@@ -68,6 +68,7 @@ KWndObjectBox::KWndObjectBox()
 	m_ulTimeDelay = 0;
 	m_nFrame = 0;
 	m_bCountFrame = 0; 
+	m_bResizeBig = 0;	// [A29] mac dinh KHONG thu nho
 }
 
 void KWndObjectBox::SetContainerId(int nId)
@@ -175,7 +176,9 @@ void KWndObjectBox::PaintWindow()
 			}			
 		}
 
-		g_pCoreShell->DrawGameObj(m_Object.uGenre, m_Object.uId,m_nAbsoluteLeft, m_nAbsoluteTop, m_Width, m_Height, 0);
+		// [A29 04/09] co 0x40000000 = ve mon nhieu o bang anh thay the MOT O (xem CoreDrawGameObj.cpp)
+		g_pCoreShell->DrawGameObj(m_Object.uGenre, m_Object.uId,m_nAbsoluteLeft, m_nAbsoluteTop, m_Width, m_Height,
+			m_bResizeBig ? 0x40000000 : 0);
 
 		KUiObjAtContRegion	Obj;
 		Obj.Obj.uGenre = m_Object.uGenre;
@@ -230,6 +233,10 @@ int	KWndObjectBox::Init(KIniFile* pIniFile, const char* pSection)
 			m_Style |= OBJCONT_S_ENABLE_CLICK_EMPTY;
 		else
 			m_Style &= ~OBJCONT_S_ENABLE_CLICK_EMPTY;
+
+		// [A29 04/09] 1 = mon rong hon MOT O thi ve bang anh thay the mot o
+		pIniFile->GetInteger(pSection, "ResizeBigItem", 0, &nValue);
+		m_bResizeBig = nValue ? 1 : 0;
 
 		pIniFile->GetInteger(pSection, "HaveBgColor", 1, &nValue);
 		if (nValue)

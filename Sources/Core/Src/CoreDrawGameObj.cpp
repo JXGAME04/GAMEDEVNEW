@@ -114,7 +114,10 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 		} 
 		else
 		{
-			Item[uId].PaintItem(x, y, false, true, uId);
+			// [A29 04/09] tham so thu ba = bResize: mon rong hon MOT O thi PaintItem ve bang anh
+			// thay the mot o. Chi bat cho o dinh kem hop thu / o vat pham bang dau gia (co tu ini),
+			// tui do va cua hang khong bat nen khong doi gi.
+			Item[uId].PaintItem(x, y, (nParam & 0x40000000) != 0, true, uId);
 		}	
 		break;
 	case CGOG_MENU_NPC:

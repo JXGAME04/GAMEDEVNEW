@@ -59,6 +59,32 @@ function AUC_MoneyAward(nCur, n)
     return "money:"..n
 end
 
+-- [A29] viet so tien cho gon: 1 van = 10.000 ; 1 uc = 10.000 van. Dung trong MOI cau thong bao
+-- va noi dung thu - chu bao "thong bao trong thu van chua rut gon, van day so dai".
+function AUC_SoTien(n)
+    n = floor(n or 0)
+    if n < 0 then
+        n = 0
+    end
+    if n >= 100000000 then
+        local nUc = floor(n / 100000000)
+        local nVan = floor(mod(n, 100000000) / 10000)
+        if nVan > 0 then
+            return nUc.." øc "..nVan.." v¹n"
+        end
+        return nUc.." øc"
+    end
+    if n >= 10000 then
+        local nVan = floor(n / 10000)
+        local nLe = mod(n, 10000)
+        if nLe > 0 then
+            return nVan.." v¹n "..nLe
+        end
+        return nVan.." v¹n"
+    end
+    return ""..n
+end
+
 function AUC_CurName(nCur)
     return AUCTION_DEF.tbCurrencyName[nCur] or "?"
 end
@@ -481,7 +507,7 @@ function AUC_OnRequestOfferDutch(nType, szAct, nId, nPrice)
         return
     end
     if AUC_GetMoney(r.currency) < nGiaMua then
-        Msg2Player("Kh«ng ®ñ "..AUC_CurName(r.currency).." (cÇn "..nGiaMua..").")
+        Msg2Player("Kh«ng ®ñ "..AUC_CurName(r.currency).." (cÇn "..AUC_SoTien(nGiaMua)..").")
         return
     end
     -- nho nguoi dang giu gia cao nhat TRUOC khi AUC_Buy ghi de ten nguoi mua
@@ -536,7 +562,7 @@ function AUC_OnRequestOfferEnglish(nType, szAct, nId, nNewPrice)
         nMin = r.cur + nStep
     end
     if nNewPrice < nMin then
-        Msg2Player("Gi¸ tr¶ ph¶i tõ "..nMin.." "..AUC_CurName(r.currency)..".")
+        Msg2Player("Gi¸ tr¶ ph¶i tõ "..AUC_SoTien(nMin).." "..AUC_CurName(r.currency)..".")
         return
     end
     -- [A24] TRA BANG HOAC VUOT GIA MUA NGAY = CHOT BAN NGAY o dung gia mua ngay.
@@ -580,7 +606,7 @@ function AUC_OnRequestOfferEnglish(nType, szAct, nId, nNewPrice)
         -- tu nang gia cua minh: hoan phan cu
         AUC_MailMoney(szOld, "Hoµn tiÒn ®Êu gi¸", "§¹i hiÖp n©ng gi¸ cho "..r.name..", hoµn l¹i møc tr¶ tr­íc.", r.currency, nOld)
     end
-    Msg2Player("§· tr¶ gi¸ "..nNewPrice.." "..AUC_CurName(r.currency).." cho "..r.name..".")
+    Msg2Player("§· tr¶ gi¸ "..AUC_SoTien(nNewPrice).." "..AUC_CurName(r.currency).." cho "..r.name..".")
     AUC_ReplyOffer(nType, szAct, nId, nNewPrice)
     local r2 = AUC_Get(nId)
     if r2 then
@@ -640,7 +666,7 @@ function AUC_Settle(r, szBuyer, nPrice)
     -- [A24] PHAI kiem ket qua gui thu: truoc day bo qua nen thu hong la tien nguoi mua da tru
     -- ma mon bien mat, con dong nam o state = 1 - khong vong quet nao nhin toi, ket vinh vien.
     -- Nay gui hong thi hoan tien nguoi mua va tra dong ve dang ban de ban lai.
-    if AUC_MailItem(szBuyer, "§Êu gi¸ thµnh c«ng", "§¹i hiÖp ®· mua ®­îc "..r.name.." víi gi¸ "..nPrice.." "..AUC_CurName(r.currency)..". VËt phÈm ®Ýnh kÌm trong th­.", r.id) <= 0 then
+    if AUC_MailItem(szBuyer, "§Êu gi¸ thµnh c«ng", "§¹i hiÖp ®· mua ®­îc "..r.name.." víi gi¸ "..AUC_SoTien(nPrice).." "..AUC_CurName(r.currency)..". VËt phÈm ®Ýnh kÌm trong th­.", r.id) <= 0 then
         AUC_MailMoney(szBuyer, "Hoµn tiÒn ®Êu gi¸", "Kh«ng giao ®­îc "..r.name..", hoµn l¹i tiÒn ®¹i hiÖp ®· tr¶.", r.currency, nPrice)
         AUC_Rollback(r.id)
         AUC_SetPrice(r.id, 0, 0, 0, r.endtime)
@@ -650,16 +676,16 @@ function AUC_Settle(r, szBuyer, nPrice)
     if r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_TONG and r.tong > 0 then
         if r.currency == AUCTION_DEF.tbCurrency.MONEY then
             TONG_ApplyAddMoney(r.tong, nNet)
-            TONG_ApplyAddEventRecord(r.tong, "§Êu gi¸ bang: b¸n "..r.name.." ®­îc "..nNet.." Ng©n l­îng vµo quü")
+            TONG_ApplyAddEventRecord(r.tong, "§Êu gi¸ bang: b¸n "..r.name.." ®­îc "..AUC_SoTien(nNet).." Ng©n l­îng vµo quü")
         else
-            AUC_MailMoney(r.seller, "TiÒn b¸n ®Êu gi¸ bang", "B¸n "..r.name.." trong phiªn bang, thu "..nNet.." Xu.", r.currency, nNet)
+            AUC_MailMoney(r.seller, "TiÒn b¸n ®Êu gi¸ bang", "B¸n "..r.name.." trong phiªn bang, thu "..AUC_SoTien(nNet).." Xu.", r.currency, nNet)
         end
     elseif r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD then
         -- phien the gioi do GM mo: tien vao he thong (khong tra ai)
     else
         -- [A20 chu chot] hoan luon TIEN COC khi ban duoc: coc chi mat khi nguoi ban tu rut mon ve
         local nCoc = r.deposit or 0
-        AUC_MailMoney(r.seller, "TiÒn b¸n ký göi", "Mãn "..r.name.." ®· b¸n ®­îc "..nPrice.." "..AUC_CurName(r.currency)..", trõ thuÕ "..nTax..", hoµn cäc "..nCoc..", ®¹i hiÖp nhËn "..(nNet + nCoc)..".", r.currency, nNet + nCoc)
+        AUC_MailMoney(r.seller, "TiÒn b¸n ký göi", "Mãn "..r.name.." ®· b¸n ®­îc "..AUC_SoTien(nPrice).." "..AUC_CurName(r.currency)..", trõ thuÕ "..AUC_SoTien(nTax)..", hoµn cäc "..AUC_SoTien(nCoc)..", ®¹i hiÖp nhËn "..AUC_SoTien((nNet + nCoc))..".", r.currency, nNet + nCoc)
     end
     AUC_SetState(r.id, 3, 3)
     AUC_Log(format("BAN id %d %s: %s -> %s gia %d tien %d (thue %d)", r.id, r.name, r.seller, szBuyer, nPrice, r.currency, nTax))
@@ -767,7 +793,7 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong, nBase
             nDeposit = nTran
         end
         if AUC_PayMoney(nCur, nDeposit) ~= 1 then
-            Msg2Player("Kh«ng ®ñ "..AUC_CurName(nCur).." ®Ó tr¶ phÝ ký göi "..nDeposit..".")
+            Msg2Player("Kh«ng ®ñ "..AUC_CurName(nCur).." ®Ó tr¶ phÝ ký göi "..AUC_SoTien(nDeposit)..".")
             return 0
         end
     end
@@ -814,14 +840,27 @@ end
 AUCPOLL_FRAMES = 30 * 18
 AUCPOLL_GLB    = 9002
 function AucPoll_Tick(nParam, nTimerId)
+    SetGlbValue(AUCPOLL_GLB, GetCurrentTime())
     if AUC_Ready() == 1 then
         AUC_Tick()
     end
     return AUCPOLL_FRAMES
 end
-if GetGlbValue(AUCPOLL_GLB) ~= 1 then
-    SetGlbValue(AUCPOLL_GLB, 1)
-    AddTimer(AUCPOLL_FRAMES, "AucPoll_Tick", 0)
+-- [A29b 04/09] GOC cua "bang hoi het gio chua tra item ve": VONG QUET CHUA TUNG CHAY.
+-- Chot chong dang ky hai lan truoc day la GetGlbValue(...) ~= 1, ma GlbValue LUU VINH VIEN:
+-- lan dau dat = 1 roi thi qua MOI lan khoi dong may chu deu thay = 1 va khong dang ky lai,
+-- nen khong mon nao het han tra ve, phien Ha Lan khong ha gia. Nhat ky: khong mot dong HET HAN.
+-- Nay dung NHIP TIM: vong quet ghi gio moi lan chay; nap tep thay nhip tim cu hon hai phut
+-- thi dang ky lai. Tu lanh sau moi lan khoi dong, va khong dang ky chong vi sau lan dau
+-- nhip tim luon moi (bien AUCPOLL_DANGKY chan luon viec Include lai tep trong cung state).
+if AUCPOLL_DANGKY ~= 1 then
+    local nNhip = GetGlbValue(AUCPOLL_GLB) or 0
+    if GetCurrentTime() - nNhip > 120 then
+        AUCPOLL_DANGKY = 1
+        SetGlbValue(AUCPOLL_GLB, GetCurrentTime())
+        AddTimer(AUCPOLL_FRAMES, "AucPoll_Tick", 0)
+        AUC_Log("dang ky vong quet dau gia (nhip tim cu %d giay)")
+    end
 end
 
 -- ---------------------------------------------------------------- DAT BAN TU NUT TREN CUA SO (khong dung NPC)

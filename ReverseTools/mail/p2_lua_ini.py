@@ -232,20 +232,11 @@ def build_ini(name):
     # O dinh kem chi 26x26 ma trang bi 2x3 ve ra 52x78; engine can giua nen mon tran ra moi phia.
     # KHONG thu nho duoc anh vat pham (KItem::PaintItem ve nguyen co) nen phai NOI O cho vua mon.
     # O neo o (300,315) trong khung thu cao 345 -> khong noi xuong duoc, phai doi len va thu bot vung chu.
-    if name == "mail_detail.ini":
-        s = _setkey(s, "MailContentValue", "Height", 122)	# 130..252
-        s = _setkey(s, "MailAwardPos", "Left", 290)
-        s = _setkey(s, "MailAwardPos", "Top", 262)		# 262 + 78 = 340, vua trong khung 345
-        s = _setkey(s, "MailAwardPos", "Interval", 62)	# 58 + 4; lot 5 o mot hang
+    # [D16 04/09] chu: "nen lam lai nhu truoc cho thu do chi duoc 1 o". Dot D14 noi o len 58x78
+    # lam lech ca bieu tuong loai anh lan cho dat, nay TRA VE NGUYEN nhu ban goc va thay bang
+    # co ResizeBigItem (mon nhieu o ve bang anh thay the mot o - xem CoreDrawGameObj.cpp [A29]).
     if name == "mail_award_item.ini":
-        s = _setkey(s, "Main", "Width", 58)
-        s = _setkey(s, "Main", "Height", 78)
-        s = _setkey(s, "MailAwardItemSpr", "Left", 0)
-        s = _setkey(s, "MailAwardItemSpr", "Top", 0)
-        s = _setkey(s, "MailAwardItemSpr", "Width", 58)
-        s = _setkey(s, "MailAwardItemSpr", "Height", 78)
-        s = _setkey(s, "MailAwardItemCount", "Top", 64)
-        s = _setkey(s, "MailAwardItemCount", "Width", 56)
+        s = _setkey(s, "MailAwardItemSpr", "ResizeBigItem", 1)
     if name == "mail_icon.ini":
         # [D4 03/09] chu: dat duoi bieu tuong Bau Cua = UiPlayerBar.ini [SpringGame] Left=765 Top=243 50x50 (800x600);
         # 1024: UiMail.cpp neo x = 1024 - 30 nhu UiPlayerBar.cpp

@@ -291,12 +291,10 @@ void KUiMailDetail::LoadScheme(const char* pScheme)
             m_AwardBg[i].Init(&IniAward, "MailAwardBgSpr");
             m_AwardBg[i].GetPosition(&l, &t);
             m_AwardBg[i].SetPosition(nBaseX + l, nBaseY + t);
-            // [D15 04/09] o dinh kem nay rong 58x78 (dot D14) nhung bieu tuong loai "anh"
-            // (tien, kinh nghiem...) van la sprite 26x26 ve tu goc TREN TRAI -> dinh goc o.
-            // Doi vao giua o: (58-26)/2 = 16 va (78-26)/2 = 26.
+            // [D16 04/09] o da tra ve 26x26 nen bieu tuong loai "anh" khong phai doi cho nua.
             m_AwardSpr[i].Init(&IniAward, "MailAwardItemSpr");
             m_AwardSpr[i].GetPosition(&l, &t);
-            m_AwardSpr[i].SetPosition(nBaseX + l + 16, nBaseY + t + 26);
+            m_AwardSpr[i].SetPosition(nBaseX + l, nBaseY + t);
             m_AwardBox[i].Init(&IniAward, "MailAwardItemSpr");
             m_AwardBox[i].GetPosition(&l, &t);
             m_AwardBox[i].SetPosition(nBaseX + l, nBaseY + t);
@@ -386,10 +384,7 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
         // [MAIL 04/09 D13] o vat pham that (KWndObjectBox) da duoc ENGINE ve san so chong o goc,
         // nen KHONG ve them nhan so nua (truoc day hien hai so chong nhau: "500" va "500").
         int bBoxShown = 0;
-        // [D14 04/09] o nay nay rong 58x78 cho vua trang bi nhieu o, con khung nen chi 26x26
-        // nen de nguyen se thay mot o vuong nho lech han duoi mon. An di khi dang giu mon that.
-        if (pA->nKind == MAILAWARD_ITEM)
-            m_AwardBg[i].Hide();
+        // [D16 04/09] o da tra ve 26x26 nen khung nen hien lai binh thuong (bo doan an cua D14).
         if (pA->nKind == MAILAWARD_ITEM)
         {
             // dung lai vat pham trong Item[] cua client tu ChatItem (CoreShell.cpp GDI_ITEM_CHAT)
