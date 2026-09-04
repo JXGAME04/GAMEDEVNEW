@@ -1048,61 +1048,6 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		return;
 	}
 
-	// [ROLECHK 04/09] KIEM RANH GIOI MOI VUNG TRONG BLOB truoc khi giao cho engine.
-	// Cac dwXxxOffset deu tinh TU DAU TRoleData (KPlayerDBFuns.cpp:1087 dat chung nhu vay) va
-	// LoadPlayerFightSkillList/Item/Task deu lam (BYTE*)pRoleBuffer + offset roi doc count ban ghi
-	// (KPlayerDBFuns.cpp:827/956/510) - khong ham nao tu kiem. Mot offset rac la doc thang ra ngoai.
-	{
-		const int nBlob = pRes->nPayloadLen - 1;              // kich thuoc blob that
-		const int nHdr  = (int)sizeof(TRoleData) - 1;         // pBuffer[1] chiem 1 byte cuoi
-		const int nDat  = (int)pData->dwDataLen;
-		int bXau = 0;
-		const char* szVi = "";
-		if (nDat < nHdr || nDat > nBlob || nDat > (int)sizeof(Player[0].m_SaveBuffer))
-			{ bXau = 1; szVi = "dwDataLen"; }
-		else if (pData->nFightSkillCount < 0 || pData->nStateSkillCount < 0
-		      || pData->nItemCount < 0 || pData->nFriendCount < 0)
-			{ bXau = 1; szVi = "count am"; }
-		else
-		{
-			// {offset, so ban ghi, co mot ban ghi}. count = 0 thi chi kiem offset nam trong blob:
-			// blob cu co the de offset tro thang vao cuoi vung (KPlayerDBFuns.cpp:1214).
-			const int aOff[5] = { pData->dwFSkillOffset, pData->dwSSkillOffset,
-			                      pData->dwTaskOffset,   pData->dwItemOffset,
-			                      pData->dwFriendOffset };
-			const int aSo[5]  = { pData->nFightSkillCount, pData->nStateSkillCount,
-			                      (int)pData->nTaskCount,  pData->nItemCount,
-			                      pData->nFriendCount };
-			const int aCo[5]  = { (int)sizeof(TDBSkillData), (int)sizeof(TDBSkillData),
-			                      (int)sizeof(TDBTaskData),  (int)sizeof(TDBItemData), 0 };
-			static const char* aTen[5] = { "FSkill", "SSkill", "Task", "Item", "Friend" };
-			for (int v = 0; v < 5 && !bXau; v++)
-			{
-				if (aOff[v] < nHdr || aOff[v] > nDat)
-					{ bXau = 1; szVi = aTen[v]; break; }
-				if (aCo[v] <= 0 || aSo[v] == 0)
-					continue;                       // khong biet co ban ghi (Friend) hoac vung rong
-				if (aSo[v] > (nDat - aOff[v]) / aCo[v])   // chia thay nhan: khong the tran so
-					{ bXau = 1; szVi = aTen[v]; break; }
-			}
-		}
-		// Ten trong blob phai dung con bot vua xin - lech ten nghia la goi ve nham cua ai do.
-		if (!bXau && strcmpi(pData->BaseInfo.szName, p->szRole) != 0)
-			{ bXau = 1; szVi = "lech ten"; }
-		if (bXau)
-		{
-			pb_Log("[RoleChk] %s: blob HONG o '%s' (len=%d blob=%d fs=%d/%d ss=%d/%d task=%d/%d"
-			       " item=%d/%d) - BO con bot nay, khong nap de khoi sap may chu\n",
-			       p->szRole, szVi, nDat, nBlob,
-			       (int)pData->nFightSkillCount, pData->dwFSkillOffset,
-			       (int)pData->nStateSkillCount, pData->dwSSkillOffset,
-			       (int)pData->nTaskCount,       pData->dwTaskOffset,
-			       (int)pData->nItemCount,       pData->dwItemOffset);
-			pb_FreePending(p);
-			return;
-		}
-	}
-
 	// MIN da biet: KPlayer::LaunchPlayer (KPlayer.cpp:6768) goi g_pServer->Release() roi
 	// dong 6776 dung con tro NULL khi m_nChestPW == 214519 (nap tu BaseInfo.ipassrole,
 	// KPlayerDBFuns.cpp:382). Mot blob mang gia tri do se giet tang mang may chu.
