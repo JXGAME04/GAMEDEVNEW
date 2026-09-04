@@ -15,19 +15,10 @@ TextureResMgr::TextureResMgr()
 	
 	// 根据物理内存大小决定资源缓冲区的大小
 	// [REP3 03/09] ngan sach cache texture theo RAM (2.0: 30/50/80/120 MB); may 4 GB+ cho rong hon vi texture 8888
-	MEMORYSTATUSEX stat;
-	stat.dwLength = sizeof(stat);
-	GlobalMemoryStatusEx(&stat);
-	unsigned __int64 uPhysMB = stat.ullTotalPhys / (1024 * 1024);
-	unsigned __int64 uBudgetMB = uPhysMB / 16;
-	if (uBudgetMB < 30)  uBudgetMB = 30;
-	if (uBudgetMB > 480) uBudgetMB = 480;
-	if (g_nRep3CacheMB > 0)
-		uBudgetMB = (unsigned __int64)g_nRep3CacheMB;
-	m_nBalanceNum = (int32)(uBudgetMB * 1024 * 1024);
+	// [REP3 03/09 RAM] ctor chay TRUOC khi Create() doc config.ini -> chi dat mac dinh, SetBudget() tinh lai sau
+	m_nBalanceNum = 256 * 1024 * 1024;
 	m_nMaxReleaseCount = 64;
 	m_uCheckPoint = 25;
-	Rep3Log("[REP3] cache texture: RAM %I64u MB -> ngan sach %I64u MB", uPhysMB, uBudgetMB);
 }
 
 TextureResMgr::~TextureResMgr()
@@ -46,28 +37,65 @@ void TextureResMgr::CheckBalance()
 	// [REP3 03/09] theo represent3free.dll 2.0 (0x10024F80): duyet tu cuoi, bo qua tai nguyen vua ve khung truoc,
 	// chi xet tai nguyen nghi > 10 s; moi luot BO DUNG MOT KHUNG texture (ReleaseAFrameData) - het khung
 	// moi xoa ca tai nguyen. Khong con cu xoa hang loat 16/32/64 cai gay khung.
+	// [REP3 03/09 RAM] vuot ngan sach VRAM: bo toi da 8 khung/luot, chi can nghi > 1 s (Release() texture re, ton khi tao lai thoi)
     KAutoCriticalSection AutoLock(m_ImageProcessLock);
 
+	bool bOver = (m_uTexCacheMemUsed > (uint32)m_nBalanceNum);
+	int nMax = bOver ? 8 : 1;
+	uint32 uIdle = bOver ? 1000 : 10000;
 	uint32 nTickCount = GetTickCount();
-	for (int i = (int)m_TextureResList.size() - 1; i >= 0; i--)
+	int nDone = 0;
+	for (int i = (int)m_TextureResList.size() - 1; i >= 0 && nDone < nMax; i--)
 	{
 		ResNode& node = m_TextureResList[i];
 		if (!node.m_bCacheable || !node.m_pTextureRes)
 			continue;
 		if (node.m_pTextureRes->m_bLastFrameUsed)
 			continue;
-		if ((nTickCount - node.m_nLastUsedTime) <= 10000)
+		if ((nTickCount - node.m_nLastUsedTime) <= uIdle)
 			continue;
 		m_nReleaseCount++;
+		nDone++;
 		if (node.m_pTextureRes->ReleaseAFrameData())
-			return;
+			continue;
 		if (m_uTexCacheMemUsed >= node.m_pTextureRes->m_nTexMemUsed)
 			m_uTexCacheMemUsed -= node.m_pTextureRes->m_nTexMemUsed;
 		node.m_pTextureRes->Release();
 		SAFE_DELETE(node.m_pTextureRes);
 		m_TextureResList.erase(m_TextureResList.begin() + i);
-		return;
 	}
+}
+
+void TextureResMgr::SetBudget()
+{
+	// [REP3 03/09 RAM] ngan sach cache texture = VRAM (texture o POOL_DEFAULT, khong chiem RAM tien trinh): RAM/16 kep 60..384 MB;
+	// 2.0 dung toi da 120 MB 4444 (= 240 MB 8888). [Client] Rep3CacheMB ghi de.
+	MEMORYSTATUSEX stat;
+	stat.dwLength = sizeof(stat);
+	GlobalMemoryStatusEx(&stat);
+	unsigned __int64 uPhysMB = stat.ullTotalPhys / (1024 * 1024);
+	unsigned __int64 uBudgetMB = uPhysMB / 16;
+	if (uBudgetMB < 60)  uBudgetMB = 60;
+	if (uBudgetMB > 384) uBudgetMB = 384;
+	if (g_nRep3CacheMB > 0)
+		uBudgetMB = (unsigned __int64)g_nRep3CacheMB;
+	m_nBalanceNum = (int32)(uBudgetMB * 1024 * 1024);
+	Rep3Log("[REP3] cache texture: RAM %I64u MB -> ngan sach %I64u MB (%s)", uPhysMB, uBudgetMB, g_nRep3Pool ? "VRAM, POOL_DEFAULT" : "RAM+VRAM, POOL_MANAGED");
+}
+
+void TextureResMgr::GetStat(uint32& uNodes, uint32& uTexMB, uint32& uRawMB, uint32& uDrawMB, uint32& uBudgetMB)
+{
+	// [REP3 03/09 RAM] cho dong thong ke trong jx_rep3.log
+    KAutoCriticalSection AutoLock(m_ImageProcessLock);
+	unsigned __int64 uRaw = 0;
+	for (int i = 0; i < (int)m_TextureResList.size(); i++)
+		if (m_TextureResList[i].m_pTextureRes)
+			uRaw += m_TextureResList[i].m_pTextureRes->m_nSprMemUsed;
+	uNodes = (uint32)m_TextureResList.size();
+	uTexMB = m_uTexCacheMemUsed >> 20;
+	uDrawMB = m_uMemDrawingUsed >> 20;
+	uRawMB = (uint32)(uRaw >> 20);
+	uBudgetMB = ((uint32)m_nBalanceNum) >> 20;
 }
 
 void TextureResMgr::CheckBalanceFrame()

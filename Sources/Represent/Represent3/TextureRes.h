@@ -133,6 +133,7 @@ public:
 	virtual void Release();
 
 	virtual bool ReleaseAFrameData();
+	virtual bool InvalidateDeviceObjects();	// [REP3 03/09 RAM] texture POOL_DEFAULT mat khi reset device -> bo het, tao lai luc ve
 
 	bool PrepareFrameData(const char* szImage, int32 nFrame, bool bPrepareTex);
 	// 取得nFrame帧的第nIdx张贴图，根据不同情况nIdx取值为1-4

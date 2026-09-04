@@ -12,6 +12,22 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <psapi.h>
+#pragma comment(lib, "psapi.lib")
+
+// [RAM] bo nho rieng cua tien trinh (PrivateUsage) va working set, MB
+// REP_OFFSCREEN=1: cua so dat ngoai man hinh, khong chiem foreground, khong chup BitBlt (chi do RAM / SaveScreenToFile)
+// REP_OFFSCREEN=2: cua so tren man hinh, TOPMOST nhung KHONG chiem focus (SWP_NOACTIVATE), co chup BitBlt + SaveScreenToFile
+static int RepMode() { const char* e = getenv("REP_OFFSCREEN"); return e ? atoi(e) : 0; }
+#define REP_OFF (RepMode() == 1)
+#define REP_NOACT (RepMode() != 0)
+
+static void PrintMem(const char* label)
+{
+	PROCESS_MEMORY_COUNTERS_EX pmc; memset(&pmc, 0, sizeof(pmc)); pmc.cb = sizeof(pmc);
+	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+	printf("[RAM] %-28s private %6.1f MB  ws %6.1f MB\n", label, pmc.PrivateUsage / 1048576.0, pmc.WorkingSetSize / 1048576.0);
+}
 
 static LRESULT CALLBACK HarnessWndProc(HWND h, UINT m, WPARAM w, LPARAM l)
 {
@@ -138,8 +154,8 @@ int main(int argc, char** argv)
 	RECT rc = {0, 0, 1024, 768};
 	DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
 	AdjustWindowRectEx(&rc, style, FALSE, 0);
-	HWND hwnd = CreateWindowExA(0, "RepHarness", szDll, style, 0, 0, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, wc.hInstance, NULL);
-	ShowWindow(hwnd, SW_SHOW); UpdateWindow(hwnd); Pump();
+	HWND hwnd = CreateWindowExA(0, "RepHarness", szDll, style, REP_OFF ? -3000 : 0, REP_OFF ? -3000 : 0, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, wc.hInstance, NULL);
+	ShowWindow(hwnd, REP_NOACT ? SW_SHOWNOACTIVATE : SW_SHOW); UpdateWindow(hwnd); Pump();
 
 	g_SetMainHWnd(hwnd);
 	g_SetDrawHWnd(hwnd);	// engine tinh vung Blt theo cua so nay (KWin32App.cpp:204)
@@ -157,6 +173,7 @@ int main(int argc, char** argv)
 	Pump();
 	printf("[OK] %s IsRep3D=%d\n", szDll, rs->IsRep3D() ? 1 : 0);
 
+	PrintMem("sau Create shell");
 	int nFontId = 0;
 	{
 		KIniFile ini;
@@ -268,9 +285,11 @@ int main(int argc, char** argv)
 	Pump(); Sleep(300); Pump();
 
 	std::string outPw = szOut; outPw.insert(outPw.size() - 4, "_pw");
-	SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW); SetForegroundWindow(hwnd); Pump(); Sleep(200); Pump();
+	if (RepMode() == 2) { SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE); Pump(); Sleep(300); Pump(); }
+	else if (!REP_OFF) { SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW); SetForegroundWindow(hwnd); Pump(); Sleep(200); Pump(); }
+	PrintMem("sau ve bang kieu (1 khung)");
 	bool b1 = rs->SaveScreenToFile(szOut, SCRFILETYPE_BMP, 0);
-	bool b2 = SaveScreenBlt(hwnd, outPw.c_str());
+	bool b2 = REP_OFF ? false : SaveScreenBlt(hwnd, outPw.c_str());
 	printf("[SHOT] SaveScreenToFile=%d ScreenBlt=%d\n", b1 ? 1 : 0, b2 ? 1 : 0);
 
 	// ---------- do toc do: N khung, moi khung ve tat ca sprite mau lap 8 lan ----------
@@ -295,11 +314,13 @@ int main(int argc, char** argv)
 		Pump();
 	}
 	QueryPerformanceCounter(&t1);
+	PrintMem("sau PERF (moi sprite, moi khung)");
 	double ms = (double)(t1.QuadPart - t0.QuadPart) * 1000.0 / (double)f.QuadPart;
 	printf("[PERF] %d khung, %d sprite/khung: %.2f ms/khung (%.1f fps), %.3f us/sprite\n",
 		nPerfFrames, nDraws / (nPerfFrames > 0 ? nPerfFrames : 1), ms / nPerfFrames, 1000.0 * nPerfFrames / ms, 1000.0 * ms / nDraws);
 
 	rs->Release();
+	PrintMem("sau Release shell");
 	FreeLibrary(hDll);
 	DestroyWindow(hwnd);
 	return 0;

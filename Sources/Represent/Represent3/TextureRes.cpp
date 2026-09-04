@@ -372,6 +372,7 @@ void TextureResSpr::ResetVar()
 	m_pOffset		= NULL;
 
 	m_nTexMemUsed = 0;
+	m_nSprMemUsed = 0;	// [REP3 03/09 RAM]
 	m_bLastFrameUsed = false;
 	m_bNew = false;
 }
@@ -487,6 +488,7 @@ bool TextureResSpr::LoadSprFile(char* szImage)
 			m_pFrameInfo[i].nRawDataLen = pOffset[i].Length - 8;//sizeof(SPRFRAME);
 			m_pFrameInfo[i].pRawData = new BYTE[m_pFrameInfo[i].nRawDataLen];
 			memcpy(m_pFrameInfo[i].pRawData, pFrame->Sprite, m_pFrameInfo[i].nRawDataLen);
+			m_nSprMemUsed += m_pFrameInfo[i].nRawDataLen;	// [REP3 03/09 RAM]
 			m_pFrameInfo[i].pFrame = NULL;
 		}
 		SprReleaseHeader(pHeader);
@@ -596,30 +598,50 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 
 	for(i=0; i<m_pFrameInfo[nFrame].nTexNum; i++)
 	{
-		m_nTexMemUsed += m_pFrameInfo[nFrame].texInfo[i].nWidth * m_pFrameInfo[nFrame].texInfo[i].nHeight * nBpp;
+		TextureInfo& ti = m_pFrameInfo[nFrame].texInfo[i];
+		m_nTexMemUsed += ti.nWidth * ti.nHeight * nBpp;
 
-		SAFE_RELEASE(m_pFrameInfo[nFrame].texInfo[i].pTexture);
-		if (FAILED(PD3DDEVICE->CreateTexture(m_pFrameInfo[nFrame].texInfo[i].nWidth, m_pFrameInfo[nFrame].texInfo[i].nHeight, 1,
-								0, eFmt, D3DPOOL_MANAGED, &m_pFrameInfo[nFrame].texInfo[i].pTexture, NULL)))
+		SAFE_RELEASE(ti.pTexture);
+		// [REP3 03/09 RAM] Rep3Pool=1: do vao texture tam SYSTEMMEM roi UpdateTexture sang texture POOL_DEFAULT (chi o VRAM).
+		// MANAGED cu giu them mot ban sao day du trong RAM tien trinh (= VRAM dang dung) -> RAM gap doi Represent2.
+		LPDIRECT3DTEXTURE9 pFill = NULL;
+		if (FAILED(PD3DDEVICE->CreateTexture(ti.nWidth, ti.nHeight, 1, 0, eFmt,
+								g_nRep3Pool ? D3DPOOL_SYSTEMMEM : D3DPOOL_MANAGED, &pFill, NULL)))
 			goto error;
 
 		D3DLOCKED_RECT LockedRect;
-		if (FAILED(m_pFrameInfo[nFrame].texInfo[i].pTexture->LockRect(0, &LockedRect, NULL, 0)))
+		if (FAILED(pFill->LockRect(0, &LockedRect, NULL, 0)))
+		{
+			pFill->Release();
 			goto error;
+		}
 
 		BYTE *pTexData = (BYTE*)LockedRect.pBits;
-		BYTE *pTp = pTempData + (m_pFrameInfo[nFrame].texInfo[i].nFrameY * nW +
-					m_pFrameInfo[nFrame].texInfo[i].nFrameX) * nBpp;
-		for(j=0; j<m_pFrameInfo[nFrame].texInfo[i].nFrameHeight; j++)
+		BYTE *pTp = pTempData + (ti.nFrameY * nW + ti.nFrameX) * nBpp;
+		for(j=0; j<ti.nFrameHeight; j++)
 		{
-			memcpy(pTexData, pTp, m_pFrameInfo[nFrame].texInfo[i].nFrameWidth * nBpp);
+			memcpy(pTexData, pTp, ti.nFrameWidth * nBpp);
 			pTexData += LockedRect.Pitch;
 			pTp += nW * nBpp;
 		}
+		pFill->UnlockRect(0);
 
-		m_pFrameInfo[nFrame].texInfo[i].pTexture->UnlockRect(0);
+		if (g_nRep3Pool)
+		{
+			LPDIRECT3DTEXTURE9 pVram = NULL;
+			if (FAILED(PD3DDEVICE->CreateTexture(ti.nWidth, ti.nHeight, 1, 0, eFmt, D3DPOOL_DEFAULT, &pVram, NULL)) ||
+				FAILED(PD3DDEVICE->UpdateTexture(pFill, pVram)))
+			{
+				SAFE_RELEASE(pVram);
+				pFill->Release();
+				goto error;
+			}
+			pFill->Release();
+			ti.pTexture = pVram;
+		}
+		else
+			ti.pTexture = pFill;
 	}
-
 	SAFE_DELETE_ARRAY(pTempData);
 	if(m_pHeader)
 	{
@@ -1030,53 +1052,54 @@ error:
 */
 int32 TextureResSpr::GetPixelAlpha(int32 nFrame, int32 x, int32 y)
 {
-	int32 nRet = 0;
-
-	if (nFrame < 0 && nFrame >= m_nFrameNum)
-		return nRet;
-
+	// [REP3 03/09 RAM] doc alpha tu du lieu RLE goc (pRawData) thay vi LockRect texture: texture POOL_DEFAULT khong lock duoc,
+	// va cach cu ep dong bo GPU moi lan ro chuot. RLE: [n][a] roi n byte chi so mau neu a != 0 (nhu RenderToA8R8G8B8).
+	if (nFrame < 0 || nFrame >= m_nFrameNum || !m_pFrameInfo)
+		return 0;
 	x -= m_pFrameInfo[nFrame].nOffX;
 	y -= m_pFrameInfo[nFrame].nOffY;
+	if (x < 0 || y < 0 || x >= m_pFrameInfo[nFrame].nWidth || y >= m_pFrameInfo[nFrame].nHeight)
+		return 0;
 
-	// 坐标超出图形范围则返回
-	if (x < 0 || y < 0 || x >= m_pFrameInfo[nFrame].nWidth || 
-		y >= m_pFrameInfo[nFrame].nHeight)
-		return nRet;
-
-	// 遍历拆分的贴图，判断象素点alpha值
-	for(int i=0; i<m_pFrameInfo[nFrame].nTexNum; i++)
+	BYTE* pSrc = m_pFrameInfo[nFrame].pRawData;
+	int nLen = m_pFrameInfo[nFrame].nRawDataLen;
+	SPRFRAME* pTmp = NULL;
+	if (!pSrc && m_pHeader)	// spr nen theo khung (raw da tra sau khi tao texture): lay lai khung tu pak
 	{
-		int32 tx = x - m_pFrameInfo[nFrame].texInfo[i].nFrameX;
-		int32 ty = y - m_pFrameInfo[nFrame].texInfo[i].nFrameY;
-		// 检测象素点是否落在第i张贴图上
-		if (tx >= 0 && ty >= 0 && tx < m_pFrameInfo[nFrame].texInfo[i].nFrameWidth && 
-									ty < m_pFrameInfo[nFrame].texInfo[i].nFrameHeight)
+		pTmp = (SPRFRAME*)SprGetFrame((SPRHEAD*)m_pHeader, nFrame);
+		if (!pTmp)
+			return 0;
+		int nL = (int)m_pOffset[nFrame].Length;
+		if (nL < 0) nL = -nL;
+		pSrc = pTmp->Sprite;
+		nLen = nL - 8;
+	}
+	if (!pSrc || nLen <= 0)
+	{
+		if (pTmp) SprReleaseFrame(pTmp);
+		return 0;
+	}
+
+	int nRet = 0;
+	int nTarget = y * m_pFrameInfo[nFrame].nWidth + x;
+	int nPos = 0;
+	BYTE* p = pSrc;
+	BYTE* pEnd = pSrc + nLen;
+	while (p + 2 <= pEnd)
+	{
+		int n = *p++;
+		int a = *p++;
+		if (nTarget < nPos + n)
 		{
-			if(!m_pFrameInfo[nFrame].texInfo[i].pTexture)
-				return nRet;
-
-			D3DLOCKED_RECT LockedRect;
-			if (FAILED(m_pFrameInfo[nFrame].texInfo[i].pTexture->LockRect(0, &LockedRect, NULL, D3DLOCK_READONLY)))
-				return nRet;
-
-			if(g_bUse4444Texture)
-			{
-				BYTE *p = (BYTE*)LockedRect.pBits;
-				p += ty * LockedRect.Pitch + tx * 2 + 1;
-				nRet = (*p) & 0xf0;
-			}
-			else
-			{
-				BYTE *p = (BYTE*)LockedRect.pBits;
-				p += ty * LockedRect.Pitch + tx * 4 + 3;
-				nRet = *p;
-			}
-
-			m_pFrameInfo[nFrame].texInfo[i].pTexture->UnlockRect(0);
+			nRet = a;
 			break;
 		}
+		nPos += n;
+		if (a != 0)
+			p += n;
 	}
-	
+	if (pTmp)
+		SprReleaseFrame(pTmp);
 	return nRet;
 }
 
@@ -1143,6 +1166,14 @@ bool TextureResSpr::ReleaseAFrameData()
 		return false;
 	}
 	return false;
+}
+
+bool TextureResSpr::InvalidateDeviceObjects()
+{
+	// [REP3 03/09 RAM] texture POOL_DEFAULT phai bo truoc khi Reset device; PrepareFrameData tao lai lan ve sau
+	if (g_nRep3Pool)
+		while (ReleaseAFrameData()) {}
+	return true;
 }
 
 int TextureResSpr::SplitTexture(uint32 nFrame)

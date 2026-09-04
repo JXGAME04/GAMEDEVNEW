@@ -44,6 +44,9 @@ public:
     void CheckBalance();
     // [REP3 03/09] goi cuoi moi khung ve (khi fps trung binh >= 25): bo toi da 1 tai nguyen/khung texture nghi > 10 s
     void CheckBalanceFrame();
+    // [REP3 03/09 RAM] ngan sach cache (goi sau khi doc ini) + thong ke cho jx_rep3.log
+    void SetBudget();
+    void GetStat(uint32& uNodes, uint32& uTexMB, uint32& uRawMB, uint32& uDrawMB, uint32& uBudgetMB);
 
 	//## 设置图形动态加载平衡参数。
     void SetBalanceParam(

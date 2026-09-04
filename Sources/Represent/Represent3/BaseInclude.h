@@ -50,6 +50,8 @@ extern int  g_nRep3Npot;        // 1 = dung texture khong luy thua 2 neu card ho
 extern int  g_nRep3Vsync;       // 0 = Present ngay (client tu dieu nhip PaintFps), 1 = cho vsync
 extern int  g_nRep3CacheMB;     // 0 = tu tinh theo RAM, >0 = ngan sach cache texture (MB)
 extern int  g_nRep3Log;         // 1 = ghi jx_rep3.log
+extern int  g_nRep3Pool;       // [REP3 03/09 RAM] 1 = texture sprite o D3DPOOL_DEFAULT (chi VRAM, khong ban sao RAM), 0 = MANAGED cu
+extern int  g_nRep3StatSec;    // [REP3 03/09 RAM] chu ky ghi thong ke RAM/VRAM/cache vao jx_rep3.log (giay), 0 = tat
 extern bool g_bNpotOK;          // card + thiet bi da qua thu NPOT
 extern int  g_nMaxTexW, g_nMaxTexH;
 void Rep3Log(const char* fmt, ...);

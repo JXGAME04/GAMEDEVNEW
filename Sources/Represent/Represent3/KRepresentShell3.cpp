@@ -13,6 +13,8 @@
 //#include "dxerr.h"
 
 #include "TextureRes.h"
+#include <psapi.h>	// [REP3 03/09 RAM] GetProcessMemoryInfo
+#pragma comment(lib, "psapi.lib")
 HWND	g_hWnd = NULL;
 int		g_ntest = 0;
 
@@ -47,6 +49,8 @@ int  g_nRep3Npot      = 1;
 int  g_nRep3Vsync     = 0;
 int  g_nRep3CacheMB   = 0;
 int  g_nRep3Log       = 1;
+int  g_nRep3Pool      = 1;	// [REP3 03/09 RAM]
+int  g_nRep3StatSec   = 30;
 bool g_bNpotOK        = false;
 int  g_nMaxTexW = 1024, g_nMaxTexH = 1024;
 
@@ -452,11 +456,15 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Vsync     = Rep3Ini("Rep3Vsync", 0);
 	g_nRep3CacheMB   = Rep3Ini("Rep3CacheMB", 0);
 	g_nRep3Log       = Rep3Ini("Rep3Log", 1);
+	g_nRep3Pool      = Rep3Ini("Rep3Pool", 1);		// [REP3 03/09 RAM]
+	g_nRep3StatSec   = Rep3Ini("Rep3StatSec", 30);
+	m_TextureResMgr.SetBudget();	// [REP3 03/09 RAM] doc Rep3CacheMB SAU khi doc ini (ctor chay truoc Create)
 	g_bUse4444Texture = (g_nRep3Tex32 == 0);
 	if (g_nRep3Flat)
 		g_renderModel = RenderModel2D;
-	Rep3Log("[REP3] Create %dx%d full=%d flat=%d composite=%d tex32=%d npot=%d vsync=%d cacheMB=%d",
-		nWidth, nHeight, (int)bFullScreen, g_nRep3Flat, g_nRep3Composite, g_nRep3Tex32, g_nRep3Npot, g_nRep3Vsync, g_nRep3CacheMB);
+	Rep3Log("[REP3] Create %dx%d full=%d flat=%d composite=%d tex32=%d npot=%d vsync=%d cacheMB=%d pool=%s statSec=%d",
+		nWidth, nHeight, (int)bFullScreen, g_nRep3Flat, g_nRep3Composite, g_nRep3Tex32, g_nRep3Npot, g_nRep3Vsync, g_nRep3CacheMB,
+		g_nRep3Pool ? "DEFAULT(VRAM)" : "MANAGED(RAM+VRAM)", g_nRep3StatSec);	// [REP3 03/09 RAM]
 	if (!g_D3DShell.Create())
 		return false;
 	g_DebugLog("[D3DRender]g_D3DShell create ok!");
@@ -2531,6 +2539,23 @@ void KRepresentShell3::RepresentEnd()
 	m_dwLastPresent = dwNow;
 	if (m_fFpsAvg >= 25.0f)
 		m_TextureResMgr.CheckBalanceFrame();
+
+	// [REP3 03/09 RAM] thong ke dinh ky: RAM rieng tien trinh, VRAM con trong, cache texture (VRAM) + raw spr (RAM), so nap/bo, fps
+	if (g_nRep3StatSec > 0)
+	{
+		static DWORD s_dwLastStat = 0;
+		if (s_dwLastStat == 0 || (dwNow - s_dwLastStat) >= (DWORD)g_nRep3StatSec * 1000)
+		{
+			s_dwLastStat = dwNow;
+			PROCESS_MEMORY_COUNTERS_EX pmc; memset(&pmc, 0, sizeof(pmc)); pmc.cb = sizeof(pmc);
+			GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+			uint32 uNodes = 0, uTexMB = 0, uRawMB = 0, uDrawMB = 0, uBudgetMB = 0;
+			m_TextureResMgr.GetStat(uNodes, uTexMB, uRawMB, uDrawMB, uBudgetMB);
+			Rep3Log("[REP3] RAM rieng %u MB, WS %u MB | VRAM con %u MB | cache %u muc: texture %u MB (ve khung nay %u MB, ngan sach %u MB), raw spr %u MB | nap %u, bo %u | fps TB %.0f",
+				(unsigned)(pmc.PrivateUsage >> 20), (unsigned)(pmc.WorkingSetSize >> 20), (unsigned)(PD3DDEVICE->GetAvailableTextureMem() >> 20),
+				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg);
+		}
+	}
 }
 
 void KRepresentShell3::ViewPortCoordToSpaceCoord(int& nX, int& nY, int nZ)
