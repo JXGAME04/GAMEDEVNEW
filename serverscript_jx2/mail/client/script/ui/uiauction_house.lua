@@ -29,6 +29,9 @@ function UIAuctionHouse:TalkToPlayer(szMsg)
 end
 
 function UIAuctionHouse:SwitchToAuctionWindow(nType)
+    -- [A33] xoa co: bam Mua ngay/Lay lai roi doi the truoc khi goi ve thi co ket 1 vinh vien,
+    -- sau do BAT KY ai ban xong cung bat ta nap lai ca trang (doi goi).
+    self.bTuBam = 0
     self.nCurTypeIndex = nType
     self.szCurActivityName = ""
     self.nCurPageIndex = 1

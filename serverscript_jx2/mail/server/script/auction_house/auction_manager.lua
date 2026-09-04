@@ -852,7 +852,7 @@ if AUCPOLL_DANGKY ~= 1 then
         AUCPOLL_DANGKY = 1
         SetGlbValue(AUCPOLL_GLB, GetCurrentTime())
         AddTimer(AUCPOLL_FRAMES, "AucPoll_Tick", 0)
-        AUC_Log("dang ky vong quet dau gia (nhip tim cu %d giay)")
+        AUC_Log("dang ky vong quet dau gia")
     end
 end
 
