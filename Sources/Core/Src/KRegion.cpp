@@ -1563,43 +1563,38 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 			pNode = (KIndexNode *)m_PlayerList.GetHead();
 		m_nBroadCastCursor += nMaxCount;
 	}
-	int nF4Duyet = 0;	// [F4] so node da xet - chan vong tron
-	int nF4Gui   = 0;	// [F4] so nguoi that da gui trong lan phat nay
-	int nBCNgoaiTam = 0;	// [BC 03/09 b] nguoi that bi loc vi ngoai tam
-	while(nMaxCount > 0 && nF4Duyet < nF4Tong)
+	int nF4Duyet = 0;	// so node da xet (chi de dem)
+	int nF4Gui   = 0;	// so nguoi that da gui trong lan phat nay (chi de dem)
+	int nBCNgoaiTam = 0;	// nguoi that bi loc vi ngoai tam (chi de dem)
+	// [BC 04/09 LUI] TRA VE VONG LAP TRUOC F4: tru ngan sach cho MOI node hop le (ke ca bot), khong duyet vong tron.
+	// Day chinh la bo han dong tinh co ma ca he thong dang dua vao: bo no ra thi mot client nhan
+	// 21.000-94.844 goi/giay -> nghen socket -> may chu vut byte khi ghi thieu -> luong lech -> client doc rac -> sap.
+	// Chi duoc bo F4 tro lai SAU KHI sua loi vut byte trong SocketServer.cpp (heaven.dll).
+	while(pNode && nMaxCount > 0)
 	{
-		if (pNode == NULL)	// [F4] het danh sach -> quay lai dau (duyet vong tron)
-		{
-			pNode = (KIndexNode *)m_PlayerList.GetHead();
-			if (pNode == NULL)
-				break;
-		}
-		nF4Duyet++;
-		// LOI TREO CO SAN: truoc day pNode chi tien BEN TRONG if, nen mot node co
-		// m_nIndex <= 0 hoac >= MAX_PLAYER se lam vong lap quay vo tan => treo cung
-		// GameServer. Nay luon tien node o cuoi vong.
 		KIndexNode* pNext = (KIndexNode *)pNode->GetNext();
+		nF4Duyet++;
 		if (pNode->m_nIndex > 0 && pNode->m_nIndex < MAX_PLAYER)
 		{
 			int nPlayerIndex = pNode->m_nIndex;
 			int nNpcIndex = Player[nPlayerIndex].m_nIndex;
 			int nDX = Npc[nNpcIndex].m_MapX - nOX;
 			int nDY = Npc[nNpcIndex].m_MapY - nOY;
-			if (nDX < 0) nDX = -nDX;	// [BC 03/09 b] tri tuyet doi hai chieu
+			if (nDX < 0) nDX = -nDX;	// [BC 03/09 b] tri tuyet doi hai chieu (chi loc bot, giu lai)
 			if (nDY < 0) nDY = -nDY;
 			if (Player[pNode->m_nIndex].m_nNetConnectIdx >= 0 && (nDX > s_nBCTam || nDY > s_nBCTam))
-				nBCNgoaiTam++;	// [BC 03/09 b] nguoi that nhung ngoai tam -> khong gui
+				nBCNgoaiTam++;
 			if (Player[pNode->m_nIndex].m_nNetConnectIdx >= 0 
 				&& nDX <= s_nBCTam && nDY <= s_nBCTam
 				&& Player[pNode->m_nIndex].m_bSleepMode == FALSE)
 			{
 				g_pServer->PackDataToClient(Player[pNode->m_nIndex].m_nNetConnectIdx, (BYTE*)pBuffer, dwSize);
-				nMaxCount--;	// [F4] CHI tru khi THAT SU gui (truoc day tru cho ca bot va nguoi ngoai tam)
 				nF4Gui++;
-				BC_DemNguoiNhan(pNode->m_nIndex, nBCLoaiGoi, (int)dwSize);	// [BC 03/09 c] do theo TUNG nguoi nhan
-				if (pNode->m_nIndex == g_nBCTheoDoi && m_nIndex >= 0 && m_nIndex < BC_MAX_VUNG)	// [BC 04/09 do2]
+				BC_DemNguoiNhan(pNode->m_nIndex, nBCLoaiGoi, (int)dwSize);
+				if (pNode->m_nIndex == g_nBCTheoDoi && m_nIndex >= 0 && m_nIndex < BC_MAX_VUNG)
 					g_abyBCVungGui[m_nIndex] = 1;
 			}
+			nMaxCount--;	// [BC 04/09 LUI] TRU CHO MOI NODE nhu ban goc (day la cai van)
 		}
 		pNode = pNext;
 	}
