@@ -511,6 +511,7 @@ using namespace std;
 #define IDC_CHECKBOX_16_MT	639
 #define IDC_SEP_15A			640
 #define IDC_STRING_16_TT	641
+#define IDC_CHECKBOX_16_VAOMAP	644
 #define IDC_INDEX_END			700
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	700

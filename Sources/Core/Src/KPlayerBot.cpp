@@ -4314,6 +4314,11 @@ static void pb_BanSap(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		int bDat = 0;
 		int nTamX = nha.nX, nTamY = nha.nY;
 		const int bCungMap = (SubWorld[nSub].m_SubWorldID == nha.nMap);
+		// [SAPRAND 04/09] chu game: "muon random toa do bay ban chu khong co dinh". Hai duong chon o
+		// duoi day von chi dua vao nLech (chi so bot - co dinh ca phien) nen cung con bot lan nao
+		// cung ra dung mot o. Hat nay lay MOI LAN xep cho, dung cho ca diem khoi dau tren vanh lan
+		// thu tu ban kinh.
+		const int nHatSap = (int)g_Random(1000000);
 		if (nSubT >= 0)
 		{
 			// tam = NPC Da Tau THAT tren ban do (toa do bang chi la duong lui)
@@ -4381,10 +4386,15 @@ static void pb_BanSap(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 				pb_SapLoang(nSubT, nTamX, nTamY, aReach);
 			// [SAPGAN 04/09] vanh dai lui cung bat dau tu PB_SAP_CACH_DT (truoc day 3 - chinh la cai vay
 			// kin NPC) va dung o PB_SAP_XA_MAX.
-			for (int r3 = PB_SAP_CACH_DT; r3 <= PB_SAP_XA_MAX && !bDat; r3++)
+			// [SAPRAND 04/09] duyet ban kinh theo THU TU XAO (bat dau tu mot vong bat ky roi chay vong
+			// tron) thay vi luon 14,15,16... - khong thi vong trong cung bao gio cung duoc lay truoc va
+			// ca dan don vao vanh 14-16.
+			const int nSoVong = PB_SAP_XA_MAX - PB_SAP_CACH_DT + 1;
+			for (int j3 = 0; j3 < nSoVong && !bDat; j3++)
 			{
+				const int r3 = PB_SAP_CACH_DT + (j3 + nHatSap) % nSoVong;
 				const int nChuVi = 8 * r3;
-				const int nBd = ((nLech % 97) * 13 + r3 * 7) % nChuVi;
+				const int nBd = (nHatSap + r3 * 7) % nChuVi;
 				for (int h3 = 0; h3 < nChuVi && !bDat; h3++)
 				{
 					const int i3 = (nBd + h3) % nChuVi;
@@ -4413,10 +4423,12 @@ static void pb_BanSap(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			// chi kiem "o di duoc", KHONG kiem NPC, KHONG khoang cach toi thieu, KHONG goc ket. Nghia
 			// la moi rang buoc o hai duong tren deu bi duong nay xoa sach.
 			// Nay lui bang CUNG bo luat, chi noi rong ban kinh (them 15 o) de van kiem duoc cho:
-			for (int r5 = PB_SAP_CACH_DT; r5 <= PB_SAP_XA_MAX + 15 && !bDat; r5++)
+			const int nSoVong5 = PB_SAP_XA_MAX + 15 - PB_SAP_CACH_DT + 1;
+			for (int j5 = 0; j5 < nSoVong5 && !bDat; j5++)
 			{
+				const int r5 = PB_SAP_CACH_DT + (j5 + nHatSap) % nSoVong5;
 				const int nCv5 = 8 * r5;
-				const int nBd5 = ((nLech % 89) * 17 + r5 * 5) % nCv5;
+				const int nBd5 = (nHatSap * 3 + r5 * 5) % nCv5;
 				for (int h5 = 0; h5 < nCv5 && !bDat; h5++)
 				{
 					const int i5 = (nBd5 + h5) % nCv5;
