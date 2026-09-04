@@ -658,11 +658,9 @@ void KUiAuctionPage::LoadScheme(const char* pScheme, int nType)
 		m_ActScroll.Init(&Ini, "ActivityListScroll_ScrollBar");
 		m_ItemScrollWnd.Init(&Ini, "ItemListScroll");
 		m_ItemScroll.Init(&Ini, "ItemListScroll_ScrollBar");
-		// The gioi / Ca nhan: "tip" chi la nut gioi thieu -> giau cho gon
-		if (nType != AUCUI_TYPE_TONG)
-			m_BtnTip.Hide();
-		else
-			m_BtnTip.Show();
+		// [DAUGIA 04/09 A4] nut goc phai dung tren CA BA trang: bam la mo luong dat ban
+		// (ca nhan = ky gui, the gioi = GM mo phien, bang hoi = menu bang chu / xem thanh vien).
+		m_BtnTip.Show();
 	}
 	else
 		sAucLog("[UI] KHONG nap duoc %s", Buff);
@@ -795,16 +793,8 @@ int KUiAuctionPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			if (uParam == (unsigned int)(KWndWindow*)&m_BtnTip)
 			{
-				if (m_nType == AUCUI_TYPE_TONG)
-				{
-					sSendOp(AUCUI_OP_MEMBER_LIST, 0);
-					KUiAuctionManager* p = KUiAuctionManager::GetSelf();
-					if (p)
-					{
-						p->m_Members.BringToTop();
-						p->m_Members.Show();
-					}
-				}
+				// [DAUGIA 04/09 A4] khong con NPC: nut nay mo thang luong dat ban tren may chu
+				sSendOp(AUCUI_OP_PUT_ON, m_nType);
 				return 1;
 			}
 		}
@@ -1358,8 +1348,14 @@ void KUiAuction_OnCoreCmd(unsigned int uCmd, int nParam)
 			p->m_Members.Clear();
 		break;
 	case AUCUI_CMD_SET_SALARY:
+		// [DAUGIA 04/09 A4] may chu gui danh sach thanh vien = nguoi choi vua bam nut o trang Bang hoi
+		// (khong phai bang chu) -> mo luon bang thanh vien.
 		if ((p = KUiAuctionManager::GetSelf()) != NULL)
+		{
 			p->m_Members.SetSalary((const KAucUiSalary*)nParam);
+			p->m_Members.BringToTop();
+			p->m_Members.Show();
+		}
 		break;
 	case AUCUI_CMD_SET_PAGE_TXT:
 		if ((p = KUiAuctionManager::GetSelf()) != NULL)

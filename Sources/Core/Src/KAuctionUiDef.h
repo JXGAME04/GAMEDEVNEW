@@ -124,6 +124,7 @@ enum AUCUI_OP
 	AUCUI_OP_CLOSE,					// cua so bi dong                    -> OnWindowClosed()
 	AUCUI_OP_RESET,					// thoat game                        -> UIAuctionHouse:Reset()
 	AUCUI_OP_TICK,					// moi giay khi cua so mo            -> UIAuctionHouse:OnTick()
+	AUCUI_OP_PUT_ON,				// nParam = nType (nut goc phai)     -> UIAuctionHouse:OnPutOnClick(nType)
 };
 
 #endif // KAUCTIONUIDEF_H

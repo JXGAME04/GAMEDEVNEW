@@ -392,6 +392,9 @@ void AuctionUi_OnRequest(unsigned int uParam, int nParam)
 	case AUCUI_OP_TICK:
 		strcpy(szCall, "UIAuctionHouse:OnTick()");
 		break;
+	case AUCUI_OP_PUT_ON:
+		sprintf(szCall, "UIAuctionHouse:OnPutOnClick(%d)", nParam);
+		break;
 	default:
 		break;
 	}
