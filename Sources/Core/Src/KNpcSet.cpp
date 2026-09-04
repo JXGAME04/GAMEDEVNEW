@@ -737,7 +737,15 @@ int		KNpcSet::GetNextIdx(int nIdx)
 {
 	if (nIdx < 0 || nIdx >= MAX_NPC)
 		return 0;
-	return m_UseIdx.GetNext(nIdx);
+	// [BIEN 04/09 c] chan CA GIA TRI TRA VE: danh sach lien ket hong thi GetNext co the tra chi so ngoai mang,
+	// vong lap ve ban do nho (PaintCharacters) se doc Npc[] ngoai bien.
+	int nKe = m_UseIdx.GetNext(nIdx);
+	if (nKe < 0 || nKe >= MAX_NPC)
+	{
+		AUTOLOG_EVERY(1000, "[BIEN-XAU] GetNextIdx tra chi so ngoai mang: %d (toi da %d) - dung duyet", nKe, (int)MAX_NPC);
+		return 0;
+	}
+	return nKe;
 }
 
 #ifdef _SERVER
@@ -1478,6 +1486,26 @@ NPC_RELATION KNpcSet::GetRelation(int nId1, int nId2)
 {
 	if (nId1 == nId2)
 		return relation_self;
+
+	// [BIEN 04/09 c] KIEM BIEN THAT (khong chi _ASSERT - ban Release bo het assert).
+	// m_RelationTable la mang 6 chieu [kind][kind][camp][camp][fight][fight]; m_Kind/m_CurrentCamp/m_FightMode
+	// duoc gan THANG TU GOI (KProtocolProcess.cpp 731/745/2147/2186-2188/2440-2442) khong kiem gia tri.
+	// Mot gia tri la la doc ngoai bang -> dia chi rac -> sap (jx_crash.log 04/09 00:47:56: GetRelation doc 0x43389AB5
+	// tu KScenePlaceMapC::PaintCharacters - ve ban do nho). Nay: ngoai bien thi coi nhu khong quan he.
+	if (nId1 <= 0 || nId1 >= MAX_NPC || nId2 <= 0 || nId2 >= MAX_NPC)
+		return relation_none;
+	if ((int)Npc[nId1].m_Kind < 0 || (int)Npc[nId1].m_Kind >= kind_num ||
+		(int)Npc[nId2].m_Kind < 0 || (int)Npc[nId2].m_Kind >= kind_num ||
+		(int)Npc[nId1].m_CurrentCamp < 0 || (int)Npc[nId1].m_CurrentCamp >= camp_num ||
+		(int)Npc[nId2].m_CurrentCamp < 0 || (int)Npc[nId2].m_CurrentCamp >= camp_num ||
+		(int)Npc[nId1].m_FightMode < 0 || (int)Npc[nId1].m_FightMode >= fight_num ||
+		(int)Npc[nId2].m_FightMode < 0 || (int)Npc[nId2].m_FightMode >= fight_num)
+	{
+		AUTOLOG_EVERY(1000, "[BIEN-XAU] GetRelation gia tri ngoai bang: id1=%d kind=%d camp=%d fight=%d | id2=%d kind=%d camp=%d fight=%d",
+			nId1, (int)Npc[nId1].m_Kind, (int)Npc[nId1].m_CurrentCamp, (int)Npc[nId1].m_FightMode,
+			nId2, (int)Npc[nId2].m_Kind, (int)Npc[nId2].m_CurrentCamp, (int)Npc[nId2].m_FightMode);
+		return relation_none;
+	}
 
 #ifndef _SERVER
 	if (Npc[nId1].m_bClientOnly || Npc[nId2].m_bClientOnly)
