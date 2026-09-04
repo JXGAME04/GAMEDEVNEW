@@ -194,6 +194,7 @@ struct PB_Bot
 	int          nJamX, nJamY;                // diem neo do "dam chan tai cho"
 	unsigned int nJamTick;                    // tu bao gio dung quanh diem neo
 	unsigned int nLachTick;                   // lan lach gan nhat (gion nhip)
+	unsigned int nDeChongToi;                 // [DECHONG 04/09] vua duoc day ra khoi o chong, nghi toi nhip nay
 	unsigned int nLachToi;                    // (20/08) dang DI BO lach ngang toi nhip nay:
 	                                          // phai de yen, khong cho nhanh khac phat do_run
 	                                          // de len (m_Command chi co MOT khe)
@@ -1349,6 +1350,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		memset(b.aLootBanTick, 0, sizeof(b.aLootBanTick));
 		b.loot.Reset();  b.nLootScanTick = 0;  b.nDonTuiTick = 0;
 		b.nPhamViTick = 0;  b.nBienLogTick = 0;  b.nLachDem = 0;  b.nLachToi = 0;
+		b.nDeChongToi = 0;	// [DECHONG 04/09]
 		b.szPmTraLoi[0] = 0;  b.nPmSenderIdx = 0;  b.nPmDenHan = 0;
 		b.nPmCamToi = 0;  b.nPmLapHash = 0;
 		b.nNhomNguoiIdx = 0;  b.dwNhomNguoiID = 0;  b.nNhomNguoiSub = -1;
@@ -10856,6 +10858,76 @@ int LuaPB_SetTongKimTran(Lua_State* L)
 	return 1;
 }
 
+// [DECHONG 04/09] Day bot DUNG YEN dang chong o sang o trong ke ben - de dam dong nhin nhu that.
+// Khong bat lai cong tac 'NPC la tuong' (g_nPbNpcChan) vi bat len thi bot ket giua dam dong,
+// phai nhay SetPos - dung canh 'bot toc bien' chu game da bat bo 21/08.
+// Khong bao gio dong den nguoi choi that: chi bot tu buoc ra. May chu keo nguoi that la de
+// tai sinh canh giat toi / giat lui vua sua xong.
+static int s_nDeChongBat   = -1;   // [Server] BotDeChong (1 = bat, mac dinh 1)
+static int s_nDeChongNhip  = -1;   // [Server] BotDeChongMoiNhip (mac dinh 4 con/nhip)
+static unsigned int s_uDeChongNhipNay = 0;
+static int s_nDeChongDaDay = 0;    // so con da day trong nhip nay
+static int s_nDeChongTong  = 0;    // tong so lan day (nhat ky)
+static bool pb_DeChong(PB_Bot& b, int nNpcIdx, int nSub, unsigned int nowAll)
+{
+	if (s_nDeChongBat < 0)
+	{
+		s_nDeChongBat  = (int)GetPrivateProfileIntA("Server", "BotDeChong", 1, ".\\config.ini");
+		s_nDeChongNhip = (int)GetPrivateProfileIntA("Server", "BotDeChongMoiNhip", 4, ".\\config.ini");
+		if (s_nDeChongNhip < 1)   s_nDeChongNhip = 1;
+		if (s_nDeChongNhip > 100) s_nDeChongNhip = 100;
+	}
+	if (!s_nDeChongBat)
+		return false;
+	if (b.nDeChongToi && nowAll < b.nDeChongToi)	// vua day xong, de yen
+		return false;
+	if (b.nLachToi && nowAll < b.nLachToi)	// dang lach ngang, khong xen vao
+		return false;
+	KNpc& npc = Npc[nNpcIdx];
+	if (npc.m_Doing != do_stand)	// dang danh / ngoi sap / chet / dang di: khong dung toi
+		return false;
+	const int nR = npc.m_RegionIndex;
+	if (nR < 0)	// khuon giong pb_ODuoc/pb_ODat: tin vao Mps2Map, chi chan so am
+		return false;
+	if (SubWorld[nSub].m_Region[nR].GetNpcCell(npc.m_MapX, npc.m_MapY) < 2)
+		return false;	// dung mot minh, khong chong ai
+	if (s_uDeChongNhipNay != nowAll)
+	{
+		s_uDeChongNhipNay = nowAll;
+		s_nDeChongDaDay = 0;
+	}
+	if (s_nDeChongDaDay >= s_nDeChongNhip)
+		return false;	// han muc moi nhip - trai deu ra, khong dot ngot sinh mot loat goi
+	int nMx = 0, nMy = 0;
+	npc.GetMpsPos(&nMx, &nMy);
+	static const int adx[8] = { 32, -32,   0,   0,  32,  32, -32, -32 };
+	static const int ady[8] = {  0,   0,  32, -32,  32, -32,  32, -32 };
+	// moi con bat dau tu mot huong khac -> khong don ca dan ve cung mot phia
+	const int nBatDau = (int)(npc.m_dwID % 8);
+	for (int k = 0; k < 8; k++)
+	{
+		const int t = (nBatDau + k) % 8;
+		const int x = nMx + adx[t];
+		const int y = nMy + ady[t];
+		if (!pb_ODuoc(nSub, x, y))
+			continue;
+		int r2 = -1, mx2 = 0, my2 = 0, ox2 = 0, oy2 = 0;
+		SubWorld[nSub].Mps2Map(x, y, &r2, &mx2, &my2, &ox2, &oy2);
+		if (r2 < 0)
+			continue;
+		if (SubWorld[nSub].m_Region[r2].GetNpcCell(mx2, my2) > 0)
+			continue;	// o ke ben cung da co nguoi
+		npc.SendCommand(do_walk, x, y);	// DI BO mot buoc, khong nhay
+		b.nDeChongToi = nowAll + (unsigned int)(GAME_FPS * 2);
+		b.nLachToi    = nowAll + (unsigned int)(GAME_FPS / 2);	// muon khoa san co de nhanh sau khong de len
+		s_nDeChongDaDay++;
+		s_nDeChongTong++;
+		AUTOLOG_EVERY(10000, "[DECHONG] da day %d luot bot ra khoi o chong (han %d con/nhip)",
+			s_nDeChongTong, s_nDeChongNhip);
+		return true;
+	}
+	return false;	// quanh minh kin dac, chiu
+}
 static void pb_DriveBot(PB_Bot& b)
 {
 	const int nIdx = b.nPlayerIdx;
@@ -10886,6 +10958,12 @@ static void pb_DriveBot(PB_Bot& b)
 		b.nJamTick = 0;  b.nLachToi = 0;
 		b.nTkDichX = 0;  b.nTkDichY = 0;  b.nTkDichTick = 0;
 	}
+
+	// [DECHONG 04/09] dung yen ma de chong len con khac thi buoc sang o trong ke ben.
+	// Tra ve true = vua phat lenh di bo: dung nhip tai day de nhanh AI phia duoi
+	// khong phat lenh khac de len (m_Command cua KNpc chi co MOT khe).
+	if (pb_DeChong(b, nNpcIdx, nSub, nowAll))
+		return;
 
 	// THE LUC giu day binh: do_run TIEU the luc, va OnRun kiet suc thi tut xuong DI BO
 	// (KNpc.cpp:2203-2215) - cham va co the la mot phan ly do "khong ra khoi trap".
