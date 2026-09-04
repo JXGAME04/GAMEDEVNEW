@@ -372,8 +372,9 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 	char sz[64];
 	m_Name.SetText(p->szName);
 	// bieu tuong: dung lai vat pham tam tu ChatItem (nhu hop thu)
-	// [A32 04/09] o lai 26x26 va mon nhieu o duoc THU NHO THAT ve mot o, nen khung nen hien lai.
-	m_IconBg.Show();
+	// [A35 04/09] o lai rong 58x78 (chu: "o vuong chi co 1x1 chua tra lai nhu truoc") de vien
+	// dong khung om dung lay mon ve nguyen co; khung nen chi 26x26 nen nho hon mon - an di.
+	m_IconBg.Hide();
 	if (!bSameItem && g_pCoreShell && p->Item.m_nID)
 	{
 		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&p->Item);
@@ -434,10 +435,12 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 			// va con so trong do - truoc chi an ba cai nut, khung nhap van nam do trong tron.
 			m_ImgInput.Hide();
 			m_TxtOffer.Hide();
-			if (p->nBuyNow > 0)
-				m_BtnGetBack.Show();
-			else
-				m_BtnGetBack.Hide();
+			// [A36 04/09] chu: "khi dau gia len bang hoi thi khong go xuong duoc".
+			// Truoc day nut nay chi hien khi mon co GIA MUA NGAY (nBuyNow > 0), ma phien bang hoi
+			// truoc nay khong co gia mua ngay -> nut khong bao gio hien -> nguoi ban khong con duong
+			// rut mon ve. May chu thi khong he chan: AUC_OnRequestGetBack chi doi dung nguoi ban va
+			// chua ai tra gia, khong phan biet loai phien. Nut phai hien cho MOI mon cua chinh minh.
+			m_BtnGetBack.Show();
 		}
 		else
 		{
@@ -1047,7 +1050,12 @@ void KUiAuctionPage::EndItem(int nId)
 	int nIdx = FindItem(nId);
 	if (nIdx < 0)
 		return;
-	m_Item[nIdx].bEnded = 1;	// giu nguyen cho, chi danh dau
+	// [A33 04/09] chu: "item duoc mua roi thi khong cap nhat lien, phai tat bang mo lai moi bien".
+	// Danh dau tai cho lam hang chet trong Y HET hang dang ban (ten, gia, bieu tuong van ve).
+	// Nay XOA TRANG o do: Fill() mo dau bang "if (!p || p->nId <= 0) { ClearRow(); return; }"
+	// nen hang trong ngay, va ClearRow nha o vat pham tam nen khong ro GDI_ITEM_CHAT.
+	// m_nItemCount KHONG doi -> hai hang kia khong dich mot ly -> khong the bam nham mon.
+	memset(&m_Item[nIdx], 0, sizeof(m_Item[nIdx]));
 	RefreshItem();
 }
 
