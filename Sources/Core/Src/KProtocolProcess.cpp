@@ -5002,6 +5002,16 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 				g_sDTCap.szSapMap[nDTLen] = 0;
 				++g_sDTCap.uSapMapSeq;
 			}
+			else if (nDTLen >= 8 && !memcmp((const char*)(pCccSync + 1), "[TKDich]", 8))
+			{	// (04/09) vi tri dich Tong Kim server tra ve - kenh du lieu rieng cho auto, an khoi khung chat
+				bDTSapMap = true;
+				int nLTD = nDTLen;
+				if (nLTD > (int)sizeof(g_szTKDich) - 1)
+					nLTD = (int)sizeof(g_szTKDich) - 1;
+				memcpy(g_szTKDich, (const char*)(pCccSync + 1), nLTD);
+				g_szTKDich[nLTD] = 0;
+				++g_uTKDichSeq;
+			}
 			else if (nDTLen > 0)
 			{
 				char* pDTKhe = g_sDTCap.aMsg[(g_sDTCap.uMsgSeq + 1) & 3];
@@ -7085,6 +7095,104 @@ void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 		return;
 
 	PLAYER_NEED_COUNT *pView = (PLAYER_NEED_COUNT *)pProtocol;
+	// (04/09 WAuto Tong Kim) dwId dac biet = xin VI TRI DICH ca map tran. Client chi thay dich trong
+	// MAX_SYNC_RANGE 40 o; bot phia may chu tim dich bang cach quet Player[] theo camp (KPlayerBot.cpp
+	// pb_TkTimDichGanNhat) - lam y vay cho nguoi choi that dung WAuto. Tra "[TKDich] id:x:y ..." (o)
+	// TK_DICH_SO dich khac camp gan nhat con song, BO dich con trong hau doanh (R 1440 mps - trap vao
+	// trai chan, khong toi duoc), qua tin He Thong rieng nguoi hoi (mgs2player_from_c.lua - cung duong
+	// [SapMap]). Chi phi: mot vong MAX_PLAYER so sanh, toi da 5 giay/nguoi (chan theo chu khe nhu SapMap),
+	// tin ~110 byte. Chi tra khi nguoi hoi dang o map tran va da co camp 1/2.
+	if (pView->dwId == TK_DICH_ID)
+	{
+		static DWORD s_uTKDNext[MAX_PLAYER] = { 0 };
+		static DWORD s_uTKDChu[MAX_PLAYER] = { 0 };
+		const DWORD dwNayTD = SubWorld[0].m_dwCurrentTime;
+		if (s_uTKDChu[nIndex] != Player[nIndex].m_dwID)
+		{
+			s_uTKDNext[nIndex] = 0;
+			s_uTKDChu[nIndex] = Player[nIndex].m_dwID;
+		}
+		if (dwNayTD < s_uTKDNext[nIndex])
+			return;
+		s_uTKDNext[nIndex] = dwNayTD + GAME_FPS * 4;	// (phan bien 04/09) 4 giay: client hoi 6 giay/lan, may chu cham nhip van khong vut goi
+		const int nMeTD = Player[nIndex].m_nIndex;
+		const int nSubTD = Npc[nMeTD].m_SubWorldIndex;
+		if (nSubTD < 0 || nSubTD >= MAX_SUBWORLD || SubWorld[nSubTD].m_SubWorldID != TK_DICH_MAP)
+			return;
+		const int nCampToiTD = (int)Npc[nMeTD].m_CurrentCamp;
+		if (nCampToiTD != 1 && nCampToiTD != 2)
+			return;
+		const int nCampDichTD = 3 - nCampToiTD;
+		int mxTD = 0, myTD = 0;
+		Npc[nMeTD].GetMpsPos(&mxTD, &myTD);
+		// hau doanh hai phe (o) - khop KPlayerBot.cpp aZHx/aZHy va KTongKimTables.h g_TKHauDoanhA/B
+		static const int aTDHx[2] = { 1229, 1689 };
+		static const int aTDHy[2] = { 3561, 3074 };
+		DWORD aIdTD[TK_DICH_SO];
+		int aXTD[TK_DICH_SO], aYTD[TK_DICH_SO];
+		__int64 aDTD[TK_DICH_SO];
+		int nSoTD = 0;
+		for (int iTD = 1; iTD < MAX_PLAYER; ++iTD)
+		{
+			if (iTD == nIndex)
+				continue;
+			const int nn = Player[iTD].m_nIndex;
+			if (nn <= 0 || nn >= MAX_NPC || Npc[nn].m_dwID == 0)
+				continue;
+			if (Npc[nn].m_SubWorldIndex != nSubTD)
+				continue;
+			if ((int)Npc[nn].m_CurrentCamp != nCampDichTD)
+				continue;
+			if (Npc[nn].m_Doing == do_death || Npc[nn].m_Doing == do_revive || Npc[nn].m_CurrentLife <= 0)
+				continue;
+			int xTD = 0, yTD = 0;
+			Npc[nn].GetMpsPos(&xTD, &yTD);
+			int bTraiTD = 0;
+			for (int hTD = 0; hTD < 2; ++hTD)
+			{
+				const __int64 hx = xTD - aTDHx[hTD] * 32, hy = yTD - aTDHy[hTD] * 32;
+				if (hx * hx + hy * hy < (__int64)1440 * 1440)
+				{
+					bTraiTD = 1;
+					break;
+				}
+			}
+			if (bTraiTD)
+				continue;
+			const __int64 ddx = xTD - mxTD, ddy = yTD - myTD;
+			const __int64 dTD = ddx * ddx + ddy * ddy;
+			// chen vao mang nho da sap xep tang dan (TK_DICH_SO phan tu)
+			int pTD = nSoTD;
+			if (nSoTD < TK_DICH_SO)
+				++nSoTD;
+			else if (dTD >= aDTD[TK_DICH_SO - 1])
+				continue;
+			else
+				pTD = TK_DICH_SO - 1;
+			while (pTD > 0 && aDTD[pTD - 1] > dTD)
+			{
+				aDTD[pTD] = aDTD[pTD - 1];
+				aIdTD[pTD] = aIdTD[pTD - 1];
+				aXTD[pTD] = aXTD[pTD - 1];
+				aYTD[pTD] = aYTD[pTD - 1];
+				--pTD;
+			}
+			aDTD[pTD] = dTD;
+			aIdTD[pTD] = Npc[nn].m_dwID;
+			aXTD[pTD] = xTD;
+			aYTD[pTD] = yTD;
+		}
+		char szTD[DATAU_SAPMAP_MAXLEN + 48];
+		int nLenTD = sprintf(szTD, "[TKDich]");
+		for (int kTD = 0; kTD < nSoTD; ++kTD)
+		{
+			if (nLenTD > DATAU_SAPMAP_MAXLEN)
+				break;
+			nLenTD += sprintf(szTD + nLenTD, " %u:%d:%d", (unsigned int)aIdTD[kTD], aXTD[kTD] / 32, aYTD[kTD] / 32);
+		}
+		Player[nIndex].ExecuteScript("\\script\\player\\mgs2player_from_c.lua", "main", szTD, false);
+		return;
+	}
 	// (r5e - auto Da Tau) dwId dac biet = xin DANH BA SAP ca map: tra ve
 	// "[SapMap] id:x:y ..." (toa do CELL) qua tin He Thong rieng nguoi hoi.
 	// Chi liet ke sap co PLAYER that dung sau (nguoi choi + bot PB) - dan
