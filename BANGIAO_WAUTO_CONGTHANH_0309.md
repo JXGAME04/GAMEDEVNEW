@@ -17,9 +17,9 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | **`9e7a516d`** | `2.529.792` | **(04/09 đêm, đợt 5 + 5b sau phản biện) Tống Kim hỏi máy chủ vị trí địch `[TKDich]` — đi cùng `bin\server\CoreServer.dll.moi bdd9bb46`** (xem `BANGIAO_WAUTO_TK_RAOMAP_0309.md` mục 9); tập cha của `5600d7a9` (đợt 4: khu xuất quân + luật ngựa mới áp cho mọi máy đi đường qua `DT_WalkTo`, kể cả CT — mục 8), `59f90510` (đợt 3, **đang chạy từ 20:51**), `4c69d7ad` (đợt 2) và `a3cecb53` (đợt 1) = WAuto Tống Kim rảo map + không tự lên ngựa + chặn chiêu bị từ chối (phiên wauto, 03/09 chiều, main `d59340c4` + bộ vá `ReverseTools\goi_va_wauto_tk_raomap_0309.py` — xem `BANGIAO_WAUTO_TK_RAOMAP_0309.md`) — tập cha của `e10abd7a` (S13k, wauto-6a) và mọi bản trước; vẫn chứa máy `CT_Process` + bảng `KCongThanhTables.h` (chuỗi "[Công Thành]" TCVN3 đếm = 1), không đổi autoData/ExtAuto/header/gói. Lịch sử: 96c3085d → 9976e63f → 5b56367c → 62730ed9 → f94b5100 → e4ac910a → f2ad5ca3 (đã chạy) → 6bbcda8f → e151cbfc → e10abd7a → a3cecb53. |
-| `Game.exe.moi` | `bd5cb88e` | `1.401.856` | **MAIL D4b** (wauto-d9, main `68dae5bf`): icon thư + tự mở hộp thư; vẫn có cổng máy CT trong `S3Client.cpp` (chuỗi "[HD-GATE] nCT=" đếm = 1) — tập cha của `24762253` **đang chạy**. Phải lên CÙNG `CoreClient.dll.moi 6bbcda8f`. |
-| `WAuto.exe.moi` | `46fdc93f` | `413.696` | tab thứ 15 **"Công Thành"** (nhóm *Sự kiện*) |
+| `CoreClient.dll.moi` | `dff1bfc8` | `2.532.864` | **AC CHÍNH đợt 1 (22:53 03/09, nhánh `acchinh-0309` 9bfe9780 = rep3-0309 20bfcdf5 + Ac chính, chưa gộp main — xem `BANGIAO_WAUTO_ACCHINH_0309.md` trong nhánh)** — tập cha của `9e7a516d` (TK đợt 5b, **đang chạy** từ 21:49), của 3d706aa2 (REP3 wauto-ca) và mọi bản trước; chuỗi "[Công Thành]" = 1, "[AC]" = 4. **Swap CÙNG Game.exe.moi + WAuto.exe.moi** (autoData +3 REP3 +14 AC ở cuối). |
+| `Game.exe.moi` | `aed2d11d` | `1.401.856` | **AC CHÍNH đợt 1** (S3Client cổng `nAC` + hiển thị REP3) — tập cha của `eb8c65dc` **đang chạy** (22:20) và `714e71d3` (REP3 wauto-ca); cổng CT "[HD-GATE] nCT=" = 1, UiMail = 6. |
+| `WAuto.exe.moi` | `72862beb` | `420.864` | **AC CHÍNH đợt 1**: tab thứ 16 "Ac chính" (nhóm Điều khiển) + chuột phải "Đặt làm ac chính…" + 2 ô hiển thị REP3 — tập cha của `a6d74466` **đang chạy** (22:27). `ChoiGame.bat` không đổi WAuto.exe.moi → đổi tay. |
 | `CoreServer.dll` (**bin\server**) | `bad8e293` | `18.298.368` | **ĐANG CHẠY** (S13i/j, chủ swap ~16:47) — hiện KHÔNG có `CoreServer.dll.moi` chờ. D4b chỉ đổi script máy chủ (`mailmanager.lua`, `dichquan.lua`, `lenhbaiadmin.lua`, `playerlogin.lua`: nạp lại bằng RLS — xem `BANGIAO_HETHU_0309.md` mục 5b). |
 
 ### Checklist swap (4 `.moi` cùng lúc — S13 hai bên phải cùng lên)
@@ -30,7 +30,7 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 4. `ChoiGame.bat` **KHÔNG** đổi `WAuto.exe.moi`: đổi tay `WAuto.exe` cũ → `.truoc`, rồi `WAuto.exe.moi` → `WAuto.exe`.
 5. Mở WAuto → nhóm **Sự kiện** → phải thấy tab **"Công Thành"** (tab thứ 3 của nhóm). Không thấy = bước 4 chưa xong.
 6. Cấu hình cũ `APdata\<ID>.dat` **vẫn dùng được** — `LoadRoleData` di trú theo `offsetof(autoData, bCongThanh)`, tính năng mặc định **TẮT**.
-7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `9e7a516d…` (đợt 5+5b đêm 04/09, đi cùng `CoreServer.dll` = `bdd9bb46…`; `59f90510` đợt 3 đang chạy từ 20:51, `CoreServer.dll` đang chạy = `b68899b2…`), `Game.exe` = `71dae629…` (đang chạy, MAIL D7), `CoreServer.dll` = `b68899b2…` (đang chạy, S13k).
+7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `dff1bfc8…`, `Game.exe` = `aed2d11d…`, `WAuto.exe` = `72862beb…` (CoreServer theo bảng đợt 5b: `bdd9bb46` chờ, `b68899b2` đang chạy) (đợt 5+5b đêm 04/09, đi cùng `CoreServer.dll` = `bdd9bb46…`; `59f90510` đợt 3 đang chạy từ 20:51, `CoreServer.dll` đang chạy = `b68899b2…`), `Game.exe` = `71dae629…` (đang chạy, MAIL D7), `CoreServer.dll` = `b68899b2…` (đang chạy, S13k).
 
 Build lại (đúng thứ tự, **tắt post-build** để không đè `bin\client` đang chạy):
 ```
