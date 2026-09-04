@@ -139,7 +139,13 @@ Dòng `auction_item` **không bao giờ bị xoá** (thư `aucitem:<id>` trỏ v
 - Hai thẻ: "Đang đấu" (`state = 0`) và "Lịch sử" (còn lại). Cột: Đợt · Món · Khởi điểm · Giá hiện tại/chốt · Người giữ giá/thắng · Trạng thái · Kết thúc.
 - Tên đợt và tên món phải giải mã TCVN3 → UTF-8 trước khi hiện (như tiêu đề thư).
 
-## 8. Phía máy chủ làm (để web biết khi nào có thể thử)
+## 8. Phía máy chủ — TRẠNG THÁI 04/09 14:39: XONG, CHỜ SWAP
+
+- `bin\server\CoreServer.dll.moi` = **8181a940** (gốc: origin/main affbc060 + origin/chienlenh-0409 2ef04da2 + mail-0309 cf84c24e; đủ dấu của Chiến Lệnh, đấu giá web và các việc chung). Script `auction_manager.lua` trên cây chạy thật đã là bản mới (28e49e48). **Chủ chạy `ChayGameServer.bat`** là đủ: DLL + script có hiệu lực cùng lúc, hai bảng tự tạo trong ≤ 30 giây sau khi máy chủ lên.
+- 5 commit (`7002737e` → `cf84c24e`) đã cherry-pick lên `origin/main` (`ab9cefaf`). Bộ giả lập Lua (`lua4.exe` + `test_aucweb.lua`, 9 kịch bản) và phản biện 4 lát cắt (43 tác tử) đã chạy; mọi phát hiện được giữ đã sửa (W3 → W8).
+- Web (`webver5-eb`) đã xong `loi/DauGia.php` + `giaodien/admin_daugia.php`, chờ swap để bật thử.
+
+### 8a. Danh sách việc đã làm (giữ để đối chiếu)
 
 1. C++ `KAuctionServer.cpp`: tạo 2 bảng + dòng cfg; `AUCWEB_Cfg / AUCWEB_ClaimRound / AUCWEB_Pool / AUCWEB_Drawn / AUCWEB_Err / AUCWEB_Msg`; `AUC_MakeRec(szAward)` dựng vật phẩm thật từ chuỗi award (không cần người chơi), tự kiểm dựng lại được rồi mới trả `item_rec`.
 2. Lua `auction_manager.lua` (bộ sinh `p12_daugia.py`): vòng quét riêng `AucWeb_Tick` 30 giây, bọc `call(..., "x")` để một dòng lỗi không giết vòng quét; bốc theo trọng số; chèn qua `AUC_PutOn` có sẵn; báo người đang mở cửa sổ một lần cuối lô; chặn cứng rút món / hoàn tiền với dòng `seller = '@WEB'`.
