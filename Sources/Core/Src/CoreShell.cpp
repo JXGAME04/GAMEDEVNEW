@@ -40,6 +40,7 @@
 #include "KDaTauTables.h"
 #include "KDaTauSpots.h"
 #include "KTongKimTables.h"
+#include "KWayPointTables.h"
 #include "KLienDauTables.h"
 #include "KHoatDongTables.h"
 #include "KCongThanhTables.h"
@@ -4491,6 +4492,8 @@ static const DTSapTown g_aDTSapTown[10] =
 	{ 53,  "Ba L¨ng" },	// (r5) rut ngan: THP viet "Huy\326n" HOA - "Ba L\250ng" khop ca 2 menu
 };
 // muc menu 1 cua Xa Phu: "Nhung thanh thi da di qua" (xaphu.lua:16)
+// muc menu "Nhung noi da di qua" cua Xa Phu (xaphu.lua) - danh sach WayPoint.txt
+#define DTM_SAP_NOIDADIQUA "n¬i ®· ®i qua"
 #define DTM_SAP_THANHTHI "thµnh thÞ ®· ®i qua"
 
 static const char* DT_SapTownMenu(int nMapId)
@@ -8868,6 +8871,82 @@ static void AC_GuiViTri(int nPlayerIdx, UINT uCurTime)
 	SendDataToTool(&v, sizeof(IPCViTri));
 }
 
+
+// (04/09) DI TOI MAP QUA MUC "NHUNG NOI DA DI QUA" CUA XA PHU.
+// Xa Phu co HAI danh sach (script/global/npcchucnang/xaphu.lua):
+//   "Nhung thanh thi da di qua" -> Station.txt  (16 thanh thi)   -> LD_DiThanh lo
+//   "Nhung noi da di qua"       -> WayPoint.txt (81 map dong / bai luyen cong)
+// Chu game 04/09: ac chinh dung o map 75 "Khoa Lang dong" ma auto bao "khong co tuyen
+// Xa Phu" - sai, vi truoc day WAuto chi biet danh sach thanh thi.
+// Tra: 1 = dang di, 0 = chua toi duoc Xa Phu, -1 = chiu (het gio / khong co trong bang).
+static int AC_DiWayPoint(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	KDaTauCapture& cap = g_sDTCap;
+	const char* szTen = WayPointMenu(nDestMap);
+	if (!szTen)
+		return -1;
+	if (!ea.uLDHopT)
+	{
+		ea.uLDHopT = uCurTime + 150000;
+		ea.uLDThpT = 0;
+	}
+	if (uCurTime > ea.uLDHopT)
+		return -1;
+	const int nMap = SubWorld[0].m_SubWorldID;
+	std::map<int, StationVector>::iterator itXa = g_MoveStation.find(nMap);
+	if (itXa == g_MoveStation.end() || itXa->second.empty())
+	{	// dang o map khong co Xa Phu -> ve thanh truoc, nhip sau di tiep
+		if (!DT_UsePortal(nPlayerIdx))
+			return -1;
+		ea.uLDNext = uCurTime + 4000;
+		return 1;
+	}
+	if (cap.uDlgSeq != ea.uLDDlgSeen)
+	{
+		ea.uLDDlgSeen = cap.uDlgSeq;
+		char szBuf[2048];
+		char* apAns[16];
+		g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+		int nAns = DT_Split(szBuf, apAns, 16);
+		int nOpt;
+		if ((nOpt = DT_FindAns(apAns, nAns, szTen)) >= 0)
+		{	// danh sach dang mo va co dung ten noi can den
+			DT_Answer(nPlayerIdx, nOpt);
+			ea.uLDNext = uCurTime + 1500;
+			return 1;
+		}
+		if ((nOpt = DT_FindAns(apAns, nAns, DTM_SAP_NOIDADIQUA)) >= 0)
+		{	// dang o menu chinh -> mo danh sach "Nhung noi da di qua"
+			DT_Answer(nPlayerIdx, nOpt);
+			ea.uLDNext = uCurTime + 900;
+			return 1;
+		}
+		ea.uLDNext = uCurTime + 1200;
+		return 1;
+	}
+	{	// chua mo duoc thoai -> di toi Xa Phu cua map dang dung
+		sStation& sXa = DT_TramGan(itXa->second, nPlayerIdx);
+		int nXaIdx = DT_FindNpcName(nPlayerIdx, "xa phu", sXa.x, sXa.y, 400);
+		if (nXaIdx)
+		{
+			int nX2, nY2, dX2, dY2;
+			Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX2, &nY2);
+			Npc[nXaIdx].GetMpsPos(&dX2, &dY2);
+			if (g_GetDistance(nX2, nY2, dX2, dY2) <= 128)
+			{
+				ea.uLDDlgSeen = cap.uDlgSeq;
+				Player[nPlayerIdx].DialogNpc(nXaIdx);
+				ea.uLDNext = uCurTime + 800;
+				return 1;
+			}
+			DT_WalkTo(nPlayerIdx, dX2, dY2, 96, uCurTime);
+			return 1;
+		}
+		DT_WalkTo(nPlayerIdx, sXa.x, sXa.y, 200, uCurTime);
+	}
+	return 1;
+}
 // (04/09) ac chinh con song va tin con moi, NHUNG dang o MAP KHAC?
 // Tach rieng voi AC_CoAcChinh (von doi cung map) de con duong sang map ac chinh.
 static int AC_KhacMap(const autoData* pAp, int nMap)
@@ -9004,8 +9083,25 @@ static int AC_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	// san co LD_DiThanh (tu tim Xa Phu -> "nhung thanh thi da di qua" -> ten thanh).
 	if (pAp->bAcChinhVaoMap && pAp->bTimAcChinh && AC_KhacMap(pAp, nMap))
 	{
-		if (!DT_SapTownMenu(pAp->nACMap))
-		{	// map ac chinh khong co tuyen Xa Phu (bai quai ngoai thanh) - bao MOT LAN
+		if (!DT_SapTownMenu(pAp->nACMap) && WayPointMenu(pAp->nACMap))
+		{	// (04/09) khong phai thanh thi nhung CO trong "Nhung noi da di qua"
+			// (81 map dong / bai luyen cong, vi du map 75 Khoa Lang dong)
+			int nW = AC_DiWayPoint(nPlayerIdx, pAp, pAp->nACMap, uCurTime);
+			if (ea.uLDNext > uCurTime)
+				ea.uACNext = ea.uLDNext;
+			if (nW >= 0)
+			{
+				if (ea.nACHold != 1)
+				{
+					s_uACBaoLoi = 0;
+					DT_Msg(nPlayerIdx, "<color=Cyan>Ac chÝnh ë map kh¸c - ®ang qua Xa Phu (n¬i ®· ®i qua) ®Ó sang.");
+				}
+				ea.nACHold = 1;
+				return 1;
+			}
+		}
+		if (!DT_SapTownMenu(pAp->nACMap) && !WayPointMenu(pAp->nACMap))
+		{	// map ac chinh khong co trong CA HAI danh sach cua Xa Phu - bao MOT LAN
 			if (!s_uACBaoLoi || (int)(uCurTime - s_uACBaoLoi) > AC_BAO_LAI)
 			{
 				s_uACBaoLoi = uCurTime ? uCurTime : 1;
