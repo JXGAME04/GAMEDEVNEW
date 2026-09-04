@@ -22,7 +22,7 @@ như mọi ô cấu hình khác); trong CoreClient thêm máy `AC_Process` đi t
 | Tìm NPC theo ID trong vùng đồng bộ | `KNpcSet::SearchID(dwID)` (KNpcSet.cpp:221) | ac phụ tra mục tiêu ac chính |
 | Đi tới toạ độ + luật ngựa mới | `DT_WalkTo` / `DT_DuocLenNgua` (đợt 4 TK) | di chuyển tới ac chính |
 | Mục tiêu hiện tại của người chơi | `KPlayer::GetTargetNpc()` = `m_nPeapleIdx`; khi auto đánh: `m_sExtAuto.uNpcID` | ac chính báo mục tiêu |
-| ID còn trống trong `Resource.h` | 628–639 (12 ID) trước `IDC_INDEX_END 640`; khối ngoài dải đã dời 700–715 | ô cấu hình mới (cần 9) |
+| ID còn trống trong `Resource.h` | ~~628–639~~ → **632–639 (8)** sau khi `wauto-ca` lấy 628–631 (22:2x); khối ngoài dải 700–715 | ô cấu hình mới (cần 9) → nâng `IDC_INDEX_END` lên 700 |
 | Bẫy WAuto cũ / mới lệch struct | `.dat` di trú theo `offsetof` (tiền lệ CT), game xoá trắng đuôi gói ngắn | an toàn khi 3 tệp không lên cùng lúc |
 
 Auto Thái làm gì (đã mổ, memory `jx1-thailan-tim-acchinh-cochec-0309`): đọc bộ nhớ client ac chính 200 ms/lần (map, x/y, `m_nPeopleIdx` → ID
@@ -83,6 +83,14 @@ Mặc định trong constructor: `nAcChinhKC = 200`, còn lại 0. `.dat` cũ: d
 
 ### 3.3 `CoreShell.h` — `ATYPE_ACCHINH` thêm CUỐI enum (sau `ATYPE_CONGTHANH`).
 
+
+> **Cập nhật 22:30 03/09 (phiên `wauto-ca`, Represent3, nhánh `rep3-0309` + cây `E:\Src_Auto_Ngoai`):** họ đã thêm vào CUỐI `autoData` 3 int
+> `bWANpcTheSame, bWAMissle, nWAMissleIndex`, thêm `PRT_HIENTHI` cuối `PROTTOOLID`, struct `IPCHienThi`, `ATYPE_HIENTHI` cuối enum, và chiếm
+> `Resource.h` **628–631** (2 ô tab Cơ bản). Hệ quả cho thiết kế này khi thi công:
+> 1. Trường AC_* phải nằm **SAU** 3 trường đó (lấy `ipc_shared.h` mới nhất, đủ 3 bản khớp nhau); `ATYPE_ACCHINH` sau `ATYPE_HIENTHI`; `PRG_VITRI` vẫn cuối `PROTGAMEID`.
+> 2. Dải ID còn trống chỉ **632–639 (8)** → tab "Ac chính" cần 9 ô: **nâng `IDC_INDEX_END 640 → 700`** (700–715 là khối ngoài dải, không chồng) rồi dùng 632–640.
+> 3. Bộ swap của họ (autoData đổi) cũng là 3 tệp; hai bên phải build từ cùng một `main` đã gộp `rep3-0309`, nếu không WAuto/Game/CoreClient lệch đuôi struct.
+
 ## 4. Phía game (CoreClient + Game.exe)
 
 ### 4.1 Gửi vị trí (CoreShell, chạy trong nhịp `ATYPE_ACCHINH`, mọi cửa sổ)
@@ -142,7 +150,7 @@ if (apdata.szAcChinhTen[0]) {
 Rẻ: quét ≤ vài chục node mỗi 54 ms.
 
 ### 5.3 Giao diện
-- **Tab mới "Ac chính"** (tab thứ 16, nhóm *Chiến đấu*), 9 control trong dải 628–639:
+- **Tab mới "Ac chính"** (tab thứ 16, nhóm *Chiến đấu*), 9 control: dùng 632–640 sau khi nâng `IDC_INDEX_END` lên 700 (xem cập nhật 22:30):
   `[v] Tìm ac chính` · `Khoảng cách [200]` · `[v] Tìm trong thành` · `[v] Đánh cùng mục tiêu ac chính` · `[ ] Ac phụ tự vào map ac chính` (đợt 2, mờ) ·
   `Ac chính: [combo tên các cửa sổ đang đăng nhập + "(không)"]` · dòng trạng thái *"Ac chính: X · map Y · cách Z · mục tiêu N"* (từ `uACTuoi`).
 - Menu chuột phải ở danh sách nhân vật: **"Đặt làm ac chính cho tất cả cửa sổ khác"** → ghi `szAcChinhTen` cho mọi node ≠ node này, `SaveRoleDataFast`.
