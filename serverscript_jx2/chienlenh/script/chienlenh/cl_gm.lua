@@ -81,3 +81,59 @@ function CL_XemTrangThai()
 	end
 	Say(szNd, 0)
 end
+
+-- ============ MENU CON cua lenh bai admin ============
+-- Nhan SayEx co tran 512 byte va CAM dau '/' trong nhan (dau '/' la cho tach
+-- ten ham), nen menu chinh chi them DUNG MOT muc tro toi day.
+function CL_MenuAdmin()
+	SayEx({
+		"--- ChiÕn LÖnh (qu¶n trÞ) ---",
+		"§óc mÉu vËt phÈm th­ëng/CL_DucMau",
+		"Xem tr¹ng th¸i ChiÕn LÖnh/CL_XemTrangThai",
+		"N¹p l¹i cÊu h×nh tõ MySQL ngay/CL_NapLai",
+		"BËt Hµo Hoa cho chÝnh m×nh (thö nghiÖm)/CL_BatVipThu",
+		"§ãng/",
+	}, 0)
+end
+
+-- Ep nap lai cau hinh ma khong cho vong 30 giay.
+function CL_NapLai()
+	if (CL_Reload == nil) then
+		Say("B¶n CoreServer ®ang ch¹y ch­a cã ChiÕn LÖnh.", 0)
+		return
+	end
+	local nLoi = CL_Reload(1)
+	if (nLoi == 0) then
+		Say("§· n¹p l¹i cÊu h×nh. Xem b¶ng st_cfg_log ®Ó biÕt chi tiÕt.", 0)
+	else
+		Say(format("CÊu h×nh cã <color=red>%d lçi<color> nªn gi÷ nguyªn b¶n cò.<enter>"
+			.. "Më tab NhËt ký cÊu h×nh trªn trang admin ®Ó xem tõng lçi.", nLoi), 0)
+	end
+end
+
+-- CHI DE THU NGHIEM. Ban chinh thuc: the Hao Hoa mua o Ky Tran Cac (xem ghi chu
+-- cuoi tep). Ham nay goi dung CL_MuaVip nen di qua het cac phep kiem that.
+function CL_BatVipThu()
+	if (CL_MuaVip == nil) then
+		Say("B¶n CoreServer ®ang ch¹y ch­a cã ChiÕn LÖnh.", 0)
+		return
+	end
+	local nKq = CL_MuaVip()
+	if (nKq == 1) then
+		Say("§· bËt ChiÕn LÖnh Hµo Hoa vµ céng ®iÓm th­ëng kÝch ho¹t.", 0)
+	elseif (nKq == 2) then
+		Say("Nh©n vËt nµy ®· cã Hµo Hoa råi - kh«ng tiªu thÎ, kh«ng céng thªm.", 0)
+	else
+		Say("Kh«ng bËt ®­îc: mïa ch­a më hoÆc ch­a n¹p ®­îc tr¹ng th¸i.", 0)
+	end
+end
+
+-- ============ THE HAO HOA BAN CHINH THUC ============
+-- CL_MuaVip() da san sang, nhung CHUA CO VAT PHAM nao goi no.
+-- Muon ban o Ky Tran Cac thi can hai thu, deu la SUA BANG DU LIEU nen phai hoi chu:
+--   1. mot dong moi trong settings\item\magicscript.txt (vat pham "Chien Lenh Hao Hoa")
+--      voi cot Script tro toi mot tep .lua goi CL_MuaVip;
+--   2. mot dong trong bang hang cua Ky Tran Cac, gia 500 xu.
+-- Tep .lua do phai theo dung luat: goi CL_MuaVip() TRUOC, chi khi tra ve 1 moi
+-- xoa the. Tra ve 2 (da co Hao Hoa) thi KHONG DUOC tieu the, neu khong nguoi choi
+-- mat 500 xu ma khong duoc gi.
