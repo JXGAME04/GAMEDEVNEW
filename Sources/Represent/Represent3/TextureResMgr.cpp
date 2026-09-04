@@ -89,8 +89,13 @@ void TextureResMgr::SetBudget()
 	unsigned __int64 uPhysMB = stat.ullTotalPhys / (1024 * 1024);
 	unsigned __int64 uBudgetMB = uPhysMB / 16;
 	if (uBudgetMB < 60)  uBudgetMB = 60;
-	if (uBudgetMB > 768) uBudgetMB = 768;	// [REP3 03/09 LAG] texture o VRAM (POOL_DEFAULT) nen
-											// khong an RAM; tran 384 lam cache luon kich tran -> bo/tao lai lien tuc
+	if (uBudgetMB > 512) uBudgetMB = 512;	// [REP3 03/09 RAM2] DINH CHINH: chu thich cu noi POOL_DEFAULT
+											// "khong an RAM" la SAI. Do 12 mau trong jx_rep3.log cua game that:
+											//   RAM rieng = 240,9 + 0,657 x (texture + raw spr)
+											// tuc moi MB texture o VRAM VAN keo theo ~0,66 MB RAM tien trinh, do WDDM
+											// cap bo dem he thong cho moi vung nho D3D9. Tran 768 cho phep RAM len ~775 MB
+											// tren tran dia chi 2048 MB cua tien trinh 32-bit. Tran 512 -> ~607 MB.
+											// Van tren muc cache thuc te (438-451 MB) nen khong quay lai loi giat cua tran 384.
 	if (g_nRep3CacheMB > 0)
 		uBudgetMB = (unsigned __int64)g_nRep3CacheMB;
 	m_nBalanceNum = (int32)(uBudgetMB * 1024 * 1024);

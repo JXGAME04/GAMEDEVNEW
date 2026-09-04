@@ -42,6 +42,45 @@ static void RenderToA8R8G8B8(DWORD* pDest, BYTE* pSrc, int nSrcLen, int nTotal, 
 		*d++ = 0;
 }
 
+// [REP3 03/09 RAM2] giai RLE spr -> A4R4G4B4, CO KIEM BIEN. Ban hop ngu RenderToA4R4G4B4 ben duoi
+// khong kiem mot bien nao: no tin RLE lap vua dung width*height, sai mot nhip la ghi tran pTempData.
+// Dung ban nay de co the bat [Client] Rep3Tex32=0 (4444) an toan - 4444 chi ton mot NUA so byte
+// texture so voi 8888, ma theo phep do o tren la giam thang ~0,66 MB RAM cho moi MB tiet kiem duoc.
+static void RenderToA4R4G4B4Safe(WORD* pDest, BYTE* pSrc, int nSrcLen, int nTotal, const WORD* pPal16, int nColors)
+{
+	BYTE*  p    = pSrc;
+	BYTE*  pEnd = pSrc + nSrcLen;
+	WORD*  d    = pDest;
+	WORD*  dEnd = pDest + nTotal;
+	while (p + 2 <= pEnd && d < dEnd)
+	{
+		int n = *p++;
+		int a = *p++;
+		if (a == 0)
+		{
+			for (int k = 0; k < n && d < dEnd; k++)
+				*d++ = 0;
+		}
+		else
+		{
+			WORD wAlpha = (WORD)((a << 8) & 0xf000);	// dung nhu ban hop ngu: giu 4 bit cao cua alpha
+			for (int k = 0; k < n && d < dEnd; k++)
+			{
+				if (p >= pEnd)
+				{
+					*d++ = 0;
+					continue;
+				}
+				int idx = *p++;
+				if (idx >= nColors)
+					idx = 0;
+				*d++ = (WORD)(wAlpha | pPal16[idx]);
+			}
+		}
+	}
+	while (d < dEnd)
+		*d++ = 0;
+}
 inline void RenderToA4R4G4B4(WORD* pDest, BYTE* pSrc, int width, int height, BYTE* pPalette)
 {
 	__asm
@@ -601,7 +640,8 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 		RenderToA8R8G8B8((DWORD*)pTempData, m_pFrameInfo[nFrame].pRawData, m_pFrameInfo[nFrame].nRawDataLen,
 						nW * nH, m_pPal24, (int)m_nColors);
 	else
-		RenderToA4R4G4B4((WORD*)pTempData, m_pFrameInfo[nFrame].pRawData, nW, nH, (BYTE*)m_pPal16);
+		RenderToA4R4G4B4Safe((WORD*)pTempData, m_pFrameInfo[nFrame].pRawData, m_pFrameInfo[nFrame].nRawDataLen,
+						nW * nH, m_pPal16, (int)m_nColors);	// [REP3 03/09 RAM2] ban co kiem bien
 
 	for(i=0; i<m_pFrameInfo[nFrame].nTexNum; i++)
 	{
