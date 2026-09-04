@@ -22,6 +22,8 @@
 #endif
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
+#include <time.h>
 
 #define SP_SCRIPT_GS	"\\script\\script_protocol\\protocol_def_gs.lua"
 #define SP_SCRIPT_C		"\\script\\script_protocol\\protocol_def_c.lua"
@@ -99,6 +101,9 @@ static void SP_Dispatch(const char* szScript, int nPlayerIdx, int nProtocolId, i
 	if (!pScript)
 	{
 		g_DebugLog((LPSTR)"[SP] khong nap duoc bo dieu phoi %.128s (id=%d)", szScript, nProtocolId);
+#ifndef _SERVER
+		SP_ClientLog("[SP] khong nap duoc bo dieu phoi %.128s (id=%d)", szScript, nProtocolId);
+#endif
 		return;
 	}
 	Lua_State* L = pScript->m_LuaState;
@@ -120,8 +125,12 @@ static void SP_Dispatch(const char* szScript, int nPlayerIdx, int nProtocolId, i
 	sprintf(szCall, "ScriptProtocol:ProtocolProcess(%d, %d)", nProtocolId, hOB);
 	int nTop = 0;
 	pScript->SafeCallBegin(&nTop);
-	if (lua_dostring(L, szCall) != 0)
+	int nErr = lua_dostring(L, szCall);
+	if (nErr != 0)
 		g_DebugLog((LPSTR)"[SP] loi chay %.128s: %s", szScript, szCall);
+#ifndef _SERVER
+	SP_ClientLog("[SP] dispatch %s trong %.128s (loi=%d)", szCall, szScript, nErr);
+#endif
 	pScript->SafeCallEnd(nTop);
 }
 
@@ -225,6 +234,27 @@ int LuaSendScriptDataToPlayer(Lua_State* L)
 //////////////////////////////////////////////////////////////////////
 // CLIENT
 //////////////////////////////////////////////////////////////////////
+// [MAIL 03/09 D4] nhat ky chan doan phia client: jx_mail.log canh Game.exe (g_DebugLog chi bay ra cua so debug,
+// khong ra tep nen 03/09 khong biet chuoi 'Nhan thu' dut o dau).
+void SP_ClientLog(const char* szFmt, ...)
+{
+	if (!szFmt)
+		return;
+	FILE* f = fopen("jx_mail.log", "a");
+	if (!f)
+		return;
+	time_t t = time(NULL);
+	struct tm* p = localtime(&t);
+	if (p)
+		fprintf(f, "%02d:%02d:%02d ", p->tm_hour, p->tm_min, p->tm_sec);
+	va_list va;
+	va_start(va, szFmt);
+	vfprintf(f, szFmt, va);
+	va_end(va);
+	fprintf(f, "\n");
+	fclose(f);
+}
+
 void SP_OnClientRecv(BYTE* pMsg)
 {
 	int nId = 0;
@@ -233,9 +263,11 @@ void SP_OnClientRecv(BYTE* pMsg)
 	if (nLen < 0)
 	{
 		g_DebugLog((LPSTR)"[SP] goi s2c_scriptdata hong");
+		SP_ClientLog("[SP] goi s2c_scriptdata hong (type=%d)", pMsg ? (int)pMsg[0] : -1);
 		return;
 	}
 	int h = KJx2OB_CreateFromBytes(pData, nLen);
+	SP_ClientLog("[SP] nhan s2c_scriptdata id=%d len=%d ob=%d", nId, nLen, h);
 	if (h <= 0)
 		return;
 	SP_Dispatch(SP_SCRIPT_C, 0, nId, h);
@@ -252,6 +284,7 @@ int SP_RunClientLua(const char* szScript, const char* szCall)
 	if (!pScript)
 	{
 		g_DebugLog((LPSTR)"[SP] RunClientLua: khong nap duoc %.128s", szScript);
+		SP_ClientLog("[SP] RunClientLua: khong nap duoc %.128s (%.200s)", szScript, szCall);
 		return 0;
 	}
 	Lua_State* L = pScript->m_LuaState;
@@ -265,6 +298,7 @@ int SP_RunClientLua(const char* szScript, const char* szCall)
 	if (lua_dostring(L, szCall) != 0)
 	{
 		g_DebugLog((LPSTR)"[SP] RunClientLua loi %.128s: %.200s", szScript, szCall);
+		SP_ClientLog("[SP] RunClientLua loi %.128s: %.200s", szScript, szCall);
 		nRet = 0;
 	}
 	pScript->SafeCallEnd(nTop);
@@ -293,6 +327,7 @@ int LuaSendScriptDataToServer(Lua_State* L)
 		return 1;
 	}
 	g_pClient->SendPackToServer(szBuf, n);
+	SP_ClientLog("[SP] gui c2s_scriptdata id=%d len=%d", (int)Lua_ValueToNumber(L, 1), n);
 	Lua_PushNumber(L, 1);
 	return 1;
 }

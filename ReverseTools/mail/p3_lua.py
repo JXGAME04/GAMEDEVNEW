@@ -144,7 +144,10 @@ def build_mailmanager():
         "end",
         "",
         "function MailManager_SendTo(nPlayerIdx, szEnum, h)",
-        "    return SendScriptDataToPlayer(nPlayerIdx, ScriptProtocol[szEnum], h)",
+        "    local nOk = SendScriptDataToPlayer(nPlayerIdx, ScriptProtocol[szEnum], h)",
+        "    -- [D4] chan doan: logs/hethong.log [MAIL] (SendScriptDataToPlayer tra 0 khi PlayerIndex/ket noi/goi hong)",
+        "    GhiLog(\"MAIL\", format(\"gui %s -> player %d: %s\", szEnum, nPlayerIdx, (nOk == 1) and \"ok\" or \"THAT BAI\"))",
+        "    return nOk",
         "end",
         "",
         "-- trang header: tbList[nId] = {szSender, szTitle, nState, nExpiredTime, nSendTime, nAwardCount}; nComplete = 1 neu het",
@@ -176,6 +179,14 @@ def build_mailmanager():
         "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nComplete)",
         "    MailManager_SendTo(nPlayerIdx, \"emSCRIPT_PROTOCOL_MAIL_HEADERLIST\", h)",
         "    OB_Release(h)",
+        "    -- [D4] thu chua giao (state 0) trong trang nay -> tra id lon nhat de bao NEWMAIL (client tu mo hop thu)",
+        "    local nNewId = 0",
+        "    for nId, tb in tbList do",
+        "        if tb.nState == 0 and nId > nNewId then",
+        "            nNewId = nId",
+        "        end",
+        "    end",
+        "    return nNewId",
         "end",
         "",
         "function MailManager_ReplyState(nId, nToState, nOk)",
@@ -311,6 +322,7 @@ def build_mailmanager():
         "-- ======== goi tu NPC / dang nhap / script khac (PlayerIndex da dat) ========",
         "function MailManager_OpenWindow()",
         "    local szRole = GetName()",
+        "    GhiLog(\"MAIL\", format(\"%s mo hop thu (OPENWINDOW, player %d)\", szRole, PlayerIndex))",
         "    MailManager_PushHeaders(PlayerIndex, szRole, 0)",
         "    local h = OB_Create()",
         "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, 1)",
@@ -320,8 +332,16 @@ def build_mailmanager():
         "",
         "function MailManager_OnLogin()",
         "    local szRole = GetName()",
-        "    if MailDB_Count(szRole) > 0 then",
-        "        MailManager_PushHeaders(PlayerIndex, szRole, 0)   -- client tu bat bieu tuong neu co thu chua doc",
+        "    local nCount = MailDB_Count(szRole)",
+        "    GhiLog(\"MAIL\", format(\"%s dang nhap: %d thu\", szRole, nCount))",
+        "    -- [D4] LUON gui trang header dau (co the rong) de client tao bieu tuong thu duoi Bau Cua",
+        "    local nNewId = MailManager_PushHeaders(PlayerIndex, szRole, 0)",
+        "    if type(nNewId) == \"number\" and nNewId > 0 then",
+        "        -- thu giao luc offline = thu moi: bao NEWMAIL de client tu mo hop thu",
+        "        local h = OB_Create()",
+        "        ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nNewId)",
+        "        MailManager_SendTo(PlayerIndex, \"emSCRIPT_PROTOCOL_MAIL_NEWMAIL\", h)",
+        "        OB_Release(h)",
         "    end",
         "end",
         "",
@@ -363,7 +383,7 @@ def build_mailmanager():
         "        ..\"" + V("Đây là thư thử của hệ thống thư mới. Hãy bấm Nhận để lấy đính kèm.") + "<enter>\"",
         "        ..\"" + V("Trân trọng") + "\"",
         "    local nId = MailManager_SendMail(GetName(), MAILMGR_SENDER_NPH, \"" + V("Thư thử hệ thống thư") + "\", szContent, szAward, 30, \"gm\")",
-        "    Msg2Player(\"" + V("Đã gửi thư thử (id ") + "\"..nId..\"). " + V("Đến Tín Sứ để mở hộp thư.") + "\")",
+        "    Msg2Player(\"" + V("Đã gửi thư thử (id ") + "\"..nId..\"). " + V("Hộp thư sẽ tự mở; hoặc bấm biểu tượng thư dưới Bầu Cua.") + "\")",
         "end",
         "",
     ]
@@ -461,29 +481,25 @@ def patch_playerlogin():
 
 
 def patch_dichquan():
+    # [D4 03/09] chu: 'khong can giao tiep qua NPC Tin Su' -> GO muc 'Nhan thu' + ham nhanthu da chen o dot 3
+    # (idempotent: khong co dau [MAIL 03/09] thi thoi). Hop thu mo bang bieu tuong duoi Bau Cua / tu mo khi co thu.
     p = os.path.join(SV, r"script\global\npcchucnang\dichquan.lua")
     s = rd(p)
-    if MARK in s:
-        print("  da va:", p)
+    if MARK not in s:
+        print("  dichquan: khong con muc thu (da go):", p)
         return
     e = "\r\n" if "\r\n" in s else "\n"
-    lines = s.split(e)
-    idx = [i for i, l in enumerate(lines) if "/especiallymessenger\"" in l and not l.lstrip().startswith("--")]
-    assert len(idx) == 1, "dichquan: especiallymessenger x%d" % len(idx)
-    lines.insert(idx[0] + 1, "\t\t\"" + V("Nhận thư") + "/nhanthu\",\t-- " + MARK + " hop thu (uimail.lua 2.0)")
+    lines = [l for l in s.split(e) if not ("/nhanthu\"" in l and MARK in l)]
     s = e.join(lines)
-    tail = e.join([
-        "",
-        "-- " + MARK + " hop thu: Tin Su 7 thanh mo cua so thu (2.0: 'hay den Tin Su cac thanh mo xem')",
-        "function nhanthu()",
-        "\tInclude(\"\\\\script\\\\mail\\\\mailmanager.lua\")",
-        "\tMailManager_OpenWindow()",
-        "end",
-        "",
-    ])
-    if not s.endswith(e):
-        s += e
-    s += tail
+    i0 = s.find("-- " + MARK + " hop thu: Tin Su")
+    if i0 >= 0:
+        i1 = s.find(e + "end", i0)
+        assert i1 > i0, "dichquan: khong thay end cua nhanthu"
+        i1 += len(e + "end")
+        while s[i1:i1 + len(e)] == e:
+            i1 += len(e)
+        s = s[:i0].rstrip("\r\n") + e + s[i1:]
+    assert MARK not in s and "nhanthu" not in s, "dichquan: van con dau vet"
     wr(p, s)
     wr(os.path.join(MIRROR, r"script\global\npcchucnang\dichquan.lua"), s)
 

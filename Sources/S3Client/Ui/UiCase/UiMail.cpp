@@ -20,6 +20,7 @@ Description : [MAIL 03/09] Cua so HOP THU. Xem UiMail.h.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 extern iCoreShell*      g_pCoreShell;
 
@@ -33,6 +34,28 @@ extern iCoreShell*      g_pCoreShell;
 #define MAILUI_ROW_HEIGHT       48
 #define MAILUI_MENU_FILTER      0x0311      // ma menu bo loc (HIWORD nParam cua WND_M_MENUITEM_SELECTED)
 #define MAILUI_CONFIRM_PARAM    0x4D41494C  // 'MAIL' - uParam cua WND_M_OTHER_WORK_RESULT tu hop xac nhan
+extern int SCREEN_WIDTH;    // S3Client.cpp: 800 / 1024 (UiPlayerBar neo cot icon phai theo no)
+
+// [MAIL 03/09 D4] nhat ky chan doan cua so thu: jx_mail.log canh Game.exe (cung tep voi KScriptProtocol.cpp)
+static void sMailLog(const char* szFmt, ...)
+{
+    if (!szFmt)
+        return;
+    FILE* f = fopen("jx_mail.log", "a");
+    if (!f)
+        return;
+    time_t t = time(NULL);
+    struct tm* p = localtime(&t);
+    if (p)
+        fprintf(f, "%02d:%02d:%02d ", p->tm_hour, p->tm_min, p->tm_sec);
+    va_list va;
+    va_start(va, szFmt);
+    vfprintf(f, szFmt, va);
+    va_end(va);
+    fprintf(f, "\n");
+    fclose(f);
+}
+
 #define MAILUI_BLINK_FRAMES     9           // 18 khung = 1 giay -> nhay 2 lan/giay
 
 KUiMailManager* KUiMailManager::ms_pSelf = NULL;
@@ -797,8 +820,13 @@ KUiMailManager* KUiMailManager::OpenWindow()
         ms_pSelf->m_InBox.CheckButton(1);
         ms_pSelf->BringToTop();
         ms_pSelf->Show();
+        int nX = 0, nY = 0;
+        ms_pSelf->GetPosition(&nX, &nY);
+        sMailLog("[UI] OpenWindow: cua so tai (%d,%d) visible=%d", nX, nY, ms_pSelf->IsVisible() ? 1 : 0);
         sSendOp(MAILUI_OP_UPDATE, 0, 0);
     }
+    else
+        sMailLog("[UI] OpenWindow: khong tao duoc cua so");
     return ms_pSelf;
 }
 
@@ -871,7 +899,10 @@ void KUiMailManager::LoadScheme(const char* pScheme)
         ms_pSelf->m_Title.Init(&Ini, "Title");
         ms_pSelf->m_InBox.Init(&Ini, "InBox");
         ms_pSelf->m_Close.Init(&Ini, "Close");
+        sMailLog("[UI] da nap %s", Buff);
     }
+    else
+        sMailLog("[UI] KHONG nap duoc %s", Buff);
     ms_pSelf->m_List.LoadScheme(pScheme);
 }
 
@@ -934,30 +965,37 @@ void KUiMailIcon::LoadScheme(const char* pScheme)
     {
         ms_pSelf->Init(&Ini, "Main");
         ms_pSelf->m_Btn.Init(&Ini, "MailBtn");
+        // [MAIL 03/09 D4] duoi bieu tuong Bau Cua: ini [Main] = vi tri 800x600 (UiPlayerBar [SpringGame] 765,243 50x50);
+        // 1024 -> neo cot icon phai nhu UiPlayerBar.cpp (x = 1024 - 30), giu Top.
+        int nX = 0, nY = 0;
+        ms_pSelf->GetPosition(&nX, &nY);
+        if (SCREEN_WIDTH == 1024)
+        {
+            nX = SCREEN_WIDTH - 30;
+            ms_pSelf->SetPosition(nX, nY);
+        }
+        sMailLog("[UI] bieu tuong thu tai (%d,%d), man hinh rong %d", nX, nY, SCREEN_WIDTH);
     }
+    else
+        sMailLog("[UI] KHONG nap duoc %s", Buff);
 }
 
+// [MAIL 03/09 D4] bieu tuong thu LUON hien sau khi may chu gui trang header dau (dang nhap), nhu bieu tuong Bau Cua;
+// bVisible (= con thu chua doc) chi bat/tat nhap nhay. Bam vao -> uimail.lua mo hop thu ngay (khong qua Tin Su).
 void KUiMailIcon::SetVisible(int bVisible)
 {
-    if (bVisible)
+    if (ms_pSelf == NULL)
     {
-        if (ms_pSelf == NULL)
-        {
-            ms_pSelf = new KUiMailIcon;
-            if (ms_pSelf)
-                ms_pSelf->Initialize();
-        }
+        ms_pSelf = new KUiMailIcon;
         if (ms_pSelf)
-        {
-            ms_pSelf->m_Btn.Show();
-            ms_pSelf->Show();
-        }
+            ms_pSelf->Initialize();
     }
-    else if (ms_pSelf)
-    {
-        ms_pSelf->m_bBlink = 0;
-        ms_pSelf->Hide();
-    }
+    if (!ms_pSelf)
+        return;
+    ms_pSelf->m_Btn.Show();
+    ms_pSelf->Show();
+    ms_pSelf->m_bBlink = bVisible ? 1 : 0;
+    ms_pSelf->m_nFrame = 0;
 }
 
 void KUiMailIcon::Blink()
@@ -1003,6 +1041,7 @@ int KUiMailIcon::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 void KUiMail_OnCoreCmd(unsigned int uCmd, int nParam)
 {
     KUiMailManager* pMgr;
+    sMailLog("[UI] cmd=%u param=%d", uCmd, nParam);
     switch (uCmd)
     {
     case MAILUI_CMD_ICON_VISIBLE:

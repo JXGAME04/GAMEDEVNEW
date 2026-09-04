@@ -89,7 +89,10 @@ function MailManager_AwardInfo(tbAward)
 end
 
 function MailManager_SendTo(nPlayerIdx, szEnum, h)
-    return SendScriptDataToPlayer(nPlayerIdx, ScriptProtocol[szEnum], h)
+    local nOk = SendScriptDataToPlayer(nPlayerIdx, ScriptProtocol[szEnum], h)
+    -- [D4] chan doan: logs/hethong.log [MAIL] (SendScriptDataToPlayer tra 0 khi PlayerIndex/ket noi/goi hong)
+    GhiLog("MAIL", format("gui %s -> player %d: %s", szEnum, nPlayerIdx, (nOk == 1) and "ok" or "THAT BAI"))
+    return nOk
 end
 
 -- trang header: tbList[nId] = {szSender, szTitle, nState, nExpiredTime, nSendTime, nAwardCount}; nComplete = 1 neu het
@@ -121,6 +124,14 @@ function MailManager_PushHeaders(nPlayerIdx, szRole, nMinId)
     ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nComplete)
     MailManager_SendTo(nPlayerIdx, "emSCRIPT_PROTOCOL_MAIL_HEADERLIST", h)
     OB_Release(h)
+    -- [D4] thu chua giao (state 0) trong trang nay -> tra id lon nhat de bao NEWMAIL (client tu mo hop thu)
+    local nNewId = 0
+    for nId, tb in tbList do
+        if tb.nState == 0 and nId > nNewId then
+            nNewId = nId
+        end
+    end
+    return nNewId
 end
 
 function MailManager_ReplyState(nId, nToState, nOk)
@@ -256,6 +267,7 @@ end
 -- ======== goi tu NPC / dang nhap / script khac (PlayerIndex da dat) ========
 function MailManager_OpenWindow()
     local szRole = GetName()
+    GhiLog("MAIL", format("%s mo hop thu (OPENWINDOW, player %d)", szRole, PlayerIndex))
     MailManager_PushHeaders(PlayerIndex, szRole, 0)
     local h = OB_Create()
     ObjBuffer:PushByType(h, OBJTYPE_NUMBER, 1)
@@ -265,8 +277,16 @@ end
 
 function MailManager_OnLogin()
     local szRole = GetName()
-    if MailDB_Count(szRole) > 0 then
-        MailManager_PushHeaders(PlayerIndex, szRole, 0)   -- client tu bat bieu tuong neu co thu chua doc
+    local nCount = MailDB_Count(szRole)
+    GhiLog("MAIL", format("%s dang nhap: %d thu", szRole, nCount))
+    -- [D4] LUON gui trang header dau (co the rong) de client tao bieu tuong thu duoi Bau Cua
+    local nNewId = MailManager_PushHeaders(PlayerIndex, szRole, 0)
+    if type(nNewId) == "number" and nNewId > 0 then
+        -- thu giao luc offline = thu moi: bao NEWMAIL de client tu mo hop thu
+        local h = OB_Create()
+        ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nNewId)
+        MailManager_SendTo(PlayerIndex, "emSCRIPT_PROTOCOL_MAIL_NEWMAIL", h)
+        OB_Release(h)
     end
 end
 
@@ -308,5 +328,5 @@ function MailManager_SendTest(nKind)
         .."§©y lµ th­ thö cña hÖ thèng th­ míi. H·y bÊm NhËn ®Ó lÊy ®Ýnh kÌm.<enter>"
         .."Tr©n träng"
     local nId = MailManager_SendMail(GetName(), MAILMGR_SENDER_NPH, "Th­ thö hÖ thèng th­", szContent, szAward, 30, "gm")
-    Msg2Player("§· göi th­ thö (id "..nId.."). §Õn TÝn Sø ®Ó më hép th­.")
+    Msg2Player("§· göi th­ thö (id "..nId.."). Hép th­ sÏ tù më; hoÆc bÊm biÓu t­îng th­ d­íi BÇu Cua.")
 end

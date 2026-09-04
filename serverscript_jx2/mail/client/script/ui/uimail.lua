@@ -133,6 +133,7 @@ function UIMail:NewMailEventArrival(nNewPrivateId)
     NewMailUIEventArrival()
     self.bHaveNewMail = 1
     self:ReCheckMailIconState()
+    self:OpenMailWindow(1)   -- [MAIL 03/09 JX1 D4] co thu moi -> hien hop thu ngay
 end
 
 function UIMail:StateChangeEventArrival(nId, nToState, nSuccessed)
@@ -549,13 +550,10 @@ function UIMail:CheckIdOnOpen(nId)
 end
 
 function UIMail:OnMailIconClick()
-    local szTitle = "ThiÕu hiÖp cã bå c©u ®­a th­ ch­a ®äc, h·y ®Õn TÝn Sø c¸c thµnh më xem."
-    local tbOption =
-    {
-        "§Õn nhËn th­/g_ConfirmFindMessager",
-        "§Ó sau/no",
-    }
-    MailConfirm(szTitle, tbOption[1], tbOption[2])
+    -- [MAIL 03/09 JX1 D4] bam bieu tuong thu (duoi Bau Cua) -> mo hop thu ngay, khong can den Tin Su
+    self.bHaveNewMail = 0
+    self:OpenMailWindow(1)
+    self:RequestMailHeaderList()
 end
 
 function g_ConfirmFindMessager()
