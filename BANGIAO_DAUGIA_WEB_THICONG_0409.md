@@ -22,6 +22,11 @@ xử lý. Ba tài liệu liên quan, đọc theo thứ tự cần:
 - **Chiến Lệnh cần chủ khởi động lại máy chủ THÊM MỘT LẦN**: 7 bảng `st_*` bị kịch bản thử của phiên web xoá lúc 14:45:21 (sau lần khởi
   động 14:43); máy chủ chỉ tạo bảng một lần mỗi tiến trình nên hiện mọi ghi `st_*` rơi im. Sau khởi động lại: web bấm hai nút nạp mặc
   định + tạo lại mùa (mở 07/09, đóng 19/10, ân hạn 7, level_score 400, vip_bonus 1200, vip_price_xu 500, reset_hour 5). Không cần binlog.
+- **SẬP 15:05:38** (dump `DumpInfo\g-v1.0-20260904-150538-7336419196.dmp`): 783 bot đăng nhập hàng loạt sau lần restart 15:03, AV
+  trong `PB_OnRoleData → KPlayerSet::Add → KPlayer::LoadDBPlayerInfo` (KPlayerDBFuns.cpp:67, khối kỹ năng role-data bot LyMinh812 có
+  offset rác 0x28000000). Không liên quan đấu giá web (mã web chỉ SELECT cfg lúc đó; diff so chienlenh chỉ 3 tệp đấu giá, không đổi
+  struct). wauto-55 điều tra [BotLuu]. PDB: `Sources\Cored\Server Release\CoreServer.pdb` (thư mục có dấu cách). Máy chủ chạy lại
+  15:08:42 vẫn 8181a940; **giữ khe trống tới khi rõ gốc**.
 - Mã: nhánh `mail-0309` HEAD `224b2621`; 5 commit tính năng đã cherry-pick sạch lên **`origin/main` = `ab9cefaf`**. Mọi bản CoreServer
   sau này dựng từ `origin/main` là có đấu giá web; **nhưng phải gộp thêm `origin/chienlenh-0409`** (máy chủ Chiến Lệnh chưa vào main).
 
