@@ -15,11 +15,18 @@ vì `struct autoData` (IPC WAuto ↔ Game.exe ↔ CoreClient.dll) dài thêm 12 
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `c9a3fb7a` | `2.544.128` | pha mới `TKP_RUONG` + 2 hàm `TK_TimRuongObj` / `TK_CatDo` + bảng `g_TKRuong` |
-| `WAuto.exe.moi` | `7b081174` | `461.824` | **gồm cả đợt 7 giao diện** (đã đè bản `e8aeda79` chưa kịp đổi) + 4 ô mới ở tab TK |
+| `CoreClient.dll.moi` | `c87a0d9c` | `2.544.640` | **BẢN GỘP**: nhánh `mail-0309` `5eae0886` (đấu giá + hộp thư của phiên khác, = bản đang chạy) **+** commit rương `e4e0fa89`. Build từ worktree `D:\GAMEDEVNEW_wt_tkruong` (nhánh `tkruong-0409`, cherry-pick sạch, không xung đột). |
+| `WAuto.exe.moi` | `7b081174` | `462.848` | **gồm cả đợt 7 giao diện** (đã đè bản `e8aeda79` chưa kịp đổi) + 4 ô mới ở tab TK |
 
-Bản đang chạy lúc làm việc: `CoreClient.dll` `53325c27`, `WAuto.exe` `742b6a9c` (đợt 5 giao diện).
-Cây nguồn `D:\GAMEDEVNEW` ở nhánh `main` `dcbfcec4`, sạch trước khi vá (chỉ 3 tệp của đợt này thay đổi).
+Bản đang chạy: `CoreClient.dll` **`bd259907`** (nhánh `mail-0309`, chủ đổi lúc 10:50), `WAuto.exe` `742b6a9c` (đợt 5 giao diện).
+
+> ⚠️ **HAI PHIÊN CÙNG ĐẶT `.moi`.** Lúc 10:49 tôi đặt `CoreClient.dll.moi` `c9a3fb7a` (main + rương);
+> phiên đấu giá/thư đè lên bằng bản của họ lúc 10:49:10 và `ChoiGame.bat` đổi bản đó vào lúc 10:50.
+> Vì vậy bản `.moi` hiện tại là **bản gộp** để không mất việc của bên nào. Nếu phiên kia lại đặt
+> `CoreClient.dll.moi` mới, việc rương sẽ **biến mất khỏi bản đó** — khi ấy build lại từ nhánh
+> `tkruong-0409` sau khi cherry-pick/merge nhánh của họ, hoặc merge `tkruong-0409` vào `main`.
+
+Cây nguồn `D:\GAMEDEVNEW` ở nhánh `main` `e4e0fa89`, sạch. Nhánh gộp: `tkruong-0409` `8673afde`.
 
 ### Cách đổi
 
