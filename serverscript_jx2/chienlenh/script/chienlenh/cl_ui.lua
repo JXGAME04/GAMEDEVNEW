@@ -88,7 +88,7 @@ function CLUI_OnOpen(n)
 	CLUI_DayTronBo(1)
 end
 
--- CL_Nhan: 1 = da gui thu, 2 = moc nay da nhan, 0 = chua du dieu kien
+-- CL_Nhan: 1 = da gui thu, 2 = moc nay da nhan, 3 = moc chua cau hinh thuong (award rong), 0 = chua du dieu kien
 function CLUI_OnGetAward(nIdx, nBranch)
 	local kq = CL_Nhan(nIdx or 0, nBranch or 0) or 0
 	if kq == 1 then
@@ -96,6 +96,8 @@ function CLUI_OnGetAward(nIdx, nBranch)
 		CLUI_DayTronBo(0)
 	elseif kq == 2 then
 		CLUI_Bao("Mèc nµy ®· nhËn råi")
+	elseif kq == 3 then
+		CLUI_Bao("Mèc nµy ch­a ®­îc cÊu h×nh th­ëng trªn web")
 	else
 		CLUI_Bao("Ch­a ®ñ ®iÓm hoÆc ch­a më nh¸nh Hµo Hoa")
 	end
