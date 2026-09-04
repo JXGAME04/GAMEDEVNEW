@@ -276,6 +276,10 @@ function MailManager_OpenWindow()
 end
 
 function MailManager_OnLogin()
+    -- [D7] bot (PB_IsBot) khong co ket noi: bo qua, khoi ghi 'THAT BAI' vao hethong.log
+    if IsBot and IsBot(PlayerIndex) == 1 then
+        return
+    end
     local szRole = GetName()
     local nCount = MailDB_Count(szRole)
     GhiLog("MAIL", format("%s dang nhap: %d thu", szRole, nCount))

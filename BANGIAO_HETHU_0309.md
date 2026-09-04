@@ -150,6 +150,13 @@ nhánh client có OBJTYPE_TABLE → không Pop ở state điều phối mà `Dyn
 rồi Pop trong state đích (`DynamicExecute` chỉ chuyển số/chuỗi); `ScriptProtocol:SendData` chuyển vào `protocol.lua`. Ini: mọi `Image=` thêm `\` đầu
 (`p2_lua_ini.py`); sprite thư ĐỀU có trong `updatejx15.pak` (cờ 0x20), riêng `信件选择框11.spr` không tồn tại ở đâu (nút phủ hàng, vô hại).
 
+**ĐỢT 7 (18:20) — chủ chụp 18:05: hộp thư ĐỦ nền + 7 thư, nhưng bấm hàng/kéo thanh cuộn không ăn, "Người gửi:" cụt.**
+Gốc: hàng thư (`KWndPage`) và thanh cuộn (`KWndScrollBar`) chỉ báo `WND_N_BUTTON_CLICK` / `WND_N_SCORLLBAR_POS_CHANGED` lên cha TRỰC TIẾP
+= khung `[MailListScroll]` (KWndImage thường) → nuốt, `KUiMailList::WndProc` không bao giờ nhận (log không có op=1). Sửa `UiMail.{h,cpp}`:
+`KUiMailScrollWnd` chuyển tiếp hai thông báo lên KUiMailList → CHỈ Game.exe đổi (không đụng header chung, đi cùng CoreClient a3cecb53 của
+wauto-c0). Ini: `[MailSenderLable]` Width 65→80, `[MailSenderValue]` Left 82 Width 259. Script: `MailManager_OnLogin` bỏ qua bot.
+`Game.exe.moi` đợt 7: xem dòng md5 bên dưới (điền sau build). Cây sống 18:00: `CoreClient.dll.moi` a3cecb53 (wauto-c0, main d59340c4, có D5).
+
 Phiên wauto-c1 (Represent3, nhánh rep3-0309) bị chặn ghi `bin\client` và nhờ gộp vào bộ này — KHÔNG làm hộ (chủ tự chép/cho phép); họ tự gộp
 origin/main (đã có D4/D4b) vào rep3-0309 và đặt sau. `Represent3.dll` 74ac07ad đã nằm ở bin\client nhưng `config.ini [Client] Represent=2` nên chưa dùng.
 

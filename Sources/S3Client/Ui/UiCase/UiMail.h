@@ -101,6 +101,17 @@ private:
 };
 
 //------------------------------------------------------------------
+// [MAIL 03/09 D7] khung chua hang + thanh cuon ([MailListScroll]): KWndPage (hang) va KWndScrollBar chi bao len
+// CHA TRUC TIEP = khung nay; KWndImage thuong nuot thong bao -> chuyen tiep len KUiMailList
+// (chu chup 18:05: bam hang / keo thanh cuon khong an).
+//------------------------------------------------------------------
+class KUiMailScrollWnd : public KWndImage
+{
+public:
+	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+};
+
+//------------------------------------------------------------------
 // Trang InBox: danh sach + nut + bo loc (mail_list.ini), chua ca KUiMailDetail
 //------------------------------------------------------------------
 class KUiMailList : public KWndImage
@@ -142,7 +153,7 @@ private:
 	KWndText80			m_FilterTitle;			// [MailFilterTitle]
 	KWndImage			m_FilterBg;				// [MailFilterBg]
 	KWndPureTextBtn		m_FilterBtn;			// [MailFilterBtn]
-	KWndImage			m_ScrollWnd;			// [MailListScroll] chua cac hang
+	KUiMailScrollWnd	m_ScrollWnd;			// [MailListScroll] chua cac hang (D7: chuyen tiep thong bao)
 	KWndScrollBar		m_Scroll;				// [MailListScroll_ScrollBar]
 	KUiMailRow			m_Row[MAILUI_ROW_COUNT];
 
