@@ -7,6 +7,8 @@
 -- thu van giao du.
 Include("\\script\\chienlenh\\cl_def.lua")
 Include("\\script\\mail\\mailmanager.lua")
+Include("\\script\\protocol.lua")
+Include("\\script\\lib\\objbuffer_head.lua")
 
 CLUI_SO_NV = 20
 
