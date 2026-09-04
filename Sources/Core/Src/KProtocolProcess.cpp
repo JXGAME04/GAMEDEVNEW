@@ -1,5 +1,25 @@
 #include "KEngine.h"
 #include "KCore.h"
+
+#ifndef _SERVER
+// [BIEN 04/09 b] CHEP AN TOAN tu goi mang: cac ham xu ly goi tinh so byte bang 'm_wLength + 1 + sizeof(truong) - sizeof(struct)',
+// ma m_wLength lay THANG TU GOI. Goi hong (luong lech) cho ra so khong lo -> memcpy ghi tran mang tren ngan xep -> sap.
+// Nhat ky sap 04/09: 00:32:40 chep 20.608 byte vao 256; 00:21:13 chep 56.196 byte vao 32; 00:39:06 chep 45.675 byte vao 64.
+static int BIEN_ChepAnToan(void* pDich, int nCoDich, const void* pNguon, int nSoByte, const char* szCho)
+{
+	if (!pDich || nCoDich <= 0)
+		return 0;
+	if (!pNguon || nSoByte < 0 || nSoByte > nCoDich - 1)
+	{
+		AUTOLOG_EVERY(1000, "[BIEN-XAU] %s: goi doi chep %d byte vao cho %d byte - BO GOI", szCho ? szCho : "?", nSoByte, nCoDich);
+		((char*)pDich)[0] = 0;
+		return 0;
+	}
+	memcpy(pDich, pNguon, (size_t)nSoByte);
+	((char*)pDich)[nSoByte] = 0;
+	return nSoByte;
+}
+#endif
 #ifndef _SERVER
 #include "../../Headers/IClient.h"
 #include "CoreShell.h"
@@ -688,7 +708,7 @@ void	KProtocolProcess::s2cChatScreenSingleError(BYTE* pMsg)
 	// 
 	char	szName[32];
 	memset(szName, 0, sizeof(szName));
-	memcpy(szName, pError->m_szName, pError->m_wLength + 1 + sizeof(pError->m_szName) - sizeof(CHAT_SCREENSINGLE_ERROR_SYNC));
+	BIEN_ChepAnToan(szName, (int)sizeof(szName), pError->m_szName, (int)(pError->m_wLength + 1 + sizeof(pError->m_szName) - sizeof(CHAT_SCREENSINGLE_ERROR_SYNC)), "szName");
 
 	KSystemMessage	sMsg;
 	sprintf(sMsg.szMessage, MSG_CHAT_TAR_REFUSE_SINGLE_TALK, szName);
@@ -1170,7 +1190,7 @@ void KProtocolProcess::s2cChatBeRefusedAddFriend(BYTE* pMsg)
 	char	szName[64];
 
 	memset(szName, 0, sizeof(szName));
-	memcpy(szName, pRefuse->m_szName, pRefuse->m_wLength + 1 + sizeof(pRefuse->m_szName) - sizeof(CHAT_REFUSE_FRIEND_SYNC));
+	BIEN_ChepAnToan(szName, (int)sizeof(szName), pRefuse->m_szName, (int)(pRefuse->m_wLength + 1 + sizeof(pRefuse->m_szName) - sizeof(CHAT_REFUSE_FRIEND_SYNC)), "szName");
 
 	// 
 	KSystemMessage	sMsg;
@@ -1240,7 +1260,7 @@ void KProtocolProcess::s2cChatLoginFriendName(BYTE* pMsg)
 	char	szName[64];
 
 	memset(szName, 0, sizeof(szName));
-	memcpy(szName, pFriend->m_szName, pFriend->m_wLength + 1 + sizeof(pFriend->m_szName) - sizeof(CHAT_LOGIN_FRIEND_NAME_SYNC));
+	BIEN_ChepAnToan(szName, (int)sizeof(szName), pFriend->m_szName, (int)(pFriend->m_wLength + 1 + sizeof(pFriend->m_szName) - sizeof(CHAT_LOGIN_FRIEND_NAME_SYNC)), "szName");
 	nTeamNo = Player[CLIENT_PLAYER_INDEX].m_cChat.CheckTeamNo(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].Name, szName);
 	if (nTeamNo < 0)
 		nTeamNo = 0;
@@ -2198,7 +2218,7 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 	Npc[nIdx].m_HitRecover		    = NpcSync->m_HitRecover;		//thêi gian phôc håi
 	Npc[nIdx].m_nMissionGroup	= NpcSync->MissionGroup;//#NpcMissionGroup
 	memset(Npc[nIdx].Name, 0, sizeof(Npc[nIdx].Name));
-	memcpy(Npc[nIdx].Name, NpcSync->m_szName, NpcSync->m_wLength - (sizeof(NPC_SYNC) - 1 - sizeof(NpcSync->m_szName)));
+	BIEN_ChepAnToan(Npc[nIdx].Name, (int)sizeof(Npc[nIdx].Name), NpcSync->m_szName, (int)(NpcSync->m_wLength - (sizeof(NPC_SYNC) - 1 - sizeof(NpcSync->m_szName))), "Npc[nIdx].Name");
 }
 
 void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã player vµ npc
@@ -2754,7 +2774,7 @@ void KProtocolProcess::SyncObjectAdd(BYTE* pMsg)
 	sInfo.m_nMovieFlag = ((pObjSyncAdd->m_btFlag & 0x02) > 0 ? 1 : 0);
 	sInfo.m_nSoundFlag = ((pObjSyncAdd->m_btFlag & 0x01) > 0 ? 1 : 0);
 	memset(sInfo.m_szName, 0, sizeof(sInfo.m_szName));
-	memcpy(sInfo.m_szName, pObjSyncAdd->m_szName, pObjSyncAdd->m_wLength + 1 + sizeof(pObjSyncAdd->m_szName) - sizeof(OBJ_ADD_SYNC));
+	BIEN_ChepAnToan(sInfo.m_szName, (int)sizeof(sInfo.m_szName), pObjSyncAdd->m_szName, (int)(pObjSyncAdd->m_wLength + 1 + sizeof(pObjSyncAdd->m_szName) - sizeof(OBJ_ADD_SYNC)), "sInfo.m_szName");
 
 	nObjIndex = ObjSet.ClientAdd(
 		pObjSyncAdd->m_nID,
@@ -3416,7 +3436,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			KSystemMessage	sMsg;
 
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), (int)(pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC)), "szName");
 			if (strcmp(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].Name, szName) == 0)
 			{
 				sprintf(sMsg.szMessage, MSG_TEAM_BE_KICKEN);
@@ -3488,7 +3508,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 		{
 			char	szName[32];
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, &pShowMsg->m_lpBuf, pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), &pShowMsg->m_lpBuf, (int)(pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC)), "szName");
 
 			KSystemMessage	sMsg;
 			sprintf(sMsg.szMessage, MSG_TEAM_REFUSE_INVITE, szName);
@@ -3831,7 +3851,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 		{
 			char	szName[32];
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, &pShowMsg->m_lpBuf, pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), &pShowMsg->m_lpBuf, (int)(pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC)), "szName");
 
 			KSystemMessage	sMsg;
 			sMsg.eType = SMT_NORMAL;
@@ -3847,7 +3867,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			char	szName[32];
 
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), (int)(pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC)), "szName");
 
 			KSystemMessage	sMsg;
 			sMsg.eType = SMT_NORMAL;
@@ -3863,7 +3883,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			char	szName[32];
 
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), (int)(pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC)), "szName");
 
 			KSystemMessage	sMsg;
 			sMsg.eType = SMT_NORMAL;
@@ -3958,7 +3978,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			char	szName[32];
 
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), (int)(pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC)), "szName");
 
 			KSystemMessage	sMsg;
 			sMsg.eType = SMT_NORMAL;
@@ -4331,7 +4351,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			KSystemMessage	sMsg;
 
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), (int)(pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC)), "szName");
 			sprintf(sMsg.szMessage, MSG_CHATROOM_JOIN, szName);
 			sMsg.eType = SMT_NORMAL;
 			sMsg.byConfirmType = SMCT_NONE;
@@ -4348,7 +4368,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			KSystemMessage	sMsg;
 
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), (int)(pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC)), "szName");
 			sprintf(sMsg.szMessage, MSG_CHATROOM_LEAVE, szName);
 			sMsg.eType = SMT_NORMAL;
 			sMsg.byConfirmType = SMCT_NONE;
@@ -4365,7 +4385,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			KSystemMessage	sMsg;
 
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), (int)(pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC)), "szName");
 			sprintf(sMsg.szMessage, MSG_CHATROOM_BEKICK, szName);
 			sMsg.eType = SMT_NORMAL;
 			sMsg.byConfirmType = SMCT_NONE;
@@ -4395,7 +4415,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			KSystemMessage	sMsg;
 
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), pMsg + sizeof(SHOW_MSG_SYNC) - sizeof(LPVOID), (int)(pShowMsg->m_wLength + 1 + sizeof(LPVOID) - sizeof(SHOW_MSG_SYNC)), "szName");
 			sprintf(sMsg.szMessage, MSG_CHATROOM_REVERSE, szName);
 			sMsg.eType = SMT_NORMAL;
 			sMsg.byConfirmType = SMCT_NONE;
@@ -5264,7 +5284,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			int		nPlayerIdx;
 
 			memset(szName, 0, sizeof(szName));
-			memcpy(szName, pApply->m_szName, pApply->m_wLength + 1 + sizeof(pApply->m_szName) - sizeof(TONG_APPLY_ADD_SYNC));
+			BIEN_ChepAnToan(szName, (int)sizeof(szName), pApply->m_szName, (int)(pApply->m_wLength + 1 + sizeof(pApply->m_szName) - sizeof(TONG_APPLY_ADD_SYNC)), "szName");
 			dwNameID = g_FileName2Id(szName);
 			nPlayerIdx = pApply->m_nPlayerIdx;
 
@@ -5625,7 +5645,7 @@ void	KProtocolProcess::s2cPKSyncEnmityState(BYTE* pMsg)
 	char	szName[32];
 
 	memset(szName, 0, sizeof(szName));
-	memcpy(szName, pState->m_szName, pState->m_wLength + 1 + sizeof(pState->m_szName) - sizeof(PK_ENMITY_STATE_SYNC));
+	BIEN_ChepAnToan(szName, (int)sizeof(szName), pState->m_szName, (int)(pState->m_wLength + 1 + sizeof(pState->m_szName) - sizeof(PK_ENMITY_STATE_SYNC)), "szName");
 	Player[CLIENT_PLAYER_INDEX].m_cPK.SetEnmityPKState(pState->m_btState, pState->m_dwNpcID, szName);
 }
 
@@ -5634,7 +5654,7 @@ void	KProtocolProcess::s2cPKSyncExerciseState(BYTE* pMsg)
 	PK_EXERCISE_STATE_SYNC	*pState = (PK_EXERCISE_STATE_SYNC*)pMsg;
 	char	szName[32];
 	memset(szName, 0, sizeof(szName));
-	memcpy(szName, pState->m_szName, pState->m_wLength + 1 + sizeof(pState->m_szName) - sizeof(PK_EXERCISE_STATE_SYNC));
+	BIEN_ChepAnToan(szName, (int)sizeof(szName), pState->m_szName, (int)(pState->m_wLength + 1 + sizeof(pState->m_szName) - sizeof(PK_EXERCISE_STATE_SYNC)), "szName");
 	Player[CLIENT_PLAYER_INDEX].m_cPK.SetExercisePKState(pState->m_btState, pState->m_dwNpcID, szName);
 }
 
