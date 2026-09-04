@@ -21,6 +21,7 @@
 #include "KPlayer.h"
 #include "KPlayerSet.h"
 #include "KMailServer.h"	// [MAIL 04/09 D10] phat luong bang hoi = gui thu
+#include "KPlayerBot.h"	// [MAIL 04/09 D12] PB_IsBot: khong phat luong / gui thu cho bot
 #include "KProtocolProcess.h"
 #include <KProtocol.h>
 #include <KProtocolDef.h>
@@ -3588,7 +3589,12 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 						continue;
 					// [MAIL 04/09 D10] ngan luong KHONG con bat buoc online: tra bang THU (Mail_Send)
 					// nen nguoi offline van nhan duoc; o "chi phat nguoi con tren mang" van co tac dung.
-					if (bOnline && sFindPlayerIdxByNameID(itM->first) <= 0)
+					int nIdxMem = sFindPlayerIdxByNameID(itM->first);
+					if (bOnline && nIdxMem <= 0)
+						continue;
+					// [MAIL 04/09 D12] chu chot: KHONG gui thu cho bot. Bo qua NGAY TU KHAU GOM danh sach
+					// (neu chi bo luc gui thi quy bang van bi tru phan cua bot = mat tien).
+					if (nIdxMem > 0 && PB_IsBot(nIdxMem))
 						continue;
 					if (nCnt[nFig - 1] < 256)
 						dwIDs[nFig - 1][nCnt[nFig - 1]++] = itM->first;
