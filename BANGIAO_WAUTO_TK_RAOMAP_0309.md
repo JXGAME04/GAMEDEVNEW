@@ -9,7 +9,8 @@ Phiên: `wauto` (Claude Fable 5.1). Chủ giao (03/09 chiều):
 
 | Tệp | md5 | Cỡ | Ghi chú |
 |---|---|---|---|
-| `bin\client\CoreClient.dll.moi` | **`5600d7a9`** | `2.525.696` | **(03/09 đêm — ĐỢT 4, xem mục 8)** 5 yêu cầu của chủ: ra trại thì tiến về **khu xuất quân địch** khi chưa thấy ai (sau điểm cuối thấy địch); **luật ngựa mới**: đi xa tự lên ngựa, gặp địch xuống, quanh có địch không lên. Build từ main `a6c6f237` + `ReverseTools\goi_va_wauto_tk_ngua_xq_0309.py`; tập cha của `59f90510`. **Chỉ đổi CoreClient.dll.** |
+| `bin\client\CoreClient.dll.moi` | **`ca5adaed`** | `2.528.768` | **(04/09 đêm — ĐỢT 5, xem mục 9)** hỏi máy chủ vị trí địch (`[TKDich]`) khi không thấy ai; tập cha của `5600d7a9` (đợt 4: khu xuất quân + luật ngựa mới, mục 8). **Đi cùng `CoreServer.dll.moi a0361438`** (server cũ thì client vẫn chạy như đợt 4). |
+| `bin\server\CoreServer.dll.moi` | **`a0361438`** | `18.299.392` | **(04/09 đêm — ĐỢT 5)** = mã máy chủ đang chạy `b68899b2` (S13k, d59340c4; main không đổi mã server từ đó) + nhánh trả `[TKDich]` trong `c2sNeedCount` + đặt chỗ id. Swap bằng `ChayGameServer.bat` (khởi động lại máy chủ). |
 | `bin\client\CoreClient.dll` | `59f90510` | `2.523.648` | **ĐANG CHẠY** (chủ swap 20:51) — ĐỢT 3 (mục 7): trận chưa bắt đầu (trap chặn cổng) thì đứng chờ; tầng săn bị tường chắn thì nhắm đúng ô địch, điểm nhắm phải `FindPath == 1`, đứng yên trong tầm PK 3 s là bỏ; ô rảo tránh trap "vào trại". Bộ vá `ReverseTools\goi_va_wauto_tk_chocong_0309.py`. |
 | `bin\client\CoreClient.dll.truoc` | `4c69d7ad` | `2.521.600` | đợt 2 (mục 6), chạy ~20:05 → 20:51. Đợt 1 `a3cecb53` chạy 18:10 → 20:05. |
 | `bin\client\Game.exe` | `bd5cb88e` | đang chạy | KHÔNG cần đổi (không chạm S3Client). |
@@ -113,3 +114,23 @@ Nguyên văn chủ: *(1) khi ra khỏi doanh trại thì Auto sẽ xác định 
 Ngưỡng do tôi chọn (chủ đổi được bằng cách nói số): "đường xa" = 480 mps (15 ô); "xung quanh có địch" = ô *Tầm nhìn PK* của tab PK + 400 mps; nghỉ 6 s sau khi xuống. Bộ vá: `ReverseTools\goi_va_wauto_tk_ngua_xq_0309.py [--thu] [--root]`.
 
 **Lưu ý:** máy đánh thường (tab Chiến đấu, ô ngựa = "tự động") vẫn tự **lên** ngựa khi chiêu cho phép cưỡi (`[FIGHT-HORSE] TOGGLE`) — muốn đúng luật "quanh có địch không lên ngựa" thì đặt ô đó = *Xuống ngựa*. **Nghiệm thu:** ra trại → `[Tống Kim] Không thấy địch - tiến về khu xuất quân của địch` → lên ngựa chạy → thấy địch trong tầm → `[TK-NGUA] gap dich - xuong ngua` → đánh; hết địch, đường xa → lên lại sau ≥ 6 s.
+
+## 9. ĐỢT 5 (04/09 đêm) — VỊ TRÍ ĐỊCH TỪ MÁY CHỦ → `CoreServer.dll.moi a0361438` + `CoreClient.dll.moi ca5adaed` (**swap CẢ HAI**)
+
+Chủ: *"không có cách nào xác định vị trí địch ở trong map à? kiểu như bot xác định địch bằng màu tên"* → *"oke hãy làm - và phản biện để có thể tìm thấy địch và không tốn nhiều tài nguyên"*.
+
+**Vì sao cần máy chủ:** client chỉ nhận NPC trong `MAX_SYNC_RANGE` 40 ô (`KNpc.cpp:763`); bot phía máy chủ tìm địch bằng cách quét `Player[]` theo camp (`KPlayerBot.cpp:9661 pb_TkTimDichGanNhat`). **Làm theo tiền lệ danh bạ sạp `[SapMap]`** (r5e, `KProtocolProcess::c2sNeedCount`): gói sẵn có `c2s_playerneedcount` với `dwId` đặc biệt, máy chủ trả bằng tin Hệ Thống riêng người hỏi qua `mgs2player_from_c.lua` → **không gói mới, không đổi struct**, hai bên lệch bản không sao (client cũ không hỏi; server cũ không trả → client rảo như đợt 1–4).
+
+| Phía | Tệp | Việc |
+|---|---|---|
+| chung | `KDaTauCap.h` | `TK_DICH_ID 0x7D1C0A11`, `TK_DICH_MAP 379`, `TK_DICH_SO 6`; `extern g_szTKDich[256]`, `g_uTKDichSeq` (ngoài struct, bố cục `KDaTauCapture` không đổi; `S3Client` không dùng → Game.exe giữ nguyên) |
+| server | `KNpcSet.cpp` `SetID` | bỏ qua `TK_DICH_ID` như `DATAU_SAPMAP_ID` (không NPC thật nào mang id này) |
+| server | `KProtocolProcess.cpp` `c2sNeedCount` | nhánh `dwId == TK_DICH_ID`: chặn **5 s/người** theo chủ khe (`GAME_FPS*5`, reset khi đổi chủ khe như SapMap) → chỉ trả khi người hỏi ở subworld có `m_SubWorldID == 379` và `m_CurrentCamp` 1/2 → quét `Player[1..MAX_PLAYER)`: cùng subworld, camp đối phương (3 − camp mình), còn sống (`do_death/do_revive/life ≤ 0` loại), **ngoài 2 vòng hậu doanh R 1.440 mps** quanh (1229,3561)/(1689,3074) (trong đó có trap vào trại, không tới được) → giữ **6 gần nhất** (chèn vào mảng nhỏ đã sắp) → `"[TKDich] id:x:y ..."` toạ độ Ô, ≤ 146 byte (< trần 200/BYTE 256 của kênh chat) → `ExecuteScript(mgs2player_from_c.lua)` = `Msg2Player`. |
+| client | `KProtocolProcess.cpp` (kênh chat, sender "Hệ Thống") | `"[TKDich]"` → chép vào `g_szTKDich`, `++g_uTKDichSeq`, **ẩn khỏi khung chat** (`bDTSapMap = true`, cùng SapMap), không vào vòng 4 khe tin |
+| client | `CoreShell.cpp` | `TK_DichNhan` (mỗi nhịp `TK_Process`: chụp trả lời đúng lúc đến, parse `%u:%d:%d`, 0 mục → quên "điểm cuối thấy địch" + bỏ chuyến khu xuất quân); `TK_DichHoi` (hỏi mỗi **5,5 s**, chỉ khi không thấy địch); `TK_DichXa` xen vào `TKP_FIGHT` **trước `TK_RaoDi`**: chọn mục gần nhất chưa bỏ, không bị loại, `FindPath == 1` (không → bỏ mục, thử mục khác) → `DT_WalkTo`; vào tới Tầm nhìn PK mà tầng săn/PK vẫn không thấy (địch đã dời) → bỏ mục, **hỏi lại ngay**; kẹt 3 s → bỏ mục; trả lời cũ > **15 s** → về rảo. Báo *"Máy chủ báo địch cách N ô - tiến tới."* (30 s/lần). Log `[TK-DICH]`. |
+
+**Chi phí:** mỗi người hỏi ≤ 1 lần/5 s → máy chủ một vòng so sánh 1.500 khe (~vài chục µs) + một `ExecuteScript` (như SapMap) + tin ~110 byte; 50 người dùng WAuto trong trận = 10 vòng quét/giây, không đáng kể. Client: parse chuỗi ngắn + tối đa 6 `FindPath` khi đổi mục.
+
+**Thứ tự `TKP_FIGHT` sau đợt 5:** tướng (nếu Ưu tiên) → người khác màu trong tầm PK có đường nhìn → săn người trong vùng đồng bộ → lính → **vị trí địch máy chủ báo** → điểm cuối thấy địch → khu xuất quân địch → rảo ô. Gặp địch trên đường: các tầng trên cướp quyền; địch chết: máy chủ không trả nữa, 5,5 s sau đổi mục.
+
+**Swap:** (1) tắt `GameServer.exe` → `bin\server\ChayGameServer.bat` (đổi `CoreServer.dll.moi` → `.dll`, giữ `.truoc` = `b68899b2`); (2) thoát Game.exe → `ChoiGame.bat`. Kiểm: `grep -c "[TKDich]" CoreServer.dll` = 1 và md5 client `ca5adaed`. **Nghiệm thu:** ra trại không thấy ai → trong ≤ 6 s có `[TK-DICH] server tra N dich: [TKDich] id:x:y ...` rồi `[TK-DICH] toi dich id=…` và nhân vật chạy thẳng tới; tới nơi có địch thì `[TK-SAN]`/`[PK-…]` tiếp quản. Server cũ → không có dòng `[TK-DICH] server tra`, auto vẫn rảo như trước.

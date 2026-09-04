@@ -15,6 +15,13 @@
 // KPlayerChat::SendSystemInfo kep = MAX_SENTENCE_LENGTH (256) -> 256 TRAN VE 0
 // lam mat trang ca goi. Giu duoi 200 cho chac.
 #define DATAU_SAPMAP_MAXLEN 200
+// (04/09 WAuto Tong Kim) id DAT CHO goi xin VI TRI DICH ca map tran (cung goi c2s_playerneedcount).
+// Dung o: KNpcSet::SetID (bo qua), KProtocolProcess::c2sNeedCount (server tra "[TKDich] id:x:y ..."
+// toa do O, TK_DICH_SO dich khac camp gan nhat con song ngoai hau doanh), KProtocolProcess s2c chat
+// (client chup vao g_szTKDich), CoreShell TK_DichXa (client hoi 5,5 giay/lan khi khong thay dich).
+#define TK_DICH_ID		0x7D1C0A11u
+#define TK_DICH_MAP		379		// map tran Tong Kim (lib_tktc.lua MAP_TK_TC)
+#define TK_DICH_SO		6		// so dich gan nhat tra ve moi lan
 
 struct KDaTauCapture
 {
@@ -63,5 +70,9 @@ struct KDaTauCapture
 };
 
 extern KDaTauCapture g_sDTCap;
+
+// (04/09) vi tri dich Tong Kim server tra ve - ngoai struct de bo cuc KDaTauCapture khong doi
+extern char g_szTKDich[256];
+extern unsigned int g_uTKDichSeq;
 
 #endif // KDATAUCAP_H

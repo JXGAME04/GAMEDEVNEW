@@ -7539,6 +7539,153 @@ static int TK_RaoKet(int nMuc, int nX, int nY, UINT uCurTime)
 	return (int)(uCurTime - s_uTKRaoKetT) > TK_RAO_KET_MS;
 }
 
+// ===== (04/09, dot 5) VI TRI DICH TU MAY CHU =====
+// Chu game: "khong co cach nao xac dinh vi tri dich o trong map a? kieu nhu bot xac dinh dich bang
+// mau ten". Client chi thay dich trong MAX_SYNC_RANGE 40 o nen HOI MAY CHU theo tien le danh ba sap
+// [SapMap]: gui c2s_playerneedcount voi TK_DICH_ID, may chu tra "[TKDich] id:x:y ..." (o) TK_DICH_SO
+// dich khac camp gan nhat con song ngoai hau doanh (KProtocolProcess.cpp c2sNeedCount), chan 5 giay
+// moi nguoi. Client: hoi moi TK_DICH_HOI_MS khi KHONG thay dich (TKP_FIGHT truoc TK_RaoDi), chon dich
+// gan nhat co FindPath == 1 roi di toi; toi tam PK ma van khong thay (no da doi cho) -> bo muc, hoi
+// lai; ket 3 giay -> bo; tra loi cu hon TK_DICH_CU_MS (server cu khong tra) -> ve cach cu (rao).
+// Tren duong gap dich: tang san / may PK cuop quyen (thu tu TKP_FIGHT); dich chet: server khong tra.
+#define TK_DICH_HOI_MS	5500		// ms: nhip hoi (server chan 5 giay/nguoi - GAME_FPS*5)
+#define TK_DICH_CU_MS	15000		// ms: tra loi cu hon the = khong dung
+static UINT  s_uTKDichSeen = 0;		// g_uTKDichSeq da xem
+static UINT  s_uTKDichHoiT = 0;		// moc duoc hoi lan tiep
+static UINT  s_uTKDichTraT = 0;		// moc nhan tra loi cuoi (0 = chua)
+static int   s_nTKDichSo = 0;
+static DWORD s_aTKDichID[TK_DICH_SO];
+static int   s_aTKDichX[TK_DICH_SO], s_aTKDichY[TK_DICH_SO];	// mps
+static int   s_aTKDichBo[TK_DICH_SO];	// 1 = da toi ma khong thay / ket / khong duong - bo
+static int   s_nTKDichChon = -1;
+static UINT  s_uTKDichTickT = 0;
+static UINT  s_uTKDichMsgT = 0;
+
+static void TK_DichHoi(UINT uCurTime)
+{
+	if (s_uTKDichHoiT && (int)(uCurTime - s_uTKDichHoiT) < 0)
+		return;
+	s_uTKDichHoiT = uCurTime + TK_DICH_HOI_MS;
+	SendClientCmdGetCount(TK_DICH_ID);
+}
+
+// goi MOI NHIP TK_Process de tra loi duoc chup dung luc den (vi tri co tuoi)
+static void TK_DichNhan(UINT uCurTime)
+{
+	if (g_uTKDichSeq == s_uTKDichSeen)
+		return;
+	s_uTKDichSeen = g_uTKDichSeq;
+	s_uTKDichTraT = uCurTime ? uCurTime : 1;
+	s_nTKDichSo = 0;
+	s_nTKDichChon = -1;
+	const char* p = g_szTKDich + 8;
+	while (s_nTKDichSo < TK_DICH_SO)
+	{
+		while (*p == ' ')
+			++p;
+		if (!*p)
+			break;
+		unsigned int id = 0;
+		int cx = 0, cy = 0;
+		if (sscanf(p, "%u:%d:%d", &id, &cx, &cy) != 3)
+			break;
+		s_aTKDichID[s_nTKDichSo] = (DWORD)id;
+		s_aTKDichX[s_nTKDichSo] = cx * 32 + 16;
+		s_aTKDichY[s_nTKDichSo] = cy * 32 + 16;
+		s_aTKDichBo[s_nTKDichSo] = 0;
+		++s_nTKDichSo;
+		while (*p && *p != ' ')
+			++p;
+	}
+	AUTOLOG("[TK-DICH] server tra %d dich: %s", s_nTKDichSo, g_szTKDich);
+	if (s_nTKDichSo == 0)
+	{	// khong con dich ngoai hau doanh: quen diem cuoi thay dich, khong di khu xuat quan nua - rao
+		s_uTKRaoLastT = 0;
+		s_nTKXQDa = 1;
+	}
+}
+
+static int TK_DichChonMuc(int nPlayerIdx, int nX, int nY, long* pnD)
+{
+	int nBest = -1;
+	long nBestD = 0x7fffffff;
+	for (int i = 0; i < s_nTKDichSo; ++i)
+	{
+		if (s_aTKDichBo[i])
+			continue;
+		if (Player[nPlayerIdx].m_mAutoExcludeNpcID.find(s_aTKDichID[i]) != Player[nPlayerIdx].m_mAutoExcludeNpcID.end())
+			continue;
+		const long d = g_GetDistance(nX, nY, s_aTKDichX[i], s_aTKDichY[i]);
+		if (d < nBestD)
+		{
+			nBestD = d;
+			nBest = i;
+		}
+	}
+	if (pnD)
+		*pnD = nBestD;
+	return nBest;
+}
+
+// tra 1 = dang di toi dich do may chu bao; 0 = khong co du lieu / het muc -> ben goi rao nhu cu
+static int TK_DichXa(int nPlayerIdx, const autoData* pAp, int nX, int nY, UINT uCurTime)
+{
+	if ((int)(uCurTime - s_uTKDichTickT) > 1500)
+		s_nTKRaoKetMuc = 0;		// vua danh / san xong quay lai -> do ket lai tu dau
+	s_uTKDichTickT = uCurTime;
+	TK_DichHoi(uCurTime);
+	if (!s_uTKDichTraT || (int)(uCurTime - s_uTKDichTraT) > TK_DICH_CU_MS)
+		return 0;
+	int nTam = pAp->nPKVision;
+	if (nTam < 100)
+		nTam = 100;
+	else if (nTam > 1200)
+		nTam = 1200;
+	if (s_nTKDichChon >= 0 && s_nTKDichChon < s_nTKDichSo)
+	{
+		const int i = s_nTKDichChon;
+		const int tx = s_aTKDichX[i], ty = s_aTKDichY[i];
+		const int nKet = TK_RaoKet(4, nX, nY, uCurTime);
+		if (g_GetDistance(nX, nY, tx, ty) <= nTam || nKet)
+		{	// da vao tam PK ma tang danh / tang san khong thay (no da doi cho), hoac ket -> bo muc nay
+			s_aTKDichBo[i] = 1;
+			s_nTKDichChon = -1;
+			s_nTKRaoKetMuc = 0;
+			AUTOLOG("[TK-DICH] toi (%d,%d) khong thay id=%u (ket=%d) - doi muc / hoi lai. me=(%d,%d)", tx, ty, (unsigned int)s_aTKDichID[i], nKet, nX, nY);
+			if (!nKet)
+				s_uTKDichHoiT = 0;		// hoi lai ngay (server van chan 5 giay - lan sau tu hoi tiep)
+		}
+		else
+		{
+			DT_WalkTo(nPlayerIdx, tx, ty, TK_O(4), uCurTime);
+			return 1;
+		}
+	}
+	long nD = 0;
+	int nBest = TK_DichChonMuc(nPlayerIdx, nX, nY, &nD);
+	while (nBest >= 0 && SubWorld[0].FindPath(s_aTKDichX[nBest], s_aTKDichY[nBest]) != 1)
+	{	// 2 = dich khong toi duoc (vung kin) - bo muc nay, chon muc khac (toi da TK_DICH_SO lan)
+		AUTOLOG("[TK-DICH] khong co duong toi id=%u (%d,%d) - bo", (unsigned int)s_aTKDichID[nBest], s_aTKDichX[nBest], s_aTKDichY[nBest]);
+		s_aTKDichBo[nBest] = 1;
+		nBest = TK_DichChonMuc(nPlayerIdx, nX, nY, &nD);
+	}
+	if (nBest < 0)
+		return 0;
+	s_nTKDichChon = nBest;
+	s_nTKRaoKetMuc = 0;
+	if (!s_uTKDichMsgT || (int)(uCurTime - s_uTKDichMsgT) > 30000)
+	{
+		s_uTKDichMsgT = uCurTime ? uCurTime : 1;
+		char szDich[160];
+		sprintf(szDich, "<color=Cyan>M¸y chñ b¸o ®Þch c¸ch %d « - tiÕn tíi.", (int)(nD / 32));
+		TK_Msg(nPlayerIdx, szDich);
+	}
+	AUTOLOG("[TK-DICH] toi dich id=%u (%d,%d) xa=%ld me=(%d,%d) muc %d/%d", (unsigned int)s_aTKDichID[nBest], s_aTKDichX[nBest], s_aTKDichY[nBest], nD, nX, nY, nBest, s_nTKDichSo);
+	DT_WalkTo(nPlayerIdx, s_aTKDichX[nBest], s_aTKDichY[nBest], TK_O(4), uCurTime);
+	return 1;
+}
+// ===== HET VI TRI DICH TU MAY CHU =====
+
 // khong thay dich: di rao. Tra 1 = dang rao (da phat lenh di), 0 = khong co luoi.
 static int TK_RaoDi(int nPlayerIdx, int nX, int nY, UINT uCurTime)
 {
@@ -7742,6 +7889,7 @@ static void TK_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 	s_uTKPosT = 0;		// (03/09 toi, dot 3) doi pha (hoi sinh / ra trai) la nhay hop le - khong tinh la bi nem ve
 	s_nTKXQDa = 0;		// (03/09 dem, dot 4) luot ra tran moi -> di lai khu xuat quan dich
 	s_nTKXQChon = -1;
+	s_nTKDichChon = -1;	// (04/09, dot 5) chon lai muc do may chu bao
 	ea.uTKPhaseT = uCurTime;
 	ea.uTKNext = uCurTime + 400;
 	ea.uTKDlgSeen = g_sDTCap.uDlgSeq;
@@ -8596,6 +8744,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			AUTOLOG("[TK-CHO] thoai: tran da bat dau - xuat quan. me=(%d,%d)", nX, nY);
 		}
 	}
+	TK_DichNhan(uCurTime);	// (04/09, dot 5) chup tra loi vi tri dich dung luc den
 	const int nLoaMo = (nTinMo || uCurTime < ea.uTKMoT);
 	int nSlot = -1;
 	const int nTrongGio = TK_KhungGio(pAp, &nSlot);
@@ -9306,6 +9455,9 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// id cu ma vung vao khong khi. Van tra 2 de con danh tra khi bi danh.
 		ea.uNpcID = 0;
 		s_uTKSanQuyen = 0;
+		// (04/09, dot 5) vi tri dich do MAY CHU bao (ngoai tam nhin client) - truoc rao map
+		if (TK_DichXa(nPlayerIdx, pAp, nX, nY, uCurTime))
+			return 2;
 		if (TK_RaoDi(nPlayerIdx, nX, nY, uCurTime))
 			return 2;
 		// chua co luoi A* (map chua nap xong) -> cach cu: bang toa do binh doan ben dich
