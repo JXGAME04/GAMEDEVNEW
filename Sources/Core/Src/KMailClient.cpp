@@ -214,7 +214,9 @@ int LuaMail_UpdateMailDetail(Lua_State* L)
 				pA->nCount = atoi(szField[7]);
 				if (pA->nCount <= 0)
 					pA->nCount = 1;
-				pA->Item.m_bStack = (BYTE)(pA->nCount > 255 ? 255 : pA->nCount);
+				// [A8 04/09] m_bStack la BYTE: so luong > 255 se bi cat (500 -> 255). Dat 1 de engine
+				// KHONG ve so tren o, phia UI se tu ve nhan so THAT (UiMail.cpp).
+				pA->Item.m_bStack = (BYTE)(pA->nCount > 255 ? 1 : pA->nCount);
 				pA->Item.m_wVersion = (WORD)g_SubWorldSet.GetGameVersion();
 				pA->Item.m_nNature = 0;
 				pA->Item.m_nGoldId = 0;

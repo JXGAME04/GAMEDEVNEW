@@ -341,7 +341,8 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 		m_IconBox.Show();
 	// [DAUGIA 04/09 D13] giong hop thu: o vat pham that da duoc engine ve san so chong,
 	// chi ve nhan so khi KHONG dung duoc o vat pham (khong thi hien hai so chong nhau).
-	if (p->nCount > 1 && m_nTempItemIdx <= 0)
+	// [A8 04/09] o vat pham chi ve duoc so <= 255; tren nguong do KAuctionClient dat stack = 1
+	if (p->nCount > 1 && (m_nTempItemIdx <= 0 || p->nCount > 255))
 	{
 		sFmtMoney(sz, sizeof(sz), p->nCount);
 		m_IconCount.SetText(sz);

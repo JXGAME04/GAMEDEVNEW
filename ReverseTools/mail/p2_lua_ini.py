@@ -208,7 +208,7 @@ def build_ini(name):
         # [D4 03/09] chu: dat duoi bieu tuong Bau Cua = UiPlayerBar.ini [SpringGame] Left=765 Top=243 50x50 (800x600);
         # 1024: UiMail.cpp neo x = 1024 - 30 nhu UiPlayerBar.cpp
         s = rep1(s, "Left=648", "Left=765", "icon left")
-        s = rep1(s, "Top=72", "Top=296", "icon top")
+        s = rep1(s, "Top=72", "Top=322", "icon top")	# [A10 04/09] nhuong 296 cho bieu tuong DAU GIA (Bau Cua 243, dau gia 296, thu 322)
     return s
 
 
