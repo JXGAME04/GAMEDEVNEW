@@ -364,6 +364,12 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 // ---------------------------------- 处理绘制列表 -------------------------------
 	nPos = 0;
 
+	// [MAUBUFF 04/09] m_cDrawFile la mang THANH VIEN: khoi ve than nguoi / hieu ung trang bi
+	// doi o nay sang ALPHA_COLOR_ADJUST + mau doc/bong/dong bang roi khong tra lai,
+	// nen hieu ung buff an theo mau con sot => moi lan buff ra mot mau khac.
+	// Tra ve dung mac dinh cua Init: ALPHA + alpha 255 (tang hinh van mo).
+	m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+	m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 	strcpy(m_cDrawFile[nPos].szImage, this->m_cNpcShadow.m_szName);
 	m_cDrawFile[nPos].uImage = m_cNpcShadow.m_dwNameID;
 	m_cDrawFile[nPos].nFrame = this->m_cNpcShadow.m_nCurFrame;
@@ -396,6 +402,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 			//	tmp1 = i;
 			//	continue;
 			//}
+			// [MAUBUFF 04/09] tra kieu ve goc (xem ghi chu o cho dau tien)
+			m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[i].m_SprContrul.m_szName);
 			m_cDrawFile[nPos].uImage = m_cStateSpr[i].m_SprContrul.m_dwNameID;
 			m_cDrawFile[nPos].nFrame = m_cStateSpr[i].m_SprContrul.m_nCurFrame;
@@ -406,6 +415,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 		}
 	}
 	/*if (tmp1 != -1 && tmp2 != -1 && tmp3 != -1 && tmp != -1) {
+		// [MAUBUFF 04/09] tra kieu ve goc (xem ghi chu o cho dau tien)
+		m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+		m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 		strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp].m_SprContrul.m_szName);
 		m_cDrawFile[nPos].uImage = m_cStateSpr[tmp].m_SprContrul.m_dwNameID;
 		m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp].m_SprContrul.m_nCurFrame;
@@ -422,6 +434,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 		//m_cDrawFile[nPos].oPosition.nZ = 0;
 		//nPos++;
 
+		// [MAUBUFF 04/09] tra kieu ve goc (xem ghi chu o cho dau tien)
+		m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+		m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 		strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp3].m_SprContrul.m_szName);
 		m_cDrawFile[nPos].uImage = m_cStateSpr[tmp3].m_SprContrul.m_dwNameID;
 		m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp3].m_SprContrul.m_nCurFrame;
@@ -440,6 +455,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 	}
 	else {
 		if (tmp1 != -1) {
+			// [MAUBUFF 04/09] tra kieu ve goc (xem ghi chu o cho dau tien)
+			m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp1].m_SprContrul.m_szName);
 			m_cDrawFile[nPos].uImage = m_cStateSpr[tmp1].m_SprContrul.m_dwNameID;
 			m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp1].m_SprContrul.m_nCurFrame;
@@ -449,6 +467,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 			nPos++;
 		}
 		if (tmp3 != -1) {
+			// [MAUBUFF 04/09] tra kieu ve goc (xem ghi chu o cho dau tien)
+			m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp3].m_SprContrul.m_szName);
 			m_cDrawFile[nPos].uImage = m_cStateSpr[tmp3].m_SprContrul.m_dwNameID;
 			m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp3].m_SprContrul.m_nCurFrame;
@@ -458,6 +479,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 			nPos++;
 		}
 		if (tmp2 != -1) {
+			// [MAUBUFF 04/09] tra kieu ve goc (xem ghi chu o cho dau tien)
+			m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp2].m_SprContrul.m_szName);
 			m_cDrawFile[nPos].uImage = m_cStateSpr[tmp2].m_SprContrul.m_dwNameID;
 			m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp2].m_SprContrul.m_nCurFrame;
@@ -467,6 +491,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 			nPos++;
 		}
 		if (tmp != -1) {
+			// [MAUBUFF 04/09] tra kieu ve goc (xem ghi chu o cho dau tien)
+			m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp].m_SprContrul.m_szName);
 			m_cDrawFile[nPos].uImage = m_cStateSpr[tmp].m_SprContrul.m_dwNameID;
 			m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp].m_SprContrul.m_nCurFrame;
@@ -486,6 +513,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 			if (m_cStateSpr[i].m_nBackStart <= m_cStateSpr[i].m_SprContrul.m_nCurFrame && 
 				m_cStateSpr[i].m_SprContrul.m_nCurFrame < m_cStateSpr[i].m_nBackEnd)
 			{
+				// [MAUBUFF 04/09] tra kieu ve goc (xem ghi chu o cho dau tien)
+				m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+				m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 				strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[i].m_SprContrul.m_szName);
 				m_cDrawFile[nPos].uImage = m_cStateSpr[i].m_SprContrul.m_dwNameID;
 				m_cDrawFile[nPos].nFrame = m_cStateSpr[i].m_SprContrul.m_nCurFrame;
@@ -548,18 +578,22 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 		{
 			if (m_nSortTable[i] >= 0 && m_nSortTable[i] < MAX_PART)
 			{
+				// [MAUBUFF 04/09] dung nPos, KHONG dung i: anh gan vao m_cDrawFile[nPos] nen kieu ve/mau
+				// cung phai vao dung o do. Bang thu tu co 'lo' (i != nPos) thi than nguoi nhan mau
+				// cua o khac, con mau dinh cho no roi vao o dang giu hieu ung buff - dung loi ma
+				// chu thich o khoi TRANG BI ngay tren da sua, khoi nay bi bo sot.
 				if (m_ulAdjustColorId > 0 && m_ulAdjustColorId <= g_ulAdjustColorCount)
 				{
-					m_cDrawFile[i].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST;
-					m_cDrawFile[i].Color.Color_dw = g_pAdjustColorTab[m_ulAdjustColorId - 1];
+					m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST;
+					m_cDrawFile[nPos].Color.Color_dw = g_pAdjustColorTab[m_ulAdjustColorId - 1];
 				}
 				else
 				{
-					m_cDrawFile[i].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+					m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
 					if (Npc[nNpcIdx].m_HideState.nTime)
-						m_cDrawFile[i].Color.Color_b.a = START_BLUR_ALPHA;
+						m_cDrawFile[nPos].Color.Color_b.a = START_BLUR_ALPHA;
 					else
-						m_cDrawFile[i].Color.Color_b.a = 255;
+						m_cDrawFile[nPos].Color.Color_b.a = 255;
 				}
 
 				strcpy(m_cDrawFile[nPos].szImage, m_cNpcImage[m_nSortTable[i]].m_szName);
@@ -588,6 +622,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 					|| strstr(m_cStateSpr[i].m_SprContrul.m_szName, "haoquang\\tim.spr") != NULL //skill quanh nguoi thieu lam
 					|| strstr(m_cStateSpr[i].m_SprContrul.m_szName, "kl_06") != NULL) // skill quanh nguoi con lon
 					gb_skill_150_draw = false;
+				// [MAUBUFF 04/09] tra kieu ve goc (xem ghi chu o cho dau tien)
+				m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+				m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 				strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[i].m_SprContrul.m_szName);
 				m_cDrawFile[nPos].uImage = m_cStateSpr[i].m_SprContrul.m_dwNameID;
 				m_cDrawFile[nPos].nFrame = m_cStateSpr[i].m_SprContrul.m_nCurFrame;
@@ -652,6 +689,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 	{
 		if (m_cStateSpr[i].m_nID)
 		{
+			// [MAUBUFF 04/09] tra kieu ve goc (xem ghi chu o cho dau tien)
+			m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
 			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[i].m_SprContrul.m_szName);
 			m_cDrawFile[nPos].uImage = m_cStateSpr[i].m_SprContrul.m_dwNameID;
 			m_cDrawFile[nPos].nFrame = m_cStateSpr[i].m_SprContrul.m_nCurFrame;
