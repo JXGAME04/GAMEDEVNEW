@@ -12,7 +12,17 @@ Gương script cây chạy thật: `serverscript_jx2\mail\{server,client}\`.
 |---|---|---|
 | 1 | Kênh ScriptProtocol (ObjBuffer) thật: `Core\Src\KScriptProtocol.{h,cpp}`, gói `s2c_scriptdata`/`c2s_scriptdata`, ObjBuffer cho client, `protocol.lua` + 12 tên MAIL, `protocol_def_c.lua`, ECHO thử | 258f0948 |
 | 2 | Cửa sổ thư client: `S3Client\Ui\UiCase\UiMail.{h,cpp}`, `Core\Src\KMailClient.{h,cpp}`, `KMailUiDef.h`, `script\ui\uimail.lua` (bản 2.0), `script\mail\maildef.lua`, 6 ini `ui\Ui3\mail\` | 2b1aff9e |
-| 3 | Server: `Core\Src\KMailServer.{h,cpp}` (bảng MySQL `mail`), `script\mail\mailmanager.lua`, `mailpoll.lua`, 6 handler trong `protocol_def_gs.lua`, móc `playerlogin.lua`, NPC Tín Sứ `dichquan.lua` mục "Nhận thư", lệnh bài admin 2 mục gửi thư thử | (xem git log) |
+| 3 | Server: `Core\Src\KMailServer.{h,cpp}` (bảng MySQL `mail`), `script\mail\mailmanager.lua`, `mailpoll.lua`, 6 handler trong `protocol_def_gs.lua`, móc `playerlogin.lua`, NPC Tín Sứ `dichquan.lua` mục "Nhận thư", lệnh bài admin 2 mục gửi thư thử | c72aaa8c (main 5c8b8736) |
+
+**Bộ `.moi` cuối (16:50, sau khi wauto-6a gộp S13i/j — cả ba build từ ≥ 5c8b8736, chứa đủ hệ thư):**
+
+| Tệp | md5 | Kích thước |
+|---|---|---|
+| `bin\server\CoreServer.dll.moi` | bad8e293 | 18.298.368 |
+| `bin\client\CoreClient.dll.moi` | f2ad5ca3 | 2.507.776 |
+| `bin\client\Game.exe.moi` | 24762253 | 1.399.808 |
+
+(Bản build thuần đợt 3 của nhánh mail-0309: cca51fdf / e4ac910a / 24762253 — đã bị hai tệp trên thay bằng superset.)
 
 Swap: thoát game, tắt GameServer, chạy `ChayGameServer.bat` + `ChoiGame.bat` (đổi `CoreServer.dll.moi`, `CoreClient.dll.moi`, `Game.exe.moi`).
 Script đã nằm sẵn ở cây chạy thật, nạp khi khởi động lại.
@@ -76,8 +86,15 @@ Người nhận đang online được báo ngay; offline nhận lúc đăng nh�
 
 ## 5. Thử nghiệm
 
+Đã swap 16:47 03/09 (bad8e293 / f2ad5ca3 / 24762253). Lần thử đầu của chủ (16:49, 16:50) báo `ScriptError 4 ... lenhbaiadmin.lua
+cFuncName:(xu/exp/mailtest1)`: nhãn menu "Gửi thư thử: tiền/xu/exp/mailtest1" có dấu `/` thừa — Say tách tên hàm ở dấu `/` ĐẦU TIÊN
+(luật cũ: cấm `/` `|` trong nhãn). Đã sửa thành "Gửi thư thử: tiền, xu, exp" (commit bfa7cd24). Nạp lại script mà không khởi động lại
+GameServer: gõ vào ô chat `?gm RLS \script\item\lenhbaiadmin.lua` (`KGMCommand.cpp`, mở bằng `_CHAT_SCRIPT_OPEN` trong `GameDataDef.h`;
+🔴 lệnh này KHÔNG kiểm tra quyền GM — mọi người chơi đều gõ được `?gm ds <lua>`, cần chặn trước khi mở server thật).
+
+0. Nạp lại script lệnh bài (chat `?gm RLS \script\item\lenhbaiadmin.lua`) hoặc khởi động lại GameServer.
 1. Lệnh bài admin → "Thu kenh ScriptProtocol (ECHO)": khung thoại `[ECHO] xin chao tu may chu` + chat `May chu da nhan ECHO: ...`.
-2. Lệnh bài admin → "Gửi thư thử: tiền/xu/exp" → chat "Đã gửi thư thử (id N)"; bồ câu góc phải nhấp nháy.
+2. Lệnh bài admin → "Gửi thư thử: tiền, xu, exp" → chat "Đã gửi thư thử (id N)"; bồ câu góc phải nhấp nháy.
 3. Đến **Tín Sứ** (Quan Dịch Trạm) bất kỳ thành nào → "Nhận thư" → cửa sổ Hộp thư: hàng thư "Nhà phát hành / Thư thử hệ thống thư / 30 ngày" (kẹp đính kèm).
 4. Bấm hàng → chi tiết (người gửi, tiêu đề, nội dung 3 dòng, 3 ô thưởng) → "Nhận" → chat "Đã nhận đính kèm trong thư." + Ngân lượng/xu/exp tăng; bấm Nhận lần 2 → "Đính kèm đã được nhận rồi!".
 5. "Gửi thư thử: có vật phẩm" → ô vật phẩm (Lệnh bài Bắc Đẩu 6,1,4139) có chú giải khi rê chuột → Nhận → vật phẩm vào túi.

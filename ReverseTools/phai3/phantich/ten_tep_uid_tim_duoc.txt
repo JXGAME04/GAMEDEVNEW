@@ -1,0 +1,15 @@
+\settings\item\004\meleeres.txt	F14DC45E	update01.pak:422,update03.pak:422
+\settings\item\004\goldequipres.txt	988746DE	update01.pak:1657
+\settings\item\004\armorres.txt	922F022F	update01.pak:2366,update03.pak:2366
+\settings\item\004\helmres.txt	82155E61	update01.pak:985,update03.pak:985
+\settings\item\meleeres.txt	AB5DCF5D	slistcache.pak:642,update01.pak:422
+\settings\item\goldequipres.txt	DBA401C3	slistcache.pak:74898,update01.pak:1657,update03.pak:3514
+\settings\item\rangeres.txt	F446BCCA	slistcache.pak:307,update01.pak:229
+\settings\clientweaponskill.txt	979CC072	update01.pak:755
+\settings\obj\objdata.txt	40344F1A	serverlist.pak:92775,slistcache.pak:94392,slistfree.pak:91603,update01.pak:84231,update03.pak:91011,update04.pak:90104
+\script\skill\advancedskill.lua	59FDDC3B	slistcache.pak:14748
+\settings\skilltemplate.txt	40F41EC4	slistcache.pak:4479,update01.pak:4489
+\settings\item\004\questkey.txt	9D21F802	slistcache.pak:236152,slistfree.pak:272292,update01.pak:120315,update03.pak:203790,update04.pak:231964
+\settings\item\004\helm.txt	AE874B4E	update01.pak:29837,update03.pak:26793
+\settings\item\004\armor.txt	EBF0DE8B	update01.pak:57423,update03.pak:57685
+\script\skill\special\远程物理攻击.lua	6CADC69E	update01.pak:688

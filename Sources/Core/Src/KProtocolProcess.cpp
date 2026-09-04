@@ -2530,6 +2530,18 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 		// nay; cua so truoc day chi mo o nhanh S8-NAN (486ms sau) nen lenh bi vut -> thang
 		// bung 8 o moi ~0,6s (11 cu / 5 cu). Mo cua so ngay tai day; gac echo giu nguyen.
 		S13_ClearCmd(nNpcIdx);	// [S13] lenh dang giu la cua cho cu
+		// [S13i 03/09] Dang di chuyen luc bi dat lai (phu ve/doi map): m_Doing=do_run + m_DesX/Y van la DICH CUA MAP CU
+		// -> OnRun/ServeMove chay tiep toi dich cu trong map moi ~250 mps roi bi S8 nan lui (do phien S13e t=751604180:
+		// +404 ms E4_MOVE_PATH des=(43493,104034) cua map 227 khi da o map 11, +692 ms S8-NAN 257). Dung lai tai cho
+		// (DoStand la private -> SendCommand(do_stand): ProcCommand khung ke DoStand; lenh dat-di cua script toi sau
+		// van vao khe di chuyen S13 va thi hanh ngay sau do_stand trong cung luot).
+		if (Npc[nNpcIdx].m_Doing == do_run || Npc[nNpcIdx].m_Doing == do_walk || Npc[nNpcIdx].m_Doing == do_runattack)
+		{
+			// [S13j] dang LUOT (DoRunAttack tat AI): nhanh AI-tat cua ProcCommand vut do_stand -> bat AI de khung ke DoStand
+			if (Npc[nNpcIdx].m_Doing == do_runattack)
+				Npc[nNpcIdx].SetProcessAI(TRUE);
+			Npc[nNpcIdx].SendCommand(do_stand, 0, 0, 0);
+		}
 		g_uS12CuaSoSelf = timeGetTime();
 		AUTOLOG("[S12-CUA] mo cua so theo-lenh tai dat-lai sv=(%d,%d) t=%u", (int)pSync->m_dwMapX, (int)pSync->m_dwMapY, SubWorld[0].m_dwCurrentTime);
 #endif
@@ -2564,6 +2576,18 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 		SubWorld[0].m_Region[Npc[nNpcIdx].m_RegionIndex].AddRef(Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, obj_npc);
 		memset(&Npc[nNpcIdx].m_sSyncPos, 0, sizeof(Npc[nNpcIdx].m_sSyncPos));
 		Npc[nNpcIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;
+#ifndef _SERVER
+		// [S13i 03/09] nhu nhanh vaolandau: bi dat lai toi vung chua nap ma dang di chuyen -> dich cu vo nghia, dung lai.
+		// [S13j] CUNG map nen LoadMap KHONG StopPath -> bo theo-duong (KSubWorld::Breathe) moi khung gui lai do_run theo
+		// duong cu de len do_stand -> phai xoa duong o day; dang luot thi bat AI (xem nhanh vaolandau).
+		SubWorld[0].StopPath();
+		if (Npc[nNpcIdx].m_Doing == do_run || Npc[nNpcIdx].m_Doing == do_walk || Npc[nNpcIdx].m_Doing == do_runattack)
+		{
+			if (Npc[nNpcIdx].m_Doing == do_runattack)
+				Npc[nNpcIdx].SetProcessAI(TRUE);
+			Npc[nNpcIdx].SendCommand(do_stand, 0, 0, 0);
+		}
+#endif
 
 		return;
 	}

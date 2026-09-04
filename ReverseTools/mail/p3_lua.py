@@ -498,7 +498,7 @@ def patch_lenhbai():
     a1 = '\t\t"Thu kenh ScriptProtocol (ECHO)/specho",\t-- [MAIL 03/09]'
     assert s.count(a1) == 1, "lenhbai: anchor ECHO"
     s = s.replace(a1, a1 + e +
-        '\t\t"' + V("Gửi thư thử: tiền/xu/exp") + '/mailtest1",\t-- [MAIL 03/09]' + e +
+        '\t\t"' + V("Gửi thư thử: tiền, xu, exp") + '/mailtest1",\t-- [MAIL 03/09]' + e +
         '\t\t"' + V("Gửi thư thử: có vật phẩm") + '/mailtest2",\t-- [MAIL 03/09]')
     tail = e.join([
         "",
