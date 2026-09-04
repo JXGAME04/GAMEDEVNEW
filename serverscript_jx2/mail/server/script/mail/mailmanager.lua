@@ -14,6 +14,12 @@ MAILMGR_ICON_EXP    = "\\spr\\item\\exp.spr"
 MAILMGR_SENDER_SYS  = "Th­ hÖ thèng"
 MAILMGR_SENDER_NPH  = "Nhµ ph¸t hµnh"
 MAILMGR_XU_TASK     = 251             -- xu hien o hanh trang = task 251 (petsys\jx1_compat.lua)
+MAILMGR_ICON_GOLD   = MAILMGR_ICON_XU   -- [D9] trang bi hoang kim (gold:) - tam dung bieu tuong xu
+MAILMGR_ICON_TASK   = MAILMGR_ICON_EXP  -- [D9] diem nhiem vu (task:) / danh vong (repute:)
+MAILMGR_TASK_NAME   = {[337] = "§iÓm sù kiÖn"}   -- [D9] ten hien thi cho task:id
+function MailManager_TaskName(nTaskId)
+    return MAILMGR_TASK_NAME[nTaskId] or ("NhiÖm vô "..nTaskId)
+end
 MailAutoDel = MailAutoDel or {}      -- [ten nhan vat] = 1: tu xoa thu khong dinh kem sau khi doc
 
 function MailManager_Split(s, sep)
@@ -53,13 +59,29 @@ function MailManager_ParseAward(szAward)
             kind = strlower(kind)
             val = MailManager_Trim(val)
             if kind == "item" then
+                -- [D9] item:g,d,p,l,s,k,n[,lock][,expSec][,magic][,stack]: lock -2 = khoa vinh vien (SetPlayerItemLock),
+                -- expSec = het han sau N giay (AddTimeItem), magic = tham so 7 AddItem, stack 1 = giao 1 chong n mon (AddItemSL)
                 local nums = MailManager_Split(val, ",")
                 if getn(nums) >= 6 then
                     tinsert(tb, {szKind = "item", nGenre = tonumber(nums[1]) or 0, nDetail = tonumber(nums[2]) or 0,
                         nParticular = tonumber(nums[3]) or 0, nLevel = tonumber(nums[4]) or 0, nSeries = tonumber(nums[5]) or 0,
-                        nLuck = tonumber(nums[6]) or 0, nCount = tonumber(nums[7]) or 1})
+                        nLuck = tonumber(nums[6]) or 0, nCount = tonumber(nums[7]) or 1, nLock = tonumber(nums[8]) or 0,
+                        nExpSec = tonumber(nums[9]) or 0, nMagic = tonumber(nums[10]) or 0, nStack = tonumber(nums[11]) or 0})
                 end
-            elseif kind == "money" or kind == "xu" or kind == "exp" then
+            elseif kind == "gold" then
+                -- [D9] gold:record,n[,lock][,expSec] = trang bi hoang kim theo dong goldequip.txt (AddItem2 NATURE_GOLD, nhu Da Tau)
+                local nums = MailManager_Split(val, ",")
+                if getn(nums) >= 1 then
+                    tinsert(tb, {szKind = "gold", nRecord = tonumber(nums[1]) or 0, nCount = tonumber(nums[2]) or 1,
+                        nLock = tonumber(nums[3]) or 0, nExpSec = tonumber(nums[4]) or 0})
+                end
+            elseif kind == "task" then
+                -- [D9] task:id,n = cong n vao o nhiem vu id (337 = diem su kien Tong Kim)
+                local nums = MailManager_Split(val, ",")
+                if getn(nums) >= 2 and (tonumber(nums[2]) or 0) ~= 0 then
+                    tinsert(tb, {szKind = "task", nTaskId = tonumber(nums[1]) or 0, nCount = tonumber(nums[2]) or 0})
+                end
+            elseif kind == "money" or kind == "xu" or kind == "exp" or kind == "repute" then
                 local n = tonumber(val) or 0
                 if n > 0 then
                     tinsert(tb, {szKind = kind, nCount = n})
@@ -83,6 +105,12 @@ function MailManager_AwardInfo(tbAward)
             tinsert(tb, {szKind = "icon", szIcon = MAILMGR_ICON_XU, szName = "Xu", szDesc = a.nCount.." xu", nCount = a.nCount})
         elseif a.szKind == "exp" then
             tinsert(tb, {szKind = "icon", szIcon = MAILMGR_ICON_EXP, szName = "Kinh nghiÖm", szDesc = a.nCount.." kinh nghiÖm", nCount = a.nCount})
+        elseif a.szKind == "gold" then
+            tinsert(tb, {szKind = "icon", szIcon = MAILMGR_ICON_GOLD, szName = "Trang bÞ Hoµng Kim", szDesc = "Dßng "..a.nRecord.." x"..a.nCount, nCount = a.nCount})
+        elseif a.szKind == "task" then
+            tinsert(tb, {szKind = "icon", szIcon = MAILMGR_ICON_TASK, szName = MailManager_TaskName(a.nTaskId), szDesc = a.nCount.." "..MailManager_TaskName(a.nTaskId), nCount = a.nCount})
+        elseif a.szKind == "repute" then
+            tinsert(tb, {szKind = "icon", szIcon = MAILMGR_ICON_TASK, szName = "Danh väng", szDesc = a.nCount.." danh väng", nCount = a.nCount})
         end
     end
     return tb
@@ -177,22 +205,70 @@ function MailManager_OnRequestWholeMail(nId)
     OB_Release(h)
 end
 
+-- [D9] khoa / han dung sau khi tao vat pham (giong tasklink_award.lua tl_linkaward_give)
+function MailManager_ItemPost(nIdx, nLock, nExpSec)
+    if nLock and nLock ~= 0 then
+        SetPlayerItemLock(nIdx, nLock)
+    end
+    if nExpSec and nExpSec > 0 then
+        AddTimeItem(nIdx, nExpSec)
+    end
+end
+
+-- [D9] trao 1 muc item/gold; tra so mon da tao
+function MailManager_GiveItem(a)
+    local nOk = 0
+    if a.szKind == "gold" then
+        for c = 1, a.nCount do
+            local nIdx = AddItem2(2, 0, a.nRecord, 0, 0, 0)
+            if nIdx and nIdx > 0 then
+                MailManager_ItemPost(nIdx, a.nLock, a.nExpSec)
+                nOk = nOk + 1
+            else
+                GhiLog("MAIL", format("AddItem2 hoang kim dong %d that bai cho %s", a.nRecord, GetName()))
+            end
+        end
+        return nOk
+    end
+    if a.nStack == 1 and a.nGenre ~= 0 then
+        -- 1 chong n mon: AddItem 21 tham so nhu lib_ham.lua AddItemSL (13 = so luong, 20 = khoa)
+        local nIdx = AddItem(a.nGenre, a.nDetail, a.nParticular, a.nLevel, a.nSeries, a.nLuck, a.nMagic, 0, 0, 0, 0, 0, a.nCount, 0, 0, 0, 0, 0, 0, a.nLock, 0)
+        if nIdx and nIdx > 0 then
+            if a.nExpSec > 0 then
+                AddTimeItem(nIdx, a.nExpSec)
+            end
+            return a.nCount
+        end
+        GhiLog("MAIL", format("AddItem chong %d,%d,%d x%d that bai cho %s", a.nGenre, a.nDetail, a.nParticular, a.nCount, GetName()))
+        return 0
+    end
+    for c = 1, a.nCount do
+        local nIdx = AddItem(a.nGenre, a.nDetail, a.nParticular, a.nLevel, a.nSeries, a.nLuck, a.nMagic)
+        if nIdx and nIdx > 0 then
+            MailManager_ItemPost(nIdx, a.nLock, a.nExpSec)
+            nOk = nOk + 1
+        else
+            GhiLog("MAIL", format("AddItem that bai %d,%d,%d cho %s", a.nGenre, a.nDetail, a.nParticular, GetName()))
+        end
+    end
+    return nOk
+end
+
 function MailManager_GiveAward(tbAward)
     for i = 1, getn(tbAward) do
         local a = tbAward[i]
-        if a.szKind == "item" then
-            for c = 1, a.nCount do
-                local nIdx = AddItem(a.nGenre, a.nDetail, a.nParticular, a.nLevel, a.nSeries, a.nLuck, 0)
-                if nIdx <= 0 then
-                    GhiLog("MAIL", format("AddItem that bai %d,%d,%d,%d,%d,%d cho %s", a.nGenre, a.nDetail, a.nParticular, a.nLevel, a.nSeries, a.nLuck, GetName()))
-                end
-            end
+        if a.szKind == "item" or a.szKind == "gold" then
+            MailManager_GiveItem(a)
         elseif a.szKind == "money" then
             Earn(a.nCount)
         elseif a.szKind == "xu" then
             SetTask(MAILMGR_XU_TASK, GetTask(MAILMGR_XU_TASK) + a.nCount)
         elseif a.szKind == "exp" then
             AddOwnExp(a.nCount)
+        elseif a.szKind == "repute" then
+            AddRepute(a.nCount)
+        elseif a.szKind == "task" then
+            SetTask(a.nTaskId, GetTask(a.nTaskId) + a.nCount)
         end
     end
 end
@@ -224,14 +300,24 @@ function MailManager_OnRequestStateChange(nId, nToState)
         Msg2Player("Th­ nµy kh«ng cã ®Ýnh kÌm!")
         return
     end
-    local nItems = 0
+    -- [D9] uoc luong O hanh trang: trang bi (genre 0) va hoang kim 6 o/mon; do khac 1 o/mon, chong = 1 o
+    local nCells = 0
     for i = 1, getn(tbAward) do
-        if tbAward[i].szKind == "item" then
-            nItems = nItems + tbAward[i].nCount
+        local a = tbAward[i]
+        if a.szKind == "item" then
+            if a.nGenre == 0 then
+                nCells = nCells + a.nCount * 6
+            elseif a.nStack == 1 then
+                nCells = nCells + 1
+            else
+                nCells = nCells + a.nCount
+            end
+        elseif a.szKind == "gold" then
+            nCells = nCells + a.nCount * 6
         end
     end
-    if nItems > 0 and CalcFreeItemCellCount(1, 1) < nItems * 6 then
-        Msg2Player("Hµnh trang kh«ng ®ñ chç trèng, h·y dän bít råi nhËn l¹i!")
+    if nCells > 0 and CalcFreeItemCellCount(1, 1) < nCells then
+        Msg2Player("Hµnh trang kh«ng ®ñ chç trèng (cÇn "..nCells.." «), h·y dän bít råi nhËn l¹i!")
         return
     end
     -- nguyen tu: chi mot lan doi duoc state < 3 -> 3
@@ -335,6 +421,10 @@ MAILMGR_ACTIVITY = {
     toptuan   = "Th­ëng Top TuÇn",
     topthang  = "Th­ëng Top Th¸ng",
     duatop    = "Sù KiÖn §ua Top",
+    phonglangdo = "Phong L¨ng §é",
+    vuotai    = "V­ît ¶i",
+    tinsu     = "TÝn Sø",
+    bangluong = "Bang héi",
     web       = "Nhµ ph¸t hµnh",
 }
 
@@ -350,6 +440,47 @@ function MailManager_SendReward(szActivity, szRole, szTitle, szContent, szAward,
         szRole = GetName()
     end
     return MailManager_SendMail(szRole, szSender, szTitle or szSender, szContent or "", szAward or "", nDays or 30, szActivity or "script")
+end
+
+-- [D9] Dung chuoi award tu bang kieu templet (awardtemplet/item_jx1): moi phan tu la mot trong:
+--   {tbProp={g,d,p,l,s,k}, nCount, nBindState(-2 = khoa), nExpSec, nMagic, nStack(1 = 1 chong)}
+--   {szKind="gold", nRecord, nCount, nBindState, nExpSec}   {szKind="task", nTaskId, nCount}
+--   {szKind="money"|"xu"|"exp"|"repute", nCount}
+function MailManager_BuildAward(tbList)
+    local tb = {}
+    for i = 1, getn(tbList) do
+        local a = tbList[i]
+        if type(a) == "table" then
+            if a.tbProp then
+                local p = a.tbProp
+                tinsert(tb, format("item:%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", p[1] or 0, p[2] or 0, p[3] or 0, p[4] or 0, p[5] or 0, p[6] or 0,
+                    floor(a.nCount or 1), a.nBindState or 0, floor(a.nExpSec or 0), a.nMagic or 0, a.nStack or 0))
+            elseif a.szKind == "gold" then
+                tinsert(tb, format("gold:%d,%d,%d,%d", a.nRecord or 0, floor(a.nCount or 1), a.nBindState or 0, floor(a.nExpSec or 0)))
+            elseif a.szKind == "task" then
+                tinsert(tb, format("task:%d,%d", a.nTaskId or 0, floor(a.nCount or 0)))
+            elseif a.szKind and a.nCount and floor(a.nCount) > 0 then
+                tinsert(tb, format("%s:%d", a.szKind, floor(a.nCount)))
+            end
+        end
+    end
+    local sz = ""
+    for i = 1, getn(tb) do
+        if i > 1 then
+            sz = sz..";"
+        end
+        sz = sz..tb[i]
+    end
+    return sz, getn(tb)
+end
+
+-- [D9] Gui thu thuong hoat dong tu bang kieu templet. szRole nil = nguoi choi dang goi. Tra id thu (0 = loi/rong).
+function MailManager_SendRewardTemplet(szActivity, szRole, szTitle, szContent, tbList, nDays)
+    local szAward, n = MailManager_BuildAward(tbList or {})
+    if n <= 0 then
+        return 0
+    end
+    return MailManager_SendReward(szActivity, szRole, szTitle, szContent, szAward, nDays)
 end
 
 function MailManager_SendTest(nKind)
