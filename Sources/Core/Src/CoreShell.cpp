@@ -7361,6 +7361,23 @@ static int   s_nTKRaoKetX = 0, s_nTKRaoKetY = 0;	// vi tri lan cuoi con nhuc nhi
 static UINT  s_uTKRaoKetT = 0;
 static int   s_nTKRaoKetMuc = 0;		// dang do cho muc nao: 0 chua / 1 diem cuoi thay dich / 2 o rao
 static UINT  s_uTKRaoTickT = 0;		// nhip TK_RaoDi lan cuoi (vua danh / san xong thi do lai tu dau)
+// ===== (03/09 toi, dot 3) TRAN CHUA BAT DAU - trap chan cong =====
+// lib_tktc.lua addtraptongkimtrungcap: 3 vet trap kim_chancong.lua + 3 vet tong_chancong.lua
+// = "Chan cong 3 trap khi chua bat dau": con hen gio 1 (bao danh, timerserver.lua:620) thi ai
+// qua cong bi SetPos ve diem duoi + Talk "... con <color=red>N<color> giay se bat dau". Het hen
+// gio: task01.lua ontime_tongkim Talk "... chinh thuc bat dau!" cho tung nguoi. Log 03/09 20:17:
+// auto rao ngay khi con dem nguoc -> cu 6 giay bi nem ve (1571,3196) mot lan, chu game thay
+// "chay lang qua lang ve". Chuoi/toa do duoi TRICH THANG tu script (goi_va_wauto_tk_chocong_0309.py).
+static const char TKM_TALK_CHUABATDAU[] = "§¹i chiÕn Tèng Kim cßn ";
+static const char TKM_TALK_BATDAU[] = "Tèng Kim §¹i chiÕn chÝnh thøc b¾t ®Çu!";
+static const TKPoint g_TKChanCongVe[2] = { { 1332, 3443 }, { 1571, 3196 } };	// tong_chancong / kim_chancong SetPos
+static const TKPoint g_TKTrapVaoA = { 1289, 3480 };	// tongvaotrai.lua (AddTrapEx2 goc + 10 o cheo)
+static const TKPoint g_TKTrapVaoB = { 1591, 3162 };	// kimvaotrai.lua
+#define TK_TRAPVAO_LEN	10
+static UINT s_uTKTalkSeen = 0;		// uTalkSeq da xem
+static UINT s_uTKChoBatDau = 0;		// != 0: dung cho toi moc nay (uCurTime) vi tran chua bat dau
+static int  s_nTKPosX = 0, s_nTKPosY = 0;	// vi tri nhip FIGHT truoc (nhan dien bi nem ve)
+static UINT s_uTKPosT = 0;
 
 static void TK_Msg(int nPlayerIdx, const char* szMsg);	// dinh nghia o duoi
 
@@ -7408,6 +7425,11 @@ static int TK_RaoDung(int nMap)
 		const int mx = bx * 32 + 16, my = by * 32 + 16;
 		if (g_GetDistance(mx, my, nCamAX, nCamAY) < TK_SAN_CAMTRAI
 		 || g_GetDistance(mx, my, nCamBX, nCamBY) < TK_SAN_CAMTRAI)
+			continue;
+		// (03/09 toi, dot 3) tranh vet trap VAO TRAI cua ca hai phe (tongvaotrai/kimvaotrai): phe minh
+		// giam vao la bi keo vao hau doanh, dong ho TIME_IN_TRAI bat lai -> ngoi ~80 giay moi ra duoc.
+		if (g_GetDistance(mx, my, TK_O((int)g_TKTrapVaoA.x + TK_TRAPVAO_LEN / 2), TK_O((int)g_TKTrapVaoA.y + TK_TRAPVAO_LEN / 2)) < 480
+		 || g_GetDistance(mx, my, TK_O((int)g_TKTrapVaoB.x + TK_TRAPVAO_LEN / 2), TK_O((int)g_TKTrapVaoB.y + TK_TRAPVAO_LEN / 2)) < 480)
 			continue;
 		s_aTKRaoX[nSo] = (short)bx;
 		s_aTKRaoY[nSo] = (short)by;
@@ -7588,6 +7610,7 @@ static void TK_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 	// ngay khi roi TKP_FIGHT, khong thi may PK bi khoa oan.
 	s_uTKSanQuyen = 0;
 	TK_SanBo();
+	s_uTKPosT = 0;		// (03/09 toi, dot 3) doi pha (hoi sinh / ra trai) la nhay hop le - khong tinh la bi nem ve
 	ea.uTKPhaseT = uCurTime;
 	ea.uTKNext = uCurTime + 400;
 	ea.uTKDlgSeen = g_sDTCap.uDlgSeq;
@@ -8092,7 +8115,15 @@ static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
 	}
 	else if (uCurTime - s_uTKSanMoveT > 3000u)
 	{
-		if (s_nTKSanRepath < 2)
+		// (03/09 toi, dot 3) DANG TRONG TAM PK ma dung yen 3 giay = tang danh khong nhan (khong duong
+		// nhin - tuong chan), tinh lai duong vo ich -> bo ngay, cam 20 giay. Log 03/09 20:5x: dich cach
+		// 164 mps, nhan vat dung sat tuong 7 giay (2 lan tinh lai) - chu game: "chay vao goc".
+		int nTamPK = pAp->nPKVision;
+		if (nTamPK < 100)
+			nTamPK = 100;
+		else if (nTamPK > 1200)
+			nTamPK = 1200;
+		if (s_nTKSanRepath < 2 && nChonD > nTamPK)
 		{	// PHAI co RemoveFlag: chi ha uDTPath la vo tac dung vi DT_WalkTo con cua
 			// thu hai so dich cu ("tx != nX || ty != nY") ma dich thi khong doi.
 			g_ScenePlace.RemoveFlag();
@@ -8102,9 +8133,10 @@ static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
 		}
 		else
 		{
-			Player[nPlayerIdx].m_mAutoExcludeNpcID[uID] = uCurTime + 60000;
+			const int nCam = (nChonD <= nTamPK) ? 20 : 60;
+			Player[nPlayerIdx].m_mAutoExcludeNpcID[uID] = uCurTime + (UINT)nCam * 1000u;
 			TK_SanBo();
-			AUTOLOG("[TK-SAN-BO] khong toi duoc id=%u - cam 60 giay", uID);
+			AUTOLOG("[TK-SAN-BO] khong toi duoc id=%u (xa=%d tam=%d) - cam %d giay", uID, nChonD, nTamPK, nCam);
 			return 0;
 		}
 	}
@@ -8129,6 +8161,14 @@ static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
 		ax = x + (nX - x) * nLui / nChonD;
 		ay = y + (nY - y) * nLui / nChonD;
 	}
+	// (03/09 toi, dot 3) duong thang toi dich bi CHAN (tuong) thi diem lui 3 o hay nam ngay chan
+	// tuong: toi do la dung yen ma tang DANH khong nhan (TK_ChonDich doi duong nhin). Bi chan thi
+	// nham DUNG o dich de A* client di vong; toi gan co duong nhin la tang danh nhan ngay.
+	if (!TK_ThayDuoc(nX, nY, x, y))
+	{
+		ax = x;
+		ay = y;
+	}
 	// TIET LUU NHAM LAI - y luat [TK-KET2] cua bot (KPlayerBot.cpp:10455-10457):
 	// doi muc tieu han thi nham lai ngay; muc tieu cu chi dich cho thi phai dich
 	// qua 8 o VA da qua 3 giay moi nham lai. Khong the thi moi nhip mot diem dich
@@ -8137,6 +8177,24 @@ static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
 	 || (g_GetDistance(ax, ay, s_nTKAimX, s_nTKAimY) > TK_O(8)
 	  && uCurTime - s_uTKAimT >= 3000u))
 	{
+		// (03/09 toi, dot 3) diem nham phai TOI DUOC: KSubWorld::FindPath tra 1 = toi dung dich;
+		// 2 = khong toi duoc, chi toi o gan nhat roi dung (cung bay voi o rao, dot 2). Diem lui
+		// khong toi duoc thi thu dung o dich; van khong -> dich nam trong vung kin, loai 20 giay.
+		// FindPath o day dat san duong; DT_WalkTo sau do thay HaveTarget trung nen khong tinh lai.
+		int nDuong = SubWorld[0].FindPath(ax, ay);
+		if (nDuong != 1 && (ax != x || ay != y))
+		{
+			ax = x;
+			ay = y;
+			nDuong = SubWorld[0].FindPath(ax, ay);
+		}
+		if (nDuong != 1)
+		{
+			Player[nPlayerIdx].m_mAutoExcludeNpcID[uID] = uCurTime + 20000u;
+			TK_SanBo();
+			AUTOLOG("[TK-SAN-BO] khong co duong toi id=%u o (%d,%d) (FindPath=%d) - cam 20 giay", uID, x, y, nDuong);
+			return 0;
+		}
 		s_nTKAimX = ax;
 		s_nTKAimY = ay;
 		s_uTKAimT = uCurTime ? uCurTime : 1;
@@ -8379,6 +8437,34 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.uTKMoT = uCurTime + 600000u;
 	}
 	ea.uTKMsgSeen = cap.uMsgSeq;
+	// (03/09 toi, dot 3) thoai Talk cua trap chan cong / cua ontime_tongkim - xem chu thich TKM_TALK_CHUABATDAU
+	if (cap.uTalkSeq != s_uTKTalkSeen)
+	{
+		s_uTKTalkSeen = cap.uTalkSeq;
+		if (DT_Has(cap.szTalk, TKM_TALK_CHUABATDAU))
+		{
+			const char* p = strstr(cap.szTalk, TKM_TALK_CHUABATDAU) + (sizeof(TKM_TALK_CHUABATDAU) - 1);
+			while (*p && (*p < '0' || *p > '9'))
+				++p;		// bo qua <color=red>
+			int nGiay = atoi(p);
+			if (nGiay < 1)
+				nGiay = 20;
+			else if (nGiay > 1800)
+				nGiay = 1800;
+			s_uTKChoBatDau = uCurTime + (UINT)nGiay * 1000u + 1500u;
+			char szCho[160];
+			sprintf(szCho, "<color=Yellow>TrËn ch­a b¾t ®Çu - cßn %d gi©y, ®øng chê tr­íc cæng.", nGiay);
+			TK_Msg(nPlayerIdx, szCho);
+			AUTOLOG("[TK-CHO] thoai chan cong: tran chua bat dau, con %d giay - dung cho. me=(%d,%d)", nGiay, nX, nY);
+		}
+		else if (DT_Has(cap.szTalk, TKM_TALK_BATDAU))
+		{
+			if (s_uTKChoBatDau)
+				TK_Msg(nPlayerIdx, "<color=Green>TrËn ®· b¾t ®Çu - xuÊt qu©n.");
+			s_uTKChoBatDau = 0;
+			AUTOLOG("[TK-CHO] thoai: tran da bat dau - xuat quan. me=(%d,%d)", nX, nY);
+		}
+	}
 	const int nLoaMo = (nTinMo || uCurTime < ea.uTKMoT);
 	int nSlot = -1;
 	const int nTrongGio = TK_KhungGio(pAp, &nSlot);
@@ -8961,6 +9047,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	case TKP_FIGHT:
 	{
 		ea.nTKHold = 2;
+		int nAimTmpX = 0, nAimTmpY = 0;	// (03/09 toi, dot 3) HaveTarget XUAT target ra tham so
 		if (nMap == TK_MAP_BAODANH)
 		{
 			// het tran (may chu keo ca hai phe ve) hoac bi da vi dung yen 5 phut
@@ -8989,6 +9076,47 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		if (TK_AnThuoc(nPlayerIdx, pAp, uCurTime))
 			return 2;
+		// (03/09 toi, dot 3) DU PHONG khi khong bat duoc thoai: nhay >= 1500 mps trong mot nhip (khong
+		// chet - chet da re sang TKP_CAMP o tren) va roi dung diem SetPos cua trap chan cong => tran chua
+		// bat dau, cho 20 giay (thoai "con N giay" neu bat duoc se dat moc chinh xac hon).
+		if (s_uTKPosT && (int)(uCurTime - s_uTKPosT) <= 1200
+		 && g_GetDistance(nX, nY, s_nTKPosX, s_nTKPosY) >= 1500)
+		{
+			for (int k = 0; k < 2; ++k)
+			{
+				if (g_GetDistance(nX, nY, TK_O((int)g_TKChanCongVe[k].x), TK_O((int)g_TKChanCongVe[k].y)) >= 300)
+					continue;
+				if (!s_uTKChoBatDau || (int)(s_uTKChoBatDau - uCurTime) < 20000)
+					s_uTKChoBatDau = uCurTime + 20000u;
+				TK_Msg(nPlayerIdx, "<color=Yellow>BÞ ®­a vÒ cæng - trËn ch­a b¾t ®Çu, ®øng chê.");
+				AUTOLOG("[TK-CHO] bi nem ve diem chan cong (%d,%d) tu (%d,%d) - cho 20 giay", nX, nY, s_nTKPosX, s_nTKPosY);
+				break;
+			}
+		}
+		s_nTKPosX = nX;
+		s_nTKPosY = nY;
+		s_uTKPosT = uCurTime;
+		if (s_uTKChoBatDau)
+		{
+			if ((int)(uCurTime - s_uTKChoBatDau) >= 0)
+			{
+				s_uTKChoBatDau = 0;
+				AUTOLOG("[TK-CHO] het gio cho - rao / san tiep. me=(%d,%d)", nX, nY);
+			}
+			else
+			{	// dung cho truoc cong: khong rao, khong san; may PK van chay (danh tra neu bi danh)
+				ea.uNpcID = 0;
+				s_uTKSanQuyen = 0;
+				TK_SanBo();
+				if (SubWorld[0].HaveTarget(nAimTmpX, nAimTmpY))
+				{
+					g_ScenePlace.RemoveFlag();
+					SubWorld[0].StopPath();	// duong cu (xuyen cong) phai bo, khong thi buoc them la lai bi nem
+				}
+				AUTOLOG_EVERY(5000, "[TK-CHO] dung cho tran bat dau - con %d giay. me=(%d,%d)", (int)(s_uTKChoBatDau - uCurTime) / 1000, nX, nY);
+				return 2;
+			}
+		}
 		// (03/09 chieu) THU TU MOI - chu game: "tim doi thu KHAC MAU, khong chay toa do":
 		//   1. tuong dich (chi khi o 'Uu tien' = Hieu Uy / Pho Tuong / Dai Tuong)
 		//   2. NGUOI khac mau trong tam PK co duong nhin -> giao may PK
