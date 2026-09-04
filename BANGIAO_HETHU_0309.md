@@ -155,7 +155,7 @@ Gốc: hàng thư (`KWndPage`) và thanh cuộn (`KWndScrollBar`) chỉ báo `WN
 = khung `[MailListScroll]` (KWndImage thường) → nuốt, `KUiMailList::WndProc` không bao giờ nhận (log không có op=1). Sửa `UiMail.{h,cpp}`:
 `KUiMailScrollWnd` chuyển tiếp hai thông báo lên KUiMailList → CHỈ Game.exe đổi (không đụng header chung, đi cùng CoreClient a3cecb53 của
 wauto-c0). Ini: `[MailSenderLable]` Width 65→80, `[MailSenderValue]` Left 82 Width 259. Script: `MailManager_OnLogin` bỏ qua bot.
-`Game.exe.moi` đợt 7: xem dòng md5 bên dưới (điền sau build). Cây sống 18:00: `CoreClient.dll.moi` a3cecb53 (wauto-c0, main d59340c4, có D5).
+`bin\client\Game.exe.moi` đợt 7 = **71dae629** (1.401.856, build từ main 18c74b6c + D7). Cây sống 18:00: `CoreClient.dll.moi` a3cecb53 (wauto-c0, main d59340c4, có D5).
 
 Phiên wauto-c1 (Represent3, nhánh rep3-0309) bị chặn ghi `bin\client` và nhờ gộp vào bộ này — KHÔNG làm hộ (chủ tự chép/cho phép); họ tự gộp
 origin/main (đã có D4/D4b) vào rep3-0309 và đặt sau. `Represent3.dll` 74ac07ad đã nằm ở bin\client nhưng `config.ini [Client] Represent=2` nên chưa dùng.
