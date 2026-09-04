@@ -1393,6 +1393,16 @@ void KRegion::SendSyncData(int nClient)
 void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int nOX, int nOY)
 {
 	#define	MAX_SYNC_RANGE	32//25
+	// [BC 03/09 b] tam phat THAT hai chieu (|dx|,|dy| <= BC_TAM): kiem cu chi 'nDX <= 32' (khong tri tuyet doi) nen phia am
+	// khong loc -> sau F4 moi goi cua 9 vung (~258 bot ria) doi vao 1 client (~59.000 goi/giay, do 03/09 dem) -> client sap.
+	// Client tu bo goi >= 40 o (S6_XaQuaTam) nen gui ngoai 32 o la vo ich. [Server] BroadCastTam trong config.ini de chinh.
+	static int s_nBCTam = -1;
+	if (s_nBCTam < 0)
+	{
+		s_nBCTam = (int)GetPrivateProfileIntA("Server", "BroadCastTam", MAX_SYNC_RANGE, ".\\config.ini");
+		if (s_nBCTam < 8) s_nBCTam = 8;
+		if (s_nBCTam > 64) s_nBCTam = 64;
+	}
 	KIndexNode *pNode = NULL;
 
 	//if (m_PlayerList.IsEmpty())
@@ -1424,6 +1434,7 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 	}
 	int nF4Duyet = 0;	// [F4] so node da xet - chan vong tron
 	int nF4Gui   = 0;	// [F4] so nguoi that da gui trong lan phat nay
+	int nBCNgoaiTam = 0;	// [BC 03/09 b] nguoi that bi loc vi ngoai tam
 	while(nMaxCount > 0 && nF4Duyet < nF4Tong)
 	{
 		if (pNode == NULL)	// [F4] het danh sach -> quay lai dau (duyet vong tron)
@@ -1443,8 +1454,12 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 			int nNpcIndex = Player[nPlayerIndex].m_nIndex;
 			int nDX = Npc[nNpcIndex].m_MapX - nOX;
 			int nDY = Npc[nNpcIndex].m_MapY - nOY;
+			if (nDX < 0) nDX = -nDX;	// [BC 03/09 b] tri tuyet doi hai chieu
+			if (nDY < 0) nDY = -nDY;
+			if (Player[pNode->m_nIndex].m_nNetConnectIdx >= 0 && (nDX > s_nBCTam || nDY > s_nBCTam))
+				nBCNgoaiTam++;	// [BC 03/09 b] nguoi that nhung ngoai tam -> khong gui
 			if (Player[pNode->m_nIndex].m_nNetConnectIdx >= 0 
-				&& nDX <= MAX_SYNC_RANGE && nDY <= MAX_SYNC_RANGE
+				&& nDX <= s_nBCTam && nDY <= s_nBCTam
 				&& Player[pNode->m_nIndex].m_bSleepMode == FALSE)
 			{
 				g_pServer->PackDataToClient(Player[pNode->m_nIndex].m_nNetConnectIdx, (BYTE*)pBuffer, dwSize);
@@ -1465,6 +1480,8 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 		const int nBCLoai = (pBuffer && dwSize > 0) ? (int)((const BYTE*)pBuffer)[0] : 0;
 		const int nBCCat  = (nMaxCount <= 0 && nF4Duyet < nF4Tong) ? 1 : 0;
 		s_anBCGoi[nBCLoai]++; s_anBCGui[nBCLoai] += nF4Gui; s_anBCBo[nBCLoai] += nBCCat;
+		static int s_nBCNgoaiTam = 0;	// [BC 03/09 b]
+		s_nBCNgoaiTam += nBCNgoaiTam;
 		s_nF4Goi++;
 		s_nF4Gui   += nF4Gui;
 		s_nF4Duyet += nF4Duyet;
@@ -1476,7 +1493,7 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 		else if (uF4Now - s_uF4Moc >= 10000)
 		{
 			s_uF4Moc = uF4Now;
-			AUTOLOG("[BC-DEM] 10s: goi=%d gui=%d cat_vi_het_ngan_sach=%d node_duyet=%d", s_nF4Goi, s_nF4Gui, s_nF4Bo, s_nF4Duyet);
+			AUTOLOG("[BC-DEM] 10s: goi=%d gui=%d cat_vi_het_ngan_sach=%d node_duyet=%d ngoai_tam=%d tam=%d", s_nF4Goi, s_nF4Gui, s_nF4Bo, s_nF4Duyet, s_nBCNgoaiTam, s_nBCTam);
 			// [BC 03/09] in toi da 8 loai goi nhieu nhat + moi loai co bi cat: 'loai:goi/gui/cat'
 			char szBC[512]; int nBCLen = 0; int nBCIn = 0;
 			for (int nBCK = 0; nBCK < 256 && nBCLen < 440; nBCK++)
@@ -1492,7 +1509,7 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 			if (nBCLen > 0)
 				AUTOLOG("[BC-LOAI] 10s loai:goi/gui/cat:%s", szBC);
 			memset(s_anBCGoi, 0, sizeof(s_anBCGoi)); memset(s_anBCGui, 0, sizeof(s_anBCGui)); memset(s_anBCBo, 0, sizeof(s_anBCBo));
-			s_nF4Goi = 0; s_nF4Gui = 0; s_nF4Bo = 0; s_nF4Duyet = 0;
+			s_nF4Goi = 0; s_nF4Gui = 0; s_nF4Bo = 0; s_nF4Duyet = 0; s_nBCNgoaiTam = 0;
 		}
 	}
 }
