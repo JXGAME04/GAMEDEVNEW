@@ -45,11 +45,11 @@ Cách làm: mổ giao diện auto Thái từ **mã C# WinForms** (`D:\Source_ANT
  │ │ …                                        │ │
  │ └──────────────────────────────────────────┘ │
  │ HĐ: Đang đánh Tống Kim, phe Tống             │
- │           Võ Lâm Ngạo Thế                    │
+ │ [Bật hết][Tắt hết][Đồng bộ][Toạ độ]          │   ← hàng nút đáy (Thái: [F9 all][TĐP all]…)
  └──────────────────────────────────────────────┘
 ```
 
-## 3. Đã làm gì (5 đợt, đều nằm trong bản `77ccc22d`)
+## 3. Đã làm gì (6 đợt, đều nằm trong bản `742b6a9c`)
 
 ### Đợt 1 — đài tab xếp theo kiểu Thái (chỉ `WAuto.cpp`)
 4 nhóm cấp 1 đổi thành **Điều khiển | Hậu cần | Cài đặt | Hoạt động** (Thái: Điều khiển | Hậu cần | Cài game | Phụ trợ), tab con xếp theo tần suất dùng:
@@ -58,10 +58,10 @@ Cách làm: mổ giao diện auto Thái từ **mã C# WinForms** (`D:\Source_ANT
 |---|---|
 | **Điều khiển** | Chiến đấu · Chiêu KH · PK · Ác chính · Di chuyển · Nhặt đồ |
 | **Hậu cần** | Hậu cần · Phục hồi · Tổ đội |
-| **Cài đặt** | Cơ bản |
+| **Cài đặt** | Cơ bản · Đăng nhập *(tab Đăng nhập thêm ở đợt 6)* |
 | **Hoạt động** | Dã Tẩu · TK · CTC · Liên đấu · Sát thủ · H.động |
 
-Đủ 16 tab, không sót tính năng nào. Rút tên cho vừa nút: "Tống Kim" → **TK**, "Công Thành" → **CTC**, "Ac chính" → **Ác chính**. Mở máy vào thẳng tab **Chiến đấu** (Thái mở vào "Bảng 1").
+Đủ 16 tab, không sót tính năng nào (đợt 6 tách thêm tab thứ 17 "Đăng nhập"). Rút tên cho vừa nút: "Tống Kim" → **TK**, "Công Thành" → **CTC**, "Ac chính" → **Ác chính**. Mở máy vào thẳng tab **Chiến đấu** (Thái mở vào "Bảng 1").
 
 ### Đợt 2 — danh sách nhân vật 5 cột (chỉ `WAuto.cpp`)
 `Nhân vật | SL | NL | Việc | Bản đồ` (Thái: `Tên nhân vật | Doing | Bản đồ`). Cột "Việc" lấy từ dòng trạng thái auto đã có sẵn trong gói đồng bộ, cột "Bản đồ" lấy từ tên map — **không cần đổi IPC, không cần đổi `autoData`, không cần gói tin mới**. Hai cột này là TCVN3 nên đi qua `g_Convert2UCEChar` rồi `delete[]`. Cột "Việc" chỉ vẽ lại khi đổi chữ (khỏi nháy). Chưa kết nối / vừa thêm dòng thì ghi "—".
