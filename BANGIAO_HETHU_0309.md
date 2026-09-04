@@ -210,6 +210,24 @@ có một lần huỷ đi kèm ⇒ khi `nNum` chạm 40 thì `nCancelNum` đã >
 (02/09 thì có). Đây là luật cũ của bản gốc, **chưa sửa vì là luật chơi — chờ chủ quyết**: giữ nguyên, hay đổi sang `(nNum - nCancelNum) == 40`
 (đủ 40 lần hoàn thành, cho phép huỷ), hay bỏ hẳn ràng buộc huỷ.
 
+### 5c-ter. ĐỢT 10 (04/09 00:30) — PHÁT LƯƠNG BANG HỘI CHUYỂN VÀO HỘP CÓ SẴN, GỬI QUA THƯ
+
+Chủ chốt 04/09: **bỏ menu phát lương ở NPC (đợt 9)**; phát lương ở **hộp "Phát ngân lượng" có sẵn trong bảng Bang hội**
+(`KUiTongGrant` → `defTONG_JX2_COP_GRANT_GROUP`) thì **tự động gửi thư**.
+
+- `KMailServer.{h,cpp}`: tách lõi C++ `Mail_Send(szRole, szSender, szTitle, szContent, szAward, nAwardCount, nExpireSec, szSource)`
+  (trước chỉ có hàm Lua); `LuaMailDB_Send` nay chỉ bọc tham số.
+- `KTongJX2.cpp` nhánh `bMoney` của `COP_GRANT_GROUP`: bỏ ràng buộc **bắt buộc online** (trước dùng `Earn` trực tiếp nên người
+  offline mất lương), thay bằng một thư mỗi thành viên: `money:N`, người gửi `"Bang hội <tên>"`, tiêu đề `"Lương bang hội"`,
+  hạn 30 ngày, nguồn `bangluong`; ghi `logs\hethong.log` `[MAIL]` số thư thành công/thất bại + số quỹ đã trừ.
+  Ô "Chỉ phát cho những người còn trên mạng" vẫn có tác dụng (tích = chỉ người online).
+- `p9_lua.py` mục 7 đổi từ "thêm menu NPC" thành "**gỡ** menu NPC + xoá `tong_luong.lua`" (đã chạy: `huodong_zongguan.lua` về nguyên bản 380 B).
+
+**`bin\server\CoreServer.dll.moi` = 2cd510de** (18.302.464). Build từ `mail-0309` sau khi **gộp `origin/broadcast-0309` (c54aaf3d)**
+của wauto-ca — vì bản đang chạy d2589ef1 là bản vá BroadCast của họ mà `main` chưa có; nếu build từ main sẽ nuốt mất.
+Đã kiểm nhị phân có đủ: `BroadCastTam` `BC-LOAI` (wauto-ca) · `S13-DENY-GIUCHAY` (wauto-75) · `TKDich` (wauto-c0) · `MailDB_Send` `bangluong` (thư).
+Chỉ máy chủ đổi; client giữ nguyên. Chạy `ChayGameServer.bat` để nạp.
+
 Phiên wauto-c1 (Represent3, nhánh rep3-0309) bị chặn ghi `bin\client` và nhờ gộp vào bộ này — KHÔNG làm hộ (chủ tự chép/cho phép); họ tự gộp
 origin/main (đã có D4/D4b) vào rep3-0309 và đặt sau. `Represent3.dll` 74ac07ad đã nằm ở bin\client nhưng `config.ini [Client] Represent=2` nên chưa dùng.
 
