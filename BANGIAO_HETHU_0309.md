@@ -166,6 +166,31 @@ hoatdong, toptuan, topthang, duatop, web → tên người gửi) + `MailManager
 (tệp đang trao trực tiếp: `tinhnang\tong_kim_tcap` 2, `congthanhchien` 2, `boss_hoangkim` 2, `pubg` 1; `cauhinh\ch_thuong_lib.lua` G_TraoThuong
 theo bảng thưởng có thể thêm bản "qua thư" đổi bảng → chuỗi award).
 
+## 5c. ĐỢT 9 (03/09 tối) — THƯỞNG HOẠT ĐỘNG QUA THƯ + LƯƠNG BANG HỘI (chỉ script, không build)
+
+Chủ chốt: Tống Kim, Phong Lăng Độ, Vượt Ải, Công Thành, Dã Tẩu (mốc), Tín Sứ → gửi thư khi **kết thúc hoạt động / trả nhiệm vụ**;
+vật phẩm giữ đúng **khoá** và **hạn sử dụng**; thêm **phát lương bang hội**. Thư offline không mất (MySQL, giao lúc đăng nhập; hết hạn 30 ngày).
+
+**Định dạng đính kèm v2** (`mailmanager.lua`, tương thích cũ): `item:g,d,p,l,s,k,n[,lock][,expSec][,magic][,stack]` (lock −2 = khoá vĩnh viễn
+`SetPlayerItemLock`; expSec = hết hạn sau N giây `AddTimeItem`; magic = tham số 7 AddItem; stack 1 = giao 1 chồng n món như `AddItemSL`),
+`gold:record,n[,lock][,expSec]` (trang bị hoàng kim theo dòng goldequip.txt, `AddItem2`), `task:id,n` (ô nhiệm vụ, 337 = điểm sự kiện), `repute:n`.
+API: `MailManager_SendRewardTemplet(szActivity, szRole, szTitle, szContent, tbList, nDays)` — tbList kiểu templet
+`{tbProp={g,d,p,l,s,k}, nCount, nBindState, nExpSec, nMagic, nStack}` / `{szKind="gold"|"task"|"money"|"xu"|"exp"|"repute", ...}`.
+Người gửi theo hoạt động: `MAILMGR_ACTIVITY` (+ phonglangdo, vuotai, tinsu, bangluong). Kiểm chỗ trống khi Nhận theo Ô (trang bị 6 ô, chồng 1 ô).
+
+| Hoạt động | Tệp (cây chạy thật) | Điểm móc | Ghi chú |
+|---|---|---|---|
+| Tống Kim | `tinhnang\tong_kim_tcap\lib_tktc.lua` (3 hàm Thưởng*TongKim), `timertask\task03.lua` (3000 điểm) | kết thúc trận (task03) | vật phẩm (chồng) + xu + 50 điểm sự kiện vào thư; **kinh nghiệm vẫn cộng ngay** (AddSumExp) |
+| Phong Lăng Độ | `missions\fengling_ferry\mission.lua` | cập bến | 6,1,3361 × HD3_PLD_THUONG_CAPBEN |
+| Vượt Ải | `missions\challengeoftime\award.lua` | hoàn thành (kinh nghiệm), vật phẩm ải ẩn | rương ải 15/28 (giữa chừng) vẫn trao thẳng |
+| Công Thành | `tinhnang\congthanhchien\lib_ctc.lua` | ≥1000 công trạng lúc kết thúc | 6,1,1075 |
+| Dã Tẩu | `task\newtask\tasklink\tasklink_award.lua` (`tl_linkaward_mail`), `global\seasonnpc.lua` (40 nv) | mốc / 40 nhiệm vụ | giữ Count/LockType/ExpDay/Magiclevel/hoàng kim từ award_link.txt; rào túi lúc NHẬN mốc (`tl_getlinkawardslots`) vẫn còn |
+| Tín Sứ | `task\tollgate\messenger\posthouse.lua` | trả nhiệm vụ | Hành Hiệp Lệnh (lần đầu/ngày) + Tín Sứ Bảo Rương + nguyên liệu kinh mạch (khoá) trong 1 thư; rào 5 ô túi trước khi trả vẫn còn |
+| Bang hội | `scriptjx2\tong_vn\tong_luong.lua` (mới) + `npc\huodong_zongguan.lua` | Bang chủ → NPC Tổng quản hoạt động | menu "Phát lương bang hội": chọn 1/5/10/50 vạn mỗi người → trừ quỹ bang → mỗi thành viên 1 thư `money:N`; 1 lần/ngày/bang (TONG task 1200) |
+
+Kích hoạt: **khởi động lại GameServer** (`ChayGameServer.bat` — lưu ý `CoreServer.dll.moi` b68899b2 của wauto-6a đang chờ sẽ được nạp) — vì
+`protocol_def_gs.lua`/`playerlogin.lua` giữ bản mailmanager cũ trong state. Công cụ: `ReverseTools\mail\p9_lua.py` (idempotent, dấu `[MAIL 03/09 D9]`).
+
 Phiên wauto-c1 (Represent3, nhánh rep3-0309) bị chặn ghi `bin\client` và nhờ gộp vào bộ này — KHÔNG làm hộ (chủ tự chép/cho phép); họ tự gộp
 origin/main (đã có D4/D4b) vào rep3-0309 và đặt sau. `Represent3.dll` 74ac07ad đã nằm ở bin\client nhưng `config.ini [Client] Represent=2` nên chưa dùng.
 
