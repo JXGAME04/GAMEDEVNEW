@@ -14952,6 +14952,9 @@ TLua_Funcs GameScriptFuns[] =
 	{"AUCWEB_Err",	LuaAUCWEB_Err},
 	{"AUCWEB_Msg",	LuaAUCWEB_Msg},
 	{"AUCWEB_SetNext",	LuaAUCWEB_SetNext},
+	// [DAUGIA-CHAT 04/09] thong bao dau gia vao kenh chat bang (KAuctionServer.cpp)
+	{"AUC_MsgTong",	LuaAUC_MsgTong},
+	{"AUC_KenhBang",	LuaAUC_KenhBang},
 #endif
 	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},

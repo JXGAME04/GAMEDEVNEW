@@ -5,6 +5,7 @@
 #include "IClient.h"
 #include "KPlayerSet.h"
 #include "KPlayerBot.h"      // PB_GhiNhoKenh - hoc id kenh chat cho bot
+#include "KAuctionServer.h"  // [DAUGIA-CHAT 04/09] AUC_GhiNhoKenhBang - hoc id kenh chat BANG cho thong bao dau gia
 
 using OnlineGameLib::Win32::CBuffer;
 
@@ -203,6 +204,8 @@ void KNewProtocolProcess::P_ProcessPlayerCommExtend(IClient* pTransfer,
 		memcpy(szTenKenh, pN->channel, __X_NAME_LEN_);
 		szTenKenh[__X_NAME_LEN_] = 0;
 		PB_GhiNhoKenh(szTenKenh, pN->channelid);
+		// [DAUGIA-CHAT 04/09] kenh "\O<tongid>" -> id, de AUC_MsgTong dua thong bao dau gia bang vao dung the "bang"
+		AUC_GhiNhoKenhBang(szTenKenh, pN->channelid);
 	}
 #endif
 	size_t pckgsize = sizeof(tagExtendProtoHeader) + nDataSize;

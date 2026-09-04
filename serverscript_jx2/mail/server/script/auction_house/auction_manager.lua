@@ -387,6 +387,241 @@ function AUC_NotifyEndActivity(nType, szAct)
     end)
 end
 
+-- ================================================================ [DAUGIA-CHAT 04/09] THONG BAO VAO KENH CHAT
+-- Chu 04/09: "viet them thong bao moi khi thay doi dau gia tren the gioi vao kenh chat - dau gia bang vao kenh
+-- chat bang; gom thong tin de nguoi choi biet". Moi thay doi cua phien THE GIOI -> Msg2SubWorld (dong "He Thong"
+-- toi moi nguoi, khong can PlayerIndex nen goi duoc tu vong quet). Phien BANG -> AUC_MsgTong (C++ [DAUGIA-CHAT]:
+-- dong "Tin bang" toi thanh vien online, vao dung the "bang" cua khung chat khi may chu da hoc duoc id kenh
+-- "\O<tongid>" tu goi notifychannelid). DLL cu chua co AUC_MsgTong -> lui ve Msg2Tong 4 tham so qua mot thanh
+-- vien dang online (Msg2Tong doi PlayerIndex hop le dang trong bang; kenh -1 = dong He thong, van chi toi bang).
+-- Ky gui ca nhan KHONG bao (chu chi noi the gioi + bang). Moi dong <= 200 byte: goi chat mang do dai 1 byte,
+-- SendSystemInfo kep 256 -> qua la mat ca dong. Cac ham bao deu tra 1 va duoc goi qua AUC_ChatThu (call x)
+-- de mot loi trong cau chu khong bao gio pha dong giao dich hay vong quet.
+AUCCHAT_MAX = 200
+
+function AUC_ChatCat(sz)
+    if strlen(sz) > AUCCHAT_MAX then
+        return strsub(sz, 1, AUCCHAT_MAX - 3).."..."
+    end
+    return sz
+end
+
+function AUC_ChatThu(f, tbArg)
+    if call(f, tbArg, "x", AucWeb_LoiLua) == nil then
+        AUC_Log("LOI Lua khi bao kenh chat (bo qua)")
+    end
+end
+
+-- gio dong ho "HH:MM" cua moc unix nT: GetLocalDate chi dinh dang GIO HIEN TAI nen cong chenh lech vao gio bay gio
+function AUC_GioDongHo(nT)
+    local nH = tonumber(GetLocalDate("%H")) or 0
+    local nM = tonumber(GetLocalDate("%M")) or 0
+    local nS = tonumber(GetLocalDate("%S")) or 0
+    local nTod = nH * 3600 + nM * 60 + nS + (floor(tonumber(nT) or 0) - GetCurrentTime())
+    nTod = mod(nTod, 86400)
+    if nTod < 0 then
+        nTod = nTod + 86400
+    end
+    return format("%02d:%02d", floor(nTod / 3600), floor(mod(nTod, 3600) / 60))
+end
+
+-- "con 2 gio 10 phut" / "con 45 phut" / "con 50 giay" / "da het gio"
+function AUC_ConLai(nEnd)
+    local nS = floor(tonumber(nEnd) or 0) - GetCurrentTime()
+    if nS <= 0 then
+        return "Æ∑ h’t giÍ"
+    end
+    if nS < 60 then
+        return "cﬂn "..nS.." gi©y"
+    end
+    local nPhut = floor(nS / 60)
+    if nPhut < 60 then
+        return "cﬂn "..nPhut.." phÛt"
+    end
+    if mod(nPhut, 60) == 0 then
+        return "cﬂn "..floor(nPhut / 60).." giÍ"
+    end
+    return "cﬂn "..floor(nPhut / 60).." giÍ "..mod(nPhut, 60).." phÛt"
+end
+
+function AUC_GiaTien(n, nCur)
+    return AUC_SoTien(n).." "..AUC_CurName(nCur)
+end
+
+-- huong dan ngan cach tham gia (dua vao cau dau cua moi dot / moi mon len san)
+function AUC_ChatHuongDan(nType)
+    if nType == AUCTION_DEF.tbAuctionTypeEnum.eType_TONG then
+        return " MÎ cˆa sÊ ß u gi∏, thŒ Bang hÈi Æ” tr∂ gi∏."
+    end
+    return " MÎ cˆa sÊ ß u gi∏, thŒ Th’ giÌi Æ” tr∂ gi∏."
+end
+
+-- tim MOT thanh vien dang online cua bang (cho Msg2Tong DLL cu); 0 = khong co ai
+function AUC_TimThanhVienOnline(nTong)
+    if not TONG_GetFirstMember or not FindPlayer then
+        return 0
+    end
+    local nMem = TONG_GetFirstMember(nTong, -1)
+    local nDem = 0
+    while nMem and nMem > 0 and nDem < 300 do
+        nDem = nDem + 1
+        if (TONGM_GetOnline(nTong, nMem) or 0) == 1 then
+            local szTen = TONGM_GetName(nTong, nMem)
+            if szTen and szTen ~= "" then
+                local nIdx = FindPlayer(szTen)
+                if nIdx and nIdx > 0 then
+                    return nIdx
+                end
+            end
+        end
+        nMem = TONG_GetNextMember(nTong, nMem, -1)
+    end
+    return 0
+end
+
+-- gui MOT dong toi dung kenh cua loai phien: the gioi -> moi nguoi; bang -> thanh vien bang nTong. Tra so nguoi/1/0.
+function AUC_ChatGui(nType, nTong, sz)
+    if nType == AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD then
+        Msg2SubWorld(AUC_ChatCat("[ß u gi∏ th’ giÌi] "..sz))
+        return 1
+    end
+    if nType ~= AUCTION_DEF.tbAuctionTypeEnum.eType_TONG or (nTong or 0) <= 0 then
+        return 0
+    end
+    sz = AUC_ChatCat("[ß u gi∏ bang] "..sz)
+    if AUC_MsgTong then
+        return AUC_MsgTong(nTong, sz)
+    end
+    local nIdx = AUC_TimThanhVienOnline(nTong)
+    if nIdx <= 0 then
+        return 0
+    end
+    Msg2Tong(nIdx, nTong, sz, -1)
+    return 1
+end
+
+function AUC_ChatLoai(nType)
+    return nType == AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD or nType == AUCTION_DEF.tbAuctionTypeEnum.eType_TONG
+end
+
+-- mon vua len san (bang chu / GM dat ban): ten, gia, cach dau, gio ket thuc, cach tham gia
+function AUC_ChatLenSan(nType, nTong, szAct, szNguoi, szTen, nCur, nGuar, nBase, nCurP, nKind, nEnd)
+    if not AUC_ChatLoai(nType) then
+        return 1
+    end
+    local sz = szNguoi.." Æ≠a "..szTen.." l™n sµn ("..szAct.."): "
+    if nKind == AUCTION_DEF.tbItemTypeEnum.eType_DUTCH then
+        sz = sz.."gi∏ mÎ "..AUC_GiaTien(nCurP, nCur)..", hπ d«n tÌi "..AUC_GiaTien(nGuar, nCur)
+    else
+        sz = sz.."khÎi Æi”m "..AUC_GiaTien(nGuar, nCur)
+        if (nBase or 0) > (nGuar or 0) then
+            sz = sz..", mua ngay "..AUC_GiaTien(nBase, nCur)
+        end
+    end
+    sz = sz..", "..AUC_ConLai(nEnd).." (k’t thÛc "..AUC_GioDongHo(nEnd)..")."..AUC_ChatHuongDan(nType)
+    AUC_ChatGui(nType, nTong, sz)
+    return 1
+end
+
+-- co nguoi tra gia (kieu Anh): ai, bao nhieu, muon vuot phai tra tu bao nhieu, con bao lau
+function AUC_ChatTraGia(r)
+    if not AUC_ChatLoai(r.atype) then
+        return 1
+    end
+    local nStep = floor((r.guar or 0) / 10)
+    if nStep < 1 then
+        nStep = 1
+    end
+    local sz = r.buyer.." tr∂ "..AUC_GiaTien(r.cur, r.currency).." cho "..r.name.." - muËn v≠Ót ph∂i tr∂ tı "..AUC_GiaTien(r.cur + nStep, r.currency)
+    if (r.base or 0) > (r.guar or 0) then
+        sz = sz..", mua ngay "..AUC_GiaTien(r.base, r.currency)
+    end
+    sz = sz.."; "..AUC_ConLai(r.endtime).."."
+    AUC_ChatGui(r.atype, r.tong, sz)
+    return 1
+end
+
+-- da ban: mua ngay (bMuaNgay = 1) hoac het gio co nguoi thang; nNet = tien nguoi ban / quy bang nhan sau thue
+function AUC_ChatBan(r, szBuyer, nPrice, nNet, bMuaNgay)
+    if not AUC_ChatLoai(r.atype) then
+        return 1
+    end
+    local sz
+    if bMuaNgay == 1 then
+        sz = szBuyer.." mua ngay "..r.name.." vÌi gi∏ "..AUC_GiaTien(nPrice, r.currency)..", vÀt ph»m gˆi qua th≠."
+    else
+        sz = "H’t giÍ: "..szBuyer.." thæng "..r.name.." vÌi gi∏ "..AUC_GiaTien(nPrice, r.currency)..", vÀt ph»m gˆi qua th≠."
+    end
+    if r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_TONG then
+        if r.currency == AUCTION_DEF.tbCurrency.MONEY then
+            sz = sz.." Qu¸ bang nhÀn "..AUC_GiaTien(nNet, r.currency).."."
+        else
+            sz = sz.." Ng≠Íi b∏n nhÀn "..AUC_GiaTien(nNet, r.currency).."."
+        end
+    end
+    AUC_ChatGui(r.atype, r.tong, sz)
+    return 1
+end
+
+-- het gio khong ai mua
+function AUC_ChatE(r)
+    if not AUC_ChatLoai(r.atype) then
+        return 1
+    end
+    local sz = "H’t giÍ: "..r.name.." kh´ng ai tr∂ gi∏, "
+    if r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD then
+        sz = sz.."Æ∑ thu hÂi."
+    else
+        sz = sz.."tr∂ v“ ng≠Íi b∏n qua th≠."
+    end
+    AUC_ChatGui(r.atype, r.tong, sz)
+    return 1
+end
+
+-- chu mon rut khoi san
+function AUC_ChatRut(r)
+    if not AUC_ChatLoai(r.atype) then
+        return 1
+    end
+    AUC_ChatGui(r.atype, r.tong, r.name.." Æ∑ Æ≠Óc rÛt kh·i sµn (ch≠a ai tr∂ gi∏).")
+    return 1
+end
+
+-- Ha Lan: ha gia mot nhip
+function AUC_ChatHaGia(r)
+    if not AUC_ChatLoai(r.atype) then
+        return 1
+    end
+    local sz = r.name.." hπ gi∏ cﬂn "..AUC_GiaTien(r.cur, r.currency)
+    if (r.dropleft or 0) > 0 then
+        sz = sz.." (cﬂn "..r.dropleft.." l«n hπ, th p nh t "..AUC_GiaTien(r.guar, r.currency)..")"
+    else
+        sz = sz.." (gi∏ th p nh t)"
+    end
+    sz = sz..", "..AUC_ConLai(r.endtime).."."
+    AUC_ChatGui(r.atype, r.tong, sz)
+    return 1
+end
+
+-- [DAUGIA-WEB] dot moi tu web admin: mot dong tong quat + moi mon mot dong (tbBao = {{ten, kd, mn, tien}})
+function AucWeb_ChatDot(szAct, nRound, nEnd, tbBao)
+    local n = getn(tbBao)
+    if n <= 0 then
+        return 1
+    end
+    local nType = AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD
+    AUC_ChatGui(nType, 0, szAct.." mÎ: "..n.." m„n mÌi, "..AUC_ConLai(nEnd).." (k’t thÛc "..AUC_GioDongHo(nEnd).."). Ai tr∂ cao nh t khi h’t giÍ Æ≠Óc nhÀn qua th≠."..AUC_ChatHuongDan(nType))
+    for i = 1, n do
+        local m = tbBao[i]
+        local sz = i..". "..m.ten..": khÎi Æi”m "..AUC_GiaTien(m.kd, m.tien)
+        if (m.mn or 0) > 0 then
+            sz = sz..", mua ngay "..AUC_GiaTien(m.mn, m.tien)
+        end
+        AUC_ChatGui(nType, 0, sz)
+    end
+    return 1
+end
+
 -- ---------------------------------------------------------------- nhan tu client (protocol_def_gs.lua)
 function AUC_MyTong()
     local _, nTong = GetTongName()
@@ -530,7 +765,7 @@ function AUC_OnRequestOfferDutch(nType, szAct, nId, nPrice)
     if szGiuGia ~= "" and nGiuGia > 0 then
         AUC_MailMoney(szGiuGia, "Hoµn ti“n Æ u gi∏", "C„ ng≠Íi mua ngay "..r.name..", hoµn lπi ti“n Æπi hi÷p Æ∑ tr∂.", r.currency, nGiuGia)
     end
-    AUC_Settle(r, GetName(), nGiaMua)
+    AUC_Settle(r, GetName(), nGiaMua, 1)
     AUC_ReplyOffer(nType, szAct, nId, nGiaMua)
     AUC_NotifyEndItem(nType, AUC_ActName(nType, r), nId, r.tong)
 end
@@ -615,6 +850,7 @@ function AUC_OnRequestOfferEnglish(nType, szAct, nId, nNewPrice)
     local r2 = AUC_Get(nId)
     if r2 then
         AUC_NotifyPrice(nType, AUC_ActName(nType, r2), r2, nNow)
+        AUC_ChatThu(AUC_ChatTraGia, {r2})
     end
 end
 
@@ -664,12 +900,14 @@ function AUC_OnRequestGetBack(nType, szAct, nId)
     AUC_SetState(nId, 3, 1)
     Msg2Player("ß∑ rÛt "..r.name..", vÀt ph»m gˆi v“ hÈp th≠.")
     AUC_Log(format("%s rut lai id %d (%s)", GetName(), nId, r.name))
+    AUC_ChatThu(AUC_ChatRut, {r})
     AUC_NotifyEndItem(nType, AUC_ActName(nType, r), nId, r.tong)
 end
 
 -- ---------------------------------------------------------------- chot giao dich
 -- r: dong (truoc khi doi), szBuyer, nPrice: gia chot. Giao do cho nguoi mua, tien cho nguoi ban / quy bang.
-function AUC_Settle(r, szBuyer, nPrice)
+-- [DAUGIA-CHAT] bMuaNgay: 1 = mua ngay, 0/nil = het gio co nguoi thang (chi de dat cau bao kenh chat)
+function AUC_Settle(r, szBuyer, nPrice, bMuaNgay)
     local nTax = floor(nPrice * AUCTION_DEF.nAuctionTaxRate / 100)
     local nNet = nPrice - nTax
     -- [A24] PHAI kiem ket qua gui thu: truoc day bo qua nen thu hong la tien nguoi mua da tru
@@ -698,6 +936,7 @@ function AUC_Settle(r, szBuyer, nPrice)
     end
     AUC_SetState(r.id, 3, 3)
     AUC_Log(format("BAN id %d %s: %s -> %s gia %d tien %d (thue %d)", r.id, r.name, r.seller, szBuyer, nPrice, r.currency, nTax))
+    AUC_ChatThu(AUC_ChatBan, {r, szBuyer, nPrice, nNet, bMuaNgay or 0})
 end
 
 -- het han / khong ai mua: tra do ve nguoi ban
@@ -707,6 +946,7 @@ function AUC_Expire(r)
     if r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD then
         AUC_Log(format("LUU PHACH the gioi id %d %s", r.id, r.name))
         AUC_SetState(r.id, 3, 3)
+        AUC_ChatThu(AUC_ChatE, {r})
         return
     end
     if AUC_MailItem(r.seller, "VÀt ph»m ch≠a b∏n Æ≠Óc", "M„n "..r.name.." h’t hπn mµ ch≠a ai mua, tr∂ lπi Æπi hi÷p.", r.id) <= 0 then
@@ -719,6 +959,7 @@ function AUC_Expire(r)
         AUC_MailMoney(r.seller, "Hoµn c‰c k˝ gˆi", "M„n "..r.name.." h’t hπn ch≠a b∏n Æ≠Óc, hoµn lπi ti“n c‰c.", r.currency, r.deposit)
     end
     AUC_Log(format("HET HAN id %d %s tra %s (hoan coc %d)", r.id, r.name, r.seller, r.deposit or 0))
+    AUC_ChatThu(AUC_ChatE, {r})
 end
 
 -- kieu Anh ket thuc co nguoi tra gia
@@ -733,7 +974,7 @@ function AUC_FinishEnglish(r)
     if AUC_Buy(r.id, r.buyer, r.cur) ~= 1 then
         return
     end
-    AUC_Settle(r, r.buyer, r.cur)
+    AUC_Settle(r, r.buyer, r.cur, 0)
 end
 
 -- ---------------------------------------------------------------- DAT BAN (goi tu NPC / GM)
@@ -853,6 +1094,8 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong, nBase
         szActReal = AUCTION_DEF.szPersonalActivity
     end
     AUC_NotifyNewItem(nType, szActReal, nId, nTong)
+    -- [DAUGIA-CHAT] bao kenh chat (the gioi / bang): ai dua mon gi, gia, ket thuc luc nao, cach tham gia
+    AUC_ChatThu(AUC_ChatLenSan, {nType, nTong or 0, szActReal or "", GetName(), szName, nCur, nGuar, nBase, nCurP, nKind, nEnd})
     return nId
 end
 
@@ -946,7 +1189,7 @@ function AucWeb_PutOne(p, szAct, nNow, nEnd)
     end
     AUCWEB_Drawn(p.id, nNow, nId, szName)
     AUC_Log(format("WEB len san id %d %s (nhom %d) khoi diem %d mua ngay %d tien %d het %d", nId, szName, p.id, nStart, nBuy, nCur, nEnd))
-    return "", nId
+    return "", nId, szName, nStart, nBuy, nCur
 end
 
 -- mo MOT dot: da gianh duoc quyen (AUCWEB_ClaimRound = 1)
@@ -961,6 +1204,7 @@ function AucWeb_Round(nNow, nPer, nEnd, nRound)
         tinsert(cand, p)
     end
     local nDone, nSkip, nLastId, nThu = 0, 0, 0, 0
+    local tbBao = {}
     -- [W6] toi da nPer * 4 lan boc: nhom cau hinh sai hang loat khong keo mot nhip game qua dai
     -- (moi dong loi = mot UPDATE dong bo ~2,5 ms + dung vat pham hai lan)
     while nDone < nPer and getn(cand) > 0 and nThu < nPer * 4 do
@@ -971,10 +1215,11 @@ function AucWeb_Round(nNow, nPer, nEnd, nRound)
         end
         local p = cand[k]
         tremove(cand, k)
-        local szErr, nId = AucWeb_PutOne(p, szAct, nNow, nEnd)
+        local szErr, nId, szTen, nKD, nMN, nTien = AucWeb_PutOne(p, szAct, nNow, nEnd)
         if szErr == "" then
             nDone = nDone + 1
             nLastId = nId or 0
+            tinsert(tbBao, {ten = szTen or "?", kd = nKD or 0, mn = nMN or 0, tien = nTien or 1})
         else
             nSkip = nSkip + 1
             AUCWEB_Err(p.id, szErr)
@@ -988,6 +1233,8 @@ function AucWeb_Round(nNow, nPer, nEnd, nRound)
         if call(AucWeb_Bao, {szAct, nLastId}, "x") == nil then
             AUC_Log("WEB: loi khi bao nguoi dang xem (bo qua)")
         end
+        -- [DAUGIA-CHAT] bao kenh chat the gioi: dot may, may mon, moi mon ten + gia, ket thuc luc nao
+        AUC_ChatThu(AucWeb_ChatDot, {szAct, nRound, nEnd, tbBao})
     end
     local szMsg = format("dot %d luc %s: %d mon len san, %d bo qua, nhom dang bat %d, het luc %s",
         nRound, GetLocalDate("%H:%M %d/%m"), nDone, nSkip, getn(pool), AUC_GioHet(nEnd))
@@ -1267,6 +1514,7 @@ function AUC_Tick()
                     r.nextdrop = nNow + AUCTION_DEF.nDutchFloatInterval
                     r.dropleft = r.dropleft - 1
                     AUC_NotifyPrice(nType, AUC_ActName(nType, r), r, nNow)
+                    AUC_ChatThu(AUC_ChatHaGia, {r})
                 end
             end
         end
