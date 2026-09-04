@@ -1931,10 +1931,11 @@ int KItem::Abrade(IN const int nAbradeP, IN const int nRange)//#mµi mßn
 void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack/* = false*/, unsigned int sidx /* = 0*/)
 {
 	bool ispos_immediacy = false;
-	if (bResize && (m_CommonAttrib.nWidth * m_CommonAttrib.nHeight > 1))
-	{
-		strcpy(m_Image.szImage, RESIZEITEM_SPR);
-	}
+	// [A31 04/09] bResize tu nay nghia la THU NHO VE MOT O chu khong doi anh nua.
+	// Truoc day no thay hinh mon bang RESIZEITEM_SPR (cai tui chuyen van) - chu bao dung:
+	// "chu ban dang thu nho ve va doi luon hinh anh sao duoc?". Nay ve bang RU_T_IMAGE_STRETCH
+	// voi khung dich mot o; Represent3 noi suy tung manh khung anh vao do (DrawSpriteAlpha).
+	bool bThuNho = (bResize && (m_CommonAttrib.nWidth * m_CommonAttrib.nHeight > 1));
 	//
 	m_Image.oPosition.nX = nX;
 	m_Image.oPosition.nY = nY;
@@ -1962,7 +1963,16 @@ void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack
 		}
 	}
 	m_Image.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
-	g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE, TRUE);
+	if (bThuNho)
+	{
+		#define	ITEM_ONE_CELL	26
+		m_Image.oEndPos.nX = m_Image.oPosition.nX + ITEM_ONE_CELL;
+		m_Image.oEndPos.nY = m_Image.oPosition.nY + ITEM_ONE_CELL;
+		m_Image.oEndPos.nZ = m_Image.oPosition.nZ;
+		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE_STRETCH, TRUE);
+	}
+	else
+		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE, TRUE);
 	
 	if (IsStack() && bPaintStack && !ispos_immediacy) //Kh«ng vÏ sè l­îng item trong « phÝm t¾t
 	{

@@ -188,14 +188,7 @@ def build_manager():
         "    if n < 0 then",
         "        n = 0",
         "    end",
-        "    if n >= 100000000 then",
-        "        local nUc = floor(n / 100000000)",
-        "        local nVan = floor(mod(n, 100000000) / 10000)",
-        "        if nVan > 0 then",
-        "            return nUc..\"" + V(" ức ") + "\"..nVan..\"" + V(" vạn") + "\"",
-        "        end",
-        "        return nUc..\"" + V(" ức") + "\"",
-        "    end",
+        "    -- [A32] chu chot: KHONG dung \"uc\", cu dem theo van (100 van -> 1000 van -> 10000 van)",
         "    if n >= 10000 then",
         "        local nVan = floor(n / 10000)",
         "        local nLe = mod(n, 10000)",
@@ -2001,15 +1994,19 @@ def copy_ini():
         # Vay bo han duong doi anh (co ResizeBigItem) va tra ve cach GIU HINH THAT: noi o cho vua mon.
         # Hang cao 107, cot trai rong 86 nen o 58x78 du cho trang bi 2x3 va khong dung vao chu.
         if n == "auction_item_icon":
-            txt = _setkey(txt, "Main", "Left", 14)
-            txt = _setkey(txt, "Main", "Top", 14)
-            txt = _setkey(txt, "MailAwardItemSpr", "Left", 0)
-            txt = _setkey(txt, "MailAwardItemSpr", "Top", 0)
-            txt = _setkey(txt, "MailAwardItemSpr", "Width", 58)
-            txt = _setkey(txt, "MailAwardItemSpr", "Height", 78)
-            txt = _setkey(txt, "MailAwardItemSpr", "ResizeBigItem", 0)
-            txt = _setkey(txt, "MailAwardItemCount", "Top", 64)
-            txt = _setkey(txt, "MailAwardItemCount", "Width", 56)
+            # [A32b] thu nho THAT duoc roi (xem [A31]) nen o ve 26x26 va bat co
+            txt = _setkey(txt, "Main", "Left", 30)
+            txt = _setkey(txt, "Main", "Top", 30)
+            txt = _setkey(txt, "MailAwardItemSpr", "Left", 1)
+            txt = _setkey(txt, "MailAwardItemSpr", "Top", 1)
+            txt = _setkey(txt, "MailAwardItemSpr", "Width", 26)
+            txt = _setkey(txt, "MailAwardItemSpr", "Height", 26)
+            txt = _setkey(txt, "MailAwardItemSpr", "ResizeBigItem", 1)
+            # nhan so noi rong va can PHAI de "9 van 6000" khong bi cat con "9 v"
+            txt = _setkey(txt, "MailAwardItemCount", "Left", -36)
+            txt = _setkey(txt, "MailAwardItemCount", "Top", 13)
+            txt = _setkey(txt, "MailAwardItemCount", "Width", 62)
+            txt = _setkey(txt, "MailAwardItemCount", "HAlign", 2)
         if n == "auction_icon":
             # bieu tuong: nam ngay duoi bieu tuong thu (mail_icon.ini Left=765 Top=296 -> dau gia Top=322)
             # [A10 04/09] chu: "cho icon dau gia xuong giua bau cua va mail"

@@ -749,6 +749,13 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 			KRUImageStretch* pTemp = (KRUImage*)pPrimitives;
 			for (i = 0; i < nPrimitiveCount; i++, pTemp++)
 			{
+				// [A31 04/09] ban dung hinh du phong nay chay tren DirectDraw, khong co duong co gian
+				// cho sprite. Ve nguyen co de khong MAT HINH (chi la khong thu nho duoc).
+				if (pTemp->nType == ISI_T_SPR)
+				{
+					DrawPrimitives(1, pTemp, RU_T_IMAGE, bSinglePlaneCoord);
+					continue;
+				}
 				if (pTemp->nType == ISI_T_BITMAP16)
 				{
 					LPDIRECTDRAWSURFACE pSurface;

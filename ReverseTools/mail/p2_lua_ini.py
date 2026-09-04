@@ -239,7 +239,12 @@ def build_ini(name):
         # [D17 04/09] BO duong doi anh: no thay hinh mon bang anh thay the, chu bao "chu ban dang thu nho
         # ve va doi luon hinh anh sao duoc". Engine khong thu nho duoc sprite (xem chu thich [A30] o
         # p12_daugia.py) nen o thu giu 26x26 va mon nhieu o se ve nguyen co - dung nhu truoc dot D14.
-        s = _setkey(s, "MailAwardItemSpr", "ResizeBigItem", 0)
+        # [D18 04/09] thu nho THAT duoc roi (xem [A31] KItem.cpp + KRepresentShell3.cpp)
+        s = _setkey(s, "MailAwardItemSpr", "ResizeBigItem", 1)
+        # nhan so noi rong va can PHAI, khong thi "9 van 6000" bi cat con "9 v"
+        s = _setkey(s, "MailAwardItemCount", "Left", -36)
+        s = _setkey(s, "MailAwardItemCount", "Width", 62)
+        s = _setkey(s, "MailAwardItemCount", "HAlign", 2)
     if name == "mail_icon.ini":
         # [D4 03/09] chu: dat duoi bieu tuong Bau Cua = UiPlayerBar.ini [SpringGame] Left=765 Top=243 50x50 (800x600);
         # 1024: UiMail.cpp neo x = 1024 - 30 nhu UiPlayerBar.cpp

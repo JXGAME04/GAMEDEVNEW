@@ -66,14 +66,7 @@ function AUC_SoTien(n)
     if n < 0 then
         n = 0
     end
-    if n >= 100000000 then
-        local nUc = floor(n / 100000000)
-        local nVan = floor(mod(n, 100000000) / 10000)
-        if nVan > 0 then
-            return nUc.." øc "..nVan.." v¹n"
-        end
-        return nUc.." øc"
-    end
+    -- [A32] chu chot: KHONG dung "uc", cu dem theo van (100 van -> 1000 van -> 10000 van)
     if n >= 10000 then
         local nVan = floor(n / 10000)
         local nLe = mod(n, 10000)

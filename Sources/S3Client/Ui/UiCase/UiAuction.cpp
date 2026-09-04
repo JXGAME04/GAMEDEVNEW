@@ -92,16 +92,8 @@ static void sFmtMoney(char* sz, int nSize, int n)
 {
 	if (n < 0)
 		n = 0;
-	if (n >= 100000000)
-	{
-		int nUc = n / 100000000;
-		int nVan = (n % 100000000) / 10000;
-		if (nVan)
-			_snprintf(sz, nSize - 1, "%d øc %d v¹n", nUc, nVan);
-		else
-			_snprintf(sz, nSize - 1, "%d øc", nUc);
-	}
-	else if (n >= 10000)
+	// [A32 04/09] chu chot: KHONG dung "øc", cu dem theo v¹n (100 v¹n -> 1000 v¹n -> 10000 v¹n)
+	if (n >= 10000)
 	{
 		int nVan = n / 10000;
 		int nLe = n % 10000;
@@ -380,9 +372,8 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 	char sz[64];
 	m_Name.SetText(p->szName);
 	// bieu tuong: dung lai vat pham tam tu ChatItem (nhu hop thu)
-	// [A30 04/09] o lai rong 58x78 de GIU HINH THAT cua mon (engine khong thu nho duoc sprite),
-	// ma khung nen chi 26x26 nen nho hon mon - an di, hang da co khung rieng.
-	m_IconBg.Hide();
+	// [A32 04/09] o lai 26x26 va mon nhieu o duoc THU NHO THAT ve mot o, nen khung nen hien lai.
+	m_IconBg.Show();
 	if (!bSameItem && g_pCoreShell && p->Item.m_nID)
 	{
 		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&p->Item);
