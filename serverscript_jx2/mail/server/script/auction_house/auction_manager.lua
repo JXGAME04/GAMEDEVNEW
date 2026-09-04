@@ -749,7 +749,12 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong, nBase
     --   guar = gia CO BAN (khoi diem)   cur = gia cao nhat dang co, 0 = chua ai tra
     --   base = gia MUA NGAY             buoc moi luot = 10% gia co ban (AUC_RowToClient)
     -- Het 24 gio: ai giu gia cao nhat thi duoc mon; khong ai tra thi tra mon ve nguoi ban.
-    local nGuar = nBaseIn or nPrice
+    -- [A37] BAY Lua 4: so 0 la TRUE nen "nBaseIn or nPrice" cho ra 0 khi nBaseIn = 0.
+    -- Duong hop ky gui da chan nBase >= 1, nhung lenh GM / NPC goi mot gia van truyen 0 duoc.
+    local nGuar = nPrice
+    if nBaseIn ~= nil and nBaseIn >= 1 and nBaseIn < nPrice then
+        nGuar = nBaseIn
+    end
     local nCurP = 0
     local nBase = nPrice
     local nEnd = nNow + AUCTION_DEF.nPersonalDuration
@@ -901,10 +906,13 @@ function AUC_OnRequestPutOn(nType)
     -- [A23 04/09] Chu bao "cho nhap gia bi de chu len": o mo ta cua hop trai tu y 96 den 182,
     -- dung cho hai hang nhap gia. Chu dai ba bon dong la de len chung (loi cua dot A21).
     -- Nay trong hop chi de MOT dong ngan; luat day du noi qua khung chat, doc lai duoc.
-    if nType == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL then
+    -- [A37] CA BA the deu nhap hai gia nen bang chu cung phai duoc doc luat nay
     Msg2Player("Ký göi: nhËp gi¸ mua ngay vµ gi¸ c¬ b¶n (c¬ b¶n ph¶i thÊp h¬n gi¸ mua ngay).")
     Msg2Player("Ng­êi mua tr¶ gi¸ lªn tõng l­ît, mçi l­ît thªm 10% gi¸ c¬ b¶n, hoÆc tr¶ th¼ng gi¸ mua ngay.")
-    Msg2Player("Cäc "..AUCTION_DEF.nPersonalPutOnCost.."% gi¸ c¬ b¶n, hoµn l¹i khi b¸n ®­îc hoÆc hÕt h¹n, chØ mÊt khi tù rót mãn. ThuÕ "..AUCTION_DEF.nAuctionTaxRate.."% khi b¸n ®­îc.")
+    if nType == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL then
+        Msg2Player("Cäc "..AUCTION_DEF.nPersonalPutOnCost.."% gi¸ c¬ b¶n, hoµn l¹i khi b¸n ®­îc hoÆc hÕt h¹n, chØ mÊt khi tù rót mãn. ThuÕ "..AUCTION_DEF.nAuctionTaxRate.."% khi b¸n ®­îc.")
+    else
+        Msg2Player("Phiªn bang héi kÐo dµi 30 phót, tiÒn b¸n vµo quü bang. ThuÕ "..AUCTION_DEF.nAuctionTaxRate.."% khi b¸n ®­îc.")
     end
     local szNhac = "Cäc "..AUCTION_DEF.nPersonalPutOnCost.."%, thuÕ "..AUCTION_DEF.nAuctionTaxRate.."% khi b¸n."
     GiveItemUI("Ký göi ®Êu gi¸", szNhac, "AUC_OnGiveOk", "AUC_OnGiveCancel", 0, "AUC_OnGiveCheck", 0, AUC_SCRIPT)
