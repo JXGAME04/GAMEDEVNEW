@@ -40,6 +40,33 @@ bool CD3D_Device::CreateDevice(D3DAdapterInfo* pAdapter,D3DDeviceInfo* pDevice,D
 		FreeAll(); 
 		return false; 
 	}
+
+	// [REP3 03/09] do NPOT nhu represent3free.dll 2.0 (0x10001700): caps + tao thu texture 33x17 A8R8G8B8
+	g_nMaxTexW = (int)m_DeviceCaps.MaxTextureWidth;
+	g_nMaxTexH = (int)m_DeviceCaps.MaxTextureHeight;
+	if (g_nMaxTexW <= 0) g_nMaxTexW = 1024;
+	if (g_nMaxTexH <= 0) g_nMaxTexH = 1024;
+	g_bNpotOK = false;
+	{
+		bool bFull = (m_DeviceCaps.TextureCaps & D3DPTEXTURECAPS_POW2) == 0;
+		bool bCond = (m_DeviceCaps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0;
+		if (g_nRep3Npot && (bFull || bCond))
+		{
+			LPDIRECT3DTEXTURE9 pProbe = NULL;
+			HRESULT hrProbe = m_pD3DDevice->CreateTexture(33, 17, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &pProbe, NULL);
+			if (SUCCEEDED(hrProbe) && pProbe)
+			{
+				pProbe->Release();
+				g_bNpotOK = true;
+			}
+			Rep3Log("[REP3] NPOT: full=%d conditional=%d probe=0x%08x -> %s", (int)bFull, (int)bCond, (unsigned int)hrProbe, g_bNpotOK ? "DUNG NPOT" : "cat POT");
+		}
+		else
+			Rep3Log("[REP3] NPOT: card khong ho tro (TextureCaps=0x%08x) hoac Rep3Npot=0 -> cat POT", (unsigned int)m_DeviceCaps.TextureCaps);
+	}
+	Rep3Log("[REP3] card: %s | MaxTex %dx%d | VertexProc %s | vsync=%d",
+		pDevice && pDevice->strDesc ? pDevice->strDesc : "?", g_nMaxTexW, g_nMaxTexH,
+		(BehaviorFlags & D3DCREATE_MIXED_VERTEXPROCESSING) ? "mixed" : "software", g_nRep3Vsync);
 	
 	// 检测是否支持非二的幂次贴图长宽
 //	if(m_DeviceCaps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL)
@@ -159,6 +186,8 @@ void CD3D_Device::SetPresentationParams(D3DPRESENT_PARAMETERS& PresentationParam
 	//PresentationParam.Flags								= 0;
 //	PresentationParam.Flags								= 0;
 	PresentationParam.FullScreen_RefreshRateInHz		= D3DPRESENT_RATE_DEFAULT; //D3DPRESENT_RATE_UNLIMITED
+	// [REP3 03/09] Present ngay, khong cho vsync (client tu dieu nhip PaintFps); Rep3Vsync=1 de bat lai
+	PresentationParam.PresentationInterval				= g_nRep3Vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 }
 
 /*

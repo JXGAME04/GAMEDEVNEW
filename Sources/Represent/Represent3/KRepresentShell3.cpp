@@ -13,6 +13,8 @@
 //#include "dxerr.h"
 
 #include "TextureRes.h"
+#include <psapi.h>	// [REP3 03/09 RAM] GetProcessMemoryInfo
+#pragma comment(lib, "psapi.lib")
 HWND	g_hWnd = NULL;
 int		g_ntest = 0;
 
@@ -38,6 +40,47 @@ RenderModel	g_renderModel = RenderModel3DPerspective;
 bool	g_bUse4444Texture = true;
 
 bool	g_bNonPow2Conditional = false;
+
+// [REP3 03/09] cong tac doc tu [Client] config.ini - xem BaseInclude.h
+int  g_nRep3Flat      = 1;
+int  g_nRep3Composite = 0;
+int  g_nRep3Tex32     = 1;
+int  g_nRep3Npot      = 1;
+int  g_nRep3Vsync     = 0;
+int  g_nRep3CacheMB   = 0;
+int  g_nRep3Log       = 1;
+int  g_nRep3Pool      = 1;	// [REP3 03/09 RAM]
+int  g_nRep3StatSec   = 30;
+bool g_bNpotOK        = false;
+int  g_nMaxTexW = 1024, g_nMaxTexH = 1024;
+
+static char s_szRep3Ini[MAX_PATH] = "";
+static int Rep3Ini(const char* szKey, int nDef)
+{
+	if (!s_szRep3Ini[0])
+	{
+		GetCurrentDirectoryA(MAX_PATH - 16, s_szRep3Ini);
+		strcat(s_szRep3Ini, "\\config.ini");
+	}
+	return (int)GetPrivateProfileIntA("Client", szKey, nDef, s_szRep3Ini);
+}
+
+void Rep3Log(const char* fmt, ...)
+{
+	if (!g_nRep3Log)
+		return;
+	FILE* pLog = fopen("jx_rep3.log", "a");
+	if (!pLog)
+		return;
+	char szBuf[1024];
+	va_list va;
+	va_start(va, fmt);
+	_vsnprintf(szBuf, sizeof(szBuf) - 1, fmt, va);
+	va_end(va);
+	szBuf[sizeof(szBuf) - 1] = 0;
+	fprintf(pLog, "[%u] %s\n", (unsigned int)GetTickCount(), szBuf);
+	fclose(pLog);
+}
 
 bool Test3D()
 {
@@ -344,6 +387,9 @@ KRepresentShell3::KRepresentShell3()
 	m_pVB3D = NULL;
 	m_bDeviceLost = false;
 	m_bDoLighting = true;
+	m_nBlendMode = 0;		// [REP3 03/09]
+	m_dwLastPresent = 0;
+	m_fFpsAvg = 0.0f;
 	m_pJxReplay = NULL;
 	m_nReplayTime = 0;
 	m_nReplayStatus = -1;
@@ -376,7 +422,9 @@ void KRepresentShell3::SetOption(RepresentOption eOption,	bool bOn)
 			m_bDoLighting = false;
 		break;
 	case PERSPECTIVE:
-		{	if(bOn)
+		{	if (g_nRep3Flat)			// [REP3 03/09] ve phang: khong doi sang 3D
+				g_renderModel = RenderModel2D;
+			else if(bOn)
 				g_renderModel = RenderModel3DOrtho;
 			else
 				g_renderModel = RenderModel3DOrtho;
@@ -400,6 +448,23 @@ void KRepresentShell3::SetUpProjectionMatrix()
 
 bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 {
+	// [REP3 03/09] doc cong tac [Client] trong config.ini
+	g_nRep3Flat      = Rep3Ini("Rep3Flat", 1);
+	g_nRep3Composite = Rep3Ini("Rep3Composite", 0);
+	g_nRep3Tex32     = Rep3Ini("Rep3Tex32", 1);
+	g_nRep3Npot      = Rep3Ini("Rep3Npot", 1);
+	g_nRep3Vsync     = Rep3Ini("Rep3Vsync", 0);
+	g_nRep3CacheMB   = Rep3Ini("Rep3CacheMB", 0);
+	g_nRep3Log       = Rep3Ini("Rep3Log", 1);
+	g_nRep3Pool      = Rep3Ini("Rep3Pool", 1);		// [REP3 03/09 RAM]
+	g_nRep3StatSec   = Rep3Ini("Rep3StatSec", 30);
+	m_TextureResMgr.SetBudget();	// [REP3 03/09 RAM] doc Rep3CacheMB SAU khi doc ini (ctor chay truoc Create)
+	g_bUse4444Texture = (g_nRep3Tex32 == 0);
+	if (g_nRep3Flat)
+		g_renderModel = RenderModel2D;
+	Rep3Log("[REP3] Create %dx%d full=%d flat=%d composite=%d tex32=%d npot=%d vsync=%d cacheMB=%d pool=%s statSec=%d",
+		nWidth, nHeight, (int)bFullScreen, g_nRep3Flat, g_nRep3Composite, g_nRep3Tex32, g_nRep3Npot, g_nRep3Vsync, g_nRep3CacheMB,
+		g_nRep3Pool ? "DEFAULT(VRAM)" : "MANAGED(RAM+VRAM)", g_nRep3StatSec);	// [REP3 03/09 RAM]
 	if (!g_D3DShell.Create())
 		return false;
 	g_DebugLog("[D3DRender]g_D3DShell create ok!");
@@ -420,6 +485,31 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 		SetWindowLong(g_hWnd, GWL_STYLE, winLong);
 	}
 
+
+	if (g_bRunWindowed)
+	{
+		// [REP3 03/09] cua so phai dung nWidth x nHeight de Present 1:1 (nhu KDirectDraw::SetWindowStyle).
+		// Game.exe cu (truoc 03/09) tu keo cao them 40 px va co toa do chuot theo 40/808:
+		// gap dung dau hieu do thi GIU NGUYEN de chuot khop, chap nhan hinh bi keo 5%.
+		RECT rcClient = {0, 0, 0, 0};
+		GetClientRect(g_hWnd, &rcClient);
+		int nCW = rcClient.right - rcClient.left;
+		int nCH = rcClient.bottom - rcClient.top;
+		if (nCW == nWidth && nCH == nHeight + 40)
+		{
+			Rep3Log("[REP3] cua so %dx%d = Game.exe cu (+40 px), giu nguyen", nCW, nCH);
+		}
+		else if (nCW != nWidth || nCH != nHeight)
+		{
+			RECT	rc = {0, 0, nWidth, nHeight};
+			DWORD	dwStyle = WS_VISIBLE | WS_SYSMENU | WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX;
+			SetWindowLong(g_hWnd, GWL_STYLE, dwStyle);
+			AdjustWindowRectEx(&rc, dwStyle, GetMenu(g_hWnd) != NULL, GetWindowLong(g_hWnd, GWL_EXSTYLE));
+			SetWindowPos(g_hWnd, HWND_NOTOPMOST, 0, 0, rc.right - rc.left, rc.bottom - rc.top,
+				SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
+			Rep3Log("[REP3] cua so %dx%d -> dat lai %dx%d", nCW, nCH, nWidth, nHeight);
+		}
+	}
 	D3DAdapterInfo* pAdapterInfo	 = NULL;
 	D3DDeviceInfo*  pDeviceInfo		 = NULL;
 	D3DModeInfo*	pModeInfo		 = NULL;
@@ -581,12 +671,16 @@ bool KRepresentShell3::RestoreDeviceObjects()
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
 	// ÉèÖÃAlpha»ìºÏÄ£Ê½
-    PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+    PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
 	// ÉèÖÃ¹ýÂËÄ£Ê½
 	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
-    PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+	// [REP3 03/09] NPOT co dieu kien bat buoc CLAMP; UV cua ta luon trong [0,1] nen khong doi hinh
+	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP );
+	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
+	PD3DDEVICE->SetTextureStageState( 1, D3DTSS_TEXCOORDINDEX, 0 );
 
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0 );
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE );
@@ -737,7 +831,12 @@ void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 	case RU_T_IMAGE_4:
 		{
 			if( g_renderModel == RenderModel2D || bSinglePlaneCoord)
-				DrawImage2D(nPrimitiveCount, pPrimitives, bSinglePlaneCoord);
+			{
+				if (g_nRep3Composite)
+					DrawImage2D(nPrimitiveCount, pPrimitives, bSinglePlaneCoord);
+				else	// [REP3 03/09] ve tung sprite y nhu Represent2
+					DrawImage2DFlat(nPrimitiveCount, pPrimitives, bSinglePlaneCoord, uGenre == RU_T_IMAGE_4);
+			}
 			else
 				DrawImage3D(uGenre, nPrimitiveCount, pPrimitives, bSinglePlaneCoord);
 		}
@@ -788,13 +887,15 @@ void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 						
 						switch(pTemp->bRenderStyle)
 						{
+						case IMAGE_RENDER_STYLE_BORDER:				// [REP3 03/09]
+						case IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST:
 						case IMAGE_RENDER_STYLE_ALPHA:
 						case IMAGE_RENDER_STYLE_3LEVEL:
 						case IMAGE_RENDER_STYLE_OPACITY:
 						case IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT:
 						{
 							DrawSpritePartAlpha(nX, nY, pSprite->m_pFrameInfo[pTemp->nFrame].nWidth, 
-								pSprite->m_pFrameInfo[pTemp->nFrame].nHeight, pTemp->nFrame, pSprite, rc);
+								pSprite->m_pFrameInfo[pTemp->nFrame].nHeight, pTemp->nFrame, pSprite, rc, pTemp->Color.Color_dw, pTemp->bRenderStyle);
 							break;
 						}
 						}
@@ -970,6 +1071,155 @@ void KRepresentShell3::DrawImage2D(int nPrimitiveCount, KRepresentUnit* pPrimiti
 			break;
 		}
 	}
+}
+
+// [REP3 03/09] ve tung sprite theo dung Represent2::DrawPrimitives (RU_T_IMAGE / RU_T_IMAGE_4):
+//  - toa do: CoordinateTransform 2D, REF_SPOT, FRAME_DRAW y het;
+//  - RU_T_IMAGE_4 (bClipRect): cat theo oImgLTPos/oImgRBPos nhu SetClipRect cua Represent2;
+//  - kieu ve giao cho SetSpriteBlend (ALPHA/3LEVEL/NOT_BE_LIT = alpha; OPACITY = duc; BORDER = khong ve;
+//    COLOR_ADJUST = nhan mau; spr moi (Reserved[1]) = SCREEN nhu DrawSpriteBlendColor(..., 1, TRUE)).
+void KRepresentShell3::DrawImage2DFlat(int nPrimitiveCount, KRepresentUnit* pPrimitives, int bSinglePlaneCoord, int bClipRect)
+{
+	int i;
+	KRUImage* pTemp = (KRUImage*)pPrimitives;
+	int nStep = bClipRect ? sizeof(KRUImage4) : sizeof(KRUImage);
+
+	for (i = 0; i < nPrimitiveCount; i++, pTemp = (KRUImage*)((char*)pTemp + nStep))
+	{
+		switch(pTemp->nType)
+		{
+		case ISI_T_SPR:
+			{
+				if (pTemp->bRenderStyle == IMAGE_RENDER_STYLE_BORDER)	// Represent2 khong ve gi
+					break;
+				TextureResSpr* pSprite = (TextureResSpr *)m_TextureResMgr.GetImage(
+					pTemp->szImage,	pTemp->uImage,
+					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+				if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
+					break;
+
+				int nX = pTemp->oPosition.nX;
+				int nY = pTemp->oPosition.nY;
+				if (!bSinglePlaneCoord)
+					CoordinateTransform(nX, nY, pTemp->oPosition.nZ);
+
+				if (pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT)
+				{
+					int nCenterX = pSprite->GetCenterX();
+					int nCenterY = pSprite->GetCenterY();
+					if (nCenterX || nCenterY)
+					{
+						nX -= nCenterX;
+						nY -= nCenterY;
+					}
+					else if (pSprite->GetWidth() > 160)
+					{
+						nX -= 160;
+						nY -= 192;
+					}
+				}
+				if (!(pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_FRAME_DRAW))
+				{
+					nX += pSprite->m_pFrameInfo[pTemp->nFrame].nOffX;
+					nY += pSprite->m_pFrameInfo[pTemp->nFrame].nOffY;
+				}
+				int nW = pSprite->m_pFrameInfo[pTemp->nFrame].nWidth;
+				int nH = pSprite->m_pFrameInfo[pTemp->nFrame].nHeight;
+				if (bClipRect)
+				{
+					KRUImage4* p4 = (KRUImage4*)pTemp;
+					RECT rc;
+					rc.left  = nX;
+					rc.top   = nY;
+					nX -= p4->oImgLTPos.nX;
+					nY -= p4->oImgLTPos.nY;
+					rc.right = nX + p4->oImgRBPos.nX;
+					rc.bottom= nY + p4->oImgRBPos.nY;
+					if (rc.left < 0) rc.left = 0;
+					if (rc.top < 0) rc.top = 0;
+					if (rc.right > g_nScreenWidth) rc.right = g_nScreenWidth;
+					if (rc.bottom > g_nScreenHeight) rc.bottom = g_nScreenHeight;
+					DrawSpritePartAlpha(nX, nY, nW, nH, pTemp->nFrame, pSprite, rc, pTemp->Color.Color_dw, pTemp->bRenderStyle);
+				}
+				else
+					DrawSpriteAlpha(nX, nY, nW, nH, pTemp->nFrame, pSprite, pTemp->Color.Color_dw, pTemp->bRenderStyle);
+			}
+			break;
+		case ISI_T_BITMAP16:
+			{
+				TextureResBmp* pBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
+					pTemp->szImage,	pTemp->uImage,
+					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+				if (!pBitmap)
+					break;
+
+				int nX = pTemp->oPosition.nX;
+				int nY = pTemp->oPosition.nY;
+				if (!bSinglePlaneCoord)
+					CoordinateTransform(nX, nY, pTemp->oPosition.nZ);
+				DrawBitmap16(nX, nY, pBitmap->GetWidth(), pBitmap->GetHeight(), pBitmap);
+			}
+			break;
+		}
+	}
+}
+
+// [REP3 03/09] trang thai tron mau theo kieu ve - doi chieu tung nhanh cua Represent2::DrawPrimitives
+//   Represent2 (32 bit):  ALPHA/3LEVEL/NOT_BE_LIT -> DrawSpriteAlpha(alpha = run*Color.a)
+//                         OPACITY -> DrawSprite (duc, bo Color.a)
+//                         BORDER  -> khong ve (DrawSpriteBorder da bi chu thich)
+//                         COLOR_ADJUST -> Color.rgb==0: nhu ALPHA; khac 0: g_BlendColor32b mode 0 = nhan mau
+//                         spr moi Reserved[1] -> g_DrawSpriteScreen32b: d' = d + a*s*(1-d) (mode 1 doi mau ~ nhan mau)
+void KRepresentShell3::SetSpriteBlend(int nRenderStyle, DWORD color, bool bNew, DWORD& vtxColor)
+{
+	DWORD a   = color >> 24;
+	DWORD rgb = color & 0x00ffffff;
+	DWORD tint = 0x00ffffff;
+	m_nBlendMode = 0;
+
+	if (nRenderStyle == IMAGE_RENDER_STYLE_OPACITY)
+	{
+		vtxColor = 0xffffffff;
+		PD3DDEVICE->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+		PD3DDEVICE->SetRenderState( D3DRS_ALPHATESTENABLE, TRUE );
+		PD3DDEVICE->SetRenderState( D3DRS_ALPHAREF, 0x01 );
+		PD3DDEVICE->SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL );
+		m_nBlendMode = 1;
+		return;
+	}
+	if ((bNew || nRenderStyle == IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST) && rgb != 0)
+		tint = rgb;
+	vtxColor = (a << 24) | tint;
+	if (bNew)
+	{
+		// screen: SRC = tex*diffuse*(texA*diffA) [2 tang], out = SRC*(1-dst) + dst
+		PD3DDEVICE->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+		PD3DDEVICE->SetTextureStageState( 1, D3DTSS_COLORARG1, D3DTA_CURRENT );
+		PD3DDEVICE->SetTextureStageState( 1, D3DTSS_COLORARG2, D3DTA_CURRENT | D3DTA_ALPHAREPLICATE );
+		PD3DDEVICE->SetTextureStageState( 1, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+		PD3DDEVICE->SetTextureStageState( 1, D3DTSS_ALPHAARG1, D3DTA_CURRENT );
+		PD3DDEVICE->SetRenderState( D3DRS_SRCBLEND,  D3DBLEND_INVDESTCOLOR );
+		PD3DDEVICE->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_ONE );
+		m_nBlendMode = 2;
+	}
+}
+
+void KRepresentShell3::ResetSpriteBlend()
+{
+	switch (m_nBlendMode)
+	{
+	case 1:
+		PD3DDEVICE->SetRenderState( D3DRS_ALPHATESTENABLE, FALSE );
+		PD3DDEVICE->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+		break;
+	case 2:
+		PD3DDEVICE->SetTextureStageState( 1, D3DTSS_COLOROP, D3DTOP_DISABLE );
+		PD3DDEVICE->SetTextureStageState( 1, D3DTSS_ALPHAOP, D3DTOP_DISABLE );
+		PD3DDEVICE->SetRenderState( D3DRS_SRCBLEND,  D3DBLEND_SRCALPHA );
+		PD3DDEVICE->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+		break;
+	}
+	m_nBlendMode = 0;
 }
 
 void KRepresentShell3::DrawImage2DStretch(int nPrimitiveCount, KRepresentUnit* pPrimitives)
@@ -2182,7 +2432,7 @@ bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
     }
 
 	// Çå³ý±³¾°
-	PD3DDEVICE->Clear( 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0,0,0), 1.0f, 0L );
+	PD3DDEVICE->Clear( 0, NULL, D3DCLEAR_TARGET, bClear ? (0xff000000 | (Color & 0x00ffffff)) : D3DCOLOR_XRGB(0,0,0), 1.0f, 0L );	// [REP3 03/09]
 
 	// ¿ªÊ¼ÐÔÄÜÍ³¼Æ
 	m_TextureResMgr.StartProfile();
@@ -2275,6 +2525,37 @@ void KRepresentShell3::RepresentEnd()
 	g_Device.End3D();
 	// ½»»»Ò³Ãæ
 	PD3DDEVICE->Present(NULL,NULL,NULL,NULL);
+
+	// [REP3 03/09] fps trung binh (EMA ~100 khung); chi don cache khi may khong dang chay cham (theo 2.0: >= 25 fps)
+	DWORD dwNow = timeGetTime();
+	if (m_dwLastPresent)
+	{
+		DWORD dwDt = dwNow - m_dwLastPresent;
+		if (dwDt < 10) dwDt = 10;
+		if (dwDt > 1000) dwDt = 1000;
+		float fFps = 1000.0f / (float)dwDt;
+		m_fFpsAvg = (m_fFpsAvg <= 0.0f) ? fFps : (m_fFpsAvg * 0.98f + fFps * 0.02f);
+	}
+	m_dwLastPresent = dwNow;
+	if (m_fFpsAvg >= 25.0f)
+		m_TextureResMgr.CheckBalanceFrame();
+
+	// [REP3 03/09 RAM] thong ke dinh ky: RAM rieng tien trinh, VRAM con trong, cache texture (VRAM) + raw spr (RAM), so nap/bo, fps
+	if (g_nRep3StatSec > 0)
+	{
+		static DWORD s_dwLastStat = 0;
+		if (s_dwLastStat == 0 || (dwNow - s_dwLastStat) >= (DWORD)g_nRep3StatSec * 1000)
+		{
+			s_dwLastStat = dwNow;
+			PROCESS_MEMORY_COUNTERS_EX pmc; memset(&pmc, 0, sizeof(pmc)); pmc.cb = sizeof(pmc);
+			GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+			uint32 uNodes = 0, uTexMB = 0, uRawMB = 0, uDrawMB = 0, uBudgetMB = 0;
+			m_TextureResMgr.GetStat(uNodes, uTexMB, uRawMB, uDrawMB, uBudgetMB);
+			Rep3Log("[REP3] RAM rieng %u MB, WS %u MB | VRAM con %u MB | cache %u muc: texture %u MB (ve khung nay %u MB, ngan sach %u MB), raw spr %u MB | nap %u, bo %u | fps TB %.0f",
+				(unsigned)(pmc.PrivateUsage >> 20), (unsigned)(pmc.WorkingSetSize >> 20), (unsigned)(PD3DDEVICE->GetAvailableTextureMem() >> 20),
+				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg);
+		}
+	}
 }
 
 void KRepresentShell3::ViewPortCoordToSpaceCoord(int& nX, int& nY, int nZ)
@@ -2321,6 +2602,12 @@ void KRepresentShell3::D3DTerm()
 
 void KRepresentShell3::CoordinateTransform( int& nX, int& nY, int nZ)
 {
+	if (g_renderModel == RenderModel2D)		// [REP3 03/09] cong thuc Represent2
+	{
+		nX = nX - m_nLeft;
+		nY = nY / 2 - m_nTop - ((nZ * 887) >> 10);
+		return;
+	}
 	// 1) grab current viewport
 	D3DVIEWPORT9 vp;
 	PD3DDEVICE->GetViewport(&vp);
@@ -2350,6 +2637,12 @@ void KRepresentShell3::CoordinateTransform( int& nX, int& nY, int nZ)
 
 void KRepresentShell3::CoordinateTransformX(int& nX, int& nY, int nZ)
 {
+	if (g_renderModel == RenderModel2D)		// [REP3 03/09] cong thuc Represent2
+	{
+		nX = nX - m_nLeft;
+		nY = nY / 2 - m_nTop - ((nZ * 887) >> 10);
+		return;
+	}
 	// 1) grab current viewport
 	D3DVIEWPORT9 vp;
 	PD3DDEVICE->GetViewport(&vp);
@@ -2384,7 +2677,7 @@ void KRepresentShell3::DrawRect(int32 x1, int32 y1, int32 nWidth, int32 nHeight,
 	PD3DDEVICE->SetFVF( D3DFVF_VERTEX2D );
 
 	VERTEX2D* pvb;
-	m_pVB2D->Lock( 0, 4*sizeof(VERTEX2D), (void**)&pvb, 0 );
+	m_pVB2D->Lock( 0, 4*sizeof(VERTEX2D), (void**)&pvb, D3DLOCK_DISCARD );
 
 	float fX1, fY1, fX2, fY2;
 	fX1 = (float)x1;
@@ -2410,7 +2703,7 @@ void KRepresentShell3::DrawRect(int32 x1, int32 y1, int32 nWidth, int32 nHeight,
 	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG2 );
 	PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 );
 	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
 }
 
 void KRepresentShell3::DrawPoint(int nPrimitiveCount, KRepresentUnit* pPrimitives, int bSinglePlaneCoord)
@@ -2443,7 +2736,7 @@ void KRepresentShell3::DrawPoint(int nPrimitiveCount, KRepresentUnit* pPrimitive
 	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG2 );
 	PD3DDEVICE->DrawPrimitive( D3DPT_POINTLIST, 0, nPrimitiveCount );
 	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
 }
 
 void KRepresentShell3::DrawLine(int32 x1, int32 y1, int32 x2, int32 y2, DWORD color)
@@ -2453,7 +2746,7 @@ void KRepresentShell3::DrawLine(int32 x1, int32 y1, int32 x2, int32 y2, DWORD co
 	PD3DDEVICE->SetFVF( D3DFVF_VERTEX2D );
 
 	VERTEX2D* pvb;
-	m_pVB2D->Lock( 0, 2*sizeof(VERTEX2D), (void**)&pvb, 0 );
+	m_pVB2D->Lock( 0, 2*sizeof(VERTEX2D), (void**)&pvb, D3DLOCK_DISCARD );
 
 	float fX1, fY1, fX2, fY2;
 	fX1 = (float)x1;
@@ -2473,7 +2766,7 @@ void KRepresentShell3::DrawLine(int32 x1, int32 y1, int32 x2, int32 y2, DWORD co
 	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG2 );
 	PD3DDEVICE->DrawPrimitive( D3DPT_LINELIST, 0, 1 );
 	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
 }
 
 void KRepresentShell3::DrawRectFrame(int32 x1, int32 y1, int32 x2, int32 y2, DWORD color)
@@ -2483,7 +2776,7 @@ void KRepresentShell3::DrawRectFrame(int32 x1, int32 y1, int32 x2, int32 y2, DWO
 	PD3DDEVICE->SetFVF( D3DFVF_VERTEX2D );
 
 	VERTEX2D* pvb;
-	m_pVB2D->Lock( 0, 5*sizeof(VERTEX2D), (void**)&pvb, 0 );
+	m_pVB2D->Lock( 0, 5*sizeof(VERTEX2D), (void**)&pvb, D3DLOCK_DISCARD );
 
 	float fX1, fY1, fX2, fY2;
 	fX1 = (float)x1;
@@ -2512,7 +2805,7 @@ void KRepresentShell3::DrawRectFrame(int32 x1, int32 y1, int32 x2, int32 y2, DWO
 	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG2 );
 	PD3DDEVICE->DrawPrimitive( D3DPT_LINESTRIP, 0, 4 );
 	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
 }
 
 void KRepresentShell3::DrawBitmap16(int32 nX, int32 nY, int32 nWidth,
@@ -2523,7 +2816,7 @@ void KRepresentShell3::DrawBitmap16(int32 nX, int32 nY, int32 nWidth,
 	PD3DDEVICE->SetFVF( D3DFVF_VERTEX2D );
 
 	VERTEX2D* pvb;
-	m_pVB2D->Lock( 0, 4*sizeof(VERTEX2D), (void**)&pvb, 0 );
+	m_pVB2D->Lock( 0, 4*sizeof(VERTEX2D), (void**)&pvb, D3DLOCK_DISCARD );
 
 	float fX1, fY1, fX2, fY2;
 	fX1 = (float)nX;
@@ -2575,13 +2868,16 @@ void KRepresentShell3::DrawBitmap16(int32 nX, int32 nY, int32 nWidth,
 		PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 );
 }
 
-void KRepresentShell3::DrawSpriteAlpha(int32 nX, int32 nY, int32 nWidth, int32 nHeight, 
+void KRepresentShell3::DrawSpriteAlpha(int32 nX, int32 nY, int32 nWidth, int32 nHeight,
 									   int32 nFrame, TextureResSpr* pSprite, DWORD color, int32 nRenderStyle)
 {
 	int i;
 
 	if(nFrame >= pSprite->m_nFrameNum)
 		return;
+	// [REP3 03/09] BORDER: Represent2 khong ve gi (DrawSpriteBorder da bi chu thich) - khong lam sang nhan vat nua
+	if (nRenderStyle == IMAGE_RENDER_STYLE_BORDER)
+		return;
 
 	if(FAILED(PD3DDEVICE->SetStreamSource( 0, m_pVB2D, 0, sizeof(VERTEX2D) )))
 		return;
@@ -2593,90 +2889,79 @@ void KRepresentShell3::DrawSpriteAlpha(int32 nX, int32 nY, int32 nWidth, int32 n
 	fX2 = fX1 + (float)nWidth;
 	fY2 = fY1 + (float)nHeight;
 
-	// Èç¹ûÍ¼ËØ³¬³öÆÁÄ»·¶Î§Ôò²»äÖÈ¾
 	if(fX2 < 0 || fX1 > g_nScreenWidth || fY2 < 0 || fY1 > g_nScreenHeight)
 		return;
 
-	VERTEX2D* pvb = NULL;
-	if(FAILED(m_pVB2D->Lock( 0, 16*sizeof(VERTEX2D), (void**)&pvb, 0 )))
-		return;
+	DWORD vtxColor = 0xffffffff;
+	SetSpriteBlend(nRenderStyle, color, pSprite->m_bNew, vtxColor);
 
-	if(nRenderStyle != IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST)
+	VERTEX2D* pvb = NULL;
+	if(FAILED(m_pVB2D->Lock( 0, 16*sizeof(VERTEX2D), (void**)&pvb, D3DLOCK_DISCARD )))
 	{
-		// ²»Æ«É«£¬½«ÑÕÉ«¸ÄÎª°×
-		color = 0xffffffff;
+		ResetSpriteBlend();
+		return;
 	}
 
-	// ¸ù¾ÝÌùÍ¼ÊýÄ¿°Ñ¾ØÐÎ²ð·Ö³É¶à¸öÐ¡¾ØÐÎ£¬¼ÆËã×ø±ê¼°ÎÆÀí
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		float fU2, fV2;
 		float x1, y1, x2, y2;
-		fU2 = (float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameWidth / 
+		fU2 = (float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameWidth /
 				(float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nWidth;
 		fV2 = (float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameHeight /
 				(float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nHeight;
 
 		x1 = ChaZhi(fX1, fX2, 0, (float)nWidth, (float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameX);
 		y1 = ChaZhi(fY1, fY2, 0, (float)nHeight, (float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameY);
-		x2 = ChaZhi(fX1, fX2, 0, (float)nWidth, (float)(pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameX + 
+		x2 = ChaZhi(fX1, fX2, 0, (float)nWidth, (float)(pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameX +
 										pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameWidth));
-		y2 = ChaZhi(fY1, fY2, 0, (float)nHeight, (float)(pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameY + 
+		y2 = ChaZhi(fY1, fY2, 0, (float)nHeight, (float)(pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameY +
 										pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameHeight));
 
 		x1 -= 0.5f,	y1 -= 0.5f,	x2 -= 0.5f,	y2 -= 0.5f;
 
 		int nBase = i*4;
 		pvb[nBase+0].position = D3DXVECTOR4( x1,y1, 100, 1 );
-		pvb[nBase+0].color    = color;
+		pvb[nBase+0].color    = vtxColor;
 		pvb[nBase+0].tu       = 0.0f;
 		pvb[nBase+0].tv       = 0.0f;
 
 		pvb[nBase+1].position = D3DXVECTOR4( x2,y1, 100, 1 );
-		pvb[nBase+1].color    = color;
+		pvb[nBase+1].color    = vtxColor;
 		pvb[nBase+1].tu       = fU2;
 		pvb[nBase+1].tv       = 0.0f;
 
 		pvb[nBase+2].position = D3DXVECTOR4( x1,y2, 100, 1 );
-		pvb[nBase+2].color    = color;
+		pvb[nBase+2].color    = vtxColor;
 		pvb[nBase+2].tu       = 0.0f;
 		pvb[nBase+2].tv       = fV2;
 
 		pvb[nBase+3].position = D3DXVECTOR4( x2,y2, 100, 1 );
-		pvb[nBase+3].color    = color;
+		pvb[nBase+3].color    = vtxColor;
 		pvb[nBase+3].tu       = fU2;
 		pvb[nBase+3].tv       = fV2;
 	}
-
 	m_pVB2D->Unlock();
 
-	// »æÖÆ¶à±ßÐÎ
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		LPDIRECT3DTEXTURE9 pTex = pSprite->GetTexture(nFrame, i);
 		if(!pTex)
 			continue;
-
 		PD3DDEVICE->SetTexture( 0, pTex );
-		
-		if( nRenderStyle == IMAGE_RENDER_STYLE_BORDER )
-		{
-			// Ñ¡ÖÐ¼ÓÁÁÐ§¹û
-			PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE2X );
-			PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, i*4, 2 );
-			PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-		}
-		else
-			PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, i*4, 2 );
+		PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, i*4, 2 );
 	}
+	ResetSpriteBlend();
 }
 
-void KRepresentShell3::DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int32 nHeight, 
-									   int32 nFrame, TextureResSpr* pSprite, RECT &rect)
+void KRepresentShell3::DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int32 nHeight,
+									   int32 nFrame, TextureResSpr* pSprite, RECT &rect, DWORD color, int32 nRenderStyle)
 {
 	int i;
 
 	if(nFrame >= pSprite->m_nFrameNum)
+		return;
+	if (nRenderStyle == IMAGE_RENDER_STYLE_BORDER)	// [REP3 03/09] Represent2 khong ve
 		return;
 
 	if(FAILED(PD3DDEVICE->SetStreamSource( 0, m_pVB2D, 0, sizeof(VERTEX2D) )))
@@ -2694,8 +2979,13 @@ void KRepresentShell3::DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int
 		return;
 
 	VERTEX2D* pvb = NULL;
-	if(FAILED(m_pVB2D->Lock( 0, 16*sizeof(VERTEX2D), (void**)&pvb, 0 )))
+	DWORD vtxColor = 0xffffffff;
+	SetSpriteBlend(nRenderStyle, color, pSprite->m_bNew, vtxColor);	// [REP3 03/09]
+	if(FAILED(m_pVB2D->Lock( 0, 16*sizeof(VERTEX2D), (void**)&pvb, D3DLOCK_DISCARD )))
+	{
+		ResetSpriteBlend();
 		return;
+	}
 
 	bool bDraw[4];
 
@@ -2741,22 +3031,22 @@ void KRepresentShell3::DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int
 
 		int nBase = i*4;
 		pvb[nBase+0].position = D3DXVECTOR4( fRcX1,fRcY1, 100, 1 );
-		pvb[nBase+0].color    = 0xffffffff;
+		pvb[nBase+0].color    = vtxColor;
 		pvb[nBase+0].tu       = fU1;
 		pvb[nBase+0].tv       = fV1;
 
 		pvb[nBase+1].position = D3DXVECTOR4( fRcX2,fRcY1, 100, 1 );
-		pvb[nBase+1].color    = 0xffffffff;
+		pvb[nBase+1].color    = vtxColor;
 		pvb[nBase+1].tu       = fU2;
 		pvb[nBase+1].tv       = fV1;
 
 		pvb[nBase+2].position = D3DXVECTOR4( fRcX1,fRcY2, 100, 1 );
-		pvb[nBase+2].color    = 0xffffffff;
+		pvb[nBase+2].color    = vtxColor;
 		pvb[nBase+2].tu       = fU1;
 		pvb[nBase+2].tv       = fV2;
 
 		pvb[nBase+3].position = D3DXVECTOR4( fRcX2,fRcY2, 100, 1 );
-		pvb[nBase+3].color    = 0xffffffff;
+		pvb[nBase+3].color    = vtxColor;
 		pvb[nBase+3].tu       = fU2;
 		pvb[nBase+3].tv       = fV2;
 	}
@@ -2772,6 +3062,7 @@ void KRepresentShell3::DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int
 		PD3DDEVICE->SetTexture( 0, pTex );
 		PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, i*4, 2 );	
 	}
+	ResetSpriteBlend();
 }
 
 void KRepresentShell3::DrawBitmap16Part(int32 nX, int32 nY, int32 nWidth, int32 nHeight, TextureResBmp* pBitmap, RECT &rc)
@@ -2781,7 +3072,7 @@ void KRepresentShell3::DrawBitmap16Part(int32 nX, int32 nY, int32 nWidth, int32 
 	PD3DDEVICE->SetFVF( D3DFVF_VERTEX2D );
 
 	VERTEX2D* pvb;
-	m_pVB2D->Lock( 0, 4*sizeof(VERTEX2D), (void**)&pvb, 0 );
+	m_pVB2D->Lock( 0, 4*sizeof(VERTEX2D), (void**)&pvb, D3DLOCK_DISCARD );
 
 	float fX1, fY1, fX2, fY2;
 	fX1 = (float)nX;
@@ -3552,7 +3843,7 @@ void KRepresentShell3::RIO_CopySprToBufferAlpha(TextureResSpr* pSprite, int32 nF
 	int32 nTargetWidth, nTargetHeight;
 
 	VERTEX2D* pvb;
-	if(FAILED(m_pVB2D->Lock( 0, 16*sizeof(VERTEX2D), (void**)&pvb, 0 )))
+	if(FAILED(m_pVB2D->Lock( 0, 16*sizeof(VERTEX2D), (void**)&pvb, D3DLOCK_DISCARD )))
 		return;
 
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)

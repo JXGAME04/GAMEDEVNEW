@@ -23,6 +23,7 @@ class TextureRes;
 // 资源链表的节点
 struct ResNode
 {
+	uint32		m_nRetryTime;				// [REP3 03/09 LAG] moc thu nap lai khi nap that bai
 	uint32		m_nLastUsedTime;			// 上一次渲染的时间标签
 	bool		m_bCacheable;				// 是否是无硬盘对应文件的资源
 	uint32		m_nID;						// 资源ID，由资源名生成
@@ -42,6 +43,11 @@ public:
 
 	//## 检查图资源存储量的平衡状况。
     void CheckBalance();
+    // [REP3 03/09] goi cuoi moi khung ve (khi fps trung binh >= 25): bo toi da 1 tai nguyen/khung texture nghi > 10 s
+    void CheckBalanceFrame();
+    // [REP3 03/09 RAM] ngan sach cache (goi sau khi doc ini) + thong ke cho jx_rep3.log
+    void SetBudget();
+    void GetStat(uint32& uNodes, uint32& uTexMB, uint32& uRawMB, uint32& uDrawMB, uint32& uBudgetMB);
 
 	//## 设置图形动态加载平衡参数。
     void SetBalanceParam(

@@ -6,6 +6,81 @@
 #include <cstdint>
 #include <new>
 
+// [REP3 03/09] giai nen RLE spr -> A8R8G8B8: [n][alpha] roi n chi so palette neu alpha != 0 (alpha 0..255)
+static void RenderToA8R8G8B8(DWORD* pDest, BYTE* pSrc, int nSrcLen, int nTotal, KPAL24* pPal, int nColors)
+{
+	BYTE*  p    = pSrc;
+	BYTE*  pEnd = pSrc + nSrcLen;
+	DWORD* d    = pDest;
+	DWORD* dEnd = pDest + nTotal;
+	while (p + 2 <= pEnd && d < dEnd)
+	{
+		int n = *p++;
+		int a = *p++;
+		if (a == 0)
+		{
+			for (int k = 0; k < n && d < dEnd; k++)
+				*d++ = 0;
+		}
+		else
+		{
+			for (int k = 0; k < n && d < dEnd; k++)
+			{
+				if (p >= pEnd)
+				{
+					*d++ = 0;
+					continue;
+				}
+				int idx = *p++;
+				if (idx >= nColors)
+					idx = 0;
+				*d++ = ((DWORD)a << 24) | ((DWORD)pPal[idx].Red << 16) | ((DWORD)pPal[idx].Green << 8) | (DWORD)pPal[idx].Blue;
+			}
+		}
+	}
+	while (d < dEnd)
+		*d++ = 0;
+}
+
+// [REP3 03/09 RAM2] giai RLE spr -> A4R4G4B4, CO KIEM BIEN. Ban hop ngu RenderToA4R4G4B4 ben duoi
+// khong kiem mot bien nao: no tin RLE lap vua dung width*height, sai mot nhip la ghi tran pTempData.
+// Dung ban nay de co the bat [Client] Rep3Tex32=0 (4444) an toan - 4444 chi ton mot NUA so byte
+// texture so voi 8888, ma theo phep do o tren la giam thang ~0,66 MB RAM cho moi MB tiet kiem duoc.
+static void RenderToA4R4G4B4Safe(WORD* pDest, BYTE* pSrc, int nSrcLen, int nTotal, const WORD* pPal16, int nColors)
+{
+	BYTE*  p    = pSrc;
+	BYTE*  pEnd = pSrc + nSrcLen;
+	WORD*  d    = pDest;
+	WORD*  dEnd = pDest + nTotal;
+	while (p + 2 <= pEnd && d < dEnd)
+	{
+		int n = *p++;
+		int a = *p++;
+		if (a == 0)
+		{
+			for (int k = 0; k < n && d < dEnd; k++)
+				*d++ = 0;
+		}
+		else
+		{
+			WORD wAlpha = (WORD)((a << 8) & 0xf000);	// dung nhu ban hop ngu: giu 4 bit cao cua alpha
+			for (int k = 0; k < n && d < dEnd; k++)
+			{
+				if (p >= pEnd)
+				{
+					*d++ = 0;
+					continue;
+				}
+				int idx = *p++;
+				if (idx >= nColors)
+					idx = 0;
+				*d++ = (WORD)(wAlpha | pPal16[idx]);
+			}
+		}
+	}
+	while (d < dEnd)
+		*d++ = 0;
+}
 inline void RenderToA4R4G4B4(WORD* pDest, BYTE* pSrc, int width, int height, BYTE* pPalette)
 {
 	__asm
@@ -336,6 +411,7 @@ void TextureResSpr::ResetVar()
 	m_pOffset		= NULL;
 
 	m_nTexMemUsed = 0;
+	m_nSprMemUsed = 0;	// [REP3 03/09 RAM]
 	m_bLastFrameUsed = false;
 	m_bNew = false;
 }
@@ -451,6 +527,7 @@ bool TextureResSpr::LoadSprFile(char* szImage)
 			m_pFrameInfo[i].nRawDataLen = pOffset[i].Length - 8;//sizeof(SPRFRAME);
 			m_pFrameInfo[i].pRawData = new BYTE[m_pFrameInfo[i].nRawDataLen];
 			memcpy(m_pFrameInfo[i].pRawData, pFrame->Sprite, m_pFrameInfo[i].nRawDataLen);
+			m_nSprMemUsed += m_pFrameInfo[i].nRawDataLen;	// [REP3 03/09 RAM]
 			m_pFrameInfo[i].pFrame = NULL;
 		}
 		SprReleaseHeader(pHeader);
@@ -498,10 +575,17 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 		m_pFrameInfo[nFrame].nOffX = pFrame->OffsetX;
 		m_pFrameInfo[nFrame].nOffY = pFrame->OffsetY;
 
-        if (((int)m_pOffset[nFrame].Length) < 0)
-            m_pOffset[nFrame].Length = -((int)m_pOffset[nFrame].Length);
+        // [REP3 03/09 SAP] KHONG ghi nguoc dau AM vao bo dem SPRHEAD dung chung voi engine.
+        // Trong pak, XPackSprFrameInfo.lSize AM = khung luu THO. XPackFile::GetSprFrame doc
+        // dau nay de chon DirectRead thay vi ExtractRead. Doi dau tai cho lam lan goi SAU do
+        // day du lieu THO vao ucl_nrv2b_decompress_8, ma bo giai nen bien dich thieu SAFE nen
+        // khong kiem bien: doc con tro tra nguoc loan + ghi tran malloc -> hong vung nho dong
+        // (0xC0000005 tai +0x154 roi 0xC0000374). Chi dung bien tam, khong dung toi bo dem.
+        int nRawLen = (int)m_pOffset[nFrame].Length;
+        if (nRawLen < 0)
+            nRawLen = -nRawLen;
 	
-		m_pFrameInfo[nFrame].nRawDataLen = m_pOffset[nFrame].Length - 8;//sizeof(SPRFRAME);
+		m_pFrameInfo[nFrame].nRawDataLen = nRawLen - 8;//sizeof(SPRFRAME);
 		m_pFrameInfo[nFrame].pRawData = pFrame->Sprite;
 		m_pFrameInfo[nFrame].pFrame = pFrame;
 	}
@@ -534,9 +618,17 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 
 	SplitTexture(nFrame);
 
+	// [REP3 03/09] texture 8888 (dung mau palette 24 bit nhu Represent2) hoac 4444 nhu cu
+	int nBpp = g_nRep3Tex32 ? 4 : 2;
+	D3DFORMAT eFmt = g_nRep3Tex32 ? D3DFMT_A8R8G8B8 : D3DFMT_A4R4G4B4;
+	int nW = m_pFrameInfo[nFrame].nWidth;
+	int nH = m_pFrameInfo[nFrame].nHeight;
+	if (nW <= 0 || nH <= 0)
+		return;
+
 	BYTE *pTempData = NULL;
 	try {
-		pTempData = new BYTE[m_pFrameInfo[nFrame].nWidth * m_pFrameInfo[nFrame].nHeight * 2];
+		pTempData = new BYTE[nW * nH * nBpp];
 	}
 	catch (const std::bad_alloc&) {
 		return;
@@ -544,79 +636,59 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 	if(!pTempData)
 		return;
 
-	RenderToA4R4G4B4((WORD*)pTempData, m_pFrameInfo[nFrame].pRawData, m_pFrameInfo[nFrame].nWidth,
-						m_pFrameInfo[nFrame].nHeight, (BYTE*)m_pPal16);
+	if (g_nRep3Tex32)
+		RenderToA8R8G8B8((DWORD*)pTempData, m_pFrameInfo[nFrame].pRawData, m_pFrameInfo[nFrame].nRawDataLen,
+						nW * nH, m_pPal24, (int)m_nColors);
+	else
+		RenderToA4R4G4B4Safe((WORD*)pTempData, m_pFrameInfo[nFrame].pRawData, m_pFrameInfo[nFrame].nRawDataLen,
+						nW * nH, m_pPal16, (int)m_nColors);	// [REP3 03/09 RAM2] ban co kiem bien
 
-/*
-	// 填充贴图数据
-	uint32 nByteCount = 0;							// 总字节计数
-	uint32 nWidth = m_pFrameInfo[nFrame].nWidth;
-	uint32 nHeight = m_pFrameInfo[nFrame].nHeight;
-	uint32 nFrameLen = m_pFrameInfo[nFrame].nRawDataLen;
-	BYTE *pData = m_pFrameInfo[nFrame].pRawData;
-	BYTE pixelNum, alpha, pixelColor;
-	BYTE *pTexLine = pTempData;						// 贴图每一行数据
-	for(;;)
-	{
-		pixelNum = *pData++;
-		alpha = *pData++;
-		nByteCount += 2;
-
-		if(alpha == 0)
-		{
-			for(int l=0; l<pixelNum; l++)
-			{
-				*((WORD*)pTexLine) = 0;
-				pTexLine += 2;
-			}
-		}
-		else
-		{
-			for(int l=0; l<pixelNum; l++)
-			{
-				pixelColor = *pData++;
-			//	*((WORD*)pTexLine) = ARGBTO4444(alpha, m_pPal24[pixelColor].Red, m_pPal24[pixelColor].Green, m_pPal24[pixelColor].Blue);
-				*((WORD*)pTexLine) = ((((WORD)alpha)<<8)&0xf000) | m_pPal16[pixelColor];
-				pTexLine += 2;
-			}
-			nByteCount += pixelNum;
-		}
-
-		// 如果一帧数据解完则停止
-		assert(nByteCount <= nFrameLen);
-		if(nByteCount >= nFrameLen)
-			break;
-	}
-*/
-	// 创建并填充贴图
 	for(i=0; i<m_pFrameInfo[nFrame].nTexNum; i++)
 	{
-		m_nTexMemUsed += m_pFrameInfo[nFrame].texInfo[i].nWidth * m_pFrameInfo[nFrame].texInfo[i].nHeight * 2;
+		TextureInfo& ti = m_pFrameInfo[nFrame].texInfo[i];
+		m_nTexMemUsed += ti.nWidth * ti.nHeight * nBpp;
 
-		// 创建贴图
-		SAFE_RELEASE(m_pFrameInfo[nFrame].texInfo[i].pTexture);
-		if (FAILED(PD3DDEVICE->CreateTexture(m_pFrameInfo[nFrame].texInfo[i].nWidth, m_pFrameInfo[nFrame].texInfo[i].nHeight, 1,
-								0, D3DFMT_A4R4G4B4, D3DPOOL_MANAGED, &m_pFrameInfo[nFrame].texInfo[i].pTexture, NULL)))
+		SAFE_RELEASE(ti.pTexture);
+		// [REP3 03/09 RAM] Rep3Pool=1: do vao texture tam SYSTEMMEM roi UpdateTexture sang texture POOL_DEFAULT (chi o VRAM).
+		// MANAGED cu giu them mot ban sao day du trong RAM tien trinh (= VRAM dang dung) -> RAM gap doi Represent2.
+		LPDIRECT3DTEXTURE9 pFill = NULL;
+		if (FAILED(PD3DDEVICE->CreateTexture(ti.nWidth, ti.nHeight, 1, 0, eFmt,
+								g_nRep3Pool ? D3DPOOL_SYSTEMMEM : D3DPOOL_MANAGED, &pFill, NULL)))
 			goto error;
 
 		D3DLOCKED_RECT LockedRect;
-		if (FAILED(m_pFrameInfo[nFrame].texInfo[i].pTexture->LockRect(0, &LockedRect, NULL, 0)))
-			goto error;
-
-		// 向贴图拷贝数据
-		BYTE *pTexData = (BYTE*)LockedRect.pBits;		// 贴图数据
-		BYTE *pTp = pTempData + (m_pFrameInfo[nFrame].texInfo[i].nFrameY * m_pFrameInfo[nFrame].nWidth + 
-					m_pFrameInfo[nFrame].texInfo[i].nFrameX) * 2;
-		for(j=0; j<m_pFrameInfo[nFrame].texInfo[i].nFrameHeight; j++)
+		if (FAILED(pFill->LockRect(0, &LockedRect, NULL, 0)))
 		{
-			memcpy(pTexData, pTp, m_pFrameInfo[nFrame].texInfo[i].nFrameWidth * 2);
-			pTexData += LockedRect.Pitch;
-			pTp += m_pFrameInfo[nFrame].nWidth * 2;
+			pFill->Release();
+			goto error;
 		}
 
-		m_pFrameInfo[nFrame].texInfo[i].pTexture->UnlockRect(0);
-	}
+		BYTE *pTexData = (BYTE*)LockedRect.pBits;
+		BYTE *pTp = pTempData + (ti.nFrameY * nW + ti.nFrameX) * nBpp;
+		for(j=0; j<ti.nFrameHeight; j++)
+		{
+			memcpy(pTexData, pTp, ti.nFrameWidth * nBpp);
+			pTexData += LockedRect.Pitch;
+			pTp += nW * nBpp;
+		}
+		pFill->UnlockRect(0);
 
+		if (g_nRep3Pool)
+		{
+			LPDIRECT3DTEXTURE9 pVram = NULL;
+			if (FAILED(PD3DDEVICE->CreateTexture(ti.nWidth, ti.nHeight, 1, 0, eFmt, D3DPOOL_DEFAULT, &pVram, NULL)) ||
+				FAILED(PD3DDEVICE->UpdateTexture(pFill, pVram)))
+			{
+				SAFE_RELEASE(pVram);
+				pFill->Release();
+				goto error;
+			}
+			pFill->Release();
+			ti.pTexture = pVram;
+		}
+		else
+			ti.pTexture = pFill;
+	}
 	SAFE_DELETE_ARRAY(pTempData);
 	if(m_pHeader)
 	{
@@ -1027,53 +1099,54 @@ error:
 */
 int32 TextureResSpr::GetPixelAlpha(int32 nFrame, int32 x, int32 y)
 {
-	int32 nRet = 0;
-
-	if (nFrame < 0 && nFrame >= m_nFrameNum)
-		return nRet;
-
+	// [REP3 03/09 RAM] doc alpha tu du lieu RLE goc (pRawData) thay vi LockRect texture: texture POOL_DEFAULT khong lock duoc,
+	// va cach cu ep dong bo GPU moi lan ro chuot. RLE: [n][a] roi n byte chi so mau neu a != 0 (nhu RenderToA8R8G8B8).
+	if (nFrame < 0 || nFrame >= m_nFrameNum || !m_pFrameInfo)
+		return 0;
 	x -= m_pFrameInfo[nFrame].nOffX;
 	y -= m_pFrameInfo[nFrame].nOffY;
+	if (x < 0 || y < 0 || x >= m_pFrameInfo[nFrame].nWidth || y >= m_pFrameInfo[nFrame].nHeight)
+		return 0;
 
-	// 坐标超出图形范围则返回
-	if (x < 0 || y < 0 || x >= m_pFrameInfo[nFrame].nWidth || 
-		y >= m_pFrameInfo[nFrame].nHeight)
-		return nRet;
-
-	// 遍历拆分的贴图，判断象素点alpha值
-	for(int i=0; i<m_pFrameInfo[nFrame].nTexNum; i++)
+	BYTE* pSrc = m_pFrameInfo[nFrame].pRawData;
+	int nLen = m_pFrameInfo[nFrame].nRawDataLen;
+	SPRFRAME* pTmp = NULL;
+	if (!pSrc && m_pHeader)	// spr nen theo khung (raw da tra sau khi tao texture): lay lai khung tu pak
 	{
-		int32 tx = x - m_pFrameInfo[nFrame].texInfo[i].nFrameX;
-		int32 ty = y - m_pFrameInfo[nFrame].texInfo[i].nFrameY;
-		// 检测象素点是否落在第i张贴图上
-		if (tx >= 0 && ty >= 0 && tx < m_pFrameInfo[nFrame].texInfo[i].nFrameWidth && 
-									ty < m_pFrameInfo[nFrame].texInfo[i].nFrameHeight)
+		pTmp = (SPRFRAME*)SprGetFrame((SPRHEAD*)m_pHeader, nFrame);
+		if (!pTmp)
+			return 0;
+		int nL = (int)m_pOffset[nFrame].Length;
+		if (nL < 0) nL = -nL;
+		pSrc = pTmp->Sprite;
+		nLen = nL - 8;
+	}
+	if (!pSrc || nLen <= 0)
+	{
+		if (pTmp) SprReleaseFrame(pTmp);
+		return 0;
+	}
+
+	int nRet = 0;
+	int nTarget = y * m_pFrameInfo[nFrame].nWidth + x;
+	int nPos = 0;
+	BYTE* p = pSrc;
+	BYTE* pEnd = pSrc + nLen;
+	while (p + 2 <= pEnd)
+	{
+		int n = *p++;
+		int a = *p++;
+		if (nTarget < nPos + n)
 		{
-			if(!m_pFrameInfo[nFrame].texInfo[i].pTexture)
-				return nRet;
-
-			D3DLOCKED_RECT LockedRect;
-			if (FAILED(m_pFrameInfo[nFrame].texInfo[i].pTexture->LockRect(0, &LockedRect, NULL, D3DLOCK_READONLY)))
-				return nRet;
-
-			if(g_bUse4444Texture)
-			{
-				BYTE *p = (BYTE*)LockedRect.pBits;
-				p += ty * LockedRect.Pitch + tx * 2 + 1;
-				nRet = (*p) & 0xf0;
-			}
-			else
-			{
-				BYTE *p = (BYTE*)LockedRect.pBits;
-				p += ty * LockedRect.Pitch + tx * 4 + 3;
-				nRet = *p;
-			}
-
-			m_pFrameInfo[nFrame].texInfo[i].pTexture->UnlockRect(0);
+			nRet = a;
 			break;
 		}
+		nPos += n;
+		if (a != 0)
+			p += n;
 	}
-	
+	if (pTmp)
+		SprReleaseFrame(pTmp);
 	return nRet;
 }
 
@@ -1131,7 +1204,7 @@ bool TextureResSpr::ReleaseAFrameData()
 			{
 				for(int j=0; j<4; j++)
 				{
-					m_nTexMemUsed -= m_pFrameInfo[i].texInfo[j].nWidth * m_pFrameInfo[i].texInfo[j].nHeight * 2;
+					m_nTexMemUsed -= m_pFrameInfo[i].texInfo[j].nWidth * m_pFrameInfo[i].texInfo[j].nHeight * (g_nRep3Tex32 ? 4 : 2);	// [REP3 03/09]
 					SAFE_RELEASE(m_pFrameInfo[i].texInfo[j].pTexture);
 				}
 				return true;
@@ -1142,10 +1215,30 @@ bool TextureResSpr::ReleaseAFrameData()
 	return false;
 }
 
+bool TextureResSpr::InvalidateDeviceObjects()
+{
+	// [REP3 03/09 RAM] texture POOL_DEFAULT phai bo truoc khi Reset device; PrepareFrameData tao lai lan ve sau
+	if (g_nRep3Pool)
+		while (ReleaseAFrameData()) {}
+	return true;
+}
+
 int TextureResSpr::SplitTexture(uint32 nFrame)
 {
 	int nWidth = m_pFrameInfo[nFrame].nWidth;
 	int nHeight = m_pFrameInfo[nFrame].nHeight;
+	// [REP3 03/09] card ho tro NPOT (da thu tao 33x17 luc tao thiet bi): 1 texture dung co khung, khong cat 1/2/4 (theo 2.0)
+	if (g_bNpotOK && g_nRep3Npot && nWidth > 0 && nHeight > 0 && nWidth <= g_nMaxTexW && nHeight <= g_nMaxTexH)
+	{
+		m_pFrameInfo[nFrame].nTexNum = 1;
+		m_pFrameInfo[nFrame].texInfo[0].nWidth = nWidth;
+		m_pFrameInfo[nFrame].texInfo[0].nHeight = nHeight;
+		m_pFrameInfo[nFrame].texInfo[0].nFrameX = 0;
+		m_pFrameInfo[nFrame].texInfo[0].nFrameY = 0;
+		m_pFrameInfo[nFrame].texInfo[0].nFrameWidth = nWidth;
+		m_pFrameInfo[nFrame].texInfo[0].nFrameHeight = nHeight;
+		return nWidth * nHeight * (g_nRep3Tex32 ? 4 : 2);
+	}
 	// 计算原始贴图尺寸
 	int nTexWidth = FitTextureSize(nWidth);
 	int nTexHeight = FitTextureSize(nHeight);
