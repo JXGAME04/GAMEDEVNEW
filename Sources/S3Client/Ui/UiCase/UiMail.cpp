@@ -354,6 +354,10 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
         // [MAIL 04/09 D13] o vat pham that (KWndObjectBox) da duoc ENGINE ve san so chong o goc,
         // nen KHONG ve them nhan so nua (truoc day hien hai so chong nhau: "500" va "500").
         int bBoxShown = 0;
+        // [D14 04/09] o nay nay rong 58x78 cho vua trang bi nhieu o, con khung nen chi 26x26
+        // nen de nguyen se thay mot o vuong nho lech han duoi mon. An di khi dang giu mon that.
+        if (pA->nKind == MAILAWARD_ITEM)
+            m_AwardBg[i].Hide();
         if (pA->nKind == MAILAWARD_ITEM)
         {
             // dung lai vat pham trong Item[] cua client tu ChatItem (CoreShell.cpp GDI_ITEM_CHAT)

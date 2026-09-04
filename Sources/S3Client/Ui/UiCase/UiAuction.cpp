@@ -421,6 +421,10 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 			m_BtnOffer.Hide();
 			m_BtnAddPrice.Hide();
 			m_BtnGiveUp.Hide();
+			// [A26 04/09] mon cua CHINH MINH thi khong tra gia duoc, nen an ca KHUNG NHAP gia
+			// va con so trong do - truoc chi an ba cai nut, khung nhap van nam do trong tron.
+			m_ImgInput.Hide();
+			m_TxtOffer.Hide();
 			if (p->nBuyNow > 0)
 				m_BtnGetBack.Show();
 			else
