@@ -390,8 +390,7 @@ void CSocketServer::WriteCompleted( Socket * /*pSocket*/, CIOBuffer *pBuffer )
 {
 	if ( pBuffer->GetUsed() != pBuffer->GetWSABUF()->len )
 	{
-		//OnError( _T("CSocketServer::WorkerThread::WriteCompleted - Socket write where not all data was written") );
-		printf("--CSocketServer::WorkerThread::WriteCompleted - Socket write where not all data was written--\n");
+		// [SOCK 04/09] da xu ly o enumIO_Write_Completed (gui not phan con lai), khong in nua
 	}
 }
 
@@ -1109,7 +1108,23 @@ void CSocketServer::WorkerThread::HandleOperation( Socket *pSocket,
             DEBUG_ONLY( Output( _T("enumIO_Write_Completed:") + ToString( pBuffer ) ) );
 			
             pBuffer->Use( dwIoSize );
-			
+
+			// [SOCK 04/09] WSASend co the ghi THIEU byte khi socket nghen. Ban cu chi in mot dong roi Release buffer,
+			// tuc VUT phan chua gui -> luong TCP mat mot khuc giua goi -> client doc rac -> sap.
+			// Nay gui not phan con lai ngay (cung hang doi ghi nen dung thu tu); khong gui duoc thi dong ket noi.
+			if ( pBuffer->GetUsed() < pBuffer->GetWSABUF()->len )
+			{
+				const size_t nDaGui  = pBuffer->GetUsed();
+				const size_t nConLai = (size_t)pBuffer->GetWSABUF()->len - nDaGui;
+				printf("--CSocketServer: ghi thieu %u/%u byte -> gui not %u byte--\n",
+					(unsigned)nDaGui, (unsigned)pBuffer->GetWSABUF()->len, (unsigned)nConLai);
+				if ( !pSocket->Write( pBuffer->GetBuffer() + nDaGui, nConLai ) )
+				{
+					printf("--CSocketServer: khong gui not duoc -> dong ket noi de client khong doc rac--\n");
+					pSocket->AbortiveClose();
+				}
+			}
+
 			m_server.WriteCompleted( pSocket, pBuffer );
 				
 			pSocket->WriteCompleted();
