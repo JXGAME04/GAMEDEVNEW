@@ -23,6 +23,9 @@
 int g_anBCVungGoi[BC_MAX_VUNG];		// [BC 04/09 do] so luot BroadCast phat VAO tung vung
 int g_anBCVungActive[BC_MAX_VUNG];	// so lan vung do duoc Activate (= so tick trong 10 giay)
 int g_nBCNormalSync = 0;			// so lan KNpc::NormalSync (dat trong KNpc.cpp)
+int g_nBCTick = 0;					// [BC 04/09 do2] nhip tick that (KSubWorldSet::Activate)
+int g_nBCTheoDoi = 0;				// chi so Player dang theo doi (client nhan nhieu nhat 10 giay truoc)
+static unsigned char g_abyBCVungGui[BC_MAX_VUNG];	// vung nao da gui cho client do (1 byte/vung)
 
 // (20/08 dem - chu game: "thu lam phan nguoi choi hay bot khong phai vat can
 // co the dung chong len nhau xem con bi khong") CONG TAC 'NPC LA TUONG':
@@ -1494,6 +1497,18 @@ static void BC_BaoCao10s()
 			anTop[2], anTop[2] >= 0 ? g_anBCVungGoi[anTop[2]] : 0);
 		AUTOLOG("[BC-SYNC] 10s: NormalSync=%d (%d/giay) -> moi lan 9 luot (NPC thuong) hoac 18 luot (NPC nguoi choi: gui ca goi 77 va 75)",
 			g_nBCNormalSync, g_nBCNormalSync / 10);
+		{	// [BC 04/09 do2] so VUNG KHAC NHAU da gui cho client dang theo doi + nhip tick that
+			int nSoVung = 0;
+			for (int k = 0; k < BC_MAX_VUNG; k++)
+				if (g_abyBCVungGui[k])
+					nSoVung++;
+			int nVungCuaHo = (g_nBCTheoDoi > 0 && g_nBCTheoDoi < MAX_PLAYER) ? Npc[Player[g_nBCTheoDoi].m_nIndex].m_RegionIndex : -1;
+			AUTOLOG("[BC-TUVUNG] 10s: client theo doi=%d dung o vung=%d, NHAN GOI TU %d VUNG khac nhau (dung thiet ke phai <= 9) | tick that=%d (%d/giay)",
+				g_nBCTheoDoi, nVungCuaHo, nSoVung, g_nBCTick, g_nBCTick / 10);
+			memset(g_abyBCVungGui, 0, sizeof(g_abyBCVungGui));
+			g_nBCTheoDoi = nMaxIdx;	// 10 giay toi theo doi client nhan nhieu nhat vua roi
+			g_nBCTick = 0;
+		}
 		g_nBCNormalSync = 0;
 		memset(g_anBCVungGoi, 0, sizeof(g_anBCVungGoi));
 		memset(g_anBCVungActive, 0, sizeof(g_anBCVungActive));
@@ -1582,6 +1597,8 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 				nMaxCount--;	// [F4] CHI tru khi THAT SU gui (truoc day tru cho ca bot va nguoi ngoai tam)
 				nF4Gui++;
 				BC_DemNguoiNhan(pNode->m_nIndex, nBCLoaiGoi, (int)dwSize);	// [BC 03/09 c] do theo TUNG nguoi nhan
+				if (pNode->m_nIndex == g_nBCTheoDoi && m_nIndex >= 0 && m_nIndex < BC_MAX_VUNG)	// [BC 04/09 do2]
+					g_abyBCVungGui[m_nIndex] = 1;
 			}
 		}
 		pNode = pNext;
