@@ -351,6 +351,9 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
         }
         const KMailUiAward* pA = &p->Award[i];
         m_AwardBg[i].Show();
+        // [MAIL 04/09 D13] o vat pham that (KWndObjectBox) da duoc ENGINE ve san so chong o goc,
+        // nen KHONG ve them nhan so nua (truoc day hien hai so chong nhau: "500" va "500").
+        int bBoxShown = 0;
         if (pA->nKind == MAILAWARD_ITEM)
         {
             // dung lai vat pham trong Item[] cua client tu ChatItem (CoreShell.cpp GDI_ITEM_CHAT)
@@ -360,6 +363,7 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
                 m_nAwardItemIdx[i] = nIdx;
                 m_AwardBox[i].HoldObject(CGOG_PLAYERSELLITEM, (unsigned int)nIdx, 1, 1);
                 m_AwardBox[i].Show();
+                bBoxShown = 1;
             }
         }
         else if (pA->szIcon[0])
@@ -374,7 +378,7 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
             szTip[sizeof(szTip) - 1] = 0;
             m_AwardSpr[i].SetToolTipInfo(szTip, sizeof(szTip));
         }
-        if (pA->nCount > 1)
+        if (pA->nCount > 1 && !bBoxShown)
             m_AwardCount[i].SetIntText(pA->nCount);
         else
             m_AwardCount[i].SetText("");
