@@ -191,7 +191,7 @@ function AUC_RowToClient(r, szMe, nNow)
     -- (GetName chi dang ky trong khoi #ifdef _SERVER) - goi ben client nem loi va dut vong ve.
     -- [A12] bo szCurrencyName + szBelongRole cho nhe goi (bo dem ObjBuffer chi 4096 byte).
     tb.bMine = 0
-    if szMe ~= "" and r.seller == szMe then
+    if szMe ~= "" and r.seller == szMe and r.seller ~= AUCWEB_SELLER then
         tb.bMine = 1
     end
     -- [A9] KHONG long bang ba tang (tbPage > dong > tbItem): ObjBuffer khong dua qua duoc,
@@ -492,7 +492,7 @@ function AUC_OnRequestOfferDutch(nType, szAct, nId, nPrice)
             return
         end
     end
-    if r.seller == GetName() then
+    if AUC_LaChuMon(r) then
         Msg2Player("Kh«ng thÓ mua mãn do chÝnh m×nh ký göi.")
         return
     end
@@ -544,7 +544,7 @@ function AUC_OnRequestOfferEnglish(nType, szAct, nId, nNewPrice)
     if r.kind ~= AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH then
         return AUC_OnRequestOfferDutch(nType, szAct, nId, nNewPrice)
     end
-    if r.seller == GetName() then
+    if AUC_LaChuMon(r) then
         Msg2Player("Kh«ng thÓ tù tr¶ gi¸ mãn cña m×nh.")
         return
     end
@@ -648,7 +648,7 @@ function AUC_OnRequestGetBack(nType, szAct, nId)
         Msg2Player("Mãn cña hÖ thèng, kh«ng rót ®­îc.")
         return
     end
-    if r.seller ~= GetName() then
+    if not AUC_LaChuMon(r) then
         Msg2Player("Kh«ng ph¶i mãn cña ®¹i hiÖp.")
         return
     end
@@ -728,7 +728,9 @@ function AUC_FinishEnglish(r)
     if r.buyer == "" or (r.cur or 0) <= 0 then
         return AUC_Expire(r)
     end
-    if AUC_SetState(r.id, 1, 1) ~= 1 then
+    -- [W6 gia chot] AUC_Buy = state 0->1 + buyer + buy_price = gia chot (nguyen tu nhu AUC_SetState).
+    -- Truoc day chi doi state nen buy_price giu gia CU do AUC_Bid ghi -> web/lich su hien sai gia chot.
+    if AUC_Buy(r.id, r.buyer, r.cur) ~= 1 then
         return
     end
     AUC_Settle(r, r.buyer, r.cur)
@@ -866,6 +868,14 @@ AUCWEB_MAX_PRICE = 2000000000
 AUCWEB_POOL_MAX  = 2000
 
 -- ham xu ly loi tam cho call(..., "x", AucWeb_LoiLua): ghi THONG DIEP loi vao nhat ky (call x mac dinh nuot mat)
+-- [W6 chu mon] Goddess khong chan ten "@WEB" (chi chan byte <= 32), nen "la chu mon" phai loai seller he thong
+function AUC_LaChuMon(r)
+    if r == nil or r.seller == nil or r.seller == AUCWEB_SELLER then
+        return nil
+    end
+    return r.seller == GetName()
+end
+
 function AucWeb_LoiLua(sz)
     AUC_Log("LOI Lua: "..tostring(sz))
 end
@@ -949,8 +959,11 @@ function AucWeb_Round(nNow, nPer, nEnd, nRound)
         p.weight = AucWeb_Kep(p.weight, 1, 1000)
         tinsert(cand, p)
     end
-    local nDone, nSkip, nLastId = 0, 0, 0
-    while nDone < nPer and getn(cand) > 0 do
+    local nDone, nSkip, nLastId, nThu = 0, 0, 0, 0
+    -- [W6] toi da nPer * 4 lan boc: nhom cau hinh sai hang loat khong keo mot nhip game qua dai
+    -- (moi dong loi = mot UPDATE dong bo ~2,5 ms + dung vat pham hai lan)
+    while nDone < nPer and getn(cand) > 0 and nThu < nPer * 4 do
+        nThu = nThu + 1
         local k = AucWeb_Pick(cand)
         if k <= 0 then
             break

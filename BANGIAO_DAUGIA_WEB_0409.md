@@ -68,7 +68,7 @@ Chỉ **MỘT** mục, không dấu `;`. Hai tiền tố được nhận:
 
 | Tiền tố | Cú pháp | Nghĩa cho đấu giá |
 |---|---|---|
-| `item:` | `item:genre,detail,particular,level,series,luck,n[,lock][,expSec][,magic][,stack]` | 6 số đầu bắt buộc (như thư). `n` = số món **trong một chồng** với loại chồng được (thuốc 1, nhiệm vụ 4, bí kíp 6, văn cương 8, tinh thạch 9); trang bị (0) luôn 1 dù ghi mấy. `magic` giữ nghĩa như thư (tham số 7 của AddItem). `stack` bị bỏ qua. |
+| `item:` | `item:genre,detail,particular,level,series,luck,n[,lock][,expSec][,magic][,stack]` | 6 số đầu bắt buộc (như thư). `n` = số món **trong một chồng**, chỉ với món **xếp chồng được** (thuốc, tinh thạch, một số vật phẩm nhiệm vụ/bí kíp có trần chồng > 1); trang bị (0) và **văn cương (8)** luôn 1 — ghi `n > 1` cho món không chồng được thì máy chủ **từ chối** (`err` = `mon khong xep chong, n phai = 1` / `van cuong khong xep chong, n phai = 1`). `magic` giữ nghĩa như thư (tham số 7 của AddItem). `stack` bị bỏ qua. Trang bị detail 13-16 (ấn, trang sức, mũ trùm, áo choàng) dựng được. |
 | `gold:` | `gold:record,n[,lock][,expSec]` | Hoàng kim theo dòng `goldequip.txt` (như thư). `n` luôn 1. |
 
 Luật riêng đấu giá (web kiểm trước khi lưu, máy chủ kiểm lại và ghi `err` nếu lọt):
@@ -89,7 +89,7 @@ Ví dụ: `item:1,1,5,1,0,0,50` (50 Đại hoàn đan trong một chồng) · `i
 | `award: thieu/sai cu phap` · `award: chi mot muc, khong dau ;` · `award: chi nhan item: hoac gold:` · `award: so khong hop le` · `award: ky tu la` · `award: so am hoac qua lon` · `award: item can 6 so` · `award: gold can so dong goldequip` | chuỗi award sai |
 | `genre X khong ho tro` | 2, 3, 7 hoặc số lạ |
 | `lock/expSec phai = 0` | |
-| `so luong qua lon` · `so luong toi da N mot chong` | `n` > 9999 hoặc vượt trần chồng của món |
+| `so luong qua lon` · `so luong toi da N mot chong` · `mon khong xep chong, n phai = 1` · `van cuong khong xep chong, n phai = 1` | `n` > 9999, vượt trần chồng, hoặc `n > 1` cho món không chồng được |
 | `dung vat pham that bai (detail/particular/dong sai)` | bộ sinh trả rỗng |
 | `het khe vat pham` · `khong doi duoc sang rec` · `rec khong doc lai duoc` · `dung lai lan hai that bai` · `dung lai lan hai ra mon khac` | lỗi nội bộ khi dựng/kiểm lại — báo máy chủ |
 | `currency 1 hoac 2` · `gia khoi diem 1..2000000000` · `gia mua ngay phai > khoi diem (va <= 2000000000)` | giá/tiền sai |
@@ -115,7 +115,7 @@ ORDER BY id DESC LIMIT 100;
 | `base_price` | giá mua ngay; = khởi điểm nghĩa là **không có** Mua ngay |
 | `cur_price` | giá cao nhất hiện tại, 0 = chưa ai trả |
 | `buyer` | người đang giữ giá / người thắng |
-| `buy_price` | giá chốt khi đã bán |
+| `buy_price` | giá chốt khi đã bán (`state` 1/3, `buyer <> ''`) — luôn bằng giá người thắng trả, kể cả khi hết giờ |
 | `state` | 0 đang đấu · 1 đã bán, đang giao thư · 3 kết thúc: `buyer <> ''` = đã bán và giao xong, `buyer = ''` = hết giờ không ai mua, đã thu hồi. (Dòng `@WEB` không bao giờ ở `state = 2` — giá trị đó chỉ dùng cho ký gửi cá nhân trả hàng về người bán; và không rút được nên không có trường hợp "đã rút".) |
 | `end_time` | giờ kết thúc (unix); có người trả trong 60 giây cuối thì tự gia hạn thêm 60 giây |
 
