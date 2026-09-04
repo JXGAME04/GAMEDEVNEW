@@ -692,6 +692,7 @@
     <ClCompile Include="Src\BauCua.cpp" />
     <ClCompile Include="Src\KScriptProtocol.cpp" />
     <ClCompile Include="Src\KMailClient.cpp" />
+    <ClCompile Include="Src\KAuctionClient.cpp" />
     <ClCompile Include="Src\KMailServer.cpp" />
     <ClCompile Include="Src\KAuctionServer.cpp" />
     <ClCompile Include="Src\CoreDrawGameObj.cpp">

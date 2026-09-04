@@ -1,3 +1,4 @@
+Include("\\script\\auction_house\\auction_npc.lua")	-- [DAUGIA 04/09]
 Include("\\script\\lib\\lib_ham.lua")
 Include("\\script\\lib\\lib_task.lua")
 Include("\\script\\lib\\lib_map.lua")
@@ -15,9 +16,10 @@ THANH_DICHTRAM={
 
 function main(NpcIndex)
 -- Talk(1,"","§ang trong thêi gian ®ua Top kh«ng thÓ tham gia ho¹t ®éng .!!!") 
-	Say("Ng­¬i t×m ta cã viÖc g×?",2,
+	Say("Ng­¬i t×m ta cã viÖc g×?",3,
 		-- "NhiÖm vô ®­a th­ /duathu",
-		"NhiÖm vô TÝn Sø/especiallymessenger",	-- [TIN SU 21/08] thay "Thien bao kho /thienbao" (tinh nang cu da go)
+		"NhiÖm vô TÝn Sø/especiallymessenger",
+		"§Êu gi¸ (ký göi, phiªn bang, më cöa sæ)/auc_npc_main",	-- [DAUGIA 04/09]	-- [TIN SU 21/08] thay "Thien bao kho /thienbao" (tinh nang cu da go)
 		"Kh«ng cã g×. Thø lçi!/no")
 end
 

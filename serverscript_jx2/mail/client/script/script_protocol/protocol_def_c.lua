@@ -54,6 +54,79 @@ Def =
 		"UIMail:OpenMailWindow",
 		{OBJTYPE_NUMBER},
 	},
+	-- [DAUGIA 04/09] dau gia -> \script\ui\uiauction_house.lua
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_OFFERPRICERET",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnOfferPriceResponse",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_REFUNDRET",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnRefundResponse",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_ACTIVITYLIST",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnActivityListResponse",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_ACTIVITYINFO",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnActivityContentResponse",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_TABLE, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_ITEMINFO",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnItemContentResponse",
+		{OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_MEMBERLIST",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnMemberListResponse",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_NEWACTIVITY",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnNewActivityEvent",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_ENDACTIVITY",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnEndActivityEvent",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_NEWITEM",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnNewItemEvent",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_ENDITEM",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnEndItemEvent",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_TPRICECHANGE",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnPriceChangeEvent",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_OPENWND",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnOpenFromServer",
+		{OBJTYPE_NUMBER},
+	},
 }
 
 ScriptProtocol:RegProtocolSet(Def)

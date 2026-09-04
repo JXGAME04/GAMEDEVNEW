@@ -43,7 +43,8 @@
 #include "KLienDauTables.h"
 #include "KHoatDongTables.h"
 #include "KCongThanhTables.h"
-#include "KMailClient.h"	// [MAIL 03/09 D2] cua so thu
+#include "KMailClient.h"
+#include "KAuctionClient.h"	// [DAUGIA 04/09 A3]	// [MAIL 03/09 D2] cua so thu
 
 #define	NPC_TRADE_BOX_WIDTH		6
 #define	NPC_TRADE_BOX_HEIGHT	10
@@ -22000,6 +22001,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	case GOI_MAIL_UI:	// [MAIL 03/09 D2] cua so thu -> Lua uimail.lua (KMailClient.cpp)
 	{
 		MailUi_OnRequest(uParam, nParam);
+	}
+	break;
+	case GOI_AUCTION_UI:	// [DAUGIA 04/09 A3] cua so dau gia -> Lua uiauction_house.lua (KAuctionClient.cpp)
+	{
+		AuctionUi_OnRequest(uParam, nParam);
 	}
 	break;
 	case GOI_DICE_CHOICE:	// DICEITEM 26/08

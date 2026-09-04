@@ -27,6 +27,8 @@ int LuaAUC_Buy(Lua_State* L);         // (nId, szBuyer, nPrice) -> 1/0 (nguyen t
 int LuaAUC_SetState(Lua_State* L);    // (nId, nState, nBelow) -> 1/0 (nguyen tu)
 int LuaAUC_Sweep(Lua_State* L);       // (nNow, nMax) -> bang muc HET HAN can tra lai nguoi ban
 int LuaAUC_CountSeller(Lua_State* L); // (szSeller) -> so mon dang ky gui
+int LuaAUC_SetPrice(Lua_State* L);    // (nId, nCur, nNextDrop, nDropLeft, nEnd) -> 1/0 (chi khi state 0)
+int LuaAUC_Bid(Lua_State* L);         // (nId, szBuyer, nPrice, nNewEnd) -> 1/0 nguyen tu: chi khi state 0 va nPrice > cur_price
 #endif
 
 #endif // KAUCTIONSERVER_H

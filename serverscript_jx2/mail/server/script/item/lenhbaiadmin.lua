@@ -1,3 +1,4 @@
+Include("\\script\\auction_house\\auction_npc.lua")	-- [DAUGIA 04/09]
 -- Author: Fong KiÒu
 -- Date: 28/11/2020
 -- Function: LÖnh bµi Admin
@@ -100,11 +101,12 @@ function chucnangadmin(itemIdx)
 		--"IgnoreState/IgnoreState",
 		-- "LÊy M¸u/laymau001",
 		"Qu¶n lý m¸y chñ/system",
-		"Thu kenh ScriptProtocol (ECHO)/specho",	-- [MAIL 03/09]
-		"Göi th­ thö: tiÒn, xu, exp/mailtest1",	-- [MAIL 03/09]
+		-- "Thu kenh ScriptProtocol (ECHO)/specho",	-- [MAIL 03/09]
+		-- "Göi th­ thö: tiÒn, xu, exp/mailtest1",	-- [MAIL 03/09]
+		"§Êu gi¸: më phiªn thÕ giíi (GM)/auc_admin_world",	-- [DAUGIA 04/09]
 		"Göi th­ thö: cã vËt phÈm/mailtest2",	-- [MAIL 03/09]
 		"Chøc n¨ng chÝnh/manager",
-		"N¹p l¹i script/reloadfileEvent",
+		-- "N¹p l¹i script/reloadfileEvent",
 		"Test bang héi - c«ng thµnh/TX_Root",
 		"BOT ng­êi ch¬i/PB_Menu",
 		"D· TÈu: xo¸ ph¹t - thªm l­ît/DT_AdminMenu",
@@ -116,7 +118,7 @@ function chucnangadmin(itemIdx)
 		--"Show Npc Time Idle/ShowNpcTimeIdle",
 		--"FKAddAllNpc/FKAddAllNpc",
 		--"Go Map 957/GoMap995VT",
-	"Ho¹t ®éng Linux: S¸t Thñ - PL§ - V­ît ¶i/HD3_AdminMenu",
+		"Ho¹t ®éng Linux: S¸t Thñ - PL§ - V­ît ¶i/HD3_AdminMenu",
 		"Bé test Viªm §Õ/TTHD_Root",
 		"Bé test lß rÌn/LR_Root",
 		"Bé test Kinh M¹ch/KM_TestRoot",
