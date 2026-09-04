@@ -345,9 +345,11 @@ def build_manager():
         "        tb.nMaxPrice = r.cur",
         "    end",
         "    -- [A20b] gia MUA NGAY (chi dong ky gui ca nhan moi co) - client ve nut \"Mua ngay\"",
+        "    -- [A34] MOI dong kieu Anh co gia mua ngay cao hon gia co ban deu hien nut Mua ngay",
+        "    -- (truoc day chi rieng the Ca nhan).",
         "    tb.nBuyNow = 0",
-        "    if r.atype == " + P + ".tbAuctionTypeEnum.eType_PERSONAL and r.kind == " + P + ".tbItemTypeEnum.eType_ENGLISH then",
-        "        tb.nBuyNow = r.base or 0",
+        "    if r.kind == " + P + ".tbItemTypeEnum.eType_ENGLISH and (r.base or 0) > (r.guar or 0) then",
+        "        tb.nBuyNow = r.base",
         "    end",
         "    -- buoc moi luot = 10% GIA CO BAN (dung y chu chot 04/09)",
         "    tb.nRangePerOffer = floor(r.guar / 10)",
@@ -604,7 +606,7 @@ def build_manager():
         "    local nGiaMua = r.cur",
         "    local bKyGui = 0",
         "    if r.kind ~= " + P + ".tbItemTypeEnum.eType_DUTCH then",
-        "        if r.atype == " + P + ".tbAuctionTypeEnum.eType_PERSONAL and (r.base or 0) > 0 then",
+        "        if (r.base or 0) > (r.guar or 0) then",	# [A34] moi the, khong rieng ky gui
         "            nGiaMua = r.base",
         "            bKyGui = 1",
         "        else",
@@ -684,7 +686,7 @@ def build_manager():
         "    -- Truoc day duong tra gia khong co tran tren nen gia cao nhat vuot duoc gia mua ngay,",
         "    -- roi bat ky ai bam Mua ngay cung lay duoc mon o gia THAP HON: nguoi ban mat phan chenh,",
         "    -- nguoi dang giu gia cao nhat bi cuop mon. Chot o day thi cur khong bao gio vuot base nua.",
-        "    if (r.base or 0) > 0 and r.atype == " + P + ".tbAuctionTypeEnum.eType_PERSONAL and nNewPrice >= r.base then",
+        "    if (r.base or 0) > (r.guar or 0) and nNewPrice >= r.base then",	# [A34] moi the
         "        return AUC_OnRequestOfferDutch(nType, szAct, nId, r.base)",
         "    end",
         "    if AUC_GetMoney(r.currency) < nNewPrice then",
@@ -879,16 +881,20 @@ def build_manager():
         "        nKind = " + P + ".tbItemTypeEnum.eType_ENGLISH",
         "    end",
         "    if nType ~= " + P + ".tbAuctionTypeEnum.eType_PERSONAL then",
-        "        nGuar = nPrice",	# phien the gioi/bang: chi mot gia khoi diem
         "        if nKind == " + P + ".tbItemTypeEnum.eType_ENGLISH then",
-        "            -- [A17] gia khoi diem = gia san, chua ai tra thi cur = 0 (khong phai 150%),",
-        "            -- khong thi nguoi tra gia DAU TIEN luon bi tu choi vi cau SQL doi cur_price < gia tra.",
+        "            -- [A34 04/09] Phien BANG HOI / THE GIOI chay dung the thuc cua ky gui ca nhan.",
+        "            -- Truoc day cho nay dat nGuar = nPrice (o \"Mua ngay\") va vut o \"Co ban\" di,",
+        "            -- nen gia KHOI DIEM bang luon gia MUA NGAY - lan tra dau da phai bang gia mua ngay,",
+        "            -- khong con gi de dau (chu bao: \"gia dau gia = voi gia mua ngay\").",
+        "            -- Nay giu nGuar = gia co ban va nBase = gia mua ngay nhu dat o dau ham.",
+        "            -- Chua ai tra thi cur = 0, khong thi nguoi tra DAU TIEN bi cau SQL cur_price < ? da ra.",
         "            nCurP = 0",
-        "            nBase = nGuar",
         "            nNextDrop = 0",
         "            nDropLeft = 0",
-        "            nEnd = nNow + " + P + ".nEnglishRemainingTime",
+        "            nEnd = nNow + " + P + ".nEnglishRemainingTime",	# phien co gio, khac cho ky gui 24h
         "        else",
+        "            nGuar = nPrice",	# kieu Ha Lan: chi mot gia bao dam
+
         "            nCurP = floor(nPrice * " + P + ".nDutchInitRate)",
         "            nBase = nCurP",
         "            nNextDrop = nNow + " + P + ".nDutchFloatInterval",
@@ -1060,17 +1066,15 @@ def build_manager():
         "        Msg2Player(\"" + V("Chưa nhập giá mua ngay hợp lệ.") + "\")",
         "        return",
         "    end",
-        "    -- [A20] ky gui ca nhan doi DU HAI gia va gia co ban phai THAP HON gia mua ngay,",
-        "    -- khong thi khong con gi de dau (chu hoi dung cho nay hom 04/09).",
-        "    if t.nType == " + P + ".tbAuctionTypeEnum.eType_PERSONAL then",
-        "        if (t.nBase or 0) < 1 then",
-        "            Msg2Player(\"" + V("Chưa nhập giá cơ bản.") + "\")",
-        "            return",
-        "        end",
-        "        if t.nBase >= t.nPrice then",
-        "            Msg2Player(\"" + V("Giá cơ bản phải thấp hơn giá mua ngay.") + "\")",
-        "            return",
-        "        end",
+        "    -- [A20] doi DU HAI gia va gia co ban phai THAP HON gia mua ngay, khong thi khong con",
+        "    -- gi de dau. [A34] ap cho CA BA the, khong rieng ky gui ca nhan nua.",
+        "    if (t.nBase or 0) < 1 then",
+        "        Msg2Player(\"" + V("Chưa nhập giá cơ bản.") + "\")",
+        "        return",
+        "    end",
+        "    if t.nBase >= t.nPrice then",
+        "        Msg2Player(\"" + V("Giá cơ bản phải thấp hơn giá mua ngay.") + "\")",
+        "        return",
         "    end",
         "    local nIdx = GetGiveItemUnit(1)",
         "    if nIdx == nil or nIdx <= 0 then",
@@ -1997,20 +2001,25 @@ def copy_ini():
         # Vay bo han duong doi anh (co ResizeBigItem) va tra ve cach GIU HINH THAT: noi o cho vua mon.
         # Hang cao 107, cot trai rong 86 nen o 58x78 du cho trang bi 2x3 va khong dung vao chu.
         if n == "auction_item_icon":
-            # [A32b] thu nho THAT duoc roi (xem [A31]) nen o ve 26x26 va bat co
-            txt = _setkey(txt, "Main", "Left", 30)
-            txt = _setkey(txt, "Main", "Top", 30)
-            txt = _setkey(txt, "MailAwardItemSpr", "Left", 1)
-            txt = _setkey(txt, "MailAwardItemSpr", "Top", 1)
-            txt = _setkey(txt, "MailAwardItemSpr", "Width", 26)
-            txt = _setkey(txt, "MailAwardItemSpr", "Height", 26)
+            # [A35 04/09] chu: "loi item 6 o ma o vuong chi co 1x1 chua tra lai nhu truoc" va
+            # "chua tra ve kich thuoc vien trang bi nhu cu". "Nhu truoc" chinh la luc o nay rong
+            # 58x78: mon ve NGUYEN CO (chu chot de nguyen kich thuoc goc o bang dau gia) nen O VUONG
+            # phai to bang mon, khong thi vien 26x26 nam lot thom giua mon 2x3.
+            # Vien dong khung (DrawBorder/DrawBorder2 trong WndObjContainer::PaintWindow) ve theo
+            # m_Width/m_Height cua o nay, nen noi o la vien khop luon.
+            txt = _setkey(txt, "Main", "Left", 14)
+            txt = _setkey(txt, "Main", "Top", 14)
+            txt = _setkey(txt, "MailAwardItemSpr", "Left", 0)
+            txt = _setkey(txt, "MailAwardItemSpr", "Top", 0)
+            txt = _setkey(txt, "MailAwardItemSpr", "Width", 58)
+            txt = _setkey(txt, "MailAwardItemSpr", "Height", 78)
             # [A33 04/09] chu chot: "hien thi trang bi tren dau gia da oke, de nguyen kich thuoc
             # goc o ban dau gia - chi thu nho item nhieu o thanh 1 o o trong mail gui ve".
             txt = _setkey(txt, "MailAwardItemSpr", "ResizeBigItem", 0)
-            # nhan so noi rong va can PHAI de "9 van 6000" khong bi cat con "9 v"
-            txt = _setkey(txt, "MailAwardItemCount", "Left", -36)
-            txt = _setkey(txt, "MailAwardItemCount", "Top", 13)
-            txt = _setkey(txt, "MailAwardItemCount", "Width", 62)
+            # nhan so dat duoi o 58x78, can PHAI de so dai khong bi cat
+            txt = _setkey(txt, "MailAwardItemCount", "Left", 0)
+            txt = _setkey(txt, "MailAwardItemCount", "Top", 62)
+            txt = _setkey(txt, "MailAwardItemCount", "Width", 58)
             txt = _setkey(txt, "MailAwardItemCount", "HAlign", 2)
         if n == "auction_icon":
             # bieu tuong: nam ngay duoi bieu tuong thu (mail_icon.ini Left=765 Top=296 -> dau gia Top=322)
