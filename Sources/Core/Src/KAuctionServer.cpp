@@ -720,4 +720,51 @@ int LuaAUC_CountSeller(Lua_State* L)
 	return 1;
 }
 
+// AUC_SetPrice(nId, nCur, nNextDrop, nDropLeft, nEnd) -> 1/0 (chi doi khi con dang ban)
+int LuaAUC_SetPrice(Lua_State* L)
+{
+	int nId = sArgInt(L, 1);
+	if (nId <= 0 || !sEnsureTable())
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KDBParam p[5];
+	p[0] = KDBParam::I(sArgI64(L, 2));
+	p[1] = KDBParam::I(sArgInt(L, 3));
+	p[2] = KDBParam::I(sArgInt(L, 4));
+	p[3] = KDBParam::I(sArgInt(L, 5));
+	p[4] = KDBParam::I(nId);
+	__int64 nAffected = 0;
+	bool bOk = g_MySQLDB.Exec(
+		"UPDATE auction_item SET cur_price=?, next_drop_time=?, drop_left=?, end_time=? WHERE id=? AND state=0", p, 5, &nAffected);
+	Lua_PushNumber(L, (bOk && nAffected > 0) ? 1 : 0);
+	return 1;
+}
+
+// AUC_Bid(nId, szBuyer, nPrice, nNewEnd) -> 1/0. Nguyen tu: chi khi state 0 va gia moi CAO HON gia hien tai.
+int LuaAUC_Bid(Lua_State* L)
+{
+	int nId = sArgInt(L, 1);
+	const char* szBuyer = sArgStr(L, 2);
+	__int64 nPrice = sArgI64(L, 3);
+	int nEnd = sArgInt(L, 4);
+	if (nId <= 0 || !szBuyer[0] || nPrice <= 0 || !sEnsureTable())
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KDBParam p[5];
+	p[0] = KDBParam::S(szBuyer);
+	p[1] = KDBParam::I(nPrice);
+	p[2] = KDBParam::I(nEnd);
+	p[3] = KDBParam::I(nId);
+	p[4] = KDBParam::I(nPrice);
+	__int64 nAffected = 0;
+	bool bOk = g_MySQLDB.Exec(
+		"UPDATE auction_item SET buyer=?, cur_price=?, buy_price=cur_price, end_time=? WHERE id=? AND state=0 AND cur_price<?", p, 5, &nAffected);
+	Lua_PushNumber(L, (bOk && nAffected > 0) ? 1 : 0);
+	return 1;
+}
+
 #endif // _SERVER

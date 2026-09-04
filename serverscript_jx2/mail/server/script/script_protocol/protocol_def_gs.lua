@@ -190,6 +190,15 @@ local Def =
 	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_STATECHANGE", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestStateChange", {OBJTYPE_NUMBER, OBJTYPE_NUMBER} },
 	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_AUTODELETE", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestAutoDelete", nil },
 	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_OPENURL", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestOpenUrl", {OBJTYPE_STRING} },
+	-- [DAUGIA 04/09] dau gia -> \script\auction_house\auction_manager.lua
+	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_OFFERENGLISHPRICE", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestOfferEnglish", {OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER} },
+	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_OFFERDUTCHPRICE", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestOfferDutch", {OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER} },
+	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_REFUND", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestRefund", {OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER} },
+	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_ACTIVITYLIST", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestActivityList", {OBJTYPE_NUMBER, OBJTYPE_NUMBER} },
+	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_ACTIVITYCONTENT", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestActivityContent", {OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_TABLE} },
+	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_ITEMCONTENT", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestItemContent", {OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER} },
+	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_MEMBERLIST", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestMemberList", {OBJTYPE_STRING} },
+	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_GETBACKITEM", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestGetBack", {OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER} },
 }
 
 ScriptProtocol:RegProtocolSet(Def)

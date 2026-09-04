@@ -549,6 +549,8 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 	GDCNI_OPEN_SMELT_BOX,
 	// [MAIL 03/09 D2] cua so THU: uParam = MAILUI_CMD_* (KMailUiDef.h), nParam = con tro / so. Dat CUOI enum.
 	GDCNI_MAIL_UI,
+	// [DAUGIA 04/09 A3] cua so DAU GIA: uParam = AUCUI_CMD_* (KAuctionUiDef.h), nParam = con tro / so
+	GDCNI_AUCTION_UI,
 };
 
 enum GAMEDEBUGCONTROL
@@ -880,6 +882,9 @@ enum GAMEOPERATION_INDEX
 
 	// [MAIL 03/09 D2] cua so THU -> Lua uimail.lua (KMailClient.cpp): uParam = MAILUI_OP_MAKE(op, extra), nParam. Dat CUOI enum.
 	GOI_MAIL_UI,
+
+	// [DAUGIA 04/09 A3] cua so DAU GIA -> Lua uiauction_house.lua (KAuctionClient.cpp): uParam = AUCUI_OP_*, nParam = KAucUiReq*
+	GOI_AUCTION_UI,
 
 };
 

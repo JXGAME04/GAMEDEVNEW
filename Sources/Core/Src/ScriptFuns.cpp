@@ -63,6 +63,7 @@
 #include "KMailClient.h"	// [MAIL 03/09 D2] cua so thu (client)
 #include "KMailServer.h"	// [MAIL 03/09 D3] kho thu MySQL (may chu)
 #include "KAuctionServer.h"	// [DAUGIA 04/09 A1] kho dau gia + giu nguyen vat pham
+#include "KAuctionClient.h"	// [DAUGIA 04/09 A3] cua so dau gia (client)
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
 {
@@ -14839,6 +14840,32 @@ TLua_Funcs GameScriptFuns[] =
 	{"FormatTime2String",	LuaMail_FormatTime2String},
 	{"MailConfirm",	LuaMail_MailConfirm},
 	{"Msg2Player",	LuaMail_Msg2Player},	// client: thong bao he thong (may chu co ban rieng trong khoi _SERVER)
+	// [DAUGIA 04/09 A3] 21 ham 2.0 ma \script\ui\uiauction_house.lua goi + 4 ham phu (KAuctionClient.cpp)
+	{"OpenAuctionWindow",	LuaAuc_OpenAuctionWindow},
+	{"CloseAuctionWindow",	LuaAuc_CloseAuctionWindow},
+	{"SwitchAuctionWindow",	LuaAuc_SwitchAuctionWindow},
+	{"AuctionUiIsOpen",	LuaAuc_AuctionUiIsOpen},
+	{"NewAuctionEventArrival",	LuaAuc_NewAuctionEventArrival},
+	{"AuctionAddActivity",	LuaAuc_AuctionAddActivity},
+	{"AuctionDelActivity",	LuaAuc_AuctionDelActivity},
+	{"AuctionClearActivityList",	LuaAuc_AuctionClearActivityList},
+	{"AuctionOnActivitySelect",	LuaAuc_AuctionOnActivitySelect},
+	{"AuctionAddEnglishItem",	LuaAuc_AuctionAddEnglishItem},
+	{"AuctionAddDutchItem",	LuaAuc_AuctionAddDutchItem},
+	{"AuctionSetEnglishItem",	LuaAuc_AuctionSetEnglishItem},
+	{"AuctionSetDutchItem",	LuaAuc_AuctionSetDutchItem},
+	{"AuctionEndItem",	LuaAuc_AuctionEndItem},
+	{"AuctionClearItemList",	LuaAuc_AuctionClearItemList},
+	{"AuctionAddActivityMember",	LuaAuc_AuctionAddActivityMember},
+	{"AuctionClearMemberList",	LuaAuc_AuctionClearMemberList},
+	{"AuctionSetSalaryAndCount",	LuaAuc_AuctionSetSalaryAndCount},
+	{"AuctionSetCurrentPageTxt",	LuaAuc_AuctionSetCurrentPageTxt},
+	{"AuctionClearAll",	LuaAuc_AuctionClearAll},
+	{"SetAuctionIconVisible",	LuaAuc_SetAuctionIconVisible},
+	{"AuctionSetMoney",	LuaAuc_AuctionSetMoney},
+	{"AuctionConfirm",	LuaAuc_AuctionConfirm},
+	{"GetLocalTime",	LuaAuc_GetLocalTime},
+	{"PopBlackTips",	LuaAuc_PopBlackTips},
 	{ "OB_Create",	LuaOB_Create },
 	{ "OB_Release",	LuaOB_Release },
 	{ "OB_IsEmpty",	LuaOB_IsEmpty },
@@ -14879,6 +14906,8 @@ TLua_Funcs GameScriptFuns[] =
 	{"AUC_SetState",	LuaAUC_SetState},
 	{"AUC_Sweep",	LuaAUC_Sweep},
 	{"AUC_CountSeller",	LuaAUC_CountSeller},
+	{"AUC_SetPrice",	LuaAUC_SetPrice},
+	{"AUC_Bid",	LuaAUC_Bid},
 #endif
 	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},

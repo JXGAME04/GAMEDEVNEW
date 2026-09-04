@@ -75,6 +75,26 @@ function MailManager_ParseAward(szAward)
                     tinsert(tb, {szKind = "gold", nRecord = tonumber(nums[1]) or 0, nCount = tonumber(nums[2]) or 1,
                         nLock = tonumber(nums[3]) or 0, nExpSec = tonumber(nums[4]) or 0})
                 end
+            elseif kind == "aucitem" then
+                -- [DAUGIA 04/09] aucitem:<id> = mon trong bang auction_item (giu nguyen thuoc tinh, AUC_GiveRec)
+                local nAid = tonumber(val) or 0
+                if nAid > 0 then
+                    local ai = AUC_Get(nAid)
+                    local pr = {0, 0, 0, 0, 0, 0}
+                    if ai then
+                        local kx = 0
+                        local sd = ai.desc
+                        while kx < 6 do
+                            local a1, b1, num = strfind(sd, "^(%-?%d+),?")
+                            if not a1 then break end
+                            kx = kx + 1
+                            pr[kx] = tonumber(num) or 0
+                            sd = strsub(sd, b1 + 1)
+                        end
+                    end
+                    tinsert(tb, {szKind = "aucitem", nAucId = nAid, nGenre = pr[1], nDetail = pr[2], nParticular = pr[3],
+                        nLevel = pr[4], nSeries = pr[5], nLuck = pr[6], nCount = 1, nCells = (ai and ai.cells) or 6})
+                end
             elseif kind == "task" then
                 -- [D9] task:id,n = cong n vao o nhiem vu id (337 = diem su kien Tong Kim)
                 local nums = MailManager_Split(val, ",")
@@ -97,7 +117,7 @@ function MailManager_AwardInfo(tbAward)
     local tb = {}
     for i = 1, getn(tbAward) do
         local a = tbAward[i]
-        if a.szKind == "item" then
+        if a.szKind == "item" or a.szKind == "aucitem" then
             tinsert(tb, a)
         elseif a.szKind == "money" then
             tinsert(tb, {szKind = "icon", szIcon = MAILMGR_ICON_MONEY, szName = "Ng©n l­îng", szDesc = a.nCount.." Ng©n l­îng", nCount = a.nCount})
@@ -257,7 +277,14 @@ end
 function MailManager_GiveAward(tbAward)
     for i = 1, getn(tbAward) do
         local a = tbAward[i]
-        if a.szKind == "item" or a.szKind == "gold" then
+        if a.szKind == "aucitem" then
+            local ai = AUC_Get(a.nAucId)
+            if ai and AUC_GiveRec(ai.rec) > 0 then
+                GhiLog("MAIL", format("%s nhan mon dau gia id %d (%s)", GetName(), a.nAucId, ai.name))
+            else
+                GhiLog("MAIL", format("LOI: %s KHONG nhan duoc mon dau gia id %d", GetName(), a.nAucId))
+            end
+        elseif a.szKind == "item" or a.szKind == "gold" then
             MailManager_GiveItem(a)
         elseif a.szKind == "money" then
             Earn(a.nCount)
@@ -312,6 +339,8 @@ function MailManager_OnRequestStateChange(nId, nToState)
             else
                 nCells = nCells + a.nCount
             end
+        elseif a.szKind == "aucitem" then
+            nCells = nCells + (a.nCells or 6)
         elseif a.szKind == "gold" then
             nCells = nCells + a.nCount * 6
         end
@@ -428,6 +457,7 @@ MAILMGR_ACTIVITY = {
     vuotai    = "V­ît ¶i",
     tinsu     = "TÝn Sø",
     bangluong = "Bang héi",
+    daugia    = "Ch­ëng QuÇy Khu §Êu Gi¸",
     web       = "Nhµ ph¸t hµnh",
 }
 
