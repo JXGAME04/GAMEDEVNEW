@@ -28,6 +28,9 @@
 
 #ifdef _SERVER
 #include "KMySQLDB.h"
+#include "KPlayer.h"
+#include "KPlayerSet.h"
+#include "KMailServer.h"	// Mail_Send: trao thuong qua he thu
 #include <vector>
 #include <string>
 #include <stdio.h>
@@ -803,6 +806,597 @@ int LuaCL_Award(Lua_State* L)
 	sSetStr(L, "award", a.sAward);
 	sSetStr(L, "title", a.sTitle);
 	sSetStr(L, "content", a.sContent);
+	return 1;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// 10. [DOT 1b] TRANG THAI NGUOI CHOI - DEM TRONG RAM, XA THEO MOC
+//
+// LUAT 1 cua he: KHONG BAO GIO ghi CSDL theo su kien chien dau. Do that tren may
+// nay: mot cau ghi cam ket 2,5 ms, luong ghi nen chi xa duoc 399 dong/giay, hang
+// doi 20.000 muc day thi BO GOI IM LANG. Voi 1000 bot dang chay, ghi moi lan giet
+// quai la chet. Nen: cong don trong RAM, chi ghi khi (a) vuot mot moc thuong,
+// (b) dang xuat, (c) hen gio 5 phut.
+//
+// Cac cho MOC deu dat o LUA (mot dong CL_Cong o canh ma hoat dong) chu khong sua
+// KNpc.cpp / ScriptFuns.cpp. Ly do:
+//   - KNpc.cpp:1837 da co chu thich "ham nay chay MOI LAN co NPC chet - dung them
+//     viec nang", va no cung la tep ma phien khac dang sua (tranh khe swap);
+//   - de o Lua thi `grep CL_Cong` trong cay script ra duoc: thang sau ai doi map
+//     Tong Kim hay doi so hieu task se NHIN THAY Chien Lenh, khong lam hong cam.
+//////////////////////////////////////////////////////////////////////////////
+
+struct KCLPlayer
+{
+	int		bLoaded;
+	int		nSeasonId;
+	int		nScore;
+	int		nVip;
+	int		nGotLow;
+	int		nGotVip;
+	int		nDayKey;		// yyyymmdd cua lan reset ngay gan nhat
+	int		nWeekKey;		// yyyymmdd cua thu Hai tuan hien tai
+	__int64	nDayState;		// 2 bit moi nhiem vu: bit chan = xong, bit le = da linh
+	__int64	nWeekState;
+	int		nProg[CL_MAX_MISSION + 1];
+	int		bDirty;
+	int		nLastFlush;
+};
+
+static KCLPlayer s_Pl[MAX_PLAYER];
+
+// 2 bit moi nhiem vu, danh so theo CHINH id nhiem vu (1..20) -> 40 bit, vua __int64
+#define CL_BIT_XONG(id)		(((__int64)1) << (((id) - 1) * 2))
+#define CL_BIT_LINH(id)		(((__int64)1) << (((id) - 1) * 2 + 1))
+
+//////////////////////////////////////////////////////////////////////////////
+// 11. MOC NGAY / TUAN
+//
+// Dung SO NGAY TUYET DOI dang yyyymmdd va chi reset khi so MOI LON HON so da luu.
+// Neu so sanh bang "khac nhau" (nhu ban 2.0) thi dong ho may chu LUI mot ngay -
+// chinh tay, dong bo NTP sai, hay phuc hoi anh may ao - la nguoi choi cay lai
+// duoc mot vong nhiem vu ngay, va diem thi cong don khong reset.
+//////////////////////////////////////////////////////////////////////////////
+
+static int sNgayGame(int nNow, int nResetHour)
+{
+	time_t t = (time_t)(nNow - nResetHour * 3600);
+	struct tm* p = localtime(&t);
+	if (!p)
+		return 0;
+	return (p->tm_year + 1900) * 10000 + (p->tm_mon + 1) * 100 + p->tm_mday;
+}
+
+static int sTuanGame(int nNow, int nResetHour)
+{
+	time_t t = (time_t)(nNow - nResetHour * 3600);
+	struct tm* p = localtime(&t);
+	if (!p)
+		return 0;
+	int nThu = (p->tm_wday + 6) % 7;	// 0 = thu Hai
+	t -= (time_t)nThu * 86400;
+	struct tm* q = localtime(&t);
+	if (!q)
+		return 0;
+	return (q->tm_year + 1900) * 10000 + (q->tm_mon + 1) * 100 + q->tm_mday;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// 12. NAP / XA TRANG THAI
+//////////////////////////////////////////////////////////////////////////////
+
+struct KCLPlBox { KCLPlayer* p; bool bCo; };
+
+static bool _RowPlayer(const KDBRow& row, void* pv)
+{
+	KCLPlBox* b = (KCLPlBox*)pv;
+	KCLPlayer* p = b->p;
+	p->nScore		= sColInt(row, 0);
+	p->nVip			= sColInt(row, 1);
+	p->nGotLow		= sColInt(row, 2);
+	p->nGotVip		= sColInt(row, 3);
+	p->nDayKey		= sColInt(row, 4);
+	p->nWeekKey		= sColInt(row, 5);
+	p->nDayState	= _atoi64(sCol(row, 6).c_str());
+	p->nWeekState	= _atoi64(sCol(row, 7).c_str());
+	// cot prog: "id:so,id:so,..."
+	std::string s = sCol(row, 8);
+	size_t i = 0;
+	while (i < s.size())
+	{
+		size_t j = s.find(',', i);
+		if (j == std::string::npos)
+			j = s.size();
+		std::string m = s.substr(i, j - i);
+		i = j + 1;
+		size_t k = m.find(':');
+		if (k == std::string::npos)
+			continue;
+		int nId = atoi(m.substr(0, k).c_str());
+		int nSo = atoi(m.substr(k + 1).c_str());
+		if (nId >= 1 && nId <= CL_MAX_MISSION)
+			p->nProg[nId] = nSo;
+	}
+	b->bCo = true;
+	return true;
+}
+
+// Nap trang thai cua mot nguoi choi. Goi luc dang nhap (mot cau doc 0,08 ms).
+static bool sNapNguoiChoi(int nIdx)
+{
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER || !s_bCfgOk)
+		return false;
+	KCLPlayer& p = s_Pl[nIdx];
+	memset(&p, 0, sizeof(p));
+	p.nSeasonId = s_Season.nId;
+	p.bLoaded = 1;
+	p.nLastFlush = (int)time(NULL);
+	if (!ChienLenh_EnsureTables())
+		return false;
+	KCLPlBox box;
+	box.p = &p;
+	box.bCo = false;
+	KDBParam q[2];
+	q[0] = KDBParam::I(s_Season.nId);
+	q[1] = KDBParam::S(Player[nIdx].m_PlayerName);
+	g_MySQLDB.Query(
+		"SELECT score, vip, got_low, got_vip, day_key, week_key, day_state, week_state, prog"
+		" FROM st_player WHERE season_id=? AND role_name=?", q, 2, _RowPlayer, &box);
+	return true;
+}
+
+// Xa trang thai xuong CSDL. Dung Post() (bat dong bo) nen KHONG chan vong lap game.
+static void sXaNguoiChoi(int nIdx)
+{
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER)
+		return;
+	KCLPlayer& p = s_Pl[nIdx];
+	if (!p.bLoaded || !p.bDirty || !s_bCfgOk)
+		return;
+	if (!ChienLenh_EnsureTables())
+		return;
+
+	char szProg[256];
+	szProg[0] = 0;
+	int nLen = 0;
+	for (int i = 1; i <= CL_MAX_MISSION; i++)
+	{
+		if (p.nProg[i] <= 0)
+			continue;
+		char szTmp[32];
+		int n = _snprintf(szTmp, sizeof(szTmp) - 1, "%s%d:%d", nLen ? "," : "", i, p.nProg[i]);
+		if (n <= 0 || nLen + n >= (int)sizeof(szProg) - 1)
+			break;
+		strcpy(szProg + nLen, szTmp);
+		nLen += n;
+	}
+
+	KDBParam q[12];
+	q[0]  = KDBParam::I(p.nSeasonId);
+	q[1]  = KDBParam::S(Player[nIdx].m_PlayerName);
+	q[2]  = KDBParam::I(p.nScore);
+	q[3]  = KDBParam::I(p.nVip);
+	q[4]  = KDBParam::I(p.nGotLow);
+	q[5]  = KDBParam::I(p.nGotVip);
+	q[6]  = KDBParam::I(p.nDayKey);
+	q[7]  = KDBParam::I(p.nWeekKey);
+	q[8]  = KDBParam::I(p.nDayState);
+	q[9]  = KDBParam::I(p.nWeekState);
+	q[10] = KDBParam::S(szProg);
+	q[11] = KDBParam::I((__int64)time(NULL));
+	g_MySQLDB.Post(
+		"INSERT INTO st_player (season_id, role_name, score, vip, got_low, got_vip,"
+		" day_key, week_key, day_state, week_state, prog, updated_at)"
+		" VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
+		" ON DUPLICATE KEY UPDATE score=VALUES(score), vip=VALUES(vip),"
+		" got_low=VALUES(got_low), got_vip=VALUES(got_vip), day_key=VALUES(day_key),"
+		" week_key=VALUES(week_key), day_state=VALUES(day_state),"
+		" week_state=VALUES(week_state), prog=VALUES(prog), updated_at=VALUES(updated_at)",
+		q, 12);
+	p.bDirty = 0;
+	p.nLastFlush = (int)time(NULL);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// 13. RESET NGAY / TUAN
+//////////////////////////////////////////////////////////////////////////////
+
+static void sKiemReset(int nIdx)
+{
+	KCLPlayer& p = s_Pl[nIdx];
+	if (!p.bLoaded || !s_bCfgOk)
+		return;
+	int nNow = (int)time(NULL);
+	int nNgay = sNgayGame(nNow, s_Season.nResetHour);
+	int nTuan = sTuanGame(nNow, s_Season.nResetHour);
+
+	// CHI reset khi moc MOI LON HON moc da luu (khong dung "khac nhau")
+	if (nNgay > p.nDayKey)
+	{
+		p.nDayKey = nNgay;
+		for (int i = 1; i <= CL_MAX_MISSION; i++)
+		{
+			if (s_Mission[i].nId == i && s_Mission[i].nKind == 2)
+			{
+				p.nDayState &= ~CL_BIT_XONG(i);
+				p.nDayState &= ~CL_BIT_LINH(i);
+				p.nProg[i] = 0;
+			}
+		}
+		p.bDirty = 1;
+	}
+	if (nTuan > p.nWeekKey)
+	{
+		p.nWeekKey = nTuan;
+		for (int i = 1; i <= CL_MAX_MISSION; i++)
+		{
+			if (s_Mission[i].nId == i && s_Mission[i].nKind == 1)
+			{
+				p.nWeekState &= ~CL_BIT_XONG(i);
+				p.nWeekState &= ~CL_BIT_LINH(i);
+				p.nProg[i] = 0;
+			}
+		}
+		p.bDirty = 1;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// 14. CONG TIEN DO / DANH DAU XONG
+//////////////////////////////////////////////////////////////////////////////
+
+extern int PB_IsBot(int nPlayerIdx);
+
+// Chi so nguoi choi hien tai. Dung DUNG khuon cua KAuctionServer.cpp:491-497:
+// GetPlayerIndex() nam trong ScriptFuns.cpp va KHONG duoc khai o header nao,
+// nen moi tep tu doc bien toan cuc Lua SCRIPT_PLAYERINDEX.
+static int sChiSoNguoiChoi(Lua_State* L)
+{
+	int nPlayerIdx = 0;
+	lua_getglobal(L, SCRIPT_PLAYERINDEX);
+	if (lua_isnumber(L, -1))
+		nPlayerIdx = (int)lua_tonumber(L, -1);
+	lua_settop(L, -2);
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+		return 0;
+	return nPlayerIdx;
+}
+
+static __int64* sTruongTrangThai(KCLPlayer& p, int nId)
+{
+	return (s_Mission[nId].nKind == 1) ? &p.nWeekState : &p.nDayState;
+}
+
+// Cong nSo vao tien do nhiem vu nId; du muc tieu thi danh dau XONG.
+// Tra 1 neu vua chuyen sang trang thai xong.
+static int sCong(int nIdx, int nId, int nSo)
+{
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER || nId < 1 || nId > CL_MAX_MISSION)
+		return 0;
+	if (!s_bCfgOk || !ChienLenh_DangMo())
+		return 0;
+	// CAU DAU TIEN: bo qua bot. 1000 bot dang chay se lam phinh ban ghi va
+	// chiem cho trong moi bang neu khong chan o day.
+	if (PB_IsBot(nIdx))
+		return 0;
+	KCLPlayer& p = s_Pl[nIdx];
+	if (!p.bLoaded)
+		return 0;
+	KCLMission& m = s_Mission[nId];
+	if (m.nId != nId || !m.nEnabled)
+		return 0;
+	sKiemReset(nIdx);
+	__int64* pTr = sTruongTrangThai(p, nId);
+	if ((*pTr) & CL_BIT_XONG(nId))
+		return 0;						// da xong roi
+	if (nSo > 0)
+	{
+		p.nProg[nId] += nSo;
+		p.bDirty = 1;
+	}
+	if (p.nProg[nId] >= m.nTarget)
+	{
+		*pTr |= CL_BIT_XONG(nId);
+		p.bDirty = 1;
+		return 1;
+	}
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// 15. TRAO THUONG - SO CAI TRUOC, THU SAU
+//
+// UNIQUE KEY (season_id, role_name, idx, branch) tren st_ledger la thu DUY NHAT
+// chong nhan hai lan. Nen thu tu BAT BUOC la:
+//   1. INSERT so cai  -> trung khoa = da nhan roi = tu choi (khong trao gi)
+//   2. chi khi INSERT AN thi moi Mail_Send
+// Neu lam nguoc (trao truoc, ghi sau) thi mot lan hong giua chung la trao hai lan.
+// Neu Mail_Send hong sau khi so cai da ghi thi dong so cai con do voi mail_id = 0,
+// tra ra duoc va bu tay duoc - hon han mat im lang.
+//////////////////////////////////////////////////////////////////////////////
+
+static int sNhanMoc(int nIdx, int nMoc, int nBranch)
+{
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER || !s_bCfgOk)
+		return 0;
+	if (PB_IsBot(nIdx))
+		return 0;
+	KCLPlayer& p = s_Pl[nIdx];
+	if (!p.bLoaded)
+		return 0;
+	if (nMoc < 1 || nMoc > (int)s_Award.size())
+		return 0;
+	KCLAward& a = s_Award[nMoc - 1];
+	if (a.nBranch != nBranch)
+		return 0;						// moc nay khong thuoc nhanh do
+	if (nBranch == 1 && p.nVip != 1)
+		return 0;						// chua kich hoat Hao Hoa
+	// MAY CHU TU TINH LAI, khong tin bat cu so nao tu client
+	if (p.nScore < a.nNeedScore)
+		return 0;
+	int nDaNhan = (nBranch == 1) ? p.nGotVip : p.nGotLow;
+	if (nMoc <= nDaNhan)
+		return 0;						// da nhan roi (bo dem)
+	// het mua van cho NHAN trong thoi gian an han, nhung khong cho cong diem nua
+	int nNow = (int)time(NULL);
+	if (nNow >= s_Season.nClose + s_Season.nGraceDays * 86400)
+		return 0;
+
+	// --- 1. gianh quyen bang so cai ---
+	__int64 nAff = 0;
+	KDBParam q[7];
+	q[0] = KDBParam::I(s_Season.nId);
+	q[1] = KDBParam::S(Player[nIdx].m_PlayerName);
+	q[2] = KDBParam::I(nMoc);
+	q[3] = KDBParam::I(nBranch);
+	q[4] = KDBParam::S(a.sAward.c_str());
+	q[5] = KDBParam::I(0);
+	q[6] = KDBParam::I(nNow);
+	bool bOk = g_MySQLDB.Exec(
+		"INSERT IGNORE INTO st_ledger (season_id, role_name, idx, branch, award, mail_id, ts)"
+		" VALUES (?,?,?,?,?,?,?)", q, 7, &nAff);
+	if (!bOk || nAff != 1)
+		return 0;						// trung khoa = da nhan roi
+
+	// --- 2. gio moi gui thu ---
+	const char* szTitle = a.sTitle.empty() ? "Th\255\353ng Chi\325n L\326nh" : a.sTitle.c_str();
+	int nMailId = Mail_Send(Player[nIdx].m_PlayerName, "Chi\325n L\326nh", szTitle,
+		a.sContent.c_str(), a.sAward.c_str(), a.nAwardCount, 90 * 86400, "chienlenh");
+
+	char szLog[192];
+	if (nMailId > 0)
+	{
+		KDBParam u[2];
+		u[0] = KDBParam::I(nMailId);
+		u[1] = KDBParam::I(0);
+		// khong can biet ket qua -> Post
+		KDBParam v[4];
+		v[0] = KDBParam::I(nMailId);
+		v[1] = KDBParam::I(s_Season.nId);
+		v[2] = KDBParam::S(Player[nIdx].m_PlayerName);
+		v[3] = KDBParam::I(nMoc);
+		g_MySQLDB.Post("UPDATE st_ledger SET mail_id=? WHERE season_id=? AND role_name=? AND idx=?",
+			v, 4);
+	}
+	else
+	{
+		_snprintf(szLog, sizeof(szLog) - 1,
+			"LOI: da ghi so cai moc %d nhanh %d cho mot nguoi choi nhung Mail_Send tra 0"
+			" (hom thu day toan thu con dinh kem?) - dong so cai con mail_id=0, bu tay duoc",
+			nMoc, nBranch);
+		ChienLenh_Log(CL_LOG_LOI, szLog);
+	}
+
+	if (nBranch == 1)
+		p.nGotVip = nMoc;
+	else
+		p.nGotLow = nMoc;
+	p.bDirty = 1;
+	sXaNguoiChoi(nIdx);
+	return nMailId > 0 ? 1 : 2;			// 2 = da ghi so cai nhung thu chua gui duoc
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// 16. HAM LUA CUA DOT 1b
+//////////////////////////////////////////////////////////////////////////////
+
+// CL_Load() -> 1/0. Goi trong playerlogin.lua.
+int LuaCL_Load(Lua_State* L)
+{
+	int nIdx = sChiSoNguoiChoi(L);
+	Lua_PushNumber(L, sNapNguoiChoi(nIdx) ? 1 : 0);
+	return 1;
+}
+
+// CL_Save() -> 1/0. Goi luc dang xuat va trong nhip 5 phut.
+int LuaCL_Save(Lua_State* L)
+{
+	int nIdx = sChiSoNguoiChoi(L);
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sXaNguoiChoi(nIdx);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// CL_Cong(nMissionId, nSo) -> 1 neu nhiem vu VUA xong.
+// Day la ham ma cac diem moc trong script hoat dong goi (mot dong moi cho).
+int LuaCL_Cong(Lua_State* L)
+{
+	int nIdx = sChiSoNguoiChoi(L);
+	int nId = sArgInt(L, 1);
+	int nSo = (Lua_GetTopIndex(L) >= 2) ? sArgInt(L, 2) : 1;
+	Lua_PushNumber(L, sCong(nIdx, nId, nSo));
+	return 1;
+}
+
+// CL_Xong(nMissionId) -> 1 neu vua xong. Dung cho nhiem vu KHONG dem (lam la xong).
+int LuaCL_Xong(Lua_State* L)
+{
+	int nIdx = sChiSoNguoiChoi(L);
+	int nId = sArgInt(L, 1);
+	if (nId >= 1 && nId <= CL_MAX_MISSION && s_Mission[nId].nId == nId)
+	{
+		int nCon = s_Mission[nId].nTarget;
+		if (nIdx > 0 && nIdx < MAX_PLAYER && s_Pl[nIdx].bLoaded)
+			nCon = s_Mission[nId].nTarget - s_Pl[nIdx].nProg[nId];
+		if (nCon < 1)
+			nCon = 1;
+		Lua_PushNumber(L, sCong(nIdx, nId, nCon));
+		return 1;
+	}
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// CL_LinhNhiemVu(nMissionId) -> so diem duoc cong (0 = khong linh duoc).
+// Nguoi choi bam nut "Nhan" o dong nhiem vu.
+int LuaCL_LinhNhiemVu(Lua_State* L)
+{
+	int nIdx = sChiSoNguoiChoi(L);
+	int nId = sArgInt(L, 1);
+	int nDiem = 0;						// day DUNG MOT LAN o cuoi ham
+	do
+	{
+		if (nIdx <= 0 || nId < 1 || nId > CL_MAX_MISSION)
+			break;
+		if (!s_bCfgOk || !ChienLenh_DangMo() || PB_IsBot(nIdx))
+			break;
+		KCLPlayer& p = s_Pl[nIdx];
+		if (!p.bLoaded || s_Mission[nId].nId != nId || !s_Mission[nId].nEnabled)
+			break;
+		sKiemReset(nIdx);
+		__int64* pTr = sTruongTrangThai(p, nId);
+		if (!((*pTr) & CL_BIT_XONG(nId)))
+			break;						// chua xong
+		if ((*pTr) & CL_BIT_LINH(nId))
+			break;						// linh roi
+		*pTr |= CL_BIT_LINH(nId);
+		p.nScore += s_Mission[nId].nScore;
+		p.bDirty = 1;
+		sXaNguoiChoi(nIdx);				// vuot moc -> xa ngay
+		nDiem = s_Mission[nId].nScore;
+	} while (0);
+	Lua_PushNumber(L, nDiem);
+	return 1;
+}
+
+// CL_Nhan(nMoc, nBranch) -> 1 nhan duoc | 2 da ghi so cai nhung thu chua gui | 0 tu choi
+int LuaCL_Nhan(Lua_State* L)
+{
+	int nIdx = sChiSoNguoiChoi(L);
+	int nMoc = sArgInt(L, 1);
+	int nBranch = sArgInt(L, 2);
+	Lua_PushNumber(L, sNhanMoc(nIdx, nMoc, nBranch));
+	return 1;
+}
+
+// CL_MuaVip() -> 1 kich hoat duoc | 0 that bai | 2 DA co roi (KHONG tieu the)
+// Script dung the goi ham nay TRUOC khi xoa vat pham; tra 2 thi dung xoa.
+int LuaCL_MuaVip(Lua_State* L)
+{
+	int nIdx = sChiSoNguoiChoi(L);
+	int nKq = 0;						// day DUNG MOT LAN o cuoi ham
+	do
+	{
+		if (nIdx <= 0 || !s_bCfgOk || !ChienLenh_DangMo())
+			break;
+		KCLPlayer& p = s_Pl[nIdx];
+		if (!p.bLoaded)
+			break;
+		if (p.nVip == 1)
+		{
+			nKq = 2;					// da co - nguoi goi PHAI khong tieu the
+			break;
+		}
+		p.nVip = 1;
+		p.nScore += s_Season.nVipBonus;
+		p.bDirty = 1;
+		sXaNguoiChoi(nIdx);
+		nKq = 1;
+	} while (0);
+	Lua_PushNumber(L, nKq);
+	return 1;
+}
+
+// CL_TrangThai() -> bang day du cho giao dien / lenh GM
+int LuaCL_TrangThai(Lua_State* L)
+{
+	int nIdx = sChiSoNguoiChoi(L);
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER || !s_Pl[nIdx].bLoaded)
+		return 0;
+	sKiemReset(nIdx);
+	KCLPlayer& p = s_Pl[nIdx];
+	Lua_NewTable(L);
+	sSetNum(L, "score", p.nScore);
+	sSetNum(L, "cap", ChienLenh_CapTuDiem(p.nScore));
+	sSetNum(L, "vip", p.nVip);
+	sSetNum(L, "got_low", p.nGotLow);
+	sSetNum(L, "got_vip", p.nGotVip);
+	sSetNum(L, "so_moc", (int)s_Award.size());
+	sSetNum(L, "dangmo", ChienLenh_DangMo() ? 1 : 0);
+	sSetNum(L, "close_time", s_Season.nClose);
+	// trang thai tung nhiem vu: 0 chua xong, 1 xong chua linh, 2 da linh
+	for (int i = 1; i <= CL_MAX_MISSION; i++)
+	{
+		if (s_Mission[i].nId != i)
+			continue;
+		__int64* pTr = sTruongTrangThai(p, i);
+		int nTt = 0;
+		if ((*pTr) & CL_BIT_LINH(i))
+			nTt = 2;
+		else if ((*pTr) & CL_BIT_XONG(i))
+			nTt = 1;
+		char szKey[24];
+		_snprintf(szKey, sizeof(szKey) - 1, "nv%d", i);
+		sSetNum(L, szKey, nTt);
+		_snprintf(szKey, sizeof(szKey) - 1, "td%d", i);
+		sSetNum(L, szKey, p.nProg[i]);
+	}
+	return 1;
+}
+
+// CL_Tick() -> so nguoi da xa. Goi moi phut trong timerserver.lua RunTime().
+// Lam ba viec: cong phut online, kiem reset ngay/tuan, xa nguoi da qua 5 phut.
+int LuaCL_Tick(Lua_State* L)
+{
+	int nXa = 0;
+	if (!s_bCfgOk)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nNow = (int)time(NULL);
+	for (int i = 1; i < MAX_PLAYER; i++)
+	{
+		KCLPlayer& p = s_Pl[i];
+		if (!p.bLoaded)
+			continue;
+		sKiemReset(i);
+		if (p.bDirty && nNow - p.nLastFlush >= 300)
+		{
+			sXaNguoiChoi(i);
+			nXa++;
+		}
+	}
+	Lua_PushNumber(L, nXa);
+	return 1;
+}
+
+// CL_Quen() -> 1. Goi luc dang xuat: xa lan cuoi roi bo khe.
+int LuaCL_Quen(Lua_State* L)
+{
+	int nIdx = sChiSoNguoiChoi(L);
+	if (nIdx > 0 && nIdx < MAX_PLAYER)
+	{
+		sXaNguoiChoi(nIdx);
+		memset(&s_Pl[nIdx], 0, sizeof(s_Pl[nIdx]));
+	}
+	Lua_PushNumber(L, 1);
 	return 1;
 }
 

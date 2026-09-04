@@ -42,6 +42,18 @@ int LuaCL_Info(Lua_State* L);		// () -> bang {season, start, close, level_score,
 int LuaCL_Mission(Lua_State* L);	// (nId) -> bang {kind, score, target, enabled} | nil
 int LuaCL_Award(Lua_State* L);		// (nIdx) -> bang {need_score, branch, award, title} | nil
 
+// ---- dot 1b: trang thai nguoi choi, cong diem, trao thuong ----
+int LuaCL_Load(Lua_State* L);		// () nap trang thai (playerlogin.lua)
+int LuaCL_Save(Lua_State* L);		// () xa trang thai
+int LuaCL_Quen(Lua_State* L);		// () xa lan cuoi roi bo khe (dang xuat)
+int LuaCL_Cong(Lua_State* L);		// (nId, nSo) cong tien do; 1 = vua xong
+int LuaCL_Xong(Lua_State* L);		// (nId) danh dau xong (nhiem vu khong dem)
+int LuaCL_LinhNhiemVu(Lua_State* L);	// (nId) -> so diem duoc cong
+int LuaCL_Nhan(Lua_State* L);		// (nMoc, nBranch) -> 1 | 2 | 0
+int LuaCL_MuaVip(Lua_State* L);		// () -> 1 | 2 (da co, DUNG tieu the) | 0
+int LuaCL_TrangThai(Lua_State* L);	// () -> bang day du cho giao dien
+int LuaCL_Tick(Lua_State* L);		// () nhip moi phut (timerserver RunTime)
+
 #endif // _SERVER
 
 #endif // KCHIENLENH_H
