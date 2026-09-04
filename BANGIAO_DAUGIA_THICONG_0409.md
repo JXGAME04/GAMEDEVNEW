@@ -105,3 +105,76 @@ Chủ 04/09: "làm xong toàn bộ rồi test 1 lần". Đã làm cả ba mức 
 6. Phiên bang: Bang chủ ở Dịch Quán → "Bang chủ: đưa vật phẩm vào phiên đấu giá bang" → Kiểu Anh / Ngân lượng → giá khởi điểm → đặt món. Thành viên mở tab Bang hội → phiên tên bang → bấm + rồi "Báo giá"; người bị vượt giá nhận thư hoàn tiền; sau 30 phút (gia hạn 60 s mỗi lần trả) món về người thắng qua thư, tiền vào quỹ bang. "Xem danh sách thành viên tham gia" mở bảng thành viên.
 7. Phiên thế giới: lệnh bài admin → "Đấu giá: mở phiên thế giới (GM)" → Kiểu Hà Lan → giá → đặt món: giá mở 150 %, giảm 10 % mỗi 5 phút, ai bấm mua trước được.
 8. Nhật ký: `logs\hethong.log` dòng `[DAUGIA]` (đặt bán / bán / hết hạn / lỗi) và `[MAIL]`; client `jx_mail.log` dòng `[AUC]`; lỗi script `ScriptError.log`.
+
+
+---
+
+## 9. Đợt A13-A14 + B1-B4 (04/09 03:42) — ba việc chủ báo + nhóm MẤT ĐỒ
+
+Binary chờ swap (ba tệp PHẢI cùng lúc; bản này gộp cả `[VATCAN]` `g_nPbNpcChan = 1` của phiên khác, biến đó
+biên vào CẢ HAI phía nên lệch là dồn dần rồi dăn một phát):
+
+| Tệp | md5 | Cỡ |
+|---|---|---|
+| `bin\server\CoreServer.dll.moi` | `cb9712ce12cae7396fbe1c876f3bd9b6` | 18.330.624 |
+| `bin\client\CoreClient.dll.moi` | `fdca41ad50cfcdc83ef2b7aeb6ac4cd6` | 2.540.544 |
+| `bin\client\Game.exe.moi` | `09f0a0f0d09751c3d25d3748643b6a34` | 1.436.672 |
+
+Commit main: `9037da0a`.
+
+### 9a. "bấm vào Ta muốn đấu giá không hiện gì cả" (A13)
+`KWndButton` chỉ báo `WND_N_BUTTON_CLICK` cho **cha trực tiếp**. Nút nằm trong một hàng vật phẩm nên thông báo
+dừng lại ở lớp hàng — lớp đó không có `WndProc` — và không bao giờ tới trang để gửi lên máy chủ. Nút *Ký gửi* /
+*Trang trước* / *Trang kế* là con trực tiếp của trang nên vẫn chạy, đúng như chủ thấy.
+Nay hai lớp hàng kế thừa `KUiAuctionScrollWnd` (lớp sẵn có việc chuyển tiếp lên cha).
+
+### 9b. "các chữ chồng lên nhau" (A14)
+Khung một hàng rộng **429**. Bản gốc để nhãn `Width=120` nhưng hai cột chỉ cách nhau **86**: `86+120 = 206` đè lên
+giá trị ở `172`, và `258+120 = 378` đè lên giá trị ở `344`; cột phải còn tràn khỏi khung (`344+120 = 464`).
+Lưới mới: **nhãn 86** (86..172 và 258..344), **giá trị 84** (172..256 và 344..428). Nhãn cũng rút gọn cho vừa:
+*Mua ngay · Giá sàn · Loại tiền · Hạ giá sau · Giá kế tiếp · Hết hạn sau* (Hà Lan) và
+*Khởi điểm · Bước giá · Loại tiền · Cao nhất · Giá của ta · Còn lại* (kiểu Anh).
+
+### 9c. "3 item trong bản thì bị chèn ra ngoài bản" (A14)
+Khung danh sách cao **321**, mỗi hàng cao **118** → ba hàng là **354**, thừa 33 px ra ngoài. Khung không cao thêm
+được (ngay dưới nó là nút chuyển trang ở `Top=374`). Nay **2 hàng/trang** và mỗi trang đúng **2 món**
+(`AUCUI_ROW_COUNT` = `nMaxItemPerPage` = 2) để số món mỗi trang khớp số hàng thấy được.
+
+### 9d. "giá mua ngay 200 xu mà giá cơ bản cũng 200 xu vậy sao đấu giá?" (A14) — LUẬT ĐẤU GIÁ
+Đúng: ký gửi cá nhân đang đặt `base = cur = sàn = ` đúng giá người bán nhập nên không còn gì để đấu.
+Bản gốc 2.0 để `nPersonalFloatTimes = 1`, tức **ký gửi cũng là đấu giá kiểu Hà Lan, một nhịp**. Nay làm đúng vậy:
+
+| | Ký gửi cá nhân | Phiên thế giới / bang hội (Hà Lan) | Phiên kiểu Anh |
+|---|---|---|---|
+| Giá mở bán | **150 %** giá người bán nhập | 150 % giá bảo đảm | = giá khởi điểm |
+| Hạ giá | **một nhịp**, sau 12 h hạ **thẳng** về giá người bán | −10 % mỗi 5 phút, 8 nhịp | không hạ, chỉ tăng |
+| Sàn | giá người bán nhập | giá bảo đảm | — |
+| Hết hạn | 24 h → trả món qua thư | hết nhịp → trả món | 30 phút, mỗi lần trả gia hạn 60 s |
+| Cách mua | bấm *Ta muốn đấu giá* = mua ngay theo giá hiện tại | như trên | bấm `+` rồi *Báo giá* |
+
+Nghĩa là: **ai muốn chắc thì mua ngay giá cao, ai chịu chờ thì mua giá gốc** — đó là chỗ "đấu" của kiểu Hà Lan.
+Ô *Mua ngay* = giá hiện tại, ô *Giá sàn* = giá người bán muốn, ô *Giá kế tiếp* báo đúng giá vòng quét sẽ hạ tới.
+Kèm một lỗi gốc: **vòng quét trước chỉ hạ giá phiên thế giới + bang hội**, nên dù có đặt mốc hạ thì ký gửi cũng
+không bao giờ hạ. Đã thêm khối quét riêng cho ký gửi (để riêng vì vòng kia còn lo báo *kết thúc phiên*, mà tab
+Cá nhân là chợ thường trực, không có phiên nào để kết thúc).
+
+### 9e. Nhóm MẤT ĐỒ (đội soát 54 tác tử)
+- **B1 (C++)** `sCanRebuild` chặn ngay ở đường ký gửi những loại `sRecToItem` không tạo lại được (quặng, nguyên
+  liệu, trang bị hỏng) — trước đây món bị xoá khỏi túi rồi lúc trả lại mới lộ ra là không dựng lại được.
+  `AUC_GiveRec` kiểm kết quả `AddKIL`. Thêm `AUC_CanGiveRec` (thử đặt thật, đòi **khối liền** WxH) và
+  `AUC_Rollback` (trả dòng về đang bán **và xoá người mua**).
+- **B2 (Lua)** cấm ký gửi món có hạn dùng (hạn là mốc tuyệt đối, món chết trong kho); xoá món khỏi túi **trước**
+  khi ghi kho, ghi hỏng thì trả lại ngay; **mua ngay chỉ áp cho dòng Hà Lan** — trước đây có thể cướp trắng dòng
+  kiểu Anh và người trả giá cao nhất mất trắng tiền đã trừ; gửi thư **trước** rồi mới đổi trạng thái.
+- **B3** timer quét đặt ngay trong `auction_manager.lua`: `Include` = `lua_dofile` vào chính state gọi, để tệp
+  riêng thì `AUC_Tick` chạy ở state khác state giữ `AUC_Viewers` nên **mọi thông báo tự động không tới ai**.
+  Người xem lưu thêm tên + bang để lọc đúng bang.
+- **B4 (hộp thư)** `CalcFreeItemCellCount` đếm **ô rời rạc** còn đặt đồ đòi **khối liền**, mà thư đã đánh dấu
+  ĐÃ NHẬN (nguyên tử) **trước** khi trao → mất món vĩnh viễn. Nay thử đặt thật trước; vẫn hỏng thì gửi lại món
+  bằng một thư mới thay vì chỉ ghi log.
+
+### 9f. Cách kiểm nhanh sau khi swap
+1. Ký gửi một món giá 200 xu → tab Cá nhân phải hiện **Mua ngay 300**, **Giá sàn 200**, **Giá kế tiếp 200**.
+2. Chữ trong hàng không đè nhau, không tràn khỏi khung; một trang đúng 2 món, món thứ ba ở trang sau.
+3. Nhân vật khác bấm *Ta muốn đấu giá* → trừ 300 xu, nhận thư đính kèm đúng món.
+4. Dọn túi cho chật (chỉ còn ô rời) rồi nhận thư → phải báo "không còn khoảng trống liền", thư **vẫn chưa nhận**.
