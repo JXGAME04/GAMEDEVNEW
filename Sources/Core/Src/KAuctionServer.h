@@ -42,7 +42,8 @@ int LuaAUCWEB_ClaimRound(Lua_State* L);// (nNow, nNext) -> 1 neu gianh duoc quye
 int LuaAUCWEB_Pool(Lua_State* L);      // (nMax) -> bang {id, award, currency, start, buy, weight} dang bat
 int LuaAUCWEB_Drawn(Lua_State* L);     // (nId, nNow, nAucId, szName) -> 1/0
 int LuaAUCWEB_Err(Lua_State* L);       // (nId, szErr) -> 1/0
-int LuaAUCWEB_Msg(Lua_State* L);       // (szMsg, nNow) -> 1/0    // (nId) -> tra dong ve dang ban VA xoa buyer/buy_price         // (nId, szBuyer, nPrice, nNewEnd) -> 1/0 nguyen tu: chi khi state 0 va nPrice > cur_price
+int LuaAUCWEB_Msg(Lua_State* L);
+int LuaAUCWEB_SetNext(Lua_State* L);   // (nNext) -> 1/0: hen lai gio mo dot ke       // (szMsg, nNow) -> 1/0    // (nId) -> tra dong ve dang ban VA xoa buyer/buy_price         // (nId, szBuyer, nPrice, nNewEnd) -> 1/0 nguyen tu: chi khi state 0 va nPrice > cur_price
 #endif
 
 #endif // KAUCTIONSERVER_H

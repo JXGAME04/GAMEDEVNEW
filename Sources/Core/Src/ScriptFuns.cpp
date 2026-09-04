@@ -14922,6 +14922,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"AUCWEB_Drawn",	LuaAUCWEB_Drawn},
 	{"AUCWEB_Err",	LuaAUCWEB_Err},
 	{"AUCWEB_Msg",	LuaAUCWEB_Msg},
+	{"AUCWEB_SetNext",	LuaAUCWEB_SetNext},
 #endif
 	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},

@@ -951,7 +951,8 @@ end
 
 -- mo MOT dot: da gianh duoc quyen (AUCWEB_ClaimRound = 1)
 function AucWeb_Round(nNow, nPer, nEnd, nRound)
-    local szAct = "§ît "..GetLocalDate("%H:%M %d/%m")
+    -- [W7] co so dot trong ten: hai lo mo cung phut khong gop thanh mot phien
+    local szAct = "§ît "..nRound.." "..GetLocalDate("%H:%M %d/%m")
     local pool = AUCWEB_Pool(AUCWEB_POOL_MAX)
     local cand = {}
     for i = 1, getn(pool) do
@@ -990,6 +991,11 @@ function AucWeb_Round(nNow, nPer, nEnd, nRound)
     end
     local szMsg = format("dot %d luc %s: %d mon len san, %d bo qua, nhom dang bat %d, het luc %s",
         nRound, GetLocalDate("%H:%M %d/%m"), nDone, nSkip, getn(pool), AUC_GioHet(nEnd))
+    if nDone == 0 then
+        -- [W7] khong mon nao dung duoc: khong de dot 3 gio trong, hen lai sau 60 giay
+        AUCWEB_SetNext(nNow + 60)
+        szMsg = szMsg.." - KHONG mon nao len san (xem cot err), thu lai sau 60 giay"
+    end
     if getn(pool) >= AUCWEB_POOL_MAX then
         szMsg = szMsg..format(" (CANH BAO: chi doc %d nhom dau theo id, nhom sau bi bo)", AUCWEB_POOL_MAX)
     end
@@ -1026,6 +1032,17 @@ function AucWeb_Body()
     local nPeriod = AucWeb_Kep(cfg.period, 10, 1440)
     local nPer = AucWeb_Kep(cfg.perround, 1, 30)
     local nEnd = nNow + nPeriod * 60
+    -- [W7 nhom rong] kiem nhom TRUOC khi gianh dot: nhom rong ma gianh la dot 3 gio 0 mon (admin bat lich
+    -- truoc khi them mon - bo cuc web dat Lich tren Nhom). Chua mo, nhip nao co mon thi mo ngay.
+    local pool0 = AUCWEB_Pool(1)
+    if getn(pool0) == 0 then
+        if AUCWEB_DA_BAO_RONG ~= 1 then
+            AUCWEB_DA_BAO_RONG = 1
+            AUCWEB_Msg("nhom rong: chua mo dot, se mo ngay khi co mon dang bat", nNow)
+        end
+        return 1
+    end
+    AUCWEB_DA_BAO_RONG = 0
     if AUCWEB_ClaimRound(nNow, nEnd) ~= 1 then
         return 1
     end
