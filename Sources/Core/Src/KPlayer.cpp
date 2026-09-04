@@ -39,6 +39,8 @@
 #include "KDaTauCap.h"
 
 KDaTauCapture g_sDTCap; // bo dem chup hoi thoai cho auto Da Tau (khai bao KDaTauCap.h)
+char g_szTKDich[256] = { 0 };	// (04/09) "[TKDich] ..." vi tri dich Tong Kim server tra ve (KDaTauCap.h)
+unsigned int g_uTKDichSeq = 0;
 
 #ifdef _SERVER
 #ifndef _STANDALONE

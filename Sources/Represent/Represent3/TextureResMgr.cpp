@@ -3,6 +3,19 @@
 #include "TextureRes.h"
 #include "TextureResMgr.h"
 
+
+// [REP3 03/09 LOAD] ghi ten anh nap that bai vao jx_rep3.log (toi da 200 dong) - truoc day im lang va cache NULL vinh vien
+static void Rep3LogLoadFail(const char* pszImage, int nType)
+{
+	static int s_nCount = 0;
+	if (s_nCount >= 200)
+		return;
+	s_nCount++;
+	Rep3Log("[REP3] LoadImage FAIL (%d/200) type=%d: %s", s_nCount, nType, pszImage ? pszImage : "");
+}
+// [REP3 03/09 LAG] anh nap that bai: nhip thu nap lai, tinh bang mili giay.
+#define REP3_RELOAD_COOLDOWN	10000
+
 TextureResMgr::TextureResMgr()
 {
 	m_uCheckPoint = ISBP_CHECK_POINT_DEF;
@@ -14,23 +27,11 @@ TextureResMgr::TextureResMgr()
     m_nMaxReleaseCount = 0;
 	
 	// 根据物理内存大小决定资源缓冲区的大小
-	MEMORYSTATUS stat;
-	GlobalMemoryStatus (&stat);
-	if(stat.dwTotalPhys <= 134217728)
-    {
-		m_nBalanceNum = ISBP_BALANCE_NUM_DEF128;
-        m_nMaxReleaseCount = 16;
-    }
-	else if(stat.dwTotalPhys <= 134217728 * 2)
-    {
-		m_nBalanceNum = ISBP_BALANCE_NUM_DEF256;
-        m_nMaxReleaseCount = 32;
-    }
-	else
-    {
-		m_nBalanceNum = ISBP_BALANCE_NUM_DEF512;
-        m_nMaxReleaseCount = 64;
-    }
+	// [REP3 03/09] ngan sach cache texture theo RAM (2.0: 30/50/80/120 MB); may 4 GB+ cho rong hon vi texture 8888
+	// [REP3 03/09 RAM] ctor chay TRUOC khi Create() doc config.ini -> chi dat mac dinh, SetBudget() tinh lai sau
+	m_nBalanceNum = 256 * 1024 * 1024;
+	m_nMaxReleaseCount = 64;
+	m_uCheckPoint = 25;
 }
 
 TextureResMgr::~TextureResMgr()
@@ -46,90 +47,88 @@ void TextureResMgr::SetBalanceParam(int32 nNumImage, uint32 uCheckPoint)
 
 void TextureResMgr::CheckBalance()
 {
-	static DWORD dwFID=10, dwSum=0;
-	static DWORD nNum = 0;
-
+	// [REP3 03/09] theo represent3free.dll 2.0 (0x10024F80): duyet tu cuoi, bo qua tai nguyen vua ve khung truoc,
+	// chi xet tai nguyen nghi > 10 s; moi luot BO DUNG MOT KHUNG texture (ReleaseAFrameData) - het khung
+	// moi xoa ca tai nguyen. Khong con cu xoa hang loat 16/32/64 cai gay khung.
+	// [REP3 03/09 RAM] vuot ngan sach VRAM: bo toi da 8 khung/luot, chi can nghi > 1 s (Release() texture re, ton khi tao lai thoi)
     KAutoCriticalSection AutoLock(m_ImageProcessLock);
 
-	//int i;
-	uint32 nUnUseTime, nMaxUnUseTime = 1000;
-	int32 nNodeSelected = -1;
-
-    vector<ResNode>::iterator iBegin, iEnd;
-    vector<ResNode>::iterator iNewBegin;
-    
-
+	// [REP3 03/09 SOC] Theo DUNG 2.0: chi MOT che do. Moi luot bo DUNG MOT muc roi thoi, va chi
+	// xet tai nguyen da nghi qua 10 giay (0x10025096 cmp ebx,0x2710). Toan than CheckBalance cua
+	// 2.0 (0x10024F80..0x100251E4) khong doc mot tran byte nao - no khong he co che do khan cap.
+	// Che do bOver cu (8 khung/luot, ha nguong nghi xuong 1 giay) la cua rieng ta, va da do duoc
+	// tac hai: voi Rep3CacheMB=120 no gay 508 luot bo MOI GIAY (so voi 30/giay o ngan sach cao),
+	// va bo dung nhung khung DANG VE: "ve khung nay" 34-124 MB tren cache chi 105-155 MB.
+	const int nMax = 1;
+	const uint32 uIdle = 10000;
 	uint32 nTickCount = GetTickCount();
+	int nDone = 0;
+	for (int i = (int)m_TextureResList.size() - 1; i >= 0 && nDone < nMax; i--)
+	{
+		ResNode& node = m_TextureResList[i];
+		if (!node.m_bCacheable || !node.m_pTextureRes)
+			continue;
+		if (node.m_pTextureRes->m_bLastFrameUsed)
+			continue;
+		if ((nTickCount - node.m_nLastUsedTime) <= uIdle)
+			continue;
+		m_nReleaseCount++;
+		nDone++;
+		if (node.m_pTextureRes->ReleaseAFrameData())
+			continue;
+		if (m_uTexCacheMemUsed >= node.m_pTextureRes->m_nTexMemUsed)
+			m_uTexCacheMemUsed -= node.m_pTextureRes->m_nTexMemUsed;
+		node.m_pTextureRes->Release();
+		SAFE_DELETE(node.m_pTextureRes);
+		m_TextureResList.erase(m_TextureResList.begin() + i);
+	}
+}
 
-    int nCurrentReleaseCount = 0;
-    
-    iEnd = m_TextureResList.end(); 
-    iNewBegin = m_TextureResList.begin();
-    for (iBegin = m_TextureResList.begin(); iBegin != iEnd; ++iBegin)
-    {
-        nUnUseTime = nTickCount - (iBegin->m_nLastUsedTime);
-        if (
-            (!iBegin->m_bCacheable) ||
-            (
-                (iBegin->m_pTextureRes) &&
-                (iBegin->m_pTextureRes->m_bLastFrameUsed)
-            ) ||
-            (nUnUseTime <= 1000 * 24) ||
-            (nCurrentReleaseCount >= m_nMaxReleaseCount)
-        )
-        {
-            *iNewBegin++ = *iBegin;
+void TextureResMgr::SetBudget()
+{
+	// [REP3 03/09 RAM] ngan sach cache texture = VRAM (texture o POOL_DEFAULT, khong chiem RAM tien trinh): RAM/16 kep 60..384 MB;
+	// 2.0 dung toi da 120 MB 4444 (= 240 MB 8888). [Client] Rep3CacheMB ghi de.
+	MEMORYSTATUSEX stat;
+	stat.dwLength = sizeof(stat);
+	GlobalMemoryStatusEx(&stat);
+	unsigned __int64 uPhysMB = stat.ullTotalPhys / (1024 * 1024);
+	unsigned __int64 uBudgetMB = uPhysMB / 16;
+	if (uBudgetMB < 60)  uBudgetMB = 60;
+	if (uBudgetMB > 512) uBudgetMB = 512;	// [REP3 03/09 RAM2] DINH CHINH: chu thich cu noi POOL_DEFAULT
+											// "khong an RAM" la SAI. Do 12 mau trong jx_rep3.log cua game that:
+											//   RAM rieng = 240,9 + 0,657 x (texture + raw spr)
+											// tuc moi MB texture o VRAM VAN keo theo ~0,66 MB RAM tien trinh, do WDDM
+											// cap bo dem he thong cho moi vung nho D3D9. Tran 768 cho phep RAM len ~775 MB
+											// tren tran dia chi 2048 MB cua tien trinh 32-bit. Tran 512 -> ~607 MB.
+											// Van tren muc cache thuc te (438-451 MB) nen khong quay lai loi giat cua tran 384.
+	if (g_nRep3CacheMB > 0)
+		uBudgetMB = (unsigned __int64)g_nRep3CacheMB;
+	m_nBalanceNum = (int32)(uBudgetMB * 1024 * 1024);
+	Rep3Log("[REP3] cache texture: RAM %I64u MB -> ngan sach %I64u MB (%s)", uPhysMB, uBudgetMB, g_nRep3Pool ? "VRAM, POOL_DEFAULT" : "RAM+VRAM, POOL_MANAGED");
+}
 
-            continue;
-        }
+void TextureResMgr::GetStat(uint32& uNodes, uint32& uTexMB, uint32& uRawMB, uint32& uDrawMB, uint32& uBudgetMB)
+{
+	// [REP3 03/09 RAM] cho dong thong ke trong jx_rep3.log
+    KAutoCriticalSection AutoLock(m_ImageProcessLock);
+	unsigned __int64 uRaw = 0;
+	for (int i = 0; i < (int)m_TextureResList.size(); i++)
+		if (m_TextureResList[i].m_pTextureRes)
+			uRaw += m_TextureResList[i].m_pTextureRes->m_nSprMemUsed;
+	uNodes = (uint32)m_TextureResList.size();
+	uTexMB = m_uTexCacheMemUsed >> 20;
+	uDrawMB = m_uMemDrawingUsed >> 20;
+	uRawMB = (uint32)(uRaw >> 20);
+	uBudgetMB = ((uint32)m_nBalanceNum) >> 20;
+}
 
-        nCurrentReleaseCount++;
-		
-        // if (nUnUseTime > 1000 * 8) // if > 8 s
-        m_nReleaseCount++;
-		if(iBegin->m_pTextureRes)
-		{
-            m_uTexCacheMemUsed -= iBegin->m_pTextureRes->m_nTexMemUsed;
-            iBegin->m_pTextureRes->Release();
-			SAFE_DELETE(iBegin->m_pTextureRes);
-		}
-    }
-    
-    if (iNewBegin != iEnd)
-        m_TextureResList.erase(iNewBegin, iEnd);
-
-
-
-//	// 选择最长时间没有使用的资源，并释放
-//	m_tmLastCheckBalance = timeGetTime();
-//	for (i = m_TextureResList.size() -1; i >= 0; i--)
-//	{
-//		if(!m_TextureResList[i].m_bCacheable)
-//			continue;
-//
-//		nUnUseTime = nTickCount - m_TextureResList[i].m_nLastUsedTime;
-//		bool b = false;
-//		if(m_TextureResList[i].m_pTextureRes)
-//			b = m_TextureResList[i].m_pTextureRes->m_bLastFrameUsed;
-//		if(!b && nUnUseTime > nMaxUnUseTime )
-//		{
-//			nMaxUnUseTime = nUnUseTime;
-//			nNodeSelected = i;
-//		}
-//	}
-//
-//	if (nNodeSelected >= 0)
-//	{
-//		m_nReleaseCount++;
-//		if(m_TextureResList[nNodeSelected].m_pTextureRes)
-//		{
-//            m_TextureResList[nNodeSelected].m_pTextureRes->Release();
-//			SAFE_DELETE(m_TextureResList[nNodeSelected].m_pTextureRes);
-//			m_TextureResList.erase(m_TextureResList.begin() + nNodeSelected);
-//		}
-//		else
-//			m_TextureResList.erase(m_TextureResList.begin() + nNodeSelected);
-//	}
+void TextureResMgr::CheckBalanceFrame()
+{
+	DWORD tmCur = timeGetTime();
+	if ((tmCur - m_tmLastCheckBalance) <= m_uCheckPoint)
+		return;
+	m_tmLastCheckBalance = tmCur;
+	CheckBalance();
 }
 
 uint32 TextureResMgr::CreateImage(const char* pszName, int32 nWidth, int32 nHeight, int32 nType)
@@ -380,15 +379,40 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 		{
 			m_TextureResList[nImagePosition].m_nLastUsedTime = GetTickCount();
 			pObject = m_TextureResList[nImagePosition].m_pTextureRes;
+			if (!pObject)	// [REP3 03/09 LAG] muc NULL = lan truoc nap that bai. CHI thu lai moi 10 giay.
+			{				// Truoc day thu lai MOI KHUNG VE: 200 anh thieu x 62 fps = ~19.000 luot
+								// quet 40 pak moi giay -> chinh la nguyen nhan giat.
+				uint32 tmNow = GetTickCount();
+				if ((tmNow - m_TextureResList[nImagePosition].m_nRetryTime) >= REP3_RELOAD_COOLDOWN)
+				{
+					m_TextureResList[nImagePosition].m_nRetryTime = tmNow;
+					pObject = LoadImage(pszImage, nType);
+					if (pObject)
+					{
+						m_nLoadCount++;
+						m_TextureResList[nImagePosition].m_pTextureRes = pObject;
+						Rep3Log("[REP3] LoadImage OK sau khi that bai: %s", pszImage);
+					}
+					else
+						Rep3LogLoadFail(pszImage, nType);
+				}
+			}
 		}
 		else if (m_TextureResList[nImagePosition].m_bCacheable == true &&
 				(pObject = LoadImage(pszImage, nType)))
 		{			
 			m_nLoadCount++;
     
-            m_uTexCacheMemUsed -= m_TextureResList[nImagePosition].m_pTextureRes->m_nTexMemUsed;
-	
-    		SAFE_DELETE(m_TextureResList[nImagePosition].m_pTextureRes);
+            // [REP3 03/09 SOC] 2.0 KIEM NULL o dung cho nay (represent3free.dll 0x10025A31:
+            //   cmp dword [eax+0x10], 0 / je) truoc khi dung TextureRes cu. Ta thieu.
+            // Tu khi ta chen lai muc NULL cho anh nap hong (dung nhu 2.0 va nhu ma goc), mot
+            // anh hong bi hoi lai bang KIEU KHAC se roi vao day, tro vao con tro NULL -> sap.
+            if (m_TextureResList[nImagePosition].m_pTextureRes)
+            {
+                if (m_uTexCacheMemUsed >= m_TextureResList[nImagePosition].m_pTextureRes->m_nTexMemUsed)
+                    m_uTexCacheMemUsed -= m_TextureResList[nImagePosition].m_pTextureRes->m_nTexMemUsed;
+                SAFE_DELETE(m_TextureResList[nImagePosition].m_pTextureRes);
+            }
 			m_TextureResList[nImagePosition].m_pTextureRes = pObject;
 			m_TextureResList[nImagePosition].m_nLastUsedTime = GetTickCount();
             m_uTexCacheMemUsed += pObject->m_nTexMemUsed;
@@ -404,10 +428,13 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 	{
 		pObject = LoadImage(pszImage, nType);
 		m_nLoadCount++;
-		
+		if (!pObject)	// [REP3 03/09 LAG] VAN chen muc NULL: lan sau FindImage thay ngay, khoi quet lai 40 pak.
+			Rep3LogLoadFail(pszImage, nType);	// van nap lai duoc, nhung theo nhip REP3_RELOAD_COOLDOWN
+
 		ResNode node;
 		node.m_bCacheable = true;
 		node.m_nLastUsedTime = GetTickCount();
+		node.m_nRetryTime = GetTickCount();	// [REP3 03/09 LAG]
 		node.m_nType = nType;
 		node.m_nID = uImage;
 		node.m_pTextureRes = pObject;

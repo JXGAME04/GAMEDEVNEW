@@ -647,7 +647,7 @@ void KNpcSet::SetID(int m_nIndex)
 	// (r5f - phan bien) bo dem chay don dieu tu 1000 nen SOM MUON gi cung cham
 	// DATAU_SAPMAP_ID; npc/sap that mang id do se bi goi xin danh ba cuop mat.
 	// Bo qua dung mot gia tri = dong goi han kha nang do.
-	if (m_dwIDCreator == DATAU_SAPMAP_ID)
+	if (m_dwIDCreator == DATAU_SAPMAP_ID || m_dwIDCreator == TK_DICH_ID)	// (04/09) + id xin vi tri dich Tong Kim
 		m_dwIDCreator++;
 	Npc[m_nIndex].m_dwID = m_dwIDCreator;
 	m_dwIDCreator++;
