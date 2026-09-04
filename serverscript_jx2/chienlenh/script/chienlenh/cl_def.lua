@@ -56,13 +56,7 @@ function CL_Tick_Wrap()
 	if (CL_Tick == nil) then
 		return
 	end
-	local nSo = GetPlayerCount()
-	for i = 1, nSo do
-		local nIdx = GetPlayerIdx(i)
-		if (nIdx and nIdx > 0) then
-			PlayerIndex = nIdx
-			CL_CongNhom(CL_NHOM_ONL, 1)
-		end
-	end
-	CL_Tick()
+	-- [CL 04/09 DOT2b] phut online dem trong C++ (CL_Tick duyet nguoi da nap, loai bot); ban cu duyet bang
+	-- GetPlayerIdx - ham KHONG co trong engine nay -> ScriptError moi phut, CL_Tick() khong bao gio chay.
+	CL_Tick(CL_NV.ONLINE_10, CL_NV.ONLINE_60, CL_NV.ONLINE_180)
 end
