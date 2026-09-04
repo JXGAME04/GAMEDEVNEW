@@ -53,9 +53,14 @@ void TextureResMgr::CheckBalance()
 	// [REP3 03/09 RAM] vuot ngan sach VRAM: bo toi da 8 khung/luot, chi can nghi > 1 s (Release() texture re, ton khi tao lai thoi)
     KAutoCriticalSection AutoLock(m_ImageProcessLock);
 
-	bool bOver = (m_uTexCacheMemUsed > (uint32)m_nBalanceNum);
-	int nMax = bOver ? 8 : 1;
-	uint32 uIdle = bOver ? 1000 : 10000;
+	// [REP3 03/09 SOC] Theo DUNG 2.0: chi MOT che do. Moi luot bo DUNG MOT muc roi thoi, va chi
+	// xet tai nguyen da nghi qua 10 giay (0x10025096 cmp ebx,0x2710). Toan than CheckBalance cua
+	// 2.0 (0x10024F80..0x100251E4) khong doc mot tran byte nao - no khong he co che do khan cap.
+	// Che do bOver cu (8 khung/luot, ha nguong nghi xuong 1 giay) la cua rieng ta, va da do duoc
+	// tac hai: voi Rep3CacheMB=120 no gay 508 luot bo MOI GIAY (so voi 30/giay o ngan sach cao),
+	// va bo dung nhung khung DANG VE: "ve khung nay" 34-124 MB tren cache chi 105-155 MB.
+	const int nMax = 1;
+	const uint32 uIdle = 10000;
 	uint32 nTickCount = GetTickCount();
 	int nDone = 0;
 	for (int i = (int)m_TextureResList.size() - 1; i >= 0 && nDone < nMax; i--)
@@ -398,9 +403,16 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 		{			
 			m_nLoadCount++;
     
-            m_uTexCacheMemUsed -= m_TextureResList[nImagePosition].m_pTextureRes->m_nTexMemUsed;
-	
-    		SAFE_DELETE(m_TextureResList[nImagePosition].m_pTextureRes);
+            // [REP3 03/09 SOC] 2.0 KIEM NULL o dung cho nay (represent3free.dll 0x10025A31:
+            //   cmp dword [eax+0x10], 0 / je) truoc khi dung TextureRes cu. Ta thieu.
+            // Tu khi ta chen lai muc NULL cho anh nap hong (dung nhu 2.0 va nhu ma goc), mot
+            // anh hong bi hoi lai bang KIEU KHAC se roi vao day, tro vao con tro NULL -> sap.
+            if (m_TextureResList[nImagePosition].m_pTextureRes)
+            {
+                if (m_uTexCacheMemUsed >= m_TextureResList[nImagePosition].m_pTextureRes->m_nTexMemUsed)
+                    m_uTexCacheMemUsed -= m_TextureResList[nImagePosition].m_pTextureRes->m_nTexMemUsed;
+                SAFE_DELETE(m_TextureResList[nImagePosition].m_pTextureRes);
+            }
 			m_TextureResList[nImagePosition].m_pTextureRes = pObject;
 			m_TextureResList[nImagePosition].m_nLastUsedTime = GetTickCount();
             m_uTexCacheMemUsed += pObject->m_nTexMemUsed;
