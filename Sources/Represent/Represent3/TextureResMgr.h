@@ -23,6 +23,7 @@ class TextureRes;
 // 资源链表的节点
 struct ResNode
 {
+	uint32		m_nRetryTime;				// [REP3 03/09 LAG] moc thu nap lai khi nap that bai
 	uint32		m_nLastUsedTime;			// 上一次渲染的时间标签
 	bool		m_bCacheable;				// 是否是无硬盘对应文件的资源
 	uint32		m_nID;						// 资源ID，由资源名生成

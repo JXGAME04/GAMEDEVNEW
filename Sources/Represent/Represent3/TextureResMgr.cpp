@@ -13,6 +13,9 @@ static void Rep3LogLoadFail(const char* pszImage, int nType)
 	s_nCount++;
 	Rep3Log("[REP3] LoadImage FAIL (%d/200) type=%d: %s", s_nCount, nType, pszImage ? pszImage : "");
 }
+// [REP3 03/09 LAG] anh nap that bai: nhip thu nap lai, tinh bang mili giay.
+#define REP3_RELOAD_COOLDOWN	10000
+
 TextureResMgr::TextureResMgr()
 {
 	m_uCheckPoint = ISBP_CHECK_POINT_DEF;
@@ -86,7 +89,8 @@ void TextureResMgr::SetBudget()
 	unsigned __int64 uPhysMB = stat.ullTotalPhys / (1024 * 1024);
 	unsigned __int64 uBudgetMB = uPhysMB / 16;
 	if (uBudgetMB < 60)  uBudgetMB = 60;
-	if (uBudgetMB > 384) uBudgetMB = 384;
+	if (uBudgetMB > 768) uBudgetMB = 768;	// [REP3 03/09 LAG] texture o VRAM (POOL_DEFAULT) nen
+											// khong an RAM; tran 384 lam cache luon kich tran -> bo/tao lai lien tuc
 	if (g_nRep3CacheMB > 0)
 		uBudgetMB = (unsigned __int64)g_nRep3CacheMB;
 	m_nBalanceNum = (int32)(uBudgetMB * 1024 * 1024);
@@ -365,17 +369,23 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 		{
 			m_TextureResList[nImagePosition].m_nLastUsedTime = GetTickCount();
 			pObject = m_TextureResList[nImagePosition].m_pTextureRes;
-			if (!pObject)	// [REP3 03/09 LOAD] muc NULL (nap that bai truoc do) -> thu nap lai thay vi bo ve vinh vien
-			{
-				pObject = LoadImage(pszImage, nType);
-				if (pObject)
+			if (!pObject)	// [REP3 03/09 LAG] muc NULL = lan truoc nap that bai. CHI thu lai moi 10 giay.
+			{				// Truoc day thu lai MOI KHUNG VE: 200 anh thieu x 62 fps = ~19.000 luot
+								// quet 40 pak moi giay -> chinh la nguyen nhan giat.
+				uint32 tmNow = GetTickCount();
+				if ((tmNow - m_TextureResList[nImagePosition].m_nRetryTime) >= REP3_RELOAD_COOLDOWN)
 				{
-					m_nLoadCount++;
-					m_TextureResList[nImagePosition].m_pTextureRes = pObject;
-					Rep3Log("[REP3] LoadImage OK sau khi that bai: %s", pszImage);
+					m_TextureResList[nImagePosition].m_nRetryTime = tmNow;
+					pObject = LoadImage(pszImage, nType);
+					if (pObject)
+					{
+						m_nLoadCount++;
+						m_TextureResList[nImagePosition].m_pTextureRes = pObject;
+						Rep3Log("[REP3] LoadImage OK sau khi that bai: %s", pszImage);
+					}
+					else
+						Rep3LogLoadFail(pszImage, nType);
 				}
-				else
-					Rep3LogLoadFail(pszImage, nType);
 			}
 		}
 		else if (m_TextureResList[nImagePosition].m_bCacheable == true &&
@@ -401,15 +411,13 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 	{
 		pObject = LoadImage(pszImage, nType);
 		m_nLoadCount++;
-		if (!pObject)	// [REP3 03/09 LOAD] khong chen muc NULL (ma cu chen -> khong bao gio nap lai, CheckBalance cung bo qua)
-		{
-			Rep3LogLoadFail(pszImage, nType);
-			return NULL;
-		}
+		if (!pObject)	// [REP3 03/09 LAG] VAN chen muc NULL: lan sau FindImage thay ngay, khoi quet lai 40 pak.
+			Rep3LogLoadFail(pszImage, nType);	// van nap lai duoc, nhung theo nhip REP3_RELOAD_COOLDOWN
 
 		ResNode node;
 		node.m_bCacheable = true;
 		node.m_nLastUsedTime = GetTickCount();
+		node.m_nRetryTime = GetTickCount();	// [REP3 03/09 LAG]
 		node.m_nType = nType;
 		node.m_nID = uImage;
 		node.m_pTextureRes = pObject;
