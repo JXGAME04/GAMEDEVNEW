@@ -3,6 +3,16 @@
 #include "TextureRes.h"
 #include "TextureResMgr.h"
 
+
+// [REP3 03/09 LOAD] ghi ten anh nap that bai vao jx_rep3.log (toi da 200 dong) - truoc day im lang va cache NULL vinh vien
+static void Rep3LogLoadFail(const char* pszImage, int nType)
+{
+	static int s_nCount = 0;
+	if (s_nCount >= 200)
+		return;
+	s_nCount++;
+	Rep3Log("[REP3] LoadImage FAIL (%d/200) type=%d: %s", s_nCount, nType, pszImage ? pszImage : "");
+}
 TextureResMgr::TextureResMgr()
 {
 	m_uCheckPoint = ISBP_CHECK_POINT_DEF;
@@ -355,6 +365,18 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 		{
 			m_TextureResList[nImagePosition].m_nLastUsedTime = GetTickCount();
 			pObject = m_TextureResList[nImagePosition].m_pTextureRes;
+			if (!pObject)	// [REP3 03/09 LOAD] muc NULL (nap that bai truoc do) -> thu nap lai thay vi bo ve vinh vien
+			{
+				pObject = LoadImage(pszImage, nType);
+				if (pObject)
+				{
+					m_nLoadCount++;
+					m_TextureResList[nImagePosition].m_pTextureRes = pObject;
+					Rep3Log("[REP3] LoadImage OK sau khi that bai: %s", pszImage);
+				}
+				else
+					Rep3LogLoadFail(pszImage, nType);
+			}
 		}
 		else if (m_TextureResList[nImagePosition].m_bCacheable == true &&
 				(pObject = LoadImage(pszImage, nType)))
@@ -379,7 +401,12 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 	{
 		pObject = LoadImage(pszImage, nType);
 		m_nLoadCount++;
-		
+		if (!pObject)	// [REP3 03/09 LOAD] khong chen muc NULL (ma cu chen -> khong bao gio nap lai, CheckBalance cung bo qua)
+		{
+			Rep3LogLoadFail(pszImage, nType);
+			return NULL;
+		}
+
 		ResNode node;
 		node.m_bCacheable = true;
 		node.m_nLastUsedTime = GetTickCount();
