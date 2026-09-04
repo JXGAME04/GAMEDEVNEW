@@ -1588,8 +1588,32 @@ def patch_lenhbai():
     wr_s(rel, s)
 
 
+def _setkey(txt, sec, key, val):
+    """[A5] doi (hoac them) mot khoa trong muc [sec] cua noi dung ini"""
+    e = chr(13) + chr(10)
+    out = []
+    cur = None
+    done = False
+    for line in txt.split(e):
+        st = line.strip()
+        if st.startswith("[") and st.endswith("]"):
+            if cur == sec and not done:
+                out.append(key + "=" + str(val))
+                done = True
+            cur = st[1:-1]
+        elif cur == sec and st.startswith(key + "="):
+            line = key + "=" + str(val)
+            done = True
+        out.append(line)
+    if cur == sec and not done:
+        out.append(key + "=" + str(val))
+    return e.join(out)
+
+
 def _relabel(txt, sec, label):
-    """[A4] doi dong Label= trong mot muc [sec] cua noi dung ini"""
+    """[A4] doi dong Label= trong mot muc [sec] cua noi dung ini (label None = khong doi gi)"""
+    if label is None:
+        return txt
     out = []
     cur = None
     for line in txt.split(chr(13) + chr(10)):
@@ -1626,13 +1650,41 @@ def copy_ini():
         txt = "\r\n".join(out)
         # sprite "小按钮二字" khong co trong pak du an -> dung "小按钮四字" (co) cho nut Bao gia
         txt = txt.replace("小按钮二字.spr".encode("gbk").decode("latin-1"), "小按钮四字.spr".encode("gbk").decode("latin-1"))
+        # [A5 04/09] sua 4 loi hien thi chu bao:
+        # 1) ba the cua cua so chinh: nhan goc qua dai cho o rong 64 -> cat con "Dau gia ..."
+        if n == "auction_manager":
+            txt = _relabel(txt, "AuctionTong", V("Bang hội"))
+            txt = _relabel(txt, "AuctionWorld", V("Thế giới"))
+            txt = _relabel(txt, "AuctionPersonal", V("Cá nhân"))
+            txt = _setkey(txt, "AuctionTong", "Left", 10)
+            txt = _setkey(txt, "AuctionWorld", "Left", 78)
+            txt = _setkey(txt, "AuctionPersonal", "Left", 146)
+            for sec in ("AuctionTong", "AuctionWorld", "AuctionPersonal"):
+                txt = _setkey(txt, sec, "Width", 66)
+            txt = _setkey(txt, "Title", "Left", 300)
+            txt = _setkey(txt, "Title", "Width", 120)
+        # 2) tieu de trang bi cat ("Loai dau g") + 3) hai dong tien DE LEN NHAU (Top 13 va 19)
+        if n in ("auction_page_personal", "auction_page_world", "auction_page_tong"):
+            txt = _setkey(txt, "Title", "Width", 150)
+            txt = _relabel(txt, "Title", None)
+            txt = _setkey(txt, "BindingSilverTitle", "Text", V("Ngân lượng"))
+            txt = _setkey(txt, "BindingGoldTitle", "Text", "Xu")
+            txt = _setkey(txt, "BindingSilverTitle", "Top", 5)
+            txt = _setkey(txt, "BindingSilverValue", "Top", 5)
+            txt = _setkey(txt, "BindingGoldTitle", "Top", 23)
+            txt = _setkey(txt, "BindingGoldValue", "Top", 23)
+            txt = _setkey(txt, "BindingSilverTitle", "Width", 70)
+            txt = _setkey(txt, "BindingGoldTitle", "Width", 70)
+            txt = _setkey(txt, "BindingSilverValue", "Left", 265)
+            txt = _setkey(txt, "BindingGoldValue", "Left", 265)
+            txt = _setkey(txt, "tip", "Text", "")
         # [A4] doi nhan nut goc phai: khong con NPC, nut nay la loi vao dat ban
         if n == "auction_page_personal":
-            txt = _relabel(txt, "AuctionPersonalTip", V("Ky gui vat pham"))
+            txt = _relabel(txt, "AuctionPersonalTip", V("Ký gửi vật phẩm"))
         elif n == "auction_page_world":
-            txt = _relabel(txt, "AuctionWorldTip", V("Mo phien (GM)"))
+            txt = _relabel(txt, "AuctionWorldTip", V("Mở phiên (GM)"))
         elif n == "auction_page_tong":
-            txt = _relabel(txt, "seeMemberList", V("Dat mon / Xem thanh vien"))
+            txt = _relabel(txt, "seeMemberList", V("Đặt món / Thành viên"))
         if n == "auction_icon":
             # bieu tuong: nam ngay duoi bieu tuong thu (mail_icon.ini Left=765 Top=296 -> dau gia Top=322)
             txt = txt.replace("Left=990", "Left=765").replace("Top=320", "Top=322")
