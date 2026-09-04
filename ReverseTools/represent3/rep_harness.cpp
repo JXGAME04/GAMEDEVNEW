@@ -205,7 +205,7 @@ int main(int argc, char** argv)
 		if (si.res1 == 1 && nNewIdx < 0) nNewIdx = (int)sprs.size();
 		sprs.push_back(si);
 		SprReleaseHeader(ph);
-		if ((int)sprs.size() >= 60) break;
+		if ((int)sprs.size() >= 4000) break;
 	}
 	if (fl) fclose(fl);
 	if (sprs.empty()) { printf("[ERR] khong co sprite nao\n"); return 5; }
