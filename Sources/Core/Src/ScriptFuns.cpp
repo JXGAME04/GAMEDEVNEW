@@ -14897,6 +14897,7 @@ TLua_Funcs GameScriptFuns[] =
 	// [DAUGIA 04/09 A1] script\auction\auction_manager.lua dung
 	{"AUC_ItemToRec",	LuaAUC_ItemToRec},
 	{"AUC_RecName",	LuaAUC_RecName},
+	{"AUC_RecDesc",	LuaAUC_RecDesc},
 	{"AUC_GiveRec",	LuaAUC_GiveRec},
 	{"AUC_RecCells",	LuaAUC_RecCells},
 	{"AUC_Ready",	LuaAUC_Ready},

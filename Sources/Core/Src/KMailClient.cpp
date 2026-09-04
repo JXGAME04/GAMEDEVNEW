@@ -11,6 +11,7 @@
 #include "KMailUiDef.h"
 #include "KScriptProtocol.h"
 #include "KMailClient.h"
+#include "KAuctionClient.h"	// [A16] Auc_FillChatItemInfo dung chung
 #ifndef _SERVER
 #include "CoreShell.h"
 #include "GameDataDef.h"
@@ -189,9 +190,14 @@ int LuaMail_UpdateMailDetail(Lua_State* L)
 		if (szLine[0])
 		{
 			KMailUiAward* pA = &d.Award[d.nAwardCount];
-			char* szField[9] = { szLine, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+			// [A16 04/09] noi tu 9 len 14 o: dong "item|" nay se mang them chuoi AUC_RecDesc o cuoi.
+			// De 9 thi truong moi bi don het vao o cuoi va khong ai doc - hong AM THAM, khong bao loi.
+			char* szField[14];
+			for (int nZ = 0; nZ < 14; nZ++)
+				szField[nZ] = NULL;
+			szField[0] = szLine;
 			int nField = 1;
-			for (char* q = szLine; *q && nField < 9; q++)
+			for (char* q = szLine; *q && nField < 14; q++)
 			{
 				if (*q == '|')
 				{
@@ -220,6 +226,10 @@ int LuaMail_UpdateMailDetail(Lua_State* L)
 				pA->Item.m_wVersion = (WORD)g_SubWorldSet.GetGameVersion();
 				pA->Item.m_nNature = 0;
 				pA->Item.m_nGoldId = 0;
+				// [A16 04/09] o thu 9 (neu co) = chuoi AUC_RecDesc: dung lai DUNG mon, ke ca hoang kim
+				// (nhan dien bang cap nature + row chu khong phai goldid) va dung 6 muc phu van.
+				if (nField >= 9 && szField[8])
+					Auc_FillChatItemInfo(&pA->Item, szField[8]);
 				pA->szIcon[0] = 0;
 				pA->szName[0] = 0;
 				pA->szDesc[0] = 0;

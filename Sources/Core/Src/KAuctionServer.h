@@ -13,8 +13,10 @@ typedef struct lua_State Lua_State;
 
 #ifdef _SERVER
 // ---- vat pham ----
-int LuaAUC_ItemToRec(Lua_State* L);   // (nItemIdx) -> szHex, szTen, szMoTa ("g,d,p,l,s,k")  (KHONG xoa mon do)
-int LuaAUC_RecName(Lua_State* L);     // (szHex) -> szTen (doc ten ma khong tao vat pham)
+int LuaAUC_ItemToRec(Lua_State* L);   // (nItemIdx) -> szHex, szTen, szMoTa ("g,d,p,l,s,k"), nCells, nStack, nHetHan  (KHONG xoa mon do)
+int LuaAUC_RecName(Lua_State* L);
+// [A16] (szHex) -> szInfo (bo so du de ve dung mon, ke ca hoang kim), nStack
+int LuaAUC_RecDesc(Lua_State* L);     // (szHex) -> szTen (doc ten ma khong tao vat pham)
 int LuaAUC_GiveRec(Lua_State* L);     // (szHex) -> nItemIdx (0 = loi/het cho) - tao cho PlayerIndex hien tai
 int LuaAUC_RecCells(Lua_State* L);    // (szHex) -> so O hanh trang mon do chiem
 

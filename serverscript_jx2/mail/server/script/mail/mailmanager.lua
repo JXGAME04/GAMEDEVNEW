@@ -80,10 +80,18 @@ function MailManager_ParseAward(szAward)
                 local nAid = tonumber(val) or 0
                 if nAid > 0 then
                     local ai = AUC_Get(nAid)
-                    local pr = {0, 0, 0, 0, 0, 0}
-                    if ai then
+                    -- [A16 04/09] Doc bo so tu cot item_rec (AUC_RecDesc) chu khong phai item_desc:
+                    -- desc chi co 6 so nen hoang kim ve ra mon khac han va so chong luon hien 1.
+                    if not ai or ai.rec == nil or ai.rec == "" then
+                        -- Dong dau gia khong con: KHONG duoc day muc rong (6 so 0 se dung ra mot mon
+                        -- rac tu khe Item[] dung lai). Hien mot bieu tuong chung chung cho an toan.
+                        tinsert(tb, {szKind = "aucitem", nAucId = nAid, szInfo = "", nCount = 1, nCells = 6,
+                            nGenre = 0, nDetail = 0, nParticular = 0, nLevel = 0, nSeries = 0, nLuck = 0, bLoi = 1})
+                    else
+                        local szInfo, nStk = AUC_RecDesc(ai.rec)
+                        local pr = {0, 0, 0, 0, 0, 0}
                         local kx = 0
-                        local sd = ai.desc
+                        local sd = szInfo
                         while kx < 6 do
                             local a1, b1, num = strfind(sd, "^(%-?%d+),?")
                             if not a1 then break end
@@ -91,9 +99,10 @@ function MailManager_ParseAward(szAward)
                             pr[kx] = tonumber(num) or 0
                             sd = strsub(sd, b1 + 1)
                         end
+                        tinsert(tb, {szKind = "aucitem", nAucId = nAid, nGenre = pr[1], nDetail = pr[2], nParticular = pr[3],
+                            nLevel = pr[4], nSeries = pr[5], nLuck = pr[6], nCount = nStk or 1,
+                            szInfo = szInfo or "", nCells = ai.cells or 6})
                     end
-                    tinsert(tb, {szKind = "aucitem", nAucId = nAid, nGenre = pr[1], nDetail = pr[2], nParticular = pr[3],
-                        nLevel = pr[4], nSeries = pr[5], nLuck = pr[6], nCount = 1, nCells = (ai and ai.cells) or 6})
                 end
             elseif kind == "task" then
                 -- [D9] task:id,n = cong n vao o nhiem vu id (337 = diem su kien Tong Kim)

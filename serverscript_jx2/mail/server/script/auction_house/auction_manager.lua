@@ -164,7 +164,16 @@ function AUC_RowToClient(r, szMe, nNow)
     tb.nS = pr[5]
     tb.nK = pr[6]
     tb.szName = r.name
-    tb.nCount = 1
+    -- [A16] Bo mat THAT cua mon nam trong cot item_rec chu khong phai item_desc (chi 6 so).
+    -- Hoang kim nhan dien bang CAP (nature = NATURE_GOLD, row); thieu no thi client dung lai
+    -- mot mon thuong khac han. Doc thang tu rec nen CA cac mon dat ban tu truoc cung hien dung,
+    -- khong phai doi cot hay chuyen doi CSDL.
+    local szInfo, nStk = AUC_RecDesc(r.rec)
+    tb.szInfo = szInfo or ""
+    tb.nCount = nStk or 1
+    if tb.nCount < 1 then
+        tb.nCount = 1
+    end
     tb.nGuaranteedPrice = r.guar
     tb.nCurPrice = r.cur
     tb.nMaxPrice = r.cur
@@ -607,14 +616,17 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong)
     if nItemIdx == nil or nItemIdx <= 0 then
         return 0
     end
-    local szRec, szName, szDesc, nCells, nStack = AUC_ItemToRec(nItemIdx)
+    local szRec, szName, szDesc, nCells, nStack, nHetHan = AUC_ItemToRec(nItemIdx)
     if szRec == nil or szRec == "" then
         Msg2Player("Mãn nµy kh«ng thÓ ký göi (quÆng, nguyªn liÖu th«...).")
         return 0
     end
     -- [B2] mon co HAN DUNG: han la MOC thoi gian tuyet doi nen mon se chet ngay trong kho dau gia
-    -- hoac trong hop thu, va nguoi nhan lay ra se mat mon o lan dang nhap sau. Cam ky gui.
-    if GetItemLife and GetItemLife(nItemIdx) ~= 0 then
+    -- hoac trong hop thu, va ban ghi ky gui khong luu moc do. Cam ky gui.
+    -- [A15 04/09] nHetHan do AUC_ItemToRec tra ve (= KItem::GetExpireTime, 0 = khong co han).
+    -- Truoc day dung GetItemLife la SAI: ham do nhan MA SU KIEN, tra -1 khi khong thay,
+    -- nen chan sach moi lan ky gui (chu bao 04/09: "bo do vao thi bao co han su dung").
+    if (nHetHan or 0) > 0 then
         Msg2Player("VËt phÈm cã h¹n sö dông kh«ng thÓ ký göi.")
         return 0
     end

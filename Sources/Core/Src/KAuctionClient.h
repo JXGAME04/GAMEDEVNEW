@@ -6,6 +6,10 @@ typedef struct lua_State Lua_State;
 
 #ifndef _SERVER
 // 21 ham 2.0 ma \script\ui\uiauction_house.lua goi
+#include "GameDataDef.h"	// ChatItem
+// [DAUGIA 04/09 A16] dien ChatItem tu chuoi AUC_RecDesc (hop thu goi chung ham nay de hai noi khong lech)
+void Auc_FillChatItemInfo(ChatItem* pItem, const char* szInfo);
+
 int LuaAuc_OpenAuctionWindow(Lua_State* L);
 int LuaAuc_CloseAuctionWindow(Lua_State* L);
 int LuaAuc_SwitchAuctionWindow(Lua_State* L);

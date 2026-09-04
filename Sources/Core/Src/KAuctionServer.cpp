@@ -326,7 +326,7 @@ static int sRecToItem(const KAucRec* p)
 //////////////////////////////////////////////////////////////////////
 // Ham Lua - vat pham
 //////////////////////////////////////////////////////////////////////
-// AUC_ItemToRec(nItemIdx) -> szHex, szTen, szMoTa ("g,d,p,l,s,k"), nCells
+// AUC_ItemToRec(nItemIdx) -> szHex, szTen, szMoTa ("g,d,p,l,s,k"), nCells, nStack, nHetHan
 int LuaAUC_ItemToRec(Lua_State* L)
 {
 	int nItemIdx = sArgInt(L, 1);
@@ -346,7 +346,12 @@ int LuaAUC_ItemToRec(Lua_State* L)
 	Lua_PushNumber(L, (double)(Item[nItemIdx].GetWidth() * Item[nItemIdx].GetHeight()));
 	// [B1] so luong THO cua chong: ben Lua GetItemStackCount bi kep theo tran chong nen xoa thieu
 	Lua_PushNumber(L, (double)Item[nItemIdx].GetStackNum());
-	return 5;
+	// [A15 04/09] HAN DUNG that su = m_CommonAttrib.nExpireTime (moc tuyet doi; GetExpireTime tra 0
+	// khi khong co hoac da qua). Ban va truoc dung ham Lua GetItemLife la SAI hoan toan: ham do nhan
+	// MA SU KIEN chu khong phai chi so vat pham, va tra -1 khi khong tim thay -> chan sach moi ky gui.
+	// Luu y nExpirePoint (dem nguoc tu luc nhan) KHONG tinh la han co dinh nen khong chan.
+	Lua_PushNumber(L, (double)Item[nItemIdx].GetExpireTime());
+	return 6;
 }
 
 // AUC_RecName(szHex) -> szTen  (tao tam mot mon do, doc ten roi tra khe ve)
@@ -367,6 +372,52 @@ int LuaAUC_RecName(Lua_State* L)
 	Lua_PushString(L, Item[nIdx].GetName());
 	ItemSet.Remove(nIdx);
 	return 1;
+}
+
+// [DAUGIA 04/09 A16] AUC_RecDesc(szHex) -> szInfo, nStack
+// szInfo = danh sach so cach nhau bang dau phay, DU de client dung lai DUNG bo mat cua mon:
+//   genre, detail, particular, level, series, luck, nature, goldid, enchance,
+//   MAX_ITEM_MAGICLEVEL muc phu van, hat giong ngau nhien
+// Truong 'detail' da ma hoa san theo luat hoang kim (khuon KItemDice::FillItemDesc):
+// hang nature >= NATURE_GOLD thi dung nRow chu KHONG phai nDetailType, vi Gen_ExistEquipment
+// nhan nRow lam chi so dong goldequip.txt (KItemGenerator.CPP case NATURE_GOLD).
+// KHONG tao vat pham tam nhu AUC_RecName/AUC_RecCells - chi giai hex, nen goi thoai mai.
+int LuaAUC_RecDesc(Lua_State* L)
+{
+	KAucRec rec;
+	if (!sHexToRec(sArgStr(L, 1), &rec))
+	{
+		Lua_PushString(L, (char*)"");
+		Lua_PushNumber(L, 1);
+		return 2;
+	}
+	int nDet = (rec.nNature >= NATURE_GOLD) ? rec.nRow : rec.nDetail;
+	char szInfo[256];
+	int nLen = _snprintf(szInfo, sizeof(szInfo) - 1, "%d,%d,%d,%d,%d,%d,%d,%d,%d",
+		rec.nGenre, nDet, rec.nParticular, rec.nLevel, rec.nSeries, rec.nLuck,
+		rec.nNature, rec.nGoldId, rec.nEnChance);
+	if (nLen < 0)
+		nLen = 0;
+	szInfo[nLen] = 0;
+	for (int i = 0; i < MAX_ITEM_MAGICLEVEL; i++)
+	{
+		int n = _snprintf(szInfo + nLen, sizeof(szInfo) - 1 - nLen, ",%d", rec.nParam[i]);
+		if (n <= 0)
+			break;
+		nLen += n;
+		szInfo[nLen] = 0;
+	}
+	{
+		int n = _snprintf(szInfo + nLen, sizeof(szInfo) - 1 - nLen, ",%u", (unsigned)rec.nRandSeed);
+		if (n > 0)
+		{
+			nLen += n;
+			szInfo[nLen] = 0;
+		}
+	}
+	Lua_PushString(L, szInfo);
+	Lua_PushNumber(L, (double)(rec.nStackNum > 0 ? rec.nStackNum : 1));
+	return 2;
 }
 
 // AUC_RecCells(szHex) -> so O hanh trang
