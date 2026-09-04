@@ -256,3 +256,319 @@ với paint/khung đo được trong giây xấu ⇒ blit là phần lớn của
 3. Port từ 2.0 theo 4.2: cache (ngân sách theo RAM, bỏ 1 khung/lượt, TTL 10 s, cổng fps), NPOT, camera lerp 0,85,
    pre-render 8888.
 4. `MAX_NPC` 256 → 800 (rebuild toàn bộ client) và tuỳ chọn `NpcTheSame`/`MissleIndex` cho WAuto/Game.exe.
+
+
+---
+
+## 10. THI CÔNG 03/09 (chiều tối) — đã làm cả 4 việc, chờ chủ swap
+
+Nhánh git **`rep3-0309`** (đã push origin; worktree `D:\GAMEDEVNEW_wt_rep3`; gốc main `d31dfde1`, sau đó merge main `c13af6ee` = MAIL đợt 3 + S13i/j `68694127`).
+Không sửa một tệp nào trong cây `D:\GAMEDEVNEW` đang có việc dở của phiên khác.
+
+### 10.1 Represent3 vẽ PHẲNG như Represent2, chạy trên GPU (`Sources\Represent\Represent3`, commit `12c232a7`)
+| Việc | Cách làm |
+|---|---|
+| Tắt góc camera 3D + ánh sáng | `g_renderModel = RenderModel2D` (cờ `[Client] Rep3Flat=1` mặc định): mọi sprite vẽ bằng toạ độ màn hình XYZRHW, `CoordinateTransform`/`X` dùng đúng công thức Represent2 (`x−m_nLeft`, `y/2−m_nTop−z·887/1024`), không ma trận view/projection, `SetOption(PERSPECTIVE)` bị bỏ qua |
+| Không "cháy" hiệu ứng | BORDER (chọn mục tiêu) → **không vẽ** như Represent2 (trước: MODULATE2X làm sáng); OPACITY → đục hoàn toàn bằng alpha-test (trước: alpha texture); ALPHA/3LEVEL/NOT_BE_LIT → alpha texture × `Color.a` (trước: bỏ `Color.a`); COLOR_ADJUST → nhân màu (đúng `g_BlendColor32b` mode 0); sprite mới `Reserved[1]` → SCREEN `d + a·s·(1−d)` bằng 2 tầng texture (INVDESTCOLOR/ONE) đúng `g_DrawSpriteScreen32b` |
+| Vẽ từng phần như Represent2 | `DrawImage2DFlat`: không ghép nhân vật lên texture pre-render (bỏ luôn LockRect/memset/RIO_Copy mỗi khung), RU_T_IMAGE_4 cắt theo `oImgLTPos/oImgRBPos` như `SetClipRect`; `Rep3Composite=1` để bật lại cách cũ |
+| Màu đúng palette | Texture sprite **A8R8G8B8** (`Rep3Tex32=1`), giải RLE bằng `RenderToA8R8G8B8`; `Rep3Tex32=0` = 4444 như 2.0 |
+| Port 2.0 | NPOT (dò caps + tạo thử 33×17, `SplitTexture` 1 texture đúng cỡ ≤ MaxTextureWidth); cache theo RAM (RAM/16, kẹp 30..480 MB, `Rep3CacheMB` ghi đè), mỗi lượt bỏ **1 khung** texture nghỉ > 10 s, bỏ qua tài nguyên vừa vẽ, dọn cuối khung khi fps TB ≥ 25; `Present` ngay không chờ vsync (`Rep3Vsync=1` để bật); `Lock` VB `D3DLOCK_DISCARD` (trước lock 0 = chờ GPU mỗi sprite) |
+| Cửa sổ | Represent3 tự đặt client = nWidth×nHeight, Present 1:1; nếu gặp Game.exe cũ (+40 px) thì giữ để chuột khớp |
+| Nhật ký | `bin\client\jx_rep3.log` (`Rep3Log=1`): card, NPOT, ngân sách cache |
+
+**Đo bằng bộ thử độc lập** (`ReverseTools\represent3\rep_harness.cpp`, chạy trên thư mục junction sang `bin\client`, không ghi gì vào cây sống):
+- Cùng 224 sprite/khung: **Represent2 3,1–5,0 ms/khung · Represent3 mới 0,85 ms/khung** (≈ 4–6×).
+- Ảnh chụp cùng bố cục (7 kiểu vẽ × 8 sprite, sprite mới SCREEN, cắt khung, đường/khung/bóng, chữ GBK + TCVN3, LookAt):
+  toàn ảnh **0,07 % điểm lệch ≥ 32/255**, các hàng sprite **0,00 %**, chữ 1,8 % (cùng font bitmap `gbk_fs10.fnt`, khác viền nhẹ), sprite SCREEN 0,07 %.
+  Ảnh so: `scratchpad\rep_compare.png` (R2 | R3 | khác biệt ×4).
+- Card máy chủ game: HAL, MaxTex 16384, **Full NPOT**, RAM 32 GB ⇒ ngân sách cache 480 MB.
+
+### 10.2 Game.exe (`S3Client.cpp`)
+- Bỏ hack kéo cửa sổ cao thêm 40 px và co toạ độ chuột `y·40/808`.
+- **Tự lùi về Represent2**: thiếu `Represent3.dll` hoặc `Create()` thất bại ⇒ giải phóng, `g_bRepresent3=false`, khởi tạo lại Represent2, ghi `[REP3]` vào `jx_auto.log`. Không còn thoát game vì lỗi D3D.
+
+### 10.3 MAX_NPC client 256 → 800 (`KNpc.h`), MAX_NPC_REQUEST 20 → 128 (`KNpcSet.h`)
+- Rebuild sạch CoreClient (`-t:Rebuild`, header dùng chung). `CoreClient.dll` SizeOfImage 82 → 105 MB (mảng `Npc[]` tĩnh, ≈ 42 KB/khe).
+- WAuto (`E:\Src_Auto_Ngoai`) chỉ nhận `nNpcIdx` của chính nhân vật qua IPC, không có mảng theo MAX_NPC ⇒ không cần build lại.
+- Server không đổi (MAX_NPC server 98000 giữ nguyên).
+
+### 10.4 Tuỳ chọn chống đông (đọc `[Client]` trong `config.ini`, chỉ client)
+| Khoá | Mặc định | Tác dụng |
+|---|---|---|
+| `NpcTheSame=1` | 0 | người chơi KHÁC (không phải mình) mặc chung: `NpcTheSameArmor` (0), `NpcTheSameHelm` (0), bỏ phi phong; `NpcTheSameHorse`/`NpcTheSameWeapon` ≥ 0 mới ép (mặc định −1 giữ riêng). Áp ở `SyncPlayer` + `SyncPlayerMin` |
+| `MissleIndex=N` | 0 | mọi đạn kỹ năng lấy `AnimFile/SndFile/AnimFileInfo` của dòng N trong missles (giữ tham số bay/va chạm của đạn gốc; dòng N phải có `AnimFile1`) |
+
+### 10.5 Tệp giao — trạng thái thật 03/09 tối
+Phiên này bị chặn lệnh ghi `.moi` vào `bin\client` (chỉ chép được `Represent3.dll`, tệp mới). Phiên wauto-d9 **không gộp rep3 vào bộ của họ** (tránh lách quyền): bộ `.moi` họ đặt lúc 17:36 (chủ ĐÃ chạy ChoiGame.bat ~17:45, không còn .moi) build từ origin/main `cef918af` (MAIL 3+4+4b + S13i/j), **không có Represent3, MAX_NPC client vẫn 256**.
+
+| Tệp đang nằm trong `bin\client` | md5 | Nguồn | Ghi chú |
+|---|---|---|---|
+| `Represent3.dll` | `74ac07ad` | rep3-0309 | ĐÃ ĐẶT, game đang nạp (chủ bật `Represent=3` từ 17:40) — bản này texture MANAGED nên **RAM gấp đôi**, thay bằng 94a33924 bên dưới |
+| `CoreClient.dll` (ĐÃ SWAP ~17:45, `.truoc` = bản 16:42) | `6bbcda8f` (2.508.800) | wauto-d9, main `cef918af` | không rep3: MAX_NPC 256, không `NpcTheSame`/`MissleIndex` |
+| `Game.exe` (ĐÃ SWAP ~17:45, `.truoc` = bản 16:38) | `bd5cb88e` (1.401.856) | wauto-d9, main `cef918af` | không rep3: còn hack +40 px, chưa tự lùi Represent2 |
+| `CoreClient.dll.moi` | `e151cbfc` (2.515.456) | wauto-d9, main `87757f14` (D5) | đặt 17:45, CHỜ ChoiGame.bat; không rep3 |
+| `CoreServer.dll` | `bad8e293` | wauto-6a | không đụng |
+
+**Bộ rep3 = tập cha** (nhánh `rep3-0309` `b231f5a2` = main `91302e35` gồm MAIL 3→7 + S13k + Tống Kim wauto-c0 + rep3 + vá RAM), build sạch `-t:Rebuild`, **CHƯA đặt** — chủ tự chép (hoặc cấp quyền ghi cho phiên):
+
+| Tệp | md5 | Chép từ → tới |
+|---|---|---|
+| `CoreClient.dll` | `5b999107` (2.521.088) | `D:\GAMEDEVNEW_wt_rep3\Sources\Core\ClientRelease\CoreClient.dll` → `bin\client\CoreClient.dll.moi` |
+| `Game.exe` | `21c4a10b` (1.401.344) | `D:\GAMEDEVNEW_wt_rep3\Sources\S3Client\Release\Game.exe` → `bin\client\Game.exe.moi` |
+| `Represent3.dll` | `94a33924` (123.904) | `D:\GAMEDEVNEW_wt_rep3\Sources\Represent\Represent3\Release\Represent3.dll` → `bin\client\Represent3.dll` (chép ĐÈ khi game ĐÃ THOÁT; ChoiGame.bat không xử lý `.moi` cho tệp này) |
+
+Thứ tự: (1) bộ thư của wauto-d9 đã swap ~17:45 và đang chạy (`.truoc` = f2ad5ca3/24762253); họ còn đặt thêm `CoreClient.dll.moi` e151cbfc (D5, gốc lỗi hộp thư) chờ ChoiGame.bat — có thể chạy nó trước để thử thư, hoặc chép đè luôn bộ rep3 (đã gồm D5); (2) thoát game, chép 2 tệp trên thành `.moi` (lệnh dưới), đặt `Represent=3` trong `[Client]` của `config.ini`, thoát game, chạy `ChoiGame.bat` lần nữa; (3) xem `bin\client\jx_rep3.log` (card, NPOT, ngân sách cache) và `jx_auto.log` dòng `[REP3]` nếu bị lùi về Represent2.
+```
+copy /Y D:\GAMEDEVNEW_wt_rep3\Sources\Core\ClientRelease\CoreClient.dll E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client\CoreClient.dll.moi
+copy /Y D:\GAMEDEVNEW_wt_rep3\Sources\S3Client\Release\Game.exe       E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client\Game.exe.moi
+copy /Y D:\GAMEDEVNEW_wt_rep3\Sources\Represent\Represent3\Release\Represent3.dll E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client\Represent3.dll
+```
+
+### 10.6 Quay lui
+- Lỗi Represent3 ⇒ Game.exe mới tự dùng Represent2; muốn tắt hẳn: `Represent=2` trong `config.ini`. `Represent2.dll` không đổi.
+- Lỗi khác ⇒ đổi lại `CoreClient.dll.truoc` / `Game.exe.truoc` (ChoiGame.bat giữ bản cũ).
+
+### 10.7 Chưa làm / cần chủ quyết
+- Chưa có giao diện bật `NpcTheSame`/`MissleIndex` trong WAuto (chỉ config.ini).
+- Camera lerp 0,85 của 2.0 không port: chế độ phẳng dùng nội suy POSSHIFT sẵn có của dự án.
+- Nhánh `rep3-0309` (`b231f5a2`, đã push) = main `91302e35` (MAIL 3→7 + S13i/j/k + Tống Kim wauto-c0) + rep3 + vá RAM/LOAD, CHƯA merge vào `main` (chờ chủ quyết sau khi thử). Ai build client sau phải lấy từ `rep3-0309` (hoặc gộp nó vào main), nếu không sẽ mất Represent3 phẳng + MAX_NPC 800 + 2 tuỳ chọn.
+
+### 10.8 RAM Represent3 gấp đôi Represent2 (chủ báo 03/09 ~17:55) — nguyên nhân, số đo, vá
+
+**Số đo trong game** (Game.exe PID 40032, Represent3 74ac07ad, RTX 3080, so với GPU counter của tiến trình):
+
+| Giờ | RAM riêng tiến trình | VRAM tiến trình (dedicated) |
+|---|---|---|
+| 17:54 | 513 MB | 237 MB |
+| 17:57 | 611 MB | 329 MB |
+| 17:59 | 457 MB | 230 MB |
+| 18:1x | 1.340 MB (đông người) | — |
+
+RAM tăng/giảm **1:1 theo VRAM** ⇒ mỗi texture tồn tại 2 bản: VRAM + bản sao trong RAM tiến trình. Gốc: sprite tạo ở `D3DPOOL_MANAGED` (D3D9 luôn giữ bản chủ trong RAM), texture 8888 = 4 B/px, ngân sách 480 MB. Represent2 chỉ giữ dữ liệu RLE 8 bit (≈ 1 B/px) trong cache engine.
+
+**Đo bằng bộ thử** (300 sprite × 40 khung, cùng danh sách, chạy ngoài màn hình; `ReverseTools\represent3\rep_harness.exe`, thư mục `run\` junction sang `bin\client`):
+
+| Bản | RAM riêng sau khi vẽ | Ghi chú |
+|---|---|---|
+| Represent2 | 97 MB | cache sprite của engine |
+| Represent3 74ac07ad (MANAGED) | 105–107 MB | = R2 + bản sao texture |
+| Represent3 mới, `Rep3Pool=0` (MANAGED) | 107 MB | đối chứng |
+| **Represent3 mới, `Rep3Pool=1` (DEFAULT)** | **68 MB** | thấp hơn Represent2 29 MB |
+
+**Vá (Represent3.dll 94a33924, commit `06649ed6` + `2a5df16b`, marker `[REP3 03/09 RAM]` / `[REP3 03/09 LOAD]`):**
+1. Texture sprite → `D3DPOOL_DEFAULT` (chỉ VRAM): đổ qua texture tạm SYSTEMMEM + `UpdateTexture`; mất device → `TextureResSpr::InvalidateDeviceObjects` bỏ hết khung, vẽ lại thì tạo lại. `Rep3Pool=0` quay về MANAGED.
+2. Hit-test chuột (`GetPixelAlpha`) đọc từ RLE gốc thay vì `LockRect` texture (DEFAULT không lock được; cách cũ còn ép đồng bộ GPU). Bộ thử: kết quả y hệt bản cũ (15 điểm / tổng 3825).
+3. Ngân sách cache = VRAM: RAM/16 kẹp 60..384 MB (máy chủ 384), đọc `Rep3CacheMB` SAU khi đọc ini (trước đây đọc trong ctor nên khoá này không tác dụng); vượt ngân sách → bỏ 8 khung/lượt, nghỉ > 1 s.
+4. Thống kê mỗi 30 s vào `jx_rep3.log` (`Rep3StatSec`, 0 = tắt): `RAM rieng, WS | VRAM con | cache N muc: texture MB (ve khung nay MB, ngan sach MB), raw spr MB | nap, bo | fps TB`.
+5. Không cache mục NULL khi nạp ảnh thất bại (mã gốc chèn node NULL, không bao giờ nạp lại → ảnh "trong suốt" cả phiên); thử nạp lại + ghi `[REP3] LoadImage FAIL type=… : <tên>` (tối đa 200 dòng). Vụ nền hộp thư 625×447 trong suốt 17:50 của wauto-d9 hoá ra do ini thiếu `\` đầu đường dẫn (đã sửa 18:05); bộ thử vẽ sprite đó bằng cả 2 bản Represent3 khớp Represent2 0,00 %.
+
+Kỳ vọng trong game: RAM ≈ Represent2 (mất phần bản sao ≈ VRAM đang dùng, 200–400 MB tuỳ cảnh). Kiểm bằng dòng `RAM rieng` trong `jx_rep3.log` sau khi thay DLL.
+
+### 10.9 Giao diện WAuto cho `NpcTheSame` / `MissleIndex` (03/09 tối, commit `04e1d93e`; nhánh `20bfcdf5` = main `b6c42d57` gồm MAIL D8) — hoàn tất việc dở ở 10.7
+
+Đọc kèm `BANGIAO_REP3_SAP_VA_RAM_0309.md` (phiên khác đã vá sập UCL / giật / RAM, `Represent3.dll` 113eeb1d đang chạy; đính chính 10.8: số đo bộ thử ở 60 sprite quá nhỏ, POOL_DEFAULT vẫn ăn ~0,45–0,66 MB RAM mỗi MB texture, 2.0 dùng 8888).
+
+**Chỗ đặt:** tab **Cơ bản**, dưới khung "Tự động đăng nhập" (thêm kẻ ngang + 2 hàng, ID 628..631, tab cao 330 → 362):
+- ☐ `Người chơi khác mặc chung 1 bộ (đông người nhẹ máy)` → `autoData.bWANpcTheSame`
+- ☐ `Mọi chiêu dùng chung 1 hiệu ứng, dòng:` [__] → `autoData.bWAMissle` + `nWAMissleIndex` (mặc định 1)
+Lưu như mọi ô khác (`SaveRoleData` → `APdata\<ID>.dat`, kích hoạt qua BN_CLICKED / EN_KILLFOCUS); tệp `.dat` cũ ngắn hơn vẫn đọc được (memset 0 + đọc phần có) → mặc định tắt.
+
+**Đường đi:** WAuto gửi gói mới `IPCHienThi` (`PRT_HIENTHI`, cuối enum) **mỗi lượt GAMELOOPINTV cho mọi game đang kết nối, KHÔNG cần tick auto** → `S3Client.cpp` case `PRT_HIENTHI` → `CoreShell` `ATYPE_HIENTHI` ghi `g_nWAOptNpcTheSame`/`g_nWAOptMissleIndex` + mốc giờ → `REP3_NpcTheSame` (KProtocolProcess.cpp) và `REP3_MissleIndex` (KMissle.cpp) dùng giá trị WAuto khi còn mới (< 5 s); tắt WAuto thì 5 s sau về `[Client]` trong `config.ini` như cũ.
+
+**Hành vi:** `NpcTheSame` áp cho người chơi **vừa xuất hiện** (SyncPlayer/SyncPlayerMin); bật/tắt thì người đang thấy giữ nguyên tới khi xuất hiện lại; chính mình không đổi. `MissleIndex` áp ngay chiêu kế tiếp (đọc mỗi lần bắn); dòng N phải có `AnimFile1`, không thì giữ đạn gốc.
+
+**Struct dùng chung đổi:** `autoData` +3 int ở CUỐI (trước constructor), `PROTTOOLID` +`PRT_HIENTHI`, `IPCHienThi` mới — `Sources\Core\Src\ipc_shared.h` và `E:\Src_Auto_Ngoai\WAuto\WAuto\ipc_shared.h` **giống nhau**; `CoreShell.h` +`ATYPE_HIENTHI` cuối enum. WAuto cũ + client mới: client kiểm `Size` nên không đọc rác; WAuto mới + client cũ: gói `PRT_HIENTHI` bị bỏ qua. Cây WAuto E: không có git — bản lưu `*.cu_0309_truoc_hienthi`; bộ vá `ReverseTools\represent3\rep3_wauto_hienthi.py` áp lại được cho cả hai cây.
+
+**Kiểm:** hộp thoại biên dịch trong `WAuto.exe` đã đọc lại bằng pefile: 4 control mới đúng ID/vị trí (628 kẻ 334, 629 checkbox 338, 630 checkbox 350, 631 ô số 350). **Chưa bấm thử trong game** (WAuto của chủ đang chạy, không mở bản thứ hai chồng lên).
+
+**Bộ tệp (tập cha của mọi thứ trên `rep3-0309` `20bfcdf5` = main `b6c42d57` + rep3 + vá sập/RAM của phiên kia + hiển thị):**
+
+| Tệp | md5 | Kích thước | Chép từ → tới |
+|---|---|---|---|
+| `CoreClient.dll` | `3d706aa2` | 2.530.304 | `D:\GAMEDEVNEW_wt_rep3\Sources\Core\ClientRelease\CoreClient.dll` → `bin\client\CoreClient.dll.moi` |
+| `Game.exe` | `714e71d3` | 1.401.344 | `D:\GAMEDEVNEW_wt_rep3\Sources\S3Client\Release\Game.exe` → `bin\client\Game.exe.moi` |
+| `WAuto.exe` | `316f7abd` | 415.744 | `E:\Src_Auto_Ngoai\WAuto\WAuto\Release\WAuto.exe` → thoát WAuto, đổi `WAuto.exe` cũ → `.truoc`, chép bản mới (ChoiGame.bat không đổi WAuto) |
+| `Represent3.dll` | `113eeb1d` (đang chạy) | — | giữ |
+
+**Cập nhật 22:5x:** chủ tắt game, tôi ĐÃ đặt `bin/client/CoreClient.dll.moi` 3d706aa2 + `Game.exe.moi` 714e71d3 (chờ `ChoiGame.bat`). `WAuto.exe`: bản 316f7abd của tôi đã bị bản 72862beb (22:47, phiên wauto-9b thi công 'Ác chính': AC_* sau 3 trường của tôi, PRG_VITRI) đè trong `E:/Src_Auto_Ngoai/WAuto/WAuto/Release`; 22:53 wauto-9b ĐÈ cả 3 `.moi` bằng bộ "Ác chính" (nhánh acchinh-0309 9bfe9780 = rep3-0309 20bfcdf5 + tính năng của họ, TẬP CHA của bộ tôi): CoreClient.dll.moi dff1bfc8 · Game.exe.moi aed2d11d · WAuto.exe.moi 72862beb — chủ chạy ChoiGame.bat + đổi tay WAuto.exe.
+
+### 10.10 Đo lại 03/09 22:38–22:45 (Tống Kim, Represent3 113eeb1d) — trả lời "2 nút không đổi gì" và "không thấy địch"
+
+**Vì sao 2 ô mới không đổi gì:** cây sống lúc đó = `CoreClient.dll` 9e7a516d + `Game.exe` eb8c65dc (build từ `main`, chưa có `PRT_HIENTHI`) + `WAuto.exe` a6d74466 (mới). WAuto gửi gói mới, client cũ bỏ qua → không có tác dụng. Cần cặp rep3 (`CoreClient` 3d706aa2 + `Game.exe` 714e71d3). Ngoài ra tệp `APdata/<ID>.dat` cũ ngắn hơn struct nên ô "dòng" ra 0 = tắt → vá di trú (dòng mặc định 1) trong `WAuto.exe` **316f7abd** (`rep3_wauto_hienthi_b.py`).
+
+**Vẽ (jx_paint.log + jx_rep3.log, phiên pid 32840, 231 s trong trận):** fps TB 63 suốt phiên; 1 giây bất thường / 231 s (0,43 %); 6 cú giật ≥ 25 ms, toàn logic; texture VRAM đỉnh 393 MB (ngân sách 512), "vẽ khung này" tới 108 MB (khung rất đông), RAM riêng 274 → 436 MB, nạp 2216 / bỏ 6160 mục trong ~4 phút. Represent2 cùng ngày (pid 704, 2 h 26): 9,2 % giây bất thường, 47,8 cú giật/phút do paint. ⇒ Về vẽ, Represent3 tốt hơn rõ; không có dấu hiệu "không vẽ được sprite" (600 dòng `LoadImage FAIL` đều là biểu tượng chat `spr/Ui3/表情/140..339.spr` không có trong pak, thử lại 10 s/lần — vô hại).
+
+**"Không thấy địch, không thấy chiêu nhưng bị chết" KHÔNG phải do Represent3:** bảng NPC client tối đa 55/256 khe, `nguoi` (người chơi trong bảng) chỉ 10–16, `mocoi` tới 34, khe hỏi NPC `dangcho=0` suốt phiên (không cạn 19 khe), **9.280 gói NPC bị bỏ vì cách ≥ 40 ô** (`S6_XaQuaTam`, FIX-D 26/08; máy chủ cũng chỉ gửi trong `MAX_SYNC_RANGE` 40 ô, `KNpc.cpp:763`). Tức là client chỉ biết địch trong vòng 40 ô và bảng chưa bao giờ đầy; nếu địch trong màn hình mà không thấy thì phải xem gói đồng bộ (mốc [S8-NAN] lệch vị trí 279 px xuất hiện 5 lần) — thuộc phần đồng bộ TK của phiên wauto-c0/9b (họ đã phải hỏi máy chủ vị trí địch vì cùng triệu chứng). Việc cặp rep3 làm được: `MAX_NPC` 800 + `MAX_NPC_REQUEST` 128 (2.0 dùng 800) — chỉ giúp khi bảng/khe đầy, phiên này chưa chạm.
+
+**Đề nghị thử tiếp:** đặt cặp rep3 + WAuto.exe 316f7abd, vào trận, lúc thấy "bị đánh mà không thấy ai" ghi lại giờ; tôi đối chiếu `[S6-BANG] dung/nguoi/boxa`, `SYNCMIN-REQNPC`, `[S8-NAN]` và dòng `RAM rieng` đúng phút đó.
+
+### 10.11 "Không thấy địch và chiêu nhưng bị chết" ở Tống Kim — mổ mã máy chủ + client 2.0 (03/09 đêm)
+
+**Client 2.0 (gamecl, bảng handler tại this+8, khớp 129/146 số hiệu gói của dự án):** cùng dòng mã với ta — `SyncNpcMin` (0x65C8A0) bỏ gói NPC cách người chơi > 35 ô (ta 40 ô), NPC lạ thì `IsNpcRequestExist` → gửi `c2s_requestnpc` → `InsertNpcRequest` (0x66BF00); `SkillCast` (0x659C60) bỏ chiêu của NPC chưa có trong bảng; `NpcRemove` chỉ chạy khi máy chủ bảo. Khác biệt duy nhất đáng kể: bảng NPC 800 (ta 256, rep3 = 800). ⇒ 2.0 "không mất địch" là nhờ **máy chủ VNG**, không phải client.
+
+**Máy chủ của ta (KRegion.cpp / KNpc.cpp), số đo phiên 22:38:** region = 16×32 ô, phát trong 3×3 region (≈48×96 ô, `MAX_SYNC_RANGE 32` kiểm một chiều); client bỏ 9.280 gói vì ≥ 40 ô (`S6_XaQuaTam`) — đúng dải "220 bot ở rìa 40–48 ô" của trận test; trong bảng client chỉ ≤ 16 người + 27 quái, không NPC nào bị client tự gỡ (S6-CAM/VANH/FIX-B = 0), bảng 55/256.
+- `KRegion::BroadCast(…, nMaxCount, …)`: ngân sách người nhận DÙNG CHUNG cho cả 9 region, duyệt theo thứ tự danh sách (có con trỏ xoay), **không theo khoảng cách**. `NormalSync` (vị trí liên tục) dùng `NPC_SYNC_BROADCAST_LIMIT 500`; nhưng **gói một lần** — `ProcessState` (phát chiêu, `s2c_skillcast`), `DoHurt`, `DoRun`, `SetCamp/SetCurrentCamp` — dùng `MAX_BROADCAST_COUNT 100`. Với 200+ người trong 9 region (bot rìa), mỗi cú phát chiêu chỉ tới ~100 người đầu danh sách; người đứng cạnh kẻ đánh có thể bị bỏ ⇒ không thấy chiêu, không thấy nó chạy tới, chỉ thấy máu tụt. Vị trí chỉ được vá lại khi tới lượt `NormalSync`.
+- `KRegion::Activate`: mỗi region mỗi tick chỉ `NormalSync` **5 NPC** (`kNpcSyncChunkSize`); region 150 NPC ⇒ mỗi NPC ~30 tick (1,7 s) mới có vị trí mới, NPC lạ hiện muộn thêm 1 vòng hỏi-đáp.
+- Không có "ép đồng bộ kẻ đánh về nạn nhân": máy chủ trừ máu (`s2c_npchurt`/life) mà không bảo đảm nạn nhân đã có NPC kẻ đánh.
+
+**Hướng (xếp theo hiệu quả/độ rẻ), chờ chủ chọn — mã máy chủ đang do phiên Tống Kim (wauto-c0/9b) giữ:**
+1. Nâng `MAX_BROADCAST_COUNT` 100 → 500 (bằng NormalSync) cho gói một lần; hoặc tốt hơn: `BroadCast` ưu tiên người trong 40 ô trước, người rìa sau. Đổi 1 hằng trong `KRegion.h` + rebuild CoreServer. Băng thông: gói chiêu ~30 B × 300 người, không đáng kể.
+2. `kNpcSyncChunkSize` 5 → thích nghi theo số NPC trong region (ví dụ max(5, N/8)) để mỗi NPC có vị trí ≤ 0,5 s.
+3. "Sync theo đòn đánh": khi NPC A gây sát thương cho người chơi P mà P chưa có A (máy chủ biết qua bảng đã sync), gửi ngay `SendSyncData(A→P)` — bảo đảm kẻ đánh luôn hiện.
+4. Client: đặt cặp rep3 (bảng 800 + 128 khe hỏi) — bỏ trần 256/19 như 2.0.
+5. Đo trước khi sửa: thêm đếm ở `KRegion::BroadCast` "số người bị bỏ vì hết ngân sách" theo loại gói (log máy chủ mỗi 10 s) và ở client đếm `s2c_skillcast` nhận được / NormalSync — một trận test là biết hướng 1 đúng bao nhiêu.
+
+**Bổ sung từ phiên wauto-75 (giựt lùi/S13), cùng gốc:** chủ báo *"bot TK chạy tới địch nhưng không đánh, lâu sau mới đánh vài cái"* — máy chủ ghi 585 bot chết/phút (bot vẫn đánh), tức lỗi hiển thị; client của chủ trong 2 phút với ~258 "người" quanh mình nhận 4.991 lệnh chạy từ 405 NPC nhưng chỉ 366 gói chiêu từ 95 NPC (181/phút, ~1–2 % lượng chiêu thật). Mã: `KRegion.cpp:1431` `nMaxCount--` nằm NGOÀI khối `if (kết nối && trong tầm && !sleep)` và `KRegion::AddPlayer` (1217) thêm cả bot vào `m_PlayerList` ⇒ 258 bot ăn sạch ngân sách 100 trước người thật. **wauto-75 nhận vá tối thiểu F4** (chỉ trừ ngân sách khi thật gửi; bot không có kết nối nên không ăn ngân sách nữa), build CoreServer từ origin/main mới nhất, đặt `CoreServer.dll.moi` và báo chủ. Hướng 1–3 còn lại vẫn chờ chủ.
+
+### 10.12 Thi công hướng 1 + 5 (chủ chọn 03/09 đêm) — `CoreServer.dll.moi` 486cb9aa
+
+Nhánh **`broadcast-0309`** (worktree `D:\GAMEDEVNEW_wt_bc`, gốc `origin/main e32e7be6` = MAIL D9 + TK đợt 5b + S13k), commit `15d099b3`, đã push. Bộ vá: `ReverseTools\goi_va_broadcast_0309.py` (chạy SAU `git apply` diff F4 của wauto-75). Chỉ đổi `KRegion.cpp` (hàm `BroadCast`) và `KRegion.h`; không đổi gói, không đổi client.
+
+| Phần | Nội dung | Của ai |
+|---|---|---|
+| F4 | `nMaxCount--` chỉ khi THẬT gửi (có kết nối, trong tầm, không ngủ) → bot (không kết nối) và người ngoài tầm không ăn ngân sách; duyệt VÒNG TRÒN tối đa N node để con trỏ xoay không bỏ sót người thật đứng trước nó; dòng `[BC-DEM] 10s: goi= gui= cat_vi_het_ngan_sach= node_duyet=` | wauto-75 (diff nguyên văn) |
+| Hướng 1 | `MAX_BROADCAST_COUNT` 100 → 500 cho gói một lần (phát chiêu `ProcessState`, `DoHurt`, `DoRun`, `SetCamp`/`SetCurrentCamp`/`RestoreCurrentCamp`); NormalSync vẫn 500 | wauto-ca |
+| Hướng 5 | `[BC-LOAI] 10s loai:goi/gui/cat: 94:a/b/c 85:… 76:…` — theo byte đầu gói (ProtocolType, `Headers\KProtocolDef.h`: 76 syncnpcmin, 84 npcwalk, 85 npcrun, 90 npchurt, 91 npcdeath, 92 chgcurcamp, 94 skillcast), tối đa 8 loại nhiều nhất + mọi loại có bị cắt; tự reset mỗi 10 s | wauto-ca |
+
+Ghi vào `bin\server\jx_auto_server.log` (config.ini `[AutoLog] On=1` đang bật). Chi phí: vài phép cộng mỗi lần phát; băng thông tăng theo số NGƯỜI THẬT nhận gói một lần (≈30 B/gói/người).
+
+**Swap (máy chủ):** tắt `GameServer.exe` → chạy `bin\server\ChayGameServer.bat` (tự đổi `CoreServer.dll.moi` → `CoreServer.dll`, bản cũ `.truoc`). Bản đang chạy trước đó: `bdd9bb46` (TK đợt 5+5b, đã có trên main). Quay lui: đổi lại `.truoc`.
+
+**Nghiệm thu:** vào Tống Kim đông, sau 1–2 phút xem `jx_auto_server.log`: `[BC-DEM]` có `cat_vi_het_ngan_sach=0`; `[BC-LOAI]` cột `gui` của loại 94/85/90 ≈ số người thật trong tầm × số gói; phía client (script của wauto-75) số gói chiêu nhận ≈ số lệnh chạy nhận theo NPC quanh mình (trước: 366 chiêu/95 NPC so với 4.991 chạy/405 NPC). Nếu `cat` vẫn > 0 nghĩa là > 500 người thật trong 9 vùng — khi đó mới cần ưu tiên theo khoảng cách.
+
+### 10.13 GỐC THẬT của "máy chủ báo not all data was written + Game.exe sập" (04/09 rạng sáng)
+
+Chủ nhắc: *"tìm nguyên nhân lỗi để fix chứ không fix đối phó"*. Dưới đây là chuỗi nhân quả đã lần tới tận mã, kèm số đo.
+
+**1. Cơ chế sập (mã, không phải phỏng đoán) — `Sources\MultiServer\Common\SocketServer.cpp`, biên vào `common.lib` → `heaven.dll` → `GameServer.exe`:**
+```
+CIOBuffer::SetupWrite()   m_wsabuf.len = m_used;  m_used = 0;      // len = số byte cần gửi
+enumIO_Write_Completed:   pBuffer->Use(dwIoSize);                   // used = số byte THẬT gửi được
+                          WriteCompleted(pSocket, pBuffer);         // used != len -> CHỈ printf
+                          pBuffer->Release();                       // phần CÒN LẠI BỊ VỨT
+```
+`WSASend` gửi thiếu (socket nghẽn) thì phần đuôi **không bao giờ được gửi lại**. Luồng TCP mất một khúc **giữa gói** ⇒ client đọc `WORD` độ dài rơi vào giữa dữ liệu ⇒ mọi ranh giới gói sau đó lệch ⇒ `KProtocolProcess` xử lý rác ⇒ `0xC0000005`. Dòng chữ chủ chụp được chính là lúc byte bị vứt. Đây là **lỗi có sẵn nhiều năm**, chỉ nổ khi đường truyền nghẽn.
+
+**2. Vì sao nghẽn (số đo `[BC-DEM]`/`[BC-LOAI]`, bản b đang chạy):** máy chủ gửi cho các client thật **trung bình 21.086 gói/giây, đỉnh 30.644 gói/giây** (≈ 1 MB/s), trong khi chỉ có 1–3 kết nối thật (netstat: GameServer 8 kết nối, phần lớn là tiến trình phụ). Thành phần: đồng bộ vị trí NPC (loại 77) ≈ 6.400/s, đồng bộ vị trí người chơi/bot (75) ≈ 6.300/s, lệnh chạy (86) ≈ 1.100–1.800/s, còn lại là đánh/trúng đòn/chiêu. Toàn máy chủ: 142.000 lượt `BroadCast`/giây, quét 11,5 triệu nút danh sách/giây.
+
+**3. Vì sao trước đây không nghẽn:** trần `MAX_BROADCAST_COUNT 100` **vô tình** là bộ hạn dòng — bot (không có kết nối) ăn hết suất nên client thật chỉ nhận ~44 gói/giây. Vá F4 (chỉ trừ suất khi thật gửi) sửa đúng chỗ sai nhưng **gỡ mất cái van tình cờ đó**, phơi ra thiết kế thật: mỗi thực thể một gói, phát cho mọi client trong 9 vùng, tới 18 lần/giây, không có hạn dòng theo client.
+
+**4. Hai lỗi độc lập phải sửa (không phải vá đối phó):**
+| # | Lỗi thật | Sửa đúng gốc |
+|---|---|---|
+| A | Tầng mạng máy chủ **vứt byte khi ghi thiếu** → hỏng luồng → client sập | Gửi lại phần còn thiếu (đẩy lại phần đuôi vào hàng đợi ghi) trong `SocketServer.cpp`; luồng không bao giờ hỏng dù tải nào |
+| B | Không có hạn dòng theo client; 21.000 gói/giây là quá sức mọi client | Ưu tiên theo loại: gói vị trí (75/77) được phép bỏ bớt vì lặp lại; gói chiêu/trúng đòn/chết không bao giờ bỏ. Kèm giảm nhịp đồng bộ theo khoảng cách |
+
+**5. Đã sửa đúng và đã bỏ cái sai:** trần 100 → 500 (hướng 1) là **sai mô hình** — số đo cho `cat_vi_het_ngan_sach = 0`, tức trần chưa từng cắt người thật; nâng nó chỉ gỡ thêm van. **Đã trả về 100** (commit `a144fa49`). Lọc tầm hai chiều `|dx|,|dy| ≤ 32` (commit `2703a52e`) giữ lại vì kiểm cũ `nDX <= 32` không lấy trị tuyệt đối là lỗi thật.
+
+**6. `CoreServer.dll.moi` = `014a2b98` (đang chờ, thay bản b `8634b9be` đang chạy):** trần về 100 + `[BC-NGUOI]` đo **theo từng người nhận** (số client, ai nhận nhiều nhất bao nhiêu gói/byte mỗi giây) + `[BC-TOP]` in 8 loại gói nhiều nhất theo lượt gửi (bản trước in nhầm 8 số hiệu nhỏ nhất nên giấu mất 87 đánh / 91 trúng đòn / 95 chiêu). Một lần khởi động lại máy chủ là đủ số liệu chốt cho fix B.
+
+**7. Nhật ký sập 04/09 xác nhận đúng chuỗi trên** (`jx_crash.log`):
+
+| Giờ | Mã lỗi | Nơi rơi | Đọc ra |
+|---|---|---|---|
+| 00:05:42 | `0xC0000374` HỎNG VÙNG NHỚ ĐỘNG | `RtlFreeHeap` | vùng nhớ đã bị ghi tràn từ trước |
+| 00:08:06 | `0xC0000005` GHI vào `0x01300000` | `strcat` ← `KProtocolProcess.cpp` (nhánh xử lý gói chat/extend) | chuỗi trong gói **không có ký tự kết thúc** nên `strcat` chạy quá biên |
+
+Ngăn xếp lần 00:08:06 từ khung [2] trở đi là rác (`?+0x3D08D82`, `0xC0CF8D82` lặp lại) ⇒ **ngăn xếp đã bị đè**. Đây đúng là dấu vết của việc đọc một luồng gói đã lệch: trường độ dài rơi vào giữa dữ liệu, chuỗi không kết thúc, `strcat` ghi tràn, hỏng cả ngăn xếp lẫn vùng nhớ động. Hai kiểu mã lỗi khác nhau (0xC0000005 và 0xC0000374) trong 3 phút là cùng một gốc.
+
+Kèm theo đó là chỗ đáng gia cố: client chép chuỗi từ gói mạng bằng `strcat`/`strcpy` mà **không chặn theo độ dài gói**. Sau khi sửa gốc A + B thì nên chặn biên các chỗ này để một gói hỏng không bao giờ đè được bộ nhớ.
+
+### 10.14 GỐC SẬP CLIENT: chép dữ liệu gói bằng độ dài lấy từ gói, không kiểm biên (04/09 00:3x)
+
+Ba lần sập gần nhất đều rơi vào hàm chép chuỗi, và thanh ghi khớp từng con số:
+
+| Giờ | Rơi tại | Thanh ghi | Đọc ra |
+|---|---|---|---|
+| 00:32:40 | `memcpy` ← `KPlayerChat::GetChat` (KPlayerChat.cpp:678) | ECX = 0x5080 = **20.608** | chép 20.608 byte vào `szBuf[256]` |
+| 00:21:13 | `memcpy` ← `KPlayerTeam::ReceiveInvite` (KPlayerTeam.cpp:112) | ECX = 0xDB84 = **56.196** | chép 56.196 byte vào `szName[32]` |
+| 00:08:06 | `strcat` ← nhánh chat/extend | ghi 0x01300000 | chuỗi không có ký tự kết thúc |
+
+**Mã sai:**
+```
+char szBuf[MAX_SENTENCE_LENGTH];                      // 256 byte trên ngăn xếp
+memcpy(szBuf, &pChat->m_szSentence[...], pChat->m_wSentenceLen);   // độ dài WORD LẤY TỪ GÓI, tới 65535
+szBuf[pChat->m_wSentenceLen] = 0;                     // ghi thêm một byte ngoài biên
+```
+`Param.szName[32]` và `Param.cChatPrefix[16]` cũng nhận `m_btNameLen` / `m_btChatPrefixLen` (byte, tới 255) mà không kiểm. Ở `ReceiveInvite` còn nặng hơn: `sizeof(TEAM_INVITE_ADD_SYNC) - pInvite->m_wLength - 1` **tràn ngược** khi `m_wLength` lớn, cho ra số byte khổng lồ.
+
+**Ý nghĩa:** chỉ cần **một** gói hỏng là bẹp ngăn xếp và sập, không cần đường truyền quá tải. Luồng lệch (máy chủ vứt byte khi ghi thiếu, mục 10.13) chỉ là nguồn cung cấp gói hỏng. Đây là lỗi thứ ba, độc lập, và là lý do client vẫn sập cả khi máy chủ đã nhẹ tải.
+
+**Đã vá** (`ReverseTools\goi_va_client_kiembien_0409.py`, nhánh `net-0309` commit `f698d749`, gốc `acchinh-0309 9bfe9780` = đúng nhánh của bộ đang chạy): kiểm biên trước khi chép; gói sai thì **bỏ gói** và ghi `[BIEN-XAU]` một lần mỗi giây vào `jx_auto.log`. Gói hợp lệ không đổi hành vi.
+
+**Tệp:** `bin\client\CoreClient.dll.moi` = **`a2280915`** (2.533.376) — đã kiểm có đủ `[AC]` (Ác chính của wauto-9b), `TKDich`, `NpcTheSame` như bản đang chạy `dff1bfc8`, cộng `BIEN-XAU`. Chủ chạy `ChoiGame.bat` là có; `Game.exe` và `WAuto.exe` giữ nguyên.
+
+**Còn lại chưa giải thích được:** khoá đồng bộ 5 NPC mỗi vùng mỗi nhịp giới hạn một client ở ~1.620 gói/giây, nhưng đo được 61.806 gói/giây (gấp 38 lần). Bản đo `[BC-TUVUNG]` (nhánh `broadcast-0309` `61e9c0c7`) đếm số **vùng khác nhau** gửi tới một client để chốt: đúng thiết kế phải ≤ 9.
+
+### 10.15 Chốt gốc bằng thực nghiệm, rồi sửa đúng chỗ (04/09 01:xx)
+
+**Thực nghiệm đã chốt:** lùi F4 (commit `489a3e18`, `CoreServer.dll` `da312a06`) là **hết sập**. Trước 486cb9aa không sập lần nào; đặt 486cb9aa vào là sập 8 lần trong 40 phút ở 5 hàm khác nhau; lùi ra là hết. Vậy chuỗi nhân quả đã được kiểm chứng chứ không còn là suy luận:
+
+```
+trần 100 người nhận tính cho CẢ BOT  →  bot ăn hết suất  →  client thật chỉ nhận ~44 gói/giây
+   ├─ hệ quả 1: KHÔNG THẤY ĐỊCH, KHÔNG THẤY CHIÊU (triệu chứng chủ báo từ đầu)
+   └─ F4 bỏ trần đó ra  →  client nhận 21.000–94.844 gói/giây  →  nghẽn socket
+         →  WSASend ghi thiếu  →  heaven.dll VỨT phần đuôi  →  luồng TCP lệch giữa gói
+         →  client đọc rác  →  sập ở bất kỳ hàm nào chạm dữ liệu đó
+```
+
+**Sửa đúng chỗ (không lùi, không đối phó) — `CoreServer.dll.moi` = `72348ac7`:**
+
+| Việc | Cách làm |
+|---|---|
+| Bot không ăn suất người thật | chỉ trừ ngân sách khi **thật sự gửi** (F4) |
+| Không để dội gói | **hạn mức theo từng client**: mỗi giây tối đa `[Server] BroadCastGoiToiDa` (mặc định 1500) gói **vị trí** |
+| Vẫn thấy chiêu và đòn đánh | hạn mức **chỉ** áp cho gói vị trí (75 người chơi, 77 NPC, 85 đi, 86 chạy). Gói chiến đấu **không bao giờ bị bỏ**: 76 đồng bộ đầy đủ, 84 gỡ NPC, 87 đánh, 88 phép, 91 trúng đòn, 92 chết, 93 đổi phe, 95 phát chiêu, 148 chiêu tức thì, 207 hiện sát thương |
+| Đo được | `[BC-DEM]` thêm `bo_vi_tri=` và `han_muc=` |
+
+Ước tính: client nhận tối đa ~1.500 gói vị trí/giây (trước: 44) cộng toàn bộ gói chiến đấu, băng thông ~150–250 KB/giây thay vì 9,6 MB/giây.
+
+**Sửa gốc làm hỏng luồng (tuỳ chọn, bước 2) — `heaven.dll.moi` = `a793834b`:** `SocketServer.cpp` khi `WSASend` ghi thiếu thì **gửi nốt phần còn lại** trên cùng hàng đợi (đúng thứ tự) thay vì vứt; không gửi nốt được thì đóng kết nối hẳn để client không bao giờ đọc rác. Chưa cần dùng ngay: hạn mức ở trên làm socket không còn nghẽn. Bản đang chạy `fa5f0012` (2.953.728) khác cỡ bản build mới (1.124.864) vì cấu hình biên dịch, cùng x64 và cùng một hàm xuất `CreateInterface`, nguồn không đổi từ ảnh chụp tháng 4. `ChayGameServer.bat` **không** tự đổi tệp này.
+
+**Cách chạy (04/09 01:2x, chủ yêu cầu làm luôn bước 2):** đã thêm một dòng `call :capnhat heaven.dll` vào `bin\server\ChayGameServer.bat` (bản gốc lưu `ChayGameServer.bat.truoc_0409`) nên **một lần tắt server + chạy bat là đổi cả hai tệp**: `CoreServer.dll` → `72348ac7` và `heaven.dll` → `a793834b` (bản cũ giữ `.truoc`). Kiểm bản mới trước khi nối vào: cùng x64, cùng một hàm xuất `CreateInterface`, **cùng đúng 5 thư viện phụ thuộc** (advapi32, kernel32, user32, version, ws2_32). Quay lui: đổi `heaven.dll.truoc` → `heaven.dll`. **Tôi không tự tắt GameServer** (luật của chủ).  Client giữ `16c0d5ca` (đã có kiểm biên). Nếu vẫn còn dòng "not all data was written" trong cửa sổ máy chủ thì mới làm bước 2:
+```
+ren heaven.dll heaven.dll.truoc
+ren heaven.dll.moi heaven.dll
+```
+Quay lui: đổi ngược hai tên đó.
+
+**Chỉnh tay nếu cần:** `bin\server\config.ini` mục `[Server]`, `BroadCastGoiToiDa=1500` (100–20000). Thấy địch chưa mượt thì nâng dần; thấy máy chủ in cảnh báo ghi thiếu thì hạ.
+
+## 10.16 Cắt băng thông tận gốc: không gửi lại gói ngoại hình khi không có gì đổi (04/09 01:5x)
+
+**Câu hỏi của chủ:** "còn cách nào tốt hơn không mà không bị giới hạn" (thay vì hạn mức `BroadCastGoiToiDa`).
+
+**Sự thật đo được.** Gói `s2c_syncplayermin` (loại 75) nặng **234 byte**, và nó **không chứa toạ độ** — toạ độ đi bằng gói NPC (loại 77, 99 byte). Nội dung 234 byte đó là:
+
+| Trường | Byte | Đổi khi chạy? |
+|---|---|---|
+| `GameTitle[64]` | 64 | không |
+| `TongName[32]` | 32 | không |
+| `TongTitle[32]` | 32 | không |
+| `MateName[32]` | 32 | không |
+| `bMeridianLevel[12]` | 12 | không |
+| trang bị, ngựa, cấp bậc, danh vọng, phúc duyên, trùng sinh, tốc độ… | ~55 | không |
+
+Nhật ký thật lúc 01:55 (1 client, tên CaiBang), ba cửa sổ 10 giây liên tiếp:
+
+| Cửa sổ | Tổng | Loại 75 (ngoại hình) | Tỉ lệ |
+|---|---|---|---|
+| 1 | 1.258 KB/10s (122 KB/s) | 783 KB | 62% |
+| 2 | 1.007 KB/10s (98 KB/s) | 666 KB | 66% |
+| 3 | 1.280 KB/10s (125 KB/s) | 755 KB | 59% |
+
+Tức **máy chủ gửi đi gửi lại tên bang, tên bạn đời, danh hiệu ~1,5 lần/giây cho mỗi người trong tầm nhìn**, chiếm ~62% toàn bộ băng thông.
+
+**Vá (commit `43e15ae6`, nhánh `broadcast-0309`; tích hợp `9bf29ea5` nhánh `int-0409`).** Chỉ phía máy chủ, **không đổi cấu trúc gói, client không cần đổi**:
+- `PS_Bam` (FNV-1a) băm nội dung gói trong `KNpc::NormalSync`. Giống hệt lần trước **và** chưa tới kỳ làm mới thì **không phát**.
+- Kỳ làm mới `[Server] BroadCastLamMoi` giây (mặc định 5, kẹp 1..60) — lưới an toàn.
+- `KNpc::SendSyncData` (một client vừa hỏi riêng NPC này = họ vừa nhìn thấy mình) **xoá dấu vết** ⇒ lần sync kế tiếp phát lại ngay, người mới thấy không bị thiếu trang bị. Quan trọng vì `NPC_SYNC` (gói đầy đủ) **không mang ngoại hình**.
+- `[PS-BO]` ghi `gui= bo= (%% bo)` mỗi 10 giây.
+- Hai mảng `s_adwPSBam[98000]`, `s_adwPSLuc[98000]` = 784 KB tĩnh, nằm trong `#ifdef _SERVER`.
+
+**Bản chờ swap (01:58):** `CoreServer.dll.moi` = **dd5057d6** (18.328.064) do wauto-e7 build lại từ `mail-0309` đã gộp `43e15ae6` + lọc bot khi phát lương bang (`KTongJX2.cpp`). Đã kiểm nhị phân: có đủ `BroadCastLamMoi`, `[PS-BO]`, `goi ngoai hinh`, `BroadCastGoiToiDa`, `BC-TUVUNG`, `auction_item`, `bangluong`. Bản 15fb8c21 của tôi và 3bda2f1a cũ đều bị thay, không mất gì. Chủ chạy `ChayGameServer.bat` để đổi (bat đã đổi cả `heaven.dll`).
+
+**Dự kiến:** loại 75 giảm ~86–93% ⇒ tổng còn ~55–68 KB/s thay vì 98–125 KB/s. Đo lại bằng chính `[BC-NGUOI]` + `[BC-TOP]` + `[PS-BO]`.
+
+**Ba cách còn lại (chưa làm):** (a) gói vị trí NPC 99 byte cũng mang máu tối đa/nội lực tối đa/4 tốc độ/nhóm nhiệm vụ mỗi nhịp — tách còn ~25 byte, nhưng **phải đổi cả hai đầu**; (b) không đồng bộ người đứng yên; (c) thưa dần theo khoảng cách.
+

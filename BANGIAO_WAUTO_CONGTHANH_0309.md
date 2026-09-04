@@ -17,9 +17,9 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `dff1bfc8` | `2.532.864` | **AC CHÍNH đợt 1 (22:53 03/09, nhánh `acchinh-0309` 9bfe9780 = rep3-0309 20bfcdf5 + Ac chính, chưa gộp main — xem `BANGIAO_WAUTO_ACCHINH_0309.md` trong nhánh)** — tập cha của `9e7a516d` (TK đợt 5b, **đang chạy** từ 21:49), của 3d706aa2 (REP3 wauto-ca) và mọi bản trước; chuỗi "[Công Thành]" = 1, "[AC]" = 4. **Swap CÙNG Game.exe.moi + WAuto.exe.moi** (autoData +3 REP3 +14 AC ở cuối). |
-| `Game.exe.moi` | `aed2d11d` | `1.401.856` | **AC CHÍNH đợt 1** (S3Client cổng `nAC` + hiển thị REP3) — tập cha của `eb8c65dc` **đang chạy** (22:20) và `714e71d3` (REP3 wauto-ca); cổng CT "[HD-GATE] nCT=" = 1, UiMail = 6. |
-| `WAuto.exe.moi` | `72862beb` | `420.864` | **AC CHÍNH đợt 1**: tab thứ 16 "Ac chính" (nhóm Điều khiển) + chuột phải "Đặt làm ac chính…" + 2 ô hiển thị REP3 — tập cha của `a6d74466` **đang chạy** (22:27). `ChoiGame.bat` không đổi WAuto.exe.moi → đổi tay. |
+| `CoreClient.dll.moi` | `679c54dd` | `2.540.544` | **ĐẤU GIÁ (wauto-e7, 04/09 sáng)** build trên cây gộp `origin/net-0309` b0a05751 (= `acchinh-0309` 9bfe9780 Ac chính + 3 vá kiểm biên mạng của wauto-ca) — tập cha của `dff1bfc8` (Ac chính, **đang chạy** từ ~23:00 03/09); chuỗi "[Công Thành]" = 1, "[AC]" = 4. Swap cùng `Game.exe.moi`; WAuto.exe 72862beb đang chạy giữ nguyên. |
+| `Game.exe.moi` | `5e959abe` | `1.435.136` | **ĐẤU GIÁ (wauto-e7)**: cửa sổ đấu giá; vẫn có cổng `nAC` + cổng CT ("[HD-GATE] nCT=" = 1) — tập cha của `aed2d11d` **đang chạy**. |
+| `WAuto.exe` | `72862beb` | `420.864` | **ĐANG CHẠY** (Ac chính đợt 1, chủ swap ~23:00 03/09) — hiện không có WAuto.exe.moi chờ. |
 | `CoreServer.dll` (**bin\server**) | `bad8e293` | `18.298.368` | **ĐANG CHẠY** (S13i/j, chủ swap ~16:47) — hiện KHÔNG có `CoreServer.dll.moi` chờ. D4b chỉ đổi script máy chủ (`mailmanager.lua`, `dichquan.lua`, `lenhbaiadmin.lua`, `playerlogin.lua`: nạp lại bằng RLS — xem `BANGIAO_HETHU_0309.md` mục 5b). |
 
 ### Checklist swap (4 `.moi` cùng lúc — S13 hai bên phải cùng lên)
@@ -30,7 +30,7 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 4. `ChoiGame.bat` **KHÔNG** đổi `WAuto.exe.moi`: đổi tay `WAuto.exe` cũ → `.truoc`, rồi `WAuto.exe.moi` → `WAuto.exe`.
 5. Mở WAuto → nhóm **Sự kiện** → phải thấy tab **"Công Thành"** (tab thứ 3 của nhóm). Không thấy = bước 4 chưa xong.
 6. Cấu hình cũ `APdata\<ID>.dat` **vẫn dùng được** — `LoadRoleData` di trú theo `offsetof(autoData, bCongThanh)`, tính năng mặc định **TẮT**.
-7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `dff1bfc8…`, `Game.exe` = `aed2d11d…`, `WAuto.exe` = `72862beb…` (CoreServer theo bảng đợt 5b: `bdd9bb46` chờ, `b68899b2` đang chạy) (đợt 5+5b đêm 04/09, đi cùng `CoreServer.dll` = `bdd9bb46…`; `59f90510` đợt 3 đang chạy từ 20:51, `CoreServer.dll` đang chạy = `b68899b2…`), `Game.exe` = `71dae629…` (đang chạy, MAIL D7), `CoreServer.dll` = `b68899b2…` (đang chạy, S13k).
+7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `679c54dd…`, `Game.exe` = `5e959abe…`, `WAuto.exe` = `72862beb…` (đang chạy); server theo bàn giao thư/đấu giá của wauto-e7 (`CoreServer.dll.moi 3bda2f1a`).
 
 Build lại (đúng thứ tự, **tắt post-build** để không đè `bin\client` đang chạy):
 ```
