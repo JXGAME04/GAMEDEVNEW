@@ -155,9 +155,12 @@ void Auc_FillChatItemInfo(ChatItem* pItem, const char* szInfo)
 {
 	if (!pItem || !szInfo || !szInfo[0])
 		return;
+	// [A25] them 16 truong sau hat giong: ban goc, do ben, he so toi da, dau tim, khoa,
+	// gio mo khoa, 4 o phi phong, 6 o van cuong, 6 hat giong van cuong.
+	const int nSeed = 9 + MAX_ITEM_MAGICLEVEL;	// vi tri hat giong ngau nhien
 	const char* p = szInfo;
 	int nIdx = 0;
-	while (*p && nIdx < 9 + MAX_ITEM_MAGICLEVEL + 1)
+	while (*p && nIdx < nSeed + 1 + 16)
 	{
 		long nVal = strtol(p, NULL, 10);
 		switch (nIdx)
@@ -172,10 +175,28 @@ void Auc_FillChatItemInfo(ChatItem* pItem, const char* szInfo)
 		case 7: pItem->m_nGoldId = (short)nVal; break;
 		case 8: pItem->m_bEnChance = (BYTE)nVal; break;
 		default:
-			if (nIdx < 9 + MAX_ITEM_MAGICLEVEL)
+			if (nIdx < nSeed)
 				pItem->m_btMagicLevel[nIdx - 9] = (short)nVal;
-			else
+			else if (nIdx == nSeed)
 				pItem->m_dwRandomSeed = (DWORD)strtoul(p, NULL, 10);
+			else if (nIdx == nSeed + 1)
+				pItem->m_wVersion = (WORD)nVal;
+			else if (nIdx == nSeed + 2)
+				pItem->m_nDurability = (int)nVal;	// [A25] 0 = do hong -> ten hien mau do
+			else if (nIdx == nSeed + 3)
+				pItem->m_nMaxOptMultiply = (int)nVal;
+			else if (nIdx == nSeed + 4)
+				pItem->m_bPoint = (BYTE)nVal;
+			else if (nIdx == nSeed + 5)
+				pItem->m_Lock = (int)nVal;
+			else if (nIdx == nSeed + 6)
+				pItem->m_HLock = (int)nVal;
+			else if (nIdx <= nSeed + 10)
+				pItem->m_nPfPack[nIdx - nSeed - 7] = (int)nVal;	// phi phong da ep
+			else if (nIdx <= nSeed + 16)
+				pItem->m_nFusionP[nIdx - nSeed - 11] = (int)nVal;	// van cuong: 6 o
+			else
+				pItem->m_uFusionSeed[nIdx - nSeed - 17] = (unsigned)strtoul(p, NULL, 10);
 			break;
 		}
 		nIdx++;

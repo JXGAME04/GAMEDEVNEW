@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""[DAUGIA 04/09 A6, A20] Them cac muc vao UiGiveItem.ini (A20: HAI hang gia - mua ngay + co ban;
+"""[DAUGIA 04/09 A6, A20, A23] Them cac muc vao UiGiveItem.ini (A20: HAI hang gia - mua ngay + co ban;
 ba muc AucBase* do p48_ini_2gia.py them, xem chu thich trong tep do)
 Truoc day:  Them 3 muc vao UiGiveItem.ini (hop dua vat pham) cho che do KY GUI:
 o nhan "Gia ban", o nhap gia, nut doi loai tien. Chi hien khi KUiAffairItem::SetAuctionMode(1).
@@ -28,7 +28,7 @@ BLOCK = E.join([
     "; khi KUiAffairItem::SetAuctionMode(1); hop giao nop khac khong dung toi.",
     "[AucPriceLabel]",
     "Left=16",
-    "Top=118",	# [A20] hang 1 = gia mua ngay
+    "Top=124",	# [A20/A23] hang 1 = gia mua ngay
     "Width=56",
     "Height=16",
     "Font=12",
@@ -39,7 +39,7 @@ BLOCK = E.join([
     "",
     "[AucPriceEdit]",
     "Left=74",
-    "Top=117",
+    "Top=123",
     "Width=82",
     "Height=16",
     "MultiLine=0",
@@ -54,8 +54,8 @@ BLOCK = E.join([
     "",
     "[AucCurBtn]",
     "Left=16",
-    "Top=158",
-    "Width=90",
+    "Top=168",	# [A23] duoi hai hang gia, tren o vat pham (191)
+    "Width=67",
     "Height=19",
     "Font=12",
     "HAlign=1",
@@ -70,7 +70,7 @@ BLOCK = E.join([
     "OverFrame=2",
     "Trans=0",
     "Image=" + BS + "spr" + BS + "Ui4" + BS + "common" + BS + unicode_to_tcvn3_bytes("").decode("latin-1") + "\xd0\xa1\xb0\xb4\xc5\xa5\xcb\xc4\xd7\xd6.spr",
-    "Label=" + V("Ngân lượng"),
+    "Label=" + V("Lượng"),	# [A23] nhan phai vua ANH cua nut (sprite 4 chu), khong noi Width duoc
     "",
 ])
 

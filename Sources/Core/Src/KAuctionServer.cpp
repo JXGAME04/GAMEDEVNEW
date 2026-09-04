@@ -392,7 +392,7 @@ int LuaAUC_RecDesc(Lua_State* L)
 		return 2;
 	}
 	int nDet = (rec.nNature >= NATURE_GOLD) ? rec.nRow : rec.nDetail;
-	char szInfo[256];
+	char szInfo[512];	// [A25] ~46 so
 	int nLen = _snprintf(szInfo, sizeof(szInfo) - 1, "%d,%d,%d,%d,%d,%d,%d,%d,%d",
 		rec.nGenre, nDet, rec.nParticular, rec.nLevel, rec.nSeries, rec.nLuck,
 		rec.nNature, rec.nGoldId, rec.nEnChance);
@@ -411,6 +411,50 @@ int LuaAUC_RecDesc(Lua_State* L)
 		int n = _snprintf(szInfo + nLen, sizeof(szInfo) - 1 - nLen, ",%u", (unsigned)rec.nRandSeed);
 		if (n > 0)
 		{
+			nLen += n;
+			szInfo[nLen] = 0;
+		}
+	}
+	// [A25 04/09] Chu bao ten trang bi hoa DO va thieu van cuong / phi phong.
+	// Ten do la vi DO BEN ve 0 (anh chup: "Do ben: 0 / 80") - mon dung lai bi coi la do hong.
+	// Gui not nhung truong ChatItem co cho chua; ban ghi trong kho da giu san tat ca.
+	{
+		int nAdd[6];
+		nAdd[0] = rec.nVersion;
+		nAdd[1] = rec.nDurability;
+		nAdd[2] = rec.nMaxOpt;
+		nAdd[3] = rec.nPoint;
+		nAdd[4] = rec.nLock;
+		nAdd[5] = rec.nHLock;
+		for (int k = 0; k < 6; k++)
+		{
+			int n = _snprintf(szInfo + nLen, sizeof(szInfo) - 1 - nLen, ",%d", nAdd[k]);
+			if (n <= 0)
+				break;
+			nLen += n;
+			szInfo[nLen] = 0;
+		}
+		for (int k2 = 0; k2 < 4; k2++)	// phi phong da ep
+		{
+			int n = _snprintf(szInfo + nLen, sizeof(szInfo) - 1 - nLen, ",%d", rec.nPf[k2]);
+			if (n <= 0)
+				break;
+			nLen += n;
+			szInfo[nLen] = 0;
+		}
+		for (int k3 = 0; k3 < 6; k3++)	// van cuong: 6 o
+		{
+			int n = _snprintf(szInfo + nLen, sizeof(szInfo) - 1 - nLen, ",%d", rec.nFusP[k3]);
+			if (n <= 0)
+				break;
+			nLen += n;
+			szInfo[nLen] = 0;
+		}
+		for (int k4 = 0; k4 < 6; k4++)	// van cuong: 6 hat giong
+		{
+			int n = _snprintf(szInfo + nLen, sizeof(szInfo) - 1 - nLen, ",%u", (unsigned)rec.nFusS[k4]);
+			if (n <= 0)
+				break;
 			nLen += n;
 			szInfo[nLen] = 0;
 		}
