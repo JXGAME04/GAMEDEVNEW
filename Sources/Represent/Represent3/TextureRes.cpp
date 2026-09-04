@@ -6,6 +6,42 @@
 #include <cstdint>
 #include <new>
 
+// [REP3 03/09] giai nen RLE spr -> A8R8G8B8: [n][alpha] roi n chi so palette neu alpha != 0 (alpha 0..255)
+static void RenderToA8R8G8B8(DWORD* pDest, BYTE* pSrc, int nSrcLen, int nTotal, KPAL24* pPal, int nColors)
+{
+	BYTE*  p    = pSrc;
+	BYTE*  pEnd = pSrc + nSrcLen;
+	DWORD* d    = pDest;
+	DWORD* dEnd = pDest + nTotal;
+	while (p + 2 <= pEnd && d < dEnd)
+	{
+		int n = *p++;
+		int a = *p++;
+		if (a == 0)
+		{
+			for (int k = 0; k < n && d < dEnd; k++)
+				*d++ = 0;
+		}
+		else
+		{
+			for (int k = 0; k < n && d < dEnd; k++)
+			{
+				if (p >= pEnd)
+				{
+					*d++ = 0;
+					continue;
+				}
+				int idx = *p++;
+				if (idx >= nColors)
+					idx = 0;
+				*d++ = ((DWORD)a << 24) | ((DWORD)pPal[idx].Red << 16) | ((DWORD)pPal[idx].Green << 8) | (DWORD)pPal[idx].Blue;
+			}
+		}
+	}
+	while (d < dEnd)
+		*d++ = 0;
+}
+
 inline void RenderToA4R4G4B4(WORD* pDest, BYTE* pSrc, int width, int height, BYTE* pPalette)
 {
 	__asm
@@ -534,9 +570,17 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 
 	SplitTexture(nFrame);
 
+	// [REP3 03/09] texture 8888 (dung mau palette 24 bit nhu Represent2) hoac 4444 nhu cu
+	int nBpp = g_nRep3Tex32 ? 4 : 2;
+	D3DFORMAT eFmt = g_nRep3Tex32 ? D3DFMT_A8R8G8B8 : D3DFMT_A4R4G4B4;
+	int nW = m_pFrameInfo[nFrame].nWidth;
+	int nH = m_pFrameInfo[nFrame].nHeight;
+	if (nW <= 0 || nH <= 0)
+		return;
+
 	BYTE *pTempData = NULL;
 	try {
-		pTempData = new BYTE[m_pFrameInfo[nFrame].nWidth * m_pFrameInfo[nFrame].nHeight * 2];
+		pTempData = new BYTE[nW * nH * nBpp];
 	}
 	catch (const std::bad_alloc&) {
 		return;
@@ -544,74 +588,33 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 	if(!pTempData)
 		return;
 
-	RenderToA4R4G4B4((WORD*)pTempData, m_pFrameInfo[nFrame].pRawData, m_pFrameInfo[nFrame].nWidth,
-						m_pFrameInfo[nFrame].nHeight, (BYTE*)m_pPal16);
+	if (g_nRep3Tex32)
+		RenderToA8R8G8B8((DWORD*)pTempData, m_pFrameInfo[nFrame].pRawData, m_pFrameInfo[nFrame].nRawDataLen,
+						nW * nH, m_pPal24, (int)m_nColors);
+	else
+		RenderToA4R4G4B4((WORD*)pTempData, m_pFrameInfo[nFrame].pRawData, nW, nH, (BYTE*)m_pPal16);
 
-/*
-	// 填充贴图数据
-	uint32 nByteCount = 0;							// 总字节计数
-	uint32 nWidth = m_pFrameInfo[nFrame].nWidth;
-	uint32 nHeight = m_pFrameInfo[nFrame].nHeight;
-	uint32 nFrameLen = m_pFrameInfo[nFrame].nRawDataLen;
-	BYTE *pData = m_pFrameInfo[nFrame].pRawData;
-	BYTE pixelNum, alpha, pixelColor;
-	BYTE *pTexLine = pTempData;						// 贴图每一行数据
-	for(;;)
-	{
-		pixelNum = *pData++;
-		alpha = *pData++;
-		nByteCount += 2;
-
-		if(alpha == 0)
-		{
-			for(int l=0; l<pixelNum; l++)
-			{
-				*((WORD*)pTexLine) = 0;
-				pTexLine += 2;
-			}
-		}
-		else
-		{
-			for(int l=0; l<pixelNum; l++)
-			{
-				pixelColor = *pData++;
-			//	*((WORD*)pTexLine) = ARGBTO4444(alpha, m_pPal24[pixelColor].Red, m_pPal24[pixelColor].Green, m_pPal24[pixelColor].Blue);
-				*((WORD*)pTexLine) = ((((WORD)alpha)<<8)&0xf000) | m_pPal16[pixelColor];
-				pTexLine += 2;
-			}
-			nByteCount += pixelNum;
-		}
-
-		// 如果一帧数据解完则停止
-		assert(nByteCount <= nFrameLen);
-		if(nByteCount >= nFrameLen)
-			break;
-	}
-*/
-	// 创建并填充贴图
 	for(i=0; i<m_pFrameInfo[nFrame].nTexNum; i++)
 	{
-		m_nTexMemUsed += m_pFrameInfo[nFrame].texInfo[i].nWidth * m_pFrameInfo[nFrame].texInfo[i].nHeight * 2;
+		m_nTexMemUsed += m_pFrameInfo[nFrame].texInfo[i].nWidth * m_pFrameInfo[nFrame].texInfo[i].nHeight * nBpp;
 
-		// 创建贴图
 		SAFE_RELEASE(m_pFrameInfo[nFrame].texInfo[i].pTexture);
 		if (FAILED(PD3DDEVICE->CreateTexture(m_pFrameInfo[nFrame].texInfo[i].nWidth, m_pFrameInfo[nFrame].texInfo[i].nHeight, 1,
-								0, D3DFMT_A4R4G4B4, D3DPOOL_MANAGED, &m_pFrameInfo[nFrame].texInfo[i].pTexture, NULL)))
+								0, eFmt, D3DPOOL_MANAGED, &m_pFrameInfo[nFrame].texInfo[i].pTexture, NULL)))
 			goto error;
 
 		D3DLOCKED_RECT LockedRect;
 		if (FAILED(m_pFrameInfo[nFrame].texInfo[i].pTexture->LockRect(0, &LockedRect, NULL, 0)))
 			goto error;
 
-		// 向贴图拷贝数据
-		BYTE *pTexData = (BYTE*)LockedRect.pBits;		// 贴图数据
-		BYTE *pTp = pTempData + (m_pFrameInfo[nFrame].texInfo[i].nFrameY * m_pFrameInfo[nFrame].nWidth + 
-					m_pFrameInfo[nFrame].texInfo[i].nFrameX) * 2;
+		BYTE *pTexData = (BYTE*)LockedRect.pBits;
+		BYTE *pTp = pTempData + (m_pFrameInfo[nFrame].texInfo[i].nFrameY * nW +
+					m_pFrameInfo[nFrame].texInfo[i].nFrameX) * nBpp;
 		for(j=0; j<m_pFrameInfo[nFrame].texInfo[i].nFrameHeight; j++)
 		{
-			memcpy(pTexData, pTp, m_pFrameInfo[nFrame].texInfo[i].nFrameWidth * 2);
+			memcpy(pTexData, pTp, m_pFrameInfo[nFrame].texInfo[i].nFrameWidth * nBpp);
 			pTexData += LockedRect.Pitch;
-			pTp += m_pFrameInfo[nFrame].nWidth * 2;
+			pTp += nW * nBpp;
 		}
 
 		m_pFrameInfo[nFrame].texInfo[i].pTexture->UnlockRect(0);
@@ -1131,7 +1134,7 @@ bool TextureResSpr::ReleaseAFrameData()
 			{
 				for(int j=0; j<4; j++)
 				{
-					m_nTexMemUsed -= m_pFrameInfo[i].texInfo[j].nWidth * m_pFrameInfo[i].texInfo[j].nHeight * 2;
+					m_nTexMemUsed -= m_pFrameInfo[i].texInfo[j].nWidth * m_pFrameInfo[i].texInfo[j].nHeight * (g_nRep3Tex32 ? 4 : 2);	// [REP3 03/09]
 					SAFE_RELEASE(m_pFrameInfo[i].texInfo[j].pTexture);
 				}
 				return true;
@@ -1146,6 +1149,18 @@ int TextureResSpr::SplitTexture(uint32 nFrame)
 {
 	int nWidth = m_pFrameInfo[nFrame].nWidth;
 	int nHeight = m_pFrameInfo[nFrame].nHeight;
+	// [REP3 03/09] card ho tro NPOT (da thu tao 33x17 luc tao thiet bi): 1 texture dung co khung, khong cat 1/2/4 (theo 2.0)
+	if (g_bNpotOK && g_nRep3Npot && nWidth > 0 && nHeight > 0 && nWidth <= g_nMaxTexW && nHeight <= g_nMaxTexH)
+	{
+		m_pFrameInfo[nFrame].nTexNum = 1;
+		m_pFrameInfo[nFrame].texInfo[0].nWidth = nWidth;
+		m_pFrameInfo[nFrame].texInfo[0].nHeight = nHeight;
+		m_pFrameInfo[nFrame].texInfo[0].nFrameX = 0;
+		m_pFrameInfo[nFrame].texInfo[0].nFrameY = 0;
+		m_pFrameInfo[nFrame].texInfo[0].nFrameWidth = nWidth;
+		m_pFrameInfo[nFrame].texInfo[0].nFrameHeight = nHeight;
+		return nWidth * nHeight * (g_nRep3Tex32 ? 4 : 2);
+	}
 	// 计算原始贴图尺寸
 	int nTexWidth = FitTextureSize(nWidth);
 	int nTexHeight = FitTextureSize(nHeight);

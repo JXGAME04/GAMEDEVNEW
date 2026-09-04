@@ -42,6 +42,8 @@ public:
 
 	//## 检查图资源存储量的平衡状况。
     void CheckBalance();
+    // [REP3 03/09] goi cuoi moi khung ve (khi fps trung binh >= 25): bo toi da 1 tai nguyen/khung texture nghi > 10 s
+    void CheckBalanceFrame();
 
 	//## 设置图形动态加载平衡参数。
     void SetBalanceParam(

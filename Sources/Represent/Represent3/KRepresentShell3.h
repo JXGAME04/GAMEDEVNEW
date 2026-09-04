@@ -443,6 +443,9 @@ private:
     TextureResMgr m_TextureResMgr;		// 贴图资源管理器
     //## 字体对象的集合。
     KRSFontItem m_FontTable[RS2_MAX_FONT_ITEM_NUM];
+    int   m_nBlendMode;                 // [REP3 03/09] 0 = binh thuong, 1 = alpha test (OPACITY), 2 = screen (spr moi)
+    DWORD m_dwLastPresent;              // [REP3 03/09] moc Present truoc, tinh fps trung binh
+    float m_fFpsAvg;                    // [REP3 03/09] fps trung binh (EMA ~100 khung) - cong don cache cuoi khung
     bool m_bDeviceLost;					// 渲染设备是否丢失的标志
 
     int m_nLeft;
@@ -522,7 +525,13 @@ private:
     void DrawBitmap16(int32 nX, int32 nY, int32 nWidth, int32 nHeight, TextureResBmp* pBitmap, bool bStretch = false);
     void DrawSpriteAlpha(int32 nX, int32 nY, int32 nWidth, int32 nHeight, int32 nFrame,
         TextureResSpr* pSprite, DWORD color, int32 nRenderStyle);
-    void DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int32 nHeight, int32 nFrame, TextureResSpr* pSprite, RECT& rect);
+    void DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int32 nHeight, int32 nFrame, TextureResSpr* pSprite, RECT& rect,
+        DWORD color = 0xffffffff, int32 nRenderStyle = 0);
+    // [REP3 03/09] ve tung sprite theo dung ngu nghia Represent2 (khong ghep texture, khong anh sang)
+    void DrawImage2DFlat(int nPrimitiveCount, KRepresentUnit* pPrimitives, int bSinglePlaneCoord, int bClipRect);
+    // [REP3 03/09] dat/khoi phuc trang thai tron mau theo kieu ve (ALPHA/OPACITY/COLOR_ADJUST/spr moi = SCREEN)
+    void SetSpriteBlend(int nRenderStyle, DWORD color, bool bNew, DWORD& vtxColor);
+    void ResetSpriteBlend();
     void DrawBitmap16Part(int32 nX, int32 nY, int32 nWidth, int32 nHeight, TextureResBmp* pBitmap, RECT& rect);
 
     void DrawBitmap163D(RenderParam3D& param, TextureResBmp* pBitmap);

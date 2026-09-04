@@ -14,23 +14,20 @@ TextureResMgr::TextureResMgr()
     m_nMaxReleaseCount = 0;
 	
 	// 根据物理内存大小决定资源缓冲区的大小
-	MEMORYSTATUS stat;
-	GlobalMemoryStatus (&stat);
-	if(stat.dwTotalPhys <= 134217728)
-    {
-		m_nBalanceNum = ISBP_BALANCE_NUM_DEF128;
-        m_nMaxReleaseCount = 16;
-    }
-	else if(stat.dwTotalPhys <= 134217728 * 2)
-    {
-		m_nBalanceNum = ISBP_BALANCE_NUM_DEF256;
-        m_nMaxReleaseCount = 32;
-    }
-	else
-    {
-		m_nBalanceNum = ISBP_BALANCE_NUM_DEF512;
-        m_nMaxReleaseCount = 64;
-    }
+	// [REP3 03/09] ngan sach cache texture theo RAM (2.0: 30/50/80/120 MB); may 4 GB+ cho rong hon vi texture 8888
+	MEMORYSTATUSEX stat;
+	stat.dwLength = sizeof(stat);
+	GlobalMemoryStatusEx(&stat);
+	unsigned __int64 uPhysMB = stat.ullTotalPhys / (1024 * 1024);
+	unsigned __int64 uBudgetMB = uPhysMB / 16;
+	if (uBudgetMB < 30)  uBudgetMB = 30;
+	if (uBudgetMB > 480) uBudgetMB = 480;
+	if (g_nRep3CacheMB > 0)
+		uBudgetMB = (unsigned __int64)g_nRep3CacheMB;
+	m_nBalanceNum = (int32)(uBudgetMB * 1024 * 1024);
+	m_nMaxReleaseCount = 64;
+	m_uCheckPoint = 25;
+	Rep3Log("[REP3] cache texture: RAM %I64u MB -> ngan sach %I64u MB", uPhysMB, uBudgetMB);
 }
 
 TextureResMgr::~TextureResMgr()
@@ -46,90 +43,40 @@ void TextureResMgr::SetBalanceParam(int32 nNumImage, uint32 uCheckPoint)
 
 void TextureResMgr::CheckBalance()
 {
-	static DWORD dwFID=10, dwSum=0;
-	static DWORD nNum = 0;
-
+	// [REP3 03/09] theo represent3free.dll 2.0 (0x10024F80): duyet tu cuoi, bo qua tai nguyen vua ve khung truoc,
+	// chi xet tai nguyen nghi > 10 s; moi luot BO DUNG MOT KHUNG texture (ReleaseAFrameData) - het khung
+	// moi xoa ca tai nguyen. Khong con cu xoa hang loat 16/32/64 cai gay khung.
     KAutoCriticalSection AutoLock(m_ImageProcessLock);
 
-	//int i;
-	uint32 nUnUseTime, nMaxUnUseTime = 1000;
-	int32 nNodeSelected = -1;
-
-    vector<ResNode>::iterator iBegin, iEnd;
-    vector<ResNode>::iterator iNewBegin;
-    
-
 	uint32 nTickCount = GetTickCount();
+	for (int i = (int)m_TextureResList.size() - 1; i >= 0; i--)
+	{
+		ResNode& node = m_TextureResList[i];
+		if (!node.m_bCacheable || !node.m_pTextureRes)
+			continue;
+		if (node.m_pTextureRes->m_bLastFrameUsed)
+			continue;
+		if ((nTickCount - node.m_nLastUsedTime) <= 10000)
+			continue;
+		m_nReleaseCount++;
+		if (node.m_pTextureRes->ReleaseAFrameData())
+			return;
+		if (m_uTexCacheMemUsed >= node.m_pTextureRes->m_nTexMemUsed)
+			m_uTexCacheMemUsed -= node.m_pTextureRes->m_nTexMemUsed;
+		node.m_pTextureRes->Release();
+		SAFE_DELETE(node.m_pTextureRes);
+		m_TextureResList.erase(m_TextureResList.begin() + i);
+		return;
+	}
+}
 
-    int nCurrentReleaseCount = 0;
-    
-    iEnd = m_TextureResList.end(); 
-    iNewBegin = m_TextureResList.begin();
-    for (iBegin = m_TextureResList.begin(); iBegin != iEnd; ++iBegin)
-    {
-        nUnUseTime = nTickCount - (iBegin->m_nLastUsedTime);
-        if (
-            (!iBegin->m_bCacheable) ||
-            (
-                (iBegin->m_pTextureRes) &&
-                (iBegin->m_pTextureRes->m_bLastFrameUsed)
-            ) ||
-            (nUnUseTime <= 1000 * 24) ||
-            (nCurrentReleaseCount >= m_nMaxReleaseCount)
-        )
-        {
-            *iNewBegin++ = *iBegin;
-
-            continue;
-        }
-
-        nCurrentReleaseCount++;
-		
-        // if (nUnUseTime > 1000 * 8) // if > 8 s
-        m_nReleaseCount++;
-		if(iBegin->m_pTextureRes)
-		{
-            m_uTexCacheMemUsed -= iBegin->m_pTextureRes->m_nTexMemUsed;
-            iBegin->m_pTextureRes->Release();
-			SAFE_DELETE(iBegin->m_pTextureRes);
-		}
-    }
-    
-    if (iNewBegin != iEnd)
-        m_TextureResList.erase(iNewBegin, iEnd);
-
-
-
-//	// 选择最长时间没有使用的资源，并释放
-//	m_tmLastCheckBalance = timeGetTime();
-//	for (i = m_TextureResList.size() -1; i >= 0; i--)
-//	{
-//		if(!m_TextureResList[i].m_bCacheable)
-//			continue;
-//
-//		nUnUseTime = nTickCount - m_TextureResList[i].m_nLastUsedTime;
-//		bool b = false;
-//		if(m_TextureResList[i].m_pTextureRes)
-//			b = m_TextureResList[i].m_pTextureRes->m_bLastFrameUsed;
-//		if(!b && nUnUseTime > nMaxUnUseTime )
-//		{
-//			nMaxUnUseTime = nUnUseTime;
-//			nNodeSelected = i;
-//		}
-//	}
-//
-//	if (nNodeSelected >= 0)
-//	{
-//		m_nReleaseCount++;
-//		if(m_TextureResList[nNodeSelected].m_pTextureRes)
-//		{
-//            m_TextureResList[nNodeSelected].m_pTextureRes->Release();
-//			SAFE_DELETE(m_TextureResList[nNodeSelected].m_pTextureRes);
-//			m_TextureResList.erase(m_TextureResList.begin() + nNodeSelected);
-//		}
-//		else
-//			m_TextureResList.erase(m_TextureResList.begin() + nNodeSelected);
-//	}
+void TextureResMgr::CheckBalanceFrame()
+{
+	DWORD tmCur = timeGetTime();
+	if ((tmCur - m_tmLastCheckBalance) <= m_uCheckPoint)
+		return;
+	m_tmLastCheckBalance = tmCur;
+	CheckBalance();
 }
 
 uint32 TextureResMgr::CreateImage(const char* pszName, int32 nWidth, int32 nHeight, int32 nType)
