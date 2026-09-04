@@ -488,7 +488,23 @@ using namespace std;
 #define IDC_EDITOR_15_SB	625
 #define IDC_STRING_15_CAP	626
 #define IDC_COMBO_15_CAP	627
-#define IDC_INDEX_END			640
+// == tab 0 Co ban, khoi HIEN THI khi dong nguoi (03/09/2026): ShowTab tab 0 hien them dai 628..631 ==
+#define IDC_SEP_0C			628
+#define IDC_CHECKBOX_0_NTS	629
+#define IDC_CHECKBOX_0_MIS	630
+#define IDC_EDITOR_0_MIS	631
+// == tab 15 "Ac chinh" (03/09/2026): dai 632..641 lien mach, ShowTab hien ca dai ==
+#define IDC_GRP_TAB15		632
+#define IDC_STRING_16_AC	633
+#define IDC_COMBO_16_AC		634
+#define IDC_CHECKBOX_16_TIM	635
+#define IDC_STRING_16_KC	636
+#define IDC_EDITOR_16_KC	637
+#define IDC_CHECKBOX_16_THANH	638
+#define IDC_CHECKBOX_16_MT	639
+#define IDC_SEP_15A			640
+#define IDC_STRING_16_TT	641
+#define IDC_INDEX_END			700
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	700
 #define IDD_NOPICK_DIALOG		701
@@ -507,6 +523,7 @@ using namespace std;
 #define IDC_STRING_HD_V		713
 #define IDC_TABBTN_12		714
 #define IDC_TABBTN_13		715
+#define IDM_ACCHINH_ALL		716	// (03/09) menu chuot phai danh sach nhan vat
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

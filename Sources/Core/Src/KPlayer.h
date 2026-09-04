@@ -336,6 +336,14 @@ struct ExtAuto
 	int  nCTMua;         // (r3) 1 = da mua thuoc o Tuy Quan duoc Y cho mang nay
 	int  nCTMuaTry;      // (r3) dem nhip tim duoc Y / cho shop mo
 	UINT uCTMuaT;        // (r3) han mua thuoc mot mang (60 s), 0 = chua bat dau
+	// == AC CHINH (03/09) ==
+	int  nACHold;        // 0 tha may / 1 dang di theo ac chinh / 2 dang giao muc tieu ac chinh cho may PK
+	UINT uACNext;        // nhip 300 ms
+	int  nACMyX;         // do ket
+	int  nACMyY;
+	UINT uACMoveT;
+	int  nACRepath;
+	UINT uACNghi;        // ket -> nghi toi moc nay
 	// == chung cho MOI may auto (25/08) ==
 	int  nMapCu;         // map cua nhip truoc; doi so = vua chuyen map -> DUNG di chuyen
 	int  nXCu;           // toa do nhip truoc (mps); nhay xa = bi TRAP dich chuyen
@@ -552,6 +560,13 @@ struct ExtAuto
 		nCTMua = 0;
 		nCTMuaTry = 0;
 		uCTMuaT = 0;
+		nACHold = 0;
+		uACNext = 0;
+		nACMyX = 0;
+		nACMyY = 0;
+		uACMoveT = 0;
+		nACRepath = 0;
+		uACNghi = 0;
 		nMapCu = 0;
 		nXCu = 0;
 		nYCu = 0;
