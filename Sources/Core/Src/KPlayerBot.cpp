@@ -1048,6 +1048,43 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		return;
 	}
 
+	// [ROLECHK2 04/09] Kiem CAU TRUC blob truoc khi giao cho engine - CHI nhung bat bien da do
+	// tren 1003/1003 blob that trong jx1_role.role (16:40 04/09):
+	//   dwDataLen == co blob nhan duoc; dwFSkillOffset == sizeof(TRoleData)-1 (745);
+	//   745 <= dwSSkillOffset <= dwTaskOffset <= dwItemOffset <= dwDataLen;
+	//   dwTaskOffset - dwSSkillOffset == 8*nStateSkillCount; dwItemOffset - dwTaskOffset == 8*nTaskCount;
+	//   dwDataLen - dwItemOffset - sizeof(TDBItemData)*nItemCount == 0 (blob moi) hoac 4 (co CRC).
+	// KHONG kiem nFightSkillCount (0/1003 khop - khong phai so ban ghi) va KHONG kiem Friend
+	// (engine khong bao gio ghi dwFriendOffset, luon 0 - chinh cho nay lam RoleChk 7af20d82 tu choi
+	// 100% bot). Vu 15:05:38 04/09: Rainbow ReadCompleted vut khoi doc khi bo dem 128 KB day -> goi 1
+	// cua bot A + goi 3.. cua bot B -> header rac -> LoadDBPlayerInfo doc ngoai vung. Rao nay bat duoc
+	// ngay dieu kien dau (dwDataLen khac co blob).
+	{
+		const int nBlob = pRes->nPayloadLen - 1;
+		const int nHdr  = (int)sizeof(TRoleData) - 1;
+		const int nLen  = (int)pData->dwDataLen;
+		const int oFS = pData->dwFSkillOffset, oSS = pData->dwSSkillOffset;
+		const int oTk = pData->dwTaskOffset,   oIt = pData->dwItemOffset;
+		const int nDu = (nLen - oIt) - (int)sizeof(TDBItemData) * (int)pData->nItemCount;
+		const char* szVi = NULL;
+		if (nLen != nBlob)                                                   szVi = "dwDataLen khac co blob";
+		else if (oFS != nHdr)                                                szVi = "dwFSkillOffset khac 745";
+		else if (!(oFS <= oSS && oSS <= oTk && oTk <= oIt && oIt <= nLen))   szVi = "offset khong tang dan";
+		else if (pData->nStateSkillCount < 0 || oTk - oSS != 8 * (int)pData->nStateSkillCount) szVi = "nStateSkillCount";
+		else if (oIt - oTk != 8 * (int)pData->nTaskCount)                    szVi = "nTaskCount";
+		else if (pData->nItemCount < 0 || (nDu != 0 && nDu != 4))            szVi = "nItemCount";
+		if (szVi)
+		{
+			pb_Log("[RoleChk2] %s: blob HONG (%s): len=%d blob=%d fs=%d ss=%d/%d task=%d/%d item=%d/%d"
+			       " - BO con bot nay, khong giao cho engine\n",
+			       p->szRole, szVi, nLen, nBlob, oFS,
+			       (int)pData->nStateSkillCount, oSS, (int)pData->nTaskCount, oTk,
+			       (int)pData->nItemCount, oIt);
+			pb_FreePending(p);
+			return;
+		}
+	}
+
 	// MIN da biet: KPlayer::LaunchPlayer (KPlayer.cpp:6768) goi g_pServer->Release() roi
 	// dong 6776 dung con tro NULL khi m_nChestPW == 214519 (nap tu BaseInfo.ipassrole,
 	// KPlayerDBFuns.cpp:382). Mot blob mang gia tri do se giet tang mang may chu.
