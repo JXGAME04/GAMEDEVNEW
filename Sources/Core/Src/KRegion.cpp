@@ -19,6 +19,11 @@
 #include "MyAssert.H"
 #include <chrono>
 
+#define BC_MAX_VUNG 8192
+int g_anBCVungGoi[BC_MAX_VUNG];		// [BC 04/09 do] so luot BroadCast phat VAO tung vung
+int g_anBCVungActive[BC_MAX_VUNG];	// so lan vung do duoc Activate (= so tick trong 10 giay)
+int g_nBCNormalSync = 0;			// so lan KNpc::NormalSync (dat trong KNpc.cpp)
+
 // (20/08 dem - chu game: "thu lam phan nguoi choi hay bot khong phai vat can
 // co the dung chong len nhau xem con bi khong") CONG TAC 'NPC LA TUONG':
 //   0 = nguoi choi/bot/quai KHONG chan duong nhau (dung chong len nhau duoc) -
@@ -686,6 +691,8 @@ int KRegion::DelAllNpc(int mSubWorldID, char* szName)
 #endif
 void KRegion::Activate()
 {
+	if (m_nIndex >= 0 && m_nIndex < BC_MAX_VUNG)	// [BC 04/09 do] dem so lan vung nay chay mot tick
+		g_anBCVungActive[m_nIndex]++;
     KIndexNode *pNode = NULL;
     KIndexNode *pTmpNode = NULL;
 	const int kNpcSyncChunkSize = 5;  // Number of NPCs to sync per frame
@@ -1459,6 +1466,38 @@ static void BC_BaoCao10s()
 	szTop[sizeof(szTop) - 1] = 0;
 	if (nLen > 0)
 		AUTOLOG("[BC-TOP] 10s top loai theo luot GUI:%s", szTop);
+	// [BC 04/09 do] vung cua client + 3 vung bi phat nhieu nhat + nhip tick
+	{
+		int nVungClient = (nMaxIdx > 0) ? Npc[Player[nMaxIdx].m_nIndex].m_RegionIndex : -1;
+		int nGoiVung = (nVungClient >= 0 && nVungClient < BC_MAX_VUNG) ? g_anBCVungGoi[nVungClient] : 0;
+		int nTick = (nVungClient >= 0 && nVungClient < BC_MAX_VUNG) ? g_anBCVungActive[nVungClient] : 0;
+		int anTop[3] = { -1, -1, -1 };
+		for (int nL = 0; nL < 3; nL++)
+		{
+			int nBest = -1, nVal = 0;
+			for (int k = 0; k < BC_MAX_VUNG; k++)
+			{
+				if (k == anTop[0] || k == anTop[1] || k == anTop[2])
+					continue;
+				if (g_anBCVungGoi[k] > nVal)
+				{
+					nVal = g_anBCVungGoi[k];
+					nBest = k;
+				}
+			}
+			anTop[nL] = nBest;
+		}
+		AUTOLOG("[BC-VUNG] 10s: vung_client=%d nhan=%d luot (%d/tick, tick=%d ~%d/giay) | top vung: %d:%d %d:%d %d:%d",
+			nVungClient, nGoiVung, nTick > 0 ? nGoiVung / nTick : 0, nTick, nTick / 10,
+			anTop[0], anTop[0] >= 0 ? g_anBCVungGoi[anTop[0]] : 0,
+			anTop[1], anTop[1] >= 0 ? g_anBCVungGoi[anTop[1]] : 0,
+			anTop[2], anTop[2] >= 0 ? g_anBCVungGoi[anTop[2]] : 0);
+		AUTOLOG("[BC-SYNC] 10s: NormalSync=%d (%d/giay) -> moi lan 9 luot (NPC thuong) hoac 18 luot (NPC nguoi choi: gui ca goi 77 va 75)",
+			g_nBCNormalSync, g_nBCNormalSync / 10);
+		g_nBCNormalSync = 0;
+		memset(g_anBCVungGoi, 0, sizeof(g_anBCVungGoi));
+		memset(g_anBCVungActive, 0, sizeof(g_anBCVungActive));
+	}
 	memset(g_anBCNguoiGoi, 0, sizeof(g_anBCNguoiGoi));
 	memset(g_anBCNguoiByte, 0, sizeof(g_anBCNguoiByte));
 	memset(g_anBCLoaiGui, 0, sizeof(g_anBCLoaiGui));
@@ -1495,7 +1534,9 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 	// quanh minh): 4.991 lenh chay tu 405 NPC nhung chi 366 goi chieu tu 95 NPC = 181/phut (~1-2% luong that).
 	// Con tro xoay m_nBroadCastCursor la cach cu chia luot khi qua tai - no NHAY QUA ca nguoi that dung truoc no,
 	// nen khi ngan sach chi con tinh nguoi that thi phai duyet VONG TRON (toi da nTong node) moi khong bo sot.
-	const int nBCLoaiGoi = (pBuffer && dwSize > 0) ? (int)((const BYTE*)pBuffer)[0] : 0;	// [BC 03/09 c] so hieu goi (byte dau)
+	const int nBCLoaiGoi = (pBuffer && dwSize > 0) ? (int)((const BYTE*)pBuffer)[0] : 0;
+	if (m_nIndex >= 0 && m_nIndex < BC_MAX_VUNG)	// [BC 04/09 do] dem luot phat vao vung nay
+		g_anBCVungGoi[m_nIndex]++;	// [BC 03/09 c] so hieu goi (byte dau)
 	const int nF4Tong = m_PlayerList.m_nNodeCount;
 	pNode = (KIndexNode *)m_PlayerList.GetHead();
 	if (nF4Tong > nMaxCount)
