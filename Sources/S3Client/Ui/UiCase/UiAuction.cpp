@@ -1475,7 +1475,15 @@ void KUiAuction_OnCoreCmd(unsigned int uCmd, int nParam)
 		break;
 	case AUCUI_CMD_PUTON_MODE:
 		// [A6] chu 04/09: gop lam MOT hop - hop dua vat pham co them o gia + nut doi loai tien
-		KUiAffairItem::SetAuctionMode(nParam);
+		// [A28 04/09] tri 2 = DONG hop (ky gui xong). Dung 2 thay vi them mot lenh moi de khong
+		// phai doi KAuctionUiDef.h - chen them tri vao giua enum la lech het ba tep nhi phan.
+		// Dong bang dung duong CloseWindow(true) cho an toan: no chay ca OnCancel, ma OnCancel
+		// ban lenh THU HOI vat pham trong hop - luc nay may chu da lay mon nen la lenh rong,
+		// con neu vi ly do gi mon van con trong hop thi no duoc tra ve hanh trang thay vi ket lai.
+		if (nParam == 2)
+			KUiAffairItem::CloseWindow(true);
+		else
+			KUiAffairItem::SetAuctionMode(nParam);
 		break;
 	case AUCUI_CMD_SET_MONEY:
 		if ((p = KUiAuctionManager::GetSelf()) != NULL && nParam)

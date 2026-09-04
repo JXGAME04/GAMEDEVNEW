@@ -933,6 +933,14 @@ function AUC_OnGiveOk(nCount)
     local nId = AUC_PutOnItem(t.nType, szAct, t.nKind, t.nCur, t.nPrice, nIdx, t.nTong, t.nBase)
     if nId > 0 then
         Msg2Player("ß∑ Æ≠a vµo khu Æ u gi∏, m∑ sË "..nId..". Ti“n b∏n vµ vÀt ph»m tr∂ v“ qua hÈp th≠.")
+        -- [A28] bao RIENG nguoi vua ky gui: dong hop dua vat pham va nap lai trang cho ho.
+        -- Khong bam vao goi NEWITEM (goi do phat cho MOI nguoi dang xem) vi nguoi khac ky gui
+        -- cung sinh ra no, se dong nham hop cua nguoi dang dat mon vao.
+        local hOk = OB_Create()
+        ObjBuffer:PushByType(hOk, OBJTYPE_NUMBER, t.nType)
+        ObjBuffer:PushByType(hOk, OBJTYPE_STRING, szAct)
+        AUC_SendTo(PlayerIndex, "emSCRIPT_PROTOCOL_AUCTION_PUTONOK", hOk)
+        OB_Release(hOk)
     end
 end
 
