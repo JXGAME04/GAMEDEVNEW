@@ -62,6 +62,7 @@
 #include "KScriptProtocol.h"	// [MAIL 03/09] kenh ScriptProtocol
 #include "KMailClient.h"	// [MAIL 03/09 D2] cua so thu (client)
 #include "KMailServer.h"	// [MAIL 03/09 D3] kho thu MySQL (may chu)
+#include "KAuctionServer.h"	// [DAUGIA 04/09 A1] kho dau gia + giu nguyen vat pham
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
 {
@@ -14865,6 +14866,19 @@ TLua_Funcs GameScriptFuns[] =
 	{"MailDB_PollNew",	LuaMailDB_PollNew},
 	{"MailDB_MaxId",	LuaMailDB_MaxId},
 	{"MailDB_Sweep",	LuaMailDB_Sweep},
+	// [DAUGIA 04/09 A1] script\auction\auction_manager.lua dung
+	{"AUC_ItemToRec",	LuaAUC_ItemToRec},
+	{"AUC_RecName",	LuaAUC_RecName},
+	{"AUC_GiveRec",	LuaAUC_GiveRec},
+	{"AUC_RecCells",	LuaAUC_RecCells},
+	{"AUC_Ready",	LuaAUC_Ready},
+	{"AUC_PutOn",	LuaAUC_PutOn},
+	{"AUC_List",	LuaAUC_List},
+	{"AUC_Get",	LuaAUC_Get},
+	{"AUC_Buy",	LuaAUC_Buy},
+	{"AUC_SetState",	LuaAUC_SetState},
+	{"AUC_Sweep",	LuaAUC_Sweep},
+	{"AUC_CountSeller",	LuaAUC_CountSeller},
 #endif
 	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},
