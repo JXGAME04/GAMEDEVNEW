@@ -105,6 +105,8 @@ enum AUCUI_CMD
 	AUCUI_CMD_CLEAR_ALL,
 	AUCUI_CMD_ICON_VISIBLE,			// nParam = 0/1
 	AUCUI_CMD_SET_MONEY,			// nParam = KAucUiSalary* (nCount = Ngan luong, nSalary = Xu) hien o tab ca nhan
+	// [A6] bat/tat che do KY GUI cho hop dua vat pham (KUiAffairItem): nParam = 0/1
+	AUCUI_CMD_PUTON_MODE,
 };
 
 // UI -> Core (GOI_AUCTION_UI, uParam = op, nParam = KAucUiReq* hoac so)
@@ -125,6 +127,7 @@ enum AUCUI_OP
 	AUCUI_OP_RESET,					// thoat game                        -> UIAuctionHouse:Reset()
 	AUCUI_OP_TICK,					// moi giay khi cua so mo            -> UIAuctionHouse:OnTick()
 	AUCUI_OP_PUT_ON,				// nParam = nType (nut goc phai)     -> UIAuctionHouse:OnPutOnClick(nType)
+	AUCUI_OP_SET_PRICE,				// nParam = KAucUiReq* (nPrice, nType = loai tien) -> UIAuctionHouse:OnSetPrice(nPrice, nCur)
 };
 
 #endif // KAUCTIONUIDEF_H

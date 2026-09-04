@@ -293,6 +293,13 @@ int LuaAuc_AuctionSetCurrentPageTxt(Lua_State* L)
 	return 0;
 }
 
+// [A6] AuctionPutOnMode(0/1): bat che do KY GUI cho hop dua vat pham (them o gia + nut doi tien)
+int LuaAuc_AuctionPutOnMode(Lua_State* L)
+{
+	sNotify(AUCUI_CMD_PUTON_MODE, sArgInt(L, 1));
+	return 0;
+}
+
 int LuaAuc_AuctionClearAll(Lua_State* L)
 {
 	sNotify(AUCUI_CMD_CLEAR_ALL, 0);
@@ -394,6 +401,10 @@ void AuctionUi_OnRequest(unsigned int uParam, int nParam)
 		break;
 	case AUCUI_OP_PUT_ON:
 		sprintf(szCall, "UIAuctionHouse:OnPutOnClick(%d)", nParam);
+		break;
+	case AUCUI_OP_SET_PRICE:
+		if (pReq)
+			sprintf(szCall, "UIAuctionHouse:OnSetPrice(%d, %d)", pReq->nPrice, pReq->nType);
 		break;
 	default:
 		break;

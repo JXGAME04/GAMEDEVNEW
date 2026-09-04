@@ -200,6 +200,7 @@ local Def =
 	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_MEMBERLIST", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestMemberList", {OBJTYPE_STRING} },
 	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_GETBACKITEM", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestGetBack", {OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER} },
 	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_PUTON", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestPutOn", {OBJTYPE_NUMBER} },
+	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_SETPRICE", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestSetPrice", {OBJTYPE_NUMBER, OBJTYPE_NUMBER} },
 }
 
 ScriptProtocol:RegProtocolSet(Def)

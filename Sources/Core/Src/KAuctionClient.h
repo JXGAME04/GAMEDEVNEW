@@ -26,6 +26,7 @@ int LuaAuc_AuctionClearMemberList(Lua_State* L);
 int LuaAuc_AuctionSetSalaryAndCount(Lua_State* L);
 int LuaAuc_AuctionSetCurrentPageTxt(Lua_State* L);
 int LuaAuc_AuctionClearAll(Lua_State* L);
+int LuaAuc_AuctionPutOnMode(Lua_State* L);	// [A6] bat che do ky gui cho hop dua vat pham
 int LuaAuc_SetAuctionIconVisible(Lua_State* L);
 // ham phu cho script client
 int LuaAuc_AuctionSetMoney(Lua_State* L);		// (nNganLuong, nXu) hien o tab ca nhan

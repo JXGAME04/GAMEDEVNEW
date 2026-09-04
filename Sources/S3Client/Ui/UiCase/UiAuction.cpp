@@ -10,6 +10,7 @@
 #include "../UiBase.h"
 #include "../UiSoundSetting.h"
 #include "../../../core/src/coreshell.h"
+#include "UiAffairItem.h"	// [A6] hop dua vat pham co o gia + nut doi tien
 #include "UiAuction.h"
 extern iCoreShell* g_pCoreShell;	// nhu UiPartnerCommon.h
 #include <time.h>
@@ -1368,6 +1369,10 @@ void KUiAuction_OnCoreCmd(unsigned int uCmd, int nParam)
 			p->m_Page.ClearActivity();
 			p->m_Members.Clear();
 		}
+		break;
+	case AUCUI_CMD_PUTON_MODE:
+		// [A6] chu 04/09: gop lam MOT hop - hop dua vat pham co them o gia + nut doi loai tien
+		KUiAffairItem::SetAuctionMode(nParam);
 		break;
 	case AUCUI_CMD_SET_MONEY:
 		if ((p = KUiAuctionManager::GetSelf()) != NULL && nParam)

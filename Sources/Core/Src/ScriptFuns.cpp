@@ -14861,6 +14861,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"AuctionSetSalaryAndCount",	LuaAuc_AuctionSetSalaryAndCount},
 	{"AuctionSetCurrentPageTxt",	LuaAuc_AuctionSetCurrentPageTxt},
 	{"AuctionClearAll",	LuaAuc_AuctionClearAll},
+	{"AuctionPutOnMode",	LuaAuc_AuctionPutOnMode},
 	{"SetAuctionIconVisible",	LuaAuc_SetAuctionIconVisible},
 	{"AuctionSetMoney",	LuaAuc_AuctionSetMoney},
 	{"AuctionConfirm",	LuaAuc_AuctionConfirm},

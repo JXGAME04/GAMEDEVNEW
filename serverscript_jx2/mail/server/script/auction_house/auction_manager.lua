@@ -646,36 +646,24 @@ function AUC_OnRequestPutOn(nType)
             return
         end
     end
-    AUC_TMP[PlayerIndex] = {nType = nType, nKind = nKind, nTong = nTong}
-    OpenGetNumber("Chän lo¹i tiÒn: gâ 1 = Ng©n l­îng, gâ 2 = Xu", AUC_SCRIPT, "AUC_OnInputCurrency", 1)
+    -- [A6] MOT hop duy nhat: hop dua vat pham da co o nhap gia + nut doi loai tien.
+    -- Client gui AUCTION_REQUEST_SETPRICE (gia, loai tien) NGAY TRUOC khi bam Dong y.
+    AUC_TMP[PlayerIndex] = {nType = nType, nKind = nKind, nTong = nTong, nCur = AUCTION_DEF.tbCurrency.MONEY, nPrice = 0}
+    GiveItemUI("Ký göi ®Êu gi¸: ®Æt vËt phÈm vµo «, nhËp gi¸ råi bÊm §ång ý", "PhÝ ký göi "..AUCTION_DEF.nPersonalPutOnCost.."% gi¸ b¸n, thuÕ "..AUCTION_DEF.nAuctionTaxRate.."% khi b¸n ®­îc", "AUC_OnGiveOk", "AUC_OnGiveCancel", 0, "AUC_OnGiveCheck", 0, AUC_SCRIPT)
 end
 
-function AUC_OnInputCurrency()
+-- [A6] client bao GIA + LOAI TIEN (o ngay trong hop dua vat pham) truoc khi bam Dong y
+function AUC_OnRequestSetPrice(nPrice, nCur)
     local t = AUC_TMP[PlayerIndex]
     if not t then
         return
     end
-    local n = floor(GetNumberFromUI() or 0)
-    if n ~= AUCTION_DEF.tbCurrency.XU then
-        n = AUCTION_DEF.tbCurrency.MONEY
+    t.nPrice = floor(nPrice or 0)
+    if nCur == AUCTION_DEF.tbCurrency.XU then
+        t.nCur = AUCTION_DEF.tbCurrency.XU
+    else
+        t.nCur = AUCTION_DEF.tbCurrency.MONEY
     end
-    t.nCur = n
-    OpenGetNumber("NhËp gi¸ b¸n ("..AUC_CurName(n)..")", AUC_SCRIPT, "AUC_OnInputPrice", 1)
-end
-
-function AUC_OnInputPrice()
-    local t = AUC_TMP[PlayerIndex]
-    if not t then
-        return
-    end
-    local n = floor(GetNumberFromUI() or 0)
-    if n < 1 or n > 2000000000 then
-        Msg2Player("Gi¸ kh«ng hîp lÖ.")
-        AUC_TMP[PlayerIndex] = nil
-        return
-    end
-    t.nPrice = n
-    GiveItemUI("§Æt vËt phÈm cÇn b¸n vµo « (1 mãn)", "Gi¸ "..n.." "..AUC_CurName(t.nCur), "AUC_OnGiveOk", "AUC_OnGiveCancel", 0, "AUC_OnGiveCheck", 0, AUC_SCRIPT)
 end
 
 function AUC_OnGiveCheck(nCount)
@@ -690,6 +678,10 @@ function AUC_OnGiveOk(nCount)
     local t = AUC_TMP[PlayerIndex]
     AUC_TMP[PlayerIndex] = nil
     if not t then
+        return
+    end
+    if (t.nPrice or 0) < 1 or t.nPrice > 2000000000 then
+        Msg2Player("Ch­a nhËp gi¸ b¸n hîp lÖ.")
         return
     end
     local nIdx = GetGiveItemUnit(1)

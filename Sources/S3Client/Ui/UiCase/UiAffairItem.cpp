@@ -13,6 +13,7 @@
 #include "../../../Engine/src/Text.h"	// [BOXMAU 01/09] TEncodeText cho o mo ta
 extern iCoreShell*		g_pCoreShell;
 
+#include "../../../core/src/KAuctionUiDef.h"	// [DAUGIA 04/09 A6] o gia + nut doi tien trong chinh hop nay
 #define	SCHEME_INI 	"UiGiveItem.ini"
 
 KUiAffairItem* KUiAffairItem::m_pSelf = NULL;
@@ -157,6 +158,15 @@ void KUiAffairItem::Initialize()
 	AddChild(&m_OkBtn);
 	AddChild(&m_CancelBtn);
 	AddChild(&m_ItemBox);
+	// [A6] che do ky gui: an san, chi hien khi KUiAffairItem::SetAuctionMode(1)
+	AddChild(&m_AucLabel);
+	AddChild(&m_AucPrice);
+	AddChild(&m_AucCur);
+	m_bAucMode = 0;
+	m_nAucCur = AUCUI_CUR_MONEY;
+	m_AucLabel.Hide();
+	m_AucPrice.Hide();
+	m_AucCur.Hide();
 	
 	m_ContentList.SetScrollbar(&m_ContentScroll);	
 	
@@ -187,17 +197,37 @@ void KUiAffairItem::LoadScheme(const char* pScheme)
 			m_pSelf->m_OkBtn.Init(&Ini, "Assemble");
 			m_pSelf->m_CancelBtn.Init(&Ini, "Close");
 			m_pSelf->m_ItemBox.Init(&Ini, "Items");
+			// [A6] ba dieu khien cua che do ky gui (muc moi trong UiGiveItem.ini; thieu muc thi rong 0 -> khong hien)
+			m_pSelf->m_AucLabel.Init(&Ini, "AucPriceLabel");
+			m_pSelf->m_AucPrice.Init(&Ini, "AucPriceEdit");
+			m_pSelf->m_AucCur.Init(&Ini, "AucCurBtn");
 			m_pSelf->m_ItemBox.EnableTracePutPos(true);
 			m_pSelf->m_ItemBox.EnablePickPut(true);
 		}
 	}
 }
 
+// [DAUGIA 04/09 A6] Chu 04/09: gop lam MOT hop - hop dua vat pham nay khi ky gui dau gia se hien
+// them o nhap GIA va nut doi LOAI TIEN. Bat truoc khi may chu mo hop; tat khi hop dong.
+static const char* sAucCurName(int nCur)
+{
+	// TCVN3 tho (cung bang ma voi phan con lai cua client)
+	return (nCur == AUCUI_CUR_XU) ? "Xu" : "Ng©n l­îng";
+}
+
+
 //--------------------------------------------------------------------------
 //	Su kien
 //--------------------------------------------------------------------------
 int KUiAffairItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 {
+	// [A6] nut doi loai tien cua che do ky gui
+	if (uMsg == WND_N_BUTTON_CLICK && uParam == (unsigned int)(KWndWindow*)&m_AucCur)
+	{
+		m_nAucCur = (m_nAucCur == AUCUI_CUR_XU) ? AUCUI_CUR_MONEY : AUCUI_CUR_XU;
+		m_AucCur.SetLabel(sAucCurName(m_nAucCur));
+		return 1;
+	}
 	int nRet = 0;
 	switch(uMsg)
 	{
@@ -234,8 +264,44 @@ int KUiAffairItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 //--------------------------------------------------------------------------
 //	Ok
 //--------------------------------------------------------------------------
+void KUiAffairItem::SetAuctionMode(int bOn)
+{
+	if (!m_pSelf)
+		return;
+	m_pSelf->m_bAucMode = bOn ? 1 : 0;
+	m_pSelf->m_nAucCur = AUCUI_CUR_MONEY;
+	if (bOn)
+	{
+		m_pSelf->m_AucPrice.SetText("");
+		m_pSelf->m_AucCur.SetLabel(sAucCurName(m_pSelf->m_nAucCur));
+		m_pSelf->m_AucLabel.Show();
+		m_pSelf->m_AucPrice.Show();
+		m_pSelf->m_AucCur.Show();
+	}
+	else
+	{
+		m_pSelf->m_AucLabel.Hide();
+		m_pSelf->m_AucPrice.Hide();
+		m_pSelf->m_AucCur.Hide();
+	}
+}
+
 void KUiAffairItem::OnOk()
 {
+	// [A6] che do ky gui: bao GIA + LOAI TIEN qua kenh dau gia TRUOC khi gui OK cua hop
+	// (cung mot duong truyen nen may chu nhan dung thu tu; khong doi cau truc goi nao).
+	if (m_bAucMode && g_pCoreShell)
+	{
+		char szBuf[32];
+		szBuf[0] = 0;
+		m_AucPrice.GetText(szBuf, sizeof(szBuf), true);
+		KAucUiReq r;
+		memset(&r, 0, sizeof(r));
+		r.nPrice = atoi(szBuf);
+		r.nType = m_nAucCur;
+		g_pCoreShell->OperationRequest(GOI_AUCTION_UI, (unsigned int)AUCUI_OP_SET_PRICE, (int)&r);
+		m_bAucMode = 0;
+	}
 	if (g_pCoreShell)
 	{
 		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_pSelf->szFunc1);
@@ -247,6 +313,7 @@ void KUiAffairItem::OnOk()
 //--------------------------------------------------------------------------
 void KUiAffairItem::OnCancel()
 {
+	m_bAucMode = 0;
 	if (g_pCoreShell)
 	{
 		int nCount = g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, 0, 0);		
