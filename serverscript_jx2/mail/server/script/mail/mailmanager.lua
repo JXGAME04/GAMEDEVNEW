@@ -444,8 +444,27 @@ function MailManager_CountAward(szAward)
     return n
 end
 
+-- [D12 04/09] 1 = ten nay la BOT dang trong the gioi (FindPlayer + IsBot, hai loi goi C++, khong tao bang)
+function MailManager_IsBotName(szRole)
+    if type(szRole) ~= "string" or szRole == "" then
+        return 0
+    end
+    local nIdx = FindPlayer(szRole)
+    if type(nIdx) ~= "number" or nIdx <= 0 then
+        return 0
+    end
+    if IsBot and IsBot(nIdx) == 1 then
+        return 1
+    end
+    return 0
+end
+
 -- nAwardCount: so muc dinh kem (nguoi goi biet san thi truyen vao cho re; nil = tu dem)
 function MailManager_SendMail(szRole, szSender, szTitle, szContent, szAward, nExpireDays, szSource, nAwardCount)
+    -- [D12 04/09] chu chot: KHONG gui thu cho bot (moi duong: hoat dong, dau gia, luong bang).
+    if MailManager_IsBotName(szRole) == 1 then
+        return 0
+    end
     local nCount = nAwardCount or MailManager_CountAward(szAward or "")
     local nId = MailDB_Send(szRole, szSender or MAILMGR_SENDER_SYS, szTitle or "", szContent or "", szAward or "",
         nCount, (nExpireDays or 30) * 86400, szSource or "script")
@@ -533,6 +552,14 @@ end
 
 -- [D9] Gui thu thuong hoat dong tu bang kieu templet. szRole nil = nguoi choi dang goi. Tra id thu (0 = loi/rong).
 function MailManager_SendRewardTemplet(szActivity, szRole, szTitle, szContent, tbList, nDays)
+    -- [D12 04/09] bot: thoat NGAY, khoi dung chuoi dinh kem (Tong Kim co hang tram bot moi tran)
+    if not szRole or szRole == "" then
+        if IsBot and IsBot(PlayerIndex) == 1 then
+            return 0
+        end
+    elseif MailManager_IsBotName(szRole) == 1 then
+        return 0
+    end
     local szAward, n = MailManager_BuildAward(tbList or {})
     if n <= 0 then
         return 0
