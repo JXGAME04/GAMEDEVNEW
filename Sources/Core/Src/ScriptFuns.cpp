@@ -63,6 +63,7 @@
 #include "KMailClient.h"	// [MAIL 03/09 D2] cua so thu (client)
 #include "KMailServer.h"	// [MAIL 03/09 D3] kho thu MySQL (may chu)
 #include "KAuctionServer.h"	// [DAUGIA 04/09 A1] kho dau gia + giu nguyen vat pham
+#include "KChienLenh.h"	// [CL 04/09] Chien Lenh: 7 bang st_* tren MySQL
 #include "KAuctionClient.h"	// [DAUGIA 04/09 A3] cua so dau gia (client)
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
@@ -14895,6 +14896,12 @@ TLua_Funcs GameScriptFuns[] =
 	{"MailDB_PollNew",	LuaMailDB_PollNew},
 	{"MailDB_MaxId",	LuaMailDB_MaxId},
 	{"MailDB_Sweep",	LuaMailDB_Sweep},
+	// [CL 04/09 DOT1a] script\chienlenh\*.lua dung - cau hinh nam o MySQL (7 bang st_*)
+	{"CL_Ready",	LuaCL_Ready},
+	{"CL_Reload",	LuaCL_Reload},
+	{"CL_Info",	LuaCL_Info},
+	{"CL_Mission",	LuaCL_Mission},
+	{"CL_Award",	LuaCL_Award},
 	// [DAUGIA 04/09 A1] script\auction\auction_manager.lua dung
 	{"AUC_ItemToRec",	LuaAUC_ItemToRec},
 	{"AUC_RecName",	LuaAUC_RecName},
