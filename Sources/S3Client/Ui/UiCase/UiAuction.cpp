@@ -380,8 +380,9 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 	char sz[64];
 	m_Name.SetText(p->szName);
 	// bieu tuong: dung lai vat pham tam tu ChatItem (nhu hop thu)
-	// [A29 04/09] o da tra ve 26x26 (mon nhieu o duoc thu nho bang co ResizeBigItem) nen khung nen hien lai.
-	m_IconBg.Show();
+	// [A30 04/09] o lai rong 58x78 de GIU HINH THAT cua mon (engine khong thu nho duoc sprite),
+	// ma khung nen chi 26x26 nen nho hon mon - an di, hang da co khung rieng.
+	m_IconBg.Hide();
 	if (!bSameItem && g_pCoreShell && p->Item.m_nID)
 	{
 		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&p->Item);

@@ -236,7 +236,10 @@ def build_ini(name):
     # lam lech ca bieu tuong loai anh lan cho dat, nay TRA VE NGUYEN nhu ban goc va thay bang
     # co ResizeBigItem (mon nhieu o ve bang anh thay the mot o - xem CoreDrawGameObj.cpp [A29]).
     if name == "mail_award_item.ini":
-        s = _setkey(s, "MailAwardItemSpr", "ResizeBigItem", 1)
+        # [D17 04/09] BO duong doi anh: no thay hinh mon bang anh thay the, chu bao "chu ban dang thu nho
+        # ve va doi luon hinh anh sao duoc". Engine khong thu nho duoc sprite (xem chu thich [A30] o
+        # p12_daugia.py) nen o thu giu 26x26 va mon nhieu o se ve nguyen co - dung nhu truoc dot D14.
+        s = _setkey(s, "MailAwardItemSpr", "ResizeBigItem", 0)
     if name == "mail_icon.ini":
         # [D4 03/09] chu: dat duoi bieu tuong Bau Cua = UiPlayerBar.ini [SpringGame] Left=765 Top=243 50x50 (800x600);
         # 1024: UiMail.cpp neo x = 1024 - 30 nhu UiPlayerBar.cpp

@@ -1994,18 +1994,22 @@ def copy_ini():
             txt = _setkey(txt, "txtJinPai", "Top", 86)
             txt = _setkey(txt, "txtJinPai", "Height", 20)
             txt = _setkey(txt, "txtJinPai", "VAlign", 1)
-        # [A29 04/09] chu: "thu nho trang bi nhieu o thanh 1 o cho dep" -> TRA O VE 26x26 nhu truoc
-        # va bat co ResizeBigItem de mon rong hon mot o duoc ve bang anh thay the mot o.
+        # [A30 04/09] chu: "trang bi thu nho lai thanh 1 o - chu ban dang thu nho ve va DOI LUON HINH ANH".
+        # Dung, va toi da doc lai bo dung hinh: KRepresentShell3::DrawImage2DStretch CHI nhan anh dang
+        # bitmap, gap sprite la thoat ngay ("if (pTemp->nType != ISI_T_BITMAP16) break"). Vat pham trong
+        # game deu la sprite nen engine CHI co hai duong: ve nguyen co, hoac doi sang anh thay the.
+        # Vay bo han duong doi anh (co ResizeBigItem) va tra ve cach GIU HINH THAT: noi o cho vua mon.
+        # Hang cao 107, cot trai rong 86 nen o 58x78 du cho trang bi 2x3 va khong dung vao chu.
         if n == "auction_item_icon":
-            txt = _setkey(txt, "Main", "Left", 30)
-            txt = _setkey(txt, "Main", "Top", 30)
-            txt = _setkey(txt, "MailAwardItemSpr", "Left", 1)
-            txt = _setkey(txt, "MailAwardItemSpr", "Top", 1)
-            txt = _setkey(txt, "MailAwardItemSpr", "Width", 26)
-            txt = _setkey(txt, "MailAwardItemSpr", "Height", 26)
-            txt = _setkey(txt, "MailAwardItemSpr", "ResizeBigItem", 1)
-            txt = _setkey(txt, "MailAwardItemCount", "Top", 13)
-            txt = _setkey(txt, "MailAwardItemCount", "Width", 24)
+            txt = _setkey(txt, "Main", "Left", 14)
+            txt = _setkey(txt, "Main", "Top", 14)
+            txt = _setkey(txt, "MailAwardItemSpr", "Left", 0)
+            txt = _setkey(txt, "MailAwardItemSpr", "Top", 0)
+            txt = _setkey(txt, "MailAwardItemSpr", "Width", 58)
+            txt = _setkey(txt, "MailAwardItemSpr", "Height", 78)
+            txt = _setkey(txt, "MailAwardItemSpr", "ResizeBigItem", 0)
+            txt = _setkey(txt, "MailAwardItemCount", "Top", 64)
+            txt = _setkey(txt, "MailAwardItemCount", "Width", 56)
         if n == "auction_icon":
             # bieu tuong: nam ngay duoi bieu tuong thu (mail_icon.ini Left=765 Top=296 -> dau gia Top=322)
             # [A10 04/09] chu: "cho icon dau gia xuong giua bau cua va mail"
