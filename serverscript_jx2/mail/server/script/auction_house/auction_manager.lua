@@ -495,7 +495,10 @@ function AUC_OnRequestOfferDutch(nType, szAct, nId, nPrice)
         -- [B2] PHAI xoa luon nguoi mua, khong thi nguoi ban khong rut lai duoc va kieu Anh
         -- se giao mon cho nguoi chua tra dong nao khi het gio.
         AUC_Rollback(nId)
+        -- [A24] AUC_Rollback xoa nguoi mua nhung KHONG tra cur_price, nen AUC_Bid ben duoi
+        -- truot chot cur_price < ? va nguoi giu gia cu khong bao gio duoc khoi phuc.
         if bKyGui == 1 and szGiuGia ~= "" and nGiuGia > 0 then
+            AUC_SetPrice(nId, 0, 0, 0, r.endtime)
             AUC_Bid(nId, szGiuGia, nGiuGia, r.endtime)
         end
         Msg2Player("Trõ tiÒn thÊt b¹i.")
@@ -536,6 +539,13 @@ function AUC_OnRequestOfferEnglish(nType, szAct, nId, nNewPrice)
         Msg2Player("Gi¸ tr¶ ph¶i tõ "..nMin.." "..AUC_CurName(r.currency)..".")
         return
     end
+    -- [A24] TRA BANG HOAC VUOT GIA MUA NGAY = CHOT BAN NGAY o dung gia mua ngay.
+    -- Truoc day duong tra gia khong co tran tren nen gia cao nhat vuot duoc gia mua ngay,
+    -- roi bat ky ai bam Mua ngay cung lay duoc mon o gia THAP HON: nguoi ban mat phan chenh,
+    -- nguoi dang giu gia cao nhat bi cuop mon. Chot o day thi cur khong bao gio vuot base nua.
+    if (r.base or 0) > 0 and r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL and nNewPrice >= r.base then
+        return AUC_OnRequestOfferDutch(nType, szAct, nId, r.base)
+    end
     if AUC_GetMoney(r.currency) < nNewPrice then
         Msg2Player("Kh«ng ®ñ "..AUC_CurName(r.currency)..".")
         return
@@ -552,9 +562,11 @@ function AUC_OnRequestOfferEnglish(nType, szAct, nId, nNewPrice)
     end
     if AUC_PayMoney(r.currency, nNewPrice) ~= 1 then
         -- [A17] AUC_Bid DA ghi ten nguoi mua moi roi. Return thang o day thi nguoi giu gia cu
-        -- khong duoc hoan (khoi hoan nam ngay duoi), ma het gio lai giao mon cho nguoi vua
-        -- tru tien hong = chua tra dong nao. Phai lui dong ve dung nhu nhanh Ha Lan lam.
-        AUC_Rollback(nId)
+        -- khong duoc hoan, ma het gio lai giao mon cho nguoi vua tru tien hong.
+        -- [A24] AUC_Rollback o day la MA CHET: no doi WHERE state=1 ma duong tra gia khong he
+        -- dat state=1. Duong lui dung la ha cur_price ve 0 roi ghi lai nguoi cu - khong ha thi
+        -- AUC_Bid truot chot cur_price < ? (gia bang nhau) va nguoi cu mat sach tien.
+        AUC_SetPrice(nId, 0, 0, 0, nEnd)
         if szOld ~= "" and nOld > 0 then
             AUC_Bid(nId, szOld, nOld, nEnd)
         end
@@ -625,7 +637,16 @@ end
 function AUC_Settle(r, szBuyer, nPrice)
     local nTax = floor(nPrice * AUCTION_DEF.nAuctionTaxRate / 100)
     local nNet = nPrice - nTax
-    AUC_MailItem(szBuyer, "§Êu gi¸ thµnh c«ng", "§¹i hiÖp ®· mua ®­îc "..r.name.." víi gi¸ "..nPrice.." "..AUC_CurName(r.currency)..". VËt phÈm ®Ýnh kÌm trong th­.", r.id)
+    -- [A24] PHAI kiem ket qua gui thu: truoc day bo qua nen thu hong la tien nguoi mua da tru
+    -- ma mon bien mat, con dong nam o state = 1 - khong vong quet nao nhin toi, ket vinh vien.
+    -- Nay gui hong thi hoan tien nguoi mua va tra dong ve dang ban de ban lai.
+    if AUC_MailItem(szBuyer, "§Êu gi¸ thµnh c«ng", "§¹i hiÖp ®· mua ®­îc "..r.name.." víi gi¸ "..nPrice.." "..AUC_CurName(r.currency)..". VËt phÈm ®Ýnh kÌm trong th­.", r.id) <= 0 then
+        AUC_MailMoney(szBuyer, "Hoµn tiÒn ®Êu gi¸", "Kh«ng giao ®­îc "..r.name..", hoµn l¹i tiÒn ®¹i hiÖp ®· tr¶.", r.currency, nPrice)
+        AUC_Rollback(r.id)
+        AUC_SetPrice(r.id, 0, 0, 0, r.endtime)
+        AUC_Log(format("LOI: id %d ban cho %s nhung GUI THU HONG - da hoan tien va tra dong ve dang ban", r.id, szBuyer))
+        return 0
+    end
     if r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_TONG and r.tong > 0 then
         if r.currency == AUCTION_DEF.tbCurrency.MONEY then
             TONG_ApplyAddMoney(r.tong, nNet)
@@ -667,7 +688,9 @@ end
 
 -- kieu Anh ket thuc co nguoi tra gia
 function AUC_FinishEnglish(r)
-    if r.buyer == "" then
+    -- [A24] PHAI kiem ca gia: neu vi mot duong lui nao do ma dong con ten nguoi mua trong khi
+    -- gia da ve 0 thi khong duoc ban mon voi gia 0 - tra mon ve nguoi ban moi dung.
+    if r.buyer == "" or (r.cur or 0) <= 0 then
         return AUC_Expire(r)
     end
     if AUC_SetState(r.id, 1, 1) ~= 1 then
@@ -838,9 +861,16 @@ function AUC_OnRequestPutOn(nType)
     -- Client gui AUCTION_REQUEST_SETPRICE (gia, loai tien) NGAY TRUOC khi bam Dong y.
     AUC_TMP[PlayerIndex] = {nType = nType, nKind = nKind, nTong = nTong, nCur = AUCTION_DEF.tbCurrency.MONEY, nPrice = 0}
     -- [A21] noi ro luat cho nguoi ban truoc khi ho bam Dong y
-    -- [A21b] o mo ta cua hop chi 256 byte (KProtocol.h Value1) nen phai ngan gon
-    local szNhac = "NhËp gi¸ mua ngay vµ gi¸ c¬ b¶n (c¬ b¶n thÊp h¬n). Mçi l­ît tr¶ gi¸ thªm 10% gi¸ c¬ b¶n. Cäc "..AUCTION_DEF.nPersonalPutOnCost.."% gi¸ c¬ b¶n, hoµn khi b¸n ®­îc hoÆc hÕt h¹n, mÊt khi tù rót. ThuÕ "..AUCTION_DEF.nAuctionTaxRate.."%."
-    GiveItemUI("Ký göi ®Êu gi¸: ®Æt mãn, nhËp hai gi¸ råi bÊm §ång ý", szNhac, "AUC_OnGiveOk", "AUC_OnGiveCancel", 0, "AUC_OnGiveCheck", 0, AUC_SCRIPT)
+    -- [A23 04/09] Chu bao "cho nhap gia bi de chu len": o mo ta cua hop trai tu y 96 den 182,
+    -- dung cho hai hang nhap gia. Chu dai ba bon dong la de len chung (loi cua dot A21).
+    -- Nay trong hop chi de MOT dong ngan; luat day du noi qua khung chat, doc lai duoc.
+    if nType == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL then
+    Msg2Player("Ký göi: nhËp gi¸ mua ngay vµ gi¸ c¬ b¶n (c¬ b¶n ph¶i thÊp h¬n gi¸ mua ngay).")
+    Msg2Player("Ng­êi mua tr¶ gi¸ lªn tõng l­ît, mçi l­ît thªm 10% gi¸ c¬ b¶n, hoÆc tr¶ th¼ng gi¸ mua ngay.")
+    Msg2Player("Cäc "..AUCTION_DEF.nPersonalPutOnCost.."% gi¸ c¬ b¶n, hoµn l¹i khi b¸n ®­îc hoÆc hÕt h¹n, chØ mÊt khi tù rót mãn. ThuÕ "..AUCTION_DEF.nAuctionTaxRate.."% khi b¸n ®­îc.")
+    end
+    local szNhac = "Cäc "..AUCTION_DEF.nPersonalPutOnCost.."%, thuÕ "..AUCTION_DEF.nAuctionTaxRate.."% khi b¸n."
+    GiveItemUI("Ký göi ®Êu gi¸", szNhac, "AUC_OnGiveOk", "AUC_OnGiveCancel", 0, "AUC_OnGiveCheck", 0, AUC_SCRIPT)
 end
 
 -- [A6] client bao GIA + LOAI TIEN (o ngay trong hop dua vat pham) truoc khi bam Dong y

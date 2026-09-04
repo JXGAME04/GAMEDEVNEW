@@ -85,9 +85,33 @@ static void sSendReq(int nOp, int nType, int nId, int nPrice, const char* szName
 	sSendOp(nOp, (int)&r);
 }
 
+// [DAUGIA 04/09 A23] chu: "thong tin gia nen rut gon lai thay vi 1000000 thi thanh 100 van".
+// 1 van = 10.000 ; 1 uc = 10.000 van = 100.000.000. Duoi mot van thi viet thang so.
+// Phan le chi hien khi khac 0 nen gia tron (thuong gap, vi Ngan luong nhap theo van) rat gon.
 static void sFmtMoney(char* sz, int nSize, int n)
 {
-	_snprintf(sz, nSize - 1, "%d", n);
+	if (n < 0)
+		n = 0;
+	if (n >= 100000000)
+	{
+		int nUc = n / 100000000;
+		int nVan = (n % 100000000) / 10000;
+		if (nVan)
+			_snprintf(sz, nSize - 1, "%d øc %d v¹n", nUc, nVan);
+		else
+			_snprintf(sz, nSize - 1, "%d øc", nUc);
+	}
+	else if (n >= 10000)
+	{
+		int nVan = n / 10000;
+		int nLe = n % 10000;
+		if (nLe)
+			_snprintf(sz, nSize - 1, "%d v¹n %d", nVan, nLe);
+		else
+			_snprintf(sz, nSize - 1, "%d v¹n", nVan);
+	}
+	else
+		_snprintf(sz, nSize - 1, "%d", n);
 	sz[nSize - 1] = 0;
 }
 
@@ -338,7 +362,9 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 	char sz[64];
 	m_Name.SetText(p->szName);
 	// bieu tuong: dung lai vat pham tam tu ChatItem (nhu hop thu)
-	m_IconBg.Show();
+	// [A25 04/09] BO khung nen 26x26: o vat pham nay nay rong 58x78 cho vua trang bi nhieu o,
+	// khung nen nho hon mon nen nhin lech han. Hang da co khung rieng roi.
+	m_IconBg.Hide();
 	if (!bSameItem && g_pCoreShell && p->Item.m_nID)
 	{
 		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&p->Item);

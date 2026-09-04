@@ -617,7 +617,10 @@ def build_manager():
         "        -- [B2] PHAI xoa luon nguoi mua, khong thi nguoi ban khong rut lai duoc va kieu Anh",
         "        -- se giao mon cho nguoi chua tra dong nao khi het gio.",
         "        AUC_Rollback(nId)",
+        "        -- [A24] AUC_Rollback xoa nguoi mua nhung KHONG tra cur_price, nen AUC_Bid ben duoi",
+        "        -- truot chot cur_price < ? va nguoi giu gia cu khong bao gio duoc khoi phuc.",
         "        if bKyGui == 1 and szGiuGia ~= \"\" and nGiuGia > 0 then",
+        "            AUC_SetPrice(nId, 0, 0, 0, r.endtime)",
         "            AUC_Bid(nId, szGiuGia, nGiuGia, r.endtime)",	# tra dong ve cho nguoi dang giu gia
         "        end",
         "        Msg2Player(\"" + V("Trừ tiền thất bại.") + "\")",
@@ -658,6 +661,13 @@ def build_manager():
         "        Msg2Player(\"" + V("Giá trả phải từ ") + "\"..nMin..\" \"..AUC_CurName(r.currency)..\".\")",
         "        return",
         "    end",
+        "    -- [A24] TRA BANG HOAC VUOT GIA MUA NGAY = CHOT BAN NGAY o dung gia mua ngay.",
+        "    -- Truoc day duong tra gia khong co tran tren nen gia cao nhat vuot duoc gia mua ngay,",
+        "    -- roi bat ky ai bam Mua ngay cung lay duoc mon o gia THAP HON: nguoi ban mat phan chenh,",
+        "    -- nguoi dang giu gia cao nhat bi cuop mon. Chot o day thi cur khong bao gio vuot base nua.",
+        "    if (r.base or 0) > 0 and r.atype == " + P + ".tbAuctionTypeEnum.eType_PERSONAL and nNewPrice >= r.base then",
+        "        return AUC_OnRequestOfferDutch(nType, szAct, nId, r.base)",
+        "    end",
         "    if AUC_GetMoney(r.currency) < nNewPrice then",
         "        Msg2Player(\"" + V("Không đủ ") + "\"..AUC_CurName(r.currency)..\".\")",
         "        return",
@@ -674,9 +684,11 @@ def build_manager():
         "    end",
         "    if AUC_PayMoney(r.currency, nNewPrice) ~= 1 then",
         "        -- [A17] AUC_Bid DA ghi ten nguoi mua moi roi. Return thang o day thi nguoi giu gia cu",
-        "        -- khong duoc hoan (khoi hoan nam ngay duoi), ma het gio lai giao mon cho nguoi vua",
-        "        -- tru tien hong = chua tra dong nao. Phai lui dong ve dung nhu nhanh Ha Lan lam.",
-        "        AUC_Rollback(nId)",
+        "        -- khong duoc hoan, ma het gio lai giao mon cho nguoi vua tru tien hong.",
+        "        -- [A24] AUC_Rollback o day la MA CHET: no doi WHERE state=1 ma duong tra gia khong he",
+        "        -- dat state=1. Duong lui dung la ha cur_price ve 0 roi ghi lai nguoi cu - khong ha thi",
+        "        -- AUC_Bid truot chot cur_price < ? (gia bang nhau) va nguoi cu mat sach tien.",
+        "        AUC_SetPrice(nId, 0, 0, 0, nEnd)",
         "        if szOld ~= \"\" and nOld > 0 then",
         "            AUC_Bid(nId, szOld, nOld, nEnd)",	# tra lai nguoi giu gia cu
         "        end",
@@ -747,7 +759,16 @@ def build_manager():
         "function AUC_Settle(r, szBuyer, nPrice)",
         "    local nTax = floor(nPrice * " + P + ".nAuctionTaxRate / 100)",
         "    local nNet = nPrice - nTax",
-        "    AUC_MailItem(szBuyer, \"" + V("Đấu giá thành công") + "\", \"" + V("Đại hiệp đã mua được ") + "\"..r.name..\"" + V(" với giá ") + "\"..nPrice..\" \"..AUC_CurName(r.currency)..\"" + V(". Vật phẩm đính kèm trong thư.") + "\", r.id)",
+        "    -- [A24] PHAI kiem ket qua gui thu: truoc day bo qua nen thu hong la tien nguoi mua da tru",
+        "    -- ma mon bien mat, con dong nam o state = 1 - khong vong quet nao nhin toi, ket vinh vien.",
+        "    -- Nay gui hong thi hoan tien nguoi mua va tra dong ve dang ban de ban lai.",
+        "    if AUC_MailItem(szBuyer, \"" + V("Đấu giá thành công") + "\", \"" + V("Đại hiệp đã mua được ") + "\"..r.name..\"" + V(" với giá ") + "\"..nPrice..\" \"..AUC_CurName(r.currency)..\"" + V(". Vật phẩm đính kèm trong thư.") + "\", r.id) <= 0 then",
+        "        AUC_MailMoney(szBuyer, \"" + V("Hoàn tiền đấu giá") + "\", \"" + V("Không giao được ") + "\"..r.name..\"" + V(", hoàn lại tiền đại hiệp đã trả.") + "\", r.currency, nPrice)",
+        "        AUC_Rollback(r.id)",
+        "        AUC_SetPrice(r.id, 0, 0, 0, r.endtime)",
+        "        AUC_Log(format(\"LOI: id %d ban cho %s nhung GUI THU HONG - da hoan tien va tra dong ve dang ban\", r.id, szBuyer))",
+        "        return 0",
+        "    end",
         "    if r.atype == " + P + ".tbAuctionTypeEnum.eType_TONG and r.tong > 0 then",
         "        if r.currency == " + P + ".tbCurrency.MONEY then",
         "            TONG_ApplyAddMoney(r.tong, nNet)",
@@ -789,7 +810,9 @@ def build_manager():
         "",
         "-- kieu Anh ket thuc co nguoi tra gia",
         "function AUC_FinishEnglish(r)",
-        "    if r.buyer == \"\" then",
+        "    -- [A24] PHAI kiem ca gia: neu vi mot duong lui nao do ma dong con ten nguoi mua trong khi",
+        "    -- gia da ve 0 thi khong duoc ban mon voi gia 0 - tra mon ve nguoi ban moi dung.",
+        "    if r.buyer == \"\" or (r.cur or 0) <= 0 then",
         "        return AUC_Expire(r)",
         "    end",
         "    if AUC_SetState(r.id, 1, 1) ~= 1 then",
@@ -960,9 +983,16 @@ def build_manager():
         "    -- Client gui AUCTION_REQUEST_SETPRICE (gia, loai tien) NGAY TRUOC khi bam Dong y.",
         "    AUC_TMP[PlayerIndex] = {nType = nType, nKind = nKind, nTong = nTong, nCur = " + P + ".tbCurrency.MONEY, nPrice = 0}",
         "    -- [A21] noi ro luat cho nguoi ban truoc khi ho bam Dong y",
-        "    -- [A21b] o mo ta cua hop chi 256 byte (KProtocol.h Value1) nen phai ngan gon",
-        "    local szNhac = \"" + V("Nhập giá mua ngay và giá cơ bản (cơ bản thấp hơn). Mỗi lượt trả giá thêm 10% giá cơ bản. Cọc ") + "\".." + P + ".nPersonalPutOnCost..\"" + V("% giá cơ bản, hoàn khi bán được hoặc hết hạn, mất khi tự rút. Thuế ") + "\".." + P + ".nAuctionTaxRate..\"%.\"",
-        "    GiveItemUI(\"" + V("Ký gửi đấu giá: đặt món, nhập hai giá rồi bấm Đồng ý") + "\", szNhac, \"AUC_OnGiveOk\", \"AUC_OnGiveCancel\", 0, \"AUC_OnGiveCheck\", 0, AUC_SCRIPT)",
+        "    -- [A23 04/09] Chu bao \"cho nhap gia bi de chu len\": o mo ta cua hop trai tu y 96 den 182,",
+        "    -- dung cho hai hang nhap gia. Chu dai ba bon dong la de len chung (loi cua dot A21).",
+        "    -- Nay trong hop chi de MOT dong ngan; luat day du noi qua khung chat, doc lai duoc.",
+        "    if nType == " + P + ".tbAuctionTypeEnum.eType_PERSONAL then",	# [A23] chi ky gui moi co hai gia
+        "    Msg2Player(\"" + V("Ký gửi: nhập giá mua ngay và giá cơ bản (cơ bản phải thấp hơn giá mua ngay).") + "\")",
+        "    Msg2Player(\"" + V("Người mua trả giá lên từng lượt, mỗi lượt thêm 10% giá cơ bản, hoặc trả thẳng giá mua ngay.") + "\")",
+        "    Msg2Player(\"" + V("Cọc ") + "\".." + P + ".nPersonalPutOnCost..\"" + V("% giá cơ bản, hoàn lại khi bán được hoặc hết hạn, chỉ mất khi tự rút món. Thuế ") + "\".." + P + ".nAuctionTaxRate..\"" + V("% khi bán được.") + "\")",
+        "    end",
+        "    local szNhac = \"" + V("Cọc ") + "\".." + P + ".nPersonalPutOnCost..\"" + V("%, thuế ") + "\".." + P + ".nAuctionTaxRate..\"" + V("% khi bán.") + "\"",
+        "    GiveItemUI(\"" + V("Ký gửi đấu giá") + "\", szNhac, \"AUC_OnGiveOk\", \"AUC_OnGiveCancel\", 0, \"AUC_OnGiveCheck\", 0, AUC_SCRIPT)",
         "end",
         "",
         "-- [A6] client bao GIA + LOAI TIEN (o ngay trong hop dua vat pham) truoc khi bam Dong y",
@@ -1865,6 +1895,25 @@ def copy_ini():
         # hien, khong phai mo mot lan dau gia - nhan cu "Ta muon dau gia" lam nguoi choi bam nham.
         if n == "auction_item_dutch_header":
             txt = _relabel(txt, "btnBid", V("Mua ngay"))
+        # [A25 04/09] nut "Bao gia": ANH cua nut rong 67 (chung sprite voi hai nut kia) ma o chi
+        # de 46 -> anh tran sang phai va cham nut ben canh o 321 (chu: "2 nut bi xac nhau").
+        if n == "auction_item_english_header":
+            txt = _setkey(txt, "btnOfferPrice", "Left", 250)	# 250 + 67 = 317, cach nut ke 4 px
+            txt = _setkey(txt, "btnOfferPrice", "Width", 67)
+        # [A25] O VAT PHAM noi rong cho vua trang bi nhieu o. Engine KHONG thu nho duoc anh vat
+        # pham: KItem::PaintItem ve nguyen co (rong x 26, cao x 26) roi DrawPrimitives, con
+        # Width/Height truyen vao chi dung de CAN GIUA. Duong duy nhat engine co san la doi han
+        # sang anh thay the (bResize) nhung anh do la tui chuyen van - mat luon hinh mon.
+        # 58 x 78 du cho trang bi 2 x 3; cao hon 3 o thi van nho ra.
+        if n == "auction_item_icon":
+            txt = _setkey(txt, "Main", "Left", 14)
+            txt = _setkey(txt, "Main", "Top", 14)
+            txt = _setkey(txt, "MailAwardItemSpr", "Left", 0)
+            txt = _setkey(txt, "MailAwardItemSpr", "Top", 0)
+            txt = _setkey(txt, "MailAwardItemSpr", "Width", 58)
+            txt = _setkey(txt, "MailAwardItemSpr", "Height", 78)
+            txt = _setkey(txt, "MailAwardItemCount", "Top", 64)
+            txt = _setkey(txt, "MailAwardItemCount", "Width", 56)
         if n == "auction_icon":
             # bieu tuong: nam ngay duoi bieu tuong thu (mail_icon.ini Left=765 Top=296 -> dau gia Top=322)
             # [A10 04/09] chu: "cho icon dau gia xuong giua bau cua va mail"
