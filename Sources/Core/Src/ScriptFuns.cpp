@@ -14909,6 +14909,8 @@ TLua_Funcs GameScriptFuns[] =
 	{"AUC_CountSeller",	LuaAUC_CountSeller},
 	{"AUC_SetPrice",	LuaAUC_SetPrice},
 	{"AUC_Bid",	LuaAUC_Bid},
+	{"AUC_CanGiveRec",	LuaAUC_CanGiveRec},
+	{"AUC_Rollback",	LuaAUC_Rollback},
 #endif
 	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},

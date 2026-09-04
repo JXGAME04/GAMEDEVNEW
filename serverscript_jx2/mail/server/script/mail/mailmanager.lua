@@ -278,11 +278,21 @@ function MailManager_GiveAward(tbAward)
     for i = 1, getn(tbAward) do
         local a = tbAward[i]
         if a.szKind == "aucitem" then
-            local ai = AUC_Get(a.nAucId)
-            if ai and AUC_GiveRec(ai.rec) > 0 then
-                GhiLog("MAIL", format("%s nhan mon dau gia id %d (%s)", GetName(), a.nAucId, ai.name))
+            local szRec = a.szRec
+            if szRec == nil or szRec == "" then
+                local ai = AUC_Get(a.nAucId)
+                if ai then
+                    szRec = ai.rec
+                end
+            end
+            if szRec ~= nil and szRec ~= "" and AUC_GiveRec(szRec) > 0 then
+                GhiLog("MAIL", format("%s nhan mon dau gia id %d", GetName(), a.nAucId))
             else
-                GhiLog("MAIL", format("LOI: %s KHONG nhan duoc mon dau gia id %d", GetName(), a.nAucId))
+                -- [B4] trao hong: thu da danh dau da nhan roi nen KHONG duoc bo qua - gui lai bang thu moi.
+                GhiLog("MAIL", format("LOI: %s KHONG nhan duoc mon dau gia id %d - gui lai qua thu", GetName(), a.nAucId))
+                MailManager_SendMail(GetName(), MAILMGR_SENDER_SYS, "VËt phÈm ®Êu gi¸ göi l¹i",
+                    "LÇn nhËn tr­íc hµnh trang kh«ng ®ñ chç, vËt phÈm ®­îc göi l¹i ®©y.",
+                    "aucitem:"..a.nAucId, 30, "daugia", 1)
             end
         elseif a.szKind == "item" or a.szKind == "gold" then
             MailManager_GiveItem(a)
@@ -343,6 +353,24 @@ function MailManager_OnRequestStateChange(nId, nToState)
             nCells = nCells + (a.nCells or 6)
         elseif a.szKind == "gold" then
             nCells = nCells + a.nCount * 6
+        end
+    end
+    -- [B4 04/09] CalcFreeItemCellCount dem O ROI RAC 1x1, con dat do doi mot KHOI LIEN WxH:
+    -- tui con 6 o roi van khong dat noi mot thanh vu khi 2x3. Voi mon dau gia phai THU DAT THAT
+    -- truoc khi danh dau da nhan, khong thi thu mat dinh kem ma trong tui khong co gi.
+    for i = 1, getn(tbAward) do
+        local a = tbAward[i]
+        if a.szKind == "aucitem" then
+            local ai = AUC_Get(a.nAucId)
+            if not ai or ai.rec == nil or ai.rec == "" then
+                Msg2Player("VËt phÈm ®Êu gi¸ kh«ng cßn trong kho, h·y b¸o qu¶n trÞ!")
+                return
+            end
+            a.szRec = ai.rec
+            if AUC_CanGiveRec and AUC_CanGiveRec(ai.rec) ~= 1 then
+                Msg2Player("Hµnh trang kh«ng cßn kho¶ng trèng liÒn ®ñ réng cho vËt phÈm nµy, h·y dän bít!")
+                return
+            end
         end
     end
     if nCells > 0 and CalcFreeItemCellCount(1, 1) < nCells then

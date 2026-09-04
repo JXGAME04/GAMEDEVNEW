@@ -14,7 +14,9 @@
 #define AUCUI_MAX_ACTIVITY	32
 #define AUCUI_MAX_ITEM		20		// AUCTION_DEF.nMaxItemPerPage
 #define AUCUI_MAX_MEMBER	64
-#define AUCUI_ROW_COUNT		3		// hang vat pham hien cung luc (321 / 118)
+// [A14 04/09] khung danh sach cao 321, moi hang cao 118 -> chi lot 2 hang.
+// De 3 la hang thu ba tran han ra ngoai khung (354 > 321) - dung nhu chu thay.
+#define AUCUI_ROW_COUNT		2		// hang vat pham hien cung luc (321 / 118)
 #define AUCUI_ACT_ROW_COUNT	14		// hang phien hien cung luc (355 / 25)
 
 // loai phien (AUCTION_DEF.tbAuctionTypeEnum)

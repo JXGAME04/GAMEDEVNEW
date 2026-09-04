@@ -17,8 +17,16 @@
 
 class KIniFile;
 
+// khung cuon: chuyen tiep thong bao nut/thanh cuon cho cha (KWndPage/KWndScrollBar chi bao cha TRUC TIEP)
+class KUiAuctionScrollWnd : public KWndImage
+{
+public:
+	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+};
+
 // ---- mot hang PHIEN (auction_activity_header.ini) ----
-class KUiAuctionActRow : public KWndImage
+// [DAUGIA 04/09 A13] ke thua KUiAuctionScrollWnd de nut trong hang bao duoc len trang
+class KUiAuctionActRow : public KUiAuctionScrollWnd
 {
 public:
 	KUiAuctionActRow();
@@ -33,7 +41,8 @@ public:
 };
 
 // ---- mot hang VAT PHAM (auction_item_english_header.ini + auction_item_dutch_header.ini) ----
-class KUiAuctionItemRow : public KWndImage
+// [DAUGIA 04/09 A13] ke thua KUiAuctionScrollWnd de nut trong hang bao duoc len trang
+class KUiAuctionItemRow : public KUiAuctionScrollWnd
 {
 public:
 	KUiAuctionItemRow();
@@ -93,12 +102,6 @@ public:
 	KWndText80			m_Level;					// [Level1]
 };
 
-// khung cuon: chuyen tiep thong bao nut/thanh cuon cho cha (KWndPage/KWndScrollBar chi bao cha TRUC TIEP)
-class KUiAuctionScrollWnd : public KWndImage
-{
-public:
-	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
-};
 
 #define AUCUI_MEMBER_ROW_COUNT	16
 
