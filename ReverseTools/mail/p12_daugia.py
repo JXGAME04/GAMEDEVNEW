@@ -1925,6 +1925,11 @@ def copy_ini():
         if n == "auction_item_english_header":
             txt = _setkey(txt, "txtJinPai", "Left", 101)
             txt = _setkey(txt, "txtJinPai", "Width", 108)
+            # [A27] chu: "so tien trong o nhap bi lech phia tren" - o chu cao 16 dat o Top=88
+            # trong khung cao 20 o Top=86 va KHONG bat can giua doc. Cho trung khung roi bat VAlign.
+            txt = _setkey(txt, "txtJinPai", "Top", 86)
+            txt = _setkey(txt, "txtJinPai", "Height", 20)
+            txt = _setkey(txt, "txtJinPai", "VAlign", 1)
         if n == "auction_item_icon":
             txt = _setkey(txt, "Main", "Left", 14)
             txt = _setkey(txt, "Main", "Top", 14)
