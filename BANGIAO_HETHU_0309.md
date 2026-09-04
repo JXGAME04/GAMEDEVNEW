@@ -141,6 +141,15 @@ Nguyên nhân: `KSortScript.h:15` phía client `MAX_SCRIPT_IN_SET = 5` (máy ch�
 `RegisterFunctions(GameScriptFuns)` + `MODEL_GAMECLIENT` như `LoadScriptToSortListA`), `SP_FindScript()` xuất cho `LuaDynamicExecute` (client).
 → `bin\client\CoreClient.dll.moi` **e151cbfc** (2.515.456); `Game.exe` bd5cb88e giữ nguyên. Commit D5 trên origin/main.
 
+**17:58 wauto-6a đặt bộ S13k** (main 87757f14 + d59340c4): `CoreServer.dll.moi` b68899b2 (18.298.368, chờ `ChayGameServer.bat`) +
+`CoreClient.dll.moi` e10abd7a (2.515.968, tập cha của e151cbfc) — chủ đã swap client 17:59:13 (đang chạy e10abd7a / Game.exe bd5cb88e).
+
+**ĐỢT 6 (18:00, chỉ SCRIPT + INI, không build)** — chủ chụp 17:50: cửa sổ mở nhưng KHÔNG hình nền, KHÔNG hàng thư. `ScriptError.log` client:
+`UIMail:HeaderListArrival(0,nil,1)` ("for table must be a table") và `attempt to call field 'SendData'`. Sửa `protocol.lua` (cả hai phía):
+nhánh client có OBJTYPE_TABLE → không Pop ở state điều phối mà `DynamicExecute(szFile, "ScriptProtocol_RecvInState", nHandle, szFun, unpack(format))`
+rồi Pop trong state đích (`DynamicExecute` chỉ chuyển số/chuỗi); `ScriptProtocol:SendData` chuyển vào `protocol.lua`. Ini: mọi `Image=` thêm `\` đầu
+(`p2_lua_ini.py`); sprite thư ĐỀU có trong `updatejx15.pak` (cờ 0x20), riêng `信件选择框11.spr` không tồn tại ở đâu (nút phủ hàng, vô hại).
+
 Phiên wauto-c1 (Represent3, nhánh rep3-0309) bị chặn ghi `bin\client` và nhờ gộp vào bộ này — KHÔNG làm hộ (chủ tự chép/cho phép); họ tự gộp
 origin/main (đã có D4/D4b) vào rep3-0309 và đặt sau. `Represent3.dll` 74ac07ad đã nằm ở bin\client nhưng `config.ini [Client] Represent=2` nên chưa dùng.
 

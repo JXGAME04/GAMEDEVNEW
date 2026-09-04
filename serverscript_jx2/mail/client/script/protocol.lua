@@ -114,6 +114,15 @@ function ScriptProtocol:ProtocolProcess(nProtolId, nHandle)
 		local szFile = self.tbProtocolDef[nProtolId][1]
 		local szFun = self.tbProtocolDef[nProtolId][2]
 		local tbParamFormat = self.tbProtocolDef[nProtolId][3]
+		-- [MAIL 03/09 D6] client: DynamicExecute chi chuyen so/chuoi, BANG thanh nil (HeaderListArrival(0,nil,1)) ->
+		-- co OBJTYPE_TABLE thi khong Pop o day ma chuyen HANDLE sang state dich, Pop o do (ScriptProtocol_RecvInState).
+		if MODEL_GAMECLIENT == 1 and ScriptProtocol_HasTable(tbParamFormat) == 1 then
+			if szFile ~= "" then
+				Require(szFile);
+			end
+			DynamicExecute(szFile, "ScriptProtocol_RecvInState", nHandle, szFun, unpack(tbParamFormat))
+			return
+		end
 		local tbParam = self:HandleProcess(nHandle, tbParamFormat)
 		if MODEL_GAMESERVER == 1 then
 			DynamicExecuteByPlayer(PlayerIndex, szFile, szFun, unpack(tbParam))
@@ -167,4 +176,50 @@ if (Require == nil) then
 		end
 		return 0
 	end
+end
+
+-- [MAIL 03/09 D6] dinh dang co OBJTYPE_TABLE? (ProtocolProcess phia client)
+function ScriptProtocol_HasTable(tbFormat)
+	if type(tbFormat) ~= "table" then
+		return 0
+	end
+	for i = 1, getn(tbFormat) do
+		if tbFormat[i] == OBJTYPE_TABLE then
+			return 1
+		end
+	end
+	return 0
+end
+
+-- [MAIL 03/09 D6] chay trong STATE DICH (uimail.lua...): Pop tham so theo dinh dang (arg) roi goi szFun
+-- ("UIMail:HeaderListArrival" = phuong thuc cua bang toan cuc, hoac ten ham toan cuc).
+function ScriptProtocol_RecvInState(nHandle, szFun, ...)
+	local tbFormat = {}
+	for i = 1, arg.n do
+		tinsert(tbFormat, arg[i])
+	end
+	local tbParam = ScriptProtocol:HandleProcess(nHandle, tbFormat)
+	local _, _, szObj, szMethod = strfind(szFun or "", "^([%w_]+):([%w_]+)$")
+	if szObj then
+		local obj = getglobal(szObj)
+		if type(obj) == "table" and type(obj[szMethod]) == "function" then
+			return obj[szMethod](obj, unpack(tbParam))
+		end
+	else
+		local f = getglobal(szFun or "")
+		if type(f) == "function" then
+			return f(unpack(tbParam))
+		end
+	end
+	if Msg2Player then
+		Msg2Player("ScriptProtocol_RecvInState: khong co ham "..(szFun or "nil"))
+	end
+end
+
+-- [MAIL 03/09 D6] client -> may chu (truoc o protocol_def_c.lua nen state uimail.lua khong thay); may chu: SendScriptDataToServer = nil -> 0
+function ScriptProtocol:SendData(szEnum, nHandle)
+	if (type(self[szEnum]) == "number" and SendScriptDataToServer) then
+		return SendScriptDataToServer(self[szEnum], nHandle)
+	end
+	return 0
 end

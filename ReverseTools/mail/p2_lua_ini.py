@@ -195,6 +195,9 @@ def build_ini(name):
     s = rd(os.path.join(SRC, "mail_jx1cu", "ui3_" + name))
     if name == "mail_list.ini":
         s = rep1(s, "Label=" + V("Nhận vật phẩm"), "Label=" + V("Nhận"), "nhan")
+    # [D6 03/09] anh nen KWndImage khong hien (chu chup 17:50): cac muc "Image=spr\Ui4\email\..." (KHONG co dau "\" dau,
+    # nguyen ban client cu) khong ve duoc, con "Image=\spr\Ui4\..." (nut, khung loc) ve tot -> them "\" dau cho moi Image=
+    s = s.replace("Image=spr\\", "Image=\\spr\\").replace("Image=Spr\\", "Image=\\Spr\\")
     if name == "mail_icon.ini":
         # [D4 03/09] chu: dat duoi bieu tuong Bau Cua = UiPlayerBar.ini [SpringGame] Left=765 Top=243 50x50 (800x600);
         # 1024: UiMail.cpp neo x = 1024 - 30 nhu UiPlayerBar.cpp
