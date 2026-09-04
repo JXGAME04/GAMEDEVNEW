@@ -156,6 +156,14 @@ public:
 	// cong thanh - SetObstacle o tren chi ghi khi o == 0 nen KHONG BAO GIO
 	// go duoc (value 0 khong de len 1); di kem luu-gia-tri-cu o KJx2WarInfra.
 #ifdef _SERVER
+	// [DECHONG 04/09] so NPC dang dung tren mot o. Bo dem m_pNpcRef van duoc AddRef/DecRef
+	// day du ngay ca khi g_nPbNpcChan = 0 (nguoi/bot khong chan duong nhau).
+	int		GetNpcCell(int nMapX, int nMapY)
+	{
+		if (!m_pNpcRef || nMapX < 0 || nMapY < 0 || nMapX >= m_nWidth || nMapY >= m_nHeight)
+			return 0;
+		return (int)m_pNpcRef[nMapY * m_nWidth + nMapX];
+	}
 	long		GetObstacleCell(int nMapX, int nMapY)
 	{
 		if (nMapX < 0 || nMapY < 0 || nMapX >= REGION_GRID_WIDTH || nMapY >= REGION_GRID_HEIGHT)
