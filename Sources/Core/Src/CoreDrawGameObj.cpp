@@ -103,7 +103,11 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 			x -= Width / 2;
 			y -= Height / 2;
 		}
-		else
+		// [A33 04/09] Phep dich can-giua nay tinh theo kich thuoc GOC cua mon. Khi dang THU NHO
+		// ve mot o thi no keo mon lech han ra ngoai (mon 2x4 bi keo len 39 px, sang trai 13 px).
+		// Chi dich khi KHONG thu nho. Mon mot o khong doi mot pixel vi (26-26)/2 = 0.
+		else if ((nParam & 0x40000000) == 0 || uObjGenre == CGOG_IME_ITEM
+			|| Item[uId].GetWidth() * Item[uId].GetHeight() <= 1)
 		{
 			x += (Width - Item[uId].GetWidth() * ITEM_CELL_WIDTH) / 2;
 			y += (Height - Item[uId].GetHeight() * ITEM_CELL_HEIGHT) / 2;

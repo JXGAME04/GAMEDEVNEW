@@ -1047,7 +1047,12 @@ void KUiAuctionPage::EndItem(int nId)
 	int nIdx = FindItem(nId);
 	if (nIdx < 0)
 		return;
-	m_Item[nIdx].bEnded = 1;	// giu nguyen cho, chi danh dau
+	// [A33 04/09] chu: "item duoc mua roi thi khong cap nhat lien, phai tat bang mo lai moi bien".
+	// Danh dau tai cho lam hang chet trong Y HET hang dang ban (ten, gia, bieu tuong van ve).
+	// Nay XOA TRANG o do: Fill() mo dau bang "if (!p || p->nId <= 0) { ClearRow(); return; }"
+	// nen hang trong ngay, va ClearRow nha o vat pham tam nen khong ro GDI_ITEM_CHAT.
+	// m_nItemCount KHONG doi -> hai hang kia khong dich mot ly -> khong the bam nham mon.
+	memset(&m_Item[nIdx], 0, sizeof(m_Item[nIdx]));
 	RefreshItem();
 }
 
