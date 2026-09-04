@@ -234,12 +234,12 @@ function UIAuctionHouse:ShowItem(nType, tbItem, bAdd)
     if nType == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL and tbItem.szBelongRole == GetName() then
         bMine = 1
     end
-    local p = tbItem.tbItem or {}
+    -- [A9] 6 so cua vat pham nam thang trong dong (khong con bang long)
     if tbItem.nType == AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH then
         if bAdd == 1 then
             AuctionAddEnglishItem(nType, tbItem.nId, tbItem.nStartTime, tbItem.nGuaranteedPrice, tbItem.nRangePerOffer, tbItem.nCurrencyType,
                 tbItem.nMaxPrice, tbItem.nSelfPrice, tbItem.nRemainingTime, bMine,
-                p[1] or 0, p[2] or 0, p[3] or 0, p[4] or 0, p[5] or 0, p[6] or 0, tbItem.nCount or 1, tbItem.szName or "", tbItem.szCurrencyName or "")
+                tbItem.nG or 0, tbItem.nD or 0, tbItem.nP or 0, tbItem.nL or 0, tbItem.nS or 0, tbItem.nK or 0, tbItem.nCount or 1, tbItem.szName or "", tbItem.szCurrencyName or "")
         else
             AuctionSetEnglishItem(nType, tbItem.nId, tbItem.nStartTime, tbItem.nGuaranteedPrice, tbItem.nRangePerOffer, tbItem.nCurrencyType,
                 tbItem.nMaxPrice, tbItem.nSelfPrice, tbItem.nRemainingTime, bMine, tbItem.szCurrencyName or "")
@@ -248,7 +248,7 @@ function UIAuctionHouse:ShowItem(nType, tbItem, bAdd)
         if bAdd == 1 then
             AuctionAddDutchItem(nType, tbItem.nId, tbItem.nStartTime, tbItem.nCurPrice, tbItem.nGuaranteedPrice, tbItem.nCurrencyType,
                 tbItem.nRemainingTime, tbItem.nNextPrice, tbItem.nTotalRemainingTime, bMine,
-                p[1] or 0, p[2] or 0, p[3] or 0, p[4] or 0, p[5] or 0, p[6] or 0, tbItem.nCount or 1, tbItem.szName or "", tbItem.szCurrencyName or "")
+                tbItem.nG or 0, tbItem.nD or 0, tbItem.nP or 0, tbItem.nL or 0, tbItem.nS or 0, tbItem.nK or 0, tbItem.nCount or 1, tbItem.szName or "", tbItem.szCurrencyName or "")
         else
             AuctionSetDutchItem(nType, tbItem.nId, tbItem.nStartTime, tbItem.nCurPrice, tbItem.nGuaranteedPrice, tbItem.nCurrencyType,
                 tbItem.nRemainingTime, tbItem.nNextPrice, tbItem.nTotalRemainingTime, bMine, tbItem.szCurrencyName or "")
@@ -316,12 +316,22 @@ function UIAuctionHouse:OnMemberListResponse(nType, tbInfo)
         return
     end
     AuctionClearMemberList()
+    -- [A9] danh sach thanh vien den duoi dang chuoi "ten,cap,chuc,online;..."
+    local sz = tbInfo.szMemberList or ""
     local n = 0
-    for szRole, t in tbInfo.tbMemberList or {} do
-        n = n + 1
-        AuctionAddActivityMember(szRole, t[1] or 0, t[2] or 0, t[3] or 0)
+    while sz ~= "" do
+        local a, b, one = strfind(sz, "^([^;]*);?")
+        if not a then
+            break
+        end
+        sz = strsub(sz, b + 1)
+        local _, _, szTen, szCap, szChuc, szOn = strfind(one, "^(.-),(%d+),(%d+),(%d+)$")
+        if szTen then
+            n = n + 1
+            AuctionAddActivityMember(szTen, tonumber(szCap) or 0, tonumber(szChuc) or 0, tonumber(szOn) or 0)
+        end
     end
-    AuctionSetSalaryAndCount(n, tbInfo.nSalary or 0)
+    AuctionSetSalaryAndCount(tbInfo.nCount or n, tbInfo.nSalary or 0)
 end
 
 function UIAuctionHouse:OnOfferPriceResponse(nType, szAct, nId, nNewPrice)

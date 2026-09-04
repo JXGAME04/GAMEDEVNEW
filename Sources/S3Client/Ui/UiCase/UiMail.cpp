@@ -378,7 +378,9 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
             szTip[sizeof(szTip) - 1] = 0;
             m_AwardSpr[i].SetToolTipInfo(szTip, sizeof(szTip));
         }
-        if (pA->nCount > 1 && !bBoxShown)
+        // [A8 04/09] o vat pham chi ve duoc so <= 255 (m_bStack la BYTE); tren nguong do
+        // KMailClient dat stack = 1 va ta tu ve nhan so that.
+        if (pA->nCount > 1 && (!bBoxShown || pA->nCount > 255))
             m_AwardCount[i].SetIntText(pA->nCount);
         else
             m_AwardCount[i].SetText("");

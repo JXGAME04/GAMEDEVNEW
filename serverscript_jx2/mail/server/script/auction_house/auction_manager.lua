@@ -147,7 +147,15 @@ function AUC_RowToClient(r, szMe, nNow)
     tb.nCurrencyType = r.currency
     tb.szCurrencyName = AUC_CurName(r.currency)
     tb.szBelongRole = r.seller
-    tb.tbItem = AUC_SplitDesc(r.desc)
+    -- [A9] KHONG long bang ba tang (tbPage > dong > tbItem): ObjBuffer khong dua qua duoc,
+    -- ben nhan ra bang RONG. Trai 6 so cua vat pham thanh 6 truong so.
+    local pr = AUC_SplitDesc(r.desc)
+    tb.nG = pr[1]
+    tb.nD = pr[2]
+    tb.nP = pr[3]
+    tb.nL = pr[4]
+    tb.nS = pr[5]
+    tb.nK = pr[6]
     tb.szName = r.name
     tb.nCount = 1
     tb.nGuaranteedPrice = r.guar
@@ -323,20 +331,24 @@ end
 
 function AUC_OnRequestMemberList(szAct)
     local nTong = AUC_MyTong()
-    local tbMem = {}
+    local szMem = ""
     local nCount = 0
     if nTong > 0 then
         local nMem = TONG_GetFirstMember(nTong, -1)
         while nMem and nMem > 0 and nCount < 60 do
             local szTen = TONGM_GetName(nTong, nMem)
             if szTen and szTen ~= "" then
-                tbMem[szTen] = {(TONGM_GetLevel and TONGM_GetLevel(nTong, nMem)) or 0, TONGM_GetFigure(nTong, nMem) or 3, TONGM_GetOnline(nTong, nMem) or 0}
+                -- [A9] noi thanh CHUOI (bang long ba tang khong qua duoc ObjBuffer)
+                if szMem ~= "" then
+                    szMem = szMem..";"
+                end
+                szMem = szMem..szTen..","..((TONGM_GetLevel and TONGM_GetLevel(nTong, nMem)) or 0)..","..(TONGM_GetFigure(nTong, nMem) or 3)..","..(TONGM_GetOnline(nTong, nMem) or 0)
                 nCount = nCount + 1
             end
             nMem = TONG_GetNextMember(nTong, nMem, -1)
         end
     end
-    local tb = {szActivityName = szAct, tbMemberList = tbMem, nSalary = 0}
+    local tb = {szActivityName = szAct, szMemberList = szMem, nCount = nCount, nSalary = 0}
     if nTong > 0 and nCount > 0 then
         tb.nSalary = floor(TONG_GetMoney(nTong) / nCount)
     end

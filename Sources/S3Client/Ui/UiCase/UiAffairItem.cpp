@@ -16,6 +16,9 @@ extern iCoreShell*		g_pCoreShell;
 #include "../../../core/src/KAuctionUiDef.h"	// [DAUGIA 04/09 A6] o gia + nut doi tien trong chinh hop nay
 #define	SCHEME_INI 	"UiGiveItem.ini"
 
+// [A7] cua so co the CHUA duoc tao khi script bat che do -> nho lai, ap dung luc OpenWindow
+static int s_bAucPending = 0;
+
 KUiAffairItem* KUiAffairItem::m_pSelf = NULL;
 
 // [BOXMAU 01/09] Chuoi mo ta tu Lua den con THO ("<color=red>" chua phai byte dieu
@@ -115,6 +118,9 @@ KUiAffairItem* KUiAffairItem::OpenWindow(const char* pszTitle, const char* pszIn
 		m_pSelf->Show();
 		Wnd_GameSpaceHandleInput(false);			
 	}
+	// [A7] ap dung che do ky gui da nho truoc khi cua so ton tai
+	if (s_bAucPending)
+		SetAuctionMode(1);
 	return m_pSelf;
 }
 
@@ -162,11 +168,13 @@ void KUiAffairItem::Initialize()
 	AddChild(&m_AucLabel);
 	AddChild(&m_AucPrice);
 	AddChild(&m_AucCur);
+	AddChild(&m_AucUnit);
 	m_bAucMode = 0;
 	m_nAucCur = AUCUI_CUR_MONEY;
 	m_AucLabel.Hide();
 	m_AucPrice.Hide();
 	m_AucCur.Hide();
+	m_AucUnit.Hide();
 	
 	m_ContentList.SetScrollbar(&m_ContentScroll);	
 	
@@ -201,6 +209,7 @@ void KUiAffairItem::LoadScheme(const char* pScheme)
 			m_pSelf->m_AucLabel.Init(&Ini, "AucPriceLabel");
 			m_pSelf->m_AucPrice.Init(&Ini, "AucPriceEdit");
 			m_pSelf->m_AucCur.Init(&Ini, "AucCurBtn");
+			m_pSelf->m_AucUnit.Init(&Ini, "AucUnitLabel");
 			m_pSelf->m_ItemBox.EnableTracePutPos(true);
 			m_pSelf->m_ItemBox.EnablePickPut(true);
 		}
@@ -215,6 +224,17 @@ static const char* sAucCurName(int nCur)
 	return (nCur == AUCUI_CUR_XU) ? "Xu" : "Ng©n l­îng";
 }
 
+// [A7] don vi hien sau o nhap: Ngan luong tinh theo VAN (x10.000), Xu tinh thang
+static const char* sAucUnitName(int nCur)
+{
+	return (nCur == AUCUI_CUR_XU) ? "Xu" : "v¹n";
+}
+
+static int sAucMultiplier(int nCur)
+{
+	return (nCur == AUCUI_CUR_XU) ? 1 : 10000;
+}
+
 
 //--------------------------------------------------------------------------
 //	Su kien
@@ -226,6 +246,7 @@ int KUiAffairItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	{
 		m_nAucCur = (m_nAucCur == AUCUI_CUR_XU) ? AUCUI_CUR_MONEY : AUCUI_CUR_XU;
 		m_AucCur.SetLabel(sAucCurName(m_nAucCur));
+		m_AucUnit.SetText(sAucUnitName(m_nAucCur));
 		return 1;
 	}
 	int nRet = 0;
@@ -267,13 +288,20 @@ int KUiAffairItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 void KUiAffairItem::SetAuctionMode(int bOn)
 {
 	if (!m_pSelf)
+	{
+		// [A7] chua co cua so: nho lai, OpenWindow se ap dung (truoc day bam lan dau khong hien o gia)
+		s_bAucPending = bOn ? 1 : 0;
 		return;
+	}
+	s_bAucPending = 0;
 	m_pSelf->m_bAucMode = bOn ? 1 : 0;
 	m_pSelf->m_nAucCur = AUCUI_CUR_MONEY;
 	if (bOn)
 	{
-		m_pSelf->m_AucPrice.SetText("");
+		m_pSelf->m_AucPrice.SetText("1");	// [A7] co san so 1 de biet cho go
 		m_pSelf->m_AucCur.SetLabel(sAucCurName(m_pSelf->m_nAucCur));
+		m_pSelf->m_AucUnit.SetText(sAucUnitName(m_pSelf->m_nAucCur));
+		m_pSelf->m_AucUnit.Show();
 		m_pSelf->m_AucLabel.Show();
 		m_pSelf->m_AucPrice.Show();
 		m_pSelf->m_AucCur.Show();
@@ -283,6 +311,7 @@ void KUiAffairItem::SetAuctionMode(int bOn)
 		m_pSelf->m_AucLabel.Hide();
 		m_pSelf->m_AucPrice.Hide();
 		m_pSelf->m_AucCur.Hide();
+		m_pSelf->m_AucUnit.Hide();
 	}
 }
 
@@ -297,7 +326,11 @@ void KUiAffairItem::OnOk()
 		m_AucPrice.GetText(szBuf, sizeof(szBuf), true);
 		KAucUiReq r;
 		memset(&r, 0, sizeof(r));
-		r.nPrice = atoi(szBuf);
+		// [A7] Ngan luong nhap theo VAN (x10.000), Xu nhap thang
+		double dP = (double)atoi(szBuf) * (double)sAucMultiplier(m_nAucCur);
+		if (dP > 2000000000.0)
+			dP = 2000000000.0;
+		r.nPrice = (int)dP;
 		r.nType = m_nAucCur;
 		g_pCoreShell->OperationRequest(GOI_AUCTION_UI, (unsigned int)AUCUI_OP_SET_PRICE, (int)&r);
 		m_bAucMode = 0;

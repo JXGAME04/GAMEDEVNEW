@@ -162,7 +162,8 @@ static void sFillItem(Lua_State* L, int nFrom, KAucUiItem* p)
 	p->nCount = sArgInt(L, nFrom + 6);
 	if (p->nCount < 1)
 		p->nCount = 1;
-	p->Item.m_bStack = (BYTE)(p->nCount > 255 ? 255 : p->nCount);
+	// [A8 04/09] m_bStack la BYTE: so luong > 255 bi cat -> dat 1, UI tu ve nhan so that
+	p->Item.m_bStack = (BYTE)(p->nCount > 255 ? 1 : p->nCount);
 	p->Item.m_wVersion = (WORD)g_SubWorldSet.GetGameVersion();
 	p->Item.m_nNature = 0;
 	p->Item.m_nGoldId = 0;
