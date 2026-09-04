@@ -716,10 +716,38 @@ int ChienLenh_SoMoc()
 // 9. HAM LUA
 //////////////////////////////////////////////////////////////////////////////
 
+// [CL 04/09 DOT2b] TU NAP cau hinh: lan dau (s_nCfgVer == -1) hoac khi web tang st_config['cfg_version'].
+// Truoc day chi lenh GM "Nap lai" moi goi ChienLenh_Reload -> may chu chay ca ngay ma Chien Lenh van "tat"
+// (st_cfg_log trong, khong co bieu tuong). Mot cau doc theo khoa chinh 0,08 ms nen goi o CL_Ready / CL_Load /
+// CL_Tick deu re. bEp = 1: ep nap bat ke phien ban (lenh GM).
+static int sTuNapLai(int bEp)
+{
+	if (!ChienLenh_EnsureTables())
+		return 1;
+	int nMoi = s_nCfgVer;
+	if (!bEp)
+	{
+		KCLIntBox c;
+		c.n = 0;
+		c.bCo = false;
+		g_MySQLDB.Query("SELECT v FROM st_config WHERE k='cfg_version'", 0, 0, _RowInt, &c);
+		if (c.bCo)
+			nMoi = c.n;
+		if (nMoi == s_nCfgVer && s_nCfgVer != -1)
+			return 0;		// khong doi, khong lam gi
+	}
+	int nLoi = ChienLenh_Reload();
+	s_nCfgVer = nMoi;		// ghi ca khi loi: bao loi MOT lan moi phien ban, web sua xong tang so la nap lai
+	if (s_nCfgVer == -1)
+		s_nCfgVer = 0;
+	return nLoi;
+}
+
 // CL_Ready() -> 1 neu bang da co VA cau hinh da nap
 int LuaCL_Ready(Lua_State* L)
 {
-	Lua_PushNumber(L, (ChienLenh_EnsureTables() && s_bCfgOk) ? 1 : 0);
+	sTuNapLai(0);
+	Lua_PushNumber(L, s_bCfgOk ? 1 : 0);
 	return 1;
 }
 
@@ -728,26 +756,7 @@ int LuaCL_Ready(Lua_State* L)
 int LuaCL_Reload(Lua_State* L)
 {
 	int bEp = sArgInt(L, 1);
-	if (!ChienLenh_EnsureTables())
-	{
-		Lua_PushNumber(L, 1);
-		return 1;
-	}
-	if (!bEp)
-	{
-		KCLIntBox c;
-		c.n = 0;
-		c.bCo = false;
-		// mot cau doc theo khoa chinh: 0,08 ms - re, goi moi 30 giay duoc
-		g_MySQLDB.Query("SELECT v FROM st_config WHERE k='cfg_version'", 0, 0, _RowInt, &c);
-		if (c.bCo && c.n == s_nCfgVer)
-		{
-			Lua_PushNumber(L, 0);	// khong doi, khong lam gi
-			return 1;
-		}
-		s_nCfgVer = c.bCo ? c.n : s_nCfgVer;
-	}
-	int nLoi = ChienLenh_Reload();
+	int nLoi = sTuNapLai(bEp);	// [CL 04/09 DOT2b] cung mot duong voi nap tu dong
 	Lua_PushNumber(L, nLoi);
 	return 1;
 }
@@ -1205,6 +1214,7 @@ static int sNhanMoc(int nIdx, int nMoc, int nBranch)
 int LuaCL_Load(Lua_State* L)
 {
 	int nIdx = sChiSoNguoiChoi(L);
+	sTuNapLai(0);	// [CL 04/09 DOT2b] dang nhap dau tien sau boot = nap cau hinh
 	Lua_PushNumber(L, sNapNguoiChoi(nIdx) ? 1 : 0);
 	return 1;
 }
@@ -1365,12 +1375,33 @@ int LuaCL_TrangThai(Lua_State* L)
 int LuaCL_Tick(Lua_State* L)
 {
 	int nXa = 0;
+	sTuNapLai(0);	// [CL 04/09 DOT2b] moi phut: web tang cfg_version la nap lai
 	if (!s_bCfgOk)
 	{
 		Lua_PushNumber(L, 0);
 		return 1;
 	}
 	int nNow = (int)time(NULL);
+	// [CL 04/09 DOT2b] PHUT ONLINE dem o day: Lua truyen so hieu cac nhiem vu online (CL_Tick(id1, id2, id3)),
+	// C++ duyet nguoi da nap (bot bi sCong loai). Truoc day cl_def.lua duyet bang GetPlayerIdx - ham KHONG co
+	// trong engine nay -> ScriptError moi phut va CL_Tick() khong bao gio duoc goi.
+	int nArg = Lua_GetTopIndex(L);
+	if (nArg > 8)
+		nArg = 8;
+	if (nArg > 0)
+	{
+		for (int k = 1; k < MAX_PLAYER; k++)
+		{
+			if (!s_Pl[k].bLoaded)
+				continue;
+			for (int a = 1; a <= nArg; a++)
+			{
+				int nId = sArgInt(L, a);
+				if (nId > 0)
+					sCong(k, nId, 1);
+			}
+		}
+	}
 	for (int i = 1; i < MAX_PLAYER; i++)
 	{
 		KCLPlayer& p = s_Pl[i];
