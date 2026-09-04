@@ -1036,6 +1036,13 @@ static int sFindScriptIdxByState(Lua_State* L)
 		if (g_ScriptSet[i].m_LuaState == L)
 			return (int)i;
 	}
+	// [A33 04/09] TEP DANG NAP nam DUNG o o nCurrentScriptNum: KSortScript chi tang bien do
+	// SAU khi Load() tra ve, nen vong tren (i < nCurrentScriptNum) khong bao gio quet toi no.
+	// Hau qua: moi loi goi AddTimer o THAN CHUNK deu tra 0 va khong dang ky gi -> ba vong quet
+	// (dau gia, hop thu, mailpoll) CHUA TUNG chay: mon het han khong duoc tra, phien Ha Lan
+	// khong ha gia. Nhat ky xac nhan: khong mot dong "HET HAN" nao tu truoc toi nay.
+	if (nCurrentScriptNum < MAX_SCRIPT_IN_SET && g_ScriptSet[nCurrentScriptNum].m_LuaState == L)
+		return (int)nCurrentScriptNum;
 	return -1;
 }
 

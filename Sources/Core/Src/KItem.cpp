@@ -1966,8 +1966,26 @@ void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack
 	if (bThuNho)
 	{
 		#define	ITEM_ONE_CELL	26
-		m_Image.oEndPos.nX = m_Image.oPosition.nX + ITEM_ONE_CELL;
-		m_Image.oEndPos.nY = m_Image.oPosition.nY + ITEM_ONE_CELL;
+		// [A33 04/09] GIU TI LE khi thu nho, khong thi mon 2x4 bi ep thanh hinh vuong va meo.
+		// Tinh hop dich theo ti le rong:cao roi canh giua trong o mot cell.
+		int nW = m_CommonAttrib.nWidth;
+		int nH = m_CommonAttrib.nHeight;
+		if (nW < 1) nW = 1;
+		if (nH < 1) nH = 1;
+		int nVeW = ITEM_ONE_CELL;
+		int nVeH = ITEM_ONE_CELL;
+		if (nW > nH)
+			nVeH = ITEM_ONE_CELL * nH / nW;
+		else if (nH > nW)
+			nVeW = ITEM_ONE_CELL * nW / nH;
+		if (nVeW < 1) nVeW = 1;
+		if (nVeH < 1) nVeH = 1;
+		int nLech = (ITEM_ONE_CELL - nVeW) / 2;
+		int nLechY = (ITEM_ONE_CELL - nVeH) / 2;
+		m_Image.oPosition.nX = m_Image.oPosition.nX + nLech;
+		m_Image.oPosition.nY = m_Image.oPosition.nY + nLechY;
+		m_Image.oEndPos.nX = m_Image.oPosition.nX + nVeW;
+		m_Image.oEndPos.nY = m_Image.oPosition.nY + nVeH;
 		m_Image.oEndPos.nZ = m_Image.oPosition.nZ;
 		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE_STRETCH, TRUE);
 	}

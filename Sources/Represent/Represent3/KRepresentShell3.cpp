@@ -1244,8 +1244,19 @@ void KRepresentShell3::DrawImage2DStretch(int nPrimitiveCount, KRepresentUnit* p
 			int nH = pTemp->oEndPos.nY - pTemp->oPosition.nY;
 			if (nW <= 0 || nH <= 0)
 				continue;
-			DrawSpriteAlpha(pTemp->oPosition.nX, pTemp->oPosition.nY, nW, nH,
-				pTemp->nFrame, pSprite, pTemp->Color.Color_dw, pTemp->bRenderStyle);
+			// [A33 04/09] PHAI dung DrawSpritePartAlpha, KHONG phai DrawSpriteAlpha.
+			// DrawSpriteAlpha noi suy ChaZhi(fX1, fX2, 0, nWidth, nFrameX): mien nguon (0, nWidth)
+			// va mien dich (fX1, fX1 + nWidth) nen ti le dung bang 1 - tham so nWidth BI TRIET TIEU,
+			// tuc ham do KHONG BAO GIO co gian. DrawSpritePartAlpha lay mien nguon la kich thuoc
+			// KHUNG ANH (m_pFrameInfo[nFrame].nWidth) nen moi co gian that.
+			// rc de rong ca man hinh vi day khong phai viec cat vien.
+			RECT rcFull;
+			rcFull.left = 0;
+			rcFull.top = 0;
+			rcFull.right = g_nScreenWidth;
+			rcFull.bottom = g_nScreenHeight;
+			DrawSpritePartAlpha(pTemp->oPosition.nX, pTemp->oPosition.nY, nW, nH,
+				pTemp->nFrame, pSprite, rcFull, pTemp->Color.Color_dw, pTemp->bRenderStyle);
 			continue;
 		}
 		if(pTemp->nType != ISI_T_BITMAP16)

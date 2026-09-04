@@ -974,7 +974,7 @@ def build_manager():
         "        AUCPOLL_DANGKY = 1",
         "        SetGlbValue(AUCPOLL_GLB, GetCurrentTime())",
         "        AddTimer(AUCPOLL_FRAMES, \"AucPoll_Tick\", 0)",
-        "        AUC_Log(\"dang ky vong quet dau gia (nhip tim cu " + "%d giay)\")",
+        "        AUC_Log(\"dang ky vong quet dau gia\")",
         "    end",
         "end",
         "",
@@ -1226,6 +1226,9 @@ def build_client_ui():
         "end",
         "",
         "function UIAuctionHouse:SwitchToAuctionWindow(nType)",
+        "    -- [A33] xoa co: bam Mua ngay/Lay lai roi doi the truoc khi goi ve thi co ket 1 vinh vien,",
+        "    -- sau do BAT KY ai ban xong cung bat ta nap lai ca trang (doi goi).",
+        "    self.bTuBam = 0",
         "    self.nCurTypeIndex = nType",
         "    self.szCurActivityName = \"\"",
         "    self.nCurPageIndex = 1",
@@ -2001,7 +2004,9 @@ def copy_ini():
             txt = _setkey(txt, "MailAwardItemSpr", "Top", 1)
             txt = _setkey(txt, "MailAwardItemSpr", "Width", 26)
             txt = _setkey(txt, "MailAwardItemSpr", "Height", 26)
-            txt = _setkey(txt, "MailAwardItemSpr", "ResizeBigItem", 1)
+            # [A33 04/09] chu chot: "hien thi trang bi tren dau gia da oke, de nguyen kich thuoc
+            # goc o ban dau gia - chi thu nho item nhieu o thanh 1 o o trong mail gui ve".
+            txt = _setkey(txt, "MailAwardItemSpr", "ResizeBigItem", 0)
             # nhan so noi rong va can PHAI de "9 van 6000" khong bi cat con "9 v"
             txt = _setkey(txt, "MailAwardItemCount", "Left", -36)
             txt = _setkey(txt, "MailAwardItemCount", "Top", 13)
