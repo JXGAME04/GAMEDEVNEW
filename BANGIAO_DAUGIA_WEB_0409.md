@@ -152,3 +152,21 @@ Dòng `auction_item` **không bao giờ bị xoá** (thư `aucitem:<id>` trỏ v
 3. Cần dựng lại `CoreServer.dll` (không đụng client, không đổi gói tin, không đổi `auction_item`).
 
 Điểm chờ chủ chốt (có thể đổi sau, không ảnh hưởng tên cột): (a) "Mở đợt ngay" có cắt sớm đợt cũ không — mặc định KHÔNG; (b) chu kỳ mặc định 180 phút; (c) có cho đặt giá Mua ngay không — mặc định TUỲ TỪNG MÓN (`buy_price = 0` là không).
+
+## 9. Thông báo vào KÊNH CHAT (04/09 chiều, `[DAUGIA-CHAT]`, phiên `wauto-4a`)
+
+Chủ: *"viết thêm thông báo mỗi khi thay đổi đấu giá trên thế giới vào kênh chat - đấu giá bang vào kênh chat bang; gôm thông tin để người chơi biết"*. **Web không đổi gì** (không thêm bảng/cột; giao kèo mục 2-6 giữ nguyên). Máy chủ tự phát:
+
+| Sự kiện | Thế giới (dòng "Hệ Thống", tới mọi người) | Bang (dòng "Tin bang", chỉ thành viên bang, vào thẻ **bang** của khung chat) |
+|---|---|---|
+| Đợt web mở | `[Đấu giá thế giới] Đợt N HH:MM dd/mm mở: 3 món mới, còn 3 giờ (kết thúc 18:00). Ai trả cao nhất khi hết giờ được nhận qua thư. Mở cửa sổ Đấu giá, thẻ Thế giới để trả giá.` rồi mỗi món một dòng `1. <tên>: khởi điểm X, mua ngay Y` | — |
+| GM / bang chủ đưa món lên sàn | `<tên người> đưa <món> lên sàn (<phiên>): khởi điểm X, mua ngay Y, còn 30 phút (kết thúc HH:MM). Mở cửa sổ Đấu giá, thẻ ... để trả giá.` (Hà Lan: `giá mở X, hạ dần tới Y`) | cùng mẫu, tiền tố `[Đấu giá bang]` |
+| Trả giá | `<ai> trả X cho <món> - muốn vượt phải trả từ X+bước, mua ngay Y; còn N phút.` | cùng mẫu |
+| Mua ngay | `<ai> mua ngay <món> với giá X, vật phẩm gửi qua thư.` | + ` Quỹ bang nhận <sau thuế>.` (Xu: ` Người bán nhận ...`) |
+| Hết giờ có người thắng | `Hết giờ: <ai> thắng <món> với giá X, vật phẩm gửi qua thư.` | + quỹ bang như trên |
+| Hết giờ ế | `Hết giờ: <món> không ai trả giá, đã thu hồi.` | `... trả về người bán qua thư.` |
+| Rút món / hạ giá Hà Lan | `<món> đã được rút khỏi sàn (chưa ai trả giá).` / `<món> hạ giá còn X (còn N lần hạ, thấp nhất Y), còn N phút.` | cùng mẫu |
+
+Ký gửi cá nhân **không** phát. Mỗi dòng ≤ 200 byte (gói chat mang độ dài 1 byte, máy chủ kẹp 256 → quá là mất cả dòng), dài hơn bị cắt `...`.
+
+Điều kiện: script nạp lúc boot → **khởi động lại máy chủ** là có phần Thế giới + phần Bang dạng "Tin bang" (DLL cũ: dòng vào khung chính qua `Msg2Tong`, vẫn chỉ tới thành viên). Muốn dòng bang vào **đúng thẻ bang** cần `CoreServer.dll` có `AUC_MsgTong` (**f576ac9e**, đặt cạnh khe `bin\server\CoreServer.dll.moi.chat_f576ac9e` vì khe đang có bản `b67f002f` của phiên khác). Mã: `mail-0309` c8264cf5 → `origin/main` 4f7f2e2e. Chi tiết kỹ thuật: `BANGIAO_DAUGIA_WEB_THICONG_0409.md` mục 15.

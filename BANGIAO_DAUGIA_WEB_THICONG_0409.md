@@ -282,3 +282,53 @@ chặn mềm; muốn chặn cứng thì Goddess `ClientNode.cpp:379` (kiểm tê
    chưa có; (b)(c) chỉ cấu hình web.
 4. Đưa vá 2712d95b vào `p3_lua.py` (wauto-55) trước khi bất kỳ ai chạy `p3`.
 5. Bộ nhớ phiên: `memory\jx1-daugia-web-0409.md`, `jx1-daugia-thicong-0409.md`.
+6. `[DAUGIA-CHAT]` (mục 15): khởi động lại máy chủ (script mới) + swap DLL có `AUC_MsgTong`; kiểm trong game: đợt web mở → 1 + N dòng "Hệ Thống"; trả giá phiên bang → dòng "Tin bang" nằm trong thẻ **bang** (DLL cũ thì nằm khung chính).
+
+---
+
+## 15. `[DAUGIA-CHAT 04/09]` — Thông báo mỗi thay đổi đấu giá vào KÊNH CHAT (phiên `wauto-4a`, 15:40-16:20)
+
+Chủ: *"viết thêm thông báo mỗi khi thay đổi đấu giá trên thế giới vào kênh chat - đấu giá bang vào kênh chat bang; gôm thông tin để
+người chơi biết"*. Mẫu câu và bảng sự kiện: giao kèo mục 9. Commit `mail-0309` **c8264cf5** → `origin/main` **4f7f2e2e**.
+
+**Vì sao phải đụng C++ (chỉ cho phần bang).** Khung chat client xếp dòng theo `channelid` trong gói `chat_channelchat`
+(`GameSpaceChangedNotify.cpp KClientCallback::ChannelMessageArrival` → `KUiMsgCentrePad::NewChannelMessageArrival`: id đã kích hoạt
+→ khung chính + phòng theo `ResourceIndex` (6 = **Bang**, 4 = Khác, 3 = Phái, 1 = Phòng); `channelid = -1` → kênh GM/Hệ thống).
+Kênh bang tên `\O<tong name id>` (`UiMsgCentrePad_Left.ini [CH_TONG] FormatName=\O<Tong#>`), **id do S3Relay cấp bằng bộ đếm tăng dần**
+(`ChannelMgr.cpp GenChannID`, đổi mỗi lần relay chạy) → GameServer không tính được. Nó chỉ *đi ngang* GameServer trong gói
+`playercomm_s2c_notifychannelid` trên đường xuống client (`KNewProtocolProcess::P_ProcessPlayerCommExtend`, chính chỗ bot học kênh thế
+giới bằng `PB_GhiNhoKenh` — nhưng bảng bot chỉ 24 ô, không tra theo bang). Nhật ký `[BotKenh] thay kenh "\O305419896" id=81` xác nhận.
+Hệ quả: có thành viên online là có id (client nào cũng hỏi kênh bang lúc vào game); chưa ai vào thì cũng không ai cần nhận.
+
+**Mã C++** (`Sources/Core/Src`, 84 dòng): `KAuctionServer.cpp` khối `[DAUGIA-CHAT]` — `s_mapKenhBang` (tong id → channel id),
+`AUC_GhiNhoKenhBang(szKenh, dwId)` (chỉ nhận `\O` + toàn chữ số), `LuaAUC_MsgTong(nTong, szMsg)` (lặp `PlayerSet`, thành viên
+`m_cTong.GetTongNameID() == nTong` → `KPlayerChat::SendSystemInfo(1, idx, "Tin bang", msg, len ≤ 250, channelid|-1)`, trả số người
+nhận; **không cần PlayerIndex** — `Msg2Tong` gốc đòi PlayerIndex hợp lệ đang trong bang nên không gọi được từ vòng quét),
+`LuaAUC_KenhBang(nTong)` (đối chiếu). `KAuctionServer.h` khai báo; `ScriptFuns.cpp` đăng ký `AUC_MsgTong`/`AUC_KenhBang` sau
+`AUCWEB_SetNext`; `KNewProtocolProcess.cpp` thêm một dòng gọi `AUC_GhiNhoKenhBang` ngay sau `PB_GhiNhoKenh` (trong `#ifdef _SERVER`,
+chỉ đọc gói). Client không đổi (đã dựng Client Release Win32 kiểm compile: PASS).
+
+**Lua** (`p12_daugia.py` → `auction_manager.lua`, khối `[DAUGIA-CHAT]` trước phần "nhận từ client"): `AUC_ChatGui(nType, nTong, sz)`
+(thế giới → `Msg2SubWorld`; bang → `AUC_MsgTong`, DLL cũ → `Msg2Tong(nIdx, nTong, sz, -1)` qua `AUC_TimThanhVienOnline` = duyệt
+`TONG_GetFirstMember/TONGM_GetOnline/TONGM_GetName` + `FindPlayer`), `AUC_ChatCat` (≤ 200 byte), `AUC_ChatThu(f, tbArg)` =
+`call(f, tbArg, "x", AucWeb_LoiLua)` (mọi hàm báo `return 1`; lỗi trong câu chữ chỉ ghi log), `AUC_GioDongHo(nT)` ("HH:MM" — `GetLocalDate`
+chỉ định dạng giờ hiện tại nên cộng chênh lệch), `AUC_ConLai(nEnd)`, `AUC_GiaTien`, `AUC_ChatHuongDan`, và các câu:
+`AUC_ChatLenSan` (cuối `AUC_PutOnItem`), `AUC_ChatTraGia` (cuối `AUC_OnRequestOfferEnglish`), `AUC_ChatBan` (cuối `AUC_Settle`,
+tham số mới `bMuaNgay`: 1 từ `OfferDutch`, 0 từ `FinishEnglish`), `AUC_ChatE` (`AUC_Expire` cả hai nhánh), `AUC_ChatRut`
+(`AUC_OnRequestGetBack`), `AUC_ChatHaGia` (`AUC_Tick` nhánh Hà Lan), `AucWeb_ChatDot` (`AucWeb_Round`; `AucWeb_PutOne` trả thêm
+`szName, nStart, nBuy, nCur` để gom `tbBao`). `AUC_ChatLoai` lọc: chỉ atype 1 (bang) và 2 (thế giới).
+
+**Kiểm thử**: `ReverseTools\mail\test_aucchat.lua` (chạy `lua4.exe -s1024 test_aucchat.lua`, đọc kết quả bằng `vn_edit.py --read`):
+đợt web 3 món, bang chủ lên sàn, GM Hà Lan, trả giá bang/thế giới, mua ngay (hoàn người giữ giá), hết giờ thắng (+ quỹ bang), ế thu hồi /
+trả về, rút món, ký gửi im lặng, đường DLL cũ (`Msg2Tong` qua thành viên online; bang không ai online → im), cắt 200 byte, lỗi trong
+hàm báo không phá giao dịch — 18 dòng chat đúng mẫu.
+
+**Bẫy mới ghi nhận**
+- `lua4.exe` KHÔNG `-s` = `lua_open(0)` = `DEFAULT_STACK_SIZE` = **128** (`llimits.h` sửa từ 1024; README lua4 nói 1024 là sai); máy chủ
+  `KLuaScript::Init → Lua_Create(0)` cũng 128. Harness stub nặng (AUC_PutOn 18 tham số + bảng 21 trường) cần `-s200`; đo bằng stub nhẹ
+  (`test_stack.lua`): cả đợt web + `AUC_Tick` chỉ cần 60 khe, **có hay không có** phần chat đều 60 → không thêm rủi ro tràn.
+- `Msg2Tong(nTong, msg)` gọi 2 tham số (script cũ `yandibaozang`) → `nChannelID = 0` = kênh **GM** (id 0 theo `[BotKenh] thay kenh "GM" id=0`);
+  muốn "Hệ thống" phải truyền `-1` tường minh. `Msg2SubWorld` = `SendSystemInfo(0,0,"Hệ Thống")` → mọi người, không cần PlayerIndex.
+- Khe `.moi` bị phiên khác đặt lúc 15:54 (b67f002f, không có `AUC_MsgTong`) trong lúc tôi làm → không đè; bản của tôi
+  `CoreServer.dll.moi.chat_f576ac9e` (origin/main 9fb1f175 + chienlenh a18b5eb8 + c8264cf5), đã nhắn `wauto-4c`.
+- GameServer đang chạy khởi động 15:30 với script CŨ (p12 sinh lại lúc ~15:50): thông báo chỉ xuất hiện sau lần khởi động kế.
