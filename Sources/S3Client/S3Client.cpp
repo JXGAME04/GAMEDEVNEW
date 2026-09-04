@@ -852,7 +852,14 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	int nST = 0;
 	if(pApData->bSatThu == 1 && nTK == 0 && nLD == 0 && nHD == 0 && nCT == 0)
 		nST = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SATTHU, (int)pApData);
-	const int nBS = nCT ? nCT : (nTK ? nTK : (nLD ? nLD : (nHD ? nHD : nST)));
+	// (03/09) AC CHINH: goi khi cua so co ten ac chinh (ac phu) hoac chinh la ac chinh - may tu nhuong
+	// khi may su kien dang cam lai (chi gui vi tri). Tra 1 = dang di theo, 2 = da giao muc tieu cho may PK.
+	int nAC = 0;
+	if(pApData->szAcChinhTen[0] || pApData->nACLaChinh == 1)
+		nAC = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ACCHINH, (int)pApData);
+	if(nTK || nLD || nHD || nCT || nST)
+		nAC = 0;
+	const int nBS = nCT ? nCT : (nTK ? nTK : (nLD ? nLD : (nHD ? nHD : (nST ? nST : nAC))));
 	// [MapSuKien] (25/08) Dang dung tren MAP SU KIEN (Tong Kim, Phong Lang Do,
 	// Tin Su, cac hoat dong bang hoi, Vuot ai, pho ban...)? Khi do MOI auto TU DO
 	// phai nam im: khong Da Tau, khong tu di chuyen theo toa do, khong tu ve thanh

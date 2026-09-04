@@ -64,6 +64,7 @@ enum AUTOOPERATION_INDEX
 	ATYPE_MAPSUKIEN,	// (25/08) dang o MAP SU KIEN? -> dung cac auto TU DO
 	ATYPE_CONGTHANH,	// (03/09) may Cong Thanh Chien cho nguoi choi that (CT_Process)
 	ATYPE_HIENTHI,		// [REP3 03/09] tuy chon hien thi tu WAuto (IPCHienThi: NpcTheSame / MissleIndex)
+	ATYPE_ACCHINH,		// (03/09) may Ac chinh: gui vi tri len WAuto + ac phu di theo / danh cung muc tieu (AC_Process)
 };
 
 enum GAMEDATA_INDEX

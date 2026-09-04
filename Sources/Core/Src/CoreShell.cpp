@@ -8753,6 +8753,187 @@ static bool WA_ChieuBiCam(KSkill* pSkill, int nSkill, int nSelf, int nTG, UINT u
 	return true;
 }
 
+// ===================== (03/09) AC CHINH - ac phu di theo + danh cung muc tieu =====================
+// Thiet ke: D:\GAMEDEVNEW\THIETKE_WAUTO_ACCHINH_0309.md (hoc auto Thai: doc vi tri ac chinh -> RUNTO;
+// WAuto khong doc bo nho ma dung IPC san). Moi cua so gui IPCViTri len WAuto 300 ms/lan; WAuto ghep
+// vi tri + muc tieu cua ac chinh vao autoData (AC_*) cua tung ac phu; may nay:
+//   - cung muc tieu: NpcSet.SearchID(uACMucTieu) thay duoc -> ea.uNpcID, tra 2 (may PK danh);
+//   - di theo: cung map va cach > nAcChinhKC -> DT_WalkTo diem cach ac chinh AC_DUNG_CACH, tra 1;
+//   - con lai tra 0 (auto thuong). Ac chinh (nACLaChinh) chi gui vi tri.
+// Trong Tong Kim: TKP_FIGHT goi AC_CungMucTieu truoc buoc 1 va AC_DiTheo truoc "hoi may chu / rao map".
+#define AC_NHIP			300
+#define AC_DUNG_CACH	150		// dung cach ac chinh (Thai: -150)
+#define AC_TUOI_MAX		5000	// ms: qua 5 s khong co tin = mat ac chinh
+static UINT s_uACViTriT = 0;
+
+static void AC_GuiViTri(int nPlayerIdx, UINT uCurTime)
+{
+	if (s_uACViTriT && (int)(uCurTime - s_uACViTriT) < AC_NHIP)
+		return;
+	s_uACViTriT = uCurTime ? uCurTime : 1;
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
+		return;
+	IPCViTri v;
+	v.CmdID = PRG_VITRI;
+	v.Size = sizeof(IPCViTri);
+	v.dwPID = Player[nPlayerIdx].m_dwID;
+	v.nMapId = SubWorld[0].m_SubWorldID;
+	Npc[nSelf].GetMpsPos(&v.nX, &v.nY);
+	UINT uMT = Player[nPlayerIdx].m_sExtAuto.uNpcID;
+	if (!uMT)
+	{
+		const int nT = Player[nPlayerIdx].GetTargetNpc();
+		if (nT > 0 && nT < MAX_NPC && nT != nSelf)
+			uMT = Npc[nT].m_dwID;
+	}
+	v.uMucTieu = uMT;
+	v.bSong = (Npc[nSelf].m_CurrentLife > 0 && Npc[nSelf].m_Doing != do_death && Npc[nSelf].m_Doing != do_revive) ? 1 : 0;
+	v.nCamp = Npc[nSelf].m_CurrentCamp;
+	SendDataToTool(&v, sizeof(IPCViTri));
+}
+
+// ac chinh hop le de theo (cung map, con song, tin con moi)?
+static int AC_CoAcChinh(const autoData* pAp, int nMap)
+{
+	if (!pAp->szAcChinhTen[0] || pAp->nACLaChinh)
+		return 0;
+	if (!pAp->uACTuoi || (int)pAp->uACTuoi > AC_TUOI_MAX)
+		return 0;
+	if (!pAp->nACSong)
+		return 0;
+	if (pAp->nACMap != nMap)
+		return 0;
+	if (pAp->nACX <= 0 || pAp->nACY <= 0)
+		return 0;
+	return 1;
+}
+
+// giao muc tieu cua ac chinh cho may PK neu THAY DUOC; tra 1 = da giao (ea.uNpcID)
+static int AC_CungMucTieu(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	if (!pAp->bCungMucTieu || !pAp->uACMucTieu)
+		return 0;
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	const int nIdx = NpcSet.SearchID(pAp->uACMucTieu);
+	if (nIdx <= 0 || nIdx == nSelf || Npc[nIdx].m_RegionIndex < 0)
+		return 0;
+	if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive || Npc[nIdx].m_CurrentLife <= 0)
+		return 0;
+	if (NpcSet.GetRelation(nSelf, nIdx) != relation_enemy)
+		return 0;
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	if (ea.uNpcID != pAp->uACMucTieu)
+		AUTOLOG("[AC] cung muc tieu ac chinh id=%u idx=%d", pAp->uACMucTieu, nIdx);
+	ea.uNpcID = pAp->uACMucTieu;
+	return 1;
+}
+
+// di toi ac chinh khi cach hon nguong; tra 1 = dang di (da phat lenh)
+static int AC_DiTheo(int nPlayerIdx, const autoData* pAp, int nX, int nY, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const int d = g_GetDistance(nX, nY, pAp->nACX, pAp->nACY);
+	int nKC = pAp->nAcChinhKC;
+	if (nKC < 100)
+		nKC = 100;
+	if (d <= nKC)
+		return 0;
+	if (ea.uACNghi && (int)(uCurTime - ea.uACNghi) < 0)
+		return 0;
+	// diem dich: tren doan noi, cach ac chinh AC_DUNG_CACH; lech nho theo dwID de cac ac phu khong chong o
+	int tx = pAp->nACX, ty = pAp->nACY;
+	if (d > AC_DUNG_CACH)
+	{
+		tx = pAp->nACX + (nX - pAp->nACX) * AC_DUNG_CACH / d;
+		ty = pAp->nACY + (nY - pAp->nACY) * AC_DUNG_CACH / d;
+	}
+	const int k = (int)(Player[nPlayerIdx].m_dwID % 5u);
+	tx += (k - 2) * 40;
+	ty += ((k * 3) % 5 - 2) * 40;
+	// do ket: 3 giay khong nhuc nhich -> tinh lai duong (2 lan) -> nghi 10 giay
+	if (g_GetDistance(nX, nY, ea.nACMyX, ea.nACMyY) >= 32)
+	{
+		ea.nACMyX = nX;
+		ea.nACMyY = nY;
+		ea.uACMoveT = uCurTime;
+		ea.nACRepath = 0;
+	}
+	else if (ea.uACMoveT && (int)(uCurTime - ea.uACMoveT) > 3000)
+	{
+		if (ea.nACRepath < 2)
+		{
+			g_ScenePlace.RemoveFlag();
+			ea.uDTPath = 0;
+			++ea.nACRepath;
+			ea.uACMoveT = uCurTime;
+		}
+		else
+		{
+			ea.uACNghi = uCurTime + 10000u;
+			ea.nACRepath = 0;
+			ea.uACMoveT = uCurTime;
+			AUTOLOG("[AC] ket khi di theo ac chinh (%d,%d) me=(%d,%d) - nghi 10 giay", pAp->nACX, pAp->nACY, nX, nY);
+			return 0;
+		}
+	}
+	DT_WalkTo(nPlayerIdx, tx, ty, 100, uCurTime);
+	AUTOLOG_EVERY(2000, "[AC] theo ac chinh (%d,%d) d=%d -> dich (%d,%d) me=(%d,%d)", pAp->nACX, pAp->nACY, d, tx, ty, nX, nY);
+	return 1;
+}
+
+// tra 0 tha may / 1 dang di theo (cam lai) / 2 da giao muc tieu (may PK danh)
+static int AC_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	s_pApDiDuong = pAp;
+	if (Player[nPlayerIdx].m_nIndex <= 0)
+		return 0;
+	AC_GuiViTri(nPlayerIdx, uCurTime);		// moi cua so (ke ca ac chinh) bao vi tri len WAuto
+	if (pAp->nACLaChinh || (!pAp->bTimAcChinh && !pAp->bCungMucTieu))
+	{
+		ea.nACHold = 0;
+		return 0;
+	}
+	// may su kien dang cam lai (Tong Kim tu goi AC_* trong TKP_FIGHT) -> khong tranh quyen
+	if (ea.nTKHold || ea.nCTHold || ea.nLDHold || ea.nHDHold || ea.nSTHold)
+	{
+		ea.nACHold = 0;
+		return 0;
+	}
+	if (ea.uACNext && (int)(uCurTime - ea.uACNext) < 0)
+		return ea.nACHold;
+	ea.uACNext = uCurTime + AC_NHIP;
+	const int nMap = SubWorld[0].m_SubWorldID;
+	if (!AC_CoAcChinh(pAp, nMap))
+	{
+		if (ea.nACHold)
+			AUTOLOG("[AC] mat ac chinh (tuoi=%u song=%d map=%d/%d) - ve auto thuong", pAp->uACTuoi, pAp->nACSong, pAp->nACMap, nMap);
+		ea.nACHold = 0;
+		return 0;
+	}
+	if (!pAp->bAcChinhThanh && g_MoveStation.find(nMap) != g_MoveStation.end())
+	{	// map co Xa Phu = thanh: o "Tim trong thanh" tat thi khong theo
+		ea.nACHold = 0;
+		return 0;
+	}
+	int nX = 0, nY = 0;
+	Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
+	if (AC_CungMucTieu(nPlayerIdx, pAp, uCurTime))
+	{
+		ea.nACHold = 2;
+		return 2;
+	}
+	if (pAp->bTimAcChinh && AC_DiTheo(nPlayerIdx, pAp, nX, nY, uCurTime))
+	{
+		ea.nACHold = 1;
+		return 1;
+	}
+	ea.nACHold = 0;
+	return 0;
+}
+// ===================== HET AC CHINH =====================
+
 static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
@@ -9484,6 +9665,17 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return 2;
 			}
 		}
+		// (03/09 dem) AC CHINH: ac phu danh CUNG MUC TIEU ac chinh neu thay duoc (truoc moi thu tu)
+		if (AC_CoAcChinh(pAp, nMap) && AC_CungMucTieu(nPlayerIdx, pAp, uCurTime))
+		{
+			TK_XuongNgua(nPlayerIdx, uCurTime);
+			ea.uTKDestT = 0;
+			s_uTKSanQuyen = 0;
+			TK_SanBo();
+			g_ScenePlace.RemoveFlag();
+			ea.uTKNext = uCurTime + 300;
+			return 2;
+		}
 		// (03/09 chieu) THU TU MOI - chu game: "tim doi thu KHAC MAU, khong chay toa do":
 		//   1. tuong dich (chi khi o 'Uu tien' = Hieu Uy / Pho Tuong / Dai Tuong)
 		//   2. NGUOI khac mau trong tam PK co duong nhin -> giao may PK
@@ -9540,6 +9732,9 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// id cu ma vung vao khong khi. Van tra 2 de con danh tra khi bi danh.
 		ea.uNpcID = 0;
 		s_uTKSanQuyen = 0;
+		// (03/09 dem) AC CHINH: ac phu DI THEO ac chinh thay cho hoi may chu / rao map
+		if (pAp->bTimAcChinh && AC_CoAcChinh(pAp, nMap) && AC_DiTheo(nPlayerIdx, pAp, nX, nY, uCurTime))
+			return 2;
 		// (04/09, dot 5) vi tri dich do MAY CHU bao (ngoai tam nhin client) - truoc rao map
 		if (TK_DichXa(nPlayerIdx, pAp, nX, nY, uCurTime))
 			return 2;
@@ -21180,6 +21375,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				case ATYPE_CONGTHANH:
 				{
 					return CT_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
+				}
+				case ATYPE_ACCHINH:	// (03/09) Ac chinh (AC_Process)
+				{
+					return AC_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
 				}
 				case ATYPE_HIENTHI:	// [REP3 03/09] tuy chon hien thi tu WAuto (goi IPCHienThi)
 				{
