@@ -44,6 +44,10 @@ int LuaAUCWEB_Drawn(Lua_State* L);     // (nId, nNow, nAucId, szName) -> 1/0
 int LuaAUCWEB_Err(Lua_State* L);       // (nId, szErr) -> 1/0
 int LuaAUCWEB_Msg(Lua_State* L);
 int LuaAUCWEB_SetNext(Lua_State* L);   // (nNext) -> 1/0: hen lai gio mo dot ke       // (szMsg, nNow) -> 1/0    // (nId) -> tra dong ve dang ban VA xoa buyer/buy_price         // (nId, szBuyer, nPrice, nNewEnd) -> 1/0 nguyen tu: chi khi state 0 va nPrice > cur_price
+// [DAUGIA-CHAT 04/09] thong bao dau gia vao kenh chat bang: id kenh "\O<tongid>" hoc tu goi notifychannelid di ngang GameServer
+void AUC_GhiNhoKenhBang(const char* szKenh, unsigned long dwId);	// KNewProtocolProcess::P_ProcessPlayerCommExtend goi (chi doc goi tin)
+int LuaAUC_MsgTong(Lua_State* L);      // (nTong, szMsg) -> so nguoi nhan: dong "Tin bang" toi thanh vien online, vao the "bang" khi da biet id kenh
+int LuaAUC_KenhBang(Lua_State* L);     // (nTong) -> id kenh chat bang da hoc, -1 neu chua
 #endif
 
 #endif // KAUCTIONSERVER_H

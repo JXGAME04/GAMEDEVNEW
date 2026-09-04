@@ -47,11 +47,13 @@
 #include "KItemSet.h"
 #include "KPlayer.h"
 #include "KPlayerSet.h"
+#include "CoreUseNameDef.h"	// [DAUGIA-CHAT 04/09] MESSAGE_SYSTEM_TONG_HEAD
 #include "GameDataDef.h"
 #include "KPlayerDef.h"
 #include "KSubWorldSet.h"	// [DAUGIA-WEB] GetGameVersion
 #include <vector>
 #include <string>
+#include <map>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -967,6 +969,78 @@ int LuaAUCWEB_SetNext(Lua_State* L)
 	p[1] = KDBParam::I((int)time(NULL));
 	bool bOk = g_MySQLDB.Exec("UPDATE auction_web_cfg SET next_round=?, mtime=? WHERE id=1", p, 2, 0);
 	Lua_PushNumber(L, bOk ? 1 : 0);
+	return 1;
+}
+
+//////////////////////////////////////////////////////////////////////
+// [DAUGIA-CHAT 04/09] THONG BAO DAU GIA vao KENH CHAT
+//   Chu 04/09: "viet them thong bao moi khi thay doi dau gia tren the gioi vao kenh chat - dau gia bang
+//   vao kenh chat bang". The gioi: Lua goi Msg2SubWorld (dong "He Thong" toi moi nguoi, khong can PlayerIndex).
+//   Bang: phai vao dung THE "bang" cua khung chat, tuc goi chat_channelchat mang channelid cua kenh "\O<tongid>".
+//   Id do S3Relay cap bang BO DEM tang dan (ChannelMgr.cpp GenChannID) -> khong tinh duoc, chi HOC duoc khi goi
+//   playercomm_s2c_notifychannelid di ngang GameServer tren duong xuong client (KNewProtocolProcess::
+//   P_ProcessPlayerCommExtend - cung cho bot dang hoc kenh the gioi, nhung bang bot chi 24 o va khong tra theo bang).
+//   He qua: co thanh vien online la co id (client nao cung hoi kenh bang luc vao game); chua ai vao thi cung
+//   khong ai can nhan. Chua biet id -> gui channelid -1 (client dua vao kenh He thong, van toi dung thanh vien).
+//////////////////////////////////////////////////////////////////////
+static std::map<DWORD, DWORD> s_mapKenhBang;	// tong name id -> channel id
+
+void AUC_GhiNhoKenhBang(const char* szKenh, unsigned long dwId)
+{
+	if (!szKenh || szKenh[0] != '\\' || szKenh[1] != 'O' || !szKenh[2] || dwId == (unsigned long)-1)
+		return;
+	for (const char* p = szKenh + 2; *p; ++p)
+		if (*p < '0' || *p > '9')
+			return;
+	s_mapKenhBang[(DWORD)strtoul(szKenh + 2, NULL, 10)] = (DWORD)dwId;
+}
+
+// AUC_MsgTong(nTong, szMsg) -> so nguoi nhan. Dong "Tin bang" toi MOI thanh vien online cua bang nTong
+// (= m_dwTongNameID, cung so voi GetTongName() va cot seller_tong), vao dung the "bang" neu da biet id kenh.
+// Khong can PlayerIndex -> goi duoc tu vong quet (Msg2Tong cua ban goc doi PlayerIndex hop le dang trong bang).
+int LuaAUC_MsgTong(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	DWORD dwTong = (DWORD)Lua_ValueToNumber(L, 1);
+	const char* szMsg = Lua_ValueToString(L, 2);
+	if (!szMsg || !szMsg[0] || dwTong == 0 || dwTong == (DWORD)-1)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nLen = (int)strlen(szMsg);
+	// sentlen tren goi la BYTE, SendSystemInfo kep = 256 -> dung 256 tran ve 0 (KProtocolProcess.cpp SapMap): kep 250
+	if (nLen > 250)
+		nLen = 250;
+	int nKenh = -1;
+	std::map<DWORD, DWORD>::iterator it = s_mapKenhBang.find(dwTong);
+	if (it != s_mapKenhBang.end())
+		nKenh = (int)it->second;
+	int nSo = 0;
+	int nIdx = PlayerSet.GetFirstPlayer();
+	while (nIdx > 0)
+	{
+		if (Player[nIdx].m_nIndex > 0 && Player[nIdx].m_cTong.GetTongNameID() == dwTong)
+		{
+			KPlayerChat::SendSystemInfo(1, nIdx, (char*)MESSAGE_SYSTEM_TONG_HEAD, (char*)szMsg, nLen, nKenh);
+			++nSo;
+		}
+		nIdx = PlayerSet.GetNextPlayer();
+	}
+	Lua_PushNumber(L, nSo);
+	return 1;
+}
+
+// AUC_KenhBang(nTong) -> id kenh chat bang da hoc duoc, -1 neu chua (de nhat ky / kiem tra doi chieu)
+int LuaAUC_KenhBang(Lua_State* L)
+{
+	DWORD dwTong = (DWORD)Lua_ValueToNumber(L, 1);
+	std::map<DWORD, DWORD>::iterator it = s_mapKenhBang.find(dwTong);
+	Lua_PushNumber(L, it == s_mapKenhBang.end() ? -1.0 : (double)it->second);
 	return 1;
 }
 
