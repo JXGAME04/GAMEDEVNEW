@@ -329,6 +329,10 @@ hàm báo không phá giao dịch — 18 dòng chat đúng mẫu.
   (`test_stack.lua`): cả đợt web + `AUC_Tick` chỉ cần 60 khe, **có hay không có** phần chat đều 60 → không thêm rủi ro tràn.
 - `Msg2Tong(nTong, msg)` gọi 2 tham số (script cũ `yandibaozang`) → `nChannelID = 0` = kênh **GM** (id 0 theo `[BotKenh] thay kenh "GM" id=0`);
   muốn "Hệ thống" phải truyền `-1` tường minh. `Msg2SubWorld` = `SendSystemInfo(0,0,"Hệ Thống")` → mọi người, không cần PlayerIndex.
-- Khe `.moi` bị phiên khác đặt lúc 15:54 (b67f002f, không có `AUC_MsgTong`) trong lúc tôi làm → không đè; bản của tôi
-  `CoreServer.dll.moi.chat_f576ac9e` (origin/main 9fb1f175 + chienlenh a18b5eb8 + c8264cf5), đã nhắn `wauto-4c`.
+- Khe `.moi` bị phiên khác đặt lúc 15:54 (b67f002f, không có `AUC_MsgTong`) trong lúc tôi làm → không đè, nhắn `wauto-4c`. Họ xác nhận
+  bản đó chỉ gồm commit đã push (main 9fb1f175 "gỡ ROLECHK" + chienlenh a18b5eb8) → **16:25 khe = f576ac9e** (gồm gỡ ROLECHK 9fb1f175 của
+  wauto-go-rolechk), kiểm trước khi đặt: `RoleChk` = 0 (bắt buộc — = 1 là bot lại không gọi được), còn đủ `CL_Cong` `st_ledger`
+  `AUCWEB_ClaimRound` `SapNpc` `TAT che do vao phai` `TKDich`; bản cũ lưu `CoreServer.dll.moi.bot_b67f002f`. Gốc sập 15:05 theo họ:
+  không phải lỗi bot — gói của bot PhanNghia813 bị ghép vào thông điệp LyMinh812 ở tầng truyền Goddess→GameServer
+  (`BANGIAO_ROLECHK_GO_0409.md` của wauto-4c).
 - GameServer đang chạy khởi động 15:30 với script CŨ (p12 sinh lại lúc ~15:50): thông báo chỉ xuất hiện sau lần khởi động kế.
