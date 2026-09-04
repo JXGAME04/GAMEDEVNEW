@@ -6,7 +6,12 @@
 #ifndef UIAUCTION_H
 #define UIAUCTION_H
 
-#include "../elem/wnds.h"
+#include "../elem/wndimage.h"
+#include "../elem/wndtext.h"
+#include "../elem/wndedit.h"
+#include "../elem/wndbutton.h"
+#include "../elem/WndLabeledButton.h"
+#include "../elem/WndScrollBar.h"
 #include "../elem/WndObjContainer.h"
 #include "../../../core/src/KAuctionUiDef.h"
 
