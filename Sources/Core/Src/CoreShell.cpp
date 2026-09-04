@@ -3203,6 +3203,12 @@ static void DT_Ride(int nPlayerIdx)
 // vao dau nhip) - de ham di duong DUNG CHUNG biet nguoi choi co cho len ngua khong.
 static const autoData* s_pApDiDuong = NULL;
 
+// [REP3 03/09] tuy chon HIEN THI tu WAuto (tab Co ban): WAuto gui IPCHienThi moi luot (khong can tick auto).
+// KProtocolProcess (NpcTheSame) va KMissle (MissleIndex) doc cac bien nay, chi tin khi con moi (< 5 s), het han ve config.ini.
+int   g_nWAOptNpcTheSame  = 0;
+int   g_nWAOptMissleIndex = 0;
+DWORD g_dwWAOptTime       = 0;
+
 // (03/09) CHI len ngua khi dang DI DUONG that su. Truoc day cu DT_WalkTo (tru pha
 // farm Da Tau) la len ngua, trong khi may PK (o 'Xuong ngua') va may danh (o ngua
 // tab Chien dau = xuong) lai xuong moi 2 giay => trong tran Tong Kim len/xuong
@@ -21174,6 +21180,18 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				case ATYPE_CONGTHANH:
 				{
 					return CT_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
+				}
+				case ATYPE_HIENTHI:	// [REP3 03/09] tuy chon hien thi tu WAuto (goi IPCHienThi)
+				{
+					const IPCHienThi* pHT = (const IPCHienThi*)nParam;
+					if (pHT)
+					{
+						g_nWAOptNpcTheSame  = pHT->bNpcTheSame;
+						g_nWAOptMissleIndex = pHT->nMissleIndex;
+						g_dwWAOptTime       = GetTickCount();
+					}
+					nRet = 1;
+					break;
 				}
 				case ATYPE_MAPSUKIEN:
 				{

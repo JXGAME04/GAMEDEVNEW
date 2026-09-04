@@ -32,6 +32,7 @@ enum PROTTOOLID
 	PRT_GETTEAMAROUND,
 	PRT_ACTAUTOLG,
 	PRT_QUITGAME,	
+	PRT_HIENTHI,	// [REP3 03/09] tuy chon HIEN THI (NpcTheSame / MissleIndex) tu tab Co ban - gui moi luot, khong can tick auto
 };
 
 struct SharedState
@@ -349,6 +350,10 @@ struct autoData
 	int		bCTMua;			// (r3) mua Ngu Hoa Ngoc Lo o Tuy Quan duoc Y trong doanh truoc khi ra tran
 	int		nCTSoBinh;		// (r3) mua toi khi tui co du so binh nay (moi mang mot lan)
 	int		nCTCapBinh;		// (r3) cap binh 1..5 (shop 53: cap 5 = 3000 luong/binh)
+	// == HIEN THI khi dong nguoi (03/09/2026) - PHAI o cuoi struct, truoc constructor (APdata .dat ghi NGUYEN struct) ==
+	int		bWANpcTheSame;	// nguoi choi KHAC mac chung 1 bo giap/non, khong phi phong (client: NpcTheSame)
+	int		bWAMissle;		// bat: moi chieu dung chung 1 hieu ung dan (client: MissleIndex)
+	int		nWAMissleIndex;	// dong trong bang missles lam hieu ung chung (mac dinh 1)
 
 	autoData()
 	{
@@ -602,6 +607,9 @@ struct autoData
 		bCTMua = 1;
 		nCTSoBinh = 10;
 		nCTCapBinh = 5;
+		bWANpcTheSame = 0;
+		bWAMissle = 0;
+		nWAMissleIndex = 1;
 
 	}
 };
@@ -609,6 +617,13 @@ struct autoData
 struct IPCGameLoop : public SharedState
 {
 	autoData setting;
+};
+
+// [REP3 03/09] tuy chon hien thi tu WAuto - goi nho gui moi luot GAMELOOPINTV cho moi game dang ket noi
+struct IPCHienThi : public SharedState
+{
+	int bNpcTheSame;	// 1 = nguoi choi khac mac chung 1 bo
+	int nMissleIndex;	// >0 = dong missles dung chung cho moi chieu, 0 = tat
 };
 
 struct IPCHideGame : public SharedState

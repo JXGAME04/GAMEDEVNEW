@@ -1241,6 +1241,13 @@ void KMyApp::ProcIpcCommand()
 				}
 			}
 			break;
+			case PRT_HIENTHI:	// [REP3 03/09] tuy chon hien thi tu WAuto (NpcTheSame / MissleIndex), khong can tick auto
+			{
+				IPCHienThi* pHT = (IPCHienThi*)p;
+				if(pHT->Size >= sizeof(IPCHienThi) && g_pCoreShell)
+					g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_HIENTHI, (int)pHT);
+			}
+			break;
 			case PRT_HIDEGAME:
 			{
 				IPCHideGame* pCmd = (IPCHideGame*)p;

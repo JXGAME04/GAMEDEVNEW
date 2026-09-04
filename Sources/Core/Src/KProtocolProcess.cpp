@@ -157,6 +157,8 @@ static int REP3_ClientIni(const char* szKey, int nDef)
 {
 	return (int)GetPrivateProfileIntA("Client", szKey, nDef, ".\\config.ini");
 }
+extern int   g_nWAOptNpcTheSame;	// [REP3 03/09] tu CoreShell.cpp (WAuto tab Co ban)
+extern DWORD g_dwWAOptTime;
 static void REP3_NpcTheSame(int nIdx)
 {
 	static int s_nOn = -1, s_nArmor = 0, s_nHelm = 0, s_nHorse = -1, s_nWeapon = -1;
@@ -168,7 +170,10 @@ static void REP3_NpcTheSame(int nIdx)
 		s_nHorse  = REP3_ClientIni("NpcTheSameHorse", -1);
 		s_nWeapon = REP3_ClientIni("NpcTheSameWeapon", -1);
 	}
-	if (s_nOn <= 0 || nIdx <= 0 || nIdx >= MAX_NPC)
+	int nOn = s_nOn;
+	if (g_dwWAOptTime && (GetTickCount() - g_dwWAOptTime) < 5000)	// [REP3 03/09] WAuto dang gui tuy chon -> ghi de config.ini
+		nOn = g_nWAOptNpcTheSame;
+	if (nOn <= 0 || nIdx <= 0 || nIdx >= MAX_NPC)
 		return;
 	if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)	// khong dung cho chinh minh
 		return;

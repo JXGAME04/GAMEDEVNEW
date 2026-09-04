@@ -42,11 +42,15 @@ static inline BOOL VhIsNewFactionSkill(int nSkillId) { return (nSkillId >= 1363 
 #ifndef _SERVER
 // [REP3 03/09] [Client] MissleIndex=N : moi dan ky nang dung sprite/am thanh cua dong N (giu tham so bay cua dan goc)
 //   theo tuy chon MissleOpen+MissleIndex cua client VLTK 2.0 - mot hieu ung cho moi chieu khi dong nguoi.
+extern int   g_nWAOptMissleIndex;	// [REP3 03/09] tu CoreShell.cpp (WAuto tab Co ban)
+extern DWORD g_dwWAOptTime;
 static int REP3_MissleIndex()
 {
 	static int s_nIdx = -1;
 	if (s_nIdx < 0)
 		s_nIdx = (int)GetPrivateProfileIntA("Client", "MissleIndex", 0, ".\\config.ini");
+	if (g_dwWAOptTime && (GetTickCount() - g_dwWAOptTime) < 5000)	// [REP3 03/09] WAuto dang gui tuy chon -> ghi de config.ini
+		return g_nWAOptMissleIndex;
 	return s_nIdx;
 }
 #endif
