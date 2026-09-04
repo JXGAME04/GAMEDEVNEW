@@ -468,6 +468,7 @@ void KUiChienLenh::Initialize()
 	AddChild(&m_Remain);
 	AddChild(&m_BtnBuy);
 	AddChild(&m_AwardBg);
+	m_AwardBg.AddChild(&m_RankBox);		// [CL 04/09 DOT2f] nen truoc, chu sau
 	m_AwardBg.AddChild(&m_RankTitle);
 	m_AwardBg.AddChild(&m_Rank);
 	m_AwardBg.AddChild(&m_LowTitle);
@@ -516,6 +517,7 @@ void KUiChienLenh::LoadScheme(const char* pScheme)
 	p->m_Remain.Init(&Ini, "TxtRemainTime");
 	p->m_BtnBuy.Init(&Ini, "BtnBuyVipCard");
 	p->m_AwardBg.Init(&Ini, "ImgAwardListBG");
+	p->m_RankBox.Init(&Ini, "ImgPlayerRankBG");
 	p->m_RankTitle.Init(&Ini, "TxtPlayerRankTitle");
 	p->m_Rank.Init(&Ini, "TxtPlayerRank");
 	p->m_LowTitle.Init(&Ini, "ImgLowAwardTitle");

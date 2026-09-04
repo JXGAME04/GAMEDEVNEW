@@ -133,6 +133,7 @@ private:
 	KWndLabeledButton	m_BtnBuy;					// [BtnBuyVipCard]
 	// khu moc thuong
 	KWndImage			m_AwardBg;					// [ImgAwardListBG] 580x176
+	KWndImage			m_RankBox;					// [ImgPlayerRankBG] hop nen cl_04 duoi "Cap/LVn" - [CL 04/09 DOT2f] (2.0 ve qua Image= cua WndText)
 	KWndText32			m_RankTitle;				// [TxtPlayerRankTitle]
 	KWndText32			m_Rank;						// [TxtPlayerRank] "LV30"
 	KWndImage			m_LowTitle;					// [ImgLowAwardTitle]
