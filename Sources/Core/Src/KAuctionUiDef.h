@@ -14,9 +14,12 @@
 #define AUCUI_MAX_ACTIVITY	32
 #define AUCUI_MAX_ITEM		20		// AUCTION_DEF.nMaxItemPerPage
 #define AUCUI_MAX_MEMBER	64
-// [A14 04/09] khung danh sach cao 321, moi hang cao 118 -> chi lot 2 hang.
-// De 3 la hang thu ba tran han ra ngoai khung (354 > 321) - dung nhu chu thay.
-#define AUCUI_ROW_COUNT		2		// hang vat pham hien cung luc (321 / 118)
+// [A22 04/09] BA hang cung luc (chu: "hien thi khong du").
+// Buoc hang ha xuong 107 trong 4 tep ini hang (muc [Main] Height): noi dung sau nhat trong mot
+// hang o y = 106 nen khong de nhau, va ba hang ket thuc o 371 - vua tren nut chuyen trang (374).
+// De buoc 118 nhu truoc thi ba hang cham 393 va de len nut do (chu thay la "chen ra ngoai ban").
+// So mon moi trang (AUCTION_DEF.nMaxItemPerPage) PHAI bang so nay.
+#define AUCUI_ROW_COUNT		3		// hang vat pham hien cung luc (321 / 107)
 #define AUCUI_ACT_ROW_COUNT	14		// hang phien hien cung luc (355 / 25)
 
 // loai phien (AUCTION_DEF.tbAuctionTypeEnum)
@@ -50,6 +53,7 @@ struct KAucUiItem
 	int		nGuaranteed;			// gia khoi diem
 	int		nRange;					// buoc gia moi lan
 	int		nMax;					// gia cao nhat hien tai
+	int		nBuyNow;				// [A20] gia MUA NGAY (chi dong ky gui ca nhan; 0 = khong co)
 	int		nSelf;					// gia minh da tra
 	int		nRemaining;				// giay con lai (tuyet doi: time_t)
 	// kieu Ha Lan / ky gui

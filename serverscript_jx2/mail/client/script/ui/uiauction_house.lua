@@ -184,10 +184,12 @@ function UIAuctionHouse:OnPutOnClick(nType)
 end
 
 -- [A6] o gia + nut doi tien nam ngay trong hop dua vat pham; bam Dong y thi bao len truoc
-function UIAuctionHouse:OnSetPrice(nPrice, nCur)
+-- [A20c] ba so: gia mua ngay, loai tien, gia co ban
+function UIAuctionHouse:OnSetPrice(nPrice, nCur, nBase)
     local h = OB_Create()
     ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nPrice or 0)
     ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nCur or 1)
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nBase or 0)
     ScriptProtocol:SendData("emSCRIPT_PROTOCOL_AUCTION_REQUEST_SETPRICE", h)
     OB_Release(h)
 end
@@ -239,7 +241,7 @@ function UIAuctionHouse:ShowItem(nType, tbItem, bAdd)
             AuctionAddEnglishItem(nType, tbItem.nId, tbItem.nStartTime, tbItem.nGuaranteedPrice, tbItem.nRangePerOffer, tbItem.nCurrencyType,
                 tbItem.nMaxPrice, tbItem.nSelfPrice, tbItem.nRemainingTime, bMine,
                 tbItem.nG or 0, tbItem.nD or 0, tbItem.nP or 0, tbItem.nL or 0, tbItem.nS or 0, tbItem.nK or 0, tbItem.nCount or 1, tbItem.szName or "", szCur,
-                tbItem.szInfo or "")
+                tbItem.szInfo or "", tbItem.nBuyNow or 0)
         else
             AuctionSetEnglishItem(nType, tbItem.nId, tbItem.nStartTime, tbItem.nGuaranteedPrice, tbItem.nRangePerOffer, tbItem.nCurrencyType,
                 tbItem.nMaxPrice, tbItem.nSelfPrice, tbItem.nRemainingTime, bMine, szCur)

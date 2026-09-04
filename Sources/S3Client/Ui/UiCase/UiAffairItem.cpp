@@ -169,12 +169,19 @@ void KUiAffairItem::Initialize()
 	AddChild(&m_AucPrice);
 	AddChild(&m_AucCur);
 	AddChild(&m_AucUnit);
+	// [A20 04/09] chu chot: nguoi ban nhap HAI gia - mua ngay va co ban (khoi diem)
+	AddChild(&m_AucLabel2);
+	AddChild(&m_AucBase);
+	AddChild(&m_AucUnit2);
 	m_bAucMode = 0;
 	m_nAucCur = AUCUI_CUR_MONEY;
 	m_AucLabel.Hide();
 	m_AucPrice.Hide();
 	m_AucCur.Hide();
 	m_AucUnit.Hide();
+	m_AucLabel2.Hide();
+	m_AucBase.Hide();
+	m_AucUnit2.Hide();
 	
 	m_ContentList.SetScrollbar(&m_ContentScroll);	
 	
@@ -210,6 +217,9 @@ void KUiAffairItem::LoadScheme(const char* pScheme)
 			m_pSelf->m_AucPrice.Init(&Ini, "AucPriceEdit");
 			m_pSelf->m_AucCur.Init(&Ini, "AucCurBtn");
 			m_pSelf->m_AucUnit.Init(&Ini, "AucUnitLabel");
+			m_pSelf->m_AucLabel2.Init(&Ini, "AucBaseLabel");
+			m_pSelf->m_AucBase.Init(&Ini, "AucBaseEdit");
+			m_pSelf->m_AucUnit2.Init(&Ini, "AucBaseUnit");
 			m_pSelf->m_ItemBox.EnableTracePutPos(true);
 			m_pSelf->m_ItemBox.EnablePickPut(true);
 		}
@@ -247,6 +257,7 @@ int KUiAffairItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		m_nAucCur = (m_nAucCur == AUCUI_CUR_XU) ? AUCUI_CUR_MONEY : AUCUI_CUR_XU;
 		m_AucCur.SetLabel(sAucCurName(m_nAucCur));
 		m_AucUnit.SetText(sAucUnitName(m_nAucCur));
+		m_AucUnit2.SetText(sAucUnitName(m_nAucCur));	// [A20] doi don vi ca o gia co ban
 		return 1;
 	}
 	int nRet = 0;
@@ -305,6 +316,12 @@ void KUiAffairItem::SetAuctionMode(int bOn)
 		m_pSelf->m_AucLabel.Show();
 		m_pSelf->m_AucPrice.Show();
 		m_pSelf->m_AucCur.Show();
+		// [A20] o gia CO BAN (khoi diem) - phai thap hon gia mua ngay
+		m_pSelf->m_AucBase.SetText("1");
+		m_pSelf->m_AucUnit2.SetText(sAucUnitName(m_pSelf->m_nAucCur));
+		m_pSelf->m_AucLabel2.Show();
+		m_pSelf->m_AucBase.Show();
+		m_pSelf->m_AucUnit2.Show();
 	}
 	else
 	{
@@ -312,6 +329,9 @@ void KUiAffairItem::SetAuctionMode(int bOn)
 		m_pSelf->m_AucPrice.Hide();
 		m_pSelf->m_AucCur.Hide();
 		m_pSelf->m_AucUnit.Hide();
+		m_pSelf->m_AucLabel2.Hide();
+		m_pSelf->m_AucBase.Hide();
+		m_pSelf->m_AucUnit2.Hide();
 	}
 }
 
@@ -332,6 +352,13 @@ void KUiAffairItem::OnOk()
 			dP = 2000000000.0;
 		r.nPrice = (int)dP;
 		r.nType = m_nAucCur;
+		// [A20] gia CO BAN di theo truong nId (duong nay bo trong) -> khong doi kich thuoc goi
+		szBuf[0] = 0;
+		m_AucBase.GetText(szBuf, sizeof(szBuf), true);
+		double dB = (double)atoi(szBuf) * (double)sAucMultiplier(m_nAucCur);
+		if (dB > 2000000000.0)
+			dB = 2000000000.0;
+		r.nId = (int)dB;
 		g_pCoreShell->OperationRequest(GOI_AUCTION_UI, (unsigned int)AUCUI_OP_SET_PRICE, (int)&r);
 		m_bAucMode = 0;
 	}

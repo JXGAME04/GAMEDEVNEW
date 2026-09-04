@@ -229,6 +229,8 @@ static void sFillEnglish(Lua_State* L, KAucUiItem* p)
 	p->nSelf = sArgInt(L, 8);
 	p->nRemaining = sArgInt(L, 9);
 	p->bMine = sArgInt(L, 10);
+	// [A20] tham so CUOI cua AuctionAddEnglishItem = gia MUA NGAY cua dong ky gui ca nhan
+	p->nBuyNow = sArgInt(L, 21);
 }
 
 // AuctionAddDutchItem(nType, nId, nStart, nCur, nGuaranteed, nCurrency, nRemaining, nNext, nTotalRemaining, bMine, g,d,p,l,s,k, nCount, szName)
@@ -448,7 +450,8 @@ void AuctionUi_OnRequest(unsigned int uParam, int nParam)
 		break;
 	case AUCUI_OP_SET_PRICE:
 		if (pReq)
-			sprintf(szCall, "UIAuctionHouse:OnSetPrice(%d, %d)", pReq->nPrice, pReq->nType);
+			// [A20] ba so: gia mua ngay, loai tien, gia co ban (dung lai truong nId dang bo trong)
+			sprintf(szCall, "UIAuctionHouse:OnSetPrice(%d, %d, %d)", pReq->nPrice, pReq->nType, pReq->nId);
 		break;
 	default:
 		break;
