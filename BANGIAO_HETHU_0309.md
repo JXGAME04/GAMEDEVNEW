@@ -190,6 +190,25 @@ Người gửi theo hoạt động: `MAILMGR_ACTIVITY` (+ phonglangdo, vuotai, t
 
 Kích hoạt: **khởi động lại GameServer** (`ChayGameServer.bat` — lưu ý `CoreServer.dll.moi` b68899b2 của wauto-6a đang chờ sẽ được nạp) — vì
 `protocol_def_gs.lua`/`playerlogin.lua` giữ bản mailmanager cũ trong state. Công cụ: `ReverseTools\mail\p9_lua.py` (idempotent, dấu `[MAIL 03/09 D9]`).
+Đã chạy lại GameServer 23:05:12 ⇒ D9 đang chạy.
+
+### 5c-bis. ĐỢT 9b (23:35) — hai việc từ báo cáo "làm xong 40 nhiệm vụ Dã Tẩu không thấy thư"
+
+**(1) LỖI THẬT — tràn ngăn xếp Lua khi gửi thư từ đáy sâu.** `ScriptError.log` 23:12:27 (`seasonnpc.lua` / `finish_exp`):
+`stack Overflow` trong `ObjBuffer:PushTable` ← `MailManager_PushHeaders` ← `NotifyNew` ← `SendMail` ← `SendReward` ← `SendRewardTemplet`
+← `tl_linkaward_mail` ← `tl_getlinkaward` ← `PayPlayerLinkAward` ← `SelectAward_Exp` ← `Prise_Chon` ← `finish_exp` (11 khung trước khi vào mã thư).
+`Include` = `lua_dofile` nên mã thư chạy TRONG state của người gọi; state Dã Tẩu đã sâu ⇒ đẩy bảng header (13 thư × 6 trường) làm tràn,
+**script đứt giữa chừng nên mất luôn phần thưởng còn lại của mốc đó**. Sửa (D9b): `MailManager_SendMail` không gọi `NotifyNew` tại chỗ nữa mà
+`DynamicExecuteByPlayer(PlayerIndex, "\script\mail\mailmanager.lua", "MailManager_NotifyNew", szRole, nId)` → chạy trong **state riêng** của
+`mailmanager.lua` (ngăn xếp nông). Kèm: `MailManager_SendReward` bỏ qua bot (`IsBot`) để khỏi tạo hàng nghìn dòng rác trong bảng `mail`.
+`Include` đọc lại tệp mỗi lần gọi ⇒ **có hiệu lực ngay, không cần khởi động lại**.
+
+**(2) KHÔNG PHẢI LỖI THƯ — mốc 40 nhiệm vụ hôm nay không hề chạy.** `seasonnpc.lua:115` giữ nguyên điều kiện gốc
+`if (nNum == 40 and nCancelNum) == 0` = phải đủ 40 nhiệm vụ **và KHÔNG huỷ nhiệm vụ nào trong ngày** (`ID_TASKLINK_LIMITCancelCount`, task 2797,
+tăng ở `seasonnpc.lua:719/760` mỗi lần huỷ). Bằng chứng 03/09: nhánh mốc 30 (`(nNum - nCancelNum) == 30`) chạy **12 lần** ⇒ mỗi lần hoàn thành lại
+có một lần huỷ đi kèm ⇒ khi `nNum` chạm 40 thì `nCancelNum` đã > 0; `script_jx2.log` không có dòng `seasonnpc_40task_ruong` lẫn exp 100 triệu của hôm nay
+(02/09 thì có). Đây là luật cũ của bản gốc, **chưa sửa vì là luật chơi — chờ chủ quyết**: giữ nguyên, hay đổi sang `(nNum - nCancelNum) == 40`
+(đủ 40 lần hoàn thành, cho phép huỷ), hay bỏ hẳn ràng buộc huỷ.
 
 Phiên wauto-c1 (Represent3, nhánh rep3-0309) bị chặn ghi `bin\client` và nhờ gộp vào bộ này — KHÔNG làm hộ (chủ tự chép/cho phép); họ tự gộp
 origin/main (đã có D4/D4b) vào rep3-0309 và đặt sau. `Represent3.dll` 74ac07ad đã nằm ở bin\client nhưng `config.ini [Client] Represent=2` nên chưa dùng.
