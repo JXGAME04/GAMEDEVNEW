@@ -1402,18 +1402,37 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 	// Bat dau duyet tu con tro xoay chu khong phai dau danh sach: neu so nguoi trong
 	// vung vuot tran nMaxCount thi moi lan phat se phuc vu mot doan khac nhau, thay vi
 	// luon phuc vu dung nhom dau danh sach (nhung nguoi con lai se thanh vo hinh).
+	// [F4 04/09] Truoc day 'nMaxCount--' nam NGOAI khoi if gui that (xem duoi) nen MOI node deu tru ngan sach,
+	// ke ca BOT (m_nNetConnectIdx = -1, khong the nhan goi) va nguoi ngoai tam. KRegion::AddPlayer them CA bot vao
+	// m_PlayerList nen mot vung Tong Kim ~258 bot an sach tran 100 truoc khi toi nguoi that; nMaxCount lai la int&
+	// dung chung cho CURREGION + 8 vung lan can nen can o vung dau la 8 vung sau khong ai nhan.
+	// Trieu chung (chu bao 04/09): 'bot chay toi dich nhung khong danh, dung yen lau sau moi danh vai cai' - bot VAN
+	// danh (585 bot chet/phut o may chu), chi la client khong nhan duoc goi. Do client cua chu (2 phut, ~258 nguoi
+	// quanh minh): 4.991 lenh chay tu 405 NPC nhung chi 366 goi chieu tu 95 NPC = 181/phut (~1-2% luong that).
+	// Con tro xoay m_nBroadCastCursor la cach cu chia luot khi qua tai - no NHAY QUA ca nguoi that dung truoc no,
+	// nen khi ngan sach chi con tinh nguoi that thi phai duyet VONG TRON (toi da nTong node) moi khong bo sot.
+	const int nF4Tong = m_PlayerList.m_nNodeCount;
 	pNode = (KIndexNode *)m_PlayerList.GetHead();
-	if (m_PlayerList.m_nNodeCount > nMaxCount)
+	if (nF4Tong > nMaxCount)
 	{
-		m_nBroadCastCursor %= m_PlayerList.m_nNodeCount;
+		m_nBroadCastCursor %= nF4Tong;
 		for (int nSkip = 0; nSkip < m_nBroadCastCursor && pNode; nSkip++)
 			pNode = (KIndexNode *)pNode->GetNext();
 		if (pNode == NULL)
 			pNode = (KIndexNode *)m_PlayerList.GetHead();
 		m_nBroadCastCursor += nMaxCount;
 	}
-	while(pNode && nMaxCount > 0)
+	int nF4Duyet = 0;	// [F4] so node da xet - chan vong tron
+	int nF4Gui   = 0;	// [F4] so nguoi that da gui trong lan phat nay
+	while(nMaxCount > 0 && nF4Duyet < nF4Tong)
 	{
+		if (pNode == NULL)	// [F4] het danh sach -> quay lai dau (duyet vong tron)
+		{
+			pNode = (KIndexNode *)m_PlayerList.GetHead();
+			if (pNode == NULL)
+				break;
+		}
+		nF4Duyet++;
 		// LOI TREO CO SAN: truoc day pNode chi tien BEN TRONG if, nen mot node co
 		// m_nIndex <= 0 hoac >= MAX_PLAYER se lam vong lap quay vo tan => treo cung
 		// GameServer. Nay luon tien node o cuoi vong.
@@ -1427,10 +1446,54 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 			if (Player[pNode->m_nIndex].m_nNetConnectIdx >= 0 
 				&& nDX <= MAX_SYNC_RANGE && nDY <= MAX_SYNC_RANGE
 				&& Player[pNode->m_nIndex].m_bSleepMode == FALSE)
+			{
 				g_pServer->PackDataToClient(Player[pNode->m_nIndex].m_nNetConnectIdx, (BYTE*)pBuffer, dwSize);
-			nMaxCount--;
+				nMaxCount--;	// [F4] CHI tru khi THAT SU gui (truoc day tru cho ca bot va nguoi ngoai tam)
+				nF4Gui++;
+			}
 		}
 		pNode = pNext;
+	}
+	// [F4] bo dem 10 giay/dong (tu quan moc thoi gian de RESET duoc so lieu, khong dung AUTOLOG_EVERY):
+	// goi phat | nguoi that da gui | lan bi cat vi het ngan sach (chi con khi > 100 NGUOI THAT cung vung) | node duyet.
+	{
+		static int   s_nF4Goi = 0, s_nF4Gui = 0, s_nF4Bo = 0, s_nF4Duyet = 0;
+		static DWORD s_uF4Moc = 0;
+		// [BC 03/09] huong 5: dem THEO LOAI GOI (byte dau cua goi = ProtocolType, xem Headers/KProtocolDef.h:
+		// 76 syncnpcmin, 85 npcrun, 84 npcwalk, 90 npchurt, 91 npcdeath, 92 chgcurcamp, 94 skillcast).
+		static int   s_anBCGoi[256], s_anBCGui[256], s_anBCBo[256];
+		const int nBCLoai = (pBuffer && dwSize > 0) ? (int)((const BYTE*)pBuffer)[0] : 0;
+		const int nBCCat  = (nMaxCount <= 0 && nF4Duyet < nF4Tong) ? 1 : 0;
+		s_anBCGoi[nBCLoai]++; s_anBCGui[nBCLoai] += nF4Gui; s_anBCBo[nBCLoai] += nBCCat;
+		s_nF4Goi++;
+		s_nF4Gui   += nF4Gui;
+		s_nF4Duyet += nF4Duyet;
+		if (nBCCat)
+			s_nF4Bo++;
+		const DWORD uF4Now = GetTickCount();
+		if (s_uF4Moc == 0)
+			s_uF4Moc = uF4Now;
+		else if (uF4Now - s_uF4Moc >= 10000)
+		{
+			s_uF4Moc = uF4Now;
+			AUTOLOG("[BC-DEM] 10s: goi=%d gui=%d cat_vi_het_ngan_sach=%d node_duyet=%d", s_nF4Goi, s_nF4Gui, s_nF4Bo, s_nF4Duyet);
+			// [BC 03/09] in toi da 8 loai goi nhieu nhat + moi loai co bi cat: 'loai:goi/gui/cat'
+			char szBC[512]; int nBCLen = 0; int nBCIn = 0;
+			for (int nBCK = 0; nBCK < 256 && nBCLen < 440; nBCK++)
+			{
+				if (s_anBCGoi[nBCK] <= 0)
+					continue;
+				if (nBCIn >= 8 && s_anBCBo[nBCK] <= 0)
+					continue;
+				nBCLen += _snprintf(szBC + nBCLen, sizeof(szBC) - 1 - nBCLen, " %d:%d/%d/%d", nBCK, s_anBCGoi[nBCK], s_anBCGui[nBCK], s_anBCBo[nBCK]);
+				nBCIn++;
+			}
+			szBC[sizeof(szBC) - 1] = 0;
+			if (nBCLen > 0)
+				AUTOLOG("[BC-LOAI] 10s loai:goi/gui/cat:%s", szBC);
+			memset(s_anBCGoi, 0, sizeof(s_anBCGoi)); memset(s_anBCGui, 0, sizeof(s_anBCGui)); memset(s_anBCBo, 0, sizeof(s_anBCBo));
+			s_nF4Goi = 0; s_nF4Gui = 0; s_nF4Bo = 0; s_nF4Duyet = 0;
+		}
 	}
 }
 

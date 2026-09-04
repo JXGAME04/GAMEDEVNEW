@@ -7,7 +7,11 @@
 
 //-----------------------------------------------------------------------
 #ifdef _SERVER
-#define	MAX_BROADCAST_COUNT		100
+// [BC 03/09] huong 1 (chu chon 03/09 dem): tran nguoi nhan cho goi MOT LAN (phat chieu, trung don, chay, doi phe)
+// 100 -> 500 = bang NPC_SYNC_BROADCAST_LIMIT. Sau F4 (chi tru khi that gui) tran nay chi con cham khi > 500
+// NGUOI THAT trong 9 vung; truoc do 258 bot ria da an sach 100 -> nguoi that khong thay chieu (do 04/09: 366 chieu/95 NPC
+// trong khi 4.991 lenh chay/405 NPC). Chi phi: goi chieu ~30 B x so nguoi that, khong dang ke.
+#define	MAX_BROADCAST_COUNT		500
 // Tran cho duong dong bo dinh ky (NormalSync). Ban goc = 100; chu game chon 500.
 #define	NPC_SYNC_BROADCAST_LIMIT	500
 // [S11 26/08] Goi su kien MOT LAN (chet s2c_npcdeath, go s2c_npcremove): hiem (vai
