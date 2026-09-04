@@ -1016,3 +1016,40 @@ Bổ sung từ wauto-c0: WAuto lên/xuống ngựa ~2,5 s/lần giữa lúc đá
 (±5); `[S8-NAN]` < 0,3/phút; phù về lúc đang chạy: không `E4_MOVE_PATH` đích map cũ, không `S8-NAN` trong 3 s sau `vaolandau`.
 Hồi quy soát: bot/quái đổi vùng mượt hơn (không xấu đi); người thật cast lên xác (hồi sinh/bốc xác?) — nếu có tính năng đó thì `[S13-XAC]`
 sẽ chặn, cần chủ báo.
+
+## 10.10 SAU SWAP S13i/j (16:47) — đo 12,5 phút → xấu hơn (4,47 nắn/phút) → tìm ra gốc "1967 cắt đường chạy" → S13k
+
+Bản chạy: server `bad8e293`, client `f2ad5ca3` (rồi client `6bbcda8f`/`e151cbfc` của wauto-d9, không đổi mã S13). Log `logsnap5\` (cl6/sv6).
+Bối cảnh khác hẳn phiên S13h: map 340, đi bộ (82 % thời gian), quái dày: **đổi mục tiêu 22 lần/phút** (S13h: 1), 54 chiêu/phút (30).
+
+| chỉ số | S13h | S13i/j |
+|---|---|---|
+| `[S8-NAN]`/phút | 1,08 | **4,47** (56 cú; 19 lúc client đứng, 14 máy chủ ở TRƯỚC, 12 ở SAU) |
+| nắn / 100 chiêu | 3,6 | 8,3 |
+| `[S13-XAC]` | — | 248 (10,5/phút), `S4-CAST` vào `life=0` = **0** (G1 vá đúng) |
+| trễ nhận lệnh chạy client→server | — | **p50 0 ms**, p90 441 (S13e: p50 328) |
+| **trễ pha chiêu** client thi hành → server thi hành cùng chiêu | p50 67 ms, p90 980 | **p50 180, p75 1.075, p90 1.788 ms; 45 % > 0,5 s** |
+
+### Loại trừ (đo trên số, không đoán)
+- **Không phải tốc độ**: cặp bước (client, máy chủ)/2 khung = (42,42) 452 lần đi bộ, (52,52) 81 lần ngựa.
+- **Không phải XAC `return` không `DoStand`** (giả thuyết máy chủ chạy tiếp vượt client): 20 lần XAC lúc máy chủ chạy, lệch 1 s sau p50 −2 mps, chỉ 1/20 có nắn trong 3 s (nền 7 %).
+- **G2 (mất khung đổi vùng) bằng chứng số yếu**: cửa sổ "mất bước" nằm gần hết **cạnh `[S6-LOADMAP]`** ở cả hai phiên (118/776 trước, 49/317 sau vá) ⇒ phần lớn là **ảo ảnh đo** do đổi khe vùng của cửa sổ 3×3 client; cơ chế mã vẫn đúng (phản biện xác nhận), giữ vá O(1), nhưng không còn coi là gốc chính.
+
+### 🔴 Gốc mới: chiêu bị TỪ CHỐI cắt đường chạy của máy chủ
+Máy chủ từ chối chiêu (case 0) **282 lần/12,5 phút, 100 % là chiêu 1967** — WAuto gửi 1967 (chiêu tự thân) nhắm quái xen kẽ với 1985/1977, cả hai phía đều từ chối (quan hệ mục tiêu). Mỗi từ chối đi qua `Exit → DoStand`. Client nhận 1967 khi **đang đứng** trong tầm (vô hại; lúc đang chạy thì WAuto cấp lại lệnh ngay khung sau). Máy chủ nhận 1967 khi **đang chạy phía sau** (xuất phát sau client) ⇒ `DoStand` **cắt đường chạy**, đứng ngoài tầm chờ lệnh chạy kế **p50 3,0 s** (client đứng trong tầm nên không gửi gì) ⇒ lệch đóng băng ở 200–300 ⇒ cú chạy kế vượt 256 ⇒ nắn. Đo: **76 lần/12,5 phút** máy chủ hủy 1967 lúc `doing=3`; 196 cú nhảy trễ pha > 300 ms, bối cảnh phổ biến nhất `cmd3 → CANCAST-DENY → SKILL_ABORT → CAST muộn`.
+Trễ pha vì thế "dính": client đánh liên tục nên máy chủ luôn bận, không bao giờ tự rút; phút 0–5 chỉ 15 ms, từ phút 6 nhảy 500–1.100 ms.
+
+### S13k (`KNpc.cpp` DoSkill, tại nhãn `Exit:`, CẢ HAI PHÍA)
+Người chơi thật đang `do_run/do_walk` mà chiêu bị huỷ vì bất kỳ lý do nào đi tới `Exit` (từ chối `CanCastSkill`, hồi chiêu chưa xong, thiếu
+mana/thể lực, cấm đánh, thiếu tầng Nộ, cast toạ độ quá tầm) ⇒ bỏ chiêu, **giữ nguyên di chuyển** (`return`, log `[S13-DENY-GIUCHAY]`), không
+`DoStand`. Phản biện S13k: bản đầu chỉ gác `case 0` (hụt 5 đường khác) và chỉ máy chủ (máy chủ sẽ dẫn trước client 15–125 mps mỗi lần vì client
+vẫn bị cắt rồi WAuto cấp lại mất 1–5 khung) ⇒ chuyển gác lên `Exit:` và bỏ `#ifdef _SERVER`. Client sẽ nhận phần này ở đợt build CoreClient kế
+của wauto-c0 (từ main ≥ commit S13k); tới lúc đó lệch dấu ngược nhỏ, S13-KEO khép khi đứng.
+Gốc xa thuộc WAuto (đã báo wauto-c0): 1967 phải cast lên chính mình hoặc bỏ khỏi vòng bắn mục tiêu — hết 23 lệnh vô ích/phút.
+
+| tệp | md5 | kích thước | swap |
+|---|---|---|---|
+| `bin\server\CoreServer.dll.moi` | **`b68899b2`** | 18.298.368 | tắt GameServer → `ChayGameServer.bat` (build từ main `87757f14`, giữ mail đợt 3) |
+| `bin\client\CoreClient.dll.moi` | **`e10abd7a`** | 2.515.968 | superset của `e151cbfc` (D5 wauto-d9) + client giữ chạy; đi cùng `Game.exe.moi bd5cb88e` (giữ nguyên); thoát Game + WAuto → `ChoiGame.bat` |
+
+**Nghiệm thu S13k**: `[S13-DENY-GIUCHAY]` xuất hiện; trễ pha chiêu p75 < 400 ms; `[S8-NAN]` < 1/phút trong bối cảnh quái dày; khoảng "máy chủ đứng ngoài tầm" sau từ chối biến mất.
