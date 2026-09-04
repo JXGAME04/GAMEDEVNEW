@@ -109,7 +109,18 @@ void	KPlayerTeam::ReceiveInvite(TEAM_INVITE_ADD_SYNC *pInvite)
 	int		nIdx;
 	memset(szName, 0, sizeof(szName));
 	memset(m_szRTongName, 0, sizeof(m_szRTongName));
-	memcpy(szName, pInvite->m_szName, sizeof(pInvite->m_szName) - (sizeof(TEAM_INVITE_ADD_SYNC) - pInvite->m_wLength - 1));
+	// [BIEN 04/09] KIEM BIEN: bieu thuc cu 'sizeof(struct) - m_wLength - 1' TRAN NGUOC khi m_wLength lon (m_wLength lay tu goi)
+	// -> so byte chep thanh khong lo, de bep ngan xep (jx_crash.log 04/09 00:21:13: 56.196 byte vao szName[32]).
+	{
+		int nChep = (int)sizeof(pInvite->m_szName) - ((int)sizeof(TEAM_INVITE_ADD_SYNC) - (int)pInvite->m_wLength - 1);
+		if (nChep < 0 || nChep > (int)sizeof(szName) - 1 || nChep > (int)sizeof(pInvite->m_szName))
+		{
+			AUTOLOG_EVERY(1000, "[BIEN-XAU] goi moi to doi hong: m_wLength=%u -> chep=%d (toi da %u) - BO GOI",
+				(unsigned)pInvite->m_wLength, nChep, (unsigned)sizeof(szName) - 1);
+			return;
+		}
+		memcpy(szName, pInvite->m_szName, nChep);
+	}
 	nIdx = pInvite->m_nIdx; //Idx cña player
 	if (m_bAutoRefuseInviteFlag)
 	{

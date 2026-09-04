@@ -673,6 +673,20 @@ void	KPlayerChat::GetChat(PLAYER_SEND_CHAT_SYNC *pChat)
 	char	szBuf[MAX_SENTENCE_LENGTH];
 	KUiMsgParam	Param;
 
+	// [BIEN 04/09] KIEM BIEN: ba do dai duoi day deu lay TU GOI. Truoc day chep thang -> mot goi hong
+	// (luong lech vi may chu vut byte khi ghi thieu) la ghi tran szBuf[256] / szName[32] / cChatPrefix[16]
+	// va de bep ngan xep -> sap (jx_crash.log 04/09 00:32:40: memcpy 20.608 byte vao szBuf[256]).
+	if (pChat->m_wSentenceLen >= MAX_SENTENCE_LENGTH ||
+		pChat->m_btNameLen >= sizeof(Param.szName) ||
+		pChat->m_btChatPrefixLen > CHAT_MSG_PREFIX_MAX_LEN ||
+		(int)pChat->m_btNameLen + (int)pChat->m_btChatPrefixLen + (int)pChat->m_wSentenceLen > (int)sizeof(pChat->m_szSentence))
+	{
+		AUTOLOG_EVERY(1000, "[BIEN-XAU] goi chat hong: ten=%u tien to=%u cau=%u (toi da %u/%u/%u) - BO GOI",
+			(unsigned)pChat->m_btNameLen, (unsigned)pChat->m_btChatPrefixLen, (unsigned)pChat->m_wSentenceLen,
+			(unsigned)sizeof(Param.szName), (unsigned)CHAT_MSG_PREFIX_MAX_LEN, (unsigned)MAX_SENTENCE_LENGTH);
+		return;
+	}
+
 	Param.cChatPrefixLen = pChat->m_btChatPrefixLen;
 	Param.nMsgLength = pChat->m_wSentenceLen;
 	memcpy(szBuf, &pChat->m_szSentence[pChat->m_btNameLen + pChat->m_btChatPrefixLen], pChat->m_wSentenceLen);
