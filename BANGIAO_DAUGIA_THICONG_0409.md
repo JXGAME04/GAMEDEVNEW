@@ -62,3 +62,46 @@ món cho người chơi hiện tại (hết chỗ thì **không** vứt xuống 
 
 Tham số đề xuất (theo bản gốc 2.0, chủ chỉnh được): thuế 5%, phí ký gửi 10%, 20 món/trang, một người ký gửi tối đa 5 món,
 ký gửi cá nhân 24 giờ giảm giá 1 lần, kiểu Anh 30 phút mỗi lần trả giá gia hạn 60 giây.
+
+---
+
+## Đợt A2 + A3 + B + C (04/09 ~01:00–02:30) — TRỌN BỘ, chờ chủ test một lần
+
+Chủ 04/09: "làm xong toàn bộ rồi test 1 lần". Đã làm cả ba mức trên cùng một cửa sổ (3 tab Bang hội / Thế giới / Cá nhân).
+
+### 1. Máy chủ (script; C++ chỉ thêm 2 hàm so với A1)
+| Tệp | Vai trò |
+|---|---|
+| `script\auction_house\auction_def.lua` | tham số: thuế 5 %, phí ký gửi 10 %, 20 món/trang, tối đa 5 món/người, ký gửi 24 h, kiểu Anh 30 phút (+60 s mỗi lần trả), Hà Lan 8 lần × 10 % mỗi 5 phút; tiền 1 = Ngân lượng, 2 = Xu (ô 251) |
+| `script\auction_house\auction_manager.lua` | bộ máy: 8 yêu cầu từ client, phát 12 sự kiện, chốt giao dịch `AUC_Settle`, hết hạn `AUC_Expire`, quét `AUC_Tick`. Giao/trả **qua thư** (`aucitem:<id>` → `AUC_GiveRec`, giữ nguyên thuộc tính). Tiền bán về người bán qua thư trừ thuế; phiên bang → **quỹ bang** (`TONG_ApplyAddMoney`); phiên thế giới (GM) → tiền vào hệ thống |
+| `script\auction_house\auction_npc.lua` | menu NPC **Dịch Quán → "Đấu giá"**: ký gửi (chọn tiền → nhập giá `OpenGetNumber` → đặt món vào hộp `GiveItemUI` → trừ phí → vào kho); Bang chủ đưa món vào phiên bang (Anh/Hà Lan × Ngân lượng/Xu); "Mở cửa sổ đấu giá". **Lệnh bài admin** → "Đấu giá: mở phiên thế giới (GM)" |
+| `script\auction_house\auctionpoll.lua` | timer 30 s (`AddTimer`, GlbValue 9002): giảm giá Hà Lan, kết thúc kiểu Anh, hết hạn ký gửi → thư trả người bán, báo kết thúc phiên |
+| `protocol.lua` (+20 tên), `protocol_def_gs.lua` (+8), `mail\mailmanager.lua` (đính kèm `aucitem:`) | |
+| `KAuctionServer.cpp` | thêm `AUC_SetPrice` (giảm giá) + `AUC_Bid` (trả giá nguyên tử: chỉ khi `cur_price < giá mới`) |
+
+### 2. Client
+| Tệp | Vai trò |
+|---|---|
+| `Core\Src\KAuctionUiDef.h` | hợp đồng Core ↔ Game.exe: `AUCUI_CMD_*` (19), `AUCUI_OP_*` (14), `KAucUiItem` / `KAucUiActivity` / `KAucUiMember` / `KAucUiReq` |
+| `Core\Src\KAuctionClient.{h,cpp}` | 21 hàm Lua giống 2.0 + `SetAuctionIconVisible`, `AuctionSetMoney`, `GetLocalTime`, `PopBlackTips`; `AuctionUi_OnRequest` → `UIAuctionHouse:xxx` qua `SP_RunClientLua` |
+| `S3Client\Ui\UiCase\UiAuction.{h,cpp}` | `KUiAuctionManager` (3 tab + đóng) · `KUiAuctionPage` (danh sách phiên cuộn, 3 hàng vật phẩm 118 px cuộn, trang trước/sau, số Ngân lượng/Xu, nút xem thành viên) · `KUiAuctionItemRow` (hai bộ widget Anh/Hà Lan, icon vật phẩm thật qua `GDI_ITEM_CHAT`, nút + / Báo giá / Huỷ / Ta muốn đấu giá / Lấy lại, đếm ngược mỗi giây) · `KUiAuctionMemberWnd` · `KUiAuctionIcon` (ngay dưới biểu tượng thư, nhấp nháy khi có món mới) |
+| `CoreShell.h/.cpp`, `ScriptFuns.cpp`, `GameSpaceChangedNotify.cpp`, 2 vcxproj | `GDCNI_AUCTION_UI` / `GOI_AUCTION_UI` (cuối enum), đăng ký 25 hàm, 3 móc GAME_START / EXIT / cmd |
+| `script\ui\uiauction_house.lua`, `script\auction_house\auction_def.lua`, `protocol_def_c.lua` (+12), `protocol.lua` | script client viết lại từ bản 2.0 (vật phẩm = 6 số + số lượng + tên + tên tiền; bỏ hộp xác nhận) |
+| `ui\Ui3\auction\*.ini` (13) | rút từ client JX1 cũ; `Image=` thêm `\` đầu; biểu tượng Left=765 Top=322; nút "Báo giá" đổi sang sprite 4 chữ (sprite 2 chữ không có trong pak dự án) |
+
+🔴 Bẫy đã gặp: `wnds.h` không có include guard → `UiAuction.h` include từng header elem như `UiMail.h`; `g_pCoreShell` phải `extern` tự khai (như `UiPartnerCommon.h`); `KWndWindow::Breathe` là private → không gọi hàm lớp cha.
+
+### 3. Phối hợp binary (04/09 01:30–02:30)
+- Máy chủ: bản đang chạy 72348ac7 là **broadcast-0309** của wauto-ca (main chưa có) ⇒ gộp `origin/broadcast-0309` c6ca1f55 rồi build: **`CoreServer.dll.moi` = 3bda2f1a** (18.327.040), đủ dấu `auction_item` `AUC_Bid` `bangluong` `BroadCastTam` `BC-TUVUNG` `S13-DENY-GIUCHAY` `TKDich`. Cần `heaven.dll` a793834b đang chạy (wauto-ca đã thêm `:capnhat heaven.dll` vào bat).
+- Client: bản đang chạy 16c0d5ca là **net-0309** (acchinh + 3 vá kiểm biên, main chưa có) ⇒ gộp `origin/net-0309` b0a05751 rồi Rebuild CoreClient + Game.exe; kiểm `BIEN-XAU` trước khi đặt; đặt **cả hai cùng lúc** (đổi enum CoreShell.h).
+- `origin/main` chỉ nhận các commit đấu giá (cherry-pick, badbd14f), không kéo nhánh của người khác.
+
+### 4. Cách test một lần (chủ)
+1. `ChayGameServer.bat` (nạp CoreServer 3bda2f1a) rồi `ChoiGame.bat` (nạp CoreClient + Game.exe .moi).
+2. Vào game: có **biểu tượng đấu giá** ngay dưới biểu tượng thư (góc phải). Bấm → cửa sổ 3 tab; tab Cá nhân có phiên "Ký gửi".
+3. Ký gửi: Dịch Quán → Đấu giá → "Ký gửi vật phẩm (Ngân lượng)" → nhập giá → đặt 1 món (không khoá) vào hộp → OK. Nhận thông báo mã số; trừ 10 % phí; món biến mất khỏi túi; tab Cá nhân hiện món (người khác thấy "Ta muốn đấu giá", chính mình thấy "Lấy lại").
+4. Mua bằng nhân vật khác: bấm "Ta muốn đấu giá" → trừ tiền → hộp thư tự mở với thư "Đấu giá thành công" đính kèm đúng món (thuộc tính y nguyên); người bán nhận thư "Tiền bán ký gửi" (giá − 5 %).
+5. Lấy lại: người bán bấm "Lấy lại" → thư "Rút vật phẩm ký gửi".
+6. Phiên bang: Bang chủ ở Dịch Quán → "Bang chủ: đưa vật phẩm vào phiên đấu giá bang" → Kiểu Anh / Ngân lượng → giá khởi điểm → đặt món. Thành viên mở tab Bang hội → phiên tên bang → bấm + rồi "Báo giá"; người bị vượt giá nhận thư hoàn tiền; sau 30 phút (gia hạn 60 s mỗi lần trả) món về người thắng qua thư, tiền vào quỹ bang. "Xem danh sách thành viên tham gia" mở bảng thành viên.
+7. Phiên thế giới: lệnh bài admin → "Đấu giá: mở phiên thế giới (GM)" → Kiểu Hà Lan → giá → đặt món: giá mở 150 %, giảm 10 % mỗi 5 phút, ai bấm mua trước được.
+8. Nhật ký: `logs\hethong.log` dòng `[DAUGIA]` (đặt bán / bán / hết hạn / lỗi) và `[MAIL]`; client `jx_mail.log` dòng `[AUC]`; lỗi script `ScriptError.log`.

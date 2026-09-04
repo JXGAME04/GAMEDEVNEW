@@ -1487,6 +1487,8 @@ def copy_ini():
                 line = "Image=" + BS + line[6:]
             out.append(line)
         txt = "\r\n".join(out)
+        # sprite "小按钮二字" khong co trong pak du an -> dung "小按钮四字" (co) cho nut Bao gia
+        txt = txt.replace("小按钮二字.spr".encode("gbk").decode("latin-1"), "小按钮四字.spr".encode("gbk").decode("latin-1"))
         if n == "auction_icon":
             # bieu tuong: nam ngay duoi bieu tuong thu (mail_icon.ini Left=765 Top=296 -> dau gia Top=322)
             txt = txt.replace("Left=990", "Left=765").replace("Top=320", "Top=322")

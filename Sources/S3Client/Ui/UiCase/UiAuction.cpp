@@ -11,6 +11,7 @@
 #include "../UiSoundSetting.h"
 #include "../../../core/src/coreshell.h"
 #include "UiAuction.h"
+extern iCoreShell* g_pCoreShell;	// nhu UiPartnerCommon.h
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -826,7 +827,6 @@ int KUiAuctionPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 
 void KUiAuctionPage::Breathe()
 {
-	KWndImage::Breathe();
 	if (!IsVisible())
 		return;
 	if (++m_nBreath >= 18)
