@@ -6559,6 +6559,11 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player to Server v? Client 1
 	if (IsPlayer())
 	{
 		PLAYER_SYNC	PlayerSync;
+		// [PS 04/09 b] goi nay dung strcpy cho MateName/GameTitle nen phan duoi buffer la RAC NGAN XEP,
+		// vai truong lai khong duoc gan o moi nhanh. Rac doi moi lan goi -> bam luon khac ->
+		// khong the bo goi trung, va con day vai chuc byte ngan xep may chu toi client.
+		memset(&PlayerSync, 0, sizeof(PlayerSync));
+
 		PlayerSync.ProtocolType		= (BYTE)s2c_syncplayer;
 		PlayerSync.ID				= m_dwID;
 		PlayerSync.ArmorType		= (BYTE)m_ArmorType;
@@ -6778,6 +6783,11 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 	if (IsPlayer())
 	{
 		PLAYER_NORMAL_SYNC PlayerSync;
+		// [PS 04/09 b] goi nay dung strcpy cho MateName/GameTitle nen phan duoi buffer la RAC NGAN XEP,
+		// vai truong lai khong duoc gan o moi nhanh. Rac doi moi lan goi -> bam luon khac ->
+		// khong the bo goi trung, va con day vai chuc byte ngan xep may chu toi client.
+		memset(&PlayerSync, 0, sizeof(PlayerSync));
+
 		PlayerSync.ProtocolType	= (BYTE)s2c_syncplayermin;
 		PlayerSync.ID			= m_dwID;
 		PlayerSync.WalkSpeed	= (BYTE)m_CurrentWalkSpeed;
