@@ -8830,6 +8830,12 @@ static bool WA_ChieuBiCam(KSkill* pSkill, int nSkill, int nSelf, int nTG, UINT u
 //   - di theo: cung map va cach > nAcChinhKC -> DT_WalkTo diem cach ac chinh AC_DUNG_CACH, tra 1;
 //   - con lai tra 0 (auto thuong). Ac chinh (nACLaChinh) chi gui vi tri.
 // Trong Tong Kim: TKP_FIGHT goi AC_CungMucTieu truoc buoc 1 va AC_DiTheo truoc "hoi may chu / rao map".
+// (04/09) co rieng cho viec "da bao loi mot lan" - TUYET DOI khong muon ea.nACHold
+// lam viec nay: nACHold la GIA TRI TRA VE cua AC_Process o nhip bi tiet che
+// (return ea.nACHold), hop dong chi cho 0/1/2; dat 3 vao do lam S3Client hieu la
+// "giu may" roi chan ca ATYPE_MOVE / may Chien dau / Da Tau / to doi.
+static UINT s_uACBaoLoi = 0;
+#define AC_BAO_LAI		60000	// ms: bao lai cung mot loi som nhat sau 60 giay
 #define AC_NHIP			300
 #define AC_DUNG_CACH	150		// dung cach ac chinh (Thai: -150)
 #define AC_TUOI_MAX		5000	// ms: qua 5 s khong co tin = mat ac chinh
@@ -8866,7 +8872,7 @@ static void AC_GuiViTri(int nPlayerIdx, UINT uCurTime)
 // Tach rieng voi AC_CoAcChinh (von doi cung map) de con duong sang map ac chinh.
 static int AC_KhacMap(const autoData* pAp, int nMap)
 {
-	if (!pAp->szAcChinhTen[0] || pAp->nACLaChinh)
+	if (!pAp->szAcChinhTen[0])
 		return 0;
 	if (!pAp->uACTuoi || (int)pAp->uACTuoi > AC_TUOI_MAX)
 		return 0;
@@ -8880,7 +8886,7 @@ static int AC_KhacMap(const autoData* pAp, int nMap)
 // ac chinh hop le de theo (cung map, con song, tin con moi)?
 static int AC_CoAcChinh(const autoData* pAp, int nMap)
 {
-	if (!pAp->szAcChinhTen[0] || pAp->nACLaChinh)
+	if (!pAp->szAcChinhTen[0])
 		return 0;
 	if (!pAp->uACTuoi || (int)pAp->uACTuoi > AC_TUOI_MAX)
 		return 0;
@@ -8974,7 +8980,10 @@ static int AC_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	if (Player[nPlayerIdx].m_nIndex <= 0)
 		return 0;
 	AC_GuiViTri(nPlayerIdx, uCurTime);		// moi cua so (ke ca ac chinh) bao vi tri len WAuto
-	if (pAp->nACLaChinh || (!pAp->bTimAcChinh && !pAp->bCungMucTieu))
+	// (04/09) truoc day kiem nACLaChinh -> cua so duoc nguoi khac chon lam ac chinh se
+	// NGUNG di theo ac chinh CUA NO (chuoi A theo B, B theo C bi dut im lang).
+	// Nghia dung: "toi khong theo ai" = szAcChinhTen rong, khong phai "co nguoi theo toi".
+	if (!pAp->szAcChinhTen[0] || (!pAp->bTimAcChinh && !pAp->bCungMucTieu))
 	{
 		ea.nACHold = 0;
 		return 0;
@@ -8997,13 +9006,14 @@ static int AC_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	{
 		if (!DT_SapTownMenu(pAp->nACMap))
 		{	// map ac chinh khong co tuyen Xa Phu (bai quai ngoai thanh) - bao MOT LAN
-			if (ea.nACHold != 3)
+			if (!s_uACBaoLoi || (int)(uCurTime - s_uACBaoLoi) > AC_BAO_LAI)
 			{
+				s_uACBaoLoi = uCurTime ? uCurTime : 1;
 				char szB[160];
 				sprintf(szB, "<color=Yellow>Ac chÝnh ®ang ë map %d - map nµy kh«ng cã tuyÕn Xa Phu nªn kh«ng tù sang ®­îc.", pAp->nACMap);
 				DT_Msg(nPlayerIdx, szB);
-				ea.nACHold = 3;
 			}
+			ea.nACHold = 0;
 			return 0;
 		}
 		int nDi = LD_DiThanh(nPlayerIdx, pAp, pAp->nACMap, uCurTime);
@@ -9012,15 +9022,19 @@ static int AC_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (nDi < 0)
 		{
 			ea.uLDHopT = 0;
-			if (ea.nACHold != 3)
+			if (!s_uACBaoLoi || (int)(uCurTime - s_uACBaoLoi) > AC_BAO_LAI)
 			{
+				s_uACBaoLoi = uCurTime ? uCurTime : 1;
 				DT_Msg(nPlayerIdx, "<color=Yellow>Kh«ng sang ®­îc map cña ¸c chÝnh (hÕt ThÇn Hµnh Phï / kh«ng thÊy Xa Phu).");
-				ea.nACHold = 3;
 			}
+			ea.nACHold = 0;
 			return 0;
 		}
 		if (ea.nACHold != 1)
+		{
+			s_uACBaoLoi = 0;		// di duoc roi - lan sau hong thi duoc bao ngay
 			DT_Msg(nPlayerIdx, "<color=Cyan>Ac chÝnh ë map kh¸c - ®ang qua Xa Phu ®Ó sang.");
+		}
 		ea.nACHold = 1;
 		return 1;
 	}
