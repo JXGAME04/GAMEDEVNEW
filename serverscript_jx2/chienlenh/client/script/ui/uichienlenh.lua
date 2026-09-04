@@ -4,6 +4,12 @@
 -- -> CoreShell GOI_CHIENLENH_UI -> C++ goi UIChienLenh:xxx() o day -> gui 3 yeu cau CL_REQUEST_* len may chu.
 -- Client KHONG tu tinh gi ca (khong doc duoc bien nhiem vu, trang thai o MySQL) - chi ve dung nhung gi may chu dua.
 
+-- [CL 04/09 DOT2d] MOI script client chay trong state Lua RIENG (KScriptProtocol.cpp sClientLoad): phai tu Include
+-- bang ten giao thuc + ObjBuffer nhu uiauction_house.lua, khong thi ScriptProtocol/ObjBuffer la nil khi bam nut
+-- (jx_mail.log 14:25 "[SP] RunClientLua loi ... UIChienLenh:RequestOpen()"). Chieu nhan van chay vi chi goi ham C++.
+Include("\\script\\protocol.lua")
+Include("\\script\\lib\\objbuffer_head.lua")
+
 UIChienLenh = UIChienLenh or {}
 
 function CLUI_Gui(szEnum, ...)
