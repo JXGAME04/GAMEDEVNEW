@@ -145,8 +145,13 @@ function AUC_RowToClient(r, szMe, nNow)
     tb.nType = r.kind
     tb.nStartTime = r.start
     tb.nCurrencyType = r.currency
-    tb.szCurrencyName = AUC_CurName(r.currency)
-    tb.szBelongRole = r.seller
+    -- [A11] MAY CHU tinh san "mon cua chinh minh": client KHONG co ham GetName
+    -- (GetName chi dang ky trong khoi #ifdef _SERVER) - goi ben client nem loi va dut vong ve.
+    -- [A12] bo szCurrencyName + szBelongRole cho nhe goi (bo dem ObjBuffer chi 4096 byte).
+    tb.bMine = 0
+    if szMe ~= "" and r.seller == szMe then
+        tb.bMine = 1
+    end
     -- [A9] KHONG long bang ba tang (tbPage > dong > tbItem): ObjBuffer khong dua qua duoc,
     -- ben nhan ra bang RONG. Trai 6 so cua vat pham thanh 6 truong so.
     local pr = AUC_SplitDesc(r.desc)
