@@ -148,6 +148,44 @@ int LuaAuc_AuctionOnActivitySelect(Lua_State* L)
 }
 
 // ---------------------------------------------------------------- vat pham
+// [DAUGIA 04/09 A16] Dien ChatItem tu chuoi AUC_RecDesc tra ve.
+// Dung chung voi HOP THU (KMailClient.cpp goi qua KAuctionClient.h) de hai noi khong lech nhau.
+// Sau khi goi, nguoi goi van phai tu dat m_nID, m_bStack va m_wVersion.
+void Auc_FillChatItemInfo(ChatItem* pItem, const char* szInfo)
+{
+	if (!pItem || !szInfo || !szInfo[0])
+		return;
+	const char* p = szInfo;
+	int nIdx = 0;
+	while (*p && nIdx < 9 + MAX_ITEM_MAGICLEVEL + 1)
+	{
+		long nVal = strtol(p, NULL, 10);
+		switch (nIdx)
+		{
+		case 0: pItem->m_btGenre = (BYTE)nVal; break;
+		case 1: pItem->m_btDetail = (short)nVal; break;	// da ma hoa nRow cho hang hoang kim
+		case 2: pItem->m_btParticur = (short)nVal; break;
+		case 3: pItem->m_btLevel = (BYTE)nVal; break;
+		case 4: pItem->m_btSeries = (BYTE)nVal; break;
+		case 5: pItem->m_btLuck = (BYTE)nVal; break;
+		case 6: pItem->m_nNature = (int)nVal; break;	// NATURE_GOLD -> CoreShell di nhanh ItemSet.Add
+		case 7: pItem->m_nGoldId = (short)nVal; break;
+		case 8: pItem->m_bEnChance = (BYTE)nVal; break;
+		default:
+			if (nIdx < 9 + MAX_ITEM_MAGICLEVEL)
+				pItem->m_btMagicLevel[nIdx - 9] = (short)nVal;
+			else
+				pItem->m_dwRandomSeed = (DWORD)strtoul(p, NULL, 10);
+			break;
+		}
+		nIdx++;
+		const char* q = strchr(p, ',');
+		if (!q)
+			break;
+		p = q + 1;
+	}
+}
+
 // 6 so + so luong + ten -> ChatItem (nhu KMailClient.cpp) bat dau tu tham so nFrom
 static void sFillItem(Lua_State* L, int nFrom, KAucUiItem* p)
 {
@@ -169,6 +207,11 @@ static void sFillItem(Lua_State* L, int nFrom, KAucUiItem* p)
 	p->Item.m_nGoldId = 0;
 	sCopyStr(p->szName, sizeof(p->szName), sArgStr(L, nFrom + 7));
 	sCopyStr(p->szCurrency, sizeof(p->szCurrency), sArgStr(L, nFrom + 8));
+	// [A16] Tham so CUOI CUNG (them 04/09) = chuoi AUC_RecDesc: bo so DU de dung lai dung mon,
+	// gom nature + row (hoang kim), goldid, 6 muc phu van va hat giong ngau nhien.
+	// Noi vao CUOI chu khong chen giua: ban .lua cu gap DLL moi thi chi thieu chuoi nay va
+	// thoai hoa em ve hanh vi cu, con chen giua se lam doc truot ten mon.
+	Auc_FillChatItemInfo(&p->Item, sArgStr(L, nFrom + 9));
 }
 
 // AuctionAddEnglishItem(nType, nId, nStart, nGuaranteed, nRange, nCurrency, nMax, nSelf, nRemaining, bMine, g,d,p,l,s,k, nCount, szName)
