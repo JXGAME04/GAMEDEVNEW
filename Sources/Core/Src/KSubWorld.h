@@ -195,6 +195,36 @@ public:
 			return true;
 		return false;
 	}
+	// (03/09 WAuto TK) DOC luoi A* cua ban do hien tai cho may auto rao map.
+	// Chi doc, khong them truong -> bo cuc lop khong doi (Game.exe khong can build lai).
+	// Tra: 1 = o di duoc, 0 = vat can, -1 = chua co luoi / dang nap / ngoai luoi.
+	int LuoiOCoDiDuoc(int nMpsX, int nMpsY) const
+	{
+		if (!m_bHavePath || !m_nGridTotal)
+			return -1;
+		if (m_hLoadPathGrid && WaitForSingleObject(m_hLoadPathGrid, 0) == WAIT_TIMEOUT)
+			return -1;
+		const int nW = m_nGridW * REGION_GRID_WIDTH;
+		const int nH = m_nGridH * REGION_GRID_HEIGHT;
+		const int cx = nMpsX / 32 - m_nRegionBeginX * REGION_GRID_WIDTH;
+		const int cy = nMpsY / 32 - m_nRegionBeginY * REGION_GRID_HEIGHT;
+		if (cx < 0 || cy < 0 || cx >= nW || cy >= nH)
+			return -1;
+		return m_GridNode[cy * nW + cx].obs ? 0 : 1;
+	}
+	// bao cua luoi (mps): [x0, x1) x [y0, y1). Tra false khi chua co luoi.
+	bool LuoiPhamViMps(int& x0, int& y0, int& x1, int& y1) const
+	{
+		if (!m_bHavePath || !m_nGridTotal)
+			return false;
+		if (m_hLoadPathGrid && WaitForSingleObject(m_hLoadPathGrid, 0) == WAIT_TIMEOUT)
+			return false;
+		x0 = m_nRegionBeginX * REGION_GRID_WIDTH * 32;
+		y0 = m_nRegionBeginY * REGION_GRID_HEIGHT * 32;
+		x1 = x0 + m_nGridW * REGION_GRID_WIDTH * 32;
+		y1 = y0 + m_nGridH * REGION_GRID_HEIGHT * 32;
+		return true;
+	}
 #endif
 private:
 	void		LoadTrap();
