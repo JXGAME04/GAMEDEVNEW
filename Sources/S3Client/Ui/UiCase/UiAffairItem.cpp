@@ -228,10 +228,13 @@ void KUiAffairItem::LoadScheme(const char* pScheme)
 
 // [DAUGIA 04/09 A6] Chu 04/09: gop lam MOT hop - hop dua vat pham nay khi ky gui dau gia se hien
 // them o nhap GIA va nut doi LOAI TIEN. Bat truoc khi may chu mo hop; tat khi hop dong.
+// [A23 04/09] chu bao "van bi nut ngan luong": nhan "Ngan luong" DAI HON anh cua nut.
+// Nut dung sprite "nut nho bon chu" nen chi ve vua bon chu Han; noi Width trong ini KHONG
+// lam anh rong ra (dot A7 da thu). Cach dung la rut nhan cho vua anh.
 static const char* sAucCurName(int nCur)
 {
 	// TCVN3 tho (cung bang ma voi phan con lai cua client)
-	return (nCur == AUCUI_CUR_XU) ? "Xu" : "Ng©n l­îng";
+	return (nCur == AUCUI_CUR_XU) ? "Xu" : "L­îng";
 }
 
 // [A7] don vi hien sau o nhap: Ngan luong tinh theo VAN (x10.000), Xu tinh thang

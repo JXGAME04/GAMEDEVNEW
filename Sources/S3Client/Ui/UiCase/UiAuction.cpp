@@ -85,9 +85,43 @@ static void sSendReq(int nOp, int nType, int nId, int nPrice, const char* szName
 	sSendOp(nOp, (int)&r);
 }
 
+// [DAUGIA 04/09 A23] chu: "thong tin gia nen rut gon lai thay vi 1000000 thi thanh 100 van".
+// 1 van = 10.000 ; 1 uc = 10.000 van = 100.000.000. Duoi mot van thi viet thang so.
+// Phan le chi hien khi khac 0 nen gia tron (thuong gap, vi Ngan luong nhap theo van) rat gon.
 static void sFmtMoney(char* sz, int nSize, int n)
 {
-	_snprintf(sz, nSize - 1, "%d", n);
+	if (n < 0)
+		n = 0;
+	// [A32 04/09] chu chot: KHONG dung "øc", cu dem theo v¹n (100 v¹n -> 1000 v¹n -> 10000 v¹n)
+	if (n >= 10000)
+	{
+		int nVan = n / 10000;
+		int nLe = n % 10000;
+		if (nLe)
+			_snprintf(sz, nSize - 1, "%d v¹n %d", nVan, nLe);
+		else
+			_snprintf(sz, nSize - 1, "%d v¹n", nVan);
+	}
+	else
+		_snprintf(sz, nSize - 1, "%d", n);
+	sz[nSize - 1] = 0;
+}
+
+// [DAUGIA 04/09 A27] chu: "xu chua co don vi van hien 100". Moi SO TIEN deu phai mang don vi;
+// rieng SO LUONG vat pham thi khong (dung sFmtMoney o tren).
+//   Xu          : "100 xu" / "12 v¹n xu"
+//   Ngan luong  : duoi mot v¹n thi "5000 l­îng", tu mot v¹n tro len thi "100 v¹n"
+//                 (chu v¹n da ngu y l­îng, va hang da ghi ro loai tien)
+static void sFmtCur(char* sz, int nSize, int n, int nCur)
+{
+	char szSo[48];
+	sFmtMoney(szSo, sizeof(szSo), n);
+	if (nCur == AUCUI_CUR_XU)
+		_snprintf(sz, nSize - 1, "%s xu", szSo);
+	else if (n < 10000)
+		_snprintf(sz, nSize - 1, "%s l­îng", szSo);
+	else
+		_snprintf(sz, nSize - 1, "%s", szSo);
 	sz[nSize - 1] = 0;
 }
 
@@ -338,6 +372,7 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 	char sz[64];
 	m_Name.SetText(p->szName);
 	// bieu tuong: dung lai vat pham tam tu ChatItem (nhu hop thu)
+	// [A32 04/09] o lai 26x26 va mon nhieu o duoc THU NHO THAT ve mot o, nen khung nen hien lai.
 	m_IconBg.Show();
 	if (!bSameItem && g_pCoreShell && p->Item.m_nID)
 	{
@@ -367,27 +402,27 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 	{
 		ShowDutch(0);
 		ShowEnglish(1);
-		sFmtMoney(sz, sizeof(sz), p->nGuaranteed);	m_EngV1.SetText(sz);
-		sFmtMoney(sz, sizeof(sz), p->nRange);		m_EngV2.SetText(sz);
+		sFmtCur(sz, sizeof(sz), p->nGuaranteed, p->nCurrency);	m_EngV1.SetText(sz);
+		sFmtCur(sz, sizeof(sz), p->nRange, p->nCurrency);		m_EngV2.SetText(sz);
 		m_EngV3.SetText(p->szCurrency);
-		sFmtMoney(sz, sizeof(sz), p->nMax);			m_EngV4.SetText(sz);
+		sFmtCur(sz, sizeof(sz), p->nMax, p->nCurrency);			m_EngV4.SetText(sz);
 		// [DAUGIA 04/09 A20e] dong ky gui ca nhan co them GIA MUA NGAY: o thu nam doi nghia.
 		// Phien the gioi / bang hoi khong co gia mua ngay (nBuyNow = 0) nen giu nguyen "Gia cua ta".
 		if (p->nBuyNow > 0)
 		{
 			m_EngT5.SetText("Mua ngay");
-			sFmtMoney(sz, sizeof(sz), p->nBuyNow);	m_EngV5.SetText(sz);
+			sFmtCur(sz, sizeof(sz), p->nBuyNow, p->nCurrency);	m_EngV5.SetText(sz);
 		}
 		else
 		{
 			m_EngT5.SetText("Gi¸ cña ta");
-			sFmtMoney(sz, sizeof(sz), p->nSelf);	m_EngV5.SetText(sz);
+			sFmtCur(sz, sizeof(sz), p->nSelf, p->nCurrency);	m_EngV5.SetText(sz);
 		}
 		// gia minh se tra: cao nhat + buoc (toi thieu = khoi diem)
 		int nBase = p->nMax > 0 ? p->nMax + p->nRange : p->nGuaranteed;
 		if (m_nOffer < nBase)
 			m_nOffer = nBase;
-		sFmtMoney(sz, sizeof(sz), m_nOffer);		m_TxtOffer.SetText(sz);
+		sFmtCur(sz, sizeof(sz), m_nOffer, p->nCurrency);		m_TxtOffer.SetText(sz);
 		// [A20e] mon cua CHINH MINH o the Ca nhan: van phai co nut "Lay lai" nhu dong Ha Lan,
 		// khong thi nguoi ban ky gui xong khong con duong nao rut mon ve.
 		if (p->bMine)
@@ -395,6 +430,10 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 			m_BtnOffer.Hide();
 			m_BtnAddPrice.Hide();
 			m_BtnGiveUp.Hide();
+			// [A26 04/09] mon cua CHINH MINH thi khong tra gia duoc, nen an ca KHUNG NHAP gia
+			// va con so trong do - truoc chi an ba cai nut, khung nhap van nam do trong tron.
+			m_ImgInput.Hide();
+			m_TxtOffer.Hide();
 			if (p->nBuyNow > 0)
 				m_BtnGetBack.Show();
 			else
@@ -415,10 +454,10 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 	{
 		ShowEnglish(0);
 		ShowDutch(1);
-		sFmtMoney(sz, sizeof(sz), p->nCur);			m_DutV1.SetText(sz);
-		sFmtMoney(sz, sizeof(sz), p->nGuaranteed);	m_DutV2.SetText(sz);
+		sFmtCur(sz, sizeof(sz), p->nCur, p->nCurrency);			m_DutV1.SetText(sz);
+		sFmtCur(sz, sizeof(sz), p->nGuaranteed, p->nCurrency);	m_DutV2.SetText(sz);
 		m_DutV3.SetText(p->szCurrency);
-		sFmtMoney(sz, sizeof(sz), p->nNext);		m_DutV5.SetText(sz);
+		sFmtCur(sz, sizeof(sz), p->nNext, p->nCurrency);		m_DutV5.SetText(sz);
 		if (p->bMine)
 		{
 			m_BtnBid.Hide();
@@ -813,7 +852,7 @@ int KUiAuctionPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				{
 				case 1:	// + buoc gia
 					r.m_nOffer += (r.m_Data.nRange > 0 ? r.m_Data.nRange : 1);
-					sFmtMoney(sz, sizeof(sz), r.m_nOffer);
+					sFmtCur(sz, sizeof(sz), r.m_nOffer, r.m_Data.nCurrency);
 					r.m_TxtOffer.SetText(sz);
 					break;
 				case 2:
@@ -1427,7 +1466,15 @@ void KUiAuction_OnCoreCmd(unsigned int uCmd, int nParam)
 		break;
 	case AUCUI_CMD_PUTON_MODE:
 		// [A6] chu 04/09: gop lam MOT hop - hop dua vat pham co them o gia + nut doi loai tien
-		KUiAffairItem::SetAuctionMode(nParam);
+		// [A28 04/09] tri 2 = DONG hop (ky gui xong). Dung 2 thay vi them mot lenh moi de khong
+		// phai doi KAuctionUiDef.h - chen them tri vao giua enum la lech het ba tep nhi phan.
+		// Dong bang dung duong CloseWindow(true) cho an toan: no chay ca OnCancel, ma OnCancel
+		// ban lenh THU HOI vat pham trong hop - luc nay may chu da lay mon nen la lenh rong,
+		// con neu vi ly do gi mon van con trong hop thi no duoc tra ve hanh trang thay vi ket lai.
+		if (nParam == 2)
+			KUiAffairItem::CloseWindow(true);
+		else
+			KUiAffairItem::SetAuctionMode(nParam);
 		break;
 	case AUCUI_CMD_SET_MONEY:
 		if ((p = KUiAuctionManager::GetSelf()) != NULL && nParam)

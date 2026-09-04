@@ -21,6 +21,7 @@ function UIAuctionHouse:Reset()
     self.tbActivityList[AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL] = {}
     self.szCurActivityName = ""
     self.nCurPageIndex = 1
+    self.bTuBam = 0
 end
 
 function UIAuctionHouse:TalkToPlayer(szMsg)
@@ -54,8 +55,14 @@ end
 function UIAuctionHouse:ResetPageInfo(nType, szAct)
     if szAct ~= "" then
         local nMax = self:GetActivityMaxPage(szAct)
+        -- [A29b] chu: "qua trang ke mua item xong ve lai 1 trang la khong thay item nao".
+        -- Truoc day co kep so trang ve trang cuoi nhung CHI doi CHU, khong nap lai noi dung,
+        -- nen man hinh van giu nguyen trang cu da rong cho toi khi tat mo lai cua so.
         if nMax > 0 and self.nCurPageIndex > nMax then
             self.nCurPageIndex = nMax
+            if AuctionUiIsOpen() == 1 and self.szCurActivityName == szAct then
+                self:RequestActivityContent(szAct, nMax)
+            end
         end
         if nMax > 0 then
             AuctionSetCurrentPageTxt(nType, format("%d/%d", self.nCurPageIndex, nMax))
@@ -141,10 +148,15 @@ function UIAuctionHouse:RequestOfferEnglishPrice(nId, nPrice)
 end
 
 function UIAuctionHouse:RequestOfferDutchPrice(nId, nPrice)
+    -- [A26] danh dau: chinh ta vua bam lenh lam mon bien khoi danh sach, nen khi goi
+    -- ket thuc mon ve thi nap lai trang cho RIENG ta. Nguoi khac van giu nguyen cho
+    -- (ban goc co y khong don danh sach duoi tay nguoi dang bam - de bam nham mon).
+    self.bTuBam = 1
     self:SendItemReq("emSCRIPT_PROTOCOL_AUCTION_REQUEST_OFFERDUTCHPRICE", nId, nPrice)
 end
 
 function UIAuctionHouse:RequestGetBackItem(nId)
+    self.bTuBam = 1
     self:SendItemReq("emSCRIPT_PROTOCOL_AUCTION_REQUEST_GETBACKITEM", nId, nil)
 end
 
@@ -175,6 +187,15 @@ function UIAuctionHouse:OnPageBtnClick(nType)
 end
 
 -- [A4] nut goc phai: Ca nhan = ky gui, The gioi = GM mo phien, Bang hoi = bang chu dat mon / thanh vien xem danh sach
+-- [A28] may chu bao ky gui XONG: dong hop dua vat pham va nap lai trang dang xem.
+function UIAuctionHouse:OnPutOnOk(nType, szAct)
+    AuctionPutOnMode(2)
+    if AuctionUiIsOpen() == 1 and self.nCurTypeIndex == nType then
+        self:ResetPageInfo(nType, szAct)
+        self:RequestActivityContent(self.szCurActivityName, self.nCurPageIndex)
+    end
+end
+
 function UIAuctionHouse:OnPutOnClick(nType)
     local h = OB_Create()
     AuctionPutOnMode(1)
@@ -431,6 +452,14 @@ function UIAuctionHouse:OnEndItemEvent(nType, szAct, nEndId, nTotal)
         -- bat MOI nguoi dang mo cua so hoi lai ca trang - dung kieu doi goi (bai hoc F4 04/09).
         AuctionEndItem(nType, nEndId)
         self:ResetPageInfo(nType, szAct)
+        -- [A26] chi nguoi VUA BAM moi duoc nap lai trang: ho dang cho danh sach doi,
+        -- khong ai bi giat tay. Nguoi khac van chi danh dau mon tai cho nhu ban goc.
+        if self.bTuBam == 1 then
+            self.bTuBam = 0
+            if AuctionUiIsOpen() == 1 then
+                self:RequestActivityContent(szAct, self.nCurPageIndex)
+            end
+        end
     end
 end
 

@@ -26,6 +26,9 @@ public:
 	void	SetObjectGenre(unsigned int uGenre);		
 	int		GetObject(KUiDraggedObject& Obj) const;		
 	void	HoldObject(unsigned int uGenre, unsigned int uId, int nDataW, int nDataH);
+	// [A29 04/09] 1 = mon rong hon MOT O thi ve bang anh thay the mot o (KItem::PaintItem bResize).
+	// Doc tu ini khoa "ResizeBigItem"; chi bat cho o dinh kem hop thu va o vat pham bang dau gia.
+	int		m_bResizeBig;
 	void	Clone(KWndObjectBox* pCopy);
 	void	SetContainerId(int nId);
 	void	EnablePickPut(bool bEnable);

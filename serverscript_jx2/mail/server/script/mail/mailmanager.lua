@@ -397,6 +397,42 @@ function MailManager_OnRequestStateChange(nId, nToState)
     GhiLog("MAIL", format("%s nhan dinh kem thu %d: %s", szRole, nId, r.award or ""))
 end
 
+-- [A29b 04/09] Vong quet hop thu TRUOC NAY KHONG CHAY: mailpoll.lua khong duoc tep nao nap,
+-- va chot dang ky cua no dung GlbValue (luu vinh vien) nen dang ky mot lan roi thoi.
+-- Nay dat ngay trong tep nay (playerlogin.lua da Include no) theo kieu NHIP TIM.
+MAILPOLL_FRAMES = 30 * 18
+MAILPOLL_GLB    = 9001
+MAILPOLL_LASTID = MAILPOLL_LASTID or 0
+MAILPOLL_TICKS  = MAILPOLL_TICKS or 0
+function MailPoll_Tick(nParam, nTimerId)
+    SetGlbValue(MAILPOLL_GLB, GetCurrentTime())
+    if MAILPOLL_LASTID == 0 then
+        MAILPOLL_LASTID = MailDB_MaxId() or 0
+    end
+    local tb = MailDB_PollNew(MAILPOLL_LASTID, 50)
+    for i = 1, getn(tb) do
+        local r = tb[i]
+        if r.id > MAILPOLL_LASTID then
+            MAILPOLL_LASTID = r.id
+        end
+        MailManager_NotifyNew(r.role, r.id)
+    end
+    MAILPOLL_TICKS = MAILPOLL_TICKS + 1
+    if MAILPOLL_TICKS >= 20 then
+        MAILPOLL_TICKS = 0
+        MailDB_Sweep()
+    end
+    return MAILPOLL_FRAMES
+end
+if MAILPOLL_DANGKY ~= 1 then
+    local nNhip = GetGlbValue(MAILPOLL_GLB) or 0
+    if GetCurrentTime() - nNhip > 120 then
+        MAILPOLL_DANGKY = 1
+        SetGlbValue(MAILPOLL_GLB, GetCurrentTime())
+        AddTimer(MAILPOLL_FRAMES, "MailPoll_Tick", 0)
+    end
+end
+
 function MailManager_OnRequestDelete(nId)
     if MailDB_Delete(GetName(), nId) == 1 then
         MailManager_ReplyDelete(nId, MAILDEF.tbDeleteReson.REQUEST)

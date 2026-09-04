@@ -291,6 +291,7 @@ void KUiMailDetail::LoadScheme(const char* pScheme)
             m_AwardBg[i].Init(&IniAward, "MailAwardBgSpr");
             m_AwardBg[i].GetPosition(&l, &t);
             m_AwardBg[i].SetPosition(nBaseX + l, nBaseY + t);
+            // [D16 04/09] o da tra ve 26x26 nen bieu tuong loai "anh" khong phai doi cho nua.
             m_AwardSpr[i].Init(&IniAward, "MailAwardItemSpr");
             m_AwardSpr[i].GetPosition(&l, &t);
             m_AwardSpr[i].SetPosition(nBaseX + l, nBaseY + t);
@@ -303,6 +304,27 @@ void KUiMailDetail::LoadScheme(const char* pScheme)
         }
     }
     Clean();
+}
+
+// [MAIL 04/09 D15] chu: "so tien hien thi qua dai, 1200000 thanh 120 v¹n".
+// Cung quy uoc voi cua so dau gia: 1 v¹n = 10.000 ; 1 øc = 10.000 v¹n.
+static void sFmtSoNgan(char* sz, int nSize, int n)
+{
+	if (n < 0)
+		n = 0;
+	// [A32 04/09] chu chot: KHONG dung "øc", cu dem theo v¹n (100 v¹n -> 1000 v¹n -> 10000 v¹n)
+	if (n >= 10000)
+	{
+		int nVan = n / 10000;
+		int nLe = n % 10000;
+		if (nLe)
+			_snprintf(sz, nSize - 1, "%d v¹n %d", nVan, nLe);
+		else
+			_snprintf(sz, nSize - 1, "%d v¹n", nVan);
+	}
+	else
+		_snprintf(sz, nSize - 1, "%d", n);
+	sz[nSize - 1] = 0;
 }
 
 void KUiMailDetail::Update(const KMailUiDetail* p)
@@ -354,6 +376,7 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
         // [MAIL 04/09 D13] o vat pham that (KWndObjectBox) da duoc ENGINE ve san so chong o goc,
         // nen KHONG ve them nhan so nua (truoc day hien hai so chong nhau: "500" va "500").
         int bBoxShown = 0;
+        // [D16 04/09] o da tra ve 26x26 nen khung nen hien lai binh thuong (bo doan an cua D14).
         if (pA->nKind == MAILAWARD_ITEM)
         {
             // dung lai vat pham trong Item[] cua client tu ChatItem (CoreShell.cpp GDI_ITEM_CHAT)
@@ -381,7 +404,11 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
         // [A8 04/09] o vat pham chi ve duoc so <= 255 (m_bStack la BYTE); tren nguong do
         // KMailClient dat stack = 1 va ta tu ve nhan so that.
         if (pA->nCount > 1 && (!bBoxShown || pA->nCount > 255))
-            m_AwardCount[i].SetIntText(pA->nCount);
+        {
+            char szSo[48];
+            sFmtSoNgan(szSo, sizeof(szSo), pA->nCount);
+            m_AwardCount[i].SetText(szSo);
+        }
         else
             m_AwardCount[i].SetText("");
         m_AwardCount[i].Show();

@@ -195,6 +195,26 @@ def build_maildef():
 INI = ["mail_manager.ini", "mail_list.ini", "mail_header.ini", "mail_detail.ini", "mail_icon.ini", "mail_award_item.ini"]
 
 
+def _setkey(txt, sec, key, val):
+    """[D14] doi (hoac them) mot khoa trong muc [sec] cua noi dung ini"""
+    e = "\r\n"
+    out, cur, done = [], None, False
+    for line in txt.split(e):
+        st = line.strip()
+        if st.startswith("[") and st.endswith("]"):
+            if cur == sec and not done:
+                out.append(key + "=" + str(val))
+                done = True
+            cur = st[1:-1]
+        elif cur == sec and st.startswith(key + "="):
+            line = key + "=" + str(val)
+            done = True
+        out.append(line)
+    if cur == sec and not done:
+        out.append(key + "=" + str(val))
+    return e.join(out)
+
+
 def build_ini(name):
     s = rd(os.path.join(SRC, "mail_jx1cu", "ui3_" + name))
     e = "\r\n" if "\r\n" in s else "\n"
@@ -208,6 +228,23 @@ def build_ini(name):
         s = rep1(s, "Top=51" + e + "Width=65", "Top=51" + e + "Width=80", "sender label")
         s = rep1(s, "[MailSenderValue]" + e + "Left=66" + e + "Top=51" + e + "Width=275",
                  "[MailSenderValue]" + e + "Left=82" + e + "Top=51" + e + "Width=259", "sender value")
+    # [D14 04/09] chu: "khi go dau gia gui tra item ve 1 o - hoac cho item nam hien thi nhu trong dau gia".
+    # O dinh kem chi 26x26 ma trang bi 2x3 ve ra 52x78; engine can giua nen mon tran ra moi phia.
+    # KHONG thu nho duoc anh vat pham (KItem::PaintItem ve nguyen co) nen phai NOI O cho vua mon.
+    # O neo o (300,315) trong khung thu cao 345 -> khong noi xuong duoc, phai doi len va thu bot vung chu.
+    # [D16 04/09] chu: "nen lam lai nhu truoc cho thu do chi duoc 1 o". Dot D14 noi o len 58x78
+    # lam lech ca bieu tuong loai anh lan cho dat, nay TRA VE NGUYEN nhu ban goc va thay bang
+    # co ResizeBigItem (mon nhieu o ve bang anh thay the mot o - xem CoreDrawGameObj.cpp [A29]).
+    if name == "mail_award_item.ini":
+        # [D17 04/09] BO duong doi anh: no thay hinh mon bang anh thay the, chu bao "chu ban dang thu nho
+        # ve va doi luon hinh anh sao duoc". Engine khong thu nho duoc sprite (xem chu thich [A30] o
+        # p12_daugia.py) nen o thu giu 26x26 va mon nhieu o se ve nguyen co - dung nhu truoc dot D14.
+        # [D18 04/09] thu nho THAT duoc roi (xem [A31] KItem.cpp + KRepresentShell3.cpp)
+        s = _setkey(s, "MailAwardItemSpr", "ResizeBigItem", 1)
+        # nhan so noi rong va can PHAI, khong thi "9 van 6000" bi cat con "9 v"
+        s = _setkey(s, "MailAwardItemCount", "Left", -36)
+        s = _setkey(s, "MailAwardItemCount", "Width", 62)
+        s = _setkey(s, "MailAwardItemCount", "HAlign", 2)
     if name == "mail_icon.ini":
         # [D4 03/09] chu: dat duoi bieu tuong Bau Cua = UiPlayerBar.ini [SpringGame] Left=765 Top=243 50x50 (800x600);
         # 1024: UiMail.cpp neo x = 1024 - 30 nhu UiPlayerBar.cpp
