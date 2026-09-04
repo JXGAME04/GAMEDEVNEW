@@ -149,6 +149,38 @@ BOOL S6_XaQuaTam(int nMpsX, int nMpsY)
 #include <BauCua.h>
 #include <iostream>
 
+#ifndef _SERVER
+// [REP3 03/09] [Client] NpcTheSame=1 : nguoi choi KHAC mac cung mot bo (theo tuy chon NpcTheSame cua client VLTK 2.0)
+//   -> ca dam dong dung chung vai bo sprite/texture, giam nap tu pak va giam cache khi Tong Kim / cong thanh.
+//   NpcTheSameArmor (mac dinh 0), NpcTheSameHelm (mac dinh 0), NpcTheSameHorse (-1 = giu ngua rieng), NpcTheSameWeapon (-1 = giu).
+static int REP3_ClientIni(const char* szKey, int nDef)
+{
+	return (int)GetPrivateProfileIntA("Client", szKey, nDef, ".\\config.ini");
+}
+static void REP3_NpcTheSame(int nIdx)
+{
+	static int s_nOn = -1, s_nArmor = 0, s_nHelm = 0, s_nHorse = -1, s_nWeapon = -1;
+	if (s_nOn < 0)
+	{
+		s_nOn     = REP3_ClientIni("NpcTheSame", 0);
+		s_nArmor  = REP3_ClientIni("NpcTheSameArmor", 0);
+		s_nHelm   = REP3_ClientIni("NpcTheSameHelm", 0);
+		s_nHorse  = REP3_ClientIni("NpcTheSameHorse", -1);
+		s_nWeapon = REP3_ClientIni("NpcTheSameWeapon", -1);
+	}
+	if (s_nOn <= 0 || nIdx <= 0 || nIdx >= MAX_NPC)
+		return;
+	if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)	// khong dung cho chinh minh
+		return;
+	if (s_nArmor >= 0)  Npc[nIdx].m_ArmorType  = s_nArmor;
+	if (s_nHelm >= 0)   Npc[nIdx].m_HelmType   = s_nHelm;
+	Npc[nIdx].m_MantleType = 0;
+	Npc[nIdx].m_byMantleLevel = 0;
+	if (s_nWeapon >= 0) Npc[nIdx].m_WeaponType = s_nWeapon;
+	if (s_nHorse >= 0 && Npc[nIdx].m_HorseType >= 0) Npc[nIdx].m_HorseType = (char)s_nHorse;
+}
+#endif
+
 
 //#define WAIGUA_ZROC
 
@@ -2876,6 +2908,9 @@ void KProtocolProcess::SyncPlayer(BYTE* pMsg) //sync player 1 lÇn ®Çu tiªn
 	Npc[nIdx].m_CurrentRunSpeed		= pPlaySync->RunSpeed;
 	Npc[nIdx].m_CurrentWalkSpeed	= pPlaySync->WalkSpeed;
 	Npc[nIdx].m_WeaponType			= pPlaySync->WeaponType;	
+#ifndef _SERVER
+	REP3_NpcTheSame(nIdx);	// [REP3 03/09]
+#endif
 	Npc[nIdx].m_Kind					= kind_player;
 	Npc[nIdx].m_btRankId				= pPlaySync->RankID;
 	Npc[nIdx].m_btRankBattleId			= pPlaySync->RankBattleID;//#RankBattle
@@ -2969,6 +3004,9 @@ void KProtocolProcess::SyncPlayerMin(BYTE* pMsg) //Sync Player liªn tôc
     {
         Npc[nIdx].m_bRideHorse = FALSE;
     }
+#ifndef _SERVER
+	REP3_NpcTheSame(nIdx);	// [REP3 03/09]
+#endif
 	Npc[nIdx].m_Kind				= kind_player;
 	Npc[nIdx].m_btRankId			= pPlaySync->RankID;
 	Npc[nIdx].m_btRankBattleId			= pPlaySync->RankBattleID;//#RankBattle

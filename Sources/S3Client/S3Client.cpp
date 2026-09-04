@@ -322,6 +322,12 @@ BOOL InitRepresentShell(BOOL bFullScreen, int nWidth, int nHeight)
 #ifdef DYNAMIC_LINK_REPRESENT_LIBRARY
 		if (l_hRepresentModule == NULL && (l_hRepresentModule = LoadLibrary(g_bRepresent3 ? REPRESENT_MODULE_3 : REPRESENT_MODULE_2)) == NULL)
 		{
+			if (g_bRepresent3)	// [REP3 03/09] thieu Represent3.dll -> lui ve Represent2
+			{
+				AUTOLOG("[REP3] khong nap duoc Represent3.dll -> lui ve Represent2");
+				g_bRepresent3 = false;
+				return InitRepresentShell(bFullScreen, nWidth, nHeight);
+			}
 			Error_SetErrorCode(ERR_T_LOAD_MODULE_FAILED);
 			return FALSE;
 		}
@@ -335,26 +341,7 @@ BOOL InitRepresentShell(BOOL bFullScreen, int nWidth, int nHeight)
 		g_pRepresentShell = CreateRepresentShell();
 #endif
 	}
-	if (g_bRepresent3 && !bFullScreen)
-	{
-		RECT	rc = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT + 40 };
-		HWND	hWnd = g_GetMainHWnd();
-		DWORD	dwStyle = 0;
-		dwStyle = WS_VISIBLE | WS_SYSMENU | WS_OVERLAPPED |
-			WS_CAPTION | WS_MINIMIZEBOX;
-		SetWindowLong(hWnd, GWL_STYLE, dwStyle);
-		AdjustWindowRectEx(&rc,
-			dwStyle,
-			GetMenu(hWnd) != NULL,
-			GetWindowLong(hWnd, GWL_EXSTYLE));
-		SetWindowPos(hWnd,
-			HWND_NOTOPMOST,
-			0,
-			0,
-			rc.right - rc.left,
-			rc.bottom - rc.top,
-			SWP_NOACTIVATE);
-	}
+	// [REP3 03/09] bo hack keo cua so cao them 40 px (Represent3 tu dat cua so dung nWidth x nHeight, Present 1:1)
 	if (g_pRepresentShell->Create(nWidth, nHeight, bFullScreen != 0))
 	{
 		// He GHI / PHAT LAI ban dien .jxr. Ban tham chieu cung nap JXReplay.dll
@@ -366,7 +353,19 @@ BOOL InitRepresentShell(BOOL bFullScreen, int nWidth, int nHeight)
 	}
 	else
 	{
-		Error_SetErrorCode(g_bRepresent3 ? ERR_T_REPRESENT3_INIT_FAILED : ERR_T_REPRESENT2_INIT_FAILED);
+		// [REP3 03/09] Represent3 khoi tao that bai (thieu d3d9/card yeu) -> lui ve Represent2, khong thoat game
+		if (g_bRepresent3)
+		{
+			AUTOLOG("[REP3] Represent3 Create that bai -> lui ve Represent2");
+			g_pRepresentShell->Release();
+			g_pRepresentShell = NULL;
+#ifdef DYNAMIC_LINK_REPRESENT_LIBRARY
+			if (l_hRepresentModule) { FreeLibrary(l_hRepresentModule); l_hRepresentModule = NULL; }
+#endif
+			g_bRepresent3 = false;
+			return InitRepresentShell(bFullScreen, nWidth, nHeight);
+		}
+		Error_SetErrorCode(ERR_T_REPRESENT2_INIT_FAILED);
 		return FALSE;
 	}
 }
@@ -1609,16 +1608,7 @@ int KMyApp::HandleInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	int nRet = 0;
 	if (uMsg != WM_CLOSE)
 	{
-		if (g_bRepresent3 && !g_bScreen)
-		{
-			if ((uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST && uMsg != WM_MOUSEWHEEL) || uMsg == WM_MOUSEHOVER)
-			{
-				int x = LOWORD(lParam);
-				int y = HIWORD(lParam);
-				y = y - y * 40 / (SCREEN_HEIGHT + 40);
-				lParam = x | (y << 16);
-			}
-		}
+		// [REP3 03/09] bo co toa do chuot y*40/808 (di kem hack cua so +40 da bo)
 		UiProcessInput(uMsg, wParam, lParam);
 	}
 	else if (g_bScreen == false && UiIsAlreadyQuit() == false)

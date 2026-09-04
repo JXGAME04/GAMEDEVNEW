@@ -7,7 +7,7 @@
 #include "KNpcGold.h"
 
 #ifndef _SERVER
-#define		MAX_NPC_REQUEST	20
+#define		MAX_NPC_REQUEST	128	// [REP3 03/09] 20 -> 128: Tong Kim can khe hoi NPC (KProtocolProcess.cpp ~2059)
 #endif
 
 #ifndef _SERVER

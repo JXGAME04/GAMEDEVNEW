@@ -20,7 +20,7 @@ class KSkill;
 #ifdef	_SERVER
 #define		MAX_NPC				98000 //max npc tai server 16384
 #else
-#define		MAX_NPC				256				//max npc tai client la 256
+#define		MAX_NPC				800				// [REP3 03/09] client 256 -> 800 (client VLTK 2.0 = 800): dong nguoi khong roi NPC
 #endif
 #define		MAX_NPCSTYLE	3000
 #define		GAME_FPS						18

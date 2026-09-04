@@ -65,6 +65,48 @@ static bool SaveClientBmp(HWND hwnd, const char* path)
 	return bRet;
 }
 
+// chup vung client tu man hinh (BitBlt tu DC toan man hinh) - hop ca DirectDraw lan D3D khi cua so dang hien
+static bool SaveScreenBlt(HWND hwnd, const char* path)
+{
+	RECT rc; GetClientRect(hwnd, &rc);
+	POINT pt = {0, 0}; ClientToScreen(hwnd, &pt);
+	int w = rc.right - rc.left, h = rc.bottom - rc.top;
+	HDC hdcScreen = GetDC(NULL);
+	HDC hdcMem = CreateCompatibleDC(hdcScreen);
+	BITMAPINFO bi; memset(&bi, 0, sizeof(bi));
+	bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER); bi.bmiHeader.biWidth = w; bi.bmiHeader.biHeight = -h;
+	bi.bmiHeader.biPlanes = 1; bi.bmiHeader.biBitCount = 32; bi.bmiHeader.biCompression = BI_RGB;
+	void* pBits = NULL;
+	HBITMAP hbm = CreateDIBSection(hdcScreen, &bi, DIB_RGB_COLORS, &pBits, NULL, 0);
+	HGDIOBJ old = SelectObject(hdcMem, hbm);
+	BOOL ok = BitBlt(hdcMem, 0, 0, w, h, hdcScreen, pt.x, pt.y, SRCCOPY | CAPTUREBLT);
+	GdiFlush();
+	bool bRet = false;
+	if (ok && pBits)
+	{
+		FILE* f = fopen(path, "wb");
+		if (f)
+		{
+			int rowBytes = ((w * 3 + 3) / 4) * 4;
+			BITMAPFILEHEADER fh; memset(&fh, 0, sizeof(fh));
+			BITMAPINFOHEADER ih; memset(&ih, 0, sizeof(ih));
+			fh.bfType = 0x4D42; fh.bfOffBits = sizeof(fh) + sizeof(ih); fh.bfSize = fh.bfOffBits + rowBytes * h;
+			ih.biSize = sizeof(ih); ih.biWidth = w; ih.biHeight = h; ih.biPlanes = 1; ih.biBitCount = 24; ih.biCompression = BI_RGB;
+			fwrite(&fh, sizeof(fh), 1, f); fwrite(&ih, sizeof(ih), 1, f);
+			std::vector<unsigned char> row(rowBytes, 0);
+			for (int y = h - 1; y >= 0; y--)
+			{
+				unsigned char* src = (unsigned char*)pBits + y * w * 4;
+				for (int x = 0; x < w; x++) { row[x*3] = src[x*4]; row[x*3+1] = src[x*4+1]; row[x*3+2] = src[x*4+2]; }
+				fwrite(&row[0], rowBytes, 1, f);
+			}
+			fclose(f); bRet = true;
+		}
+	}
+	SelectObject(hdcMem, old); DeleteObject(hbm); DeleteDC(hdcMem); ReleaseDC(NULL, hdcScreen);
+	return bRet;
+}
+
 static void SetImg(KRUImage& img, const char* name, int x, int y, int style, DWORD color, unsigned char flag)
 {
 	img.oPosition.nX = x; img.oPosition.nY = y; img.oPosition.nZ = 0;
@@ -100,6 +142,7 @@ int main(int argc, char** argv)
 	ShowWindow(hwnd, SW_SHOW); UpdateWindow(hwnd); Pump();
 
 	g_SetMainHWnd(hwnd);
+	g_SetDrawHWnd(hwnd);	// engine tinh vung Blt theo cua so nay (KWin32App.cpp:204)
 	g_SetRootPath(NULL);
 	g_SetFilePath("\\");
 	KPakList pak;
@@ -156,18 +199,27 @@ int main(int argc, char** argv)
 	DWORD colors[7] = { 0xff000000, 0x80000000, 0xff000000, 0xff000000, 0xff000000, 0xffff8040, 0xff000000 };
 	const char* labels[7] = { "ALPHA a=255", "ALPHA a=128", "OPACITY", "3LEVEL", "NOT_BE_LIT", "COLOR_ADJUST ff8040", "BORDER" };
 
-	rs->RepresentBegin(1, 0x00303030);
-	int nCols = nSprMax < (int)sprs.size() ? nSprMax : (int)sprs.size();
+	// chon sprite vua (<= 200 px) cho bang kieu ve
+	std::vector<int> tbl;
+	for (int k = 0; k < (int)sprs.size() && (int)tbl.size() < nSprMax; k++)
+		if (sprs[k].w <= 200 && sprs[k].h <= 200 && sprs[k].res1 == 0) tbl.push_back(k);
+	if (tbl.empty()) tbl.push_back(0);
+	int nCols = (int)tbl.size();
+	int nRowH = 0; for (int k = 0; k < nCols; k++) if (sprs[tbl[k]].h > nRowH) nRowH = sprs[tbl[k]].h;
+	nRowH += 8; if (nRowH > 95) nRowH = 95;
+	rs->RepresentBegin(1, 0x00000000);
 	for (int s = 0; s < 7; s++)
 	{
+		int x = 10;
 		for (int k = 0; k < nCols; k++)
 		{
 			KRUImage img;
-			SetImg(img, sprs[k].name.c_str(), 10 + k * 150, 10 + s * 95, styles[s], colors[s], 0);
+			SetImg(img, sprs[tbl[k]].name.c_str(), x, 10 + s * nRowH, styles[s], colors[s], 0);
 			rs->DrawPrimitives(1, &img, RU_T_IMAGE, 1);
+			x += sprs[tbl[k]].w + 12;
 		}
 		if (nFontId)
-			rs->OutputText(nFontId, labels[s], (int)strlen(labels[s]), 10 + nCols * 150, 10 + s * 95, 0xffffff00, 0, TEXT_IN_SINGLE_PLANE_COORD, 0);
+			rs->OutputText(nFontId, labels[s], (int)strlen(labels[s]), x + 10, 10 + s * nRowH, 0xffffff00, 0, TEXT_IN_SINGLE_PLANE_COORD, 0);
 	}
 	// spr moi (Reserved[1]==1) neu co: 3 kieu
 	if (nNewIdx >= 0)
@@ -210,14 +262,16 @@ int main(int argc, char** argv)
 		rs->DrawPrimitives(1, &img, RU_T_IMAGE, 0);
 		if (nFontId) rs->OutputText(nFontId, "LookAt/REF_SPOT giua man hinh", 29, 400000, 300000 - 40, 0xff00ffff, 0, 0, 0);
 	}
-	if (nFontId) rs->OutputText(nFontId, "Represent test: chu Viet TCVN3 - ABC xyz 0123", 45, 10, 745, 0xffffffff, 0, TEXT_IN_SINGLE_PLANE_COORD, 0xff000000);
+	if (nFontId) rs->OutputText(nFontId, "Represent test ABC xyz 0123", 27, 10, 745, 0xffffffff, 0, TEXT_IN_SINGLE_PLANE_COORD, 0xff000000);
+	if (nFontId) { char szVN[] = "KiÕm tra ch÷ ViÖt TCVN3: ThÖ Giíedi Vâ L©m"; rs->OutputVNText(nFontId, szVN, (int)strlen(szVN), 400, 745, 0xffffff80, 0, TEXT_IN_SINGLE_PLANE_COORD, 0xff000000); }
 	rs->RepresentEnd();
 	Pump(); Sleep(300); Pump();
 
 	std::string outPw = szOut; outPw.insert(outPw.size() - 4, "_pw");
+	SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW); SetForegroundWindow(hwnd); Pump(); Sleep(200); Pump();
 	bool b1 = rs->SaveScreenToFile(szOut, SCRFILETYPE_BMP, 0);
-	bool b2 = SaveClientBmp(hwnd, outPw.c_str());
-	printf("[SHOT] SaveScreenToFile=%d PrintWindow=%d\n", b1 ? 1 : 0, b2 ? 1 : 0);
+	bool b2 = SaveScreenBlt(hwnd, outPw.c_str());
+	printf("[SHOT] SaveScreenToFile=%d ScreenBlt=%d\n", b1 ? 1 : 0, b2 ? 1 : 0);
 
 	// ---------- do toc do: N khung, moi khung ve tat ca sprite mau lap 8 lan ----------
 	LARGE_INTEGER f, t0, t1; QueryPerformanceFrequency(&f);
@@ -225,7 +279,7 @@ int main(int argc, char** argv)
 	QueryPerformanceCounter(&t0);
 	for (int fr = 0; fr < nPerfFrames; fr++)
 	{
-		rs->RepresentBegin(1, 0x00303030);
+		rs->RepresentBegin(1, 0x00000000);
 		for (int rep = 0; rep < 8; rep++)
 		{
 			for (int k = 0; k < (int)sprs.size(); k++)
