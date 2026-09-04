@@ -101,6 +101,10 @@ void KSubWorldSet::MainLoop()
 #ifdef _SERVER
 //		g_GlobalMissionArray.Activate();
 #endif
+	{	// [BC 04/09 do2] nhip tick THAT cua ca the gioi (mot lan moi vong Activate)
+		extern int g_nBCTick;
+		g_nBCTick++;
+	}
 	nActiveRegionCount = 0;
 	nActiveNpcCount = 0;
 	
