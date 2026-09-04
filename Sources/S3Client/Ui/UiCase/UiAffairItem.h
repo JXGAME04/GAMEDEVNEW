@@ -8,6 +8,7 @@
 #include "../elem/wndObjContainer.h"
 #include "../../../core/src/gamedatadef.h"
 #include "../Elem/WndLabeledButton.h"
+#include "../Elem/WndEdit.h"
 
 struct KUiObjAtRegion;
 
@@ -18,6 +19,8 @@ public:
 	static KUiAffairItem*	GetIfVisible();
 	static void			LoadScheme(const char* pScheme);
 	static void			CloseWindow(bool bDestroy);	
+	// [DAUGIA 04/09 A6] che do KY GUI: hien them o nhap gia + nut doi loai tien ngay trong hop nay
+	static void			SetAuctionMode(int bOn);
 	void	OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 	void	UpdateItem(KUiObjAtRegion* pItem, int bAdd);
 	void	UpdateData();	
@@ -36,6 +39,11 @@ private:
 	KWndObjectMatrix	m_ItemBox;
 	KWndLabeledButton	m_OkBtn;
 	KWndLabeledButton	m_CancelBtn;
+	KWndText32			m_AucLabel;		// [A6] "Gia ban"
+	KWndEdit32			m_AucPrice;		// [A6] o nhap gia
+	KWndLabeledButton	m_AucCur;		// [A6] nut doi Ngan luong <-> Xu
+	int					m_bAucMode;
+	int					m_nAucCur;		// 1 Ngan luong, 2 Xu
 	char 				szFunc1[32];	
 	char 				szFunc2[32];		
 };

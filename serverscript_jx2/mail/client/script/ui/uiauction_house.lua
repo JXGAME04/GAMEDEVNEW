@@ -177,8 +177,18 @@ end
 -- [A4] nut goc phai: Ca nhan = ky gui, The gioi = GM mo phien, Bang hoi = bang chu dat mon / thanh vien xem danh sach
 function UIAuctionHouse:OnPutOnClick(nType)
     local h = OB_Create()
+    AuctionPutOnMode(1)
     ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nType or self.nCurTypeIndex)
     ScriptProtocol:SendData("emSCRIPT_PROTOCOL_AUCTION_REQUEST_PUTON", h)
+    OB_Release(h)
+end
+
+-- [A6] o gia + nut doi tien nam ngay trong hop dua vat pham; bam Dong y thi bao len truoc
+function UIAuctionHouse:OnSetPrice(nPrice, nCur)
+    local h = OB_Create()
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nPrice or 0)
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nCur or 1)
+    ScriptProtocol:SendData("emSCRIPT_PROTOCOL_AUCTION_REQUEST_SETPRICE", h)
     OB_Release(h)
 end
 
