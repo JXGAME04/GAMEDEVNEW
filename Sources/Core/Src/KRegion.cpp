@@ -1390,6 +1390,80 @@ void KRegion::SendSyncData(int nClient)
 	}
 }
 
+// [BC 03/09 c] DO CHO RA GOC (khong sua hanh vi): moi 10 giay in ba dong vao jx_auto_server.log
+//   [BC-NGUOI] so client thuc nhan goi, client nhan NHIEU NHAT bao nhieu goi/byte, loai goi nhieu nhat cua no.
+//   [BC-TOP]   8 loai goi nhieu nhat theo SO LUOT GUI (ban truoc in 8 so hieu nho nhat -> giau mat 87/91/95).
+// So hieu: 75 syncplayermin 76 syncnpc 77 syncnpcmin 78 syncnpcminplayer 84 npcremove 85 npcwalk 86 npcrun
+//          87 npcattack 88 npcmagic 91 npchurt 92 npcdeath 95 skillcast.
+static int   g_anBCNguoiGoi[MAX_PLAYER];	// so goi da gui cho tung nguoi choi (chi so Player[])
+static int   g_anBCNguoiByte[MAX_PLAYER];
+static short g_anBCNguoiLoai[MAX_PLAYER];	// loai goi gan nhat cua nguoi do (de xem ai doi loai gi)
+static int   g_anBCLoaiGui[256];		// so luot GUI theo loai
+static int   g_anBCLoaiByte[256];
+static void BC_DemNguoiNhan(int nPlayerIndex, int nLoai, int nSize)
+{
+	if (nPlayerIndex > 0 && nPlayerIndex < MAX_PLAYER)
+	{
+		g_anBCNguoiGoi[nPlayerIndex]++;
+		g_anBCNguoiByte[nPlayerIndex] += nSize;
+		g_anBCNguoiLoai[nPlayerIndex] = (short)nLoai;
+	}
+	if (nLoai >= 0 && nLoai < 256)
+	{
+		g_anBCLoaiGui[nLoai]++;
+		g_anBCLoaiByte[nLoai] += nSize;
+	}
+}
+static void BC_BaoCao10s()
+{
+	// nguoi nhan
+	int nSo = 0, nMax = 0, nMaxIdx = 0;
+	double dTongByte = 0;
+	for (int i = 1; i < MAX_PLAYER; i++)
+	{
+		if (g_anBCNguoiGoi[i] <= 0)
+			continue;
+		nSo++;
+		dTongByte += g_anBCNguoiByte[i];
+		if (g_anBCNguoiGoi[i] > nMax)
+		{
+			nMax = g_anBCNguoiGoi[i];
+			nMaxIdx = i;
+		}
+	}
+	AUTOLOG("[BC-NGUOI] 10s: so_client=%d tong_byte=%.0f | nhieu nhat: player=%d ten=%s goi=%d (%d/giay) byte=%d (%d KB/giay) loai_cuoi=%d",
+		nSo, dTongByte, nMaxIdx,
+		(nMaxIdx > 0 && Npc[Player[nMaxIdx].m_nIndex].Name[0]) ? Npc[Player[nMaxIdx].m_nIndex].Name : "?",
+		nMax, nMax / 10, nMaxIdx > 0 ? g_anBCNguoiByte[nMaxIdx] : 0, nMaxIdx > 0 ? g_anBCNguoiByte[nMaxIdx] / 10240 : 0,
+		nMaxIdx > 0 ? (int)g_anBCNguoiLoai[nMaxIdx] : -1);
+	// top 8 loai theo so luot gui
+	char szTop[512]; int nLen = 0;
+	int anDung[256];
+	memset(anDung, 0, sizeof(anDung));
+	for (int nLan = 0; nLan < 8 && nLen < 440; nLan++)
+	{
+		int nBest = -1, nBestVal = 0;
+		for (int k = 0; k < 256; k++)
+		{
+			if (!anDung[k] && g_anBCLoaiGui[k] > nBestVal)
+			{
+				nBestVal = g_anBCLoaiGui[k];
+				nBest = k;
+			}
+		}
+		if (nBest < 0)
+			break;
+		anDung[nBest] = 1;
+		nLen += _snprintf(szTop + nLen, sizeof(szTop) - 1 - nLen, " %d:gui=%d,%dKB", nBest, g_anBCLoaiGui[nBest], g_anBCLoaiByte[nBest] / 1024);
+	}
+	szTop[sizeof(szTop) - 1] = 0;
+	if (nLen > 0)
+		AUTOLOG("[BC-TOP] 10s top loai theo luot GUI:%s", szTop);
+	memset(g_anBCNguoiGoi, 0, sizeof(g_anBCNguoiGoi));
+	memset(g_anBCNguoiByte, 0, sizeof(g_anBCNguoiByte));
+	memset(g_anBCLoaiGui, 0, sizeof(g_anBCLoaiGui));
+	memset(g_anBCLoaiByte, 0, sizeof(g_anBCLoaiByte));
+}
 void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int nOX, int nOY)
 {
 	#define	MAX_SYNC_RANGE	32//25
@@ -1421,6 +1495,7 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 	// quanh minh): 4.991 lenh chay tu 405 NPC nhung chi 366 goi chieu tu 95 NPC = 181/phut (~1-2% luong that).
 	// Con tro xoay m_nBroadCastCursor la cach cu chia luot khi qua tai - no NHAY QUA ca nguoi that dung truoc no,
 	// nen khi ngan sach chi con tinh nguoi that thi phai duyet VONG TRON (toi da nTong node) moi khong bo sot.
+	const int nBCLoaiGoi = (pBuffer && dwSize > 0) ? (int)((const BYTE*)pBuffer)[0] : 0;	// [BC 03/09 c] so hieu goi (byte dau)
 	const int nF4Tong = m_PlayerList.m_nNodeCount;
 	pNode = (KIndexNode *)m_PlayerList.GetHead();
 	if (nF4Tong > nMaxCount)
@@ -1465,6 +1540,7 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 				g_pServer->PackDataToClient(Player[pNode->m_nIndex].m_nNetConnectIdx, (BYTE*)pBuffer, dwSize);
 				nMaxCount--;	// [F4] CHI tru khi THAT SU gui (truoc day tru cho ca bot va nguoi ngoai tam)
 				nF4Gui++;
+				BC_DemNguoiNhan(pNode->m_nIndex, nBCLoaiGoi, (int)dwSize);	// [BC 03/09 c] do theo TUNG nguoi nhan
 			}
 		}
 		pNode = pNext;
@@ -1509,6 +1585,7 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 			if (nBCLen > 0)
 				AUTOLOG("[BC-LOAI] 10s loai:goi/gui/cat:%s", szBC);
 			memset(s_anBCGoi, 0, sizeof(s_anBCGoi)); memset(s_anBCGui, 0, sizeof(s_anBCGui)); memset(s_anBCBo, 0, sizeof(s_anBCBo));
+			BC_BaoCao10s();	// [BC 03/09 c]
 			s_nF4Goi = 0; s_nF4Gui = 0; s_nF4Bo = 0; s_nF4Duyet = 0; s_nBCNgoaiTam = 0;
 		}
 	}
