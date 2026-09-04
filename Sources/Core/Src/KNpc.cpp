@@ -6663,6 +6663,9 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player to Server v? Client 1
 
 void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 {
+	extern int g_nBCNormalSync;	// [BC 04/09 do] dem so lan phat dong bo (KRegion.cpp)
+	g_nBCNormalSync++;
+
 	if (m_Doing == do_revive || m_Doing == do_death || !m_Index || m_RegionIndex < 0)
 		return;
 
