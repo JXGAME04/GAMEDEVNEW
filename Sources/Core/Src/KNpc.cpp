@@ -2918,6 +2918,17 @@ Exit:
 AUTOLOG_EVERY(300, "[E4_SKILL_ABORT] npc=%d id=%u skill=%d tgt=(%d,%d) people=%d object=%d doing=%d", m_Index, m_dwID, m_ActiveSkillID, nX, nY, m_nPeopleIdx, m_nObjectIdx, (int)m_Doing);
 	m_nPeopleIdx = 0;
 	m_nObjectIdx = 0;
+	// [S13k 03/09] Nguoi choi that DANG CHAY/DI ma chieu bi huy (moi duong toi Exit: CanCastSkill tu choi, hoi chieu chua
+	// xong, Cost thieu mana/the luc, cam danh, thieu tang No, cast toa do qua tam): KHONG DoStand - giu nguyen di chuyen,
+	// chi bo chieu. Do phien S13i/j (12,5 phut): 100% ca la 1967 (WAuto gui chieu tu than vao quai, hai phia deu tu choi);
+	// may chu dang chay phia sau bi DoStand cat duong chay 76 lan, dung ngoai tam cho lenh chay ke p50 3,0 s (client dang
+	// dung trong tam nen khong gui) -> lech dong bang -> nan giut. Client cung bi cat 91 lan (WAuto cap lai mat 1-5 khung).
+	// Ap CA HAI PHIA cho doi xung (phan bien S13k: chi may chu -> may chu dan truoc 15-125 mps moi lan).
+	if (S13_IsRealPlayer(this) && (m_Doing == do_run || m_Doing == do_walk))
+	{
+		AUTOLOG_IDX_EVERY(m_Index, 500, "[S13-DENY-GIUCHAY] npc=%d skill=%d doing=%d des=(%d,%d)", m_Index, m_ActiveSkillID, (int)m_Doing, m_DesX, m_DesY);
+		return;
+	}
 	DoStand();
 }  
 

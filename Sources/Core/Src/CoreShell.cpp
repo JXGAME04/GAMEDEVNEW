@@ -3199,6 +3199,29 @@ static void DT_Ride(int nPlayerIdx)
 	SendClientCmdRide(FALSE);
 }
 
+// (03/09) Con tro cau hinh cua may auto dang goi DT_WalkTo (moi *_Process ghi
+// vao dau nhip) - de ham di duong DUNG CHUNG biet nguoi choi co cho len ngua khong.
+static const autoData* s_pApDiDuong = NULL;
+
+// (03/09) CHI len ngua khi dang DI DUONG that su. Truoc day cu DT_WalkTo (tru pha
+// farm Da Tau) la len ngua, trong khi may PK (o 'Xuong ngua') va may danh (o ngua
+// tab Chien dau = xuong) lai xuong moi 2 giay => trong tran Tong Kim len/xuong
+// lien tuc ~2,5 giay/lan, cat chieu, doi toc do (chu game bao 03/09). Luat:
+//   - cau hinh noi XUONG (bPKDownHorse hoac nSelFHorse == 2): khong bao gio tu len;
+//   - may nao dang TRONG TRAN (hold == 2: TK / CT / LD / HD / ST): khong len;
+//   - pha farm Da Tau: khong len (luat cu 19/08);
+//   - con lai (di duong toi NPC / Xa Phu / ve thanh): len nhu cu.
+static bool DT_DuocLenNgua(const ExtAuto& ea)
+{
+	if (s_pApDiDuong && (s_pApDiDuong->bPKDownHorse || s_pApDiDuong->nSelFHorse == 2))
+		return false;
+	if (ea.nTKHold == 2 || ea.nCTHold == 2 || ea.nLDHold == 2 || ea.nHDHold == 2 || ea.nSTHold == 2)
+		return false;
+	if (ea.nDTPhase == DTP_FARM)
+		return false;
+	return true;
+}
+
 // di bo trong map; tra 1 khi da toi gan (nNear mps)
 static int DT_WalkTo(int nPlayerIdx, int nX, int nY, int nNear, UINT uCurTime)
 {
@@ -3209,7 +3232,7 @@ static int DT_WalkTo(int nPlayerIdx, int nX, int nY, int nNear, UINT uCurTime)
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	// di duong (ve thanh tra nhiem vu / toi NPC / toi tiem / toi Xa Phu) thi LEN NGUA;
 	// rieng pha farm thi khong - dang danh quai (yeu cau chu game 19/08).
-	if (ea.nDTPhase != DTP_FARM)
+	if (DT_DuocLenNgua(ea))
 		DT_Ride(nPlayerIdx);
 	if (ea.uDTPath < uCurTime)
 	{
@@ -4935,6 +4958,7 @@ static int DT_BagRelease(int nPlayerIdx, const autoData* pAp, UINT uCurTime, con
 static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	s_pApDiDuong = pAp;	// (03/09) cho DT_WalkTo biet cau hinh ngua
 	KDaTauCapture& cap = g_sDTCap;
 	int nMap = SubWorld[0].m_SubWorldID;
 	if (nMap != g_nDTLastMap)
@@ -7303,6 +7327,192 @@ static void TK_SanBo(void)			// xoa khoa muc tieu san
 	s_uTKAimT = 0;
 }
 
+
+// ===================== (03/09) RAO MAP TIM DICH =====================
+// Chu game: "WAuto tu di chuyen tim doi thu trong Tong Kim HET ban do, thay vi chay
+// toa do co dinh". Khong the hoi may chu vi tri nguoi choi (khong co goi nao - da mo
+// auto Thai: no cung chi doc mang NPC client + toa do nguoi dung ghi), nen phai TU DI:
+// chia luoi A* client cua map tran (SubWorld[0].LuoiOCoDiDuoc, nap tu maps/<id>.fp
+// khi vao map) thanh o vuong TK_RAO_O x TK_RAO_O o luoi, moi o giu MOT diem di duoc
+// gan tam o nhat. Moi khi khong thay dich: chon o CHUA THAM (hoac tham da lau) gan
+// nhat, nghieng ve nua ban do DICH; toi noi hoac qua han thi danh dau da tham; dang
+// di ma tang san / tang danh thay ai thi chung chiem quyen ngay (thu tu TKP_FIGHT).
+// Diem cuoi cung THAY nguoi khac mau duoc di lai truoc (3 phut). Tranh hai hau doanh
+// (vao hau doanh dich = chet ngay). Het o thi mo lai tat ca, rao vong moi.
+#define TK_RAO_O		20			// canh o rao (o luoi 32 mps) = 640 mps ~ tam PK
+#define TK_RAO_MAX		2048		// tran so o rao
+#define TK_RAO_THAM		480000		// ms: da tham thi 8 phut sau moi quay lai
+#define TK_RAO_LAST		180000		// ms: diem cuoi thay dich con gia tri
+#define TK_RAO_HAN		45000		// ms: han di toi mot o
+static int   s_nTKRaoMap = 0;
+static int   s_nTKRaoSo = 0;
+static short s_aTKRaoX[TK_RAO_MAX];	// diem dai dien (o luoi tuyet doi)
+static short s_aTKRaoY[TK_RAO_MAX];
+static UINT  s_aTKRaoT[TK_RAO_MAX];	// moc lan cuoi tham (0 = chua)
+static int   s_nTKRaoDangDi = -1;
+static UINT  s_uTKRaoHan = 0;
+static int   s_nTKRaoLastX = 0, s_nTKRaoLastY = 0;	// diem cuoi thay nguoi khac mau (mps)
+static UINT  s_uTKRaoLastT = 0;
+static int   s_nTKRaoLastDi = 0;		// 1 = da quay lai diem do roi
+static UINT  s_uTKRaoMsgT = 0;
+
+static void TK_Msg(int nPlayerIdx, const char* szMsg);	// dinh nghia o duoi
+
+static void TK_RaoThayDich(int nIdx, UINT uCurTime)
+{
+	if (nIdx <= 0)
+		return;
+	Npc[nIdx].GetMpsPos(&s_nTKRaoLastX, &s_nTKRaoLastY);
+	s_uTKRaoLastT = uCurTime ? uCurTime : 1;
+	s_nTKRaoLastDi = 0;
+}
+
+// dung bang o rao cho map hien tai (mot lan moi map); tra so o dung duoc
+static int TK_RaoDung(int nMap)
+{
+	if (s_nTKRaoMap == nMap && s_nTKRaoSo > 0)
+		return s_nTKRaoSo;
+	int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+	if (!SubWorld[0].LuoiPhamViMps(x0, y0, x1, y1))
+		return 0;
+	const int nCamAX = TK_O((int)g_TKHauDoanhA.x), nCamAY = TK_O((int)g_TKHauDoanhA.y);
+	const int nCamBX = TK_O((int)g_TKHauDoanhB.x), nCamBY = TK_O((int)g_TKHauDoanhB.y);
+	const int nOx0 = x0 / 32, nOy0 = y0 / 32, nOx1 = x1 / 32, nOy1 = y1 / 32;
+	int nSo = 0;
+	for (int oy = nOy0; oy < nOy1 && nSo < TK_RAO_MAX; oy += TK_RAO_O)
+	for (int ox = nOx0; ox < nOx1 && nSo < TK_RAO_MAX; ox += TK_RAO_O)
+	{
+		const int cx = ox + TK_RAO_O / 2, cy = oy + TK_RAO_O / 2;
+		int bx = 0, by = 0, bd = 0x7fffffff;
+		for (int dy = -TK_RAO_O / 2; dy < TK_RAO_O / 2; ++dy)
+		for (int dx = -TK_RAO_O / 2; dx < TK_RAO_O / 2; ++dx)
+		{
+			const int d = dx * dx + dy * dy;
+			if (d >= bd)
+				continue;
+			if (SubWorld[0].LuoiOCoDiDuoc((cx + dx) * 32 + 16, (cy + dy) * 32 + 16) == 1)
+			{
+				bd = d;
+				bx = cx + dx;
+				by = cy + dy;
+			}
+		}
+		if (bd == 0x7fffffff)
+			continue;
+		const int mx = bx * 32 + 16, my = by * 32 + 16;
+		if (g_GetDistance(mx, my, nCamAX, nCamAY) < TK_SAN_CAMTRAI
+		 || g_GetDistance(mx, my, nCamBX, nCamBY) < TK_SAN_CAMTRAI)
+			continue;
+		s_aTKRaoX[nSo] = (short)bx;
+		s_aTKRaoY[nSo] = (short)by;
+		s_aTKRaoT[nSo] = 0;
+		++nSo;
+	}
+	s_nTKRaoMap = nMap;
+	s_nTKRaoSo = nSo;
+	s_nTKRaoDangDi = -1;
+	s_uTKRaoHan = 0;
+	AUTOLOG("[TK-RAO] dung bang o rao map=%d: %d o (luoi o %d..%d x %d..%d, canh %d)", nMap, nSo, nOx0, nOx1, nOy0, nOy1, TK_RAO_O);
+	return nSo;
+}
+
+// khong thay dich: di rao. Tra 1 = dang rao (da phat lenh di), 0 = khong co luoi.
+static int TK_RaoDi(int nPlayerIdx, int nX, int nY, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const int nMap = SubWorld[0].m_SubWorldID;
+	if (!TK_RaoDung(nMap))
+		return 0;
+	if (!s_uTKRaoMsgT || (int)(uCurTime - s_uTKRaoMsgT) > 120000)
+	{
+		s_uTKRaoMsgT = uCurTime ? uCurTime : 1;
+		TK_Msg(nPlayerIdx, "<color=Cyan>Kh«ng thÊy ®Þch quanh ®©y - r¶o map t×m ®Þch.");
+	}
+	// (a) o quanh minh = DA THAM
+	for (int i = 0; i < s_nTKRaoSo; ++i)
+		if (g_GetDistance(nX, nY, s_aTKRaoX[i] * 32 + 16, s_aTKRaoY[i] * 32 + 16) < TK_O(TK_RAO_O) / 2 + 100)
+			s_aTKRaoT[i] = uCurTime ? uCurTime : 1;
+	// (b) diem cuoi thay nguoi khac mau (3 phut) - quay lai truoc
+	if (s_uTKRaoLastT && !s_nTKRaoLastDi && (int)(uCurTime - s_uTKRaoLastT) < TK_RAO_LAST)
+	{
+		if (g_GetDistance(nX, nY, s_nTKRaoLastX, s_nTKRaoLastY) < 300)
+			s_nTKRaoLastDi = 1;
+		else
+		{
+			AUTOLOG_EVERY(3000, "[TK-RAO] ve diem cuoi thay dich (%d,%d) me=(%d,%d)", s_nTKRaoLastX, s_nTKRaoLastY, nX, nY);
+			DT_WalkTo(nPlayerIdx, s_nTKRaoLastX, s_nTKRaoLastY, 250, uCurTime);
+			return 1;
+		}
+	}
+	// (c) o dang di: toi noi / qua han -> danh dau da tham
+	if (s_nTKRaoDangDi >= 0 && s_nTKRaoDangDi < s_nTKRaoSo)
+	{
+		const int tx = s_aTKRaoX[s_nTKRaoDangDi] * 32 + 16, ty = s_aTKRaoY[s_nTKRaoDangDi] * 32 + 16;
+		if (g_GetDistance(nX, nY, tx, ty) < 200 || (int)(uCurTime - s_uTKRaoHan) > 0)
+		{
+			s_aTKRaoT[s_nTKRaoDangDi] = uCurTime ? uCurTime : 1;
+			s_nTKRaoDangDi = -1;
+		}
+		else
+		{
+			DT_WalkTo(nPlayerIdx, tx, ty, 160, uCurTime);
+			return 1;
+		}
+	}
+	// (d) chon o moi: chua tham (hoac tham da lau) gan nhat, nghieng ve nua ban do dich
+	int nCamX = 0, nCamY = 0;
+	if (ea.nTKThe == 1)
+	{
+		nCamX = TK_O((int)g_TKHauDoanhB.x);
+		nCamY = TK_O((int)g_TKHauDoanhB.y);
+	}
+	else if (ea.nTKThe == 2)
+	{
+		nCamX = TK_O((int)g_TKHauDoanhA.x);
+		nCamY = TK_O((int)g_TKHauDoanhA.y);
+	}
+	for (int nThu = 0; nThu < 4; ++nThu)
+	{
+		int nBest = -1;
+		long nBestScore = 0x7fffffff;
+		for (int i = 0; i < s_nTKRaoSo; ++i)
+		{
+			if (s_aTKRaoT[i] && (int)(uCurTime - s_aTKRaoT[i]) < TK_RAO_THAM)
+				continue;
+			const int tx = s_aTKRaoX[i] * 32 + 16, ty = s_aTKRaoY[i] * 32 + 16;
+			long nScore = g_GetDistance(nX, nY, tx, ty);
+			if (nCamX)
+				nScore += g_GetDistance(tx, ty, nCamX, nCamY) / 3;
+			if (nScore < nBestScore)
+			{
+				nBestScore = nScore;
+				nBest = i;
+			}
+		}
+		if (nBest < 0)
+		{
+			for (int i = 0; i < s_nTKRaoSo; ++i)
+				s_aTKRaoT[i] = 0;
+			AUTOLOG("[TK-RAO] da rao het %d o - rao lai tu dau", s_nTKRaoSo);
+			continue;
+		}
+		const int tx = s_aTKRaoX[nBest] * 32 + 16, ty = s_aTKRaoY[nBest] * 32 + 16;
+		if (SubWorld[0].FindPath(tx, ty) <= 0)
+		{	// khong co duong (o kin / dao nho) - bo o nay mot vong
+			s_aTKRaoT[nBest] = uCurTime ? uCurTime : 1;
+			continue;
+		}
+		s_nTKRaoDangDi = nBest;
+		s_uTKRaoHan = uCurTime + TK_RAO_HAN;
+		ea.uTKDestT = 0;
+		AUTOLOG("[TK-RAO] o %d/%d -> (%d,%d) me=(%d,%d) the=%d", nBest, s_nTKRaoSo, tx, ty, nX, nY, ea.nTKThe);
+		DT_WalkTo(nPlayerIdx, tx, ty, 160, uCurTime);
+		return 1;
+	}
+	return 0;
+}
+// ===================== HET RAO MAP =====================
+
 static int TK_Abs(int v)
 {
 	return v < 0 ? -v : v;
@@ -7617,7 +7827,9 @@ static int TK_AnThuoc(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 // chon dich trong tran: khac phe, con song, trong tam nhin tab PK va KHONG bi
 // tuong chan. Uu tien NPC quan quan (Hieu Uy / Pho Tuong / Dai Tuong) neu nguoi
 // choi bat o cau hinh. Tra 0 = khong co dich hop le -> may se di chuyen tiep.
-static int TK_ChonDich(int nPlayerIdx, const autoData* pAp)
+// (03/09) nLoai: 0 = nhu cu (gan nhat, tuong truoc neu 'Uu tien'), 1 = CHI tuong
+// NPC trong bang g_TKQuanRes, 2 = CHI nguoi choi khac mau.
+static int TK_ChonDich(int nPlayerIdx, const autoData* pAp, int nLoai)
 {
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
 	if (nSelf <= 0)
@@ -7645,11 +7857,20 @@ static int TK_ChonDich(int nPlayerIdx, const autoData* pAp)
 			continue;
 		if (Npc[nIdx].m_Kind == kind_player)
 		{
-			if (!pAp->bPKPlayer)
+			if (!pAp->bPKPlayer || nLoai == 1)
 				continue;
 		}
-		else if (!pAp->bPKNpc)
+		else if (!pAp->bPKNpc || nLoai == 2)
 			continue;
+		if (nLoai == 1)
+		{	// chi nhan TUONG dich
+			int q = 0;
+			for (; q < TK_QUAN_COUNT; ++q)
+				if (Npc[nIdx].m_NpcSettingIdx == (int)g_TKQuanRes[q])
+					break;
+			if (q >= TK_QUAN_COUNT)
+				continue;
+		}
 		Npc[nIdx].GetMpsPos(&x, &y);
 		int nD = g_GetDistance(nX, nY, x, y);
 		if (nD > nTam)
@@ -7804,6 +8025,7 @@ static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
 		AUTOLOG_EVERY(3000, "[TK-SAN] khong thay ai: campminh=%d campdich=%d thay=%d cungphe=%d trongtrai=%d the=%d me=(%d,%d)", nCampToi, nCampDich, nThay, nLoaiPhe, nLoaiCam, ea.nTKThe, nX, nY);
 		return 0;
 	}
+	TK_RaoThayDich(nChon, uCurTime);	// (03/09) nho diem cuoi thay nguoi khac mau
 	const UINT uID = Npc[nChon].m_dwID;
 	if (uID != s_uTKSanID)
 	{	// doi muc tieu -> dat lai bo do ket
@@ -8004,9 +8226,46 @@ static int TK_CoTin(int nPlayerIdx, const char* szMark)
 	return nCo;
 }
 
+// (03/09) [CHIEU-CAM] KHONG gui chieu ma chinh client se tu choi (sai vu khi /
+// dang cuoi ngua / bi im lang / quan he muc tieu): moi lan gui bi tu choi la mot
+// lan Exit -> DoStand cat dut duong chay (wauto-6a do: chieu 1967 Tran Bien Thuy
+// - Vu Hon he THUAN, EqtLimit 8 - bi tu choi 282 lan / 12,5 phut vi nhan vat cam
+// DAO, moi lan dung 560 ms roi bi nan). Hoi truoc bang dung ham kiem cua client
+// (KSkill::CanCastSkill), truot thi cam chieu do 30 giay va coi nhu 'da ban' de
+// bang ket hop sang khe ke tiep; het han thu lai (doi vu khi / xuong ngua la dung duoc).
+#define WA_CHIEUCAM_SO	16
+static UINT s_uChieuCamId[WA_CHIEUCAM_SO];
+static UINT s_uChieuCamHan[WA_CHIEUCAM_SO];
+static bool WA_ChieuBiCam(KSkill* pSkill, int nSkill, int nSelf, int nTG, UINT uCurTime)
+{
+	int nTrong = -1;
+	for (int i = 0; i < WA_CHIEUCAM_SO; ++i)
+	{
+		if (s_uChieuCamId[i] == (UINT)nSkill)
+		{
+			if ((int)(s_uChieuCamHan[i] - uCurTime) > 0)
+				return true;
+			nTrong = i;
+			break;
+		}
+		if (nTrong < 0 && (!s_uChieuCamId[i] || (int)(s_uChieuCamHan[i] - uCurTime) <= 0))
+			nTrong = i;
+	}
+	int p1 = -1, p2 = nTG;
+	if (!pSkill || pSkill->CanCastSkill(nSelf, p1, p2))
+		return false;
+	if (nTrong < 0)
+		nTrong = 0;
+	s_uChieuCamId[nTrong] = (UINT)nSkill;
+	s_uChieuCamHan[nTrong] = uCurTime + 30000u;
+	AUTOLOG("[CHIEU-CAM] t=%u skill=%d bi client tu choi (vu khi / ngua / quan he / im lang) - cam 30 giay, sang khe khac", uCurTime, nSkill);
+	return true;
+}
+
 static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	s_pApDiDuong = pAp;	// (03/09) cho DT_WalkTo biet cau hinh ngua
 	KDaTauCapture& cap = g_sDTCap;
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
 	if (nSelf <= 0)
@@ -8650,14 +8909,40 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		if (TK_AnThuoc(nPlayerIdx, pAp, uCurTime))
 			return 2;
+		// (03/09 chieu) THU TU MOI - chu game: "tim doi thu KHAC MAU, khong chay toa do":
+		//   1. tuong dich (chi khi o 'Uu tien' = Hieu Uy / Pho Tuong / Dai Tuong)
+		//   2. NGUOI khac mau trong tam PK co duong nhin -> giao may PK
+		//   3. NGUOI khac mau o xa / khuat trong bong bong dong bo -> tang san di toi
+		//   4. linh NPC dich trong tam (o 'Danh quai') -> giao may PK
+		//   5. khong thay ai: RAO MAP theo luoi A* (TK_RaoDi); chua co luoi thi bang toa do
 		{
-			int nTG = TK_ChonDich(nPlayerIdx, pAp);
+			int nTG = 0;
+			if (pAp->nTKUuTien == 1)
+				nTG = TK_ChonDich(nPlayerIdx, pAp, 1);
+			if (!nTG)
+				nTG = TK_ChonDich(nPlayerIdx, pAp, 2);
+			if (!nTG)
+			{
+				int nAimX = 0, nAimY = 0;
+				const int nSan = TK_SanNguoi(nPlayerIdx, pAp, uCurTime, &nAimX, &nAimY);
+				if (nSan)
+				{
+					ea.uNpcID = 0;			// chua danh duoc ai - de may PK khong om id cu
+					s_uTKSanQuyen = uCurTime + 700;
+					ea.uTKDestT = 0;
+					DT_WalkTo(nPlayerIdx, nAimX, nAimY, TK_O(4), uCurTime);
+					return 2;
+				}
+				nTG = TK_ChonDich(nPlayerIdx, pAp, 0);
+			}
 			if (nTG)
 			{
+				if (Npc[nTG].m_Kind == kind_player)
+					TK_RaoThayDich(nTG, uCurTime);
 				// giao muc tieu cho may PK (tab PK) danh - no nhan luon uNpcID nay
 				ea.uNpcID = Npc[nTG].m_dwID;
 				ea.uTKDestT = 0;
-				s_uTKSanQuyen = 0;	// (03/09) da co dich danh duoc - tra toan quyen cho may PK
+				s_uTKSanQuyen = 0;	// da co dich danh duoc - tra toan quyen cho may PK
 				TK_SanBo();
 				g_ScenePlace.RemoveFlag();
 				ea.uTKNext = uCurTime + 300;
@@ -8665,26 +8950,12 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			}
 		}
 		// (25/08) khong co dich hop le: PHAI xoa muc tieu cu, khong thi may PK con om
-		// id cu ma vung vao khong khi (chu game bao: 'khong co doi tuong khac phe ma
-		// van dung danh vao khong khi'). Van tra 2 de con danh tra khi bi danh.
+		// id cu ma vung vao khong khi. Van tra 2 de con danh tra khi bi danh.
 		ea.uNpcID = 0;
-		// (03/09) LAN SAN: truoc khi roi ve bang toa do, tu tim NGUOI / BOT khac phe
-		// gan nhat roi di toi. Xem chu thich day du o TK_SanNguoi.
-		{
-			int nAimX = 0, nAimY = 0;
-			const int nSan = TK_SanNguoi(nPlayerIdx, pAp, uCurTime, &nAimX, &nAimY);
-			if (nSan)
-			{
-				// giu khe lenh 700 ms: nhip TK la 300-400 ms nen quyen tu het han neu
-				// tang san ngung chay, khong can ai go
-				s_uTKSanQuyen = uCurTime + 700;
-				ea.uTKDestT = 0;	// bo diem tho dang chay; quay lai lan do se chon diem moi
-				DT_WalkTo(nPlayerIdx, nAimX, nAimY, TK_O(4), uCurTime);
-				return 2;
-			}
-		}
-		s_uTKSanQuyen = 0;	// khong san ai - tra quyen cho may PK
-		// khong co dich hop le -> chay toi mot diem trong bang binh doan ben dich
+		s_uTKSanQuyen = 0;
+		if (TK_RaoDi(nPlayerIdx, nX, nY, uCurTime))
+			return 2;
+		// chua co luoi A* (map chua nap xong) -> cach cu: bang toa do binh doan ben dich
 		if (!ea.uTKDestT || uCurTime > ea.uTKDestT
 		 || g_GetDistance(nX, nY, TK_O(ea.nTKDestX), TK_O(ea.nTKDestY)) < 200)
 			TK_ChonDiem(nPlayerIdx, uCurTime);
@@ -9485,6 +9756,7 @@ static int CT_ToiXaPhu(int nPlayerIdx, UINT uCurTime)
 static int CT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	s_pApDiDuong = pAp;	// (03/09) cho DT_WalkTo biet cau hinh ngua
 	KDaTauCapture& cap = g_sDTCap;
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
 	if (nSelf <= 0)
@@ -10669,6 +10941,7 @@ static int LD_DiThanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT uC
 static int LD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	s_pApDiDuong = pAp;	// (03/09) cho DT_WalkTo biet cau hinh ngua
 	KDaTauCapture& cap = g_sDTCap;
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
 	if (nSelf <= 0)
@@ -11704,6 +11977,7 @@ static int WA_MapSuKien(int nPlayerIdx);	// dinh nghia duoi (bang KMapSuKien.h)
 static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	s_pApDiDuong = pAp;	// (03/09) cho DT_WalkTo biet cau hinh ngua
 	KDaTauCapture& cap = g_sDTCap;
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
 	if (nSelf <= 0)
@@ -13440,6 +13714,7 @@ static int WA_DoiMapDungDi(int nPlayerIdx, UINT uCurTime)
 static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	s_pApDiDuong = pAp;	// (03/09) cho DT_WalkTo biet cau hinh ngua
 	KDaTauCapture& cap = g_sDTCap;
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
 	if (nSelf <= 0)
@@ -17036,9 +17311,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					}
 					else if(nDist < nSkillRadius)
 					{
-						Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, -1, nTGNpcIdx);
-						SendClientCmdSkill(nMainSkill, -1, Npc[nTGNpcIdx].m_dwID);
-						bBanRoi = true;
+						if(WA_ChieuBiCam(pSkill, nMainSkill, nNpcIdx, nTGNpcIdx, uCurTime))
+							bBanRoi = true;	// (03/09) coi nhu da ban de sang khe ke
+						else
+						{
+							Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, -1, nTGNpcIdx);
+							SendClientCmdSkill(nMainSkill, -1, Npc[nTGNpcIdx].m_dwID);
+							bBanRoi = true;
+						}
 					}
 					if(bBanRoi)
 					{
@@ -17533,9 +17813,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						{
 							if(!bCamBan)
 							{
-								Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, -1, nTGNpcIdx);
-								SendClientCmdSkill(nMainSkill, -1, Npc[nTGNpcIdx].m_dwID);
-								bBanRoi = true;
+								if(WA_ChieuBiCam(pSkill, nMainSkill, nNpcIdx, nTGNpcIdx, uCurTime))
+									bBanRoi = true;	// (03/09) coi nhu da ban de sang khe ke
+								else
+								{
+									Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, -1, nTGNpcIdx);
+									SendClientCmdSkill(nMainSkill, -1, Npc[nTGNpcIdx].m_dwID);
+									bBanRoi = true;
+								}
 							}
 						}
 						else
@@ -17558,9 +17843,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						{
 							if(!bCamBan)
 							{
-								Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, -1, nTGNpcIdx);
-								SendClientCmdSkill(nMainSkill, -1, Npc[nTGNpcIdx].m_dwID);
-								bBanRoi = true;
+								if(WA_ChieuBiCam(pSkill, nMainSkill, nNpcIdx, nTGNpcIdx, uCurTime))
+									bBanRoi = true;	// (03/09) coi nhu da ban de sang khe ke
+								else
+								{
+									Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, -1, nTGNpcIdx);
+									SendClientCmdSkill(nMainSkill, -1, Npc[nTGNpcIdx].m_dwID);
+									bBanRoi = true;
+								}
 							}
 						}
 						else

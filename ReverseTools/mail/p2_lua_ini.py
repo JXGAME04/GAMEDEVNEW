@@ -193,8 +193,17 @@ INI = ["mail_manager.ini", "mail_list.ini", "mail_header.ini", "mail_detail.ini"
 
 def build_ini(name):
     s = rd(os.path.join(SRC, "mail_jx1cu", "ui3_" + name))
+    e = "\r\n" if "\r\n" in s else "\n"
     if name == "mail_list.ini":
         s = rep1(s, "Label=" + V("Nhận vật phẩm"), "Label=" + V("Nhận"), "nhan")
+    # [D6 03/09] anh nen KWndImage khong hien (chu chup 17:50): cac muc "Image=spr\Ui4\email\..." (KHONG co dau "\" dau,
+    # nguyen ban client cu) khong ve duoc, con "Image=\spr\Ui4\..." (nut, khung loc) ve tot -> them "\" dau cho moi Image=
+    s = s.replace("Image=spr\\", "Image=\\spr\\").replace("Image=Spr\\", "Image=\\Spr\\")
+    if name == "mail_detail.ini":
+        # [D7 03/09] chu chup 18:05: "Nguoi gui:" cut con "Nguoi g" -> nhan rong 65->80, o gia tri lui 66->82
+        s = rep1(s, "Top=51" + e + "Width=65", "Top=51" + e + "Width=80", "sender label")
+        s = rep1(s, "[MailSenderValue]" + e + "Left=66" + e + "Top=51" + e + "Width=275",
+                 "[MailSenderValue]" + e + "Left=82" + e + "Top=51" + e + "Width=259", "sender value")
     if name == "mail_icon.ini":
         # [D4 03/09] chu: dat duoi bieu tuong Bau Cua = UiPlayerBar.ini [SpringGame] Left=765 Top=243 50x50 (800x600);
         # 1024: UiMail.cpp neo x = 1024 - 30 nhu UiPlayerBar.cpp

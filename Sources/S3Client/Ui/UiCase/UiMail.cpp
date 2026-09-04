@@ -412,6 +412,14 @@ KUiMailList::KUiMailList()
     strcpy(m_szDayUnit, "");
 }
 
+// [MAIL 03/09 D7] khung cuon chuyen tiep thong bao cua hang / thanh cuon len KUiMailList
+int KUiMailScrollWnd::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+{
+    if ((uMsg == WND_N_BUTTON_CLICK || uMsg == WND_N_SCORLLBAR_POS_CHANGED) && m_pParentWnd)
+        return m_pParentWnd->WndProc(uMsg, uParam, nParam);
+    return KWndImage::WndProc(uMsg, uParam, nParam);
+}
+
 void KUiMailList::Build()
 {
     AddChild(&m_ScrollWnd);
