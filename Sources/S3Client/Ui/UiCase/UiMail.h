@@ -218,6 +218,8 @@ private:
 	KWndButton			m_Btn;					// [MailBtn]
 	int					m_bBlink;
 	int					m_nFrame;
+	int					m_bUnread;				// [D8] con thu chua doc -> giu khung HOT
+	int					m_nBlinkLeft;			// [D8] so khung con nhay (thu moi)
 };
 
 // GameSpaceChangedNotify.cpp: case GDCNI_MAIL_UI
