@@ -693,6 +693,7 @@
     <ClCompile Include="Src\KScriptProtocol.cpp" />
     <ClCompile Include="Src\KMailClient.cpp" />
     <ClCompile Include="Src\KMailServer.cpp" />
+    <ClCompile Include="Src\KAuctionServer.cpp" />
     <ClCompile Include="Src\CoreDrawGameObj.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
