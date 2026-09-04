@@ -536,10 +536,17 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 		m_pFrameInfo[nFrame].nOffX = pFrame->OffsetX;
 		m_pFrameInfo[nFrame].nOffY = pFrame->OffsetY;
 
-        if (((int)m_pOffset[nFrame].Length) < 0)
-            m_pOffset[nFrame].Length = -((int)m_pOffset[nFrame].Length);
+        // [REP3 03/09 SAP] KHONG ghi nguoc dau AM vao bo dem SPRHEAD dung chung voi engine.
+        // Trong pak, XPackSprFrameInfo.lSize AM = khung luu THO. XPackFile::GetSprFrame doc
+        // dau nay de chon DirectRead thay vi ExtractRead. Doi dau tai cho lam lan goi SAU do
+        // day du lieu THO vao ucl_nrv2b_decompress_8, ma bo giai nen bien dich thieu SAFE nen
+        // khong kiem bien: doc con tro tra nguoc loan + ghi tran malloc -> hong vung nho dong
+        // (0xC0000005 tai +0x154 roi 0xC0000374). Chi dung bien tam, khong dung toi bo dem.
+        int nRawLen = (int)m_pOffset[nFrame].Length;
+        if (nRawLen < 0)
+            nRawLen = -nRawLen;
 	
-		m_pFrameInfo[nFrame].nRawDataLen = m_pOffset[nFrame].Length - 8;//sizeof(SPRFRAME);
+		m_pFrameInfo[nFrame].nRawDataLen = nRawLen - 8;//sizeof(SPRFRAME);
 		m_pFrameInfo[nFrame].pRawData = pFrame->Sprite;
 		m_pFrameInfo[nFrame].pFrame = pFrame;
 	}
