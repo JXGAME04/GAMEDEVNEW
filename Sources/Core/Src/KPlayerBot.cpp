@@ -3162,8 +3162,9 @@ static int pb_ODat(int nSubIdx, int nOX, int nOY, int nLech, int nRMax,
 #define PB_SAP_XA_MAX     30   // o: [SAPGAN 04/09] XA NHAT duoc phep - chu game muon sap van o KHU
                                // NPC Da Tau, chi khong duoc vay chan duong vao NPC
 #define PB_SAP_CACH_NHAU   3   // o: hai sap cach nhau it nhat bay nhieu (rai rac, khong chong cui)
-#define PB_SAP_CACH_NPC    3   // o: cach MOI NPC co kich ban (Xa Phu, tiem, kho, nhiem vu) - khong
-                               // vay bat ky NPC nao, khong rieng Da Tau
+#define PB_SAP_CACH_NPC    4   // o: cach MOI NPC dung yen (thi ve, Xa Phu, tiem, kho, nhiem vu,
+                               // ca NPC trang tri khong kich ban) - [SAPNPC 04/09] chu game: "ne
+                               // duoc npc da tau ma de len npc khac"
 #define PB_SAP_THU_NODE   60   // so node SimCity thu moi lan xep cho
 
 // Loang tu chan NPC (o luoi nTamX,nTamY) ra moi o DI DUOC theo dia hinh (pb_ODuoc,
@@ -3209,6 +3210,52 @@ static int pb_SapLoang(int nSubIdx, int nTamX, int nTamY, unsigned char* aReach)
 // [SAPRAI2 04/09] Ban kiem o KHONG dung cua so BFS quanh NPC: dung cho cho ngoi lay tu luoi node
 // SimCity (rai khap thanh, xa NPC Da Tau nen cua so BFS cu khong phu toi). Node cua SimCity von
 // nam tren duong NPC tuan tra di duoc nen tinh lien thong da co san, khong can loang lai.
+// [SAPNPC 04/09] O sap phai cach MOI NPC dung yen it nhat PB_SAP_CACH_NPC o.
+// Hai diem sua so voi ban [SAPRAI2] hom qua:
+//   * quet CA CAC REGION KE BEN (lay region cua tam + 4 goc o vuong ban kinh PB_SAP_CACH_NPC):
+//     o sat mep region truoc day khong thay NPC ben kia mep, du chi cach 1-2 o;
+//   * bo dieu kien m_ActionScriptID: thi ve / linh canh / NPC trang tri khong co kich ban van la
+//     vat can dung ro rang tren man hinh, dap len la sai.
+// Nguoi that va bot (kind_player) KHONG tinh o day - da co PB_SAP_CACH_NHAU lo phan do.
+static int pb_SapXaNpc(int nSubIdx, int nCellX, int nCellY)
+{
+	static const int aQx[5] = { 0, -PB_SAP_CACH_NPC,  PB_SAP_CACH_NPC, -PB_SAP_CACH_NPC, PB_SAP_CACH_NPC };
+	static const int aQy[5] = { 0, -PB_SAP_CACH_NPC, -PB_SAP_CACH_NPC,  PB_SAP_CACH_NPC, PB_SAP_CACH_NPC };
+	int aR5[5], nSoR5 = 0;
+	for (int g5 = 0; g5 < 5; g5++)
+	{
+		int r5 = -1, mx5 = 0, my5 = 0, ox5 = 0, oy5 = 0;
+		SubWorld[nSubIdx].Mps2Map((nCellX + aQx[g5]) * 32, (nCellY + aQy[g5]) * 32,
+		                          &r5, &mx5, &my5, &ox5, &oy5);
+		if (r5 < 0)
+			continue;
+		int bCo5 = 0;
+		for (int t5 = 0; t5 < nSoR5; t5++)
+			if (aR5[t5] == r5) { bCo5 = 1; break; }
+		if (!bCo5)
+			aR5[nSoR5++] = r5;
+	}
+	for (int u5 = 0; u5 < nSoR5; u5++)
+	{
+		KIndexNode* pN5 = (KIndexNode *)SubWorld[nSubIdx].m_Region[aR5[u5]].m_NpcList.GetHead();
+		while (pN5)
+		{
+			const int ni5 = pN5->m_nIndex;
+			pN5 = (KIndexNode *)pN5->GetNext();
+			if (ni5 <= 0 || ni5 >= MAX_NPC)
+				continue;
+			if (Npc[ni5].IsPlayer())
+				continue;              // nguoi that / bot - do PB_SAP_CACH_NHAU lo
+			int ex5 = 0, ey5 = 0;
+			Npc[ni5].GetMpsPos(&ex5, &ey5);
+			const int edx5 = ex5 / 32 - nCellX, edy5 = ey5 / 32 - nCellY;
+			if (edx5 * edx5 + edy5 * edy5 < PB_SAP_CACH_NPC * PB_SAP_CACH_NPC)
+				return 0;
+		}
+	}
+	return 1;
+}
+
 static int pb_OSapTotRai(int nSubIdx, int nCellX, int nCellY)
 {
 	const int nMpsX = nCellX * 32, nMpsY = nCellY * 32;
@@ -3236,34 +3283,18 @@ static int pb_OSapTotRai(int nSubIdx, int nCellX, int nCellY)
 		if (ddx * ddx + ddy * ddy < PB_SAP_CACH_NHAU * PB_SAP_CACH_NHAU)
 			return 0;
 	}
-	// [SAPRAI2 - phan bien] Khong duoc vay BAT KY NPC dich vu nao (Xa Phu, tiem, kho, nhiem vu):
-	// rai khap thanh ma khong loc thi chi doi cho tac nghen tu NPC Da Tau sang NPC khac.
-	// Chi quet NPC trong CHINH region cua o ung vien - danh sach nay ngan, va o ung vien chi duoc
-	// xet mot lan moi doi bot nen chi phi khong dang ke.
-	{
-		KIndexNode* pN4 = (KIndexNode *)SubWorld[nSubIdx].m_Region[nR].m_NpcList.GetHead();
-		while (pN4)
-		{
-			const int ni4 = pN4->m_nIndex;
-			pN4 = (KIndexNode *)pN4->GetNext();
-			if (ni4 <= 0 || ni4 >= MAX_NPC)
-				continue;
-			if (!Npc[ni4].m_ActionScriptID)
-				continue;              // quai / bot khong co kich ban - khong phai NPC dich vu
-			int ex4 = 0, ey4 = 0;
-			Npc[ni4].GetMpsPos(&ex4, &ey4);
-			const int edx = ex4 / 32 - nCellX, edy = ey4 / 32 - nCellY;
-			if (edx * edx + edy * edy < PB_SAP_CACH_NPC * PB_SAP_CACH_NPC)
-				return 0;
-		}
-	}
+	// [SAPNPC 04/09] mot bo luat duy nhat, quet ca region ke ben va moi NPC dung yen (ke ca khong
+	// co kich ban - thi ve, linh canh, NPC trang tri).
+	if (!pb_SapXaNpc(nSubIdx, nCellX, nCellY))
+		return 0;
 	static const int aTx4[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 	static const int aTy4[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
 	int nThoang4 = 0;
 	for (int h4 = 0; h4 < 8; h4++)
 		if (pb_ODuoc(nSubIdx, nMpsX + aTx4[h4] * 32, nMpsY + aTy4[h4] * 32))
 			nThoang4++;
-	return (nThoang4 >= 5) ? 1 : 0;	// o tui / khe tuong / goc nha = 'goc ket'
+	// [SAPNPC 04/09] 5/8 van lot o sat vach (3 huong bi chan). Chu game: "ne luon vat can, goc chet".
+	return (nThoang4 >= 6) ? 1 : 0;	// o tui / khe tuong / goc nha = 'goc ket'
 }
 
 static int pb_OSapTot(int nSubIdx, int nCellX, int nCellY, int nTamX, int nTamY,
@@ -3304,13 +3335,18 @@ static int pb_OSapTot(int nSubIdx, int nCellX, int nCellY, int nTamX, int nTamY,
 		if (qx3 / 32 == nCellX && qy3 / 32 == nCellY)
 			return 0;
 	}
+	// [SAPNPC 04/09] LO CU: bo loc NPC hom qua chi duoc gan vao pb_OSapTotRai (duong luoi node),
+	// con duong vanh dai nay - hom nay 93/200 sap di qua - khong loc NPC gi ca, nen sap dap len
+	// thi ve / linh canh nhu anh chu game gui. Nay dung CHUNG mot bo luat.
+	if (!pb_SapXaNpc(nSubIdx, nCellX, nCellY))
+		return 0;
 	static const int aTx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 	static const int aTy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
 	int nThoang = 0;
 	for (int h = 0; h < 8; h++)
 		if (pb_ODuoc(nSubIdx, nMpsX + aTx[h] * 32, nMpsY + aTy[h] * 32))
 			nThoang++;
-	if (nThoang < 5)
+	if (nThoang < 6)           // [SAPNPC 04/09] 5/8 van lot o sat vach (3 huong bi chan)
 		return 0;              // o tui / khe tuong / goc nha = "goc ket"
 	return 1;
 }
@@ -4372,18 +4408,41 @@ static void pb_BanSap(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 						bDat = (Npc[nNpcIdx].ChangeWorld(nha.nMap, nSx, nSy) == 1);
 				}
 			}
-			// het vong ma chua dat duoc (quang truong chat kin / NPC dung goc khuat)
-			// -> lui ve pb_ODat nhu cu: con hon khong bay duoc sap
-			if (!bDat && pb_ODat(nSubT, nTamX, nTamY, nLech, 12, &nSx, &nSy))
+			// [SAPNPC 04/09] THU PHAM chinh cua tam anh chu game gui (sap dap len Duong Mon Thi Ve):
+			// duong lui cu goi pb_ODat(..., 12, ...) - xoan oc tu CHINH NPC Da Tau ban kinh 0..12 o,
+			// chi kiem "o di duoc", KHONG kiem NPC, KHONG khoang cach toi thieu, KHONG goc ket. Nghia
+			// la moi rang buoc o hai duong tren deu bi duong nay xoa sach.
+			// Nay lui bang CUNG bo luat, chi noi rong ban kinh (them 15 o) de van kiem duoc cho:
+			for (int r5 = PB_SAP_CACH_DT; r5 <= PB_SAP_XA_MAX + 15 && !bDat; r5++)
 			{
-				if (bCungMap)
+				const int nCv5 = 8 * r5;
+				const int nBd5 = ((nLech % 89) * 17 + r5 * 5) % nCv5;
+				for (int h5 = 0; h5 < nCv5 && !bDat; h5++)
 				{
-					Npc[nNpcIdx].SetPos(nSx, nSy);
-					bDat = 1;
+					const int i5 = (nBd5 + h5) % nCv5;
+					const int nC5 = i5 / (2 * r5);
+					const int t5 = i5 % (2 * r5) - r5;
+					int cx5 = nTamX, cy5 = nTamY;
+					if (nC5 == 0)      { cx5 += r5;  cy5 += t5; }
+					else if (nC5 == 1) { cx5 -= r5;  cy5 += t5; }
+					else if (nC5 == 2) { cx5 += t5;  cy5 += r5; }
+					else               { cx5 += t5;  cy5 -= r5; }
+					if (!pb_OSapTotRai(nSubT, cx5, cy5))
+						continue;
+					nSx = cx5 * 32;
+					nSy = cy5 * 32;
+					if (bCungMap)
+					{
+						Npc[nNpcIdx].SetPos(nSx, nSy);
+						bDat = 1;
+					}
+					else
+						bDat = (Npc[nNpcIdx].ChangeWorld(nha.nMap, nSx, nSy) == 1);
 				}
-				else
-					bDat = (Npc[nNpcIdx].ChangeWorld(nha.nMap, nSx, nSy) == 1);
 			}
+			if (!bDat)
+				pb_Log("[SapNpc] %s khong tim ra o sach quanh NPC Da Tau thanh %d - tha khong ngoi sap"
+				       " con hon dap len NPC\n", Player[nIdx].m_PlayerName, nha.nMap);
 		}
 		if (!bDat)
 		{
