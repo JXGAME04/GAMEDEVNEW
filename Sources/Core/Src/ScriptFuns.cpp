@@ -14035,6 +14035,7 @@ extern int LuaPB_BotCount(Lua_State* L);
 extern int LuaPB_ClearBot(Lua_State* L);
 extern int LuaPB_JoinFaction(Lua_State* L);
 extern int LuaPB_SetFight(Lua_State* L);
+extern int LuaPB_SetNhapMon(Lua_State* L);
 extern int LuaPB_SetChat(Lua_State* L);
 extern int LuaPB_SaveAll(Lua_State* L);
 extern int LuaPB_SetBuff(Lua_State* L);
@@ -15149,6 +15150,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"PB_ClearBot",		LuaPB_ClearBot},
 	{"PB_JoinFaction",	LuaPB_JoinFaction},
 	{"PB_SetFight",		LuaPB_SetFight},
+	{"PB_SetNhapMon",	LuaPB_SetNhapMon},	// [TATNHAPMON] tat che do vao phai (bot da du cap)
 	{"PB_SetChat",		LuaPB_SetChat},
 	{"PB_SaveAll",		LuaPB_SaveAll},
 	{"PB_SetBuff",		LuaPB_SetBuff},		// (19/08) bat/tat cham TTL + Que Hoa Tuu

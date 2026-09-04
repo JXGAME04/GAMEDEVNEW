@@ -194,6 +194,7 @@ int  PB_GetCount();                            // so bot dang song
 int  PB_RemoveAll();                           // go het bot (tra so da go)
 int  PB_JoinFaction();                         // ra lenh cho bot di vao phai (tra so da nhan lenh)
 int  PB_SetFight(int bOn);                     // bat/tat danh quai (tra so bot doi trang thai)
+int  PB_SetNhapMon(int bOn);                   // [TATNHAPMON] tat che do vao phai + go bot treo
 int  PB_SaveAll();                             // xep hang luu NGAY toan bo bot (tra so bot)
 int  PB_OnSaveFailed(int nPlayerIdx);          // Goddess vut bai luu -> hen luu lai (1 = la bot)
 // Tra 1 = da nhan la bot VA da tra loi (GameServer khong chuyen tiep nua); 0 = khong phai bot.
@@ -214,6 +215,7 @@ int  LuaPB_AddBot(Lua_State* L);               // (nTu [, nDen]) -> so da xep ha
 int  LuaPB_BotCount(Lua_State* L);             // () -> so bot dang song, tran
 int  LuaPB_ClearBot(Lua_State* L);             // () -> so bot da go
 int  LuaPB_JoinFaction(Lua_State* L);          // () -> so bot da nhan lenh vao phai
+int  LuaPB_SetNhapMon(Lua_State* L);           // (bOn) -> so bot go khoi trang thai vao phai
 int  LuaPB_SetFight(Lua_State* L);             // (bOn) -> so bot da bat/tat danh quai
 int  LuaPB_SetChat(Lua_State* L);              // (nRate[,szFile,szType]) -> so cau da nap
 int  LuaPB_SaveAll(Lua_State* L);              // () -> so bot da xep hang luu

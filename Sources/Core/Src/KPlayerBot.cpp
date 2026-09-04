@@ -1615,6 +1615,43 @@ int PB_JoinFaction()
 	return nRa;
 }
 
+// [TATNHAPMON 04/09] Tat (hoac bat lai) CHE DO NHAP MON. Truoc day chi co duong BAT (trong
+// PB_JoinFaction), nen mot khi da bat thi moi nhip lai day bot IDLE sang GOTO_FACTION; ma
+// PB_SetFight khong nhan trang thai do -> ca dan treo o "dang chay toi NPC mon phai" va dung
+// yen cho toi khi khoi dong lai may chu. Tat thi phai GO KET luon dan dang treo, khong thi
+// tat cung vo nghia.
+// Tra ve: so bot da duoc go ve PB_AI_IDLE.
+int PB_SetNhapMon(int bOn)
+{
+	s_nPbCheDoNhapMon = bOn ? 1 : 0;
+	if (bOn)
+		return 0;
+	int nGo = 0;
+	for (int i = 0; i < s_botCount; i++)
+	{
+		PB_Bot& b = s_bots[i];
+		if (b.nAi != PB_AI_GOTO_FACTION && b.nAi != PB_AI_GIVEUP)
+			continue;
+		b.nAi      = PB_AI_IDLE;
+		b.nRetry   = 0;
+		b.nNextTry = 0;
+		b.walk.Reset();
+		const int nNpcIdx = Player[b.nPlayerIdx].m_nIndex;
+		if (nNpcIdx > 0 && nNpcIdx < MAX_NPC)
+			Npc[nNpcIdx].SendCommand(do_stand);
+		nGo++;
+	}
+	pb_Log("[Bot] TAT che do vao phai, go %d bot dang treo ve trang thai ranh\n", nGo);
+	return nGo;
+}
+
+int LuaPB_SetNhapMon(Lua_State* L)
+{
+	int bOn = (Lua_GetTopIndex(L) >= 1) ? (int)Lua_ValueToNumber(L, 1) : 0;
+	Lua_PushNumber(L, PB_SetNhapMon(bOn));
+	return 1;
+}
+
 // Bat/tat che do danh quai cho moi bot da vao phai.
 // Tach rieng khoi vao phai (giong PB_JoinFaction) de chu game chu dong thoi diem test.
 int PB_SetFight(int bOn)
