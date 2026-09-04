@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""[DAUGIA 04/09 A6] Them 3 muc vao UiGiveItem.ini (hop dua vat pham) cho che do KY GUI:
+"""[DAUGIA 04/09 A6, A20] Them cac muc vao UiGiveItem.ini (A20: HAI hang gia - mua ngay + co ban;
+ba muc AucBase* do p48_ini_2gia.py them, xem chu thich trong tep do)
+Truoc day:  Them 3 muc vao UiGiveItem.ini (hop dua vat pham) cho che do KY GUI:
 o nhan "Gia ban", o nhap gia, nut doi loai tien. Chi hien khi KUiAffairItem::SetAuctionMode(1).
 Dat de len phan duoi cua o mo ta (96..182) vi luc ky gui mo ta rat ngan. Idempotent.
 Chay: python p13_hopgop_ini.py"""
@@ -26,19 +28,19 @@ BLOCK = E.join([
     "; khi KUiAffairItem::SetAuctionMode(1); hop giao nop khac khong dung toi.",
     "[AucPriceLabel]",
     "Left=16",
-    "Top=138",
-    "Width=52",
+    "Top=118",	# [A20] hang 1 = gia mua ngay
+    "Width=56",
     "Height=16",
     "Font=12",
     "HAlign=0",
     "VAlign=1",
     "Color=255,217,78",
-    "Text=" + V("Giá bán"),
+    "Text=" + V("Mua ngay"),
     "",
     "[AucPriceEdit]",
-    "Left=70",
-    "Top=137",
-    "Width=110",
+    "Left=74",
+    "Top=117",
+    "Width=82",
     "Height=16",
     "MultiLine=0",
     "Password=0",

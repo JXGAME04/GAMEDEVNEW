@@ -2,10 +2,15 @@
 -- \script\auction_house\auction_def.lua cua client JX1 cu (2.0). Chu chot 04/09: tien XU va NGAN LUONG.
 AUCTION_DEF = {}
 AUCTION_DEF.nAuctionTaxRate        = 5              -- thue giao dich (%) tru vao tien nguoi ban nhan
-AUCTION_DEF.nPersonalPutOnCost     = 10             -- phi ky gui (%) thu ngay khi dat ban, khong hoan
--- [A14] moi trang 2 mon cho KHOP so hang thay duoc (AUCUI_ROW_COUNT = 2): khung danh sach cao 321,
--- moi hang cao 118 nen hang thu ba tran ra ngoai khung. (Bo dem ObjBuffer 4096 byte, moi dong ~600.)
-AUCTION_DEF.nMaxItemPerPage        = 2
+AUCTION_DEF.nPersonalPutOnCost     = 10             -- tien coc ky gui (%) tinh tren GIA CO BAN
+-- [A20 04/09 chu chot] Tien coc HOAN lai khi ban duoc va khi het han e; CHI MAT khi nguoi ban
+-- tu rut mon ve. Kem tran de mot lan go nham gia khong tru sach vi:
+AUCTION_DEF.nMaxDepositXu          = 20000
+AUCTION_DEF.nMaxDepositMoney       = 20000000
+-- [A22] PHAI bang AUCUI_ROW_COUNT (so hang ve duoc) - khong thi mon thua nam duoi thanh cuon
+-- ma nguoi choi khong biet. Tran that la bo dem goi script 4096 byte: moi dong ~665 byte
+-- sau khi them chuoi mo ta vat pham, nen 3 dong ~2000 byte con rong rai; qua 5 dong la sat.
+AUCTION_DEF.nMaxItemPerPage        = 3
 AUCTION_DEF.nMaxItemPerSeller      = 5              -- mot nguoi ky gui toi da
 AUCTION_DEF.nPersonalDuration      = 24 * 60 * 60   -- ky gui 24 gio
 -- [A14] Ky gui CUNG la dau gia kieu Ha Lan (dung ban goc 2.0: nPersonalFloatTimes = 1):

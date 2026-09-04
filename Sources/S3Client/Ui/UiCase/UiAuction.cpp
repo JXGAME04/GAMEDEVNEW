@@ -371,18 +371,44 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 		sFmtMoney(sz, sizeof(sz), p->nRange);		m_EngV2.SetText(sz);
 		m_EngV3.SetText(p->szCurrency);
 		sFmtMoney(sz, sizeof(sz), p->nMax);			m_EngV4.SetText(sz);
-		sFmtMoney(sz, sizeof(sz), p->nSelf);		m_EngV5.SetText(sz);
+		// [DAUGIA 04/09 A20e] dong ky gui ca nhan co them GIA MUA NGAY: o thu nam doi nghia.
+		// Phien the gioi / bang hoi khong co gia mua ngay (nBuyNow = 0) nen giu nguyen "Gia cua ta".
+		if (p->nBuyNow > 0)
+		{
+			m_EngT5.SetText("Mua ngay");
+			sFmtMoney(sz, sizeof(sz), p->nBuyNow);	m_EngV5.SetText(sz);
+		}
+		else
+		{
+			m_EngT5.SetText("Gi¸ cña ta");
+			sFmtMoney(sz, sizeof(sz), p->nSelf);	m_EngV5.SetText(sz);
+		}
 		// gia minh se tra: cao nhat + buoc (toi thieu = khoi diem)
 		int nBase = p->nMax > 0 ? p->nMax + p->nRange : p->nGuaranteed;
 		if (m_nOffer < nBase)
 			m_nOffer = nBase;
 		sFmtMoney(sz, sizeof(sz), m_nOffer);		m_TxtOffer.SetText(sz);
-		m_BtnGetBack.Hide();
+		// [A20e] mon cua CHINH MINH o the Ca nhan: van phai co nut "Lay lai" nhu dong Ha Lan,
+		// khong thi nguoi ban ky gui xong khong con duong nao rut mon ve.
 		if (p->bMine)
 		{
 			m_BtnOffer.Hide();
 			m_BtnAddPrice.Hide();
 			m_BtnGiveUp.Hide();
+			if (p->nBuyNow > 0)
+				m_BtnGetBack.Show();
+			else
+				m_BtnGetBack.Hide();
+		}
+		else
+		{
+			m_BtnGetBack.Hide();
+			// nut phai = MUA NGAY (chi dong ky gui moi co gia mua ngay)
+			if (p->nBuyNow > 0)
+			{
+				m_BtnGiveUp.SetLabel("Mua ngay");
+				m_BtnGiveUp.Show();
+			}
 		}
 	}
 	else
@@ -794,7 +820,10 @@ int KUiAuctionPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					sSendReq(AUCUI_OP_OFFER_ENGLISH, m_nType, r.m_Data.nId, r.m_nOffer, NULL);
 					break;
 				case 3:
-					sSendReq(AUCUI_OP_REFUND, m_nType, r.m_Data.nId, 0, NULL);
+					// [A20e] nut phai cua dong kieu Anh: co gia mua ngay thi la MUA NGAY,
+					// khong thi la nut "Huy dau gia" cu (A18 da an han vi no la nut chet).
+					if (r.m_Data.nBuyNow > 0)
+						sSendReq(AUCUI_OP_OFFER_DUTCH, m_nType, r.m_Data.nId, r.m_Data.nBuyNow, NULL);
 					break;
 				case 4:
 					sSendReq(AUCUI_OP_OFFER_DUTCH, m_nType, r.m_Data.nId, r.m_Data.nCur, NULL);

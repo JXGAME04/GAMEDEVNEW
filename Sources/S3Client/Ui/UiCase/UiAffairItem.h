@@ -43,6 +43,9 @@ private:
 	KWndEdit32			m_AucPrice;		// [A6] o nhap gia
 	KWndLabeledButton	m_AucCur;		// [A6] nut doi Ngan luong <-> Xu
 	KWndText32			m_AucUnit;		// [A7] don vi sau o nhap: "van" / "Xu"
+	KWndText32			m_AucLabel2;	// [A20] "Gia co ban"
+	KWndEdit32			m_AucBase;		// [A20] o nhap gia co ban (khoi diem, phai thap hon gia mua ngay)
+	KWndText32			m_AucUnit2;		// [A20] don vi cua o gia co ban
 	int					m_bAucMode;
 	int					m_nAucCur;		// 1 Ngan luong, 2 Xu
 	char 				szFunc1[32];	
