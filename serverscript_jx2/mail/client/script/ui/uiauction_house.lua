@@ -21,6 +21,7 @@ function UIAuctionHouse:Reset()
     self.tbActivityList[AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL] = {}
     self.szCurActivityName = ""
     self.nCurPageIndex = 1
+    self.bTuBam = 0
 end
 
 function UIAuctionHouse:TalkToPlayer(szMsg)
@@ -141,10 +142,15 @@ function UIAuctionHouse:RequestOfferEnglishPrice(nId, nPrice)
 end
 
 function UIAuctionHouse:RequestOfferDutchPrice(nId, nPrice)
+    -- [A26] danh dau: chinh ta vua bam lenh lam mon bien khoi danh sach, nen khi goi
+    -- ket thuc mon ve thi nap lai trang cho RIENG ta. Nguoi khac van giu nguyen cho
+    -- (ban goc co y khong don danh sach duoi tay nguoi dang bam - de bam nham mon).
+    self.bTuBam = 1
     self:SendItemReq("emSCRIPT_PROTOCOL_AUCTION_REQUEST_OFFERDUTCHPRICE", nId, nPrice)
 end
 
 function UIAuctionHouse:RequestGetBackItem(nId)
+    self.bTuBam = 1
     self:SendItemReq("emSCRIPT_PROTOCOL_AUCTION_REQUEST_GETBACKITEM", nId, nil)
 end
 
@@ -431,6 +437,14 @@ function UIAuctionHouse:OnEndItemEvent(nType, szAct, nEndId, nTotal)
         -- bat MOI nguoi dang mo cua so hoi lai ca trang - dung kieu doi goi (bai hoc F4 04/09).
         AuctionEndItem(nType, nEndId)
         self:ResetPageInfo(nType, szAct)
+        -- [A26] chi nguoi VUA BAM moi duoc nap lai trang: ho dang cho danh sach doi,
+        -- khong ai bi giat tay. Nguoi khac van chi danh dau mon tai cho nhu ban goc.
+        if self.bTuBam == 1 then
+            self.bTuBam = 0
+            if AuctionUiIsOpen() == 1 then
+                self:RequestActivityContent(szAct, self.nCurPageIndex)
+            end
+        end
     end
 end
 

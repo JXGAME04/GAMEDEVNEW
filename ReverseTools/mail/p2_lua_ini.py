@@ -195,6 +195,26 @@ def build_maildef():
 INI = ["mail_manager.ini", "mail_list.ini", "mail_header.ini", "mail_detail.ini", "mail_icon.ini", "mail_award_item.ini"]
 
 
+def _setkey(txt, sec, key, val):
+    """[D14] doi (hoac them) mot khoa trong muc [sec] cua noi dung ini"""
+    e = "\r\n"
+    out, cur, done = [], None, False
+    for line in txt.split(e):
+        st = line.strip()
+        if st.startswith("[") and st.endswith("]"):
+            if cur == sec and not done:
+                out.append(key + "=" + str(val))
+                done = True
+            cur = st[1:-1]
+        elif cur == sec and st.startswith(key + "="):
+            line = key + "=" + str(val)
+            done = True
+        out.append(line)
+    if cur == sec and not done:
+        out.append(key + "=" + str(val))
+    return e.join(out)
+
+
 def build_ini(name):
     s = rd(os.path.join(SRC, "mail_jx1cu", "ui3_" + name))
     e = "\r\n" if "\r\n" in s else "\n"
@@ -208,6 +228,24 @@ def build_ini(name):
         s = rep1(s, "Top=51" + e + "Width=65", "Top=51" + e + "Width=80", "sender label")
         s = rep1(s, "[MailSenderValue]" + e + "Left=66" + e + "Top=51" + e + "Width=275",
                  "[MailSenderValue]" + e + "Left=82" + e + "Top=51" + e + "Width=259", "sender value")
+    # [D14 04/09] chu: "khi go dau gia gui tra item ve 1 o - hoac cho item nam hien thi nhu trong dau gia".
+    # O dinh kem chi 26x26 ma trang bi 2x3 ve ra 52x78; engine can giua nen mon tran ra moi phia.
+    # KHONG thu nho duoc anh vat pham (KItem::PaintItem ve nguyen co) nen phai NOI O cho vua mon.
+    # O neo o (300,315) trong khung thu cao 345 -> khong noi xuong duoc, phai doi len va thu bot vung chu.
+    if name == "mail_detail.ini":
+        s = _setkey(s, "MailContentValue", "Height", 122)	# 130..252
+        s = _setkey(s, "MailAwardPos", "Left", 290)
+        s = _setkey(s, "MailAwardPos", "Top", 262)		# 262 + 78 = 340, vua trong khung 345
+        s = _setkey(s, "MailAwardPos", "Interval", 62)	# 58 + 4; lot 5 o mot hang
+    if name == "mail_award_item.ini":
+        s = _setkey(s, "Main", "Width", 58)
+        s = _setkey(s, "Main", "Height", 78)
+        s = _setkey(s, "MailAwardItemSpr", "Left", 0)
+        s = _setkey(s, "MailAwardItemSpr", "Top", 0)
+        s = _setkey(s, "MailAwardItemSpr", "Width", 58)
+        s = _setkey(s, "MailAwardItemSpr", "Height", 78)
+        s = _setkey(s, "MailAwardItemCount", "Top", 64)
+        s = _setkey(s, "MailAwardItemCount", "Width", 56)
     if name == "mail_icon.ini":
         # [D4 03/09] chu: dat duoi bieu tuong Bau Cua = UiPlayerBar.ini [SpringGame] Left=765 Top=243 50x50 (800x600);
         # 1024: UiMail.cpp neo x = 1024 - 30 nhu UiPlayerBar.cpp

@@ -1178,6 +1178,7 @@ def build_client_ui():
         "    self.tbActivityList[" + T + ".eType_PERSONAL] = {}",
         "    self.szCurActivityName = \"\"",
         "    self.nCurPageIndex = 1",
+        "    self.bTuBam = 0",
         "end",
         "",
         "function UIAuctionHouse:TalkToPlayer(szMsg)",
@@ -1298,10 +1299,15 @@ def build_client_ui():
         "end",
         "",
         "function UIAuctionHouse:RequestOfferDutchPrice(nId, nPrice)",
+        "    -- [A26] danh dau: chinh ta vua bam lenh lam mon bien khoi danh sach, nen khi goi",
+        "    -- ket thuc mon ve thi nap lai trang cho RIENG ta. Nguoi khac van giu nguyen cho",
+        "    -- (ban goc co y khong don danh sach duoi tay nguoi dang bam - de bam nham mon).",
+        "    self.bTuBam = 1",
         "    self:SendItemReq(\"emSCRIPT_PROTOCOL_AUCTION_REQUEST_OFFERDUTCHPRICE\", nId, nPrice)",
         "end",
         "",
         "function UIAuctionHouse:RequestGetBackItem(nId)",
+        "    self.bTuBam = 1",	# [A26] xem chu thich o RequestOfferDutchPrice
         "    self:SendItemReq(\"emSCRIPT_PROTOCOL_AUCTION_REQUEST_GETBACKITEM\", nId, nil)",
         "end",
         "",
@@ -1588,6 +1594,14 @@ def build_client_ui():
         "        -- bat MOI nguoi dang mo cua so hoi lai ca trang - dung kieu doi goi (bai hoc F4 04/09).",
         "        AuctionEndItem(nType, nEndId)",
         "        self:ResetPageInfo(nType, szAct)",
+        "        -- [A26] chi nguoi VUA BAM moi duoc nap lai trang: ho dang cho danh sach doi,",
+        "        -- khong ai bi giat tay. Nguoi khac van chi danh dau mon tai cho nhu ban goc.",
+        "        if self.bTuBam == 1 then",
+        "            self.bTuBam = 0",
+        "            if AuctionUiIsOpen() == 1 then",
+        "                self:RequestActivityContent(szAct, self.nCurPageIndex)",
+        "            end",
+        "        end",
         "    end",
         "end",
         "",
@@ -1905,6 +1919,12 @@ def copy_ini():
         # Width/Height truyen vao chi dung de CAN GIUA. Duong duy nhat engine co san la doi han
         # sang anh thay the (bResize) nhung anh do la tui chuyen van - mat luon hinh mon.
         # 58 x 78 du cho trang bi 2 x 3; cao hon 3 o thi van nho ra.
+        # [A26 04/09] con so tien de o Left=31 trong khi ANH khung nhap trai tu 86 den 213,
+        # nen no ve han ra ngoai ben trai khung (chu: "so tien phai nam trong o nhap").
+        # Dat vao 101 - ngay sau dau nho o 89..98 - va rong 108 cho gon trong khung.
+        if n == "auction_item_english_header":
+            txt = _setkey(txt, "txtJinPai", "Left", 101)
+            txt = _setkey(txt, "txtJinPai", "Width", 108)
         if n == "auction_item_icon":
             txt = _setkey(txt, "Main", "Left", 14)
             txt = _setkey(txt, "Main", "Top", 14)
