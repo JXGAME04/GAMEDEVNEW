@@ -282,7 +282,8 @@ chặn mềm; muốn chặn cứng thì Goddess `ClientNode.cpp:379` (kiểm tê
    chưa có; (b)(c) chỉ cấu hình web.
 4. Đưa vá 2712d95b vào `p3_lua.py` (wauto-55) trước khi bất kỳ ai chạy `p3`.
 5. Bộ nhớ phiên: `memory\jx1-daugia-web-0409.md`, `jx1-daugia-thicong-0409.md`.
-6. `[DAUGIA-CHAT]` (mục 15): khởi động lại máy chủ (script mới) + swap DLL có `AUC_MsgTong`; kiểm trong game: đợt web mở → 1 + N dòng "Hệ Thống"; trả giá phiên bang → dòng "Tin bang" nằm trong thẻ **bang** (DLL cũ thì nằm khung chính).
+6. `[DAUGIA-CHAT]` (mục 15): **đã live 16:20** (f576ac9e + script mới). Còn kiểm trong game bằng mắt: đợt web mở → 1 + N dòng "Hệ Thống"; trả giá phiên bang → dòng "Tin bang" nằm trong thẻ **bang**. Đợt 2 (16:23) và món bang id 38 (16:22) đã chạy qua đường mới không lỗi Lua.
+7. Của wauto-4c, chờ chủ: `rainbow.dll.moi` e8056284 (bat chưa có dòng `call :capnhat rainbow.dll`) + `bin\multiserver\heaven.dll.moi` ad7e6985 (restart cụm); gốc sập 15:05 = Rainbow vứt im lặng khối đọc khi bộ đệm link Goddess 128 KB đầy (`BANGIAO_ROLECHK_GO_0409.md`). **Build CoreServer sau phải gộp `origin/main` d028ea41.**
 
 ---
 
