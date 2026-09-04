@@ -33,7 +33,16 @@ int LuaAUC_SetPrice(Lua_State* L);    // (nId, nCur, nNextDrop, nDropLeft, nEnd)
 int LuaAUC_Bid(Lua_State* L);
 // [DAUGIA 04/09 B1] chong mat do
 int LuaAUC_CanGiveRec(Lua_State* L);  // (szHex) -> 1 neu dat duoc vao tui NGAY BAY GIO (khoi lien tuc WxH)
-int LuaAUC_Rollback(Lua_State* L);    // (nId) -> tra dong ve dang ban VA xoa buyer/buy_price         // (nId, szBuyer, nPrice, nNewEnd) -> 1/0 nguyen tu: chi khi state 0 va nPrice > cur_price
+int LuaAUC_Rollback(Lua_State* L);
+// [DAUGIA-WEB 04/09] dau gia THE GIOI cau hinh tu web admin (BANGIAO_DAUGIA_WEB_0409.md)
+int LuaAUC_MakeRec(Lua_State* L);      // (szAward) -> szHex, szTen, szMoTa, nCells, nStack, szLoi - dung mon THAT tu chuoi award, khong can nguoi choi
+int LuaAUCWEB_Ready(Lua_State* L);     // () -> 1 neu hai bang auction_web_* da co
+int LuaAUCWEB_Cfg(Lua_State* L);       // () -> {enabled, period, perround, next, last, roundno} / nil
+int LuaAUCWEB_ClaimRound(Lua_State* L);// (nNow, nNext) -> 1 neu gianh duoc quyen mo dot (nguyen tu)
+int LuaAUCWEB_Pool(Lua_State* L);      // (nMax) -> bang {id, award, currency, start, buy, weight} dang bat
+int LuaAUCWEB_Drawn(Lua_State* L);     // (nId, nNow, nAucId, szName) -> 1/0
+int LuaAUCWEB_Err(Lua_State* L);       // (nId, szErr) -> 1/0
+int LuaAUCWEB_Msg(Lua_State* L);       // (szMsg, nNow) -> 1/0    // (nId) -> tra dong ve dang ban VA xoa buyer/buy_price         // (nId, szBuyer, nPrice, nNewEnd) -> 1/0 nguyen tu: chi khi state 0 va nPrice > cur_price
 #endif
 
 #endif // KAUCTIONSERVER_H

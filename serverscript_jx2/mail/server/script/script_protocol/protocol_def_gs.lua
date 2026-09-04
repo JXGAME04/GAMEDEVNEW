@@ -190,6 +190,10 @@ local Def =
 	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_STATECHANGE", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestStateChange", {OBJTYPE_NUMBER, OBJTYPE_NUMBER} },
 	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_AUTODELETE", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestAutoDelete", nil },
 	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_OPENURL", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestOpenUrl", {OBJTYPE_STRING} },
+	-- [CL 04/09 DOT2] Chien Lenh (cl_ui.lua): PlayerIndex do bo phan phoi dat san
+	{ "emSCRIPT_PROTOCOL_CL_REQUEST_OPEN", "\\script\\chienlenh\\cl_ui.lua", "CLUI_OnOpen", { OBJTYPE_NUMBER } },
+	{ "emSCRIPT_PROTOCOL_CL_REQUEST_GETAWARD", "\\script\\chienlenh\\cl_ui.lua", "CLUI_OnGetAward", { OBJTYPE_NUMBER, OBJTYPE_NUMBER } },
+	{ "emSCRIPT_PROTOCOL_CL_REQUEST_GETMISSION", "\\script\\chienlenh\\cl_ui.lua", "CLUI_OnGetMission", { OBJTYPE_NUMBER } },
 	-- [DAUGIA 04/09] dau gia -> \script\auction_house\auction_manager.lua
 	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_OFFERENGLISHPRICE", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestOfferEnglish", {OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER} },
 	{ "emSCRIPT_PROTOCOL_AUCTION_REQUEST_OFFERDUTCHPRICE", "\\script\\auction_house\\auction_manager.lua", "AUC_OnRequestOfferDutch", {OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER} },

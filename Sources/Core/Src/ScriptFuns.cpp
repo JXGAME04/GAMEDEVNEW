@@ -14913,6 +14913,15 @@ TLua_Funcs GameScriptFuns[] =
 	{"AUC_Bid",	LuaAUC_Bid},
 	{"AUC_CanGiveRec",	LuaAUC_CanGiveRec},
 	{"AUC_Rollback",	LuaAUC_Rollback},
+	// [DAUGIA-WEB 04/09] dau gia the gioi cau hinh tu web admin
+	{"AUC_MakeRec",	LuaAUC_MakeRec},
+	{"AUCWEB_Ready",	LuaAUCWEB_Ready},
+	{"AUCWEB_Cfg",	LuaAUCWEB_Cfg},
+	{"AUCWEB_ClaimRound",	LuaAUCWEB_ClaimRound},
+	{"AUCWEB_Pool",	LuaAUCWEB_Pool},
+	{"AUCWEB_Drawn",	LuaAUCWEB_Drawn},
+	{"AUCWEB_Err",	LuaAUCWEB_Err},
+	{"AUCWEB_Msg",	LuaAUCWEB_Msg},
 #endif
 	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},

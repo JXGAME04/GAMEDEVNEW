@@ -643,6 +643,11 @@ function AUC_OnRequestGetBack(nType, szAct, nId)
     if AUC_CheckRow(r, nType) == 0 then
         return
     end
+    -- [DAUGIA-WEB] mon he thong (web) khong ai rut duoc, ke ca trung ten nguoi ban
+    if r.seller == AUCWEB_SELLER then
+        Msg2Player("Mãn cña hÖ thèng, kh«ng rót ®­îc.")
+        return
+    end
     if r.seller ~= GetName() then
         Msg2Player("Kh«ng ph¶i mãn cña ®¹i hiÖp.")
         return
@@ -849,12 +854,176 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong, nBase
     return nId
 end
 
+-- ================================================================ [DAUGIA-WEB 04/09] DAU GIA THE GIOI TU WEB ADMIN
+-- Giao keo: BANGIAO_DAUGIA_WEB_0409.md. Web ghi auction_web_pool (nhom vat pham + gia) va auction_web_cfg (lich).
+-- Den hen: gianh dot (UPDATE nguyen tu), boc ngau nhien theo trong so, DUNG MON THAT (AUC_MakeRec), chen bang
+-- AUC_PutOn (C++, khong dinh PlayerIndex). CAM goi AUC_PutOnItem tu day: timer KHONG dat PlayerIndex,
+-- ham do se moc do tu tui nguoi choi CUOI CUNG cham vao state nay (KJx2League.cpp KJx2ScriptTimer_Breathe).
+AUCWEB_SELLER    = "@WEB"
+AUCWEB_FRAMES    = 30 * 18
+AUCWEB_GLB       = 9003
+AUCWEB_MAX_PRICE = 2000000000
+
+function AucWeb_Kep(n, nMin, nMax)
+    n = floor(tonumber(n) or 0)
+    if n < nMin then return nMin end
+    if n > nMax then return nMax end
+    return n
+end
+
+-- boc MOT chi so trong cand theo trong so (.weight)
+function AucWeb_Pick(cand)
+    local nTotal = 0
+    for i = 1, getn(cand) do
+        nTotal = nTotal + cand[i].weight
+    end
+    if nTotal <= 0 then
+        return 0
+    end
+    local r = random(1, nTotal)
+    for i = 1, getn(cand) do
+        r = r - cand[i].weight
+        if r <= 0 then
+            return i
+        end
+    end
+    return getn(cand)
+end
+
+-- dat MOT mon cua nhom len san; tra "" neu xong, khong thi chuoi loi ASCII de ghi vao cot err
+function AucWeb_PutOne(p, szAct, nNow, nEnd)
+    local nCur = floor(tonumber(p.currency) or 0)
+    if nCur ~= AUCTION_DEF.tbCurrency.MONEY and nCur ~= AUCTION_DEF.tbCurrency.XU then
+        return "currency 1 hoac 2"
+    end
+    local nStart = floor(tonumber(p.start) or 0)
+    local nBuy = floor(tonumber(p.buy) or 0)
+    if nStart < 1 or nStart > AUCWEB_MAX_PRICE then
+        return "gia khoi diem 1..2000000000"
+    end
+    if nBuy ~= 0 and (nBuy <= nStart or nBuy > AUCWEB_MAX_PRICE) then
+        return "gia mua ngay phai > khoi diem (va <= 2000000000)"
+    end
+    local szHex, szName, szDesc, nCells, nStack, szErr = AUC_MakeRec(p.award or "")
+    if (szErr or "") ~= "" or (szHex or "") == "" then
+        if (szErr or "") == "" then
+            szErr = "dung vat pham that bai"
+        end
+        return szErr
+    end
+    -- kieu Anh hai gia nhu ky gui: guar = khoi diem, base = mua ngay (bang khoi diem = khong co nut Mua ngay), cur = 0
+    local nBase = nBuy
+    if nBase == 0 then
+        nBase = nStart
+    end
+    local nId = AUC_PutOn(AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD, szAct, AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH,
+        AUCWEB_SELLER, 0, szName, szDesc, szHex, nCells, nCur, nBase, 0, nStart, 0, nNow, nEnd, 0, 0)
+    if (nId or 0) <= 0 then
+        return "khong ghi duoc auction_item"
+    end
+    AUCWEB_Drawn(p.id, nNow, nId, szName)
+    AUC_Log(format("WEB len san id %d %s (nhom %d) khoi diem %d mua ngay %d tien %d het %d", nId, szName, p.id, nStart, nBuy, nCur, nEnd))
+    return "", nId
+end
+
+-- mo MOT dot: da gianh duoc quyen (AUCWEB_ClaimRound = 1)
+function AucWeb_Round(nNow, nPer, nEnd, nRound)
+    local szAct = "§ît "..GetLocalDate("%H:%M %d/%m")
+    local pool = AUCWEB_Pool(500)
+    local cand = {}
+    for i = 1, getn(pool) do
+        local p = pool[i]
+        p.weight = AucWeb_Kep(p.weight, 1, 1000)
+        tinsert(cand, p)
+    end
+    local nDone, nSkip, nLastId = 0, 0, 0
+    while nDone < nPer and getn(cand) > 0 do
+        local k = AucWeb_Pick(cand)
+        if k <= 0 then
+            break
+        end
+        local p = cand[k]
+        tremove(cand, k)
+        local szErr, nId = AucWeb_PutOne(p, szAct, nNow, nEnd)
+        if szErr == "" then
+            nDone = nDone + 1
+            nLastId = nId or 0
+        else
+            nSkip = nSkip + 1
+            AUCWEB_Err(p.id, szErr)
+            AUC_Log(format("WEB bo qua nhom %d: %s", p.id, szErr))
+        end
+    end
+    if nDone > 0 then
+        -- bao nguoi dang xem MOT lan cuoi lo (AUC_NotifyNewItem quet ca bang, khong goi tung mon)
+        AUC_NotifyNewItem(AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD, szAct, nLastId, 0)
+    end
+    local szMsg = format("dot %d luc %s: %d mon len san, %d bo qua, nhom dang bat %d, het luc %s",
+        nRound, GetLocalDate("%H:%M %d/%m"), nDone, nSkip, getn(pool), AUC_GioHet(nEnd))
+    AUCWEB_Msg(szMsg, nNow)
+    AUC_Log("WEB "..szMsg)
+end
+
+function AUC_GioHet(nT)
+    local nS = floor(tonumber(nT) or 0) - GetCurrentTime()
+    if nS <= 0 then
+        return "da qua"
+    end
+    return format("%d phut nua", floor(nS / 60))
+end
+
+-- than vong quet; LUON tra 1 (call(..., "x") tra nil khi co loi Lua)
+function AucWeb_Body()
+    if AUC_Ready() ~= 1 or AUCWEB_Ready() ~= 1 then
+        return 1
+    end
+    local cfg = AUCWEB_Cfg()
+    if not cfg or (cfg.enabled or 0) ~= 1 then
+        return 1
+    end
+    local nNow = GetCurrentTime()
+    if (cfg.next or 0) > nNow then
+        return 1
+    end
+    local nPeriod = AucWeb_Kep(cfg.period, 10, 1440)
+    local nPer = AucWeb_Kep(cfg.perround, 1, 30)
+    local nEnd = nNow + nPeriod * 60
+    if AUCWEB_ClaimRound(nNow, nEnd) ~= 1 then
+        return 1
+    end
+    local cfg2 = AUCWEB_Cfg()
+    AucWeb_Round(nNow, nPer, nEnd, (cfg2 and cfg2.roundno) or 0)
+    return 1
+end
+
+function AucWeb_Tick(nParam, nTimerId)
+    SetGlbValue(AUCWEB_GLB, GetCurrentTime())
+    -- call(..., "x"): loi Lua trong than KHONG lan ra; lan ra la KJx2ScriptTimer_Breathe xoa timer vinh vien
+    if call(AucWeb_Body, {}, "x") == nil then
+        AUC_Log("LOI Lua trong AucWeb_Body - bo qua nhip nay")
+    end
+    return AUCWEB_FRAMES
+end
+if AUCWEB_DANGKY ~= 1 then
+    local nNhip = GetGlbValue(AUCWEB_GLB) or 0
+    if GetCurrentTime() - nNhip > 120 then
+        AUCWEB_DANGKY = 1
+        SetGlbValue(AUCWEB_GLB, GetCurrentTime())
+        AddTimer(AUCWEB_FRAMES, "AucWeb_Tick", 0)
+        AUC_Log("dang ky vong quet dau gia WEB")
+    end
+end
+
 AUCPOLL_FRAMES = 30 * 18
 AUCPOLL_GLB    = 9002
 function AucPoll_Tick(nParam, nTimerId)
     SetGlbValue(AUCPOLL_GLB, GetCurrentTime())
     if AUC_Ready() == 1 then
-        AUC_Tick()
+        -- [DAUGIA-WEB] boc call(..., "x"): mot loi Lua (vi du truong nil) ma lan ra khoi callback la
+        -- KJx2ScriptTimer_Breathe XOA timer vinh vien - het han/ha gia dung cho toi lan khoi dong sau.
+        if call(AUC_Tick, {}, "x") == nil then
+            AUC_Log("LOI Lua trong AUC_Tick - bo qua nhip nay")
+        end
     end
     return AUCPOLL_FRAMES
 end
@@ -1059,4 +1228,5 @@ function AUC_Tick()
             AUC_LastCount[nType.."|"..n] = v.nTotalCount
         end
     end
+    return 1
 end
