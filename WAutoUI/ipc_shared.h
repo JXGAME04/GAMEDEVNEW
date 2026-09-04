@@ -373,6 +373,14 @@ struct autoData
 	int		nACCamp;
 	unsigned int uACTuoi;		// ms ke tu lan WAuto nhan PRG_VITRI cuoi cua ac chinh (0 = chua co)
 
+	// (04/09) TONG KIM - het tran ve thanh xong thi TOI RUONG cua thanh do.
+	// Cham vao ruong chay script obj "OpenBox(); SetRevPos(nn)" -> vua mo ruong vua
+	// DAT LAI DIEM HOI SINH ve dung cua thanh nguoi choi chon (bang g_TKRuong trong
+	// KTongKimTables.h, sinh tu shenxingfu.lua + RevivePos.ini).
+	int		bTKRuong;			// 1 = bat (mac dinh 0)
+	int		nTKRuongHuong;		// 0 Trung Tam / 1 Dong / 2 Tay / 3 Nam / 4 Bac / 5 gan nhat
+	int		bTKRuongCat;		// 1 = cat TRANG BI trong hanh trang vao ruong (giu thuoc/phu)
+
 	autoData()
 	{
 		bCheckiLife = 0;
@@ -642,6 +650,9 @@ struct autoData
 		nACSong = 0;
 		nACCamp = 0;
 		uACTuoi = 0;
+		bTKRuong = 0;
+		nTKRuongHuong = 5;		// mac dinh: ruong gan cho dung nhat
+		bTKRuongCat = 1;
 
 	}
 };

@@ -387,4 +387,32 @@ static const short g_TKPill[TK_PILL_COUNT][2] = {
 #define TK_QUAN_COUNT	6
 static const short g_TKQuanRes[TK_QUAN_COUNT] = { 632, 638, 634, 640, 635, 641 };
 
+// ===== RUONG CHUA DO theo THANH x HUONG (04/09/2026) - SINH TU DONG boi
+// ReverseTools/gen_tk_ruong.py tu shenxingfu.lua (RUONG_ARRAY + THANH_ARRAY) va
+// settings/RevivePos.ini. Huong duoc gan bang cach lay ruong GAN NHAT diem hoi sinh
+// cua chinh huong do - vi RUONG_ARRAY la danh sach THO, thu tu KHAC menu Than Hanh Phu.
+// Hang = thu tu g_LDVeMap {1,11,162,37,78,80,176} (dung thang o 'Het tran ve' cua tab TK).
+// Cot = 0 Trung Tam / 1 Dong / 2 Tay / 3 Nam / 4 Bac.  {-1,-1} = thanh KHONG co huong do.
+#define TK_RUONG_THANH	7
+#define TK_RUONG_HUONG	5
+static const TKPoint g_TKRuong[TK_RUONG_THANH][TK_RUONG_HUONG] = {
+	{ { 1591, 3170 }, { 1630, 3260 }, { 1571, 3118 }, { 1545, 3218 }, { 1658, 3156 } },	// 1   Ph­îng T­êng Phñ
+	{ { 3155, 5075 }, { 3185, 5180 }, { 3052, 4981 }, { 3001, 5104 }, { 3236, 5028 } },	// 11  Thµnh §« Phñ
+	{ { 1576, 3133 }, {   -1,   -1 }, {   -1,   -1 }, {   -1,   -1 }, { 1625, 3151 } },	// 162 §¹i Lý Phñ
+	{ { 1722, 3081 }, { 1694, 3207 }, { 1613, 3013 }, {   -1,   -1 }, { 1853, 2955 } },	// 37  BiÖn Kinh Phñ
+	{ { 1565, 3219 }, { 1576, 3342 }, { 1481, 3164 }, { 1452, 3262 }, { 1686, 3235 } },	// 78  T­¬ng D­¬ng Phñ
+	{ { 1756, 3006 }, { 1709, 3227 }, { 1661, 2985 }, { 1626, 3176 }, { 1856, 3032 } },	// 80  D­¬ng Ch©u Phñ
+	{ {   -1,   -1 }, { 1687, 3277 }, {   -1,   -1 }, { 1391, 3312 }, { 1573, 2933 } },	// 176 L©m An Phñ
+};
+// revId cua RevivePos.ini tuong ung (chi de doi chieu khi go loi), -1 = khong co
+static const short g_TKRuongRev[TK_RUONG_THANH][TK_RUONG_HUONG] = {
+	{   5,   1,   2,   3,   4 },
+	{   5,   6,   7,   8,   9 },
+	{  63,  -1,  -1,  -1,  64 },
+	{  23,  24,  25,  -1,  26 },
+	{  29,  30,  32,  31,  33 },
+	{  34,  35,  38,  37,  36 },
+	{  -1,  68,  -1,  67,  69 },
+};
+
 #endif // KTONGKIMTABLES_H

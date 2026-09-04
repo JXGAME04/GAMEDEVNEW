@@ -7316,6 +7316,7 @@ enum TKPhase
 	TKP_FIGHT,		// trong tran
 	TKP_END,		// het tran: don tui roi ra khoi map bao danh
 	TKP_VETHANH,	// (26/08) da roi 324: di ve THANH nguoi choi chon (Than Hanh Phu / Xa Phu)
+	TKP_RUONG,		// (04/09) da ve thanh: toi RUONG cua huong da chon (dat diem hoi sinh + cat do)
 	TKP_DONE		// xong khung gio nay - tha may
 };
 
@@ -8673,6 +8674,73 @@ static int TK_ToiNpc(int nPlayerIdx, const char* szTen, int nOx, int nOy, UINT u
 	return 1;
 }
 
+
+// ============ TONG KIM: VE THANH XONG THI TOI RUONG (04/09/2026) ============
+// Chu game 04/09: "ve thanh nao thi luu ruong thanh do, co them tuy chon luu ruong
+// dong - tay - nam - bac - trung tam tuy thanh, co san o than hanh phu doi chieu lam theo".
+// Bang g_TKRuong / g_TKRuongRev (KTongKimTables.h) sinh tu bin\server\script\item\ib\
+// shenxingfu.lua (RUONG_ARRAY + THANH_ARRAY) va settings\RevivePos.ini: HUONG cua menu
+// Than Hanh Phu ung voi RUONG nam gan diem hoi sinh cua chinh huong do nhat (thu tu
+// RUONG_ARRAY KHONG trung thu tu ten tep obj nen phai ghep bang khoang cach).
+// Cham vao ruong = server chay script obj "OpenBox(); SetRevPos(nn);" -> vua mo ruong
+// vua DAT LAI DIEM HOI SINH ve dung cua thanh do. Server chi cho cham khi cach <= 200 mps
+// (KProtocolProcess.cpp:6525, defMAX_EXEC_OBJ_SCRIPT_DISTANCE) va obj phai dang DONG.
+// Rieng viec CAT DO thi KHONG can dung canh ruong: c2sdnmbr_exchangeitem chi doi
+// m_CUnlocked (mat khau ruong o tab Hau can) va khong o fight-mode - dung lai
+// DT_EnsureUnlock / DT_ChestRoomFor / DT_BagToBox cua may Da Tau.
+
+// tim OBJ ruong (Obj_Kind_Box dang DONG) gan diem (nMpsX,nMpsY) nhat trong ban kinh nR mps.
+static int TK_TimRuongObj(int nMpsX, int nMpsY, int nR)
+{
+	int nBest = 0, nBd = nR + 1;
+	int nObj = ObjSet.GetNext(0);
+	while (nObj)
+	{
+		if (Object[nObj].m_nKind == Obj_Kind_Box && Object[nObj].m_nState == OBJ_BOX_STATE_CLOSE)
+		{
+			int dX = 0, dY = 0;
+			Object[nObj].GetMpsPos(&dX, &dY);
+			int d = g_GetDistance(nMpsX, nMpsY, dX, dY);
+			if (d < nBd)
+			{
+				nBd = d;
+				nBest = nObj;
+			}
+		}
+		nObj = ObjSet.GetNext(nObj);
+	}
+	return nBest;
+}
+
+// cat MOT mon TRANG BI trong hanh trang vao ruong (thuoc / phu / nguyen lieu giu nguyen
+// trong tui de auto con chay tiep). Tra: 1 = vua gui mot lenh (goi lai nhip sau),
+// 0 = khong con mon nao de cat, -1 = chiu (fight-mode / khong co mat khau / ruong day).
+static int TK_CatDo(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	if (Npc[Player[nPlayerIdx].m_nIndex].m_FightMode)
+		return -1;		// ngoai thanh server tu choi moi thao tac ruong
+	if (!Player[nPlayerIdx].m_CUnlocked && !pAp->szBoxPass[0])
+		return -1;		// ruong khoa ma tab Hau can chua co mat khau
+	if (!DT_EnsureUnlock(nPlayerIdx, pAp, uCurTime))
+		return 1;		// dang go mat khau ruong
+	KItemList& il = Player[nPlayerIdx].m_ItemList;
+	for (int i = 0; i < EQUIPMENT_ROOM_HEIGHT; ++i)
+		for (int j = 0; j < EQUIPMENT_ROOM_WIDTH; ++j)
+		{
+			int nIdx = il.m_Room[room_equipment].FindItem(j, i);
+			if (nIdx <= 0)
+				continue;
+			if (Item[nIdx].GetGenre() != item_equip)
+				continue;
+			int nDst = DT_ChestRoomFor(nPlayerIdx, pAp, Item[nIdx].GetWidth(), Item[nIdx].GetHeight());
+			if (!nDst)
+				return -1;	// ruong day
+			DT_BagToBox(nIdx, nDst);
+			return 1;
+		}
+	return 0;
+}
+
 // ================== MAY CHINH TONG KIM ==================
 // Tra ve: 0 = tha may; 1 = dang cam lai (chan Da Tau / Hau can / di chuyen / phu ve);
 //         2 = dang trong tran (cam lai + de may PK cua tab PK danh).
@@ -9909,6 +9977,15 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (nMap == nDest)
 			{
 				ea.uLDHopT = 0;
+				// (04/09) da ve toi thanh: bat "toi ruong" thi di tiep sang pha RUONG
+				// (toi ruong cua huong da chon -> dat lai diem hoi sinh + cat do),
+				// khong bat thi tra may lai cho auto cu nhu truoc.
+				if (pAp->bTKRuong)
+				{
+					TK_Msg(nPlayerIdx, "<color=Cyan>§· vÒ tíi thµnh ®· chän - ®i tiÕp tíi r­¬ng.");
+					TK_Pha(nPlayerIdx, TKP_RUONG, uCurTime);
+					return 1;
+				}
 				TK_Msg(nPlayerIdx, "<color=Cyan>§· vÒ tíi thµnh ®· chän - tr¶ m¸y l¹i cho auto cò.");
 				ea.nTKPhase = TKP_DONE;
 				ea.nTKHold = 0;
@@ -9927,6 +10004,131 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			}
 		}
 		return 1;
+	}
+
+
+	case TKP_RUONG:
+	{
+		// (04/09) da dung trong thanh da chon: di toi RUONG cua huong nguoi choi chon
+		// -> cham vao (OpenBox + SetRevPos: dat lai diem hoi sinh dung cua) -> cat
+		// trang bi trong hanh trang vao ruong neu co tick. Xong thi tra may cho auto cu.
+		ea.nTKHold = 1;
+		int nVe = pAp->nTKVeThanh;
+		if (nVe < 0 || nVe >= LD_VE_COUNT)
+			nVe = 0;
+		if (nMap != (int)g_LDVeMap[nVe])
+		{
+			// bi keo di noi khac (phu lac / Xa Phu) - quay lai mach di ve thanh
+			TK_Pha(nPlayerIdx, TKP_VETHANH, uCurTime);
+			return 1;
+		}
+		if (nVe >= TK_RUONG_THANH)
+		{
+			ea.nTKPhase = TKP_DONE;
+			ea.nTKHold = 0;
+			return 0;
+		}
+		// huong: nguoi choi chon; thanh KHONG co huong do (Dai Ly chi co Trung Tam +
+		// Bac, Lam An khong co Trung Tam/Tay...) hoac chon "gan nhat" -> lay ruong
+		// gan cho dang dung nhat trong cac huong thanh do that su co.
+		int nH = pAp->nTKRuongHuong;
+		if (nH < 0 || nH >= TK_RUONG_HUONG || g_TKRuong[nVe][nH].x <= 0)
+		{
+			int nBest = -1, nBd = 0;
+			for (int h = 0; h < TK_RUONG_HUONG; ++h)
+			{
+				if (g_TKRuong[nVe][h].x <= 0)
+					continue;
+				int d = g_GetDistance(nX, nY, TK_O((int)g_TKRuong[nVe][h].x), TK_O((int)g_TKRuong[nVe][h].y));
+				if (nBest < 0 || d < nBd)
+				{
+					nBd = d;
+					nBest = h;
+				}
+			}
+			if (nBest < 0)
+			{
+				TK_Msg(nPlayerIdx, "<color=Yellow>Thµnh nµy kh«ng cã r­¬ng trong b¶ng - tr¶ m¸y l¹i cho auto cò.");
+				ea.nTKPhase = TKP_DONE;
+				ea.nTKHold = 0;
+				return 0;
+			}
+			nH = nBest;
+		}
+		{
+			const int nRx = TK_O((int)g_TKRuong[nVe][nH].x);
+			const int nRy = TK_O((int)g_TKRuong[nVe][nH].y);
+			if (ea.nTKStep == 0)
+			{
+				// buoc 0: di bo/cuoi ngua toi sat ruong (server doi <= 200 mps moi cho cham)
+				if (!DT_WalkTo(nPlayerIdx, nRx, nRy, 150, uCurTime))
+				{
+					if (++ea.nTKTry > 900)		// ~6 phut van chua toi thi thoi
+					{
+						TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng ®i tíi ®­îc r­¬ng ®· chän - tr¶ m¸y l¹i cho auto cò.");
+						ea.nTKPhase = TKP_DONE;
+						ea.nTKHold = 0;
+						return 0;
+					}
+					ea.uTKNext = uCurTime + 400;
+					return 1;
+				}
+				ea.nTKStep = 1;
+				ea.nTKTry = 0;
+				ea.uTKNext = uCurTime + 300;
+				return 1;
+			}
+			if (ea.nTKStep == 1)
+			{
+				// buoc 1: cham vao ruong -> server chay OpenBox(); SetRevPos(nn)
+				int nObj = TK_TimRuongObj(nRx, nRy, 320);
+				if (nObj)
+				{
+					Player[nPlayerIdx].CheckObject(nObj);
+					TK_Msg(nPlayerIdx, "<color=Cyan>§· tíi r­¬ng - ®Æt l¹i ®iÓm håi sinh ë cöa nµy.");
+				}
+				else if (++ea.nTKTry < 12)
+				{
+					ea.uTKNext = uCurTime + 400;
+					return 1;
+				}
+				else
+					TK_Msg(nPlayerIdx, "<color=Yellow>§øng ®óng chç nh­ng kh«ng thÊy r­¬ng - vÉn cÊt ®å b×nh th­êng.");
+				ea.nTKStep = 2;
+				ea.nTKTry = 0;
+				ea.uTKNext = uCurTime + 900;
+				return 1;
+			}
+		}
+		if (!pAp->bTKRuongCat)
+		{
+			TK_Msg(nPlayerIdx, "<color=Cyan>Xong viÖc ë r­¬ng - tr¶ m¸y l¹i cho auto cò.");
+			ea.nTKPhase = TKP_DONE;
+			ea.nTKHold = 0;
+			return 0;
+		}
+		{
+			// buoc 2: cat trang bi trong hanh trang vao ruong (moi nhip mot mon)
+			int nR = TK_CatDo(nPlayerIdx, pAp, uCurTime);
+			if (nR > 0)
+			{
+				if (++ea.nTKTry <= 80)
+				{
+					ea.uTKNext = uCurTime + 800;
+					return 1;
+				}
+				TK_Msg(nPlayerIdx, "<color=Yellow>CÊt ®å qu¸ l©u - dõng l¹i, phÇn cßn l¹i ®Ó trong tói.");
+			}
+			else if (nR < 0)
+				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng cÊt ®­îc vµo r­¬ng (r­¬ng ®Çy / ch­a cã mËt khÈu r­¬ng ë tab HËu cÇn).");
+			else if (ea.nTKTry > 0)
+				TK_Msg(nPlayerIdx, "<color=Cyan>§· cÊt trang bÞ vµo r­¬ng xong - tr¶ m¸y l¹i cho auto cò.");
+			else
+				TK_Msg(nPlayerIdx, "<color=Cyan>Trong tói kh«ng cã trang bÞ nµo cÇn cÊt - tr¶ m¸y l¹i cho auto cò.");
+		}
+		ea.nTKPhase = TKP_DONE;
+		ea.nTKHold = 0;
+		return 0;
 	}
 
 	default:
@@ -15448,6 +15650,7 @@ void WA_HoatDong(int nPlayerIdx, char* szOut, int nMax)
 		case TKP_TRAP:   sz = "Tèng Kim: ra trËn"; break;
 		case TKP_FIGHT:  sz = "Tèng Kim: ®ang ®¸nh trËn"; break;
 		case TKP_END:    sz = "Tèng Kim: rêi ®iÓm b¸o danh"; break;
+		case TKP_RUONG:  sz = "Tèng Kim: tíi r­¬ng cña thµnh"; break;
 		case TKP_VETHANH: sz = "Tèng Kim: vÒ thµnh ®· chän"; break;
 		default: break;
 		}
