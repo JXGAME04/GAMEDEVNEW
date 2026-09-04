@@ -104,6 +104,24 @@ def build_uimail():
     # 5) OnMailIconClick: JX1 chua co AutoCrossMapFindPath phia client -> chi nhac (giu bang map de sau)
     s = rep1(s, "    AutoCrossMapFindPath(tbAutoFindPath[1], tbAutoFindPath[2], tbAutoFindPath[3])",
              "    -- [MAIL 03/09 JX1] client JX1 chua co AutoCrossMapFindPath: chi nhac, khong tu chay", "findpath")
+    # 7) [D4 03/09] chu: bo Tin Su -> bam bieu tuong thu la mo hop thu ngay (thay ca than OnMailIconClick;
+    #    g_ConfirmFindMessager + bang map giu nguyen, khong ai goi)
+    i0 = s.find("function UIMail:OnMailIconClick()")
+    assert i0 >= 0, "OnMailIconClick"
+    i1 = s.find(e + "end", i0)
+    assert i1 > i0, "OnMailIconClick end"
+    s = s[:i0] + e.join([
+        "function UIMail:OnMailIconClick()",
+        "    -- [MAIL 03/09 JX1 D4] bam bieu tuong thu (duoi Bau Cua) -> mo hop thu ngay, khong can den Tin Su",
+        "    self.bHaveNewMail = 0",
+        "    self:OpenMailWindow(1)",
+        "    self:RequestMailHeaderList()",
+    ]) + s[i1:]
+    # 8) [D4 03/09] chu: co thu moi (NEWMAIL, ke ca thu giao luc dang nhap) -> hien hop thu luon
+    s = rep1(s, "    self.bHaveNewMail = 1" + e + "    self:ReCheckMailIconState()" + e + "end",
+             "    self.bHaveNewMail = 1" + e + "    self:ReCheckMailIconState()" + e +
+             "    self:OpenMailWindow(1)   -- [MAIL 03/09 JX1 D4] co thu moi -> hien hop thu ngay" + e + "end",
+             "NewMail auto open")
     # 6) dau dau tep
     s = ("-- [MAIL 03/09] uimail.lua = ban client VLTK 2.0 (slistcl.pak uid 9565EFB1) + sua cho JX1 (tim \"[MAIL 03/09 JX1]\")." + e +
          "-- Cac ham C++ (KMailClient.cpp): OpenMailWindow AddMailHeader SetMailHeader DeleteOneMail CleanMailAll CleanMailList" + e +
@@ -164,6 +182,11 @@ def build_ini(name):
     s = rd(os.path.join(SRC, "mail_jx1cu", "ui3_" + name))
     if name == "mail_list.ini":
         s = rep1(s, "Label=" + V("Nhận vật phẩm"), "Label=" + V("Nhận"), "nhan")
+    if name == "mail_icon.ini":
+        # [D4 03/09] chu: dat duoi bieu tuong Bau Cua = UiPlayerBar.ini [SpringGame] Left=765 Top=243 50x50 (800x600);
+        # 1024: UiMail.cpp neo x = 1024 - 30 nhu UiPlayerBar.cpp
+        s = rep1(s, "Left=648", "Left=765", "icon left")
+        s = rep1(s, "Top=72", "Top=296", "icon top")
     return s
 
 

@@ -50,6 +50,7 @@ static int sArgInt(Lua_State* L, int n)
 
 static void sNotify(int nCmd, int nParam)
 {
+	SP_ClientLog("[MAILUI] Lua->UI cmd=%d param=%d", nCmd, nParam);	// [D4] chan doan
 	CoreDataChanged(GDCNI_MAIL_UI, (unsigned int)nCmd, nParam);
 }
 
@@ -319,6 +320,7 @@ void MailUi_OnRequest(unsigned int uParam, int nParam)
 	int nExtra = MAILUI_OP_EXTRA(uParam);
 	char szCall[256];
 	szCall[0] = 0;
+	SP_ClientLog("[MAILUI] UI->Lua op=%d extra=%d param=%d", nOp, nExtra, nParam);	// [D4] chan doan
 	switch (nOp)
 	{
 	case MAILUI_OP_SELECT:

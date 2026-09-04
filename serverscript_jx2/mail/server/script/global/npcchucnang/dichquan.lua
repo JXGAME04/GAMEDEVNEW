@@ -18,7 +18,6 @@ function main(NpcIndex)
 	Say("Ng­¬i t×m ta cã viÖc g×?",2,
 		-- "NhiÖm vô ®­a th­ /duathu",
 		"NhiÖm vô TÝn Sø/especiallymessenger",	-- [TIN SU 21/08] thay "Thien bao kho /thienbao" (tinh nang cu da go)
-		"NhËn th­/nhanthu",	-- [MAIL 03/09] hop thu (uimail.lua 2.0)
 		"Kh«ng cã g×. Thø lçi!/no")
 end
 
@@ -75,9 +74,3 @@ end;
 
 function no()
 end;
-
--- [MAIL 03/09] hop thu: Tin Su 7 thanh mo cua so thu (2.0: 'hay den Tin Su cac thanh mo xem')
-function nhanthu()
-	Include("\\script\\mail\\mailmanager.lua")
-	MailManager_OpenWindow()
-end
