@@ -5,7 +5,7 @@ Hai bên: **web admin** (phiên `webver5-eb`, model `loi/DauGia.php`) và **máy
 ## 1. Cách chạy (luật chủ đã chốt 04/09)
 
 1. Admin cấu hình một **NHÓM vật phẩm** kèm giá (bảng `auction_web_pool`) và **LỊCH** (bảng `auction_web_cfg`).
-2. Máy chủ quét mỗi 30 giây. Tới giờ `next_round` thì **mở đợt mới**: bốc ngẫu nhiên `items_per_round` món trong nhóm (theo trọng số, không trùng trong một đợt), **dựng vật phẩm thật** (trang bị được bốc thuộc tính ngẫu nhiên y như phần thưởng thư, mỗi đợt một bộ khác nhau), rồi chèn vào `auction_item` với `atype = 2` (Thế giới), tên phiên `Đợt HH:MM dd/mm`, người bán `@WEB`.
+2. Máy chủ quét mỗi 30 giây. Tới giờ `next_round` thì **mở đợt mới**: bốc ngẫu nhiên `items_per_round` món trong nhóm (theo trọng số, không trùng trong một đợt), **dựng vật phẩm thật** (trang bị được bốc thuộc tính ngẫu nhiên y như phần thưởng thư, mỗi đợt một bộ khác nhau), rồi chèn vào `auction_item` với `atype = 2` (Thế giới), tên phiên `Đợt N HH:MM dd/mm` (N = số thứ tự đợt `round_no`), người bán `@WEB`.
 3. Đợt kéo dài đúng một chu kỳ (`period_min`, mặc định 180 phút). Trong đợt: khởi điểm = `start_price`, mỗi lượt trả thêm 10 % khởi điểm, người đang giữ giá cao nhất không tự nâng được, ai trả bằng/vượt `buy_price` (nếu có) là chốt ngay.
 4. Hết đợt: có người trả → **món gửi về thư người thắng** (đường `aucitem:<id>` có sẵn), tiền vào hệ thống; không ai trả → món thu hồi (không mất gì, vì món sinh từ cấu hình). Đợt kế mở ngay sau đó.
 5. Web **không bao giờ ghi** `auction_item`. Web chỉ đọc nó để hiện "đang lên sàn / lịch sử".
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS auction_web_pool (
   currency     TINYINT        NOT NULL DEFAULT 1,   -- WEB: 1 = Ngân lượng, 2 = Xu
   start_price  BIGINT         NOT NULL DEFAULT 0,   -- WEB: giá KHỞI ĐIỂM (giá cơ bản), 1 .. 2000000000
   buy_price    BIGINT         NOT NULL DEFAULT 0,   -- WEB: giá MUA NGAY; 0 = không có nút Mua ngay; nếu > 0 phải > start_price
-  weight       INT            NOT NULL DEFAULT 1,   -- WEB: trọng số bốc, 1 .. 1000 (2 = gấp đôi cơ hội)
+  weight       INT            NOT NULL DEFAULT 1,   -- WEB: trọng số bốc, 1 .. 1000 (2 = gấp đôi cơ hội); máy chủ kẹp: ≤ 0 coi như 1, > 1000 coi như 1000
   enabled      TINYINT        NOT NULL DEFAULT 1,   -- WEB: 1 tham gia bốc, 0 tạm tắt
   drawn_count  INT            NOT NULL DEFAULT 0,   -- MÁY CHỦ: số lần đã lên sàn
   drawn_time   INT            NOT NULL DEFAULT 0,   -- MÁY CHỦ: lần cuối lên sàn (unix)
@@ -60,7 +60,7 @@ Luật:
 - "**Mở đợt ngay**" = web chạy `UPDATE auction_web_cfg SET next_round = 0, mtime = ? WHERE id = 1 AND next_round <> 0`. Máy chủ thấy `next_round <= now` ở nhịp kế (≤ 30 s) là mở. **Đợt cũ không bị cắt**: món cũ chạy tới hết giờ của nó, nên trong lúc đó tab Thế giới có hai đợt. Lịch tính lại từ lúc mở: `next_round = now + period_min × 60`.
 - `enabled = 0` chỉ ngăn mở đợt mới; không đụng món đang đấu.
 - Máy chủ giành đợt bằng một câu nguyên tử `UPDATE ... SET next_round = ?, last_round = ?, round_no = round_no + 1 WHERE id = 1 AND enabled = 1 AND next_round <= ?` và chỉ mở khi `affected_rows = 1` (an toàn nếu sau này chạy hai GameServer).
-- `next_round` mặc định 0 nên **lần đầu bật `enabled = 1` là mở đợt ngay**.
+- `next_round` mặc định 0 nên **lần đầu bật `enabled = 1` là mở đợt ngay** — nhưng **nhóm rỗng thì không mở** (không đốt chu kỳ; `last_msg` = `nhom rong: chua mo dot...`), nhịp nào có món đang bật là mở. Nếu mở đợt mà **không món nào dựng được** (toàn lỗi), máy chủ tự hẹn lại `next_round = now + 60` và `last_msg` nói rõ; sửa `err` xong là ≤ 60 giây sau mở lại.
 
 ## 4. Cột `award` — cú pháp (dùng lại đúng ngữ pháp thư, thêm luật đấu giá)
 
@@ -68,10 +68,11 @@ Chỉ **MỘT** mục, không dấu `;`. Hai tiền tố được nhận:
 
 | Tiền tố | Cú pháp | Nghĩa cho đấu giá |
 |---|---|---|
-| `item:` | `item:genre,detail,particular,level,series,luck,n[,lock][,expSec][,magic][,stack]` | 6 số đầu bắt buộc (như thư). `n` = số món **trong một chồng**, chỉ với món **xếp chồng được** (thuốc, tinh thạch, một số vật phẩm nhiệm vụ/bí kíp có trần chồng > 1); trang bị (0) và **văn cương (8)** luôn 1 — ghi `n > 1` cho món không chồng được thì máy chủ **từ chối** (`err` = `mon khong xep chong, n phai = 1` / `van cuong khong xep chong, n phai = 1`). `magic` giữ nghĩa như thư (tham số 7 của AddItem). `stack` bị bỏ qua. Trang bị detail 13-16 (ấn, trang sức, mũ trùm, áo choàng) dựng được. |
+| `item:` | `item:genre,detail,particular,level,series,luck,n[,lock][,expSec][,magic][,stack]` | 6 số đầu bắt buộc (như thư). `n` = số món **trong một chồng**, chỉ với món có **cờ xếp chồng** trong bảng vật phẩm (thuốc, tinh thạch, vật phẩm nhiệm vụ / bí kíp có MaxStack > 0); trần chồng theo bảng, không có thì 500. Trang bị (0) và **văn cương (8)** luôn 1 — ghi `n > 1` cho món không chồng được thì máy chủ **từ chối** (`err` = `mon khong xep chong, n phai = 1` / `van cuong khong xep chong, n phai = 1`). `magic` giữ nghĩa như thư (tham số 7 của AddItem). `stack` bị bỏ qua. Trang bị detail 13-16 (ấn, trang sức, mũ trùm, áo choàng) dựng được. |
 | `gold:` | `gold:record,n[,lock][,expSec]` | Hoàng kim theo dòng `goldequip.txt` (như thư). `n` luôn 1. |
 
 Luật riêng đấu giá (web kiểm trước khi lưu, máy chủ kiểm lại và ghi `err` nếu lọt):
+- `level`: trang bị thường (detail ≤ ngựa) phải **1..10**, thuốc phải **1..5** — level 0 hay quá trần sẽ dựng ra **món khác** nên máy chủ từ chối (`err` = `level trang bi phai 1..10` / `level thuoc phai 1..5`).
 - `genre` chỉ trong **0, 1, 4, 5, 6, 8, 9** (đúng danh sách `Thu::locChuoiQua` đã chặn 2/3; máy chủ còn chặn 7 = trang bị hỏng).
 - `lock` và `expSec` **phải bằng 0** — món đấu giá không được khoá, không được có hạn (cùng luật ký gửi trong game: "có hạn sử dụng không thể ký gửi").
 - Không nhận `money:` `xu:` `exp:` `repute:` `task:` `aucitem:`.
@@ -113,7 +114,7 @@ ORDER BY id DESC LIMIT 100;
 | `item_name` | tên món, **byte TCVN3** |
 | `guaranteed_price` | giá khởi điểm |
 | `base_price` | giá mua ngay; = khởi điểm nghĩa là **không có** Mua ngay |
-| `cur_price` | giá cao nhất hiện tại, 0 = chưa ai trả |
+| `cur_price` | giá cao nhất hiện tại, 0 = chưa ai trả (khi `state = 0`, `buy_price` chỉ là bản sao giá đang trả — **đừng** dùng nó làm dấu "đã chốt") |
 | `buyer` | người đang giữ giá / người thắng |
 | `buy_price` | giá chốt khi đã bán (`state` 1/3, `buyer <> ''`) — luôn bằng giá người thắng trả, kể cả khi hết giờ |
 | `state` | 0 đang đấu · 1 đã bán, đang giao thư · 3 kết thúc: `buyer <> ''` = đã bán và giao xong, `buyer = ''` = hết giờ không ai mua, đã thu hồi. (Dòng `@WEB` không bao giờ ở `state = 2` — giá trị đó chỉ dùng cho ký gửi cá nhân trả hàng về người bán; và không rút được nên không có trường hợp "đã rút".) |

@@ -878,8 +878,9 @@ int LuaAUCWEB_Pool(Lua_State* L)
 	std::vector<KAucWebPool> rows;
 	KDBParam p[1];
 	p[0] = KDBParam::I(nMax);
+	// [W7] khong loc weight>0: Lua kep 1..1000 (giao keo), 0 coi nhu 1
 	if (!g_MySQLDB.Query("SELECT id, award, currency, start_price, buy_price, weight FROM auction_web_pool"
-		" WHERE enabled=1 AND weight>0 ORDER BY id LIMIT ?", p, 1, _RowWebPool, &rows))
+		" WHERE enabled=1 ORDER BY id LIMIT ?", p, 1, _RowWebPool, &rows))
 		return 1;
 	for (size_t i = 0; i < rows.size(); i++)
 	{
@@ -948,6 +949,23 @@ int LuaAUCWEB_Msg(Lua_State* L)
 	p[0] = KDBParam::S(sArgStr(L, 1));
 	p[1] = KDBParam::I(sArgInt(L, 2));
 	bool bOk = g_MySQLDB.Exec("UPDATE auction_web_cfg SET last_msg=?, mtime=? WHERE id=1", p, 2, 0);
+	Lua_PushNumber(L, bOk ? 1 : 0);
+	return 1;
+}
+
+// AUCWEB_SetNext(nNext) -> 1/0: hen lai gio mo dot ke (dung khi dot vua mo khong co mon nao dung duoc)
+int LuaAUCWEB_SetNext(Lua_State* L)
+{
+	int nNext = sArgInt(L, 1);
+	if (nNext <= 0 || !sEnsureWebTable())
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KDBParam p[2];
+	p[0] = KDBParam::I(nNext);
+	p[1] = KDBParam::I((int)time(NULL));
+	bool bOk = g_MySQLDB.Exec("UPDATE auction_web_cfg SET next_round=?, mtime=? WHERE id=1", p, 2, 0);
 	Lua_PushNumber(L, bOk ? 1 : 0);
 	return 1;
 }
@@ -1071,6 +1089,12 @@ int LuaAUC_MakeRec(Lua_State* L)
 	if (nGenre == item_fusion && nCount > 1)	// [W6] Gen_Fusion luon SetStackNum(1) (1 vien = 1 seed), ep im lang la lua admin
 		return sMakeRecFail(L, "van cuong khong xep chong, n phai = 1");
 
+	// [W7 level] chi so dong bang = particular*10 + level - 1 (trang bi toi equip_horse) / detail*5 + level - 1 (thuoc):
+	// level 0 hay qua tran ra MOT MON KHAC co ten hop le (qua ca tu kiem) -> chan truoc.
+	if (nGenre == item_equip && nNature == NATURE_NORMAL && nDetail <= equip_horse && (nLevel < 1 || nLevel > 10))
+		return sMakeRecFail(L, "level trang bi phai 1..10");
+	if (nGenre == item_medicine && (nLevel < 1 || nLevel > 5))
+		return sMakeRecFail(L, "level thuoc phai 1..5");
 	KItem it;
 	ZeroMemory(&it, sizeof(KItem));
 	int nML[MAX_ITEM_MAGICLEVEL];
@@ -1133,15 +1157,20 @@ int LuaAUC_MakeRec(Lua_State* L)
 	}
 	if (!bOk || it.GetWidth() <= 0 || it.GetHeight() <= 0 || !it.GetName()[0])
 		return sMakeRecFail(L, "dung vat pham that bai (detail/particular/dong sai)");
-	// [W6 chong] mon KHONG xep chong (nMaxStack 0/1: bi kip, nhieu vat pham nhiem vu) ma nhan n > 1 thi san hien 'x N'
-	// nhung KItemList chi tru chong khi IsStack() -> dung mot lan la mat ca mon. Tu choi de admin sua n = 1.
-	if (it.GetMaxStackNum() <= 1 && it.GetStackNum() > 1)
+	// [W8 bStack] mon KHONG xep chong (co bStack = 0 trong bang) ma nhan n > 1 -> tu choi de admin sua n = 1
+	// (khop giao keo: n = so mon trong MOT chong, chi voi mon chong duoc; hop thu voi cung chuoi lai trao n mon RIENG).
+	// KHONG dung nMaxStack de xet: operator=(MEDICINE) / operator=(QUEST) khong gan nMaxStack (luon 0) nen thuoc va
+	// vat pham nhiem vu se bi tu choi oan. Tran chong: nMaxStack > 0 thi theo bang, khong thi 500.
+	if (it.GetStackNum() > 1 && !it.m_CommonAttrib.bStack)
 		return sMakeRecFail(L, "mon khong xep chong, n phai = 1");
-	if (it.GetMaxStackNum() > 0 && it.GetStackNum() > it.GetMaxStackNum())
 	{
-		char szS[64];
-		sprintf(szS, "so luong toi da %d mot chong", it.GetMaxStackNum());
-		return sMakeRecFail(L, szS);
+		int nTran = it.GetMaxStackNum() > 0 ? it.GetMaxStackNum() : 500;
+		if (it.GetStackNum() > nTran)
+		{
+			char szS[64];
+			sprintf(szS, "so luong toi da %d mot chong", nTran);
+			return sMakeRecFail(L, szS);
+		}
 	}
 	int nIdx = ItemSet.AddI(&it);
 	if (nIdx <= 0)
@@ -1367,7 +1396,8 @@ int LuaAUC_CountSeller(Lua_State* L)
 			return true;
 		}
 	};
-	g_MySQLDB.Query("SELECT COUNT(*) FROM auction_item WHERE seller=? AND state=0", p, 1, Local::Row, &c);
+	// [W8] atype<>2: mon he thong (@WEB) va phien the gioi GM mo khong tinh vao han ky gui ca nhan
+	g_MySQLDB.Query("SELECT COUNT(*) FROM auction_item WHERE seller=? AND state=0 AND atype<>2", p, 1, Local::Row, &c);
 	lua_settop(L, -2);
 	Lua_PushNumber(L, (double)c.n);
 	return 1;
