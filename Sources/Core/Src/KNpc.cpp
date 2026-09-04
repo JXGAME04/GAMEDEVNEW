@@ -6466,8 +6466,37 @@ void KNpc::SwitchMaskFeature()
 
 
 #ifdef _SERVER
+#ifdef _SERVER
+// [PS 04/09] Goi ngoai hinh (s2c_syncplayermin, 234 byte) chiem 62% bang thong ma KHONG chua toa do:
+// GameTitle[64] + TongName[32] + TongTitle[32] + MateName[32] + kinh mach[12] + trang bi/ngua/cap bac...
+// Toan thu khong doi khi chay. Nay chi phat khi NOI DUNG DOI, hoac toi ky lam moi.
+static DWORD s_adwPSBam[MAX_NPC];	// dau vet noi dung goi lan phat truoc
+static DWORD s_adwPSLuc[MAX_NPC];	// tick luc phat lan truoc
+static int   s_nPSLamMoi = -1;		// [Server] BroadCastLamMoi (giay)
+static int   s_nPSBo = 0, s_nPSGui = 0;
+static DWORD PS_Bam(const void* pData, int nCo)
+{
+	DWORD dw = 2166136261u;
+	const BYTE* p = (const BYTE*)pData;
+	for (int k = 0; k < nCo; k++)
+	{
+		dw ^= p[k];
+		dw *= 16777619u;
+	}
+	return dw ? dw : 1;	// 0 danh rieng cho 'phai gui lai'
+}
+// mot client vua hoi rieng NPC nay (ho vua nhin thay minh) -> phat lai ngoai hinh o lan sync ke tiep
+void PS_XoaDauVet(int nNpcIdx)
+{
+	if (nNpcIdx > 0 && nNpcIdx < MAX_NPC)
+		s_adwPSBam[nNpcIdx] = 0;
+}
+#endif
 BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player to Server v? Client 1 lÇn
 {
+	if (IsPlayer())	// [PS 04/09] co nguoi moi thay minh -> lan sync ke tiep phat lai ngoai hinh
+		PS_XoaDauVet(m_Index);
+
 	BOOL	bRet = FALSE;
 	NPC_SYNC	NpcSync;
 	NpcSync.ProtocolType		= (BYTE)s2c_syncnpc;
@@ -6845,14 +6874,44 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 			// Client moi dung bit nay de loc bot khoi GetAroundPlayer / moi to doi (WAuto).
 			PlayerSync.m_btSomeFlag |= 0x20;
 		}
-		int nMaxCount = NPC_SYNC_BROADCAST_LIMIT;
-		CURREGION.BroadCast(&PlayerSync, sizeof(PLAYER_NORMAL_SYNC), nMaxCount, m_MapX, m_MapY);
-		for (j = 0; j < 8; j++)
+		// [PS 04/09] chi phat goi ngoai hinh khi NOI DUNG DOI hoac toi ky lam moi (goi nay khong chua toa do)
+		if (s_nPSLamMoi < 0)
 		{
-			int nConRegion = CURREGION.m_nConnectRegion[j];
-			if (nConRegion == -1)
-				continue;
-			SubWorld[m_SubWorldIndex].m_Region[nConRegion].BroadCast((BYTE*)&PlayerSync, sizeof(PLAYER_NORMAL_SYNC), nMaxCount, m_MapX - POff[j].x, m_MapY - POff[j].y);
+			s_nPSLamMoi = (int)GetPrivateProfileIntA("Server", "BroadCastLamMoi", 5, ".\\config.ini");
+			if (s_nPSLamMoi < 1)  s_nPSLamMoi = 1;
+			if (s_nPSLamMoi > 60) s_nPSLamMoi = 60;
+		}
+		bool bPSGui = true;
+		if (m_Index > 0 && m_Index < MAX_NPC)
+		{
+			const DWORD dwBam = PS_Bam(&PlayerSync, (int)sizeof(PLAYER_NORMAL_SYNC));
+			const DWORD dwLuc = GetTickCount();
+			if (s_adwPSBam[m_Index] == dwBam &&
+				(dwLuc - s_adwPSLuc[m_Index]) < (DWORD)(s_nPSLamMoi * 1000))	// GetTickCount tinh bang mili giay
+			{
+				bPSGui = false;
+				s_nPSBo++;
+			}
+			else
+			{
+				s_adwPSBam[m_Index] = dwBam;
+				s_adwPSLuc[m_Index] = dwLuc;
+				s_nPSGui++;
+			}
+		}
+		AUTOLOG_EVERY(10000, "[PS-BO] goi ngoai hinh: gui=%d bo=%d (%d%% bo) lam moi moi %d giay",
+			s_nPSGui, s_nPSBo, (s_nPSGui + s_nPSBo) > 0 ? (s_nPSBo * 100 / (s_nPSGui + s_nPSBo)) : 0, s_nPSLamMoi);
+		if (bPSGui)
+		{
+			int nMaxCount = NPC_SYNC_BROADCAST_LIMIT;
+			CURREGION.BroadCast(&PlayerSync, sizeof(PLAYER_NORMAL_SYNC), nMaxCount, m_MapX, m_MapY);
+			for (j = 0; j < 8; j++)
+			{
+				int nConRegion = CURREGION.m_nConnectRegion[j];
+				if (nConRegion == -1)
+					continue;
+				SubWorld[m_SubWorldIndex].m_Region[nConRegion].BroadCast((BYTE*)&PlayerSync, sizeof(PLAYER_NORMAL_SYNC), nMaxCount, m_MapX - POff[j].x, m_MapY - POff[j].y);
+			}
 		}
 		//------------------------------------------------------End SYNC 2-------------------------------
 		NPC_PLAYER_TYPE_NORMAL_SYNC	sSync;
