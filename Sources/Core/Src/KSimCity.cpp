@@ -1308,7 +1308,8 @@ int LuaSC_ClearChat(Lua_State* L)
 #define SC_MAX_ADV    32
 #define SC_MAX_TEN    800
 #define SC_MAX_ATTR   320
-#define SC_MAX_NSET   12
+#define SC_MAX_NSET   48   // [SAPRAI2 04/09] bot ban sap tu giu 10 khe (10 thanh Da Tau); phan con
+                           // lai de cho SimCity admin. Moi khe ~2 KB nen cu rong tay.
 #define SC_NSET_NODE  512
 
 static char  s_adv[SC_MAX_ADV][32];
@@ -1470,6 +1471,50 @@ int LuaSC_SetBotSit(Lua_State* L)
 
 // (nWorldId) -> nSetId / -1. Tu tra maps/thanhthi.txt (WorldID -> file nodes),
 // nap luoi node cua ban do do. Nap roi thi tra lai id cu (khu trung).
+// [SAPRAI2 04/09] Tach LOI nap luoi node ra ham C de module khac dung chung (bot ban sap cua
+// KPlayerBot goi de rai sap khap thanh thay vi vay quanh NPC Da Tau). Ham Lua ben duoi chi con
+// la vo boc - hanh vi va gia tri tra ve KHONG doi.
+static int sc_NapNodeSet(int nW);	// khai bao tien - than ham nam duoi LuaSC_CityNodes
+
+int SC_NodeSetCuaMap(int nWorldId)
+{
+	const int nW = nWorldId;
+	for (int k = 0; k < s_nsetCount; k++)
+		if (s_nset[k].nWorldId == nW)
+			return k;
+	if (s_nsetCount >= SC_MAX_NSET)
+	{
+		// Phan biet ro voi ca 'ban do khong co du lieu node': o day TEP CO, chi la het khe.
+		char szDay[128];
+		_snprintf(szDay, sizeof(szDay) - 1, "het khe luoi node (%d/%d) - map %d khong nap duoc",
+		          s_nsetCount, SC_MAX_NSET, nW);
+		szDay[sizeof(szDay) - 1] = 0;
+		g_GhiLogHeThong("SIMCITY", szDay);
+		return -1;
+	}
+	return sc_NapNodeSet(nW);
+}
+
+// So node cua luoi (0 neu id sai) va lay node thu i theo O LUOI (tile).
+int SC_NodeSo(int nSetId)
+{
+	if (nSetId < 0 || nSetId >= s_nsetCount)
+		return 0;
+	return s_nset[nSetId].nCount;
+}
+
+int SC_NodeLay(int nSetId, int i, int* pCellX, int* pCellY)
+{
+	if (nSetId < 0 || nSetId >= s_nsetCount)
+		return 0;
+	SC_NodeSet& ns = s_nset[nSetId];
+	if (i < 0 || i >= ns.nCount)
+		return 0;
+	if (pCellX) *pCellX = (int)ns.x[i];
+	if (pCellY) *pCellY = (int)ns.y[i];
+	return 1;
+}
+
 int LuaSC_CityNodes(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) < 1)
@@ -1478,17 +1523,14 @@ int LuaSC_CityNodes(Lua_State* L)
 		return 1;
 	}
 	const int nW = (int)Lua_ValueToNumber(L, 1);
-	for (int k = 0; k < s_nsetCount; k++)
-		if (s_nset[k].nWorldId == nW)
-		{
-			Lua_PushNumber(L, k);
-			return 1;
-		}
-	if (s_nsetCount >= SC_MAX_NSET)
-	{
-		Lua_PushNumber(L, -1);
-		return 1;
-	}
+	Lua_PushNumber(L, SC_NodeSetCuaMap(nW));
+	return 1;
+}
+
+// LOI nap: doc bang chi muc thanhthi.txt -> tep nodes cua ban do, nap vao s_nset.
+// Tra chi so luoi vua nap, -1 neu khong co du lieu.
+static int sc_NapNodeSet(int nW)
+{
 
 	// tra bang chi muc: WorldID <TAB> Ten <TAB> duong dan file <TAB> loai
 	char szFileNode[160];
@@ -1496,10 +1538,7 @@ int LuaSC_CityNodes(Lua_State* L)
 	{
 		FILE* f = fopen("settings/simcity/maps/thanhthi.txt", "rb");
 		if (!f)
-		{
-			Lua_PushNumber(L, -1);
-			return 1;
-		}
+			return -1;
 		char szDong[256];
 		while (fgets(szDong, sizeof(szDong), f))
 		{
@@ -1525,17 +1564,11 @@ int LuaSC_CityNodes(Lua_State* L)
 		fclose(f);
 	}
 	if (!szFileNode[0])
-	{
-		Lua_PushNumber(L, -1);
-		return 1;
-	}
+		return -1;
 
 	FILE* f = fopen(szFileNode, "rb");
 	if (!f)
-	{
-		Lua_PushNumber(L, -1);
-		return 1;
-	}
+		return -1;
 	SC_NodeSet& ns = s_nset[s_nsetCount];
 	ns.nWorldId = nW;
 	ns.nCount   = 0;
@@ -1557,13 +1590,9 @@ int LuaSC_CityNodes(Lua_State* L)
 	}
 	fclose(f);
 	if (ns.nCount <= 0)
-	{
-		Lua_PushNumber(L, -1);
-		return 1;
-	}
+		return -1;
 	s_nsetCount++;
-	Lua_PushNumber(L, s_nsetCount - 1);
-	return 1;
+	return s_nsetCount - 1;
 }
 
 // (nSetId, nMode, nWorldId, nSubWorldIdx) -> nMpsX, nMpsY (0,0 = that bai)
