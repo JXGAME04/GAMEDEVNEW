@@ -723,6 +723,102 @@ def build_manager():
         "    return nId",
         "end",
         "",
+        "-- ---------------------------------------------------------------- DAT BAN TU NUT TREN CUA SO (khong dung NPC)",
+        "-- Chu 04/09: \"khong can lam npc ma lam nut tren box dau gia luon\". Nut goc phai moi trang gui",
+        "-- REQUEST_PUTON; o day mo hai hop nhap so roi hop dat vat pham. CA BA hop deu CHI DINH duong dan script",
+        "-- (OpenGetNumber 4 doi, GiveItemUI 8 doi) nen callback chay dung trong tep nay du khong thoai voi NPC nao.",
+        "AUC_SCRIPT = \"\\\\script\\\\auction_house\\\\auction_manager.lua\"",
+        "AUC_TMP = AUC_TMP or {}",
+        "",
+        "function AUC_OnRequestPutOn(nType)",
+        "    local szTong, nTong = GetTongName()",
+        "    nTong = nTong or 0",
+        "    local nKind = " + P + ".tbItemTypeEnum.eType_ENGLISH",
+        "    if nType == " + P + ".tbAuctionTypeEnum.eType_PERSONAL then",
+        "        nKind = " + P + ".tbItemTypeEnum.eType_DUTCH",
+        "        if AUC_CountSeller(GetName()) >= " + P + ".nMaxItemPerSeller then",
+        "            Msg2Player(\"" + V("Đại hiệp đang ký gửi tối đa ") + "\".." + P + ".nMaxItemPerSeller..\"" + V(" món, hãy chờ bán xong hoặc rút bớt.") + "\")",
+        "            return",
+        "        end",
+        "    elseif nType == " + P + ".tbAuctionTypeEnum.eType_WORLD then",
+        "        if not (admincheck and admincheck() == 1) then",
+        "            Msg2Player(\"" + V("Chỉ GM mới mở được phiên đấu giá thế giới.") + "\")",
+        "            return",
+        "        end",
+        "    else",
+        "        if nTong <= 0 then",
+        "            Msg2Player(\"" + V("Đại hiệp chưa gia nhập bang hội.") + "\")",
+        "            return",
+        "        end",
+        "        if TONG_GetMaster(nTong) ~= GetName() then",
+        "            -- khong phai bang chu: nut nay xem DANH SACH THANH VIEN cua phien bang",
+        "            AUC_OnRequestMemberList(szTong)",
+        "            return",
+        "        end",
+        "    end",
+        "    AUC_TMP[PlayerIndex] = {nType = nType, nKind = nKind, nTong = nTong}",
+        "    OpenGetNumber(\"" + V("Chọn loại tiền: gõ 1 = Ngân lượng, gõ 2 = Xu") + "\", AUC_SCRIPT, \"AUC_OnInputCurrency\", 1)",
+        "end",
+        "",
+        "function AUC_OnInputCurrency()",
+        "    local t = AUC_TMP[PlayerIndex]",
+        "    if not t then",
+        "        return",
+        "    end",
+        "    local n = floor(GetNumberFromUI() or 0)",
+        "    if n ~= " + P + ".tbCurrency.XU then",
+        "        n = " + P + ".tbCurrency.MONEY",
+        "    end",
+        "    t.nCur = n",
+        "    OpenGetNumber(\"" + V("Nhập giá bán (") + "\"..AUC_CurName(n)..\")\", AUC_SCRIPT, \"AUC_OnInputPrice\", 1)",
+        "end",
+        "",
+        "function AUC_OnInputPrice()",
+        "    local t = AUC_TMP[PlayerIndex]",
+        "    if not t then",
+        "        return",
+        "    end",
+        "    local n = floor(GetNumberFromUI() or 0)",
+        "    if n < 1 or n > 2000000000 then",
+        "        Msg2Player(\"" + V("Giá không hợp lệ.") + "\")",
+        "        AUC_TMP[PlayerIndex] = nil",
+        "        return",
+        "    end",
+        "    t.nPrice = n",
+        "    GiveItemUI(\"" + V("Đặt vật phẩm cần bán vào ô (1 món)") + "\", \"" + V("Giá ") + "\"..n..\" \"..AUC_CurName(t.nCur), \"AUC_OnGiveOk\", \"AUC_OnGiveCancel\", 0, \"AUC_OnGiveCheck\", 0, AUC_SCRIPT)",
+        "end",
+        "",
+        "function AUC_OnGiveCheck(nCount)",
+        "    return 1",
+        "end",
+        "",
+        "function AUC_OnGiveCancel()",
+        "    AUC_TMP[PlayerIndex] = nil",
+        "end",
+        "",
+        "function AUC_OnGiveOk(nCount)",
+        "    local t = AUC_TMP[PlayerIndex]",
+        "    AUC_TMP[PlayerIndex] = nil",
+        "    if not t then",
+        "        return",
+        "    end",
+        "    local nIdx = GetGiveItemUnit(1)",
+        "    if nIdx == nil or nIdx <= 0 then",
+        "        Msg2Player(\"" + V("Chưa đặt vật phẩm vào ô.") + "\")",
+        "        return",
+        "    end",
+        "    local szAct = \"\"",
+        "    if t.nType == " + P + ".tbAuctionTypeEnum.eType_TONG then",
+        "        szAct = GetTongName()",
+        "    elseif t.nType == " + P + ".tbAuctionTypeEnum.eType_WORLD then",
+        "        szAct = \"" + V("Phiên ") + "\"..GetLocalDate(\"%H:%M %d/%m\")",
+        "    end",
+        "    local nId = AUC_PutOnItem(t.nType, szAct, t.nKind, t.nCur, t.nPrice, nIdx, t.nTong)",
+        "    if nId > 0 then",
+        "        Msg2Player(\"" + V("Đã đưa vào khu đấu giá, mã số ") + "\"..nId..\"" + V(". Tiền bán và vật phẩm trả về qua hộp thư.") + "\")",
+        "    end",
+        "end",
+        "",
         "-- ---------------------------------------------------------------- QUET (auctionpoll.lua goi moi 30 giay)",
         "function AUC_Tick()",
         "    local nNow = GetCurrentTime()",
@@ -1118,6 +1214,14 @@ def build_client_ui():
         "    self:SwitchToAuctionWindow(nType)",
         "end",
         "",
+        "-- [A4] nut goc phai: Ca nhan = ky gui, The gioi = GM mo phien, Bang hoi = bang chu dat mon / thanh vien xem danh sach",
+        "function UIAuctionHouse:OnPutOnClick(nType)",
+        "    local h = OB_Create()",
+        "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nType or self.nCurTypeIndex)",
+        "    ScriptProtocol:SendData(\"emSCRIPT_PROTOCOL_AUCTION_REQUEST_PUTON\", h)",
+        "    OB_Release(h)",
+        "end",
+        "",
         "function UIAuctionHouse:OnWindowClosed()",
         "end",
         "",
@@ -1351,6 +1455,7 @@ PROTO_NAMES = [
     "emSCRIPT_PROTOCOL_AUCTION_REQUEST_REFUND", "emSCRIPT_PROTOCOL_AUCTION_REQUEST_ACTIVITYLIST",
     "emSCRIPT_PROTOCOL_AUCTION_REQUEST_ACTIVITYCONTENT", "emSCRIPT_PROTOCOL_AUCTION_REQUEST_ITEMCONTENT",
     "emSCRIPT_PROTOCOL_AUCTION_REQUEST_MEMBERLIST", "emSCRIPT_PROTOCOL_AUCTION_REQUEST_GETBACKITEM",
+    "emSCRIPT_PROTOCOL_AUCTION_REQUEST_PUTON",
 ]
 
 S2C = [  # (enum, ham, kieu tham so)
@@ -1377,18 +1482,40 @@ C2S = [
     ("emSCRIPT_PROTOCOL_AUCTION_REQUEST_ITEMCONTENT", "AUC_OnRequestItemContent", "{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER}"),
     ("emSCRIPT_PROTOCOL_AUCTION_REQUEST_MEMBERLIST", "AUC_OnRequestMemberList", "{OBJTYPE_STRING}"),
     ("emSCRIPT_PROTOCOL_AUCTION_REQUEST_GETBACKITEM", "AUC_OnRequestGetBack", "{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER}"),
+    ("emSCRIPT_PROTOCOL_AUCTION_REQUEST_PUTON", "AUC_OnRequestPutOn", "{OBJTYPE_NUMBER}"),
 ]
+
+
+def _strip_auction(s, e):
+    """[A4] bo moi dong cu cua khoi dau gia (ten giao thuc + muc dang ky) de chen lai tron bo"""
+    out = []
+    skip_block = 0
+    for line in s.split(e):
+        t = line.strip()
+        if "emSCRIPT_PROTOCOL_AUCTION" in line or (MARK in line and "dau gia" in line):
+            # muc dang ky nhieu dong cua protocol_def_c: bo tu dong "{" truoc do
+            if out and out[-1].strip() == "{":
+                out.pop()
+                skip_block = 1
+            continue
+        if skip_block:
+            # bo not phan con lai cua muc: duong dan, ten ham, kieu tham so, "},"
+            if t.startswith('"') or t.startswith("{OBJTYPE") or t == "}," or t.startswith("},"):
+                if t == "}," or t.startswith("},"):
+                    skip_block = 0
+                continue
+            skip_block = 0
+        out.append(line)
+    return e.join(out)
 
 
 def patch_protocol():
     """them 20 ten vao protocol.lua (server + client giong nhau)"""
     for root, mirror in ((SV, MIRROR_S), (CL, MIRROR_C)):
         rel = r"script\protocol.lua"
-        s = rd(os.path.join(root, rel))
-        if "AUCTION_OFFERPRICERET" in s:
-            print("  da co ten AUCTION:", root)
-            continue
+        s = io.open(os.path.join(root, rel), "r", encoding="latin-1", newline="").read()
         e = eol(s)
+        s = _strip_auction(s, e)
         anchor = '\t"emSCRIPT_PROTOCOL_MAIL_REQUEST_AUTODELETE",'
         assert s.count(anchor) == 1, "protocol.lua neo MAIL_REQUEST_AUTODELETE"
         add = anchor + e + "\t-- " + MARK + " dau gia (2.0 + OPENWND rieng cua JX1)" + e + e.join('\t"%s",' % n for n in PROTO_NAMES)
@@ -1399,10 +1526,8 @@ def patch_protocol():
 def patch_def_gs():
     rel = r"script\script_protocol\protocol_def_gs.lua"
     s = rd(os.path.join(SV, rel))
-    if "AUCTION_REQUEST_OFFERENGLISHPRICE" in s:
-        print("  da co protocol_def_gs")
-        return
     e = eol(s)
+    s = _strip_auction(s, e)
     lines = ["\t-- " + MARK + " dau gia -> \\script\\auction_house\\auction_manager.lua"]
     for en, fn, ty in C2S:
         lines.append('\t{ "%s", "%s", "%s", %s },' % (en, lp("script", "auction_house", "auction_manager.lua"), fn, ty))
@@ -1415,11 +1540,9 @@ def patch_def_gs():
 
 def patch_def_c():
     rel = r"script\script_protocol\protocol_def_c.lua"
-    s = rd(os.path.join(CL, rel))
-    if "AUCTION_OFFERPRICERET" in s:
-        print("  da co protocol_def_c")
-        return
+    s = io.open(os.path.join(CL, rel), "r", encoding="latin-1", newline="").read()
     e = eol(s)
+    s = _strip_auction(s, e)
     lines = ["\t-- " + MARK + " dau gia -> \\script\\ui\\uiauction_house.lua"]
     for en, fn, ty in S2C:
         lines.append("\t{" + e + '\t\t"%s",' % en + e + '\t\t"%s",' % lp("script", "ui", "uiauction_house.lua") + e + '\t\t"%s",' % fn + e + "\t\t%s," % ty + e + "\t},")
@@ -1465,6 +1588,20 @@ def patch_lenhbai():
     wr_s(rel, s)
 
 
+def _relabel(txt, sec, label):
+    """[A4] doi dong Label= trong mot muc [sec] cua noi dung ini"""
+    out = []
+    cur = None
+    for line in txt.split(chr(13) + chr(10)):
+        st = line.strip()
+        if st.startswith("[") and st.endswith("]"):
+            cur = st[1:-1]
+        elif cur == sec and st.startswith("Label="):
+            line = "Label=" + label
+        out.append(line)
+    return (chr(13) + chr(10)).join(out)
+
+
 def copy_ini():
     """13 ini + item icon -> client ui\\Ui3\\auction\\ ; Image= them dau \\ (bai hoc hop thu: g_FileName2Id khong chuan hoa)"""
     names = ["auction_manager", "auction_icon", "auction_page_personal", "auction_page_tong", "auction_page_world",
@@ -1489,6 +1626,13 @@ def copy_ini():
         txt = "\r\n".join(out)
         # sprite "小按钮二字" khong co trong pak du an -> dung "小按钮四字" (co) cho nut Bao gia
         txt = txt.replace("小按钮二字.spr".encode("gbk").decode("latin-1"), "小按钮四字.spr".encode("gbk").decode("latin-1"))
+        # [A4] doi nhan nut goc phai: khong con NPC, nut nay la loi vao dat ban
+        if n == "auction_page_personal":
+            txt = _relabel(txt, "AuctionPersonalTip", V("Ky gui vat pham"))
+        elif n == "auction_page_world":
+            txt = _relabel(txt, "AuctionWorldTip", V("Mo phien (GM)"))
+        elif n == "auction_page_tong":
+            txt = _relabel(txt, "seeMemberList", V("Dat mon / Xem thanh vien"))
         if n == "auction_icon":
             # bieu tuong: nam ngay duoi bieu tuong thu (mail_icon.ini Left=765 Top=296 -> dau gia Top=322)
             txt = txt.replace("Left=990", "Left=765").replace("Top=320", "Top=322")
@@ -1566,19 +1710,60 @@ def patch_mail_generator():
         os.system('python "%s"' % p)
 
 
+def drop_npc():
+    """[A4] khong con duong NPC: xoa auction_npc.lua o ca hai noi"""
+    for root in (SV, MIRROR_S):
+        pth = os.path.join(root, r"script\auction_house\auction_npc.lua")
+        if os.path.exists(pth):
+            if CHECK:
+                print("  (check) xoa", pth)
+            else:
+                os.remove(pth)
+                print("  xoa:", pth)
+
+
+def _revert(rel, root, mirror):
+    """go moi dong mang dau MARK + dong Include auction_npc"""
+    p = os.path.join(root, rel)
+    s = io.open(p, "r", encoding="latin-1", newline="").read()
+    if MARK not in s:
+        print("  da sach:", rel)
+        return
+    e = eol(s)
+    out = []
+    for line in s.split(e):
+        if MARK in line and ("auc_npc_main" in line or "auc_admin_world" in line or "auction_npc.lua" in line):
+            continue
+        out.append(line)
+    s2 = e.join(out)
+    # tra so lua chon cua Say ve 2 (dichquan)
+    s2 = s2.replace('Say("' + V("Ngươi tìm ta có việc gì?") + '",3,', 'Say("' + V("Ngươi tìm ta có việc gì?") + '",2,')
+    if MARK in s2:
+        raise AssertionError(rel + ": van con dau vet " + MARK)
+    wr_both(rel, s2, root, mirror)
+
+
+def revert_dichquan():
+    _revert(r"script\global\npcchucnang\dichquan.lua", SV, MIRROR_S)
+
+
+def revert_lenhbai():
+    _revert(r"script\item\lenhbaiadmin.lua", SV, MIRROR_S)
+
+
 def main():
     steps = [
         ("def (server)", lambda: wr_s(r"script\auction_house\auction_def.lua", build_def())),
         ("def (client)", lambda: wr_c(r"script\auction_house\auction_def.lua", build_def())),
         ("manager", lambda: wr_s(r"script\auction_house\auction_manager.lua", build_manager())),
-        ("npc", lambda: wr_s(r"script\auction_house\auction_npc.lua", build_npc())),
+        ("go npc", drop_npc),
         ("poll", lambda: wr_s(r"script\auction_house\auctionpoll.lua", build_poll())),
         ("client ui", lambda: wr_c(r"script\ui\uiauction_house.lua", build_client_ui())),
         ("protocol.lua", patch_protocol),
         ("protocol_def_gs", patch_def_gs),
         ("protocol_def_c", patch_def_c),
-        ("dichquan", patch_dichquan),
-        ("lenhbaiadmin", patch_lenhbai),
+        ("tra dichquan", revert_dichquan),
+        ("tra lenhbaiadmin", revert_lenhbai),
         ("ini", copy_ini),
         ("mail aucitem", patch_mail_generator),
     ]

@@ -613,6 +613,102 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong)
     return nId
 end
 
+-- ---------------------------------------------------------------- DAT BAN TU NUT TREN CUA SO (khong dung NPC)
+-- Chu 04/09: "khong can lam npc ma lam nut tren box dau gia luon". Nut goc phai moi trang gui
+-- REQUEST_PUTON; o day mo hai hop nhap so roi hop dat vat pham. CA BA hop deu CHI DINH duong dan script
+-- (OpenGetNumber 4 doi, GiveItemUI 8 doi) nen callback chay dung trong tep nay du khong thoai voi NPC nao.
+AUC_SCRIPT = "\\script\\auction_house\\auction_manager.lua"
+AUC_TMP = AUC_TMP or {}
+
+function AUC_OnRequestPutOn(nType)
+    local szTong, nTong = GetTongName()
+    nTong = nTong or 0
+    local nKind = AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH
+    if nType == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL then
+        nKind = AUCTION_DEF.tbItemTypeEnum.eType_DUTCH
+        if AUC_CountSeller(GetName()) >= AUCTION_DEF.nMaxItemPerSeller then
+            Msg2Player("§¹i hiÖp ®ang ký göi tèi ®a "..AUCTION_DEF.nMaxItemPerSeller.." mãn, h·y chê b¸n xong hoÆc rót bít.")
+            return
+        end
+    elseif nType == AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD then
+        if not (admincheck and admincheck() == 1) then
+            Msg2Player("ChØ GM míi më ®­îc phiªn ®Êu gi¸ thÕ giíi.")
+            return
+        end
+    else
+        if nTong <= 0 then
+            Msg2Player("§¹i hiÖp ch­a gia nhËp bang héi.")
+            return
+        end
+        if TONG_GetMaster(nTong) ~= GetName() then
+            -- khong phai bang chu: nut nay xem DANH SACH THANH VIEN cua phien bang
+            AUC_OnRequestMemberList(szTong)
+            return
+        end
+    end
+    AUC_TMP[PlayerIndex] = {nType = nType, nKind = nKind, nTong = nTong}
+    OpenGetNumber("Chän lo¹i tiÒn: gâ 1 = Ng©n l­îng, gâ 2 = Xu", AUC_SCRIPT, "AUC_OnInputCurrency", 1)
+end
+
+function AUC_OnInputCurrency()
+    local t = AUC_TMP[PlayerIndex]
+    if not t then
+        return
+    end
+    local n = floor(GetNumberFromUI() or 0)
+    if n ~= AUCTION_DEF.tbCurrency.XU then
+        n = AUCTION_DEF.tbCurrency.MONEY
+    end
+    t.nCur = n
+    OpenGetNumber("NhËp gi¸ b¸n ("..AUC_CurName(n)..")", AUC_SCRIPT, "AUC_OnInputPrice", 1)
+end
+
+function AUC_OnInputPrice()
+    local t = AUC_TMP[PlayerIndex]
+    if not t then
+        return
+    end
+    local n = floor(GetNumberFromUI() or 0)
+    if n < 1 or n > 2000000000 then
+        Msg2Player("Gi¸ kh«ng hîp lÖ.")
+        AUC_TMP[PlayerIndex] = nil
+        return
+    end
+    t.nPrice = n
+    GiveItemUI("§Æt vËt phÈm cÇn b¸n vµo « (1 mãn)", "Gi¸ "..n.." "..AUC_CurName(t.nCur), "AUC_OnGiveOk", "AUC_OnGiveCancel", 0, "AUC_OnGiveCheck", 0, AUC_SCRIPT)
+end
+
+function AUC_OnGiveCheck(nCount)
+    return 1
+end
+
+function AUC_OnGiveCancel()
+    AUC_TMP[PlayerIndex] = nil
+end
+
+function AUC_OnGiveOk(nCount)
+    local t = AUC_TMP[PlayerIndex]
+    AUC_TMP[PlayerIndex] = nil
+    if not t then
+        return
+    end
+    local nIdx = GetGiveItemUnit(1)
+    if nIdx == nil or nIdx <= 0 then
+        Msg2Player("Ch­a ®Æt vËt phÈm vµo «.")
+        return
+    end
+    local szAct = ""
+    if t.nType == AUCTION_DEF.tbAuctionTypeEnum.eType_TONG then
+        szAct = GetTongName()
+    elseif t.nType == AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD then
+        szAct = "Phiªn "..GetLocalDate("%H:%M %d/%m")
+    end
+    local nId = AUC_PutOnItem(t.nType, szAct, t.nKind, t.nCur, t.nPrice, nIdx, t.nTong)
+    if nId > 0 then
+        Msg2Player("§· ®­a vµo khu ®Êu gi¸, m· sè "..nId..". TiÒn b¸n vµ vËt phÈm tr¶ vÒ qua hép th­.")
+    end
+end
+
 -- ---------------------------------------------------------------- QUET (auctionpoll.lua goi moi 30 giay)
 function AUC_Tick()
     local nNow = GetCurrentTime()

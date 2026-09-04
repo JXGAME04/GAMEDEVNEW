@@ -838,7 +838,13 @@ int LuaGiveItemUI(Lua_State* L)
 		return 0;
 	// callback = ham trong CHINH script dang thoai (ActionScript cua npc dialog
 	// da duoc engine gan vao Npc nguoi choi - khuon OpenGiveBox 4 doi :2445)
-	Player[nPlayerIndex].m_dwGiveBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
+	// [DAUGIA 04/09 A4] tham so 8 = duong dan script: cho phep mo hop tu mot CUA SO
+	// (nut Ky gui cua khu dau gia) khi nguoi choi KHONG dang thoai voi NPC nao.
+	// Cung khuon OpenGiveBox 5 doi (ScriptFuns.cpp:3111).
+	if (Lua_GetTopIndex(L) >= 8 && Lua_IsString(L, 8))
+		Player[nPlayerIndex].m_dwGiveBoxId = g_FileName2Id((char*)Lua_ValueToString(L, 8));
+	else
+		Player[nPlayerIndex].m_dwGiveBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
 	KJx2WarInfra_ClearAffairBox(nPlayerIndex);	// [BOXSOT 01/09] don do sot phien truoc
 	S2C_GIVE_BOX NetCommand;
 	NetCommand.ProtocolType = s2c_openaffairbox;

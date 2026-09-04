@@ -1,4 +1,3 @@
-Include("\\script\\auction_house\\auction_npc.lua")	-- [DAUGIA 04/09]
 -- Author: Fong KiÒu
 -- Date: 28/11/2020
 -- Function: LÖnh bµi Admin
@@ -103,7 +102,6 @@ function chucnangadmin(itemIdx)
 		"Qu¶n lý m¸y chñ/system",
 		-- "Thu kenh ScriptProtocol (ECHO)/specho",	-- [MAIL 03/09]
 		-- "Göi th­ thö: tiÒn, xu, exp/mailtest1",	-- [MAIL 03/09]
-		"§Êu gi¸: më phiªn thÕ giíi (GM)/auc_admin_world",	-- [DAUGIA 04/09]
 		"Göi th­ thö: cã vËt phÈm/mailtest2",	-- [MAIL 03/09]
 		"Chøc n¨ng chÝnh/manager",
 		-- "N¹p l¹i script/reloadfileEvent",
