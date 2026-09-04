@@ -148,10 +148,32 @@ static bool sHexToRec(const char* szHex, KAucRec* p)
 	return (p->nVer == AUC_REC_VER);
 }
 
+// [DAUGIA 04/09 B1] Loai nao sRecToItem tao lai duoc? PHAI kiem NGAY o duong ky gui, khong thi
+// mon bi xoa khoi tui roi luc tra lai moi phat hien khong dung duoc -> mat vinh vien.
+// Danh sach nay phai khop y het nhanh switch cua sRecToItem ben duoi.
+static bool sCanRebuild(int nGenre)
+{
+	switch (nGenre)
+	{
+	case item_equip:
+	case item_medicine:
+	case item_task:
+	case item_townportal:
+	case item_magicscript:
+	case item_fusion:
+	case item_starstone:
+		return true;
+	default:
+		return false;	// item_mine, item_materials, item_brokenequip... ban goc cung khong nap lai duoc
+	}
+}
+
 // Lay ban ghi tu mot mon do dang co trong Item[] (khuon KPlayer::SavePlayerItemList)
 static bool sItemToRec(int nItemIdx, KAucRec* p)
 {
 	if (nItemIdx <= 0 || nItemIdx >= MAX_ITEM || !p)
+		return false;
+	if (!sCanRebuild(Item[nItemIdx].m_CommonAttrib.nItemGenre))
 		return false;
 	KItem& it = Item[nItemIdx];
 	memset(p, 0, sizeof(KAucRec));
@@ -322,7 +344,9 @@ int LuaAUC_ItemToRec(Lua_State* L)
 	Lua_PushString(L, Item[nItemIdx].GetName());
 	Lua_PushString(L, szDesc);
 	Lua_PushNumber(L, (double)(Item[nItemIdx].GetWidth() * Item[nItemIdx].GetHeight()));
-	return 4;
+	// [B1] so luong THO cua chong: ben Lua GetItemStackCount bi kep theo tran chong nen xoa thieu
+	Lua_PushNumber(L, (double)Item[nItemIdx].GetStackNum());
+	return 5;
 }
 
 // AUC_RecName(szHex) -> szTen  (tao tam mot mon do, doc ten roi tra khe ve)
@@ -395,8 +419,47 @@ int LuaAUC_GiveRec(Lua_State* L)
 		Lua_PushNumber(L, 0);
 		return 1;
 	}
-	Player[nPlayerIdx].m_ItemList.AddKIL(nIdx, pos_equiproom, x, y, false, true);
+	// [DAUGIA 04/09 B1] PHAI kiem ket qua AddKIL: truoc day bo qua nen khi dat that bai thi mon
+	// nam mo coi trong ItemSet ma Lua van tuong da giao xong -> hop thu danh dau da nhan, mat do.
+	if (Player[nPlayerIdx].m_ItemList.AddKIL(nIdx, pos_equiproom, x, y, false, true) <= 0)
+	{
+		ItemSet.Remove(nIdx);
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
 	Lua_PushNumber(L, (double)nIdx);
+	return 1;
+}
+
+// [DAUGIA 04/09 B1] AUC_CanGiveRec(szHex) -> 1 neu THUC SU dat duoc vao tui bay gio.
+// Khac CalcFreeItemCellCount: ham do dem o ROI RAC, con dat do doi mot KHOI LIEN TUC WxH.
+// Tui con 8 o roi rac van khong dat noi mot thanh vu khi 2x3.
+int LuaAUC_CanGiveRec(Lua_State* L)
+{
+	int nPlayerIdx = 0;
+	{
+		lua_getglobal(L, SCRIPT_PLAYERINDEX);
+		if (lua_isnumber(L, -1))
+			nPlayerIdx = (int)lua_tonumber(L, -1);
+		lua_settop(L, -2);
+	}
+	KAucRec rec;
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER || !sHexToRec(sArgStr(L, 1), &rec))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nIdx = sRecToItem(&rec);
+	if (nIdx <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int x = 0, y = 0;
+	int bOk = Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+		Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y) ? 1 : 0;
+	ItemSet.Remove(nIdx);	// chi la phep thu - tra khe ve ngay
+	Lua_PushNumber(L, bOk);
 	return 1;
 }
 
@@ -763,6 +826,26 @@ int LuaAUC_Bid(Lua_State* L)
 	__int64 nAffected = 0;
 	bool bOk = g_MySQLDB.Exec(
 		"UPDATE auction_item SET buyer=?, cur_price=?, buy_price=cur_price, end_time=? WHERE id=? AND state=0 AND cur_price<?", p, 5, &nAffected);
+	Lua_PushNumber(L, (bOk && nAffected > 0) ? 1 : 0);
+	return 1;
+}
+
+// [DAUGIA 04/09 B1] AUC_Rollback(nId): tra dong ve DANG BAN va XOA nguoi mua.
+// AUC_SetState chi lui state, de nguyen buyer/buy_price -> nguoi ban khong rut lai duoc (AUC_OnRequestGetBack
+// tu choi vi buyer khac rong) va dong kieu Anh khi het gio se giao mon cho nguoi CHUA TRA dong nao.
+int LuaAUC_Rollback(Lua_State* L)
+{
+	int nId = sArgInt(L, 1);
+	if (nId <= 0 || !sEnsureTable())
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KDBParam p[1];
+	p[0] = KDBParam::I(nId);
+	__int64 nAffected = 0;
+	bool bOk = g_MySQLDB.Exec(
+		"UPDATE auction_item SET state=0, buyer='', buy_price=0 WHERE id=? AND state=1", p, 1, &nAffected);
 	Lua_PushNumber(L, (bOk && nAffected > 0) ? 1 : 0);
 	return 1;
 }

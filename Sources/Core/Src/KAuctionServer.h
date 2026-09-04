@@ -28,7 +28,10 @@ int LuaAUC_SetState(Lua_State* L);    // (nId, nState, nBelow) -> 1/0 (nguyen tu
 int LuaAUC_Sweep(Lua_State* L);       // (nNow, nMax) -> bang muc HET HAN can tra lai nguoi ban
 int LuaAUC_CountSeller(Lua_State* L); // (szSeller) -> so mon dang ky gui
 int LuaAUC_SetPrice(Lua_State* L);    // (nId, nCur, nNextDrop, nDropLeft, nEnd) -> 1/0 (chi khi state 0)
-int LuaAUC_Bid(Lua_State* L);         // (nId, szBuyer, nPrice, nNewEnd) -> 1/0 nguyen tu: chi khi state 0 va nPrice > cur_price
+int LuaAUC_Bid(Lua_State* L);
+// [DAUGIA 04/09 B1] chong mat do
+int LuaAUC_CanGiveRec(Lua_State* L);  // (szHex) -> 1 neu dat duoc vao tui NGAY BAY GIO (khoi lien tuc WxH)
+int LuaAUC_Rollback(Lua_State* L);    // (nId) -> tra dong ve dang ban VA xoa buyer/buy_price         // (nId, szBuyer, nPrice, nNewEnd) -> 1/0 nguyen tu: chi khi state 0 va nPrice > cur_price
 #endif
 
 #endif // KAUCTIONSERVER_H

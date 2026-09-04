@@ -8,7 +8,9 @@ Include("\\script\\lib\\objbuffer_head.lua")
 Include("\\script\\auction_house\\auction_def.lua")
 Include("\\script\\mail\\mailmanager.lua")
 
-AUC_Viewers = AUC_Viewers or {}      -- [PlayerIndex] = {nType, szAct}  nguoi dang mo tab nao
+-- [B3] [PlayerIndex] = {nType, szAct, szName, nTong}: luu TEN de biet o nguoi choi da bi cap lai
+-- cho nguoi khac, va luu BANG de khong gui goi phien bang A cho nguoi bang B.
+AUC_Viewers = AUC_Viewers or {}
 AUC_LastCount = AUC_LastCount or {}  -- [nType..'|'..szAct] = so mon lan quet truoc (bao ket thuc phien)
 
 function AUC_Log(sz)
@@ -177,14 +179,26 @@ function AUC_RowToClient(r, szMe, nNow)
     tb.nRemainingTime = r.endtime - nNow
     tb.nTotalRemainingTime = r.endtime - nNow
     tb.nNextPrice = r.cur
-    tb.nFloatInterval = AUCTION_DEF.nDutchFloatInterval
-    tb.nTotalFloatTimes = AUCTION_DEF.nDutchFloatTimes
-    tb.nCurFloatTimes = AUCTION_DEF.nDutchFloatTimes - r.dropleft
+    -- [A14b] ky gui ha THANG ve gia san mot nhip, phien the gioi/bang hoi ha 10% moi nhip.
+    -- O "Gia ke tiep" phai bao dung cai vong quet se lam, khong thi nguoi mua thay mot dang tra mot neo.
+    local bCaNhan = (r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL)
+    if bCaNhan then
+        tb.nFloatInterval = AUCTION_DEF.nPersonalFloatInterval
+        tb.nTotalFloatTimes = AUCTION_DEF.nPersonalFloatTimes
+        tb.nCurFloatTimes = AUCTION_DEF.nPersonalFloatTimes - r.dropleft
+    else
+        tb.nFloatInterval = AUCTION_DEF.nDutchFloatInterval
+        tb.nTotalFloatTimes = AUCTION_DEF.nDutchFloatTimes
+        tb.nCurFloatTimes = AUCTION_DEF.nDutchFloatTimes - r.dropleft
+    end
     if r.kind == AUCTION_DEF.tbItemTypeEnum.eType_DUTCH and r.dropleft > 0 and r.nextdrop > 0 then
         tb.nRemainingTime = r.nextdrop - nNow
-        local nNext = floor(r.cur * (1 - AUCTION_DEF.nDutchFloatRange))
-        if nNext < r.guar then
-            nNext = r.guar
+        local nNext = r.guar
+        if not bCaNhan then
+            nNext = floor(r.cur * (1 - AUCTION_DEF.nDutchFloatRange))
+            if nNext < r.guar then
+                nNext = r.guar
+            end
         end
         tb.nNextPrice = nNext
     end
@@ -238,9 +252,11 @@ function AUC_SendActivityContent(nPlayerIdx, nType, nTong, szAct, nPage)
 end
 
 -- bao cho moi nguoi dang xem (nType, szAct): szEnum voi ham push tham so
-function AUC_Broadcast(nType, szAct, szEnum, fnPush)
+-- nTongLoc: chi phien bang hoi moi dung (chi gui cho nguoi CUNG bang)
+function AUC_Broadcast(nType, szAct, szEnum, fnPush, nTongLoc)
     for nIdx, v in AUC_Viewers do
-        if v.nType == nType and (szAct == nil or v.szAct == szAct or v.szAct == "") then
+        if v.nType == nType and (nTongLoc == nil or nTongLoc == 0 or v.nTong == nTongLoc)
+            and (szAct == nil or v.szAct == szAct or v.szAct == "") then
             local h = OB_Create()
             fnPush(h)
             if AUC_SendTo(nIdx, szEnum, h) ~= 1 then
@@ -251,9 +267,10 @@ function AUC_Broadcast(nType, szAct, szEnum, fnPush)
     end
 end
 
-function AUC_NotifyNewItem(nType, szAct, nId)
+-- [B3] PHAI truyen nTong that: AUC_Rows loc theo bang, truyen 0 thi phien bang luon dem = 0
+function AUC_NotifyNewItem(nType, szAct, nId, nTong)
     local nCount = 0
-    local tb = AUC_Activities(nType, 0)
+    local tb = AUC_Activities(nType, nTong or 0)
     if tb[szAct] then
         nCount = tb[szAct].nTotalCount
     end
@@ -262,12 +279,13 @@ function AUC_NotifyNewItem(nType, szAct, nId)
         ObjBuffer:PushByType(h, OBJTYPE_STRING, %szAct)
         ObjBuffer:PushByType(h, OBJTYPE_NUMBER, %nId)
         ObjBuffer:PushByType(h, OBJTYPE_NUMBER, %nCount)
-    end)
+    end, nTong)
 end
 
-function AUC_NotifyEndItem(nType, szAct, nId)
+-- [B3] PHAI truyen nTong that: AUC_Rows loc theo bang, truyen 0 thi phien bang luon dem = 0
+function AUC_NotifyEndItem(nType, szAct, nId, nTong)
     local nCount = 0
-    local tb = AUC_Activities(nType, 0)
+    local tb = AUC_Activities(nType, nTong or 0)
     if tb[szAct] then
         nCount = tb[szAct].nTotalCount
     end
@@ -276,7 +294,7 @@ function AUC_NotifyEndItem(nType, szAct, nId)
         ObjBuffer:PushByType(h, OBJTYPE_STRING, %szAct)
         ObjBuffer:PushByType(h, OBJTYPE_NUMBER, %nId)
         ObjBuffer:PushByType(h, OBJTYPE_NUMBER, %nCount)
-    end)
+    end, nTong)
 end
 
 function AUC_NotifyPrice(nType, szAct, r, nNow)
@@ -314,12 +332,12 @@ function AUC_MyTong()
 end
 
 function AUC_OnRequestActivityList(nType, nStartTime)
-    AUC_Viewers[PlayerIndex] = {nType = nType, szAct = ""}
+    AUC_Viewers[PlayerIndex] = {nType = nType, szAct = "", szName = GetName(), nTong = AUC_MyTong()}
     AUC_SendActivityList(PlayerIndex, nType, AUC_MyTong())
 end
 
 function AUC_OnRequestActivityContent(nType, szAct, nPage, tbIds)
-    AUC_Viewers[PlayerIndex] = {nType = nType, szAct = szAct}
+    AUC_Viewers[PlayerIndex] = {nType = nType, szAct = szAct, szName = GetName(), nTong = AUC_MyTong()}
     AUC_SendActivityContent(PlayerIndex, nType, AUC_MyTong(), szAct, nPage)
 end
 
@@ -396,6 +414,12 @@ function AUC_OnRequestOfferDutch(nType, szAct, nId, nPrice)
     if AUC_CheckRow(r, nType) == 0 then
         return
     end
+    -- [B2] mua ngay CHI ap cho dong Ha Lan/ky gui: truoc day khong kiem nen ghi de nguoi dang
+    -- giu gia cao nhat cua dong kieu Anh ma khong hoan tien ho.
+    if r.kind ~= AUCTION_DEF.tbItemTypeEnum.eType_DUTCH then
+        Msg2Player("Mãn nµy ®Êu theo kiÓu t¨ng gi¸, h·y dïng nót B¸o gi¸.")
+        return
+    end
     if r.seller == GetName() then
         Msg2Player("Kh«ng thÓ mua mãn do chÝnh m×nh ký göi.")
         return
@@ -414,13 +438,15 @@ function AUC_OnRequestOfferDutch(nType, szAct, nId, nPrice)
     end
     if AUC_PayMoney(r.currency, r.cur) ~= 1 then
         -- tra lai trang thai (hiem: tien vua doi)
-        AUC_SetState(nId, 0, 2)
+        -- [B2] PHAI xoa luon nguoi mua, khong thi nguoi ban khong rut lai duoc va kieu Anh
+        -- se giao mon cho nguoi chua tra dong nao khi het gio.
+        AUC_Rollback(nId)
         Msg2Player("Trõ tiÒn thÊt b¹i.")
         return
     end
     AUC_Settle(r, GetName(), r.cur)
     AUC_ReplyOffer(nType, szAct, nId, r.cur)
-    AUC_NotifyEndItem(nType, AUC_ActName(nType, r), nId)
+    AUC_NotifyEndItem(nType, AUC_ActName(nType, r), nId, r.tong)
 end
 
 -- KIEU ANH: tra gia (giu tien nguoi tra; nguoi bi vuot duoc hoan qua thu)
@@ -514,14 +540,15 @@ function AUC_OnRequestGetBack(nType, szAct, nId)
         Msg2Player("§· cã ng­êi tr¶ gi¸, kh«ng thÓ rót l¹i.")
         return
     end
-    if AUC_SetState(nId, 3, 1) ~= 1 then
+    -- [B2] gui thu TRUOC roi moi danh dau da xu ly
+    if AUC_MailItem(r.seller, "Rót vËt phÈm ký göi", "§¹i hiÖp ®· rót "..r.name.." khái khu ®Êu gi¸, phÝ ký göi kh«ng hoµn.", nId) <= 0 then
         Msg2Player("Kh«ng rót ®­îc, h·y thö l¹i.")
         return
     end
-    AUC_MailItem(r.seller, "Rót vËt phÈm ký göi", "§¹i hiÖp ®· rót "..r.name.." khái khu ®Êu gi¸, phÝ ký göi kh«ng hoµn.", nId)
+    AUC_SetState(nId, 3, 1)
     Msg2Player("§· rót "..r.name..", vËt phÈm göi vÒ hép th­.")
     AUC_Log(format("%s rut lai id %d (%s)", GetName(), nId, r.name))
-    AUC_NotifyEndItem(nType, AUC_ActName(nType, r), nId)
+    AUC_NotifyEndItem(nType, AUC_ActName(nType, r), nId, r.tong)
 end
 
 -- ---------------------------------------------------------------- chot giao dich
@@ -548,15 +575,18 @@ end
 
 -- het han / khong ai mua: tra do ve nguoi ban
 function AUC_Expire(r)
-    if AUC_SetState(r.id, 2, 1) ~= 1 then
-        return
-    end
+    -- [B2] GUI THU TRUOC roi moi doi trang thai: truoc day doi truoc, thu gui hong la mon ket
+    -- trong bang vinh vien (moi vong quet chi lay state = 0).
     if r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD then
         AUC_Log(format("LUU PHACH the gioi id %d %s", r.id, r.name))
         AUC_SetState(r.id, 3, 3)
         return
     end
-    AUC_MailItem(r.seller, "VËt phÈm ch­a b¸n ®­îc", "Mãn "..r.name.." hÕt h¹n mµ ch­a ai mua, tr¶ l¹i ®¹i hiÖp.", r.id)
+    if AUC_MailItem(r.seller, "VËt phÈm ch­a b¸n ®­îc", "Mãn "..r.name.." hÕt h¹n mµ ch­a ai mua, tr¶ l¹i ®¹i hiÖp.", r.id) <= 0 then
+        AUC_Log(format("gui thu tra mon id %d cho %s HONG - giu nguyen de vong quet sau thu lai", r.id, r.seller))
+        return
+    end
+    AUC_SetState(r.id, 2, 1)
     AUC_Log(format("HET HAN id %d %s tra %s", r.id, r.name, r.seller))
 end
 
@@ -577,9 +607,15 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong)
     if nItemIdx == nil or nItemIdx <= 0 then
         return 0
     end
-    local szRec, szName, szDesc, nCells = AUC_ItemToRec(nItemIdx)
+    local szRec, szName, szDesc, nCells, nStack = AUC_ItemToRec(nItemIdx)
     if szRec == nil or szRec == "" then
         Msg2Player("Mãn nµy kh«ng thÓ ký göi (quÆng, nguyªn liÖu th«...).")
+        return 0
+    end
+    -- [B2] mon co HAN DUNG: han la MOC thoi gian tuyet doi nen mon se chet ngay trong kho dau gia
+    -- hoac trong hop thu, va nguoi nhan lay ra se mat mon o lan dang nhap sau. Cam ky gui.
+    if GetItemLife and GetItemLife(nItemIdx) ~= 0 then
+        Msg2Player("VËt phÈm cã h¹n sö dông kh«ng thÓ ký göi.")
         return 0
     end
     if GetItemBindState and GetItemBindState(nItemIdx) ~= 0 then
@@ -587,7 +623,14 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong)
         return 0
     end
     local nNow = GetCurrentTime()
-    local nBase, nCurP, nGuar, nEnd, nNextDrop, nDropLeft = nPrice, nPrice, nPrice, nNow + AUCTION_DEF.nPersonalDuration, 0, 0
+    -- [A14] ky gui: gia MO BAN = 150% gia nguoi ban muon, gia SAN = dung gia do, ha mot nhip.
+    -- (Truoc day base = cur = san = gia nguoi ban nen Mua ngay bang Gia co ban, khong con gi de dau.)
+    local nGuar = nPrice
+    local nCurP = floor(nPrice * AUCTION_DEF.nDutchInitRate)
+    local nBase = nCurP
+    local nEnd = nNow + AUCTION_DEF.nPersonalDuration
+    local nNextDrop = nNow + AUCTION_DEF.nPersonalFloatInterval
+    local nDropLeft = AUCTION_DEF.nPersonalFloatTimes
     if nType ~= AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL then
         if nKind == AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH then
             nEnd = nNow + AUCTION_DEF.nEnglishRemainingTime
@@ -607,9 +650,27 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong)
             return 0
         end
     end
+    -- [B2] XOA MON TRUOC roi moi ghi kho: truoc day ghi kho xong moi xoa va bo qua ket qua,
+    -- xoa hong la mon vua nam trong tui vua nam trong kho dau gia = nhan doi.
+    -- Dung so luong THO tu AUC_ItemToRec (GetItemStackCount bi kep theo tran chong nen xoa thieu).
+    if RemoveItemByIndex(nItemIdx, nStack or 1) ~= 1 then
+        Msg2Player("Kh«ng lÊy ®­îc vËt phÈm khái hµnh trang, h·y thö l¹i.")
+        if nDeposit > 0 then
+            if nCur == AUCTION_DEF.tbCurrency.XU then
+                SetTask(AUCTION_DEF.XU_TASK, GetTask(AUCTION_DEF.XU_TASK) + nDeposit)
+            else
+                Earn(nDeposit)
+            end
+        end
+        return 0
+    end
     local nId = AUC_PutOn(nType, szAct or "", nKind, GetName(), nTong or 0, szName, szDesc, szRec, nCells or 1, nCur,
         nBase, nCurP, nGuar, nDeposit, nNow, nEnd, nNextDrop, nDropLeft)
     if nId <= 0 then
+        -- ghi kho hong: TRA MON LAI NGAY (AUC_GiveRec dung lai dung mon vua xoa)
+        if AUC_GiveRec(szRec) <= 0 then
+            AUC_Log(format("MAT DO: %s ky gui %s nhung ghi kho hong VA tra lai hong", GetName(), szName))
+        end
         if nDeposit > 0 then
             if nCur == AUCTION_DEF.tbCurrency.XU then
                 SetTask(AUCTION_DEF.XU_TASK, GetTask(AUCTION_DEF.XU_TASK) + nDeposit)
@@ -620,14 +681,26 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong)
         Msg2Player("Kho ®Êu gi¸ lçi, h·y thö l¹i sau.")
         return 0
     end
-    RemoveItemByIndex(nItemIdx, GetItemStackCount(nItemIdx))
     AUC_Log(format("DAT BAN id %d loai %d '%s' %s gia %d tien %d nguoi %s", nId, nType, szAct or "", szName, nPrice, nCur, GetName()))
     local szActReal = szAct
     if nType == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL then
         szActReal = AUCTION_DEF.szPersonalActivity
     end
-    AUC_NotifyNewItem(nType, szActReal, nId)
+    AUC_NotifyNewItem(nType, szActReal, nId, nTong)
     return nId
+end
+
+AUCPOLL_FRAMES = 30 * 18
+AUCPOLL_GLB    = 9002
+function AucPoll_Tick(nParam, nTimerId)
+    if AUC_Ready() == 1 then
+        AUC_Tick()
+    end
+    return AUCPOLL_FRAMES
+end
+if GetGlbValue(AUCPOLL_GLB) ~= 1 then
+    SetGlbValue(AUCPOLL_GLB, 1)
+    AddTimer(AUCPOLL_FRAMES, "AucPoll_Tick", 0)
 end
 
 -- ---------------------------------------------------------------- DAT BAN TU NUT TREN CUA SO (khong dung NPC)
@@ -718,7 +791,9 @@ function AUC_OnGiveOk(nCount)
     end
 end
 
--- ---------------------------------------------------------------- QUET (auctionpoll.lua goi moi 30 giay)
+-- ---------------------------------------------------------------- QUET (moi 30 giay)
+-- [B3] Timer PHAI dang ky ngay trong tep nay: Include = lua_dofile vao CHINH state goi, nen dat o
+-- tep rieng thi AUC_Tick chay o state khac state giu AUC_Viewers -> moi thong bao tu dong khong toi ai.
 function AUC_Tick()
     local nNow = GetCurrentTime()
     -- 1) het han / ket thuc
@@ -731,7 +806,22 @@ function AUC_Tick()
         else
             AUC_Expire(r)
         end
-        AUC_NotifyEndItem(r.atype, szAct, r.id)
+        AUC_NotifyEndItem(r.atype, szAct, r.id, r.tong)
+    end
+    -- [A14] 1b) ky gui ca nhan: ha mot nhip THANG ve gia san khi den moc.
+    -- De khoi rieng chu khong nhet vao vong duoi, vi vong duoi con lo bao KET THUC PHIEN -
+    -- tab Ca nhan la cho ban thuong truc, khong co phien nao de ket thuc.
+    local rowsP = AUC_List(AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL, 200, 0)
+    for i = 1, getn(rowsP) do
+        local r = rowsP[i]
+        if r.dropleft > 0 and r.nextdrop > 0 and r.nextdrop <= nNow then
+            if AUC_SetPrice(r.id, r.guar, 0, 0, r.endtime) == 1 then
+                r.cur = r.guar
+                r.nextdrop = 0
+                r.dropleft = 0
+                AUC_NotifyPrice(AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL, AUCTION_DEF.szPersonalActivity, r, nNow)
+            end
+        end
     end
     -- 2) Ha Lan giam gia (the gioi / bang hoi)
     for _, nType in {AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD, AUCTION_DEF.tbAuctionTypeEnum.eType_TONG} do
