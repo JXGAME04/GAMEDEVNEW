@@ -548,6 +548,14 @@ function AUC_OnRequestOfferEnglish(nType, szAct, nId, nNewPrice)
         Msg2Player("Kh«ng thÓ tù tr¶ gi¸ mãn cña m×nh.")
         return
     end
+    -- [A38 04/09 chu chot] KHONG cho tu nang gia cua chinh minh: dang giu gia cao nhat thi
+    -- phai cho nguoi khac tra vuot da moi duoc tra lai. Truoc day cho phep, va con co ca
+    -- nhanh hoan lai phan da tra - tu dau gia voi chinh minh nhu vay chi lam nguoi ban loi
+    -- ma nguoi mua bi khoa them tien vo ich.
+    if r.buyer == GetName() then
+        Msg2Player("§¹i hiÖp ®ang gi÷ gi¸ cao nhÊt, chê ng­êi kh¸c tr¶ v­ît ®·.")
+        return
+    end
     local nStep = floor(r.guar / 10)
     if nStep < 1 then
         nStep = 1
@@ -598,7 +606,8 @@ function AUC_OnRequestOfferEnglish(nType, szAct, nId, nNewPrice)
     if szOld ~= "" and szOld ~= GetName() and nOld > 0 then
         AUC_MailMoney(szOld, "Hoµn tiÒn ®Êu gi¸", "Cã ng­êi tr¶ gi¸ cao h¬n cho "..r.name..", hoµn l¹i tiÒn ®· tr¶.", r.currency, nOld)
     elseif szOld == GetName() and nOld > 0 then
-        -- tu nang gia cua minh: hoan phan cu
+        -- [A38] tu nang gia da bi chan o tren nen nhanh nay khong con toi duoc;
+        -- giu lai lam luoi an toan phong khi co duong khac ghi de nguoi mua.
         AUC_MailMoney(szOld, "Hoµn tiÒn ®Êu gi¸", "§¹i hiÖp n©ng gi¸ cho "..r.name..", hoµn l¹i møc tr¶ tr­íc.", r.currency, nOld)
     end
     Msg2Player("§· tr¶ gi¸ "..AUC_SoTien(nNewPrice).." "..AUC_CurName(r.currency).." cho "..r.name..".")
