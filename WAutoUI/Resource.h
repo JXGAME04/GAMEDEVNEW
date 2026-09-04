@@ -493,6 +493,9 @@ using namespace std;
 #define IDC_CHECKBOX_0_NTS	629
 #define IDC_CHECKBOX_0_MIS	630
 #define IDC_EDITOR_0_MIS	631
+// (04/09) tab 16 "Dang nhap" - PHAI nam trong [161,700) de ShowTab an/hien duoc
+#define IDC_GRP_TAB16		642
+#define IDC_SEP_16A			643
 // == tab 15 "Ac chinh" (03/09/2026): dai 632..641 lien mach, ShowTab hien ca dai ==
 #define IDC_GRP_TAB15		632
 #define IDC_STRING_16_AC	633
@@ -524,6 +527,25 @@ using namespace std;
 #define IDC_TABBTN_12		714
 #define IDC_TABBTN_13		715
 #define IDM_ACCHINH_ALL		716	// (03/09) menu chuot phai danh sach nhan vat
+// (04/09) hop note huong dan kieu auto Thai (ngoai dai an/hien cua ShowTab)
+#define IDD_HELP_DIALOG		750
+#define IDC_HELP_TEXT		751
+// (04/09) VUNG TREN kieu auto Thai - dai 720..728 NAM NGOAI [161,700) nen
+// vong an/hien cua ShowTab khong dung toi: cac o nay LUON HIEN o moi tab.
+#define IDC_STRING_TICKER	720
+#define IDC_BTN_TOP_A		721
+#define IDC_BTN_TOP_H		722
+#define IDC_BTN_TOP_HELP	723
+#define IDC_COMBO_TOP_CD	724
+#define IDC_BTN_TOP_AC		725
+#define IDC_BTN_TOP_ACX		726
+#define IDC_BTN_TOP_Q		727
+#define IDC_SEP_TOP			728
+// (04/09) hang nut day kieu auto Thai (ngoai dai an/hien)
+#define IDC_BTN_BOT_ON		730
+#define IDC_BTN_BOT_OFF		731
+#define IDC_BTN_BOT_SYNC	732
+#define IDC_BTN_BOT_POS		733
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

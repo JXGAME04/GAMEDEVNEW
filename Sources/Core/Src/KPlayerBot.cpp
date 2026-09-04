@@ -18,6 +18,7 @@
 #include "KSubWorldSet.h"
 #include "KFaction.h"       // FACTIONS_PRR_SERIES - so phai moi he
 #include "KRandom.h"        // g_Random
+#include "KSimCity.h"       // [SAPRAI2 04/09] luoi node thanh thi cua SimCity - rai cho ngoi ban sap
 #include "KFilePath.h"      // g_FileName2Id - doi duong script -> ma bam de nhan dien NPC
 #include "KItem.h"          // Item[] - doc DetailType / Particular / Series cua vu khi
 #include "KItemSet.h"       // ItemSet.Add - tao vat pham
@@ -3117,6 +3118,13 @@ static int pb_ODat(int nSubIdx, int nOX, int nOY, int nLech, int nRMax,
 #define PB_SAP_BFS_W   (PB_SAP_BFS_R * 2 + 1)   // canh cua so (27)
 #define PB_SAP_BFS_O   (PB_SAP_BFS_W * PB_SAP_BFS_W)   // 729 o - tran cung
 
+// [SAPRAI2 04/09] Chu game: sap vay kin NPC Da Tau nen nguoi choi khong doi thoai duoc.
+#define PB_SAP_CACH_DT    14   // o: BAN KINH CAM quanh NPC Da Tau - khong dat sap trong day
+#define PB_SAP_CACH_NHAU   3   // o: hai sap cach nhau it nhat bay nhieu (rai rac, khong chong cui)
+#define PB_SAP_CACH_NPC    3   // o: cach MOI NPC co kich ban (Xa Phu, tiem, kho, nhiem vu) - khong
+                               // vay bat ky NPC nao, khong rieng Da Tau
+#define PB_SAP_THU_NODE   60   // so node SimCity thu moi lan xep cho
+
 // Loang tu chan NPC (o luoi nTamX,nTamY) ra moi o DI DUOC theo dia hinh (pb_ODuoc,
 // khong tinh nguoi - bot ngoi truoc khong duoc phep "cat duong" bot sau) trong cua
 // so PB_SAP_BFS_W x PB_SAP_BFS_W. aReach[idx] = 1 neu o toi duoc tu NPC.
@@ -3155,6 +3163,66 @@ static int pb_SapLoang(int nSubIdx, int nTamX, int nTamY, unsigned char* aReach)
 	// van loang duoc vi o goc da danh dau 1 truoc khi kiem - 4 o lan can cua no
 	// duoc thu binh thuong o vong dau.
 	return nDuoi;
+}
+
+// [SAPRAI2 04/09] Ban kiem o KHONG dung cua so BFS quanh NPC: dung cho cho ngoi lay tu luoi node
+// SimCity (rai khap thanh, xa NPC Da Tau nen cua so BFS cu khong phu toi). Node cua SimCity von
+// nam tren duong NPC tuan tra di duoc nen tinh lien thong da co san, khong can loang lai.
+static int pb_OSapTotRai(int nSubIdx, int nCellX, int nCellY)
+{
+	const int nMpsX = nCellX * 32, nMpsY = nCellY * 32;
+	if (!pb_ODuoc(nSubIdx, nMpsX, nMpsY))
+		return 0;
+	int nR = -1, nMX = 0, nMY = 0, nOX = 0, nOY = 0;
+	SubWorld[nSubIdx].Mps2Map(nMpsX, nMpsY, &nR, &nMX, &nMY, &nOX, &nOY);
+	if (nR < 0)
+		return 0;
+	if (SubWorld[nSubIdx].m_Region[nR].GetBarrierMin(nMX, nMY, nOX, nOY, TRUE) != Obstacle_NULL)
+		return 0;
+	for (int q4 = 0; q4 < s_botCount; q4++)
+	{
+		if (!s_bots[q4].nBanSap || s_bots[q4].nPlayerIdx <= 0)
+			continue;
+		const int nn4 = Player[s_bots[q4].nPlayerIdx].m_nIndex;
+		if (nn4 <= 0 || nn4 >= MAX_NPC)
+			continue;
+		if (Npc[nn4].m_SubWorldIndex != nSubIdx)
+			continue;
+		int qx4 = 0, qy4 = 0;
+		Npc[nn4].GetMpsPos(&qx4, &qy4);
+		// giu KHOANG CACH giua hai sap: sat nhau van la 'chong cui', chu game muon RAI RAC
+		const int ddx = qx4 / 32 - nCellX, ddy = qy4 / 32 - nCellY;
+		if (ddx * ddx + ddy * ddy < PB_SAP_CACH_NHAU * PB_SAP_CACH_NHAU)
+			return 0;
+	}
+	// [SAPRAI2 - phan bien] Khong duoc vay BAT KY NPC dich vu nao (Xa Phu, tiem, kho, nhiem vu):
+	// rai khap thanh ma khong loc thi chi doi cho tac nghen tu NPC Da Tau sang NPC khac.
+	// Chi quet NPC trong CHINH region cua o ung vien - danh sach nay ngan, va o ung vien chi duoc
+	// xet mot lan moi doi bot nen chi phi khong dang ke.
+	{
+		KIndexNode* pN4 = (KIndexNode *)SubWorld[nSubIdx].m_Region[nR].m_NpcList.GetHead();
+		while (pN4)
+		{
+			const int ni4 = pN4->m_nIndex;
+			pN4 = (KIndexNode *)pN4->GetNext();
+			if (ni4 <= 0 || ni4 >= MAX_NPC)
+				continue;
+			if (!Npc[ni4].m_ActionScriptID)
+				continue;              // quai / bot khong co kich ban - khong phai NPC dich vu
+			int ex4 = 0, ey4 = 0;
+			Npc[ni4].GetMpsPos(&ex4, &ey4);
+			const int edx = ex4 / 32 - nCellX, edy = ey4 / 32 - nCellY;
+			if (edx * edx + edy * edy < PB_SAP_CACH_NPC * PB_SAP_CACH_NPC)
+				return 0;
+		}
+	}
+	static const int aTx4[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+	static const int aTy4[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+	int nThoang4 = 0;
+	for (int h4 = 0; h4 < 8; h4++)
+		if (pb_ODuoc(nSubIdx, nMpsX + aTx4[h4] * 32, nMpsY + aTy4[h4] * 32))
+			nThoang4++;
+	return (nThoang4 >= 5) ? 1 : 0;	// o tui / khe tuong / goc nha = 'goc ket'
 }
 
 static int pb_OSapTot(int nSubIdx, int nCellX, int nCellY, int nTamX, int nTamY,
@@ -4186,8 +4254,51 @@ static void pb_BanSap(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			// dau CUNG tia). Diem khoi dau tren vanh xoay theo chi so bot -> moi con
 			// mot huong rieng, toa deu quanh quang truong nhu cho that; pb_OSapTot
 			// (da them quet danh sach sap) tranh o co sap khac.
+			// [SAPRAI2 04/09] TRUOC HET rai theo LUOI NODE THANH THI cua SimCity ban Linux
+			// (settings\simcity\maps\thanhthi\<id>_*_nodes.txt - chinh luoi 'dan di dao rai deu').
+			// Node nam khap thanh va deu la o di duoc, nen sap toa ra thay vi vay quanh NPC Da Tau;
+			// bo moi node trong PB_SAP_CACH_DT o quanh NPC de nguoi choi luon vao doi thoai duoc.
+			const int nSetR = SC_NodeSetCuaMap(nha.nMap);
+			const int nSoNodeR = SC_NodeSo(nSetR);
+			if (nSoNodeR > 0)
+			{
+				for (int t4 = 0; t4 < PB_SAP_THU_NODE && !bDat; t4++)
+				{
+					// tron theo chi so bot + so vong: g_Random DONG BANG THEO GIAY (bay engine.lib
+					// da ghi o pb_ChamHangSap) nen mot minh no se cho ca dan cung mot node.
+					// buoc nhay 1: buoc 101 se thoai hoa (chi cham nSoNodeR/101 node) neu so node
+					// chia het cho 101 - du lieu hien tai khong dinh, nhung khong dat cuoc vao do.
+					const int q4 = ((int)g_Random(nSoNodeR) + nLech * 37 + t4) % nSoNodeR;
+					int cx4 = 0, cy4 = 0;
+					if (!SC_NodeLay(nSetR, q4, &cx4, &cy4))
+						continue;
+					cx4 += (int)g_Random(5) - 2;   // lech +-2 o nhu che do 0 cua SimCity
+					cy4 += (int)g_Random(5) - 2;
+					const int ddx4 = cx4 - nTamX, ddy4 = cy4 - nTamY;
+					if (ddx4 * ddx4 + ddy4 * ddy4 < PB_SAP_CACH_DT * PB_SAP_CACH_DT)
+						continue;                  // sat NPC Da Tau -> bo
+					if (!pb_OSapTotRai(nSubT, cx4, cy4))
+						continue;
+					nSx = cx4 * 32;
+					nSy = cy4 * 32;
+					if (bCungMap)
+					{
+						Npc[nNpcIdx].SetPos(nSx, nSy);
+						bDat = 1;
+					}
+					else
+						bDat = (Npc[nNpcIdx].ChangeWorld(nha.nMap, nSx, nSy) == 1);
+					if (bDat)
+						pb_Log("[SapRai] %s ngoi sap theo node SimCity: thanh %d o(%d,%d) cach NPC Da Tau %d o\n",
+						       Player[nIdx].m_PlayerName, nha.nMap, cx4, cy4,
+						       (ddx4 > 0 ? ddx4 : -ddx4) + (ddy4 > 0 ? ddy4 : -ddy4));
+				}
+			}
+			// Ban do khong co luoi node (khong nam trong thanhthi.txt) hoac thu het van chua duoc
+			// -> quay ve cach cu: vanh dai quanh NPC. Giu duoc tinh nang khi thieu du lieu.
 			unsigned char aReach[PB_SAP_BFS_O];
-			pb_SapLoang(nSubT, nTamX, nTamY, aReach);
+			if (!bDat)
+				pb_SapLoang(nSubT, nTamX, nTamY, aReach);
 			for (int r3 = 3; r3 <= 12 && !bDat; r3++)
 			{
 				const int nChuVi = 8 * r3;

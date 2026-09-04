@@ -57,6 +57,12 @@ int LuaSC_CityNodes(Lua_State* L);     // (nWorldId) -> nSetId / -1
 int LuaSC_PickSpawn(Lua_State* L);     // (nSetId, nMode, nWorldId, nSubWorldIdx) -> x, y MPS
 int LuaSC_RandomName(Lua_State* L);    // () -> ten tu names.txt
 
+// [SAPRAI2 04/09] Luoi node thanh thi (settings\simcity\maps\thanhthi\<id>_*_nodes.txt) - dung
+// chung cho bot ban sap cua KPlayerBot de rai sap khap thanh (khong vay quanh NPC Da Tau).
+int  SC_NodeSetCuaMap(int nWorldId);            // -1 = ban do khong co luoi node
+int  SC_NodeSo(int nSetId);                     // so node trong luoi
+int  SC_NodeLay(int nSetId, int i, int* pCellX, int* pCellY);   // node thu i (O LUOI)
+
 void SC_Breathe();                    // goi moi tick tu CoreServerShell::Breathe (KHONG phai ham Lua)
 
 #endif // _SERVER
