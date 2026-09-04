@@ -157,6 +157,15 @@ Gốc: hàng thư (`KWndPage`) và thanh cuộn (`KWndScrollBar`) chỉ báo `WN
 wauto-c0). Ini: `[MailSenderLable]` Width 65→80, `[MailSenderValue]` Left 82 Width 259. Script: `MailManager_OnLogin` bỏ qua bot.
 `bin\client\Game.exe.moi` đợt 7 = **71dae629** (1.401.856, build từ main 18c74b6c + D7). Cây sống 18:00: `CoreClient.dll.moi` a3cecb53 (wauto-c0, main d59340c4, có D5).
 
+**ĐỢT 8 (22:20) — chủ: thanh cuộn OK; "icon thư bấm vào là mất, khó trúng, lệch toạ độ".** Gốc: nhấp nhảy = ẨN/HIỆN nút mỗi 9 khung,
+lúc ẩn `PtInWindow` = false → bấm xuyên qua (toạ độ không lệch: `KWndWindow::AbsoluteMove` dời cả con). Sửa `UiMail.{h,cpp}`: nút luôn vẽ,
+thư mới → đổi khung 0↔2 trong 6 giây rồi giữ khung 2 (Over) khi còn thư chưa đọc; bấm → khung theo trạng thái. → `bin\client\Game.exe.moi`
+**eb8c65dc** (1.401.856). Kèm API cho hoạt động: `mailmanager.lua` `MAILMGR_ACTIVITY` (tongkim, congthanh, liendau, datau, boss, viemde,
+hoatdong, toptuan, topthang, duatop, web → tên người gửi) + `MailManager_SendReward(szActivity, szRole, szTitle, szContent, szAward, nDays)`
+(szRole nil = người chơi đang gọi; `source` = szActivity để web/log lọc). Chưa gắn vào hoạt động nào — chờ chủ chọn danh sách
+(tệp đang trao trực tiếp: `tinhnang\tong_kim_tcap` 2, `congthanhchien` 2, `boss_hoangkim` 2, `pubg` 1; `cauhinh\ch_thuong_lib.lua` G_TraoThuong
+theo bảng thưởng có thể thêm bản "qua thư" đổi bảng → chuỗi award).
+
 Phiên wauto-c1 (Represent3, nhánh rep3-0309) bị chặn ghi `bin\client` và nhờ gộp vào bộ này — KHÔNG làm hộ (chủ tự chép/cho phép); họ tự gộp
 origin/main (đã có D4/D4b) vào rep3-0309 và đặt sau. `Represent3.dll` 74ac07ad đã nằm ở bin\client nhưng `config.ini [Client] Represent=2` nên chưa dùng.
 

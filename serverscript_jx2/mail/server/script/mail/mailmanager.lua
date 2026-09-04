@@ -323,6 +323,35 @@ function MailManager_SendMail(szRole, szSender, szTitle, szContent, szAward, nEx
 end
 
 -- lenh bai admin: gui thu thu cho chinh minh (1 = tien/xu/exp, 2 = them vat pham 6,1,4139)
+-- [D8] nguoi gui theo HOAT DONG (chu 03/09: 'moi loai hoat dong ten khac nhau'); them hoat dong = them 1 dong
+MAILMGR_ACTIVITY = {
+    tongkim   = "Tèng Kim",
+    congthanh = "C«ng Thµnh ChiÕn",
+    liendau   = "Liªn §Êu",
+    datau     = "D· TÈu",
+    boss      = "Boss Hoµng Kim",
+    viemde    = "Viªm §Õ",
+    hoatdong  = "Ho¹t §éng",
+    toptuan   = "Th­ëng Top TuÇn",
+    topthang  = "Th­ëng Top Th¸ng",
+    duatop    = "Sù KiÖn §ua Top",
+    web       = "Nhµ ph¸t hµnh",
+}
+
+-- MailManager_SendReward(szActivity, szRole, szTitle, szContent, szAward, nDays) -> id thu (0 = loi)
+--   szActivity: khoa MAILMGR_ACTIVITY (tongkim, congthanh, liendau, datau, boss, viemde, hoatdong, toptuan, topthang,
+--               duatop, web) hoac ten nguoi gui tu do; cung ghi vao cot `source` de web/log loc theo hoat dong.
+--   szRole nil/"" = nguoi choi dang goi script (PlayerIndex); szAward theo dinh dang dau tep; nDays mac dinh 30.
+-- Vi du (trong script hoat dong, sau Include("\\script\\mail\\mailmanager.lua")):
+--   MailManager_SendReward("tongkim", nil, "Thuong Tong Kim", "Chuc mung...<enter>Tran trong", "money:5000;exp:100000")
+function MailManager_SendReward(szActivity, szRole, szTitle, szContent, szAward, nDays)
+    local szSender = MAILMGR_ACTIVITY[szActivity or ""] or szActivity or MAILMGR_SENDER_SYS
+    if not szRole or szRole == "" then
+        szRole = GetName()
+    end
+    return MailManager_SendMail(szRole, szSender, szTitle or szSender, szContent or "", szAward or "", nDays or 30, szActivity or "script")
+end
+
 function MailManager_SendTest(nKind)
     local szAward = "money:10000;xu:10;exp:50000"
     if nKind == 2 then

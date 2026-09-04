@@ -56,6 +56,9 @@ static void sMailLog(const char* szFmt, ...)
     fclose(f);
 }
 
+#define MAILUI_ICON_FRAME_NORMAL 0          // [D8] mail_icon.ini [MailBtn] Up=0
+#define MAILUI_ICON_FRAME_HOT    2          // [D8] khung Over=2 = con thu chua doc
+#define MAILUI_BLINK_TOTAL      (18 * 6)    // [D8] thu moi: nhay 6 giay roi giu khung HOT
 #define MAILUI_BLINK_FRAMES     9           // 18 khung = 1 giay -> nhay 2 lan/giay
 
 KUiMailManager* KUiMailManager::ms_pSelf = NULL;
@@ -957,6 +960,8 @@ KUiMailIcon::KUiMailIcon()
 {
     m_bBlink = 0;
     m_nFrame = 0;
+    m_bUnread = 0;
+    m_nBlinkLeft = 0;
 }
 
 void KUiMailIcon::Initialize()
@@ -1008,10 +1013,13 @@ void KUiMailIcon::SetVisible(int bVisible)
         return;
     ms_pSelf->m_Btn.Show();
     ms_pSelf->Show();
-    ms_pSelf->m_bBlink = bVisible ? 1 : 0;
-    ms_pSelf->m_nFrame = 0;
+    // [D8] khong an/hien nut nua (an = bam xuyen qua, chu bao 'bam la mat, kho trung'): con thu chua doc = khung HOT
+    ms_pSelf->m_bUnread = bVisible ? 1 : 0;
+    if (!ms_pSelf->m_bBlink)
+        ms_pSelf->m_Btn.SetFrame(ms_pSelf->m_bUnread ? MAILUI_ICON_FRAME_HOT : MAILUI_ICON_FRAME_NORMAL);
 }
 
+// [D8] thu moi: doi khung 0 <-> 2 moi 9 khung trong 6 giay, roi giu khung HOT (nut luon ve, luon bam duoc)
 void KUiMailIcon::Blink()
 {
     SetVisible(1);
@@ -1019,6 +1027,7 @@ void KUiMailIcon::Blink()
     {
         ms_pSelf->m_bBlink = 1;
         ms_pSelf->m_nFrame = 0;
+        ms_pSelf->m_nBlinkLeft = MAILUI_BLINK_TOTAL;
     }
 }
 
@@ -1027,13 +1036,18 @@ void KUiMailIcon::Breathe()
     if (!m_bBlink)
         return;
     m_nFrame++;
+    if (m_nBlinkLeft > 0)
+        m_nBlinkLeft--;
+    if (m_nBlinkLeft <= 0)
+    {
+        m_bBlink = 0;
+        m_Btn.SetFrame(m_bUnread ? MAILUI_ICON_FRAME_HOT : MAILUI_ICON_FRAME_NORMAL);
+        return;
+    }
     if (m_nFrame >= MAILUI_BLINK_FRAMES)
     {
         m_nFrame = 0;
-        if (m_Btn.IsVisible())
-            m_Btn.Hide();
-        else
-            m_Btn.Show();
+        m_Btn.SetFrame(m_Btn.GetCurrentFrame() == MAILUI_ICON_FRAME_HOT ? MAILUI_ICON_FRAME_NORMAL : MAILUI_ICON_FRAME_HOT);
     }
 }
 
@@ -1043,6 +1057,7 @@ int KUiMailIcon::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
     {
         m_bBlink = 0;
         m_Btn.Show();
+        m_Btn.SetFrame(m_bUnread ? MAILUI_ICON_FRAME_HOT : MAILUI_ICON_FRAME_NORMAL);
         sSendOp(MAILUI_OP_ICON_CLICK, 0, 0);
         return 1;
     }
