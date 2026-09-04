@@ -986,6 +986,12 @@ def build_manager():
         "AUCWEB_FRAMES    = 30 * 18",
         "AUCWEB_GLB       = 9003",
         "AUCWEB_MAX_PRICE = 2000000000",	# client dau bang so nguyen 32 bit
+        "AUCWEB_POOL_MAX  = 2000",	# tran so nhom doc moi dot (C++ AUCWEB_Pool kep cung so nay)
+        "",
+        "-- ham xu ly loi tam cho call(..., \"x\", AucWeb_LoiLua): ghi THONG DIEP loi vao nhat ky (call x mac dinh nuot mat)",
+        "function AucWeb_LoiLua(sz)",
+        "    AUC_Log(\"LOI Lua: \"..tostring(sz))",
+        "end",
         "",
         "function AucWeb_Kep(n, nMin, nMax)",
         "    n = floor(tonumber(n) or 0)",
@@ -1003,7 +1009,14 @@ def build_manager():
         "    if nTotal <= 0 then",
         "        return 0",
         "    end",
-        "    local r = random(1, nTotal)",
+        "    -- [W5 random] random() cua Lua 4.0 chi co 32767 muc (RAND_MAX MSVC): tong trong so lon hon thi",
+        "    -- co o KHONG BAO GIO duoc boc -> ghep hai lan random de phu du.",
+        "    local r",
+        "    if nTotal <= 30000 then",
+        "        r = random(1, nTotal)",
+        "    else",
+        "        r = mod(random(0, 32766) * 32767 + random(0, 32766), nTotal) + 1",
+        "    end",
         "    for i = 1, getn(cand) do",
         "        r = r - cand[i].weight",
         "        if r <= 0 then",
@@ -1052,7 +1065,7 @@ def build_manager():
         "-- mo MOT dot: da gianh duoc quyen (AUCWEB_ClaimRound = 1)",
         "function AucWeb_Round(nNow, nPer, nEnd, nRound)",
         "    local szAct = \"" + V("Đợt ") + "\"..GetLocalDate(\"%H:%M %d/%m\")",
-        "    local pool = AUCWEB_Pool(500)",
+        "    local pool = AUCWEB_Pool(AUCWEB_POOL_MAX)",
         "    local cand = {}",
         "    for i = 1, getn(pool) do",
         "        local p = pool[i]",
@@ -1087,6 +1100,9 @@ def build_manager():
         "    end",
         "    local szMsg = format(\"dot %d luc %s: %d mon len san, %d bo qua, nhom dang bat %d, het luc %s\",",
         "        nRound, GetLocalDate(\"%H:%M %d/%m\"), nDone, nSkip, getn(pool), AUC_GioHet(nEnd))",
+        "    if getn(pool) >= AUCWEB_POOL_MAX then",
+        "        szMsg = szMsg..format(\" (CANH BAO: chi doc %d nhom dau theo id, nhom sau bi bo)\", AUCWEB_POOL_MAX)",
+        "    end",
         "    AUCWEB_Msg(szMsg, nNow)",
         "    AUC_Log(\"WEB \"..szMsg)",
         "end",
@@ -1131,7 +1147,7 @@ def build_manager():
         "function AucWeb_Tick(nParam, nTimerId)",
         "    SetGlbValue(AUCWEB_GLB, GetCurrentTime())",
         "    -- call(..., \"x\"): loi Lua trong than KHONG lan ra; lan ra la KJx2ScriptTimer_Breathe xoa timer vinh vien",
-        "    if call(AucWeb_Body, {}, \"x\") == nil then",
+        "    if call(AucWeb_Body, {}, \"x\", AucWeb_LoiLua) == nil then",
         "        AUC_Log(\"LOI Lua trong AucWeb_Body - bo qua nhip nay\")",
         "    end",
         "    return AUCWEB_FRAMES",
@@ -1153,7 +1169,7 @@ def build_manager():
         "    if AUC_Ready() == 1 then",
         "        -- [DAUGIA-WEB] boc call(..., \"x\"): mot loi Lua (vi du truong nil) ma lan ra khoi callback la",
         "        -- KJx2ScriptTimer_Breathe XOA timer vinh vien - het han/ha gia dung cho toi lan khoi dong sau.",
-        "        if call(AUC_Tick, {}, \"x\") == nil then",
+        "        if call(AUC_Tick, {}, \"x\", AucWeb_LoiLua) == nil then",
         "            AUC_Log(\"LOI Lua trong AUC_Tick - bo qua nhip nay\")",
         "        end",
         "    end",
@@ -2293,8 +2309,11 @@ def patch_mail_generator():
         s = s.replace(old5, old5 + nl + '        "    daugia    = \\"" + V("Chưởng Quầy Khu Đấu Giá") + "\\",",')
         io.open(p, "w", encoding="utf-8", newline="").write(s)
         print("  p3_lua.py: them aucitem")
-    if not CHECK:
-        os.system('python "%s"' % p)
+        # [W4 04/09] CHI sinh lai mailmanager.lua khi VUA va p3. Truoc day chay p3 MOI LAN p12 chay,
+        # de len cay chay that ban do p3 sinh -> lam roi ban va tay 2712d95b cua wauto-55 (MailManager_QuaConLai,
+        # 50 dong, khong nam trong p3). mailmanager.lua tu nay do p3 + cac phien khac quan ly, p12 khong dung.
+        if not CHECK:
+            os.system('python "%s"' % p)
 
 
 def drop_poll():

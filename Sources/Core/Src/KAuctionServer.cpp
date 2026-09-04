@@ -864,8 +864,8 @@ static bool _RowWebPool(const KDBRow& row, void* p)
 int LuaAUCWEB_Pool(Lua_State* L)
 {
 	int nMax = sArgInt(L, 1);
-	if (nMax <= 0 || nMax > 500)
-		nMax = 500;
+	if (nMax <= 0 || nMax > 2000)	// [W5 tran] Lua doc AUCWEB_POOL_MAX = 2000, cham tran thi ghi canh bao
+		nMax = 2000;
 	Lua_NewTable(L);
 	if (!sEnsureWebTable())
 		return 1;

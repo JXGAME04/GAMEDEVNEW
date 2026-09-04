@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS auction_web_pool (
 Luật:
 - Web INSERT / UPDATE / DELETE tự do các cột **WEB**. Xoá dòng đang có món trên sàn không sao (dòng `auction_item` độc lập, đã chứa `item_rec`).
 - Web **không ghi** 5 cột MÁY CHỦ (`drawn_*`, `item_name`, `err`). Máy chủ ghi chúng bằng `UPDATE ... WHERE id = ?`, không đụng cột khác.
-- Máy chủ đọc nhóm **lúc mở đợt** (không cache). Sửa xong là đợt kế có hiệu lực.
+- Máy chủ đọc nhóm **lúc mở đợt** (không cache). Sửa xong là đợt kế có hiệu lực. Mỗi đợt đọc **tối đa 2.000 nhóm** đang bật (theo `id` tăng dần); chạm trần thì `last_msg` có chữ CANH BAO — web nên chặn khi số nhóm bật vượt 2.000.
 - Một dòng lỗi (`err <> ''`) **vẫn được bốc lại** ở đợt sau (admin sửa `award` thì tự hết lỗi). Muốn loại hẳn thì đặt `enabled = 0`.
 
 ## 3. Bảng `auction_web_cfg` — LỊCH (một dòng, `id = 1`)
@@ -82,15 +82,18 @@ Ví dụ: `item:1,1,5,1,0,0,50` (50 Đại hoàn đan trong một chồng) · `i
 
 ## 5. Máy chủ kiểm gì trước khi đưa lên sàn (ghi vào `err`, bỏ qua món, bốc món khác)
 
-| Lỗi (`err`, ASCII) | Nguyên nhân |
+**Web hiện `err` NGUYÊN VĂN** (ASCII không dấu) và tô đỏ khi khác rỗng — đừng tra bảng, vì danh sách còn dài thêm khi máy chủ sửa. Các chuỗi hiện có:
+
+| `err` | Nguyên nhân |
 |---|---|
-| `award: thieu/sai cu phap` | không có tiền tố item:/gold:, thiếu 6 số, hoặc >1 mục |
+| `award: thieu/sai cu phap` · `award: chi mot muc, khong dau ;` · `award: chi nhan item: hoac gold:` · `award: so khong hop le` · `award: ky tu la` · `award: so am hoac qua lon` · `award: item can 6 so` · `award: gold can so dong goldequip` | chuỗi award sai |
 | `genre X khong ho tro` | 2, 3, 7 hoặc số lạ |
 | `lock/expSec phai = 0` | |
-| `dung vat pham that bai` | detail/particular/record sai → bộ sinh trả rỗng |
-| `gia khoi diem 1..2000000000` | |
-| `gia mua ngay phai > khoi diem` | `buy_price > 0` mà `<= start_price` |
-| `currency 1 hoac 2` | |
+| `so luong qua lon` · `so luong toi da N mot chong` | `n` > 9999 hoặc vượt trần chồng của món |
+| `dung vat pham that bai (detail/particular/dong sai)` | bộ sinh trả rỗng |
+| `het khe vat pham` · `khong doi duoc sang rec` · `rec khong doc lai duoc` · `dung lai lan hai that bai` · `dung lai lan hai ra mon khac` | lỗi nội bộ khi dựng/kiểm lại — báo máy chủ |
+| `currency 1 hoac 2` · `gia khoi diem 1..2000000000` · `gia mua ngay phai > khoi diem (va <= 2000000000)` | giá/tiền sai |
+| `khong ghi duoc auction_item` | MySQL lỗi lúc chèn — đợt sau thử lại |
 
 Trần số: giá ≤ 2 000 000 000 (client đấu bằng số nguyên 32 bit); `period_min` kẹp 10..1440; `items_per_round` kẹp 1..30; `weight` kẹp 1..1000. Nếu nhóm hợp lệ ít hơn `items_per_round` thì mở bấy nhiêu món, ghi `last_msg`.
 
