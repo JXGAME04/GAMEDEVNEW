@@ -55,8 +55,14 @@ end
 function UIAuctionHouse:ResetPageInfo(nType, szAct)
     if szAct ~= "" then
         local nMax = self:GetActivityMaxPage(szAct)
+        -- [A29b] chu: "qua trang ke mua item xong ve lai 1 trang la khong thay item nao".
+        -- Truoc day co kep so trang ve trang cuoi nhung CHI doi CHU, khong nap lai noi dung,
+        -- nen man hinh van giu nguyen trang cu da rong cho toi khi tat mo lai cua so.
         if nMax > 0 and self.nCurPageIndex > nMax then
             self.nCurPageIndex = nMax
+            if AuctionUiIsOpen() == 1 and self.szCurActivityName == szAct then
+                self:RequestActivityContent(szAct, nMax)
+            end
         end
         if nMax > 0 then
             AuctionSetCurrentPageTxt(nType, format("%d/%d", self.nCurPageIndex, nMax))
