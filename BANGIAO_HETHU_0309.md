@@ -134,6 +134,13 @@ Kiểm tra sau swap: (1) vào game → icon thư dưới Bầu Cua; (2) lệnh b
 (3) bấm hàng → chi tiết → Nhận; (4) đóng hộp thư, bấm icon → mở lại; (5) web INSERT → ≤ 30 s tự mở; (6) thoát ra chọn nhân vật, vào lại → icon
 lại hiện, danh sách đúng nhân vật. Nếu vẫn không hiện: gửi `bin\client\jx_mail.log` + `bin\server\logs\hethong.log`.
 
+**ĐỢT 5 (17:40–17:50) — GỐC LỖI TÌM RA NHỜ jx_mail.log:** chủ swap 6bbcda8f/bd5cb88e → icon hiện, bấm không mở. Log: `[SP] nhan s2c_scriptdata id=37`
+(kênh tốt) rồi `[SP] khong nap duoc bo dieu phoi \script\script_protocol\protocol_def_c.lua`, `RunClientLua: khong nap duoc \script\ui\uimail.lua`.
+Nguyên nhân: `KSortScript.h:15` phía client `MAX_SCRIPT_IN_SET = 5` (máy chủ 5000) → `LoadAllScript("\script")` nạp 5 tệp `lib\` đầu rồi đầy,
+`g_GetScript`/`ReLoadScript` thất bại với mọi tệp khác. Sửa: `KScriptProtocol.cpp` giữ bảng `KLuaScript` riêng phía client (nạp theo yêu cầu,
+`RegisterFunctions(GameScriptFuns)` + `MODEL_GAMECLIENT` như `LoadScriptToSortListA`), `SP_FindScript()` xuất cho `LuaDynamicExecute` (client).
+→ `bin\client\CoreClient.dll.moi` **e151cbfc** (2.515.456); `Game.exe` bd5cb88e giữ nguyên. Commit D5 trên origin/main.
+
 Phiên wauto-c1 (Represent3, nhánh rep3-0309) bị chặn ghi `bin\client` và nhờ gộp vào bộ này — KHÔNG làm hộ (chủ tự chép/cho phép); họ tự gộp
 origin/main (đã có D4/D4b) vào rep3-0309 và đặt sau. `Represent3.dll` 74ac07ad đã nằm ở bin\client nhưng `config.ini [Client] Represent=2` nên chưa dùng.
 

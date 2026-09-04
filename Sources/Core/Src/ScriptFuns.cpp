@@ -2489,7 +2489,11 @@ int LuaDynamicExecute(Lua_State* L)
 	char szLow[MAX_PATH];
 	g_StrCpyLen(szLow, (char*)szScript, MAX_PATH);
 	g_StrLower(szLow);
+#ifdef _SERVER
 	KLuaScript* pScript = (KLuaScript*)g_GetScript(szLow);
+#else
+	KLuaScript* pScript = SP_FindScript(szLow, 1);	// [MAIL 03/09 D5] client: g_ScriptSet chi 5 o -> bang rieng KScriptProtocol.cpp
+#endif
 	if (!pScript)
 	{
 		g_DebugLog((LPSTR)"[WLLS] DynamicExecute: script chua nap, bo qua: %.128s -> %.64s", szLow, szFun);

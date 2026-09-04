@@ -19,6 +19,7 @@
 #include "KWin32.h"
 
 typedef struct lua_State Lua_State;
+class KLuaScript;
 
 #pragma pack(push, enter_scriptprotocol)
 #pragma pack(1)
@@ -48,5 +49,8 @@ int  LuaSendScriptDataToServer(Lua_State* L);
 int  SP_RunClientLua(const char* szScript, const char* szCall);	// [MAIL 03/09 D2] chay 1 cau Lua trong state cua script (nap neu chua)
 #endif
 int  LuaEnsureScript(Lua_State* L);
+// [MAIL 03/09 D5] tim/nap script theo duong tuong doi (chu thuong hoa ben trong). Client: g_ScriptSet chi 5 o nen
+// KScriptProtocol giu bang KLuaScript rieng (nap theo yeu cau); ScriptFuns.cpp LuaDynamicExecute (client) dung ham nay.
+KLuaScript* SP_FindScript(const char* szScript, int bLoad);
 
 #endif // KSCRIPTPROTOCOL_H
