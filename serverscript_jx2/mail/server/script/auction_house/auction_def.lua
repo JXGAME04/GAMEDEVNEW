@@ -3,7 +3,7 @@
 AUCTION_DEF = {}
 AUCTION_DEF.nAuctionTaxRate        = 5              -- thue giao dich (%) tru vao tien nguoi ban nhan
 AUCTION_DEF.nPersonalPutOnCost     = 10             -- phi ky gui (%) thu ngay khi dat ban, khong hoan
-AUCTION_DEF.nMaxItemPerPage        = 20             -- moi trang
+AUCTION_DEF.nMaxItemPerPage        = 4              -- moi trang (bo dem ObjBuffer chi 4096 byte, moi dong ~600)
 AUCTION_DEF.nMaxItemPerSeller      = 5              -- mot nguoi ky gui toi da
 AUCTION_DEF.nPersonalDuration      = 24 * 60 * 60   -- ky gui 24 gio
 AUCTION_DEF.nEnglishRemainingTime  = 30 * 60        -- kieu Anh: 30 phut

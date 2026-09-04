@@ -230,28 +230,27 @@ end
 
 -- ---------------------------------------------------------------- tu may chu (protocol_def_c.lua)
 function UIAuctionHouse:ShowItem(nType, tbItem, bAdd)
-    local bMine = 0
-    if nType == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL and tbItem.szBelongRole == GetName() then
-        bMine = 1
-    end
+    -- [A11] may chu da gui san bMine (client khong co GetName)
+    local bMine = tbItem.bMine or 0
+    local szCur = AUCTION_DEF.tbCurrencyName[tbItem.nCurrencyType] or ""
     -- [A9] 6 so cua vat pham nam thang trong dong (khong con bang long)
     if tbItem.nType == AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH then
         if bAdd == 1 then
             AuctionAddEnglishItem(nType, tbItem.nId, tbItem.nStartTime, tbItem.nGuaranteedPrice, tbItem.nRangePerOffer, tbItem.nCurrencyType,
                 tbItem.nMaxPrice, tbItem.nSelfPrice, tbItem.nRemainingTime, bMine,
-                tbItem.nG or 0, tbItem.nD or 0, tbItem.nP or 0, tbItem.nL or 0, tbItem.nS or 0, tbItem.nK or 0, tbItem.nCount or 1, tbItem.szName or "", tbItem.szCurrencyName or "")
+                tbItem.nG or 0, tbItem.nD or 0, tbItem.nP or 0, tbItem.nL or 0, tbItem.nS or 0, tbItem.nK or 0, tbItem.nCount or 1, tbItem.szName or "", szCur)
         else
             AuctionSetEnglishItem(nType, tbItem.nId, tbItem.nStartTime, tbItem.nGuaranteedPrice, tbItem.nRangePerOffer, tbItem.nCurrencyType,
-                tbItem.nMaxPrice, tbItem.nSelfPrice, tbItem.nRemainingTime, bMine, tbItem.szCurrencyName or "")
+                tbItem.nMaxPrice, tbItem.nSelfPrice, tbItem.nRemainingTime, bMine, szCur)
         end
     else
         if bAdd == 1 then
             AuctionAddDutchItem(nType, tbItem.nId, tbItem.nStartTime, tbItem.nCurPrice, tbItem.nGuaranteedPrice, tbItem.nCurrencyType,
                 tbItem.nRemainingTime, tbItem.nNextPrice, tbItem.nTotalRemainingTime, bMine,
-                tbItem.nG or 0, tbItem.nD or 0, tbItem.nP or 0, tbItem.nL or 0, tbItem.nS or 0, tbItem.nK or 0, tbItem.nCount or 1, tbItem.szName or "", tbItem.szCurrencyName or "")
+                tbItem.nG or 0, tbItem.nD or 0, tbItem.nP or 0, tbItem.nL or 0, tbItem.nS or 0, tbItem.nK or 0, tbItem.nCount or 1, tbItem.szName or "", szCur)
         else
             AuctionSetDutchItem(nType, tbItem.nId, tbItem.nStartTime, tbItem.nCurPrice, tbItem.nGuaranteedPrice, tbItem.nCurrencyType,
-                tbItem.nRemainingTime, tbItem.nNextPrice, tbItem.nTotalRemainingTime, bMine, tbItem.szCurrencyName or "")
+                tbItem.nRemainingTime, tbItem.nNextPrice, tbItem.nTotalRemainingTime, bMine, szCur)
         end
     end
 end
