@@ -693,6 +693,7 @@
     <ClCompile Include="Src\KScriptProtocol.cpp" />
     <ClCompile Include="Src\KMailClient.cpp" />
     <ClCompile Include="Src\KAuctionClient.cpp" />
+    <ClCompile Include="Src\KChienLenhClient.cpp" />
     <ClCompile Include="Src\KMailServer.cpp" />
     <ClCompile Include="Src\KAuctionServer.cpp" />
     <ClCompile Include="Src\KChienLenh.cpp" />
@@ -1053,6 +1054,8 @@
     <ClInclude Include="Src\KMySQLDB.h" />
     <ClInclude Include="Src\KGameKV.h" />
     <ClInclude Include="Src\KChienLenh.h" />
+    <ClInclude Include="Src\KChienLenhClient.h" />
+    <ClInclude Include="Src\KChienLenhUiDef.h" />
     <ClInclude Include="Src\BauCua.h" />
     <ClInclude Include="Src\CoreDrawGameObj.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>

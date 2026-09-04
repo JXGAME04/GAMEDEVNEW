@@ -1,4 +1,5 @@
 Include("\\script\\chienlenh\\cl_def.lua")	-- [CL 04/09] so hieu nhiem vu Chien Lenh
+Include("\\script\\chienlenh\\cl_ui.lua")	-- [CL 04/09 DOT2] bieu tuong + cua so Chien Lenh
 --Author: Fong KiÒu
 --Date: 07/07/2021
 --Function: Khi Player vµo game
@@ -28,6 +29,7 @@ function main()
 	CheckXu()-- fix xu ao
 	AddSkillHoTro()
 	CL_Load()	-- [CL 04/09] nap trang thai Chien Lenh (mot cau doc 0,08 ms)
+	CLUI_OnLogin()	-- [CL 04/09 DOT2] hien bieu tuong Chien Lenh tren HUD
 	MailManager_OnLogin()	-- [MAIL 03/09] co thu -> gui header, client bat bieu tuong bo cau
 	dofile("script/nationalwar/minister.lua")
 	nw_refresh_duty()

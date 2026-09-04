@@ -553,6 +553,7 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 	GDCNI_MAIL_UI,
 	// [DAUGIA 04/09 A3] cua so DAU GIA: uParam = AUCUI_CMD_* (KAuctionUiDef.h), nParam = con tro / so
 	GDCNI_AUCTION_UI,
+	GDCNI_CHIENLENH_UI,			// [CL 04/09 DOT2] cua so Chien Lenh (KChienLenhUiDef.h)
 };
 
 enum GAMEDEBUGCONTROL
@@ -887,6 +888,7 @@ enum GAMEOPERATION_INDEX
 
 	// [DAUGIA 04/09 A3] cua so DAU GIA -> Lua uiauction_house.lua (KAuctionClient.cpp): uParam = AUCUI_OP_*, nParam = KAucUiReq*
 	GOI_AUCTION_UI,
+	GOI_CHIENLENH_UI,			// [CL 04/09 DOT2] cua so Chien Lenh -> ChienLenhUi_OnRequest
 
 };
 

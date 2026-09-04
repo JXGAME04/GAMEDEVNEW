@@ -65,6 +65,7 @@
 #include "KAuctionServer.h"	// [DAUGIA 04/09 A1] kho dau gia + giu nguyen vat pham
 #include "KChienLenh.h"	// [CL 04/09] Chien Lenh: 7 bang st_* tren MySQL
 #include "KAuctionClient.h"	// [DAUGIA 04/09 A3] cua so dau gia (client)
+#include "KChienLenhClient.h"	// [CL 04/09 DOT2] cau noi Lua <-> cua so Chien Lenh (client)
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
 {
@@ -14842,6 +14843,17 @@ TLua_Funcs GameScriptFuns[] =
 	{"FormatTime2String",	LuaMail_FormatTime2String},
 	{"MailConfirm",	LuaMail_MailConfirm},
 	{"Msg2Player",	LuaMail_Msg2Player},	// client: thong bao he thong (may chu co ban rieng trong khoi _SERVER)
+	// [CL 04/09 DOT2] 10 ham \script\ui\uichienlenh.lua goi (KChienLenhClient.cpp)
+	{"CLUi_SetIconVisible",	LuaCLUi_SetIconVisible},
+	{"CLUi_Open",	LuaCLUi_Open},
+	{"CLUi_Close",	LuaCLUi_Close},
+	{"CLUi_IsOpen",	LuaCLUi_IsOpen},
+	{"CLUi_Clear",	LuaCLUi_Clear},
+	{"CLUi_SetInfo",	LuaCLUi_SetInfo},
+	{"CLUi_SetAward",	LuaCLUi_SetAward},
+	{"CLUi_SetMission",	LuaCLUi_SetMission},
+	{"CLUi_Refresh",	LuaCLUi_Refresh},
+	{"CLUi_Msg",		LuaCLUi_Msg},
 	// [DAUGIA 04/09 A3] 21 ham 2.0 ma \script\ui\uiauction_house.lua goi + 4 ham phu (KAuctionClient.cpp)
 	{"OpenAuctionWindow",	LuaAuc_OpenAuctionWindow},
 	{"CloseAuctionWindow",	LuaAuc_CloseAuctionWindow},

@@ -64,6 +64,7 @@
 #include "UiCase/UiDiceItem.h"	// DICEITEM 26/08
 #include "UiCase/UiMail.h"
 #include "UiCase/UiAuction.h"	// [DAUGIA 04/09 A3]	// [MAIL 03/09 D2] cua so thu
+#include "UiCase/UiChienLenh.h"	// [CL 04/09 DOT2] cua so Chien Lenh
 #include "UiCase/UiPartnerCommon.h"	// [BDH-G4]
 #include "UiCase/UiPartnerAttr.h"
 #include "UiCase/UiPartnerSkill.h"
@@ -502,6 +503,7 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		KUiMsgCentrePad::QueryAllChannel();
 		KUiMail_OnGameStart();	// [MAIL 03/09 D4] bieu tuong thu + hop thu cho toi khi vao game
 		KUiAuction_OnGameStart();	// [DAUGIA 04/09 A3]
+		KUiChienLenh_OnGameStart();	// [CL 04/09 DOT2]
 		KUiOptions2::LoadSetting(true, true);//add by phong kiÒu 24/08/2021
 	}
 	break;
@@ -663,6 +665,9 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		break;
 	case GDCNI_AUCTION_UI:	// [DAUGIA 04/09 A3] uParam = AUCUI_CMD_*, nParam = con tro / so (song trong loi goi)
 		KUiAuction_OnCoreCmd(uParam, nParam);
+		break;
+	case GDCNI_CHIENLENH_UI:		// [CL 04/09 DOT2]
+		KUiChienLenh_OnCoreCmd(uParam, nParam);
 		break;
 	case GDCNI_OPEN_TREMBLE_ITEM:
 		if (uParam > 0)
@@ -915,6 +920,7 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 	case GDCNI_EXIT_GAME:
 		KUiMail_OnGameExit();	// [MAIL 03/09 D4] don hop thu + xoa danh sach trong state Lua truoc khi thoat
 		KUiAuction_OnGameExit();	// [DAUGIA 04/09 A3]
+		KUiChienLenh_OnGameExit();	// [CL 04/09 DOT2]
 		if (g_pCoreShell)
 		{
 			g_pCoreShell->OperationRequest(GOI_EXIT_GAME, 0, 0);
