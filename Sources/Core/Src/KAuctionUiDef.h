@@ -45,6 +45,7 @@ struct KAucUiItem
 	int		nStartTime;
 	int		nCurrency;				// AUCUI_CUR_*
 	int		bMine;					// 1 = mon cua chinh minh (ca nhan) -> nut "lay lai"
+	int		bEnded;					// [A18] mon da ket thuc - giu nguyen cho, chi an nut (dung nhu ban goc)
 	// kieu Anh
 	int		nGuaranteed;			// gia khoi diem
 	int		nRange;					// buoc gia moi lan

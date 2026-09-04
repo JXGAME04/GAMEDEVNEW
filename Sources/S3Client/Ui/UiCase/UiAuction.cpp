@@ -270,11 +270,16 @@ void KUiAuctionItemRow::LoadScheme(KIniFile* pEng, KIniFile* pDutch, KIniFile* p
 void KUiAuctionItemRow::ShowEnglish(int b)
 {
 	KWndWindow* a[] = { &m_EngT1, &m_EngV1, &m_EngT2, &m_EngV2, &m_EngT3, &m_EngV3, &m_EngT4, &m_EngV4,
-		&m_EngT5, &m_EngV5, &m_EngT6, &m_EngV6, &m_ImgInput, &m_TxtOffer, &m_BtnAddPrice, &m_BtnOffer, &m_BtnGiveUp };
+		&m_EngT5, &m_EngV5, &m_EngT6, &m_EngV6, &m_ImgInput, &m_TxtOffer, &m_BtnAddPrice, &m_BtnOffer };
 	for (int i = 0; i < (int)(sizeof(a) / sizeof(a[0])); i++)
 	{
 		if (b) a[i]->Show(); else a[i]->Hide();
 	}
+	// [DAUGIA 04/09 A18] Nut "Huy dau gia" la NUT CHET nen an han.
+	// Ban goc bat nguoi choi tu bam nut do de doi lai tien da tra; ban ta hoan TU DONG qua thu
+	// ngay khi bi vuot gia (tot hon goc), nen duong hoan thu cong luon tra that bai va nguoi vua
+	// duoc hoan tien bam vao se doc "Dai hiep khong co muc gia nao dang giu o mon nay".
+	m_BtnGiveUp.Hide();
 	m_ImgSuccess.Hide();
 	m_ImgFail.Hide();
 }
@@ -321,7 +326,14 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 	}
 	int bSameItem = (m_Data.nId == p->nId && m_nTempItemIdx > 0);
 	if (!bSameItem)
+	{
 		ReleaseItem();
+		// [DAUGIA 04/09 A18] HANG NAY DA DOI SANG MON KHAC -> phai quen so tien de nghi cu.
+		// Truoc day m_nOffer chi duoc NANG len ("if (m_nOffer < nBase)") chu khong bao gio ha,
+		// nen mot mon 100 van vua troi di, mon 1 van thay cho, bam la gui thang 100 van.
+		// May chu khong cuu duoc: tra THUA van la mot lenh tra gia hop le.
+		m_nOffer = 0;
+	}
 	m_Data = *p;
 	char sz[64];
 	m_Name.SetText(p->szName);
@@ -390,6 +402,16 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 			m_BtnGetBack.Hide();
 	}
 	RefreshTime();
+	// [A18] mon da ket thuc thi giu nguyen cho nhung an het nut - nguoi choi con doc duoc
+	// ten va gia, chi khong bam nham duoc nua (dung tinh than ban goc: danh dau tai cho).
+	if (p->bEnded)
+	{
+		m_BtnBid.Hide();
+		m_BtnGetBack.Hide();
+		m_BtnOffer.Hide();
+		m_BtnAddPrice.Hide();
+		m_BtnGiveUp.Hide();
+	}
 	Show();
 }
 
@@ -947,14 +969,17 @@ void KUiAuctionPage::SetItem(const KAucUiItem* p)
 	RefreshItem();
 }
 
+// [DAUGIA 04/09 A18] KHONG don danh sach duoi tay nguoi dang bam.
+// Ban goc co y khong lam viec nay: hai dong "xoa mon" va "nap lai trang" bi chinh tac gia
+// goc chu thich bo (uiauction_house.lua:559 va :568), chi danh dau mon do tai cho.
+// Dich mot bac = mon dang nam duoi con tro chuot doi thanh mon khac giua chung -> mua nham.
+// Cung voi B2 (so tien de nghi cu) thi thanh bo doi: bam mot cai la mua mon la voi gia mon cu.
 void KUiAuctionPage::EndItem(int nId)
 {
 	int nIdx = FindItem(nId);
 	if (nIdx < 0)
 		return;
-	for (int j = nIdx + 1; j < m_nItemCount; j++)
-		m_Item[j - 1] = m_Item[j];
-	m_nItemCount--;
+	m_Item[nIdx].bEnded = 1;	// giu nguyen cho, chi danh dau
 	RefreshItem();
 }
 

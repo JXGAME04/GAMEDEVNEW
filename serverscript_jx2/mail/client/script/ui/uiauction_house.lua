@@ -375,6 +375,28 @@ function UIAuctionHouse:OnEndActivityEvent(nType, szAct)
     end
 end
 
+-- [A19] so mon THUC SU dang nam tren trang dang xem (ban goc co ham nay, ban ta thieu)
+function UIAuctionHouse:GetCurPageSize()
+    local a = self.tbActivityList[self.nCurTypeIndex]
+    if not a then
+        return 0
+    end
+    a = a[self.szCurActivityName]
+    if not a then
+        return 0
+    end
+    local nTong = a.nTotalCount or 0
+    local nBo = (self.nCurPageIndex - 1) * AUCTION_DEF.nMaxItemPerPage
+    local nCon = nTong - nBo
+    if nCon < 0 then
+        nCon = 0
+    end
+    if nCon > AUCTION_DEF.nMaxItemPerPage then
+        nCon = AUCTION_DEF.nMaxItemPerPage
+    end
+    return nCon
+end
+
 function UIAuctionHouse:OnNewItemEvent(nType, szAct, nNewId, nTotal)
     local a = self.tbActivityList[nType][szAct]
     if not a then
@@ -385,7 +407,10 @@ function UIAuctionHouse:OnNewItemEvent(nType, szAct, nNewId, nTotal)
         end
     end
     a.nTotalCount = nTotal or 0
-    if self.nCurTypeIndex == nType and self.szCurActivityName == szAct and AuctionUiIsOpen() == 1 then
+    -- [A19] chi hoi lai khi TRANG DANG XEM CHUA DAY (dung dieu kien thu tu cua ban goc,
+    -- uiauction_house.lua:542). Trang da day thi mon moi nam o trang sau, hoi lai chi to doi goi.
+    if self.nCurTypeIndex == nType and self.szCurActivityName == szAct and AuctionUiIsOpen() == 1
+        and self:GetCurPageSize() < AUCTION_DEF.nMaxItemPerPage then
         self:RequestActivityContent(szAct, self.nCurPageIndex)
     end
     NewAuctionEventArrival()
@@ -397,11 +422,13 @@ function UIAuctionHouse:OnEndItemEvent(nType, szAct, nEndId, nTotal)
         a.nTotalCount = nTotal or 0
     end
     if self.nCurTypeIndex == nType and self.szCurActivityName == szAct then
+        -- [A19] CHI danh dau mon tai cho, KHONG nap lai ca trang.
+        -- Ban goc co y chu thich bo dong nap lai (uiauction_house.lua:568): don danh sach duoi
+        -- tay nguoi dang bam la mua nham mon, va loi goi nap lai con xoa luon ket qua cua
+        -- AuctionEndItem ngay dong tren no. Voi 2 mon mot trang thi moi mon ai do ban xong deu
+        -- bat MOI nguoi dang mo cua so hoi lai ca trang - dung kieu doi goi (bai hoc F4 04/09).
         AuctionEndItem(nType, nEndId)
         self:ResetPageInfo(nType, szAct)
-        if AuctionUiIsOpen() == 1 then
-            self:RequestActivityContent(szAct, self.nCurPageIndex)
-        end
     end
 end
 

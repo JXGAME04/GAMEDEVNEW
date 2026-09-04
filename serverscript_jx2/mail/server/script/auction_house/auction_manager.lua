@@ -77,8 +77,29 @@ end
 
 -- ---------------------------------------------------------------- doc kho
 -- tra ve danh sach dong dang ban cua loai nType (bang hoi: chi bang nTong)
+-- [A19] AUC_List cat theo trang (nMax, nAfterId). Truoc day goi dung MOT lan voi 200 nen
+-- qua 200 mon la tong so va so trang bi cat AM THAM. Nay lap theo con tro id.
+AUC_ROWS_MAX = 2000
 function AUC_Rows(nType, nTong)
-    local tb = AUC_List(nType, 200, 0)
+    local tb = {}
+    local nAfter = 0
+    while getn(tb) < AUC_ROWS_MAX do
+        local lo = AUC_List(nType, 200, nAfter)
+        local n = getn(lo)
+        if n <= 0 then
+            break
+        end
+        for i = 1, n do
+            tinsert(tb, lo[i])
+        end
+        nAfter = lo[n].id
+        if n < 200 then
+            break
+        end
+    end
+    if getn(tb) >= AUC_ROWS_MAX then
+        AUC_Log(format("CANH BAO: loai %d da cham tran %d dong - danh sach bi cat", nType, AUC_ROWS_MAX))
+    end
     if nType ~= AUCTION_DEF.tbAuctionTypeEnum.eType_TONG then
         return tb
     end
@@ -176,7 +197,12 @@ function AUC_RowToClient(r, szMe, nNow)
     end
     tb.nGuaranteedPrice = r.guar
     tb.nCurPrice = r.cur
-    tb.nMaxPrice = r.cur
+    -- [A17] chua ai tra gia thi KHONG duoc bao "gia cao nhat": client lay nMaxPrice + buoc gia
+    -- lam gia de nghi, nen nguoi tra dau tien bi day len thua mot buoc.
+    tb.nMaxPrice = 0
+    if r.buyer ~= "" then
+        tb.nMaxPrice = r.cur
+    end
     tb.nRangePerOffer = floor(r.guar / 10)
     if tb.nRangePerOffer < 1 then
         tb.nRangePerOffer = 1
@@ -498,8 +524,15 @@ function AUC_OnRequestOfferEnglish(nType, szAct, nId, nNewPrice)
         return
     end
     if AUC_PayMoney(r.currency, nNewPrice) ~= 1 then
+        -- [A17] AUC_Bid DA ghi ten nguoi mua moi roi. Return thang o day thi nguoi giu gia cu
+        -- khong duoc hoan (khoi hoan nam ngay duoi), ma het gio lai giao mon cho nguoi vua
+        -- tru tien hong = chua tra dong nao. Phai lui dong ve dung nhu nhanh Ha Lan lam.
+        AUC_Rollback(nId)
+        if szOld ~= "" and nOld > 0 then
+            AUC_Bid(nId, szOld, nOld, nEnd)
+        end
         Msg2Player("Trõ tiÒn thÊt b¹i.")
-        AUC_Log(format("LOI: bid id %d cua %s da ghi nhung tru tien that bai", nId, GetName()))
+        AUC_Log(format("LOI: bid id %d cua %s da ghi nhung tru tien that bai - da lui dong", nId, GetName()))
         return
     end
     if szOld ~= "" and szOld ~= GetName() and nOld > 0 then
@@ -645,6 +678,13 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong)
     local nDropLeft = AUCTION_DEF.nPersonalFloatTimes
     if nType ~= AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL then
         if nKind == AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH then
+            -- [A17] PHAI keo gia ve GIA SAN: bon dong tren dat san 150% cho ky gui ca nhan,
+            -- de nguyen thi dong kieu Anh mo ban o 150% trong khi may chu bao gia toi thieu
+            -- la r.guar -> nguoi tra gia DAU TIEN luon bi tu choi (cau SQL doi cur_price < gia tra).
+            nCurP = nGuar
+            nBase = nGuar
+            nNextDrop = 0
+            nDropLeft = 0
             nEnd = nNow + AUCTION_DEF.nEnglishRemainingTime
         else
             nCurP = floor(nPrice * AUCTION_DEF.nDutchInitRate)
