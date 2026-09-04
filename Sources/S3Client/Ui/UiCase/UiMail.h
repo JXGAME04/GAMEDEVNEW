@@ -196,6 +196,7 @@ public:
 	static void	SetVisible(int bVisible);
 	static void	Blink();
 	static void	LoadScheme(const char* pScheme);
+	static void	Release();					// [D4] thoat game: huy bieu tuong
 
 private:
 	static KUiMailIcon* ms_pSelf;
@@ -210,3 +211,6 @@ private:
 
 // GameSpaceChangedNotify.cpp: case GDCNI_MAIL_UI
 void KUiMail_OnCoreCmd(unsigned int uCmd, int nParam);
+// [MAIL 03/09 D4] GameSpaceChangedNotify.cpp: GDCNI_GAME_START / GDCNI_EXIT_GAME
+void KUiMail_OnGameStart();
+void KUiMail_OnGameExit();

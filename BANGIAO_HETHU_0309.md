@@ -102,6 +102,41 @@ GameServer: gõ vào ô chat `?gm RLS \script\item\lenhbaiadmin.lua` (`KGMComman
 7. Web: INSERT một dòng như mục 2 cho nhân vật đang online → trong ≤ 30 s bồ câu nhấp nháy.
 8. Thoát game, vào lại: thư còn nguyên, bồ câu hiện nếu còn thư chưa đọc.
 
+## 5b. ĐỢT 4 (03/09 chiều) — chủ báo "bấm Nhận thư không hiện gì" + icon dưới Bầu Cua + tự mở hộp thư + bỏ Tín Sứ
+
+**Bộ `.moi` đợt 4 (chỉ CLIENT; CoreServer giữ bad8e293; build từ origin/main b020e6ea + D4b, KHÔNG gộp rep3-0309):**
+
+| Tệp | md5 | Kích thước |
+|---|---|---|
+| `bin\client\CoreClient.dll.moi` | 6bbcda8f | 2.508.800 |
+| `bin\client\Game.exe.moi` | bd5cb88e | 1.401.856 |
+
+Swap: thoát game → `ChoiGame.bat`. Máy chủ không đổi binary nhưng SCRIPT đã đổi (`mailmanager.lua`, `dichquan.lua`, `lenhbaiadmin.lua`):
+gõ chat `?gm RLS \script\player\playerlogin.lua` + `?gm RLS \script\global\npcchucnang\dichquan.lua` + `?gm RLS \script\item\lenhbaiadmin.lua`,
+hoặc chạy lại `ChayGameServer.bat`.
+
+Chẩn đoán lần 1 (16:50, chủ bấm "Nhận thư" ở Tín Sứ 5 lần): không có lỗi script hai phía, `g_DebugLog` chỉ bắn ra cửa sổ debug (không ra tệp)
+→ mù. Đọc lại toàn chuỗi (enum `s2c_scriptdata` trước `s2c_end`, bảng kích thước khớp 155/109 hàng, tách gói `-1`, dispatcher Lua) không thấy lỗi
+⇒ thêm nhật ký để lần test sau nhìn được:
+- Client `bin\client\jx_mail.log`: `[SP] nhan s2c_scriptdata id= len=` → `[SP] dispatch ...` → `[MAILUI] Lua->UI cmd=` → `[UI] cmd=` →
+  `[UI] OpenWindow: cua so tai (x,y)`; `[UI] GAME_START`, `[UI] bieu tuong thu tai (x,y)`; `[UI] KHONG nap duoc <ini>` nếu thiếu ini.
+- Máy chủ `logs\hethong.log` `[MAIL]`: `X dang nhap: N thu`, `gui emSCRIPT_PROTOCOL_MAIL_HEADERLIST -> player N: ok|THAT BAI`, `X mo hop thu`.
+
+Thiết kế mới (theo 3 yêu cầu của chủ):
+- Icon thư LUÔN hiện sau khi vào game tại (765,296) ở 800x600 = ngay dưới icon Bầu Cua (`UiPlayerBar.ini [SpringGame]` 765,243 50x50);
+  1024x768: x = 1024−30 như cột icon phải (`UiPlayerBar.cpp`). Nhấp nháy khi còn thư chưa đọc. Bấm icon → mở hộp thư ngay (không Tín Sứ).
+- Thư mới (web/hoạt động khi đang online, hoặc thư state 0 giao lúc đăng nhập) → hộp thư TỰ MỞ (`UIMail:NewMailEventArrival` → `OpenMailWindow`).
+- Gói thư lúc đăng nhập đến TRƯỚC `s2c_syncend` (`playerlogin.lua` chạy đầu `KPlayer::LaunchPlayer`) → C++ hoãn icon/mở tới
+  `GDCNI_GAME_START`; `GDCNI_EXIT_GAME` huỷ cửa sổ + icon + `MAILUI_OP_RESET` → `UIMail:Reset()` (state Lua client sống suốt tiến trình).
+- Tín Sứ: gỡ mục "Nhận thư" khỏi `dichquan.lua` (`MailManager_OpenWindow` giữ cho script khác dùng).
+
+Kiểm tra sau swap: (1) vào game → icon thư dưới Bầu Cua; (2) lệnh bài "Gửi thư thử: tiền, xu, exp" → hộp thư TỰ MỞ, có hàng thư;
+(3) bấm hàng → chi tiết → Nhận; (4) đóng hộp thư, bấm icon → mở lại; (5) web INSERT → ≤ 30 s tự mở; (6) thoát ra chọn nhân vật, vào lại → icon
+lại hiện, danh sách đúng nhân vật. Nếu vẫn không hiện: gửi `bin\client\jx_mail.log` + `bin\server\logs\hethong.log`.
+
+Phiên wauto-c1 (Represent3, nhánh rep3-0309) bị chặn ghi `bin\client` và nhờ gộp vào bộ này — KHÔNG làm hộ (chủ tự chép/cho phép); họ tự gộp
+origin/main (đã có D4/D4b) vào rep3-0309 và đặt sau. `Represent3.dll` 74ac07ad đã nằm ở bin\client nhưng `config.ini [Client] Represent=2` nên chưa dùng.
+
 ## 6. Khác 2.0 (đã chốt hoặc bắt buộc)
 
 - Không có đấu giá → không có người gửi "Chưởng quầy khu đấu giá" (bộ lọc chỉ 4 mục).

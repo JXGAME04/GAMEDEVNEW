@@ -57,6 +57,7 @@ enum MAILUI_OP
 	MAILUI_OP_CHECK_ID_ON_OPEN,		// nParam = nId               -> UIMail:CheckIdOnOpen(nId)
 	MAILUI_OP_CONFIRM_RESULT,		// nParam = 1 dong y / 0 huy  -> goi ham Lua da dat khi MailConfirm
 	MAILUI_OP_CLOSE,				// cua so bi dong
+	MAILUI_OP_RESET,				// [D4] thoat game (GDCNI_EXIT_GAME) -> UIMail:Reset(): xoa danh sach thu trong state Lua
 };
 
 #define MAILUI_OP_CODE(u)		((u) & 0xFFFF)
