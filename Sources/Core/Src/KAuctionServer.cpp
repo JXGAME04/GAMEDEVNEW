@@ -49,12 +49,14 @@
 #include "KPlayerSet.h"
 #include "GameDataDef.h"
 #include "KPlayerDef.h"
+#include "KSubWorldSet.h"	// [DAUGIA-WEB] GetGameVersion
 #include <vector>
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 
 #define AUC_REC_VER		1
 #define AUC_MAX_ROW		200
@@ -690,6 +692,479 @@ static void sPushRow(Lua_State* L, const KAucRow& r)
 	Lua_PushString(L, (char*)"nextdrop");  Lua_PushNumber(L, (double)r.nNextDrop);  Lua_SetTable(L, t);
 	Lua_PushString(L, (char*)"dropleft");  Lua_PushNumber(L, (double)r.nDropLeft);  Lua_SetTable(L, t);
 	Lua_PushString(L, (char*)"state");     Lua_PushNumber(L, (double)r.nState);     Lua_SetTable(L, t);
+}
+
+//////////////////////////////////////////////////////////////////////
+// [DAUGIA-WEB 04/09] DAU GIA THE GIOI cau hinh tu WEB ADMIN
+//   Giao keo: BANGIAO_DAUGIA_WEB_0409.md. Web ghi hai bang auction_web_pool (nhom vat pham + gia) va
+//   auction_web_cfg (lich); may chu (auction_manager.lua, AucWeb_Tick) den hen thi boc ngau nhien vai
+//   mon trong nhom, DUNG VAT PHAM THAT (AUC_MakeRec) roi chen vao auction_item bang AUC_PutOn co san.
+//   Web KHONG ghi auction_item, KHONG sinh item_rec.
+//////////////////////////////////////////////////////////////////////
+static bool s_bWebTableOk = false;
+
+static bool sEnsureWebTable()
+{
+	if (!g_MySQLDB.IsReady())
+		return false;
+	if (s_bWebTableOk)
+		return true;
+	const char* szPool =
+		"CREATE TABLE IF NOT EXISTS auction_web_pool ("
+		" id INT AUTO_INCREMENT PRIMARY KEY,"
+		" award VARCHAR(255) NOT NULL,"
+		" label VARBINARY(128) NOT NULL DEFAULT '',"
+		" currency TINYINT NOT NULL DEFAULT 1,"
+		" start_price BIGINT NOT NULL DEFAULT 0,"
+		" buy_price BIGINT NOT NULL DEFAULT 0,"
+		" weight INT NOT NULL DEFAULT 1,"
+		" enabled TINYINT NOT NULL DEFAULT 1,"
+		" drawn_count INT NOT NULL DEFAULT 0,"
+		" drawn_time INT NOT NULL DEFAULT 0,"
+		" drawn_auc INT NOT NULL DEFAULT 0,"
+		" item_name VARBINARY(64) NOT NULL DEFAULT '',"
+		" err VARBINARY(191) NOT NULL DEFAULT '',"
+		" ctime INT NOT NULL DEFAULT 0,"
+		" mtime INT NOT NULL DEFAULT 0,"
+		" KEY idx_enabled (enabled)"
+		") ENGINE=InnoDB DEFAULT CHARSET=latin1";
+	const char* szCfg =
+		"CREATE TABLE IF NOT EXISTS auction_web_cfg ("
+		" id INT PRIMARY KEY,"
+		" enabled TINYINT NOT NULL DEFAULT 0,"
+		" period_min INT NOT NULL DEFAULT 180,"
+		" items_per_round INT NOT NULL DEFAULT 3,"
+		" next_round INT NOT NULL DEFAULT 0,"
+		" last_round INT NOT NULL DEFAULT 0,"
+		" round_no INT NOT NULL DEFAULT 0,"
+		" last_msg VARBINARY(191) NOT NULL DEFAULT '',"
+		" mtime INT NOT NULL DEFAULT 0"
+		") ENGINE=InnoDB DEFAULT CHARSET=latin1";
+	if (!g_MySQLDB.Exec(szPool, 0, 0) || !g_MySQLDB.Exec(szCfg, 0, 0))
+	{
+		g_DebugLog((LPSTR)"[DAUGIA-WEB] khong tao duoc bang auction_web_pool / auction_web_cfg");
+		return false;
+	}
+	// dong cau hinh duy nhat (id = 1); da co thi bo qua
+	g_MySQLDB.Exec("INSERT IGNORE INTO auction_web_cfg (id) VALUES (1)", 0, 0);
+	s_bWebTableOk = true;
+	return true;
+}
+
+static void sSetNum(Lua_State* L, int t, const char* k, double v)
+{
+	Lua_PushString(L, (char*)k);
+	Lua_PushNumber(L, v);
+	Lua_SetTable(L, t);
+}
+
+static void sSetStr(Lua_State* L, int t, const char* k, const char* v)
+{
+	Lua_PushString(L, (char*)k);
+	Lua_PushString(L, (char*)(v ? v : ""));
+	Lua_SetTable(L, t);
+}
+
+// AUCWEB_Ready() -> 1 neu MySQL san sang va hai bang da co
+int LuaAUCWEB_Ready(Lua_State* L)
+{
+	Lua_PushNumber(L, sEnsureWebTable() ? 1 : 0);
+	return 1;
+}
+
+struct KAucWebCfg
+{
+	int nEnabled, nPeriod, nPerRound, nNext, nLast, nRoundNo;
+};
+
+static bool _RowWebCfg(const KDBRow& row, void* p)
+{
+	KAucWebCfg* c = (KAucWebCfg*)p;
+	c->nEnabled = sColInt(row, 0);
+	c->nPeriod = sColInt(row, 1);
+	c->nPerRound = sColInt(row, 2);
+	c->nNext = sColInt(row, 3);
+	c->nLast = sColInt(row, 4);
+	c->nRoundNo = sColInt(row, 5);
+	return true;
+}
+
+// AUCWEB_Cfg() -> {enabled, period, perround, next, last, roundno} / nil
+int LuaAUCWEB_Cfg(Lua_State* L)
+{
+	KAucWebCfg c;
+	c.nEnabled = -1;
+	c.nPeriod = c.nPerRound = c.nNext = c.nLast = c.nRoundNo = 0;
+	KDBParam p[1];
+	p[0] = KDBParam::I(1);
+	if (!sEnsureWebTable()
+		|| !g_MySQLDB.Query("SELECT enabled, period_min, items_per_round, next_round, last_round, round_no"
+			" FROM auction_web_cfg WHERE id=?", p, 1, _RowWebCfg, &c)
+		|| c.nEnabled < 0)
+	{
+		Lua_PushNil(L);
+		return 1;
+	}
+	Lua_NewTable(L);
+	int t = Lua_GetTopIndex(L);
+	sSetNum(L, t, "enabled", c.nEnabled);
+	sSetNum(L, t, "period", c.nPeriod);
+	sSetNum(L, t, "perround", c.nPerRound);
+	sSetNum(L, t, "next", c.nNext);
+	sSetNum(L, t, "last", c.nLast);
+	sSetNum(L, t, "roundno", c.nRoundNo);
+	return 1;
+}
+
+// AUCWEB_ClaimRound(nNow, nNext) -> 1 neu GIANH duoc quyen mo dot (UPDATE nguyen tu: chi mot tien trinh
+// thay next_round <= nNow va enabled = 1 moi doi duoc dong; khuon KGameKV / AUC_Buy).
+int LuaAUCWEB_ClaimRound(Lua_State* L)
+{
+	int nNow = sArgInt(L, 1);
+	int nNext = sArgInt(L, 2);
+	if (nNow <= 0 || nNext <= nNow || !sEnsureWebTable())
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KDBParam p[4];
+	p[0] = KDBParam::I(nNext);
+	p[1] = KDBParam::I(nNow);
+	p[2] = KDBParam::I(nNow);
+	p[3] = KDBParam::I(nNow);
+	__int64 nAffected = 0;
+	bool bOk = g_MySQLDB.Exec("UPDATE auction_web_cfg SET next_round=?, last_round=?, round_no=round_no+1, mtime=?"
+		" WHERE id=1 AND enabled=1 AND next_round<=?", p, 4, &nAffected);
+	Lua_PushNumber(L, (bOk && nAffected > 0) ? 1 : 0);
+	return 1;
+}
+
+struct KAucWebPool
+{
+	int nId, nCurrency, nWeight;
+	__int64 nStart, nBuy;
+	std::string sAward;
+};
+
+static bool _RowWebPool(const KDBRow& row, void* p)
+{
+	std::vector<KAucWebPool>* pv = (std::vector<KAucWebPool>*)p;
+	KAucWebPool r;
+	r.nId = sColInt(row, 0);
+	r.sAward = sCol(row, 1);
+	r.nCurrency = sColInt(row, 2);
+	r.nStart = sColI64(row, 3);
+	r.nBuy = sColI64(row, 4);
+	r.nWeight = sColInt(row, 5);
+	pv->push_back(r);
+	return true;
+}
+
+// AUCWEB_Pool(nMax) -> bang {[i] = {id, award, currency, start, buy, weight}} cac dong enabled = 1
+int LuaAUCWEB_Pool(Lua_State* L)
+{
+	int nMax = sArgInt(L, 1);
+	if (nMax <= 0 || nMax > 500)
+		nMax = 500;
+	Lua_NewTable(L);
+	if (!sEnsureWebTable())
+		return 1;
+	int tb = Lua_GetTopIndex(L);
+	std::vector<KAucWebPool> rows;
+	KDBParam p[1];
+	p[0] = KDBParam::I(nMax);
+	if (!g_MySQLDB.Query("SELECT id, award, currency, start_price, buy_price, weight FROM auction_web_pool"
+		" WHERE enabled=1 AND weight>0 ORDER BY id LIMIT ?", p, 1, _RowWebPool, &rows))
+		return 1;
+	for (size_t i = 0; i < rows.size(); i++)
+	{
+		Lua_PushNumber(L, (double)(i + 1));
+		Lua_NewTable(L);
+		int t = Lua_GetTopIndex(L);
+		sSetNum(L, t, "id", rows[i].nId);
+		sSetStr(L, t, "award", rows[i].sAward.c_str());
+		sSetNum(L, t, "currency", rows[i].nCurrency);
+		sSetNum(L, t, "start", (double)rows[i].nStart);
+		sSetNum(L, t, "buy", (double)rows[i].nBuy);
+		sSetNum(L, t, "weight", rows[i].nWeight);
+		Lua_SetTable(L, tb);
+	}
+	return 1;
+}
+
+// AUCWEB_Drawn(nId, nNow, nAucId, szName) -> 1/0: ghi so lan len san + ten that, xoa loi cu
+int LuaAUCWEB_Drawn(Lua_State* L)
+{
+	int nId = sArgInt(L, 1);
+	if (nId <= 0 || !sEnsureWebTable())
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KDBParam p[4];
+	p[0] = KDBParam::I(sArgInt(L, 2));
+	p[1] = KDBParam::I(sArgInt(L, 3));
+	p[2] = KDBParam::S(sArgStr(L, 4));
+	p[3] = KDBParam::I(nId);
+	__int64 nAffected = 0;
+	bool bOk = g_MySQLDB.Exec("UPDATE auction_web_pool SET drawn_count=drawn_count+1, drawn_time=?, drawn_auc=?,"
+		" item_name=?, err='' WHERE id=?", p, 4, &nAffected);
+	Lua_PushNumber(L, (bOk && nAffected > 0) ? 1 : 0);
+	return 1;
+}
+
+// AUCWEB_Err(nId, szErr) -> 1/0: ghi ly do bo qua de admin doc tren web (ASCII khong dau)
+int LuaAUCWEB_Err(Lua_State* L)
+{
+	int nId = sArgInt(L, 1);
+	if (nId <= 0 || !sEnsureWebTable())
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KDBParam p[2];
+	p[0] = KDBParam::S(sArgStr(L, 2));
+	p[1] = KDBParam::I(nId);
+	__int64 nAffected = 0;
+	bool bOk = g_MySQLDB.Exec("UPDATE auction_web_pool SET err=? WHERE id=?", p, 2, &nAffected);
+	Lua_PushNumber(L, (bOk && nAffected > 0) ? 1 : 0);
+	return 1;
+}
+
+// AUCWEB_Msg(szMsg, nNow) -> 1/0: ket qua dot gan nhat
+int LuaAUCWEB_Msg(Lua_State* L)
+{
+	if (!sEnsureWebTable())
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KDBParam p[2];
+	p[0] = KDBParam::S(sArgStr(L, 1));
+	p[1] = KDBParam::I(sArgInt(L, 2));
+	bool bOk = g_MySQLDB.Exec("UPDATE auction_web_cfg SET last_msg=?, mtime=? WHERE id=1", p, 2, 0);
+	Lua_PushNumber(L, bOk ? 1 : 0);
+	return 1;
+}
+
+static int sMakeRecFail(Lua_State* L, const char* szErr)
+{
+	Lua_PushString(L, (char*)"");
+	Lua_PushString(L, (char*)"");
+	Lua_PushString(L, (char*)"");
+	Lua_PushNumber(L, 0);
+	Lua_PushNumber(L, 0);
+	Lua_PushString(L, (char*)(szErr ? szErr : "loi"));
+	return 6;
+}
+
+// AUC_MakeRec(szAward) -> szHex, szTen, szMoTa ("g,d,p,l,s,k"), nCells, nStack, szLoi ("" = ok)
+// Dung vat pham THAT tu chuoi award kieu hop thu, KHONG can nguoi choi:
+//   item:genre,detail,particular,level,series,luck,n[,lock][,expSec][,magic][,stack]
+//   gold:record,n[,lock][,expSec]
+// Di DUNG duong sinh cua AddItem (Gen_Equipment 10 tham so: hat giong moi -> thuoc tinh ngau nhien nhu
+// phan thuong thu) va AddItem2 (Gen_Equipment 9 tham so co nature, hoang kim goldequip.txt). Sau do
+// sItemToRec lay hex, roi TU KIEM dung lai lan hai (sHexToRec + sRecToItem) - chi tra hex khi lan hai
+// ra dung ten/dung so o. Gen_* nhanh hoang kim tra TRUE ca khi dong sai, nen phai kiem w*h > 0 va ten.
+int LuaAUC_MakeRec(Lua_State* L)
+{
+	const char* s = sArgStr(L, 1);
+	while (*s == ' ' || *s == '\t')
+		s++;
+	char szKind[16];
+	int k = 0;
+	while (isalpha((unsigned char)*s) && k < 15)
+		szKind[k++] = (char)tolower((unsigned char)*s++);
+	szKind[k] = 0;
+	while (*s == ' ' || *s == '\t')
+		s++;
+	if (*s != ':' || k == 0)
+		return sMakeRecFail(L, "award: thieu/sai cu phap");
+	s++;
+	if (strchr(s, ';'))
+		return sMakeRecFail(L, "award: chi mot muc, khong dau ;");
+	__int64 v[12];
+	int n = 0;
+	{
+		const char* q = s;
+		while (n < 12)
+		{
+			while (*q == ' ' || *q == '\t')
+				q++;
+			if (!*q)
+				break;
+			char* e = 0;
+			__int64 x = _strtoi64(q, &e, 10);
+			if (e == q)
+				return sMakeRecFail(L, "award: so khong hop le");
+			v[n++] = x;
+			q = e;
+			while (*q == ' ' || *q == '\t')
+				q++;
+			if (*q == ',')
+			{
+				q++;
+				continue;
+			}
+			if (*q)
+				return sMakeRecFail(L, "award: ky tu la");
+		}
+	}
+	for (int i = 0; i < n; i++)
+	{
+		if (v[i] < 0 || v[i] > 1000000000)
+			return sMakeRecFail(L, "award: so am hoac qua lon");
+	}
+	int nGenre, nDetail, nParticular, nLevel, nSeries, nLuck, nCount, nLock, nExp, nMagic;
+	int nNature = NATURE_NORMAL, nRow = 0;
+	if (!strcmp(szKind, "item"))
+	{
+		if (n < 6)
+			return sMakeRecFail(L, "award: item can 6 so");
+		nGenre = (int)v[0];
+		nDetail = (int)v[1];
+		nParticular = (int)v[2];
+		nLevel = (int)v[3];
+		nSeries = (int)v[4];
+		nLuck = (int)v[5];
+		nCount = n > 6 ? (int)v[6] : 1;
+		nLock = n > 7 ? (int)v[7] : 0;
+		nExp = n > 8 ? (int)v[8] : 0;
+		nMagic = n > 9 ? (int)v[9] : 0;
+	}
+	else if (!strcmp(szKind, "gold"))
+	{
+		if (n < 1)
+			return sMakeRecFail(L, "award: gold can so dong goldequip");
+		nGenre = item_equip;
+		nNature = NATURE_GOLD;
+		nRow = (int)v[0];
+		nDetail = nRow;
+		nParticular = 0;
+		nLevel = 0;
+		nSeries = 0;
+		nLuck = 0;
+		nCount = 1;
+		nLock = n > 2 ? (int)v[2] : 0;
+		nExp = n > 3 ? (int)v[3] : 0;
+		nMagic = 0;
+	}
+	else
+		return sMakeRecFail(L, "award: chi nhan item: hoac gold:");
+	if (nLock != 0 || nExp != 0)
+		return sMakeRecFail(L, "lock/expSec phai = 0");
+	if (!sCanRebuild(nGenre))
+	{
+		char szG[64];
+		sprintf(szG, "genre %d khong ho tro", nGenre);
+		return sMakeRecFail(L, szG);
+	}
+	if (nCount < 1)
+		nCount = 1;
+	if (nCount > 9999)
+		return sMakeRecFail(L, "so luong qua lon");
+
+	KItem it;
+	ZeroMemory(&it, sizeof(KItem));
+	int nML[MAX_ITEM_MAGICLEVEL];
+	ZeroMemory(nML, sizeof(nML));
+	for (int m = 0; m < 6 && m < MAX_ITEM_MAGICLEVEL; m++)
+		nML[m] = nMagic;	// nhu AddItem 7 tham so: muc phu van dung chung cho 6 o
+	int nVer = g_SubWorldSet.GetGameVersion();
+	it.m_GeneratorParam.nVersion = nVer;
+	it.m_GeneratorParam.uRandomSeed = 0;
+	BOOL bOk = FALSE;
+	int nStack = nCount;
+	switch (nGenre)
+	{
+	case item_equip:
+		nStack = 1;
+		if (nNature == NATURE_GOLD)
+		{
+			// khuon KItemSet::Add <- LuaAddItem2(2, 0, record, 0, 0, 0) cua hop thu
+			bOk = ItemGen.Gen_Equipment(NATURE_GOLD, nRow, 0, 0, 0, (const int*)0, 0, nVer, &it);
+			it.SetMaxOptMultiply(KItemSet::genXOpt(0));
+		}
+		else
+		{
+			// khuon KItemSet::AddItemSet2 <- LuaAddItem: hat giong moi moi lan (Gen_Equipment tu boc)
+			bOk = ItemGen.Gen_Equipment(nDetail, nParticular, nSeries, nLevel, nML, nLuck, nVer, &it, 0, 0);
+			it.SetMaxOptMultiply(KItemSet::genXOpt(nLuck));
+		}
+		break;
+	case item_medicine:
+		bOk = ItemGen.Gen_Medicine(nDetail, nParticular, nLevel, nVer, &it, nStack);
+		break;
+	case item_task:
+		bOk = ItemGen.Gen_Quest(nDetail, &it, nStack);
+		break;
+	case item_townportal:
+		nStack = 1;
+		bOk = ItemGen.Gen_TownPortal(&it);
+		break;
+	case item_magicscript:
+		bOk = ItemGen.Gen_MagicScript(nDetail, nParticular, &it, nLevel, nSeries, nLuck, nStack);
+		break;
+	case item_fusion:
+		bOk = ItemGen.Gen_Fusion(nParticular, &it, nStack);
+		break;
+	case item_starstone:
+		bOk = ItemGen.Gen_StarStone(nParticular, &it, nStack);
+		break;
+	default:
+		bOk = FALSE;
+		break;
+	}
+	if (!bOk || it.GetWidth() <= 0 || it.GetHeight() <= 0 || !it.GetName()[0])
+		return sMakeRecFail(L, "dung vat pham that bai (detail/particular/dong sai)");
+	if (it.GetMaxStackNum() > 0 && it.GetStackNum() > it.GetMaxStackNum())
+	{
+		char szS[64];
+		sprintf(szS, "so luong toi da %d mot chong", it.GetMaxStackNum());
+		return sMakeRecFail(L, szS);
+	}
+	int nIdx = ItemSet.AddI(&it);
+	if (nIdx <= 0)
+		return sMakeRecFail(L, "het khe vat pham");
+	KAucRec rec;
+	char szHex[AUC_REC_INTS * 8 + 8];
+	szHex[0] = 0;
+	bool bRec = sItemToRec(nIdx, &rec);
+	if (bRec)
+		sRecToHex(&rec, szHex, sizeof(szHex));
+	char szName[64];
+	strncpy(szName, Item[nIdx].GetName(), 63);
+	szName[63] = 0;
+	char szDesc[128];
+	sprintf(szDesc, "%d,%d,%d,%d,%d,%d",
+		Item[nIdx].m_CommonAttrib.nItemGenre, Item[nIdx].m_CommonAttrib.nDetailType,
+		Item[nIdx].m_CommonAttrib.nParticularType, Item[nIdx].m_CommonAttrib.nLevel,
+		Item[nIdx].m_CommonAttrib.nSeries, Item[nIdx].GetItemParam()->nLuck);
+	int nCells = Item[nIdx].GetWidth() * Item[nIdx].GetHeight();
+	int nStk = Item[nIdx].GetStackNum();
+	ItemSet.Remove(nIdx);
+	if (!bRec || !szHex[0])
+		return sMakeRecFail(L, "khong doi duoc sang rec");
+	// tu kiem: dung lai lan hai tu chinh chuoi hex (dung duong AUC_GiveRec se dung khi trao)
+	KAucRec r2;
+	if (!sHexToRec(szHex, &r2))
+		return sMakeRecFail(L, "rec khong doc lai duoc");
+	int n2 = sRecToItem(&r2);
+	if (n2 <= 0)
+		return sMakeRecFail(L, "dung lai lan hai that bai");
+	bool bSame = (strcmp(Item[n2].GetName(), szName) == 0)
+		&& (Item[n2].GetWidth() * Item[n2].GetHeight() == nCells)
+		&& (Item[n2].GetStackNum() == nStk);
+	ItemSet.Remove(n2);
+	if (!bSame)
+		return sMakeRecFail(L, "dung lai lan hai ra mon khac");
+	Lua_PushString(L, szHex);
+	Lua_PushString(L, szName);
+	Lua_PushString(L, szDesc);
+	Lua_PushNumber(L, (double)nCells);
+	Lua_PushNumber(L, (double)nStk);
+	Lua_PushString(L, (char*)"");
+	return 6;
 }
 
 int LuaAUC_Ready(Lua_State* L)

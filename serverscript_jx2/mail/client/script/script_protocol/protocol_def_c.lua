@@ -54,6 +54,14 @@ Def =
 		"UIMail:OpenMailWindow",
 		{OBJTYPE_NUMBER},
 	},
+	-- [CL 04/09 DOT2] Chien Lenh (uichienlenh.lua)
+	{ "emSCRIPT_PROTOCOL_CL_SHOWICON", "\\script\\ui\\uichienlenh.lua", "CLUI_OnShowIcon", { OBJTYPE_NUMBER } },
+	{ "emSCRIPT_PROTOCOL_CL_INFO", "\\script\\ui\\uichienlenh.lua", "CLUI_OnInfo", { OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER } },
+	{ "emSCRIPT_PROTOCOL_CL_AWARD", "\\script\\ui\\uichienlenh.lua", "CLUI_OnAward", { OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_STRING } },
+	{ "emSCRIPT_PROTOCOL_CL_MISSION", "\\script\\ui\\uichienlenh.lua", "CLUI_OnMission", { OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_STRING } },
+	{ "emSCRIPT_PROTOCOL_CL_CLEAR", "\\script\\ui\\uichienlenh.lua", "CLUI_OnClear", { OBJTYPE_NUMBER } },
+	{ "emSCRIPT_PROTOCOL_CL_REFRESH", "\\script\\ui\\uichienlenh.lua", "CLUI_OnRefresh", { OBJTYPE_NUMBER } },
+	{ "emSCRIPT_PROTOCOL_CL_MSG", "\\script\\ui\\uichienlenh.lua", "CLUI_OnMsg", { OBJTYPE_STRING } },
 	-- [DAUGIA 04/09] dau gia -> \script\ui\uiauction_house.lua
 	{
 		"emSCRIPT_PROTOCOL_AUCTION_OFFERPRICERET",
