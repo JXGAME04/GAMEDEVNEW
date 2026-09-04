@@ -287,6 +287,18 @@ int main(int argc, char** argv)
 	std::string outPw = szOut; outPw.insert(outPw.size() - 4, "_pw");
 	if (RepMode() == 2) { SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE); Pump(); Sleep(300); Pump(); }
 	else if (!REP_OFF) { SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW); SetForegroundWindow(hwnd); Pump(); Sleep(200); Pump(); }
+	// [HIT] hit-test: GetImagePixelAlpha tren luoi 4 px cua khung 0 sprite dau (so R2 / R3 cu / R3 moi)
+	if (!sprs.empty())
+	{
+		unsigned nNonZero = 0, nSum = 0; int w = sprs[0].w, h = sprs[0].h;
+		for (int yy = 0; yy < h; yy += 4)
+			for (int xx = 0; xx < w; xx += 4)
+			{
+				int a = rs->GetImagePixelAlpha(sprs[0].name.c_str(), 0, xx, yy, ISI_T_SPR);
+				if (a > 0) { nNonZero++; nSum += (unsigned)a; }
+			}
+		char buf[256]; sprintf(buf, "[HIT] %s %dx%d: diem alpha>0 = %u, tong alpha = %u", sprs[0].name.c_str(), w, h, nNonZero, nSum); puts(buf);
+	}
 	PrintMem("sau ve bang kieu (1 khung)");
 	bool b1 = rs->SaveScreenToFile(szOut, SCRFILETYPE_BMP, 0);
 	bool b2 = REP_OFF ? false : SaveScreenBlt(hwnd, outPw.c_str());
