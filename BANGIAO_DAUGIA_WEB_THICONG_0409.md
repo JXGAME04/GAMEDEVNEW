@@ -283,7 +283,7 @@ chặn mềm; muốn chặn cứng thì Goddess `ClientNode.cpp:379` (kiểm tê
 4. Đưa vá 2712d95b vào `p3_lua.py` (wauto-55) trước khi bất kỳ ai chạy `p3`.
 5. Bộ nhớ phiên: `memory\jx1-daugia-web-0409.md`, `jx1-daugia-thicong-0409.md`.
 6. `[DAUGIA-CHAT]` (mục 15): **đã live 16:20** (f576ac9e + script mới). Còn kiểm trong game bằng mắt: đợt web mở → 1 + N dòng "Hệ Thống"; trả giá phiên bang → dòng "Tin bang" nằm trong thẻ **bang**. Đợt 2 (16:23) và món bang id 38 (16:22) đã chạy qua đường mới không lỗi Lua.
-7. Của wauto-4c, chờ chủ: `rainbow.dll.moi` e8056284 (bat chưa có dòng `call :capnhat rainbow.dll`) + `bin\multiserver\heaven.dll.moi` ad7e6985 (restart cụm); gốc sập 15:05 = Rainbow vứt im lặng khối đọc khi bộ đệm link Goddess 128 KB đầy (`BANGIAO_ROLECHK_GO_0409.md`). **Build CoreServer sau phải gộp `origin/main` d028ea41.**
+7. Của wauto-4c, chờ chủ: `rainbow.dll.moi` e8056284 (bat chưa có dòng `call :capnhat rainbow.dll`) + `bin\multiserver\heaven.dll.moi` ad7e6985 (restart cụm); gốc sập 15:05 = Rainbow vứt im lặng khối đọc khi bộ đệm link Goddess 128 KB đầy (`BANGIAO_ROLECHK_GO_0409.md`). **Build CoreServer sau phải gộp `origin/main` d028ea41.** Thêm 2 ứng viên CẠNH khe (khe `CoreServer.dll.moi` trống, chủ chọn): `CoreServer.dll.moi.rolechk2_99765285` (= main d028ea41 + chienlenh a18b5eb8 + rào `[RoleChk2]`; **đã có `AUC_MsgTong`/`AUC_KenhBang`**, `RoleChk` cũ = 0; nhánh `rolechk2-0409` 252d0268 chưa gộp main) và `GameServer.exe.moi.recv_02b583ad` (KSOServer: link DB 8 MB + bỏ gói role-data ghép sai độ dài).
 
 ---
 
