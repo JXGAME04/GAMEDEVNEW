@@ -21,7 +21,7 @@
 // (client chup vao g_szTKDich), CoreShell TK_DichXa (client hoi 5,5 giay/lan khi khong thay dich).
 #define TK_DICH_ID		0x7D1C0A11u
 #define TK_DICH_MAP		379		// map tran Tong Kim (lib_tktc.lua MAP_TK_TC)
-#define TK_DICH_SO		6		// so dich gan nhat tra ve moi lan
+#define TK_DICH_SO		9		// so dich gan nhat tra ve moi lan (phan bien 04/09: 6 -> 9; moi muc <= 21 byte, 8 + 9*21 = 197 <= 200)
 
 struct KDaTauCapture
 {

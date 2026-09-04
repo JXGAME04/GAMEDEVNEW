@@ -7076,7 +7076,7 @@ void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 		}
 		if (dwNayTD < s_uTKDNext[nIndex])
 			return;
-		s_uTKDNext[nIndex] = dwNayTD + GAME_FPS * 5;
+		s_uTKDNext[nIndex] = dwNayTD + GAME_FPS * 4;	// (phan bien 04/09) 4 giay: client hoi 6 giay/lan, may chu cham nhip van khong vut goi
 		const int nMeTD = Player[nIndex].m_nIndex;
 		const int nSubTD = Npc[nMeTD].m_SubWorldIndex;
 		if (nSubTD < 0 || nSubTD >= MAX_SUBWORLD || SubWorld[nSubTD].m_SubWorldID != TK_DICH_MAP)
