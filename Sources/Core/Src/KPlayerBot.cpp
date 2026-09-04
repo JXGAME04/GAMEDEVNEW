@@ -3113,13 +3113,17 @@ static int pb_ODat(int nSubIdx, int nOX, int nOY, int nLech, int nRMax,
 // A* loang het ca thanh phan lien thong cua map thanh (map 1: 777k o) - 200 bot dat
 // sap cung mot khung la treo server. BFS cua so co TRAN CUNG PB_SAP_BFS_O o, re va du.
 
-#define PB_SAP_BFS_R   13                       // ban kinh cua so loang (o) - phu het
-                                                // vong dat sap 3..12 + 1 o du phong
+#define PB_SAP_BFS_R   31                       // ban kinh cua so loang (o) - phu het
+                                                // [SAPGAN 04/09] vong dat sap nay la 14..30 (xem
+                                                // PB_SAP_XA_MAX) + 1 o du phong, nen ban kinh phai
+                                                // 31 chu khong con 13 nhu thoi vong 3..12
 #define PB_SAP_BFS_W   (PB_SAP_BFS_R * 2 + 1)   // canh cua so (27)
 #define PB_SAP_BFS_O   (PB_SAP_BFS_W * PB_SAP_BFS_W)   // 729 o - tran cung
 
 // [SAPRAI2 04/09] Chu game: sap vay kin NPC Da Tau nen nguoi choi khong doi thoai duoc.
 #define PB_SAP_CACH_DT    14   // o: BAN KINH CAM quanh NPC Da Tau - khong dat sap trong day
+#define PB_SAP_XA_MAX     30   // o: [SAPGAN 04/09] XA NHAT duoc phep - chu game muon sap van o KHU
+                               // NPC Da Tau, chi khong duoc vay chan duong vao NPC
 #define PB_SAP_CACH_NHAU   3   // o: hai sap cach nhau it nhat bay nhieu (rai rac, khong chong cui)
 #define PB_SAP_CACH_NPC    3   // o: cach MOI NPC co kich ban (Xa Phu, tiem, kho, nhiem vu) - khong
                                // vay bat ky NPC nao, khong rieng Da Tau
@@ -4275,8 +4279,11 @@ static void pb_BanSap(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 					cx4 += (int)g_Random(5) - 2;   // lech +-2 o nhu che do 0 cua SimCity
 					cy4 += (int)g_Random(5) - 2;
 					const int ddx4 = cx4 - nTamX, ddy4 = cy4 - nTamY;
-					if (ddx4 * ddx4 + ddy4 * ddy4 < PB_SAP_CACH_DT * PB_SAP_CACH_DT)
-						continue;                  // sat NPC Da Tau -> bo
+					const int dd4 = ddx4 * ddx4 + ddy4 * ddy4;
+					if (dd4 < PB_SAP_CACH_DT * PB_SAP_CACH_DT)
+						continue;                  // sat NPC Da Tau -> chan duong, bo
+					if (dd4 > PB_SAP_XA_MAX * PB_SAP_XA_MAX)
+						continue;                  // [SAPGAN] qua xa khu NPC -> bo
 					if (!pb_OSapTotRai(nSubT, cx4, cy4))
 						continue;
 					nSx = cx4 * 32;
@@ -4299,7 +4306,9 @@ static void pb_BanSap(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			unsigned char aReach[PB_SAP_BFS_O];
 			if (!bDat)
 				pb_SapLoang(nSubT, nTamX, nTamY, aReach);
-			for (int r3 = 3; r3 <= 12 && !bDat; r3++)
+			// [SAPGAN 04/09] vanh dai lui cung bat dau tu PB_SAP_CACH_DT (truoc day 3 - chinh la cai vay
+			// kin NPC) va dung o PB_SAP_XA_MAX.
+			for (int r3 = PB_SAP_CACH_DT; r3 <= PB_SAP_XA_MAX && !bDat; r3++)
 			{
 				const int nChuVi = 8 * r3;
 				const int nBd = ((nLech % 97) * 13 + r3 * 7) % nChuVi;
