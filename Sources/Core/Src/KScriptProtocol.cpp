@@ -24,6 +24,11 @@
 #include <string.h>
 #include <stdarg.h>
 #include <time.h>
+#ifndef _SERVER
+#include <map>
+#include <string>
+#include "LuaFuns.h"	// GameScriptFuns / g_GetGameScriptFunNum
+#endif
 
 #define SP_SCRIPT_GS	"\\script\\script_protocol\\protocol_def_gs.lua"
 #define SP_SCRIPT_C		"\\script\\script_protocol\\protocol_def_c.lua"
@@ -79,6 +84,32 @@ static int SP_ParsePacket(BYTE* pMsg, BYTE btType, int* pnProtocolId, const BYTE
 //////////////////////////////////////////////////////////////////////
 // g_FileName2Id KHONG doi chu thuong, con LoadScriptToSortList luu ten CHU THUONG
 // (KSortScript.cpp) -> luon ha chu truoc khi tra.
+#ifndef _SERVER
+// [MAIL 03/09 D5] CLIENT: g_ScriptSet chi co MAX_SCRIPT_IN_SET = 5 o (KSortScript.h) -> LoadAllScript("\\script") nap 5 tep
+// lib\ dau tien roi day, ReLoadScript cung that bai => bo dieu phoi + uimail.lua "khong nap duoc" (jx_mail.log 17:39).
+// Client giu bang KLuaScript rieng, nap theo yeu cau, dang ky GameScriptFuns y nhu KSortScript.cpp:LoadScriptToSortListA.
+static std::map<std::string, KLuaScript*> s_SpClientScripts;
+
+static KLuaScript* sClientLoad(const char* szLow)
+{
+	std::map<std::string, KLuaScript*>::iterator it = s_SpClientScripts.find(szLow);
+	if (it != s_SpClientScripts.end())
+		return it->second;
+	KLuaScript* p = new KLuaScript;
+	if (!p)
+		return NULL;
+	p->Init();
+	p->RegisterFunctions(GameScriptFuns, g_GetGameScriptFunNum());
+	Lua_PushNumber(p->m_LuaState, 1);
+	p->SetGlobalName((LPSTR)"MODEL_GAMECLIENT");
+	g_StrCpyLen(p->m_szScriptName, (char*)szLow, 100);
+	int nOk = p->Load((char*)szLow);
+	s_SpClientScripts[szLow] = p;	// giu ca khi than chunk loi (nhu g_ScriptSet), khoi nap lai vo han
+	SP_ClientLog("[SP] nap %s vao bang rieng: %s", szLow, nOk ? "ok" : "LOI than chunk (xem ScriptError.log)");
+	return p;
+}
+#endif
+
 static KLuaScript* SP_GetScript(const char* szScript, int bLoad)
 {
 	if (!szScript || !szScript[0])
@@ -87,12 +118,28 @@ static KLuaScript* SP_GetScript(const char* szScript, int bLoad)
 	g_StrCpyLen(szLow, (char*)szScript, MAX_PATH);
 	g_StrLower(szLow);
 	KLuaScript* pScript = (KLuaScript*)g_GetScript(szLow);
+#ifdef _SERVER
 	if (!pScript && bLoad)
 	{
 		if (ReLoadScript(szLow))
 			pScript = (KLuaScript*)g_GetScript(szLow);
 	}
+#else
+	if (!pScript)
+	{
+		std::map<std::string, KLuaScript*>::iterator it = s_SpClientScripts.find(szLow);
+		if (it != s_SpClientScripts.end())
+			pScript = it->second;
+		else if (bLoad)
+			pScript = sClientLoad(szLow);
+	}
+#endif
 	return pScript;
+}
+
+KLuaScript* SP_FindScript(const char* szScript, int bLoad)
+{
+	return SP_GetScript(szScript, bLoad);
 }
 
 static void SP_Dispatch(const char* szScript, int nPlayerIdx, int nProtocolId, int hOB)
