@@ -223,9 +223,11 @@ function AUC_RowToClient(r, szMe, nNow)
         tb.nMaxPrice = r.cur
     end
     -- [A20b] gia MUA NGAY (chi dong ky gui ca nhan moi co) - client ve nut "Mua ngay"
+    -- [A34] MOI dong kieu Anh co gia mua ngay cao hon gia co ban deu hien nut Mua ngay
+    -- (truoc day chi rieng the Ca nhan).
     tb.nBuyNow = 0
-    if r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL and r.kind == AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH then
-        tb.nBuyNow = r.base or 0
+    if r.kind == AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH and (r.base or 0) > (r.guar or 0) then
+        tb.nBuyNow = r.base
     end
     -- buoc moi luot = 10% GIA CO BAN (dung y chu chot 04/09)
     tb.nRangePerOffer = floor(r.guar / 10)
@@ -482,7 +484,7 @@ function AUC_OnRequestOfferDutch(nType, szAct, nId, nPrice)
     local nGiaMua = r.cur
     local bKyGui = 0
     if r.kind ~= AUCTION_DEF.tbItemTypeEnum.eType_DUTCH then
-        if r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL and (r.base or 0) > 0 then
+        if (r.base or 0) > (r.guar or 0) then
             nGiaMua = r.base
             bKyGui = 1
         else
@@ -562,7 +564,7 @@ function AUC_OnRequestOfferEnglish(nType, szAct, nId, nNewPrice)
     -- Truoc day duong tra gia khong co tran tren nen gia cao nhat vuot duoc gia mua ngay,
     -- roi bat ky ai bam Mua ngay cung lay duoc mon o gia THAP HON: nguoi ban mat phan chenh,
     -- nguoi dang giu gia cao nhat bi cuop mon. Chot o day thi cur khong bao gio vuot base nua.
-    if (r.base or 0) > 0 and r.atype == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL and nNewPrice >= r.base then
+    if (r.base or 0) > (r.guar or 0) and nNewPrice >= r.base then
         return AUC_OnRequestOfferDutch(nType, szAct, nId, r.base)
     end
     if AUC_GetMoney(r.currency) < nNewPrice then
@@ -757,16 +759,19 @@ function AUC_PutOnItem(nType, szAct, nKind, nCur, nPrice, nItemIdx, nTong, nBase
         nKind = AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH
     end
     if nType ~= AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL then
-        nGuar = nPrice
         if nKind == AUCTION_DEF.tbItemTypeEnum.eType_ENGLISH then
-            -- [A17] gia khoi diem = gia san, chua ai tra thi cur = 0 (khong phai 150%),
-            -- khong thi nguoi tra gia DAU TIEN luon bi tu choi vi cau SQL doi cur_price < gia tra.
+            -- [A34 04/09] Phien BANG HOI / THE GIOI chay dung the thuc cua ky gui ca nhan.
+            -- Truoc day cho nay dat nGuar = nPrice (o "Mua ngay") va vut o "Co ban" di,
+            -- nen gia KHOI DIEM bang luon gia MUA NGAY - lan tra dau da phai bang gia mua ngay,
+            -- khong con gi de dau (chu bao: "gia dau gia = voi gia mua ngay").
+            -- Nay giu nGuar = gia co ban va nBase = gia mua ngay nhu dat o dau ham.
+            -- Chua ai tra thi cur = 0, khong thi nguoi tra DAU TIEN bi cau SQL cur_price < ? da ra.
             nCurP = 0
-            nBase = nGuar
             nNextDrop = 0
             nDropLeft = 0
             nEnd = nNow + AUCTION_DEF.nEnglishRemainingTime
         else
+            nGuar = nPrice
             nCurP = floor(nPrice * AUCTION_DEF.nDutchInitRate)
             nBase = nCurP
             nNextDrop = nNow + AUCTION_DEF.nDutchFloatInterval
@@ -939,17 +944,15 @@ function AUC_OnGiveOk(nCount)
         Msg2Player("Ch≠a nhÀp gi∏ mua ngay hÓp l÷.")
         return
     end
-    -- [A20] ky gui ca nhan doi DU HAI gia va gia co ban phai THAP HON gia mua ngay,
-    -- khong thi khong con gi de dau (chu hoi dung cho nay hom 04/09).
-    if t.nType == AUCTION_DEF.tbAuctionTypeEnum.eType_PERSONAL then
-        if (t.nBase or 0) < 1 then
-            Msg2Player("Ch≠a nhÀp gi∏ c¨ b∂n.")
-            return
-        end
-        if t.nBase >= t.nPrice then
-            Msg2Player("Gi∏ c¨ b∂n ph∂i th p h¨n gi∏ mua ngay.")
-            return
-        end
+    -- [A20] doi DU HAI gia va gia co ban phai THAP HON gia mua ngay, khong thi khong con
+    -- gi de dau. [A34] ap cho CA BA the, khong rieng ky gui ca nhan nua.
+    if (t.nBase or 0) < 1 then
+        Msg2Player("Ch≠a nhÀp gi∏ c¨ b∂n.")
+        return
+    end
+    if t.nBase >= t.nPrice then
+        Msg2Player("Gi∏ c¨ b∂n ph∂i th p h¨n gi∏ mua ngay.")
+        return
     end
     local nIdx = GetGiveItemUnit(1)
     if nIdx == nil or nIdx <= 0 then

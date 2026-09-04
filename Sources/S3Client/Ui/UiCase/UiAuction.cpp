@@ -372,8 +372,9 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 	char sz[64];
 	m_Name.SetText(p->szName);
 	// bieu tuong: dung lai vat pham tam tu ChatItem (nhu hop thu)
-	// [A32 04/09] o lai 26x26 va mon nhieu o duoc THU NHO THAT ve mot o, nen khung nen hien lai.
-	m_IconBg.Show();
+	// [A35 04/09] o lai rong 58x78 (chu: "o vuong chi co 1x1 chua tra lai nhu truoc") de vien
+	// dong khung om dung lay mon ve nguyen co; khung nen chi 26x26 nen nho hon mon - an di.
+	m_IconBg.Hide();
 	if (!bSameItem && g_pCoreShell && p->Item.m_nID)
 	{
 		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&p->Item);
@@ -434,10 +435,12 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 			// va con so trong do - truoc chi an ba cai nut, khung nhap van nam do trong tron.
 			m_ImgInput.Hide();
 			m_TxtOffer.Hide();
-			if (p->nBuyNow > 0)
-				m_BtnGetBack.Show();
-			else
-				m_BtnGetBack.Hide();
+			// [A36 04/09] chu: "khi dau gia len bang hoi thi khong go xuong duoc".
+			// Truoc day nut nay chi hien khi mon co GIA MUA NGAY (nBuyNow > 0), ma phien bang hoi
+			// truoc nay khong co gia mua ngay -> nut khong bao gio hien -> nguoi ban khong con duong
+			// rut mon ve. May chu thi khong he chan: AUC_OnRequestGetBack chi doi dung nguoi ban va
+			// chua ai tra gia, khong phan biet loai phien. Nut phai hien cho MOI mon cua chinh minh.
+			m_BtnGetBack.Show();
 		}
 		else
 		{
