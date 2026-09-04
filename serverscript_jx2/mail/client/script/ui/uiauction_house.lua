@@ -181,6 +181,15 @@ function UIAuctionHouse:OnPageBtnClick(nType)
 end
 
 -- [A4] nut goc phai: Ca nhan = ky gui, The gioi = GM mo phien, Bang hoi = bang chu dat mon / thanh vien xem danh sach
+-- [A28] may chu bao ky gui XONG: dong hop dua vat pham va nap lai trang dang xem.
+function UIAuctionHouse:OnPutOnOk(nType, szAct)
+    AuctionPutOnMode(2)
+    if AuctionUiIsOpen() == 1 and self.nCurTypeIndex == nType then
+        self:ResetPageInfo(nType, szAct)
+        self:RequestActivityContent(self.szCurActivityName, self.nCurPageIndex)
+    end
+end
+
 function UIAuctionHouse:OnPutOnClick(nType)
     local h = OB_Create()
     AuctionPutOnMode(1)

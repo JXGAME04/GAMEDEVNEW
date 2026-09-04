@@ -110,6 +110,12 @@ Def =
 		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
 	},
 	{
+		"emSCRIPT_PROTOCOL_AUCTION_PUTONOK",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnPutOnOk",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING},
+	},
+	{
 		"emSCRIPT_PROTOCOL_AUCTION_ENDITEM",
 		"\\script\\ui\\uiauction_house.lua",
 		"UIAuctionHouse:OnEndItemEvent",
