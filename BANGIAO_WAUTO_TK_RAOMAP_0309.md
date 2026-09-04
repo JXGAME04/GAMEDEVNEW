@@ -9,9 +9,9 @@ Phiên: `wauto` (Claude Fable 5.1). Chủ giao (03/09 chiều):
 
 | Tệp | md5 | Cỡ | Ghi chú |
 |---|---|---|---|
-| `bin\client\CoreClient.dll.moi` | **`59f90510`** | `2.523.648` | **(03/09 tối — ĐỢT 3, xem mục 7)** trận chưa bắt đầu (trap chặn cổng) thì đứng chờ thay vì bị ném về liên tục; tầng săn: bị tường chắn thì nhắm đúng ô địch cho A* đi vòng, điểm nhắm phải `FindPath == 1`, đứng yên trong tầm PK 3 s là bỏ mục tiêu; ô rảo tránh trap "vào trại". Build từ main `3d6c3a62` + `ReverseTools\goi_va_wauto_tk_chocong_0309.py`; tập cha của `4c69d7ad`. **Chỉ đổi CoreClient.dll.** |
-| `bin\client\CoreClient.dll` | `4c69d7ad` | `2.521.600` | **ĐANG CHẠY** (chủ swap ~20:05) — ĐỢT 2 (mục 6): chỉ nhận ô rảo `FindPath == 1` + đo kẹt 3 s; đứng trong map 379 mà máy TK bị xoá (tắt/bật tick auto) thì vào lại ngay; cấm chiêu 30 s chỉ khi sai vũ khí. Bộ vá `ReverseTools\goi_va_wauto_tk_rao_ket_0309.py`. |
-| `bin\client\CoreClient.dll.truoc` | `a3cecb53` | `2.520.064` | đợt 1 (chiều), chạy 18:10 → 20:05. |
+| `bin\client\CoreClient.dll.moi` | **`5600d7a9`** | `2.525.696` | **(03/09 đêm — ĐỢT 4, xem mục 8)** 5 yêu cầu của chủ: ra trại thì tiến về **khu xuất quân địch** khi chưa thấy ai (sau điểm cuối thấy địch); **luật ngựa mới**: đi xa tự lên ngựa, gặp địch xuống, quanh có địch không lên. Build từ main `a6c6f237` + `ReverseTools\goi_va_wauto_tk_ngua_xq_0309.py`; tập cha của `59f90510`. **Chỉ đổi CoreClient.dll.** |
+| `bin\client\CoreClient.dll` | `59f90510` | `2.523.648` | **ĐANG CHẠY** (chủ swap 20:51) — ĐỢT 3 (mục 7): trận chưa bắt đầu (trap chặn cổng) thì đứng chờ; tầng săn bị tường chắn thì nhắm đúng ô địch, điểm nhắm phải `FindPath == 1`, đứng yên trong tầm PK 3 s là bỏ; ô rảo tránh trap "vào trại". Bộ vá `ReverseTools\goi_va_wauto_tk_chocong_0309.py`. |
+| `bin\client\CoreClient.dll.truoc` | `4c69d7ad` | `2.521.600` | đợt 2 (mục 6), chạy ~20:05 → 20:51. Đợt 1 `a3cecb53` chạy 18:10 → 20:05. |
 | `bin\client\Game.exe` | `bd5cb88e` | đang chạy | KHÔNG cần đổi (không chạm S3Client). |
 | `bin\client\WAuto.exe` | `46fdc93f` | đang chạy | KHÔNG cần đổi (không có ô cấu hình mới — tận dụng ô sẵn có). |
 | `bin\server\CoreServer.dll.moi` | `b68899b2` | 18.298.368 | của wauto-6a (S13k máy chủ), swap theo lịch của họ; độc lập với bộ này. |
@@ -97,4 +97,19 @@ Bộ vá: `ReverseTools\goi_va_wauto_tk_chocong_0309.py [--thu] [--root ...] [--
 
 **Swap: chỉ `CoreClient.dll.moi`** (thoát Game.exe → `ChoiGame.bat`). **Nghiệm thu:** vào trận lúc còn báo danh → kênh `[Tống Kim]` báo *Trận chưa bắt đầu - còn N giây…* đúng một lần và nhân vật đứng trước cổng, không còn bị ném về lặp; đến giờ → *Trận đã bắt đầu - xuất quân*. Log: `[TK-CHO] thoai chan cong…`, `[TK-CHO] thoai: tran da bat dau`, `[TK-SAN-BO] khong co duong toi id=…` (địch trong vùng kín), không còn `[TK-SAN] … xa=1xx … repath=2` kéo dài.
 
-**Còn phải hỏi chủ:** phiên 62776 chết **12 lần / 9 phút**: mỗi lần hồi sinh xong auto chạy thẳng ~4.000 mps về *"điểm cuối thấy địch"* (luật đợt chiều) = giữa đám địch, sống 5–15 s. Có nên đổi luật (đứng gần cổng mình chờ địch tới / chỉ lao vào khi thấy ≤ N địch) không? Chưa đổi vì thuộc chiến thuật của chủ.
+**Còn phải hỏi chủ:** phiên 62776 chết **12 lần / 9 phút**: mỗi lần hồi sinh xong auto chạy thẳng ~4.000 mps về *"điểm cuối thấy địch"* (luật đợt chiều) = giữa đám địch, sống 5–15 s. Có nên đổi luật (đứng gần cổng mình chờ địch tới / chỉ lao vào khi thấy ≤ N địch) không? Chưa đổi vì thuộc chiến thuật của chủ. → **Chủ trả lời 21:0x bằng 5 yêu cầu (mục 8): giữ hướng "ra trại là tìm địch để đánh".**
+
+## 8. ĐỢT 4 (03/09 đêm) — 5 yêu cầu của chủ → `CoreClient.dll.moi 5600d7a9`
+
+Nguyên văn chủ: *(1) khi ra khỏi doanh trại thì Auto sẽ xác định vị trí của địch để di chuyển tới đánh; (2) trên đường di chuyển gặp địch thì dừng lại để đánh; (3) nếu đối tượng được xác định lúc đầu đã chết thì đổi qua đối tượng khác; (4) di chuyển đường xa, lúc chết về thì phải tự lên ngựa, xuống ngựa chỉ khi gặp địch; (5) đang dưới ngựa mà xung quanh có địch thì không được lên ngựa, chỉ lên ngựa khi di chuyển xa.*
+
+| Yêu cầu | Đã có sẵn | Làm thêm ở đợt 4 (chỉ `CoreShell.cpp`) |
+|---|---|---|
+| (1) xác định vị trí địch | Client **chỉ thấy** địch trong vùng đồng bộ (~40 ô); thứ tự `TKP_FIGHT`: tướng → người khác màu trong tầm PK → săn người trong vùng đồng bộ → lính → "điểm cuối thấy địch" (3 phút) → rảo | `TK_RaoDi (b2)`: chưa thấy ai và không còn điểm cuối thấy địch → **mỗi lượt ra trận đi thẳng một lần tới khu xuất quân của địch** (8 điểm trap ra trại bên kia, `g_TKXuatQuanA/B` đã có trong `KTongKimTables.h`, chọn điểm gần nhất có `FindPath == 1`); tới nơi (< 480 mps) / 90 s / kẹt 3 s → rảo quanh đó. Log `[TK-XQ]`, báo *"Không thấy địch - tiến về khu xuất quân của địch."* |
+| (2) gặp địch trên đường thì đánh | Có: tầng săn/máy PK chạy mỗi nhịp trước rảo, thấy địch là cướp quyền | — |
+| (3) mục tiêu chết thì đổi | Có: `TK_SanNguoi` bỏ mục tiêu chết mỗi nhịp; `TK_ChonDich` bỏ `do_death` | — |
+| (4)(5) ngựa | Đợt chiều: ô "Xuống ngựa" tab PK / ô ngựa tab Chiến đấu = xuống ⇒ **không bao giờ** tự lên; máy trong trận không lên | **Đổi luật `DT_DuocLenNgua`** (mọi máy đi đường qua `DT_WalkTo`): lên ngựa khi đường còn ≥ 480 mps, không ôm mục tiêu, **không có địch** (quan hệ enemy, còn sống; NPC chỉ tính khi trong trận TK và bật "Đánh quái") trong **Tầm nhìn PK + 400 mps**, và đã ≥ 6 s từ lần xuống. Hai ô cấu hình "xuống ngựa" giờ chỉ nói về lúc đánh. Pha farm Dã Tẩu vẫn không lên. Máy TK **xuống ngựa khi gặp địch** (`TK_XuongNgua`): giao mục tiêu cho máy PK, địch săn vào Tầm nhìn PK + 400, hay máy PK đang ôm mục tiêu. Log `[TK-NGUA]`. |
+
+Ngưỡng do tôi chọn (chủ đổi được bằng cách nói số): "đường xa" = 480 mps (15 ô); "xung quanh có địch" = ô *Tầm nhìn PK* của tab PK + 400 mps; nghỉ 6 s sau khi xuống. Bộ vá: `ReverseTools\goi_va_wauto_tk_ngua_xq_0309.py [--thu] [--root]`.
+
+**Lưu ý:** máy đánh thường (tab Chiến đấu, ô ngựa = "tự động") vẫn tự **lên** ngựa khi chiêu cho phép cưỡi (`[FIGHT-HORSE] TOGGLE`) — muốn đúng luật "quanh có địch không lên ngựa" thì đặt ô đó = *Xuống ngựa*. **Nghiệm thu:** ra trại → `[Tống Kim] Không thấy địch - tiến về khu xuất quân của địch` → lên ngựa chạy → thấy địch trong tầm → `[TK-NGUA] gap dich - xuong ngua` → đánh; hết địch, đường xa → lên lại sau ≥ 6 s.
