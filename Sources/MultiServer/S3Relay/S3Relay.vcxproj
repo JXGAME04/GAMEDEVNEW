@@ -79,7 +79,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
-      <AdditionalOptions>/source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;..\..\..\Headers;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <PostBuildEvent>
@@ -131,7 +131,7 @@ copy release\S3Relay.exe ..\..\..\..\bin\multiserver\release\S3Relay.exe</Comman
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <AdditionalOptions>/source-charset:windows-1258 /execute-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;..\..\..\Headers;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <PostBuildEvent>

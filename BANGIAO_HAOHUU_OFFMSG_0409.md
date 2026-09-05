@@ -48,11 +48,15 @@ Thiếu hẳn: **lời nhắn mật tới người ngoại tuyến bị vứt** 
 | `ChannelMgr.h/.cpp` | `SomeoneChat`: người nhận ngoại tuyến → lưu → feedback `codeStore` (client vẫn hiện câu vừa gửi) + dòng `[Hệ thống] X hiện không trực tuyến, lời nhắn đã được lưu và sẽ chuyển khi X đăng nhập.` trong chính cửa sổ chat với X. `DeliverOfflineMsgs()`: giao từng lời nhắn như chat mật từ người gửi, đầu câu `[Lời nhắn lúc dd/mm hh:mm]`, giao đủ mới xoá |
 | `ChatConnect.cpp` | gọi `DeliverOfflineMsgs` tại `Proc1_Normal_EnterGame` (GS chỉ báo relay sau `enumPlayerSyncEnd`, lúc đó client đã `UiStartGame()` mở `KUiMsgCentrePad` — `UiShell.cpp:461`) |
 | `Global.cpp` | `OfflineMsg_Init()` sau `g_FriendMgr.Initialize()` (lỗi MySQL ⇒ tự tắt tính năng, relay vẫn chạy); `OfflineMsg_Uninit()` lúc tắt |
-| `S3Relay.vcxproj` | thêm 2 tệp mới |
+| `S3Relay.vcxproj` | thêm 2 tệp mới; **thêm `/execution-charset:windows-1258`** cho Release (trước chỉ có `/source-charset` ⇒ MSVC chuyển mã 1258→ACP máy 1252, hỏng byte F5/D5/E3…), Debug sửa lỗi gõ `/execute-charset` |
 | `ToolsMySQL\schema_relay.sql` | DDL `relay_offline_msg` (tham chiếu) |
 
-Chỉ chèn ASCII (chữ Việt bằng octal `\326`… sinh từ `vn_to_octal.py`); số byte cao của mọi tệp đã vá **không đổi** (`check_encoding.py`).
-Build `Release|Win32`: COMPILE 0 lỗi, LINK ra `S3Relay.exe` 4.413.952 byte 18:49 (lỗi `MSB3073` chỉ là post-build copy sang `D:\bin` không tồn tại).
+Bộ vá p01 chỉ chèn ASCII (chữ Việt tạm bằng octal `\326`…), số byte cao mọi tệp **không đổi**. Sau đó chủ yêu cầu *"ghi đúng font"* →
+bộ vá `p02_raw_tcvn3.py` đổi 8 chuỗi sang **byte thật** (TCVN3 sinh từ `vn_to_octal.unicode_to_tcvn3_bytes`; GBK đọc thẳng từ
+`#define ENEMY_UNITNAME/BROTHER_UNITNAME` trong `KPlayerChat.cpp` — không gõ tay byte nào) và thêm cờ `/execution-charset` nói trên.
+Kiểm chứng: exe build lại **chỉ khác 9 byte header** (TimeDateStamp/PDB age) so với bản octal ⇒ chuỗi trong exe giống hệt từng byte;
+`check_encoding.py` FFFD = 0, byte cao FriendMgr 24→36, ChannelMgr 72→95 đúng bằng số byte Việt/Hán đã chèn. Từ nay relay ghi raw TCVN3 như Core (RULE 0).
+Build `Release|Win32`: COMPILE 0 lỗi, LINK ra `S3Relay.exe` 4.413.952 byte 19:37 (lỗi `MSB3073` chỉ là post-build copy sang `D:\bin` không tồn tại).
 Đã thử **đúng các câu SQL** của mã C trên DB tạm (tạo/đếm/chèn/đọc/xoá, byte TCVN3 nguyên vẹn) rồi drop DB tạm.
 
 ## 4. Cấu hình (mặc định = bản Linux, không cần thêm gì)

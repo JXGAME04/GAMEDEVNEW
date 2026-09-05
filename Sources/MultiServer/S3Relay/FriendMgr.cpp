@@ -20,9 +20,9 @@
 //////////////////////////////////////////////////////////////////////
 // [HAOHUU 04/09] TEN NHOM QUAN HE (unit "\n" nhom con -- client tach o '\n', xem sParseUGName)
 // GameServer (Core\Src\KPlayerChat.cpp MakeEnemy/MakeBrother) gui ten don vi bang chu Han GBK
-//   "\263\360\310\313\n" (Cuu nhan) va "\307\327\310\313\n" (Than nhan)
+//   B3 F0 C8 CB 0A (Cuu nhan) va C7 D7 C8 CB 0A (Than nhan) -- chep tu KPlayerChat.cpp
 // trong khi client (S3Client\Ui\UiCase\UiChatCentre.cpp ENEMY_UNITNAME/BROTHER_UNITNAME) chi co
-//   "C\365u Nh\251n" va "Th\251n Nh\251n" (TCVN3) => FindUnitIndex tra -1 => moi cuu nhan/than nhan
+//   43 F5 75 20 4E 68 A9 6E va 54 68 A9 6E 20 4E 68 A9 6E (TCVN3 "Cuu Nhan" / "Than Nhan") => FindUnitIndex tra -1 => moi cuu nhan/than nhan
 // do may chu tao ra deu VO HINH tren client (do 04/09: 93.140 ban ghi nhom GBK trong relay_kv).
 // Ban Linux doi ten ngay trong relay (stringtable_relay.txt K_PR_ENEMY/K_PR_BROTHER) -> lam nhu vay:
 // doi khi nhan goi (TongConnect) VA khi nap tu DB (_LoadSomeone) de du lieu cu cung hien ra.
@@ -30,8 +30,8 @@
 struct LEGACY_GROUP { const char* legacy; const char* client; };
 static const LEGACY_GROUP s_LegacyGroups[] =
 {
-	{ "\263\360\310\313\n",	"C\365u Nh\251n\n" },	// GBK "Cuu nhan"  -> client ENEMY_UNITNAME
-	{ "\307\327\310\313\n",	"Th\251n Nh\251n\n" },	// GBK "Than nhan" -> client BROTHER_UNITNAME
+	{ "³ðÈË\n",	"Cõu Nh©n\n" },	// GBK "Cuu nhan"  -> client ENEMY_UNITNAME
+	{ "Ç×ÈË\n",	"Th©n Nh©n\n" },	// GBK "Than nhan" -> client BROTHER_UNITNAME
 };
 
 std::_tstring CFriendMgr::NormalizeGroup(const std::_tstring& group)

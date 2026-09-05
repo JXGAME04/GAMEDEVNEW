@@ -874,7 +874,7 @@ BOOL CChannelMgr::SomeoneChat(DWORD srcIP, const tagPlusSrcInfo& SrcInfo, const 
 	{	// [HAOHUU 04/09] bao nguoi gui biet loi nhan da duoc luu -- hien trong chinh cua so chat voi nguoi nhan
 		char szNotice[400];
 		int nNotice = _snprintf(szNotice, sizeof(szNotice) - 1,
-			"[H\326 th\350ng] %s hi\326n kh\253ng tr\371c tuy\325n, l\352i nh\276n \256\267 \256\255\356c l\255u v\265 s\317 chuy\323n khi %s \256\250ng nh\313p.",
+			"[HÖ thèng] %s hiÖn kh«ng trùc tuyÕn, lêi nh¾n ®· ®­îc l­u vµ sÏ chuyÓn khi %s ®¨ng nhËp.",
 			pSomeoneChatCmd->someone, pSomeoneChatCmd->someone);
 		if (nNotice < 0 || nNotice > (int)MAX_SENTLEN - 1) nNotice = (int)MAX_SENTLEN - 1;
 		size_t nsize = sizeof(CHAT_SOMEONECHAT_SYNC) + nNotice;
@@ -1686,7 +1686,7 @@ int CChannelMgr::DeliverOfflineMsgs(const char* role, DWORD ip, unsigned long pa
 	{
 		OFFMSG_REC& r = recs[i];
 		char szText[MAX_SENTLEN + 64];
-		int nPre = _snprintf(szText, 63, "[L\352i nh\276n l\363c %02d/%02d %02d:%02d] ", r.day, r.mon, r.hour, r.minute);
+		int nPre = _snprintf(szText, 63, "[Lêi nh¾n lóc %02d/%02d %02d:%02d] ", r.day, r.mon, r.hour, r.minute);
 		if (nPre < 0) nPre = 0;
 		int nLen = r.textlen;
 		if (nPre + nLen > (int)MAX_SENTLEN - 1) nLen = (int)MAX_SENTLEN - 1 - nPre;
