@@ -99,7 +99,8 @@ Trang "Cấu hình game": lọc theo nhóm + ô tìm khoá/mô tả; sửa `v` t
 
 | tệp | md5 | ghi chú |
 |---|---|---|
-| `bin\server\CoreServer.dll.moi` | **0e3634a6328d77ee7eb40ae0fa186fd6** (18.424.832) | = bản đang chạy 5af51667 (S13l + TKBOT/VATCAN) + CFGW; tắt GameServer → `ChayGameServer.bat` |
+| `bin\server\CoreServer.dll` (LIVE từ 04/09 20:47) | 0e3634a6328d77ee7eb40ae0fa186fd6 (18.424.832) | bản 04/09: gcfg 15 cột, chưa có tiếng Việt |
+| `bin\server\CoreServer.dll.moi` **(05/09 10:02, chờ swap)** | **98252d9dcad43637c0188048fe727e58** (18.431.488) | = 0e3634a6 + 4 cột tiếng Việt (mục 8) + ALTER tự động; nguồn origin/main `6177ba7e`; tắt GameServer → `ChayGameServer.bat` |
 | `bin\client\CoreClient.dll` | 790fa976dc0ca7d95d8d71bc6e16ca29 | đã live 19:43 (chủ swap cặp 5af51667/790fa976); CFGW chỉ máy chủ → **không cần swap client** lần này |
 
 Nghiệm thu: sau restart, `SELECT COUNT(*) FROM gcfg` ≈ 350; `gcfg_log` có dòng "da nap cfg_version=0: N khoa, 0 loi"; sửa `ServerConfig.ExpRate` trên web → ≤ 30 s có dòng "`<cũ> -> <mới> (ap ngay)`" và exp nhận được đổi ngay; sửa `BAT_TONGKIM` / `TW_GIO_KHAICHIEN` → ≤ 1,5 phút `timerserver` đọc giá trị mới (kiểm `CFGW_Info()` qua lệnh GM hoặc `gcfg.v_ap`). Gõ chữ vào ô số → `gcfg_log` level 2 kèm `k`, `v_ap` giữ số cũ.
