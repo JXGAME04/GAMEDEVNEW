@@ -225,7 +225,7 @@ void KUiFlashMessage::Initialize()
 	LoadScheme(Scheme);
 
 	// determine line height and how many slots fit
-	m_nLineHeight = m_nFontSize + 2; // font size + small padding (adjust if desired)
+	m_nLineHeight = m_nFontSize + 4; // [TKCHAT 04/09] font + 4: ba dong TK khong dinh nhau
 	//if (m_Height <= 0) m_nHeight = m_Height; // keep original members mis-typed? (no change)
 	// compute usable content height: total window height minus vertical padding (indentV top+bottom)
 	int usableHeight = m_Height - m_nIndentV * 2;
@@ -350,11 +350,52 @@ void KUiFlashMessage::MessageArrival(KNewsMessage* pMsg, SYSTEMTIME* pTime)
 /*********************************************************************************
 *功能：显示消息，并在显示完成后对消息进行进一步处理
 **********************************************************************************/
+// [TKCHAT 04/09] Do rong (px) cua chuoi DA MA HOA, dem DUNG cach KTextProcess::GetSimplexText/DrawTextLine
+// dem khi ve: byte > 0x80 = 2 nua-o va nuot 2 byte (chuan GBK), KTC_COLOR/BORDER 4 byte = 0 nua-o,
+// RESTORE 1 byte = 0, INLINE_PIC 3 byte ~ 2 nua-o, con lai 1 nua-o; mot nua-o = nFontSize/2 px
+// (DrawTextLine cong nCount/2*nFontSize). KHONG dung TGetEncodedTextOutputLenPos: ham do dem RESTORE
+// thanh 1 o (loi && thay vi ||) nen lech.
+static int sTkChatDoRong(const char* p, int nLen, int nFontSize)
+{
+	int nUnits = 0, i = 0;
+	while (i < nLen)
+	{
+		unsigned char c = (unsigned char)p[i];
+		if (c > 0x80)
+		{
+			nUnits += 2;
+			i += 2;
+		}
+		else if (c == KTC_COLOR || c == KTC_BORDER_COLOR)
+			i += 4;
+		else if (c == KTC_COLOR_RESTORE || c == KTC_BORDER_RESTORE)
+			i += 1;
+		else if (c == KTC_INLINE_PIC)
+		{
+			nUnits += 2;
+			i += 3;
+		}
+		else if (c == KTC_ENTER)
+			i += 1;
+		else
+		{
+			nUnits += 1;
+			i += 1;
+		}
+	}
+	return nUnits * nFontSize / 2;
+}
+
+// [TKCHAT 04/09] Chu 04/09: "thong bao giet dich o tong kim giua man hinh dang co nhung bi loi".
+// Truoc: moi o ve o x = trai + IndentH (can TRAI) voi OutputRichText(..., m_nVisionWidth) mot dong ->
+// dong dai hon 578 px bi CAT o mep phai (anh chu: "...nhan duoc 330 tich l"), o nao trong thi nhan tin
+// moi -> dong moi co the nhay len TREN dong cu. Nay: xep cac o dang hien theo thoi diem bat dau (cu tren,
+// moi duoi), ve lien tiep tu tren xuong, CAN GIUA theo be rong that, khong gioi han be rong (0).
+// Cua so nay rong = ca man hinh (UiFlashMessage.ini Left=0 Width=800/1024).
 void KUiFlashMessage::PaintWindow()
 {
 	if (!g_pRepresentShell)
 		return;
-
 
 	KOutputTextParam Param;
 	Param.Color = m_uTextColor;
@@ -365,30 +406,48 @@ void KUiFlashMessage::PaintWindow()
 	Param.nVertAlign = 0;
 	Param.bPicPackInSingleLine = true;
 
-	for (int i = 0; i < m_nNumSlots; ++i)
+	int aIdx[64];
+	int nSo = 0;
+	for (int i = 0; i < m_nNumSlots && nSo < 64; ++i)
 	{
-		DisplaySlot& slot = m_DisplaySlots[i];
-		if (!slot.bActive) continue;
+		if (m_DisplaySlots[i].bActive)
+			aIdx[nSo++] = i;
+	}
+	for (int a = 1; a < nSo; ++a)
+	{
+		int k = aIdx[a];
+		int b = a - 1;
+		while (b >= 0 && m_DisplaySlots[aIdx[b]].uDisplayStartTime > m_DisplaySlots[k].uDisplayStartTime)
+		{
+			aIdx[b + 1] = aIdx[b];
+			--b;
+		}
+		aIdx[b + 1] = k;
+	}
 
-		Param.nX = slot.nTextPosX;
-		Param.nY = m_nAbsoluteTop + m_nIndentV + i * m_nLineHeight;
-
-		// compute the render start and length:
-		int renderStart = slot.bStationary ? 0 : slot.nCharIndex;
-		int renderLen = slot.CurrentMsg.nMsgLen - renderStart;
-		if (renderLen <= 0) continue;
-
-		int nLen = 1;
+	for (int r = 0; r < nSo; ++r)
+	{
+		DisplaySlot& slot = m_DisplaySlots[aIdx[r]];
+		if (slot.CurrentMsg.nMsgLen <= 0)
+			continue;
 		char szTemp[512];
-		strncpy(szTemp, slot.CurrentMsg.sMsg, sizeof(szTemp) - 1);
-		nLen = TEncodeText(szTemp, slot.CurrentMsg.nMsgLen);
-
-		g_pRepresentShell->OutputRichText(m_nFontSize, &Param,
-			szTemp, nLen, m_nVisionWidth);
+		int nCopy = slot.CurrentMsg.nMsgLen;
+		if (nCopy > (int)sizeof(szTemp) - 1)
+			nCopy = (int)sizeof(szTemp) - 1;
+		memcpy(szTemp, slot.CurrentMsg.sMsg, nCopy);
+		szTemp[nCopy] = 0;
+		int nLen = TEncodeText(szTemp, nCopy);
+		if (nLen <= 0)
+			continue;
+		int nRong = sTkChatDoRong(szTemp, nLen, m_nFontSize);
+		int nX = m_nAbsoluteLeft + (m_Width - nRong) / 2;
+		if (nX < m_nAbsoluteLeft + m_nIndentH)
+			nX = m_nAbsoluteLeft + m_nIndentH;
+		Param.nX = nX;
+		Param.nY = m_nAbsoluteTop + m_nIndentV + r * m_nLineHeight;
+		g_pRepresentShell->OutputRichText(m_nFontSize, &Param, szTemp, nLen, 0);
 	}
 }
-
-
 
 /*********************************************************************************
 *功能：在队列中，寻找是否有符合显示条件的消息，使指针m_pHandling指向找到的消息

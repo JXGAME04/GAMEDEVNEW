@@ -47,6 +47,7 @@
 #include "UiCase/UiQuestDT.h"
 #include "UiCase/UiQuestDT1.h"
 #include "UiCase/UiBattleReport.h"
+#include "UiCase/UiTongKimScore.h"	// [TKDIEM 04/09] bang diem Tong VS Kim
 #include "UiCase/UiSuperShop.h"
 #include "UiCase/UiAffairItem.h"
 #include "UiCase/UiMantleInlay.h"
@@ -569,6 +570,7 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 	}
 	break;
 	case GDCNI_SWITCHING_SCENEPLACE:
+		KUiTongKimScore::OnSwitchMap(nParam);	// [TKDIEM 04/09] bat dau nap map moi -> an bang diem
 		break;
 	case GDCNI_MISSION_RECORD:
 		if (uParam)
@@ -799,6 +801,8 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 	}
 	break;
 	case GDCNI_UPDATE_BATTLE_BOX:
+		// [TKDIEM 04/09] bang diem Tong VS Kim: nKind 6 = cap nhat "tong|kim|diem", 9 = an
+		KUiTongKimScore::OnBattleBox((char*)uParam, nParam);
 		if (nParam)
 			KUiBattleReport::UpdateRankWorld((char*)uParam, nParam);
 		else
