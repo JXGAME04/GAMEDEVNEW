@@ -241,6 +241,11 @@ def main():
     head = ["chuyen_lua4_54: %d tep .lua, %d tep co thay doi" % (so_tep, so_doi),
             "  " + ", ".join("%s=%d" % kv for kv in sorted(tong.items())), ""]
     io.open(bc_path, "a", encoding="utf-8").write("\n".join(head + baocao) + "\n")
+    # Dau hieu cay da chuyen: Lua54Dll.dll kiem tep nay luc mo thu vien (lua4_baselibopen) - thieu la tu choi
+    # chay, tranh canh "DLL 5.4 + cay script Lua 4" (66 tep co %x se loi cu phap).
+    import time
+    io.open(os.path.join(dich, "LUA54_DA_CHUYEN.txt"), "w", encoding="ascii").write(
+        "Cay script nay da qua chuyen_lua4_54.py luc %s tu %s\n%s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), os.path.abspath(nguon), head[0]))
     print("\n".join(head[:2]))
     print("bao cao:", bc_path)
 

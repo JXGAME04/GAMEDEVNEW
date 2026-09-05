@@ -292,7 +292,7 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\..\Lib\debug\libdb181sd.lib" />
-    <Library Include="..\..\..\Lib\debug\lualibdll.lib" />
+    <Library Include="..\..\..\Lib\lua54\$(Platform)\Lua54Dll.lib" />
     <Library Include="..\..\..\Lib\release\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Library>

@@ -66,7 +66,7 @@ def main():
     goc = sys.argv[1]
     bc = []
     S = L.luaL_newstate(); L.luaL_openlibs(S)
-    r, msg = kiem_cu_phap(S, os.path.join(HERE, "lua4compat.lua"), "lua4compat.lua")
+    r, msg = kiem_cu_phap(S, os.path.join(HERE, "..", "..", "Sources", "Library", "Lua54", "lua4compat.lua"), "lua4compat.lua")
     bc.append("lua4compat.lua cu phap: %s" % ("OK" if r == 0 else "LOI " + msg))
     so, loi = 0, []
     for d, _, fs in os.walk(goc):
@@ -86,7 +86,7 @@ def main():
         bc.append("")
         bc.append("CHAY THU (shim + tep du lieu):")
         S2 = L.luaL_newstate(); L.luaL_openlibs(S2)
-        r, msg = chay_chunk(S2, os.path.join(HERE, "lua4compat.lua"), "lua4compat.lua")
+        r, msg = chay_chunk(S2, os.path.join(HERE, "..", "..", "Sources", "Library", "Lua54", "lua4compat.lua"), "lua4compat.lua")
         bc.append("  nap shim: %s" % ("OK" if r == 0 else "LOI " + msg))
         # Include() gia: nap tep tuong doi tu goc
         stub = ("function Include(p) local q = string.gsub(p, string.char(92), '/') local f, e = loadfile(%r .. q) "

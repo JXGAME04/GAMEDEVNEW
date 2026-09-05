@@ -60,7 +60,7 @@ def main():
 
     ok = chay(('RA_TEP = "%s"' % ra.replace("\\", "/")).encode("latin-1"), "=ra")
     ok = ok and chay(PRINT_RA_TEP.encode("latin-1"), "=print")
-    ok = ok and chay(io.open(os.path.join(HERE, "lua4compat.lua"), "rb").read(), "=lua4compat.lua")
+    ok = ok and chay(io.open(os.path.join(HERE, "..", "..", "Sources", "Library", "Lua54", "lua4compat.lua"), "rb").read(), "=lua4compat.lua")
     if goc is not None:
         ok = ok and chay(('GOC = "%s"' % goc.replace("\\", "/")).encode("latin-1"), "=goc")
     ok = ok and chay(io.open(tep, "rb").read(), "=" + os.path.basename(tep))

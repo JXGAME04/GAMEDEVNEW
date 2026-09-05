@@ -266,7 +266,7 @@
       <OutputFile>ClientDebug\CoreClient.dll</OutputFile>
       <ImportLibrary>.\ClientDebug\CoreClient.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Shlwapi.lib;Winmm.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Shlwapi.lib;Winmm.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">
@@ -325,7 +325,7 @@
       <OutputFile>ClientDebug\CoreClient.dll</OutputFile>
       <ImportLibrary>.\ClientDebug\CoreClient.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Shlwapi.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Shlwapi.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">
@@ -384,7 +384,7 @@
       <OutputFile>ClientRelease\CoreClient.dll</OutputFile>
       <ImportLibrary>.\ClientRelease\CoreClient.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/release/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Shlwapi.lib;Winmm.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Shlwapi.lib;Winmm.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">
@@ -442,7 +442,7 @@
       <OutputFile>ClientRelease\CoreClient.dll</OutputFile>
       <ImportLibrary>.\ClientRelease\CoreClient.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/release/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Shlwapi.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Shlwapi.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">
@@ -497,7 +497,7 @@
       <OutputFile>ServerDebug\CoreServer.dll</OutputFile>
       <ImportLibrary>.\ServerDebug\CoreServer.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;C:\Program Files (x86)\MySQL\MySQL Server 5.7\lib\libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;C:\Program Files (x86)\MySQL\MySQL Server 5.7\lib\libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <HeapReserveSize>0xffffffff</HeapReserveSize>
     </Link>
   </ItemDefinitionGroup>
@@ -557,7 +557,7 @@
       <OutputFile>.\x64\ServerDebug\CoreServer.dll</OutputFile>
       <ImportLibrary>.\x64\ServerDebug\CoreServer.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Winmm.lib;Shlwapi.lib;ws2_32.lib;crypt32.lib;D:\MySQL57_x64_SDK\lib\libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Winmm.lib;Shlwapi.lib;ws2_32.lib;crypt32.lib;D:\MySQL57_x64_SDK\lib\libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <HeapReserveSize>0xffffffff</HeapReserveSize>
     </Link>
   </ItemDefinitionGroup>
@@ -616,7 +616,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>ServerRelease\CoreServer.dll</OutputFile>
       <ImportLibrary>.\ServerRelease\CoreServer.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;C:\Program Files (x86)\MySQL\MySQL Server 5.7\lib\libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;C:\Program Files (x86)\MySQL\MySQL Server 5.7\lib\libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../../lib/release/</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -676,7 +676,7 @@
       <ImportLibrary>.\x64\ServerRelease\CoreServer.lib</ImportLibrary>
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>.\x64\ServerRelease\CoreServer.map</MapFileName>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;crypt32.lib;D:\MySQL57_x64_SDK\lib\libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;crypt32.lib;D:\MySQL57_x64_SDK\lib\libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../../lib/release/</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -1313,7 +1313,7 @@
     </Library>
     <Library Include="..\..\Lib\x64\Engine Server Debug\engine.lib" />
     <Library Include="..\..\Lib\x64\Engine Server Release\engine.lib" />
-    <Library Include="..\..\Lib\x64\lualibdll.lib" />
+    <Library Include="..\..\Lib\lua54\$(Platform)\Lua54Dll.lib" />
     <Library Include="Src\USBKey\EP1KDL20.LIB" />
     <Library Include="Src\USBKey\EpsForJoLib.lib" />
   </ItemGroup>
