@@ -7,6 +7,7 @@
 #include "ChatConnect.h"
 #include "ChatServer.h"
 #include "S3Relay.h"
+#include "OfflineMsgDB.h"	// [HAOHUU 04/09]
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -120,6 +121,11 @@ void CChatConnect::Proc1_Normal_EnterGame(const void* pData, size_t size)
 
 	{{
 	g_FriendMgr.SomeoneLogin(strRole);
+	}}
+
+	{{
+	// [HAOHUU 04/09] giao loi nhan mat nhan duoc trong luc ngoai tuyen (port Linux KOfflineMsgStore)
+	g_ChannelMgr.DeliverOfflineMsgs(strRole.c_str(), GetIP(), pEnterGame2->lnID, pEnterGame2->dwNameID);
 	}}
 
 	rTRACE("Chat:Player Login Acc:%s Role:%s (IP:%08X, lnID:%08X, nSelServer:%d)", strAcc.c_str(), strRole.c_str(), GetIP(), pEnterGame2->lnID, pEnterGame2->nSelServer);

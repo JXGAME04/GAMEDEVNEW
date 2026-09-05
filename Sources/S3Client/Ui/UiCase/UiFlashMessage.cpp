@@ -42,6 +42,11 @@ KUiFlashMessage::KUiFlashMessage()
 	m_nFontSize = 8;
 	m_nFontHalfWidth[0] = m_nFontHalfWidth[1] = 4;
 	srand(IR_GetCurrentTime());
+	m_nRiseFrom = -1;		// [TKCHAT 04/09c]
+	m_nRiseSpeed = 35;
+	m_nFadeMs = 1500;
+	m_uMaxQueueDelay = 1500;
+	m_uNextStartTime = 0;
 	SetColor(0x00000000); // fully transparent background
 }
 
@@ -86,14 +91,22 @@ bool KUiFlashMessage::AddMessage(KNewsMessage* pMsg, unsigned int uTime, unsigne
 			pCurrent = pCurrent->pNext;
 		}
 
+		// [TKCHAT 04/09c] hang doi da don qua MaxQueueDelay -> bo tin moi (dong troi len theo nhip co dinh,
+		// khong de tin giet dich hien muon hang chuc giay khi Tong Kim dong nguoi)
+		if (m_uMaxQueueDelay > 0)
+		{
+			unsigned int uNow = IR_GetCurrentTime();
+			if ((int)(m_uNextStartTime - uNow) > (int)m_uMaxQueueDelay)
+				return false;
+		}
 		pNew = (KNewsMessageNode*)malloc(sizeof(KNewsMessageNode));
 		if (pNew)
 		{
 			*(KNewsMessage*)pNew = *pMsg;
 			pNew->uTime = uTime;
 			pNew->uStartTime = uTimeParam;
-			pNew->pNext = m_pHead;
-			m_pHead = pNew;
+			pNew->pNext = NULL;
+			AddToTail(pNew);	// [TKCHAT 04/09c] FIFO (truoc: chen dau danh sach -> khi don, tin moi hien truoc tin cu)
 		}
 	}
 	return (pNew != NULL);
@@ -225,7 +238,7 @@ void KUiFlashMessage::Initialize()
 	LoadScheme(Scheme);
 
 	// determine line height and how many slots fit
-	m_nLineHeight = m_nFontSize + 2; // font size + small padding (adjust if desired)
+	m_nLineHeight = m_nFontSize + 4; // [TKCHAT 04/09] font + 4: ba dong TK khong dinh nhau
 	//if (m_Height <= 0) m_nHeight = m_Height; // keep original members mis-typed? (no change)
 	// compute usable content height: total window height minus vertical padding (indentV top+bottom)
 	int usableHeight = m_Height - m_nIndentV * 2;
@@ -282,6 +295,16 @@ void KUiFlashMessage::LoadScheme(const char* pszScheme)
 			Ini.GetInteger("Main", "ShowInterval", SHOW_INTERVAL, (int*)&m_pSelf->m_uShowInterval);
 			Ini.GetInteger("Main", "ScrollInterval", SCROLL_INTERVAL, (int*)&m_pSelf->m_uScrollInterval);
 			Ini.GetInteger("Main", "DisplayDuration", 5000, (int*)&m_pSelf->m_uDisplayDuration);
+			// [TKCHAT 04/09c] tham so troi len - doc o section dang dung de 800/1024 dat khac nhau
+			{
+				const char* pszSec = (SCREEN_WIDTH == 1024) ? "Main1024" : "Main";
+				Ini.GetInteger(pszSec, "RiseFrom", -1, &m_pSelf->m_nRiseFrom);
+				Ini.GetInteger(pszSec, "RiseSpeed", 35, &m_pSelf->m_nRiseSpeed);
+				Ini.GetInteger(pszSec, "FadeMs", 1500, &m_pSelf->m_nFadeMs);
+				Ini.GetInteger(pszSec, "MaxQueueDelay", 1500, (int*)&m_pSelf->m_uMaxQueueDelay);
+				if (m_pSelf->m_nRiseSpeed < 1)
+					m_pSelf->m_nRiseSpeed = 1;
+			}
 		}
 	}
 }
@@ -350,11 +373,61 @@ void KUiFlashMessage::MessageArrival(KNewsMessage* pMsg, SYSTEMTIME* pTime)
 /*********************************************************************************
 *功能：显示消息，并在显示完成后对消息进行进一步处理
 **********************************************************************************/
+// [TKCHAT 04/09] Do rong (px) cua chuoi DA MA HOA, dem DUNG cach KTextProcess::GetSimplexText/DrawTextLine
+// dem khi ve: byte > 0x80 = 2 nua-o va nuot 2 byte (chuan GBK), KTC_COLOR/BORDER 4 byte = 0 nua-o,
+// RESTORE 1 byte = 0, INLINE_PIC 3 byte ~ 2 nua-o, con lai 1 nua-o; mot nua-o = nFontSize/2 px
+// (DrawTextLine cong nCount/2*nFontSize). KHONG dung TGetEncodedTextOutputLenPos: ham do dem RESTORE
+// thanh 1 o (loi && thay vi ||) nen lech.
+static int sTkChatDoRong(const char* p, int nLen, int nFontSize)
+{
+	int nUnits = 0, i = 0;
+	while (i < nLen)
+	{
+		unsigned char c = (unsigned char)p[i];
+		if (c > 0x80)
+		{
+			nUnits += 2;
+			i += 2;
+		}
+		else if (c == KTC_COLOR || c == KTC_BORDER_COLOR)
+			i += 4;
+		else if (c == KTC_COLOR_RESTORE || c == KTC_BORDER_RESTORE)
+			i += 1;
+		else if (c == KTC_INLINE_PIC)
+		{
+			nUnits += 2;
+			i += 3;
+		}
+		else if (c == KTC_ENTER)
+			i += 1;
+		else
+		{
+			nUnits += 1;
+			i += 1;
+		}
+	}
+	return nUnits * nFontSize / 2;
+}
+
+// [TKCHAT 04/09c] giam do sang mau (0xAARRGGBB cua GetColor) con nPct % - giu byte alpha; chu khong co alpha nen 'mo dan' = toi dan
+static unsigned int sTkChatMoMau(unsigned int uColor, int nPct)
+{
+	unsigned int r = ((uColor >> 16) & 0xFF) * nPct / 100;
+	unsigned int g = ((uColor >> 8) & 0xFF) * nPct / 100;
+	unsigned int b = (uColor & 0xFF) * nPct / 100;
+	return (uColor & 0xFF000000) | (r << 16) | (g << 8) | b;
+}
+
+// [TKCHAT 04/09] Chu 04/09: "thong bao giet dich o tong kim giua man hinh dang co nhung bi loi".
+// Truoc: moi o ve o x = trai + IndentH (can TRAI) voi OutputRichText(..., m_nVisionWidth) mot dong ->
+// dong dai hon 578 px bi CAT o mep phai (anh chu: "...nhan duoc 330 tich l"), o nao trong thi nhan tin
+// moi -> dong moi co the nhay len TREN dong cu. Nay: xep cac o dang hien theo thoi diem bat dau (cu tren,
+// moi duoi), ve lien tiep tu tren xuong, CAN GIUA theo be rong that, khong gioi han be rong (0).
+// Cua so nay rong = ca man hinh (UiFlashMessage.ini Left=0 Width=800/1024).
 void KUiFlashMessage::PaintWindow()
 {
 	if (!g_pRepresentShell)
 		return;
-
 
 	KOutputTextParam Param;
 	Param.Color = m_uTextColor;
@@ -365,30 +438,51 @@ void KUiFlashMessage::PaintWindow()
 	Param.nVertAlign = 0;
 	Param.bPicPackInSingleLine = true;
 
+	// [TKCHAT 04/09c] kieu 2.0: moi dong sinh o RiseFromY() (giua man hinh), troi len RiseSpeed px/giay, toi dan FadeMs cuoi,
+	// het DisplayDuration hoac cham mep tren thi bien mat. Thu tu tren-duoi tu nhien theo thoi diem sinh (cu tren, moi duoi).
+	unsigned int uNow = IR_GetCurrentTime();
+	int nFrom = RiseFromY();
 	for (int i = 0; i < m_nNumSlots; ++i)
 	{
 		DisplaySlot& slot = m_DisplaySlots[i];
-		if (!slot.bActive) continue;
-
-		Param.nX = slot.nTextPosX;
-		Param.nY = m_nAbsoluteTop + m_nIndentV + i * m_nLineHeight;
-
-		// compute the render start and length:
-		int renderStart = slot.bStationary ? 0 : slot.nCharIndex;
-		int renderLen = slot.CurrentMsg.nMsgLen - renderStart;
-		if (renderLen <= 0) continue;
-
-		int nLen = 1;
+		if (!slot.bActive || slot.CurrentMsg.nMsgLen <= 0)
+			continue;
+		int nElapsed = (int)(uNow - slot.uDisplayStartTime);
+		if (nElapsed < 0)
+			continue;	// chua toi luot sinh (xep hang cach dong truoc dung 1 hang)
+		if (nElapsed >= (int)m_uDisplayDuration)
+			continue;
+		int nY = nFrom - nElapsed * m_nRiseSpeed / 1000;
+		if (nY < m_nAbsoluteTop)
+			continue;
 		char szTemp[512];
-		strncpy(szTemp, slot.CurrentMsg.sMsg, sizeof(szTemp) - 1);
-		nLen = TEncodeText(szTemp, slot.CurrentMsg.nMsgLen);
-
-		g_pRepresentShell->OutputRichText(m_nFontSize, &Param,
-			szTemp, nLen, m_nVisionWidth);
+		int nCopy = slot.CurrentMsg.nMsgLen;
+		if (nCopy > (int)sizeof(szTemp) - 1)
+			nCopy = (int)sizeof(szTemp) - 1;
+		memcpy(szTemp, slot.CurrentMsg.sMsg, nCopy);
+		szTemp[nCopy] = 0;
+		int nLen = TEncodeText(szTemp, nCopy);
+		if (nLen <= 0)
+			continue;
+		int nRong = sTkChatDoRong(szTemp, nLen, m_nFontSize);
+		int nX = m_nAbsoluteLeft + (m_Width - nRong) / 2;
+		if (nX < m_nAbsoluteLeft + m_nIndentH)
+			nX = m_nAbsoluteLeft + m_nIndentH;
+		unsigned int uColor = m_uTextColor;
+		int nRemain = (int)m_uDisplayDuration - nElapsed;
+		if (m_nFadeMs > 0 && nRemain < m_nFadeMs)
+		{
+			int nPct = nRemain * 100 / m_nFadeMs;
+			if (nPct < 12)
+				nPct = 12;
+			uColor = sTkChatMoMau(m_uTextColor, nPct);
+		}
+		Param.Color = uColor;
+		Param.nX = nX;
+		Param.nY = nY;
+		g_pRepresentShell->OutputRichText(m_nFontSize, &Param, szTemp, nLen, 0);
 	}
 }
-
-
 
 /*********************************************************************************
 *功能：在队列中，寻找是否有符合显示条件的消息，使指针m_pHandling指向找到的消息
@@ -577,7 +671,18 @@ void KUiFlashMessage::ResetSlot(int idx)
 	// No entering scroll: display immediately as stationary
 	slot.bJustIncoming = false;
 	slot.bStationary = true;
-	slot.uDisplayStartTime = IR_GetCurrentTime();
+	// [TKCHAT 04/09c] lich sinh dong: cach dong truoc dung 1 hang (m_nLineHeight / RiseSpeed) -> khong bao gio de len nhau
+	{
+		unsigned int uNow = IR_GetCurrentTime();
+		unsigned int uStart = uNow;
+		if ((int)(m_uNextStartTime - uNow) > 0)
+			uStart = m_uNextStartTime;
+		slot.uDisplayStartTime = uStart;
+		int nSpacingMs = (m_nRiseSpeed > 0) ? (m_nLineHeight * 1000 / m_nRiseSpeed) : 500;
+		if (nSpacingMs < 50)
+			nSpacingMs = 50;
+		m_uNextStartTime = uStart + nSpacingMs;
+	}
 
 	slot.nCharIndex = 0;
 	slot.nHalfIndex = 0;
@@ -764,13 +869,24 @@ void KUiFlashMessage::Breathe()
 					}
 				}
 			}
-			// check stationary timeout
-			if (now >= slot.uDisplayStartTime + m_uDisplayDuration)
+			// [TKCHAT 04/09c] het han (DisplayDuration) HOAC da troi qua mep tren cua so -> bien mat;
+			// tin NORMAL chi hien MOT lan (truoc: AddToTail -> cung dong hien lai toi MAX_NORMAL_SHOW_TIMES = 3 lan)
 			{
-				if (slot.pSourceNode) AddToTail(slot.pSourceNode);
-				slot.bActive = false;
-				slot.pSourceNode = NULL;
-				continue;
+				int nElapsed = (int)(now - slot.uDisplayStartTime);
+				int nY = RiseFromY() - (nElapsed > 0 ? nElapsed * m_nRiseSpeed / 1000 : 0);
+				if (nElapsed >= (int)m_uDisplayDuration || nY < m_nAbsoluteTop)
+				{
+					if (slot.pSourceNode)
+					{
+						if (slot.pSourceNode->nType == NEWSMESSAGE_NORMAL)
+							free(slot.pSourceNode);
+						else
+							AddToTail(slot.pSourceNode);
+					}
+					slot.bActive = false;
+					slot.pSourceNode = NULL;
+					continue;
+				}
 			}
 			// else keep showing
 			continue;

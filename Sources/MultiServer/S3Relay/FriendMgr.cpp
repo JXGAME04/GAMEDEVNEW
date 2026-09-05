@@ -18,6 +18,36 @@
 #define STR_NULL	_T("")
 
 //////////////////////////////////////////////////////////////////////
+// [HAOHUU 04/09] TEN NHOM QUAN HE (unit "\n" nhom con -- client tach o '\n', xem sParseUGName)
+// GameServer (Core\Src\KPlayerChat.cpp MakeEnemy/MakeBrother) gui ten don vi bang chu Han GBK
+//   B3 F0 C8 CB 0A (Cuu nhan) va C7 D7 C8 CB 0A (Than nhan) -- chep tu KPlayerChat.cpp
+// trong khi client (S3Client\Ui\UiCase\UiChatCentre.cpp ENEMY_UNITNAME/BROTHER_UNITNAME) chi co
+//   43 F5 75 20 4E 68 A9 6E va 54 68 A9 6E 20 4E 68 A9 6E (TCVN3 "Cuu Nhan" / "Than Nhan") => FindUnitIndex tra -1 => moi cuu nhan/than nhan
+// do may chu tao ra deu VO HINH tren client (do 04/09: 93.140 ban ghi nhom GBK trong relay_kv).
+// Ban Linux doi ten ngay trong relay (stringtable_relay.txt K_PR_ENEMY/K_PR_BROTHER) -> lam nhu vay:
+// doi khi nhan goi (TongConnect) VA khi nap tu DB (_LoadSomeone) de du lieu cu cung hien ra.
+//////////////////////////////////////////////////////////////////////
+struct LEGACY_GROUP { const char* legacy; const char* client; };
+static const LEGACY_GROUP s_LegacyGroups[] =
+{
+	{ "仇人\n",	"C鮱 Nh﹏\n" },	// GBK "Cuu nhan"  -> client ENEMY_UNITNAME
+	{ "亲人\n",	"Th﹏ Nh﹏\n" },	// GBK "Than nhan" -> client BROTHER_UNITNAME
+};
+
+std::_tstring CFriendMgr::NormalizeGroup(const std::_tstring& group)
+{
+	for (size_t i = 0; i < sizeof(s_LegacyGroups) / sizeof(s_LegacyGroups[0]); i++)
+	{
+		const char* legacy = s_LegacyGroups[i].legacy;
+		size_t len = strlen(legacy);
+		// khop ca "GBK\n" (nhom mac dinh) lan "GBK\n<ten nhom con>"
+		if (group.size() >= len && memcmp(group.data(), legacy, len) == 0)
+			return std::_tstring(s_LegacyGroups[i].client) + group.substr(len);
+	}
+	return group;
+}
+
+//////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////
@@ -314,7 +344,10 @@ BOOL CFriendMgr::SomeoneLogout(const std::string& role)
 
 
 	//不能并发写，因此这里不写DB
-	//_StoreSomeone(itPlayer);
+	// [HAOHUU 04/09] ghi DB ngay khi thoat. Truoc day chi ghi theo timer (5 phut, toi da 8 nguoi/lan)
+	// va luc tat relay => relay sap/kill la mat het thay doi trong khoang do. _StoreSomeone chi ghi khi
+	// co thay doi that (dirty / cheating doi) nen khong ton them truy van neu khong co gi moi.
+	_StoreSomeone(itPlayer);
 
 
 	return TRUE;
@@ -462,6 +495,13 @@ BOOL CFriendMgr::PlayerAddFriend(const std::_tstring& someone, const std::_tstri
 	rDstInfo.pCheated = &rSrcInfo.cheating;
 
 
+	// [HAOHUU 04/09] danh dau + ghi DB ngay cho CA HAI phia (truoc day chi trong timer/luc tat)
+	rSrcPlayerInfo.dirty = TRUE;
+	rDstPlayerInfo.dirty = TRUE;
+	_StoreSomeone(m_mapPlayers.find(someone));
+	if (rDstPlayerInfo.loaded)
+		_StoreSomeone(m_mapPlayers.find(dst));
+
 	rTRACE("Player Add Friend: %s [%s]", someone.c_str(), dst.c_str());
 
 	return TRUE;
@@ -496,8 +536,12 @@ BOOL CFriendMgr::PlayerDelFriend(const std::_tstring& someone, const std::_tstri
 	//	return FALSE;
 	
 	rSrcInfo.cheating = true;
+	rSrcPlayerInfo.dirty = TRUE;	// [HAOHUU 04/09]
 	if (!*rSrcInfo.pCheated)
+	{
+		_StoreSomeone(itSrcPlayer);	// [HAOHUU 04/09] xoa mot phia: ghi ngay
 		return TRUE;
+	}
 
 	//erase...
 	//dst
@@ -506,7 +550,10 @@ BOOL CFriendMgr::PlayerDelFriend(const std::_tstring& someone, const std::_tstri
 	{
 		PLAYERINFO& rDstPlayerInfo = (*itDstPlayer).second;
 		if (rDstPlayerInfo.loaded)
+		{
 			rDstPlayerInfo.friends.erase(someone);
+			rDstPlayerInfo.dirty = TRUE;	// [HAOHUU 04/09] muc da bi xoa khoi map -> so cheating khong con de so
+		}
 		else
 		{
 			FRIENDSMAP::iterator itDstFriend = rDstPlayerInfo.friends.find(someone);
@@ -521,6 +568,11 @@ BOOL CFriendMgr::PlayerDelFriend(const std::_tstring& someone, const std::_tstri
 	//src
 	rSrcPlayerInfo.friends.erase(itSrcFriend);
 
+
+	// [HAOHUU 04/09] ghi DB ngay cho ca hai phia
+	_StoreSomeone(itSrcPlayer);
+	if (itDstPlayer != m_mapPlayers.end() && (*itDstPlayer).second.loaded)
+		_StoreSomeone(itDstPlayer);
 
 	rTRACE("Player Del Friend: %s [%s]", someone.c_str(), dst.c_str());
 
@@ -570,7 +622,11 @@ BOOL CFriendMgr::SetFriendGroup(const std::_tstring& someone, const std::_tstrin
 	if (rInfo.cheating && *rInfo.pCheated)
 		return FALSE;
 
-	rInfo.group = group;
+	rInfo.group = NormalizeGroup(group);
+	// [HAOHUU 04/09] GOC 'doi sang Than Nhan/Cuu Nhan khong luu': khong bat dirty, con needstore trong
+	// _StoreSomeone/BkgrndUpdateDB chi so co cheating => nhom KHONG BAO GIO xuong DB. Bat co + ghi ngay.
+	rPlayerInfo.dirty = TRUE;
+	_StoreSomeone(itPlayer);
 
 	rTRACE("Player Group Friend: %s [%s] (%s)", someone.c_str(), dst.c_str(), group.c_str());
 
@@ -693,7 +749,9 @@ CFriendMgr::PLAYERSMAP::iterator CFriendMgr::_LoadSomeone(const std::_tstring& s
 
 		if (insretfriend.second)	//insert this friend
 		{
-			rInfo.group = rmemFriendRec.group;
+			rInfo.group = NormalizeGroup(rmemFriendRec.group);	// [HAOHUU 04/09] ten nhom GBK cu -> ten client
+			if (rInfo.group != rmemFriendRec.group)
+				rPlayerInfo.dirty = TRUE;
 			rInfo.cheating = rmemFriendRec.cheating;
 			rInfo.orig_cheating = rmemFriendRec.cheating ? FRIENDINFO::cheatTRUE : FRIENDINFO::cheatFALSE;
 			rInfo.orig_cheated = rmemFriendRec.cheated ? FRIENDINFO::cheatTRUE : FRIENDINFO::cheatFALSE;
@@ -717,7 +775,9 @@ CFriendMgr::PLAYERSMAP::iterator CFriendMgr::_LoadSomeone(const std::_tstring& s
 				continue;
 			}
 
-			rInfo.group = rmemFriendRec.group;
+			rInfo.group = NormalizeGroup(rmemFriendRec.group);	// [HAOHUU 04/09] ten nhom GBK cu -> ten client
+			if (rInfo.group != rmemFriendRec.group)
+				rPlayerInfo.dirty = TRUE;
 			rInfo.orig_cheating = rmemFriendRec.cheating ? FRIENDINFO::cheatTRUE : FRIENDINFO::cheatFALSE;
 			rInfo.orig_cheated = rmemFriendRec.cheated ? FRIENDINFO::cheatTRUE : FRIENDINFO::cheatFALSE;
 		}
@@ -1183,6 +1243,9 @@ BOOL CFriendMgr::PlayerAssociate(const std::_tstring& someone, const std::_tstri
 	rDstInfo.pCheated = &rSrcInfo.cheating;
 
 
+	rSrcPlayerInfo.dirty = TRUE;	// [HAOHUU 04/09] ghi luc logout/timer (PK bot sinh hang loat, khong ghi tung cai)
+	rDstPlayerInfo.dirty = TRUE;
+
 	rTRACE("Player Associate: %s [%s] on <%s>, bidir: %u", someone.c_str(), dst.c_str(), group.c_str(), int(bidir));
 
 	return TRUE;
@@ -1246,6 +1309,8 @@ BOOL CFriendMgr::PlayerAssociateBevy(const _BEVY& bevy, const std::_tstring& gro
 				//binding
 				rSrcInfo.pCheated = &rDstInfo.cheating;
 				rDstInfo.pCheated = &rSrcInfo.cheating;
+				rSrcPlayerInfo.dirty = TRUE;	// [HAOHUU 04/09]
+				rDstPlayerInfo.dirty = TRUE;
 			}
 		};
 	}

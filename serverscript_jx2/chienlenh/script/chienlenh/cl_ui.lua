@@ -87,6 +87,28 @@ end
 
 -- ============================ 3 yeu cau tu cua so ============================
 function CLUI_OnOpen(n)
+	-- [CL 04/09 MUA] n = 2: nut "Mua Chien Lenh" -> mo Ky Tran Cac (the Hao Hoa = goods 771, o the Su Kien =
+	-- hang 95 buysell.txt). Client khong tu mo shop duoc: Ky Tran Cac mo bang NewSale(...) tu may chu, y het
+	-- PermitSuperShop (script_protocol.lua:75) - ham do o state khac nen goi thang NewSale (ham C, co o moi state).
+	-- n = 3: nut "?" -> goi y cach choi. CLUI_Bao = dong tren cua so (3 giay) + dong chat (giu lai duoc).
+	if (n == 2) then
+		local tt = CL_TrangThai()
+		if (tt and tt.vip == 1) then
+			CLUI_Bao("Nh©n vËt ®· kİch ho¹t ChiÕn LÖnh Hµo Hoa råi")
+			return
+		end
+		if (GetFightState() >= 1) then
+			CLUI_Bao("Kú Tr©n C¸c chØ më ®­îc khi kh«ng ë tr¹ng th¸i chiÕn ®Êu")
+			return
+		end
+		NewSale(0, 1, 5, 95, 96, 97, 98, 101, 100)
+		CLUI_Bao("Mua thÎ Hµo Hoa (500 xu) ë thÎ Sù KiÖn, mua xong dïng thÎ")
+		return
+	end
+	if (n == 3) then
+		CLUI_Bao("Lµm nhiÖm vô lÊy ®iÓm, ®ñ ®iÓm bÊm « s¸ng ®Ó nhËn th­ëng qua th­")
+		return
+	end
 	CLUI_DayTronBo(1)
 end
 

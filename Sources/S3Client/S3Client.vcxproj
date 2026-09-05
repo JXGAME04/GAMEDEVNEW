@@ -271,6 +271,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\UiCase\UiFindPos.cpp" />
     <ClCompile Include="Ui\UiCase\UiFinishQuest.cpp" />
     <ClCompile Include="Ui\UiCase\UiFlashMessage.cpp" />
+    <ClCompile Include="Ui\UiCase\UiTongKimScore.cpp" />
     <ClCompile Include="Ui\UiCase\UiGamble.cpp" />
     <ClCompile Include="Ui\UiCase\UiGame.cpp" />
     <ClCompile Include="Ui\UiCase\UiGetMoney.cpp" />
@@ -477,6 +478,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\UiCase\UiFindPos.h" />
     <ClInclude Include="Ui\UiCase\UiFinishQuest.h" />
     <ClInclude Include="Ui\UiCase\UiFlashMessage.h" />
+    <ClInclude Include="Ui\UiCase\UiTongKimScore.h" />
     <ClInclude Include="Ui\UiCase\UiGamble.h" />
     <ClInclude Include="Ui\UiCase\UiGame.h" />
     <ClInclude Include="Ui\UiCase\UiGetMoney.h" />

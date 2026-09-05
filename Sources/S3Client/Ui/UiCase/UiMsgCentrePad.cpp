@@ -269,10 +269,19 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 		KNewsMessage newsMsg;
 		memset(&newsMsg, 0, sizeof(newsMsg));
 		// Copy safely into newsMsg.sMsg (assumes sMsg is a char array member)
-		int tmpSize = strlen(pMsgBuff) > sizeof(newsMsg.sMsg)? sizeof(newsMsg.sMsg)-1: strlen(pMsgBuff)-1;
-		strncpy(newsMsg.sMsg, pMsgBuff, tmpSize);
-		newsMsg.sMsg[tmpSize] = '\0';
-		newsMsg.nMsgLen = static_cast<int>(strlen(newsMsg.sMsg));
+		// [TKCHAT 04/09] chep DU chuoi (truoc day strlen-1 lam roi ky tu cuoi) va gop dau cach lien tiep:
+		// mau cau may chu "%s %s <color> %s" + chuc vu co dau cach duoi sinh 2-3 dau cach quanh chuc vu.
+		int nSrc = (int)nMsgLength;	// [TKCHAT 04/09b] goi chat KHONG ket thuc NUL -> strlen doc qua duoi = rac ".-2" ".MFj" (anh chu 19:40)
+		int nDst = 0;
+		for (int s = 0; s < nSrc && nDst < (int)sizeof(newsMsg.sMsg) - 1; ++s)
+		{
+			char ch = pMsgBuff[s];
+			if (ch == ' ' && nDst > 0 && newsMsg.sMsg[nDst - 1] == ' ')
+				continue;
+			newsMsg.sMsg[nDst++] = ch;
+		}
+		newsMsg.sMsg[nDst] = 0;
+		newsMsg.nMsgLen = nDst;
 		// set other fields on newsMsg if required, e.g. newsMsg.nType = NEWSMESSAGE_NORMAL;
 		newsMsg.nType = NEWSMESSAGE_NORMAL;
 		// Build SYSTEMTIME for nParam
