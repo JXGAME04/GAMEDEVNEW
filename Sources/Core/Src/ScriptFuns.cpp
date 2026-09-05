@@ -12256,6 +12256,128 @@ int LuaUpdateBattleBox(Lua_State* L)// UpdateBattleBox
 	return 0;
 }
 
+// [TKINFO 05/09] Cua so "thong tin tran" Tong Kim kieu Lien Dau Bang 2.0 (client KUiTongKimInfo) - kenh S2C_BATTLE_BOX co san:
+//   kind 7 = "phase|rest_giay|tong|kim"  (phase: 1 bao danh, 2 chien dau, 3 ket thuc; rest = timer nTimerId cua nhiem vu / 18)
+//   kind 8 = "n;hang|ten|phe|diem;..."    (top nRows tu m_MissionLadder - da xep theo tham so ladder, cap nhat trong
+//                                          KMission::SetPlayerParam moi lan cong diem; ten cat 12 ky tu de vua 127 byte)
+// UpdateBattleInfo(nMissionId, nPhase, nTimerId, nTong, nKim, nRows)    -> gui cho PlayerIndex hien tai (ra trai / vao tran)
+// UpdateBattleInfoAll(nMissionId, nPhase, nTimerId, nTong, nKim, nRows) -> gui ca tran (dieu kien nhu UpdateBattleBoxAll)
+static void sTkInfoBuild(KMission* pMission, int nPhase, int nTimerId, int nTong, int nKim, int nRows, char* szHead, char* szRows)
+{
+	int nRest = 0;
+	if (nTimerId > 0)
+		nRest = (int)(pMission->GetTimerRestTimer((unsigned char)nTimerId) / 18);	// khung -> giay (18 khung/giay)
+	sprintf(szHead, "%d|%d|%d|%d", nPhase, nRest, nTong, nKim);
+	if (nRows > MISSION_STATNUM)
+		nRows = MISSION_STATNUM;
+	int nHave = 0;
+	for (int i = 0; i < nRows; i++)
+		if (pMission->m_MissionLadder[i].Name[0])
+			nHave++;
+	int nLen = sprintf(szRows, "%d", nHave);
+	int nLadder = pMission->GetMissionLadderParam();
+	if (nLadder < 0 || nLadder >= MAX_MISSION_PARAM)
+		nLadder = 0;
+	for (int i = 0; i < nRows; i++)
+	{
+		TMissionLadderInfo& Info = pMission->m_MissionLadder[i];
+		if (!Info.Name[0])
+			continue;
+		char szName[16];
+		strncpy(szName, Info.Name, 12);
+		szName[12] = 0;
+		char szTmp[64];
+		int n = sprintf(szTmp, ";%d|%s|%d|%d", i + 1, szName, (int)Info.ucGroup, Info.nParam[nLadder]);
+		if (nLen + n >= 127)
+			break;
+		memcpy(szRows + nLen, szTmp, n);
+		nLen += n;
+		szRows[nLen] = 0;
+	}
+}
+
+static int sTkInfoSend(int nPlayerIndex, const char* szHead, const char* szRows)
+{
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER || !g_pServer)
+		return 0;
+	if (Player[nPlayerIndex].m_nNetConnectIdx == -1)
+		return 0;
+	S2C_BATTLE_BOX NetCommand;
+	NetCommand.ProtocolType = s2c_battlebox;
+	NetCommand.nType = 7;
+	strcpy(NetCommand.szBattleDesc, szHead);
+	g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_BATTLE_BOX));
+	NetCommand.nType = 8;
+	strcpy(NetCommand.szBattleDesc, szRows);
+	g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_BATTLE_BOX));
+	return 1;
+}
+
+static KMission* sTkInfoArgs(Lua_State* L, int& nPhase, int& nTimerId, int& nTong, int& nKim, int& nRows)
+{
+	if (Lua_GetTopIndex(L) < 6)
+		return NULL;
+	int nMissionId = (int)Lua_ValueToNumber(L, 1);
+	nPhase = (int)Lua_ValueToNumber(L, 2);
+	nTimerId = (int)Lua_ValueToNumber(L, 3);
+	nTong = (int)Lua_ValueToNumber(L, 4);
+	nKim = (int)Lua_ValueToNumber(L, 5);
+	nRows = (int)Lua_ValueToNumber(L, 6);
+	int nSubWorldIndex = GetSubWorldIndex(L);
+	if (nMissionId < 0 || nSubWorldIndex < 0 || !g_pServer)
+		return NULL;
+	if (nRows < 0) nRows = 0;
+	return SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);
+}
+
+int LuaUpdateBattleInfo(Lua_State* L)
+{
+	int nPhase, nTimerId, nTong, nKim, nRows;
+	KMission* pMission = sTkInfoArgs(L, nPhase, nTimerId, nTong, nKim, nRows);
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (!pMission || nPlayerIndex <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	char szHead[128], szRows[160];
+	sTkInfoBuild(pMission, nPhase, nTimerId, nTong, nKim, nRows, szHead, szRows);
+	Lua_PushNumber(L, sTkInfoSend(nPlayerIndex, szHead, szRows));
+	return 1;
+}
+
+int LuaUpdateBattleInfoAll(Lua_State* L)
+{
+	int nPhase, nTimerId, nTong, nKim, nRows;
+	KMission* pMission = sTkInfoArgs(L, nPhase, nTimerId, nTong, nKim, nRows);
+	if (!pMission)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	char szHead[128], szRows[160];
+	sTkInfoBuild(pMission, nPhase, nTimerId, nTong, nKim, nRows, szHead, szRows);
+	int nCount = 0;
+	int nIdx = 0;
+	while (1)
+	{
+		nIdx = pMission->m_MissionPlayer.m_UseIdx.GetNext(nIdx);
+		if (!nIdx)
+			break;
+		TMissionPlayerInfo& Info = pMission->m_MissionPlayer.m_Data[nIdx];
+		if (Info.m_nParam[MISSION_PARAM_AVAILABLE] != MISSION_AVAILABLE_VALUE)
+			continue;
+		int nPlayerIndex = (int)Info.m_ulPlayerIndex;
+		if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER)
+			continue;
+		if (Player[nPlayerIndex].m_dwID != Info.m_ulPlayerID)
+			continue;
+		nCount += sTkInfoSend(nPlayerIndex, szHead, szRows);
+	}
+	Lua_PushNumber(L, nCount);
+	return 1;
+}
+
 // [TKDIEM 05/09] UpdateBattleBoxAll(nMissionId, nTong, nKim, nKind) -> so nguoi da gui.
 // Phat bang diem "tong|kim|diem_rieng" (S2C_BATTLE_BOX) cho MOI nguoi con trong tran bang MOT loi goi Lua,
 // duyet thang m_UseIdx nhu KMission::Msg2All. Thay vong Lua 600 o trong lib_tktc.lua TK_GuiDiemPhe
@@ -15450,6 +15572,8 @@ TLua_Funcs GameScriptFuns[] =
 		{"Msg2MSPlayer", LuaMissionMsg2Player},
 		{"UpdateBattleBox",	LuaUpdateBattleBox},
 		{"UpdateBattleBoxAll",	LuaUpdateBattleBoxAll},	// [TKDIEM 05/09] phat bang diem ca tran, 1 loi goi
+		{"UpdateBattleInfo",	LuaUpdateBattleInfo},	// [TKINFO 05/09] thong tin tran cho 1 nguoi (kind 7+8)
+		{"UpdateBattleInfoAll",	LuaUpdateBattleInfoAll},	// [TKINFO 05/09] thong tin tran ca tran
 		{"SetDeathScript", LuaSetPlayerDeathScript},
 		{"SetLogoutScript", LuaSetLogoutScript},
 		{"HideNpc", LuaHideNpc}	,//HideNpc(npcindex/npcname, hidetime)

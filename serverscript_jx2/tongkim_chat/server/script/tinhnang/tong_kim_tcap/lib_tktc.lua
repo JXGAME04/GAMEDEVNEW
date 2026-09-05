@@ -935,6 +935,9 @@ end
 -- nen chi nhan o ma chinh nguoi choi do tra nguoc ve dung o (PIdx2MSDIdx == i). UpdateBattleBox tu bo qua
 -- nguoi da mat ket noi (m_nNetConnectIdx == -1).
 function TK_GuiDiemPhe(nKind)
+	if nKind ~= TKDIEM_KIND_AN then
+		TK_GuiThongTinPhe()	-- [TKINFO 05/09] cua so thong tin tran (tu tiet che 3 s)
+	end
 	-- [TKDIEM 05/09] chu 20:40 "fix xong thay game lag hon nhieu": truoc day MOI lan giet gui 1 goi cho TUNG nguoi
 	-- (toi 600 goi) -> Tong Kim dong, hang chuc lan giet/giay = hang nghin goi/giay + client cap nhat bang lien tuc.
 	-- Nay toi da 1 lan / 1 giay (05/09b, truoc 2 giay; lan giet ke tiep se gui tiep); lenh AN (kind 9) khong bi han che.
@@ -964,4 +967,53 @@ function TK_GuiDiemPhe(nKind)
 	end
 	PlayerIndex = nCu
 	return nSo
+end
+
+-- ================================================================ [TKINFO 05/09] CUA SO 'THONG TIN TRAN' kieu Lien Dau Bang 2.0
+-- Client KUiTongKimInfo: giai doan, giay con lai (client tu dem lui), top 5 tich luy (hang/ten/phe/diem), nut xem Chien Bao.
+-- Kenh S2C_BATTLE_BOX kind 7 (dau) + 8 (hang), kind 9 (an) dung chung voi bang diem. C++: UpdateBattleInfo / UpdateBattleInfoAll
+-- (ScriptFuns.cpp) doc m_MissionLadder (top theo tham so ladder = 6 tich luy, xep san trong C++) + timer con lai.
+-- Cu phap trung tinh Lua 4 / 5.4. CoreServer cu chua co ham -> bo qua, khong loi.
+TKINFO_KHUNG_GIUA_2LAN = 54	-- 3 giay giua hai lan phat ca tran
+TKINFO_KHUNG_GUI_CUOI  = 0
+TKINFO_SO_HANG         = 5
+
+-- 1 = bao danh (timer 1 con chay), 2 = chien dau
+function TK_GiaiDoan()
+	local nBD = GetMSRestTime(MS_TONGKIM, 1)
+	if nBD ~= nil and nBD > 0 then
+		return 1
+	end
+	return 2
+end
+
+-- timer dem lui hien tren cua so: bao danh -> timer 1, chien dau -> timer 3 (ca tran)
+function TK_TimerHien(nPha)
+	if nPha == 1 then
+		return 1
+	end
+	return 3
+end
+
+-- gui cho CHINH PlayerIndex hien tai (ra khoi hau doanh / vao tran)
+function TK_GuiThongTinChoToi()
+	if UpdateBattleInfo == nil then
+		return 0
+	end
+	local nPha = TK_GiaiDoan()
+	return UpdateBattleInfo(MS_TONGKIM, nPha, TK_TimerHien(nPha), GetMissionV(M_TICHLUYA), GetMissionV(M_TICHLUYB), TKINFO_SO_HANG)
+end
+
+-- gui ca tran, tu tiet che TKINFO_KHUNG_GIUA_2LAN (goi tu TK_GuiDiemPhe moi lan giet)
+function TK_GuiThongTinPhe()
+	if UpdateBattleInfoAll == nil then
+		return 0
+	end
+	local nKhung = GetGameTime()
+	if nKhung - TKINFO_KHUNG_GUI_CUOI < TKINFO_KHUNG_GIUA_2LAN then
+		return 0
+	end
+	TKINFO_KHUNG_GUI_CUOI = nKhung
+	local nPha = TK_GiaiDoan()
+	return UpdateBattleInfoAll(MS_TONGKIM, nPha, TK_TimerHien(nPha), GetMissionV(M_TICHLUYA), GetMissionV(M_TICHLUYB), TKINFO_SO_HANG)
 end

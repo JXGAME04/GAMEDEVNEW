@@ -30,6 +30,7 @@ function main(nPlayerIndex)
 	-- SetPMParam(MS_TONGKIM,nPlayerDataIdx,0,1)--set online ms tong kim param 0 value 1
 	SetPMParam(MS_TONGKIM,nPlayerDataIdx,1,1)--set online ms tong kim param 0 value 1
 	TK_GuiDiemChoToi(TKDIEM_KIND_CAPNHAT)	-- [TKDIEM 04/09] vua ra khoi hau doanh: hien bang diem Tong VS Kim
+	TK_GuiThongTinChoToi()	-- [TKINFO 05/09] cua so thong tin tran (giai doan, giay con lai, top 5)
 	tong_ratran()
 	StopTimer()
 end

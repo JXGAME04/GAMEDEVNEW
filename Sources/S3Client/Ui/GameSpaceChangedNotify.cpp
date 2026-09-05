@@ -48,6 +48,7 @@
 #include "UiCase/UiQuestDT1.h"
 #include "UiCase/UiBattleReport.h"
 #include "UiCase/UiTongKimScore.h"	// [TKDIEM 04/09] bang diem Tong VS Kim
+#include "UiCase/UiTongKimInfo.h"	// [TKINFO 05/09]
 #include "UiCase/UiSuperShop.h"
 #include "UiCase/UiAffairItem.h"
 #include "UiCase/UiMantleInlay.h"
@@ -802,6 +803,7 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 	case GDCNI_UPDATE_BATTLE_BOX:
 		// [TKDIEM 04/09] bang diem Tong VS Kim: nKind 6 = cap nhat "tong|kim|diem", 9 = an
 		KUiTongKimScore::OnBattleBox((char*)uParam, nParam);
+		KUiTongKimInfo::OnBattleBox((char*)uParam, nParam);	// [TKINFO 05/09] kind 7/8 thong tin tran, 9 an
 		if (nParam)
 			KUiBattleReport::UpdateRankWorld((char*)uParam, nParam);
 		else
@@ -880,6 +882,7 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		// [TKDIEM 05/09] doi map THAT (KScenePlaceC::OpenPlace) -> an bang diem Tong VS Kim. Truoc dung GDCNI_SWITCHING_SCENEPLACE:
 		// co nay cung bat khi nap VUNG luc chay trong map (SetFocusPosition > SPWP_TRIGGER_LOADING_RANGE) -> bang an/hien = 'nhay'.
 		KUiTongKimScore::OnSwitchMap(1);
+		KUiTongKimInfo::OnSwitchMap(1);	// [TKINFO 05/09]
 		if (uParam)
 			MapSetMode(MINIMAP_M_BRIEF_PIC);
 		else
