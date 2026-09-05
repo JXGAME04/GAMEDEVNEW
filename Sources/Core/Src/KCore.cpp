@@ -882,6 +882,12 @@ BOOL InitGameSetting()
 				}
 			}
 		}
+		// [CFGW 05/09] bao lop cau hinh web: [ServerConfig] + [Exp] da doc xong -> tu day moi duoc khai/ap khoa C++
+		// (truoc do script da nap trong g_InitCore va khai bang gia tri tinh: Skill90/120Rate = 1 thay vi ini 10).
+		{
+			extern void CauHinhWeb_IniDaDoc();
+			CauHinhWeb_IniDaDoc();
+		}
 		g_GameSetting.GetInteger("ServerConfig", "NotAddNpcNormal", 1, &g_NotAddNpcNormal); //#cÊu h×nh kh«ng add npc normal 1 lµ kh«ng add 0 lµ cho phÐp add
 #endif
 		g_GameSetting.GetInteger("ServerConfig", "WriteScriptNpcLog", 0, &g_WriteScriptNpcLog);	//cÊu h×nh ghi log ®­êng dÉn script khi ®èi tho¹i víi npc
