@@ -271,7 +271,7 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 		// Copy safely into newsMsg.sMsg (assumes sMsg is a char array member)
 		// [TKCHAT 04/09] chep DU chuoi (truoc day strlen-1 lam roi ky tu cuoi) va gop dau cach lien tiep:
 		// mau cau may chu "%s %s <color> %s" + chuc vu co dau cach duoi sinh 2-3 dau cach quanh chuc vu.
-		int nSrc = (int)strlen(pMsgBuff);
+		int nSrc = (int)nMsgLength;	// [TKCHAT 04/09b] goi chat KHONG ket thuc NUL -> strlen doc qua duoi = rac ".-2" ".MFj" (anh chu 19:40)
 		int nDst = 0;
 		for (int s = 0; s < nSrc && nDst < (int)sizeof(newsMsg.sMsg) - 1; ++s)
 		{
