@@ -54,6 +54,7 @@
 #include "UiCase/UiTradeConfirmWnd.h"
 #include "UiCase/UiNewsMessage.h"
 #include "UiCase/UiFlashMessage.h"
+#include "UiCase/UiTongKimScore.h"	// [TKDIEM 04/09]
 #include "UiCase/UiNewsMessage1.h"
 #include "UiCase/UiTrembleItem.h"
 #include "UiCase/UiCompoundItem.h"	// [UILOREN] he lo ren 7 khung
@@ -465,6 +466,7 @@ void UiStartGame()
 	KUiToolsControlBar::OpenWindow();
 	KUiNewsMessage::OpenWindow();
 	KUiFlashMessage::OpenWindow();
+	KUiTongKimScore::OpenWindow();	// [TKDIEM 04/09] tao san (an), hien khi may chu gui diem
 	KUiNewsMessage1::OpenWindow();
 	Wnd_ShowHideGameSpace(true);
 	g_UiBase.SetStatus(UIS_S_IDLE);
@@ -577,6 +579,7 @@ bool UiCloseWndsInGame(bool bAll)
 		MapSetMode(MINIMAP_M_NONE);
 		KUiNewsMessage::CloseWindow(TRUE);
 		KUiFlashMessage::CloseWindow(TRUE);
+		KUiTongKimScore::CloseWindow(TRUE);	// [TKDIEM 04/09]
 		KUiNewsMessage1::CloseWindow(TRUE);
 		g_UiInformation.Close();
 		g_UiInformation2.Close();
