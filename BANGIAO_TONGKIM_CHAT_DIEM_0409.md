@@ -250,3 +250,31 @@ Hội)**: ini cửa sổ `WndType=WndImage` `ScriptFile=\script\ui\tong_battle_2
 - Hệ quả rộng hơn (chưa sửa): **mọi script dùng API nhiệm vụ đều trả giá ~40 µs/lời gọi** (Tống Kim, Phong Lăng Độ, công thành, Bang chiến, timer nhiệm vụ mỗi phút) — nghi là nguồn của `SCRIPT_TIME max ≈ 95 ms` mỗi phút TK (script hẹn giờ duyệt người chơi bằng API này).
 
 **Đề xuất gốc rễ (chưa làm):** trong `ScriptFuns.cpp` thay `KMission Mission; …GetData(&Mission)` bằng tra theo id không dựng đối tượng (thêm `KSubWorldMissionArray::GetByMissionId(id)` duyệt `m_UseIdx` so `m_ulMissionId`, hoặc bảng `id → KMission*`) → mọi API nhiệm vụ rẻ ~100 lần; khi đó vòng bảng điểm 600 ô chỉ ~1-2 ms, chat giết địch ~2 ms. Song song vẫn nên tiết chế/gộp phát điểm và đưa vòng gửi vào C++.
+
+
+### 13g. 05/09 11:10 — ẢNH HƯỞNG NẾU SỬA GỐC RỄ (chủ hỏi "fix vậy có ảnh hưởng gì không?") — chỉ phân tích
+**Phương án gốc rễ = thay `KMission Mission; Mission.SetMissionId(id); m_MissionArray.GetData(&Mission)` bằng tra theo id không dựng đối tượng.**
+
+Đã kiểm từng điều kiện an toàn:
+1. **Ngữ nghĩa giống hệt**: `KMissionArray::FindSame` (`KMissionArray.h:64`) chỉ so `GetMissionId()`, KHÔNG ghi gì vào nhiệm vụ thật (khác mảng người chơi `_KMissionPlayerArray::FindSame` có ghi `m_ulPlayerIndex`). Trả `NULL` khi không có → giữ nguyên.
+2. **Toàn bộ 27 chỗ đều là TRA thuần**: 24 trong `ScriptFuns.cpp` (+`StopMission` 11620), `KJx2WarInfra.cpp` 1, `KPlayerBot.cpp:9200` (`pb_TkMission`). Đối tượng tạm không được dùng vào việc gì khác. TẠO nhiệm vụ đi qua `m_MissionArray.Add()` (ScriptFuns 11447), XOÁ qua `Remove(pMission)` — không đụng.
+3. **Constructor/destructor không có tác dụng phụ toàn cục**: `KMission()` chỉ `SetOwner` cho 10 timer của chính nó + memset trường riêng; `KLinkArray` dtor `delete[]` node của chính nó.
+4. **Không có luồng khác chạy Lua**: máy chủ chỉ có luồng MySQL (`KMySQLDB.cpp:153`), client có luồng nạp cảnh — script luôn ở luồng chính → không có race.
+5. **Phạm vi build**: `ScriptFuns.cpp` dùng chung nhưng API nhiệm vụ nằm trong vùng `_SERVER` — `CoreClient.dll` live KHÔNG chứa `GetPMParam/UpdateBattleBox/Msg2MSAll/PIdx2MSDIdx` → client không đổi hành vi; vẫn phải build cả hai (luật) và swap CoreServer + restart.
+6. **Bộ nhớ**: mỗi lời gọi hiện đặt ~210 KB (`m_Data` người 1500×88 = 128 KB + NPC 5000×16 = 78 KB + timer/giá trị) trên STACK và `new[]` 101 KB node heap rồi `delete[]` → sau sửa không còn → giảm áp lực stack khi script lồng nhau (`ExecuteScript` → C → Lua) và giảm phân mảnh heap (heap CRT dùng chung với luồng IOCP). Chỉ có lợi.
+7. **Điểm KHÔNG đổi**: cấu trúc `KMission`, giao thức, dữ liệu lưu, cân bằng — không đụng.
+
+**Rủi ro thực tế còn lại của phương án gốc rễ:**
+- Sửa 27 chỗ trong tệp bị nhiều phiên cùng sửa (`ScriptFuns.cpp`) → xung đột gộp; làm bằng kịch bản thay mẫu + kiểm `grep` không còn `KMission Mission;`, commit pathspec, build cả hai cấu hình.
+- Lợi ích chưa đo được phần nền: bao nhiêu lời gọi API nhiệm vụ mỗi tick lúc bình thường (timer nhiệm vụ mỗi phút, bot `pb_TkNhip` 2 lần/tick, `PB_TrapLog` mỗi lần bot đạp trap ~15/s) — sẽ thấy trong `SCRIPT_TIME max` (95 ms) sau khi sửa.
+
+**Xếp hạng phương án (rủi ro ↑):**
+| # | Phương án | Hiệu quả | Rủi ro | Ghi chú |
+|---|---|---|---|---|
+| 1 | Giữ tiết chế 2 s (đã sống 09:44) | TK 12 ms | 0 | bảng điểm trễ ≤ 2 s |
+| 2 | Vòng gửi bảng điểm vào C++ (duyệt `m_UseIdx` như `Msg2All`, 1 lời gọi Lua) | 2.400 lời gọi → 1; ~2 ms/lần | thấp, chỉ tính năng của tôi | có thể bỏ tiết chế hoặc giữ 1 s |
+| 3 | `FindById` thay 27 chỗ dựng `KMission` tạm | mọi API nhiệm vụ ~40 µs → <0,5 µs; giảm stack/heap | thấp về ngữ nghĩa, trung bình về quy trình (tệp chung, build 2 cấu hình, restart) | lợi cho TẤT CẢ nhiệm vụ + bot |
+| 4 | Sửa `KLinkArrayTemplate` khởi tạo lười | như 3 | CAO: đổi container lõi dùng bởi mảng người/NPC/timer của nhiệm vụ thật | KHÔNG khuyến nghị |
+| 5 | Đối tượng dò tĩnh `static KMission s_Probe` | như 3, ít sửa chỗ | thấp (không luồng khác) nhưng kém rõ ràng | phương án dự phòng |
+
+Khuyến nghị: làm 2 + 3 (3 bằng kịch bản, kiểm `grep`), thử trên máy chủ dev/giờ vắng, đo lại `jx_perf_server.log` trước/sau cùng cửa sổ TK.
