@@ -352,3 +352,11 @@ N. nen 20:05-20:49 hom qua, khong TK                 n=45 chet/ph=   0 MAIN= 4.4
   **`Game.exe.moi` = a136398e (md5 62ff6f75b0a2b4e57eef19e626d1b4af)** — cả hai link Lua54, build từ main đã merge. Chủ: `ChayGameServer.bat`
   (máy chủ lên 5.4 + cửa sổ) và `ChoiGame.bat` (client). Kiểm sau: vào Tống Kim, ra khỏi hậu doanh → cửa sổ "Tống Kim" hiện giai đoạn/giây/top 5;
   bấm "Nhấn xem Chiến Báo" mở chiến báo.
+
+### 16d. 12:55 — Sau khi máy chủ lên Lua 5.4 (12:41): lỗi 5.4 trong đấu giá + máy chủ dừng 12:44
+- `logs\hethong.log` 12:42–12:43 mỗi 30 s: `[DAUGIA] LOI Lua: [string "?"]:1503: attempt to call a table value (for iterator)` — `auction_manager.lua:1503`
+  `for _, nType in {A, B} do` (Lua 4) → `ipairs({A, B})` `[LUA54 05/09]` (live cây 5.4 + gương `serverscript_jx2\mail\server\scriptuction_house`).
+  Bọc `call(AUC_Tick, ..., "x")` đã giữ vòng quét sống ("bo qua nhip nay"), nên hậu quả chỉ là 2 phút Hà Lan không hạ giá. Quét cả cây 5.4: không còn
+  `for … in {` / `for k,v in t do` nào khác. `kiem_54.py` chỉ kiểm biên dịch, KHÔNG bắt lỗi chạy kiểu này.
+- GameServer (pid 75388, lên 12:41:24) không còn chạy lúc 12:44:36; log cuối 12:43:56–12:44:00 bình thường, không dump/Event → nghi tắt chủ động (hỏi wauto-c9).
+- Script Tống Kim `[TKINFO]/[TKDIEM]` còn nguyên trong cây 5.4 (`script.lua4` giữ bản cũ), `kiem_54` 0 lỗi; cửa sổ chưa thử được vì chưa có trận.

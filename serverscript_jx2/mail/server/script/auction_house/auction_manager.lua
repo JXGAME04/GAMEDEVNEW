@@ -1500,7 +1500,7 @@ function AUC_Tick()
         end
     end
     -- 2) Ha Lan giam gia (the gioi / bang hoi)
-    for _, nType in {AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD, AUCTION_DEF.tbAuctionTypeEnum.eType_TONG} do
+    for _, nType in ipairs({AUCTION_DEF.tbAuctionTypeEnum.eType_WORLD, AUCTION_DEF.tbAuctionTypeEnum.eType_TONG}) do	-- [LUA54 05/09] Lua 4 'in {..}' -> ipairs (loi 12:42 'attempt to call a table value')
         local rows = AUC_List(nType, 200, 0)
         for i = 1, getn(rows) do
             local r = rows[i]
