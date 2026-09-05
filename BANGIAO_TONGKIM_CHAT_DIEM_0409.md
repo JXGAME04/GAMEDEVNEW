@@ -305,3 +305,14 @@ N. nen 20:05-20:49 hom qua, khong TK                 n=45 chet/ph=   0 MAIN= 4.4
 ```
 - Chi phí mỗi lần chết: B 77–98 ms → C 8 ms → **D ~1,8 ms** (còn lại chủ yếu 600 gói chat giết địch); tick trễ 39 % → 5 % → **0,1 %**; p95 184 → 25 → **~10 ms**.
 - `SCRIPT_TIME max` mỗi phút TK 93–97 ms → 56–86 ms (nền không TK 55–62 ms) — script hẹn giờ theo phút vẫn ~55 ms, việc riêng (mục 13d).
+
+
+## 15. 05/09 11:30 — "tiếp tục": hai việc còn lại (chỉ phân tích, chưa đổi gì)
+### 15a. Khựng ~55 ms MỖI PHÚT (`SCRIPT_TIME max`, cả lúc không Tống Kim)
+- `CoreServerShell.cpp:1162-1172`: mỗi tick, nếu khung %% 18 == 0 và giây hệ thống == 0 → `timerserver.lua RunTime()` (script hẹn giờ, 1 lần/phút).
+- `RunTime()` (`timerserver.lua:55-84`, `[NHIPNAP 29/08]` của chủ): **`dofile("script/timerserver.lua")` nạp lại chính nó + 33 `Include` = 90 tệp / 1,17 MB mỗi phút** để "sửa script ăn ngay, không cần restart". Đo ngoài engine bằng `lua4.exe` + tag method `getglobal` giả lập hàm engine: **~20 ms** chỉ riêng biên dịch (vài tệp dừng sớm → trong engine cao hơn, có thêm tra pak/đăng ký hàm). Phần còn lại của 55-86 ms = tác vụ theo phút (`BDH_JitanTick`, `CL_Tick_Wrap`, `BotAuto_Tick`, `sukien_tongkim`, bảo trì bang 6:05…); trong phút TK trước FindById 93-97 ms, sau 56-86 ms.
+- Hậu quả: đúng 1 tick mỗi phút dài ~60-90 ms (ngân sách 55) → mọi người khựng nhẹ 1 lần/phút; không tích luỹ.
+- **Đã có núm, không cần sửa mã**: `script{BS}cauhinh{BS}ch_chung.lua:137 CH_NAPLAI_PHUT = 1` (1 = mỗi phút, 5 = 5 phút/lần, 0 = tắt — khi tắt thì sửa script phải restart); khoá đã phơi lên web admin (`cauhinh_web{BS}cfgw_meta.lua:68`, nhóm HETHONG, nhịp áp 30 s). → Quyết định của chủ: giữ 1 (tiện dev) hay 5/0 (mượt hơn).
+### 15b. Chat giết địch `Msg2MSAll` (tongtu/kimtu:88)
+- 600 `SendSystemInfo` → 600 `PackDataToClient` mỗi lần chết ≈ 2 ms; ở ~10 lần chết/giây = 20 ms/giây ≈ 2 %% ngân sách; mỗi client nhận ~10 dòng/giây (chat + widget).
+- Phương án nếu muốn giảm: (a) chỉ gửi cho người trong 3×3 vùng quanh chỗ chết (KRegion) + người giết/bị giết — đổi trải nghiệm (không thấy kill xa); (b) gộp 1 giây gửi 1 gói nhiều dòng — client `KUiFlashMessage` cần tách dòng; (c) giữ nguyên. Khuyến nghị **(c)** vì chi phí đã nhỏ sau fix.
