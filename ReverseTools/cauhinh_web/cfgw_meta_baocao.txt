@@ -1,0 +1,204 @@
+cfgw_meta: 291 khoa script, 27 khoa C++, 23 bo qua, 0 LOI
+NHOM            khoa  ap<=1ph  restart
+BACHNHAN          19       11        8
+BANDONGHANH       15        1       14
+BANGCHIEN         11        4        7
+BOSS              16        0       16
+CHUNG             20       14        6
+CONGTHANH         22        2       20
+DATAU              3        0        3
+EXP                5        4        1
+HETHONG            5        0        5
+HOATDONG          47       33       14
+LICH               5        0        5
+LOIDAI             5        0        5
+ROTDO             40       27       13
+THANHBAO          20       14        6
+TIEN               1        0        1
+TONGKIM           17        0       17
+TRONGBANG          6        0        6
+TYVO               4        2        2
+VANTIEU           19       19        0
+VIEMDE            11        7        4
+
+NGUY CO: 53 an toan, 180 can than, 85 nguy hiem
+
+KHOA CAN NAP LAI SCRIPT / RESTART (ap_dung = 2):
+  DT_SO_NV_MOI_VONG              DATAU        ch_chung.lua
+  DT_SO_VONG_MOI_CHU_KY          DATAU        ch_chung.lua
+  DT_SO_CHU_KY_TOI_DA            DATAU        ch_chung.lua
+  BDH_CHANNGUYEN_DOI_1_TUCHAN    BANDONGHANH  ch_chung.lua
+  BDH_TUCHAN_TOI_DA              BANDONGHANH  ch_chung.lua
+  BDH_SO_LAN_CHO_AN_MOI_NGAY     BANDONGHANH  ch_chung.lua
+  BDH_GIA_DOI_NGOAI_QUAN         BANDONGHANH  ch_chung.lua
+  BDH_GIA_DOI_TEN                BANDONGHANH  ch_chung.lua
+  BDH_CAP_TOI_DA                 BANDONGHANH  ch_chung.lua
+  BDH_BUOC_CAP_NGOAI_QUAN        BANDONGHANH  ch_chung.lua
+  BDH_CAP_NHANVAT_TOI_THIEU      BANDONGHANH  ch_chung.lua
+  BDH_CAP_MO_KYNANG_BIKIP        BANDONGHANH  ch_chung.lua
+  BDH_SO_O_KYNANG_TOI_DA         BANDONGHANH  ch_chung.lua
+  BDH_BUOC_CAP_MO_O_KYNANG       BANDONGHANH  ch_chung.lua
+  BDH_KYNANG_BIKIP_CAP_TOI_DA    BANDONGHANH  ch_chung.lua
+  BDH_TUCHAN_MOI_CAP_KYNANG      BANDONGHANH  ch_chung.lua
+  BHK_PHUT_BOSS_TON_TAI          BOSS         ch_chung.lua
+  BHK_MAU_BOSS_TIEU              BOSS         ch_chung.lua
+  BHK_MAU_BOSS_DAI               BOSS         ch_chung.lua
+  BHK_NETRANH_BOSS               BOSS         ch_chung.lua
+  BHK_HOIMAU_BOSS                BOSS         ch_chung.lua
+  BHK_EXP_NPC_BOSS_DAI           BOSS         ch_chung.lua
+  BHK_EXP_NPC_BOSS_TIEU          BOSS         ch_chung.lua
+  CTC_DIEM_PHA_LONGTRU           CONGTHANH    ch_chung.lua
+  CTC_EXP_TOP10_BANSAO           CONGTHANH    ch_chung.lua
+  CTC_GIA_LENHBAI                CONGTHANH    ch_chung.lua
+  CTC_GIA_TRA_LAI_LENHBAI        CONGTHANH    ch_chung.lua
+  CTC_MAX_LIENMINH_CONG_VEBINH   CONGTHANH    ch_chung.lua
+  CTC_MAX_LIENMINH_THU_VEBINH    CONGTHANH    ch_chung.lua
+  CTC_MAX_NGUOI_PHE_CONG_VEBINH  CONGTHANH    ch_chung.lua
+  CTC_MAX_NGUOI_PHE_THU_VEBINH   CONGTHANH    ch_chung.lua
+  CTC_CHUKY_LOA_GIAY             CONGTHANH    ch_chung.lua
+  CTC_DODAI_TRAN_PHUT            CONGTHANH    ch_chung.lua
+  CTC_EXP_TOP10                  CONGTHANH    ch_chung.lua
+  CTC_SO_LONGTRU                 CONGTHANH    ch_chung.lua
+  CTC_SO_CONG_THANH              CONGTHANH    ch_chung.lua
+  CTC_MAX_NGUOI_PHE_THU          CONGTHANH    ch_chung.lua
+  CTC_MAX_NGUOI_PHE_CONG         CONGTHANH    ch_chung.lua
+  CTC_MAX_LIENMINH_THU           CONGTHANH    ch_chung.lua
+  CTC_MAX_LIENMINH_CONG          CONGTHANH    ch_chung.lua
+  CTC_CAP_LONGTRU                CONGTHANH    ch_chung.lua
+  CTC_CAP_CONG_THANH             CONGTHANH    ch_chung.lua
+  GLB_GIO_MO_SERVER              HETHONG      ch_chung.lua
+  GLB_CHE_DO_TEST                HETHONG      ch_chung.lua
+  GLB_TILE_TIEN                  TIEN         ch_chung.lua
+  GLB_TILE_EXP                   EXP          ch_chung.lua
+  GLB_SATTHUONG_BOSS_HK          CHUNG        ch_chung.lua
+  GLB_SATTHUONG_QUAI_PLD         CHUNG        ch_chung.lua
+  GLB_SATTHUONG_BOSS_TTDL        CHUNG        ch_chung.lua
+  GLB_MANH_BOSS_VUOTAI           CHUNG        ch_chung.lua
+  GLB_MANH_NGUYENSOAI_TK         CHUNG        ch_chung.lua
+  GLB_MAX_DONG_THUOCTINH         CHUNG        ch_chung.lua
+  CH_NAPLAI_PHUT                 HETHONG      ch_chung.lua
+  CH_LOG_CAUHINH                 HETHONG      ch_chung.lua
+  CH_LOG_THUONG                  HETHONG      ch_chung.lua
+  CTC_CHUKY_QUET_MO_TRAN_PHUT    CONGTHANH    ch_lich.lua
+  CTLD_MAX_NGUOI_MOI_PHE         LOIDAI       ch_lich.lua
+  CTLD_CHUKY_LOA_GIAY            LOIDAI       ch_lich.lua
+  CTLD_DODAI_TRAN_PHUT           LOIDAI       ch_lich.lua
+  CTLD_GIAY_CHO_VAO_DAUTRUONG    LOIDAI       ch_lich.lua
+  CTLD_EXP_BANG_THANG            LOIDAI       ch_lich.lua
+  TK_PHUT_BAODANH                LICH         ch_lich.lua
+  TK_PHUT_TRAN                   LICH         ch_lich.lua
+  TK_PHUT_NGUYENSOAI             LICH         ch_lich.lua
+  TK_PHUT_XOANPC                 LICH         ch_lich.lua
+  TK_NGUOI_MOI_PHE               LICH         ch_lich.lua
+  TBH_PHUT_TRONG_TON_TAI         TRONGBANG    ch_thuong.lua
+  TBH_GIO_MO                     TRONGBANG    ch_thuong.lua
+  TBH_GIO_DONG                   TRONGBANG    ch_thuong.lua
+  TBH_EXP_TRAN_NGAY              TRONGBANG    ch_thuong.lua
+  TBH_EXP_MIN                    TRONGBANG    ch_thuong.lua
+  TBH_EXP_MAX                    TRONGBANG    ch_thuong.lua
+  BDH_THOIHAN_DANHHIEU_NGAY      BANDONGHANH  ch_thuong.lua
+  BHK_EXP_GIET_BOSS_PLD          BOSS         ch_thuong.lua
+  BHK_EXP_LANCAN_BOSS_PLD        BOSS         ch_thuong.lua
+  BHK_PHAMVI_HUONG_EXP_PLD       BOSS         ch_thuong.lua
+  BHK_EXP_GIET_BOSS_DAI          BOSS         ch_thuong.lua
+  BHK_EXP_LANCAN_BOSS_DAI        BOSS         ch_thuong.lua
+  BHK_PHAMVI_HUONG_EXP_DAI       BOSS         ch_thuong.lua
+  BHK_EXP_GIET_BOSS_TIEU         BOSS         ch_thuong.lua
+  BHK_EXP_LANCAN_BOSS_TIEU       BOSS         ch_thuong.lua
+  BHK_PHAMVI_HUONG_EXP_TIEU      BOSS         ch_thuong.lua
+  TKT_GIA_DOI_NHACVUONGKIEM      TONGKIM      ch_thuong.lua
+  TKT_PHI_TRINHSAT               TONGKIM      ch_thuong.lua
+  TKT_SL_HONTHACH_DOI_KIEM       TONGKIM      ch_thuong.lua
+  TKT_CAP_TOI_THIEU              TONGKIM      ch_thuong.lua
+  TKT_LECH_QUANSO_TOIDA          TONGKIM      ch_thuong.lua
+  TKT_PHI_BAO_DANH               TONGKIM      ch_thuong.lua
+  TKT_THUONG_TICHLUY_THANG       TONGKIM      ch_thuong.lua
+  TKT_THUONG_TICHLUY_THUA        TONGKIM      ch_thuong.lua
+  TKT_THUONG_TICHLUY_HOA         TONGKIM      ch_thuong.lua
+  TKT_DIEM_TOITHIEU_NHAN_THUONG  TONGKIM      ch_thuong.lua
+  TKT_SO_CO_TOIDA                TONGKIM      ch_thuong.lua
+  TKT_DIEM_CAM_CO                TONGKIM      ch_thuong.lua
+  TKT_MUC_GIAM_TOCDO_GIU_CO      TONGKIM      ch_thuong.lua
+  TKT_GIAY_TRONG_DOANHTRAI       TONGKIM      ch_thuong.lua
+  TKT_GIAY_DELAY_RA_TRAI         TONGKIM      ch_thuong.lua
+  TKT_MAU_NGUYENSOAI             TONGKIM      ch_thuong.lua
+  TKT_DIEM_GIET_NGUYENSOAI       TONGKIM      ch_thuong.lua
+  SKD_RANDMAP                    ROTDO        ch_drop.lua
+  SKD_RANDPLD                    ROTDO        ch_drop.lua
+  SKD_RANDOTHER                  ROTDO        ch_drop.lua
+  SKD_RANDTK                     ROTDO        ch_drop.lua
+  SKD_RANDVA                     ROTDO        ch_drop.lua
+  SKD_DROPMDTB                   ROTDO        ch_drop.lua
+  SKD_PUBG_MA_MIN                ROTDO        ch_drop.lua
+  SKD_PUBG_MA_MAX                ROTDO        ch_drop.lua
+  SKD_HKMP_MA_MIN                ROTDO        ch_drop.lua
+  SKD_HKMP_MA_MAX                ROTDO        ch_drop.lua
+  SKD_HKMP_HAN_NGAY              ROTDO        ch_drop.lua
+  SKD_TIENDONG_SL_MIN            ROTDO        ch_drop.lua
+  SKD_TIENDONG_SL_MAX            ROTDO        ch_drop.lua
+  TW_PHUT_TRAN                   BANGCHIEN    cauhinh_hoatdong.lua
+  TW_PHUT_CHUANBI                BANGCHIEN    cauhinh_hoatdong.lua
+  TW_NGUOI_TOIDA                 BANGCHIEN    cauhinh_hoatdong.lua
+  TW_NGUOI_TOITHIEU              BANGCHIEN    cauhinh_hoatdong.lua
+  TW_GIAY_HAUDOANH               BANGCHIEN    cauhinh_hoatdong.lua
+  TW_DIEM_KILL                   BANGCHIEN    cauhinh_hoatdong.lua
+  TW_DIEM_LIENTRAM               BANGCHIEN    cauhinh_hoatdong.lua
+  TS_CAP_TOITHIEU                THANHBAO     cauhinh_hoatdong.lua
+  TS_LUOT_THUONG_NGAY            THANHBAO     cauhinh_hoatdong.lua
+  TS_LUOT_ITEM_NGAY              THANHBAO     cauhinh_hoatdong.lua
+  TS_TRA_HANHHIEP                THANHBAO     cauhinh_hoatdong.lua
+  TS_TRA_BAORUONG                THANHBAO     cauhinh_hoatdong.lua
+  BR_GIAY_CHO_KHIEUCHIEN         BACHNHAN     cauhinh_hoatdong.lua
+  BR_GIAY_DEM_NGUOC              BACHNHAN     cauhinh_hoatdong.lua
+  BR_PHUT_MOI_LUOT               BACHNHAN     cauhinh_hoatdong.lua
+  BR_PHUT_DUNG_YEN               BACHNHAN     cauhinh_hoatdong.lua
+  BR_PHUT_BUFF_X2                BACHNHAN     cauhinh_hoatdong.lua
+  BR_NPC_MAP                     BACHNHAN     cauhinh_hoatdong.lua
+  BR_NPC_ID                      BACHNHAN     cauhinh_hoatdong.lua
+  BR_NPC_LEVEL                   BACHNHAN     cauhinh_hoatdong.lua
+  BW_PHUT_CHO                    TYVO         cauhinh_hoatdong.lua
+  BW_PHUT_TRAN                   TYVO         cauhinh_hoatdong.lua
+  TC_THU                         THANHBAO     cauhinh_hoatdong.lua
+  HD3_ST_MAX_NGAY                HOATDONG     cauhinh_hoatdong.lua
+  HD3_PLD_SUC_CHUA               HOATDONG     cauhinh_hoatdong.lua
+  HD3_VA_PHUT_BAODANH            HOATDONG     cauhinh_hoatdong.lua
+  HD3_VA_PHUT_NHIEMVU            HOATDONG     cauhinh_hoatdong.lua
+  HD3_VA_NGUOI_TOIDA             HOATDONG     cauhinh_hoatdong.lua
+  HD3_VA_GIO_XEPHANG             HOATDONG     cauhinh_hoatdong.lua
+  HD3_VA_LUOT_NGAY               HOATDONG     cauhinh_hoatdong.lua
+  HD3_ST_HESO_EXP                HOATDONG     cauhinh_hoatdong.lua
+  HD3_ST_EXP_QUAY                HOATDONG     cauhinh_hoatdong.lua
+  HD3_PLD_CO_THUYENPHU_BAC       HOATDONG     cauhinh_hoatdong.lua
+  HD3_PLD_SO_AN_BOSS             HOATDONG     cauhinh_hoatdong.lua
+  HD3_PLD_TILE_HAILONG           HOATDONG     cauhinh_hoatdong.lua
+  HD3_PLD_TILE_TRUYCONG          HOATDONG     cauhinh_hoatdong.lua
+  HD3_PLD_THUONG_CAPBEN          HOATDONG     cauhinh_hoatdong.lua
+  YDBZ_BAT                       VIEMDE       cauhinh_hoatdong.lua
+  YDBZ_PHONG_TOIDA               VIEMDE       cauhinh_hoatdong.lua
+  YDBZ_PHUT_BAODANH              VIEMDE       cauhinh_hoatdong.lua
+  YDBZ_NPC_MAP                   VIEMDE       cauhinh_hoatdong.lua
+
+BO QUA (khong dua len web):
+  TK_LICH                        bang con
+  TW_MUA9                        bang con
+  TW_THUONG                      nil
+  TW_TEST_REDO                   bang con
+  TS_EXP_MO_RUONG                nil
+  TS_DIEM_MO_RUONG               nil
+  TS_EXP_GIET_THUHO              nil
+  TS_DIEM_GIET_THUHO             nil
+  TC_GIO_MO                      bang con
+  TC_GIO_CAY2                    bang con
+  TC_GIO_CAY3                    bang con
+  TC_GIO_DONG                    bang con
+  TC_DIEM_CAY                    nil
+  TC_THUONG_LENH                 nil
+  HD3_PLD_GIO                    bang con
+  HD3_PLD_GIO_TONPHI             bang con
+  HD3_VA_GIO                     bang con
+  HD3_ST_THUONG                  nil
+  HD3_ST_EXP                     nil
+  HD3_PLD_THUONG_RUONG           nil
+  HD3_VA_THUONG_HOANTHANH        nil
+  HD3_VA_THUONG_HANG_NGAY        nil
+  HD3_VA_THUONG_RUONG            nil

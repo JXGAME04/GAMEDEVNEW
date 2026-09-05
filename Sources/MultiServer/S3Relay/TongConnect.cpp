@@ -841,7 +841,7 @@ on_nextgroup:
 	if (!gIsLegalString(pGroup, 0, _GROUP_NAME_LEN))
 		return;	//error
 
-	std::_tstring group(pGroup);
+	std::_tstring group(CFriendMgr::NormalizeGroup(std::_tstring(pGroup)));	// [HAOHUU 04/09]
 
 	for (char* pRoleTag = pGroup + strlen(pGroup) + 1; ; )
 	{
@@ -905,7 +905,7 @@ void CTongConnect::Proc1_Friend_Associate(const void* pData, size_t size)
 	if (!gIsLegalString(szGroup, 0, _GROUP_NAME_LEN))
 		return;
 
-	std::_tstring group(szGroup);
+	std::_tstring group(CFriendMgr::NormalizeGroup(std::_tstring(szGroup)));	// [HAOHUU 04/09] GBK GS -> ten don vi client
 
 	char* szRole1 = szGroup + group.size() + 1;
 	if (!gIsLegalString(szRole1, 1, _NAME_LEN))
@@ -990,7 +990,7 @@ void CTongConnect::Proc1_Friend_AssociateBevy(const void* pData, size_t size)
 	if (!gIsLegalString(szGroup, 0, _GROUP_NAME_LEN))
 		return;
 
-	group.assign(szGroup);
+	group = CFriendMgr::NormalizeGroup(std::_tstring(szGroup));	// [HAOHUU 04/09] GBK GS -> ten don vi client
 
 	char* szRoles = szGroup + group.size() + 1;
 	while (*szRoles)

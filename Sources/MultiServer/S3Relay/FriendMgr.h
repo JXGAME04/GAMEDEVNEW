@@ -167,6 +167,9 @@ public:
 	typedef std::vector<std::_tstring>	_BEVY;
 	BOOL PlayerAssociateBevy(const _BEVY& bevy, const std::_tstring& group);
 
+	// [HAOHUU 04/09] doi ten nhom GBK cu cua GameServer sang ten don vi ma client hieu (xem FriendMgr.cpp)
+	static std::_tstring NormalizeGroup(const std::_tstring& group);
+
 };
 
 

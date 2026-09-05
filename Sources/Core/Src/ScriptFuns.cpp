@@ -64,6 +64,7 @@
 #include "KMailServer.h"	// [MAIL 03/09 D3] kho thu MySQL (may chu)
 #include "KAuctionServer.h"	// [DAUGIA 04/09 A1] kho dau gia + giu nguyen vat pham
 #include "KChienLenh.h"	// [CL 04/09] Chien Lenh: 7 bang st_* tren MySQL
+#include "KCauHinhWeb.h"	// [CFGW 04/09] cau hinh game chinh tu WEB ADMIN (bang gcfg tren MySQL)
 #include "KAuctionClient.h"	// [DAUGIA 04/09 A3] cua so dau gia (client)
 #include "KChienLenhClient.h"	// [CL 04/09 DOT2] cau noi Lua <-> cua so Chien Lenh (client)
 #ifndef WIN32
@@ -14924,6 +14925,13 @@ TLua_Funcs GameScriptFuns[] =
 	{"CL_MuaVip",	LuaCL_MuaVip},
 	{"CL_TrangThai",	LuaCL_TrangThai},
 	{"CL_Tick",	LuaCL_Tick},
+	// [CFGW 04/09] script\cauhinh_web\cfgw_driver.lua + ch_lib.lua (G_CFG) dung - cau hinh game tren MySQL (bang gcfg)
+	{"CFGW_Get",	LuaCFGW_Get},
+	{"CFGW_Khai",	LuaCFGW_Khai},
+	{"CFGW_Tick",	LuaCFGW_Tick},
+	{"CFGW_Reload",	LuaCFGW_Reload},
+	{"CFGW_Info",	LuaCFGW_Info},
+	{"CFGW_MoTa",	LuaCFGW_MoTa},	// [05/09] tieng Viet cho khoa C++
 	// [DAUGIA 04/09 A1] script\auction\auction_manager.lua dung
 	{"AUC_ItemToRec",	LuaAUC_ItemToRec},
 	{"AUC_RecName",	LuaAUC_RecName},

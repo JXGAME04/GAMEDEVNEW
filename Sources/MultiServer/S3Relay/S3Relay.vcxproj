@@ -79,7 +79,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
-      <AdditionalOptions>/source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;..\..\..\Headers;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <PostBuildEvent>
@@ -131,7 +131,7 @@ copy release\S3Relay.exe ..\..\..\..\bin\multiserver\release\S3Relay.exe</Comman
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <AdditionalOptions>/source-charset:windows-1258 /execute-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;..\..\..\Headers;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <PostBuildEvent>
@@ -175,6 +175,7 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
     </ClCompile>
     <ClCompile Include="DBTable_MySQL.cpp" />
     <ClCompile Include="_neo_libdb.cpp" />
+    <ClCompile Include="OfflineMsgDB.cpp" />
     <ClCompile Include="DealRelay.cpp" />
     <ClCompile Include="DoScript.cpp" />
     <ClCompile Include="FilterTextLib.cpp" />
@@ -240,6 +241,7 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
     <ClInclude Include="DoScript.h" />
     <ClInclude Include="FilterTextLib.h" />
     <ClInclude Include="FriendMgr.h" />
+    <ClInclude Include="OfflineMsgDB.h" />
     <ClInclude Include="GatewayCenter.h" />
     <ClInclude Include="GatewayClient.h" />
     <ClInclude Include="Global.h" />
