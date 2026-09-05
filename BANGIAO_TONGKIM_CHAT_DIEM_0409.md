@@ -87,15 +87,25 @@ Máy chủ (`lib_tktc.lua` cuối tệp): `TK_GuiDiemChoToi(nKind)` (một ngư�
 
 ## 6. Nhị phân
 
-- **`bin\client\Game.exe.moi` = b590accc** (1.462.784 B, 19:03 04/09; S3Client "Release|Win32" từ worktree `mail-0309` = origin/main 056e3ea6+ gộp
-  + đợt này). Dấu kiểm: `grep -c -a "UiTongKimScore.ini"` = 1, `"UiFlashMessage.ini"` = 1. Khe lúc đặt còn `CoreClient.dll.moi` (17:58) + `WAuto.exe.moi`
+- **`bin\client\Game.exe.moi` = 052fe11f** (1.462.272 B, 19:20 04/09; thay b590accc 19:03 cũng của phiên này; S3Client "Release|Win32" từ worktree
+  `mail-0309` = origin/main 056e3ea6+ gộp + đợt này). Dấu kiểm: `grep -c -a "UiTongKimScore.ini"` = 1, `"ImgLeft"` = 1, `"UiFlashMessage.ini"` = 1. Khe lúc đặt còn `CoreClient.dll.moi` (17:58) + `WAuto.exe.moi`
   của phiên khác — KHÔNG đụng; đợt này không đổi Core nên Game.exe mới chạy với CoreClient hiện có lẫn bản .moi đó (cùng origin/main).
 - Live lúc đặt: `Game.exe` 7e353a0c (14:41). Build: `python build.py --config Release --platform Win32 --project S3Client` (mục 5).
 
-## 7. Còn mở — "phải giống bản 2.0" (chủ 04/09 ~19:00)
+## 7. "Phải giống bản 2.0" — ĐÃ GIỐNG (chủ 19:00: *"Nó là tống kim bang hội… vào map tống kim bang hội là có liền"*)
 
-Tài nguyên thật của bảng 2.0 (`淮河河畔.ini` + sprite) **không có trên máy này**: không trong 13 pak của `Vo Lam Truyen Ky 2.0`, không trong
-`UserDataCl`/`lottery`, không trong 30 pak của client JX1 cũ (chỉ thấy `宋金快报.ini` = cửa sổ TỔNG KẾT cuối trận và `风云宋金.ini` = bảng xếp hạng
-Phong Vân — hai thứ khác, đã rút về `ReverseTools\tongkim_chat\` để dùng sau nếu chủ muốn). Bảng hiện tại = đúng CẤU TRÚC 2.0 với ảnh tự vẽ.
-Để giống 100 %: chủ đưa thư mục client 2.0 ĐANG HIỆN bảng (hoặc gói pak của nó) → rút `淮河河畔.ini` + `\spr\...` bằng `scan_small.py`/tra băm,
-thay ảnh + toạ độ trong `UiTongKimScore.ini` (lớp client đọc cùng cấu trúc: ảnh nền + 2 nhãn + thanh).
+Mổ nhầm lúc đầu: bảng của 2.0 KHÔNG phải `KUiHuaihehepan` (C++, tài nguyên không đóng gói) mà là **UI Lua động `tong_battle_2023` (Tống Kim Bang
+Hội)**: ini cửa sổ `WndType=WndImage` `ScriptFile=\script\ui\tong_battle_2023\fight_bar.lua` (slistcl.pak uid **A652C52E** / E1F499A0, 736 B):
+- `[Main]` 469×122 tại (276,45), nền `\spr\Ui4\主界面\宋金战斗界面vng\宋金战斗界面.spr`; `[ImgLeft]` chữ Tống `宋.spr` (107,33); `[ImgRight]` chữ Kim
+  `金.spr` (321,35); `[TxtLScore]` (73,72) 100×20 căn giữa màu 255,128,0 "Điểm: 0"; `[TxtRScore]` (291,71) màu 255,128,192.
+- Ba sprite rút từ `update.pak` 2.0 (uid 71164AFA / 688DAF8F / 9201F55D; bản không `vng` 3303E9EE/E83D99C3/D6A00DAC là chữ Trung) → chép sang
+  `bin\client\spr\Ui3\UiGameMain\UiTongKim\{nen20,tong20,kim20}.spr` (tên ASCII; SPR cùng định dạng, nạp thẳng). Ảnh ghép đối chiếu:
+  `ReverseTools\tongkim_chat\spr20\preview_2_0_ghep.png` — trùng ảnh chủ gửi.
+- `UiTongKimScore.ini` ghi lại theo đúng toạ độ trên (`Left=-1` tự căn giữa: 800 → 276 như 2.0), `Prefix=Điểm: ` (TCVN3) cho hai dòng điểm; thanh cân
+  bằng tắt (`[Bar] Width=0`) vì 2.0 không có. Lớp `KUiTongKimScore` thêm 2 `KWndImage` (`[ImgLeft]/[ImgRight]`) + tiền tố.
+- Script `fight_bar.lua`/`remind_wnd.lua` KHÔNG có trong pak client 2.0 này (quét nội dung `TxtLScore`/`fight_bar` toàn bộ update/slistcl/common
+  + res1/res2 ≤ 256 KB) → ở 2.0 bảng chỉ hiện tĩnh "Điểm: 0 / 0" (đúng ảnh chủ); dự án cấp dữ liệu thật qua kênh `UpdateBattleBox` (mục 3).
+- Dòng giết địch dời xuống `Top=175` (`UiFlashMessage.ini`) để không đè lên bảng (45..167).
+- Bản đầu (ảnh tự vẽ `bangdiem.spr` + thanh cân bằng) giữ lại làm tuỳ chọn: đổi `[Main] Image` về `bangdiem.spr` 300×64 và bật `[Bar]`.
+
+`宋金快报.ini` (tổng kết cuối trận) + `风云宋金.ini` (BXH Phong Vân) rút từ client JX1 cũ (`update01.pak`) để ở `ReverseTools\tongkim_chat\` — chưa làm.

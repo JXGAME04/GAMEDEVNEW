@@ -23,6 +23,8 @@ KUiTongKimScore::KUiTongKimScore()
 	m_nBarWidth = m_nBarHeight = 0;
 	m_nTong = m_nKim = 0;
 	m_bHaveData = 0;
+	m_szPrefixTong[0] = 0;
+	m_szPrefixKim[0] = 0;
 }
 
 KUiTongKimScore* KUiTongKimScore::OpenWindow()
@@ -54,6 +56,8 @@ void KUiTongKimScore::Initialize()
 {
 	AddChild(&m_BarTong);
 	AddChild(&m_BarKim);
+	AddChild(&m_ImgTong);
+	AddChild(&m_ImgKim);
 	AddChild(&m_TongPoint);
 	AddChild(&m_KimPoint);
 	char Scheme[256];
@@ -77,8 +81,12 @@ void KUiTongKimScore::LoadScheme(const char* pScheme)
 		ms_pSelf->Init(&Ini, "Main1024");
 	else
 		ms_pSelf->Init(&Ini, "Main");
+	ms_pSelf->m_ImgTong.Init(&Ini, "ImgLeft");		// chu "Tong" (anh 2.0)
+	ms_pSelf->m_ImgKim.Init(&Ini, "ImgRight");		// chu "Kim"
 	ms_pSelf->m_TongPoint.Init(&Ini, "TongPoint");
 	ms_pSelf->m_KimPoint.Init(&Ini, "KimPoint");
+	Ini.GetString("TongPoint", "Prefix", "", ms_pSelf->m_szPrefixTong, sizeof(ms_pSelf->m_szPrefixTong));
+	Ini.GetString("KimPoint", "Prefix", "", ms_pSelf->m_szPrefixKim, sizeof(ms_pSelf->m_szPrefixKim));
 	ms_pSelf->m_BarTong.Init(&Ini, "BarTong");
 	ms_pSelf->m_BarKim.Init(&Ini, "BarKim");
 	// [Bar]: vung thanh can bang (toa do trong cua so); hai KWndShadow chia nhau theo %
@@ -125,8 +133,12 @@ void KUiTongKimScore::SetScore(int nTong, int nKim)
 	m_nTong = nTong;
 	m_nKim = nKim;
 	m_bHaveData = 1;
-	m_TongPoint.SetIntText(nTong);
-	m_KimPoint.SetIntText(nKim);
+	// "Diem: N" nhu TxtLScore/TxtRScore cua 2.0 (tien to TCVN3 doc tu ini de nguon ASCII sach)
+	char szBuf[64];
+	sprintf(szBuf, "%s%d", m_szPrefixTong, nTong);
+	m_TongPoint.SetText(szBuf);
+	sprintf(szBuf, "%s%d", m_szPrefixKim, nKim);
+	m_KimPoint.SetText(szBuf);
 	ApplyBar();
 	if (!IsVisible())
 		Show();

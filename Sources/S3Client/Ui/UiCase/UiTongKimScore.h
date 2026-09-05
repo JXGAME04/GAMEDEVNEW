@@ -40,11 +40,19 @@ private:
 	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 	virtual int  PtInWindow(int x, int y);	// 0 = trong suot voi chuot (bam xuyen qua nhu KUiFlashMessage)
 
-	KWndText	m_TongPoint;	// [TongPoint]
-	KWndText	m_KimPoint;		// [KimPoint]
-	KWndShadow	m_BarTong;		// [BarTong] phan trai thanh can bang (mau Tong)
+	// [TKDIEM 04/09 2.0] bo cuc lay NGUYEN tu ini fight_bar cua 2.0 (\script\ui\tong_battle_2023\fight_bar.lua, uid A652C52E):
+	// [Main] nen 469x122 (\spr\Ui4\主界面\宋金战斗界面vng\宋金战斗界面.spr) + [ImgLeft] chu Tong + [ImgRight] chu Kim
+	// + [TxtLScore]/[TxtRScore] "Diem: N" mau 255,128,0 / 255,128,192. Sprite goc rut tu update.pak 2.0, chep sang
+	// spr\Ui3\UiGameMain\UiTongKim\{nen20,tong20,kim20}.spr (ten ASCII).
+	KWndImage	m_ImgTong;		// [ImgLeft]
+	KWndImage	m_ImgKim;		// [ImgRight]
+	KWndText	m_TongPoint;	// [TongPoint]  (= TxtLScore 2.0)
+	KWndText	m_KimPoint;		// [KimPoint]   (= TxtRScore 2.0)
+	KWndShadow	m_BarTong;		// [BarTong] phan trai thanh can bang (mau Tong) - tuy chon, 2.0 khong co
 	KWndShadow	m_BarKim;		// [BarKim]  phan phai (mau Kim)
-	int		m_nBarLeft, m_nBarTop, m_nBarWidth, m_nBarHeight;	// [Bar]
+	int		m_nBarLeft, m_nBarTop, m_nBarWidth, m_nBarHeight;	// [Bar] (Width=0 = khong ve thanh)
+	char	m_szPrefixTong[32];	// [TongPoint] Prefix= (TCVN3 "Diem: ")
+	char	m_szPrefixKim[32];	// [KimPoint]  Prefix=
 	int		m_nTong, m_nKim;
 	int		m_bHaveData;
 };
