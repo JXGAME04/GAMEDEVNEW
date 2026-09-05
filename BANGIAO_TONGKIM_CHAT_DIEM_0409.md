@@ -109,3 +109,34 @@ Hội)**: ini cửa sổ `WndType=WndImage` `ScriptFile=\script\ui\tong_battle_2
 - Bản đầu (ảnh tự vẽ `bangdiem.spr` + thanh cân bằng) giữ lại làm tuỳ chọn: đổi `[Main] Image` về `bangdiem.spr` 300×64 và bật `[Bar]`.
 
 `宋金快报.ini` (tổng kết cuối trận) + `风云宋金.ini` (BXH Phong Vân) rút từ client JX1 cũ (`update01.pak`) để ở `ReverseTools\tongkim_chat\` — chưa làm.
+
+
+## 8. 19:40 — Chủ: "tôi thấy chưa có điểm" + "vẫn còn thông báo giết cũ" (ảnh trong game)
+
+### 8a. Không có điểm — gốc: `KWndText` thường KHÔNG có bộ đệm
+- `KWndText::SetText` chỉ ghi khi `m_pText != NULL`; `KWndText::Init` chỉ cấp bộ đệm khi ini có `Text=`; ini `UiTongKimScore.ini`
+  không có → `SetText("Điểm: 673320")` bị bỏ qua im lặng → bảng hiện, số trống.
+- Sửa (`UiTongKimScore.h`): `m_TongPoint`/`m_KimPoint` → `KWndText32` (bộ đệm 32 byte trong lớp, như `KUiTargetInfo`/`KUiTimeBox`).
+- Chủ 19:50 xác nhận ảnh: `Điểm: 673320` / `Điểm: 3334620` đã hiện; đuôi rác cũng hết.
+
+### 8b. Đuôi rác `.-2` `.MFj` `.V[j` trên dòng giết địch
+- `UiMsgCentrePad.cpp:274` chép bằng `strlen(pMsgBuff)`; gói chat KHÔNG kết thúc NUL → đọc lố sang byte sau → rác.
+- Sửa: chép đúng `nMsgLength` (tham số hàm), trần `sizeof(sMsg)-1`.
+
+### 8c. Trạng thái
+- `Game.exe.moi` = **9f695c30** (19:42, S3Client Release Win32; chủ đã swap). Git: mail-0309 `407a0d0f` → origin/main `5ca8bbb7`.
+- Bẫy git: `git commit -- <tệp> -m "..."` SAI (git coi `-m` là pathspec) → `git commit -m "..." -- <tệp>`.
+- Chủ: *"vẫn còn thông báo giết người cũ — tôi muốn xóa cũ làm cái mới như bản 2.0"* → mục 9.
+
+## 9. "Cái mới như bản 2.0" cho dòng giết địch — mổ tiếp 2.0 (chưa có mẫu để dựng)
+- Exe 2.0 KHÔNG có chuỗi TCVN3 "đánh trọng thương"/"Hệ Thống" → 2.0 không bắt tin giết địch trong C++ như dự án (`UiMsgCentrePad.cpp:265`).
+- Tống Kim bang hội 2.0 (`tong_battle_2023`) có 3 cửa sổ Lua: `fight_bar.ini` (bảng điểm — đã port), **`remind_wnd.ini`** (cửa sổ nhắc: máy chủ
+  gửi `emSCRIPT_PROTOCOL_TONG_BATTLE_UPDATE_INFO` → `TB_UpdateWndInfo(table)`, `..._CLOSE_WND` → `TB_CloseWndInfo`; bảng giao thức
+  slistcl.pak D0E42D05:459-471), `player_info.ini`. Gốc ini = `\ui\ui3_1024\` (băm `fight_bar.ini` = A652C52E; `\ui\ui3_800\` = E1F499A0).
+- 🔴 `remind_wnd.ini/.lua`, `player_info.ini/.lua`, `fight_bar.lua` KHÔNG có trong 13 pak (tra băm đúng gốc + quét nội dung); không có tệp rời.
+  (`\script\Ui\tong_battle_2023\player_info.lua` uid 087C460B trong map.pak là TRÙNG BĂM — nội dung là bản đồ.)
+- Widget engine 2.0 còn lại: `KUiTipsMessage` (`TipsWindow.ini` — client JX1 cũ có: 312,50 400×16 chữ xanh 0,255,0 nền bóng đen, cuộn) — 2.0 không
+  đóng gói ini này; `PopBlackTips(text)` (Lua 2.0, dự án đang shim thành `Msg2Player`) = gói `#`+text → dải đen chữ vàng giữa màn hình
+  (`BlackTips.ini` cũ: 125,350 550×30, `blacktipsback.spr`, LifeTime 8) — dự án ĐÃ có bản tương đương: `KUiInformation3` (`UiInformation3.ini`
+  125,200 550×30 vàng, LifeTime 5, kích bằng `GDCNI_OPEN_TALK_EX` ← `KProtocolProcess.cpp:4952`).
+- → Cần ảnh chụp 2.0 lúc có dòng giết địch để dựng đúng (vị trí, màu, nền, số dòng, thời gian hiện). Ini cũ rút về `ReverseTools\tongkim_chat\tips_*.ini`.
