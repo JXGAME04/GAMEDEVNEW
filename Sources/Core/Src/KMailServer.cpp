@@ -37,6 +37,9 @@
 
 #define MAILDB_MAX_MAIL		100		// MAILDEF.PLAYER_MAX_MAIL cua 2.0
 #define MAILDB_DEF_EXPIRE	(30 * 86400)
+// [CL 04/09 V2] tran do dai cot `award` VARCHAR(512); de 480 cho du cho dau ';'
+// cuoi va cho nguoi goi noi them mot muc ngan ma khong cham tran that.
+#define MAILDB_MAX_AWARD	480
 
 static bool s_bTableOk = false;
 
@@ -192,6 +195,11 @@ int Mail_Send(const char* szRole, const char* szSender, const char* szTitle, con
 	if (!szContent) szContent = "";
 	if (!szAward) szAward = "";
 	if (!szSource) szSource = "";
+	// [CL 04/09 V2] cot `award` la VARCHAR(512). Voi sql_mode STRICT_TRANS_TABLES thi
+	// chuoi dai hon lam HONG CA CAU INSERT (thu khong den tay ai) chu khong cat bot.
+	// Chan som va tra 0 de nguoi goi biet, thay vi de MySQL tu choi khong loi giai thich.
+	if ((int)strlen(szAward) > MAILDB_MAX_AWARD)
+		return 0;
 	int nNow = (int)time(NULL);
 	int nExpire = (nExpireSec > 0) ? nNow + nExpireSec : nNow + MAILDB_DEF_EXPIRE;
 	// tran 100 thu: danh dau xoa thu CU NHAT (ly do OVERFLOW cua 2.0)
@@ -202,7 +210,17 @@ int Mail_Send(const char* szRole, const char* szSender, const char* szTitle, con
 	if (g_MySQLDB.Query("SELECT COUNT(*) FROM mail WHERE role_name=? AND state<4", pc, 1, _RowCount, &c)
 		&& c.n >= MAILDB_MAX_MAIL)
 	{
-		g_MySQLDB.Exec("UPDATE mail SET state=4 WHERE role_name=? AND state<4 ORDER BY id LIMIT 1", pc, 1);
+		// [CL 04/09 V2] CHI duoc cat thu KHONG con dinh kem (award_count = 0).
+		// Truoc day cau nay khong nhin award_count nen no cat ca thu con vat pham
+		// CHUA NHAN: nguoi choi it vao game, hom thu day (du an dang gui thu tu 8
+		// nguon), mot thu thuong moi day vao la GIET mot thu con do. Neu khong con
+		// thu trong nao de cat thi TU CHOI GUI va tra 0 - nguoi goi thu lai duoc,
+		// con do cua nguoi choi thi khong lay lai duoc.
+		__int64 nCut = 0;
+		g_MySQLDB.Exec("UPDATE mail SET state=4 WHERE role_name=? AND state<4 AND award_count=0"
+			" ORDER BY id LIMIT 1", pc, 1, &nCut);
+		if (nCut < 1)
+			return 0;
 	}
 	KDBParam p[9];
 	p[0] = KDBParam::S(szRole);

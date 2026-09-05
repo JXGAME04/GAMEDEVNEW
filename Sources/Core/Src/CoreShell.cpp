@@ -46,6 +46,7 @@
 #include "KCongThanhTables.h"
 #include "KMailClient.h"
 #include "KAuctionClient.h"	// [DAUGIA 04/09 A3]	// [MAIL 03/09 D2] cua so thu
+#include "KChienLenhClient.h"	// [CL 04/09 DOT2] cua so Chien Lenh
 
 #define	NPC_TRADE_BOX_WIDTH		6
 #define	NPC_TRADE_BOX_HEIGHT	10
@@ -22587,6 +22588,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	case GOI_AUCTION_UI:	// [DAUGIA 04/09 A3] cua so dau gia -> Lua uiauction_house.lua (KAuctionClient.cpp)
 	{
 		AuctionUi_OnRequest(uParam, nParam);
+	}
+	break;
+	case GOI_CHIENLENH_UI:		// [CL 04/09 DOT2] cua so Chien Lenh -> KChienLenhClient.cpp
+	{
+		ChienLenhUi_OnRequest(uParam, nParam);
 	}
 	break;
 	case GOI_DICE_CHOICE:	// DICEITEM 26/08

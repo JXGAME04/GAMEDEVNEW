@@ -283,6 +283,24 @@ function MailManager_GiveItem(a)
     return nOk
 end
 
+-- [CL 04/09 V4] Dung lai chuoi cot `award` cho phan CON THIEU de gui lai qua thu.
+-- Giu dung ngu phap ma MailManager_ParseAward doc duoc.
+function MailManager_QuaConLai(a, nThieu)
+    if nThieu == nil or nThieu <= 0 then
+        return ""
+    end
+    if a.szKind == "gold" then
+        return format("gold:%d,%d,%d,%d", a.nRecord or 0, nThieu, a.nLock or 0, a.nExpSec or 0)
+    end
+    if a.szKind == "item" then
+        return format("item:%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+            a.nGenre or 0, a.nDetail or 0, a.nParticular or 0, a.nLevel or 0,
+            a.nSeries or 0, a.nLuck or 0, nThieu, a.nLock or 0, a.nExpSec or 0,
+            a.nMagic or 0, a.nStack or 0)
+    end
+    return ""
+end
+
 function MailManager_GiveAward(tbAward)
     for i = 1, getn(tbAward) do
         local a = tbAward[i]
@@ -304,7 +322,24 @@ function MailManager_GiveAward(tbAward)
                     "aucitem:"..a.nAucId, 30, "daugia", 1)
             end
         elseif a.szKind == "item" or a.szKind == "gold" then
-            MailManager_GiveItem(a)
+            -- [CL 04/09 V4] TRUOC DAY vut bo gia tri tra ve: AddItem hong thi chi
+            -- GhiLog roi thoi, ma thu DA danh dau da nhan -> mat do vinh vien.
+            -- Nay lam giong nhanh aucitem: thieu bao nhieu thi gui lai bang thu moi.
+            local nOk = MailManager_GiveItem(a) or 0
+            local nThieu = (a.nCount or 1) - nOk
+            if a.nStack == 1 and a.nGenre ~= 0 and nOk > 0 then
+                nThieu = 0   -- mot chong n mon: tra ve nCount khi dat duoc
+            end
+            if nThieu > 0 then
+                local szLai = MailManager_QuaConLai(a, nThieu)
+                GhiLog("MAIL", format("LOI: %s KHONG nhan du (%d/%d) - gui lai: %s",
+                    GetName(), nOk, a.nCount or 1, szLai))
+                if szLai ~= "" then
+                    MailManager_SendMail(GetName(), MAILMGR_SENDER_SYS, "VËt phÈm göi l¹i",
+                        "LÇn nhËn tr­íc hµnh trang kh«ng ®ñ chç trèng liÒn, phÇn cßn thiÕu ®­îc göi l¹i ®©y.",
+                        szLai, 30, "mail", nThieu)
+                end
+            end
         elseif a.szKind == "money" then
             Earn(a.nCount)
         elseif a.szKind == "xu" then
@@ -348,11 +383,13 @@ function MailManager_OnRequestStateChange(nId, nToState)
     end
     -- [D9] uoc luong O hanh trang: trang bi (genre 0) va hoang kim 6 o/mon; do khac 1 o/mon, chong = 1 o
     local nCells = 0
+    local nBigCells = 0   -- [CL 04/09 V4] so mon doi mot khoi lien 2x3
     for i = 1, getn(tbAward) do
         local a = tbAward[i]
         if a.szKind == "item" then
             if a.nGenre == 0 then
                 nCells = nCells + a.nCount * 6
+                nBigCells = nBigCells + a.nCount
             elseif a.nStack == 1 then
                 nCells = nCells + 1
             else
@@ -362,6 +399,7 @@ function MailManager_OnRequestStateChange(nId, nToState)
             nCells = nCells + (a.nCells or 6)
         elseif a.szKind == "gold" then
             nCells = nCells + a.nCount * 6
+            nBigCells = nBigCells + a.nCount
         end
     end
     -- [B4 04/09] CalcFreeItemCellCount dem O ROI RAC 1x1, con dat do doi mot KHOI LIEN WxH:
@@ -382,7 +420,17 @@ function MailManager_OnRequestStateChange(nId, nToState)
             end
         end
     end
-    if nCells > 0 and CalcFreeItemCellCount(1, 1) < nCells then
+    -- [CL 04/09 V4] Phep kiem cu chi dem O ROI RAC 1x1 nen tui con 6 o roi van
+    -- "du cho" cho mot bo giap 2x3 ma dat that thi hong. Nay kiem HAI dieu:
+    --   (a) du SO O tong cong (nhu cu), va
+    --   (b) du SO KHOI LIEN 2x3 cho tung mon trang bi / hoang kim.
+    -- LUU Y ham C++ co guard `Lua_GetTopIndex(L) > 2` (ScriptFuns.cpp:6042) nen goi
+    -- HAI tham so la W/H bi BO QUA IM LANG - bat buoc truyen DU BA tham so.
+    if nBigCells > 0 and CalcFreeItemCellCount(2, 3, 0) < nBigCells then
+        Msg2Player("Hµnh trang kh«ng cßn kho¶ng trèng liÒn ®ñ réng, h·y dän bít råi nhËn l¹i!")
+        return
+    end
+    if nCells > 0 and CalcFreeItemCellCount(1, 1, 0) < nCells then
         Msg2Player("Hµnh trang kh«ng ®ñ chç trèng (cÇn "..nCells.." «), h·y dän bít råi nhËn l¹i!")
         return
     end

@@ -353,10 +353,30 @@ static bool KDBRun(MYSQL *conn, const char *szSql, const KDBParam *pParam, int n
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// [CL 04/09 V3] Ket noi DONG BO (pSync) truoc day KHONG BAO GIO duoc ping hay noi
+// lai: mysql_ping chi xuat hien DUNG MOT LAN trong tep nay, o luong ghi nen (pAsync).
+// wait_timeout cua may chu MySQL nay la 28.800 giay (8 gio), nen chi can pSync nam
+// im qua nguong do la MOI Exec/Query hong VINH VIEN cho toi khi khoi dong lai - va
+// hong CAM, chi tang m_nErrors. Hien chua no chi vi mailpoll.lua goi mot Query dong
+// bo moi 30 giay, VO TINH giu ket noi song; bo hoac gian vong quet do la bom no.
+// Mot lan ping ton ~0,05 ms, khong dang ke so voi 0,08 ms (doc) / 2,5 ms (ghi).
+static void KDBEnsureSync(KMySQLDB::Impl *im)
+{
+    if (!im) return;
+    if (im->pSync && mysql_ping(im->pSync) != 0)
+    {
+        KDBLog("ket noi dong bo: mat ket noi -- dang noi lai");
+        mysql_close(im->pSync);
+        im->pSync = KDBConnect(im, "ket noi dong bo");
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
 bool KMySQLDB::Exec(const char *szSql, const KDBParam *pParam, int nParam,
                     __int64 *pnAffected, __int64 *pnInsertId)
 {
     if (!m_bReady || !m_pImpl) return false;
+    KDBEnsureSync(m_pImpl);
     return KDBRun(m_pImpl->pSync, szSql, pParam, nParam,
                   pnAffected, pnInsertId, 0, 0, &m_nErrors);
 }
@@ -365,6 +385,7 @@ bool KMySQLDB::Query(const char *szSql, const KDBParam *pParam, int nParam,
                      KDBRowFunc pfnRow, void *pUserParam)
 {
     if (!m_bReady || !m_pImpl) return false;
+    KDBEnsureSync(m_pImpl);
     return KDBRun(m_pImpl->pSync, szSql, pParam, nParam,
                   0, 0, pfnRow, pUserParam, &m_nErrors);
 }

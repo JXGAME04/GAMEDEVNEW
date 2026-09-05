@@ -63,7 +63,9 @@
 #include "KMailClient.h"	// [MAIL 03/09 D2] cua so thu (client)
 #include "KMailServer.h"	// [MAIL 03/09 D3] kho thu MySQL (may chu)
 #include "KAuctionServer.h"	// [DAUGIA 04/09 A1] kho dau gia + giu nguyen vat pham
+#include "KChienLenh.h"	// [CL 04/09] Chien Lenh: 7 bang st_* tren MySQL
 #include "KAuctionClient.h"	// [DAUGIA 04/09 A3] cua so dau gia (client)
+#include "KChienLenhClient.h"	// [CL 04/09 DOT2] cau noi Lua <-> cua so Chien Lenh (client)
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
 {
@@ -14841,6 +14843,17 @@ TLua_Funcs GameScriptFuns[] =
 	{"FormatTime2String",	LuaMail_FormatTime2String},
 	{"MailConfirm",	LuaMail_MailConfirm},
 	{"Msg2Player",	LuaMail_Msg2Player},	// client: thong bao he thong (may chu co ban rieng trong khoi _SERVER)
+	// [CL 04/09 DOT2] 10 ham \script\ui\uichienlenh.lua goi (KChienLenhClient.cpp)
+	{"CLUi_SetIconVisible",	LuaCLUi_SetIconVisible},
+	{"CLUi_Open",	LuaCLUi_Open},
+	{"CLUi_Close",	LuaCLUi_Close},
+	{"CLUi_IsOpen",	LuaCLUi_IsOpen},
+	{"CLUi_Clear",	LuaCLUi_Clear},
+	{"CLUi_SetInfo",	LuaCLUi_SetInfo},
+	{"CLUi_SetAward",	LuaCLUi_SetAward},
+	{"CLUi_SetMission",	LuaCLUi_SetMission},
+	{"CLUi_Refresh",	LuaCLUi_Refresh},
+	{"CLUi_Msg",		LuaCLUi_Msg},
 	// [DAUGIA 04/09 A3] 21 ham 2.0 ma \script\ui\uiauction_house.lua goi + 4 ham phu (KAuctionClient.cpp)
 	{"OpenAuctionWindow",	LuaAuc_OpenAuctionWindow},
 	{"CloseAuctionWindow",	LuaAuc_CloseAuctionWindow},
@@ -14895,6 +14908,22 @@ TLua_Funcs GameScriptFuns[] =
 	{"MailDB_PollNew",	LuaMailDB_PollNew},
 	{"MailDB_MaxId",	LuaMailDB_MaxId},
 	{"MailDB_Sweep",	LuaMailDB_Sweep},
+	// [CL 04/09 DOT1a] script\chienlenh\*.lua dung - cau hinh nam o MySQL (7 bang st_*)
+	{"CL_Ready",	LuaCL_Ready},
+	{"CL_Reload",	LuaCL_Reload},
+	{"CL_Info",	LuaCL_Info},
+	{"CL_Mission",	LuaCL_Mission},
+	{"CL_Award",	LuaCL_Award},
+	{"CL_Load",	LuaCL_Load},
+	{"CL_Save",	LuaCL_Save},
+	{"CL_Quen",	LuaCL_Quen},
+	{"CL_Cong",	LuaCL_Cong},
+	{"CL_Xong",	LuaCL_Xong},
+	{"CL_LinhNhiemVu",	LuaCL_LinhNhiemVu},
+	{"CL_Nhan",	LuaCL_Nhan},
+	{"CL_MuaVip",	LuaCL_MuaVip},
+	{"CL_TrangThai",	LuaCL_TrangThai},
+	{"CL_Tick",	LuaCL_Tick},
 	// [DAUGIA 04/09 A1] script\auction\auction_manager.lua dung
 	{"AUC_ItemToRec",	LuaAUC_ItemToRec},
 	{"AUC_RecName",	LuaAUC_RecName},

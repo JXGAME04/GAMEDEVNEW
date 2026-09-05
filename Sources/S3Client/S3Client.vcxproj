@@ -369,6 +369,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="ui\uicase\UiDiceItem.cpp" />
     <ClCompile Include="ui\uicase\UiMail.cpp" />
     <ClCompile Include="ui\uicase\UiAuction.cpp" />
+    <ClCompile Include="ui\uicase\UiChienLenh.cpp" />
     <ClCompile Include="ui\uicase\UiPartnerCommon.cpp" />
     <ClCompile Include="ui\uicase\UiPartnerAttr.cpp" />
     <ClCompile Include="ui\uicase\UiPartnerSkill.cpp" />
@@ -558,6 +559,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="ui\uicase\UiDiceItem.h" />
     <ClInclude Include="ui\uicase\UiMail.h" />
     <ClInclude Include="ui\uicase\UiAuction.h" />
+    <ClInclude Include="ui\uicase\UiChienLenh.h" />
     <ClInclude Include="ui\uicase\UiPartnerCommon.h" />
     <ClInclude Include="ui\uicase\UiPartnerAttr.h" />
     <ClInclude Include="ui\uicase\UiPartnerSkill.h" />

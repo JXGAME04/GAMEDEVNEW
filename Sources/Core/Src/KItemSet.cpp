@@ -220,43 +220,66 @@ int KItemSet::AddItemSet2(int nItemGenre, int nSeries, int nLevel, int nLuck, in
 	ZeroMemory(pItem->m_aryBaseAttrib, sizeof(pItem->m_aryBaseAttrib));
 	ZeroMemory(pItem->m_aryRequireAttrib, sizeof(pItem->m_aryRequireAttrib));
 	ZeroMemory(pItem->m_aryMagicAttrib, sizeof(pItem->m_aryMagicAttrib));
+	// [CL 04/09 V1] m_CommonAttrib CUNG phai sach, va day moi la khoi nguy hiem nhat:
+	// no giu TEN, GIA, so chong, nGoldId, nRow cua mon do. Gen_MagicScript chi gan
+	// phan co ban tu bang; khi tra bang THAT BAI (ParticularType ngoai bang, so am,
+	// hoac genre khong co nhanh sinh) thi khoi nay GIU NGUYEN so lieu cua mon do
+	// TRUOC DO o khe Item[] dung lai -> nguoi choi nhan mot BAN SAO mon cua nguoi
+	// khac, va ham van tra ve i > 0 nen khong cho nao phat hien duoc.
+	ZeroMemory(&pItem->m_CommonAttrib, sizeof(pItem->m_CommonAttrib));
 	pItem->m_GeneratorParam.nVersion = nVersion;
 	pItem->m_GeneratorParam.uRandomSeed = nRandomSeed;
+	// [CL 04/09 V1] BAT gia tri tra ve cua Gen_*: truoc day moi nhanh deu vut bo,
+	// nen tra bang that bai van di tiep xuong SetID + m_UseIdx.Insert va tra ve i > 0.
+	BOOL bGenOk = FALSE;
 	switch(nItemGenre)
 	{
-	case item_equip:			
-		ItemGen.Gen_Equipment(nDetailType, nParticularType, nSeries, nLevel, pnMagicLevel, nLuck, nVersion, pItem, nEnChance, nPoint);
+	case item_equip:
+		bGenOk = ItemGen.Gen_Equipment(nDetailType, nParticularType, nSeries, nLevel, pnMagicLevel, nLuck, nVersion, pItem, nEnChance, nPoint);
 		pItem->SetMaxOptMultiply(nMaxOptMultiply);
 		break;
-	case item_medicine:			
-		ItemGen.Gen_Medicine(nDetailType, nParticularType, nLevel, nVersion, pItem, nStackNum);
+	case item_medicine:
+		bGenOk = ItemGen.Gen_Medicine(nDetailType, nParticularType, nLevel, nVersion, pItem, nStackNum);
 		break;
 	case item_mine:
+		// [CL 04/09 V1] KHONG co nhanh sinh -> that bai that su (bGenOk giu FALSE).
+		// Da quet toan bo cay script may chu: khong cho nao goi genre 2 hay 3.
 		break;
-	case item_materials:		
+	case item_materials:
 		break;
-	case item_task:				
-		ItemGen.Gen_Quest(nDetailType, pItem, nStackNum);
+	case item_task:
+		bGenOk = ItemGen.Gen_Quest(nDetailType, pItem, nStackNum);
 		break;
 	case item_starstone:	// [PHI PHONG] Tinh Than Thach
-		ItemGen.Gen_StarStone(nParticularType, pItem, nStackNum);
+		bGenOk = ItemGen.Gen_StarStone(nParticularType, pItem, nStackNum);
 		break;
 	case item_fusion:	// [DUNGLUYEN 01/09] Van Cuong
-		ItemGen.Gen_Fusion(nParticularType, pItem, nStackNum);
+		bGenOk = ItemGen.Gen_Fusion(nParticularType, pItem, nStackNum);
 		break;
 
 	case item_townportal:
-		ItemGen.Gen_TownPortal(pItem);
+		bGenOk = ItemGen.Gen_TownPortal(pItem);
 		break;
 	case item_magicscript:
-		ItemGen.Gen_MagicScript(nDetailType, nParticularType, pItem, nLevel, nSeries, nLuck, nStackNum);
+		bGenOk = ItemGen.Gen_MagicScript(nDetailType, nParticularType, pItem, nLevel, nSeries, nLuck, nStackNum);
 		break;
 	default:
 		printf("KItemSet::AddItemSet2 khong tim thay nItemGenre=%d \n", nItemGenre);
 		_ASSERT(0);
 		break;
 	}
-	
+
+	// [CL 04/09 V1] Sinh hong thi TRA VE 0 va KHONG giao khe ra ngoai: khong SetID,
+	// khong m_UseIdx.Insert, khong m_FreeIdx.Remove. Doi voi ban Release dieu nay
+	// con quan trong hon vi _ASSERT o nhanh default bi bo het, nen genre la truoc
+	// day chay thang xuong duoi. Xoa lai m_CommonAttrib de khe tra ve free list
+	// khong con mang ten/gia cua mon cu.
+	if (!bGenOk)
+	{
+		ZeroMemory(&pItem->m_CommonAttrib, sizeof(pItem->m_CommonAttrib));
+		return 0;
+	}
+
 #ifdef _SERVER
 	SetID(i);
 #endif
