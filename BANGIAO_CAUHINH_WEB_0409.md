@@ -100,7 +100,7 @@ Trang "Cấu hình game": lọc theo nhóm + ô tìm khoá/mô tả; sửa `v` t
 | tệp | md5 | ghi chú |
 |---|---|---|
 | `bin\server\CoreServer.dll` (LIVE từ 04/09 20:47) | 0e3634a6328d77ee7eb40ae0fa186fd6 (18.424.832) | bản 04/09: gcfg 15 cột, chưa có tiếng Việt |
-| `bin\server\CoreServer.dll.moi` **(05/09 10:02, chờ swap)** | **98252d9dcad43637c0188048fe727e58** (18.431.488) | = 0e3634a6 + 4 cột tiếng Việt (mục 8) + ALTER tự động; nguồn origin/main `6177ba7e`; tắt GameServer → `ChayGameServer.bat` |
+| `bin\server\CoreServer.dll.moi` **(05/09 10:40, chờ swap)** | **263b57c74b4282c958cfa563b30b1d75** (18.432.000) | = 0e3634a6 + 4 cột tiếng Việt (mục 8) + ALTER tự động + vá thứ tự boot / luật nguồn giá trị (mục 9); thay bản 98252d9d 10:02 chưa swap; tắt GameServer → `ChayGameServer.bat` |
 | `bin\client\CoreClient.dll` | 790fa976dc0ca7d95d8d71bc6e16ca29 | đã live 19:43 (chủ swap cặp 5af51667/790fa976); CFGW chỉ máy chủ → **không cần swap client** lần này |
 
 Nghiệm thu: sau restart, `SELECT COUNT(*) FROM gcfg` ≈ 350; `gcfg_log` có dòng "da nap cfg_version=0: N khoa, 0 loi"; sửa `ServerConfig.ExpRate` trên web → ≤ 30 s có dòng "`<cũ> -> <mới> (ap ngay)`" và exp nhận được đổi ngay; sửa `BAT_TONGKIM` / `TW_GIO_KHAICHIEN` → ≤ 1,5 phút `timerserver` đọc giá trị mới (kiểm `CFGW_Info()` qua lệnh GM hoặc `gcfg.v_ap`). Gõ chữ vào ô số → `gcfg_log` level 2 kèm `k`, `v_ap` giữ số cũ.
@@ -123,3 +123,12 @@ Chủ (04/09 tối): *"tôi cần chi tiết hơn phải giải thích rõ hơn 
 - Bộ sinh ghi đè kiểu sai: `GLB_GIO_MO_SERVER` (yymmddHHMM), `CH_NAPLAI_PHUT`, `GLB_SATTHUONG_*`, `GLB_MANH_BOSS_VUOTAI` → số nguyên; `BR_GIO_DONG_H`, `HD3_BD_GIO_MO/DONG` → giờ 0..23 (đơn vị `gio`); `TC_GIO_NHANDIEM_DEN` → số HHMM 0..2400. Đơn vị mới: `bac cai con met bot la vong "chu ky" "nhiem vu" phong HHMM`.
 - Web (webver5-eb): mỗi khoá một thẻ (tên lớn + khoá mono + nhãn kiểu / hiệu lực / nguy cơ; ô nhập + đơn vị + mặc định + đang dùng; khối giải thích; hộp cảnh báo màu theo `nguy_co`); đầu nhóm có mô tả; tìm theo `ten` + khoá + `giai_thich`; lọc nhanh nguy hiểm / cần restart / khác mặc định; xác nhận trước khi lưu khoá `nguy_co = 2`. Thiếu cột hoặc `ten` rỗng (DLL cũ) → hiện tên khoá như cũ.
 - Nhị phân: `CoreServer.dll.moi` mới (md5 ở mục 7, dòng cập nhật 05/09) = bản 0e3634a6 + 4 cột; client không đổi.
+
+## 9. Luật NGUỒN GIÁ TRỊ + sự cố Skill90/120Rate (05/09 sáng)
+
+**Sự cố:** 27 khoá C++ được khai lúc script nạp trong `g_InitCore` (KCore.cpp:343 `g_IniScriptEngine`), **trước** `InitGameSetting()` (:358) đọc `gamesetting.ini` → khai bằng giá trị tĩnh lúc biên dịch. `Skill90Rate`/`Skill120Rate` tĩnh = 1, ini = 10 → bảng ghi 1 với `updated_by='server'`. Lần nạp lại đầu tiên (09:10:00, sau khi admin lưu ExpRate) máy chủ áp 1 đè 10: exp kỹ năng 90/120 chạy 1/10 từ 09:10 tới restart 09:44. Bằng chứng: `gcfg_log` "Skill90Rate 10 -> 1 (ap ngay)", `updated_by='server'`, ini = 10. Đã sửa tay 2 dòng về 10 (không tăng cfg_version).
+
+**Vá gốc (bản .moi 05/09 lần 2):**
+- `KCore.cpp` cuối khối `[Exp]` gọi `CauHinhWeb_IniDaDoc()`; `KCauHinhWeb.cpp` chỉ khai (`sKhaiCpp`) và áp (`sApCpp`) khoá C++ khi cờ này bật — tức ở nhịp `CFGW_Tick` đầu tiên sau khi ini đã đọc (≤ 30 s), rồi ép nạp lại.
+- **Luật nguồn giá trị:** khi khai khoá lúc boot, nếu `updated_by='server'` (web chưa hề sửa) và `v` khác giá trị tệp/ini hiện tại → máy chủ ghi `v = v_ap = giá trị tệp` (UPDATE đồng bộ, trước SELECT nạp). Web đã sửa (`updated_by` = tên đăng nhập) → giữ `v` của web. Hệ quả: sửa tay `ch_*.lua` / `gamesetting.ini` vẫn có tác dụng cho khoá chưa sửa trên web; muốn một khoá quay về theo tệp, web đặt `updated_by='server'` (+ `v = v_macdinh`) rồi tăng `cfg_version`.
+- Web nên hiện nhãn "theo tệp" / "web đặt" theo `updated_by`, và nút "Trả về theo tệp".

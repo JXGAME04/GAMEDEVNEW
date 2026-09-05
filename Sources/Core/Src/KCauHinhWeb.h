@@ -20,6 +20,7 @@ typedef struct lua_State Lua_State;
 #ifdef _SERVER
 
 // ---- loi C++ ----
+void CauHinhWeb_IniDaDoc();				// [05/09] KCore.cpp goi sau khi doc gamesetting.ini; truoc do khong khai/ap khoa C++
 bool CauHinhWeb_EnsureTables();							// tao 3 bang + khai khoa C++; false = MySQL chua san sang
 int  CauHinhWeb_TuNapLai(int bEp);						// -1 chua san sang | 0 khong doi | 1 da nap lai
 void CauHinhWeb_Log(int nLevel, const char* k, const char* szMsg);	// ghi nguoc gcfg_log (0 tin, 1 canh bao, 2 loi)

@@ -46,6 +46,8 @@
 //////////////////////////////////////////////////////////////////////////////
 
 static bool s_bTableOk = false;
+static bool s_bIniDaDoc = false;	// [05/09] KCore.cpp InitGameSetting() da doc gamesetting.ini chua (truoc do bien toan cuc = gia tri tinh)
+static bool s_bCppDaKhai = false;	// [05/09] 27 khoa C++ da khai trong tien trinh nay (chi lam SAU khi ini da doc)
 
 static const char* s_szDDL[] =
 {
@@ -297,6 +299,19 @@ static bool sKhai(const char* k, const char* v, const char* nhom, int nKieu, dou
 			return false;					// MySQL loi -> lan sau khai lai
 	}
 	{
+		// [05/09] LUAT NGUON GIA TRI: khoa web CHUA sua (updated_by='server') thi gia tri TEP/INI hien tai
+		// la gia tri chay (v, v_ap theo tep); web da sua (updated_by = ten dang nhap) thi web thang.
+		// Dong bo (Exec, chi luc boot, mot lan moi khoa) de SELECT nap lai ngay sau do thay gia tri moi.
+		// Bai hoc 05/09: Skill90/120Rate bi khai bang gia tri tinh 1 (truoc khi doc ini = 10) roi
+		// ban 1 do de len ini o lan nap ke tiep du web khong he sua.
+		KDBParam q[4];
+		q[0] = KDBParam::S(v ? v : "");
+		q[1] = KDBParam::S(v ? v : "");
+		q[2] = KDBParam::S(k);
+		q[3] = KDBParam::S(v ? v : "");
+		g_MySQLDB.Exec("UPDATE gcfg SET v=?, v_ap=? WHERE k=? AND updated_by='server' AND v<>?", q, 4, 0, 0);
+	}
+	{
 		// lam moi metadata (mac dinh dang chay, mo ta, nhom, thu tu, tieng Viet...) - KHONG dong vao v cua web
 		KDBParam p[14];
 		p[0] = KDBParam::S(v ? v : "");
@@ -348,6 +363,13 @@ static void sKhaiCpp()
 
 static void sDamBaoCotMoi();		// [05/09] dinh nghia o muc 5 (can _RowInt)
 
+// [05/09] KCore.cpp InitGameSetting() goi sau khi doc xong [ServerConfig] + [Exp]. Tu day moi duoc
+// khai / ap khoa C++; nhip CFGW_Tick ke tiep (<= 30 s) se khai va nap lai.
+void CauHinhWeb_IniDaDoc()
+{
+	s_bIniDaDoc = true;
+}
+
 bool CauHinhWeb_EnsureTables()
 {
 	if (!g_MySQLDB.IsReady())
@@ -367,7 +389,8 @@ bool CauHinhWeb_EnsureTables()
 	// khoa cfg_version phai co san de web INCREMENT duoc ngay lan luu dau
 	g_MySQLDB.Exec("INSERT IGNORE INTO gcfg_config (k, v, updated_at) VALUES ('cfg_version', '0', 0)", 0, 0);
 	s_bTableOk = true;
-	sKhaiCpp();
+	// [05/09] KHONG sKhaiCpp() o day nua: luc nay (script nap trong g_InitCore) gamesetting.ini CHUA doc,
+	// bien toan cuc con gia tri tinh -> khai sai. Khai C++ o CauHinhWeb_TuNapLai() sau khi co co s_bIniDaDoc.
 	return true;
 }
 
@@ -484,6 +507,8 @@ static bool sHopLe(const KCFGWVal& x, char* szLoi, int nLoi)
 // Ap khoa C++: doc tu s_Val, kep khoang, gan bien toan cuc. Tra so khoa da doi.
 static int sApCpp()
 {
+	if (!s_bIniDaDoc)
+		return 0;		// [05/09] ini chua doc: khong ap (InitGameSetting se ghi de ngay sau, va DB co the con gia tri tinh)
 	int nDoi = 0;
 	const int nSo = (int)(sizeof(s_aCpp) / sizeof(s_aCpp[0]));
 	for (int i = 0; i < nSo; i++)
@@ -525,6 +550,12 @@ int CauHinhWeb_TuNapLai(int bEp)
 {
 	if (!CauHinhWeb_EnsureTables())
 		return -1;
+	if (s_bIniDaDoc && !s_bCppDaKhai)
+	{
+		sKhaiCpp();		// [05/09] khai 27 khoa C++ bang gia tri INI that (sau InitGameSetting), v theo ini neu web chua sua
+		s_bCppDaKhai = true;
+		bEp = 1;		// nap lai ngay de s_Val + bien toan cuc theo gia tri vua khai
+	}
 	int nMoi = s_nVer;
 	{
 		KCFGWIntBox c;
