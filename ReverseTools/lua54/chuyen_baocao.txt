@@ -1,0 +1,789 @@
+chuyen_lua4_54: 2986 tep .lua, 135 tep co thay doi
+  ESCAPE=17, FORIN=142, LSTR=0, NUMKW=1, UPVAL=415, VARARG=41
+
+protocol.lua:105  for key, v in self.KE_SCRIPT_PROTOCOL -> pairs(self.KE_SCRIPT_PROTOCOL)
+protocol.lua:231  function(...) -> + local arg = {n=select('#',...), ...}
+timerserver.lua:383  "C:\server\dulieu\\topTG.txt" -> "C:serverdulieu\\topTG.txt"
+activitysys/activity.lua:24  for key, value in self -> pairs(self)
+activitysys/activity.lua:136  for varId, pData in tbMessage -> pairs(tbMessage)
+activitysys/activitydetail.lua:28  for key, value in self -> pairs(self)
+activitysys/activitydetail.lua:75  function(...) -> + local arg = {n=select('#',...), ...}
+activitysys/activitydetail.lua:77  function(...) -> + local arg = {n=select('#',...), ...}
+activitysys/activitydetail.lua:106  %_pack_ -> _pack_
+activitysys/activitydetail.lua:108  %_pack_ -> _pack_
+activitysys/functionlib.lua:105  %nExpTaskId -> nExpTaskId
+activitysys/functionlib.lua:105  %pExpValue -> pExpValue
+activitysys/functionlib.lua:295  for k, v in tb -> pairs(tb)
+activitysys/functionlib.lua:301  function(...) -> + local arg = {n=select('#',...), ...}
+activitysys/functionlib.lua:306  function(...) -> + local arg = {n=select('#',...), ...}
+activitysys/functionlib.lua:319  function(...) -> + local arg = {n=select('#',...), ...}
+activitysys/functionlib.lua:337  function(...) -> + local arg = {n=select('#',...), ...}
+activitysys/g_activity.lua:18  function(...) -> + local arg = {n=select('#',...), ...}
+activitysys/g_activity.lua:34  function(...) -> + local arg = {n=select('#',...), ...}
+activitysys/g_activity.lua:37  for varId, pData in self.FunSet[szKey] -> pairs(self.FunSet[szKey])
+activitysys/g_activity.lua:96  for varId, pData in self.tbItemScript[varKey] -> pairs(self.tbItemScript[varKey])
+activitysys/playerfunlib.lua:708  %tbMapList -> tbMapList
+activitysys/playerfunlib.lua:718  %tbMapList -> tbMapList
+auction_house/auction_manager.lua:319  for nIdx, v in AUC_Viewers -> pairs(AUC_Viewers)
+auction_house/auction_manager.lua:340  %nType -> nType
+auction_house/auction_manager.lua:341  %szAct -> szAct
+auction_house/auction_manager.lua:342  %nId -> nId
+auction_house/auction_manager.lua:343  %nCount -> nCount
+auction_house/auction_manager.lua:355  %nType -> nType
+auction_house/auction_manager.lua:356  %szAct -> szAct
+auction_house/auction_manager.lua:357  %nId -> nId
+auction_house/auction_manager.lua:358  %nCount -> nCount
+auction_house/auction_manager.lua:365  %nType -> nType
+auction_house/auction_manager.lua:366  %szAct -> szAct
+auction_house/auction_manager.lua:367  %tb -> tb
+auction_house/auction_manager.lua:368  %tb -> tb
+auction_house/auction_manager.lua:369  %tb -> tb
+auction_house/auction_manager.lua:370  %tb -> tb
+auction_house/auction_manager.lua:371  %tb -> tb
+auction_house/auction_manager.lua:377  %nType -> nType
+auction_house/auction_manager.lua:378  %szAct -> szAct
+auction_house/auction_manager.lua:379  %nStart -> nStart
+auction_house/auction_manager.lua:385  %nType -> nType
+auction_house/auction_manager.lua:386  %szAct -> szAct
+auction_house/auction_manager.lua:1523  for k, v in AUC_LastCount -> pairs(AUC_LastCount)
+auction_house/auction_manager.lua:1530  for n, v in tbAct -> pairs(tbAct)
+battles/battle_rank_award.lua:93  function(...) -> + local arg = {n=select('#',...), ...}
+battles/doubleexp.lua:10  %tbDouble -> tbDouble
+battles/doubleexp.lua:11  %tbDouble -> tbDouble
+battles/weeklyrank.lua:140  %tbRankAward -> tbRankAward
+battles/weeklyrank.lua:141  %tbRankAward -> tbRankAward
+battles/weeklyrank.lua:142  %tbRankAward -> tbRankAward
+battles/weeklyrank.lua:144  %tbRankAward -> tbRankAward
+battles/weeklyrank.lua:145  %tbRankAward -> tbRankAward
+battles/weeklyrank.lua:206  %tbRankAward -> tbRankAward
+cauhinh_web/cfgw_driver.lua:35  for k, v in tb -> pairs(tb)
+cauhinh_web/cfgw_driver.lua:104  for k, m in tbCFGW_META_CPP -> pairs(tbCFGW_META_CPP)
+chienlenh/cl_ui.lua:15  function(...) -> + local arg = {n=select('#',...), ...}
+dailogsys/dailog.lua:11  for k, v in self -> pairs(self)
+dailogsys/dailog.lua:103  for i, tbOptionList in self.tbOptionList -> pairs(self.tbOptionList)
+event/birthday_jieri/200905/class.lua:41  for i, j in tbActData -> pairs(tbActData)
+event/equip_publish/wuxingyin/wuxingyin.lua:92  %tbSuccessRate -> tbSuccessRate
+event/equip_publish/wuxingyin/wuxingyin.lua:219  %tbLogAction -> tbLogAction
+event/equip_publish/wuxingyin/wuxingyin.lua:256  %tbFormulaList -> tbFormulaList
+event/equip_publish/wuxingyin/wuxingyin.lua:257  %tbFormulaList -> tbFormulaList
+event/equip_publish/wuxingyin/wuxingyin.lua:259  %tbMaterialA -> tbMaterialA
+event/equip_publish/wuxingyin/wuxingyin.lua:262  %tbMaterialA -> tbMaterialA
+event/equip_publish/wuxingyin/wuxingyin.lua:263  %tbAdditive -> tbAdditive
+event/equip_publish/wuxingyin/wuxingyin.lua:264  %tbFormulaList -> tbFormulaList
+event/equip_publish/wuxingyin/wuxingyin.lua:268  %tbFormulaList -> tbFormulaList
+event/equip_publish/wuxingyin/wuxingyin.lua:299  %tbFormulaList -> tbFormulaList
+event/tongwar/event.lua:99  function(...) -> + local arg = {n=select('#',...), ...}
+event/tongwar/npc_shizhe.lua:39  %SZTONGNAME_ONETONG -> SZTONGNAME_ONETONG
+event/tongwar/npc_shizhe.lua:40  %SZTONGNAME_ONETONG -> SZTONGNAME_ONETONG
+event/tongwar/npc_shizhe.lua:338  %N_TTITLE_ID -> N_TTITLE_ID
+event/tongwar/npc_shizhe.lua:341  %SZTONGNAME_ONETONG -> SZTONGNAME_ONETONG
+event/tongwar/tongwar_gmscript.lua:18  function(...) -> + local arg = {n=select('#',...), ...}
+global/hocvocong.lua:1027  for fac, tb in SKILL150_ARRAY -> pairs(SKILL150_ARRAY)
+global/smelt_system.lua:148  for i, v in tbFusionInfo -> pairs(tbFusionInfo)
+global/smelt_system.lua:175  for i, v in tbFusionInfo -> pairs(tbFusionInfo)
+global/mantlesystem/item_starore.lua:52  %tbAwardList -> tbAwardList
+global/mantlesystem/item_starstone.lua:33  %tbAwardList -> tbAwardList
+global/npcchucnang/thoren.lua:180  so dinh chu (vd 7then) -> chen dau cach
+global/smeltsystem/smeltupgrade.lua:80  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:82  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:82  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:87  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:87  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:92  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:92  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:104  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:104  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:104  %WEN_JING_MONEY -> WEN_JING_MONEY
+global/smeltsystem/smeltupgrade.lua:110  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:126  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:142  for k, v in tbItemNum -> pairs(tbItemNum)
+global/smeltsystem/smeltupgrade.lua:143  %GetItemIdx -> GetItemIdx
+global/smeltsystem/smeltupgrade.lua:144  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:145  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:149  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:150  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:159  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:164  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:169  for k, v in tbItemNum -> pairs(tbItemNum)
+global/smeltsystem/smeltupgrade.lua:170  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:173  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:189  for k, v in tbItemNum -> pairs(tbItemNum)
+global/smeltsystem/smeltupgrade.lua:190  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:191  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:193  %WEN_JING_MONEY -> WEN_JING_MONEY
+global/smeltsystem/smeltupgrade.lua:203  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:208  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:208  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:208  %WEN_JING_MONEY -> WEN_JING_MONEY
+global/smeltsystem/smeltupgrade.lua:214  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:230  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:246  for k, v in tbItemNum -> pairs(tbItemNum)
+global/smeltsystem/smeltupgrade.lua:247  %GetItemIdx -> GetItemIdx
+global/smeltsystem/smeltupgrade.lua:248  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:249  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:253  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:254  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:259  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:267  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:271  %WEN_JING_MONEY -> WEN_JING_MONEY
+global/smeltsystem/smeltupgrade.lua:272  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:272  %WEN_JING_MONEY -> WEN_JING_MONEY
+global/smeltsystem/smeltupgrade.lua:277  for k, v in tbItemNum -> pairs(tbItemNum)
+global/smeltsystem/smeltupgrade.lua:278  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:281  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:297  for k, v in tbItemNum -> pairs(tbItemNum)
+global/smeltsystem/smeltupgrade.lua:298  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:299  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:300  %WEN_JING_MONEY -> WEN_JING_MONEY
+global/smeltsystem/smeltupgrade.lua:309  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:315  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:317  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:318  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:334  %GetItemIdx -> GetItemIdx
+global/smeltsystem/smeltupgrade.lua:336  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:340  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:340  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:341  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:346  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:350  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:351  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:352  %tbSmeltUpgradeTable -> tbSmeltUpgradeTable
+global/smeltsystem/smeltupgrade.lua:355  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:361  %FUSION_MSG -> FUSION_MSG
+global/smeltsystem/smeltupgrade.lua:366  %FUSION_MSG -> FUSION_MSG
+global/ÌØÊâÓÃµØ/ËÎ½ð±¨Ãûµã/npc/songjin_shophead.lua:140  %tbProduct -> tbProduct
+global/ÌØÊâÓÃµØ/ËÎ½ð±¨Ãûµã/npc/songjin_shophead.lua:160  %tbProduct -> tbProduct
+huoyuedu/huoyuedu.lua:198  for _, value in tbActivity2ID -> pairs(tbActivity2ID)
+huoyuedu/huoyuedu.lua:218  for _, value in tbActivity2ID -> pairs(tbActivity2ID)
+huoyuedu/huoyuedu.lua:231  for _, nActivityId in tbActivity2ID -> pairs(tbActivity2ID)
+item/bd_lenhbai_info.lua:19  for k, v in tbBeidou.LENHBAI_HD -> pairs(tbBeidou.LENHBAI_HD)
+item/bosscharm.lua:10  %tbUseOnlyInMap -> tbUseOnlyInMap
+item/bosscharm.lua:11  %tbUseOnlyInMap -> tbUseOnlyInMap
+item/bosscharm.lua:52  %checkOnlyUseInMap -> checkOnlyUseInMap
+item/hd3_admin.lua:129  "\script\tinhnang\3hoatdong\hd3_reload.lua" -> "script\tinhnang\3hoatdonghd3_reload.lua"
+item/item_jingjingkuang.lua:172  %tbJingJingKuangAwardList -> tbJingJingKuangAwardList
+item/item_jingtiekuang.lua:95  %tbJingTieKuangAwardList -> tbJingTieKuangAwardList
+item/skillbook.lua:73  %faction_skill_list -> faction_skill_list
+item/skillbook.lua:76  %faction_skill_list -> faction_skill_list
+item/skillbook.lua:84  %faction_skill_list -> faction_skill_list
+item/skillbook.lua:92  %faction_skill_list -> faction_skill_list
+item/xinshirenwu/xinshibaoxiang.lua:19  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+item/xinshirenwu/xinshibaoxiang.lua:25  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+item/xinshirenwu/xinshibaoxiang.lua:31  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+item/xinshirenwu/xinshibaoxiang.lua:37  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+item/xinshirenwu/xinshibaoxiang.lua:43  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+item/xinshirenwu/xinshibaoxiang.lua:69  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+item/xinshirenwu/xinshibaoxiang.lua:75  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+item/xinshirenwu/xinshibaoxiang.lua:81  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+item/xinshirenwu/xinshibaoxiang.lua:87  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+item/xinshirenwu/xinshibaoxiang.lua:93  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+item/xinshirenwu/xinshibaoxiang.lua:99  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+leaguematch/head.lua:176  function(...) -> + local arg = {n=select('#',...), ...}
+leaguematch/joinmatch.lua:224  function(...) -> + local arg = {n=select('#',...), ...}
+leaguematch/task.lua:10  for _, tb_cal in tb_calendar -> pairs(tb_calendar)
+leaguematch/task.lua:25  for i, tb in WLLS_SEASON_TB -> pairs(WLLS_SEASON_TB)
+leaguematch/wlls_config.lua:66  for n_sid, tb_row in WLLS_SEASON_TB -> pairs(WLLS_SEASON_TB)
+leaguematch/wlls_config.lua:76  for n_sid, tb_row in WLLS_SEASON_TB -> pairs(WLLS_SEASON_TB)
+leaguematch/wlls_config.lua:83  for n_sid, n_loai in WLLS_CFG.LOAI_THEO_MUA -> pairs(WLLS_CFG.LOAI_THEO_MUA)
+leaguematch/wlls_config.lua:100  for n_type, tb_data in WLLS_TAB -> pairs(WLLS_TAB)
+leaguematch/wlls_config.lua:102  for n_level, tb_rows in tb_data.award_rank -> pairs(tb_data.award_rank)
+leaguematch/wlls_config.lua:103  for n_row, tb_row in tb_rows -> pairs(tb_rows)
+lib/awardtemplet.lua:50  for k, v in self.TYPE -> pairs(self.TYPE)
+lib/baseclass.lua:21  function(...) -> + local arg = {n=select('#',...), ...}
+lib/baseclass.lua:26  %t -> t
+lib/baseclass.lua:35  function(...) -> + local arg = {n=select('#',...), ...}
+lib/baseclass.lua:41  %t -> t
+lib/common.lua:27  function(...) -> + local arg = {n=select('#',...), ...}
+lib/common.lua:155  for key, val in obj -> pairs(obj)
+lib/composeclass.lua:228  function(...) -> + local arg = {n=select('#',...), ...}
+lib/composeex.lua:157  for k, v in tbItem -> pairs(tbItem)
+lib/composeex.lua:162  for k1, v1 in v -> pairs(v)
+lib/composeex.lua:170  for key, value in tbItem -> pairs(tbItem)
+lib/lib_ham.lua:141  for key, value in tTable -> pairs(tTable)
+lib/lib_ham.lua:180  for key, value in tTable -> pairs(tTable)
+lib/log.lua:56  function(...) -> + local arg = {n=select('#',...), ...}
+lib/log.lua:87  function(...) -> + local arg = {n=select('#',...), ...}
+lib/log.lua:94  %tbFactionNumber2Name -> tbFactionNumber2Name
+lib/log.lua:122  for k, v in self.tbLogItemCount -> pairs(self.tbLogItemCount)
+lib/log.lua:132  for _, v in tbItem -> pairs(tbItem)
+lib/log.lua:143  %tbFactionNumber2Name -> tbFactionNumber2Name
+lib/objbuffer_head.lua:110  for key, val in tb -> pairs(tb)
+lib/objbuffer_head.lua:114  for key, val in tb -> pairs(tb)
+lib/progressbar.lua:35  %tbData -> tbData
+lib/progressbar.lua:36  %tbData -> tbData
+lib/progressbar.lua:37  %tbData -> tbData
+lib/progressbar.lua:38  %tbData -> tbData
+lib/progressbar.lua:39  %tbData -> tbData
+lib/progressbar.lua:42  %tbData -> tbData
+lib/progressbar.lua:49  %tbData -> tbData
+lib/worldlibrary.lua:29  function(...) -> + local arg = {n=select('#',...), ...}
+lib/worldlibrary.lua:37  function(...) -> + local arg = {n=select('#',...), ...}
+lib/awardtype/simple.lua:8  for k, v in self -> pairs(self)
+mail/maildef.lua:36  function(...) -> + local arg = {n=select('#',...), ...}
+mail/maildef.lua:47  for _, _ in tb -> pairs(tb)
+mail/maildef.lua:58  for k, x in v -> pairs(v)
+mail/mailmanager.lua:186  for nId, tb in tbList -> pairs(tbList)
+misc/taskmanager.lua:290  for nGroupId, bUse in self.tbUseGroup -> pairs(self.tbUseGroup)
+misc/taskmanager.lua:340  for key, value in %TaskGroup -> pairs(TaskGroup)
+misc/eventsys/eventsys.lua:11  for key, value in self -> pairs(self)
+misc/eventsys/eventsys.lua:27  function(...) -> + local arg = {n=select('#',...), ...}
+misc/eventsys/eventsys.lua:62  function(...) -> + local arg = {n=select('#',...), ...}
+misc/eventsys/eventsys.lua:79  function(...) -> + local arg = {n=select('#',...), ...}
+misc/eventsys/type/func.lua:107  for key, value in tbEvent -> pairs(tbEvent)
+misc/eventsys/type/usetownportal.lua:5  function(...) -> + local arg = {n=select('#',...), ...}
+mission/tongcastle/tongcastle.lua:154  for szName, nPoint in tbData -> pairs(tbData)
+mission/tongcastle/tongcastle.lua:246  for nMapId, tb in self.tbMapList -> pairs(self.tbMapList)
+mission/tongcastle/tongcastle.lua:252  for nMapId, tb in self.tbMapList -> pairs(self.tbMapList)
+mission/tongcastle/tongcastle.lua:428  for nMapId, _ in self.tbMapList -> pairs(self.tbMapList)
+mission/tongcastle/tongcastle.lua:439  for nMapId, _ in self.tbMapList -> pairs(self.tbMapList)
+mission/tongcastle/tongcastle.lua:449  for k, v in self.tbPlayerTreePoint -> pairs(self.tbPlayerTreePoint)
+mission/tongcastle/tongcastle.lua:454  for k, v in self.tbTongTreePoint -> pairs(self.tbTongTreePoint)
+missions/bairenleitai/hundred_arena.lua:155  for szType, nId in self.tbRegId -> pairs(self.tbRegId)
+missions/bairenleitai/hundred_arena.lua:166  function(...) -> + local arg = {n=select('#',...), ...}
+missions/bairenleitai/hundred_arena.lua:289  for szname, tb in self.tbPlayerList -> pairs(self.tbPlayerList)
+missions/bairenleitai/hundred_arena.lua:357  for name, tb in self.tbPlayerList -> pairs(self.tbPlayerList)
+missions/bairenleitai/hundred_arena.lua:394  for szname, tb in self.tbPlayerList -> pairs(self.tbPlayerList)
+missions/basemission/dungeon.lua:141  for k, v in self -> pairs(self)
+missions/basemission/dungeon.lua:155  for k, v in self -> pairs(self)
+missions/basemission/dungeon.lua:267  for nTimerId, tb in self._timer_ -> pairs(self._timer_)
+missions/basemission/lib.lua:9  function(...) -> + local arg = {n=select('#',...), ...}
+missions/basemission/lib.lua:19  function(...) -> + local arg = {n=select('#',...), ...}
+missions/challengeoftime/award.lua:111  %tbAward_batch -> tbAward_batch
+missions/challengeoftime/award.lua:112  %tbPro -> tbPro
+missions/challengeoftime/award.lua:112  %tbAward_batch -> tbAward_batch
+missions/challengeoftime/award.lua:113  %tbPro -> tbPro
+missions/challengeoftime/award.lua:117  %tbPro -> tbPro
+missions/challengeoftime/award.lua:118  %tbPro -> tbPro
+missions/challengeoftime/chuangguang30.lua:64  function(...) -> + local arg = {n=select('#',...), ...}
+missions/challengeoftime/chuangguang30.lua:77  for szType, tbId in self.tbRegist -> pairs(self.tbRegist)
+missions/challengeoftime/chuangguang30.lua:171  for _, szName in (self.tbGroup[nGroup]) -> pairs((self.tbGroup[nGroup]))
+missions/challengeoftime/chuangguang30.lua:190  for _, szName in (self.tbGroup[nGroup]) -> pairs((self.tbGroup[nGroup]))
+missions/challengeoftime/chuangguang30.lua:202  for szName, bFlag in self.tbPlayer -> pairs(self.tbPlayer)
+missions/challengeoftime/chuangguang30.lua:226  for szName, bFlag in self.tbPlayer -> pairs(self.tbPlayer)
+missions/challengeoftime/doubleexp.lua:10  %tbDouble -> tbDouble
+missions/challengeoftime/doubleexp.lua:11  %tbDouble -> tbDouble
+missions/challengeoftime/npc.lua:492  %tbTalkDailyTask -> tbTalkDailyTask
+missions/challengeoftime/item/chuangguanbaoxiang.lua:28  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:34  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:40  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:46  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:52  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:78  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:84  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:90  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:96  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:102  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:108  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/challengeoftime/item/chuangguanbaoxiang.lua:167  %TransLife6 -> TransLife6
+missions/challengeoftime/item/chuangguanbaoxiang.lua:167  %TASK_ID_BOX -> TASK_ID_BOX
+missions/challengeoftime/npc/dragonboat_main.lua:154  %TSK_Longxuewan_Date -> TSK_Longxuewan_Date
+missions/challengeoftime/npc/dragonboat_main.lua:155  %TSK_Longxuewan_avail -> TSK_Longxuewan_avail
+missions/challengeoftime/npc/dragonboat_main.lua:157  %TSK_Longxuewan_avail -> TSK_Longxuewan_avail
+missions/challengeoftime/npc/dragonboat_main.lua:160  %TSK_Longxuewan_avail -> TSK_Longxuewan_avail
+missions/fengling_ferry/fld_smalltimer.lua:13  %tbTalkDailyTask -> tbTalkDailyTask
+missions/fengling_ferry/hd3_baoruongthuytac.lua:25  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/fengling_ferry/hd3_baoruongthuytac.lua:31  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/fengling_ferry/hd3_baoruongthuytac.lua:37  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/fengling_ferry/hd3_baoruongthuytac.lua:43  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/fengling_ferry/hd3_baoruongthuytac.lua:49  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/fengling_ferry/hd3_baoruongthuytac.lua:74  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/fengling_ferry/hd3_baoruongthuytac.lua:80  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/fengling_ferry/hd3_baoruongthuytac.lua:86  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/fengling_ferry/hd3_baoruongthuytac.lua:92  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/fengling_ferry/hd3_baoruongthuytac.lua:98  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/fengling_ferry/hd3_baoruongthuytac.lua:104  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/leaguematch/head.lua:986  function(...) -> + local arg = {n=select('#',...), ...}
+missions/leaguematch/head.lua:994  function(...) -> + local arg = {n=select('#',...), ...}
+missions/leaguematch/wlls_autoexec.lua:31  for _, tb in WLLS_NPC_CITY -> pairs(WLLS_NPC_CITY)
+missions/leaguematch/wlls_autoexec.lua:38  for _, tb_data in WLLS_TAB -> pairs(WLLS_TAB)
+missions/leaguematch/wlls_autoexec.lua:39  for _, tb_mtype in tb_data.match_type -> pairs(tb_data.match_type)
+missions/leaguematch/wlls_autoexec.lua:40  for _, tb_group in tb_mtype.map -> pairs(tb_mtype.map)
+missions/leaguematch/wlls_autoexec.lua:49  for _, tb_pos in tb_poss -> pairs(tb_poss)
+missions/leaguematch/wlls_autoexec.lua:66  for _, tb_npc in tb_npcs -> pairs(tb_npcs)
+missions/leaguematch/wlls_gmscript.lua:98  for n_idx, nGroupIdx in tb_sub -> pairs(tb_sub)
+missions/leaguematch/wlls_gmscript.lua:124  for n_idx, nGroupIdx in tb_sub -> pairs(tb_sub)
+missions/leaguematch/glbmission/combat.lua:15  for n_idx, nGroupIdx in tb_sub -> pairs(tb_sub)
+missions/leaguematch/glbmission/schedule.lua:120  for _, nIdx in tbLGs[nOrgCamp].tbPlayer -> pairs(tbLGs[nOrgCamp].tbPlayer)
+missions/leaguematch/glbmission/schedule.lua:134  for _, nIdx in tbLGs[nEmyCamp].tbPlayer -> pairs(tbLGs[nEmyCamp].tbPlayer)
+missions/leaguematch/glbmission/schedule.lua:180  for n_idx, nGroupIdx in tb_sub -> pairs(tb_sub)
+missions/leaguematch/glbmission/schedule.lua:194  for _, nCamp in tb_mstroop -> pairs(tb_mstroop)
+missions/leaguematch/glbmission/schedule.lua:241  for n_idx, nGroupIdx in tb_sub -> pairs(tb_sub)
+missions/leaguematch/item/hongyinbaoxiang.lua:17  %tbItem -> tbItem
+missions/leaguematch/item/jindanbaoxiang.lua:16  %tbItem -> tbItem
+missions/leaguematch/item/zhenjing.lua:25  %tbData -> tbData
+missions/leaguematch/item/zhenjing.lua:48  %_AddBitTask -> _AddBitTask
+missions/leaguematch/macthtype/normal.lua:117  for nMType, tbMType in tbData.match_type -> pairs(tbData.match_type)
+missions/leaguematch/macthtype/normal.lua:118  for nGroup, tbGroup in tbMType.map -> pairs(tbMType.map)
+missions/leaguematch/macthtype/normal.lua:134  for _, tbTopic in tmp_help -> pairs(tmp_help)
+missions/leaguematch/npc/head.lua:42  for n_mtype, tb_mtaype in WLLS_TAB[n_type].match_type -> pairs(WLLS_TAB[n_type].match_type)
+missions/leaguematch/npc/head.lua:179  function(...) -> + local arg = {n=select('#',...), ...}
+missions/leaguematch/npc/helper.lua:80  for n_idx, tb_fmt in WLLS_REG_TABLE -> pairs(WLLS_REG_TABLE)
+missions/leaguematch/npc/helper.lua:110  for n_idx, tb_fmt in WLLS_REG_TABLE -> pairs(WLLS_REG_TABLE)
+missions/leaguematch/npc/helper.lua:156  for n_idx, tb_fmt in WLLS_REG_TABLE -> pairs(WLLS_REG_TABLE)
+missions/leaguematch/npc/helper.lua:188  for n, tb_fmt in WLLS_REG_TABLE -> pairs(WLLS_REG_TABLE)
+missions/leaguematch/npc/helper.lua:319  for n_idx, tb_fmt in WLLS_REG_TABLE -> pairs(WLLS_REG_TABLE)
+missions/leaguematch/npc/helper.lua:349  for n_idx, tb_fmt in WLLS_REG_TABLE -> pairs(WLLS_REG_TABLE)
+missions/leaguematch/npc/helper.lua:412  for n_idx, tb_fmt in WLLS_REG_TABLE -> pairs(WLLS_REG_TABLE)
+missions/tongcastle/castleplayer.lua:32  %PlayerFunLib -> PlayerFunLib
+missions/tongcastle/castleplayer.lua:32  %TSK_STAY_TIME -> TSK_STAY_TIME
+missions/tongcastle/game.lua:48  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/game.lua:57  for key, value in self.tbTrapList -> pairs(self.tbTrapList)
+missions/tongcastle/game.lua:63  for key, value in self.tbNpcTypeList -> pairs(self.tbNpcTypeList)
+missions/tongcastle/game.lua:81  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/game.lua:117  for key, value in self -> pairs(self)
+missions/tongcastle/game.lua:130  function(...) -> + local arg = {n=select('#',...), ...}
+missions/tongcastle/game.lua:131  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/game.lua:143  for szType, tbId in self.tbRegId -> pairs(self.tbRegId)
+missions/tongcastle/game.lua:145  for nMapId, _ in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/game.lua:166  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/game.lua:173  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/guideperson.lua:100  %szDlgText -> szDlgText
+missions/tongcastle/guideperson.lua:139  %tbGuideNpc -> tbGuideNpc
+missions/tongcastle/guideperson.lua:140  %tbGuideNpc -> tbGuideNpc
+missions/tongcastle/guideperson.lua:142  %tbGuideNpc -> tbGuideNpc
+missions/tongcastle/guideperson.lua:148  %tbGuideNpcInside -> tbGuideNpcInside
+missions/tongcastle/guideperson.lua:149  %tbGuideNpcInside -> tbGuideNpcInside
+missions/tongcastle/guideperson.lua:151  %tbGuideNpcInside -> tbGuideNpcInside
+missions/tongcastle/guideperson.lua:164  %tbCity -> tbCity
+missions/tongcastle/guideperson.lua:182  %tbCity -> tbCity
+missions/tongcastle/guideperson.lua:189  %tbTranPos -> tbTranPos
+missions/tongcastle/guideperson.lua:189  %tbTranPos -> tbTranPos
+missions/tongcastle/guideperson.lua:198  %MSG_PLAYER_LIMIT -> MSG_PLAYER_LIMIT
+missions/tongcastle/guideperson.lua:202  %JOIN_TONG_TIME -> JOIN_TONG_TIME
+missions/tongcastle/guideperson.lua:203  %MSG_PLAYER_LIMIT -> MSG_PLAYER_LIMIT
+missions/tongcastle/guideperson.lua:212  %TSK_SAVE_DATE -> TSK_SAVE_DATE
+missions/tongcastle/guideperson.lua:213  %TSK_SAVE_DATE -> TSK_SAVE_DATE
+missions/tongcastle/guideperson.lua:214  %TSK_TREEPOINT -> TSK_TREEPOINT
+missions/tongcastle/guideperson.lua:229  %AWARD_STATE_TIME -> AWARD_STATE_TIME
+missions/tongcastle/guideperson.lua:229  %AWARD_END_TIME -> AWARD_END_TIME
+missions/tongcastle/guideperson.lua:234  %MIN_STAY_TIME -> MIN_STAY_TIME
+missions/tongcastle/guideperson.lua:235  %MIN_STAY_TIME -> MIN_STAY_TIME
+missions/tongcastle/guideperson.lua:239  %PlayerFunLib -> PlayerFunLib
+missions/tongcastle/guideperson.lua:239  %TSK_GET_AWARD -> TSK_GET_AWARD
+missions/tongcastle/guideperson.lua:262  %PlayerFunLib -> PlayerFunLib
+missions/tongcastle/guideperson.lua:262  %TSK_GET_AWARD -> TSK_GET_AWARD
+missions/tongcastle/guideperson.lua:266  %TSK_TREEPOINT -> TSK_TREEPOINT
+missions/tongcastle/guideperson.lua:266  %TSK_TREEPOINT -> TSK_TREEPOINT
+missions/tongcastle/guideperson.lua:285  %TSK_TREEPOINT -> TSK_TREEPOINT
+missions/tongcastle/guideperson.lua:289  %tbTreeItem -> tbTreeItem
+missions/tongcastle/guideperson.lua:290  %tbTreeItem -> tbTreeItem
+missions/tongcastle/guideperson.lua:291  %tbTreeItem -> tbTreeItem
+missions/tongcastle/guideperson.lua:303  %TSK_TREEPOINT -> TSK_TREEPOINT
+missions/tongcastle/guideperson.lua:309  %tbTreeItem -> tbTreeItem
+missions/tongcastle/guideperson.lua:310  %tbTreeItem -> tbTreeItem
+missions/tongcastle/guideperson.lua:314  %TSK_TREEPOINT -> TSK_TREEPOINT
+missions/tongcastle/tongcastle.lua:228  for key, value in self.tbNpcTypeList -> pairs(self.tbNpcTypeList)
+missions/tongcastle/tongcastle.lua:233  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/tongcastle.lua:316  for szRoomName, _ in self.tbRoomCondition -> pairs(self.tbRoomCondition)
+missions/tongcastle/tongcastle.lua:339  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/tongcastle.lua:512  %TSK_STAY_TIME -> TSK_STAY_TIME
+missions/tongcastle/tongcastle.lua:514  %TSK_STAY_TIME -> TSK_STAY_TIME
+missions/tongcastle/tongcastle.lua:526  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/tongcastle.lua:530  %tbCity -> tbCity
+missions/tongcastle/tongcastle.lua:531  for szPlayerName, tbPlayer in self.tbPlayerList[nMapId] -> pairs(self.tbPlayerList[nMapId])
+missions/tongcastle/tongcastle.lua:631  %tbCity -> tbCity
+missions/tongcastle/tongcastle.lua:666  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/tongcastle.lua:691  for nNpcIndex, dwNpcId in tbTmp.tbInfo -> pairs(tbTmp.tbInfo)
+missions/tongcastle/tongcastle.lua:762  %tbCity -> tbCity
+missions/tongcastle/tongcastle.lua:824  for nNpcIndex, dwNpcId in tbTmp.tbInfo -> pairs(tbTmp.tbInfo)
+missions/tongcastle/tongcastle.lua:882  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/tongcastle.lua:884  for szPlayerName, _ in self.tbPlayerList[nMapId] -> pairs(self.tbPlayerList[nMapId])
+missions/tongcastle/tongcastle.lua:898  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/tongcastle.lua:917  for nMapId, _ in %tbCity -> pairs(tbCity)
+missions/tongcastle/tongcastle.lua:1010  for nMapId, bFlag in self.tbMapList -> pairs(self.tbMapList)
+missions/tongcastle/tongcastle.lua:1030  %tbCity -> tbCity
+missions/tongcastle/tongcastle.lua:1034  %tbCity -> tbCity
+missions/tongcastle/treedeath.lua:46  %tbMapList -> tbMapList
+missions/tongcastle/treedeath.lua:47  %tbTreePrice -> tbTreePrice
+missions/tongcastle/treedeath.lua:54  %JOIN_TONG_TIME -> JOIN_TONG_TIME
+missions/tongcastle/treedeath.lua:117  for szNpcName, _ in TongCastle.tbNpcTypeList -> pairs(TongCastle.tbNpcTypeList)
+missions/tongwar/tongwar_main.lua:9  function(...) -> + local arg = {n=select('#',...), ...}
+missions/tongwar/match/head.lua:166  function(...) -> + local arg = {n=select('#',...), ...}
+missions/tongwar/relay/tongwar.lua:228  for i, tb in TONGWAR_SEASON_TB -> pairs(TONGWAR_SEASON_TB)
+missions/tongwar/relay/tongwar.lua:254  for strCityTongName, tbCity in tbTongSet -> pairs(tbTongSet)
+missions/yandibaozang/doubleexp.lua:15  %tbDouble -> tbDouble
+missions/yandibaozang/doubleexp.lua:16  %tbDouble -> tbDouble
+missions/yandibaozang/npc_death.lua:23  for x1, y1 in YDBZ_tbaward_item[ntype] -> pairs(YDBZ_tbaward_item[ntype])
+missions/yandibaozang/saizi.lua:74  for index, value in t -> pairs(t)
+missions/yandibaozang/item/yandimibao.lua:28  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:34  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:40  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:46  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:52  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:78  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:84  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:90  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:96  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:102  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:108  %tbvng_ChestExpAward -> tbvng_ChestExpAward
+missions/yandibaozang/item/yandimibao.lua:166  %TransLife6 -> TransLife6
+missions/yandibaozang/item/yandimibao.lua:166  %TASK_ID_BOX -> TASK_ID_BOX
+missions/yandibaozang/npc/yandibaozang_main.lua:28  %ndebug -> ndebug
+missions/yandibaozang/readymap/ready.lua:22  for k, v in self -> pairs(self)
+missions/yandibaozang/readymap/ready.lua:60  %nPak -> nPak
+missions/yandibaozang/readymap/ready.lua:77  for nMapId, _ in self.tbMapId -> pairs(self.tbMapId)
+missions/yandibaozang/readymap/ready.lua:182  for szName, nPartyId in self.tbPlayer -> pairs(self.tbPlayer)
+missions/yandibaozang/readymap/ready.lua:187  for nPartyId, v in tbPartyMap -> pairs(tbPartyMap)
+missions/yandibaozang/readymap/ydbz_maphook.lua:31  for k, v in ReadyMap -> pairs(ReadyMap)
+npcthon/npcmonphai/caibang.lua:7  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/conlon.lua:7  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/duongmon.lua:7  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/hoason.lua:4  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/ngami.lua:7  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/ngudoc.lua:7  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/thiennhan.lua:7  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/thienvuong.lua:7  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/thieulam.lua:7  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/thuyyen.lua:7  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/tieudao.lua:4  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/vodang.lua:7  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+npcthon/npcmonphai/vuhon.lua:4  "\\script\\npcthon\\npcmonphai\FactionHelper.lua" -> "\\script\\npcthon\\npcmonphaiFactionHelper.lua"
+petsys/bikip.lua:49  %CANCEL -> CANCEL
+petsys/delete.lua:11  %tbSecurityLock -> tbSecurityLock
+petsys/delete.lua:11  %tbSecurityLock -> tbSecurityLock
+petsys/delete.lua:18  %CONFIRM -> CONFIRM
+petsys/delete.lua:19  %CANCEL -> CANCEL
+petsys/delete.lua:20  %DELETE_TITLE -> DELETE_TITLE
+petsys/feature.lua:9  %CHANGE_FEATURE_COIN -> CHANGE_FEATURE_COIN
+petsys/feature.lua:10  %NOT_ENOUGH_COIN -> NOT_ENOUGH_COIN
+petsys/feature.lua:10  %CHANGE_FEATURE_COIN -> CHANGE_FEATURE_COIN
+petsys/feature.lua:14  %CHANGE_FEATURE_DLG1_TITLE -> CHANGE_FEATURE_DLG1_TITLE
+petsys/feature.lua:18  %CHANGE_FEATURE_DLG1_TITLE -> CHANGE_FEATURE_DLG1_TITLE
+petsys/feature.lua:24  %PET_LEVEL_STEP -> PET_LEVEL_STEP
+petsys/feature.lua:27  %PET_LEVEL_STEP -> PET_LEVEL_STEP
+petsys/feature.lua:27  %PET_LEVEL_STEP -> PET_LEVEL_STEP
+petsys/feature.lua:30  %END_DLG -> END_DLG
+petsys/feature.lua:40  %PET_LEVEL_STEP -> PET_LEVEL_STEP
+petsys/feature.lua:46  %BACK -> BACK
+petsys/feature.lua:47  %END_DLG -> END_DLG
+petsys/feature.lua:52  %CHANGE_FEATURE_COIN -> CHANGE_FEATURE_COIN
+petsys/feature.lua:53  %NOT_ENOUGH_COIN -> NOT_ENOUGH_COIN
+petsys/feature.lua:53  %CHANGE_FEATURE_COIN -> CHANGE_FEATURE_COIN
+petsys/feature.lua:56  %CHANGE_FEATURE_COIN -> CHANGE_FEATURE_COIN
+petsys/feature.lua:62  %MSG_CHANGE_FEATURE -> MSG_CHANGE_FEATURE
+petsys/feature.lua:63  %tbLog -> tbLog
+petsys/levelup.lua:30  %MAX_LEVEL -> MAX_LEVEL
+petsys/levelup.lua:31  %LEVEL_LIMIT -> LEVEL_LIMIT
+petsys/levelup.lua:45  %NOT_ENOUGH_POINT -> NOT_ENOUGH_POINT
+petsys/levelup.lua:50  %tbLevelUpNeedItem -> tbLevelUpNeedItem
+petsys/levelup.lua:50  %NOT_ENOUGH_LEVEL_UP_ITEM -> NOT_ENOUGH_LEVEL_UP_ITEM
+petsys/levelup.lua:55  %LEVEL_UP_RATE_TITLE -> LEVEL_UP_RATE_TITLE
+petsys/levelup.lua:57  %CONFIRM -> CONFIRM
+petsys/levelup.lua:58  %CANCEL -> CANCEL
+petsys/levelup.lua:63  %tbLevelUpNeedItem -> tbLevelUpNeedItem
+petsys/levelup.lua:63  %NOT_ENOUGH_LEVEL_UP_ITEM -> NOT_ENOUGH_LEVEL_UP_ITEM
+petsys/levelup.lua:66  %tbLevelUpNeedItem -> tbLevelUpNeedItem
+petsys/levelup.lua:70  %LEVEL_UP_FAIL -> LEVEL_UP_FAIL
+petsys/levelup.lua:71  %tbLog -> tbLog
+petsys/levelup.lua:91  %LEVEL_UP_SUCCESS -> LEVEL_UP_SUCCESS
+petsys/levelup.lua:92  %tbLog -> tbLog
+petsys/levelup.lua:102  %tbLevelUpAttr -> tbLevelUpAttr
+petsys/levelup.lua:104  %attrInitValue -> attrInitValue
+petsys/name.lua:10  %CHANGE_NAME_COIN -> CHANGE_NAME_COIN
+petsys/name.lua:11  %NOT_ENOUGH_COIN -> NOT_ENOUGH_COIN
+petsys/name.lua:11  %CHANGE_NAME_COIN -> CHANGE_NAME_COIN
+petsys/name.lua:15  %CHANGE_NAME_TITLE -> CHANGE_NAME_TITLE
+petsys/name.lua:20  %SENSITIVE_NAME -> SENSITIVE_NAME
+petsys/name.lua:24  %CHANGE_NAME_COIN -> CHANGE_NAME_COIN
+petsys/name.lua:25  %NOT_ENOUGH_COIN -> NOT_ENOUGH_COIN
+petsys/name.lua:25  %CHANGE_NAME_COIN -> CHANGE_NAME_COIN
+petsys/name.lua:29  %CHANGE_NAME_COIN -> CHANGE_NAME_COIN
+petsys/name.lua:30  %PET_SetName -> PET_SetName
+petsys/name.lua:34  %CHANGE_NAME_SUCCESS -> CHANGE_NAME_SUCCESS
+petsys/name.lua:35  %tbLog -> tbLog
+petsys/name.lua:35  %PET_GetLevel -> PET_GetLevel
+petsys/petbox.lua:24  for k, v in PETEQUIP_DEF -> pairs(PETEQUIP_DEF)
+petsys/petcard.lua:12  %MSG_NOT_ENOUGH_LEVEL -> MSG_NOT_ENOUGH_LEVEL
+petsys/petcard.lua:12  %MIN_LEVEL -> MIN_LEVEL
+petsys/petcard.lua:18  %ALREADY_CREATE_PET -> ALREADY_CREATE_PET
+petsys/petcard.lua:22  %PET_LEVEL_STEP -> PET_LEVEL_STEP
+petsys/petcard.lua:32  %ALREADY_SKILL_PET -> ALREADY_SKILL_PET
+petsys/petequip.lua:13  "\settings\petsys\attribname.txt" -> "settingspetsys\attribname.txt"
+petsys/petequip.lua:58  for k, v in tbDem -> pairs(tbDem)
+petsys/petequip.lua:135  %CANCEL -> CANCEL
+petsys/petequip.lua:145  %CANCEL -> CANCEL
+petsys/summon.lua:7  %ALREADY_SUMMON -> ALREADY_SUMMON
+petsys/summon.lua:20  %FORBID_SUMMON -> FORBID_SUMMON
+petsys/transferexp.lua:16  %NOT_ENOUGH_EXP -> NOT_ENOUGH_EXP
+petsys/transferexp.lua:21  %NOT_ENOUGH_EXP -> NOT_ENOUGH_EXP
+petsys/xiuzhen.lua:48  %CANCEL -> CANCEL
+skill/npc/chunniu.lua:347  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:350  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:353  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:354  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:356  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:357  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:359  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:360  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:362  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:363  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:364  %SKILLS -> SKILLS
+startgame/tinhnang/tongkim/songjin_shophead.lua:140  %tbProduct -> tbProduct
+startgame/tinhnang/tongkim/songjin_shophead.lua:160  %tbProduct -> tbProduct
+task/task_addplayerexp.lua:16  %NTRANSLIFE_MAX -> NTRANSLIFE_MAX
+task/metempsychosis/translife_5.lua:48  %nChuanguanLimit -> nChuanguanLimit
+task/metempsychosis/translife_5.lua:65  %nYDBZguoguanLimit -> nYDBZguoguanLimit
+task/metempsychosis/translife_5.lua:97  %nFinishSongJin -> nFinishSongJin
+task/metempsychosis/translife_5.lua:109  %TSK_Longxuewan_avail -> TSK_Longxuewan_avail
+task/metempsychosis/translife_5.lua:121  %tbAwardItem -> tbAwardItem
+task/metempsychosis/translife_5.lua:121  %nAwardCount -> nAwardCount
+task/metempsychosis/translife_5.lua:121  %tbAwardItem -> tbAwardItem
+task/metempsychosis/translife_5.lua:131  %nTranslifeCount -> nTranslifeCount
+task/metempsychosis/translife_5.lua:131  %nLevelLimit -> nLevelLimit
+task/metempsychosis/translife_5.lua:143  %nTranslifeCount -> nTranslifeCount
+task/metempsychosis/translife_5.lua:144  %nTranslifeCount -> nTranslifeCount
+task/metempsychosis/translife_5.lua:148  %nLevelLimit -> nLevelLimit
+task/metempsychosis/translife_5.lua:149  %nLevelLimit -> nLevelLimit
+task/metempsychosis/translife_5.lua:198  %TRANSLIFE5_SKILL -> TRANSLIFE5_SKILL
+task/metempsychosis/translife_6.lua:68  %TASK_V_FINISH -> TASK_V_FINISH
+task/metempsychosis/translife_6.lua:93  %ITEM_TRANSLIFE_JADE -> ITEM_TRANSLIFE_JADE
+task/metempsychosis/translife_6.lua:93  %ITEM_TRANSLIFE_JADE -> ITEM_TRANSLIFE_JADE
+task/metempsychosis/translife_6.lua:93  %ITEM_TRANSLIFE_JADE -> ITEM_TRANSLIFE_JADE
+task/metempsychosis/translife_6.lua:98  %ITEM_TRANSLIFE_JADE -> ITEM_TRANSLIFE_JADE
+task/metempsychosis/translife_6.lua:98  %ITEM_TRANSLIFE_JADE -> ITEM_TRANSLIFE_JADE
+task/metempsychosis/translife_6.lua:98  %ITEM_TRANSLIFE_JADE -> ITEM_TRANSLIFE_JADE
+task/metempsychosis/translife_6.lua:112  %TASK_V_FINISH -> TASK_V_FINISH
+task/metempsychosis/translife_6.lua:121  %TASK_V_ACCEPT -> TASK_V_ACCEPT
+task/metempsychosis/translife_6.lua:121  %TASK_V_COUNT_BASE -> TASK_V_COUNT_BASE
+task/metempsychosis/translife_6.lua:126  %TASK_V_ACCEPT -> TASK_V_ACCEPT
+task/metempsychosis/translife_6.lua:137  %TASK_V_COUNT_BASE -> TASK_V_COUNT_BASE
+task/metempsychosis/translife_6.lua:138  %TASK_V_FINISH -> TASK_V_FINISH
+task/metempsychosis/translife_6.lua:143  %TASK_V_NONE -> TASK_V_NONE
+task/metempsychosis/translife_6.lua:154  %ITEM_FUSHENGWAN -> ITEM_FUSHENGWAN
+task/metempsychosis/translife_6.lua:154  %ITEM_FUSHENGWAN -> ITEM_FUSHENGWAN
+task/metempsychosis/translife_6.lua:154  %ITEM_FUSHENGWAN -> ITEM_FUSHENGWAN
+task/metempsychosis/translife_6.lua:154  %ITEM_FUSHENGWAN -> ITEM_FUSHENGWAN
+task/metempsychosis/translife_6.lua:158  %ITEM_FUSHENGWAN -> ITEM_FUSHENGWAN
+task/metempsychosis/translife_6.lua:158  %ITEM_FUSHENGWAN -> ITEM_FUSHENGWAN
+task/metempsychosis/translife_6.lua:158  %ITEM_FUSHENGWAN -> ITEM_FUSHENGWAN
+task/metempsychosis/translife_6.lua:158  %ITEM_FUSHENGWAN -> ITEM_FUSHENGWAN
+task/metempsychosis/translife_6.lua:163  %TASK_V_FINISH -> TASK_V_FINISH
+task/metempsychosis/translife_6.lua:170  %TASK_V_NONE -> TASK_V_NONE
+task/metempsychosis/translife_6.lua:170  %TASK_V_FINISH -> TASK_V_FINISH
+task/metempsychosis/translife_6.lua:173  %TASK_V_COUNT_BASE -> TASK_V_COUNT_BASE
+task/metempsychosis/translife_6.lua:183  %TASK_ID_SONGJIN -> TASK_ID_SONGJIN
+task/metempsychosis/translife_6.lua:184  %TASK_ID_SONGJIN -> TASK_ID_SONGJIN
+task/metempsychosis/translife_6.lua:190  %TASK_ID_COT -> TASK_ID_COT
+task/metempsychosis/translife_6.lua:192  %TASK_ID_COT -> TASK_ID_COT
+task/metempsychosis/translife_6.lua:198  %TASK_ID_YANDI -> TASK_ID_YANDI
+task/metempsychosis/translife_6.lua:199  %TASK_ID_YANDI -> TASK_ID_YANDI
+task/metempsychosis/translife_6.lua:204  %TASK_ID_FLD -> TASK_ID_FLD
+task/metempsychosis/translife_6.lua:206  %TASK_ID_FLD -> TASK_ID_FLD
+task/metempsychosis/translife_6.lua:221  %tbTL6MainDlg -> tbTL6MainDlg
+task/metempsychosis/translife_6.lua:225  %tbAcceptTaskDlg -> tbAcceptTaskDlg
+task/metempsychosis/translife_6.lua:229  %tbFinishTaskDlg -> tbFinishTaskDlg
+task/metempsychosis/translife_6.lua:233  %tbFinishTaskItemDlg -> tbFinishTaskItemDlg
+task/metempsychosis/translife_6.lua:242  %TASK_V_NONE -> TASK_V_NONE
+task/metempsychosis/translife_6.lua:244  %TASK_V_FINISH -> TASK_V_FINISH
+task/metempsychosis/translife_6.lua:246  %TASK_V_COUNT_BASE -> TASK_V_COUNT_BASE
+task/metempsychosis/translife_6.lua:249  %TASK_V_COUNT_BASE -> TASK_V_COUNT_BASE
+task/metempsychosis/translife_6.lua:257  %TL6_MSG -> TL6_MSG
+task/metempsychosis/translife_6.lua:264  %CreateNewSayEx -> CreateNewSayEx
+task/metempsychosis/translife_6.lua:299  %TRANSLIFE5_SKILL -> TRANSLIFE5_SKILL
+task/metempsychosis/translife_6.lua:300  %TRANSLIFE5_SKILL -> TRANSLIFE5_SKILL
+task/metempsychosis/translife_6.lua:301  %TRANSLIFE5_SKILL_ENHANCE -> TRANSLIFE5_SKILL_ENHANCE
+task/system/task_string.lua:41  function(...) -> + local arg = {n=select('#',...), ...}
+task/tollgate/killer/shashou_mibao.lua:17  %n_XuanTian_Chui -> n_XuanTian_Chui
+task/tollgate/killer/shashou_mibao.lua:18  %n_XuanTian_Chui -> n_XuanTian_Chui
+task/tollgate/killer/shashou_mibao.lua:21  %n_XuanTian_Chui -> n_XuanTian_Chui
+task/tollgate/messenger/messenger_turerukou.lua:82  %get_task_order -> get_task_order
+task/tollgate/messenger/posthouse.lua:495  %get_task_daily -> get_task_daily
+task/tollgate/messenger/posthouse.lua:517  %add_task_daily -> add_task_daily
+task/tollgate/messenger/posthouse.lua:524  %get_task_daily -> get_task_daily
+task/tollgate/messenger/posthouse.lua:1110  %get_task_daily -> get_task_daily
+task/tollgate/messenger/qianbaoku/enemy_tureboss.lua:44  %add_task_step -> add_task_step
+task/tollgate/messenger/qianbaoku/messenger_baoxiangtask.lua:20  %nOpendRequire -> nOpendRequire
+task/tollgate/messenger/qianbaoku/messenger_baoxiangtask.lua:21  %nBaoXiangTotal -> nBaoXiangTotal
+task/tollgate/messenger/qianbaoku/messenger_baoxiangtask.lua:54  %nBaoXiangTotal -> nBaoXiangTotal
+task/tollgate/messenger/qianbaoku/messenger_baoxiangtask.lua:58  %nOpendRequire -> nOpendRequire
+task/tollgate/messenger/qianbaoku/messenger_baoxiangtask.lua:80  %nOpendRequire -> nOpendRequire
+task/tollgate/messenger/qianbaoku/messenger_baoxiangtask.lua:84  %nOpendRequire -> nOpendRequire
+tinhnang/3hoatdong/hd3_driver.lua:88  "\tollgate\killer\\" -> "\tollgatekiller\\"
+vng_event/change_request_baoruong/exp_award.lua:94  for key, val in self.tbBitTask -> pairs(self.tbBitTask)
+vng_event/change_request_baoruong/exp_award.lua:95  %tbVNG_BitTask_Lib -> tbVNG_BitTask_Lib
+vng_event/change_request_baoruong/exp_award.lua:98  %tbVNG_BitTask_Lib -> tbVNG_BitTask_Lib
+vng_event/change_request_baoruong/exp_award.lua:105  %tbVNG_BitTask_Lib -> tbVNG_BitTask_Lib
+vng_event/change_request_baoruong/exp_award.lua:111  %tbVNG_BitTask_Lib -> tbVNG_BitTask_Lib
+vng_event/change_request_baoruong/exp_award.lua:120  %tbVNG_BitTask_Lib -> tbVNG_BitTask_Lib
+vng_event/thapnienlenhbai/mainfuc.lua:12  for i, v in self.TASK_ID_MAP[nTransLife][nEventId] -> pairs(self.TASK_ID_MAP[nTransLife][nEventId])
+vng_event/thapnienlenhbai/mainfuc.lua:20  for i, v in self.TASK_INFOR_ABOUNT[nEventId] -> pairs(self.TASK_INFOR_ABOUNT[nEventId])
+vng_event/thapnienlenhbai/mainfuc.lua:35  for _, v in self.TASK_ID_MAP[nTransLife][nEventId] -> pairs(self.TASK_ID_MAP[nTransLife][nEventId])
+vng_event/thapnienlenhbai/mainfuc.lua:43  for _, v in self.TASK_INFOR_ABOUNT[nEventId] -> pairs(self.TASK_INFOR_ABOUNT[nEventId])
+vng_lib/vngtranslog.lua:20  function(...) -> + local arg = {n=select('#',...), ...}
+vng_lib/vngtranslog.lua:31  %tbVngFactionName -> tbVngFactionName
+vng_lib/vngtranslog.lua:38  %tbVngLib_File -> tbVngLib_File
+Î÷ÄÏ±±Çø/½­½ò´å/Ö°ÄÜnpc/ÔÂÀÏ.lua:97  function(...) -> + local arg = {n=select('#',...), ...}
+Î÷ÄÏÄÏÇø/´óÀí¸®/´óÀí¸®/trap/dali_heidong_trap.lua:16  for nx, tbp in tballpoint -> pairs(tballpoint)
+ÖÐÔ­±±Çø/ãê¾©/ãê¾©/trap/bianjing_ximen_trap.lua:16  for nx, tbp in tballpoint -> pairs(tballpoint)
+chuyen_lua4_54: 449 tep .lua, 35 tep co thay doi
+  ESCAPE=0, FORIN=54, LSTR=0, UPVAL=85, VARARG=31
+
+protocol.lua:105  for key, v in self.KE_SCRIPT_PROTOCOL -> pairs(self.KE_SCRIPT_PROTOCOL)
+protocol.lua:231  function(...) -> + local arg = {n=select('#',...), ...}
+lib/awardtemplet.lua:50  for k, v in self.TYPE -> pairs(self.TYPE)
+lib/baseclass.lua:21  function(...) -> + local arg = {n=select('#',...), ...}
+lib/baseclass.lua:26  %t -> t
+lib/baseclass.lua:35  function(...) -> + local arg = {n=select('#',...), ...}
+lib/baseclass.lua:41  %t -> t
+lib/basic.lua:35  function(...) -> + local arg = {n=select('#',...), ...}
+lib/basic.lua:86  for key, value in org -> pairs(org)
+lib/common.lua:27  function(...) -> + local arg = {n=select('#',...), ...}
+lib/common.lua:155  for key, val in obj -> pairs(obj)
+lib/common_sharedata.lua:33  %RECORD_KEY2 -> RECORD_KEY2
+lib/common_sharedata.lua:40  %INFO_KEY1 -> INFO_KEY1
+lib/common_sharedata.lua:40  %INFO_KEY2 -> INFO_KEY2
+lib/common_sharedata.lua:46  %RECORD_KEY2 -> RECORD_KEY2
+lib/common_sharedata.lua:48  %ObjBuffer -> ObjBuffer
+lib/common_sharedata.lua:49  %ObjBuffer -> ObjBuffer
+lib/common_sharedata.lua:56  for k, v in self.tbData -> pairs(self.tbData)
+lib/common_sharedata.lua:63  %INFO_KEY1 -> INFO_KEY1
+lib/common_sharedata.lua:63  %INFO_KEY2 -> INFO_KEY2
+lib/common_sharedata.lua:157  for key, data in tb -> pairs(tb)
+lib/common_sharedata.lua:173  for k, v in tbData -> pairs(tbData)
+lib/common_sharedata.lua:189  %tbKeyList -> tbKeyList
+lib/common_sharedata.lua:195  for k, v in %CommonShareData -> pairs(CommonShareData)
+lib/composeclass.lua:173  function(...) -> + local arg = {n=select('#',...), ...}
+lib/composeex.lua:157  for k, v in tbItem -> pairs(tbItem)
+lib/composeex.lua:162  for k1, v1 in v -> pairs(v)
+lib/composeex.lua:170  for key, value in tbItem -> pairs(tbItem)
+lib/composelistclass.lua:27  for i, tbFormula in self.tbFormulaList -> pairs(self.tbFormulaList)
+lib/composelistex.lua:19  for i, tbFormula in self.tbFormulaList -> pairs(self.tbFormulaList)
+lib/debug.lua:16  function(...) -> + local arg = {n=select('#',...), ...}
+lib/debug.lua:41  %Match -> Match
+lib/debug.lua:45  %Match -> Match
+lib/debug.lua:74  %GetVar -> GetVar
+lib/debug.lua:76  %GetVar -> GetVar
+lib/debug.lua:78  %GetVar -> GetVar
+lib/debug.lua:80  %GetVar -> GetVar
+lib/debug.lua:88  %GetVar -> GetVar
+lib/debug.lua:97  %calcExp -> calcExp
+lib/debug.lua:117  %GetExpValue -> GetExpValue
+lib/debug.lua:148  %Break -> Break
+lib/debug.lua:149  %Break -> Break
+lib/debug.lua:152  for k, v in pBreak -> pairs(pBreak)
+lib/debug.lua:168  %IsAtBreakPoint -> IsAtBreakPoint
+lib/debug.lua:179  %TmpBreak -> TmpBreak
+lib/debug.lua:179  %TmpBreak -> TmpBreak
+lib/debug.lua:223  %ShowCurStack -> ShowCurStack
+lib/debug.lua:225  %ShowCurStack -> ShowCurStack
+lib/debug.lua:235  %GetLocalVariable -> GetLocalVariable
+lib/debug.lua:237  %_read_ -> _read_
+lib/debug.lua:247  %ParseExp -> ParseExp
+lib/debug.lua:248  %GetExpValue -> GetExpValue
+lib/debug.lua:251  %ShowStack -> ShowStack
+lib/debug.lua:255  %ParseExp -> ParseExp
+lib/debug.lua:256  %SetExpValue -> SetExpValue
+lib/debug.lua:263  %Break -> Break
+lib/debug.lua:268  %_read_ -> _read_
+lib/debug.lua:275  %TmpBreak -> TmpBreak
+lib/debug.lua:276  %TmpBreak -> TmpBreak
+lib/debug.lua:292  %TmpBreak -> TmpBreak
+lib/debug.lua:292  %TmpBreak -> TmpBreak
+lib/debug.lua:293  %TmpBreak -> TmpBreak
+lib/debug.lua:299  %TmpBreak -> TmpBreak
+lib/debug.lua:299  %TmpBreak -> TmpBreak
+lib/debug.lua:300  %TmpBreak -> TmpBreak
+lib/debug.lua:303  %NeedStop -> NeedStop
+lib/debug.lua:306  %ShowStack -> ShowStack
+lib/debug.lua:307  %ProcCmd -> ProcCmd
+lib/debug.lua:315  %Hook -> Hook
+lib/debug.lua:316  %Hook -> Hook
+lib/debug.lua:326  %Break -> Break
+lib/debug.lua:331  %Break -> Break
+lib/file.lua:57  %GetTabFileHeight -> GetTabFileHeight
+lib/itemblue.lua:93  for x, y in ITEM_BLUE -> pairs(ITEM_BLUE)
+lib/log.lua:56  function(...) -> + local arg = {n=select('#',...), ...}
+lib/log.lua:87  function(...) -> + local arg = {n=select('#',...), ...}
+lib/log.lua:94  %tbFactionNumber2Name -> tbFactionNumber2Name
+lib/log.lua:122  for k, v in self.tbLogItemCount -> pairs(self.tbLogItemCount)
+lib/log.lua:132  for _, v in tbItem -> pairs(tbItem)
+lib/log.lua:143  %tbFactionNumber2Name -> tbFactionNumber2Name
+lib/mapdb.lua:17  for name, tb in self.m_List -> pairs(self.m_List)
+lib/mapdb.lua:31  for name, tb in self.m_List -> pairs(self.m_List)
+lib/mapdb.lua:64  for name, tb in self.m_List -> pairs(self.m_List)
+lib/mapdb.lua:115  for name, tb in self.m_List -> pairs(self.m_List)
+lib/mem.lua:13  for i, j in org -> pairs(org)
+lib/mem.lua:25  for i, j in org -> pairs(org)
+lib/mem.lua:40  function(...) -> + local arg = {n=select('#',...), ...}
+lib/objbuffer_head.lua:110  for key, val in tb -> pairs(tb)
+lib/objbuffer_head.lua:114  for key, val in tb -> pairs(tb)
+lib/player.lua:108  for k, v in tab -> pairs(tab)
+lib/player.lua:121  for k, v in tab -> pairs(tab)
+lib/player.lua:128  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:179  %t -> t
+lib/player.lua:256  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:260  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:264  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:268  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:272  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:276  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:542  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:546  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:622  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:626  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:654  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:658  function(...) -> + local arg = {n=select('#',...), ...}
+lib/progressbar.lua:43  %tbEventSring -> tbEventSring
+lib/progressbar.lua:44  %tbEventSring -> tbEventSring
+lib/progressbar.lua:63  %tbEventSring -> tbEventSring
+lib/progressbar.lua:64  %tbEventSring -> tbEventSring
+lib/progressbar.lua:97  %tbData -> tbData
+lib/progressbar.lua:99  %tbData -> tbData
+lib/progressbar.lua:100  %tbData -> tbData
+lib/progressbar.lua:101  %tbData -> tbData
+lib/progressbar.lua:102  %tbData -> tbData
+lib/progressbar.lua:106  %tbData -> tbData
+lib/progressbar.lua:115  %tbData -> tbData
+lib/say.lua:31  for _, option in tb_options -> pairs(tb_options)
+lib/simulator.lua:6  function(...) -> + local arg = {n=select('#',...), ...}
+lib/statemachine.lua:23  %lib -> lib
+lib/statemachine.lua:23  %StateMachine -> StateMachine
+lib/statemachine.lua:30  %lib -> lib
+lib/statemachine.lua:61  %StateBase -> StateBase
+lib/statemachine.lua:168  for k, v in self.tbStateList -> pairs(self.tbStateList)
+lib/statemachine.lua:193  function(...) -> + local arg = {n=select('#',...), ...}
+lib/statemachine.lua:194  %lib -> lib
+lib/statemachine.lua:197  for k, v in self.tbStateList -> pairs(self.tbStateList)
+lib/statemachine.lua:210  %lib -> lib
+lib/statemachine.lua:210  %TemplateStateMachine -> TemplateStateMachine
+lib/unittest.lua:54  for key, func in self -> pairs(self)
+lib/awardtype/simple.lua:8  for k, v in self -> pairs(self)
+mail/maildef.lua:36  function(...) -> + local arg = {n=select('#',...), ...}
+mail/maildef.lua:47  for _, _ in tb -> pairs(tb)
+mail/maildef.lua:58  for k, x in v -> pairs(v)
+skill/npc/chunniu.lua:347  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:350  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:353  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:354  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:356  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:357  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:359  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:360  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:362  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:363  %SKILLS -> SKILLS
+skill/npc/chunniu.lua:364  %SKILLS -> SKILLS
+tong/log.lua:9  for key, value in tbMsg -> pairs(tbMsg)
+tong/tong_mix.lua:18  for _k, _v in _1 -> pairs(_1)
+tong/tong_mix.lua:28  function(...) -> + local arg = {n=select('#',...), ...}
+tong/tong_setting.lua:74  function(...) -> + local arg = {n=select('#',...), ...}
+tong/map/map_management.lua:47  for nMapCopyId, szMapCopyName in aDynMapCopyName -> pairs(aDynMapCopyName)
+tong/map/map_management.lua:64  for nMapCopyId, szMapCopyName in aDynMapCopyName -> pairs(aDynMapCopyName)
+tong/npc/city_totempole.lua:593  function(...) -> + local arg = {n=select('#',...), ...}
+tong/npc/tong_totempole.lua:611  function(...) -> + local arg = {n=select('#',...), ...}
+ui/uiauction_house.lua:40  for szName, tbInfo in self.tbActivityList[nType] -> pairs(self.tbActivityList[nType])
+ui/uiauction_house.lua:80  for szName, tbInfo in self.tbActivityList[self.nCurTypeIndex] -> pairs(self.tbActivityList[self.nCurTypeIndex])
+ui/uiauction_house.lua:94  for nPage, tbPage in a.tbItemList -> pairs(a.tbItemList)
+ui/uiauction_house.lua:95  for i, tbItem in tbPage -> pairs(tbPage)
+ui/uiauction_house.lua:290  for szName, tbInfo in tbList -> pairs(tbList)
+ui/uiauction_house.lua:324  for i, tbItem in tbPage -> pairs(tbPage)
+ui/uiauction_house.lua:332  for i, tbItem in tbPage -> pairs(tbPage)
+ui/uichienlenh.lua:15  function(...) -> + local arg = {n=select('#',...), ...}
+ui/uimail.lua:44  for nId, tbHeader in self.tbMailList -> pairs(self.tbMailList)
+ui/uimail.lua:54  for nId, tbHeader in self.tbMailList -> pairs(self.tbMailList)
+ui/uimail.lua:64  for nId, tbHeader in self.tbMailList -> pairs(self.tbMailList)
+ui/uimail.lua:93  for nId, tbMail in self.tbMailList -> pairs(self.tbMailList)
+ui/uimail.lua:106  for nId, tbMailHeader in tbHeaderList -> pairs(tbHeaderList)
+ui/uimail.lua:235  for _, tbInfo in tbAwardInfo -> pairs(tbAwardInfo)
+ui/uimail.lua:254  for _, tbInfo in tbAward -> pairs(tbAward)
+ui/uimail.lua:432  for nId, _ in self.tbMailCheckList -> pairs(self.tbMailCheckList)
+ui/uimail.lua:457  for nId, _ in self.tbMailCheckList -> pairs(self.tbMailCheckList)

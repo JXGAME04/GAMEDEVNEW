@@ -1,0 +1,5 @@
+lua4compat.lua cu phap: OK
+cu phap 5.4: 449 tep, 3 LOI
+  lib/basic.lua  lib/basic.lua:45: unexpected symbol near '*'
+  lib/say.lua  lib/say.lua:71: unexpected symbol near '/'
+  lib/string.lua  lib/string.lua:40: unexpected symbol near '/'
