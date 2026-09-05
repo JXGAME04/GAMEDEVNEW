@@ -14931,6 +14931,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"CFGW_Tick",	LuaCFGW_Tick},
 	{"CFGW_Reload",	LuaCFGW_Reload},
 	{"CFGW_Info",	LuaCFGW_Info},
+	{"CFGW_MoTa",	LuaCFGW_MoTa},	// [05/09] tieng Viet cho khoa C++
 	// [DAUGIA 04/09 A1] script\auction\auction_manager.lua dung
 	{"AUC_ItemToRec",	LuaAUC_ItemToRec},
 	{"AUC_RecName",	LuaAUC_RecName},

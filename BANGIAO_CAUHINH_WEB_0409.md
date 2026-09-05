@@ -103,3 +103,22 @@ Trang "Cấu hình game": lọc theo nhóm + ô tìm khoá/mô tả; sửa `v` t
 | `bin\client\CoreClient.dll` | 790fa976dc0ca7d95d8d71bc6e16ca29 | đã live 19:43 (chủ swap cặp 5af51667/790fa976); CFGW chỉ máy chủ → **không cần swap client** lần này |
 
 Nghiệm thu: sau restart, `SELECT COUNT(*) FROM gcfg` ≈ 350; `gcfg_log` có dòng "da nap cfg_version=0: N khoa, 0 loi"; sửa `ServerConfig.ExpRate` trên web → ≤ 30 s có dòng "`<cũ> -> <mới> (ap ngay)`" và exp nhận được đổi ngay; sửa `BAT_TONGKIM` / `TW_GIO_KHAICHIEN` → ≤ 1,5 phút `timerserver` đọc giá trị mới (kiểm `CFGW_Info()` qua lệnh GM hoặc `gcfg.v_ap`). Gõ chữ vào ô số → `gcfg_log` level 2 kèm `k`, `v_ap` giữ số cũ.
+
+## 8. Tiếng Việt có dấu + cảnh báo cho từng khoá (05/09) — 4 cột mới
+
+Chủ (04/09 tối): *"tôi cần chi tiết hơn phải giải thích rõ hơn bằng tiếng việt có dấu và cảnh báo nếu chỉnh sai"* · *"trên web phải hiện rõ từng mục chuyên nghiệp hơn hiện nhìn không khác gì một tờ báo"*.
+
+| cột `gcfg` | kiểu | nghĩa |
+|---|---|---|
+| `ten` | VARBINARY(96) TCVN3 | tên tiếng Việt của khoá (tiêu đề thẻ) |
+| `giai_thich` | VARBINARY(1500) TCVN3, có `\n` tách đoạn | giải thích chi tiết: nghĩa, đơn vị, công thức, mặc định, hiệu lực |
+| `canh_bao` | VARBINARY(800) TCVN3 | cảnh báo nếu chỉnh sai |
+| `nguy_co` | TINYINT | 0 An toàn · 1 Cẩn thận · 2 Nguy hiểm (web hỏi lại kèm nguyên văn `canh_bao` trước khi lưu) |
+
+- Máy chủ khai 4 cột trong `sKhai()` (INSERT + UPDATE làm mới mỗi boot). Bảng đã tồn tại từ bản 04/09 → `sDamBaoCotMoi()` hỏi `information_schema.COLUMNS` rồi `ALTER TABLE gcfg ADD COLUMN` (web vẫn KHÔNG ALTER).
+- 27 khoá C++ (`ServerConfig.*`, `Exp.*`): C++ khai metadata ASCII như cũ; tiếng Việt do script gửi qua hàm mới `CFGW_MoTa(k, ten, giai_thich, canh_bao, nguy_co)` (bảng `tbCFGW_META_CPP`, `CFGW_MoTaCpp()` chạy một lần mỗi tiến trình).
+- Nguồn chữ: `ReverseTools\cauhinh_web\cfgw_vietngu\` (UTF-8, `vn_*.py`, mỗi khoá một bộ 4 + ghi đè kiểu/đơn vị/khoảng). `sinh_cfgw_meta.py` đổi sang TCVN3 (`vn_to_octal.unicode_to_tcvn3_bytes`), **báo lỗi và không ghi** khi thiếu khoá, chữ hoa có dấu (TCVN3 không có), quá dài. Từ điển đọc được: `ReverseTools\cauhinh_web\cfgw_tudien.md`. Mô tả 22 nhóm: `cfgw_vietngu\__init__.py` `NHOM_VN`.
+- `cfgw_meta.lua` giờ 12 trường `{nhom, chú thích gốc, kieu, min, max, ap, nguon, don_vi, ten, giai_thich, canh_bao, nguy_co}` + `tbCFGW_META_CPP`; `CFGW_Khai` nhận đối số 11..14 (DLL 04/09 bỏ qua đối số thừa, không lỗi).
+- Bộ sinh ghi đè kiểu sai: `GLB_GIO_MO_SERVER` (yymmddHHMM), `CH_NAPLAI_PHUT`, `GLB_SATTHUONG_*`, `GLB_MANH_BOSS_VUOTAI` → số nguyên; `BR_GIO_DONG_H`, `HD3_BD_GIO_MO/DONG` → giờ 0..23 (đơn vị `gio`); `TC_GIO_NHANDIEM_DEN` → số HHMM 0..2400. Đơn vị mới: `bac cai con met bot la vong "chu ky" "nhiem vu" phong HHMM`.
+- Web (webver5-eb): mỗi khoá một thẻ (tên lớn + khoá mono + nhãn kiểu / hiệu lực / nguy cơ; ô nhập + đơn vị + mặc định + đang dùng; khối giải thích; hộp cảnh báo màu theo `nguy_co`); đầu nhóm có mô tả; tìm theo `ten` + khoá + `giai_thich`; lọc nhanh nguy hiểm / cần restart / khác mặc định; xác nhận trước khi lưu khoá `nguy_co = 2`. Thiếu cột hoặc `ten` rỗng (DLL cũ) → hiện tên khoá như cũ.
+- Nhị phân: `CoreServer.dll.moi` mới (md5 ở mục 7, dòng cập nhật 05/09) = bản 0e3634a6 + 4 cột; client không đổi.

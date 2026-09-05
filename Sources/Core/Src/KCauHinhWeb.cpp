@@ -65,6 +65,10 @@ static const char* s_szDDL[] =
 	" thu_tu INT NOT NULL DEFAULT 0,"
 	" updated_at INT NOT NULL DEFAULT 0,"
 	" updated_by VARBINARY(32) NOT NULL DEFAULT '',"
+	" ten VARBINARY(96) NOT NULL DEFAULT '',"			// [05/09] ten tieng Viet (TCVN3)
+	" giai_thich VARBINARY(1500) NOT NULL DEFAULT '',"	// [05/09] giai thich chi tiet (TCVN3, xuong dong tach doan)
+	" canh_bao VARBINARY(800) NOT NULL DEFAULT '',"		// [05/09] canh bao neu chinh sai (TCVN3)
+	" nguy_co TINYINT NOT NULL DEFAULT 0,"				// [05/09] 0 an toan | 1 can than | 2 nguy hiem
 	" KEY idx_nhom (nhom, thu_tu)"
 	") ENGINE=InnoDB DEFAULT CHARSET=latin1",
 
@@ -255,8 +259,12 @@ static void sGhiVAp(const std::string& k, const std::string& v)
 // 4. KHAI KHOA (INSERT IGNORE: web da sua thi giu; metadata lam moi moi lan boot)
 //////////////////////////////////////////////////////////////////////////////
 
+// [05/09] ten / giaithich / canhbao / nNguyCo: tieng Viet TCVN3 tu cfgw_meta.lua (chu game: "giai thich ro
+// hon bang tieng Viet co dau va canh bao neu chinh sai"). NULL = khong dong vao (khoa C++ khai tu sKhaiCpp,
+// tieng Viet den sau qua CFGW_MoTa).
 static bool sKhai(const char* k, const char* v, const char* nhom, int nKieu, double dMin, double dMax,
-                  const char* mota, const char* nguon, int nApDung, const char* donvi)
+                  const char* mota, const char* nguon, int nApDung, const char* donvi,
+                  const char* ten = 0, const char* giaithich = 0, const char* canhbao = 0, int nNguyCo = 0)
 {
 	if (!s_bTableOk || !k || !k[0])
 		return false;
@@ -266,7 +274,7 @@ static bool sKhai(const char* k, const char* v, const char* nhom, int nKieu, dou
 		return true;						// da khai trong tien trinh nay
 	const int nThuTu = ++s_nThuTu;
 	{
-		KDBParam p[13];
+		KDBParam p[17];
 		p[0]  = KDBParam::S(k);
 		p[1]  = KDBParam::S(v ? v : "");	// v
 		p[2]  = KDBParam::S(v ? v : "");	// v_ap: luc khai, gia tri dang chay = gia tri tep
@@ -280,13 +288,17 @@ static bool sKhai(const char* k, const char* v, const char* nhom, int nKieu, dou
 		p[10] = KDBParam::S(nguon ? nguon : "");
 		p[11] = KDBParam::I(nApDung);
 		p[12] = KDBParam::I(nThuTu);
-		if (!g_MySQLDB.Exec("INSERT IGNORE INTO gcfg (k, v, v_ap, v_macdinh, nhom, kieu, min_v, max_v, don_vi, mota, nguon, ap_dung, thu_tu, updated_at, updated_by)"
-		                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'server')", p, 13, 0, 0))
+		p[13] = KDBParam::S(ten ? ten : "");
+		p[14] = KDBParam::S(giaithich ? giaithich : "");
+		p[15] = KDBParam::S(canhbao ? canhbao : "");
+		p[16] = KDBParam::I(nNguyCo);
+		if (!g_MySQLDB.Exec("INSERT IGNORE INTO gcfg (k, v, v_ap, v_macdinh, nhom, kieu, min_v, max_v, don_vi, mota, nguon, ap_dung, thu_tu, updated_at, updated_by, ten, giai_thich, canh_bao, nguy_co)"
+		                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'server', ?, ?, ?, ?)", p, 17, 0, 0))
 			return false;					// MySQL loi -> lan sau khai lai
 	}
 	{
-		// lam moi metadata (mac dinh dang chay, mo ta, nhom, thu tu...) - KHONG dong vao v cua web
-		KDBParam p[10];
+		// lam moi metadata (mac dinh dang chay, mo ta, nhom, thu tu, tieng Viet...) - KHONG dong vao v cua web
+		KDBParam p[14];
 		p[0] = KDBParam::S(v ? v : "");
 		p[1] = KDBParam::S(nhom ? nhom : "");
 		p[2] = KDBParam::I(nKieu);
@@ -296,8 +308,20 @@ static bool sKhai(const char* k, const char* v, const char* nhom, int nKieu, dou
 		p[6] = KDBParam::S(mota ? mota : "");
 		p[7] = KDBParam::S(nguon ? nguon : "");
 		p[8] = KDBParam::I(nApDung);
-		p[9] = KDBParam::S(k);
-		g_MySQLDB.Post("UPDATE gcfg SET v_macdinh=?, nhom=?, kieu=?, min_v=?, max_v=?, don_vi=?, mota=?, nguon=?, ap_dung=? WHERE k=?", p, 10);
+		if (ten)
+		{
+			p[9]  = KDBParam::S(ten);
+			p[10] = KDBParam::S(giaithich ? giaithich : "");
+			p[11] = KDBParam::S(canhbao ? canhbao : "");
+			p[12] = KDBParam::I(nNguyCo);
+			p[13] = KDBParam::S(k);
+			g_MySQLDB.Post("UPDATE gcfg SET v_macdinh=?, nhom=?, kieu=?, min_v=?, max_v=?, don_vi=?, mota=?, nguon=?, ap_dung=?, ten=?, giai_thich=?, canh_bao=?, nguy_co=? WHERE k=?", p, 14);
+		}
+		else
+		{
+			p[9] = KDBParam::S(k);
+			g_MySQLDB.Post("UPDATE gcfg SET v_macdinh=?, nhom=?, kieu=?, min_v=?, max_v=?, don_vi=?, mota=?, nguon=?, ap_dung=? WHERE k=?", p, 10);
+		}
 		{
 			KDBParam q[2];
 			q[0] = KDBParam::I(nThuTu);
@@ -322,6 +346,8 @@ static void sKhaiCpp()
 	}
 }
 
+static void sDamBaoCotMoi();		// [05/09] dinh nghia o muc 5 (can _RowInt)
+
 bool CauHinhWeb_EnsureTables()
 {
 	if (!g_MySQLDB.IsReady())
@@ -337,6 +363,7 @@ bool CauHinhWeb_EnsureTables()
 			return false;
 		}
 	}
+	sDamBaoCotMoi();		// bang da co tu ban truoc -> them cot tieng Viet neu thieu
 	// khoa cfg_version phai co san de web INCREMENT duoc ngay lan luu dau
 	g_MySQLDB.Exec("INSERT IGNORE INTO gcfg_config (k, v, updated_at) VALUES ('cfg_version', '0', 0)", 0, 0);
 	s_bTableOk = true;
@@ -356,6 +383,39 @@ static bool _RowInt(const KDBRow& row, void* p)
 	((KCFGWIntBox*)p)->n = s.empty() ? 0 : atoi(s.c_str());
 	((KCFGWIntBox*)p)->bCo = true;
 	return true;
+}
+
+// [05/09] Cot tieng Viet them sau khi bang gcfg co the da ton tai (may chu tung chay ban 04/09):
+// CREATE TABLE IF NOT EXISTS khong them cot -> hoi information_schema, thieu thi ALTER (mot lan).
+struct KCFGWCotMoi { const char* ten; const char* ddl; };
+static const KCFGWCotMoi s_aCotMoi[] =
+{
+	{ "ten",        "ALTER TABLE gcfg ADD COLUMN ten VARBINARY(96) NOT NULL DEFAULT ''" },
+	{ "giai_thich", "ALTER TABLE gcfg ADD COLUMN giai_thich VARBINARY(1500) NOT NULL DEFAULT ''" },
+	{ "canh_bao",   "ALTER TABLE gcfg ADD COLUMN canh_bao VARBINARY(800) NOT NULL DEFAULT ''" },
+	{ "nguy_co",    "ALTER TABLE gcfg ADD COLUMN nguy_co TINYINT NOT NULL DEFAULT 0" },
+};
+
+static void sDamBaoCotMoi()
+{
+	const int nSo = (int)(sizeof(s_aCotMoi) / sizeof(s_aCotMoi[0]));
+	for (int i = 0; i < nSo; i++)
+	{
+		KCFGWIntBox c;
+		c.n = 0;
+		c.bCo = false;
+		KDBParam p[1];
+		p[0] = KDBParam::S(s_aCotMoi[i].ten);
+		if (!g_MySQLDB.Query("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='gcfg' AND COLUMN_NAME=?", p, 1, _RowInt, &c))
+			continue;
+		if (c.bCo && c.n == 0)
+		{
+			if (g_MySQLDB.Exec(s_aCotMoi[i].ddl, 0, 0))
+				g_DebugLog((LPSTR)"[CFGW] da them cot gcfg.%s", s_aCotMoi[i].ten);
+			else
+				g_DebugLog((LPSTR)"[CFGW] KHONG them duoc cot gcfg.%s", s_aCotMoi[i].ten);
+		}
+	}
 }
 
 struct KCFGWRow { std::string k; std::string vAp; std::string vMacDinh; KCFGWVal x; };
@@ -566,7 +626,12 @@ int LuaCFGW_Get(Lua_State* L)
 	return 1;
 }
 
-// CFGW_Khai(k, v, nhom, kieu, min, max, mota, nguon, ap_dung, don_vi) -> 1 da khai | 0 chua san sang
+#define CFGW_MAX_TEN		96
+#define CFGW_MAX_GIAITHICH	1500
+#define CFGW_MAX_CANHBAO	800
+
+// CFGW_Khai(k, v, nhom, kieu, min, max, mota, nguon, ap_dung, don_vi [, ten, giai_thich, canh_bao, nguy_co])
+//   -> 1 da khai | 0 chua san sang. [05/09] 4 doi so cuoi = tieng Viet TCVN3 (tu cfgw_meta.lua), bo trong = khong dong.
 int LuaCFGW_Khai(Lua_State* L)
 {
 	if (!CauHinhWeb_EnsureTables())
@@ -584,10 +649,55 @@ int LuaCFGW_Khai(Lua_State* L)
 	std::string nguon = sArgStr(L, 8);
 	const int nAp     = sArgInt(L, 9);
 	std::string donvi = sArgStr(L, 10);
+	std::string ten   = sArgStr(L, 11);
+	std::string gt    = sArgStr(L, 12);
+	std::string cb    = sArgStr(L, 13);
+	int nNguyCo       = sArgInt(L, 14);
 	if (mota.size() > 250)  mota.resize(250);
 	if (v.size() > 250)     v.resize(250);
 	if (donvi.size() > 16)  donvi.resize(16);
-	Lua_PushNumber(L, sKhai(k.c_str(), v.c_str(), nhom.c_str(), nKieu, dMin, dMax, mota.c_str(), nguon.c_str(), nAp, donvi.c_str()) ? 1 : 0);
+	if (ten.size() > CFGW_MAX_TEN)      ten.resize(CFGW_MAX_TEN);
+	if (gt.size() > CFGW_MAX_GIAITHICH) gt.resize(CFGW_MAX_GIAITHICH);
+	if (cb.size() > CFGW_MAX_CANHBAO)   cb.resize(CFGW_MAX_CANHBAO);
+	if (nNguyCo < 0 || nNguyCo > 2)     nNguyCo = 1;
+	const bool bCoVn = !ten.empty();
+	Lua_PushNumber(L, sKhai(k.c_str(), v.c_str(), nhom.c_str(), nKieu, dMin, dMax, mota.c_str(), nguon.c_str(), nAp, donvi.c_str(),
+	                        bCoVn ? ten.c_str() : 0, bCoVn ? gt.c_str() : 0, bCoVn ? cb.c_str() : 0, bCoVn ? nNguyCo : 0) ? 1 : 0);
+	return 1;
+}
+
+// CFGW_MoTa(k, ten, giai_thich, canh_bao, nguy_co) -> 1 da ghi | 0 chua san sang / khoa rong.
+// [05/09] Tieng Viet cho khoa C++ (ServerConfig.* / Exp.*): C++ tu khai metadata (sKhaiCpp, chu ASCII),
+// script gui tieng Viet TCVN3 qua day de C++ khong phai chua literal TCVN3. Post (khong cho), mot lan moi boot.
+int LuaCFGW_MoTa(Lua_State* L)
+{
+	if (!CauHinhWeb_EnsureTables())
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	std::string k   = sArgStr(L, 1);
+	std::string ten = sArgStr(L, 2);
+	std::string gt  = sArgStr(L, 3);
+	std::string cb  = sArgStr(L, 4);
+	int nNguyCo     = sArgInt(L, 5);
+	if (k.empty() || k.size() > 64)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	if (ten.size() > CFGW_MAX_TEN)      ten.resize(CFGW_MAX_TEN);
+	if (gt.size() > CFGW_MAX_GIAITHICH) gt.resize(CFGW_MAX_GIAITHICH);
+	if (cb.size() > CFGW_MAX_CANHBAO)   cb.resize(CFGW_MAX_CANHBAO);
+	if (nNguyCo < 0 || nNguyCo > 2)     nNguyCo = 1;
+	KDBParam p[5];
+	p[0] = KDBParam::S(ten.c_str());
+	p[1] = KDBParam::S(gt.c_str());
+	p[2] = KDBParam::S(cb.c_str());
+	p[3] = KDBParam::I(nNguyCo);
+	p[4] = KDBParam::S(k.c_str());
+	g_MySQLDB.Post("UPDATE gcfg SET ten=?, giai_thich=?, canh_bao=?, nguy_co=? WHERE k=?", p, 5);
+	Lua_PushNumber(L, 1);
 	return 1;
 }
 

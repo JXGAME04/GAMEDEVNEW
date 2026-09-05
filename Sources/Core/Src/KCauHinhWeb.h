@@ -27,7 +27,8 @@ const char* CauHinhWeb_Get(const char* k);				// gia tri ban web (NULL = chua co
 
 // ---- ham Lua (dang ky trong ScriptFuns.cpp, nhanh may chu) ----
 int LuaCFGW_Get(Lua_State* L);		// (k) -> so | chuoi | nil
-int LuaCFGW_Khai(Lua_State* L);		// (k, v, nhom, kieu, min, max, mota, nguon, ap_dung, don_vi) -> 1 | 0
+int LuaCFGW_Khai(Lua_State* L);		// (k, v, nhom, kieu, min, max, mota, nguon, ap_dung, don_vi [, ten, giai_thich, canh_bao, nguy_co]) -> 1 | 0
+int LuaCFGW_MoTa(Lua_State* L);		// (k, ten, giai_thich, canh_bao, nguy_co) tieng Viet cho khoa C++ -> 1 | 0   [05/09]
 int LuaCFGW_Tick(Lua_State* L);		// () -> 1 vua nap lai | 0 khong doi | -1 chua san sang
 int LuaCFGW_Reload(Lua_State* L);	// () ep nap lai -> so loi | -1
 int LuaCFGW_Info(Lua_State* L);		// () -> bang {ready, ver, so_khoa, so_loi, nap_cuoi, so_khai}

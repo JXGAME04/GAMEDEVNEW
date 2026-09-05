@@ -44,6 +44,7 @@ function CFGW_KhaiBang(tb, szNguon, szNhomMacDinh)
 		end
 		if (kieu >= 0 and type(k) == "string") then
 			local nhom, mota, mn, mx, ap, donvi = szNhomMacDinh, "", 0, 0, 1, ""
+			local ten, gt, cb, nc = "", "", "", 1		-- [05/09] tieng Viet: ten / giai thich / canh bao / nguy co
 			local m = nil
 			if (tbCFGW_META ~= nil) then
 				m = tbCFGW_META[k]
@@ -60,8 +61,15 @@ function CFGW_KhaiBang(tb, szNguon, szNhomMacDinh)
 				if (m[8] ~= nil) then
 					donvi = m[8]
 				end
+				if (m[9] ~= nil) then
+					ten = m[9]
+					gt = m[10]
+					cb = m[11]
+					nc = m[12]
+				end
 			end
-			if (CFGW_Khai(k, tostring(v), nhom, kieu, mn, mx, mota, szNguon, ap, donvi) == 1) then
+			-- DLL 04/09 (CFGW_Khai 10 doi so) bo qua 4 doi so thua - khong loi
+			if (CFGW_Khai(k, tostring(v), nhom, kieu, mn, mx, mota, szNguon, ap, donvi, ten, gt, cb, nc) == 1) then
 				nOk = nOk + 1
 			end
 		end
@@ -80,6 +88,27 @@ function CFGW_KhaiTatCa()
 	n = n + CFGW_KhaiBang(tbCFG_EXP,    "ch_exp.lua",           "EXP")
 	n = n + CFGW_KhaiBang(tbCFG_DROP,   "ch_drop.lua",          "ROTDO")
 	n = n + CFGW_KhaiBang(tbCHD,        "cauhinh_hoatdong.lua", "HOATDONG")
+	CFGW_MoTaCpp()
+	return n
+end
+
+-- [05/09] Tieng Viet cho khoa C++ (ServerConfig.* / Exp.*): C++ tu khai metadata cua no (chu ASCII),
+-- script chi gui ten / giai thich / canh bao / nguy co qua CFGW_MoTa (bang tbCFGW_META_CPP trong
+-- cfgw_meta.lua). Lam MOT lan moi tien trinh (co CFGW_DA_MOTA_CPP la global, song qua dofile);
+-- MySQL chua san sang (tra 0) thi lan sau lam tiep. DLL cu khong co CFGW_MoTa -> bo qua.
+function CFGW_MoTaCpp()
+	if (CFGW_MoTa == nil or tbCFGW_META_CPP == nil or CFGW_DA_MOTA_CPP == 1) then
+		return 0
+	end
+	local n = 0
+	for k, m in tbCFGW_META_CPP do
+		if (CFGW_MoTa(k, m[1], m[2], m[3], m[4]) == 1) then
+			n = n + 1
+		end
+	end
+	if (n > 0) then
+		CFGW_DA_MOTA_CPP = 1
+	end
 	return n
 end
 

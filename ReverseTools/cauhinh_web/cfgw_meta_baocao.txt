@@ -1,4 +1,4 @@
-cfgw_meta: 291 khoa khai, 23 bo qua
+cfgw_meta: 291 khoa script, 27 khoa C++, 23 bo qua, 0 LOI
 NHOM            khoa  ap<=1ph  restart
 BACHNHAN          19       11        8
 BANDONGHANH       15        1       14
@@ -20,6 +20,8 @@ TRONGBANG          6        0        6
 TYVO               4        2        2
 VANTIEU           19       19        0
 VIEMDE            11        7        4
+
+NGUY CO: 53 an toan, 180 can than, 85 nguy hiem
 
 KHOA CAN NAP LAI SCRIPT / RESTART (ap_dung = 2):
   DT_SO_NV_MOI_VONG              DATAU        ch_chung.lua
