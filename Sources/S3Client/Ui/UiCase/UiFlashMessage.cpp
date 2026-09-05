@@ -48,6 +48,7 @@ KUiFlashMessage::KUiFlashMessage()
 	m_uMaxQueueDelay = 1500;
 	m_uNextStartTime = 0;
 	m_nMaxLines = 3;	// [TKCHAT 05/09]
+	m_bEnable = 1;	// [TKCHAT 05/09b]
 	SetColor(0x00000000); // fully transparent background
 }
 
@@ -188,8 +189,13 @@ KUiFlashMessage* KUiFlashMessage::OpenWindow()
 	if (m_pSelf)
 	{
 		m_pSelf->m_uLastShowTime = IR_GetCurrentTime();
-		m_pSelf->Show();
-		m_pSelf->BringToTop();
+		if (m_pSelf->m_bEnable)	// [TKCHAT 05/09b] Enable=0: cua so an, khong Paint/Breathe gi
+		{
+			m_pSelf->Show();
+			m_pSelf->BringToTop();
+		}
+		else
+			m_pSelf->Hide();
 	}
 	return m_pSelf;
 }
@@ -304,6 +310,7 @@ void KUiFlashMessage::LoadScheme(const char* pszScheme)
 				Ini.GetInteger(pszSec, "FadeMs", 1500, &m_pSelf->m_nFadeMs);
 				Ini.GetInteger(pszSec, "MaxQueueDelay", 1500, (int*)&m_pSelf->m_uMaxQueueDelay);
 				Ini.GetInteger(pszSec, "MaxLines", 3, &m_pSelf->m_nMaxLines);	// [TKCHAT 05/09]
+				Ini.GetInteger(pszSec, "Enable", 1, &m_pSelf->m_bEnable);	// [TKCHAT 05/09b] 0 = tat hoan toan
 				if (m_pSelf->m_nMaxLines < 1)
 					m_pSelf->m_nMaxLines = 1;
 				if (m_pSelf->m_nRiseSpeed < 1)
@@ -325,6 +332,8 @@ int KUiFlashMessage::PtInWindow(int x, int y)
 void KUiFlashMessage::MessageArrival(KNewsMessage* pMsg, SYSTEMTIME* pTime)
 {
 	unsigned int uTime;
+	if (m_pSelf && !m_pSelf->m_bEnable)	// [TKCHAT 05/09b] tat hoan toan: khong nhan, khong xep hang
+		return;
 	if (m_pSelf && pMsg &&
 		pMsg->nMsgLen > 0 && pMsg->nMsgLen <= sizeof(pMsg->sMsg))
 	{
