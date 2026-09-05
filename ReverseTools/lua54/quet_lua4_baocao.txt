@@ -1,1126 +1,439 @@
-quet_lua4: 3435 tep .lua, 11.5 MB, 0 tep loi doc
+quet_lua4: 189 tep .lua, 0.9 MB, 0 tep loi doc
 
 MA                lan      tep  y nghia
-UPVAL             500       66  %ten upvalue (bo % -> tham chieu)
-UPVAL_RUIRO         1        1  %ten ma bien ngoai bi gan lai sau do -> phai ra tay
-FORIN             197       70  for k,v in t -> pairs()
-LIB             13950     1039  goi ham thu vien ten cu (shim)
-IO                240       28  ham I/O Lua 4 (shim io.*)
-TAG                18        3  tag method -> metatable (tay)
-VARARG            113       39  arg trong ham ... (chen local arg = {...})
-DOSTRING           14        8  dostring -> load (shim)
-CALL               55       24  call -> pcall (shim)
-GLOBALS            22        9  globals/getglobal/setglobal (shim _G)
-ESCAPE             20       17  day thoat la trong chuoi -> loi cu phap 5.4 (bo chuyen sua)
-KEYWORD             4        3  ten trung tu khoa moi
-DIV              3518      421  phep chia / (5.4 ra so thuc)
-FMTD              868      223  format %d (5.4 loi neu khong nguyen -> shim)
-BIGINT             37       14  hang so > 2^31
-FORASSIGN        2652      629  gan lai bien for (5.5 cam)
-NEXT                3        2  next()
+UPVAL              74        8  %ten upvalue (bo % -> tham chieu)
+UPVAL_RUIRO         0        0  %ten ma bien ngoai bi gan lai sau do -> phai ra tay
+FORIN              38       23  for k,v in t -> pairs()
+LIB              1464       92  goi ham thu vien ten cu (shim)
+IO                 26        4  ham I/O Lua 4 (shim io.*)
+TAG                11        2  tag method -> metatable (tay)
+VARARG             52       16  arg trong ham ... (chen local arg = {...})
+DOSTRING            6        4  dostring -> load (shim)
+CALL               21       12  call -> pcall (shim)
+GLOBALS             9        8  globals/getglobal/setglobal (shim _G)
+ESCAPE              0        0  day thoat la trong chuoi -> loi cu phap 5.4 (bo chuyen sua)
+KEYWORD             0        0  ten trung tu khoa moi
+DIV               192       44  phep chia / (5.4 ra so thuc)
+FMTD               71       31  format %d (5.4 loi neu khong nguyen -> shim)
+BIGINT              0        0  hang so > 2^31
+FORASSIGN         234       71  gan lai bien for (5.5 cam)
+NEXT                0        0  next()
 
 HAM THU VIEN Lua 4 theo ten (so lan):
-  floor=6154, getn=1833, format=1604, tonumber=972, random=824, tinsert=538, print=329, type=289, strsub=258, strfind=257, date=251, mod=232, tostring=139, dofile=67, strlen=46, error=32, ceil=30, gsub=29, abs=22, rawget=9, sort=6, sqrt=5, tremove=4, rawset=4, log10=4, next=3, min=3, atan2=2, strbyte=1, strlower=1, exp=1, max=1
+  tonumber=229, getn=189, format=175, floor=159, tinsert=153, random=151, print=103, tostring=71, type=69, strfind=34, strsub=30, mod=26, strlen=21, date=19, ceil=9, rawget=6, gsub=4, abs=4, rawset=3, sort=3, error=2, dofile=2, min=1, tremove=1
 HAM I/O Lua 4 theo ten:
-  write=76, openfile=70, closefile=65, read=11, appendto=5, writeto=5, exit=3, flush=3, execute=2
+  write=12, openfile=6, flush=4, read=3, exit=1
 
-== UPVAL_RUIRO (1) ==
-  script/auction_house/auction_manager.lua:343  %nCount (gan lai o dong 349)
+== FORIN (38) ==
+  scriptjx2/lib/awardtemplet.lua:50  for k, v in
+  scriptjx2/lib/basic.lua:85  for key, value in
+  scriptjx2/lib/common.lua:155  for key, val in
+  scriptjx2/lib/common_sharedata.lua:56  for k, v in
+  scriptjx2/lib/common_sharedata.lua:157  for key, data in
+  scriptjx2/lib/common_sharedata.lua:173  for k, v in
+  scriptjx2/lib/common_sharedata.lua:195  for k, v in
+  scriptjx2/lib/composeex.lua:157  for k, v in
+  scriptjx2/lib/composeex.lua:162  for k1, v1 in
+  scriptjx2/lib/composeex.lua:170  for key, value in
+  scriptjx2/lib/composelistclass.lua:27  for i, tbFormula in
+  scriptjx2/lib/composelistex.lua:19  for i, tbFormula in
+  scriptjx2/lib/debug.lua:152  for k, v in
+  scriptjx2/lib/itemblue.lua:93  for x, y in
+  scriptjx2/lib/log.lua:122  for k, v in
+  scriptjx2/lib/log.lua:132  for _, v in
+  scriptjx2/lib/mapdb.lua:17  for name, tb in
+  scriptjx2/lib/mapdb.lua:31  for name, tb in
+  scriptjx2/lib/mapdb.lua:64  for name, tb in
+  scriptjx2/lib/mapdb.lua:115  for name, tb in
+  scriptjx2/lib/mem.lua:13  for i, j in
+  scriptjx2/lib/mem.lua:25  for i, j in
+  scriptjx2/lib/objbuffer_head.lua:110  for key, val in
+  scriptjx2/lib/objbuffer_head.lua:114  for key, val in
+  scriptjx2/lib/player.lua:108  for k, v in
+  scriptjx2/lib/player.lua:121  for k, v in
+  scriptjx2/lib/say.lua:31  for _, option in
+  scriptjx2/lib/statemachine.lua:168  for k, v in
+  scriptjx2/lib/statemachine.lua:197  for k, v in
+  scriptjx2/lib/unittest.lua:54  for key, func in
+  scriptjx2/lib/awardtype/simple.lua:8  for k, v in
+  scriptjx2/tong/log.lua:9  for key, value in
+  scriptjx2/tong/map/map_management.lua:47  for nMapCopyId, szMapCopyName in
+  scriptjx2/tong/map/map_management.lua:64  for nMapCopyId, szMapCopyName in
+  scriptjx2/tong_vn/log.lua:9  for key, value in
+  scriptjx2/tong_vn/tong_mix.lua:18  for _k, _v in
+  scriptjx2/tong_vn/map/map_management.lua:47  for nMapCopyId, szMapCopyName in
+  scriptjx2/tong_vn/map/map_management.lua:64  for nMapCopyId, szMapCopyName in
 
-== FORIN (184) ==
-  script/protocol.lua:105  for key, v in
-  script/activitysys/activity.lua:24  for key, value in
-  script/activitysys/activity.lua:136  for varId, pData in
-  script/activitysys/activitydetail.lua:28  for key, value in
-  script/activitysys/functionlib.lua:295  for k, v in
-  script/activitysys/g_activity.lua:37  for varId, pData in
-  script/activitysys/g_activity.lua:96  for varId, pData in
-  script/auction_house/auction_manager.lua:319  for nIdx, v in
-  script/auction_house/auction_manager.lua:1503  for _, nType in
-  script/auction_house/auction_manager.lua:1523  for k, v in
-  script/auction_house/auction_manager.lua:1530  for n, v in
-  script/cauhinh_web/cfgw_driver.lua:35  for k, v in
-  script/cauhinh_web/cfgw_driver.lua:104  for k, m in
-  script/dailogsys/dailog.lua:11  for k, v in
-  script/dailogsys/dailog.lua:103  for i, tbOptionList in
-  script/event/birthday_jieri/200905/class.lua:41  for i, j in
-  script/global/hocvocong.lua:1027  for fac, tb in
-  script/global/smelt_system.lua:148  for i, v in
-  script/global/smelt_system.lua:175  for i, v in
-  script/global/smeltsystem/smeltupgrade.lua:142  for k, v in
-  script/global/smeltsystem/smeltupgrade.lua:169  for k, v in
-  script/global/smeltsystem/smeltupgrade.lua:189  for k, v in
-  script/global/smeltsystem/smeltupgrade.lua:246  for k, v in
-  script/global/smeltsystem/smeltupgrade.lua:277  for k, v in
-  script/global/smeltsystem/smeltupgrade.lua:297  for k, v in
-  script/huoyuedu/huoyuedu.lua:198  for _, value in
-  script/huoyuedu/huoyuedu.lua:218  for _, value in
-  script/huoyuedu/huoyuedu.lua:231  for _, nActivityId in
-  script/item/bd_lenhbai_info.lua:19  for k, v in
-  script/leaguematch/task.lua:10  for _, tb_cal in
-  script/leaguematch/task.lua:25  for i, tb in
-  script/leaguematch/wlls_config.lua:66  for n_sid, tb_row in
-  script/leaguematch/wlls_config.lua:76  for n_sid, tb_row in
-  script/leaguematch/wlls_config.lua:83  for n_sid, n_loai in
-  script/leaguematch/wlls_config.lua:100  for n_type, tb_data in
-  script/leaguematch/wlls_config.lua:102  for n_level, tb_rows in
-  script/leaguematch/wlls_config.lua:103  for n_row, tb_row in
-  script/lib/awardtemplet.lua:50  for k, v in
-  script/lib/common.lua:155  for key, val in
-  script/lib/composeex.lua:157  for k, v in
-  script/lib/composeex.lua:162  for k1, v1 in
-  script/lib/composeex.lua:170  for key, value in
-  script/lib/lib_ham.lua:141  for key, value in
-  script/lib/lib_ham.lua:180  for key, value in
-  script/lib/log.lua:122  for k, v in
-  script/lib/log.lua:132  for _, v in
-  script/lib/objbuffer_head.lua:110  for key, val in
-  script/lib/objbuffer_head.lua:114  for key, val in
-  script/lib/awardtype/simple.lua:8  for k, v in
-  script/mail/maildef.lua:47  for _, _ in
-  script/mail/maildef.lua:58  for k, x in
-  script/mail/mailmanager.lua:186  for nId, tb in
-  script/misc/taskmanager.lua:290  for nGroupId, bUse in
-  script/misc/taskmanager.lua:340  for key, value in
-  script/misc/eventsys/eventsys.lua:11  for key, value in
-  script/misc/eventsys/type/func.lua:107  for key, value in
-  script/mission/tongcastle/tongcastle.lua:154  for szName, nPoint in
-  script/mission/tongcastle/tongcastle.lua:246  for nMapId, tb in
-  script/mission/tongcastle/tongcastle.lua:252  for nMapId, tb in
-  script/mission/tongcastle/tongcastle.lua:428  for nMapId, _ in
-  script/mission/tongcastle/tongcastle.lua:439  for nMapId, _ in
-  script/mission/tongcastle/tongcastle.lua:449  for k, v in
-  script/mission/tongcastle/tongcastle.lua:454  for k, v in
-  script/missions/bairenleitai/hundred_arena.lua:155  for szType, nId in
-  script/missions/bairenleitai/hundred_arena.lua:289  for szname, tb in
-  script/missions/bairenleitai/hundred_arena.lua:357  for name, tb in
-  script/missions/bairenleitai/hundred_arena.lua:394  for szname, tb in
-  script/missions/basemission/dungeon.lua:141  for k, v in
-  script/missions/basemission/dungeon.lua:155  for k, v in
-  script/missions/basemission/dungeon.lua:267  for nTimerId, tb in
-  script/missions/challengeoftime/chuangguang30.lua:77  for szType, tbId in
-  script/missions/challengeoftime/chuangguang30.lua:171  for _, szName in
-  script/missions/challengeoftime/chuangguang30.lua:190  for _, szName in
-  script/missions/challengeoftime/chuangguang30.lua:202  for szName, bFlag in
-  script/missions/challengeoftime/chuangguang30.lua:226  for szName, bFlag in
-  script/missions/leaguematch/wlls_autoexec.lua:31  for _, tb in
-  script/missions/leaguematch/wlls_autoexec.lua:38  for _, tb_data in
-  script/missions/leaguematch/wlls_autoexec.lua:39  for _, tb_mtype in
-  script/missions/leaguematch/wlls_autoexec.lua:40  for _, tb_group in
-  script/missions/leaguematch/wlls_autoexec.lua:49  for _, tb_pos in
-  script/missions/leaguematch/wlls_autoexec.lua:66  for _, tb_npc in
-  script/missions/leaguematch/wlls_gmscript.lua:98  for n_idx, nGroupIdx in
-  script/missions/leaguematch/wlls_gmscript.lua:124  for n_idx, nGroupIdx in
-  script/missions/leaguematch/glbmission/combat.lua:15  for n_idx, nGroupIdx in
-  script/missions/leaguematch/glbmission/schedule.lua:120  for _, nIdx in
-  script/missions/leaguematch/glbmission/schedule.lua:134  for _, nIdx in
-  script/missions/leaguematch/glbmission/schedule.lua:180  for n_idx, nGroupIdx in
-  script/missions/leaguematch/glbmission/schedule.lua:194  for _, nCamp in
-  script/missions/leaguematch/glbmission/schedule.lua:241  for n_idx, nGroupIdx in
-  script/missions/leaguematch/macthtype/normal.lua:117  for nMType, tbMType in
-  script/missions/leaguematch/macthtype/normal.lua:118  for nGroup, tbGroup in
-  script/missions/leaguematch/macthtype/normal.lua:134  for _, tbTopic in
-  script/missions/leaguematch/npc/head.lua:42  for n_mtype, tb_mtaype in
-  script/missions/leaguematch/npc/helper.lua:80  for n_idx, tb_fmt in
-  script/missions/leaguematch/npc/helper.lua:110  for n_idx, tb_fmt in
-  script/missions/leaguematch/npc/helper.lua:156  for n_idx, tb_fmt in
-  script/missions/leaguematch/npc/helper.lua:188  for n, tb_fmt in
-  script/missions/leaguematch/npc/helper.lua:319  for n_idx, tb_fmt in
-  script/missions/leaguematch/npc/helper.lua:349  for n_idx, tb_fmt in
-  script/missions/leaguematch/npc/helper.lua:412  for n_idx, tb_fmt in
-  script/missions/tongcastle/game.lua:48  for nMapId, bFlag in
-  script/missions/tongcastle/game.lua:57  for key, value in
-  script/missions/tongcastle/game.lua:63  for key, value in
-  script/missions/tongcastle/game.lua:81  for nMapId, bFlag in
-  script/missions/tongcastle/game.lua:117  for key, value in
-  script/missions/tongcastle/game.lua:131  for nMapId, bFlag in
-  script/missions/tongcastle/game.lua:143  for szType, tbId in
-  script/missions/tongcastle/game.lua:145  for nMapId, _ in
-  script/missions/tongcastle/game.lua:166  for nMapId, bFlag in
-  script/missions/tongcastle/game.lua:173  for nMapId, bFlag in
-  script/missions/tongcastle/tongcastle.lua:228  for key, value in
-  script/missions/tongcastle/tongcastle.lua:233  for nMapId, bFlag in
-  script/missions/tongcastle/tongcastle.lua:316  for szRoomName, _ in
-  script/missions/tongcastle/tongcastle.lua:339  for nMapId, bFlag in
-  script/missions/tongcastle/tongcastle.lua:526  for nMapId, bFlag in
-  script/missions/tongcastle/tongcastle.lua:531  for szPlayerName, tbPlayer in
-  script/missions/tongcastle/tongcastle.lua:666  for nMapId, bFlag in
-  script/missions/tongcastle/tongcastle.lua:691  for nNpcIndex, dwNpcId in
-  script/missions/tongcastle/tongcastle.lua:824  for nNpcIndex, dwNpcId in
-  script/missions/tongcastle/tongcastle.lua:882  for nMapId, bFlag in
-  script/missions/tongcastle/tongcastle.lua:884  for szPlayerName, _ in
-  script/missions/tongcastle/tongcastle.lua:898  for nMapId, bFlag in
-  script/missions/tongcastle/tongcastle.lua:917  for nMapId, _ in
-  script/missions/tongcastle/tongcastle.lua:1010  for nMapId, bFlag in
-  script/missions/tongcastle/treedeath.lua:117  for szNpcName, _ in
-  script/missions/tongwar/relay/tongwar.lua:228  for i, tb in
-  script/missions/tongwar/relay/tongwar.lua:254  for strCityTongName, tbCity in
-  script/missions/yandibaozang/npc_death.lua:23  for x1, y1 in
-  script/missions/yandibaozang/saizi.lua:74  for index, value in
-  script/missions/yandibaozang/readymap/ready.lua:22  for k, v in
-  script/missions/yandibaozang/readymap/ready.lua:77  for nMapId, _ in
-  script/missions/yandibaozang/readymap/ready.lua:182  for szName, nPartyId in
-  script/missions/yandibaozang/readymap/ready.lua:187  for nPartyId, v in
-  script/missions/yandibaozang/readymap/ydbz_maphook.lua:31  for k, v in
-  script/petsys/petbox.lua:24  for k, v in
-  script/petsys/petequip.lua:58  for k, v in
-  script/vng_event/change_request_baoruong/exp_award.lua:94  for key, val in
-  script/vng_event/thapnienlenhbai/mainfuc.lua:12  for i, v in
-  script/vng_event/thapnienlenhbai/mainfuc.lua:20  for i, v in
-  script/vng_event/thapnienlenhbai/mainfuc.lua:35  for _, v in
-  script/vng_event/thapnienlenhbai/mainfuc.lua:43  for _, v in
-  script/Î÷ÄÏÄÏÇø/´óÀí¸®/´óÀí¸®/trap/dali_heidong_trap.lua:16  for nx, tbp in
-  script/ÖÐÔ­±±Çø/ãê¾©/ãê¾©/trap/bianjing_ximen_trap.lua:16  for nx, tbp in
-  script/lib/basic.lua:86  for key, value in
-  script/lib/common_sharedata.lua:56  for k, v in
-  script/lib/common_sharedata.lua:157  for key, data in
-  script/lib/common_sharedata.lua:173  for k, v in
-  script/lib/common_sharedata.lua:195  for k, v in
-  script/lib/composelistclass.lua:27  for i, tbFormula in
-  script/lib/composelistex.lua:19  for i, tbFormula in
-  script/lib/debug.lua:152  for k, v in
-  script/lib/itemblue.lua:93  for x, y in
-  script/lib/mapdb.lua:17  for name, tb in
-  script/lib/mapdb.lua:31  for name, tb in
-  script/lib/mapdb.lua:64  for name, tb in
-  script/lib/mapdb.lua:115  for name, tb in
-  script/lib/mem.lua:13  for i, j in
-  script/lib/mem.lua:25  for i, j in
-  script/lib/player.lua:108  for k, v in
-  script/lib/player.lua:121  for k, v in
-  script/lib/say.lua:31  for _, option in
-  script/lib/statemachine.lua:168  for k, v in
-  script/lib/statemachine.lua:197  for k, v in
-  script/lib/unittest.lua:54  for key, func in
-  script/tong/log.lua:9  for key, value in
-  script/tong/tong_mix.lua:18  for _k, _v in
-  script/tong/map/map_management.lua:47  for nMapCopyId, szMapCopyName in
-  script/tong/map/map_management.lua:64  for nMapCopyId, szMapCopyName in
-  script/ui/uiauction_house.lua:40  for szName, tbInfo in
-  script/ui/uiauction_house.lua:80  for szName, tbInfo in
-  script/ui/uiauction_house.lua:94  for nPage, tbPage in
-  script/ui/uiauction_house.lua:95  for i, tbItem in
-  script/ui/uiauction_house.lua:290  for szName, tbInfo in
-  script/ui/uiauction_house.lua:324  for i, tbItem in
-  script/ui/uiauction_house.lua:332  for i, tbItem in
-  script/ui/uimail.lua:44  for nId, tbHeader in
-  script/ui/uimail.lua:54  for nId, tbHeader in
-  script/ui/uimail.lua:64  for nId, tbHeader in
-  script/ui/uimail.lua:93  for nId, tbMail in
-  script/ui/uimail.lua:106  for nId, tbMailHeader in
-  script/ui/uimail.lua:235  for _, tbInfo in
-  script/ui/uimail.lua:254  for _, tbInfo in
-  script/ui/uimail.lua:432  for nId, _ in
-  script/ui/uimail.lua:457  for nId, _ in
+== TAG (11) ==
+  scriptjx2/lib/baseclass.lua:4  newtag
+  scriptjx2/lib/baseclass.lua:18  newtag
+  scriptjx2/lib/baseclass.lua:26  settag
+  scriptjx2/lib/baseclass.lua:41  settag
+  scriptjx2/lib/baseclass.lua:51  settagmethod
+  scriptjx2/lib/baseclass.lua:52  settagmethod
+  scriptjx2/lib/player.lua:147  newtag
+  scriptjx2/lib/player.lua:167  newtag
+  scriptjx2/lib/player.lua:169  settagmethod
+  scriptjx2/lib/player.lua:170  settagmethod
+  scriptjx2/lib/player.lua:179  settag
 
-== TAG (12) ==
-  script/global/station.lua:323  tag
-  script/lib/baseclass.lua:4  newtag
-  script/lib/baseclass.lua:18  newtag
-  script/lib/baseclass.lua:26  settag
-  script/lib/baseclass.lua:41  settag
-  script/lib/baseclass.lua:51  settagmethod
-  script/lib/baseclass.lua:52  settagmethod
-  script/lib/player.lua:147  newtag
-  script/lib/player.lua:167  newtag
-  script/lib/player.lua:169  settagmethod
-  script/lib/player.lua:170  settagmethod
-  script/lib/player.lua:179  settag
+== VARARG (52) ==
+  scriptjx2/lib/baseclass.lua:30  arg trong ham(...) mo o dong 21
+  scriptjx2/lib/baseclass.lua:45  arg trong ham(...) mo o dong 35
+  scriptjx2/lib/baseclass.lua:46  arg trong ham(...) mo o dong 35
+  scriptjx2/lib/basic.lua:36  arg trong ham(...) mo o dong 35
+  scriptjx2/lib/common.lua:28  arg trong ham(...) mo o dong 27
+  scriptjx2/lib/composeclass.lua:217  arg trong ham(...) mo o dong 173
+  scriptjx2/lib/debug.lua:21  arg trong ham(...) mo o dong 16
+  scriptjx2/lib/log.lua:57  arg trong ham(...) mo o dong 56
+  scriptjx2/lib/log.lua:58  arg trong ham(...) mo o dong 56
+  scriptjx2/lib/log.lua:59  arg trong ham(...) mo o dong 56
+  scriptjx2/lib/log.lua:98  arg trong ham(...) mo o dong 87
+  scriptjx2/lib/mem.lua:51  arg trong ham(...) mo o dong 40
+  scriptjx2/lib/player.lua:131  arg trong ham(...) mo o dong 128
+  scriptjx2/lib/player.lua:257  arg trong ham(...) mo o dong 256
+  scriptjx2/lib/player.lua:261  arg trong ham(...) mo o dong 260
+  scriptjx2/lib/player.lua:265  arg trong ham(...) mo o dong 264
+  scriptjx2/lib/player.lua:269  arg trong ham(...) mo o dong 268
+  scriptjx2/lib/player.lua:273  arg trong ham(...) mo o dong 272
+  scriptjx2/lib/player.lua:277  arg trong ham(...) mo o dong 276
+  scriptjx2/lib/player.lua:543  arg trong ham(...) mo o dong 542
+  scriptjx2/lib/player.lua:552  arg trong ham(...) mo o dong 546
+  scriptjx2/lib/player.lua:623  arg trong ham(...) mo o dong 622
+  scriptjx2/lib/player.lua:627  arg trong ham(...) mo o dong 626
+  scriptjx2/lib/player.lua:655  arg trong ham(...) mo o dong 654
+  scriptjx2/lib/player.lua:659  arg trong ham(...) mo o dong 658
+  scriptjx2/lib/simulator.lua:9  arg trong ham(...) mo o dong 6
+  scriptjx2/lib/simulator.lua:13  arg trong ham(...) mo o dong 6
+  scriptjx2/lib/simulator.lua:15  arg trong ham(...) mo o dong 6
+  scriptjx2/lib/simulator.lua:22  arg trong ham(...) mo o dong 6
+  scriptjx2/lib/simulator.lua:26  arg trong ham(...) mo o dong 6
+  scriptjx2/lib/simulator.lua:33  arg trong ham(...) mo o dong 6
+  scriptjx2/lib/statemachine.lua:204  arg trong ham(...) mo o dong 193
+  scriptjx2/tong/tong_setting.lua:79  arg trong ham(...) mo o dong 74
+  scriptjx2/tong/tong_setting.lua:80  arg trong ham(...) mo o dong 74
+  scriptjx2/tong/tong_setting.lua:81  arg trong ham(...) mo o dong 74
+  scriptjx2/tong/tong_setting.lua:82  arg trong ham(...) mo o dong 74
+  scriptjx2/tong/npc/city_totempole.lua:601  arg trong ham(...) mo o dong 595
+  scriptjx2/tong/npc/city_totempole.lua:604  arg trong ham(...) mo o dong 595
+  scriptjx2/tong/npc/city_totempole.lua:604  arg trong ham(...) mo o dong 595
+  scriptjx2/tong/npc/tong_totempole.lua:619  arg trong ham(...) mo o dong 613
+  scriptjx2/tong/npc/tong_totempole.lua:622  arg trong ham(...) mo o dong 613
+  scriptjx2/tong/npc/tong_totempole.lua:622  arg trong ham(...) mo o dong 613
+  scriptjx2/tong_vn/tong_setting.lua:79  arg trong ham(...) mo o dong 74
+  scriptjx2/tong_vn/tong_setting.lua:80  arg trong ham(...) mo o dong 74
+  scriptjx2/tong_vn/tong_setting.lua:81  arg trong ham(...) mo o dong 74
+  scriptjx2/tong_vn/tong_setting.lua:82  arg trong ham(...) mo o dong 74
+  scriptjx2/tong_vn/npc/city_totempole.lua:601  arg trong ham(...) mo o dong 595
+  scriptjx2/tong_vn/npc/city_totempole.lua:604  arg trong ham(...) mo o dong 595
+  scriptjx2/tong_vn/npc/city_totempole.lua:604  arg trong ham(...) mo o dong 595
+  scriptjx2/tong_vn/npc/tong_totempole.lua:619  arg trong ham(...) mo o dong 613
+  scriptjx2/tong_vn/npc/tong_totempole.lua:622  arg trong ham(...) mo o dong 613
+  scriptjx2/tong_vn/npc/tong_totempole.lua:622  arg trong ham(...) mo o dong 613
 
-== VARARG (101) ==
-  script/protocol.lua:233  arg trong ham(...) mo o dong 231
-  script/protocol.lua:234  arg trong ham(...) mo o dong 231
-  script/activitysys/activitydetail.lua:75  arg trong ham(...) mo o dong 75
-  script/activitysys/activitydetail.lua:106  arg trong ham(...) mo o dong 77
-  script/activitysys/activitydetail.lua:108  arg trong ham(...) mo o dong 77
-  script/activitysys/functionlib.lua:302  arg trong ham(...) mo o dong 301
-  script/activitysys/functionlib.lua:309  arg trong ham(...) mo o dong 306
-  script/activitysys/functionlib.lua:322  arg trong ham(...) mo o dong 319
-  script/activitysys/functionlib.lua:343  arg trong ham(...) mo o dong 337
-  script/activitysys/functionlib.lua:346  arg trong ham(...) mo o dong 337
-  script/activitysys/g_activity.lua:20  arg trong ham(...) mo o dong 18
-  script/activitysys/g_activity.lua:35  arg trong ham(...) mo o dong 34
-  script/activitysys/g_activity.lua:40  arg trong ham(...) mo o dong 34
-  script/battles/battle_rank_award.lua:101  arg trong ham(...) mo o dong 93
-  script/chienlenh/cl_ui.lua:17  arg trong ham(...) mo o dong 15
-  script/chienlenh/cl_ui.lua:18  arg trong ham(...) mo o dong 15
-  script/chienlenh/cl_ui.lua:19  arg trong ham(...) mo o dong 15
-  script/chienlenh/cl_ui.lua:21  arg trong ham(...) mo o dong 15
-  script/event/tongwar/event.lua:100  arg trong ham(...) mo o dong 99
-  script/event/tongwar/tongwar_gmscript.lua:19  arg trong ham(...) mo o dong 18
-  script/leaguematch/head.lua:177  arg trong ham(...) mo o dong 176
-  script/leaguematch/joinmatch.lua:225  arg trong ham(...) mo o dong 224
-  script/leaguematch/joinmatch.lua:225  arg trong ham(...) mo o dong 224
-  script/leaguematch/joinmatch.lua:226  arg trong ham(...) mo o dong 224
-  script/leaguematch/joinmatch.lua:227  arg trong ham(...) mo o dong 224
-  script/lib/baseclass.lua:30  arg trong ham(...) mo o dong 21
-  script/lib/baseclass.lua:45  arg trong ham(...) mo o dong 35
-  script/lib/baseclass.lua:46  arg trong ham(...) mo o dong 35
-  script/lib/common.lua:28  arg trong ham(...) mo o dong 27
-  script/lib/composeclass.lua:217  arg trong ham(...) mo o dong 173
-  script/lib/log.lua:57  arg trong ham(...) mo o dong 56
-  script/lib/log.lua:58  arg trong ham(...) mo o dong 56
-  script/lib/log.lua:59  arg trong ham(...) mo o dong 56
-  script/lib/log.lua:98  arg trong ham(...) mo o dong 87
-  script/lib/worldlibrary.lua:32  arg trong ham(...) mo o dong 29
-  script/lib/worldlibrary.lua:40  arg trong ham(...) mo o dong 37
-  script/lib/worldlibrary.lua:44  arg trong ham(...) mo o dong 37
-  script/mail/maildef.lua:38  arg trong ham(...) mo o dong 36
-  script/misc/eventsys/eventsys.lua:32  arg trong ham(...) mo o dong 27
-  script/misc/eventsys/eventsys.lua:67  arg trong ham(...) mo o dong 62
-  script/misc/eventsys/eventsys.lua:97  arg trong ham(...) mo o dong 79
-  script/misc/eventsys/eventsys.lua:99  arg trong ham(...) mo o dong 79
-  script/misc/eventsys/type/usetownportal.lua:12  arg trong ham(...) mo o dong 5
-  script/missions/bairenleitai/hundred_arena.lua:168  arg trong ham(...) mo o dong 166
-  script/missions/basemission/lib.lua:12  arg trong ham(...) mo o dong 9
-  script/missions/basemission/lib.lua:22  arg trong ham(...) mo o dong 19
-  script/missions/challengeoftime/chuangguang30.lua:65  arg trong ham(...) mo o dong 64
-  script/missions/leaguematch/head.lua:987  arg trong ham(...) mo o dong 986
-  script/missions/leaguematch/npc/head.lua:181  arg trong ham(...) mo o dong 179
-  script/missions/leaguematch/npc/head.lua:182  arg trong ham(...) mo o dong 179
-  script/missions/leaguematch/npc/head.lua:182  arg trong ham(...) mo o dong 179
-  script/missions/leaguematch/npc/head.lua:185  arg trong ham(...) mo o dong 179
-  script/missions/leaguematch/npc/head.lua:188  arg trong ham(...) mo o dong 179
-  script/missions/leaguematch/npc/head.lua:188  arg trong ham(...) mo o dong 179
-  script/missions/tongcastle/game.lua:133  arg trong ham(...) mo o dong 130
-  script/missions/tongwar/tongwar_main.lua:10  arg trong ham(...) mo o dong 9
-  script/missions/tongwar/match/head.lua:167  arg trong ham(...) mo o dong 166
-  script/missions/tongwar/match/head.lua:167  arg trong ham(...) mo o dong 166
-  script/missions/tongwar/match/head.lua:167  arg trong ham(...) mo o dong 166
-  script/missions/tongwar/match/head.lua:167  arg trong ham(...) mo o dong 166
-  script/task/system/task_string.lua:42  arg trong ham(...) mo o dong 41
-  script/vng_lib/vngtranslog.lua:35  arg trong ham(...) mo o dong 20
-  script/vng_lib/vngtranslog.lua:36  arg trong ham(...) mo o dong 20
-  script/Î÷ÄÏ±±Çø/½­½ò´å/Ö°ÄÜnpc/ÔÂÀÏ.lua:113  arg trong ham(...) mo o dong 97
-  script/lib/basic.lua:36  arg trong ham(...) mo o dong 35
-  script/lib/debug.lua:21  arg trong ham(...) mo o dong 16
-  script/lib/mem.lua:51  arg trong ham(...) mo o dong 40
-  script/lib/player.lua:131  arg trong ham(...) mo o dong 128
-  script/lib/player.lua:257  arg trong ham(...) mo o dong 256
-  script/lib/player.lua:261  arg trong ham(...) mo o dong 260
-  script/lib/player.lua:265  arg trong ham(...) mo o dong 264
-  script/lib/player.lua:269  arg trong ham(...) mo o dong 268
-  script/lib/player.lua:273  arg trong ham(...) mo o dong 272
-  script/lib/player.lua:277  arg trong ham(...) mo o dong 276
-  script/lib/player.lua:543  arg trong ham(...) mo o dong 542
-  script/lib/player.lua:552  arg trong ham(...) mo o dong 546
-  script/lib/player.lua:623  arg trong ham(...) mo o dong 622
-  script/lib/player.lua:627  arg trong ham(...) mo o dong 626
-  script/lib/player.lua:655  arg trong ham(...) mo o dong 654
-  script/lib/player.lua:659  arg trong ham(...) mo o dong 658
-  script/lib/simulator.lua:9  arg trong ham(...) mo o dong 6
-  script/lib/simulator.lua:13  arg trong ham(...) mo o dong 6
-  script/lib/simulator.lua:15  arg trong ham(...) mo o dong 6
-  script/lib/simulator.lua:22  arg trong ham(...) mo o dong 6
-  script/lib/simulator.lua:26  arg trong ham(...) mo o dong 6
-  script/lib/simulator.lua:33  arg trong ham(...) mo o dong 6
-  script/lib/statemachine.lua:204  arg trong ham(...) mo o dong 193
-  script/tong/tong_setting.lua:79  arg trong ham(...) mo o dong 74
-  script/tong/tong_setting.lua:80  arg trong ham(...) mo o dong 74
-  script/tong/tong_setting.lua:81  arg trong ham(...) mo o dong 74
-  script/tong/tong_setting.lua:82  arg trong ham(...) mo o dong 74
-  script/tong/npc/city_totempole.lua:599  arg trong ham(...) mo o dong 593
-  script/tong/npc/city_totempole.lua:602  arg trong ham(...) mo o dong 593
-  script/tong/npc/city_totempole.lua:602  arg trong ham(...) mo o dong 593
-  script/tong/npc/tong_totempole.lua:617  arg trong ham(...) mo o dong 611
-  script/tong/npc/tong_totempole.lua:620  arg trong ham(...) mo o dong 611
-  script/tong/npc/tong_totempole.lua:620  arg trong ham(...) mo o dong 611
-  script/ui/uichienlenh.lua:17  arg trong ham(...) mo o dong 15
-  script/ui/uichienlenh.lua:18  arg trong ham(...) mo o dong 15
-  script/ui/uichienlenh.lua:19  arg trong ham(...) mo o dong 15
-  script/ui/uichienlenh.lua:21  arg trong ham(...) mo o dong 15
+== DOSTRING (6) ==
+  scriptjx2/lib/composeclass.lua:292  dostring
+  scriptjx2/lib/debug.lua:254  dostring
+  scriptjx2/lib/debug.lua:265  dostring
+  scriptjx2/lib/say.lua:20  dostring
+  scriptjx2/lib/simulator.lua:51  dostring
+  scriptjx2/lib/simulator.lua:60  dostring
 
-== DOSTRING (13) ==
-  script/activitysys/functionlib.lua:34  dostring
-  script/activitysys/functionlib.lua:45  dostring
-  script/activitysys/functionlib.lua:213  dostring
-  script/activitysys/functionlib.lua:222  dostring
-  script/lib/composeclass.lua:292  dostring
-  script/lib/lib_ham.lua:88  dostring
-  script/partner/partner_test_bdh.lua:182  dostring
-  script/task/system/task_string.lua:130  dostring
-  script/lib/debug.lua:254  dostring
-  script/lib/debug.lua:265  dostring
-  script/lib/say.lua:20  dostring
-  script/lib/simulator.lua:51  dostring
-  script/lib/simulator.lua:60  dostring
+== CALL (21) ==
+  scriptjx2/lib/baseclass.lua:46  call
+  scriptjx2/lib/composeclass.lua:217  call
+  scriptjx2/lib/debug.lua:21  call
+  scriptjx2/lib/pfunction.lua:50  call
+  scriptjx2/lib/player.lua:131  call
+  scriptjx2/lib/player.lua:139  call
+  scriptjx2/lib/player.lua:552  call
+  scriptjx2/lib/player.lua:565  call
+  scriptjx2/lib/progressbar.lua:111  call
+  scriptjx2/lib/progressbar.lua:120  call
+  scriptjx2/lib/remoteexc.lua:56  call
+  scriptjx2/lib/remoteexc.lua:85  call
+  scriptjx2/lib/awardtype/honour.lua:38  call
+  scriptjx2/lib/awardtype/honour.lua:43  call
+  scriptjx2/lib/awardtype/item.lua:139  call
+  scriptjx2/lib/awardtype/item.lua:144  call
+  scriptjx2/lib/awardtype/simple.lua:49  call
+  scriptjx2/lib/awardtype/simple.lua:54  call
+  scriptjx2/lib/awardtype/title.lua:30  call
+  scriptjx2/lib/awardtype/title.lua:34  call
+  scriptjx2/lib/awardtype/zhenyuanpoint.lua:36  call
 
-== CALL (46) ==
-  script/timerserver.lua:88  call
-  script/timerserver.lua:89  call
-  script/timerserver.lua:90  call
-  script/activitysys/functionlib.lua:309  call
-  script/activitysys/functionlib.lua:322  call
-  script/activitysys/g_activity.lua:20  call
-  script/auction_house/auction_manager.lua:410  call
-  script/auction_house/auction_manager.lua:1233  call
-  script/auction_house/auction_manager.lua:1304  call
-  script/auction_house/auction_manager.lua:1326  call
-  script/cauhinh_web/cfgw_driver.lua:131  call
-  script/dailogsys/dailogsay.lua:58  call
-  script/dailogsys/dailogsay.lua:83  call
-  script/dailogsys/dailogsay.lua:109  call
-  script/dailogsys/dailogsay.lua:133  call
-  script/dailogsys/dailogsay.lua:149  call
-  script/dailogsys/dailogsay.lua:163  call
-  script/global/onkillnpc.lua:23  call
-  script/lib/baseclass.lua:46  call
-  script/lib/composeclass.lua:217  call
-  script/lib/pfunction.lua:50  call
-  script/lib/progressbar.lua:111  call
-  script/lib/progressbar.lua:120  call
-  script/lib/remoteexc.lua:56  call
-  script/lib/remoteexc.lua:85  call
-  script/lib/worldlibrary.lua:32  call
-  script/lib/awardtype/simple.lua:49  call
-  script/lib/awardtype/simple.lua:54  call
-  script/misc/eventsys/eventsys.lua:69  call
-  script/misc/eventsys/eventsys.lua:101  call
-  script/missions/basemission/dungeon.lua:247  call
-  script/missions/basemission/lib.lua:12  call
-  script/missions/basemission/lib.lua:22  call
-  script/Î÷ÄÏ±±Çø/½­½ò´å/Ö°ÄÜnpc/ÔÂÀÏ.lua:113  call
-  script/lib/debug.lua:21  call
-  script/lib/player.lua:131  call
-  script/lib/player.lua:139  call
-  script/lib/player.lua:552  call
-  script/lib/player.lua:565  call
-  script/lib/awardtype/honour.lua:38  call
-  script/lib/awardtype/honour.lua:43  call
-  script/lib/awardtype/item.lua:139  call
-  script/lib/awardtype/item.lua:144  call
-  script/lib/awardtype/title.lua:30  call
-  script/lib/awardtype/title.lua:34  call
-  script/lib/awardtype/zhenyuanpoint.lua:36  call
+== GLOBALS (9) ==
+  scriptjx2/lib/composeclass.lua:38  setglobal
+  scriptjx2/lib/composelistclass.lua:19  setglobal
+  scriptjx2/lib/debug.lua:63  getglobal
+  scriptjx2/lib/pfunction.lua:19  getglobal
+  scriptjx2/lib/pfunction.lua:27  getglobal
+  scriptjx2/tong/npc/city_totempole.lua:32  getglobal
+  scriptjx2/tong/npc/tong_totempole.lua:38  getglobal
+  scriptjx2/tong_vn/npc/city_totempole.lua:32  getglobal
+  scriptjx2/tong_vn/npc/tong_totempole.lua:38  getglobal
 
-== GLOBALS (17) ==
-  script/protocol.lua:239  getglobal
-  script/protocol.lua:244  getglobal
-  script/activitysys/playerfunlib.lua:124  getglobal
-  script/activitysys/playerfunlib.lua:285  getglobal
-  script/activitysys/playerfunlib.lua:519  getglobal
-  script/activitysys/playerfunlib.lua:613  getglobal
-  script/activitysys/playerfunlib.lua:614  getglobal
-  script/activitysys/playerfunlib.lua:649  getglobal
-  script/activitysys/playerfunlib.lua:662  getglobal
-  script/item/test_hoatdong_admin.lua:40  getglobal
-  script/lib/composeclass.lua:38  setglobal
-  script/lib/pfunction.lua:19  getglobal
-  script/lib/pfunction.lua:27  getglobal
-  script/lib/composelistclass.lua:19  setglobal
-  script/lib/debug.lua:63  getglobal
-  script/tong/npc/city_totempole.lua:32  getglobal
-  script/tong/npc/tong_totempole.lua:38  getglobal
+== FORASSIGN (234) ==
+  scriptjx2/lib/alonelib.lua:37  i =
+  scriptjx2/lib/alonelib.lua:41  i =
+  scriptjx2/lib/award.lua:76  i =
+  scriptjx2/lib/award.lua:141  i =
+  scriptjx2/lib/awardtemplet.lua:24  i =
+  scriptjx2/lib/awardtemplet.lua:39  i =
+  scriptjx2/lib/awardtemplet.lua:44  i =
+  scriptjx2/lib/basic.lua:56  i =
+  scriptjx2/lib/basic.lua:99  i =
+  scriptjx2/lib/basic.lua:112  i =
+  scriptjx2/lib/common.lua:39  i =
+  scriptjx2/lib/common.lua:167  i =
+  scriptjx2/lib/common_sharedata.lua:75  i =
+  scriptjx2/lib/compose.lua:37  i =
+  scriptjx2/lib/compose.lua:58  i =
+  scriptjx2/lib/compose.lua:83  i =
+  scriptjx2/lib/compose.lua:97  i =
+  scriptjx2/lib/compose.lua:113  i =
+  scriptjx2/lib/compose.lua:167  i =
+  scriptjx2/lib/composeclass.lua:54  i =
+  scriptjx2/lib/composeclass.lua:97  i =
+  scriptjx2/lib/composeclass.lua:111  i =
+  scriptjx2/lib/composeclass.lua:152  i =
+  scriptjx2/lib/composeclass.lua:306  i =
+  scriptjx2/lib/composeex.lua:77  i =
+  scriptjx2/lib/composeex.lua:128  i =
+  scriptjx2/lib/composeex.lua:184  i =
+  scriptjx2/lib/composeex.lua:198  i =
+  scriptjx2/lib/composeex.lua:214  i =
+  scriptjx2/lib/composeex.lua:245  i =
+  scriptjx2/lib/composeex.lua:294  i =
+  scriptjx2/lib/composeex.lua:468  i =
+  scriptjx2/lib/composelistclass.lua:39  i =
+  scriptjx2/lib/composelistex.lua:30  i =
+  scriptjx2/lib/composelistex.lua:48  i =
+  scriptjx2/lib/compose_jinnang.lua:9  i =
+  scriptjx2/lib/compose_jinnang.lua:19  i =
+  scriptjx2/lib/coordinate.lua:11  i =
+  scriptjx2/lib/coordinate.lua:35  i =
+  scriptjx2/lib/coordinate.lua:45  i =
+  scriptjx2/lib/coordinate.lua:90  i =
+  scriptjx2/lib/coordinate.lua:118  i =
+  scriptjx2/lib/coordinate.lua:147  i =
+  scriptjx2/lib/coordinate.lua:195  i =
+  scriptjx2/lib/debug.lua:91  i =
+  scriptjx2/lib/debug.lua:148  i =
+  scriptjx2/lib/debug.lua:218  i =
+  scriptjx2/lib/droptemplet.lua:50  i =
+  scriptjx2/lib/droptemplet.lua:105  i =
+  scriptjx2/lib/droptemplet.lua:110  i =
+  scriptjx2/lib/droptemplet.lua:124  i =
+  scriptjx2/lib/equipex.lua:55  i =
+  scriptjx2/lib/equipex.lua:71  i =
+  scriptjx2/lib/functionset.lua:32  i =
+  scriptjx2/lib/functionset.lua:40  i =
+  scriptjx2/lib/getrectangle_point.lua:35  nx =
+  scriptjx2/lib/getrectangle_point.lua:36  nk =
+  scriptjx2/lib/itemblue.lua:103  i =
+  scriptjx2/lib/itemblue.lua:134  i =
+  scriptjx2/lib/limitedaward_head.lua:22  i =
+  scriptjx2/lib/limitedaward_head.lua:33  j =
+  scriptjx2/lib/limitedaward_head.lua:51  i =
+  scriptjx2/lib/limitedaward_head.lua:54  j =
+  scriptjx2/lib/log.lua:58  i =
+  scriptjx2/lib/mapdb.lua:46  i =
+  scriptjx2/lib/objbuffer_head.lua:100  i =
+  scriptjx2/lib/pfunction.lua:42  i =
+  scriptjx2/lib/pfunction.lua:46  i =
+  scriptjx2/lib/pfunction.lua:108  i =
+  scriptjx2/lib/player.lua:23  i =
+  scriptjx2/lib/player.lua:39  i =
+  scriptjx2/lib/player.lua:45  i =
+  scriptjx2/lib/player.lua:58  i =
+  scriptjx2/lib/player.lua:75  i =
+  scriptjx2/lib/progressbar.lua:38  nRow =
+  scriptjx2/lib/progressbar.lua:43  j =
+  scriptjx2/lib/progressbar.lua:63  i =
+  scriptjx2/lib/progressbar.lua:83  i =
+  scriptjx2/lib/remoteexc.lua:45  i =
+  scriptjx2/lib/remoteexc.lua:50  i =
+  scriptjx2/lib/remoteexc.lua:79  i =
+  scriptjx2/lib/say.lua:157  i =
+  scriptjx2/lib/say.lua:166  i =
+  scriptjx2/lib/say.lua:173  i =
+  scriptjx2/lib/say.lua:174  j =
+  scriptjx2/lib/simulator.lua:14  i =
+  scriptjx2/lib/simulator.lua:25  i =
+  scriptjx2/lib/string.lua:131  i =
+  scriptjx2/lib/string.lua:266  i =
+  scriptjx2/lib/unittest.lua:107  i =
+  scriptjx2/lib/unittest.lua:122  i =
+  scriptjx2/lib/awardtype/item.lua:78  i =
+  scriptjx2/lib/awardtype/item.lua:89  i =
+  scriptjx2/tong/addtongnpc.lua:19  y =
+  scriptjx2/tong/addtongnpc.lua:21  x =
+  scriptjx2/tong/addtongnpc.lua:134  i =
+  scriptjx2/tong/addtongnpc.lua:142  i =
+  scriptjx2/tong/addtongnpc.lua:159  j =
+  scriptjx2/tong/addtongnpc.lua:171  i =
+  scriptjx2/tong/addtongnpc.lua:194  j =
+  scriptjx2/tong/addtongnpc.lua:200  j =
+  scriptjx2/tong/addtongnpc.lua:206  i =
+  scriptjx2/tong/addtongnpc.lua:215  i =
+  scriptjx2/tong/addtongnpc.lua:218  j =
+  scriptjx2/tong/tong.lua:80  i =
+  scriptjx2/tong/tong.lua:95  i =
+  scriptjx2/tong/tong.lua:110  i =
+  scriptjx2/tong/tong.lua:308  i =
+  scriptjx2/tong/tong.lua:311  j =
+  scriptjx2/tong/tong.lua:935  i =
+  scriptjx2/tong/tong_blacklist.lua:13  i =
+  scriptjx2/tong/tong_login.lua:7  i =
+  scriptjx2/tong/tong_mix.lua:1118  i =
+  scriptjx2/tong/tong_mix.lua:1121  j =
+  scriptjx2/tong/tong_setting.lua:16  y =
+  scriptjx2/tong/tong_setting.lua:19  x =
+  scriptjx2/tong/tong_setting.lua:49  y =
+  scriptjx2/tong/tong_setting.lua:81  i =
+  scriptjx2/tong/tong_setting.lua:153  i =
+  scriptjx2/tong/tong_statistics.lua:20  i =
+  scriptjx2/tong/tong_statistics.lua:42  i =
+  scriptjx2/tong/tong_statistics.lua:43  j =
+  scriptjx2/tong/tong_statistics.lua:60  i =
+  scriptjx2/tong/map/map_management.lua:161  i =
+  scriptjx2/tong/map/map_management.lua:180  i =
+  scriptjx2/tong/npc/city_totempole.lua:248  i =
+  scriptjx2/tong/npc/city_totempole.lua:366  i =
+  scriptjx2/tong/npc/city_totempole.lua:376  i =
+  scriptjx2/tong/npc/city_totempole.lua:431  i =
+  scriptjx2/tong/npc/city_totempole.lua:442  i =
+  scriptjx2/tong/npc/city_totempole.lua:460  i =
+  scriptjx2/tong/npc/city_totempole.lua:470  i =
+  scriptjx2/tong/npc/jitan.lua:343  i =
+  scriptjx2/tong/npc/jitan.lua:536  i =
+  scriptjx2/tong/npc/jitan.lua:550  i =
+  scriptjx2/tong/npc/jitan.lua:572  i =
+  scriptjx2/tong/npc/tong_totempole.lua:261  i =
+  scriptjx2/tong/npc/tong_totempole.lua:382  i =
+  scriptjx2/tong/npc/tong_totempole.lua:392  i =
+  scriptjx2/tong/npc/tong_totempole.lua:447  i =
+  scriptjx2/tong/npc/tong_totempole.lua:458  i =
+  scriptjx2/tong/npc/tong_totempole.lua:476  i =
+  scriptjx2/tong/npc/tong_totempole.lua:486  i =
+  scriptjx2/tong/workshop/tongcolltask.lua:75  i =
+  scriptjx2/tong/workshop/tongcolltask.lua:88  i =
+  scriptjx2/tong/workshop/tongcolltask.lua:108  i =
+  scriptjx2/tong/workshop/tongcolltask.lua:117  i =
+  scriptjx2/tong/workshop/workshop_setting.lua:20  y =
+  scriptjx2/tong/workshop/workshop_setting.lua:23  x =
+  scriptjx2/tong/workshop/workshop_setting.lua:33  y =
+  scriptjx2/tong/workshop/workshop_setting.lua:36  x =
+  scriptjx2/tong/workshop/workshop_setting.lua:45  i =
+  scriptjx2/tong/workshop/ws_bingjia.lua:14  y =
+  scriptjx2/tong/workshop/ws_huodong.lua:27  y =
+  scriptjx2/tong/workshop/ws_huodong.lua:198  i =
+  scriptjx2/tong/workshop/ws_huodong.lua:211  i =
+  scriptjx2/tong/workshop/ws_liwu.lua:14  y =
+  scriptjx2/tong/workshop/ws_mianju.lua:21  y =
+  scriptjx2/tong/workshop/ws_mianju.lua:38  y =
+  scriptjx2/tong/workshop/ws_shilian.lua:16  y =
+  scriptjx2/tong/workshop/ws_shilian.lua:271  i =
+  scriptjx2/tong/workshop/ws_tiangong.lua:15  y =
+  scriptjx2/tong/workshop/ws_tianyi.lua:19  y =
+  scriptjx2/tong/workshop/ws_tianyi.lua:114  i =
+  scriptjx2/tong_vn/addtongnpc.lua:19  y =
+  scriptjx2/tong_vn/addtongnpc.lua:21  x =
+  scriptjx2/tong_vn/addtongnpc.lua:136  i =
+  scriptjx2/tong_vn/addtongnpc.lua:144  i =
+  scriptjx2/tong_vn/addtongnpc.lua:161  j =
+  scriptjx2/tong_vn/addtongnpc.lua:173  i =
+  scriptjx2/tong_vn/addtongnpc.lua:196  j =
+  scriptjx2/tong_vn/addtongnpc.lua:202  j =
+  scriptjx2/tong_vn/addtongnpc.lua:208  i =
+  scriptjx2/tong_vn/addtongnpc.lua:217  i =
+  scriptjx2/tong_vn/addtongnpc.lua:220  j =
+  scriptjx2/tong_vn/tong.lua:79  i =
+  scriptjx2/tong_vn/tong.lua:94  i =
+  scriptjx2/tong_vn/tong.lua:109  i =
+  scriptjx2/tong_vn/tong.lua:307  i =
+  scriptjx2/tong_vn/tong.lua:310  j =
+  scriptjx2/tong_vn/tong.lua:953  i =
+  scriptjx2/tong_vn/tong_login.lua:7  i =
+  scriptjx2/tong_vn/tong_mix.lua:1289  i =
+  scriptjx2/tong_vn/tong_mix.lua:1292  j =
+  scriptjx2/tong_vn/tong_setting.lua:16  y =
+  scriptjx2/tong_vn/tong_setting.lua:19  x =
+  scriptjx2/tong_vn/tong_setting.lua:49  y =
+  scriptjx2/tong_vn/tong_setting.lua:81  i =
+  scriptjx2/tong_vn/tong_setting.lua:153  i =
+  scriptjx2/tong_vn/tong_statistics.lua:22  i =
+  scriptjx2/tong_vn/tong_statistics.lua:44  i =
+  scriptjx2/tong_vn/tong_statistics.lua:45  j =
+  scriptjx2/tong_vn/tong_statistics.lua:62  i =
+  scriptjx2/tong_vn/map/map_management.lua:161  i =
+  scriptjx2/tong_vn/map/map_management.lua:180  i =
+  scriptjx2/tong_vn/npc/city_totempole.lua:248  i =
+  scriptjx2/tong_vn/npc/city_totempole.lua:366  i =
+  scriptjx2/tong_vn/npc/city_totempole.lua:376  i =
+  scriptjx2/tong_vn/npc/city_totempole.lua:431  i =
+  scriptjx2/tong_vn/npc/city_totempole.lua:442  i =
+  scriptjx2/tong_vn/npc/city_totempole.lua:460  i =
+  scriptjx2/tong_vn/npc/city_totempole.lua:470  i =
+  scriptjx2/tong_vn/npc/jitan.lua:343  i =
+  scriptjx2/tong_vn/npc/jitan.lua:536  i =
+  scriptjx2/tong_vn/npc/jitan.lua:550  i =
+  scriptjx2/tong_vn/npc/jitan.lua:572  i =
+  scriptjx2/tong_vn/npc/tong_totempole.lua:261  i =
+  scriptjx2/tong_vn/npc/tong_totempole.lua:382  i =
+  scriptjx2/tong_vn/npc/tong_totempole.lua:392  i =
+  scriptjx2/tong_vn/npc/tong_totempole.lua:447  i =
+  scriptjx2/tong_vn/npc/tong_totempole.lua:458  i =
+  scriptjx2/tong_vn/npc/tong_totempole.lua:476  i =
+  scriptjx2/tong_vn/npc/tong_totempole.lua:486  i =
+  scriptjx2/tong_vn/workshop/tongcolltask.lua:79  i =
+  scriptjx2/tong_vn/workshop/tongcolltask.lua:92  i =
+  scriptjx2/tong_vn/workshop/tongcolltask.lua:112  i =
+  scriptjx2/tong_vn/workshop/tongcolltask.lua:121  i =
+  scriptjx2/tong_vn/workshop/workshop_setting.lua:20  y =
+  scriptjx2/tong_vn/workshop/workshop_setting.lua:23  x =
+  scriptjx2/tong_vn/workshop/workshop_setting.lua:33  y =
+  scriptjx2/tong_vn/workshop/workshop_setting.lua:36  x =
+  scriptjx2/tong_vn/workshop/workshop_setting.lua:45  i =
+  scriptjx2/tong_vn/workshop/ws_bingjia.lua:14  y =
+  scriptjx2/tong_vn/workshop/ws_huodong.lua:27  y =
+  scriptjx2/tong_vn/workshop/ws_huodong.lua:198  i =
+  scriptjx2/tong_vn/workshop/ws_huodong.lua:211  i =
+  scriptjx2/tong_vn/workshop/ws_liwu.lua:14  y =
+  scriptjx2/tong_vn/workshop/ws_mianju.lua:21  y =
+  scriptjx2/tong_vn/workshop/ws_mianju.lua:38  y =
+  scriptjx2/tong_vn/workshop/ws_shilian.lua:17  y =
+  scriptjx2/tong_vn/workshop/ws_shilian.lua:280  i =
+  scriptjx2/tong_vn/workshop/ws_tiangong.lua:15  y =
+  scriptjx2/tong_vn/workshop/ws_tianyi.lua:19  y =
+  scriptjx2/tong_vn/workshop/ws_tianyi.lua:123  i =
 
-== ESCAPE (20) ==
-  script/timerserver.lua:383  \s
-  script/timerserver.lua:383  \d
-  script/item/hd3_admin.lua:129  \s
-  script/item/hd3_admin.lua:129  \h
-  script/npcthon/npcmonphai/caibang.lua:7  \F
-  script/npcthon/npcmonphai/conlon.lua:7  \F
-  script/npcthon/npcmonphai/duongmon.lua:7  \F
-  script/npcthon/npcmonphai/hoason.lua:4  \F
-  script/npcthon/npcmonphai/ngami.lua:7  \F
-  script/npcthon/npcmonphai/ngudoc.lua:7  \F
-  script/npcthon/npcmonphai/thiennhan.lua:7  \F
-  script/npcthon/npcmonphai/thienvuong.lua:7  \F
-  script/npcthon/npcmonphai/thieulam.lua:7  \F
-  script/npcthon/npcmonphai/thuyyen.lua:7  \F
-  script/npcthon/npcmonphai/tieudao.lua:4  \F
-  script/npcthon/npcmonphai/vodang.lua:7  \F
-  script/npcthon/npcmonphai/vuhon.lua:4  \F
-  script/petsys/petequip.lua:13  \s
-  script/petsys/petequip.lua:13  \p
-  script/tinhnang/3hoatdong/hd3_driver.lua:88  \k
-
-== KEYWORD (4) ==
-  script/timerserver.lua:399  false
-  script/item/lenhbaitanthu.lua:367  false
-  script/tinhnang/pubg/pubg.lua:28  false
-  script/tinhnang/pubg/pubg.lua:63  true
-
-== BIGINT (37) ==
-  script/cauhinh/ch_chung.lua:115  2506251900
-  script/global/npcchucnang/lequan.lua:173  100000000000
-  script/item/lenhbaitanthu.lua:425  100000000000
-  script/item/lenhbaitanthu.lua:707  100000000000
-  script/item/tuitanthu.lua:12  100000000000
-  script/item/compound/compound_header.lua:51  10000000000
-  script/item/compound/compound_header.lua:53  10000000000
-  script/lib/lib_server.lua:16  2506251900
-  script/misc/vngpromotion/ipbonus/ipbonus_2_head.lua:33  201203220000
-  script/misc/vngpromotion/ipbonus/ipbonus_2_head.lua:34  201204052400
-  script/missions/boss/bigboss.lua:281  201201200000
-  script/missions/boss/bigboss.lua:281  201201252400
-  script/missions/boss/bigboss.lua:294  201201200000
-  script/missions/boss/bigboss.lua:294  201201252400
-  script/npcthon/balanghuyen/hotrotanthu.lua:299  100000000000
-  script/npcthon/balanghuyen/hotrotanthu.lua:333  100000000000
-  script/npcthon/balanghuyen/hotrotest.lua:242  100000000000
-  script/npcthon/balanghuyen/hotrotest.lua:425  100000000000
-  script/player/playerlogin.lua:61  100000000000
-  script/task/tollgate/killer/lib_killlevel.lua:154  201104210000
-  script/task/tollgate/killer/lib_killlevel.lua:155  201105020000
-  script/task/tollgate/killer/lib_killlevel.lua:156  201105160000
-  script/task/tollgate/killer/lib_killlevel.lua:164  201105230000
-  script/vng_event/give_support_item.lua:27  201404070000
-  script/vng_event/give_support_item.lua:28  201404172400
-  script/vng_feature/double_mission_award.lua:2  201303110000
-  script/vng_feature/double_mission_award.lua:3  201303172400
-  script/vng_feature/double_mission_award.lua:5  201303110000
-  script/vng_feature/double_mission_award.lua:5  201303172400
-  script/vng_feature/double_mission_award.lua:6  201303110000
-  script/vng_feature/double_mission_award.lua:6  201303172400
-  script/vng_feature/double_mission_award.lua:7  201303110000
-  script/vng_feature/double_mission_award.lua:7  201303172400
-  script/vng_feature/double_mission_award.lua:8  201303110000
-  script/vng_feature/double_mission_award.lua:8  201303172400
-  script/vng_feature/double_mission_award.lua:9  201304290000
-  script/vng_feature/double_mission_award.lua:9  201305062400
-
-== FORASSIGN (2253) ==
-  script/protocol.lua:137  i =
-  script/protocol.lua:174  i =
-  script/protocol.lua:221  i =
-  script/protocol.lua:233  i =
-  script/startgame.lua:151  i =
-  script/timerserver.lua:315  i =
-  script/timerserver.lua:343  i =
-  script/timerserver.lua:361  i =
-  script/timerserver.lua:400  i =
-  script/timerserver.lua:422  i =
-  script/timerserver.lua:486  i =
-  script/timerserver.lua:580  i =
-  script/timerserver.lua:583  i =
-  script/timerserver.lua:606  i =
-  script/timerserver.lua:615  i =
-  script/timerserver.lua:661  dataindex =
-  script/timerserver.lua:680  i =
-  script/timerserver.lua:687  z =
-  script/timerserver.lua:693  y =
-  script/timerserver.lua:702  i =
-  script/timerserver.lua:714  i =
-  script/timerserver.lua:724  j =
-  script/timerserver.lua:746  p =
-  script/timerserver.lua:750  k =
-  script/timerserver.lua:781  u =
-  script/timerserver.lua:798  i =
-  script/timerserver.lua:816  i =
-  script/timerserver.lua:817  j =
-  script/timerserver_ctc.lua:19  i =
-  script/timerserver_ctc.lua:37  i =
-  script/activitysys/activity.lua:69  i =
-  script/activitysys/activitydetail.lua:136  i =
-  script/activitysys/activitydetail.lua:145  i =
-  script/activitysys/activitydetail.lua:176  i =
-  script/activitysys/activitydetail.lua:181  i =
-  script/activitysys/functionlib.lua:76  nRow =
-  script/activitysys/functionlib.lua:165  i =
-  script/activitysys/functionlib.lua:190  i =
-  script/activitysys/functionlib.lua:195  j =
-  script/activitysys/functionlib.lua:246  i =
-  script/activitysys/functionlib.lua:270  i =
-  script/activitysys/functionlib.lua:341  i =
-  script/activitysys/g_activity.lua:27  i =
-  script/activitysys/ladderfunlib.lua:18  i =
-  script/activitysys/ladderfunlib.lua:33  i =
-  script/activitysys/playerfunlib.lua:265  i =
-  script/activitysys/playerfunlib.lua:503  i =
-  script/activitysys/playerfunlib.lua:540  i =
-  script/activitysys/playerfunlib.lua:546  j =
-  script/activitysys/config/32/dailytask.lua:26  i =
-  script/activitysys/config/32/talkdailytask.lua:40  nRow =
-  script/activitysys/config/32/talkdailytask.lua:52  nRow =
-  script/auction_house/auction_manager.lua:111  i =
-  script/auction_house/auction_manager.lua:126  i =
-  script/auction_house/auction_manager.lua:145  i =
-  script/auction_house/auction_manager.lua:284  i =
-  script/auction_house/auction_manager.lua:299  i =
-  script/auction_house/auction_manager.lua:614  i =
-  script/auction_house/auction_manager.lua:1136  i =
-  script/auction_house/auction_manager.lua:1150  i =
-  script/auction_house/auction_manager.lua:1201  i =
-  script/auction_house/auction_manager.lua:1477  i =
-  script/auction_house/auction_manager.lua:1491  i =
-  script/auction_house/auction_manager.lua:1505  i =
-  script/battles/battlehead.lua:67  i =
-  script/battles/battlehead.lua:300  i =
-  script/battles/battlehead.lua:311  i =
-  script/battles/battlehead.lua:351  i =
-  script/battles/battlehead.lua:380  i =
-  script/battles/battlehead.lua:434  i =
-  script/battles/battlehead.lua:478  i =
-  script/battles/battlehead.lua:536  i =
-  script/battles/battlehead.lua:578  i =
-  script/battles/battlehead.lua:594  i =
-  script/battles/battlehead.lua:614  i =
-  script/battles/battlehead.lua:630  i =
-  script/battles/battlehead.lua:638  i =
-  script/battles/battlehead.lua:741  tt =
-  script/battles/battlehead.lua:749  i =
-  script/battles/battlehead.lua:761  tj =
-  script/battles/battlehead.lua:766  i =
-  script/battles/battlehead.lua:854  i =
-  script/battles/battlehead.lua:940  i =
-  script/battles/battlehead.lua:956  i =
-  script/battles/battlehead.lua:1031  i =
-  script/battles/battlehead.lua:1058  i =
-  script/battles/battlehead.lua:1060  k =
-  script/battles/battlehead.lua:1076  i =
-  script/battles/battlehead.lua:1095  i =
-  script/battles/battlehead.lua:1131  i =
-  script/battles/battlehead.lua:1226  i =
-  script/battles/battlehead.lua:1242  i =
-  script/battles/battlehead.lua:1259  i =
-  script/battles/battlehead.lua:1277  nCurCamp =
-  script/battles/battlehead.lua:1284  i =
-  script/battles/battle_rank_award.lua:65  i =
-  script/battles/battle_rank_award.lua:79  i =
-  script/battles/doubleexp.lua:10  i =
-  script/battles/weeklyrank.lua:6  i =
-  script/battles/weeklyrank.lua:56  i =
-  script/cauhinh/ch_thuong_lib.lua:164  i =
-  script/chienlenh/cl_def.lua:42  i =
-  script/chienlenh/cl_ui.lua:17  i =
-  script/chienlenh/cl_ui.lua:70  i =
-  script/chienlenh/cl_ui.lua:77  i =
-  script/dailogsys/dailog.lua:39  key =
-  script/dailogsys/dailogsay.lua:31  i =
-  script/event/20thang10/npcevent.lua:152  i =
-  script/event/20thang10/npcevent.lua:189  i =
-  script/event/20thang10/npcevent.lua:228  i =
-  script/event/30thang4/tuongquan.lua:216  i =
-  script/event/30thang4/tuongquan.lua:253  i =
-  script/event/30thang4/tuongquan.lua:292  i =
-  script/event/birthday_jieri/200905/taskctrl.lua:72  i =
-  script/event/birthday_jieri/200905/chuangguan/chuangguan.lua:58  i =
-  script/event/change_destiny/mission.lua:15  i =
-  script/event/equip_publish/wuxingyin/wuxingyin.lua:100  i =
-  script/event/equip_publish/wuxingyin/wuxingyin.lua:134  i =
-  script/event/equip_publish/wuxingyin/wuxingyin.lua:137  j =
-  script/event/equip_publish/wuxingyin/wuxingyin.lua:204  i =
-  script/event/equip_publish/wuxingyin/wuxingyin.lua:252  i =
-  script/event/equip_publish/wuxingyin/wuxingyin.lua:259  i =
-  script/event/eventnoel/main_noel.lua:146  i =
-  script/event/eventnoel/main_noel.lua:183  i =
-  script/event/eventnoel/main_noel.lua:222  i =
-  script/event/event_cauhoi/cauhoi.lua:89  i =
-  script/event/event_cauhoi/lib.lua:348  i =
-  script/event/event_huyhoang_dungdb/lib_huyhoang.lua:64  i =
-  script/event/event_huyhoang_dungdb/lib_huyhoang.lua:119  i =
-  script/event/event_vantieu/lib_vt.lua:136  i =
-  script/event/event_vantieu/lib_vt.lua:142  i =
-  script/event/event_vantieu/lib_vt.lua:149  i =
-  script/event/event_vantieu/tieudau.lua:261  k =
-  script/event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:127  i =
-  script/event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:138  i =
-  script/event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:149  i =
-  script/event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:161  i =
-  script/event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:194  i =
-  script/event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:222  i =
-  script/event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:242  i =
-  script/event/jiefang_jieri/200904/shuizei/shuizei.lua:95  i =
-  script/event/kiemmonquan/congtonthu.lua:57  i =
-  script/event/kiemmonquan/lib_kmq.lua:83  i =
-  script/event/storm/function.lua:215  i =
-  script/event/storm/function.lua:251  i =
-  script/event/storm/function.lua:378  i =
-  script/event/storm/function.lua:406  i =
-  script/event/storm/function.lua:429  i =
-  script/event/storm/function.lua:448  i =
-  script/event/storm/head.lua:95  i =
-  script/event/storm/head.lua:105  i =
-  script/event/storm/head.lua:107  j =
-  script/event/tongwar/event.lua:113  i =
-  script/event/tongwar/head.lua:30  i =
-  script/event/tongwar/head.lua:43  i =
-  script/event/tongwar/head.lua:62  i =
-  script/event/tongwar/head.lua:70  i =
-  script/event/tongwar/head.lua:124  i =
-  script/event/tongwar/head.lua:142  i =
-  script/event/tongwar/head.lua:152  i =
-  script/event/tongwar/head.lua:286  i =
-  script/event/tongwar/head.lua:299  i =
-  script/event/tongwar/head.lua:328  i =
-  script/event/tongwar/head.lua:404  i =
-  script/event/tongwar/head.lua:426  i =
-  script/event/tongwar/head.lua:445  i =
-  script/event/tongwar/head.lua:490  i =
-  script/event/tongwar/head.lua:563  i =
-  script/event/tongwar/head.lua:597  i =
-  script/event/tongwar/head.lua:632  i =
-  script/event/tongwar/head.lua:663  i =
-  script/event/tongwar/head.lua:699  i =
-  script/event/tongwar/headinfo.lua:189  i =
-  script/event/tongwar/npc_shizhe.lua:95  i =
-  script/event/tongwar/npc_shizhe.lua:171  i =
-  script/event/tongwar/npc_shizhe.lua:177  i =
-  script/event/tongwar/npc_shizhe.lua:237  i =
-  script/event/tongwar/tongwar_gmscript.lua:21  i =
-  script/event/tongwar/tongwar_signup.lua:34  i =
-  script/event/tongwar/tongwar_signup.lua:80  i =
-  script/event/trongbanghoi/congtontoan.lua:62  i =
-  script/event/trongbanghoi/lib.lua:45  i =
-  script/event/trongbanghoi/tungtung.lua:73  pd =
-  script/event/trongbanghoi/tungtung.lua:78  vlmt =
-  script/event/trongbanghoi/tungtung.lua:83  vlmt =
-  script/event/trongbanghoi/tungtung1.lua:58  i =
-  script/global/autoexec_head.lua:17  i =
-  script/global/autoexec_npc_hd3.lua:18  i =
-  script/global/bot_tongkim.lua:89  i =
-  script/global/equip_system.lua:166  i =
-  script/global/equip_system.lua:174  k =
-  script/global/forbidmap.lua:21  i =
-  script/global/forbidmap.lua:28  i =
-  script/global/forbidmap.lua:35  i =
-  script/global/forbidmap.lua:49  i =
-  script/global/forbidmap.lua:57  i =
-  script/global/forbidmap.lua:74  i =
-  script/global/forbidmap.lua:81  i =
-  script/global/forbidmap.lua:88  i =
-  script/global/hocvocong.lua:46  i =
-  script/global/hocvocong.lua:230  i =
-  script/global/hocvocong.lua:232  j =
-  script/global/hocvocong.lua:879  i =
-  script/global/hocvocong.lua:895  i =
-  script/global/hocvocong.lua:904  i =
-  script/global/hocvocong.lua:972  i =
-  script/global/hocvocong.lua:1067  i =
-  script/global/judgeoffline_limit.lua:417  i =
-  script/global/script_protocol.lua:35  i =
-  script/global/seasonnpc.lua:545  i =
-  script/global/seasonnpc.lua:588  i =
-  script/global/seasonnpc.lua:857  i =
-  script/global/seasonnpc.lua:1270  i =
-  script/global/seasonnpc.lua:1299  i =
-  script/global/seasonnpc.lua:1313  i =
-  script/global/seasonnpc.lua:1316  k =
-  script/global/seasonnpc.lua:1327  i =
-  script/global/seasonnpc.lua:1328  k =
-  script/global/seasonnpc.lua:1344  q =
-  script/global/seasonnpc_death.lua:30  i =
-  script/global/smelt_system.lua:211  i =
-  script/global/station.lua:72  i =
-  script/global/station.lua:113  i =
-  script/global/station.lua:124  j =
-  script/global/station.lua:134  i =
-  script/global/station.lua:491  i =
-  script/global/titlefuncs.lua:87  i =
-  script/global/titlefuncs.lua:92  i =
-  script/global/trangbihoangkim.lua:42  i =
-  script/global/trangbihoangkim.lua:47  i =
-  script/global/trangbihoangkim.lua:51  i =
-  script/global/trangbihoangkim.lua:57  i =
-  script/global/trangbihoangkim.lua:63  i =
-  script/global/trangbihoangkim.lua:67  i =
-  script/global/trangbihoangkim.lua:73  i =
-  script/global/trangbihoangkim.lua:169  i =
-  script/global/trangbihoangkim.lua:173  i =
-  script/global/trangbihoangkim.lua:177  i =
-  script/global/trangbihoangkim.lua:181  i =
-  script/global/trangbihoangkim.lua:185  i =
-  script/global/trangbihoangkim.lua:189  i =
-  script/global/trangbihoangkim.lua:193  i =
-  script/global/trangbihoangkim.lua:197  i =
-  script/global/trangbihoangkim.lua:201  i =
-  script/global/trangbihoangkim.lua:205  i =
-  script/global/trangbihoangkim.lua:209  i =
-  script/global/trangbihoangkim.lua:213  i =
-  script/global/trangbihoangkim.lua:217  i =
-  script/global/trangbihoangkim.lua:221  i =
-  script/global/trangbihoangkim.lua:225  i =
-  script/global/trangbihoangkim.lua:229  i =
-  script/global/trangbihoangkim.lua:233  i =
-  script/global/trangbihoangkim.lua:237  i =
-  script/global/trangbihoangkim.lua:241  i =
-  script/global/trangbihoangkim.lua:245  i =
-  script/global/trangbihoangkim.lua:249  i =
-  script/global/trangbihoangkim.lua:253  i =
-  script/global/trangbihoangkim.lua:257  i =
-  script/global/trangbihoangkim.lua:261  i =
-  script/global/trangbihoangkim.lua:265  i =
-  script/global/trangbihoangkim.lua:269  i =
-  script/global/trangbihoangkim.lua:273  i =
-  script/global/trangbihoangkim.lua:277  i =
-  script/global/trangbihoangkim.lua:281  i =
-  script/global/trangbihoangkim.lua:285  i =
-  script/global/trangbihoangkim.lua:289  i =
-  script/global/trangbihoangkim.lua:293  i =
-  script/global/trangbihoangkim.lua:297  i =
-  script/global/trangbihoangkim.lua:301  i =
-  script/global/trangbihoangkim.lua:305  i =
-  script/global/trangbisieunhan.lua:50  i =
-  script/global/trangbisieunhan.lua:55  i =
-  script/global/trangbisieunhan.lua:102  i =
-  script/global/trangbisieunhan.lua:107  i =
-  script/global/trangbisieunhan.lua:171  i =
-  script/global/trangbisieunhan.lua:176  i =
-  script/global/trangbisieunhan.lua:220  i =
-  script/global/trangbisieunhan.lua:225  i =
-  script/global/trangbisieunhan.lua:268  i =
-  script/global/trangbisieunhan.lua:273  i =
-  script/global/trangbisieunhan.lua:317  i =
-  script/global/trangbisieunhan.lua:322  i =
-  script/global/trangbisieunhan.lua:366  i =
-  script/global/trangbisieunhan.lua:371  i =
-  script/global/trangbisieunhan.lua:415  i =
-  script/global/trangbisieunhan.lua:420  i =
-  script/global/trangbisieunhan.lua:466  i =
-  script/global/trangbisieunhan.lua:471  i =
-  script/global/trangbisieunhan.lua:512  i =
-  script/global/trangbisieunhan.lua:518  i =
-  script/global/trangbisieunhan.lua:564  i =
-  script/global/trangbisieunhan.lua:570  i =
-  script/global/trangbisieunhan.lua:614  i =
-  script/global/trangbisieunhan.lua:620  i =
-  script/global/trangbisieunhan.lua:666  i =
-  script/global/trangbisieunhan.lua:672  i =
-  script/global/trangbisieunhan.lua:717  i =
-  script/global/trangbisieunhan.lua:723  i =
-  script/global/trangbisieunhan.lua:771  i =
-  script/global/trangbisieunhan.lua:777  i =
-  script/global/trangbisieunhan.lua:824  i =
-  script/global/trangbisieunhan.lua:830  i =
-  script/global/trangbisieunhan.lua:877  i =
-  script/global/trangbisieunhan.lua:883  i =
-  script/global/trangbixanh.lua:138  i =
-  script/global/trangbixanh.lua:148  i =
-  script/global/trangbixanh.lua:178  num =
-  script/global/vatpham.lua:83  i =
-  script/global/vatpham.lua:89  i =
-  script/global/vatpham.lua:95  i =
-  script/global/vatpham.lua:101  i =
-  script/global/vatpham.lua:104  j =
-  script/global/vatpham.lua:107  k =
-  script/global/vatpham.lua:178  i =
-  script/global/vatpham.lua:225  i =
-  script/global/admin/point.lua:49  i =
-  script/global/admin/quanly.lua:32  i =
-  script/global/admin/quanly.lua:387  i =
-  script/global/huashan2013/npc_hoason.lua:24  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:367  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:516  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:628  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:680  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:821  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:855  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:920  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:944  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:1039  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:1050  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:1054  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:1081  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:1122  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:1135  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:1147  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:1178  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:1241  i =
-  script/global/mantlesystem/mantleupgrade_head.lua:1271  i =
-  script/global/mantlesystem/mantleupgrade_npc.lua:191  i =
-  script/global/mantlesystem/mantleupgrade_npc.lua:251  i =
-  script/global/mantlesystem/mantleupgrade_npc.lua:313  i =
-  script/global/mantlesystem/mantleupgrade_npc.lua:337  i =
-  script/global/mantlesystem/mantleupgrade_npc.lua:347  i =
-  script/global/mantlesystem/mantleupgrade_npc.lua:430  i =
-  script/global/mantlesystem/mantleupgrade_npc.lua:604  i =
-  script/global/mantlesystem/mantleupgrade_npc.lua:662  i =
-  script/global/mantlesystem/mantleupgrade_npc.lua:693  i =
-  script/global/mantlesystem/other_func_outputs.lua:60  i =
-  script/global/npcchucnang/lequan.lua:172  i =
-  script/global/npcchucnang/lequan.lua:214  i =
-  script/global/npcchucnang/lequan.lua:215  j =
-  script/global/npcchucnang/lequan.lua:331  i =
-  script/global/npcchucnang/lequan.lua:332  j =
-  script/global/npcchucnang/nangcapngua.lua:62  i =
-  script/global/npcchucnang/nangcapngua.lua:63  j =
-  script/global/npcchucnang/nangcapngua.lua:150  i =
-  script/global/npcchucnang/nangcapngua.lua:151  j =
-  script/global/npcchucnang/nangcapngua.lua:237  i =
-  script/global/npcchucnang/nangcapngua.lua:238  j =
-  script/global/npcchucnang/nangcapngua.lua:325  i =
-  script/global/npcchucnang/nangcapngua.lua:326  j =
-  script/global/npcchucnang/nangcapngua.lua:412  i =
-  script/global/npcchucnang/nangcapngua.lua:413  j =
-  script/global/npcchucnang/nangcapngua.lua:496  i =
-  script/global/npcchucnang/nangcapngua.lua:497  j =
-  script/global/npcchucnang/nangcapngua.lua:548  i =
-  script/global/npcchucnang/nangcapngua.lua:549  j =
-  script/global/npcchucnang/nangcapngua.lua:600  i =
-  script/global/npcchucnang/nangcapngua.lua:601  j =
-  script/global/npcchucnang/nangcapngua.lua:652  i =
-  script/global/npcchucnang/nangcapngua.lua:653  j =
-  script/global/npcchucnang/thoren.lua:147  i =
-  script/global/npcchucnang/thoren.lua:148  j =
-  script/global/npcchucnang/thoren.lua:235  i =
-  script/global/npcchucnang/thoren.lua:236  j =
-  script/global/npcchucnang/thoren.lua:382  i =
-  script/global/npcchucnang/thoren.lua:383  j =
-  script/global/npcchucnang/thoren.lua:510  i =
-  script/global/npcchucnang/thoren.lua:511  j =
-  script/global/npcchucnang/thoren.lua:609  i =
-  script/global/npcchucnang/thoren.lua:610  j =
-  script/global/npcchucnang/thoren.lua:707  i =
-  script/global/npcchucnang/thoren.lua:708  j =
-  script/global/npcchucnang/thoren.lua:842  i =
-  script/global/npcchucnang/thoren.lua:843  j =
-  script/global/npcchucnang/thoren.lua:952  i =
-  script/global/npcchucnang/thoren.lua:953  j =
-  script/global/npcchucnang/thoren.lua:1063  i =
-  script/global/npcchucnang/thoren.lua:1064  j =
-  script/global/npcchucnang/thoren.lua:1188  i =
-  script/global/npcchucnang/thoren.lua:1190  i =
-  script/global/npcchucnang/thoren.lua:1191  j =
-  script/global/npcchucnang/thoren.lua:1256  i =
-  script/global/npcchucnang/thoren.lua:1258  i =
-  script/global/npcchucnang/thoren.lua:1259  j =
-  script/global/npcchucnang/thoren.lua:1321  i =
-  script/global/npcchucnang/thoren.lua:1346  i =
-  script/global/npcchucnang/thoren.lua:1349  i =
-  script/global/npcchucnang/thoren.lua:1350  j =
-  script/global/npcchucnang/thoren.lua:1389  i =
-  script/global/npcchucnang/thoren.lua:1400  i =
-  ... (1853 nua)
-
-== IO (240) ==
-  script/timerserver.lua:302  openfile
-  script/timerserver.lua:305  read
-  script/timerserver.lua:306  closefile
-  script/timerserver.lua:331  openfile
-  script/timerserver.lua:337  read
-  script/timerserver.lua:338  closefile
-  script/timerserver.lua:367  openfile
-  script/timerserver.lua:369  closefile
-  script/timerserver.lua:384  openfile
-  script/timerserver.lua:392  read
-  script/timerserver.lua:393  closefile
-  script/timerserver.lua:531  openfile
-  script/timerserver.lua:533  write
-  script/timerserver.lua:535  closefile
-  script/timerserver.lua:537  openfile
-  script/timerserver.lua:539  write
-  script/timerserver.lua:541  closefile
-  script/timerserver.lua:546  openfile
-  script/timerserver.lua:548  write
-  script/timerserver.lua:550  closefile
-  script/timerserver.lua:552  openfile
-  script/timerserver.lua:554  write
-  script/timerserver.lua:556  closefile
-  script/timerserver.lua:777  openfile
-  script/timerserver.lua:785  write
-  script/timerserver.lua:790  closefile
-  script/event/20thang10/npcevent.lua:40  openfile
-  script/event/20thang10/npcevent.lua:42  write
-  script/event/20thang10/npcevent.lua:44  closefile
-  script/event/eventtet/npcsukien.lua:207  openfile
-  script/event/eventtet/npcsukien.lua:208  write
-  script/event/eventtet/npcsukien.lua:209  closefile
-  script/event/event_huyhoang_dungdb/commonscript.lua:129  exit
-  script/global/npcchucnang/thoren.lua:792  openfile
-  script/global/npcchucnang/thoren.lua:794  write
-  script/global/npcchucnang/thoren.lua:796  closefile
-  script/global/npcchucnang/thoren.lua:809  openfile
-  script/global/npcchucnang/thoren.lua:811  write
-  script/global/npcchucnang/thoren.lua:813  closefile
-  script/global/npcchucnang/thoren.lua:1020  openfile
-  script/global/npcchucnang/thoren.lua:1022  write
-  script/global/npcchucnang/thoren.lua:1024  closefile
-  script/global/npcchucnang/thoren.lua:1033  openfile
-  script/global/npcchucnang/thoren.lua:1035  write
-  script/global/npcchucnang/thoren.lua:1037  closefile
-  script/global/npcchucnang/thoren.lua:1521  openfile
-  script/global/npcchucnang/thoren.lua:1523  write
-  script/global/npcchucnang/thoren.lua:1525  closefile
-  script/global/npcchucnang/thoren.lua:1534  openfile
-  script/global/npcchucnang/thoren.lua:1536  write
-  script/global/npcchucnang/thoren.lua:1538  closefile
-  script/global/smeltsystem/smeltupgrade.lua:385  exit
-  script/global/ÌØÊâÓÃµØ/ËÎ½ð±¨Ãûµã/npc/songjin_shophead.lua:261  openfile
-  script/global/ÌØÊâÓÃµØ/ËÎ½ð±¨Ãûµã/npc/songjin_shophead.lua:262  write
-  script/global/ÌØÊâÓÃµØ/ËÎ½ð±¨Ãûµã/npc/songjin_shophead.lua:263  closefile
-  script/item/hoatdong_admin.lua:47  openfile
-  script/item/hoatdong_admin.lua:51  read
-  script/item/hoatdong_admin.lua:56  closefile
-  script/item/lenhbaiadmin.lua:254  openfile
-  script/item/lenhbaiadmin.lua:260  write
-  script/item/lenhbaiadmin.lua:266  closefile
-  script/item/lenhbaitanthu.lua:270  openfile
-  script/item/lenhbaitanthu.lua:272  write
-  script/item/lenhbaitanthu.lua:274  closefile
-  script/item/lenhbaitanthu.lua:352  openfile
-  script/item/lenhbaitanthu.lua:360  read
-  script/item/lenhbaitanthu.lua:361  closefile
-  script/item/lenhbaitanthu.lua:741  openfile
-  script/item/lenhbaitanthu.lua:743  write
-  script/item/lenhbaitanthu.lua:745  closefile
-  script/item/lenhbaitanthu.lua:1431  openfile
-  script/item/lenhbaitanthu.lua:1433  write
-  script/item/lenhbaitanthu.lua:1435  closefile
-  script/item/event/tuilyxi.lua:74  openfile
-  script/item/event/tuilyxi.lua:76  write
-  script/item/event/tuilyxi.lua:78  closefile
-  script/item/event/eventtet/banhdacbiet.lua:46  openfile
-  script/item/event/eventtet/banhdacbiet.lua:48  write
-  script/item/event/eventtet/banhdacbiet.lua:50  closefile
-  script/item/event/eventtet/banhdacbiet.lua:85  openfile
-  script/item/event/eventtet/banhdacbiet.lua:86  write
-  script/item/event/eventtet/banhdacbiet.lua:87  closefile
-  script/item/itemvalue/itemvalue_header.lua:48  openfile
-  script/item/itemvalue/itemvalue_header.lua:53  write
-  script/item/itemvalue/itemvalue_header.lua:57  write
-  script/lib/lib_ham.lua:165  openfile
-  script/lib/lib_ham.lua:166  write
-  script/lib/lib_ham.lua:167  closefile
-  script/lib/lib_ham.lua:196  openfile
-  script/lib/lib_ham.lua:197  write
-  script/lib/lib_ham.lua:198  closefile
-  script/lib/lib_ham.lua:203  openfile
-  script/lib/lib_ham.lua:205  write
-  script/lib/lib_ham.lua:206  closefile
-  script/lib/lib_ham.lua:210  execute
-  script/lib/lib_ham.lua:211  openfile
-  script/lib/lib_ham.lua:213  write
-  script/lib/lib_ham.lua:214  closefile
-  script/log_game/save_log.lua:7  openfile
-  script/log_game/save_log.lua:8  write
-  script/log_game/save_log.lua:9  closefile
-  script/log_game/save_log.lua:14  openfile
-  script/log_game/save_log.lua:15  write
-  script/log_game/save_log.lua:16  closefile
-  script/log_game/save_log.lua:21  openfile
-  script/log_game/save_log.lua:22  write
-  script/log_game/save_log.lua:23  closefile
-  script/log_game/save_log.lua:28  openfile
-  script/log_game/save_log.lua:29  write
-  script/log_game/save_log.lua:30  closefile
-  script/log_game/save_log.lua:35  openfile
-  script/log_game/save_log.lua:36  write
-  script/log_game/save_log.lua:37  closefile
-  script/log_game/save_log.lua:42  openfile
-  script/log_game/save_log.lua:43  write
-  script/log_game/save_log.lua:44  closefile
-  script/log_game/save_log.lua:49  openfile
-  script/log_game/save_log.lua:50  write
-  script/log_game/save_log.lua:51  closefile
-  script/log_game/save_log.lua:56  openfile
-  script/log_game/save_log.lua:57  write
-  script/log_game/save_log.lua:58  closefile
-  script/log_game/save_log.lua:63  openfile
-  script/log_game/save_log.lua:64  write
-  script/log_game/save_log.lua:65  closefile
-  script/log_game/save_log.lua:70  openfile
-  script/log_game/save_log.lua:71  write
-  script/log_game/save_log.lua:72  closefile
-  script/log_game/save_log.lua:77  openfile
-  script/log_game/save_log.lua:78  write
-  script/log_game/save_log.lua:79  closefile
-  script/log_game/save_log.lua:84  openfile
-  script/log_game/save_log.lua:85  write
-  script/log_game/save_log.lua:86  closefile
-  script/log_game/save_log.lua:91  openfile
-  script/log_game/save_log.lua:92  write
-  script/log_game/save_log.lua:93  closefile
-  script/log_game/save_log.lua:98  openfile
-  script/log_game/save_log.lua:99  write
-  script/log_game/save_log.lua:100  closefile
-  script/log_game/save_log.lua:105  openfile
-  script/log_game/save_log.lua:106  write
-  script/log_game/save_log.lua:107  closefile
-  script/log_game/save_log.lua:112  openfile
-  script/log_game/save_log.lua:113  write
-  script/log_game/save_log.lua:114  closefile
-  script/log_game/save_log.lua:119  openfile
-  script/log_game/save_log.lua:120  write
-  script/log_game/save_log.lua:121  closefile
-  script/log_game/save_log.lua:126  openfile
-  script/log_game/save_log.lua:127  write
-  script/log_game/save_log.lua:128  closefile
-  script/log_game/save_log.lua:133  openfile
-  script/log_game/save_log.lua:134  write
-  script/log_game/save_log.lua:135  closefile
-  script/log_game/save_log.lua:140  openfile
-  script/log_game/save_log.lua:141  write
-  script/log_game/save_log.lua:142  closefile
-  script/log_game/save_log.lua:147  openfile
-  script/log_game/save_log.lua:148  write
-  script/log_game/save_log.lua:149  closefile
-  script/partner/partner_test_bdh.lua:11  appendto
-  script/partner/partner_test_bdh.lua:12  write
-  script/partner/partner_test_bdh.lua:13  writeto
-  script/petsys/head.lua:5  appendto
-  script/petsys/head.lua:6  write
-  script/petsys/head.lua:7  writeto
-  script/petsys/protocol_process_gs.lua:5  appendto
-  script/petsys/protocol_process_gs.lua:6  write
-  script/petsys/protocol_process_gs.lua:7  writeto
-  script/petsys/protocol_process_gs.lua:20  appendto
-  script/petsys/protocol_process_gs.lua:21  write
-  script/petsys/protocol_process_gs.lua:22  writeto
-  script/player/vutdo.lua:12  openfile
-  script/player/vutdo.lua:14  write
-  script/player/vutdo.lua:15  closefile
-  script/songbac/chusongbac.lua:160  openfile
-  script/songbac/chusongbac.lua:162  write
-  script/songbac/chusongbac.lua:164  closefile
-  script/songbac/chusongbac.lua:188  openfile
-  script/songbac/chusongbac.lua:190  write
-  script/songbac/chusongbac.lua:192  closefile
-  script/songbac/chusongbac.lua:286  openfile
-  script/songbac/chusongbac.lua:288  write
-  script/songbac/chusongbac.lua:290  closefile
-  script/songbac/chusongbac.lua:309  openfile
-  script/songbac/chusongbac.lua:311  write
-  script/songbac/chusongbac.lua:313  closefile
-  script/startgame/tinhnang/tongkim/songjin_shophead.lua:261  openfile
-  script/startgame/tinhnang/tongkim/songjin_shophead.lua:262  write
-  script/startgame/tinhnang/tongkim/songjin_shophead.lua:263  closefile
-  script/task/partner/train/bdh_jitan_driver.lua:25  appendto
-  script/task/partner/train/bdh_jitan_driver.lua:26  write
-  script/task/partner/train/bdh_jitan_driver.lua:27  write
-  script/task/partner/train/bdh_jitan_driver.lua:28  writeto
-  script/test/event_rank.lua:160  openfile
-  script/test/event_rank.lua:163  write
-  script/test/event_rank.lua:167  write
-  script/test/event_rank.lua:175  write
-  script/test/event_rank.lua:176  closefile
-  script/test/event_rank.lua:180  openfile
-  script/test/event_rank.lua:182  closefile
-  script/tinhnang/boss_hoangkim/deathhksv.lua:129  openfile
-  script/tinhnang/boss_hoangkim/deathhksv.lua:131  write
-  script/tinhnang/boss_hoangkim/deathhksv.lua:133  closefile
-  script/vng_lib/files_lib.lua:3  openfile
-  script/vng_lib/files_lib.lua:8  read
-  script/vng_lib/files_lib.lua:14  closefile
-  script/vng_lib/files_lib.lua:19  openfile
-  script/vng_lib/files_lib.lua:23  write
-  script/vng_lib/files_lib.lua:24  closefile
-  script/vng_lib/files_lib.lua:30  openfile
-  script/vng_lib/files_lib.lua:32  execute
-  script/vng_lib/files_lib.lua:33  openfile
-  script/vng_lib/files_lib.lua:39  write
-  script/vng_lib/files_lib.lua:41  write
-  script/vng_lib/files_lib.lua:48  write
-  script/vng_lib/files_lib.lua:50  write
-  script/vng_lib/files_lib.lua:54  closefile
-  script/vng_lib/files_lib.lua:59  openfile
-  script/vng_lib/files_lib.lua:64  read
-  script/vng_lib/files_lib.lua:67  read
-  script/vng_lib/files_lib.lua:74  closefile
-  script/lib/debug.lua:7  write
-  script/lib/debug.lua:8  write
-  script/lib/debug.lua:9  read
-  script/lib/debug.lua:242  exit
-  script/lib/simulator.lua:17  flush
-  script/lib/simulator.lua:18  read
-  script/lib/simulator.lua:28  flush
-  script/lib/simulator.lua:29  read
-  script/tong/tong.lua:73  openfile
-  script/tong/tong.lua:74  openfile
-  script/tong/tong.lua:80  write
-  script/tong/tong.lua:82  write
-  script/tong/tong.lua:84  openfile
-  script/tong/tong.lua:92  write
-  script/tong/tong.lua:95  write
-  script/tong/tong.lua:97  write
-  script/tong/tong.lua:101  flush
+== IO (26) ==
+  scriptjx2/lib/debug.lua:7  write
+  scriptjx2/lib/debug.lua:8  write
+  scriptjx2/lib/debug.lua:9  read
+  scriptjx2/lib/debug.lua:242  exit
+  scriptjx2/lib/simulator.lua:17  flush
+  scriptjx2/lib/simulator.lua:18  read
+  scriptjx2/lib/simulator.lua:28  flush
+  scriptjx2/lib/simulator.lua:29  read
+  scriptjx2/tong/tong.lua:74  openfile
+  scriptjx2/tong/tong.lua:75  openfile
+  scriptjx2/tong/tong.lua:81  write
+  scriptjx2/tong/tong.lua:83  write
+  scriptjx2/tong/tong.lua:85  openfile
+  scriptjx2/tong/tong.lua:93  write
+  scriptjx2/tong/tong.lua:96  write
+  scriptjx2/tong/tong.lua:98  write
+  scriptjx2/tong/tong.lua:102  flush
+  scriptjx2/tong_vn/tong.lua:73  openfile
+  scriptjx2/tong_vn/tong.lua:74  openfile
+  scriptjx2/tong_vn/tong.lua:80  write
+  scriptjx2/tong_vn/tong.lua:82  write
+  scriptjx2/tong_vn/tong.lua:84  openfile
+  scriptjx2/tong_vn/tong.lua:92  write
+  scriptjx2/tong_vn/tong.lua:95  write
+  scriptjx2/tong_vn/tong.lua:97  write
+  scriptjx2/tong_vn/tong.lua:101  flush
 
