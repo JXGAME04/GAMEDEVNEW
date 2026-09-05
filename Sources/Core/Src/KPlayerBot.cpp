@@ -9197,9 +9197,7 @@ static KMission* pb_TkMission(int* pnSub)
 		return NULL;
 	if (pnSub)
 		*pnSub = nSub;
-	KMission M;
-	M.SetMissionId(PB_TK_MISSION);
-	return SubWorld[nSub].m_MissionArray.GetData(&M);
+	return SubWorld[nSub].m_MissionArray.FindById(PB_TK_MISSION);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 }
 
 // Bot nay co du tu cach vao Tong Kim khong. Dung DUNG cac cua chan cua chinh

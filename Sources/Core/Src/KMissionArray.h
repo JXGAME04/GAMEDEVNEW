@@ -70,6 +70,25 @@ public:
 		return m_MissionValue[ulValueId];
 	};
 
+	// [MSFIND 05/09] Tra nhiem vu theo id KHONG dung KMission tam. Truoc: moi ham Lua nhiem vu viet
+	// 'KMission Mission; Mission.SetMissionId(id); GetData(&Mission)' -> constructor KLinkArrayTemplate cap phat
+	// 2 x new KLinkNode[] cho mang nguoi (MAX_PLAYER) + NPC (5000) + timer, chen toan bo o free, roi delete[]:
+	// ~210 KB stack + 101 KB heap + ~6.500 vong moi loi goi (~40 us). Do 05/09: vong bang diem TK 2.400 loi goi
+	// /lan chet = ~90 ms -> may chu bao hoa (ban giao BANGIAO_TONGKIM_CHAT_DIEM_0409.md muc 13f/13g).
+	// FindSame chi so GetMissionId() va khong ghi nguoc -> ham nay tuong duong 100%.
+	T* FindById(unsigned long ulMissionId)
+	{
+		int nIdx = 0;
+		while(1)
+		{
+			nIdx = m_UseIdx.GetNext(nIdx);
+			if (!nIdx)
+				break;
+			if (m_Data[nIdx].GetMissionId() == ulMissionId)
+				return &m_Data[nIdx];
+		}
+		return NULL;
+	};
 	unsigned long FindSame(T *pMission)
 	{
 		int nIdx = 0;

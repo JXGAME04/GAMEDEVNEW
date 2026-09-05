@@ -278,3 +278,18 @@ Hội)**: ini cửa sổ `WndType=WndImage` `ScriptFile=\script\ui\tong_battle_2
 | 5 | Đối tượng dò tĩnh `static KMission s_Probe` | như 3, ít sửa chỗ | thấp (không luồng khác) nhưng kém rõ ràng | phương án dự phòng |
 
 Khuyến nghị: làm 2 + 3 (3 bằng kịch bản, kiểm `grep`), thử trên máy chủ dev/giờ vắng, đo lại `jx_perf_server.log` trước/sau cùng cửa sổ TK.
+
+
+## 14. 05/09 10:45 — THI CÔNG phương án 2 + 3 (chủ chốt "làm 2-3")
+### 14a. Phương án 3 — `[MSFIND 05/09]` tra nhiệm vụ theo id, không dựng `KMission` tạm
+- `KMissionArray.h`: thêm `T* FindById(unsigned long ulMissionId)` (duyệt `m_UseIdx`, so `GetMissionId()`, trả `&m_Data[nIdx]` hoặc NULL) — tương đương 100 % `GetData(&probe)` vì `FindSame` chỉ so id.
+- Thay 27/27 chỗ bằng kịch bản regex có kiểm đếm (`ReverseTools{BS}tongkim_chat{BS}va_msfind.py`): `ScriptFuns.cpp` 25 (kể cả `StopMission`), `KJx2WarInfra.cpp` 1, `KPlayerBot.cpp` 1 (`pb_TkMission`). Kiểm: không còn `KMission X;` trong 3 tệp; số byte cao không đổi.
+- Mỗi lời gọi API nhiệm vụ: bỏ ~210 KB stack + 2×3 `new[]/delete[]` (101 KB) + ~6.500 vòng chèn → còn ≤ 10 so sánh id.
+### 14b. Phương án 2 — `[TKDIEM 05/09]` `UpdateBattleBoxAll(nMissionId, nTong, nKim, nKind)` (C++, `ScriptFuns.cpp` sau `LuaUpdateBattleBox`, đăng ký cạnh `UpdateBattleBox`)
+- Duyệt thẳng `m_MissionPlayer.m_UseIdx` như `KMission::Msg2All`; điều kiện gửi = đúng vòng Lua cũ: ô còn dùng (`MISSION_PARAM_AVAILABLE`), còn nối, `Player[idx].m_dwID == m_ulPlayerID` (bỏ ô cũ của người đã rời); gói `S2C_BATTLE_BOX` "tong|kim|diem_riêng" (`m_nParam[6]`); trả số người đã gửi.
+- Lua `lib_tktc.lua` `TK_GuiDiemPhe`: tiết chế 18 khung (1 s, trước 2 s) → `if UpdateBattleBoxAll then return UpdateBattleBoxAll(...) end` → **rơi về vòng cũ nếu CoreServer cũ** (không lỗi script khi chỉ restart mà chưa swap DLL). Gương git: `serverscript_jx2{BS}tongkim_chat{BS}server{BS}script{BS}...`.
+### 14c. Build / triển khai
+- Worktree mail-0309 đã merge `origin/main` 573b9130 (diff trống) → build từ main. `CoreServer.dll` x64 Server Release = **a2053172** (10:42; dấu hiệu: `UpdateBattleBoxAll`, `CL_Cong`, `AUC_MsgTong`, `[CFGW]`, `S13-TELE`).
+- Khe `bin{BS}server{BS}CoreServer.dll.moi` có bản chờ 10:02 của phiên khác (= `[CFGW 05/09]` 6177ba7e, đã trong main → bản tôi bao trùm) → đổi tên thành `CoreServer.dll.moi.cfgw_1002_phienkhac`, đặt bản a2053172 làm `.moi`. Chủ: `ChayGameServer.bat` (swap DLL + nạp Lua mới).
+- Client Win32 chỉ build kiểm biên dịch (API nhiệm vụ không có trong CoreClient) — không swap client.
+- Kỳ vọng đo sau restart (cùng cửa sổ TK ~500 chết/phút): MAIN mỗi lần chết 3 → ~2 ms (còn 600 gói chat), bảng điểm 1 s/lần ~2-3 ms/lần, `SCRIPT_TIME max` mỗi phút giảm.
