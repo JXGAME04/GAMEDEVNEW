@@ -231,3 +231,22 @@ Hội)**: ini cửa sổ `WndType=WndImage` `ScriptFile=\script\ui\tong_battle_2
 2. Chat giết địch: gộp theo 1-2 s hoặc chỉ gửi cho người trong vùng nhìn thấy / người liên quan (đã hỏi chủ 09:36).
 3. Tắt `[AutoLog]` máy chủ + client khi đo hiệu năng; xoay `bot.log`.
 4. Mổ 95 ms script hẹn giờ mỗi phút và khựng 1 s `SW_MAINLOOP` (log riêng theo tick khi > 200 ms).
+
+
+### 13f. 05/09 10:40 — ĐO THẬT + CƠ CHẾ XÁC NHẬN (chủ: "phân tích nguyên nhân")
+**Đo (ghép `bot.log` số lần chết/phút với `SW_MAINLOOP` mỗi phút, trừ nền 4.787 ms/phút):**
+| giai đoạn | chết/phút | MAIN tb | ms MAIN cho MỖI lần chết (hiệu số) | hồi quy theo phút |
+|---|---|---|---|---|
+| A. TK 16:30 + 17:50 hôm qua — chỉ chat giết địch | 474 | 5,6–5,9 ms | **2,6–3,3 ms** | 6,5 ms (n=52) |
+| B. 4 trận TK 19:31→09:43 — chat + vòng bảng điểm MỖI lần chết | 413–572 | 33,9–55,1 ms | **77–98 ms** | 86,4 ms (n=113) |
+| C. TK 09:49→10:05 — bảng điểm tiết chế 1 lần/2 s | 497 | 8,2 ms | 8,1 ms | 7,6 ms (n=17) |
+→ Vòng `TK_GuiDiemPhe` tốn **~90 ms cho mỗi lần gọi**; ở 10 lần chết/giây = 900 ms/giây > ngân sách 18 tick × 55 ms → bão hoà. Tiết chế 0,5 lần/giây → +45 ms/giây ≈ +2,5 ms/tick (khớp C).
+
+**Cơ chế (đọc mã):** không phải `PackDataToClient` (600 gói/lần chết của chat có sẵn chỉ ~3 ms) và không phải `FindSame` (`KLinkArray::GetNext` là liên kết đôi O(1), quét 600 ô ≈ 4 ms/lần chết). Thủ phạm:
+- MỌI hàm Lua về nhiệm vụ (`MSDIdx2PIdx`, `PIdx2MSDIdx`, `GetPMParam`, `SetPMParam`, `UpdateBattleBox`, `Msg2MSAll`, …) đều viết `KMission Mission; Mission.SetMissionId(id); m_MissionArray.GetData(&Mission)` — dựng một **`KMission` tạm trên stack** chỉ để tra theo id.
+- `KMission` chứa `KMissionPlayerArray = KLinkArrayTemplate<TMissionPlayerInfo, MAX_PLAYER=1500>` (~88 B/ô) + `KMissionNpcArray<…, 5000>` + `KMissionTimerArray<…, 10>`. Constructor `KLinkArrayTemplate()` (`KLinkArrayTemplate.h`): `m_FreeIdx.Init(ulSize)` + `m_UseIdx.Init(ulSize)` = **2 × `new KLinkNode[ulSize]`**, rồi `for (i = ulSize-1; i > 0; i--) m_FreeIdx.Insert(i)` + `Clear()`; destructor `delete[]` ×2. `KMission()` còn duyệt 10 timer.
+- ⇒ mỗi lời gọi Lua = **6 cấp phát + 6 giải phóng heap, ~6510 vòng chèn danh sách, chạm ~207 KB bộ nhớ** ≈ 30–45 µs. Vòng bảng điểm: 600 ô × 4 lời gọi = 2.400 lời gọi/lần chết ≈ 70–110 ms → khớp số đo 77–98 ms.
+- Cùng cơ chế giải thích chi phí nền của TK: mỗi lần chết `tongtu.lua` gọi ~25 hàm nhiệm vụ (GetPMParam/SetPMParam…) ≈ 1 ms + 600 gói chat ≈ 2 ms = 3 ms/lần chết (giai đoạn A).
+- Hệ quả rộng hơn (chưa sửa): **mọi script dùng API nhiệm vụ đều trả giá ~40 µs/lời gọi** (Tống Kim, Phong Lăng Độ, công thành, Bang chiến, timer nhiệm vụ mỗi phút) — nghi là nguồn của `SCRIPT_TIME max ≈ 95 ms` mỗi phút TK (script hẹn giờ duyệt người chơi bằng API này).
+
+**Đề xuất gốc rễ (chưa làm):** trong `ScriptFuns.cpp` thay `KMission Mission; …GetData(&Mission)` bằng tra theo id không dựng đối tượng (thêm `KSubWorldMissionArray::GetByMissionId(id)` duyệt `m_UseIdx` so `m_ulMissionId`, hoặc bảng `id → KMission*`) → mọi API nhiệm vụ rẻ ~100 lần; khi đó vòng bảng điểm 600 ô chỉ ~1-2 ms, chat giết địch ~2 ms. Song song vẫn nên tiết chế/gộp phát điểm và đưa vòng gửi vào C++.
