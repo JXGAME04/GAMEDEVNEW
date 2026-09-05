@@ -119,3 +119,22 @@ Kết luận: lõi nhanh 2,5–4×; các hàm thư viện tên cũ **phải cài
 1. **Cho phép tải mã nguồn Lua 5.4.7** (`lua-5.4.7.tar.gz`, 374.097 byte, từ `https://www.lua.org/ftp/`) — máy đang có mạng, không cần gì khác. Đây là điều kiện để làm 1a.
 2. Xác nhận chọn **5.4.7** (mục 2). Nếu chủ muốn 5.5.0 thì cộng thêm việc sửa 2.652 chỗ gán biến for.
 3. Có máy chủ thử (hoặc cho phép chạy bản thử trên cùng máy với cổng khác) cho 1b.
+
+## 10. Giai đoạn 1a ĐÃ LÀM (05/09 trưa) — chờ chủ khởi động lại
+
+Chủ: *"oke hãy làm trên máy chủ hiện tại — làm xong nhớ chạy kiểm tra"*.
+
+**Đã dựng:** `Sources\Library\Lua54` (nguồn 5.4.7 + 2 vá + `lua4compat.c` 84 hàm + shim nhúng), `Engine\Include\LuaLib.h` mới (742 hàm gắn, KLuaScript không sửa), 4 vcxproj trỏ `Lib\lua54\$(Platform)\Lua54Dll.lib`. Build sạch: Lua54Dll x64/Win32, CoreServer, engine.dll máy chủ, CoreClient, Engine.dll client, Game.exe.
+
+**Kiểm trước khi lên (đã chạy):** `lua4_selftest` 25 mục = 0 lỗi; dump 3.858 khoá cấu hình qua API `lua4_*` giống Lua 4 (chỉ khác `1`→`true` cho biểu thức so sánh); bench qua DLL nhanh hơn Lua 4 ở mọi mục (2/27/12/26/68 ms so 12/75/29/53/64); 2.986 script máy chủ + 446 client biên dịch 5.4 OK.
+
+**Đã đặt trong `bin\server`:** `CoreServer.dll.moi` 4081ce2d · `engine.dll.moi` 1f4f8c92 · `Lua54Dll.dll` 8ef0b246 (đặt thẳng, bản cũ không dùng tới) · `LUA54.moi` (dấu hiệu đổi cây script) · `tools\chuyen_lua4_54.py` · `ChayGameServer.bat` mới (bản cũ `.truoc`) · `LuiLua4.bat`.
+**Đã đặt trong `bin\client`:** `Game.exe.moi` 41a0d7e3 · `CoreClient.dll.moi` f400b7ef · `Engine.dll.moi` 622b12f3 · `Lua54Dll.dll` e4f341cf · `LUA54.moi` · `tools\` · `ChoiGame.bat` mới (bản cũ `.truoc`) · `LuiLua4.bat`.
+
+**Cách lên (chủ làm):** tắt GameServer → chạy `ChayGameServer.bat`: bat thay 3 file `.moi`, thấy `LUA54.moi` và `CoreServer.dll` đã dùng Lua54Dll thì chạy converter tại chỗ (`script` → `script54`, ~20 s, lấy đúng cây script hiện tại kể cả sửa đổi mới nhất), đổi `script`→`script.lua4`, `script54`→`script`, đổi `LUA54.moi`→`LUA54.da_doi`, mở GameServer. Client: thoát game → `ChoiGame.bat` (tương tự). Hai lớp bảo vệ: bat chỉ đổi script khi binary đã dùng Lua54Dll; Lua54Dll từ chối chạy (hộp thoại + ScriptError.log) nếu `script\LUA54_DA_CHUYEN.txt` thiếu.
+
+**Lùi lại:** tắt → `LuiLua4.bat` (trả `.truoc` cho CoreServer/engine (Game/CoreClient/Engine), `script.lua4`→`script`, không xoá gì) → chạy bat thường.
+
+**Kiểm sau khi lên (Claude làm khi chủ báo):** ScriptError.log không có lỗi mới kiểu `attempt to call global`/`unexpected symbol`; `jx_perf_server.log` SCRIPT_TIME giảm; bot.log vẫn có [BotTK]/[BotDT]; gcfg nạp bình thường; Tống Kim 17:50 chạy; client đăng nhập, UI, kỹ năng, bang, thư, đấu giá.
+
+**Quy tắc viết script từ giờ (cây `script` = bản 5.4):** không dùng `%x` (viết `x` thẳng), duyệt bảng `for k, v in pairs(t) do`, hàm `...` tự khai `local arg = {n = select("#", ...), ...}`, chuỗi có `\` phải là thoát hợp lệ (`\`), số không dính chữ (`7 then`). Tên hàm cũ (getn, format, strfind, floor, date...) vẫn dùng được nhờ lớp tương thích. `script.lua4` là bản lưu, ĐỪNG sửa.
