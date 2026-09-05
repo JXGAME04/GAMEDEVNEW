@@ -46,8 +46,10 @@ private:
 	// spr\Ui3\UiGameMain\UiTongKim\{nen20,tong20,kim20}.spr (ten ASCII).
 	KWndImage	m_ImgTong;		// [ImgLeft]
 	KWndImage	m_ImgKim;		// [ImgRight]
-	KWndText	m_TongPoint;	// [TongPoint]  (= TxtLScore 2.0)
-	KWndText	m_KimPoint;		// [KimPoint]   (= TxtRScore 2.0)
+	// KWndText thuong KHONG co bo dem (m_pText NULL khi ini khong co Text=) -> SetText im lang bo qua = "khong co diem";
+	// dung KWndText32 (bo dem 32 byte trong lop) nhu KUiTargetInfo / KUiTimeBox.
+	KWndText32	m_TongPoint;	// [TongPoint]  (= TxtLScore 2.0)
+	KWndText32	m_KimPoint;		// [KimPoint]   (= TxtRScore 2.0)
 	KWndShadow	m_BarTong;		// [BarTong] phan trai thanh can bang (mau Tong) - tuy chon, 2.0 khong co
 	KWndShadow	m_BarKim;		// [BarKim]  phan phai (mau Kim)
 	int		m_nBarLeft, m_nBarTop, m_nBarWidth, m_nBarHeight;	// [Bar] (Width=0 = khong ve thanh)
