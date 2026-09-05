@@ -317,3 +317,38 @@ N. nen 20:05-20:49 hom qua, khong TK                 n=45 chet/ph=   0 MAIN= 4.4
 - 600 `SendSystemInfo` → 600 `PackDataToClient` mỗi lần chết ≈ 2 ms; ở ~10 lần chết/giây = 20 ms/giây ≈ 2 %% ngân sách; mỗi client nhận ~10 dòng/giây (chat + widget).
 - Phương án nếu muốn giảm: (a) chỉ gửi cho người trong 3×3 vùng quanh chỗ chết (KRegion) + người giết/bị giết — đổi trải nghiệm (không thấy kill xa); (b) gộp 1 giây gửi 1 gói nhiều dòng — client `KUiFlashMessage` cần tách dòng; (c) giữ nguyên. Khuyến nghị **(c)** vì chi phí đã nhỏ sau fix.
 - 🔴 **Chủ 11:35: "phần RunTime() cẩn thận vì nó là bộ hẹn của các hoạt động"** → KHÔNG đụng `RunTime()`/`timerserver.lua`; KHÔNG đổi `CH_NAPLAI_PHUT` nếu chưa rà từng driver phụ thuộc nhịp nạp lại (trạng thái cấp tệp bị reset mỗi phút theo thiết kế `g_nMocNapLai`; cấu hình `G_CFG` tươi nhờ nạp lại; `cfgw_driver` 30 s; `hd3_driver`, `ydbz_driver`, `bot_auto`, `sukien_tongkim`). Khựng ~60 ms/phút là cái giá chấp nhận của thiết kế "sửa script ăn ngay". Mục 15a chỉ là phân tích, không phải đề xuất đổi.
+
+
+## 16. 05/09 12:30 — CỬA SỔ "THÔNG TIN TRẬN" kiểu Liên Đấu Bang 2.0 cho Tống Kim (chủ: "mổ nhị phân 2.0 lấy UI trên cho tống kim")
+### 16a. Mổ 2.0
+- Ảnh chủ: tiêu đề "Liên Đấu Bang", "Giai đoạn: Chiến đấu", "Còn: 1084 giây", bảng Hạng | Tên Bang | Phe | Điểm Phe, dòng "Nhấn xem Chiến B…".
+- Exe 2.0 không chứa nhãn (UI Lua). Quét NỘI DUNG 13 pak (≤128 KB, chuỗi TCVN3) → 12 mục trong `slistcl.pak`: bảng hướng dẫn (mục BHLS
+  "Liên Đấu Bang … 19:50-20:20"), bảng danh hiệu, lịch hoạt động, và **`\script\ui\greatteamfight\fieldreport.lua`** (8369606B):
+  `UpdateStage` ("<color=yellow>Giai đoạn: <color>%s"), `Countdown` ("Còn: <color=green>%d<color> giây" — client tự đếm lui từ `nEndTime`).
+  → "Liên Đấu Bang" = tên Việt của nhóm `greatteamfight` (侠峰论剑); cửa sổ trong ảnh là cửa sổ cùng nhóm mà ini/lua KHÔNG được đóng gói
+  (tra băm `\ui\ui3_1024\greatteamfight\{fieldreport,fightbar,roundstate,entrybtn,signin}.ini` đều trống; chỉ có `fightresult.ini/lua`,
+  `mainguide\mainpageset.ini`, `signin.lua`). Nền 2.0 rút được: 竞技场底图 397×403, 竞技场内底 381×239, 侠峰论剑底版 612×471 (thân gần đen
+  20,20,20; dải tiêu đề nâu vàng 48,42,28; viền vàng mảnh) → tự vẽ `thongtin20.spr` 221×268 theo phong cách đó (giải mã SPR: `spr2png.py`).
+### 16b. Dựng trong dự án (không đổi giao thức)
+- Client `KUiTongKimInfo` (`S3Client\Ui\UiCase\UiTongKimInfo.*`, ini `UiTongKimInfo.ini` TCVN3): Title "Tống Kim"; `Giai đoạn:` + tên pha
+  (`[Phase] P1=Báo danh P2=Chiến đấu P3=Kết thúc`); `Còn: N giây` — client đếm lui mỗi giây từ gói cuối (`Breathe`); bảng 5 hàng Hạng|Tên|Phe|Điểm
+  (`[Camp] C1=Tống C2=Kim`); nút chữ trong suốt `[BtnReport]` "Nhấn xem Chiến Báo" (`KWndLabeledButton`) → mở `KUiBattleReport` (chiến báo top-10
+  có sẵn). Hook: `GameSpaceChangedNotify` (`GDCNI_UPDATE_BATTLE_BOX` kind 7/8/9, `SWITCHING_MAPMODE` ẩn), `UiShell` mở/đóng, vcxproj/filters.
+  Vị trí: 800 `Left=5 Top=170`, 1024 `Left=5 Top=215`.
+- Máy chủ `ScriptFuns.cpp` `[TKINFO 05/09]`: `UpdateBattleInfo(mission, phase, timerId, tong, kim, rows)` (cho PlayerIndex) và `UpdateBattleInfoAll(...)`
+  (cả trận, điều kiện như `UpdateBattleBoxAll`): kind 7 `"phase|rest|tong|kim"` (rest = `GetTimerRestTimer(timerId)/18`), kind 8 `"n;hang|ten|phe|diem;…"`
+  từ **`m_MissionLadder`** (top-10 theo tham số ladder = 6 tích lũy, C++ tự xếp trong `KMission::SetPlayerParam` mỗi lần cộng điểm — TK mở nhiệm vụ với
+  `nMSLadderParam = 6`), tên cắt 12 ký tự để ≤127 byte.
+- Lua `lib_tktc.lua` `[TKINFO 05/09]`: `TK_GiaiDoan()` (timer 1 còn → 1 báo danh, else 2), `TK_TimerHien(pha)` (1 → timer 1, 2 → timer 3),
+  `TK_GuiThongTinChoToi()` (gọi ở `tongratrai/kimratrai.lua` sau `TK_GuiDiemChoToi`), `TK_GuiThongTinPhe()` (tiết chế 54 khung = 3 s, gọi đầu
+  `TK_GuiDiemPhe` mỗi lần giết). Cú pháp trung tính Lua 4/5.4 (`kiem_54.py`: 0 lỗi); **chỉ gọi khi hàm C++ tồn tại** → an toàn với máy chủ cũ.
+- Kind 9 (ẩn, `task03.lua PlayerEndTongKim`) ẩn cả bảng điểm lẫn cửa sổ này.
+### 16c. Trạng thái / triển khai
+- wauto-c9 12:00: main đã Lua 5.4 (38d65e50) — worktree mail-0309 đã merge (df1c5dec), build link `Lua54Dll`.
+- 🔴 wauto-c9 12:15 KHẨN: bat đổi cây script lỗi → **KHÔNG đặt Game.exe.moi / CoreServer.dll.moi link Lua54 vào bin** cho tới khi họ báo xong.
+  Binary build xong giữ trong worktree (`Sources\Core\x64\ServerRelease\CoreServer.dll`, `Sources\S3Client\Release\Game.exe`).
+- Ini + spr client và Lua máy chủ đã đặt trên cây live (trơ với binary cũ).
+- 12:40 — wauto-c9 12:25 báo bat đã sửa, cho phép đặt: **`CoreServer.dll.moi` = 0e5c545d (md5 d48983c4fb74fe093a4daa5b37afd3ff)**,
+  **`Game.exe.moi` = a136398e (md5 62ff6f75b0a2b4e57eef19e626d1b4af)** — cả hai link Lua54, build từ main đã merge. Chủ: `ChayGameServer.bat`
+  (máy chủ lên 5.4 + cửa sổ) và `ChoiGame.bat` (client). Kiểm sau: vào Tống Kim, ra khỏi hậu doanh → cửa sổ "Tống Kim" hiện giai đoạn/giây/top 5;
+  bấm "Nhấn xem Chiến Báo" mở chiến báo.

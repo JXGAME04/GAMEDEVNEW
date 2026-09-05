@@ -648,6 +648,9 @@
     <ClCompile Include="Ui\UiCase\UiTongKimScore.cpp">
       <Filter>BASE_ELEMENT_CASE\UICase\UI_NEW_MESS\FLASH_MESS</Filter>
     </ClCompile>
+    <ClCompile Include="Ui\UiCase\UiTongKimInfo.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase\UI_NEW_MESS\FLASH_MESS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ui\Elem\AutoLocateWnd.h">
