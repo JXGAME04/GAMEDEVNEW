@@ -50,10 +50,13 @@ end
 
 -- nut "Mua Chien Lenh": the ban o Ky Tran Cac (goods.txt 6/1/4977, 500 xu), dung the -> CL_MuaVip
 function UIChienLenh:OnBuyVip()
+	-- [CL 04/09 MUA] client khong tu mo Ky Tran Cac duoc -> xin may chu (CLUI_OnOpen(2) trong cl_ui.lua)
+	CLUI_Gui("emSCRIPT_PROTOCOL_CL_REQUEST_OPEN", 2)
 	CLUi_Msg("Mua ChiÕn LÖnh Hµo Hoa t¹i Kú Tr©n C¸c (500 xu) råi dïng thÎ")
 end
 
 function UIChienLenh:OnHelp()
+	CLUI_Gui("emSCRIPT_PROTOCOL_CL_REQUEST_OPEN", 3)
 	CLUi_Msg("Lµm nhiÖm vô lÊy ®iÓm, ®ñ ®iÓm bÊm « s¸ng ®Ó nhËn th­ëng qua th­")
 end
 
