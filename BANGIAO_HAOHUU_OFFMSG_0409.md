@@ -108,6 +108,19 @@ server build Lua54), chỉ cần build lại relay từ origin/main (`build.py -
 rồi đặt `.moi` **cùng lúc** với engine.dll và sửa `ChayRelay.bat` swap thêm `engine.dll`. Đã nhắn wauto-c9 hai câu hỏi (cấu hình Engine cho multiserver; có phủ đợt này không)
 + nit: `S3Relay.vcxproj` @origin/main còn dòng 300 `Lib\release\LuaLibDll.lib` (chỉ bỏ dòng debug), vô hại.
 
+**wauto-c9 trả lời 12:15:** engine.dll 634 KB = cấu hình **"Engine Server Release|Win32"** của `Engine.vcxproj` (OutDir `.\EngineServerRelease\`).
+Đợt này **KHÔNG phủ `bin\multiserver`**: S3Relay/Bishop giữ `engine.dll` + `LuaLibDll.dll` cũ (relay không có script .lua trên Windows).
+⇒ **ĐỪNG đặt S3Relay.exe.moi bản Lua54, đừng đặt engine.dll Lua54 vào multiserver**; `.moi` Lua 4 hiện tại là đúng. Đợt 2 họ sẽ đưa
+engine.dll Win32 server + Lua54Dll Win32 vào cùng lúc với S3Relay. (Cảnh báo kèm: client bị đơ do bat đổi cây script, họ đã lùi client, đang sửa.)
+
+**Đã thử (05/09 12:20) và KHÔNG được:** trả dòng `.lib` của `S3Relay.vcxproj` về `LuaLibDll` → link hỏng: `DoScript.obj` đòi
+`__imp__lua4_gettop / lua4_pushstring / lua4_tonumber / lua4_tostring`, vì `Engine\Include\LuaLib.h` mới trên origin/main đã ánh xạ macro
+`Lua_*` → `lua4_*`. **Relay trên origin/main gắn với Lua54 ở tầng header**, không tách được bằng vcxproj ⇒ đúng như wauto-c9 nói:
+bản relay Lua 4 chỉ build được từ commit **trước 38d65e50** (= `.moi` hiện tại, nguồn e299bbb1, sha `6014c6d1`). Đã hoàn lại vcxproj về nguyên trạng.
+**Quy tắc cho relay từ nay đến đợt 2:** KHÔNG build lại relay từ origin/main để đặt `.moi`; nếu buộc phải sửa relay, làm trên nhánh tách
+từ e299bbb1 (hoặc `git worktree add <thư mục> e299bbb1` rồi cherry-pick) và ghi rõ trong bàn giao. Đợt 2 (wauto-c9 phủ multiserver) thì
+build từ origin/main và swap S3Relay.exe + engine.dll (Engine Server Release|Win32) + Lua54Dll.dll (Win32) cùng lúc.
+
 ## 8. Chưa làm / lưu ý
 - **Phối ngẫu** (`K_PR_MATE`) không port — dự án chưa có `DoMarry/UnMarry` (xem `jx1-kethon-linux-jx1-0309`).
 - Không có đổi tên nhân vật ở JX1 ⇒ không port `UPDATE Relation SET RoleName`.
