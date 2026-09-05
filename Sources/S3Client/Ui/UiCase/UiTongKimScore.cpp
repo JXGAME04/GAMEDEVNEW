@@ -140,9 +140,12 @@ void KUiTongKimScore::SetScore(int nTong, int nKim)
 	sprintf(szBuf, "%s%d", m_szPrefixKim, nKim);
 	m_KimPoint.SetText(szBuf);
 	ApplyBar();
+	// [TKDIEM 05/09] chi Show + BringToTop LAN DAU (truoc: moi lan cap nhat cung BringToTop -> xao danh sach cua so lien tuc)
 	if (!IsVisible())
+	{
 		Show();
-	BringToTop();
+		BringToTop();
+	}
 }
 
 // szDesc = "tong|kim|diem_toi" (LuaUpdateBattleBox 5 tham so); nType = nKind

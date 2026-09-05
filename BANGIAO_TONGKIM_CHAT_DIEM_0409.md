@@ -155,3 +155,25 @@ Hội)**: ini cửa sổ `WndType=WndImage` `ScriptFile=\script\ui\tong_battle_2
   chung `RiseSpeed=35 FadeMs=1500 DisplayDuration=6000 MaxQueueDelay=1500 Font=14 TextColor=0,255,0`. Chỉnh cảm giác: `RiseSpeed` (nhanh/chậm), `RiseFrom` (cao/thấp), `DisplayDuration`.
 - `Game.exe.moi` = **77d148a9** (20:27). Chờ chủ `ChoiGame.bat`. Không đụng máy chủ.
 - Kịch bản vá: `ReverseTools\tongkim_chat\va_flash_troilen.py` (neo LF/CRLF tự dò — tệp .h là CRLF, `vn_edit --read` không lộ `\r`).
+
+
+## 11. 05/09 00:40 — Chủ (ảnh 12 dòng chồng): "3 dòng thôi + trôi nhanh hơn", "fix xong game lag hơn nhiều", "Tống VS Kim hay bị nháy"
+
+### 11a. Nháy bảng điểm — GỐC: ẩn nhầm theo cờ nạp VÙNG
+- Tôi ẩn bảng ở `GDCNI_SWITCHING_SCENEPLACE`; cờ này (`KScenePlaceC::SetLoadingStatus`) bật cả trong `SetFocusPosition` mỗi khi nhân vật
+  chạy quá `SPWP_TRIGGER_LOADING_RANGE` (nạp vùng kế trong CÙNG map) → bảng ẩn, cập nhật điểm sau đó hiện lại = nháy.
+- Sửa: chuyển sang `GDCNI_SWITCHING_MAPMODE` (chỉ bắn trong `KScenePlaceC::OpenPlace` = đổi map thật; `GameSpaceChangedNotify.cpp` case :880).
+- Thêm: `SetScore` chỉ `Show + BringToTop` lần đầu (trước mỗi lần cập nhật đều xáo danh sách cửa sổ).
+
+### 11b. Lag — 2 gốc
+- **Máy chủ**: `TK_GuiDiemPhe` gửi 1 gói cho TỪNG người (tới 600) sau MỖI lần giết → Tống Kim đông, hàng chục lần giết/giây = hàng nghìn gói/giây,
+  client xử lý bảng liên tục. Sửa Lua (`lib_tktc.lua` `[TKDIEM 05/09]`): tối đa 1 lần / 36 khung (2 s, `GetGameTime` script JX1 = frame 18/s),
+  lần giết kế tiếp gửi tiếp; lệnh ẩn (kind 9) không hạn chế. **Cần restart máy chủ** (Lua nạp lúc boot). Gương: `serverscript_jx2\tongkim_chat\server\...`.
+- **Client**: bản trôi lên vẽ tới 14 dòng/khung (Height 260 / 18) + `TEncodeText` + đo rộng MỖI khung cho MỖI dòng. Sửa `[TKCHAT 05/09]`:
+  `MaxLines` (ini, mặc định 3): cách sinh ≥ `DisplayDuration/MaxLines` → tối đa 3 dòng cùng lúc; mã hoá + đo rộng MỘT lần lúc sinh
+  (`DisplaySlot.szEnc/nEncLen/nRongPx`), `PaintWindow` chỉ vẽ.
+
+### 11c. Ini mới (live + gương) — nhanh hơn
+- 800×600: `Top=140 Height=200 RiseFrom=320`; 1024×768: `Top=230 Height=200 RiseFrom=410`; chung `RiseSpeed=60 DisplayDuration=2500 FadeMs=700 MaxLines=3 MaxQueueDelay=1200`.
+  → mỗi dòng sống 2,5 s, đi 150 px, dòng sau cách dòng trước 833 ms (50 px). Kịch bản vá: `ReverseTools\tongkim_chat\va_flash_3dong.py`.
+- `Game.exe.moi` = **bc08ffb4** (05/09 09:30). Chủ: `ChoiGame.bat` (client) + **restart máy chủ** (Lua tiết chế gói điểm).

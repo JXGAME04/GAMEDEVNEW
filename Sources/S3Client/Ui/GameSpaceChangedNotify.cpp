@@ -570,7 +570,6 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 	}
 	break;
 	case GDCNI_SWITCHING_SCENEPLACE:
-		KUiTongKimScore::OnSwitchMap(nParam);	// [TKDIEM 04/09] bat dau nap map moi -> an bang diem
 		break;
 	case GDCNI_MISSION_RECORD:
 		if (uParam)
@@ -878,6 +877,9 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 	}
 	break;
 	case GDCNI_SWITCHING_MAPMODE:
+		// [TKDIEM 05/09] doi map THAT (KScenePlaceC::OpenPlace) -> an bang diem Tong VS Kim. Truoc dung GDCNI_SWITCHING_SCENEPLACE:
+		// co nay cung bat khi nap VUNG luc chay trong map (SetFocusPosition > SPWP_TRIGGER_LOADING_RANGE) -> bang an/hien = 'nhay'.
+		KUiTongKimScore::OnSwitchMap(1);
 		if (uParam)
 			MapSetMode(MINIMAP_M_BRIEF_PIC);
 		else

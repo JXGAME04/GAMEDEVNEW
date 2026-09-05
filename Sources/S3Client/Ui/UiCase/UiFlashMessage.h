@@ -98,6 +98,10 @@ private:
 		int             nInsertPlace;      // for counting messages
 		int             nSkipTimes;        // slot-local skip counter (was static before)
 		int             nLineLen;          // total char length for this slot
+		// [TKCHAT 05/09] chu da ma hoa + do rong px, tinh MOT lan luc sinh (khong TEncodeText moi khung)
+		char            szEnc[512];
+		int             nEncLen;
+		int             nRongPx;
 	};
 
 	std::vector<DisplaySlot> m_DisplaySlots; // dynamic number of slots (computed at Initialize)
@@ -110,6 +114,7 @@ private:
 	int             m_nFadeMs;            // toi dan trong FadeMs cuoi (ini FadeMs; 0 = khong)
 	unsigned int    m_uMaxQueueDelay;     // hang doi don qua muc nay (ms) thi bo tin moi (ini MaxQueueDelay)
 	unsigned int    m_uNextStartTime;     // thoi diem som nhat dong ke tiep duoc sinh (cach dong truoc dung 1 hang)
+	int             m_nMaxLines;          // [TKCHAT 05/09] toi da so dong cung hien (ini MaxLines, mac dinh 3)
 	int     RiseFromY() { return (m_nRiseFrom >= 0) ? m_nRiseFrom : (m_nAbsoluteTop + m_Height - m_nIndentV - m_nLineHeight); }
 
 	// --------------------------------------
