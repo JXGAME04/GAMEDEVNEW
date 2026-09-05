@@ -174,7 +174,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
       <SubSystem>Windows</SubSystem>
       <OutputFile>Release/Game.exe</OutputFile>
       <AdditionalLibraryDirectories>..\..\Lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FilterText_StaticLib.lib;odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;lualibdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>FilterText_StaticLib.lib;odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -585,7 +585,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\debug\FilterText_StaticLib.lib" />
-    <Library Include="..\..\Lib\debug\lualibdll.lib">
+    <Library Include="..\..\Lib\lua54\$(Platform)\Lua54Dll.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\release\CoreClient.lib">
@@ -594,7 +594,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <Library Include="..\..\Lib\release\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="..\..\Lib\release\LuaLibDll.lib" />
+    <Library Include="..\..\Lib\lua54\$(Platform)\Lua54Dll.lib" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Script1.rc" />

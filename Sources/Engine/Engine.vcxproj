@@ -328,7 +328,7 @@ copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\ClientDebug\Engine.dll</OutputFile>
       <ImportLibrary>.\ClientDebug\Engine.lib</ImportLibrary>
-      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\debug\JpgLib.lib;..\..\Lib\debug\mp3lib.lib;..\..\Lib\debug\lualibdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\debug\JpgLib.lib;..\..\Lib\debug\mp3lib.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -340,7 +340,7 @@ copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll</Command>
       <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;src;..\Core\Src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\ClientDebug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -377,7 +377,7 @@ copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\ClientDebug\Engine.dll</OutputFile>
       <ImportLibrary>.\ClientDebug\Engine.lib</ImportLibrary>
-      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\debug64\lualibdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -390,7 +390,7 @@ copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll</Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <MinimalRebuild>true</MinimalRebuild>
-      <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;src;..\Core\Src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SERVER;_DEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\EngineServerDebug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -429,7 +429,7 @@ copy EngineServerDebug\engine.pdb ..\..\..\bin\Multiserver\engine.pdb</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\EngineServerDebug\Engine.dll</OutputFile>
       <ImportLibrary>.\EngineServerDebug\Engine.lib</ImportLibrary>
-      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\debug\lualibdll.lib;..\..\Lib\debug\JpgLib.lib;..\..\Lib\debug\mp3lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;..\..\Lib\debug\JpgLib.lib;..\..\Lib\debug\mp3lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -442,7 +442,7 @@ copy EngineServerDebug\engine.pdb ..\..\..\bin\Multiserver\engine.pdb</Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <MinimalRebuild>true</MinimalRebuild>
-      <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;src;..\Core\Src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SERVER;NDEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\EngineServerRelease\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -481,7 +481,7 @@ copy EngineServerRelease\engine.pdb ..\..\..\bin\Multiserver\engine.pdb</Command
       <SubSystem>Console</SubSystem>
       <OutputFile>.\EngineServerRelease\Engine.dll</OutputFile>
       <ImportLibrary>.\EngineServerRelease\Engine.lib</ImportLibrary>
-      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\release\JpgLib.lib;..\..\Lib\release\mp3lib.lib;..\..\Lib\release\LuaLibDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\release\JpgLib.lib;..\..\Lib\release\mp3lib.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -493,7 +493,7 @@ copy EngineServerRelease\engine.pdb ..\..\..\bin\Multiserver\engine.pdb</Command
       <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;src;..\Core\Src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SERVER;_DEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -531,7 +531,7 @@ copy ".\x64\Engine Server Debug\\engine.pdb" "..\..\..\bin\server\engine.pdb"</C
       <SubSystem>Console</SubSystem>
       <OutputFile>$(IntDir)\Engine.dll</OutputFile>
       <ImportLibrary>$(IntDir)\Engine.lib</ImportLibrary>
-      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\debug64\lualibdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -543,7 +543,7 @@ copy ".\x64\Engine Server Debug\\engine.pdb" "..\..\..\bin\server\engine.pdb"</C
       <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;src;..\Core\Src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SERVER;NDEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -581,7 +581,7 @@ copy ".\x64\Engine Server Release\\engine.pdb" "..\..\..\bin\server\engine.pdb"<
       <SubSystem>Console</SubSystem>
       <OutputFile>$(IntDir)\Engine.dll</OutputFile>
       <ImportLibrary>$(IntDir)\Engine.lib</ImportLibrary>
-      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\release64\lualibdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -641,7 +641,7 @@ copy release\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\Engine.dll</OutputFile>
       <ImportLibrary>.\Release\Engine.lib</ImportLibrary>
-      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\release\JpgLib.lib;..\..\Lib\release\mp3lib.lib;..\..\Lib\release\LuaLibDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\release\JpgLib.lib;..\..\Lib\release\mp3lib.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -692,7 +692,7 @@ copy release\engine.map ..\..\..\bin\server\release\engine.map</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\Engine.dll</OutputFile>
       <ImportLibrary>.\Release\Engine.lib</ImportLibrary>
-      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\release64\lualibdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>

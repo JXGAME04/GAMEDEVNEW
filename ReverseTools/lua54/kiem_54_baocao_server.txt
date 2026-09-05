@@ -1,0 +1,2 @@
+lua4compat.lua cu phap: OK
+cu phap 5.4: 2986 tep, 0 LOI

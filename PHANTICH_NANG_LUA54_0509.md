@@ -1,0 +1,140 @@
+# PHÂN TÍCH NÂNG LUA 4.0.1 → LUA 5.4 (05/09/2026)
+
+Chủ (05/09): *"phân tích kỹ trước khi fix — tôi muốn nâng một lần để dùng cho sau này nên cần tốt nhất"*.
+Tài liệu này là kết quả giai đoạn 0 (phân tích + dựng công cụ + kiểm trên bản sao). **Chưa đụng cây chạy thật, chưa đổi engine.**
+
+## 1. Hiện trạng đo được
+
+| Chỉ số | Giá trị | Nguồn |
+|---|---|---|
+| Lua nhúng | **4.0.1** (2000), `Sources\Library\LuaLib` → `LuaLibDll.dll` (x64 máy chủ 265 KB, Win32 client 206 KB) | `lua.h:50`, `LuaLibDll.vcxproj` |
+| Script máy chủ | **2.986 tệp**, 11,5 MB (trong `bin\server\script`) | `quet_lua4.py` |
+| Script client | **449 tệp** (`bin\client\script`: ui, skill, tong, mail, auction_house…) | `quet_lua4.py` |
+| Hàm C++ gắn cho Lua | **742** (bảng trong `ScriptFuns.cpp`; 4 hàm ngoài `#ifdef _SERVER` dùng chung client) | grep |
+| Bề mặt API Lua mà engine/core gọi | ~120 tên `lua_*`/`Lua_*` (lớp macro `Engine\Include\lua.h` + `LuaLib.h`), 16 tệp gọi API thô, 742 hàm gắn chỉ dùng `Lua_GetTopIndex / IsNumber / IsString / ValueToNumber / ValueToString / PushNumber / PushString / PushNil / NewTable / SetTable` | grep |
+| Kiến trúc | **mỗi tệp script = một `lua_State` riêng**, `lua_open(100)` (stack 100 ô), `Include` = thực thi tệp vào state đang gọi (2.546 dòng Include / 1.098 tệp → thư viện bị chép vào hàng trăm state); `KScriptList` ép `lua_setgcthreshold(200)` mỗi vòng cho step-script | `KLuaScript.cpp:23`, `KScriptList.cpp:44`, `ScriptFuns.cpp:2009` |
+| API tự thêm trong DLL | `lua_compilebuffer/compilefile/execute/gettopindex` (ldo.c), `lua_setdebugout/outoutmsg/outerrmsg` (lua.c), `LuaExtend.c` (`Lua_SetTable_*`, `Lua_GetValuesFromStack`) | đọc mã |
+
+### Hạn chế Lua 4 chứng minh bằng chạy thử (lua4.exe của dự án)
+
+| Hạn chế | Bằng chứng | Ảnh hưởng thật |
+|---|---|---|
+| `%d` chỉ tới 2^31 | `format("%d", 3000000000)` = **-2147483648** | 868 chỗ `format(%d)`; exp/tiền đã vượt 2,1 tỷ |
+| `random` chỉ 32.768 mức (`rand()%RAND_MAX/RAND_MAX`) | quay 200.000 lần trong 1..100.000 chỉ ra **32.691** giá trị khác nhau | tỉ lệ rớt có mẫu số > 32.767 không đúng cấu hình; 824 chỗ `random(` |
+| Closure chụp **bản sao** biến ngoài, chỉ đọc, không đệ quy cục bộ | `%dem` = 0 trong khi biến ngoài = 5; hàm cục bộ tự gọi → "cannot access a variable in outer scope" | 500 chỗ `%x` / 66 tệp |
+| Không boolean, không `#`, không coroutine, không metatable (tag method), không `table.concat`, vararg chỉ qua bảng `arg` | `type(1 == 1)` = number | 18 chỗ tag method (3 tệp), 113 chỗ `arg` (39 tệp) |
+| Stack cố định | đệ quy 3.000 tầng → "stack Overflow" ngay cả bản 1024 ô; engine mở 100 ô | vòng Include 23/08 sập boot |
+| GC dừng-toàn-bộ (`GCthreshold = 2×nblocks`) | `lgc.c:344` | cú giật 55–100 ms mỗi phút khi nạp lại 1 MB script |
+| Xử lý lỗi bằng `call(f, args, "x")`, thiếu là timer chết | bài học AucWeb | 55 chỗ `call(` |
+
+## 2. Quyết định phiên bản: **Lua 5.4.7**
+
+- **Không chọn 5.5.0** (vcpkg đã có): 5.5 cấm gán lại biến điều khiển `for` → bộ quét đếm **2.652 chỗ gán lại biến for trong 629 tệp** (Lua 4 cho phép, nhiều script dùng `i = i + 1` trong vòng for) → phải sửa tay hàng nghìn chỗ; hệ sinh thái (luacheck, EmmyLua, tài liệu) chưa theo kịp. 5.4 → 5.5 sau này là bước rất nhỏ so với 4.0 → 5.4.
+- **Không chọn LuaJIT**: ngữ nghĩa 5.1 (không số nguyên 64 bit thật, `%d` vẫn ép double), một người bảo trì, lag hiện tại nằm ở C++ (perf log 05/09: SW_ACTIVATE 50–60 ms/tick khi bot đánh Tống Kim) nên tốc độ Lua không phải nút thắt.
+- 5.4.7: số nguyên 64 bit, GC thế hệ, closure thật, coroutine, metatable, `goto`, thư viện chuẩn đầy đủ, 5 năm ổn định.
+
+## 3. Kiến trúc nâng cấp (giữ engine, thay lõi)
+
+```
+Engine/Core/Client (742 hàm gắn, ~150 chỗ gọi API)   -- KHÔNG SỬA
+        │  gọi tên Lua 4:  lua_gettop, lua_tonumber, lua_call, lua_dostring, lua_newtag ...
+        ▼
+Engine\Include\LuaLib.h (viết lại): #define lua_gettop lua4_gettop ...   (macro → tên mới)
+        ▼
+Lua54Dll.dll  =  lõi Lua 5.4.7 (vá 1 dòng in số)  +  lua4compat.c (lua4_* với ĐÚNG chữ ký Lua 4)
+                                                  +  lua4compat.lua (nhúng, nạp vào mỗi state)
+```
+
+- **`lua4compat.c`** (viết mới, ~600 dòng): mỗi hàm Lua 4 mà engine dùng có bản `lua4_*` với chữ ký cũ → không đụng 742 hàm gắn. Điểm phải xử lý khác biệt:
+  - mã kiểu: Lua 4 `TNIL=1, TNUMBER=2, TSTRING=3, TTABLE=4, TFUNCTION=5, TUSERDATA=0` ≠ 5.4 → `lua4_type` ánh xạ; **boolean** (5.4 trả về từ so sánh) → `lua4_isnumber` = đúng, `lua4_tonumber` = 1/0 để hàm C cũ không hỏng.
+  - `lua_call` (Lua 4 là **có bảo vệ**, trả mã lỗi) → `lua_pcall` + hàm nhận lỗi ghép traceback rồi gọi `_ALERT` (LuaGameAlert ghi ScriptError.log như hiện nay); `lua_rawcall` → `lua_call`.
+  - `lua_dofile/dostring/dobuffer/compilebuffer/execute` → `luaL_loadX` + pcall; mã lỗi đổi về mã Lua 4 (ERRRUN=1, ERRFILE=2, ERRSYNTAX=3…).
+  - tag: `lua_newtag/settag/tag/pushusertag/settagmethod/copytagmethods` → metatable trong registry; `pushusertag(ptr, tag)` = full userdata bọc con trỏ + metatable của tag (engine chỉ dùng cho tham số `p` của `CallFunction`).
+  - `lua_ref/getref/unref` → `luaL_ref`; `lua_getn` → `luaL_len`; `lua_strlen` → `lua_rawlen`; `lua_stackspace` → hằng; `lua_getgcthreshold/getgccount/setgcthreshold` → `lua_gc` (đặt **GC thế hệ** lúc tạo state); `lua_error(L, msg)` → `luaL_error`; `lua_equal/lessthan` → `lua_compare`; `lua_open(n)` → `luaL_newstate` + openlibs + nạp shim.
+  - Thư viện: `lua_baselibopen` = `luaL_openlibs` + chạy `lua4compat.lua`; `iolibopen/strlibopen/mathlibopen/dblibopen` = no-op.
+  - Hàm nóng của shim đưa xuống C (đo ở mục 6): `getn, tinsert, tremove, format, random, mod, strsub, strfind, strlen` — port từ `lbaselib.c/lstrlib.c` 4.0.1 sang API 5.4 (giữ nguyên ngữ nghĩa, `%d` 64 bit).
+- **Vá lõi 5.4** (1 chỗ, `lobject.c tostringbuff`): không thêm `.0` khi in số thực tròn → `10/2` in ra `5` như Lua 4 (5.4 gốc in `5.0`; ảnh hưởng mọi chỗ ghép chuỗi `..` và `print`). Định dạng vẫn `%.14g` như Lua 4.
+- **Giữ mỗi tệp một state** ở giai đoạn 1 (ngữ nghĩa y hệt, rủi ro thấp). Gộp về một state + `_ENV` riêng từng tệp + cache bytecode (hết nạp trùng thư viện, `require`) là **giai đoạn 2**, làm sau khi giai đoạn 1 chạy ổn.
+
+## 4. Bộ công cụ đã dựng (`ReverseTools\lua54\`)
+
+| Tệp | Việc |
+|---|---|
+| `quet_lua4.py` | tách token Lua 4 thật (không đếm nhầm `%d` trong chuỗi), phân loại 17 nhóm khác biệt; báo cáo `quet_lua4_baocao.txt` |
+| `chuyen_lua4_54.py` | bộ chuyển byte-safe (giữ TCVN3, CRLF): `%x`→`x`, `for k,v in t`→`pairs(t)`, thoát lạ `\c`→`c` (đúng như Lua 4 hiểu), `function(...)`→chèn `local arg`, số dính chữ `7then`→`7 then`, `[[ [[ ]] ]]`→`[=[ ]=]`; báo cáo từng dòng `chuyen_baocao.txt` |
+| `lua4compat.lua` | lớp tương thích (getn/tinsert với `t.n` đúng như `lbaselib.c`, `call/dostring/dofile` đúng `passresults`, tag method→metatable, `format` ép nguyên, `random` kiểu Lua 4, I/O `openfile/read/write/closefile/readfrom/writeto`…) |
+| `kiem_54.py` | kiểm cú pháp toàn cây bằng **Lua 5.4 thật** (`C:\Program Files\Wireshark\lua54.dll` qua ctypes, không cần tải gì) |
+| `chay_54.py` | chạy một tệp trên 5.4 + shim, `print` ra tệp để diff với `lua4.exe` |
+| `test\dump_cfg.lua`, `test\bench.lua` | đối chứng dữ liệu + đo tốc độ (viết bằng cú pháp Lua 4, chính bộ chuyển đổi chúng) |
+
+## 5. Kết quả trên bản sao toàn bộ script
+
+| Kiểm | Kết quả |
+|---|---|
+| Chuyển máy chủ | 2.986 tệp, **135 tệp có sửa** (UPVAL 415, FORIN 142, ESCAPE 17, VARARG 41, NUMKW 1), 2.851 tệp giữ nguyên từng byte |
+| Chuyển client | 449 tệp, 35 tệp có sửa (UPVAL 85, FORIN 54, VARARG 31) |
+| Biên dịch Lua 5.4 máy chủ | **2.986 / 2.986 OK** |
+| Biên dịch Lua 5.4 client | 446 OK; 3 tệp lỗi (`lib\basic.lua`, `lib\say.lua`, `lib\string.lua`) dùng chú thích C `/* */` — **đã lỗi sẵn trên Lua 4** (tệp chết, client không nạp) |
+| Đối chứng dữ liệu | nạp toàn bộ `ch_all.lua` + `cauhinh_hoatdong.lua` + `cfgw_meta.lua` (3.858 khoá, 4.162 dòng in) trên Lua 4 gốc và 5.4 + shim: **giống hệt**, chỉ 3 dòng khác đúng dự kiến: `10/2` in `5.0` (vá lõi sẽ hết), `date(..) ~= nil` in `true` thay vì `1` (boolean), `tonumber("0x10")` = 16 ở cả hai (đã sửa shim cho giống) |
+
+## 6. Tốc độ (cùng bench, cùng máy)
+
+| Phép đo | Lua 4.0.1 | Lua 5.4 + shim Lua | Ghi chú |
+|---|---|---|---|
+| vòng lặp lồng 600×600 | 12 ms | **3 ms** | lõi 5.4 nhanh 4× |
+| gọi hàm 2.000.000 lần | 74 ms | **29 ms** | 2,5× |
+| tinsert 200.000 + đọc | 28 ms | 49 ms | shim viết bằng Lua chậm hơn → đưa xuống C |
+| format + ghép 100.000 | 54 ms | 116 ms | shim `format` phân tích `%` bằng Lua → đưa xuống C |
+| floor + random 1.000.000 | 64 ms | 159 ms | `random` bọc Lua → đưa xuống C |
+
+Kết luận: lõi nhanh 2,5–4×; các hàm thư viện tên cũ **phải cài bằng C trong DLL** (mục 3) để không chậm hơn Lua 4 ở đường nóng (floor 6.154 chỗ, getn 1.833, format 1.604, random 824).
+
+## 7. Khác biệt ngữ nghĩa phải RÀ TAY (đã liệt kê đích danh trong báo cáo quét)
+
+| # | Việc | Số lượng | Xử lý |
+|---|---|---|---|
+| 1 | `%x` mà biến ngoài bị gán lại sau khi tạo closure (5.4 thấy giá trị mới) | **1** (`auction_house\auction_manager.lua:343 %nCount`, gán lại dòng 349) | sửa tay: chụp bản sao `local nCount_ = nCount` |
+| 2 | `true`/`false` dùng như biến (Lua 4 = nil) | 4 (`timerserver.lua:399`, `lenhbaitanthu.lua:367`, `pubg.lua:28,63`) | rà từng chỗ: 5.4 thành boolean thật, luồng `if` có thể đổi |
+| 3 | Chuỗi có thoát lạ (`"C:\server\dulieu"` Lua 4 đọc thành `C:serverdulieu`) | 17 (`timerserver.lua:383`, `hd3_admin.lua:129`, 12 tệp `npcmonphai\*.lua:7` `\F`) | bộ chuyển giữ đúng hành vi Lua 4 (bỏ `\`); dev quyết có sửa ý gốc không |
+| 4 | Kết quả so sánh thành boolean thay vì 1/nil | không có chỗ gán/return trực tiếp; 1.752 chỗ `== 1` là so với số thật | C++: `lua4_tonumber(boolean)` = 1/0; Lua: chỉ lộ khi ghép chuỗi (`"x" .. (a==b)` sẽ lỗi ở 5.4) → chạy thử trên máy thử |
+| 5 | Thứ tự duyệt bảng `for k,v in` khác giữa hai lõi | 197 vòng; 9 tệp vừa duyệt bảng vừa `Say(` (menu NPC có thể đổi thứ tự) | rà 9 tệp, đổi sang duyệt theo chỉ số |
+| 6 | Nhân số nguyên vượt 2^63 quay vòng (Lua 4 là số thực) | hằng > 2^31: 37 chỗ (mốc ngày, 1e11 lượng) | không có tích nào tới 9,2e18; đánh dấu theo dõi |
+| 7 | 3 tệp client chết (chú thích C) | 3 | xoá hoặc sửa, không ảnh hưởng |
+| 8 | Lỗi runtime giờ báo kèm traceback đầy đủ | – | ScriptError.log rõ hơn, không cần làm gì |
+
+## 8. Kế hoạch còn lại
+
+| Giai đoạn | Việc | Nghiệm thu |
+|---|---|---|
+| 1a (cần nguồn 5.4.7) | dựng `Lua54Dll.vcxproj` (x64 + Win32) từ lua-5.4.7 + vá in số + `lua4compat.c` (hàm nóng bằng C) + nhúng shim; viết lại `Engine\Include\LuaLib.h`/`lua.h`; sửa `KLuaScript.cpp` (`lua_open` → tạo state kiểu mới), `KScriptList` (GC), 9 chỗ `lua_dostring`, `KCore.cpp:284 setdebugout` | Core (x64) + Engine/Client (Win32) build sạch, `lua4compat` self-test qua |
+| 1b | máy chủ **thử** (bản sao `bin\server` + DB thử): boot với cây script đã chuyển, chạy bot 1000 con 2 giờ, so `ScriptError.log`, `jx_perf_server.log`, bot.log với bản 4.0 | không lỗi script mới, SCRIPT_TIME giảm, tick không tăng |
+| 1c | client thử: đăng nhập, UI, kỹ năng, bang, thư, đấu giá (449 script client) | không lỗi `ScriptError.log` client |
+| 1d | lên thật theo quy trình `.moi` (CoreServer + LuaLibDll máy chủ; Game.exe/CoreClient + LuaLibDll client cùng lúc) + cây script đã chuyển; giữ bản cũ để lùi trong 1 phút | 24 giờ đầu theo dõi log |
+| 2 (sau) | một state + `_ENV` từng tệp + cache bytecode; `require` cho thư viện; bỏ nạp lại 1 MB/phút; coroutine cho hội thoại nhiều bước | perf log |
+
+**Lùi lại (rollback):** DLL cũ + cây script cũ vẫn giữ nguyên trên đĩa (`.truoc`); đổi lại là chạy được ngay vì bộ chuyển không đụng cây thật cho tới 1d.
+
+## 9. Việc cần chủ quyết
+
+1. **Cho phép tải mã nguồn Lua 5.4.7** (`lua-5.4.7.tar.gz`, 374.097 byte, từ `https://www.lua.org/ftp/`) — máy đang có mạng, không cần gì khác. Đây là điều kiện để làm 1a.
+2. Xác nhận chọn **5.4.7** (mục 2). Nếu chủ muốn 5.5.0 thì cộng thêm việc sửa 2.652 chỗ gán biến for.
+3. Có máy chủ thử (hoặc cho phép chạy bản thử trên cùng máy với cổng khác) cho 1b.
+
+## 10. Giai đoạn 1a ĐÃ LÀM (05/09 trưa) — chờ chủ khởi động lại
+
+Chủ: *"oke hãy làm trên máy chủ hiện tại — làm xong nhớ chạy kiểm tra"*.
+
+**Đã dựng:** `Sources\Library\Lua54` (nguồn 5.4.7 + 2 vá + `lua4compat.c` 84 hàm + shim nhúng), `Engine\Include\LuaLib.h` mới (742 hàm gắn, KLuaScript không sửa), 4 vcxproj trỏ `Lib\lua54\$(Platform)\Lua54Dll.lib`. Build sạch: Lua54Dll x64/Win32, CoreServer, engine.dll máy chủ, CoreClient, Engine.dll client, Game.exe.
+
+**Kiểm trước khi lên (đã chạy):** `lua4_selftest` 25 mục = 0 lỗi; dump 3.858 khoá cấu hình qua API `lua4_*` giống Lua 4 (chỉ khác `1`→`true` cho biểu thức so sánh); bench qua DLL nhanh hơn Lua 4 ở mọi mục (2/27/12/26/68 ms so 12/75/29/53/64); 2.986 script máy chủ + 446 client biên dịch 5.4 OK.
+
+**Đã đặt trong `bin\server`:** `CoreServer.dll.moi` 4081ce2d · `engine.dll.moi` 1f4f8c92 · `Lua54Dll.dll` 8ef0b246 (đặt thẳng, bản cũ không dùng tới) · `LUA54.moi` (dấu hiệu đổi cây script) · `tools\chuyen_lua4_54.py` · `ChayGameServer.bat` mới (bản cũ `.truoc`) · `LuiLua4.bat`.
+**Đã đặt trong `bin\client`:** `Game.exe.moi` 41a0d7e3 · `CoreClient.dll.moi` f400b7ef · `Engine.dll.moi` 622b12f3 · `Lua54Dll.dll` e4f341cf · `LUA54.moi` · `tools\` · `ChoiGame.bat` mới (bản cũ `.truoc`) · `LuiLua4.bat`.
+
+**Cách lên (chủ làm):** tắt GameServer → chạy `ChayGameServer.bat`: bat thay 3 file `.moi`, thấy `LUA54.moi` và `CoreServer.dll` đã dùng Lua54Dll thì chạy converter tại chỗ (`script` → `script54`, ~20 s, lấy đúng cây script hiện tại kể cả sửa đổi mới nhất), đổi `script`→`script.lua4`, `script54`→`script`, đổi `LUA54.moi`→`LUA54.da_doi`, mở GameServer. Client: thoát game → `ChoiGame.bat` (tương tự). Hai lớp bảo vệ: bat chỉ đổi script khi binary đã dùng Lua54Dll; Lua54Dll từ chối chạy (hộp thoại + ScriptError.log) nếu `script\LUA54_DA_CHUYEN.txt` thiếu.
+
+**Lùi lại:** tắt → `LuiLua4.bat` (trả `.truoc` cho CoreServer/engine (Game/CoreClient/Engine), `script.lua4`→`script`, không xoá gì) → chạy bat thường.
+
+**Kiểm sau khi lên (Claude làm khi chủ báo):** ScriptError.log không có lỗi mới kiểu `attempt to call global`/`unexpected symbol`; `jx_perf_server.log` SCRIPT_TIME giảm; bot.log vẫn có [BotTK]/[BotDT]; gcfg nạp bình thường; Tống Kim 17:50 chạy; client đăng nhập, UI, kỹ năng, bang, thư, đấu giá.
+
+**Quy tắc viết script từ giờ (cây `script` = bản 5.4):** không dùng `%x` (viết `x` thẳng), duyệt bảng `for k, v in pairs(t) do`, hàm `...` tự khai `local arg = {n = select("#", ...), ...}`, chuỗi có `\` phải là thoát hợp lệ (`\`), số không dính chữ (`7 then`). Tên hàm cũ (getn, format, strfind, floor, date...) vẫn dùng được nhờ lớp tương thích. `script.lua4` là bản lưu, ĐỪNG sửa.
