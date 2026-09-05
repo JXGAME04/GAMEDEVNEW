@@ -186,3 +186,95 @@ Hội)**: ini cửa sổ `WndType=WndImage` `ScriptFile=\script\ui\tong_battle_2
   Goddess/Rainbow/Bishop/S3Relay ~0. → "rất lag" nằm ở MÁY CHỦ, không phải vẽ chữ trên client.
 - Nếu tắt rồi vẫn lag: (1) máy chủ chưa restart → `TK_GuiDiemPhe` vẫn 600 gói/lần giết; (2) dòng chat giết địch `Msg2MSAll` (tongtu/kimtu:87)
   cũng 600 gói/lần giết — có từ trước, có thể tiết chế/gửi cho người liên quan; (3) tải nền bot (1000 bot) — ngoài phạm vi TK chat.
+
+
+## 13. 05/09 10:05 — PHÂN TÍCH LOG "rất lag" (chủ: chỉ phân tích, chưa sửa)
+
+### 13a. Nguồn số đo
+- `bin\server\jx_perf_server.log` ([PERF] mỗi 60 s: tick/tre/online, KHOILUONG region+NPC, TICK / SCRIPT_TIME / SW_MAINLOOP / SW_ACTIVATE… tb/max/p95/chiếm);
+  `bot.log` (lịch bot vào trận TK "RA TRAN", chết/phút); `jx_auto_server.log` (debug từng phát đánh, 243 dòng/s); client `jx_paint.log` ([SEC] fps, tick), `jx_rep3.log`.
+- `SCRIPT_TIME` CHỈ đo script hẹn giờ (`CoreServerShell.cpp:1164 pTimeScript`), KHÔNG gồm script chết/giết → script `OnDeath` nằm trong `SW_MAINLOOP`.
+
+### 13b. Máy chủ có 2 chế độ (tick ngân sách 55 ms = 18 tick/s)
+| cửa sổ | tick tb | p95 | % tick trễ | MAIN tb | % phút bão hoà |
+|---|---|---|---|---|---|
+| 04/09 20:05-20:50 không TK (nền, 1001 online) | 6,8 ms | 9 | 0,1 | 4,4 | 0 |
+| 04/09 01:30-03:20 TK đêm (Lua cũ) | 11,2 | 17 | 0,2 | 7,7 | 0 |
+| 04/09 16:30 TK, 17:50 TK (TRƯỚC 19:29) | 8,9 / 8,7 | 12 / 15 | 0,2 / 0,5 | 5,9 / 5,6 | 0 |
+| 04/09 19:30 TK (SAU restart 19:29 = Lua bảng điểm chưa tiết chế, CoreServer 17:35) | **36,3** | 143 | **26,9** | 33,0 | 0 |
+| 04/09 20:50 TK, 22:50 TK (CoreServer 20:47) | **49,6 / 47,2** | 163 / 159 | **32,8 / 30,5** | 45,8 / 43,4 | **81 / 78** |
+| 05/09 09:20-09:43 TK (trước restart 09:44) | **57,0** | 184 | **39,4** | 53,2 | **92** |
+| 05/09 09:48-10:05 TK (SAU restart 09:44 = Lua đã tiết chế 2 s) | 12,0 | 25 | 3,7 | 7,8 | 0 |
+- Bão hoà = tick tb 55-78 ms, max 400-1250 ms, 40-48 % tick trễ → mọi thao tác trễ 0,2-1 s = "rất lag". Khối lượng region/NPC mỗi tick KHÔNG tăng khi bão hoà
+  (reg 1100-1200, npc 2100-2300) → thời gian MỖI NPC tăng ×4, không phải nhiều NPC hơn.
+- Client (`jx_paint.log` [SEC]): 52-61 fps, tick thế giới 10-24 ms/giây, tickmax 3-5 ms; `jx_rep3` 63 fps → client KHÔNG phải nút thắt.
+- GameServer RAM 9,3 GB WS / 11,6 GB private ổn định (+1 MB/30 s) → không rò; 1 luồng game 7,2 s CPU/30 s (24 % lõi) khi bình thường, ≈ 1 lõi kịch khi bão hoà.
+
+### 13c. GỐC: `TK_GuiDiemPhe` (Lua `[TKDIEM 04/09]` của tôi, sống từ restart 19:29) chạy MỖI LẦN người chơi chết
+- Bot TK chết ~600 lần/phút (bot.log "da chet") = ~10 lần/giây. Mỗi lần: vòng `for i = 1, 600`: `MSDIdx2PIdx` (O(1)) + **`PIdx2MSDIdx` = `KMission::GetMissionPlayer_DataIndex` → `FindSame` quét
+  danh sách `m_UseIdx` tới 600 phần tử** → 360.000 bước/lần giết (O(N²)); + 4 lời gọi Lua→C mỗi vòng (2.400/lần giết, mỗi lời gọi `GetSubWorldIndex` + `m_MissionArray.GetData`);
+  + 600 `PackDataToClient` (mỗi gói lấy khoá TOÀN CỤC `m_csCM` chung với luồng mạng IOCP + khoá kết nối; đầy bộ đệm thì `_SendDataEx` gửi ngay trên luồng game).
+- Ước lượng từ số đo: +27..+45 ms/tick ở 10 lần giết/s ⇒ **≈ 30-45 ms cho MỖI lần gọi** (≈ 60 µs/vòng). Sau tiết chế 1 lần/2 s: +2 ms/tick (12,0 vs 8,7-8,9) — khớp.
+- So sánh: `Msg2MSAll` (chat giết địch, có từ trước) cũng 600 `SendSystemInfo`/lần giết nhưng duyệt thẳng `m_UseIdx` (O(N), không FindSame, 1 lời gọi Lua) → TK trước 19:29 vẫn 8,7 ms.
+- Chuỗi nhân quả: 19:29 nạp Lua → TK 19:30 36 ms (27 % trễ) → 20:47 thay CoreServer (không phải gốc, cộng thêm ~3 ms) → 20:50/22:50/09:20 bão hoà → 09:28 vá tiết chế, 09:44 restart → 12 ms.
+
+### 13d. Thứ yếu (chưa sửa, ghi nhận)
+- Chat giết địch `Msg2MSAll`: 600 gói/lần giết × 10/s = 6.000 gói/s, mỗi client nhận 10 dòng/s — chi phí còn lại lớn nhất theo lần giết (~1-2 ms/lần).
+- Log debug: máy chủ `jx_auto_server.log` 243 dòng/s (67 MB/30 phút; `[AutoLog] On=1` config.ini), `bot.log` 5 KB/s; client `jx_auto.log` **86 KB/s** (5 MB/phút, [S6-SYNC] mỗi khung) — không gây bão hoà nhưng tốn CPU/đĩa; nên tắt khi đo thật.
+- `SCRIPT_TIME max` ≈ 95 ms đều đặn mỗi phút TK (script hẹn giờ theo phút — task03/timertask?) và 220-400 ms lúc 1000 bot đăng nhập dồn (09:47-09:49) → khựng 0,1-0,4 s.
+- `SW_MAINLOOP max` 1000-1600 ms lẻ tẻ cả lúc bình thường (18:20 1246 ms, 21:22 1593 ms) → khựng ~1 s hiếm, chưa rõ nguồn (autosave/nạp map/DB?).
+- Bot: `[BotTrap]` 900 dòng/phút "đạp trap → BỎ QUA" = bot dẫm trap liên tục (trap TK gọi script mỗi lần) — chi phí nhỏ nhưng vô ích.
+
+### 13e. Đề xuất (CHƯA làm — chờ chủ)
+1. Bảng điểm: đưa vòng gửi vào C++ (`KMission::Msg2All`-style duyệt `m_UseIdx`, gói `S2C_BATTLE_BOX` chung) → 1 lời gọi Lua, O(N), không FindSame; giữ tiết chế 2 s. Hoặc Lua chỉ duyệt
+   `m_UseIdx` qua hàm C mới `MSNextIdx`.
+2. Chat giết địch: gộp theo 1-2 s hoặc chỉ gửi cho người trong vùng nhìn thấy / người liên quan (đã hỏi chủ 09:36).
+3. Tắt `[AutoLog]` máy chủ + client khi đo hiệu năng; xoay `bot.log`.
+4. Mổ 95 ms script hẹn giờ mỗi phút và khựng 1 s `SW_MAINLOOP` (log riêng theo tick khi > 200 ms).
+
+
+### 13f. 05/09 10:40 — ĐO THẬT + CƠ CHẾ XÁC NHẬN (chủ: "phân tích nguyên nhân")
+**Đo (ghép `bot.log` số lần chết/phút với `SW_MAINLOOP` mỗi phút, trừ nền 4.787 ms/phút):**
+| giai đoạn | chết/phút | MAIN tb | ms MAIN cho MỖI lần chết (hiệu số) | hồi quy theo phút |
+|---|---|---|---|---|
+| A. TK 16:30 + 17:50 hôm qua — chỉ chat giết địch | 474 | 5,6–5,9 ms | **2,6–3,3 ms** | 6,5 ms (n=52) |
+| B. 4 trận TK 19:31→09:43 — chat + vòng bảng điểm MỖI lần chết | 413–572 | 33,9–55,1 ms | **77–98 ms** | 86,4 ms (n=113) |
+| C. TK 09:49→10:05 — bảng điểm tiết chế 1 lần/2 s | 497 | 8,2 ms | 8,1 ms | 7,6 ms (n=17) |
+→ Vòng `TK_GuiDiemPhe` tốn **~90 ms cho mỗi lần gọi**; ở 10 lần chết/giây = 900 ms/giây > ngân sách 18 tick × 55 ms → bão hoà. Tiết chế 0,5 lần/giây → +45 ms/giây ≈ +2,5 ms/tick (khớp C).
+
+**Cơ chế (đọc mã):** không phải `PackDataToClient` (600 gói/lần chết của chat có sẵn chỉ ~3 ms) và không phải `FindSame` (`KLinkArray::GetNext` là liên kết đôi O(1), quét 600 ô ≈ 4 ms/lần chết). Thủ phạm:
+- MỌI hàm Lua về nhiệm vụ (`MSDIdx2PIdx`, `PIdx2MSDIdx`, `GetPMParam`, `SetPMParam`, `UpdateBattleBox`, `Msg2MSAll`, …) đều viết `KMission Mission; Mission.SetMissionId(id); m_MissionArray.GetData(&Mission)` — dựng một **`KMission` tạm trên stack** chỉ để tra theo id.
+- `KMission` chứa `KMissionPlayerArray = KLinkArrayTemplate<TMissionPlayerInfo, MAX_PLAYER=1500>` (~88 B/ô) + `KMissionNpcArray<…, 5000>` + `KMissionTimerArray<…, 10>`. Constructor `KLinkArrayTemplate()` (`KLinkArrayTemplate.h`): `m_FreeIdx.Init(ulSize)` + `m_UseIdx.Init(ulSize)` = **2 × `new KLinkNode[ulSize]`**, rồi `for (i = ulSize-1; i > 0; i--) m_FreeIdx.Insert(i)` + `Clear()`; destructor `delete[]` ×2. `KMission()` còn duyệt 10 timer.
+- ⇒ mỗi lời gọi Lua = **6 cấp phát + 6 giải phóng heap, ~6510 vòng chèn danh sách, chạm ~207 KB bộ nhớ** ≈ 30–45 µs. Vòng bảng điểm: 600 ô × 4 lời gọi = 2.400 lời gọi/lần chết ≈ 70–110 ms → khớp số đo 77–98 ms.
+- Cùng cơ chế giải thích chi phí nền của TK: mỗi lần chết `tongtu.lua` gọi ~25 hàm nhiệm vụ (GetPMParam/SetPMParam…) ≈ 1 ms + 600 gói chat ≈ 2 ms = 3 ms/lần chết (giai đoạn A).
+- Hệ quả rộng hơn (chưa sửa): **mọi script dùng API nhiệm vụ đều trả giá ~40 µs/lời gọi** (Tống Kim, Phong Lăng Độ, công thành, Bang chiến, timer nhiệm vụ mỗi phút) — nghi là nguồn của `SCRIPT_TIME max ≈ 95 ms` mỗi phút TK (script hẹn giờ duyệt người chơi bằng API này).
+
+**Đề xuất gốc rễ (chưa làm):** trong `ScriptFuns.cpp` thay `KMission Mission; …GetData(&Mission)` bằng tra theo id không dựng đối tượng (thêm `KSubWorldMissionArray::GetByMissionId(id)` duyệt `m_UseIdx` so `m_ulMissionId`, hoặc bảng `id → KMission*`) → mọi API nhiệm vụ rẻ ~100 lần; khi đó vòng bảng điểm 600 ô chỉ ~1-2 ms, chat giết địch ~2 ms. Song song vẫn nên tiết chế/gộp phát điểm và đưa vòng gửi vào C++.
+
+
+### 13g. 05/09 11:10 — ẢNH HƯỞNG NẾU SỬA GỐC RỄ (chủ hỏi "fix vậy có ảnh hưởng gì không?") — chỉ phân tích
+**Phương án gốc rễ = thay `KMission Mission; Mission.SetMissionId(id); m_MissionArray.GetData(&Mission)` bằng tra theo id không dựng đối tượng.**
+
+Đã kiểm từng điều kiện an toàn:
+1. **Ngữ nghĩa giống hệt**: `KMissionArray::FindSame` (`KMissionArray.h:64`) chỉ so `GetMissionId()`, KHÔNG ghi gì vào nhiệm vụ thật (khác mảng người chơi `_KMissionPlayerArray::FindSame` có ghi `m_ulPlayerIndex`). Trả `NULL` khi không có → giữ nguyên.
+2. **Toàn bộ 27 chỗ đều là TRA thuần**: 24 trong `ScriptFuns.cpp` (+`StopMission` 11620), `KJx2WarInfra.cpp` 1, `KPlayerBot.cpp:9200` (`pb_TkMission`). Đối tượng tạm không được dùng vào việc gì khác. TẠO nhiệm vụ đi qua `m_MissionArray.Add()` (ScriptFuns 11447), XOÁ qua `Remove(pMission)` — không đụng.
+3. **Constructor/destructor không có tác dụng phụ toàn cục**: `KMission()` chỉ `SetOwner` cho 10 timer của chính nó + memset trường riêng; `KLinkArray` dtor `delete[]` node của chính nó.
+4. **Không có luồng khác chạy Lua**: máy chủ chỉ có luồng MySQL (`KMySQLDB.cpp:153`), client có luồng nạp cảnh — script luôn ở luồng chính → không có race.
+5. **Phạm vi build**: `ScriptFuns.cpp` dùng chung nhưng API nhiệm vụ nằm trong vùng `_SERVER` — `CoreClient.dll` live KHÔNG chứa `GetPMParam/UpdateBattleBox/Msg2MSAll/PIdx2MSDIdx` → client không đổi hành vi; vẫn phải build cả hai (luật) và swap CoreServer + restart.
+6. **Bộ nhớ**: mỗi lời gọi hiện đặt ~210 KB (`m_Data` người 1500×88 = 128 KB + NPC 5000×16 = 78 KB + timer/giá trị) trên STACK và `new[]` 101 KB node heap rồi `delete[]` → sau sửa không còn → giảm áp lực stack khi script lồng nhau (`ExecuteScript` → C → Lua) và giảm phân mảnh heap (heap CRT dùng chung với luồng IOCP). Chỉ có lợi.
+7. **Điểm KHÔNG đổi**: cấu trúc `KMission`, giao thức, dữ liệu lưu, cân bằng — không đụng.
+
+**Rủi ro thực tế còn lại của phương án gốc rễ:**
+- Sửa 27 chỗ trong tệp bị nhiều phiên cùng sửa (`ScriptFuns.cpp`) → xung đột gộp; làm bằng kịch bản thay mẫu + kiểm `grep` không còn `KMission Mission;`, commit pathspec, build cả hai cấu hình.
+- Lợi ích chưa đo được phần nền: bao nhiêu lời gọi API nhiệm vụ mỗi tick lúc bình thường (timer nhiệm vụ mỗi phút, bot `pb_TkNhip` 2 lần/tick, `PB_TrapLog` mỗi lần bot đạp trap ~15/s) — sẽ thấy trong `SCRIPT_TIME max` (95 ms) sau khi sửa.
+
+**Xếp hạng phương án (rủi ro ↑):**
+| # | Phương án | Hiệu quả | Rủi ro | Ghi chú |
+|---|---|---|---|---|
+| 1 | Giữ tiết chế 2 s (đã sống 09:44) | TK 12 ms | 0 | bảng điểm trễ ≤ 2 s |
+| 2 | Vòng gửi bảng điểm vào C++ (duyệt `m_UseIdx` như `Msg2All`, 1 lời gọi Lua) | 2.400 lời gọi → 1; ~2 ms/lần | thấp, chỉ tính năng của tôi | có thể bỏ tiết chế hoặc giữ 1 s |
+| 3 | `FindById` thay 27 chỗ dựng `KMission` tạm | mọi API nhiệm vụ ~40 µs → <0,5 µs; giảm stack/heap | thấp về ngữ nghĩa, trung bình về quy trình (tệp chung, build 2 cấu hình, restart) | lợi cho TẤT CẢ nhiệm vụ + bot |
+| 4 | Sửa `KLinkArrayTemplate` khởi tạo lười | như 3 | CAO: đổi container lõi dùng bởi mảng người/NPC/timer của nhiệm vụ thật | KHÔNG khuyến nghị |
+| 5 | Đối tượng dò tĩnh `static KMission s_Probe` | như 3, ít sửa chỗ | thấp (không luồng khác) nhưng kém rõ ràng | phương án dự phòng |
+
+Khuyến nghị: làm 2 + 3 (3 bằng kịch bản, kiểm `grep`), thử trên máy chủ dev/giờ vắng, đo lại `jx_perf_server.log` trước/sau cùng cửa sổ TK.
