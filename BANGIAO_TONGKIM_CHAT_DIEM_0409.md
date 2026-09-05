@@ -294,3 +294,14 @@ Khuyến nghị: làm 2 + 3 (3 bằng kịch bản, kiểm `grep`), thử trên 
 - Client Win32 chỉ build kiểm biên dịch (API nhiệm vụ không có trong CoreClient) — không swap client.
 - Kỳ vọng đo sau restart (cùng cửa sổ TK ~500 chết/phút): MAIN mỗi lần chết 3 → ~2 ms (còn 600 gói chat), bảng điểm 1 s/lần ~2-3 ms/lần, `SCRIPT_TIME max` mỗi phút giảm.
 - 10:45 — main nhận thêm ff7d0359 `[CFGW 05/09]` (KCauHinhWeb + KCore) sau lúc merge → merge lại (1c72eb1d), build lại: **CoreServer.dll = e4d6156e** (10:45) = `.moi` hiện tại; a2053172 bỏ. Git: mail-0309 == main (2e6d93d8 + ff7d0359).
+
+### 14d. 05/09 11:10 — ĐO SAU FIX (máy chủ restart 10:50:03, pid 4660, DLL e4d6156e; TK từ 10:56, ~580 chết/phút; không lỗi script)
+```
+D. TK 10:57-11:08 SAU FIX 2+3 (DLL e4d6156e, tiet che 1 s) n=12 chet/ph= 584 MAIN= 5.56 tick=  7.9 p95= 10 tre= 0.1% tickmax=  95.0 SCmax= 62.3 | ms/chet hieu so=  2.1 hoi quy=11.3
+C. TK 09:49-10:05 tiet che 2 s (DLL cu)              n=17 chet/ph= 497 MAIN= 8.16 tick= 12.5 p95= 26 tre= 4.0% tickmax= 369.1 SCmax=115.5 | ms/chet hieu so=  8.1 hoi quy=7.6
+B. TK 09:21-09:43 vong Lua moi lan chet              n=23 chet/ph= 572 MAIN=55.07 tick= 58.8 p95=190 tre=40.9% tickmax=1255.6 SCmax= 78.7 | ms/chet hieu so= 95.8 hoi quy=83.7
+A. TK 16:30-16:55 hom qua, chi chat                  n=26 chet/ph=   0 MAIN= 5.87 tick=  8.9 p95= 12 tre= 0.2% tickmax= 544.2 SCmax= 97.3 | ms/chet hieu so=  0.0 hoi quy=-
+N. nen 20:05-20:49 hom qua, khong TK                 n=45 chet/ph=   0 MAIN= 4.43 tick=  6.8 p95=  9 tre= 0.1% tickmax=  73.4 SCmax= 52.1 | ms/chet hieu so=  0.0 hoi quy=-
+```
+- Chi phí mỗi lần chết: B 77–98 ms → C 8 ms → **D ~1,8 ms** (còn lại chủ yếu 600 gói chat giết địch); tick trễ 39 % → 5 % → **0,1 %**; p95 184 → 25 → **~10 ms**.
+- `SCRIPT_TIME max` mỗi phút TK 93–97 ms → 56–86 ms (nền không TK 55–62 ms) — script hẹn giờ theo phút vẫn ~55 ms, việc riêng (mục 13d).
