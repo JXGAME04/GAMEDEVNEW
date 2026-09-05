@@ -80,3 +80,25 @@ Rào chỉ dùng 6 dòng đầu; blob hỏng thì ghi `[RoleChk2] … blob HONG 
 ## 6. CÔNG CỤ ĐỂ LẠI (scratchpad phiên)
 
 `dump_ctx.py` (CONTEXT + đọc vùng nhớ tại rdx/rbx+0xCC), `quet_khung.py` (tìm khung 518 byte trong dump), `patch_recv.py` (vá latin-1 giữ CRLF, neo phải xuất hiện đúng 1 lần). Blob lấy từ MySQL: `role_history (role_name, saved_at, role_blob)` ảnh 30 phút/lần — rất quý để đối chiếu dump.
+
+---
+
+## 7. CẬP NHẬT 17:35 — ĐÃ COPY TOÀN BỘ BẢN MỚI VÀO CÂY CHẠY THẬT (chủ yêu cầu, server đã tắt)
+
+Chủ 17:25: *"tôi thoát game rồi, copy toàn bộ build mới; xem bản build đã đầy đủ tính năng từ main chính chưa; thêm luật mỗi lần fix xong up git qua main chính luôn"*.
+
+**Phát hiện trước khi copy:** bản `CoreServer.dll` 4b2b69f3 (phiên wauto-c9 đặt 17:10) build từ main + phù về nhưng **thiếu hẳn Chiến Lệnh** (CL_Cong = 0, st_ledger = 0) vì nhánh `chienlenh-0409` chưa bao giờ vào main. Đã gộp `phuve-0409` + `chienlenh-0409` + `rolechk2-0409` vào **`origin/main` = 056e3ea6** (không xung đột) và build lại từ đúng main.
+
+| Tệp (bin/) | Đang ở chỗ | Bản cũ để rollback |
+|---|---|---|
+| `server/CoreServer.dll` | **467afa59** (origin/main 056e3ea6: đủ Chiến Lệnh, đấu giá web, chat đấu giá, RoleChk2, TK rảo map, sạp, phù về [S13-TELE-CU], DECHONG) | `CoreServer.dll.truoc` = 4b2b69f3 (f576ac9e lưu `_moi_backup/CoreServer.dll.truoc_f576ac9e`) |
+| `server/GameServer.exe` | **02b583ad** (link DB 8 MB + bỏ gói role-data sai độ dài) | `GameServer.exe.truoc` = a0506598 |
+| `server/rainbow.dll` | **e8056284** (vá gốc: không vứt khối đọc, sàn 4 MB) — ai đó đã đổi tên vào trước 17:10 | `rainbow.dll.truoc` = a61aa1a6 (chép từ `server/debug64/`) |
+| `server/heaven.dll` | a793834b (x64, có SOCK từ 01:19, không đổi) | `heaven.dll.truoc` = fa5f0012 |
+| `multiserver/heaven.dll` | **ad7e6985** (x86, có SOCK) cho Goddess/Bishop — đã được đổi tên vào trước | `heaven.dll.truoc` = cb2dedb9 (chép từ `multiserver/testgop/`) |
+| `client/heaven.dll` | ad7e6985 — **không phải tôi đặt**, ai đó chép bản x86 vào client | `client/release/heaven.dll` = 86a65286 |
+| `client/WAuto.exe.moi` | của phiên WAuto, chờ `ChoiGame.bat` | |
+
+Khởi động lại: chạy cụm như thường lệ (Goddess bấm Start trước, rồi `ChayGameServer.bat`). Khe `.moi` server đang trống.
+
+**Luật mới (đã ghi bộ nhớ):** fix xong là gộp + đẩy thẳng `origin/main`; máy chủ chỉ build từ `origin/main`; trước khi đặt bản mới kiểm đủ dấu: `CL_Cong`, `st_ledger`, `AUCWEB_ClaimRound`, `AUC_MsgTong`, `AUC_KenhBang`, `[RoleChk2]`, `TKDich`, `SapNpc`, `TAT che do vao phai`, `[S13-TELE-CU]`. `mail-0309` còn 78 commit chưa vào main (phần đấu giá/chat đã cherry-pick) — wauto-4a tự rà phần còn thiếu.
