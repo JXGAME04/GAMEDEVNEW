@@ -50,6 +50,7 @@ def main():
     ap.add_argument("--moc", required=True, help='moc chuyen sang 5.4, dang "HH:MM" (theo gio trong log)')
     ap.add_argument("--online", type=int, default=900)
     ap.add_argument("--giaidoan", default="SCRIPT_TIME,TICK,SW_MAINLOOP,GS_MAINLOOP")
+    ap.add_argument("--dau", type=int, default=0, help="chi lay N khoi DAU (online du) cua MOI lan chay - so cong bang boot vs boot")
     a = ap.parse_args()
     moc = a.moc.split()[-1][:5]
     mh, mm = int(moc[:2]), int(moc[3:5])
@@ -77,6 +78,16 @@ def main():
         lan[-1][0]["gio"], lan[-1][-1]["gio"], len(lan[-1]), max(x["online"] for x in lan[-1])))
     truoc = [r for r in rows[:i_moc] if r["online"] >= a.online]
     sau = [r for r in rows[i_moc:] if r["online"] >= a.online]
+    if a.dau > 0:
+        # cong bang: N khoi dau tien (du online) cua TUNG lan chay Lua 4, so voi N khoi dau cua lan 5.4
+        truoc = []
+        dem2 = 0
+        for L in lan:
+            if dem2 >= i_moc: break
+            du = [r for r in L if r["online"] >= a.online][:a.dau]
+            truoc.extend(du); dem2 += len(L)
+        sau = sau[:a.dau]
+        print("Che do --dau %d: Lua 4 = %d khoi dau cua %d lan chay; Lua 5.4 = %d khoi dau" % (a.dau, len(truoc), sum(1 for L in lan[:-1] if any(r["online"] >= a.online for r in L)), len(sau)))
     print("jx_perf_server.log: %d khoi; moc 5.4 = %s" % (len(rows), moc))
     print("Loc online >= %d:  Lua 4 = %d khoi, Lua 5.4 = %d khoi" % (a.online, len(truoc), len(sau)))
     if not sau:

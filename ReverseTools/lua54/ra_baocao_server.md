@@ -1,4 +1,4 @@
-# Ra cay script E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server\script - 2986 tep, 315224 dong
+# Ra cay script E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server\script - 2986 tep, 315228 dong
 
 ## 1. Goi ham Lua 4 cu (qua shim lua4compat) - tong theo ten
 
@@ -34,6 +34,9 @@ Tong goi cu: 8177 trong 897 tep.
 
 - `min`: 1 tep: missions/challengeoftime/award.lua
 - `sqrt`: 1 tep: tinhnang/pubg/pubg.lua
+
+## 2b. [LUA54] GAN LAI BIEN DIEU KHIEN VONG FOR - loi im lang (Lua 4 co tac dung, 5.4 khong): 0 cho
+
 
 ## 3. Mau hieu nang thap - tong
 

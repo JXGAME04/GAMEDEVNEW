@@ -46,6 +46,49 @@ RE_ARG = re.compile(r"\barg\b")
 RE_CONCAT_GAN = re.compile(r"^\s*([A-Za-z_][\w.\[\]]*)\s*=\s*\1\s*\.\.", re.M)
 
 
+RE_KW_KHOI = re.compile(r"\b(function|if|for|while|do|repeat|end|until)\b")
+
+
+def than_vong_for(code, d):
+    """Tra ve than vong tu vi tri sau 'do' (d) den 'end' can bang."""
+    i, muc = d, 1
+    while i < len(code) and muc > 0:
+        mm = RE_KW_KHOI.search(code, i)
+        if not mm:
+            break
+        w = mm.group(1)
+        if w in ("function", "if", "for", "while", "repeat"):
+            muc += 1
+        elif w == "do":
+            j = mm.start() - 1
+            while j >= 0 and code[j] in " \t":
+                j -= 1
+            if not re.search(r"\b(for|while)\b[^\n]*$", code[max(0, j - 60):j + 1]):
+                muc += 1
+        elif w in ("end", "until"):
+            muc -= 1
+        i = mm.end()
+    return code[d:i]
+
+
+def gan_lai_bien_for(code):
+    """[LUA54] Lua 4: gan lai bien dieu khien for CO tac dung (i=21 thoat vong, i=i+1 = buoc 2,
+    i = f() nhay ban ghi); Lua 5.4 KHONG -> loi im lang, bo chuyen khong thay (cu phap hop le).
+    Tra ve [(dong, ten)] cac vong THAT SU gan lai (bo vong long che bong cung ten, bo 'local ten')."""
+    ra = []
+    for m in re.finditer(r"\bfor\s+([A-Za-z_]\w*)\s*=", code):
+        ten = m.group(1)
+        d = code.find(" do", m.end())
+        if d < 0:
+            continue
+        t = than_vong_for(code, d + 3)
+        t = re.sub(r"\bfor\s+" + re.escape(ten) + r"\s*=.*?\bdo\b", " ", t, flags=re.S)
+        t = re.sub(r"\blocal\s+" + re.escape(ten) + r"\b", " ", t)
+        if re.search(r"(?<![\w.:])" + re.escape(ten) + r"\s*=(?!=)", t):
+            ra.append((code.count("\n", 0, m.start()) + 1, ten))
+    return ra
+
+
 def bo_chu_thich_va_chuoi(s):
     """Xoa chu thich (--, --[[ ]]) va noi dung chuoi de dem cho dung. Giu so dong."""
     ra = []
@@ -130,8 +173,11 @@ def ra_tep(p, goc):
     r["global_gan"] = len(set(RE_GLOBAL_GAN.findall(code)))
     r["truefalse_bien"] = len(RE_TRUEFALSE_BIEN.findall(code))
     r["upval"] = len(RE_UPVAL.findall(code))
+    gl = gan_lai_bien_for(code)
+    r["gan_bien_for"] = len(gl)
+    r["gan_bien_for_ds"] = gl
     r["arg"] = len(RE_ARG.findall(code))
-    r["diem_hieunang"] = (r["while_getn"] * 5 + r["dostring"] * 4 + r["include_trong_ham"] * 4 +
+    r["diem_hieunang"] = (r["gan_bien_for"] * 20 + r["while_getn"] * 5 + r["dostring"] * 4 + r["include_trong_ham"] * 4 +
                           r["concat_trong_lap"] * 2 + r["ham_dai"] * 2 + (2 if r["dong"] > 3000 else 0))
     return r
 
@@ -173,6 +219,10 @@ def main():
         out.append("## 2. Tep TU DINH NGHIA ham trung ten shim (doi ten may moc phai TRANH cac tep nay)\n")
         for t, fs in sorted(trung.items()):
             out.append("- `%s`: %d tep: %s" % (t, len(fs), ", ".join(fs[:6]) + (" ..." if len(fs) > 6 else "")))
+    gb = [(r["tep"], d, t) for r in ds for d, t in r["gan_bien_for_ds"]]
+    out.append("\n## 2b. [LUA54] GAN LAI BIEN DIEU KHIEN VONG FOR - loi im lang (Lua 4 co tac dung, 5.4 khong): %d cho\n" % len(gb))
+    for tep, d, t in gb:
+        out.append("- `%s:%d` bien `%s` -> dung break / for buoc N / while" % (tep, d, t))
     out.append("\n## 3. Mau hieu nang thap - tong\n")
     for k, ten in [("while_getn", "while ... getn(...) (goi getn moi vong)"), ("dostring", "dostring( (bien dich moi lan goi)"),
                    ("include_trong_ham", "Include( trong than ham (nap lai tep moi lan)"), ("concat_trong_lap", "x = x .. y trong vong lap (O(n^2))"),
