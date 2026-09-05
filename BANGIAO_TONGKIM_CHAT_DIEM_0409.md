@@ -140,3 +140,18 @@ Hội)**: ini cửa sổ `WndType=WndImage` `ScriptFile=\script\ui\tong_battle_2
   (`BlackTips.ini` cũ: 125,350 550×30, `blacktipsback.spr`, LifeTime 8) — dự án ĐÃ có bản tương đương: `KUiInformation3` (`UiInformation3.ini`
   125,200 550×30 vàng, LifeTime 5, kích bằng `GDCNI_OPEN_TALK_EX` ← `KProtocolProcess.cpp:4952`).
 - → Cần ảnh chụp 2.0 lúc có dòng giết địch để dựng đúng (vị trí, màu, nền, số dòng, thời gian hiện). Ini cũ rút về `ReverseTools\tongkim_chat\tips_*.ini`.
+
+
+## 10. 20:30 — Chủ: "các dòng thông báo lúc đánh chết sẽ chạy giữa màn hình LÊN rồi biến mất" → làm lại KUiFlashMessage kiểu trôi lên
+- Không cần mẫu ảnh nữa: chủ mô tả hành vi 2.0 = sinh ở giữa màn hình, trôi lên, biến mất. Bản cũ (đứng yên 3 hàng, hiện lại tới 3 lần) bỏ hẳn.
+- `UiFlashMessage.cpp/.h` `[TKCHAT 04/09c]`:
+  - `PaintWindow`: mỗi ô đang hiện vẽ tại `y = RiseFromY() - (now - start) * RiseSpeed / 1000`, căn giữa theo bề rộng thật (giữ `sTkChatDoRong`);
+    `FadeMs` cuối tối dần bằng `sTkChatMoMau` (giảm 24 bit màu, giữ alpha 0xFF của `GetColor`; chữ không có alpha thật).
+  - `ResetSlot`: lịch sinh `m_uNextStartTime` — dòng sau cách dòng trước đúng 1 hàng (`m_nLineHeight*1000/RiseSpeed` ms) → không đè nhau.
+  - `AddMessage`: FIFO (`AddToTail`; trước chèn đầu → khi dồn tin mới hiện trước tin cũ); hàng đợi dồn quá `MaxQueueDelay` → bỏ tin mới.
+  - `Breathe`: hết `DisplayDuration` HOẶC trôi qua mép trên cửa sổ → biến mất; tin NORMAL `free` (trước `AddToTail` → cùng dòng hiện lại tới `MAX_NORMAL_SHOW_TIMES`=3 lần).
+  - `LoadScheme`: đọc `RiseFrom/RiseSpeed/FadeMs/MaxQueueDelay` ở đúng section đang dùng (`Main`/`Main1024`).
+- Ini live + gương `serverscript_jx2\tongkim_chat\client\Ui\Ui3\UiFlashMessage.ini`: 800×600 `Top=90 Height=260 RiseFrom=320`; 1024×768 `Top=120 Height=320 RiseFrom=410`;
+  chung `RiseSpeed=35 FadeMs=1500 DisplayDuration=6000 MaxQueueDelay=1500 Font=14 TextColor=0,255,0`. Chỉnh cảm giác: `RiseSpeed` (nhanh/chậm), `RiseFrom` (cao/thấp), `DisplayDuration`.
+- `Game.exe.moi` = **77d148a9** (20:27). Chờ chủ `ChoiGame.bat`. Không đụng máy chủ.
+- Kịch bản vá: `ReverseTools\tongkim_chat\va_flash_troilen.py` (neo LF/CRLF tự dò — tệp .h là CRLF, `vn_edit --read` không lộ `\r`).
