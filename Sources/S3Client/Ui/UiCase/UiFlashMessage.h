@@ -115,6 +115,7 @@ private:
 	unsigned int    m_uMaxQueueDelay;     // hang doi don qua muc nay (ms) thi bo tin moi (ini MaxQueueDelay)
 	unsigned int    m_uNextStartTime;     // thoi diem som nhat dong ke tiep duoc sinh (cach dong truoc dung 1 hang)
 	int             m_nMaxLines;          // [TKCHAT 05/09] toi da so dong cung hien (ini MaxLines, mac dinh 3)
+	int             m_bEnable;            // [TKCHAT 05/09b] ini Enable (0 = tat hoan toan; chu thu xem con lag khong)
 	int     RiseFromY() { return (m_nRiseFrom >= 0) ? m_nRiseFrom : (m_nAbsoluteTop + m_Height - m_nIndentV - m_nLineHeight); }
 
 	// --------------------------------------
