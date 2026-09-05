@@ -104,6 +104,13 @@ private:
 	int             m_nNumSlots;             // how many vertical slots we can display
 	int             m_nLineHeight;           // computed line height (font + spacing)
 	unsigned int    m_uDisplayDuration;   // NEW: how long to show after head hits left (ms)
+	// [TKCHAT 04/09c] dong TROI LEN nhu 2.0 (chu: "dong thong bao luc danh chet chay giua man hinh len roi bien mat")
+	int             m_nRiseFrom;          // Y tuyet doi noi dong sinh ra (ini RiseFrom; -1 = day cua so)
+	int             m_nRiseSpeed;         // toc do troi len, px/giay (ini RiseSpeed)
+	int             m_nFadeMs;            // toi dan trong FadeMs cuoi (ini FadeMs; 0 = khong)
+	unsigned int    m_uMaxQueueDelay;     // hang doi don qua muc nay (ms) thi bo tin moi (ini MaxQueueDelay)
+	unsigned int    m_uNextStartTime;     // thoi diem som nhat dong ke tiep duoc sinh (cach dong truoc dung 1 hang)
+	int     RiseFromY() { return (m_nRiseFrom >= 0) ? m_nRiseFrom : (m_nAbsoluteTop + m_Height - m_nIndentV - m_nLineHeight); }
 
 	// --------------------------------------
 
