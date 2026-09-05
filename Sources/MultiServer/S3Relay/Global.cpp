@@ -11,6 +11,7 @@
 #include "../../../Headers/inoutmac.h"
 
 #include "DoScript.h"
+#include "OfflineMsgDB.h"	// [HAOHUU 04/09] loi nhan ngoai tuyen
 
 
 //////////////////////////////////////////////////////////////////////
@@ -256,6 +257,8 @@ BOOL gInitialize()
 		return FALSE;
 	if (!g_FriendMgr.Initialize())
 		return FALSE;
+	// [HAOHUU 04/09] kho loi nhan ngoai tuyen: loi MySQL thi tu tat tinh nang, relay van chay
+	OfflineMsg_Init();
 
 
 	const size_t playercntRelay = gGetPrivateProfileIntEx(sec_relay, key_playercnt, file_relaycfg, 0);
@@ -431,6 +434,7 @@ BOOL gUninitialize()
 
 		g_ChannelMgr.Uninitialize();
 		g_FriendMgr.Uninitialize();
+		OfflineMsg_Uninit();	// [HAOHUU 04/09]
 
 
 		g_libRainbow.Uninitialize();

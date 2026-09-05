@@ -155,6 +155,7 @@ public:
 
 public:
 	BOOL SayOnSomeone(DWORD ip, unsigned long param, DWORD nameid, const std::_tstring& name, const std::_tstring& sent);
+	int  DeliverOfflineMsgs(const char* role, DWORD ip, unsigned long param, DWORD nameid);	// [HAOHUU 04/09] giao loi nhan luu khi ngoai tuyen
 	BOOL SayOnChannel(DWORD channid, BOOL filter, const std::_tstring& ids, const std::_tstring& name, const std::_tstring& sent);
 
 private:

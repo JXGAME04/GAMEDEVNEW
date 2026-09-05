@@ -8,6 +8,7 @@
 #include "S3Relay.h"
 #include "time.h"
 #include "malloc.h"
+#include "OfflineMsgDB.h"	// [HAOHUU 04/09] loi nhan ngoai tuyen
 
 #include <list>
 #include <map>
@@ -837,13 +838,23 @@ BOOL CChannelMgr::SomeoneChat(DWORD srcIP, const tagPlusSrcInfo& SrcInfo, const 
 	}
 
 
+	// [HAOHUU 04/09] nguoi nhan NGOAI TUYEN -> luu loi nhan vao MySQL, giao khi ho dang nhap
+	// (port KOfflineMsgStore cua S3Relay Linux). codeStore (co san trong enum) != codeFail nen client
+	// van hien cau vua gui trong cua so chat, khong hien "khong co tren mang".
+	BOOL stored = FALSE;
+	if (!sent && OfflineMsg_Enabled())
+	{
+		if (OfflineMsg_Store(pSomeoneChatCmd->someone, srcrole.c_str(), pSomeoneChatCmd + 1, pSomeoneChatCmd->sentlen))
+			stored = TRUE;
+	}
+
 	{{
 	size_t _exsize = sizeof(DWORD) + _NAME_LEN + sizeof(BYTE) + pSomeoneChatCmd->sentlen;	////X
 	size_t feedbacksize = sizeof(CHAT_FEEDBACK) + _exsize;
 	CHAT_FEEDBACK* pCfb = (CHAT_FEEDBACK*)_alloca(feedbacksize);
 	pCfb->ProtocolType = chat_feedback;
 	pCfb->packageID = pSomeoneChatCmd->packageID;
-	pCfb->code = sent ? codeSucc : codeFail;
+	pCfb->code = sent ? codeSucc : (stored ? codeStore : codeFail);	// [HAOHUU 04/09]
 
 	////X
 	DWORD* pChannelid = (DWORD*)(pCfb + 1);
@@ -858,6 +869,25 @@ BOOL CChannelMgr::SomeoneChat(DWORD srcIP, const tagPlusSrcInfo& SrcInfo, const 
 
 	PassToSpecMan(srcIP, SrcInfo.lnID, SrcInfo.nameid, pCfb, feedbacksize);
 	}}
+
+	if (stored)
+	{	// [HAOHUU 04/09] bao nguoi gui biet loi nhan da duoc luu -- hien trong chinh cua so chat voi nguoi nhan
+		char szNotice[400];
+		int nNotice = _snprintf(szNotice, sizeof(szNotice) - 1,
+			"[H\326 th\350ng] %s hi\326n kh\253ng tr\371c tuy\325n, l\352i nh\276n \256\267 \256\255\356c l\255u v\265 s\317 chuy\323n khi %s \256\250ng nh\313p.",
+			pSomeoneChatCmd->someone, pSomeoneChatCmd->someone);
+		if (nNotice < 0 || nNotice > (int)MAX_SENTLEN - 1) nNotice = (int)MAX_SENTLEN - 1;
+		size_t nsize = sizeof(CHAT_SOMEONECHAT_SYNC) + nNotice;
+		CHAT_SOMEONECHAT_SYNC* pNt = (CHAT_SOMEONECHAT_SYNC*)_alloca(nsize);
+		pNt->ProtocolType = chat_someonechat;
+		pNt->wSize = (WORD)(nsize - 1);
+		pNt->packageID = -1;
+		memset(pNt->someone, 0, sizeof(pNt->someone));
+		strncpy(pNt->someone, pSomeoneChatCmd->someone, _NAME_LEN - 1);
+		pNt->sentlen = (BYTE)nNotice;
+		memcpy(pNt + 1, szNotice, nNotice);
+		PassToSpecMan(srcIP, SrcInfo.lnID, SrcInfo.nameid, pNt, nsize);
+	}
 
 	//Log chat mat
 	char fkszLogChatM[256];
@@ -1635,6 +1665,56 @@ size_t CChannelMgr::GetChannelCount()
 	return m_mapChannid2Info.size();
 }
 
+
+// [HAOHUU 04/09] Giao loi nhan mat da luu khi nguoi choi ngoai tuyen (port KOfflineMsgStore Linux).
+// Goi luc EnterGame tren ket noi chat -- GameServer chi bao relay sau enumPlayerSyncEnd, luc do client
+// da UiStartGame() -> KUiMsgCentrePad da mo, nen goi chat_someonechat hien ngay trong cua so chat mat.
+// Moi loi nhan = mot goi tu chinh nguoi gui, dau cau co moc thoi gian. Giao du het moi xoa trong DB.
+int CChannelMgr::DeliverOfflineMsgs(const char* role, DWORD ip, unsigned long param, DWORD nameid)
+{
+	if (!role || !role[0] || !OfflineMsg_Enabled())
+		return 0;
+
+	OFFMSG_REC recs[OFFMSG_MAX_LOAD];
+	int n = OfflineMsg_Load(role, recs, OFFMSG_MAX_LOAD);
+	if (n <= 0)
+		return 0;
+
+	char buffer[sizeof(CHAT_SOMEONECHAT_SYNC) + MAX_SENTLEN];
+	int nSent = 0;
+	for (int i = 0; i < n; i++)
+	{
+		OFFMSG_REC& r = recs[i];
+		char szText[MAX_SENTLEN + 64];
+		int nPre = _snprintf(szText, 63, "[L\352i nh\276n l\363c %02d/%02d %02d:%02d] ", r.day, r.mon, r.hour, r.minute);
+		if (nPre < 0) nPre = 0;
+		int nLen = r.textlen;
+		if (nPre + nLen > (int)MAX_SENTLEN - 1) nLen = (int)MAX_SENTLEN - 1 - nPre;
+		if (nLen < 0) nLen = 0;
+		memcpy(szText + nPre, r.text, nLen);
+		int nTotal = nPre + nLen;
+
+		size_t syncsize = sizeof(CHAT_SOMEONECHAT_SYNC) + nTotal;
+		CHAT_SOMEONECHAT_SYNC* pCscSync = (CHAT_SOMEONECHAT_SYNC*)buffer;
+		pCscSync->ProtocolType = chat_someonechat;
+		pCscSync->wSize = (WORD)(syncsize - 1);
+		pCscSync->packageID = -1;
+		memset(pCscSync->someone, 0, sizeof(pCscSync->someone));
+		strncpy(pCscSync->someone, r.sender, _NAME_LEN - 1);
+		pCscSync->sentlen = (BYTE)nTotal;
+		memcpy(pCscSync + 1, szText, nTotal);
+
+		if (!PassToSpecMan(ip, param, nameid, pCscSync, syncsize))
+			break;
+		nSent++;
+	}
+
+	if (nSent >= n)
+		OfflineMsg_Clear(role);
+
+	rTRACE("[OfflineMsg] giao %d/%d loi nhan cho %s", nSent, n, role);
+	return nSent;
+}
 
 BOOL CChannelMgr::SayOnSomeone(DWORD ip, unsigned long param, DWORD nameid, const std::_tstring& name, const std::_tstring& sent)
 {

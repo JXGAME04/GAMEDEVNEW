@@ -52,3 +52,22 @@ CREATE TABLE IF NOT EXISTS `relay_delete_log` (
   KEY `idx_store_k` (`store`, `k`),
   KEY `idx_time` (`deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=binary ROW_FORMAT=DYNAMIC;
+
+-- =====================================================================
+--  jx1_role.relay_offline_msg -- LOI NHAN MAT cho nguoi choi NGOAI TUYEN (04/09/2026)
+--  Port tu S3Relay Linux (KOfflineMsgStore): bang OfflineMsg(Receiver, Sender, Msg, LastModify).
+--  S3Relay tu CREATE TABLE IF NOT EXISTS luc khoi dong (OfflineMsgDB.cpp) -- tep nay chi de
+--  tham chieu / tao truoc. Gioi han do tu binary s3relay_y: toi da 10 loi nhan / nguoi nhan
+--  (0x80e65dd cmp 9;jg), giu 30 ngay (0x80e5c29 sub 0x278d00). Chinh o relay_friendcfg.ini [offlinemsg].
+-- =====================================================================
+USE `jx1_role`;
+
+CREATE TABLE IF NOT EXISTS `relay_offline_msg` (
+  `id`       BIGINT        NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `receiver` VARBINARY(32) NOT NULL COMMENT 'ten nhan vat nhan (TCVN3, khop chinh xac nhu FriendMgr)',
+  `sender`   VARBINARY(32) NOT NULL,
+  `msg`      VARBINARY(512) NOT NULL COMMENT 'noi dung tho tu client, toi da 255 byte',
+  `created`  DATETIME      NOT NULL,
+  KEY `idx_receiver` (`receiver`),
+  KEY `idx_created` (`created`)
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
