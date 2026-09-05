@@ -1053,3 +1053,37 @@ Gốc xa thuộc WAuto (đã báo wauto-c0): 1967 phải cast lên chính mình 
 | `bin\client\CoreClient.dll.moi` | **`e10abd7a`** | 2.515.968 | superset của `e151cbfc` (D5 wauto-d9) + client giữ chạy; đi cùng `Game.exe.moi bd5cb88e` (giữ nguyên); thoát Game + WAuto → `ChoiGame.bat` |
 
 **Nghiệm thu S13k**: `[S13-DENY-GIUCHAY]` xuất hiện; trễ pha chiêu p75 < 400 ms; `[S8-NAN]` < 1/phút trong bối cảnh quái dày; khoảng "máy chủ đứng ngoài tầm" sau từ chối biến mất.
+
+## 10.11 04/09 chiều — chủ báo "phù về thành thì hay bị trượt lui" → đo log 15:50–16:44 → S13l `[S13-TELE-CU]` (máy chủ)
+
+Bản chạy khi báo: client `b73372be` (14:03), server `f576ac9e` (16:03; GameServer khởi động 16:20). Log **xoay ngay trong lúc phân tích** (tệp client 14:32–15:50 mất vĩnh viễn) → đã chụp bộ hiện có về `scratchpad\phuve\logs\` (cl1 = 15:50–16:37, cl = 16:37→, sv1 = 14:35–16:32, sv = 16:32→). Nhân vật CaiBang (client idx 1, id 92476, server idx 91477), auto Tống Kim (sw 324 "Điểm báo danh" → 379 "Xung phong (Trung cấp)").
+
+### Số đo
+- 11 lần đổi map thật + 40 lần dịch chuyển cùng map (`nhanh=loadmap` = SetPos Tống Kim: hồi sinh về trại (54016,98304), xuất quân). Thổ Địa Phù thật chỉ còn 1 mẫu (14:33, pid 55828, `vaolandau`, client đang **đánh**) → sạch 15 s đầu; các lần về Thành Đô khác đều là đăng nhập lại (`[S6-ADD] idx=1`), sạch.
+- **12/40 lần dịch chuyển cùng map có `[S13-KEO]` (trượt) hoặc `[S8-NAN]` (giật) trong 8 s sau.**
+- 🔴 **Ca bắt được** (t=845760300): client đang **chạy** (doing=3) tới (53184,99168) thì bị SetPos về (50240,101536). **Cùng mili-giây** với gói dịch chuyển, máy chủ phát `s2c_npcrun` đích **(53184,99168) = ĐÍCH CŨ**; các gói tự-sync kế cho thấy máy chủ chạy hết tốc về hướng cũ: lệch 16 → 65 → 90 → 123 → 167 mps trong 0,8 s trong khi client đứng (S13i) → `[S13-KEO]` +233 ms kéo client theo (**trượt**), auto ra lệnh mới +778 ms, hai bên chạy song song lệch 170–190 mps suốt 6 s, `[S8-NAN] lệch=274` lúc +6,5 s (**giật lùi**). Lặp lại ở 845824639 (KEO +224 / +2338 / +6078) và 845729518. Tổng **3/28 lần dịch chuyển trong cl1.log máy chủ thi hành lệnh đích cũ** (`ReverseTools\phuve_0409\dem_cu.py`); điều kiện đủ = client đang chạy lúc bị dịch chuyển.
+- Đã bác: máy chủ bị chặn (`E4_MOVE_PATH npc=91477` ret=0: 0/75 mẫu, ret=1: 73), tốc độ khác nhau, lệnh tồn đọng **phía client** (S13i đã chặn, không thấy `E4_MOVE_PATH npc=1` đích cũ).
+
+### Gốc
+`KNpc::SetPos` / `ChangeWorld` (máy chủ) xoá khe S13 và `m_Command` **tại thời điểm** dịch chuyển, nhưng gói `c2s_npcrun/npcwalk` client gửi **trước khi biết** mình bị dịch chuyển (auto gửi ~9 lệnh/giây khi chạy) tới máy chủ **sau** đó → `NpcRunCommand` → `SendCommand(do_run, đích cũ)` → khe S13 → `RunTo` (`NewPath` không kiểm gì) → máy chủ chạy từ vị trí MỚI về đích CŨ. Với Thổ Địa Phù (`UseTownPortal` → `ChangeWorld`) đích cũ là toạ độ **map cũ** → máy chủ chạy vô định trong thành trong khi client đứng chờ auto (DT pha=18 đứng 15 s+) → KEO kéo / NAN nắn lặp lại = đúng "phù về thành thì trượt lùi" khi bấm phù **lúc đang chạy**.
+
+### S13l — vá máy chủ, không đổi giao thức, không đổi layout KNpc (nhánh `phuve-0409`, worktree `D:\GAMEDEVNEW_wt_phuve`)
+- `KNpc.cpp` (sau `S13_ClearCmd`, `#ifdef _SERVER`): mảng tĩnh `s_S13Tele[MAX_NPC]` {mốc `GetTickCount`, vị trí cũ, vị trí mới}; `S13_GhiTele()` gọi trong `SetPos` và `ChangeWorld` (người chơi thật, **trước** khi đổi toạ độ; chỉ vũ trang khi dịch chuyển ≥ 1024 mps); `S13_LenhCuSauTele()`: trong **600 ms** sau dịch chuyển, lệnh có đích cách chỗ mới > 512 mps **và** gần chỗ cũ hơn chỗ mới → vứt + `AUTOLOG("[S13-TELE-CU] …")`; lệnh hợp lệ đầu tiên (đích quanh chỗ mới) **đóng cửa sổ ngay**. `Init()` xoá mốc khi thu hồi khe.
+- `KProtocolProcess.cpp`: `NpcWalkCommand` / `NpcRunCommand` gọi gác trước `SendCommand` (chỉ `#ifdef _SERVER`).
+- Client **không đổi mã** (đã build Win32 để kiểm biên dịch tệp chung: 0 lỗi; không swap client).
+
+| tệp | md5 | kích thước | swap |
+|---|---|---|---|
+| `bin\server\CoreServer.dll.moi` | **4b2b69f3a124e727001ee0d042d6f4a1** | 18.354.176 | tắt GameServer → `ChayGameServer.bat` |
+
+Build từ `origin/main` 8d6e76d3 (C++ Core trùng bản live f576ac9e — diff 4f7f2e2e..main chỉ đụng MultiServer; **chưa gồm** nhánh `rolechk2-0409` của wauto-4c). Kiểm nhị phân: đủ mọi nhãn `[…]` của bản live + `[S13-TELE-CU]`. Nhánh `phuve-0409` đã đẩy lên origin, **chưa gộp main** (chờ nghiệm thu).
+
+### Nghiệm thu (script `ReverseTools\phuve_0409\`)
+- `jx_auto_server.log`: xuất hiện `[S13-TELE-CU]` mỗi khi bị dịch chuyển lúc đang chạy (kỳ vọng ~1/10 lần dịch chuyển Tống Kim), `dt` ≤ vài chục ms, `toicu` nhỏ, `toimoi` hàng nghìn.
+- `python dem_cu.py <jx_auto.log>`: "lenh cu thi hanh" = **0** (trước: 3/28); không còn `[S13-KEO]` trong 1 s sau `nhanh=loadmap/vaolandau`.
+- Thổ Địa Phù bấm **lúc đang chạy** về Thành Đô: đứng yên tại điểm đến, không trượt/giật trong 15 s.
+- Hồi quy phải soát: ngay sau dịch chuyển ≥ 32 ô mà cố tình chạy **ngược** về chỗ cũ với node đường đầu > 16 ô trong 0,6 s → lệnh đầu bị vứt, client tự gửi lại khung sau (chỉ chậm ≤ 0,6 s).
+
+### Còn lại (không thuộc vá này)
+- KEO/NAN 3–8 s **sau** dịch chuyển trong Tống Kim (8/40) là lệch chạy chung: client A* vs máy chủ đi thẳng giữa 170+ NPC (`g_nPbNpcChan=1` từ 04/09 03:1x) — ca 845891756 máy chủ đi ~290 mps trong 2,6 s, client ~700 → `[S8-NAN] 503`. Cần đo riêng, không đoán.
+- KEO kéo client đang đứng về phía máy chủ **còn đang chạy** chính là "trượt" nhìn thấy; gói tự-sync có trường `m_byDoing` nhưng máy chủ để trống (KNpc.cpp:6934 chú thích) nên client không phân biệt được. Chờ chủ quyết có điền trường sẵn có này không (không đổi layout).

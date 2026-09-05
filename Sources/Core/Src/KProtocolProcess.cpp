@@ -5811,6 +5811,9 @@ void KProtocolProcess::ObjRequestCommand(int nIndex, BYTE* pProtocol)
 	ObjSet.SyncAdd(pObjClientSyncAdd->m_nID, Player[nIndex].m_nNetConnectIdx);
 }
 
+#ifdef _SERVER
+extern BOOL S13_LenhCuSauTele(int nIdx, int nDichX, int nDichY);	// [S13-TELE-CU] KNpc.cpp: lenh chay/di cua cho CU toi sau dich chuyen
+#endif
 void KProtocolProcess::NpcWalkCommand(int nIndex, BYTE* pProtocol)
 {
 	NPC_WALK_COMMAND* pNetCommand = (NPC_WALK_COMMAND *)pProtocol;
@@ -5824,6 +5827,10 @@ void KProtocolProcess::NpcWalkCommand(int nIndex, BYTE* pProtocol)
 	{
 		ParamY = 0;
 	}
+#ifdef _SERVER
+	if (S13_LenhCuSauTele(Player[nIndex].m_nIndex, ParamX, ParamY))
+		return;	// [S13-TELE-CU] lenh cua cho cu toi sau dich chuyen -> vut
+#endif
 	Npc[Player[nIndex].m_nIndex].SendCommand(do_walk, ParamX, ParamY);
 }
 
@@ -5845,6 +5852,10 @@ void KProtocolProcess::NpcRunCommand(int nIndex, BYTE* pProtocol)
 	int nIdx = Player[nIndex].m_nIndex;
 	if (nIdx > 0 && nIdx < MAX_NPC)
 	{
+#ifdef _SERVER
+		if (S13_LenhCuSauTele(nIdx, ParamX, ParamY))
+			return;	// [S13-TELE-CU] lenh cua cho cu toi sau dich chuyen -> vut
+#endif
 		Npc[nIdx].SendCommand(do_run, ParamX, ParamY);
 	}
 }
