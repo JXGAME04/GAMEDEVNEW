@@ -177,3 +177,12 @@ Hội)**: ini cửa sổ `WndType=WndImage` `ScriptFile=\script\ui\tong_battle_2
 - 800×600: `Top=140 Height=200 RiseFrom=320`; 1024×768: `Top=230 Height=200 RiseFrom=410`; chung `RiseSpeed=60 DisplayDuration=2500 FadeMs=700 MaxLines=3 MaxQueueDelay=1200`.
   → mỗi dòng sống 2,5 s, đi 150 px, dòng sau cách dòng trước 833 ms (50 px). Kịch bản vá: `ReverseTools\tongkim_chat\va_flash_3dong.py`.
 - `Game.exe.moi` = **bc08ffb4** (05/09 09:30). Chủ: `ChoiGame.bat` (client) + **restart máy chủ** (Lua tiết chế gói điểm).
+
+## 12. 05/09 09:35 — Chủ: "tắt hoàn toàn thông báo giữa màn hình để xem còn lag không" (đang rất lag)
+- `[TKCHAT 05/09b]` công tắc ini `Enable` (đọc ở section đang dùng): 0 = `MessageArrival` bỏ qua ngay (không xếp hàng), `OpenWindow` không `Show`
+  (cửa sổ ẩn → không Paint/Breathe). Bật lại: `Enable=1` trong `bin\client\Ui\Ui3\UiFlashMessage.ini`, không cần build.
+- Ini live + gương đặt `Enable=0` cả `[Main]`/`[Main1024]`. `Game.exe.moi` = **c9212b50** (09:34). Dòng "Hệ Thống" trong khung chat vẫn còn.
+- **Đo 09:36 (3 s, 24 lõi)**: GameServer 4,3 % ≈ **1 lõi chạy kịch** (vòng lặp chính bão hoà) — 9,3 GB RAM, 60 luồng; Game.exe client 1,9 % (≈ nửa lõi);
+  Goddess/Rainbow/Bishop/S3Relay ~0. → "rất lag" nằm ở MÁY CHỦ, không phải vẽ chữ trên client.
+- Nếu tắt rồi vẫn lag: (1) máy chủ chưa restart → `TK_GuiDiemPhe` vẫn 600 gói/lần giết; (2) dòng chat giết địch `Msg2MSAll` (tongtu/kimtu:87)
+  cũng 600 gói/lần giết — có từ trước, có thể tiết chế/gửi cho người liên quan; (3) tải nền bot (1000 bot) — ngoài phạm vi TK chat.
