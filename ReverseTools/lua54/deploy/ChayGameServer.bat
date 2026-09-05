@@ -21,6 +21,7 @@ set LOI=0
 call :capnhat CoreServer.dll
 call :capnhat heaven.dll
 call :capnhat engine.dll
+call :capnhat Lua54Dll.dll
 if "%LOI%"=="1" goto :loi
 
 if exist "LUA54.moi" call :doiscript

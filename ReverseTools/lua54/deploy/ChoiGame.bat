@@ -18,6 +18,7 @@ set LOI=0
 call :capnhat Game.exe
 call :capnhat CoreClient.dll
 call :capnhat Engine.dll
+call :capnhat Lua54Dll.dll
 call :capnhat Represent3.dll
 call :capnhat Represent2.dll
 call :capnhat WAuto.dll
