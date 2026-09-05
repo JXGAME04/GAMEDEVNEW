@@ -47,6 +47,7 @@ KUiFlashMessage::KUiFlashMessage()
 	m_nFadeMs = 1500;
 	m_uMaxQueueDelay = 1500;
 	m_uNextStartTime = 0;
+	m_nMaxLines = 3;	// [TKCHAT 05/09]
 	SetColor(0x00000000); // fully transparent background
 }
 
@@ -302,6 +303,9 @@ void KUiFlashMessage::LoadScheme(const char* pszScheme)
 				Ini.GetInteger(pszSec, "RiseSpeed", 35, &m_pSelf->m_nRiseSpeed);
 				Ini.GetInteger(pszSec, "FadeMs", 1500, &m_pSelf->m_nFadeMs);
 				Ini.GetInteger(pszSec, "MaxQueueDelay", 1500, (int*)&m_pSelf->m_uMaxQueueDelay);
+				Ini.GetInteger(pszSec, "MaxLines", 3, &m_pSelf->m_nMaxLines);	// [TKCHAT 05/09]
+				if (m_pSelf->m_nMaxLines < 1)
+					m_pSelf->m_nMaxLines = 1;
 				if (m_pSelf->m_nRiseSpeed < 1)
 					m_pSelf->m_nRiseSpeed = 1;
 			}
@@ -456,15 +460,26 @@ void KUiFlashMessage::PaintWindow()
 		if (nY < m_nAbsoluteTop)
 			continue;
 		char szTemp[512];
-		int nCopy = slot.CurrentMsg.nMsgLen;
-		if (nCopy > (int)sizeof(szTemp) - 1)
-			nCopy = (int)sizeof(szTemp) - 1;
-		memcpy(szTemp, slot.CurrentMsg.sMsg, nCopy);
-		szTemp[nCopy] = 0;
-		int nLen = TEncodeText(szTemp, nCopy);
-		if (nLen <= 0)
-			continue;
-		int nRong = sTkChatDoRong(szTemp, nLen, m_nFontSize);
+		const char* pszVe = szTemp;
+		int nLen = 0, nRong = 0;
+		if (slot.nEncLen > 0)
+		{
+			pszVe = slot.szEnc;	// [TKCHAT 05/09] da ma hoa san luc sinh
+			nLen = slot.nEncLen;
+			nRong = slot.nRongPx;
+		}
+		else
+		{
+			int nCopy = slot.CurrentMsg.nMsgLen;
+			if (nCopy > (int)sizeof(szTemp) - 1)
+				nCopy = (int)sizeof(szTemp) - 1;
+			memcpy(szTemp, slot.CurrentMsg.sMsg, nCopy);
+			szTemp[nCopy] = 0;
+			nLen = TEncodeText(szTemp, nCopy);
+			if (nLen <= 0)
+				continue;
+			nRong = sTkChatDoRong(szTemp, nLen, m_nFontSize);
+		}
 		int nX = m_nAbsoluteLeft + (m_Width - nRong) / 2;
 		if (nX < m_nAbsoluteLeft + m_nIndentH)
 			nX = m_nAbsoluteLeft + m_nIndentH;
@@ -480,7 +495,7 @@ void KUiFlashMessage::PaintWindow()
 		Param.Color = uColor;
 		Param.nX = nX;
 		Param.nY = nY;
-		g_pRepresentShell->OutputRichText(m_nFontSize, &Param, szTemp, nLen, 0);
+		g_pRepresentShell->OutputRichText(m_nFontSize, &Param, (char*)pszVe, nLen, 0);
 	}
 }
 
@@ -679,9 +694,26 @@ void KUiFlashMessage::ResetSlot(int idx)
 			uStart = m_uNextStartTime;
 		slot.uDisplayStartTime = uStart;
 		int nSpacingMs = (m_nRiseSpeed > 0) ? (m_nLineHeight * 1000 / m_nRiseSpeed) : 500;
+		// [TKCHAT 05/09] chu: "hien 3 dong thoi" -> toi da MaxLines dong cung luc: cach sinh >= DisplayDuration / MaxLines
+		if (m_nMaxLines > 0 && nSpacingMs < (int)m_uDisplayDuration / m_nMaxLines)
+			nSpacingMs = (int)m_uDisplayDuration / m_nMaxLines;
 		if (nSpacingMs < 50)
 			nSpacingMs = 50;
 		m_uNextStartTime = uStart + nSpacingMs;
+	}
+	// [TKCHAT 05/09] ma hoa chu MOT lan luc sinh (truoc: TEncodeText + do rong moi khung cho moi dong -> ton CPU, chu 'lag hon')
+	slot.nEncLen = 0;
+	slot.nRongPx = 0;
+	if (slot.nInsertPlace == NOT_NEED_INSERT && slot.CurrentMsg.nMsgLen > 0)
+	{
+		int nCopy = slot.CurrentMsg.nMsgLen;
+		if (nCopy > (int)sizeof(slot.szEnc) - 1)
+			nCopy = (int)sizeof(slot.szEnc) - 1;
+		memcpy(slot.szEnc, slot.CurrentMsg.sMsg, nCopy);
+		slot.szEnc[nCopy] = 0;
+		slot.nEncLen = TEncodeText(slot.szEnc, nCopy);
+		if (slot.nEncLen > 0)
+			slot.nRongPx = sTkChatDoRong(slot.szEnc, slot.nEncLen, m_nFontSize);
 	}
 
 	slot.nCharIndex = 0;

@@ -918,6 +918,8 @@ end
 TKDIEM_KIND_CAPNHAT = 6
 TKDIEM_KIND_AN      = 9
 TKDIEM_MAX_O        = 600	-- MAX_PLAYER_MISSION (KMission.h)
+TKDIEM_KHUNG_GIUA_2LAN = 36	-- [TKDIEM 05/09] toi thieu 36 khung (2 giay; GetGameTime script JX1 = frame 18/s) giua hai lan gui ca phe
+TKDIEM_KHUNG_GUI_CUOI  = 0
 
 -- gui cho CHINH nguoi choi PlayerIndex hien tai
 function TK_GuiDiemChoToi(nKind)
@@ -933,6 +935,16 @@ end
 -- nen chi nhan o ma chinh nguoi choi do tra nguoc ve dung o (PIdx2MSDIdx == i). UpdateBattleBox tu bo qua
 -- nguoi da mat ket noi (m_nNetConnectIdx == -1).
 function TK_GuiDiemPhe(nKind)
+	-- [TKDIEM 05/09] chu 20:40 "fix xong thay game lag hon nhieu": truoc day MOI lan giet gui 1 goi cho TUNG nguoi
+	-- (toi 600 goi) -> Tong Kim dong, hang chuc lan giet/giay = hang nghin goi/giay + client cap nhat bang lien tuc.
+	-- Nay toi da 1 lan / 2 giay (lan giet ke tiep se gui tiep); lenh AN (kind 9) khong bi han che.
+	if nKind ~= TKDIEM_KIND_AN then
+		local nKhung = GetGameTime()
+		if nKhung - TKDIEM_KHUNG_GUI_CUOI < TKDIEM_KHUNG_GIUA_2LAN then
+			return 0
+		end
+		TKDIEM_KHUNG_GUI_CUOI = nKhung
+	end
 	local nCu = PlayerIndex
 	local nTong = GetMissionV(M_TICHLUYA)
 	local nKim = GetMissionV(M_TICHLUYB)
