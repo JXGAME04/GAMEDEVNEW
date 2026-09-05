@@ -44,13 +44,14 @@ static unsigned char g_abyBCVungGui[BC_MAX_VUNG];	// vung nao da gui cho client 
 //       van chay du nen bat lai la ve nguyen trang, khong dong 20 cap cong/tru.
 //   1 = ban goc: NPC dung o nao thi o do la vat can song (Obstacle_JumpFly).
 // Doi luc chay bang lenh GM Lua PB_SetNpcChan(1/0/-1) - khong can restart.
-// (04/09 - chu game: "loi chong nguoi len nhau - fix lai nguoi + bot la nhu vat can vay,
-// khong cho chay xuyen qua va dung chong len nhau") -> TRA VE HANH VI GOC = 1.
+// (04/09 03:18 - chu game: "loi chong nguoi len nhau - fix lai nguoi + bot la nhu vat can vay,
+// khong cho chay xuyen qua va dung chong len nhau") -> tung TRA VE 1.
+// (04/09 chieu - chu game: "bo tinh nang nguoi choi - bot la vat can") -> TAT LAI = 0. Giu pb_DeChong.
 // Bien nay bien vao CA HAI phia (nhanh #else phia duoi cung doc no): hai ban PHAI cung gia tri,
 // neu khong client mo phong nguoi khac bi CHAN trong khi may chu cho CHAY XUYEN => lech dan roi
 // dan mot phat khi goi dong bo toi. Vi vay doi so nay la phai swap CoreServer.dll VA CoreClient.dll
 // CUNG LUC; lenh GM Lua PB_SetNpcChan chi doi phia may chu nen chi dung de tat khan cap.
-int g_nPbNpcChan = 1;
+int g_nPbNpcChan = 0;
 KRegion::KRegion()
 {
 	m_nIndex		= -1;

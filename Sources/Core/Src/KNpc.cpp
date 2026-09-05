@@ -154,6 +154,73 @@ void S13_ClearCmd(int nIdx)
 		Npc[nIdx].SendCommand(do_none, 0, 0, 0);	// m_Command private: do_none qua het cua chan va xoa khe
 }
 
+#ifdef _SERVER
+// [S13-TELE-CU 04/09] LENH TON DONG SAU DICH CHUYEN. Client dang chay thi gui lenh run/walk (dich = node duong
+// hien tai) ~9 lan/giay; dich chuyen (SetPos cung map, ChangeWorld doi map) toi giua chung => lenh gui TRUOC khi
+// client biet minh bi dich chuyen toi may chu SAU dich chuyen, may chu RunTo(dich cu) tu vi tri MOI.
+// Do that 04/09 Tong Kim (cl1.log/sv.log 16:3x): 3/28 lan dich chuyen co echo s2c_npcrun dich cu tai +0..+1 ms,
+// may chu chay het toc ve huong cu ~170 mps trong 0,8 s trong khi client dung (S13i) => S13-KEO keo client theo
+// tu +233 ms ('truot lui'), lech 170-190 mps bam dai roi S8-NAN 274 luc +6,5 s ('giat lui'). Voi Tho Dia Phu
+// (ChangeWorld) dich cu nam o MAP CU => may chu chay vo dinh trong thanh trong khi client dung cho auto.
+// Sua: ghi moc + vi tri CU/MOI luc dich chuyen (nguoi choi that); NpcRunCommand/NpcWalkCommand vut lenh toi
+// trong S13_TELE_CUASO_MS ma dich gan cho CU hon cho MOI va cach cho MOI > S13_TELE_DICH_GAN. Lenh hop le dau
+// tien (dich quanh cho moi) DONG cua so ngay nen lenh sau khong bao gio bi xet. Khong doi giao thuc/layout KNpc.
+#define S13_TELE_CUASO_MS	600		// tre nhat con coi la ton dong: RTT + 2 khung client (do that: +0..+1 ms)
+#define S13_TELE_XA_MIN		1024	// chi vu trang khi dich chuyen >= 32 o (ngan hon thi dich cu gan cho moi, vo hai)
+#define S13_TELE_DICH_GAN	512		// dich trong 16 o quanh cho moi = lenh MOI hop le (auto/duong di gui node <= ~600 mps)
+struct S13TELE { DWORD uTick; int nCuX, nCuY, nMoiX, nMoiY; };
+static S13TELE s_S13Tele[MAX_NPC];
+static int S13_Cheb(int nAx, int nAy, int nBx, int nBy)
+{
+	int nDx = nAx - nBx; if (nDx < 0) nDx = -nDx;
+	int nDy = nAy - nBy; if (nDy < 0) nDy = -nDy;
+	return (nDx > nDy) ? nDx : nDy;
+}
+// Goi TRUOC khi doi m_MapX/m_OffX/m_RegionIndex (can vi tri CU). nMoiX/nMoiY = mps diem den.
+static void S13_GhiTele(KNpc* pNpc, int nMoiX, int nMoiY)
+{
+	if (!S13_IsRealPlayer(pNpc))
+		return;
+	int nCuX = nMoiX, nCuY = nMoiY;
+	if (pNpc->m_SubWorldIndex >= 0 && pNpc->m_RegionIndex >= 0)
+		pNpc->GetMpsPos(&nCuX, &nCuY);
+	S13TELE& t = s_S13Tele[pNpc->m_Index];
+	if (S13_Cheb(nCuX, nCuY, nMoiX, nMoiY) < S13_TELE_XA_MIN)
+	{
+		t.uTick = 0;
+		return;
+	}
+	t.nCuX = nCuX; t.nCuY = nCuY; t.nMoiX = nMoiX; t.nMoiY = nMoiY;
+	t.uTick = GetTickCount();
+	if (t.uTick == 0)
+		t.uTick = 1;
+}
+// Goi tu KProtocolProcess.cpp (NpcRunCommand/NpcWalkCommand): TRUE = lenh ton dong cua cho cu -> vut.
+BOOL S13_LenhCuSauTele(int nIdx, int nDichX, int nDichY)
+{
+	if (nIdx <= 0 || nIdx >= MAX_NPC)
+		return FALSE;
+	S13TELE& t = s_S13Tele[nIdx];
+	if (t.uTick == 0)
+		return FALSE;
+	const DWORD uDt = (DWORD)(GetTickCount() - t.uTick);
+	if (uDt > (DWORD)S13_TELE_CUASO_MS)
+	{
+		t.uTick = 0;
+		return FALSE;
+	}
+	const int nToiMoi = S13_Cheb(nDichX, nDichY, t.nMoiX, t.nMoiY);
+	const int nToiCu = S13_Cheb(nDichX, nDichY, t.nCuX, t.nCuY);
+	if (nToiMoi <= S13_TELE_DICH_GAN || nToiMoi <= nToiCu)
+	{
+		t.uTick = 0;	// lenh MOI hop le (tinh tu cho moi) -> dong cua so
+		return FALSE;
+	}
+	AUTOLOG("[S13-TELE-CU] vut lenh ton dong sau dich chuyen npc=%d dich=(%d,%d) cu=(%d,%d) moi=(%d,%d) dt=%u ms toicu=%d toimoi=%d", nIdx, nDichX, nDichY, t.nCuX, t.nCuY, t.nMoiX, t.nMoiY, uDt, nToiCu, nToiMoi);
+	return TRUE;
+}
+#endif
+
 KNpc::KNpc()
 {
 #ifdef _SERVER
@@ -177,7 +244,12 @@ void KNpc::Init()
 {
 	// [S13] xoa khe di chuyen rieng theo chi so CU (Init duoc Remove goi khi thu hoi khe)
 	if (m_Index > 0 && m_Index < MAX_NPC)
+	{
 		s_S13Move[m_Index].CmdKind = do_none;
+#ifdef _SERVER
+		s_S13Tele[m_Index].uTick = 0;	// [S13-TELE-CU] moc dich chuyen cua chu cu khong song sot qua thu hoi khe
+#endif
+	}
 	memset(m_btStateInfo, 0, sizeof(m_btStateInfo));
 	m_dwID = 0;
 	m_Index = 0;
@@ -10949,6 +11021,7 @@ int KNpc::SetPos(int nX, int nY)
 		s_S13Move[m_Index].CmdKind = do_none;
 		m_Command.CmdKind = do_none;
 	}
+	S13_GhiTele(this, nX, nY);	// [S13-TELE-CU] ghi vi tri cu/moi + moc dich chuyen (TRUOC khi doi toa do)
 	int nOldRegion = m_RegionIndex;
 	if (m_RegionIndex >= 0)
 	{
@@ -11058,6 +11131,7 @@ int KNpc::ChangeWorld(DWORD dwSubWorldID, int nX, int nY)
 		SendDataToNearRegion(&RemoveSync, sizeof(NPC_REMOVE_SYNC), NPC_EVENT_BROADCAST_LIMIT);	// [S11] go khong cat ai
 	}
 
+	S13_GhiTele(this, nX, nY);	// [S13-TELE-CU] ghi vi tri cu (map cu)/moi + moc dich chuyen
 	// [S13] doi map: lenh chay/chieu dang giu la cua MAP CU -> xoa
 	if (S13_IsRealPlayer(this))
 	{

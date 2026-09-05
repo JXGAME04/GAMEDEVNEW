@@ -685,7 +685,9 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 
 	if ( pClientFactroyFun && SUCCEEDED( pClientFactroyFun( IID_IClientFactory, reinterpret_cast< void ** >( &pClientFactory ) ) ) )
 	{
-		pClientFactory->SetEnvironment( 1024 * 128 );
+		// [RECV 04/09] 128 KB chi dem duoc 0,4 giay o ~300 KB/s khi nap 1000 bot; tran thi Rainbow (ban cu)
+		// vut nguyen khoi doc -> goi role-data ghep lan -> sap 15:05:38 04/09. Nang 8 MB (~27 giay dem).
+		pClientFactory->SetEnvironment( 8 * 1024 * 1024 );
 
 		pClientFactory->CreateClientInterface( IID_IESClient, reinterpret_cast< void ** >( &m_pDatabaseClient ) );
 
@@ -2284,6 +2286,20 @@ void KSwordOnLineSever::DatabaseLargePackProcess(const char* pData, size_t dataL
 				// Chi lay tra loi CUA BOT: Core luon bat bit 31 cua ulIdentity.
 				// Duong luu nhan vat dung ulIdentity = chi so nguoi choi (KSOServer.cpp:3196)
 				// nen khong bao gio dung cham dai nay.
+#ifndef _STANDALONE
+				// [RECV 04/09] Goi lon ghep xong phai DUNG do dai TProcessData khai bao (nDataLen). Mat mot
+				// khung giua duong (Rainbow ReadCompleted vut khi bo dem day) thi CPackager::PackUp ghep goi 1
+				// cua nhan vat nay voi goi 3.. cua nhan vat sau -> ngan hon khai bao. Bo goi + bao, khong giao rac.
+				{
+					const size_t nDauTP = (size_t)((const char*)&pRI->pDataBuffer[0] - (const char*)pRI);
+					if (pBuffer->GetUsed() < nDauTP || pBuffer->GetUsed() - nDauTP != (size_t)pRI->nDataLen)
+					{
+						printf("--DatabaseLargePackProcess: role-data id %08lX ghep duoc %u byte nhung khai bao %u -> BO (mat khung Goddess->GameServer)--\n",
+							pRI->ulIdentity, (unsigned)(pBuffer->GetUsed() - nDauTP), (unsigned)pRI->nDataLen);
+						break;
+					}
+				}
+#endif
 				if (m_pCoreServerShell && (pRI->ulIdentity & 0x80000000ul))
 				{
 					PB_DB_RESULT res;
