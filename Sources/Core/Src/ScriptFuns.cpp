@@ -2868,9 +2868,7 @@ int LuaGetMissionRestTime(Lua_State* L)
 			if (nMissionId < 0 || nTimerId < 0)
 				goto lab_getmissionresttime;
 
-			KMission Mission;
-			Mission.SetMissionId(nMissionId);
-			KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+			KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 			if (pMission)
 			{
 				RestTime = (int)pMission->GetTimerRestTimer(nTimerId);
@@ -11435,9 +11433,7 @@ int LuaInitMission(Lua_State* L)
 	if (nSubWorldIndex < 0)
 		return 0;
 
-	KMission Mission;
-	Mission.SetMissionId(nMissionId);
-	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 	if (pMission)
 	{
 		_ASSERT(0);
@@ -11535,9 +11531,7 @@ int LuaRunMission(Lua_State* L)
 	if (nSubWorldIndex < 0)
 		return 0;
 
-	KMission Mission;
-	Mission.SetMissionId(nMissionId);
-	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 	if (pMission)
 	{
 		// [WLLS 20/08] FIX 2 loi lam sap GS ngay tran dau (BANGIAO_LIENDAU 4.1):
@@ -11581,9 +11575,7 @@ int LuaGetMissionName(Lua_State* L)
 	if (nSubWorldIndex < 0)
 		return 0;
 
-	KMission Mission;
-	Mission.SetMissionId(nMissionId);
-	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 
 	if (pMission)
 	{
@@ -11617,9 +11609,7 @@ int LuaCloseMission(Lua_State* L)//CloseMission(missionId)
 	if (nSubWorldIndex < 0)
 		return 0;
 	//
-	KMission StopMission;
-	StopMission.SetMissionId(nMissionId);
-	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&StopMission);
+	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 	if (pMission)
 	{
 		char szScript[MAX_PATH];
@@ -11647,9 +11637,7 @@ int LuaStopMissionTimer(Lua_State* L)//StopMissionTimer(missionid, timerid)
 
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			KTimerTaskFun StopTimer;
@@ -11679,9 +11667,7 @@ int LuaStartMissionTimer(Lua_State* L)//StartMissionTimer(missionid, timerid, ti
 
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			KTimerTaskFun* pTimer = pMission->m_cTimerTaskSet.Add();
@@ -11764,9 +11750,7 @@ int LuaAddMissionPlayer(Lua_State* L)
 	int nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			int nPlayerDataIdx = pMission->AddPlayer(nPlayerIndex, Player[nPlayerIndex].m_dwID, nGroupId);
@@ -11871,9 +11855,7 @@ int LuaRemoveMissionPlayer(Lua_State* L)//RemoveMSPlayer(MissionId, PlayerIndex,
 	int nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			pMission->RemovePlayer(nPlayerIndex, Player[nPlayerIndex].m_dwID);
@@ -11900,9 +11882,7 @@ int LuaAddMissionNpc(Lua_State* L)
 	int nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			pMission->AddNpc(nNpcIndex, Npc[nNpcIndex].m_dwID, nGroupId);
@@ -11938,9 +11918,7 @@ int LuaRemoveMissionNpc(Lua_State* L)
 	int nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			pMission->RemoveNpc(nNpcIndex, Npc[nNpcIndex].m_dwID);
@@ -11971,9 +11949,7 @@ int LuaGetNextPlayer(Lua_State* L)//GetNextPlayer(mission, idx,group)
 
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			nResultIdx = pMission->GetNextPlayerC(nIdx, nGroup, nPlayerIndex);
@@ -11998,9 +11974,7 @@ int LuaMissionMsg2Group(Lua_State* L)//MSMsg2Group(missionid, string , group)
 	int nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			pMission->Msg2Group(strMsg, nGroupId);
@@ -12021,9 +11995,7 @@ int LuaMissionMsg2All(Lua_State* L)//MSMsg2Group(missionid, string)
 	int nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			pMission->Msg2All(strMsg);
@@ -12045,9 +12017,7 @@ int LuaMissionMsg2Player(Lua_State* L)//MSMsg2Group(missionid, string , group)
 	int nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			pMission->Msg2Group(strMsg, nPlayerIndex);
@@ -12077,9 +12047,7 @@ int LuaMissionNpcCount(Lua_State* L)
 	nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			if (nGroupId >= 0)
@@ -12114,9 +12082,7 @@ int LuaMissionPlayerCount(Lua_State* L)
 	nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex >= 0)
 	{
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			if (nGroupId >= 0)
@@ -12187,9 +12153,7 @@ int LuaUpdateBattleBox(Lua_State* L)// UpdateBattleBox
 	if (nSubWorldIndex < 0)
 		return 0;
 
-	KMission Mission;
-	Mission.SetMissionId(nMissionId);
-	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 
 	if (!pMission)
 		return 0;
@@ -12290,6 +12254,64 @@ int LuaUpdateBattleBox(Lua_State* L)// UpdateBattleBox
 	if (g_pServer && Player[nPlayerIndex].m_nNetConnectIdx != -1)
 		g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_BATTLE_BOX));
 	return 0;
+}
+
+// [TKDIEM 05/09] UpdateBattleBoxAll(nMissionId, nTong, nKim, nKind) -> so nguoi da gui.
+// Phat bang diem "tong|kim|diem_rieng" (S2C_BATTLE_BOX) cho MOI nguoi con trong tran bang MOT loi goi Lua,
+// duyet thang m_UseIdx nhu KMission::Msg2All. Thay vong Lua 600 o trong lib_tktc.lua TK_GuiDiemPhe
+// (MSDIdx2PIdx + PIdx2MSDIdx + GetPMParam + UpdateBattleBox = 2.400 loi goi Lua-C moi lan chet; do 05/09 ~90 ms/lan
+// -> may chu bao hoa 55-78 ms/tick trong Tong Kim; xem BANGIAO_TONGKIM_CHAT_DIEM_0409.md muc 13f).
+// Dieu kien gui = dung dieu kien vong cu: o con dung (MISSION_PARAM_AVAILABLE), nguoi con noi, va chi so nguoi
+// van thuoc dung nguoi do (m_dwID == m_ulPlayerID; o cu cua nguoi da roi bi bo qua).
+int LuaUpdateBattleBoxAll(Lua_State* L)
+{
+	int nCount = 0;
+	if (Lua_GetTopIndex(L) < 4)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nMissionId = (int)Lua_ValueToNumber(L, 1);
+	int nTong = (int)Lua_ValueToNumber(L, 2);
+	int nKim = (int)Lua_ValueToNumber(L, 3);
+	BYTE nKind = (BYTE)Lua_ValueToNumber(L, 4);
+	int nSubWorldIndex = GetSubWorldIndex(L);
+	if (nMissionId < 0 || nSubWorldIndex < 0 || !g_pServer)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);
+	if (!pMission)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	S2C_BATTLE_BOX NetCommand;
+	NetCommand.ProtocolType = s2c_battlebox;
+	NetCommand.nType = nKind;
+	int nIdx = 0;
+	while (1)
+	{
+		nIdx = pMission->m_MissionPlayer.m_UseIdx.GetNext(nIdx);
+		if (!nIdx)
+			break;
+		TMissionPlayerInfo& Info = pMission->m_MissionPlayer.m_Data[nIdx];
+		if (Info.m_nParam[MISSION_PARAM_AVAILABLE] != MISSION_AVAILABLE_VALUE)
+			continue;
+		int nPlayerIndex = (int)Info.m_ulPlayerIndex;
+		if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER)
+			continue;
+		if (Player[nPlayerIndex].m_nNetConnectIdx == -1)
+			continue;
+		if (Player[nPlayerIndex].m_dwID != Info.m_ulPlayerID)
+			continue;
+		sprintf(NetCommand.szBattleDesc, "%d|%d|%d", nTong, nKim, Info.m_nParam[6]);
+		g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_BATTLE_BOX));
+		nCount++;
+	}
+	Lua_PushNumber(L, nCount);
+	return 1;
 }
 
 
@@ -12493,9 +12515,7 @@ int LuaGetMissionPlayer_PlayerIndex(Lua_State* L)
 		if (nMissionId < 0 || nDataIndex < 0)
 			goto lab_getmissionplayer_npcindex;
 
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			nResult = pMission->GetMissionPlayer_PlayerIndex(nDataIndex);
@@ -12522,9 +12542,7 @@ int LuaGetMissionPlayer_DataIndex(Lua_State* L)
 		if (nMissionId < 0 || nPlayerIndex < 0)
 			goto lab_getmissionplayer_dataindex;
 
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			nResult = pMission->GetMissionPlayer_DataIndex(nPlayerIndex, Player[nPlayerIndex].m_dwID);
@@ -12553,9 +12571,7 @@ int LuaSetMissionPlayerParam(Lua_State* L)//SetMPParam(missionid, nDidx, vid, v)
 		if (nMissionId < 0 || nDataIndex < 0 || nParamId > MAX_MISSION_PARAM)
 			return 0;
 
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			//pMission->m_MissionPlayer.SetParam(nDataIndex, nParamId, nValue);
@@ -12582,9 +12598,7 @@ int LuaGetMissionPlayerParam(Lua_State* L)
 		if (nMissionId < 0 || nDataIndex < 0 || nParamId > MAX_MISSION_PARAM)
 			goto lab_getmissionplayerparam;
 
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			nResult = pMission->m_MissionPlayer.GetParam(nDataIndex, nParamId);
@@ -12611,9 +12625,7 @@ int LuaGetPlayerMissionGroup(Lua_State* L)
 		if (nMissionId < 0 || nNpcIndex < 0)
 			goto lab_getmissionplayergroup;
 
-		KMission Mission;
-		Mission.SetMissionId(nMissionId);
-		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+		KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 		if (pMission)
 		{
 			nResult = pMission->GetMissionPlayer_GroupId(nNpcIndex);
@@ -12638,9 +12650,7 @@ int LuaIsMission(Lua_State* L)
 	if (nSubWorldIndex < 0)
 		return 0;
 
-	KMission Mission;
-	Mission.SetMissionId(nMissionId);
-	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 	if (pMission)
 		Lua_PushNumber(L, 1);
 	else
@@ -12661,9 +12671,7 @@ int LuaGetMSLadder(Lua_State* L)//add by phong kiÒu using tèng kim
 	int nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex < 0)
 		return 0;
-	KMission Mission;
-	Mission.SetMissionId(nMissionId);
-	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 	if (pMission)
 	{
 		int nOrdinal = (int)Lua_ValueToNumber(L, 2);
@@ -15441,6 +15449,7 @@ TLua_Funcs GameScriptFuns[] =
 		{"Msg2MSAll", LuaMissionMsg2All},
 		{"Msg2MSPlayer", LuaMissionMsg2Player},
 		{"UpdateBattleBox",	LuaUpdateBattleBox},
+		{"UpdateBattleBoxAll",	LuaUpdateBattleBoxAll},	// [TKDIEM 05/09] phat bang diem ca tran, 1 loi goi
 		{"SetDeathScript", LuaSetPlayerDeathScript},
 		{"SetLogoutScript", LuaSetLogoutScript},
 		{"HideNpc", LuaHideNpc}	,//HideNpc(npcindex/npcname, hidetime)

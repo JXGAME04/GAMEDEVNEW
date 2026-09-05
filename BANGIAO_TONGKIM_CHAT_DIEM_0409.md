@@ -278,3 +278,42 @@ Hội)**: ini cửa sổ `WndType=WndImage` `ScriptFile=\script\ui\tong_battle_2
 | 5 | Đối tượng dò tĩnh `static KMission s_Probe` | như 3, ít sửa chỗ | thấp (không luồng khác) nhưng kém rõ ràng | phương án dự phòng |
 
 Khuyến nghị: làm 2 + 3 (3 bằng kịch bản, kiểm `grep`), thử trên máy chủ dev/giờ vắng, đo lại `jx_perf_server.log` trước/sau cùng cửa sổ TK.
+
+
+## 14. 05/09 10:45 — THI CÔNG phương án 2 + 3 (chủ chốt "làm 2-3")
+### 14a. Phương án 3 — `[MSFIND 05/09]` tra nhiệm vụ theo id, không dựng `KMission` tạm
+- `KMissionArray.h`: thêm `T* FindById(unsigned long ulMissionId)` (duyệt `m_UseIdx`, so `GetMissionId()`, trả `&m_Data[nIdx]` hoặc NULL) — tương đương 100 % `GetData(&probe)` vì `FindSame` chỉ so id.
+- Thay 27/27 chỗ bằng kịch bản regex có kiểm đếm (`ReverseTools{BS}tongkim_chat{BS}va_msfind.py`): `ScriptFuns.cpp` 25 (kể cả `StopMission`), `KJx2WarInfra.cpp` 1, `KPlayerBot.cpp` 1 (`pb_TkMission`). Kiểm: không còn `KMission X;` trong 3 tệp; số byte cao không đổi.
+- Mỗi lời gọi API nhiệm vụ: bỏ ~210 KB stack + 2×3 `new[]/delete[]` (101 KB) + ~6.500 vòng chèn → còn ≤ 10 so sánh id.
+### 14b. Phương án 2 — `[TKDIEM 05/09]` `UpdateBattleBoxAll(nMissionId, nTong, nKim, nKind)` (C++, `ScriptFuns.cpp` sau `LuaUpdateBattleBox`, đăng ký cạnh `UpdateBattleBox`)
+- Duyệt thẳng `m_MissionPlayer.m_UseIdx` như `KMission::Msg2All`; điều kiện gửi = đúng vòng Lua cũ: ô còn dùng (`MISSION_PARAM_AVAILABLE`), còn nối, `Player[idx].m_dwID == m_ulPlayerID` (bỏ ô cũ của người đã rời); gói `S2C_BATTLE_BOX` "tong|kim|diem_riêng" (`m_nParam[6]`); trả số người đã gửi.
+- Lua `lib_tktc.lua` `TK_GuiDiemPhe`: tiết chế 18 khung (1 s, trước 2 s) → `if UpdateBattleBoxAll then return UpdateBattleBoxAll(...) end` → **rơi về vòng cũ nếu CoreServer cũ** (không lỗi script khi chỉ restart mà chưa swap DLL). Gương git: `serverscript_jx2{BS}tongkim_chat{BS}server{BS}script{BS}...`.
+### 14c. Build / triển khai
+- Worktree mail-0309 đã merge `origin/main` 573b9130 (diff trống) → build từ main. `CoreServer.dll` x64 Server Release = **a2053172** (10:42; dấu hiệu: `UpdateBattleBoxAll`, `CL_Cong`, `AUC_MsgTong`, `[CFGW]`, `S13-TELE`).
+- Khe `bin{BS}server{BS}CoreServer.dll.moi` có bản chờ 10:02 của phiên khác (= `[CFGW 05/09]` 6177ba7e, đã trong main → bản tôi bao trùm) → đổi tên thành `CoreServer.dll.moi.cfgw_1002_phienkhac`, đặt bản a2053172 làm `.moi`. Chủ: `ChayGameServer.bat` (swap DLL + nạp Lua mới).
+- Client Win32 chỉ build kiểm biên dịch (API nhiệm vụ không có trong CoreClient) — không swap client.
+- Kỳ vọng đo sau restart (cùng cửa sổ TK ~500 chết/phút): MAIN mỗi lần chết 3 → ~2 ms (còn 600 gói chat), bảng điểm 1 s/lần ~2-3 ms/lần, `SCRIPT_TIME max` mỗi phút giảm.
+- 10:45 — main nhận thêm ff7d0359 `[CFGW 05/09]` (KCauHinhWeb + KCore) sau lúc merge → merge lại (1c72eb1d), build lại: **CoreServer.dll = e4d6156e** (10:45) = `.moi` hiện tại; a2053172 bỏ. Git: mail-0309 == main (2e6d93d8 + ff7d0359).
+
+### 14d. 05/09 11:10 — ĐO SAU FIX (máy chủ restart 10:50:03, pid 4660, DLL e4d6156e; TK từ 10:56, ~580 chết/phút; không lỗi script)
+```
+D. TK 10:57-11:08 SAU FIX 2+3 (DLL e4d6156e, tiet che 1 s) n=12 chet/ph= 584 MAIN= 5.56 tick=  7.9 p95= 10 tre= 0.1% tickmax=  95.0 SCmax= 62.3 | ms/chet hieu so=  2.1 hoi quy=11.3
+C. TK 09:49-10:05 tiet che 2 s (DLL cu)              n=17 chet/ph= 497 MAIN= 8.16 tick= 12.5 p95= 26 tre= 4.0% tickmax= 369.1 SCmax=115.5 | ms/chet hieu so=  8.1 hoi quy=7.6
+B. TK 09:21-09:43 vong Lua moi lan chet              n=23 chet/ph= 572 MAIN=55.07 tick= 58.8 p95=190 tre=40.9% tickmax=1255.6 SCmax= 78.7 | ms/chet hieu so= 95.8 hoi quy=83.7
+A. TK 16:30-16:55 hom qua, chi chat                  n=26 chet/ph=   0 MAIN= 5.87 tick=  8.9 p95= 12 tre= 0.2% tickmax= 544.2 SCmax= 97.3 | ms/chet hieu so=  0.0 hoi quy=-
+N. nen 20:05-20:49 hom qua, khong TK                 n=45 chet/ph=   0 MAIN= 4.43 tick=  6.8 p95=  9 tre= 0.1% tickmax=  73.4 SCmax= 52.1 | ms/chet hieu so=  0.0 hoi quy=-
+```
+- Chi phí mỗi lần chết: B 77–98 ms → C 8 ms → **D ~1,8 ms** (còn lại chủ yếu 600 gói chat giết địch); tick trễ 39 % → 5 % → **0,1 %**; p95 184 → 25 → **~10 ms**.
+- `SCRIPT_TIME max` mỗi phút TK 93–97 ms → 56–86 ms (nền không TK 55–62 ms) — script hẹn giờ theo phút vẫn ~55 ms, việc riêng (mục 13d).
+
+
+## 15. 05/09 11:30 — "tiếp tục": hai việc còn lại (chỉ phân tích, chưa đổi gì)
+### 15a. Khựng ~55 ms MỖI PHÚT (`SCRIPT_TIME max`, cả lúc không Tống Kim)
+- `CoreServerShell.cpp:1162-1172`: mỗi tick, nếu khung %% 18 == 0 và giây hệ thống == 0 → `timerserver.lua RunTime()` (script hẹn giờ, 1 lần/phút).
+- `RunTime()` (`timerserver.lua:55-84`, `[NHIPNAP 29/08]` của chủ): **`dofile("script/timerserver.lua")` nạp lại chính nó + 33 `Include` = 90 tệp / 1,17 MB mỗi phút** để "sửa script ăn ngay, không cần restart". Đo ngoài engine bằng `lua4.exe` + tag method `getglobal` giả lập hàm engine: **~20 ms** chỉ riêng biên dịch (vài tệp dừng sớm → trong engine cao hơn, có thêm tra pak/đăng ký hàm). Phần còn lại của 55-86 ms = tác vụ theo phút (`BDH_JitanTick`, `CL_Tick_Wrap`, `BotAuto_Tick`, `sukien_tongkim`, bảo trì bang 6:05…); trong phút TK trước FindById 93-97 ms, sau 56-86 ms.
+- Hậu quả: đúng 1 tick mỗi phút dài ~60-90 ms (ngân sách 55) → mọi người khựng nhẹ 1 lần/phút; không tích luỹ.
+- **Đã có núm, không cần sửa mã**: `script{BS}cauhinh{BS}ch_chung.lua:137 CH_NAPLAI_PHUT = 1` (1 = mỗi phút, 5 = 5 phút/lần, 0 = tắt — khi tắt thì sửa script phải restart); khoá đã phơi lên web admin (`cauhinh_web{BS}cfgw_meta.lua:68`, nhóm HETHONG, nhịp áp 30 s). → Quyết định của chủ: giữ 1 (tiện dev) hay 5/0 (mượt hơn).
+### 15b. Chat giết địch `Msg2MSAll` (tongtu/kimtu:88)
+- 600 `SendSystemInfo` → 600 `PackDataToClient` mỗi lần chết ≈ 2 ms; ở ~10 lần chết/giây = 20 ms/giây ≈ 2 %% ngân sách; mỗi client nhận ~10 dòng/giây (chat + widget).
+- Phương án nếu muốn giảm: (a) chỉ gửi cho người trong 3×3 vùng quanh chỗ chết (KRegion) + người giết/bị giết — đổi trải nghiệm (không thấy kill xa); (b) gộp 1 giây gửi 1 gói nhiều dòng — client `KUiFlashMessage` cần tách dòng; (c) giữ nguyên. Khuyến nghị **(c)** vì chi phí đã nhỏ sau fix.
+- 🔴 **Chủ 11:35: "phần RunTime() cẩn thận vì nó là bộ hẹn của các hoạt động"** → KHÔNG đụng `RunTime()`/`timerserver.lua`; KHÔNG đổi `CH_NAPLAI_PHUT` nếu chưa rà từng driver phụ thuộc nhịp nạp lại (trạng thái cấp tệp bị reset mỗi phút theo thiết kế `g_nMocNapLai`; cấu hình `G_CFG` tươi nhờ nạp lại; `cfgw_driver` 30 s; `hd3_driver`, `ydbz_driver`, `bot_auto`, `sukien_tongkim`). Khựng ~60 ms/phút là cái giá chấp nhận của thiết kế "sửa script ăn ngay". Mục 15a chỉ là phân tích, không phải đề xuất đổi.

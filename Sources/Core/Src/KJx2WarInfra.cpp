@@ -1796,9 +1796,7 @@ int LuaHD3_JoinMission(Lua_State* L)
 	int nSubWorldIndex = GetSubWorldIndex(L);
 	if (nPlayerIndex <= 0 || nSubWorldIndex < 0)
 		return 0;
-	KMission Mission;
-	Mission.SetMissionId(nMissionId);
-	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.FindById(nMissionId);	// [MSFIND 05/09] tra theo id, khong dung KMission tam
 	if (pMission)
 		pMission->AddPlayer(nPlayerIndex, Player[nPlayerIndex].m_dwID, nCamp);
 	return 0;
