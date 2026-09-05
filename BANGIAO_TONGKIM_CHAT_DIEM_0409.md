@@ -293,3 +293,4 @@ Khuyến nghị: làm 2 + 3 (3 bằng kịch bản, kiểm `grep`), thử trên 
 - Khe `bin{BS}server{BS}CoreServer.dll.moi` có bản chờ 10:02 của phiên khác (= `[CFGW 05/09]` 6177ba7e, đã trong main → bản tôi bao trùm) → đổi tên thành `CoreServer.dll.moi.cfgw_1002_phienkhac`, đặt bản a2053172 làm `.moi`. Chủ: `ChayGameServer.bat` (swap DLL + nạp Lua mới).
 - Client Win32 chỉ build kiểm biên dịch (API nhiệm vụ không có trong CoreClient) — không swap client.
 - Kỳ vọng đo sau restart (cùng cửa sổ TK ~500 chết/phút): MAIN mỗi lần chết 3 → ~2 ms (còn 600 gói chat), bảng điểm 1 s/lần ~2-3 ms/lần, `SCRIPT_TIME max` mỗi phút giảm.
+- 10:45 — main nhận thêm ff7d0359 `[CFGW 05/09]` (KCauHinhWeb + KCore) sau lúc merge → merge lại (1c72eb1d), build lại: **CoreServer.dll = e4d6156e** (10:45) = `.moi` hiện tại; a2053172 bỏ. Git: mail-0309 == main (2e6d93d8 + ff7d0359).
