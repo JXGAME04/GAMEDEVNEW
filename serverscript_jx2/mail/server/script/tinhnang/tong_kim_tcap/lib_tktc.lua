@@ -829,7 +829,7 @@ function updatetopten(nTotalAccum,nDesPlayerData)
 	for i=11,20 do
 		if(nDesPlayerData == GetMissionV(i)) then
 			nData = i
-			i = 21 --break
+			break	--[LUA54] truoc la gan bien for de thoat vong: Lua 4 cho, 5.4 gan khong tac dung
 		end
 	end
 	--check diem tich luy co kha nang vao bang ko? va vi tri thu may?
@@ -837,11 +837,11 @@ function updatetopten(nTotalAccum,nDesPlayerData)
 		--Msg2Player(format("%d",GetMissionV(i+10)))
 		if(nTotalAccum > GetMissionV(i)) then
 			nRankAcc = i
-			i = 11 --break
+			break	--[LUA54] truoc la gan bien for de thoat vong: Lua 4 cho, 5.4 gan khong tac dung
 		end
 		if(nData == i+10 and nRankAcc < 0) then
 			nRankAcc = i
-			i = 11 --break
+			break	--[LUA54] truoc la gan bien for de thoat vong: Lua 4 cho, 5.4 gan khong tac dung
 		end
 	end
 	--Msg2Player(format("updatetopten %d %d %d", nTotalAccum,nDesPlayerData,nRankAcc))
