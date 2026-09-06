@@ -20,7 +20,7 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 
 | Bước | Lệnh | Ghi chú |
 |---|---|---|
-| Máy chủ | tắt GameServer → `bin\server\ChayGameServer.bat` | `CoreServer.dll.moi` mới đã đặt (mục 2.1). **Bản `.moi` cũ 14:23 của phiên khác KHÔNG có engine xe tiêu** — tôi đổi tên thành `CoreServer.dll.moi.relayht_1f3988de_1423` (không xoá). |
+| Máy chủ | tắt GameServer → `bin\server\ChayGameServer.bat` | `CoreServer.dll.moi` mới đã đặt (mục 2.1), build từ `origin/main` 75b1091d (đã có BOTNOI + cache Include LUA54 + vận tiêu + relay) + nhánh này. Bản `.moi` 15:21 của phiên LUA54b (có engine xe tiêu nhưng thiếu 3 lệnh `vt_*` của F11) được **đổi tên** `CoreServer.dll.moi.lua54b_4fcb02f9_1521` (không xoá). `Lua54Dll.dll.moi` (server + client) của phiên LUA54b **giữ nguyên** — bản tôi build link đúng thư viện đó (`Lib\lua54` cùng commit). Bản 14:23 của phiên relay (`.moi.relay_f807aa12_1423`) **không có engine xe tiêu**, đã được phiên khác đổi tên trước. |
 | Client | thoát game → `bin\client\ChoiGame.bat` | `Game.exe.moi` + `CoreClient.dll.moi` đã đặt. `Ui\uitasklist.ini` đã thêm 3 mục (tệp rời, không cần pak). |
 | Sau khi lên | Lệnh bài admin → "Bộ test hoạt động" → "Vận tiêu Long Môn Tiêu Cục" | mục 5 |
 
@@ -28,9 +28,11 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 
 | Tệp | Đặt ở | SHA-256 (8 đầu) | Có đủ |
 |---|---|---|---|
-| `CoreServer.dll.moi` | `bin\server` | *(xem mục 8, điền sau khi build)* | CreateBiaoChe/KBiaoChe (xe tiêu), AUC_MsgTong, CL_Cong, UpdateBattleInfo, st3_goboss, Lua54Dll, RelayHT, **vt_goto_canhan** |
-| `Game.exe.moi` | `bin\client` | *(mục 8)* | NewTask/F11, KUiTongKimInfo, Chiến Lệnh, đấu giá, **UiTaskGuideVanTieu** |
-| `CoreClient.dll.moi` | `bin\client` | *(mục 8)* | TG_VanTieu (dẫn đường) |
+| `CoreServer.dll.moi` | `bin\server` | **a9db7810** (18.450.432 B, 15:34) | CreateBiaoChe/BC_SetEnable (xe tiêu), AUC_MsgTong, CL_Cong, UpdateBattleInfo, st3_goboss, Lua54Dll, [RELAYHT], LUA_CALL (LUA54b), BOTNOI, **vt_goto_canhan** |
+| `Game.exe.moi` | `bin\client` | **3c4daa2c** (1.480.704 B, 15:34) | NewTask/F11, tg_quit/st3_quit, **vt_quit_canhan/vt_quit_bang + bài hướng dẫn vận tiêu**; `re_pe_crt` UCRT-RELEASE đúng |
+| `CoreClient.dll.moi` | `bin\client` | **8afed3eb** (2.568.192 B, 15:34) | TG_VanTieu (dẫn đường), st3_goboss |
+
+Cặp thư viện: `Lib\lua54\x64\Lua54Dll.dll` 2fe07c19 = `bin\server\Lua54Dll.dll.moi`; `Lib\lua54\Win32\Lua54Dll.dll` 2e8a2677 = `bin\client\Lua54Dll.dll.moi` (của phiên LUA54b, giữ nguyên để swap cùng lúc).
 
 Kiểm nhanh sau restart: `Logs\ScriptError.log` không có dòng mới về `lmbiaoche`, `longmenbiaoju`, `config\129`, `lenhbaiadmin`; vào game bấm **F11** thấy nhóm "Long Môn Tiêu Cục".
 
@@ -38,8 +40,8 @@ Kiểm nhanh sau restart: `Logs\ScriptError.log` không có dòng mới về `lm
 
 ## 3. PHÁT HIỆN QUAN TRỌNG (đọc trước khi test)
 
-### 3.1 Bản `.moi` đang chờ swap KHÔNG có engine xe tiêu
-`grep -a -c CreateBiaoChe` trên `CoreServer.dll` đang chạy và trên `CoreServer.dll.moi` 14:23 (phiên relay đặt) đều = **0**. Bản 8af0c392 của đợt port đã bị đè. Tôi build lại từ `origin/main` (đã gộp đủ vận tiêu + relay + TKINFO) và thay `.moi`.
+### 3.1 Khe `.moi` máy chủ bị nhiều phiên thay nhau trong chiều nay
+`grep -a -c CreateBiaoChe` trên `CoreServer.dll` đang chạy (10:23) và bản `.moi` 14:23 của phiên relay đều = **0** (bản 8af0c392 của đợt port đã bị đè). Bản 15:21 của phiên LUA54b có engine nhưng chưa có lệnh `vt_*`. Vì vậy tôi gộp `origin/main` mới nhất (75b1091d) vào nhánh rồi build lại cả ba nhị phân để bản đặt vào khe là **siêu tập** của mọi phiên (kiểm dấu hiệu: `CreateBiaoChe`, `[RELAYHT]`, `LUA_CALL`, `AUC_MsgTong`, `CL_Cong`, `UpdateBattleInfo`, `st3_goboss`, `vt_goto_canhan` — kịch bản `deploy.py` trong scratchpad, ghi ở mục 8).
 
 ### 3.2 Nhánh cá nhân của đợt port không chạy được trên JX1 → nối sang mã gốc Linux không trạng thái
 - JX1: **mỗi tệp `.lua` là một `lua_State` riêng** (`Engine\Src\KLuaScript.cpp:23 lua_open`). Lớp `LongMenBiaoJu.*` giữ sổ đăng ký xe trong state của `tasknpc.lua`, còn `OnTimer`/`OnDeath` của xe chạy trong state của `biaoche.lua` → không thấy nhau: xe tạo bằng `AddNpcEx` đứng yên, không hết hạn, chết không rơi Tiêu Kỳ.
