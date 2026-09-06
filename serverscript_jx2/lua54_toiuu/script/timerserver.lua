@@ -76,8 +76,9 @@ end
 
 -- "\\script\\lib\\x.lua" -> "script/lib/x.lua"; thieu thi thu scriptjx2 nhu sJX2RemapScriptPath
 function TS_DuongDan(szInc)
-	local s = gsub(szInc, "\\", "/")
-	if (strsub(s, 1, 1) == "/") then s = strsub(s, 2) end
+	-- trong TEP nguon, Include("\\script\\lib\\x.lua") la HAI ky tu gach cheo -> gop moi day \ hoac / thanh mot /
+	local s = gsub(szInc, "[\\/]+", "/")
+	s = gsub(s, "^/+", "")
 	local f = openfile(s, "rb")
 	if (f ~= nil) then closefile(f) return s end
 	s = gsub(s, "^script/lib/", "scriptjx2/lib/")
