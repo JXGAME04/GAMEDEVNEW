@@ -48,3 +48,43 @@ Nguồn tham chiếu đã quét: mọi chuỗi `.lua` trong script; 73 tệp `se
 5. **Mức tham vọng**: R0 + R1 + R2 + R3-1 (an toàn, ~1 buổi, lợi RAM/boot ngay) hay tới R3-3/R3-4 (đổi bố cục, vài ngày)?
 
 Trả lời xong tôi làm R0 → R1 → R2 (một build CoreServer) → R3-1, mỗi bước kiểm bằng `boot_gia.py` + `kiem_54.py` và có `.moi`/bat lùi.
+
+## 5. ĐÃ LÀM 06/09 15:30–16:05 (chủ chốt: tên Việt không dấu; xoá tệp Hán không dùng sau khi kiểm kỹ; bỏ đường lùi Lua 4; làm hết trong buổi)
+
+| Bước | Trạng thái | Chi tiết |
+|---|---|---|
+| R0 git | **xong** | `serverscript_live/` = ảnh chụp nguyên trạng trước sắp xếp (commit 84675cc3, 3.396 tệp). Sau khi chạy bat bước cuối, gương được robocopy /MIR lại → tôi commit "sau sắp xếp". |
+| R1 dọn | **xong** | 150 mục vào `bin\_luutru\0609\` (nhật ký `NHATKY_LUUTRU_0609.txt`): `_backup_*` ×5, `_moi_backup`, `_x86…`, `_dara`, `_gobo…`, `script_go_bo_3hd`, 124 tệp `settings/Maps *.truoc*/*.goc`; **đường lùi Lua 4 đã bỏ**: `script.lua4`, `scriptjx2.lua4`, `LuiLua4.bat`, `lualibdll.*`, `ChayGameServer.bat.truoc/.v2` (server) + `script.lua4`, `lualibdll.dll` (client) → `_luutru\0609\server\lua4`, `client\lua4`. `DumpInfo` 12 GB để nguyên. |
+| R3-1 Hán chết | **xong** | Kiểm kỹ 5 nguồn (Include/dofile chuỗi, settings 73 tệp, C++ 104 tệp, trap ID băm 5.008 `Region_S.dat`, MapList): 1.507 tệp Hán → **136 còn tham chiếu GIỮ** (71 `skill/partner`, 26 `skill/npc`, 5 saolin, 2 emei, 2 chuiyang, 2 baiming = kỹ năng tên Hán trong `skills.txt`; 10 trap `中原北区`; 2 trap khác; 1 `global/…`), **1.371 tệp không ai gọi → `bin\_luutru\0609\disan_jx\`** (xoá khỏi cây chạy, còn trên đĩa + trong git R0; xoá hẳn khi chủ muốn). Cây còn **1.852 tệp** (từ 3.220). |
+| R3-2 jx2 | **xong** | `scriptjx2/tong` (67 tệp bản cũ, 0 tham chiếu) → `_luutru\0609\server\scriptjx2_tong_cu`; 10 tệp `scriptjx2/lib` giống hệt `script/lib` → `_luutru\0609\server\scriptjx2_lib_trung` (remap chỉ dùng jx2 khi script/lib thiếu; 0 tham chiếu tường minh). 5 tệp KHÁC nội dung giữ lại (awardtemplet, composeclass, getrectangle_point, objbuffer_head, progressbar). |
+| R2 bí danh | **xong, chờ restart** | `Lua54Dll` + `KSortScript`: tệp `script\_duongdan_cu.txt` (dòng `--@ cũ=mới`, cả tệp là chú thích Lua hợp lệ) → Include/dofile tra bí danh khi tệp gốc không có; ID băm cũ đăng ký trỏ cùng script (trap, settings, `g_GetScript` tên cũ); `g_IsJx2Script` xét cả tên cũ (cache theo state); engine bỏ qua tên bắt đầu `_`. Selftest + `test_alias.py` OK (bắt được 1 lỗi khoảng trắng đầu dòng). Commit origin/main **47569764**. `.moi` đã đặt: `CoreServer.dll.moi` **6ba06754**, `Lua54Dll.dll.moi` 7689d830 (server), `Lua54Dll.dll.moi` b9467bf6 (client). |
+| R3-3 bố cục | **sẵn sàng, CHỜ CHỦ TẮT SERVER** | Kế hoạch 1.419 tệp (`tools\sapxep\r33_kehoach.txt`), 0 va chạm. Vì 30 tệp nằm trong chuỗi nạp nóng của `timerserver.lua` và `activitysys/functionlib` Include lúc chạy, **chỉ đổi chỗ khi server đã tắt**. |
+
+### Bố cục mới (tiếng Việt không dấu, giữ tên thư mục con)
+
+| Mới | Từ | Số tệp |
+|---|---|---:|
+| `nhanvat/kynang`, `nhanvat/nguoichoi`, `nhanvat/thucung`, `nhanvat/donghanh` | skill, player, petsys, partner | 367 + 23 + 28 + 5 |
+| `vatpham/…` (lên thẳng) | item (trừ 11 tệp admin) | 245 |
+| `giaodich/thu`, `giaodich/daugia` | mail, auction_house | 4 + 2 |
+| `tinhnang/phuban`, `sukien`, `chientruong`, `liendau`, `songbac`, `vng_event`, `vng_feature`, `activitysys`, `nationalwar`, `huoyuedu`, `baucua`, `bonusvlmc`, `congthanh`, `chienlenh`, `trapcu/…` | missions, event, battles, leaguematch, songbac, vng_*, activitysys, nationalwar, huoyuedu, baucua, bonusvlmc, mission, chienlenh, 3 thư mục Hán còn trap | 309 + 93 + 9 + 9 + 5 + 8 + 4 + 35 + 1 + 1 + 1 + 1 + 2 + 4 + 12 |
+| `nhiemvu/…` (lên thẳng), `nhiemvu/hoithoai`, `nhiemvu/tanthu` | task, dailogsys, tagnewplayer | 201 + 3 + 1 |
+| `npc/…` (lên thẳng), `npc/thanhthi`, `npc/khac` | npcthon, npcthanhthi, npckhac | 18 + 3 + 1 |
+| `dulieu/` | codenew.lua, giftcode_new.lua, giftcode_fancung.lua | 3 |
+| `kiemthu/` | test/, 11 `item/*_admin.lua`, `partner_test_bdh`, `task_debug`, `copy of 30thang4` | 24 |
+| **Giữ ở gốc (hệ thống, C++ nạp trực tiếp)** | lib, header, cauhinh, cauhinh_web, class, script_protocol, startgame, global, misc, maps, log_game, vng_lib, npclevelscript, timertask, timerserver*.lua, protocol.lua, startgame.lua, gmscript.lua, gb_taskfuncs.lua | — |
+
+### Cách chạy bước cuối (chủ làm, ~1 phút)
+
+1. Tắt GameServer.
+2. Chạy `bin\server\SAPXEP_0609.bat`: tự thay `CoreServer.dll`/`Lua54Dll.dll` bằng `.moi` → đổi chỗ 1.419 tệp + sinh `script\_duongdan_cu.txt` → `kiem_duongdan_cu.py sua` (tệp phiên khác vừa ghi ở đường cũ được dời sang mới) → mô phỏng boot cây mới và so tập lỗi với trước (`so_boot.py`; phải "chi co SAU: 0") → robocopy gương git → mở GameServer.
+3. Trên console phải thấy `[script] LoadAllScript: … tep, … ms` và **`[script] Bi danh duong dan: 1419 dong, dang ky ID cu 1419, ten moi chua nap 0, ten cu con ton tai 0`**. Kiểm nhanh: trap chuyển map hoạt động, NPC vật phẩm/kỹ năng chạy, `ScriptError.log` (nằm trong từng thư mục script) không có lỗi mới.
+4. Client: `ChoiGame.bat` nhận `Lua54Dll.dll.moi` (cây script client không đổi).
+
+**Lùi:** tắt server → `python tools\sapxep\r33_lui.py` (dời tệp về đường dẫn cũ theo bí danh) → mở lại. `.moi.truoc` của CoreServer/Lua54Dll vẫn giữ.
+
+**Lưu ý cho các phiên khác:** từ giờ ghi tệp theo đường dẫn MỚI; ghi nhầm vào đường cũ vẫn chạy được (bí danh) nhưng tạo hai bản → chạy `kiem_duongdan_cu.py sua` trước mỗi lần restart. Muốn thêm bí danh tay: thêm dòng `--@ script\cu.lua=script\moi.lua` vào `script\_duongdan_cu.txt`.
+
+### Hai lỗi đỏ lúc boot 15:39/15:44 (không do cache) — đã chặn
+- `event\longmenbiaoju\tasknpc.lua:64`: `AutoFunctions` chỉ có trong state `global/autoexec_head.lua` (JX1 mỗi tệp một state) → chèn `if AutoFunctions ~= nil then … end`.
+- `global\achievementsys\type\longmenbiaoju.lua:7`: Include `achievementsys\head.lua` không tồn tại ở JX1 (không có hệ thành tựu) → `if AchievementDetailBase == nil then return end`. Cả hai là tệp vận tiêu 13:51 của phiên khác; sửa chỉ chặn lỗi, không đổi logic.
