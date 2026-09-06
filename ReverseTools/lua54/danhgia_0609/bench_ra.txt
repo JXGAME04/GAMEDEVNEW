@@ -1,0 +1,21 @@
+floor(x) vs math.floor(x)        n=2000000  cu=    36.0 ms  moi=    40.0 ms  cu/moi= 0.90  moi2=    13.0 ms ((i/3)//1)
+getn(t) vs #t, 10 pt, khong t.n  n=200000   cu=    25.0 ms  moi=     1.0 ms  cu/moi=25.00
+getn(t) vs #t, 100 pt, khong t.n n=20000    cu=    17.0 ms  moi=     0.0 ms  cu/moi=  inf
+getn(t) vs #t, 1000 pt, khong t.n n=2000     cu=    16.0 ms  moi=     0.0 ms  cu/moi=  inf
+getn(t) co t.n vs #t             n=1000000  cu=    28.0 ms  moi=     6.0 ms  cu/moi= 4.67
+tinsert(t,v) vs table.insert     n=200000   cu=    11.0 ms  moi=     8.0 ms  cu/moi= 1.38  moi2=     4.0 ms (t[#t+1]=v)
+format %d-%s (so nguyen)         n=300000   cu=    47.0 ms  moi=    52.0 ms  cu/moi= 0.90
+format %d (so thuc, ep nguyen)   n=300000   cu=    31.0 ms  moi=    39.0 ms  cu/moi= 0.79
+random(1,100) vs math.random     n=1000000  cu=    50.0 ms  moi=    27.0 ms  cu/moi= 1.85
+mod(a,b) vs math.fmod vs %       n=1000000  cu=    33.0 ms  moi=    25.0 ms  cu/moi= 1.32  moi2=     5.0 ms (i % 7)
+strfind vs string.find           n=500000   cu=    18.0 ms  moi=    20.0 ms  cu/moi= 0.90
+strsub vs string.sub             n=500000   cu=    17.0 ms  moi=    18.0 ms  cu/moi= 0.94
+strlen vs #s                     n=500000   cu=     7.0 ms  moi=     2.0 ms  cu/moi= 3.50
+date vs os.date                  n=100000   cu=    35.0 ms  moi=    35.0 ms  cu/moi= 1.00
+call(f,{a,b},'x') vs pcall       n=200000   cu=   131.0 ms  moi=     6.0 ms  cu/moi=21.83
+dostring vs load()()             n=50000    cu=    46.0 ms  moi=    31.0 ms  cu/moi= 1.48
+sort vs table.sort (1000 pt)     n=200      cu=    39.0 ms  moi=    31.0 ms  cu/moi= 1.26
+foreachi vs ipairs (1000 pt)     n=2000     cu=   110.0 ms  moi=    25.0 ms  cu/moi= 4.40
+foreach vs pairs (1000 pt)       n=2000     cu=    57.0 ms  moi=    27.0 ms  cu/moi= 2.11
+i..'' vs tostring(i)             n=500000   cu=    40.0 ms  moi=    60.0 ms  cu/moi= 0.67
+goi ham toan cuc vs local        n=3000000  cu=    52.0 ms  moi=    39.0 ms  cu/moi= 1.33

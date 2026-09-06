@@ -156,3 +156,102 @@ Ket qua: RunTime moi phut 36-43 -> 9-12 ms; TICK max 42-51 -> 20-25 ms; het rot 
 Bo do: `TS_tProf` 13 khoi -> `GhiLog("PROF", ...)` trong `logs/hethong.log` khi >= 8 ms (`TS_PROF_NGUONG`); `HD3_Tick`/`HD3_DonNpcCu` co dong rieng.
 Tep: `serverscript_jx2/lua54_toiuu/script/` (timerserver.lua, tinhnang/3hoatdong/hd3_driver.lua, activitysys/functionlib.lua) = ban dang chay.
 Quy tac sua nong: python latin-1 giu CRLF + dem byte cao, `kiem_54.py`, chay thu bang Lua54Dll + engine gia, cp de; RunTime cu tu dofile ban moi phut ke.
+
+## 12. Có nên viết lại TOÀN BỘ script sang Lua 5.4 thuần không? + phân tích hiệu năng (06/09/2026)
+
+Chủ hỏi (06/09): *"có nên đổi từ Lua4 qua Lua5.4 hết toàn bộ script không? — và phân tích hiệu năng khi nâng toàn bộ script lên Lua5.4"*.
+
+### 12.1 Hiện trạng: phần "nâng lên 5.4" đã xong 100 %, phần còn lại là "viết lại kiểu 5.4"
+
+| Lớp | Trạng thái |
+|---|---|
+| Lõi thông dịch | Lua 5.4.7 (`Lua54Dll.dll`) ở máy chủ, client và relay từ 05/09 |
+| Cú pháp script | 3 cây đã chuyển hết: máy chủ `script` 3.031 + `scriptjx2` 189 + client 450 tệp, biên dịch 5.4 sạch |
+| Tên hàm thư viện kiểu Lua 4 | **12.990 lời gọi / 1.243 tệp** (máy chủ 8.177/897, scriptjx2 1.005/86, client 3.808/260) vẫn gọi `getn, format, floor, random, tinsert, strfind, date, call, dostring…` qua lớp tương thích |
+| Lớp tương thích | 6 hàm nóng bằng C trong DLL (`getn, tinsert, tremove, format, random, randomseed`); ~30 tên chỉ là **alias** trỏ đúng hàm C của 5.4 (`floor = math.floor`, `strfind = string.find`, `date = os.date`…); còn lại là wrapper Lua (`mod, call, dostring, dofile, sort, foreach, tag*, I/O cũ`) |
+
+Vậy câu hỏi thực chất là: **có nên bỏ lớp tương thích, đổi 12.990 chỗ sang `math.floor / string.format / #t / table.insert / pcall…` hay không.**
+
+### 12.2 Khuyến nghị: KHÔNG viết lại hàng loạt — giữ lớp tương thích làm API chuẩn của game
+
+1. **Hiệu năng gần như không đổi** (số đo mục 12.3–12.4): alias có tốc độ bằng hàm gốc, hàm nóng đã là C; Lua chỉ chiếm phần rất nhỏ của tick.
+2. **Rủi ro nằm đúng ở những hàm không phải alias**, và là lỗi im lặng lúc chạy (như vụ gán biến `for` 05/09):
+   - `format("%d", x)` với `x` số thực: Lua 4 ép nguyên, **5.4 `string.format` ném lỗi** "number has no integer representation" → **957 chỗ** `%d/%i` trong cây máy chủ phải bọc `math.floor` từng chỗ.
+   - `random(a, b)` với đối số là biến (có thể lẻ): **278 chỗ**; `math.random` 5.4 cũng ném lỗi với số thực.
+   - `getn`/`tinsert` với quy ước `t.n` và bảng có lỗ (`{1,nil,3}` = 3 ở Lua 4, `#t` không xác định); 12 chỗ đọc `.n` trực tiếp.
+   - `mod(a,b)` = C `fmod` (dấu theo số bị chia) ≠ `%` 5.4 (dấu theo số chia) khi âm; `mod(x,0)` trả nan chứ không lỗi.
+   - `call(f, {...}, "x")` / `dostring` có luồng bắt lỗi riêng (`_ERRORMESSAGE`), 76 + 20 chỗ.
+3. **Không có bộ kiểm thử tự động** cho 315.000 dòng logic game → mọi khác biệt chỉ lộ khi người chơi chạm vào tính năng.
+4. Khối lượng ~13.000 chỗ / 1.243 tệp + 272 chỗ `arg` + 152 dòng I/O cũ + 17 tag method — đổi máy móc được ~7.000 chỗ alias (vô nghĩa về hiệu năng), phần còn lại phải rà tay.
+5. Đây là cách các engine game lớn vẫn làm: lớp API ổn định cho script cũ, script mới viết theo chuẩn mới.
+
+**Nên làm thay vào đó (rẻ, không đụng script):**
+- Quy tắc từ giờ: script **mới** viết 5.4 thuần (`math.*`, `string.*`, `#`, `table.insert`, `pcall`); tệp cũ chỉ đổi khi đã phải sửa nó.
+- Đưa các wrapper Lua còn lại trong shim xuống C nếu thấy trên đường nóng (`mod`, `call`, `foreach`) — hiện không cần vì chưa có chỗ nào nóng.
+- Sửa 10 chỗ `while … getn(t)` (O(n²), Lua 4 cũng vậy) thành `#t` khi tiện.
+- **Lỗi có sẵn trong shim (chưa nổ vì 0 script gọi):** `lua4compat.lua:175` `_G.collectgarbage` và `gcinfo` gọi lại chính nó → tràn ngăn xếp. Sửa: giữ bản gốc `local cg = collectgarbage` trước khi gán. Cần rebuild Lua54Dll khi có dịp.
+
+### 12.3 Đo trên máy chủ thật (`jx_perf_server.log`, 3.467 khối, cắt 16 lần chạy; chỉ lấy khối online ≥ 900)
+
+| Lần chạy | Lõi | TICK tb / p95 / max (ms) | SCRIPT_TIME tb / max (ms) | SCRIPT chiếm % tick | SW_ACTIVATE tb |
+|---|---|---|---|---|---|
+| 04/09 10:00–13:13 | Lua 4 | 6,88 / 10,4 / 801 | 0,063 / 794 | 0,12 % | 4,31 |
+| 04/09 13:17–15:00 | Lua 4 | 8,94 / 17,2 / 332 | 0,075 / 299 | 0,14 % | 5,58 |
+| 04/09 17:38–19:28 | Lua 4 | 7,32 / 10,5 / 1.246 | 0,067 / 443 | 0,13 % | 4,64 |
+| 05/09 00:00–12:20 | Lua 4 | 8,90 / 16,1 / 1.619 | 0,057 / 566 | 0,11 % | 6,31 |
+| 05/09 13:02–23:59 | **5.4** | 6,61 / 8,8 / 684 | 0,032 / 677 | 0,09 % | 4,31 |
+| 06/09 00:00–12:18 | **5.4** | 6,61 / 9,2 / 800 | 0,015 / 794 | 0,01 % | 4,30 |
+| 06/09 13:32–14:37 | **5.4** + tối ưu mục 11 + C++ quét NPC theo vùng | 7,53 / 12,6 / 139 | 0,020 / **57** | 0,01 % | 4,87 |
+
+- `SCRIPT_TIME` **chỉ đo `RunTime` của `timerserver.lua`** (C++ gọi 1 lần/phút, `KPerfTick.h:34`). Phần Lua chạy trong `SW_ACTIVATE` (hội thoại NPC, vật phẩm, kỹ năng, nhiệm vụ, hoạt động) **chưa có đồng hồ riêng** → không thể nói chính xác Lua chiếm bao nhiêu phần trăm tick; chỉ biết tick trung bình 6,6–7,5 ms trong đó `SW_ACTIVATE` (C++ + Lua sự kiện) 4,3–4,9 ms. Muốn biết chắc: thêm một `PERF_SCOPE` trong `KLuaScript::CallFunction` (5 dòng, chi phí một lần đọc đồng hồ).
+- Sau nâng cấp, tick trung bình và p95 **không tăng** (6,9–8,9 → 6,6–7,5 ms) dù thay lõi; đỉnh `SCRIPT_TIME` từng phút hôm nay median 18 ms, max 57 ms (trước 300–880 ms).
+
+### 12.4 Micro-bench: tên hàm cũ (lớp tương thích) vs 5.4 thuần — chạy trên đúng `Lua54Dll.dll` x64 của máy chủ, i7-13700K, best-of-3
+
+| Phép đo | n | cũ (ms) | mới (ms) | cũ/mới | Ghi chú |
+|---|---:|---:|---:|---:|---|
+| `floor(x)` vs `math.floor(x)` | 2.000.000 | 36 | 40 | 0,90 | alias = cùng hàm C, tra 1 biến toàn cục nhanh hơn tra `math.floor`; `(x)//1` 13 ms |
+| `strfind` / `strsub` / `date` vs `string.find` / `string.sub` / `os.date` | 500k / 500k / 100k | 18 / 17 / 35 | 20 / 18 / 35 | 0,9–1,0 | alias |
+| `format("%d-%s")` vs `string.format` | 300.000 | 47 | 52 | 0,90 | bản C trong DLL; với `%d` số thực: 31 vs 39 ms (5.4 phải `math.floor` trước) |
+| `tinsert(t,v)` vs `table.insert` | 200.000 | 11 | 8 | 1,38 | ghi thêm `t.n`; `t[#t+1]=v` 4 ms |
+| `random(1,100)` vs `math.random` | 1.000.000 | 50 | 27 | 1,85 | +23 ns mỗi lần |
+| `mod(a,b)` vs `math.fmod` vs `a % b` | 1.000.000 | 33 | 25 | 1,32 | wrapper Lua; `%` 5 ms |
+| `getn(t)` có `t.n` vs `#t` | 1.000.000 | 28 | 6 | 4,7 | +22 ns mỗi lần |
+| `getn(t)` không `t.n`, 10 / 100 / 1000 phần tử | 200k / 20k / 2k | 25 / 17 / 16 | 1 / <1 / <1 | ≥ 25 | quét O(n) đúng như `lua_getn` Lua 4 — chỉ đau ở `while getn` (10 chỗ) |
+| `call(f,{a,b},"x")` vs `pcall` | 200.000 | 131 | 6 | 22 | wrapper Lua + tạo bảng; tuyệt đối 0,65 µs/lần, 76 chỗ |
+| `dostring` vs `load()()` | 50.000 | 46 | 31 | 1,48 | 20 chỗ |
+| `sort` vs `table.sort` (1.000 pt) | 200 | 39 | 31 | 1,26 | 9 chỗ |
+| `foreachi` / `foreach` vs `ipairs` / `pairs` | 2.000 × 1.000 | 110 / 57 | 25 / 27 | 4,4 / 2,1 | 0 chỗ dùng trong 3 cây |
+| gọi hàm toàn cục vs `local` | 3.000.000 | 52 | 39 | 1,33 | kiểu viết, không liên quan lớp tương thích |
+
+Đọc số: nhóm chiếm 90 % lời gọi (floor 6.169, format 1.731, getn 2.006 chủ yếu `for i=1,getn(t)`, strfind/strsub/date) **không nhanh hơn khi viết lại**; nhóm chậm hơn thật (`random` +23 ns, `getn` +22 ns, `tinsert` +15 ns, `mod` +8 ns, `call` +0,6 µs) có tổng chi phí cận trên: kể cả 100.000 lời gọi/giây × 50 ns = **5 ms mỗi giây = 0,5 % một lõi**, tức dưới 0,03 ms trên tick 6,6 ms. Viết lại toàn bộ để đổi lấy tối đa ~0,4 % tick là không đáng.
+
+### 12.5 Chỗ hiệu năng THẬT nằm ở kiến trúc nạp script, không ở phương ngữ — số đo cây live (`do_include.py`)
+
+| Chỉ số | Số đo |
+|---|---|
+| Cây máy chủ | 3.220 tệp (`script` + `scriptjx2`), **10,2 MB** nguồn; 2.839 dòng `Include` trong 1.230 tệp |
+| Mô hình hiện tại | mỗi tệp một `lua_State`; `Include` biên dịch lại tệp vào state đang gọi, **không khử trùng** (`LuaIncludeFile`, ScriptFuns.cpp:2010) |
+| Byte phải biên dịch lúc boot | **338,6 MB = 33 lần cây nguồn** (42.055 lượt biên dịch tệp) |
+| Nếu khử trùng Include trong từng state | 154,3 MB = 15 lần |
+| Nếu một state chung + cache bytecode | 10,2 MB = 1 lần |
+| State nặng nhất | `item/lenhbaiadmin.lua` 7,0 MB / 766 lượt biên dịch (duy nhất chỉ 1,36 MB / 117 tệp); `challengeoftime/npc_death.lua` 6,4 MB / 783 lượt |
+| Tệp bị chép nhiều nhất | `task/tollgate/killbosshead.lua` 376 KB × 53 state = 19,9 MB; `global/itemset.lua` 67 KB × 286 state = 19,2 MB; `lib/lib_task.lua` × 495 state; `activitysys/playerfunlib.lua` × 285 |
+| Tốc độ biên dịch 5.4 | 62 MB/s (10,2 MB = 164–178 ms) → boot ≈ **5,4 s biên dịch + 0,8 s tạo 3.220 state** (chưa kể chạy thân chunk) |
+| Nạp lại từ bytecode (`string.dump` → `load`) | toàn cây 9,1 MB bytecode nạp trong **13 ms** = nhanh hơn biên dịch **14 lần** |
+| Bộ nhớ proto (bytecode + hằng + debug) | 14,3 MB cho một bản cây (1,4 × nguồn); bản thứ hai trong cùng state +12,3 MB |
+| Bộ nhớ mỗi state cơ bản | 68 KB (libs 5.4 + shim) + 59 KB (742 hàm C đăng ký) = **127 KB** → 3.220 state = **399 MB** |
+| Ước tính heap Lua lúc boot | proto lặp ≈ 338,6 MB × 1,2–1,4 ≈ 410–470 MB + 399 MB base ≈ **0,8–0,9 GB** (≈ 11 % working set GameServer 7,3 GB; chưa tính bảng dữ liệu do chunk tạo) — so với ≈ 15 MB nếu một state |
+| Include trỏ tới tệp không tồn tại | 56 tệp / 105 dòng (vd `npcthon/npcmonphaifactionhelper.lua` ×13, `missions/clearskill/testhole.lua` ×8) — cần rà, một phần có thể nằm trong chú thích khối |
+
+Lộ trình giai đoạn 2 theo lợi ích / rủi ro:
+
+| Bước | Việc (chỉ C++/DLL, không đụng script) | Được gì | Rủi ro |
+|---|---|---|---|
+| 2a | Khử trùng `Include` trong từng state (bảng đã-nạp trong registry, `LuaIncludeFile`) | biên dịch boot 338 → 154 MB, RAM proto −55 %, boot nhanh ~2,5 s | thấp: chỉ đổi hành vi khi một tệp bị Include 2 lần trong cùng state (định nghĩa lại hàm giống hệt) |
+| 2b | Cache bytecode dùng chung: biên dịch mỗi tệp một lần, `lua_load` nhị phân vào từng state | biên dịch boot 5,4 s → ~0,4 s; nạp nóng nhanh | thấp; RAM không đổi (proto vẫn theo state) |
+| 2c | Một `lua_State` chung, mỗi tệp một `_ENV` riêng (globals cách ly như hiện nay), thư viện dùng chung | RAM Lua 0,8 GB → ~20 MB; GC một chỗ; `Include` = `require` | trung bình–cao: sửa `KLuaScript/KScriptList/KSortScript`, 742 hàm gắn dùng `L` chung, phải giữ cách ly biến toàn cục giữa tệp; test dài |
+
+Kết luận hiệu năng: **lõi 5.4 đã cho phần lợi thấy được (tick không tăng, đỉnh script từ 300–880 ms xuống 57 ms sau tối ưu mục 11); viết lại 13.000 lời gọi sang tên 5.4 thuần không đem lại gì đo được và mở ra hàng trăm điểm lỗi im lặng; tiền hiệu năng tiếp theo nằm ở 2a → 2b (rẻ) và ở C++ (`SW_ACTIVATE` 4,3 của 6,6 ms tick).**
+
+Công cụ đo đợt này (`ReverseTools\lua54\danhgia_0609\`): `bench_compat.lua` + `bench_run.py` (micro-bench qua Lua54Dll), `do_include.py` (đồ thị Include, byte biên dịch, state cơ bản), `mem_proto.py` (heap proto qua GC step vì `collectgarbage` của shim lỗi), `perf_runs.py` (cắt perf log theo lần chạy).

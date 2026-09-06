@@ -1,0 +1,48 @@
+CAY SCRIPT LIVE (script + scriptjx2): 3220 tep, 10.20 MB nguon
+Dong Include (ngoai chu thich): 2839; tep co Include: 1230; Include khong tim thay tep: 56 (105 dong)
+Moi tep = 1 lua_State rieng, Include = bien dich lai tep vao state do (khong dedupe).
+  Tong byte BIEN DICH luc boot (Include lap ke ca trung trong cung state): 338.56 MB = 33.2 x cay nguon; so lan bien dich tep: 42055
+  Neu dedupe trong tung state (moi tep 1 lan/state):                  154.25 MB = 15.1 x
+  Neu MOT state chung + cache bytecode (giai doan 2):                 10.20 MB = 1.0 x
+
+Top 12 state nang nhat (byte bien dich ke ca Include lap | so tep | duy nhat):
+      6996 KB   766 tep  (duy nhat     1358 KB / 117 tep)  script/item/lenhbaiadmin.lua
+      6378 KB   783 tep  (duy nhat      617 KB /  92 tep)  script/missions/challengeoftime/npc_death.lua
+      5493 KB   517 tep  (duy nhat      777 KB /  57 tep)  script/task/tollgate/messenger/trap/trap_qianbaoku.lua
+      5178 KB   475 tep  (duy nhat      763 KB /  55 tep)  script/task/tollgate/messenger/trap/trap_fengzhiqi.lua
+      5000 KB   450 tep  (duy nhat      763 KB /  55 tep)  script/task/tollgate/messenger/trap/trap_shanshenmiao.lua
+      4700 KB   596 tep  (duy nhat      511 KB /  78 tep)  script/missions/challengeoftime/npc/transfer.lua
+      4259 KB   328 tep  (duy nhat     1740 KB / 130 tep)  script/startgame.lua
+      4057 KB   492 tep  (duy nhat      348 KB /  49 tep)  script/missions/yandibaozang/player_death.lua
+      3947 KB   499 tep  (duy nhat      503 KB /  74 tep)  script/missions/challengeoftime/chuangguang30.lua
+      3938 KB   483 tep  (duy nhat      347 KB /  49 tep)  script/missions/yandibaozang/mission.lua
+      3919 KB   479 tep  (duy nhat      344 KB /  48 tep)  script/missions/yandibaozang/npc_death.lua
+      3677 KB   446 tep  (duy nhat      305 KB /  56 tep)  script/item/bdh_admin.lua
+
+Top 15 tep bi chep vao nhieu state nhat (so state x kich thuoc = byte trung):
+    53 state x  375.8 KB =  19918.0 KB  script/task/tollgate/killbosshead.lua
+   286 state x   67.0 KB =  19171.2 KB  script/global/itemset.lua
+   495 state x   12.0 KB =   5956.9 KB  script/lib/lib_task.lua
+   285 state x   18.3 KB =   5216.8 KB  script/activitysys/playerfunlib.lua
+   285 state x   14.0 KB =   3992.8 KB  script/lib/composeex.lua
+   286 state x   12.5 KB =   3578.4 KB  script/misc/taskmanager.lua
+   109 state x   31.0 KB =   3383.5 KB  script/mail/mailmanager.lua
+   137 state x   24.1 KB =   3301.5 KB  script/header/cauhinh_hoatdong.lua
+   292 state x   11.2 KB =   3282.1 KB  script/activitysys/functionlib.lua
+   347 state x    8.6 KB =   2982.4 KB  script/protocol.lua
+   117 state x   23.8 KB =   2786.5 KB  script/lib/lib_map.lua
+   378 state x    7.3 KB =   2773.0 KB  scriptjx2/lib/string.lua
+   285 state x    8.5 KB =   2421.1 KB  script/activitysys/activity.lua
+   286 state x    7.8 KB =   2243.0 KB  script/script_protocol/protocol_def_gs.lua
+   298 state x    7.5 KB =   2224.8 KB  script/task/metempsychosis/task_head.lua
+
+Include khong tim thay (top 10): script/npcthon/npcmonphaifactionhelper.lua x13; script/missions/clearskill/testhole.lua x8; script/global/login_head.lua x5; script/event/springfestival08/allbrother/findnpctask.lua x5; script/maps/checkmap.lua x3; script/task/newtask/branch/zhengpai/branch_zhengpaitasknpc.lua x3; script/task/newtask/branch/zhongli/branch_zhonglitasknpc.lua x3; script/global/global_zahuodian.lua x3; script/global/itemhead.lua x3; script/missions/clearskill/clearhole.lua x2
+
+(DLL xuat lua_gc: False; lua4_getgccount: True)
+STATE CO BAN (lua4_open + openlibs + shim lua4compat): 68.0 KB, tao+huy 0.25 ms; +742 ham C dang ky: +59.0 KB, 0.57 ms
+BIEN DICH (loadfile, khong chay) toan cay 3214 tep 10.20 MB: 164 ms mot luot (62.2 MB/s); loi 0 (); tep khong ma hoa duoc ten: 6
+BO NHO PROTO (bytecode+hang+debug) khi bien dich moi tep 1 lan: 3.7 MB (= 0.36 x nguon)
+UOC LUONG LUC BOOT, 3220 state (chi phan bien dich, chua tinh du lieu bang do chunk tao ra):
+  thoi gian bien dich: 338.6 MB / 62.2 MB/s = 5.4 s (+ 3220 x 0.25 ms tao state = 0.8 s)
+  bo nho Lua: proto 228 MB (lap Include) + state co ban 3220 x 127 KB = 399 MB  => tong ~627 MB; neu mot state chung: proto 4 MB + 127 KB
+  8 tep ton bo nho proto nhat: script/startgame/npcpos.lua 1707 KB; script/giftcode_new.lua 356 KB; script/codenew.lua 290 KB; script/global/itemset.lua 125 KB; script/test/bangthanh_f.lua 117 KB; script/auction_house/auction_manager.lua 117 KB; script/task/partner/partner_head.lua 111 KB; script/task/partner/education/partner_educationpeople.lua 98 KB
