@@ -19,6 +19,7 @@
 #include "../../Engine/Src/Text.h"
 #endif
 #include <unordered_map>
+#include "LuaFuns.h"		// [CLIENTREG 06/09] GameScriptFuns / g_GetGameScriptFunNum
 
 #define	BUY_SELL_SCALE		4
 
@@ -3877,6 +3878,12 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 	//Load Lua script
 	KLuaScript Script;
 	Script.Init();
+#ifndef _SERVER
+	// [CLIENTREG 06/09] thieu dang ky ham -> Include trong script mo ta vat pham = nil,
+	// GetDesc khong chay duoc. Boc #ifndef _SERVER vi KItem::GetDesc bien dich vao CA HAI
+	// phia, ma loi chi quan sat duoc ben client - khong doi hanh vi may chu dang chay.
+	Script.RegisterFunctions(GameScriptFuns, g_GetGameScriptFunNum());
+#endif
 	if (Script.Load(m_CommonAttrib.szScript))
 	{
 		pScript = &Script;

@@ -5,11 +5,11 @@ IncludeLib("LEAGUE")
 IncludeLib("SETTING")
 
 function TRUE(value)
-	return value ~=0 and value ~=nil 
+	return (value ~= 0 and value ~= nil) and 1 or nil	--[LUA54] Lua 4 tra 1/nil, 5.4 tra true/false -> noi goi so '== 1' se sai; giu 1/nil
 end
 
 function FALSE(value)
-	return value == 0 or value==nil
+	return (value == 0 or value == nil) and 1 or nil	--[LUA54] Lua 4 tra 1/nil, 5.4 tra true/false -> noi goi so '== 1' se sai; giu 1/nil
 end
 
 function getPlayerInfo(playerIndex,baseInfo,task,tasktmp)

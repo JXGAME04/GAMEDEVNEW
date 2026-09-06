@@ -1,66 +1,107 @@
 @echo off
+setlocal EnableDelayedExpansion
 rem ============================================================
 rem  CHOI GAME - tu cap nhat build moi roi mo game
 rem  Quy uoc: ban build moi duoc dat canh voi ten <file>.moi
 rem  (Game.exe.moi / CoreClient.dll.moi / Engine.dll.moi / WAuto.dll.moi)
 rem  Chi can THOAT GAME roi chay lai file nay la an ban moi.
 rem
-rem  [LUA54 05/09] Nang Lua 4.0 -> 5.4: khi co dau hieu LUA54.moi thi doi cay script
-rem  client: script -> script.lua4, script54 (sinh lai bang tools\chuyen_lua4_54.py) -> script.
-rem  Lui lai: LuiLua4.bat.
+rem  [LUA54 05/09 v3] Nang Lua 4.0 -> 5.4:
+rem   - Khi co LUA54.moi va da chuan bi san cay script54 (co dau
+rem     script54\LUA54_DA_CHUYEN.txt) thi CHI DOI TEN: script -> script.lua4,
+rem     script54 -> script (lenh cmd thuan). Chua co thi goi python tools\doi_lua54.py client.
+rem   - Moi buoc doi ten thu lai 5 lan; hong thi TRA LAI ban cu, KHONG mo game, pause de doc loi.
 rem ============================================================
 cd /d "%~dp0"
+set LOI=0
 
 call :capnhat Game.exe
 call :capnhat CoreClient.dll
 call :capnhat Engine.dll
+call :capnhat Lua54Dll.dll
 call :capnhat Represent3.dll
 call :capnhat Represent2.dll
 call :capnhat WAuto.dll
+call :capnhat WAuto.exe
+if "%LOI%"=="1" goto :loi
 
-if exist "LUA54.moi" call :doiscript54
+if exist "LUA54.moi" call :doiscript
+if "%LOI%"=="1" goto :loi
 
 start "" "%~dp0Game.exe"
-exit /b
+exit /b 0
+
+:loi
+echo.
+echo ===== KHONG MO GAME - doc loi o tren, chup man hinh gui Claude =====
+pause
+exit /b 1
 
 :capnhat
-if exist "%~1.moi" (
+if not exist "%~1.moi" exit /b 0
+echo [Cap nhat] %~1 : co ban moi (.moi)
+if exist "%~1" (
+    if exist "%~1.truoc" del /f /q "%~1.truoc" >nul 2>&1
+    call :ren_thu "%~1" "%~1.truoc"
     if exist "%~1" (
-        del /f /q "%~1.truoc" >nul 2>&1
-        ren "%~1" "%~1.truoc" >nul 2>&1
+        echo [Cap nhat] LOI: khong doi ten duoc %~1 - game dang mo? Thoat game han roi chay lai.
+        set LOI=1
+        exit /b 1
     )
-    ren "%~1.moi" "%~1"
-    echo [Cap nhat] %~1 da len ban moi
 )
-exit /b
+call :ren_thu "%~1.moi" "%~1"
+if exist "%~1.moi" (
+    echo [Cap nhat] LOI: khong dua duoc %~1.moi vao - tra lai ban cu.
+    if exist "%~1.truoc" ren "%~1.truoc" "%~1"
+    set LOI=1
+    exit /b 1
+)
+echo [Cap nhat] %~1 da len ban moi
+exit /b 0
 
-:doiscript54
-findstr /m /i /c:"Lua54Dll.dll" "CoreClient.dll" >nul 2>&1
+:ren_thu
+set /a N=0
+:ren_lap
+ren "%~1" "%~2" >nul 2>&1
+if not exist "%~1" exit /b 0
+set /a N+=1
+if !N! geq 5 exit /b 1
+timeout /t 2 /nobreak >nul
+goto :ren_lap
+
+:doiscript
+if exist "script54\LUA54_DA_CHUYEN.txt" if exist "script54\protocol.lua" goto :doiten
+echo [LUA54] chua co script54 chuan bi san - goi python tools\doi_lua54.py client
+set PY=python
+where python >nul 2>&1 || set "PY=%LocalAppData%\Programs\Python\Python312\python.exe"
+"%PY%" "tools\doi_lua54.py" client
 if errorlevel 1 (
-    echo [LUA54] CoreClient.dll hien tai KHONG dung Lua54Dll - chua doi cay script (chay lai khi da co ban 5.4)
-    exit /b
+    set LOI=1
+    exit /b 1
 )
-if exist "script.lua4\nul" (
-    echo [LUA54] script.lua4 da co - cay script hien tai da la ban 5.4
-    ren "LUA54.moi" "LUA54.da_doi"
-    exit /b
+exit /b 0
+
+:doiten
+if exist "script.lua4" (
+    echo [LUA54] LOI: da co script.lua4 tu truoc - trang thai la, bao Claude
+    set LOI=1
+    exit /b 1
 )
-if not exist "tools\chuyen_lua4_54.py" (
-    echo [LUA54] THIEU tools\chuyen_lua4_54.py - KHONG doi cay script. Bao Claude.
-    exit /b
+echo [LUA54] doi ten script -^> script.lua4 ...
+call :ren_thu "script" "script.lua4"
+if exist "script" (
+    echo [LUA54] LOI: khong doi ten duoc thu muc script - co tep dang bi mo?
+    set LOI=1
+    exit /b 1
 )
-echo [LUA54] Dang chuyen cay script client (Lua 4 -> 5.4) vao script54 ...
-python "tools\chuyen_lua4_54.py" "script" "script54" --baocao "tools\chuyen_baocao.txt"
-if errorlevel 1 (
-    echo [LUA54] CHUYEN THAT BAI - giu nguyen cay script cu. Bao Claude.
-    exit /b
+echo [LUA54] doi ten script54 -^> script ...
+call :ren_thu "script54" "script"
+if exist "script54" (
+    echo [LUA54] LOI: khong doi ten duoc script54 - tra lai script cu.
+    ren "script.lua4" "script"
+    set LOI=1
+    exit /b 1
 )
-if not exist "script54\LUA54_DA_CHUYEN.txt" (
-    echo [LUA54] script54 thieu dau hieu LUA54_DA_CHUYEN.txt - giu nguyen cay cu. Bao Claude.
-    exit /b
-)
-ren "script" "script.lua4"
-ren "script54" "script"
 ren "LUA54.moi" "LUA54.da_doi"
-echo [LUA54] Da doi: script = ban 5.4 (ban cu giu o script.lua4)
-exit /b
+echo [LUA54] XONG: script = ban Lua 5.4, ban cu giu o script.lua4
+exit /b 0

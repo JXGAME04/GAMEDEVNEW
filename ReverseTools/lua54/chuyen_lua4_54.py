@@ -90,6 +90,32 @@ def token_hoa(src):
     return toks
 
 
+def co_phay_muc0(s):
+    """Co dau phay o MUC NGOAC 0 khong? (bo qua phay trong (), {}, [] va trong chuoi).
+
+    Lua 4 'for k,v in EXPR do' voi EXPR la BANG -> phai boc pairs(EXPR), KE CA khi EXPR
+    la bang hang co phay ben trong: {A, B} (loi 05/09 auction_manager.lua:1503 sap server).
+    Chi khi co phay o MUC 0 (vd 'next, t, nil' = bo ba iterator kieu 5.x) thi KHONG boc.
+    """
+    d = 0
+    i, n = 0, len(s)
+    while i < n:
+        c = s[i]
+        if c == chr(34) or c == chr(39):
+            q = c; i += 1
+            while i < n and s[i] != q:
+                if s[i] == chr(92): i += 1
+                i += 1
+        elif c in "({[":
+            d += 1
+        elif c in ")}]":
+            d -= 1
+        elif c == "," and d == 0:
+            return True
+        i += 1
+    return False
+
+
 def dong_cua(src, pos):
     return src.count("\n", 0, pos) + 1
 
@@ -180,7 +206,7 @@ def chuyen(src, rel, baocao):
                     dau_bieu = dau
                     cuoi_bieu = dau + len(bieu)
                     # da la pairs(...) / next, ... / ham() thi thoi
-                    if not re.match(r"^(pairs|ipairs|next)\b", bieu) and "," not in bieu:
+                    if not re.match(r"^(pairs|ipairs|next)\b", bieu) and not co_phay_muc0(bieu):
                         bieu_moi = re.sub(r"%(?=[A-Za-z_])", "", bieu)      # %upvalue trong bieu thuc -> bo %
                         if bieu_moi != bieu:
                             sonhap["UPVAL"] += bieu.count("%") - bieu_moi.count("%")
@@ -245,7 +271,10 @@ def main():
     # chay, tranh canh "DLL 5.4 + cay script Lua 4" (66 tep co %x se loi cu phap).
     import time
     io.open(os.path.join(dich, "LUA54_DA_CHUYEN.txt"), "w", encoding="ascii").write(
-        "Cay script nay da qua chuyen_lua4_54.py luc %s tu %s\n%s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), os.path.abspath(nguon), head[0]))
+        "-- LUA54: cay script da qua chuyen_lua4_54.py luc %s\n-- nguon: %s\n-- %s\n"
+        "-- Moi dong bat dau bang -- vi engine nap CA tep .txt trong cay script va chay nhu Lua,\n"
+        "-- nen tep van khong hop le se thanh ScriptError 3 (KSortScript.cpp loc duoi .LUA va .TXT).\n"
+        % (time.strftime("%Y-%m-%d %H:%M:%S"), os.path.abspath(nguon), head[0]))
     print("\n".join(head[:2]))
     print("bao cao:", bc_path)
 

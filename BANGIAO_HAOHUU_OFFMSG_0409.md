@@ -88,6 +88,39 @@ Không cần restart GameServer/CoreServer/Client. Quay lui: đổi `.truoc` l�
 - A nhắn mật B (B offline): A thấy câu mình gửi + dòng `[Hệ thống] B hiện không trực tuyến, ...`; MySQL có 1 dòng. B đăng nhập: cửa sổ chat mật mở tab A với `[Lời nhắn lúc ...] ...`; bảng về 0 dòng. Nhắn quá 10 lần: log `hop cua B DAY (10/10)`, A nhận "không có trên mạng" như cũ.
 - Bot: whisper tới bot không qua relay (GS xử lý tại chỗ) — không ảnh hưởng.
 
+## 9. RÀNG BUỘC LUA54 (05/09 12:00 — tin từ phiên wauto-c9: chủ duyệt nâng Lua 4.0.1 → 5.4.7)
+
+`bin\multiserver` là một **đảo Lua riêng** mà giai đoạn 1a của họ chưa phủ (bat của họ chỉ đổi `bin\server` và `bin\client`):
+
+| Tệp trong `bin\multiserver` | Kiến trúc | Nhập | Ghi chú |
+|---|---|---|---|
+| `S3Relay.exe` (đang chạy) và `S3Relay.exe.moi` của tôi | x86 | `LuaLibDll.dll`, `Engine.dll`, `libmysql.dll` | `.moi` build trước commit 38d65e50 ⇒ còn Lua 4 |
+| `engine.dll` (634.368 byte, sha d4c788bb) | x86 | `LuaLibDll.dll` | KHÁC bản client `Engine.dll` (402 KB) — cấu hình Win32 kiểu server |
+| `Bishop.exe` | x86 | `Engine.dll` | không dùng Lua trực tiếp |
+
+Relay tạo `Lua_State` qua `KLuaScript` của `engine.dll` rồi gọi `Lua_*` trực tiếp trong `DoScript.cpp` (GM `ExcuteScript`)
+⇒ **S3Relay.exe và engine.dll phải cùng một lõi Lua**; lệch (relay Lua54 + engine Lua4 hoặc ngược lại) là sập khi GM chạy script.
+
+Quyết định tạm: **giữ `.moi` bản Lua 4** (nhất quán với `engine.dll` hiện có; các bat Lua54 không đụng `bin\multiserver` nên chủ
+swap relay lúc nào cũng an toàn). Đã gộp origin/main 5e2fdf9d vào nhánh và **build thử relay bản Lua54: link sạch, nhập `Lua54Dll.dll`,
+chuỗi TCVN3 nguyên** (giữ ở scratchpad, chưa đặt). Khi wauto-c9 phủ `bin\multiserver` (cần `Lua54Dll.dll` Win32 + `engine.dll` Win32
+server build Lua54), chỉ cần build lại relay từ origin/main (`build.py --project Sources/MultiServer/S3Relay/S3Relay.vcxproj --config Release --platform Win32`)
+rồi đặt `.moi` **cùng lúc** với engine.dll và sửa `ChayRelay.bat` swap thêm `engine.dll`. Đã nhắn wauto-c9 hai câu hỏi (cấu hình Engine cho multiserver; có phủ đợt này không)
++ nit: `S3Relay.vcxproj` @origin/main còn dòng 300 `Lib\release\LuaLibDll.lib` (chỉ bỏ dòng debug), vô hại.
+
+**wauto-c9 trả lời 12:15:** engine.dll 634 KB = cấu hình **"Engine Server Release|Win32"** của `Engine.vcxproj` (OutDir `.\EngineServerRelease\`).
+Đợt này **KHÔNG phủ `bin\multiserver`**: S3Relay/Bishop giữ `engine.dll` + `LuaLibDll.dll` cũ (relay không có script .lua trên Windows).
+⇒ **ĐỪNG đặt S3Relay.exe.moi bản Lua54, đừng đặt engine.dll Lua54 vào multiserver**; `.moi` Lua 4 hiện tại là đúng. Đợt 2 họ sẽ đưa
+engine.dll Win32 server + Lua54Dll Win32 vào cùng lúc với S3Relay. (Cảnh báo kèm: client bị đơ do bat đổi cây script, họ đã lùi client, đang sửa.)
+
+**Đã thử (05/09 12:20) và KHÔNG được:** trả dòng `.lib` của `S3Relay.vcxproj` về `LuaLibDll` → link hỏng: `DoScript.obj` đòi
+`__imp__lua4_gettop / lua4_pushstring / lua4_tonumber / lua4_tostring`, vì `Engine\Include\LuaLib.h` mới trên origin/main đã ánh xạ macro
+`Lua_*` → `lua4_*`. **Relay trên origin/main gắn với Lua54 ở tầng header**, không tách được bằng vcxproj ⇒ đúng như wauto-c9 nói:
+bản relay Lua 4 chỉ build được từ commit **trước 38d65e50** (= `.moi` hiện tại, nguồn e299bbb1, sha `6014c6d1`). Đã hoàn lại vcxproj về nguyên trạng.
+**Quy tắc cho relay từ nay đến đợt 2:** KHÔNG build lại relay từ origin/main để đặt `.moi`; nếu buộc phải sửa relay, làm trên nhánh tách
+từ e299bbb1 (hoặc `git worktree add <thư mục> e299bbb1` rồi cherry-pick) và ghi rõ trong bàn giao. Đợt 2 (wauto-c9 phủ multiserver) thì
+build từ origin/main và swap S3Relay.exe + engine.dll (Engine Server Release|Win32) + Lua54Dll.dll (Win32) cùng lúc.
+
 ## 8. Chưa làm / lưu ý
 - **Phối ngẫu** (`K_PR_MATE`) không port — dự án chưa có `DoMarry/UnMarry` (xem `jx1-kethon-linux-jx1-0309`).
 - Không có đổi tên nhân vật ở JX1 ⇒ không port `UPDATE Relation SET RoleName`.

@@ -393,7 +393,13 @@ _G.atan2 = function(y, x) return math.atan(y, x) end
 _G.frexp = math.frexp or function(x) error("frexp khong co tren 5.4") end
 _G.ldexp = math.ldexp or function(m, e) return m * 2.0 ^ e end
 _G.PI = math.pi
-_G.mod = math.fmod
+-- [LUA54 05/09] mod(x, 0): Lua 4 = C fmod -> nan (im lang); 5.4 math.fmod voi so nguyen bao loi
+-- "bad argument #2 (zero)" va cat ngang script. Giu ngu nghia Lua 4: chia 0 tra nan.
+local __l4_fmod = math.fmod
+_G.mod = function(a, b)
+    if b == 0 then return 0 / 0 end
+    return __l4_fmod(a, b)
+end
 _G.randomseed = function(s) math.randomseed(epNguyen(s or os.time())) end
 _G.random = function(a, b)
 	if a == nil then

@@ -35,6 +35,7 @@ static inline int VhEventLevel(int nEventSkillLevel, int nSkillId, int nSkillLev
 #include "KMagicDesc.h"
 #include "KOption.h"
 #include "../../Engine/Src/Text.h"
+#include "LuaFuns.h"		// [CLIENTREG 06/09] GameScriptFuns / g_GetGameScriptFunNum
 
 
 #endif
@@ -2226,6 +2227,11 @@ void		KSkill::LoadSkillLevelData(unsigned long  nLevel /* =0*/, int nParam)
 
 	KLuaScript Script;
 	Script.Init();
+	// [CLIENTREG 06/09] THIEU dong nay: than chunk cua script cap ky nang goi Include(...)
+	// ngay dong dau; khong dang ky GameScriptFuns thi Include = nil -> chunk chet ->
+	// Load() tra FALSE -> ScriptError 4:[1] (khong co thong diep vi _ALERT cung chua dang ky)
+	// -> du lieu cap ky nang KHONG duoc doc phia client. Server lam dung o KSortScript.cpp:168.
+	Script.RegisterFunctions(GameScriptFuns, g_GetGameScriptFunNum());
 	if (!Script.Load(szSettingScriptName)) 
 	{
 		g_DebugLog("Can't load %s", szSettingScriptName);

@@ -329,7 +329,10 @@ function TongCastle:AddATrap(szPrefix, szPosPath, szTrapFile)
 	end
 	
 	local nRowCount = TabFile_GetRowCount(szPosPath)
-	for nRow = 1, nRowCount do
+	--[LUA54] truoc la 'for nRow = 1, nRowCount do': than vong tu nhay nRow qua het mot ban ghi.
+	--Lua 4 cho gan lai bien dieu khien for, Lua 5.4 KHONG -> phai viet thanh while.
+	local nRow = 1
+	while nRow <= nRowCount do
 		local szCurTrapName = format("%s*%s", szPrefix, TabFile_GetCell(szPosPath, nRow, 2))
 		local szNextTrapName = format("%s*%s", szPrefix, TabFile_GetCell(szPosPath, nRow+1, 2))
 		local nIsTrans = tonumber(TabFile_GetCell(szPosPath, nRow+2, 2))
@@ -363,6 +366,7 @@ function TongCastle:AddATrap(szPrefix, szPosPath, szTrapFile)
 			end
 		end
 		nRow = nRow+6+nTrapCount+nTransCount-1
+		nRow = nRow + 1	--[LUA54] buoc tang cua vong for cu
 	end
 end
 

@@ -138,3 +138,21 @@ Chủ: *"oke hãy làm trên máy chủ hiện tại — làm xong nhớ chạy 
 **Kiểm sau khi lên (Claude làm khi chủ báo):** ScriptError.log không có lỗi mới kiểu `attempt to call global`/`unexpected symbol`; `jx_perf_server.log` SCRIPT_TIME giảm; bot.log vẫn có [BotTK]/[BotDT]; gcfg nạp bình thường; Tống Kim 17:50 chạy; client đăng nhập, UI, kỹ năng, bang, thư, đấu giá.
 
 **Quy tắc viết script từ giờ (cây `script` = bản 5.4):** không dùng `%x` (viết `x` thẳng), duyệt bảng `for k, v in pairs(t) do`, hàm `...` tự khai `local arg = {n = select("#", ...), ...}`, chuỗi có `\` phải là thoát hợp lệ (`\`), số không dính chữ (`7 then`). Tên hàm cũ (getn, format, strfind, floor, date...) vẫn dùng được nhờ lớp tương thích. `script.lua4` là bản lưu, ĐỪNG sửa.
+
+## 11. Toi uu RunTime timerserver.lua (05/09 22:30 - 06/09 00:05, sua nong, khong restart)
+
+Do 7 gio 5.4 (`ReverseTools/lua54/so_sanh_perf.py`): SCRIPT_TIME max 39 ms MOI PHUT (568/568 phut > 20 ms), gio chan 90-126 ms.
+C++ `CoreServerShell.cpp:1164` goi `RunTime` MOT lan moi phut (giay 0) -> moi thu trong do la viec theo phut.
+
+| Nguyen nhan | Do | Sua |
+|---|---|---|
+| `dofile("script/timerserver.lua")` moi phut chay lai 33 Include = 47 tep 905 KB bien dich lai | 21-26 ms | `TS_CoThayDoi`: doc + so sanh noi dung (6 ms), chi dofile khi doi. Sua nong van an trong 1 phut |
+| `HD3_DonNpcCu` 5 luot quet `Npc[1..MAX_NPC]` (KJx2WarInfra.cpp) | 14-34 ms (quet TEN 33 ms luc Tong Kim) | xoay vong 1 luot/phut (`HD3_DON_XOAYVONG=0` = nhu cu; boot/admin quet het) |
+| `lib:OptionFunction` dostring("return a>b") moi lan kiem dieu kien hoat dong | nho, thuong xuyen | so truc tiep khi hai ve la so (hieu luc khi restart) |
+| Gio chan: Vuot Ai `OnTrigger` (dong/mo mission cac tang, KickOutAll, ClearMapNpc) + PLD | 44 + 4 ms | viec that cua tinh nang, giu; giam nua phai sua C++ hoac lich `HD3_VA_GIO` |
+| 00:00: `UpdateNgayMoiAllPlayer` 1001 nguoi | ~94 ms | mot lan/ngay, giu |
+
+Ket qua: RunTime moi phut 36-43 -> 9-12 ms; TICK max 42-51 -> 20-25 ms; het rot khung theo phut.
+Bo do: `TS_tProf` 13 khoi -> `GhiLog("PROF", ...)` trong `logs/hethong.log` khi >= 8 ms (`TS_PROF_NGUONG`); `HD3_Tick`/`HD3_DonNpcCu` co dong rieng.
+Tep: `serverscript_jx2/lua54_toiuu/script/` (timerserver.lua, tinhnang/3hoatdong/hd3_driver.lua, activitysys/functionlib.lua) = ban dang chay.
+Quy tac sua nong: python latin-1 giu CRLF + dem byte cao, `kiem_54.py`, chay thu bang Lua54Dll + engine gia, cp de; RunTime cu tu dofile ban moi phut ke.

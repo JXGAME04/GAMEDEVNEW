@@ -733,7 +733,7 @@ local myPercent
 
 local myTableRow = TabFile_GetRowCount(myTableName) -- 获取TABLE文件的总行数
 
-	for i = 3,myTableRow-1 do
+	for i = 3,myTableRow-1,2 do	--[LUA54] than vong co 'i = i + 1' (Lua 4 = buoc 2)
 		myReadRate = tonumber(TabFile_GetCell(myTableName,myTableRow,myTableCol))
 		myTotalRate = myTotalRate + myReadRate
 		i = i + 1

@@ -1,0 +1,145 @@
+chuyen_lua4_54: 189 tep .lua, 34 tep co thay doi
+  ESCAPE=0, FORIN=38, LSTR=0, UPVAL=74, VARARG=31
+
+lib/awardtemplet.lua:50  for k, v in self.TYPE -> pairs(self.TYPE)
+lib/baseclass.lua:21  function(...) -> + local arg = {n=select('#',...), ...}
+lib/baseclass.lua:26  %t -> t
+lib/baseclass.lua:35  function(...) -> + local arg = {n=select('#',...), ...}
+lib/baseclass.lua:41  %t -> t
+lib/basic.lua:35  function(...) -> + local arg = {n=select('#',...), ...}
+lib/basic.lua:85  for key, value in org -> pairs(org)
+lib/common.lua:27  function(...) -> + local arg = {n=select('#',...), ...}
+lib/common.lua:155  for key, val in obj -> pairs(obj)
+lib/common_sharedata.lua:33  %RECORD_KEY2 -> RECORD_KEY2
+lib/common_sharedata.lua:40  %INFO_KEY1 -> INFO_KEY1
+lib/common_sharedata.lua:40  %INFO_KEY2 -> INFO_KEY2
+lib/common_sharedata.lua:46  %RECORD_KEY2 -> RECORD_KEY2
+lib/common_sharedata.lua:48  %ObjBuffer -> ObjBuffer
+lib/common_sharedata.lua:49  %ObjBuffer -> ObjBuffer
+lib/common_sharedata.lua:56  for k, v in self.tbData -> pairs(self.tbData)
+lib/common_sharedata.lua:63  %INFO_KEY1 -> INFO_KEY1
+lib/common_sharedata.lua:63  %INFO_KEY2 -> INFO_KEY2
+lib/common_sharedata.lua:157  for key, data in tb -> pairs(tb)
+lib/common_sharedata.lua:173  for k, v in tbData -> pairs(tbData)
+lib/common_sharedata.lua:189  %tbKeyList -> tbKeyList
+lib/common_sharedata.lua:195  for k, v in %CommonShareData -> pairs(CommonShareData)
+lib/composeclass.lua:173  function(...) -> + local arg = {n=select('#',...), ...}
+lib/composeex.lua:157  for k, v in tbItem -> pairs(tbItem)
+lib/composeex.lua:162  for k1, v1 in v -> pairs(v)
+lib/composeex.lua:170  for key, value in tbItem -> pairs(tbItem)
+lib/composelistclass.lua:27  for i, tbFormula in self.tbFormulaList -> pairs(self.tbFormulaList)
+lib/composelistex.lua:19  for i, tbFormula in self.tbFormulaList -> pairs(self.tbFormulaList)
+lib/debug.lua:16  function(...) -> + local arg = {n=select('#',...), ...}
+lib/debug.lua:41  %Match -> Match
+lib/debug.lua:45  %Match -> Match
+lib/debug.lua:74  %GetVar -> GetVar
+lib/debug.lua:76  %GetVar -> GetVar
+lib/debug.lua:78  %GetVar -> GetVar
+lib/debug.lua:80  %GetVar -> GetVar
+lib/debug.lua:88  %GetVar -> GetVar
+lib/debug.lua:97  %calcExp -> calcExp
+lib/debug.lua:117  %GetExpValue -> GetExpValue
+lib/debug.lua:148  %Break -> Break
+lib/debug.lua:149  %Break -> Break
+lib/debug.lua:152  for k, v in pBreak -> pairs(pBreak)
+lib/debug.lua:168  %IsAtBreakPoint -> IsAtBreakPoint
+lib/debug.lua:179  %TmpBreak -> TmpBreak
+lib/debug.lua:179  %TmpBreak -> TmpBreak
+lib/debug.lua:223  %ShowCurStack -> ShowCurStack
+lib/debug.lua:225  %ShowCurStack -> ShowCurStack
+lib/debug.lua:235  %GetLocalVariable -> GetLocalVariable
+lib/debug.lua:237  %_read_ -> _read_
+lib/debug.lua:247  %ParseExp -> ParseExp
+lib/debug.lua:248  %GetExpValue -> GetExpValue
+lib/debug.lua:251  %ShowStack -> ShowStack
+lib/debug.lua:255  %ParseExp -> ParseExp
+lib/debug.lua:256  %SetExpValue -> SetExpValue
+lib/debug.lua:263  %Break -> Break
+lib/debug.lua:268  %_read_ -> _read_
+lib/debug.lua:275  %TmpBreak -> TmpBreak
+lib/debug.lua:276  %TmpBreak -> TmpBreak
+lib/debug.lua:292  %TmpBreak -> TmpBreak
+lib/debug.lua:292  %TmpBreak -> TmpBreak
+lib/debug.lua:293  %TmpBreak -> TmpBreak
+lib/debug.lua:299  %TmpBreak -> TmpBreak
+lib/debug.lua:299  %TmpBreak -> TmpBreak
+lib/debug.lua:300  %TmpBreak -> TmpBreak
+lib/debug.lua:303  %NeedStop -> NeedStop
+lib/debug.lua:306  %ShowStack -> ShowStack
+lib/debug.lua:307  %ProcCmd -> ProcCmd
+lib/debug.lua:315  %Hook -> Hook
+lib/debug.lua:316  %Hook -> Hook
+lib/debug.lua:326  %Break -> Break
+lib/debug.lua:331  %Break -> Break
+lib/file.lua:57  %GetTabFileHeight -> GetTabFileHeight
+lib/itemblue.lua:93  for x, y in ITEM_BLUE -> pairs(ITEM_BLUE)
+lib/log.lua:56  function(...) -> + local arg = {n=select('#',...), ...}
+lib/log.lua:87  function(...) -> + local arg = {n=select('#',...), ...}
+lib/log.lua:94  %tbFactionNumber2Name -> tbFactionNumber2Name
+lib/log.lua:122  for k, v in self.tbLogItemCount -> pairs(self.tbLogItemCount)
+lib/log.lua:132  for _, v in tbItem -> pairs(tbItem)
+lib/log.lua:143  %tbFactionNumber2Name -> tbFactionNumber2Name
+lib/mapdb.lua:17  for name, tb in self.m_List -> pairs(self.m_List)
+lib/mapdb.lua:31  for name, tb in self.m_List -> pairs(self.m_List)
+lib/mapdb.lua:64  for name, tb in self.m_List -> pairs(self.m_List)
+lib/mapdb.lua:115  for name, tb in self.m_List -> pairs(self.m_List)
+lib/mem.lua:13  for i, j in org -> pairs(org)
+lib/mem.lua:25  for i, j in org -> pairs(org)
+lib/mem.lua:40  function(...) -> + local arg = {n=select('#',...), ...}
+lib/objbuffer_head.lua:110  for key, val in tb -> pairs(tb)
+lib/objbuffer_head.lua:114  for key, val in tb -> pairs(tb)
+lib/player.lua:108  for k, v in tab -> pairs(tab)
+lib/player.lua:121  for k, v in tab -> pairs(tab)
+lib/player.lua:128  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:179  %t -> t
+lib/player.lua:256  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:260  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:264  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:268  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:272  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:276  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:542  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:546  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:622  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:626  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:654  function(...) -> + local arg = {n=select('#',...), ...}
+lib/player.lua:658  function(...) -> + local arg = {n=select('#',...), ...}
+lib/progressbar.lua:43  %tbEventSring -> tbEventSring
+lib/progressbar.lua:44  %tbEventSring -> tbEventSring
+lib/progressbar.lua:63  %tbEventSring -> tbEventSring
+lib/progressbar.lua:64  %tbEventSring -> tbEventSring
+lib/progressbar.lua:97  %tbData -> tbData
+lib/progressbar.lua:99  %tbData -> tbData
+lib/progressbar.lua:100  %tbData -> tbData
+lib/progressbar.lua:101  %tbData -> tbData
+lib/progressbar.lua:102  %tbData -> tbData
+lib/progressbar.lua:106  %tbData -> tbData
+lib/progressbar.lua:115  %tbData -> tbData
+lib/say.lua:31  for _, option in tb_options -> pairs(tb_options)
+lib/simulator.lua:6  function(...) -> + local arg = {n=select('#',...), ...}
+lib/statemachine.lua:23  %lib -> lib
+lib/statemachine.lua:23  %StateMachine -> StateMachine
+lib/statemachine.lua:30  %lib -> lib
+lib/statemachine.lua:61  %StateBase -> StateBase
+lib/statemachine.lua:168  for k, v in self.tbStateList -> pairs(self.tbStateList)
+lib/statemachine.lua:193  function(...) -> + local arg = {n=select('#',...), ...}
+lib/statemachine.lua:194  %lib -> lib
+lib/statemachine.lua:197  for k, v in self.tbStateList -> pairs(self.tbStateList)
+lib/statemachine.lua:210  %lib -> lib
+lib/statemachine.lua:210  %TemplateStateMachine -> TemplateStateMachine
+lib/unittest.lua:54  for key, func in self -> pairs(self)
+lib/awardtype/simple.lua:8  for k, v in self -> pairs(self)
+tong/log.lua:9  for key, value in tbMsg -> pairs(tbMsg)
+tong/tong_setting.lua:74  function(...) -> + local arg = {n=select('#',...), ...}
+tong/map/map_management.lua:47  for nMapCopyId, szMapCopyName in aDynMapCopyName -> pairs(aDynMapCopyName)
+tong/map/map_management.lua:64  for nMapCopyId, szMapCopyName in aDynMapCopyName -> pairs(aDynMapCopyName)
+tong/npc/city_totempole.lua:595  function(...) -> + local arg = {n=select('#',...), ...}
+tong/npc/tong_totempole.lua:613  function(...) -> + local arg = {n=select('#',...), ...}
+tong_vn/log.lua:9  for key, value in tbMsg -> pairs(tbMsg)
+tong_vn/tong_mix.lua:18  for _k, _v in _1 -> pairs(_1)
+tong_vn/tong_mix.lua:28  function(...) -> + local arg = {n=select('#',...), ...}
+tong_vn/tong_setting.lua:74  function(...) -> + local arg = {n=select('#',...), ...}
+tong_vn/map/map_management.lua:47  for nMapCopyId, szMapCopyName in aDynMapCopyName -> pairs(aDynMapCopyName)
+tong_vn/map/map_management.lua:64  for nMapCopyId, szMapCopyName in aDynMapCopyName -> pairs(aDynMapCopyName)
+tong_vn/npc/city_totempole.lua:595  function(...) -> + local arg = {n=select('#',...), ...}
+tong_vn/npc/tong_totempole.lua:613  function(...) -> + local arg = {n=select('#',...), ...}

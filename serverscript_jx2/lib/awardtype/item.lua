@@ -75,7 +75,11 @@ function ItemType:Give(tbItem, nAmount, tbLogTitle)
 	nAmount = (nAmount or 1) * (tbItem.nCount or 1)
 	local szName = ""
 	local szCode = ""
-	for i = 1, nAmount do
+	--[LUA54] truoc la 'for i = 1, nAmount do': than vong gan 'i = self:SetStackCount(...)'
+	--de nhay qua so mon da xep chong. Lua 4 cho, Lua 5.4 KHONG -> phai viet thanh while,
+	--neu khong se tao du nAmount mon thay vi vai chong.
+	local i = 1
+	while i <= nAmount do
 		nItemIndex = self:NewItemEx(szWhere, tbItem)
 		if nItemIndex < 0 then
 			break;
@@ -119,6 +123,7 @@ function ItemType:Give(tbItem, nAmount, tbLogTitle)
 		end
 		szName = tbItem.szName or GetItemName(nItemIndex) --同类物品因此选最后的Index名字也一样
 		AddItemByIndex(nItemIndex)		
+		i = i + 1	--[LUA54] buoc tang cua vong for cu
 	end
 	
 	Msg2Player(format("Nh薾 頲 %d %s.", nAmount, szName))
