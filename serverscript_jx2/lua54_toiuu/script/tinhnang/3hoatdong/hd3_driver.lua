@@ -242,12 +242,16 @@ function HD3_Tick(nHr, nMi)
 	local nHHMM = nHr * 100 + nMi
 
 	-- (B) Phong Lang Do - relay fengling_ferry.lua: moi gio phut :00
+	-- [TOIUU 05/09] do 3 nhanh HD3_Tick (PROF 23:00: hd3=65 ms o phut 0) de biet nhanh nao nang
+	local tT0 = clock()
 	if (nMi == 0) and (HD3_InList(nHHMM, HD_CFG("HD3_PLD_GIO", {})) == 1) then
 		DynamicExecute(HD3_PLD_ENTRY, "fenglingdu_main")
 		print(format("[3HD] Phong Lang Do khai cuoc %02d:%02d", nHr, nMi))
 	end
 
 	-- (C) Vuot Ai - relay challengeoftime.lua: moi gio phut :00
+	local nPld = (clock() - tT0) * 1000
+	tT0 = clock()
 	if (nMi == 0) and (HD3_InList(nHHMM, HD_CFG("HD3_VA_GIO", {})) == 1) then
 		DynamicExecute(HD3_VA_TRIGGER, "OnTrigger")
 		AddLocalCountNews("Thêi gian b¸o danh 'Th¸ch thøc thêi gian' ®· b¾t ®Çu, c¸c ®éi tr­ëng h·y mau ®Õn NhiÕp ThÝ TrÇn ë c¸c thµnh thÞ b¸o danh. Thêi gian b¸o danh lµ 10 phót.", 2)	-- chuoi goc relay challengeoftime.lua
@@ -255,8 +259,14 @@ function HD3_Tick(nHr, nMi)
 	end
 
 	-- (C) Vuot Ai - bang xep hang ngay: relay challegeoftime-dailyrank.lua
+	local nVa = (clock() - tT0) * 1000
+	tT0 = clock()
 	if (nHHMM == HD_CFG("HD3_VA_GIO_XEPHANG", 0)) then
 		HD3_VA_DailyRank()
+	end
+	local nXh = (clock() - tT0) * 1000
+	if ((nPld + nVa + nXh) >= 5 and GhiLog ~= nil) then
+		GhiLog("PROF", format("HD3_Tick %02d:%02d pld=%d va=%d xephang=%d ms", nHr, nMi, nPld, nVa, nXh))
 	end
 end
 
