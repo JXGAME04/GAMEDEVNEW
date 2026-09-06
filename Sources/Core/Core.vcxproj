@@ -682,6 +682,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="KMeridian.cpp" />
+    <ClCompile Include="Src\KBiaoChe.cpp" />
     <ClCompile Include="Src\base64.cpp" />
     <ClCompile Include="Src\KMySQLDB.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1051,6 +1052,7 @@
     <ClInclude Include="..\..\Headers\KProtocolDef.h" />
     <ClInclude Include="..\..\Lib\S3DBInterface.h" />
     <ClInclude Include="KMeridian.h" />
+    <ClInclude Include="Src\KBiaoChe.h" />
     <ClInclude Include="Src\base64.h" />
     <ClInclude Include="Src\KMySQLDB.h" />
     <ClInclude Include="Src\KGameKV.h" />

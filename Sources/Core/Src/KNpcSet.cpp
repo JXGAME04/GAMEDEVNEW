@@ -499,6 +499,13 @@ int KNpcSet::AddNpcSet1(int nNpcSettingIdxInfo, int nSeries, int nSubWorld, int 
 	Npc[i].m_RegionIndex = nRegion;
 	Npc[i].m_nNpcTimeout = 0;
 	ZeroMemory(Npc[i].m_nNpcParam, sizeof(Npc[i].m_nNpcParam));
+#ifdef _SERVER
+	// [LMBC 06/09] reset trang thai xe tieu cung luc voi cac truong bam duong
+	Npc[i].m_btBiaoChe = 0;
+	Npc[i].m_btBiaoCheFlag = 0;
+	Npc[i].m_nBiaoCheOwner = 0;
+	Npc[i].m_dwBiaoCheLostTick = 0;
+#endif
 	Npc[i].m_bNpcFollowFindPath = FALSE;
 	Npc[i].m_uFindPathTime = 0;
 	Npc[i].m_uFindPathMaxTime = 0;

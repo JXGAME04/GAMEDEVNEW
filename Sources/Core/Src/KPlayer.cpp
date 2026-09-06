@@ -325,6 +325,10 @@ void	KPlayer::Release()
 	memset(m_TongTempMagic, 0, sizeof(m_TongTempMagic));
 	m_dwNumberBoxId = 0;
 	m_dwLogoutScriptID = 0;
+#ifdef _SERVER
+	m_nBiaoCheIdx = 0;		// [LMBC 06/09]
+	m_dwBiaoCheID = 0;
+#endif
 	m_dwRewardId = 0;
 	m_dwRewardExId = 0;
 	m_dwTrembleItemId = 0;

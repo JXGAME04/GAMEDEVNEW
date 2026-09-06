@@ -279,6 +279,13 @@ void KNpc::Init()
 	m_SkillParam2 = 0;
 	m_nNpcTimeout = 0;
 	ZeroMemory(m_nNpcParam, sizeof(m_nNpcParam));
+#ifdef _SERVER
+	// [LMBC 06/09] xoa trang thai xe tieu khi khe NPC duoc tai su dung
+	m_btBiaoChe = 0;
+	m_btBiaoCheFlag = 0;
+	m_nBiaoCheOwner = 0;
+	m_dwBiaoCheLostTick = 0;
+#endif
 	m_bNpcFollowFindPath = FALSE;
 	m_uFindPathTime = 0;
 	m_uFindPathMaxTime = 0;

@@ -67,6 +67,7 @@
 #include "KCauHinhWeb.h"	// [CFGW 04/09] cau hinh game chinh tu WEB ADMIN (bang gcfg tren MySQL)
 #include "KAuctionClient.h"	// [DAUGIA 04/09 A3] cua so dau gia (client)
 #include "KChienLenhClient.h"	// [CL 04/09 DOT2] cau noi Lua <-> cua so Chien Lenh (client)
+#include "KBiaoChe.h"	// [LMBC 06/09] xe tieu Long Mon
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
 {
@@ -14915,6 +14916,16 @@ int LuaWllsSetStringTask(Lua_State* L)
 }
 #endif // _SERVER (khoi ham WLLS)
 
+#ifdef _SERVER
+// [LMBC 06/09] Long Mon Tieu Cuc - hien thuc o KBiaoChe.cpp
+extern int LuaCreateBiaoChe(Lua_State* L);
+extern int LuaDeleteBiaoChe(Lua_State* L);
+extern int LuaGetBiaoChePos(Lua_State* L);
+extern int LuaIsBiaoCheAlive(Lua_State* L);
+extern int LuaSyncBiaoCheDeathInfoToRelay(Lua_State* L);
+extern int LuaBC_SetEnable(Lua_State* L);
+#endif
+
 TLua_Funcs GameScriptFuns[] =
 {
 	{"Say", LuaSelectUI},
@@ -15319,6 +15330,15 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetNpcValue",		LuaSetNpcParam},
 	{"GetNpcParam",		LuaGetNpcParam},
 	{"GetNpcValue",		LuaGetNpcParam},
+#ifdef _SERVER
+	// == [LMBC 06/09] Long Mon Tieu Cuc (xe tieu bam theo chu) ==
+	{"CreateBiaoChe",				LuaCreateBiaoChe},				// (series, setting, level, ten, ticks) -> npcidx | nil
+	{"DeleteBiaoChe",				LuaDeleteBiaoChe},				// () -> 1/0
+	{"GetBiaoChePos",				LuaGetBiaoChePos},				// () -> x, y, subworld | -1
+	{"IsBiaoCheAlive",				LuaIsBiaoCheAlive},				// () -> 1/0
+	{"SyncBiaoCheDeathInfoToRelay",	LuaSyncBiaoCheDeathInfoToRelay},	// (npcidx) -> 1/0
+	{"BC_SetEnable",				LuaBC_SetEnable},				// cong tat nong
+#endif
 	{"SC_SetBotFlag",	LuaSC_SetBotFlag},	// Port SimCity
 	{"SC_GetBotFlag",	LuaSC_GetBotFlag},
 	{"SC_AddBot",		LuaSC_AddBot},
