@@ -283,14 +283,14 @@ Khuyến nghị: làm 2 + 3 (3 bằng kịch bản, kiểm `grep`), thử trên 
 ## 14. 05/09 10:45 — THI CÔNG phương án 2 + 3 (chủ chốt "làm 2-3")
 ### 14a. Phương án 3 — `[MSFIND 05/09]` tra nhiệm vụ theo id, không dựng `KMission` tạm
 - `KMissionArray.h`: thêm `T* FindById(unsigned long ulMissionId)` (duyệt `m_UseIdx`, so `GetMissionId()`, trả `&m_Data[nIdx]` hoặc NULL) — tương đương 100 % `GetData(&probe)` vì `FindSame` chỉ so id.
-- Thay 27/27 chỗ bằng kịch bản regex có kiểm đếm (`ReverseTools{BS}tongkim_chat{BS}va_msfind.py`): `ScriptFuns.cpp` 25 (kể cả `StopMission`), `KJx2WarInfra.cpp` 1, `KPlayerBot.cpp` 1 (`pb_TkMission`). Kiểm: không còn `KMission X;` trong 3 tệp; số byte cao không đổi.
+- Thay 27/27 chỗ bằng kịch bản regex có kiểm đếm (`ReverseTools\tongkim_chat\va_msfind.py`): `ScriptFuns.cpp` 25 (kể cả `StopMission`), `KJx2WarInfra.cpp` 1, `KPlayerBot.cpp` 1 (`pb_TkMission`). Kiểm: không còn `KMission X;` trong 3 tệp; số byte cao không đổi.
 - Mỗi lời gọi API nhiệm vụ: bỏ ~210 KB stack + 2×3 `new[]/delete[]` (101 KB) + ~6.500 vòng chèn → còn ≤ 10 so sánh id.
 ### 14b. Phương án 2 — `[TKDIEM 05/09]` `UpdateBattleBoxAll(nMissionId, nTong, nKim, nKind)` (C++, `ScriptFuns.cpp` sau `LuaUpdateBattleBox`, đăng ký cạnh `UpdateBattleBox`)
 - Duyệt thẳng `m_MissionPlayer.m_UseIdx` như `KMission::Msg2All`; điều kiện gửi = đúng vòng Lua cũ: ô còn dùng (`MISSION_PARAM_AVAILABLE`), còn nối, `Player[idx].m_dwID == m_ulPlayerID` (bỏ ô cũ của người đã rời); gói `S2C_BATTLE_BOX` "tong|kim|diem_riêng" (`m_nParam[6]`); trả số người đã gửi.
-- Lua `lib_tktc.lua` `TK_GuiDiemPhe`: tiết chế 18 khung (1 s, trước 2 s) → `if UpdateBattleBoxAll then return UpdateBattleBoxAll(...) end` → **rơi về vòng cũ nếu CoreServer cũ** (không lỗi script khi chỉ restart mà chưa swap DLL). Gương git: `serverscript_jx2{BS}tongkim_chat{BS}server{BS}script{BS}...`.
+- Lua `lib_tktc.lua` `TK_GuiDiemPhe`: tiết chế 18 khung (1 s, trước 2 s) → `if UpdateBattleBoxAll then return UpdateBattleBoxAll(...) end` → **rơi về vòng cũ nếu CoreServer cũ** (không lỗi script khi chỉ restart mà chưa swap DLL). Gương git: `serverscript_jx2\tongkim_chat\server\script\...`.
 ### 14c. Build / triển khai
 - Worktree mail-0309 đã merge `origin/main` 573b9130 (diff trống) → build từ main. `CoreServer.dll` x64 Server Release = **a2053172** (10:42; dấu hiệu: `UpdateBattleBoxAll`, `CL_Cong`, `AUC_MsgTong`, `[CFGW]`, `S13-TELE`).
-- Khe `bin{BS}server{BS}CoreServer.dll.moi` có bản chờ 10:02 của phiên khác (= `[CFGW 05/09]` 6177ba7e, đã trong main → bản tôi bao trùm) → đổi tên thành `CoreServer.dll.moi.cfgw_1002_phienkhac`, đặt bản a2053172 làm `.moi`. Chủ: `ChayGameServer.bat` (swap DLL + nạp Lua mới).
+- Khe `bin\server\CoreServer.dll.moi` có bản chờ 10:02 của phiên khác (= `[CFGW 05/09]` 6177ba7e, đã trong main → bản tôi bao trùm) → đổi tên thành `CoreServer.dll.moi.cfgw_1002_phienkhac`, đặt bản a2053172 làm `.moi`. Chủ: `ChayGameServer.bat` (swap DLL + nạp Lua mới).
 - Client Win32 chỉ build kiểm biên dịch (API nhiệm vụ không có trong CoreClient) — không swap client.
 - Kỳ vọng đo sau restart (cùng cửa sổ TK ~500 chết/phút): MAIN mỗi lần chết 3 → ~2 ms (còn 600 gói chat), bảng điểm 1 s/lần ~2-3 ms/lần, `SCRIPT_TIME max` mỗi phút giảm.
 - 10:45 — main nhận thêm ff7d0359 `[CFGW 05/09]` (KCauHinhWeb + KCore) sau lúc merge → merge lại (1c72eb1d), build lại: **CoreServer.dll = e4d6156e** (10:45) = `.moi` hiện tại; a2053172 bỏ. Git: mail-0309 == main (2e6d93d8 + ff7d0359).
@@ -312,7 +312,7 @@ N. nen 20:05-20:49 hom qua, khong TK                 n=45 chet/ph=   0 MAIN= 4.4
 - `CoreServerShell.cpp:1162-1172`: mỗi tick, nếu khung %% 18 == 0 và giây hệ thống == 0 → `timerserver.lua RunTime()` (script hẹn giờ, 1 lần/phút).
 - `RunTime()` (`timerserver.lua:55-84`, `[NHIPNAP 29/08]` của chủ): **`dofile("script/timerserver.lua")` nạp lại chính nó + 33 `Include` = 90 tệp / 1,17 MB mỗi phút** để "sửa script ăn ngay, không cần restart". Đo ngoài engine bằng `lua4.exe` + tag method `getglobal` giả lập hàm engine: **~20 ms** chỉ riêng biên dịch (vài tệp dừng sớm → trong engine cao hơn, có thêm tra pak/đăng ký hàm). Phần còn lại của 55-86 ms = tác vụ theo phút (`BDH_JitanTick`, `CL_Tick_Wrap`, `BotAuto_Tick`, `sukien_tongkim`, bảo trì bang 6:05…); trong phút TK trước FindById 93-97 ms, sau 56-86 ms.
 - Hậu quả: đúng 1 tick mỗi phút dài ~60-90 ms (ngân sách 55) → mọi người khựng nhẹ 1 lần/phút; không tích luỹ.
-- **Đã có núm, không cần sửa mã**: `script{BS}cauhinh{BS}ch_chung.lua:137 CH_NAPLAI_PHUT = 1` (1 = mỗi phút, 5 = 5 phút/lần, 0 = tắt — khi tắt thì sửa script phải restart); khoá đã phơi lên web admin (`cauhinh_web{BS}cfgw_meta.lua:68`, nhóm HETHONG, nhịp áp 30 s). → Quyết định của chủ: giữ 1 (tiện dev) hay 5/0 (mượt hơn).
+- **Đã có núm, không cần sửa mã**: `script\cauhinh\ch_chung.lua:137 CH_NAPLAI_PHUT = 1` (1 = mỗi phút, 5 = 5 phút/lần, 0 = tắt — khi tắt thì sửa script phải restart); khoá đã phơi lên web admin (`cauhinh_web\cfgw_meta.lua:68`, nhóm HETHONG, nhịp áp 30 s). → Quyết định của chủ: giữ 1 (tiện dev) hay 5/0 (mượt hơn).
 ### 15b. Chat giết địch `Msg2MSAll` (tongtu/kimtu:88)
 - 600 `SendSystemInfo` → 600 `PackDataToClient` mỗi lần chết ≈ 2 ms; ở ~10 lần chết/giây = 20 ms/giây ≈ 2 %% ngân sách; mỗi client nhận ~10 dòng/giây (chat + widget).
 - Phương án nếu muốn giảm: (a) chỉ gửi cho người trong 3×3 vùng quanh chỗ chết (KRegion) + người giết/bị giết — đổi trải nghiệm (không thấy kill xa); (b) gộp 1 giây gửi 1 gói nhiều dòng — client `KUiFlashMessage` cần tách dòng; (c) giữ nguyên. Khuyến nghị **(c)** vì chi phí đã nhỏ sau fix.
@@ -360,3 +360,32 @@ N. nen 20:05-20:49 hom qua, khong TK                 n=45 chet/ph=   0 MAIN= 4.4
   `for … in {` / `for k,v in t do` nào khác. `kiem_54.py` chỉ kiểm biên dịch, KHÔNG bắt lỗi chạy kiểu này.
 - GameServer (pid 75388, lên 12:41:24) không còn chạy lúc 12:44:36; log cuối 12:43:56–12:44:00 bình thường, không dump/Event → nghi tắt chủ động (hỏi wauto-c9).
 - Script Tống Kim `[TKINFO]/[TKDIEM]` còn nguyên trong cây 5.4 (`script.lua4` giữ bản cũ), `kiem_54` 0 lỗi; cửa sổ chưa thử được vì chưa có trận.
+
+
+## 17. 06/09 09:48 — CLIENT SẬP khi vẽ cửa sổ Tống Kim mới — GỐC: sprite nền do tôi ghi sai bảng màu
+### 17a. Bằng chứng (jx_crash.log)
+```
+Ma loi : 0xC0000005 (Access Violation), DOC dia chi 0x69CAAE93
+[00] TextureResSpr::LoadSprFile + 0x1F9   [TextureRes.cpp dong 522]
+[01] TextureResSpr::LoadImageA           [02] TextureResMgr::LoadImageA
+[04] KRepresentShell3::DrawImage2DFlat   [06] KWndImage::PaintWindow  [09] UiPaint
+```
+`TextureRes.cpp:522` = `m_pFrameInfo[i].nWidth = pFrame->Width;` với `pFrame = pSprite + pOffset[i].Offset`.
+### 17b. Gốc
+- `thongtin20.spr` (nền cửa sổ, tôi vẽ 05/09) khai `Colors = 256` nhưng **chỉ ghi 138 màu = 414 byte**: `pal_img.getpalette()`
+  của Pillow CHỈ trả về số màu ảnh thật sự dùng, tôi lại cắt `[:768]` mà không đệm.
+- `LoadSprFile` đọc bảng màu theo `Colors` (768 byte) → bảng `SPROFFS` lệch 354 byte, rơi vào giữa dữ liệu RLE →
+  `Offset = 0x4B4B4B4B = 1.263.225.675` → con trỏ hoang → sập ngay khi cửa sổ được vẽ lần đầu.
+- `bangdiem.spr` (04/09) không sập vì ảnh đó dùng đủ 256 màu — lỗi tiềm ẩn, chỉ lộ khi ảnh ít màu.
+- Chỉ 1 lần sập hôm nay, đúng chữ ký này. Các lần sập 05/09 12:06–12:09 là `lua_pushinteger` (chuyển Lua 5.4, việc khác).
+### 17c. Sửa
+- `ReverseTools\tongkim_chat\ghi_spr.py` (MỚI): ghi SPR **luôn đệm bảng màu đủ 256×3** + `kiem_spr()` đọc ngược kiểm
+  (bảng màu, `SPROFFS` trong tệp, đầu khung, RLE phủ đúng số dòng); ghi xong tự kiểm, sai thì ném lỗi chứ không tạo tệp hỏng.
+- `ve_thongtin20.py` (MỚI): vẽ lại nền và ghi qua bộ ghi trên. Tệp mới 61.726 byte, `kiem_spr` OK, giải mã ngược ra đúng 221×268.
+- `lam_bangdiem.py`: vá cùng lỗi để không tái diễn.
+- Quét **3.028 tệp .spr rời** trong `bin\client`: không còn tệp nào hỏng cấu trúc (`Spr\item\citydefence\smallfragment.spr`
+  bắt đầu bằng `FB "SPR"` = dạng nén, có từ 31/08, không liên quan).
+### 17d. Triển khai
+- **Chỉ cần khởi động lại client** (`ChoiGame.bat`): `.spr` là tệp rời, nạp lúc vẽ. `Game.exe` live đã đúng bản a136398e, không có `.moi` chờ.
+- Bài học: **mọi tệp nhị phân tự sinh (SPR/PAK/ảnh) phải đọc ngược kiểm trước khi đặt vào cây chạy thật** — engine không kiểm biên,
+  một tệp sai làm sập client ngay khi vẽ.
