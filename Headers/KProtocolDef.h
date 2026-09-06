@@ -394,6 +394,7 @@ enum c2c_PROTOCOL
 
 	s2s_broadcast = 96,		//Relay
 	s2s_execute = 97,		//Relay
+	s2s_script = 98,		//Relay -- [RELAYHT 06/09] goi kich ban GS<->relay (RELAY_SCRIPT_CALL)
 
 	c2c_end,
 };

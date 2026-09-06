@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "Global.h"
 #include "HostConnect.h"
+#include "RelayRpc.h"	// [RELAYHT 06/09]
 #include "HostServer.h"
 #include "DealRelay.h"
 #include "S3Relay.h"
@@ -178,6 +179,15 @@ void CHostConnect::Proc1_Relay_Data(const void* pData, size_t size)
 	if (pRelayData->nToIP == 0)
 	{
 		//arrived
+		// [RELAYHT 06/09] GameServer goi kich ban tren relay: than goi bat dau
+		// bang s2s_script. Day la LUONG MANG nen chi xep hang, RelayRpc_Tick()
+		// (luong chinh) moi chay Lua.
+		if (pRelayData->routeDateLength > 1 &&
+			*((BYTE*)(pRelayData + 1)) == (BYTE)s2s_script)
+		{
+			RelayRpc_OnPacket((BYTE*)(pRelayData + 1) + 1,
+				pRelayData->routeDateLength - 1, GetID());
+		}
 		return;
 	}
 	else if (pRelayData->nToIP == g_RootClient.GetSvrIP())  //from bishop

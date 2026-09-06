@@ -71,6 +71,27 @@ struct RELAY_ASKWAY_DATA : EXTEND_HEADER
 
 
 
+// [RELAYHT 06/09] GOI KICH BAN QUA LAI GameServer <-> S3Relay (kieu RemoteExecute ban Linux)
+//
+// Goi nam TRONG RELAY_DATA, byte dau tien cua phan than la s2s_script, roi toi
+// cau truc nay, roi toi 3 khoi byte noi duoi nhau:
+//     char szScript[wScriptLen]   duong dan kich ban, ke ca byte 0 cuoi
+//     char szFunc  [wFuncLen]     ten ham,            ke ca byte 0 cuoi
+//     BYTE data    [wDataLen]     noi dung ObjBuffer (co the rong)
+//
+// Chieu di  (byIsResult = 0): ben goi nho lai dwCallId de doi ket qua.
+// Chieu ve  (byIsResult = 1): dwCallId lay nguyen tu goi di; szFunc de trong.
+// dwCallId = 0 nghia la KHONG can tra ket qua.
+struct RELAY_SCRIPT_CALL : EXTEND_HEADER
+{
+	DWORD	dwCallId;
+	DWORD	dwGameSvrId;							// 0 = khong chi dinh may chu nao
+	BYTE	byIsResult;
+	WORD	wScriptLen;
+	WORD	wFuncLen;
+	WORD	wDataLen;
+};
+
 ////////////////////////////////////////////////////////
 //pf_playercommunity
 

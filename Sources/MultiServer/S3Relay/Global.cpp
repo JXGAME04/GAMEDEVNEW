@@ -14,6 +14,7 @@
 #include "RelayScript.h"		// [RELAYHT 06/09] ha tang kich ban kieu Linux
 #include "RelayShareData.h"
 #include "RelayTaskCentre.h"
+#include "RelayRpc.h"
 #include "OfflineMsgDB.h"	// [HAOHUU 04/09] loi nhan ngoai tuyen
 
 
@@ -243,6 +244,8 @@ BOOL gInitialize()
 	RelayScript_Init();
 	RelayScript_AddFuncTable(g_ShareDataFuns, g_GetShareDataFunNum());
 	RelayScript_AddFuncTable(g_TaskCentreFuns, g_GetTaskCentreFunNum());
+	RelayScript_AddFuncTable(g_RelayRpcFuns, g_GetRelayRpcFunNum());
+	RelayRpc_Init();		// [RELAYHT 06/09] goi kich ban GS<->relay
 	ShareData_Init();		// loi MySQL -> tu tat, relay van chay
 	TaskCentre_Init();
 	
@@ -445,6 +448,7 @@ BOOL gUninitialize()
 
 		g_ChannelMgr.Uninitialize();
 		g_FriendMgr.Uninitialize();
+		RelayRpc_Uninit();
 		TaskCentre_Uninit();	// [RELAYHT 06/09]
 		ShareData_Uninit();
 		RelayScript_Uninit();

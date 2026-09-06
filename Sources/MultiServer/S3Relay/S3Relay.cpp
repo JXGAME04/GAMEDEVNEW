@@ -10,6 +10,7 @@
 
 #include "S3Relay.h"
 #include "RelayTaskCentre.h"	// [RELAYHT 06/09]
+#include "RelayRpc.h"	// [RELAYHT 06/09]
 #include "KTongJX2Relay.h"	// JX2 port
 #include "Global.h"
 
@@ -555,6 +556,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	g_nShowTime = SetTimer(g_mainwnd, timer_log, elapse_log, NULL);
 	SetTimer(g_mainwnd, timer_tongjx2, 30000, NULL);
 	SetTimer(g_mainwnd, timer_relaytask, 1000, NULL);	// [RELAYHT 06/09] TaskCentre	// JX2 port: tick 30s
+	SetTimer(g_mainwnd, timer_relayrpc, 100, NULL);	// [RELAYHT 06/09]
 
 	//auto startup
 	::SendMessage(g_mainwnd, WM_COMMAND, MAKEWPARAM(IDM_STARTUP, 0), NULL);
@@ -749,6 +751,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case timer_friendudtdb: gFriendTimingUpdateDB(); break;
 			case timer_tongjx2: JX2_TimerTick(); break;
 			case timer_relaytask: TaskCentre_Tick(); break;	// [RELAYHT 06/09]	// JX2 port
+			case timer_relayrpc: RelayRpc_Tick(); break;	// [RELAYHT 06/09]
 			default: break;
 			}
 			break;
