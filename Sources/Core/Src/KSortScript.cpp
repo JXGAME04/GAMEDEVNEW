@@ -66,6 +66,103 @@ static void sGhiThongKeNapScript(unsigned long nLoaded, DWORD dwMs)
 	g_DebugLog((LPSTR)"%s", szMsg);
 }
 
+// ============================================================================
+// [SAPXEP 06/09] BI DANH DUONG DAN SCRIPT (SAPXEP_SCRIPT_0609.md R2)
+// Tep script\_duongdan_cu.txt: moi dong "--@ <cu>=<moi>" (duong dan tuong doi goc may chu,
+// khong phan biet hoa thuong, '\' hay '/'). Dong khac bat dau "--" la chu thich; ca tep la
+// chu thich Lua hop le nen engine cu nap nham cung vo hai.
+//  - sDangKyBiDanh(): sau LoadAllScript, moi <cu> co <moi> da nap -> them node
+//    ID(g_FileName2Id("\<cu>")) tro cung script index. Trap trong Region_S.dat, cot script
+//    trong settings, g_GetScript(ten cu) deu bam theo duong dan cu -> van tim duoc.
+//  - sBiDanh_TenCu(): ten moi -> ten cu, de g_IsJx2Script (ngu nghia ham JX2 theo tien to
+//    duong dan) van dung sau khi doi cho tep.
+//  Lua54Dll doc cung tep cho Include/dofile khi tep goc khong ton tai (lua4_dofile).
+// ============================================================================
+#include <vector>
+#include <string>
+struct KBiDanhScript { std::string szCu; std::string szMoi; };
+static std::vector<KBiDanhScript>	s_BiDanh;
+#include <map>
+static std::map<Lua_State*, int>	s_mapJx2;		// [SAPXEP 06/09] cache g_IsJx2Script theo state
+static int							s_nBiDanhDaDoc = 0;
+
+static void sBiDanh_ChuanHoa(std::string& s)
+{
+	// -> "\thu\muc\tep.lua" chu thuong, bo khoang trang dau/cuoi, bo ".\" va "/" dau
+	while (!s.empty() && (s[0] == ' ' || s[0] == '\t')) s.erase(0, 1);
+	while (!s.empty() && (s[s.size() - 1] == ' ' || s[s.size() - 1] == '\t' || s[s.size() - 1] == '\r' || s[s.size() - 1] == '\n')) s.erase(s.size() - 1);
+	for (size_t i = 0; i < s.size(); i++)
+	{
+		if (s[i] == '/') s[i] = '\\';
+		else if (s[i] >= 'A' && s[i] <= 'Z') s[i] = (char)(s[i] + 32);
+	}
+	while (s.size() >= 2 && s[0] == '.' && s[1] == '\\') s.erase(0, 2);
+	while (!s.empty() && s[0] == '\\') s.erase(0, 1);
+	if (!s.empty()) s.insert(0, "\\");
+}
+
+static void sDocBiDanh()
+{
+	if (s_nBiDanhDaDoc) return;
+	s_nBiDanhDaDoc = 1;
+	s_BiDanh.clear();
+	FILE* f = fopen("script\\_duongdan_cu.txt", "rb");
+	if (!f) return;
+	char szDong[2048];
+	while (fgets(szDong, sizeof(szDong), f))
+	{
+		if (strncmp(szDong, "--@", 3) != 0) continue;
+		char* p = szDong + 3;
+		char* eq = strchr(p, '=');
+		if (!eq) continue;
+		*eq = 0;
+		KBiDanhScript bd;
+		bd.szCu = p; bd.szMoi = eq + 1;
+		sBiDanh_ChuanHoa(bd.szCu); sBiDanh_ChuanHoa(bd.szMoi);
+		if (bd.szCu.size() <= 1 || bd.szMoi.size() <= 1 || bd.szCu == bd.szMoi) continue;
+		s_BiDanh.push_back(bd);
+	}
+	fclose(f);
+}
+
+// ten moi (dang "\script\...", chu thuong) -> ten cu, hoac NULL
+static const char* sBiDanh_TenCu(const char* szMoi)
+{
+	if (!szMoi || !szMoi[0]) return NULL;
+	sDocBiDanh();
+	for (size_t i = 0; i < s_BiDanh.size(); i++)
+		if (_stricmp(s_BiDanh[i].szMoi.c_str(), szMoi) == 0)
+			return s_BiDanh[i].szCu.c_str();
+	return NULL;
+}
+
+static void sDangKyBiDanh()
+{
+	s_nBiDanhDaDoc = 0;					// ReLoadAllScript doc lai tep
+	s_mapJx2.clear();
+	sDocBiDanh();
+	int nDangKy = 0, nThieu = 0, nTrung = 0;
+	for (size_t i = 0; i < s_BiDanh.size(); i++)
+	{
+		KSortScriptNode nodeMoi, nodeCu;
+		nodeMoi.SetScriptID(g_FileName2Id((LPSTR)s_BiDanh[i].szMoi.c_str()));
+		if (!g_ScriptBinTree.Find(nodeMoi)) { nThieu++; continue; }
+		nodeCu.SetScriptID(g_FileName2Id((LPSTR)s_BiDanh[i].szCu.c_str()));
+		if (g_ScriptBinTree.Find(nodeCu)) { nTrung++; continue; }		// ten cu van con tep that -> khong de
+		nodeCu.SetScriptIndex(nodeMoi.GetScriptIndex());
+		g_ScriptBinTree.Insert(nodeCu);
+		nDangKy++;
+	}
+	if (!s_BiDanh.empty())
+	{
+		char szMsg[256];
+		sprintf_s(szMsg, sizeof(szMsg), "[script] Bi danh duong dan: %d dong, dang ky ID cu %d, ten moi chua nap %d, ten cu con ton tai %d",
+			(int)s_BiDanh.size(), nDangKy, nThieu, nTrung);
+		printf("%s\n", szMsg);
+		g_DebugLog((LPSTR)"%s", szMsg);
+	}
+}
+
 unsigned long g_IniScriptEngine()
 {
 	g_szCurScriptDir[0] = 0;
@@ -83,6 +180,7 @@ unsigned long g_IniScriptEngine()
 	// duong bam NPC. KHONG nap rieng thu muc con nua de khoi trung ID.
 	nLoaded = LoadAllScript("\\scriptjx2\\tong_vn");
 #endif
+	sDangKyBiDanh();				// [SAPXEP 06/09] ID cu -> script moi
 	sGhiThongKeNapScript(nLoaded, GetTickCount() - dwT0);
 	return nLoaded;
 }
@@ -158,15 +256,25 @@ int g_IsJx2Script(Lua_State* L)
 		// phai LUON ap skill that (include.lua:37-40 buff 461/458/459).
 		"\\script\\missions\\yandibaozang\\",
 	};
+	// [SAPXEP 06/09] nho ket qua theo state (tra bi danh la quet tuyen tinh); s_mapJx2 xoa trong sDangKyBiDanh
+	std::map<Lua_State*, int>::iterator itJ = s_mapJx2.find(L);
+	if (itJ != s_mapJx2.end())
+		return itJ->second;
 	const char* szName = g_GetScriptNameByState(L);
 	if (!szName || !szName[0])
 		return 0;
+	const char* szCu = sBiDanh_TenCu(szName);	// tep da doi cho: xet theo ten cu
+	int nJx2 = 0;
 	for (int i = 0; i < (int)(sizeof(szJx2) / sizeof(szJx2[0])); i++)
 	{
-		if (strstr(szName, szJx2[i]) != NULL)
-			return 1;
+		if (strstr(szName, szJx2[i]) != NULL || (szCu && strstr(szCu, szJx2[i]) != NULL))
+		{
+			nJx2 = 1;
+			break;
+		}
 	}
-	return 0;
+	s_mapJx2[L] = nJx2;
+	return nJx2;
 }
 
 extern int LuaIncludeFile(Lua_State * L);
@@ -286,6 +394,11 @@ void	LoadScriptInDirectory(LPSTR lpszRootDir, LPSTR lpszSubDir)
 	intptr_t dir = _findfirst("*.*", &FindData);
 	while(dir != -1) {
 		if(strcmp(FindData.name, ".") == 0 || strcmp(FindData.name, "..") == 0)	{
+			if(_findnext(dir, &FindData)) break;
+			continue;
+		}
+		if (FindData.name[0] == '_')	// [SAPXEP 06/09] bo qua thu muc/tep bat dau '_' (_duongdan_cu.txt, _luutru, ...)
+		{
 			if(_findnext(dir, &FindData)) break;
 			continue;
 		}
