@@ -47,7 +47,7 @@ function main()
     if PlayerFunLib:CheckFreeBagCell(nMincCells, szTips) ~= 1 then
         return nil;
     end
-    local tbBiaoQiItem = {szName = "Tiªu Kú", tbProp = {6,1,4200,1,0,0}, nBindState = -2,};
+    local tbBiaoQiItem = {szName = "Tiªu Kú", tbProp = {6,1,4771,1,0,0}, nBindState = -2,};
     PlayerFunLib:GetItem(tbBiaoQiItem, 1, "[Ho¹t ®éng Long M«n Tiªu Côc] Tiªu Xa bÞ c­íp nhËn ®­îc Tiªu Kú");
     SetNpcParam(nNpcIndex, 5, 1);
     DelNpc(nNpcIndex);

@@ -1,0 +1,83 @@
+{
+ "_bang_anh_xa": "c22089d369606cbac2aa24bdbbdb03964f01c2fb66bc6c21e6aaf5c9fca0ab8f",
+ "script\\activitysys\\config\\129\\award.lua": {
+  "truoc": "61ce907c20d3723291fe04163966e3ec4a4773f49f1ec404b042d124e0b5cc6b",
+  "sau": "95b66fdaecbf41cba37cf281d5b8779bdc1a80359568ca8a4e0f045c45a04077",
+  "so_cho": 91
+ },
+ "script\\activitysys\\config\\129\\extend.lua": {
+  "truoc": "151d4fc3e868c7ce2882182d21a11d724f75bd5490b4bb588223360da8421c77",
+  "sau": "e034979189643c4fabc21a1c3a6fe77d7306b42c84041482571d600fd35d9ae3",
+  "so_cho": 11
+ },
+ "script\\activitysys\\config\\129\\item_addproperty.lua": {
+  "truoc": "f850b61a2948b4e18cc1b86d171c2bbd58301e2f5936912c057c07a43644977a",
+  "sau": "227c48176efbb0c05dbc9379fa236e3e8d71ee753744fc6f1da092c284235dff",
+  "so_cho": 6
+ },
+ "script\\activitysys\\config\\129\\item_followaward.lua": {
+  "truoc": "bd8d210f19c714c1e3ab55e6d6ccb0c167ea9e6ff6cb075a2d1effd56e74a04d",
+  "sau": "60e7948e7299a616442f947af234162e5204020d150820686867a05a7126b0ef",
+  "so_cho": 32
+ },
+ "script\\activitysys\\config\\129\\npc_lmbiaobox.lua": {
+  "truoc": "73d839ce35f77a2e524115ecfe6b4ff641ea06182bcd5379bf52dc4b4f988172",
+  "sau": "18e38772eac8b321b158abc8fb65497b86ee151ec3a2c1976a9b7035150123b5",
+  "so_cho": 1
+ },
+ "script\\activitysys\\config\\129\\npc_lmbiaoqi.lua": {
+  "truoc": "b50674414be8a555a7fca817c0b7888913c79ee1c145ce8422eb8c47143116f3",
+  "sau": "ada6ae4d42e2714242074c583437f646200d5f6d2c5772e3c693c508c6aca52d",
+  "so_cho": 1
+ },
+ "script\\activitysys\\config\\129\\npc_receiver.lua": {
+  "truoc": "4c0667a8c7afc69f5d7fdec6cb3302269b9b98c18ae08c66d6a68f41970d70c2",
+  "sau": "88357c4fc5252c2143012f059521dbfa1adad0a023422ebd31b8dd30af5d3ef1",
+  "so_cho": 4
+ },
+ "script\\event\\longmenbiaoju\\award.lua": {
+  "truoc": "01907c2c44c1132e7869fc959ddd8c85ebe804903fb5671afe76ae412987ff4e",
+  "sau": "68bacf466387a21183671ed19b7e216bdcc1a551a37a691e8e0d1885bbcd2daf",
+  "so_cho": 76
+ },
+ "script\\event\\longmenbiaoju\\gaojiweirenzhuang.lua": {
+  "truoc": "994937b573af21c12de16fdc3ca4d8ccd8b133b739f393842ba42f3f98634a63",
+  "sau": "5fd433b3cd596048d7d5aae0f20eb6817c08c4039c57fcb12bc0c84c7c2c28e5",
+  "so_cho": 1
+ },
+ "script\\event\\longmenbiaoju\\item.lua": {
+  "truoc": "d143b3e7d98c6deccc51ae9ad1bc0e1a2139ad2d3c2bb93bdfd706a63f770256",
+  "sau": "d997ab6bfe235f6ed88e494ac88a5ca11e1bea0abdc5abc71ad80897180db850",
+  "so_cho": 6
+ },
+ "script\\event\\longmenbiaoju\\item_biaojulibao.lua": {
+  "truoc": "87b67a0de7fc3c5cce6eb06ca989d8fcc4952b635d9886768cee929c7d6a8e8a",
+  "sau": "64ff99dbaea308fd3afab00ba4a6252f2be0b5d5b7b5a17a259d72fc26177d07",
+  "so_cho": 4
+ },
+ "script\\event\\longmenbiaoju\\item_hubiaolihe.lua": {
+  "truoc": "b072928de31276fd2cb4568d0b567491290fd6fd0dfa90bb51381b9ecb6baadd",
+  "sau": "7f26aaffe6339257eaedd73085df89d556def56478f62844119034df12e8eb51",
+  "so_cho": 1
+ },
+ "script\\event\\longmenbiaoju\\item_jingjingkuang.lua": {
+  "truoc": "fe86577288ee37ed2e576eb6b91af4eb68cf206ab2e9b78b73f80bf2419d03c6",
+  "sau": "22b27ebb5958327c82fd806f20c0c17b59ec3a49e21ddce9d791a1e7e56ed163",
+  "so_cho": 25
+ },
+ "script\\event\\longmenbiaoju\\item_jingjingkuang_piece.lua": {
+  "truoc": "a61c3aa359a08e803de48e414956d024ab76bec0811eba5d75a7f36716de8787",
+  "sau": "1e082066e22e3ddd9a86923f53b6c21528a87cc77ab318954e26a72e8154ce43",
+  "so_cho": 2
+ },
+ "script\\event\\longmenbiaoju\\item_jingtiekuang_piece.lua": {
+  "truoc": "0ff08acef82852505390d630925b1c014898985dd1800ee3077bc2e66a10a00a",
+  "sau": "99616ef479327472e9390a10f44e3826f7971df4da654a0662d2704a0b8ffe17",
+  "so_cho": 2
+ },
+ "script\\event\\longmenbiaoju\\item_yaobao.lua": {
+  "truoc": "10c23d384a81671e3945d1cd9b47838f18718da25842a77fcab056279dfbe57f",
+  "sau": "16f7807e7c379103efe5c63d0b6e2a593cc3be4bf7da9746ae6932d87a63be44",
+  "so_cho": 1
+ }
+}

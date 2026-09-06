@@ -12,7 +12,7 @@ function main(nItemIndex)
 		return 1;
     end
     local nG, nD, nP =  GetItemProp(nItemIndex);
-    if (nP>4207 or nP<4204) then
+    if (nP>4778 or nP<4775) then
         return nil;
     end
     -- ÊÇ·ñ½ÓÈÎÎñ
@@ -29,7 +29,7 @@ function main(nItemIndex)
 
     -- ¼ì²éÊÇ·ñÔÚÀäÈ´Ê±¼ä(5·ÖÖÓ)
     local nCurTime = GetCurrentTime();
-    local nItemTaskID = nP - 4204 + TSK_ItemKMJBTime;
+    local nItemTaskID = nP - 4775 + TSK_ItemKMJBTime;
     local nLeftTime = 180 - (nCurTime-GetTask(nItemTaskID));
     if nLeftTime > 0 then
         Talk(1, "", format("Ng­¬i võa sö dông ®¹o cô nµy, sau %d phót %d gi©y n÷a sö dông l¹i", floor(nLeftTime/60), mod(nLeftTime, 60)));
@@ -48,13 +48,13 @@ function main(nItemIndex)
         return 1;
     end
     -- ¿ìÂí¼Ó±Þ
-    if (nP == 4204) then
+    if (nP == 4775) then
         SetTask(nItemTaskID, nCurTime);
         NpcCastSkill(nCarNpcIndex, 1467, 1);
         return nil;
     end
     -- ¼á²»¿É´Ý
-    if (nP == 4205) then
+    if (nP == 4776) then
         -- »ñÈ¡ÑºïÚÈÎÎñÐÅÏ¢
         local nId = floor(nTaskFlagValue/10);       -- ÑºïÚÂ·ÏßID
         SetTask(nItemTaskID, nCurTime);
@@ -62,13 +62,13 @@ function main(nItemIndex)
         return nil;
     end
     -- Ìú¼¬ÃÜ²¼
---    if (nP == 4206) then
+--    if (nP == 4777) then
 --        SetTask(nItemTaskID, nCurTime);
 --        NpcCastSkill(nCarNpcIndex, 1469, 1);
 --        return nil;
 --    end
     -- ïÚ³µÒÆÎ»
-    if (nP == 4207) then
+    if (nP == 4778) then
         SetTask(nItemTaskID, nCurTime);
         SetNpcPos(nCarNpcIndex, nPX*32, nPY*32);
         return nil;

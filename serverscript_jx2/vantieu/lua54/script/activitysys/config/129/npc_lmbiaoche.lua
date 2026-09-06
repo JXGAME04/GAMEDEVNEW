@@ -5,6 +5,8 @@ Include("\\script\\activitysys\\config\\129\\head.lua")
 Include("\\script\\activitysys\\config\\129\\config.lua")
 Include("\\script\\activitysys\\config\\129\\extend.lua")
 Include("\\script\\activitysys\\config\\129\\variables.lua")
+Include("\\script\\global\\yunbiao_system.lua")	-- [LMBC 06/09] ba ham engine goi nguoc ban vao state CUA SCRIPT XE
+Include("\\script\\lib\\lib_lmbiaoche.lua")	-- [LMBC 06/09] WriteYunBiaoLog
 
 tbDialogNpcList = {
     ["LÔ Quan"]         = 1,

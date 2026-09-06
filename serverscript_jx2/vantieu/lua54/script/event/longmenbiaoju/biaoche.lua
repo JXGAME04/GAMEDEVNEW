@@ -1,4 +1,5 @@
 Include("\\script\\event\\longmenbiaoju\\head.lua")
+Include("\\script\\global\\yunbiao_system.lua")	-- [LMBC 06/09] ba ham engine goi nguoc ban vao state CUA SCRIPT XE
 
 local BiaoCheClass = {}
 BiaoCheClass.tbNpcType = {

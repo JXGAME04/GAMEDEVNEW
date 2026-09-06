@@ -1,10 +1,10 @@
 Include("\\script\\lib\\awardtemplet.lua")
 Include("\\script\\activitysys\\playerfunlib.lua")
 
-TB_DEST_ITEM = {tbProp = {6, 1, 4537, 1,0, 0}, szName="Tinh Tinh Kho¸ng kh«ng nguyªn chÊt.", nCount=1, nBindState = -2}
+TB_DEST_ITEM = {tbProp = {6, 1, 4984, 1,0, 0}, szName="Tinh Tinh Kho¸ng kh«ng nguyªn chÊt.", nCount=1, nBindState = -2}
 NEED_ROOM = 1
 NEED_COUNT = 10
-TB_NEED_ITEM = {tbProp = {6, 1, 4535, 1,0, 0}, szName="M¶nh Tinh Tinh Kho¸ng."}
+TB_NEED_ITEM = {tbProp = {6, 1, 4982, 1,0, 0}, szName="M¶nh Tinh Tinh Kho¸ng."}
 
 function main(nItemIndex)
 	if PlayerFunLib:CheckFreeBagCell(NEED_ROOM, "default") ~= 1 then

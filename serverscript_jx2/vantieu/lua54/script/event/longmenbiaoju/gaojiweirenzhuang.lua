@@ -7,7 +7,7 @@ function OnKillKillerBoss(nTaskId, nTaskValue)
 	if nKillerLevel ~= 90 then
 		return 
 	end
-	local tbAward = {{tbProp={6,1,4202,1,0,0}, nRate=0.2}}
+	local tbAward = {{tbProp={6,1,4773,1,0,0}, nRate=0.2}}
 	if CalcFreeItemCellCount() > 0 then
 		tbAwardTemplet:Give(tbAward, 1, {"FinishKiller90", "Get_GaoJiWeiRenZhuang"})
 	else

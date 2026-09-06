@@ -57,7 +57,7 @@ local _GetAward = function(nNpcIndex, dwNpcID)
     -- ¸ø½±Àø
     local nExpTime = getExpiredTime();
     local tbItemAward = {
-        { szName = "R­¬ng Tiªu VËt Bang", tbProp = {6, 1, 4475, 1, 0, 0}, nBindState = -2, nExpiredTime = nExpTime,},
+        { szName = "R­¬ng Tiªu VËt Bang", tbProp = {6, 1, 4980, 1, 0, 0}, nBindState = -2, nExpiredTime = nExpTime,},
     }
     tbAwardTemplet:GiveAwardByList(tbItemAward, "[Long M«n Tiªu Côc_¸p Tiªu Bang] NhÆt R­¬ng Tiªu VËt Bang");
     local nCurCount = GetNpcParam(nNpcIndex, 1) + 1;

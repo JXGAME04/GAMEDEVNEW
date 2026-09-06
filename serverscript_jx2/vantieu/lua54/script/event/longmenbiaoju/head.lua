@@ -1,10 +1,14 @@
 Include("\\script\\lib\\objbuffer_head.lua")
 
-LongMenBiaoJu = {}
-LongMenBiaoJu.GSCallBackList = {}
-LongMenBiaoJu.RelayCallBackId = 0
-LongMenBiaoJu.BiaoCheList = {}
-LongMenBiaoJu.GenData = {}
+-- [VANTIEU 06/09 va#4] Include cua JX1 KHONG dedupe (ScriptFuns.cpp:2061
+-- lua_dofile MOI lan): 22 tep deu Include tep nay o dong 1, nen "= {}"
+-- se XOA sach nhung gi tep nap truoc da gan (do that: mat 8 lop, ke ca
+-- TaskClass/BiaoCheClass). Dung loi viet nha JX1: "X = X or {}".
+LongMenBiaoJu = LongMenBiaoJu or {}
+LongMenBiaoJu.GSCallBackList = LongMenBiaoJu.GSCallBackList or {}
+LongMenBiaoJu.RelayCallBackId = LongMenBiaoJu.RelayCallBackId or 0
+LongMenBiaoJu.BiaoCheList = LongMenBiaoJu.BiaoCheList or {}
+LongMenBiaoJu.GenData = LongMenBiaoJu.GenData or {}
 LongMenBiaoJu.nCurDate = nil
 LongMenBiaoJu.nCurDate = nil
 LongMenBiaoJu.nCurDate = nil
@@ -194,6 +198,11 @@ function LongMenBiaoJu:GenerateTask(HParam, HResult)
 		end
 	end
 
+	-- [VANTIEU 06/09] Tong nRate cua RandomTable chi la 0,9900 (head.lua:18-27) ma
+	-- so boc la random(1, 10000): roi vao 9901..10000 thi khong nhanh nao khop,
+	-- tbData con nil va dong duoi nem loi. Lui ve nhiem vu 1 sao - dung y nType = 1
+	-- ma chinh ham da dat san.
+	tbData = tbData or self.RandomTable[1]
 	local idx = random(1, getn(tbData.tbRoute))
 	local nRouteId = tbData.tbRoute[idx]
 	local nInvert = random(0, 1)
@@ -249,4 +258,9 @@ function LongMenBiaoJu:Msg2Player(ParamHandle)
 	Msg2PlayerByName(szName, szMsg)
 end
 
-LongMenBiaoJu:Load()
+-- [VANTIEU 06/09] BO loi goi Load() o than chunk: Load() dung OB_LoadShareData,
+-- ham CHI CO ben Relay -> tren GameServer no la nil va lam chet ca chuoi Include
+-- (luaerror_20260806.txt:201-290). Nap so lieu doi sang LongMenBiaoJu:EnsureLoaded()
+-- trong lmbj_config.lua (goi tre, chi khi that su dang o Relay).
+-- Dong duoi day cung chinh la cho nap phan cau hinh TU VIET cua nhanh ca nhan.
+Include("\\script\\event\\longmenbiaoju\\lmbj_config.lua")

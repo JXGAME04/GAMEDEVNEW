@@ -9,6 +9,7 @@ Include("\\script\\dailogsys\\g_dialog.lua");
 Include("\\script\\lib\\progressbar.lua");
 Include("\\script\\lib\\awardtemplet.lua");
 Include("\\script\\activitysys\\playerfunlib.lua");
+Include("\\script\\lib\\lib_lmbiaoche.lua")	-- [LMBC 06/09] WriteYunBiaoLog
 
 -- clear npc
 function OnTimer(nNpcIndex, nTimeOut)

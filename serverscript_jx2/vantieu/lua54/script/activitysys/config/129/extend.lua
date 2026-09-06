@@ -15,6 +15,7 @@ Include("\\script\\activitysys\\playerfunlib.lua")
 Include("\\script\\tong\\tong_award_head.lua")
 
 IncludeLib("TIMER")
+Include("\\script\\lib\\lib_lmbiaoche.lua")	-- [LMBC 06/09] WriteYunBiaoLog
 
 pActivity.nPak = curpack();
 
@@ -287,7 +288,7 @@ function pActivity:CheckReceiveTaskCondition()
         end
     end
     -- Ìõ¼þÅÐ¶Ï£ºÊÇ·ñÓÐÎ´ÁìµÄ½±Àø
-    if (CalcItemCount(-1, 6, 1, 4200, -1) > 0) then
+    if (CalcItemCount(-1, 6, 1, 4771, -1) > 0) then
         Talk(1, "", "Ng­¬i cã phÇn th­ëng ¸p Tiªu ch­a nhËn, nhËn xong råi quay l¹i ®©y.");
         return nil;
     end
@@ -405,7 +406,7 @@ function pActivity:ReceiveAward(nNpcType)
     local tbCountCell = self.tbAllCountCell[nLevel];
     local tbAwardList = self.tbAward[nLevel];
     -- ÊÇ·ñÓÐïÚÆì_ÓÐïÚÆìÁìµÍ±£
-    local nBiaoQiCount = CalcItemCount(-1, 6, 1, 4200, -1);
+    local nBiaoQiCount = CalcItemCount(-1, 6, 1, 4771, -1);
     if nBiaoQiCount > 0 then
         tbCountCell = self.tbLowCountCell[nLevel];
         -- ¼ì²é±³°ü¿Õ¼ä
@@ -417,7 +418,7 @@ function pActivity:ReceiveAward(nNpcType)
         -- ÐÞ¸ÄÑºïÚ±ê¼Ç±äÁ¿
         SetTask(TSK_LMBJTaskFlag, 0);
         for i = 1, nBiaoQiCount do
-            ConsumeItem(-1, 1, 6, 1, 4200, -1); -- ¿Û³ýµÀ¾ß
+            ConsumeItem(-1, 1, 6, 1, 4771, -1); -- ¿Û³ýµÀ¾ß
         end
         DynamicExecuteByPlayer(PlayerIndex, "\\script\\huoyuedu\\huoyuedu.lua", "tbHuoYueDu:AddHuoYueDu", "yunbiao"); -- ¸øÍæ¼ÒÔö¼Ó»îÔ¾¶È
         tbAwardTemplet:GiveAwardByList(tbAwardList, "[Long M«n Tiªu Côc] Tiªu Xa bÞ c­íp nhËn ®­îc phÇn th­ëng an ñi.", tbCountCell[1]);
@@ -457,7 +458,7 @@ function pActivity:ReceiveAward(nNpcType)
         -- ¸ø½±Àø
         DynamicExecuteByPlayer(PlayerIndex, "\\script\\huoyuedu\\huoyuedu.lua", "tbHuoYueDu:AddHuoYueDu", "yunbiao"); -- ¸øÍæ¼ÒÔö¼Ó»îÔ¾¶È
         tbAwardTemplet:GiveAwardByList(tbAwardList, "[Long M«n Tiªu Côc] ¸p tiªu thµnh c«ng nhËn ®­îc toµn bé phÇn th­ëng.", tbCountCell[1]);
-        local tbAwardItem = {szName = "Hé Tiªu LÖnh", tbProp = {6, 1, 4203, 1, 0, 0}, nBindState = -2,};
+        local tbAwardItem = {szName = "Hé Tiªu LÖnh", tbProp = {6, 1, 4774, 1, 0, 0}, nBindState = -2,};
         PlayerFunLib:GetItem(tbAwardItem, 2, "[Long M«n Tiªu Côc-NhiÖm vô ¸p Tiªu] ¸p tiªu thµnh c«ng nhËn ®­îc Hé Tiªu LÖnh");
         AddStatData("lmbj_task_over");
         WriteYunBiaoLog(format("[Long M«n Tiªu Côc] Tµi kho¶n: %s, Nh©n vËt: %s, ¸p tiªu thµnh c«ng nhËn ®­îc toµn bé phÇn th­ëng, ID nhiÖm vô: %d, CÊp sao: %d", 
@@ -479,7 +480,7 @@ function pActivity:ViewTaskInfor()
     local nTaskFlagValue = GetTask(TSK_LMBJTaskFlag);
     local nTaskTimeValue = GetTask(TSK_LMBJTaskTime);
     -- ½ÓÁËÈÎÎñ²¢ÇÒÁìÁËïÚ³µ
-    local nBiaoQiCount = CalcItemCount(-1, 6, 1, 4200, -1);
+    local nBiaoQiCount = CalcItemCount(-1, 6, 1, 4771, -1);
     if (nTaskFlagValue ~= 0 and nTaskTimeValue ~= 0 and nBiaoQiCount <= 0) then
         local handle = OB_Create();
         ObjBuffer:PushObject(handle, GetName());
@@ -561,7 +562,7 @@ function pActivity:Transport2Dest()
         return nil;
     end
     -- ¼ì²éïÚ³µÊÇ·ñÒÑ±»´Ý»Ù»òÕßÏûÊ§
-    if (CalcItemCount(-1, 6, 1, 4200, -1) > 0) then
+    if (CalcItemCount(-1, 6, 1, 4771, -1) > 0) then
         Talk(1, "", "Tiªu Xa ®Òu bÞ ng­¬i lµm mÊt hÕt råi, kh«ng thÓ truyÒn tèng.");
         return nil;
     end
@@ -760,7 +761,7 @@ function pActivity:onSelectProcess(nSelId, tbParam)
             return 0;
         end
         -- Ìõ¼þÅÐ¶Ï£º±³°üÖÐÊÇ·ñÓÐ»»Æ±Æ¾Ö¤
-        if (CalcItemCount(3, 6, 1, 4201, -1) <= 0) then
+        if (CalcItemCount(3, 6, 1, 4772, -1) <= 0) then
             Talk(1, "", "Kh«ng cã Ho¸n Tiªu ChØ, kh«ng nªn l·ng phÝ thêi gian.");
             return 0;
         end
@@ -795,7 +796,7 @@ function pActivity:onConfirmProcess(nSelId, tbParam)
 
     -- È·¶¨Ê¹ÓÃ»»ïÚÆ¾Ö¤»»ïÚ
     if (nSelId == 2) then
-        if (ConsumeItem(3, 1, 6, 1, 4201, -1) == 1) then -- ¿Û³ýµÀ¾ß(»»ïÚÆ¾Ö¤)
+        if (ConsumeItem(3, 1, 6, 1, 4772, -1) == 1) then -- ¿Û³ýµÀ¾ß(»»ïÚÆ¾Ö¤)
             Msg2Player("NhiÖm vô ¸p Tiªu ®· t¹o míi, trõ 1 Ho¸n Tiªu ChØ.");
             -- ÖØÐÂ²úÉúÑºïÚÂ·Ïß
             local nTaskValue = self:getChangeTaskFlag();
@@ -811,7 +812,7 @@ function pActivity:onConfirmProcess(nSelId, tbParam)
 
     -- È·¶¨½ÓÊÜ¸ß¼¶ÑºïÚÈÎÎñ
     if (nSelId == 3) then
-        if (ConsumeItem(3, 1, 6, 1, 4202, -1) ~= 1) then -- ¿Û³ýµÀ¾ß(»»ïÚÆ¾Ö¤)
+        if (ConsumeItem(3, 1, 6, 1, 4773, -1) ~= 1) then -- ¿Û³ýµÀ¾ß(»»ïÚÆ¾Ö¤)
             Talk(1, "", "Ng­¬i kh«ng cã ¸p tiªu ñy nhiÖm tr¹ng cao cÊp, ®õng phÝ thêi gian n÷a.");
             return nil;
         end
@@ -1409,7 +1410,7 @@ function pActivity:PutBiaoCheBox(nTongTaskId, nCount)
     for i = 1, nCount do
         local nItemIndex = GetGiveItemUnit(i);
         local  nG, nD, nP = GetItemProp(nItemIndex);
-        if nP ~= 4475 then
+        if nP ~= 4980 then
             bCheckResult = 0;
             break;
         end
@@ -1425,7 +1426,7 @@ function pActivity:PutBiaoCheBox(nTongTaskId, nCount)
     for i = 1, nCount do
         local nItemIndex = GetGiveItemUnit(i);
         local nG, nD, nP = GetItemProp(nItemIndex);
-        if nP == 4475 then
+        if nP == 4980 then
             local nStackCount = GetItemStackCount(nItemIndex);
             local nMemDate = self:GetItemExpiredTime(nItemIndex);
             if nCurDate >= nMemDate then

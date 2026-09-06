@@ -5,7 +5,7 @@ Include("\\script\\lib\\progressbar.lua")
 
 local tbItem = 
 {
-	["6,1,4539"] = {szName="Ngò hoa ngäc lé hoµn ®Æc biÖt", tbProp={1, 8, 0, 4, 0, 0}},
+	["6,1,4986"] = {szName="Ngò hoa ngäc lé hoµn ®Æc biÖt", tbProp={1, 8, 0, 4, 0, 0}},
 }
 
 local _AskForNumber = function(nItemIndex, nCount)

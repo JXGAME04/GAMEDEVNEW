@@ -66,7 +66,7 @@ function pActivity:HandTongBiaoChe()
     local tbCountCell = self.tbAllCountCell[10];
     local nExpTime = getExpiredTime();
     local tbAwardList = {
-        { szName = "R­¬ng Tiªu VËt Bang", tbProp = {6,1,4475,1,0,0}, nBindState = -2, nExpiredTime = nExpTime,},
+        { szName = "R­¬ng Tiªu VËt Bang", tbProp = {6,1,4980,1,0,0}, nBindState = -2, nExpiredTime = nExpTime,},
     }
     -- ¼ì²é±³°ü¿Õ¼ä
     local szTips = format("Tói kh«ng ®ñ chç, ®¶m b¶o cã %d « trèng h·y ®Õn.", tbCountCell[2]);
@@ -92,13 +92,13 @@ end
 function pActivity:getAward(nCount)
     local tbItem = {}
     if nCount < 5 then
-        tbItem = { szName = "CÈm nang thay ®æi trêi ®Êt", tbProp = {6,1,2527,1,0,0}, nBindState = -2, tbParam={0}, nExpiredTime = 43200,
+        tbItem = { szName = "CÈm nang thay ®æi trêi ®Êt", tbProp = {6,1,2536,1,0,0}, nBindState = -2, tbParam={0}, nExpiredTime = 43200,
             CallBack = function(nItemIndex) AddStatData("bhyb_followaward1_count"); end,};
     elseif nCount >= 5 and nCount < 12 then
-        tbItem = { szName = "Th­ëng TËn Trung", tbProp = {6,1,4473,1,0,0}, nBindState = -2, nExpiredTime = 10080,
+        tbItem = { szName = "Th­ëng TËn Trung", tbProp = {6,1,4978,1,0,0}, nBindState = -2, nExpiredTime = 10080,
             CallBack = function(nItemIndex) AddStatData("bhyb_followaward2_count"); end,};
     elseif nCount >= 12 then
-        tbItem = { szName = "Th­ëng Trung Thµnh", tbProp = {6,1,4474,1,0,0}, nBindState = -2, nExpiredTime = 10080,
+        tbItem = { szName = "Th­ëng Trung Thµnh", tbProp = {6,1,4979,1,0,0}, nBindState = -2, nExpiredTime = 10080,
             CallBack = function(nItemIndex) AddStatData("bhyb_followaward3_count"); end,};
     end
     return tbItem;

@@ -1,6 +1,15 @@
+-- =========================================================================
+-- yunbiao_system.lua   [LMBC 06/09]  port tu ban Linux
+--   D:\ServerLinux\server1\script\global\yunbiao_system.lua
+-- Ba ham duoi day la GOI NGUOC tu engine (commit 16f38a84):
+--   OnBiaoCheFarAwayPlayerDisapper / OnBiaoCheDisapper  goi tren XE tieu
+--   OnBiaoCheChangeMapNotice                            goi tren NGUOI CHOI
+-- Can WriteYunBiaoLog (script\lib\lib_lmbiaoche.lua) va
+-- tbGlobalMapId2Name (script\global\maplist.lua).
+-- =========================================================================
+Include("\\script\\lib\\lib_lmbiaoche.lua")
 Include("\\script\\global\\maplist.lua")
 Include("\\script\\activitysys\\config\\129\\variables.lua")
-Include("\\script\\lib\\lib_lmbiaoche.lua")	-- [LMBC 06/09] WriteYunBiaoLog
 
 function OnBiaoCheFarAwayPlayerDisapper(nNpcIndex, szPlayerName)--ïÚ³µÀëÍæ¼ÒÌ«Ô¶£¬³¬Ê±Ö®ºó×Ô¶¯ÏûÊ§
     --´Ëº¯ÊýÖÐµÄPlayerIndexÎÞÐ§£¬²»ÄÜÊ¹ÓÃ
@@ -24,7 +33,19 @@ function OnBiaoCheDisapper(nNpcIndex, szPlayerName)--ïÚ³µ´æÔÚ³¬¹ý30·ÖÖÓÏûÊ§
     	local nTongId = GetNpcParam(nNpcIndex, 5) + GetNpcParam(nNpcIndex, 6);
 	    if (nTongId ~= 0) then
 	    	local szMsg = format("[¸p tiªu bang héi] %s t¹i [%s]qu¸ giê ¸p tiªu sÏ tù ®éng mÊt", szBiaoCheName, tbGlobalMapId2Name[nMapID]);
-	    	Msg2Tong(nTongId, szMsg);
+	    	-- [LMBC-KIEM 06/09] SUA: Msg2Tong(nTong, szMsg) dang 2 THAM SO lay
+	    	-- PlayerIndex TU STATE (ScriptFuns.cpp:15199 -> LuaMsgToTong, cau
+	    	-- 'nPlayerIndex = GetPlayerIndex(L); if (nPlayerIndex <= 0) return 0;').
+	    	-- Ba goi nguoc xe tieu chay qua BC_FireCartScript, ham nay DAT
+	    	-- SCRIPT_PLAYERINDEX = 0 (KBiaoChe.cpp:197-198) => GetPlayerIndex tra -1
+	    	-- => Msg2Tong IM LANG khong gui gi. AUC_MsgTong(nTong, szMsg)
+	    	-- (KAuctionServer.cpp:1001, dang ky ScriptFuns.cpp:15129) KHONG can
+	    	-- PlayerIndex - dung chinh ham do, giu Msg2Tong lam duong lui.
+	    	if AUC_MsgTong then
+	    		AUC_MsgTong(nTongId, szMsg);
+	    	else
+	    		Msg2Tong(nTongId, szMsg);
+	    	end
 	    end
     end
 end
@@ -45,6 +66,9 @@ function OnBiaoCheChangeMapNotice()
     end
 --    local tbBiaoCheLevel = { 1, 2, 2, 2, 2, 2, 2, 3, 3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 
 --                10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,};
+    -- [LMBC 06/09] getLevel la BIEN CUC BO giu mot ham vo danh (khong phai
+    -- ham engine bi thieu). Bang tbBiaoCheLevel bi chu thich o tren chi de
+    -- doi chieu; nguon that la pActivity.tbBJPathLevel ben extend.lua.
     local getLevel = function(nId)
         local nLv = nil;
         if nId >= 19 and nId < 23 then -- 7ÐÇïÚ³µ
@@ -53,7 +77,11 @@ function OnBiaoCheChangeMapNotice()
             nLv = 8;
         elseif nId >= 26 and nId < 27 then -- 9ÐÇïÚ³µ
             nLv = 9;
-        elseif nId >= 27 and nId < 45 then -- 10ÐÇïÚ³µ
+        -- [LMBC 06/09] SUA: ban goc la 'nId >= 27 and nId < 45' -> mat loa 5
+        -- tuyen bang hoi 10 sao cuoi bang. tbBJPathLevel trong
+        -- script\activitysys\config\129\extend.lua co ID 27..49
+        -- (44,45,46 = Phuong Tuong; 47,48,49 = Dai Ly), nen phai la nId <= 49.
+        elseif nId >= 27 and nId <= 49 then -- 10ÐÇïÚ³µ
             nLv = 10;
         end
         return nLv;

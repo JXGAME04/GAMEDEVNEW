@@ -636,7 +636,11 @@ function TaskClass:QueryBiaoChe(nParam)
 	OB_Release(handle)
 end
 
-TaskClass:Load()
+-- [VANTIEU 06/09] BO loi goi Load() o than chunk: Load() dung TabFile_Load, khong
+-- co ben Relay -> route.txt KHONG BAO GIO duoc nap (luaerror_20260806.txt:281-284).
+-- Bang tuyen duong nay duoc nap TRE trong LongMenBiaoJu:GetTaskClass()
+-- (lmbj_config.lua muc 11), dung o lan dau co ai can den no.
+-- TaskClass:Load()
 LongMenBiaoJu.TaskClass = TaskClass
 
 function LongMenBiaoJu:CallBack_GenerateTask(nParam, HResult)
