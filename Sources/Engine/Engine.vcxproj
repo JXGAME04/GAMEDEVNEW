@@ -475,6 +475,7 @@ copy EngineServerRelease\engine.pdb ..\..\..\bin\Multiserver\engine.pdb</Command
       <OutputFile>.\Debug\Engine.bsc</OutputFile>
     </Bscmake>
     <Link>
+      <IgnoreSpecificDefaultLibraries>MSVCRT.lib</IgnoreSpecificDefaultLibraries>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
