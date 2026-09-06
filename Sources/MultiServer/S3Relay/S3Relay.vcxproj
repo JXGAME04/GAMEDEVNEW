@@ -175,6 +175,9 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
     </ClCompile>
     <ClCompile Include="DBTable_MySQL.cpp" />
     <ClCompile Include="_neo_libdb.cpp" />
+    <ClCompile Include="RelayScript.cpp" />
+    <ClCompile Include="RelayShareData.cpp" />
+    <ClCompile Include="RelayTaskCentre.cpp" />
     <ClCompile Include="OfflineMsgDB.cpp" />
     <ClCompile Include="DealRelay.cpp" />
     <ClCompile Include="DoScript.cpp" />
@@ -241,6 +244,9 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
     <ClInclude Include="DoScript.h" />
     <ClInclude Include="FilterTextLib.h" />
     <ClInclude Include="FriendMgr.h" />
+    <ClInclude Include="RelayScript.h" />
+    <ClInclude Include="RelayShareData.h" />
+    <ClInclude Include="RelayTaskCentre.h" />
     <ClInclude Include="OfflineMsgDB.h" />
     <ClInclude Include="GatewayCenter.h" />
     <ClInclude Include="GatewayClient.h" />

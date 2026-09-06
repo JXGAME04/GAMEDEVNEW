@@ -62,7 +62,8 @@ const UINT timer_rootclient = 2;
 const UINT timer_gatewayclient = 3;
 const UINT timer_dbclient = 4;
 const UINT timer_friendudtdb = 5;
-const UINT timer_tongjx2 = 6;	// JX2 port: bao tri bang hoi + quy -> kinh nghiem
+const UINT timer_tongjx2 = 6;
+const UINT timer_relaytask = 7;	// [RELAYHT 06/09] nhip TaskCentre, 1 giay	// JX2 port: bao tri bang hoi + quy -> kinh nghiem
 
 
 #endif // !defined(AFX_S3RELAY_H__B8C0717F_28A0_45B1_B760_36FCC946AD70__INCLUDED_)
