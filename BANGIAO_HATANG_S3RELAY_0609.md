@@ -109,7 +109,36 @@ function GameSvrReady(dwIP) end
 
 ---
 
-## 3. ⛔ CHƯA SWAP ĐƯỢC — VƯỚNG ĐÚNG MỘT THỨ
+## 3. ✅ ĐÃ SWAP THẬT LÚC 12:23 — VÀ CÁCH GỠ CHỖ VƯỚNG
+
+> **Cập nhật 06/09 12:23**: chủ tắt máy chủ và cho phép chép vào. Đã gỡ được chỗ vướng
+> mô tả bên dưới, `bin\multiserver` giờ có đủ bộ:
+>
+> | Tệp | Cỡ | Ghi chú |
+> |---|---:|---|
+> | `S3Relay.exe` | 4.462.592 | bản mới (cũ 4.413.952 → `S3Relay.exe.truoc_relayht0609`) |
+> | `engine.dll` | 923.648 | **"Engine Server Release\|Win32" bản Lua 5.4** (cũ 634.368 → `engine.dll.truoc_relayht0609`) |
+> | `Lua54Dll.dll` | 492.544 | Win32 Release, tệp mới |
+> | `libcrypto-3.dll` | 2.970.624 | **tệp mới bắt buộc** — engine.dll mới nhập OpenSSL (do `Src\KIniFile.cpp`); thiếu là engine.dll không nạp được và cả S3Relay lẫn Bishop chết lúc khởi động. Lấy từ `C:\vcpkg\packages\openssl_x86-windows\bin` |
+>
+> **Lùi lại**: chạy `LuiRelayHT0609.bat` trong chính thư mục đó (relay phải tắt).
+>
+> **Cách gỡ lỗi liên kết**: thêm `<IgnoreSpecificDefaultLibraries>MSVCRT.lib` vào
+> cấu hình *"Engine Server Release|Win32"* (commit `6f251915`). Còn lại chỉ là cảnh
+> báo `LNK4217/LNK4286` "imported by" của `JpgLib.lib`/`mp3lib.lib` — vô hại vì cả
+> hai chỉ dùng `malloc`/`memmove` và đều nằm trong **cùng một CRT tĩnh** bên trong
+> `engine.dll`.
+>
+> **Đã đối chiếu trước khi swap** (bằng bộ đọc PE tự viết): mọi hàm `engine.dll` mà
+> `Bishop.exe` (1), `StartGameSV.exe` (1), `S3DBInterface.dll` (3) và `S3Relay.exe`
+> (23) gọi **đều còn đủ** trong bản mới (1.320/1.324 hàm xuất); mọi DLL phụ thuộc
+> đều có mặt. Cặp cũ vốn **đã trộn CRT sẵn** (S3Relay tĩnh + engine.dll CRT gỡ rối)
+> nên bản mới (tĩnh + tĩnh) không phát sinh rủi ro mới.
+>
+> **CHƯA CHẠY THỬ**: `S3Relay.exe` có hộp thoại đăng nhập lúc khởi động nên không
+> tự kiểm được — xem mục 5 để biết cần nhìn gì trong nhật ký khi chủ bật lên.
+
+### 3.1 (Ghi lại) Chỗ vướng ban đầu
 
 `bin\multiserver` là **đảo Lua riêng** và **vẫn đang chạy Lua 4**
 (`lualibdll.dll`, `engine.dll` 634 KB ngày 18/08). S3Relay trên `origin/main` từ
@@ -144,13 +173,13 @@ cho phép tôi thêm `vcruntime.lib` / gỡ `MSVCRT` khỏi cấu hình đó.
 
 | Chỗ | Nội dung |
 |---|---|
-| `bin\multiserver\_relayht_0609\S3Relay.exe` | bản mới (**chưa** đặt tên `.moi`, để không ai lỡ swap thiếu tệp) |
-| `bin\multiserver\_relayht_0609\Lua54Dll.dll` | Win32 Release, 492.544 byte |
-| `bin\multiserver\script\lib\*.lua` | 2 thư viện kịch bản (đã chép, **vô hại** với relay đang chạy) |
+| `bin\multiserver\S3Relay.exe` · `engine.dll` · `Lua54Dll.dll` · `libcrypto-3.dll` | **đã swap 12:23** (xem mục 3) |
+| `bin\multiserver\*.truoc_relayht0609` | 2 tệp sao lưu để lùi |
+| `bin\multiserver\LuiRelayHT0609.bat` | lùi về bản cũ (relay phải tắt) |
+| `bin\multiserver\script\lib\*.lua` | 2 thư viện kịch bản |
 | `bin\multiserver\relaysetting\task\*` | `tasklist.ini` + `hb_relay.lua` |
 
-Relay đang chạy **không đọc** `script\` và `relaysetting\` nên chép trước hoàn toàn
-an toàn; swap xong là chạy ngay.
+Thư mục dựng tạm `_relayht_0609\` đã xoá sau khi swap xong.
 
 ---
 
