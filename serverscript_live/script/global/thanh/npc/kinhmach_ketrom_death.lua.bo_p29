@@ -1,0 +1,21 @@
+-- [KM 28/08] Thuong giet Ke Trom Chan Nguyen - so lieu DUNG ban Linux
+-- (global\thinh\rskinhmach\npcdeath.lua): 5tr exp + 50 Ho Mach Don + 1 Dai HMD
+-- + 1 vien Chan Nguyen (Linux 6,1,4804; JX1 thay = 1 CND (dai) 4847 = +10 diem).
+-- Mau chuyen ngu canh nguoi giet: tinhnang\datau\danhquai.lua (NpcIdx2PIdx + PlayerIndex).
+Include("\\script\\lib\\lib_ham.lua")
+
+function OnDeath(nNpcIndex, nDamageIndex)
+	local nPlayerIndex = NpcIdx2PIdx(nDamageIndex)
+	if nPlayerIndex == nil then
+		return
+	end
+	if nPlayerIndex <= 0 then
+		return
+	end
+	PlayerIndex = nPlayerIndex
+	AddOwnExp(5000000)
+	AddItemSL(4844, 50, 0)
+	AddItemSL(4870, 1, 0)
+	AddItemSL(4847, 1, 0)
+	Msg2Player("Tiªu diÖt KÎ Trém Ch©n Nguyªn: +5.000.000 kinh nghiÖm, 50 Hé M¹ch §¬n, 1 §¹i Hé M¹ch §¬n, 1 Ch©n Nguyªn §¬n (®¹i).")
+end

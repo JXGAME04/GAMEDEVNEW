@@ -1,0 +1,153 @@
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: [string "?"]:26: unexpected symbol near '%'
+2026/09/05 12:04:52.940 	 ScriptError 3. (\script\lib\baseclass.lua) 
+
+2026/09/05 12:04:52.940 	 ScriptError 3. (\script\lib\baseclass.lua) 
+
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:80: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:80: in main chunk
+2026/09/05 12:04:52.944 	 ScriptError 4:[1] (\script\lib\composeclass.lua) 
+
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:44: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:44: in main chunk
+2026/09/05 12:04:52.944 	 ScriptError 4:[1] (\script\lib\composeex.lua) 
+
+error: [string "?"]:94: unexpected symbol near '%'
+2026/09/05 12:04:52.957 	 ScriptError 3. (\script\lib\log.lua) 
+
+2026/09/05 12:04:52.957 	 ScriptError 3. (\script\lib\log.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:3: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:52.957 	 ScriptError 4:[1] (\script\lib\pfunction.lua) 
+
+error: [string "?"]:35: unexpected symbol near '%'
+2026/09/05 12:04:52.957 	 ScriptError 3. (\script\lib\progressbar.lua) 
+
+2026/09/05 12:04:52.957 	 ScriptError 3. (\script\lib\progressbar.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:6: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:6: in main chunk
+2026/09/05 12:04:52.957 	 ScriptError 4:[1] (\script\lib\remoteexc.lua) 
+
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: [string "?"]:26: unexpected symbol near '%'
+2026/09/05 12:22:38.967 	 ScriptError 3. (\script\lib\baseclass.lua) 
+
+2026/09/05 12:22:38.967 	 ScriptError 3. (\script\lib\baseclass.lua) 
+
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:80: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:80: in main chunk
+2026/09/05 12:22:38.969 	 ScriptError 4:[1] (\script\lib\composeclass.lua) 
+
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:44: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:44: in main chunk
+2026/09/05 12:22:38.974 	 ScriptError 4:[1] (\script\lib\composeex.lua) 
+
+error: [string "?"]:94: unexpected symbol near '%'
+2026/09/05 12:22:38.983 	 ScriptError 3. (\script\lib\log.lua) 
+
+2026/09/05 12:22:38.983 	 ScriptError 3. (\script\lib\log.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:3: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:38.985 	 ScriptError 4:[1] (\script\lib\pfunction.lua) 
+
+error: [string "?"]:35: unexpected symbol near '%'
+2026/09/05 12:22:38.986 	 ScriptError 3. (\script\lib\progressbar.lua) 
+
+2026/09/05 12:22:38.986 	 ScriptError 3. (\script\lib\progressbar.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:6: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:6: in main chunk
+2026/09/05 12:22:38.988 	 ScriptError 4:[1] (\script\lib\remoteexc.lua) 
+
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: [string "?"]:26: unexpected symbol near '%'
+2026/09/05 12:24:59.873 	 ScriptError 3. (\script\lib\baseclass.lua) 
+
+2026/09/05 12:24:59.873 	 ScriptError 3. (\script\lib\baseclass.lua) 
+
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:80: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:80: in main chunk
+2026/09/05 12:24:59.875 	 ScriptError 4:[1] (\script\lib\composeclass.lua) 
+
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:44: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:44: in main chunk
+2026/09/05 12:24:59.878 	 ScriptError 4:[1] (\script\lib\composeex.lua) 
+
+error: [string "?"]:94: unexpected symbol near '%'
+2026/09/05 12:24:59.888 	 ScriptError 3. (\script\lib\log.lua) 
+
+2026/09/05 12:24:59.888 	 ScriptError 3. (\script\lib\log.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:3: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.891 	 ScriptError 4:[1] (\script\lib\pfunction.lua) 
+
+error: [string "?"]:35: unexpected symbol near '%'
+2026/09/05 12:24:59.892 	 ScriptError 3. (\script\lib\progressbar.lua) 
+
+2026/09/05 12:24:59.892 	 ScriptError 3. (\script\lib\progressbar.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:6: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:6: in main chunk
+2026/09/05 12:24:59.893 	 ScriptError 4:[1] (\script\lib\remoteexc.lua) 
+

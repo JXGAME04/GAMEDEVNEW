@@ -1,0 +1,63 @@
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:5: in main chunk
+error: [string "?"]:9: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:9: in main chunk
+2026/09/05 12:04:52.057 	 ScriptError 4:[1] (\script\event\birthday_jieri\200905\class.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:16: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:16: in main chunk
+2026/09/05 12:04:52.057 	 ScriptError 4:[1] (\script\event\birthday_jieri\200905\taskctrl.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:5: in main chunk
+error: [string "?"]:9: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:9: in main chunk
+2026/09/05 12:22:38.363 	 ScriptError 4:[1] (\script\event\birthday_jieri\200905\class.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:16: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:16: in main chunk
+2026/09/05 12:22:38.368 	 ScriptError 4:[1] (\script\event\birthday_jieri\200905\taskctrl.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:5: in main chunk
+error: [string "?"]:9: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:9: in main chunk
+2026/09/05 12:24:59.277 	 ScriptError 4:[1] (\script\event\birthday_jieri\200905\class.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:16: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:16: in main chunk
+2026/09/05 12:24:59.281 	 ScriptError 4:[1] (\script\event\birthday_jieri\200905\taskctrl.lua) 
+

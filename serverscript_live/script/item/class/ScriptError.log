@@ -1,0 +1,18 @@
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:2: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:2: in main chunk
+2026/09/05 12:04:52.584 	 ScriptError 4:[1] (\script\item\class\virtualitem.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:2: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:2: in main chunk
+2026/09/05 12:22:38.718 	 ScriptError 4:[1] (\script\item\class\virtualitem.lua) 
+
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:2: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:2: in main chunk
+2026/09/05 12:24:59.627 	 ScriptError 4:[1] (\script\item\class\virtualitem.lua) 
+

@@ -1,0 +1,24 @@
+-- Manh ban do Son Ha Xa Tac: 439 = +100 manh, 2523 = +1000 manh (task 1027).
+-- [JX1 PORT 16/08/2026] remap particular theo bang item JX1: 440->439, 2514->2523.
+-- [PB 19/08/2026] Them mau cho so manh + SUA LOI thieu dau cach ("tong cong100").
+-- File thuan ASCII, tieng Viet bang escape thap phan \\ddd cua Lua 4.
+-- Dau cach ASCII truoc <color...> khi phia truoc la chu Viet (Text.cpp:468).
+
+Include("\\script\\task\\newtask\\newtask_head.lua")
+
+function main(nItemIdx)
+	local _,_,detail = GetItemProp(nItemIdx)
+	local nWorldMaps = nt_getTask(1027)
+	local nThem = 0
+	if (detail == 439) then
+		nThem = 100
+	elseif (detail == 2523) then
+		nThem = 1000
+	end
+	if (nThem > 0) then
+		nWorldMaps = nWorldMaps + nThem
+		nt_setTask(1027,nWorldMaps)
+		Msg2Player("B¹n nhËn ®­îc".." <color=Yellow>"..nThem.."<color> ".."m¶nh b¶n ®å S¬n Hµ X· T¾c! HiÖn t¹i b¹n cã tæng céng"..
+			" <color=AYellow>"..nWorldMaps.."<color>".." m¶nh b¶n ®å S¬n Hµ X· T¾c.");
+	end
+end

@@ -1,0 +1,54 @@
+-- Author: Fong KiÒu
+-- Date: 28/11/2020
+-- Function: Xa Phu Tèng Kim
+
+Include("\\script\\lib\\lib_task.lua")
+Include("\\script\\tinhnang\\tong_kim_tcap\\lib_tktc.lua")
+Include("\\script\\global\\station.lua")
+
+CurStation = 1
+
+function mainphekim(sel)
+	SetCurCamp(GetCamp())
+	SetFightState(0)
+	local mapid = SubWorldIdx2ID(SubWorld)
+	local tbOpp = {
+		"Nh÷ng n¬i ®· ®i qua/WayPointFun", 
+		"Nh÷ng thµnh thŞ ®· ®i qua/StationFun", 
+		"Trë l¹i chç lóc n·y/TownPortalFun"
+	}
+	tinsert(tbOpp, format("§Õn ®iÓm b¸o danh phe Tèng (T)/#battle_transprot(1,%d)", mapid))
+	tinsert(tbOpp, "Kh«ng cÇn ®©u/OnCancel")
+	Say("Nh÷ng ng­êi xa phu chiÕn tr­êng chóng t«i vµo sinh ra tö, kiÕm tiÒn b»ng sinh m¹ng m×nh! Xin gióp cho vµi l­îng b¹c!", getn(tbOpp), tbOpp)
+end
+
+function mainphetong(sel)
+	SetCurCamp(GetCamp())
+	SetFightState(0)
+	local mapid = SubWorldIdx2ID(SubWorld)
+	local tbOpp = {
+					"Nh÷ng n¬i ®· ®i qua/WayPointFun", 
+					"Nh÷ng thµnh thŞ ®· ®i qua/StationFun", 
+					"Trë l¹i chç lóc n·y/TownPortalFun"
+					}
+	tinsert(tbOpp, format("§Õn ®iÓm b¸o danh phe Kim (K)/#battle_transprot(2,%d)", mapid))
+	tinsert(tbOpp, "Kh«ng cÇn ®©u/OnCancel")
+	Say("Nh÷ng ng­êi xa phu chiÕn tr­êng chóng t«i vµo sinh ra tö, kiÕm tiÒn b»ng sinh m¹ng m×nh! Xin gióp cho vµi l­îng b¹c!", getn(tbOpp), tbOpp)
+end
+
+function OnCancel()
+end
+
+function battle_transprot(nSel, mapid)
+	local tbsongjin_pos = {1541, 3178}
+	local szstr = "phe Tèng (T)"
+	if (nSel == 2) then
+		tbsongjin_pos = {1570, 3085}
+		szstr = "phe Kim (K)"
+	end
+	if (mapid >= 323 and mapid <= 325) then
+		NewWorld( mapid, tbsongjin_pos[1], tbsongjin_pos[2])
+		Msg2Player( "Vµo ®iÓm b¸o danh "..szstr)
+	end
+end
+

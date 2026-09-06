@@ -1,0 +1,30 @@
+FUSION_MSG = {}
+
+FUSION_MSG.NoMaterial = "§¹i hiÖp ch­a bá nguyªn liÖu vµo"
+
+FUSION_MSG.DegradeWenJing = "Ph©n gi¶i V¨n Tinh"
+FUSION_MSG.DegradeWenJingTips = "H·y bá vµo V¨n Tinh muèn ph©n gi¶i, 1 V¨n Tinh cã thÓ ph©n gi¶i thµnh 2 V¨n Tinh cÊp thÊp h¬n. Ph©n gi¶i 1 V¨n Tinh cÇn tiªu hao %d l­îng."
+FUSION_MSG.NotWenJing = "Trong khung ph©n gi¶i V¨n Tinh chØ ®­îc bá vµo V¨n Tinh."
+FUSION_MSG.ItemCantDegrade="VËt phÈm bá vµo khung kh«ng thÓ ph©n gi¶i V¨n Tinh"
+FUSION_MSG.WenJingCantDegrade="V¨n Tinh bá vµo khung kh«ng thÓ ph©n gi¶i"
+FUSION_MSG.DegradeNeedBag = "Hµnh trang cßn İt nhÊt %d « trèng míi cã thÓ tiÕn hµnh Ph©n gi¶i V¨n Tinh"
+FUSION_MSG.WenJingNotEnoughMoney = "Sè b¹c trªn ng­êi ®¹i hiÖp kh«ng ®ñ, Ph©n gi¶i V¨n Tinh lÇn nµy cÇn %d l­îng míi ®­îc tiÕn hµnh."
+FUSION_MSG.WenJingDegradeOK = "Ph©n gi¶i V¨n Tinh thµnh c«ng!"
+
+FUSION_MSG.WenJingUpgrade = "N©ng cÊp V¨n Tinh "
+FUSION_MSG.WenJingUpgradeTips = "H·y bá vµo sè V¨n Tinh cÇn t¨ng cÊp, 2 V¨n Tinh gièng nhau cã thÓ hîp thµnh 1 V¨n Tinh cao h¬n 1 cÊp, th¨ng cÊp 1 V¨n Tinh lªn 1 cÊp cÇn tiªu hao %d l­îng."
+FUSION_MSG.DegradeNotWenJing = "Trong khung N©ng cÊp V¨n Tinh chØ ®­îc bá vµo V¨n Tinh."
+FUSION_MSG.ItemCantUpgrade = "VËt phÈm bá vµo trong khung kh«ng thÓ tiÕn hµnh N©ng cÊp V¨n Tinh."
+FUSION_MSG.WenJingCantUpgrade = "V¨n Tinh bá vµo khung kh«ng thÓ n©ng cÊp."
+FUSION_MSG.AmountNotEven = "Mçi lo¹i V¨n Tinh bá vµo khung ph¶i lµ sè ch¼n míi tiÕn hµnh n©ng cÊp ®­îc."
+FUSION_MSG.UpgradeNeedBag = "Hµnh trang cßn İt nhÊt %d « trèng míi tiÕn hµnh N©ng cÊp V¨n Tinh ®­îc."
+FUSION_MSG.WenJingUpgradeNeedMoney = "Sè b¹c trªn ng­êi ®¹i hiÖp kh«ng ®ñ, n©ng cÊp V¨n Tinh lÇn nµy cÇn %d l­îng míi ®­îc tiÕn hµnh."
+FUSION_MSG.WenJingUpgradeOK = "N©ng cÊp V¨n Tinh  thµnh c«ng!"
+
+FUSION_MSG.UpgradeWenGang = "X¸c nhËn dïng V¨n Tinh n©ng cÊp V¨n C­¬ng cã thuéc tİnh vµ phÈm chÊt t­¬ng øng?"
+FUSION_MSG.Sure = " Sö dông"
+FUSION_MSG.Cancel = " Hñy bá "
+FUSION_MSG.WenJingCantUpgradeWenGang = "V¨n Tinh nµy kh«ng thÓ n©ng cÊp bÊt kú lo¹i V¨n C­¬ng nµo"
+FUSION_MSG.WenGangUpgradeNeedBag = "Hµnh trang cßn İt nhÊt %d « trèng míi tiÕn hµnh N©ng cÊp V¨n C­¬ng ®­îc."
+FUSION_MSG.NoWenGang = "Trong tay ®¹i hiÖp kh«ng cã V¨n Tinh cã thÓ n©ng cÊp V¨n C­¬ng"
+FUSION_MSG.WenGangUpgradeOK = "N©ng cÊp V¨n C­¬ng thµnh c«ng!"

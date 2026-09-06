@@ -1,0 +1,249 @@
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:8: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\achievement.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:4: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\chat.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:6: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\client_event.lua) 
+
+error: [string "?"]:107: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	[string "?"]:107: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\func.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\harvestplant.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\host.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\map.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\npc.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\npcdeath.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\npcdeathbydamage.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\player.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:53.058 	 ScriptError 4:[1] (\script\misc\eventsys\type\tong.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:53.074 	 ScriptError 4:[1] (\script\misc\eventsys\type\usetownportal.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:04:53.074 	 ScriptError 4:[1] (\script\misc\eventsys\type\vip.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:8: in main chunk
+2026/09/05 12:22:39.078 	 ScriptError 4:[1] (\script\misc\eventsys\type\achievement.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:4: in main chunk
+2026/09/05 12:22:39.080 	 ScriptError 4:[1] (\script\misc\eventsys\type\chat.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:6: in main chunk
+2026/09/05 12:22:39.081 	 ScriptError 4:[1] (\script\misc\eventsys\type\client_event.lua) 
+
+error: [string "?"]:107: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	[string "?"]:107: in main chunk
+2026/09/05 12:22:39.082 	 ScriptError 4:[1] (\script\misc\eventsys\type\func.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:39.082 	 ScriptError 4:[1] (\script\misc\eventsys\type\harvestplant.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:39.083 	 ScriptError 4:[1] (\script\misc\eventsys\type\host.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:39.083 	 ScriptError 4:[1] (\script\misc\eventsys\type\map.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:39.085 	 ScriptError 4:[1] (\script\misc\eventsys\type\npc.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:39.086 	 ScriptError 4:[1] (\script\misc\eventsys\type\npcdeath.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:39.087 	 ScriptError 4:[1] (\script\misc\eventsys\type\npcdeathbydamage.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:39.087 	 ScriptError 4:[1] (\script\misc\eventsys\type\player.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:39.088 	 ScriptError 4:[1] (\script\misc\eventsys\type\tong.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:39.091 	 ScriptError 4:[1] (\script\misc\eventsys\type\usetownportal.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:22:39.092 	 ScriptError 4:[1] (\script\misc\eventsys\type\vip.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:8: in main chunk
+2026/09/05 12:24:59.981 	 ScriptError 4:[1] (\script\misc\eventsys\type\achievement.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:4: in main chunk
+2026/09/05 12:24:59.982 	 ScriptError 4:[1] (\script\misc\eventsys\type\chat.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:6: in main chunk
+2026/09/05 12:24:59.983 	 ScriptError 4:[1] (\script\misc\eventsys\type\client_event.lua) 
+
+error: [string "?"]:107: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	[string "?"]:107: in main chunk
+2026/09/05 12:24:59.984 	 ScriptError 4:[1] (\script\misc\eventsys\type\func.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.985 	 ScriptError 4:[1] (\script\misc\eventsys\type\harvestplant.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.986 	 ScriptError 4:[1] (\script\misc\eventsys\type\host.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.988 	 ScriptError 4:[1] (\script\misc\eventsys\type\map.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.989 	 ScriptError 4:[1] (\script\misc\eventsys\type\npc.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.990 	 ScriptError 4:[1] (\script\misc\eventsys\type\npcdeath.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.991 	 ScriptError 4:[1] (\script\misc\eventsys\type\npcdeathbydamage.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.991 	 ScriptError 4:[1] (\script\misc\eventsys\type\player.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.992 	 ScriptError 4:[1] (\script\misc\eventsys\type\tong.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.994 	 ScriptError 4:[1] (\script\misc\eventsys\type\usetownportal.lua) 
+
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	[string "?"]:3: in main chunk
+2026/09/05 12:24:59.995 	 ScriptError 4:[1] (\script\misc\eventsys\type\vip.lua) 
+

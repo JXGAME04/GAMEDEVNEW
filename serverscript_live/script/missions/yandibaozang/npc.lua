@@ -1,0 +1,559 @@
+-- 
+-- by 
+-- 2007.10.24
+-- ÎÒ..
+-- ..
+-- ..
+
+
+Include("\\script\\missions\\yandibaozang\\include.lua")
+Include("\\script\\missions\\yandibaozang\\readymap\\include.lua")
+
+-- [CAMP 29/08] QUAI PHAI THU DICH NGUOI CHOI.
+-- Ban Linux: tham so 7 cua AddNpcEx = bNoRevive (chet la bien mat).
+-- Ban JX1: LuaAddNpcEx (ScriptFuns.cpp:7055) lay tham so 7 lam CAMP va ghi de
+-- camp cua npcs.txt => quai Viem De (Camp=5 thu dich) bi ep ve camp 1 = chinh
+-- phai = CUNG PHE voi to doi 1 (ready.lua SetTmpCamp theo so doi) => quai dung
+-- yen khong danh. Doi port 3 hoat dong 25/08 da lam ham HD3_AddNpcEx giu dung
+-- ngu nghia Linux (khong dung camp, tham so 7 = bNoRevive) - dung lai no.
+if HD3_AddNpcEx ~= nil then
+	YDBZ_AddNpcEx = HD3_AddNpcEx
+else
+	YDBZ_AddNpcEx = AddNpcEx
+end
+
+-- <=>
+YDBZ_map_posfiles = {
+	[1]={	--10
+		[1] = {
+			[1] = {"\\settings\\maps\\yandibaozang\\waya_01.txt", 1},	
+			[2] = {"\\settings\\maps\\yandibaozang\\waya_02.txt", 1},
+			[3] = {"\\settings\\maps\\yandibaozang\\waya_03.txt", 1},	
+			[4] = {"\\settings\\maps\\yandibaozang\\waya_04.txt", 1},
+			[5] = {"\\settings\\maps\\yandibaozang\\waya_05.txt", 1},	
+			[6] = {"\\settings\\maps\\yandibaozang\\waya_06.txt", 1},
+			[7] = {"\\settings\\maps\\yandibaozang\\waya_07.txt", 1},	
+			[8] = {"\\settings\\maps\\yandibaozang\\waya_08.txt", 1},
+			[9] = {"\\settings\\maps\\yandibaozang\\waya_09.txt", 1},	
+			[10]= {"\\settings\\maps\\yandibaozang\\waya_10.txt", 1},	
+		},
+		[2] = {
+			[1] = {"\\settings\\maps\\yandibaozang\\wayb_01.txt", 1},	
+			[2] = {"\\settings\\maps\\yandibaozang\\wayb_02.txt", 1},
+			[3] = {"\\settings\\maps\\yandibaozang\\wayb_03.txt", 1},	
+			[4] = {"\\settings\\maps\\yandibaozang\\wayb_04.txt", 1},
+			[5] = {"\\settings\\maps\\yandibaozang\\wayb_05.txt", 1},	
+			[6] = {"\\settings\\maps\\yandibaozang\\wayb_06.txt", 1},
+			[7] = {"\\settings\\maps\\yandibaozang\\wayb_07.txt", 1},	
+			[8] = {"\\settings\\maps\\yandibaozang\\wayb_08.txt", 1},
+			[9] = {"\\settings\\maps\\yandibaozang\\wayb_09.txt", 1},	
+			[10]= {"\\settings\\maps\\yandibaozang\\wayb_10.txt", 1},		
+		},
+		[3] = {
+			[1] = {"\\settings\\maps\\yandibaozang\\wayc_01.txt", 1},	
+			[2] = {"\\settings\\maps\\yandibaozang\\wayc_02.txt", 1},
+			[3] = {"\\settings\\maps\\yandibaozang\\wayc_03.txt", 1},	
+			[4] = {"\\settings\\maps\\yandibaozang\\wayc_04.txt", 1},
+			[5] = {"\\settings\\maps\\yandibaozang\\wayc_05.txt", 1},	
+			[6] = {"\\settings\\maps\\yandibaozang\\wayc_06.txt", 1},
+			[7] = {"\\settings\\maps\\yandibaozang\\wayc_07.txt", 1},	
+			[8] = {"\\settings\\maps\\yandibaozang\\wayc_08.txt", 1},
+			[9] = {"\\settings\\maps\\yandibaozang\\wayc_09.txt", 1},	
+			[10]= {"\\settings\\maps\\yandibaozang\\wayc_10.txt", 1},		
+		},
+	},
+	[2] = {--boss
+		[1] = {"\\settings\\maps\\yandibaozang\\wayfinial.txt", 1},			
+	},
+};
+
+-- NPCID
+-- NPC<NPC>, <>, <IDBOSS(0,1)>
+--table {x,y,nway} nway,1-10A10,11-20B10,21-30C10
+-- 
+YDBZ_map_npc = {
+	-- 1
+	{
+		{nil, 1299, "M«n ®Ö Thiªn V­¬ng Bang", 95, -1, 0, 60, func_npc_getpos},
+		{nil, 1289, "Cæ Thiªn KhuyÕt", 95, 0, 1, 1, func_npc_getpos}
+	},
+	-- 2
+	{
+		{nil, 1300, "§Ö tö ThiÕu l©m", 95, -1, 0, 60, func_npc_getpos},
+		{nil, 1290, "Chøng Ng«n", 95, 0, 1, 1, func_npc_getpos}
+	},
+	-- 3
+	{
+		{nil, 1301, "Ngò §éc gi¸o ®å", 95, -1, 0, 60, func_npc_getpos},
+		{nil, 1291, "ChiÕu NhËt MiÖn", 95, 1, 1, 1, func_npc_getpos}
+	},
+	-- 4
+	{
+		{nil, 1302, "§­êng M«n gia ®inh", 95, -1, 0, 60, func_npc_getpos},
+		{nil, 1292, "§­êng H¹o", 95, 1, 1, 1, func_npc_getpos}
+	},
+	-- 5
+	{
+		{nil, 1303, "§Ö tö Nga My", 95, -1, 0, 60, func_npc_getpos},
+		{nil, 1293, "DiÖu NhÊt", 95, 2, 1, 1, func_npc_getpos}
+	},
+	-- 6
+	{
+		{nil, 1304, "§Ö t?Thóy Yªn ", 95, -1, 0, 60, func_npc_getpos},
+		{nil, 1294, "LÖ ChiÕt Mai", 95, 2, 1, 1, func_npc_getpos}
+	},
+	-- 7
+	{
+		{nil, 1305, "Thiªn NhÉn Gi¸o ®å", 95, -1, 0, 60, func_npc_getpos},
+		{nil, 1295, "§oan Méc Li", 95, 3, 1, 1, func_npc_getpos}
+	},
+	-- 8
+	{
+		{nil, 1306, "§Ö tö C¸i Bang", 95, -1, 0, 60, func_npc_getpos},
+		{nil, 1296, "B¹ch Lang", 95, 3, 1, 1, func_npc_getpos}
+	},
+	-- 9
+	{
+		{nil, 1307, "§Ö tö Vâ §ang", 95, -1, 0, 60, func_npc_getpos},
+		{nil, 1297, "TÇn HiÓu Th­", 95, 4, 1, 1, func_npc_getpos}
+	},
+	-- 10
+	{
+		{nil, 1308, "§Ö tö C«n L«n", 95, -1, 0, 60, func_npc_getpos},
+		{nil, 1298, "L¨ng Tiªu Tö", 95, 4, 1, 1, func_npc_getpos}
+	},
+};
+
+--n,m boss
+YDBZ_map_npcBossEx = 
+{
+	[1] = 
+	{
+		[3] = {nil, 1310, "Cæ Thiªn KhuyÕt (Né)", 95, 0, 1, 1, func_npc_getpos},
+		[6] = {nil, 1312, "ChiÕu NhËt MiÖn (Né)", 95, 1, 1, 1, func_npc_getpos},
+	},
+	[2] = 
+	{
+		[3] = {nil, 1317, "B¹ch Lang (Né)", 95, 3, 1, 1, func_npc_getpos},
+		[6] = {nil, 1314, "DiÖu NhÊt (Né)", 95, 2, 1, 1, func_npc_getpos},
+	},
+	[3] =
+	{
+		[3] = {nil, 1318, "TÇn HiÓu Th­ (Né)", 95, 4, 1, 1, func_npc_getpos},
+		[6] = {nil, 1319, "L¨ng Tiªu Tö (Né)", 95, 4, 1, 1, func_npc_getpos},
+	},
+}
+
+YDBZ_map_npcYuanJun =
+{
+	{nil, 1338, "Dung Binh", 90, -1, 1, 5, func_npc_getpos},
+}
+--table {x,y,nway} nway,40-boss
+YDBZ_map_npcboss = {
+	{nil, 1311, "ChÝnh Ng«n (Né)", 95, 0, 1, 1, func_npc_getpos},
+	{nil, 1313, "§­êng H¹o (Né)", 95, 1, 1, 1, func_npc_getpos},
+	{nil, 1315, "LÖ ChiÕt Mai (Né)", 95, 2, 1, 1, func_npc_getpos},
+	{nil, 1316, "§oan Méc Li (Né)", 95, 3, 1, 1, func_npc_getpos},
+}
+
+YDBZ_map_npcfinal = {
+	{nil, 1309, "L­¬ng Mi Nhi", 95, -1, 1, 1, func_npc_getpos},
+}
+
+-- NPCID
+function YDBZ_get_npc_id(item, index)
+	local id = item[YDBZ_NPC_ATTRIDX_ID];
+	local id_type = type(id);
+	if (id_type == "function") then
+		return id(item, index);
+	elseif (id_type == "number") then
+		return id;
+	elseif (id_type == "table") then
+		local pos = random(1, getn(id));
+		return id[pos];
+	end
+end
+
+-- NPC
+function YDBZ_get_npc_name(item, index)
+	local name = item[YDBZ_NPC_ATTRIDX_NAME];
+	local name_type = type(name);
+	-- DEBUG
+--	print(format("get_npc_name(): item is %s", name_type));
+	
+	if (name_type == "string") then
+		return name;
+	elseif (name_type == "function") then
+		return name(item, index);
+	elseif (name_type == "table") then
+		local func = name[1];
+		return func(item, index);
+	else
+		return nil;
+	end
+end
+
+-- NPC
+function YDBZ_get_npc_level(item, index)
+	-- DEBUG
+--	print(format("get_npc_level():%d", item[NPC_ATTRIDX_LEVEL]));
+	return item[YDBZ_NPC_ATTRIDX_LEVEL];
+end
+
+-- NPC
+function YDBZ_get_npc_series(item, index)
+	local series = item[YDBZ_NPC_ATTRIDX_SERIES];
+	local series_type = type(series);
+	if (series_type == "function") then
+		return series(item, index);
+	elseif (series_type == "number") then
+		if (series < 0) then
+			local pos = random(1, getn(YDBZ_map_series));
+			return YDBZ_map_series[pos];
+		else
+			return series;
+		end
+	else
+		return nil;
+	end
+end
+
+-- NPC
+function YDBZ_npc_proceed(item)
+	local proceed = item[YDBZ_NPC_ATTRIDX_PROCEED];
+	local proceed_type = type(proceed);
+	if (proceed_type == "function") then
+		YDBZ_proceed(item);
+	end
+end
+
+-- NPC
+function YDBZ_get_npc_count(item)
+	return item[YDBZ_NPC_ATTRIDX_COUNT];
+end
+
+-- NPC
+function YDBZ_get_npc_pos(item, index,nnpclist)
+	local pos = item[YDBZ_NPC_ATTRIDX_POSITION];
+	local pos_type = type(pos);
+	if (pos_type == "table") then
+		return pos[1], pos[2];
+	elseif (pos_type == "function") then
+		return pos(item, index,nnpclist);
+	else
+		return nil;
+	end
+end
+
+-- BOSS
+function YDBZ_get_npc_isboss(item,index)
+	return item[YDBZ_NPC_ATTRIDX_ISBOSS];
+end
+
+-- 
+function advanced()
+	world = SubWorldIdx2ID(SubWorld);
+	return map_isadvanced[world] ~= 0;
+end
+
+-- NPC
+function current_npc_map()
+	if (advanced()) then
+		return map_hnpc;
+	else
+		return map_lnpc;
+	end
+end
+
+-- 
+function get_batch_count()
+	return getn(current_npc_map());
+end
+
+-- NPCNPC
+-- [PBLUA 29/08] Ham nay nay TRA VE 0 khi khong sinh duoc quai/boss.
+-- Phia goi (npc_death.lua) HIEN CHUA doc gia tri nay - no van ghi so
+-- nhu da sinh xong, nen mot ai thieu tep toa do se lam to doi ket ma
+-- khong bao gi. Sua phia goi la viec cua dot sau (can nghiem thu rieng).
+function YDBZ_add_npc(file,nteams,nway,nstate)
+	-- [PBLUA 29/08] rao NGAY DAU HAM. Ba dong duoi day moi la cho no
+	-- THAT SU cua loi toa do: file nil, hoac file[2] <= 0 lam
+	-- random(1, pos_count) nem loi truoc khi toi duoc cac chot ben duoi.
+	if (file == nil or file[1] == nil or file[2] == nil or file[2] < 1) then
+		print("[VIEMDE] YDBZ_add_npc: tham so file khong hop le")
+		return 0
+	end
+	local file_name = file[1];	-- 
+	local pos_count = file[2];	-- 
+	local column = 2 * (random(1, pos_count) - 1) + 1;
+	local ntype = GetMissionV(YDBZ_NPC_TYPE[nteams][nway])
+		local	items = YDBZ_map_npc[ntype]
+	--for npcitem=1,getn(items) do
+		local item = items[nstate]
+		if nstate == 21 then
+			-- [PBLUA 29/08] kiem TUNG TANG: chot cu dat sau phep tra hai
+			-- tang nen neu nteams ngoai 1..3 thi no ngay tai day, chot
+			-- khong bao gio chay toi.
+			local tbBossEx = YDBZ_map_npcBossEx[nteams]
+			if (tbBossEx == nil) then
+				print("[VIEMDE] khong co bang boss cho to "..nteams)
+				return 0
+			end
+			item = tbBossEx[nway]
+			-- [RAOCHAN 29/08] bang do chi khai [nteams][3] va [nteams][6];
+			-- goi voi nway khac se cho nil roi no o YDBZ_get_npc_count.
+			-- Moi noi goi hien nay deu da co rao nen KHONG doi hanh vi.
+			if (item == nil) then
+				print("[VIEMDE] khong co boss ai cho to "..nteams.." ai "..nway)
+				return 0
+			end
+		end
+		local npc_count = YDBZ_get_npc_count(item);			-- NPC
+		local res_count = 0;							-- NPC
+		local radomitem = {}
+		
+		local npc_create_point = YDBZ_GetTabFileHeight(file_name)
+		-- [RAOCHAN 29/08] YDBZ_GetTabFileHeight tra 0 khi KHONG mo duoc tep
+		-- (include.lua:167-173). Truoc day roi thang xuong random(1,0)
+		-- ben duoi va NEM LOI, huy sach ca tran: khong to nao co quai,
+		-- 4 boss trung tam cung khong sinh. Nay bo qua DUNG MOT ai.
+		-- Du lieu dung thi so nay la 50 (hoac 10 o wayfinial) nen nhanh
+		-- duoi day KHONG BAO GIO chay - ti le/vi tri giu nguyen.
+		if (npc_create_point <= 0) then
+			print("[VIEMDE] thieu hoac khong doc duoc tep toa do: "..file_name)
+			return 0
+		end
+		local nlistsum = 0 
+		if npc_create_point < npc_count then
+			nlistsum = npc_count
+		else
+			nlistsum = npc_create_point
+		end
+		for i=1,nlistsum do
+			if i > npc_create_point then
+				radomitem[i] = random(1,npc_create_point)
+			else
+				radomitem[i] = i
+			end
+		end
+	  radomitem = YDBZ_get_randomlist(radomitem,nlistsum)
+		for index = 1, npc_count do
+			local id = YDBZ_get_npc_id(item, index);			-- NPCID
+			local level = YDBZ_get_npc_level(item, index);	-- NPC
+			local isboss = YDBZ_get_npc_isboss(item, index);	-- boss
+			local series = YDBZ_get_npc_series(item, index);
+			local name = YDBZ_get_npc_name(item, index);
+			
+			--print(nteams.." way:"..nway.."callnpc:"..radomitem[index])
+			local px,py = YDBZ_get_file_pos(file_name, radomitem[index] + 1, column);
+			YDBZ_npc_proceed(item);
+			
+			-- DEBUG
+	--		print("AddNpcEx");
+	--		print(format("id:%d", id));
+	--		print(format("level:%d", level));
+	--		print(format("series:%d", series));
+	--		print(format("isboss:%d", isboss));
+	--		print(format("name:%s", name));
+	--		print(format("pos: %d, %d", px, py));
+	
+			local npc_index = YDBZ_AddNpcEx(
+				id,			-- ID
+				level,		-- 
+				series,		-- 
+				SubWorld,	-- 
+				px ,	-- X
+				py ,	-- Y
+				1,			-- 
+				name,		-- 
+				isboss);	-- BOSS
+			if (npc_index ~= nil and npc_index > 0) then
+				res_count = res_count + 1;
+				-- 
+				if isboss == 1 and ( nstate == 2 or nstate == 21 ) then
+					SetNpcParam(npc_index,1,((nteams-1)*10 + nway))
+				else
+					SetNpcParam(npc_index,1,0)
+					SetNpcParam(npc_index,2,(nteams-1)*10 + ntype)
+				end
+				SetNpcDeathScript(npc_index, YDBZ_SCRIPT_NPC_DEATH);
+			else
+				-- DEBUG
+				local msg = format("Failed to AddNpcEx(%d,%d,%d,%d,%d,%d,%d,%s,%d)!!!",
+					id, level, series, SubWorld, px/32, py/32, 1, name, isboss);
+				print(msg);
+			end
+			--print(""..res_count)
+		end
+	--end
+end
+
+function YDBZ_add_npcboss(file,nway)
+	-- [PBLUA 29/08] rao NGAY DAU HAM. Ba dong duoi day moi la cho no
+	-- THAT SU cua loi toa do: file nil, hoac file[2] <= 0 lam
+	-- random(1, pos_count) nem loi truoc khi toi duoc cac chot ben duoi.
+	if (file == nil or file[1] == nil or file[2] == nil or file[2] < 1) then
+		print("[VIEMDE] YDBZ_add_npc: tham so file khong hop le")
+		return 0
+	end
+	local file_name = file[1];	-- 
+	local pos_count = file[2];	-- 
+	local column = 2 * (random(1, pos_count) - 1) + 1;
+	local radomlist = {}
+	local radsum = getn(YDBZ_map_npcboss)
+	for i=1,radsum do
+			radomlist[i] = i
+	end
+	radomlist = YDBZ_get_randomlist(radomlist,radsum)
+	for index=1,radsum do
+		local item = YDBZ_map_npcboss[radomlist[index]]
+		local npc_count = YDBZ_get_npc_count(item);			-- NPC
+		local res_count = 0;							-- NPC
+		local id = YDBZ_get_npc_id(item, index);			-- NPCID
+		local level = YDBZ_get_npc_level(item, index);	-- NPC
+		local isboss = YDBZ_get_npc_isboss(item, index);	-- boss
+		local series = YDBZ_get_npc_series(item, index);
+		local name = YDBZ_get_npc_name(item, index);
+		local px,py = YDBZ_get_file_pos(file_name, index + 1, column);
+		YDBZ_npc_proceed(item);
+		
+		-- DEBUG
+--		print("AddNpcEx");
+--		print(format("id:%d", id));
+--		print(format("level:%d", level));
+--		print(format("series:%d", series));
+--		print(format("isboss:%d", isboss));
+--		print(format("name:%s", name));
+--		print(format("pos: %d, %d", px, py));
+
+		local npc_index = YDBZ_AddNpcEx(
+			id,			-- ID
+			level,		-- 
+			series,		-- 
+			SubWorld,	-- 
+			px ,	-- X
+			py ,	-- Y
+			1,			-- 
+			name,		-- 
+			isboss);	-- BOSS
+		if (npc_index ~= nil and npc_index > 0) then
+			res_count = res_count + 1;
+			-- 
+			if isboss == 1 then
+				SetNpcParam(npc_index,1,40)
+				local nsum = GetMissionV(YDBZ_NPC_BOSS_COUNT)
+				SetMissionV(YDBZ_NPC_BOSS_COUNT,(nsum+1))
+			end
+			SetNpcDeathScript(npc_index, YDBZ_SCRIPT_NPC_DEATH);
+		else
+			-- DEBUG
+			local msg = format("Failed to AddNpcEx(%d,%d,%d,%d,%d,%d,%d,%s,%d)!!!",
+				id, level, series, SubWorld, px, py, 1, name, isboss);
+			print(msg);
+		end
+	end
+end
+
+function YDBZ_add_final_npc(world,x,y)
+	for index=1,getn(YDBZ_map_npcfinal) do
+		local item = YDBZ_map_npcfinal[index]
+		local npc_count = YDBZ_get_npc_count(item);			-- NPC
+		local res_count = 0;							-- NPC
+		local id = YDBZ_get_npc_id(item, index);			-- NPCID
+		local level = YDBZ_get_npc_level(item, index);	-- NPC
+		local isboss = YDBZ_get_npc_isboss(item, index);	-- boss
+		local series = YDBZ_get_npc_series(item, index);
+		local name = YDBZ_get_npc_name(item, index);
+		local nsubworld = world
+		local px = x
+		local py = y
+		local npc_index = YDBZ_AddNpcEx(
+				id,			-- ID
+				level,		-- 
+				series,		-- 
+				nsubworld,	-- 
+				px ,	-- X
+				py ,	-- Y
+				1,			-- 
+				name,		-- 
+				isboss);	-- BOSS
+		if (npc_index ~= nil and npc_index > 0) then
+			if isboss == 1 then
+				SetNpcParam(npc_index,1,50)
+				--local nsum = GetMissionV(YDBZ_NPC_BOSS_COUNT)
+				--SetMissionV(YDBZ_NPC_BOSS_COUNT,(nsum+1))
+			end
+			SetNpcDeathScript(npc_index, YDBZ_SCRIPT_NPC_DEATH);
+		else
+			-- DEBUG
+			local msg = format("Failed to AddNpcEx(%d,%d,%d,%d,%d,%d,%d,%s,%d)!!!",
+				id, level, series, SubWorld, px, py, 1, name, isboss);
+			print(msg);
+		end
+	end
+end
+function YDBZ_create_all_npc()
+	--print("")
+	for nteam=1,getn(YDBZ_map_posfiles[1]) do
+		
+		local radomlist = {}
+		local radsum = getn(YDBZ_map_posfiles[1][nteam])
+		for i=1,radsum do
+			radomlist[i] = i
+		end
+		radomlist = YDBZ_get_randomlist(radomlist,radsum)
+		for i=1,radsum do
+			SetMissionV(YDBZ_NPC_TYPE[nteam][i],radomlist[i])
+		end
+		local file = YDBZ_map_posfiles[1][nteam][1];
+		YDBZ_add_npc(file,nteam,1,1,1)
+
+	end
+	for nway = 1,getn(YDBZ_map_posfiles[2]) do
+		local file = YDBZ_map_posfiles[2][nway]
+		YDBZ_add_npcboss(file,nway)
+	end
+end
+YDBZ_YuanJunPos = 		--
+{
+	[1]=
+	{
+		{1797,3514},
+	},
+	[2]=
+	{
+		{1806,3568},
+	},
+	[3]=
+	{
+		{1763,3524},
+	},
+}
+function YDBZ_AddNpc_YuanJun(nTeam,nTmpCamp)
+	
+	local item = YDBZ_map_npcYuanJun[1]
+	local npc_count = YDBZ_get_npc_count(item);			-- NPC
+	for index = 1, npc_count do
+		local id		= YDBZ_get_npc_id(item, index);			-- NPCID
+		local level		= YDBZ_get_npc_level(item, index);	-- NPC
+		local isboss	= YDBZ_get_npc_isboss(item, index);	-- boss
+		local series	= YDBZ_get_npc_series(item, index);
+		local name		= YDBZ_get_npc_name(item, index);
+		local tbPos		= YDBZ_YuanJunPos[nTeam][random (1, getn(YDBZ_YuanJunPos[nTeam]))]
+		local px		= ( tbPos[1]+random(-3,3) ) * 32
+		local py		= ( tbPos[2]+random(-3,3) ) * 32
+		YDBZ_npc_proceed(item);
+			
+		local npc_index = YDBZ_AddNpcEx(
+				id,			-- ID
+				level,		-- 
+				series,		-- 
+				SubWorld,	-- 
+				px ,	-- X
+				py ,	-- Y
+				1,			-- 
+				name,		-- 
+				isboss);	-- BOSS
+		SetTmpCamp(nTmpCamp, npc_index)
+	end
+end

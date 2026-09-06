@@ -1,0 +1,5 @@
+BATTLE_STR_1 = "ChiÕn tr­êng cßn <color=red>%d <color=red>phót n÷a cã thÓ b¸o danh"
+BATTLE_STR_2 = "Xin lçi, tham gia ®ît Phong V©n LuËn KiÕm nµy, cÇn ph¶i nép 1 Tèng Kim Chiªu Binh LÖnh"
+BATTLE_STR_3 = "ChiÕn tr­êng lµ n¬i sinh tö, kh«ng ph¶i chuyÖn ®ïa, häc nghÖ ch­a th«ng kh«ng nªn m¹o hiÓm."
+BATTLE_STR_4 = "Chøc n¨ng ®· ®ãng."
+BATTLE_STR_5 = "§¹i hiÖp kh«ng tháa ®iÒu kiÖn ®Ó tham gia tİnh n¨ng nµy"
