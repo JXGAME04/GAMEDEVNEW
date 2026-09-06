@@ -111,6 +111,15 @@ function GameSvrReady(dwIP) end
 
 ## 3. ✅ ĐÃ SWAP THẬT LÚC 12:23 — VÀ CÁCH GỠ CHỖ VƯỚNG
 
+> ⚠️ **TRẠNG THÁI HIỆN TẠI (kiểm lúc 13:0x): cây chạy thật ĐÃ ĐƯỢC LÙI VỀ BẢN CŨ.**
+> `S3Relay.exe` = `6014c6d1…` (4.413.952, bản 04/09) và `engine.dll` = `d4c788bb…` (634.368, 18/08),
+> giờ sửa đúng bằng giờ của hai tệp `*.truoc_relayht0609` — dấu vết của lệnh `copy` trong
+> `LuiRelayHT0609.bat`. `Lua54Dll.dll` và `libcrypto-3.dll` vẫn nằm đó nhưng **vô hại**
+> (bản cũ không nhập hai tệp này), nên cặp cũ vẫn chạy bình thường như trước.
+> Muốn bật lại bản mới: chép lại 2 tệp từ `D:\GAMEDEVNEW_wt_relay\Sources\...` (mục 3 bên dưới).
+> Ghi chú bitness đã đo lại: **cả bốn tệp đều là x86 32-bit** (`Machine 0x14c`, `PE32 magic 0x10b`);
+> cỡ `engine.dll` tăng 634→923 KB là do đổi từ CRT gỡ rối sang CRT tĩnh, không phải 64-bit.
+
 > **Cập nhật 06/09 12:23**: chủ tắt máy chủ và cho phép chép vào. Đã gỡ được chỗ vướng
 > mô tả bên dưới, `bin\multiserver` giờ có đủ bộ:
 >
