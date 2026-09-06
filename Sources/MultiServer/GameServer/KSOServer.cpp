@@ -2544,6 +2544,13 @@ void KSwordOnLineSever::TransferSmallPackProcess(const void *pData, size_t dataL
 			m_pCoreServerShell->ProcessExecuteMessage((const char *)(pS + 1), dataLength - 1);
 		}
 		break;
+	case s2s_script:		// [RELAYHT 06/09] relay tra ket qua RemoteExecute ve
+		{
+			BYTE* pS = (BYTE *)pData;
+			m_pCoreServerShell->ProcessNewClientMessage(m_pTransferClient, 0, 0, -1,
+				(const char *)(pS + 1), dataLength - 1);
+		}
+		break;
 	case c2c_permitplayerexchangein:
 		{
 			tagPermitPlayerExchange* pPermit = (tagPermitPlayerExchange *)pData;

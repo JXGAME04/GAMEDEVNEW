@@ -83,7 +83,7 @@ static size_t RpcBuild(void* pOut, size_t nCap,
 
 	RELAY_SCRIPT_CALL* pSC = (RELAY_SCRIPT_CALL*)p;
 	pSC->ProtocolFamily = pf_relay;
-	pSC->ProtocolID = relay_c2c_data;
+	pSC->ProtocolID = relay_s2c_script;	// [RELAYHT 06/09] de GameServer dinh tuyen duoc
 	pSC->dwCallId = dwCallId;
 	pSC->dwGameSvrId = dwGameSvrId;
 	pSC->byIsResult = byIsResult;

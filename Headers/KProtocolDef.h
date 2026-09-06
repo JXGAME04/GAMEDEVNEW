@@ -433,6 +433,8 @@ enum relay_PROTOCOL		//server relay
 	relay_s2c_loseway,
 	relay_s2c_updateserver,
 	relay_s2c_updatemaps,
+	relay_c2s_script,		// [RELAYHT 06/09] GameServer -> relay: goi kich ban
+	relay_s2c_script,
 	relay_end,
 };
 
