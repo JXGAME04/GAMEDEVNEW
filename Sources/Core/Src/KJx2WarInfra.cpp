@@ -1881,6 +1881,66 @@ static int sHD3_AddNpcCommon(Lua_State* L, int bHasSeries)
 // du lieu map tinh, khong script nao tat duoc) TRUOC khi sinh NPC 769 Linux.
 // Duyet m_UseIdx nhu KNpcSet::GetAroundGoldMonster => chi cham NPC dang song,
 // khong dinh free-slot; go theo dung khuon LuaDelNpc (ScriptFuns.cpp:7078).
+// [TOIUU 06/09] Ba ham HD3_DelNpc* ben duoi truoc day quet THANG mang Npc[1..MAX_NPC] (98.000 o,
+// moi o mot lan cham bo nho) - HD3_DonNpcCu goi MOI PHUT -> PROF do 2-33 ms moi luot (33 ms luc
+// Tong Kim nhieu NPC). NPC dang song (m_RegionIndex >= 0) deu nam trong KRegion::m_NpcList cua sub
+// world dang nap, nen duyet theo danh sach vung chi cham vai nghin con. DIEU KIEN LOC GIU NGUYEN
+// (m_dwID, IsPlayer, m_SubWorldIndex/m_RegionIndex hop le, loc map theo m_SubWorldIndex cua NPC,
+// strstr ten / script) -> hanh vi khong doi, chi nhanh hon. Khong trung chi so (moi NPC o dung
+// mot danh sach vung; van kiem lai cho chac vi xoa hai lan la hong).
+// nLoai: 0 = theo ten (pTen); 1 = theo ten + loai tru script (pTen, szExcl da g_StrLower);
+//        2 = theo script (pTen = szSub da g_StrLower).
+static int sHD3_GomNpc(int nLoai, const char* pTen, const char* szExcl, int nLocMap, int* anGom, int nMax)
+{
+	int nGom = 0;
+	for (int w = 0; w < MAX_SUBWORLD; w++)
+	{
+		KSubWorld* pWorld = &SubWorld[w];
+		if (pWorld->m_SubWorldID < 0 || pWorld->m_Region == NULL)
+			continue;
+		if (nLocMap != 0 && pWorld->m_SubWorldID != nLocMap)
+			continue;
+		for (int r = 0; r < pWorld->m_nTotalRegion; r++)
+		{
+			KIndexNode* pNode = (KIndexNode*)pWorld->m_Region[r].m_NpcList.GetHead();
+			while (pNode)
+			{
+				int nIdx = pNode->m_nIndex;
+				pNode = (KIndexNode*)pNode->GetNext();
+				if (nIdx <= 0 || nIdx >= MAX_NPC)
+					continue;
+				if (Npc[nIdx].m_dwID == 0)
+					continue;
+				if (Npc[nIdx].IsPlayer())
+					continue;
+				if (Npc[nIdx].m_SubWorldIndex < 0 || Npc[nIdx].m_RegionIndex < 0)
+					continue;
+				if (nLocMap != 0 && SubWorld[Npc[nIdx].m_SubWorldIndex].m_SubWorldID != nLocMap)
+					continue;
+				if (nLoai == 2)
+				{
+					if (Npc[nIdx].ActionScript[0] == 0 || strstr(Npc[nIdx].ActionScript, pTen) == NULL)
+						continue;
+				}
+				else
+				{
+					if (strstr(Npc[nIdx].Name, pTen) == NULL)
+						continue;
+					if (nLoai == 1 && szExcl && szExcl[0] && Npc[nIdx].ActionScript[0] && strstr(Npc[nIdx].ActionScript, szExcl) != NULL)
+						continue;	// NPC cua minh - giu
+				}
+				int k = 0;
+				while (k < nGom && anGom[k] != nIdx)
+					k++;
+				if (k < nGom)
+					continue;
+				if (nGom < nMax)
+					anGom[nGom++] = nIdx;
+			}
+		}
+	}
+	return nGom;
+}
 int LuaHD3_DelNpcByName(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) < 1 || !Lua_IsString(L, 1))
@@ -1896,23 +1956,8 @@ int LuaHD3_DelNpcByName(Lua_State* L)
 	int nXoa = 0;
 	int nGom = 0;
 	static int s_anGom[512];
-	// m_UseIdx la private => quet thang mang Npc[]; slot trong co m_dwID == 0
-	// (quy uoc engine, vd KNpc.cpp:2621 kiem "khong ton tai" bang m_dwID == 0).
-	for (int nIdx = 1; nIdx < MAX_NPC; nIdx++)
-	{
-		if (Npc[nIdx].m_dwID == 0)
-			continue;
-		if (Npc[nIdx].IsPlayer())
-			continue;
-		if (Npc[nIdx].m_SubWorldIndex < 0 || Npc[nIdx].m_RegionIndex < 0)
-			continue;
-		if (nLocMapID != 0 && SubWorld[Npc[nIdx].m_SubWorldIndex].m_SubWorldID != nLocMapID)
-			continue;
-		if (strstr(Npc[nIdx].Name, pTen) == NULL)
-			continue;
-		if (nGom < 512)
-			s_anGom[nGom++] = nIdx;
-	}
+	// [TOIUU 06/09] duyet theo danh sach vung thay vi quet Npc[1..MAX_NPC] - xem sHD3_GomNpc
+	nGom = sHD3_GomNpc(0, pTen, NULL, nLocMapID, s_anGom, 512);
 	for (int i = 0; i < nGom; i++)
 	{
 		int n = s_anGom[i];
@@ -1958,23 +2003,8 @@ int LuaHD3_DelNpcByNameEx(Lua_State* L)
 	int nXoa = 0;
 	int nGom = 0;
 	static int s_anGomN[512];
-	for (int nIdx = 1; nIdx < MAX_NPC; nIdx++)
-	{
-		if (Npc[nIdx].m_dwID == 0)
-			continue;
-		if (Npc[nIdx].IsPlayer())
-			continue;
-		if (Npc[nIdx].m_SubWorldIndex < 0 || Npc[nIdx].m_RegionIndex < 0)
-			continue;
-		if (nLocMap != 0 && SubWorld[Npc[nIdx].m_SubWorldIndex].m_SubWorldID != nLocMap)
-			continue;
-		if (strstr(Npc[nIdx].Name, pTen) == NULL)
-			continue;
-		if (szExcl[0] && Npc[nIdx].ActionScript[0] && strstr(Npc[nIdx].ActionScript, szExcl) != NULL)
-			continue;	// NPC cua minh - giu
-		if (nGom < 512)
-			s_anGomN[nGom++] = nIdx;
-	}
+	// [TOIUU 06/09] duyet theo danh sach vung thay vi quet Npc[1..MAX_NPC] - xem sHD3_GomNpc
+	nGom = sHD3_GomNpc(1, pTen, szExcl, nLocMap, s_anGomN, 512);
 	for (int i = 0; i < nGom; i++)
 	{
 		int n = s_anGomN[i];
@@ -2006,19 +2036,8 @@ int LuaHD3_DelNpcByScript(Lua_State* L)
 	int nXoa = 0;
 	int nGom = 0;
 	static int s_anGomS[512];
-	for (int nIdx = 1; nIdx < MAX_NPC; nIdx++)
-	{
-		if (Npc[nIdx].m_dwID == 0)
-			continue;
-		if (Npc[nIdx].IsPlayer())
-			continue;
-		if (Npc[nIdx].m_SubWorldIndex < 0 || Npc[nIdx].m_RegionIndex < 0)
-			continue;
-		if (Npc[nIdx].ActionScript[0] == 0 || strstr(Npc[nIdx].ActionScript, szSub) == NULL)
-			continue;
-		if (nGom < 512)
-			s_anGomS[nGom++] = nIdx;
-	}
+	// [TOIUU 06/09] duyet theo danh sach vung thay vi quet Npc[1..MAX_NPC] - xem sHD3_GomNpc
+	nGom = sHD3_GomNpc(2, szSub, NULL, 0, s_anGomS, 512);
 	for (int i = 0; i < nGom; i++)
 	{
 		int n = s_anGomS[i];
