@@ -135,8 +135,9 @@ function GameSvrReady(dwIP) end
 > đều có mặt. Cặp cũ vốn **đã trộn CRT sẵn** (S3Relay tĩnh + engine.dll CRT gỡ rối)
 > nên bản mới (tĩnh + tĩnh) không phát sinh rủi ro mới.
 >
-> **CHƯA CHẠY THỬ**: `S3Relay.exe` có hộp thoại đăng nhập lúc khởi động nên không
-> tự kiểm được — xem mục 5 để biết cần nhìn gì trong nhật ký khi chủ bật lên.
+> **ĐÃ CHẠY THỬ THẬT lúc 12:49–12:51** — xem **mục 8**. (Hộp thoại đăng nhập của
+> `S3Relay.exe` **tự đóng**: nó đọc tài khoản/mật khẩu từ `relay_config.ini [root]`
+> ngay trong `WM_INITDIALOG` rồi `EndDialog`, nên chạy thử không cần bấm gì.)
 
 ### 3.1 (Ghi lại) Chỗ vướng ban đầu
 
