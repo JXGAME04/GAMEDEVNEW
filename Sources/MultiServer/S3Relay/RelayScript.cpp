@@ -402,6 +402,13 @@ KLuaScript* RelayScript_Get(const char* szFile, BOOL bLoadIfNeed)
 	return RsLoad(strKey);
 }
 
+// [RELAYHT 06/09 VA2] s_mapStateFile da co san tu luc nap, chi thieu duong tra ra.
+const char* RelayScript_FileOfState(Lua_State* L)
+{
+	std::map<Lua_State*, std::string>::iterator it = s_mapStateFile.find(L);
+	return (it == s_mapStateFile.end()) ? "" : it->second.c_str();
+}
+
 BOOL RelayScript_CallVoid(const char* szFile, const char* szFunc)
 {
 	KLuaScript* pScript = RelayScript_Get(szFile, TRUE);

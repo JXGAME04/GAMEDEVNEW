@@ -464,6 +464,9 @@ static void RpcNotifySDB(unsigned long ulConnId, const char* szKey, int nP1, int
 	char szSafe[128], szLua[512];
 	RpcSafeText(szKey ? szKey : "", szSafe, sizeof(szSafe));
 	_snprintf(szLua, sizeof(szLua) - 1,
+		// [RELAYHT 06/09 VA2] KHONG dung duoc "dw": GMDoWorldScriptAction chi dang ky 9 ham
+		// WorldScriptFuns (ScriptFuns.cpp:16334) va DynamicExecute KHONG nam trong do.
+		// Goi thang bang duong RPC s2s_script (Core xu ly o KJx2_OnRelayScriptPacket).
 		"dw DynamicExecute([[\\script\\lib\\sdbnotify.lua]],[[SDB_OnRecordChanged]],[[%s]],%d,%d,%d);",
 		szSafe, nP1, nP2, nFlag);
 	szLua[sizeof(szLua) - 1] = 0;

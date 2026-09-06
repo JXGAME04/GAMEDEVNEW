@@ -35,6 +35,10 @@ BOOL		RelayScript_Init();				// tao bo kich ban + nap \script\lib\*.lua neu co
 void		RelayScript_Uninit();
 BOOL		RelayScript_IsReady();
 
+// [RELAYHT 06/09 VA2] Ten tep kich ban dang chay tren mot Lua_State (rong neu khong biet).
+// Dung de chay callback trong state cua TEP DANG GOI, giong remoteexc.lua ban Linux.
+const char* RelayScript_FileOfState(Lua_State* L);
+
 // Lay (va nap neu chua co) mot tep kich ban. szFile kieu "\\script\\x.lua".
 KLuaScript*	RelayScript_Get(const char* szFile, BOOL bLoadIfNeed);
 
