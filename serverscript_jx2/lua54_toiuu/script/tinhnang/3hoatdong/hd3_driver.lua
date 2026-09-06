@@ -51,23 +51,43 @@ HD3_SCRIPT_CU = {
 }
 function HD3_DonNpcCu(bNoiLuc)
 	if (HD3_DelNpcByScript == nil) then return end
+	-- [TOIUU 05/09] Moi luot quet = C++ duyet Npc[1..MAX_NPC] (LuaHD3_DelNpcByScript, ~7 ms).
+	-- Truoc: 5 luot/phut (3 script + 2 ten) = 34 ms moi phut (PROF 22:42). Nay XOAY VONG: moi phut
+	-- 1 luot, du chu ky 5 phut van don het. bNoiLuc == 1 (boot/admin) hoac HD3_DON_XOAYVONG ~= 1
+	-- thi quet het nhu cu. HD3_nDonBuoc giu qua cac lan nap nong (khong gan o dau tep).
 	local nTong = 0
-	-- [TOIUU 05/09] do HD3_DonNpcCu: moi lan quet la C++ duyet toan bo NPC; PROF 22:42 = 34 ms/phut.
 	local tHD0 = clock()
 	local szHD = ""
-	for i = 1, getn(HD3_SCRIPT_CU) do
+	local nXoay = 1
+	if (HD_CFG ~= nil) then nXoay = HD_CFG("HD3_DON_XOAYVONG", 1) end
+	local nScript = getn(HD3_SCRIPT_CU)
+	if (bNoiLuc == 1 or nXoay ~= 1) then
+		for i = 1, nScript do
+			local t0 = clock()
+			nTong = nTong + HD3_DelNpcByScript(HD3_SCRIPT_CU[i])
+			szHD = szHD .. format(" s%d=%d", i, (clock() - t0) * 1000)
+		end
+		if (HD3_DelNpcByNameEx ~= nil) then
+			local t1 = clock()
+			nTong = nTong + HD3_DelNpcByNameEx("Nhi’p Th› Tr«n", 0, "nieshichen")
+			nTong = nTong + HD3_DelNpcByNameEx("Thuy“n phu", 336, "hd3_thuyenphu")
+			szHD = szHD .. format(" ten=%d", (clock() - t1) * 1000)
+		end
+	else
+		HD3_nDonBuoc = mod((HD3_nDonBuoc or 0), nScript + 2) + 1
+		local k = HD3_nDonBuoc
 		local t0 = clock()
-		nTong = nTong + HD3_DelNpcByScript(HD3_SCRIPT_CU[i])
-		szHD = szHD .. format(" s%d=%d", i, (clock() - t0) * 1000)
+		if (k <= nScript) then
+			nTong = HD3_DelNpcByScript(HD3_SCRIPT_CU[k])
+		elseif (HD3_DelNpcByNameEx ~= nil) then
+			if (k == nScript + 1) then
+				nTong = HD3_DelNpcByNameEx("Nhi’p Th› Tr«n", 0, "nieshichen")
+			else
+				nTong = HD3_DelNpcByNameEx("Thuy“n phu", 336, "hd3_thuyenphu")
+			end
+		end
+		szHD = format(" buoc%d=%d", k, (clock() - t0) * 1000)
 	end
-	-- [C19] lop CHAC CHAN: xoa NPC trung ten KHONG mang script cua minh
-	-- (bat duoc NPC cu bat ke no bind script gi / khong script)
-	local t1 = clock()
-	if (HD3_DelNpcByNameEx ~= nil) then
-		nTong = nTong + HD3_DelNpcByNameEx("Nhi’p Th› Tr«n", 0, "nieshichen")
-		nTong = nTong + HD3_DelNpcByNameEx("Thuy“n phu", 336, "hd3_thuyenphu")
-	end
-	szHD = szHD .. format(" ten=%d", (clock() - t1) * 1000)
 	local nHDMs = (clock() - tHD0) * 1000
 	if (nHDMs >= 5 and GhiLog ~= nil) then
 		GhiLog("PROF", format("HD3_DonNpcCu %d ms:%s xoa=%d", nHDMs, szHD, nTong))
