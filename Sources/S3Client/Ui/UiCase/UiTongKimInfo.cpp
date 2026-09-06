@@ -1,14 +1,14 @@
 //////////////////////////////////////////////////////////////////////
-// UiTongKimInfo.cpp - [TKINFO 05/09] cua so "thong tin tran" Tong Kim kieu Lien Dau Bang 2.0 (xem UiTongKimInfo.h)
+// UiTongKimInfo.cpp - [TKINFO 05/09 + 06/09] cua so "thong tin tran" Tong Kim (xem UiTongKimInfo.h)
 //////////////////////////////////////////////////////////////////////
 #include "KWin32.h"
 #include "KIniFile.h"
 #include "../../../Represent/iRepresent/iRepresentShell.h"
-#include "../elem/wnds.h"		// mot lan duy nhat (khong co include guard): Wnd_AddWindow, WL_TOPMOST
-#include "../Elem/WndMessage.h"	// WND_N_BUTTON_CLICK
 #include "../UiBase.h"
 #include "UiTongKimInfo.h"
 #include "UiBattleReport.h"
+#include "../Elem/WndMessage.h"	// WND_N_BUTTON_CLICK
+#include "../elem/wnds.h"		// KHONG co include guard -> de CUOI CUNG: Wnd_AddWindow, WL_TOPMOST
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,6 +25,12 @@ KUiTongKimInfo::KUiTongKimInfo()
 {
 	memset(m_szPhase, 0, sizeof(m_szPhase));
 	memset(m_szCamp, 0, sizeof(m_szCamp));
+	memset(m_szImgFull, 0, sizeof(m_szImgFull));
+	memset(m_szImgFold, 0, sizeof(m_szImgFold));
+	m_nHeightFull = 0;
+	m_nHeightFold = 27;
+	m_bFold = 0;
+	m_bUserFold = 0;
 	m_nRestSec = 0;
 	m_uRestTick = 0;
 	m_nLastShown = -1;
@@ -76,6 +82,7 @@ void KUiTongKimInfo::Initialize()
 		AddChild(&m_Point[i]);
 	}
 	AddChild(&m_BtnReport);
+	AddChild(&m_BtnFold);	// [TKINFO 06/09] them SAU CUNG: TopChildFromPoint duyet nguoc nen nut nay o tren cung
 	char Scheme[256];
 	g_UiBase.GetCurSchemePath(Scheme, 256);
 	LoadScheme(Scheme);
@@ -89,13 +96,12 @@ void KUiTongKimInfo::LoadScheme(const char* pScheme)
 		return;
 	char Buff[256];
 	KIniFile Ini;
-	sprintf(Buff, "%s\\%s", pScheme, TKINFO_INI);
+	_snprintf(Buff, sizeof(Buff) - 1, "%s\\%s", pScheme, TKINFO_INI);
+	Buff[sizeof(Buff) - 1] = 0;
 	if (!Ini.Load(Buff))
 		return;
-	if (SCREEN_WIDTH == 1024)
-		ms_pSelf->Init(&Ini, "Main1024");
-	else
-		ms_pSelf->Init(&Ini, "Main");
+	const char* pszSec = (SCREEN_WIDTH == 1024) ? "Main1024" : "Main";
+	ms_pSelf->Init(&Ini, pszSec);
 	ms_pSelf->m_Title.Init(&Ini, "Title");
 	ms_pSelf->m_StageLabel.Init(&Ini, "StageLabel");
 	ms_pSelf->m_Stage.Init(&Ini, "Stage");
@@ -115,6 +121,7 @@ void KUiTongKimInfo::LoadScheme(const char* pScheme)
 		sprintf(szSec, "Point_%d", i);	ms_pSelf->m_Point[i].Init(&Ini, szSec);
 	}
 	ms_pSelf->m_BtnReport.Init(&Ini, "BtnReport");
+	ms_pSelf->m_BtnFold.Init(&Ini, "BtnFold");
 	for (int p = 0; p < 4; p++)
 	{
 		sprintf(szSec, "P%d", p);
@@ -122,6 +129,44 @@ void KUiTongKimInfo::LoadScheme(const char* pScheme)
 		sprintf(szSec, "C%d", p);
 		Ini.GetString("Camp", szSec, "", ms_pSelf->m_szCamp[p], sizeof(ms_pSelf->m_szCamp[p]));
 	}
+	// [TKINFO 06/09] hai anh nen cho hai trang thai. KWndImage::PaintWindow ve NGUYEN tam SPR va KHONG cat
+	// theo m_Height, nen "thu gon" bat buoc phai DOI ANH chu khong the chi SetSize.
+	Ini.GetString(pszSec, "Image", "", ms_pSelf->m_szImgFull, sizeof(ms_pSelf->m_szImgFull));
+	Ini.GetString(pszSec, "ImageFold", "", ms_pSelf->m_szImgFold, sizeof(ms_pSelf->m_szImgFold));
+	if (!ms_pSelf->m_szImgFold[0])
+		strcpy(ms_pSelf->m_szImgFold, ms_pSelf->m_szImgFull);
+	Ini.GetInteger(pszSec, "HeightFold", 27, &ms_pSelf->m_nHeightFold);
+	if (ms_pSelf->m_nHeightFold <= 0)
+		ms_pSelf->m_nHeightFold = 27;
+	int nW = 0, nH = 0;
+	ms_pSelf->GetSize(&nW, &nH);
+	ms_pSelf->m_nHeightFull = nH;
+	ms_pSelf->m_bFold = 0;
+}
+
+// [TKINFO 06/09] thu gon con dai tieu de / mo ra. Tieu de va nut thu gon LUON hien.
+void KUiTongKimInfo::SetFold(int bFold)
+{
+	m_bFold = bFold ? 1 : 0;
+	int i;
+	for (i = 0; i < TKINFO_MAX_ROW; i++)
+	{
+		if (m_bFold) { m_Rank[i].Hide(); m_Name[i].Hide(); m_Camp[i].Hide(); m_Point[i].Hide(); }
+		else		 { m_Rank[i].Show(); m_Name[i].Show(); m_Camp[i].Show(); m_Point[i].Show(); }
+	}
+	if (m_bFold)
+	{
+		m_StageLabel.Hide(); m_Stage.Hide(); m_CountLabel.Hide(); m_Count.Hide(); m_CountSuffix.Hide();
+		m_HdRank.Hide(); m_HdName.Hide(); m_HdCamp.Hide(); m_HdPoint.Hide(); m_BtnReport.Hide();
+	}
+	else
+	{
+		m_StageLabel.Show(); m_Stage.Show(); m_CountLabel.Show(); m_Count.Show(); m_CountSuffix.Show();
+		m_HdRank.Show(); m_HdName.Show(); m_HdCamp.Show(); m_HdPoint.Show(); m_BtnReport.Show();
+	}
+	if (m_szImgFull[0])
+		SetImage(ISI_T_SPR, m_bFold ? m_szImgFold : m_szImgFull);
+	SetSize(m_Width, m_bFold ? m_nHeightFold : m_nHeightFull);
 }
 
 // "phase|rest|tong|kim"
@@ -135,6 +180,9 @@ void KUiTongKimInfo::SetHeader(int nPhase, int nRestSec, int nTong, int nKim)
 	m_nLastShown = -1;
 	m_bHaveData = 1;
 	RefreshCountdown();
+	// [TKINFO 06/09] ton trong lua chon cua nguoi choi: da thu gon thi khong tu bung ra khi co du lieu moi
+	if (m_bFold != m_bUserFold)
+		SetFold(m_bUserFold);
 	if (!IsVisible())
 	{
 		Show();
@@ -145,11 +193,11 @@ void KUiTongKimInfo::SetHeader(int nPhase, int nRestSec, int nTong, int nKim)
 // "n;hang|ten|phe|diem;hang|ten|phe|diem..." (hang thieu -> xoa trang)
 void KUiTongKimInfo::SetRows(const char* pszRows)
 {
-	char szTmp[160];
+	// [TKINFO 06/09] dung dung co truong S2C_BATTLE_BOX::szBattleDesc[128] (KProtocol.h) - truoc day de 160
+	char szTmp[128];
 	strncpy(szTmp, pszRows ? pszRows : "", sizeof(szTmp) - 1);
 	szTmp[sizeof(szTmp) - 1] = 0;
 	int nRow = 0;
-	char* pCtx = NULL;
 	char* pRec = strtok(szTmp, ";");	// phan tu dau = so hang (tham khao)
 	if (pRec)
 		pRec = strtok(NULL, ";");
@@ -160,12 +208,12 @@ void KUiTongKimInfo::SetRows(const char* pszRows)
 		int nCamp = 0;
 		char* p = pRec;
 		char* q = strchr(p, '|');
-		if (q) { *q = 0; strncpy(szRank, p, 15); p = q + 1; }
+		if (q) { *q = 0; strncpy(szRank, p, sizeof(szRank) - 1); p = q + 1; }
 		q = strchr(p, '|');
-		if (q) { *q = 0; strncpy(szName, p, 31); p = q + 1; }
+		if (q) { *q = 0; strncpy(szName, p, sizeof(szName) - 1); p = q + 1; }
 		q = strchr(p, '|');
 		if (q) { *q = 0; nCamp = atoi(p); p = q + 1; }
-		strncpy(szPoint, p, 15);
+		strncpy(szPoint, p, sizeof(szPoint) - 1);
 		if (nCamp < 0 || nCamp > 3) nCamp = 0;
 		m_Rank[nRow].SetText(szRank);
 		m_Name[nRow].SetText(szName);
@@ -206,7 +254,7 @@ void KUiTongKimInfo::RefreshCountdown()
 void KUiTongKimInfo::Breathe()
 {
 	// KWndWindow::Breathe la private (khong goi lop cha - nhu KUiFlashMessage)
-	if (m_bHaveData && IsVisible())
+	if (m_bHaveData && IsVisible() && !m_bFold)
 		RefreshCountdown();
 }
 
@@ -214,16 +262,20 @@ void KUiTongKimInfo::OnBattleBox(const char* pszDesc, int nType)
 {
 	if (nType != TKINFO_KIND_HEAD && nType != TKINFO_KIND_ROWS && nType != TKINFO_KIND_HIDE)
 		return;
-	KUiTongKimInfo* p = OpenWindow();
-	if (!p)
-		return;
 	if (nType == TKINFO_KIND_HIDE)
 	{
-		p->m_bHaveData = 0;
-		p->Hide();
+		// [TKINFO 06/09] KHONG tao cua so chi de an no (truoc day goi OpenWindow o day co the sinh lai
+		// cua so ngay sau khi UiShell da CloseWindow(TRUE) luc thoat game).
+		if (ms_pSelf)
+		{
+			ms_pSelf->m_bHaveData = 0;
+			ms_pSelf->m_bUserFold = 0;	// tran sau mo lai binh thuong
+			ms_pSelf->Hide();
+		}
 		return;
 	}
-	if (!pszDesc)
+	KUiTongKimInfo* p = OpenWindow();
+	if (!p || !pszDesc)
 		return;
 	if (nType == TKINFO_KIND_ROWS)
 	{
@@ -248,8 +300,28 @@ void KUiTongKimInfo::OnSwitchMap(int bLoading)
 	if (ms_pSelf && bLoading)
 	{
 		ms_pSelf->m_bHaveData = 0;
+		ms_pSelf->m_bUserFold = 0;
 		ms_pSelf->Hide();
 	}
+}
+
+// [TKINFO 06/09] Cua so nam o lop WL_TOPMOST: neu bat chuot tren ca 221x268 thi suot tran nguoi choi khong
+// bam duoc xuong dat/muc tieu o goc trai man hinh (Wnds.cpp Wnd_GetActive chon cua so theo PtInWindow).
+// Chi bat o dai tieu de va hai nut; con lai cho xuyen qua (cach lam giong KUiMsgCentrePad).
+int KUiTongKimInfo::PtInWindow(int x, int y)
+{
+	if (!IsVisible())
+		return 0;
+	int nH = m_bFold ? m_nHeightFold : m_nHeightFull;
+	if (x < m_nAbsoluteLeft || x >= m_nAbsoluteLeft + m_Width)
+		return 0;
+	if (y < m_nAbsoluteTop || y >= m_nAbsoluteTop + nH)
+		return 0;
+	if (y < m_nAbsoluteTop + m_nHeightFold)		// dai tieu de (co nut thu gon)
+		return 1;
+	if (!m_bFold && m_BtnReport.PtInWindow(x, y))
+		return 1;
+	return 0;
 }
 
 int KUiTongKimInfo::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
@@ -257,10 +329,21 @@ int KUiTongKimInfo::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
+		if (uParam == (unsigned int)(KWndWindow*)&m_BtnFold)
+		{
+			// [TKINFO 06/09] "nut an vao": thu con dai tieu de, bam lan nua thi mo ra
+			m_bUserFold = m_bFold ? 0 : 1;
+			SetFold(m_bUserFold);
+			return 0;
+		}
 		if (uParam == (unsigned int)(KWndWindow*)&m_BtnReport)
 		{
-			// "Nhan xem Chien Bao": mo bang chien bao day du (top 10) co san
-			KUiBattleReport::OpenWindow();
+			// [TKINFO 06/09] CONG TAC: KUiBattleReport::OpenWindow KHONG tu tat, bang chien bao lai khong co
+			// nut dong nao cua rieng no -> truoc day mo ra roi khong tat duoc (chu bao 06/09).
+			if (KUiBattleReport::GetIfVisible())
+				KUiBattleReport::CloseWindow(false);
+			else
+				KUiBattleReport::OpenWindow();
 			return 0;
 		}
 		break;

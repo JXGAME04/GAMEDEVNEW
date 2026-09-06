@@ -389,3 +389,40 @@ Ma loi : 0xC0000005 (Access Violation), DOC dia chi 0x69CAAE93
 - **Chỉ cần khởi động lại client** (`ChoiGame.bat`): `.spr` là tệp rời, nạp lúc vẽ. `Game.exe` live đã đúng bản a136398e, không có `.moi` chờ.
 - Bài học: **mọi tệp nhị phân tự sinh (SPR/PAK/ảnh) phải đọc ngược kiểm trước khi đặt vào cây chạy thật** — engine không kiểm biên,
   một tệp sai làm sập client ngay khi vẽ.
+
+
+## 18. 06/09 10:30 — Chủ báo 3 lỗi cửa sổ Thông Tin Trận: thiếu tên cột, thiếu nút ẩn, chiến báo không tắt được
+### 18a. Lỗi 1 — 8 nhãn tĩnh không hiện (tiêu đề, "Giai đoạn:", "Còn:", "giây", 4 tên cột)
+- GỐC: khai bằng `KWndText` TRẦN. Lớp này **không có bộ đệm chữ** (`m_pText = NULL`, WndText.cpp:24); `KWndText::Init`
+  chỉ đọc khoá `Text=` khi ĐÃ có bộ đệm (WndText.cpp:163) và `PaintWindow` thoát ngay khi không có (WndText.cpp:202);
+  `SetText` cũng có chốt y hệt (WndText.cpp:46) nên gọi cũng vô hiệu. Ini KHÔNG sai. Ô động dùng `KWndText32` nên hiện bình thường.
+- Sửa: 8 nhãn → `KWndText32`; cột Tên → `KWndText80` (tên 12 ký tự TCVN3 có thể tới 24 byte). **Đây là lần thứ ba mắc bẫy này**
+  (đã ghi ở `UiTongKimScore.h` và `UiDiceItem.h`) → nay ghi thành luật ở đầu `UiTongKimInfo.h`.
+- Kèm bố cục: cột chia lại Hạng 8/26, Tên 36/94, Phe 132/34, Điểm 168/45 (trước chồng nhau 2 px và tràn khung);
+  dòng "Còn: N giây" liền mạch (`Count` HAlign=2 canh phải); nhãn nút canh giữa (`LabelXOffset=30` → 0, lớp nút tự canh).
+### 18b. Lỗi 2 — nút ẩn
+- Thêm `[BtnFold]` (dùng sẵn `switch.spr` 15×11, 3 khung): bấm → cửa sổ co còn dải tiêu đề, bấm lại → mở ra.
+  Vì `KWndImage::PaintWindow` vẽ NGUYÊN tấm SPR (không cắt theo `m_Height`) nên phải **đổi ảnh nền**: thêm ảnh
+  `thongtin20_thu.spr` 221×27 (`ve_thongtin20.py` sinh cả hai, qua `ghi_spr.py` có kiểm) + khoá ini `ImageFold`/`HeightFold`.
+- `m_bUserFold`: máy chủ gửi dữ liệu mới (3 s/lần) KHÔNG tự bung ra; hết trận (kind 9) hoặc đổi map thì quên trạng thái.
+### 18c. Lỗi 3 — chiến báo mở ra không tắt được
+- GỐC: `KUiBattleReport` **không có đường đóng nào của riêng nó**: `OpenWindow()` gọi lần hai không toggle, ini chỉ có
+  `[SwitchBtn]` (đổi chế độ To/Nhỏ), nhánh `VK_ESCAPE` gần như mã chết vì `KShortcutKeyCentre` ăn phím trước
+  (ESC thực tế đóng SẠCH mọi cửa sổ qua `UiShell.cpp` `UiCloseWndsInGame`).
+- Sửa 3 đường: nút `[BtnReport]` thành **công tắc** (`GetIfVisible` → `CloseWindow`); thêm `[CloseBtn]` cho chính bảng chiến báo
+  (chế độ To nhãn "Đóng", chế độ Nhỏ nhãn "X" — chỗ đặt chọn theo khe trống thật); **tự đóng khi hết trận** (`UpdateRankWorld` case 9).
+### 18d. Thẩm định phản biện (3 góc nhìn độc lập, 211 lượt đọc mã) — bắt được 5 lỗi TRƯỚC khi giao
+1. 🔴 `[BtnFold]` đặt `Trans=1` → `KWndImage::PtInWindow` đo độ đục TỪNG ĐIỂM ẢNH, mà `switch.spr` là **khung rỗng ruột**
+   (47 % điểm ảnh trong suốt) → bấm vào giữa nút không ăn. Bỏ `Trans=1` (`[SwitchBtn]` dùng chính ảnh này cũng không đặt).
+2. 🔴 `[BtnFold]` ở góc phải (x 204..218) bị **thân bảng Chiến Báo che trọn** (600×350 tại x=100) khi bảng đó mở → dời sang
+   góc TRÁI (abs x 11..26, luôn tự do); ảnh nền bỏ hoa văn trái để không đè.
+3. `[CloseBtn]` chế độ To đè chữ vẽ sẵn trên `main.spr` → dời vào khe trống x 527..563.
+4. `[CloseBtn]` chế độ Nhỏ đè ô số người phe Kim → dời vào khe x 33..47, nhãn "X".
+5. `UpdateRankWorld` còn `strcpy` không kiểm độ dài từ bộ đệm nhận gói → `strncpy` + ép NUL.
+- Ba góc đều xác nhận KHÔNG có lỗi sập/rò rỉ trong mã mới; luồng nút, Show/Hide, thứ tự gói kind 7 trước kind 8 đều đúng.
+### 18e. Kèm theo
+- `PtInWindow` mới: cửa sổ TOPMOST 221×268 trước đây **nuốt mọi cú bấm** vào góc trái màn hình suốt trận; nay chỉ bắt ở
+  dải tiêu đề + hai nút, phần thân cho xuyên xuống thế giới game.
+- Máy chủ (`ScriptFuns.cpp`): số hạng dùng biến đếm thật (ô ladder trống làm `i+1` nhảy số); `szBattleDesc` khởi tạo rỗng.
+  **Chưa đặt `.moi` máy chủ**: khe đang có bản chờ 10:23 của phiên khác dựng từ commit mới hơn; mã đã lên main, ai build sau sẽ có.
+- `Game.exe.moi` = **ff05d3b4** (md5 bc19244a). Chủ chỉ cần `ChoiGame.bat`. Ini + 2 sprite là tệp rời, đã đặt trên cây chạy thật.
