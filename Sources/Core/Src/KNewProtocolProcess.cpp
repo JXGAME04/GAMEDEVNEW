@@ -10,11 +10,21 @@
 using OnlineGameLib::Win32::CBuffer;
 
 KNewProtocolProcess g_NewProtocolProcess;
+// [RELAYHT 06/09] relay tra ket qua RemoteExecute ve (than goi = RELAY_SCRIPT_CALL)
+void KJx2_OnRelayScriptPacket(const void* pData, int nSize);
+static void sProcessRelayScript(IClient* pTransfer,
+							DWORD dwFromIP, DWORD dwFromRelayID,
+							int nPlayerIndex, BYTE* pData, int nDataSize)
+{
+	KJx2_OnRelayScriptPacket(pData, nDataSize);
+}
+
 
 KNewProtocolProcess::KNewProtocolProcess()
 	: m_theAllocator( 1024, 500 )
 {
 	m_ProtocolTable[MAKEWORD(pf_gamemaster, gm_c2s_execute)] = P_ProcessGMExecute;
+	m_ProtocolTable[MAKEWORD(pf_relay, relay_s2c_script)] = sProcessRelayScript;	// [RELAYHT 06/09]
 	m_ProtocolTable[MAKEWORD(pf_gamemaster, gm_c2s_findplayer)] = P_ProcessGMFindPlayer;
 
 	m_ProtocolTable[MAKEWORD(pf_playercommunity, playercomm_channelchat)] = P_ProcessPlayerCommExtend;

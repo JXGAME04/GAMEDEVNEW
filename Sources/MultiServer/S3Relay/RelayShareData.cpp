@@ -466,8 +466,166 @@ static int LuaSD_GetFirstRecordFromSDB(Lua_State* L)
 	return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// Ban ghi NHIEU O -- SaveCustomDataToSDB('KEY', p1, p2, 'sliii', ...)
+//   'i' = so nguyen, 'l' = so nguyen dai, 's' = chuoi   (theo ban Linux)
+// Cach xep trong o du lieu: 'c' + [BYTE do dai dinh dang] + dinh dang +
+//   moi o: so -> 8 byte double; chuoi -> int do dai + byte chuoi
+//////////////////////////////////////////////////////////////////////////////
+static int SdSaveCustom(Lua_State* L, bool bOverwrite)
+{
+	int nParam = Lua_GetTopIndex(L);
+	if (nParam < 4 || !Lua_IsString(L, 1) || !Lua_IsString(L, 4))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	const char* szKey = Lua_ValueToString(L, 1);
+	DWORD dwP1 = (DWORD)(int)Lua_ValueToNumber(L, 2);
+	DWORD dwP2 = (DWORD)(int)Lua_ValueToNumber(L, 3);
+	const char* szFmt = Lua_ValueToString(L, 4);
+	int nFmtLen = (int)strlen(szFmt);
+	if (nFmtLen <= 0 || nFmtLen > 64)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	if (!bOverwrite && SdCacheGet(szKey, dwP1, dwP2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+
+	BYTE Buf[SD_DATA_MAX];
+	int n = 0;
+	Buf[n++] = 'c';
+	Buf[n++] = (BYTE)nFmtLen;
+	memcpy(Buf + n, szFmt, nFmtLen);
+	n += nFmtLen;
+
+	for (int i = 0; i < nFmtLen; i++)
+	{
+		int nArg = 5 + i;
+		char c = szFmt[i];
+		if (c == 's')
+		{
+			const char* sz = (nArg <= nParam && Lua_IsString(L, nArg)) ? Lua_ValueToString(L, nArg) : "";
+			int nLen = (int)strlen(sz);
+			if (n + 4 + nLen > SD_DATA_MAX)
+			{
+				Lua_PushNumber(L, 0);
+				return 1;
+			}
+			memcpy(Buf + n, &nLen, 4);
+			n += 4;
+			memcpy(Buf + n, sz, nLen);
+			n += nLen;
+		}
+		else
+		{
+			double d = (nArg <= nParam && Lua_IsNumber(L, nArg)) ? (double)Lua_ValueToNumber(L, nArg) : 0;
+			if (n + (int)sizeof(double) > SD_DATA_MAX)
+			{
+				Lua_PushNumber(L, 0);
+				return 1;
+			}
+			memcpy(Buf + n, &d, sizeof(double));
+			n += (int)sizeof(double);
+		}
+	}
+	Lua_PushNumber(L, ShareData_Set(szKey, dwP1, dwP2, Buf, n) ? 1 : 0);
+	return 1;
+}
+
+static int LuaSD_SaveCustomDataToSDB(Lua_State* L)	{ return SdSaveCustom(L, false); }
+static int LuaSD_SaveCustomDataToSDBOw(Lua_State* L)	{ return SdSaveCustom(L, true); }
+
+// GetCustomDataFromSDB(szKey, nP1, nP2) -> tra ve tung o theo dung dinh dang da luu
+static int LuaSD_GetCustomDataFromSDB(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 3 || !Lua_IsString(L, 1))
+		return 0;
+	BYTE Buf[SD_DATA_MAX];
+	int nLen = ShareData_Get(Lua_ValueToString(L, 1),
+		(DWORD)(int)Lua_ValueToNumber(L, 2), (DWORD)(int)Lua_ValueToNumber(L, 3), Buf, sizeof(Buf));
+	if (nLen < 2 || Buf[0] != 'c')
+		return 0;
+
+	int nFmtLen = Buf[1];
+	int n = 2;
+	if (n + nFmtLen > nLen)
+		return 0;
+	char szFmt[65];
+	if (nFmtLen > 64)
+		return 0;
+	memcpy(szFmt, Buf + n, nFmtLen);
+	szFmt[nFmtLen] = 0;
+	n += nFmtLen;
+
+	int nRet = 0;
+	for (int i = 0; i < nFmtLen; i++)
+	{
+		if (szFmt[i] == 's')
+		{
+			if (n + 4 > nLen)
+				break;
+			int nStr = 0;
+			memcpy(&nStr, Buf + n, 4);
+			n += 4;
+			if (nStr < 0 || n + nStr > nLen)
+				break;
+			char szTmp[SD_DATA_MAX];
+			memcpy(szTmp, Buf + n, nStr);
+			szTmp[nStr] = 0;
+			n += nStr;
+			Lua_PushString(L, szTmp);
+		}
+		else
+		{
+			if (n + (int)sizeof(double) > nLen)
+				break;
+			double d = 0;
+			memcpy(&d, Buf + n, sizeof(double));
+			n += (int)sizeof(double);
+			Lua_PushNumber(L, d);
+		}
+		nRet++;
+	}
+	return nRet;
+}
+
+// GetRecordInfoFromNO(szKey, nNo) -> nP1, nP2 cua ban ghi thu nNo (dem tu 1)
+static int LuaSD_GetRecordInfoFromNO(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsString(L, 1))
+		return 0;
+	std::string strKey = Lua_ValueToString(L, 1);
+	int nNo = (int)Lua_ValueToNumber(L, 2);
+	if (nNo < 1)
+		return 0;
+	int nCount = 0;
+	std::map<SD_KEY, SD_VAL*>::iterator it;
+	for (it = s_mapData.begin(); it != s_mapData.end(); ++it)
+	{
+		if (it->first.strKey != strKey)
+			continue;
+		nCount++;
+		if (nCount == nNo)
+		{
+			Lua_PushNumber(L, (double)it->first.dwP1);
+			Lua_PushNumber(L, (double)it->first.dwP2);
+			return 2;
+		}
+	}
+	return 0;
+}
+
 TLua_Funcs g_ShareDataFuns[] =
 {
+	{ "SaveCustomDataToSDB",	LuaSD_SaveCustomDataToSDB },
+	{ "SaveCustomDataToSDBOw",	LuaSD_SaveCustomDataToSDBOw },
+	{ "GetCustomDataFromSDB",	LuaSD_GetCustomDataFromSDB },
+	{ "GetRecordInfoFromNO",	LuaSD_GetRecordInfoFromNO },
 	{ "OB_SaveShareData",		LuaSD_OB_SaveShareData },
 	{ "OB_LoadShareData",		LuaSD_OB_LoadShareData },
 	{ "OB_DeleteShareData",		LuaSD_OB_DeleteShareData },

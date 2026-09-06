@@ -15,6 +15,8 @@
 #include "KDebug.h"
 #include "LuaLib.h"
 #include "KJx2SharedStore.h"
+#include "KNewProtocolProcess.h"	// [RELAYHT 06/09] gui goi len relay
+#include <string>
 #include <map>
 #include <vector>
 #include <string.h>
@@ -104,6 +106,156 @@ int LuaOB_Release(Lua_State* L)
 // state cua szScript (co remap \script\lib -> \scriptjx2\lib nhu Include); co callback ->
 // cb(nCbParam, hRes) trong state DANG GOI; dwGameSvrId (tham so 6) bo qua. Caller tu
 // OB_Release hParam; hRes do ham nay cap va huy.
+//////////////////////////////////////////////////////////////////////////////
+// [RELAYHT 06/09] REMOTEEXECUTE THAT: GameServer -> S3Relay
+//
+// Goi nam trong RELAY_DATA (nToIP = 0 nghia la 'da toi noi' -> relay tu xu ly),
+// byte dau than goi la s2s_script, roi RELAY_SCRIPT_CALL, roi 3 khoi:
+//     szScript / szFunc / du lieu ObjBuffer.
+// Ham callback duoc tim trong state cua CHINH tep kich ban da goi -- dung theo
+// loi remoteexc.lua ban Linux (callback dinh nghia cung tep voi ham duoc goi).
+//////////////////////////////////////////////////////////////////////////////
+#define JX2RPC_MAX_PENDING	512
+#define JX2RPC_MAX_PACKET	8192
+
+struct KJx2RpcPending
+{
+	std::string	strScript;
+	std::string	strCbFunc;
+	int			nCbParam;
+};
+
+static std::map<DWORD, KJx2RpcPending>	s_mapRpcPending;
+static DWORD							s_dwRpcNextId = 0;
+
+// Tra ve 1 = da xep vao hang gui len relay.
+static int Jx2Relay_SendRemote(const char* szScript, const char* szFunc,
+							   const BYTE* pData, int nDataLen,
+							   const char* szCbFunc, int nCbParam)
+{
+	if (!szScript || !szScript[0] || !szFunc || !szFunc[0])
+		return 0;
+	if (nDataLen < 0)
+		nDataLen = 0;
+
+	size_t nScriptLen = strlen(szScript) + 1;
+	size_t nFuncLen = strlen(szFunc) + 1;
+	size_t nBody = 1 + sizeof(RELAY_SCRIPT_CALL) + nScriptLen + nFuncLen + nDataLen;
+	size_t nTotal = sizeof(RELAY_DATA) + nBody;
+	if (nTotal > JX2RPC_MAX_PACKET)
+	{
+		g_DebugLog((LPSTR)"[RELAYHT] RemoteExecute: goi qua lon (%d byte) %.128s", (int)nTotal, szScript);
+		return 0;
+	}
+
+	DWORD dwCallId = 0;
+	if (szCbFunc && szCbFunc[0])
+	{
+		if (s_mapRpcPending.size() >= JX2RPC_MAX_PENDING)
+		{
+			g_DebugLog((LPSTR)"[RELAYHT] RemoteExecute: tran so lenh cho ket qua");
+			return 0;
+		}
+		dwCallId = ++s_dwRpcNextId;
+		if (dwCallId == 0)
+			dwCallId = ++s_dwRpcNextId;
+		KJx2RpcPending pend;
+		pend.strScript = szScript;
+		pend.strCbFunc = szCbFunc;
+		pend.nCbParam = nCbParam;
+		s_mapRpcPending[dwCallId] = pend;
+	}
+
+	char szBuf[JX2RPC_MAX_PACKET];
+	RELAY_DATA* pRD = (RELAY_DATA*)szBuf;
+	pRD->ProtocolFamily = pf_relay;
+	pRD->ProtocolID = relay_c2c_data;
+	pRD->nToIP = 0;				// 0 = da toi noi: relay tu xu ly than goi
+	pRD->nToRelayID = 0;
+	pRD->nFromIP = 0;
+	pRD->nFromRelayID = 0;
+	pRD->routeDateLength = (WORD)nBody;
+
+	BYTE* p = (BYTE*)szBuf + sizeof(RELAY_DATA);
+	*p++ = (BYTE)s2s_script;
+	RELAY_SCRIPT_CALL* pSC = (RELAY_SCRIPT_CALL*)p;
+	pSC->ProtocolFamily = pf_relay;
+	pSC->ProtocolID = relay_c2s_script;
+	pSC->dwCallId = dwCallId;
+	pSC->dwGameSvrId = 0;
+	pSC->byIsResult = 0;
+	pSC->wScriptLen = (WORD)nScriptLen;
+	pSC->wFuncLen = (WORD)nFuncLen;
+	pSC->wDataLen = (WORD)nDataLen;
+	p += sizeof(RELAY_SCRIPT_CALL);
+
+	memcpy(p, szScript, nScriptLen);	p += nScriptLen;
+	memcpy(p, szFunc, nFuncLen);		p += nFuncLen;
+	if (nDataLen > 0)
+		memcpy(p, pData, nDataLen);
+
+	g_NewProtocolProcess.PushMsgInTransfer(szBuf, nTotal);
+	return 1;
+}
+
+// Relay tra ket qua ve. Goi tu KNewProtocolProcess (bang giao thuc).
+void KJx2_OnRelayScriptPacket(const void* pData, int nSize)
+{
+	if (!pData || nSize < (int)sizeof(RELAY_SCRIPT_CALL))
+		return;
+	RELAY_SCRIPT_CALL sc;
+	memcpy(&sc, pData, sizeof(sc));
+	const BYTE* q = (const BYTE*)pData + sizeof(RELAY_SCRIPT_CALL);
+	int nLeft = nSize - (int)sizeof(RELAY_SCRIPT_CALL);
+	if ((int)sc.wScriptLen + sc.wFuncLen + sc.wDataLen > nLeft)
+		return;
+	const BYTE* pRes = q + sc.wScriptLen + sc.wFuncLen;
+
+	if (!sc.byIsResult)
+		return;			// relay chu dong goi xuong: chua dung toi
+
+	std::map<DWORD, KJx2RpcPending>::iterator it = s_mapRpcPending.find(sc.dwCallId);
+	if (it == s_mapRpcPending.end())
+		return;
+	KJx2RpcPending pend = it->second;
+	s_mapRpcPending.erase(it);
+	if (pend.strCbFunc.empty())
+		return;
+
+	KLuaScript* pScript = (KLuaScript*)g_GetScript((char*)pend.strScript.c_str());
+	if (!pScript || !pScript->m_LuaState)
+	{
+		g_DebugLog((LPSTR)"[RELAYHT] callback: khong thay kich ban %.128s", pend.strScript.c_str());
+		return;
+	}
+
+	KJx2ObjBuffer* pOb = new KJx2ObjBuffer;
+	if (!pOb)
+		return;
+	pOb->nRead = 0;
+	pOb->nWrite = (sc.wDataLen > JX2OB_BUF_SIZE) ? JX2OB_BUF_SIZE : sc.wDataLen;
+	if (pOb->nWrite > 0)
+		memcpy(pOb->Buf, pRes, pOb->nWrite);
+	int hRes = ++s_nOBNextHandle;
+	s_OBMap[hRes] = pOb;
+
+	char szCall[600];
+	sprintf(szCall, "%s(%d,%d)", pend.strCbFunc.c_str(), pend.nCbParam, hRes);
+	int nTop = lua_gettop(pScript->m_LuaState);
+	if (lua_dostring(pScript->m_LuaState, szCall) != 0)
+		g_DebugLog((LPSTR)"[RELAYHT] callback LOI: %.200s", szCall);
+	lua_settop(pScript->m_LuaState, nTop);
+
+	{
+		std::map<int, KJx2ObjBuffer*>::iterator itR = s_OBMap.find(hRes);
+		if (itR != s_OBMap.end())
+		{
+			delete itR->second;
+			s_OBMap.erase(itR);
+		}
+	}
+}
+
 int LuaJX2_RemoteExecute(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) < 3 || !Lua_IsString(L, 1) || !Lua_IsString(L, 2) || !Lua_IsNumber(L, 3))
@@ -140,8 +292,26 @@ int LuaJX2_RemoteExecute(Lua_State* L)
 	}
 	if (!pScript || !pScript->m_LuaState)
 	{
-		g_DebugLog((LPSTR)"[PORT5] RemoteExecute: script chua nap %.128s", szLow);
-		return 0;
+		// [RELAYHT 06/09] khong co kich ban nay trong cay GameServer -> GUI LEN S3RELAY
+		// chay (truoc day chi ghi log roi bo qua). Kich ban CO SAN van chay tai cho
+		// nhu cu nen cac cho goi dang chay khong doi hanh vi.
+		const BYTE* pOut = NULL;
+		int nOutLen = 0;
+		{
+			std::map<int, KJx2ObjBuffer*>::iterator itP = s_OBMap.find(nHandle);
+			if (itP != s_OBMap.end())
+			{
+				pOut = itP->second->Buf;
+				nOutLen = itP->second->nWrite;
+			}
+		}
+		const char* szCbR = (Lua_GetTopIndex(L) >= 4 && Lua_IsString(L, 4)) ? Lua_ValueToString(L, 4) : NULL;
+		int nCbIdR = (Lua_GetTopIndex(L) >= 5 && Lua_IsNumber(L, 5)) ? (int)Lua_ValueToNumber(L, 5) : 0;
+		int nSent = Jx2Relay_SendRemote(szLow, szFunc, pOut, nOutLen, szCbR, nCbIdR);
+		if (!nSent)
+			g_DebugLog((LPSTR)"[RELAYHT] RemoteExecute: khong nap duoc, gui len relay cung hong: %.128s", szLow);
+		Lua_PushNumber(L, nSent);
+		return 1;
 	}
 	const char* szCb = (Lua_GetTopIndex(L) >= 4 && Lua_IsString(L, 4)) ? Lua_ValueToString(L, 4) : NULL;
 	int nCbId = (Lua_GetTopIndex(L) >= 5 && Lua_IsNumber(L, 5)) ? (int)Lua_ValueToNumber(L, 5) : 0;

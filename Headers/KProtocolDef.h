@@ -394,6 +394,7 @@ enum c2c_PROTOCOL
 
 	s2s_broadcast = 96,		//Relay
 	s2s_execute = 97,		//Relay
+	s2s_script = 98,		//Relay -- [RELAYHT 06/09] goi kich ban GS<->relay (RELAY_SCRIPT_CALL)
 
 	c2c_end,
 };
@@ -432,6 +433,8 @@ enum relay_PROTOCOL		//server relay
 	relay_s2c_loseway,
 	relay_s2c_updateserver,
 	relay_s2c_updatemaps,
+	relay_c2s_script,		// [RELAYHT 06/09] GameServer -> relay: goi kich ban
+	relay_s2c_script,
 	relay_end,
 };
 

@@ -111,6 +111,15 @@ function GameSvrReady(dwIP) end
 
 ## 3. ✅ ĐÃ SWAP THẬT LÚC 12:23 — VÀ CÁCH GỠ CHỖ VƯỚNG
 
+> ⚠️ **TRẠNG THÁI HIỆN TẠI (kiểm lúc 13:0x): cây chạy thật ĐÃ ĐƯỢC LÙI VỀ BẢN CŨ.**
+> `S3Relay.exe` = `6014c6d1…` (4.413.952, bản 04/09) và `engine.dll` = `d4c788bb…` (634.368, 18/08),
+> giờ sửa đúng bằng giờ của hai tệp `*.truoc_relayht0609` — dấu vết của lệnh `copy` trong
+> `LuiRelayHT0609.bat`. `Lua54Dll.dll` và `libcrypto-3.dll` vẫn nằm đó nhưng **vô hại**
+> (bản cũ không nhập hai tệp này), nên cặp cũ vẫn chạy bình thường như trước.
+> Muốn bật lại bản mới: chép lại 2 tệp từ `D:\GAMEDEVNEW_wt_relay\Sources\...` (mục 3 bên dưới).
+> Ghi chú bitness đã đo lại: **cả bốn tệp đều là x86 32-bit** (`Machine 0x14c`, `PE32 magic 0x10b`);
+> cỡ `engine.dll` tăng 634→923 KB là do đổi từ CRT gỡ rối sang CRT tĩnh, không phải 64-bit.
+
 > **Cập nhật 06/09 12:23**: chủ tắt máy chủ và cho phép chép vào. Đã gỡ được chỗ vướng
 > mô tả bên dưới, `bin\multiserver` giờ có đủ bộ:
 >
@@ -135,8 +144,9 @@ function GameSvrReady(dwIP) end
 > đều có mặt. Cặp cũ vốn **đã trộn CRT sẵn** (S3Relay tĩnh + engine.dll CRT gỡ rối)
 > nên bản mới (tĩnh + tĩnh) không phát sinh rủi ro mới.
 >
-> **CHƯA CHẠY THỬ**: `S3Relay.exe` có hộp thoại đăng nhập lúc khởi động nên không
-> tự kiểm được — xem mục 5 để biết cần nhìn gì trong nhật ký khi chủ bật lên.
+> **ĐÃ CHẠY THỬ THẬT lúc 12:49–12:51** — xem **mục 8**. (Hộp thoại đăng nhập của
+> `S3Relay.exe` **tự đóng**: nó đọc tài khoản/mật khẩu từ `relay_config.ini [root]`
+> ngay trong `WM_INITDIALOG` rồi `EndDialog`, nên chạy thử không cần bấm gì.)
 
 ### 3.1 (Ghi lại) Chỗ vướng ban đầu
 
@@ -205,28 +215,44 @@ Thư mục dựng tạm `_relayht_0609\` đã xoá sau khi swap xong.
 
 ---
 
-## 6. ĐỢT 1b — VIỆC TIẾP THEO (chưa làm)
+## 6. ĐỢT 1b — ĐÃ LÀM XONG PHẦN CỦA S3RELAY
 
-**`RemoteExecute` thật (RPC GameServer ↔ relay).** Hiện `LuaJX2_RemoteExecute` trong
-`Core\Src\KJx2SharedStore.cpp` (port 23/08) **chạy TẠI CHỖ trong chính GameServer**
-— ghi chú trong mã: *"Du an 1 GS khong relay -> thuc thi TAI CHO dong bo"*. Bên Linux
-nó gửi gói sang relay, relay `DynamicExecute(script, fun, ...)` rồi trả kết quả về
-cho hàm callback.
+**`RemoteExecute` thật (RPC GameServer ↔ relay)** — `RelayRpc.h/.cpp` (577 dòng).
 
-Cần làm:
-1. `Headers\KProtocolDef.h`: thêm `relay_c2s_script`, `relay_s2c_script` vào
-   `enum relay_PROTOCOL` (trước `relay_end`).
-2. `Headers\KRelayProtocol.h`: thêm `struct RELAY_SCRIPT_CALL` (callId, gameSvrId,
-   script, func, callbackFunc, callbackParam, khối ObjBuffer).
-3. Relay: `CHostConnect::Proc0_Relay` thêm nhánh; **xếp gói vào hàng đợi cho luồng
-   chính** rồi mới chạy Lua (gói tới trên luồng mạng, Lua không an toàn đa luồng).
-4. Core: `LuaJX2_RemoteExecute` → gửi qua `g_NewProtocolProcess.PushMsgInTransfer`;
-   giữ đường chạy tại chỗ làm phương án dự phòng khi relay chưa nối.
-5. Chép `script\lib\remoteexc.lua` + `sharedata.lua` (bản Linux) sang cả hai cây.
+| Việc | Cách làm |
+|---|---|
+| Giao thức | `s2s_script = 98` (`KProtocolDef.h`) + `struct RELAY_SCRIPT_CALL` (`KRelayProtocol.h`): gói nằm trong `RELAY_DATA`, byte đầu thân gói là `s2s_script`, rồi cấu trúc, rồi 3 khối `szScript` / `szFunc` / `data` (ObjBuffer) |
+| GS → relay | bắt ở `CHostConnect::Proc1_Relay_Data` nhánh **"arrived"** (`nToIP == 0`) — chỗ trước đây vứt gói. Gói tới trên **luồng mạng** nên chỉ **xếp hàng**; `RelayRpc_Tick()` (WM_TIMER **100 ms**, luồng chính) mới chạy Lua — Lua không an toàn đa luồng |
+| relay → GS | gửi thẳng trên đúng kết nối của máy chủ đó (`FindNetConnect`), hoặc `BroadPackage` khi `dwGameSvrId = 0` |
+| Kết quả + callback | `dwCallId` ≠ 0 thì bên nhận gửi ngược `byIsResult = 1`; bên gọi chạy `szCallBackFunc(nCallBackParam, hResult)` trong state của **chính kịch bản đã gọi** |
 
-Xong đợt 1b thì `GetBiaoChePos` của **vận tiêu bang** và nhóm hàm phó bản động của
-**Viêm Đế Bảo Tàng** làm được **hoàn toàn bằng Lua trên relay**, không phải viết
-thêm hàm C++ vào Core.
+Thêm **10 hàm Lua**: `RemoteExecute`, `GetHostPlayerCount`, `IsGameServerReady`,
+`ConnectIdx2GameServerId`, `GameServerId2ConnectIdx`, `Msg2PlayerByName`,
+`Msg2Tong`, `Msg2Faction`, `AddGlobalNews`, `NotifySDBRecordChanged`,
+`NotifySDBRChanged1Svr`. Nhóm `Msg2*`/`Notify*` đi qua đường GM `dw <lệnh Lua>`
+có sẵn nên **không phải sửa `GameServer.exe`**.
+
+Và **4 hàm ShareData bản ghi nhiều ô** giống bản Linux: `SaveCustomDataToSDB`,
+`SaveCustomDataToSDBOw`, `GetCustomDataFromSDB`, `GetRecordInfoFromNO`
+(`'i'` số nguyên · `'l'` số dài · `'s'` chuỗi — ví dụ `'sliii'`).
+
+### 6.1 Còn lại: nửa bên GameServer (chưa làm, cần swap `CoreServer.dll`)
+
+`LuaJX2_RemoteExecute` trong `Core\Src\KJx2SharedStore.cpp` (port 23/08) vẫn
+**chạy TẠI CHỖ trong chính GameServer** — ghi chú trong mã: *"Du an 1 GS khong relay
+-> thuc thi TAI CHO dong bo"*. Relay giờ đã sẵn sàng nhận, chỉ cần bên GS chịu gửi:
+
+1. `LuaJX2_RemoteExecute`: **giữ nguyên** đường chạy tại chỗ khi kịch bản có sẵn
+   trong cây của GameServer (khỏi hỏng 14 chỗ gọi đang chạy: `weeklyrank`,
+   `tongcastle`, `bigboss`, `msg2allworld`…); **chỉ khi không tìm thấy kịch bản**
+   thì đóng gói gửi lên relay qua `g_NewProtocolProcess.PushMsgInTransfer` —
+   hiện chỗ đó chỉ ghi log "script chua nap, bo qua" nên đổi là **thuần lợi**.
+2. Nhận kết quả: relay trả về bằng `dw` (đường `s2s_execute` có sẵn) gọi một hàm
+   Lua điều phối do Core đăng ký ⇒ **vẫn không phải sửa `GameServer.exe`**.
+3. Chép `script\lib\remoteexc.lua` + `sharedata.lua` (bản Linux) sang cây relay.
+
+Việc này đụng `CoreServer.dll` nên để thành một đợt riêng, swap cùng lúc với
+GameServer khi chủ sắp xếp được.
 
 ---
 
@@ -248,3 +274,55 @@ thêm hàm C++ vào Core.
    thẳng.
 6. **Build relay từ worktree** phải chép tay `Lib\debug\libdb181sd.lib` +
    `Lib\release\libdb181s.lib` (không tracked) — thiếu là LNK1181.
+
+---
+
+## 8. ĐÃ CHẠY THỬ THẬT — 06/09 12:49→12:51 (máy chủ đang tắt)
+
+Cách thử: bật `S3RelayServer.exe` (chính là **root**, nghe cổng 7777) rồi bật
+`S3Relay.exe`. Hộp thoại đăng nhập **tự đóng** (đọc tài khoản từ `relay_config.ini`
+`[root]`) nên không cần bấm gì.
+
+### 8.1 Nhật ký lần chạy đầu (`relay_log\2026_09_06\12_49_48_798.log`)
+```
+5  -- [RelayScript] san sang, 38 ham Lua
+6  -- [RelayRpc] san sang (hang doi 256, cho ket qua 512)
+7  -- [ShareData] MO: 127.0.0.1:3306/jx1_role bang relay_sharedata, nap 0 ban ghi
+8  -- [Script] [hb_relay] da khai bao lich: 10 phut/lan
+9  -- [TaskCentre] + hb_relay.lua [Nhip tim relay ...] moc ngay lap tuc, moi 10 phut
+10 -- [TaskCentre] nap 1/1 tac vu tu .\relaysetting\task\tasklist.ini
+...
+357 -- [Script] [hb_relay] lan 1 trong phien nay, tong tu truoc toi nay 1, luc 2026-09-06 12:49:53
+```
+Dòng 357 chứng minh **cả chuỗi** trong một phát: TaskCentre gọi `TaskContent()` →
+`Include` hai tệp thư viện → `NewCommonShareData` → ObjBuffer đóng gói bảng Lua →
+`OB_SaveShareData` → ghi MySQL → `format()` / `FormatTime2String()` / `GetTaskCurCount()`.
+
+### 8.2 MySQL sau đó
+```
+so ban ghi: 2
+  skey=RELAY_HEARTBEAT p1=0 p2=0 len=45   <- ban ghi thong tin {nUsed, nMaxRow}
+  skey=RELAY_HEARTBEAT p1=1 p2=1 len=63   <- ban ghi 1 {data, key}
+```
+
+### 8.3 Khởi động lại → dữ liệu bền vững
+```
+7   -- [ShareData] MO: ... nap 2 ban ghi          <- doc lai tu MySQL
+357 -- [Script] [hb_relay] lan 1 trong phien nay, tong tu truoc toi nay 2
+```
+Bộ đếm **2** chứ không quay về 1 ⇒ ShareData sống qua khởi động lại. Đúng như bản Linux.
+
+### 8.4 Một bẫy đã đo được (KHÔNG phải lỗi của đợt này)
+Lúc đầu tôi thử bằng một **"root giả"** (chỉ mở cổng 7777 rồi im lặng). Relay
+**sập `0xC0000005`** sau ~5–10 giây, tại `CNetClient::Startup+0x200`
+(`NetClient.cpp:245` — nhánh dọn dẹp khi `ConnectTo` thất bại **sau khi** TCP đã nối).
+Đã đối chứng: **bản CŨ** (`S3Relay.exe` 4.413.952 + `engine.dll` 634.368) **sập y hệt
+ở cùng chỗ** ⇒ **lỗi có sẵn**, không do đợt này. Bài học: đừng thử relay bằng root giả,
+hãy bật `S3RelayServer.exe` thật. (Dump nằm ở `bin\multiserver\DumpInfo\`; đọc bằng
+`ReverseTools\crash\doc_dump.py` + `giai_ma.py` như đợt 04/09.)
+
+### 8.5 Trạng thái hiện tại
+- Tiến trình thử **đã tắt hết**, chủ bật cụm như bình thường.
+- `relay_sharedata` còn 2 dòng `RELAY_HEARTBEAT` của tác vụ mẫu — vô hại, cứ để làm
+  "nhịp tim" (10 phút một dòng log). Muốn tắt: sửa `relaysetting\task\tasklist.ini`
+  thành `Count=0`.
