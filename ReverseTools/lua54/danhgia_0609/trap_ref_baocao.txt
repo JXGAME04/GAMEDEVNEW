@@ -1,0 +1,11 @@
+Region_S.dat: 5008 tep (0 loi cau truc); o trap: 407; ID trap khac nhau: 28; khoi NPC co chuoi .lua: 0 tep
+Khop dang '\script\...': 28 ID; dang 'script\...': 0 ID
+ID trap KHONG khop tep script nao (script da xoa/di chuyen -> trap chet): 0 ID, 0 o, o 0 map
+
+Tep script duoc TRAP tham chieu, theo thu muc cap 2 (so tep):
+    10  script\ÖÐÔ­±±Çø
+    10  script\task
+     8  script\missions
+
+Tong tep script duoc trap tham chieu: 28; trong do ten/thu muc Han: 10 / 1513 tep Han
+Map co nhieu trap chet nhat: 

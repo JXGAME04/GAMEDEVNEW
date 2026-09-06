@@ -27,6 +27,7 @@ static const char* s_szStage[PERF_COUNT] =
 	"BAUCUA",
 	"GS_MSGLOOP",
 	"GS_MAINLOOP",
+	"LUA_CALL",
 };
 
 // Bang phan bo: mot o cho moi mili-giay tron, o cuoi gom tat ca >= PERF_BUCKETS-1.
@@ -259,6 +260,40 @@ static void PerfReport(double dNow, int nOnlinePlayer)
 }
 
 //---------------------------------------------------------------------------
+// [LUA54 06/09] Thoi gian chay Lua cua tick vua xong: Lua54Dll cong don trong lua4_call
+// (do sau 0, ke ca Include/dofile), Core doc + xoa moi tick -> giai doan LUA_CALL.
+// Lay ham qua GetProcAddress de CoreServer van chay voi Lua54Dll cu (khong co ham -> bo qua).
+//---------------------------------------------------------------------------
+static void PerfLuaDoc()
+{
+	typedef int (*PFN_L4READ)(double*, double*, int*);
+	typedef void (*PFN_L4SET)(int);
+	static PFN_L4READ s_pfnRead = NULL;
+	static int s_nDaThu = 0;
+	if (!s_nDaThu)
+	{
+		s_nDaThu = 1;
+		HMODULE hLua = GetModuleHandleA("Lua54Dll.dll");
+		if (hLua)
+		{
+			s_pfnRead = (PFN_L4READ)GetProcAddress(hLua, "lua4_perf_read");
+			PFN_L4SET pfnSet = (PFN_L4SET)GetProcAddress(hLua, "lua4_perf_set");
+			if (s_pfnRead && pfnSet)
+				pfnSet(1);
+			else
+				s_pfnRead = NULL;
+		}
+	}
+	if (s_pfnRead)
+	{
+		double dTong = 0.0, dMax = 0.0;
+		int n = 0;
+		if (s_pfnRead(&dTong, &dMax, &n))
+			g_PerfAdd(PERF_LUA_CALL, dTong);
+	}
+}
+
+//---------------------------------------------------------------------------
 void g_PerfFrame(int nOnlinePlayer)
 {
 	if (!g_PerfOn())
@@ -270,6 +305,7 @@ void g_PerfFrame(int nOnlinePlayer)
 		return;
 	}
 	s_nFrame++;
+	PerfLuaDoc();
 	if (s_dLastTick > s_dTreMs)
 		s_nLate++;
 	s_dLastTick = 0.0;

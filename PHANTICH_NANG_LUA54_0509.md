@@ -255,3 +255,49 @@ Lộ trình giai đoạn 2 theo lợi ích / rủi ro:
 Kết luận hiệu năng: **lõi 5.4 đã cho phần lợi thấy được (tick không tăng, đỉnh script từ 300–880 ms xuống 57 ms sau tối ưu mục 11); viết lại 13.000 lời gọi sang tên 5.4 thuần không đem lại gì đo được và mở ra hàng trăm điểm lỗi im lặng; tiền hiệu năng tiếp theo nằm ở 2a → 2b (rẻ) và ở C++ (`SW_ACTIVATE` 4,3 của 6,6 ms tick).**
 
 Công cụ đo đợt này (`ReverseTools\lua54\danhgia_0609\`): `bench_compat.lua` + `bench_run.py` (micro-bench qua Lua54Dll), `do_include.py` (đồ thị Include, byte biên dịch, state cơ bản), `mem_proto.py` (heap proto qua GC step vì `collectgarbage` của shim lỗi), `perf_runs.py` (cắt perf log theo lần chạy).
+
+## 13. Giai đoạn 2a + 2b ĐÃ THI CÔNG (06/09 15:00–15:25) — `.moi` đã đặt, chờ chủ restart
+
+Chủ (06/09): *"hãy làm tiếp"* (sau mục 12). Chỉ đụng Lua54Dll + Core, **không đụng script**. Nhánh `lua54b-0609` (worktree `D:\GAMEDEVNEW_wt_lua54b`), đã gộp origin/main **1b90aee9**.
+
+### 13.1 Làm gì
+
+| # | Chỗ | Nội dung |
+|---|---|---|
+| 1 | `Lua54Dll` `lua4compat.c` `lua4_dofile` (đường `Include`) | **2a**: mỗi state giữ closure đã biên dịch theo đường dẫn (registry `lua4.inc.fn/st`); Include lần 2 trong cùng state KHÔNG biên dịch lại nhưng **vẫn chạy lại thân tệp** → ngữ nghĩa y hệt Lua 4. **2b**: bytecode dùng chung cả tiến trình (bảng băm đường dẫn chuẩn hoá → code + mtime + size, khoá CRITICAL_SECTION); state khác nạp nhị phân. Tệp đổi trên đĩa (mtime hoặc size khác) → biên dịch lại → sửa nóng và `ReLoadAllScript` vẫn ăn. Tắt: biến môi trường `LUA54_KHONG_CACHE=1` hoặc `lua4_inc_set(0)`. Thống kê qua `lua4_inc_stats`. |
+| 2 | `lua4_call` | đồng hồ ở độ sâu 0 khi `lua4_perf_set(1)`; Core đọc + xoá mỗi tick qua `lua4_perf_read` → giai đoạn mới **`LUA_CALL`** trong `jx_perf_server.log` = tổng ms Lua mỗi tick (mọi lời gọi C++→Lua, kể cả Include/dofile). Không bật = không đọc đồng hồ. |
+| 3 | `KPerfTick.h/.cpp` | `PERF_LUA_CALL` + `PerfLuaDoc()` (GetProcAddress → chạy được với DLL cũ) |
+| 4 | `KSortScript.cpp g_IniScriptEngine` | dòng log `[script] LoadAllScript: N tep, M ms; cache Include: bien dich a, dung lai cung state b, bytecode chung c, bo qua phan tich d KB, bytecode giu e KB` (console GameServer + g_DebugLog) |
+| 5 | `lua4compat.lua:175` | sửa lỗi có sẵn: `collectgarbage`/`gcinfo` gọi lại chính nó → tràn ngăn xếp (0 script gọi nên chưa nổ). Giữ `collectgarbage_54` gốc. |
+
+### 13.2 Kiểm đã chạy
+
+- `lua4_selftest` **0 lỗi** (thêm 2 mục: Include lần 2 phải chạy lại thân tệp + không biên dịch; tệp đổi phải biên dịch lại; đồng hồ đếm được).
+- Mô phỏng boot thật (`boot_gia.py`: 3.098 state như `LoadAllScript`, `Include` thật qua `lua4_dofile` với remap JX2, hàm engine giả, sandbox I/O, cùng DLL x64 sẽ deploy):
+
+| Chế độ | Tổng | Tạo state + shim | Chạy thân tệp + Include | State có lỗi `_ALERT` |
+|---|---:|---:|---:|---:|
+| Không cache | 6,37 s | 0,97 s | 5,25 s | 452 |
+| Cache 2a+2b | **2,98 s** | 0,95 s | **1,89 s** | 452 |
+
+Tập lỗi `_ALERT` (2.192 dòng, do hàm engine giả) **giống hệt từng byte** hai chế độ → cache không đổi hành vi. Thống kê: 466 lần biên dịch, 30.518 lần dùng lại closure cùng state, 11.861 lần nạp bytecode chung, bỏ qua phân tích **263 MB** nguồn, bytecode giữ 4,4 MB.
+- Build: Lua54Dll x64/Win32 0 lỗi; CoreServer "Server Release x64" 105 tệp 0 lỗi, obj riêng trong worktree. Dấu hiệu tính năng trong DLL mới: CL_Cong, AUC_MsgTong, S13, GetBiaoChePos, RemoteExecute, TKDich, LoadAllScript:, LUA_CALL.
+
+**Đính chính mục 12.5:** ước tính RAM "proto lặp 410–470 MB" quá cao — Include lại trong cùng state tạo proto mới nhưng bản cũ thành rác và GC dọn, nên phần bền vững chỉ là bản duy nhất theo từng state (~154 MB nguồn ≈ 200 MB) + 399 MB state cơ bản ≈ **0,6 GB**. Cache 2a giữ closure sống nên RAM không tăng; cái được là thời gian boot, rác GC và sau này là nạp lại nhanh.
+
+### 13.3 Đã đặt (chờ chủ chạy bat) và cách kiểm sau restart
+
+| Tệp | Hash | Ghi chú |
+|---|---|---|
+| `bin\server\CoreServer.dll.moi` | 4fcb02f9 | từ origin/main 1b90aee9 = **gồm cả bot nội/ngoại đợt 1+2 (4395bd89, ca4f1d03) của phiên khác**; bản `.moi` trước đó của phiên bot giữ ở `CoreServer.dll.moi.truoc_lua54b_1454` |
+| `bin\server\Lua54Dll.dll.moi` | 2fe07c19 | x64; bat đã có `:capnhat Lua54Dll.dll` |
+| `bin\client\Lua54Dll.dll.moi` | 2e8a2677 | Win32; `ChoiGame.bat` có `:capnhat Lua54Dll.dll` |
+| PDB | `D:\GAMEDEVNEW_wt_lua54b\Sources\Core\x64\ServerRelease\CoreServer.pdb` | mổ dump |
+
+`bin\multiserver` (relay) chưa phủ vì không có bat capnhat; DLL Win32 mới tương thích, đặt sau.
+
+Kiểm sau restart: (1) console GameServer / g_DebugLog có `[script] LoadAllScript: 3098 tep, … ms` — kỳ vọng ≈ 2–3 s thay cho ≈ 6–7 s, `bo qua phan tich ≈ 260.000 KB`; (2) `jx_perf_server.log` có dòng `LUA_CALL n=1080 tb=… ms` → lần đầu biết Lua chiếm bao nhiêu tick; (3) `ScriptError.log` không có lỗi mới; (4) sửa nóng: ghi một tệp được Include (vd `cauhinh\ch_*.lua`) → phút sau `RunTime` đọc bản mới (mtime đổi → biên dịch lại).
+
+**Lùi:** đặt `CoreServer.dll.moi.truoc_lua54b_1454` → `CoreServer.dll.moi` và bỏ `Lua54Dll.dll.moi`; hoặc chỉ tắt cache bằng `set LUA54_KHONG_CACHE=1` trong `ChayGameServer.bat` trước `start GameServer.exe` (DLL vẫn mới).
+
+Công cụ: `ReverseTools\lua54\danhgia_0609\` (`boot_gia.py`, `selftest_dll.py`, `patch_lua54.py`, `patch_core.py`, `build_lua54b.bat`). Tiếp theo: xem [SAPXEP_SCRIPT_0609.md](SAPXEP_SCRIPT_0609.md) (sắp xếp lại cây script — chờ chủ quyết).
