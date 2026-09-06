@@ -76,7 +76,10 @@ def ghi_spr(img, path):
             r, g, b, a = px[x, y]
             prgb[x, y] = (r, g, b) if a > 0 else (0, 0, 0)
     pal_img = rgb.quantize(colors=256, method=Image.MEDIANCUT, dither=Image.NONE)
-    pal = pal_img.getpalette()[:768]
+    # [SPRFIX 06/09] getpalette() CHI tra ve so mau anh that su dung; header khai Colors = 256 nen thieu byte
+    # -> bo nap doc lech vao du lieu RLE -> Offset rac -> SAP client (06/09 09:48). Xem ghi_spr.py.
+    pal = list(pal_img.getpalette() or [])[:768]
+    pal += [0] * (768 - len(pal))
     idx = pal_img.load()
     # RLE tung dong: nhom theo (alpha luong tu 16 muc) - alpha 0 = trong suot
     rle = bytearray()
