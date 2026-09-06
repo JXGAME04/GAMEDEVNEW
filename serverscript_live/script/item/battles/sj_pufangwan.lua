@@ -1,0 +1,17 @@
+--Author: Fong KiÒu
+--Date: 2021
+--Function: Item Tèng Kim
+
+Include("\\script\\header\\forbidmap.lua")
+
+function main(nItemIdx)
+	local W,X,Y = GetWorldPos()
+	local nMapId = W
+	if ( checkSJMaps(nMapId) ~= 1 ) then
+		Msg2Player("B¹n kh«ng thÓ sö dông vËt phÈm nµy ë ®©y")
+		return
+	end
+	RemoveItem(nItemIdx,1)
+	AddSkillState( 473, 5, 1,3240,0)
+	Msg2Player("B¹n ®­îc 1 viªn Phæ Phßng hoµn")
+end

@@ -1,0 +1,144 @@
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:38: in main chunk
+2026/09/05 12:04:54.859 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_01.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:36: in main chunk
+2026/09/05 12:04:54.859 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_03.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:34: in main chunk
+2026/09/05 12:04:54.876 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_04.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:38: in main chunk
+2026/09/05 12:22:40.800 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_01.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:36: in main chunk
+2026/09/05 12:22:40.803 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_03.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:34: in main chunk
+2026/09/05 12:22:40.805 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_04.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:38: in main chunk
+2026/09/05 12:38:49.769 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_01.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:36: in main chunk
+2026/09/05 12:38:49.771 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_03.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:34: in main chunk
+2026/09/05 12:38:49.773 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_04.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:38: in main chunk
+2026/09/05 12:39:27.561 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_01.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:36: in main chunk
+2026/09/05 12:39:27.563 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_03.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:34: in main chunk
+2026/09/05 12:39:27.567 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_04.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:38: in main chunk
+2026/09/05 12:39:39.921 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_01.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:36: in main chunk
+2026/09/05 12:39:39.923 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_03.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:34: in main chunk
+2026/09/05 12:39:39.925 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_04.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:38: in main chunk
+2026/09/05 12:41:31.059 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_01.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:36: in main chunk
+2026/09/05 12:41:31.063 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_03.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	[string "?"]:34: in main chunk
+2026/09/05 12:41:31.066 	 ScriptError 4:[1] (\script\task\partner\rewind\partner_reward_main_04.lua) 
+

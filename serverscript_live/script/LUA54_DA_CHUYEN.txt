@@ -1,0 +1,4 @@
+-- Cay script nay da qua chuyen_lua4_54.py luc 2026-09-05 12:35:39 tu E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server\script
+-- chuyen_lua4_54: 2986 tep .lua, 135 tep co thay doi
+-- Moi dong bat dau bang -- vi engine nap CA tep .txt trong cay script va chay nhu Lua
+-- (KSortScript.cpp loc duoi .LUA va .TXT); tep van khong hop le = ScriptError 3.

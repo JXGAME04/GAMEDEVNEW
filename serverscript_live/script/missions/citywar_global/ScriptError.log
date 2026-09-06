@@ -1,0 +1,91 @@
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...INE\bin\server\script\missions\citywar_global\ladder.lua:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...INE\bin\server\script\missions\citywar_global\ladder.lua:19: in main chunk
+	[C]: in function 'Include'
+	...erver\script\missions\citywar_global\infocenter_head.lua:10: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:1: in main chunk
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...INE\bin\server\script\missions\citywar_global\ladder.lua:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...INE\bin\server\script\missions\citywar_global\ladder.lua:19: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:10: in main chunk
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:19: in main chunk
+2026/09/05 12:04:53.352 	 ScriptError 4:[1] (\script\missions\citywar_global\ladder.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...INE\bin\server\script\missions\citywar_global\ladder.lua:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...INE\bin\server\script\missions\citywar_global\ladder.lua:19: in main chunk
+	[C]: in function 'Include'
+	...erver\script\missions\citywar_global\infocenter_head.lua:10: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:6: in main chunk
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...INE\bin\server\script\missions\citywar_global\ladder.lua:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...INE\bin\server\script\missions\citywar_global\ladder.lua:19: in main chunk
+	[C]: in function 'Include'
+	...erver\script\missions\citywar_global\infocenter_head.lua:10: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:1: in main chunk
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...INE\bin\server\script\missions\citywar_global\ladder.lua:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...INE\bin\server\script\missions\citywar_global\ladder.lua:19: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:10: in main chunk
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:19: in main chunk
+2026/09/05 12:22:39.290 	 ScriptError 4:[1] (\script\missions\citywar_global\ladder.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...INE\bin\server\script\missions\citywar_global\ladder.lua:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...INE\bin\server\script\missions\citywar_global\ladder.lua:19: in main chunk
+	[C]: in function 'Include'
+	...erver\script\missions\citywar_global\infocenter_head.lua:10: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:6: in main chunk
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...INE\bin\server\script\missions\citywar_global\ladder.lua:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...INE\bin\server\script\missions\citywar_global\ladder.lua:19: in main chunk
+	[C]: in function 'Include'
+	...erver\script\missions\citywar_global\infocenter_head.lua:10: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:1: in main chunk
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...INE\bin\server\script\missions\citywar_global\ladder.lua:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...INE\bin\server\script\missions\citywar_global\ladder.lua:19: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:10: in main chunk
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: [string "?"]:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	[string "?"]:19: in main chunk
+2026/09/05 12:25:00.194 	 ScriptError 4:[1] (\script\missions\citywar_global\ladder.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...INE\bin\server\script\missions\citywar_global\ladder.lua:19: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...INE\bin\server\script\missions\citywar_global\ladder.lua:19: in main chunk
+	[C]: in function 'Include'
+	...erver\script\missions\citywar_global\infocenter_head.lua:10: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:6: in main chunk
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'

@@ -1,0 +1,58 @@
+2026/08/13 07:38:19.224 	 ScriptError 4:[1] (\script\lib_jx2\alonelib.lua) 
+
+2026/08/13 07:38:19.226 	 ScriptError 4:[1] (\script\lib_jx2\award.lua) 
+
+2026/08/13 07:38:19.227 	 ScriptError 4:[1] (\script\lib_jx2\awardtemplet.lua) 
+
+2026/08/13 07:38:19.264 	 ScriptError 3. (\script\lib_jx2\basic.lua) 
+
+2026/08/13 07:38:19.264 	 ScriptError 3. (\script\lib_jx2\basic.lua) 
+
+2026/08/13 07:38:19.275 	 ScriptError 4:[1] (\script\lib_jx2\composeclass.lua) 
+
+2026/08/13 07:38:19.281 	 ScriptError 4:[1] (\script\lib_jx2\composeex.lua) 
+
+2026/08/13 07:38:19.282 	 ScriptError 4:[1] (\script\lib_jx2\composelistclass.lua) 
+
+2026/08/13 07:38:19.283 	 ScriptError 4:[1] (\script\lib_jx2\composelistex.lua) 
+
+2026/08/13 07:38:19.284 	 ScriptError 4:[1] (\script\lib_jx2\compose_jinnang.lua) 
+
+2026/08/13 07:38:19.292 	 ScriptError 4:[1] (\script\lib_jx2\droptemplet.lua) 
+
+2026/08/13 07:38:19.293 	 ScriptError 4:[1] (\script\lib_jx2\equipex.lua) 
+
+2026/08/13 07:38:19.294 	 ScriptError 4:[1] (\script\lib_jx2\file.lua) 
+
+2026/08/13 07:38:19.295 	 ScriptError 4:[1] (\script\lib_jx2\functionset.lua) 
+
+2026/08/13 07:38:19.296 	 ScriptError 4:[1] (\script\lib_jx2\gb_modulefuncs.lua) 
+
+2026/08/13 07:38:19.301 	 ScriptError 4:[1] (\script\lib_jx2\gb_taskfuncs.lua) 
+
+2026/08/13 07:38:19.307 	 ScriptError 4:[1] (\script\lib_jx2\log.lua) 
+
+2026/08/13 07:38:19.311 	 ScriptError 4:[1] (\script\lib_jx2\pfunction.lua) 
+
+2026/08/13 07:38:19.322 	 ScriptError 4:[1] (\script\lib_jx2\player.lua) 
+
+2026/08/13 07:38:19.323 	 ScriptError 4:[1] (\script\lib_jx2\progressbar.lua) 
+
+2026/08/13 07:38:19.324 	 ScriptError 4:[1] (\script\lib_jx2\randomitem.lua) 
+
+2026/08/13 07:38:19.325 	 ScriptError 4:[1] (\script\lib_jx2\rangevalue.lua) 
+
+2026/08/13 07:38:19.326 	 ScriptError 4:[1] (\script\lib_jx2\remoteexc.lua) 
+
+2026/08/13 07:38:19.327 	 ScriptError 3. (\script\lib_jx2\say.lua) 
+
+2026/08/13 07:38:19.327 	 ScriptError 3. (\script\lib_jx2\say.lua) 
+
+2026/08/13 07:38:19.329 	 ScriptError 4:[1] (\script\lib_jx2\statemachine.lua) 
+
+2026/08/13 07:38:19.330 	 ScriptError 3. (\script\lib_jx2\string.lua) 
+
+2026/08/13 07:38:19.331 	 ScriptError 3. (\script\lib_jx2\string.lua) 
+
+2026/08/13 07:38:19.334 	 ScriptError 4:[1] (\script\lib_jx2\unittest.lua) 
+

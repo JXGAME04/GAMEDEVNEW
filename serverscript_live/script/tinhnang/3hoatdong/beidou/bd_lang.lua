@@ -1,0 +1,30 @@
+-- ============================================================================
+-- SINH TU DONG boi ReverseTools/gen_beidou.py - DUNG SUA TAY.
+-- Dich nguoc tu ban Linux script\event\beidoulingpai\ (xem dau tep gen).
+-- ============================================================================
+-- lang.lua ban Linux - giu nguyen tung cau chu.
+MSG_FINISH_TASK = "Hoµn thµnh nhiÖm vô B¾c §Èu l·o nh©n giao cho."
+MSG_WANT_TASK_OPT = "NhËn nhiÖm vô"
+MSG_SUBMIT_TASK_OPT = "Nép nhiÖm vô"
+MSG_CANCEL_TASK_OPT = "Hñy bá nhiÖm vô"
+MSG_QUERY_TASK_OPT = "KiÓm tra nhiÖm vô ®· nhËn"
+MSG_END_DIALOG = " KÕt thóc ®èi tho¹i!"
+MSG_TITLE = "Xin chµo!"
+MSG_ERR_NO_TASK = "HiÖn t¹i b¹n vÉn ch­a nhËn nhiÖm vô"
+MSG_CURR_TASK = "NhiÖm vô hiÖn t¹i lµ: %s"
+MSG_DOUBLE_AWARD = "PhÇn th­ëng gÊp ®«i"
+MSG_ALREADY_HAVE_TASK = "§· nhËn nhiÖm vô B¾c §Èu l·o nh©n råi"
+MSG_ERR_TASK_DAY_LIMIT = "Mçi ngµy nhËn nhiÒu nhÊt %d lÇn"
+MSG_GET_TASK = "NhËn ®­îc nhiÖm vô: %s"
+MSG_TASK_FAIL = "Thêi gian hoµn thµnh nhiÖm vô ®· hÕt, nhiÖm vô thÊt b¹i!"
+MSG_NO_FINISH_TASK = "B¹n d­êng nh­ vÉn ch­a hoµn thµnh nhiÖm vô."
+MSG_CANCEL_TASK = "Hñy nhiÖm vô B¾c §Èu l·o nh©n: %s."
+MSG_ERR_NO_ENOUGH_COUNT = "Sè l­îng %s trªn ng­êi b¹n kh«ng ®ñ"
+MSG_ALREADY_DOUBLE_AWARD = "B¹n ®· cã hiÖu øng phÇn th­ëng gÊp ®«i råi, kh«ng nªn l·ng phÝ Linh §¬n"
+MSG_DOUBLE_AWARD_TIP = "LÇn sau nhËn nhiÖm vô h­ëng hiÖu øng phÇn th­ëng gÊp ®«i"
+MSG_NO_OPEN = "Ch­a ®Õn thêi gian më ho¹t ®éng"
+MSG_BEIDOUZHIBAO = "§¹i hiÖp sö dông B¾c §Èu Chi B¶o phót chèc hoµn thµnh nhiÖm vô!"
+MSG_LEVEL_LIMIT = "ChØ nh÷ng b»ng h÷u cÊp 150 trë lªn hoÆc ®· trïng sinh míi ®­îc tham gia"
+BD_MSG_GET_AWARD = "Nép %d lÖnh bµi B¾c §Èu nhËn th­ëng"
+BD_MSG_TASK_CITY = "§Õn %s gÆp B¾c §Èu l·o nh©n"
+BD_MSG_WRONG_CITY = "NhiÖm vô cña ng­¬i lµ %s, ®©y kh«ng ph¶i n¬i ®ã."

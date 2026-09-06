@@ -1,0 +1,42 @@
+error: ...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: in method '_InitProtocolEnum'
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:188: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:6: in main chunk
+error: ...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: in method '_InitProtocolEnum'
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:188: in main chunk
+	[C]: in function 'Include'
+	...\TESTLOFFF_ONLINE\bin\server\script\mail\mailmanager.lua:6: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:4: in main chunk
+error: ...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: in method '_InitProtocolEnum'
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:188: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:6: in main chunk
+error: ...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: in method '_InitProtocolEnum'
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:188: in main chunk
+	[C]: in function 'Include'
+	...\TESTLOFFF_ONLINE\bin\server\script\mail\mailmanager.lua:6: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:4: in main chunk
+error: ...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: in method '_InitProtocolEnum'
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:188: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:6: in main chunk
+error: ...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:105: in method '_InitProtocolEnum'
+	...urceVs22\TESTLOFFF_ONLINE\bin\server\script\protocol.lua:188: in main chunk
+	[C]: in function 'Include'
+	...\TESTLOFFF_ONLINE\bin\server\script\mail\mailmanager.lua:6: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:4: in main chunk

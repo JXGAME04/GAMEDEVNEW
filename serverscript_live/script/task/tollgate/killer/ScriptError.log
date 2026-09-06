@@ -1,0 +1,374 @@
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...FF_ONLINE\bin\server\script\activitysys\playerfunlib.lua:708: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	...F_ONLINE\bin\server\script\misc\eventsys\type\player.lua:3: in main chunk
+	[C]: in function 'Include'
+	...LINE\bin\server\script\task\metempsychosis\task_func.lua:16: in main chunk
+	[C]: in function 'Include'
+	...F_ONLINE\bin\server\script\event\change_destiny\head.lua:2: in main chunk
+	[C]: in function 'Include'
+	...NLINE\bin\server\script\event\change_destiny\mission.lua:1: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:14: in main chunk
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...FF_ONLINE\bin\server\script\activitysys\playerfunlib.lua:708: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	...22\TESTLOFFF_ONLINE\bin\server\script\class\ktabfile.lua:52: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:3: in main chunk
+error: ...\script\missions\challengeoftime\npc\dragonboat_main.lua:154: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: in main chunk
+	[C]: in function 'Include'
+	...\bin\server\script\event\birthday_jieri\200905\class.lua:5: in main chunk
+	[C]: in function 'Include'
+	...pt\event\birthday_jieri\200905\chuangguan\chuangguan.lua:2: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:6: in main chunk
+error: ...\bin\server\script\event\birthday_jieri\200905\class.lua:9: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...\bin\server\script\event\birthday_jieri\200905\class.lua:9: in main chunk
+	[C]: in function 'Include'
+	...pt\event\birthday_jieri\200905\chuangguan\chuangguan.lua:2: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:6: in main chunk
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: in main chunk
+	[C]: in function 'Include'
+	...\bin\server\script\event\birthday_jieri\200905\class.lua:5: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:7: in main chunk
+error: ...\bin\server\script\event\birthday_jieri\200905\class.lua:9: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...\bin\server\script\event\birthday_jieri\200905\class.lua:9: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:7: in main chunk
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: attempt to call a nil value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: in function '__clone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:42: in function 'new'
+	[string "?"]:60: in main chunk
+2026/09/05 12:04:54.909 	 ScriptError 4:[1] (\script\task\tollgate\killer\nieshichen.lua) 
+
+error: [string "?"]:17: unexpected symbol near '%'
+2026/09/05 12:04:54.909 	 ScriptError 3. (\script\task\tollgate\killer\shashou_mibao.lua) 
+
+2026/09/05 12:04:54.925 	 ScriptError 3. (\script\task\tollgate\killer\shashou_mibao.lua) 
+
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...FF_ONLINE\bin\server\script\activitysys\playerfunlib.lua:708: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...OFFF_ONLINE\bin\server\script\misc\eventsys\eventsys.lua:11: in method 'NewType'
+	...F_ONLINE\bin\server\script\misc\eventsys\type\player.lua:3: in main chunk
+	[C]: in function 'Include'
+	...LINE\bin\server\script\task\metempsychosis\task_func.lua:16: in main chunk
+	[C]: in function 'Include'
+	...F_ONLINE\bin\server\script\event\change_destiny\head.lua:2: in main chunk
+	[C]: in function 'Include'
+	...NLINE\bin\server\script\event\change_destiny\mission.lua:1: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:14: in main chunk
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...FF_ONLINE\bin\server\script\activitysys\playerfunlib.lua:708: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	...22\TESTLOFFF_ONLINE\bin\server\script\class\ktabfile.lua:52: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:3: in main chunk
+error: ...\script\missions\challengeoftime\npc\dragonboat_main.lua:154: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: in main chunk
+	[C]: in function 'Include'
+	...\bin\server\script\event\birthday_jieri\200905\class.lua:5: in main chunk
+	[C]: in function 'Include'
+	...pt\event\birthday_jieri\200905\chuangguan\chuangguan.lua:2: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:6: in main chunk
+error: ...\bin\server\script\event\birthday_jieri\200905\class.lua:9: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...\bin\server\script\event\birthday_jieri\200905\class.lua:9: in main chunk
+	[C]: in function 'Include'
+	...pt\event\birthday_jieri\200905\chuangguan\chuangguan.lua:2: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:6: in main chunk
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...s22\TESTLOFFF_ONLINE\bin\server\script\lib\baseclass.lua:26: unexpected symbol near '%'
+error: ...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...n\server\script\event\birthday_jieri\200905\taskctrl.lua:16: in main chunk
+	[C]: in function 'Include'
+	...\bin\server\script\event\birthday_jieri\200905\class.lua:5: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:7: in main chunk
+error: ...\bin\server\script\event\birthday_jieri\200905\class.lua:9: attempt to index a nil value (global 'tbBaseClass')
+stack traceback:
+	...\bin\server\script\event\birthday_jieri\200905\class.lua:9: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:7: in main chunk
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ourceVs22\TESTLOFFF_ONLINE\bin\server\script\lib\log.lua:94: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: attempt to call a nil value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: in function '__clone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:42: in function 'new'
+	[string "?"]:60: in main chunk
+2026/09/05 12:22:40.854 	 ScriptError 4:[1] (\script\task\tollgate\killer\nieshichen.lua) 
+
+error: [string "?"]:17: unexpected symbol near '%'
+2026/09/05 12:22:40.855 	 ScriptError 3. (\script\task\tollgate\killer\shashou_mibao.lua) 
+
+2026/09/05 12:22:40.855 	 ScriptError 3. (\script\task\tollgate\killer\shashou_mibao.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	...22\TESTLOFFF_ONLINE\bin\server\script\class\ktabfile.lua:52: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:3: in main chunk
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: attempt to call a nil value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: in function '__clone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:42: in function 'new'
+	[string "?"]:60: in main chunk
+2026/09/05 12:38:49.853 	 ScriptError 4:[1] (\script\task\tollgate\killer\nieshichen.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	...22\TESTLOFFF_ONLINE\bin\server\script\class\ktabfile.lua:52: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:3: in main chunk
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: attempt to call a nil value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: in function '__clone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:42: in function 'new'
+	[string "?"]:60: in main chunk
+2026/09/05 12:39:27.645 	 ScriptError 4:[1] (\script\task\tollgate\killer\nieshichen.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	...22\TESTLOFFF_ONLINE\bin\server\script\class\ktabfile.lua:52: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:3: in main chunk
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: attempt to call a nil value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: in function '__clone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:42: in function 'new'
+	[string "?"]:60: in main chunk
+2026/09/05 12:39:40.007 	 ScriptError 4:[1] (\script\task\tollgate\killer\nieshichen.lua) 
+
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: attempt to call a table value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:25: in function '__cclone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:57: in function 'inherit'
+	...22\TESTLOFFF_ONLINE\bin\server\script\class\ktabfile.lua:52: in main chunk
+	[C]: in function 'Include'
+	[string "?"]:3: in main chunk
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...eVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\file.lua:57: unexpected symbol near '%'
+error: ...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: attempt to call a nil value (for iterator 'for iterator')
+stack traceback:
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:13: in function '__clone'
+	...ceVs22\TESTLOFFF_ONLINE\bin\server\scriptjx2\lib\mem.lua:42: in function 'new'
+	[string "?"]:60: in main chunk
+2026/09/05 12:41:31.144 	 ScriptError 4:[1] (\script\task\tollgate\killer\nieshichen.lua) 
+
