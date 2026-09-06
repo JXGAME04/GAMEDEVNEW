@@ -53,6 +53,7 @@ extern void Partner_OnNpcDeath(int nNpcIdx);	// [BDH 27/08] KPlayerPartner.cpp
 #define max(a,b)    (((a) > (b)) ? (a) : (b))
 #endif
 #include <MapHandler.h>
+#include "LuaFuns.h"		// [CLIENTREG 06/09] GameScriptFuns / g_GetGameScriptFunNum
 extern KLuaScript		*g_pNpcLevelScript;
 #ifndef _SERVER
 extern BOOL			g_bPaintInterpFocus;	// CoreShell.cpp: PaintFps interpolation drives the camera
@@ -9028,6 +9029,10 @@ void KNpc::GetNpcCopyFromTemplate(int nNpcTemplateId, int nLevel, int nSeries)
 		else
 		{
 			LevelScript.Init();
+			// [CLIENTREG 06/09] nhu KSkills.cpp: script cap NPC (makeboss.lua, task_killboss.lua)
+			// mo dau bang Include("\\script\\npclevelscript\\property.lua") - thieu dang ky
+			// GameScriptFuns thi Include = nil, chunk chet, NPC roi ve script mac dinh.
+			LevelScript.RegisterFunctions(GameScriptFuns, g_GetGameScriptFunNum());
 			if (!LevelScript.Load(g_pNpcTemplate[nNpcTemplateId][0][0]->m_szLevelSettingScript))
 			{
 				//_ASSERT(0);

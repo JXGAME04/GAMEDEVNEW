@@ -583,6 +583,8 @@ BOOL	InitNpcSetting()
 #else
 	g_pNpcLevelScript = new KLuaScript;
 	g_pNpcLevelScript->Init();
+	// [CLIENTREG 06/09] thieu dang ky ham -> Include trong npclevelscript.lua = nil.
+	g_pNpcLevelScript->RegisterFunctions(GameScriptFuns, g_GetGameScriptFunNum());
 	if (!g_pNpcLevelScript->Load(NPC_LEVELSCRIPT_FILENAME))
 	{
 		printf("[error] %s", NPC_LEVELSCRIPT_FILENAME);
