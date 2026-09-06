@@ -441,7 +441,19 @@ static int pb_DonVatLy(KSkill* p)
 	return PB_DA_LA(p, 9, magic_physicsdamage_v) || PB_DA_LA(p, 9, magic_physicsenhance_p);
 }
 
-static int pb_CoChieuNoiTayKhong(int nNpcIdx)
+// [NGUDOC-NOI 06/09] Chu game: "ngu doc phai co noi cong". Chieu tay khong cua Ngu Doc
+// (63 Doc Sa Chuong rq10, 68 U Minh Quy Luy rq30, 71 Thien Cuong Dia Sat rq60, 353 Am
+// Phong Thuc Cot rq80 - deu IsPhysical=0, eqt -2) CHI mang don DOC. Voi bDocLaNoi = 1
+// (chi Ngu Doc) thi don doc KHONG vat ly cung tinh la chieu noi. Do lai co che doc
+// (KNpc.cpp ~4940 dat trang thai, ~1487 tick): poisondamage_v = {sat thuong/tick, so
+// khung, khung/tick}; 353 cap 20 = 121 moi 10 khung trong 60..120 khung -> sut mau that.
+// Ket luan 303-DOC 30/08 "doc khong bao mon quai" chi dung voi 303 CAP 1 (8 moi 10 khung).
+static int pb_DonDocNoi(KSkill* p)
+{
+	return !p->IsPhysical() && pb_DonDoc(p);
+}
+
+static int pb_CoChieuNoiTayKhong(int nNpcIdx, int bDocLaNoi)
 {
 	KSkillList& sl = Npc[nNpcIdx].m_SkillList;
 	for (int i = 1; i < MAX_NPCSKILL; i++)
@@ -480,6 +492,8 @@ static int pb_CoChieuNoiTayKhong(int nNpcIdx)
 		// noi/ngoai nam im tu 28/08). Doc bi loai theo 303-DOC.
 		if (pb_DonPhepThat(p))
 			return 1;
+		if (bDocLaNoi && pb_DonDocNoi(p))   // [NGUDOC-NOI 06/09]
+			return 1;
 	}
 	return 0;
 }
@@ -516,6 +530,13 @@ static int pb_PhaiLuonCamVuKhi(int nFaction)
 	return nFaction == 1 || nFaction == 2;   // 1 Thien Vuong, 2 Duong Mon
 }
 
+// [NGUDOC-NOI 06/09] Phai ma don DOC (khong vat ly) la duong NOI: chu game "ngu doc phai
+// co noi cong". Duong Mon KHONG (van chan cung tren + 303 cap thap vo dung).
+static int pb_PhaiDocLaNoi(int nFaction)
+{
+	return nFaction == 3;                    // 3 Ngu Doc
+}
+
 // duong NOI THAT SU = dwID le VA phai co chieu noi tay khong dung duoc ngay bay gio
 static int pb_BotNoiThat(int nIdx)
 {
@@ -529,7 +550,8 @@ static int pb_BotNoiThat(int nIdx)
 	const int nNpcIdx = Player[nIdx].m_nIndex;
 	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
 		return 0;
-	return pb_CoChieuNoiTayKhong(nNpcIdx);
+	return pb_CoChieuNoiTayKhong(nNpcIdx,
+		pb_PhaiDocLaNoi((int)Player[nIdx].m_cFaction.m_nCurFaction));   // [NGUDOC-NOI 06/09]
 #else
 	(void)nIdx;   // [NOI-HOAN 31/08] xem ghi chu ngay tren
 	return 0;
@@ -2909,6 +2931,68 @@ static void pb_AllocAttribPoints(int nIdx, int nFaction)
 }
 
 // ===========================================================================
+// [TAYDIEM 06/09] TAY DIEM BOT NOI - chu game: "cho bot noi tay lai diem va tang diem lai".
+// Bot noi dang mang chi so NGOAI (diem da tieu theo mau SM 50% khi con cam vu khi).
+// Bang goc = cua chinh game: chuyensinhdaisu.lua:122 / lenhbaitanthu.lua:212 as[ngu hanh]
+// = {Suc manh, Sinh khi, Than phap, Noi cong} (thu tu tham so SetBasePoint: LuaSetBasePoint
+// ScriptFuns.cpp:10680 gan m_nStrength=1, m_nVitality=2, m_nDexterity=3, m_nEngergy=4).
+// Quy sau tay = (cap-1)*5 + diem giu chuyen sinh, y het LuaSetBasePoint (ScriptFuns.cpp:10695).
+// Dat chi so qua ResetBaseAttribute (KPlayer.cpp:4542 -> ResetBase*: dat tuyet doi +
+// UpdataCurData + dong bo), roi pb_AllocAttribPoints chia lai (tay khong -> mau NOI).
+// Nhan biet "dang mang chi so ngoai" bang TY LE chu khong so bang tuyet doi (chia tung
+// cap 5 diem lam tron khac chia mot cuc): phai thuong SM >= 35% quy da tieu (mau noi 20%,
+// ngoai 50%); Vo Dang NC < 50% (mau noi 70%, ngoai 0%). Sau khi tay, ty le ve dung mau
+// -> khong lam lai moi lan restart / len cap.
+// ===========================================================================
+static const int s_nTayDiemGoc[series_num][4] = {   // {SM, SK, TP, NC}
+	{ 35, 25, 25, 15 },   // 0 Kim
+	{ 20, 35, 20, 25 },   // 1 Moc
+	{ 25, 25, 25, 25 },   // 2 Thuy
+	{ 30, 20, 30, 20 },   // 3 Hoa
+	{ 20, 15, 25, 40 },   // 4 Tho
+};
+
+static void pb_TayDiemBotNoi(int nIdx, int nNpcIdx, PB_Bot& b)
+{
+	const int nSeries = Npc[nNpcIdx].m_Series;
+	if (nSeries < 0 || nSeries >= series_num)
+		return;
+	const int* g = s_nTayDiemGoc[nSeries];
+	// diem da tieu = chi so goc hien tai - bang goc (kep 0 neu nhan vat mau thap hon bang goc)
+	int nSM = Player[nIdx].m_nStrength  - g[0];  if (nSM < 0) nSM = 0;
+	int nSK = Player[nIdx].m_nVitality  - g[1];  if (nSK < 0) nSK = 0;
+	int nTP = Player[nIdx].m_nDexterity - g[2];  if (nTP < 0) nTP = 0;
+	int nNC = Player[nIdx].m_nEngergy   - g[3];  if (nNC < 0) nNC = 0;
+	const int nTieu = nSM + nSK + nTP + nNC;
+	if (nTieu <= 0)
+		return;
+	int bNgoai;
+	if (b.nFaction == 8)                       // Vo Dang noi: 70% NC
+		bNgoai = (nNC * 100 / nTieu < 50);
+	else                                       // noi cac phai con lai: 20% SM
+		bNgoai = (nSM * 100 / nTieu >= 35);
+	if (!bNgoai)
+		return;
+
+	const int nQuy = (Npc[nNpcIdx].m_Level - 1) * 5
+	               + Player[nIdx].m_cReBorn.GetReBornKeepQpiont();
+	PLAYER_ADD_BASE_ATTRIBUTE_COMMAND cmd;
+	cmd.ProtocolType = c2s_playeraddbaseattribute;
+	cmd.m_btAttribute = ATTRIBUTE_STRENGTH;   cmd.m_nAddNo = g[0];  Player[nIdx].ResetBaseAttribute((BYTE*)&cmd);
+	cmd.m_btAttribute = ATTRIBUTE_VITALITY;   cmd.m_nAddNo = g[1];  Player[nIdx].ResetBaseAttribute((BYTE*)&cmd);
+	cmd.m_btAttribute = ATTRIBUTE_DEXTERITY;  cmd.m_nAddNo = g[2];  Player[nIdx].ResetBaseAttribute((BYTE*)&cmd);
+	cmd.m_btAttribute = ATTRIBUTE_ENGERGY;    cmd.m_nAddNo = g[3];  Player[nIdx].ResetBaseAttribute((BYTE*)&cmd);
+	Player[nIdx].m_nAttributePoint = nQuy;    // y het LuaSetBasePoint
+	pb_Log("[BotTayDiem] %s phai %s cap %d: tay diem (da tieu SM=%d SK=%d TP=%d NC=%d)"
+	       " -> ve goc he %d, chia lai %d diem theo duong NOI\n",
+	       Player[nIdx].m_PlayerName,
+	       (b.nFaction >= 0 && b.nFaction < MAX_FACTION) ? s_facNpc[b.nFaction].szTen : "?",
+	       (int)Npc[nNpcIdx].m_Level, nSM, nSK, nTP, nNC, nSeries, nQuy);
+	pb_AllocAttribPoints(nIdx, b.nFaction);
+	b.nAtkSkill = 0;   // tran mana/HP doi -> chon lai chieu (bo loc COST cua pb_PickSkill)
+}
+
+// ===========================================================================
 // TRANG BI THEO CAP (chu game 19/08 chieu): tieu not tiem nang ton dong, mac bo
 // Hoang Kim "Kim Phong", cuoi ngua Tuc Suong cap 10, dat 81 doi vu khi cap 10.
 // Duong tao do la duong that cua du an: ItemSet.AddGoldItem (y het LuaAddGoldItem,
@@ -3060,6 +3144,10 @@ static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 			       (b.nFaction >= 0 && b.nFaction < MAX_FACTION) ? s_facNpc[b.nFaction].szTen : "?",
 			       nLevel);
 		}
+		// ---- 3c. [TAYDIEM 06/09] bot noi (da tay khong) con mang chi so NGOAI -> tay
+		// diem ve bang goc cua game roi chia lai theo mau NOI (xem pb_TayDiemBotNoi) ----
+		if (Player[nIdx].m_ItemList.GetEquipment(itempart_weapon) <= 0)
+			pb_TayDiemBotNoi(nIdx, nNpcIdx, b);
 	}
 
 	// ---- 4. dat cap 81: doi vu khi len CAP 10 cung loai dang cam ----
@@ -5277,6 +5365,9 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 	// (chan/le) de on dinh giua cac phien; phai khong co chieu phep hop le (Thieu
 	// Lam...) thi bNoi = 0 cho moi ung vien va tu roi ve vat ly nhu cu.
 	const int bThienNoi = pb_BotNoi(nIdx);   // [BotNoi 28/08] mot nguon su that voi duong tay-khong
+	// [NGUDOC-NOI 06/09] Ngu Doc: don doc khong-vat-ly LA chieu noi (63/68/71/353) - khong loai
+	// DOCTHUAN, va duoc uu tien nhu don phep cho nua dan thien noi.
+	const int bDocLaNoi = pb_PhaiDocLaNoi((int)Player[nIdx].m_cFaction.m_nCurFaction);
 	// NHAT KY CHON CHIEU: liet ke TUNG chieu trong danh sach kem ly do loai, de doc
 	// bot.log la biet ngay vi sao mot phai "khong co chieu de danh" - khong doan mo.
 	//   HE=x  chieu mang ngu hanh x khac he bot     KIEU=x  style x khong phai Missles/Melee
@@ -5388,7 +5479,7 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 		// attackrating/ignoredefense/seriesdamage cung nam trong khoang do.
 		// [SPARSE 31/08] doc theo O; BO doc khoi "don phep" (doc = 0 sat thuong voi quai)
 		// nen chieu doc khong con duoc uu tien lam "chieu noi cong".
-		const int bNoi = pb_DonPhepThat(p);
+		const int bNoi = pb_DonPhepThat(p) || (bDocLaNoi && pb_DonDocNoi(p));   // [NGUDOC-NOI 06/09]
 		// [303-DOC 30/08] chieu PHEP ma MOI don sat thuong deu la POISON (303 Doc
 		// Thach Cot cua DM: duci_gu chi co poisondamage_v): do that 29-30/08 co
 		// 199k cu "10 giay khong sut mau" vao quai HP600 con nguyen mau - doc khong
@@ -5399,7 +5490,8 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 		// ma don sat thuong DUY NHAT la doc -> vo dung voi quai (303 Doc Thach Cot).
 		// 303 con co seriesdamage_p (o [3]) nen phai so theo O DON THAT, khong the
 		// "co attrib khac doc" nhu ban cu.
-		if (!p->IsPhysical() && pb_DonDoc(p)
+		if (!bDocLaNoi   // [NGUDOC-NOI 06/09] Ngu Doc: doc la chieu noi, khong loai
+		 && !p->IsPhysical() && pb_DonDoc(p)
 		 && !pb_DonPhepThat(p) && !pb_DonVatLy(p))
 		{ PB_DIAG(" %d:DOCTHUAN", id); continue; }
 		const int nNoi = bThienNoi ? bNoi : 0;

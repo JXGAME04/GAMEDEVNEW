@@ -85,3 +85,55 @@ Build từ `origin/main` 50e19ac3 + commit nhánh `botnoi-0609` (đủ nhãn b�
 
 ## 8. Liên quan
 `BANGIAO_PHIEN_BOT_TK_3008.md` (máy trạng thái bot), `ReverseTools/goi_va_botnoingoai.py` (28/08 chia đường), `goi_va_botnoi_theophai.py` (28/08 TV/DM theo dữ liệu), `goi_va_noi_hoan.py` (31/08 ngắt), `goi_va_damageattrib_thua.py` (31/08 mảng thưa).
+
+---
+
+## 9. ĐỢT 2 (06/09 ~15:10) — chủ trả lời 3 câu hỏi mục 7
+
+Chủ: *"thiếu lâm có đường quyền"* · *"ngũ độc phải có nội công"* · *"cho bot nội tẩy lại điểm và tăng điểm lại"*.
+
+### 9.1 Thiếu Lâm — giữ nguyên
+Không chặn cứng Thiếu Lâm; bot lẻ đi đường quyền 271/318 (tay không) như đợt 1.
+
+### 9.2 Ngũ Độc có đường nội — đòn ĐỘC không vật lý là chiêu nội (chỉ Ngũ Độc)
+Dữ liệu thật (`wudu.lua`): chiêu tay không của Ngũ Độc đều IsPhysical = 0, EqtLimit −2, chỉ mang `poisondamage_v`:
+
+| id | tên | rq | poison cấp 1 → 20 (sát thương / tick, số khung, khung / tick) | mana |
+|---|---|---|---|---|
+| 63 | Độc Sa Chưởng | 10 | 2 → 26 / 60 / 10 | 10 |
+| 68 | U Minh Quỷ Lụy | 30 | 11 → 40 / 60 / 10 | 40 |
+| 71 | Thiên Cương Địa Sát | 60 | 50 → 135 / 60 / 10 | 60 |
+| 353 | Âm Phong Thực Cốt (chiêu 90, bot có cấp 20) | 80 | 20 → **121** / 60 / 10 | 30 → 80 |
+
+Cơ chế độc trong engine (`KNpc.cpp` ~4940 đặt trạng thái, ~1487 tick): mỗi 10 khung trừ `nValue[0]` máu trong 60..120 khung (nhân hệ số 1..2 theo kháng độc), cộng `MixPoisonDamage` từ Ngũ Độc Chưởng Pháp (62). 353 cấp 20 ≈ 121 × 6..12 tick / lần ra chiêu → **sụt máu thật**. Kết luận [303-DOC 30/08] "độc không bào mòn quái" chỉ đúng với 303 của Đường Môn ở **cấp 1** (8 / tick) — không phải luật chung; Đường Môn vẫn giữ nguyên loại 303 vì đã chặn cứng không đi đường nội.
+
+Sửa (`ReverseTools/goi_va_botnoi_dot2_0609.py`, H5–H7):
+- `pb_DonDocNoi(p)` = `!IsPhysical && pb_DonDoc`; `pb_PhaiDocLaNoi(f)` = `f == 3` (Ngũ Độc).
+- `pb_CoChieuNoiTayKhong(nNpcIdx, bDocLaNoi)`: với Ngũ Độc, chiêu độc không vật lý tính là chiêu nội → `pb_BotNoiThat` = 1 cho bot lẻ Ngũ Độc → tháo vũ khí ở 3b như 7 phái kia.
+- `pb_PickSkill`: Ngũ Độc **không** loại `DOCTHUAN`, và `bNoi` tính cả đòn độc → bot lẻ tay không chọn 353 (rq 80 cao nhất; 63/68/71 dự phòng theo cấp). Bot chẵn cầm đao vẫn chọn 355 Huyền Âm Trảm (rank khớp vũ khí thắng).
+
+### 9.3 Tẩy điểm + chia lại cho bot nội — `pb_TayDiemBotNoi` (H8)
+- Gọi ở `pb_TrangBiTheoCap` bước **3c**, ngay sau 3b, chỉ khi bot là nội thật (`pb_BotNoiThat`) **và đã tay không**.
+- Nhận biết "đang mang chỉ số ngoại" bằng **tỉ lệ** điểm đã tiêu (điểm gốc hiện tại − bảng gốc): phái thường `SM ≥ 35 %` (mẫu nội 20 %, ngoại 50 %); Võ Đang `NC < 50 %` (mẫu nội 70 %, ngoại 0 %). Sau khi tẩy, tỉ lệ về đúng mẫu → **không lặp lại** mỗi restart / lên cấp (không so bằng tuyệt đối vì chia 5 điểm / cấp làm tròn khác chia một cục).
+- Tẩy đúng đường của game: bảng gốc `as[ngũ hành]` của `chuyensinhdaisu.lua:122` / `lenhbaitanthu.lua:212` = {Sức mạnh, Sinh khí, Thân pháp, Nội công}: Kim {35,25,25,15}, Mộc {20,35,20,25}, Thủy {25,25,25,25}, Hỏa {30,20,30,20}, Thổ {20,15,25,40}; đặt qua `KPlayer::ResetBaseAttribute` (KPlayer.cpp:4542 → `ResetBase*` đặt tuyệt đối + tính lại HP/MP/công/thủ + đồng bộ); quỹ = `(cấp − 1) × 5 + điểm giữ chuyển sinh` y hệt `LuaSetBasePoint` (ScriptFuns.cpp:10695; máy chủ cộng `PLAYER_LEVEL_ADD_ATTRIBUTE` = 5 mỗi cấp, KPlayer.cpp:61 / :2690).
+- Rồi `pb_AllocAttribPoints` chia lại cả quỹ (tay không → mẫu nội: 20 % SM / 10 % TP / 70 % SK; Võ Đang 70 % NC / 30 % SK) và `nAtkSkill = 0` để chọn lại chiêu theo trần mana mới.
+- Log: `[BotTayDiem] <tên> phai <phái> cap N: tay diem (da tieu SM=.. SK=.. TP=.. NC=..) -> ve goc he X, chia lai P diem theo duong NOI`.
+- Ví dụ bot cấp 115 (570 điểm): trước SM 228 / TP 114 / SK 228 → sau SM 114 / TP 57 / SK 399 (HP tăng ~ +171 × máu/điểm); Võ Đang: NC 399 / SK 171.
+
+### 9.4 Nghiệm thu bổ sung (sau restart)
+```bash
+grep -c "\[BotTayDiem\]" bot.log
+```
+≈ số bot nội (≈ 340 + ~50 Ngũ Độc lẻ); mỗi bot **một** dòng, restart lần sau phải là **0** dòng mới.
+```bash
+grep "\[BotNoi\]" bot.log | grep -c "Ngu Doc"
+```
+≈ 50 (bot lẻ Ngũ Độc bị tháo vũ khí); `Thien Vuong|Duong Mon` vẫn **0**.
+- `[BotDanh]`/`[BotCast]` có chiêu 353 (Ngũ Độc tay không); `[BotDiem]` lần lên cấp kế của bot nội theo mẫu nội.
+
+### 9.5 Nhị phân đợt 2
+| tệp | md5 | kích thước | swap |
+|---|---|---|---|
+| `bin\server\CoreServer.dll.moi` | **e86f3de72e727f1fdfcb0c07866d38ec** | 18.448.896 | tắt GameServer → `ChayGameServer.bat` (thay bản đợt 1 d7c406dc) |
+
+Nhãn kiểm: đủ nhãn đợt 1 + `[BotTayDiem]`, `[NGUDOC-NOI]` không phải chuỗi; kiểm `duong NOI` (2) + `BotTayDiem` (1).
