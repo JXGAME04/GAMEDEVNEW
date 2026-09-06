@@ -1,0 +1,5 @@
+-- LUA54: cay script da qua chuyen_lua4_54.py luc 2026-09-06 11:48:03
+-- nguon: D:\GAMEDEVNEW_wt_vantieu\serverscript_jx2\vantieu\goc_lua4
+-- chuyen_lua4_54: 40 tep .lua, 9 tep co thay doi
+-- Moi dong bat dau bang -- vi engine nap CA tep .txt trong cay script va chay nhu Lua,
+-- nen tep van khong hop le se thanh ScriptError 3 (KSortScript.cpp loc duoi .LUA va .TXT).

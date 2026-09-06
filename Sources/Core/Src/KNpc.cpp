@@ -279,6 +279,13 @@ void KNpc::Init()
 	m_SkillParam2 = 0;
 	m_nNpcTimeout = 0;
 	ZeroMemory(m_nNpcParam, sizeof(m_nNpcParam));
+#ifdef _SERVER
+	// [LMBC 06/09] xoa trang thai xe tieu khi khe NPC duoc tai su dung
+	m_btBiaoChe = 0;
+	m_btBiaoCheFlag = 0;
+	m_nBiaoCheOwner = 0;
+	m_dwBiaoCheLostTick = 0;
+#endif
 	m_bNpcFollowFindPath = FALSE;
 	m_uFindPathTime = 0;
 	m_uFindPathMaxTime = 0;
@@ -4053,12 +4060,19 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 	//
 	if(Owner[0]) //add by phong kiÒu npc vËn tiªu
 	{
-		if(strcmp(Player[Npc[nAttacker].m_nPlayerIdx].m_PlayerName,Owner) == 0)//#Tù ®¸nh vµo Tiªu Xa kh«ng lªn Damage
+		// [LMBC 06/09] KIEM BIEN: quai / bay / dan deu co m_nPlayerIdx == 0 -> doc
+		// Player[0] la khe CHUA KHOI TAO. Xe tieu cu it roi thanh nen chua lo, nhung
+		// xe Long Mon di khap the gioi thi moi cu danh cua quai deu di qua day.
+		int nLMBCAtkP = (nAttacker > 0 && nAttacker < MAX_NPC) ? Npc[nAttacker].m_nPlayerIdx : 0;
+		if (nLMBCAtkP <= 0 || nLMBCAtkP >= MAX_PLAYER)
+		{
+		}
+		else if(strcmp(Player[nLMBCAtkP].m_PlayerName,Owner) == 0)//#Tù ®¸nh vµo Tiªu Xa kh«ng lªn Damage
 		{
 			return FALSE;
 		}
 
-		if(Player[Npc[nAttacker].m_nPlayerIdx].m_cPK.GetNormalPKState() == 0)//#PK luyÖn c«ng kh«ng lªn Damage
+		else if(Player[nLMBCAtkP].m_cPK.GetNormalPKState() == 0)//#PK luyÖn c«ng kh«ng lªn Damage
 		{
 			return FALSE;
 		}
@@ -4768,12 +4782,18 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 
 	if (Owner[0]) //add by phong kiÒu npc vËn tiªu
 	{
-		if (strcmp(Player[Npc[nLauncher].m_nPlayerIdx].m_PlayerName, Owner) == 0)//#Tù ®¸nh vµo Tiªu Xa kh«ng lªn Damage
+		// [LMBC 06/09] KIEM BIEN nhu cong tren. LUU Y: nhanh thu hai o day CO 13
+		// ZeroMemory + IgnoreState(TRUE) truoc return, KHAC han cong :4054 - giu nguyen.
+		int nLMBCLauP = (nLauncher > 0 && nLauncher < MAX_NPC) ? Npc[nLauncher].m_nPlayerIdx : 0;
+		if (nLMBCLauP <= 0 || nLMBCLauP >= MAX_PLAYER)
+		{
+		}
+		else if (strcmp(Player[nLMBCLauP].m_PlayerName, Owner) == 0)//#Tù ®¸nh vµo Tiªu Xa kh«ng lªn Damage
 		{
 			return FALSE;
 		}
 
-		if (Player[Npc[nLauncher].m_nPlayerIdx].m_cPK.GetNormalPKState() == 0)//#PK luyÖn c«ng kh«ng lªn Damage
+		else if (Player[nLMBCLauP].m_cPK.GetNormalPKState() == 0)//#PK luyÖn c«ng kh«ng lªn Damage
 		{
 			ZeroMemory(&m_PhysicsArmor, sizeof(m_PhysicsArmor));		////Tr¹ng th¸i kh¸ng PTVL
 			ZeroMemory(&m_ColdArmor, sizeof(m_ColdArmor));				//Tr¹ng th¸i kh¸ng b¨ng

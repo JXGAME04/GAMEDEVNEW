@@ -1,0 +1,2476 @@
+{
+ "nguon_script": "D:\\GAMEDEVNEW_wt_vantieu\\serverscript_jx2\\vantieu\\goc_lua4",
+ "so_tep_lua": 40,
+ "bang_linux": "D:\\ServerLinux\\server1\\settings\\item\\004\\magicscript.txt",
+ "bang_jx1_server": "E:\\SourceTuanLe\\SourceVs22\\TESTLOFFF_ONLINE\\bin\\server\\settings\\item\\magicscript.txt",
+ "bang_jx1_client": "E:\\SourceTuanLe\\SourceVs22\\TESTLOFFF_ONLINE\\bin\\client\\settings\\item\\magicscript.txt",
+ "quy_tac": "B1 tra Linux THEO GIA TRI (Genre,DetailType,ParticularType) lay ten cot 1; B2 tra JX1 THEO TEN roi lay ParticularType TU SO DONG (PT == so dong - 2).",
+ "tong_ma": 79,
+ "dung_lai": 66,
+ "doi_ten_tai_cho": 3,
+ "dat_o_script": [
+  {
+   "jx1_pt": 4775,
+   "script": "\\script\\event\\longmenbiaoju\\item.lua"
+  },
+  {
+   "jx1_pt": 4776,
+   "script": "\\script\\event\\longmenbiaoju\\item.lua"
+  },
+  {
+   "jx1_pt": 4777,
+   "script": "\\script\\event\\longmenbiaoju\\item.lua"
+  },
+  {
+   "jx1_pt": 4778,
+   "script": "\\script\\event\\longmenbiaoju\\item.lua"
+  }
+ ],
+ "script_khac_chi_bao_cao": [
+  {
+   "linux_ma": "6,0,20",
+   "jx1_ma": "6,1,20",
+   "linux_script": "0",
+   "jx1_script": "\\script\\item\\hoahong.lua"
+  },
+  {
+   "linux_ma": "6,1,127",
+   "jx1_ma": "6,1,126",
+   "linux_script": "\\script\\item\\zhongqiu\\·îÔÂ¹ûÈØ.lua",
+   "jx1_script": "\\script\\item\\zhongqiu\\phungnguyet.lua"
+  },
+  {
+   "linux_ma": "6,1,2269",
+   "jx1_ma": "6,1,2278",
+   "linux_script": "\\script\\item\\huihuangzhihuo_avd1.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,2271",
+   "jx1_ma": "6,1,2280",
+   "linux_script": "\\script\\item\\huihuangzhihuo_avd3.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,2527",
+   "jx1_ma": "6,1,2536",
+   "linux_script": "\\script\\item\\caiyao\\huitianlibao.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,2952",
+   "jx1_ma": "6,1,3570",
+   "linux_script": "\\script\\item\\ib_shop\\gongjizuliwan.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,2953",
+   "jx1_ma": "6,1,3571",
+   "linux_script": "\\script\\item\\ib_shop\\yinyanghuoxuewan.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,3150",
+   "jx1_ma": "6,1,3768",
+   "linux_script": "\\script\\missions\\qianchonglou\\item\\nupaolingfu.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,3154",
+   "jx1_ma": "6,1,3772",
+   "linux_script": "\\script\\item\\xuanjinkuangshi.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,3155",
+   "jx1_ma": "6,1,3773",
+   "linux_script": "\\script\\item\\xuanjinkuangshi.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,3308",
+   "jx1_ma": "6,1,4752",
+   "linux_script": "\\script\\global\\meridian\\item_zhenyuandan.lua",
+   "jx1_script": "\\script\\item\\event\\kinhmach\\channguyendan.lua"
+  },
+  {
+   "linux_ma": "6,1,3554",
+   "jx1_ma": "6,1,4172",
+   "linux_script": "\\script\\missions\\miniencounter\\item_brokenexploitmedal.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,4204",
+   "jx1_ma": "6,1,4775",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,4205",
+   "jx1_ma": "6,1,4776",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,4206",
+   "jx1_ma": "6,1,4777",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,4207",
+   "jx1_ma": "6,1,4778",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "jx1_script": "0"
+  },
+  {
+   "linux_ma": "6,1,30228",
+   "jx1_ma": "6,1,4846",
+   "linux_script": "\\script\\global\\meridian\\channguyendon.lua",
+   "jx1_script": "\\script\\item\\event\\kinhmach\\channguyendan.lua"
+  },
+  {
+   "linux_ma": "6,1,30229",
+   "jx1_ma": "6,1,4847",
+   "linux_script": "\\script\\global\\meridian\\channguyendon.lua",
+   "jx1_script": "\\script\\item\\event\\kinhmach\\channguyendan.lua"
+  },
+  {
+   "linux_ma": "6,1,30301",
+   "jx1_ma": "6,1,4857",
+   "linux_script": "\\script\\vng_event\\item\\hunyuanzenyuan.lua",
+   "jx1_script": "\\script\\item\\event\\kinhmach\\honnguyenchandon.lua"
+  },
+  {
+   "linux_ma": "6,1,30557",
+   "jx1_ma": "6,1,4813",
+   "linux_script": "\\script\\vng_event\\item\\lebaonguhoanlh.lua",
+   "jx1_script": "\\script\\item\\tuiduocpham.lua"
+  }
+ ],
+ "them_moi": 10,
+ "pt_moi": [
+  4978,
+  4987
+ ],
+ "con_mo": [
+  "6,1,30557"
+ ],
+ "ghi_chu_mo": [
+  "6,1,4539: script/event/longmenbiaoju/item_yaobao.lua co bang tbItem voi khoa \"6,1,4539\" = 'Ngu hoa ngoc lo hoan dac biet', TRONG KHI bang Linux 004 dong 4868 goi 6,1,4539 la 'Dia Linh Don' va gan script config/31/item_dilingdan.lua. Bang 004 la bang DUY NHAT co that (000-003 chi 3-18 dong), nen item_yaobao.lua gan nhu chac chan la tep thua tu goi khac, khong duoc bang vat pham tro toi. Bo va van cap id cho 'Dia Linh Don' (theo bang Linux), nhung neu chu muon dung Duoc Bao thi phai chot lai.",
+  "6,1,4539 / 6,1,4502 / 6,1,4604: script goc nam ngoai pham vi port (config 31, config 50, man Co Thap) nen o Script de 0 -- mon SE HIEN va NHAN DUOC nhung bam KHONG CHAY. Neu day la phan thuong that su can dung thi phai port them script tuong ung."
+ ],
+ "anh_xa": {
+  "6,0,20": "6,1,20",
+  "6,0,2389": "6,1,2398",
+  "6,1,127": "6,1,126",
+  "6,1,906": "6,1,907",
+  "6,1,907": "6,1,908",
+  "6,1,2126": "6,1,2135",
+  "6,1,2269": "6,1,2278",
+  "6,1,2271": "6,1,2280",
+  "6,1,2390": "6,1,2399",
+  "6,1,2391": "6,1,2400",
+  "6,1,2527": "6,1,2536",
+  "6,1,2952": "6,1,3570",
+  "6,1,2953": "6,1,3571",
+  "6,1,3150": "6,1,3768",
+  "6,1,3154": "6,1,3772",
+  "6,1,3155": "6,1,3773",
+  "6,1,3203": "6,1,4844",
+  "6,1,3308": "6,1,4752",
+  "6,1,3455": "6,1,4876",
+  "6,1,3456": "6,1,4877",
+  "6,1,3457": "6,1,4878",
+  "6,1,3458": "6,1,4879",
+  "6,1,3554": "6,1,4172",
+  "6,1,3559": "6,1,4177",
+  "6,1,3560": "6,1,4178",
+  "6,1,3570": "6,1,4188",
+  "6,1,3580": "6,1,4198",
+  "6,1,3590": "6,1,4208",
+  "6,1,3600": "6,1,4218",
+  "6,1,3610": "6,1,4228",
+  "6,1,3620": "6,1,4238",
+  "6,1,3630": "6,1,4248",
+  "6,1,3640": "6,1,4258",
+  "6,1,3650": "6,1,4268",
+  "6,1,3660": "6,1,4278",
+  "6,1,3670": "6,1,4288",
+  "6,1,3680": "6,1,4298",
+  "6,1,3690": "6,1,4308",
+  "6,1,3700": "6,1,4318",
+  "6,1,3710": "6,1,4328",
+  "6,1,3720": "6,1,4338",
+  "6,1,3730": "6,1,4348",
+  "6,1,3740": "6,1,4358",
+  "6,1,3750": "6,1,4368",
+  "6,1,3760": "6,1,4378",
+  "6,1,3770": "6,1,4388",
+  "6,1,3780": "6,1,4398",
+  "6,1,3790": "6,1,4408",
+  "6,1,3800": "6,1,4418",
+  "6,1,3810": "6,1,4428",
+  "6,1,4200": "6,1,4771",
+  "6,1,4201": "6,1,4772",
+  "6,1,4202": "6,1,4773",
+  "6,1,4203": "6,1,4774",
+  "6,1,4204": "6,1,4775",
+  "6,1,4205": "6,1,4776",
+  "6,1,4206": "6,1,4777",
+  "6,1,4207": "6,1,4778",
+  "6,1,4550": "6,1,4885",
+  "6,1,30228": "6,1,4846",
+  "6,1,30229": "6,1,4847",
+  "6,1,30289": "6,1,4848",
+  "6,1,30301": "6,1,4857",
+  "6,1,30438": "6,1,4864",
+  "6,1,30538": "6,1,4866",
+  "6,1,30557": "6,1,4813",
+  "6,1,3156": "6,1,3774",
+  "6,1,3189": "6,1,3807",
+  "6,1,3190": "6,1,3808",
+  "6,1,4473": "6,1,4978",
+  "6,1,4474": "6,1,4979",
+  "6,1,4475": "6,1,4980",
+  "6,1,4502": "6,1,4981",
+  "6,1,4535": "6,1,4982",
+  "6,1,4536": "6,1,4983",
+  "6,1,4537": "6,1,4984",
+  "6,1,4538": "6,1,4985",
+  "6,1,4539": "6,1,4986",
+  "6,1,4604": "6,1,4987"
+ },
+ "chi_tiet": [
+  {
+   "linux_ma": "6,0,20",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 23,
+   "ten_chuan": "Hoa hång",
+   "linux_spr": "\\spr\\item\\questkey\\flower.spr",
+   "linux_obj": "330",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "SÏ t¹o bªn mét trËn m­a hoa hång",
+   "linux_price": "10000",
+   "linux_script": "0",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 22,
+   "jx1_pt": 20,
+   "jx1_ma": "6,1,20",
+   "jx1_spr": "\\spr\\item\\questkey\\flower.spr",
+   "jx1_script": "\\script\\item\\hoahong.lua",
+   "jx1_maxstack": "50",
+   "ung_vien": [
+    20,
+    2547,
+    2548,
+    2859,
+    3939,
+    4087
+   ],
+   "ly_do": "dong 22: spr flower.spr + obj 330 + intro + gia 10000 GIONG HET Linux; ung vien PT 3939 co intro GBK, obj 41, gia 0 = vat pham khac",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,0,2389",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 2401,
+   "ten_chuan": "Tr­êng HiÖu Ngäc Lé Hoµn",
+   "linux_spr": "\\spr\\item\\medecine\\obj-potion14.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sau khi sö dông nhiÒu nhÊt chØ håi phôc tæng céng 216000 sinh lùc néi lùc.",
+   "linux_price": "0",
+   "linux_script": "0",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 2400,
+   "jx1_pt": 2398,
+   "jx1_ma": "6,1,2398",
+   "jx1_spr": "\\spr\\item\\medecine\\obj-potion14.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,127",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_followaward.lua"
+   ],
+   "linux_dong": 129,
+   "ten_chuan": "Phông NguyÖt Qu¶ Dung",
+   "linux_spr": "\\spr\\item\\medecine\\zq_icon_001.spr",
+   "linux_obj": "377",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "T¨ng 1 ®iÓm kü n¨ng, ®¼ng cÊp yªu cÇu: 80. Mçi ng­êi chØ ®­îc ¨n 2 c¸i",
+   "linux_price": "800",
+   "linux_script": "\\script\\item\\zhongqiu\\·îÔÂ¹ûÈØ.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 128,
+   "jx1_pt": 126,
+   "jx1_ma": "6,1,126",
+   "jx1_spr": "\\spr\\item\\medecine\\zq_icon_001.spr",
+   "jx1_script": "\\script\\item\\zhongqiu\\phungnguyet.lua",
+   "jx1_maxstack": "0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,906",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 910,
+   "ten_chuan": "Qu¶ Huy Hoµng (cao) ",
+   "linux_spr": "\\spr\\item\\questkey\\huihuangzhiguo.spr",
+   "linux_obj": "377",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "¡n vµo sÏ t¨ng gÊp ®«i c«ng lùc",
+   "linux_price": "10000",
+   "linux_script": "\\script\\item\\huihuangzhiguo3.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 909,
+   "jx1_pt": 907,
+   "jx1_ma": "6,1,907",
+   "jx1_spr": "\\spr\\item\\questkey\\huihuangzhiguo.spr",
+   "jx1_script": "\\script\\item\\huihuangzhiguo3.lua",
+   "jx1_maxstack": "0",
+   "ung_vien": [
+    907,
+    3440
+   ],
+   "ly_do": "dong 909: spr huihuangzhiguo.spr + obj 377 + script huihuangzhiguo3.lua + MaxStack 0 GIONG HET Linux; PT 3440 khong co script, MaxStack 50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,907",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 911,
+   "ten_chuan": "Qu¶ Hoµng Kim",
+   "linux_spr": "\\spr\\item\\questkey\\huangjinzhiguo.spr",
+   "linux_obj": "377",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "¡n vµo sÏ t¨ng gÊp ®«i c«ng lùc",
+   "linux_price": "10000",
+   "linux_script": "\\script\\item\\goldenseed.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 910,
+   "jx1_pt": 908,
+   "jx1_ma": "6,1,908",
+   "jx1_spr": "\\spr\\item\\questkey\\huangjinzhiguo.spr",
+   "jx1_script": "\\script\\item\\goldenseed.lua",
+   "jx1_maxstack": "0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,2126",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua",
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 2138,
+   "ten_chuan": "NhÊt Kû Cµn Kh«n Phï",
+   "linux_spr": "\\spr\\item\\script\\zhongqiu_jieri\\gongxuanlingpai.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Nh©n sÜ vâ l©m nµo cã ®­îc b¸u vËt nµy sÏ nh­ hæ thªm c¸nh",
+   "linux_price": "0",
+   "linux_script": "\\script\\missions\\leaguematch\\item\\yijiqiankunfu.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 2137,
+   "jx1_pt": 2135,
+   "jx1_ma": "6,1,2135",
+   "jx1_spr": "\\spr\\item\\script\\zhongqiu_jieri\\gongxuanlingpai.spr",
+   "jx1_script": "\\script\\missions\\leaguematch\\item\\yijiqiankunfu.lua",
+   "jx1_maxstack": "0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,2269",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua",
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 2281,
+   "ten_chuan": "B¸ch Niªn Huy Hoµng qu¶",
+   "linux_spr": "\\spr\\item\\script\\huihuangzhiguo_avd1.spr",
+   "linux_obj": "377",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "B¸ch niªn huy hoµng qu¶, sö dông sÏ gia t¨ng c«ng lùc",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\huihuangzhihuo_avd1.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 2280,
+   "jx1_pt": 2278,
+   "jx1_ma": "6,1,2278",
+   "jx1_spr": "\\spr\\item\\script\\huihuangzhiguo_avd1.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,2271",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 2283,
+   "ten_chuan": "V¹n Niªn Huy Hoµng qu¶",
+   "linux_spr": "\\spr\\item\\script\\huihuangzhiguo_avd3.spr",
+   "linux_obj": "377",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "V¹n niªn huy hoµng qu¶, sö dông sÏ gia t¨ng nhiÒu lÇn c«ng lùc",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\huihuangzhihuo_avd3.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 2282,
+   "jx1_pt": 2280,
+   "jx1_ma": "6,1,2280",
+   "jx1_spr": "\\spr\\item\\script\\huihuangzhiguo_avd3.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,2390",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_followaward.lua"
+   ],
+   "linux_dong": 2402,
+   "ten_chuan": "B¹ch Ngäc",
+   "linux_spr": "\\spr\\item\\script\\baiyu.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Nép cho xa phu thÊt ®¹i thµnh thÞ ®Ó cã c¬ héi tiÕn vµo ®¶o tÈy tñy tÈy ®iÓm kü n¨ng.",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 2401,
+   "jx1_pt": 2399,
+   "jx1_ma": "6,1,2399",
+   "jx1_spr": "\\spr\\item\\script\\baiyu.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,2391",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_followaward.lua"
+   ],
+   "linux_dong": 2403,
+   "ten_chuan": "Tö Ngäc",
+   "linux_spr": "\\spr\\item\\script\\ziyu.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Nép cho xa phu thÊt ®¹i thµnh thÞ ®Ó cã c¬ héi tiÕn vµo ®¶o tÈy tñy tÈy ®iÓm tiÒm n¨ng.",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 2402,
+   "jx1_pt": 2400,
+   "jx1_ma": "6,1,2400",
+   "jx1_spr": "\\spr\\item\\script\\ziyu.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,2527",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_followaward.lua",
+    "script/activitysys/config/129/npc_receiver.lua"
+   ],
+   "linux_dong": 2539,
+   "ten_chuan": "Håi thiªn t¸i t¹o lÔ bao",
+   "linux_spr": "\\spr\\item\\script\\caiyao\\htzzjn.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "CÈm nang cã chøa thay ®æi trêi ®Êt ®¬n d­îc, bÊm chuét ph¶i ®Ó lÊy.",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\caiyao\\huitianlibao.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 2538,
+   "jx1_pt": 2536,
+   "jx1_ma": "6,1,2536",
+   "jx1_spr": "\\spr\\item\\script\\caiyao\\htzzjn.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,2952",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_followaward.lua"
+   ],
+   "linux_dong": 3559,
+   "ten_chuan": "KÝch C«ng Trî Lùc Hoµn",
+   "linux_spr": "\\spr\\item\\medecine\\obj-potion15.spr",
+   "linux_obj": "19",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Mét lo¹i b¶o d­îc cã thÓ lµm t¨ng lùc c«ng kÝch, tèc ®é c«ng kÝch ngo¹i c«ng t¨ng 50%, <enter> tèc ®é c«ng kÝch néi c«ng 50%, lùc c«ng kÝch hÖ ngo¹i c«ng t¨ng 100 ®iÓm, lùc c«ng kÝch hÖ néi c«ng t¨ng 2000 ®iÓm, chÝnh x¸c 500 ®iÓm",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\ib_shop\\gongjizuliwan.lua",
+   "linux_maxstack": "5",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 3572,
+   "jx1_pt": 3570,
+   "jx1_ma": "6,1,3570",
+   "jx1_spr": "\\spr\\item\\medecine\\obj-potion15.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "5",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,2953",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_followaward.lua"
+   ],
+   "linux_dong": 3560,
+   "ten_chuan": "¢m D­¬ng Ho¹t HuyÕt §¬n",
+   "linux_spr": "\\spr\\item\\questkey\\taskobj144.spr",
+   "linux_obj": "19",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Mét lo¹i thÇn ®¬n cã thÓ lµm t¨ng huyÕt khÝ, kh¸ng tÊt c¶ 25%,<enter>sinh lùc 500 ®iÓm, nÐ tr¸nh 500 ®iÓm, tèc ®é di chuyÓn 20%",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\ib_shop\\yinyanghuoxuewan.lua",
+   "linux_maxstack": "5",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 3573,
+   "jx1_pt": 3571,
+   "jx1_ma": "6,1,3571",
+   "jx1_spr": "\\spr\\item\\questkey\\taskobj144.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "5",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3150",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 3757,
+   "ten_chuan": "B¹o Né LÖnh Phï",
+   "linux_spr": "\\spr\\item\\questkey\\taskobj126.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "NhÊn chuét tr¸i sö dông t¨ng thªm 100 ®iÓm c¬ së Thiªn Trïng L©u hiÖn t¹i vµ 200 ®iÓm ®æi phÇn th­ëng ®· ®¹t ®Õn giíi h¹n, mçi ngµy chØ ®­îc sö dông nhiÒu nhÊt 8 c¸i, ®iÓm c¬ së ngµy h«m nay sÏ kh«ng ®­îc céng dån cho ®Õn ngµy h«m sau.",
+   "linux_price": "0",
+   "linux_script": "\\script\\missions\\qianchonglou\\item\\nupaolingfu.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 3770,
+   "jx1_pt": 3768,
+   "jx1_ma": "6,1,3768",
+   "jx1_spr": "\\spr\\item\\questkey\\taskobj126.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3154",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 3761,
+   "ten_chuan": "HuyÒn Kim Kho¸ng Th¹ch (trung)",
+   "linux_spr": "\\spr\\item\\vnxmas2007\\wuse_bingjin.spr",
+   "linux_obj": "333",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sau khi luyÖn HuyÒn Kim thiªn nhiªn xong sÏ nhËn ®­îc HuyÒn Kim. <enter>nhÊn nót ph¶i ®Ó nhËn HuyÒn Kim phÈm chÊt kh¸c nhau ",
+   "linux_price": "100",
+   "linux_script": "\\script\\item\\xuanjinkuangshi.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 3774,
+   "jx1_pt": 3772,
+   "jx1_ma": "6,1,3772",
+   "jx1_spr": "\\spr\\item\\vnxmas2007\\wuse_bingjin.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3155",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 3762,
+   "ten_chuan": "HuyÒn Kim Kho¸ng Th¹ch (®¹i)",
+   "linux_spr": "\\spr\\item\\vnxmas2007\\wuse_bingjin.spr",
+   "linux_obj": "333",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sau khi luyÖn HuyÒn Kim thiªn nhiªn xong sÏ nhËn ®­îc HuyÒn Kim. <enter>nhÊn nót ph¶i ®Ó nhËn HuyÒn Kim phÈm chÊt kh¸c nhau ",
+   "linux_price": "100",
+   "linux_script": "\\script\\item\\xuanjinkuangshi.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 3775,
+   "jx1_pt": 3773,
+   "jx1_ma": "6,1,3773",
+   "jx1_spr": "\\spr\\item\\vnxmas2007\\wuse_bingjin.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3203",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua",
+    "script/activitysys/config/129/item_followaward.lua",
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 3810,
+   "ten_chuan": "Hé M¹ch §¬n",
+   "linux_spr": "\\spr\\item\\jianzhong\\xuelingzhuhun.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Thiªn ®Þa tinh hoa së tô, xung huyÖt tÊt bÞ chi vËt.",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "500",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4846,
+   "jx1_pt": 4844,
+   "jx1_ma": "6,1,4844",
+   "jx1_spr": "\\spr\\item\\kinhmach\\homachdon.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "500",
+   "ung_vien": [
+    3821,
+    4844
+   ],
+   "ly_do": "he kinh mach song CHI chap nhan 4844: script/player/setmeridian.lua:21 KM_ITEM_HMD = 4844, KM_DemItem/DelItem deu dung hang so do. PT 3821 co spr giong Linux nhung KHONG he thong nao tieu thu (cac bang rot con phat 3821 la loi CO SAN cua ban live)",
+   "spr_khop": false
+  },
+  {
+   "linux_ma": "6,1,3308",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 3915,
+   "ten_chuan": "Ch©n Nguyªn §an",
+   "linux_spr": "\\spr\\item\\christmas\\mid_white.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "ÌìµØ¾«»ªËù¾Û£¬¿ÉÔö¼Ó×ÔÉíÕæÔªÖµ¡£ÓÒ¼üµã»÷Ê¹ÓÃºó»ñµÃ10µãÕæÔª¡£",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\meridian\\item_zhenyuandan.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4754,
+   "jx1_pt": 4752,
+   "jx1_ma": "6,1,4752",
+   "jx1_spr": "\\spr\\item\\script\\wusetang.spr",
+   "jx1_script": "\\script\\item\\event\\kinhmach\\channguyendan.lua",
+   "jx1_maxstack": "250",
+   "ung_vien": [
+    3926,
+    4752
+   ],
+   "ly_do": "script/item/event/kinhmach/channguyendan.lua dang ky KM_CND_GIATRI[4752]=10, [4846]=5, [4847]=10 -> 4752 la vien Chan Nguyen he kinh mach dang chay; PT 3926 chi con 1 bang rot cu dung, khong co script",
+   "spr_khop": false
+  },
+  {
+   "linux_ma": "6,1,3455",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 4062,
+   "ten_chuan": "Tr¸i t¸o",
+   "linux_spr": "\\spr\\item\\vietnam\\christmas2009\\hongpingguo.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "PhÝm ph¶i sö dông, n©ng cao ®iÓm t¨ng tr­ëng cña b¹n ®ång hµnh",
+   "linux_price": "0",
+   "linux_script": "\\script\\petsys\\feed.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4878,
+   "jx1_pt": 4876,
+   "jx1_ma": "6,1,4876",
+   "jx1_spr": "\\spr\\item\\vietnam\\christmas2009\\hongpingguo.spr",
+   "jx1_script": "\\script\\petsys\\feed.lua",
+   "jx1_maxstack": "50",
+   "ung_vien": [
+    4073,
+    4876
+   ],
+   "ly_do": "dong 4878: spr VA script petsys/feed.lua deu GIONG Linux; PT 4073 cung spr nhung Script=0 (khong an duoc)",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3456",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 4063,
+   "ten_chuan": "MÝa",
+   "linux_spr": "\\spr\\item\\script\\jiefang_jieri\\201004\\jipinbujuan.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "PhÝm ph¶i sö dông, n©ng cao ®iÓm t¨ng tr­ëng cña b¹n ®ång hµnh",
+   "linux_price": "0",
+   "linux_script": "\\script\\petsys\\feed.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4879,
+   "jx1_pt": 4877,
+   "jx1_ma": "6,1,4877",
+   "jx1_spr": "\\spr\\item\\script\\jiefang_jieri\\201004\\jipinbujuan.spr",
+   "jx1_script": "\\script\\petsys\\feed.lua",
+   "jx1_maxstack": "50",
+   "ung_vien": [
+    4074,
+    4877
+   ],
+   "ly_do": "dong 4879: spr VA script petsys/feed.lua GIONG Linux; PT 4074 Script=0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3457",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 4064,
+   "ten_chuan": "B¾p",
+   "linux_spr": "\\spr\\item\\script\\yumi.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "PhÝm ph¶i sö dông, n©ng cao ®iÓm t¨ng tr­ëng cña b¹n ®ång hµnh",
+   "linux_price": "0",
+   "linux_script": "\\script\\petsys\\feed.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4880,
+   "jx1_pt": 4878,
+   "jx1_ma": "6,1,4878",
+   "jx1_spr": "\\spr\\item\\script\\yumi.spr",
+   "jx1_script": "\\script\\petsys\\feed.lua",
+   "jx1_maxstack": "50",
+   "ung_vien": [
+    4075,
+    4878
+   ],
+   "ly_do": "dong 4880: spr VA script petsys/feed.lua GIONG Linux; PT 4075 Script=0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3458",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 4065,
+   "ten_chuan": "Khoai lang",
+   "linux_spr": "\\spr\\item\\script\\hongshu.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "PhÝm ph¶i sö dông, n©ng cao ®iÓm t¨ng tr­ëng cña b¹n ®ång hµnh",
+   "linux_price": "0",
+   "linux_script": "\\script\\petsys\\feed.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4881,
+   "jx1_pt": 4879,
+   "jx1_ma": "6,1,4879",
+   "jx1_spr": "\\spr\\item\\script\\hongshu.spr",
+   "jx1_script": "\\script\\petsys\\feed.lua",
+   "jx1_maxstack": "50",
+   "ung_vien": [
+    4076,
+    4879
+   ],
+   "ly_do": "dong 4881: spr VA script petsys/feed.lua GIONG Linux; PT 4076 Script=0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3554",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 4161,
+   "ten_chuan": "M¶nh c«ng hu©n chu¬ng Tèng Kim",
+   "linux_spr": "\\spr\\item\\questkey\\yinpiao.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "NhÊp phÝm ph¶i sö dông 1 m¶nh c«ng hu©n ch­¬ng cã thÓ nhËn ®­îc 700 ®iÓm ®iÓm c«ng hu©n Tèng Kim. Mçi tuÇn cã thÓ sö dông nhiÒu nhÊt 5 c¸i. ",
+   "linux_price": "0",
+   "linux_script": "\\script\\missions\\miniencounter\\item_brokenexploitmedal.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4174,
+   "jx1_pt": 4172,
+   "jx1_ma": "6,1,4172",
+   "jx1_spr": "\\spr\\item\\questkey\\yinpiao.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3559",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 4166,
+   "ten_chuan": "Ngò Hµnh Nguyªn Th¹ch",
+   "linux_spr": "\\spr\\item\\fusion\\Ææ½ð-»ð.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "ÔÌº¬ÎåÐÐÖ®Á¦µÄÔ­¿ó£¬ÓëÎåÐÐÓ¡Ò»Í¬¶ÍÔì£¬¿ÉÒÔÌá¸ßÎåÐÐÓ¡µÄµÈ¼¶¡£",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4179,
+   "jx1_pt": 4177,
+   "jx1_ma": "6,1,4177",
+   "jx1_spr": "\\spr\\item\\fusion\\Ææ½ð-»ð.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3560",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4167,
+   "ten_chuan": "Th­¬ng Long V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Long V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Long V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> PhÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> t¹o thµnh tû lÖ s¸t th­¬ng:  t¨ng 1%<color><bclr> ",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4180,
+   "jx1_pt": 4178,
+   "jx1_ma": "6,1,4178",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3570",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4177,
+   "ten_chuan": "Th­¬ng Long V¨n Tinh- Êt [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Long V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Long V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> PhÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> gi¶m tû lÖ s¸t th­¬ng:  t¨ng 1%<color><bclr> ",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4190,
+   "jx1_pt": 4188,
+   "jx1_ma": "6,1,4188",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3580",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4187,
+   "ten_chuan": "Th­¬ng Long V¨n Tinh- BÝnh[CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Long V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Long V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> PhÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> t¹o thµnh thêi gian s¸t th­¬ng:  t¨ng 1%<color><bclr> ",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4200,
+   "jx1_pt": 4198,
+   "jx1_ma": "6,1,4198",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3590",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4197,
+   "ten_chuan": "Th­¬ng Long V¨n Tinh- §inh [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Long V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Long V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> PhÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> Thêi gian s¸t th­¬ng:  gi¶m 1 (d­¬ng) <color><bclr> ",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4210,
+   "jx1_pt": 4208,
+   "jx1_ma": "6,1,4208",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3600",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4207,
+   "ten_chuan": "¢m Méc V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ä¾.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Méc V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Méc V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> PhÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> T¹o thµnh thêi gian tróng ®éc:  t¨ng 5%<color><bclr> ",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4220,
+   "jx1_pt": 4218,
+   "jx1_ma": "6,1,4218",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ä¾.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3610",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4217,
+   "ten_chuan": "¢m Méc V¨n Tinh- Êt [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ä¾.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Méc V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Méc V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> PhÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> Thêi gian tróng ®éc: gi¶m  5%<color><bclr> ",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4230,
+   "jx1_pt": 4228,
+   "jx1_ma": "6,1,4228",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ä¾.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3620",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4227,
+   "ten_chuan": "HuyÒn Thñy V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Thñy V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Thñy V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> PhÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> T¹o thµnh thêi gian tr× ho·n:  t¨ng 5%<color><bclr> ",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4240,
+   "jx1_pt": 4238,
+   "jx1_ma": "6,1,4238",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3630",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4237,
+   "ten_chuan": "HuyÒn Thñy V¨n Tinh- Êt [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Thñy V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Thñy V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> PhÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> Thêi gian tr× ho·n: gi¶m  5%<color><bclr> ",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4250,
+   "jx1_pt": 4248,
+   "jx1_ma": "6,1,4248",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3640",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4247,
+   "ten_chuan": "Thiªn L«i V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-ÍÁ.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "L«i V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é L«i V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> PhÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> T¹o thµnh tû lÖ cho¸ng:  t¨ng 1%<color><bclr> ",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4260,
+   "jx1_pt": 4258,
+   "jx1_ma": "6,1,4258",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-ÍÁ.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3650",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4257,
+   "ten_chuan": "Thiªn L«i V¨n Tinh- Êt [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-ÍÁ.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "L«i V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é L«i V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> PhÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> Gi¶m tû lÖ cho¸ng:  t¨ng 1%<color><bclr> ",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4270,
+   "jx1_pt": 4268,
+   "jx1_ma": "6,1,4268",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-ÍÁ.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3660",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4267,
+   "ten_chuan": "Thiªn L«i V¨n Tinh- BÝnh[CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-ÍÁ.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "L«i V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é L«i V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>T¹o thµnh thêi gian cho¸ng: t¨ng 3%<color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4280,
+   "jx1_pt": 4278,
+   "jx1_ma": "6,1,4278",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-ÍÁ.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3670",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4277,
+   "ten_chuan": "Thiªn L«i V¨n Tinh- §inh [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-ÍÁ.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "L«i V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é L«i V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White> Thêi gian cho¸ng: gi¶m 3%<color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4290,
+   "jx1_pt": 4288,
+   "jx1_ma": "6,1,4288",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-ÍÁ.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3680",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4287,
+   "ten_chuan": "Nh­îc Thñy V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Thñy V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Thñy V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>T¨ng tû lÖ phôc håi sinh lùc: t¨ng 1%<color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4300,
+   "jx1_pt": 4298,
+   "jx1_ma": "6,1,4298",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3690",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4297,
+   "ten_chuan": "Nh­îc Thñy V¨n Tinh- Êt [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Thñy V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Thñy V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>T¨ng tû lÖ håi phôc néi lùc: t¨ng 1%<color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4310,
+   "jx1_pt": 4308,
+   "jx1_ma": "6,1,4308",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3700",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4307,
+   "ten_chuan": "Nh­îc Thñy V¨n Tinh- BÝnh[CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Thñy V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Thñy V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>Mçi nöa gi©y håi phôc sinh lùc: t¨ng 5 ®iÓm <color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4320,
+   "jx1_pt": 4318,
+   "jx1_ma": "6,1,4318",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3710",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4317,
+   "ten_chuan": "Nh­îc Thñy V¨n Tinh- §inh [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Thñy V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Thñy V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>mçi nöa gi©y phôc håi néi lùc: t¨ng 5 ®iÓm <color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4330,
+   "jx1_pt": 4328,
+   "jx1_ma": "6,1,4328",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3720",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4327,
+   "ten_chuan": "Nh­îc Thñy V¨n Tinh- MËu[CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Thñy V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Thñy V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>gi¸ trÞ sinh lùc tèi ®a: t¨ng 1% (d­¬ng) <color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4340,
+   "jx1_pt": 4338,
+   "jx1_ma": "6,1,4338",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3730",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4337,
+   "ten_chuan": "Nh­îc Thñy V¨n Tinh- Kû [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Thñy V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Thñy V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>Gi¸ trÞ néi lùc tèi ®a: t¨ng 1% (d­¬ng) <color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4350,
+   "jx1_pt": 4348,
+   "jx1_ma": "6,1,4348",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3740",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4347,
+   "ten_chuan": "Bµn Long V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Long V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Long V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>TriÖt tiªu s¸t th­¬ng: t¨ng 5 (d­¬ng) <color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4360,
+   "jx1_pt": 4358,
+   "jx1_ma": "6,1,4358",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3750",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4357,
+   "ten_chuan": "Bµn Long V¨n Tinh- Êt [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Long V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Long V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>TriÖt tiªu tû lÖ träng kÝch t¨ng 1%<color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4370,
+   "jx1_pt": 4368,
+   "jx1_ma": "6,1,4368",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3760",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4367,
+   "ten_chuan": "Kim Long V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Long V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Long V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>Bá qua phßng thñ vËt lý ®èi ph­¬ng: t¨ng 2% (d­¬ng) <color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4380,
+   "jx1_pt": 4378,
+   "jx1_ma": "6,1,4378",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-½ð.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3770",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4377,
+   "ten_chuan": "Thanh Méc V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ä¾.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Méc V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Méc V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>Bá qua ®éc phßng ®èi thñ:  t¨ng 2% (d­¬ng) <color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4390,
+   "jx1_pt": 4388,
+   "jx1_ma": "6,1,4388",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ä¾.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3780",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4387,
+   "ten_chuan": "MÞch Thñy V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Thñy V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Thñy V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>Bá qua b¨ng phßng ®èi thñ: : t¨ng 2% (d­¬ng) <color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4400,
+   "jx1_pt": 4398,
+   "jx1_ma": "6,1,4398",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-Ë®.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3790",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4397,
+   "ten_chuan": "XÝch Háa V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-»ð.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Háa V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Háa V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>Bá qua háa phßng ®èi thñ: t¨ng 2% (d­¬ng) <color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4410,
+   "jx1_pt": 4408,
+   "jx1_ma": "6,1,4408",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-»ð.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3800",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang.lua"
+   ],
+   "linux_dong": 4407,
+   "ten_chuan": "L¹c Bµn V¨n Tinh- Gi¸p [CÊp 1]",
+   "linux_spr": "\\spr\\item\\fusion\\ÒìÊ¯-ÍÁ.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Long V¨n Tinh ®­îc thÝ luyÖn ra tõ Tinh Tinh Kho¸ng, nhÊn chuét ph¶i sö dông sÏ n©ng cao cÊp ®é Long V¨n C­¬ng víi thuéc tÝnh phÈm chÊt t­¬ng øng. <enter><color=blue> phÈm chÊt: cÊp 1 <color><enter><bclr=Blue><color=White>Bá qua l«i phßng ®èi thñ: t¨ng 2% (d­¬ng) <color><bclr>",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4420,
+   "jx1_pt": 4418,
+   "jx1_ma": "6,1,4418",
+   "jx1_spr": "\\spr\\item\\fusion\\ÒìÊ¯-ÍÁ.spr",
+   "jx1_script": "\\script\\global\\smeltsystem\\smeltupgrade.lua",
+   "jx1_maxstack": "200",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,3810",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_followaward.lua"
+   ],
+   "linux_dong": 4417,
+   "ten_chuan": "Tinh ThiÕt Kho¸ng",
+   "linux_spr": "\\spr\\item\\questkey\\taskobj025.spr",
+   "linux_obj": "333",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Kho¸ng th¹ch V¨n C­¬ng phÈm chÊt cao, nhÊn chuét ph¶i sö dông cã thÓ ngÉu nhiªn nhËn ®­îc mét lo¹i V¨n C­¬ng phÈm chÊt tõ 2 ®Õn 4.",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\item_jingtiekuang.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4430,
+   "jx1_pt": 4428,
+   "jx1_ma": "6,1,4428",
+   "jx1_spr": "\\spr\\item\\questkey\\taskobj025.spr",
+   "jx1_script": "\\script\\item\\item_jingtiekuang.lua",
+   "jx1_maxstack": "50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,4200",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/npc_lmbiaoqi.lua"
+   ],
+   "linux_dong": 4760,
+   "ten_chuan": "Tiªu Kú",
+   "linux_spr": "\\spr\\item\\longmenbiaoju\\ïÚÆì.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Tiªu Kú, b¶ng hiÖu Long M«n Tiªu Côc vµ Tiªu Xa sau khi bÞ c­íp mµ ®o¹t l¹i ®­îc cã thÓ nhËn phÝ lao vô.",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4773,
+   "jx1_pt": 4771,
+   "jx1_ma": "6,1,4771",
+   "jx1_spr": "\\spr\\item\\longmenbiaoju\\ïÚÆì.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,4201",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_biaojulibao.lua",
+    "script/event/longmenbiaoju/item_hubiaolihe.lua"
+   ],
+   "linux_dong": 4761,
+   "ten_chuan": "Ho¸n Tiªu ChØ",
+   "linux_spr": "\\spr\\item\\longmenbiaoju\\»»ïÚÆ¾Ö¤.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Dïng hÕt sè lÇn lµm míi nhiÖm vô ¸p Tiªu muèn tiÕp tôc lµm míi nhiÖm vô cÇn ph¶i nép vËt nµy.",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4774,
+   "jx1_pt": 4772,
+   "jx1_ma": "6,1,4772",
+   "jx1_spr": "\\spr\\item\\longmenbiaoju\\»»ïÚÆ¾Ö¤.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,4202",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_followaward.lua",
+    "script/event/longmenbiaoju/gaojiweirenzhuang.lua"
+   ],
+   "linux_dong": 4762,
+   "ten_chuan": "¸p tiªu ñy nhiÖm tr¹ng cao cÊp",
+   "linux_spr": "\\spr\\item\\longmenbiaoju\\¸ß¼¶ÑºïÚÎ¯ÈÎ×´.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "§em vËt nµy nép cho «ng chñ Tiªu côc cã thÓ nhËn ngÉu nhiªn nhiÖm vô ¸p Tiªu 7 sao, 8 sao, 9 sao.",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4775,
+   "jx1_pt": 4773,
+   "jx1_ma": "6,1,4773",
+   "jx1_spr": "\\spr\\item\\longmenbiaoju\\¸ß¼¶ÑºïÚÎ¯ÈÎ×´.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,4203",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/extend.lua"
+   ],
+   "linux_dong": 4763,
+   "ten_chuan": "Hé Tiªu LÖnh",
+   "linux_spr": "\\spr\\item\\longmenbiaoju\\»¤ïÚÁî.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Tiªu côc tÆng huy ch­¬ng cho sù anh dòng hé tiªu cña ®¹i hiÖp khi gÆp nguy hiÓm kh«ng lo¹n, cã thÓ ®æi vËt phÈm ¸p Tiªu.",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4776,
+   "jx1_pt": 4774,
+   "jx1_ma": "6,1,4774",
+   "jx1_spr": "\\spr\\item\\longmenbiaoju\\»¤ïÚÁî.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,4204",
+   "dang": [
+    "nP_sosanh",
+    "chuoi",
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_addproperty.lua",
+    "script/event/longmenbiaoju/item.lua",
+    "script/event/longmenbiaoju/item_biaojulibao.lua"
+   ],
+   "linux_dong": 4764,
+   "ten_chuan": "Kho¸i M· Gia Tiªn",
+   "linux_spr": "\\spr\\item\\longmenbiaoju\\jiasufu.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sö dông gÇn Tiªu Xa, t¨ng 100% tèc ®é di chuyÓn cña Tiªu Xa, duy tr× 15 gi©y, thêi gian chê 3 phót",
+   "linux_price": "0",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4777,
+   "jx1_pt": 4775,
+   "jx1_ma": "6,1,4775",
+   "jx1_spr": "\\spr\\item\\longmenbiaoju\\jiasufu.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true,
+   "dat_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "dat_script_ly_do": "'Khoai Ma Gia Tien' - buff xe tieu; Linux 004 dong 4764 cot 14 tro vao item.lua, JX1 dong 4777 dang de 0"
+  },
+  {
+   "linux_ma": "6,1,4205",
+   "dang": [
+    "nP_sosanh",
+    "chuoi",
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_addproperty.lua",
+    "script/event/longmenbiaoju/item.lua",
+    "script/event/longmenbiaoju/item_biaojulibao.lua"
+   ],
+   "linux_dong": 4765,
+   "ten_chuan": "Kiªn BÊt Kh¶ Táa",
+   "linux_spr": "\\spr\\item\\longmenbiaoju\\jiaxuefu.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sö dông gÇn Tiªu Xa, n©ng cao l­íi b¶o hé cña Tiªu Xa, håi phôc 10% m¸u cña Tiªu Xa, thêi gian chê 3 phót",
+   "linux_price": "0",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4778,
+   "jx1_pt": 4776,
+   "jx1_ma": "6,1,4776",
+   "jx1_spr": "\\spr\\item\\longmenbiaoju\\jiaxuefu.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true,
+   "dat_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "dat_script_ly_do": "'Kien Bat Kha Toa' - buff xe tieu; JX1 dang de Script 0"
+  },
+  {
+   "linux_ma": "6,1,4206",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_biaojulibao.lua"
+   ],
+   "linux_dong": 4766,
+   "ten_chuan": "ThiÕt Xa MËt Bè",
+   "linux_spr": "\\spr\\item\\longmenbiaoju\\yinshenfu.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sö dông gÇn Tiªu Xa, më nót ®ãng më mòi tªn ®­îc giÊu kÝn, ph¶n s¸t th­¬ng 100%, duy tr× 10 gi©y, thêi gian chê 3 phót",
+   "linux_price": "0",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4779,
+   "jx1_pt": 4777,
+   "jx1_ma": "6,1,4777",
+   "jx1_spr": "\\spr\\item\\longmenbiaoju\\yinshenfu.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true,
+   "dat_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "dat_script_ly_do": "'Thiet Xa Mat Bo' - buff xe tieu; JX1 dang de Script 0"
+  },
+  {
+   "linux_ma": "6,1,4207",
+   "dang": [
+    "nP_sosanh",
+    "chuoi"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_addproperty.lua",
+    "script/event/longmenbiaoju/item.lua"
+   ],
+   "linux_dong": 4767,
+   "ten_chuan": "Tiªu Xa Di VÞ",
+   "linux_spr": "\\spr\\item\\longmenbiaoju\\gedangfu.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sö dông gÇn Tiªu Xa, lµm cho Tiªu Xa dÞch chuyÓn ®Õn vÞ trÝ cña ng­êi ch¬i, thêi gian chê 3 phót",
+   "linux_price": "0",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4780,
+   "jx1_pt": 4778,
+   "jx1_ma": "6,1,4778",
+   "jx1_spr": "\\spr\\item\\longmenbiaoju\\gedangfu.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "50",
+   "spr_khop": true,
+   "dat_script": "\\script\\event\\longmenbiaoju\\item.lua",
+   "dat_script_ly_do": "'Tieu Xa Di Vi' - buff xe tieu; JX1 dang de Script 0"
+  },
+  {
+   "linux_ma": "6,1,4550",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 4873,
+   "ten_chuan": "Tinh Ngäc Nguyªn Th¹ch",
+   "linux_spr": "\\spr\\item\\pifeng\\ÐÇÓñÔ­Ê¯.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "VËt r¬i rít tõ Thiªn Ngo¹i VÉn ThiÕt, nhÊp ph¶i tèn 1 Tinh Háa Than ®Ó tinh luyÖn nhËn ®­îc c¸c nguyªn liÖu dïng ®Ó t¨ng cÊp Phi Phong.",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\mantlesystem\\item_starstone.lua",
+   "linux_maxstack": "100",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4887,
+   "jx1_pt": 4885,
+   "jx1_ma": "6,1,4885",
+   "jx1_spr": "\\spr\\item\\pifeng\\ÐÇÓñÔ­Ê¯.spr",
+   "jx1_script": "\\script\\global\\mantlesystem\\item_starstone.lua",
+   "jx1_maxstack": "100",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,30228",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 2979,
+   "ten_chuan": "Ch©n Nguyªn §¬n (trung)",
+   "linux_spr": "\\spr\\vng\\item\\120628_event_thang_7\\chanlongdon.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sö dông nhËn ®­îc <color=yellow>5<color> ®iÓm ch©n nguyªn",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\meridian\\channguyendon.lua",
+   "linux_maxstack": "500",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4848,
+   "jx1_pt": 4846,
+   "jx1_ma": "6,1,4846",
+   "jx1_spr": "\\spr\\item\\kinhmach\\channguyendon.spr",
+   "jx1_script": "\\script\\item\\event\\kinhmach\\channguyendan.lua",
+   "jx1_maxstack": "500",
+   "spr_khop": false,
+   "spr_khac_ly_do": "script/item/event/kinhmach/channguyendan.lua dang ky KM_CND_GIATRI[4846]=5 dung bang gia tri vien 'trung' cua Linux -> cung vat pham, JX1 chi ve lai icon (kinhmach/channguyendon.spr thay vng/.../chanlongdon.spr)"
+  },
+  {
+   "linux_ma": "6,1,30229",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_followaward.lua",
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 2980,
+   "ten_chuan": "Ch©n Nguyªn §¬n (®¹i)",
+   "linux_spr": "\\spr\\vng\\item\\120628_event_thang_7\\chanlongdon.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sö dông nhËn ®­îc <color=yellow>10<color> ®iÓm ch©n nguyªn",
+   "linux_price": "0",
+   "linux_script": "\\script\\global\\meridian\\channguyendon.lua",
+   "linux_maxstack": "500",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4849,
+   "jx1_pt": 4847,
+   "jx1_ma": "6,1,4847",
+   "jx1_spr": "\\spr\\item\\kinhmach\\channguyendon.spr",
+   "jx1_script": "\\script\\item\\event\\kinhmach\\channguyendan.lua",
+   "jx1_maxstack": "500",
+   "ung_vien": [
+    2991,
+    4847
+   ],
+   "ly_do": "dong 4849 'Chan Nguyen Don (Dai)' bo kinh mach, MaxStack 500, script kinhmach/channguyendan.lua - cung bo voi 30228 -> 4846 (Trung) va 4845 (Tieu); PT 2991 la ban cu spr questkey/taskobj056.spr",
+   "spr_khop": false
+  },
+  {
+   "linux_ma": "6,1,30289",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua",
+    "script/activitysys/config/129/item_followaward.lua",
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 3040,
+   "ten_chuan": "HuyÕt Long §»ng",
+   "linux_spr": "\\spr\\item\\meridian\\xuelongteng.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sö dông 10 c¸i HuyÕt Long §»ng t­¬ng øng phèi hîp ®Ó xung huyÖt, sau khi bÞ thÊt b¹i sÏ kh«ng bÞ h¹ ®¼ng cÊp kinh m¹ch",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4850,
+   "jx1_pt": 4848,
+   "jx1_ma": "6,1,4848",
+   "jx1_spr": "\\spr\\item\\kinhmach\\huyetlongdang.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "500",
+   "ung_vien": [
+    3051,
+    3946,
+    4848
+   ],
+   "ly_do": "he kinh mach song CHI chap nhan 4848: script/player/setmeridian.lua:25 KM_ITEM_HLDANG = 4848. PT 3051/3946 co spr giong Linux nhung khong he thong nao tieu thu",
+   "spr_khop": false
+  },
+  {
+   "linux_ma": "6,1,30301",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 3052,
+   "ten_chuan": "Hçn nguyªn ch©n ®¬n",
+   "linux_spr": "\\spr\\item\\newyear0901\\liubaozhu.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Chøa 1000 ®iÓm Ch©n Nguyªn, nhËn ®­îc khi sö dông",
+   "linux_price": "0",
+   "linux_script": "\\script\\vng_event\\item\\hunyuanzenyuan.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4859,
+   "jx1_pt": 4857,
+   "jx1_ma": "6,1,4857",
+   "jx1_spr": "\\spr\\item\\newyear0901\\liubaozhu.spr",
+   "jx1_script": "\\script\\item\\event\\kinhmach\\honnguyenchandon.lua",
+   "jx1_maxstack": "0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,30438",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 3189,
+   "ten_chuan": "Qu¶ §¹i Hoµng Kim",
+   "linux_spr": "\\spr\\item\\questkey\\huangjinzhiguo.spr",
+   "linux_obj": "377",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sö dông sÏ nhËn ®­îc 200 triÖu kinh nghiÖm",
+   "linux_price": "0",
+   "linux_script": "\\script\\vng_event\\item\\biggoldenseed.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4866,
+   "jx1_pt": 4864,
+   "jx1_ma": "6,1,4864",
+   "jx1_spr": "\\spr\\item\\questkey\\huangjinzhiguo.spr",
+   "jx1_script": "\\script\\vng_event\\item\\biggoldenseed.lua",
+   "jx1_maxstack": "0",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,30538",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua",
+    "script/activitysys/config/129/item_followaward.lua"
+   ],
+   "linux_dong": 3289,
+   "ten_chuan": "§»ng Long Th¹ch - H¹",
+   "linux_spr": "\\spr\\vng\\item\\longha.spr",
+   "linux_obj": "387",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sö dông ®Ó chÕ t¹o trang bÞ §»ng Long. Mçi vËt phÈm t¨ng 1% tØ lÖ thµnh c«ng khi thùc hiÖn",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "250",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4868,
+   "jx1_pt": 4866,
+   "jx1_ma": "6,1,4866",
+   "jx1_spr": "\\spr\\vng\\item\\longha.spr",
+   "jx1_script": "0",
+   "jx1_maxstack": "250",
+   "spr_khop": true
+  },
+  {
+   "linux_ma": "6,1,30557",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/item_followaward.lua",
+    "script/event/longmenbiaoju/award.lua"
+   ],
+   "linux_dong": 3308,
+   "ten_chuan": "Tói D­îc PhÈm",
+   "linux_spr": "\\spr\\item\\script\\pingzi\\200805\\qiutiandalibao.spr",
+   "linux_obj": "387",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Bªn trong cã chøa D­îc PhÈm ",
+   "linux_price": "0",
+   "linux_script": "\\script\\vng_event\\item\\lebaonguhoanlh.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "DUNG_LAI",
+   "jx1_dong": 4815,
+   "jx1_pt": 4813,
+   "jx1_ma": "6,1,4813",
+   "jx1_spr": "\\spr\\item\\obj_item_jixiang.spr",
+   "jx1_script": "\\script\\item\\tuiduocpham.lua",
+   "jx1_maxstack": "0",
+   "spr_khop": false,
+   "canh_bao": "TEN trung nhung SPRITE khac Linux -- can chu xac nhan la cung mot vat pham (doi hoa) hay la vat pham khac"
+  },
+  {
+   "linux_ma": "6,1,3156",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 3763,
+   "ten_chuan": "HuyÒn Kim Kho¸ng Th¹ch (Cùc lín)",
+   "linux_spr": "\\spr\\item\\vnxmas2007\\wuse_bingjin.spr",
+   "linux_obj": "333",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sau khi luyÖn HuyÒn Kim thiªn nhiªn xong sÏ nhËn ®­îc HuyÒn Kim. <enter>nhÊn nót ph¶i ®Ó nhËn HuyÒn Kim phÈm chÊt kh¸c nhau ",
+   "linux_price": "100",
+   "linux_script": "\\script\\item\\xuanjinkuangshi.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DOI_TEN_TAI_CHO",
+   "jx1_pt": 3774,
+   "jx1_dong": 3776,
+   "jx1_ma": "6,1,3774",
+   "ten_moi": "Huyền Kim Khoáng Thạch (Cực lớn)",
+   "ten_cu": "Ðþ½ð¿óÊ¯£¨ÌØ´ó£©",
+   "bang_chung": "dong 3776 spr vnxmas2007/wuse_bingjin.spr + obj 333 + intro Viet GIONG Linux, ten con GBK; nam ngay sau tieu/trung/dai (3772/3773)"
+  },
+  {
+   "linux_ma": "6,1,3189",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 3796,
+   "ten_chuan": "Huy Hoµng Tr©n DiÖp",
+   "linux_spr": "\\spr\\item\\questkey\\taskobj396.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "ÎÂ²¹Ö®Îï¡£Ê³Ö®¿ÉÔö¼Ó5´Î¸ß¼¶»Ô»ÍÖ®¹ûµÄÊ¹ÓÃ´ÎÊý£¬Ã¿Ìì¿ÉÊ³ÓÃ1Æ¬¡£",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DOI_TEN_TAI_CHO",
+   "jx1_pt": 3807,
+   "jx1_dong": 3809,
+   "jx1_ma": "6,1,3807",
+   "ten_moi": "Huy Hoàng Trân Diệp",
+   "ten_cu": "»Ô»ÍÕäÒ¶",
+   "bang_chung": "dong 3809 spr questkey/taskobj396.spr + obj 41 + INTRO GBK GIONG HET Linux"
+  },
+  {
+   "linux_ma": "6,1,3190",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 3797,
+   "ten_chuan": "Huy Hoµng Hoa",
+   "linux_spr": "\\spr\\item\\yulanpenjie\\jinlianhua.spr",
+   "linux_obj": "443",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "ÎÂ²¹Ö®Îï¡£Ê³Ö®¿ÉÔö¼Ó5´Î°ÙÄê»Ô»ÍÖ®¹ûµÄÊ¹ÓÃ´ÎÊý£¬Ã¿Ìì¿ÉÊ³ÓÃ1¶ä¡£",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "50",
+   "trang_thai": "DOI_TEN_TAI_CHO",
+   "jx1_pt": 3808,
+   "jx1_dong": 3810,
+   "jx1_ma": "6,1,3808",
+   "ten_moi": "Huy Hoàng Hoa",
+   "ten_cu": "»Ô»ÍÖ®»¨",
+   "bang_chung": "dong 3810 spr yulanpenjie/jinlianhua.spr + obj 443 + INTRO GBK GIONG HET Linux"
+  },
+  {
+   "linux_ma": "6,1,4473",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/npc_receiver.lua"
+   ],
+   "linux_dong": 4802,
+   "ten_chuan": "Th­ëng TËn Trung",
+   "linux_spr": "\\spr\\item\\script\\weizhulibao.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Khen ngîi sù tham gia tÝch cùc cña ®¹i hiÖp trong ho¹t ®éng ¸p Tiªu Bang Héi, click chuét ph¶i ®Ó nhËn phÇn th­ëng.",
+   "linux_price": "0",
+   "linux_script": "\\script\\activitysys\\config\\129\\item_followaward.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "THEM_MOI",
+   "jx1_pt": 4978,
+   "jx1_ma": "6,1,4978",
+   "jx1_dong": 4980,
+   "ten_moi": "Thưởng Tận Trung",
+   "script_dat": "\\script\\activitysys\\config\\129\\item_followaward.lua",
+   "spr_dat": "\\spr\\item\\script\\weizhulibao.spr",
+   "obj_dat": "41"
+  },
+  {
+   "linux_ma": "6,1,4474",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/npc_receiver.lua"
+   ],
+   "linux_dong": 4803,
+   "ten_chuan": "Th­ëng Trung Thµnh",
+   "linux_spr": "\\spr\\item\\script\\fuguijinhe.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Khen ngîi c«ng lao to lín cña ®¹i hiÖp trong ho¹t ®éng ¸p Tiªu Bang Héi, click chuét ph¶i ®Ó nhËn phÇn th­ëng.",
+   "linux_price": "0",
+   "linux_script": "\\script\\activitysys\\config\\129\\item_followaward.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "THEM_MOI",
+   "jx1_pt": 4979,
+   "jx1_ma": "6,1,4979",
+   "jx1_dong": 4981,
+   "ten_moi": "Thưởng Trung Thành",
+   "script_dat": "\\script\\activitysys\\config\\129\\item_followaward.lua",
+   "spr_dat": "\\spr\\item\\script\\fuguijinhe.spr",
+   "obj_dat": "41"
+  },
+  {
+   "linux_ma": "6,1,4475",
+   "dang": [
+    "nP_sosanh",
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/extend.lua",
+    "script/activitysys/config/129/npc_lmbiaobox.lua",
+    "script/activitysys/config/129/npc_receiver.lua"
+   ],
+   "linux_dong": 4804,
+   "ten_chuan": "R­¬ng Tiªu VËt Bang",
+   "linux_spr": "\\spr\\item\\script\\item_baihubaoxiang.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sau khi nép ë chç TÕ Töu, bang chñ cã thÓ nhËn phÇn th­ëng ®oµn thÓ cña ¸p Tiªu Bang Héi.",
+   "linux_price": "0",
+   "linux_script": "\\script\\item\\noscript.lua",
+   "linux_maxstack": "100",
+   "trang_thai": "THEM_MOI",
+   "bo_script": "Linux dung script/item/noscript.lua; JX1 KHONG co tep do, JX1 ghi 0",
+   "jx1_pt": 4980,
+   "jx1_ma": "6,1,4980",
+   "jx1_dong": 4982,
+   "ten_moi": "Rương Tiêu Vật Bang",
+   "script_dat": "0",
+   "spr_dat": "\\spr\\item\\script\\item_baihubaoxiang.spr",
+   "obj_dat": "41"
+  },
+  {
+   "linux_ma": "6,1,4502",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 4831,
+   "ten_chuan": "ThÒ Non HÑn BiÓn",
+   "linux_spr": "\\spr\\item\\script\\vanlentine2007\\pure_rose.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Sö dông cho ng­êi m×nh th­¬ng nhí, bµy tá t×nh yªu ¸i mé.",
+   "linux_price": "0",
+   "linux_script": "\\script\\activitysys\\config\\50\\item_love.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "THEM_MOI",
+   "bo_script": "Linux dung script/activitysys/config/50/item_love.lua; config 50 khong port",
+   "jx1_pt": 4981,
+   "jx1_ma": "6,1,4981",
+   "jx1_dong": 4983,
+   "ten_moi": "Thề Non Hẹn Biển",
+   "script_dat": "0",
+   "spr_dat": "\\spr\\item\\script\\vanlentine2007\\pure_rose.spr",
+   "obj_dat": "41"
+  },
+  {
+   "linux_ma": "6,1,4535",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua",
+    "script/event/longmenbiaoju/item_jingjingkuang_piece.lua"
+   ],
+   "linux_dong": 4864,
+   "ten_chuan": "M¶nh Tinh Tinh Kho¸ng.",
+   "linux_spr": "\\spr\\item\\script\\item_xuanjingkuangshi.spr",
+   "linux_obj": "425",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "M¶nh Tinh Tinh Kho¸ng, tËp hîp ®ñ 10 m¶nh cã thÓ hîp thµnh mét m¶nh Tinh Tinh Kho¸ng kh«ng nguyªn chÊt.",
+   "linux_price": "0",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item_jingjingkuang_piece.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "THEM_MOI",
+   "jx1_pt": 4982,
+   "jx1_ma": "6,1,4982",
+   "jx1_dong": 4984,
+   "ten_moi": "Mảnh Tinh Tinh Khoáng",
+   "script_dat": "\\script\\event\\longmenbiaoju\\item_jingjingkuang_piece.lua",
+   "spr_dat": "\\spr\\item\\script\\item_xuanjingkuangshi.spr",
+   "obj_dat": "425"
+  },
+  {
+   "linux_ma": "6,1,4536",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/award.lua",
+    "script/event/longmenbiaoju/item_jingtiekuang_piece.lua"
+   ],
+   "linux_dong": 4865,
+   "ten_chuan": "M¶nh Tinh ThiÕt Kho¸ng",
+   "linux_spr": "\\spr\\item\\questkey\\taskobj125.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": " M¶nh Tinh ThiÕt Kho¸ng, tËp hîp ®ñ 10 m¶nh cã thÓ hîp thµnh mét m¶nh Tinh ThiÕt Kho¸ng kh«ng nguyªn chÊt.",
+   "linux_price": "0",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item_jingtiekuang_piece.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "THEM_MOI",
+   "thay_sprite": "goc questkey/taskobj125.spr khong co dong JX1 nao dung; muon icon cua 'Tinh Thiet Toa' PT 3785",
+   "jx1_pt": 4983,
+   "jx1_ma": "6,1,4983",
+   "jx1_dong": 4985,
+   "ten_moi": "Mảnh Tinh Thiết Khoáng",
+   "script_dat": "\\script\\event\\longmenbiaoju\\item_jingtiekuang_piece.lua",
+   "spr_dat": "\\spr\\item\\script\\duankaidejian.spr",
+   "obj_dat": "41"
+  },
+  {
+   "linux_ma": "6,1,4537",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingjingkuang_piece.lua"
+   ],
+   "linux_dong": 4866,
+   "ten_chuan": "Tinh Tinh Kho¸ng kh«ng nguyªn chÊt.",
+   "linux_spr": "\\spr\\item\\christmas\\high_blue.spr",
+   "linux_obj": "333",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "NhÊn chuét ph¶i sö dông cã thÓ nhËn ®­îc Tinh Tinh Kho¸ng cÊp 1",
+   "linux_price": "0",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item_jingjingkuang.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "THEM_MOI",
+   "jx1_pt": 4984,
+   "jx1_ma": "6,1,4984",
+   "jx1_dong": 4986,
+   "ten_moi": "Tinh Tinh Khoáng không nguyên chất",
+   "script_dat": "\\script\\event\\longmenbiaoju\\item_jingjingkuang.lua",
+   "spr_dat": "\\spr\\item\\christmas\\high_blue.spr",
+   "obj_dat": "333"
+  },
+  {
+   "linux_ma": "6,1,4538",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_jingtiekuang_piece.lua"
+   ],
+   "linux_dong": 4867,
+   "ten_chuan": "Tinh ThiÕt Kho¸ng kh«ng nguyªn chÊt.",
+   "linux_spr": "\\spr\\item\\questkey\\nanmingzhijing.spr",
+   "linux_obj": "372",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "NhÊn chuét ph¶i sö dông cã thÓ nhËn ®­îc Tinh ThiÕt Kho¸ng cÊp 1",
+   "linux_price": "0",
+   "linux_script": "\\script\\event\\longmenbiaoju\\item_jingtiekuang.lua",
+   "linux_maxstack": "200",
+   "trang_thai": "THEM_MOI",
+   "thay_sprite": "goc questkey/nanmingzhijing.spr khong co o JX1; muon icon cua 'Tinh Thiet Khoang' PT 4428",
+   "jx1_pt": 4985,
+   "jx1_ma": "6,1,4985",
+   "jx1_dong": 4987,
+   "ten_moi": "Tinh Thiết Khoáng không nguyên chất",
+   "script_dat": "\\script\\event\\longmenbiaoju\\item_jingtiekuang.lua",
+   "spr_dat": "\\spr\\item\\questkey\\taskobj025.spr",
+   "obj_dat": "333"
+  },
+  {
+   "linux_ma": "6,1,4539",
+   "dang": [
+    "khoa",
+    "chuoi"
+   ],
+   "tep": [
+    "script/event/longmenbiaoju/item_yaobao.lua"
+   ],
+   "linux_dong": 4868,
+   "ten_chuan": "§Þa Linh §¬n.",
+   "linux_spr": "\\spr\\item\\questkey\\taskobj127.spr",
+   "linux_obj": "19",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "Chuét ph¶i sö dông nhËn ®­îc 250000000 kinh nghiÖm kh«ng céng dån.",
+   "linux_price": "0",
+   "linux_script": "\\script\\activitysys\\config\\31\\item_dilingdan.lua",
+   "linux_maxstack": "0",
+   "trang_thai": "THEM_MOI",
+   "thay_sprite": "goc questkey/taskobj127.spr khong co o JX1; muon icon vien thuoc cua 'Truong Menh hoan' PT 1 (ObjIdx 19 trung dung voi Linux)",
+   "bo_script": "Linux dung script/activitysys/config/31/item_dilingdan.lua; config 31 khong port",
+   "jx1_pt": 4986,
+   "jx1_ma": "6,1,4986",
+   "jx1_dong": 4988,
+   "ten_moi": "Địa Linh Đơn",
+   "script_dat": "0",
+   "spr_dat": "\\spr\\item\\medecine\\obj-potion15.spr",
+   "obj_dat": "19"
+  },
+  {
+   "linux_ma": "6,1,4604",
+   "dang": [
+    "bang"
+   ],
+   "tep": [
+    "script/activitysys/config/129/award.lua"
+   ],
+   "linux_dong": 4927,
+   "ten_chuan": "LÖnh bµi Cæ Th¸p - B¹c",
+   "linux_spr": "\\spr\\item\\vietnam\\leaguematch\\icon_league_silver.spr",
+   "linux_obj": "41",
+   "linux_w": "1",
+   "linux_h": "1",
+   "linux_intro": "NhËn ®­îc 250 ®iÓm tÝch ®iÓm c¸ nh©n Cæ Th¸p.",
+   "linux_price": "0",
+   "linux_script": "\\script\\missions\\tong_guta\\item\\guta_lingpai.lua",
+   "linux_maxstack": "250",
+   "trang_thai": "THEM_MOI",
+   "bo_script": "Linux dung script/missions/tong_guta/...; man Co Thap khong port",
+   "jx1_pt": 4987,
+   "jx1_ma": "6,1,4987",
+   "jx1_dong": 4989,
+   "ten_moi": "Lệnh bài Cổ Tháp - Bạc",
+   "script_dat": "0",
+   "spr_dat": "\\spr\\item\\vietnam\\leaguematch\\icon_league_silver.spr",
+   "obj_dat": "41"
+  }
+ ]
+}

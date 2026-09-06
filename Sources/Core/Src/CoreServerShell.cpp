@@ -103,6 +103,7 @@ private:
 static CoreServerShell	g_CoreServerShell;
 
 #include "KMySQLDB.h"
+#include "KBiaoChe.h"	// [LMBC 06/09] xe tieu Long Mon
 
 CORE_API void g_InitCore(char * nParmName);
 
@@ -1200,6 +1201,7 @@ int CoreServerShell::Breathe()
 		SC_Breathe();	// Port SimCity: nhip di chuyen bot
 		QueryPerformanceCounter(&t1);
 		PB_Breathe();
+	BC_Breathe();	// [LMBC 06/09] xe tieu Long Mon: vong doi + keo qua ban do
 	KPartner_Breathe();	// [BDH 27/08] he ban dong hanh (KPlayerPartner.cpp)	// Bot KPlayer that: rut hang doi sinh + het han cho
 		QueryPerformanceCounter(&t2);
 		{ PERF_SCOPE(PERF_SW_MSGLOOP);  g_SubWorldSet.MessageLoop(); }

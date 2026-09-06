@@ -434,7 +434,13 @@ enum COMBAT_INFO_TYPE
 #define		REGION_CELL_HEIGHT			(REGION_PIXEL_HEIGHT/REGION_CELL_SIZE_Y)
 #define		MAX_TONG_LEVEL					10
 #define		MAX_TONG_NATIONALEMBLEM			6
-#define		MAX_NPCPARAM			4
+// [LMBC 06/09] 4 -> 8: script Long Mon Tieu Cuc (ban Linux) dung toi chi so 6.
+// Cay script dang chay CUNG da ghi/doc chi so 4 (tong_disciple, tong_springfestival,
+// muren_death) tuc la dang ghi NGOAI MANG; noi mang bien chung thanh o that.
+// KNpc.h chi duoc project Core dung (Engine/Src/LuaFuns.cpp chet vi USEOLD khong dinh nghia)
+// nen chi can Rebuild ca hai cau hinh cua Core, khong phai swap dong bo nhi phan khac.
+// PHAI di kem kiem bien o LuaSetNpcParam/LuaGetNpcParam (ScriptFuns.cpp).
+#define		MAX_NPCPARAM			8
 #define		MAX_NPC_DIR		64
 #define		MAX_WEAPON		MAX_MELEE_WEAPON + MAX_RANGE_WEAPON
 #define		MAX_SKILL_STATE 18

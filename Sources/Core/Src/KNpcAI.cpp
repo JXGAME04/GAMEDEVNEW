@@ -13,6 +13,7 @@ extern void Partner_ProcessAI(int nNpcIdx);	// [BDH 27/08] KPlayerPartner.cpp
 #include "KTaskFuns.h"
 // flying add here, to use math lib
 #include <math.h>
+#include "KBiaoChe.h"	// [LMBC 06/09] xe tieu Long Mon
 extern int GetRandomNumber(int nMin, int nMax);
 
 #define		MAX_FOLLOW_DISTANCE		48
@@ -63,8 +64,18 @@ void KNpcAI::Activate(int nIndex)// flying modified this function. // Jun.4.2003
 		}
 		return;
 	}
+	// [LMBC 06/09] duong nay nam TRUOC cong m_NextAITime nen chay 18 lan/giay, moi
+	// lan FindAroundPlayer quet ten qua 9 vung. Xe Long Mon di tiet che nhu moi AI
+	// khac; XE TIEU CU giu nguyen duong cu de khong doi hanh vi tinh nang dang chay.
 	if (Npc[m_nIndex].Owner[0] && Npc[m_nIndex].m_bNpcFollowFindPath)//add by phong kiÒu 19/08/2021
 	{
+		if (Npc[m_nIndex].m_btBiaoChe)
+		{
+			int nCurTimeB = SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_dwCurrentTime;
+			if (Npc[m_nIndex].m_NextAITime > nCurTimeB)
+				return;
+			Npc[m_nIndex].m_NextAITime = nCurTimeB + BC_AI_TICK;
+		}
 		ProcessAIFollow();
 		return;
 	}
@@ -136,9 +147,25 @@ void KNpcAI::Activate(int nIndex)// flying modified this function. // Jun.4.2003
 #define	MAX_WAIT_PATH_NPC_TIME		6000
 #define	MAX_FIND_PATH_NPC_TIME		36000
 
+// [LMBC 06/09] Nhanh xe Long Mon Tieu Cuc duoc chen o dau ham. Phan con lai
+// (xe tieu CU cua du an) giu nguyen tung dong.
 void	KNpcAI::ProcessAIFollow()										//add by phong kiÒu using vËn tiªu
 {
-	int nIdx = Npc[m_nIndex].FindAroundPlayer(Npc[m_nIndex].Owner);
+	KNpc*	pMeLM = &Npc[m_nIndex];
+	BOOL	bLM   = pMeLM->m_btBiaoChe;	// [LMBC 06/09] cong duy nhat
+
+	int nIdx = 0;
+	if (bLM)
+	{
+		// [LMBC 06/09] O(1): chu da biet -> khoi di bo danh sach lien ket + strcmp
+		// qua MOI NPC cua toi da 9 vung. Day moi la cho nghen that su.
+		int nPLM = pMeLM->m_nBiaoCheOwner;
+		if (nPLM > 0 && nPLM < MAX_PLAYER && Player[nPLM].m_nIndex > 0 &&
+			strcmp(Npc[Player[nPLM].m_nIndex].Name, pMeLM->Owner) == 0)
+			nIdx = Player[nPLM].m_nIndex;
+	}
+	if (nIdx <= 0)
+		nIdx = Npc[m_nIndex].FindAroundPlayer(Npc[m_nIndex].Owner);
 
 	if (nIdx <= 0 || Npc[nIdx].m_dwID <= 0)
 		return;
@@ -148,6 +175,35 @@ void	KNpcAI::ProcessAIFollow()										//add by phong kiÒu using vËn tiªu
 
 	if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
 		return;
+
+	if (bLM)
+	{
+		// [LMBC 06/09] Ba lenh return o tren von co nghia 'BO CUOC VINH VIEN'. Voi xe
+		// Long Mon chung chi con nghia 'nhip nay khong di chuyen': het han, lac chu,
+		// keo qua ban do va don xac deu do BC_Breathe lo - vi AI KHONG chay khi vung
+		// cua xe vang nguoi choi.
+		//
+		// KHONG dong vao phe: da dat MOT LAN luc sinh. Ban goc lat phe MOI KHUNG, moi
+		// lan SetCurrentCamp phat s2c_npcchgcurcamp ra 9 vung (~324 goi vung/giay/xe).
+		// KHONG tu go NPC: vong doi thuoc ve BC_Breathe.
+		int nD2LM = NpcSet.GetDistanceSquare(m_nIndex, nIdx);
+
+		// GIU TRAN TREN: qua BC_FAR_DIST2 thi NGUNG phat do_walk (xe ket sau tuong hoac
+		// chu dich chuyen trong cung map se khong tim duong 6 lan/giay suot 30 phut).
+		if (nD2LM > BC_FOLLOW_DIST2 && (DWORD)nD2LM <= BC_FAR_DIST2)
+		{
+			if (pMeLM->m_FightMode != Npc[nIdx].m_FightMode)
+				pMeLM->m_FightMode = Npc[nIdx].m_FightMode;
+
+			int nOwnerXLM, nOwnerYLM, nMpsXLM, nMpsYLM;
+			Npc[nIdx].GetMpsPos(&nOwnerXLM, &nOwnerYLM);
+			pMeLM->GetMpsPos(&nMpsXLM, &nMpsYLM);
+			int nXGoLM = nOwnerXLM + ((nOwnerXLM - nMpsXLM) > 0 ? -1 : 1) * 50;
+			int nYGoLM = nOwnerYLM + ((nOwnerYLM - nMpsYLM) > 0 ? -1 : 1) * 50;
+			pMeLM->SendCommand(do_walk, nXGoLM, nYGoLM);
+		}
+		return;
+	}
 
 	if (Npc[m_nIndex].m_uFindPathTime)
 	{

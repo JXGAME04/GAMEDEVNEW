@@ -521,6 +521,12 @@ public:
 	// [BDH 27/08] he ban dong hanh (KPlayerPartner.cpp): chu so huu cua NPC kind_partner
 	int				m_nPartnerOwner;		// player idx cua chu (0 = khong phai partner)
 	int				m_nPartnerNo;			// con so may cua chu (1..3)
+	// [LMBC 06/09] Long Mon Tieu Cuc - xe tieu. m_btBiaoChe la CONG DUY NHAT bat
+	// moi hanh vi moi; van tieu cu (SetNpcOwner) khong dat co nay nen chay duong cu.
+	BYTE			m_btBiaoChe;			// 1 = xe Long Mon Tieu Cuc
+	BYTE			m_btBiaoCheFlag;		// bit 0x01 = da bao 'qua xa'; 0x02 = da xu ly chet
+	int				m_nBiaoCheOwner;		// bo nho dem player idx cua chu (LUON kiem lai bang ten)
+	DWORD			m_dwBiaoCheLostTick;	// moc lac chu / moc bat dau dem xac
 #endif
 	int					m_nPeopleIdx;			// 对象人物
 	int					m_nLastDamageIdx;		// 最后一次伤害的人物索引

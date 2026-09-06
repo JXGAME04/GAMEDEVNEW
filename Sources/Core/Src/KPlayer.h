@@ -766,6 +766,10 @@ public:
 	void			TongTempMagicRecord(int nSkillId, int nLevel);	// cong don; ve 0 thi xoa ban ghi
 	void			TongTempMagicReapply();							// goi trong UpdataCurData sau khi xoa TempSkill
 	int				TongIsForbidSkill(int nSkillId);				// 1 = bi cam (toan bo hoac rieng)
+	// [LMBC 06/09] the yeu tro toi xe tieu. TU LANH: KNpc::Init dat m_dwID = 0 va
+	// xoa Owner, nen khe NPC bi dung lai cho viec khac KHONG THE bi nham la xe cu.
+	int			m_nBiaoCheIdx;			// chi so NPC cua xe (0 = khong co)
+	DWORD			m_dwBiaoCheID;			// m_dwID cua xe
 #endif
 	DWORD			m_dwNumberBoxId;
 	DWORD			m_dwLogoutScriptID;

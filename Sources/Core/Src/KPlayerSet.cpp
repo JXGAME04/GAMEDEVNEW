@@ -16,6 +16,7 @@
 #include "KPlayerSet.h"
 #include "Text.h"
 #include "CoreUseNameDef.h"
+#include "KBiaoChe.h"	// [LMBC 06/09] xe tieu Long Mon
 
 #define		PLAYER_FIRST_LUCKY				0
 
@@ -362,6 +363,8 @@ void KPlayerSet::PrepareRemove(int nIndex)//#khi player dang xuat
 	g_DebugLog("SERVER:Player[%s] has been removed!", Npc[Player[nIndex].m_nIndex].Name);
 
 	Player[nIndex].m_cChat.OffLine(Player[nIndex].m_dwID);
+
+	BC_OnPlayerLogout(nIndex);	// [LMBC 06/09] xe tieu: bat dau dem 5 phut cho chu vao lai
 
 	Player[nIndex].ExecuteScript("\\script\\player\\playerlogout.lua", "main", 0);
 	if (Player[nIndex].m_dwLogoutScriptID)

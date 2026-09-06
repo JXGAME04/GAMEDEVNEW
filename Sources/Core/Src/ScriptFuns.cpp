@@ -67,6 +67,7 @@
 #include "KCauHinhWeb.h"	// [CFGW 04/09] cau hinh game chinh tu WEB ADMIN (bang gcfg tren MySQL)
 #include "KAuctionClient.h"	// [DAUGIA 04/09 A3] cua so dau gia (client)
 #include "KChienLenhClient.h"	// [CL 04/09 DOT2] cau noi Lua <-> cua so Chien Lenh (client)
+#include "KBiaoChe.h"	// [LMBC 06/09] xe tieu Long Mon
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
 {
@@ -6992,7 +6993,9 @@ int LuaSetNpcOwner(Lua_State* L)
 	if (nNpcIndex <= 0 || nNpcIndex >= MAX_NPC)
 		return 0;
 
-	strcpy(Npc[nNpcIndex].Owner, (char*)Lua_ValueToString(L, 2));
+	// [LMBC 06/09] strcpy -> g_StrCpyLen: Owner[32] nam ngay sau Name[32] (KNpc.h:503-504),
+	// ten dai hon 31 byte se tran de sang truong ke.
+	g_StrCpyLen(Npc[nNpcIndex].Owner, (char*)Lua_ValueToString(L, 2), sizeof(Npc[nNpcIndex].Owner));
 
 	if (nParamNum >= 3)
 		Npc[nNpcIndex].m_bNpcFollowFindPath = (BOOL)Lua_ValueToNumber(L, 3);
@@ -7449,7 +7452,9 @@ int LuaSetNpcName(Lua_State* L)
 		Replace.GetString((int)Lua_ValueToNumber(L, 2) + 2, "targetname", "", Npc[nNpcIndex].Name, sizeof(Npc[nNpcIndex].Name));
 	}
 	else if (Lua_IsString(L, 2))
-		strcpy(Npc[nNpcIndex].Name, (char*)Lua_ValueToString(L, 2));
+		// [LMBC 06/09] strcpy -> g_StrCpyLen: ten xe tieu bang cua ban Linux
+		// ("Tieu Xa bang cua [<ten bang>]<ten nguoi>") chac chan vuot Name[32].
+		g_StrCpyLen(Npc[nNpcIndex].Name, (char*)Lua_ValueToString(L, 2), sizeof(Npc[nNpcIndex].Name));
 
 	return 0;
 }
@@ -7477,7 +7482,15 @@ int LuaSetNpcParam(Lua_State* L)
 		return 0;
 
 	if (nParamNum > 2)
-		Npc[nNpcIndex].m_nNpcParam[(int)Lua_ValueToNumber(L, 2)] = (int)Lua_ValueToNumber(L, 3);
+	{
+		// [LMBC 06/09] truoc day KHONG kiem chi so: script goi SetNpcParam(idx, N, v)
+		// voi N tuy y se ghi de bo nho ke sau mang. SetNpcValue la BI DANH cua chinh
+		// ham nay (bang dang ky :15297) nen sua o day bit ca hai duong.
+		int nP = (int)Lua_ValueToNumber(L, 2);
+		if (nP < 0 || nP >= MAX_NPCPARAM)
+			return 0;
+		Npc[nNpcIndex].m_nNpcParam[nP] = (int)Lua_ValueToNumber(L, 3);
+	}
 	else
 		Npc[nNpcIndex].m_nNpcParam[0] = (int)Lua_ValueToNumber(L, 2);
 	return 0;
@@ -7495,7 +7508,17 @@ int LuaGetNpcParam(Lua_State* L)
 		return 0;
 
 	if (nParamNum > 1)
-		Lua_PushNumber(L, Npc[nNpcIndex].m_nNpcParam[(int)Lua_ValueToNumber(L, 2)]);
+	{
+		// [LMBC 06/09] xem chu thich o LuaSetNpcParam. Tra 0 khi chi so ngoai bien
+		// (KHONG tra nil) vi script goc so sanh thang ket qua voi so.
+		int nP = (int)Lua_ValueToNumber(L, 2);
+		if (nP < 0 || nP >= MAX_NPCPARAM)
+		{
+			Lua_PushNumber(L, 0);
+			return 1;
+		}
+		Lua_PushNumber(L, Npc[nNpcIndex].m_nNpcParam[nP]);
+	}
 	else
 		Lua_PushNumber(L, Npc[nNpcIndex].m_nNpcParam[0]);
 	return 1;
@@ -14895,6 +14918,16 @@ int LuaWllsSetStringTask(Lua_State* L)
 }
 #endif // _SERVER (khoi ham WLLS)
 
+#ifdef _SERVER
+// [LMBC 06/09] Long Mon Tieu Cuc - hien thuc o KBiaoChe.cpp
+extern int LuaCreateBiaoChe(Lua_State* L);
+extern int LuaDeleteBiaoChe(Lua_State* L);
+extern int LuaGetBiaoChePos(Lua_State* L);
+extern int LuaIsBiaoCheAlive(Lua_State* L);
+extern int LuaSyncBiaoCheDeathInfoToRelay(Lua_State* L);
+extern int LuaBC_SetEnable(Lua_State* L);
+#endif
+
 TLua_Funcs GameScriptFuns[] =
 {
 	{"Say", LuaSelectUI},
@@ -15299,6 +15332,15 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetNpcValue",		LuaSetNpcParam},
 	{"GetNpcParam",		LuaGetNpcParam},
 	{"GetNpcValue",		LuaGetNpcParam},
+#ifdef _SERVER
+	// == [LMBC 06/09] Long Mon Tieu Cuc (xe tieu bam theo chu) ==
+	{"CreateBiaoChe",				LuaCreateBiaoChe},				// (series, setting, level, ten, ticks) -> npcidx | nil
+	{"DeleteBiaoChe",				LuaDeleteBiaoChe},				// () -> 1/0
+	{"GetBiaoChePos",				LuaGetBiaoChePos},				// () -> x, y, subworld | -1
+	{"IsBiaoCheAlive",				LuaIsBiaoCheAlive},				// () -> 1/0
+	{"SyncBiaoCheDeathInfoToRelay",	LuaSyncBiaoCheDeathInfoToRelay},	// (npcidx) -> 1/0
+	{"BC_SetEnable",				LuaBC_SetEnable},				// cong tat nong
+#endif
 	{"SC_SetBotFlag",	LuaSC_SetBotFlag},	// Port SimCity
 	{"SC_GetBotFlag",	LuaSC_GetBotFlag},
 	{"SC_AddBot",		LuaSC_AddBot},
