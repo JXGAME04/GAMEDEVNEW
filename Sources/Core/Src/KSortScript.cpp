@@ -48,11 +48,30 @@ static unsigned long LoadAllScript(char * szFilePath)
 	return nCurrentScriptNum;
 }
 
+// [LUA54 06/09] Thong ke nap script + cache Include cua Lua54Dll (PHANTICH_NANG_LUA54_0509.md muc 13).
+// Lay ham qua GetProcAddress de Core van chay voi Lua54Dll cu (chua co ham) - khi do chi in thoi gian.
+static void sGhiThongKeNapScript(unsigned long nLoaded, DWORD dwMs)
+{
+	typedef void (*PFN_INCSTATS)(long long*, long long*, long long*, long long*, long long*);
+	long long nStateHit = 0, nGlobalHit = 0, nCompile = 0, nBytesSaved = 0, nBytesCode = 0;
+	HMODULE hLua = GetModuleHandleA("Lua54Dll.dll");
+	PFN_INCSTATS pfn = hLua ? (PFN_INCSTATS)GetProcAddress(hLua, "lua4_inc_stats") : NULL;
+	if (pfn)
+		pfn(&nStateHit, &nGlobalHit, &nCompile, &nBytesSaved, &nBytesCode);
+	char szMsg[512];
+	sprintf_s(szMsg, sizeof(szMsg),
+		"[script] LoadAllScript: %lu tep, %lu ms; cache Include: bien dich %lld, dung lai cung state %lld, bytecode chung %lld, bo qua phan tich %lld KB, bytecode giu %lld KB",
+		nLoaded, dwMs, nCompile, nStateHit, nGlobalHit, nBytesSaved / 1024, nBytesCode / 1024);
+	printf("%s\n", szMsg);
+	g_DebugLog((LPSTR)"%s", szMsg);
+}
+
 unsigned long g_IniScriptEngine()
 {
 	g_szCurScriptDir[0] = 0;
 	nCurrentScriptNum = 0;
 	g_ScriptBinTree.ClearList();
+	DWORD dwT0 = GetTickCount();		// [LUA54 06/09] do thoi gian nap toan bo script
 	unsigned long nLoaded = LoadAllScript("\\script");
 #ifdef _SERVER
 	// JX2 port: script bang hoi nam NGOAI \script (o scriptjx2\) de khong
@@ -64,6 +83,7 @@ unsigned long g_IniScriptEngine()
 	// duong bam NPC. KHONG nap rieng thu muc con nua de khoi trung ID.
 	nLoaded = LoadAllScript("\\scriptjx2\\tong_vn");
 #endif
+	sGhiThongKeNapScript(nLoaded, GetTickCount() - dwT0);
 	return nLoaded;
 }
 

@@ -20,6 +20,7 @@ local _G = _G
 local string, table, math, os, io = string, table, math, os, io
 local rawget, rawset, type, select, tostring, tonumber = rawget, rawset, type, select, tostring, tonumber
 local pcall, xpcall, error, load, loadfile, setmetatable, getmetatable = pcall, xpcall, error, load, loadfile, setmetatable, getmetatable
+local collectgarbage_54 = collectgarbage	-- [LUA54 06/09] giu ban goc: ban shim cu goi lai chinh no -> tran ngan xep (gcinfo/collectgarbage)
 local unpack = table.unpack
 local mfloor = math.floor
 
@@ -169,12 +170,12 @@ _G.foreachvar = function(f)
 		if r ~= nil then return r end
 	end
 end
-_G.gcinfo = function() return mfloor(collectgarbage("count")), 0 end
+_G.gcinfo = function() return mfloor(collectgarbage_54("count")), 0 end
 _G.collectgarbage = function(n)
 	if n ~= nil then
-		collectgarbage("step", n)
+		collectgarbage_54("step", n)
 	else
-		collectgarbage("collect")
+		collectgarbage_54("collect")
 	end
 	return 0
 end

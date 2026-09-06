@@ -41,6 +41,7 @@ enum KPERF_STAGE
 	PERF_BAUCUA,			// g_BauCua.run
 	PERF_GS_MSGLOOP,		// (GameServer.exe) KSwordOnLineSever::MessageLoop
 	PERF_GS_MAINLOOP,		// (GameServer.exe) KSwordOnLineSever::MainLoop
+	PERF_LUA_CALL,			// [LUA54 06/09] tong thoi gian chay Lua trong tick (lua4_call do sau 0, doc tu Lua54Dll)
 	PERF_COUNT
 };
 
