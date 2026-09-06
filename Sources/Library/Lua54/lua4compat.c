@@ -226,7 +226,14 @@ static int s_alias_n = 0;
 static void l4_alias_norm(const char* in, char* out, size_t cap)
 {
 	size_t i = 0, o = 0;
-	while (in[i] == '\\' || in[i] == '/' || (in[i] == '.' && (in[i + 1] == '\\' || in[i + 1] == '/'))) i += (in[i] == '.') ? 2 : 1;
+	/* bo khoang trang dau (dong "--@ cu=moi" co dau cach), roi bo '\\' '/' '.\\' dau */
+	for (;;)
+	{
+		if (in[i] == ' ' || in[i] == '\t') { i++; continue; }
+		if (in[i] == '\\' || in[i] == '/') { i++; continue; }
+		if (in[i] == '.' && (in[i + 1] == '\\' || in[i + 1] == '/')) { i += 2; continue; }
+		break;
+	}
 	for (; in[i] && o + 1 < cap; i++)
 	{
 		char ch = in[i];
