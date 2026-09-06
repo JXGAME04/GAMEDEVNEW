@@ -11,6 +11,9 @@
 #include "../../../Headers/inoutmac.h"
 
 #include "DoScript.h"
+#include "RelayScript.h"		// [RELAYHT 06/09] ha tang kich ban kieu Linux
+#include "RelayShareData.h"
+#include "RelayTaskCentre.h"
 #include "OfflineMsgDB.h"	// [HAOHUU 04/09] loi nhan ngoai tuyen
 
 
@@ -234,6 +237,14 @@ BOOL gInitialize()
 	}
 
 	InitScript();
+
+	// [RELAYHT 06/09] HA TANG KICH BAN KIEU LINUX. Thu tu BAT BUOC:
+	// dang ky het bang ham -> roi moi nap kich ban (TaskCentre nap kich ban).
+	RelayScript_Init();
+	RelayScript_AddFuncTable(g_ShareDataFuns, g_GetShareDataFunNum());
+	RelayScript_AddFuncTable(g_TaskCentreFuns, g_GetTaskCentreFunNum());
+	ShareData_Init();		// loi MySQL -> tu tat, relay van chay
+	TaskCentre_Init();
 	
 	gs_reclient_enable = TRUE;
 
@@ -434,6 +445,9 @@ BOOL gUninitialize()
 
 		g_ChannelMgr.Uninitialize();
 		g_FriendMgr.Uninitialize();
+		TaskCentre_Uninit();	// [RELAYHT 06/09]
+		ShareData_Uninit();
+		RelayScript_Uninit();
 		OfflineMsg_Uninit();	// [HAOHUU 04/09]
 
 

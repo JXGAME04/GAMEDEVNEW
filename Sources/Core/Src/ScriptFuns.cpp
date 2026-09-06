@@ -12164,7 +12164,7 @@ int LuaUpdateBattleBox(Lua_State* L)// UpdateBattleBox
 		return 0;
 
 	int nSubWorldIndex = -1;
-	char szBattleDesc[128];
+	char szBattleDesc[128] = "";	// [TKINFO 06/09] truoc day KHONG khoi tao: nhanh 2 tham so (kind 9) strcpy rac tu ngan xep vao goi
 	BYTE nType = 0;
 	int nValue[2];
 
@@ -12298,6 +12298,7 @@ static void sTkInfoBuild(KMission* pMission, int nPhase, int nTimerId, int nTong
 		if (pMission->m_MissionLadder[i].Name[0])
 			nHave++;
 	int nLen = sprintf(szRows, "%d", nHave);
+	int nRank = 0;	// [TKINFO 06/09] hang THAT (o ladder trong bi bo qua nen i + 1 se nhay so)
 	int nLadder = pMission->GetMissionLadderParam();
 	if (nLadder < 0 || nLadder >= MAX_MISSION_PARAM)
 		nLadder = 0;
@@ -12306,11 +12307,12 @@ static void sTkInfoBuild(KMission* pMission, int nPhase, int nTimerId, int nTong
 		TMissionLadderInfo& Info = pMission->m_MissionLadder[i];
 		if (!Info.Name[0])
 			continue;
+		nRank++;
 		char szName[16];
 		strncpy(szName, Info.Name, 12);
 		szName[12] = 0;
 		char szTmp[64];
-		int n = sprintf(szTmp, ";%d|%s|%d|%d", i + 1, szName, (int)Info.ucGroup, Info.nParam[nLadder]);
+		int n = sprintf(szTmp, ";%d|%s|%d|%d", nRank, szName, (int)Info.ucGroup, Info.nParam[nLadder]);
 		if (nLen + n >= 127)
 			break;
 		memcpy(szRows + nLen, szTmp, n);

@@ -2,6 +2,7 @@
 
 #include "../Elem/WndText.h"
 #include "../Elem/WndButton.h"
+#include "../Elem/WndLabeledButton.h"	// [TKINFO 06/09] nut "Dong"
 #include "../Elem/WndEdit.h"
 #include "../../../Core/Src/GameDatadef.h"
 
@@ -34,6 +35,7 @@ private:
 private:
 	static KUiBattleReport* m_pSelf;
 	KWndButton	m_SwitchBtn;	
+	KWndLabeledButton m_CloseBtn;	// [TKINFO 06/09] nut dong cua rieng bang chien bao (ini [CloseBtn])
 	KWndText32	m_NumPlayerT;
 	KWndText32	m_NumPlayerK;	
 	KWndText32	m_TimeRemaining;

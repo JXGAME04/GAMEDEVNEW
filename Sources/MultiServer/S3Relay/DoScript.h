@@ -11,6 +11,10 @@
 #include "../../Engine/src/KWin32.h"
 #include "../../Engine/src/KLuaScript.h"
 
+// [RELAYHT 06/09] RelayScript.cpp dang ky lai bang ham nay cho MOI kich ban relay
+extern TLua_Funcs GameScriptFuns[];
+int g_GetGameScriptFunNum();
+
 BOOL InitScript();
 BOOL ExcuteScript(DWORD nIP, DWORD nRelayID, const char * ScriptCommand);
 BOOL UninitScript();
