@@ -84,6 +84,7 @@ void KUiBattleReport::Initialize()
 	AddChild(&m_PointPlayerK);
 	AddChild(&m_PointPlayer);
 	AddChild(&m_SwitchBtn);	
+	AddChild(&m_CloseBtn);	// [TKINFO 06/09] phai AddChild TRUOC LoadScheme
 	for (int i = 0; i < MAX_TOP_INFO; i++)
 	{
 		if (i < 10)
@@ -135,6 +136,7 @@ void KUiBattleReport::LoadScheme(KIniFile* pIni, BATTLE_MODE eMode)
 	m_PointPlayerK.Init(pIni, "PointPlayerK");
 	m_PointPlayer.Init(pIni, "PointPlayer");
 	m_SwitchBtn.Init(pIni, "SwitchBtn");	
+	m_CloseBtn.Init(pIni, "CloseBtn");	// [TKINFO 06/09] co trong CA HAI ini Big + Small
 		
 	for (i = 0; i < MAX_BATTLE_GROUP; i++)
 	{
@@ -235,6 +237,11 @@ int KUiBattleReport::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	case WND_N_BUTTON_CLICK:
 		if (uParam == (unsigned int)(KWndWindow*)&m_SwitchBtn)
 			SetMode(s_eBattleMode == BATTLE_M_SMALL ? BATTLE_M_BIG : BATTLE_M_SMALL);
+		// [TKINFO 06/09] nut dong cua rieng bang chien bao. Truoc day cua so nay khong co duong dong nao:
+		// [SwitchBtn] chi doi che do To/Nho, con nhanh VK_ESCAPE ben duoi hau nhu khong bao gio chay vi
+		// KShortcutKeyCentre an phim ESC truoc (Wnds.cpp) - ESC thuc te dong SACH moi cua so qua UiShell.
+		else if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+			CloseWindow(false);	// false = chi an, giu du lieu (true se Destroy va bo m_pSelf)
 		break;
 	case WM_KEYDOWN:
 		if (uParam == VK_ESCAPE)
@@ -262,8 +269,22 @@ void KUiBattleReport::UpdateRankWorld(const char* pszWorldRank, BYTE nType)
 	{
 		return;
 	}
+	// [TKINFO 06/09] kind 9 = het tran / roi tran (script Tong Kim da gui san): dong luon bang chien bao,
+	// truoc day no treo lai tren man hinh cho toi khi nguoi choi bam ESC (ma ESC dong SACH moi cua so).
+	if (nType == 9)
+	{
+		CloseWindow(false);
+		return;
+	}
+	// kind 7/8 la cua cua so Thong Tin Tran (KUiTongKimInfo), khong phai cua bang nay -> ra som,
+	// tranh strcpy KHONG kiem tra do dai o duoi chep chuoi 127 byte vao szString[128] ma khong dung den.
+	if (pszWorldRank == NULL || nType > 6)
+		return;
 	char szString[128];
-	strcpy(szString, pszWorldRank);
+	// [TKINFO 06/09] pszWorldRank tro THANG vao bo dem nhan goi (szBattleDesc[128] khong bao dam ket thuc NUL)
+	// -> strcpy khong kiem do dai co the tran ngan xep. Chep co chan nhu KUiTongKimInfo::SetRows.
+	strncpy(szString, pszWorldRank, sizeof(szString) - 1);
+	szString[sizeof(szString) - 1] = 0;
 	switch (nType)
 	{
 		case 1:
