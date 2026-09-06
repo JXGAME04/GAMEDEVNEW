@@ -22,6 +22,7 @@ call :capnhat Lua54Dll.dll
 call :capnhat Represent3.dll
 call :capnhat Represent2.dll
 call :capnhat WAuto.dll
+call :capnhat WAuto.exe
 if "%LOI%"=="1" goto :loi
 
 if exist "LUA54.moi" call :doiscript
