@@ -495,13 +495,36 @@ static int pb_CoChieuNoiTayKhong(int nNpcIdx)
 // ~400/1000 bot se bi huy vu khi NGAY lan pb_TrangBiTheoCap dau sau restart.
 // Chu game CHUA duyet, va viec do KHONG lien quan loi "bot Duong Mon dung yen".
 // => TAM NGAT, giu nguyen hanh vi dang chay. Doi 0 -> 1 khi muon test rieng.
-#define PB_BAT_DUONG_NOI  0
+// [BotNoi-BAT 06/09] Chu game: "hien tai da so bot la ngoai cong ... bot khong co vu khi
+// la noi cong nhung hien tai da so bot la co vu khi nen khong danh skill noi" -> BAT.
+// Do lai (ReverseTools/quet_noi.py: skills.txt x SKILLNORMAL + SKILL90, cap 110):
+//   co chieu noi tay khong: TL 271/318 (eqt -1 = PHAI tay khong), NM 80/82/91/380,
+//   TY 102/113/111/337, CB 122/128/357, TN 145/138/148/362, VD 153/164/165/365,
+//   CL 179/182/375 (eqt -2); Ngu Doc chi co don DOC (bi loai 303-DOC) -> giu vu khi;
+//   Hoa Son / Vu Hon / Tieu Dao khong co chieu tay khong nao -> giu vu khi.
+//   DUONG MON: chieu 90 id 351 (eqt -2) CO don phep -> neu chi dua vao bo quet thi DM
+//   cap >= 80 se bi thao vu khi = khong danh duoc (dung loi chu game canh bao)
+//   -> chan CUNG bang pb_PhaiLuonCamVuKhi, khong phu thuoc du lieu.
+#define PB_BAT_DUONG_NOI  1
+
+// [BotNoi-BAT 06/09] Phai TOAN ky nang ngoai cong / tam xa CAN vu khi. Chu game: "bot he
+// kim Thien Vuong toan bo la ngoai cong phai co vu khi; bot he moc Duong Mon toan bo phai
+// co vu khi moi danh duoc; luu y 2 phai do tranh xoa vu khi nham". Chan cung o day: moi
+// noi quyet dinh thao / khong phat vu khi deu di qua pb_BotNoiThat -> ham nay.
+static int pb_PhaiLuonCamVuKhi(int nFaction)
+{
+	return nFaction == 1 || nFaction == 2;   // 1 Thien Vuong, 2 Duong Mon
+}
 
 // duong NOI THAT SU = dwID le VA phai co chieu noi tay khong dung duoc ngay bay gio
 static int pb_BotNoiThat(int nIdx)
 {
 #if PB_BAT_DUONG_NOI
 	if (!pb_BotNoi(nIdx))
+		return 0;
+	// [BotNoi-BAT 06/09] Thien Vuong / Duong Mon: KHONG BAO GIO di duong noi, bat ke
+	// bo quet chieu noi ra gi (DM co 351 eqt -2 mang don phep o cap 80).
+	if (pb_PhaiLuonCamVuKhi((int)Player[nIdx].m_cFaction.m_nCurFaction))
 		return 0;
 	const int nNpcIdx = Player[nIdx].m_nIndex;
 	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
@@ -3032,8 +3055,10 @@ static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 		{
 			Player[nIdx].m_ItemList.RemoveItemIdx(nWn, Item[nWn].GetStackNum());
 			b.nAtkSkill = 0;
-			pb_Log("[BotNoi] %s cap %d: thao vu khi (duong NOI CONG danh tay khong)\n",
-			       Player[nIdx].m_PlayerName, nLevel);
+			pb_Log("[BotNoi] %s phai %s cap %d: thao vu khi (duong NOI CONG danh tay khong)\n",
+			       Player[nIdx].m_PlayerName,
+			       (b.nFaction >= 0 && b.nFaction < MAX_FACTION) ? s_facNpc[b.nFaction].szTen : "?",
+			       nLevel);
 		}
 	}
 
@@ -11970,10 +11995,12 @@ static void pb_DriveBot(PB_Bot& b)
 			// tran 5 lan: phai quyen boc trung "tay khong" (w.d < 0) la co y,
 			// thu vai lan roi thoi chu khong spam ItemSet.Add moi phut.
 			if (b.nGaveWeapon && b.nFaction >= 0
-			 && !pb_BotNoiThat(nIdx)   // [BotNoi-PHAI] chi bot noi THAT (phai co chieu noi) moi mien
 			 && Player[nIdx].m_ItemList.GetWeaponType() < 0
 			 && b.nVuKhiThu < 5
-			 && nowAll - b.nVuKhiTick >= (unsigned int)(GAME_FPS * 60))
+			 && nowAll - b.nVuKhiTick >= (unsigned int)(GAME_FPS * 60)
+			 // [BotNoi-PHAI] chi bot noi THAT (phai co chieu noi) moi mien phat lai;
+			 // [BotNoi-BAT 06/09] xet SAU CUNG: bo quet chieu chi chay khi bot da tay khong
+			 && !pb_BotNoiThat(nIdx))
 			{
 				b.nVuKhiTick = nowAll;
 				b.nVuKhiThu++;
