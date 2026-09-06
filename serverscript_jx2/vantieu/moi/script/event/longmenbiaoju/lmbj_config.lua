@@ -56,39 +56,43 @@ LongMenBiaoJu = LongMenBiaoJu or {}
 --   Can cu: moi lan ap tieu THANH CONG duoc 2 Ho Tieu Lenh (taskclass.lua:555),
 --   toi da 3 lan/ngay => 6 cai/ngay. Dat 5/5/10 de mua duoc khoang 1 mon moi ngay.
 
+-- [VTCN 06/09] SUA MA: bang Linux 4200-4207 KHONG phai ma JX1. Trong magicscript.txt cua may chu
+-- nay (dong = ParticularType + 1): 4771 Tieu Ky, 4772 Hoan Tieu Chi, 4773 uy nhiem trang cao cap,
+-- 4774 Ho Tieu Lenh, 4775 Khoai Ma Gia Tien, 4776 Kien Bat Kha Toa, 4777 Thiet Xa Mat Bo,
+-- 4778 Tieu Xa Di Vi. Dong 4200-4207 la 'Thuong Long Van Tinh - Binh' - phat nham mon.
 LongMenBiaoJu.ItemList = {
 	-- Tieu Ky: rot ra khi Tieu Xa bi pha; nop lai de lay phan thuong an ui
 	BiaoQi = {
 		szName = "Tiªu Kú",
-		tbProp = {6, 1, 4200, 1, 0, 0},
+		tbProp = {6, 1, 4771, 1, 0, 0},	-- [VTCN 06/09] ma JX1 (magicscript.txt), Linux la 4200
 		nCount = 1,
 		nBindState = -2,
 	},
 	-- Hoan Tieu Chung: lam moi nhiem vu khi da het luot mien phi
 	PingZheng = {
 		szName = "Ho¸n Tiªu ChØ",
-		tbProp = {6, 1, 4201, 1, 0, 0},
+		tbProp = {6, 1, 4772, 1, 0, 0},	-- [VTCN 06/09] ma JX1 (magicscript.txt), Linux la 4201
 		nCount = 1,
 		nBindState = -2,
 	},
 	-- Uy nhiem trang cao cap: doi lay nhiem vu 7/8/9 sao
 	WeiRenZhuang = {
 		szName = "¸p tiªu ñy nhiÖm tr¹ng cao cÊp",
-		tbProp = {6, 1, 4202, 1, 0, 0},
+		tbProp = {6, 1, 4773, 1, 0, 0},	-- [VTCN 06/09] ma JX1 (magicscript.txt), Linux la 4202
 		nCount = 1,
 		nBindState = -2,
 	},
 	-- Ho Tieu Lenh: tien te cua cua hang Tieu Cuc
 	HuBiaoLing = {
 		szName = "Hé Tiªu LÖnh",
-		tbProp = {6, 1, 4203, 1, 0, 0},
+		tbProp = {6, 1, 4774, 1, 0, 0},	-- [VTCN 06/09] ma JX1 (magicscript.txt), Linux la 4203
 		nCount = 1,
 		nBindState = -2,
 	},
 	-- Khoai Ma Gia Tien: tang 100 phan tram toc do Tieu Xa trong 15 giay
 	KuaiMaJiaBian = {
 		szName = "Kho¸i M· Gia Tiªn",
-		tbProp = {6, 1, 4204, 1, 0, 0},
+		tbProp = {6, 1, 4775, 1, 0, 0},	-- [VTCN 06/09] ma JX1 (magicscript.txt), Linux la 4204
 		nCount = 1,
 		nBindState = -2,
 		nPrice = 5,
@@ -100,7 +104,7 @@ LongMenBiaoJu.ItemList = {
 	-- Kien Bat Kha Toa: hoi 10 phan tram mau Tieu Xa
 	JianBuKeCui = {
 		szName = "Kiªn BÊt Kh¶ Táa",
-		tbProp = {6, 1, 4205, 1, 0, 0},
+		tbProp = {6, 1, 4776, 1, 0, 0},	-- [VTCN 06/09] ma JX1 (magicscript.txt), Linux la 4205
 		nCount = 1,
 		nBindState = -2,
 		nPrice = 5,
@@ -112,7 +116,7 @@ LongMenBiaoJu.ItemList = {
 	-- Tieu Xa Di Vi: keo Tieu Xa ve dung cho nguoi choi dang dung
 	BiaoCheWeiYi = {
 		szName = "Tiªu Xa Di VÞ",
-		tbProp = {6, 1, 4207, 1, 0, 0},
+		tbProp = {6, 1, 4778, 1, 0, 0},	-- [VTCN 06/09] ma JX1 (magicscript.txt), Linux la 4207
 		nCount = 1,
 		nBindState = -2,
 		nPrice = 10,
@@ -324,7 +328,7 @@ LongMenBiaoJu.nExtraAwardCondition = 3
 -- [L] Le Bao Tieu Cuc = 6,1,4534 (chinh script goc gan cho no la
 --     item_biaojulibao.lua): D:\ServerLinux\server1\settings\item\004\magicscript.txt:4863
 LongMenBiaoJu.tbExtraAward = {
-	{szName = "LÔ Bao Tiªu Côc", tbProp = {6, 1, 4534, 1, 0, 0}, nCount = 1, nBindState = -2},
+	{szName = "LÔ Bao Tiªu Côc", tbProp = {6, 1, 4809, 1, 0, 0}, nCount = 1, nBindState = -2},	-- [VTCN 06/09] 4534 la dong test rac trong magicscript JX1; 4809 = Ho Tieu Le Hop (mon gan nhat, chua co script su dung)
 }
 
 -- =====================================================================================

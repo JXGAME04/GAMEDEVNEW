@@ -52,3 +52,51 @@ function WriteYunBiaoLog(szMsg)
 	local szLine = "[" .. szTime .. "]\t" .. szMsg .. "\r\n";
 	return WriteStringToFile(LMBC_LOG_PREFIX .. szDay .. LMBC_LOG_SUFFIX, szLine);
 end
+
+-- =========================================================================
+-- [VTCN 06/09] CO TEST van tieu - 3 bit trong bien nhiem vu 4169 CUA NGUOI CHOI
+-- (chi admin dat qua Lenh bai admin > Bo test van tieu > Co test). Vi JX1 moi
+-- tep .lua la mot lua_State rieng nen KHONG dung bien toan cuc de bat co; bien
+-- nhiem vu thi moi state deu doc duoc va chi anh huong nguoi bat co.
+--   bit 1 (1): bo qua khung gio / thu   (ca nhan 10-23h; bang thu 7, CN 12-23h)
+--   bit 2 (2): bo qua "vao bang du 7 ngay"
+--   bit 3 (4): coi bang minh la bang dang chiem thanh dang dung
+-- 4169 nam ngoai moi dai dang dung (4160-4168 nhanh cu, 4178-4187 nhanh bang).
+-- =========================================================================
+VT_TEST_TASK = 4169
+
+function VT_TestBoQua(nBit)
+	if (GetTask == nil or PlayerIndex == nil or PlayerIndex <= 0) then
+		return 0
+	end
+	local v = GetTask(VT_TEST_TASK)
+	if (v == nil or v == 0) then
+		return 0
+	end
+	local nMask = 1
+	for i = 2, nBit do
+		nMask = nMask * 2
+	end
+	if (mod(floor(v / nMask), 2) == 1) then
+		return 1
+	end
+	return 0
+end
+
+function VT_TestDat(nBit, bOn)
+	local v = GetTask(VT_TEST_TASK)
+	if (v == nil) then
+		v = 0
+	end
+	local nMask = 1
+	for i = 2, nBit do
+		nMask = nMask * 2
+	end
+	local bCo = (mod(floor(v / nMask), 2) == 1)
+	if (bOn == 1 and not bCo) then
+		v = v + nMask
+	elseif (bOn == 0 and bCo) then
+		v = v - nMask
+	end
+	SetTask(VT_TEST_TASK, v)
+end

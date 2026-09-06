@@ -10,6 +10,7 @@
 #include "KIniFile.h"
 #include <stdio.h>
 #include <string.h>
+#include <time.h>	// [VTCN 06/09] time/strftime cho trang thai van tieu
 #include "../Elem/Wnds.h"
 #include "../Elem/WndMessage.h"
 #include "../UiSoundSetting.h"
@@ -17,6 +18,8 @@
 #include "UiTaskTrace.h"
 #include "UiTaskGuideStr.h"
 #include "UiTaskGuideSatThuBoss.h"	// [C18] SINH TU DONG tu killer.txt
+#include "UiTaskGuideVanTieu.h"	// [VTCN 06/09] SINH TU DONG (ReverseTools/vantieu/gen_vantieu_chinam.py)
+#include "../../../core/src/KVanTieuPos.h"	// [VTCN 06/09] diem/tuyen van tieu (sinh tu extend.lua)
 #include "../UiBase.h"
 #include "../../Represent/iRepresent/iRepresentShell.h"
 #include "../../../core/src/CoreShell.h"
@@ -32,6 +35,8 @@ extern iCoreShell*		g_pCoreShell;
 #define TASKGUIDE_BANGCHIEN_TASKID	8	// [CHI NAM 24/08] tongwar: task 2369..2378 (nt_setTask co SyncTaskValue)
 #define TASKGUIDE_BACHNHAN_TASKID	9	// [CHI NAM 24/08] bairenleitai: task 2709 (luot exp/ngay)
 #define TASKGUIDE_SATTHU_TASKID	10	// [3HD 25/08] san boss sat thu: task 1082/1192/1193/1217 (nt_setTask co SyncTaskValue)
+#define TASKGUIDE_VT_CANHAN_TASKID	11	// [VTCN 06/09] van tieu ca nhan: task 4179/4180/4178/4183
+#define TASKGUIDE_VT_BANG_TASKID	12	// [VTCN 06/09] ap Tieu Bang: task 4179/4180/3542..3545
 #define TRACE_MAX_TASKID	16	// [C33] so he toi da tren bang Chi nam (chi so = TaskId)
 
 // ---- bang du lieu tasklink (dia thang pak - KPakFile doc dia truoc) ----
@@ -195,6 +200,16 @@ void KUiTaskGuide::OnTaskValueChanged(int nTaskId)
 		if (nTaskId == 1082 || nTaskId == 1192 || nTaskId == 1193 || nTaskId == 1217)
 			m_pSelf->BuildSatThuText();
 	}
+	else if (m_pSelf->m_Entries[m_pSelf->m_nCurEntry].nTaskId == TASKGUIDE_VT_CANHAN_TASKID)
+	{
+		if ((nTaskId >= 4178 && nTaskId <= 4187) || nTaskId == 4169)	// [VTCN 06/09]
+			m_pSelf->BuildVanTieuCaNhanText();
+	}
+	else if (m_pSelf->m_Entries[m_pSelf->m_nCurEntry].nTaskId == TASKGUIDE_VT_BANG_TASKID)
+	{
+		if ((nTaskId >= 4178 && nTaskId <= 4187) || (nTaskId >= 3540 && nTaskId <= 3545))	// [VTCN 06/09]
+			m_pSelf->BuildVanTieuBangText();
+	}
 }
 
 // [C35] Tu BAT theo doi khi nguoi choi VUA NHAN nhiem vu (khoi phai bam nut).
@@ -217,6 +232,20 @@ void KUiTaskGuide::AutoTraceOnTask(int nTaskId)
 	{
 		nHe = TASKGUIDE_DATAU_TASKID;
 		bCo = (DTG_TaskVal(1021) != 0);
+	}
+	else if (nTaskId == 4179)	// [VTCN 06/09] van tieu: tuyen*10+dao chieu; sao >= 10 la xe bang
+	{
+		int nF = DTG_TaskVal(4179);
+		int nT = nF / 10;
+		int nS = (nT >= 1 && nT <= VT_TUYEN_SO) ? s_nVTTuyenSao[nT] : 0;
+		if (nS <= 0)
+		{
+			s_abAutoDone[TASKGUIDE_VT_CANHAN_TASKID] = false;
+			s_abAutoDone[TASKGUIDE_VT_BANG_TASKID] = false;
+			return;
+		}
+		nHe = (nS >= 10) ? TASKGUIDE_VT_BANG_TASKID : TASKGUIDE_VT_CANHAN_TASKID;
+		bCo = true;
 	}
 	if (nHe < 0 || nHe >= TRACE_MAX_TASKID)
 		return;
@@ -439,6 +468,14 @@ void KUiTaskGuide::ShowTask(int nEntry)
 	{
 		BuildSatThuText();
 	}
+	else if (pEntry->nTaskId == TASKGUIDE_VT_CANHAN_TASKID)	// [VTCN 06/09]
+	{
+		BuildVanTieuCaNhanText();
+	}
+	else if (pEntry->nTaskId == TASKGUIDE_VT_BANG_TASKID)
+	{
+		BuildVanTieuBangText();
+	}
 	else
 	{
 		m_Content.Clear();
@@ -592,6 +629,164 @@ void KUiTaskGuide::BuildSatThuText()
 	sprintf(szLine, ST3_LIMIT_FMT, nUsed);
 	AddLine(szLine);
 }
+
+// ============================================================================
+// [VTCN 06/09] Van tieu Long Mon Tieu Cuc (2 muc: ca nhan TaskId 11, ap Tieu Bang TaskId 12).
+// So lieu diem/tuyen: KVanTieuPos.h (sinh tu extend.lua may chu); chuoi: UiTaskGuideVanTieu.h.
+// Task: 4179 = tuyen*10 + dao chieu (0 = chua nhan), 4180 = giay epoch may chu luc xe xuat phat,
+// 4178 / 4183 = dem ngay (yymmdd*256 + n), 3542..3545 = diem bam xe bang (tuan%W*1000 + n).
+// ============================================================================
+static void VT_TenDiem(int nDiem, char* pOut, int nSize)
+{
+	pOut[0] = 0;
+	if (nDiem >= 1 && nDiem <= VT_DIEM_SO)
+		strncpy(pOut, s_szVTDiemTen[nDiem], nSize - 1);
+	pOut[nSize - 1] = 0;
+}
+
+// 4180 la giay epoch cua MAY CHU; client cung mui gio nen tru thang time(NULL) (lech vai giay khong sao)
+static void VT_TrangThaiXe(int nXuatPhat, char* pOut, int nSize)
+{
+	if (nXuatPhat == 0)
+		strncpy(pOut, VT_CN_XE_CHUA, nSize - 1);
+	else
+	{
+		int nCon = 1800 - (int)((long)time(NULL) - (long)nXuatPhat);
+		if (nCon <= 0)
+			strncpy(pOut, VT_CN_XE_HET, nSize - 1);
+		else
+			_snprintf(pOut, nSize - 1, VT_CN_XE_CON_FMT, (nCon + 59) / 60);
+	}
+	pOut[nSize - 1] = 0;
+}
+
+// tra nFlag (4179); *pSao = 0 khi chua nhan / tuyen la
+static int VT_Tuyen(int* pSao, int* pDau, int* pCuoi)
+{
+	int nFlag = DTG_TaskVal(4179);
+	int nTuyen = nFlag / 10;
+	int nDao = nFlag % 10;
+	*pSao = 0;
+	*pDau = 0;
+	*pCuoi = 0;
+	if (nTuyen >= 1 && nTuyen <= VT_TUYEN_SO)
+	{
+		*pSao = s_nVTTuyenSao[nTuyen];
+		*pDau = nDao ? s_nVTTuyenCuoi[nTuyen] : s_nVTTuyenDau[nTuyen];
+		*pCuoi = nDao ? s_nVTTuyenDau[nTuyen] : s_nVTTuyenCuoi[nTuyen];
+	}
+	return nFlag;
+}
+
+// 3542..3545: tuan (%W) * 1000 + so diem; khac tuan hien tai coi nhu 0 (extend.lua GetFollowAwardCount)
+static int VT_DiemBamXe(int nTaskId)
+{
+	int v = DTG_TaskVal(nTaskId);
+	if (v <= 0)
+		return 0;
+	time_t t = time(NULL);
+	struct tm* p = localtime(&t);
+	char szTuan[8] = "0";
+	if (p)
+		strftime(szTuan, sizeof(szTuan), "%W", p);
+	if (v / 1000 != atoi(szTuan))
+		return 0;
+	return v % 1000;
+}
+
+void KUiTaskGuide::BuildVanTieuCaNhanText()
+{
+	m_Content.Clear();
+	AddLine(VT_CN_TIEU);
+	AddLine(VT_CN_DK);
+	AddLine(VT_CN_B1);
+	AddLine(VT_CN_B2);
+	AddLine(VT_CN_B3);
+	AddLine(VT_CN_B3B);
+	AddLine(VT_CN_B4);
+	AddLine(VT_CN_THUONG);
+	AddLine(VT_CN_SHOP);
+	AddLine(VT_CN_LUUY);
+	int nSao, nDau, nCuoi;
+	VT_Tuyen(&nSao, &nDau, &nCuoi);
+	char szLine[1024];
+	if (nSao >= 1 && nSao <= 9)
+	{
+		char szD[96], szC[96], szXe[96];
+		VT_TenDiem(nDau, szD, sizeof(szD));
+		VT_TenDiem(nCuoi, szC, sizeof(szC));
+		VT_TrangThaiXe(DTG_TaskVal(4180), szXe, sizeof(szXe));
+		_snprintf(szLine, sizeof(szLine) - 1, VT_CN_TT_FMT, nSao, szD, szC, szXe);
+		szLine[sizeof(szLine) - 1] = 0;
+		AddLine(szLine);
+	}
+	else
+		AddLine(VT_CN_TT_NONE);
+	_snprintf(szLine, sizeof(szLine) - 1, VT_CN_NGAY_FMT, DTG_DailyCount(DTG_TaskVal(4178)), DTG_DailyCount(DTG_TaskVal(4183)));
+	szLine[sizeof(szLine) - 1] = 0;
+	AddLine(szLine);
+	AddLine(VT_CN_HINT);
+}
+
+void KUiTaskGuide::BuildVanTieuBangText()
+{
+	m_Content.Clear();
+	AddLine(VT_BH_TIEU);
+	AddLine(VT_BH_DK);
+	AddLine(VT_BH_B1);
+	AddLine(VT_BH_B2);
+	AddLine(VT_BH_B3);
+	AddLine(VT_BH_B3B);
+	AddLine(VT_BH_B4);
+	AddLine(VT_BH_LUUY);
+	int nSao, nDau, nCuoi;
+	VT_Tuyen(&nSao, &nDau, &nCuoi);
+	char szLine[1024];
+	if (nSao >= 10)
+	{
+		char szD[96], szC[96], szXe[96];
+		VT_TenDiem(nDau, szD, sizeof(szD));
+		VT_TenDiem(nCuoi, szC, sizeof(szC));
+		VT_TrangThaiXe(DTG_TaskVal(4180), szXe, sizeof(szXe));
+		_snprintf(szLine, sizeof(szLine) - 1, VT_BH_TT_FMT, szD, szC, szXe);
+		szLine[sizeof(szLine) - 1] = 0;
+		AddLine(szLine);
+	}
+	else
+		AddLine(VT_BH_TT_NONE);
+	_snprintf(szLine, sizeof(szLine) - 1, VT_BH_DIEM_FMT, VT_DiemBamXe(3542), VT_DiemBamXe(3543), VT_DiemBamXe(3544), VT_DiemBamXe(3545));
+	szLine[sizeof(szLine) - 1] = 0;
+	AddLine(szLine);
+	AddLine(VT_BH_HINT);
+}
+
+// ban rut gon cho khung Theo doi nhiem vu
+static void VT_BuildBrief(int nTaskId, char* pOut, int nSize)
+{
+	int nSao, nDau, nCuoi;
+	VT_Tuyen(&nSao, &nDau, &nCuoi);
+	char szD[96], szC[96], szXe[96];
+	VT_TenDiem(nDau, szD, sizeof(szD));
+	VT_TenDiem(nCuoi, szC, sizeof(szC));
+	VT_TrangThaiXe(DTG_TaskVal(4180), szXe, sizeof(szXe));
+	pOut[0] = 0;
+	if (nTaskId == TASKGUIDE_VT_CANHAN_TASKID)
+	{
+		if (nSao >= 1 && nSao <= 9)
+			_snprintf(pOut, nSize - 1, VT_CN_BRIEF_FMT, nSao, szD, szC, szXe);
+		else
+			strncpy(pOut, VT_CN_BRIEF_NONE, nSize - 1);
+	}
+	else
+	{
+		if (nSao >= 10)
+			_snprintf(pOut, nSize - 1, VT_BH_BRIEF_FMT, szD, szC, szXe);
+		else
+			strncpy(pOut, VT_BH_BRIEF_NONE, nSize - 1);
+	}
+	pOut[nSize - 1] = 0;
+}
+
 void KUiTaskGuide::BuildTinSuText()
 {
 	m_Content.Clear();
@@ -695,12 +890,21 @@ const char* KUiTaskGuide::GetTaskTitle(int nTaskId)
 {
 	if (nTaskId == TASKGUIDE_SATTHU_TASKID)
 		return ST3_TRACE_TITLE;
+	if (nTaskId == TASKGUIDE_VT_CANHAN_TASKID)	// [VTCN 06/09]
+		return VT_CN_TRACE_TITLE;
+	if (nTaskId == TASKGUIDE_VT_BANG_TASKID)
+		return VT_BH_TRACE_TITLE;
 	return DTG_TRACE_TITLE;
 }
 
 // ban rut gon cua MOT he bat ky (khung theo doi liet ke nhieu he)
 void KUiTaskGuide::BuildTraceLineOf(int nTaskId, char* pOut, int nSize)
 {
+	if (nTaskId == TASKGUIDE_VT_CANHAN_TASKID || nTaskId == TASKGUIDE_VT_BANG_TASKID)	// [VTCN 06/09]
+	{
+		VT_BuildBrief(nTaskId, pOut, nSize);
+		return;
+	}
 	if (nTaskId == TASKGUIDE_SATTHU_TASKID)
 	{
 		int nBoss = DTG_TaskVal(1082);
@@ -728,12 +932,21 @@ void KUiTaskGuide::UpdateButtons()
 	// [C18] tab San Boss Sat Thu cung dung duoc 3 nut nhu Da Tau
 	bool bST = (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount &&
 		m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_SATTHU_TASKID);
+	// [VTCN 06/09] 2 tab van tieu: nut Bo nhiem vu = huy o may chu (du luat: ca nhan chi khi xe
+	// chua xuat phat va duoi 7 sao; bang = CancelTongTask), Theo doi dung ban rut gon VT_BuildBrief
+	int nCurVT = (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount) ? m_Entries[m_nCurEntry].nTaskId : -1;
+	bool bVT = (nCurVT == TASKGUIDE_VT_CANHAN_TASKID || nCurVT == TASKGUIDE_VT_BANG_TASKID);
+	int nSaoVT = 0, nDauVT = 0, nCuoiVT = 0;
+	if (bVT)
+		VT_Tuyen(&nSaoVT, &nDauVT, &nCuoiVT);
+	bool bQuitVT = (nCurVT == TASKGUIDE_VT_CANHAN_TASKID && nSaoVT >= 1 && nSaoVT <= 6 && DTG_TaskVal(4180) == 0) ||
+		(nCurVT == TASKGUIDE_VT_BANG_TASKID && nSaoVT >= 10);
 	int nCourse = bDT ? DTG_TaskVal(1028) : 0;
 	int nBossST = bST ? DTG_TaskVal(1082) : 0;
-	m_BtnQuit.Enable((bDT && nCourse == 1) || (bST && nBossST >= 1 && nBossST <= ST3_BOSS_MAX));
+	m_BtnQuit.Enable((bDT && nCourse == 1) || (bST && nBossST >= 1 && nBossST <= ST3_BOSS_MAX) || bQuitVT);
 	// [C33] moi he theo doi doc lap: bat 'Theo doi' khi he DANG CHON chua theo doi
 	int nCurTask = (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount) ? m_Entries[m_nCurEntry].nTaskId : -1;
-	bool bCoBan = (bDT || bST);	// he da co ban rut gon de hien trong khung
+	bool bCoBan = (bDT || bST || bVT);	// he da co ban rut gon de hien trong khung ([VTCN] + 2 tab van tieu)
 	m_BtnTrace.Enable(bCoBan && !IsTracedTask(nCurTask));
 	m_BtnCancelTrace.Enable(bCoBan && IsTracedTask(nCurTask));
 }
@@ -987,6 +1200,12 @@ int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				if (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount &&
 					m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_SATTHU_TASKID)
 					pCmd = "st3_quit";	// [C18] -> nieshichen.lua cancel()
+				if (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount &&
+					m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_VT_CANHAN_TASKID)
+					pCmd = "vt_quit_canhan";	// [VTCN 06/09] -> vt_chinam.lua AbandonTask (hop xac nhan)
+				if (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount &&
+					m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_VT_BANG_TASKID)
+					pCmd = "vt_quit_bang";	// [VTCN 06/09] -> CancelTongTask
 				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 6, (int)pCmd);
 			}
 			return true;
@@ -1052,6 +1271,14 @@ void KUiTaskGuide::TryGoXaFu()
 	{
 		if (g_pCoreShell)
 			g_pCoreShell->OperationRequest(GOI_TASKGUIDE_GOTO_SATTHU, 0, 0);
+		return;
+	}
+	// [VTCN 06/09] 2 tab van tieu: dan duong toi NPC nhan nhiem vu (uParam = TaskId)
+	if (m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_VT_CANHAN_TASKID ||
+		m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_VT_BANG_TASKID)
+	{
+		if (g_pCoreShell)
+			g_pCoreShell->OperationRequest(GOI_TASKGUIDE_GOTO_VANTIEU, (unsigned int)m_Entries[m_nCurEntry].nTaskId, 0);
 		return;
 	}
 	if (m_Entries[m_nCurEntry].nTaskId != TASKGUIDE_DATAU_TASKID)

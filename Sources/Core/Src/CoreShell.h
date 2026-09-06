@@ -890,6 +890,10 @@ enum GAMEOPERATION_INDEX
 	GOI_AUCTION_UI,
 	GOI_CHIENLENH_UI,			// [CL 04/09 DOT2] cua so Chien Lenh -> ChienLenhUi_OnRequest
 
+	// [VTCN 06/09] bang F11 muc Van tieu: uParam = TaskId (11 ca nhan / 12 ap Tieu Bang) ->
+	// tu dan duong toi NPC nhan nhiem vu (bam lai = huy). Dat CUOI enum (Core + S3Client cung dich).
+	GOI_TASKGUIDE_GOTO_VANTIEU,
+
 };
 
 // [CITYINFO 21/08] ban sao 7 thanh (KJx2CityWar server -> UI_CITYINFO -> Core client)

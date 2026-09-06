@@ -83,10 +83,16 @@ function lmbj_addnpc_bang()
 end
 
 -- Nhanh CA NHAN (1-9 sao): Long Mon Tieu Su + ong chu tieu cuc.
--- Ca hai deu dung chung tasknpc.lua cua ban Linux.
+-- [VTCN 06/09] Script NPC = npc_canhan.lua (thoai noi vao nhanh ca nhan GOC LINUX khong
+-- trang thai trong config\129\extend.lua). tasknpc.lua (lop LongMenBiaoJu.*) KHONG chay
+-- duoc tren JX1: goi GetDlgClass() ma khong Include dialog.lua, va so dang ky xe nam trong
+-- state cua tasknpc.lua con OnTimer/OnDeath cua xe chay o state biaoche.lua (moi tep .lua
+-- mot lua_State - Engine\Src\KLuaScript.cpp:23). Muon lui: doi hang duoi ve tasknpc.lua.
+LMBJ_SCRIPT_CANHAN = "\\script\\activitysys\\config\\129\\npc_canhan.lua"
+-- LMBJ_SCRIPT_CANHAN = "\\script\\event\\longmenbiaoju\\tasknpc.lua"	-- ban cu (lop LongMenBiaoJu)
 function lmbj_addnpc_canhan()
-	NpcFunLib:AddObjNpc(LMBJ_TEN_BIAOSHI,  2145, LMBJ_POS_BIAOSHI,  "\\script\\event\\longmenbiaoju\\tasknpc.lua")
-	NpcFunLib:AddObjNpc(LMBJ_TEN_ZHANGGUI, 2157, LMBJ_POS_ZHANGGUI, "\\script\\event\\longmenbiaoju\\tasknpc.lua")
+	NpcFunLib:AddObjNpc(LMBJ_TEN_BIAOSHI,  2145, LMBJ_POS_BIAOSHI,  LMBJ_SCRIPT_CANHAN)
+	NpcFunLib:AddObjNpc(LMBJ_TEN_ZHANGGUI, 2157, LMBJ_POS_ZHANGGUI, LMBJ_SCRIPT_CANHAN)
 end
 
 -- Bat/tat tung nhanh o day. De 0 la nhanh do khong sinh NPC nao.

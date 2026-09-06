@@ -6911,6 +6911,17 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 				// cua chinh thoai nieshichen (huy nhiem vu dang nhan, giu luat goc)
 				Player[nIndex].ExecuteScript("\\script\\task\\tollgate\\killer\\nieshichen.lua", "cancel", 0);
 			}
+			else
+			{
+				// [VTCN 06/09] bang F11 muc Van tieu: dan duong (vt_goto_canhan) / nut Bo nhiem vu
+				// (vt_quit_canhan, vt_quit_bang) -> script\event\lmbiaoche\vt_chinam.lua. Chep ra bo dem
+				// co ket thuc vi szFunc[32] tu client khong chac co NUL (khuon case 7).
+				char szFunVT[sizeof(pUiCmd->szFunc) + 1];
+				memcpy(szFunVT, pUiCmd->szFunc, sizeof(pUiCmd->szFunc));
+				szFunVT[sizeof(pUiCmd->szFunc)] = 0;
+				if (!strcmp(szFunVT, "vt_goto_canhan") || !strcmp(szFunVT, "vt_quit_canhan") || !strcmp(szFunVT, "vt_quit_bang"))
+					Player[nIndex].ExecuteScript("\\script\\event\\lmbiaoche\\vt_chinam.lua", szFunVT, 0);
+			}
 			break;
 		case 5://kh¶m n¹m
 			{

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# [VTCN 06/09] ma vat pham doi sang ma JX1 (magicscript.txt): 4771-4778, Le Bao -> 4809 Ho Tieu Le Hop
 """Sinh lmbj_config.lua (Lua 5.4, chu Viet TCVN3) cho nhanh CA NHAN Long Mon Tieu Cuc.
 
 Chi ghi bang latin-1 (byte nguyen), khong dung Edit/Write tool len tep nguon JX1.
@@ -778,30 +779,30 @@ def item(key, gdp, extra=""):
 L = [PART1]
 L.append('LongMenBiaoJu.ItemList = {')
 L.append('\t-- Tieu Ky: rot ra khi Tieu Xa bi pha; nop lai de lay phan thuong an ui')
-L.append(item('BiaoQi', 4200))
+L.append(item('BiaoQi', 4771))
 L.append('\t-- Hoan Tieu Chung: lam moi nhiem vu khi da het luot mien phi')
-L.append(item('PingZheng', 4201))
+L.append(item('PingZheng', 4772))
 L.append('\t-- Uy nhiem trang cao cap: doi lay nhiem vu 7/8/9 sao')
-L.append(item('WeiRenZhuang', 4202))
+L.append(item('WeiRenZhuang', 4773))
 L.append('\t-- Ho Tieu Lenh: tien te cua cua hang Tieu Cuc')
-L.append(item('HuBiaoLing', 4203))
+L.append(item('HuBiaoLing', 4774))
 L.append('\t-- Khoai Ma Gia Tien: tang 100 phan tram toc do Tieu Xa trong 15 giay')
-L.append(item('KuaiMaJiaBian', 4204,
+L.append(item('KuaiMaJiaBian', 4775,
               '\t\tnPrice = 5,\n\t\tCD = 180,\n\t\tnTaskId = 3500,\n'
               '\t\tnSkillId = 1467,\n\t\ttbSkillLevel = {1, 2, 3},\n'))
 L.append('\t-- Kien Bat Kha Toa: hoi 10 phan tram mau Tieu Xa')
-L.append(item('JianBuKeCui', 4205,
+L.append(item('JianBuKeCui', 4776,
               '\t\tnPrice = 5,\n\t\tCD = 180,\n\t\tnTaskId = 3501,\n'
               '\t\tnSkillId = 1468,\n\t\ttbSkillLevel = {1, 2, 3},\n'))
 L.append('\t-- Tieu Xa Di Vi: keo Tieu Xa ve dung cho nguoi choi dang dung')
-L.append(item('BiaoCheWeiYi', 4207,
+L.append(item('BiaoCheWeiYi', 4778,
               '\t\tnPrice = 10,\n\t\tCD = 180,\n\t\tnTaskId = 3502,\n'))
 L.append('}')
 L.append(PART2)
 L.append('-- [L] Le Bao Tieu Cuc = 6,1,4534 (chinh script goc gan cho no la')
 L.append('--     item_biaojulibao.lua): D:\\ServerLinux\\server1\\settings\\item\\004\\magicscript.txt:4863')
 L.append('LongMenBiaoJu.tbExtraAward = {')
-L.append('\t{szName = "%s", tbProp = {6, 1, 4534, 1, 0, 0}, nCount = 1, nBindState = -2},'
+L.append('\t{szName = "%s", tbProp = {6, 1, 4809, 1, 0, 0}, nCount = 1, nBindState = -2},'
          % s('LiBao'))
 L.append('}')
 L.append(PART3)

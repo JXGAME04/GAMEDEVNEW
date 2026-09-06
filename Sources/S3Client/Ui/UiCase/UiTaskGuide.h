@@ -64,6 +64,8 @@ private:
 	void					BuildBangChienText();	// [CHI NAM 24/08]
 	void					BuildBachNhanText();	// [CHI NAM 24/08]			// [TIN SU 21/08] noi dung nhiem vu Tin Su (TaskId 7)
 	void					BuildSatThuText();	// [3HD 25/08] san boss sat thu (TaskId 10)
+	void					BuildVanTieuCaNhanText();	// [VTCN 06/09] van tieu ca nhan (TaskId 11)
+	void					BuildVanTieuBangText();		// [VTCN 06/09] ap Tieu Bang (TaskId 12)
 	void	AddLine(const char* pText);	// them 1 dong (tu ma hoa <color>/<enter>)
 	void	TryGoXaFu();				// nhiem vu loai 4 dang lam -> nho CoreShell dan den Xa Phu
 	void	UpdateButtons();			// bat/tat 3 nut theo trang thai nhiem vu + theo doi
