@@ -43,7 +43,7 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 | Bước | Lệnh | Ghi chú |
 |---|---|---|
 | Máy chủ | (không bắt buộc) tắt GameServer → `bin\server\ChayGameServer.bat` | Nhận `CoreServer.dll.moi` v2 61bc3e0f; chỉ khác bản đang chạy ở chỗ bỏ lệnh chết `vt_goto_canhan`. Máy chủ 18:04 đã có mọi thứ cần cho test. |
-| Client | **BẮT BUỘC** thoát game → `bin\client\ChoiGame.bat` | Nhận `Game.exe.moi` acc36aba + `CoreClient.dll.moi` 96dc5115 (v2: không nhảy map, chặn map sự kiện). `Ui\uitasklist.ini` đã có 3 mục. |
+| Client | **BẮT BUỘC** thoát game → `bin\client\ChoiGame.bat` | Nhận `Game.exe.moi` acc36aba + `CoreClient.dll.moi` 1f25d254 (phiên WAuto TK 18:38 build từ main 95317dc4, siêu tập của bản 96dc5115 của tôi, đã kiểm dấu hiệu) (v2: không nhảy map, chặn map sự kiện). `Ui\uitasklist.ini` đã có 3 mục. |
 | Sau khi lên | Lệnh bài admin → "Bộ test hoạt động" → "Vận tiêu Long Môn Tiêu Cục" | mục 5 |
 
 ### 2.1 Nhị phân v2 (build từ `origin/main` c4761ea5 = đã có SAPXEP R2 bí danh + LUA54b + BOTNOI + vận tiêu + relay, cộng nhánh này; worktree sạch)
@@ -52,7 +52,7 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 |---|---|---|---|
 | `CoreServer.dll.moi` | `bin\server` | **61bc3e0f** (18.455.552 B, 18:12) | CreateBiaoChe/BC_SetEnable, AUC_MsgTong, CL_Cong, UpdateBattleInfo, st3_goboss, Lua54Dll, [RELAYHT], LUA_CALL, `_duongdan_cu` (R2), **vt_quit_canhan/vt_quit_bang**, KHÔNG còn vt_goto_canhan. Không bắt buộc swap ngay: bản 6ba06754 đang chạy chỉ thừa lệnh chết. |
 | `Game.exe.moi` | `bin\client` | **f0b16230** (bản cấp 90 + bài hướng dẫn đã rà, thay 04ae18d2) | NewTask/F11, tg_quit/st3_quit, vt_quit_*, bài hướng dẫn vận tiêu v2 (gợi ý Xa Phu / phù về thành / map sự kiện); `re_pe_crt` UCRT-RELEASE đúng |
-| `CoreClient.dll.moi` | `bin\client` | **96dc5115** (2.577.408 B, 18:12) | TG_VanTieu v2 (6 pha, không nhảy map), TG_ChanMapSuKien cho Dã Tẩu/Sát Thủ/Vận tiêu, tên bến Xa Phu |
+| `CoreClient.dll.moi` | `bin\client` | **1f25d254 (phiên WAuto TK 18:38 build từ main 95317dc4, siêu tập của bản 96dc5115 của tôi, đã kiểm dấu hiệu)** (2.577.408 B, 18:12) | TG_VanTieu v2 (6 pha, không nhảy map), TG_ChanMapSuKien cho Dã Tẩu/Sát Thủ/Vận tiêu, tên bến Xa Phu |
 
 Cặp thư viện: `Lib\lua54\x64\Lua54Dll.dll` 5db18c30 = `bin\server\Lua54Dll.dll` đang chạy; `Lib\lua54\Win32\Lua54Dll.dll` 462453cf = `bin\client\Lua54Dll.dll` đang chạy (không cần đổi thư viện).
 
