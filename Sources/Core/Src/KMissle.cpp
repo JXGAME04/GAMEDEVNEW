@@ -229,6 +229,7 @@ KMissle::KMissle()
 	m_nDesMapX = 0;
 	m_nDesMapY = 0;
 	m_nDesRegion = 0;
+	m_nFollowArrive = 0;
 	m_bNeedReclaim = FALSE;
 
 	m_nDoHurtP = FALSE;
@@ -1011,12 +1012,33 @@ void KMissle::OnFly()
 							m_nDir			= g_DirIndex2Dir(m_nDirIndex, MaxMissleDir);
 							m_nXFactor = nXFactor;
 							m_nYFactor = nYFactor;
+							// [DANDAP 06/09] ghi lai vi tri dich + so nhip bay toi noi
+							// (ban Linux 0x08075F35: m_nDesX/Y va m_nParam2 = dist/speed + 1)
+							m_nDesMapX = nDesMpsX;
+							m_nDesMapY = nDesMpsY;
+							m_nFollowArrive = (m_nSpeed > 0) ? (nDistance / m_nSpeed + 1) : 0;
 						}
 					}
 				}
 			}
-			nDOffsetX	 = m_nXFactor * m_nSpeed;
-			nDOffsetY	 = m_nYFactor * m_nSpeed;
+			// [DANDAP 06/09] BUOC DAP DICH - ban Linux co (0x08075DA0), JX1 truoc day thieu.
+			// Dem lui so nhip toi dich; dung nhip toi noi thi di MOT buoc dat dan DUNG
+			// len toa do dich da ghi. Dan da vot qua thi buoc nay di NGUOC lai - dung la
+			// hieu ung 'bay toi roi bay lui' cua hai chieu Cai Bang 357/359 ben Linux.
+			if (m_nFollowArrive > 0 && --m_nFollowArrive == 0)
+			{
+				int nCurMpsX = 0;
+				int nCurMpsY = 0;
+				SubWorld[m_nSubWorldId].Map2Mps(m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, &nCurMpsX, &nCurMpsY);
+				nDOffsetX	 = (m_nDesMapX - nCurMpsX) << 10;
+				nDOffsetY	 = (m_nDesMapY - nCurMpsY) << 10;
+				AUTOLOG_EVERY(1000, "[MIS-FLY-ARRIVE] id=%d skill=%d follow=%d cur=%d,%d des=%d,%d dOff=%d,%d", m_nMissleId, m_nSkillId, m_nFollowNpcIdx, nCurMpsX, nCurMpsY, m_nDesMapX, m_nDesMapY, nDOffsetX, nDOffsetY);
+			}
+			else
+			{
+				nDOffsetX	 = m_nXFactor * m_nSpeed;
+				nDOffsetY	 = m_nYFactor * m_nSpeed;
+			}
 		}break;
 
 	case	MISSLE_MMK_Motion:							
@@ -1263,6 +1285,7 @@ KMissle&	KMissle::operator=(KMissle& Missle)
 	Missle.m_nDesMapX			=	0;
 	Missle.m_nDesMapY			=	0;
 	Missle.m_nDesRegion		=	0;
+	Missle.m_nFollowArrive	=	0;
 	Missle.m_bNeedReclaim	=	FALSE;
 	Missle.m_nFirstReclaimTime = 0;
 	Missle.m_nEndReclaimTime = 0;

@@ -104,7 +104,10 @@ void KNpcAI::Activate(int nIndex)// flying modified this function. // Jun.4.2003
 		case 6:
 			ProcessAIType06();
 			break;
-/*		case 7:
+		// [AI710 06/09] ban Linux chay du AI 1-10 (bang nhay 0x08255340).
+		// JX1 chu thich 4 case nay nen 112 con quai khai AIMode 9/10 khong co AI.
+		// Bon ham duoi day da co san trong tep nay, chi thieu duong goi.
+		case 7:
 			ProcessAIType7();
 			break;
 		case 8:
@@ -115,7 +118,7 @@ void KNpcAI::Activate(int nIndex)// flying modified this function. // Jun.4.2003
 			break;
 		case 10:
 			ProcessAIType10();
-			break;*/
+			break;
 		default:
 			break;
 		}

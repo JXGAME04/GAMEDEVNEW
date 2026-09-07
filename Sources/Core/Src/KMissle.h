@@ -110,6 +110,7 @@ public:
 	int					m_nDesMapX;				//单颗子单时，目的坐标
 	int					m_nDesMapY;				
 	int					m_nDesRegion;
+	int					m_nFollowArrive;		// [DANDAP 06/09] so nhip con lai toi vi tri dich da ghi (0 = chua co)
 	BOOL				m_bNeedReclaim;			//是否已纠正过一次子单的方向问题
 
 	BOOL				m_nDoHurtP;				//受伤时是否需要作受伤动作
