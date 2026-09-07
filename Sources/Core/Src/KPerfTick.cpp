@@ -298,6 +298,14 @@ static void PerfLuaDoc()
 			PFN_L4SET pfnSet = (PFN_L4SET)GetProcAddress(hLua, "lua4_perf_set");
 			if (s_pfnRead && pfnSet)
 				pfnSet(1);
+			// [LUA54 06/09 toi] C11: bat profiler lay mau trong Lua54Dll cho MAY CHU (moi 2000 lenh VM ~ 0,1 % thoi gian Lua);
+			// bien moi truong LUA54_PROF (0 = tat, n = buoc) uu tien; client khong goi -> khong lay mau. Ket qua: jx_lua_prof.log moi 10 phut.
+			{
+				typedef int (*PFN_L4PROF)(int);
+				PFN_L4PROF pfnProf = (PFN_L4PROF)GetProcAddress(hLua, "lua4_prof_set");
+				if (pfnProf && getenv("LUA54_PROF") == NULL)
+					pfnProf(2000);
+			}
 			else
 				s_pfnRead = NULL;
 		}

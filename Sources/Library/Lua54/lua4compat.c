@@ -377,7 +377,7 @@ static int l4_prof_every(void)
 	if (s_prof_every == -2)
 	{
 		const char* e = getenv("LUA54_PROF");
-		s_prof_every = (e == NULL) ? 2000 : atoi(e);
+		s_prof_every = (e == NULL) ? 0 : atoi(e);	/* mac dinh TAT trong DLL; may chu bat 2000 qua lua4_prof_set (KPerfTick), client khong bat */
 		if (s_prof_every < 0) s_prof_every = 0;
 		if (s_prof_every > 0 && s_prof_every < 100) s_prof_every = 100;
 	}
