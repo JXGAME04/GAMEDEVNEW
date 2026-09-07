@@ -262,6 +262,7 @@ struct PB_Bot
 	int          nVuKhiThu;                   // so lan phat lai vu khi (tran 5)
 	int          nTrangBiLevel;               // cap lan cuoi da thu mac do (0 = chua)
 	int          nHoc90;                      // (20/08) 1 = da goi hoc bo ky nang 90 doi nay
+	int          nHoc120;                     // [SKILL120 06/09] 1 = da hoc ky nang 120 doi nay
 	                                          // (bot cu nap lai goi lai 1 lan - vo hai vi
 	                                          // KSkillList::Add khong bao gio HA cap chieu)
 	unsigned int nQhtTick;                    // lan cham Que Hoa Tuu gan nhat
@@ -1492,7 +1493,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nVuKhiTick = 0;    b.nVuKhiThu = 0;                     // rac cu -> phai xoa
 		b.nTkKetPha = 0;     b.nTkKetTick = 0;  b.nTkKetX = 0;  b.nTkKetY = 0;
 		b.nTkSanIdx = 0;
-		b.nTrangBiLevel = 0;  b.nQhtTick = 0;  b.nHoc90 = 0;
+		b.nTrangBiLevel = 0;  b.nQhtTick = 0;  b.nHoc90 = 0;  b.nHoc120 = 0;
 		b.nDaTauTick = 0;  b.nDaTauNghi = 0;  b.nDaTauNut = 0;  b.nDaTauDaGhi = 0;
 		b.nDaTauChon = 0;  b.nDaTauKe = 0;    b.nDaTauHan = 0;  b.nDaTauThu = 0;
 		b.nBanSap = 0;     b.nBanSapXong = 0;  b.nBanSapNgoi = 0;  b.nNguaTick = 0;
@@ -1814,6 +1815,78 @@ int PB_SaveAll()
 int LuaPB_SaveAll(Lua_State* L)
 {
 	Lua_PushNumber(L, PB_SaveAll());
+	return 1;
+}
+
+// ===========================================================================
+// [NANGMACH 06/09] NANG KINH MACH CHO TOAN BO BOT - chu game: "toi muon viet them ham
+// nang mach cho toan bo bot". Lenh GM/Lua PB_NangMach(nCap [, nMach]):
+//   nCap  0..32 (MAX_MERIDIAN_LEVEL) - cap dat cho mach (moi huyet toi cap do)
+//   nMach 0 = ca 12 mach (MAX_MERIDIAN), 1..12 = mot mach (meridian.txt: 1 Doc, 2 Nham,
+//         3 Xung, 4 Dai, 5-12 con lai)
+// Di dung duong SetMeridian cua Lua (ScriptFuns.cpp:315 LuaSetPlayerMeridianValue):
+// setMeridian (ma mach dem tu 0) roi ApplyMaridianToNPC / RemoveMaridianFromNPC (dem
+// tu 1 - [KM 27/08b]) + UpdataCurData. Cap mach nam trong blob role (KPlayerDBFuns.cpp
+// :1088 szStringduphong2) -> ben qua restart sau khi luu (goi PB_SaveAll); KPlayer.cpp
+// :3103 ap lai luc dang nhap. Khong gui s2c_syncmeridian (bot khong co client).
+// Tra so bot co it nhat mot mach doi. Menu lenh bai: simcity_admin.lua PB_MachMenu.
+// ===========================================================================
+static int pb_DatMach(int nIdx, int nMach0, int nCap)
+{
+	if (nMach0 < 0 || nMach0 >= MAX_MERIDIAN || nCap < 0 || nCap > MAX_MERIDIAN_LEVEL)
+		return 0;
+	const int nNpcIdx = Player[nIdx].m_nIndex;
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+		return 0;
+	const int nDiff = Player[nIdx].m_cMeridian.setMeridian(nMach0, nCap);
+	if (nDiff == 0)
+		return 0;
+	if (nDiff > 0)
+		MeridianManager.ApplyMaridianToNPC(&Npc[nNpcIdx], nMach0 + 1, nCap, nDiff);
+	else
+		MeridianManager.RemoveMaridianFromNPC(&Npc[nNpcIdx], nMach0 + 1, nCap, nDiff);
+	return 1;
+}
+
+int PB_NangMach(int nCap, int nMach)
+{
+	if (nCap < 0) nCap = 0;
+	if (nCap > MAX_MERIDIAN_LEVEL) nCap = MAX_MERIDIAN_LEVEL;
+	if (nMach < 0 || nMach > MAX_MERIDIAN)
+		return 0;
+	int nBot = 0;
+	for (int i = 0; i < s_botCount; i++)
+	{
+		PB_Bot& b = s_bots[i];
+		const int nIdx = b.nPlayerIdx;
+		if (nIdx <= 0 || nIdx >= MAX_PLAYER || Player[nIdx].m_nIndex <= 0)
+			continue;
+		int nDoi = 0;
+		if (nMach == 0)
+		{
+			for (int m = 0; m < MAX_MERIDIAN; m++)
+				nDoi += pb_DatMach(nIdx, m, nCap);
+		}
+		else
+			nDoi = pb_DatMach(nIdx, nMach - 1, nCap);
+		if (nDoi > 0)
+		{
+			Player[nIdx].UpdataCurData();
+			nBot++;
+		}
+	}
+	pb_Log("[BotMach] nang mach %d (0 = ca 12) len cap %d: %d/%d bot doi\n",
+	       nMach, nCap, nBot, s_botCount);
+	if (nBot > 0)
+		PB_SaveAll();               // ghi blob de ben qua restart
+	return nBot;
+}
+
+int LuaPB_NangMach(Lua_State* L)
+{
+	const int nCap  = (Lua_GetTopIndex(L) >= 1) ? (int)Lua_ValueToNumber(L, 1) : 0;
+	const int nMach = (Lua_GetTopIndex(L) >= 2) ? (int)Lua_ValueToNumber(L, 2) : 0;
+	Lua_PushNumber(L, PB_NangMach(nCap, nMach));
 	return 1;
 }
 
@@ -2708,6 +2781,20 @@ static int pb_FindFacNpc(int nFaction)
 }
 
 // ===========================================================================
+// [VKMAGIC 06/09] Chu game: "bot co vu khi se cho random ti le nMagicLevel tu 7 - 8".
+// Mang nMagicLevel[MAX_ITEM_MAGICLEVEL] cua ItemSet.Add -> Gen_Equipment -> Gen_MagicAttrib
+// (KItemGenerator.CPP:593): o [i] (i < 6) = CAP DONG THUOC TINH thu i (1..10, bang
+// magicattrib theo (tien/hau to, loai, he, cap)); 0 = dung sinh dong tu do. Bot truoc
+// 06/09 truyen toan 0 = vu khi TRANG. Nay 6 o = 7 hoac 8 ngau nhien tung o; 6 o sau = 0.
+// ===========================================================================
+static void pb_MagicVuKhi(int* nMagic)
+{
+	ZeroMemory(nMagic, sizeof(int) * MAX_ITEM_MAGICLEVEL);
+	for (int i = 0; i < MAX_ITEM_MAGICATTRIB && i < MAX_ITEM_MAGICLEVEL; i++)
+		nMagic[i] = 7 + (int)g_Random(2);
+}
+
+// ===========================================================================
 // TRAO VU KHI NHAP MON THEO PHAI (cap 1)
 //
 // Khuon lay tu cay tham khao: GiveBotFactionWeapon (USVOLAM PlayerAI\KBotManager.cpp:2010).
@@ -2802,7 +2889,7 @@ static void pb_GiveFactionWeapon(int nIdx, int nFaction)
 
 	const int nSeries = nFaction / 2;   // phai = series*2 + {0,1}
 	int nMagic[MAX_ITEM_MAGICLEVEL];
-	ZeroMemory(nMagic, sizeof(nMagic));
+	pb_MagicVuKhi(nMagic);   // [VKMAGIC 06/09] 6 dong cap 7-8
 	// (nItemNature=0, nItemGenre=0 item_equip, nSeries, nLevel=1, nLuck=0, nDetail, nParticular)
 	const int nNew = ItemSet.Add(0, 0, nSeries, 1, 0, w.d, w.p, nMagic,
 						  g_SubWorldSet.GetGameVersion(), 0);
@@ -3092,6 +3179,25 @@ static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 		b.nAtkSkill = 0;   // chon lai chieu danh - co the co chieu 90 manh hon
 	}
 
+	// ---- 1c. [SKILL120 06/09] chu game: "bot len 120 se co skill 120 full skill" ->
+	// bot_hoc120(nCurFac) trong hocvocong.lua: AddMagic(SKILL120AR[nCurFac], 20) = chieu
+	// 120 cua phai (709..717 / 1365 / 1984 / 2127, deu bi dong-tu buff) o cap 20 = max
+	// (skills.txt MaxLevel 20) - dung dong show_kynang90 cap cho nguoi choi. Khong kem
+	// 210 khinh cong / SKILL150_ARRAY. Goi lai sau nap-bot-cu vo hai (KSkillList::Add
+	// chi nang, khong ha). ----
+	if (nLevel >= 120 && !b.nHoc120 && b.nFaction >= 0)
+	{
+		b.nHoc120 = 1;
+		Player[nIdx].ExecuteScript((char*)"\\script\\global\\hocvocong.lua",
+		                           (char*)"bot_hoc120",
+		                           (int)Player[nIdx].m_cFaction.m_nCurFaction + 1,
+		                           false);
+		pb_Log("[BotSkill120] %s cap %d hoc ky nang 120 cap 20 (phai %d)\n",
+		       Player[nIdx].m_PlayerName, nLevel,
+		       (int)Player[nIdx].m_cFaction.m_nCurFaction + 1);
+		b.nAtkSkill = 0;
+	}
+
 	// ---- 2. bo Kim Phong: mon nao chua mac ma du dieu kien thi mac ----
 	for (int k = 0; k < 9; k++)
 	{
@@ -3108,23 +3214,41 @@ static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 			       Player[nIdx].m_PlayerName, nLevel, k + 1, s_nKpId[k]);
 	}
 
-	// ---- 3. ngua Tuc Suong cap 10 (horse.txt dong 30-31: detail 10 = equip_horse,
-	//         particular 2; cot cap co ban 9 va 10 - chu game dan lay cap 10) ----
+	// ---- 3. ngua: duoi cap 110 Tuc Suong cap 10 (horse.txt dong 30-31: detail 10 =
+	//         equip_horse, particular 2). [NGUA110 06/09] chu game: "bot cap 110 se cho
+	//         mac ngua chieu da" -> tu cap 110 Chieu Da Ngoc Su Tu cap 10 (horse.txt
+	//         dong 61: particular 5, cap 10; dong 130 ban Hoang Kim particular 12 khong
+	//         dung). Ngua cu (khong phai Hoang Kim) thao huy nhu vu khi buoc 4; kiem
+	//         CanEquip mon moi TRUOC khi huy mon cu. ----
 	{
-		const int nNgua = Player[nIdx].m_ItemList.GetEquipment(itempart_horse);
+		const int  nNguaParti = (nLevel >= 110) ? 5 : 2;
+		const int  nNgua = Player[nIdx].m_ItemList.GetEquipment(itempart_horse);
 		const bool bDaCo = (nNgua > 0 && Item[nNgua].GetDetailType() == equip_horse
-		                 && Item[nNgua].GetParticular() == 2
+		                 && Item[nNgua].GetParticular() == nNguaParti
 		                 && Item[nNgua].GetLevel() >= 10);
-		if (!bDaCo)
+		const bool bHoangKim = (nNgua > 0 && Item[nNgua].GetGoldId() != 0);
+		if (!bDaCo && !bHoangKim)
 		{
 			int nMagic[MAX_ITEM_MAGICLEVEL];
 			ZeroMemory(nMagic, sizeof(nMagic));
 			const int nNew = ItemSet.Add(0, 0, Npc[nNpcIdx].m_Series, 10, 0,
-			                             equip_horse, 2, nMagic,
+			                             equip_horse, nNguaParti, nMagic,
 			                             g_SubWorldSet.GetGameVersion(), 0);
-			if (nNew > 0 && pb_MacVaoNguoi(nIdx, nNew, -1))
-				pb_Log("[BotTrangBi] %s cap %d cuoi ngua Tuc Suong cap 10\n",
-				       Player[nIdx].m_PlayerName, nLevel);
+			if (nNew > 0 && !Player[nIdx].m_ItemList.CanEquip(nNew, -1))
+				ItemSet.Remove(nNew);
+			else if (nNew > 0)
+			{
+				if (nNgua > 0)
+				{
+					if (Npc[nNpcIdx].m_bRideHorse)
+						Player[nIdx].CheckRideHorse(TRUE);   // dang cuoi -> xuong ngua truoc khi thao
+					Player[nIdx].m_ItemList.RemoveItemIdx(nNgua, Item[nNgua].GetStackNum());
+				}
+				if (pb_MacVaoNguoi(nIdx, nNew, -1))
+					pb_Log("[BotTrangBi] %s cap %d cuoi ngua %s cap 10\n",
+					       Player[nIdx].m_PlayerName, nLevel,
+					       (nNguaParti == 5) ? "Chieu Da Ngoc Su Tu" : "Tuc Suong");
+			}
 		}
 	}
 
@@ -3153,14 +3277,20 @@ static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 	// ---- 4. dat cap 81: doi vu khi len CAP 10 cung loai dang cam ----
 	// (giu nguyen detail/particular/he - chi nang bac item nhu chu game dan;
 	// khong dong vao vu khi Hoang Kim neu sau nay bot duoc phat)
+	// [VKMAGIC 06/09] chu game: "bot co vu khi se cho random ti le nMagicLevel tu 7 - 8":
+	// vu khi cap 10 sinh moi mang 6 dong cap 7-8 (pb_MagicVuKhi); vu khi cap 10 CU chua co
+	// dong (GetTotalMagicLevel() == 0 = moi vu khi bot sinh truoc 06/09) duoc sinh lai MOT
+	// LAN cung loai/he/cap, co dong 7-8 (sau do tong dong > 0 -> khong lam lai).
 	if (nLevel >= 81)
 	{
 		const int nW = Player[nIdx].m_ItemList.GetEquipment(itempart_weapon);
-		if (nW > 0 && Item[nW].GetGoldId() == 0 && Item[nW].GetLevel() < 10)
+		if (nW > 0 && Item[nW].GetGoldId() == 0
+		 && (Item[nW].GetLevel() < 10 || Item[nW].GetTotalMagicLevel() <= 0))
 		{
+			const int nCapVk = (Item[nW].GetLevel() < 10) ? 10 : Item[nW].GetLevel();
 			int nMagic[MAX_ITEM_MAGICLEVEL];
-			ZeroMemory(nMagic, sizeof(nMagic));
-			const int nNew = ItemSet.Add(0, 0, Item[nW].GetSeries(), 10, 0,
+			pb_MagicVuKhi(nMagic);
+			const int nNew = ItemSet.Add(0, 0, Item[nW].GetSeries(), nCapVk, 0,
 			                             Item[nW].GetDetailType(),
 			                             Item[nW].GetParticular(), nMagic,
 			                             g_SubWorldSet.GetGameVersion(), 0);
@@ -3174,9 +3304,11 @@ static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 				if (pb_MacVaoNguoi(nIdx, nNew, -1))
 				{
 					b.nAtkSkill = 0;   // chon lai chieu theo vu khi (cung loai - cho chac)
-					pb_Log("[BotTrangBi] %s cap %d len vu khi cap 10 (detail %d parti %d)\n",
-					       Player[nIdx].m_PlayerName, nLevel,
-					       Item[nNew].GetDetailType(), Item[nNew].GetParticular());
+					pb_Log("[BotTrangBi] %s cap %d len vu khi cap %d (detail %d parti %d,"
+					       " dong 7-8 tong %d)\n",
+					       Player[nIdx].m_PlayerName, nLevel, Item[nNew].GetLevel(),
+					       Item[nNew].GetDetailType(), Item[nNew].GetParticular(),
+					       Item[nNew].GetTotalMagicLevel());
 				}
 			}
 		}
