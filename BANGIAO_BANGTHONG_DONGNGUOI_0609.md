@@ -794,3 +794,5 @@ Chủ swap 10:08 (bản MATDO b c37a0b1b, gồm TOCDO + SKEXP + DELTA a–e); tr
 **Kiểm sau swap:** vào thành bằng Thổ Địa Phù rồi bấm chiêu: client không còn cho mua chiêu; `findstr /C:"[E4_SKILL_IN] npc=1 " jx_auto.log` phải ra `fight=0` khớp `[S2-NETSKILL-IN] fight=0`. Ra khỏi thành bật chiến đấu phải đánh được ngay (cờ về theo 221 trong ≤ vài tick).
 
 **Tình trạng lúc 15:06:** máy chủ live 11f83405 (14:35, có vá g: `[DMG-GON] gon=1.658.820 day=0`, `lam moi moi 300 giay`), client live 52a55d89 (TUKICH b, 14:43, có hello 2). Vá h chỉ cần swap client.
+
+**Đã đặt 15:12 (chỉ client, chờ chủ chạy ChoiGame.bat):** `CoreClient.dll.moi` **716ab775** = build từ origin/main 7caf7cd0 + vá h (⊇ client live 52a55d89 TUKICH b, kiểm chuỗi missing = 0; commit 6a7ca54f sau đó chỉ là báo cáo, không đổi mã). Máy chủ không cần swap.
