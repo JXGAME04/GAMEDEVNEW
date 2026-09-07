@@ -521,7 +521,7 @@ Linux cũng có 721/722 style 14 — JX1 đã đổi thành 2; 723 → 0; 1545 �
 
 Bỏ qua có chủ ý: kiểm hồi chiêu `0x080E4540` trước `do_skill` (JX1 `DoSkill` tự kiểm `CanCast`); `randmove` miễn AiMode 10 (F.5) — chưa làm.
 
-## I.2 Dữ liệu trên cây chạy thật (sao lưu `*.truoc_sk120_0709`; máy chủ đã restart 00:56 07/09 nên phần server đã có hiệu lực, **client còn chờ `ChoiGame.bat`** — khe client đang có `CoreClient.dll.moi` 5c359b16 của DELTA, không liên quan phần tôi)
+## I.2 Dữ liệu trên cây chạy thật (sao lưu `*.truoc_sk120_0709`; **đã có hiệu lực cả hai phía**: máy chủ restart 00:56:55, client restart 00:57:02 ngày 07/09 — theo đính chính của phiên DELTA, `GameServer.exe` b98d9f31 và `CoreClient.dll` 5c359b16 cũng đã được áp, không còn `.moi` nào trong `bin/server` lẫn `bin/client`)
 
 | Tệp (server và client) | Sửa |
 |---|---|
