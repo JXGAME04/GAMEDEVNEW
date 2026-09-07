@@ -215,7 +215,284 @@ Không A*, không né vật cản. Đã đối chiếu **3 bản lưu cũ nhất
 
 ## C — VIỆC CÒN LẠI (chưa đo, đừng kết luận)
 
+> **06/09 đêm — ĐÃ ĐO TOÀN BỘ ở ĐỢT 3 (Phần F bên dưới).**
+
 * `KNpc::NewPath` / đường đi thực tế của lệnh `do_walk` **bản Linux** — có tìm đường không (B.4).
 * Thân hàm AI 2, 5, 6, 9, 10 bản Linux (mới có địa chỉ + danh sách hàm gọi).
 * Ý nghĩa hai cờ `+0x19A0/+0x19A4` (cổng lọc mục tiêu `0x08079200`) và `+0x168C` (cổng người chơi trong `0x0808C640`), `+0x1479` (cờ định thân).
 * Phía **client** (`Patch\game_y_unpacked.bin`): cách vẽ đạn truy đuổi — client tự mô phỏng đạn từ gói `s2c_skillcast`, nên nếu port bước đáp đích thì **phải port cả hai phía** mới thấy hiệu ứng.
+
+---
+
+## PHẦN D — THIÊN NHẪN "120" (đối chiếu hai bản)
+
+Bộ ba kỹ năng 120 của Thiên Nhẫn (`ReqLevel = 120`), dữ liệu cấp nằm ở
+`script/skill/tianren.lua` (Linux) và `script/nhanvat/kynang/tianren.lua` (JX1),
+khoá `tianren120`:
+
+| SkillId | Tên | Ghi chú |
+|---|---|---|
+| 711 | Hấp Tinh Yểm | thế thân (SkillStyle 3) |
+| 714 | Hỗn Thiên Khí Công | thế thân (SkillStyle 3) |
+| 715 | Ma Âm Phệ Phách | trạng thái (SkillStyle 2) |
+| 719 / 720 | …_Quyết Chú | bản chủ động |
+| 723 | Ma Âm Phệ Phách – Hoảng loạn | chiêu nổ ra khi chết |
+| 1223 / 1236 | biến thể | |
+
+### Khác biệt đo được
+
+| # | Kỹ năng | Linux | Dự án JX1 |
+|---|---|---|---|
+| TN-1 | **720** Hỗn Thiên Khí Công_Quyết Chú | có thêm `fastwalkrun_p` (**tăng tốc chạy**), dữ liệu `gaibang120zuzhou` | **KHÔNG có** |
+| TN-2 | **720** | `LvlSetting1/2` = `physicsresmax_p` / `fireresmax_p`, `LvlSetting4/5` = `physicsres_p` / `fireres_p` | **đảo ngược**: 1/2 = `physicsres_p` / `fireres_p`, 4/5 = `…resmax_p` — cùng `LvlData` nhưng **áp sai thuộc tính** (kháng thường ↔ trần kháng) |
+| TN-3 | **723** Ma Âm Phệ Phách – Hoảng loạn | `SkillStyle = 14` | `SkillStyle = 0` |
+| TN-4 | **715** Ma Âm Phệ Phách | không có | JX1 **thêm** `skill_eventskilllevel = tianren120` |
+| TN-5 | **711** Hấp Tinh Yểm | không có | JX1 **thêm** `autoattackskillplus = wudu120` |
+| TN-6 | **714** Hỗn Thiên Khí Công | không có | JX1 **thêm** `autoattackskillplus = gaibang120` |
+| TN-7 | bảng `tianren120` | không có | JX1 **thêm** `skill_eventskilllevel={{{1,1},{20,20}}}` |
+| TN-8 | 719 · 1223 · 1236 | — | **giống hệt** |
+
+Phần lõi (`skill_cost_v`, `skill_mintimepercast_v` 45→20 giây, `autodeathskill = 723*256+41…60`,
+`randmove`/`missle_missrate` đều bị chú thích ở **cả hai bản**) là **như nhau**.
+
+### ⚠️ Một chỗ hỏng mã hoá trong tệp JX1 (không phải khác biệt thiết kế)
+
+`script/nhanvat/kynang/tianren.lua` của dự án bị **mất byte** ở 4 chỗ trong `skill_desc`
+của `tianren120` — so với bản Linux:
+
+| Bản Linux | Bản JX1 |
+|---|---|
+| `m?c ti�u g?n b? ho?ng lo?n` (bị + dấu cách) | `m?c ti�u g?n b?ho?ng lo?n` |
+| `c? x�c su?t` | `c?x�c su?t` |
+| `kh�ng th? t?n c�ng v? di chuy?n` | `kh�ng th?t?n c�ng v?di chuy?n` |
+
+Đúng dấu hiệu của Gate 1 (sửa tệp TCVN3 bằng công cụ đọc UTF-8): ký tự `ị`/`ề` và dấu cách
+sau nó bị nuốt. **Chỉ ảnh hưởng dòng mô tả kỹ năng hiện trên giao diện**, không ảnh hưởng số liệu.
+Chưa sửa — chờ chủ game quyết (sửa được bằng `vn_edit.py`).
+
+---
+
+## PHẦN E — ĐÃ THI CÔNG (06/09, commit `0ffc42dd`, đã lên origin/main `cbceded5`)
+
+| # | Việc | Tệp | Bộ vá |
+|---|---|---|---|
+| 1 | **Bước đáp đích** cho đạn truy đuổi (A.2) | `Sources/Core/Src/KMissle.h` + `KMissle.cpp` | `ReverseTools/goi_va_dan_dapdich_0609.py` |
+| 2 | **Bật AI quái 7/8/9/10** (B.1) | `Sources/Core/Src/KNpcAI.cpp` | `ReverseTools/goi_va_ai_7_10_0609.py` |
+| 3 | **Thêm cột `AIMaxTime`** vào `settings/npcs.txt` (máy chủ + khách) | cây chạy thật `E:/SourceTuanLe/.../bin/{server,client}/settings/npcs.txt` | `ReverseTools/goi_va_npcs_aimaxtime_0609.py` |
+
+**Giữ nguyên theo yêu cầu**: cửa chặn huỷ bám mục tiêu **bất tử / ẩn thân** của dự án
+(`KMissle.cpp:506-511`) — không đụng một dòng.
+
+**Không làm** (vì sẽ *sửa* hành vi đang có chứ không phải *thêm* phần thiếu — chờ chủ game):
+* bỏ nhánh `IsCanInput()` trong `CommonAction` (B.5 mục 2);
+* mở lại khối `MINI_ATTACK_RANGE 32` đang bị chú thích (B.5 mục 3);
+* `MISSLE_MMK_Circle` Speed+30 → +50;
+* 4 chỗ hỏng mã hoá trong `tianren.lua` (Phần D).
+
+**Số liệu nhịp AI sau khi thêm cột** (2 090/2 643 dòng được chép, 553 dòng để trống = giữ 25):
+
+| AIMode | số mẫu | nhịp cũ | nhịp mới (trung bình) |
+|---|---|---|---|
+| **1** (quái thường) | 1 245 | 25 khung (1,39 s) | **11,6 khung (0,65 s)** |
+| 2 | 38 | 25 | 33,8 (chậm lại) |
+| 3 | 78 | 25 | 34,0 (chậm lại) |
+| 9 | 50 | 25 | **6,9 (0,39 s)** |
+| 10 | 62 | 25 | 28,1 (chậm lại) |
+
+⇒ quái luyện công chạy AI **~2,15 lần dày hơn**, không phải 8 lần như ước lượng thô ban đầu.
+Nền hiện tại (`jx_perf_server.log`, 1 001 người/bot): `TICK` 6,9–7,2 ms (12–13 % ngân sách),
+`SW_ACTIVATE` 4,1–4,5 ms, `tre = 0`. Dự kiến `TICK` lên khoảng 9–11 ms — vẫn dư ngân sách,
+nhưng **đo lại `jx_perf_server.log` sau khi swap** rồi hãy kết luận.
+
+### Nhị phân chờ swap
+
+| Tệp | MD5 | Cỡ |
+|---|---|---|
+| `bin/server/CoreServer.dll.moi` | `b43c85e89f8726b5e86fbafb5aa853b4` | 18 466 816 |
+| `bin/client/CoreClient.dll.moi` | `964da287399ce9ffa05d4efdf929e58e` | 2 607 104 |
+
+> Bản `.moi` cũ của phiên khác (`d0bc87a4…`, sửa mất đồ Cái Bang) đã được giữ lại ở
+> `CoreServer.dll.moi.truoc_dandap_0609`. Bản mới **build từ origin/main đã gộp**, nên
+> **đã bao gồm** bản vá mất đồ đó — không mất gì.
+
+**Cần khởi động lại máy chủ** (đổi `npcs.txt` + đổi DLL), và client cần chạy `ChoiGame.bat`.
+
+### Cách lùi từng phần
+
+* Đạn + AI 7-10: `git revert 0ffc42dd` rồi build lại.
+* Nhịp AI quái: khôi phục `npcs.txt.truoc_aimaxtime_0609` ở cả `bin/server/settings` và `bin/client/settings` (không cần build lại).
+
+---
+
+# ĐỢT 3 (06/09 đêm) — LÀM TIẾP PHẦN C + PHÂN TÍCH SÂU THIÊN NHẪN 120
+> **CHỈ PHÂN TÍCH, KHÔNG SỬA GÌ.** Công cụ phiên này lưu ở `ReverseTools/mo_nhi_phan_0609/`
+> (`elfre.py` dis/xref, `fnfull.py` dis trọn hàm, `sweep.py` → `dis_all.txt` 3,1 triệu lệnh,
+> `magicmap2.py` → `linux_magicnames.txt` 336 tên thuộc tính phép theo đúng chỉ số enum Linux,
+> `cl.py`/`clsweep.py` cho client `Patch/game_y_unpacked.bin` (VA = 0x401000 + offset), `skdiff.py` so `skills.txt`).
+
+---
+
+## PHẦN F — KẾT QUẢ CÁC VIỆC CÒN LẠI CỦA PHẦN C
+
+### F.1 `NewPath` / `do_walk` bản Linux: **CŨNG KHÔNG TÌM ĐƯỜNG** (B.4 đóng)
+
+`KNpc::ProcCommand` Linux = `0x08088640`, bảng nhảy lệnh `0x08254AD8` (22 mục, `cmd 0..21`):
+
+| cmd | Linux | Làm gì |
+|---|---|---|
+| 1 stand | `0x0808871A` | `DoStand` (`0x08080030`) |
+| **2 walk** | **`0x0808874C`** | **`m_DesX(+0x14A0) = Param_X; m_DesY(+0x14A4) = Param_Y;` rồi gọi thẳng `DoWalk 0x0807B430`** |
+| 3 run | `0x08088727` | ghi `m_DesX/Y` như trên rồi `DoRun 0x0807B620` |
+| 4 jump | `0x080887E8` | `0x08087F00(x, y)` |
+| 5 skill | `0x0808879B` | tìm trong `m_SkillList`(+0x248) `0x080E4290` → `SetActiveSkill 0x08086D90` → `DoSkill 0x08088350` |
+| 8 sit · 11 · 12 hurt · 21 revive | `0x0808878E` · `0x08088771` · `0x080886D0` · `0x080886F0` | như JX1 |
+
+`DoWalk 0x0807B430`: `nTotalFrame = m_WalkFrame(+0x161C) × m_WalkSpeed(+0x1920) / m_CurrentWalkSpeed(+0x1288) + 1`, phát gói `0x50` (`s2c_npcwalk`, 13 byte = kiểu + ID + X + Y, đúng `NPC_WALK_SYNC` của JX1) rồi `m_Doing = 2`. **Không A\*, không gọi `FindPath`.** `DoRun 0x0807B620` tương tự (gói `0x51`, `m_Doing = 3`; người chơi kiểm `Player+0x5A50` để rơi về `DoWalk`).
+
+⇒ **Hai bản y hệt: quái đi thẳng tới đích, đâm vật cản.** Không phải hồi quy của dự án. Khác nhỏ: Linux khi `m_Doing` là chết/hồi sinh chỉ nhận `do_revive` ngay đầu hàm; nhánh không‑AI của Linux chỉ xử `do_hurt` / `do_revive` / `do_skill` (`0x080820F0`, chỉ cho người chơi) — JX1 có thêm `do_walk` khi hoảng loạn và các khối `[S13]`.
+
+### F.2 Ba cờ chưa rõ nghĩa — đã đặt tên
+
+| Offset KNpc (Linux) | Tên | Bằng chứng | Tương đương JX1 |
+|---|---|---|---|
+| `+0x19A0` | **`hide`** (giá trị ẩn thân, cộng dồn) | thuộc tính phép **idx 200 `hide`**, handler `0x08097860` (chuỗi log `"Hide + %d = %d"`): `hide += nValue[0]`; Lua `SetHide(v)` (`0x0810AD80`) và `NpcSetHide(idx, v)` (`0x08101C10`) gọi `0x0807FF80` | `m_HideState.nTime` (KState theo thời gian) |
+| `+0x19A4` | cờ tạm "đang phát tin ẩn" | `=1` chỉ trong lúc `0x0807FF80` gọi `0x0807A870` (phát gói `'O'` 5 byte) rồi `=0` | không có |
+| `[+4]` trong cổng lọc | `m_Index` | bố cục KNpc Linux: `+0 m_dwID`, `+4 m_Index` | `m_Index` |
+| `+0x168C` | **`m_FightMode`** | `0x08079B30` = `SetFightMode`: người chơi → gọi `Player(+0x8788·idx)…(9)` trước, đổi giá trị → hai hàm PK/Team (`0x080CBE00`, `0x080C32C0`), sau đó `0x08162110(Player+0x8078, v, 0)`; JX1 `SetFightMode` cũng gọi `m_cPK.CloseAll()` | `m_FightMode` |
+| `+0x1479` (BYTE) | **`frozen_action`** | handler `0x08096170` = `ProcessFunc[251]`. Bảng handler Linux **bước 8 byte** (con trỏ hàm thành viên GCC), gốc `+4`: kiểm `[+0x644] = hide (200)`, `[+0x63C] = randmove (199)`. Kề bên: `+0x1478 = forbit_attack` (250, handler `0x08096150`), idx 252 `forbit_takemedicine` (handler `0x08096190`) | `m_FrozenAction.nTime` (có thời gian) |
+
+**Cổng lọc `0x08079200(pNpc, me)`**: `if (+0x19A4) return pNpc->m_Index == me; if (hide == 0) return 0; return pNpc->m_Index != me` ⇒ **địch đang ẩn thì AI không thấy** (trừ chính nó). Được gọi ở 10 chỗ: AI1/2/3/10, `GetNearestNpc` (`0x0808EEDE`), … JX1: `GetNearestNpc` bỏ `m_HideState.nTime > 0` nhưng `ProcessAIType01..05` **không kiểm lại mục tiêu đã khoá** khi nó ẩn (chỉ `ProcessAIType06` có).
+
+**Hệ quả cho `SendCommand` (B.3)**: cổng định thân Linux là thuộc tính `frozen_action` — chặn stand/walk/run/jump/sit, **vẫn cho ra chiêu**; cấm đánh là thuộc tính riêng `forbit_attack` (`+0x1478`, JX1 cũng có `magic_forbit_attack` 324 từ 02/09). JX1 `FrozenAction` chặn cả di chuyển lẫn chiêu.
+
+**Nhịp AI `0x0808C640`** còn bỏ mục tiêu là **người chơi chưa bật chiến đấu** (`m_FightMode == 0`) — JX1 chỉ làm việc này trong `ProcessAIType06`.
+
+### F.3 Thân AI 2–10 bản Linux — đối chiếu ĐÚNG bộ hàm JX1 đang gọi
+
+> `KNpcAI.cpp` của JX1 có **HAI bộ**: `ProcessAIType01..06` (dòng 1340‑1937, **`Activate` gọi**) và `ProcessAIType1..10` (dòng 1955‑2743; **1..6 không được gọi ở đâu**, 7..10 vừa được bản vá `[AI710 06/09]` nối vào). Đợt này so với bộ đang chạy.
+
+| AIMode | Linux | JX1 (hàm đang gọi) | Kết luận |
+|---|---|---|---|
+| 2 | `0x08093B00` | `ProcessAIType02` | **TRÙNG KHÍT**: p0 tuần tra khi không địch; máu < p1 → p2 % → (`m_AiAddLifeTime < p9` && p3 %) hồi máu bằng skill 1 (`do_skill` lên mình, `AiAddLifeTime++`) ngược lại `Flee`; xa hơn p10 → p7 đứng / p8 tuần tra / `FollowAttack`; gần → p4/p5/p6 skill 2/3/4. Linux thêm: tự khoá mình → huỷ; kiểm tầm nhìn + cổng ẩn khi giữ mục tiêu cũ |
+| 3 | `0x08093850` | `ProcessAIType03` | **TRÙNG KHÍT** (máu thấp: p3 % → skill 1 + `FollowAttack`, ngược lại `Flee`) |
+| 4 | `0x080936E0` | `ProcessAIType04` | **TRÙNG KHÍT** (không tự tìm địch, chỉ đánh kẻ đã khoá) |
+| 5 | `0x08093490` | `ProcessAIType05` | **TRÙNG KHÍT** + Linux huỷ khi tự khoá mình |
+| 6 | `0x08093290` | `ProcessAIType06` | Lõi giống. **JX1 thêm 3 thứ**: bỏ mục tiêu chết/hồi sinh/ẩn; bỏ người chơi chưa bật chiến đấu; khi địch xa thì bốc skill ngẫu nhiên 1..4 (`GetRandomNumber(1,4)`) thay vì `FollowAttack` thẳng |
+| **7** | `0x08094040` | `ProcessAIType7` | **KHÁC HẲN.** Linux: `if (p0 == 0) return; t = 0x0807A1F0(this, p0)` (duyệt vùng hiện tại + 8 vùng kề, gọi `0x080E1FD0(region, me, p0)` — tìm NPC theo tham số p0); có → chọn skill 1..4 theo p1..p4 → `FollowAttack(t)`. = **"Công thành Xung xa" tìm và phá mục tiêu p0** (cổng/thành). JX1: "máu thấp chạy về phía đồng minh gần nhất" |
+| **8** | `0x0808F1C0` | `ProcessAIType8` | **KHÁC HẲN.** Linux: `if (p0 == 0 || p1 == 0) return;` chọn skill theo p3..p6; `SendCommand(do_skill, skill, X = p0 − p2/2 + rand(p2), Y = p1 − p2/2 + rand(p2))` = **"Đầu Thạch Xa" bắn vào ô vuông cạnh p2 quanh (p0, p1)**, không bao giờ đi. JX1: "tự sát": đi tới địch p0 %, skill p1..p3, `FollowAttack` |
+| **9** | `0x08092E30` | `ProcessAIType9` | **KHÁC HẲN. Linux = HÀNH QUÂN**: (a) `KeepActiveRange` vượt → bỏ mục tiêu, thôi; (b) chọn skill theo p2/p3/p4 (còn lại → skill 4), thất bại → `CommonAction`; (c) có mục tiêu và `(+0x12A4) ≠ 0` → `FollowAttack`, thất bại → bỏ mục tiêu; (d) p0 % → **tìm địch ngẫu nhiên** (`0x0808DBA0`: gom tối đa 10 địch trong tầm nhìn, bốc 1) → **gốc `m_OriginX/Y` := vị trí hiện tại** → `FollowAttack`; (e) không địch: `p6 == 1` → **bám thủ lĩnh** `Npc[p7]` (id p8, còn sống, cùng subworld): gốc := vị trí thủ lĩnh, `FollowAttack(p7)`; `p6 ≠ 1` → **đi tới điểm (p7, p8)**: hướng = `g_GetDirIndex(me → đích)` (bảng sin/cos 64 hướng), `r = min(+0x12A8, +0x12A4)/2`, gốc := vị trí hiện tại, `SendCommand(do_walk, p7 − sin·r, p8 − cos·r)`. Vì gốc dời theo nên dây xích không cản. Script Linux dùng: `missions/newcitydefence/smalltimer.lua` `SetNpcAI(idx, 9, 20, -1,-1,-1,-1,-1, 0, aimx, aimy)` (lính hành quân tới `aimx, aimy`), `trap/trap_onroad.lua`. JX1: "càng đánh càng hăng" (skill theo ngưỡng máu, `GetNearestNpc`, `CommonAction`) |
+| **10** | `0x08091EB0` | `ProcessAIType10` | **KHÁC HẲN. Linux = ĐỨNG YÊN BẮN**: khoá/tìm địch gần nhất (kiểm ẩn + tầm nhìn), chọn skill theo p1..p4 cộng dồn, thất bại → thôi; `0x0808F360(me, e)`: `dist² ≥ m_CurrentAttackRadius²` → **không làm gì (không đi)**; trong tầm và `InEyeshot` → kiểm hồi chiêu `0x080E4540` → `SendCommand(do_skill, skill, -1, e)`. **Không bao giờ `do_walk`.** JX1: "bỏ chạy" (skill theo ngưỡng máu, `Flee` p5, `FollowAttack` → **đi tới địch**) |
+
+**Ai dùng mode 7‑10** (npcs.txt hai bản trùng id):
+* mode 7 = `Công thành Xung xa` (1 mẫu, p0 = 0), mode 8 = `Đầu Thạch Xa` (1 mẫu, p0 = p1 = 0) ⇒ ở Linux hai AI này **không làm gì cho tới khi script đặt tham số**.
+* **mode 9 = 50 mẫu**: Tống/Kim `Tiểu Hiệu`, `Đội trưởng`, `Tiên phong`, `Chủ tướng 1‑2`, `Chủ Soái` (10 phái × 2) [id 1067‑1099]; `Mộc nhân` 1161/2318, `Công Thành Chiến Xa` 1337, `Tuần La Quái Vật` 1807‑1808, `Hình nhân` 2319, `Trụ (ải 6)` 2325, `Trụ Kim/Mộc/Thủy/Hỏa/Thổ (ải 11)` 2331‑2335, `Tế Đài` 2336, `Thần Thú` 2337, `Tiểu Ngưu` 2340, `Quang Đoàn ×5` 2342‑2346. Tham số chung `50|25|25|25|25|30|50|0|0` (p7 = p8 = 0), Walk 6‑15.
+* **mode 10 = 62 mẫu**: `Tuyệt Sát 1‑8 (Đơn)`, `Trụ (Phản đòn đơn)`, `Trụ (ải 13)`, `Tri Thù Tơ`, `cung kỵ binh`, `弓兵1`, `天池` cơ quan/bẫy… — **bẫy, trụ, cung binh**; Walk 6‑15 (chỉ 1 mẫu Walk 0).
+* Script JX1: **không có `AddNpc` nào sinh mẫu 1067‑1099** (trừ 1077 trong `event_cauhoi/lib.lua`); Tống Kim JX1 (`tinhnang/tong_kim_tcap/lib_tktc.lua`) dùng mẫu 631‑641 (`Tống binh … Đại tướng`, **AIMode 1**). Các mẫu mode 9/10 vào game qua đặt sẵn trong bản đồ (`maps.pak`) hoặc `AddNpc` theo id (42 dòng, phần lớn mode 10: Tần Lăng "Tuyệt Sát", ải 13…). Bản Linux cũng không có script `AddNpc` cho 1067‑1099.
+
+> ⚠️ **HỆ QUẢ CHO PHẦN E MỤC 2** (`[AI710 06/09]`, đang nằm trong `CoreServer.dll.moi` `b43c85e8…` **CHƯA SWAP**): bản vá chỉ nối `case 7..10` vào `ProcessAIType7..10` **của JX1**, mà bốn hàm này là **thuật toán khác** với bản Linux (bốn tên hàm giống nhau nhưng thân hàm không phải bản dịch của Linux). Nếu swap:
+> 1. **62 bẫy/trụ mode 10** (Walk ≠ 0) sẽ `Flee`/`FollowAttack` = **đi theo người chơi** thay vì đứng bắn khi vào tầm.
+> 2. **Trụ ải 6/11, Tế Đài, Quang Đoàn, Mộc nhân, quan quân Tống Kim mode 9** sẽ tuần tra (`CommonAction`: 20 % đi ngẫu nhiên trong nửa bán kính hoạt động) và đuổi đánh theo ngưỡng máu.
+> Trước bản vá chúng **đứng im hoàn toàn và không đánh** (cũng không đúng Linux, nhưng vô hại hơn).
+> **Đề nghị (chờ chủ game quyết):** (a) KHÔNG swap phần AI 7‑10 như hiện tại — chỉ swap bước đáp đích + `AIMaxTime`; hoặc (b) viết lại 9/10 theo Linux (AI10 ~40 dòng: đứng yên, bắn khi trong tầm; AI9 ~120 dòng: hành quân/bám thủ lĩnh) rồi mới bật; hoặc (c) lùi `case 9/10`, giữ 7/8 (vô hại vì p0 = 0 nhưng cũng không giống Linux). Lùi nhanh: `git revert 0ffc42dd` hoặc chạy lại đoạn `goi_va_ai_7_10_0609.py` theo chiều ngược (tệp lưu `KNpcAI.cpp.truoc_ai710_0609`).
+
+### F.4 Client `game_y` (2022): `KMissle::Fly` **CÓ bước đáp đích**
+
+`Fly` client = **`0x00617480`** (this = `esi`; bảng nhảy MoveKind `0x00617928`, `cmp ecx, 0x63` = 100 mục đúng như `switch` JX1). Bố cục KMissle client **trùng Linux**: `+0x14 MoveKind · +0x28 Speed · +0x60 CurrentLife · +0x88/+0x8C DesX/DesY · +0xC8/+0xCC XFactor/YFactor · +0xD4/+0xD8 FollowNpcIdx/ID · +0x11C Param1 · +0x120 Param2 · +0x130/+0x134 TempParam1/2 · +0x144/+0x148/+0x14C DirIndex/Dir/Angle`.
+
+* Nhánh truy đuổi `0x006177F7`: `Param1++ ≥ 8` → nắn hướng, **ghi toạ độ địch vào `+0x88/+0x8C`** (`lea edi,[esi+0x88]; lea ebp,[esi+0x8C]` truyền vào `GetMpsPos`), `XFactor/YFactor = (d << 10)/dist`, **`Param2 = dist/speed + 1`** (`0x006178B7`).
+* Mỗi nhịp `0x006178D9`: `Param2 ≠ 0` → `--Param2 == 0` → **bước `(Des − pos) << 10`** (`0x00617909‑0x00617920`).
+* Nhánh bay về `0x00617586` (`TempParam1/2`, `Dir −= 32`) y hệt JX1/Linux.
+
+⇒ **Client tham chiếu cũng có bước đáp đích** — bản port đợt 2 cho cả `CoreClient.dll.moi` là đúng hướng; mục "phải port cả hai phía" của Phần C được xác nhận.
+
+### F.5 `randmove` (hoảng loạn) — cơ chế Linux vs JX1
+
+* **Linux**: handler idx 199 (`0x080978D0`): **bộ đếm** `+0x14C4 += nValue[0]` (trạng thái hết hạn trừ lại); đổi `0 ↔ ≠0` → `0x080791E0`/`0x080791C0` tắt/bật `m_ProcessAI` (`+0x194C`); **NPC AiMode 10 được miễn**. Mỗi khung (`0x08087770`): đếm ≠ 0, không chết/hồi sinh, AiMode ≠ 10 → `0x08081DF0`: đang `do_walk` hoặc `frozen_action` → thôi; ngược lại `m_DesX/Y = vị trí + rand(100) − 50` → `DoWalk` (ghi thẳng, không qua `SendCommand`).
+* **JX1** (`KNpc.cpp:1535`): `m_ProcessAI = 0`; mỗi `GAME_UPDATE_TIME` khung: đích = vị trí ± `rand(100)` (dấu ngẫu nhiên từng trục) → `SendCommand(do_walk)`; hết giờ → `m_ProcessAI = 1`.
+* Khác: biên độ **±50** (Linux) vs **±100** (JX1); Linux chỉ chọn đích mới khi đã đứng lại, JX1 theo chu kỳ; Linux miễn cho AiMode 10.
+
+---
+
+## PHẦN G — THIÊN NHẪN 120: PHÂN TÍCH SÂU (đính chính Phần D)
+
+### G.1 Đính chính: chỉ **715 / 723 (+ 1236)** là của Thiên Nhẫn
+
+Phần D gộp theo `ReqLevel = 120` nên lẫn kỹ năng phái khác. Theo `LvlSetScript`, icon và bảng dữ liệu:
+
+| Id | Tên | Phái thật | `LvlSetScript` → bảng | Icon |
+|---|---|---|---|---|
+| 711 | Hấp Tinh Yểm | **Ngũ Độc** | `wudu.lua` → `wudu120` | `icon_sk_wd_120` |
+| 714 | Hỗn Thiên Khí Công | **Cái Bang** | `gaibang.lua` → `gaibang120` | `icon_sk_gb_120` |
+| **715** | **Ma Âm Phệ Phách** | **THIÊN NHẪN** | `tianren.lua` → `tianren120` | `icon_sk_tr_120` |
+| 719 | Hấp Tinh Yểm_Quyết Chú | Ngũ Độc (trạng thái áp lên địch) | `wudu120zuzhou` | |
+| 720 | Hỗn Thiên Khí Công_Quyết Chú | Cái Bang | `gaibang120zuzhou` | |
+| **723** | **Ma Âm Phệ Phách – Hoảng loạn** | **THIÊN NHẪN** (chiêu con của 715) | `quntisuijizoudong` | |
+| 1223 | Hấp Tinh trận | Đường Môn (theo `SkillDesc`) | `autorescueskill` | |
+| 1236 | Ma Âm Phệ Phách (bản sao) | Thiên Nhẫn | `tianren120` | |
+
+JX1 cấp 715 qua `vatpham/lvl120skillbook.lua` `[7] = {715, …, "Ma Âm Phệ Phách"}`.
+⇒ **TN‑1, TN‑2, TN‑5, TN‑6 là chuyện của Cái Bang / Ngũ Độc**, không phải Thiên Nhẫn (xem G.5).
+
+### G.2 Cơ chế 715 → 723 (giống nhau ở hai bản, trừ `SkillStyle` của 723)
+
+Dòng 715 trong `skills.txt` (114 cột, hai bản chỉ khác 2 ô: JX1 thêm `LvlSetting7/LvlData7 = skill_eventskilllevel / tianren120` và `SkillDesc` có thêm dấu `"`):
+`SkillStyle = 2` (InitiativeNpcState – trạng thái chủ động lên mình) · `TargetSelf = 1` · `CharAnimId = 11` · `StartEvent = 1, StartSkillId = 723, EventSkillLevel = −1` · `MaxLevel = 20` · `IsExpSkill = 1` · `LvlSetting`: `skill_cost_v`, `autodeathskill`, `skill_mintimepercastonhorse_v`, `skill_mintimepercast_v`, `skill_desc`, `skill_skillexp_v`.
+
+Luồng khi bấm chiêu (`KSkill::Cast` — JX1 `KSkills.cpp:486`; Linux `0x080EA920`, bảng nhảy `SkillStyle` `0x0825843C`):
+
+1. **Style 2** → áp trạng thái của 715 lên chính mình. `autodeathskill = {723·256 + (40 + cấp), −1, 100}` → `HS_AutoSkillModify` (`KNpcAttribModify.cpp:1061`, port chuẩn Linux `0x08189000` ngày 02/09): thêm mục vào `m_DeathSkill` {skill 723, cấp 41..60, tỷ lệ 100 %, hồi 0}; thời gian −1 = giữ tới khi trạng thái bị gỡ (gỡ → giá trị đảo dấu → tỷ lệ về 0 → xoá mục).
+2. **`StartEvent`** → `Cast(723, cấp)` với cấp = cấp của 715 (Linux `EventSkillLevel = −1` = cấp chính nó; JX1 `VhEventLevel` `[VHTD 02/09m]` + bảng `skill_eventskilllevel = {{1,1},{20,20}}` — hai cách, cùng kết quả).
+3. **723 cấp 1‑20**: `randmove = {1, 18..72 khung}` (1→4 giây), `missle_missrate` 65→15 (tức 35 %→85 % trúng), `missle_hitcount = 6`; `ChildSkillId = 273` "Khu vực đối phương" (`MoveKind 0, LifeTime 1, CollidRange = DmgRange = 7, AutoExplode 1, ColVanish 1` — **hai bản y hệt**), `MisslesForm = 7` (AtFirer), `AttackRadius = 180`.
+   * **Linux style 14** (`0x080EAAD0` → `0x080EA720`): cấp phát **một** viên 273 tại chỗ người phát (`0x08076F00`), gán skill/launcher/subworld/attribs, `Activate` (`0x08075710`) rồi **`DoVanish(1)` ngay** (`0x08075210`) = nổ vùng tức thì.
+   * **JX1 style 0** (Missles) → `CastMissles` form AtFirer → một viên 273 tại chỗ, sống 1 khung rồi `AutoExplode`. **Cùng kết quả, chậm đúng 1 khung.**
+4. **Trúng đòn** (`KNpc::ReceiveDamage`, JX1 `KNpc.cpp:5142`): ô `randmove[16]` có giá trị → `g_RandPercent(missrate)` → **bỏ qua toàn bộ đòn** (không sát thương, không trạng thái); trúng → `m_RandMove.nTime += khung` (cơ chế F.5).
+5. **Khi chết** (`KNpc.cpp:4700 / 5033`): `m_DeathSkill[0]` có và `m_Level ≥ LEVEL_EXPLOSIVE (120)` → `DeathSkill()` → `Cast(723, 41..60)` → **đoạn 2** của bảng `quntisuijizoudong`: `randmove` 18→72 khung (cấp 41→60), `missrate = 0` = **100 % trúng**, 6 mục tiêu, bán kính 180.
+
+Hồi chiêu 45 s (cấp 1) → 25 s (cấp 15) → 20 s (cấp 20); nội lực 25→80. Mô tả trên giao diện sinh từ `skill_desc`.
+
+### G.3 Khác biệt **thật** về Thiên Nhẫn 120
+
+| # | Điểm | Linux | JX1 | Ảnh hưởng |
+|---|---|---|---|---|
+| TN‑3 | `SkillStyle` của 723 | 14 (nổ vùng tức thì) | 0 (đạn 273 sống 1 khung) | không đáng kể — JX1 vẫn chạy đúng |
+| TN‑4/7 | `skill_eventskilllevel` | không | thêm | vô hại (tương đương −1) |
+| TN‑9 | 4 chỗ hỏng mã hoá trong `skill_desc` (Gate 1) | đúng | mất byte "bị", "có", "thể", "và" | chỉ mô tả trên giao diện |
+| TN‑10 | `PreCastSpr` của 1236 | `spr/skill/门派进阶/火.spr` | `.spr/…` (thừa dấu chấm đầu) | client không hiện hiệu ứng vung chiêu của 1236; không thấy script/npc nào dùng 1236 |
+| TN‑11 | `skill_skillexp_v` | thuộc tính idx 8, engine nạp | `KMagicDesc` JX1 **không có tên này** (326 vs 336 tên, lệch từ idx 8) → `ParseString2MagicAttrib` bỏ qua | JX1 tính exp kỹ năng qua `PlayerSet.m_cMagicLevelExp` (`KSkillList.cpp:248`), không qua bảng Lua; bảng `tianren120` hai bản giống nhau nên không lệch |
+| TN‑12 | cửa `m_Level ≥ 120` cho `autodeathskill` | chưa đo | `LEVEL_EXPLOSIVE = 120` | người 120 mới học được nên không ảnh hưởng |
+
+**Kết luận:** Thiên Nhẫn 120 ở JX1 **không thiếu gì** so với Linux về số liệu lẫn cơ chế; chỉ còn mô tả hỏng font (TN‑9) và dấu chấm thừa của 1236 (TN‑10).
+
+### G.4 ⚠️ Phát hiện kèm: 5 kỹ năng `SkillStyle 14/15` đang **chết** trong JX1
+
+Bảng nhảy Linux `0x0825843C`: `0` Missles · `1` (không) · `2` Initiative · `3` Passivity · `4` CreateNpc · `5‑13` không làm gì · **`14` → `0x080EAAD0`** (nổ vùng tức thì, G.2) · **`15` → `0x080ECBD8`** (biến thể trong `CastMissles`: đạn đặt tại vị trí mục tiêu). `switch` của JX1 (`KSkills.cpp:486‑566`) chỉ có `case 0..12`, **không `default`** ⇒ style 14/15 chỉ chạy `StartEvent` rồi trả `TRUE`.
+
+`skills.txt` JX1 còn 5 dòng như vậy:
+
+| Id | Tên | Style | Ai dùng |
+|---|---|---|---|
+| 876 | 魔音噬魄_BOSS专用 (Ma Âm Phệ Phách bản boss, Child 273) | 14 | **31 NPC**: Ngưu Ma Vương, Tiểu/Đại Xuân Ngưu, Thiết Ngưu Đại Vương, Lãnh Băng (+Đơn, Anh Hùng Tháp), Hoàng Nhan Quảng Dương, Lưu Tuấn, Tây Vực Phạn Hoàng, Thủ Lĩnh Kiếp Phỉ, Tiểu Đạo Tặc, Cửu Châu Thị Vệ, 4 Bào Quái Khách… |
+| 1322 | Hư Nhược Vô Lực (`firofworld.lua`, `skill_enhance`) | 14 | sự kiện |
+| 1406 | 超级魔音噬魄 (`boss_superskill.lua`, Child 409 bán kính 14) | 14 | boss |
+| 1493 | 魔音噬魄_随机走动（单人）(`jianzhong.lua`) | 14 | Kiếm Trủng |
+| 400 | (`kunlun.lua` `tianji_xunlei`, ReqLevel 30) | 15 | Côn Lôn |
+
+Linux cũng có 721/722 style 14 — JX1 đã đổi thành 2; 723 → 0; 1545 → 3; **4 dòng còn lại bị bỏ sót**. ⇒ **Boss dùng 876 ở JX1 không bao giờ gây hoảng loạn.** Với 876/1406/1493 (đều Child 273/409 form 7) chỉ cần đổi dữ liệu `14 → 0` như 723 đã làm; 1322 và 400 cần xem riêng. **Chờ chủ game.**
+
+### G.5 Cái Bang / Ngũ Độc 120 (đính chính TN‑1/2/5/6)
+
+* **TN‑2 SAI**: `GetSkillLevelData(levelname, data, level)` (`advancedskill.lua:349`) tra `SKILLS[data][levelname]` **theo tên thuộc tính** → đổi vị trí cột `LvlSetting` **không đổi giá trị**, chỉ đổi thứ tự trong `m_StateAttribs`. Bốn thuộc tính kháng của `gaibang120zuzhou` hai bản **giống hệt**.
+* **TN‑1 ĐÚNG, thuộc Cái Bang**: Linux `gaibang120zuzhou.fastwalkrun_p = {{1,−9},{23,−50}}` (**giảm tốc chạy nạn nhân 9→50 %**) + cột `LvlSetting6` của 720; JX1 thiếu cả bảng lẫn cột → quyết chú Cái Bang 120 ở JX1 **không làm chậm**; mô tả JX1 cũng bỏ câu "giảm tốc độ di chuyển".
+* **TN‑5/6 vô hại**: `autoattackskillplus` **không có trong `KMagicDesc` cả hai bản** (Linux 0 chuỗi) → `GetSkillLevelData` trả `""` → `ParseString2MagicAttrib` không khớp tên → bỏ. Dữ liệu chết.
+* `wudu120.skill_skillexp_v` JX1 khác Linux (180…789 321, thêm cấp 21‑28 = 1 910 800) — engine JX1 không đọc (TN‑11) → vô hại.
+* `tianren.lua` ngoài 120: JX1 thiếu các thuộc tính `_yan_` (`fasthitrecover_yan_v`, `attackspeed_yan_v`, `lifemax_yan_p`) và mốc cấp 33‑43 của `tianmo_jieti` (Thiên Ma Giải Thể) — `KMagicDesc` JX1 có sẵn 22 tên `_yan_` nên chỉ là dữ liệu; `attackratingenhance_p` Thiên Ma Giải Thể cấp 30: Linux 600 vs JX1 500; `moren150` hoả 80→1500 (Linux) vs 45→1098 (JX1), `fatallystrike_p` 25 vs 30; JX1 đổi `addskillexp1` nhiều chiêu sang `{361, EXP_PER = 14}` (engine JX1 không có `addskillexp1` → vô hại).
+
+---
+
+## PHẦN H — VIỆC CÒN LẠI / CHỜ QUYẾT
+
+1. **Bản vá AI 7‑10** (F.3): chọn (a)/(b)/(c) **trước khi swap** `CoreServer.dll.moi b43c85e8…`.
+2. Có sửa dữ liệu 876/1406/1493 `SkillStyle 14 → 0` không (G.4).
+3. 4 chỗ hỏng mã hoá `tianren.lua` + dấu `.` thừa của 1236 (`vn_edit.py`).
+4. Cái Bang 120: thêm `fastwalkrun_p` (bảng + cột) nếu muốn như Linux.
+5. Chưa đo: AI 21‑24 Linux; cửa cấp 120 của `autodeathskill` bên Linux; `0x0807A1F0` (AI7) tìm mục tiêu theo mẫu hay theo `Kind`.
