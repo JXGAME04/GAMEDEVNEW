@@ -314,3 +314,41 @@ Công cụ: `ReverseTools\lua54\danhgia_0609\` (`boot_gia.py`, `selftest_dll.py`
 Kết luận đo lần đầu bằng đồng hồ thật: **Lua chiếm 3,6 % tick (0,245 / 6,73 ms) và 0,45 % thời gian thực**; tick trễ 0 %; working set 8,1 GB. Đúng như dự đoán mục 12: viết lại script sang 5.4 thuần không thể đem lại quá 0,4 % tick. Đỉnh 67,5 ms mỗi vài phút trùng `SCRIPT_TIME` = `RunTime` (HD3/Vượt Ải giờ chẵn), không phải cache. Công cụ đo lại sau mỗi lần test: `python tools\sapxep\hieunang_sau.py [HH:MM]`.
 
 Hai lỗi đỏ boot 15:39 (`tasknpc.lua:64 AutoFunctions`, `achievementsys/type/longmenbiaoju.lua:7 AchievementDetailBase`) là script vận tiêu 13:51 của phiên khác, không do cache; đã chèn guard nil.
+
+## 14. Lua 5.4 có tính năng gì mới để tối ưu script? (06/09 18:40, đo trên `Lua54Dll.dll` máy chủ, `bench_54.lua`)
+
+Bối cảnh: script đang chạy trên lõi 5.4 nhưng viết theo phương ngữ Lua 4 qua lớp tương thích; Lua chỉ chiếm ~3,5 % tick (6,5 % khi Tống Kim) nên **tối ưu tốc độ có trần thấp**. Giá trị của 5.4 nằm ở (1) vài điểm nóng cụ thể, (2) độ bền (bắt lỗi, số nguyên), (3) code gọn cho script mới.
+
+### 14.1 Số đo: cách viết cũ vs tính năng 5.4 (cùng máy, best-of-3)
+
+| Tính năng 5.4 | Cách cũ đang dùng | Nhanh hơn | Trong cây script | Đáng làm? |
+|---|---|---:|---|---|
+| Toán tử bit `& \| ~ << >>` | `mod(floor(x/2^k),2)` | 8× đọc, 18× đặt bit | **0 chỗ** tính bit kiểu này (bit nhiệm vụ đi qua C++ `GetTaskBit/SetTaskBit`, 204 chỗ) | chỉ cho code mới (cờ/mask) |
+| `table.concat` | `s = s .. x` trong vòng lặp | **23,5×** ở 20.000 phần tử (O(n) vs O(n²)) | 386 dòng `x = x ..`, ~74 trong vòng lặp (37 tệp) | **CÓ** ở chỗ ghép danh sách dài (xếp hạng, thông báo nhiều dòng) |
+| Số nguyên 64-bit, `a // b` | `floor(a/b)` | 4,4× | 376 chỗ `floor(x/n)`; 3.470 `floor(` | code mới dùng `//`; cũ để yên (alias cùng hàm C) |
+| `#t` | `getn(t)` (quét O(n) như Lua 4) | 25× (10 pt) → ∞ | **10 chỗ `while getn`** = O(n²) | **CÓ**, 10 chỗ |
+| `pcall`/`xpcall` + `debug.traceback` | `call(f,{...},"x")` (wrapper Lua) | 22× | 59 chỗ `call(`, 15 `dostring(` | đổi dần khi chạm tệp; code mới dùng pcall |
+| `local` upvalue / `local function` | biến, hàm toàn cục (Lua 4 không có closure thật) | 2,9× đọc cấu hình trong vòng lặp | 9.524 hàm toàn cục, **0** `local function` | code mới: hàm nội bộ `local`; hàm engine gọi theo tên (`main`, `OnDialog`…) vẫn toàn cục |
+| `goto continue` | biến cờ | 1,5× | – | code mới, cho gọn |
+| Metatable / `__index` (OOP thật) | tag method (shim) | – | 11 tag method, 1 `setmetatable` | lớp mới viết `setmetatable`; cũ để shim |
+| Coroutine | chuỗi hàm callback `Say(...)` | **chậm 100×** cho state machine (220 vs 2 ms / 300k resume) | 1.350 `Say(`, 0 coroutine | KHÔNG phải tối ưu tốc độ; chỉ để viết hội thoại NPC nhiều bước tuyến tính (cần helper `SayCo` giữ coroutine theo người chơi — thiết kế riêng) |
+| `table.move` | vòng for sao chép | 1,1× | 0 | không |
+| `string.format` | `..` | 1,2× | – | không |
+| `<const>` / `<close>` | – | – | – | `<const>` cho hằng cấu hình (bắt gán nhầm lúc biên dịch); `<close>` tự đóng tệp trong `files_lib`/`ch_lib` |
+| GC thế hệ | GC dừng toàn bộ Lua 4 | – | đã bật cho mọi state trong `lua4_open` | có thể tinh chỉnh tham số nếu cần |
+
+Đã hưởng sẵn ở tầng engine, không cần sửa script: số nguyên 64-bit trong `format("%d")` (hết tràn 2,1 tỷ), `random` xoshiro 64-bit (hết 32.768 mức), closure tham chiếu thật (hết `%x`), traceback khi lỗi, cache bytecode `string.dump`/`lua_load` (boot 6,4 → 3,0 s), GC thế hệ, stack không giới hạn 100 ô.
+
+### 14.2 Bẫy khi dùng 5.4 thuần trong cây này
+- `string.format("%d", 2.5)` và `math.random(1, 2.5)` **ném lỗi**; `format`/`random` của lớp tương thích ép nguyên như Lua 4 → giữ dùng, hoặc `math.tointeger`/`//` trước.
+- `#t` khác `getn(t)` khi bảng có lỗ hoặc dùng `t.n`; `tinsert` ghi `t.n`, `table.insert` không.
+- Hàm engine gọi theo tên toàn cục; biến toàn cục là "API" giữa các Include trong cùng state → không `local` hoá bừa.
+- Mỗi tệp một `lua_State`: `local` chỉ sống trong tệp; muốn dùng chung vẫn phải Include.
+
+### 14.3 Đề xuất làm (theo lợi ích)
+1. `lib/lib_54.lua` (thư viện tiện ích 5.4, ~60 dòng): `GhepChuoi(tb, sep)` = `table.concat`; `Thu(f, ...)` = `xpcall` + traceback ghi `_ALERT`; `Bit_Co/Bit_Dat/Bit_Xoa` bằng toán tử bit; `IncludeOnce(path)` (guard biến toàn cục). Include ở nơi cần, không bắt buộc.
+2. Sửa 10 chỗ `while … getn(t)` → `#t` hoặc đếm một lần; rà 74 chỗ `x = x ..` trong vòng lặp, đổi những chỗ ghép > 50 phần tử sang `table.concat` (xếp hạng CTC/Tống Kim, danh sách bang, thông báo).
+3. Quy ước code MỚI (đã có trong `_MUCLUC.lua`, bổ sung): `local` cho hàm/biến nội bộ, `//`, toán tử bit, `pcall`, `goto continue`, `<const>` cho hằng; tên hàm cũ vẫn được.
+4. Đổi 59 `call(` → `pcall` và 15 `dostring` → `load` khi chạm tệp (không làm hàng loạt).
+5. Hội thoại NPC bằng coroutine: thử một NPC (helper `SayCo`) trước khi quyết định.
+6. Không làm: viết lại 13k lời gọi (mục 12), đổi `format`/`getn` hàng loạt.

@@ -1,0 +1,10 @@
+doc bit: floor(x/2^k) mod 2  vs  (x>>k)&1      n=1000000  cach cu=    48.0 ms   5.4=     6.0 ms   nhanh   8.0x  
+dat bit: x + 2^k (kiem truoc)  vs  x | (1<<k)  n=1000000  cach cu=    54.0 ms   5.4=     3.0 ms   nhanh  18.0x  
+ghep chuoi s = s .. x (20.000 lan) vs table.concat n=20000    cach cu=    47.0 ms   5.4=     2.0 ms   nhanh  23.5x  (O(n^2) vs O(n))
+cong so nguyen (5.4 integer) vs so thuc        n=3000000  cach cu=    11.0 ms   5.4=     8.0 ms   nhanh   1.4x  
+chia lay phan nguyen floor(a/b) vs a//b        n=3000000  cach cu=    53.0 ms   5.4=    12.0 ms   nhanh   4.4x  
+sao chep bang 1000 pt: for vs table.move       n=2000     cach cu=    19.0 ms   5.4=    17.0 ms   nhanh   1.1x  
+bo qua phan tu: co 'flag' vs goto continue     n=3000000  cach cu=    29.0 ms   5.4=    19.0 ms   nhanh   1.5x  
+state machine bang bien vs coroutine resume/yield n=300000   cach cu=     2.0 ms   5.4=   220.0 ms   nhanh   0.0x  (coroutine cham hon nhung don gian hoa code)
+doc CFG.ExpRate toan cuc vs local cache        n=3000000  cach cu=    23.0 ms   5.4=     8.0 ms   nhanh   2.9x  
+format('%s co %d vp') vs a..' co '..b..' vp'   n=300000   cach cu=    59.0 ms   5.4=    50.0 ms   nhanh   1.2x  
