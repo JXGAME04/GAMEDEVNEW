@@ -713,3 +713,5 @@ Chủ chạy cả hai bat lúc 07:28; trận Tống Kim mới bắt đầu 07:31
 **Vá e (chỉ máy chủ, chẩn đoán):** băm gói 75 với từng nhóm trường xoá trắng (tốc độ / rank-danh hiệu / chỉ số / trang bị-ngựa / tên-chuỗi-cờ) → `[PS-BO] ... nhom: toc_do= rank= chi_so= trang_bi= ten= nhieu=`. Sau trận kế đọc dòng này là biết trường nào; cách sửa tương ứng đã sẵn: tốc độ hiện tại → đưa 2 byte vào gói gọn (27 byte, đúng bằng Linux) và bỏ khỏi băm 75; RankInWorld/Repute → bỏ khỏi băm 75 và chỉ gửi ở kỳ làm mới 30 s (client không cần tức thời).
 
 **Bí ẩn `[PERF]` đã hết:** từ 07:28 chỉ còn một tiến trình ghi (`pid=54436`). Hai chuỗi lạ đêm qua không còn; nếu tái xuất thì `pid=` sẽ chỉ ra ngay.
+
+**Vá e đã build:** `bin\server\CoreServer.dll.moi` = **bdc8ae53** (18.480.640, từ `origin/main` aa38685a ⊇ SK120 33b1dfa4), chỉ máy chủ; client giữ 5f86a7f7. Swap sau khi trận 07:31 kết thúc (~08:01), rồi đọc `[PS-BO] ... nhom:` ở trận kế.
