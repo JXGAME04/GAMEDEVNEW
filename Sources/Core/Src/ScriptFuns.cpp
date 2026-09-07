@@ -649,6 +649,14 @@ static void sUiAppendAnswer(char* pBufStart, char* pCur, const char* pAdd)
 		strncat(pCur, pAdd, nRoom);
 }
 
+// [DIALOG 06/09 toi] ID script cua state dang goi Say/Talk (ke ca coroutine: g_GetScriptNameByState tra ve chu) -> KPlayer::m_dwDialogScriptID
+static DWORD sDialogScriptId(Lua_State* L)
+{
+	const char* szName = g_GetScriptNameByState(L);
+	if (!szName || !szName[0]) return 0;
+	return (DWORD)g_FileName2Id((LPSTR)szName);
+}
+
 int LuaSelectUI(Lua_State* L)
 {
 	char* strMain = NULL;
@@ -792,14 +800,6 @@ int LuaSelectUI(Lua_State* L)
 
 	Player[nPlayerIndex].DoScriptAction(&UiInfo);
 	return 0;
-}
-
-// [DIALOG 06/09 toi] ID script cua state dang goi Say/Talk (ke ca coroutine: g_GetScriptNameByState tra ve chu) -> KPlayer::m_dwDialogScriptID
-static DWORD sDialogScriptId(Lua_State* L)
-{
-	const char* szName = g_GetScriptNameByState(L);
-	if (!szName || !szName[0]) return 0;
-	return (DWORD)g_FileName2Id((LPSTR)szName);
 }
 
 int LuaSaySPR(Lua_State* L)//Say new
