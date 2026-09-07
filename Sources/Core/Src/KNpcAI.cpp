@@ -860,6 +860,12 @@ void KNpcAI::FollowPeople(int nIdx)
 {
 	if (CheckNpc(nIdx))
 	{
+		// [TUKICH 07/09 b] DAY moi la nhanh that su bat muc tieu chet: CheckNpc goi
+		// IsAlive() (chi xet m_Doing == do_death/do_revive) nen no an truoc nhanh
+		// "m_Doing == do_death" phia duoi - ban va a dat chot o nhanh do nen khong
+		// bao gio toi. Chi bat chot khi CHET; ra khoi tam nhin / an minh giu nhu cu.
+		if (nIdx > 0 && nIdx < MAX_NPC && Npc[nIdx].m_RegionIndex >= 0 && !Npc[nIdx].IsAlive())
+			g_OnLockedTargetDead(nIdx);
 		Npc[m_nIndex].m_nPeopleIdx = 0;
 		return;
 	}

@@ -156,6 +156,35 @@ void S13_ClearCmd(int nIdx)
 		Npc[nIdx].SendCommand(do_none, 0, 0, 0);	// m_Command private: do_none qua het cua chan va xoa khe
 }
 
+// [TUKICH 07/09 b] Muc tieu dang khoa vua CHET: vut lenh DI CHUYEN dang treo cua chinh
+// minh neu no nham vao ngay cho con quai chet. Phai lam o day vi s_S13Move la static cua
+// tep nay. Vi sao can: lenh chay/di cua nguoi choi that nam o khe rieng s_S13Move (xem
+// chu thich [S13] dau tep) nen no SONG SOT qua ca hoat anh danh - danh xong, ProcCommand
+// thi hanh no va nhan vat chay toi xac quai. Ban va 07/09 a chi kiem
+// m_Doing == do_run/do_walk nen bo lot dung truong hop nay (luc do dang la hoat anh danh).
+// CHI vut khi DICH nam quanh xac: nguoi choi dang chay di cho khac (ne, kite) thi giu
+// nguyen y dinh cua ho. TRUE = da vut -> ben goi nen bao may chu dung theo.
+BOOL S13_HuyLenhDiToiXac(int nIdx, int nXacX, int nXacY, int nBanKinh)
+{
+	if (nIdx <= 0 || nIdx >= MAX_NPC)
+		return FALSE;
+
+	BOOL bNham = FALSE;
+	NPC_COMMAND& sMove = s_S13Move[nIdx];
+	if (sMove.CmdKind == do_walk || sMove.CmdKind == do_run)
+		bNham = (g_GetDistance(sMove.Param_X, sMove.Param_Y, nXacX, nXacY) <= nBanKinh);
+
+	// dang chay do lenh cu da thi hanh: dich hien tai nam ngay cho xac
+	if (!bNham && (Npc[nIdx].m_Doing == do_walk || Npc[nIdx].m_Doing == do_run))
+		bNham = (g_GetDistance(Npc[nIdx].m_DesX, Npc[nIdx].m_DesY, nXacX, nXacY) <= nBanKinh);
+
+	if (!bNham)
+		return FALSE;
+
+	S13_ClearCmd(nIdx);		// xoa CA khe di chuyen lan m_Command
+	return TRUE;
+}
+
 #ifdef _SERVER
 // [S13-TELE-CU 04/09] LENH TON DONG SAU DICH CHUYEN. Client dang chay thi gui lenh run/walk (dich = node duong
 // hien tai) ~9 lan/giay; dich chuyen (SetPos cung map, ChangeWorld doi map) toi giua chung => lenh gui TRUOC khi
@@ -1849,13 +1878,13 @@ void KNpc::DoDeath(int nMode/* = 0*/, int nAttacker)
 
 #ifndef _SERVER
 	m_ClientDoing = cdo_death;
+	// [TUKICH 07/09 b] goi VO DIEU KIEN: m_nPeopleIdx co the da bi xoa truoc khi con quai
+	// chet (KNpc.cpp DoSkill bo chieu / CastMeleeSkill that bai), luc do dieu kien
+	// "m_nPeopleIdx == m_Index" cua ban va a khong con dung. g_OnLockedTargetDead tu loc
+	// con nao la muc tieu cua chinh minh (theo m_nPeopleIdx HOAC con vua bam vao).
+	g_OnLockedTargetDead(m_Index);
 	if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx == m_Index)
 	{
-		// [TUKICH 07/09] muc tieu dang khoa vua chet: truoc day chi xoa khoa,
-		// lenh do_run da gui van con hieu luc -> nhan vat chay not toi xac quai,
-		// va cu kich chuot ke tiep (tu kich chuot) lai keo toi xac / do roi.
-		// g_OnLockedTargetDead (CoreShell.cpp) dung tai cho + chot o vua chet.
-		g_OnLockedTargetDead(m_Index);
 		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx = 0;
 	}
 #endif

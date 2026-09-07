@@ -23944,6 +23944,9 @@ int KCoreShell::UseSkill(int x, int y, int nSkillID)
 	return 1;
 }
 
+// [TUKICH 07/09 b] dinh nghia phia duoi, canh khoi chot o quai vua chet.
+void g_TuKichGhiMucTieu(DWORD dwID);
+
 int KCoreShell::LockSomeoneUseSkill(int nTargetIndex, int nSkillID)
 {
 	if (Player[CLIENT_PLAYER_INDEX].CheckTrading())
@@ -23973,6 +23976,8 @@ int KCoreShell::LockSomeoneUseSkill(int nTargetIndex, int nSkillID)
 	if (nRelation == relation_enemy)
 	{
 		Npc[nIndex].m_nPeopleIdx = nTargetIndex;
+		// [TUKICH 07/09 b] nho con vua bam vao: m_nPeopleIdx co the bi xoa truoc khi no chet
+		g_TuKichGhiMucTieu(Npc[nTargetIndex].m_dwID);
 		return 1;
 	}
 
@@ -24052,13 +24057,49 @@ static BOOL DeadTargetGuardBlock(int nX, int nY)
 	return TRUE;
 }
 
-// Muc tieu dang khoa vua chet: huy lenh di chuyen dang treo (khong co no thi
-// nhan vat chay not toi xac quai) va bat chot o vua chet.
-// Goi tu KNpc::DoDeath va KNpcAI::FollowPeople (deu trong #ifndef _SERVER).
+// [TUKICH 07/09 b] dinh nghia o KNpc.cpp (cho duy nhat nhin thay khe lenh s_S13Move).
+extern BOOL S13_HuyLenhDiToiXac(int nIdx, int nXacX, int nXacY, int nBanKinh);
+
+// [TUKICH 07/09 b] Nho con quai MINH VUA BAM VAO de danh. Can vi m_nPeopleIdx co the bi
+// xoa TRUOC khi con quai chet (KNpc.cpp:3015 DoSkill bo chieu, :3090 CastMeleeSkill that
+// bai) - luc do moc o DoDeath se khong nhan ra day la muc tieu cua minh nua. Nho theo
+// m_dwID (chi so NPC bi dung lai), va chi trong TUKICH_TGT_NHO_MS.
+#define TUKICH_TGT_NHO_MS	15000
+
+static DWORD	s_dwTuKichTgtID = 0;
+static DWORD	s_dwTuKichTgtTime = 0;
+
+void g_TuKichGhiMucTieu(DWORD dwID)
+{
+	s_dwTuKichTgtID = dwID;
+	s_dwTuKichTgtTime = GetTickCount();
+}
+
+// Con vua chet co phai muc tieu cua CHINH MINH khong.
+static BOOL TuKichLaMucTieuCuaToi(int nIdxDead)
+{
+	int nMeIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nMeIdx <= 0 || nMeIdx >= MAX_NPC)
+		return FALSE;
+	if (Npc[nMeIdx].m_nPeopleIdx == nIdxDead)
+		return TRUE;
+	if (s_dwTuKichTgtID && Npc[nIdxDead].m_dwID == s_dwTuKichTgtID &&
+		GetTickCount() - s_dwTuKichTgtTime <= TUKICH_TGT_NHO_MS)
+		return TRUE;
+	return FALSE;
+}
+
+// Muc tieu cua minh vua chet: huy lenh di chuyen dang treo (khong co no thi nhan vat
+// chay not toi xac quai) va bat chot o vua chet.
+// Goi tu KNpc::DoDeath va KNpcAI::FollowPeople (deu trong #ifndef _SERVER); goi cho
+// MOI con chet cung duoc - ham tu loc con nao la muc tieu cua minh.
 void g_OnLockedTargetDead(int nIdxDead)
 {
 	if (nIdxDead <= 0 || nIdxDead >= MAX_NPC)
 		return;
+
+	if (!TuKichLaMucTieuCuaToi(nIdxDead))
+		return;		// con khac chet ngang duong (Tong Kim...) - khong dung chan nguoi choi
 
 	Npc[nIdxDead].GetMpsPos(&s_nDeadTgtX, &s_nDeadTgtY);
 	s_dwDeadTgtTime = GetTickCount();
@@ -24067,17 +24108,23 @@ void g_OnLockedTargetDead(int nIdxDead)
 	if (nMeIdx <= 0 || nMeIdx >= MAX_NPC)
 		return;
 
-	// "di toi cho minh dang dung" = dung lai; dung dung khuon san co o
-	// KNpcAI::FollowPeople (nhanh gap NPC doi thoai).
-	if (Npc[nMeIdx].m_Doing == do_walk || Npc[nMeIdx].m_Doing == do_run)
+	// [TUKICH 07/09 b] Ban va a kiem m_Doing == do_walk/do_run o day: SAI CHO. Luc giet
+	// duoc quai thi m_Doing dang la hoat anh danh, nen khong gui gi - trong khi lenh chay
+	// toi con quai VAN NAM trong khe rieng s_S13Move va se duoc ProcCommand thi hanh ngay
+	// sau khi danh xong => "kich danh xong van chay toi vi tri quai".
+	// Gio vut thang khe do (S13_HuyLenhDiToiXac o KNpc.cpp), roi moi bao may chu dung.
+	BOOL bHuyLenh = S13_HuyLenhDiToiXac(nMeIdx, s_nDeadTgtX, s_nDeadTgtY, DEAD_TGT_GUARD_RANGE);
+	if (bHuyLenh)
 	{
+		// "di toi cho minh dang dung" = dung lai (khuon san co o KNpcAI::FollowPeople
+		// nhanh gap NPC doi thoai); can ca hai ve vi may chu giu lenh chay rieng.
 		int nMeX = 0, nMeY = 0;
 		Npc[nMeIdx].GetMpsPos(&nMeX, &nMeY);
 		Npc[nMeIdx].SendCommand(do_walk, nMeX, nMeY);
 		SendClientCmdWalk(nMeX, nMeY);
-		AUTOLOG("[TUKICH] muc tieu %d chet luc dang duoi -> dung tai (%d,%d) oquai=(%d,%d)",
-			nIdxDead, nMeX, nMeY, s_nDeadTgtX, s_nDeadTgtY);
 	}
+	AUTOLOG("[TUKICH] chot o quai chet: quai=%d o=(%d,%d) toi=%d doing=%d huylenh=%d",
+		nIdxDead, s_nDeadTgtX, s_nDeadTgtY, nMeIdx, (int)Npc[nMeIdx].m_Doing, (int)bHuyLenh);
 }
 
 int KCoreShell::LockObjectAction(int nTargetIndex)
