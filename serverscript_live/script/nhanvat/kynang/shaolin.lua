@@ -347,6 +347,7 @@ SKILLS={
 							}},	
 	},
 	quanshaolin150={ --Dai luc Kim cang chuong - 150
+		anti_block_rate={{{1,3},{20,10},{21,10}},{{1,-1},{2,-1}}},--[SK150 07/09] nhu Linux
 		physicsenhance_p={{{1,65},{15,415},{20,740},{23,1130},{26,1325}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		ignoredefense_p={{{1,9},{20,90},{21,94},{22,98},{23,99},{24,99},}},
@@ -388,6 +389,13 @@ SKILLS={
 												}},	
 	},
 	gunshaolin150={ --Vi Da Hien xu - 150
+		skill_startevent={
+			[1]={{1,1},{20,1}},
+			[3]={{1,1201},{20,1201}}
+		},
+		skill_showevent={{{1,1},{20,1}}},
+		skill_eventskilllevel={{{1,1},{20,20}}},
+		anti_block_rate={{{1,3},{20,10},{21,10}},{{1,-1},{2,-1}}},--[SK150 07/09] nhu Linux
 		physicsenhance_p={{{1,12},{15,180},{20,425},{23,719},{26,866}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		skill_cost_v={{{1,18},{20,25},{23,27}}},
@@ -434,11 +442,11 @@ SKILLS={
 			[3]={{1,12},{20,135},{23,173},{26,193}}
 		},
 		skill_eventskilllevel={{{1,1},{20,20}}},
-		skill_startevent={--double x daoshaolin150
+		skill_startevent={
 			[1]={{1,0},{10,0},{10,1},{20,1}},
 			[3]={{1,1085},{20,1085}}
 		},
-		--skill_showevent={{{1,0},{10,0},{10,1},{15,1}}},
+		skill_showevent={{{1,0},{10,0},{10,1},{15,1}}},
 		skill_cost_v={{{1,18},{20,55},{23,66},{26,72}}},
 		missle_speed_v={{{1,32},{20,36},{23,38},{30,38}}},
 		skill_attackradius={{{1,448},{20,512}}},
