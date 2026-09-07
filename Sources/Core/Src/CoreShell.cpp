@@ -9036,9 +9036,15 @@ static bool HC_DangGiu(int nPlayerIdx, const autoData* pAp, int nIdx, const char
 			*ppLyDo = "do nhiem vu Da Tau - phai de trong tui";
 		return false;
 	}
-	// (2) BO LOC THUOC TINH - chep dung phep thu cua buoc ban (20986-21019), ke ca luat
-	// "thuoc tinh 139 thi luon giu" va luat magic_indestructible_b khong xet nguong.
-	if (pAp->bFilter && pAp->nFtMaCount)
+	// (2) BO LOC THUOC TINH - chep DUNG phep thu cua buoc ban, ke ca luat "thuoc tinh
+	// 139 thi luon giu" va luat magic_indestructible_b khong xet nguong.
+	// Dieu kien phai la (!nSelSell && nFtMaCount) Y HET buoc ban, KHONG phai bFilter:
+	// nSelSell la o "Muc trang bi dem ban" (IDC_COMBO_5_S) - 0 = "Ban giu loc do"
+	// (ton trong danh sach loc), 1 = "Ban het do" (khong doc danh sach). O che do
+	// "Ban het do" thi buoc ban khong dem xia den danh sach, nen buoc cat cung khong.
+	// Chu game 03/09: "do cui la do xanh khong co thuoc tinh hoac co ma thuoc tinh cui
+	// khong co trong danh sach loc" => do xanh CHI duoc cat khi KHOP danh sach loc.
+	if (!pAp->nSelSell && pAp->nFtMaCount)
 	{
 		for (int k = 0; k < pAp->nFtMaCount && !bGiu; ++k)
 		{
@@ -9082,21 +9088,17 @@ static bool HC_DangGiu(int nPlayerIdx, const autoData* pAp, int nIdx, const char
 		bGiu = true;
 		szLyDo = "do dang khoa";
 	}
-	// (5) mau tren xanh la = hoang kim / do tim / bach kim. Day la nhom "buoc ban tu choi
-	// ban" (20943) nen truoc gio chinh no bi day tuot vao ruong. Nay con phai qua nguong
-	// cap neu nguoi choi co dat o "Cap >" ben tab nhat do.
+	// (5) mau tren xanh la = hoang kim / do tim / bach kim.
+	// Chu game 03/09 chot: "hoang kim / do tim / bach kim dung luat tu cat" - nen nhom
+	// nay CAT VO DIEU KIEN, khong kep them nguong "Cap >" (ban dau toi co kep, chu game
+	// bao khong can). Buoc ban cung tu choi ban nhom nay (dong "> green_item").
 	if (!bGiu && Item[nIdx].GetColorItem() > green_item)
 	{
-		if (pAp->bLevel && Item[nIdx].GetLevel() < pAp->nLevel)
-			szLyDo = "mau quy nhung duoi nguong 'Cap >'";
-		else
-		{
-			bGiu = true;
-			szLyDo = "mau tren xanh la";
-		}
+		bGiu = true;
+		szLyDo = "hoang kim / do tim / bach kim";
 	}
 	if (!bGiu && !szLyDo[0])
-		szLyDo = "khong khop bo loc nao";
+		szLyDo = "do xanh/trang khong khop danh sach loc - de trong tui";
 	if (ppLyDo)
 		*ppLyDo = szLyDo;
 	return bGiu;
