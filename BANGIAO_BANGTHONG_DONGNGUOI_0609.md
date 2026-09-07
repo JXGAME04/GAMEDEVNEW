@@ -643,3 +643,48 @@ Thành phần byte của client trong Tống Kim (trung bình 77 cửa sổ, KB 
 **Chưa cần chỉnh:** 75 ngoại hình 29 KB/10 s trong Tống Kim là do đổi thật (cờ chiến đấu, lên xuống ngựa, hồi sinh), không phải làm mới 30 s. 207 là lựa chọn của chủ. `node_duyet` tăng (4,5–6,2 triệu/10 s) vì chủ đứng giữa đám đông, CPU không đổi.
 
 **Bản vá c đã build:** `bin\server\CoreServer.dll.moi` = **4b524b2f** (18.478.080, 01:15), chỉ máy chủ, client giữ nguyên 5c359b16. Chờ chủ tắt GameServer → `ChayGameServer.bat`. Nghiệm thu: trong Tống Kim, dòng `[NS-BO] 10s` có `day` nhỏ hơn hẳn `gon` (kỳ vọng dưới 3 %), `[BC-TOP]` byte của 77 giảm so với cửa sổ 360 s ở 8.7.
+
+### 8.8 Trận Tống Kim trọn vẹn 01:00–01:30 trên bản DELTA (chủ: "để hết trận lấy log phân tích tiếp, tìm phương án fix tiếp")
+
+Nguồn: `jx_auto_server.log.1` (tệp đã xoay, 67 MB) + `jx_auto_server.log`, pid 54884, **181 cửa sổ 10 s = 30,0 phút**, t = 1048800419..1050600598; `jx_perf_server.log`; client `jx_paint.log`, `jx_crash.log`. Script: `ptich_tran_tk.py` (scratchpad; đọc cả hai tệp, tách theo pid, lọc theo t). Bản chạy suốt trận: CoreServer 4b89f185 (vá c 4b524b2f chưa swap), 1.000 bot, Tống Kim trận 500, chủ (CaiBang) đứng trong đám đông.
+
+**Ổn định cả trận:** máy chủ TICK 6,4–7,0 ms (12 % ngân sách), `tre` ≤ 1/phút, không dòng lỗi; client không sập, 0 `Net Msg Error`, 4 spike (trận 22:50 hôm trước 9 spike), thời gian vẽ mỗi lượt 2,1 ms (trước 1,44 ms: nhận gấp đôi lần đồng bộ và đủ chiêu nên vẽ nhiều hơn, vẫn ~124 lượt/giây).
+
+**Client của chủ, phân bố theo 181 cửa sổ:**
+
+| | gói/giây | KB/giây |
+|---|---|---|
+| trung vị | 818 | 23,7 |
+| p90 | 1.545 | 40,8 |
+| p95 | 1.640 | 43,3 |
+| tối đa | 2.196 | 51,3 |
+| trung bình | 864 | 24,8 |
+
+Trận 22:50 hôm trước (bản cũ, cùng bot, cùng chỗ) chỉ còn 8 cửa sổ đỉnh trong nhật ký cũ: 1.586 / 1.490 / 1.483 gói/giây ở 61,5 / 60 / 51 KB/giây. Cùng ~1.500–1.600 gói/giây thì bản DELTA là 40–43 KB/giây, **giảm 29–33 %**, trong khi số lần đồng bộ vị trí nhận được gấp đôi và mọi chiêu/lệnh chạy đều tới.
+
+**Thành phần byte tới client cả trận (44,1 MB / 30 phút):**
+
+| Mã | Gói | MB | Tỉ lệ | Cỡ thật |
+|---|---|---|---|---|
+| 221 vị trí gọn | 829.356 | 20,2 | **46 %** | 25 B |
+| 77 vị trí đầy đủ | 79.546 | 7,6 | **17 %** | 98 B |
+| 75 ngoại hình | 29.916 | 6,7 | **15 %** | 231 B |
+| 207 số sát thương | 281.345 | 4,6 | 10 % | 17 B |
+| 148 chiêu | 104.882 | 2,1 | 5 % | 20 B |
+| 86 lệnh chạy | 147.886 | 1,8 | 4 % | 12 B |
+| 95 chiêu | 48.234 | 0,9 | 2 % | 20 B |
+| 85 lệnh đi | 23.049 | 0,2 | 0,5 % | 10 B |
+
+Quyết định đồng bộ cả trận (cộng dồn `[NS-BO]`): bỏ qua 25,1 triệu (44 %), gọn 29,5 triệu (52 %), đầy đủ 1,77 triệu (3 %). Lượt `BroadCast` 1,4–1,7 triệu/10 s (trước 2,4–2,6 triệu), `node_duyet` 4,5–7 triệu/10 s (chủ giữa đám đông), không cắt, van không bỏ.
+
+**Ba phát hiện dẫn tới phương án sửa tiếp:**
+
+1. **Gói 77 đầy đủ vẫn 17 % byte** (44 gói/giây tới client) dù chỉ 6 % số lượt; có cửa sổ 77 nhiều hơn 221 (phút 8,0: 1.526 gói = 147 KB; phút 28,5: 1.322 gói = 127 KB). Vá c (vòng bất tử băm 0/1) đã build nhưng chưa swap; kỳ vọng còn dưới 5 %.
+2. **Gói 75 ngoại hình 15 % byte** (16,6 gói/giây × 231 byte) dù làm mới 30 s. Nguyên nhân duy nhất đổi liên tục trong trận là bit `0x02` cờ chiến đấu trong `m_btSomeFlag` (bot đánh/nghỉ/hồi sinh, `KPlayer.cpp:7002-7007`, `KPlayerBot.cpp:12119`); client chỉ biết cờ này qua gói 75 (`KProtocolProcess.cpp:3035`). **Vá d:** cờ chiến đấu đi theo bit `STATE_FIGHTMODE 0x40` của `State` trong gói 77/221 (client `SyncNpcMin` áp cho `kind_player` khác mình), bỏ bit `0x02` khỏi băm gói 75; thêm đếm `[PS-BO] doi: chi_co_chien_dau / co_khac_hoac_ngua / khac` để đối chiếu. Kỳ vọng 75 còn dưới 3 %.
+3. **207 số sát thương 10 %** trung bình nhưng tới 40 % ở cửa sổ đánh dồn (12.707 gói = 210 KB/10 s). Là lựa chọn của chủ (không cắt); nếu sau này cần thì gói cho người xem có thể bỏ `dwLauncher` (17 → 13 byte) vì client chỉ dùng người nhận, hoặc thu tầm cho người xem. Chưa làm.
+
+**Việc ngoài lề phát hiện qua `jx_perf_server.log`:** trong khoảng 22:50–01:05 có **ba** chuỗi `[PERF]` cùng ghi vào tệp này (giây lệch :13/:12/:01 rồi :16/:17/:50), tất cả báo `online=1001`; chuỗi ":01→:50" là GameServer thật (khởi động lại 23:22 và 00:56, `online=1` lúc mới lên). Chuỗi ":13" **bão hoà suốt trận 22:52–23:21** (TICK 47–62 ms, 99,9 % ngân sách, 350–440 tick trễ/phút, tick 960–1.279/phút) nhưng đó không phải vòng game thật (`[BC-VUNG]` cùng lúc ghi 18 tick/giây). Chưa biết hai tiến trình kia là gì; vá d thêm `pid=` vào đầu dòng `[PERF]` để lần sau đọc ra ngay.
+
+**Sau vá d, mức kỳ vọng cho client trong Tống Kim:** 221 ~11 KB/s + 207 ~3 KB/s + 148/95/86 ~3 KB/s + 77 ~1 KB/s + 75 ~0,5 KB/s ≈ **19 KB/s trung bình, ~35 KB/s đỉnh** (từ 24,8 / 51). Phần còn lại là gói gọn 25 byte × 460/giây, tức là "giá" của việc đồng bộ vị trí dày gấp đôi; muốn giảm nữa chỉ còn cách hạ `DongBoMoiTick` (10 → 6 giảm ~40 % phần 221 nhưng NPC lỡ lệnh chạy chờ lâu hơn), là đánh đổi trải nghiệm nên để chủ quyết.
+
+**Vá c + d đã build (commit a8a6bfcc, 5b390cd8), chờ swap CẢ HAI:** `bin\server\CoreServer.dll.moi` = **6246967d** (18.479.104, thay bản c 4b524b2f, giữ tên `.moi.delta_c_4b524b2f_0115`), `bin\client\CoreClient.dll.moi` = **9cb92330** (2.610.176). Máy chủ mới + client cũ vẫn chạy (client cũ bỏ qua bit 0x40, chỉ mất tính năng cờ chiến đấu theo gói vị trí; gói 75 vẫn mang cờ khi được gửi). Nghiệm thu trận Tống Kim kế: `[PS-BO] ... doi: chi_co_chien_dau=` phải chiếm đa số các lần đổi trước đây và 75 tụt dưới 3 % byte; `[NS-BO] 10s` cột `day` dưới 3 %; `[PERF]` có `pid=` để nhận diện hai tiến trình lạ.
