@@ -1,0 +1,156 @@
+# BÀN GIAO — WAuto Tống Kim: LƯU CẤU HÌNH NGAY + VỀ THÀNH → RƯƠNG (06/09/2026 tối)
+
+> Chủ game báo: *"khi tống kim xong về thành với lưu rương chưa hoạt động · về không đúng thành ·
+> chưa lưu rương · cần bạn đọc hết lại WAuto phần lưu - tôi muốn khi nào config mới là auto tự lưu liền"*.
+
+Tiếp nối `BANGIAO_WAUTO_TK_RUONG_0409.md` (tính năng rương 04/09 chưa từng chạy được vì lỗi ở mục 2.1).
+
+---
+
+## 1. Trạng thái — CHỜ SWAP, ba tệp `.moi` ở `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client`
+
+| Tệp | md5 | cỡ (byte) | Nội dung |
+|---|---|---|---|
+| `WAuto.exe.moi` | `807e4007` | 465.920 | **lưu ngay** mọi ô tick / ô chọn + mặc định 3 trường rương TK (mục 2) |
+| `CoreClient.dll.moi` | `9cb2f51f` | 2.578.432 | build từ `main` `95317dc4` = **bản của phiên Vận tiêu 18:13** (`59161dae`, đã cất thành `CoreClient.dll.moi.vtcn_1813_59161dae`) **+** vá về thành + nhật ký (mục 3) |
+| `Game.exe.moi` | `fb443d6d` | 1.481.216 | của phiên Vận tiêu 18:21 — **không đụng** |
+
+Bản đang chạy: `CoreClient.dll` `b166ec89` · `Game.exe` `a4083afa` · `WAuto.exe` `66b9856b`.
+
+### Cách đổi
+
+1. Thoát hẳn `Game.exe` **và** `WAuto.exe`.
+2. Chạy `bin\client\ChoiGame.bat` — bản mới của bat (06/09) đổi **cả** `WAuto.exe.moi`, không phải đổi tay nữa.
+3. Mở WAuto → nhóm **Hoạt động** → tab **TK** → **tick lại một lần** `Về thành xong thì tới rương`,
+   chọn `Rương cửa`, tick `Cất trang bị trong túi vào rương`. Lý do: tệp `APdata\2513089250.dat`
+   hiện có (7.640 byte) đang ghi `bTKRuong=0, nTKRuongHuong=0 (Trung tâm), bTKRuongCat=0` vì bản
+   WAuto cũ chưa bao giờ lưu được ba ô này. Từ bản mới, bấm là lưu ngay.
+
+---
+
+## 2. WAuto — vì sao "lưu rương chưa hoạt động" và "config mới không tự lưu"
+
+### 2.1 Gốc (đã chứng minh bằng tệp cấu hình)
+
+`SaveRoleData` (đọc **toàn bộ** giao diện → `gnode.apdata` → ghi `APdata\<ID>.dat`) chỉ được gọi từ
+các khối `case IDC_...:` **liệt kê tay** trong `WM_COMMAND`. Hai ô tick thêm ngày 04/09 —
+`IDC_CHECKBOX_9_RUONG` (475) *Về thành xong thì tới rương* và `IDC_CHECKBOX_9_RCAT` (478) *Cất trang
+bị* — **không có** trong danh sách đó (combo `IDC_COMBO_9_RH` 477 thì có). Hậu quả:
+
+- bấm ô không ghi `.dat`, và **không cập nhật `gnode.apdata`** — chính là khối được `memcpy` vào
+  `IPCGameLoop` gửi sang game mỗi 54 ms → CoreClient luôn nhận `bTKRuong = 0` → về tới thành là trả
+  máy, không bao giờ sang pha `TKP_RUONG`;
+- chọn lại nhân vật / game kết nối lại → `LoadRoleData` + `UpdateUI` trả ô tick về 0.
+
+Bằng chứng: `APdata\2513089250.dat` ghi lúc 18:05:44 (nhân vật đang test): `bTongKim=1`,
+`nTKVeThanh=4` (Tương Dương Phủ), **`bTKRuong=0`**, `nTKRuongHuong=0`, `bTKRuongCat=0`.
+(Đọc bằng bộ phân tích struct `autoData` theo `ipc_shared.h`, `sizeof = 7.640`.)
+
+### 2.2 Sửa (bộ vá `ReverseTools\goi_va_wauto_luu_ngay_0609.py`, commit `6527b8be`)
+
+1. **Khối lưu chung** đặt ngay trước `switch (LOWORD(wParam))` của `WM_COMMAND`: bất kỳ control có ID
+   trong dải cấu hình `[IDC_STRING_0_L, IDC_INDEX_END)` = [161, 700) mà là **Button kiểu checkbox /
+   radio** (`BN_CLICKED`, kiểm `GWL_STYLE & BS_TYPEMASK`) hoặc **ComboBox** (`CBN_SELCHANGE`, kiểm
+   `GetClassNameW`) → `SaveRoleData` ngay. Nút bấm thường bỏ qua. `CheckDlgButton` /
+   `ComboBox_SetCurSel` do mã gọi không phát thông báo nên không lặp. Ô nhập chữ đã có cơ chế sẵn
+   (EN_CHANGE hẹn 750 ms + EN_KILLFOCUS, 27/08). Các khối `case` cũ vẫn giữ — chúng gọi
+   `SaveRoleData` lần hai, vô hại. **Từ nay thêm ô mới không còn phải nhớ liệt kê `case`.**
+2. `LoadRoleData`: đặt mặc định `bTKRuong=0 / nTKRuongHuong=5 (gần nhất) / bTKRuongCat=1` ở cả nhánh
+   *chưa có tệp* lẫn nhánh *tệp cũ ngắn hơn* (`uOldSize <= offsetof(autoData, bTKRuong)`). Trước đây
+   `memset(0)` ở đầu hàm xoá hết giá trị của constructor `autoData()` nên hai ô này ra 0 — trái với
+   bàn giao 04/09.
+
+Kiểm toán bằng script (281 control trong `.rc` đối chiếu `Resource.h` + `WAuto.cpp`): ngoài hai ô trên,
+mọi checkbox/combo khác đều đã có `case`; sau vá, khối chung bao trùm tất cả.
+
+---
+
+## 3. CoreClient — "về không đúng thành"
+
+### 3.1 Không còn vết của trận chủ báo
+
+`jx_auto.log` được **tạo lại mỗi lần mở game** (18:05:26 hôm nay) và **xoay vòng khi ~17 MB**
+(18:28 mất 470.000 dòng); log của trận chủ than phiền (phiên 15:42) đã mất. `TK_Msg` / `TK_Pha`
+chỉ hiện chat, không ghi log → kể cả còn log cũng không đọc được pha. **Đã thêm** `AUTOLOG`
+`[TK-MSG]` (mọi thông báo Tống Kim), `[TK-PHA] cũ -> mới map=… t=…`, `[LD-MSG]` (Liên đấu /
+`LD_DiThanh`, dùng chung cho về thành TK + CTC).
+
+### 3.2 Một lỗi thật tìm được khi đọc mã (bộ vá `ReverseTools\goi_va_tk_vethanh_0609.py`, commit `95317dc4`)
+
+`TKP_END` ở map báo danh 324 nhờ Xa Phu *"Những thành thị đã đi qua"* đưa về thành đã chọn.
+Danh sách đó do `station.lua::StationFun` dựng: `GetStation(i, CurStation)` →
+`LuaGetPlayerStation` (`ScriptFuns.cpp:10262`) chỉ liệt kê trạm có `g_GetPriceToStation(CurStation, id) > 0`.
+`tong_kim_tcap/xaphu.lua` đặt `CurStation = 1` (Phượng Tường) và `GetCurStation()` không đổi vì
+map 324 không có trong `STATION_ARRAY`; `StationPrice.txt` hàng Phượng Tường → Phượng Tường = **-1**.
+
+⇒ Chọn **Phượng Tường Phủ** — chính là **mục mặc định** của ô *Hết trận về* — thì Xa Phu 324 **không
+bao giờ liệt kê**. Mã cũ chuyển bước 4: *"Trở lại chỗ lúc nãy"* → `ReturnFromPortal` về map luyện
+công trước trận; map đó thường **không có Xa Phu**, không có phù về thành thì `LD_DiThanh` trả -1
+ngay → *"Không đi tới được thành đã chọn - trả máy tại chỗ"* → người chơi đứng ở map cũ hoặc ở
+thành mà Thổ Địa Phù đưa tới = **"về không đúng thành"**.
+
+Sửa: bước 3 không thấy thành đã chọn → chọn **một thành khác có trong danh sách** (theo thứ tự
+`g_LDVeMap`; 7 thành nối nhau qua Xa Phu, `StationPrice.txt` mọi cặp thành đều có giá), báo
+*"Xa Phu điểm báo danh không liệt kê thành đã chọn - đi qua thành khác rồi nhờ Xa Phu ở đó về tiếp"*,
+log `[TK-VE]`; `TKP_VETHANH` ở thành trung gian dùng `LD_DiThanh` (Thần Hành Phù nếu có, không thì
+Xa Phu) đi nốt. Hết cách mới rơi về đường cũ.
+
+Với cấu hình hiện tại của nhân vật test (Tương Dương, có trong danh sách, giá 30 lượng) đường Xa Phu
+phải chạy thẳng; nếu lần tới vẫn sai thành, `jx_auto.log` sẽ có đủ `[TK-PHA]` / `[TK-MSG]` / `[LD-MSG]`
+để chỉ đúng chỗ. **Chưa test thật** (trận 18:09 chạy trên DLL cũ, chưa swap).
+
+### 3.3 Đường về thành đúng — tóm tắt để đối chiếu log
+
+```
+TKP_END (map 324) --Xa Phu 'Những thành thị đã đi qua' + tên thành--> thành đã chọn
+   | không có tên thành (Phượng Tường LUÔN thế)
+   v (mới 06/09)  --chọn thành khác trong danh sách--> thành trung gian
+TKP_VETHANH: nMap != đích -> LD_DiThanh (Thần Hành Phù 6/1/1271: Thành thị > tên thành > cửa;
+             không phù: Xa Phu 'Những thành thị đã đi qua'); quá 150 s -> trả máy
+             nMap == đích -> bTKRuong ? TKP_RUONG : TKP_DONE
+TKP_RUONG: đi tới rương cửa đã chọn (g_TKRuong) -> chạm (OpenBox + SetRevPos) -> cất trang bị
+```
+
+---
+
+## 4. Cách kiểm sau swap
+
+- WAuto: tick một ô bất kỳ → `dir APdata\<ID>.dat` đổi giờ ngay; trong game, ô mới có tác dụng ở
+  nhịp kế (54 ms).
+- Client: `findstr /C:"[TK-PHA]" /C:"[TK-MSG]" /C:"[TK-VE]" /C:"[LD-MSG]" bin\client\jx_auto.log`.
+  Kỳ vọng sau hết trận: `[TK-PHA] … -> TKP_END` → `[TK-MSG] Xong Tống Kim - nhờ Xa Phu đưa về thành đã
+  chọn` → `[TK-PHA] … -> TKP_VETHANH` → `[TK-MSG] Đã về tới thành đã chọn - đi tiếp tới rương` →
+  `[TK-PHA] … -> TKP_RUONG` → `[TK-MSG] Đã tới rương - đặt lại điểm hồi sinh ở cửa này` → `… cất
+  trang bị vào rương xong`. Log ghi TCVN3 (mở bằng bảng mã TCVN3 hoặc đọc qua `vn_edit.py --read`).
+
+---
+
+## 5. Bẫy
+
+1. **Nhiều phiên đặt `.moi` chung một thư mục.** Lúc 18:13 phiên Vận tiêu đặt `CoreClient.dll.moi`
+   `59161dae` + 18:21 `Game.exe.moi`. Tôi đã thay `CoreClient.dll.moi` bằng bản `main` HEAD (siêu tập:
+   `main..chinam-vantieu-0609` = 0 commit, nguồn client sau 18:13 chỉ có `5a4d0d24` của chính họ +
+   30 dòng của tôi), giữ bản cũ cạnh đó và **đã nhắn phiên đó**. Ai đặt lại `.moi` phải merge
+   `origin/main` trước.
+2. **Nhánh `mail-0309` còn 55 commit client chưa gộp `main`** (đấu giá, hộp thư, cửa sổ Thông tin trận
+   TK…). Kết quả kiểm chuỗi nhị phân ghi ở mục 6. Nếu bản đang chạy có mã đó thì mọi build từ `main`
+   (của tôi và của phiên Vận tiêu) đều thiếu — cần gộp `mail-0309` vào `main` trước khi build tiếp.
+3. **`memset(&apdata, 0)` trong `LoadRoleData`** xoá mọi mặc định của constructor `autoData()`:
+   thêm trường mới phải đặt mặc định ở **cả hai** nhánh của `LoadRoleData`, không chỉ trong `ipc_shared.h`.
+4. **Đọc cấu hình thật của người chơi trước khi đoán**: `APdata\<ID>.dat` là struct thô — parse theo
+   `ipc_shared.h` (pack 1) ra được đúng từng ô; đã làm ở mục 2.1 và nó chỉ thẳng lỗi.
+5. Tên cấu hình build client ở `D:\GAMEDEVNEW` là **`Client Release|Win32`** (không có ` - US`);
+   `build.py --config "Client Release" --platform Win32 --project Core --solution-dir D:/GAMEDEVNEW`.
+   WAuto: `MSBuild WAuto.vcxproj -p:Configuration=Release -p:Platform=Win32` trong
+   `E:\Src_Auto_Ngoai\WAuto\WAuto` → `Release\WAuto.exe`.
+
+## 6. Kết quả kiểm bổ sung
+
+- **Nhánh `mail-0309` không gây rủi ro cho build từ `main`**: `git diff main..mail-0309 -- Sources` = 27 tệp,
+  **+26 / −2.169 dòng**; 26 dòng "thêm" chỉ là mã cũ (bot nội/ngoại `PB_BAT_DUONG_NOI`, `lua4compat`,
+  `KJx2SharedStore`, `[PORT5] RemoteExecute`) mà `main` đã thay bằng bản mới hơn — không có tính năng client
+  nào chỉ nằm trong `mail-0309` (55 commit của nó đã vào `main` bằng nội dung, chỉ khác mã băm).
+- **Trận 18:09 trên DLL cũ `b166ec89`** (cấu hình `bTKRuong=0`, đích Tương Dương): tới 18:42 vẫn đang đánh
+  (`[HD-GATE] nTK` 2↔1 = chết/hồi sinh). Một bộ canh `jx_auto.log` chạy nền thêm 10 phút; nếu trận kết thúc
+  trong khoảng đó, diễn biến sau `TKP_END` (map đến) sẽ được ghi thêm ở đây. DLL cũ không có `[TK-PHA]`
+  nên chỉ suy được từ `[S6-ME] loadmap` + `[DT-STATE] map=` / `[MOVE-NOMODE] curmap=`.

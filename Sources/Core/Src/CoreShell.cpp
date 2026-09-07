@@ -8344,6 +8344,7 @@ static void TK_Msg(int nPlayerIdx, const char* szMsg)
 	if (ea.uTKMsgT > uNow)
 		return;
 	ea.uTKMsgT = uNow + 1200;
+	AUTOLOG("[TK-MSG] %s", szMsg);	// (06/09) de truy vet 'het tran ve thanh nao / toi ruong' trong jx_auto.log
 	try
 	{
 		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "[Tèng Kim]", (char*)szMsg, strlen(szMsg), TRUE);
@@ -8354,6 +8355,7 @@ static void TK_Msg(int nPlayerIdx, const char* szMsg)
 static void TK_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	AUTOLOG("[TK-PHA] %d -> %d map=%d t=%u", ea.nTKPhase, nPha, SubWorld[0].m_SubWorldID, uCurTime);	// (06/09)
 	ea.nTKPhase = nPha;
 	ea.nTKStep = 0;
 	ea.nTKTry = 0;
@@ -10455,6 +10457,33 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			// qua thanh nay nen Xa Phu khong liet ke): dong thoai, chuyen sang cach
 			// cu - roi map bang 'Tro lai cho luc nay' roi TKP_VETHANH tu lo (co The
 			// dung Than Hanh Phu o map khac vi map do khong bi cam).
+			// (06/09) Xa Phu map bao danh KHONG liet ke thanh da chon. Voi Phuong Tuong (muc
+			// mac dinh cua o 'Het tran ve') thi LUON the: tong_kim_tcap/xaphu.lua dat
+			// CurStation = 1 (Phuong Tuong), GetCurStation() khong doi vi map 324 khong co
+			// trong STATION_ARRAY, ma station.lua chi liet ke tram co gia > 0 tu tram hien tai
+			// (StationPrice.txt: Phuong Tuong -> Phuong Tuong = -1). Duong cu 'Tro lai cho
+			// luc nay' dua ve map luyen cong cu - thuong khong Xa Phu, khong phu -> LD_DiThanh
+			// bo tay, nguoi choi dung o map cu ("ve khong dung thanh"). Nay: di sang MOT THANH
+			// KHAC co trong danh sach (7 thanh noi nhau qua Xa Phu); TKP_VETHANH se nho Xa Phu
+			// / Than Hanh Phu o thanh do dua tiep ve dung thanh da chon. Khong con thanh nao
+			// trong danh sach thi moi roi map theo duong cu.
+			if (ea.nTKStep == 3)
+			{
+				for (int i = 0; i < LD_VE_COUNT; ++i)
+				{
+					if (i == nVe)
+						continue;
+					const char* szKhac = DT_SapTownMenu((int)g_LDVeMap[i]);
+					if (!szKhac || (nOpt = DT_FindAns(apAns, nAns, szKhac)) < 0)
+						continue;
+					DT_Answer(nPlayerIdx, nOpt);
+					ea.nTKStep = 4;
+					TK_Msg(nPlayerIdx, "<color=Yellow>Xa Phu ®iÓm b¸o danh kh«ng liÖt kª thµnh ®· chän - ®i qua thµnh kh¸c råi nhê Xa Phu ë ®ã vÒ tiÕp.");
+					AUTOLOG("[TK-VE] Xa Phu 324 khong co thanh %d (map %d) - di qua thanh %d (map %d) truoc", nVe, (int)g_LDVeMap[nVe], i, (int)g_LDVeMap[i]);
+					ea.uTKNext = uCurTime + 2000;
+					return 1;
+				}
+			}
 			if (ea.nTKStep == 3)
 			{
 				ea.nTKStep = 4;
@@ -11955,6 +11984,7 @@ static void LD_Msg(int nPlayerIdx, const char* szMsg)
 	if (ea.uLDMsgT > uNow)
 		return;
 	ea.uLDMsgT = uNow + 1200;
+	AUTOLOG("[LD-MSG] %s", szMsg);	// (06/09) LD_DiThanh dung chung cho TK / CT ve thanh
 	try
 	{
 		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "[Liªn ®Êu]", (char*)szMsg, strlen(szMsg), TRUE);
