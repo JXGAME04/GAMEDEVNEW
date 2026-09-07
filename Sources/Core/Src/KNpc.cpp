@@ -4587,41 +4587,10 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			}
 		}
 
-		if(g_Skill120ExpRate && !m_btSimCityBot) // luyen skill 120
-		{
-			if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance <= 0 )
-					Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance = 1;
-
-			int calExpSkill = 1 * g_Skill120ExpRate * Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance;
-			if(IsPlayer())																						//#giam exp skill khi luyen bia danh vao nguoi choi
-			{
-				calExpSkill = 1 - g_Random(DEF_DOWN_SKILLEXP120);
-				if(calExpSkill < 0)
-					calExpSkill = 0;
-			}
-			if(calExpSkill)
-			{
-				Player[Npc[nAttacker].m_nPlayerIdx].AddSkillExp120(calExpSkill);
-			}
-		}
-
-		if(g_Skill90ExpRate && !m_btSimCityBot) // luyen skill 90
-		{
-			if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance <= 0 )
-					Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance = 1;
-
-			int calExpSkill = 1 * g_Skill90ExpRate * Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance;
-			if(IsPlayer())																							//#giam exp skill khi luyen bia danh vao nguoi choi
-			{
-				calExpSkill = 1 - g_Random(DEF_DOWN_SKILLEXP90);
-				if(calExpSkill < 0)
-					calExpSkill = 0;
-			}
-			if(calExpSkill)
-			{
-				Player[Npc[nAttacker].m_nPlayerIdx].AddSkillExp90(calExpSkill);
-			}
-		}
+		// [SKEXP 07/09] DA BO hai khoi AddSkillExp120/AddSkillExp90 cua JX1 (cong g_Skill*Rate x he so cho MOI lan CalcDamage
+		// = moi HE sat thuong, moi tia doc, moi muc tieu, doc nham m_CurrentExpSkillsEnchance cua Player[CLIENT_PLAYER_INDEX]).
+		// Linux khong co: exp ky nang chi phat o ReceiveDamage theo o addskillexp1/2 cua chieu (KMissle::ProcessDamage ->
+		// KNpc::CongExpKyNangKhiTrung), moi lan trung 1 muc tieu, 60 %, khong nhan theo he. Ky nang 120 nhan exp qua Add120SkillExp.
 		
 		int sendBloodInfo = nDamage > m_CurrentLife ? m_CurrentLife : nDamage;
 		if(nDamage * nStolen_Life / MAX_PERCENT > 0)
@@ -5173,6 +5142,44 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 }
 #endif
 
+#ifdef _SERVER
+// [SKEXP 07/09] Luat Linux ReceiveDamage 0x0808AA3C-0x0808AA97 (sau khe choang): duyet o addskillexp1/2 cua chieu vua trung:
+//   v0 (id ky nang nhan exp; 0 = chinh chieu) > 0; tung rand(100) > 59 thi bo (60 % moi lan trung);
+//   co v2 & 2 -> exp cho NAN NHAN (neu la nguoi choi); khong thi cho NGUOI PHAT (phai la nguoi choi);
+//   KSkillList::AddSkillExp (0x080E5D90): chi ky nang kinh nghiem, cap < cap toi da, exp += v1 (co 0).
+// JX1: exp = v1 x Skill90Rate (gamesetting.ini [ServerConfig], 1 = dung Linux) x he so x2 (m_CurrentExpSkillsEnchance CUA NGUOI NHAN).
+void KNpc::CongExpKyNangKhiTrung(int nSkillId, int nLevel, int nVictim)
+{
+	if (nVictim <= 0 || nVictim >= MAX_NPC || Npc[nVictim].m_btSimCityBot)
+		return;
+	KSkill *pSkill = (KSkill *)g_SkillManager.GetSkill(nSkillId, nLevel);
+	if (!pSkill || pSkill->GetAddSkillExpNum() <= 0)
+		return;
+	KMagicAttrib *pExp = pSkill->GetAddSkillExp();
+	for (int i = 0; i < pSkill->GetAddSkillExpNum(); i++)
+	{
+		int nIdNhan = pExp[i].nValue[0] > 0 ? pExp[i].nValue[0] : nSkillId;
+		int nExp = pExp[i].nValue[1];
+		if (nIdNhan <= 0 || nIdNhan >= MAX_SKILL || nExp <= 0)
+			continue;
+		if (!g_RandPercent(60))
+			continue;
+		int nNhan = m_Index;
+		if (pExp[i].nValue[2] & 2)
+		{
+			if (!Npc[nVictim].IsPlayer())
+				continue;
+			nNhan = nVictim;
+		}
+		if (!Npc[nNhan].IsPlayer() || Npc[nNhan].m_nPlayerIdx <= 0 || Npc[nNhan].m_nPlayerIdx >= MAX_PLAYER)
+			continue;
+		int nHeSo = g_Skill90ExpRate > 0 ? g_Skill90ExpRate : 1;
+		int nX2 = Npc[nNhan].m_CurrentExpSkillsEnchance > 1 ? Npc[nNhan].m_CurrentExpSkillsEnchance : 1;
+		Player[Npc[nNhan].m_nPlayerIdx].AddSkillExpKhiTrung(nIdNhan, nExp * nHeSo * nX2);
+	}
+}
+#endif
+
 void KNpc::SetImmediatelySkillEffect(int nLauncher, void *pData, int nDataNum)
 {
 	if (!pData || !nDataNum)
@@ -5310,8 +5317,10 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	if (pTemp->nAttribType == magic_physicsenhance_p)
 	{
 		pDes->nAttribType = magic_physicsdamage_v;
-		pDes->nValue[0] = nMinDamage * (MAX_PERCENT + (pTemp->nValue[0] + (pTemp->nValue[0] * nAddDamageP / MAX_PERCENT))) / MAX_PERCENT;
-		pDes->nValue[2] = nMaxDamage * (MAX_PERCENT + (pTemp->nValue[0] + (pTemp->nValue[0] * nAddDamageP / MAX_PERCENT))) / MAX_PERCENT;
+		// [SK150 07/09] Linux 0x0807C7A8-0x0807C844: v = (goc + add) x (100 + p) / 100, roi v += v x tang / 100 -
+		// he so tang sat thuong ky nang nhan CA phan goc, khong chi phan p nhu ban cu (lech 4-9 % khi co skill_enhance).
+		pDes->nValue[0] = (int)((__int64)nMinDamage * (MAX_PERCENT + pTemp->nValue[0]) / MAX_PERCENT * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT);
+		pDes->nValue[2] = (int)((__int64)nMaxDamage * (MAX_PERCENT + pTemp->nValue[0]) / MAX_PERCENT * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT);
 		if (IsPlayer())
 		{
 			if (Player[m_nPlayerIdx].m_ItemList.GetWeaponType() == equip_meleeweapon)
@@ -5386,8 +5395,10 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	if (pTemp->nAttribType == magic_firedamage_v)
 	{
 		pDes->nAttribType = magic_firedamage_v;
-		pDes->nValue[0] = pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT + pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT * m_CurrentFireEnhance / MAX_PERCENT;
-		pDes->nValue[2] = pTemp->nValue[2] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT + pTemp->nValue[2] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT * m_CurrentFireEnhance / MAX_PERCENT;
+		// [SK150 07/09] Linux 0x0807CD98-0x0807CE1C: hoa sat (m_CurrentFireEnhance) chi nhan vao MAX cua chieu; sau do
+		// ca min/max x (100 + tang) / 100. Ban cu nhan hoa sat vao ca min lan max.
+		pDes->nValue[0] = pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT;
+		pDes->nValue[2] = (pTemp->nValue[2] + pTemp->nValue[2] * m_CurrentFireEnhance / MAX_PERCENT) * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT;
 
 
 		if (!bIsPhysical)
@@ -5407,8 +5418,9 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	}
 	if (bIsPhysical)
 	{
-		pDes->nValue[0] += m_CurrentFireDamage.nValue[0] + m_CurrentFireDamage.nValue[0] * m_CurrentFireEnhance / MAX_PERCENT;
-		pDes->nValue[2] += m_CurrentFireDamage.nValue[2] + m_CurrentFireDamage.nValue[2] * m_CurrentFireEnhance / MAX_PERCENT;
+		// [SK150 07/09] Linux 0x0807CD78: hoa cua vu khi cong thang, KHONG nhan hoa sat.
+		pDes->nValue[0] += m_CurrentFireDamage.nValue[0];
+		pDes->nValue[2] += m_CurrentFireDamage.nValue[2];
 		if (nSkillID == 359)
 		{
 		    const float bonusRate = 1.0f; // +100% so voi st hien tai

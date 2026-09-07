@@ -134,6 +134,10 @@ private:
 	int					m_nShowAddition;
 	KMagicAttrib        m_AddSkillDamage[MAX_ADDSKILLDAMAGE];
 	int					m_nAddSkillDamageNum;
+	// [SKEXP 07/09] addskillexp1/2 theo Linux (idx 73/74): {id ky nang nhan exp (0 = chinh chieu nay), exp moi lan trung, co}.
+	// KHONG dua vao enum KMagicAttrib (tranh doi so thu tu thuoc tinh dang dong bo client) - doc thang ten LvlSetting.
+	KMagicAttrib		m_AddSkillExp[2];
+	int					m_nAddSkillExpNum;
 	char				m_szMagicSkillDesc[512];
 public:
 	KSkill();
@@ -223,6 +227,8 @@ public:
 	};
 	int					GetShowAddition() {return m_nShowAddition;};
 	KMagicAttrib*       GetAddSkillDamage()  { return m_AddSkillDamage;};    //get	
+	KMagicAttrib*       GetAddSkillExp()  { return m_AddSkillExp;};			// [SKEXP 07/09]
+	int					GetAddSkillExpNum() { return m_nAddSkillExpNum;};	// [SKEXP 07/09]
 	int					GetSkillSeries() const {return m_nSeries;};
 private:
 	void				Vanish(KMissle *) const;

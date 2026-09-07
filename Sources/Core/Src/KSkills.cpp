@@ -144,6 +144,7 @@ KSkill::KSkill()
 	m_nShowAddition = 0;
 
 	m_nAddSkillDamageNum = 0;
+	m_nAddSkillExpNum = 0; memset(m_AddSkillExp, 0, sizeof(m_AddSkillExp));	// [SKEXP 07/09]
 }
 
 KSkill::~KSkill()
@@ -2208,6 +2209,7 @@ void		KSkill::LoadSkillLevelData(unsigned long  nLevel /* =0*/, int nParam)
 	m_nMissleAttribsNum = 0;
 	m_nDamageAttribsNum = 0;
 	m_nAddSkillDamageNum = 0;
+	m_nAddSkillExpNum = 0; memset(m_AddSkillExp, 0, sizeof(m_AddSkillExp));	// [SKEXP 07/09]
 	m_nImmediateAttribsNum = 0;
 	m_nStateAttribsNum	= 0;		
 	m_nCostSpKey = 0; m_nCostSp = 0;	// [VHTD 02/09]
@@ -2295,6 +2297,26 @@ void		KSkill::LoadSkillLevelData(unsigned long  nLevel /* =0*/, int nParam)
 			sprintf(szMsg, "Cap ky nang %d(%s,%s) da xay ra loi, xin kiem ra lai!",nLevel, szSettingNameValue, szSettingDataValue);
 			g_DebugLog(szMsg);
 			break;
+		}
+		// [SKEXP 07/09] addskillexp1/2 (Linux idx 73/74, o sat thuong 16/17): JX1 khong co ten nay trong KMagicDesc
+		// nen ParseString2MagicAttrib bo qua -> doc rieng o day. Gia tri Lua: {id, exp moi lan trung, co} (id 0 = chinh chieu).
+		if (!strcmp(szSettingNameValue, "addskillexp1") || !strcmp(szSettingNameValue, "addskillexp2"))
+		{
+			if (m_nAddSkillExpNum < 2)
+			{
+				const char *pcszExp = szResult;
+				int nExpV0 = KSG_StringGetInt(&pcszExp, 0);
+				KSG_StringSkipSymbol(&pcszExp, ',');
+				int nExpV1 = KSG_StringGetInt(&pcszExp, 0);
+				KSG_StringSkipSymbol(&pcszExp, ',');
+				int nExpV2 = KSG_StringGetInt(&pcszExp, 0);
+				m_AddSkillExp[m_nAddSkillExpNum].nAttribType = 0;
+				m_AddSkillExp[m_nAddSkillExpNum].nValue[0] = nExpV0;
+				m_AddSkillExp[m_nAddSkillExpNum].nValue[1] = nExpV1;
+				m_AddSkillExp[m_nAddSkillExpNum].nValue[2] = nExpV2;
+				m_nAddSkillExpNum++;
+			}
+			continue;
 		}
 		ParseString2MagicAttrib(nLevel, szSettingNameValue, szResult);
 	}

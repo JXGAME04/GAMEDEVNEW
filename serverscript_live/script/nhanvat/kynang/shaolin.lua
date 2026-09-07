@@ -195,7 +195,7 @@ SKILLS={
 			[3]={{1,10},{20,155}}
 		},
 		deadlystrike_p={{{1,5},{20,40}}},
-		addskillexp1={{{1,318},{2,318}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,318},{2,318}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(6312,1.15,1,2,1)},
 							{2,SkillExpFunc(6312,1.15,2,2,1)},
 							{3,SkillExpFunc(6312,1.16,3,2,1)},
@@ -244,7 +244,7 @@ SKILLS={
 			[3]={{1,1},{20,20}}
 		},
 		skill_attackradius={{{1,128},{20,128}}},
-		addskillexp1={{{1,319},{2,319}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(5070,1.15,1,3,1)},
 							{2,SkillExpFunc(5070,1.15,2,3,1)},
 							{3,SkillExpFunc(5070,1.16,3,3,1)},
@@ -279,7 +279,7 @@ SKILLS={
 			[3]={{1,1},{20,18}}
 		},
 		skill_cost_v={{{1,15},{20,45}}},
-		addskillexp1={{{1,321},{2,321}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(5700,1.15,1,2,1)},
 							{2,SkillExpFunc(5700,1.15,2,2,1)},
 							{3,SkillExpFunc(5700,1.16,3,2,1)},
@@ -347,6 +347,7 @@ SKILLS={
 							}},	
 	},
 	quanshaolin150={ --Dai luc Kim cang chuong - 150
+		addskillexp1={{{1,1055},{2,1055}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		anti_block_rate={{{1,3},{20,10},{21,10}},{{1,-1},{2,-1}}},--[SK150 07/09] nhu Linux
 		physicsenhance_p={{{1,65},{15,415},{20,740},{23,1130},{26,1325}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
@@ -389,6 +390,7 @@ SKILLS={
 												}},	
 	},
 	gunshaolin150={ --Vi Da Hien xu - 150
+		addskillexp1={{{1,1056},{2,1056}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		skill_startevent={
 			[1]={{1,1},{20,1}},
 			[3]={{1,1201},{20,1201}}
@@ -435,6 +437,7 @@ SKILLS={
 												}},	
 	},
 	daoshaolin150={ --Tam gioi Quy thien - 150
+		addskillexp1={{{1,1057},{2,1057}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,55},{15,180},{20,400},{23,664},{26,796}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		colddamage_v={

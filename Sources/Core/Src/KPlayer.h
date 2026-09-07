@@ -1182,6 +1182,7 @@ public:
 	void			AddSkillPoint(BYTE* pProtocol);			// 收到客户端要求增加某个技能的点数
 	void			IncSkillLevel(int nSkillId, int nAddLevel);
 	void			IncSkillExp(int nSkillId, int nAddExp);
+	void			AddSkillExpKhiTrung(int nSkillId, int nExp);		// [SKEXP 07/09] luat Linux KSkillList::AddSkillExp
 	BOOL			ServerPickUpItem(BYTE* pProtocol);		// 收到客户端消息鼠标点击某个obj拣起装备或金钱
 	void			EatItem(BYTE* pProtocol);				// 收到客户端消息吃药
 	void			ServerMoveItem(BYTE* pProtocol);		// 收到客户端消息移动物品

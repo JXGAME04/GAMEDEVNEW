@@ -4838,6 +4838,35 @@ void	KPlayer::IncSkillLevel(int nSkillId, int nAddLevel)
 	}
 }
 
+// [SKEXP 07/09] Cong exp ky nang khi trung - theo KSkillList::AddSkillExp Linux (0x080E5D90): chi ky nang kinh nghiem (IsExp),
+// dung khi cap >= cap toi da THAT cua ky nang (skills.txt MaxLevel) - AddSkillExp90 cu chan o MAX_TRAIN_SKILLEXPLEVEL 20 nen
+// ky nang 150 khong bao gio len duoc 21-26. Nguong cap = magic_level_exp.txt (trung skill_skillexp_v Linux 62/62).
+void	KPlayer::AddSkillExpKhiTrung(int nSkillId, int nExp)
+{
+	if (nSkillId <= 0 || nSkillId >= MAX_SKILL || nExp <= 0)
+		return;
+	int nSkillIndex = Npc[m_nIndex].m_SkillList.FindSame(nSkillId);
+	if (nSkillIndex <= 0)
+		return;
+	int nSkillLevel = Npc[m_nIndex].m_SkillList.GetLevel(nSkillId);
+	if (nSkillLevel <= 0 || nSkillLevel >= (int)g_SkillManager.GetSkillMaxLevel(nSkillId))
+		return;
+	KSkill *pSkill = (KSkill *)g_SkillManager.GetSkill(nSkillId, nSkillLevel);
+	if (!pSkill || !pSkill->IsExp())
+		return;
+	if (Npc[m_nIndex].m_SkillList.IncreaseExp(nSkillIndex, nExp))
+		UpdataCurData();
+	PLAYER_SKILL_LEVEL_SYNC	sSkill;
+	sSkill.ProtocolType = s2c_playerskilllevel;
+	sSkill.m_nSkillID = nSkillId;
+	sSkill.m_nSkillLevel = Npc[m_nIndex].m_SkillList.GetLevel(nSkillId);
+	sSkill.m_nAddLevel = Npc[m_nIndex].m_SkillList.GetAddLevel(nSkillId);
+	sSkill.m_nSkillExp = Npc[m_nIndex].m_SkillList.GetExp(nSkillId);
+	sSkill.m_bTempSkill = Npc[m_nIndex].m_SkillList.IsTempSkill(nSkillId);
+	sSkill.m_nLeavePoint = m_nSkillPoint;
+	g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sSkill, sizeof(PLAYER_SKILL_LEVEL_SYNC));
+}
+
 void	KPlayer::IncSkillExp(int nSkillId, int nAddExp)
 {	
 	int		nSkillIndex, nSkillLevel;
@@ -9984,8 +10013,9 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	//
 	if (magic_physicsenhance_p == pMagicData->nAttribType)
 	{
-		*nMin += nMinNpcDamage * (100 + pMagicData->nValue[0] * (100 + nAddDamageP) / 100) / 100;
-		*nMax += nMaxNpcDamage * (100 + pMagicData->nValue[0] * (100 + nAddDamageP) / 100) / 100;
+		// [SK150 07/09] cung cong thuc voi KNpc::AppendSkillEffect (Linux 0x0807C7A8)
+		*nMin += (int)((__int64)nMinNpcDamage * (100 + pMagicData->nValue[0]) / 100 * (100 + nAddDamageP) / 100);
+		*nMax += (int)((__int64)nMaxNpcDamage * (100 + pMagicData->nValue[0]) / 100 * (100 + nAddDamageP) / 100);
 		
 		int nEnhance;
 		if (equip_meleeweapon == m_ItemList.GetWeaponType()) //trang bÞ vò khÝ cËn chiÕn
@@ -10041,8 +10071,9 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	// Calc fire damage[11]
 	if (magic_firedamage_v == pMagicData->nAttribType)
 	{
-		*nMin += pMagicData->nValue[0] * (100 + nAddDamageP) / 100 + pMagicData->nValue[0] * (100 + nAddDamageP) / 100 * Npc[m_nIndex].m_CurrentFireEnhance / 100;
-		*nMax += pMagicData->nValue[2] * (100 + nAddDamageP) / 100 + pMagicData->nValue[2] * (100 + nAddDamageP) / 100 * Npc[m_nIndex].m_CurrentFireEnhance / 100;
+		// [SK150 07/09] cung cong thuc voi KNpc::AppendSkillEffect (Linux 0x0807CD98): hoa sat chi nhan MAX
+		*nMin += pMagicData->nValue[0] * (100 + nAddDamageP) / 100;
+		*nMax += (pMagicData->nValue[2] + pMagicData->nValue[2] * Npc[m_nIndex].m_CurrentFireEnhance / 100) * (100 + nAddDamageP) / 100;
 
 		if (!bIsPhysical)
 		{
@@ -10052,8 +10083,8 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	}
 	if (bIsPhysical)
 	{
-		*nMin += Npc[m_nIndex].m_CurrentFireDamage.nValue[0] + Npc[m_nIndex].m_CurrentFireDamage.nValue[0] * Npc[m_nIndex].m_CurrentFireEnhance / 100;
-		*nMax += Npc[m_nIndex].m_CurrentFireDamage.nValue[2] + Npc[m_nIndex].m_CurrentFireDamage.nValue[2] * Npc[m_nIndex].m_CurrentFireEnhance / 100;
+		*nMin += Npc[m_nIndex].m_CurrentFireDamage.nValue[0];	// [SK150 07/09] Linux 0x0807CD78: hoa vu khi khong nhan hoa sat
+		*nMax += Npc[m_nIndex].m_CurrentFireDamage.nValue[2];
 	}
 	pMagicData++;
 

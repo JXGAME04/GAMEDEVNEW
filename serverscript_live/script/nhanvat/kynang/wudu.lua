@@ -203,7 +203,7 @@ SKILLS={
 			[3]={{1,1},{20,60}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,8},{20,8}}},
-		addskillexp1={{{1,353},{2,353}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,180},
 							{2,460},
 							{3,920},
@@ -251,7 +251,7 @@ SKILLS={
 		missle_speed_v={{{1,28},{20,32},{21,32}}},
 		skill_attackradius={{{1,448},{20,512},{21,512}}},
 		skill_cost_v={{{1,30},{20,60}}},
-		addskillexp1={{{1,355},{2,355}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,180},
 							{2,460},
 							{3,920},
@@ -362,7 +362,7 @@ SKILLS={
 		skill_attackradius={{{1,448},{20,480},{21,480}}},
 		skill_cost_v={{{1,35},{20,100},{23,120}}},
 		skill_eventskilllevel={{{1,1},{20,20}}},--startevent: 1094
-		addskillexp1={{{1,1066},{2,1066}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,1066},{2,1066}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		skill_skillexp_v={{	{1,10500},
 							{2,12180},
 							{3,14373},
@@ -386,6 +386,7 @@ SKILLS={
 						}},
 	},
 	zhangwudu150_2={ --chuong 150 tang 2
+		addskillexp1={{{1,1066},{2,1066}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{20,80},{21,82}}},
 		poisondamage_v={{{1,1},{20,25}},{{1,60},{20,60}},{{1,10},{20,10}}},
 	},
@@ -408,7 +409,7 @@ SKILLS={
 			[3]={{1,1095},{20,1095}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,4},{20,4}}},
-		addskillexp1={{{1,1067},{2,1067}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,1067},{2,1067}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		skill_skillexp_v={{	{1,10500},
 							{2,12180},
 							{3,14373},
@@ -432,6 +433,7 @@ SKILLS={
 						}},
 	},
 	daowudu150_2={ --Hon Anh tung sanh -150 tang 2
+		addskillexp1={{{1,1067},{2,1067}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{20,80},{21,82}}},
 		poisondamage_v={{{1,1},{20,12},{23,15}},{{1,60},{20,60}},{{1,10},{20,10}}},
 	},

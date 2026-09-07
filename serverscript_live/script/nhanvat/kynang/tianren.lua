@@ -199,7 +199,7 @@ SKILLS={
 --			[3]={{1,378},{20,378}}
 --		},
 --		skill_showevent={{{1,0},{10,0},{10,1},{20,1}}},
-		addskillexp1={{{1,361},{2,361}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(11600,1.15,1,1,1)},
 							{2,SkillExpFunc(11600,1.15,2,1,1)},
 							{3,SkillExpFunc(11600,1.16,3,1,1)},
@@ -247,7 +247,7 @@ SKILLS={
 			[3]={{1,1},{20,55}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,8},{20,8}}},
-		addskillexp1={{{1,362},{2,362}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(4085,1.15,1,3,1)},
 							{2,SkillExpFunc(4085,1.15,2,3,1)},
 							{3,SkillExpFunc(4085,1.16,3,3,1)},
@@ -347,6 +347,7 @@ SKILLS={
 		missle_hitcount={{{1,6},{20,6}}},
 	},
 	zhanren150={ --Giang Hai no Lan -150
+		addskillexp1={{{1,1075},{2,1075}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,55},{20,535},{23,686},{26,762}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		deadlystrike_p={{{1,6},{20,80},{23,103},{26,115}}},
@@ -402,6 +403,7 @@ SKILLS={
 												}},	
 	},
 	moren150={ --Tat Hoa Lieu nguyen -150
+		addskillexp1={{{1,1076},{2,1076}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		firedamage_v={
 			[1]={{1,80},{20,1000},{23,1300},{26,1500}},

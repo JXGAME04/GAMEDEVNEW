@@ -264,7 +264,7 @@ SKILLS={
 		skill_showevent={{{1,0},{10,0},{10,4},{20,4}}},
 		missle_speed_v={{{1,28},{20,32},{21,32}}},
 		skill_attackradius={{{1,448},{20,512},{21,512}}},
-		addskillexp1={{{1,339},{2,339}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(4000,1.215,1,1,3)},
 							{2,SkillExpFunc(4000,1.15,2,1,3)},
 							{3,SkillExpFunc(4000,1.16,3,1,3)},
@@ -298,7 +298,7 @@ SKILLS={
 		skill_attackradius={{{1,448},{20,480},{21,480}}},
 		poisondamage_v={{{1,1},{20,19}},{{1,60},{20,60}},{{1,10},{20,10}}}, --damage doc
 		missle_lifetime_v={{{1,18},{20,18*2},{21,18*2}}},
-		addskillexp1={{{1,302},{2,302}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(12260,1.15,1,1,1)},
 							{2,SkillExpFunc(12260,1.15,2,1,1)},
 							{3,SkillExpFunc(12260,1.16,3,1,1)},
@@ -356,7 +356,7 @@ SKILLS={
 			[1]={{1,1100},{2,1100}},
 			[3]={{1,1},{20,60}}
 		},
-		addskillexp1={{{1,342},{2,342}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(4680,1.15,1,1,5)},
 							{2,SkillExpFunc(4680,1.15,2,1,5)},
 							{3,SkillExpFunc(4680,1.16,3,1,5)},
@@ -454,6 +454,7 @@ SKILLS={
 							}},	
 	},
 	feidaotang150={ --Vo Anh xuyen - 150
+		addskillexp1={{{1,1069},{2,1069}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,30},{15,180},{20,360},{23,576},{26,684}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		poisondamage_v={{{1,6},{20,38},{23,48},{26,53}},{{1,60},{20,60}},{{1,10},{20,10}}},
@@ -495,6 +496,7 @@ SKILLS={
 												}},	
 	},
 	feidaotang150_2={ --Truy tam Toa Menh - 150 tang 2
+		addskillexp1={{{1,1069},{2,1069}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{20,80},{21,82}}},
 		physicsenhance_p={{{1,30},{20,140},{23,174},{26,192}}},
 		--增加第三式银刀射月 edited by LLX
@@ -506,6 +508,7 @@ SKILLS={
 		skill_showevent={{{1,0},{10,0},{10,4},{20,4}}},
 	},
 	nutang150={ --Thiet Lien Tu Sat -150
+		addskillexp1={{{1,1070},{2,1070}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		physicsenhance_p={{{1,18},{15,240},{20,520},{23,856},{26,1024}}},
 		skill_cost_v={{{1,35},{20,100},{23,120}}},
@@ -547,11 +550,13 @@ SKILLS={
 												}},	
 	},
 	nutang150_2={ --Thiet Sa Xa Tinh -150 tang 2
+		addskillexp1={{{1,1070},{2,1070}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{20,80},{21,82}}},
 		physicsenhance_p={{{1,18},{15,120},{20,180},{23,252},{26,288}}},
 		poisondamage_v={{{1,10},{20,20},{23,23}},{{1,60},{20,60}},{{1,10},{20,10}}},
 	},
 	biaotang150={ --Can Khon Nhat Trich-150
+		addskillexp1={{{1,1071},{2,1071}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		physicsenhance_p={{{1,12},{15,120},{20,355},{23,637},{26,778}}},
 		deadlystrike_p={{{1,12},{20,45},{23,55},{26,60}}},
@@ -587,6 +592,7 @@ SKILLS={
 												}},	
 	},
 	biaotang150_2={ --tang 2 - ko su dung
+		addskillexp1={{{1,1071},{2,1071}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		physicsenhance_p={{{1,12},{15,120},{20,355}}},
 		deadlystrike_p={{{1,12},{20,45}}},
@@ -596,6 +602,7 @@ SKILLS={
 		skill_cost_v={{{1,36},{20,90}}},
 	},
 	biaotang150_3={ --tang 3 - ko su dung
+		addskillexp1={{{1,1071},{2,1071}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		physicsenhance_p={{{1,12},{15,120},{20,355}}},
 		deadlystrike_p={{{1,12},{20,45}}},

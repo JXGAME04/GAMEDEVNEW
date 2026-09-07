@@ -216,7 +216,7 @@ SKILLS={
 			[3]={{1,1},{20,120}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,4},{20,4}}},
-		addskillexp1={{{1,336},{2,336}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_misslenum_v={{{1,1},{5,1},{20,5},{21,5}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(8000,1.25,1,1,1)},
 							{2,SkillExpFunc(8000,1.15,2,1,1)},
@@ -290,7 +290,7 @@ SKILLS={
 			[3]={{1,1},{20,45}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,2},{20,2}}},
-		addskillexp1={{{1,337},{2,337}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(13000,1.25,1,1,1)},
 							{2,SkillExpFunc(13000,1.15,2,1,1)},
 							{3,SkillExpFunc(13000,1.16,3,1,1)},
@@ -358,6 +358,7 @@ SKILLS={
 		enhancehit_rate={{{1,100},{20,100}},{{1,18},{20,18}}},
 	},
 	daocuiyan150={ --Bang Tuoc Hoat ky -150
+		addskillexp1={{{1,1063},{2,1063}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,90},{15,600},{20,900},{23,1260},{26,1440}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		colddamage_v={
@@ -401,6 +402,7 @@ SKILLS={
 												}},	
 	},
 	daocuiyan150_2={ --Bang Ngung Han Yen - 150 tang 2
+		addskillexp1={{{1,1063},{2,1063}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,18},{15,120},{20,175},{23,241},{26,274}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		colddamage_v={
@@ -411,6 +413,7 @@ SKILLS={
 		skill_misslenum_v={{{1,1},{5,1},{20,5},{21,5}}},
 	},
 	neicuiyan150={ --Thuy Anh Man Tu -150
+		addskillexp1={{{1,1065},{2,1065}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		physicsdamage_v={
 			[1]={{1,36},{15,570},{20,1280},{23,1492},{26,1768}},
@@ -459,6 +462,7 @@ SKILLS={
 	},
 	--startevent: 1102 missle:362 neicuiyan150
 	neicuiyan150_2={ --Khinh Sa Phu Thuy -150 tang 2
+		addskillexp1={{{1,1065},{2,1065}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{20,80},{21,82}}},
 		colddamage_v={
 			[1]={{1,55},{20,720},{23,930},{26,1035}},

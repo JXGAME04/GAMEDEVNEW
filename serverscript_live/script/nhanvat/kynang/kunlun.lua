@@ -191,7 +191,7 @@ SKILLS={
 			[3]={{1,375},{20,375}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,4},{20,4}}},
-		addskillexp1={{{1,0},{2,0}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,10}},{{1,0},{2,0}}},
 		skill_skillexp_v={{{1,20000},{20,84567890,Conic}}},
 	},
 	leidong_jiutian={ --Loi Dong Cuu Thien
@@ -212,7 +212,7 @@ SKILLS={
 		},
 		stun_p={{{1,10},{20,20},{21,20}},{{1,1},{20,6},{21,6}}},
 		skill_showevent={{{1,0},{10,0},{10,4},{20,4}}},
-		addskillexp1={{{1,375},{2,375}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(5330,1.15,1,8,1)},
 							{2,SkillExpFunc(5330,1.15,2,8,1)},
 							{3,SkillExpFunc(5330,1.16,3,8,1)},
@@ -267,7 +267,7 @@ SKILLS={
 			[3]={{1,1},{20,35}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,4},{20,4}}},
-		addskillexp1={{{1,372},{2,372}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(6860,1.15,1,5,1)},
 							{2,SkillExpFunc(6860,1.15,2,5,1)},
 							--{3,SkillExpFunc(6860,1.16,3,5,1)},
@@ -360,7 +360,7 @@ SKILLS={
 			[3]={{1,1109},{20,1109}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,8},{20,8}}},
-		addskillexp1={{{1,1081},{2,1081}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,1081},{2,1081}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		skill_skillexp_v={{	{1,10500},
 							{2,12180},
 							{3,14373},
@@ -384,6 +384,7 @@ SKILLS={
 						}},
 	},
 	jiankunlun150={ --Loi Dong Can khon-150 tang 2
+		addskillexp1={{{1,1081},{2,1081}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		lightingdamage_v={
 			[1]={{1,207},{15,849},{20,1430},{23,2082},{26,2430}},
@@ -411,7 +412,7 @@ SKILLS={
 			[3]={{1,1108},{20,1108}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,4},{20,4}}},
-		addskillexp1={{{1,1080},{2,1080}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,1080},{2,1080}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		skill_skillexp_v={{	{1,10500},
 							{2,12180},
 							{3,14373},
@@ -435,6 +436,7 @@ SKILLS={
 						}},
 	},
 	daokunlun150_2={ --Phong Minh Ngoc Toai-150 tang 2
+		addskillexp1={{{1,1080},{2,1080}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{20,80},{21,82}}},
 		missle_lifetime_v={{{1,6},{20,24},{21,24}}},
 		lightingdamage_v={

@@ -192,7 +192,7 @@ SKILLS={
 			[3]={{1,1},{20,25}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,1},{20,1}}},
-		addskillexp1={{{1,328},{2,328}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(5000,1.25,1,3,1)},
 							{2,SkillExpFunc(5000,1.15,2,3,1)},
 							{3,SkillExpFunc(5000,1.16,3,3,1)},
@@ -234,7 +234,7 @@ SKILLS={
 			[3]={{1,380},{20,380}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,1},{20,1}}},
-		addskillexp1={{{1,0},{2,0}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,10}},{{1,0},{2,0}}},
 		skill_skillexp_v={{{1,20000},{20,100000000,Conic}}},
 	},
 	fengshuang_suiying={ --Phong Suong toai anh
@@ -254,7 +254,7 @@ SKILLS={
 			[3]={{1,1},{20,25}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,1},{20,1}}},
-		addskillexp1={{{1,380},{2,380}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(6260,1.25,1,3,1)},
 							{2,SkillExpFunc(6260,1.15,2,3,1)},
 							{3,SkillExpFunc(6260,1.16,3,3,1)},
@@ -327,6 +327,7 @@ SKILLS={
 		skill_appendskill={{{1,332},{20,332}},{{1,1},{20,20}}},
 	},
 	jianemei150={ --Kiem Hoa Van Tinh -150
+		addskillexp1={{{1,1061},{2,1061}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,12},{15,120},{20,285},{23,483},{26,582}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		colddamage_v={
@@ -371,6 +372,7 @@ SKILLS={
 												}},	
 	},
 	jianemei150_2={ --Kiem Tam Tinh Dien - 150 tang 2
+		addskillexp1={{{1,1061},{2,1061}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,36},{20,175},{23,218},{26,240}}},
 		seriesdamage_p={{{1,40},{20,80},{21,82}}},
 		deadlystrike_p={{{1,12},{20,24},{23,27}}},
@@ -381,6 +383,7 @@ SKILLS={
 		--vanishedevent: 1091 missle: 353 jianemei150_2
 	},
 	zhangemei150={ --Bang Vu Lac Tinh - 150 - hoi yeu' can xem lai.
+		addskillexp1={{{1,1062},{2,1062}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		colddamage_v={
 			[1]={{1,24},{15,420},{20,930},{23,1542},{26,1848}},
@@ -415,6 +418,7 @@ SKILLS={
 												}},	
 	},
 	zhangemei150_2={ --tang 2- ko su dung
+		addskillexp1={{{1,1062},{2,1062}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		colddamage_v={
 			[1]={{1,10},{20,585},{21,600}},
 			[3]={{1,10},{20,585},{21,600}},
@@ -424,6 +428,7 @@ SKILLS={
 		skill_misslenum_v={{{1,1},{10,1},{20,3},{21,3}}},
 	},
 	fuzhuemei150={ --¸¨Öú150
+		addskillexp1={{{1,1114},{2,1114}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,20},{15,20},{20,60},{21,62}}},
 		colddamage_v={
 			[1]={{1,20},{15,200},{20,400},{23,640},{26,760}},
