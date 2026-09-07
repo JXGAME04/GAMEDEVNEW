@@ -62,3 +62,8 @@ Kết luận may mắn: dự án **có "May mắn %" (`lucky_v`)** và dùng nó
 
 1. Tốc độ đánh: có làm gói (1)+(2) mục 3 không (hiện không đổi hành vi, chỉ phòng xa).
 2. May mắn: có thêm `lucky_v_partner` và/hoặc cộng may mắn theo đồng đội gần như Linux không; có giữ các tác dụng may mắn JX1 tự thêm không.
+
+
+---
+
+**Đính chính 07/09 (đợt 2, xem `PHANTICH_TOCDODANH_LINUX_SAU_0709.md`)**: `0x08088221`/`0x0808818D` là đuôi `KNpc::DoSkill` (`0x08088150`), không phải ProcCommand; "bảng cấp NPC cột +0x20" là bảng npcgold cột `AttackSpeed/CastSpeed`; nhánh "style 14" thực ra là `CharAnimId == cdo_none (14)` ⇒ khung 0 (JX1 cũng vậy). Lệch có tác dụng thật là **khung gốc**: JX1 người chơi `m_CastFrame` kẹt 20 (Linux 18), `AttackFrame` 17 vs 18.
