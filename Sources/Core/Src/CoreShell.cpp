@@ -8709,6 +8709,13 @@ static int PK_CoKhien(int nIdx)
 	return ((int)(it->second.uHan - uNow) > 0) ? 1 : 0;
 }
 
+// (06/09) [HC-BAN] HAU CAN buoc 1 (ban rac): mon gui lenh ban ma KHONG MAT (may chu tu choi im lang)
+// truoc day bi gui lai 300 ms/lan MAI MAI, nhan vat dung yen trong thanh ("ve thanh la dung yen" - log
+// 19:22 map 78: [HC-STATE] buoc=1 hang phut, tui 28 o trong). Nay dem so lan gui theo dwID, qua
+// HC_BAN_THU lan van con trong tui thi bo qua mon do trong luot nay; buoc 0 xoa bo dem de luot sau thu lai.
+#define HC_BAN_THU	6
+static std::map<DWORD, int> s_mHCBanThu;	// dwID -> so lan da gui lenh ban trong luot Hau can nay
+
 static int TK_ChonDich(int nPlayerIdx, const autoData* pAp, int nLoai)
 {
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
@@ -20590,6 +20597,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					{	//cÊt hoÆc qu¨ng mãn trªn tay nÕu cã
 						g_ScenePlace.RemoveFlag();
 						++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+						s_mHCBanThu.clear();	// (06/09) [HC-BAN] luot moi - thu ban lai moi mon
 						int nIdx = Player[nPlayerIdx].m_ItemList.Hand();
 						if(nIdx > 0)
 						{
@@ -20633,6 +20641,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 										// (20/08) item dat yeu cau nhiem vu Da Tau dang lam: CAM ban
 										if(DT_IsQuestItem(nPlayerIdx, pApData, nIdx))
 											continue;
+										{	// (06/09) [HC-BAN] mon da gui lenh ban HC_BAN_THU lan ma van con -> bo qua
+											std::map<DWORD, int>::iterator itBan = s_mHCBanThu.find((DWORD)Item[nIdx].GetID());
+											if(itBan != s_mHCBanThu.end() && itBan->second >= HC_BAN_THU)
+												continue;
+										}
 										int nDetail = Item[nIdx].GetDetailType();
 										if(!pApData->bSellHorse)
 										{
@@ -20702,6 +20715,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							}
 							if(nSelIdx)
 							{
+								// (06/09) [HC-BAN] dem so lan gui; toi HC_BAN_THU ma mon van con la bo qua (khoi lap vo han)
+								const int nBanThu = ++s_mHCBanThu[(DWORD)Item[nSelIdx].GetID()];
+								if(nBanThu == 1 || nBanThu == HC_BAN_THU)
+									AUTOLOG("[HC-BAN] gui ban id=%u '%s' genre=%d detail=%d mau=%d khoa=%d/%d lan %d/%d%s",
+										Item[nSelIdx].GetID(), Item[nSelIdx].GetName(), (int)Item[nSelIdx].GetGenre(),
+										(int)Item[nSelIdx].GetDetailType(), (int)Item[nSelIdx].GetColorItem(),
+										(int)Item[nSelIdx].GetPlayerItemLock(), (int)Item[nSelIdx].GetPlayerItemHLock(),
+										nBanThu, HC_BAN_THU, (nBanThu >= HC_BAN_THU) ? " - VAN CON TRONG TUI, bo qua mon nay" : "");
 								SendClientCmdSell(Item[nSelIdx].GetID());
 								return 1;
 							}
