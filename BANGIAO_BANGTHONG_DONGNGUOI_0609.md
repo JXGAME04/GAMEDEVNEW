@@ -715,3 +715,5 @@ Chủ chạy cả hai bat lúc 07:28; trận Tống Kim mới bắt đầu 07:31
 **Bí ẩn `[PERF]` đã hết:** từ 07:28 chỉ còn một tiến trình ghi (`pid=54436`). Hai chuỗi lạ đêm qua không còn; nếu tái xuất thì `pid=` sẽ chỉ ra ngay.
 
 **Vá e đã build:** `bin\server\CoreServer.dll.moi` = **bdc8ae53** (18.480.640, từ `origin/main` aa38685a ⊇ SK120 33b1dfa4), chỉ máy chủ; client giữ 5f86a7f7. Swap sau khi trận 07:31 kết thúc (~08:01), rồi đọc `[PS-BO] ... nhom:` ở trận kế.
+
+**Cập nhật 07:55:** phiên SKEXP thay cả hai khe bằng bản build từ `origin/main` 217202f0 (⊇ vá e b4e6277c, đã kiểm đủ dấu hiệu DELTA): **`CoreServer.dll.moi` = ce462519, `CoreClient.dll.moi` = e7c70880** (không đổi giao thức; bản e bdc8ae53 giữ tên `.moi.delta_e_bdc8ae53_0749`). Cặp chờ swap hiện tại là cặp này, chạy cả hai bat sau trận 07:31.
