@@ -32,6 +32,7 @@ class KSkill;
 #define		STATE_HIDE		0x0008
 #define		STATE_FROZEN	0x0010
 #define		STATE_WALKRUN	0x0020
+#define		STATE_FIGHTMODE	0x0040	// [DELTA 07/09 d] co chien dau nguoi choi trong goi 77/221 (thay bit 0x02 cua goi 75)
 #define MAX_POISON_DAMAGE 200000 //tæng dame ®éc giíi h¹n 
 #define MAX_FIRE_DAMAGE 50000 //tæng dame hoa sat giíi h¹n 
 

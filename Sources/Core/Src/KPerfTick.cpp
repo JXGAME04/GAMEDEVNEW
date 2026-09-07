@@ -203,11 +203,11 @@ static void PerfReport(double dNow, int nOnlinePlayer)
 
 	char szLine[512];
 	_snprintf(szLine, sizeof(szLine) - 1,
-		"[PERF] %02d:%02d:%02d tick=%d tre=%d (%.1f%%) online=%d khoang=%.1fs",
+		"[PERF] %02d:%02d:%02d tick=%d tre=%d (%.1f%%) online=%d khoang=%.1fs pid=%u",
 		st.wHour, st.wMinute, st.wSecond,
 		s_nFrame, s_nLate,
 		s_nFrame > 0 ? (s_nLate * 100.0 / s_nFrame) : 0.0,
-		nOnlinePlayer, dWindow / 1000.0);
+		nOnlinePlayer, dWindow / 1000.0, (unsigned)GetCurrentProcessId());	// [DELTA 07/09 d] pid: nhieu tien trinh cung ghi tep nay
 	szLine[sizeof(szLine) - 1] = 0;
 	PerfWrite(szLine);
 

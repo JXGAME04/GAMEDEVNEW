@@ -6568,6 +6568,10 @@ static DWORD s_adwPSBam[MAX_NPC];	// dau vet noi dung goi lan phat truoc
 static DWORD s_adwPSLuc[MAX_NPC];	// tick luc phat lan truoc
 static int   s_nPSLamMoi = -1;		// [Server] BroadCastLamMoi (giay)
 static int   s_nPSBo = 0, s_nPSGui = 0;
+// [DELTA 07/09 d] doi chieu nguyen nhan goi 75 phai phat lai: bam DAY DU (co ca bit 0x02) va bam KHONG co/ngua
+static DWORD s_adwPSBamDay[MAX_NPC];
+static DWORD s_adwPSBamKhac[MAX_NPC];
+static int   s_nPSDoiFight = 0, s_nPSDoiCoNgua = 0, s_nPSDoiKhac = 0;
 static DWORD PS_Bam(const void* pData, int nCo)
 {
 	DWORD dw = 2166136261u;
@@ -6889,6 +6893,8 @@ void KNpc::NS_DungGoi(void* pOut, int nMpsX, int nMpsY) //Sync npc min liªn tô
 		NpcSync.State |= STATE_FROZEN;
 	if (m_WalkRun.nTime > 0)
 		NpcSync.State |= STATE_WALKRUN;
+	if (m_FightMode)
+		NpcSync.State |= STATE_FIGHTMODE;	// [DELTA 07/09 d] di theo goi vi tri, khong phat lai goi 75 234 byte
 	//if (m_ForbidAttack.nTime > 0)
 	//	NpcSync.State |= STATE_FBDATK;
 	NpcSync.m_bySeries			= (BYTE)m_Series;
@@ -7133,7 +7139,25 @@ BOOL KNpc::NormalSync()
 		bool bPSGui = true;
 		if (m_Index > 0 && m_Index < MAX_NPC)
 		{
-			const DWORD dwBam = PS_Bam(&PlayerSync, (int)sizeof(PLAYER_NORMAL_SYNC));
+			// [DELTA 07/09 d] bit 0x02 (co chien dau) doi lien tuc trong Tong Kim (bot danh/nghi/hoi sinh) -> bo khoi bam;
+			// co nay da di theo STATE_FIGHTMODE cua goi 77/221. Dem nguyen nhan doi de doi chieu trong [PS-BO].
+			PLAYER_NORMAL_SYNC sPSBam = PlayerSync;
+			sPSBam.m_btSomeFlag &= ~0x02;
+			const DWORD dwBam = PS_Bam(&sPSBam, (int)sizeof(PLAYER_NORMAL_SYNC));
+			{
+				const DWORD dwBamDay = PS_Bam(&PlayerSync, (int)sizeof(PLAYER_NORMAL_SYNC));
+				PLAYER_NORMAL_SYNC sPSKhac = sPSBam;
+				sPSKhac.m_btSomeFlag = 0; sPSKhac.HorseType = 0;
+				const DWORD dwBamKhac = PS_Bam(&sPSKhac, (int)sizeof(PLAYER_NORMAL_SYNC));
+				if (s_adwPSBamDay[m_Index] != 0)
+				{
+					if (dwBamDay != s_adwPSBamDay[m_Index] && dwBam == s_adwPSBam[m_Index]) s_nPSDoiFight++;
+					else if (dwBam != s_adwPSBam[m_Index] && dwBamKhac == s_adwPSBamKhac[m_Index]) s_nPSDoiCoNgua++;
+					else if (dwBam != s_adwPSBam[m_Index]) s_nPSDoiKhac++;
+				}
+				s_adwPSBamDay[m_Index] = dwBamDay;
+				s_adwPSBamKhac[m_Index] = dwBamKhac;
+			}
 			const DWORD dwLuc = GetTickCount();
 			if (s_adwPSBam[m_Index] == dwBam &&
 				(dwLuc - s_adwPSLuc[m_Index]) < (DWORD)(s_nPSLamMoi * 1000))	// GetTickCount tinh bang mili giay
@@ -7148,8 +7172,9 @@ BOOL KNpc::NormalSync()
 				s_nPSGui++;
 			}
 		}
-		AUTOLOG_EVERY(10000, "[PS-BO] goi ngoai hinh: gui=%d bo=%d (%d%% bo) lam moi moi %d giay",
-			s_nPSGui, s_nPSBo, (s_nPSGui + s_nPSBo) > 0 ? (s_nPSBo * 100 / (s_nPSGui + s_nPSBo)) : 0, s_nPSLamMoi);
+		AUTOLOG_EVERY(10000, "[PS-BO] goi ngoai hinh: gui=%d bo=%d (%d%% bo) lam moi moi %d giay | doi: chi_co_chien_dau=%d co_khac_hoac_ngua=%d khac=%d",
+			s_nPSGui, s_nPSBo, (s_nPSGui + s_nPSBo) > 0 ? (s_nPSBo * 100 / (s_nPSGui + s_nPSBo)) : 0, s_nPSLamMoi,
+			s_nPSDoiFight, s_nPSDoiCoNgua, s_nPSDoiKhac);
 		if (bPSGui)
 		{
 			bNSKq = TRUE;	// [DELTA 07/09]

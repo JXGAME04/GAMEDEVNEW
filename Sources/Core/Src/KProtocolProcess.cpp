@@ -2497,6 +2497,9 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 		Npc[nIdx].m_FrozenAction.nTime	= (NpcSync->State & STATE_FROZEN);
 		//Npc[nIdx].m_ForbidAttack.nTime	= (NpcSync->State & STATE_FBDATK);
 		Npc[nIdx].m_WalkRun.nTime		= NpcSync->State & STATE_WALKRUN;
+		// [DELTA 07/09 d] co chien dau cua nguoi choi khac di theo goi 77/221 (truoc chi qua goi 75 -> 75 phat lai lien tuc)
+		if (nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex && Npc[nIdx].m_Kind == kind_player)
+			Npc[nIdx].m_FightMode = (NpcSync->State & STATE_FIGHTMODE) ? enumPKWar : enumPKNormal;
 		//
 		Npc[nIdx].m_nProtectedTime = NpcSync->m_nProtectedTime;			//vong tron bat tu, vßng trßn bÊt t?
 		Npc[nIdx].m_CurrentLife			= NpcSync->m_CurrentLife;
