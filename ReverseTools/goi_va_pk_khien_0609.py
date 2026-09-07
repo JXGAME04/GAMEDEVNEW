@@ -17,6 +17,9 @@ khien = luc thay + so khung con lai / 18, va chi keo dai han khi gia tri dong bo
 Vao viec:
   1. ipc_shared.h (CA HAI ban D:\GAMEDEVNEW va E:\Src_Auto_Ngoai): them `bPKBoQuaKhien` o CUOI autoData
      (+ khoi tao = 1). autoData dai them 4 byte -> WAuto.exe va CoreClient.dll phai doi CUNG LUC.
+  (21:15) SUA: dong loc khien trong TK_ChonDich phai dat SAU 'else if (!bPKNpc || nLoai == 2) continue;'
+     - ban dau chen giua '}' va 'else if' lam else dinh vao if moi -> moi nguoi choi bi loai khi nLoai == 2
+     -> WAuto vao Tong Kim khong danh (chu bao 21:10). Neo CS_TKCHON_CU da sua de ap lai dung.
   2. CoreShell.cpp: PK_CoKhien(); loc trong ATYPE_PKFIGHT (muc tieu dang giu + muc tieu moi -> loai 3 s
      qua m_mAutoExcludeNpcID), TK_SanNguoi, TK_ChonDich, LD_ChonDich.
   3. WAuto: Resource.h ID 479; WAuto.rc o tick tab 7 y=351 (+ s_aTabDay[7] 350->365; hang 336 bi ShowTab doi cum Doi voi tay trai toi) (nhan ngan, do_wauto_bo_cuc.py 0 nhan cat); WAuto.cpp ShowTab / SaveRoleData / UpdateUI /
@@ -196,6 +199,8 @@ CS_TKCHON_CU = """		if (Npc[nIdx].m_Kind == kind_player)
 			if (!pAp->bPKPlayer || nLoai == 1)
 				continue;
 		}
+		else if (!pAp->bPKNpc || nLoai == 2)
+			continue;
 """
 CS_TKCHON_MOI = CS_TKCHON_CU + """		if (pAp->bPKBoQuaKhien && PK_CoKhien(nIdx))
 			continue;	// (06/09) dang co khien bao ve - danh khong trung

@@ -246,3 +246,26 @@ nhân vật** (chưa có dòng log nào của pid mới, bộ nhớ 185 MB = mà
 kiểm: `findstr /C:"[HC-BAN]" jx_auto.log` — dòng đầu ghi tên món máy chủ từ chối bán, dòng `lan 6/6 - VAN CON TRONG TUI, bo qua`
 là máy đã bỏ qua và đi tiếp; `[HC-STATE] buoc` phải chạy 1 → 2 → … → 9 thay vì kẹt 1. Khe `.moi` của tôi hiện TRỐNG; `Game.exe.moi`
 (6210e1f5) và `bin\server\CoreServer.dll.moi` (d0dab0c9, đã gộp `42262294`) là của phiên Vận tiêu / bot nội, tôi không đụng.
+
+---
+
+## 9. (21:20) 🔴 LỖI CỦA TÔI — "vào Tống Kim không đánh, chỉ chạy tới rồi đứng yên" (chủ báo 21:10)
+
+**Gốc:** bộ vá tab PK 19:0x chèn dòng lọc khiên vào `TK_ChonDich` **giữa** khối `if (Npc.m_Kind == kind_player) {…}` và
+nhánh `else if (!pAp->bPKNpc || nLoai == 2) continue;`. Nhánh `else if` đó dính vào câu `if` mới, nên với **người chơi**
+không có khiên, `else if (… || nLoai == 2)` chạy → `continue` → `TK_ChonDich(…, 2)` (bước "người khác màu trong tầm PK
+có đường nhìn → giao máy PK" của `TKP_FIGHT`) **không bao giờ trả về người chơi**. Tầng săn (lọc bằng màu phe, không
+qua `TK_ChonDich`) vẫn chạy tới địch, đứng cách 95 mps chờ tầng đánh nhận, 3 giây sau `[TK-SAN-BO] khong toi duoc` loại
+20 giây rồi chạy sang địch khác. Log 20:56: `[TK-SAN] san id=93043 xa=95` → `[TK-SAN-QUYEN]` lặp → `[TK-SAN-BO]`,
+`[PK-IN] tgID=0`, không có `[PK-KHIEN]` nào (bộ lọc khiên tự nó không hề loại ai).
+
+**Sửa (commit bên dưới, bộ vá `goi_va_pk_khien_0609.py` đã đổi neo):** trả `else if` về đúng chỗ, đặt dòng lọc khiên
+**sau** nhánh `else if`. Ba chỗ chèn còn lại (`TK_SanNguoi`, `LD_ChonDich`, máy PK) đã soi lại: dòng kế tiếp đều là câu
+`if` độc lập, không có `else` dính.
+
+**Bài học ghi vào bộ nhớ:** chèn mã bằng script theo neo văn bản phải in **cả dòng sau** điểm chèn (`cat -A`) trước khi
+build; một `else` ngay sau `}` là chỗ chết. Build thành công không có nghĩa là đúng.
+
+`.moi` đợt 4 (chỉ CoreClient): `CoreClient.dll.moi` **`db8d96fb`** (sha256 `5300c46f`, 2.593.792 B). Cách đổi: thoát game →
+`ChoiGame.bat`. Kiểm sau swap: vào Tống Kim, `[TK-SAN] san id=…` phải được nối bằng `[PK-IN] tgID=<id>` rồi
+`NET-SKILL-PKT` / `[S6-ATK]`, không còn `[TK-SAN-BO]` liên tục.
