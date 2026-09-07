@@ -80,7 +80,12 @@ BOOL KLuaScript::LoadBuffer(PBYTE pBuffer, DWORD dwLen )
 		return FALSE;
 	}
 	
-	if (Lua_CompileBuffer(m_LuaState, (char *) pBuffer, dwLen, NULL) != 0)
+	// [LUA54 06/09 toi] C1: ten chunk = "@" + ten script -> loi runtime ghi "\script\x.lua:12:" thay vi [string "?"]
+	char szChunk[160];
+	szChunk[0] = '@';
+	strncpy(szChunk + 1, m_szScriptName[0] ? m_szScriptName : "?", sizeof(szChunk) - 2);
+	szChunk[sizeof(szChunk) - 1] = 0;
+	if (Lua_CompileBuffer(m_LuaState, (char *) pBuffer, dwLen, szChunk) != 0)
 	{
 		ScriptError(LUA_SCRIPT_COMPILE_ERROR);
 		return FALSE;
@@ -171,7 +176,8 @@ BOOL KLuaScript::ExecuteCode()
 	}
 	
 	int state;
-	if (state = Lua_Execute(m_LuaState) != 0)
+	state = Lua_Execute(m_LuaState);	// [LUA54 06/09 toi] C2: truoc day 'state = (... != 0)' -> ma loi luon [1]
+	if (state != 0)
 	{
 		ScriptError(LUA_SCRIPT_EXECUTE_ERROR, state);
 		return FALSE;
@@ -268,14 +274,30 @@ BOOL KLuaScript::CallFunction(LPSTR cFuncName, int nResults, LPSTR cFormat, va_l
 					nArgnum ++;
 				}
 				break;
-			case 't'://输入为一Table类型
+			case 't'://[LUA54 06/09 toi] C3: bang: (KLuaTableFill pfn, void* ctx) -> tao bang moi o dinh, pfn dien bang Lua_SetTable_*
 				{
-					
-					
-
+					KLuaTableFill pfnFill = va_arg(vlist, KLuaTableFill);
+					void* pCtx = va_arg(vlist, void *);
+					Lua_NewTable(m_LuaState);
+					if (pfnFill) pfnFill(m_LuaState, Lua_GetTopIndex(m_LuaState), pCtx);
+					nArgnum ++;
 				}
 				break;
 			
+			case 'b'://[LUA54 06/09 toi] C3: boolean that (int 0/1)
+				{
+					int nB = va_arg(vlist, int);
+					Lua_PushBoolean(m_LuaState, nB ? 1 : 0);
+					nArgnum ++;
+				}
+				break;
+			case 'i'://[LUA54 06/09 toi] C3: so nguyen 64 bit that (long long)
+				{
+					long long llV = va_arg(vlist, long long);
+					Lua_PushInteger(m_LuaState, llV);
+					nArgnum ++;
+				}
+				break;
 			case 'p':
 				{
 					pPoint = va_arg(vlist, void *);
@@ -400,6 +422,17 @@ BOOL KLuaScript::GetValuesFromStack(char * cFormat, ...)
 						return FALSE;
 					}
 
+				}
+				break;
+			case 'b'://[LUA54 06/09 toi] C3: boolean hoac so -> int 0/1
+				{
+					pInt = va_arg(vlist, int *);
+					if (pInt == NULL)
+						return FALSE;
+					if (Lua_IsNumber(m_LuaState, nIndex))
+						* pInt = (Lua_ValueToNumber(m_LuaState, nIndex ++) != 0.0) ? 1 : 0;
+					else
+						* pInt = Lua_ToBoolean(m_LuaState, nIndex ++);
 				}
 				break;
 			case 's'://字符串形

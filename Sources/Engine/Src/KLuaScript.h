@@ -31,6 +31,8 @@
 #define LUA_SCRIPT_NOT_TABLE_ERROR 12
 #define LUA_SCRIPT_STATES_IS_NULL 20
 
+// [LUA54 06/09 toi] C3: CallFunction dinh dang 't' = (KLuaTableFill, void* ctx): tao bang moi (chi so nTableIndex) roi goi pfn dien
+typedef void (*KLuaTableFill)(Lua_State* L, int nTableIndex, void* pCtx);
 typedef struct  {
 	const char *name;
 	lua_CFunction func;

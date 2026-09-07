@@ -155,6 +155,17 @@ LUA_API void		lua4_outerrmsg(const char* szerrmsg);
 /* thong tin */
 LUA_API const char*	lua4_version(void);			/* "Lua 5.4.7" */
 LUA_API int			lua4_selftest(lua_State* L);	/* 0 = OK, khac 0 = so muc that bai (kiem sau khi build) */
+/* [LUA54 06/09 toi] PHUONGAN_LUA54_SCRIPT_0609.md: boolean/so nguyen that (C3), mot state (C8), profiler (C11), IncludeOnce (C6) */
+LUA_API void		lua4_pushboolean(lua_State* L, int b);
+LUA_API void		lua4_pushinteger(lua_State* L, long long n);
+LUA_API int			lua4_toboolean(lua_State* L, int index);
+LUA_API int			lua4_mot_state(void);				/* 1 = dang chay che do mot state (LUA54_MOT_STATE=1) */
+LUA_API lua_State*	lua4_master(void);					/* state chu (mot state) hoac NULL */
+LUA_API lua_State*	lua4_owner(lua_State* L);			/* thread script so huu L (coroutine -> script tao no) */
+LUA_API int			lua4_so_state(void);
+LUA_API int			lua4_prof_set(int every);			/* 0 = tat; n >= 100 = lay mau moi n lenh; tra gia tri ap dung */
+LUA_API long long	lua4_prof_write(const char* path, int top);	/* ghi bang xep hang (ghi noi) roi xoa; tra so mau */
+LUA_API long long	lua4_inc_once_skip(void);			/* so lan Include bo qua nho @IncludeOnce */
 
 /* LuaExtend.c cu (ten giu nguyen, C linkage) */
 LUA_API int Lua_SetTable_StringFromId(lua_State* L, int nIndex, int Id, const char* szString);
@@ -291,6 +302,9 @@ LUA_API int Lua_GetValuesFromStack(lua_State* L, char* cFormat, ...);
 #define Lua_PushNumber(L,Number)		lua_pushnumber(L,Number)
 #define Lua_PushLString(L,LString,Len)	lua_pushlstring(L,LString,Len)
 #define Lua_PushString(L,String)		lua_pushstring(L,String)
+#define Lua_PushBoolean(L,b)			lua4_pushboolean(L,b)		/* [LUA54 06/09 toi] */
+#define Lua_PushInteger(L,n)			lua4_pushinteger(L,n)
+#define Lua_ToBoolean(L,nIndex)			lua4_toboolean(L,nIndex)
 #define Lua_PushCClosure(L,Fun,N)		lua_pushcclosure(L,Fun,N)
 #define Lua_PushUserTag(L,PVoid,Tag)	lua_pushusertag(L,PVoid,Tag)
 #define Lua_GetGlobal(L,Valuename)		lua_getglobal(L,Valuename)
