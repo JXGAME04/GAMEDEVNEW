@@ -13904,6 +13904,11 @@ extern int LuaTONG_GetSelfCamp(Lua_State* L);
 extern int LuaTONG_GetCurCamp(Lua_State* L);
 extern int LuaTONG_GetExpLevel(Lua_State* L);
 extern int LuaTONG_GetLevelExpNeed(Lua_State* L);	// [BHLV 07/09]
+extern int LuaSetMapType(Lua_State* L);	// [BHMAP 07/09]
+extern int LuaGetMapType(Lua_State* L);
+extern int LuaSetMapParam(Lua_State* L);
+extern int LuaGetMapParam(Lua_State* L);
+extern int LuaSetWorldName(Lua_State* L);
 extern int LuaTONG_GetPremium(Lua_State* L);
 extern int LuaTONG_GetCurWeekGoalLevel(Lua_State* L);
 extern int LuaTONG_GetWeekGoalEvent(Lua_State* L);
@@ -15813,6 +15818,11 @@ TLua_Funcs GameScriptFuns[] =
 		{ "TONG_GetCurCamp",	LuaTONG_GetCurCamp },
 		{ "TONG_GetExpLevel",	LuaTONG_GetExpLevel },
 		{ "TONG_GetLevelExpNeed",	LuaTONG_GetLevelExpNeed },	// [BHLV 07/09] kinh nghiem can cho cap n
+		{ "SetMapType",	LuaSetMapType },	// [BHMAP 07/09] loai/tham so ban do (Linux KSubWorld)
+		{ "GetMapType",	LuaGetMapType },
+		{ "SetMapParam",	LuaSetMapParam },
+		{ "GetMapParam",	LuaGetMapParam },
+		{ "SetWorldName",	LuaSetWorldName },
 		{ "TONG_GetPremium",	LuaTONG_GetPremium },
 		{ "TONG_GetCurWeekGoalLevel",	LuaTONG_GetCurWeekGoalLevel },
 		{ "TONG_GetWeekGoalEvent",	LuaTONG_GetWeekGoalEvent },

@@ -74,6 +74,16 @@ public:
 	// [BH100 07/09] ban day du: dwTarget = bang khac (chi doc), nSort/nOnline = sap xep danh sach
 	int		BuildClientViewEx(int nPlayerIdx, int nPage, int nStart, DWORD dwTarget, int nSort, int nOnline, void* pOut, int nOutSize);
 	void	PushViewTo(DWORD dwPlayerIdx, DWORD dwTongNameID, int nPage);
+	// [BHMAP 07/09] loai + tham so ban do (ban Linux: SetMapType/SetMapParam cua KSubWorld, JX1 khong co).
+	// Khoa = chi so SubWorld; tham so 0 = NameID bang chu khu rieng. Khong dong bo, GS chay lai thi
+	// ENTER_MAP / CreatMap gan lai.
+	std::map<int, int>		m_mapMapType;
+	std::map<int, DWORD>	m_mapMapParam;	// khoa = nSubIdx * 8 + k
+	void	SetMapType(int nSubIdx, int nType) { m_mapMapType[nSubIdx] = nType; }
+	int		GetMapType(int nSubIdx) { std::map<int, int>::iterator it = m_mapMapType.find(nSubIdx); return it == m_mapMapType.end() ? 0 : it->second; }
+	void	SetMapParam(int nSubIdx, int k, DWORD dwVal) { m_mapMapParam[nSubIdx * 8 + (k & 7)] = dwVal; }
+	DWORD	GetMapParam(int nSubIdx, int k) { std::map<int, DWORD>::iterator it = m_mapMapParam.find(nSubIdx * 8 + (k & 7)); return it == m_mapMapParam.end() ? 0 : it->second; }
+	void	SetMapOwner(int nSubIdx, int nType, DWORD dwTong) { if (nSubIdx >= 0) { SetMapType(nSubIdx, nType); SetMapParam(nSubIdx, 0, dwTong); } }
 	DWORD	NextTongID(DWORD dwPrev);	// duyet bang (0 = dau; tra 0 khi het)
 	// thao tac tu cua so (kiem quyen theo bang ID JX2 roi push len relay) -> 0 = ok
 	int		DoClientOp(int nPlayerIdx, const void* pCmd);

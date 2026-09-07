@@ -2069,6 +2069,44 @@ static void sJX2_SayTong(CTongControl* pTong, const char* pszMsg)
 		g_ChannelMgr.SayOnChannel(dwChann, TRUE, std::string(),
 			std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(pszMsg));
 }
+// [BHWS 07/09] Bao ket qua thao tac RIENG cho nguoi bam (qua GS dang giu nguoi do). Kenh bang \O<id> chi
+// ton tai tren relay khi da co nguoi dang ky, va chu chot: 'bam vao khong bao gi het' -> noi tren kenh
+// (neu co) VA nhan thang cho nguoi bam (STRING_SYNC kind NOTIFY, m_dwParam = chi so nguoi choi).
+static void sJX2_NotifyOp(CTongConnect* pConn, CTongControl* pTong, DWORD dwParam, const char* pszMsg)
+{
+	sJX2_SayTong(pTong, pszMsg);
+	if (!pConn || !pTong || !dwParam || !pszMsg || !pszMsg[0])
+		return;
+	STONG_JX2_STRING_COMMAND sStr;
+	memset(&sStr, 0, sizeof(sStr));
+	sStr.ProtocolFamily = pf_tong;
+	sStr.ProtocolID = enumS2C_TONG_JX2_STRING_SYNC;
+	sStr.m_dwTongNameID = pTong->JX2_NameID();
+	sStr.m_btKind = defTONG_JX2_STR_NOTIFY;
+	sStr.m_dwParam = dwParam;
+	strncpy(sStr.m_szText, pszMsg, sizeof(sStr.m_szText) - 1);
+	pConn->SendPackage(&sStr, sizeof(sStr));
+}
+
+// [BHWS 07/09] Echo 1 field ve GS cua nguoi bam de GS day lai trang (khoa tac phuong -> trang Tac phuong,
+// 45/46 -> trang Tin tuc). Truoc day thao tac qua TOP_WS_OP chi phat TONG_SYNC (khong co m_dwParam) nen
+// cua so dang mo KHONG doi -> 'lap tac phuong khong thay gi'.
+static void sJX2_EchoField(CTongConnect* pConn, CTongControl* pTong, WORD wKey, DWORD dwParam)
+{
+	if (!pConn || !pTong || !dwParam)
+		return;
+	STONG_JX2_FIELD_COMMAND sSync;
+	memset(&sSync, 0, sizeof(sSync));
+	sSync.ProtocolFamily = pf_tong;
+	sSync.ProtocolID = enumS2C_TONG_JX2_FIELD_SYNC;
+	sSync.m_dwTongNameID = pTong->JX2_NameID();
+	sSync.m_wKey = wKey;
+	sSync.m_btOp = defTONG_JX2_OP_SET;
+	sSync.m_dwValue = pTong->JX2_GetField(wKey);
+	sSync.m_dwParam = dwParam;
+	pConn->SendPackage(&sSync, sizeof(sSync));
+}
+
 
 // [LevelUnionNum] tongset.ini ban goc (doc byte tho :206-307):
 // cap bang minh chu 0-9 -> 3 bang, 10-29 -> 4, 30-49 -> 5, 50-69 -> 6,
@@ -2257,16 +2295,20 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 		break;
 	case defTONG_JX2_TOP_SET_MAP:
 		pTong->JX2_SetField(45, (DWORD)pCmd->m_nParam1);
+		sJX2_EchoField(pConn, pTong, 45, pCmd->m_dwParam);	// [BHMAP] trang Tin tuc doi ngay (nut Vao bon bang)
 		bOK = TRUE;
 		break;
 	case defTONG_JX2_TOP_CREATE_MAP:
 		pTong->JX2_SetField(45, (DWORD)pCmd->m_nParam1);
 		pTong->JX2_SetField(46, (DWORD)pCmd->m_nParam1);
+		sJX2_EchoField(pConn, pTong, 45, pCmd->m_dwParam);	// [BHMAP] (thong bao do Lua CreatMap phat nhu MAP_CREATED_R goc)
 		bOK = TRUE;
 		break;
 	case defTONG_JX2_TOP_DELETE_MAP:
 		pTong->JX2_SetField(45, 0);
 		pTong->JX2_SetField(46, 0);
+		sJX2_NotifyOp(pConn, pTong, pCmd->m_dwParam, "Bang héi ®· huû khu vùc ho¹t ®éng riªng.");	// [BHMAP]
+		sJX2_EchoField(pConn, pTong, 45, pCmd->m_dwParam);
 		bOK = TRUE;
 		break;
 	case defTONG_JX2_TOP_CONTRIBUTE:
@@ -2508,7 +2550,7 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 			// dieu kien 3 ban goc: bang dang tam ngung thi cam moi thao tac
 			if (pTong->JX2_GetField(44) != 0)
 			{
-				sJX2_SayTong(pTong, "Bang h\351i \256ang t\271m ng\365ng ho\271t \256\351ng, kh\253ng th\323 thao t\270c t\270c ph\255\352ng!");
+				sJX2_NotifyOp(pConn, pTong, pCmd->m_dwParam, "Bang h\351i \256ang t\271m ng\365ng ho\271t \256\351ng, kh\253ng th\323 thao t\270c t\270c ph\255\352ng!");
 				break;
 			}
 			if (nAct == 0)
@@ -2518,26 +2560,27 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 					break;
 				if (sJX2_CountWorkshop(pTong, 0) >= sJX2_WsMaxNum(nBuildLv))
 				{
-					sJX2_SayTong(pTong, "S\350 t\270c ph\255\352ng \256\267 \256\271t gi\355i h\271n theo \256\274ng c\312p ki\325n thi\325t bang!");
+					sJX2_NotifyOp(pConn, pTong, pCmd->m_dwParam, "S\350 t\270c ph\255\352ng \256\267 \256\271t gi\355i h\271n theo \256\274ng c\312p ki\325n thi\325t bang!");
 					break;
 				}
 				int nCost = sJX2_WsUpgradeCost(nType, 0);
 				if (nCost < 0 || nFund < nCost)
 				{
-					sJX2_SayTong(pTong, "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361 \256\323 x\251y t\270c ph\255\352ng n\265y.");
+					sJX2_NotifyOp(pConn, pTong, pCmd->m_dwParam, "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361 \256\323 x\251y t\270c ph\255\352ng n\265y.");
 					break;
 				}
 				pTong->JX2_AddField(12, -nCost, FALSE);
 				{
 					char szMsg[128];
 					sprintf(szMsg, "\247\267 x\251y t\270c ph\255\352ng (chi %d ng\251n s\270ch ki\325n thi\325t)", nCost);
-					sJX2_SayTong(pTong, szMsg);
+					sJX2_NotifyOp(pConn, pTong, pCmd->m_dwParam, szMsg);
 				}
 				pTong->JX2_SetField(wBase, 1);
 				pTong->JX2_SetField((WORD)(wBase + 2), 1);	// cap 1
 				pTong->JX2_SetField((WORD)(wBase + 1), 1);	// mo
 				// attr4 = UseLevel: ban goc doi >= 1 moi cho dung khu
 				pTong->JX2_SetField((WORD)(wBase + 4), 1);
+				sJX2_EchoField(pConn, pTong, wBase, pCmd->m_dwParam);	// [BHWS] GS day lai trang Tac phuong cho nguoi bam
 				bOK = TRUE;
 				break;
 			}
@@ -2553,15 +2596,16 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 					int nCost = sJX2_WsOpenCost(nType, nCurLv);
 					if (nCost < 0 || nFund < nCost)
 					{
-						sJX2_SayTong(pTong, "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361 \256\323 m\353 t\270c ph\255\352ng n\265y.");
+						sJX2_NotifyOp(pConn, pTong, pCmd->m_dwParam, "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361 \256\323 m\353 t\270c ph\255\352ng n\265y.");
 						break;
 					}
 					if (nCost > 0)
 						pTong->JX2_AddField(12, -nCost, FALSE);
 				}
 				pTong->JX2_SetField((WORD)(wBase + 1), (nAct == 1) ? 1 : 0);
-				sJX2_SayTong(pTong, (nAct == 1) ?
+				sJX2_NotifyOp(pConn, pTong, pCmd->m_dwParam, (nAct == 1) ?
 					"\247\267 m\353 t\270c ph\255\352ng." : "\247\267 \256\343ng t\270c ph\255\352ng.");
+				sJX2_EchoField(pConn, pTong, wBase, pCmd->m_dwParam);	// [BHWS] GS day lai trang Tac phuong cho nguoi bam
 				bOK = TRUE;
 				break;
 			}
@@ -2573,13 +2617,13 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 				int nToLv = nCurLv + 1;
 				if (nToLv > sJX2_WsUpperLevel(nBuildLv))
 				{
-					sJX2_SayTong(pTong, "T\270c ph\255\352ng n\265y \256\267 \256\271t \256\325n c\312p cao nh\312t, mu\350n n\251ng c\312p c\307n n\251ng \256\274ng c\312p ki\325n thi\325t tr\255\355c!");
+					sJX2_NotifyOp(pConn, pTong, pCmd->m_dwParam, "T\270c ph\255\352ng n\265y \256\267 \256\271t \256\325n c\312p cao nh\312t, mu\350n n\251ng c\312p c\307n n\251ng \256\274ng c\312p ki\325n thi\325t tr\255\355c!");
 					break;
 				}
 				int nCost = sJX2_WsUpgradeCost(nType, nCurLv);
 				if (nCost < 0 || nFund < nCost)
 				{
-					sJX2_SayTong(pTong, "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361, kh\253ng th\323 n\251ng c\312p t\270c ph\255\352ng n\265y.");
+					sJX2_NotifyOp(pConn, pTong, pCmd->m_dwParam, "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361, kh\253ng th\323 n\251ng c\312p t\270c ph\255\352ng n\265y.");
 					break;
 				}
 				pTong->JX2_AddField(12, -nCost, FALSE);
@@ -2589,8 +2633,9 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 				{
 					char szMsg[160];
 					sprintf(szMsg, "T\270c ph\255\352ng th\250ng l\252n c\312p %d (chi %d ng\251n s\270ch ki\325n thi\325t)", nToLv, nCost);
-					sJX2_SayTong(pTong, szMsg);
+					sJX2_NotifyOp(pConn, pTong, pCmd->m_dwParam, szMsg);
 				}
+				sJX2_EchoField(pConn, pTong, wBase, pCmd->m_dwParam);	// [BHWS] GS day lai trang Tac phuong cho nguoi bam
 				bOK = TRUE;
 				break;
 			}

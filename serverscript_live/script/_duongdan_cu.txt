@@ -2545,3 +2545,33 @@
 --@ script\global\特殊用地\宋金报名点\trap\jin_trap.lua=script\bando\dacthu\tongkimbaodanhdiem\trap\jin_trap.lua
 --@ script\global\特殊用地\宋金报名点\trap\song_trap.lua=script\bando\dacthu\tongkimbaodanhdiem\trap\song_trap.lua
 --@ script\global\钱庄功能.lua=script\global\tientrangcongnang.lua
+-- [BHMAP 07/09] trap 11 ban do lanh dia bang (586-597, maps.pak) goi script theo ID bam duong dan Linux
+--  \script\tong\map\<khu>\*.lua - cay that o scriptjx2\tong_vn\map\ (24 ID trap 'chet' trong kiem_trap_map.py).
+--@ script\tong\map\bianjing\entrance_trap.lua=scriptjx2\tong_vn\map\bianjing\entrance_trap.lua
+--@ script\tong\map\bianjing\spacenorth_trap.lua=scriptjx2\tong_vn\map\bianjing\spacenorth_trap.lua
+--@ script\tong\map\bianjing\spacesouth_trap.lua=scriptjx2\tong_vn\map\bianjing\spacesouth_trap.lua
+--@ script\tong\map\chengdu\entrance_trap.lua=scriptjx2\tong_vn\map\chengdu\entrance_trap.lua
+--@ script\tong\map\chengdu\spacenorth_trap.lua=scriptjx2\tong_vn\map\chengdu\spacenorth_trap.lua
+--@ script\tong\map\chengdu\spacesouth_trap.lua=scriptjx2\tong_vn\map\chengdu\spacesouth_trap.lua
+--@ script\tong\map\dali\entrance_trap.lua=scriptjx2\tong_vn\map\dali\entrance_trap.lua
+--@ script\tong\map\dali\spacenorth_trap.lua=scriptjx2\tong_vn\map\dali\spacenorth_trap.lua
+--@ script\tong\map\dali\spacesouth_trap.lua=scriptjx2\tong_vn\map\dali\spacesouth_trap.lua
+--@ script\tong\map\fengxiang\entrance_trap.lua=scriptjx2\tong_vn\map\fengxiang\entrance_trap.lua
+--@ script\tong\map\fengxiang\spacenorth_trap.lua=scriptjx2\tong_vn\map\fengxiang\spacenorth_trap.lua
+--@ script\tong\map\fengxiang\spacesouth_trap.lua=scriptjx2\tong_vn\map\fengxiang\spacesouth_trap.lua
+--@ script\tong\map\linan\entrance_trap.lua=scriptjx2\tong_vn\map\linan\entrance_trap.lua
+--@ script\tong\map\linan\spacenorth_trap.lua=scriptjx2\tong_vn\map\linan\spacenorth_trap.lua
+--@ script\tong\map\linan\spacesouth_trap.lua=scriptjx2\tong_vn\map\linan\spacesouth_trap.lua
+--@ script\tong\map\public\entrance_trap.lua=scriptjx2\tong_vn\map\public\entrance_trap.lua
+--@ script\tong\map\public\spacenorth_trap.lua=scriptjx2\tong_vn\map\public\spacenorth_trap.lua
+--@ script\tong\map\public\spacesouth_trap.lua=scriptjx2\tong_vn\map\public\spacesouth_trap.lua
+--@ script\tong\map\xiangyang\entrance_trap.lua=scriptjx2\tong_vn\map\xiangyang\entrance_trap.lua
+--@ script\tong\map\xiangyang\spacenorth_trap.lua=scriptjx2\tong_vn\map\xiangyang\spacenorth_trap.lua
+--@ script\tong\map\xiangyang\spacesouth_trap.lua=scriptjx2\tong_vn\map\xiangyang\spacesouth_trap.lua
+--@ script\tong\map\yangzhou\entrance_trap.lua=scriptjx2\tong_vn\map\yangzhou\entrance_trap.lua
+--@ script\tong\map\yangzhou\spacenorth_trap.lua=scriptjx2\tong_vn\map\yangzhou\spacenorth_trap.lua
+--@ script\tong\map\yangzhou\spacesouth_trap.lua=scriptjx2\tong_vn\map\yangzhou\spacesouth_trap.lua
+--@ script\tong\map\entrance_trap.lua=scriptjx2\tong_vn\map\entrance_trap.lua
+--@ script\tong\map\spacenorth_trap.lua=scriptjx2\tong_vn\map\spacenorth_trap.lua
+--@ script\tong\map\spacesouth_trap.lua=scriptjx2\tong_vn\map\spacesouth_trap.lua
+--@ script\tong\map\map_management.lua=scriptjx2\tong_vn\map\map_management.lua

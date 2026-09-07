@@ -409,3 +409,42 @@ reset 7 thành (`SetViewTongOwnCity("", i)`), ở Tiện ích trang 2. Bộ cũ 
 **Triển khai 16:0x:** `bin\server\CoreServer.dll.moi` 1ed4d726 (⊇ DELTA i b9b4cb4a đã swap 15:2x), `bin\multiserver\S3Relay.exe.moi`
 26d7df5d (**chép tay khi relay tắt**, bat không swap relay; `relay_config.ini` mới cũng áp khi relay chạy lại), `Game.exe.moi`
 f4eb3bdd (vá 7) vẫn chờ; script + `lib_ham.lua` sống ngay (lệnh bài dofile), `botbang.txt` áp khi GS chạy lại.
+
+### 7.10 Lượt 5 của chủ (16:4x 07/09) — "phường thợ chưa lập được, kích không báo gì", "tìm các nút phường thợ để kiểm", "tạo lãnh địa xong không báo", "trap trong map lãnh địa chưa hoạt động" — vá 9 [BHWS] [BHMAP]
+
+**Nút trang Tác phường (6 nút gốc `帮会作坊信息页面.ini`, đã nối đủ, ini `Ws_Btn*`, hỏi trước bằng `[Ws_WarnInfo]`):**
+
+| Nút | Client → GS | GS → relay | Điều kiện / ai kiểm |
+|---|---|---|---|
+| Lập tác phường (`BtnLearnWorkshop`) | `COP_WS_ADD` khu đang chọn (bấm biểu tượng 1..7, mặc định 1) | `TOP_WS_OP` nAct 0 | quyền 9001/bang chủ (GS); khu chưa có (GS mã 9); relay: không tạm ngưng (field 44), số khu < `MAX_WORKSHOP_NUM` theo cấp KIẾN THIẾT (`tong_level_data.txt`: cấp 0 = **0 khu**, cấp 1 = 6…), đủ ngân sách kiến thiết (field 12) theo `workshop_setting` |
+| Mở / Đóng (`BtnOpen/BtnClose`) | `COP_WS_OPEN` / `COP_WS_CLOSE` | nAct 1 / 2 | khu đã lập (GS mã 10); mở tốn `OPEN_FUND`, đóng miễn phí |
+| Thăng cấp (`BtnUpgrade`) | `COP_WS_UP` | nAct 3 | cấp mới ≤ `WORKSHOP_UPPER_LEVEL` của cấp kiến thiết; đủ quỹ |
+| Đổi cấp sử dụng (`BtnSetUseLevel`) | `COP_WS_SETLV` (xoay vòng 1..cấp) | lệnh field attr4 | ép ≤ cấp thật; relay echo field → GS đẩy lại trang |
+| Huỷ tác phường (`BtnDelete`) | `COP_WS_DEL` | SET 0 sáu attr | quyền 9001 |
+| Sử dụng khu | không có nút — dùng qua NPC Tổng quản trong lãnh địa (`ws_*.lua` → `TWS_ApplyUse`) | | |
+
+**Vì sao "kích vào không báo gì":** GS trả mã 20 (im lặng) rồi relay báo kết quả bằng `sJX2_SayTong` = `g_ChannelMgr.GetChannelID("\O<id>", 0)` +
+`SayOnChannel`; kênh chỉ tồn tại trên relay khi đã có người đăng ký (`B_Subscribe`) → không kênh = **nuốt** cả 9 câu báo (thiếu quỹ, quá số khu,
+đã xây…). Thêm nữa thao tác thành công chỉ phát `TONG_SYNC` (không có `m_dwParam`) nên cửa sổ đang mở không được đẩy lại trang → không thấy
+khu mới. Sửa [BHWS]: relay `sJX2_NotifyOp` = nói trên kênh (nếu có) **và** gửi `STRING_SYNC` kind mới `defTONG_JX2_STR_NOTIFY` (5,
+`m_dwParam` = chỉ số người bấm) → GS `SendSystemInfo` thẳng cho người bấm; `sJX2_EchoField` echo field khu (có `m_dwParam`) → GS đẩy lại trang
+Tác phường (đường VIEC7 có sẵn). 9 câu báo trong `TOP_WS_OP` đổi sang `sJX2_NotifyOp`; 3 chỗ thành công thêm echo.
+
+**Tạo lãnh địa không báo:** `CreatMap` (tong_mix.lua) chỉ `TONG_ApplyCreatMap` → relay ghi field 45/46 rồi thôi; bản gốc relay tạo bản đồ
+động rồi gọi lại `MAP_CREATED_R` (Msg2Tong "Xin chúc mừng…", ghi lịch sử/sự kiện) + `MAP_CREATED_G_2` (SetWorldName/SetMapType/SetMapParam,
+NPC, toà xưởng) — JX1 không có đường gọi lại → im lặng. Sửa [BHMAP]: `CreatMap`/`PublicMap` tự phát thông báo (Msg2Player + Msg2Tong +
+ghi lịch sử/sự kiện) và gán `SetMapType(idx,1)`/`SetMapParam(idx,0,tong)`; relay echo field 45 (`m_dwParam`) → GS đẩy lại trang Tin tức
+(nút "Vào bổn bang" đổi ngay); `TOP_DELETE_MAP` báo "đã huỷ khu vực". GS `COP_ENTER_MAP` gán lại chủ bản đồ mỗi lần vào (khu riêng =
+field 46 ≠ 0 → bang; khu chung 586/595–597 → 0) vì GS chạy lại mất bảng. NPC/toà xưởng 11 bản đồ đã đặt sẵn lúc boot
+(`startgame\tongjx2npc.lua JX2Tong_AddTerritoryNpc` → `add_tongnpc()`), không đặt lại khi tạo.
+
+**Trap lãnh địa:** `kiem_trap_map.py` (đã quét cả `maps.pak`) → 36 ID trap "chết từ trước", **24 = 8 khu × 3 trap của 11 bản đồ 586–597**
+(`\script\tong\map\{public,bianjing,chengdu,dali,fengxiang,linan,xiangyang,yangzhou}\{entrance,spacenorth,spacesouth}_trap.lua`, băm đường
+dẫn Linux; cây thật ở `scriptjx2\tong_vn\map\`, `_duongdan_cu.txt` không có dòng nào cho `script\tong\`). Thêm 28 bí danh (24 + 4 tệp gốc).
+Chưa đủ: `entrance_trap.lua` gọi `GetMapType/GetMapParam` (KSubWorld bản Linux) — JX1 **không có** 4 hàm này (`SetMapType/GetMapType/
+SetMapParam/GetMapParam`, thêm `SetWorldName`) → thêm vào Core (`g_TongJX2.m_mapMapType/m_mapMapParam`, khoá = chỉ số SubWorld, không đồng
+bộ). Trap north/south (SetPos + TaskTemp 2777 + SetTempRevPos/SetRevPos/SetCurCamp) dùng hàm có sẵn. Còn 12 ID trap chết khác không thuộc
+lãnh địa (chưa động).
+
+**Triển khai:** CoreServer.dll + S3Relay.exe build lại (⊇ DELTA k b1308b4c); client không đổi. Script sống ngay (tong_mix.lua qua ExecuteScript2
+đọc tệp; bí danh chỉ đăng ký lúc GS boot → cần chạy lại GS = lúc swap).

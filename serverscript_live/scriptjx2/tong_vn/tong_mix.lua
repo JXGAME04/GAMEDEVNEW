@@ -801,6 +801,19 @@ function CreatMap(nTongID, nMapCopy)
 	_TONG_MIX_DEBUG(31, nTongID, nMapCopy)
 	
 	TONG_ApplyCreatMap(nTongID, nMapCopy)
+	-- [BHMAP 07/09] JX1 dung ban do tinh: relay chi ghi field 45/46, KHONG goi lai MAP_CREATED_R/_G_2 nhu ban goc
+	-- -> tu bao ket qua + gan ban do cho bang ngay tai day (NPC / toa xuong da dat san luc boot: startgame\tongjx2npc.lua).
+	local szMap = aDynMapCopyName[nMapCopy] or ("b¶n ®å "..nMapCopy)
+	local szMsg = "Xin chóc mõng, quý bang ®· së h÷u khu vùc ho¹t ®éng riªng "..szMap..". H·y chän 'Vµo bæn bang' ë cöa sæ bang héi ®Ó b­íc vµo."
+	Msg2Player(szMsg)
+	Msg2Tong(nTongID, szMsg)
+	TONG_ApplyAddHistoryRecord(nTongID, szMsg)
+	TONG_ApplyAddEventRecord(nTongID, szMsg)
+	local nMapIdx = SubWorldID2Idx(nMapCopy)
+	if (nMapIdx ~= nil and nMapIdx >= 0) then
+		SetMapType(nMapIdx, 1)
+		SetMapParam(nMapIdx, 0, nTongID)
+	end
 end
 
 function BrowseMap(nTongID)
@@ -870,6 +883,11 @@ function PublicMap(nTongID, nSelect)
 	
 	gb_AppendTask("TONG_PUBLIC_MAP", nSelect, 1)
 	TONG_ApplySetTongMap(nTongID, aPublicMap[nSelect])
+	-- [BHMAP 07/09] bao ket qua (ban goc MAP_CREATED_R do relay goi lai; JX1 khong co duong do)
+	local szMsg = "Bang héi ®· chän khu vùc chung "..nSelect..". H·y chän 'Vµo bæn bang' ë cöa sæ bang héi ®Ó b­íc vµo."
+	Msg2Player(szMsg)
+	Msg2Tong(nTongID, szMsg)
+	TONG_ApplyAddEventRecord(nTongID, szMsg)
 end
 
 --µØÍ¼´´½¨³É¹¦
