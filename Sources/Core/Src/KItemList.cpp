@@ -233,8 +233,30 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	case pos_equip:
 		if (nX < 0 || nX >= itempart_num)
 			return 0;
+		// [MATDO 06/09] O da co mon (ban luu co HAI mon cung mot o trang bi - xem Equip):
+		// TRUOC DAY return 0 = bo mon thu hai IM LANG => nguoi choi mat do sau moi lan vao game.
+		// Nay cuu mon: dat vao hanh trang, roi ruong; het cho that su moi thoi.
 		if (m_EquipItem[nX])
+		{
+			int rx = -1, ry = -1;
+			if (CheckCanPlaceInEquipment(Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &rx, &ry)
+			 && m_Room[room_equipment].PlaceItem(rx, ry, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
+			{
+				m_Items[i].nPlace = pos_equiproom;
+				m_Items[i].nX = rx;
+				m_Items[i].nY = ry;
+				break;
+			}
+			if (CheckCanPlaceInEquipment(Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &rx, &ry, room_repository)
+			 && m_Room[room_repository].PlaceItem(rx, ry, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
+			{
+				m_Items[i].nPlace = pos_repositoryroom;
+				m_Items[i].nX = rx;
+				m_Items[i].nY = ry;
+				break;
+			}
 			return 0;
+		}
 		m_Items[i].nPlace = pos_equip;
 		m_Items[i].nX = nX;
 		m_Items[i].nY = 0;
@@ -249,8 +271,17 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		m_Items[i].nY = 0;
 		break;
 	case pos_equiproom://xu ly xep chong item cho nay
+		// [MATDO 06/09] trung o luoi (hai mon cung toa do trong ban luu) -> TRUOC DAY bo mon im
+		// lang = mat do. Nay tim o trong khac trong chinh hanh trang truoc khi chiu thua.
 		if (!m_Room[room_equipment].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
-			return 0;
+		{
+			int qx = -1, qy = -1;
+			if (!CheckCanPlaceInEquipment(Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &qx, &qy)
+			 || !m_Room[room_equipment].PlaceItem(qx, qy, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
+				return 0;
+			nX = qx;
+			nY = qy;
+		}
 		m_Items[i].nPlace = pos_equiproom;
 		m_Items[i].nX = nX;
 		m_Items[i].nY = nY;
@@ -267,8 +298,16 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		break;
 #endif
 	case pos_repositoryroom:
+		// [MATDO 06/09] nhu tren: trung o trong ruong thi tim o trong khac, khong bo mon.
 		if (!m_Room[room_repository].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
-			return 0;
+		{
+			int qx = -1, qy = -1;
+			if (!CheckCanPlaceInEquipment(Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &qx, &qy, room_repository)
+			 || !m_Room[room_repository].PlaceItem(qx, qy, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
+				return 0;
+			nX = qx;
+			nY = qy;
+		}
 		m_Items[i].nPlace = pos_repositoryroom;
 		m_Items[i].nX = nX;
 		m_Items[i].nY = nY;		
@@ -1390,6 +1429,41 @@ BOOL KItemList::Equip(int nIdx, int nPlace /* = -1 */)
 		break;
 	}
 	// 更新装备自身坐标
+	// [MATDO 06/09] O DICH DA CO MON KHAC -> phai go mon cu ra TRUOC. Truoc day gan de len:
+	// mon cu van con nPlace = pos_equip / nX = o nay -> HAI mon mot o -> luu xuong DB ca hai ->
+	// lan nap sau AddKIL(pos_equip) thay o da chiem va BO mon thu hai = MAT DO (do that tren
+	// role_history cua CaiBang: 17 mon mac / 14 o luc 20:45, con 14 mon luc 21:09).
+	// Duong nguoi choi (MoveItem case pos_equip) chi UnEquip o NGUON nen keo tu o nay sang o
+	// khac dang co do la sinh trung.
+	if (m_EquipItem[nEquipPlace] && m_EquipItem[nEquipPlace] != nIdx)
+	{
+		const int nCu = m_EquipItem[nEquipPlace];
+		UnEquip(nCu, nEquipPlace);
+		const int nListCu = FindSame(nCu);
+		if (nListCu)
+		{
+			int cx = -1, cy = -1;
+			if (m_Items[nListCu].nPlace == pos_equip
+			 && CheckCanPlaceInEquipment(Item[nCu].GetWidth(), Item[nCu].GetHeight(), &cx, &cy)
+			 && m_Room[room_equipment].PlaceItem(cx, cy, nCu, Item[nCu].GetWidth(), Item[nCu].GetHeight()))
+			{
+				m_Items[nListCu].nPlace = pos_equiproom;
+				m_Items[nListCu].nX = cx;
+				m_Items[nListCu].nY = cy;
+			}
+			else if (m_Items[nListCu].nPlace == pos_equip && !m_Hand)
+			{
+				m_Items[nListCu].nPlace = pos_hand;   // tui day -> giu tren tay nhu duong client that
+				m_Items[nListCu].nX = 0;
+				m_Items[nListCu].nY = 0;
+				m_Hand = nCu;
+			}
+		}
+	}
+	// [MATDO 06/09] mon vua roi TAY de mac len nguoi -> phai xoa m_Hand, khong thi m_Hand con tro
+	// vao mon DA MAC: lan InsertEquipment sau se "nem mon dang o tay" = nem chinh do dang mac.
+	if (m_Hand == nIdx)
+		m_Hand = 0;
 	m_EquipItem[nEquipPlace] = nIdx;
 	m_Items[nItemListIdx].nPlace = pos_equip;
 	m_Items[nItemListIdx].nX = nEquipPlace;
