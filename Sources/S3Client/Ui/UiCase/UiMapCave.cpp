@@ -74,7 +74,11 @@ void KUiMapCave::Initialize()
 
 	char szBuffer[128];
 	g_UiBase.GetCurSchemePath(szBuffer, sizeof(szBuffer));
-	sprintf(szBuffer, "\\%s", SCHEME_INI_WORLD);
+	// [BANDO20 06/09] LOI CU: sprintf GHI DE duong dan giao dien vua lay -> nap "\UiMapCave.ini" (khong ton tai)
+	// => cua so khong co Left/Top/Width/Height va mui ten [Sign] 'nguoi o day' khong bao gio hien.
+	// Noi them nhu KUiWorldmap::Initialize.
+	strcat(szBuffer, "\\");
+	strcat(szBuffer, SCHEME_INI_WORLD);
 	KIniFile	Ini;
 	if (Ini.Load(szBuffer))
 	{
@@ -92,7 +96,20 @@ int KUiMapCave::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 
 	switch(uMsg)
 	{
-	case WM_LBUTTONDOWN:
+	case WM_LBUTTONDOWN:	// [BANDO20 06/09] bam dia diem -> Core tu chay bo toi map do; bam cho khac = dong (nhu cu)
+		{
+			int nCX = 0, nCY = 0;
+			Wnd_GetCursorPos(&nCX, &nCY);
+			int nGo = m_Locs.OnClick(nCX - m_nAbsoluteLeft, nCY - m_nAbsoluteTop);
+			if (nGo == 0)	// trung dia diem nhung khong di duoc (da bao ly do) -> giu ban do mo
+			{
+				nResult = true;
+				break;
+			}
+			CloseWindow();
+			nResult = true;
+		}
+		break;
 	case WM_RBUTTONDOWN:
 	case WM_KEYDOWN:
 		CloseWindow();
@@ -114,6 +131,7 @@ void KUiMapCave::UpdateData()
 		KIniFile	Ini;
 		if (Ini.Load(WORLD_MAP_INFO_FILE))
 		{
+			m_Locs.Load(&Ini);	// [BANDO20 06/09] bang dia diem (ten Viet + toa do) de tro chuot / bam
 			
 			char	szBuffer[128];
 			if (Ini.GetString("List", "CaveMapImage", "", szBuffer, sizeof(szBuffer)))
@@ -129,8 +147,8 @@ void KUiMapCave::UpdateData()
 				{
 					int nWidth, nHeight;
 					m_Sign.GetSize(&nWidth,  &nHeight);
-					m_Sign.SetPosition(nAreaX - nWidth / 2,
-						nAreaY - nHeight / 2);
+					m_Sign.SetPosition((nAreaX - nWidth / 2) + 30,	// [BANDO20 06/09] cung do lech +30,+17 voi KUiWorldmap (cung anh)
+						(nAreaY - nHeight / 2) + 17);
 					m_Sign.Show();
 				}
 			}
@@ -142,4 +160,11 @@ void KUiMapCave::Breathe()
 {
 	if (m_Sign.IsVisible())
 		m_Sign.NextFrame();
+}
+
+// [BANDO20 06/09] ve anh ban do son dong roi ten dia diem dang tro chuot
+void KUiMapCave::PaintWindow()
+{
+	KWndImage::PaintWindow();
+	m_Locs.PaintHover(m_nAbsoluteLeft, m_nAbsoluteTop, m_Width);
 }

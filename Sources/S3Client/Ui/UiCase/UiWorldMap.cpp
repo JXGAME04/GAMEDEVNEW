@@ -11,6 +11,8 @@
 #include "../../../Represent/iRepresent/KRepresentUnit.h"
 #include "../../../core/src/CoreShell.h"
 #include "../../../core/src/GameDataDef.h"
+#include "../Elem/WndWindow.h"	// [BANDO20 06/09] GetColor
+#include "../../../Represent/iRepresent/Text/TextProcessDef.h"	// [BANDO20 06/09] KOutputTextParam
 
 extern iRepresentShell*	g_pRepresentShell;
 extern iCoreShell*		g_pCoreShell;
@@ -192,7 +194,20 @@ int KUiWorldmap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 
 	switch(uMsg)
 	{
-	case WM_LBUTTONDOWN:
+	case WM_LBUTTONDOWN:	// [BANDO20 06/09] bam dia diem -> Core tu chay bo toi map do; bam cho khac = dong (nhu cu)
+		{
+			int nCX = 0, nCY = 0;
+			Wnd_GetCursorPos(&nCX, &nCY);
+			int nGo = m_Locs.OnClick(nCX - m_nAbsoluteLeft, nCY - m_nAbsoluteTop);
+			if (nGo == 0)	// trung dia diem nhung khong di duoc (da bao ly do) -> giu ban do mo
+			{
+				nResult = true;
+				break;
+			}
+			CloseWindow();
+			nResult = true;
+		}
+		break;
 	case WM_RBUTTONDOWN:
 	case WM_KEYDOWN:
 		CloseWindow();
@@ -212,6 +227,7 @@ void KUiWorldmap::UpdateData()
 		KIniFile	Ini;
 		if (Ini.Load(WORLD_MAP_INFO_FILE))
 		{
+			m_Locs.Load(&Ini);	// [BANDO20 06/09] bang dia diem (ten Viet + toa do) de tro chuot / bam
 			char	szBuffer[128];
 			if (Ini.GetString("List", "WorldMapImage", "", szBuffer, sizeof(szBuffer)))	
 			{
@@ -346,4 +362,135 @@ void KUiWorldmap::Breathe()
 		m_Cave.NextFrame();
 	else if (m_Others.IsVisible())
 		m_Others.NextFrame();
+}
+
+// ===========================================================================
+// [BANDO20 06/09] KWorldMapLocs - bang dia diem tren anh ban do (dung chung the gioi + son dong)
+// ===========================================================================
+static const char* WML_LoaiTen(const char* szType)
+{
+	static const char* aLoai[][2] =
+	{
+		{ "City", "Thµnh" },
+		{ "Capital", "Kinh ®«" },
+		{ "Cave", "S¬n ®éng" },
+		{ "Field", "D· ngo¹i" },
+		{ "Battlefield", "ChiÕn tr­êng" },
+		{ "Tong", "Bang ph¸i" },
+		{ "Country", "N­íc" },
+		{ "Others", "Kh¸c" },
+	};
+	for (int i = 0; i < (int)(sizeof(aLoai) / sizeof(aLoai[0])); i++)
+		if (stricmp(szType, aLoai[i][0]) == 0)
+			return aLoai[i][1];
+	return "";
+}
+
+void KWorldMapLocs::Load(KIniFile* pIni)
+{
+	m_nCount = 0;
+	m_nHover = -1;
+	if (!pIni)
+		return;
+	char szKey[32];
+	for (int i = 1; i <= 1200 && m_nCount < WORLDMAP_MAX_LOC; i++)
+	{
+		int nX = -1, nY = -1;
+		sprintf(szKey, "%d_MapPos", i);
+		pIni->GetInteger2("List", szKey, &nX, &nY);
+		if (nX < 0 || nY < 0)
+			continue;
+		KWorldMapLoc& l = m_aLoc[m_nCount];
+		l.nMapId = i;
+		l.nX = nX + 30;		// cung do lech voi ky hieu 'nguoi o day' (KUiWorldmap::UpdateData)
+		l.nY = nY + 17;
+		sprintf(szKey, "%d_name", i);
+		l.szName[0] = 0;
+		pIni->GetString("List", szKey, "", l.szName, sizeof(l.szName));
+		char* pc = l.szName;
+		while (*pc == ' ')
+			pc++;
+		if (pc != l.szName)
+			memmove(l.szName, pc, strlen(pc) + 1);
+		if (l.szName[0] == 0)
+			continue;
+		sprintf(szKey, "%d_MapType", i);
+		l.szType[0] = 0;
+		pIni->GetString("List", szKey, "", l.szType, sizeof(l.szType));
+		m_nCount++;
+	}
+}
+
+int KWorldMapLocs::Hit(int nLocalX, int nLocalY) const
+{
+	int nBest = -1, nBestD = 14 * 14 + 1;
+	for (int i = 0; i < m_nCount; i++)
+	{
+		int dx = m_aLoc[i].nX - nLocalX;
+		int dy = m_aLoc[i].nY - nLocalY;
+		int dd = dx * dx + dy * dy;
+		if (dd < nBestD)
+		{
+			nBestD = dd;
+			nBest = i;
+		}
+	}
+	return nBest;
+}
+
+int KWorldMapLocs::OnClick(int nLocalX, int nLocalY)
+{
+	int nLoc = Hit(nLocalX, nLocalY);
+	if (nLoc < 0 || g_pCoreShell == NULL)
+		return -1;
+	return g_pCoreShell->OperationRequest(GOI_WORLDMAP_GOTO, (unsigned int)m_aLoc[nLoc].nMapId, 0);
+}
+
+// Tu do vi tri chuot moi khung (khong dua vao WM_MOUSEMOVE - chuot dang o tren nut con thi
+// cha khong nhan WM_MOUSEMOVE, nhan se dinh lai). Ve ten dia diem canh diem, tranh trai ra ngoai cua so.
+void KWorldMapLocs::PaintHover(int nAbsLeft, int nAbsTop, int nWndWidth)
+{
+	if (m_nCount <= 0 || g_pRepresentShell == NULL)
+		return;
+	int nCX = 0, nCY = 0;
+	Wnd_GetCursorPos(&nCX, &nCY);
+	m_nHover = Hit(nCX - nAbsLeft, nCY - nAbsTop);
+	if (m_nHover < 0)
+		return;
+	const KWorldMapLoc& l = m_aLoc[m_nHover];
+	const char* szLoai = WML_LoaiTen(l.szType);
+	char szText[128];
+	int nLen;
+	if (szLoai[0])
+		nLen = _snprintf(szText, sizeof(szText) - 1, "%s (%s) - bÊm ®Ó ch¹y tíi", l.szName, szLoai);
+	else
+		nLen = _snprintf(szText, sizeof(szText) - 1, "%s - bÊm ®Ó ch¹y tíi", l.szName);
+	if (nLen < 0)
+		nLen = sizeof(szText) - 1;
+	szText[sizeof(szText) - 1] = 0;
+	int nW = nLen * 6;		// font 12: ~6 px / ky tu
+	int nX = l.nX + 12;
+	if (nX + nW > nWndWidth - 4)
+		nX = l.nX - 12 - nW;
+	if (nX < 2)
+		nX = 2;
+	int nY = l.nY - 7;
+	if (nY < 2)
+		nY = 2;
+	KOutputTextParam param;
+	param.Color = GetColor("255,255,80");
+	param.BorderColor = GetColor("0,0,0");
+	param.nX = nAbsLeft + nX;
+	param.nY = nAbsTop + nY;
+	param.nZ = TEXT_IN_SINGLE_PLANE_COORD;
+	param.nSkipLine = 0;
+	param.nNumLine = 1;
+	g_pRepresentShell->OutputRichText(12, &param, szText, nLen);
+}
+
+// [BANDO20 06/09] ve anh ban do roi ten dia diem dang tro chuot
+void KUiWorldmap::PaintWindow()
+{
+	KWndImage::PaintWindow();
+	m_Locs.PaintHover(m_nAbsoluteLeft, m_nAbsoluteTop, m_Width);
 }
