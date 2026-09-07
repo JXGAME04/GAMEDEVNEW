@@ -7189,7 +7189,16 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 				KSkill* p2 = (KSkill*)g_SkillManager.GetSkill(id2, 1);
 				if (!p2)
 					continue;
-				if (p2->GetSkillStyle() == SKILL_SS_PassivityNpcState)
+				// [TRANPHAI60 07/09] chu game: "cho bot nang max skill tran phai cap 60". Bo tran phai =
+				// chieu moc 60 co MaxLevel > 20 (skills.txt; moi phai dung 1 chieu, trung chu thich "tran phai"
+				// trong SKILLNORMAL factionhead.lua: 273/36/48/75/252/114/130/150/166/275). Chieu nay duoc nang
+				// toi MaxLevel (30) va KHONG bi bo qua du la bi dong (style 3): KSkillList::Add/IncreaseLevel
+				// tu Cast bi dong nen hieu ung ap ngay. Do 07/09: 7/10 chieu tran phai (bi dong) nam o cap 0,
+				// 3 chieu con lai ket 20 tren toan bo 1.000 bot.
+				const int rq2 = p2->GetSkillReqLevel();
+				const int nMaxSk = (int)g_SkillManager.GetSkillMaxLevel(id2);
+				const int bTranPhai = (rq2 == 60 && nMaxSk > 20);
+				if (p2->GetSkillStyle() == SKILL_SS_PassivityNpcState && !bTranPhai)
 					continue;
 				// khong nang chieu khac ngu hanh (chieu phai khac thua ke tu mau)
 				{
@@ -7197,15 +7206,19 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 					if (nSr2 >= 0 && nSr2 < series_num && nSr2 != Npc[nNpcIdx].m_Series)
 						continue;
 				}
-				const int rq2 = p2->GetSkillReqLevel();
 				if (nLvBot < rq2)
 					continue;                    // chua du cap mo ky nang nay
-				int nMuon = (rq2 >= 80) ? 1 : nLvBot;
-				if (nMuon > 20) nMuon = 20;
+				int nMuon = bTranPhai ? nMaxSk : ((rq2 >= 80) ? 1 : nLvBot);
+				if (!bTranPhai && nMuon > 20) nMuon = 20;
 				if (sl2.m_Skills[q].SkillLevel < nMuon)
 				{
+					const int nCuLv = sl2.m_Skills[q].SkillLevel;
 					sl2.Add(id2, nMuon);
 					nNang++;
+					if (bTranPhai)
+						pb_Log("[BotTranPhai] %s cap %d: %s (id %d) %d -> %d (max)\n",
+						       Player[nIdx].m_PlayerName, nLvBot, p2->GetSkillName(), id2, nCuLv,
+						       sl2.m_Skills[q].SkillLevel);
 				}
 			}
 			if (nNang)
