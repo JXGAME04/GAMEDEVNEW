@@ -11,9 +11,9 @@ Tiếp nối `BANGIAO_WAUTO_TK_RUONG_0409.md` (tính năng rương 04/09 chưa t
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `WAuto.exe.moi` | `807e4007` | 465.920 | **lưu ngay** mọi ô tick / ô chọn + mặc định 3 trường rương TK (mục 2) |
-| `CoreClient.dll.moi` | `9cb2f51f` | 2.578.432 | build từ `main` `95317dc4` = **bản của phiên Vận tiêu 18:13** (`59161dae`, đã cất thành `CoreClient.dll.moi.vtcn_1813_59161dae`) **+** vá về thành + nhật ký (mục 3) |
-| `Game.exe.moi` | `fb443d6d` | 1.481.216 | của phiên Vận tiêu 18:21 — **không đụng** |
+| `WAuto.exe.moi` | `807e4007` (sha256 `739560f1`) | 465.920 | **lưu ngay** mọi ô tick / ô chọn + mặc định 3 trường rương TK (mục 2) |
+| `CoreClient.dll.moi` | `9cb2f51f` (sha256 `1f25d254`) | 2.578.432 | build từ `main` `95317dc4` = **bản của phiên Vận tiêu 18:13** (`59161dae`, đã cất thành `CoreClient.dll.moi.vtcn_1813_59161dae`) **+** vá về thành + nhật ký (mục 3) |
+| `Game.exe.moi` | `3da2169e` (sha256 `f0b16230`) | 1.481.216 | của phiên Vận tiêu, bản **18:43** (cấp 90 + bài hướng dẫn), thay bản 18:21 `fb443d6d` — **không đụng** |
 
 Bản đang chạy: `CoreClient.dll` `b166ec89` · `Game.exe` `a4083afa` · `WAuto.exe` `66b9856b`.
 
@@ -174,3 +174,11 @@ Sau khi swap WAuto mới và tick lại ba ô rương, thứ tự sẽ là: về
 hồi sinh, cất trang bị** → trả máy → Hậu cần bán/sửa/rút → Xa Phu về map luyện công (đúng cấu hình Hậu cần
 của chủ). **Nếu chủ muốn nhân vật ĐỨNG LẠI trong thành sau Tống Kim** thì hoặc bỏ tick *Đi map luyện công*
 ở tab Hậu cần, hoặc yêu cầu thêm tuỳ chọn "sau rương thì đứng lại" — chưa làm vì đây là quyết định luật chơi.
+
+### 6.2 Phối hợp với phiên Vận tiêu (18:45)
+
+Phiên Vận tiêu đã kiểm `CoreClient.dll.moi` của tôi (thấy đủ dấu hiệu mã v2 của họ + `[TK-MSG]`) và **đồng ý
+không đặt lại**; từ `5a4d0d24` họ không sửa `Sources\Core` nữa nên bản này đầy đủ. Họ **đã thay `Game.exe.moi`**
+bằng bản 18:43 (`3da2169e`, chỉ mã S3Client, không liên quan WAuto). Máy chủ: `bin\server\CoreServer.dll.moi`
+`6439ba82` (sha256 `61bc3e0f`) là của họ, giữ nguyên. Lưu ý sổ hash: tôi ghi **md5**, họ ghi **sha256[:8]**
+— cùng tệp khác hàm băm, đừng tưởng lệch bản.
