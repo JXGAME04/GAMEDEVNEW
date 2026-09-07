@@ -6578,6 +6578,11 @@ static int   s_nPSBo = 0, s_nPSGui = 0;
 static DWORD s_adwPSBamDay[MAX_NPC];
 static DWORD s_adwPSBamKhac[MAX_NPC];
 static int   s_nPSDoiFight = 0, s_nPSDoiCoNgua = 0, s_nPSDoiKhac = 0;
+// [DELTA 07/09 e] doi nam o nhom truong nao: 0 toc do (Walk/Run/Attack/CastSpeed), 1 rank/danh hieu, 2 chi so
+// (RankInWorld/Repute/FuYuan/PK/ReBorn), 3 trang bi/ngua/anh, 4 ten-chuoi-co; bam voi nhom do xoa trang.
+static DWORD s_adwPSNhom[5][MAX_NPC];
+static int   s_anPSNhom[5] = { 0, 0, 0, 0, 0 };
+static int   s_nPSNhomNhieu = 0;
 static DWORD PS_Bam(const void* pData, int nCo)
 {
 	DWORD dw = 2166136261u;
@@ -7164,6 +7169,32 @@ BOOL KNpc::NormalSync()
 				s_adwPSBamDay[m_Index] = dwBamDay;
 				s_adwPSBamKhac[m_Index] = dwBamKhac;
 			}
+			{	// [DELTA 07/09 e] doi o NHOM nao: nhom nao bam-xoa-trang KHONG doi thi doi nam trong nhom do
+				DWORD adwNhom[5];
+				for (int k = 0; k < 5; k++)
+				{
+					PLAYER_NORMAL_SYNC sN = sPSBam;
+					switch (k)
+					{
+					case 0: sN.WalkSpeed = 0; sN.RunSpeed = 0; sN.AttackSpeed = 0; sN.CastSpeed = 0; break;
+					case 1: sN.RankID = 0; sN.RankBattleID = 0; sN.PlayerTitle = 0; sN.HonorID = 0; sN.MantleLevel = 0; break;
+					case 2: sN.RankInWorld = 0; sN.Repute = 0; sN.FuYuan = 0; sN.PKValue = 0; sN.ReBorn = 0; break;
+					case 3: sN.HelmType = 0; sN.ArmorType = 0; sN.WeaponType = 0; sN.MantleType = 0; sN.MaskType = 0; sN.HorseType = 0; sN.ExItemID = 0; sN.ExBoxID = 0; sN.CUnlocked = 0; sN.ImagePlayer = 0; break;
+					default: memset(sN.MateName, 0, sizeof(sN.MateName)); memset(sN.TongName, 0, sizeof(sN.TongName)); memset(sN.TongTitle, 0, sizeof(sN.TongTitle)); sN.TongFigure = 0; sN.TongRecruit = 0; memset(sN.GameTitle, 0, sizeof(sN.GameTitle)); memset(sN.bMeridianLevel, 0, sizeof(sN.bMeridianLevel)); sN.nFirstFaction = 0; sN.m_bBaiTan = 0; sN.m_btSomeFlag = 0; break;
+					}
+					adwNhom[k] = PS_Bam(&sN, (int)sizeof(PLAYER_NORMAL_SYNC));
+				}
+				if (s_adwPSBam[m_Index] != 0 && dwBam != s_adwPSBam[m_Index] && s_adwPSNhom[0][m_Index] != 0)
+				{
+					int nTim = -1;
+					for (int k = 0; k < 5 && nTim < 0; k++)
+						if (adwNhom[k] == s_adwPSNhom[k][m_Index])
+							nTim = k;
+					if (nTim >= 0) s_anPSNhom[nTim]++; else s_nPSNhomNhieu++;
+				}
+				for (int k = 0; k < 5; k++)
+					s_adwPSNhom[k][m_Index] = adwNhom[k];
+			}
 			const DWORD dwLuc = GetTickCount();
 			if (s_adwPSBam[m_Index] == dwBam &&
 				(dwLuc - s_adwPSLuc[m_Index]) < (DWORD)(s_nPSLamMoi * 1000))	// GetTickCount tinh bang mili giay
@@ -7178,9 +7209,10 @@ BOOL KNpc::NormalSync()
 				s_nPSGui++;
 			}
 		}
-		AUTOLOG_EVERY(10000, "[PS-BO] goi ngoai hinh: gui=%d bo=%d (%d%% bo) lam moi moi %d giay | doi: chi_co_chien_dau=%d co_khac_hoac_ngua=%d khac=%d",
+		AUTOLOG_EVERY(10000, "[PS-BO] goi ngoai hinh: gui=%d bo=%d (%d%% bo) lam moi moi %d giay | doi: chi_co_chien_dau=%d co_khac_hoac_ngua=%d khac=%d | nhom: toc_do=%d rank=%d chi_so=%d trang_bi=%d ten=%d nhieu=%d",
 			s_nPSGui, s_nPSBo, (s_nPSGui + s_nPSBo) > 0 ? (s_nPSBo * 100 / (s_nPSGui + s_nPSBo)) : 0, s_nPSLamMoi,
-			s_nPSDoiFight, s_nPSDoiCoNgua, s_nPSDoiKhac);
+			s_nPSDoiFight, s_nPSDoiCoNgua, s_nPSDoiKhac,
+			s_anPSNhom[0], s_anPSNhom[1], s_anPSNhom[2], s_anPSNhom[3], s_anPSNhom[4], s_nPSNhomNhieu);
 		if (bPSGui)
 		{
 			bNSKq = TRUE;	// [DELTA 07/09]
