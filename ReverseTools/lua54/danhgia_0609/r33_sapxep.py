@@ -6,7 +6,7 @@ import os, sys, json, shutil, collections
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 SP = sys.argv[1]
 DO = len(sys.argv) > 2 and sys.argv[2] == "thuc_hien"
-ROOT = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server"
+ROOT = os.environ.get("SAPXEP_ROOT", r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server")
 SCRIPT = os.path.join(ROOT, "script")
 LUU = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\_luutru\0609"
 BS = chr(92)
@@ -29,8 +29,10 @@ NHOM = {
     "test": "kiemthu/test",
 }
 # thu muc ten Han con lai (trap map con dung, tham chieu theo ID) -> ten pinyin Viet
-HAN = {"\u4e2d\u539f\u5317\u533a": "tinhnang/trapcu/trungnguyenbac", "\u897f\u5357\u5357\u533a": "tinhnang/trapcu/taynamnam",
-       "\u4e24\u6e56\u533a": "tinhnang/trapcu/luongho"}
+HAN_GBK = {bytes([0xd6, 0xd0, 0xd4, 0xad, 0xb1, 0xb1, 0xc7, 0xf8]): "tinhnang/trapcu/trungnguyenbac",   # trung nguyen bac
+           bytes([0xce, 0xf7, 0xc4, 0xcf, 0xc4, 0xcf, 0xc7, 0xf8]): "tinhnang/trapcu/taynamnam",        # tay nam nam
+           bytes([0xc1, 0xbd, 0xba, 0xfe, 0xc7, 0xf8]): "tinhnang/trapcu/luongho",
+           bytes([0xbd, 0xad, 0xc4, 0xcf, 0xc7, 0xf8]): "tinhnang/trapcu/giangnam"}                     # giang nam                    # luong ho
 # tep le o goc -> du lieu
 GOC = {"codenew.lua": "dulieu/codenew.lua", "giftcode_new.lua": "dulieu/giftcode_new.lua", "giftcode_fancung.lua": "dulieu/giftcode_fancung.lua"}
 # tep kiem thu / admin nam lan trong thu muc chay (duong dan tuong doi script/, dung /)
@@ -50,10 +52,25 @@ GIU_TAI_CHO.update([
     "script_protocol/protocol_def_c.lua", "timerserver.lua", "protocol.lua", "startgame.lua", "gmscript.lua",
 ])
 
+def to_disk_bytes(s):
+    out = bytearray()
+    for ch in s:
+        o = ord(ch)
+        if o < 128 or o in (0x81, 0x8D, 0x8F, 0x90, 0x9D): out.append(o)
+        else:
+            try: out += ch.encode("cp1252")
+            except UnicodeEncodeError: out += b"?"
+    return bytes(out)
+def ansi_str(b):
+    # byte ANSI -> unicode dung nhu Windows (cp1252; 5 byte khong dinh nghia -> U+0081...)
+    return "".join(chr(x) if (x < 128 or x in (0x81, 0x8D, 0x8F, 0x90, 0x9D)) else bytes([x]).decode("cp1252") for x in b)
+HAN = {ansi_str(k): v for k, v in HAN_GBK.items()}
+
 def rel_of(path):
     return os.path.relpath(path, SCRIPT).replace(os.sep, "/")
 
 plan = []   # (rel_cu, rel_moi)
+TEN_UNICODE = []
 def add(rel_cu, rel_moi):
     if rel_cu in GIU_TAI_CHO:
         return
@@ -67,6 +84,10 @@ for dp, dn, fn in os.walk(SCRIPT):
         rel = rel_of(p)
         if f.startswith("_") or f.lower() == "lua54_da_chuyen.txt" or f.lower() == "scripterror.log":
             continue
+        if not (f.lower().endswith(".lua") or f.lower().endswith(".txt")):
+            continue                                  # rac (.bak/.truoc_*/.dat/.zip) don rieng, khong bi danh
+        if any(ord(ch) > 255 for ch in rel):
+            TEN_UNICODE.append(rel); continue        # ten Unicode that: engine ANSI (cp1252) khong mo duoc -> giu nguyen, bao rieng
         parts = rel.split("/")
         top = parts[0]
         if len(parts) == 1:
@@ -88,6 +109,8 @@ dich = collections.Counter(m for _, m in plan)
 trung = [m for m, n in dich.items() if n > 1]
 tontai = [m for _, m in plan if os.path.exists(os.path.join(SCRIPT, m.replace("/", os.sep)))]
 print("Ke hoach: %d tep doi cho; dich trung: %d; dich da ton tai: %d" % (len(plan), len(trung), len(tontai)))
+if TEN_UNICODE:
+    print("CANH BAO: %d tep ten Unicode that (engine ANSI khong mo duoc, khong doi cho, can doi ten): %s" % (len(TEN_UNICODE), "; ".join(TEN_UNICODE[:6])))
 for m in trung[:10]: print("  TRUNG", m)
 for m in tontai[:10]: print("  TON TAI", m)
 by = collections.Counter((c.split("/")[0], "/".join(m.split("/")[:2])) for c, m in plan)
@@ -109,10 +132,6 @@ def viet_bidanh(plan_list):
         lines.append("--@ script" + BS + c.replace("/", BS) + "=script" + BS + m.replace("/", BS))
     return "\r\n".join(lines) + "\r\n"
 
-def to_disk_bytes(s):
-    # ten Han -> GBK; con lai ASCII
-    return s.encode("mbcs")
-
 if DO:
     n = 0
     for c, m in plan:
@@ -124,20 +143,36 @@ if DO:
     p_alias = os.path.join(SCRIPT, "_duongdan_cu.txt")
     cu_lines = []
     if os.path.exists(p_alias):
-        for ln in open(p_alias, "rb").read().decode("mbcs", errors="replace").split("\n"):
+        for ln in ansi_str(open(p_alias, "rb").read()).split("\n"):
             if ln.startswith("--@"): cu_lines.append(ln.rstrip("\r"))
     txt = viet_bidanh(plan)
     if cu_lines:
         txt = txt + "\r\n".join(cu_lines) + "\r\n"
     open(p_alias, "wb").write(to_disk_bytes(txt))
+    for rel in TEN_UNICODE:
+        src = os.path.join(SCRIPT, rel.replace("/", os.sep)); dst = os.path.join(LUU, "ten_unicode", rel.replace("/", os.sep))
+        if os.path.exists(src):
+            os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.move(src, dst)
+    if TEN_UNICODE: print("tep ten Unicode da chuyen vao _luutru/0609/ten_unicode: %d" % len(TEN_UNICODE))
+    # rac trong cay script (.bak, .dat, .log, back/...) -> _luutru/0609/rac_trong_script (giu .lua va .txt)
+    nrac = 0
+    for dp, dn, fn in os.walk(SCRIPT):
+        for f in fn:
+            fl = f.lower()
+            if fl.endswith(".lua") or fl.endswith(".txt") or f.startswith("_"):
+                continue
+            src = os.path.join(dp, f); rel = os.path.relpath(src, ROOT)
+            dst = os.path.join(LUU, "rac_trong_script", rel); os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.move(src, dst); nrac += 1
+    print("rac trong script/ da don: %d" % nrac)
     # ScriptError.log rai rac trong cay -> _luutru
     nlog = 0
     for top in ("script", "scriptjx2"):
         for dp, dn, fn in os.walk(os.path.join(ROOT, top)):
             for f in fn:
-                if f.lower() == "scripterror.log":
+                if f.lower().endswith(".log"):
                     src = os.path.join(dp, f); rel = os.path.relpath(src, ROOT)
-                    dst = os.path.join(LUU, "scripterror_log", rel); os.makedirs(os.path.dirname(dst), exist_ok=True)
+                    dst = os.path.join(LUU, "log_trong_script", rel); os.makedirs(os.path.dirname(dst), exist_ok=True)
                     shutil.move(src, dst); nlog += 1
     # xoa thu muc rong
     removed = 0

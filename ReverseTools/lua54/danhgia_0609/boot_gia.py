@@ -7,7 +7,7 @@ DLL = sys.argv[1]
 MODE = sys.argv[2]
 LIMIT = int(sys.argv[3]) if len(sys.argv) > 3 else 0
 LOG = sys.argv[4] if len(sys.argv) > 4 else None
-ROOT = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server"
+ROOT = os.environ.get("SAPXEP_ROOT", r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server")
 os.environ["LUA54_BO_KIEM"] = "1"
 if MODE == "khongcache":
     os.environ["LUA54_KHONG_CACHE"] = "1"

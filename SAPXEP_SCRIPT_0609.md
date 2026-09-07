@@ -88,3 +88,25 @@ Trả lời xong tôi làm R0 → R1 → R2 (một build CoreServer) → R3-1, m
 ### Hai lỗi đỏ lúc boot 15:39/15:44 (không do cache) — đã chặn
 - `event\longmenbiaoju\tasknpc.lua:64`: `AutoFunctions` chỉ có trong state `global/autoexec_head.lua` (JX1 mỗi tệp một state) → chèn `if AutoFunctions ~= nil then … end`.
 - `global\achievementsys\type\longmenbiaoju.lua:7`: Include `achievementsys\head.lua` không tồn tại ở JX1 (không có hệ thành tựu) → `if AchievementDetailBase == nil then return end`. Cả hai là tệp vận tiêu 13:51 của phiên khác; sửa chỉ chặn lỗi, không đổi logic.
+
+## 6. KIỂM TRA TRƯỚC KHI CHỦ TEST (06/09 16:10–16:45) — đã chạy lại toàn bộ script
+
+Chủ: *"chạy lại toàn bộ script trước khi tôi chạy test; rút gọn sắp xếp cho gọn, dễ hiểu, dễ điều chỉnh, file hệ thống phải note từng phần; kiểm .lua đã lên toàn bộ 5.4 chưa; để kiểm tra hiệu năng sau test"*.
+
+| Kiểm | Kết quả |
+|---|---|
+| **Toàn bộ .lua đã là Lua 5.4?** | Biên dịch bằng Lua 5.4 thật (`kiem_54.py`): máy chủ `script` **1.664 tệp 0 lỗi**, `scriptjx2` **112 / 0 lỗi**, client `script` **450 / 0 lỗi**. Cấu trúc Lua 4 còn sót: `%x` 0, thoát lạ 0, `for k,v in <bảng>` không có `pairs` **0** (bộ quét cũ báo 150 là báo thừa), `arg` vararg cũ 0 (chỉ `class/ktabfile.lua` dùng `arg` làm tên tham số). → **100 % cây đã 5.4**; lớp tương thích `lua4compat` giữ tên hàm cũ. |
+| Boot mô phỏng cây thật (DLL mới, cache) | 1.733 state, 2,75 s, 439 state báo lỗi do hàm engine giả (baseline `boot_loi_truoc.txt`) |
+| **Diễn tập sắp xếp trên BẢN SAO** (`_luutru\thu_sapxep`, không đụng cây thật) | `r33_sapxep.py`: **1.238 tệp đổi chỗ, 1.238 dòng bí danh, 0 va chạm**; 284 tệp rác (`*.truoc_*`, `.bak`, `.dat`, `.zip`, `.log`) dọn ra kho; 228 thư mục rỗng xoá; `kiem_duongdan_cu.py`: 0 tệp còn ở đường cũ, 0 đích thiếu. Boot mô phỏng cây mới qua bí danh: 439 state lỗi, **tập lỗi GIỐNG HỆT baseline (878/878 dòng, 0 khác)** → bí danh Include/dofile hoạt động, không tệp nào mất. |
+| Tệp Hán đã lưu kho — kiểm lại bằng bộ mã đúng | Phát hiện lỗi bộ mã (codepage hệ thống 1252, byte GBK đọc theo cp1252, 5 byte không định nghĩa) → kiểm lại 1.371 tệp: **2 tệp còn tham chiếu đã trả về cây chạy** (`global\…\songjin_shophead.lua` Tống Kim, `江南区\金山岛\addnpcandtrap.lua`), 1.369 tệp xác nhận không ai gọi (token settings/script/C++ + 28 ID trap). |
+| Tên tệp Unicode thật | 6 tệp `skill\special\{毒攻击,生命内力双补,轻功,近程物理攻击,远程物理攻击,长兵物理攻击}.lua` có tên Unicode (không phải byte GBK) → engine ANSI đọc thành `?` nên **chưa bao giờ nạp được**; bản GBK cùng tên vẫn có. Bat sẽ chuyển vào `_luutru\0609\ten_unicode`. |
+| **Chú thích tệp hệ thống** | `ghi_chu_hethong.py` chèn khối `[HE THONG]` đầu **178 tệp** (gốc, lib, header, cauhinh, cauhinh_web, class, script_protocol, startgame, global, misc, vng_lib, log_game, timertask, maps, npclevelscript): mục đích, ai nạp (Include từ N tệp / engine / C++), danh sách Include, **danh mục hàm + số dòng**, có sửa nóng được không (trong chuỗi Include của timerserver), quy ước 5.4. Cú pháp sau chèn: 1.664 + 112 tệp 0 lỗi. Thêm `script\_MUCLUC.lua` (bố cục, quy ước viết script, bí danh, đo hiệu năng). Tệp trong chuỗi timerserver tự nạp lại một lần (chỉ thêm chú thích). |
+| Hiệu năng bản đang chạy (15:49, cache + đồng hồ) | `hieunang_sau.py 15:49` (79 khối, 1001 online): TICK 6,73 ms tb / p95 9 / max 88; SW_ACTIVATE 4,34; **LUA_CALL 0,245 ms = 3,6 % tick, 0,45 % thời gian**; tick trễ 0 %; WS 8,1 GB. |
+
+### Cách chạy bước cuối (không đổi): tắt GameServer → `bin\server\SAPXEP_0609.bat`
+Bat: thay `.moi` (CoreServer 6ba06754 bí danh, Lua54Dll 7689d830) → `r33_sapxep.py thuc_hien` → `kiem_duongdan_cu.py sua` → `boot_gia.py` cây mới + `so_boot.py` (phải in **GIONG HET**) → robocopy gương git → mở GameServer. Console phải có `[script] Bi danh duong dan: 1238 dong, dang ky ID cu 1238, ten moi chua nap 0, ten cu con ton tai 0`.
+
+### Đo hiệu năng sau khi test
+`python tools\sapxep\hieunang_sau.py HH:MM` (HH:MM = giờ mở server) → bảng TICK / SW_ACTIVATE / LUA_CALL / SCRIPT_TIME, % Lua trên tick, tick trễ, RAM. So với dòng "bản 15:49" ở trên; LoadAllScript ms đọc trên console lúc boot (trước ≈ 6–7 s, kỳ vọng ≈ 2–3 s và ít state hơn: 1.733 → ~1.730).
+
+**Bài học ghi lại:** máy chủ chạy codepage 1252; tên tệp GBK trên đĩa là byte GBK được Windows đọc theo cp1252 (5 byte 0x81/0x8D/0x8F/0x90/0x9D thành U+0081…) — mọi công cụ so tên tệp với chuỗi trong dữ liệu phải dùng đúng bộ mã này (`ansi_str`/`to_disk_bytes` trong `tools\sapxep`), không dùng `gbk`/`mbcs` mặc định.
