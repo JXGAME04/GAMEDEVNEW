@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/log_game/log_giaodich.lua
+-- Muc dich  : Log giao dich.
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng) + C++ goi truc tiep theo ten tep
+-- Include   : save_log.lua, lib_map.lua
+-- Ham (dong): linebegin (9), trademoney (33), tradeitem (39)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author Fong Ki“u
 --Date 21/01/2021
 --Script luu lich su giao dich cua player

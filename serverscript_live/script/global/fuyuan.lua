@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/global/fuyuan.lua
+-- Muc dich  : Phuc Duyen (ban global).
+-- Duoc nap  : Include tu 1 tep (vd tasklink_head.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): FuYuan_Start (21), FuYuan_Pause (33), FuYuan_Resume (54), FuYuan_Gain (62), FuYuan_GetDepositTime (107), FuYuan_Get (148), FuYuan_Set (153), FuYuan_Add (163), FuYuan_Reduce (172), IsCharged (181), IsFuYuanStarted (190), IsFuYuanAvailable (200), IsFuYuanPaused (210)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --¸£ÔµÏµÍ³
 --2004.8.5
 

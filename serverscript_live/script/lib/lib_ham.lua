@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/lib_ham.lua
+-- Muc dich  : THU VIEN HAM TIEN ICH CHUNG cua du an: thoi gian, chuoi, bang, thong bao, tien te.
+-- Duoc nap  : Include tu 84 tep (vd eventlib2010.lua, npcevent.lua, eventlib.lua, tuongquan.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : lib_task.lua
+-- Ham (dong): UpdateTongExpAndLevel (34), AddItemSL (49), admincheck (54), MsgEx (63), SayEx (71), MsgToPlayerInTaskTemp (90), MsgToPlayerInTask (102), MsgToPlayerInTaskValue (114), FindNameInTab (126), TaoBang (134), SaveData (163), TaoBangNew (169), SaveDataNew (194), LuuBang (200), updatengaymoi (221), LuuTrangThaiHoatDongHomQua (313), CapNhatThieuHoatDong (330), GetNgayHomNay (370), UpdateNgayMoiAllPlayer (378), no (392), Exit (395)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- Author: Fong KiÒu
 -- Date: 28/06/2021
 -- Chuc nang: Ham ho tro

@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/header/revivepos_head.lua
+-- Muc dich  : DIEM HOI SINH (du lieu).
+-- Duoc nap  : Include tu 7 tep (vd shenxingfu.lua, thodiafu.lua, thodiaphuvh.lua, xaloi.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham       : (khong co - tep du lieu/cau hinh)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --hoangnhk
 THANH_ARRAY = {
 {1 ,	"Ph­îng T­êng Phñ"	,{

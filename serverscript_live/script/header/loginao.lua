@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/header/loginao.lua
+-- Muc dich  : Map/ao dang nhap.
+-- Duoc nap  : Include tu 1 tep (vd timerserver.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): Active_LogginAo (7)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 TAB_NAMEAO= {
 "Thiªn","Kim","Hoµng","Ngu","ãc","Chã","§ång","Ngäc","T©m","Léc","Lý","Thó","Chïa","ThÇy","ThÇn","Kinh","ThiÕu","L©m","Tù","NghÌo","NhÊt","Xãm",
 "Xµm","v«","®èi","thô","d©m","tÆc","ng­êi","l¹","cµy","tiÒn","H¹","Minh","Sang","D©m","ThiÕt","Méc","Thñy","Háa","Thæ","M¹nh","Kha","§Þnh","NguyÔn","Th«ng",

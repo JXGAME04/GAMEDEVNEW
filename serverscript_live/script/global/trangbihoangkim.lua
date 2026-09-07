@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/trangbihoangkim.lua
+-- Muc dich  : TRANG BI HOANG KIM (55 ham).
+-- Duoc nap  : Include tu 2 tep (vd lenhbaiadmin.lua, hotrotest.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : lib_ham.lua
+-- Ham (dong): laydohoangkim (6), trangbikimo (27), trangbiminhphung (41), trangbihonganh (46), trangbiliendau (49), chonanbang (55), chonanbangld (61), chondinhquoc (65), chondinhquocld (71), hoangkimmonphai345 (75), thienvuong (90), ngamy (98), namdoc (106), thuyyen (113), duongmon (120), caibang (129), thiennhan (136), vodang (144), conlon (151), thieulam (159), monglong (167), phucma (171), tukhong (175), hamthien (179) ... (55 ham)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong Ki“u
 --Date: 09/07/2021
 --Function: Lib Trang bﬁ Hoµng Kim

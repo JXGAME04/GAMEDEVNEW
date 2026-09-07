@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/header/repute_head.lua
+-- Muc dich  : DANH VONG (repute): loai, ten, gioi han.
+-- Duoc nap  : Include tu 1 tep (vd vebinh.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): ReturnRepute (1), GetLevelRepute (13), GetReputeLevel (22), GetReputeStr (50), Repute_Get (77), Repute_Set (81), Repute_Add (86), Repute_Reduce (94), nothing (102)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 function ReturnRepute(default_repute,max_level,reduce_rate)
 	player_level = GetLevel()
 	if (GetLevel() <= max_level) then

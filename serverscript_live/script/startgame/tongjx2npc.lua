@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/startgame/tongjx2npc.lua
+-- Muc dich  : Dat NPC BANG HOI JX2 (goi tu OnGame).
+-- Duoc nap  : Include tu 1 tep (vd startgame.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : addtongnpc.lua
+-- Ham (dong): JX2Tong_AddNpc (5), JX2Tong_AddTerritoryNpc (115)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- tongjx2npc.lua - dat NPC bang hoi JX2 (goi tu OnGame trong startgame.lua)
 -- Ten NPC + template + script lay NGUYEN VAN tu addtongnpc.lua ban Linux.
 -- Map lanh dia bang (586-597) chua port -> cum NPC dat TAM o Ba Lang Huyen

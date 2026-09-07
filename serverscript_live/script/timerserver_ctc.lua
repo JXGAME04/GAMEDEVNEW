@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/timerserver_ctc.lua
+-- Muc dich  : Dong ho 5 pha CONG THANH CHIEN tren GameServer (dot E6); goi tu timerserver.lua.
+-- Duoc nap  : Include tu 3 tep (vd bangthanh_f.lua, citywar_e3.lua, timerserver.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): ctc6_lgname (12), ctc6_checkleague (18), ctc6_clearleague (36), ctc6_randomchallenger (59), ctc6_startsignup (96), ctc6_endsignup (109), ctc6_startwar (147), ctc6_startarena (164), ctc6_daily0h (172), CTC_JX2_Tick (186)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- timerserver_ctc.lua - DOT E (E6): dong ho 5 pha cong thanh tren GS
 -- (port nguyen ngu nghia cw_*_fun relay citywar_head.lua:99-145 +
 -- citywar_clearchallenger.lua - ta 1 GS khong co relay-Lua).

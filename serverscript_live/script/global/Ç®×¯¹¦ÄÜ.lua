@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/Ç®×¯¹¦ÄÜ.lua
+-- Muc dich  : Thu vien TOAN CUC (global) - nap boi Include tu nhieu tep.
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng)
+-- Include   : head_qianzhuang.lua
+-- Ham (dong): main_proc (7), buy_sele (17), buy1 (22), buy2 (32), buy3 (42), no (52), hesui_hongbao (55), Package_Hesui (59), ruyi_hongbao (70), Package_Ruyi (74)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong KiÒu
 --Date:2021
 --Function: Chñ tiÒn trang

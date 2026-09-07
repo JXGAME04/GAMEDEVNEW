@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/header/testgame.lua
+-- Muc dich  : Bo test/khung khi khoi dong game (1412 dong).
+-- Duoc nap  : Include tu 2 tep (vd lenhbaiadmin.lua, hotrotest.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): xanhtest (3), vukhit123 (17), aotnam (27), aotnu (37), giayt (46), dait (56), nont (66), baotayt (76), hanglient (86), gioichit (96), ngocboit (106), selvk (116), selaonam (344), selaonu (463), selgiay (581), seldai (700), selnon (819), seltay (938), seldc (1057), selnhan (1176), selnb (1295)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --hoangnhk
 PLEASE = "H·y lùa chän:";
 function xanhtest()

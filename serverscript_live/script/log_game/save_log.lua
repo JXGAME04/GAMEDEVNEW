@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/log_game/save_log.lua
+-- Muc dich  : HAM GHI LOG CHUNG cua game (21 ham) - log_game/*.lua dung.
+-- Duoc nap  : Include tu 41 tep (vd lib.lua, quahuyhoang.lua, lib_vt.lua, lib.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): logTBHK (4), logEventThang1 (11), logEventThang10 (18), logPhanThuongToiDa (25), logTriAn (32), logTOP10 (39), logHack (46), logGiftCode (53), logCreatGiftCode (60), logCreatCardCode (67), logWorldCup (74), logWriteLogin (81), logWriteTrade (88), logWriteBind (95), logWriteKTC (102), logNapThe (109), logDoiNhacVuongKiem (116), logDoiKNB (123), logHoatDong (130), logRutXu (137), logRutXuTK (144)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong KiÒu
 --Date: 2021
 --Function: Lib Save All Log GS

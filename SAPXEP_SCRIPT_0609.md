@@ -125,3 +125,14 @@ Bat: thay `.moi` (CoreServer 6ba06754 bí danh, Lua54Dll 7689d830) → `r33_sapx
 Console phải có `[script] Bi danh duong dan: 1238 dong, dang ky ID cu 1238, ten moi chua nap 0, ten cu con ton tai 0`; `ScriptError.log` trong các thư mục mới không sinh thêm.
 
 **Bài học ghi lại:** mô phỏng phải bắt chước cả **thư mục làm việc** của engine, không chỉ đường dẫn; mọi tệp cấu hình DLL/Core đọc lúc boot phải mở theo đường tuyệt đối suy từ gốc máy chủ.
+
+## 8. KẾT QUẢ SAU RESTART 18:04 (cây mới + DLL sửa) — kiểm 18:20
+
+| Kiểm | Kết quả |
+|---|---|
+| Lỗi script mới | **0**: không `ScriptError.log` nào sinh trong cây sau 18:04; `ScriptError.log` ở gốc (1.476 dòng) toàn bộ 17:54–17:58 = lần chạy lỗi trước; `script_jx2.log`, `hethong.log`, `jx_auto_server.log` không có `attempt to`/`error` sau 18:04 |
+| Hệ thống chạy | RunTime 14–22 ms/phút (PROF), NPC hội thoại chạy (`ScripNpcDialog.log` 315 dòng), bot Tống Kim ra trận, người chơi đăng nhập |
+| Perf lần chạy mới (18:06–18:19, 1001 online, đang Tống Kim) | TICK **6,16 ms** tb (bản 15:49: 6,7), SW_ACTIVATE 3,9, tick trễ 0,12 %, RAM 8,08 GB; **LUA_CALL 0,40 ms = 6,5 % tick** — bằng đúng bản cũ trong cùng khung Tống Kim (17:50–17:53: 0,42 ms, 6,3 %); ngoài Tống Kim từng phút 0,18–0,24 ms như trước (0,226) → **sắp xếp + bí danh không thêm chi phí** |
+| Gương git | `serverscript_live` = cây sau sắp xếp (commit sau 18:20) |
+
+Còn lại nhỏ: `nhiemvu\partner\train\bdh_jitan_driver.lua` (và 2 tệp kiemthu) ghi `script\bdh_test.log` vào trong cây script → nên đổi sang `logs\`. Các phiên khác từ nay ghi tệp theo đường dẫn MỚI (`kiem_duongdan_cu.py sua` trước mỗi restart nếu nghi ngờ).

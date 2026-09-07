@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/composeex.lua
+-- Muc dich  : CHE TAO / GHEP DO khong giao dien (compose ex) - dung luyen, lo ren.
+-- Duoc nap  : Include tu 4 tep (vd activitydetail.lua, wuxingyin.lua, boss.lua, composelistex.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : dailogsay.lua, awardtemplet.lua, baseclass.lua, string.lua
+-- Ham (dong): tbActivityCompose:_init (50), tbActivityCompose:UseGiveUI (58), tbActivityCompose:CheckMaterial (70), tbActivityCompose:CanMakeMaxCount (125), tbActivityCompose:MakeItem (135), tbActivityCompose:CheckItem (151), tbActivityCompose:GetRoomItems (179), tbActivityCompose:CalcItemCount (195), tbActivityCompose:ConsumeItem (209), tbActivityCompose:ConsumeMaterial (242), tbActivityCompose:GetMaterialList (290), tbActivityCompose:Compose (314), tbActivityCompose:ComposeGiveUI (364), tbActivityCompose:GiveUIOk (378), tbActivityCompose:ComposeDailog (390), tbActivityCompose:ConsumeLog (416), tbActivityCompose:AskNumber (419), tbActivityCompose:ComposeCountComfirm (436), tbActivityCompose:GetProductName (457), tbActivityCompose:GetFormulaByString (464)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --无UI界面的合成类
 --通过调用tbActivityCompose:GetMaterialList(tbMaterial)自动产生合成材料信息 
 --格式： 物品名 （物品个数/需求个数）

@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/global/hocvocong.lua
+-- Muc dich  : HOC VO CONG (1070 dong): hoc/nang ky nang tai NPC.
+-- Duoc nap  : Include tu 4 tep (vd quanly.lua, lenhbaitanthu.lua, hotrotanthu.lua, hotrotest.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): ThemKyNang (4), ThemTiemNang (9), hocvocong (14), hocvocong2 (31), hockynangpubg (44), hvctvb (55), hvctl (60), hvcdm (64), hvc5doc (68), hvcnm (72), hvcty (76), hvctn (80), hvccb (84), hvcvd (88), hvccl (92), hvchs (96), hvcwh (100), hvcxy (103), HoTroSkill (219), hockhinhcong (245), hocskill90123 (250), kynangthieulamtest (269), kynangngamytest (287), del_all_skill (298) ... (47 ham)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong KiÒu
 --Date: 2021
 --Function: Lib häc kü n¨ng vâ c«ng

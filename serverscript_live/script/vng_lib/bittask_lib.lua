@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/vng_lib/bittask_lib.lua
+-- Muc dich  : Bit task (VNG).
+-- Duoc nap  : Include tu 4 tep (vd activitydetail.lua, ipbonus_2_head.lua, exp_award.lua, give_support_item.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : functionlib.lua
+-- Ham (dong): tbVNG_BitTask_Lib:getBitTask (5), tbVNG_BitTask_Lib:setBitTask (9), tbVNG_BitTask_Lib:addTask (16), tbVNG_BitTask_Lib:isMaxBitTaskValue (24), tbVNG_BitTask_Lib:IsMaxValue (30), tbVNG_BitTask_Lib:CheckBitTaskValue (37)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\activitysys\\functionlib.lua")
 if not tbVNG_BitTask_Lib then
 	tbVNG_BitTask_Lib = {}

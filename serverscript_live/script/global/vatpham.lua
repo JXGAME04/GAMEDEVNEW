@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/vatpham.lua
+-- Muc dich  : Ham VAT PHAM toan cuc (22 ham).
+-- Duoc nap  : Include tu 23 tep (vd eventlib2010.lua, npcevent.lua, eventlib.lua, tuongquan.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : lib_ham.lua, lib_vatpham.lua
+-- Ham (dong): AddRandXuHoatDong (7), AddRandNHKTHoatDong (31), layvatpham (55), nhanlbb (79), lenhbaihtdatau (82), ruonghoangkim (87), ruonghoangkim2 (93), NhanPTLBCC (99), Nhan500NHKT (112), quahuyhoang223 (117), tienthaolo447 (131), daithanhbikip (136), xaloikimdon (177), lbadmin9987 (182), tuiduocpham1238 (186), nhacvuongkkkk (191), addPhucDuyenLo (196), lbgoiboss12 (206), thanhanhphu235 (210), thodiaphu235 (214), lenhbaitanthu346 (218), volaammattichttk667 (223)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong KiÒu
 --Date: 09/07/2021
 --Function: Lib vËt phÈm

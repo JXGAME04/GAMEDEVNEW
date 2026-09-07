@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/smelt_system.lua
+-- Muc dich  : DUNG LUYEN (port Linux 01/09).
+-- Duoc nap  : Include tu 1 tep (vd thoren.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : eventsys.lua
+-- Ham (dong): SmeltMsg (63), DoSmeltEquip (71), DoUnSmeltEquip (122), FUS_MoBox (198), onSmelt (203), FUS_LayDoTrongKhay (208), doSmeltBox (227), doUnSmeltBox (243)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- [DUNGLUYEN 01/09] Port 100% tu ban Linux \script\global\smelt_system.lua (jx_linux_y).
 -- Khac Linux: (1) Huyen Hoa Than JX1 = (6,1,4125) (Linux 3507);
 --             (2) JX1 khong co goi s2c 0xDC -> ma ket qua bao bang Msg2Player theo [ReturnInfo] smelt.ini/distill.ini (ban VNG);

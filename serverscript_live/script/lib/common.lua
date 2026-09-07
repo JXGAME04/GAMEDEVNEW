@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/common.lua
+-- Muc dich  : Ham co ban dung chung (JX2): chuoi, bang, so.
+-- Duoc nap  : Include tu 38 tep (vd ladderfunlib.lua, battlehead.lua, event.lua, score.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): iif (7), unpack (16), pack (27), join (32), tonum (47), split (56), strfill_left (74), strfill_right (86), strfill_center (98), replace (116), safestr (127), no (140), clone (143), random_shuffle (165)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --====  常用基础函数  ====--
 if (not COMMON_HEAD) then
 COMMON_HEAD = 1

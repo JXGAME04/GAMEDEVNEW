@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/log_game/log_kytrancac.lua
+-- Muc dich  : Log Ky Tran Cac.
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng) + C++ goi truc tiep theo ten tep
+-- Include   : save_log.lua
+-- Ham (dong): main (5)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- Author: Fong Ki“u
 -- Date: 28/11/2021
 -- Chuc nang: Luu giao dich ky tran cac

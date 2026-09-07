@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/maps/newworldscript_default.lua
+-- Muc dich  : Script map mac dinh: OnNewWorld/OnLeaveWorld (MapList.ini tro newworldscript.lua khong ton tai -> ban compat nay).
+-- Duoc nap  : Include tu 12 tep (vd newworld.lua, newworld.lua, newworld.lua, newworld.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : map.lua
+-- Ham (dong): PraseParam (26), OnNewWorldDefault (44), OnLeaveWorldDefault (54)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- newworldscript_default.lua - ban COMPAT cua du an (WLLS port 20/08/2026).
 -- Ban Linux goc keo them newworldscript_h.lua + tianziyuxi.lua (chuoi phu
 -- thuoc nang, dinh den 495 map khac). Map lien dau chi dung 3 tham so

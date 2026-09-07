@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/header/factionhead.lua
+-- Muc dich  : DINH NGHIA MON PHAI: id, ten, ky nang, vu khi, he.
+-- Duoc nap  : Include tu 16 tep (vd chuyensinhdaisu.lua, lenhbaitanthu.lua, hotrotest.lua, caibang.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : taskid.lua, lib_task.lua, map_helper.lua, doccokiem.lua
+-- Ham (dong): gianhapmonphai (21), xuatsu (34), sr2name (42), hotrokn (64), trungphansumon (77), check_yes (91), hockynang (99), show_kynang90 (105), show_kynang150 (126), selskill (148), no (158)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\header\\taskid.lua")	-- [BOTBANG 02/09] TASK_DUNGCHUNG2 (4134) truoc day nil trong state script mon phai -> xuatsu() ghi nham task 0; dat TRUOC lib_task.lua de 3 hang trung ten (TASK_NVST/TASK_TANTHU/TASK_THOIGIAN9) giu gia tri cua lib_task nhu cu
 Include("\\script\\lib\\lib_task.lua")
 Include("\\script\\header\\map_helper.lua")

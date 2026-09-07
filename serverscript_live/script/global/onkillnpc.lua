@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/onkillnpc.lua
+-- Muc dich  : OnKillNpc toan cuc (DONDATAU 30/08).
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng) + C++ goi truc tiep theo ten tep
+-- Include   : cl_def.lua, bdh_killhook.lua
+-- Ham (dong): OnPlayerKillNpc (16), OnDeathMonsterDaTau (28)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\chienlenh\\cl_def.lua")	-- [CL 04/09] so hieu nhiem vu Chien Lenh
 -- onkillnpc.lua - [DONDATAU 30/08]
 -- MOC "nguoi choi giet mot NPC". Duoc goi tu C++ trong KNpc::OnDeath

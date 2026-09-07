@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/class/ktabfile.lua
+-- Muc dich  : Doc BANG .TXT tab (KTabFile): GetTabFileHeight/GetTabFileValue... dung boi awardtemplet va hoat dong JX2.
+-- Duoc nap  : Include tu 1 tep (vd nieshichen.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : mem.lua, lerror.lua
+-- Ham       : (khong co - tep du lieu/cau hinh)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --========文件定义==================================--
 --文件名：ktabfile.lua
 --作者：yfeng

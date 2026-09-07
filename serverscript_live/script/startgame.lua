@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/startgame.lua
+-- Muc dich  : CHAY MOT LAN khi server khoi dong (OnGame): dat NPC/trap (startgame/npcpos.lua, traplib.lua), boot cong thanh, bang hoi JX2, van tieu... Sua xong phai restart.
+-- Duoc nap  : Include tu 1 tep (vd lenhbaiadmin.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : worldlibrary.lua, lib_map.lua, lib_ham.lua, lib_server.lua, traplib.lua, lib_boss_st.lua, lib_bosshk.lua, lib_phonglangdo.lua, lib_tktc.lua, lib_ctc.lua, wlls_autoexec.lua, lib_vt.lua ... (50)
+-- Ham (dong): OnGame (58), testnew (151), addfullnpc (187)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong Ki“u
 --Date: 2021
 --Function: Add Npc All Server

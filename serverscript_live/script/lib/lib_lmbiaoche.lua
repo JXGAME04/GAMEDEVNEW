@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/lib_lmbiaoche.lua
+-- Muc dich  : VAN TIEU Long Mon: ham xe tieu (engine KBiaoChe.cpp).
+-- Duoc nap  : Include tu 7 tep (vd extend.lua, npc_lmbiaoche.lua, npc_lmbiaowu.lua, variables.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): WriteYunBiaoLog (32), VT_TestBoQua (67), VT_TestDat (85)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- =========================================================================
 -- lib_lmbiaoche.lua   [LMBC 06/09]  thu vien Long Mon Tieu Cuc cho JX1
 --

@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/script_protocol.lua
+-- Muc dich  : Giao thuc script toan cuc (C++ SCRIPT_PROTOCOL_FILE nap truc tiep - KHONG doi cho).
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng) + C++ goi truc tiep theo ten tep
+-- Include   : region.lua, worldlibrary.lua, checkmap.lua
+-- Ham (dong): PermitTrade (2), OtherMap:Initialize (33), OtherMap:AddMap (39), OtherMap:DelMap (43), OtherMap:Check (47), IsShopMap (56), PermitSuperShop (66), no (80)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\header\\region.lua")
 
 function PermitTrade()

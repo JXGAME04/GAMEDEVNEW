@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/gb_taskfuncs.lua
+-- Muc dich  : Ham bien nhiem vu toan cum (Relay share, goc JX2). Trung noi dung voi lib/gb_taskfuncs.lua.
+-- Duoc nap  : Include tu 6 tep (vd event.lua, npc_tongwar.lua, task.lua, tong_collectgoods.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): gb_GetTask (11), gb_SetTask (19), debug_print (34), OnCreateModule (38), gb_AppendTask (45)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --应用Relay的战队系统设计的，全服务器组，共享的新的任务变量功能。
 --该任务变量的特点是：
 --1、全服务器可以同时访问与修改

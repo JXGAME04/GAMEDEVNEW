@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/header/map_helper.lua
+-- Muc dich  : TRO GIUP MAP (48 ham): id <-> ten, toa do, kiem tra map thanh/thi.
+-- Duoc nap  : Include tu 2 tep (vd vebinh.lua, factionhead.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): map_help (52), skill_help (69), Uworld1000_knowmagic (100), Uworld1000_emei (115), Uworld1000_tangmen (123), Uworld1000_tianwang (132), Uworld1000_tianren (141), Uworld1000_wudang (149), Uworld1000_cuiyan (157), Uworld1000_shaolin (165), Uworld1000_gaibang (174), Uworld1000_kunlun (182), Uworld1000_wudu (191), Uworld1000_emeijianzong (200), Uworld1000_emeiqizong (204), Uworld1000_emeifuzhu (208), Uworld1000_tangmenfeidao (212), Uworld1000_tangmennujian (216), Uworld1000_tangmenfeibiao (220), Uworld1000_tangmenxianjing (224), Uworld1000_daotianwang (228), Uworld1000_qiangtianwang (232), Uworld1000_chuitianwang (236), Uworld1000_fuzhutianwang (240) ... (48 ham)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 lv_str={	"ch≠a Æ’n c p 10 ","h¨n c p 10","h¨n c p 20","h¨n c p 30","h¨n c p 40","h¨n c p 50","h¨n c p 60","h¨n c p 70","h¨n c p 80","h¨n c p 90"}
 map0 = {	"C∏c T©n thÒ th´n ",
 			"G«n b™n BÊn m´n, c∏c thµnh thﬁ nÊi danh ",

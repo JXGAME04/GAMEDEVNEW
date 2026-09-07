@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/global/repute_head.lua
+-- Muc dich  : Danh vong (port Linux 01/09).
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng)
+-- Ham (dong): ReturnRepute (4), GetLevelRepute (17), GetReputeLevel (26), GetReputeStr (54), nothing (81)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- [HOASON 01/09] chep nguyen ban Linux script\global\repute_head.lua
 -- ReputeHead.lua
 -- By: Dan_Deng(2003-08-23) 任务声望相关工具

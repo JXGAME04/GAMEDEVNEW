@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/misc/taskmanager.lua
+-- Muc dich  : QUAN LY NHIEM VU JX2 (task manager) - Include boi ~286 tep.
+-- Duoc nap  : Include tu 3 tep (vd activity.lua, registe.lua, taskmanager.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : taskmanager.lua
+-- Ham (dong): TaskManager:GetTask (194), TaskManager:SetTask (199), TaskManager:AddTask (204), TaskManager:GetTaskBit (210), TaskManager:SetTaskBit (215), TaskManager:GetTaskId (221), TaskManager:GetCurrentVersion (230), TaskManager:GetGroupTaskTable (243), TaskManager:GetVersionTaskId (257), TaskManager:CheckTaskGroup (269), TaskManager:ResetTaskGroup (276), TaskManager:ResetUseGroup (289), TaskManager:AddUseGroup (298), TaskManager:DebugCheck (306), TaskManager:Create (331), TaskGroup:_init (349), TaskGroup:GetTask (355), TaskGroup:SetTask (362), TaskGroup:AddTask (370), TaskGroup:GetTaskBit (378), TaskGroup:SetTaskBit (385)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- ====================== 文件信息 ======================
 
 -- 剑侠情缘网络版越南收费版 - 任务变量管理

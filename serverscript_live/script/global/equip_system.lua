@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/equip_system.lua
+-- Muc dich  : NPC THO REN - cua vao he lo ren (dung luyen, cuong hoa).
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng)
+-- Include   : compound_header.lua, atlas.lua
+-- Ham (dong): OnFoundry (58), OnFoundry2 (67), OnQueryPiece (77), OnEpDoTim (89), OnEpDoPho (94), OnKhamNam (100), OnNangKhoang (106), OnHopHuyenTinh (112), OnTinhLuyen (118), OnHuyenKim (124), OnHuyenKimTinh (130), OnNhanEpDoTim (136), OnNhanEpDoPho (138), OnNhanKhamNam (139), OnNhanNangKhoang (140), OnNhanHopHuyenTinh (141), OnNhanTinhLuyen (142), OnNhanHuyenKim (143), OnNhanHuyenKimTinh (144), LoRenChay (153), OnCancel (229), no (232), OnAbout (239), OnAbout_2 (245)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- Chøc n¨ng: NPC Thî rÌn - cöa vµo cña c¶ hÖ lß rÌn.
 -- DÞch ng­îc tõ  D:\ServerLinux\server1\script\global\equip_system.lua
 --

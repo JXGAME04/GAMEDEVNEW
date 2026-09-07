@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/lib_faction.lua
+-- Muc dich  : MON PHAI: doi phai, ky nang phai, kiem tra phai/he.
+-- Duoc nap  : Include tu 1 tep (vd char.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : lib_task.lua
+-- Ham (dong): GetFactionEx (155), GetFactionEx1 (169), GetFactionEx2 (188), AddFaction (209), LeaveFaction (222), ReturnFaction (233), hockhinhcong (244), add_skill_90 (251), add_skill_120 (317), add_skill_150 (346), SavetStrMagic (409), ReturnStrMagic (441)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- Author: Fong Ki“u
 -- Date: 28/11/2020
 -- Chuc nang: Ham ho tro mon phai

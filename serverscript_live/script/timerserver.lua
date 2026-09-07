@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/timerserver.lua
+-- Muc dich  : DONG HO MAY CHU. C++ (CoreServerShell.cpp) goi RunTime() moi phut o giay 0. Tu nap lai chinh no khi noi dung (hoac tep Include) doi -> sua nong khong can restart. Dieu phoi: Chien Lenh, bot tu dong, Tong Kim, 3 hoat dong (HD3), Viem De, cong thanh, su kien, dua top, song bac, kick, PUBG. Bo do PROF ghi logs/hethong.log khi >= TS_PROF_NGUONG ms.
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng) + C++ goi truc tiep theo ten tep
+-- Include   : cl_def.lua, lib_ham.lua, lib_map.lua, lib_task.lua, lib_server.lua, lib_loidai.lua, lib_ctc.lua, lib_tktc.lua, mobinhtk.lua, lib_bosshk.lua, lib_vuotai.lua, lib_phonglangdo.lua ... (34)
+-- Ham (dong): TS_DocTep (68), TS_DuongDan (78), TS_GomTep (88), TS_CoThayDoi (105), TS_GhiProf (121), RunTime (130), RunTimePUBG (355), pubg_runner (359), split_lines (396), check_and_kick (411), load_accounts (441), kichaccket (467), trim (490), XepHangDuaTopTG (493), songbac (549), sukien_vantieu (676), ThongBao (681), sukien_kiemmonquan (690), sukien_tongkim (715), sukien_bosshk (790), sukien_hathuyhoang (812), sukien_trangnguyen (824), sukien_trongbanghoi (834), XepHangDuaTop (851) ... (26 ham)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\chienlenh\\cl_def.lua")	-- [CL 04/09] so hieu nhiem vu Chien Lenh
 --Author: Fong KiÒu
 --Date: 28/11/2020

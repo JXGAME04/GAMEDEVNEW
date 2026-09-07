@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/nhadich_dailao.lua
+-- Muc dich  : Nha dich Dai Lao.
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng)
+-- Include   : taskid.lua, fuyuan.lua, save_log.lua
+-- Ham (dong): default_talk (8), nhadich (19), atone (30), want_atone (44), go_atone (52), visit (71), go_visit (77), no (96)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong Ki“u
 --Date: 2021
 --Function: Nha Dﬁch ßπi Lao

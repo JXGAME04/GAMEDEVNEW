@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/global/trangbixanh.lua
+-- Muc dich  : TRANG BI XANH.
+-- Duoc nap  : Include tu 4 tep (vd lenhbaiadmin.lua, lenhbaitanthu.lua, hotrotanthu.lua, hotrotest.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): laydoxanh0 (129), laydoxanh1 (144), laydoxanh2 (154), laydoxanh3 (165), no (186)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong Ki“u
 --Date: 09/07/2021
 --Function: Lib Trang bﬁ xanh

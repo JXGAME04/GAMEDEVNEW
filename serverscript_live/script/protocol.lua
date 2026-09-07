@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/protocol.lua
+-- Muc dich  : Bo dang ky GIAO THUC SCRIPT (KE_SCRIPT_PROTOCOL): client <-> server goi ham theo id; dung boi script_protocol/*.lua va global/script_protocol.lua.
+-- Duoc nap  : Include tu 5 tep (vd auction_manager.lua, cl_ui.lua, mailmanager.lua, echo_gs.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : objbuffer_head.lua
+-- Ham (dong): ScriptProtocol:_InitProtocolEnum (103), ScriptProtocol:RegProtocol (109), ScriptProtocol:HandleProcess (128), ScriptProtocol:ProtocolProcess (147), ScriptProtocol:RegProtocolSet (172), ScriptProtocol:Echo (181), unpack (197), Require (208), ScriptProtocol_HasTable (217), ScriptProtocol_RecvInState (231), ScriptProtocol:SendData (255)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\lib\\objbuffer_head.lua")
 
 
