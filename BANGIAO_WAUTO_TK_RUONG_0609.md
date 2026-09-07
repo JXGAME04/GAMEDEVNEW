@@ -154,3 +154,23 @@ TKP_RUONG: đi tới rương cửa đã chọn (g_TKRuong) -> chạm (OpenBox + 
   (`[HD-GATE] nTK` 2↔1 = chết/hồi sinh). Một bộ canh `jx_auto.log` chạy nền thêm 10 phút; nếu trận kết thúc
   trong khoảng đó, diễn biến sau `TKP_END` (map đến) sẽ được ghi thêm ở đây. DLL cũ không có `[TK-PHA]`
   nên chỉ suy được từ `[S6-ME] loadmap` + `[DT-STATE] map=` / `[MOVE-NOMODE] curmap=`.
+
+### 6.1 Trận 18:09 đã kết thúc — đo được trên DLL cũ (`jx_auto.log`, giờ máy 18:43)
+
+| t (ms) | Sự kiện |
+|---|---|
+| 1026204188 | rời 379 → về map báo danh 324 (`SYNCNPC-SETPOS npc=92533`), TK giữ máy (`nTK=1`) ≈ 30 s: Xa Phu 324 |
+| 1026208415 | **`[DT-STATE] map=78` = đã về tới Tương Dương Phủ, đúng thành đã chọn** (`nTKVeThanh=4`). Cùng nhịp, TK trả máy (`bTKRuong=0`) và máy **Hậu cần** bắt đầu: `[HC-STATE] buoc=0 … bat: ban=1 sua=1 rut=1 cat=1 giutien=1 xafu=1/0 bando=1/10` |
+| 1026211423 | `[HC-STATE] buoc=3` (bán rác xong: ô trống 1 → 22) |
+| 1026214654 | `[HC-STATE] buoc=9 sub=2` — bước 9 = ra Xa Phu lên map luyện công (`bGoMap=1`, `nSelMap=10`), mục tiêu = NPC Xa Phu (54146,103434) |
+| 1026217555 | `SYNCNPC-SETPOS` + `[MOVE-NOMODE] curmap=93` — **về lại map luyện công 93**, 9 giây sau khi tới Tương Dương |
+
+⇒ **"Về không đúng thành" thật ra là: về ĐÚNG thành rồi bị máy Hậu cần (tab Hậu cần: *Tự quay lại* + *Đi map
+luyện công*) đưa ngay về map luyện công trong ~9 giây**, nên người nhìn chỉ thấy nhân vật đứng ở map 93.
+Đường chọn thành / Xa Phu 324 chạy đúng với Tương Dương. Vá Phượng Tường ở mục 3.2 vẫn đúng (lỗi tiềm ẩn
+cho mục mặc định), không phải nguyên nhân của lần này.
+
+Sau khi swap WAuto mới và tick lại ba ô rương, thứ tự sẽ là: về thành → **TK giữ máy đi tới rương, đặt điểm
+hồi sinh, cất trang bị** → trả máy → Hậu cần bán/sửa/rút → Xa Phu về map luyện công (đúng cấu hình Hậu cần
+của chủ). **Nếu chủ muốn nhân vật ĐỨNG LẠI trong thành sau Tống Kim** thì hoặc bỏ tick *Đi map luyện công*
+ở tab Hậu cần, hoặc yêu cầu thêm tuỳ chọn "sau rương thì đứng lại" — chưa làm vì đây là quyết định luật chơi.
