@@ -36,3 +36,5 @@ Kết quả mong đợi: đang có Lưỡng Nghi Chân Khí thì độc/cháy ch
 **Trạng thái 11:22 07/09**: build từ origin/main `bc1a8224` (gộp TRANPHAI60 `962a8255`, DELTA f, BANGSAT2; compile 0 lỗi, link thật): `bin/server/CoreServer.dll.moi` = **a71d3305** (18 482 176), `bin/client/CoreClient.dll.moi` = **90eeaa8d** (2 611 712) — khe trước đó trống (live server e8130f46 từ 11:02, client 7bcf5119). Bản sao `.moi.lnck_*`. Đã báo DELTA + TRANPHAI60/MATDO. Chờ chủ swap (server đủ; client cùng mã nhưng không bắt buộc cho tính năng này).
 
 **11:3x**: phiên TUKICH thay khe client bằng `15bd934d` (origin/main `e2a03fc0`, chứa `bc1a8224` ⇒ vẫn có LNCK; bản 90eeaa8d giữ tên `.moi.lnck_*`); khe server vẫn `a71d3305`. Build sau: base ≥ `e2a03fc0`.
+
+**11:38**: DELTA đợt g thay cả hai khe: `CoreServer.dll.moi` = `1d06f7f0` (origin/main `be72d6b6`, đã kiểm chứa `bc1a8224` ⇒ LNCK còn nguyên; bản a71d3305 giữ tên `.moi.lnck_*`), `CoreClient.dll.moi` = `1ca74e6e` (⊇ TUKICH). Chờ chủ swap cả hai.
