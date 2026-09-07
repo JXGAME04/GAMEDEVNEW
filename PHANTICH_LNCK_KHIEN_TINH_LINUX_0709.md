@@ -62,3 +62,20 @@ Kết luận: khiên **hoạt động đúng** (hấp thụ trước kháng, tr�
 Không có đường sát thương nào khác né khiên ngoài các đường Linux cũng né: chí tử (25 % máu hiện tại, ghi thẳng máu `0x0808B0F8` = `KNpc.cpp:5057`), `life_v` tức thời âm, rút máu theo nhịp (`lifereplenish_v` âm). Độc/cháy theo nhịp và phản đòn đã qua khiên từ bản [LNCK].
 
 Nếu chủ muốn Lưỡng Nghi Chân Khí "bất tử" thật cho nhân vật ngoại công: tăng nội lực tối đa (điểm nội công / trang bị) hoặc đổi dữ liệu — ví dụ `staticmagicshield_p` 10000 → 100000 (1 000 lần nội lực) hoặc đổi sang tính theo sinh lực tối đa (cần sửa handler) — đây là **thay đổi ngoài Linux**, chờ chủ quyết; có thể thêm tuỳ chọn gỡ biểu tượng 721 khi khiên vỡ để người chơi khỏi hiểu nhầm (Linux không gỡ).
+
+
+---
+
+# 5. "Nội lực hộ thân" tính thế nào? (chủ hỏi 07/09 chiều)
+
+`MagicDesc.ini` (hai bản giống nhau) dán nhãn **"Nội lực hộ thân"** cho HAI thuộc tính khác nhau, và dòng mô tả Lưỡng Nghi Chân Khí của dự án ghi "gấp 100 lần mức **nội lực hộ thân**" là **dịch sai**: Linux ghi "mức nội lực", engine hai bản đều nhân với **nội lực tối đa** (`m_CurrentManaMax` / Linux `max(+0x1a1c, +0x1a20)`), không dính gì hai thuộc tính dưới đây.
+
+| Thuộc tính | Nhãn | Linux | Dự án | Ai có |
+|---|---|---|---|---|
+| `manashield_p` (149) | "Nội lực hộ thân: +X %" | handler `0x08098680`: `KNpc+0x13d4 += X`. Trong `CalcDamage 0x08089EC3‑0x08089EF7`, **sau** kháng hệ và sau giảm/sorb sát thương, **trước** trừ máu: `cắt = dmg × X / 100; nếu nội lực ≥ cắt → nội lực −= cắt, dmg −= cắt; nếu thiếu → nội lực = 0, dmg GIỮ NGUYÊN` (`0x0808A408`). Áp cả nhịp độc (`0x0808A0C8`) | `KNpc.cpp:4614‑4633` đã làm chuẩn đợt [HOTHAN2 01/09] (thêm kẹp X ≤ 100 khi cộng dồn nhiều nguồn) | Võ Đang: Tọa Vọng Vô Ngã 157 `25→99 %` (120‑180 s), Võ Đang Quyền Pháp 152 `−5→−25 %` (giảm của địch); dự án thêm `thanphap.lua` 15/30 % |
+| `dynamicmagicshield_v` (181) | "Nội lực hộ thân: +X điểm" (khiên điểm) | handler `0x08095CA0`: `+0x1464 += X`. `CalcDamage 0x0808A070‑0x0808A096`: `giảm = ((min+max)/2 × X) / tổngTrungBình4Hệ` (chỉ khi có tổng > 0, tức độc không được che), `dmg −= giảm`, sàn 1; **không** tốn nội lực, áp **sau** khiên tĩnh, **trước** kháng | `KNpc.cpp:4170‑4195` (`m_CurrentManaShield`), đã chuẩn [HOTHAN2] | Côn Lôn Huyền Thiên Vô Cực 630 `50→550`, boss 1207 |
+| `staticmagicshield_p` (204) | (không có nhãn "hộ thân") | bể = nội lực tối đa × X / 100, mục 1‑4 | như Linux | Lưỡng Nghi Chân Khí 721, Phất Y 2134, Tiêu Dao Vũ 2139 |
+
+Thứ tự trong `CalcDamage` Linux (đã đối chiếu): quay sát thương → **khiên tĩnh** (bể) → **khiên điểm** → kháng hệ → giảm/sorb → **nội lực hộ thân %** → trừ máu (chí tử ghi thẳng máu ở `ReceiveDamage`, không qua các lớp này).
+
+Đề xuất nhỏ (chưa làm): sửa chữ mô tả 717 trong `kunlun.lua` (server + client) "mức nội lực hộ thân" → "nội lực tối đa" cho đúng bản chất.
