@@ -233,6 +233,17 @@ int		KObjSet::Add(int nDataID, KMapPos MapPos, KObjItemInfo sItemInfo)
 {
 	if (sItemInfo.m_nItemID > 0)
 	{
+		// [MATDO 07/09] chi so item RONG (da ItemSet.Remove) hoac ngoai bien -> KHONG tao vat roi: vat roi
+		// "loi item" nhat vao thanh entry treo, het han thi KObj::Release giai phong NHAM chi so da tai cap.
+		if (sItemInfo.m_nItemID >= MAX_ITEM || Item[sItemInfo.m_nItemID].GetID() == 0)
+		{
+			char szMatDo[160];
+			_snprintf(szMatDo, sizeof(szMatDo) - 1, "KObjSet::Add tu choi: item %d rong/ngoai bien (dataid=%d)", sItemInfo.m_nItemID, nDataID);
+			szMatDo[sizeof(szMatDo) - 1] = 0;
+			g_GhiLogHeThong("MATDO", szMatDo);	// logs\hethong.log (g_DebugLog chi ra cua so debug)
+			g_DebugLog("[MATDO] %s", szMatDo);
+			return -1;
+		}
 		g_DebugLog("[ITEM]Object ItemIndex:%d, ID:%d", sItemInfo.m_nItemID, Item[sItemInfo.m_nItemID].GetID());
 	}
 	int nAddNo;

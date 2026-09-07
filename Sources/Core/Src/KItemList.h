@@ -136,7 +136,10 @@ public:
 	int			GetXuAmount();					
 	int			GetEquipmentXu();
 	void		SetPlayerIdx(int nIdx);				
-	int			Hand() { return m_Hand; };
+	int			Hand();		// [MATDO 07/09] tu chua m_Hand lech - xem KItemList.cpp
+	BOOL		CungMotMon(int nIdx1, int nIdx2);		// [MATDO 07/09] hai KItem = MOT mon (ban ghi kep)
+	BOOL		MonKepTrongLuoi(int nRoom, int nIdx, int nX, int nY);	// [MATDO 07/09]
+	int			CuuMonKhiNap(int i, int nIdx, int& nPlace, int& nX, int& nY, int nRoomUuTien, const char* szLyDo);	// [MATDO 07/09]
 	void		ClearRoom(int nRoom);
 	void	    ClearAll();	//míi thªm vµo sau nµy
 	void		BackupTrade();
