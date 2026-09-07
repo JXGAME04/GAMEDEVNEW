@@ -781,7 +781,8 @@ public:
 	
 	char			m_szTaskAnswerFun[MAX_ANSWERNUM][32];
 	int				m_nAvailableAnswerNum;
-	bool			m_bWaitingPlayerFeedBack;	
+	bool			m_bWaitingPlayerFeedBack;
+	DWORD			m_dwDialogScriptID;		// [DIALOG 06/09 toi] script da goi Say/Talk cuoi cung -> callback lua chon ve DUNG state (Npc.m_ActionScriptID bi trap/timer ghi de khi hop thoai dang mo)
 //	DWORD			m_dwOutOfDateFeedBackTime;	
 	BYTE			m_btTryExecuteScriptTimes;	
 	//char			m_CurScriptName[128];

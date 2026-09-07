@@ -731,6 +731,7 @@ int LuaSelectUI(Lua_State* L)
 		nOptionNum = MAX_ANSWERNUM;
 
 	Player[nPlayerIndex].m_nAvailableAnswerNum = nOptionNum;
+	Player[nPlayerIndex].m_dwDialogScriptID = sDialogScriptId(L);	// [DIALOG 06/09 toi]
 
 	for (int i = 0; i < nOptionNum; i++)
 	{
@@ -791,6 +792,14 @@ int LuaSelectUI(Lua_State* L)
 
 	Player[nPlayerIndex].DoScriptAction(&UiInfo);
 	return 0;
+}
+
+// [DIALOG 06/09 toi] ID script cua state dang goi Say/Talk (ke ca coroutine: g_GetScriptNameByState tra ve chu) -> KPlayer::m_dwDialogScriptID
+static DWORD sDialogScriptId(Lua_State* L)
+{
+	const char* szName = g_GetScriptNameByState(L);
+	if (!szName || !szName[0]) return 0;
+	return (DWORD)g_FileName2Id((LPSTR)szName);
 }
 
 int LuaSaySPR(Lua_State* L)//Say new
@@ -875,6 +884,7 @@ int LuaSaySPR(Lua_State* L)//Say new
 		nOptionNum = MAX_ANSWERNUM;
 
 	Player[nPlayerIndex].m_nAvailableAnswerNum = nOptionNum;
+	Player[nPlayerIndex].m_dwDialogScriptID = sDialogScriptId(L);	// [DIALOG 06/09 toi]
 
 	for (int i = 0; i < nOptionNum; i++)
 	{
@@ -1047,6 +1057,7 @@ int LuaSelectImage(Lua_State* L)
 		nOptionNum = MAX_ANSWERNUM;
 
 	Player[nPlayerIndex].m_nAvailableAnswerNum = nOptionNum;
+	Player[nPlayerIndex].m_dwDialogScriptID = sDialogScriptId(L);	// [DIALOG 06/09 toi]
 
 	if (nParamNum >= 2)
 	{
@@ -1931,6 +1942,7 @@ int LuaTalkUI(Lua_State* L)
 	{
 		UiInfo.m_nParam = 1;
 		Player[nPlayerIndex].m_nAvailableAnswerNum = 1;
+		Player[nPlayerIndex].m_dwDialogScriptID = sDialogScriptId(L);	// [DIALOG 06/09 toi]
 		g_StrCpyLen(Player[nPlayerIndex].m_szTaskAnswerFun[0], pCallBackFun, sizeof(Player[nPlayerIndex].m_szTaskAnswerFun[0]));
 		Player[nPlayerIndex].m_bWaitingPlayerFeedBack = true;
 	}

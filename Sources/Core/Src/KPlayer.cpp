@@ -7686,13 +7686,19 @@ void	KPlayer::ProcessPlayerSelectFromUI(BYTE* pProtocol)
 			}
 			if (m_nIndex)
 			{
+				// [DIALOG 06/09 toi] callback ve script DA GOI Say/Talk (m_dwDialogScriptID, ghi trong LuaSaySPR/LuaTalkUI...). Truoc day dung
+				// Npc[m_nIndex].m_ActionScriptID = script chay gan nhat cho nguoi choi (bGlobal): trap/timer/kimtu.lua chay xen khi hop thoai
+				// dang mo -> callback roi vao state khac -> 'attempt to call a nil value' (menu lenh bai, SayWait trong Tong Kim 21:18).
+				DWORD dwScript = Npc[m_nIndex].m_ActionScriptID;
+				if (m_dwDialogScriptID && g_GetScript(m_dwDialogScriptID))
+					dwScript = m_dwDialogScriptID;
 				if(m_szTaskAnswerFun[pSelUI->nSelectIndex][0] == '#')
-					ExecuteScript(Npc[m_nIndex].m_ActionScriptID, m_szTaskAnswerFun[pSelUI->nSelectIndex] + 1, pSelUI->nSelectIndex);
+					ExecuteScript(dwScript, m_szTaskAnswerFun[pSelUI->nSelectIndex] + 1, pSelUI->nSelectIndex);
 				else {
-					if (Npc[m_nIndex].m_ActionScriptID == 2051848301 && strcmp(m_szTaskAnswerFun[pSelUI->nSelectIndex], "yes") == 0) { //check TDP, Auto temporary fix
+					if (dwScript == 2051848301 && strcmp(m_szTaskAnswerFun[pSelUI->nSelectIndex], "yes") == 0) { //check TDP, Auto temporary fix
 						return;
 					}
-					ExecuteScript(Npc[m_nIndex].m_ActionScriptID, m_szTaskAnswerFun[pSelUI->nSelectIndex], pSelUI->nSelectIndex);
+					ExecuteScript(dwScript, m_szTaskAnswerFun[pSelUI->nSelectIndex], pSelUI->nSelectIndex);
 				}
 			}
 			}
@@ -9475,6 +9481,7 @@ void	KPlayer::SyncCurPlayer(BYTE* pMsg) //Sync Player 1 lÇn chÝnh m×nh trong tõ 
 	m_cTong.Clear();
 	memset(m_szTaskAnswerFun, 0, sizeof(m_szTaskAnswerFun));
 	m_nAvailableAnswerNum = 0;
+	m_dwDialogScriptID = 0;	// [DIALOG 06/09 toi]
 	
 	Npc[m_nIndex].m_Experience = 0;
 	memset(Npc[m_nIndex].m_szChatBuffer, 0, sizeof(Npc[m_nIndex].m_szChatBuffer));
