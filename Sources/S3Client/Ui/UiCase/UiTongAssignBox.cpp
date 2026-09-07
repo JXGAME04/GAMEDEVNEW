@@ -329,18 +329,18 @@ void KUiTongAssignBox::ArrangeDataJX2(const char* szName, unsigned long dwNameID
 }
 
 
-// [BH100 07/09] uy nhiem dai than: cung khung, doi nhan 3 o (Official_A/B/C cua blueprint)
-void KUiTongAssignBox::ArrangeDataMinister(const char* szName, unsigned long dwNameID)
-{
-	if (!ms_pSelf || !szName || !szName[0] || dwNameID == 0)
-		return;
-	ArrangeDataJX2(szName, dwNameID, 3);
-	ms_pSelf->m_bMinisterMode = true;
-	ms_pSelf->m_BtnElder.SetText("Th鮝 Tng");
-	ms_pSelf->m_BtnCaptain.SetText("Nguy猲 So竔");
-	ms_pSelf->m_BtnPilgarlic.SetText("Ti猲 Phong");
-}
-
+// [BH100 07/09] uy nhiem dai than: cung khung, doi nhan 3 o (Official_A/B/C cua blueprint)
+void KUiTongAssignBox::ArrangeDataMinister(const char* szName, unsigned long dwNameID)
+{
+	if (!ms_pSelf || !szName || !szName[0] || dwNameID == 0)
+		return;
+	ArrangeDataJX2(szName, dwNameID, 3);
+	ms_pSelf->m_bMinisterMode = true;
+	ms_pSelf->m_BtnElder.SetText("Th鮝 Tng");
+	ms_pSelf->m_BtnCaptain.SetText("Nguy猲 So竔");
+	ms_pSelf->m_BtnPilgarlic.SetText("Ti猲 Phong");
+}
+
 /*********************************************************************
 * 功能：Check管理函数
 **********************************************************************/
