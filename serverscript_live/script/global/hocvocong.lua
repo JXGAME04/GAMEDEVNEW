@@ -1076,3 +1076,18 @@ function bot_hoc90(nCurFac)
 		AddMagic(SKILL90_ARRAY[nCurFac][i][2],20)
 	end
 end
+
+-- [SKILL120 06/09] chu game: "bot len 120 se co skill 120 full skill". Ham RIENG cho bot
+-- (KPlayerBot.cpp pb_TrangBiTheoCap buoc 1c goi khi bot dat cap 120): hoc ky nang 120
+-- cua phai (SKILL120AR - mot chieu/phai) o cap 20 = max (skills.txt MaxLevel 20), dung
+-- dong AddMagic(SKILL120AR[nCurFac], 20) cua show_kynang90. KHONG kem 210 khinh cong /
+-- SKILL150_ARRAY. nCurFac 1-based (m_nCurFaction + 1).
+function bot_hoc120(nCurFac)
+	if (GetLevel() < 120) then
+		return
+	end
+	if (nCurFac == nil or SKILL120AR[nCurFac] == nil) then
+		return
+	end
+	AddMagic(SKILL120AR[nCurFac], 20)
+end

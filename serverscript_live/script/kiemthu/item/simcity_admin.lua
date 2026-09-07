@@ -159,6 +159,7 @@ function PB_Menu()
 	"Gäi vÒ thµnh - th«n/PB_VtMenu",
 	"Tham gia Tèng Kim/PB_TkMenu",
 	"Bang héi bot/PB_BangMenu",
+	"N©ng kinh m¹ch bot/PB_MachMenu",
 	"Quay l¹i SimCity/SC_Menu",
 	SC_END_SAY})
 end
@@ -197,6 +198,31 @@ function PB_VtMenu()
 	"T¾t (bot vÒ b·i luyÖn)/#PB_VeThanhBat(0)",
 	"Quay l¹i/PB_Menu",
 	SC_END_SAY})
+end
+
+-- ================= NANG KINH MACH BOT (06/09) =================
+-- [NANGMACH 06/09] chu game: "toi muon viet them ham nang mach cho toan bo bot".
+-- Ham C PB_NangMach(nCap, nMach) (KPlayerBot.cpp): nCap 0..32, nMach 0 = ca 12 mach.
+-- Ap cho MOI bot dang song roi PB_SaveAll -> ben qua restart. Xem bot.log [BotMach].
+function PB_MachMenu()
+	SayEx({"<color=yellow>N©ng kinh m¹ch cho toµn bé bot<color>\n12 m¹ch, mçi huyÖt tíi cÊp chän (tèi ®a 32); ghi blob ngay",
+	"Toµn bé m¹ch cÊp 32 (tèi ®a)/#PB_MachBot(32)",
+	"Toµn bé m¹ch cÊp 24/#PB_MachBot(24)",
+	"Toµn bé m¹ch cÊp 16/#PB_MachBot(16)",
+	"Toµn bé m¹ch cÊp 8/#PB_MachBot(8)",
+	"Xo¸ hÕt m¹ch (cÊp 0)/#PB_MachBot(0)",
+	"Quay l¹i/PB_Menu",
+	SC_END_SAY})
+end
+
+function PB_MachBot(nCap)
+	if (PB_NangMach == nil) then
+		Msg2Player("B¶n CoreServer ®ang ch¹y ch­a cã PB_NangMach (ch­a swap b¶n 06/09).")
+		return
+	end
+	local nDoi = PB_NangMach(nCap, 0)
+	Msg2Player(format("§· ®Æt kinh m¹ch cÊp %d cho %d bot (xem bot.log [BotMach]).", nCap, nDoi))
+	PB_MachMenu()
 end
 
 -- ================= BANG HOI BOT (02/09) =================

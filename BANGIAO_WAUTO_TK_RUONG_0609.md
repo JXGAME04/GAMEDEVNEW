@@ -11,9 +11,9 @@ Tiếp nối `BANGIAO_WAUTO_TK_RUONG_0409.md` (tính năng rương 04/09 chưa t
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `WAuto.exe.moi` | `807e4007` | 465.920 | **lưu ngay** mọi ô tick / ô chọn + mặc định 3 trường rương TK (mục 2) |
-| `CoreClient.dll.moi` | `9cb2f51f` | 2.578.432 | build từ `main` `95317dc4` = **bản của phiên Vận tiêu 18:13** (`59161dae`, đã cất thành `CoreClient.dll.moi.vtcn_1813_59161dae`) **+** vá về thành + nhật ký (mục 3) |
-| `Game.exe.moi` | `fb443d6d` | 1.481.216 | của phiên Vận tiêu 18:21 — **không đụng** |
+| `WAuto.exe.moi` | `807e4007` (sha256 `739560f1`) | 465.920 | **lưu ngay** mọi ô tick / ô chọn + mặc định 3 trường rương TK (mục 2) |
+| `CoreClient.dll.moi` | `9cb2f51f` (sha256 `1f25d254`) | 2.578.432 | build từ `main` `95317dc4` = **bản của phiên Vận tiêu 18:13** (`59161dae`, đã cất thành `CoreClient.dll.moi.vtcn_1813_59161dae`) **+** vá về thành + nhật ký (mục 3) |
+| `Game.exe.moi` | `3da2169e` (sha256 `f0b16230`) | 1.481.216 | của phiên Vận tiêu, bản **18:43** (cấp 90 + bài hướng dẫn), thay bản 18:21 `fb443d6d` — **không đụng** |
 
 Bản đang chạy: `CoreClient.dll` `b166ec89` · `Game.exe` `a4083afa` · `WAuto.exe` `66b9856b`.
 
@@ -154,3 +154,31 @@ TKP_RUONG: đi tới rương cửa đã chọn (g_TKRuong) -> chạm (OpenBox + 
   (`[HD-GATE] nTK` 2↔1 = chết/hồi sinh). Một bộ canh `jx_auto.log` chạy nền thêm 10 phút; nếu trận kết thúc
   trong khoảng đó, diễn biến sau `TKP_END` (map đến) sẽ được ghi thêm ở đây. DLL cũ không có `[TK-PHA]`
   nên chỉ suy được từ `[S6-ME] loadmap` + `[DT-STATE] map=` / `[MOVE-NOMODE] curmap=`.
+
+### 6.1 Trận 18:09 đã kết thúc — đo được trên DLL cũ (`jx_auto.log`, giờ máy 18:43)
+
+| t (ms) | Sự kiện |
+|---|---|
+| 1026204188 | rời 379 → về map báo danh 324 (`SYNCNPC-SETPOS npc=92533`), TK giữ máy (`nTK=1`) ≈ 30 s: Xa Phu 324 |
+| 1026208415 | **`[DT-STATE] map=78` = đã về tới Tương Dương Phủ, đúng thành đã chọn** (`nTKVeThanh=4`). Cùng nhịp, TK trả máy (`bTKRuong=0`) và máy **Hậu cần** bắt đầu: `[HC-STATE] buoc=0 … bat: ban=1 sua=1 rut=1 cat=1 giutien=1 xafu=1/0 bando=1/10` |
+| 1026211423 | `[HC-STATE] buoc=3` (bán rác xong: ô trống 1 → 22) |
+| 1026214654 | `[HC-STATE] buoc=9 sub=2` — bước 9 = ra Xa Phu lên map luyện công (`bGoMap=1`, `nSelMap=10`), mục tiêu = NPC Xa Phu (54146,103434) |
+| 1026217555 | `SYNCNPC-SETPOS` + `[MOVE-NOMODE] curmap=93` — **về lại map luyện công 93**, 9 giây sau khi tới Tương Dương |
+
+⇒ **"Về không đúng thành" thật ra là: về ĐÚNG thành rồi bị máy Hậu cần (tab Hậu cần: *Tự quay lại* + *Đi map
+luyện công*) đưa ngay về map luyện công trong ~9 giây**, nên người nhìn chỉ thấy nhân vật đứng ở map 93.
+Đường chọn thành / Xa Phu 324 chạy đúng với Tương Dương. Vá Phượng Tường ở mục 3.2 vẫn đúng (lỗi tiềm ẩn
+cho mục mặc định), không phải nguyên nhân của lần này.
+
+Sau khi swap WAuto mới và tick lại ba ô rương, thứ tự sẽ là: về thành → **TK giữ máy đi tới rương, đặt điểm
+hồi sinh, cất trang bị** → trả máy → Hậu cần bán/sửa/rút → Xa Phu về map luyện công (đúng cấu hình Hậu cần
+của chủ). **Nếu chủ muốn nhân vật ĐỨNG LẠI trong thành sau Tống Kim** thì hoặc bỏ tick *Đi map luyện công*
+ở tab Hậu cần, hoặc yêu cầu thêm tuỳ chọn "sau rương thì đứng lại" — chưa làm vì đây là quyết định luật chơi.
+
+### 6.2 Phối hợp với phiên Vận tiêu (18:45)
+
+Phiên Vận tiêu đã kiểm `CoreClient.dll.moi` của tôi (thấy đủ dấu hiệu mã v2 của họ + `[TK-MSG]`) và **đồng ý
+không đặt lại**; từ `5a4d0d24` họ không sửa `Sources\Core` nữa nên bản này đầy đủ. Họ **đã thay `Game.exe.moi`**
+bằng bản 18:43 (`3da2169e`, chỉ mã S3Client, không liên quan WAuto). Máy chủ: `bin\server\CoreServer.dll.moi`
+`6439ba82` (sha256 `61bc3e0f`) là của họ, giữ nguyên. Lưu ý sổ hash: tôi ghi **md5**, họ ghi **sha256[:8]**
+— cùng tệp khác hàm băm, đừng tưởng lệch bản.

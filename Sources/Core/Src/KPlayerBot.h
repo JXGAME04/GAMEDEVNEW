@@ -219,6 +219,8 @@ int  LuaPB_SetNhapMon(Lua_State* L);           // (bOn) -> so bot go khoi trang 
 int  LuaPB_SetFight(Lua_State* L);             // (bOn) -> so bot da bat/tat danh quai
 int  LuaPB_SetChat(Lua_State* L);              // (nRate[,szFile,szType]) -> so cau da nap
 int  LuaPB_SaveAll(Lua_State* L);              // () -> so bot da xep hang luu
+int  LuaPB_NangMach(Lua_State* L);          // [NANGMACH 06/09] (nCap[,nMach]) -> so bot doi mach
+int  PB_NangMach(int nCap, int nMach);      // [NANGMACH 06/09] nang kinh mach toan bo bot
 
 #endif // _SERVER
 #endif // KPLAYERBOT_H
