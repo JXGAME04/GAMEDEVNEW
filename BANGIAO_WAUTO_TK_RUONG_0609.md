@@ -240,6 +240,9 @@ Tệp `.dat` 7.640 byte cũ nạp được, ô mới mặc định bật. Chưa 
 | **Dã Tẩu** | `pha=1` tới NPC 108, thoại, rồi `pha=14` treo 3.598 s, `du40=260906/260906` | NPC nói đúng câu `seasonnpc.lua:62` *"Mỗi ngày làm 40 lần là đủ rồi! Ngày mai trở lại nhé!"* (mốc `DTM_MSG_LIMIT` = "Mỗi ngày làm 40 lần"). Nhân vật này **đã làm đủ 40 nhiệm vụ hôm nay** (từ 18:04 log đã treo vì đủ 40). Auto báo trong chat *"Tuyệt! Đã đủ 40 nhiệm vụ Dã Tẩu hôm nay - nghỉ, qua ngày auto tự chạy lại."* | Đúng thiết kế, **không sửa**. Qua ngày mới (`DT_Today()` đổi) tự chạy lại. |
 | **Cả hai bị "khởi động lại"** mỗi 57-100 s | `[DT-STATE] pha=0 … du40=0 dlg=17/0` = `ExtAuto` bị `memset` (`ATYPE_CLEAR`) | `ATYPE_CLEAR` chỉ phát khi ô tick auto trong danh sách WAuto đổi trạng thái: bấm ô tick, hoặc **Ctrl+A trong game** (`UiGame.cpp:91` → `PRG_AUTOONOFF` → WAuto đổi tick → `PRT_TICKSTART` → xoá trạng thái). Mỗi lần như vậy Dã Tẩu quên "đủ 40" → đi lại tới NPC → hỏi → treo lại; Hậu cần về bước 0. | Không phải lỗi mã; là hệ quả của việc bật/tắt auto liên tục khi thấy nhân vật đứng. Ghi nhận để chủ biết. |
 
-`.moi` đợt 3 (chỉ CoreClient): `CoreClient.dll.moi` **`b425fb53`** (sha256 `076e8550`, 2.593.280 B). Struct IPC không đổi
-(7.644) nên đổi một mình CoreClient là đủ; `WAuto.exe` `9ff7c4e6` đang chạy giữ nguyên (tệp `WAuto.exe.moi` còn
-lại cùng md5, vô hại). Cách đổi: thoát game → `ChoiGame.bat`.
+**Đợt 3 ĐÃ LÊN MÁY 19:31-19:34** (phiên Vận tiêu đo, tôi kiểm lại 19:50): `CoreClient.dll` **`b425fb53`** (sha256 `076e8550`,
+2.593.280 B) + `WAuto.exe` `9ff7c4e6` + `Game.exe` `3da2169e`; game mở lại 19:34:37 (pid 29772) nhưng tới 19:50 **chưa vào
+nhân vật** (chưa có dòng log nào của pid mới, bộ nhớ 185 MB = màn hình đăng nhập) nên chưa đo được vá Hậu cần. Khi vào lại,
+kiểm: `findstr /C:"[HC-BAN]" jx_auto.log` — dòng đầu ghi tên món máy chủ từ chối bán, dòng `lan 6/6 - VAN CON TRONG TUI, bo qua`
+là máy đã bỏ qua và đi tiếp; `[HC-STATE] buoc` phải chạy 1 → 2 → … → 9 thay vì kẹt 1. Khe `.moi` của tôi hiện TRỐNG; `Game.exe.moi`
+(6210e1f5) và `bin\server\CoreServer.dll.moi` (d0dab0c9, đã gộp `42262294`) là của phiên Vận tiêu / bot nội, tôi không đụng.
