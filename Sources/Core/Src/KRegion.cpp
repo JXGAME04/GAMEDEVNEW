@@ -1580,7 +1580,7 @@ static void BC_BaoCao10s()
 	memset(g_anBCLoaiGui, 0, sizeof(g_anBCLoaiGui));
 	memset(g_anBCLoaiByte, 0, sizeof(g_anBCLoaiByte));
 }
-void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int nOX, int nOY)
+void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int nOX, int nOY, int nBoNguoi1 /* = -1 */, int nBoNguoi2 /* = -1 */)
 {
 	#define	MAX_SYNC_RANGE	32//25
 	// [BC 03/09 b] tam phat THAT hai chieu (|dx|,|dy| <= BC_TAM): kiem cu chi 'nDX <= 32' (khong tri tuyet doi) nen phia am
@@ -1651,7 +1651,7 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 	{
 		KIndexNode* pNext = (KIndexNode *)pNode->GetNext();
 		nF4Duyet++;
-		if (pNode->m_nIndex > 0 && pNode->m_nIndex < MAX_PLAYER)
+		if (pNode->m_nIndex > 0 && pNode->m_nIndex < MAX_PLAYER && pNode->m_nIndex != nBoNguoi1 && pNode->m_nIndex != nBoNguoi2)	// [DELTA 07/09 g] bo nguoi trong cuoc (ho nhan goi rieng)
 		{
 			int nPlayerIndex = pNode->m_nIndex;
 			int nNpcIndex = Player[nPlayerIndex].m_nIndex;

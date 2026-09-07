@@ -3960,6 +3960,7 @@ int	KNpc::UpdateDBStateList(BYTE * pStateBuffer)
 #endif
 
 #ifdef _SERVER
+static int NS_SoClientCu2(DWORD dwLuc);	// [DELTA 07/09 g] dinh nghia ben duoi (canh NS_SoClientCu)
 void KNpc::SyncDamageInfo(int nLauncher, int nDamage, COMBAT_INFO_TYPE damType, int skillId, bool isCrit, bool bBroadCast /* = false */)
 {
 	DAMAGESHOW	damInfo;
@@ -3971,13 +3972,36 @@ void KNpc::SyncDamageInfo(int nLauncher, int nDamage, COMBAT_INFO_TYPE damType, 
 	damInfo.IsCrit = isCrit;
 	damInfo.dwReceiver = GetId();
 	damInfo.dwLauncher = Npc[nLauncher].GetId();
+	// [DELTA 07/09 g] nguoi xem nhan ban GON 13 byte (bo dwLauncher, client khong dung); hai nguoi trong cuoc (danh / bi danh)
+	// van nhan ban day du bang goi rieng ben duoi -> LOAI HO khoi phat vung de khong nhan hai lan (truoc day ho nhan 2 goi
+	// trung nhau, client ve chong len nhau nen khong thay). Chi phat gon khi moi client noi da bao hello phien ban 2.
+	DAMAGESHOW_GON gonInfo;
+	gonInfo.ProtocolType = (BYTE)s2c_showdamagegon;
+	gonInfo.enType = damInfo.enType;
+	gonInfo.nDamage = damInfo.nDamage;
+	gonInfo.SkillId = damInfo.SkillId;
+	gonInfo.IsCrit = damInfo.IsCrit;
+	gonInfo.dwReceiver = damInfo.dwReceiver;
+	const bool  bGon = (NS_SoClientCu2(GetTickCount()) == 0);
+	const void* pPhat = bGon ? (const void*)&gonInfo : (const void*)&damInfo;
+	const DWORD dwPhat = bGon ? (DWORD)sizeof(gonInfo) : (DWORD)sizeof(damInfo);
+	int nBoNguoi1 = -1, nBoNguoi2 = -1;
+	if (nLauncher != m_Index && Npc[nLauncher].m_nPlayerIdx >= 0)
+		nBoNguoi1 = Npc[nLauncher].m_nPlayerIdx;
+	if (GetKind() == kind_player)
+		nBoNguoi2 = GetPlayerIdx();
+	{
+		static int s_nDmgGon = 0, s_nDmgDay = 0;
+		if (bGon) s_nDmgGon++; else s_nDmgDay++;
+		AUTOLOG_EVERY(20000, "[DMG-GON] so sat thuong phat vung: gon=%d day=%d (client chua bao phien ban 2: %d)", s_nDmgGon, s_nDmgDay, NS_SoClientCu2(GetTickCount()));
+	}
 	bBroadCast = true;
 	if (bBroadCast)
 	{
 		int nMaxCount = MAX_BROADCAST_COUNT;
 		if (m_SubWorldIndex >= 0 && m_SubWorldIndex < MAX_SUBWORLD) {
 			if (m_RegionIndex >= 0 && m_RegionIndex < SubWorld[m_SubWorldIndex].m_nTotalRegion) {
-				CURREGION.BroadCast(&damInfo, sizeof(damInfo), nMaxCount, m_MapX, m_MapY);
+				CURREGION.BroadCast(pPhat, dwPhat, nMaxCount, m_MapX, m_MapY, nBoNguoi1, nBoNguoi2);	// [DELTA 07/09 g]
 				static const POINT	POff[8] =
 				{
 					{0, 32},
@@ -3995,7 +4019,7 @@ void KNpc::SyncDamageInfo(int nLauncher, int nDamage, COMBAT_INFO_TYPE damType, 
 				{
 					if (CONREGIONIDX(i) == -1)
 						continue;
-					CONREGION(i).BroadCast(&damInfo, sizeof(damInfo), nMaxCount, m_MapX - POff[i].x, m_MapY - POff[i].y);
+					CONREGION(i).BroadCast(pPhat, dwPhat, nMaxCount, m_MapX - POff[i].x, m_MapY - POff[i].y, nBoNguoi1, nBoNguoi2);	// [DELTA 07/09 g]
 				}
 			}
 		}
@@ -6678,6 +6702,22 @@ static int NS_SoClientCu(DWORD dwLuc)
 	}
 	return s_nCu;
 }
+// [DELTA 07/09 g] so client that dang noi ma chua bao PHIEN BAN >= 2 (chua hieu 222 so sat thuong gon) - dem lai moi giay
+static int NS_SoClientCu2(DWORD dwLuc)
+{
+	static DWORD s_dwMoc2 = 0;
+	static int   s_nCu2 = 0;
+	if (s_dwMoc2 == 0 || (dwLuc - s_dwMoc2) >= 1000)
+	{
+		s_dwMoc2 = dwLuc;
+		int n = 0;
+		for (int i = 1; i < MAX_PLAYER; i++)
+			if (Player[i].m_nNetConnectIdx >= 0 && g_abyDeltaHello[i] < 2)
+				n++;
+		s_nCu2 = n;
+	}
+	return s_nCu2;
+}
 // co nguoi vua vao vung nay hoac 8 vung ke trong ky lam moi -> phai phat de ho biet NPC (client chi biet NPC la qua goi 77)
 static BOOL NS_CoNguoiVuaVao(const KNpc* pNpc, DWORD dwLuc)
 {
@@ -7199,9 +7239,9 @@ BOOL KNpc::NormalSync()
 		// [PS 04/09] chi phat goi ngoai hinh khi NOI DUNG DOI hoac toi ky lam moi (goi nay khong chua toa do)
 		if (s_nPSLamMoi < 0)
 		{
-			s_nPSLamMoi = (int)GetPrivateProfileIntA("Server", "BroadCastLamMoi", 30, ".\\config.ini");	// [DELTA 07/09] 5 -> 30 s
+			s_nPSLamMoi = (int)GetPrivateProfileIntA("Server", "BroadCastLamMoi", 300, ".\\config.ini");	// [DELTA 07/09 g] 30 -> 300 s: goi 75 da loc theo bam (ngua/toc do/co chien dau di theo 221), ky lam moi chi la luoi an toan
 			if (s_nPSLamMoi < 1)  s_nPSLamMoi = 1;
-			if (s_nPSLamMoi > 60) s_nPSLamMoi = 60;
+			if (s_nPSLamMoi > 3600) s_nPSLamMoi = 3600;
 		}
 		bool bPSGui = true;
 		if (m_Index > 0 && m_Index < MAX_NPC)

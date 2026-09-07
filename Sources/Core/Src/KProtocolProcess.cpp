@@ -229,6 +229,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_syncnpcmin] = &KProtocolProcess::SyncNpcMin;
 	ProcessFunc[s2c_syncnpcminplayer] = &KProtocolProcess::SyncNpcMinPlayer;
 	ProcessFunc[s2c_syncnpcpos] = &KProtocolProcess::SyncNpcPos;	// [DELTA 07/09]
+	ProcessFunc[s2c_showdamagegon] = &KProtocolProcess::s2cShowDamageGon;	// [DELTA 07/09 g]
 	ProcessFunc[s2c_objadd] = &KProtocolProcess::SyncObjectAdd;
 	ProcessFunc[s2c_syncobjstate] = &KProtocolProcess::SyncObjectState;
 	ProcessFunc[s2c_syncobjdir] = &KProtocolProcess::SyncObjectDir;
@@ -3302,7 +3303,7 @@ void KProtocolProcess::SyncEnd(BYTE* pMsg)
 	{
 		C2S_DELTA_HELLO sHello;
 		sHello.ProtocolType = (BYTE)c2s_deltahello;
-		sHello.byPhienBan = 1;
+		sHello.byPhienBan = 2;	// [DELTA 07/09 g] 2 = hieu them s2c_showdamagegon (222); may chu cu coi moi gia tri nhu nhau
 		if (g_pClient)
 			g_pClient->SendPackToServer((BYTE*)&sHello, sizeof(sHello));
 	}
@@ -4635,6 +4636,23 @@ void KProtocolProcess::s2cShowDamage(BYTE* pMsg)
 		Npc[receiverNpcIndex].SetBlood2(pDamage);
 	}
 }
+// [DELTA 07/09 g] so sat thuong GON cho nguoi xem (s2c_showdamagegon = 222): 13 byte = DAMAGESHOW bo dwLauncher
+// (client chi dung nguoi nhan, so, loai, chi mang - xem SetBlood2; dwLauncher chi de ghi log). Dung lai DAMAGESHOW
+// day du voi dwLauncher = 0 de di chung mot duong voi s2cShowDamage.
+void KProtocolProcess::s2cShowDamageGon(BYTE* pMsg)
+{
+	DAMAGESHOW_GON* pGon = (DAMAGESHOW_GON*)pMsg;
+	DAMAGESHOW sDay;
+	memset(&sDay, 0, sizeof(sDay));
+	sDay.ProtocolType = (BYTE)s2c_show_damage;
+	sDay.enType = pGon->enType;
+	sDay.nDamage = pGon->nDamage;
+	sDay.SkillId = pGon->SkillId;
+	sDay.IsCrit = pGon->IsCrit;
+	sDay.dwReceiver = pGon->dwReceiver;
+	sDay.dwLauncher = 0;
+	s2cShowDamage((BYTE*)&sDay);
+}
 void KProtocolProcess::s2cSyncMagic(BYTE* pMsg)
 {
 	ITEM_SYNC_MAGIC* pItemSync = (ITEM_SYNC_MAGIC*)pMsg;
@@ -5851,8 +5869,10 @@ void KProtocolProcess::RemoveRole(int nIndex, BYTE * pProtocol)
 BYTE g_abyDeltaHello[MAX_PLAYER];
 void KProtocolProcess::DeltaHello(int nIndex, BYTE* pMsg)
 {
+	// [DELTA 07/09 g] luu PHIEN BAN client bao: 1 = hieu 221 (vi tri gon), 2 = hieu them 222 (so sat thuong gon); toi thieu 1
+	C2S_DELTA_HELLO* pHello = (C2S_DELTA_HELLO*)pMsg;
 	if (nIndex > 0 && nIndex < MAX_PLAYER)
-		g_abyDeltaHello[nIndex] = 1;
+		g_abyDeltaHello[nIndex] = (pHello != NULL && pHello->byPhienBan > 1) ? pHello->byPhienBan : (BYTE)1;
 }
 
 void KProtocolProcess::NpcRequestCommand(int nIndex, BYTE* pProtocol)

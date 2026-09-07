@@ -1263,6 +1263,18 @@ typedef struct tagDamageShow
 	DWORD			dwLauncher;
 } DAMAGESHOW, * PDAMAGESHOW;
 
+// [DELTA 07/09 g] s2c_showdamagegon = 222: ban GON cho nguoi xem = DAMAGESHOW bo dwLauncher (client chi dung nguoi nhan,
+// so, loai, chi mang - KNpc::SetBlood2). 13 byte thay vi 17. Thu tu truong y het DAMAGESHOW de client chep thang.
+typedef struct tagDamageShowGon
+{
+	BYTE			ProtocolType;
+	BYTE			enType;
+	int				nDamage;
+	WORD			SkillId;
+	BYTE			IsCrit;
+	DWORD			dwReceiver;
+} DAMAGESHOW_GON;
+
 typedef struct
 {
 	BYTE	ProtocolType;

@@ -154,7 +154,7 @@ public:
 	int			SearchNpcID(DWORD dwID);
 #ifdef _SERVER
 	void		SendSyncData(int nClient);
-	void		BroadCast(const void *pBuffer, DWORD dwSize, int &nMaxCount, int nX, int nY);
+	void		BroadCast(const void *pBuffer, DWORD dwSize, int &nMaxCount, int nX, int nY, int nBoNguoi1 = -1, int nBoNguoi2 = -1);	// [DELTA 07/09 g] nBoNguoi = chi so Player KHONG gui (ho nhan goi rieng)
 	int			FindPlayer(DWORD dwId);
 	BOOL		CheckPlayerIn(int nPlayerIdx);
 	void		SetTrap(DWORD nTrapId, int nMapX, int nMapY);

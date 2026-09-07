@@ -211,6 +211,8 @@ enum s2c_PROTOCOL
 	s2c_scriptdata,			// [MAIL 03/09] goi ScriptProtocol (ObjBuffer) may chu -> client, do dai dong (-1)
 	s2c_syncnpcpos = 221,	// [DELTA 07/09] dong bo vi tri GON (NPC_POS_SYNC 25 byte). Ma 221 nam trong doan trong 221-249:
 							// KHONG doi so hieu goi nao khac. g_nProtocolSize (KProtocol.cpp) phai co o 156 cho ma nay.
+	s2c_showdamagegon,		// [DELTA 07/09 g] = 222: so sat thuong GON cho nguoi xem (DAMAGESHOW_GON 13 byte = DAMAGESHOW bo dwLauncher).
+							// g_nProtocolSize (KProtocol.cpp) phai co o 157 cho ma nay. Chi phat khi moi client noi da bao hello phien ban 2.
 //	s2c_dynamic_structure,	//dynamic structure
 
 //	s2c_gmgateway2relaysvr,		//GM

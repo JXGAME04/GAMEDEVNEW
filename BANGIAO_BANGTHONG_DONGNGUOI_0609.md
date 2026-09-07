@@ -765,3 +765,18 @@ Chủ swap 10:08 (bản MATDO b c37a0b1b, gồm TOCDO + SKEXP + DELTA a–e); tr
 2. **207 giờ là gói lớn thứ hai khi đánh dồn (25 %, đỉnh 219 KB/10 s).** Cách giảm không mất gì: bản phát tán cho người xem bỏ `dwLauncher` (client `s2cShowDamage` chỉ dùng người nhận, số, loại, chí mạng; `dwLauncher` chỉ để ghi log), 17 → 13 byte (−24 % phần 207, ≈ −6 % tổng lúc đánh dồn); người đánh/nạn nhân vẫn nhận bản đầy đủ riêng. Đổi giao thức nhỏ (mã mới, gated hello). Làm khi chủ muốn.
 3. `gon_them` ~700/10 s (gói gọn kèm sau gói đầy đủ) là chi phí nhỏ (25 B), giữ.
 4. Đỉnh 64,7 KB/s @ 3.337 gói/s là "giá" của không cắt số sát thương khi 250 bot đánh dồn quanh chủ; client vẫn 124 lượt vẽ/giây, 2,2 ms mỗi lượt.
+
+### 8.12 Vá g: kỳ làm mới gói 75 lên 300 s + gói 207 gọn cho người xem + hết nhận 207 hai lần
+
+**Từ trận 11:12:** gói 75 còn 7,3 % và 19,8k lần/10 phút = đúng kỳ làm mới 30 s của 1.000 bot. Kiểm `bin\server\config.ini`: **không có mục `[Server]`** nên mọi khoá DELTA đang chạy mặc định; và mã kẹp `BroadCastLamMoi` ≤ 60 s (`KNpc.cpp` chỗ đọc khoá) nên chỉ sửa config không tới 300 được. Vá mã: mặc định 300 s, kẹp 3.600 s (config vẫn ghi đè được).
+
+**Gói 207 (25 % khi đánh dồn), đọc `KNpc::SyncDamageInfo` (KNpc.cpp:3963):** phát 9 vùng bản 17 byte tới mọi người trong tầm 32 ô, gồm cả người đánh và người bị đánh, rồi **gửi riêng lại** cho người đánh và người bị đánh. Nghĩa là hai người trong cuộc nhận mỗi đòn **hai gói trùng nhau** (client `SetBlood2` vẽ hai số chồng khít cùng chỗ cùng lúc nên không ai thấy). Client `s2cShowDamage` (KProtocolProcess.cpp:4621) chỉ dùng người nhận, số, loại, chí mạng; `dwLauncher` chỉ vào dòng log (dòng `AddInfo` dùng nó đã bị chú thích từ trước).
+
+**Vá g (script `ReverseTools/goi_va_delta7_207gon_lammoi_0709.py`, 8 tệp):**
+
+1. `DAMAGESHOW_GON` 13 byte = `DAMAGESHOW` bỏ `dwLauncher` (thứ tự trường giữ nguyên), mã mới `s2c_showdamagegon = 222`, ô 157 bảng cỡ client; client dựng lại `DAMAGESHOW` với `dwLauncher = 0` rồi đi chung `s2cShowDamage`.
+2. Phát vùng dùng bản gọn khi mọi client đang nối đã báo hello **phiên bản 2** (`NS_SoClientCu2`, đếm lại mỗi giây); `KRegion::BroadCast` thêm hai tham số mặc định `nBoNguoi1/2 = -1` để **loại hai người trong cuộc** khỏi phát vùng; họ vẫn nhận gói riêng đầy đủ 17 byte như cũ → mỗi đòn còn đúng một gói.
+3. Hello `byPhienBan = 2`; máy chủ lưu phiên bản (máy chủ cũ ghi 1 với mọi giá trị nên không sao). Ma trận: client cũ + máy chủ mới → 207 đầy đủ; client mới + máy chủ cũ → không phát 222. Không thể lệch luồng.
+4. Đếm `[DMG-GON] gon= day= (client chua bao phien ban 2: n)` mỗi 20.000 đòn để đối chiếu.
+
+**Kỳ vọng trận kế:** 75 từ 7,3 % xuống ~0,8 %; byte 207 tới người xem −24 %, người trong cuộc bớt một gói 17 byte mỗi đòn gây/nhận; tổng byte client ≈ −10 % trong trận, đỉnh 64,7 → ~58 KB/s; không đổi gì nhìn thấy.
