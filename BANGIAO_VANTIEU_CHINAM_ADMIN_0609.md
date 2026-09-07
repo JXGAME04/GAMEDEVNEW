@@ -55,7 +55,7 @@ Nhị phân đợt này: `CoreServer.dll.moi` **d0dab0c9** (build từ origin/ma
 | Bước | Lệnh | Ghi chú |
 |---|---|---|
 | Máy chủ | (không bắt buộc) tắt GameServer → `bin\server\ChayGameServer.bat` | Nhận `CoreServer.dll.moi` v2 61bc3e0f; chỉ khác bản đang chạy ở chỗ bỏ lệnh chết `vt_goto_canhan`. Máy chủ 18:04 đã có mọi thứ cần cho test. |
-| Client | **BẮT BUỘC** thoát game → `bin\client\ChoiGame.bat` | Nhận `Game.exe.moi` acc36aba + `CoreClient.dll.moi` ba2f2f11 (phiên WAuto TK 19:03, 2.586.112 B, build từ main sau 5eec1c02: thêm PK bỏ mục tiêu có khiên 963 + ipc_shared.h autoData 7644 B đi kèm WAuto.exe.moi; siêu tập của bản 96dc5115 của tôi, đã kiểm dấu hiệu v2 lúc 19:05) (v2: không nhảy map, chặn map sự kiện). `Ui\uitasklist.ini` đã có 3 mục. |
+| Client | **BẮT BUỘC** thoát game → `bin\client\ChoiGame.bat` | Nhận `Game.exe.moi` acc36aba + `CoreClient.dll.moi` 5300c46f (phiên WAuto TK 21:18, 2.593.792 B: sửa lỗi Tống Kim không đánh của vá tab PK + Hậu cần; siêu tập v2 của tôi, đã kiểm dấu hiệu lúc 21:20; bản 076e8550 19:31 đang chạy) (v2: không nhảy map, chặn map sự kiện). `Ui\uitasklist.ini` đã có 3 mục. |
 | Sau khi lên | Lệnh bài admin → "Bộ test hoạt động" → "Vận tiêu Long Môn Tiêu Cục" | mục 5 |
 
 ### 2.1 Nhị phân v2 (build từ `origin/main` c4761ea5 = đã có SAPXEP R2 bí danh + LUA54b + BOTNOI + vận tiêu + relay, cộng nhánh này; worktree sạch)
@@ -64,7 +64,7 @@ Nhị phân đợt này: `CoreServer.dll.moi` **d0dab0c9** (build từ origin/ma
 |---|---|---|---|
 | `CoreServer.dll.moi` | `bin\server` | **61bc3e0f** (18.455.552 B, 18:12) | CreateBiaoChe/BC_SetEnable, AUC_MsgTong, CL_Cong, UpdateBattleInfo, st3_goboss, Lua54Dll, [RELAYHT], LUA_CALL, `_duongdan_cu` (R2), **vt_quit_canhan/vt_quit_bang**, KHÔNG còn vt_goto_canhan. Không bắt buộc swap ngay: bản 6ba06754 đang chạy chỉ thừa lệnh chết. |
 | `Game.exe.moi` | `bin\client` | **6210e1f5** (bài hướng dẫn: xe chỉ theo qua cửa bản đồ; thay f0b16230) | NewTask/F11, tg_quit/st3_quit, vt_quit_*, bài hướng dẫn vận tiêu v2 (gợi ý Xa Phu / phù về thành / map sự kiện); `re_pe_crt` UCRT-RELEASE đúng |
-| `CoreClient.dll.moi` | `bin\client` | **ba2f2f11 (phiên WAuto TK 19:03, 2.586.112 B, build từ main sau 5eec1c02: thêm PK bỏ mục tiêu có khiên 963 + ipc_shared.h autoData 7644 B đi kèm WAuto.exe.moi; siêu tập của bản 96dc5115 của tôi, đã kiểm dấu hiệu v2 lúc 19:05)** (2.577.408 B, 18:12) | TG_VanTieu v2 (6 pha, không nhảy map), TG_ChanMapSuKien cho Dã Tẩu/Sát Thủ/Vận tiêu, tên bến Xa Phu |
+| `CoreClient.dll.moi` | `bin\client` | **5300c46f (phiên WAuto TK 21:18, 2.593.792 B: sửa lỗi Tống Kim không đánh của vá tab PK + Hậu cần; siêu tập v2 của tôi, đã kiểm dấu hiệu lúc 21:20; bản 076e8550 19:31 đang chạy)** (2.577.408 B, 18:12) | TG_VanTieu v2 (6 pha, không nhảy map), TG_ChanMapSuKien cho Dã Tẩu/Sát Thủ/Vận tiêu, tên bến Xa Phu |
 
 Cặp thư viện: `Lib\lua54\x64\Lua54Dll.dll` 5db18c30 = `bin\server\Lua54Dll.dll` đang chạy; `Lib\lua54\Win32\Lua54Dll.dll` 462453cf = `bin\client\Lua54Dll.dll` đang chạy (không cần đổi thư viện).
 
