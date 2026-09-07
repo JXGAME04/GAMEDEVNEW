@@ -53,7 +53,15 @@ function UpdateTongExpAndLevel(nAddExp)
         end
         i = i + 1
     end
-    SetTongLevel(nNewLevel)
+    -- [BHLV 07/09] chi NANG cap: relay tu len cap theo kinh nghiem JX2 (field 6, [LevelExp]),
+    -- bang JX1 cua boss khong duoc keo cap xuong
+    local nCur = GetTongLevel()
+    if nCur == nil then
+        nCur = 0
+    end
+    if nNewLevel > nCur then
+        SetTongLevel(nNewLevel)
+    end
 end
 
 function AddItemSL(ID, SOLUONG, KHOA)

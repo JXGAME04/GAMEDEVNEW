@@ -838,6 +838,8 @@ void JX2_ProcTongField(CTongConnect* pConn, const void* pData)
 	}
 	if (!bOK)
 		return;
+	if (pCmd->m_wKey == 6)
+		pTong->JX2_CheckExpLevel();	// [BHLV] script/test cong kinh nghiem -> len cap ngay
 
 	g_cTongDB.ChangeTong(*pTong);
 
@@ -1907,6 +1909,60 @@ void CTongControl::JX2_MoneyToExpTick()
 	JX2_SetMoney64(nMoney);
 	JX2_SetField(6, (DWORD)nExp);
 }
+// [BHLV 07/09] DANG CAP BANG = ham cua kinh nghiem bang (field 6) theo [LevelExp] cua
+// settings\tong\tong_setting.ini (ban Linux: TONG_GetExpLevel; MaxLevel 100, mac dinh n*n*1000).
+// Truoc day m_nLevel chi doi qua SetTongLevel cua script JX1 -> cua so bang hoi luon hien 0
+// du quy da chuyen thanh kinh nghiem moi 750 s. Chi NANG cap, khong ha; dong bo thanh vien
+// online + bao kenh bang bang dung duong DBChangeTongLevel (nhu lenh SetTongLevel).
+static int   s_nLvExpMax = -1;
+static DWORD s_dwLvExp[256];
+static void sJX2_LoadLevelExp()
+{
+	if (s_nLvExpMax >= 0)
+		return;
+	const char* szIni = "..\\server\\settings\\tong\\tong_setting.ini";
+	int nMax = gGetPrivateProfileIntEx("LevelExp", "MaxLevel", szIni, 100);
+	if (nMax < 1)
+		nMax = 1;
+	if (nMax > 255)
+		nMax = 255;
+	s_dwLvExp[0] = 0;
+	for (int i = 1; i <= nMax; i++)
+	{
+		char szKey[16];
+		sprintf(szKey, "%d", i);
+		int n = gGetPrivateProfileIntEx("LevelExp", szKey, szIni, -1);
+		s_dwLvExp[i] = (n >= 0) ? (DWORD)n : (DWORD)i * (DWORD)i * 1000;
+	}
+	s_nLvExpMax = nMax;
+	rTRACE("[TONGJX2] bang cap theo kinh nghiem: MaxLevel %d, cap 1 = %u, cap %d = %u", nMax, s_dwLvExp[1], nMax, s_dwLvExp[nMax]);
+}
+
+int CTongControl::JX2_ExpLevelOf(DWORD dwExp)
+{
+	sJX2_LoadLevelExp();
+	int nLv = 0;
+	for (int i = 1; i <= s_nLvExpMax && dwExp >= s_dwLvExp[i]; i++)
+		nLv = i;
+	return nLv;
+}
+
+BOOL CTongControl::JX2_CheckExpLevel()
+{
+	int nLv = JX2_ExpLevelOf(JX2_GetField(6));
+	if (nLv <= m_nLevel)
+		return FALSE;
+	STONG_CHANGE_LEVEL_COMMAND sCmd;
+	memset(&sCmd, 0, sizeof(sCmd));
+	sCmd.ProtocolFamily = pf_tong;
+	sCmd.ProtocolID = enumC2S_TONG_CHANGE_LEVEL;
+	sCmd.m_nTongLevel = nLv;
+	sCmd.m_dwTongNameID = m_dwNameID;
+	strncpy(sCmd.m_szName, m_szName, sizeof(sCmd.m_szName) - 1);
+	rTRACE("[TONGJX2] tong %s: kinh nghiem %u -> len cap %d (cu %d)", m_szName, JX2_GetField(6), nLv, m_nLevel);
+	return DBChangeTongLevel(&sCmd);	// dat m_nLevel + dong bo thanh vien online + bao kenh bang; nguoi goi luu DB
+}
+
 
 // Phan phoi cong hien (JX2 6.4)
 BOOL CTongControl::JX2_Distribute(int nOpCode, DWORD dwMemberNameID, int nOffer, int nFigure)
@@ -2634,6 +2690,7 @@ void JX2_TimerTick()
 		if (bM2E)
 		{
 			pTong->JX2_MoneyToExpTick();
+			pTong->JX2_CheckExpLevel();	// [BHLV] len cap khi du kinh nghiem
 			bChanged = TRUE;
 		}
 		if (bChanged)

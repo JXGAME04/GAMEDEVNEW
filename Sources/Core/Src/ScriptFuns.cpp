@@ -13903,6 +13903,7 @@ extern int LuaJX2_WriteStringToFile(Lua_State* L);
 extern int LuaTONG_GetSelfCamp(Lua_State* L);
 extern int LuaTONG_GetCurCamp(Lua_State* L);
 extern int LuaTONG_GetExpLevel(Lua_State* L);
+extern int LuaTONG_GetLevelExpNeed(Lua_State* L);	// [BHLV 07/09]
 extern int LuaTONG_GetPremium(Lua_State* L);
 extern int LuaTONG_GetCurWeekGoalLevel(Lua_State* L);
 extern int LuaTONG_GetWeekGoalEvent(Lua_State* L);
@@ -15811,6 +15812,7 @@ TLua_Funcs GameScriptFuns[] =
 		{ "TONG_GetSelfCamp",	LuaTONG_GetSelfCamp },
 		{ "TONG_GetCurCamp",	LuaTONG_GetCurCamp },
 		{ "TONG_GetExpLevel",	LuaTONG_GetExpLevel },
+		{ "TONG_GetLevelExpNeed",	LuaTONG_GetLevelExpNeed },	// [BHLV 07/09] kinh nghiem can cho cap n
 		{ "TONG_GetPremium",	LuaTONG_GetPremium },
 		{ "TONG_GetCurWeekGoalLevel",	LuaTONG_GetCurWeekGoalLevel },
 		{ "TONG_GetWeekGoalEvent",	LuaTONG_GetWeekGoalEvent },

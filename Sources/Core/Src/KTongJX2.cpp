@@ -28,6 +28,7 @@
 #include <KTongProtocol.h>
 #include "KNewProtocolProcess.h"
 #include "KTongJX2.h"
+#include "KIniFile.h"	// [BHLV] bang [LevelExp]
 #include "KAuctionServer.h"	// [BH100] AUC_MsgTongC: dong 'Tin bang' vao dung the BANG cua khung chat
 #include <vector>
 
@@ -1470,7 +1471,62 @@ static int sApplyAddFieldArg2(Lua_State* L, WORD wKey, BOOL bUnsigned)
 // ---- getters theo bang field JX2 (2.1) ----
 DEF_TONG_GETF(SelfCamp, 1)
 DEF_TONG_GETF(CurCamp, 2)
-DEF_TONG_GETF(ExpLevel, 6)			// theo tai lieu: cung o field 6 voi GetExp
+// [BHLV 07/09] TONG_GetExpLevel(nTongID) -> cap bang theo kinh nghiem (field 6), bang [LevelExp]
+// settings\tong\tong_setting.ini (Linux infocenter_head.lua:719 dung). Cung luat voi relay (JX2_ExpLevelOf).
+static int   s_nLvExpMax = -1;
+static DWORD s_dwLvExp[256];
+static void sJX2_LoadLevelExp()
+{
+	if (s_nLvExpMax >= 0)
+		return;
+	char szRoot[MAX_PATH], szPath[MAX_PATH];
+	g_GetRootPath(szRoot);
+	sprintf(szPath, "%s\\settings\\tong\\tong_setting.ini", szRoot);
+	KIniFile Ini;
+	BOOL bIni = Ini.Load(szPath);
+	int nMax = 100;
+	if (bIni)
+		Ini.GetInteger((LPSTR)"LevelExp", (LPSTR)"MaxLevel", 100, &nMax);
+	if (nMax < 1)
+		nMax = 1;
+	if (nMax > 255)
+		nMax = 255;
+	s_dwLvExp[0] = 0;
+	for (int i = 1; i <= nMax; i++)
+	{
+		char szKey[16];
+		sprintf(szKey, "%d", i);
+		int n = -1;
+		if (bIni)
+			Ini.GetInteger((LPSTR)"LevelExp", szKey, -1, &n);
+		s_dwLvExp[i] = (n >= 0) ? (DWORD)n : (DWORD)i * (DWORD)i * 1000;
+	}
+	s_nLvExpMax = nMax;
+}
+
+int KTongJX2_ExpLevelOf(DWORD dwExp)
+{
+	sJX2_LoadLevelExp();
+	int nLv = 0;
+	for (int i = 1; i <= s_nLvExpMax && dwExp >= s_dwLvExp[i]; i++)
+		nLv = i;
+	return nLv;
+}
+
+// TONG_GetLevelExpNeed(nLevel) -> kinh nghiem can cho cap do (0 = ngoai bang)
+int LuaTONG_GetLevelExpNeed(Lua_State* L)
+{
+	sJX2_LoadLevelExp();
+	int nLv = Lua_IsNumber(L, 1) ? (int)Lua_ValueToNumber(L, 1) : 0;
+	Lua_PushNumber(L, (nLv >= 1 && nLv <= s_nLvExpMax) ? (double)s_dwLvExp[nLv] : 0);
+	return 1;
+}
+
+int LuaTONG_GetExpLevel(Lua_State* L)
+{
+	Lua_PushNumber(L, (double)KTongJX2_ExpLevelOf(g_TongJX2.GetField(sArgTongID(L), 6)));
+	return 1;
+}
 DEF_TONG_GETF(Premium, 14)
 DEF_TONG_GETF(CurWeekGoalLevel, 36)
 DEF_TONG_GETF(WeekGoalEvent, 22)
@@ -2608,7 +2664,12 @@ int KTongJX2Mgr::BuildClientViewEx(int nPlayerIdx, int nPage, int nStart, DWORD 
 			strncpy(pSync->m_szSelf, Player[nPlayerIdx].m_PlayerName, 31);
 			pSync->m_dwMyWeekOffer = GetMemberField(pMe, 9);
 			// "Dang cap" bang (khac "Dang cap kien thiet" = m_nLevel field 13)
-			pSync->m_nTongLevel = bOther ? 0 : Player[nPlayerIdx].m_cTong.GetTongLevel();
+			{
+				// [BHLV 07/09] Dang cap = max(cap JX1 dong bo tu relay, cap theo kinh nghiem field 6) - xem bang khac cung co
+				int nLvExp = KTongJX2_ExpLevelOf(GetField(pTong->dwNameID, 6));
+				int nLvJX1 = bOther ? 0 : Player[nPlayerIdx].m_cTong.GetTongLevel();
+				pSync->m_nTongLevel = (nLvJX1 > nLvExp) ? nLvJX1 : nLvExp;
+			}
 			pSync->m_dwUnionID = GetField(pTong->dwNameID, 10);
 			strncpy(pSync->m_szUnionName, pTong->szUnionName, sizeof(pSync->m_szUnionName) - 1);
 			pSync->m_bUnionLeader = GetField(pTong->dwNameID, 50) ? 1 : 0;

@@ -371,3 +371,41 @@ Kiểm cú pháp bằng Lua 5.4 thật (`luacheck54.py` qua `lua54.dll` của Wi
 Triển khai 15:26: `Game.exe.moi` f4eb3bdd (client, chờ `ChoiGame.bat`), `UiTongJX2.ini` 4f65666a chép thẳng vào `bin\client\Ui\Ui3`
 (bản cũ `.truoc_bh100b`) + `J:\CayChay\pakgame\volamngaothe\PATCHFULL_NGAOTHE_MK_123456\Ui\Ui3`; script server sống ngay (lệnh bài dofile).
 Máy chủ đang có `CoreServer.dll.moi` của phiên khác — không đụng.
+
+### 7.9 Lượt 4 của chủ (16:xx 07/09) — trần 150 thành viên, "Đẳng cấp bang hội chưa hoạt động", hộp thoại lệnh bài thiếu nút, thêm test công thành / Thái thú — vá 8 [BHLV] [BH150]
+
+**Trần thành viên 150/bang — khảo sát:** không có trần nào < 150 trong mã: relay chặn ở `CTongControl::AddMember`
+(`m_nCapSize` = `relay_config.ini [tong] tongcap`, live đang **160**); GS `sJX2_DoApplyJoin` không giới hạn; JX2 gốc không có trần
+theo cấp bang (chỉ `stuntData MaxMemberCnt` cho tuyệt kỹ). Hai con số thấp hơn 150 đang có: (a) `[tongjx2] NormalMemberLimit`
+mặc định 100 (JX2 `[MoneyToExp]`: trên mức này mỗi người trừ thêm 50 lượng/750 s khi đổi quỹ → kinh nghiệm) → thêm mục
+`[tongjx2] NormalMemberLimit = 150` vào `relay_config.ini` (áp khi relay khởi động lại); (b) bang bot `settings\simcity\botbang.txt`
+cột SONGUOI 120 → **150** cho 5 bang bot (bản cũ `.truoc_bh150`, `nMuc = bb.nSoNguoi` không có kẹp trong mã).
+
+**Đẳng cấp bang hội:** ô "Đẳng cấp" (`TxtTongLevel`) = `m_nTongLevel` = cấp JX1 của relay (`CTongControl::m_nLevel`), trước nay
+chỉ đổi qua `SetTongLevel` của script JX1 (`lib_ham.lua UpdateTongExpAndLevel`, bảng `DIEMBANGHOINANGCAP`, gọi khi giết boss)
+→ bang JX2 luôn 0. Bản Linux: quỹ → `[MoneyToExp]` (relay, 750 s, quỹ > 1.000.000: −5.000 lượng, +120 kinh nghiệm) → field 6 →
+**cấp bang = `[LevelExp]` của `settings\tong\tong_setting.ini`** (MaxLevel 100, cấp n = n²×1000: 1.000, 4.000, 9.000 …) →
+`TONG_GetExpLevel` (Linux `infocenter_head.lua:719` dùng). Thi công [BHLV]:
+- Relay `KTongJX2Relay.cpp`: `JX2_ExpLevelOf(exp)` đọc `..\server\settings\tong\tong_setting.ini [LevelExp]` (thiếu → n²×1000),
+  `JX2_CheckExpLevel()` chỉ NÂNG `m_nLevel` (không hạ) và đi đúng đường `DBChangeTongLevel` (đồng bộ thành viên online
+  `STONG_BE_CHANGED_LEVEL_SYNC` + câu "Bang hội thay đổi đẳng cấp thành %d" trên kênh bang; người gọi lưu DB). Gọi sau
+  `JX2_MoneyToExpTick` (tick 750 s) và sau lệnh field 6 từ GS (`JX2_ProcTongField`), nên `TONG_ApplyAddTaskValue(nT, 6, x)` lên cấp ngay.
+- GS `KTongJX2.cpp`: `TONG_GetExpLevel` thật (trước là `DEF_TONG_GETF(ExpLevel, 6)` = trả kinh nghiệm), `TONG_GetLevelExpNeed(n)` mới,
+  gói INFO `m_nTongLevel = max(cấp JX1 đồng bộ, cấp theo kinh nghiệm)` (xem bang khác cũng có cấp). Client không đổi.
+- `lib_ham.lua UpdateTongExpAndLevel`: chỉ `SetTongLevel` khi cao hơn `GetTongLevel()` (bảng JX1 của boss không kéo cấp xuống).
+- Kiểm: lệnh bài → Bang hội → trang 3 → "10. Cấp bang + kinh nghiệm bang": +1.000 / +50.000 kinh nghiệm → cấp 1 / 7 ngay; +2.000.000 quỹ → chờ 750 s.
+
+**Hộp thoại lệnh bài:** `UiMsgSel.ini [Select_List] Height=92` chỉ vẽ 6 dòng, `[InfoText] Height=96` = 6 dòng → bộ test viết lại
+(1461 dòng): 3 trang gốc, **mọi hộp thoại ≤ 6 nút** (kiểm tự động `SayEx` ≤ 6, `#Ham(...)` ≤ 31 ký tự), câu hỏi ≤ 3 dòng, luôn có
+"Quay lại" + "Thoát/no" (trừ menu chọn 6 mục), trạng thái dài in `Msg2Player`.
+
+**Công thành / Thái thú (mục 8, `BH_CT*`):** in 7 thành (chủ, Thái thú, thuế, đang chiến, đang báo danh); chọn thành 1..7 hoặc
+thành đang đứng (`BH_CITY[tên admin]`); **bang tôi làm chủ thành = `AppointViceroy` (Thái thú = bang chủ, cấp danh hiệu 152+thành,
+thu của chủ cũ, ghi ngày chiếm thành field 48)**; khiêu chiến giả `AppointChallenger`; trạng thái 0/1/2 `CTC_JX2_SetCityState`;
+bang báo danh `NumOfSignUpTongs`; ép pha 18h/19h/20h/0h `CTC_JX2_Tick` (hỏi trước); kết trận `NotifyWarResult` công/thủ thắng;
+thuế `CTC_JX2_SetTax` (mã trả về diễn giải); danh hiệu Thái thú `Title_AddTitle/ActiveTitle/RemoveTitle` + `SetPlayerTitle(167+thành)`;
+reset 7 thành (`SetViewTongOwnCity("", i)`), ở Tiện ích trang 2. Bộ cũ `TX_Root` vẫn gọi được.
+
+**Triển khai 16:0x:** `bin\server\CoreServer.dll.moi` 1ed4d726 (⊇ DELTA i b9b4cb4a đã swap 15:2x), `bin\multiserver\S3Relay.exe.moi`
+26d7df5d (**chép tay khi relay tắt**, bat không swap relay; `relay_config.ini` mới cũng áp khi relay chạy lại), `Game.exe.moi`
+f4eb3bdd (vá 7) vẫn chờ; script + `lib_ham.lua` sống ngay (lệnh bài dofile), `botbang.txt` áp khi GS chạy lại.
