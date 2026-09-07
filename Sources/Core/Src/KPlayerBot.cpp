@@ -3187,8 +3187,34 @@ static int pb_DonChoMac(int nIdx, int nNew, const char* szViec)
 		pb_LamChoTui(nIdx, nW, nH);
 	if (!il.CheckCanPlaceInEquipment(nW, nH, &x, &y))
 	{
-		pb_Log("[BotMac] %s: tui DAY, khong co dai %dx%d cho %s -> giu do cu\n",
-		       Player[nIdx].m_PlayerName, nW, nH, szViec);
+		// [TUI-BINH dot 5] thong ke tui theo genre (toi da 60 dong/phien) de biet tui chua gi
+		static int s_nThongKeTui = 0;
+		char szTk[160];
+		szTk[0] = 0;
+		if (s_nThongKeTui < 60)
+		{
+			int aGe[16];
+			int nTong = 0, nGia = 0;
+			ZeroMemory(aGe, sizeof(aGe));
+			for (int q = 1; q < MAX_PLAYER_ITEM; q++)
+			{
+				const int g = il.m_Items[q].nIdx;
+				if (g <= 0 || g >= MAX_ITEM || il.m_Items[q].nPlace != pos_equiproom)
+					continue;
+				const int ge = Item[g].GetGenre();
+				if (ge >= 0 && ge < 16) aGe[ge]++;
+				nTong++;
+				if (il.m_Items[q].nPrice > 0) nGia++;
+			}
+			_snprintf(szTk, sizeof(szTk) - 1,
+			          " | tui %d mon (equip %d thuoc %d mine %d task %d phu %d magic %d, dang bay %d)",
+			          nTong, aGe[item_equip], aGe[item_medicine], aGe[item_mine], aGe[item_task],
+			          aGe[item_townportal], aGe[item_magicscript], nGia);
+			szTk[sizeof(szTk) - 1] = 0;
+			s_nThongKeTui++;
+		}
+		pb_Log("[BotMac] %s: tui DAY, khong co dai %dx%d cho %s -> giu do cu%s\n",
+		       Player[nIdx].m_PlayerName, nW, nH, szViec, szTk);
 		return 0;
 	}
 	if (pb_DemDanhSach(nIdx) >= MAX_PLAYER_ITEM - 1)
@@ -6807,6 +6833,62 @@ static bool pb_DoBiNe(const PB_Bot& b, int nObjID, unsigned int now)
 	return false;
 }
 
+// [TUI-BINH 06/09 dot 5] Xoa bot chong binh thuoc trong TUI, giu nGiu chong "tot nhat" (binh HP
+// detail 0 truoc, roi chong lon truoc). nW/nH > 0: dung ngay khi da co dai o nW x nH. Tra so chong xoa.
+#define PB_BINH_GIU       12     // don dinh ky: tran chong binh trong tui
+#define PB_BINH_GIU_KHAN  4      // luc can cho mac do: giu it hon
+static int pb_XoaBinhThua(int nIdx, int nGiu, int nW, int nH)
+{
+	KItemList& il = Player[nIdx].m_ItemList;
+	int aQ[MAX_PLAYER_ITEM];
+	int nBinh = 0;
+	for (int q = 1; q < MAX_PLAYER_ITEM; q++)
+	{
+		const int g = il.m_Items[q].nIdx;
+		if (g <= 0 || g >= MAX_ITEM || il.m_Items[q].nPlace != pos_equiproom)
+			continue;
+		if (il.m_Items[q].nPrice > 0 || Item[g].GetGenre() != item_medicine)
+			continue;
+		aQ[nBinh++] = q;
+	}
+	if (nBinh <= nGiu)
+		return 0;
+	// sap xep: binh HP (detail 0) truoc, chong lon truoc -> phan DUOI danh sach bi xoa
+	for (int i = 1; i < nBinh; i++)
+	{
+		const int qi = aQ[i];
+		int j = i - 1;
+		while (j >= 0)
+		{
+			const int gj = il.m_Items[aQ[j]].nIdx, gi = il.m_Items[qi].nIdx;
+			const int kj = (Item[gj].GetDetailType() == 0 ? 1000000 : 0) + Item[gj].GetStackNum();
+			const int ki = (Item[gi].GetDetailType() == 0 ? 1000000 : 0) + Item[gi].GetStackNum();
+			if (kj >= ki)
+				break;
+			aQ[j + 1] = aQ[j];
+			j--;
+		}
+		aQ[j + 1] = qi;
+	}
+	int nXoa = 0;
+	int x = -1, y = -1;
+	for (int i = nBinh - 1; i >= nGiu; i--)
+	{
+		if (nW > 0 && nH > 0 && il.CheckCanPlaceInEquipment(nW, nH, &x, &y)
+		 && pb_DemDanhSach(nIdx) < MAX_PLAYER_ITEM - 2)
+			break;
+		const int g = il.m_Items[aQ[i]].nIdx;
+		if (g <= 0 || g >= MAX_ITEM)
+			continue;
+		int nSo = Item[g].GetStackNum();
+		if (nSo < 1)
+			nSo = 1;
+		if (il.RemoveItemIdx(g, nSo))
+			nXoa++;
+	}
+	return nXoa;
+}
+
 static void pb_DonTui(int nIdx, PB_Bot& b, unsigned int now)
 {
 	if (b.nDonTuiTick && now - b.nDonTuiTick < (unsigned int)PB_DONTUI_GAP)
@@ -6852,9 +6934,11 @@ static void pb_DonTui(int nIdx, PB_Bot& b, unsigned int now)
 		if (Player[nIdx].m_ItemList.RemoveItemIdx(g, nSo))
 			nXoa++;
 	}
-	if (nXoa)
-		pb_Log("[BotXoaDo] %s don tui: xoa %d mon, giu binh thuoc + tui mau + phu + tien thao lo\n",
-		       Player[nIdx].m_PlayerName, nXoa);
+	// [TUI-BINH 06/09 dot 5] tran chong binh thuoc - de tui khong day lai boi binh nhat duoc
+	const int nXoaBinh = pb_XoaBinhThua(nIdx, PB_BINH_GIU, 0, 0);
+	if (nXoa || nXoaBinh)
+		pb_Log("[BotXoaDo] %s don tui: xoa %d mon rac + %d chong binh thua (giu %d chong), giu tui mau + phu + tien thao lo\n",
+		       Player[nIdx].m_PlayerName, nXoa, nXoaBinh, (int)PB_BINH_GIU);
 }
 
 // [MAC-TUI 06/09] Lam cho trong tui de dat mon nW x nH: xoa tung mon RAC trong tui (cung bo loc
@@ -6897,10 +6981,17 @@ static int pb_LamChoTui(int nIdx, int nW, int nH)
 		if (il.RemoveItemIdx(g, nSo))
 			nXoa++;
 	}
-	if (nXoa)
-		pb_Log("[BotXoaDo] %s lam cho tui: xoa %d mon de dat mon %dx%d\n",
-		       Player[nIdx].m_PlayerName, nXoa, nW, nH);
-	return nXoa;
+	// [TUI-BINH 06/09 dot 5] Van chua co cho: tui bot day BINH THUOC nhat duoc (pb_Uong "con 47..51
+	// binh" = 47-51 chong, moi chong 1 o; pb_DonTui truoc gio giu het). Bot chi uong binh DAU TIEN
+	// tim thay nen giu PB_BINH_GIU_KHAN chong lon nhat (uu tien binh HP detail 0) la du; con lai xoa
+	// dan cho toi khi co dai o. Binh nhat lai lien tuc ngoai bai nen khong thiet.
+	int nXoaBinh = 0;
+	if (!(il.CheckCanPlaceInEquipment(nW, nH, &x, &y) && pb_DemDanhSach(nIdx) < MAX_PLAYER_ITEM - 2))
+		nXoaBinh = pb_XoaBinhThua(nIdx, PB_BINH_GIU_KHAN, nW, nH);
+	if (nXoa || nXoaBinh)
+		pb_Log("[BotXoaDo] %s lam cho tui: xoa %d mon rac + %d chong binh de dat mon %dx%d\n",
+		       Player[nIdx].m_PlayerName, nXoa, nXoaBinh, nW, nH);
+	return nXoa + nXoaBinh;
 }
 
 // Mot nhip NHAT DO. Tra 1 = dang ban (dang di toi / vua nhat), 0 = khong co gi nhat.
