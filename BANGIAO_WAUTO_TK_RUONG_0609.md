@@ -227,3 +227,19 @@ Cách đổi: thoát Game.exe **và** WAuto.exe → `ChoiGame.bat` (đổi cả 
 → CoreClient cũ) bị bỏ 4 byte cuối; không sập, chỉ là tính năng khiên im lặng không chạy cho tới khi đổi đủ cả hai.
 Tệp `.dat` 7.640 byte cũ nạp được, ô mới mặc định bật. Chưa test thật; kiểm bằng `findstr /C:"[PK-KHIEN]" jx_auto.log` khi PK gần người vừa dịch chuyển.
 `origin/main` sau `aed31625` có thêm bot nội đợt 3 (server) — không ảnh hưởng client, chưa build lại.
+
+---
+
+## 8. (19:35) Chủ báo sau swap đợt 2: "về thành là đứng yên" + "tới NPC Dã Tẩu xong đứng yên"
+
+Đo `jx_auto.log` pid 47140 (game mở 19:14, map 78 Tương Dương), 19:22-19:25:
+
+| Máy | Thấy gì | Gốc | Xử lý |
+|---|---|---|---|
+| **Hậu cần** | `[HC-STATE] buoc=1` đứng yên hàng phút ở cùng toạ độ, túi còn 28-29 ô trống | Bước 1 (bán rác) quét túi, gặp một món trang bị ≤ xanh không khoá → `SendClientCmdSell` rồi `return 1`; 300 ms sau quét lại, món **vẫn còn** (máy chủ từ chối im lặng: `KBuySell::Sell` trả FALSE khi khoá/-2/FightMode, hoặc lệnh không tới) → gửi lại **mãi mãi**, không sang bước 2. Lúc 18:43 bước 1 qua trong 3 s vì túi không có món đó. | **Đã vá** (commit `42262294`, `goi_va_hc_ban_0609.py`): đếm số lần gửi theo dwID, tới 6 lần mà món vẫn còn thì bỏ qua món đó trong lượt này; bước 0 xoá bộ đếm. Log `[HC-BAN] gui ban id=… 'tên' genre/detail/mau/khoa lan k/6` — lần sau đọc là biết món nào và vì sao. |
+| **Dã Tẩu** | `pha=1` tới NPC 108, thoại, rồi `pha=14` treo 3.598 s, `du40=260906/260906` | NPC nói đúng câu `seasonnpc.lua:62` *"Mỗi ngày làm 40 lần là đủ rồi! Ngày mai trở lại nhé!"* (mốc `DTM_MSG_LIMIT` = "Mỗi ngày làm 40 lần"). Nhân vật này **đã làm đủ 40 nhiệm vụ hôm nay** (từ 18:04 log đã treo vì đủ 40). Auto báo trong chat *"Tuyệt! Đã đủ 40 nhiệm vụ Dã Tẩu hôm nay - nghỉ, qua ngày auto tự chạy lại."* | Đúng thiết kế, **không sửa**. Qua ngày mới (`DT_Today()` đổi) tự chạy lại. |
+| **Cả hai bị "khởi động lại"** mỗi 57-100 s | `[DT-STATE] pha=0 … du40=0 dlg=17/0` = `ExtAuto` bị `memset` (`ATYPE_CLEAR`) | `ATYPE_CLEAR` chỉ phát khi ô tick auto trong danh sách WAuto đổi trạng thái: bấm ô tick, hoặc **Ctrl+A trong game** (`UiGame.cpp:91` → `PRG_AUTOONOFF` → WAuto đổi tick → `PRT_TICKSTART` → xoá trạng thái). Mỗi lần như vậy Dã Tẩu quên "đủ 40" → đi lại tới NPC → hỏi → treo lại; Hậu cần về bước 0. | Không phải lỗi mã; là hệ quả của việc bật/tắt auto liên tục khi thấy nhân vật đứng. Ghi nhận để chủ biết. |
+
+`.moi` đợt 3 (chỉ CoreClient): `CoreClient.dll.moi` **`b425fb53`** (sha256 `076e8550`, 2.593.280 B). Struct IPC không đổi
+(7.644) nên đổi một mình CoreClient là đủ; `WAuto.exe` `9ff7c4e6` đang chạy giữ nguyên (tệp `WAuto.exe.moi` còn
+lại cùng md5, vô hại). Cách đổi: thoát game → `ChoiGame.bat`.
