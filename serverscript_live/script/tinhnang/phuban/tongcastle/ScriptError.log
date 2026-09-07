@@ -1,0 +1,10 @@
+error: [string "?"]:14: attempt to index a nil value (global 'Game')
+stack traceback:
+	[string "?"]:14: in main chunk
+2026/09/06 17:53:18.979 	 ScriptError 4:[1] (\script\tinhnang\phuban\tongcastle\tongcastle.lua) 
+
+error: [string "?"]:14: attempt to index a nil value (global 'Game')
+stack traceback:
+	[string "?"]:14: in main chunk
+2026/09/06 17:54:05.328 	 ScriptError 4:[1] (\script\tinhnang\phuban\tongcastle\tongcastle.lua) 
+

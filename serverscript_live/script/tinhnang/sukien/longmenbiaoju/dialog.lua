@@ -7,7 +7,7 @@ local DlgClass = {}
 LongMenBiaoJu.DlgClass = DlgClass
 
 function DlgClass:OnNpcDialog(nNpcIndex)
-	if PlayerFunLib:CheckTotalLevel(120, "", ">=") ~= 1 then
+	if PlayerFunLib:CheckTotalLevel(90, "", ">=") ~= 1 then	-- [VTCN 06/09] chu: cap ha xuong 90 (Linux 120)
 		CreateNewSayEx(LongMenBiaoJu.LANG.DLG_TOO_YONG, {{LongMenBiaoJu.LANG.DLG_CLOSE}})
 		return
 	end

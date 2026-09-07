@@ -8,7 +8,7 @@ Include("\\script\\activitysys\\playerfunlib.lua")
 
 function main(nItemIndex)
 	-- ¼ì²éµÈ¼¶
-	if PlayerFunLib:CheckTotalLevel(150,"ChØ ng­êi ch¬i ®¹t cÊp 150 hoÆc ®· chuyÓn sinh míi cã thÓ dïng ®¹o cô nµy!",">=") ~= 1 then
+	if PlayerFunLib:CheckTotalLevel(90,"ChØ ng­êi ch¬i ®¹t cÊp 90 hoÆc ®· chuyÓn sinh míi cã thÓ dïng ®¹o cô nµy!",">=") ~= 1 then	-- [VTCN 06/09] chu: cap ha xuong 90 (Linux 150)
 		return 1;
     end
     local nG, nD, nP =  GetItemProp(nItemIndex);

@@ -123,7 +123,7 @@ end
 
 function pActivity:RecvTongBiaoChe()
     --µÈ¼¶ÅÐ¶Ï
-    if PlayerFunLib:CheckTotalLevel(150, "Ch­a ®¹t cÊp 150 vµ ch­a chuyÓn sinh, kh«ng thÓ nhËn ¸p Tiªu Bang.", ">=") ~= 1 then
+    if PlayerFunLib:CheckTotalLevel(90, "Ch­a ®¹t cÊp 90 vµ ch­a chuyÓn sinh, kh«ng thÓ nhËn ¸p Tiªu Bang.", ">=") ~= 1 then	-- [VTCN 06/09] chu: cap ha xuong 90 (Linux 150)
 	    return nil;
     end
     -- ÓÐÃ»ÓÐ¿ªÆô°ï»áÑºïÚ

@@ -1,0 +1,12 @@
+error: [string "?"]:137: bad argument #3 to 'format' (number expected, got nil)
+stack traceback:
+	[C]: in function 'format'
+	[string "?"]:137: in main chunk
+2026/09/06 17:53:18.796 	 ScriptError 4:[1] (\script\tinhnang\chientruong\battleinfo.lua) 
+
+error: [string "?"]:137: bad argument #3 to 'format' (number expected, got nil)
+stack traceback:
+	[C]: in function 'format'
+	[string "?"]:137: in main chunk
+2026/09/06 17:54:05.146 	 ScriptError 4:[1] (\script\tinhnang\chientruong\battleinfo.lua) 
+

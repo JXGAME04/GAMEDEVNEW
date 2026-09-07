@@ -1,0 +1,10 @@
+error: [string "?"]:50: attempt to index a nil value (global 'EventSys')
+stack traceback:
+	[string "?"]:50: in main chunk
+2026/09/06 17:53:18.906 	 ScriptError 4:[1] (\script\tinhnang\phuban\leaguematch\award.lua) 
+
+error: [string "?"]:50: attempt to index a nil value (global 'EventSys')
+stack traceback:
+	[string "?"]:50: in main chunk
+2026/09/06 17:54:05.255 	 ScriptError 4:[1] (\script\tinhnang\phuban\leaguematch\award.lua) 
+
