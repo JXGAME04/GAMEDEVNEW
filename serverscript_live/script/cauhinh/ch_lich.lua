@@ -72,7 +72,7 @@ TK_PHUT_TRAN          = 30    ,	-- so PHUT ca tran. !! chu thich trong ma ghi 70
 TK_PHUT_NGUYENSOAI    = 1     ,	-- so PHUT den luc ra Nguyen Soai. !! chu thich ghi 30 - dang chay 1
 TK_PHUT_XOANPC        = 1     ,	-- so PHUT xoa NPC sau tran
 TK_NGUOI_MOI_PHE      = 2000  ,	-- so nguoi toi da moi phe
-TK_LICH               = {{18,13,19,1}, {17,50,18,3}, {20,50,21,4}, {22,50,23,5}},
+TK_LICH               = {{21,08,19,1}, {17,50,18,3}, {20,50,21,4}, {22,50,23,5}},
 -- [CONGTAC 29/08] CONG TAC BAT/TAT HOAT DONG
 -- 1 = bat, 0 = tat. Gia tri duoi day DUNG BANG trang thai dang chay
 -- hom nay, nen file nay khong lam doi gi ca cho toi khi ban sua.

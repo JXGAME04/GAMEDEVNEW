@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 9 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local YDBZ_get_npc_id, YDBZ_get_npc_name, YDBZ_get_npc_level, YDBZ_get_npc_series, YDBZ_npc_proceed, YDBZ_get_npc_isboss, advanced, current_npc_map, YDBZ_add_npcboss
 -- 
 -- by 
 -- 2007.10.24

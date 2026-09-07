@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 5 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local Task_Punish, Task_GiveAward, _WriteCancelLog, Prise_Parse, Prise_Params
 -- ================================================================================================
 -- [HE THONG] script/global/seasonnpc.lua
 -- Muc dich  : DA TAU - chuoi nhiem vu theo mua (1439 dong, 53 ham).

@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local hoason_hoasonbynpc
 -- [HOASON 01/09] NPC Hoa Son - RUT GON theo y chu (khong nhiem vu, nhan ky nang nhu 9 phai co san).
 -- Toa do 8 thon + map 987 lay nguyen bang Linux script\global\huashan2013\npc_hoason.lua (hoason_parserby).
 -- Quai/NPC nhiem vu Linux (2090 luyen kiem, 2092 cuong dao, 2097 Son Phi, 2103/2108/2110, Van Tu Vien...) KHONG spawn;

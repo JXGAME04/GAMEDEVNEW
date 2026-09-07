@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 --任务系统中各奖励扩展
 
 --任务Npc死亡奖励经验

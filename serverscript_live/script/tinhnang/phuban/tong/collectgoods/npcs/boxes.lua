@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local gift_true828, add_dropitem828
 Include([[\script\missions\tong\collectgoods\head.lua]]);
 
 ITEM_DROPRATE_TABLE828 = {

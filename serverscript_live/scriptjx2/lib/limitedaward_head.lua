@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 --特点：适应于这样的应用。
 --一等奖共10名，其中有1人得某种奖品，另4人得某种奖品，另5人又得某种奖品
 --二等奖共50名，其中20人得某种奖，30人得其它奖品

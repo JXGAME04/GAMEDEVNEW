@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 5 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local YDBZ_cancel_match, YDBZ_ready_start_match, YDBZ_ready_match, YDBZ_ready_broad_talk, YDBZ_ready_close_match_timer
 -- description	: 
 -- author		: wangbin
 -- datetime		: 2005-06-04

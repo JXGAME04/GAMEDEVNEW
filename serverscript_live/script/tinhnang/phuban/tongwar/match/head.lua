@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local sf_winbouns, tongwar_dorelay
 Include("\\script\\missions\\tongwar\\head.lua")
 Include("\\script\\lib\\file.lua")
 --以下是某些值记录在MissionValue中的索引位置，通过GetMissionV(MS_XXX)来获得实际的值

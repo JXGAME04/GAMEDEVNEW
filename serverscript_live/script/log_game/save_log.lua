@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 -- ================================================================================================
 -- [HE THONG] script/log_game/save_log.lua
 -- Muc dich  : HAM GHI LOG CHUNG cua game (21 ham) - log_game/*.lua dung.

@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 -- ================================================================================================
 -- [HE THONG] script/header/testgame.lua
 -- Muc dich  : Bo test/khung khi khoi dong game (1412 dong).

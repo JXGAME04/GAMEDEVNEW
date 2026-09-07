@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 9 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local gioutbch, phututbch, gioutdbch, phututdbch, LayExpUyThac, AddSkillHoTro, CheckXu, LogDangNhap, CuuNguoiKetLDHC
 Include("\\script\\chienlenh\\cl_def.lua")	-- [CL 04/09] so hieu nhiem vu Chien Lenh
 Include("\\script\\chienlenh\\cl_ui.lua")	-- [CL 04/09 DOT2] bieu tuong + cua so Chien Lenh
 --Author: Fong Ki“u

@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 5 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local HD3_BD_AddNpc, HD3_PLD_AddBoatNpcTab, HD3_PLD_AddBoatNpc, HD3_InList, HD3_VA_DailyRank
 -- ============================================================================
 -- HD3_DRIVER.LUA - Boot + Lich chay 3 hoat dong ban Linux (port 25/08)
 --   (A) SAN BOSS SAT THU   (B) PHONG LANG DO   (C) VUOT AI

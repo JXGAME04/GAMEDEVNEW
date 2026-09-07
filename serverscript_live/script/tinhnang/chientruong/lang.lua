@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 BATTLE_STR_1 = "ChiÕn tr­êng cßn <color=red>%d <color=red>phót n÷a cã thÓ b¸o danh"
 BATTLE_STR_2 = "Xin lçi, tham gia ®ît Phong V©n LuËn KiÕm nµy, cÇn ph¶i nép 1 Tèng Kim Chiªu Binh LÖnh"
 BATTLE_STR_3 = "ChiÕn tr­êng lµ n¬i sinh tö, kh«ng ph¶i chuyÖn ®ïa, häc nghÖ ch­a th«ng kh«ng nªn m¹o hiÓm."

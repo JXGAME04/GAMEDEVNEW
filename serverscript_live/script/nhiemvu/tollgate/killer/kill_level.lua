@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local kill_level20, killbossall
 -- [MATHUONG 29/08] nan ma vat pham bang thuong theo TEN (xem ReverseTools\cauhinh\t01_nan_ma_thuong.py)
 -------------------------------------------------------------------------
 -- FileName		:	kill_level.lua

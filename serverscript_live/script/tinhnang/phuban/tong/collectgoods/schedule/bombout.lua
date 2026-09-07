@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local bomb_out_pl, makebomber, go_other_place
 Include([[\script\missions\tong\collectgoods\head.lua]]);
 
 function bombout()

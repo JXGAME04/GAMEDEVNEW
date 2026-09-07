@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local Getphysicsdamage_p, Getaddskillexp1, Getskill_skillexp_v
 --迭代函数，用于计算技能熟练度
 --具体方法：
 --根据1级熟练度，升级加速度，级数，重复伤害次数，范围，计算出相应等级熟练度

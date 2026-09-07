@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 jf0904_TSK_version		= 1760	-- 活动版本号
 jf0904_TSK_jiuexp		= 1761	-- 酒葫芦和葡萄酒使用后获得的经验
 jf0904_TSK_jiuexplt		= 1762	-- 酒葫芦和葡萄酒使用后获得的经验上限

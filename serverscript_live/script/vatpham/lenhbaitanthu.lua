@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local DKKV_Map, dangkykhuvucbang, NhapMoc3000k
 --Author: Fong KiÒu
 --Date: 07/07/2021
 --Function: LÖnh Bµi T©n Thñ

@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local LineWith8Byte
 -- [VHTD 02/09] noi suy tach byte cao/thap (id*256+cap) - chep tu client VLTK
 function LineWith8Byte(x,x1,y1,x2,y2)
 	if(x2==x1) then

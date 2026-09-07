@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 -- ================================================================================================
 -- [HE THONG] script/startgame/tongjx2npc.lua
 -- Muc dich  : Dat NPC BANG HOI JX2 (goi tu OnGame).

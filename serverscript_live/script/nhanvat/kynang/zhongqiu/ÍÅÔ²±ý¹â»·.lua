@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local Getexpenhance_p
 --Create by mengfan ,2004-9-17
 --团圆饼技能
 --作用：使用后，使用者及其附近队员30分钟内获得双倍经验时间。

@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local wlls_record_one_match_result, wlls_AddMatchCount, wlls_in_mission
 
 -- [WLLS port 20/08/2026] MO guard goc: Include cua engine ta la lua_dofile
 -- (khong include-once) -> thieu guard thi vong head<->macthtype de quy vo han.

@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 -- ================================================================================================
 -- [HE THONG] script/lib/lib_lmbiaoche.lua
 -- Muc dich  : VAN TIEU Long Mon: ham xe tieu (engine KBiaoChe.cpp).

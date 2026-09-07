@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 4 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local Getaddfiredamage_v, Getaddcolddamage_v, Getaddlightingdamage_v, Getaddpoisondamage_v
 function GetSkillLevelData(levelname, data, level)
 
 if (levelname == "fasthitrecover_v") then----------受伤动作时间减少点

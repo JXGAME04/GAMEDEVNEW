@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 12 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local partner_keepjiguan1, partner_keepjiguan2, partner_keepjiguan3, partner_keepjiguan4, partner_keepzhuofeifan, partner_keepheishadizi, partner_moxiaofeng_fajiang1, partner_xiaoding_fajiang1, partner_quwan_fajiang1, partner_xieqinger_fajiang1, niumanman_bisaijieguo, partner_getpartnerlevel
 ------------------------------------------------------------------------
 -- FileName		:	partner_educationpeople.lua
 -- Author		:	xiaoyang

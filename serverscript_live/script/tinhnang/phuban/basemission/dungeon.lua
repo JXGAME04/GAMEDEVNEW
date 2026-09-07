@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local ApplyDungeonMap, ReturnDungenonMap
 -- ==========================================================================
 -- KHUNG PHO BAN DONG (dungeon) - ban JX1
 -- SINH TU DONG boi ReverseTools\viemde\v03_gen_dungeon.py - DUNG SUA TAY

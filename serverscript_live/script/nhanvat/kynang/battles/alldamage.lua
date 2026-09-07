@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 6 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local Getstun_P, Getcolddamage_V, Getpoisondamage_V, Getfastwalkrun_P, Getmeleedamagereturn_P, Getrangedamagereturn_P
 -- 眩晕、冰冻、中毒、减速等状态量的技能级别公式
 -- 状态量增加（数值）公式：根据不同状态数值不同
 

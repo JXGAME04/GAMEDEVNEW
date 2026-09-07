@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local CLUI_GuiXuong, CLUI_ThongTinMoc, CLUI_DayTronBo
 -- cl_ui.lua - [CL 04/09 DOT2] MAY CHU day du lieu cua so Chien Lenh xuong client + nhan 3 yeu cau tu cua so.
 -- Kenh ScriptProtocol (protocol.lua / script_protocol/protocol_def_gs.lua), khuon y het auction_manager.lua:
 -- bo phan phoi dat san PlayerIndex roi goi CLUI_OnOpen / CLUI_OnGetAward / CLUI_OnGetMission voi tham so da giai.

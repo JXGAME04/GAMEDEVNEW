@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 8 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local YDBZ_DebugDailog, YDBZ_PlayerCheck, YDBZ_view_player, YDBZ_PartyCheck, YDBZ_PlayerConsume, YDBZ_PartyConsume, YDBZ_want_play, YDBZ_about
 
 Include("\\script\\dailogsys\\dailogsay.lua")
 Include("\\script\\missions\\yandibaozang\\head.lua")

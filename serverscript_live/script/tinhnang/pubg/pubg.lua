@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local sin_approx, cos_approx
 -- generate_layers.lua (Lua 4.1–compatible)
 -- Pure Lua replacements for math functions
 PI = 3.1415926535898

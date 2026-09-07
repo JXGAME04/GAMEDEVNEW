@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 14 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local tongwar_getmember, tongwar_bigger, get_tongwar_phase, tongWar_SelectCity, tongWar_CanSelectCity, tongWar_AddSelectCityOpt, tongwar_title_award, tongwar_addtitle, tongwar_check_team, tongwar_getenemycity, tongwar_getnamestr, tongwar_getaworditem, tongwar_award_log, tongwar_clear_rlpoint
 Include("\\script\\event\\tongwar\\headinfo.lua")
 Include("\\script\\event\\tongwar\\tongwar_signup.lua")
 --Include("\\script\\task\\random\\treasure_head.lua");	-- [TONGWAR 23/08] 0/21 ky hieu duoc dung; task\random khong port (tien le Tin Su)

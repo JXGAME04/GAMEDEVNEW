@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 7 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local TRANSLIFE5_onFinishSongJin, TRANSLIFE5_onChuanguan, TRANSLIFE5_onYDBZguoguan, TRANSLIFE5_ontianlu_tree, TRANSLIFE5_onFinishSongJinAward, TRANSLIFE5_onChuanguanAward, TRANSLIFE5_award
 -----------------------------------------------------------------------------
 -- Translife 5
 --

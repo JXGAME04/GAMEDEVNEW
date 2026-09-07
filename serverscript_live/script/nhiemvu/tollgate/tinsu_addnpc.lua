@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local tinsu_add_dialognpc
 -- ============================================================
 -- TIN SU (port Linux 21/08): dat NPC cho 3 ai Tin Su + quai/bao ruong cua ai
 -- Linux: global\autoexec.lua main() goi add_alltollgatenpc() (task\tollgate\addtollgatenpc.lua)

@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 4 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local tmp_help_award, tmp_player_type, tmp_check_addmem, tmp_str
 --==============一般比赛相关数据===============
 Include("\\script\\lib\\common.lua")
 Include("\\script\\missions\\leaguematch\\head.lua")

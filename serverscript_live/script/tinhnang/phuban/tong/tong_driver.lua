@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local TONG_Drv_CurQ
 -- ============================================================
 -- TONG DRIVER - thay the task centre cua RELAY cho 3 Hoat dong Phuong bang hoi
 -- (khuon y het \script\leaguematch\gsdriver.lua cua dot Lien Dau 20/08).

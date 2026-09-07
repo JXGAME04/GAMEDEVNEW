@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 --	Author: Fong Ki?u
 --	Date: 23/10/2020
 --	Desc: Npc Lap bang hoa son kim son chuong mon

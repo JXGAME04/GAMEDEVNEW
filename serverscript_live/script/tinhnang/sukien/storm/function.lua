@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local storm_calc_today, storm_calc_point
 --Storm 活动开始
 --Include("\\script\\event\\storm\\function.lua")
 --storm_ask2start(gameid)

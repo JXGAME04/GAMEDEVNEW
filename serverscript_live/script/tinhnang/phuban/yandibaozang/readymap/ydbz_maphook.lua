@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local YDBZ_HOOK_LayPhoBan
 -- ==========================================================================
 -- VIEM DE - HOOK VAO/ROI BAN DO PHONG CHO
 -- SINH TU DONG boi ReverseTools\viemde\v12_gen_readymap.py - DUNG SUA TAY

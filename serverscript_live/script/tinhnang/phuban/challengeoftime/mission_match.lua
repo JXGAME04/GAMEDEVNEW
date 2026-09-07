@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 4 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local start_match_timer, start_signup, PlayerLeave, PlayerJoinMission
 -- description	: 比赛任务
 -- author		: wangbin
 -- datetime		: 2005-06-04

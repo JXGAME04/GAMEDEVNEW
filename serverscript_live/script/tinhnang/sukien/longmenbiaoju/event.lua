@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local DataInit
 --龙门镖局活动--全局共享数据操作
 Include("\\script\\lib\\objbuffer_head.lua")
 

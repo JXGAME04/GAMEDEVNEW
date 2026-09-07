@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local TONGWAR_Drv_CurQ
 -- ============================================================
 -- TONGWAR DRIVER -- [TONGWAR 23/08] - thay task centre relay cho Bang Chien / Vo Lam De Nhat Bang
 -- (khuon y het \script\missions\tong\tong_driver.lua cua dot Hoat dong Phuong 21/08).

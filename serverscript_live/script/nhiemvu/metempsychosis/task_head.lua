@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local Load_TransLifeSetting
 -- [NAN5MA 30/08] nan ma vat pham theo TEN, tra bang DUNG cach may tra (theo chi so dong).
 -- Xem ReverseTools/cauhinh/t23_nan_5_ma_con_lai.py va ra_soat_ma_thuong.txt
 -- ====================== 文件信息 ======================

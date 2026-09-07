@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local checkPlayerRemain, GainExp, GainProp
 Include("\\script\\tinhnang\\pubg\\pubgutils.lua")
 Include("\\script\\lib\\lib_task.lua")
 Include("\\script\\timertask\\pubgend.lua")

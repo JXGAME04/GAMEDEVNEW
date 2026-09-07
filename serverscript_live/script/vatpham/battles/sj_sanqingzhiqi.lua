@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 4 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local add505, add506, add507, add508
 --Author: Fong Ki“u
 --Date: 2021
 --Function: Item TËng Kim

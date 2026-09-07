@@ -7,7 +7,7 @@ Include("\\script\\lib\\lib_54.lua")
 function L54_MenuThu()
 	SayEx({"Thu nghiem Lua 5.4 (06/09 toi):",
 		"Hoi thoai coroutine SayWait (3 buoc trong MOT ham)/L54_ThuHoiThoai",
-		"Tien ich lib_54: Thu / GhepChuoi / ChiaChuoi / Bit/L54_ThuLib",
+		"Tien ich lib_54: Thu, GhepChuoi, ChiaChuoi, Bit/L54_ThuLib",	-- nhan KHONG duoc chua '/' (engine cat ten ham tai dau '/' dau tien)
 		"Thong tin phien ban Lua + che do mot state/L54_ThongTin",
 		"Thoat/L54_Thoat"})
 end

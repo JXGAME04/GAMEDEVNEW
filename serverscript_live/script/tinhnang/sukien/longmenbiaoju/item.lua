@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local UseForTongBiaoCheCheck
 Include("\\script\\event\\longmenbiaoju\\head.lua")
 Include("\\script\\event\\longmenbiaoju\\lang.lua")
 ------------------------帮会运镖道具和个人运镖道具共用，越南版逻辑和大陆版逻辑共用

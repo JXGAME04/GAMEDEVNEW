@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 7 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local PF_InlayMoLai, PF_InlayLoi, PF_MoLaiWashBox, PF_WashLoi, PF_DoiTinhNgoc, PF_MoLaiHopNangCap, HandIn_onFirstTimeStarLevelOk
 Include("\\script\\global\\mantlesystem\\mantleupgrade_head.lua")
 Include("\\script\\dailogsys\\dailogsay.lua")
 Include("\\script\\activitysys\\playerfunlib.lua")

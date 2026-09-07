@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 5 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local LoadDataFromFile, GetItemIdx, HandIn_DegradeWenJing, HandIn_UpgradeWenJing, HandIn_Main
 -- [DUNGLUYEN 01/09] Port tu ban Linux \script\global\smeltsystem\smeltupgrade.lua. Khac: duong bang phang,
 -- AddItem 7 tham so, ConsumeItem tra so mon, RemoveItemByIndex(idx, soluong), GetGiveItemUnit tra 1 muc/don vi.
 Include("\\script\\activitysys\\playerfunlib.lua")

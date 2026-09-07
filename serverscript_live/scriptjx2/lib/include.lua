@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 --Creator:yfeng
 --Date:2004-8-31
 --Comm:Includeº¯ÊýÄ£Äâ

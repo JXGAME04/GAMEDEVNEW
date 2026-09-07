@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local YDBZ_show_msg, YDBZ_show_roll_info
 -- [MA2 29/08] nan ma vat pham con sot cua ban Linux (doi chieu TEN bang magicscript cua du an) - xem ReverseTools\viemde\v26_ma_consot.py
 IL("DICEITEM")
 Include("\\script\\missions\\yandibaozang\\include.lua")

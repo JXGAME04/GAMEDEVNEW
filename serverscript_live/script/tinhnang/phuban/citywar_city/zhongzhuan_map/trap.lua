@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local JoinWithCard
 --攻城战 中转地图to城战地图（攻城方）
 --Trap ID：攻城战
 Include("\\script\\missions\\citywar_global\\head.lua");

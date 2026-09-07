@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 11 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local Getlifemax_yan_v, Getmanamax_yan_v, Getallres_yan_p, Getattackspeed_yan_v, Getcastspeed_yan_v, Getaddcoldmagic_v, Getaddfiremagic_v, Getaddlightingmagic_v, Getaddpoisonmagic_v, Getsorbdamage_yan_p, Getblock_rate
 -- 越南免费版新PK药技能脚本
 -- 作者：llx
 -- 时间：2013.09.11  

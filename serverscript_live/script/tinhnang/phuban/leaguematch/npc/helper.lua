@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 10 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local wlls_get_winrate, wlls_get_total, wlls_save_myinfo, wlls_get_infostr, wlls_get_needinfo, wlls_get_oneneed, wlls_get_oneinfo, wlls_check_need, wlls_reg_savedata, wlls_reg_loaddata
 Include( "\\script\\missions\\leaguematch\\head.lua" )
 Include( "\\script\\missions\\leaguematch\\npc\\head.lua" )
 

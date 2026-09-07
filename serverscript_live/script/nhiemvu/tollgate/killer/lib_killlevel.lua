@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local HD3_ST_ThuongBoss, jiefangri_award
 -------------------------------------------------------------------------
 Include("\\script\\tinhnang\\3hoatdong\\beidou\\bd_activity.lua")
 Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD C29] noi cauhinh thuong

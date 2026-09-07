@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local LR_UI_GomPhong, LR_UI_Lam
 -- compound_ui.lua - [UILOREN v37] nut bam phia may chu cua cua so lo ren
 -- Dat tep nay vao \script\item\compound\ tren may chu.
 -- CACH DUNG: script NPC / lenh bai Include tep nay roi goi LR_UI_Mo().

@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 -- ============================================================================
 -- DA TAU - CONG CU ADMIN (19/08/2026 - yeu cau chu game)
 --   1. Xoa phat "huy nhieu nhiem vu khong lam duoc" -> cho lam tiep NGAY

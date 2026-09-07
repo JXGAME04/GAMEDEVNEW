@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 9 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local QueryTreePoint, GiveGuardToken, EnterCastle, CheckPlayer, UpdateTreePoint, s2rExchangeTreePoint, PlayerGetTreePoint, ApplyTreeToken, GiveTreeToken
 Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [HD CONFIG 24/08] gate / gia doi Thanh Bao chinh duoc
 Include("\\script\\dailogsys\\g_dialog.lua")	-- [TONGCASTLE 23/08] thay npcdailog (keo 18 tep bonusvlmc): DailogClass
 Include("\\script\\dailogsys\\dailogsay.lua")	-- g_AskClientNumberEx

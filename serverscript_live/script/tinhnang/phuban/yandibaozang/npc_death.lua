@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 7 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local YDBZ_award, YDBZ_fun_award_byCount, YDBZ_fun_award_ydmibao, YDBZ_fun_award_exp, YDBZ_savepaihang, YDBZ_award_finalboss, KM_ThuongViemDeAi6
 -- 
 -- by 
 -- 2007.10.24

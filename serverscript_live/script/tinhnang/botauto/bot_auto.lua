@@ -1,3 +1,6 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local BotAuto_Xem
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 -- ============================================================================
 -- BOT_AUTO.LUA - tu goi bot va tu phan cong viec moi lan may chu khoi dong
 -- [BOTAUTO 04/09] Chu game: "moi lan mo game len tu goi 1000 bot; tu keu 200 bot

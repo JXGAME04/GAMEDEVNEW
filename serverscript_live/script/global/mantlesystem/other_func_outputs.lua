@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local RegisterFuncOutPutEvent
 --其他功能产出
 Include("\\script\\misc\\eventsys\\type\\func.lua")
 Include("\\script\\lib\\awardtemplet.lua")

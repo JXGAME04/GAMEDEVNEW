@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local tongwar_addmember, tongwar_say, _msg
 Include("\\script\\lib\\common.lua")
 Include("\\script\\gb_taskfuncs.lua")
 

@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local CTLD_CFG
 -- [CFGCTC 30/08] hai tep duoi day la LA (khong Include gi).
 Include("\\script\\cauhinh\\ch_lib.lua")
 Include("\\script\\cauhinh\\ch_lich.lua")

@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 ----------×÷·»Ãû³Æ------------------------
 NAME_BINGJIA = "Khu Binh gi¸p "
 NAME_TIANGONG = "Khu Thiªn C«ng "

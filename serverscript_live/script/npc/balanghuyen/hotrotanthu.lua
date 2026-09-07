@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local check_code_3, OKGiftCode
 --Author: Fong KiÒu
 --Date: 07/07/2021
 --Function: Hç trî t©n thñ

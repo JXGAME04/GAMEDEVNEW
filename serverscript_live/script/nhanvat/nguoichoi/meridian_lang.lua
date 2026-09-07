@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 
 MERIDIAN_NOTICE_COST_ZY="Xung mπch l«n nµy c«n ti™u hao %s: %d Æi”m"
 MERIDIAN_NOTICE_COST_HMD="Xung mπch l«n nµy c«n ti™u hao %s: %d c∏i"

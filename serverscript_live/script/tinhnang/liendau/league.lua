@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 4 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local wlls_relay_createleague, wlls_relay_addmember, wlls_rest_hint, wlls_say
 Include( "\\script\\leaguematch\\head.lua" )
 
 --提供GameServer调用的建立战队函数

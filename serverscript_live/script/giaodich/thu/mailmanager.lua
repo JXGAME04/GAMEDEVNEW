@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 16 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local MailManager_TaskName, MailManager_Split, MailManager_Trim, MailManager_AwardInfo, MailManager_SendTo, MailManager_Headers, MailManager_PushHeaders, MailManager_ReplyState, MailManager_ReplyDelete, MailManager_ItemPost, MailManager_GiveItem, MailManager_QuaConLai, MailManager_GiveAward, MailManager_CountAward, MailManager_IsBotName, MailManager_BuildAward
 -- mailmanager.lua - [MAIL 03/09] he THU phia MAY CHU (thay \script\mail\MailManager.lua cua VLTK 2.0 - khong co o dau).
 -- Thu nam trong bang MySQL `mail` (KMailServer.cpp: MailDB_*). Nguon gui: web admin ghi thang bang (state 0),
 -- hoat dong / top tuan-thang / dua top goi MailManager_SendMail(...). Client = uimail.lua cua 2.0, giao thuc giu nguyen.

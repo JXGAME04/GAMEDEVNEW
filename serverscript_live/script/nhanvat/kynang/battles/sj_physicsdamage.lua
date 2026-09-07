@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local GetStatusColdEnhance_V
 -- 增加外功伤害的技能级别公式
 -- 外功伤害增加（数值）公式：逐级递增10点外功伤害
 --	外功伤害增加（百分比）公式:逐级递增10%外功伤害

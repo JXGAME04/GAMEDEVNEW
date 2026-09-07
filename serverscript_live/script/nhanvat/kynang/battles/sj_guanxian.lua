@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local GetLife_P, GetRes_P
 -- 增加血量、内力等状态量上限的技能级别公式
 -- 状态量上限增加（数值）公式：逐级递增100点状态量
 

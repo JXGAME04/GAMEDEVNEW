@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local calcAltItemFinalVal
 -- 功能：装备[合成]脚本头文件（此处[合成]泛指原料升级、打造、镶嵌等所有相关操作）
 -- 说明：本文件提供了[合成]操作的一般流程框架及几个相关功能函数，仅供其他具体的[合成]操作脚本文件包含使用
 --       包含该文件完成[合成]功能，需要实现以下几个函数和全局变量：

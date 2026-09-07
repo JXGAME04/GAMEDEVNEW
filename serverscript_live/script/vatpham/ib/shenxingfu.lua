@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local GetRevPos
 --Author: Fong Ki“u
 --Function: Th«n hµnh phÔ
 --Date: 21/06/2021

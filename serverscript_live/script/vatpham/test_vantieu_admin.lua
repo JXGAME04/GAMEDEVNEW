@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 8 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local VT_ADM_Co, VT_ADM_TenMap, VT_ADM_XeGoi, VT_ADM_Cho, VT_ADM_TrangThaiEngine, VT_ADM_BangDat1149, VT_ADM_CoDao, VT_ADM_TeleMenu
 -- ============================================================================
 -- TEST_VANTIEU_ADMIN.LUA  [VTCN 06/09]  Bo test VAN TIEU Long Mon Tieu Cuc tren Lenh Bai
 -- Admin (Include tu lenhbaiadmin.lua, main() dofile lai => sua KHONG can restart).

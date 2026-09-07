@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local previewProb
 -- 功能：紫色装备系统 - 使用黄金图谱和原料合成黄金装备
 -- Fanghao Wu 2005.1.15
 

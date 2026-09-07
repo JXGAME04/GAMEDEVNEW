@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 8 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local award_batch_extend, award_item, award_random_object, award_player, drop_item, award_batch_item, award_batch_contribution, GetMissionCompleteAward
 Include("\\script\\tinhnang\\3hoatdong\\beidou\\bd_activity.lua")
 Include("\\script\\missions\\challengeoftime\\include.lua")
 Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh

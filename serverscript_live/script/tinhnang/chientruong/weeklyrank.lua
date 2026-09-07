@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 5 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local sj_UpdateScore, sj_GetWeeklyRank, sj_GiveRankAward, sj_GetWeeklyRank_2, sj_GiveRankAward_2
 Include("\\script\\lib\\objbuffer_head.lua")
 Include("\\script\\lib\\awardtemplet.lua")
 Include("\\script\\dailogsys\\dailogsay.lua")

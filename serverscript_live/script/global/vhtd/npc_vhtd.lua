@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local vhtd_bynpc
 -- [VHTD 02/09d] NPC Vu Hon (11) / Tieu Dao (12) - TOA DO LINUX: script\wumumenpai\npc_wumumenpai.lua (6 thon + map 1042),
 -- script\xiaoyao\npc\npc_xiaoyao.lua (8 thon + map xiaoyao; Linux 1046 = map JX1 1057, cung .wor). id NPC Linux = id JX1 (VLTK).
 -- Bo: Linux 2476 Cat Khang / 2477 Thu Nhue (JX1 la Nam/Nu De Tu Vu Hon), De Tu Kha Nghi 2501, Thi The 2495 (NPC nhiem vu Linux).

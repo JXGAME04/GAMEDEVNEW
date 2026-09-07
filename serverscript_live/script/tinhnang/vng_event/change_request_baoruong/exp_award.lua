@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local CFG_EXP
 Include("\\script\\activitysys\\playerfunlib.lua")
 Include("\\script\\vng_lib\\bittask_lib.lua")
 -- [CFGTRAN 29/08] hai tep duoi day la LA (khong Include gi).

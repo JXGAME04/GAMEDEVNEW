@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local WhichWarBegin
 -- station_ctc.lua - DOT E (E5): port 3 ham vao tran cong thanh tu station.lua
 -- JX2 goc (D:\ServerLinux) - THAN HAM TRICH BYTE-EXACT, giu nguyen TCVN3.
 -- station.lua JX1 cua ta GIU NGUYEN vai tro cu; file nay duoc no Include them.

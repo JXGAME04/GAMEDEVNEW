@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 5 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local bt_addrandfightnpc, bt_getgn_awardtimes, bt_sortmaxhonour, bt_createleague, bt_reportworldresult
 IncludeLib("FILESYS");
 IncludeLib("TITLE");
 IncludeLib("SETTING");

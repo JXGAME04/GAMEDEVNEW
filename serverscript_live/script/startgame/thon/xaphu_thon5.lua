@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 -- ================================================================================================
 -- [HE THONG] script/startgame/thon/xaphu_thon5.lua
 -- Muc dich  : [VTCN 06/09] chu game: "sua lai Xa Phu cho day du thanh thon" - 5 thon/tran co ben

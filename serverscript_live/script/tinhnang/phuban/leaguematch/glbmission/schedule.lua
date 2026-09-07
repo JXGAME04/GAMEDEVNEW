@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local wlls_GetPosFileData, wlls_SaveMeetEmy, wlls_addtroop_combat
 Include( "\\script\\missions\\leaguematch\\head.lua" )
 WLLS_FACTION_NAME	= {"ThiÕu L©m", "Thiªn V­¬ng", "§­êng M«n", "Ngò §éc", "Nga Mi", "Thóy Yªn", "C¸i Bang", "Thiªn NhÉn", "Vâ §ang", "C«n L«n"}
 WLLS_FACTION_NAME[0] = "Kh«ng m«n ph¸i"

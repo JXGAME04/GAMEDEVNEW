@@ -90,6 +90,13 @@ Sau swap kiểm console: `[script] LoadAllScript ... `, `[script] IncludeOnce bo
 
 **Cập nhật 20:57:** chủ đã swap cả 4 `.moi` (server 20:52: CoreServer 7e41f1b7, engine 6457bc53, Lua54Dll 889d92e7; client Lua54Dll eb4aa618), GameServer boot 20:57 với 1.000 bot, phiên BOTNOI xác nhận đủ nhãn của họ; phút đầu không có ScriptError mới, LUA_CALL 0,20 ms/tick, TICK 7,28 ms. `jx_lua_prof.log` xuất hiện sau 10 phút.
 
+
+**Profiler ky dau (21:07, 655 s, 9.469 mau, moi 2.000 lenh; LUA_CALL 0,20 ms/tick = 2,7 % tick 7,28 ms):** duong "giet quai" chiem ~40 % thoi gian Lua:
+`G_CFG` (cauhinh/ch_lib.lua:34-43) 8,9 % + `SKD_CFG` (lib/lib_sukien.lua:24-25) 7,3 % + `DropRate` (global/luanpcmonsters/droprate_normal.lua) ~7 % + `OnPlayerKillNpc` (onkillnpc.lua:34-35) 4 % + `CL_CongNhom` (cl_def.lua:43) 2 %.
+Moi lan giet quai, DropRate goi SKD_CFG -> G_CFG -> CFGW_Get khoang 10 khoa DRQ_* rieng le. Ngoai ra: `tl_getMapInfo` quet tuyen tinh TL_MAPTRAPINDEX (map_index.lua:226-227) 2,6 %, `ScriptProtocol:_InitProtocolEnum` (protocol.lua:114-115) 2,5 % duoc goi lap, `Task_AwardLink` quet tuyen tinh (tasklink_award.lua:579-580) 1,8 %.
+De xuat sua dich danh (chua lam, cho chu chot): (1) SKD_CFG/G_CFG cache gia tri theo khoa voi TTL vai giay hoac bo dem phien ban CFGW -> bo ~15 % thoi gian Lua; (2) TL_MAPTRAPINDEX va Task_AwardLink -> bang bam theo id; (3) _InitProtocolEnum chi chay mot lan. Tong loi toi da ~0,05 ms/tick.
+**Loi da sua 21:03:** nhan menu lenh bai chua dau '/' ("Thu / GhepChuoi / ChiaChuoi / Bit") -> engine cat ten ham tai dau '/' dau tien -> "attempt to call a nil value"; doi nhan dung dau phay, SayWait/TalkWait tu thay '/' trong nhan bang '|'. Khong co ScriptError nao khac tu 20:57.
+
 ## 6. PHẢN BIỆN (tự soát, 06/09 tối)
 
 1. **Hai sự cố sản xuất hôm nay là do tôi**, cùng một gốc: tin phân tích tĩnh hơn giới hạn thật của engine. (a) Xoá 1.369 tệp dù memory 30/08 đã cảnh báo pak là đường tham chiếu; (b) đặt tên dài không kiểm `m_szScriptName[100]`. Bộ mô phỏng boot không mô phỏng bộ đệm C++ nên không bắt được (b). Phòng ngừa đã làm: luật < 96 ký tự, `kiem_trap_map.py` quét pak, memory LUẬT. Việc còn thiếu: **đo động** (ghi script nào được `g_GetScript` chạm trong 1–2 tuần) trước khi dọn bất cứ gì.

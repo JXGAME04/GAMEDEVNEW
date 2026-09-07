@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local motrangbi_f
 --Author: Fong KiÒu
 --Date: 2021
 --Function: Th¸o trang bÞ --GetPlayerItemIsLock tr¹ng th¸i kho¸ 0 kh«ng 1 kho¸ -2 kho¸ vv

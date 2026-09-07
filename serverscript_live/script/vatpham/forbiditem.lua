@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 6 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local get_MapType, get_ItemType, LoadItemType, LoadItemDetail, pack_ItemDetail, LoadMapDetail
 IncludeLib("FILESYS")
 IncludeLib("ITEM")
 Include("\\script\\lib\\common.lua");

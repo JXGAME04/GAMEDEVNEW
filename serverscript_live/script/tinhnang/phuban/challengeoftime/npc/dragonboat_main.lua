@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 4 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local COT_CheckTeamRequirement, COT_GetFreeMap, COT_TeamMemberJoin, COT_TeamJoin
 Include("\\script\\missions\\challengeoftime\\include.lua")
 Include("\\script\\lib\\log.lua")
 Include("\\script\\activitysys\\functionlib.lua")

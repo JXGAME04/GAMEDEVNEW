@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 10 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local tl_getawardtypeforrate, tl_giveplayeraward_goods, tl_getawardagin, tl_getaward, tl_linkaward_count, tl_linkaward_cells, tl_getplayerlucky, AssignValue_AwardRate, TaskLink_WriteLog, TireReduce
 -- 野叟任务链脚本奖励头文件
 -- Edited by peres
 -- 2004/12/25 圣诞节早上

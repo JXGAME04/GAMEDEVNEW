@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local give_shuizei_award_exp
 Include("\\script\\event\\jiefang_jieri\\200904\\taskctrl.lua");
 Include("\\script\\lib\\lib_ham.lua")	-- [KM 28/08] AddItemSL
 Include("\\script\\lib\\awardtemplet.lua")

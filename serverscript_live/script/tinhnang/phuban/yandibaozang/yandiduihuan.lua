@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 6 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local yandiduihuan_CalcItemCount, yandiduihuan_checkGoldItem, yandiduihuan_MakeItemTable, yandiduihuan_checkItem, yandiduihuan_checkOne, yandiduihuan_LogEquip
 -- yandiduihuan.lua
 -- zhongchaolong
 -- 2008-05-14 16:38:43

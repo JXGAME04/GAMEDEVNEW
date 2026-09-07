@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local GetRandomNpcRange, get_random_npc_id
 IncludeLib("RELAYLADDER")
 Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 Include("\\script\\tong\\tong_award_head.lua")		--By Liao Zhishan

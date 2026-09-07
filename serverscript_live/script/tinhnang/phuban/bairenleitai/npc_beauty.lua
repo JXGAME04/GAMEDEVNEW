@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local onBeautyState
 -- ====================== 文件信息 ======================
 
 -- 剑侠情缘网络版大陆版 - 擂台美女

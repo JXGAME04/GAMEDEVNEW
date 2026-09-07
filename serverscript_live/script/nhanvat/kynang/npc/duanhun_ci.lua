@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local Getdeadlystrike_p, Getskill_param1_v, Getskill_param2_v
 function GetSkillLevelData(levelname, data, level)
 
 if (levelname == "physicsenhance_p") then

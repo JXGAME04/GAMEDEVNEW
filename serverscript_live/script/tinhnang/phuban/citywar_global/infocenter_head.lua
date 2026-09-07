@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 6 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local EnterGame, getCityWarElector, checkIsTakeQingtongDing, checkSignUpCityWar, checkCityOwner, checkCItyChallenger
 -- [FIX TRUNG TASK 24/08] 300/301/302 la T_SAVE_TK_KILLPLAYER/KILLNPC/DEATH cua TONG KIM
 -- (lib\lib_task.lua) - dau truong ghi de len thong ke Tong Kim. Doi sang 4129/4130/4131.
 IncludeLib("LEAGUE")

@@ -72,7 +72,8 @@ function SayWait(szText, tbChon)
 	if n > HT_MAX_CHON then n = HT_MAX_CHON end
 	local tbOpt = {}
 	for i = 1, n do
-		tbOpt[i] = tostring(tbChon[i]) .. "/HT_Chon" .. i
+		-- engine tach "nhan/ham" tai dau '/' DAU TIEN -> nhan khong duoc chua '/', thay bang '|'
+		tbOpt[i] = string.gsub(tostring(tbChon[i]), "/", "|") .. "/HT_Chon" .. i
 	end
 	HT_Co[PlayerIndex] = co
 	Say(szText, n, table.unpack(tbOpt, 1, n))

@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local get_ncount_pos, partner_addjindinpc
 --MAPID: 539
 jindienter_pos_file = "\\settings\\maps\\partner\\enter.txt"
 jindiexit_trap_file = "\\settings\\maps\\partner\\exit.txt"

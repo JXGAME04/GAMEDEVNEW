@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local calcItemValue_Socket, calcItemValue_Level, calcItemValue_Type
 -- 功能：紫色装备系统 - 紫色装备的价值量计算
 -- Fanghao Wu 2005.1.15
 

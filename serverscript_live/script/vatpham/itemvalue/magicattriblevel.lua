@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 5 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local calcMagicVal_Single, calcMagicVal_Combine, getMagAttrLvlEquipVal, getMagAttrLvlSeriesVal, getMagAttrLvlPosVal
 -- 功能：紫色装备系统 - 魔法属性的价值量计算
 -- Fanghao Wu 2005.1.15
 

@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 7 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local festival_affiche, festival_nianshou, festival_getman, festival_make_nianshou, festival_change_to_gift, festival_givedaoju, festival_give_Item
 Include("\\script\\missions\\tong\\tong_springfestival\\head.lua");
 
 function OnTimer()

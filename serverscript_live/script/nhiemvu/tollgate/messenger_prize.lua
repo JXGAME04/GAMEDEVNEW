@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local messenger_group
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- FileName		:	messenger_prize.lua                            ----O--------O----
 -- Author		:	xiaoyang										       ^

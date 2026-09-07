@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 -- ================================================================================================
 -- [HE THONG] script/cauhinh/ch_lib.lua
 -- Muc dich  : HAM DOC/GHI CAU HINH (CH_*), noi voi web CFGW.

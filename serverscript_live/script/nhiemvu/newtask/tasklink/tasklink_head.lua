@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 9 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local DT_CFG, tl_setplayertasktype, tl_savetasktablecol, tl_gettalkvalue, tl_gettasktype, tl_gettasklink, tl_selecttask, tl_gettasklinknum, tl_getlinksforlevel
 -- 野叟任务链脚本头文件
 -- Edited by peres
 -- 2004/12/25 圣诞节早上

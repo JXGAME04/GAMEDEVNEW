@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local BW_SetRev, bw_state_joined_in
 Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [HD CONFIG 24/08] nhip tran Ty Vo chinh duoc (RESTART)
 IncludeLib("RELAYLADDER")
 Include("\\script\\task\\newtask\\branch\\branch_bwsj.lua")

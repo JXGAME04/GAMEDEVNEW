@@ -1,3 +1,4 @@
+-- @IncludeOnce  [LUA54 06/09 toi] tep toan ham: Lua54Dll chi chay than mot lan moi state (chon_includeonce.py)
 --description: 唐门江津村唐元舅舅 非任务对话
 --author: yuanlan	
 --date: 2003/3/12

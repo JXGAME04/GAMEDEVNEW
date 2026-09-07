@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local havetask, givesword
 --Boss杀手任务接引npc脚本
 --By LiuKuo 2005.3.25
 Include ("\\script\\class\\ktabfile.lua")

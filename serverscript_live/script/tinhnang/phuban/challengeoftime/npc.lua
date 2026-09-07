@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 7 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local get_npc_id, get_npc_series, npc_proceed, get_npc_count, get_npc_pos, get_npc_isboss, add_npc
 -- description	: ´´½¨NPC
 -- author		: wangbin
 -- datetime		: 2005-06-06

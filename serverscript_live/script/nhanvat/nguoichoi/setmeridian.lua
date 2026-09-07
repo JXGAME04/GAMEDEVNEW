@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 17 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local KM_Pow256, KM_GetByte, KM_SetByte, KM_TenMach, KM_BaoVeCap, KM_MachMoi, KM_TenDiem, KM_DemItem, KM_LayThongSo, KM_DanCuaLan, KM_DuDiem, KM_TruDiem, KM_DuTaiNguyen, KM_TruTaiNguyen, KM_CongBaoDay, KM_BaoKetQua, KM_MuaKhiDoanh
 -- ============================================================================
 -- Xung huyet kinh mach -- theo DUNG common.lua + client.lua cua ban chuan VLTK.
 -- Moi CON SO tu meridian_data.lua (sinh tu bang chuan); moi CAU CHU tu

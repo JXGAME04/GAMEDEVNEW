@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local LXW_LuotNgay
 -- longxuewan.lua - Long Huyet Hoan (vat pham 6/1/2126).
 -- [PORT LINUX 30/08] PORT tu D:\ServerLinux\server1\script\item\longxuewan.lua
 -- [LXW-V2 30/08] sua 6 diem bo phan bien bat duoc - xem cuoi tep.

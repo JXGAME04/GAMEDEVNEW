@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local onetong_createlist, onetong_addacclist, onetong_applyaddmem
 --武林第一帮使者
 -- 九月天下第一帮 第一名帮会帮主可以登记自己的队友
 

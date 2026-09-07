@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local PetSys_ResyncClient
 Include("\\script\\petsys\\head.lua")
 -- [JX1 28/08] wrapper global de C goi - dat TRUOC cac Include phu de
 -- mot Include loi giua chung khong giet wrapper

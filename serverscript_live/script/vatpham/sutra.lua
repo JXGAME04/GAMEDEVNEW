@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local sutra_addexp
 --Author: Fong Ki“u Item Bat nhuoc tam kinh
 
 NUM20E = 2000000000

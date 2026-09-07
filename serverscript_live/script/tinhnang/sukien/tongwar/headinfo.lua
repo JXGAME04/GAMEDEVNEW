@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 1 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local tongwar_citynamecheck
 Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [HD CONFIG 24/08] bang thuong Bang Chien chinh duoc
 IL("FILESYS");
 IL("ITEM");

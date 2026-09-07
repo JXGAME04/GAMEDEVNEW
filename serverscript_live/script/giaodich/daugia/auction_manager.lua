@@ -1,3 +1,6 @@
+-- [LOCAL54 06/09 toi] 34 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local AUC_Log, AUC_SendTo, AUC_GetMoney, AUC_PayMoney, AUC_MoneyAward, AUC_SoTien, AUC_CurName, AUC_MailItem, AUC_MailMoney, AUC_ActName, AUC_Activities, AUC_SplitDesc, AUC_SendActivityList, AUC_SendActivityContent, AUC_Broadcast, AUC_NotifyEndItem, AUC_NotifyPrice, AUC_NotifyEndActivity, AUC_ChatCat, AUC_GioDongHo, AUC_ConLai, AUC_GiaTien, AUC_ChatHuongDan, AUC_TimThanhVienOnline, AUC_ChatGui
+local AUC_ChatLoai, AUC_ChatLenSan, AUC_ChatTraGia, AUC_ChatBan, AUC_ChatE, AUC_ChatRut, AUC_ChatHaGia, AucWeb_ChatDot, AUC_MyTong
 -- auction_manager.lua - [DAUGIA 04/09] bo may DAU GIA phia may chu. Kho: bang MySQL auction_item (KAuctionServer.cpp,
 -- 14 ham AUC_*). Giao/tra VAT PHAM va TIEN deu qua THU (mailmanager.lua) nen nguoi offline khong mat gi; vat pham giu
 -- NGUYEN thuoc tinh (AUC_ItemToRec / AUC_GiveRec). Client: \script\ui\uiauction_house.lua. Giao thuc: 20 ten AUCTION_*.

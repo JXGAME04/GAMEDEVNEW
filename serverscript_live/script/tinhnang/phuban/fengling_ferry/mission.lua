@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 2 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local JiluAttendCount, Landing
 Include("\\script\\chienlenh\\cl_def.lua")	-- [CL 04/09] so hieu nhiem vu Chien Lenh
 Include("\\script\\tinhnang\\3hoatdong\\beidou\\bd_activity.lua")
 Include("\\script\\missions\\fengling_ferry\\fld_head.lua")

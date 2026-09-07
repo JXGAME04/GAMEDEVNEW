@@ -1,3 +1,5 @@
+-- [LOCAL54 06/09 toi] 3 ham chi dung trong tep nay -> local (PA-2 tu dong, local_hoa2.py); bo dong nay va dong local duoi = ve toan cuc
+local YDBZ_GetRV, YDBZ_SetRV, YDBZ_MoMissionNeo
 -- ==========================================================================
 -- VIEM DE - LOP DUNG CHUNG TRANG THAI (ban JX1)
 -- SINH TU DONG boi ReverseTools\viemde\v10_gen_share.py - DUNG SUA TAY
