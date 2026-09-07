@@ -1951,7 +1951,7 @@ static int l4_kiem(lua_State* L, const char* ten, const char* code, const char* 
 	int ok;
 	lua_settop(L, 0);
 	if (lua4_dostring(L, code) != 0) { lua4_outerrmsg("  selftest LOI chay: "); lua4_outerrmsg(ten); lua4_outerrmsg("\n"); return 1; }
-	lua_getglobal(L, "KQ");
+	lua4_getglobal(L, "KQ");					/* [LUA54 06/09 toi] theo E cua script (mot state) */
 	r = lua4_tostring(L, -1);
 	ok = (r != NULL && strcmp(r, mong) == 0);
 	if (!ok)
@@ -1991,7 +1991,7 @@ LUA_API int lua4_selftest(lua_State* L)
 		lua_settop(L, 0);
 		lua4_dostring(L, "DA_BAO = 0 _ERRORMESSAGE = function(m) DA_BAO = 1 end");
 		if (lua4_dostring(L, "error('loi thu')") != L4_ERRRUN) { lua4_outerrmsg("  selftest SAI: ma loi ERRRUN\n"); loi++; }
-		lua_getglobal(L, "DA_BAO");
+		lua4_getglobal(L, "DA_BAO");
 		if (lua4_tonumber(L, -1) != 1.0) { lua4_outerrmsg("  selftest SAI: _ERRORMESSAGE khong duoc goi\n"); loi++; }
 		if (lua_gettop(L) != 1) { lua4_outerrmsg("  selftest SAI: stack sau loi\n"); loi++; }
 		lua_settop(L, 0);
@@ -2001,7 +2001,7 @@ LUA_API int lua4_selftest(lua_State* L)
 	{
 		lua_settop(L, 0);
 		lua4_dostring(L, "KQB = (1 == 1)");
-		lua_getglobal(L, "KQB");
+		lua4_getglobal(L, "KQB");
 		if (!lua4_isnumber(L, -1) || lua4_tonumber(L, -1) != 1.0) { lua4_outerrmsg("  selftest SAI: boolean -> 1\n"); loi++; }
 		if (lua4_type(L, -1) != L4_TNUMBER) { lua4_outerrmsg("  selftest SAI: type boolean\n"); loi++; }
 		lua_settop(L, 0);
