@@ -1006,6 +1006,7 @@ void	KNpc::ReSetRes(int nMark)
 		m_WalkSpeed = NpcSet.GetPlayerWalkSpeed();
 		m_RunSpeed = NpcSet.GetPlayerRunSpeed();
 		m_AttackFrame = NpcSet.GetPlayerAttackFrame();
+		m_CastFrame = NpcSet.GetPlayerCastFrame();	// [TOCDO 07/09] nhu Linux: nguoi choi nap CastFrame tu ini (truoc day ket 20 cua ham dung)
 		m_HurtFrame	= NpcSet.GetPlayerHurtFrame();
 	}
 	else
@@ -3117,7 +3118,7 @@ int KNpc::DoOrdinSkill(KSkill * pSkill, int nX, int nY)
 			int attackSpeedDivisor = m_CurrentAttackSpeed + MAX_PERCENT;
 			if (attackSpeedDivisor <= 0) attackSpeedDivisor = 1;
 			int nTotalFrame = m_AttackFrame * MAX_PERCENT / attackSpeedDivisor;
-			m_Frames.nTotalFrame = nTotalFrame - nTotalFrame % 2;
+			m_Frames.nTotalFrame = nTotalFrame;	// [TOCDO 07/09] bo lam chan khung, nhu Linux
 			if (m_Frames.nTotalFrame <= 0)
 				m_Frames.nTotalFrame = 1;
 		}
@@ -3139,7 +3140,7 @@ int KNpc::DoOrdinSkill(KSkill * pSkill, int nX, int nY)
 			int castSpeedDivisor = m_CurrentCastSpeed + MAX_PERCENT;
 			if (castSpeedDivisor <= 0) castSpeedDivisor = 1;
 			int nTotalFrame = m_CastFrame * MAX_PERCENT / castSpeedDivisor;
-			m_Frames.nTotalFrame = nTotalFrame - nTotalFrame % 2;
+			m_Frames.nTotalFrame = nTotalFrame;	// [TOCDO 07/09] bo lam chan khung, nhu Linux
 			if (m_Frames.nTotalFrame <= 0)
 				m_Frames.nTotalFrame = 1;
 		}
@@ -3168,7 +3169,13 @@ void KNpc::DoAttack()
 #endif
 
 	m_ProcessAI = 0;
-	m_Frames.nTotalFrame = m_AttackFrame * 100 / (100 + m_CurrentAttackSpeed);
+	{
+		// [TOCDO 07/09] nhu Linux: chan mau so <= 0 va khung <= 0 (DoAttack/DoBlurAttack/DoJumpAttack)
+		int nTocDoChia = 100 + m_CurrentAttackSpeed;
+		if (nTocDoChia <= 0) nTocDoChia = 1;
+		m_Frames.nTotalFrame = m_AttackFrame * 100 / nTocDoChia;
+		if (m_Frames.nTotalFrame <= 0) m_Frames.nTotalFrame = 1;
+	}
 	m_Frames.nCurrentFrame = 0;
 	m_Doing = do_attack;
 }
@@ -3265,7 +3272,13 @@ BOOL KNpc::DoBlurAttack()// DoSpecail1
 				m_ClientDoing = cdo_attack1;
 		}
 #endif
-	m_Frames.nTotalFrame = m_AttackFrame * 100 / (100 + m_CurrentAttackSpeed);
+	{
+		// [TOCDO 07/09] nhu Linux: chan mau so <= 0 va khung <= 0 (DoAttack/DoBlurAttack/DoJumpAttack)
+		int nTocDoChia = 100 + m_CurrentAttackSpeed;
+		if (nTocDoChia <= 0) nTocDoChia = 1;
+		m_Frames.nTotalFrame = m_AttackFrame * 100 / nTocDoChia;
+		if (m_Frames.nTotalFrame <= 0) m_Frames.nTotalFrame = 1;
+	}
 	m_Frames.nCurrentFrame = 0;
 	m_Doing = do_special1;
 	return TRUE;
@@ -6324,6 +6337,7 @@ void KNpc::Load(int nNpcSettingIdx, int nLevel, int nSeries)
 		m_WalkSpeed = NpcSet.GetPlayerWalkSpeed();
 		m_RunSpeed = NpcSet.GetPlayerRunSpeed();
 		m_AttackFrame = NpcSet.GetPlayerAttackFrame();
+		m_CastFrame = NpcSet.GetPlayerCastFrame();	// [TOCDO 07/09] nhu Linux: nguoi choi nap CastFrame tu ini (truoc day ket 20 cua ham dung)
 		m_HurtFrame	= NpcSet.GetPlayerHurtFrame();
 	}
 	else
@@ -9121,7 +9135,13 @@ BOOL KNpc::DoJumpAttack()
 		}
 		m_Dir = g_GetDirIndex(x, y, tx, ty);
 #endif
-		m_Frames.nTotalFrame = m_AttackFrame * 100 / (100 + m_CurrentAttackSpeed);
+		{
+			// [TOCDO 07/09] nhu Linux: chan mau so <= 0 va khung <= 0 (DoAttack/DoBlurAttack/DoJumpAttack)
+			int nTocDoChia = 100 + m_CurrentAttackSpeed;
+			if (nTocDoChia <= 0) nTocDoChia = 1;
+			m_Frames.nTotalFrame = m_AttackFrame * 100 / nTocDoChia;
+			if (m_Frames.nTotalFrame <= 0) m_Frames.nTotalFrame = 1;
+		}
 		m_Frames.nCurrentFrame = 0;
 		m_Doing = do_jumpattack;
 		break;

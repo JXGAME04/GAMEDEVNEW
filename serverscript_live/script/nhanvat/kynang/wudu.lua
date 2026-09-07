@@ -158,6 +158,8 @@ SKILLS={
 		addpoisondamage_v={{{1,5},{30,45}},{{1,-1},{20,-1}},{{1,10},{2,10}}},
 		poisonenhance_p={{{1,12},{30,50}},{{1,-1},{2,-1}}},
 		deadlystrikeenhance_p={{{1,4},{30,45}},{{1,-1},{2,-1}}},
+		castspeed_v={{{1,32},{16,32},{17,33.41},{40,80}},{{1,-1},{30,-1}}},--[TOCDO 07/09] nhu Linux: max(castspeed_v 1->80, Duong 32) gap vao Am
+		attackspeed_v={{{1,32},{40,32}},{{1,-1},{30,-1}}},--[TOCDO 07/09] nhu Linux: attackspeed Duong 32 gap vao Am
 	},
 	baidu_chuanxin={ --Bach doc xuyen tam
 		physicsenhance_p={{{1,10},{20,95}}},

@@ -50,6 +50,7 @@ typedef struct
 	int		nWalkSpeed;
 	int		nRunSpeed;
 	int		nAttackFrame;
+	int		nCastFrame;		// [TOCDO 07/09] CastFrame tu BaseValue.ini nhu Linux
 	int		nHurtFrame;
 } PlayerBaseValue;
 
@@ -117,6 +118,7 @@ public:
 	int				GetPlayerWalkSpeed() { return m_cPlayerBaseValue.nWalkSpeed; };
 	int				GetPlayerRunSpeed() { return m_cPlayerBaseValue.nRunSpeed; };
 	int				GetPlayerAttackFrame() { return m_cPlayerBaseValue.nAttackFrame; };
+	int				GetPlayerCastFrame() { return m_cPlayerBaseValue.nCastFrame; };	// [TOCDO 07/09]
 	int				GetPlayerHurtFrame() { return m_cPlayerBaseValue.nHurtFrame; };
 	int				GetDistanceMps(int nRx1, int nRy1, int nRx2, int nRy2);
 #ifndef _SERVER
