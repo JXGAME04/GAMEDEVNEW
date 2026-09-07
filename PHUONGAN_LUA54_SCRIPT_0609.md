@@ -87,6 +87,9 @@ Sau swap kiểm console: `[script] LoadAllScript ... `, `[script] IncludeOnce bo
 
 **Sự cố cùng buổi (đã sửa):** (1) mất trap các map do 1.369 tệp Hán bị xếp nhầm "chết" (SAPXEP mục 9); (2) GameServer sập lúc boot 19:34 vì tên `bando\` dài ≥ 100 (SAPXEP mục 10) — máy chủ tắt 19:34–20:45.
 
+
+**Cập nhật 20:57:** chủ đã swap cả 4 `.moi` (server 20:52: CoreServer 7e41f1b7, engine 6457bc53, Lua54Dll 889d92e7; client Lua54Dll eb4aa618), GameServer boot 20:57 với 1.000 bot, phiên BOTNOI xác nhận đủ nhãn của họ; phút đầu không có ScriptError mới, LUA_CALL 0,20 ms/tick, TICK 7,28 ms. `jx_lua_prof.log` xuất hiện sau 10 phút.
+
 ## 6. PHẢN BIỆN (tự soát, 06/09 tối)
 
 1. **Hai sự cố sản xuất hôm nay là do tôi**, cùng một gốc: tin phân tích tĩnh hơn giới hạn thật của engine. (a) Xoá 1.369 tệp dù memory 30/08 đã cảnh báo pak là đường tham chiếu; (b) đặt tên dài không kiểm `m_szScriptName[100]`. Bộ mô phỏng boot không mô phỏng bộ đệm C++ nên không bắt được (b). Phòng ngừa đã làm: luật < 96 ký tự, `kiem_trap_map.py` quét pak, memory LUẬT. Việc còn thiếu: **đo động** (ghi script nào được `g_GetScript` chạm trong 1–2 tuần) trước khi dọn bất cứ gì.
