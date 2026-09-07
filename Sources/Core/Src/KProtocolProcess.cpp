@@ -2195,7 +2195,23 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 	else
 		Npc[nIdx].m_CurrentLife	= 0;*/
 
-	if (Npc[nIdx].m_Doing != do_death || Npc[nIdx].m_Doing != do_revive) // need check later -- spe 03/05/27
+	// [NAMBEP 07/09 j] Dieu kien duoi LUON DUNG (mot gia tri khong the vua bang do_death vua bang do_revive)
+	// nen goi dong bo day du LUON ap Doing cua may chu, ke ca cho CHINH NHAN VAT. Neu mot goi mang do_death
+	// (vd goi dung khi con dang chet, toi tay sau khi da hoi sinh) thi chinh minh nam xuong lai trong khi may
+	// chu van coi la dang dung -> 'chet ve thanh roi van nam bep duoi dat', chi het khi nguoi choi tu di.
+	// Trang thai chet/hoi sinh cua chinh minh CHI duoc den tu goi rieng s2c_npcdeath (NetCommandDeath) va
+	// s2c_playerrevive (PlayerRevive), nen o day bo qua - khong dung toi NPC khac.
+	BOOL bBoLenhChet = FALSE;
+#ifndef _SERVER
+	if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex &&
+		(NpcSync->m_Doing == do_death || NpcSync->m_Doing == do_revive) &&
+		Npc[nIdx].m_Doing != do_death && Npc[nIdx].m_Doing != do_revive)
+	{
+		bBoLenhChet = TRUE;
+		AUTOLOG("[S7-NAMBEP-CHAN] goi dong bo day du dinh dat chinh minh ve tu the chet: sync_doing=%d doing=%d cdoing=%d life=%d sync_life=%d t=%u", (int)NpcSync->m_Doing, (int)Npc[nIdx].m_Doing, (int)Npc[nIdx].m_ClientDoing, Npc[nIdx].m_CurrentLife, NpcSync->m_CurrentLife, SubWorld[0].m_dwCurrentTime);
+	}
+#endif
+	if (!bBoLenhChet && (Npc[nIdx].m_Doing != do_death || Npc[nIdx].m_Doing != do_revive)) // need check later -- spe 03/05/27
 		Npc[nIdx].SendCommand((NPCCMD)NpcSync->m_Doing, NpcSync->MapX, NpcSync->MapY);
 
 	Npc[nIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;

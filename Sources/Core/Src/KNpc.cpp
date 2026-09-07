@@ -929,6 +929,32 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 	// Doc: resdoing=8 => loi o lop ve; cdoing=8 => loi o KNpc; ca ba deu 1 ma van nam => Represent.
 	if (m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex)
 	{
+		// [NAMBEP 07/09 j] Bao dong tu the CHET khi CON MAU: chu bao 'chet ve thanh roi van nam bep duoi dat'
+		// ma 15/15 lan chet trong nhat ky 07/09 deu dung day trong 0,2 s => phai bat duoc dung luc no xay ra.
+		// Dieu kien: chinh minh, m_CurrentLife > 0 (da hoi sinh: may chu tra mau ve) nhung logic hoac LOP VE
+		// van o tu the chet, lien tuc >= 500 ms. Ghi moi 2 s trong luc ket va mot dong khi het ket.
+		{
+			static DWORD s_uNamBepBatDau = 0, s_uNamBepGhi = 0;
+			const DWORD uNamBepNay = timeGetTime();
+			const BOOL bTuTheChet = (m_Doing == do_death || m_ClientDoing == cdo_death || m_DataRes.GetResDoing() == (int)cdo_death);
+			if (m_CurrentLife > 0 && bTuTheChet)
+			{
+				if (s_uNamBepBatDau == 0)
+					s_uNamBepBatDau = uNamBepNay;
+				else if ((DWORD)(uNamBepNay - s_uNamBepBatDau) >= 500 && (DWORD)(uNamBepNay - s_uNamBepGhi) >= 2000)
+				{
+					s_uNamBepGhi = uNamBepNay;
+					AUTOLOG("[S7-NAMBEP] CON MAU MA VAN O TU THE CHET %u ms: doing=%d cdoing=%d resdoing=%d resaction=%d frame=%d/%d life=%d/%d reg=%d cell=(%d,%d) t=%u", (unsigned int)(uNamBepNay - s_uNamBepBatDau), (int)m_Doing, (int)m_ClientDoing, m_DataRes.GetResDoing(), m_DataRes.GetAction(), m_Frames.nCurrentFrame, m_Frames.nTotalFrame, m_CurrentLife, m_CurrentLifeMax, m_RegionIndex, m_MapX, m_MapY, SubWorld[0].m_dwCurrentTime);
+				}
+			}
+			else if (s_uNamBepBatDau)
+			{
+				if ((DWORD)(uNamBepNay - s_uNamBepBatDau) >= 500)
+					AUTOLOG("[S7-NAMBEP-HET] da dung day sau %u ms (doing=%d cdoing=%d resdoing=%d) t=%u", (unsigned int)(uNamBepNay - s_uNamBepBatDau), (int)m_Doing, (int)m_ClientDoing, m_DataRes.GetResDoing(), SubWorld[0].m_dwCurrentTime);
+				s_uNamBepBatDau = 0;
+				s_uNamBepGhi = 0;
+			}
+		}
 		static DWORD s_uS9VeT = 0;
 		static int s_nS9VeCu = -999;
 		DWORD uS9Now = timeGetTime();
