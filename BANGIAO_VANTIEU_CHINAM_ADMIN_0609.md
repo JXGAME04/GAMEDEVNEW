@@ -30,6 +30,14 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 - **Như bản Linux**: giữ nhánh cá nhân theo mã gốc Linux không trạng thái (`extend.lua`), phần thưởng `award.lua` số Linux, luật giờ/lượt/Tiêu Kỳ/Tán Lạc Tiêu Vật nguyên gốc. Giá cửa hàng Hộ Tiêu Lệnh (5/5/10) và tiền thuê Xa Phu là chỗ Linux không còn số nên vẫn là số tạm qua `HD_CFG`.
 - **Cấp 90 cho MỌI ngưỡng cấp của vận tiêu** (Linux là 120 nhận cá nhân / 150 nhận xe bang, nhặt Tiêu Kỳ, nhặt Tán Lạc, dùng đạo cụ): đã sửa 12 chỗ bằng `ReverseTools\vantieu\va_vtcn_cap90_0609.py` (byte-safe, có `.truoc_cap90_0609`): `npc_canhan.lua` (nhận), `npc_consigner.lua` (nhận xe bang), `npc_lmbiaoqi.lua` (Tiêu Kỳ), `npc_lmbiaowu.lua` (Tán Lạc), `item_addproperty.lua` (đạo cụ), `dialog.lua`/`lmbj_config.lua`/`lang.lua` (lớp cũ, cho đồng bộ), bộ test admin và bài hướng dẫn trên client (`Game.exe.moi` mới, mục 2.1).
 
+## 1d. RÀ ĐỒNG BỘ BÀI HƯỚNG DẪN (06/09 tối, sau câu hỏi của chủ)
+
+Đối chiếu TỪNG câu của `UiTaskGuideVanTieu.h` với script/engine đang chạy (`config\129\extend.lua`, `npc_consigner.lua`, `npc_receiver.lua`, `npc_lmbiaoche.lua`, `npc_lmbiaowu/qi/box.lua`, `item_addproperty.lua`, `award.lua`, `settings\item\magicscript.txt`, `DACTA_ENGINE_XETIEU_0609.md`):
+
+- **Khớp**: cấp 90 (mọi chỗ), 10:00–23:00, phải vào môn phái, 3 nhiệm vụ/ngày, 5 lần làm mới + Hoán Tiêu Chỉ (4772), ủy nhiệm trạng cao cấp 7/8/9 sao 60/30/10%, đưa thẳng tới Tiêu Sư điểm đầu (`transToBeginPos`), 30 phút, Tiêu Kỳ 10 phút chỉ chủ xe, Tán Lạc 3 phút chủ xe + tổ đội rồi ai cũng nhặt 5 lần/ngày, kết thúc mất xe 100 vạn, thưởng `award.lua` + 2 Hộ Tiêu Lệnh, 3 đạo cụ đúng mô tả trong `magicscript.txt` (100% tốc độ 15 giây, hồi 10% máu, kéo xe; chờ 3 phút, trong 750 = 23 ô), truyền tống 1 vạn lượng / 30 giây, từ bỏ chỉ khi chưa xuất phát và dưới 7 sao, cá nhân ↔ bang loại trừ nhau; bang: thứ 7/CN 12:00–23:00, (số thành + 1) chia 2, bang chủ/trưởng lão, 7 ngày, 30 phút giữa 2 lần, loa toàn máy chủ, 3–4 hang/thành, 25 ô mỗi 60 giây 400 vạn + 1 điểm, Rương bang 3 phút, 8 Rương khi giao, thưởng bám xe <5 / 5–11 / ≥12 điểm, truyền tống CD 20→60 giây, từ bỏ chỉ trong giờ.
+- **SAI, đã sửa (bộ sinh + `Game.exe.moi` mới)**: (1) câu "xe không theo phù về thành, thần hành phù" — engine `KBiaoChe.cpp` nhánh B6 kéo xe sang **mọi** lần chủ đổi bản đồ (ChangeWorld, thử lại mỗi giây), chỉ dịch chuyển trong cùng bản đồ mới làm xe đứng đợi (B7, 16 ô, 5 phút); chủ thoát game thì xe đợi 5 phút, vào lại kịp thì nối tiếp (B4, `g_nBiaoCheGiuKhiThoat`). (2) câu "người giữ xe không rời bang/bị khai trừ, bang đã mở áp tiêu không đổi bang chủ" — **JX1 chưa thi hành**: Linux làm qua `script\global\tongleavepower.lua` + `tong_change_master.lua` (engine Linux ExecuteCode trước khi rời/khai trừ/đổi chủ) gọi `pActivity:CheckCanKick/CheckCanLeaveTong/CheckCanChangeMaster`; JX1 không có 2 tệp đó và `KPlayerTong.cpp` (`ApplyLeave/ApplyKick/ApplyChangeMaster`, `CheckLeavePower/CheckKickPower/CheckChangeMasterPower`) không gọi script. Ba hàm `CheckCan*` vẫn nằm sẵn trong `extend.lua` chờ nối.
+- Hook đăng nhập/đăng xuất của Linux (`PlayerExchageServerLoginInit/…LoginOut_BeforeSaveData`, `OnExchangeServerStart`) KHÔNG được JX1 gọi (không có trong Core, activitysys JX1 không phát `PlayerLogin`), nên xe không được lưu/khôi phục qua script — engine tự giữ 5 phút như trên; bài hướng dẫn mô tả đúng hành vi engine.
+
 ## 2. CÁCH CHẠY (chủ làm)
 
 | Bước | Lệnh | Ghi chú |
@@ -43,7 +51,7 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 | Tệp | Đặt ở | SHA-256 (8 đầu) | Có đủ (kiểm bằng `ReverseTools\vantieu\deploy_vtcn2_0609.py`) |
 |---|---|---|---|
 | `CoreServer.dll.moi` | `bin\server` | **61bc3e0f** (18.455.552 B, 18:12) | CreateBiaoChe/BC_SetEnable, AUC_MsgTong, CL_Cong, UpdateBattleInfo, st3_goboss, Lua54Dll, [RELAYHT], LUA_CALL, `_duongdan_cu` (R2), **vt_quit_canhan/vt_quit_bang**, KHÔNG còn vt_goto_canhan. Không bắt buộc swap ngay: bản 6ba06754 đang chạy chỉ thừa lệnh chết. |
-| `Game.exe.moi` | `bin\client` | **04ae18d2** (bản cấp 90, thay acc36aba) | NewTask/F11, tg_quit/st3_quit, vt_quit_*, bài hướng dẫn vận tiêu v2 (gợi ý Xa Phu / phù về thành / map sự kiện); `re_pe_crt` UCRT-RELEASE đúng |
+| `Game.exe.moi` | `bin\client` | **f0b16230** (bản cấp 90 + bài hướng dẫn đã rà, thay 04ae18d2) | NewTask/F11, tg_quit/st3_quit, vt_quit_*, bài hướng dẫn vận tiêu v2 (gợi ý Xa Phu / phù về thành / map sự kiện); `re_pe_crt` UCRT-RELEASE đúng |
 | `CoreClient.dll.moi` | `bin\client` | **96dc5115** (2.577.408 B, 18:12) | TG_VanTieu v2 (6 pha, không nhảy map), TG_ChanMapSuKien cho Dã Tẩu/Sát Thủ/Vận tiêu, tên bến Xa Phu |
 
 Cặp thư viện: `Lib\lua54\x64\Lua54Dll.dll` 5db18c30 = `bin\server\Lua54Dll.dll` đang chạy; `Lib\lua54\Win32\Lua54Dll.dll` 462453cf = `bin\client\Lua54Dll.dll` đang chạy (không cần đổi thư viện).
@@ -157,6 +165,7 @@ Client đọc task 4179 (tuyến×10 + đảo chiều), 4180 (mốc xuất phát
 2. **Giá cửa hàng Tiêu cục** (Hộ Tiêu Lệnh → đạo cụ) tự đặt 5/5/10, đọc qua `HD_CFG` khoá `VT_GIA_KMGT / VT_GIA_KBKT / VT_GIA_TXDV`; **tiền xe dẫn đường** `VT_TIEN_XE_CHINAM` 1000 lượng. Chưa khai trong từ điển web `cfgw_vietngu`.
 3. `Hộ Tiêu Lễ Hộp` (4809) và 3 món mới (Thề Non Hẹn Biển, Địa Linh Đơn, Lệnh bài Cổ Tháp) trong `magicscript.txt` có `Script=0` → nhận được nhưng bấm không chạy.
 4. ~~Ngưỡng cấp 120/150~~ **ĐÃ CHỐT: mọi ngưỡng = 90** (mục 1c).
+5. **3 luật bang của Linux chưa nối trên JX1** (mục 1d): người giữ xe vẫn rời bang / bị khai trừ được, bang đã mở áp tiêu vẫn đổi bang chủ được. Muốn giống Linux phải thêm gọi script trong `KPlayerTong.cpp` (máy chủ, không đổi giao thức) — chủ quyết có làm không; bài hướng dẫn hiện KHÔNG hứa luật này.
 5. **Biến bang 1149** vẫn chưa được công thành chiến ghi (như BANGIAO cũ) — test bằng menu "Đặt 1149".
 6. Relay `bin\multiserver\script` không có `event\longmenbiaoju` — không cần vì JX1 chạy `RemoteExecute` tại chỗ; nếu sau này chia nhiều GameServer thì phải làm phần relay.
 7. `lmbj_config.lua` (đã sửa mã) + `taskclass.lua` + `dialog.lua` là mã chết khi dùng `npc_canhan.lua`; gỡ hẳn hay không tuỳ chủ.
