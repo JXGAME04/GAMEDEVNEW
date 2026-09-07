@@ -221,6 +221,9 @@ Lúc 18:50 và 19:01 chủ đã chạy `ChoiGame.bat`: bản đang chạy = `Cor
 | `WAuto.exe.moi` | `c692b1de` | `9cf5e921` | 466.944 |
 | `CoreClient.dll.moi` | `e233e443` | `ba2f2f11` | 2.586.112 |
 
-Cách đổi: thoát Game.exe **và** WAuto.exe → `ChoiGame.bat` (đổi cả hai). Tệp `.dat` 7.640 byte cũ nạp được, ô mới
-mặc định bật. Chưa test thật; kiểm bằng `findstr /C:"[PK-KHIEN]" jx_auto.log` khi PK gần người vừa dịch chuyển.
+Cách đổi: thoát Game.exe **và** WAuto.exe → `ChoiGame.bat` (đổi cả hai). **PHẢI đổi cả hai cùng lúc** vì gói IPC
+`IPCGameLoop` dài thêm 4 byte. Nếu lỡ chỉ đổi một: `S3Client.cpp:1232` (PRT_GAMELOOP) đã có lưới — gói NGẮN hơn
+(WAuto cũ → CoreClient mới) được chép vào bản sao xoá trắng nên ô mới đọc ra 0 = tính năng tắt, gói DÀI hơn (WAuto mới
+→ CoreClient cũ) bị bỏ 4 byte cuối; không sập, chỉ là tính năng khiên im lặng không chạy cho tới khi đổi đủ cả hai.
+Tệp `.dat` 7.640 byte cũ nạp được, ô mới mặc định bật. Chưa test thật; kiểm bằng `findstr /C:"[PK-KHIEN]" jx_auto.log` khi PK gần người vừa dịch chuyển.
 `origin/main` sau `aed31625` có thêm bot nội đợt 3 (server) — không ảnh hưởng client, chưa build lại.
