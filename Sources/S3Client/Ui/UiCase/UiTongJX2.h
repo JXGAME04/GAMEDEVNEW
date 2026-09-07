@@ -256,7 +256,7 @@ private:
 	int		m_nSelWs;			// khu tac phuong dang chon (1..7)
 	// du lieu trang hien tai (ban chep goi sync gan nhat)
 	unsigned char	m_byInfo[512];
-	unsigned char	m_byMember[2048];	// [BH100] 25 thanh vien x ~100 byte
+	unsigned char	m_byMember[4096];	// [BH100] 25 thanh vien x 102 byte = 2560 (2048 cu VUT goi -> danh sach trong)
 	unsigned char	m_byWs[256];
 	unsigned char	m_byRecruit[512];
 	int		m_bHasInfo, m_bHasMember, m_bHasWs;

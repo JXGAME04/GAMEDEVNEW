@@ -4308,7 +4308,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 		TONG_JX2VIEW_COMMAND* pView = (TONG_JX2VIEW_COMMAND*)pData;
 		if (dataLength < sizeof(TONG_JX2VIEW_COMMAND))
 			break;
-		BYTE byOut[2048];
+		BYTE byOut[4096];	// [BH100] MEMBER_SYNC 25 dong = 2560 B
 		int nLen = 0;
 		if (m_pCoreServerShell)
 		{

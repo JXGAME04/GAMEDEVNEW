@@ -28,6 +28,7 @@
 #include <KTongProtocol.h>
 #include "KNewProtocolProcess.h"
 #include "KTongJX2.h"
+#include "KAuctionServer.h"	// [BH100] AUC_MsgTongC: dong 'Tin bang' vao dung the BANG cua khung chat
 #include <vector>
 
 KTongJX2Mgr g_TongJX2;
@@ -384,7 +385,7 @@ void KTongJX2Mgr::PushViewTo(DWORD dwPlayerIdx, DWORD dwTongNameID, int nPage)
 		return;	// nguoi o GS khac / da roi bang
 	if (!g_pServer)
 		return;
-	BYTE byOut[2048];
+	BYTE byOut[4096];	// [BH100] MEMBER_SYNC 25 dong = 2560 B
 	int nLen = BuildClientView(nIdx, nPage, 0, byOut, sizeof(byOut));
 	if (nLen > 0)
 		g_pServer->PackDataToClient(Player[nIdx].m_nNetConnectIdx, byOut, nLen);
@@ -2886,16 +2887,9 @@ static void sJX2_Msg2Tong(KTongJX2Tong* pTong, const char* pszMsg)
 {
 	if (!pTong || !pszMsg || !pszMsg[0])
 		return;
-	int nLen = (int)strlen(pszMsg);
-	int nIdx = PlayerSet.GetFirstPlayer();
-	while (nIdx > 0)
-	{
-		if (Player[nIdx].m_nIndex > 0 &&
-			Player[nIdx].m_cTong.GetTongNameID() == pTong->dwNameID)
-			KPlayerChat::SendSystemInfo(1, nIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-				(char*)pszMsg, nLen);
-		nIdx = PlayerSet.GetNextPlayer();
-	}
+	// [BH100 07/09] chu game: 'thong bao bang phai vao KENH BANG' - dung duong AUC_MsgTongC
+	// (dau 'Tin bang' + id kenh \O<tong> hoc tu relay) nhu thong bao dau gia, khong di He Thong nua
+	AUC_MsgTongC(pTong->dwNameID, pszMsg);
 }
 
 // Ma tra ve 20 = "im lang": handler da tu SendSystemInfo cau tra loi rieng
@@ -3583,8 +3577,8 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 		}
 	case defTONG_JX2_COP_UNION_CREATE:
 		{
-			// chi bang chu; chua o lien minh; ten <= 31; MIEN PHI (ban goc)
-			if (!bMaster)
+			// bang chu hoac quyen 1101 (Quan ly lien minh - exe bat nut theo quyen nay); chua o lien minh; ten <= 31; MIEN PHI
+			if (!bMaster && !sJX2_HasRight(pMe, 1101))
 				return 3;
 			if (GetField(dwTongID, 10) != 0)
 			{
@@ -3601,7 +3595,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 	case defTONG_JX2_COP_UNION_APPLY:
 		{
 			// bang chu xin cho BANG MINH vao lien minh cua bang szText
-			if (!bMaster)
+			if (!bMaster && !sJX2_HasRight(pMe, 1101))	/* [BH100] quyen Quan ly lien minh */
 			{
 				// G_PLAYERTONG_11
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
@@ -3664,7 +3658,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 	case defTONG_JX2_COP_UNION_ACCEPT:
 		{
 			// minh chu duyet bang szText vao lien minh (relay kiem + tru tien)
-			if (!bMaster)
+			if (!bMaster && !sJX2_HasRight(pMe, 1101))	/* [BH100] quyen Quan ly lien minh */
 				return 3;
 			if (!GetField(dwTongID, 10) || !GetField(dwTongID, 50))
 				return 3;
@@ -3675,7 +3669,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 		}
 	case defTONG_JX2_COP_UNION_LEAVE:
 		{
-			if (!bMaster)
+			if (!bMaster && !sJX2_HasRight(pMe, 1101))	/* [BH100] quyen Quan ly lien minh */
 				return 3;
 			if (!GetField(dwTongID, 10))
 				return 5;
@@ -3684,7 +3678,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 		}
 	case defTONG_JX2_COP_UNION_KICK:
 		{
-			if (!bMaster)
+			if (!bMaster && !sJX2_HasRight(pMe, 1101))	/* [BH100] quyen Quan ly lien minh */
 				return 3;
 			if (!GetField(dwTongID, 10) || !GetField(dwTongID, 50))
 				return 3;

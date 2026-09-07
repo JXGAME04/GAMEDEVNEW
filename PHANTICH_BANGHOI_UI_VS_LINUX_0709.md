@@ -305,3 +305,14 @@ Nguồn: `cm_funuse.txt` (74 control exe nạp ở trang chức năng), `wp_funu
 - `BtnAcceptUnionReq` không có trong exe (relay gốc duyệt kiểu khác) — giữ của ta vì luồng xin/duyệt liên minh của ta cần nút này.
 - Không port (chết trong exe / không phải bang hội): `BtnTongChallenge/Detect` (Enable=0), `TitleWeeklyAim/TxtWeeklyOffer*`
   (không có trong ini VN), hàng Liveness/DailyCost/ServiceFee, thuế Thái thú.
+
+
+### 7.6 Sau lượt test đầu của chủ (14:25 07/09) — 4 lỗi và cách sửa (vá 5)
+| Lỗi chủ báo | Nguyên nhân (đo được) | Sửa |
+|---|---|---|
+| Thành viên bang hội không hiện | `jx_tongjx2.log`: sau `[REQ]` chỉ về `trangSV=0` (INFO), không bao giờ có `trangSV=1`. `TONG_JX2_MEMBER_SYNC` 25 dòng × 102 B = 2560 B > đệm `byOut[2048]` (KSOServer + `PushViewTo`) và `m_byMember[2048]` client → `BuildClientViewEx` trả 0, gói bị vứt | 3 đệm → 4096 (build lại CoreServer + GameServer + Game.exe) |
+| Tác phường không hiện | ini VN `[BtnFunUse] Left=208` trùng `[BtnWorkshop] 209` (blueprint gốc + patch Linux đều 303): tab Chức năng đè lên tab Tác phường, ô 303 trống | `Left=303` |
+| Huỷ liên minh không được | client đã gửi `op=32` 2 lần; GS chặn `if (!bMaster)` cho mọi op liên minh trong khi exe bật nút theo quyền 1101 (trưởng lão có quyền) | 5 op liên minh: bang chủ **hoặc** quyền 1101 |
+| Thông báo bang đi kênh Hệ thống | `sJX2_Msg2Tong` dùng `SendSystemInfo(... MESSAGE_SYSTEM_ANNOUCE_HEAD)` | đi `AUC_MsgTongC` (đầu "Tin bang" + id kênh `\O<tong>` học từ relay — đường đã có của đấu giá); Lua `Msg2Tong` không kèm id kênh cũng lấy id đã học |
+
+`ChayGameServer.bat` chỉ đổi tên `CoreServer.dll.moi` → đã thêm dòng `call :capnhat GameServer.exe` (bản cũ `.truoc_bh100`); `S3Relay.exe` vẫn phải chép tay khi relay tắt.

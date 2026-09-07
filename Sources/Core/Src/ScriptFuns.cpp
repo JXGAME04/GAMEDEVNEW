@@ -3946,6 +3946,10 @@ int LuaMsgToTong(Lua_State* L)
 	if (Player[nPlayerIndex].m_cTong.GetTongNameID() == -1)
 		return 0;
 
+	// [BH100 07/09] script goi Msg2Tong(nTongID, szMsg) khong kem id kenh -> dung id kenh bang
+	// \O<tong> da hoc tu relay (AUC_KenhBangID) de dong vao dung THE BANG cua khung chat
+	if (nChannelID <= 0)
+		nChannelID = AUC_KenhBangID(dwTongID);
 	if (szMsg)
 	{
 		int nIndex = PlayerSet.GetFirstPlayer();

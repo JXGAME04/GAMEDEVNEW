@@ -998,6 +998,35 @@ void AUC_GhiNhoKenhBang(const char* szKenh, unsigned long dwId)
 // AUC_MsgTong(nTong, szMsg) -> so nguoi nhan. Dong "Tin bang" toi MOI thanh vien online cua bang nTong
 // (= m_dwTongNameID, cung so voi GetTongName() va cot seller_tong), vao dung the "bang" neu da biet id kenh.
 // Khong can PlayerIndex -> goi duoc tu vong quet (Msg2Tong cua ban goc doi PlayerIndex hop le dang trong bang).
+// [BH100] than C++ cua AUC_MsgTong - KTongJX2.cpp (sJX2_Msg2Tong) va ScriptFuns Msg2Tong dung chung
+int AUC_KenhBangID(unsigned long dwTong)
+{
+	std::map<DWORD, DWORD>::iterator it = s_mapKenhBang.find((DWORD)dwTong);
+	return (it == s_mapKenhBang.end()) ? -1 : (int)it->second;
+}
+
+int AUC_MsgTongC(unsigned long dwTong, const char* szMsg)
+{
+	if (!szMsg || !szMsg[0] || dwTong == 0 || dwTong == (unsigned long)-1)
+		return 0;
+	int nLen = (int)strlen(szMsg);
+	if (nLen > 250)
+		nLen = 250;
+	int nKenh = AUC_KenhBangID(dwTong);
+	int nSo = 0;
+	int nIdx = PlayerSet.GetFirstPlayer();
+	while (nIdx > 0)
+	{
+		if (Player[nIdx].m_nIndex > 0 && Player[nIdx].m_cTong.GetTongNameID() == (DWORD)dwTong)
+		{
+			KPlayerChat::SendSystemInfo(1, nIdx, (char*)MESSAGE_SYSTEM_TONG_HEAD, (char*)szMsg, nLen, nKenh);
+			++nSo;
+		}
+		nIdx = PlayerSet.GetNextPlayer();
+	}
+	return nSo;
+}
+
 int LuaAUC_MsgTong(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) < 2)
