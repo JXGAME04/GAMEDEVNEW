@@ -2036,7 +2036,7 @@ LUA_API int lua4_selftest(lua_State* L)
 			lua_settop(L, 0);
 			if (lua4_dofile(L, tep) != 0 || lua4_dofile(L, tep) != 0) { lua4_outerrmsg("  selftest SAI: dofile qua cache\n"); loi++; }
 			lua_settop(L, 0);
-			lua_getglobal(L, "L4_DEM");
+			lua4_getglobal(L, "L4_DEM");
 			if (lua4_tonumber(L, -1) != 2.0) { lua4_outerrmsg("  selftest SAI: Include lan 2 phai CHAY LAI than tep\n"); loi++; }
 			lua_settop(L, 0);
 			if (l4_inc_enabled() && (s_inc_n_state_hit != h0 + 1 || s_inc_n_compile != c0 + 1))
@@ -2045,7 +2045,7 @@ LUA_API int lua4_selftest(lua_State* L)
 			if (f != NULL) { fputs("L4_DEM = (L4_DEM or 0) + 1  L4_GT = 22\n", f); fclose(f); }
 			lua4_dofile(L, tep);
 			lua_settop(L, 0);
-			lua_getglobal(L, "L4_GT");
+			lua4_getglobal(L, "L4_GT");
 			if (lua4_tonumber(L, -1) != 22.0) { lua4_outerrmsg("  selftest SAI: tep doi ma khong bien dich lai\n"); loi++; }
 			lua_settop(L, 0);
 			remove(tep);
