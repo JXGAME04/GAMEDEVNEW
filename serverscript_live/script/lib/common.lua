@@ -41,14 +41,14 @@ function join(tb, str_sep)
 	if (not str_sep) then
 		str_sep = ","
 	end
-	local str = ""
-	if (getn(tb) > 0) then
-		str = tostring(tb[1])
-		for i = 2, getn(tb) do
-			str = str .. str_sep .. tostring(tb[i])
-		end
+	-- [PA1 06/09 toi] table.concat thay ghep chuoi trong vong lap (O(n))
+	local n = getn(tb)
+	if n <= 0 then return "" end
+	local t = {}
+	for i = 1, n do
+		t[i] = tostring(tb[i])
 	end
-	return str
+	return table.concat(t, str_sep)
 end
 
 --安全的转换为数字，不能转换时返回n_default或0，不会返回nil

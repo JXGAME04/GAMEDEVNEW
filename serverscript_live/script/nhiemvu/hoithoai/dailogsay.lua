@@ -54,8 +54,8 @@ function g_DailogBack(nSelectId, nCount)
 		elseif nParamCount == 3 then
 			local pFun = tbOpt[nSelectId][2]
 			local tbParam = tbOpt[nSelectId][3]
-			
-			call(pFun, tbParam)	
+
+			pFun(table.unpack(tbParam, 1, getn(tbParam)))	-- [PA1 06/09 toi] goi thang thay call(): loi van lan ra nhu cu
 		end
 	end
 end

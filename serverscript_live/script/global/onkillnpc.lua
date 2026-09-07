@@ -29,7 +29,8 @@ function OnPlayerKillNpc(nNpcIndex, nDamageIndex)
 		return
 	end
 	PlayerIndex = nPlayerIndex
-	call(BDH_OnKillNpc, {nNpcIndex}, "x")
+	-- [PA1 06/09 toi] xpcall thay call(...,"x") (moi lan giet quai): loi van vao _ERRORMESSAGE (ScriptError.log)
+	xpcall(BDH_OnKillNpc, function(m) if type(_ERRORMESSAGE) == "function" then _ERRORMESSAGE(tostring(m)) end return m end, nNpcIndex)
 	CL_CongNhom(CL_NHOM_QUAI, 1)	-- [CL 04/09] nhiem vu diet 500/1000/3000 quai
 end
 

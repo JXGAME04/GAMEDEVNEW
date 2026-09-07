@@ -4,6 +4,7 @@
 -- BO CUC (tieng Viet khong dau):
 --   (goc)         timerserver.lua (dong ho moi phut), timerserver_ctc.lua, protocol.lua, startgame.lua (boot), gmscript.lua, gb_taskfuncs.lua
 --   lib/          thu vien dung chung (lib_task, lib_ham, lib_map, lib_vatpham, awardtemplet, objbuffer_head, remoteexc...)
+--                 lib_54.lua (Thu/GhepChuoi/ChiaChuoi/Bit_* - tien ich 5.4), hoithoai_54.lua (HoiThoai/SayWait/TalkWait: hoi thoai NPC bang coroutine)
 --   header/       dinh nghia dau (taskid = ID bien nhiem vu, factionhead = mon phai, cauhinh_hoatdong, tongkim, map_helper...)
 --   cauhinh/      CAU HINH may chu (ch_chung, ch_exp, ch_drop, ch_lich, ch_thuong) - sua o day, web CFGW co the ghi de
 --   cauhinh_web/  CFGW: nap bang gcfg tu MySQL + tu dien khoa
@@ -38,6 +39,12 @@
 --   - Moi tep .lua = MOT lua_State rieng: bien toan cuc cua tep khac KHONG thay duoc; muon dung chung thi Include.
 --   - Include KHONG khu trung nhung da co cache (Lua54Dll): Include lai van chay lai than tep -> dung "X = X or {}" khi khai bang.
 --   - Sua nong: tep trong chuoi Include cua timerserver.lua tu nap lai <= 1 phut; tep khac can restart.
+--   - [LOCAL54] 323 tep co dong 'local A, B, ...' o dau (local_hoa.py 06/09 toi): ham/bien chi dung trong tep -> local (nhanh hon, khong va cham ten).
+--     Muon goi tu tep khac / theo ten chuoi (Say callback, ExecuteScript, settings): XOA ten khoi dong local do.
+--   - '-- @IncludeOnce' o dong dau tep TOAN HAM (khong bien/bang cap tep): Lua54Dll chi chay than tep mot lan moi state (Include lai tra ve ngay).
+--   - Hoi thoai nhieu buoc: Include lib/hoithoai_54.lua roi HoiThoai(function() local c = SayWait(text, {lua chon...}) ... end) - xem kiemthu/item/test_lua54_admin.lua.
+--   - Bien moi truong Lua54Dll (ChayGameServer.bat): LUA54_PROF=n (lay mau moi n lenh -> jx_lua_prof.log moi 10 phut; 0 tat), LUA54_KIEM_KIEU=1 (ghi logs/lua_kieu.log khi ham C nhan sai kieu),
+--     LUA54_MOT_STATE=1 (mot lua_State chu + moi script mot thread/bang E), LUA54_INCLUDE_ONCE=0 (tat IncludeOnce), LUA54_KHONG_CACHE=1 (tat cache Include).
 --   - Kiem truoc khi ghi: python ReverseTools/lua54/kiem_54.py <tep|thu muc>; loi luc chay ghi ScriptError.log trong THU MUC cua tep loi.
 --   - Chu Viet trong chuoi: TCVN3 raw (dung vn_edit.py), chu thich: ASCII khong dau.
 --

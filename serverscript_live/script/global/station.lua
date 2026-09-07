@@ -130,7 +130,7 @@ end
 
 function StationFun()
 	GetCurStation()--míi thªm vµo x¸c ®?nh CurStation theo map ®ang ®øng
-	for j = 1, 15 do
+	for j = 1, getn(STATION_ARRAY) do	-- [VTCN 06/09] chu: du 16 ben Station.txt (truoc 1..15, sot Tran Thach Co)
 		AddStation(j)
 	end
 	Count = GetStationCount()

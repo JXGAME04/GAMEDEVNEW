@@ -117,17 +117,13 @@ end
 function TalkEx(fun,szMsg)
 
 	local num = getn(szMsg);
-	local szmsg = "";
-	PushString(szmsg)
+	-- [PA1 06/09 toi] truoc: ghep chuoi "Talk(n,%q,...)" roi dostring; nay goi Talk truc tiep (cau cuoi qua SetTaskSayColor nhu cu)
+	local tb = {}
 	for i=1,num-1 do
-		-- szmsg = szmsg..format("%q",szMsg[i])..",";
-		AppendString(format("%q",szMsg[i]))
-		AppendString(",")
+		tb[i] = szMsg[i]
 	end;
-	szmsg = PopString()
-	szmsg = szmsg .. format("%q",SetTaskSayColor(szMsg[num]));
-	szmsg = "Talk("..num..","..format("%q",fun)..","..szmsg..")";
-	dostring(szmsg);
+	tb[num] = SetTaskSayColor(szMsg[num])
+	Talk(num, fun, table.unpack(tb, 1, num));
 	
 end;
 

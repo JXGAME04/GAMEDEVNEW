@@ -130,11 +130,11 @@ end
 
 function TS_GhiProf(nTongMs)
 	if (nTongMs < TS_PROF_NGUONG or GhiLog == nil) then return end
-	local sz = ""
+	local tb = {}	-- [PA1 06/09 toi] bo dem thay ghep chuoi
 	for k, v in pairs(TS_tProf) do
-		if (v >= 1) then sz = sz .. format(" %s=%d", k, v) end
+		if (v >= 1) then tb[#tb + 1] = format(" %s=%d", k, v) end
 	end
-	GhiLog("PROF", format("RunTime %d ms:%s", nTongMs, sz))
+	GhiLog("PROF", format("RunTime %d ms:%s", nTongMs, table.concat(tb)))
 end
 
 function RunTime()
