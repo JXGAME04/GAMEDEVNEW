@@ -853,6 +853,9 @@ void KNpcAI::FollowObject(int nIdx)
 #endif
 
 #ifndef _SERVER
+// [TUKICH 07/09] dinh nghia o CoreShell.cpp (tep chi bien dich cho client).
+extern void g_OnLockedTargetDead(int nIdxDead);
+
 void KNpcAI::FollowPeople(int nIdx)
 {
 	if (CheckNpc(nIdx))
@@ -863,6 +866,9 @@ void KNpcAI::FollowPeople(int nIdx)
 
 	if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
 	{
+		// [TUKICH 07/09] du phong khi KNpc::DoDeath khong chay (muc tieu vao
+		// trang thai chet qua duong dong bo): dung tai cho + chot o vua chet.
+		g_OnLockedTargetDead(nIdx);
 		Npc[m_nIndex].m_nPeopleIdx = 0;
 		return;
 	}

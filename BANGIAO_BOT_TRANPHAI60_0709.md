@@ -43,6 +43,13 @@ grep -c "\[BotTranPhai\]" /e/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/server
 
 Mong đợi ~1.000 dòng trong vài phút đầu (mỗi bot một chiêu), sau đó thưa dần (chỉ bot mới lên 60). Kiểm lại dữ liệu: `python ReverseTools/kiem_skill_bot_0709.py ReverseTools/kiem_skill_bot_skills_map.json` → mục "CHIEU BI DONG chua full" không còn 10 chiêu trên; các "X pháp" cấp 10 và tâm pháp khác (21, 360, 630, 66, 124, 129, 274, 160) vẫn 0 là đúng thiết kế hiện tại.
 
+## 6. Nghiệm thu (bản e8130f46 ĐÃ LIVE 11:09:22, chủ swap ngay sau khi đặt)
+
+- `bot.log` 11:13–11:17: **799 dòng `[BotTranPhai]`**, mỗi bot đang đánh nâng đúng một chiêu: 166 ×95, 150 ×90, 36 ×87, 75 ×86, 252 ×83, 114 ×83, 48 ×76, 273 ×73, 275 ×66, 130 ×60; bị động 0 → 30, bùa 20 → 30, đúng bộ 10 chiêu.
+- ~200 bot bán sạp không vào `pb_Fight` nên chưa nâng (đúng thiết kế hiện tại: nâng chiêu nằm trong nhịp đánh). Muốn nâng cả bot sạp thì chuyển khối nâng sang `pb_TrangBiTheoCap` (mỗi lần lên cấp) — chưa làm.
+- `role_history` cập nhật dần theo nhịp lưu (11:2x mới 468 bot lưu sau khi nâng) nên `kiem_skill_bot_0709.py` còn thấy một phần bot chưa 30 — đọc `bot.log` là chuẩn.
+- Khe `.moi` sau đó thuộc phiên LNCK (a71d3305 / 90eeaa8d, main bc1a8224 chứa 962a8255).
+
 ## 5. Còn mở (chờ chủ)
 
 - Đường Môn 4 chiêu ám khí khác hệ (347/343/345/349) ở cấp 0: cho nâng không?

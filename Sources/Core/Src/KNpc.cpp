@@ -1756,6 +1756,11 @@ BOOL KNpc::ProcessState()
 	return nRet;
 }
 
+#ifndef _SERVER
+// [TUKICH 07/09] dinh nghia o CoreShell.cpp (tep chi bien dich cho client).
+extern void g_OnLockedTargetDead(int nIdxDead);
+#endif
+
 void KNpc::DoDeath(int nMode/* = 0*/, int nAttacker)
 {
 	//_ASSERT(m_Doing != do_death);
@@ -1846,6 +1851,11 @@ void KNpc::DoDeath(int nMode/* = 0*/, int nAttacker)
 	m_ClientDoing = cdo_death;
 	if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx == m_Index)
 	{
+		// [TUKICH 07/09] muc tieu dang khoa vua chet: truoc day chi xoa khoa,
+		// lenh do_run da gui van con hieu luc -> nhan vat chay not toi xac quai,
+		// va cu kich chuot ke tiep (tu kich chuot) lai keo toi xac / do roi.
+		// g_OnLockedTargetDead (CoreShell.cpp) dung tai cho + chot o vua chet.
+		g_OnLockedTargetDead(m_Index);
 		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx = 0;
 	}
 #endif
