@@ -5,6 +5,7 @@
 Include("\\script\\lib\\lib_ham.lua")
 Include("\\script\\chienlenh\\cl_gm.lua")	-- [CL 04/09] lenh GM Chien Lenh
 Include("\\script\\item\\test_kinhmach_admin.lua");
+Include("\\script\\kiemthu\\item\\test_lua54_admin.lua")	-- [LUA54 06/09 toi] thu SayWait coroutine + lib_54
 Include("\\script\\lib\\lib_vatpham.lua")
 Include("\\script\\lib\\lib_task.lua")
 Include("\\script\\lib\\lib_map.lua")
@@ -98,6 +99,7 @@ function chucnangadmin(itemIdx)
 		"Qu¶n lý m¸y chñ/system",
 		"Chøc n¨ng chÝnh: nhËn trang bÞ, ®iÓm, vËt phÈm, thö nghiÖm/manager",
 		"BOT ng­êi ch¬i/PB_Menu",
+		"Thu nghiem Lua 5.4: SayWait coroutine, lib_54/L54_MenuThu",	-- [LUA54 06/09 toi]
 		"ChiÕn LÖnh (admin)/CL_MenuAdmin",	-- [CL 04/09]
 		"Göi th­ thö: cã vËt phÈm/mailtest2",	-- [MAIL 03/09]
 		"Bé test ho¹t ®éng: VËn tiªu, Bang héi, D· TÈu, Liªn ®Êu, S¸t Thñ, Viªm §Õ.../ADM_TestHoatDong",

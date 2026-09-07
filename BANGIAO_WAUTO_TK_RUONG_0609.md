@@ -240,6 +240,32 @@ Tệp `.dat` 7.640 byte cũ nạp được, ô mới mặc định bật. Chưa 
 | **Dã Tẩu** | `pha=1` tới NPC 108, thoại, rồi `pha=14` treo 3.598 s, `du40=260906/260906` | NPC nói đúng câu `seasonnpc.lua:62` *"Mỗi ngày làm 40 lần là đủ rồi! Ngày mai trở lại nhé!"* (mốc `DTM_MSG_LIMIT` = "Mỗi ngày làm 40 lần"). Nhân vật này **đã làm đủ 40 nhiệm vụ hôm nay** (từ 18:04 log đã treo vì đủ 40). Auto báo trong chat *"Tuyệt! Đã đủ 40 nhiệm vụ Dã Tẩu hôm nay - nghỉ, qua ngày auto tự chạy lại."* | Đúng thiết kế, **không sửa**. Qua ngày mới (`DT_Today()` đổi) tự chạy lại. |
 | **Cả hai bị "khởi động lại"** mỗi 57-100 s | `[DT-STATE] pha=0 … du40=0 dlg=17/0` = `ExtAuto` bị `memset` (`ATYPE_CLEAR`) | `ATYPE_CLEAR` chỉ phát khi ô tick auto trong danh sách WAuto đổi trạng thái: bấm ô tick, hoặc **Ctrl+A trong game** (`UiGame.cpp:91` → `PRG_AUTOONOFF` → WAuto đổi tick → `PRT_TICKSTART` → xoá trạng thái). Mỗi lần như vậy Dã Tẩu quên "đủ 40" → đi lại tới NPC → hỏi → treo lại; Hậu cần về bước 0. | Không phải lỗi mã; là hệ quả của việc bật/tắt auto liên tục khi thấy nhân vật đứng. Ghi nhận để chủ biết. |
 
-`.moi` đợt 3 (chỉ CoreClient): `CoreClient.dll.moi` **`b425fb53`** (sha256 `076e8550`, 2.593.280 B). Struct IPC không đổi
-(7.644) nên đổi một mình CoreClient là đủ; `WAuto.exe` `9ff7c4e6` đang chạy giữ nguyên (tệp `WAuto.exe.moi` còn
-lại cùng md5, vô hại). Cách đổi: thoát game → `ChoiGame.bat`.
+**Đợt 3 ĐÃ LÊN MÁY 19:31-19:34** (phiên Vận tiêu đo, tôi kiểm lại 19:50): `CoreClient.dll` **`b425fb53`** (sha256 `076e8550`,
+2.593.280 B) + `WAuto.exe` `9ff7c4e6` + `Game.exe` `3da2169e`; game mở lại 19:34:37 (pid 29772) nhưng tới 19:50 **chưa vào
+nhân vật** (chưa có dòng log nào của pid mới, bộ nhớ 185 MB = màn hình đăng nhập) nên chưa đo được vá Hậu cần. Khi vào lại,
+kiểm: `findstr /C:"[HC-BAN]" jx_auto.log` — dòng đầu ghi tên món máy chủ từ chối bán, dòng `lan 6/6 - VAN CON TRONG TUI, bo qua`
+là máy đã bỏ qua và đi tiếp; `[HC-STATE] buoc` phải chạy 1 → 2 → … → 9 thay vì kẹt 1. Khe `.moi` của tôi hiện TRỐNG; `Game.exe.moi`
+(6210e1f5) và `bin\server\CoreServer.dll.moi` (d0dab0c9, đã gộp `42262294`) là của phiên Vận tiêu / bot nội, tôi không đụng.
+
+---
+
+## 9. (21:20) 🔴 LỖI CỦA TÔI — "vào Tống Kim không đánh, chỉ chạy tới rồi đứng yên" (chủ báo 21:10)
+
+**Gốc:** bộ vá tab PK 19:0x chèn dòng lọc khiên vào `TK_ChonDich` **giữa** khối `if (Npc.m_Kind == kind_player) {…}` và
+nhánh `else if (!pAp->bPKNpc || nLoai == 2) continue;`. Nhánh `else if` đó dính vào câu `if` mới, nên với **người chơi**
+không có khiên, `else if (… || nLoai == 2)` chạy → `continue` → `TK_ChonDich(…, 2)` (bước "người khác màu trong tầm PK
+có đường nhìn → giao máy PK" của `TKP_FIGHT`) **không bao giờ trả về người chơi**. Tầng săn (lọc bằng màu phe, không
+qua `TK_ChonDich`) vẫn chạy tới địch, đứng cách 95 mps chờ tầng đánh nhận, 3 giây sau `[TK-SAN-BO] khong toi duoc` loại
+20 giây rồi chạy sang địch khác. Log 20:56: `[TK-SAN] san id=93043 xa=95` → `[TK-SAN-QUYEN]` lặp → `[TK-SAN-BO]`,
+`[PK-IN] tgID=0`, không có `[PK-KHIEN]` nào (bộ lọc khiên tự nó không hề loại ai).
+
+**Sửa (commit bên dưới, bộ vá `goi_va_pk_khien_0609.py` đã đổi neo):** trả `else if` về đúng chỗ, đặt dòng lọc khiên
+**sau** nhánh `else if`. Ba chỗ chèn còn lại (`TK_SanNguoi`, `LD_ChonDich`, máy PK) đã soi lại: dòng kế tiếp đều là câu
+`if` độc lập, không có `else` dính.
+
+**Bài học ghi vào bộ nhớ:** chèn mã bằng script theo neo văn bản phải in **cả dòng sau** điểm chèn (`cat -A`) trước khi
+build; một `else` ngay sau `}` là chỗ chết. Build thành công không có nghĩa là đúng.
+
+`.moi` đợt 4 (chỉ CoreClient): `CoreClient.dll.moi` **`db8d96fb`** (sha256 `5300c46f`, 2.593.792 B). Cách đổi: thoát game →
+`ChoiGame.bat`. Kiểm sau swap: vào Tống Kim, `[TK-SAN] san id=…` phải được nối bằng `[PK-IN] tgID=<id>` rồi
+`NET-SKILL-PKT` / `[S6-ATK]`, không còn `[TK-SAN-BO]` liên tục.

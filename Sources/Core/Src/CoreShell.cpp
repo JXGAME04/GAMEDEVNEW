@@ -8747,10 +8747,14 @@ static int TK_ChonDich(int nPlayerIdx, const autoData* pAp, int nLoai)
 			if (!pAp->bPKPlayer || nLoai == 1)
 				continue;
 		}
-		if (pAp->bPKBoQuaKhien && PK_CoKhien(nIdx))
-			continue;	// (06/09) dang co khien bao ve - danh khong trung
 		else if (!pAp->bPKNpc || nLoai == 2)
 			continue;
+		// (06/09 21:15) SUA LOI cua chinh ban va 19:0x: dong loc khien truoc day bi chen GIUA khoi
+		// if (kind_player) {...} va nhanh 'else if (!bPKNpc || nLoai == 2) continue;' -> else dinh vao
+		// cau if moi, moi NGUOI CHOI deu bi continue khi nLoai == 2 (tang giao muc tieu cua Tong Kim)
+		// => WAuto vao Tong Kim chi chay toi dich roi dung yen. Phai dat SAU nhanh else if.
+		if (pAp->bPKBoQuaKhien && PK_CoKhien(nIdx))
+			continue;	// (06/09) dang co khien bao ve - danh khong trung
 		if (nLoai == 1)
 		{	// chi nhan TUONG dich
 			int q = 0;

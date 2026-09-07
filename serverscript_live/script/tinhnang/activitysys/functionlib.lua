@@ -42,7 +42,35 @@ function lib:OptionFunction(nValue1, nValue2, szOption)
 		elseif (szOption == "~=") then return nValue1 ~= nValue2
 		end
 	end
-	return dostring("return "..nValue1..szOption..nValue2)
+	-- [PA1 06/09 toi] chuoi/khac: so sanh truc tiep (cung ngu nghia toan tu Lua), khong bien dich chunk
+	if (szOption == "==") then return nValue1 == nValue2
+	elseif (szOption == "~=") then return nValue1 ~= nValue2
+	elseif (type(nValue1) == type(nValue2) and (type(nValue1) == "number" or type(nValue1) == "string")) then
+		if (szOption == ">") then return nValue1 > nValue2
+		elseif (szOption == ">=") then return nValue1 >= nValue2
+		elseif (szOption == "<") then return nValue1 < nValue2
+		elseif (szOption == "<=") then return nValue1 <= nValue2
+		end
+	end
+	return dostring("return "..tostring(nValue1)..szOption..tostring(nValue2))
+end
+
+-- [PA1 06/09 toi] cache chunk da bien dich theo chuoi (cau hinh hoat dong lap lai cung chuoi hang nghin lan)
+lib.tbChunkCache = lib.tbChunkCache or {}
+function lib:ChayChuoi(szCode)
+	local f = self.tbChunkCache[szCode]
+	if f == nil then
+		local e
+		f, e = load(szCode, szCode, "t")
+		if f == nil then
+			if type(_ERRORMESSAGE) == "function" then _ERRORMESSAGE("ChayChuoi: "..tostring(e)) end
+			return nil
+		end
+		self.tbChunkCache[szCode] = f
+	end
+	local ok, r = xpcall(f, function(m) if type(_ERRORMESSAGE) == "function" then _ERRORMESSAGE(tostring(m)) end return m end)
+	if ok then return r end
+	return nil
 end
 
 function lib:ParseAward(szAwardMsg)
@@ -52,8 +80,8 @@ function lib:ParseAward(szAwardMsg)
 	end
 	szAwardMsg = gsub(szAwardMsg, "<enter>", "\n")
 	szAwardMsg = gsub(szAwardMsg, "<tab>", "\t")
-	
-	return dostring(szAwardMsg)
+
+	return self:ChayChuoi(szAwardMsg)	-- [PA1 06/09 toi] cache chunk
 end
 
 function lib:WriteLog(szEventName, szAction, szItemName, szItemCode)
@@ -221,7 +249,7 @@ function lib:NumberParamTrans(pParam)
 	if type(pParam) == "number" then
 		return pParam
 	elseif type(pParam) == "string" then
-		return dostring("return "..pParam)
+		return tonumber(pParam) or self:ChayChuoi("return "..pParam)	-- [PA1 06/09 toi] so thuan -> tonumber; con lai cache chunk
 	end
 end
 
@@ -230,7 +258,7 @@ function lib:StringParamTrans(pParam)
 	local szParam = nil
 	si, sn, szParam = strfind(pParam, "<lua (.-)/>")
 	while( szParam ) do
-		szValue = dostring("return ".. szParam)
+		szValue = self:ChayChuoi("return ".. szParam)	-- [PA1 06/09 toi] cache chunk
 		pParam = format("%s%s%s",strsub(pParam, 1, si-1),tostring(szValue),strsub(pParam, sn+1))
 		si, sn, szParam = strfind(pParam, "<lua (.-)/>", si)
 	end

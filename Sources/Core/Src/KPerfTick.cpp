@@ -256,6 +256,24 @@ static void PerfReport(double dNow, int nOnlinePlayer)
 	s_nRegionMax = 0;
 	s_nNpcSum = 0;
 	s_nNpcMax = 0;
+	// [LUA54 06/09 toi] C11: profiler lay mau trong Lua54Dll (LUA54_PROF, mac dinh moi 2000 lenh) -> moi 10 ky
+	// (10 phut) ghi bang xep hang tep:dong vao jx_lua_prof.log roi xoa. Lay ham qua GetProcAddress (DLL cu -> bo qua).
+	{
+		typedef long long (*PFN_L4PROFW)(const char*, int);
+		static PFN_L4PROFW s_pfnProfW = NULL;
+		static int s_nProfThu = 0, s_nProfKy = 0;
+		if (!s_nProfThu)
+		{
+			s_nProfThu = 1;
+			HMODULE hLua = GetModuleHandleA("Lua54Dll.dll");
+			if (hLua) s_pfnProfW = (PFN_L4PROFW)GetProcAddress(hLua, "lua4_prof_write");
+		}
+		if (s_pfnProfW && ++s_nProfKy >= 10)
+		{
+			s_nProfKy = 0;
+			s_pfnProfW("jx_lua_prof.log", 40);
+		}
+	}
 	s_dWindowStart = dNow;
 }
 
@@ -282,6 +300,14 @@ static void PerfLuaDoc()
 				pfnSet(1);
 			else
 				s_pfnRead = NULL;
+			// [LUA54 06/09 toi] C11: bat profiler lay mau trong Lua54Dll cho MAY CHU (moi 2000 lenh VM ~ 0,1 % thoi gian Lua);
+			// bien moi truong LUA54_PROF (0 = tat, n = buoc) uu tien; client khong goi -> khong lay mau. Ket qua: jx_lua_prof.log moi 10 phut.
+			{
+				typedef int (*PFN_L4PROF)(int);
+				PFN_L4PROF pfnProf = (PFN_L4PROF)GetProcAddress(hLua, "lua4_prof_set");
+				if (pfnProf && getenv("LUA54_PROF") == NULL)
+					pfnProf(2000);
+			}
 		}
 	}
 	if (s_pfnRead)

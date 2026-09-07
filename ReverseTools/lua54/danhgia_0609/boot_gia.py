@@ -30,6 +30,13 @@ D.lua4_tonumber.argtypes = [vp, ci]; D.lua4_tonumber.restype = ctypes.c_double
 CFN = ctypes.CFUNCTYPE(ci, vp)
 D.lua4_pushcclosure.argtypes = [vp, CFN, ci]
 try:
+    D.lua4_master.restype = vp; D.lua4_master.argtypes = []
+    HAS_MASTER = True
+except Exception:
+    HAS_MASTER = False
+MOT_STATE = os.environ.get("LUA54_MOT_STATE") == "1"
+DUMP_G = os.environ.get("BOOT_DUMP_GLOBALS")      # tep ghi danh sach bien toan cuc moi state (kiem PA-2 local hoa)
+try:
     D.lua4_inc_stats.argtypes = [ctypes.POINTER(ctypes.c_longlong)] * 5
     HAS_STATS = True
 except Exception:
@@ -58,6 +65,7 @@ def include_cb(L):
                 if i >= 0:
                     full = full[:i] + b + full[i + len(a):]
                     break
+        if TRACE: sys.stderr.write('  INC ' + full.decode('latin-1', 'replace') + chr(10)); sys.stderr.flush()
         D.lua4_dofile(L, full)
     except Exception as e:
         sys.stderr.write("include_cb loi: %r\n" % (e,))
@@ -77,7 +85,7 @@ os.remove = function() return nil end  os.rename = function() return nil end  os
 os.exit = function() end  os.tmpname = function() return "sandbox.tmp" end
 remove = os.remove  rename = os.rename  execute = os.execute  exit = os.exit  tmpname = os.tmpname
 writeto = function() return nil end  appendto = function() return nil end
-debug.sethook(function() error("QUA HAN lenh (vong lap?)") end, "", 20000000)
+debug.sethook(function() io.stderr:write(debug.traceback("QUA HAN", 2)); io.stderr:write(string.char(10)); io.stderr:flush(); error("QUA HAN lenh (vong lap?)") end, "", 20000000)
 """
 
 files = []
@@ -93,15 +101,34 @@ print("MODE=%s, %d tep goc" % (MODE, len(files)))
 t_all = time.perf_counter()
 n_err_states = 0
 loi_all = []
+dump_g = []
+G_BASE = set()
 t_open = t_run = 0.0
-CHDIR = os.environ.get("BOOT_CHDIR", "1") == "1"    # nhu engine: LoadScriptInDirectory chdir vao thu muc cua tep truoc khi nap
+CHDIR = os.environ.get("BOOT_CHDIR", "1") == "1"
+TRACE = os.environ.get("BOOT_TRACE") == "1"
+CHI = os.environ.get("BOOT_CHI")
+if CHI:
+    files = [f for f in files if CHI.lower() in f.lower()]
+    print("BOOT_CHI:", CHI, len(files), "tep")    # nhu engine: LoadScriptInDirectory chdir vao thu muc cua tep truoc khi nap
 for i, path in enumerate(files):
     t0 = time.perf_counter()
     if CHDIR:
         os.chdir(os.path.dirname(path))
     L = D.lua4_open(100)
     D.lua4_baselibopen(L)
-    D.lua4_dostring(L, STUB); D.lua4_settop(L, 0)
+    if MOT_STATE and HAS_MASTER:
+        M = D.lua4_master()
+        if i == 0:
+            D.lua4_dostring(M, STUB); D.lua4_settop(M, 0)       # STUB (_ALERT, metatable rong, sandbox) tren bang chu
+            G_BASE = set()
+        D.lua4_dostring(M, b"L4_LOI = {}"); D.lua4_settop(M, 0)
+        LX = M                                                  # doc L4_LOI tu bang chu
+    else:
+        D.lua4_dostring(L, STUB); D.lua4_settop(L, 0)
+        LX = L
+        if DUMP_G and i == 0:
+            D.lua4_dostring(L, b"L4_G = {} for k in next, _G do L4_G[#L4_G + 1] = tostring(k) end L4_GS = table.concat(L4_G, ',')"); D.lua4_settop(L, 0)
+            D.lua4_getglobal(L, b"L4_GS"); G_BASE = set((D.lua4_tostring(L, -1) or b"").decode("latin-1").split(",")); D.lua4_settop(L, 0)
     D.lua4_pushcclosure(L, INCLUDE_CB, 0); D.lua4_setglobal(L, b"Include")
     rel = os.path.relpath(path, ROOT)
     if "scriptjx2" in rel or "script_protocol" in rel:
@@ -115,12 +142,17 @@ for i, path in enumerate(files):
     D.lua4_dobuffer(L, data, len(data), name); D.lua4_settop(L, 0)
     t2 = time.perf_counter()
     # thu loi
-    D.lua4_dostring(L, b"L4_N = #L4_LOI  L4_S = table.concat(L4_LOI, ' || ')"); D.lua4_settop(L, 0)
-    D.lua4_getglobal(L, b"L4_N"); n = int(D.lua4_tonumber(L, -1)); D.lua4_settop(L, 0)
+    D.lua4_dostring(LX, b"L4_N = #L4_LOI  L4_S = table.concat(L4_LOI, ' || ')"); D.lua4_settop(LX, 0)
+    D.lua4_getglobal(LX, b"L4_N"); n = int(D.lua4_tonumber(LX, -1)); D.lua4_settop(LX, 0)
     if n > 0:
         n_err_states += 1
-        D.lua4_getglobal(L, b"L4_S"); s = D.lua4_tostring(L, -1) or b""; D.lua4_settop(L, 0)
+        D.lua4_getglobal(LX, b"L4_S"); s = D.lua4_tostring(LX, -1) or b""; D.lua4_settop(LX, 0)
         loi_all.append("%s\t%d\t%s" % (rel, n, s[:300].decode("latin-1", "replace")))
+    if DUMP_G:
+        D.lua4_dostring(L, b"L4_G = {} for k in next, _G do L4_G[#L4_G + 1] = tostring(k) end L4_GS = table.concat(L4_G, ',')"); D.lua4_settop(L, 0)
+        D.lua4_getglobal(L, b"L4_GS"); gs = (D.lua4_tostring(L, -1) or b"").decode("latin-1", "replace"); D.lua4_settop(L, 0)
+        names = sorted(set(gs.split(",")) - G_BASE - {"L4_G", "L4_GS", "L4_N", "L4_S", "L4_LOI", "_G", "MODEL_GAMESERVER", "Include"})
+        dump_g.append("%s\t%s" % (rel, ",".join(names)))
     D.lua4_close(L)
     t_open += t1 - t0; t_run += t2 - t1
 dt = time.perf_counter() - t_all
@@ -130,6 +162,14 @@ if HAS_STATS and MODE == "cache":
     D.lua4_inc_stats(*[ctypes.byref(x) for x in v])
     print("cache Include: dung lai cung state %d, bytecode chung %d, bien dich %d, bo qua phan tich %.1f MB, bytecode giu %.1f MB" % (
         v[0].value, v[1].value, v[2].value, v[3].value / 1048576.0, v[4].value / 1048576.0))
+    try:
+        D.lua4_inc_once_skip.restype = ctypes.c_longlong
+        print("IncludeOnce bo qua: %d lan" % D.lua4_inc_once_skip())
+    except Exception:
+        pass
 if LOG:
     open(LOG, "w", encoding="utf-8").write("\n".join(sorted(loi_all)) + "\n")
     print("ghi loi ->", LOG)
+if DUMP_G:
+    open(DUMP_G, "w", encoding="utf-8").write("\n".join(dump_g) + "\n")
+    print("ghi bien toan cuc ->", DUMP_G)

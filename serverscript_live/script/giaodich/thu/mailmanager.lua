@@ -661,13 +661,7 @@ function MailManager_BuildAward(tbList)
             end
         end
     end
-    local sz = ""
-    for i = 1, getn(tb) do
-        if i > 1 then
-            sz = sz..";"
-        end
-        sz = sz..tb[i]
-    end
+    local sz = table.concat(tb, ";", 1, getn(tb))    -- [PA1 06/09 toi] thay ghep chuoi trong vong lap
     return sz, getn(tb)
 end
 

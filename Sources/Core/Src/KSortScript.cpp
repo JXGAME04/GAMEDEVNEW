@@ -64,6 +64,20 @@ static void sGhiThongKeNapScript(unsigned long nLoaded, DWORD dwMs)
 		nLoaded, dwMs, nCompile, nStateHit, nGlobalHit, nBytesSaved / 1024, nBytesCode / 1024);
 	printf("%s\n", szMsg);
 	g_DebugLog((LPSTR)"%s", szMsg);
+	// [LUA54 06/09 toi] IncludeOnce (@IncludeOnce) + che do mot state (LUA54_MOT_STATE)
+	{
+		typedef long long (*PFN_ONCE)(void);
+		typedef int (*PFN_MOT)(void);
+		PFN_ONCE pfnOnce = hLua ? (PFN_ONCE)GetProcAddress(hLua, "lua4_inc_once_skip") : NULL;
+		PFN_MOT pfnMot = hLua ? (PFN_MOT)GetProcAddress(hLua, "lua4_mot_state") : NULL;
+		if (pfnOnce || pfnMot)
+		{
+			sprintf_s(szMsg, sizeof(szMsg), "[script] IncludeOnce bo qua %lld lan; che do mot state: %s",
+				pfnOnce ? pfnOnce() : 0LL, (pfnMot && pfnMot()) ? "BAT (LUA54_MOT_STATE=1)" : "tat");
+			printf("%s\n", szMsg);
+			g_DebugLog((LPSTR)"%s", szMsg);
+		}
+	}
 }
 
 // ============================================================================
@@ -205,21 +219,55 @@ const KScript * g_GetScript(const char * szRelativeScriptFile)
 // ("\script\missions\bw\bwhead.lua", LoadScriptToSortList). Quet tuyen tinh lan dau,
 // nho lai theo state (script chi nap luc boot; ReLoadScript giu nguyen state).
 #include <map>
+// [LUA54 06/09 toi] L co the la COROUTINE (SayWait) hay thread cua che do mot state: hoi Lua54Dll thread script so huu
+static Lua_State* sLuaOwner(Lua_State* L)
+{
+	typedef Lua_State* (*PFN_L4OWNER)(Lua_State*);
+	static PFN_L4OWNER s_pfnOwner = NULL;
+	static int s_nThu = 0;
+	if (!s_nThu)
+	{
+		s_nThu = 1;
+		HMODULE h = GetModuleHandleA("Lua54Dll.dll");
+		if (h) s_pfnOwner = (PFN_L4OWNER)GetProcAddress(h, "lua4_owner");
+	}
+	return s_pfnOwner ? s_pfnOwner(L) : NULL;
+}
+
 const char * g_GetScriptNameByState(Lua_State* L)
 {
 	static std::map<Lua_State*, int> s_mapState;
 	if (!L)
 		return NULL;
 	std::map<Lua_State*, int>::iterator it = s_mapState.find(L);
-	if (it != s_mapState.end() && it->second >= 0 && it->second < (int)nCurrentScriptNum
-		&& g_ScriptSet[it->second].m_LuaState == L)
-		return g_ScriptSet[it->second].m_szScriptName;
+	if (it != s_mapState.end() && it->second >= 0 && it->second < (int)nCurrentScriptNum)
+	{
+		if (g_ScriptSet[it->second].m_LuaState == L)
+			return g_ScriptSet[it->second].m_szScriptName;
+		Lua_State* L2 = sLuaOwner(L);
+		if (L2 && L2 != L && g_ScriptSet[it->second].m_LuaState == L2)
+			return g_ScriptSet[it->second].m_szScriptName;
+	}
 	for (unsigned int i = 0; i < nCurrentScriptNum && i < MAX_SCRIPT_IN_SET; i++)
 	{
 		if (g_ScriptSet[i].m_LuaState == L)
 		{
 			s_mapState[L] = (int)i;
 			return g_ScriptSet[i].m_szScriptName;
+		}
+	}
+	{
+		Lua_State* L2 = sLuaOwner(L);
+		if (L2 && L2 != L)
+		{
+			for (unsigned int i = 0; i < nCurrentScriptNum && i < MAX_SCRIPT_IN_SET; i++)
+			{
+				if (g_ScriptSet[i].m_LuaState == L2)
+				{
+					s_mapState[L] = (int)i;
+					return g_ScriptSet[i].m_szScriptName;
+				}
+			}
 		}
 	}
 	return NULL;

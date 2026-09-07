@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <math.h>
 #include <limits.h>
+#include <time.h>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -82,6 +83,7 @@ typedef struct L4IncEntry
 	long long size;
 	char* code;
 	size_t len;
+	int once;						/* [LUA54 06/09 toi] tep co dau "@IncludeOnce" trong 512 byte dau */
 	struct L4IncEntry* next;
 } L4IncEntry;
 
@@ -143,6 +145,355 @@ static unsigned l4_fnv(const char* s)
 	return h;
 }
 
+/* ======================================================================== [LUA54 06/09 toi] MOT STATE + profiler + kiem kieu + IncludeOnce ==== */
+/* PHUONGAN_LUA54_SCRIPT_0609.md C4 / C6 / C8 / C11:
+**  - LUA54_MOT_STATE=1: MOT lua_State chu (master) + moi script = mot THREAD voi bang moi truong E rieng
+**    (metatable E.__index = bang toan cuc chu, E._G = E). Ham C dang ky vao bang chu (mot lan; trung thi bo qua,
+**    khac thi ghi de rieng trong E); bien Core dat (PlayerIndex...) va ham/bien cua script vao E. Chunk nap qua
+**    dofile/dostring/dobuffer/compile* duoc gan _ENV = E. Coroutine hay thread la: E suy tu upvalue _ENV cua ham
+**    Lua dang chay (cache theo thread, khoa yeu). lua4_close(thread) chi bo neo; master song den het tien trinh.
+**  - LUA54_PROF=<n> (mac dinh 2000; 0 = tat): hook dem lenh, moi n lenh ghi nhan "tep:dong" Lua dang chay;
+**    lua4_prof_write(path, top) ghi bang xep hang (dong + tep) roi xoa; Core goi moi 10 phut (KPerfTick).
+**  - LUA54_KIEM_KIEU=1: lua4_tonumber/lua4_tostring ep kieu that bai (nil, bang, ham...) -> ghi logs\lua_kieu.log
+**    mot lan cho moi (tep:dong, ham, doi so). Mac dinh tat (0 chi phi).
+**  - IncludeOnce: tep co "@IncludeOnce" trong 512 byte dau chi CHAY THAN mot lan trong moi state/E; lan Include
+**    sau tra ve ngay. Chi danh dau tep toan ham (khong bien/bang cap tep). LUA54_INCLUDE_ONCE=0 tat. */
+#define L4_REG_ENV			"lua4.env"			/* thread -> E (khoa yeu) */
+#define L4_REG_ENVTHREAD	"lua4.envthread"	/* E -> thread script (khoa yeu) */
+#define L4_REG_THREADS		"lua4.threads"		/* thread -> true (neo) */
+#define L4_REG_INC_BYENV	"lua4.inc.byenv"	/* E -> {fn=, st=, done=} (khoa yeu) */
+
+#define L4_MAX_STATES	16384
+static lua_State* s_states[L4_MAX_STATES];
+static int s_nstates = 0;
+static int s_mot_state = -1;					/* -1 chua doc bien moi truong */
+static lua_State* s_master = NULL;
+static int s_prof_every = -2;					/* -2 chua doc; 0 tat; > 0 so lenh moi mau */
+static int s_kiem_kieu = -1;
+static int s_inc_once = -1;
+static long long s_inc_n_once_skip = 0;
+
+static void l4_states_add(lua_State* L) { if (s_nstates < L4_MAX_STATES) s_states[s_nstates++] = L; }
+static void l4_states_del(lua_State* L)
+{
+	int i;
+	for (i = 0; i < s_nstates; i++)
+		if (s_states[i] == L) { s_states[i] = s_states[--s_nstates]; return; }
+}
+static int l4_mot_state(void)
+{
+	if (s_mot_state < 0) { const char* e = getenv("LUA54_MOT_STATE"); s_mot_state = (e != NULL && e[0] == '1') ? 1 : 0; }
+	return s_mot_state;
+}
+LUA_API int lua4_mot_state(void)		{ return l4_mot_state(); }
+LUA_API lua_State* lua4_master(void)	{ return l4_mot_state() ? s_master : NULL; }
+LUA_API int lua4_so_state(void)			{ return s_nstates; }
+
+/* bang trong registry theo ten (tao neu chua co; weak = "k" -> khoa yeu) -> de len dinh */
+static void l4_reg_table(lua_State* L, const char* name, const char* weak)
+{
+	lua_getfield(L, LUA_REGISTRYINDEX, name);
+	if (!lua_istable(L, -1))
+	{
+		lua_pop(L, 1);
+		lua_newtable(L);
+		if (weak != NULL)
+		{
+			lua_newtable(L);
+			lua_pushstring(L, weak);
+			lua_setfield(L, -2, "__mode");
+			lua_setmetatable(L, -2);
+		}
+		lua_pushvalue(L, -1);
+		lua_setfield(L, LUA_REGISTRYINDEX, name);
+	}
+}
+
+/* upvalue _ENV cua ham Lua dang chay o muc lv_dau..lv_cuoi (0 = ham hien tai) -> de len dinh, tra 1; khong co -> 0 */
+static int l4_env_tu_stack(lua_State* L, int lv_dau, int lv_cuoi)
+{
+	lua_Debug ar;
+	int lv;
+	for (lv = lv_dau; lv <= lv_cuoi; lv++)
+	{
+		int i;
+		if (!lua_getstack(L, lv, &ar)) break;
+		if (!lua_getinfo(L, "f", &ar)) break;			/* [f] */
+		if (lua_iscfunction(L, -1)) { lua_pop(L, 1); continue; }
+		for (i = 1; i <= 64; i++)
+		{
+			const char* nm = lua_getupvalue(L, -1, i);	/* [f v] */
+			if (nm == NULL) break;
+			if (strcmp(nm, "_ENV") == 0 && lua_istable(L, -1)) { lua_remove(L, -2); return 1; }
+			lua_pop(L, 1);
+		}
+		lua_pop(L, 1);
+	}
+	return 0;
+}
+
+/* E cua thread L -> de len dinh (mot state); che do thuong -> bang toan cuc */
+static void l4_env_push(lua_State* L)
+{
+	if (!l4_mot_state()) { lua_pushglobaltable(L); return; }
+	l4_reg_table(L, L4_REG_ENV, "k");			/* [env] */
+	lua_pushthread(L);							/* [env L] */
+	lua_rawget(L, -2);							/* [env E?] */
+	if (lua_istable(L, -1)) { lua_remove(L, -2); return; }
+	lua_pop(L, 1);								/* [env] */
+	if (l4_env_tu_stack(L, 0, 12))				/* coroutine / thread la: theo ham Lua dang chay; [env E] */
+	{
+		lua_pushthread(L);						/* [env E L] */
+		lua_pushvalue(L, -2);					/* [env E L E] */
+		lua_rawset(L, -4);						/* env[L] = E; [env E] */
+		lua_remove(L, -2);
+		return;
+	}
+	lua_pop(L, 1);
+	lua_pushglobaltable(L);
+}
+
+/* thread script so huu E cua L (mot state) hoac main thread cua state (che do thuong) */
+LUA_API lua_State* lua4_owner(lua_State* L)
+{
+	lua_State* T = NULL;
+	if (L == NULL) return NULL;
+	if (!l4_mot_state())
+	{
+		lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
+		T = lua_tothread(L, -1);
+		lua_pop(L, 1);
+		return T ? T : L;
+	}
+	l4_env_push(L);								/* [E] */
+	l4_reg_table(L, L4_REG_ENVTHREAD, "k");		/* [E map] */
+	lua_pushvalue(L, -2);						/* [E map E] */
+	lua_rawget(L, -2);							/* [E map T?] */
+	T = lua_tothread(L, -1);
+	lua_pop(L, 3);
+	return T ? T : L;
+}
+
+/* gan _ENV = E cho chunk (ham) o dinh stack; che do thuong: khong lam gi */
+static void l4_gan_env(lua_State* L)
+{
+	if (!l4_mot_state() || !lua_isfunction(L, -1)) return;
+	l4_env_push(L);								/* [f E] */
+	if (lua_setupvalue(L, -2, 1) == NULL) lua_pop(L, 1);
+}
+
+/* Lua: L4_Env(lv) -> bang moi truong cua ham Lua o muc lv (1 = ham goi L4_Env) */
+static int l4_b_env(lua_State* L)
+{
+	int lv = (int)luaL_optinteger(L, 1, 1);
+	if (lv < 0) lv = 0;
+	if (l4_env_tu_stack(L, lv, lv + 8)) return 1;
+	l4_env_push(L);
+	return 1;
+}
+
+/* bang cache Include cua script hien tai: which = "fn" | "st" | "done" -> de len dinh */
+static void l4_inc_bang(lua_State* L, const char* which)
+{
+	if (!l4_mot_state())
+	{
+		char ten[32];
+		snprintf(ten, sizeof(ten), "lua4.inc.%s", which);
+		l4_reg_table(L, ten, NULL);
+		return;
+	}
+	l4_reg_table(L, L4_REG_INC_BYENV, "k");	/* [byenv] */
+	l4_env_push(L);							/* [byenv E] */
+	lua_rawget(L, -2);						/* [byenv t?] */
+	if (!lua_istable(L, -1))
+	{
+		lua_pop(L, 1);
+		lua_newtable(L);					/* [byenv t] */
+		l4_env_push(L);						/* [byenv t E] */
+		lua_pushvalue(L, -2);				/* [byenv t E t] */
+		lua_rawset(L, -4);					/* byenv[E] = t; [byenv t] */
+	}
+	lua_remove(L, -2);						/* [t] */
+	lua_getfield(L, -1, which);				/* [t sub?] */
+	if (!lua_istable(L, -1))
+	{
+		lua_pop(L, 1);
+		lua_newtable(L);					/* [t sub] */
+		lua_pushvalue(L, -1);				/* [t sub sub] */
+		lua_setfield(L, -3, which);			/* [t sub] */
+	}
+	lua_remove(L, -2);						/* [sub] */
+}
+
+static int l4_inc_once_enabled(void)
+{
+	if (s_inc_once < 0) { const char* e = getenv("LUA54_INCLUDE_ONCE"); s_inc_once = (e != NULL && e[0] == '0') ? 0 : 1; }
+	return s_inc_once;
+}
+static int l4_tep_once(const char* filename)
+{
+	char dau[513];
+	size_t n;
+	FILE* f = fopen(filename, "rb");
+	if (f == NULL) return 0;
+	n = fread(dau, 1, 512, f);
+	fclose(f);
+	dau[n] = 0;
+	return strstr(dau, "@IncludeOnce") != NULL;
+}
+
+/* ---- profiler lay mau ---- */
+typedef struct L4Prof { char* key; long long n; struct L4Prof* next; } L4Prof;
+#define L4_PROF_BUCKETS		4096
+#define L4_PROF_MAX_KEYS	30000
+static L4Prof* s_prof_bucket[L4_PROF_BUCKETS];
+static int s_prof_nkeys = 0;
+static long long s_prof_mau = 0, s_prof_khac = 0;
+static double s_prof_t0 = 0.0;
+
+static void l4_prof_hook(lua_State* L, lua_Debug* ar)
+{
+	char key[320];
+	unsigned h;
+	L4Prof* e;
+	if (ar->event != LUA_HOOKCOUNT) return;
+	if (!lua_getinfo(L, "Sl", ar)) return;
+	snprintf(key, sizeof(key), "%s:%d", ar->short_src, ar->currentline);
+	s_prof_mau++;
+	h = l4_fnv(key) % L4_PROF_BUCKETS;
+	for (e = s_prof_bucket[h]; e; e = e->next)
+		if (strcmp(e->key, key) == 0) { e->n++; return; }
+	if (s_prof_nkeys >= L4_PROF_MAX_KEYS) { s_prof_khac++; return; }
+	e = (L4Prof*)calloc(1, sizeof(L4Prof));
+	if (e == NULL) return;
+	e->key = _strdup(key);
+	e->n = 1;
+	e->next = s_prof_bucket[h];
+	s_prof_bucket[h] = e;
+	s_prof_nkeys++;
+}
+static int l4_prof_every(void)
+{
+	if (s_prof_every == -2)
+	{
+		const char* e = getenv("LUA54_PROF");
+		s_prof_every = (e == NULL) ? 0 : atoi(e);	/* mac dinh TAT trong DLL; may chu bat 2000 qua lua4_prof_set (KPerfTick), client khong bat */
+		if (s_prof_every < 0) s_prof_every = 0;
+		if (s_prof_every > 0 && s_prof_every < 100) s_prof_every = 100;
+	}
+	return s_prof_every;
+}
+static void l4_prof_dat(lua_State* L)
+{
+	int n = l4_prof_every();
+	if (L == NULL) return;
+	if (n > 0) lua_sethook(L, l4_prof_hook, LUA_MASKCOUNT, n);
+	else lua_sethook(L, NULL, 0, 0);
+	if (s_prof_t0 <= 0.0) s_prof_t0 = l4_now_ms();
+}
+LUA_API int lua4_prof_set(int every)
+{
+	int i;
+	if (every < 0) every = 0;
+	if (every > 0 && every < 100) every = 100;
+	s_prof_every = every;
+	for (i = 0; i < s_nstates; i++) l4_prof_dat(s_states[i]);
+	if (s_master) l4_prof_dat(s_master);
+	return every;
+}
+static int l4_prof_cmp(const void* a, const void* b)
+{
+	long long x = (*(L4Prof* const*)a)->n, y = (*(L4Prof* const*)b)->n;
+	return (x < y) - (x > y);
+}
+/* ghi bang xep hang vao path (ghi noi), top dong + gop theo tep, roi xoa so lieu; tra so mau cua ky */
+LUA_API long long lua4_prof_write(const char* path, int top)
+{
+	L4Prof** arr;
+	L4Prof* e;
+	int i, k = 0;
+	long long mau = s_prof_mau;
+	FILE* f;
+	double giay = (l4_now_ms() - s_prof_t0) / 1000.0;
+	time_t t = time(NULL);
+	struct tm* tm = localtime(&t);
+	if (mau <= 0 || s_prof_nkeys <= 0) return 0;
+	arr = (L4Prof**)malloc(sizeof(L4Prof*) * (size_t)s_prof_nkeys);
+	if (arr == NULL) return 0;
+	for (i = 0; i < L4_PROF_BUCKETS; i++)
+		for (e = s_prof_bucket[i]; e; e = e->next) arr[k++] = e;
+	qsort(arr, (size_t)k, sizeof(L4Prof*), l4_prof_cmp);
+	f = fopen(path ? path : "jx_lua_prof.log", "a");
+	if (f != NULL)
+	{
+		typedef struct { char tep[256]; long long n; } L4Tep;
+		L4Tep* tep = (L4Tep*)calloc(64, sizeof(L4Tep));
+		int ntep = 0;
+		if (top <= 0) top = 40;
+		fprintf(f, "=== [LUA54 PROF] %04d/%02d/%02d %02d:%02d:%02d  ky %.0f s  %lld mau (moi %d lenh, %d vi tri, %lld ngoai bang) ===\n",
+			tm ? tm->tm_year + 1900 : 0, tm ? tm->tm_mon + 1 : 0, tm ? tm->tm_mday : 0, tm ? tm->tm_hour : 0, tm ? tm->tm_min : 0, tm ? tm->tm_sec : 0,
+			giay, mau, s_prof_every, s_prof_nkeys, s_prof_khac);
+		for (i = 0; i < k && i < top; i++)
+			fprintf(f, "  %6.2f%%  %9lld  %s\n", 100.0 * (double)arr[i]->n / (double)mau, arr[i]->n, arr[i]->key);
+		if (tep != NULL)
+		{
+			for (i = 0; i < k; i++)
+			{
+				const char* p = strrchr(arr[i]->key, ':');
+				size_t len = p ? (size_t)(p - arr[i]->key) : strlen(arr[i]->key);
+				int j;
+				if (len >= sizeof(tep[0].tep)) len = sizeof(tep[0].tep) - 1;
+				for (j = 0; j < ntep; j++)
+					if (strncmp(tep[j].tep, arr[i]->key, len) == 0 && tep[j].tep[len] == 0) { tep[j].n += arr[i]->n; break; }
+				if (j == ntep && ntep < 64) { memcpy(tep[ntep].tep, arr[i]->key, len); tep[ntep].tep[len] = 0; tep[ntep].n = arr[i]->n; ntep++; }
+			}
+			fprintf(f, "  -- theo tep:\n");
+			for (i = 0; i < ntep && i < 20; i++)
+				fprintf(f, "  %6.2f%%  %9lld  %s\n", 100.0 * (double)tep[i].n / (double)mau, tep[i].n, tep[i].tep);
+			free(tep);
+		}
+		fclose(f);
+	}
+	free(arr);
+	for (i = 0; i < L4_PROF_BUCKETS; i++)
+	{
+		e = s_prof_bucket[i];
+		while (e) { L4Prof* nx = e->next; free(e->key); free(e); e = nx; }
+		s_prof_bucket[i] = NULL;
+	}
+	s_prof_nkeys = 0; s_prof_mau = 0; s_prof_khac = 0;
+	s_prof_t0 = l4_now_ms();
+	return mau;
+}
+
+/* ---- kiem kieu doi so ---- */
+static int l4_kiem_kieu_on(void)
+{
+	if (s_kiem_kieu < 0) { const char* e = getenv("LUA54_KIEM_KIEU"); s_kiem_kieu = (e != NULL && e[0] == '1') ? 1 : 0; }
+	return s_kiem_kieu;
+}
+static unsigned char s_kieu_da[8192];
+static void l4_kieu_bao(lua_State* L, int index, const char* mong)
+{
+	lua_Debug ar0, ar1;
+	char msg[512];
+	const char* ham = "?";
+	const char* tep = "(C++)";
+	int dong = 0;
+	unsigned h;
+	FILE* f;
+	if (lua_getstack(L, 0, &ar0) && lua_getinfo(L, "n", &ar0) && ar0.name) ham = ar0.name;
+	if (lua_getstack(L, 1, &ar1) && lua_getinfo(L, "Sl", &ar1)) { tep = ar1.short_src; dong = ar1.currentline; }
+	snprintf(msg, sizeof(msg), "[KIEUSAI] %s:%d %s(#%d) nhan %s, mong %s -> %s", tep, dong, ham, index,
+		luaL_typename(L, index), mong, (mong[0] == 's') ? "NULL" : "0");
+	h = l4_fnv(msg) & 0xFFFF;
+	if (s_kieu_da[h >> 3] & (unsigned char)(1 << (h & 7))) return;
+	s_kieu_da[h >> 3] |= (unsigned char)(1 << (h & 7));
+	f = fopen("logs\\lua_kieu.log", "a");
+	if (f == NULL) f = fopen("lua_kieu.log", "a");
+	if (f) { fprintf(f, "%s\n", msg); fclose(f); }
+}
+
 /* chuan hoa khoa: '\' -> '/', ASCII thuong; byte cao (ten Han GBK) giu nguyen */
 static void l4_inc_norm(const char* in, char* out, size_t cap)
 {
@@ -186,25 +537,11 @@ static int l4_writer(lua_State* L, const void* p, size_t sz, void* ud)
 /* closure o dinh stack -> ghi vao cache cua state (FN[key] = closure, ST[key] = stamp); closure van o dinh */
 static void l4_inc_remember(lua_State* L, const char* key, const char* stamp)
 {
-	lua_getfield(L, LUA_REGISTRYINDEX, L4_REG_INC_FN);
-	if (!lua_istable(L, -1))
-	{
-		lua_pop(L, 1);
-		lua_newtable(L);
-		lua_pushvalue(L, -1);
-		lua_setfield(L, LUA_REGISTRYINDEX, L4_REG_INC_FN);
-	}
+	l4_inc_bang(L, "fn");					/* [closure fn] - [LUA54 06/09 toi] theo state, hoac theo E khi mot state */
 	lua_pushvalue(L, -2);
 	lua_setfield(L, -2, key);
 	lua_pop(L, 1);
-	lua_getfield(L, LUA_REGISTRYINDEX, L4_REG_INC_ST);
-	if (!lua_istable(L, -1))
-	{
-		lua_pop(L, 1);
-		lua_newtable(L);
-		lua_pushvalue(L, -1);
-		lua_setfield(L, LUA_REGISTRYINDEX, L4_REG_INC_ST);
-	}
+	l4_inc_bang(L, "st");					/* [closure st] */
 	lua_pushstring(L, stamp);
 	lua_setfield(L, -2, key);
 	lua_pop(L, 1);
@@ -340,7 +677,7 @@ LUA_API int lua4_alias_doi(const char* full, char* out, int cap) { return l4_ali
 
 /* Tra: 1 = closure da o dinh stack (tu cache hoac vua bien dich); 0 = khong dung cache (goi duong cu);
 **      < 0 = -(ma loi Lua 4), loi da duoc bao qua _ERRORMESSAGE nhu duong cu */
-static int l4_inc_load(lua_State* L, const char* filename)
+static int l4_inc_load(lua_State* L, const char* filename, int* once)
 {
 	char key[1024];
 	char stamp[64];
@@ -349,42 +686,46 @@ static int l4_inc_load(lua_State* L, const char* filename)
 	unsigned h;
 	L4IncEntry* e;
 	int r;
+	if (once) *once = 0;
 	if (strlen(filename) >= sizeof(key)) return 0;
 	if (_stat64(filename, &st) != 0 || (st.st_mode & _S_IFDIR)) return 0;
 	mt = (long long)st.st_mtime;
 	sz = (long long)st.st_size;
 	l4_inc_norm(filename, key, sizeof(key));
 	snprintf(stamp, sizeof(stamp), "%lld:%lld", mt, sz);
-	/* 2a: closure cua chinh state nay */
-	lua_getfield(L, LUA_REGISTRYINDEX, L4_REG_INC_ST);
-	if (lua_istable(L, -1))
+	h = l4_fnv(key);
+	/* 2a: closure cua chinh state nay (theo E khi mot state) */
+	l4_inc_bang(L, "st");						/* [st] */
+	lua_getfield(L, -1, key);					/* [st v] */
+	if (lua_isstring(L, -1) && strcmp(lua_tostring(L, -1), stamp) == 0)
 	{
-		lua_getfield(L, -1, key);
-		if (lua_isstring(L, -1) && strcmp(lua_tostring(L, -1), stamp) == 0)
+		lua_pop(L, 2);
+		l4_inc_bang(L, "fn");					/* [fn] */
+		lua_getfield(L, -1, key);				/* [fn f] */
+		if (lua_isfunction(L, -1))
 		{
-			lua_pop(L, 2);
-			lua_getfield(L, LUA_REGISTRYINDEX, L4_REG_INC_FN);
-			lua_getfield(L, -1, key);
-			if (lua_isfunction(L, -1))
+			lua_remove(L, -2);
+			s_inc_n_state_hit++;
+			s_inc_bytes_saved += sz;
+			if (once)
 			{
-				lua_remove(L, -2);
-				s_inc_n_state_hit++;
-				s_inc_bytes_saved += sz;
-				return 1;
+				l4_inc_lock();
+				e = l4_inc_find(key, h);
+				*once = (e != NULL) ? e->once : 0;
+				l4_inc_unlock();
 			}
-			lua_pop(L, 2);
+			return 1;
 		}
-		else
-			lua_pop(L, 2);
+		lua_pop(L, 2);
 	}
 	else
-		lua_pop(L, 1);
+		lua_pop(L, 2);
 	/* 2b: bytecode dung chung */
-	h = l4_fnv(key);
 	l4_inc_lock();
 	e = l4_inc_find(key, h);
 	if (e != NULL && e->code != NULL && e->mtime == mt && e->size == sz)
 	{
+		int once_e = e->once;
 		r = luaL_loadbufferx(L, e->code, e->len, key, "b");
 		l4_inc_unlock();
 		if (r == LUA_OK)
@@ -392,6 +733,7 @@ static int l4_inc_load(lua_State* L, const char* filename)
 			s_inc_n_global_hit++;
 			s_inc_bytes_saved += sz;
 			l4_inc_remember(L, key, stamp);
+			if (once) *once = once_e;
 			return 1;
 		}
 		lua_pop(L, 1);							/* bytecode hong (khong mong doi) -> bien dich lai tu nguon */
@@ -403,6 +745,8 @@ static int l4_inc_load(lua_State* L, const char* filename)
 	s_inc_n_compile++;
 	{
 		L4Buf b;
+		int once_tep = l4_tep_once(filename);
+		if (once) *once = once_tep;
 		memset(&b, 0, sizeof(b));
 		if (lua_dump(L, l4_writer, &b, 0) == 0 && !b.oom && b.buf != NULL)
 		{
@@ -421,7 +765,7 @@ static int l4_inc_load(lua_State* L, const char* filename)
 			if (e != NULL && e->key != NULL)
 			{
 				if (e->code) { s_inc_bytes_code -= (long long)e->len; free(e->code); }
-				e->code = b.buf; e->len = b.len; e->mtime = mt; e->size = sz;
+				e->code = b.buf; e->len = b.len; e->mtime = mt; e->size = sz; e->once = once_tep;
 				s_inc_bytes_code += (long long)b.len;
 				b.buf = NULL;
 			}
@@ -434,6 +778,7 @@ static int l4_inc_load(lua_State* L, const char* filename)
 }
 
 LUA_API void lua4_inc_set(int on)		{ s_inc_on = on ? 1 : 0; }
+LUA_API long long lua4_inc_once_skip(void)	{ return s_inc_n_once_skip; }	/* [LUA54 06/09 toi] so lan Include bo qua nho @IncludeOnce */
 LUA_API void lua4_inc_stats(long long* state_hit, long long* global_hit, long long* compiled, long long* bytes_saved, long long* bytes_code)
 {
 	if (state_hit) *state_hit = s_inc_n_state_hit;
@@ -491,11 +836,11 @@ static void l4_report(lua_State* L)
 {
 	int top = lua_gettop(L);
 	if (top < 1) return;
-	lua_getglobal(L, "_ERRORMESSAGE");
+	lua4_getglobal(L, "_ERRORMESSAGE");		/* [LUA54 06/09 toi] theo E cua script (mot state) roi bang chu */
 	if (!lua_isfunction(L, -1))
 	{
 		lua_pop(L, 1);
-		lua_getglobal(L, "_ALERT");
+		lua4_getglobal(L, "_ALERT");
 	}
 	if (lua_isfunction(L, -1))
 	{
@@ -555,18 +900,71 @@ static int l4_status(int st)
 
 LUA_API lua_State* lua4_open(int stacksize)
 {
-	lua_State* L = luaL_newstate();
+	lua_State* L;
 	(void)stacksize;					/* 5.4 tu tang stack */
+	if (l4_mot_state())					/* [LUA54 06/09 toi] mot state chu + thread/E cho moi script */
+	{
+		lua_State* T;
+		if (s_master == NULL)
+		{
+			s_master = luaL_newstate();
+			if (s_master == NULL) return NULL;
+			lua_atpanic(s_master, l4_panic);
+			lua_gc(s_master, LUA_GCGEN, 0, 0);
+			l4_inc_init();
+			l4_prof_dat(s_master);
+		}
+		T = lua_newthread(s_master);				/* master: [T] */
+		if (T == NULL) return NULL;
+		l4_reg_table(s_master, L4_REG_THREADS, NULL);	/* master: [T threads] */
+		lua_pushvalue(s_master, -2);				/* [T threads T] */
+		lua_pushboolean(s_master, 1);
+		lua_rawset(s_master, -3);					/* threads[T] = true */
+		lua_pop(s_master, 2);
+		lua_newtable(T);							/* T: [E] */
+		lua_newtable(T);							/* [E mt] */
+		lua_pushglobaltable(T);
+		lua_setfield(T, -2, "__index");				/* mt.__index = bang chu */
+		lua_setmetatable(T, -2);					/* [E] */
+		lua_pushvalue(T, -1);
+		lua_setfield(T, -2, "_G");					/* E._G = E (script coi E la bang toan cuc cua minh) */
+		l4_reg_table(T, L4_REG_ENV, "k");			/* [E env] */
+		lua_pushthread(T);							/* [E env T] */
+		lua_pushvalue(T, -3);						/* [E env T E] */
+		lua_rawset(T, -3);							/* env[T] = E; [E env] */
+		lua_pop(T, 1);								/* [E] */
+		l4_reg_table(T, L4_REG_ENVTHREAD, "k");		/* [E map] */
+		lua_pushvalue(T, -2);						/* [E map E] */
+		lua_pushthread(T);							/* [E map E T] */
+		lua_rawset(T, -3);							/* map[E] = T; [E map] */
+		lua_pop(T, 2);
+		l4_prof_dat(T);
+		l4_states_add(T);
+		return T;
+	}
+	L = luaL_newstate();
 	if (L == NULL) return NULL;
 	lua_atpanic(L, l4_panic);
 	lua_gc(L, LUA_GCGEN, 0, 0);			/* GC the he: khong con dung-toan-bo nhu Lua 4 */
 	l4_inc_init();						/* [LUA54 06/09] khoa cache Include (mot lan, luong chinh) */
+	l4_prof_dat(L);						/* [LUA54 06/09 toi] profiler lay mau (LUA54_PROF) */
+	l4_states_add(L);
 	return L;
 }
 
 LUA_API void lua4_close(lua_State* L)
 {
-	if (L) lua_close(L);
+	if (L == NULL) return;
+	l4_states_del(L);
+	if (l4_mot_state())					/* thread: bo neo + E, de GC don; master song den het tien trinh */
+	{
+		if (L == s_master) return;
+		lua_settop(L, 0);
+		l4_reg_table(L, L4_REG_ENV, "k");		lua_pushthread(L); lua_pushnil(L); lua_rawset(L, -3); lua_pop(L, 1);
+		l4_reg_table(L, L4_REG_THREADS, NULL);	lua_pushthread(L); lua_pushnil(L); lua_rawset(L, -3); lua_pop(L, 1);
+		return;
+	}
+	lua_close(L);
 }
 
 /* ======================================================================== stack ==== */
@@ -649,15 +1047,21 @@ LUA_API double lua4_tonumber(lua_State* L, int index)
 	if (lua_isboolean(L, index))
 		return lua_toboolean(L, index) ? 1.0 : 0.0;
 	d = (double)lua_tonumberx(L, index, &isnum);
+	if (!isnum && l4_kiem_kieu_on()) l4_kieu_bao(L, index, "number");	/* [LUA54 06/09 toi] LUA54_KIEM_KIEU=1 */
 	return isnum ? d : 0.0;
 }
 
 LUA_API const char* lua4_tostring(lua_State* L, int index)
 {
+	const char* s;
 	if (lua_isboolean(L, index))
 		return lua_toboolean(L, index) ? "1" : "0";
-	return lua_tolstring(L, index, NULL);		/* so -> chuoi tai cho, nhu Lua 4 */
+	s = lua_tolstring(L, index, NULL);			/* so -> chuoi tai cho, nhu Lua 4 */
+	if (s == NULL && l4_kiem_kieu_on()) l4_kieu_bao(L, index, "string");
+	return s;
 }
+
+LUA_API int lua4_toboolean(lua_State* L, int index)	{ return lua_toboolean(L, index); }
 
 LUA_API size_t lua4_strlen(lua_State* L, int index)
 {
@@ -840,6 +1244,9 @@ LUA_API void lua4_pushnumber(lua_State* L, double n)
 LUA_API void lua4_pushlstring(lua_State* L, const char* s, size_t len)	{ lua_pushlstring(L, s, len); }
 LUA_API void lua4_pushstring(lua_State* L, const char* s)				{ lua_pushstring(L, s); }
 LUA_API void lua4_pushcclosure(lua_State* L, lua_CFunction fn, int n)	{ lua_pushcclosure(L, fn, n); }
+/* [LUA54 06/09 toi] C3: boolean / so nguyen 64 bit that (KLuaScript::CallFunction 'b' / 'i') */
+LUA_API void lua4_pushboolean(lua_State* L, int b)						{ lua_pushboolean(L, b); }
+LUA_API void lua4_pushinteger(lua_State* L, long long n)				{ lua_pushinteger(L, (lua_Integer)n); }
 
 LUA_API void lua4_pushusertag(lua_State* L, void* u, int tag)
 {
@@ -860,13 +1267,43 @@ LUA_API void lua4_pushusertag(lua_State* L, void* u, int tag)
 
 /* ======================================================================== get / set ==== */
 
-LUA_API void lua4_getglobal(lua_State* L, const char* name)	{ lua_getglobal(L, name); }
+/* [LUA54 06/09 toi] mot state: bien toan cuc cua script = bang E cua thread (E.__index -> bang chu) */
+LUA_API void lua4_getglobal(lua_State* L, const char* name)
+{
+	if (!l4_mot_state()) { lua_getglobal(L, name); return; }
+	l4_env_push(L);								/* [E] */
+	lua_getfield(L, -1, name);					/* [E v] */
+	lua_remove(L, -2);
+}
 LUA_API void lua4_gettable(lua_State* L, int index)			{ lua_gettable(L, index); }
 LUA_API void lua4_rawget(lua_State* L, int index)			{ lua_rawget(L, index); }
 LUA_API void lua4_rawgeti(lua_State* L, int index, int n)	{ lua_rawgeti(L, index, (lua_Integer)n); }
-LUA_API void lua4_getglobals(lua_State* L)					{ lua_pushglobaltable(L); }
+LUA_API void lua4_getglobals(lua_State* L)					{ l4_env_push(L); }
 LUA_API void lua4_newtable(lua_State* L)					{ lua_newtable(L); }
-LUA_API void lua4_setglobal(lua_State* L, const char* name)	{ lua_setglobal(L, name); }
+LUA_API void lua4_setglobal(lua_State* L, const char* name)	/* gia tri o dinh stack */
+{
+	if (!l4_mot_state()) { lua_setglobal(L, name); return; }
+	if (lua_iscfunction(L, -1))
+	{
+		/* ham C (742 ham gan, _ALERT...): vao bang chu neu chua co; trung thi bo qua; khac -> ghi de rieng trong E */
+		lua_pushglobaltable(L);					/* [v G] */
+		lua_getfield(L, -1, name);				/* [v G cu] */
+		if (lua_isnil(L, -1))
+		{
+			lua_pop(L, 1);						/* [v G] */
+			lua_pushvalue(L, -2);				/* [v G v] */
+			lua_setfield(L, -2, name);			/* G[name] = v; [v G] */
+			lua_pop(L, 2);
+			return;
+		}
+		if (lua_rawequal(L, -1, -3)) { lua_pop(L, 3); return; }
+		lua_pop(L, 2);							/* [v] */
+	}
+	l4_env_push(L);								/* [v E] */
+	lua_insert(L, -2);							/* [E v] */
+	lua_setfield(L, -2, name);					/* E[name] = v; [E] */
+	lua_pop(L, 1);
+}
 LUA_API void lua4_settable(lua_State* L, int index)			{ lua_settable(L, index); }
 LUA_API void lua4_rawset(lua_State* L, int index)			{ lua_rawset(L, index); }
 LUA_API void lua4_rawseti(lua_State* L, int index, int n)	{ lua_rawseti(L, index, (lua_Integer)n); }
@@ -874,7 +1311,12 @@ LUA_API void lua4_rawseti(lua_State* L, int index, int n)	{ lua_rawseti(L, index
 LUA_API void lua4_setglobals(lua_State* L)
 {
 	if (!lua_istable(L, -1)) { lua_pop(L, 1); return; }
-	lua_rawseti(L, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
+	if (!l4_mot_state()) { lua_rawseti(L, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS); return; }
+	l4_reg_table(L, L4_REG_ENV, "k");			/* [t env] */
+	lua_pushthread(L);							/* [t env L] */
+	lua_pushvalue(L, -3);						/* [t env L t] */
+	lua_rawset(L, -3);							/* env[L] = t; [t env] */
+	lua_pop(L, 2);
 }
 
 LUA_API int lua4_getref(lua_State* L, int ref)
@@ -991,6 +1433,7 @@ LUA_API int lua4_dostring(lua_State* L, const char* str)
 	if (str == NULL) return L4_ERRRUN;
 	st = luaL_loadbufferx(L, str, strlen(str), str, "t");
 	if (st != LUA_OK) return l4_loi_nap(L, st);
+	l4_gan_env(L);							/* [LUA54 06/09 toi] chunk chay trong E cua script (mot state) */
 	return lua4_call(L, 0, LUA_MULTRET);
 }
 
@@ -1006,12 +1449,30 @@ LUA_API int lua4_dofile(lua_State* L, const char* filename)
 	}
 	if (filename != NULL && l4_inc_enabled())	/* [LUA54 06/09] cache Include 2a + 2b, xem khoi tren */
 	{
-		int r = l4_inc_load(L, filename);
-		if (r > 0) return lua4_call(L, 0, LUA_MULTRET);
+		int once = 0;
+		int r = l4_inc_load(L, filename, &once);
+		if (r > 0)
+		{
+			l4_gan_env(L);
+			if (once && l4_inc_once_enabled())	/* [LUA54 06/09 toi] @IncludeOnce: than tep chi chay mot lan / state (E) */
+			{
+				char key[1024];
+				l4_inc_norm(filename, key, sizeof(key));
+				l4_inc_bang(L, "done");			/* [f done] */
+				lua_getfield(L, -1, key);		/* [f done v] */
+				if (lua_toboolean(L, -1)) { lua_pop(L, 3); s_inc_n_once_skip++; return 0; }
+				lua_pop(L, 1);					/* [f done] */
+				lua_pushboolean(L, 1);
+				lua_setfield(L, -2, key);		/* done[key] = true */
+				lua_pop(L, 1);					/* [f] */
+			}
+			return lua4_call(L, 0, LUA_MULTRET);
+		}
 		if (r < 0) return -r;
 	}
 	st = luaL_loadfilex(L, filename, "t");
 	if (st != LUA_OK) return l4_loi_nap(L, st);
+	l4_gan_env(L);
 	return lua4_call(L, 0, LUA_MULTRET);
 }
 
@@ -1019,6 +1480,7 @@ LUA_API int lua4_dobuffer(lua_State* L, const char* buff, size_t size, const cha
 {
 	int st = luaL_loadbufferx(L, buff, size, name ? name : "?", "t");
 	if (st != LUA_OK) return l4_loi_nap(L, st);
+	l4_gan_env(L);
 	return lua4_call(L, 0, LUA_MULTRET);
 }
 
@@ -1026,6 +1488,7 @@ LUA_API int lua4_compilebuffer(lua_State* L, const char* buff, size_t size, cons
 {
 	int st = luaL_loadbufferx(L, buff, size, name ? name : "?", "t");
 	if (st != LUA_OK) return l4_loi_nap(L, st);
+	l4_gan_env(L);
 	return 0;								/* ham da bien dich nam o dinh stack */
 }
 
@@ -1033,6 +1496,7 @@ LUA_API int lua4_compilefile(lua_State* L, const char* filename)
 {
 	int st = luaL_loadfilex(L, filename, "t");
 	if (st != LUA_OK) return l4_loi_nap(L, st);
+	l4_gan_env(L);
 	return 0;
 }
 
@@ -1352,6 +1816,7 @@ LUA_API void lua4_baselibopen(lua_State* L)
 	lua_register(L, "random", l4_b_random);
 	lua_register(L, "randomseed", l4_b_randomseed);
 	lua_register(L, "L4_DuongDanMoi", l4_b_duongdanmoi);	/* [SAPXEP 06/09] bi danh duong dan cho shim dofile */
+	lua_register(L, "L4_Env", l4_b_env);					/* [LUA54 06/09 toi] moi truong cua ham goi (getglobal/dostring/load... trong shim) */
 	lua_pushboolean(L, 1);
 	lua_setfield(L, LUA_REGISTRYINDEX, L4_REG_LIBS);
 }
@@ -1486,7 +1951,7 @@ static int l4_kiem(lua_State* L, const char* ten, const char* code, const char* 
 	int ok;
 	lua_settop(L, 0);
 	if (lua4_dostring(L, code) != 0) { lua4_outerrmsg("  selftest LOI chay: "); lua4_outerrmsg(ten); lua4_outerrmsg("\n"); return 1; }
-	lua_getglobal(L, "KQ");
+	lua4_getglobal(L, "KQ");					/* [LUA54 06/09 toi] theo E cua script (mot state) */
 	r = lua4_tostring(L, -1);
 	ok = (r != NULL && strcmp(r, mong) == 0);
 	if (!ok)
@@ -1526,7 +1991,7 @@ LUA_API int lua4_selftest(lua_State* L)
 		lua_settop(L, 0);
 		lua4_dostring(L, "DA_BAO = 0 _ERRORMESSAGE = function(m) DA_BAO = 1 end");
 		if (lua4_dostring(L, "error('loi thu')") != L4_ERRRUN) { lua4_outerrmsg("  selftest SAI: ma loi ERRRUN\n"); loi++; }
-		lua_getglobal(L, "DA_BAO");
+		lua4_getglobal(L, "DA_BAO");
 		if (lua4_tonumber(L, -1) != 1.0) { lua4_outerrmsg("  selftest SAI: _ERRORMESSAGE khong duoc goi\n"); loi++; }
 		if (lua_gettop(L) != 1) { lua4_outerrmsg("  selftest SAI: stack sau loi\n"); loi++; }
 		lua_settop(L, 0);
@@ -1536,7 +2001,7 @@ LUA_API int lua4_selftest(lua_State* L)
 	{
 		lua_settop(L, 0);
 		lua4_dostring(L, "KQB = (1 == 1)");
-		lua_getglobal(L, "KQB");
+		lua4_getglobal(L, "KQB");
 		if (!lua4_isnumber(L, -1) || lua4_tonumber(L, -1) != 1.0) { lua4_outerrmsg("  selftest SAI: boolean -> 1\n"); loi++; }
 		if (lua4_type(L, -1) != L4_TNUMBER) { lua4_outerrmsg("  selftest SAI: type boolean\n"); loi++; }
 		lua_settop(L, 0);
@@ -1571,7 +2036,7 @@ LUA_API int lua4_selftest(lua_State* L)
 			lua_settop(L, 0);
 			if (lua4_dofile(L, tep) != 0 || lua4_dofile(L, tep) != 0) { lua4_outerrmsg("  selftest SAI: dofile qua cache\n"); loi++; }
 			lua_settop(L, 0);
-			lua_getglobal(L, "L4_DEM");
+			lua4_getglobal(L, "L4_DEM");
 			if (lua4_tonumber(L, -1) != 2.0) { lua4_outerrmsg("  selftest SAI: Include lan 2 phai CHAY LAI than tep\n"); loi++; }
 			lua_settop(L, 0);
 			if (l4_inc_enabled() && (s_inc_n_state_hit != h0 + 1 || s_inc_n_compile != c0 + 1))
@@ -1580,7 +2045,7 @@ LUA_API int lua4_selftest(lua_State* L)
 			if (f != NULL) { fputs("L4_DEM = (L4_DEM or 0) + 1  L4_GT = 22\n", f); fclose(f); }
 			lua4_dofile(L, tep);
 			lua_settop(L, 0);
-			lua_getglobal(L, "L4_GT");
+			lua4_getglobal(L, "L4_GT");
 			if (lua4_tonumber(L, -1) != 22.0) { lua4_outerrmsg("  selftest SAI: tep doi ma khong bien dich lai\n"); loi++; }
 			lua_settop(L, 0);
 			remove(tep);

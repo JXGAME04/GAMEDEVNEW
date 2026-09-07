@@ -42,8 +42,17 @@ _G._ERRORMESSAGE = function(msg)
 	end
 end
 
-local function baoLoi(msg)
-	local em = _G._ERRORMESSAGE
+-- [LUA54 06/09 toi] moi truong toan cuc cua SCRIPT dang goi ham shim: che do thuong = _G; che do MOT STATE
+-- (LUA54_MOT_STATE=1) = bang E rieng cua script. L4_Env(lv) do Lua54Dll dang ky, lv dem tu ham goi L4_Env:
+-- 1 = moiTruong, 2 = ham shim (getglobal, call, dostring...), 3 = script. Chi dung TRUC TIEP trong ham shim.
+local function moiTruong()
+	local f = _G.L4_Env
+	if f ~= nil then return f(3) end
+	return _G
+end
+
+local function baoLoi(msg, env)
+	local em = (env or _G)._ERRORMESSAGE
 	if type(em) == "function" then
 		pcall(em, msg)
 	end
@@ -157,18 +166,28 @@ _G.globals = function(t)
 	if t ~= nil then
 		error("globals(t): thay bang toan cuc khong ho tro tren Lua 5.4", 2)
 	end
-	return _G
+	return moiTruong()
 end
-_G.getglobal = function(name) return _G[name] end
-_G.setglobal = function(name, v) _G[name] = v end
-_G.rawgetglobal = function(name) return rawget(_G, name) end
-_G.rawsetglobal = function(name, v) rawset(_G, name, v) end
-_G.nextvar = function(k) return next(_G, k) end
+_G.getglobal = function(name) return moiTruong()[name] end
+_G.setglobal = function(name, v) moiTruong()[name] = v end
+_G.rawgetglobal = function(name) return rawget(moiTruong(), name) end
+_G.rawsetglobal = function(name, v) rawset(moiTruong(), name, v) end
+_G.nextvar = function(k) return next(moiTruong(), k) end
 _G.foreachvar = function(f)
-	for k, v in next, _G do
+	for k, v in next, moiTruong() do
 		local r = f(k, v)
 		if r ~= nil then return r end
 	end
+end
+-- load / loadfile: mac dinh chay trong moi truong cua script goi (mot state); che do thuong = _G nhu 5.4
+local load54, loadfile54 = load, loadfile
+_G.load = function(chunk, name, mode, env)
+	if env == nil then env = moiTruong() end
+	return load54(chunk, name, mode, env)
+end
+_G.loadfile = function(path, mode, env)
+	if env == nil then env = moiTruong() end
+	return loadfile54(path, mode, env)
 end
 _G.gcinfo = function() return mfloor(collectgarbage_54("count")), 0 end
 _G.collectgarbage = function(n)
@@ -187,26 +206,27 @@ _G.call = function(f, args, mode, handler)
 	if type(args) ~= "table" then
 		error("bad argument #2 to `call' (table expected)", 2)
 	end
+	local env = moiTruong()
 	local n = getn(args)
 	mode = mode or ""
 	local cu
 	if handler ~= nil then
-		cu = _G._ERRORMESSAGE
-		_G._ERRORMESSAGE = handler
+		cu = env._ERRORMESSAGE
+		env._ERRORMESSAGE = handler
 	end
 	local function goi()
 		return f(unpack(args, 1, n))
 	end
 	local r = { xpcall(goi, function(msg)
 		-- Lua 4: loi -> _ERRORMESSAGE(msg) (handler neu co) ngay tai cho loi
-		local em = _G._ERRORMESSAGE
+		local em = env._ERRORMESSAGE
 		if type(em) == "function" then
 			pcall(em, themTraceback(msg))
 		end
 		return msg
 	end) }
 	if handler ~= nil then
-		_G._ERRORMESSAGE = cu
+		env._ERRORMESSAGE = cu
 	end
 	if r[1] then
 		return unpack(r, 2, #r)
@@ -217,13 +237,13 @@ _G.call = function(f, args, mode, handler)
 	error(r[2], 0)			-- lan loi ra ngoai, khong them thong diep (lua_error(L, NULL))
 end
 
-local function chayChunk(f, err)
+local function chayChunk(f, err, env)
 	if not f then
-		baoLoi(err)
+		baoLoi(err, env)
 		return nil
 	end
 	local r = { xpcall(f, function(msg)
-		baoLoi(themTraceback(msg))
+		baoLoi(themTraceback(msg), env)
 		return msg
 	end) }
 	if r[1] then
@@ -239,17 +259,19 @@ _G.dostring = function(s, name)
 	if string.byte(s, 1) == 27 then
 		error("`dostring' cannot run pre-compiled code", 2)
 	end
-	local f, e = load(s, name or s, "t")
-	return chayChunk(f, e)
+	local env = moiTruong()
+	local f, e = load54(s, name or s, "t", env)
+	return chayChunk(f, e, env)
 end
 
 _G.dofile = function(path)
-	local f, e = loadfile(path, "t")
+	local env = moiTruong()
+	local f, e = loadfile54(path, "t", env)
 	if f == nil and type(path) == "string" and type(_G.L4_DuongDanMoi) == "function" then
 		local moi = _G.L4_DuongDanMoi(path)	-- [SAPXEP 06/09] duong dan cu -> moi (script\_duongdan_cu.txt)
-		if moi ~= nil then f, e = loadfile(moi, "t") end
+		if moi ~= nil then f, e = loadfile54(moi, "t", env) end
 	end
-	return chayChunk(f, e)
+	return chayChunk(f, e, env)
 end
 
 -- ---------------------------------------------------------------------------

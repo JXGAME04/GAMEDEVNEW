@@ -84,17 +84,8 @@ function SayEx(strSay)
 	if strNum < 2 then
 		return
 	end;
-	if strNum > 2 then
-		for i=2,strNum - 1 do
-			strSel = strSel..format("%q", strSay[i])..",";
-		end;
-		strSel = strSel..format("%q", strSay[strNum]);
-		strMsg = "Say("..format("%q", strSay[1])..","..(strNum - 1)..","..strSel..");";
-	elseif strNum == 2 then
-		strSel = format("%q", strSay[strNum]);
-		strMsg = "Say("..format("%q", strSay[1])..",1"..","..strSel..");";
-	end;
-	dostring(strMsg);
+	-- [PA1 06/09 toi] truoc: ghep chuoi "Say(%q,...)" roi dostring (bien dich mot chunk moi lan mo menu); nay goi thang
+	Say(strSay[1], strNum - 1, table.unpack(strSay, 2, strNum));
 end;
 
 function MsgToPlayerInTaskTemp(IdTaskTemp,TAB_MSG)
@@ -142,33 +133,30 @@ function FindNameInTab(Name,TabName,nTT)
 end
 
 function TaoBang(tTable,sTableName,sTab)
-    sTab = sTab or "";  
-    sTmp = ""  
-    sTmp = sTmp..sTab..sTableName.."={"  
- 
-    local tStart = 0  
-    for key, value in pairs(tTable) do  
-  
-        if tStart == 1 then  
-            sTmp = sTmp..",\r\n"  
- 
-        else  
-            sTmp = sTmp.."\r\n"  
-            tStart = 1  
-        end  
-        local sKey = (type(key) == "string") and format("[%q]",key) or format("[%d]",key);  
-        if(type(value) == "table") then  
-            sTmp = sTmp..TaoBang(value, sKey, sTab.."\t");  
-        else  
-            local sValue = (type(value) == "string") and format("%q",value) or tostring(value);  
-            sTmp = sTmp..sTab.."\t"..sKey.." = "..sValue 
-        end  
- 
-    end 
-    sTmp = sTmp.."\r\n"..sTab.."}"  
+    -- [PA1 06/09 toi] ghep chuoi trong vong lap (O(n^2) voi bang lon khi luu du lieu) -> bo dem table.concat
+    sTab = sTab or "";
+    local tb = { sTab..sTableName.."={" }
+    local tStart = 0
+    for key, value in pairs(tTable) do
+        if tStart == 1 then
+            tb[#tb + 1] = ",\r\n"
+        else
+            tb[#tb + 1] = "\r\n"
+            tStart = 1
+        end
+        local sKey = (type(key) == "string") and format("[%q]",key) or format("[%d]",key);
+        if(type(value) == "table") then
+            tb[#tb + 1] = TaoBang(value, sKey, sTab.."\t")
+        else
+            local sValue = (type(value) == "string") and format("%q",value) or tostring(value);
+            tb[#tb + 1] = sTab.."\t"..sKey.." = "..sValue
+        end
+    end
+    tb[#tb + 1] = "\r\n"..sTab.."}"
+    sTmp = table.concat(tb)
     return sTmp
-  
-end  
+
+end
 
 function SaveData(file, string)   ---Tuy ngan nhung wan trong nhat >''<
 	file_op = openfile( file, "w+" )  --- a+ la vit them hem xoa file dau -- w+ -- la che do doc ghi xoa file dau  
@@ -177,27 +165,29 @@ function SaveData(file, string)   ---Tuy ngan nhung wan trong nhat >''<
 end 
 
 function TaoBangNew(tTable, sTableName, sTab)
+    -- [PA1 06/09 toi] bo dem table.concat thay ghep chuoi trong vong lap
     sTab = sTab or ""
-    local sTmp = ""
+    local tb = {}
 
     if sTableName and sTableName ~= "" then
-        sTmp = sTmp .. sTab .. sTableName .. " = {\n"
+        tb[#tb + 1] = sTab .. sTableName .. " = {\n"
     else
-        sTmp = sTmp .. sTab .. "{\n"
+        tb[#tb + 1] = sTab .. "{\n"
     end
 
     for key, value in pairs(tTable) do
         local sKey = (type(key) == "string") and format("[%q]", key) or format("[%d]", key)
         if type(value) == "table" then
-      
-            sTmp = sTmp .. sTab .. "\t" .. sKey .. " = " .. TaoBangNew(value, "", sTab .. "\t") .. ",\n"
+
+            tb[#tb + 1] = sTab .. "\t" .. sKey .. " = " .. TaoBangNew(value, "", sTab .. "\t") .. ",\n"
         else
             local sValue = (type(value) == "string") and format("%q", value) or tostring(value)
-            sTmp = sTmp .. sTab .. "\t" .. sKey .. " = " .. sValue .. ",\n"
+            tb[#tb + 1] = sTab .. "\t" .. sKey .. " = " .. sValue .. ",\n"
         end
     end
 
-    sTmp = sTmp .. sTab .. "}"
+    tb[#tb + 1] = sTab .. "}"
+    local sTmp = table.concat(tb)
     return sTmp
 end
 

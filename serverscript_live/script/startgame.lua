@@ -39,6 +39,7 @@ Include("\\script\\startgame\\thon\\balanghuyen.lua");
 Include("\\script\\startgame\\thon\\giangtanthon.lua");
 Include("\\script\\startgame\\thon\\longmontran.lua");
 Include("\\script\\startgame\\thon\\namnhactran.lua");
+Include("\\script\\startgame\\thon\\xaphu_thon5.lua");	-- [VTCN 06/09] Xa Phu cho 5 thon/tran con thieu
 Include("\\script\\global\\huashan2013\\npc_hoason.lua");	-- [HOASON 01/09] NPC/quai Hoa Son 2013 (Linux)
 Include("\\script\\global\\vhtd\\npc_vhtd.lua");	-- [VHTD 02/09] NPC nhap mon Vu Hon / Tieu Dao
 Include("\\script\\startgame\\thanh\\tuongduong.lua");
@@ -201,6 +202,8 @@ function addfullnpc()
 	addnpclongmon()
 	
 	addnpcnamnhac()
+	
+	addnpcxaphuthon5()	-- [VTCN 06/09] Xa Phu Long Tuyen/Dao Huong/Vinh Lac/Chu Tien/Thach Co
 	
 	addnpctuongduong()
 	

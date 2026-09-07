@@ -153,3 +153,16 @@ Chủ báo *"kiểm tra các file trap trước, dọn script làm mất trap c�
 **Cần chủ làm:** restart GameServer (hoặc GM `ReLoadAllSct`/`RLAS` = `ReLoadAllScript()` → `g_IniScriptEngine()` nạp lại + đăng ký bí danh; lệnh này huỷ mọi state đang chạy, chỉ nên dùng lúc vắng). Sau khi mở: console phải in `[script] Bi danh duong dan: 2541 dong, dang ky ID cu 2541, ten moi chua nap 0` (dòng này KHÔNG ra tệp log nào — `g_DebugLog` chỉ ra cửa sổ debug).
 
 **Luật rút ra:** không xoá/chuyển script chỉ dựa quét chữ; trước khi dọn phải chạy `kiem_trap_map.py` ra `NAM TRONG kho 0`; dọn thật sự chỉ sau khi đo động (ghi script nào được `g_GetScript` chạm trong vài tuần). Công cụ ở `bin\server	ools\sapxep\` và `ReverseTools\lua54\danhgia_0609\`.
+
+
+## 10. SỰ CỐ 19:34 (sau mục 9): GameServer sập lúc boot vì tên tệp `bando\` quá dài — đã sửa, mở lại 20:45
+
+Chủ mở GameServer 4 lần (19:34–19:35) đều sập ngay sau `mysql_core.log Init OK`. Phiên BOTNOI mổ dump (BANGIAO_BOTNOI_NGOAI_0609.md mục 10.7) chỉ đúng gốc: `KLuaScript::Load` (Engine/Src/KLuaScript.cpp:107) `strcpy(m_szScriptName, Filename)` **không giới hạn** vào `char m_szScriptName[100]`, kế tiếp là `m_UserTag` rồi `Lua_State* m_LuaState` → đuôi tên đè con trỏ state → ACCESS_VIOLATION trong `luaM_malloc_`. Kích hoạt: `gom_bando.py` (mục 9) đặt tên Hán-Việt ghép từng chữ → **390 đường dẫn > 95 ký tự, dài nhất 139** (`script\bando\trungnguyen_bac\thiennhangiao\thiennhangiaothanhdong2\trap\thiennhangiaothanhdongnhitangmatthat_to_thiennhangiaothanhdong2.lua`). 5 dump 5,8 GB (28 GB) ghi vào `script\bando\dongbac\truongbachson\truongbachsoncuoc\obj\DumpInfo\` (engine đang chdir vào đó) → đã dời `bin\_luutru\0609\dump_1934\`.
+
+**Khắc phục (20:20–20:35):**
+1. `tools\sapxep\rutgon_bando.py sua`: 524 tệp rút gọn (bỏ tiền tố trùng tên thư mục cha `<thanh>to_` → `to_`, còn dài thì cắt ≤ 90 + `_xxxx` FNV) + 3 tệp tay (`rutgon_3tep.py`) → **0 đường dẫn ≥ 96**; cập nhật 522 dòng `_duongdan_cu.txt` (vế phải) + `bando\_DOICHIEU_TEN.txt`. Kiểm: `kiem_duongdan_cu.py` 0 lỗi; `kiem_trap_map.py` 793 ID trap vẫn tra được qua bí danh.
+2. Engine: `strncpy` có giới hạn (commit 0ef17789) — phòng vệ, có trong `engine.dll.moi`.
+3. Dọn thêm: 27 tệp `.log` (386 MB: `ScriptError.log` engine ghi vào từng thư mục script khi chdir, `bdh_test.log`) dời `bin\_luutru\0609\log_trong_script\`; gương git bỏ theo dõi `*.log` (`serverscript_live/.gitignore`), tệp 386 MB bị GitHub từ chối push nên đã viết lại commit chưa đẩy.
+4. Chủ mở lại 20:45: `[Total ScriptLoaded : 3100]`, chỉ 1 lỗi biên dịch của tệp rác `scriptjx2\tong_vn\workshop\boot_loi_bando.txt` (log mô phỏng ghi nhầm vào cây, đã xoá).
+
+**Luật rút ra (memory `jx1-ten-script-100-ky-tu-sap-boot-0609`):** đường dẫn script tương đối (kể cả `\` đầu) **< 96 ký tự**; mọi công cụ đổi tên phải kiểm; `find script -type f | awk '{ if (length($0)+1 >= 96) c++ } END {print c+0}'` phải ra 0. Thư mục `DumpInfo` xuất hiện trong cây script = sập khi đang nạp tệp gần đó.
