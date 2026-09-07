@@ -110,3 +110,18 @@ Bat: thay `.moi` (CoreServer 6ba06754 bí danh, Lua54Dll 7689d830) → `r33_sapx
 `python tools\sapxep\hieunang_sau.py HH:MM` (HH:MM = giờ mở server) → bảng TICK / SW_ACTIVATE / LUA_CALL / SCRIPT_TIME, % Lua trên tick, tick trễ, RAM. So với dòng "bản 15:49" ở trên; LoadAllScript ms đọc trên console lúc boot (trước ≈ 6–7 s, kỳ vọng ≈ 2–3 s và ít state hơn: 1.733 → ~1.730).
 
 **Bài học ghi lại:** máy chủ chạy codepage 1252; tên tệp GBK trên đĩa là byte GBK được Windows đọc theo cp1252 (5 byte 0x81/0x8D/0x8F/0x90/0x9D thành U+0081…) — mọi công cụ so tên tệp với chuỗi trong dữ liệu phải dùng đúng bộ mã này (`ansi_str`/`to_disk_bytes` trong `tools\sapxep`), không dùng `gbk`/`mbcs` mặc định.
+
+## 7. SỰ CỐ 17:53 sau khi chủ chạy `SAPXEP_0609.bat` — "báo lỗi script rất nhiều" — GỐC và SỬA (18:00)
+
+**Triệu chứng:** 19 thư mục mới có `ScriptError.log`, ví dụ `global\seasonnpc.lua:84 attempt to call a nil value (global 'AssignValue')` = hàm từ tệp Include đã đổi chỗ không được nạp.
+
+**Gốc:** `KSortScript::LoadScriptInDirectory` **`chdir` vào từng thư mục script** khi nạp; Lua54Dll mở tệp bí danh bằng đường tương đối `script\_duongdan_cu.txt` → hụt ngay lần Include đầu tiên (cwd đang ở thư mục con) **và ghi nhớ "không có bí danh" vĩnh viễn** → toàn bộ Include đường dẫn cũ hỏng. Phần C++ (`sDangKyBiDanh`, ID cũ) không sao vì chạy sau khi LoadAllScript trả cwd về gốc. Mô phỏng `boot_gia.py` trước đó không đổi thư mục làm việc nên không bắt được.
+
+**Sửa (Lua54Dll x64 5db18c30 / Win32 462453cf, origin/main c3a63f77):** tệp bí danh được mở theo **gốc suy ra từ chính đường dẫn Include** (phần trước `\script\`), thử lại khi chưa mở được, không ghi nhớ kết quả thiếu tệp. `boot_gia.py` nay có `BOOT_CHDIR=1` (mặc định) đổi thư mục như engine: với DLL cũ trên cây đã sắp xếp → 257 state, chuỗi Include vỡ (tái hiện đúng sự cố); với DLL mới → 439 state, **tập lỗi giống hệt baseline cùng điều kiện (878/878, 0 khác)**. Baseline trong `tools\sapxep\boot_loi_truoc.txt` đã tính lại với đổi thư mục.
+
+**Chủ làm:** tắt GameServer →
+- nếu đã lùi bằng `r33_lui.py` (cây cũ): chạy `SAPXEP_0609.bat` lần nữa (thay `Lua54Dll.dll.moi`, đổi chỗ lại, so sánh phải in `GIONG HET`, mở server);
+- nếu chưa lùi (cây mới đang có `script\_duongdan_cu.txt`): chạy `ChayGameServer.bat` (chỉ thay `Lua54Dll.dll.moi` rồi mở).
+Console phải có `[script] Bi danh duong dan: 1238 dong, dang ky ID cu 1238, ten moi chua nap 0, ten cu con ton tai 0`; `ScriptError.log` trong các thư mục mới không sinh thêm.
+
+**Bài học ghi lại:** mô phỏng phải bắt chước cả **thư mục làm việc** của engine, không chỉ đường dẫn; mọi tệp cấu hình DLL/Core đọc lúc boot phải mở theo đường tuyệt đối suy từ gốc máy chủ.

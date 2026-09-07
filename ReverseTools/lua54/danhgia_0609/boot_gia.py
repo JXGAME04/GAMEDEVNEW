@@ -94,8 +94,11 @@ t_all = time.perf_counter()
 n_err_states = 0
 loi_all = []
 t_open = t_run = 0.0
+CHDIR = os.environ.get("BOOT_CHDIR", "1") == "1"    # nhu engine: LoadScriptInDirectory chdir vao thu muc cua tep truoc khi nap
 for i, path in enumerate(files):
     t0 = time.perf_counter()
+    if CHDIR:
+        os.chdir(os.path.dirname(path))
     L = D.lua4_open(100)
     D.lua4_baselibopen(L)
     D.lua4_dostring(L, STUB); D.lua4_settop(L, 0)
