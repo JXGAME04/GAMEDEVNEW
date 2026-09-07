@@ -301,3 +301,16 @@ Kiểm sau restart: (1) console GameServer / g_DebugLog có `[script] LoadAllScr
 **Lùi:** đặt `CoreServer.dll.moi.truoc_lua54b_1454` → `CoreServer.dll.moi` và bỏ `Lua54Dll.dll.moi`; hoặc chỉ tắt cache bằng `set LUA54_KHONG_CACHE=1` trong `ChayGameServer.bat` trước `start GameServer.exe` (DLL vẫn mới).
 
 Công cụ: `ReverseTools\lua54\danhgia_0609\` (`boot_gia.py`, `selftest_dll.py`, `patch_lua54.py`, `patch_core.py`, `build_lua54b.bat`). Tiếp theo: xem [SAPXEP_SCRIPT_0609.md](SAPXEP_SCRIPT_0609.md) (sắp xếp lại cây script — chờ chủ quyết).
+
+### 13.4 Số đo thật sau restart 15:49 (bản cache + LUA_CALL, chưa sắp xếp script) — 79 khối, online 1001
+
+| Giai đoạn | tb ms | p95 ms | max ms | chiếm % thời gian |
+|---|---:|---:|---:|---:|
+| TICK | 6,73 | 9,0 | 88,1 | 12,1 |
+| SW_ACTIVATE | 4,34 | 6,1 | 32,3 | 7,8 |
+| **LUA_CALL** (toàn bộ Lua mỗi tick) | **0,245** | 0,1 | 67,5 | **0,45** |
+| SCRIPT_TIME (RunTime mỗi phút) | 0,018 | 0 | 67,5 | 0,00 |
+
+Kết luận đo lần đầu bằng đồng hồ thật: **Lua chiếm 3,6 % tick (0,245 / 6,73 ms) và 0,45 % thời gian thực**; tick trễ 0 %; working set 8,1 GB. Đúng như dự đoán mục 12: viết lại script sang 5.4 thuần không thể đem lại quá 0,4 % tick. Đỉnh 67,5 ms mỗi vài phút trùng `SCRIPT_TIME` = `RunTime` (HD3/Vượt Ải giờ chẵn), không phải cache. Công cụ đo lại sau mỗi lần test: `python tools\sapxep\hieunang_sau.py [HH:MM]`.
+
+Hai lỗi đỏ boot 15:39 (`tasknpc.lua:64 AutoFunctions`, `achievementsys/type/longmenbiaoju.lua:7 AchievementDetailBase`) là script vận tiêu 13:51 của phiên khác, không do cache; đã chèn guard nil.

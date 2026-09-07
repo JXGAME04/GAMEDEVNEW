@@ -245,6 +245,10 @@ end
 
 _G.dofile = function(path)
 	local f, e = loadfile(path, "t")
+	if f == nil and type(path) == "string" and type(_G.L4_DuongDanMoi) == "function" then
+		local moi = _G.L4_DuongDanMoi(path)	-- [SAPXEP 06/09] duong dan cu -> moi (script\_duongdan_cu.txt)
+		if moi ~= nil then f, e = loadfile(moi, "t") end
+	end
 	return chayChunk(f, e)
 end
 
