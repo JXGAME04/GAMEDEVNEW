@@ -38,6 +38,18 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 - **SAI, đã sửa (bộ sinh + `Game.exe.moi` mới)**: (1) câu "xe không theo phù về thành, thần hành phù" — engine `KBiaoChe.cpp` nhánh B6 kéo xe sang **mọi** lần chủ đổi bản đồ (ChangeWorld, thử lại mỗi giây), chỉ dịch chuyển trong cùng bản đồ mới làm xe đứng đợi (B7, 16 ô, 5 phút); chủ thoát game thì xe đợi 5 phút, vào lại kịp thì nối tiếp (B4, `g_nBiaoCheGiuKhiThoat`). (2) câu "người giữ xe không rời bang/bị khai trừ, bang đã mở áp tiêu không đổi bang chủ" — **JX1 chưa thi hành**: Linux làm qua `script\global\tongleavepower.lua` + `tong_change_master.lua` (engine Linux ExecuteCode trước khi rời/khai trừ/đổi chủ) gọi `pActivity:CheckCanKick/CheckCanLeaveTong/CheckCanChangeMaster`; JX1 không có 2 tệp đó và `KPlayerTong.cpp` (`ApplyLeave/ApplyKick/ApplyChangeMaster`, `CheckLeavePower/CheckKickPower/CheckChangeMasterPower`) không gọi script. Ba hàm `CheckCan*` vẫn nằm sẵn trong `extend.lua` chờ nối.
 - Hook đăng nhập/đăng xuất của Linux (`PlayerExchageServerLoginInit/…LoginOut_BeforeSaveData`, `OnExchangeServerStart`) KHÔNG được JX1 gọi (không có trong Core, activitysys JX1 không phát `PlayerLogin`), nên xe không được lưu/khôi phục qua script — engine tự giữ 5 phút như trên; bài hướng dẫn mô tả đúng hành vi engine.
 
+## 1e. 06/09 TỐI — CHỦ GIAO THÊM 2 VIỆC (đã làm, CHỜ RESTART máy chủ + ChoiGame.bat)
+
+**(1) "Sửa lại Xa Phu cho đầy đủ thành thôn để di chuyển được khi bấm vào Chỉ nam"** — 3 gốc, đã sửa cả 3:
+
+- `settings\StationPrice.txt` là ma trận giá THƯA (−1 = không có tuyến; Linux cũng thế): từ Trấn Long Môn chỉ đi được Phượng Tường, từ thành chỉ tới thôn kề… → `GetStation()` engine chỉ liệt kê bến có giá > 0. Đã điền ĐỦ 16×16 (174 ô) bằng đường ngắn nhất trên các tuyến sẵn có (Floyd–Warshall, giá cao nhất 90 lượng; ví dụ Long Môn→Thành Đô = 20+20 = 40). Công cụ `ReverseTools\vantieu\va_vtcn_xaphu_0609.py`, sao lưu `.truoc_vtcn_xaphu_0609`. Engine nạp bảng lúc boot → cần restart.
+- `script\global\station.lua` `StationFun()` chỉ `AddStation(1..15)` trong khi `Station.txt` có 16 bến (sót Trấn Thạch Cổ) → `getn(STATION_ARRAY)`.
+- 5 thôn/trấn có bến nhưng KHÔNG có NPC Xa Phu: Long Tuyền 174, Đạo Hương 101, Vĩnh Lạc 99, Chu Tiên 100, Thạch Cổ 153 (chỉ Giang Tân/Long Môn/Ba Lăng/Nam Nhạc có, trong `startgame\thon\`). Thêm `script\startgame\thon\xaphu_thon5.lua` (`addnpcxaphuthon5()`, mẫu 239, cách điểm đến của bến 3 ô, đã soi lưới `Maps\<id>_srv.fp` bằng `ReverseTools\fp_view.py` = ô đi được) và móc vào `startgame.lua` (Include dòng 42 + gọi trong `addfullnpc()` dòng 206). Client `s_nVTXaPhuMap` (16 map) đã đúng từ trước.
+
+**(2) "Xe tiêu nhảy map theo người chơi khi dùng Thần Hành Phù or đi Xa Phu"** — engine nhánh B6 `KBiaoChe.cpp` kéo xe theo MỌI lần đổi map; Linux chỉ giữ xe khi dập trap (`GetPlayerEnteringTrap`). Sửa engine (commit ac843e9b): `KNpc::CheckTrap` ghi dấu `BC_OnPlayerTrap` khi script trap ĐÃ đổi map; B6 chỉ kéo xe khi dấu = map của xe; đổi map ngoài trap (Thần Hành Phù, phù về thành, Xa Phu, hồi sinh về thành) → xe ở lại, tính "quá xa" (5 phút biến mất), chủ về xe bằng "Truyền tống đến Tiêu Xa". Chi tiết + cách kiểm: `DACTA_ENGINE_XETIEU_0609.md` mục 10. Bài hướng dẫn Chỉ nam (VT_CN_B3, VT_BH_LUUY) sửa lại theo đúng luật này (câu tôi "sửa" ở mục 1d hồi 18:40 nay đảo lại vì chủ chốt hành vi Linux).
+
+Nhị phân đợt này: `CoreServer.dll.moi` **d0dab0c9** (build từ origin/main đã gộp 2c2be21f: gồm cả bot nội/ngoại đợt 4, WAuto TK, SAPXEP trap), `Game.exe.moi` **6210e1f5**. Máy chủ đã restart 19:32 với bản `d83e56da` của phiên bot nội/ngoại (siêu tập v2 của tôi) nên khe `.moi` máy chủ trống — bản mới đặt vào đó.
+
 ## 2. CÁCH CHẠY (chủ làm)
 
 | Bước | Lệnh | Ghi chú |
@@ -51,7 +63,7 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 | Tệp | Đặt ở | SHA-256 (8 đầu) | Có đủ (kiểm bằng `ReverseTools\vantieu\deploy_vtcn2_0609.py`) |
 |---|---|---|---|
 | `CoreServer.dll.moi` | `bin\server` | **61bc3e0f** (18.455.552 B, 18:12) | CreateBiaoChe/BC_SetEnable, AUC_MsgTong, CL_Cong, UpdateBattleInfo, st3_goboss, Lua54Dll, [RELAYHT], LUA_CALL, `_duongdan_cu` (R2), **vt_quit_canhan/vt_quit_bang**, KHÔNG còn vt_goto_canhan. Không bắt buộc swap ngay: bản 6ba06754 đang chạy chỉ thừa lệnh chết. |
-| `Game.exe.moi` | `bin\client` | **f0b16230** (bản cấp 90 + bài hướng dẫn đã rà, thay 04ae18d2) | NewTask/F11, tg_quit/st3_quit, vt_quit_*, bài hướng dẫn vận tiêu v2 (gợi ý Xa Phu / phù về thành / map sự kiện); `re_pe_crt` UCRT-RELEASE đúng |
+| `Game.exe.moi` | `bin\client` | **6210e1f5** (bài hướng dẫn: xe chỉ theo qua cửa bản đồ; thay f0b16230) | NewTask/F11, tg_quit/st3_quit, vt_quit_*, bài hướng dẫn vận tiêu v2 (gợi ý Xa Phu / phù về thành / map sự kiện); `re_pe_crt` UCRT-RELEASE đúng |
 | `CoreClient.dll.moi` | `bin\client` | **ba2f2f11 (phiên WAuto TK 19:03, 2.586.112 B, build từ main sau 5eec1c02: thêm PK bỏ mục tiêu có khiên 963 + ipc_shared.h autoData 7644 B đi kèm WAuto.exe.moi; siêu tập của bản 96dc5115 của tôi, đã kiểm dấu hiệu v2 lúc 19:05)** (2.577.408 B, 18:12) | TG_VanTieu v2 (6 pha, không nhảy map), TG_ChanMapSuKien cho Dã Tẩu/Sát Thủ/Vận tiêu, tên bến Xa Phu |
 
 Cặp thư viện: `Lib\lua54\x64\Lua54Dll.dll` 5db18c30 = `bin\server\Lua54Dll.dll` đang chạy; `Lib\lua54\Win32\Lua54Dll.dll` 462453cf = `bin\client\Lua54Dll.dll` đang chạy (không cần đổi thư viện).

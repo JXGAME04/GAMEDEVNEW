@@ -995,3 +995,21 @@ extern int LuaBC_SetEnable(Lua_State* L);
 2. **PK luyen cong**: cong co san `KNpc.cpp:4054`/`:4769` khien nguoi o trang thai PK luyen cong (`GetNormalPKState() == 0`) danh xe **khong len damage** — tuc **ke cuop bat buoc phai bat co PK**. Giu, hay boc `if (!m_btBiaoChe)`?
 3. **Phe xe**: `camp_animal` khien xe **ally voi quai `camp_animal`** va **thu dich voi moi quai khac tren lo trinh** (chung se aggro xe suot duong di). Chap nhan, hay muon mot phe trung lap khac?
 4. **Nguong khoang cach**: dac ta giu **dung hang so Linux** (bam theo khi `d2 > 46224` ≈ 215 Mps ≈ 6,7 o; qua xa khi `d2 > 262143` ≈ 512 Mps ≈ 16 o). JX1 hien dung `MAX_FIND_PATH_NPC_DISTANCE = 750` tuyen tinh. **Xe se lu di ro ret** so voi cam giac JX1 hien nay — do thuc te tren may thu roi chot.
+
+---
+
+## 10. SUA 06/09 TOI (chu game): XE CHI THEO CHU QUA TRAP (cua ban do)
+
+Chu bao loi: *"xe tieu nhay map theo nguoi choi khi dung than hanh phu or di xa phu"*. Nhanh **B6** o tren keo xe sang **moi** lan chu doi ban do (ChangeWorld) - khac ban Linux: script Linux chi luu/khoi phuc xe khi `GetPlayerEnteringTrap()` (dap trap), NewWorld ngoai trap (Than Hanh Phu, phu ve thanh, Xa Phu, hoi sinh ve thanh) thi xe o lai, chu quay ve xe bang "Truyen tong den Tieu Xa" (1 van luong).
+
+Sua (commit `[VTCN 06/09 chu] Xe tieu CHI theo chu qua TRAP`):
+
+| Tep | Sua |
+|---|---|
+| `KBiaoChe.cpp` | `static short s_nBCTrapFrom[MAX_PLAYER]` = idx map + 1 noi chu vua DAP TRAP di ra (0 = khong). **B6** chi keo xe khi `bKhacMap && s_nBCTrapFrom[nOwner] == pC->m_SubWorldIndex + 1`; keo xong xoa dau. Khac map ma khong qua trap -> **B7** voi `dwD2 = -1` = "qua xa": ban `OnBiaoCheFarAwayPlayerDisapper` mot lan, 5 phut (`BC_LOST_TICK`) khong ai quay lai thi `OnBiaoCheDisapper` + go xe. Nhanh "gan" (B7 else), `BC_Attach`, `BC_OnPlayerLogout` xoa dau. |
+| `KBiaoChe.h` | `void BC_OnPlayerTrap(int nPlayerIdx, int nFromSubWorld, BOOL bChanged)` |
+| `KNpc.cpp` `CheckTrap` | `#ifdef _SERVER`: nho `m_SubWorldIndex` TRUOC `Player[].ExecuteScript(m_TrapScriptID, "main", ...)` (ca 2 duong: trap JX2 co param va trap thuong), sau do `BC_OnPlayerTrap(m_nPlayerIdx, nFrom, m_SubWorldIndex != nFrom)` - chi ghi dau khi script trap DA doi map (ChangeWorld cua `NewWorld` la dong bo). |
+
+He qua thay duoc: chu dap trap A->B (di bo qua cua) -> xe sang B trong ~1 giay (nhu cu). Chu dung Than Hanh Phu / phu ve thanh / Xa Phu / hoi sinh sang map khac -> xe DUNG TAI CHO o map A, log `[Long Mon Tieu Cuc] ... cach nguoi choi 750m qua gio bien mat`, 5 phut sau mat xe; chu ve A trong 5 phut (Truyen tong, di bo, Xa Phu) thi xe theo tiep. Chu dap trap o map B (khong phai map xe) -> KHONG keo (dau = B, xe o A). Bai huong dan Chi nam (`UiTaskGuideVanTieu.h` VT_CN_B3 / VT_BH_LUUY) da ghi dung luat nay.
+
+Kiem sau restart: (1) nhan xe 1 sao, di bo qua cua map -> xe theo; (2) dung Than Hanh Phu -> xe o lai, Log KSG_YunBiaoLog co dong 'cach nguoi choi 750m'; (3) Truyen tong ve xe -> xe theo tiep; (4) Xa Phu sang thanh khac roi doi 5 phut -> xe mat, `OnBiaoCheDisapper`.
