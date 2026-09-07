@@ -717,3 +717,5 @@ Chủ chạy cả hai bat lúc 07:28; trận Tống Kim mới bắt đầu 07:31
 **Vá e đã build:** `bin\server\CoreServer.dll.moi` = **bdc8ae53** (18.480.640, từ `origin/main` aa38685a ⊇ SK120 33b1dfa4), chỉ máy chủ; client giữ 5f86a7f7. Swap sau khi trận 07:31 kết thúc (~08:01), rồi đọc `[PS-BO] ... nhom:` ở trận kế.
 
 **Cập nhật 07:55:** phiên SKEXP thay cả hai khe bằng bản build từ `origin/main` 217202f0 (⊇ vá e b4e6277c, đã kiểm đủ dấu hiệu DELTA): **`CoreServer.dll.moi` = ce462519, `CoreClient.dll.moi` = e7c70880** (không đổi giao thức; bản e bdc8ae53 giữ tên `.moi.delta_e_bdc8ae53_0749`). Cặp chờ swap hiện tại là cặp này, chạy cả hai bat sau trận 07:31.
+
+**Cập nhật 09:58:** phiên TOCDO thay khe: **`CoreServer.dll.moi` = e37ab486, `CoreClient.dll.moi` = ab99660c** (build từ `origin/main` ffffade4 ⊇ vá e, đã kiểm đủ dấu hiệu DELTA; cặp SKEXP giữ tên `.moi.tocdo_*`). Live vẫn 1a33f617 + 5f86a7f7 từ 07:28, tức vá e chưa chạy; chạy cả hai bat để có chẩn đoán gói 75 ở trận kế.
