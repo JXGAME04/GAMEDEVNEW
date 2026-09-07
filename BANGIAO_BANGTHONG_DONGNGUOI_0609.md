@@ -824,3 +824,34 @@ Nguồn: pid 27800 (máy chủ 11f83405 từ 14:35, có vá g), 210 cửa sổ 1
 **Vá i (chỉ máy chủ, script `ReverseTools/goi_va_delta9_dandeu75_lammoiday_0709.py`):** (1) `DongBoLamMoiDay` mặc định 60.000 ms, kẹp 600.000; (2) làm mới 75: `+ (m_Index % 128) * 1000` ms; (3) đếm bit cờ. Kỳ vọng trận kế ở cùng mật độ: 77 15 → ~3 %, 75 11 → ~6 % (còn phần bit chưa rõ), tổng −15 %, đỉnh 62 → ~45 KB/s.
 
 **Đã đặt 15:21 (chỉ máy chủ, chờ chủ chạy ChayGameServer.bat):** `CoreServer.dll.moi` **b9b4cb4a** = origin/main 822e5857 (⊇ live 11f83405, kiểm chuỗi missing = 0). Sau trận kế đọc: `[PS-BO] ... | bit: 01= 02= 04= 08= 10= 20= | bot= nguoi=` (bit nào đổi), tỉ lệ byte 77 (kỳ vọng ~3 %), cửa sổ đỉnh không còn cụm 75.
+
+### 8.15 Chu bao "chet ve thanh roi van nam bep duoi dat" (15:48): do 15 lan chet va va j
+
+**Nhat ky noi gi** (client 716ab775 + may chu b9b4cb4a, 15 lan chet trong mot phien):
+
+| Tang | Ket qua |
+|---|---|
+| May chu | chet -> ve thanh 0,70-0,78 s moi lan, khong lan nao `[S7-REV-NUOT]` |
+| Logic client | 15/15 lan `[S7-REV-CLI2] doing=1 cdoing=1` (dung), mau ve day sau ~1,3 s |
+| Lop ve | `[S9-VE]` ngay sau khi dung con `resdoing=8 resaction=36` (tu the chet) nhung `[S9-KET]` = **0** ca nhat ky, tuc lop ve duoi kip trong <= 3 nhip (~0,17 s) |
+| Anh SPR | 0 dong `LoadImage FAIL` cho bo phan nhan vat trong phien (24.000 dong FAIL deu la thu muc giao dien Ui3) |
+
+Nen **nhan hien co khong bat duoc** trieu chung chu thay: theo may do, 15/15 lan deu dung day trong 0,2 s.
+
+**Nhung doc ma thi co mot loi that, dung hinh dang trieu chung** (`KProtocolProcess.cpp:2198`, ham `SyncNpc` xu ly goi dong bo DAY DU):
+
+```
+if (Npc[nIdx].m_Doing != do_death || Npc[nIdx].m_Doing != do_revive) // need check later -- spe 03/05/27
+    Npc[nIdx].SendCommand((NPCCMD)NpcSync->m_Doing, ...);
+```
+
+Dieu kien nay **luon dung** (mot gia tri khong the vua bang `do_death` vua bang `do_revive`), tuc y dinh chan cua tac gia goc chua bao gio chay. He qua: goi dong bo day du **luon** ap `Doing` cua may chu, ke ca `do_death` va ke ca cho CHINH NHAN VAT. Nhat ky 07/09 co hai dong `SYNCNPC-SETPOS npc=92526 idx=1 doing=10 life=0` (nhan nay lay mau 1 giay/dong nen thuc te nhieu hon nhieu) - lan nay chung toi dung luc dang chet nen vo hai. Mot goi nhu vay toi **sau** khi da hoi sinh se dat nhan vat nam xuong trong khi may chu van coi la dang dung: dung "ve thanh roi van nam bep", va chi het khi nguoi choi tu di.
+
+**Va j (chi client, `ReverseTools/goi_va_nambep_j_0709.py`):**
+
+1. **Chan:** goi dong bo day du khong duoc dat CHINH NHAN VAT ve `do_death`/`do_revive` khi minh dang khong o hai trang thai do. Chet va hoi sinh cua chinh minh chi den tu goi rieng `s2c_npcdeath` va `s2c_playerrevive`. NPC khac khong doi. Moi lan chan ghi `[S7-NAMBEP-CHAN]` kem trang thai, nen lan sau doc nhat ky la biet day co phai goc that khong.
+2. **Nhan bat tai tran `[S7-NAMBEP]`:** chinh minh con mau (`m_CurrentLife > 0`) ma logic hoac lop ve van o tu the chet lien tuc >= 0,5 s thi ghi moi 2 giay day du `doing/cdoing/resdoing/resaction/frame/life/o`, va ghi `[S7-NAMBEP-HET]` khi dung day. Neu lan toi van nam ma khong co dong `CHAN` nao thi loi nam o tang ve (Represent3), va so lieu trong dong nay chi thang tang nao.
+
+Chu choi tiep vai tran roi keo nhat ky: co `[S7-NAMBEP-CHAN]` = da chan dung goc; co `[S7-NAMBEP]` ma khong co `CHAN` = con tang khac, doc `resdoing` de biet la lop ve hay logic.
+
+**Da dat 16:14 (chi client, cho chu chay ChoiGame.bat):** `CoreClient.dll.moi` **a6a9e29d** = origin/main a21c0362 + va j (chua ca HC-CAT b51b6e31 cua phien khac, ban do doi ten `.moi.hccat_b51b6e31`; kiem chuoi: du 7/7 chuoi tinh nang cua ho). May chu khong can swap.
