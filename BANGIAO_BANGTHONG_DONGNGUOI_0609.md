@@ -855,3 +855,25 @@ Dieu kien nay **luon dung** (mot gia tri khong the vua bang `do_death` vua bang 
 Chu choi tiep vai tran roi keo nhat ky: co `[S7-NAMBEP-CHAN]` = da chan dung goc; co `[S7-NAMBEP]` ma khong co `CHAN` = con tang khac, doc `resdoing` de biet la lop ve hay logic.
 
 **Da dat 16:14 (chi client, cho chu chay ChoiGame.bat):** `CoreClient.dll.moi` **a6a9e29d** = origin/main a21c0362 + va j (chua ca HC-CAT b51b6e31 cua phien khac, ban do doi ten `.moi.hccat_b51b6e31`; kiem chuoi: du 7/7 chuoi tinh nang cua ho). May chu khong can swap.
+
+### 8.16 Va i chay that (may chu b9b4cb4a tu 15:33): so lieu 41,7 phut va muc tieu ke tiep
+
+| Chi so | 15:00 (va g) | 16:15 (va i) |
+|---|---|---|
+| 75 ngoai hinh | 11,2 % | **7,4 %** (73 goi/10 s, het phat theo cum) |
+| 77 day du | 15,4 % | 16,4 % (382 goi/10 s) |
+| 221 gon | 52,4 % | 49,6 % |
+| 222 so sat thuong | 8,3 % | 14,3 % (danh don nhieu hon) |
+| Client TB / dinh | 26,2 / 62,0 KB/s | **22,9 / 58,9 KB/s** |
+| day/(gon+day) | 2,6 % | 1,9 % |
+| TICK | 8,0 ms | 8,7 ms (15,7 %) |
+
+**Bo dem bit tra loi cau hoi treo tu muc 8.14** (`[PS-BO] ... | bit: 01=831 02=0 04=0 08=6 10=831 20=0 40=0 80=0 | bot=0 nguoi=27302`):
+
+1. **bot = 0**: sau va d/f/i, bot khong con gay mot lan phat lai goi ngoai hinh nao. Toan bo phat lai la cua nguoi that.
+2. Bit doi that su: `0x01` va `0x10` (cap co trang thai PK, luon doi cung nhau) 831 lan; `0x08` (co bang) 6 lan; co chien dau `0x02` = 0 (va d con nguyen tac dung); ngu `0x04` = 0.
+3. Nhom `rank` (RankInWorld/Repute/FuYuan/PKValue/ReBorn) 1.115 lan - nhieu nhat trong cac nhom "cham".
+
+**Ky lam moi day du 60 s KHONG ha duoc goi 77** (16,4 %): `day/(gon+day)` chi 1,9 %, tuc phan lon goi 77 khong phai do ky lam moi ma do **bam cham doi**. Cac truong con lai trong bam cham co the doi lien tuc khi danh nhau: `m_ASpeed`/`m_CSpeed` (toc do danh/ra chieu, doi theo buff), `m_btMenuState`, `NpcEnchant`, `Camp/CurrentCamp`. Buoc sau (khi khe .moi may chu ranh): dem tung nhom truong cua bam cham y nhu da lam voi goi 75, roi dua nhung truong doi nhanh xuong goi gon 221 hoac bo khoi bam cham.
+
+**Loi hien thi nho trong nhat ky:** `[PS-BO] ... (-24% bo)` am la do `s_nPSBo * 100` tran so nguyen 32 bit khi bo > 21 trieu; chi la dong log, khong anh huong chay. Sua kem lan va sau.
