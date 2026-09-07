@@ -140,7 +140,7 @@ thuong = ("Số lần bốc thưởng khi giao xe: %s. Mỗi lần bốc trúng 
 S = {}
 # ---- nhanh ca nhan (TaskId 11) ----
 S["VT_CN_TIEU"] = "<color=yellow>Long Môn Tiêu Cục - vận tiêu cá nhân (1 đến 9 sao)<color>"
-S["VT_CN_DK"] = ("Điều kiện: cấp 120 trở lên (hoặc đã chuyển sinh) và đã gia nhập môn phái. Giờ mở: 10:00 đến 23:00 hằng ngày. "
+S["VT_CN_DK"] = ("Điều kiện: cấp 90 trở lên (hoặc đã chuyển sinh) và đã gia nhập môn phái. Giờ mở: 10:00 đến 23:00 hằng ngày. "
                  "Mỗi ngày nhận tối đa 3 nhiệm vụ; làm mới nhiệm vụ ngẫu nhiên miễn phí 5 lần, hết lượt thì dùng Hoán Tiêu Chỉ.")
 S["VT_CN_B1"] = ("Bước 1 - Nhận nhiệm vụ: đến <color=yellow>Long Môn trấn<color> gặp <color=yellow>Ông chủ Tiêu cục Lục Tam Cân<color> chọn Nhận nhiệm vụ áp Tiêu. "
                  "Có 3 loại: 1 sao (dễ nhất); ngẫu nhiên 2 đến 9 sao (xem tuyến rồi mới nhận, được làm mới); cao cấp (nộp áp tiêu ủy nhiệm trạng cao cấp "
@@ -151,7 +151,7 @@ S["VT_CN_B3"] = ("Bước 3 - Hộ tống: đi bộ (cưỡi ngựa được) d�
                  "Xe chỉ bám theo khi ngươi ở gần (khoảng 16 ô); xa quá xe đứng lại, sau 5 phút không ai quay lại thì xe biến mất. "
                  "Xe theo được qua cửa bản đồ nhưng không theo phù về thành, thần hành phù, và mất nếu ngươi thoát game quá 5 phút.")
 S["VT_CN_B3B"] = ("Xe có máu và bị người khác đánh phá. Xe vỡ thì rơi <color=yellow>Tiêu Kỳ<color> (chỉ chủ xe nhặt được, còn 10 phút) và "
-                  "<color=yellow>Tán Lạc Tiêu Vật<color> (3 phút đầu chỉ chủ xe và tổ đội nhặt, sau đó ai đủ cấp 150 cũng nhặt được, mỗi người 5 lần một ngày). "
+                  "<color=yellow>Tán Lạc Tiêu Vật<color> (3 phút đầu chỉ chủ xe và tổ đội nhặt, sau đó ai đủ cấp 90 cũng nhặt được, mỗi người 5 lần một ngày). "
                   "Mang Tiêu Kỳ về Tiêu Sư vẫn nhận một phần thưởng; mất cả xe lẫn kỳ thì chọn Kết thúc nhiệm vụ để nhận 100 vạn kinh nghiệm.")
 S["VT_CN_B4"] = ("Bước 4 - Trả hàng: đưa xe tới sát <color=yellow>Tiêu Sư điểm cuối<color> rồi chọn Nhận phần thưởng nhiệm vụ áp Tiêu. "
                  "Thưởng bốc theo cấp sao: kinh nghiệm hoặc vật phẩm quý (Bách Niên Huy Hoàng quả, Quả Huy Hoàng, Huyền Kim Khoáng Thạch, Hộ Mạch Đơn, "
@@ -177,7 +177,7 @@ S["VT_CN_BRIEF_FMT"] = "%d sao: %s tới %s (%s)"
 # ---- nhanh bang (TaskId 12) ----
 S["VT_BH_TIEU"] = "<color=yellow>Long Môn Tiêu Cục - áp Tiêu Bang (10 sao)<color>"
 S["VT_BH_DK"] = ("Thời gian: <color=yellow>thứ bảy và chủ nhật, 12:00 đến 23:00<color>. Điều kiện bang: đang chiếm giữ thành sau Công thành chiến; "
-                 "số lượt trong tuần bằng (số thành chiếm trong tuần + 1) chia 2. Người nhận xe: bang chủ hoặc trưởng lão, cấp 150 trở lên "
+                 "số lượt trong tuần bằng (số thành chiếm trong tuần + 1) chia 2. Người nhận xe: bang chủ hoặc trưởng lão, cấp 90 trở lên "
                  "(hoặc chuyển sinh), vào bang đủ 7 ngày, không đang làm vận tiêu cá nhân.")
 S["VT_BH_B1"] = ("Bước 1 - Bang chủ mở: gặp <color=yellow>Tiếp Dẫn áp Tiêu Bang<color> tại thành bang đang chiếm (có ở Dương Châu, Lâm An, Biện Kinh, "
                  "Thành Đô, Tương Dương, Phượng Tường, Đại Lý) chọn Mở áp Tiêu Bang. Mỗi tuần mở một lần.")

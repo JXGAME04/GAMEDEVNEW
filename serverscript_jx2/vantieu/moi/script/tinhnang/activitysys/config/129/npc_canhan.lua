@@ -38,7 +38,8 @@ VTCN_SHOP = {
 function main()
 	local nNpcIndex = GetLastDiagNpc()
 	local nSetting = GetNpcSettingIdx(nNpcIndex)
-	if PlayerFunLib:CheckTotalLevel(120, "Ng­¬i vÉn ch­a ®Õn cÊp 120, h·y cè g¾ng h¬n n÷a.", ">=") ~= 1 then
+	-- [VTCN 06/09] chu game: cap ha xuong 90 (Linux 120)
+	if PlayerFunLib:CheckTotalLevel(90, "Ng­¬i vÉn ch­a ®Õn cÊp 90, h·y cè g¾ng h¬n n÷a.", ">=") ~= 1 then
 		return
 	end
 	pActivity:LogCurMapID()

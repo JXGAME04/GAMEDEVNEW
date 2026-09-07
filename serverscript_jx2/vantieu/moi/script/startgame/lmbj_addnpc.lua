@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/startgame/lmbj_addnpc.lua
+-- Muc dich  : Dat NPC VAN TIEU luc khoi dong.
+-- Duoc nap  : Include tu 2 tep (vd test_vantieu_admin.lua, startgame.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : npcfunlib.lua
+-- Ham (dong): lmbj_addnpc_bang (80), lmbj_addnpc_canhan (93), lmbj_addnpc (101)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- ============================================================
 -- [LMBC 06/09] KHOI TAO NPC LONG MON TIEU CUC (van tieu).
 --

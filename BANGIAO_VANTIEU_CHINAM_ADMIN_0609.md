@@ -25,6 +25,11 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 
 **Máy chủ 18:04 đang chạy `CoreServer.dll` 6ba06754 (phiên SAPXEP build từ origin/main sau khi tôi đẩy) = đã có engine xe tiêu + bí danh + lệnh `vt_quit_*`; client 18:05 đang chạy `Game.exe` 3c4daa2c + `CoreClient.dll` 8afed3eb (v1 của tôi).** Bản v2 (không nhảy map + chặn map sự kiện) chỉ đổi **client** → chủ chỉ cần `ChoiGame.bat` lần nữa; `CoreServer.dll.moi` v2 (bỏ `vt_goto_canhan`, siêu tập origin/main c4761ea5) đặt sẵn cho lần restart sau, không bắt buộc.
 
+## 1c. CHỦ CHỐT (06/09 tối): 'làm như bản Linux' + 'cấp hạ xuống 90'
+
+- **Như bản Linux**: giữ nhánh cá nhân theo mã gốc Linux không trạng thái (`extend.lua`), phần thưởng `award.lua` số Linux, luật giờ/lượt/Tiêu Kỳ/Tán Lạc Tiêu Vật nguyên gốc. Giá cửa hàng Hộ Tiêu Lệnh (5/5/10) và tiền thuê Xa Phu là chỗ Linux không còn số nên vẫn là số tạm qua `HD_CFG`.
+- **Cấp 90 cho MỌI ngưỡng cấp của vận tiêu** (Linux là 120 nhận cá nhân / 150 nhận xe bang, nhặt Tiêu Kỳ, nhặt Tán Lạc, dùng đạo cụ): đã sửa 12 chỗ bằng `ReverseTools\vantieu\va_vtcn_cap90_0609.py` (byte-safe, có `.truoc_cap90_0609`): `npc_canhan.lua` (nhận), `npc_consigner.lua` (nhận xe bang), `npc_lmbiaoqi.lua` (Tiêu Kỳ), `npc_lmbiaowu.lua` (Tán Lạc), `item_addproperty.lua` (đạo cụ), `dialog.lua`/`lmbj_config.lua`/`lang.lua` (lớp cũ, cho đồng bộ), bộ test admin và bài hướng dẫn trên client (`Game.exe.moi` mới, mục 2.1).
+
 ## 2. CÁCH CHẠY (chủ làm)
 
 | Bước | Lệnh | Ghi chú |
@@ -38,7 +43,7 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 | Tệp | Đặt ở | SHA-256 (8 đầu) | Có đủ (kiểm bằng `ReverseTools\vantieu\deploy_vtcn2_0609.py`) |
 |---|---|---|---|
 | `CoreServer.dll.moi` | `bin\server` | **61bc3e0f** (18.455.552 B, 18:12) | CreateBiaoChe/BC_SetEnable, AUC_MsgTong, CL_Cong, UpdateBattleInfo, st3_goboss, Lua54Dll, [RELAYHT], LUA_CALL, `_duongdan_cu` (R2), **vt_quit_canhan/vt_quit_bang**, KHÔNG còn vt_goto_canhan. Không bắt buộc swap ngay: bản 6ba06754 đang chạy chỉ thừa lệnh chết. |
-| `Game.exe.moi` | `bin\client` | **acc36aba** (1.481.216 B, 18:12) | NewTask/F11, tg_quit/st3_quit, vt_quit_*, bài hướng dẫn vận tiêu v2 (gợi ý Xa Phu / phù về thành / map sự kiện); `re_pe_crt` UCRT-RELEASE đúng |
+| `Game.exe.moi` | `bin\client` | **04ae18d2** (bản cấp 90, thay acc36aba) | NewTask/F11, tg_quit/st3_quit, vt_quit_*, bài hướng dẫn vận tiêu v2 (gợi ý Xa Phu / phù về thành / map sự kiện); `re_pe_crt` UCRT-RELEASE đúng |
 | `CoreClient.dll.moi` | `bin\client` | **96dc5115** (2.577.408 B, 18:12) | TG_VanTieu v2 (6 pha, không nhảy map), TG_ChanMapSuKien cho Dã Tẩu/Sát Thủ/Vận tiêu, tên bến Xa Phu |
 
 Cặp thư viện: `Lib\lua54\x64\Lua54Dll.dll` 5db18c30 = `bin\server\Lua54Dll.dll` đang chạy; `Lib\lua54\Win32\Lua54Dll.dll` 462453cf = `bin\client\Lua54Dll.dll` đang chạy (không cần đổi thư viện).
@@ -148,10 +153,10 @@ Client đọc task 4179 (tuyến×10 + đảo chiều), 4180 (mốc xuất phát
 
 ## 7. CÒN MỞ / CẦN CHỦ QUYẾT
 
-1. **Phần thưởng nhánh cá nhân nay là số Linux** (`award.lua`), không còn số tự đặt của `lmbj_config.lua` — chủ xem lại có muốn giữ (ý gốc "chuẩn 100% Linux").
+1. ~~Phần thưởng nhánh cá nhân~~ **ĐÃ CHỐT: như bản Linux** (`award.lua`).
 2. **Giá cửa hàng Tiêu cục** (Hộ Tiêu Lệnh → đạo cụ) tự đặt 5/5/10, đọc qua `HD_CFG` khoá `VT_GIA_KMGT / VT_GIA_KBKT / VT_GIA_TXDV`; **tiền xe dẫn đường** `VT_TIEN_XE_CHINAM` 1000 lượng. Chưa khai trong từ điển web `cfgw_vietngu`.
 3. `Hộ Tiêu Lễ Hộp` (4809) và 3 món mới (Thề Non Hẹn Biển, Địa Linh Đơn, Lệnh bài Cổ Tháp) trong `magicscript.txt` có `Script=0` → nhận được nhưng bấm không chạy.
-4. Nhận nhiệm vụ cá nhân cần cấp **120** (`npc_canhan.lua`, theo lang.lua) nhưng nhặt Tiêu Kỳ/Tán Lạc Tiêu Vật cần **150** (script Linux `npc_lmbiaoqi/lmbiaowu`) — hai ngưỡng khác nhau, chủ chọn một.
+4. ~~Ngưỡng cấp 120/150~~ **ĐÃ CHỐT: mọi ngưỡng = 90** (mục 1c).
 5. **Biến bang 1149** vẫn chưa được công thành chiến ghi (như BANGIAO cũ) — test bằng menu "Đặt 1149".
 6. Relay `bin\multiserver\script` không có `event\longmenbiaoju` — không cần vì JX1 chạy `RemoteExecute` tại chỗ; nếu sau này chia nhiều GameServer thì phải làm phần relay.
 7. `lmbj_config.lua` (đã sửa mã) + `taskclass.lua` + `dialog.lua` là mã chết khi dùng `npc_canhan.lua`; gỡ hẳn hay không tuỳ chủ.
