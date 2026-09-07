@@ -4,14 +4,14 @@ Chủ: *"làm 1 - 2 · fix tận gốc lỗi tránh sau phát hành game bị l�
 
 Commit **`225bf978`** đã lên `origin/main` (trên `d32cc061`). Bộ vá idempotent: `ReverseTools/goi_va_matdo_goc_0709.py`.
 
-## 1. Nhị phân chờ swap (đặt 00:28, build từ main `225bf978` = bản đang chạy + fix)
+## 1. Nhị phân chờ swap (đặt 00:37, build từ main `68d7591b` = bản đang chạy + fix MATDO + AI710L của phiên "Phân tích CaiBang skill 120")
 
 | tệp | md5 | cỡ | thay bản đang chạy |
 |---|---|---|---|
-| `bin\server\CoreServer.dll.moi` | `dfd18306e58bece29de8f5097548092b` | 18 471 424 | b43c85e8 (23:15) |
-| `bin\client\CoreClient.dll.moi` | `8a49131452e10459e8c77cbfe76f0b4d` | 2 609 664 | 964da287 (23:15) |
+| `bin\server\CoreServer.dll.moi` | `a509a089bcc2c3e6a6102fc879c7103e` | 18 475 008 | b43c85e8 (23:15) |
+| `bin\client\CoreClient.dll.moi` | `4e25e8e4517666e1caa0f03cac75becf` | 2 609 664 | 964da287 (23:15) |
 
-Swap: tắt GameServer → `ChayGameServer.bat`; client → `ChoiGame.bat`. Không có `.moi` nào khác đang chờ lúc đặt (00:28). Cả hai là superset của bản đang chạy (cùng main).
+Swap: tắt GameServer → `ChayGameServer.bat`; client → `ChoiGame.bat`. Bản đầu (dfd18306 / 8a491314, 00:28, main `225bf978`) đã được thay bằng bản gộp sau khi phiên AI710L báo họ cũng định đặt `.moi`; họ đã được nhắn không đè. Cả hai là superset của bản đang chạy (cùng main).
 
 ## 2. Đã sửa gì (3 tệp)
 
