@@ -19,7 +19,7 @@ Vao viec:
      (+ khoi tao = 1). autoData dai them 4 byte -> WAuto.exe va CoreClient.dll phai doi CUNG LUC.
   2. CoreShell.cpp: PK_CoKhien(); loc trong ATYPE_PKFIGHT (muc tieu dang giu + muc tieu moi -> loai 3 s
      qua m_mAutoExcludeNpcID), TK_SanNguoi, TK_ChonDich, LD_ChonDich.
-  3. WAuto: Resource.h ID 479; WAuto.rc o tick tab 7 y=336 (nhan ngan, do_wauto_bo_cuc.py 0 nhan cat); WAuto.cpp ShowTab / SaveRoleData / UpdateUI /
+  3. WAuto: Resource.h ID 479; WAuto.rc o tick tab 7 y=351 (+ s_aTabDay[7] 350->365; hang 336 bi ShowTab doi cum Doi voi tay trai toi) (nhan ngan, do_wauto_bo_cuc.py 0 nhan cat); WAuto.cpp ShowTab / SaveRoleData / UpdateUI /
      LoadRoleData (mac dinh BAT o ca 2 nhanh) / tooltip / note. Luu ngay nho khoi luu chung 06/09.
 
 Chay: python goi_va_pk_khien_0609.py [--thu]
@@ -276,7 +276,7 @@ def va_resource():
 
 # ================================================================== WAuto: WAuto.rc (UTF-16)
 RC_CU = '\tCONTROL "Vẽ vòng", IDC_CHECKBOX_7_DV, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 141, 171, 42, 12\n'
-RC_MOI = RC_CU + '\tCONTROL "Bỏ qua mục tiêu đang có khiên bảo vệ", IDC_CHECKBOX_7_KHIEN, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 5, 336, 177, 12\n'
+RC_MOI = RC_CU + '\tCONTROL "Bỏ qua mục tiêu đang có khiên bảo vệ", IDC_CHECKBOX_7_KHIEN, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 5, 351, 177, 12\n'
 
 
 def va_rc():

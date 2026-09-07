@@ -207,7 +207,7 @@ bằng bản 18:43 (`3da2169e`, chỉ mã S3Client, không liên quan WAuto). M�
 |---|---|
 | `ipc_shared.h` (Core + WAuto) | `int bPKBoQuaKhien` ở **cuối** `autoData`, mặc định 1 → struct **7.640 → 7.644 byte**: `WAuto.exe` và `CoreClient.dll` phải đổi **cùng lúc** |
 | `CoreShell.cpp` | `PK_CoKhien(nIdx)`; máy PK `ATYPE_PKFIGHT`: mục tiêu đang giữ có khiên → bỏ; mục tiêu mới có khiên → đưa vào `m_mAutoExcludeNpcID` 3,5 s (FindTargetNpc tự bỏ qua) + log `[PK-KHIEN]`; tầng săn TK `TK_SanNguoi`, `TK_ChonDich`, `LD_ChonDich` bỏ qua người có khiên |
-| WAuto tab PK | ô tick **Bỏ qua mục tiêu đang có khiên bảo vệ** (ID 479, y=336, `do_wauto_bo_cuc.py` 0 nhãn cắt), lưu ngay (khối lưu chung), mặc định **BẬT** cho tệp mới và tệp cũ, tooltip + note tab PK |
+| WAuto tab PK | ô tick **Bỏ qua mục tiêu đang có khiên bảo vệ** (ID 479, hàng y=351 vì hàng 336 bị `ShowTab` dời cụm *Đổi với tay trái* tới — bản đầu chồng lên combo, chủ báo 19:10; `s_aTabDay[7]` 350 → 365; `do_wauto_bo_cuc.py` 0 nhãn cắt), lưu ngay (khối lưu chung), mặc định **BẬT** cho tệp mới và tệp cũ, tooltip + note tab PK |
 
 Mặc định BẬT vì đánh người có khiên chỉ tốn lượt; chủ không muốn thì bỏ tick.
 
