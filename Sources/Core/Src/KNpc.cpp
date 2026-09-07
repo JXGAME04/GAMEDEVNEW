@@ -6937,6 +6937,9 @@ BOOL KNpc::NormalSync()
 			NPC_NORMAL_SYNC sCham = NpcSync;
 			sCham.MapX = 0; sCham.MapY = 0; sCham.m_fkRegionID = 0; sCham.m_fkOffX = 0; sCham.m_fkOffY = 0;
 			sCham.Doing = 0; sCham.State = 0; sCham.m_CurrentLife = 0; sCham.m_CurrentMana = 0;
+			// [DELTA 07/09 c] vong bat tu: may chu tru moi tick (KNpc.cpp:1627) nen chi coi la 'doi' khi bat/tat;
+			// client khong dem nguoc, chi can biet dang bat tu hay khong (goi day du khi bat va khi het).
+			sCham.m_nProtectedTime = (NpcSync.m_nProtectedTime > 0) ? 1 : 0;
 			const DWORD dwBamCham = PS_Bam(&sCham, (int)sizeof(sCham));
 			const BOOL bNguoiMoi = NS_CoNguoiVuaVao(this, dwLuc);
 			if (dwBamTat == s_adwNSBamTat[m_Index] && !bNguoiMoi && (dwLuc - s_adwNSLucGui[m_Index]) < (DWORD)s_nNSLamMoi)
@@ -6968,8 +6971,18 @@ BOOL KNpc::NormalSync()
 			sGon.m_CurrentMana = NpcSync.m_CurrentMana;
 		}
 		if (!bPhat) s_nNSBo++; else if (bGon) s_nNSGonDem++; else s_nNSDay++;
-		AUTOLOG_EVERY(10000, "[NS-BO] dong bo theo thay doi: bo=%d gon=%d day=%d (lam moi %d ms, day du %d ms, gon=%d, client cu=%d)",
-			s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon, NS_SoClientCu(dwLuc));
+		{	// [DELTA 07/09 c] in so trong 10 giay (truoc: cong don tu luc boot, kho doc)
+			static DWORD s_dwNSMoc = 0;
+			if (s_dwNSMoc == 0)
+				s_dwNSMoc = dwLuc;
+			else if (dwLuc - s_dwNSMoc >= 10000)
+			{
+				s_dwNSMoc = dwLuc;
+				AUTOLOG("[NS-BO] 10s dong bo theo thay doi: bo=%d gon=%d day=%d (lam moi %d ms, day du %d ms, gon=%d, client cu=%d)",
+					s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon, NS_SoClientCu(dwLuc));
+				s_nNSBo = 0; s_nNSGonDem = 0; s_nNSDay = 0;
+			}
+		}
 	}
 	BOOL bNSKq = bPhat;
 	static const POINT	POff[8] = 	//MAX_PLAYER
