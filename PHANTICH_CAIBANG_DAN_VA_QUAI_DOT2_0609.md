@@ -645,3 +645,92 @@ Nghĩa là ở JX1, **Thiên Nhẫn đánh chiêu 120/150 lại giúp đối th�
 * 5 byte hỏng trong `wudang120.skill_desc` (server + client, `vn_edit.py`).
 * `wudang120_child.missle_missrate` cấp 15: 25 → 20 nếu muốn khớp Linux.
 * Không cần sửa SkillStyle: 716/738/899/1396 đều `SkillStyle 0` ở cả hai bản, cơ chế đạn 274/275 giống nhau.
+
+
+---
+
+# PHẦN K (07/09 rạng sáng) — THI CÔNG "fix toàn bộ và kiểm tra còn skill lệch bản Linux thì làm lại như Linux"
+
+Phạm vi đã chọn (chủ game chưa nêu rõ): **họ kỹ năng 120 của 10 phái** (112 dòng bên Linux / 106 bên JX1: kỹ năng chính 708‑723, quyết chú 724‑725/738, bản BOSS 876/899/1396/1405/1406/1493, bảng `*120*` trong Lua) + toàn bộ lỗi engine của Phần J. Lệch ngoài họ 120 (331 dòng `skills.txt`, ~250 khoá Lua) chỉ **liệt kê** ở K.4, chờ chủ quyết.
+
+## K.1 Engine — commit `33b1dfa4` origin/main (server only, `CoreClient.dll` không đổi)
+
+Bộ vá `ReverseTools/goi_va_sk120_linux_0709.py` (idempotent, `--check`), 8 hunk, mỗi hunk chú thích địa chỉ Linux tương ứng:
+
+| # | Tệp / hàm | JX1 cũ | Sau vá (= Linux) | Linux |
+|---|---|---|---|---|
+| H1 | `KMissle.cpp` vòng quét va chạm (trước `nRet++`) | không có khe trượt; `m_nMissRate` chỉ chui vào `ReceiveDamage` | `m_nMissRate > 0 && g_RandPercent(m_nMissRate)` ⇒ `continue`: **bỏ cả đòn** (không sát thương, không trạng thái, không trừ `m_nHitCount`) | `0x080753F0`‑`0x08075600`: `missrate > rand(100)` ⇒ log `Missle nMissRate = %d%%, Miss!`, trả 0 |
+| H2 | `KMissle::ProcessDamage` | `if (g_RandPercent(ign)) return TRUE;` bên trong điều kiện hẹp (`nValue[1] && !nValue[2] && style 0/2 && IsTargetEnemy`), bỏ luôn cả `SetImmediatelySkillEffect` | bỏ dòng này (chuyển sang H8) | — |
+| H3 | `KNpc::ReceiveDamage` ô 15 `ignorenegativestate_p` | tẩy 13 KState với xác suất `100 − nMissRate` | tẩy **không tung** (khe trượt đã tung ở H1) | handler 201 `0x080977D0` |
+| H4 | `ReceiveDamage` | `else if (g_RandPercent(nMissRate)) { ClearNormalState(); IgnoreState(TRUE); …}` — **tẩy sạch debuff của NẠN NHÂN** mỗi khi chiêu có `missle_missrate` mà ô 15 không phải ignoreneg (723/876/1406/1493 Ma Âm Phệ Phách 65 → 15 %, 1131 Ma Âm Kích 99 → 80 %, 1190…) | xoá nhánh | `0x0808A4A0` không đọc nMissRate |
+| H5 | `ReceiveDamage` ô 16 `randmove` | `nValue[0] && nValue[1] && g_RandPercent(nMissRate) ⇒ return FALSE` | xoá (khe trượt đã tung ở H1) | — |
+| H6 | `KNpc::DoHurt` | không có khe miễn dịch | sau khe cơ bản: `ign > 0 && g_RandPercent(ign)` ⇒ không thọ thương | `0x0807F821`‑`0x0807F85C` `IgnoreNegState(Hurt)` |
+| H7 | `ReceiveDamage` băng (ô 10) | không có khe miễn dịch | ngay sau khi đặt `m_FreezeState.nTime`: `g_RandPercent(ign)` ⇒ `nTime = 0` | `0x0808B21F`‑`0x0808B273` `IgnoreNegState(Freeze)` |
+| H8 | `KNpc::SetStateSkillEffect` (sau `GetSkill`) | — | `ign > 0 && nTime != 0 && pSkill && pSkill->IsTargetEnemy() && g_RandPercent(ign)` ⇒ `return` (không áp trạng thái nào, không đồng bộ client); `#ifdef _SERVER` | `0x08086410`‑`0x08086D13` (`忽略负面状态(魔法):%d%%, 忽略!`), chỉ xét `IsTargetEnemy` (vfunc `+0x2C`) |
+
+Hệ quả cho người chơi:
+
+| Tình huống | JX1 cũ | Sau vá |
+|---|---|---|
+| Thiên Nhẫn 723 (và 876/1406/1493) trúng địch | luôn trúng; xác suất `missrate` **tẩy debuff nạn nhân**; hoảng loạn áp với xác suất `100 − missrate` | trượt `missrate` (65 % c1 → 15 % c20) = không gì xảy ra; trúng = sát thương + hoảng loạn; không còn tẩy nạn nhân |
+| Võ Đang 738 Xuất Ứ Bất Nhiễm (đạn tự thân) | tẩy `100 − missrate_child` nhưng **miễn dịch +100 % luôn áp** | tẩy **và** miễn dịch cùng xác suất `100 − missrate_child` (15 % c1 → 85 % c20) |
+| Võ Đang 716 lên đồng đội | tẩy `100 − missrate` | giữ |
+| Nạn nhân đang có ign% bị chiêu nhắm địch mang trạng thái (Cái Bang 720 làm chậm, Thúy Yên băng, Ngũ Độc độc‑trạng‑thái, Đường Môn…) | tung ign chỉ khi `nValue[1] && !nValue[2] && style 0/2` | tung ign cho **mọi** chiêu `IsTargetEnemy`; các thuộc tính tức thời vẫn áp |
+| Thọ thương / băng / choáng khi có ign% | choáng đã nhân `(100 − ign)`; thọ thương, băng không có khe | cả ba đều có khe như Linux |
+
+Cố ý **giữ khác Linux** (ghi để chủ quyết): `m_nTime_Ignorenegativestate` — sau khi 738 tẩy, JX1 zero 13 KState ở **mỗi** `ReceiveDamage` trong 1 → 3 s (kể cả độc, bỏng, phá giáp, ẩn, câm, hoảng loạn); Linux chỉ có `ign = 100 %` trong cùng thời gian, tức chỉ chặn choáng/băng/thọ thương/trạng thái phép, **không** chặn độc/bỏng/phá giáp qua ô sát thương. Muốn giống hệt: xoá khối `if (m_nTime_Ignorenegativestate > 0)` (KNpc.cpp ô 15) — một dòng, chưa làm vì đụng cảm giác "bất khả xâm phạm" của Võ Đang 120.
+
+Kiểm mã hoá: `KNpc.cpp` high‑byte 2160 → 2156 (xoá đúng dòng chú thích `// 3 giây` trong nhánh H4), `KMissle.cpp` 638 → 638, FFFD = 0 cả hai. Build "Server Release|x64" worktree `D:\GAMEDEVNEW_wt_ai710l` từ origin/main: 0 lỗi, link thật; DLL chứa `[SK120-MISS]`, `[SK120-IGNSTATE]`.
+
+## K.2 Dữ liệu (server **và** client, sao lưu `*.truoc_sk120b_0709`; gương `serverscript_live` đã cập nhật cùng commit)
+
+| Tệp | Sửa | Linux |
+|---|---|---|
+| `settings/skills.txt` (sửa từng ô theo tên cột vì hai bản khác cấu trúc từ dòng 1602) | 713 Ngự Tuyết Ẩn: `LvlSetting7 = fastwalkrun_p`, `LvlData7 = cuiyan120`; 709 `LvlData5` (rác `dachengrulaizhou`, không có LvlSetting5) → rỗng; 717 `LvlData4` (rác) → rỗng | y hệt |
+| `cuiyan.lua` `cuiyan120` | thêm `fastwalkrun_p={{{1,1},{20,30},{21,30}},{{1,5*18},{15,25*18},{20,30*18},{21,30*18}}}` — **Thúy Yên 120 chạy nhanh +1 → +30 % trong lúc ẩn** (JX1 hoàn toàn thiếu, cả bảng lẫn skills.txt) | chú thích Linux `20141013` |
+| `kunlun.lua` | `kunlun120.autorescueskill` c15: 45 % → **60 %**; `kunlun120jiasu.fastwalkrun_p` thời gian 2/4/5/5 s → **3/9/10/10 s**; `kunlun120mofadun.staticmagicshield_p` 2/4/5/5 s → **5/9/10/10 s** (JX1 đã cắt nửa; mô tả tự tính theo bảng) | y hệt |
+| `wudang.lua` | `wudang120_child.missle_missrate` c15 25 → **20**; 5 byte `?` hỏng ở mô tả 716/738 (`loại bỏ trạng thái dị thường`, `tự loại bỏ và miễn dịch …`) theo nguyên văn Linux dòng 429‑430 | y hệt |
+| `shaolin.lua` `gunshaolin150` | thêm `missle_missrate={{{1,99},{20,50}}}` (1201 Vi Đà Hộ Pháp). **Lưu ý**: 1056 Vi Đà Hiến Xử bên JX1 thiếu `skill_startevent/showevent/eventskilllevel/anti_block_rate`, MaxLevel 20 (Linux 26) ⇒ 1201 hiện **không bao giờ được bắn** ở JX1 — thuộc họ 150, chưa đụng | y hệt |
+
+`kiem_54.py` 4 tệp: 0 lỗi cú pháp 5.4. Client: `cuiyan/wudang/shaolin.lua` byte‑một với server; `kunlun.lua` chỉ khác dòng 176 `manareplenish_v` có sẵn từ trước (server −5/−70, client −1/−20 — của phiên khác, không đụng).
+
+## K.3 Rà họ 120 — còn lệch và quyết định
+
+| Mục | Linux | JX1 | Quyết định |
+|---|---|---|---|
+| 721/722 Côn Lôn con `SkillStyle` | 14 (bùng tức thời `0x080EAAD0`) | 2 (`CastInitiativeSkill`) | giữ 2: JX1 không có style 14; với chiêu tự thân, 2 là tương đương (723 loại nhắm địch đã đổi về 0) |
+| 710 Mê Ảnh Tung `CharAnimId` | 11 | 0 (từ gốc JX1) | giữ, **hỏi chủ**: động tác thi triển trước khi dịch chuyển |
+| 715/716/721 + `tianren120/wudang120/kunlun120mofadun.skill_eventskilllevel` | không | có | JX1 thêm, vô hại, giữ |
+| 711/714 `autoattackskillplus = wudu120/gaibang120` | không | có trong skills.txt | **khoá không tồn tại** trong bảng Lua cả hai bản ⇒ tham chiếu chết, vô hại |
+| 720 thứ tự `physicsres/resmax` | 1‑2‑4‑5 | hoán vị | vô hại (cùng khoá, tính sau khi cộng) |
+| 1178‑1181/1192/1237/1239/1282/1294/1313‑1316/1318/1392/1393/1427/1428 `*_yan_*` | có | đổi sang bản không `_yan_` | JX1 bỏ hệ Âm/Dương (cả 331 dòng ngoài họ 120 cũng vậy) — giữ |
+| 1396 `AttackRadius` 0 → 400, 1405 `StartSkillId` 1366 → 1406, 1427/1428 script boss khác + mất `meleedamagereturn/rangedamagereturn` | | | boss riêng JX1 — giữ, báo |
+| 1521 "Miễn dịch khủng cụ" (npc, `wudang120_child`), 1545 "Ma Âm Phệ Phách_Di chuyển ngẫu nhiên (đơn)" | có | **id bị dùng lại**: 1521 = 摩诃无量boss (`biggoldboss.lua`), 1545 = Ngũ Hành Tý Hộ (`guta.lua`); bản đơn của 1545 được JX1 tạo lại ở **1493** | không thể phục hồi cùng id; 1521 Linux chỉ 1 NPC dùng — nếu cần thì cấp id mới |
+| `emei120..emei120_4.skill_appendskill` cấp phụ `{20,40}` | | `{20,20}` | JX1 engine **không đọc** thành phần cấp (`KNpc.cpp:1421/10890` chỉ lấy id; cấp = cấp kỹ năng người chơi ≤ cấp 120) — không đổi |
+| 1618‑1628 至尊印鉴 (Chí Tôn Ấn Giám, 11 phái, `zhizunyinjian.lua`, ReqLevel 120) | có | không | hệ mới (cần LvlSetting `dec_pskill_cdtime`, `dec_percasttime`, `enhance_709_auto`, `movedistanc_710_enhance`, `validtiem_1366_enhance`, `daoxutian_enhance`) — ngoài phạm vi |
+| chỉ JX1: 1493, 1984 Trung Vũ Lưu Phong, 2127/2128 Tiêu Dao, 2132‑2134 Hoa Sơn | | | phái mới JX1 |
+| `skill_skillexp_v` (wudang120/wudu120/…150) | khác số | | bảng exp — giữ JX1 |
+
+## K.4 Ngoài họ 120 (chưa đụng — chờ chủ chọn phạm vi)
+
+`ReverseTools/mo_nhi_phan_0609/audit_skills_diff.txt` (331 dòng `skills.txt` lệch cột cơ chế; 64 id chỉ Linux, 119 chỉ JX1) và `audit_lua_diff.txt` (khoá Lua lệch theo tệp). Nhóm chính: (1) bỏ `_yan_` hàng loạt; (2) JX1 thêm `seriesdamage_p`/`stun_p`…; (3) đổi `DoHurt`/`AttackRadius`/`ChildSkillNum`/`MaxLevel` (vd 1056 Vi Đà Hiến Xử 26 → 20 và mất sự kiện 1201; 353/355 Thiên Nhẫn; 359/128/165); (4) bảng số kỹ năng thường (xueying, huabu_liushou, qingfeng_fu, jingxin_jue, tianmo_jieti, longzhao_huzhua, rulai_qianye, yijin_jing, wangu_shixin, xuanyin_zhan…). Phần lớn có dấu hiệu **chỉnh cân bằng có chủ ý** của JX1, không nên đổi mù.
+
+Phát hiện thêm khi mổ `SetStateSkillEffect` Linux: hai khe "bỏ qua bùa chú" (724) / "phản đòn bùa chú" (725) nằm **trong** hàm này, điều kiện là hai bảng cờ theo skill id (`0x8fc2420`, `0x8fc04e0`) chứ không phải `nValue[1] && !nValue[2] && style 0/2` như JX1 — chưa giải hai bảng cờ, JX1 giữ điều kiện cũ (mục mở).
+
+## K.5 Nhị phân + kiểm sau restart
+
+| Tệp | MD5 | Cỡ | Ghi chú |
+|---|---|---|---|
+| `bin/server/CoreServer.dll.moi.sk120_1a33f617_0318` | `1a33f617` | 18 479 104 | origin/main `33b1dfa4` (= `bc0fffc3` của DELTA + đợt này). Khe `.moi` lúc build đang là `6246967d` (DELTA 01:42, trước push của tôi) — xem phần trạng thái cuối để biết bản nào đang ở khe |
+
+Lùi: `git revert 33b1dfa4`; dữ liệu: đổi tên `*.truoc_sk120b_0709` về tên gốc (5 tệp server + 5 tệp client).
+
+Kiểm sau restart máy chủ + client:
+1. Thiên Nhẫn 120 (723) đánh mộc nhân/người: có lần **trượt hẳn** (không sát thương, không hoảng loạn); nạn nhân đang mang debuff (chậm, độc) **không** còn được tẩy khi trúng 723.
+2. Võ Đang 120 bấm 738 nhiều lần ở cấp thấp: có lần **không** tẩy và **không** có biểu tượng miễn dịch (trước đây luôn có miễn dịch).
+3. Võ Đang đang miễn dịch bị Cái Bang 120 / Thúy Yên đánh: không bị làm chậm/đóng băng, không thọ thương (log `[SK120-IGNSTATE]`, `[SK120-MISS]` trong AUTOLOG).
+4. Thúy Yên 120 ẩn thân: chạy nhanh hơn 1 → 30 %.
+5. Côn Lôn 120: Ma Pháp Đôn 5 → 10 s, Gia Tốc 3 → 10 s, cứu nguy cấp 15 = 60 %.
+6. Mô tả 716/738 hết ký tự `?`.
+
+**Trạng thái khe `.moi` lúc 03:25 07/09**: `bin/server/CoreServer.dll.moi` = **`1a33f617`** (đợt này; superset của bản DELTA vì build từ origin/main `33b1dfa4` = `bc0fffc3` của DELTA + đợt này, cùng cỡ 18 479 104); bản DELTA giữ ở `CoreServer.dll.moi.delta_6246967d_0142`; đang chạy vẫn `4b89f185` (00:50). Hai phiên DELTA/MATDO đã được nhắn. Chờ chủ chạy `ChayGameServer.bat` + `ChoiGame.bat` (client chỉ cần dữ liệu, không cần DLL mới).

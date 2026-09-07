@@ -1,0 +1,329 @@
+cuiyan.lua | bihai_chaosheng | addskilldamage2 | L={[1]={{1,338},{2,338}},[3]={{1,2},{20,65}}} | J=None
+cuiyan.lua | binggu_xuexin | addcolddamage_v | L=None | J={{{1,30},{30,275}},{{1,-1},{2,-1}}}
+cuiyan.lua | binggu_xuexin | addcoldmagic_v | L= | J={{{1,60},{30,315}},{{1,-1},{2,-1}}}
+cuiyan.lua | binggu_xuexin | addphysicsmagic_v | L=None | J={{{1,30},{30,275}},{{1,-1},{2,-1}}}
+cuiyan.lua | binggu_xuexin | coldenhance_p | L=None | J={{{1,8},{30,80}},{{1,-1},{2,-1}}}
+cuiyan.lua | binggu_xuexin | deadlystrikeenhance_p | L=None | J={{{1,5},{30,45,Conic}},{{1,-1},{2,-1}}}
+cuiyan.lua | binggu_xuexin | fasthitrecover_v | L=None | J={{{1,5},{30,25},{31,25}},{{1,-1},{2,-1}}}
+cuiyan.lua | bingxin_xianzi | CHI JX1
+cuiyan.lua | bingxin_xuelian | CHI JX1
+cuiyan.lua | bingxin_yuling | CHI JX1
+cuiyan.lua | bingzong_wuying | CHI JX1
+cuiyan.lua | cuiyan120 | CHI JX1
+cuiyan.lua | cuiyan120_1 | CHI JX1
+cuiyan.lua | daocuiyan150 | CHI JX1
+cuiyan.lua | daocuiyan150_2 | CHI JX1
+cuiyan.lua | fengjuan_canxue | colddamage_v | L=None | J={[1]={{1,10},{20,75}},[3]={{1,10},{20,125}}}
+cuiyan.lua | fengxue_bingtian | CHI JX1
+cuiyan.lua | fuyun_sanxue | physicsdamage_v | L=None | J={[1]={{1,10},{20,135}},[3]={{1,10},{20,135}},}
+cuiyan.lua | neicuiyan150 | CHI JX1
+cuiyan.lua | neicuiyan150_2 | CHI JX1
+cuiyan.lua | xueying | attackspeed_v | L={{{1,12},{20,65},{23,73},{25,90},{28,99},{42,111},{43,119},{44,122}},{{1,18*120},{20,18*180}}} | J={{{1,12},{20,65}},{{1,18*120},{20,18*180}}}
+cuiyan.lua | xueying | castspeed_v | L={{{1,12},{20,65},{23,73},{25,90},{28,99},{42,111},{43,119},{44,122}},{{1,18*120},{20,18*180}}} | J={{{1,12},{20,65}},{{1,18*120},{20,18*180}}}
+cuiyan.lua | xueying | fastwalkrun_p | L={{{1,8},{20,27}},{{1,18*120},{20,18*180}}} | J={{{1,17},{20,55}},{{1,18*120},{20,18*180}}}
+emei.lua | emei120 | skill_appendskill | L={{{1,86},{20,86}},{{1,1},{19,19},{20,40},{21,40}}} | J={{{1,86},{20,86}},{{1,1},{20,20}}}
+emei.lua | emei120_1 | skill_appendskill | L={{{1,89},{20,89}},{{1,1},{19,19},{20,40},{21,40}}} | J={{{1,89},{20,89}},{{1,1},{20,20}}}
+emei.lua | emei120_2 | skill_appendskill | L={{{1,92},{20,92}},{{1,1},{19,19},{20,40},{21,40}}} | J={{{1,92},{20,92}},{{1,1},{20,20}}}
+emei.lua | emei120_3 | skill_appendskill | L={{{1,282},{20,282}},{{1,1},{19,19},{20,40},{21,40}}} | J={{{1,282},{20,282}},{{1,1},{20,20}}}
+emei.lua | emei120_4 | skill_appendskill | L={{{1,332},{20,332}},{{1,1},{19,19},{20,40},{21,40}}} | J={{{1,332},{20,332}},{{1,1},{20,20}}}
+emei.lua | fengshuang_suiying | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,380},{2,380}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+emei.lua | fofa_wubian | attackspeed_v | L={{{1,12},{30,65},{33,70},{35,90},{38,95},{41,100}},{{1,-1},{2,-1}}} | J={{{1,12},{30,65}},{{1,-1},{2,-1}}}
+emei.lua | fofa_wubian | castspeed_v | L={{{1,12},{30,65},{33,70},{35,90},{38,95},{41,100}},{{1,-1},{2,-1}}} | J={{{1,12},{30,65}},{{1,-1},{2,-1}}}
+emei.lua | fofa_wubian | lifemax_yan_p | L={{{1,21},{35,50},{36,50}},{{1,-1},{30,-1}}} | J=None
+emei.lua | foxin_ciyou | lifemax_yan_p | L={{{1,30},{25,100},{26,100}},{{1,18*8},{2,18*8}}} | J=None
+emei.lua | fuzhuemei150 | skill_skillexp_v | L={{{1,300},{2,600},{3,1000},{4,1500},{5,2100},{6,2800},{7,3600},{8,4500},{9,5500},{10,6600},{11,7800},{12,9100},{13,10500},{14,12000},{15,13600},{16,15300},{17,17100},{18,19000},{19,21400},{20,90000},{21,120000},{22,150000},{23,200000},{24,250000},{25,300000},}} | J={{{1,300},{2,600},{3,1000},{4,1500},{5,2100},{6,2800},{7,3600},{8,4500},{9,5500},{10,6600},{11,7800},{12,9100},{13,10500},{14,12000},{15,13600},{16,15300},{17,17100},{18,19000},{19,21400},{20,21000},}}
+emei.lua | liushui | fastwalkrun_p | L={{{1,5},{20,33}},{{1,18},{2,18}}} | J={{{1,9},{20,66}},{{1,18},{2,18}}}
+emei.lua | piaoyun_chuanxue | physicsdamage_v | L={[1]={{1,10},{20,120}},[3]={{1,10},{20,120}},} | J=None
+emei.lua | pudu_zhongsheng | fasthitrecover_yan_v | L={{{1,1},{20,10},{21,10}},{{1,18},{2,18}}} | J=None
+emei.lua | qianfo_qianye | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,10}},{{1,0},{2,0}}} | J={{{1,0},{2,0}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+emei.lua | qingyin_fanchang | fasthitrecover_v | L={{{1,1},{20,20},{31,31},{32,31}},{{1,18},{2,18}}} | J={{{1,1},{20,20}},{{1,18},{2,18}}}
+emei.lua | sane_jixue | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,328},{2,328}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+gaibang.lua | dagou_zhen | addphysicsdamage_p | L={{{1,10},{20,175}},{{1,-1},{30,-1}},{{1,2},{2,2}}} | J={{{1,10},{20,175}},{{1,18},{2,18}},{{1,6},{2,6}}}
+gaibang.lua | feilong_zaitian | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,357},{2,357}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+gaibang.lua | feilong_zaitian | skill_param1_v | L=None | J={{{1,0},{11,0},{11,32},{20,32},{21,32}}}
+gaibang.lua | gungaibang150 | addskillexp1 | L=None | J={{{1,1074},{2,1074}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+gaibang.lua | gungaibang150 | skill_skillexp_v | L={{{1,300},{2,600},{3,1000},{4,1500},{5,2100},{6,2800},{7,3600},{8,4500},{9,5500},{10,6600},{11,7800},{12,9100},{13,10500},{14,12000},{15,13600},{16,15300},{17,17100},{18,19000},{19,21400},{20,90000},{21,120000},{22,150000},{23,200000},{24,250000},{25,300000},}} | J={{{1,10500},{2,12180},{3,14373},{4,17251},{5,21056},{6,26127},{7,32953},{8,42238},{9,55008},{10,72775},{11,97788},{12,133433},{13,184856},{14,259967},{15,371060},{16,537451},{17,789823},{18,1177459},{19,1780405},{20,2730112},}}
+gaibang.lua | huabu_liushou | fastwalkrun_p | L={{{1,5},{20,33}},{{1,18*120},{20,18*180}}} | J={{{1,9},{20,66}},{{1,18*120},{20,18*180}}}
+gaibang.lua | tianxia_wugou | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,359},{2,359}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+gaibang.lua | xianglong_zhang | lifemax_p | L={{{1,-1},{20,-25},{25,-25},{26,-25}},{{1,-1},{2,-1}}} | J={{{1,-1},{20,-25}},{{1,-1},{2,-1}}}
+gaibang.lua | xiaoyao_gong | addphysicsdamage_p | L={{{1,10},{20,120}},{{1,-1},{2,-1}},{{1,2},{2,2}}} | J=None
+gaibang.lua | xiaoyao_gong | attackspeed_v | L={{{1,6},{20,65},{25,90},{31,108},{32,118},{33,121}},{{1,-1},{20,-1}}} | J={{{1,6},{20,65}},{{1,-1},{20,-1}}}
+gaibang.lua | xiaoyao_gong | castspeed_v | L={{{1,6},{20,65},{25,90},{31,108},{32,118},{33,121}},{{1,-1},{2,-1}}} | J={{{1,6},{20,65}},{{1,-1},{2,-1}}}
+gaibang.lua | xiaoyao_gong | deadlystrikeenhance_p | L={{{1,1},{20,20,Conic}},{{1,18*120},{20,18*180}}} | J=None
+gaibang.lua | zhanggaibang150 | addskillexp1 | L=None | J={{{1,1073},{2,1073}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+gaibang.lua | zhanggaibang150 | skill_misslenum_v | L={{{1,1},{11,1},{12,2},{15,2},{16,2},{20,3},{21,3}}} | J=None
+gaibang.lua | zhanggaibang150 | skill_skillexp_v | L={{{1,300},{2,600},{3,1000},{4,1500},{5,2100},{6,2800},{7,3600},{8,4500},{9,5500},{10,6600},{11,7800},{12,9100},{13,10500},{14,12000},{15,13600},{16,15300},{17,17100},{18,19000},{19,21400},{20,90000},{21,120000},{22,150000},{23,200000},{24,250000},{25,300000},}} | J={{{1,10500},{2,12180},{3,14373},{4,17251},{5,21056},{6,26127},{7,32953},{8,42238},{9,55008},{10,72775},{11,97788},{12,133433},{13,184856},{14,259967},{15,371060},{16,537451},{17,789823},{18,1177459},{19,1780405},{20,2730112},}}
+gaibang.lua | zuidie_kuangwu | lifemax_p | L=None | J={{{1,21},{35,20},{36,20}},{{1,-1},{30,-1}}}
+gaibang.lua | zuidie_kuangwu | lifemax_yan_p | L={{{1,21},{35,60},{36,60}},{{1,-1},{30,-1}}} | J=None
+gaibang.lua | zuidie_kuangwu | returnres_p | L={{{1,5},{40,40},{41,40}},{{1,-1},{20,-1}}} | J=None
+huashan.lua | addskilldamage1 | CHI JX1
+huashan.lua | addskilldamage2 | CHI JX1
+huashan.lua | addskilldamage3 | CHI JX1
+huashan.lua | baihong_guanri | CHI LINUX
+huashan.lua | cangsong_yingke | CHI LINUX
+huashan.lua | colddamage_v | CHI JX1
+huashan.lua | duoming_lianhuan | CHI LINUX
+huashan.lua | duoming_start | CHI LINUX
+huashan.lua | haina_baichuan | CHI LINUX
+huashan.lua | haoran_zhiqi | CHI LINUX
+huashan.lua | huanyan_yunyan | CHI LINUX
+huashan.lua | jianzong_zongjue | CHI LINUX
+huashan.lua | jinyan_hengkong | CHI LINUX
+huashan.lua | jiujian_heyi | CHI LINUX
+huashan.lua | jiujian_start | CHI LINUX
+huashan.lua | longraoshen | CHI LINUX
+huashan.lua | longxuan2 | CHI LINUX
+huashan.lua | longxuan_jianqi1 | CHI LINUX
+huashan.lua | longxuan_jianqi2 | CHI LINUX
+huashan.lua | moyun_jianqi1 | CHI LINUX
+huashan.lua | moyun_jianqi2 | CHI LINUX
+huashan.lua | new_wuji | CHI LINUX
+huashan.lua | physicsenhance_p | CHI JX1
+huashan.lua | poanqi_pozhang | CHI LINUX
+huashan.lua | podao_pojian | CHI LINUX
+huashan.lua | pogun_poqiang | CHI LINUX
+huashan.lua | qiguan_changhong | CHI LINUX
+huashan.lua | qingfeng_songshuang | CHI LINUX
+huashan.lua | qisha_qichang2 | CHI LINUX
+huashan.lua | qizhen_shanhe | CHI LINUX
+huashan.lua | reduceskillcd1 | CHI JX1
+huashan.lua | reduceskillcd2 | CHI JX1
+huashan.lua | seriesdamage_p | CHI JX1
+huashan.lua | shenguang_xuanrao | CHI LINUX
+huashan.lua | shenguang_xuanrao1 | CHI LINUX
+huashan.lua | skill_eventskilllevel | CHI JX1
+huashan.lua | skill_showevent | CHI JX1
+huashan.lua | tianshen_daoxuan | CHI LINUX
+huashan.lua | wuji_jianqi1 | CHI LINUX
+huashan.lua | wuji_jianqi2 | CHI LINUX
+huashan.lua | xiyi_jianfa | CHI LINUX
+huashan.lua | yangwu_jianfa | CHI LINUX
+huashan.lua | zixia_jianqi | CHI LINUX
+huashan.lua | zixia_xiaoguo | CHI LINUX
+kunlun.lua | aoxue_xiaofeng | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,372},{2,372}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+kunlun.lua | aoxue_xiaofeng | skill_skillexp_v | L={{{1,SkillExpFunc(6860,1.15,1,5,1)},{2,SkillExpFunc(6860,1.15,2,5,1)},{3,SkillExpFunc(6860,1.16,3,5,1)},{4,SkillExpFunc(6860,1.17,4,5,1)},{5,SkillExpFunc(6860,1.18,5,5,1)},{6,SkillExpFunc(6860,1.19,6,5,1)},{7,SkillExpFunc(6860,1.20,7,5,1)},{8,SkillExpFunc(6860,1.21,8,5,1)},{9,SkillExpFunc(6860,1.22,9,5,1)},{10,SkillExpFunc(6860,1.23,10,5,1)},{11,SkillExpFunc(6860,1.24,11,5,1)},{12,SkillExpFunc(6860,1.23,12,5,1)},{13,SkillExpFunc(6860,1.22,13,5,1)},{14,SkillExpFunc(6860,1.21,14,5,1)},{15,SkillExpFunc(6860,1.20,15,5,1)},{16,SkillExpFunc(6860,1.19,16,5,1)},{17,SkillExpFunc(6860,1.18,17,5,1)},{18,SkillExpFunc(6860,1.17,18,5,1)},{19,SkillExpFunc(6860,1.16,19,5,1)},{20,SkillExpFunc(6860,1.15,20,5,1)},}} | J={{{1,SkillExpFunc(6860,1.15,1,5,1)},{2,SkillExpFunc(6860,1.15,2,5,1)},{14,SkillExpFunc(6860,1.21,14,5,1)},{15,SkillExpFunc(6860,1.20,15,5,1)},{16,SkillExpFunc(6860,1.19,16,5,1)},{17,SkillExpFunc(6860,1.18,17,5,1)},{18,SkillExpFunc(6860,1.17,18,5,1)},{19,SkillExpFunc(6860,1.16,19,5,1)},{20,SkillExpFunc(6860,1.15,20,5,1)},}}
+kunlun.lua | daokunlun150 | addskillexp1 | L=None | J={{{1,1080},{2,1080}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+kunlun.lua | daokunlun150 | skill_skillexp_v | L={{{1,300},{2,600},{3,1000},{4,1500},{5,2100},{6,2800},{7,3600},{8,4500},{9,5500},{10,6600},{11,7800},{12,9100},{13,10500},{14,12000},{15,13600},{16,15300},{17,17100},{18,19000},{19,21400},{20,90000},{21,120000},{22,150000},{23,200000},{24,250000},{25,300000},}} | J={{{1,10500},{2,12180},{3,14373},{4,17251},{5,21056},{6,26127},{7,32953},{8,42238},{9,55008},{10,72775},{11,97788},{12,133433},{13,184856},{14,259967},{15,371060},{16,537451},{17,789823},{18,1177459},{19,1780405},{20,2730112},}}
+kunlun.lua | jiankunlun150 | lightingdamage_v | L={[1]={{1,207},{15,849},{20,1430},{23,2082},{26,2430}},[3]={{1,207},{15,849},{20,1430},{23,2082},{26,2430}}} | J={[1]={{1,192},{15,624},{20,1130},{23,1737},{26,2040}},[3]={{1,192},{15,624},{20,1130},{23,1737},{26,2040}}}
+kunlun.lua | jiankunlun150fu | addskillexp1 | L=None | J={{{1,1081},{2,1081}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+kunlun.lua | jiankunlun150fu | lightingdamage_v | L={[1]={{1,30},{20,350},{23,436},{26,486}},[3]={{1,30},{20,350},{23,436},{26,486}}} | J={[1]={{1,25},{20,250},{23,321},{26,356}},[3]={{1,25},{20,250},{23,321},{26,356}}}
+kunlun.lua | jiankunlun150fu | skill_skillexp_v | L={{{1,300},{2,600},{3,1000},{4,1500},{5,2100},{6,2800},{7,3600},{8,4500},{9,5500},{10,6600},{11,7800},{12,9100},{13,10500},{14,12000},{15,13600},{16,15300},{17,17100},{18,19000},{19,21400},{20,90000},{21,120000},{22,150000},{23,200000},{24,250000},{25,300000},}} | J={{{1,10500},{2,12180},{3,14373},{4,17251},{5,21056},{6,26127},{7,32953},{8,42238},{9,55008},{10,72775},{11,97788},{12,133433},{13,184856},{14,259967},{15,371060},{16,537451},{17,789823},{18,1177459},{19,1780405},{20,2730112},}}
+kunlun.lua | jiban_fu | fastwalkrun_p | L={{{1,-20},{20,-40},{21,-40}},{{1,18*20},{20,18*90}}} | J={{{1,-22},{20,-52}},{{1,18*20},{20,18*90}}}
+kunlun.lua | kunlun120 | autorescueskill | L={{{1,721*256+1},{20,721*256+20},{21,721*256+21}},{{1,-1},{20,-1}},{{1,20*18*256+15},{15,20*18*256+60},{20,20*18*256+65},{21,20*18*256+65}}} | J={{{1,721*256+1},{20,721*256+20},{21,721*256+21}},{{1,-1},{20,-1}},{{1,20*18*256+15},{15,20*18*256+45},{20,20*18*256+65},{21,20*18*256+65}}}
+kunlun.lua | kunlun120jiasu | fastwalkrun_p | L={{{1,5},{15,30},{20,35},{21,36}},{{1,3*18},{15,9*18},{20,10*18},{21,10*18}}} | J={{{1,5},{15,30},{20,35},{21,36}},{{1,2*18},{15,4*18},{20,5*18},{21,5*18}}}
+kunlun.lua | kunlun120mofadun | skill_eventskilllevel | L=None | J={{{1,1},{20,20}}}
+kunlun.lua | kunlun120mofadun | staticmagicshield_p | L={{{1,1800},{15,9750},{20,10000},{21,10050}},{{1,5*18},{15,9*18},{20,10*18},{21,10*18}}} | J={{{1,1800},{15,9750},{20,10000},{21,10050}},{{1,2*18},{15,4*18},{20,5*18},{21,5*18}}}
+kunlun.lua | leidong_jiutian | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,375},{2,375}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+kunlun.lua | leidong_jiutian | stun_p | L=None | J={{{1,10},{20,20},{21,20}},{{1,1},{20,6},{21,6}}}
+kunlun.lua | qihan_aoxue | attackspeed_yan_v | L={{{1,-1},{30,-16},{31,-16}},{{1,18*20},{20,18*60}}} | J=None
+kunlun.lua | qihan_aoxue | castspeed_v | L={{{1,-6},{20,-39},{30,-50},{31,-50}},{{1,18*20},{20,18*60}}} | J={{{1,-6},{20,-39},{30,-50},{31,-50}},{{1,18*45},{20,18*120}}}
+kunlun.lua | qihan_aoxue | castspeed_yan_v | L={{{1,-1},{30,-12},{31,-12}},{{1,18*20},{20,18*60}}} | J=None
+kunlun.lua | qingfeng_fu | fastwalkrun_p | L={{{1,11},{20,30}},{{1,18*120},{20,18*120}}} | J={{{1,22},{20,60}},{{1,18*120},{20,18*120}}}
+kunlun.lua | shuangao_kunlun | attackspeed_v | L={{{1,25},{20,65},{33,92},{35,118},{38,124},{39,126}},{{1,-1},{30,-1}}} | J={{{1,25},{20,65}},{{1,-1},{30,-1}}}
+kunlun.lua | shuangao_kunlun | castspeed_v | L={{{1,25},{30,65},{34,73},{35,90},{36,92}},{{1,-1},{30,-1}}} | J={{{1,25},{30,65}},{{1,-1},{30,-1}}}
+kunlun.lua | shuangao_kunlun | lifemax_yan_p | L={{{1,21},{35,80},{36,80}},{{1,-1},{30,-1}}} | J=None
+kunlun.lua | tianqing_dizhuo | addskilldamage1 | L={[1]={{1,1081},{2,1081}},[3]={{1,3},{20,60}}} | J=None
+kunlun.lua | tianqing_dizhuo | addskilldamage2 | L={[1]={{1,1109},{2,1109}},[3]={{1,3},{20,60}}} | J=None
+kunlun.lua | wusuo_kunlun | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,10}},{{1,0},{2,0}}} | J={{{1,0},{2,0}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+kunlun.lua | yiqi_sanqing | addphysicsdamage_p | L={{{1,35},{20,215}},{{1,18*120},{20,18*120}},{{1,1},{2,1}}} | J={{{1,35},{20,215}},{{1,18*120},{20,18*120}},{{1,6},{2,6}}}
+kunlun.lua | zuixian_cuogu | CHI LINUX
+kunlun.lua | zuixian_cuoguzzzz | CHI JX1
+shaolin.lua | damo_dujiang | addskillexp1 | L={{{1,318},{2,318}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,318},{2,318}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+shaolin.lua | damo_dujiang | missle_lifetime_v | L={{{1,4},{20,4}}} | J=None
+shaolin.lua | daoshaolin150 | skill_showevent | L={{{1,0},{10,0},{10,1},{15,1}}} | J=None
+shaolin.lua | gunshaolin150 | anti_block_rate | L={{{1,3},{20,10},{21,10}},{{1,-1},{2,-1}}} | J=None
+shaolin.lua | gunshaolin150 | missle_missrate | L={{{1,99},{20,50}}} | J=None
+shaolin.lua | gunshaolin150 | skill_eventskilllevel | L={{{1,1},{20,20}}} | J=None
+shaolin.lua | gunshaolin150 | skill_showevent | L={{{1,1},{20,1}}} | J=None
+shaolin.lua | gunshaolin150 | skill_startevent | L={[1]={{1,1},{20,1}},[3]={{1,1201},{20,1201}}} | J=None
+shaolin.lua | hengsao_qianjun | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,319},{2,319}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+shaolin.lua | longzhao_huzhua | addskilldamage1 | L={[1]={{1,318},{2,318}},[3]={{1,1},{20,110},{25,150},{27,161}}} | J={[1]={{1,318},{2,318}},[3]={{1,1},{20,110}}}
+shaolin.lua | longzhao_huzhua | addskilldamage2 | L={[1]={{1,317},{2,317}},[3]={{1,1},{20,110},{25,150},{27,161}}} | J={[1]={{1,317},{2,317}},[3]={{1,1},{20,110}}}
+shaolin.lua | longzhao_huzhua | physicsenhance_p | L={{{1,120},{20,600}}} | J={{{1,120},{20,1242}}}
+shaolin.lua | luohan_zhen | meleedamagereturn_p | L={{{1,1},{20,20},{25,25},{26,25}},{{1,18},{2,18}}} | J={{{1,1},{20,45},{21,46}},{{1,18},{2,18}}}
+shaolin.lua | luohan_zhen | rangedamagereturn_p | L={{{1,1},{20,20},{25,25},{26,25}},{{1,18},{2,18}}} | J={{{1,1},{20,45},{21,46}},{{1,18},{2,18}}}
+shaolin.lua | quanshaolin150 | anti_block_rate | L={{{1,3},{20,10},{21,10}},{{1,-1},{2,-1}}} | J=None
+shaolin.lua | rulai_qianye | attackspeed_v | L={{{1,35},{30,65},{35,70},{36,82},{37,96},{38,98},{39,100},{40,101},{41,102},{42,103},{43,104},{44,105},{45,106},{46,107},{47,108}},{{1,18*120},{30,18*360}}} | J={{{1,35},{30,65}},{{1,18*120},{30,18*360}}}
+shaolin.lua | rulai_qianye | lifemax_p | L=None | J={{{1,3},{30,100}},{{1,18*120},{30,18*360}}}
+shaolin.lua | shaolin_quanfa | addphysicsdamage_p | L={{{1,25},{20,215}},{{1,-1},{2,-1}},{{1,9},{2,9}}} | J={{{1,25},{20,415*2}},{{1,-1},{2,-1}},{{1,9},{2,9}}}
+shaolin.lua | wuxiang_zhan | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,321},{2,321}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+shaolin.lua | xinglong_buyu | deadlystrike_p | L={{{1,5},{20,20}}} | J=None
+shaolin.lua | xinglong_buyu | physicsdamage_v | L={[1]={{1,20},{20,220}},[3]={{1,20},{20,220}},} | J=None
+shaolin.lua | yijin_jing | lifemax_p | L={{{1,3},{20,80},{21,80}},{{1,18*120},{20,18*360},{21,18*360}}} | J=None
+shaolin.lua | yijin_jing | lifemax_yan_p | L={{{1,21},{35,150},{36,150}},{{1,-1},{30,-1}}} | J=None
+shaolin.lua | yijin_jing | meleedamagereturn_p | L={{{1,1},{20,20},{25,25},{26,25}},{{1,-1},{2,-1}}} | J=None
+shaolin.lua | yijin_jing | rangedamagereturn_p | L={{{1,1},{20,20},{25,25},{26,25}},{{1,-1},{2,-1}}} | J=None
+tangmen.lua | baoyu_lihua | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,302},{2,302}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+tangmen.lua | baoyu_lihua | skill_cost_v | L={{{1,25},{20,80}}} | J={{{1,25},{20,60}}}
+tangmen.lua | jiugong_feixing | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,342},{2,342}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+tangmen.lua | jiugong_feixing | skill_skillexp_v | L={{{1,SkillExpFunc(4680,1.15,1,1,5)},{2,SkillExpFunc(4680,1.15,2,1,5)},{3,SkillExpFunc(4680,1.16,3,1,5)},{4,SkillExpFunc(4680,1.17,4,1,5)},{5,SkillExpFunc(4680,1.18,5,1,5)},{6,SkillExpFunc(4680,1.19,6,1,5)},{7,SkillExpFunc(4680,1.20,7,1,5)},{8,SkillExpFunc(4680,1.21,8,1,5)},{9,SkillExpFunc(4680,1.22,9,1,5)},{10,SkillExpFunc(4680,1.23,10,1,5)},{11,SkillExpFunc(4680,1.24,11,1,5)},{12,SkillExpFunc(4680,1.23,12,1,5)},{13,SkillExpFunc(4680,1.22,13,1,5)},{14,SkillExpFunc(4680,1.21,14,1,5)},{15,SkillExpFunc(4680,1.20,15,1,5)},{16,SkillExpFunc(4680,1.19,16,1,5)},{17,SkillExpFunc(4680,1.18,17,1,5)},{18,SkillExpFunc(4680,1.17,18,1,5)},{19,SkillExpFunc(4680,1.16,19,1,5)},{20,SkillExpFunc(4680,1.15,20,1,5)},}} | J={{{1,SkillExpFunc(4680,1.15,1,1,5)},{2,SkillExpFunc(4680,1.15,2,1,5)},{3,SkillExpFunc(4680,1.16,3,1,5)},{4,SkillExpFunc(4680,1.17,4,1,5)},{5,SkillExpFunc(4680,1.18,5,1,5)},{15,SkillExpFunc(4680,1.20,15,1,5)},{16,SkillExpFunc(4680,1.19,16,1,5)},{17,SkillExpFunc(4680,1.18,17,1,5)},{18,SkillExpFunc(4680,1.17,18,1,5)},{19,SkillExpFunc(4680,1.16,19,1,5)},{20,SkillExpFunc(4680,1.15,20,1,5)},}}
+tangmen.lua | sanhua_biao | addskilldamage2 | L={[1]={{1,1071},{2,1071}},[3]={{1,1},{20,42}}} | J=None
+tangmen.lua | sanhua_biao | addskilldamage3 | L={[1]={{1,1099},{2,1099}},[3]={{1,1},{20,42}}} | J=None
+tangmen.lua | sanhua_biao | addskilldamage4 | L={[1]={{1,1100},{2,1100}},[3]={{1,1},{20,42}}} | J=None
+tangmen.lua | shehun_yueying | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,339},{2,339}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+tangmen.lua | shehun_yueying | physicsenhance_p | L={{{1,25},{15,150},{20,301}}} | J={{{1,25},{15,150},{20,360}}}
+tangmen.lua | xiaoli_feidao | skill_dohurt | L={{{1,10},{20,53},{21,53}}} | J={{{1,10},{20,60},{21,62}}}
+tangmen.lua | xinyan | lifemax_yan_p | L={{{1,21},{35,20},{36,20}},{{1,-1},{30,-1}}} | J=None
+tangmen.lua | xinyan | poisonenhance_p | L=None | J={{{1,3},{30,33}},{{1,-1},{2,-1}}}
+tianren.lua | beisu_qingfeng | fasthitrecover_v | L={{{1,-6},{20,-30},{23,-34},{28,-34},{29,-35}},{{1,18*40},{20,18*120}}} | J={{{1,-6},{20,-30}},{{1,18*40},{20,18*120}}}
+tianren.lua | beisu_qingfeng | fasthitrecover_yan_v | L={{{1,-6},{28,-18},{29,-18}},{{1,18*40},{20,18*120}}} | J=None
+tianren.lua | moren150 | fatallystrike_p | L={{{1,10},{20,25}}} | J={{{1,10},{20,30}}}
+tianren.lua | moren150 | firedamage_v | L={[1]={{1,80},{20,1000},{23,1300},{26,1500}},[3]={{1,80},{20,1000},{23,1300},{26,1500}}} | J={[1]={{1,45},{20,760},{23,985},{26,1098}},[3]={{1,45},{20,760},{23,985},{26,1098}}}
+tianren.lua | shehun_luanxin | fasthitrecover_v | L=None | J={{{1,-6},{20,-30}},{{1,18*40},{20,18*120}}}
+tianren.lua | shehun_luanxin | fasthitrecover_yan_v | L={{{1,-3},{20,-10},{21,-10}},{{1,18*40},{20,18*120}}} | J=None
+tianren.lua | tianmo_jieti | attackratingenhance_p | L={{{1,65},{30,600}},{{1,18*120},{30,18*360}}} | J={{{1,65},{30,500}},{{1,18*120},{30,18*360}}}
+tianren.lua | tianmo_jieti | attackspeed_v | L={{{1,26},{30,102},{33,109},{35,134},{38,138},{41,145},{42,163},{43,165}},{{1,18*120},{30,18*360}}} | J={{{1,26},{30,102}},{{1,18*120},{30,18*360}}}
+tianren.lua | tianmo_jieti | attackspeed_yan_v | L={{{1,0},{38,0},{39,60},{40,60}},{{1,18*120},{30,18*360}}} | J=None
+tianren.lua | tianmo_jieti | castspeed_v | L={{{1,26},{30,81},{33,86},{35,101},{36,103}},{{1,18*120},{30,18*360}}} | J={{{1,26},{30,81}},{{1,18*120},{30,18*360}}}
+tianren.lua | tianmo_jieti | fasthitrecover_yan_v | L={{{1,5},{20,49},{21,49}},{{1,18*120},{20,18*360}}} | J=None
+tianren.lua | tianmo_jieti | lifemax_yan_p | L={{{1,21},{35,20},{36,20}},{{1,18*45},{30,18*180}}} | J=None
+tianren.lua | tianren120 | skill_eventskilllevel | L=None | J={{{1,1},{20,20}}}
+tianren.lua | tianwai_liuxing | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,362},{2,362}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+tianren.lua | yunlong_ji | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,361},{2,361}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+tianwang.lua | chenglong_jue | colddamage_v | L={[1]={{1,10},{20,100}},[3]={{1,20},{20,200}}} | J=None
+tianwang.lua | chuitianwang150 | colddamage_v | L={[1]={{1,1},{20,60},{23,78},{26,87}},[3]={{1,10},{20,300},{23,391},{26,439}}} | J=None
+tianwang.lua | chuitianwang150 | physicsenhance_p | L={{{1,40},{15,360},{20,655},{23,979},{26,1156}}} | J={{{1,30},{15,210},{20,455},{23,749},{26,896}}}
+tianwang.lua | daotianwang150 | physicsenhance_p | L={{{1,52},{15,285},{20,545},{23,836},{26,992}}} | J={{{1,45},{15,180},{20,405},{23,675},{26,810}}}
+tianwang.lua | jingxin_jue | attackratingenhance_p | L={{{1,95},{20,900}},{{1,18*120},{20,18*180}}} | J={{{1,45},{20,400}},{{1,18*120},{20,18*180}}}
+tianwang.lua | jingxin_jue | do_hurt_p | L={{{1,1},{2,2},{20,20},{30,30},{40,35},{41,35}},{{1,18},{2,18}}} | J=None
+tianwang.lua | jinzhong_zhao | poisonres_p | L={{{1,12},{20,49}},{{1,18*120},{20,18*180}}} | J=None
+tianwang.lua | jinzhong_zhao | sorbdamage_yan_p | L={{{1,2},{20,40}},{{1,18},{2,18}}} | J=None
+tianwang.lua | pofeng_zhan | addskilldamage1 | L={[1]={{1,322},{2,322}},[3]={{1,1},{20,70},{25,110},{27,117}}} | J={[1]={{1,322},{2,322}},[3]={{1,1},{20,70}}}
+tianwang.lua | pofeng_zhan | addskilldamage2 | L={[1]={{1,326},{2,326}},[3]={{1,1},{20,70},{25,110},{27,117}}} | J={[1]={{1,326},{2,326}},[3]={{1,1},{20,70}}}
+tianwang.lua | potian_zhan | addskillexp1 | L={{{1,322},{2,322}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,322},{2,322}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+tianwang.lua | potian_zhan | physicsenhance_p | L={{{1,35},{15,150},{20,338}}} | J={{{1,35},{15,150},{20,446}}}
+tianwang.lua | qiangtianwang150 | deadlystrike_p | L={{{1,6},{20,40},{23,48},{26,54}}} | J={{{1,5},{20,30},{23,37},{26,41}}}
+tianwang.lua | qiangtianwang150 | physicsenhance_p | L={{{1,68},{15,360},{20,640},{23,929},{26,1028}}} | J={{{1,60},{15,240},{20,460},{23,724},{26,856}}}
+tianwang.lua | tianwang_chuifa | addphysicsdamage_p | L={{{1,25},{20,275}},{{1,-1},{2,-1}},{{1,4},{2,4}}} | J={{{1,25},{20,275*2}},{{1,-1},{2,-1}},{{1,4},{2,4}}}
+tianwang.lua | tianwang_daofa | addphysicsdamage_p | L={{{1,50},{20,300}},{{1,-1},{2,-1}},{{1,1},{2,1}}} | J={{{1,50},{20,300*2}},{{1,-1},{2,-1}},{{1,1},{2,1}}}
+tianwang.lua | tianwang_qiangfa | addphysicsdamage_p | L={{{1,25},{20,315}},{{1,-1},{2,-1}},{{1,3},{2,3}}} | J={{{1,25},{20,315*2}},{{1,-1},{2,-1}},{{1,3},{2,3}}}
+tianwang.lua | tianwang_zhanyi | attackspeed_v | L={{{1,5},{30,65}},{{1,-1},{30,-1}}} | J=None
+tianwang.lua | tianwang_zhanyi | deadlystrikeenhance_p | L={{{1,5},{30,45}},{{1,-1},{30,-1}}} | J={{{1,5},{30,48}},{{1,-1},{30,-1}}}
+tianwang.lua | tianwang_zhanyi | lifemax_yan_p | L={{{1,21},{35,160},{36,160}},{{1,-1},{30,-1}}} | J=None
+tianwang.lua | tianwang_zhanyi | skill_cost_v | L={{{1,10},{30,50}}} | J=None
+tianwang.lua | xingyun_jue | addskilldamage1 | L={[1]={{1,325},{2,325}},[3]={{1,1},{20,55},{25,95},{29,116}}} | J={[1]={{1,325},{2,325}},[3]={{1,1},{20,55}}}
+tianwang.lua | xingyun_jue | addskilldamage2 | L={[1]={{1,408},{2,408}},[3]={{1,1},{20,55},{25,95},{29,116}}} | J={[1]={{1,408},{2,408}},[3]={{1,1},{20,55}}}
+tianwang.lua | xingyun_jue | colddamage_v | L={[1]={{1,5},{20,50}},[3]={{1,100},{20,100}}} | J=None
+tianwang.lua | yangguan_sandie | addskilldamage1 | L={[1]={{1,323},{2,323}},[3]={{1,1},{20,65},{25,105},{29,118}}} | J={[1]={{1,323},{2,323}},[3]={{1,1},{20,65}}}
+tianwang.lua | yangguan_sandie | addskilldamage2 | L={[1]={{1,327},{2,327}},[3]={{1,1},{20,65},{25,105},{29,118}}} | J={[1]={{1,327},{2,327}},[3]={{1,1},{20,65}}}
+tianwang.lua | zhanlong_jue | colddamage_v | L={[1]={{1,1},{20,25}},[3]={{1,2},{20,50}}} | J=None
+tianwang.lua | zhuifeng_jue | addskillexp1 | L={{{1,325},{2,325}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,325},{2,325}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+tianwang.lua | zhuifeng_jue | colddamage_v | L={[1]={{1,1},{20,50}},[3]={{1,5},{20,250}}} | J=None
+tianwang.lua | zhuixing_zhuyue | addskillexp1 | L={{{1,323},{2,323}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,323},{2,323}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+tianwang.lua | zhuixing_zhuyue | physicsenhance_p | L={{{1,50},{15,200},{20,381}}} | J={{{1,50},{15,200},{20,458}}}
+wudang.lua | jianwudang150_2 | stun_p | L={{{1,1},{20,34},{23,42},{26,47}},{{1,1},{19,9},{20,10}}} | J={{{1,1},{20,24},{23,31},{26,34}},{{1,1},{19,9},{20,10}}}
+wudang.lua | jianwudang150_3 | stun_p | L={{{1,1},{20,24},{23,31},{26,34}},{{1,1},{19,9},{20,10}}} | J=None
+wudang.lua | qingxing_zhen | attackratingenhance_p | L={{{1,24},{20,500}},{{1,18},{2,18}}} | J={{{1,24},{20,450}},{{1,18},{2,18}}}
+wudang.lua | qiwudang150 | lightingdamage_v | L={[1]={{1,6},{20,10},{23,100}},[3]={{1,6},{15,400},{20,600},{23,900},{26,1200}}} | J={[1]={{1,6},{20,10},{23,11}},[3]={{1,6},{15,180},{20,420},{23,708},{26,852}}}
+wudang.lua | renjian_heyi | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,368},{2,368}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+wudang.lua | renjian_heyi | skill_skillexp_v | L={{{1,SkillExpFunc(7200,1.15,1,3,1)},{2,SkillExpFunc(7200,1.15,2,3,1)},{3,SkillExpFunc(7200,1.16,3,3,1)},{4,SkillExpFunc(7200,1.17,4,3,1)},{5,SkillExpFunc(7200,1.18,5,3,1)},{6,SkillExpFunc(7200,1.19,6,3,1)},{7,SkillExpFunc(7200,1.20,7,3,1)},{8,SkillExpFunc(7200,1.21,8,3,1)},{9,SkillExpFunc(7200,1.22,9,3,1)},{10,SkillExpFunc(7200,1.23,10,3,1)},{11,SkillExpFunc(7200,1.24,11,3,1)},{12,SkillExpFunc(7200,1.23,12,3,1)},{13,SkillExpFunc(7200,1.22,13,3,1)},{14,SkillExpFunc(7200,1.21,14,3,1)},{15,SkillExpFunc(7200,1.20,15,3,1)},{16,SkillExpFunc(7200,1.19,16,3,1)},{17,SkillExpFunc(7200,1.18,17,3,1)},{18,SkillExpFunc(7200,1.17,18,3,1)},{19,SkillExpFunc(7200,1.16,19,3,1)},{20,SkillExpFunc(7200,1.15,20,3,1)},}} | J={{{1,180},{2,460},{3,920},{4,1840},{5,2680},{6,5360},{7,7040},{8,9640},{9,11160},{10,12200},{11,23213},{12,38231},{13,57867},{14,79324},{15,124231},{16,186754},{17,278453},{18,397564},{19,457631},{20,789321},{21,1910800},{22,1910800},{23,1910800},{24,1910800},{25,1910800},{26,1910800},{27,1910800},{28,1910800}},{{1,368},{20,368}},{{1,192},{2,192}}}
+wudang.lua | sanhuan_taoyue | stealmana_p | L={{{1,1},{20,5}}} | J=None
+wudang.lua | taiji_shengong | attackspeed_v | L={{{1,21},{30,65},{33,69},{35,90},{38,94},{41,98}},{{1,-1},{30,-1}}} | J={{{1,21},{30,65}},{{1,-1},{30,-1}}}
+wudang.lua | taiji_shengong | castspeed_v | L={{{1,21},{30,65},{33,69},{35,81},{41,90},{44,94}},{{1,-1},{30,-1}}} | J={{{1,21},{30,65}},{{1,-1},{30,-1}}}
+wudang.lua | taiji_shengong | deadlystrikeenhance_p | L={{{1,5},{30,25}},{{1,-1},{2,-1}}} | J=None
+wudang.lua | taiji_shengong | lightingenhance_p | L={{{1,16},{30,100},{33,108},{38,108},{41,116}},{{1,-1},{2,-1}}} | J={{{1,16},{30,100}},{{1,-1},{2,-1}}}
+wudang.lua | taiji_shengong | manamax_yan_p | L={{{1,50},{35,300},{36,300}},{{1,-1},{2,-1}}} | J=None
+wudang.lua | tiandi_wuji | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,365},{2,365}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+wudang.lua | tiandi_wuji | skill_skillexp_v | L={{{1,SkillExpFunc(5880,1.15,1,5,1)},{2,SkillExpFunc(5880,1.15,2,5,1)},{3,SkillExpFunc(5880,1.16,3,5,1)},{4,SkillExpFunc(5880,1.17,4,5,1)},{5,SkillExpFunc(5880,1.18,5,5,1)},{6,SkillExpFunc(5880,1.19,6,5,1)},{7,SkillExpFunc(5880,1.20,7,5,1)},{8,SkillExpFunc(5880,1.21,8,5,1)},{9,SkillExpFunc(5880,1.22,9,5,1)},{10,SkillExpFunc(5880,1.23,10,5,1)},{11,SkillExpFunc(5880,1.24,11,5,1)},{12,SkillExpFunc(5880,1.23,12,5,1)},{13,SkillExpFunc(5880,1.22,13,5,1)},{14,SkillExpFunc(5880,1.21,14,5,1)},{15,SkillExpFunc(5880,1.20,15,5,1)},{16,SkillExpFunc(5880,1.19,16,5,1)},{17,SkillExpFunc(5880,1.18,17,5,1)},{18,SkillExpFunc(5880,1.17,18,5,1)},{19,SkillExpFunc(8000,1.16,19,5,1)},{20,SkillExpFunc(8000,1.15,20,5,1)},}} | J={{{1,180},{2,460},{3,920},{4,1840},{5,2680},{6,5360},{7,7040},{8,9640},{9,11160},{10,12200},{11,23213},{12,38231},{13,57867},{14,79324},{15,124231},{16,186754},{17,278453},{18,397564},{19,457631},{20,789321},{21,1910800},{22,1910800},{23,1910800},{24,1910800},{25,1910800},{26,1910800},{27,1910800},{28,1910800}},{{1,365},{20,365}},{{1,191},{2,191}}}
+wudang.lua | tiandi_wuji | stun_p | L={{{1,10},{20,20},{25,30},{26,30}},{{1,1},{20,6},{21,6}}} | J={{{1,10},{20,20},{21,20}},{{1,1},{20,6},{21,6}}}
+wudang.lua | tiyun_zong | fastwalkrun_p | L={{{1,18},{20,30},{33,55},{34,55}},{{1,-1},{20,-1}}} | J={{{1,18},{20,60}},{{1,-1},{20,-1}}}
+wudang.lua | wudang120 | skill_eventskilllevel | L=None | J={{{1,1},{20,20}}}
+wudang.lua | wudang120 | skill_skillexp_v | L={{{1,17851239},{2,19487603},{3,22760330},{4,27669421},{5,34214875},{6,42396694},{7,52214875},{8,63669421},{9,76760330},{10,91487603},{11,107851239},{12,135669421},{13,174942148},{14,225669421},{15,274418181},{16,344618181},{17,425738181},{18,517778181},{19,620738181},{20,620738181},}} | J={{{1,180},{2,460},{3,920},{4,1840},{5,2680},{6,5360},{7,7040},{8,9640},{9,11160},{10,12200},{11,23213},{12,38231},{13,57867},{14,79324},{15,124231},{16,186754},{17,278453},{18,397564},{19,457631},{20,789321},{21,1910800},{22,1910800},{23,1910800},{24,1910800},{25,1910800},{26,1910800},{27,1910800},{28,1910800}},{{1,0},{20,0}},{{1,194},{2,194}}}
+wudang.lua | wudang120_child | missle_missrate | L={{{1,85},{15,20},{20,15},{21,15}}} | J={{{1,85},{15,25},{20,15},{21,15}}}
+wudang.lua | wudang_quanfa | addlightingmagic_v | L={{{1,20},{15,250},{20,915},{25,1115},{26,1248}},{{1,-1},{2,-1}}} | J={{{1,20},{15,250},{20,915}},{{1,-1},{2,-1}}}
+wudu.lua | binglan_xuanjing | coldres_p | L=None | J={{{1,-9},{20,-49}},{{1,18*20},{20,18*90}}}
+wudu.lua | binglan_xuanjing | coldresmax_p | L={{{1,-1},{25,-15},{26,-15}},{{1,18*20},{20,18*90}}} | J=None
+wudu.lua | chiyan_shitian | fireres_p | L=None | J={{{1,-9},{20,-49}},{{1,18*20},{20,18*90}}}
+wudu.lua | chiyan_shitian | fireresmax_p | L={{{1,-1},{25,-15},{26,-15}},{{1,18*20},{20,18*90}}} | J=None
+wudu.lua | chuanxin_duci | poisonres_p | L=None | J={{{1,-29},{20,-49}},{{1,18*20},{20,18*90}}}
+wudu.lua | chuanxin_duci | poisonresmax_p | L={{{1,-1},{25,-15},{26,-15}},{{1,18*20},{20,18*90}}} | J=None
+wudu.lua | chuanyi_pojia | physicsres_p | L=None | J={{{1,-9},{20,-49}},{{1,18*20},{20,18*90}}}
+wudu.lua | chuanyi_pojia | physicsresmax_p | L={{{1,-1},{20,-15},{20,-15}},{{1,18*20},{20,18*90}}} | J=None
+wudu.lua | daowudu150 | addskillexp1 | L=None | J={{{1,1067},{2,1067}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+wudu.lua | daowudu150 | physicsenhance_p | L={{{1,23},{15,165},{20,308},{23,458},{26,541}}} | J={{{1,18},{15,95},{20,208},{23,343},{26,411}}}
+wudu.lua | daowudu150 | skill_skillexp_v | L={{{1,300},{2,600},{3,1000},{4,1500},{5,2100},{6,2800},{7,3600},{8,4500},{9,5500},{10,6600},{11,7800},{12,9100},{13,10500},{14,12000},{15,13600},{16,15300},{17,17100},{18,19000},{19,21400},{20,90000},{21,120000},{22,150000},{23,200000},{24,250000},{25,300000},}} | J={{{1,10500},{2,12180},{3,14373},{4,17251},{5,21056},{6,26127},{7,32953},{8,42238},{9,55008},{10,72775},{11,97788},{12,133433},{13,184856},{14,259967},{15,371060},{16,537451},{17,789823},{18,1177459},{19,1780405},{20,2730112},}}
+wudu.lua | duanjin_fugu | allres_p | L=None | J={{{1,-1},{20,-40}},{{1,18*20},{20,18*90}}}
+wudu.lua | duanjin_fugu | allresmax_p | L={{{1,-1},{20,-25},{21,-25}},{{1,18*20},{20,18*90}}} | J=None
+wudu.lua | jiutian_kuanglei | lightingres_p | L=None | J={{{1,-9},{20,-49}},{{1,18*20},{20,18*90}}}
+wudu.lua | jiutian_kuanglei | lightingresmax_p | L={{{1,-1},{25,-15},{26,-15}},{{1,18*20},{20,18*90}}} | J=None
+wudu.lua | wangu_shixin | poisontimereduce_p | L={{{1,-105},{20,-300},{21,-300}},{{1,18*45},{20,18*120}}} | J={{{1,-100},{20,-200}},{{1,18*45},{20,18*120}}}
+wudu.lua | wudu120 | skill_skillexp_v | L={{{1,17851239},{2,19487603},{3,22760330},{4,27669421},{5,34214875},{6,42396694},{7,52214875},{8,63669421},{9,76760330},{10,91487603},{11,107851239},{12,135669421},{13,174942148},{14,225669421},{15,274418181},{16,344618181},{17,425738181},{18,517778181},{19,620738181},{20,620738181},}} | J={{{1,180},{2,460},{3,920},{4,1840},{5,2680},{6,5360},{7,7040},{8,9640},{9,11160},{10,12200},{11,23213},{12,38231},{13,57867},{14,79324},{15,124231},{16,186754},{17,278453},{18,397564},{19,457631},{20,789321},{21,1910800},{22,1910800},{23,1910800},{24,1910800},{25,1910800},{26,1910800},{27,1910800},{28,1910800}},{{1,0},{20,0}},{{1,194},{2,194}}}
+wudu.lua | wudu_daofa | addphysicsdamage_p | L={{{1,20},{20,360},{21,370}},{{1,-1},{20,-1}},{{1,1},{2,1}}} | J={{{1,20},{20,180}},{{1,-1},{20,-1}},{{1,1},{2,1}}}
+wudu.lua | wudu_qijing | addpoisondamage_v | L={{{1,5},{30,100}},{{1,-1},{20,-1}},{{1,11},{2,11}}} | J={{{1,5},{30,45}},{{1,-1},{20,-1}},{{1,10},{2,10}}}
+wudu.lua | wudu_qijing | addpoisonmagic_v | L={{{1,5},{30,100}},{{1,-1},{20,-1}},{{1,11},{2,11}}} | J={{{1,5},{30,100}},{{1,-1},{20,-1}},{{1,10},{2,10}}}
+wudu.lua | wudu_qijing | attackspeed_yan_v | L={{{1,32},{40,32}},{{1,-1},{30,-1}}} | J=None
+wudu.lua | wudu_qijing | castspeed_v | L={{{1,1},{40,80}},{{1,-1},{30,-1}}} | J=None
+wudu.lua | wudu_qijing | castspeed_yan_v | L={{{1,32},{40,32}},{{1,-1},{30,-1}}} | J=None
+wudu.lua | wudu_qijing | lifemax_yan_p | L={{{1,21},{35,20},{36,20}},{{1,-1},{30,-1}}} | J=None
+wudu.lua | wudu_qijing | poisonenhance_p | L={{{1,1},{30,15},{31,15}},{{1,-1},{2,-1}}} | J={{{1,12},{30,50}},{{1,-1},{2,-1}}}
+wudu.lua | wuxing_gu | fastwalkrun_p | L={{{1,-10},{25,-50},{26,-50}},{{1,18*2},{20,18*2}}} | J=None
+wudu.lua | wuxing_gu | poisondamage_v | L=None | J={[1]={{1,5},{20,25}},[2]={{1,20},{20,20}},[3]={{1,25},{2,25}}}
+wudu.lua | xuanyin_zhan | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,355},{2,355}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+wudu.lua | xuanyin_zhan | missle_speed_v | L={{{1,28},{20,40},{21,40}}} | J={{{1,28},{20,32},{21,32}}}
+wudu.lua | xuanyin_zhan | poisondamage_v | L={{{1,20},{15,60},{20,120}},{{1,60},{20,60}},{{1,10},{20,10}}} | J={{{1,20},{15,30},{20,60}},{{1,60},{20,60}},{{1,10},{20,10}}}
+wudu.lua | xuanyin_zhan | skill_skillexp_v | L={{{1,SkillExpFunc(5000,1.15,1,1,3)},{2,SkillExpFunc(5000,1.15,2,1,3)},{3,SkillExpFunc(5000,1.16,3,1,3)},{4,SkillExpFunc(5000,1.17,4,1,3)},{5,SkillExpFunc(5000,1.18,5,1,3)},{6,SkillExpFunc(5000,1.19,6,1,3)},{7,SkillExpFunc(5000,1.20,7,1,3)},{8,SkillExpFunc(5000,1.21,8,1,3)},{9,SkillExpFunc(5000,1.22,9,1,3)},{10,SkillExpFunc(5000,1.23,10,1,3)},{11,SkillExpFunc(5000,1.24,11,1,3)},{12,SkillExpFunc(5000,1.23,12,1,3)},{13,SkillExpFunc(5000,1.22,13,1,3)},{14,SkillExpFunc(5000,1.21,14,1,3)},{15,SkillExpFunc(5000,1.20,15,1,3)},{16,SkillExpFunc(5000,1.19,16,1,3)},{17,SkillExpFunc(5000,1.18,17,1,3)},{18,SkillExpFunc(5000,1.17,18,1,3)},{19,SkillExpFunc(5000,1.16,19,1,3)},{20,SkillExpFunc(5000,1.15,20,1,3)},}} | J={{{1,180},{2,460},{3,920},{4,1840},{5,2680},{6,5360},{7,7040},{8,9640},{9,11160},{10,12200},{11,23213},{12,38231},{13,57867},{14,79324},{15,124231},{16,186754},{17,278453},{18,397564},{19,457631},{20,789321},{21,1910800},{22,1910800},{23,1910800},{24,1910800},{25,1910800},{26,1910800},{27,1910800},{28,1910800}},{{1,355},{20,355}},{{1,192},{2,192}}}
+wudu.lua | yinfeng_shigu | addskillexp1 | L={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}} | J={{{1,353},{2,353}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+wudu.lua | yinfeng_shigu | poisondamage_v | L={{{1,20},{15,80},{20,181}},{{1,60},{20,60}},{{1,10},{20,10}}} | J={{{1,20},{15,50},{20,121}},{{1,60},{20,60}},{{1,10},{20,10}}}
+wudu.lua | yinfeng_shigu | skill_flyevent | L={[1]={{1,0},{10,0},{10,1},{20,1}},[2]={{1,6},{2,6}},[3]={{1,388},{20,388}}} | J=None
+wudu.lua | yinfeng_shigu | skill_skillexp_v | L={{{1,SkillExpFunc(3540,1.15,1,1,5)},{2,SkillExpFunc(3540,1.15,2,1,5)},{3,SkillExpFunc(3540,1.16,3,1,5)},{4,SkillExpFunc(3540,1.17,4,1,5)},{5,SkillExpFunc(3540,1.18,5,1,5)},{6,SkillExpFunc(3540,1.19,6,1,5)},{7,SkillExpFunc(3540,1.20,7,1,5)},{8,SkillExpFunc(3540,1.21,8,1,5)},{9,SkillExpFunc(3540,1.22,9,1,5)},{10,SkillExpFunc(3540,1.23,10,1,5)},{11,SkillExpFunc(3540,1.24,11,1,5)},{12,SkillExpFunc(3540,1.23,12,1,5)},{13,SkillExpFunc(3540,1.22,13,1,5)},{14,SkillExpFunc(3540,1.21,14,1,5)},{15,SkillExpFunc(3540,1.20,15,1,5)},{16,SkillExpFunc(3540,1.19,16,1,5)},{17,SkillExpFunc(3540,1.18,17,1,5)},{18,SkillExpFunc(3540,1.17,18,1,5)},{19,SkillExpFunc(3540,1.16,19,1,5)},{20,SkillExpFunc(3540,1.15,20,1,5)},}} | J={{{1,180},{2,460},{3,920},{4,1840},{5,2680},{6,5360},{7,7040},{8,9640},{9,11160},{10,12200},{11,23213},{12,38231},{13,57867},{14,79324},{15,124231},{16,186754},{17,278453},{18,397564},{19,457631},{20,789321},{21,1910800},{22,1910800},{23,1910800},{24,1910800},{25,1910800},{26,1910800},{27,1910800},{28,1910800}},{{1,353},{20,353}},{{1,191},{2,191}}}
+wudu.lua | zanan_yaojing | poisontimereduce_p | L={{{1,1},{30,30}},{{1,18},{2,18}}} | J=None
+wudu.lua | zhangwudu150 | addskillexp1 | L=None | J={{{1,1066},{2,1066}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}}
+wudu.lua | zhangwudu150 | poisondamage_v | L={{{1,30},{15,175},{20,315},{23,550},{26,652}},{{1,60},{20,60}},{{1,10},{20,10}}} | J={{{1,25},{15,100},{20,215},{23,353},{26,422}},{{1,60},{20,60}},{{1,10},{20,10}}}
+wudu.lua | zhangwudu150 | skill_skillexp_v | L={{{1,300},{2,600},{3,1000},{4,1500},{5,2100},{6,2800},{7,3600},{8,4500},{9,5500},{10,6600},{11,7800},{12,9100},{13,10500},{14,12000},{15,13600},{16,15300},{17,17100},{18,19000},{19,21400},{20,90000},{21,120000},{22,150000},{23,200000},{24,250000},{25,300000},}} | J={{{1,10500},{2,12180},{3,14373},{4,17251},{5,21056},{6,26127},{7,32953},{8,42238},{9,55008},{10,72775},{11,97788},{12,133433},{13,184856},{14,259967},{15,371060},{16,537451},{17,789823},{18,1177459},{19,1780405},{20,2730112},}}
+wuhuntang.lua | addskilldamage1 | CHI JX1
+wuhuntang.lua | addskilldamage2 | CHI JX1
+wuhuntang.lua | addskilldamage3 | CHI JX1
+wuhuntang.lua | baijiangguzhanhan | CHI LINUX
+wuhuntang.lua | changyinghuichi | CHI LINUX
+wuhuntang.lua | chanjianchuning | CHI LINUX
+wuhuntang.lua | feixuezhiren | CHI LINUX
+wuhuntang.lua | firedamage_v | CHI JX1
+wuhuntang.lua | gongzhongbingxing | CHI LINUX
+wuhuntang.lua | hanshanji | CHI LINUX
+wuhuntang.lua | hanshanji_zi | CHI LINUX
+wuhuntang.lua | hanshanji_zi2 | CHI LINUX
+wuhuntang.lua | jicanhunurou | CHI LINUX
+wuhuntang.lua | keyinxiongnuxue | CHI LINUX
+wuhuntang.lua | missle_speed_v | CHI JX1
+wuhuntang.lua | nupitianya | CHI LINUX
+wuhuntang.lua | nuqi | CHI LINUX
+wuhuntang.lua | nuqi2 | CHI LINUX
+wuhuntang.lua | physicsenhance_p | CHI JX1
+wuhuntang.lua | seriesdamage_p | CHI JX1
+wuhuntang.lua | skill_attackradius | CHI JX1
+wuhuntang.lua | skill_cost_v | CHI JX1
+wuhuntang.lua | wuhuntangdaofa | CHI LINUX
+wuhuntang.lua | wumuyizhi | CHI LINUX
+wuhuntang.lua | zhongwuliufeng | CHI LINUX
+wuhuntang.lua | zhongwuliufengBUFF | CHI LINUX
+wuzhuanjineng.lua | qiankun_wuliang_seven | CHI LINUX
+xiaoyao.lua | addskilldamage1 | CHI JX1
+xiaoyao.lua | addskilldamage2 | CHI JX1
+xiaoyao.lua | addskilldamage3 | CHI JX1
+xiaoyao.lua | danzhichishang | CHI LINUX
+xiaoyao.lua | danzhichishang_Buff | CHI LINUX
+xiaoyao.lua | gaoshanliushui | CHI LINUX
+xiaoyao.lua | guanglingsan | CHI LINUX
+xiaoyao.lua | jianjuefuyun | CHI LINUX
+xiaoyao.lua | lightingdamage_v | CHI JX1
+xiaoyao.lua | luoyanpingsha | CHI LINUX
+xiaoyao.lua | meihuasannong | CHI LINUX
+xiaoyao.lua | physicsenhance_p | CHI JX1
+xiaoyao.lua | qianliduxing | CHI LINUX
+xiaoyao.lua | sataliuxing | CHI LINUX
+xiaoyao.lua | seriesdamage_p | CHI JX1
+xiaoyao.lua | shibuyisha | CHI LINUX
+xiaoyao.lua | shibuyisha_Buff | CHI LINUX
+xiaoyao.lua | skill_cost_v | CHI JX1
+xiaoyao.lua | suiyiqu | CHI LINUX
+xiaoyao.lua | wugoushuangxue | CHI LINUX
+xiaoyao.lua | xiagurouqing | CHI LINUX
+xiaoyao.lua | xiaoyaojianfa | CHI LINUX
+xiaoyao.lua | xiaoyaoqinfa | CHI LINUX
+xiaoyao.lua | xiaoyaoyu | CHI LINUX
+xiaoyao.lua | yangguansandie | CHI LINUX
+xiaoyao.lua | yigonghuanyu | CHI LINUX
+xiaoyao.lua | yijianfutian | CHI LINUX
+xiaoyao.lua | yinanbaima | CHI LINUX
+xiaoyao.lua | yinlv | CHI LINUX
+xiaoyao.lua | zhizunyinjian | CHI LINUX
