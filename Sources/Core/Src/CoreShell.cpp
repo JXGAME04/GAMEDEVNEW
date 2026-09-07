@@ -24004,12 +24004,101 @@ int KCoreShell::LockSomeoneAction(int nTargetIndex)
 	return 0;
 }
 
+// [TUKICH 07/09] "tu kich chuot danh quai": moi cu kich chuot trai deu chay
+// Mouse_Action (Ui\autoexec.lua) -> LockObjectAction + GotoWhere VO DIEU KIEN.
+// Khi con quai dang danh chet, con tro van nam nguyen cho no, nen cu kich ke
+// tiep roi vao O TRONG (hoac vao mon do vua rot) va keo nhan vat chay toi day.
+// Chot: quai bi khoa chet -> ghi lai o vua chet; ke tu do, moi lenh DI CHUYEN
+// hoac KHOA VAT PHAM nham vao vung quanh o do deu bi bo qua, va moi lan bi bo
+// qua thi han cho lai duoc gia han - tu kich chuot bam mai mot cho se khong bao
+// gio keo duoc nhan vat toi. Nham RA NGOAI vung (nguoi choi chu dong doi cho),
+// hoac dang khoa mot muc tieu con song (lenh ap sat), thi go chot ngay.
+// Ngung bam DEAD_TGT_GUARD_MS thi chot tu het -> bam lai la nhat do binh thuong.
+#define DEAD_TGT_GUARD_MS		2000
+#define DEAD_TGT_GUARD_RANGE	96		// ~3 o: du bao xac quai lan do rot quanh no
+
+static int		s_nDeadTgtX = 0;
+static int		s_nDeadTgtY = 0;
+static DWORD	s_dwDeadTgtTime = 0;
+
+// TRUE = diem (nX,nY) dang nam trong vung chot -> phai bo qua lenh nay.
+static BOOL DeadTargetGuardBlock(int nX, int nY)
+{
+	if (!s_dwDeadTgtTime)
+		return FALSE;
+
+	if (GetTickCount() - s_dwDeadTgtTime > DEAD_TGT_GUARD_MS)
+	{
+		s_dwDeadTgtTime = 0;
+		return FALSE;
+	}
+
+	int nMeIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nMeIdx > 0 && nMeIdx < MAX_NPC && Npc[nMeIdx].m_nPeopleIdx > 0)
+	{
+		s_dwDeadTgtTime = 0;	// dang khoa muc tieu con song -> day la lenh ap sat
+		return FALSE;
+	}
+
+	if (g_GetDistance(nX, nY, s_nDeadTgtX, s_nDeadTgtY) > DEAD_TGT_GUARD_RANGE)
+	{
+		s_dwDeadTgtTime = 0;	// nguoi choi nham cho khac -> tra lai dieu khien
+		return FALSE;
+	}
+
+	s_dwDeadTgtTime = GetTickCount();	// van nham vao xac quai -> giu chot
+	AUTOLOG_EVERY(500, "[TUKICH] bo qua lenh nham o quai vua chet: diem=(%d,%d) oquai=(%d,%d)",
+		nX, nY, s_nDeadTgtX, s_nDeadTgtY);
+	return TRUE;
+}
+
+// Muc tieu dang khoa vua chet: huy lenh di chuyen dang treo (khong co no thi
+// nhan vat chay not toi xac quai) va bat chot o vua chet.
+// Goi tu KNpc::DoDeath va KNpcAI::FollowPeople (deu trong #ifndef _SERVER).
+void g_OnLockedTargetDead(int nIdxDead)
+{
+	if (nIdxDead <= 0 || nIdxDead >= MAX_NPC)
+		return;
+
+	Npc[nIdxDead].GetMpsPos(&s_nDeadTgtX, &s_nDeadTgtY);
+	s_dwDeadTgtTime = GetTickCount();
+
+	int nMeIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nMeIdx <= 0 || nMeIdx >= MAX_NPC)
+		return;
+
+	// "di toi cho minh dang dung" = dung lai; dung dung khuon san co o
+	// KNpcAI::FollowPeople (nhanh gap NPC doi thoai).
+	if (Npc[nMeIdx].m_Doing == do_walk || Npc[nMeIdx].m_Doing == do_run)
+	{
+		int nMeX = 0, nMeY = 0;
+		Npc[nMeIdx].GetMpsPos(&nMeX, &nMeY);
+		Npc[nMeIdx].SendCommand(do_walk, nMeX, nMeY);
+		SendClientCmdWalk(nMeX, nMeY);
+		AUTOLOG("[TUKICH] muc tieu %d chet luc dang duoi -> dung tai (%d,%d) oquai=(%d,%d)",
+			nIdxDead, nMeX, nMeY, s_nDeadTgtX, s_nDeadTgtY);
+	}
+}
+
 int KCoreShell::LockObjectAction(int nTargetIndex)
 {
 	if (Player[CLIENT_PLAYER_INDEX].CheckTrading())
 		return 0;
 	
 	int nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+
+	// [TUKICH 07/09] mon do vua rot ngay cho quai chet: khong khoa, de cu kich
+	// chuot ke tiep khong keo nhan vat chay toi nhat.
+	if (nTargetIndex > 0 && nTargetIndex < MAX_OBJECT)
+	{
+		int nObjX = 0, nObjY = 0;
+		Object[nTargetIndex].GetMpsPos(&nObjX, &nObjY);
+		if (DeadTargetGuardBlock(nObjX, nObjY))
+		{
+			Npc[nIndex].m_nObjectIdx = 0;
+			return 1;
+		}
+	}
 
 	if (nTargetIndex <= 0)	
 		Npc[nIndex].m_nObjectIdx = 0;
@@ -24023,6 +24112,15 @@ void KCoreShell::GotoWhere(int x, int y, int mode)
 {
 	if (mode < 0 || mode > 2)
 		return;
+
+	// [TUKICH 07/09] bo qua cu kich roi vao o con quai vua chet
+	// (xem chu thich o DEAD_TGT_GUARD_MS phia tren LockObjectAction).
+	{
+		int nGX = x, nGY = y, nGZ = 0;
+		g_ScenePlace.ViewPortCoordToSpaceCoord(nGX, nGY, nGZ);
+		if (DeadTargetGuardBlock(nGX, nGY))
+			return;
+	}
 
 	if (Player[CLIENT_PLAYER_INDEX].m_nSendMoveFrames >= defMAX_PLAYER_SEND_MOVE_FRAME)
 	{
