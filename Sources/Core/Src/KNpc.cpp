@@ -6673,6 +6673,10 @@ static int   s_nPSBo = 0, s_nPSGui = 0;
 static DWORD s_adwPSBamDay[MAX_NPC];
 static DWORD s_adwPSBamKhac[MAX_NPC];
 static int   s_nPSDoiFight = 0, s_nPSDoiCoNgua = 0, s_nPSDoiKhac = 0;
+// [DELTA 07/09 i] bit nao cua m_btSomeFlag doi (XOR voi lan truoc, chi dem khi goi phai phat lai) va la bot hay nguoi
+static BYTE  s_abyPSCo[MAX_NPC];
+static int   s_anPSBit[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static int   s_nPSDoiBot = 0, s_nPSDoiNguoi = 0;
 // [DELTA 07/09 e] doi nam o nhom truong nao: 0 toc do (Walk/Run/Attack/CastSpeed), 1 rank/danh hieu, 2 chi so
 // (RankInWorld/Repute/FuYuan/PK/ReBorn), 3 trang bi/ngua/anh, 4 ten-chuoi-co; bam voi nhom do xoa trang.
 static DWORD s_adwPSNhom[5][MAX_NPC];
@@ -6710,7 +6714,7 @@ static DWORD s_adwNSLucGui[MAX_NPC];	// GetTickCount lan phat truoc (gon hoac da
 static DWORD s_adwNSLucDay[MAX_NPC];	// GetTickCount lan phat DAY DU truoc
 static DWORD s_adwNSNgua[MAX_NPC];	// [DELTA 07/09 f] bam ngua+toc do lan phat truoc (de gui them goi gon sau goi day du)
 static int   s_nNSGonThem = 0;
-static int   s_nNSLamMoi = -1, s_nNSLamMoiDay = 10000, s_nNSGon = 1;
+static int   s_nNSLamMoi = -1, s_nNSLamMoiDay = 60000, s_nNSGon = 1;	// [DELTA 07/09 i] day du 10 s -> 60 s
 static int   s_nNSBo = 0, s_nNSGonDem = 0, s_nNSDay = 0;
 static void NS_DocCauHinh()
 {
@@ -6719,9 +6723,12 @@ static void NS_DocCauHinh()
 	s_nNSLamMoi = (int)GetPrivateProfileIntA("Server", "DongBoLamMoi", 2000, ".\\config.ini");
 	if (s_nNSLamMoi < 0) s_nNSLamMoi = 0;
 	if (s_nNSLamMoi > 10000) s_nNSLamMoi = 10000;
-	s_nNSLamMoiDay = (int)GetPrivateProfileIntA("Server", "DongBoLamMoiDay", 10000, ".\\config.ini");
+	// [DELTA 07/09 i] 10 s -> 60 s: goi day du chi la luoi an toan (moi truong cham nam trong bam cham -> doi la phat day du
+	// ngay; NPC moi thay -> client hoi c2s_requestnpc -> SendSyncData gui day du). Do 15:00: 77 = 15,4 % byte trong tran,
+	// 410 goi/10 s = dung bang so NPC trong tam chia 10 s.
+	s_nNSLamMoiDay = (int)GetPrivateProfileIntA("Server", "DongBoLamMoiDay", 60000, ".\\config.ini");
 	if (s_nNSLamMoiDay < 1000) s_nNSLamMoiDay = 1000;
-	if (s_nNSLamMoiDay > 60000) s_nNSLamMoiDay = 60000;
+	if (s_nNSLamMoiDay > 600000) s_nNSLamMoiDay = 600000;
 	s_nNSGon = (int)GetPrivateProfileIntA("Server", "DongBoGoiGon", 1, ".\\config.ini");
 }
 // so client that dang noi ma CHUA bao hieu goi gon (client cu) - dem lai moi giay; > 0 thi khong phat goi gon cho ai
@@ -7302,7 +7309,16 @@ BOOL KNpc::NormalSync()
 					if (dwBamDay != s_adwPSBamDay[m_Index] && dwBam == s_adwPSBam[m_Index]) s_nPSDoiFight++;
 					else if (dwBam != s_adwPSBam[m_Index] && dwBamKhac == s_adwPSBamKhac[m_Index]) s_nPSDoiCoNgua++;
 					else if (dwBam != s_adwPSBam[m_Index]) s_nPSDoiKhac++;
+					if (dwBam != s_adwPSBam[m_Index])	// [DELTA 07/09 i] bit co nao doi, bot hay nguoi
+					{
+						const BYTE byXor = (BYTE)(sPSBam.m_btSomeFlag ^ s_abyPSCo[m_Index]);
+						for (int b = 0; b < 8; b++)
+							if (byXor & (1 << b))
+								s_anPSBit[b]++;
+						if (m_nPlayerIdx > 0) s_nPSDoiNguoi++; else s_nPSDoiBot++;
+					}
 				}
+				s_abyPSCo[m_Index] = sPSBam.m_btSomeFlag;
 				s_adwPSBamDay[m_Index] = dwBamDay;
 				s_adwPSBamKhac[m_Index] = dwBamKhac;
 			}
@@ -7333,8 +7349,10 @@ BOOL KNpc::NormalSync()
 					s_adwPSNhom[k][m_Index] = adwNhom[k];
 			}
 			const DWORD dwLuc = GetTickCount();
+			// [DELTA 07/09 i] DAN DEU ky lam moi: + (m_Index % 128) giay cho tung NPC. Bot vao tam cung luc thi lam moi
+			// cung luc (do 15:00: mot cua so 10 s co 1.024 goi 75 = 234 KB, 38 % cua so dinh 62 KB/s); dan ra 128 s.
 			if (s_adwPSBam[m_Index] == dwBam &&
-				(dwLuc - s_adwPSLuc[m_Index]) < (DWORD)(s_nPSLamMoi * 1000))	// GetTickCount tinh bang mili giay
+				(dwLuc - s_adwPSLuc[m_Index]) < (DWORD)(s_nPSLamMoi * 1000 + (m_Index % 128) * 1000))	// GetTickCount tinh bang mili giay
 			{
 				bPSGui = false;
 				s_nPSBo++;
@@ -7346,10 +7364,11 @@ BOOL KNpc::NormalSync()
 				s_nPSGui++;
 			}
 		}
-		AUTOLOG_EVERY(10000, "[PS-BO] goi ngoai hinh: gui=%d bo=%d (%d%% bo) lam moi moi %d giay | doi: chi_co_chien_dau=%d co_khac_hoac_ngua=%d khac=%d | nhom: toc_do=%d rank=%d chi_so=%d trang_bi=%d ten=%d nhieu=%d",
+		AUTOLOG_EVERY(10000, "[PS-BO] goi ngoai hinh: gui=%d bo=%d (%d%% bo) lam moi moi %d giay | doi: chi_co_chien_dau=%d co_khac_hoac_ngua=%d khac=%d | nhom: toc_do=%d rank=%d chi_so=%d trang_bi=%d ten=%d nhieu=%d | bit: 01=%d 02=%d 04=%d 08=%d 10=%d 20=%d 40=%d 80=%d | bot=%d nguoi=%d",
 			s_nPSGui, s_nPSBo, (s_nPSGui + s_nPSBo) > 0 ? (s_nPSBo * 100 / (s_nPSGui + s_nPSBo)) : 0, s_nPSLamMoi,
 			s_nPSDoiFight, s_nPSDoiCoNgua, s_nPSDoiKhac,
-			s_anPSNhom[0], s_anPSNhom[1], s_anPSNhom[2], s_anPSNhom[3], s_anPSNhom[4], s_nPSNhomNhieu);
+			s_anPSNhom[0], s_anPSNhom[1], s_anPSNhom[2], s_anPSNhom[3], s_anPSNhom[4], s_nPSNhomNhieu,
+			s_anPSBit[0], s_anPSBit[1], s_anPSBit[2], s_anPSBit[3], s_anPSBit[4], s_anPSBit[5], s_anPSBit[6], s_anPSBit[7], s_nPSDoiBot, s_nPSDoiNguoi);
 		if (bPSGui)
 		{
 			bNSKq = TRUE;	// [DELTA 07/09]

@@ -796,3 +796,29 @@ Chủ swap 10:08 (bản MATDO b c37a0b1b, gồm TOCDO + SKEXP + DELTA a–e); tr
 **Tình trạng lúc 15:06:** máy chủ live 11f83405 (14:35, có vá g: `[DMG-GON] gon=1.658.820 day=0`, `lam moi moi 300 giay`), client live 52a55d89 (TUKICH b, 14:43, có hello 2). Vá h chỉ cần swap client.
 
 **Đã đặt 15:12 (chỉ client, chờ chủ chạy ChoiGame.bat):** `CoreClient.dll.moi` **716ab775** = build từ origin/main 7caf7cd0 + vá h (⊇ client live 52a55d89 TUKICH b, kiểm chuỗi missing = 0; commit 6a7ca54f sau đó chỉ là báo cáo, không đổi mã). Máy chủ không cần swap.
+
+### 8.14 Đo sau khi vá g chạy thật (14:35 → 15:10, chủ vào đám đông ~400 NPC từ 14:57) và vá i
+
+Nguồn: pid 27800 (máy chủ 11f83405 từ 14:35, có vá g), 210 cửa sổ 10 s = 34,8 phút; đoạn đánh nhau 90 cửa sổ (15 phút cuối). Client 52a55d89 (14:43) rồi 716ab775 (15:09, vá h). Không sập, không dòng lỗi, `[DMG-GON] gon=2,18 triệu day=0`, `lam moi moi 300 giay`.
+
+**Mật độ khác trận 11:12** (chủ đứng chỗ ~400 NPC trong tầm 32 ô, gói 77 410/10 s ≈ số NPC trong tầm ÷ 10 s; trận 11:12 chỉ ~125/10 s) nên so theo tỉ lệ và theo "mỗi NPC", không so KB tuyệt đối.
+
+| Chỉ số (đoạn đánh nhau) | 11:12 (a–f) | 15:00 (a–g) |
+|---|---|---|
+| 221 gọn | 53,6 % | 52,4 % (4.911 gói/10 s) |
+| 207 → 222 số sát thương | 25 % (17 B) | **8,3 %** (222 13 B, 1.697 gói/10 s; 207 đầy đủ không còn xuất hiện trong top) |
+| 77 đầy đủ | 6,9 % | 15,4 % (410 gói/10 s = **kỳ làm mới 10 s** × số NPC trong tầm) |
+| 75 ngoại hình | 7,3 % | 11,2 % (127 gói/10 s; **cụm**: hai cửa sổ 778 và 1.024 gói = 177 / 234 KB) |
+| Lần phát 75 máy chủ | 19,8k / 10 phút | 6,7k / 10 phút (−66 %) |
+| Client TB / đỉnh | 17,6 / 64,7 KB/s | 26,2 / 62,0 KB/s @ 1.724 gói/s (mật độ gấp đôi) |
+| TICK | 6,5 ms | 8,0 ms (14,5 %), 15:13 lên 12,6 ms / 87 ms max (đầu đợt mới) |
+
+**Đọc:**
+
+1. **207 gọn đúng như tính:** gon = 100 %, số sát thương còn 8,3 % dù chủ đứng giữa đám đánh dồn.
+2. **Gói 77 giờ là mục lớn thứ hai (15,4 %)** và toàn bộ là kỳ làm mới đầy đủ 10 giây (`DongBoLamMoiDay`, NS-BO `day/(gon+day)` = 2,7 % máy chủ-wide nhưng tới client ở chỗ 400 NPC là 40 KB/10 s). Kỳ này chỉ là lưới an toàn: mọi trường chậm nằm trong băm chậm (đổi là phát đầy đủ ngay), NPC mới thấy thì client hỏi `c2s_requestnpc` → `SendSyncData` gửi đầy đủ; client không xoá NPC theo tuổi đồng bộ (chỉ theo S6 khoảng cách). → **vá i: 10 → 60 s** (−80 % gói 77 ≈ −12 % byte trong trận).
+3. **Gói 75 phát theo cụm:** bot vào tầm cùng lúc thì 300 s sau làm mới cùng lúc → cửa sổ đỉnh 62 KB/s có 234 KB là 75 (38 %). → **vá i: dàn đều** + (m_Index % 128) giây cho từng NPC (đỉnh kỳ vọng ~45 KB/s).
+4. **`co_khac_hoac_ngua = 14.508` trong 35 phút (62 % số lần phát 75)** chưa rõ bit nào: bot chỉ có bit 0x08 (tên bang) có thể đổi, người thật có 0x01/0x10 (PK) và 0x04 (ngủ); mà nhóm `ten` chỉ 1.540 nên số liệu tự mâu thuẫn. → **vá i: đếm XOR từng bit + tách bot/người** trong `[PS-BO] ... | bit: 01= 02= 04= 08= 10= 20= | bot= nguoi=`. Lần kéo log sau đọc dòng này là biết.
+5. **Vá h (cờ chiến đấu chính mình):** client 716ab775 chạy từ 15:11:56; `[E4_SKILL_IN] npc=1 fight=1` khớp `[S2-NETSKILL-IN] fight=1` ở mọi dòng cuối; chưa có mẫu Thổ Địa Phù về thành để chốt, chủ thử theo mục 8.13.
+
+**Vá i (chỉ máy chủ, script `ReverseTools/goi_va_delta9_dandeu75_lammoiday_0709.py`):** (1) `DongBoLamMoiDay` mặc định 60.000 ms, kẹp 600.000; (2) làm mới 75: `+ (m_Index % 128) * 1000` ms; (3) đếm bit cờ. Kỳ vọng trận kế ở cùng mật độ: 77 15 → ~3 %, 75 11 → ~6 % (còn phần bit chưa rõ), tổng −15 %, đỉnh 62 → ~45 KB/s.
