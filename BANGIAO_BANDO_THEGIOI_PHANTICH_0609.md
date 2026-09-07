@@ -495,4 +495,72 @@ Tương Dương, Thành Đô) — **giống hệt mức chạm trên bản chữ
 - **Chưa làm** (chờ chủ): kích-để-đi (mục 6), nhãn vẽ lúc chạy (5.4), lỗi `UiMapCave.ini` (mục 7 —
   cửa sổ sơn động vẫn hiện ảnh mới bình thường vì `UpdateData` tự đặt ảnh).
 
-*Đợt 1 xong: đã đổi ảnh, chưa build, chưa đặt `.moi`. Còn chờ chủ chốt câu 2–5 ở mục 9.*
+---
+
+## 11. ✅ THI CÔNG ĐỢT 2 (06/09 ~22:30) — KÍCH ĐỊA ĐIỂM → TỰ CHẠY BỘ NHƯ 2.0 · NHÃN TIẾNG VIỆT · SỬA LỖI SƠN ĐỘNG
+
+Chủ chốt: *"cho chạy bộ như 2.0"* · *"làm 2 và 3 luôn"* · *"up git luôn"*.
+Commit **`7aac074f`** trên `origin/main` (rebase lên `a38ab346`). Cặp `.moi` đã đặt ở `bin\client\`, **chờ chủ chạy `ChoiGame.bat`
+(phải swap CẢ HAI cùng lúc — chung `GOI_WORLDMAP_GOTO` ở cuối enum)**:
+
+| Tệp | Cỡ | md5 | Ghi chú |
+|---|---|---|---|
+| `Game.exe.moi` | 1.483.776 B | `93ffa8a4` | **thay** `Game.exe.moi` 22:10 của phiên TKINFO (md5 `d0cc24e1`, đã sao lưu `Game.exe.moi.tkinfo_2210_d0cc24e1`); bản mới **chứa cả** TKINFO (`d9cb993e` đã lên main — kiểm chuỗi: chỉ thêm `WidthFold`, có mặt) |
+| `CoreClient.dll.moi` | 2.605.568 B | `bcf80dec` | đang chạy `db8d96fb` 21:08 |
+
+Build ở worktree `D:\GAMEDEVNEW_wt_bando`: Core `Client Release|Win32` LINK PASS · S3Client `Release|Win32` LINK PASS ·
+Core `Server Release|x64` COMPILE PASS (tệp dùng chung `CoreShell.cpp` vẫn dịch được phía máy chủ; **không** đặt CoreServer).
+
+### 11.1 Cách chạy (client, `CoreShell.cpp` mô-đun `TG_BanDo*` cạnh `TG_VanTieu`, tick 400 ms từ `Breathe`)
+
+1. Bấm địa điểm trên **bản đồ thế giới hoặc bản đồ sơn động** → `GOI_WORLDMAP_GOTO(map id)`.
+2. `BD_TimDuong`: **BFS** trên đồ thị cửa map lấy từ `g_MapTraffic` (`k_Type=0` → `k_Point`, `k_Index`; 493 cửa / 389 map,
+   nạp 1 lần). Không có đường bộ → *"[Bản đồ] Không tìm được đường bộ tới X - nơi này phải đi bằng Xa Phu, thuyền hoặc phù."*
+3. Mỗi chặng: `DT_WalkTo` (tự lên ngựa như Chỉ Nam) tới cửa — **MPS = Point.x×16, Point.y×32** (cùng công thức `FlagOnTarget`
+   và bộ vẽ cờ `ScenePlaceMapC.cpp:539`) — đạp lên trap → máy chủ đổi map → tick thấy `m_SubWorldID` = map kế → chặng tiếp.
+4. Đứng trên cửa ~2 s mà map không đổi → **dò quanh 8 hướng × 1 ô rồi × 2 ô** (tối đa 16 lần) vì client **không có dữ liệu trap**
+   (`KRegion::GetTrap` trả 0 phía client, `LoadServerTrap` chỉ `_SERVER`). Hết 16 lần → *"Không qua được cửa map (bị chặn?)"*.
+5. Lạc sang map ngoài kế hoạch (trap rơi chỗ khác / bị kéo) → **tính lại đường từ map mới**, tối đa 3 lần.
+6. Tới map đích → *"[Bản đồ] Đã tới X."* và dừng (`RemoveFlag`).
+
+**Rào**: map sự kiện (`TG_ChanMapSuKien`, cùng luật Chỉ Nam) · auto Dã Tẩu đang chạy · đang ở đúng map · mỗi chặng ≤ 3 phút ·
+mất nhân vật > 20 s. **Một người một đường**: bật bản đồ thì tắt 3 dẫn đường F11 và ngược lại (`TG_BanDoStop(NULL)` chèn trước
+`g_nTG*On = 1` của cả 3). **Huỷ** = bấm lại đúng địa điểm đó (trả 2) → *"Đã huỷ tự chạy."*
+
+### 11.2 Nhãn tiếng Việt (S3Client, lớp `KWorldMapLocs` trong `UiWorldMap.h/.cpp`, dùng chung 2 cửa sổ)
+
+- Khi mở cửa sổ: đọc `N_MapPos`/`N_name`/`N_MapType` (N = 1..1200 — `Count=1000` nhưng có N tới 1057) → **224 điểm**;
+  tâm trên ảnh = `MapPos + (30,17)` (cùng độ lệch với ký hiệu "ngươi ở đây").
+- Mỗi khung `PaintWindow` tự đo chuột (không dựa `WM_MOUSEMOVE` vì chuột trên nút bang hội thì cha không nhận): điểm gần nhất
+  trong **14 px** → vẽ `"<tên> (<loại>) - bấm để chạy tới"` font 12 vàng viền đen (`OutputRichText`), tự né mép phải.
+  Loại dịch: City→Thành, Capital→Kinh đô, Cave→Sơn động, Field→Dã ngoại, Battlefield→Chiến trường, Tong→Bang phái, Country→Nước.
+- Bấm: trúng điểm → đi (đóng cửa sổ khi trả 1/2; trả 0 thì **giữ cửa sổ mở** để chọn chỗ khác); bấm chỗ khác / chuột phải /
+  phím = đóng như cũ. 7 nhãn bang hội chiếm lĩnh **không đụng**.
+
+### 11.3 Lỗi sơn động (mục 7) — đã sửa
+
+`UiMapCave.cpp:77` `sprintf` → `strcat` như `KUiWorldmap` ⇒ nạp đúng `\Ui\Ui3\UiMapCave.ini` (Left/Top/Width/Height + `[Sign]`).
+Mũi tên "ngươi ở đây" giờ hiện, và đặt **+30,+17** như bản đồ thế giới (cùng ảnh 752×576). Bản đồ sơn động cũng có trỏ/bấm.
+
+### 11.4 Kiểm thử đề nghị (chủ)
+
+1. Đứng ở Phượng Tường, mở bản đồ, trỏ "Thành Đô" → thấy nhãn vàng; bấm → chat *"Đang tự chạy tới Thành Đô (qua N cửa map)"*,
+   nhân vật lên ngựa chạy ra cửa, sang map, chạy tiếp; tới nơi → *"Đã tới Thành Đô"*.
+2. Đang chạy, mở bản đồ bấm **lại** Thành Đô → *"Đã huỷ tự chạy"*; bấm địa điểm **khác** → đổi đích.
+3. Bấm một sơn động (bản đồ sơn động) → đi tới cửa động; bấm map không nối đường bộ (đảo/thuyền) → báo "phải đi bằng Xa Phu…".
+4. Trong Tống Kim / Công Thành bấm bản đồ → bị chặn (thông báo map sự kiện).
+5. Mở bản đồ sơn động → thấy **mũi tên "ngươi ở đây"** (trước đây không bao giờ hiện).
+6. Nếu nhân vật **đứng im ở cửa map** quá 2 s → phải thấy nó nhích quanh (dò); nếu vẫn không qua sau ~35 s → báo "Không qua được".
+
+**Lùi**: `Game.exe.truoc` / `CoreClient.dll.truoc` theo `ChoiGame.bat`; hoặc đặt lại `Game.exe.moi.tkinfo_2210_d0cc24e1` → `Game.exe.moi`.
+
+### 11.5 Bẫy gặp khi thi công (đã ghi memory)
+
+- **`Sources\.gitattributes` = `text=auto`**: tệp làm việc phải CRLF; bảng loại map trong bộ vá sinh `\r\r\n` ⇒ git coi
+  `UiWorldMap.cpp` là **binary** (`w/-text`), diff cả tệp. Sửa `\r\r\n`→`\r\n`; `p_bando_code.py` đã vá.
+- **Worktree thiếu `Lib\debug64\*`, `Lib\release64\*`…** (gitignore) ⇒ LNK1181 dù COMPILE PASS; chép từ cây chính (15 tệp).
+- **`.moi` của phiên khác đang chờ** (TKINFO 22:10): phải fetch, rebase lên commit của họ, build lại, kiểm superset chuỗi rồi mới thay
+  (giữ sao lưu). `origin/main` đổi 2 lần trong 30 phút.
+- Heredoc Bash cắt `\\` → mọi bộ vá viết bằng Write rồi chạy tệp.
+
+*Đợt 2 xong: mã đã lên `origin/main` (`7aac074f`), cặp `.moi` đã đặt, chờ chủ swap và thử theo 11.4.*
