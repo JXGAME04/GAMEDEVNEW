@@ -107,7 +107,6 @@ private:
 	void	Request(int nStart);
 private:
 	static KUiTongListJX2*	ms_pSelf;
-	KTJX2Shade			m_Shade;			// nen toi ben trong khung (sprite goc trong suot giua)
 	KWndLabeledButton	m_BtnClose;
 	KWndText80			m_Row[TJX2_UI_ROWS];
 	KWndButton			m_RowSel[TJX2_UI_ROWS];

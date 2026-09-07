@@ -50,6 +50,7 @@ Include("\\script\\item\\bdh_admin.lua")	-- [BDH 28/08] bo test Dong hanh	-- [27
 Include("\\script\\item\\test_phiphong_admin.lua")	-- [PHI PHONG 29/08] bo test phi phong, an, trang suc, mat na
 Include("\\script\\item\\test_dungluyen_admin.lua")	-- [DUNGLUYEN-PB 02/09] bo test dung luyen Van Cuong
 Include("\\script\\item\\test_vantieu_admin.lua")	-- [VTCN 06/09] bo test VAN TIEU Long Mon Tieu Cuc
+Include("\\script\\kiemthu\\item\\test_banghoi_admin.lua")	-- [BHTEST 07/09] bo test BANG HOI day du (BH_TestRoot)
 
 ADMIN_SUPPORT_TEXT = "Chøc n¨ng hç trî qu¶n trÞ viªn"
 PLAYER_INFOMATION = "<sex> - Tªn: <color=pink>%s<color>.\n- Täa ®é: <color=gold>%s (%d/%d) (%d/%d)<color>.\n- PIndex: <color=green>%d<color>"
@@ -539,7 +540,8 @@ end
 function ADM_TestHoatDong()
 	SayEx({"<color=yellow>Bé test ho¹t ®éng<color>: chän môc",
 	"VËn tiªu Long M«n Tiªu Côc (c¸ nh©n + bang héi)/VT_TestRoot",	-- [VTCN 06/09]
-	"Bang héi - c«ng thµnh/TX_Root",
+	"Bang héi - bé test ®Çy ®ñ (thµnh viªn, kinh tÕ, môc tiªu tuÇn, liªn minh, ho¹t ®éng)/BH_TestRoot",	-- [BHTEST 07/09]
+	"Bang héi - c«ng thµnh (bé cò)/TX_Root",
 	"D· TÈu: xo¸ ph¹t - thªm l­ît/DT_AdminMenu",
 	"Liªn ®Êu/LD_AdminMenu",
 	"Bang ChiÕn - B¸ch Nh©n - Tû Vâ - Thµnh B¶o/HD_AdminMenu",

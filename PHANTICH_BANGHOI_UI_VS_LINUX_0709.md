@@ -326,3 +326,48 @@ Nguồn: `cm_funuse.txt` (74 control exe nạp ở trang chức năng), `wp_funu
 - **Cửa sổ "Tìm bang khác" bị lệch**: blueprint gốc đặt tuyệt đối (50,45) cho màn 800×600; ta đặt sát trái cửa sổ chính, cùng đỉnh (`GetAbsolutePos` − 122).
 - **Chữ Trước/Kế bị đè**: sprite `查询别帮.spr` đã nung sẵn chữ nút và giữa khung trong suốt (thấy cảnh game/khung chat); ta thêm nền tối
   `KTJX2Shade` (alpha 232) bên trong khung rồi tự vẽ nhãn Trước/Kế/Đóng (nút không ảnh) — bỏ nhãn trùng.
+
+### 7.8 Lượt 3 của chủ (15:0x 07/09) — "UI Tìm bang khác sai, tìm đúng ảnh gốc" + "thông tin thành viên sai với gốc" + bộ test lệnh bài — vá 7
+
+**Tooltip thành viên — giải mã hàm dựng chuỗi gốc `0x4db1f0` (game_y.exe), gọi từ `ShowMemberTip 0x4dc1c0`:**
+
+```
+<color=BẢNG[figure]>                       BẢNG 0x6e77a0: 0 ffff33 (bang chủ) / 1 00ffff / 2 9966ff / 3 999999 / 4 555555 (ẩn sĩ)
+G_STR_NAME:<TÊN nhân vật>                  0x195 "Danh hiệu" (bảng VN dịch nhầm NAME), tên = tra NameID (+4) qua danh sách 0xc
+G_STR_TITLE:<danh hiệu ghế>                0x196 "danh hiệu", chuỗi +0x24 của bản ghi thành viên (rỗng nếu chưa có)
+<dòng trống>
+G_STR_CURRENT_LEVEL: <color=0x33ff00>%d<color>        0x197, cấp +0xc
+G_STR_CURRENT_OFFER: <color=0x33ff00>%d<color>        0x198, cống hiến +0x10
+G_STR_JION_TIME: <color=0x33ff00>%d-%d-%d<color>      0x199, localtime(+8) → năm-tháng-ngày
+```
+
+Bản vá 6 in dòng 1 là **tên chức vụ** thay vì **tên nhân vật** và đóng màu sớm → chủ báo sai. Nay `GetMemberTip`/`ShowMemberTip`
+dùng đúng chuỗi trên (`pM->m_szName`, màu `<color=R,G,B>` — `TEncodeText` nhận dạng dạng thập phân qua `TGetColor`, tên màu chỉ có 26).
+
+**Cột giá trị panel thành viên** (hàm vẽ dòng `0x4dc7c0`, dạng `"%d\t%s\t…"`): chế độ 5 chức vụ in tên 0..4, ngoài khoảng in `"(%d)"`;
+chế độ 6 ngày `"%02d/%02d/%02d"` hoặc `"--/--/--"`; các chế độ số in `"%d"` (vá 6 in `%.1f` cho TB ngày → đổi về số nguyên).
+Nhánh "tên khớp 3 chức quốc chiến (`G_STR_NW_MINISTER/MARSHAL/PIONEER`, dữ liệu 0x138b/0x138c)" là hệ quốc chiến JX2 — JX1 không có, bỏ.
+
+**Cửa sổ "Tìm bang khác" — ảnh gốc:** giải mã `查询别帮.spr` (update03.pak, 120×463, 1 khung, bảng 256 màu; bộ giải `spr2png.py`
+theo `KBmp2Spr::ConvertLine` [đếm][alpha][điểm…]): **không có điểm trong suốt** — thân là alpha **192** (mờ tối), khung/chữ alpha 255,
+chữ nung sẵn **"Tìm bang khác" / "Trước" / "Sau" / "Đóng"** (không phải "Kế"). Lượt trước tôi tưởng thân trong suốt nên chồng
+`KTJX2Shade` + nhãn tự vẽ (đè lên chữ nung) → sai. Sửa: bỏ shade + nhãn (`Label=` trong `TL_Btn*`), 3 nút chỉ là vùng bấm,
+`[TL_Main] Trans=1` để Represent vẽ theo alpha từng điểm (Trans=0 = OPACITY bỏ alpha). `关闭.spr` cùng thư mục là nút Trung
+(chữ 关闭, 3 khung) không được ini gốc dùng → bỏ. Vị trí vẫn sát trái cửa sổ chính (blueprint 50,45 tuyệt đối gây lệch).
+
+**Bộ test bang hội trên lệnh bài admin — viết lại đầy đủ:** `script\kiemthu\item\test_banghoi_admin.lua` (933 dòng, TCVN3, gương
+`serverscript_live`), Include từ `lenhbaiadmin.lua` (đường dẫn thật, không bí danh), mục `ADM_TestHoatDong` → "Bang hội - bộ test đầy đủ"
+(`BH_TestRoot`; bộ cũ `TX_Root` giữ là "công thành (bộ cũ)"). 9 mục: hồ sơ + bảo trì ngày/tuần + nâng/hạ cấp + toàn server;
+thành viên (danh sách 25, chọn thành viên, chi tiết mọi khoá, cống hiến ±, quyền 1901/1002/1101/2004/9001 cấp-gỡ, thoái ẩn, đuổi có hỏi);
+kinh tế 12 lệnh (quỹ, kiến thiết, chiến bị, dự trữ, tổng, tuần/trần, phí duy trì, góp `ContributeOffer`, phát nhóm/thành viên, cá nhân);
+mục tiêu tuần (đặt cấp/sự kiện/tổng/cá nhân/thưởng, cộng điểm, hoàn thành ngay, chốt tuần); nhật ký/lịch sử/công cáo/tuyệt kỹ/ngoại hình/
+tạm ngưng/log; lãnh địa + tác phường (gọi `TLD_/TPT_` cũ + `TWS_MaintainAll`); bang khác (liệt kê 12 bang, liên minh, xin vào bang
+`TONG_ApplyJoin`, tìm theo tên); hoạt động (công thành `TCT_`, vận tiêu bang `VT_ADM_Bang`, bang chiến `HD_`, danh hiệu-thuế `TDT_`,
+`TongClaimWar`); tiện ích (vào bang test, rời bang, `TONG_ApplyInit`, nạp lại). Không có lệnh Lua cho: thăng/giáng chức, chuyển bang chủ
+(`SetTongMaster` là stub), lập/duyệt/rời liên minh, danh hiệu ghế — menu ghi rõ "chỉ qua cửa sổ bang hội".
+Kiểm cú pháp bằng Lua 5.4 thật (`luacheck54.py` qua `lua54.dll` của Wireshark): 3 tệp OK. Bẫy: TCVN3 không có chữ HOA có dấu
+(À/Ầ/Ọ…) → `tc.enc` báo lỗi từng dòng, phải viết thường.
+
+Triển khai 15:26: `Game.exe.moi` f4eb3bdd (client, chờ `ChoiGame.bat`), `UiTongJX2.ini` 4f65666a chép thẳng vào `bin\client\Ui\Ui3`
+(bản cũ `.truoc_bh100b`) + `J:\CayChay\pakgame\volamngaothe\PATCHFULL_NGAOTHE_MK_123456\Ui\Ui3`; script server sống ngay (lệnh bài dofile).
+Máy chủ đang có `CoreServer.dll.moi` của phiên khác — không đụng.
