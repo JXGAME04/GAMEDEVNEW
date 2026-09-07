@@ -75,3 +75,5 @@ Kiểm: `check_encoding.py` KNpc.cpp giữ số byte cao; `kiem_54.py` 2 tệp 0
 Nga My (Phật Pháp Vô Biên 8→37 khung) không đổi. Đòn băng bị kháng hết (sát thương 0, báo né) nay vẫn đóng băng như Linux.
 
 **Trạng thái 10:42 07/09**: build từ origin/main `34b58589` (worktree `D:/GAMEDEVNEW_wt_ai710l`, compile 0 lỗi, link thật; gộp DELTA f `a6d62a3c`, CL `10a55613`): `bin/server/CoreServer.dll.moi` = **8008e14d** (18 482 176), `bin/client/CoreClient.dll.moi` = **7bcf5119** (2 611 712) — thay khe DELTA f (bc6b2b80/9916d00f, giữ tên `.moi.delta_f_*`); kiểm chuỗi `gon_them` (đợt f) và `CastFrame` (TOCDO) có trong khe. Phải swap **cả server lẫn client** (gói vị trí 28 byte của DELTA f). Live vẫn db5d064f/563c127e. Đã báo DELTA + MATDO.
+
+**LIVE 10:43:33 07/09**: chủ đã swap; live `CoreServer.dll` = 8008e14d, `CoreClient.dll` = 7bcf5119, khe `.moi` trống (MATDO xác nhận GameServer khởi động lại 10:43:33, log không còn dòng cứu đồ lúc chạy). Gói băng như Linux + dữ liệu Băng Cốt Tuyết Tâm đang chạy thật.

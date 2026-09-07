@@ -4148,7 +4148,9 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		// hap thu SAT THUONG VUA QUAY, TRUOC khang/giap/sorb. dmg < be -> be -= dmg, don nay khong mat mau
 		// (Linux tra ve 1 - van la trung don); dmg >= be -> dmg -= be, be = 0. Ban cu ap o CUOI ham va co
 		// bug 'nDamage = 0 roi be -= nDamage' nen be khong bao gio can.
-		if (!bReturn && m_CurrentStaticMagicShieldP > 0 && nDamage > 0)
+		// [LNCK 07/09] Linux CalcDamage 0x08089D5D: khien tinh chan MOI sat thuong, ke ca nhip doc/chay (bReturn = TRUE)
+		// va sat thuong phan don. Ban cu bo qua khi bReturn => Luong Nghi Chan Khi con ma van chet vi doc.
+		if (m_CurrentStaticMagicShieldP > 0 && nDamage > 0)
 		{
 			if (nDamage < m_CurrentStaticMagicShieldP)
 			{
