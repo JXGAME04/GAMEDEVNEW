@@ -521,7 +521,7 @@ Linux cũng có 721/722 style 14 — JX1 đã đổi thành 2; 723 → 0; 1545 �
 
 Bỏ qua có chủ ý: kiểm hồi chiêu `0x080E4540` trước `do_skill` (JX1 `DoSkill` tự kiểm `CanCast`); `randmove` miễn AiMode 10 (F.5) — chưa làm.
 
-## I.2 Dữ liệu trên cây chạy thật (sao lưu `*.truoc_sk120_0709`, cần **restart máy chủ + client** mới ăn)
+## I.2 Dữ liệu trên cây chạy thật (sao lưu `*.truoc_sk120_0709`; máy chủ đã restart 00:56 07/09 nên phần server đã có hiệu lực, **client còn chờ `ChoiGame.bat`** — khe client đang có `CoreClient.dll.moi` 5c359b16 của DELTA, không liên quan phần tôi)
 
 | Tệp (server và client) | Sửa |
 |---|---|
@@ -538,10 +538,11 @@ Skill 400 (`SkillStyle 15`, Côn Lôn) **không đổi**: bảng nhảy Linux c�
 
 | Tệp | MD5 | Cỡ | Nguồn |
 |---|---|---|---|
-| `bin/server/CoreServer.dll.moi` (đang nằm trong khe) | `a509a089bcc2c3e6a6102fc879c7103e` | 18 475 008 | **phiên MATDO** build 00:37 trong `D:/GAMEDEVNEW` từ main `68d7591b` + sửa MATDO (commit bàn giao `ddb8b058` ghi rõ "gộp main 68d7591b (MATDO + AI710L)"; PDB cây chính có `AI09_HanhQuan`) ⇒ **đã gồm AI710L**, tôi không đặt đè |
-| `D:/GAMEDEVNEW_wt_ai710l/Sources/Core/x64/ServerRelease/CoreServer.dll` | `bcec43b20dd3a1e46783be7aaa56c0de` | 18 475 008 | bản của tôi, đúng `68d7591b` không có phần MATDO — chỉ dự phòng, **không dùng** |
+| `bin/server/CoreServer.dll` **ĐANG CHẠY từ 00:56 07/09** | `4b89f185` | 18 478 080 | **phiên DELTA** build 00:48 ở `D:/GAMEDEVNEW_wt_delta` từ main `68d7591b` + `delta-0709` (origin/main `61857a53`); `KNpcAI.obj` của worktree đó có `AI09_HanhQuan` ×12 ⇒ **gồm AI710L**; kèm `heaven.dll` 096fdeb2. Bản cũ `b43c85e8` thành `CoreServer.dll.truoc` |
+| `CoreServer.dll.moi.matdo_a509a089_0037` | `a509a089bcc2c3e6a6102fc879c7103e` | 18 475 008 | phiên MATDO build 00:37 từ main `68d7591b` + MATDO (commit `ddb8b058`); `KNpcAI.obj` cây chính 00:36:58 có `AI09_HanhQuan` ×12 — đã bị DELTA thay, giữ làm sao lưu |
+| `D:/GAMEDEVNEW_wt_ai710l/Sources/Core/x64/ServerRelease/CoreServer.dll` | `bcec43b20dd3a1e46783be7aaa56c0de` | 18 475 008 | bản của tôi, đúng `68d7591b`, thiếu MATDO và DELTA — chỉ dự phòng, **không dùng** |
 
-Bản đang chạy `CoreServer.dll` = `b43c85e8…` (bản vá [AI710 06/09] đã được swap 23:15 06/09 — tức bốn AI kiểu JX1 **đang chạy thật** cho tới khi restart). Khe `.moi` lúc tôi kiểm còn trống, 15 phút sau phiên MATDO đặt bản gộp — đúng luật khe dùng chung nên giữ bản của họ. Client **không cần** DLL mới (chỉ `skills.txt` + 3 tệp Lua).
+Bản `b43c85e8…` (AI kiểu JX1, swap 23:15 06/09) chạy tới 00:50 07/09; **từ 00:56 07/09 máy chủ chạy `4b89f185`** (`ChayGameServer.bat` nuốt `.moi`, đổi bản cũ thành `.truoc`) — AI 7‑10 dịch từ Linux, `skills.txt` và 3 tệp Lua phía server đã có hiệu lực. Khe `.moi` lúc tôi kiểm còn trống; 00:37 phiên MATDO đặt bản gộp `a509a089`, 00:50 phiên DELTA thay bằng bản gộp `4b89f185` (giữ bản MATDO dưới tên `.moi.matdo_a509a089_0037`) — tôi không đặt bản nào, đúng luật khe dùng chung. Client **không cần** DLL mới (chỉ `skills.txt` + 3 tệp Lua).
 
 Lùi: `git revert 68d7591b` + build lại; dữ liệu: đổi tên `*.truoc_sk120_0709` về tên gốc (6 tệp server + 6 tệp client). Lùi riêng AI 7‑10 mà vẫn giữ Linux‑AI khác: đổi 4 dòng `case` về `ProcessAIType7..10` (bản cũ vẫn còn).
 
