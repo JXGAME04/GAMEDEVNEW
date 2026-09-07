@@ -42,6 +42,20 @@ grep -c "\[MATDO\]" /e/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/server/logs/
 - Dòng `KObjSet::Add tu choi` = có nơi vẫn ném chỉ số rỗng → báo lại.
 - Kiểm tổng: `python ReverseTools/matdo_theo_vitri.py CaiBang 40` — "DANG MAC" phải đúng số ô thật, "RUONG"/"hanh trang" không tụt ngoài bán/dùng.
 
+## 5. Nghiệm thu thực tế (fix ĐÃ SỐNG từ 00:56, đo tới 03:40)
+
+Phiên DELTA swap lúc 00:50 bản `4b89f185` build từ main sau `225bf978` → fix mất đồ chạy thật từ 00:56:55 (đã kiểm chuỗi `[MATDO]` trong DLL đang chạy và cả CoreClient 5c359b16). Khe `.moi` sau đó thuộc phiên SK120 (`1a33f617`, superset); bản của tôi được giữ tên `.moi.matdo_a509a089_0037` / `.moi.matdo_4e25e8e4_0037`.
+
+| chỉ số (00:57 → 03:40) | kết quả |
+|---|---|
+| đăng nhập qua đường nạp mới (`AddKIL`) | 1.001 (1.000 bot + CaiBang) |
+| dòng `[MATDO]` trong `logs\hethong.log` | **1**: `CaiBang: CUU mon Xà Khiếp (dt 0 cấp 7 seed 108862496) từ ô trang bị (2,13,0) → rương (0,2)` = đúng bản ghi ma đã chứng minh là đồ bot |
+| `m_Hand LECH`, `KObjSet::Add tu choi`, `ban ghi KEP`, `BO mon` | 0 |
+| bot.log: bot phát lại vũ khí / `LECH` / `tay dang giu` | 77 / 0 / 0 |
+| CaiBang mất món thật (`matdo_quet.py`) | 0 (chỉ auto bán rác hàng (x,0)/(x,2) như mọi ngày; rương giữ 2 món) |
+
+Món "Xà Khiếp" sau khi vào rương đã được auto xử lý (không còn trong bản lưu 01:01), là đồ rác của bot nên không cần giữ. Lưu ý đọc số liệu: bản lưu `role_history` đầu tiên sau đăng nhập (00:58:25) là bản CŨ trước khi tắt máy chủ (thứ tự bản ghi trùng 00:48); bản 01:01:25 mới là trạng thái sau nạp (thứ tự đảo ngược, không còn bản ghi ma).
+
 ## 4. Còn mở (chờ chủ)
 
 - **Khôi phục đồ CaiBang** từ `role_history` id **693958** (19:03:00 06/09, trước bão: 14 mặc + 31 rương + 35 túi). Phải tắt nhân vật, mất đồ nhặt sau mốc đó. Chưa làm.
