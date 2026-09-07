@@ -381,6 +381,12 @@ struct autoData
 	int		nTKRuongHuong;		// 0 Trung Tam / 1 Dong / 2 Tay / 3 Nam / 4 Bac / 5 gan nhat
 	int		bTKRuongCat;		// 1 = cat TRANG BI trong hanh trang vao ruong (giu thuoc/phu)
 
+	// (06/09) TAB PK - bo qua muc tieu dang co KHIEN BAO VE (vong tron bat tu): moi script dich chuyen
+	// goi SetProtectTime(18*3) + AddSkillState(963, 1, 0, 18*3) (Xa Phu, Than Hanh Phu, cong thanh,
+	// trap ra trai Tong Kim...). Danh vao khong trung. Client nhan qua NPC_NORMAL_SYNC (m_nProtectedTime
+	// + StateInfo 159) - CoreShell PK_CoKhien. Ap cho may PK va tang san Tong Kim / Lien dau.
+	int		bPKBoQuaKhien;		// 1 = bo qua (mac dinh 1)
+
 	autoData()
 	{
 		bCheckiLife = 0;
@@ -653,6 +659,7 @@ struct autoData
 		bTKRuong = 0;
 		nTKRuongHuong = 5;		// mac dinh: ruong gan cho dung nhat
 		bTKRuongCat = 1;
+		bPKBoQuaKhien = 1;
 
 	}
 };
