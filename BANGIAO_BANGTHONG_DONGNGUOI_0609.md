@@ -719,3 +719,21 @@ Chủ chạy cả hai bat lúc 07:28; trận Tống Kim mới bắt đầu 07:31
 **Cập nhật 07:55:** phiên SKEXP thay cả hai khe bằng bản build từ `origin/main` 217202f0 (⊇ vá e b4e6277c, đã kiểm đủ dấu hiệu DELTA): **`CoreServer.dll.moi` = ce462519, `CoreClient.dll.moi` = e7c70880** (không đổi giao thức; bản e bdc8ae53 giữ tên `.moi.delta_e_bdc8ae53_0749`). Cặp chờ swap hiện tại là cặp này, chạy cả hai bat sau trận 07:31.
 
 **Cập nhật 09:58:** phiên TOCDO thay khe: **`CoreServer.dll.moi` = e37ab486, `CoreClient.dll.moi` = ab99660c** (build từ `origin/main` ffffade4 ⊇ vá e, đã kiểm đủ dấu hiệu DELTA; cặp SKEXP giữ tên `.moi.tocdo_*`). Live vẫn 1a33f617 + 5f86a7f7 từ 07:28, tức vá e chưa chạy; chạy cả hai bat để có chẩn đoán gói 75 ở trận kế.
+
+### 8.10 Trận 10:11 trên bản có vá e (live db5d064f/563c127e từ 10:08): thủ phạm gói 75 và vá f
+
+Chủ swap 10:08 (bản MATDO b c37a0b1b, gồm TOCDO + SKEXP + DELTA a–e); trận Tống Kim thứ ba của ngày bắt đầu 10:11. Nhật ký trận 07:31 đã bị xoay mất (chỉ còn 13,5 phút đầu ở mục 8.9). Số dưới đây là 11 phút đầu trận 10:11 (67 cửa sổ).
+
+| Chỉ số | Trận 01:00 (a) | 07:31 (c+d) | 10:11 (c+d+e) |
+|---|---|---|---|
+| 77 đầy đủ, % byte | 17 | 10,5 | 9,9 |
+| `day/(gon+day)` | 5,7 % | 2,7 % | 2,6 % |
+| 75 ngoại hình, % byte | 15 | 12,1 | 11,8 |
+| 221 gọn | 46 | 54 | 61 |
+| Client trung bình / đỉnh | 24,8 / 51,3 KB/s | 12,3 / 52,6 | 8,5 / 42,5 |
+| TICK | 6,7 ms | 6,5 | 6,5 |
+| Client giật | 4 | 10 (9 lúc nạp) | 10 (10 lúc nạp), 0 `Net Msg Error` |
+
+**Chẩn đoán vá e trả lời dứt khoát** (`[PS-BO]` cộng dồn 11 phút, 38.500 lần gói 75 phải phát lại): chỉ cờ chiến đấu 7.514 (đã loại nhờ vá d), chỉ cờ khác/ngựa 2.972, còn lại 35.481 chia theo nhóm: tốc độ 2.118 · rank 347 · chỉ số 0 · trang bị 10 · tên/chuỗi 334 · **nhiều nhóm cùng lúc 32.649 (90 %)**. Cái gì đổi hai nhóm trong một lần? **Lên/xuống ngựa**: `KPlayer::CheckRideHorse` (`KPlayer.cpp:10478`) đổi `m_bRideHorse` (→ `HorseType`, nhóm trang bị) và gỡ/áp thuộc tính ngựa (→ `RunSpeed`, nhóm tốc độ) cùng lúc; bot Tống Kim lên ngựa để chạy xa và xuống ngựa để đánh (`KPlayerBot.cpp:3928, 6743`), mỗi bot vài chục giây một lần. Client chỉ biết ngựa và tốc độ hiện tại qua gói 75 (`KProtocolProcess.cpp:2994`, `:3008`), nên mỗi lần lên/xuống ngựa là 231 byte tới mọi người trong tầm.
+
+**Vá f (commit aa1c78cc):** `NPC_POS_SYNC` thêm `HorseType, WalkSpeed, RunSpeed` (25 → 28 byte, bản Linux 27); máy chủ gom ba trường này vào băm gói gọn và bỏ `HorseType/WalkSpeed/RunSpeed/AttackSpeed/CastSpeed` khỏi băm gói 75 (tốc độ đánh/ra chiêu client đã nhận qua gói 77 `m_ASpeed/m_CSpeed`); khi phải gửi gói 77 đầy đủ mà ngựa/tốc độ vừa đổi thì gửi thêm một gói gọn (`[NS-BO] gon_them=`). Client `SyncNpcPos` áp ngựa + tốc độ cho người chơi khác y hệt `SyncPlayerMin`. Kỳ vọng: gói 75 còn dưới 2 % byte, tổng byte client −10 %, và cái nhìn thấy không đổi (ngựa hiện đúng lúc, tốc độ chạy đúng).
