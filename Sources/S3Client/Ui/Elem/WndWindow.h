@@ -39,6 +39,10 @@ protected:
 	char		m_Caption[32];		//±êÌâÎÄ×Ö
 #endif
 
+	// [UITOADO] ten muc ini ma cua so nay duoc Init tu do - dinh danh ben
+	// de luu / ap lai toa do trong UserData\UiToaDo.ini
+	char		m_szMucIni[64];
+
 	int			m_bMoving;
 	int			m_nLastMouseHoldPosX;
 	int			m_nLastMouseHoldPosY;
@@ -104,6 +108,8 @@ public:
 #ifdef _DEBUG
 	void			SetCaption(char* pszCaption);
 #endif
+	// [UITOADO] ten muc ini dat cho cua so nay (rong = chua Init tu ini)
+	const char*		GetMucIni() const { return m_szMucIni; }
 	int				IsDisable() { return (m_Style & WND_S_DISABLE); }
 	int				GetStyle() { return m_Style; }
 	int				SetStyle(unsigned int nStyle)

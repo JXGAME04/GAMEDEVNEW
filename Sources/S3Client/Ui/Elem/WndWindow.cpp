@@ -37,6 +37,8 @@ KWndWindow::KWndWindow()
 	m_nAbsoluteLeft = 0;
 	m_nAbsoluteTop	= 0;
 
+	m_szMucIni[0]	= 0;			// [UITOADO]
+
 	m_bMoving = false;
 	m_nLastMouseHoldPosX = m_nLastMouseHoldPosY = 0;
 
@@ -260,6 +262,9 @@ int KWndWindow::Init(KIniFile* pIniFile, const char* pSection)
 #ifdef _DEBUG
 		strncpy(m_Caption, pSection, 32);
 #endif
+		// [UITOADO] nho ten muc ini de lam dinh danh khi luu / ap toa do
+		strncpy(m_szMucIni, pSection, sizeof(m_szMucIni) - 1);
+		m_szMucIni[sizeof(m_szMucIni) - 1] = 0;
 		pIniFile->GetInteger(pSection, "Width", 0, &m_Width);
 		pIniFile->GetInteger(pSection, "Height",0, &m_Height);
 		pIniFile->GetInteger(pSection, "Left",  0, &nValue1);

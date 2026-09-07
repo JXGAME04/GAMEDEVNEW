@@ -249,6 +249,8 @@ public:
 	void	JX2_DailyMaintain(int nTodayDay, int nWeekday);
 	void	JX2_WeeklyMaintain(int nTodayDay);
 	void	JX2_MoneyToExpTick();
+	static int	JX2_ExpLevelOf(DWORD dwExp);	// [BHLV 07/09] cap bang theo kinh nghiem (field 6), bang [LevelExp]
+	BOOL	JX2_CheckExpLevel();			// [BHLV] nang m_nLevel khi kinh nghiem du (khong ha), dong bo nhu SetTongLevel
 	BOOL	JX2_Distribute(int nOpCode, DWORD dwMemberNameID, int nOffer, int nFigure);
 };
 

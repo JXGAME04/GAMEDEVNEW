@@ -2006,13 +2006,18 @@ void KUiTongJX2::RenderMembers(int nOffset)
 				long nDays = 1;
 				if (pM->m_dwJoinTime && (DWORD)time(NULL) > pM->m_dwJoinTime)
 					nDays = (long)((time(NULL) - (time_t)pM->m_dwJoinTime) / 86400) + 1;
-				sprintf(szV, "%.1f", (double)pM->m_dwOffer / (double)nDays);
+				sprintf(szV, "%d", (int)(pM->m_dwOffer / (DWORD)nDays));	// [BH100b] exe in "%d" (so nguyen)
 			}
 			break;
 		case 2: sprintf(szV, "%u", pM->m_dwWeeklyOffer); break;
 		case 3: sprintf(szV, "%u", pM->m_dwWeekOffer); break;
 		case 4: strcpy(szV, pM->m_btFigure == 4 ? s_szFigure[4] : ""); break;
-		case 5: strcpy(szV, pM->m_btFigure < 5 ? s_szFigure[pM->m_btFigure] : "?"); break;
+		case 5:	// [BH100b] exe: ten chuc vu 0..4, ngoai khoang in "(%d)"
+			if (pM->m_btFigure < 5)
+				strcpy(szV, s_szFigure[pM->m_btFigure]);
+			else
+				sprintf(szV, "(%d)", (int)pM->m_btFigure);
+			break;
 		case 6:
 			if (pM->m_dwLastActive)
 			{
@@ -2068,24 +2073,31 @@ int KUiTongJX2::GetMemberTip(int nRow, char* szOut, int nMax)
 	if (nRow < 0 || nRow >= (int)p->m_btCount || nRow >= TJX2_UI_ROWS)
 		return 0;
 	TONG_JX2_ONE_MEMBER* pM = &p->m_sMember[nRow];
-	static const char* szCol[5] = { "yellow", "cyan", "purple", "gray", "DBlue" };
+	// [BH100b] y het ban goc game_y.exe 0x4db1f0: <mau theo chuc vu>Danh hieu:<TEN>, danh hieu:<ghe>,
+	// dong trong, roi Dang cap / Diem cong hien / Thoi gian nhap bang (so mau 0x33ff00) - nhan la chuoi
+	// G_STR_NAME/G_STR_TITLE/G_STR_CURRENT_LEVEL/G_STR_CURRENT_OFFER/G_STR_JION_TIME cua stringtable_client VN.
+	// Mau chuc vu goc 0xffff33/0x00ffff/0x9966ff/0x999999/0x555555 (TEncodeText nhan dang R,G,B).
+	static const char* szCol[5] = { "255,255,51", "0,255,255", "153,102,255", "153,153,153", "85,85,85" };
 	int nFig = pM->m_btFigure < 5 ? pM->m_btFigure : 3;
-	char szDate[24];
+	int nY = 0, nM = 0, nD = 0;
 	if (pM->m_dwJoinTime)
 	{
 		time_t nT = (time_t)pM->m_dwJoinTime;
 		struct tm* pTm = localtime(&nT);
-		sprintf(szDate, "%04d-%d-%d", pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday);
+		if (pTm)
+		{
+			nY = pTm->tm_year + 1900;
+			nM = pTm->tm_mon + 1;
+			nD = pTm->tm_mday;
+		}
 	}
-	else
-		strcpy(szDate, "-");
 	char szT[400];
 	sprintf(szT,
-		"<color=%s>Danh hi÷u:%s\ndanh hi÷u:%s\n<color>\n"
-		"ßºng c p hi÷n tπi: <color=green>%d<color>\n"
-		"ßi”m cËng hi’n hi÷n tπi: <color=green>%u<color>\n"
-		"ThÍi gian nhÀp bang: <color=green>%s<color>",
-		szCol[nFig], s_szFigure[nFig], pM->m_szTitle, (int)pM->m_btLevel, pM->m_dwOffer, szDate);
+		"<color=%s>Danh hi÷u:%s\ndanh hi÷u:%s\n"
+		"\nßºng c p hi÷n tπi: <color=51,255,0>%d<color>\n"
+		"ßi”m cËng hi’n hi÷n tπi: <color=51,255,0>%u<color>\n"
+		"ThÍi gian nhÀp bang: <color=51,255,0>%d-%d-%d<color>\n",
+		szCol[nFig], pM->m_szName, pM->m_szTitle, (int)pM->m_btLevel, pM->m_dwOffer, nY, nM, nD);
 	int nLen = TEncodeText(szT, (int)strlen(szT));
 	if (nLen > nMax)
 		nLen = nMax;
@@ -2100,9 +2112,8 @@ int KTJX2RowBtn::GetToolTipInfo(char* szTip, int nMax)
 	return m_pOwner->GetMemberTip(m_nRow, szTip, nMax);
 }
 
-// [BH100] tooltip thanh vien (MemberPanel WndProc LIST_ITEM_ACTIVE -> ShowMemberTip cua ban goc):
-// <mau theo chuc vu>Danh hieu:<chuc vu>\ndanh hieu:<danh hieu ghe>\n\nDang cap hien tai / Diem
-// cong hien hien tai / Thoi gian nhap bang (mau xanh la). Mau goc ffff33/00ffff/9966ff/999999/555555.
+// [BH100] bam ten thanh vien -> tooltip (ShowMemberTip 0x4dc1c0 cua ban goc: dung g_MouseOver tai con tro;
+// noi dung do 0x4db1f0 dung, xem GetMemberTip). Ban JX1 hien qua GetToolTipInfo cua nut dong (va 6).
 void KUiTongJX2::ShowMemberTip(int nMember)
 {
 	if (!m_bHasMember)
@@ -2111,24 +2122,31 @@ void KUiTongJX2::ShowMemberTip(int nMember)
 	if (nMember < 0 || nMember >= (int)p->m_btCount)
 		return;
 	TONG_JX2_ONE_MEMBER* pM = &p->m_sMember[nMember];
-	static const char* szCol[5] = { "yellow", "cyan", "purple", "gray", "DBlue" };
+	// [BH100b] y het ban goc game_y.exe 0x4db1f0: <mau theo chuc vu>Danh hieu:<TEN>, danh hieu:<ghe>,
+	// dong trong, roi Dang cap / Diem cong hien / Thoi gian nhap bang (so mau 0x33ff00) - nhan la chuoi
+	// G_STR_NAME/G_STR_TITLE/G_STR_CURRENT_LEVEL/G_STR_CURRENT_OFFER/G_STR_JION_TIME cua stringtable_client VN.
+	// Mau chuc vu goc 0xffff33/0x00ffff/0x9966ff/0x999999/0x555555 (TEncodeText nhan dang R,G,B).
+	static const char* szCol[5] = { "255,255,51", "0,255,255", "153,102,255", "153,153,153", "85,85,85" };
 	int nFig = pM->m_btFigure < 5 ? pM->m_btFigure : 3;
-	char szDate[24];
+	int nY = 0, nM = 0, nD = 0;
 	if (pM->m_dwJoinTime)
 	{
 		time_t nT = (time_t)pM->m_dwJoinTime;
 		struct tm* pTm = localtime(&nT);
-		sprintf(szDate, "%04d-%d-%d", pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday);
+		if (pTm)
+		{
+			nY = pTm->tm_year + 1900;
+			nM = pTm->tm_mon + 1;
+			nD = pTm->tm_mday;
+		}
 	}
-	else
-		strcpy(szDate, "-");
 	char szT[700];
 	sprintf(szT,
-		"<color=%s>Danh hi÷u:%s\ndanh hi÷u:%s\n<color>\n"
-		"ßºng c p hi÷n tπi: <color=green>%d<color>\n"
-		"ßi”m cËng hi’n hi÷n tπi: <color=green>%u<color>\n"
-		"ThÍi gian nhÀp bang: <color=green>%s<color>\n",
-		szCol[nFig], s_szFigure[nFig], pM->m_szTitle, (int)pM->m_btLevel, pM->m_dwOffer, szDate);
+		"<color=%s>Danh hi÷u:%s\ndanh hi÷u:%s\n"
+		"\nßºng c p hi÷n tπi: <color=51,255,0>%d<color>\n"
+		"ßi”m cËng hi’n hi÷n tπi: <color=51,255,0>%u<color>\n"
+		"ThÍi gian nhÀp bang: <color=51,255,0>%d-%d-%d<color>\n",
+		szCol[nFig], pM->m_szName, pM->m_szTitle, (int)pM->m_btLevel, pM->m_dwOffer, nY, nM, nD);
 	int nLen = TEncodeText(szT, (int)strlen(szT));
 	int x = 0, y = 0;
 	Wnd_GetCursorPos(&x, &y);
@@ -3948,8 +3966,6 @@ void KUiTongListJX2::Initialize()
 	m_nStart = 0;
 	m_nSel = -1;
 	memset(m_byList, 0, sizeof(m_byList));
-	AddChild(&m_Shade);	// nen toi ben trong khung, ve truoc chu
-	m_Shade.Enable(false);
 	for (i = 0; i < TJX2_UI_ROWS; i++)
 		AddChild(&m_Row[i]);
 	for (i = 0; i < TJX2_UI_ROWS; i++)
@@ -3974,10 +3990,6 @@ void KUiTongListJX2::LoadScheme(const char* pScheme)
 		return;
 	ms_pSelf->Init(&Ini, "TL_Main");
 	ms_pSelf->m_BtnClose.Init(&Ini, "TL_BtnClose");
-	// sprite goc chi la khung, giua trong suot (nhin xuyen ra canh game / khung chat) -> nen toi
-	ms_pSelf->m_Shade.SetPosition(4, 22);
-	ms_pSelf->m_Shade.SetSize(112, 438);
-	ms_pSelf->m_Shade.SetShade((16 << 16) | (22 << 8) | 26, 232);
 	ms_pSelf->m_BtnPrev.Init(&Ini, "TL_BtnPrevPage");
 	ms_pSelf->m_BtnNext.Init(&Ini, "TL_BtnNextPage");
 	for (int i = 0; i < TJX2_UI_ROWS; i++)

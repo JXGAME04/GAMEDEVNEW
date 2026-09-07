@@ -9017,6 +9017,93 @@ static int PK_CoKhien(int nIdx)
 #define HC_BAN_THU	6
 static std::map<DWORD, int> s_mHCBanThu;	// dwID -> so lan da gui lenh ban trong luot Hau can nay
 
+// (03/09) [HC-CAT] BO LOC CHO BUOC 5 "Cat do" cua Hau can (nHomeStep == 5).
+// Chu game 03/09: "WAuto khong thuoc tinh trang bi nhat do gui ruong nhu ma lau lau van
+// tu gui may mon do cui vao ruong". Do lai thi buoc 5 von chi co DUNG MOT dieu kien -
+// "la trang bi" - roi day sach tui vao ruong: khong doc bFilter/nFtMagic, khong doc mau,
+// khong doc cap, khong doc o giu nhan, khong tru ca do khoa. Trong khi buoc 1 "Ban rac"
+// (CoreShell.cpp:20941-21019) thi co DU bo loc. Tuc la bo loc thuoc tinh xua nay chi
+// duoc noi vao khau BAN, chua bao gio noi vao khau CAT - dung trieu chung chu game thay.
+// Ham nay tra loi "mon nay co DANG GIU khong", dung lai chinh phep thu cua buoc ban.
+static bool HC_DangGiu(int nPlayerIdx, const autoData* pAp, int nIdx, const char** ppLyDo)
+{
+	const char* szLyDo = "";
+	bool bGiu = false;
+	// (1) do dat yeu cau nhiem vu Da Tau dang lam: PHAI nam trong tui de con nop.
+	if (DT_IsQuestItem(nPlayerIdx, pAp, nIdx))
+	{
+		if (ppLyDo)
+			*ppLyDo = "do nhiem vu Da Tau - phai de trong tui";
+		return false;
+	}
+	// (2) BO LOC THUOC TINH - chep DUNG phep thu cua buoc ban, ke ca luat "thuoc tinh
+	// 139 thi luon giu" va luat magic_indestructible_b khong xet nguong.
+	// Dieu kien phai la (!nSelSell && nFtMaCount) Y HET buoc ban, KHONG phai bFilter:
+	// nSelSell la o "Muc trang bi dem ban" (IDC_COMBO_5_S) - 0 = "Ban giu loc do"
+	// (ton trong danh sach loc), 1 = "Ban het do" (khong doc danh sach). O che do
+	// "Ban het do" thi buoc ban khong dem xia den danh sach, nen buoc cat cung khong.
+	// Chu game 03/09: "do cui la do xanh khong co thuoc tinh hoac co ma thuoc tinh cui
+	// khong co trong danh sach loc" => do xanh CHI duoc cat khi KHOP danh sach loc.
+	if (!pAp->nSelSell && pAp->nFtMaCount)
+	{
+		for (int k = 0; k < pAp->nFtMaCount && !bGiu; ++k)
+		{
+			for (int m = 0; m < 6; ++m)
+			{
+				if (Item[nIdx].m_aryMagicAttrib[m].nAttribType == 139)
+				{
+					bGiu = true;
+					szLyDo = "co thuoc tinh 139";
+					break;
+				}
+				if (Item[nIdx].m_aryMagicAttrib[m].nAttribType == 0)
+					break;
+				if (pAp->nFtMagic[k][0] == Item[nIdx].m_aryMagicAttrib[m].nAttribType
+				&& (pAp->nFtMagic[k][0] == magic_indestructible_b
+				 || Item[nIdx].m_aryMagicAttrib[m].nValue[0] >= pAp->nFtMagic[k][1]))
+				{
+					bGiu = true;
+					szLyDo = "khop bo loc thuoc tinh";
+					break;
+				}
+			}
+		}
+	}
+	// (3) o "Giu nhan, day chuyen, ngoc boi cap >" - cung luat voi buoc ban (20975-20984).
+	if (!bGiu && pAp->bSaveRing)
+	{
+		const int nD = Item[nIdx].GetDetailType();
+		if ((nD == equip_ring || nD == equip_amulet || nD == equip_pendant)
+		&& Item[nIdx].GetLevel() > pAp->nSRLevel)
+		{
+			bGiu = true;
+			szLyDo = "nhan/day/ngoc tren nguong cap";
+		}
+	}
+	// (4) do dang KHOA = chinh nguoi choi danh dau la quy (buoc ban cung khong dam ban).
+	if (!bGiu && (Item[nIdx].GetPlayerItemLock() > 0
+			   || Item[nIdx].GetPlayerItemHLock() > 0
+			   || Item[nIdx].GetPlayerItemLock() == -2))
+	{
+		bGiu = true;
+		szLyDo = "do dang khoa";
+	}
+	// (5) mau tren xanh la = hoang kim / do tim / bach kim.
+	// Chu game 03/09 chot: "hoang kim / do tim / bach kim dung luat tu cat" - nen nhom
+	// nay CAT VO DIEU KIEN, khong kep them nguong "Cap >" (ban dau toi co kep, chu game
+	// bao khong can). Buoc ban cung tu choi ban nhom nay (dong "> green_item").
+	if (!bGiu && Item[nIdx].GetColorItem() > green_item)
+	{
+		bGiu = true;
+		szLyDo = "hoang kim / do tim / bach kim";
+	}
+	if (!bGiu && !szLyDo[0])
+		szLyDo = "do xanh/trang khong khop danh sach loc - de trong tui";
+	if (ppLyDo)
+		*ppLyDo = szLyDo;
+	return bGiu;
+}
+
 static int TK_ChonDich(int nPlayerIdx, const autoData* pAp, int nLoai)
 {
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
@@ -21111,6 +21198,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						if(pApData->bSaveItem && Player[nPlayerIdx].m_CUnlocked)
 						{
 							int nSaveIdx = 0, nDstPos = 0;
+							// (03/09) [HC-CAT] dem mon bi bo qua de bao mot dong khi het luot
+							int nBoQua = 0;
+							const char* szBQTen = "";
+							const char* szBQLyDo = "";
 							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
 							{
 								if(nSaveIdx)
@@ -21122,6 +21213,22 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									{
 										if(Item[nIdx].GetGenre() != item_equip)
 											continue;
+										// (03/09) [HC-CAT] CHI CAT MON DANG GIU. Truoc day day het
+										// moi trang bi trong tui vao ruong nen do cui cung vao theo.
+										{
+											const char* szLyDo = "";
+											if(!HC_DangGiu(nPlayerIdx, pApData, nIdx, &szLyDo))
+											{
+												if(!nBoQua)
+												{
+													szBQTen = Item[nIdx].GetName();
+													szBQLyDo = szLyDo;
+												}
+												++nBoQua;
+												continue;
+											}
+											AUTOLOG("[HC-CAT] cat '%s' mau=%d cap=%d - %s", Item[nIdx].GetName(), Item[nIdx].GetColorItem(), Item[nIdx].GetLevel(), szLyDo);
+										}
 										int x, y;
 										if(pApData->nSelStore == 0)
 										{
@@ -21208,7 +21315,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								return 1;
 							}
 							else
+							{
+								if(nBoQua)
+									AUTOLOG("[HC-CAT] de lai trong tui %d mon (vi du '%s' - %s)", nBoQua, szBQTen, szBQLyDo);
 								++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+							}
 						}
 						else
 							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;

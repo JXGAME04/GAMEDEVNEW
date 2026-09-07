@@ -7,6 +7,7 @@
 #include "KIniFile.h"
 #include "ShortcutKey.h"
 #include "UiBase.h"
+#include "Elem/UiToaDo.h"	// [UITOADO]
 #include "UiCase/UiTeamManage.h"
 #include "UiCase/UiPartnerCommon.h"	// [BDH-G4]
 #include "UiCase/UiPet.h"	// [PETSYS]
@@ -604,6 +605,8 @@ char* l_StatusList[] =
 	"showplayernumber",	//8 界面显示玩家数字
 	"showobjname", //9 hien ten obj duoi dat edit by phong kieu
 	"market",//10
+	"uitoado",		//11 [UITOADO] bat / tat che do sua giao dien
+	"uitoadoxoa",	//12 [UITOADO] xoa het toa do nguoi choi tu dat
 };
 
 int FindStatus(const char* szname)
@@ -699,6 +702,12 @@ int LuaSwitchStatus(Lua_State * L)
 			break;
 		case 10:
 			KUiPlayerBar::SwitchChannel();
+			break;
+		case 11:	// [UITOADO] bat / tat che do sua giao dien
+			UiToaDo_BatTat();
+			break;
+		case 12:	// [UITOADO] xoa het toa do nguoi choi tu dat
+			UiToaDo_XoaHet();
 			break;
 		}
 	}
