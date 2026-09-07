@@ -47,6 +47,10 @@ void		Wnd_Cleanup();			//清除工作，销毁全部的窗口
 
 void		Wnd_GetScreenSize(int& nWidth, int& nHeight);//获取屏幕范围大小
 void		Wnd_SetScreenSize(int nWidth, int nHeight);  //设置屏幕范围大小
+// [UITOADO] lay cua so goc cua mot lop (WL_LOWEST / WL_NORMAL / WL_TOPMOST);
+// cac cua so cap 1 nam trong chuoi GetNextWnd() cua no.
+KWndWindow*	Wnd_GetLayerRoot(int nLayer);
+
 void		Wnd_RenderWindows();						//绘制界面系统
 void		Wnd_AddWindow(KWndWindow* pWnd, WND_LAYER_LIST eLayer = WL_NORMAL);	//添加窗口
 void		Wnd_OnWindowDelete(KWndWindow* pWnd);		//响应窗口的删除

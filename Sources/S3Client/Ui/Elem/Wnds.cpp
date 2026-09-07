@@ -14,6 +14,7 @@
 #include "WndGameSpace.h"
 #include "MouseHover.h"
 #include "PopupMenu.h"
+#include "UiToaDo.h"
 #include "../UiBase.h"
 #include "../ShortcutKey.h"
 
@@ -129,6 +130,8 @@ void Wnd_RenderWindows()
 	if (WND_SHOW_MOUSE_OVER_WND && s_WndStation.pMouseOverWnd)
 		s_WndStation.pMouseOverWnd->PaintDebugInfo();
 
+	UiToaDo_Ve();		// [UITOADO] khung + dong huong dan khi dang sua
+
 	if (bShowCursor)
 		s_WndStation.Cursor.Paint();
 }
@@ -156,6 +159,22 @@ void Wnd_AddWindow(KWndWindow* pWnd, WND_LAYER_LIST eLayer/* = WL_NORMAL*/)
 		s_WndStation.TopLayerRoot.AddBrother(pWnd);
 	else
 		s_WndStation.NormalLayerRoot.AddBrother(pWnd);	
+
+	// [UITOADO] cua so vua duoc dat vao he thong: ap toa do nguoi choi
+	// da tu dat (neu co) de len toa do doc tu \Ui\ui3\*.ini
+	UiToaDo_ApChoCuaSo(pWnd);
+}
+
+//--------------------------------------------------------------------------
+//	[UITOADO] lay cua so goc cua mot lop, de duyet het cua so cap 1
+//--------------------------------------------------------------------------
+KWndWindow* Wnd_GetLayerRoot(int nLayer)
+{
+	if (nLayer == WL_LOWEST)
+		return &s_WndStation.LowLayerRoot;
+	if (nLayer == WL_TOPMOST)
+		return &s_WndStation.TopLayerRoot;
+	return &s_WndStation.NormalLayerRoot;
 }
 
 //--------------------------------------------------------------------------
@@ -284,6 +303,11 @@ void Wnd_ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		//====设置鼠标指针图形位置====
 		s_WndStation.Cursor.SetPosition(x, y);
+
+		// [UITOADO] dang o che do sua giao dien thi chuot danh rieng cho
+		// viec keo tha o giao dien, khong cho giao dien phia duoi nhan.
+		if (UiToaDo_NhanChuot(uMsg, uParam, nParam))
+			return;
 
 		if (KPopupMenu::HandleInput(uMsg, uParam, nParam))
 		{

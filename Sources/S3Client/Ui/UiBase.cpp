@@ -48,6 +48,7 @@
 #include "UiChatPhrase.h"
 #include "ShortcutKey.h"
 #include "Elem/Wnds.h"
+#include "Elem/UiToaDo.h"
 #include "Elem/PopupMenu.h"
 #include "../../Represent/iRepresent/iRepresentShell.h"
 
@@ -174,6 +175,9 @@ int KUiBase::Init()
 	g_CreatePath(UI_USER_DATA_FOLDER);
 	g_CreatePath(UI_USER_DATA_TEMP_FOLDER);
 	KWndShowAnimate::SetInterval(nInterval);
+	// [UITOADO] doc toa do nguoi choi tu dat TRUOC khi nap giao dien,
+	// de Wnd_AddWindow ap duoc ngay cho tung cua so
+	UiToaDo_Nap();
 	LoadScheme(SchemeName);
 	return true;
 }
@@ -352,6 +356,9 @@ int KUiBase::LoadScheme(const char* pScheme)
 		}
 		
 		LoadSchemeForEachWnd();
+		// [UITOADO] LoadScheme vua ghi de toa do bang so trong ini,
+		// ap lai toa do nguoi choi da tu dat
+		UiToaDo_ApChoTatCa();
 		
 		return true;
 	}

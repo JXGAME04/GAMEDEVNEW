@@ -224,6 +224,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\Elem\WndObjContainer.cpp" />
     <ClCompile Include="Ui\Elem\WndPage.cpp" />
     <ClCompile Include="Ui\Elem\WndPureTextBtn.cpp" />
+    <ClCompile Include="Ui\Elem\UiToaDo.cpp" />
     <ClCompile Include="Ui\Elem\Wnds.cpp" />
     <ClCompile Include="Ui\Elem\WndScrollBar.cpp" />
     <ClCompile Include="Ui\elem\WndShadow.cpp" />
@@ -414,6 +415,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\Elem\ComWindow.h" />
     <ClInclude Include="Ui\Elem\MouseHover.h" />
     <ClInclude Include="Ui\Elem\PopupMenu.h" />
+    <ClInclude Include="Ui\Elem\UiToaDo.h" />
     <ClInclude Include="Ui\Elem\SpecialFuncs.h" />
     <ClInclude Include="Ui\Elem\TextPic.h" />
     <ClInclude Include="Ui\Elem\UiCursor.h" />
