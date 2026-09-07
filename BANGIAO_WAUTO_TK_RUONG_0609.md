@@ -182,3 +182,45 @@ không đặt lại**; từ `5a4d0d24` họ không sửa `Sources\Core` nữa n�
 bằng bản 18:43 (`3da2169e`, chỉ mã S3Client, không liên quan WAuto). Máy chủ: `bin\server\CoreServer.dll.moi`
 `6439ba82` (sha256 `61bc3e0f`) là của họ, giữ nguyên. Lưu ý sổ hash: tôi ghi **md5**, họ ghi **sha256[:8]**
 — cùng tệp khác hàm băm, đừng tưởng lệch bản.
+
+---
+
+## 7. (19:05) Tính năng mới tab PK — BỎ QUA MỤC TIÊU ĐANG CÓ KHIÊN BẢO VỆ
+
+> Chủ giao: *"thêm tính năng ở tab pk bỏ qua đối tượng đang có khiên bảo vệ AddSkillState(963, 1, 0, 18*3)"*.
+
+### 7.1 Khiên là gì, client biết bằng cách nào
+
+- Mọi script dịch chuyển cấp **vòng tròn bất tử 3 giây**: `SetProtectTime(18*3)` + `AddSkillState(963, 1, 0, 18*3)`
+  — `station.lua` (Xa Phu), `shenxingfu.lua` (Thần Hành Phù), trap cổng thành, **trap ra trại Tống Kim**
+  `maps/tongkim/trap/kimratrai.lua` / `tongratrai.lua`, `trinhsat.lua`, `playerlogin.lua`; `dichuyenmap.lua` 18*6;
+  pubg 18*180. Skill 963 = *Thánh Quang Bình Thuẫn (chỉ hiệu ứng)*, `StateSpecialId = 159`. Đánh vào không trúng.
+- Client nhận khiên của người khác qua gói **NPC_NORMAL_SYNC**: `m_nProtectedTime` (`KProtocolProcess.cpp:2453`) và
+  `StateInfo` → `m_btStateInfo` (`:2465`, có 159). **Bẫy:** client KHÔNG tự đếm lùi `m_nProtectedTime` (`KNpc.cpp:1626`
+  nằm trong `#ifdef _SERVER`) nên giá trị có thể "đứng" tới lần đồng bộ sau → `PK_CoKhien` tự ước **hạn hết khiên** =
+  lúc thấy + số khung còn lại / 18, chỉ tính lại khi giá trị đồng bộ **đổi**; hết hạn thì đánh bình thường dù cờ còn
+  đứng — không bao giờ bỏ qua ai mãi mãi.
+
+### 7.2 Đã làm (commit `aed31625`, bộ vá `ReverseTools\goi_va_pk_khien_0609.py`)
+
+| Chỗ | Nội dung |
+|---|---|
+| `ipc_shared.h` (Core + WAuto) | `int bPKBoQuaKhien` ở **cuối** `autoData`, mặc định 1 → struct **7.640 → 7.644 byte**: `WAuto.exe` và `CoreClient.dll` phải đổi **cùng lúc** |
+| `CoreShell.cpp` | `PK_CoKhien(nIdx)`; máy PK `ATYPE_PKFIGHT`: mục tiêu đang giữ có khiên → bỏ; mục tiêu mới có khiên → đưa vào `m_mAutoExcludeNpcID` 3,5 s (FindTargetNpc tự bỏ qua) + log `[PK-KHIEN]`; tầng săn TK `TK_SanNguoi`, `TK_ChonDich`, `LD_ChonDich` bỏ qua người có khiên |
+| WAuto tab PK | ô tick **Bỏ qua mục tiêu đang có khiên bảo vệ** (ID 479, y=336, `do_wauto_bo_cuc.py` 0 nhãn cắt), lưu ngay (khối lưu chung), mặc định **BẬT** cho tệp mới và tệp cũ, tooltip + note tab PK |
+
+Mặc định BẬT vì đánh người có khiên chỉ tốn lượt; chủ không muốn thì bỏ tick.
+
+### 7.3 Trạng thái swap
+
+Lúc 18:50 và 19:01 chủ đã chạy `ChoiGame.bat`: bản đang chạy = `CoreClient.dll` `9cb2f51f` + `Game.exe` `3da2169e`
+(Vận tiêu) + `WAuto.exe` `807e4007` — tức **đợt 1 (lưu ngay + về thành) đã lên máy**. `.moi` mới chờ đợt 2:
+
+| Tệp | md5 | sha256[:8] | cỡ |
+|---|---|---|---|
+| `WAuto.exe.moi` | `c692b1de` | `9cf5e921` | 466.944 |
+| `CoreClient.dll.moi` | `e233e443` | `ba2f2f11` | 2.586.112 |
+
+Cách đổi: thoát Game.exe **và** WAuto.exe → `ChoiGame.bat` (đổi cả hai). Tệp `.dat` 7.640 byte cũ nạp được, ô mới
+mặc định bật. Chưa test thật; kiểm bằng `findstr /C:"[PK-KHIEN]" jx_auto.log` khi PK gần người vừa dịch chuyển.
+`origin/main` sau `aed31625` có thêm bot nội đợt 3 (server) — không ảnh hưởng client, chưa build lại.
