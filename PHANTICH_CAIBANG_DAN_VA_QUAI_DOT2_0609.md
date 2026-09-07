@@ -491,8 +491,64 @@ Linux cũng có 721/722 style 14 — JX1 đã đổi thành 2; 723 → 0; 1545 �
 
 ## PHẦN H — VIỆC CÒN LẠI / CHỜ QUYẾT
 
+> **07/09 — chủ game duyệt "hãy làm": mục 1‑4 ĐÃ THI CÔNG ở ĐỢT 4 bên dưới (phương án (b) cho AI 7‑10).**
+
 1. **Bản vá AI 7‑10** (F.3): chọn (a)/(b)/(c) **trước khi swap** `CoreServer.dll.moi b43c85e8…`.
 2. Có sửa dữ liệu 876/1406/1493 `SkillStyle 14 → 0` không (G.4).
 3. 4 chỗ hỏng mã hoá `tianren.lua` + dấu `.` thừa của 1236 (`vn_edit.py`).
 4. Cái Bang 120: thêm `fastwalkrun_p` (bảng + cột) nếu muốn như Linux.
 5. Chưa đo: AI 21‑24 Linux; cửa cấp 120 của `autodeathskill` bên Linux; `0x0807A1F0` (AI7) tìm mục tiêu theo mẫu hay theo `Kind`.
+
+---
+
+# ĐỢT 4 (07/09 sáng) — THI CÔNG THEO PHẦN H (chủ game: "hãy làm")
+
+## I.1 AI 7/8/9/10 dịch từ Linux — commit `68d7591b` (origin/main)
+
+| Tệp | Thay đổi |
+|---|---|
+| `Sources/Core/Src/KNpcAI.h` | thêm 8 khai báo trong `#ifdef _SERVER`: `AI07_XungXa`, `AI08_ThachXa`, `AI09_HanhQuan`, `AI10_DungBan`, `AI_BoMucTieuLinux`, `AI_TimDichNgauNhien`, `AI_TimNpcTheoIdGan`, `AI_BanTaiCho` |
+| `Sources/Core/Src/KNpcAI.cpp` | `Activate`: `case 7..10` gọi bốn hàm mới; thêm ~300 dòng thân hàm (toàn bộ trong `#ifdef _SERVER` ⇒ **CoreClient.dll không đổi**). Bốn hàm cũ `ProcessAIType7..10` giữ nguyên, không còn được gọi (giống `ProcessAIType1..6`) |
+| `ReverseTools/goi_va_ai_7_10_linux_0709.py` | bộ vá (latin‑1, idempotent, sao lưu `*.truoc_ai710l_0709`) |
+
+Đối chiếu từng bước với nhị phân (F.3):
+
+* **AI07_XungXa** = `0x08094040`: `p0` là `m_dwID` của NPC mục tiêu (tra `NpcSet.SearchID`, phải cùng subworld, ở vùng hiện tại hoặc 1 trong 8 vùng kề, không ẩn — đúng `0x0807A1F0`/`0x080E1FD0`); chọn skill 1..4 theo `p1..p4` cộng dồn; `FollowAttack`. `p0 = 0` → không làm gì.
+* **AI08_ThachXa** = `0x0808F1C0`: `p0` hoặc `p1` = 0 → thôi; skill theo `p3..p6`; `SendCommand(do_skill, skill, p0 − p2/2 + rand(p2), p1 − p2/2 + rand(p2))`; không bao giờ đi. Thêm chặn `rand(0)`.
+* **AI09_HanhQuan** = `0x08092E30`: đúng thứ tự Linux (KeepActiveRange → chọn skill `p2/p3/p4`, thất bại → `CommonAction` → mục tiêu cũ & `m_CurrentVisionRadius ≠ 0` → `FollowAttack` (mất mục tiêu → bỏ) → `p0 %` tìm địch **ngẫu nhiên** trong tối đa 10 con (quét ô như `GetNpcNumber`, bỏ ẩn) → gốc := vị trí → `FollowAttack` → `p6 == 1` bám thủ lĩnh `Npc[p7]` id `p8` (gốc := vị trí thủ lĩnh, `FollowAttack` rồi **rơi tiếp** `CommonAction` như Linux) → đi tới `(p7,p8)` dừng cách `min(AttackRadius, VisionRadius)/2` theo bảng 64 hướng `g_DirCos/g_DirSin`). **Một cửa JX1 thêm**: `p6 ∉ {0,1}` hoặc `p7 = p8 = 0` → không hành quân, chỉ `CommonAction` — vì 50 mẫu trong `npcs.txt` (quan quân Tống Kim, Mộc nhân, Trụ ải…) mang `0|0` hoặc `20|50` từ thời AI9 cũ, dịch nguyên văn sẽ kéo chúng về góc bản đồ.
+* **AI10_DungBan** = `0x08091EB0` + `0x0808F360`: giữ/tìm địch gần nhất (kiểm `m_dwID`, `dist² < Vision²`, không ẩn), skill `p1..p4` cộng dồn (hết → thôi), chỉ `do_skill` khi `dist² < m_CurrentAttackRadius²` và trong tầm nhìn. **Không bao giờ `do_walk`.**
+* **AI_BoMucTieuLinux** = phần bỏ mục tiêu của nhịp `0x0808C640` (chết / hồi sinh / người chơi chưa bật chiến đấu).
+
+Bỏ qua có chủ ý: kiểm hồi chiêu `0x080E4540` trước `do_skill` (JX1 `DoSkill` tự kiểm `CanCast`); `randmove` miễn AiMode 10 (F.5) — chưa làm.
+
+## I.2 Dữ liệu trên cây chạy thật (sao lưu `*.truoc_sk120_0709`, cần **restart máy chủ + client** mới ăn)
+
+| Tệp (server và client) | Sửa |
+|---|---|
+| `settings/skills.txt` | 876 · 1406 · 1493 · 1322: `SkillStyle 14 → 0` (như 723 đã đổi từ trước); 1236: `PreCastSpr` bỏ dấu `.` đầu; 720: `LvlSetting6 = fastwalkrun_p`, `LvlData6 = gaibang120zuzhou` |
+| `script/nhanvat/kynang/tianren.lua` (client: `script/skill/tianren.lua`) | 5 chỗ Gate‑1: `gần bị hoảng loạn` ×2, `chết có xác suất`, `không thể tấn công và di chuyển`, `hình thức thứ hai`, `tỷ lệ khiến cho đối phương khiếp sợ ` (thêm dấu cách trước `<color`) |
+| `script/nhanvat/kynang/gaibang.lua` | `giá trị PTVL`, `giá trị KH`, `khi bị tấn công`, `có thể thi triển`; `gaibang120zuzhou` thêm `fastwalkrun_p={{{1,-9},{23,-50}},{{1,3*18},{15,8*18},{20,9*18},{21,9*18}}}` (đúng số Linux); mô tả thêm "giảm tốc độ di chuyển X%" |
+| `script/nhanvat/kynang/wudu.lua` | `bị độc sát`, `có thể thi triển` |
+
+Cách làm: `vn_edit.py --old/--new` (TCVN3), `safe_edit.py` cho dòng ASCII, Python sửa từng ô `skills.txt`; bản client là bản sao byte‑một của server (đã kiểm bằng `cmp` trước và sau).
+
+Skill 400 (`SkillStyle 15`, Côn Lôn) **không đổi**: bảng nhảy Linux cũng chỉ tới 14 (`cmp ecx, 0xe`) — Linux cũng không chạy.
+
+## I.3 Nhị phân
+
+| Tệp | MD5 | Cỡ | Nguồn |
+|---|---|---|---|
+| `bin/server/CoreServer.dll.moi` (đang nằm trong khe) | `a509a089bcc2c3e6a6102fc879c7103e` | 18 475 008 | **phiên MATDO** build 00:37 trong `D:/GAMEDEVNEW` từ main `68d7591b` + sửa MATDO (commit bàn giao `ddb8b058` ghi rõ "gộp main 68d7591b (MATDO + AI710L)"; PDB cây chính có `AI09_HanhQuan`) ⇒ **đã gồm AI710L**, tôi không đặt đè |
+| `D:/GAMEDEVNEW_wt_ai710l/Sources/Core/x64/ServerRelease/CoreServer.dll` | `bcec43b20dd3a1e46783be7aaa56c0de` | 18 475 008 | bản của tôi, đúng `68d7591b` không có phần MATDO — chỉ dự phòng, **không dùng** |
+
+Bản đang chạy `CoreServer.dll` = `b43c85e8…` (bản vá [AI710 06/09] đã được swap 23:15 06/09 — tức bốn AI kiểu JX1 **đang chạy thật** cho tới khi restart). Khe `.moi` lúc tôi kiểm còn trống, 15 phút sau phiên MATDO đặt bản gộp — đúng luật khe dùng chung nên giữ bản của họ. Client **không cần** DLL mới (chỉ `skills.txt` + 3 tệp Lua).
+
+Lùi: `git revert 68d7591b` + build lại; dữ liệu: đổi tên `*.truoc_sk120_0709` về tên gốc (6 tệp server + 6 tệp client). Lùi riêng AI 7‑10 mà vẫn giữ Linux‑AI khác: đổi 4 dòng `case` về `ProcessAIType7..10` (bản cũ vẫn còn).
+
+## I.4 Cần chủ game kiểm sau restart
+
+1. Tần Lăng / ải có "Tuyệt Sát", "Trụ", "Tri Thù Tơ", cung binh (mode 10): **đứng yên**, bắn khi người chơi vào tầm.
+2. Vượt ải: "Trụ (ải 6/11)", "Tế Đài", "Quang Đoàn", "Mộc nhân" (mode 9): không tuần tra lung tung; NPC có skill sẽ đánh người chơi tới gần (50 %/nhịp) như Linux.
+3. Boss dùng 876 (Ngưu Ma Vương, Lãnh Băng, Hoàng Nhan Quảng Dương, Tây Vực Phạn Hoàng…): giờ **có** gây hoảng loạn.
+4. Cái Bang 120: hoại thương làm chậm mục tiêu 9–50 %; mô tả kỹ năng Thiên Nhẫn/Cái Bang/Ngũ Độc 120 hết ký tự `?`.
+5. `jx_perf_server.log`: `TICK`/`SW_ACTIVATE` không tăng bất thường (AI9 quét ô tối đa 10 địch mỗi nhịp, tương đương `GetNpcNumber`).
