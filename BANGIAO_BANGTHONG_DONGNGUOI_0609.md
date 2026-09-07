@@ -616,3 +616,30 @@ Swap: tắt GameServer → `ChayGameServer.bat`; thoát game → `ChoiGame.bat`.
 | `[PS-BO]` | `99% bo, lam moi 30 giay` | ngoại hình 30 s |
 
 Lưu ý: lúc đo bot vừa đăng nhập lại sau restart nên `goi` mới ~3.000/10 s; xem lại `[NS-BO]`/`[BC-TOP]` khi 1.000 bot đã vào đủ và khi có Tống Kim. Nếu còn một cửa sổ `Game.exe` cũ (mở 23:21 hôm trước, CoreClient cũ) đăng nhập vào, `client cu` sẽ > 0 và máy chủ tự ngừng gói gọn cho tới khi cửa sổ đó thoát; đó là chủ ý, không phải lỗi.
+
+### 8.7 Phân tích nhật ký 13 phút đầu sau swap (00:57–01:10, 1.000 bot vào đủ lúc 01:09, Tống Kim bật, chủ đứng trong đám đông)
+
+Nguồn: `jx_auto_server.log` pid 54884 (77 cửa sổ 10 s), `jx_perf_server.log`, `logs\hethong.log`, client `jx_paint.log`, `jx_crash.log`. Công cụ: `ReverseTools\linuxbc\..` không dùng; script phiên này `ptich_log_delta.py` (scratchpad).
+
+**Ổn định:** không dòng lỗi nào cho pid 54884; `hethong.log` boot bình thường, `RunTime` 14–38 ms; client không sập (`jx_crash.log` chỉ có dòng khởi động 00:57:02), **0 lần `Net Msg Error`** (client tách gói 221 đúng), `[SUM]` 124 lượt vẽ/giây, spikes 2 (15 phút trước swap: 6), max 116 ms (trước 143 ms).
+
+**Máy chủ, cùng 1.000 bot:**
+
+| Chỉ số | Trước swap (pid 67968, 11 cửa sổ cuối) | Sau swap (pid 54884, từ 150 s) |
+|---|---|---|
+| Lượt `BroadCast` mỗi 10 s | 2,4–2,6 triệu | 1,1–1,6 triệu (**−40 %**) |
+| `NormalSync` mỗi giây | 28.900 | 30.700 (chunk 10 thay 5, nhưng 48 % bị bỏ vì NPC không đổi) |
+| Quyết định cộng dồn 852 s | | bỏ 48 %, gọn 49 %, đầy đủ 3 % |
+| TICK trung bình / p95 / % ngân sách | 6,7 ms / 9 ms / 12 % | 6,4–7,0 ms / 9 ms / 12 % (**không tăng** dù băm 99 byte mỗi NPC và xả mỗi tick) |
+| `cat_vi_het_ngan_sach`, `bo_vi_tri` | 0, 0 | 0, 0 (`han_muc=5000`) |
+| `client cu` | | 0 ở cả 86 dòng `[NS-BO]` |
+
+**Client của chủ trong đám đông (CaiBang):** trung bình 19 KB/giây, đỉnh **43,6 KB/giây ở 1.640 gói/giây**. Cửa sổ đỉnh trước swap cùng cỡ gói (1.586 gói/giây) là 61,5 KB/giây. Cùng mức ~1.600 gói/giây: **−29 % byte**, trong khi số lần đồng bộ vị trí nhận được tăng gần gấp đôi (678/giây gồm 606 gói gọn + 72 đầy đủ, trước 363/giây) và mọi chiêu/lệnh chạy đều tới (trần đã bỏ).
+
+Thành phần byte của client trong Tống Kim (trung bình 77 cửa sổ, KB mỗi 10 s): 221 gọn 84 · 77 đầy đủ 38 · 75 ngoại hình 29 · 207 số sát thương 14 · 148 chiêu 9 · 86 chạy 7 · 95 chiêu 3. Đỉnh 207 lên 103 KB/10 s (6.261 gói) khi đánh dồn: đúng như dự đoán, số sát thương là gói nhiều nhất khi đánh nhau, và chủ chọn không cắt.
+
+**Phát hiện cần chỉnh (đã làm ngay, commit `[DELTA 07/09 c]`):** gói 77 đầy đủ chỉ 6 % số lượt nhưng 20–30 % byte đồng bộ, và trong Tống Kim có cửa sổ 77 chiếm 139 KB > 221 (72 KB). Nguyên nhân: `m_nProtectedTime` (vòng bất tử sau hồi sinh) nằm trong nhóm chậm nhưng máy chủ trừ nó **mỗi tick** (`KNpc.cpp:1627`), nên NPC đang bất tử phát gói đầy đủ ở mọi lần đồng bộ; bot Tống Kim hồi sinh liên tục. Client không tự đếm lùi và chỉ cần biết bật/tắt (`CoreShell.cpp:8965`), nên băm quy về 0/1: gói đầy đủ chỉ đi khi bật và khi hết. Kèm theo: `[NS-BO]` in số trong 10 s thay vì cộng dồn.
+
+**Chưa cần chỉnh:** 75 ngoại hình 29 KB/10 s trong Tống Kim là do đổi thật (cờ chiến đấu, lên xuống ngựa, hồi sinh), không phải làm mới 30 s. 207 là lựa chọn của chủ. `node_duyet` tăng (4,5–6,2 triệu/10 s) vì chủ đứng giữa đám đông, CPU không đổi.
+
+**Bản vá c đã build:** `bin\server\CoreServer.dll.moi` = **4b524b2f** (18.478.080, 01:15), chỉ máy chủ, client giữ nguyên 5c359b16. Chờ chủ tắt GameServer → `ChayGameServer.bat`. Nghiệm thu: trong Tống Kim, dòng `[NS-BO] 10s` có `day` nhỏ hơn hẳn `gon` (kỳ vọng dưới 3 %), `[BC-TOP]` byte của 77 giảm so với cửa sổ 360 s ở 8.7.
