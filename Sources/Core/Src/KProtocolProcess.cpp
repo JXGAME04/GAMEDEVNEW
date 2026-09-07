@@ -2505,8 +2505,12 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync li™n tÙc npc trong Æ„ c„ pl
 		Npc[nIdx].m_FrozenAction.nTime	= (NpcSync->State & STATE_FROZEN);
 		//Npc[nIdx].m_ForbidAttack.nTime	= (NpcSync->State & STATE_FBDATK);
 		Npc[nIdx].m_WalkRun.nTime		= NpcSync->State & STATE_WALKRUN;
-		// [DELTA 07/09 d] co chien dau cua nguoi choi khac di theo goi 77/221 (truoc chi qua goi 75 -> 75 phat lai lien tuc)
-		if (nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex && Npc[nIdx].m_Kind == kind_player)
+		// [DELTA 07/09 d] co chien dau cua nguoi choi di theo goi 77/221 (truoc chi qua goi 75 -> 75 phat lai lien tuc).
+		// [DELTA 07/09 h] AP CA CHO CHINH MINH: goi 75 khong phat lai khi chi co nay doi (bit 0x02 da bo khoi bam) nen day la
+		// duong DUY NHAT mang co cua minh ve; loai tru chinh minh (ban d) lam client giu co cu toi ky lam moi (300 s):
+		// phu ve thanh van 'danh skill duoc' (client cho mua chieu, may chu tu choi). Client khong bao gio tu ghi co nay
+		// cho chinh minh (moi cho ghi deu nam trong #ifdef _SERVER) nen khong dung nhau.
+		if (Npc[nIdx].m_Kind == kind_player)
 			Npc[nIdx].m_FightMode = (NpcSync->State & STATE_FIGHTMODE) ? enumPKWar : enumPKNormal;
 		//
 		Npc[nIdx].m_nProtectedTime = NpcSync->m_nProtectedTime;			//vong tron bat tu, vﬂng trﬂn b t t?

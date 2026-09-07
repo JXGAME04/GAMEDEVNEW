@@ -782,3 +782,15 @@ Chủ swap 10:08 (bản MATDO b c37a0b1b, gồm TOCDO + SKEXP + DELTA a–e); tr
 **Kỳ vọng trận kế:** 75 từ 7,3 % xuống ~0,8 %; byte 207 tới người xem −24 %, người trong cuộc bớt một gói 17 byte mỗi đòn gây/nhận; tổng byte client ≈ −10 % trong trận, đỉnh 64,7 → ~58 KB/s; không đổi gì nhìn thấy.
 
 **Đã đặt 11:38 (chờ chủ chạy CẢ HAI bat):** `CoreServer.dll.moi` **1d06f7f0** (build từ origin/main be72d6b6 = DELTA a–g + LNCK + TUKICH + TRANPHAI60; bản LNCK a71d3305 đổi tên `.moi.lnck_a71d3305`) và `CoreClient.dll.moi` **1ca74e6e** (⊇ TUKICH 15bd934d, đổi tên `.moi.tukich_15bd934d`). Thứ tự swap không quan trọng: máy chủ mới + client cũ → 207 đầy đủ; client mới + máy chủ cũ → không phát 222. Sau trận kế: đọc `[DMG-GON] gon= day=` (gon phải ≈ 100 %), `[PS-BO] gui=` (kỳ vọng ≈ 2.000/10 phút thay vì 19.800), tỉ lệ byte 207 của client.
+
+### 8.13 Hồi quy của vá d/g: cờ chiến đấu của CHÍNH MÌNH kẹt trên client (phù về thành vẫn "đánh skill được"), vá h
+
+**Phiên TUKICH (wauto-58) đo và chuyển giao, tôi kiểm lại mã, đúng.** Chứng cứ của họ: cùng mốc thời gian, cùng chiêu 372, client ghi `[E4_SKILL_IN] fight=1` còn máy chủ ghi `[S2-NETSKILL-IN] fight=0`, lệch kéo dài ≥ 7 giây. Chiều ngược lại cũng dính: ra khỏi thành client kẹt `fight=0`, không đánh được.
+
+**Gốc = hai mảnh của DELTA gặp nhau:** vá d bỏ bit `0x02` (cờ chiến đấu) khỏi băm gói 75 (`KNpc.cpp` `sPSBam.m_btSomeFlag &= ~0x02`) với lý do cờ đã đi theo `STATE_FIGHTMODE` của gói 77/221; nhưng client `SyncNpcMin` (KProtocolProcess.cpp:2509) lại **loại trừ chính mình** khi áp cờ đó. Với chính mình không còn đường nào: 75 không phát lại (bit đã bỏ khỏi băm), 77/221 thì client tự bỏ qua; chỉ còn kỳ làm mới 75, mà vá g vừa nâng 30 → 300 s nên client giữ cờ cũ tới 5 phút (tự khỏi khi trường khác của gói 75 đổi, nên lúc có lúc không).
+
+**Vá h (client, một điều kiện, không đụng giao thức, không mất băng thông đã tiết kiệm):** bỏ vế "khác chính mình" ở KProtocolProcess.cpp:2509 → `if (Npc[nIdx].m_Kind == kind_player)`. An toàn vì máy chủ đã nhét cờ này cho mọi NPC kể cả chính mình (`NS_DungGoi`), gói gọn 221 mang `State` và `SyncNpcPos` chuyển tiếp sang `SyncNpcMin` cho cả chính mình (chỉ loại chính mình ở phần ngựa/tốc độ), và client không bao giờ tự ghi `m_FightMode` cho chính mình (KPlayer.cpp:6837/6866/6953/7031/7036 đều trong `#ifdef _SERVER`, mở ở 6808 và 6990). Cách khác (đưa bit 0x02 trở lại băm 75) sẽ mất lại phần tiết kiệm vì bot Tống Kim đổi cờ liên tục (`chi_co_chien_dau=135.596` trong 30 phút), không chọn. Script `ReverseTools/goi_va_delta8_fightmode_chinhminh_0709.py`.
+
+**Kiểm sau swap:** vào thành bằng Thổ Địa Phù rồi bấm chiêu: client không còn cho mua chiêu; `findstr /C:"[E4_SKILL_IN] npc=1 " jx_auto.log` phải ra `fight=0` khớp `[S2-NETSKILL-IN] fight=0`. Ra khỏi thành bật chiến đấu phải đánh được ngay (cờ về theo 221 trong ≤ vài tick).
+
+**Tình trạng lúc 15:06:** máy chủ live 11f83405 (14:35, có vá g: `[DMG-GON] gon=1.658.820 day=0`, `lam moi moi 300 giay`), client live 52a55d89 (TUKICH b, 14:43, có hello 2). Vá h chỉ cần swap client.
