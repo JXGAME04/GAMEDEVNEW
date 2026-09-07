@@ -36,7 +36,11 @@ def clit(s_latin1):
     return '"' + s_latin1.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 # ---------------- extend.lua ----------------
-ext = rd(os.path.join(SRV, r"script\activitysys\config\129\extend.lua"))
+# [SAPXEP 06/09] cay script da sap xep lai: activitysys nam duoi script\tinhnang\ (duong cu con bi danh)
+CFG129 = os.path.join(SRV, r"script\tinhnang\activitysys\config\129")
+if not os.path.isdir(CFG129):
+    CFG129 = os.path.join(SRV, r"script\activitysys\config\129")
+ext = rd(os.path.join(CFG129, "extend.lua"))
 i0 = ext.index("pActivity.tbBJPathLevel = {")
 i1 = ext.index("pActivity.tbAllTask", i0)
 tuyen = {}
@@ -52,7 +56,7 @@ for m in re.finditer(r'\[(\d+)\]\s*=\s*\{\s*"([^"]*)",\s*\{\s*(\d+),\s*(\d+),\s*
 assert len(diem) == 44, len(diem)
 
 # ---------------- award.lua ----------------
-aw = rd(os.path.join(SRV, r"script\activitysys\config\129\award.lua"))
+aw = rd(os.path.join(CFG129, "award.lua"))
 k0 = aw.index("pActivity.tbAllCountCell = {")
 k1 = aw.index("}", aw.index("[10]", k0))
 boc = {}
@@ -72,6 +76,19 @@ cq = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
 # 7 Tiep Dan = cac diem cua tuyen bang (27..49) o vi tri DAU
 tiepdan = sorted({tuyen[n][0] for n in range(27, 50)})
 assert len(tiepdan) == 7, tiepdan
+
+# ---------------- settings\Station.txt (ben Xa Phu: cot DESC = nhan menu "thanh thi da di qua") ----------------
+# station.lua StationFun: nhan = GetStationName(id) .. "[gia luong]" ; GetStationName doc dong id+1 cot DESC.
+# SECT1 = "map, x, y" -> map cua ben. Client va server co cung tep (da cmp).
+st = rd(os.path.join(SRV, r"settings\Station.txt")).split("\n")
+ben = []   # (map, DESC da cat khoang trang)
+for l in st[1:]:
+    c = l.rstrip("\r").split("\t")
+    if len(c) < 4 or not c[0].strip().isdigit():
+        continue
+    nmap = int(c[3].split(",")[0].strip())
+    ben.append((nmap, c[1].strip()))
+assert len(ben) >= 16, len(ben)
 
 # ---------------- 1) KVanTieuPos.h ----------------
 L = []
@@ -151,8 +168,9 @@ S["VT_CN_XE_CHUA"] = "chưa xuất phát"
 S["VT_CN_XE_CON_FMT"] = "đã xuất phát, còn khoảng %d phút"
 S["VT_CN_XE_HET"] = "đã xuất phát và đã hết giờ"
 S["VT_CN_NGAY_FMT"] = "Hôm nay: đã nhận <color=yellow>%d/3<color> nhiệm vụ, làm mới miễn phí <color=yellow>%d/5<color>."
-S["VT_CN_HINT"] = ("<color=Cyan>Nhấp vào dòng nhiệm vụ để tự đi: chưa nhận thì tới Ông chủ Tiêu cục ở Long Môn trấn (thuê xe nếu khác bản đồ); "
-                   "đã nhận thì tới Tiêu Sư điểm đầu; xe đã xuất phát thì tới Tiêu Sư điểm cuối nếu cùng bản đồ.<color>")
+S["VT_CN_HINT"] = ("<color=Cyan>Nhấp vào dòng nhiệm vụ để tự đi: chưa nhận thì tới Ông chủ Tiêu cục ở Long Môn trấn, đã nhận thì tới Tiêu Sư điểm đầu "
+                   "(đang ở thành hay thôn thì chạy ra Xa Phu đi xe, đang ở map luyện công thì dùng phù về thành trước); xe đã xuất phát thì tới "
+                   "Tiêu Sư điểm cuối nếu cùng bản đồ. Không dẫn đường khi đang ở map sự kiện.<color>")
 S["VT_CN_TRACE_TITLE"] = "<color=yellow>Vận tiêu cá nhân<color>"
 S["VT_CN_BRIEF_NONE"] = "Chưa nhận nhiệm vụ áp Tiêu."
 S["VT_CN_BRIEF_FMT"] = "%d sao: %s tới %s (%s)"
@@ -178,25 +196,31 @@ S["VT_BH_LUUY"] = ("Tại Tiếp Dẫn còn có Xem thông tin Tiêu Xa, Truyề
 S["VT_BH_TT_NONE"] = "Trạng thái: <color=yellow>ngươi chưa giữ xe bang<color>."
 S["VT_BH_TT_FMT"] = "Trạng thái: đang giữ Tiêu Xa Bang tuyến <color=yellow>%s<color> tới <color=yellow>%s<color>, %s."
 S["VT_BH_DIEM_FMT"] = "Điểm bám xe tuần này (4 lượt): %d, %d, %d, %d."
-S["VT_BH_HINT"] = ("<color=Cyan>Nhấp vào dòng nhiệm vụ để tự đi tới Tiếp Dẫn áp Tiêu Bang (dùng phù về thành nếu đang ở ngoài thành); "
-                   "đang giữ xe thì đi tới Nhận Hàng điểm cuối nếu cùng bản đồ.<color>")
+S["VT_BH_HINT"] = ("<color=Cyan>Nhấp vào dòng nhiệm vụ để tự đi tới Tiếp Dẫn áp Tiêu Bang ở thành bang đang chiếm (đang ở thành hay thôn thì "
+                   "chạy ra Xa Phu đi xe, đang ở map luyện công thì dùng phù về thành trước); đang giữ xe thì đi tới Nhận Hàng điểm cuối "
+                   "nếu cùng bản đồ. Không dẫn đường khi đang ở map sự kiện.<color>")
 S["VT_BH_TRACE_TITLE"] = "<color=yellow>áp Tiêu Bang<color>"
 S["VT_BH_BRIEF_NONE"] = "Chưa giữ xe bang."
 S["VT_BH_BRIEF_FMT"] = "%s tới %s (%s)"
-# ---- thong bao dan duong (DT_Msg) ----
+# ---- thong bao dan duong (DT_Msg) - v2 06/09: KHONG nhay map, di bang phu ve thanh + Xa Phu ----
 S["VT_MSG_HUY"] = "<color=Cyan>[Chỉ nam] Đã hủy dẫn đường vận tiêu."
 S["VT_MSG_DT"] = "<color=Yellow>[Chỉ nam] Auto Dã Tẩu đang chạy - để auto tự lo việc di chuyển."
 S["VT_MSG_LAU"] = "<color=Yellow>[Chỉ nam] Đi quá lâu - dừng dẫn đường."
-S["VT_MSG_XE_THUE"] = "<color=Cyan>[Chỉ nam] Khác bản đồ - đang thuê xe tới Long Môn trấn (tốn tiền)..."
-S["VT_MSG_CN_DIEMDAU"] = "<color=Cyan>[Chỉ nam] Đã nhận nhiệm vụ - đưa tới Tiêu Sư điểm xuất phát..."
+S["VT_MSG_SUKIEN_FMT"] = "<color=Yellow>[Chỉ nam] Đang ở map sự kiện (%s) - Chỉ nam không tự di chuyển ở đây."
 S["VT_MSG_CN_XUATPHAT"] = "<color=Yellow>[Chỉ nam] Xe đã xuất phát - hãy hộ tống xe đi bộ tới Tiêu Sư điểm cuối (không dẫn đường qua bản đồ)."
 S["VT_MSG_TOI_NPC_FMT"] = "<color=Cyan>[Chỉ nam] Đang chạy tới %s - bấm lại vào dòng nhiệm vụ để hủy."
 S["VT_MSG_DEN_NPC_FMT"] = "<color=Cyan>[Chỉ nam] Đã tới %s - hãy chọn mục trong khung thoại."
-S["VT_MSG_PHU"] = "<color=Cyan>[Chỉ nam] Đang ở ngoài thành - dùng phù về thành rồi chạy tới Tiếp Dẫn áp Tiêu Bang..."
-S["VT_MSG_KHONGPHU"] = "<color=Yellow>[Chỉ nam] Không có phù về thành trong túi - hãy tự về một trong 7 thành rồi bấm lại."
+S["VT_MSG_PHU"] = "<color=Cyan>[Chỉ nam] Đang ở map luyện công - dùng phù về thành, rồi ra Xa Phu đi tiếp..."
+S["VT_MSG_KHONGPHU"] = "<color=Yellow>[Chỉ nam] Không có phù về thành trong túi - hãy tự về thành rồi bấm lại."
+S["VT_MSG_XAPHU_DI_FMT"] = "<color=Cyan>[Chỉ nam] Đang chạy tới Xa Phu để đi %s (tốn tiền xe) - bấm lại để hủy."
+S["VT_MSG_XAPHU_KHONGCO_FMT"] = "<color=Yellow>[Chỉ nam] Thoại Xa Phu không có mục %s - hãy tự chọn trong khung thoại."
+S["VT_MSG_XAPHU_CHUADI"] = "<color=Yellow>[Chỉ nam] Chưa lên được bản đồ đích (thiếu tiền xe?) - dừng dẫn đường."
+S["VT_MSG_XAPHU_KHONGBEN"] = "<color=Yellow>[Chỉ nam] Nơi cần đến không có bến Xa Phu - hãy tự đi bộ."
+S["VT_MSG_BANG_KHONGBANG"] = "<color=Yellow>[Chỉ nam] Ngươi chưa vào bang - Tiếp Dẫn áp Tiêu Bang chỉ tiếp bang chiếm thành."
+S["VT_MSG_BANG_KHONGTHANH"] = "<color=Yellow>[Chỉ nam] Bang của ngươi chưa chiếm thành nào - chưa có Tiếp Dẫn nào nhận xe."
 S["VT_MSG_BH_XE"] = "<color=Yellow>[Chỉ nam] Đang giữ xe bang - xe phải đi bộ; chỉ dẫn đường tới Nhận Hàng khi ngươi đang ở đúng bản đồ điểm cuối."
 S["VT_MSG_KHONG_NPC"] = "<color=Yellow>[Chỉ nam] Không thấy NPC ở vị trí quy định - có thể máy chủ chưa sinh NPC vận tiêu."
-S["VT_MSG_CHUYENMAP"] = "<color=Yellow>[Chỉ nam] Chưa sang được bản đồ đích - dừng dẫn đường."
+S["VT_MENU_THANHTHI"] = "thành thị đã đi qua"
 S["VT_NPC_CHUONGQUY"] = "Ông chủ Tiêu cục Lục Tam Cân"
 S["VT_NPC_TIEUSU"] = "Long Môn Tiêu Sư"
 S["VT_NPC_TIEPDAN"] = "Tiếp Dẫn áp Tiêu Bang"
@@ -219,7 +243,7 @@ for i in range(1, 45):
 U.append("};")
 U.append("")
 for k, v in S.items():
-    if k.startswith("VT_MSG_") or k.startswith("VT_NPC_"):
+    if k.startswith("VT_MSG_") or k.startswith("VT_NPC_") or k.startswith("VT_MENU_"):
         continue
     U.append("#define %-20s %s" % (k, clit(V(v))))
 U.append("")
@@ -238,9 +262,17 @@ M.append("// ===================================================================
 M.append("#ifndef KVANTIEU_MSG_H")
 M.append("#define KVANTIEU_MSG_H")
 M.append("")
+M.append("// ben Xa Phu (settings\\Station.txt cot DESC): map -> nhan trong thoai 'thanh thi da di qua'")
+M.append("#define VT_XAPHU_SO %d" % len(ben))
+M.append("static const short s_nVTXaPhuMap[VT_XAPHU_SO] = { " + ", ".join(str(b[0]) for b in ben) + " };")
+M.append("static const char* const s_szVTXaPhuTen[VT_XAPHU_SO] = {")
+for b in ben:
+    M.append("\t" + clit(b[1]) + ",")
+M.append("};")
+M.append("")
 for k, v in S.items():
-    if k.startswith("VT_MSG_") or k.startswith("VT_NPC_"):
-        M.append("#define %-20s %s" % (k, clit(V(v))))
+    if k.startswith("VT_MSG_") or k.startswith("VT_NPC_") or k.startswith("VT_MENU_"):
+        M.append("#define %-24s %s" % (k, clit(V(v))))
 M.append("")
 M.append("#endif")
 io.open(OUT_MSG, "w", encoding="latin-1", newline="").write("\r\n".join(M) + "\r\n")
