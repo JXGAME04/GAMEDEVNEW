@@ -104,7 +104,10 @@ BOOL KLuaScript::Load(char * Filename)
 	DWORD		Size;
 
 	if(Filename[0]) //fix by Phong KiÒu
-		strcpy(m_szScriptName,Filename);
+	{	// [LUA54 06/09 toi] KHAN: strcpy khong gioi han de len m_UserTag/m_LuaState khi ten >= 100 ky tu -> sap luc boot 19:34
+		strncpy(m_szScriptName, Filename, sizeof(m_szScriptName) - 1);
+		m_szScriptName[sizeof(m_szScriptName) - 1] = 0;
+	}
 	
 	// open file
 	if (!File.Open(Filename))	return FALSE;
