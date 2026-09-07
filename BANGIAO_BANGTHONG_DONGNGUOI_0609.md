@@ -855,3 +855,39 @@ Dieu kien nay **luon dung** (mot gia tri khong the vua bang `do_death` vua bang 
 Chu choi tiep vai tran roi keo nhat ky: co `[S7-NAMBEP-CHAN]` = da chan dung goc; co `[S7-NAMBEP]` ma khong co `CHAN` = con tang khac, doc `resdoing` de biet la lop ve hay logic.
 
 **Da dat 16:14 (chi client, cho chu chay ChoiGame.bat):** `CoreClient.dll.moi` **a6a9e29d** = origin/main a21c0362 + va j (chua ca HC-CAT b51b6e31 cua phien khac, ban do doi ten `.moi.hccat_b51b6e31`; kiem chuoi: du 7/7 chuoi tinh nang cua ho). May chu khong can swap.
+
+### 8.16 Va i chay that (may chu b9b4cb4a tu 15:33): so lieu 41,7 phut va muc tieu ke tiep
+
+| Chi so | 15:00 (va g) | 16:15 (va i) |
+|---|---|---|
+| 75 ngoai hinh | 11,2 % | **7,4 %** (73 goi/10 s, het phat theo cum) |
+| 77 day du | 15,4 % | 16,4 % (382 goi/10 s) |
+| 221 gon | 52,4 % | 49,6 % |
+| 222 so sat thuong | 8,3 % | 14,3 % (danh don nhieu hon) |
+| Client TB / dinh | 26,2 / 62,0 KB/s | **22,9 / 58,9 KB/s** |
+| day/(gon+day) | 2,6 % | 1,9 % |
+| TICK | 8,0 ms | 8,7 ms (15,7 %) |
+
+**Bo dem bit tra loi cau hoi treo tu muc 8.14** (`[PS-BO] ... | bit: 01=831 02=0 04=0 08=6 10=831 20=0 40=0 80=0 | bot=0 nguoi=27302`):
+
+1. **bot = 0**: sau va d/f/i, bot khong con gay mot lan phat lai goi ngoai hinh nao. Toan bo phat lai la cua nguoi that.
+2. Bit doi that su: `0x01` va `0x10` (cap co trang thai PK, luon doi cung nhau) 831 lan; `0x08` (co bang) 6 lan; co chien dau `0x02` = 0 (va d con nguyen tac dung); ngu `0x04` = 0.
+3. Nhom `rank` (RankInWorld/Repute/FuYuan/PKValue/ReBorn) 1.115 lan - nhieu nhat trong cac nhom "cham".
+
+**Ky lam moi day du 60 s KHONG ha duoc goi 77** (16,4 %): `day/(gon+day)` chi 1,9 %, tuc phan lon goi 77 khong phai do ky lam moi ma do **bam cham doi**. Cac truong con lai trong bam cham co the doi lien tuc khi danh nhau: `m_ASpeed`/`m_CSpeed` (toc do danh/ra chieu, doi theo buff), `m_btMenuState`, `NpcEnchant`, `Camp/CurrentCamp`. Buoc sau (khi khe .moi may chu ranh): dem tung nhom truong cua bam cham y nhu da lam voi goi 75, roi dua nhung truong doi nhanh xuong goi gon 221 hoac bo khoi bam cham.
+
+**Loi hien thi nho trong nhat ky:** `[PS-BO] ... (-24% bo)` am la do `s_nPSBo * 100` tran so nguyen 32 bit khi bo > 21 trieu; chi la dong log, khong anh huong chay. Sua kem lan va sau.
+
+### 8.17 Va k: dem nhom truong cua BAM CHAM (tim vi sao goi 77 van 16,4 %)
+
+Muc 8.16 cho thay ky lam moi day du 60 s khong ha duoc goi 77 vi `day/(gon+day)` chi 1,9 % - goi day du la do **bam cham doi**, khong phai do ky lam moi. Bam cham = ca goi `NPC_NORMAL_SYNC` tru toa do/vung/Doing/State/mau/noi luc, va `m_nProtectedTime` quy ve 0/1. Nhung truong con lai co the doi lien tuc khi danh nhau, dac biet `m_WalkSpeed/m_RunSpeed/m_ASpeed/m_CSpeed` (buff toc do) va `StateInfo` (trang thai ky nang).
+
+**Va k (chi may chu, khong doi hanh vi, script `ReverseTools/goi_va_delta11_nhom_bamcham_0709.py`):** bam lai voi tung nhom xoa trang, nhom nao khong doi thi doi nam trong nhom do - y het cach da dung cho goi 75 o va e. Nam nhom: toc do (Walk/Run/A/CSpeed) - trang thai ky nang (`StateInfo`) - chi so toi da (LifeMax/ManaMax) - phe/loai (Camp/Series/NpcEnchant/MissionGroup) - vong bat tu. Ket qua vao dong `[NS-BO] ... | bam cham doi o nhom: toc_do= trang_thai= chi_so_max= phe_loai= bat_tu= nhieu=`, dem lai moi 10 giay.
+
+Khac va i mot diem quan trong: **moc so sanh cua tung nhom duoc luu DUNG LUC luu `s_adwNSBamCham` (lan phat day du truoc)**, khong luu moi tick. Bo dem bit cua va i lam moc theo tick nen so bit (1.668) khong khop so lan phat lai (24.806) - lan nay khong bi vay.
+
+Kem theo: sua dong `[PS-BO]` in `-24% bo` do `bo * 100` tran so nguyen 32 bit khi bo vuot 21 trieu (tinh bang `__int64`).
+
+**Chua dat vao khe `.moi`:** khe may chu dang giu ban `1ed4d726` cua phien BH100 (cap bang theo kinh nghiem) va commit cua ho **chua len origin/main**, nen toi khong the build sieu tap. Va k da push len origin/main; dat `.moi` sau khi chu swap ban cua ho, hoac sau khi ho push va toi build gop.
+
+**Da dat 16:22:** `CoreServer.dll.moi` **b1308b4c** = origin/main 552bab7e (gom ca BHLV 40eb50c1 cua phien BH100 - ho da push nen build gop duoc; ban 1ed4d726 doi ten `.moi.bhlv_1ed4d726`). Kiem chuoi: co du `TONG_GetLevelExpNeed`, `tong_setting.ini`, `TONG_GetExpLevel`. `S3Relay.exe.moi` 26d7df5d cua ho giu nguyen, phai swap cung. Sau tran ke doc `[NS-BO] ... | bam cham doi o nhom:` de biet truong nao lam goi 77 phat lai.
