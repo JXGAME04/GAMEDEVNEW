@@ -245,14 +245,14 @@ static void l4_alias_norm(const char* in, char* out, size_t cap)
 	out[o] = 0;
 }
 
-static void l4_alias_doc(void)
+static void l4_alias_doc(const char* tep)
 {
 	FILE* f;
 	char dong[2048];
 	if (s_alias_da_doc) return;
+	f = fopen(tep ? tep : "script\\_duongdan_cu.txt", "rb");
+	if (f == NULL) return;					/* chua thay -> lan sau thu lai (engine chdir vao tung thu muc script luc boot) */
 	s_alias_da_doc = 1;
-	f = fopen("script\\_duongdan_cu.txt", "rb");
-	if (f == NULL) return;
 	while (fgets(dong, sizeof(dong), f))
 	{
 		char* p = dong;
@@ -282,10 +282,20 @@ static void l4_alias_doc(void)
 }
 
 /* rel (da chuan hoa) -> duong dan moi (da chuan hoa) hoac NULL */
-static const char* l4_alias_tra(const char* rel)
+static const char* l4_alias_tra(const char* rel, const char* goc_full, size_t goc_len)
 {
 	L4Alias* a;
-	l4_alias_doc();
+	if (!s_alias_da_doc)
+	{
+		char tep[1200];
+		if (goc_full != NULL && goc_len + 32 < sizeof(tep))
+		{
+			memcpy(tep, goc_full, goc_len);		/* giu byte goc cua duong dan (ten Han) */
+			strcpy(tep + goc_len, "script\\_duongdan_cu.txt");
+			l4_alias_doc(tep);
+		}
+		if (!s_alias_da_doc) l4_alias_doc(NULL);	/* tuong doi cwd (shim dofile, goc may chu) */
+	}
 	if (s_alias_n == 0) return NULL;
 	for (a = s_alias_bucket[l4_fnv(rel) % L4_ALIAS_BUCKETS]; a; a = a->next)
 		if (strcmp(a->cu, rel) == 0) return a->moi;
@@ -307,9 +317,9 @@ static int l4_alias_doi(const char* full, char* out, size_t cap)
 	if (rel != NULL) rel++;
 	else if (strncmp(norm, "scriptjx2/", 10) == 0 || strncmp(norm, "script/", 7) == 0) rel = norm;
 	else return 0;
-	moi = l4_alias_tra(rel);
-	if (moi == NULL) return 0;
 	o = (size_t)(rel - norm);					/* phan dau (goc) giu nguyen byte goc */
+	moi = l4_alias_tra(rel, full, o);
+	if (moi == NULL) return 0;
 	if (o + strlen(moi) + 1 > cap) return 0;
 	memcpy(out, full, o);
 	for (i = 0; moi[i]; i++) out[o + i] = (moi[i] == '/') ? '\\' : moi[i];
@@ -325,7 +335,7 @@ static int l4_b_duongdanmoi(lua_State* L)
 	if (l4_alias_doi(p, out, sizeof(out))) lua_pushstring(L, out); else lua_pushnil(L);
 	return 1;
 }
-LUA_API int lua4_alias_count(void) { l4_alias_doc(); return s_alias_n; }
+LUA_API int lua4_alias_count(void) { if (!s_alias_da_doc) l4_alias_doc(NULL); return s_alias_n; }
 LUA_API int lua4_alias_doi(const char* full, char* out, int cap) { return l4_alias_doi(full, out, (size_t)cap); }
 
 /* Tra: 1 = closure da o dinh stack (tu cache hoac vua bien dich); 0 = khong dung cache (goi duong cu);
