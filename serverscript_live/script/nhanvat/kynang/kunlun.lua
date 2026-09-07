@@ -159,7 +159,7 @@ SKILLS={
 		skill_cost_v={{{1,30},{20,40}}}
 	},
 	qihan_aoxue={ --Khi Han Ngao Tuyet
-		castspeed_v={{{1,-6},{20,-39},{30,-50},{31,-50}},{{1,18*45},{20,18*120}}},
+		castspeed_v={{{1,-6},{20,-39},{30,-50},{31,-50}},{{1,18*20},{20,18*60}}},--[TOCDO 07/09] thoi gian nhu Linux
 		skill_cost_v={{{1,30},{20,40}}}
 	},
 	mizhong_huanying={ --Me Tung Ao Anh

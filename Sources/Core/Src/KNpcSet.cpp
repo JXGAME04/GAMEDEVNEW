@@ -105,6 +105,7 @@ void KNpcSet::LoadPlayerBaseValue(LPSTR szFile)
 	File.GetInteger("Common", "RunSpeed", 10, &m_cPlayerBaseValue.nRunSpeed);
 	File.GetInteger("Common", "WalkSpeed", 5, &m_cPlayerBaseValue.nWalkSpeed);
 	File.GetInteger("Common", "AttackFrame", 20, &m_cPlayerBaseValue.nAttackFrame);
+	File.GetInteger("Common", "CastFrame", 20, &m_cPlayerBaseValue.nCastFrame);	// [TOCDO 07/09] nhu Linux (ini 18); truoc day nguoi choi ket 20
 #ifndef _SERVER
 	File.GetInteger("Male", "WalkFrame", 15, &m_cPlayerBaseValue.nWalkFrame[0]);
 	File.GetInteger("Female", "WalkFrame", 15, &m_cPlayerBaseValue.nWalkFrame[1]);
