@@ -822,3 +822,5 @@ Nguồn: pid 27800 (máy chủ 11f83405 từ 14:35, có vá g), 210 cửa sổ 1
 5. **Vá h (cờ chiến đấu chính mình):** client 716ab775 chạy từ 15:11:56; `[E4_SKILL_IN] npc=1 fight=1` khớp `[S2-NETSKILL-IN] fight=1` ở mọi dòng cuối; chưa có mẫu Thổ Địa Phù về thành để chốt, chủ thử theo mục 8.13.
 
 **Vá i (chỉ máy chủ, script `ReverseTools/goi_va_delta9_dandeu75_lammoiday_0709.py`):** (1) `DongBoLamMoiDay` mặc định 60.000 ms, kẹp 600.000; (2) làm mới 75: `+ (m_Index % 128) * 1000` ms; (3) đếm bit cờ. Kỳ vọng trận kế ở cùng mật độ: 77 15 → ~3 %, 75 11 → ~6 % (còn phần bit chưa rõ), tổng −15 %, đỉnh 62 → ~45 KB/s.
+
+**Đã đặt 15:21 (chỉ máy chủ, chờ chủ chạy ChayGameServer.bat):** `CoreServer.dll.moi` **b9b4cb4a** = origin/main 822e5857 (⊇ live 11f83405, kiểm chuỗi missing = 0). Sau trận kế đọc: `[PS-BO] ... | bit: 01= 02= 04= 08= 10= 20= | bot= nguoi=` (bit nào đổi), tỉ lệ byte 77 (kỳ vọng ~3 %), cửa sổ đỉnh không còn cụm 75.
