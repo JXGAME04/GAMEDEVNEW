@@ -780,3 +780,5 @@ Chủ swap 10:08 (bản MATDO b c37a0b1b, gồm TOCDO + SKEXP + DELTA a–e); tr
 4. Đếm `[DMG-GON] gon= day= (client chua bao phien ban 2: n)` mỗi 20.000 đòn để đối chiếu.
 
 **Kỳ vọng trận kế:** 75 từ 7,3 % xuống ~0,8 %; byte 207 tới người xem −24 %, người trong cuộc bớt một gói 17 byte mỗi đòn gây/nhận; tổng byte client ≈ −10 % trong trận, đỉnh 64,7 → ~58 KB/s; không đổi gì nhìn thấy.
+
+**Đã đặt 11:38 (chờ chủ chạy CẢ HAI bat):** `CoreServer.dll.moi` **1d06f7f0** (build từ origin/main be72d6b6 = DELTA a–g + LNCK + TUKICH + TRANPHAI60; bản LNCK a71d3305 đổi tên `.moi.lnck_a71d3305`) và `CoreClient.dll.moi` **1ca74e6e** (⊇ TUKICH 15bd934d, đổi tên `.moi.tukich_15bd934d`). Thứ tự swap không quan trọng: máy chủ mới + client cũ → 207 đầy đủ; client mới + máy chủ cũ → không phát 222. Sau trận kế: đọc `[DMG-GON] gon= day=` (gon phải ≈ 100 %), `[PS-BO] gui=` (kỳ vọng ≈ 2.000/10 phút thay vì 19.800), tỉ lệ byte 207 của client.
