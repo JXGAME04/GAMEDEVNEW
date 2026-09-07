@@ -184,3 +184,51 @@ Bảng ảo (`0x082587a8`): `+0x08 GetSkillId [+0x24]`, `+0x0c GetSkillName`, `+
 | F | 392 Thúc Phược Chú `TimePerCast` 0 → 27 như Linux; boss 1539‑1545 hồi chiêu | nhịp dùng chiêu | skills.txt |
 
 Không đề xuất đổi: công thức khung, 60 %, cách chọn `IsPhysical`, làm chẵn khung (vô hại), bảng buff 90 (giống trong dải cấp).
+
+
+---
+
+# PHẦN 10 (07/09, sau khi chủ chọn) — THI CÔNG "tốc độ đánh ngoại/nội như Linux, không thêm kênh Âm/Dương"
+
+Quyết định của chủ: (1) làm tốc độ đánh ngoại – nội như bản Linux; (2) dự án không dùng thuộc tính Âm – Dương nên **không** thêm kênh Dương (mục 9 C bỏ). Commit `[TOCDO 07/09]` **ffffade4** origin/main (gói `ReverseTools/goi_va_tocdo_0709.py` + dữ liệu `ReverseTools/du_lieu_tocdo_0709.py`).
+
+## 10.1 Engine (`Sources/Core`, cùng mã cho CoreServer.dll x64 và CoreClient.dll Win32)
+
+| # | Tệp | Thay đổi | Như Linux |
+|---|---|---|---|
+| H1‑H2 | `KNpcSet.h/.cpp` | `m_cPlayerBaseValue.nCastFrame` + `GetPlayerCastFrame()`; `LoadPlayerBaseValue` đọc thêm `[Common] CastFrame` (mặc định 20 = giá trị cũ nếu ini thiếu) | NpcSet Linux đọc cả `AttackFrame`/`CastFrame` (`0x080A0185` → `0x8badef4/0x8badef8`) |
+| H3 | `KNpc.cpp:1008/6326` | người chơi gán `m_CastFrame = NpcSet.GetPlayerCastFrame()` (trước đây kẹt 20 của hàm dựng) | `0x08085E4A`, `0x08165C64` |
+| H4 | `KNpc.cpp` DoSkill (2 chỗ) | bỏ `nTotalFrame - nTotalFrame % 2` (làm chẵn); giữ chặn `≤ 0 → 1` | Linux không làm chẵn |
+| H5 | `KNpc.cpp` DoAttack / DoBlurAttack / DoJumpAttack (3 chỗ) | `chia = 100 + tốc độ; ≤0→1; khung = AttackFrame×100/chia; ≤0→1` | `0x080787A9`, `0x08084954`, `0x080808A8` |
+
+Không đổi: công thức, 60 %, chọn theo `IsPhysical`, handler (Dương vẫn gộp vào Âm như cũ — dữ liệu dự án không có Dương).
+
+## 10.2 Dữ liệu (cây chạy thật server + client, sao lưu `*.truoc_tocdo_0709`; gương git `serverscript_live` cùng commit)
+
+| # | Tệp | Thay đổi | Ghi chú |
+|---|---|---|---|
+| D1 | `settings/npc/player/BaseValue.ini` + `settings/player/BaseValue.ini` (server và client, 4 tệp) | `AttackFrame 17 → 18`, `CastFrame 17 → 18` | Linux `basevalue.ini` 18/18; Core đọc `\settings
+pc\player\BaseValue.ini` (`CoreUseNameDef.h:89`), bản `settings/player/` giữ đồng bộ |
+| D2 | `settings/skills.txt` dòng 75 Ngũ Độc Kỳ Kinh (server + client) | `LvlSetting5 = castspeed_v`, `LvlSetting6 = attackspeed_v` (ô trống, không đụng ô khác) | Linux khai `castspeed_v`, `castspeed_yan_v`, `attackspeed_yan_v` |
+| D3 | `wudu.lua` `wudu_qijing` (server + client, byte‑một) | `castspeed_v={{1,32},{16,32},{17,33.41},{40,80}}`, `attackspeed_v={{1,32},{40,32}}`, thời gian `-1` | = giá trị **hiệu lực** Linux `max(Âm, Dương)` khi đứng một mình: cast `max(1→80, 32)`, đánh `max(0, 32) = 32` (Dương gấp vào Âm vì không có kênh Dương; đúng cả khi cộng lệnh bài Tống Kim 492 vì Linux 492 cũng có Dương; chỉ lệch nếu cộng thêm buff **chỉ Âm** như Bánh chưng 401/Công Tốc hoàn 511: JX1 cộng, Linux lấy max) |
+| D4 | `kunlun.lua` `qihan_aoxue` (server + client, sửa riêng từng tệp vì client sẵn khác dòng 176) | thời gian `18*45..18*120 → 18*20..18*60`; giữ `castspeed_v -6→-50` | Linux Âm y hệt; 2 dòng Dương (`attackspeed_yan_v -1→-16`, `castspeed_yan_v -1→-12`) **không** chép được: với luật max, trên mục tiêu **không** có buff tốc độ Linux chỉ giảm `-1→-12 %` (Dương thắng), trên mục tiêu có buff 90 (Âm) thì giảm đủ `-50` — JX1 giữ `-50` mọi lúc (đúng trường hợp PvP có buff, mạnh hơn Linux khi mục tiêu trần). Chủ muốn đúng cả trường hợp trần thì phải có kênh Dương |
+
+Không làm (ngoài "tốc độ đánh"): 1309 `加攻速` (JX1 khai `attackspeed_v` nhưng Lua chỉ có `_yan_v` ⇒ vô hiệu) — không script JX1 nào phát skill này (các số 1309 trong `itemset.lua`/`citywar`/`yandibaozang` là id vật phẩm/NPC); `TimePerCast` 392/boss (mục 7.3) là hồi chiêu, chờ chủ nếu muốn.
+
+## 10.3 Kết quả mong đợi (18 tick/s)
+
+| Tình huống | Trước (JX1) | Sau (= Linux) |
+|---|---|---|
+| Đánh thường / chiêu ngoại, tốc độ 0 | 17 khung (0,94 s) | 18 khung (1,00 s) |
+| Chiêu nội, tốc độ 0 | 20 khung (1,11 s) | 18 khung (1,00 s) |
+| Chiêu ngoại +65 % (Tuyết Ảnh 20) | 17×100/165 = 10 → làm chẵn 10 | 18×100/165 = 10 |
+| Chiêu ngoại +90 % | 17×100/190 = 8 → 8 | 18×100/190 = 9 |
+| Chiêu nội +65 % | 20×100/165 = 12 | 10 |
+| Chiêu nội +100 % | 10 | 9 |
+| Ngũ Độc Kỳ Kinh cấp 30 (bản thân) | +0 % đánh, +0 % xuất chiêu | +32 % đánh, +59 % xuất chiêu (Linux 59,7) |
+| Khi Hàn Ngạo Tuyết cấp 20 | −39 % xuất chiêu 120 s | −39 % xuất chiêu 60 s |
+| Tốc độ ≤ −100 % (đánh thường/ảo ảnh/nhảy) | chia 0 → sập/âm | 1 khung |
+
+Kiểm: `check_encoding.py` 3 tệp engine giữ nguyên số byte cao; `kiem_54.py` 4 tệp Lua 0 lỗi; `wudu.lua` client = server byte‑một; ini 4 tệp ASCII. Cần **restart server + client** (ini/skills/Lua) và **swap `.moi`** (engine) — khung nội mới chỉ có tác dụng khi cả engine mới (nạp CastFrame) lẫn ini 18 cùng chạy; nếu chỉ restart mà chưa swap thì đánh thường 18 khung (ini) còn nội vẫn 20.
+
+**Trạng thái 09:58 07/09**: build từ origin/main `ffffade4` (worktree `D:/GAMEDEVNEW_wt_ai710l`, compile 0 lỗi, link thật): `bin/server/CoreServer.dll.moi` = **e37ab486** (18 481 664), `bin/client/CoreClient.dll.moi` = **ab99660c** (2 611 200) — thay khe cũ của chính tôi (ce462519/e7c70880, chưa swap); bản sao `.moi.tocdo_*`. Live vẫn 1a33f617 / 5f86a7f7. Đã báo DELTA + MATDO. Chờ chủ chạy `ChayGameServer.bat` / `ChoiGame.bat` (swap + restart) để ini/skills/Lua và engine cùng có hiệu lực.
