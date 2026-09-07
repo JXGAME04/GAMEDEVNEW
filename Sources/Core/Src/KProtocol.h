@@ -545,7 +545,10 @@ typedef struct
 	BYTE	m_bySeries;
 	int		m_CurrentLife;
 	int		m_CurrentMana;
-} NPC_POS_SYNC;						// 25 byte (pack 1)
+	BYTE	HorseType;		// [DELTA 07/09 f] ngua dang cuoi (255 = khong), truoc chi co trong goi 75
+	BYTE	WalkSpeed;		// toc do di/chay HIEN TAI (nhu goi 75) - doi theo buff, len/xuong ngua
+	BYTE	RunSpeed;
+} NPC_POS_SYNC;						// 28 byte (pack 1); ban Linux 27 byte
 
 // [DELTA 07/09] client -> may chu ngay sau c2s_syncend: 'toi hieu goi s2c_syncnpcpos'. May chu chi phat goi gon khi
 // MOI client dang noi deu da bao (KProtocolProcess::DeltaHello), nen client cu khong bao gio nhan ma 221.

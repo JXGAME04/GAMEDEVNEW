@@ -2252,6 +2252,13 @@ void KProtocolProcess::SyncNpcPos(BYTE* pMsg)
 	const int nIdx = NpcSet.SearchID(pGon->ID);
 	if (nIdx > 0 && nIdx < MAX_NPC)
 	{
+		if (Npc[nIdx].m_Kind == kind_player && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)
+		{	// [DELTA 07/09 f] ngua + toc do hien tai tu goi gon (truoc chi qua goi 75; y het SyncPlayerMin)
+			Npc[nIdx].m_CurrentWalkSpeed = pGon->WalkSpeed;
+			Npc[nIdx].m_CurrentRunSpeed = pGon->RunSpeed;
+			Npc[nIdx].m_HorseType = (char)pGon->HorseType;
+			Npc[nIdx].m_bRideHorse = (Npc[nIdx].m_HorseType >= 0) ? TRUE : FALSE;
+		}
 		sDay.m_nProtectedTime = Npc[nIdx].m_nProtectedTime;
 		sDay.m_CurrentLifeMax = Npc[nIdx].m_CurrentLifeMax;
 		sDay.m_LifeMax = Npc[nIdx].m_LifeMax;

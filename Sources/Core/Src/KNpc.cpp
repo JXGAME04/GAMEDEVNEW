@@ -6639,6 +6639,8 @@ static DWORD s_adwNSBamTat[MAX_NPC];	// bam toan goi lan phat truoc
 static DWORD s_adwNSBamCham[MAX_NPC];	// bam nhom cham lan phat DAY DU truoc
 static DWORD s_adwNSLucGui[MAX_NPC];	// GetTickCount lan phat truoc (gon hoac day)
 static DWORD s_adwNSLucDay[MAX_NPC];	// GetTickCount lan phat DAY DU truoc
+static DWORD s_adwNSNgua[MAX_NPC];	// [DELTA 07/09 f] bam ngua+toc do lan phat truoc (de gui them goi gon sau goi day du)
+static int   s_nNSGonThem = 0;
 static int   s_nNSLamMoi = -1, s_nNSLamMoiDay = 10000, s_nNSGon = 1;
 static int   s_nNSBo = 0, s_nNSGonDem = 0, s_nNSDay = 0;
 static void NS_DocCauHinh()
@@ -6969,14 +6971,20 @@ BOOL KNpc::NormalSync()
 	NS_DungGoi(&NpcSync, nMpsX, nMpsY);
 
 	// [DELTA 07/09] quyet dinh: bo qua / goi GON / goi DAY DU (xem chu thich tren cac bien s_adwNS*).
-	BOOL bPhat = TRUE, bGon = FALSE;
+	BOOL bPhat = TRUE, bGon = FALSE, bGonThem = FALSE;
 	NPC_POS_SYNC sGon;
+	// [DELTA 07/09 f] ngua + toc do hien tai: doi lien tuc (bot len/xuong ngua, buff) -> di theo goi gon, khong qua goi 75
+	BYTE abyNgua[3];
+	abyNgua[0] = (BYTE)(m_bRideHorse ? m_HorseType : -1);
+	abyNgua[1] = (BYTE)m_CurrentWalkSpeed;
+	abyNgua[2] = (BYTE)m_CurrentRunSpeed;
+	const DWORD dwBamNgua = PS_Bam(abyNgua, 3);
 	{
 		NS_DocCauHinh();
 		const DWORD dwLuc = GetTickCount();
 		if (m_Index > 0 && m_Index < MAX_NPC && s_nNSLamMoi > 0)
 		{
-			const DWORD dwBamTat = PS_Bam(&NpcSync, (int)sizeof(NpcSync));
+			const DWORD dwBamTat = PS_Bam(&NpcSync, (int)sizeof(NpcSync)) ^ (dwBamNgua * 0x9E3779B1u);	// [DELTA 07/09 f] gom ca ngua/toc do
 			NPC_NORMAL_SYNC sCham = NpcSync;
 			sCham.MapX = 0; sCham.MapY = 0; sCham.m_fkRegionID = 0; sCham.m_fkOffX = 0; sCham.m_fkOffY = 0;
 			sCham.Doing = 0; sCham.State = 0; sCham.m_CurrentLife = 0; sCham.m_CurrentMana = 0;
@@ -6991,6 +6999,9 @@ BOOL KNpc::NormalSync()
 				bGon = TRUE;
 			if (bPhat)
 			{
+				if (!bGon && dwBamNgua != s_adwNSNgua[m_Index])	// [DELTA 07/09 f] goi day du khong mang ngua/toc do -> gui them goi gon
+					bGonThem = TRUE;
+				s_adwNSNgua[m_Index] = dwBamNgua;
 				s_adwNSBamTat[m_Index] = dwBamTat;
 				s_adwNSLucGui[m_Index] = dwLuc;
 				if (!bGon)
@@ -7000,7 +7011,7 @@ BOOL KNpc::NormalSync()
 				}
 			}
 		}
-		if (bGon)
+		if (bGon || bGonThem)
 		{
 			sGon.ProtocolType = (BYTE)s2c_syncnpcpos;
 			sGon.ID = m_dwID;
@@ -7012,7 +7023,11 @@ BOOL KNpc::NormalSync()
 			sGon.m_bySeries = NpcSync.m_bySeries;
 			sGon.m_CurrentLife = NpcSync.m_CurrentLife;
 			sGon.m_CurrentMana = NpcSync.m_CurrentMana;
+			sGon.HorseType = abyNgua[0];	// [DELTA 07/09 f]
+			sGon.WalkSpeed = abyNgua[1];
+			sGon.RunSpeed = abyNgua[2];
 		}
+		if (bGonThem) s_nNSGonThem++;
 		if (!bPhat) s_nNSBo++; else if (bGon) s_nNSGonDem++; else s_nNSDay++;
 		{	// [DELTA 07/09 c] in so trong 10 giay (truoc: cong don tu luc boot, kho doc)
 			static DWORD s_dwNSMoc = 0;
@@ -7021,9 +7036,9 @@ BOOL KNpc::NormalSync()
 			else if (dwLuc - s_dwNSMoc >= 10000)
 			{
 				s_dwNSMoc = dwLuc;
-				AUTOLOG("[NS-BO] 10s dong bo theo thay doi: bo=%d gon=%d day=%d (lam moi %d ms, day du %d ms, gon=%d, client cu=%d)",
-					s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon, NS_SoClientCu(dwLuc));
-				s_nNSBo = 0; s_nNSGonDem = 0; s_nNSDay = 0;
+				AUTOLOG("[NS-BO] 10s dong bo theo thay doi: bo=%d gon=%d day=%d gon_them=%d (lam moi %d ms, day du %d ms, gon=%d, client cu=%d)",
+					s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSGonThem, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon, NS_SoClientCu(dwLuc));
+				s_nNSBo = 0; s_nNSGonDem = 0; s_nNSDay = 0; s_nNSGonThem = 0;
 			}
 		}
 	}
@@ -7051,14 +7066,23 @@ BOOL KNpc::NormalSync()
 	int j;
 	if (bPhat)
 	{
-		CURREGION.BroadCast(pNSBuf, dwNSSize, nMaxCount, m_MapX, m_MapY);
-		for (j = 0; j < 8; j++)
+		// [DELTA 07/09 f] lan 0 = goi da chon (gon/day du); lan 1 = goi gon them khi goi day du khong mang ngua/toc do vua doi
+		for (int nNSLan = 0; nNSLan < 2; nNSLan++)
 		{
-			int nConRegion = CURREGION.m_nConnectRegion[j];
-			if (nConRegion == -1)
-				continue;
-			_ASSERT(m_SubWorldIndex >= 0 && nConRegion >= 0);
-			SubWorld[m_SubWorldIndex].m_Region[nConRegion].BroadCast((BYTE*)pNSBuf, dwNSSize, nMaxCount, m_MapX - POff[j].x, m_MapY - POff[j].y);
+			if (nNSLan == 1 && !bGonThem)
+				break;
+			const void* pB = (nNSLan == 0) ? pNSBuf : (const void*)&sGon;
+			const DWORD dwB = (nNSLan == 0) ? dwNSSize : (DWORD)sizeof(NPC_POS_SYNC);
+			int nMaxLan = NPC_SYNC_BROADCAST_LIMIT;
+			CURREGION.BroadCast(pB, dwB, nMaxLan, m_MapX, m_MapY);
+			for (j = 0; j < 8; j++)
+			{
+				int nConRegion = CURREGION.m_nConnectRegion[j];
+				if (nConRegion == -1)
+					continue;
+				_ASSERT(m_SubWorldIndex >= 0 && nConRegion >= 0);
+				SubWorld[m_SubWorldIndex].m_Region[nConRegion].BroadCast((BYTE*)pB, dwB, nMaxLan, m_MapX - POff[j].x, m_MapY - POff[j].y);
+			}
 		}
 	}
 	//------------------------------------------------------End SYNC 1-------------------------------
@@ -7180,6 +7204,8 @@ BOOL KNpc::NormalSync()
 			// co nay da di theo STATE_FIGHTMODE cua goi 77/221. Dem nguyen nhan doi de doi chieu trong [PS-BO].
 			PLAYER_NORMAL_SYNC sPSBam = PlayerSync;
 			sPSBam.m_btSomeFlag &= ~0x02;
+			// [DELTA 07/09 f] ngua + toc do di/chay di theo goi gon 221; toc do danh/ra chieu client da nhan qua goi 77 (m_ASpeed/m_CSpeed)
+			sPSBam.HorseType = 0; sPSBam.WalkSpeed = 0; sPSBam.RunSpeed = 0; sPSBam.AttackSpeed = 0; sPSBam.CastSpeed = 0;
 			const DWORD dwBam = PS_Bam(&sPSBam, (int)sizeof(PLAYER_NORMAL_SYNC));
 			{
 				const DWORD dwBamDay = PS_Bam(&PlayerSync, (int)sizeof(PLAYER_NORMAL_SYNC));
