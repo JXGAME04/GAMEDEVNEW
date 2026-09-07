@@ -33,6 +33,11 @@ struct KBiaoCheSlot
 static KBiaoCheSlot s_Cart[BC_MAX_CART];
 static int          s_nCart = 0;
 
+// [VTCN 06/09 chu] Dau "chu vua DAP TRAP (cua ban do) di ra khoi map <idx>": luu idx+1,
+// 0 = khong co. KNpc::CheckTrap ghi sau khi script trap chay xong (chi khi map DA doi).
+// BC_Breathe (B6) chi keo xe sang map moi khi dau nay dung bang map cua xe.
+static short        s_nBCTrapFrom[MAX_PLAYER];
+
 static void BC_ClearSlot(int s)
 {
     if (s < 0 || s >= BC_MAX_CART)
@@ -128,6 +133,7 @@ BOOL BC_Attach(int nPlayerIdx, int nNpcIdx)
     Npc[nNpcIdx].m_nBiaoCheOwner     = nPlayerIdx;
     Npc[nNpcIdx].m_dwBiaoCheLostTick = 0;
     Npc[nNpcIdx].m_btBiaoCheFlag     = 0;
+    s_nBCTrapFrom[nPlayerIdx]        = 0;
     return TRUE;
 }
 
@@ -243,8 +249,17 @@ static void BC_CallOwner(int nPlayerIdx, char* szFun, DWORD dwScriptId)
     catch (...) { }
 }
 
+void BC_OnPlayerTrap(int nPlayerIdx, int nFromSubWorld, BOOL bChanged)
+{
+    if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+        return;
+    s_nBCTrapFrom[nPlayerIdx] = (bChanged && nFromSubWorld >= 0) ? (short)(nFromSubWorld + 1) : 0;
+}
+
 void BC_OnPlayerLogout(int nPlayerIdx)
 {
+    if (nPlayerIdx > 0 && nPlayerIdx < MAX_PLAYER)
+        s_nBCTrapFrom[nPlayerIdx] = 0;
     int nCart = BC_GetCart(nPlayerIdx);
     if (nCart <= 0)
         return;
@@ -374,7 +389,13 @@ void BC_Breathe()
         // (B6) CHU DOI BAN DO -> keo xe sang.
         if (pO->m_SubWorldIndex < 0)
             continue;                               // chu dang chuyen map
-        if (pC->m_SubWorldIndex != pO->m_SubWorldIndex)
+        // [VTCN 06/09 chu] CHI keo xe khi chu vua DAP TRAP (cua ban do) di ra tu DUNG
+        // map cua xe (s_nBCTrapFrom do KNpc::CheckTrap ghi). Than Hanh Phu / phu ve
+        // thanh / Xa Phu / hoi sinh ve thanh = NewWorld ngoai trap -> KHONG keo: xe o
+        // lai, roi xuong nhanh B7 voi khoang cach -1 = "qua xa" (5 phut bien mat), chu
+        // quay lai bang "Truyen tong den Tieu Xa" - dung nhu ban Linux.
+        BOOL bKhacMap = (pC->m_SubWorldIndex != pO->m_SubWorldIndex);
+        if (bKhacMap && s_nBCTrapFrom[nOwner] == (short)(pC->m_SubWorldIndex + 1))
         {
             // gian cach thu lai 1 giay: tai dung m_uLastFindPathTime lam moc
             // (truong nay da thanh vo dung voi xe Long Mon).
@@ -396,6 +417,7 @@ void BC_Breathe()
                 pC->SendCommand(do_none);
                 pC->m_dwBiaoCheLostTick = 0;
                 pC->m_btBiaoCheFlag    &= ~0x01;
+                s_nBCTrapFrom[nOwner]   = 0;        // dau trap da dung xong
                 BC_CallOwner(nOwner, (char*)"OnBiaoCheChangeMapNotice",
                              pC->m_ActionScriptID);
             }
@@ -407,7 +429,9 @@ void BC_Breathe()
         // (B7) CUNG BAN DO - do binh phuong khoang cach.
         //      GetDistanceSquare tra -1 khi khac SubWorld -> so sanh KHONG DAU
         //      cho -1 roi dung nhanh "qua xa", y het lenh ja cua ban Linux.
-        DWORD dwD2 = (DWORD)NpcSet.GetDistanceSquare(nCart, pP->m_nIndex);
+        //      [VTCN 06/09] khac map ma KHONG qua trap cung ep -1 -> "qua xa".
+        DWORD dwD2 = bKhacMap ? (DWORD)-1
+                              : (DWORD)NpcSet.GetDistanceSquare(nCart, pP->m_nIndex);
         if (dwD2 > BC_FAR_DIST2)
         {
             if (!(pC->m_btBiaoCheFlag & 0x01))      // BAN MOT LAN, khong 2 lan/giay
@@ -431,6 +455,7 @@ void BC_Breathe()
         {
             pC->m_dwBiaoCheLostTick = 0;
             pC->m_btBiaoCheFlag    &= ~0x01;
+            s_nBCTrapFrom[nOwner]   = 0;            // dau trap cu (neu con) da vo nghia
         }
     }
 }

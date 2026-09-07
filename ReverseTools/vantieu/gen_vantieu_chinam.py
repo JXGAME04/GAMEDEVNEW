@@ -148,9 +148,10 @@ S["VT_CN_B1"] = ("Bước 1 - Nhận nhiệm vụ: đến <color=yellow>Long Mô
 S["VT_CN_B2"] = ("Bước 2 - Xuất phát: nhận xong ngươi được đưa ngay tới <color=yellow>Long Môn Tiêu Sư<color> ở điểm đầu tuyến. "
                  "Nói chuyện với Tiêu Sư chọn Bắt đầu áp Tiêu, Tiêu Xa xuất hiện cạnh ngươi và bám theo. Đồng hồ 30 phút chạy từ lúc này.")
 S["VT_CN_B3"] = ("Bước 3 - Hộ tống: đi bộ (cưỡi ngựa được) dẫn Tiêu Xa tới Tiêu Sư ở điểm cuối trước khi hết 30 phút. "
-                 "Xe bám theo khi ngươi ở gần (dưới 16 ô); trong cùng bản đồ mà ngươi đi xa hơn (kể cả dùng phù) thì xe đứng lại đợi, "
-                 "quá 5 phút không ai quay lại thì xe biến mất. Ngươi sang bản đồ khác bằng bất cứ cách nào (cửa bản đồ, phù về thành, Xa Phu) "
-                 "thì xe được kéo sang theo ngay. Thoát game thì xe đứng đợi 5 phút: vào lại kịp thì xe theo tiếp, quá 5 phút là mất xe.")
+                 "Xe bám theo khi ngươi ở gần (dưới 16 ô); đi xa hơn thì xe đứng lại đợi, quá 5 phút không ai quay lại thì xe biến mất. "
+                 "Xe chỉ theo ngươi sang bản đồ khác khi ngươi đi bộ qua cửa bản đồ; dùng Thần Hành Phù, phù về thành, Xa Phu hay hồi sinh về thành "
+                 "thì xe ở lại chỗ cũ và tính là lạc xe (gặp Ông chủ hoặc Tiêu Sư chọn Truyền tống để về bên xe trước khi hết 5 phút). "
+                 "Thoát game thì xe đứng đợi 5 phút: vào lại kịp thì xe theo tiếp, quá 5 phút là mất xe.")
 S["VT_CN_B3B"] = ("Xe có máu và bị người khác đánh phá. Xe vỡ thì rơi <color=yellow>Tiêu Kỳ<color> (chỉ chủ xe nhặt được, còn 10 phút) và "
                   "<color=yellow>Tán Lạc Tiêu Vật<color> (3 phút đầu chỉ chủ xe và tổ đội nhặt, sau đó ai đủ cấp 90 cũng nhặt được, mỗi người 5 lần một ngày). "
                   "Mang Tiêu Kỳ về Tiêu Sư vẫn nhận một phần thưởng; mất cả xe lẫn kỳ thì chọn Kết thúc nhiệm vụ để nhận 100 vạn kinh nghiệm.")
@@ -193,7 +194,8 @@ S["VT_BH_B4"] = ("Bước 4 - Giao xe: đưa xe tới sát Nhận Hàng rồi ng
                  "Sau khi chuyến kết thúc, thành viên đã bám xe gặp Nhận Hàng chọn Nhận phần thưởng hộ tiêu cá nhân: dưới 5 điểm nhận Cẩm nang thay đổi trời đất, "
                  "5 đến 11 điểm Thưởng Tận Trung, 12 điểm trở lên Thưởng Trung Thành (mở ra kinh nghiệm, Hộ Mạch Đơn, Chân Nguyên Đơn, Huyết Long Đằng, Túi Dược Phẩm...).")
 S["VT_BH_LUUY"] = ("Tại Tiếp Dẫn còn có Xem thông tin Tiêu Xa, Truyền tống đến Tiêu Xa (chờ 20 giây, tăng dần tới 60) "
-                   "và Từ bỏ (chỉ trong giờ 12:00 đến 23:00).")
+                   "và Từ bỏ (chỉ trong giờ 12:00 đến 23:00). Xe bang cũng chỉ theo người giữ xe qua cửa bản đồ, "
+                   "không theo Thần Hành Phù, phù về thành hay Xa Phu; lạc xe thì dùng Truyền tống.")
 S["VT_BH_TT_NONE"] = "Trạng thái: <color=yellow>ngươi chưa giữ xe bang<color>."
 S["VT_BH_TT_FMT"] = "Trạng thái: đang giữ Tiêu Xa Bang tuyến <color=yellow>%s<color> tới <color=yellow>%s<color>, %s."
 S["VT_BH_DIEM_FMT"] = "Điểm bám xe tuần này (4 lượt): %d, %d, %d, %d."

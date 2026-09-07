@@ -13,6 +13,7 @@ extern void Partner_OnNpcDeath(int nNpcIdx);	// [BDH 27/08] KPlayerPartner.cpp
 #include "KMath.h"
 #include "KPlayer.h"
 #include "KPlayerSet.h"
+#include "KBiaoChe.h"	// [VTCN 06/09] xe tieu: BC_OnPlayerTrap (chu vua dap trap)
 #include "KNpc.h"
 #include "GameDataDef.h"
 #include "KSubWorldSet.h"
@@ -11476,15 +11477,23 @@ void KNpc::CheckTrap()
 #endif
 
 #ifdef _SERVER
+	// [VTCN 06/09] xe tieu Long Mon: nho map TRUOC khi script trap chay; sau do bao
+	// KBiaoChe (chi khi map DA doi) de xe duoc keo theo. NewWorld ngoai trap (Than
+	// Hanh Phu, phu ve thanh, Xa Phu...) khong qua day -> xe o lai (nhu ban Linux).
+	int nBCTrapFrom = m_SubWorldIndex;
 	if (nCellTrapParam != JX2TRAP_PARAM_NONE)
 	{
 		// [PORT5 23/08] trap dat qua AddMapTrap: main(nParam) nhu Linux (KNpc::CheckTrap 0x0807DA78;
 		// 4 tham so -> param 0 -> main(0) cung nhu Linux)
 		Player[m_nPlayerIdx].ExecuteScript(m_TrapScriptID, "main", nCellTrapParam);
+		BC_OnPlayerTrap(m_nPlayerIdx, nBCTrapFrom, m_SubWorldIndex != nBCTrapFrom);
 		return;
 	}
 #endif
 	Player[m_nPlayerIdx].ExecuteScript(m_TrapScriptID, "main", m_nPlayerIdx);
+#ifdef _SERVER
+	BC_OnPlayerTrap(m_nPlayerIdx, nBCTrapFrom, m_SubWorldIndex != nBCTrapFrom);
+#endif
 }
 
 void KNpc::SetFightMode(BOOL bFightMode)

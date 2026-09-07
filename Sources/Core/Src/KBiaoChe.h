@@ -38,6 +38,7 @@ void    BC_HardRemove(int nNpcIdx);         // go NPC theo khuon nha (chong DecR
 void    BC_FireCartScript(int nNpcIdx, char* szFun, char* szOwnerName);
 void    BC_Breathe();                       // CoreServerShell.cpp nhip chinh
 void    BC_OnPlayerLogout(int nPlayerIdx);  // KPlayerSet::PrepareRemove
+void    BC_OnPlayerTrap(int nPlayerIdx, int nFromSubWorld, BOOL bChanged); // KNpc::CheckTrap [VTCN 06/09]
 
 #endif  // _SERVER
 #endif  // _KBIAOCHE_H_
