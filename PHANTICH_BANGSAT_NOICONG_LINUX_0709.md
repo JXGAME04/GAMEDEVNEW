@@ -49,3 +49,29 @@ Không có vật phẩm/script nào khác cấp `coldenhance_p` ở cả hai b�
 
 1. Dữ liệu `binggu_xuexin` (server + client): `coldenhance_p 8→80 → 10→140`, `deadlystrikeenhance_p 45 → 60`; sửa cặp khai/dữ liệu `fasthitrecover_v` (Linux là bản Dương `fasthitrecover_yan_v {1,5},{30,49}` — dự án không dùng Dương thì khai `fasthitrecover_v` với giá trị Linux) và bỏ `sorbdamage_p` rỗng.
 2. Engine: bỏ điều kiện "sát thương băng > 0" khi đặt băng (`KNpc.cpp:4891`) để băng cả khi bị kháng hết như Linux — ảnh hưởng nhỏ.
+
+
+---
+
+# 5. THI CÔNG (07/09, chủ chọn "làm như Linux") — commit `[BANGSAT2 07/09]` **34b58589** origin/main
+
+| # | Việc | Nội dung | Như Linux |
+|---|---|---|---|
+| E1 | Engine `KNpc.cpp` (gói `ReverseTools/goi_va_bangsat_0709.py`, cùng mã CoreServer + CoreClient) | ô băng: `bBangTrung = CalcDamage(cold…)`; đặt băng khi `bBangTrung` **hoặc** mục tiêu còn hợp lệ (`m_Doing != do_death/do_revive`, `m_RegionIndex >= 0`, không phải xe tiêu `Owner`); thêm điều kiện `pTemp->nValue[1] > 0` | `ReceiveDamage 0x0808A6D1 → 0x0808B1E0`: băng không phụ thuộc sát thương băng > 0; `CalcDamage 0x08089C90` trả 1 khi `min+max ≤ 0`, trả 0 chỉ khi chết/hồi sinh/không hợp lệ. Giữ chặn riêng JX1 cho xe tiêu (không có ở Linux) |
+| D1 | `cuiyan.lua` `binggu_xuexin` (server + client byte‑một, sao lưu `*.truoc_bangsat_0709`, gương `serverscript_live`) | `coldenhance_p 8→80 ⇒ 10→140`; `deadlystrikeenhance_p 45 ⇒ 60 (Conic)`; `fasthitrecover_v 5→25 ⇒ 5→49` | Linux `10→140`, `60`, `fasthitrecover_yan_v 5→49` (Dương gấp vào Âm vì dự án không dùng Dương, đúng khi đứng một mình) |
+| D2 | `skills.txt` dòng 114 Băng Cốt Tuyết Tâm (server + client) | ô `LvlSetting6` `sorbdamage_p` (không có dữ liệu Lua ⇒ 0) ⇒ `fasthitrecover_v` (LvlData6 vẫn `binggu_xuexin`) | Linux khai 7 ô (thêm `lifemax_yan_p`, `fasthitrecover_yan_v`); `lifemax_yan_p` (Dương +21 % HP) **không** chép — ngoài câu hỏi băng, chủ quyết riêng |
+
+Kiểm: `check_encoding.py` KNpc.cpp giữ số byte cao; `kiem_54.py` 2 tệp 0 lỗi; cuiyan.lua client = server. Cần **restart** (Lua/skills) và **swap `.moi`** (engine).
+
+## 5.1 Kết quả mong đợi (Thúy Yên bật Băng Cốt Tuyết Tâm, nạn nhân không có giảm thời gian băng)
+
+| Cấp buff | Trước (khung / giây) | Sau = Linux |
+|---|---|---|
+| 1 | 8 / 0,44 s | 10 / 0,56 s |
+| 15 | 43 / 2,4 s | 73 / 4,0 s |
+| 20 | 55 / 3,1 s | 94 / 5,2 s |
+| 30 | 80 / 4,4 s | 140 / 7,8 s |
+
+Nga My (Phật Pháp Vô Biên 8→37 khung) không đổi. Đòn băng bị kháng hết (sát thương 0, báo né) nay vẫn đóng băng như Linux.
+
+**Trạng thái 10:42 07/09**: build từ origin/main `34b58589` (worktree `D:/GAMEDEVNEW_wt_ai710l`, compile 0 lỗi, link thật; gộp DELTA f `a6d62a3c`, CL `10a55613`): `bin/server/CoreServer.dll.moi` = **8008e14d** (18 482 176), `bin/client/CoreClient.dll.moi` = **7bcf5119** (2 611 712) — thay khe DELTA f (bc6b2b80/9916d00f, giữ tên `.moi.delta_f_*`); kiểm chuỗi `gon_them` (đợt f) và `CastFrame` (TOCDO) có trong khe. Phải swap **cả server lẫn client** (gói vị trí 28 byte của DELTA f). Live vẫn db5d064f/563c127e. Đã báo DELTA + MATDO.
