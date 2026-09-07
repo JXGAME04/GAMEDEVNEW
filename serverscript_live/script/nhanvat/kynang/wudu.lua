@@ -315,10 +315,10 @@ SKILLS={
 		autoattackskill={{{1,719*256 + 1},{20,719*256 + 20},{21,719*256 + 21}},{{1,-1},{20,-1}},{{1,10*18*256 + 1},{15,10*18*256 + 12},{20,10*18*256 + 15},{21,10*18*256 + 15}}},
 		skill_desc=
 			function(level)
-				return "X¸c suÊt <color=orange>"..floor(Link(level,SKILLS.wudu120.autoattackskill[3]) - 10*18*256).."%<color> khiÕn cho ®èi th­¬ng b?®éc s¸t\n"..
+				return "X¸c suÊt <color=orange>"..floor(Link(level,SKILLS.wudu120.autoattackskill[3]) - 10*18*256).."%<color> khiÕn cho ®èi th­¬ng bÞ ®éc s¸t\n"..
 				" ®ång thêi lµm gi¶m <color=orange>"..floor(Link(level,SKILLS.wudu120zuzhou.poison2decmana_p[1])).."%<color> néi lùc ®èi ph­¬ng"..
 				" trong <color=orange>"..floor(Link(level,SKILLS.wudu120zuzhou.poison2decmana_p[2]) / 18).." gi©y<color>\n"..
-				" <color=orange>"..floor((Link(level,SKILLS.wudu120.autoattackskill[3]) / (18*256))).." gi©y<color> sau míi c?th?thi triÓn tiÕp"
+				" <color=orange>"..floor((Link(level,SKILLS.wudu120.autoattackskill[3]) / (18*256))).." gi©y<color> sau míi cã thÓ thi triÓn tiÕp"
 			end,
 		skill_skillexp_v={{	{1,180},
 							{2,460},

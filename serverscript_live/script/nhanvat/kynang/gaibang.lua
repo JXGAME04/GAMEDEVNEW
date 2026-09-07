@@ -256,11 +256,11 @@ SKILLS={
 				return "X¸c suÊt <color=orange>"..floor(Link(level,SKILLS.gaibang120.autoattackskill[3]) - 12*18*256).."%<color> g©y ho¹i th­¬ng \n"..
 				"Ho¹i th­¬ng lµm gi¶m <color=orange>"..floor(-Link(level,SKILLS.gaibang120zuzhou.physicsres_p[1]))..
 				"%<color> PTVL, gi¶m <color=orange>"..floor(-Link(level,SKILLS.gaibang120zuzhou.fireres_p[1]))..
-				"%<color> KH,\n ®ång thêi lµm gi¶m gi?tr?PTVL lín nhÊt <color=orange>"..floor(-Link(level,SKILLS.gaibang120zuzhou.physicsresmax_p[1]))..
-				"%<color>, gi¶m gi?tr?KH lín nhÊt <color=orange>"..floor(-Link(level,SKILLS.gaibang120zuzhou.fireresmax_p[1]))..
-				"%<color>\n ®ång thêi ph¶n ®ßn khi b?tÊn c«ng tÇm xa gi¶m <color=orange>"..floor(-Link(level,SKILLS.gaibang120zuzhou.rangedamagereturn_p[1]))..
+				"%<color> KH,\n ®ång thêi lµm gi¶m gi¸ trÞ PTVL lín nhÊt <color=orange>"..floor(-Link(level,SKILLS.gaibang120zuzhou.physicsresmax_p[1]))..
+				"%<color>, gi¶m gi¸ trÞ KH lín nhÊt <color=orange>"..floor(-Link(level,SKILLS.gaibang120zuzhou.fireresmax_p[1]))..
+				"%<color>, gi¶m tèc ®é di chuyÓn <color=orange>"..floor(-Link(level,SKILLS.gaibang120zuzhou.fastwalkrun_p[1])).."%<color>\n ®ång thêi ph¶n ®ßn khi bÞ tÊn c«ng tÇm xa gi¶m <color=orange>"..floor(-Link(level,SKILLS.gaibang120zuzhou.rangedamagereturn_p[1]))..
 				"%<color> trong <color=orange>"..floor(Link(level,SKILLS.gaibang120zuzhou.physicsres_p[2]) / 18).." gi©y<color>\n"..
-				"Trong vßng <color=orange>"..floor((Link(level,SKILLS.gaibang120.autoattackskill[3]) / (18*256))).." gi©y<color> sau míi c?th?thi triÓn tiÕp"
+				"Trong vßng <color=orange>"..floor((Link(level,SKILLS.gaibang120.autoattackskill[3]) / (18*256))).." gi©y<color> sau míi cã thÓ thi triÓn tiÕp"
 			end,
 		skill_skillexp_v={{	{1,17851239},
 							{2,19487603},
@@ -291,6 +291,7 @@ SKILLS={
 		fireresmax_p={{{1,-1},{15,-2},{20,-12},{21,-12}},{{1,3*18},{15,8*18},{20,9*18},{21,9*18}}},
 		--meleedamagereturn_p={{{1,-4},{15,-16},{20,-20},{21,-20}},{{1,3*18},{15,8*18},{20,9*18},{21,9*18}}},
 		rangedamagereturn_p={{{1,-4},{15,-25},{20,-30},{21,-30}},{{1,3*18},{15,8*18},{20,9*18},{21,9*18}}},
+		fastwalkrun_p={{{1,-9},{23,-50}},{{1,3*18},{15,8*18},{20,9*18},{21,9*18}}},--[SK120 07/09] nhu Linux: giam toc chay nan nhan 9->50%
 	},
 	zhanggaibang150={ --Thoi Thua Luc Long-150
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},

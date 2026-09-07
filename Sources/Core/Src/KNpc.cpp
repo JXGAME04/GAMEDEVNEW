@@ -2027,6 +2027,10 @@ void KNpc::DoHurt(int nHurtFrames, int nX, int nY,int nHurtI)
 	{
 		return;
 	}
+	// [SK120 07/09] Linux DoHurt 0x0807F821-0x0807F85C: sau khe co ban, nan nhan co ignorenegativestate_p (+0x1474 > 0)
+	// tung rand(100) < ign% => 'IgnoreNegState(Hurt): %d%%, Ignore!' -> KHONG tho thuong.
+	if (m_CurrentIgnoreNegativeStateP > 0 && g_RandPercent(m_CurrentIgnoreNegativeStateP))
+		return;
 #endif
 	m_Doing = do_hurt;
 	m_ProcessAI	= 0;
@@ -4920,6 +4924,10 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 			if (nGiam > FREEZE_TIME_REDUCE_MAX)
 				nGiam = FREEZE_TIME_REDUCE_MAX;
 			m_FreezeState.nTime = pTemp->nValue[1] * (MAX_PERCENT - nGiam) / MAX_PERCENT;
+			// [SK120 07/09] Linux ReceiveDamage 0x0808B21F-0x0808B273: ngay sau khi dat thoi gian bang, nan nhan co
+			// ignorenegativestate_p -> tung rand(100) < ign% => 'IgnoreNegState(Freeze): %d%%, Ignore!' -> huy bang.
+			if (m_CurrentIgnoreNegativeStateP > 0 && g_RandPercent(m_CurrentIgnoreNegativeStateP))
+				m_FreezeState.nTime = 0;
 		}
 	}
 
@@ -5095,7 +5103,9 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	pTemp++; 
 	if (pTemp->nAttribType == magic_ignorenegativestate_p)
 	{
-		if (g_RandPercent(100 - nMissRate))
+		// [SK120 07/09] Linux handler 201 (0x080977D0) tay trang thai KHONG tung xuc xac; khe truot m_nMissRate da tung
+		// MOT lan o KMissle (vong quet va cham). Ban cu tung (100 - nMissRate) o day ma khong co khe truot -> tay va
+		// mien dich (+ign% qua m_StateAttribs) lech xac suat nhau (738: tay 100-miss nhung mien dich luon 100%).
 		{
 			ZeroMemory(&m_PhysicsArmor, sizeof(m_PhysicsArmor));		////Tr¹ng th¸i kh¸ng PTVL
 			ZeroMemory(&m_ColdArmor, sizeof(m_ColdArmor));				//Tr¹ng th¸i kh¸ng b¨ng
@@ -5114,12 +5124,9 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 			m_nTime_Ignorenegativestate = pTemp->nValue[1]; //3*18; // 3 gi©y
 		}
 	}
-	else if(g_RandPercent(nMissRate))
-	{
-		this->ClearNormalState();
-		this->IgnoreState(TRUE);
-		m_nTime_Ignorenegativestate = pTemp->nValue[1]; //3*18; // 3 giÂ©y
-	}
+	// [SK120 07/09] BO nhanh 'else if (g_RandPercent(nMissRate))' cua JX1: no TAY SACH trang thai xau cua NAN NHAN moi khi
+	// chieu co missle_missrate ma o 15 khong phai ignorenegativestate (723/876/1406/1493 Ma Am Phe Phach, 1131 Ma Am Kich,
+	// 1190...). Linux ReceiveDamage 0x0808A4A0 khong doc nMissRate. Xem PHANTICH_CAIBANG_DAN_VA_QUAI_DOT2_0609.md Phan J.4.
 	if(m_nTime_Ignorenegativestate > 0)
 	{
 		ZeroMemory(&m_PhysicsArmor, sizeof(m_PhysicsArmor));		////Tr¹ng th¸i kh¸ng PTVL
@@ -5141,8 +5148,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 
 	pTemp++; //randmove[16]
 	AUTOLOG_EVERY(1000, "[E2-RECV-RANDMOVE] target=%d launcher=%d randmove0=%d randmove1=%d missrate=%d -> co the return FALSE (bo qua sat thuong)", m_Index, nLauncher, pTemp->nValue[0], pTemp->nValue[1], nMissRate);
-	if (pTemp->nValue[0] && pTemp->nValue[1] && g_RandPercent(nMissRate))
-		return FALSE;
+	// [SK120 07/09] bo khe 'g_RandPercent(nMissRate) -> return FALSE' o o randmove[16]: khe truot da tung o KMissle.
 
 	AUTOLOG_EVERY(1000, "[E2-RECV-OK] target=%d launcher=%d lifeconlai=%d doing=%d -> ReceiveDamage se tra TRUE", m_Index, nLauncher, m_CurrentLife, (int)m_Doing);
 	{
@@ -8668,6 +8674,18 @@ void KNpc::SetStateSkillEffect(int nLauncher, int nSkillID, int nLevel, void *pD
 
 	_ASSERT(nSkillID < MAX_SKILL && nLevel < MAX_SKILLLEVEL);
 	KSkill * pOrdinSkill = (KSkill *)g_SkillManager.GetSkill(nSkillID, nLevel);
+#ifdef _SERVER
+	// [SK120 07/09] Linux SetStateSkillEffect 0x08086410-0x08086D13: nan nhan co ignorenegativestate_p (+0x1474 > 0) va
+	// chieu nham KE DICH (vfunc IsTargetEnemy) -> tung rand(100) < ign% => log 'bo qua trang thai xau (phep): %d%%, bo!'
+	// -> KHONG ap bat ky trang thai nao cua chieu (ke ca dong bo len client). Linux khong xet nValue[1]/nValue[2]/
+	// SkillStyle nhu khoi cu trong KMissle::ProcessDamage (da bo). nTime == 0 la lenh GO trang thai -> khong tung.
+	if (m_CurrentIgnoreNegativeStateP > 0 && nTime != 0 && pOrdinSkill && pOrdinSkill->IsTargetEnemy()
+		&& g_RandPercent(m_CurrentIgnoreNegativeStateP))
+	{
+		AUTOLOG_EVERY(2000, "[SK120-IGNSTATE] npc=%d skill=%d/%d launcher=%d ign=%d -> bo trang thai", m_Index, nSkillID, nLevel, nLauncher, m_CurrentIgnoreNegativeStateP);
+		return;
+	}
+#endif
 	//
 	_ASSERT(nDataNum < MAX_SKILL_STATE);
 	if (nDataNum >= MAX_SKILL_STATE)

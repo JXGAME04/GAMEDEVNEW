@@ -398,6 +398,7 @@ SKILLS={
 			[3]={{1,12},{20,138},{23,177},{26,197}}
 		},
 		skill_attackradius={{{1,128},{20,128}}},
+		missle_missrate={{{1,99},{20,50}}},--[SK120 07/09] nhu Linux (1201 Vi Da Ho Phap)
 		skill_skillexp_v={{	{1,300},
 												{2,600},
 												{3,1000},

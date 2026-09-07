@@ -312,12 +312,12 @@ SKILLS={
 				return "Thêi gian kh«i phôc chiªu thøc: <color=orange>"..floor(Link(level,SKILLS.tianren120.skill_mintimepercast_v[1]) / 18).." gi©y<color>\n"..
 				"Thêi gian kh«i phôc chiªu thøc trªn ngùa: <color=orange>"..floor(Link(level,SKILLS.tianren120.skill_mintimepercastonhorse_v[1]) / 18).." gi©y<color>\n"..
 				"X¸c suÊt <color=orange>"..floor(100 -Link(level,SKILLS.quntisuijizoudong.missle_missrate[1])).."%<color> khiÕn cho tèi ®a "..
-				floor(Link(level,SKILLS.quntisuijizoudong.missle_hitcount[1])).." môc tiªu gÇn b?ho¶ng lo¹n trong <color=orange>"..
+				floor(Link(level,SKILLS.quntisuijizoudong.missle_hitcount[1])).." môc tiªu gÇn bÞ ho¶ng lo¹n trong <color=orange>"..
 				floor(Link(level,SKILLS.quntisuijizoudong.randmove[2]) / 18).." gi©y<color>\n"..
-				"Sau khi chÕt c?x¸c suÊt <color=orange>"..floor(Link(level,SKILLS.tianren120.autodeathskill[3])).."%<color> khiÕn cho tèi ®a "..
-				floor(Link(level,SKILLS.quntisuijizoudong.missle_hitcount[1])).." môc tiªu gÇn b?ho¶ng lo¹n trong <color=orange>"..
+				"Sau khi chÕt cã x¸c suÊt <color=orange>"..floor(Link(level,SKILLS.tianren120.autodeathskill[3])).."%<color> khiÕn cho tèi ®a "..
+				floor(Link(level,SKILLS.quntisuijizoudong.missle_hitcount[1])).." môc tiªu gÇn bÞ ho¶ng lo¹n trong <color=orange>"..
 				floor(Link(level,SKILLS.quntisuijizoudong.randmove[2]) / 18).." gi©y<color>\n"..
-				"Trong lóc ho¶ng lo¹n kh«ng th?tÊn c«ng v?di chuyÓn\n"
+				"Trong lóc ho¶ng lo¹n kh«ng thÓ tÊn c«ng vµ di chuyÓn\n"
 			end,
 		skill_skillexp_v={{	{1,17851239},
 							{2,19487603},
@@ -365,7 +365,7 @@ SKILLS={
 		skill_desc=
 			function(level)
 				local szTime = format("%.2f", (floor(Link(level,SKILLS.zhanren150.randmove[2])*100/18 )/100))
-				return "T¨ng thªm h×nh thøc th?hai <color=blue>Ma ©m kÝch<color>\nvíi <color=orange>"..floor(100 -Link(level,SKILLS.zhanren150.missle_missrate[1])).."%<color> t?l?khiÕn cho ®èi ph­¬ng khiÕp s?"..
+				return "T¨ng thªm h×nh thøc thø hai <color=blue>Ma ©m kÝch<color>\nvíi <color=orange>"..floor(100 -Link(level,SKILLS.zhanren150.missle_missrate[1])).."%<color> tû lÖ khiÕn cho ®èi ph­¬ng khiÕp sî "..
 						"<color=orange>"..szTime.." gi©y<color>\n"
 			end,
 		skill_eventskilllevel={{{1,1},{20,20}}},

@@ -1412,8 +1412,8 @@ BOOL KMissle::ProcessDamage(int nNpcId)
 					if (m_pMagicAttribsData->m_pStateMagicAttribs->nValue[1] && !m_pMagicAttribsData->m_pStateMagicAttribs->nValue[2] && 
 						(pSkill->GetSkillStyle() == SKILL_SS_Missles || pSkill->GetSkillStyle() == SKILL_SS_InitiativeNpcState) && pSkill->IsTargetEnemy())
 					{
-						if (g_RandPercent(Npc[nNpcId].m_CurrentIgnoreNegativeStateP))
-							return TRUE;
+						// [SK120 07/09] khe ign% doi voi trang thai da chuyen vao KNpc::SetStateSkillEffect (Linux 0x08086410):
+						// ap cho MOI chieu nham ke dich, khong bo luon SetImmediatelySkillEffect nhu ban cu, khong tung hai lan.
 
 						if(pSkill->IsSkillReduceResist())
 						{
@@ -1682,6 +1682,17 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 				if(Npc[nNpcIdx].GetProtectTime() > 0 && eRelation == relation_enemy) //®ang trong tr¹ng th¸i bÊt tö bÞ kÎ thï ®¸nh vµo return
 					continue; //FIX 24/08: bo qua RIENG muc tieu bat tu, KHONG bo ca vung quet - return 0 cu lam MOT con bat tu chan het sat thuong dien rong cua ca vien dan va pha luon bo dem nRet/m_nHitCount. vong tron bat tu, vßng trßn bÊt tö
 				AUTOLOG_EVERY(2000, "[COLL-NPC-FOUND] msl=%d sk=%d launcher=%d npc=%d(id=%u) o(%d,%d) region=%d rel=%d protect=%d doing=%d nRet=%d hitcount=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nNpcIdx, Npc[nNpcIdx].m_dwID, nRMx, nRMy, nSearchRegion, eRelation, Npc[nNpcIdx].GetProtectTime(), (int)Npc[nNpcIdx].m_Doing, nRet, m_nHitCount);
+#ifdef _SERVER
+				// [SK120 07/09] Linux KMissle collide 0x080753F0-0x08075600: neu m_nMissRate > 0 thi tung rand(100) MOT lan
+				// cho MOI muc tieu TRUOC khi xu ly; missrate > rand => log 'Missle nMissRate = %d%%, Miss!' va tra 0:
+				// bo ca don (khong sat thuong, khong trang thai, khong tru m_nHitCount). JX1 truoc day khong co khe truot
+				// nay ma dung nMissRate sai cho trong KNpc::ReceiveDamage (o 15 tay trang thai 100-miss, o 16 return FALSE).
+				if (m_nMissRate > 0 && g_RandPercent(m_nMissRate))
+				{
+					AUTOLOG_EVERY(2000, "[SK120-MISS] msl=%d sk=%d/%d launcher=%d npc=%d missrate=%d -> truot ca don", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, nNpcIdx, m_nMissRate);
+					continue;
+				}
+#endif
 				nRet++;
 				VHLOG("[VH-SCAN-NPC] msl=%d sk=%d npc=%d(id=%u kind=%u doing=%d life=%d) o(%d,%d) region=%d nret=%d", m_nMissleId, m_nSkillId, nNpcIdx, (unsigned int)Npc[nNpcIdx].m_dwID, (unsigned int)Npc[nNpcIdx].m_Kind, (int)Npc[nNpcIdx].m_Doing, Npc[nNpcIdx].m_CurrentLife, i, j, nSearchRegion, nRet);
 #ifndef _SERVER
