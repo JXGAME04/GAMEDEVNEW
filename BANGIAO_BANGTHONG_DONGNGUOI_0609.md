@@ -603,3 +603,16 @@ Swap: tắt GameServer → `ChayGameServer.bat`; thoát game → `ChoiGame.bat`.
 - `ChayGameServer.bat` chưa được sửa (bị chặn quyền), chủ thêm một dòng như 8.3.
 - Chưa tăng `KPROTOCOL_VERSION` (chỉ một client, và đã có bắt tay hello nên không cần).
 - Gom danh sách + `PackDataToClients` một lệnh (CPU), van theo tình trạng socket: chờ đo với người thật.
+
+### 8.6 ĐÃ CHẠY THẬT 00:56:55 (chủ chạy `ChayGameServer.bat` và `ChoiGame.bat`), số đo 10 giây đầu
+
+`bin\server\CoreServer.dll` = 4b89f185, `heaven.dll` = 096fdeb2, `GameServer.exe` = b98d9f31 (tiến trình 54884 khởi động 00:56:55, sau khi tệp đã thay), `Game.exe` mới 00:57:02 với `CoreClient.dll` 5c359b16. Không có sập, `hethong.log` boot bình thường.
+
+| Dòng log (pid 54884) | Giá trị | Ý nghĩa |
+|---|---|---|
+| `[NS-BO]` | `bo=716 gon=2491 day=112 ... client cu=0` | client mới đã chào; 75 % lượt là gói gọn, 22 % bỏ qua (NPC không đổi), 3 % gói đầy đủ |
+| `[BC-TOP]` | `221:gui=1155,28KB` vs `77:gui=20,1KB` | gói gọn thay gần hết gói 77: 1.155 gói chỉ 28 KB (~25 byte/gói); trước đây 874 gói 77 = 84 KB |
+| `[BC-DEM]` | `han_muc=5000/giay bo_vi_tri=0 cat_vi_het_ngan_sach=0` | van mới, không cắt gì |
+| `[PS-BO]` | `99% bo, lam moi 30 giay` | ngoại hình 30 s |
+
+Lưu ý: lúc đo bot vừa đăng nhập lại sau restart nên `goi` mới ~3.000/10 s; xem lại `[NS-BO]`/`[BC-TOP]` khi 1.000 bot đã vào đủ và khi có Tống Kim. Nếu còn một cửa sổ `Game.exe` cũ (mở 23:21 hôm trước, CoreClient cũ) đăng nhập vào, `client cu` sẽ > 0 và máy chủ tự ngừng gói gọn cho tới khi cửa sổ đó thoát; đó là chủ ý, không phải lỗi.
