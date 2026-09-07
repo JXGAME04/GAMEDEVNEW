@@ -29,6 +29,7 @@ public:
 	void	SyncNpc(BYTE* pMsg);
 	void	SyncNpcMin(BYTE* pMsg);
 	void	SyncNpcMinPlayer(BYTE* pMsg);
+	void	SyncNpcPos(BYTE* pMsg);		// [DELTA 07/09] goi vi tri gon s2c_syncnpcpos
 	void	SyncPlayer(BYTE* pMsg);
 	void	SyncPlayerMin(BYTE* pMsg);
 	void	SyncCurPlayer(BYTE* pMsg);

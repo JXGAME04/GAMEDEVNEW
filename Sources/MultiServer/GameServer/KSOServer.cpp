@@ -3313,10 +3313,9 @@ void KSwordOnLineSever::MainLoop()
 		}
 	}
 LOOPINCREASE:
-	if (m_nGameLoop & 0x01)
-	{
-		m_pServer->SendPackToClient(-1);
-	}
+	// [DELTA 07/09] xa socket MOI tick (truoc: moi 2 tick '& 0x01' -> moi goi may chu->client cho 0-111 ms trong dem).
+	// 18 lan WSASend/giay/client thay vi 9; do [PERF] MainLoop truoc sau.
+	m_pServer->SendPackToClient(-1);
 	m_nGameLoop++;
 #ifdef _STANDALONE
 	g_mutexFlow.unlock();

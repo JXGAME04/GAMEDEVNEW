@@ -13,9 +13,15 @@
 // trong khi 4.991 lenh chay/405 NPC). Chi phi: goi chieu ~30 B x so nguoi that, khong dang ke.
 // [BC 03/09 c] TRA VE 100: do that cho thay cat_vi_het_ngan_sach = 0, tuc tran nay KHONG cat nguoi that.
 // Nang len 500 chi go them mot van an toan chu khong sua gi. Giu 100 lam muc chan cuoi.
-#define	MAX_BROADCAST_COUNT		100
+// [DELTA 07/09] (chu game 07/09: ban test, khong gioi han trai nghiem) tran nguoi nhan doc tu config.ini [Server]
+// BroadCastMotLan (su kien mot lan) / BroadCastDongBo (goi dong bo 77/75), mac dinh 100000 = KHONG cat ai. Chi phi
+// that bi chan boi so NGUOI THAT trong tam 32 o (bot khong an suat tu F4 04/09). Ban Linux tham chieu: 100 / 1200.
+// Muon ve tran cu: BroadCastMotLan=100, BroadCastDongBo=500 (khong can build lai).
+int BC_TranMotLan();
+int BC_TranDongBo();
+#define	MAX_BROADCAST_COUNT		BC_TranMotLan()
 // Tran cho duong dong bo dinh ky (NormalSync). Ban goc = 100; chu game chon 500.
-#define	NPC_SYNC_BROADCAST_LIMIT	500
+#define	NPC_SYNC_BROADCAST_LIMIT	BC_TranDongBo()
 // [S11 26/08] Goi su kien MOT LAN (chet s2c_npcdeath, go s2c_npcremove): hiem (vai
 // cu/giay ca tran) nhung MAT goi la client giu MA - danh vao khong khi, xac 0 mau
 // van di, bung ve trai. Gia tri > so nguoi toi da nghia la KHONG CAT AI; chi phi
@@ -61,6 +67,7 @@ public:
 	// Diem bat dau duyet danh sach nguoi choi khi phat dong bo. Xoay moi lan phat de
 	// khong ai bi bo doi khi so nguoi trong vung vuot tran NPC_SYNC_BROADCAST_LIMIT.
 	int			m_nBroadCastCursor;
+	DWORD		m_dwLucCoNguoiVao;	// [DELTA 07/09] GetTickCount() lan cuoi co nguoi vao vung (AddPlayer); NormalSync xem 9 vung
 private:
 #ifdef _SERVER
 	long		m_Obstacle[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];	// 地图障碍信息表

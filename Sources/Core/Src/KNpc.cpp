@@ -6586,6 +6586,51 @@ void PS_XoaDauVet(int nNpcIdx)
 		s_adwPSBam[nNpcIdx] = 0;
 }
 #endif
+// [DELTA 07/09] (chu game 07/09: ban test, khong gioi han trai nghiem) DONG BO THEO THAY DOI cho goi 77:
+//  - bam toan goi NPC_NORMAL_SYNC; giong lan phat truoc, chua toi ky lam moi va khong co nguoi vua vao 9 vung quanh
+//    -> KHONG phat (NPC dung yen khong ton bang thong; ban Linux tham chieu cung chi phat 1 NPC/vung/2 tick).
+//  - bam nhom CHAM (bo toa do, Doing, State, mau/noi luc hien tai) giong lan phat DAY DU truoc va chua toi ky lam moi
+//    day du -> phat goi GON s2c_syncnpcpos 25 byte (Linux: 27 byte) thay cho 99 byte.
+//  - Client vua biet NPC (RequestNpc -> SendSyncData) duoc day RIENG mot goi 77 day du, nen goi gon khong lam thieu
+//    trang thai cham. Khoa config.ini [Server]: DongBoLamMoi (ms, mac dinh 2000; 0 = luon phat nhu cu),
+//    DongBoLamMoiDay (ms, mac dinh 10000), DongBoGoiGon (1 = dung goi gon, 0 = luon goi day du).
+static DWORD s_adwNSBamTat[MAX_NPC];	// bam toan goi lan phat truoc
+static DWORD s_adwNSBamCham[MAX_NPC];	// bam nhom cham lan phat DAY DU truoc
+static DWORD s_adwNSLucGui[MAX_NPC];	// GetTickCount lan phat truoc (gon hoac day)
+static DWORD s_adwNSLucDay[MAX_NPC];	// GetTickCount lan phat DAY DU truoc
+static int   s_nNSLamMoi = -1, s_nNSLamMoiDay = 10000, s_nNSGon = 1;
+static int   s_nNSBo = 0, s_nNSGonDem = 0, s_nNSDay = 0;
+static void NS_DocCauHinh()
+{
+	if (s_nNSLamMoi >= 0)
+		return;
+	s_nNSLamMoi = (int)GetPrivateProfileIntA("Server", "DongBoLamMoi", 2000, ".\\config.ini");
+	if (s_nNSLamMoi < 0) s_nNSLamMoi = 0;
+	if (s_nNSLamMoi > 10000) s_nNSLamMoi = 10000;
+	s_nNSLamMoiDay = (int)GetPrivateProfileIntA("Server", "DongBoLamMoiDay", 10000, ".\\config.ini");
+	if (s_nNSLamMoiDay < 1000) s_nNSLamMoiDay = 1000;
+	if (s_nNSLamMoiDay > 60000) s_nNSLamMoiDay = 60000;
+	s_nNSGon = (int)GetPrivateProfileIntA("Server", "DongBoGoiGon", 1, ".\\config.ini");
+}
+// co nguoi vua vao vung nay hoac 8 vung ke trong ky lam moi -> phai phat de ho biet NPC (client chi biet NPC la qua goi 77)
+static BOOL NS_CoNguoiVuaVao(const KNpc* pNpc, DWORD dwLuc)
+{
+	if (pNpc->m_SubWorldIndex < 0 || pNpc->m_SubWorldIndex >= MAX_SUBWORLD || pNpc->m_RegionIndex < 0)
+		return FALSE;
+	const KRegion& rV = SubWorld[pNpc->m_SubWorldIndex].m_Region[pNpc->m_RegionIndex];
+	if (rV.m_dwLucCoNguoiVao && (dwLuc - rV.m_dwLucCoNguoiVao) < (DWORD)s_nNSLamMoi)
+		return TRUE;
+	for (int i = 0; i < 8; i++)
+	{
+		const int nKe = rV.m_nConnectRegion[i];
+		if (nKe < 0)
+			continue;
+		const KRegion& rK = SubWorld[pNpc->m_SubWorldIndex].m_Region[nKe];
+		if (rK.m_dwLucCoNguoiVao && (dwLuc - rK.m_dwLucCoNguoiVao) < (DWORD)s_nNSLamMoi)
+			return TRUE;
+	}
+	return FALSE;
+}
 BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player to Server v? Client 1 lÇn
 {
 	if (IsPlayer())	// [PS 04/09] co nguoi moi thay minh -> lan sync ke tiep phat lai ngoai hinh
@@ -6647,6 +6692,15 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player to Server v? Client 1
 	{
 		printf("Packing sync data failed...\n");
 		return FALSE;
+	}
+	// [DELTA 07/09] client vua biet NPC nay -> day RIENG goi 77 DAY DU (goi 77 phat tan tu nay thuong la ban GON).
+	if (m_RegionIndex >= 0 && m_SubWorldIndex >= 0)
+	{
+		NPC_NORMAL_SYNC sNSDay;
+		int nNSX = 0, nNSY = 0;
+		GetMpsPos(&nNSX, &nNSY);
+		NS_DungGoi(&sNSDay, nNSX, nNSY);
+		g_pServer->PackDataToClient(nClient, (BYTE*)&sNSDay, sizeof(sNSDay));
 	}
 	g_DebugLog("[Sync]%d:%s<%d> request to %d. size:%d", SubWorld[m_SubWorldIndex].m_dwCurrentTime, Name, m_Kind, nClient, NpcSync.m_wLength + 1);
 
@@ -6789,18 +6843,10 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player to Server v? Client 1
 	return bRet;
 }
 
-void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
+// [DELTA 07/09] Phan DUNG goi tach ra de SendSyncData cung dung duoc (day goi 77 day du khi client vua biet NPC).
+void KNpc::NS_DungGoi(void* pOut, int nMpsX, int nMpsY) //Sync npc min liªn tôc tõ server vÒ client
 {
-	extern int g_nBCNormalSync;	// [BC 04/09 do] dem so lan phat dong bo (KRegion.cpp)
-	g_nBCNormalSync++;
-
-	if (m_Doing == do_revive || m_Doing == do_death || !m_Index || m_RegionIndex < 0)
-		return;
-
-	NPC_NORMAL_SYNC NpcSync;
-	int	nMpsX, nMpsY;
-
-	GetMpsPos(&nMpsX, &nMpsY);
+	NPC_NORMAL_SYNC& NpcSync = *(NPC_NORMAL_SYNC*)pOut;
 
 	NpcSync.ProtocolType = (BYTE)s2c_syncnpcmin;
 	NpcSync.ID = m_dwID;
@@ -6846,6 +6892,69 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 	// [3HD 25/08] nhu SendSyncData: giu mau VANG qua duong sync lien tuc.
 	if (NpcSync.NpcEnchant == 0 && m_Type == boss_gold)
 		NpcSync.NpcEnchant		= boss_gold;
+}
+
+BOOL KNpc::NormalSync()
+{
+	extern int g_nBCNormalSync;	// [BC 04/09 do] dem so lan phat dong bo (KRegion.cpp)
+	g_nBCNormalSync++;
+
+	if (m_Doing == do_revive || m_Doing == do_death || !m_Index || m_RegionIndex < 0)
+		return FALSE;
+
+	NPC_NORMAL_SYNC NpcSync;
+	int	nMpsX, nMpsY;
+
+	GetMpsPos(&nMpsX, &nMpsY);
+	NS_DungGoi(&NpcSync, nMpsX, nMpsY);
+
+	// [DELTA 07/09] quyet dinh: bo qua / goi GON / goi DAY DU (xem chu thich tren cac bien s_adwNS*).
+	BOOL bPhat = TRUE, bGon = FALSE;
+	NPC_POS_SYNC sGon;
+	{
+		NS_DocCauHinh();
+		const DWORD dwLuc = GetTickCount();
+		if (m_Index > 0 && m_Index < MAX_NPC && s_nNSLamMoi > 0)
+		{
+			const DWORD dwBamTat = PS_Bam(&NpcSync, (int)sizeof(NpcSync));
+			NPC_NORMAL_SYNC sCham = NpcSync;
+			sCham.MapX = 0; sCham.MapY = 0; sCham.m_fkRegionID = 0; sCham.m_fkOffX = 0; sCham.m_fkOffY = 0;
+			sCham.Doing = 0; sCham.State = 0; sCham.m_CurrentLife = 0; sCham.m_CurrentMana = 0;
+			const DWORD dwBamCham = PS_Bam(&sCham, (int)sizeof(sCham));
+			const BOOL bNguoiMoi = NS_CoNguoiVuaVao(this, dwLuc);
+			if (dwBamTat == s_adwNSBamTat[m_Index] && !bNguoiMoi && (dwLuc - s_adwNSLucGui[m_Index]) < (DWORD)s_nNSLamMoi)
+				bPhat = FALSE;
+			else if (s_nNSGon && dwBamCham == s_adwNSBamCham[m_Index] && (dwLuc - s_adwNSLucDay[m_Index]) < (DWORD)s_nNSLamMoiDay)
+				bGon = TRUE;
+			if (bPhat)
+			{
+				s_adwNSBamTat[m_Index] = dwBamTat;
+				s_adwNSLucGui[m_Index] = dwLuc;
+				if (!bGon)
+				{
+					s_adwNSBamCham[m_Index] = dwBamCham;
+					s_adwNSLucDay[m_Index] = dwLuc;
+				}
+			}
+		}
+		if (bGon)
+		{
+			sGon.ProtocolType = (BYTE)s2c_syncnpcpos;
+			sGon.ID = m_dwID;
+			sGon.MapX = nMpsX;
+			sGon.MapY = nMpsY;
+			sGon.Doing = NpcSync.Doing;
+			sGon.State = NpcSync.State;
+			sGon.Camp = NpcSync.Camp;
+			sGon.m_bySeries = NpcSync.m_bySeries;
+			sGon.m_CurrentLife = NpcSync.m_CurrentLife;
+			sGon.m_CurrentMana = NpcSync.m_CurrentMana;
+		}
+		if (!bPhat) s_nNSBo++; else if (bGon) s_nNSGonDem++; else s_nNSDay++;
+		AUTOLOG_EVERY(10000, "[NS-BO] dong bo theo thay doi: bo=%d gon=%d day=%d (lam moi %d ms, day du %d ms, gon=%d)",
+			s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon);
+	}
+	BOOL bNSKq = bPhat;
 	static const POINT	POff[8] = 	//MAX_PLAYER
 	{
 		{0, 32},
@@ -6863,15 +6972,21 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 	// diem bat dau trong KRegion::BroadCast, neu khong thi nguoi xep sau vi tri 500 se khong
 	// bao gio nhan duoc dong bo (nguoi vo hinh).
 	int nMaxCount = NPC_SYNC_BROADCAST_LIMIT;
-	CURREGION.BroadCast(&NpcSync, sizeof(NPC_NORMAL_SYNC), nMaxCount, m_MapX, m_MapY);
+	// [DELTA 07/09] phat goi GON hoac DAY DU, hoac khong phat (NPC khong doi)
+	const void* pNSBuf = bGon ? (const void*)&sGon : (const void*)&NpcSync;
+	const DWORD dwNSSize = bGon ? (DWORD)sizeof(NPC_POS_SYNC) : (DWORD)sizeof(NPC_NORMAL_SYNC);
 	int j;
-	for (j = 0; j < 8; j++)
+	if (bPhat)
 	{
-		int nConRegion = CURREGION.m_nConnectRegion[j];
-		if (nConRegion == -1)
-			continue;
-		_ASSERT(m_SubWorldIndex >= 0 && nConRegion >= 0);
-		SubWorld[m_SubWorldIndex].m_Region[nConRegion].BroadCast((BYTE*)&NpcSync, sizeof(NPC_NORMAL_SYNC), nMaxCount, m_MapX - POff[j].x, m_MapY - POff[j].y);
+		CURREGION.BroadCast(pNSBuf, dwNSSize, nMaxCount, m_MapX, m_MapY);
+		for (j = 0; j < 8; j++)
+		{
+			int nConRegion = CURREGION.m_nConnectRegion[j];
+			if (nConRegion == -1)
+				continue;
+			_ASSERT(m_SubWorldIndex >= 0 && nConRegion >= 0);
+			SubWorld[m_SubWorldIndex].m_Region[nConRegion].BroadCast((BYTE*)pNSBuf, dwNSSize, nMaxCount, m_MapX - POff[j].x, m_MapY - POff[j].y);
+		}
 	}
 	//------------------------------------------------------End SYNC 1-------------------------------
 	if (IsPlayer())
@@ -6981,7 +7096,7 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 		// [PS 04/09] chi phat goi ngoai hinh khi NOI DUNG DOI hoac toi ky lam moi (goi nay khong chua toa do)
 		if (s_nPSLamMoi < 0)
 		{
-			s_nPSLamMoi = (int)GetPrivateProfileIntA("Server", "BroadCastLamMoi", 5, ".\\config.ini");
+			s_nPSLamMoi = (int)GetPrivateProfileIntA("Server", "BroadCastLamMoi", 30, ".\\config.ini");	// [DELTA 07/09] 5 -> 30 s
 			if (s_nPSLamMoi < 1)  s_nPSLamMoi = 1;
 			if (s_nPSLamMoi > 60) s_nPSLamMoi = 60;
 		}
@@ -7007,6 +7122,7 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 			s_nPSGui, s_nPSBo, (s_nPSGui + s_nPSBo) > 0 ? (s_nPSBo * 100 / (s_nPSGui + s_nPSBo)) : 0, s_nPSLamMoi);
 		if (bPSGui)
 		{
+			bNSKq = TRUE;	// [DELTA 07/09]
 			int nMaxCount = NPC_SYNC_BROADCAST_LIMIT;
 			CURREGION.BroadCast(&PlayerSync, sizeof(PLAYER_NORMAL_SYNC), nMaxCount, m_MapX, m_MapY);
 			for (j = 0; j < 8; j++)
@@ -7032,10 +7148,11 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 		// Bot khong co ket noi mang: Player[0].m_nNetConnectIdx = -1. Goi nay chi phi tien
 		// mang vo ich moi tick moi bot (khong sap - CIOCPServer::PackDataToClient co kiem bien,
 		// MultiServer/Heaven/ServerStage.cpp:390-396).
-		if (!m_btSimCityBot && m_nPlayerIdx > 0)
+		if (bPhat && !m_btSimCityBot && m_nPlayerIdx > 0)	// [DELTA 07/09] chi khi co phat dong bo
 			g_pServer->PackDataToClient(Player[m_nPlayerIdx].m_nNetConnectIdx, (BYTE*)&sSync, sizeof(sSync));
 		//------------------------------------------------------End SYNC 3-------------------------------
 	}
+	return bNSKq;
 }
 
 void KNpc::BroadCastRevive(int nType)

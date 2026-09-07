@@ -873,7 +873,8 @@ public:
 	int					  UpdateDBStateList(BYTE *);
 	void				ExecuteRevive(){DoRevive();};
 	BOOL			SendSyncData(int nClient);						
-	void				NormalSync();									
+	BOOL				NormalSync();	// [DELTA 07/09] TRUE = co phat goi dong bo (gon hoac day du)
+	void				NS_DungGoi(void* pOut, int nMpsX, int nMpsY);	// [DELTA 07/09] dung NPC_NORMAL_SYNC (NormalSync + SendSyncData)									
 	void				BroadCastRevive(int nType);
 	int					  GetPlayerIdx();
 	BOOL		    CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int nMissleSeries, BOOL bIsPhysical, BOOL bIsMelee, BOOL bReturn = FALSE , int nSeries_DamageP = 0, int nStole_Life = 0, int nStole_Mana = 0, int nStole_Stamina = 0, BOOL bIsDS = FALSE, BOOL bIsFS = FALSE, int nTotalAvg = 0);	// [HOTHAN2 01/09] nTotalAvg = tong trung binh 4 he (khien diem)

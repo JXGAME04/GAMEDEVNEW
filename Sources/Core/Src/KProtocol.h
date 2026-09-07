@@ -529,6 +529,24 @@ typedef struct
 	int		NpcEnchant;
 } NPC_NORMAL_SYNC;									// okay
 
+// [DELTA 07/09] Goi dong bo vi tri GON (s2c_syncnpcpos): chi phan DOI NHANH cua NPC_NORMAL_SYNC. May chu phat goi nay
+// khi nhom truong CHAM (phe, he, mau/noi luc toi da, toc do, StateInfo, MissionGroup, NpcEnchant, ProtectedTime)
+// khong doi so voi lan phat DAY DU truoc. Offset va ma vung KHONG gui: client tinh tu MPS bang Mps2Map (nhu client Linux).
+// Ban Linux tham chieu dung goi 27 byte cho viec nay; JX1 truoc day 99 byte.
+typedef struct
+{
+	BYTE	ProtocolType;	// s2c_syncnpcpos
+	DWORD	ID;
+	int		MapX;			// MPS
+	int		MapY;
+	BYTE	Doing;
+	BYTE	State;			// STATE_FREEZE/POISON/STUN/HIDE/FROZEN/WALKRUN nhu NPC_NORMAL_SYNC.State
+	BYTE	Camp;
+	BYTE	m_bySeries;
+	int		m_CurrentLife;
+	int		m_CurrentMana;
+} NPC_POS_SYNC;						// 25 byte (pack 1)
+
 typedef struct
 {
 	BYTE		ProtocolType;

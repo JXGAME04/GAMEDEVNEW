@@ -33,8 +33,34 @@ static int   g_nBCHanMuc = -1;		// doc mot lan tu config.ini
 // loai goi VI TRI - lap lai lien tuc nen bo mot nhip khong mat gi
 static bool BC_LaGoiViTri(int nLoai)
 {
-	return (nLoai == 75 || nLoai == 77 || nLoai == 85 || nLoai == 86);
+	// [DELTA 07/09] bo 75 (da bam, hiem, KHONG duoc bo vi lam moi 30 s), them 221 goi vi tri gon
+	return (nLoai == 77 || nLoai == 85 || nLoai == 86 || nLoai == 221);
 }
+#ifdef _SERVER
+// [DELTA 07/09] tran nguoi nhan (xem chu thich KRegion.h). Doc mot lan, kep 100..100000.
+int BC_TranMotLan()
+{
+	static int s_n = -1;
+	if (s_n < 0)
+	{
+		s_n = (int)GetPrivateProfileIntA("Server", "BroadCastMotLan", 100000, ".\\config.ini");
+		if (s_n < 100) s_n = 100;
+		if (s_n > 100000) s_n = 100000;
+	}
+	return s_n;
+}
+int BC_TranDongBo()
+{
+	static int s_n = -1;
+	if (s_n < 0)
+	{
+		s_n = (int)GetPrivateProfileIntA("Server", "BroadCastDongBo", 100000, ".\\config.ini");
+		if (s_n < 100) s_n = 100;
+		if (s_n > 100000) s_n = 100000;
+	}
+	return s_n;
+}
+#endif
 static unsigned char g_abyBCVungGui[BC_MAX_VUNG];	// vung nao da gui cho client do (1 byte/vung)
 
 // (20/08 dem - chu game: "thu lam phan nguoi choi hay bot khong phai vat can
@@ -59,6 +85,7 @@ KRegion::KRegion()
 	m_nActive		= 0;
 	m_nNpcSyncCounter = 0;
 	m_nBroadCastCursor = 0;
+	m_dwLucCoNguoiVao = 0;	// [DELTA 07/09]
 	m_nObjSyncCounter = 0;
 	m_nNpcSyncCursor  = 0;
 	m_nWidth		= 0;
@@ -715,7 +742,17 @@ void KRegion::Activate()
 		g_anBCVungActive[m_nIndex]++;
     KIndexNode *pNode = NULL;
     KIndexNode *pTmpNode = NULL;
-	const int kNpcSyncChunkSize = 5;  // Number of NPCs to sync per frame
+	// [DELTA 07/09] so NPC dong bo moi khung doc tu config.ini [Server] DongBoMoiTick (mac dinh 10, kep 1..40; truoc 5).
+	// Dem theo so lan PHAT THAT (NormalSync tra ve TRUE): NPC dung yen khong doi bi bo qua khong ton suat, nen NPC dang
+	// di chuyen duoc nan day hon voi cung so goi. Moi khung xet toi da 4 x DongBoMoiTick NPC ke tu con tro (chan chi phi bam).
+	static int s_nNSChunk = -1;
+	if (s_nNSChunk < 0)
+	{
+		s_nNSChunk = (int)GetPrivateProfileIntA("Server", "DongBoMoiTick", 10, ".\\config.ini");
+		if (s_nNSChunk < 1) s_nNSChunk = 1;
+		if (s_nNSChunk > 40) s_nNSChunk = 40;
+	}
+	const int kNpcSyncChunkSize = s_nNSChunk;  // Number of NPCs to sync per frame
 	int npcCount = m_NpcList.GetNodeCount();
 #ifdef _SERVER
 	extern int nActiveNpcCount;	// [PerfLog 24/08] khoi luong tick (KSubWorldSet.cpp)
@@ -732,9 +769,10 @@ void KRegion::Activate()
 	// chu ky, khong pipeline duoc) chay cho MOI NPC MOI KHUNG, du ca vong chi
 	// dung toi da 5 gia tri: m_nNpcSyncCursor khong doi trong vong (chi cap nhat
 	// sau vong) va npcCount lay mot lan o tren.
-	int aSyncIdx[kNpcSyncChunkSize];
-	for (int k = 0; k < kNpcSyncChunkSize; k++)
-		aSyncIdx[k] = (npcCount > 0) ? ((m_nNpcSyncCursor + k) % npcCount) : -1;
+	// [DELTA 07/09] cua so lien tuc theo thu tu danh sach tu con tro: khong con quan vong (khong bo sot NPC quan).
+	const int nNSBatDau = (npcCount > 0) ? (m_nNpcSyncCursor % npcCount) : 0;
+	const int nNSCuaSo = kNpcSyncChunkSize * 4;
+	int nNSXetToi = -1;	// chi so lon nhat da xet trong khung nay (de day con tro)
 #endif
 
 	while (pNode)
@@ -763,10 +801,11 @@ void KRegion::Activate()
 			// chay. Doi chieu: m_nObjSyncCounter thi CO duoc tang - chung to day dung
 			// la ma bo quen chu khong phai co y.
 			// Viec dong bo that su van do vong 'chunk' ngay duoi dam nhiem.
-			if (synced < kNpcSyncChunkSize && currentIndex == aSyncIdx[synced])
+			if (synced < kNpcSyncChunkSize && currentIndex >= nNSBatDau && (currentIndex - nNSBatDau) < nNSCuaSo)
 			{
-				Npc[nNpcIdx].NormalSync();
-				synced++;
+				if (Npc[nNpcIdx].NormalSync())	// [DELTA 07/09] TRUE = co phat (goi gon hoac day du)
+					synced++;
+				nNSXetToi = currentIndex;
 			}
 #endif
 			// Always activate
@@ -776,7 +815,12 @@ void KRegion::Activate()
 		pNode = pNpcTmpNode;	// dung ban da lay TRUOC Activate (xem chu thich dau vong)
 	}
 	// Move sync cursor forward
-	m_nNpcSyncCursor = (m_nNpcSyncCursor + kNpcSyncChunkSize) % (npcCount > 0 ? npcCount : 1);
+#ifdef _SERVER
+	// [DELTA 07/09] day con tro qua cac NPC da xet; het danh sach thi quay ve dau (lap sau).
+	m_nNpcSyncCursor = (nNSXetToi >= 0 && nNSXetToi + 1 < npcCount) ? (nNSXetToi + 1) : 0;
+#else
+	m_nNpcSyncCursor = 0;
+#endif
 
     nCounter = 0;
     KIndexNode *pObjNode = NULL;
@@ -1254,6 +1298,7 @@ BOOL KRegion::AddPlayer(int nIdx)
 		{
 			m_PlayerList.AddTail(&Player[nIdx].m_Node);
 			Player[nIdx].m_Node.AddRef();
+			m_dwLucCoNguoiVao = GetTickCount();	// [DELTA 07/09] NormalSync phat bat ke bam trong ky lam moi de nguoi moi biet NPC
 			return TRUE;
 		}
 	}
@@ -1569,7 +1614,7 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 	const int nBCLoaiGoi = (pBuffer && dwSize > 0) ? (int)((const BYTE*)pBuffer)[0] : 0;
 	if (g_nBCHanMuc < 0)	// [BC 04/09 UUTIEN] han muc goi vi tri moi giay cho mot client
 	{
-		g_nBCHanMuc = (int)GetPrivateProfileIntA("Server", "BroadCastGoiToiDa", 1500, ".\\config.ini");
+		g_nBCHanMuc = (int)GetPrivateProfileIntA("Server", "BroadCastGoiToiDa", 5000, ".\\config.ini");	// [DELTA 07/09] 1500 -> 5000: chi con la van an toan
 		if (g_nBCHanMuc < 100) g_nBCHanMuc = 100;
 		if (g_nBCHanMuc > 20000) g_nBCHanMuc = 20000;
 	}
@@ -1668,16 +1713,22 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 				s_nF4Goi, s_nF4Gui, s_nF4Bo, s_nF4Duyet, s_nBCNgoaiTam, s_nBCTam, g_nBCBoTrongGiay, g_nBCHanMuc);
 			g_nBCBoTrongGiay = 0;
 			// [BC 03/09] in toi da 8 loai goi nhieu nhat + moi loai co bi cat: 'loai:goi/gui/cat'
-			char szBC[512]; int nBCLen = 0; int nBCIn = 0;
-			for (int nBCK = 0; nBCK < 256 && nBCLen < 440; nBCK++)
+			// [DELTA 07/09] in 8 loai NHIEU NHAT theo so luot phat (ban cu in 8 ma NHO NHAT -> giau 91/95/148/207) + loai bi cat
+			char szBC[512]; int nBCLen = 0;
+			int anBCDaIn[256]; memset(anBCDaIn, 0, sizeof(anBCDaIn));
+			for (int nBCLan = 0; nBCLan < 8 && nBCLen < 440; nBCLan++)
 			{
-				if (s_anBCGoi[nBCK] <= 0)
-					continue;
-				if (nBCIn >= 8 && s_anBCBo[nBCK] <= 0)
-					continue;
+				int nBCK = -1, nBCMax = 0;
+				for (int k = 0; k < 256; k++)
+					if (!anBCDaIn[k] && s_anBCGoi[k] > nBCMax) { nBCMax = s_anBCGoi[k]; nBCK = k; }
+				if (nBCK < 0)
+					break;
+				anBCDaIn[nBCK] = 1;
 				nBCLen += _snprintf(szBC + nBCLen, sizeof(szBC) - 1 - nBCLen, " %d:%d/%d/%d", nBCK, s_anBCGoi[nBCK], s_anBCGui[nBCK], s_anBCBo[nBCK]);
-				nBCIn++;
 			}
+			for (int nBCK = 0; nBCK < 256 && nBCLen < 440; nBCK++)
+				if (!anBCDaIn[nBCK] && s_anBCBo[nBCK] > 0)
+					nBCLen += _snprintf(szBC + nBCLen, sizeof(szBC) - 1 - nBCLen, " %d:%d/%d/%d", nBCK, s_anBCGoi[nBCK], s_anBCGui[nBCK], s_anBCBo[nBCK]);
 			szBC[sizeof(szBC) - 1] = 0;
 			if (nBCLen > 0)
 				AUTOLOG("[BC-LOAI] 10s loai:goi/gui/cat:%s", szBC);

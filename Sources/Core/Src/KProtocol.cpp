@@ -172,6 +172,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(S2C_SYNC_VHTD),			// s2c_syncvhtd [VHTD 02/09g]
 	sizeof(S2C_DETONATE),			// s2c_detonate [VHTD 02/09w]
 	-1,							// s2c_scriptdata [MAIL 03/09] do dai dong: WORD sau ProtocolType
+	sizeof(NPC_POS_SYNC),		// s2c_syncnpcpos = 221 [DELTA 07/09] - o 156 = ma 221 (ngay sau 220), KHONG chen gi giua
 	
 #else
 	sizeof(LOGIN_COMMAND),		//	c2s_login,

@@ -209,6 +209,8 @@ enum s2c_PROTOCOL
 	s2c_syncvhtd,			// [VHTD 02/09g] dong bo so tang No/Am Luat + khien tinh toi client cua chinh minh (S2C_SYNC_VHTD)
 	s2c_detonate,			// [VHTD 02/09w] may chu bao client kich no dan (S2C_DETONATE)
 	s2c_scriptdata,			// [MAIL 03/09] goi ScriptProtocol (ObjBuffer) may chu -> client, do dai dong (-1)
+	s2c_syncnpcpos = 221,	// [DELTA 07/09] dong bo vi tri GON (NPC_POS_SYNC 25 byte). Ma 221 nam trong doan trong 221-249:
+							// KHONG doi so hieu goi nao khac. g_nProtocolSize (KProtocol.cpp) phai co o 156 cho ma nay.
 //	s2c_dynamic_structure,	//dynamic structure
 
 //	s2c_gmgateway2relaysvr,		//GM

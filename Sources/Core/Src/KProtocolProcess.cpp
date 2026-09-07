@@ -228,6 +228,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_syncnpc] = &KProtocolProcess::SyncNpc;
 	ProcessFunc[s2c_syncnpcmin] = &KProtocolProcess::SyncNpcMin;
 	ProcessFunc[s2c_syncnpcminplayer] = &KProtocolProcess::SyncNpcMinPlayer;
+	ProcessFunc[s2c_syncnpcpos] = &KProtocolProcess::SyncNpcPos;	// [DELTA 07/09]
 	ProcessFunc[s2c_objadd] = &KProtocolProcess::SyncObjectAdd;
 	ProcessFunc[s2c_syncobjstate] = &KProtocolProcess::SyncObjectState;
 	ProcessFunc[s2c_syncobjdir] = &KProtocolProcess::SyncObjectDir;
@@ -2220,6 +2221,52 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 	memset(Npc[nIdx].Name, 0, sizeof(Npc[nIdx].Name));
 	BIEN_ChepAnToan(Npc[nIdx].Name, (int)sizeof(Npc[nIdx].Name), NpcSync->m_szName, (int)(NpcSync->m_wLength - (sizeof(NPC_SYNC) - 1 - sizeof(NpcSync->m_szName))), "Npc[nIdx].Name");
 }
+
+#ifndef _SERVER
+// [DELTA 07/09] Goi vi tri GON s2c_syncnpcpos (25 byte): may chu chi gui phan doi nhanh (toa do MPS, Doing, State,
+// phe, he, mau/noi luc hien tai). Cach xu ly: DUNG LAI mot NPC_NORMAL_SYNC day du tu goi gon + cac truong cham dang
+// giu trong Npc[] (da nhan qua goi 77 day du hoac SendSyncData), roi giao cho SyncNpcMin - moi nhanh S6/S10, hoi NPC la,
+// gan lai NPC mo coi... giu nguyen mot dong ma. Offset va ma vung tinh tu MPS bang Mps2Map (dung hai dong tung bi
+// chu thich trong SyncNpcMin), giong client Linux. NPC chua biet: chi can ID/MapX/MapY/State -> hoi NPC nhu cu.
+void KProtocolProcess::SyncNpcPos(BYTE* pMsg)
+{
+	NPC_POS_SYNC* pGon = (NPC_POS_SYNC*)pMsg;
+	NPC_NORMAL_SYNC sDay;
+	memset(&sDay, 0, sizeof(sDay));
+	sDay.ProtocolType = (BYTE)s2c_syncnpcmin;
+	sDay.ID = pGon->ID;
+	sDay.MapX = pGon->MapX;
+	sDay.MapY = pGon->MapY;
+	sDay.Doing = pGon->Doing;
+	sDay.State = pGon->State;
+	sDay.Camp = pGon->Camp;
+	sDay.m_bySeries = pGon->m_bySeries;
+	sDay.m_CurrentLife = pGon->m_CurrentLife;
+	sDay.m_CurrentMana = pGon->m_CurrentMana;
+	int nRegion = -1, nMapX = 0, nMapY = 0, nOffX = 0, nOffY = 0;
+	SubWorld[0].Mps2Map(pGon->MapX, pGon->MapY, &nRegion, &nMapX, &nMapY, &nOffX, &nOffY);
+	sDay.m_fkOffX = nOffX;
+	sDay.m_fkOffY = nOffY;
+	sDay.m_fkRegionID = (nRegion >= 0 && nRegion < MAX_REGION) ? SubWorld[0].m_Region[nRegion].m_RegionID : 0;
+	const int nIdx = NpcSet.SearchID(pGon->ID);
+	if (nIdx > 0 && nIdx < MAX_NPC)
+	{
+		sDay.m_nProtectedTime = Npc[nIdx].m_nProtectedTime;
+		sDay.m_CurrentLifeMax = Npc[nIdx].m_CurrentLifeMax;
+		sDay.m_LifeMax = Npc[nIdx].m_LifeMax;
+		sDay.m_WalkSpeed = Npc[nIdx].m_WalkSpeed;
+		sDay.m_RunSpeed = Npc[nIdx].m_RunSpeed;
+		sDay.m_ASpeed = Npc[nIdx].m_CurrentAttackSpeed;
+		sDay.m_CSpeed = Npc[nIdx].m_CurrentCastSpeed;
+		sDay.m_CurrentManaMax = Npc[nIdx].m_CurrentManaMax;
+		sDay.m_ManaMax = Npc[nIdx].m_ManaMax;
+		sDay.MissionGroup = Npc[nIdx].m_nMissionGroup;
+		memcpy(sDay.StateInfo, Npc[nIdx].m_btStateInfo, sizeof(BYTE) * MAX_SKILL_STATE);
+		sDay.NpcEnchant = Npc[nIdx].m_Type;
+	}
+	SyncNpcMin((BYTE*)&sDay);
+}
+#endif
 
 void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã player vµ npc
 {

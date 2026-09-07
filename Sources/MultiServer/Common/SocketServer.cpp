@@ -271,6 +271,11 @@ int CSocketServer::Run()
 					
 					if ( acceptedSocket != INVALID_SOCKET )
 					{
+						// [DELTA 07/09] tat Nagle tren socket vua nhan: goi nho (13-21 byte) di ngay, khong doi ACK/200 ms.
+						{
+							BOOL bNoDelay = TRUE;
+							::setsockopt( acceptedSocket, IPPROTO_TCP, TCP_NODELAY, ( const char * )&bNoDelay, sizeof( bNoDelay ) );
+						}
 						Socket *pSocket = AllocateSocket( acceptedSocket );
 						
 						OnConnectionEstablished( pSocket, pAddress );
