@@ -316,3 +316,13 @@ Nguồn: `cm_funuse.txt` (74 control exe nạp ở trang chức năng), `wp_funu
 | Thông báo bang đi kênh Hệ thống | `sJX2_Msg2Tong` dùng `SendSystemInfo(... MESSAGE_SYSTEM_ANNOUCE_HEAD)` | đi `AUC_MsgTongC` (đầu "Tin bang" + id kênh `\O<tong>` học từ relay — đường đã có của đấu giá); Lua `Msg2Tong` không kèm id kênh cũng lấy id đã học |
 
 `ChayGameServer.bat` chỉ đổi tên `CoreServer.dll.moi` → đã thêm dòng `call :capnhat GameServer.exe` (bản cũ `.truoc_bh100`); `S3Relay.exe` vẫn phải chép tay khi relay tắt.
+
+
+### 7.7 Test lần 2 của chủ (cửa sổ danh sách bang + tooltip) — vá 6
+- **Bấm thành viên chỉ hiện "Mật đàm", không hiện thông tin**: cách "bấm rồi gọi `g_MouseOver`" bị chính nút dòng xoá ngay khi
+  rê chuột (`KWndButton` chỉ hiện tip qua `WM_MOUSEHOVER` → hàm ảo `GetToolTipInfo`, và `Wnds.cpp:320` huỷ hover khi đổi cửa sổ con).
+  Sửa: nút dòng là lớp `KTJX2RowBtn` kế thừa `KWndButton`, `GetToolTipInfo` trả 5 dòng thông tin thành viên (`GetMemberTip`,
+  đã `TEncodeText`, ≤ 255 byte), đặt `SetToolTipInfo(" ")` để nút chịu báo hover. Rê chuột lên tên là hiện; bấm = chọn; bấm kép = Mật đàm.
+- **Cửa sổ "Tìm bang khác" bị lệch**: blueprint gốc đặt tuyệt đối (50,45) cho màn 800×600; ta đặt sát trái cửa sổ chính, cùng đỉnh (`GetAbsolutePos` − 122).
+- **Chữ Trước/Kế bị đè**: sprite `查询别帮.spr` đã nung sẵn chữ nút và giữa khung trong suốt (thấy cảnh game/khung chat); ta thêm nền tối
+  `KTJX2Shade` (alpha 232) bên trong khung rồi tự vẽ nhãn Trước/Kế/Đóng (nút không ảnh) — bỏ nhãn trùng.

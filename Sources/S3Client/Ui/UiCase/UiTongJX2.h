@@ -35,7 +35,12 @@ Description : Cua so bang hoi kieu JX2 (6 tab nhu ban Linux: Tin tuc / Chieu mo 
 class KTJX2Shade : public KWndWindow
 {
 public:
+	KTJX2Shade() { m_uRGB = (20 << 16) | (90 << 8) | 70; m_nAlpha = 150; }
+	void			SetShade(unsigned int uRGB, int nAlpha) { m_uRGB = uRGB; m_nAlpha = nAlpha; }
 	virtual void	PaintWindow();
+private:
+	unsigned int	m_uRGB;
+	int				m_nAlpha;
 };
 
 // [BH100] thanh tien do (o TxtBuildFund / TxtPersonalOffer cua ban goc dung anh thanh
@@ -52,6 +57,17 @@ private:
 };
 
 class KUiTongJX2;
+
+// [BH100] nut chon dong cua panel thanh vien: tooltip theo co che nut JX1 (WM_MOUSEHOVER ->
+// GetToolTipInfo) - thong tin 5 dong cua thanh vien tren dong do (ban goc: bam ten hien tip)
+class KTJX2RowBtn : public KWndButton
+{
+public:
+	KTJX2RowBtn() { m_pOwner = NULL; m_nRow = -1; }
+	virtual int		GetToolTipInfo(char* szTip, int nMax);
+	KUiTongJX2*		m_pOwner;
+	int				m_nRow;
+};
 
 // [BH100] cua so TRO GIUP bang hoi (nut BtnTongHelp goc mo he tro giup chi tiet cua JX2;
 // noi dung chu de bang hoi trong ban VN chi con 4 trang anh 800x600 - hien lan luot)
@@ -91,7 +107,8 @@ private:
 	void	Request(int nStart);
 private:
 	static KUiTongListJX2*	ms_pSelf;
-	KWndButton			m_BtnClose;
+	KTJX2Shade			m_Shade;			// nen toi ben trong khung (sprite goc trong suot giua)
+	KWndLabeledButton	m_BtnClose;
 	KWndText80			m_Row[TJX2_UI_ROWS];
 	KWndButton			m_RowSel[TJX2_UI_ROWS];
 	KWndLabeledButton	m_BtnPrev, m_BtnNext;
@@ -124,6 +141,7 @@ public:
 
 	virtual int			WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 	void				LoadFunMaskImage();	// nap anh ten trang con theo m_nFunSub
+	int				GetMemberTip(int nRow, char* szOut, int nMax);	// [BH100] chu tooltip (da TEncodeText) cua dong nRow, 0 = khong co
 
 private:
 	void	Initialize();
@@ -182,7 +200,7 @@ private:
 	KWndImage			m_WsIconSel;			// khung chon khu (sprite chon goc)
 	KWndImage			m_WsArt;				// buc tranh nen 298x226 cua trang tac phuong
 	KWndLabeledButton	m_RecToggle;			// dong/mo tuyen (trang chieu mo) - an
-	KWndButton			m_BtnRowSel[TJX2_UI_ROWS];	// vung bam chon dong (trong suot)
+	KTJX2RowBtn		m_BtnRowSel[TJX2_UI_ROWS];	// vung bam chon dong (trong suot) + tooltip thanh vien
 	KWndLabeledButton	m_BtnTab[TJX2_UI_TABS];
 	KWndLabeledButton	m_BtnOtherZm;			// [BH100] tab 'chieu mo bang khac' khi CHUA co bang (BtnOtherZhaoMu)
 	KWndButton			m_BtnHelp;				// [BH100] nut tro giup goc tren cua so chinh (BtnTongHelp)

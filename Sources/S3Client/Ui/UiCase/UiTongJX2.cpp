@@ -561,7 +561,11 @@ void KUiTongJX2::Initialize()
 	for (i = 0; i < TJX2_INFO_NUM; i++)
 		AddChild(&m_InfoHelp[i]);
 	for (i = 0; i < TJX2_UI_ROWS; i++)
+	{
+		m_BtnRowSel[i].m_pOwner = this;
+		m_BtnRowSel[i].m_nRow = i;
 		AddChild(&m_BtnRowSel[i]);
+	}
 	for (i = 0; i < TJX2_UI_ACTS; i++)
 		AddChild(&m_BtnAct[i]);
 	AddChild(&m_BtnPrev);
@@ -848,6 +852,8 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	{
 		sprintf(szSec, "RowSel%d", i);
 		ms_pSelf->m_BtnRowSel[i].Init(&Ini, szSec);
+		// [BH100] can m_szTip khac rong de KWndButton bao WM_MOUSEHOVER -> GetToolTipInfo (chu that lay luc re)
+		ms_pSelf->m_BtnRowSel[i].SetToolTipInfo((char*)" ", 1);
 	}
 	for (i = 0; i < 8; i++)
 	{
@@ -2048,6 +2054,52 @@ void KUiTongJX2::RenderMembers(int nOffset)
 		UpdateFunButtons();	// [BH100] nut nhan su bat/tat theo nguoi dang chon (nhu exe)
 }
 
+// [BH100] chu tooltip cua dong nRow trong panel thanh vien (da TEncodeText, <= nMax):
+// <mau theo chuc vu>Danh hieu:<chuc vu>\ndanh hieu:<danh hieu ghe>\n\nDang cap hien tai / Diem cong
+// hien hien tai / Thoi gian nhap bang (mau xanh la) - dung nhu ShowMemberTip cua game_y.exe.
+int KUiTongJX2::GetMemberTip(int nRow, char* szOut, int nMax)
+{
+	if (!szOut || nMax <= 8 || !m_bHasMember || m_nListMode != 0)
+		return 0;
+	if (m_nPage != defTONG_JX2_PAGE_INFO && m_nPage != defTONG_JX2_PAGE_MEMBER &&
+		m_nPage != defTONG_JX2_PAGE_RIGHT && m_nPage != TJX2_UI_PAGE_FUNUSE && m_nPage != defTONG_JX2_PAGE_WS)
+		return 0;
+	TONG_JX2_MEMBER_SYNC* p = (TONG_JX2_MEMBER_SYNC*)m_byMember;
+	if (nRow < 0 || nRow >= (int)p->m_btCount || nRow >= TJX2_UI_ROWS)
+		return 0;
+	TONG_JX2_ONE_MEMBER* pM = &p->m_sMember[nRow];
+	static const char* szCol[5] = { "yellow", "cyan", "purple", "gray", "DBlue" };
+	int nFig = pM->m_btFigure < 5 ? pM->m_btFigure : 3;
+	char szDate[24];
+	if (pM->m_dwJoinTime)
+	{
+		time_t nT = (time_t)pM->m_dwJoinTime;
+		struct tm* pTm = localtime(&nT);
+		sprintf(szDate, "%04d-%d-%d", pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday);
+	}
+	else
+		strcpy(szDate, "-");
+	char szT[400];
+	sprintf(szT,
+		"<color=%s>Danh hi÷u:%s\ndanh hi÷u:%s\n<color>\n"
+		"ßºng c p hi÷n tπi: <color=green>%d<color>\n"
+		"ßi”m cËng hi’n hi÷n tπi: <color=green>%u<color>\n"
+		"ThÍi gian nhÀp bang: <color=green>%s<color>",
+		szCol[nFig], s_szFigure[nFig], pM->m_szTitle, (int)pM->m_btLevel, pM->m_dwOffer, szDate);
+	int nLen = TEncodeText(szT, (int)strlen(szT));
+	if (nLen > nMax)
+		nLen = nMax;
+	memcpy(szOut, szT, nLen);
+	return nLen;
+}
+
+int KTJX2RowBtn::GetToolTipInfo(char* szTip, int nMax)
+{
+	if (!m_pOwner || !szTip)
+		return 0;
+	return m_pOwner->GetMemberTip(m_nRow, szTip, nMax);
+}
+
 // [BH100] tooltip thanh vien (MemberPanel WndProc LIST_ITEM_ACTIVE -> ShowMemberTip cua ban goc):
 // <mau theo chuc vu>Danh hieu:<chuc vu>\ndanh hieu:<danh hieu ghe>\n\nDang cap hien tai / Diem
 // cong hien hien tai / Thoi gian nhap bang (mau xanh la). Mau goc ffff33/00ffff/9966ff/999999/555555.
@@ -2208,8 +2260,8 @@ void KTJX2Shade::PaintWindow()
 	sBg.oEndPos.nX = m_nAbsoluteLeft + m_Width;
 	sBg.oEndPos.nY = m_nAbsoluteTop + m_Height;
 	// quy uoc alpha cua KWndMessageListBox: (255 - alpha) << 21
-	sBg.Color.Color_dw = ((20 << 16) | (90 << 8) | 70) |
-		(((unsigned int)(255 - 150) << 21) & 0xff000000);
+	sBg.Color.Color_dw = (m_uRGB & 0x00FFFFFF) |
+		(((unsigned int)(255 - m_nAlpha) << 21) & 0xff000000);
 	g_pRepresentShell->DrawPrimitives(1, &sBg, RU_T_SHADOW, true);
 }
 
@@ -3142,13 +3194,10 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 							PopupMenu(8, 1, szPM);
 							return 1;
 						}
-						if (m_nSel == nM && m_nTipMember == nM)
-							HideMemberTip();
-						else
-						{
-							m_nSel = nM;
-							ShowMemberTip(nM);
-						}
+						// chon dong; thong tin thanh vien hien bang tooltip cua chinh nut dong
+						// (KTJX2RowBtn::GetToolTipInfo) khi chuot dung tren ten - cach goi
+						// g_MouseOver truc tiep bi nut xoa ngay khi re chuot nen khong thay gi
+						m_nSel = nM;
 						RenderMembers();
 					}
 					else if (m_nPage == TJX2_UI_PAGE_RECRUIT)
@@ -3851,6 +3900,18 @@ KUiTongListJX2* KUiTongListJX2::OpenWindow()
 	}
 	if (ms_pSelf)
 	{
+		// [BH100] dat SAT TRAI cua so chinh, cung dinh (blueprint goc 50,45 la toa do tuyet doi cua
+		// man hinh 800x600 - o ta cua so chinh o 211,80 nen bi 'lech')
+		KUiTongJX2* pMain = KUiTongJX2::GetIfVisible();
+		if (pMain)
+		{
+			int nML = 0, nMT = 0;
+			pMain->GetAbsolutePos(&nML, &nMT);
+			int nX = nML - 122;
+			if (nX < 0)
+				nX = 0;
+			ms_pSelf->SetPosition(nX, nMT);
+		}
 		ms_pSelf->Show();
 		ms_pSelf->BringToTop();
 		ms_pSelf->m_nStart = 0;
@@ -3887,6 +3948,8 @@ void KUiTongListJX2::Initialize()
 	m_nStart = 0;
 	m_nSel = -1;
 	memset(m_byList, 0, sizeof(m_byList));
+	AddChild(&m_Shade);	// nen toi ben trong khung, ve truoc chu
+	m_Shade.Enable(false);
 	for (i = 0; i < TJX2_UI_ROWS; i++)
 		AddChild(&m_Row[i]);
 	for (i = 0; i < TJX2_UI_ROWS; i++)
@@ -3911,6 +3974,10 @@ void KUiTongListJX2::LoadScheme(const char* pScheme)
 		return;
 	ms_pSelf->Init(&Ini, "TL_Main");
 	ms_pSelf->m_BtnClose.Init(&Ini, "TL_BtnClose");
+	// sprite goc chi la khung, giua trong suot (nhin xuyen ra canh game / khung chat) -> nen toi
+	ms_pSelf->m_Shade.SetPosition(4, 22);
+	ms_pSelf->m_Shade.SetSize(112, 438);
+	ms_pSelf->m_Shade.SetShade((16 << 16) | (22 << 8) | 26, 232);
 	ms_pSelf->m_BtnPrev.Init(&Ini, "TL_BtnPrevPage");
 	ms_pSelf->m_BtnNext.Init(&Ini, "TL_BtnNextPage");
 	for (int i = 0; i < TJX2_UI_ROWS; i++)
