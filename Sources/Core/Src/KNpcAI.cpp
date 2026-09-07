@@ -106,18 +106,20 @@ void KNpcAI::Activate(int nIndex)// flying modified this function. // Jun.4.2003
 			break;
 		// [AI710 06/09] ban Linux chay du AI 1-10 (bang nhay 0x08255340).
 		// JX1 chu thich 4 case nay nen 112 con quai khai AIMode 9/10 khong co AI.
-		// Bon ham duoi day da co san trong tep nay, chi thieu duong goi.
+		// [AI710L 07/09] ProcessAIType7..10 cua JX1 la thuat toan KHAC ban Linux (9 'cang danh cang hang',
+		// 10 'bo chay' deu FollowAttack -> 62 bay/tru mode 10 se di theo nguoi choi). Goi bon ham
+		// AI07_XungXa / AI08_ThachXa / AI09_HanhQuan / AI10_DungBan dich tu nhi phan Linux.
 		case 7:
-			ProcessAIType7();
+			AI07_XungXa();
 			break;
 		case 8:
-			ProcessAIType8();
+			AI08_ThachXa();
 			break;
 		case 9:
-			ProcessAIType9();
+			AI09_HanhQuan();
 			break;
 		case 10:
-			ProcessAIType10();
+			AI10_DungBan();
 			break;
 		default:
 			break;
@@ -1935,6 +1937,314 @@ void	KNpcAI::ProcessAIType06()
 	}
 	FollowAttack(nEnemyIdx);
 }
+
+#ifdef _SERVER
+//------------------------------------------------------------------------------
+// [AI710L 07/09] AI 7/8/9/10 dich tu nhi phan Linux jx_linux_y (bang nhay 0x08255340).
+// Xem D:/GAMEDEVNEW/PHANTICH_CAIBANG_DAN_VA_QUAI_DOT2_0609.md Phan F.3.
+// Bon ham ProcessAIType7..10 co san cua JX1 (ben duoi) la thuat toan KHAC, khong phai
+// ban dich, nen tu 07/09 Activate goi bon ham nay thay the (bon ham cu giu nguyen, khong goi).
+// Ben Linux moi ProcessAIType goi 'nhip AI' 0x0808C640 o dong dau: dat m_NextAITime
+// (JX1 lam san trong Activate) + bo muc tieu da chet/hoi sinh + bo NGUOI CHOI chua bat
+// che do chien dau. AI_BoMucTieuLinux() lam phan sau.
+//------------------------------------------------------------------------------
+void KNpcAI::AI_BoMucTieuLinux()
+{
+	int nTarget = Npc[m_nIndex].m_nPeopleIdx;
+	if (nTarget <= 0 || nTarget >= MAX_NPC)
+	{
+		Npc[m_nIndex].m_nPeopleIdx = 0;
+		return;
+	}
+	if (Npc[nTarget].m_Doing == do_death || Npc[nTarget].m_Doing == do_revive)
+		Npc[m_nIndex].m_nPeopleIdx = 0;
+	else if (Npc[nTarget].m_Kind == kind_player && Npc[nTarget].m_FightMode == 0)
+		Npc[m_nIndex].m_nPeopleIdx = 0;
+}
+
+// Linux 0x0808DBA0: quet o trong tam nhin (nhu GetNpcNumber), gom toi da 10 dich
+// (bo NPC dang an) roi boc NGAU NHIEN mot con - khong phai con gan nhat.
+int KNpcAI::AI_TimDichNgauNhien()
+{
+	int nList[10];
+	int nCount = 0;
+	int nSubWorld = Npc[m_nIndex].m_SubWorldIndex;
+	int nRegion = Npc[m_nIndex].m_RegionIndex;
+	int nMapX = Npc[m_nIndex].m_MapX;
+	int nMapY = Npc[m_nIndex].m_MapY;
+	if (nSubWorld < 0 || nRegion < 0)
+		return 0;
+	int nRangeX = Npc[m_nIndex].m_VisionRadius / SubWorld[nSubWorld].m_nCellWidth;
+	int nRangeY = Npc[m_nIndex].m_VisionRadius / SubWorld[nSubWorld].m_nCellHeight;
+	const int nR2 = nRangeX * nRangeX;
+	for (int i = -nRangeX; i < nRangeX && nCount < 10; i++)
+	{
+		for (int j = -nRangeY; j < nRangeY && nCount < 10; j++)
+		{
+			if ((i * i + j * j) > nR2)
+				continue;
+			int nRMx = nMapX + i;
+			int nRMy = nMapY + j;
+			int nSearchRegion = nRegion;
+			if (nRMx < 0)
+			{
+				nSearchRegion = SubWorld[nSubWorld].m_Region[nSearchRegion].m_nConnectRegion[2];
+				nRMx += SubWorld[nSubWorld].m_nRegionWidth;
+			}
+			else if (nRMx >= SubWorld[nSubWorld].m_nRegionWidth)
+			{
+				nSearchRegion = SubWorld[nSubWorld].m_Region[nSearchRegion].m_nConnectRegion[6];
+				nRMx -= SubWorld[nSubWorld].m_nRegionWidth;
+			}
+			if (nSearchRegion == -1)
+				continue;
+			if (nRMy < 0)
+			{
+				nSearchRegion = SubWorld[nSubWorld].m_Region[nSearchRegion].m_nConnectRegion[4];
+				nRMy += SubWorld[nSubWorld].m_nRegionHeight;
+			}
+			else if (nRMy >= SubWorld[nSubWorld].m_nRegionHeight)
+			{
+				nSearchRegion = SubWorld[nSubWorld].m_Region[nSearchRegion].m_nConnectRegion[0];
+				nRMy -= SubWorld[nSubWorld].m_nRegionHeight;
+			}
+			if (nSearchRegion == -1)
+				continue;
+			int nNpcIdx = SubWorld[nSubWorld].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, m_nIndex, relation_enemy);
+			if (nNpcIdx > 0 && nNpcIdx < MAX_NPC && Npc[nNpcIdx].m_HideState.nTime == 0)
+				nList[nCount++] = nNpcIdx;
+		}
+	}
+	if (nCount <= 0)
+		return 0;
+	int nPick = g_Random(nCount);
+	if (nPick < 0 || nPick >= nCount)
+		nPick = 0;
+	return nList[nPick];
+}
+
+// Linux 0x0807A1F0 -> 0x080E1FD0: NPC co m_dwID == dwID trong vung hien tai va 8 vung ke, bo NPC dang an.
+int KNpcAI::AI_TimNpcTheoIdGan(DWORD dwID)
+{
+	if (dwID == 0)
+		return 0;
+	int nSubWorld = Npc[m_nIndex].m_SubWorldIndex;
+	int nMyRegion = Npc[m_nIndex].m_RegionIndex;
+	if (nSubWorld < 0 || nMyRegion < 0)
+		return 0;
+	int nIdx = NpcSet.SearchID(dwID);
+	if (nIdx <= 0 || nIdx >= MAX_NPC)
+		return 0;
+	if (Npc[nIdx].m_SubWorldIndex != nSubWorld || Npc[nIdx].m_RegionIndex < 0 || Npc[nIdx].m_HideState.nTime > 0)
+		return 0;
+	if (Npc[nIdx].m_RegionIndex == nMyRegion)
+		return nIdx;
+	for (int i = 0; i < 8; i++)
+	{
+		if (SubWorld[nSubWorld].m_Region[nMyRegion].m_nConnectRegion[i] == Npc[nIdx].m_RegionIndex)
+			return nIdx;
+	}
+	return 0;
+}
+
+// Linux 0x0808F360: ra chieu TAI CHO - chi khi dich con song, trong m_CurrentAttackRadius va trong tam nhin.
+// KHONG bao gio di (khac FollowAttack: ngoai tam thi do_walk toi dich).
+void KNpcAI::AI_BanTaiCho(int nEnemy)
+{
+	if (nEnemy <= 0 || nEnemy >= MAX_NPC)
+		return;
+	if (Npc[nEnemy].m_RegionIndex < 0)
+		return;
+	if (Npc[nEnemy].m_Doing == do_death || Npc[nEnemy].m_Doing == do_revive)
+		return;
+	int nD2 = KNpcSet::GetDistanceSquare(m_nIndex, nEnemy);
+	int nAtk = Npc[m_nIndex].m_CurrentAttackRadius;
+	if (nD2 >= nAtk * nAtk)
+		return;
+	if (!InEyeshot(nEnemy))
+		return;
+	Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, -1, nEnemy);
+}
+
+// AI 7 - Linux 0x08094040 'Cong thanh Xung xa': p0 = m_dwID cua NPC muc tieu (script dat),
+// p1..p4 = ty le skill 1..4. p0 = 0 (mac dinh npcs.txt) -> khong lam gi.
+void KNpcAI::AI07_XungXa()
+{
+	AI_BoMucTieuLinux();
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
+	if (pAIParam[0] == 0)
+		return;
+	int nTarget = AI_TimNpcTheoIdGan((DWORD)pAIParam[0]);
+	if (nTarget <= 0)
+		return;
+	int nRand = g_Random(100);
+	if (nRand < pAIParam[1])
+		Npc[m_nIndex].SetActiveSkill(1);
+	else if (nRand < pAIParam[1] + pAIParam[2])
+		Npc[m_nIndex].SetActiveSkill(2);
+	else if (nRand < pAIParam[1] + pAIParam[2] + pAIParam[3])
+		Npc[m_nIndex].SetActiveSkill(3);
+	else if (nRand < pAIParam[1] + pAIParam[2] + pAIParam[3] + pAIParam[4])
+		Npc[m_nIndex].SetActiveSkill(4);
+	FollowAttack(nTarget);
+}
+
+// AI 8 - Linux 0x0808F1C0 'Dau Thach Xa': ban skill (p3..p6 -> skill 1..4) vao diem ngau nhien
+// trong o vuong canh p2 quanh (p0, p1). p0 hoac p1 = 0 -> khong lam gi. Khong bao gio di.
+void KNpcAI::AI08_ThachXa()
+{
+	AI_BoMucTieuLinux();
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
+	if (pAIParam[0] == 0 || pAIParam[1] == 0)
+		return;
+	int nSide = pAIParam[2];
+	int nRandX = (nSide > 0) ? g_Random(nSide) : 0;
+	int nRandY = (nSide > 0) ? g_Random(nSide) : 0;
+	int nRand = g_Random(100);
+	if (nRand < pAIParam[3])
+		Npc[m_nIndex].SetActiveSkill(1);
+	else if (nRand < pAIParam[3] + pAIParam[4])
+		Npc[m_nIndex].SetActiveSkill(2);
+	else if (nRand < pAIParam[3] + pAIParam[4] + pAIParam[5])
+		Npc[m_nIndex].SetActiveSkill(3);
+	else if (nRand < pAIParam[3] + pAIParam[4] + pAIParam[5] + pAIParam[6])
+		Npc[m_nIndex].SetActiveSkill(4);
+	int nX = pAIParam[0] - nSide / 2 + nRandX;
+	int nY = pAIParam[1] - nSide / 2 + nRandY;
+	Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, nX, nY);
+}
+
+// AI 9 - Linux 0x08092E30 'HANH QUAN' (newcitydefence: SetNpcAI(idx,9,20,-1,-1,-1,-1,-1,0,x,y)):
+//   p0 = % moi nhip tim dich ngau nhien trong tam nhin; p2/p3/p4 = ty le skill 1/2/3 (con lai skill 4);
+//   p6 = 1: bam thu linh Npc[p7] (m_dwID = p8); p6 = 0: di toi diem (p7,p8), dung cach dich
+//   min(AttackRadius, VisionRadius)/2. Goc m_OriginX/Y DOI THEO vi tri hien tai moi lan di nen
+//   day xich khong can. JX1 them MOT cua: p7 = p8 = 0 hoac p6 ngoai {0,1} (50 mau trong npcs.txt:
+//   quan quan Tong Kim, Moc nhan, Tru ai... mang 0|0 hay 20|50 tu thoi AI9 cu) thi KHONG hanh quan
+//   toi goc ban do - chi CommonAction.
+void KNpcAI::AI09_HanhQuan()
+{
+	AI_BoMucTieuLinux();
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
+	if (KeepActiveRange())
+	{
+		Npc[m_nIndex].m_nPeopleIdx = 0;
+		return;
+	}
+	int nRand = g_Random(100);
+	int nSkillNo = 4;
+	if (nRand < pAIParam[2])
+		nSkillNo = 1;
+	else if (nRand < pAIParam[2] + pAIParam[3])
+		nSkillNo = 2;
+	else if (nRand < pAIParam[2] + pAIParam[3] + pAIParam[4])
+		nSkillNo = 3;
+	if (!Npc[m_nIndex].SetActiveSkill(nSkillNo))
+	{
+		CommonAction();
+		return;
+	}
+	int nEnemy = Npc[m_nIndex].m_nPeopleIdx;
+	if (nEnemy > 0 && Npc[m_nIndex].m_CurrentVisionRadius != 0)
+	{
+		// Linux: FollowAttack tra 0 (muc tieu mat vung / chet) -> bo muc tieu
+		if (CheckNpc(nEnemy))
+		{
+			Npc[m_nIndex].m_nPeopleIdx = 0;
+			return;
+		}
+		FollowAttack(nEnemy);
+		return;
+	}
+	if (pAIParam[0] > (int)g_Random(100))
+	{
+		nEnemy = AI_TimDichNgauNhien();
+		Npc[m_nIndex].m_nPeopleIdx = nEnemy;
+		if (nEnemy > 0)
+		{
+			Npc[m_nIndex].GetMpsPos(&Npc[m_nIndex].m_OriginX, &Npc[m_nIndex].m_OriginY);
+			FollowAttack(nEnemy);
+			return;
+		}
+	}
+	if (pAIParam[6] == 1)
+	{
+		int nLeader = pAIParam[7];
+		if (nLeader > 0 && nLeader < MAX_NPC &&
+			Npc[nLeader].m_dwID == (DWORD)pAIParam[8] &&
+			Npc[nLeader].m_Doing != do_death &&
+			Npc[nLeader].m_SubWorldIndex == Npc[m_nIndex].m_SubWorldIndex)
+		{
+			Npc[nLeader].GetMpsPos(&Npc[m_nIndex].m_OriginX, &Npc[m_nIndex].m_OriginY);
+			// Linux: FollowAttack(thu linh) roi ROI TIEP vao CommonAction (khong return)
+			// -> lenh cuoi cung la di ve goc = vi tri thu linh.
+			FollowAttack(nLeader);
+		}
+		CommonAction();
+		return;
+	}
+	if (pAIParam[6] != 0 || (pAIParam[7] == 0 && pAIParam[8] == 0))
+	{
+		CommonAction();
+		return;
+	}
+	int nMyX, nMyY;
+	Npc[m_nIndex].GetMpsPos(&nMyX, &nMyY);
+	int nDesX = pAIParam[7];
+	int nDesY = pAIParam[8];
+	int nWantX = nDesX;
+	int nWantY = nDesY;
+	if (nDesX != nMyX || nDesY != nMyY)
+	{
+		int nR = Npc[m_nIndex].m_CurrentAttackRadius;
+		if (Npc[m_nIndex].m_CurrentVisionRadius < nR)
+			nR = Npc[m_nIndex].m_CurrentVisionRadius;
+		nR = nR / 2;
+		int nDir = g_GetDirIndex(nMyX, nMyY, nDesX, nDesY);
+		nWantX = nDesX - ((nR * g_DirCos(nDir, 64)) >> 10);
+		nWantY = nDesY - ((nR * g_DirSin(nDir, 64)) >> 10);
+	}
+	Npc[m_nIndex].GetMpsPos(&Npc[m_nIndex].m_OriginX, &Npc[m_nIndex].m_OriginY);
+	Npc[m_nIndex].SendCommand(do_walk, nWantX, nWantY);
+}
+
+// AI 10 - Linux 0x08091EB0 'DUNG YEN BAN' (Tuyet Sat, Tri Thu To, cung binh, co quan...):
+//   khoa/tim dich gan nhat (kiem an + tam nhin), p1..p4 = ty le skill 1..4 (cong don, con lai -> thoi),
+//   chi ra chieu khi dich trong m_CurrentAttackRadius. KHONG bao gio do_walk.
+void KNpcAI::AI10_DungBan()
+{
+	AI_BoMucTieuLinux();
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
+	int nEnemy = Npc[m_nIndex].m_nPeopleIdx;
+	BOOL bValid = FALSE;
+	if (nEnemy > 0 && nEnemy < MAX_NPC && Npc[nEnemy].m_dwID != 0)
+	{
+		int nD2 = KNpcSet::GetDistanceSquare(m_nIndex, nEnemy);
+		int nVision = Npc[m_nIndex].m_VisionRadius;
+		if (nD2 > 0 && nD2 < nVision * nVision && Npc[nEnemy].m_HideState.nTime == 0)
+			bValid = TRUE;
+	}
+	if (!bValid)
+	{
+		nEnemy = GetNearestNpc(relation_enemy);
+		Npc[m_nIndex].m_nPeopleIdx = nEnemy;
+	}
+	int nRand = g_Random(100);
+	int nSkillNo = 0;
+	if (nRand < pAIParam[1])
+		nSkillNo = 1;
+	else if (nRand < pAIParam[1] + pAIParam[2])
+		nSkillNo = 2;
+	else if (nRand < pAIParam[1] + pAIParam[2] + pAIParam[3])
+		nSkillNo = 3;
+	else if (nRand < pAIParam[1] + pAIParam[2] + pAIParam[3] + pAIParam[4])
+		nSkillNo = 4;
+	if (nSkillNo == 0)
+		return;
+	if (!Npc[m_nIndex].SetActiveSkill(nSkillNo))
+		return;
+	AI_BanTaiCho(nEnemy);
+}
+#endif
 
 
 //------------------------------------------------------------------------------

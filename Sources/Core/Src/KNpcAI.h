@@ -41,6 +41,18 @@ private:
 	void			ProcessAIType04();		// 普通被动类1
 	void			ProcessAIType05();		// 普通被动类2
 	void			ProcessAIType06();		// 普通被动类3
+#ifdef _SERVER
+	// [AI710L 07/09] AI 7/8/9/10 dich tu nhi phan Linux jx_linux_y - xem PHANTICH_CAIBANG_DAN_VA_QUAI_DOT2_0609.md Phan F.3.
+	// Bon ham ProcessAIType7..10 o tren la thuat toan KHAC ban Linux nen KHONG con duoc Activate goi.
+	void			AI07_XungXa();			// Linux 0x08094040: xung xa tim NPC co m_dwID == p0 roi pha
+	void			AI08_ThachXa();			// Linux 0x0808F1C0: dau thach xa ban vao o vuong canh p2 quanh (p0,p1)
+	void			AI09_HanhQuan();		// Linux 0x08092E30: hanh quan toi (p7,p8) / bam thu linh p7 / p0% danh dich
+	void			AI10_DungBan();			// Linux 0x08091EB0: dung yen, chi ra chieu khi dich trong tam
+	void			AI_BoMucTieuLinux();	// nhip AI Linux 0x0808C640: bo muc tieu chet/hoi sinh/nguoi choi chua bat chien dau
+	int				AI_TimDichNgauNhien();	// Linux 0x0808DBA0: gom toi da 10 dich trong tam nhin, boc 1
+	int				AI_TimNpcTheoIdGan(DWORD dwID);	// Linux 0x0807A1F0: NPC co m_dwID trong vung hien tai + 8 vung ke
+	void			AI_BanTaiCho(int nEnemy);	// Linux 0x0808F360: ra chieu tai cho, khong di
+#endif
 	void			TriggerObjectTrap();
 	void			TriggerMapTrap();
 	void			FollowAttack(int nIdx);
