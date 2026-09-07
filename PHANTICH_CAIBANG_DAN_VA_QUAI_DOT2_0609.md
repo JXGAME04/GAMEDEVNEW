@@ -553,3 +553,95 @@ Lùi: `git revert 68d7591b` + build lại; dữ liệu: đổi tên `*.truoc_sk1
 3. Boss dùng 876 (Ngưu Ma Vương, Lãnh Băng, Hoàng Nhan Quảng Dương, Tây Vực Phạn Hoàng…): giờ **có** gây hoảng loạn.
 4. Cái Bang 120: hoại thương làm chậm mục tiêu 9–50 %; mô tả kỹ năng Thiên Nhẫn/Cái Bang/Ngũ Độc 120 hết ký tự `?`.
 5. `jx_perf_server.log`: `TICK`/`SW_ACTIVATE` không tăng bất thường (AI9 quét ô tối đa 10 địch mỗi nhịp, tương đương `GetNpcNumber`).
+
+---
+
+# ĐỢT 5 (07/09 sáng) — VÕ ĐANG 120 "XUẤT Ứ BẤT NHIỄM": MỔ NHỊ PHÂN LINUX SO VỚI DỰ ÁN
+> **CHỈ PHÂN TÍCH, KHÔNG SỬA GÌ.** Công cụ như đợt 3 (`ReverseTools/mo_nhi_phan_0609/`), thêm `linux_magic_handlers.txt` (336 tên thuộc tính phép ↔ địa chỉ handler, bảng `ProcessFunc` bước 8 byte gốc `+4`).
+
+## J.1 Bộ kỹ năng (skills.txt hai bản: 114 cột, sai lệch rất nhỏ)
+
+| Id | Tên | Vai trò | Khác biệt JX1 |
+|---|---|---|---|
+| **716** | Xuất Ứ Bất Nhiễm (`icon_sk_wa_120`) | `SkillStyle 0`, `TargetAlly + TargetSelf`, đạn **274** "Khu vực đồng đội" (`MisslesForm 7` tại chỗ, `CollidRange = DmgRange = 10`, `CanColFriend 1`, sống 1 khung, nổ), `StartEvent → 738`, `EventSkillLevel −1`; LvlSetting: `skill_cost_v`, `missle_missrate`, hồi chiêu (ngựa/bộ), `skill_desc`, `skill_skillexp_v`, `ignorenegativestate_p` | JX1 thêm `LvlSetting8 = skill_eventskilllevel/wudang120` (vô hại, như 715) và dấu `"` quanh `SkillDesc` |
+| **738** | Kỹ năng phụ – Xuất Ứ Bất Nhiễm | chiêu con lên **chính mình**: đạn **275** (một viên, `CollidRange 1`), `ByMissle 1`; LvlSetting: `ignorenegativestate_p`, `missle_missrate` (bảng `wudang120_child`) | giống hệt |
+| 899 | 出淤不染_BOSS专用 | bản boss của 716 (`ReqLevel 1`) | giống hệt; không NPC nào dùng ở cả hai bản |
+| 1396 | 超级出淤不染 (`boss_superskill.lua`) | bản siêu boss | `AttackRadius` Linux 0 / JX1 400; không NPC nào dùng |
+| 1521 | Linux: **Miễn dịch khống chế** (thụ động `SkillStyle 3`, `wudang120_child` + `statusimmunity_b`, `fatallystrikeres_p`, `freeze/poison/stuntimereduce_p`, `fasthitrecover_v`) | | **JX1 đã dùng lại id 1521 cho "摩诃无量boss"** (Thiếu Lâm, `biggoldboss.lua`) — hai bản khác hẳn; không NPC nào dùng ở cả hai bản, `statusimmunity_b` không có trong KMagicDesc JX1 |
+
+## J.2 Dữ liệu cấp (`wudang.lua`, khoá `wudang120` / `wudang120_child`)
+
+| Bảng | Linux | JX1 |
+|---|---|---|
+| `wudang120.skill_cost_v` | 15 → 50 | giống |
+| `wudang120.missle_missrate` | **85 → 25 (c15) → 15** = 15 % → 75 % → 85 % đồng đội được tẩy | giống |
+| `wudang120.ignorenegativestate_p` | `{1, 18 khung}` | giống |
+| `wudang120.skill_mintimepercast(_onhorse)_v` | 35 s → 18 s (c15) → 15 s | giống |
+| `wudang120.skill_eventskilllevel` | không | **thêm** `{{1,1},{20,20}}` (tương đương −1) |
+| `wudang120.skill_skillexp_v` | 17,8 tr → 620 tr | 180 → 789 321 (+cấp 21‑28) — engine JX1 không đọc (TN‑11) |
+| `wudang120.skill_desc` | đúng | **5 byte hỏng Gate 1**: `loại b?trạng thái d?thường`, `t?loại b?v?miễn dịch … d?thường` (server = client, byte‑một) |
+| `wudang120_child.missle_missrate` | **85 → 20 (c15) → 15** | **85 → 25 (c15) → 15** — cấp 15 JX1 tự tẩy 75 % thay vì 80 % (cấp 1 và 20 như nhau) |
+| `wudang120_child.ignorenegativestate_p` | `{100, 1 s → 3 s (c20)}` | giống |
+| `clearnegativestate` | bị chú thích | bị chú thích (JX1 có tên thuộc tính 185, Linux không) |
+
+⇒ **Số liệu hai bản trùng, trừ một mốc cấp 15 (75 % vs 80 %) và 5 byte hỏng mô tả.**
+
+## J.3 Cơ chế trong engine — đây mới là chỗ khác nhau
+
+### Linux (đo từ nhị phân)
+1. **Trượt đòn** xử ở hàm va chạm đạn `0x080753F0`: `m_nMissRate (+0x154) > rand(100)` ⇒ log `"Missle nMissRate = %d%%, Miss!"`, **bỏ cả đòn** (không sát thương, không trạng thái). Trúng ⇒ `ReceiveDamage 0x0808A4A0` (tham số thứ 7 là **quan hệ** của chiêu, không có tham số miss‑rate) ⇒ nếu trả về khác 0 ⇒ áp danh sách trạng thái `0x08086260` ⇒ áp tức thì `0x0807D5A0`.
+2. **`ignorenegativestate_p` là thuộc tính TRẠNG THÁI bình thường**, handler idx 201 = `0x080977D0`:
+   * lúc áp (cờ tham số 1 = 0): gọi `0x080823B0(pNpc, 0, 1, 1, 0)` = duyệt `m_StateSkillList` (+0x234) **gỡ nút trạng thái do kỹ năng địch** (tương tự `IgnoreState(TRUE)` của JX1) và **đặt 0 hai ô `+0x1D8` và `+0x1E8`** (+0x1E8 là choáng — được ghi ngay sau khối tính tỷ lệ choáng `0x0808A8C5‑0x0808A941`; +0x1D8 là trạng thái khống chế kế bên, thời gian tính theo %);
+   * luôn: `m_CurrentIgnoreNegativeStateP (+0x1474) += nValue[0]` (log `"IgnoreNegativeStateP + %d%% = %d%%"`); hết hạn thì nút trạng thái gỡ với giá trị đảo dấu ⇒ trở về 0.
+3. **`+0x1474` được đọc ở 4 nơi**: (a) `ReceiveDamage 0x0808A8B6`: tỷ lệ choáng × (100 − ign)/100; (b) `ReceiveDamage 0x0808B21F`: ngay sau khi tính thời gian trạng thái `+0x1D8`, tung `rand(100)` so với ign ⇒ huỷ trạng thái đó; (c) **áp trạng thái `0x08086260` (0x08086C76‑0x08086CE8)**: nếu kỹ năng nhắm địch (`vfunc +0x2C`) và `ign > rand(100)` ⇒ **bỏ toàn bộ trạng thái của chiêu đó** (log `0x8254F68`); (d) **`DoHurt 0x0807F780`**: `hitrecover − anti ≥ 100` ⇒ không giật; `rand(100) ≤ 49` ⇒ không giật; **`ign > rand(100)` ⇒ không giật** (log `"IgnoreNegState(Hurt):%d%%, Hit!"`) — tức **miễn dịch còn chặn cả giật đòn**; (e) `GetPlayerMagicAttrib 0x08119060` (Lua đọc).
+
+⇒ Ở Linux, Xuất Ứ Bất Nhiễm cho **mỗi đồng đội trong 10 ô** với xác suất `100 − missrate`: tẩy debuff + choáng/khống chế và +1 % (vô nghĩa) trong 1 s; **chính mình** với xác suất `100 − missrate_child`: tẩy + **miễn dịch 100 % trong 1→3 s** với mọi trạng thái từ chiêu địch, choáng, và giật đòn.
+
+### JX1 (`KSkills.cpp:2756`, `KNpc.cpp:5094‑5140`, `KMissle.cpp:1410‑1444`)
+1. `missle_missrate` → `KMissle::m_nMissRate` → **truyền vào `ReceiveDamage(…, nMissRate)`** (chữ ký khác Linux). **Không có "trượt cả đòn"**; miss‑rate chỉ dùng trong 3 chỗ: ô sát thương 15 (`ignorenegativestate_p`), ô 16 (`randmove` → `return FALSE`), và **nhánh `else if (g_RandPercent(nMissRate))` — xem J.4**.
+2. `ignorenegativestate_p` được `ParseString2MagicAttrib` ghi vào **cả hai nơi**: `m_DamageAttribs[15]` (**JX1 tự viết thêm**) và, vì `nValue2 ≠ 0`, cũng vào `m_StateAttribs` (đường Linux).
+3. Trúng đòn (`ReceiveDamage` 5096‑5115): ô 15 = ignoreneg ⇒ `g_RandPercent(100 − nMissRate)` ⇒ `ZeroMemory` **13 KState** (5 giáp bị phá, độc, băng, bỏng, choáng, say, ẩn, câm, hoảng loạn) + `IgnoreState(TRUE)` (gỡ nút debuff) + **`m_nTime_Ignorenegativestate = nValue[1]`**; trong lúc bộ đếm > 0, **mỗi lần bị đánh** lại xoá 13 KState + gỡ debuff (5123‑5140); bộ đếm giảm mỗi khung (1632).
+4. Sau đó `ProcessDamage` áp `m_StateAttribs` **không tung xúc xắc** ⇒ `m_CurrentIgnoreNegativeStateP += nValue[0]` trong `nValue[1]` khung: 716 cho +1 %, 738 cho **+100 % trong 1→3 s, đúng 100 % số lần bấm chiêu** (Linux chỉ 15 %→85 % vì cả viên đạn có thể trượt).
+5. `m_CurrentIgnoreNegativeStateP` được đọc ở **2 nơi**: `KMissle.cpp:1415` (bỏ trạng thái chiêu địch) và `KNpc.cpp:5069` (tỷ lệ choáng). **Không** có ở `DoHurt` (5149‑5154 chỉ `DoHurt% + do_hurt_p − anti_do_hurt_p`) và không có vòng tung thứ hai như Linux (b).
+6. Điều kiện bỏ trạng thái ở `KMissle.cpp:1412` hẹp hơn Linux: chỉ khi **thuộc tính trạng thái ĐẦU TIÊN** của chiêu có `nValue[1] ≠ 0 && nValue[2] == 0` và chiêu là `Missles`/`InitiativeNpcState` nhắm địch. Chiêu địch mà thuộc tính đầu có 3 tham số (ví dụ `addphysicsdamage_p={{…},{…},{6}}` của Lịch Ma Đoạt Hồn / Nhiếp Hồn Loạn Tâm Thiên Nhẫn) **lọt qua miễn dịch** ở JX1; Linux chặn theo `IsTargetEnemy` không phân biệt.
+
+### Bảng đối chiếu hành vi
+
+| Điểm | Linux | JX1 | Ảnh hưởng |
+|---|---|---|---|
+| Xác suất cả đòn trượt theo `missle_missrate` | có, trước `ReceiveDamage` | **không có** | xem J.4 |
+| Tẩy trạng thái đồng đội (716) | `100 − missrate` | `100 − missrate` | giống |
+| Tẩy + miễn dịch bản thân (738) | tẩy **và** miễn dịch cùng xác suất `100 − missrate_child` | tẩy `100 − missrate_child`, **miễn dịch 100 %** | JX1 mạnh hơn: luôn có 1→3 s miễn dịch |
+| Miễn dịch chặn trạng thái chiêu địch | mọi chiêu nhắm địch | chỉ khi thuộc tính đầu có 2 tham số | JX1 yếu hơn với chiêu 3 tham số |
+| Miễn dịch chặn giật đòn (`do_hurt`) | có (0x0807F780) | không | JX1 yếu hơn |
+| Miễn dịch vs choáng | tỷ lệ × (100 − ign) | giống | giống |
+| Xoá KState khi tẩy | 2 ô (+0x1D8, +0x1E8) + gỡ nút debuff | 13 KState + gỡ nút debuff, **và lặp lại mỗi lần bị đánh** trong `nValue[1]` khung | JX1 tẩy rộng hơn |
+| Tổng thể cho Võ Đang 120 | | | **JX1 không thiếu tính năng**; chênh lệch cân bằng hai chiều nhỏ |
+
+## J.4 ⚠️ PHÁT HIỆN KÈM (engine JX1, ảnh hưởng chiêu có `missle_missrate` của phái KHÁC)
+
+`KNpc.cpp:5117`:
+```c
+if (pTemp->nAttribType == magic_ignorenegativestate_p) { … }
+else if (g_RandPercent(nMissRate))          // <-- ô 15 KHÔNG phải ignoreneg
+{
+    this->ClearNormalState();               // xoá 13 KState (kể cả giáp bị phá, độc, băng, bỏng, choáng, hoảng loạn)
+    this->IgnoreState(TRUE);                // gỡ mọi nút trạng thái do kỹ năng địch
+    m_nTime_Ignorenegativestate = pTemp->nValue[1];   // ô 15 rỗng -> 0
+}
+```
+Nhánh này **không có bên Linux** (Linux không truyền miss‑rate vào `ReceiveDamage`). Hệ quả: mọi chiêu có `missle_missrate` mà ô 15 không phải `ignorenegativestate_p` sẽ **tẩy debuff cho NẠN NHÂN** với xác suất = missrate:
+
+| Chiêu (JX1) | missrate | randmove? | Hành vi Linux | Hành vi JX1 |
+|---|---|---|---|---|
+| 723 Ma Âm Phệ Phách – Hoảng loạn (+876/1406/1493 boss) | 65 → 15 % | có | trượt cả đòn 65→15 % | **tẩy debuff nạn nhân 65→15 %** + tung riêng "trượt" 65→15 % (ô 16) |
+| 1131 Ma Âm Kích (Thiên Nhẫn 150, `zhanren150`) | **99 → 80 %** | có | trượt 99→80 % | **tẩy debuff nạn nhân 99→80 % mỗi đòn trúng** + tung riêng trượt |
+| 1190 Bộc phát Mê Túy Thiên Hương (vật phẩm) | theo `zhandan_randmove` | có | trượt | tẩy + trượt |
+| 1201 Vi Đà Hộ Pháp (Thiếu Lâm 150) | Linux 99 → 50 %; **JX1 bảng `gunshaolin150` không có dòng `missle_missrate`** ⇒ `m_nMissRate = 0` | không | trượt 99→50 % | không bao giờ trượt, không tẩy |
+
+Nghĩa là ở JX1, **Thiên Nhẫn đánh chiêu 120/150 lại giúp đối thủ sạch debuff** (kể cả debuff của chính Thiên Nhẫn vừa áp), và Vi Đà Hộ Pháp không trượt như Linux. Khuyến nghị (chờ chủ game): làm theo Linux — (1) `KMissle::ProcessDamage` tung `m_nMissRate` một lần, trượt ⇒ bỏ cả đòn; (2) ô 15 tẩy **không** tung lại; (3) bỏ nhánh `else if`; (4) bỏ tung ở ô 16 (`randmove`) vì (1) đã lo; (5) thêm `missle_missrate` cho `gunshaolin150` nếu muốn Vi Đà Hộ Pháp như Linux. Đây là thay đổi PvP, cần chủ duyệt trước.
+
+## J.5 Việc nhỏ có thể sửa ngay (chưa làm)
+* 5 byte hỏng trong `wudang120.skill_desc` (server + client, `vn_edit.py`).
+* `wudang120_child.missle_missrate` cấp 15: 25 → 20 nếu muốn khớp Linux.
+* Không cần sửa SkillStyle: 716/738/899/1396 đều `SkillStyle 0` ở cả hai bản, cơ chế đạn 274/275 giống nhau.
