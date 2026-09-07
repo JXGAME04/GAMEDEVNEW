@@ -161,3 +161,5 @@ Kiểm: `kiem_54.py` 0 lỗi 14 tệp; mã hoá không đổi; client byte‑m�
 | Kỹ năng 120 | +10 mỗi hệ mỗi đòn cho mọi buff (vô nghĩa với ngưỡng 17,8 triệu) | chỉ qua nhiệm vụ (`Add120SkillExp`) |
 
 Muốn đúng Linux 100 % về tốc độ: đặt `Skill90Rate = 1` trong gamesetting.ini (1 exp/đòn, 60 %).
+
+**Trạng thái nhị phân lúc 07:55 07/09**: origin/main `217202f0` (= `b4e6277c` của DELTA + `[SKEXP 07/09]`). `bin/server/CoreServer.dll.moi` = **`ce462519`** (18 481 152; thay bản DELTA `bdc8ae53`, giữ ở `CoreServer.dll.moi.delta_e_bdc8ae53_0749`; bản mới là tập cha vì build từ origin/main sau merge của DELTA). `bin/client/CoreClient.dll.moi` = **`e7c70880`** (2 611 200; tooltip + KSkill thêm 2 trường, không đổi giao thức; khe trước đó trống). Đang chạy: server `1a33f617` (đợt SK120 đã được swap), client `5f86a7f7`. Chủ chạy cả `ChayGameServer.bat` lẫn `ChoiGame.bat`.
