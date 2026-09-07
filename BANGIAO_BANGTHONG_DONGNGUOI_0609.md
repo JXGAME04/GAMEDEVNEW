@@ -690,3 +690,26 @@ Quyết định đồng bộ cả trận (cộng dồn `[NS-BO]`): bỏ qua 25,1
 **Vá c + d đã build (commit a8a6bfcc, 5b390cd8), chờ swap CẢ HAI:** `bin\server\CoreServer.dll.moi` = **6246967d** (18.479.104, thay bản c 4b524b2f, giữ tên `.moi.delta_c_4b524b2f_0115`), `bin\client\CoreClient.dll.moi` = **9cb92330** (2.610.176). Máy chủ mới + client cũ vẫn chạy (client cũ bỏ qua bit 0x40, chỉ mất tính năng cờ chiến đấu theo gói vị trí; gói 75 vẫn mang cờ khi được gửi). Nghiệm thu trận Tống Kim kế: `[PS-BO] ... doi: chi_co_chien_dau=` phải chiếm đa số các lần đổi trước đây và 75 tụt dưới 3 % byte; `[NS-BO] 10s` cột `day` dưới 3 %; `[PERF]` có `pid=` để nhận diện hai tiến trình lạ.
 
 **Cập nhật 03:28:** phiên SK120 đã thay khe máy chủ bằng bản của họ **1a33f617** (build từ `origin/main` 33b1dfa4 = gồm trọn DELTA c+d, đã kiểm 0 chuỗi thiếu; bản 6246967d giữ tên `.moi.delta_6246967d_0142`). Client build lại từ `origin/main` e85303e2 (gồm cả `KMissle.cpp`/`KNpc.cpp` của SK120): `bin\client\CoreClient.dll.moi` = **5f86a7f7**. Cặp chờ swap hiện tại: **máy chủ 1a33f617 + client 5f86a7f7**, chạy cả hai bat.
+
+### 8.9 So sánh bản c+d (máy chủ 1a33f617 + client 5f86a7f7, chạy từ 07:28) với trận 01:00 (bản 4b89f185)
+
+Chủ chạy cả hai bat lúc 07:28; trận Tống Kim mới bắt đầu 07:31. Số dưới đây lấy 13,5 phút đầu (82 cửa sổ, 3 phút đầu bot còn đang vào), so với 30 phút của trận 01:00. Chưa hết trận, chỉ so xu hướng; số liệu trọn trận đo lại sau 08:01.
+
+| Chỉ số | Trận 01:00 (bản a) | 07:31 (bản c+d, 13,5 phút) |
+|---|---|---|
+| 77 đầy đủ, tỉ lệ byte | 17 % | **10,5 %** |
+| `day/(gon+day)` (NS-BO) | 5,7 % | **2,7 %** |
+| 75 ngoại hình, tỉ lệ byte | 15 % | **12,1 %** (chưa giảm như kỳ vọng) |
+| 221 gọn | 46 % | 54 % |
+| 207 số sát thương | 10 % | 14 % (đánh dồn gần chủ nhiều hơn) |
+| Client trung bình | 24,8 KB/s | 12,3 KB/s (gồm 3 phút vắng) |
+| Client đỉnh | 51,3 KB/s @ 2.196 gói/s | 52,6 KB/s @ 2.185 gói/s (cửa sổ 207 + 221 dồn) |
+| TICK máy chủ | 6,7 ms | 6,5 ms, `tre` 1 |
+| Client | 4 spike / 30 phút | 10 spike, 9 trong 5 phút đầu (nạp map), 0 `Net Msg Error` |
+| `client cu` | 0 | 0 |
+
+**Đọc:** vá c làm gói 77 đầy đủ giảm gần một nửa như tính. Vá d đúng nhưng chưa đủ: `[PS-BO] doi: chi_co_chien_dau=10.782 co_khac_hoac_ngua=5.924 khac=41.321` — cờ chiến đấu chỉ là 19 % số lần gói 75 phải phát lại, **71 % là trường khác** chưa xác định. Nghi ngờ theo mã: bốn trường tốc độ (`WalkSpeed/RunSpeed/AttackSpeed/CastSpeed` = tốc độ HIỆN TẠI, đổi mỗi lần trúng buff/giảm tốc trong trận) hoặc `RankInWorld/Repute` (xếp hạng tính lại mỗi phút). Đỉnh băng thông không đổi vì cửa sổ đỉnh do 207 + 221 quyết định, đúng như dự báo mục 8.8.
+
+**Vá e (chỉ máy chủ, chẩn đoán):** băm gói 75 với từng nhóm trường xoá trắng (tốc độ / rank-danh hiệu / chỉ số / trang bị-ngựa / tên-chuỗi-cờ) → `[PS-BO] ... nhom: toc_do= rank= chi_so= trang_bi= ten= nhieu=`. Sau trận kế đọc dòng này là biết trường nào; cách sửa tương ứng đã sẵn: tốc độ hiện tại → đưa 2 byte vào gói gọn (27 byte, đúng bằng Linux) và bỏ khỏi băm 75; RankInWorld/Repute → bỏ khỏi băm 75 và chỉ gửi ở kỳ làm mới 30 s (client không cần tức thời).
+
+**Bí ẩn `[PERF]` đã hết:** từ 07:28 chỉ còn một tiến trình ghi (`pid=54436`). Hai chuỗi lạ đêm qua không còn; nếu tái xuất thì `pid=` sẽ chỉ ra ngay.
