@@ -174,6 +174,14 @@ Bản vá: `ReverseTools/goi_va_botnoi_dot3_0609.py` (C++: `KPlayerBot.cpp` H9�
 
 Build từ `origin/main` e41c0262 (đã rebase, gồm cả các commit vận tiêu / WAuto TK / lua54 của các phiên khác) + nhánh `botnoi-0609`. Nhãn kiểm mới: `[BotMach]`, `[BotSkill120]`, `bot_hoc120`, `Chieu Da Ngoc Su Tu`, `dong 7-8 tong`, `PB_NangMach` (mỗi nhãn 1) + đủ nhãn đợt 1-2. Script Lua đã ghi thẳng cây chạy thật (`hocvocong.lua` nạp lúc boot → hiệu lực sau restart; menu lệnh bài dùng ngay nhưng báo "chưa có PB_NangMach" cho tới khi swap).
 
+### 10.0 Kết quả đo THẬT của đợt 1 + 2 (bản live 3cb5a6a3 từ 16:01, restart 15:47 / 16:01 / 18:04)
+Bản `CoreServer.dll` đang chạy (md5 3cb5a6a3, phiên lua54 build từ origin/main sau 15:20) đã có `[BotNoi]` + `[BotTayDiem]`. `bot.log` sau 15:48:
+- `[BotNoi]` **383** bot bị tháo vũ khí: Thiếu Lâm 44 · Nga Mi 47 · Thúy Yên 52 · Cái Bang 40 · Thiên Nhẫn 61 · Võ Đang 58 · Côn Lôn 45 · Ngũ Độc 36; **Thiên Vương / Đường Môn = 0** ✔. Không lặp ở restart 18:04 (một lần/bot) ✔.
+- `[BotTayDiem]` **378** bot tẩy điểm; `[BotDiem]` sau đó đúng mẫu nội: `SM=114 TP=57 SK=399` (570 điểm), Võ Đang `NC=399 SK=171` ✔.
+- Chiêu nội đã được dùng (`[BotDanh]` sau 15:48): 337 Thúy Yên **750** · 365 Võ Đang 276 · 357 Cái Bang 256 · **353 Ngũ Độc 225** · 362 Thiên Nhẫn 191 · 380 Nga Mi 178 · 375 Côn Lôn 159 · 318 Thiếu Lâm 126 (trước 15:48 gần như 0). Chiêu vũ khí của bot ngoại vẫn chạy (45 / 355 / 336 / 328 / 359 / 372 …).
+- `tay khong giua doi -> phat lai` = **0**; `[BotCast] BI TU CHOI` = **0** ✔.
+- `ScriptError.log` sau 18:07 chỉ có 1 lỗi của `npc_lmbiaoche.lua` (vận tiêu, phiên khác) — không liên quan bot.
+
 ### 10.6 Nghiệm thu đợt 3 (sau restart)
 ```bash
 grep -c "cuoi ngua Chieu Da" bot.log
