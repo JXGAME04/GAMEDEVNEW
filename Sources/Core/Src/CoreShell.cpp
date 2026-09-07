@@ -3319,6 +3319,7 @@ static int DT_WalkTo(int nPlayerIdx, int nX, int nY, int nNear, UINT uCurTime)
 static void DT_Answer(int nPlayerIdx, int nIdx);	// dinh nghia o duoi (dung chung voi engine)
 #include "KVanTieuMsg.h"	// [VTCN 06/09] thong bao [Chi nam] + ten ben Xa Phu (sinh tu settings\Station.txt)
 static int TG_ChanMapSuKien(int nPlayerIdx);	// [VTCN 06/09] dinh nghia sau KMapSuKien.h: 1 = dang o map su kien (da bao)
+static void TG_BanDoStop(const char* szMsg);	// [BANDO20 06/09] dinh nghia sau TG_VanTieu (ban do: tu chay bo)
 
 static int	g_nTGXaFuOn = 0;
 static UINT	g_uTGXaFuNext = 0;
@@ -3359,6 +3360,7 @@ static int TG_XaFuStart()
 		DT_Msg(nPlayerIdx, "<color=Yellow>[ChØ nam] Kh«ng t×m thÊy Xa Phu ë thµnh nµy.");
 		return 0;
 	}
+	TG_BanDoStop(NULL);	// [BANDO20 06/09] mot nguoi mot duong
 	g_nTGXaFuOn = 1;
 	g_nTGXaFuMap = nMap;
 	g_nTGXaFuTry = 0;
@@ -3553,6 +3555,7 @@ static int TG_SatThuStart()
 		g_nTGSTNpc = 0;
 		g_uTGSTDlgSeen = g_sDTCap.uDlgSeq;
 		g_nTGSTPhase = (TG_SatThuChiSoNpcMap(SubWorld[0].m_SubWorldID) >= 0) ? 11 : 10;
+		TG_BanDoStop(NULL);	// [BANDO20 06/09] mot nguoi mot duong
 		g_nTGSTOn = 1;
 		DT_Msg(nPlayerIdx, "<color=Cyan>[ChØ nam] Ch­a nhËn nhiÖm vô - ®ang dïng phï vÒ thµnh gÆp NhiÕp ThÝ TrÇn...");
 		return 1;
@@ -3580,6 +3583,7 @@ static int TG_SatThuStart()
 		}
 		g_nTGSTPhase = 1;
 	}
+	TG_BanDoStop(NULL);	// [BANDO20 06/09] mot nguoi mot duong
 	g_nTGSTOn = 1;
 	DT_Msg(nPlayerIdx, "<color=Cyan>[ChØ nam] §ang dÉn ®­êng tíi boss - bÊm l¹i vµo dßng nhiÖm vô ®Ó hñy.");
 	return 1;
@@ -3976,6 +3980,7 @@ static int TG_VanTieuStart(int nTaskId)
 		g_nTGVTPhase = 20;
 	else
 		g_nTGVTPhase = 10;
+	TG_BanDoStop(NULL);	// [BANDO20 06/09] mot nguoi mot duong
 	g_nTGVTOn = 1;
 	if (g_nTGVTPhase == 3)
 	{
@@ -4124,6 +4129,302 @@ static void TG_VanTieuTick()
 	}
 	if (DT_WalkTo(nPlayerIdx, nDX, nDY, 200, uCur))
 		TG_VanTieuStop(VT_MSG_KHONG_NPC);	// da toi o quy dinh ma khong thay NPC
+}
+
+//---------------------------------------------------------------------------
+// [BANDO20 06/09] BAN DO THE GIOI / SON DONG: bam dia diem -> TU CHAY BO xuyen map toi map do
+// (nhu 2.0, KHONG nhay map). Do thi noi map = settings\MapTraffic.ini (da nap g_MapTraffic):
+// trong muc [map], k_Type=0 la CUA sang map khac, k_Point = diem tren tieu ban do (MPS = x*16,
+// y*32 - cung cong thuc FlagOnTarget / ve co ScenePlaceMapC.cpp:539), k_Index = map dich.
+// BFS tim chuoi cua tu map dang dung toi map dich; moi chang DT_WalkTo toi cua de dam len trap
+// -> may chu doi map -> sang map ke thi chang tiep; toi map dich = xong. Dung tren cua ma map
+// khong doi ~2 s -> do quanh 8 huong x 1-2 o (ky hieu co the lech o trap). Bi keo sang map
+// ngoai ke hoach -> tinh lai duong tu map moi (toi da 3 lan). Client KHONG co du lieu trap
+// (KRegion::GetTrap tra 0 phia client) nen chi dua vao Point cua MapTraffic.
+// Tick 400 ms tu KCoreShell::Breathe nhu cac TG_ khac; map su kien chan (TG_ChanMapSuKien);
+// mot nguoi mot duong: bat cai nay thi tat 3 dan duong F11 va nguoc lai. Bam lai dung map = huy.
+//---------------------------------------------------------------------------
+struct sBDLink { int nFrom; int nTo; int nX; int nY; };	// nX/nY = MPS cua cua
+static std::vector<sBDLink> g_vBDLink;				// toan bo cua noi map (nap 1 lan)
+static int  g_nBDLinkLoaded = 0;
+static int  g_nBDOn = 0;
+static int  g_nBDTarget = 0;							// map dich
+static std::vector<sBDLink> g_vBDPlan;				// chuoi cua phai qua
+static int  g_nBDStep = 0;
+static int  g_nBDTry = 0;							// tick trong chang hien tai
+static int  g_nBDWait = 0;							// tick dung tren cua ma map chua doi
+static int  g_nBDNudge = 0;							// so lan do quanh cua
+static int  g_nBDLost = 0;							// tick m_nIndex <= 0 (dang doi map)
+static int  g_nBDReplan = 0;						// so lan tinh lai duong
+static UINT g_uBDNext = 0;
+static KIniFile* g_pBDMapList = NULL;				// \Settings\MapList.ini (ten map)
+#define BD_MAX_MAP		1300
+#define BD_MAX_SYMBOL	64
+
+static void BD_LoadLinks()
+{
+	if (g_nBDLinkLoaded)
+		return;
+	g_nBDLinkLoaded = 1;
+	char szSect[16], szKey[32];
+	for (int nMap = 1; nMap < BD_MAX_MAP; nMap++)
+	{
+		sprintf(szSect, "%d", nMap);
+		if (!g_MapTraffic.IsSectionExist(szSect))
+			continue;
+		for (int j = 1; j <= BD_MAX_SYMBOL; j++)
+		{
+			int nType = -1;
+			sprintf(szKey, "%d_Type", j);
+			g_MapTraffic.GetInteger(szSect, szKey, -1, &nType);
+			if (nType != 0)
+				continue;
+			int nX = 0, nY = 0, nTo = 0;
+			sprintf(szKey, "%d_Point", j);
+			g_MapTraffic.GetInteger2(szSect, szKey, &nX, &nY);
+			sprintf(szKey, "%d_Index", j);
+			g_MapTraffic.GetInteger(szSect, szKey, 0, &nTo);
+			if (nTo <= 0 || nTo >= BD_MAX_MAP || nTo == nMap || nX <= 0 || nY <= 0)
+				continue;
+			sBDLink l;
+			l.nFrom = nMap;
+			l.nTo = nTo;
+			l.nX = nX * 16;
+			l.nY = nY * 32;
+			g_vBDLink.push_back(l);
+		}
+	}
+}
+
+// ten map (MapList N_name, bo khoang trang dau) - "" neu khong co
+static const char* BD_TenMap(int nMap)
+{
+	static char szTen[64];
+	szTen[0] = 0;
+	if (!g_pBDMapList)
+	{
+		g_pBDMapList = new KIniFile;
+		if (!g_pBDMapList->Load("\\Settings\\MapList.ini"))
+		{
+			delete g_pBDMapList;
+			g_pBDMapList = NULL;
+			return szTen;
+		}
+	}
+	char szKey[32];
+	sprintf(szKey, "%d_name", nMap);
+	g_pBDMapList->GetString("List", szKey, "", szTen, sizeof(szTen));
+	char* pc = szTen;
+	while (*pc == ' ')
+		pc++;
+	if (pc != szTen)
+		memmove(szTen, pc, strlen(pc) + 1);
+	return szTen;
+}
+
+// BFS tren do thi cua: tra so chang (0 = dang o dich, -1 = khong co duong bo)
+static int BD_TimDuong(int nFrom, int nTo, std::vector<sBDLink>& vPlan)
+{
+	vPlan.clear();
+	if (nFrom == nTo)
+		return 0;
+	if (nFrom <= 0 || nFrom >= BD_MAX_MAP || nTo <= 0 || nTo >= BD_MAX_MAP)
+		return -1;
+	BD_LoadLinks();
+	static int aPrev[BD_MAX_MAP];		// chi so cua dan toi map (-1 chua toi, -2 diem xuat phat)
+	static int aQueue[BD_MAX_MAP];
+	for (int i = 0; i < BD_MAX_MAP; i++)
+		aPrev[i] = -1;
+	int nHead = 0, nTail = 0;
+	aQueue[nTail++] = nFrom;
+	aPrev[nFrom] = -2;
+	while (nHead < nTail)
+	{
+		int nCur = aQueue[nHead++];
+		if (nCur == nTo)
+			break;
+		for (int k = 0; k < (int)g_vBDLink.size(); k++)
+		{
+			const sBDLink& l = g_vBDLink[k];
+			if (l.nFrom != nCur || aPrev[l.nTo] != -1)
+				continue;
+			aPrev[l.nTo] = k;
+			if (nTail < BD_MAX_MAP)
+				aQueue[nTail++] = l.nTo;
+		}
+	}
+	if (aPrev[nTo] == -1)
+		return -1;
+	int nMap = nTo;
+	while (nMap != nFrom)
+	{
+		int k = aPrev[nMap];
+		if (k < 0)
+			return -1;
+		vPlan.insert(vPlan.begin(), g_vBDLink[k]);
+		nMap = g_vBDLink[k].nFrom;
+		if ((int)vPlan.size() > BD_MAX_MAP)
+			return -1;
+	}
+	return (int)vPlan.size();
+}
+
+static void TG_BanDoStop(const char* szMsg)
+{
+	if (!g_nBDOn)
+		return;
+	if (szMsg)
+		DT_Msg(CLIENT_PLAYER_INDEX, szMsg);
+	g_nBDOn = 0;
+	g_ScenePlace.RemoveFlag();	// bo duong dang di (SubWorld[0].StopPath)
+}
+
+// bat dau tu chay toi map nMap: tra 1 = di, 2 = huy (bam lai dung map dang di), 0 = khong duoc
+static int TG_BanDoStart(int nMap)
+{
+	int nPlayerIdx = CLIENT_PLAYER_INDEX;
+	if (Player[nPlayerIdx].m_nIndex <= 0)
+		return 0;
+	if (g_nBDOn && nMap == g_nBDTarget)
+	{
+		TG_BanDoStop("<color=Cyan>[B¶n ®å] §· huû tù ch¹y.");
+		return 2;
+	}
+	if (Player[nPlayerIdx].m_sExtAuto.nDTEngaged)
+	{
+		DT_Msg(nPlayerIdx, "<color=Yellow>[B¶n ®å] Auto D· TÈu ®ang ch¹y - ®Ó auto tù lo viÖc di chuyÓn.");
+		return 0;
+	}
+	if (TG_ChanMapSuKien(nPlayerIdx))
+		return 0;
+	int nCur = SubWorld[0].m_SubWorldID;
+	if (nCur == nMap)
+	{
+		DT_Msg(nPlayerIdx, "<color=Yellow>[B¶n ®å] Ng­¬i ®ang ë ngay b¶n ®å nµy.");
+		return 0;
+	}
+	std::vector<sBDLink> vPlan;
+	int nHop = BD_TimDuong(nCur, nMap, vPlan);
+	char szBuf[256];
+	if (nHop <= 0)
+	{
+		_snprintf(szBuf, sizeof(szBuf) - 1, "<color=Yellow>[B¶n ®å] Kh«ng t×m ®­îc ®­êng bé tíi %s - n¬i nµy ph¶i ®i b»ng Xa Phu, thuyÒn hoÆc phï.", BD_TenMap(nMap));
+		szBuf[sizeof(szBuf) - 1] = 0;
+		DT_Msg(nPlayerIdx, szBuf);
+		return 0;
+	}
+	// mot nguoi mot duong: tat 3 dan duong F11
+	TG_XaFuStop(NULL);
+	TG_SatThuStop(NULL);
+	TG_VanTieuStop(NULL);
+	g_vBDPlan = vPlan;
+	g_nBDTarget = nMap;
+	g_nBDStep = 0;
+	g_nBDTry = 0;
+	g_nBDWait = 0;
+	g_nBDNudge = 0;
+	g_nBDLost = 0;
+	g_nBDReplan = 0;
+	g_uBDNext = 0;
+	g_nBDOn = 1;
+	_snprintf(szBuf, sizeof(szBuf) - 1, "<color=Cyan>[B¶n ®å] §ang tù ch¹y tíi %s (qua %d cöa map) - bÊm l¹i ®Þa ®iÓm ®ã trªn b¶n ®å ®Ó huû.", BD_TenMap(nMap), nHop);
+	szBuf[sizeof(szBuf) - 1] = 0;
+	DT_Msg(nPlayerIdx, szBuf);
+	return 1;
+}
+
+static void TG_BanDoTick()
+{
+	if (!g_nBDOn)
+		return;
+	int nPlayerIdx = CLIENT_PLAYER_INDEX;
+	UINT uCur = timeGetTime();
+	if (uCur < g_uBDNext)
+		return;
+	g_uBDNext = uCur + 400;
+	if (Player[nPlayerIdx].m_nIndex <= 0)
+	{
+		if (++g_nBDLost > 50)	// ~20 s khong co nhan vat (thoat / doi map qua lau)
+			g_nBDOn = 0;
+		return;
+	}
+	g_nBDLost = 0;
+	int nCur = SubWorld[0].m_SubWorldID;
+	if (nCur == g_nBDTarget)
+	{
+		char szBuf[256];
+		_snprintf(szBuf, sizeof(szBuf) - 1, "<color=Cyan>[B¶n ®å] §· tíi %s.", BD_TenMap(nCur));
+		szBuf[sizeof(szBuf) - 1] = 0;
+		TG_BanDoStop(szBuf);
+		return;
+	}
+	if (g_nBDStep < 0 || g_nBDStep >= (int)g_vBDPlan.size() || g_vBDPlan[g_nBDStep].nFrom != nCur)
+	{
+		// vua sang map khac: dung mot map trong ke hoach? (co the nhay qua nhieu chang)
+		int nFound = -1;
+		for (int k = 0; k < (int)g_vBDPlan.size(); k++)
+		{
+			if (g_vBDPlan[k].nFrom == nCur)
+			{
+				nFound = k;
+				break;
+			}
+		}
+		if (nFound < 0)
+		{
+			// lac sang map ngoai ke hoach -> tinh lai tu map nay
+			if (++g_nBDReplan > 3 || TG_ChanMapSuKien(nPlayerIdx))
+			{
+				TG_BanDoStop("<color=Yellow>[B¶n ®å] L¹c sang map kh¸c, kh«ng t×m ®­îc ®­êng ®i tiÕp - dõng tù ch¹y.");
+				return;
+			}
+			std::vector<sBDLink> vPlan;
+			if (BD_TimDuong(nCur, g_nBDTarget, vPlan) <= 0)
+			{
+				TG_BanDoStop("<color=Yellow>[B¶n ®å] L¹c sang map kh¸c, kh«ng t×m ®­îc ®­êng ®i tiÕp - dõng tù ch¹y.");
+				return;
+			}
+			g_vBDPlan = vPlan;
+			nFound = 0;
+		}
+		g_nBDStep = nFound;
+		g_nBDTry = 0;
+		g_nBDWait = 0;
+		g_nBDNudge = 0;
+		return;		// nhip sau moi di (map vua nap, luoi A* co the chua san)
+	}
+	if (++g_nBDTry > 450)	// ~3 phut mot chang
+	{
+		TG_BanDoStop("<color=Yellow>[B¶n ®å] §i qu¸ l©u - dõng tù ch¹y.");
+		return;
+	}
+	const sBDLink& l = g_vBDPlan[g_nBDStep];
+	int nX = l.nX, nY = l.nY;
+	if (g_nBDNudge > 0)
+	{
+		// do quanh cua: 8 huong x 1 o, roi 8 huong x 2 o
+		static const int aDX[8] = { 1, -1, 0, 0, 1, -1, 1, -1 };
+		static const int aDY[8] = { 0, 0, 1, -1, 1, -1, -1, 1 };
+		int n = (g_nBDNudge - 1) % 8;
+		int nBuoc = 32 * (1 + (g_nBDNudge - 1) / 8);
+		nX += aDX[n] * nBuoc;
+		nY += aDY[n] * nBuoc;
+	}
+	if (DT_WalkTo(nPlayerIdx, nX, nY, 20, uCur))
+	{
+		// dang dung tren cua ma map chua doi: doi ~2 s roi do sang o ben canh
+		if (++g_nBDWait >= 5)
+		{
+			g_nBDWait = 0;
+			if (++g_nBDNudge > 16)
+			{
+				TG_BanDoStop("<color=Yellow>[B¶n ®å] Kh«ng qua ®­îc cöa map (bÞ chÆn?) - dõng tù ch¹y.");
+				return;
+			}
+		}
+	}
+	else
+		g_nBDWait = 0;
 }
 
 // [DaTau] tim quai con SONG da sync NGOAI tam danh de chay toi (T4 di tim quai).
@@ -16337,6 +16638,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	case GOI_TASKGUIDE_GOTO_VANTIEU:	// [VTCN 06/09] bang F11 muc Van tieu: uParam = TaskId 11/12 -> dan duong toi NPC
 		nRet = TG_VanTieuStart((int)uParam);
 		break;
+	case GOI_WORLDMAP_GOTO:	// [BANDO20 06/09] ban do the gioi / son dong: bam dia diem -> tu chay bo toi map (uParam = map id)
+		nRet = TG_BanDoStart((int)uParam);
+		break;
 	case GOI_CP_UNLOCK:						//open ruong
 		SendClientCPUnlockCmd(uParam);
 		break;
@@ -23977,6 +24281,7 @@ int KCoreShell::Breathe()
 		TG_XaFuTick();	// [TaskGuide] dan duong den Xa Phu (chi chay khi dang bat)
 		TG_SatThuTick();	// [3HD C20] dan duong toi boss Sat Thu
 		TG_VanTieuTick();	// [VTCN 06/09] dan duong van tieu (chi chay khi dang bat)
+		TG_BanDoTick();	// [BANDO20 06/09] ban do: tu chay bo toi map da bam (chi chay khi dang bat)
 		DWORD dwTickT2 = timeGetTime();
 		g_ScenePlace.Breathe();
 		CoreProbeTick(dwTickT0, dwTickT1 - dwTickT0, dwTickT2 - dwTickT1, timeGetTime() - dwTickT2);
@@ -23988,6 +24293,7 @@ int KCoreShell::Breathe()
 	TG_XaFuTick();	// [TaskGuide] dan duong den Xa Phu (chi chay khi dang bat)
 	TG_SatThuTick();	// [3HD C20] dan duong toi boss Sat Thu
 	TG_VanTieuTick();	// [VTCN 06/09] dan duong van tieu (chi chay khi dang bat)
+	TG_BanDoTick();	// [BANDO20 06/09] ban do: tu chay bo toi map da bam (chi chay khi dang bat)
 	g_ScenePlace.Breathe();
 	return true;
 }

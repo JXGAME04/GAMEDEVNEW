@@ -893,6 +893,10 @@ enum GAMEOPERATION_INDEX
 	// [VTCN 06/09] bang F11 muc Van tieu: uParam = TaskId (11 ca nhan / 12 ap Tieu Bang) ->
 	// tu dan duong toi NPC nhan nhiem vu (bam lai = huy). Dat CUOI enum (Core + S3Client cung dich).
 	GOI_TASKGUIDE_GOTO_VANTIEU,
+	// [BANDO20 06/09] Ban do the gioi / son dong: bam dia diem -> TU CHAY BO xuyen map toi map do (nhu 2.0,
+	// KHONG nhay map). uParam = map id (MapList N). Tra 1 = bat dau, 2 = huy (bam lai dung map dang di),
+	// 0 = khong duoc (da bao ly do). Dat CUOI enum (Core + S3Client cung dich).
+	GOI_WORLDMAP_GOTO,
 
 };
 
