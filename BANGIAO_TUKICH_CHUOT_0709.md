@@ -9,22 +9,32 @@
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `bin\client\CoreClient.dll.moi` | `15bd934d` | 2.612.736 | `origin/main` `0747c8e6` **+** commit `e2a03fc0` (vá này) |
+| `bin\client\CoreClient.dll.moi` | **`1ca74e6e`** | 2.612.736 | `origin/main` `be72d6b6` = TUKICH `e2a03fc0` + LNCK + DELTA a–g + MATDO |
+| `bin\server\CoreServer.dll.moi` | `1d06f7f0` | — | của phiên DELTA (⊇ LNCK `a71d3305`) — vá này thuần client, không cần |
 
 Bản đang chạy: `CoreClient.dll` `7bcf5119` · `Game.exe` `610a1b63`.
 
 **Cách đổi:** thoát hẳn `Game.exe` → chạy `bin\client\ChoiGame.bat`. **Không** cần đổi `Game.exe`
 hay `WAuto.exe` (vá chỉ nằm trong CoreClient, không đụng gói tin / cấu trúc / vtable).
 
-### Khe `.moi` dùng chung với phiên khác — đã kiểm
+### Khe `.moi` dùng chung với phiên khác — nhật ký
 
-- Khe trước đó là `90eeaa8d` của phiên **LNCK** (đặt 11:19). Bản lưu của họ
-  `CoreClient.dll.moi.lnck_90eeaa8d_1122` vẫn còn nguyên, tôi không đụng.
-- `15bd934d` là **siêu tập** của `90eeaa8d`: nó build từ `origin/main` `0747c8e6`, mà `0747c8e6`
-  đã chứa `bc1a8224` (LNCK — `KNpc.cpp::CalcDamage` bỏ điều kiện `!bReturn`). Kiểm bằng
-  `git diff HEAD -- Sources/` = **chỉ 114 dòng thêm của tôi**, không xoá dòng nào.
-- `bin\server\CoreServer.dll.moi` (`a71d3305`) là của họ — **không đụng**; vá này thuần client.
-- Đã nhắn phiên LNCK. Ai đặt lại `.moi` phải merge `origin/main` ≥ `e2a03fc0` trước.
+| Giờ | Khe `CoreClient.dll.moi` | Ai |
+|---|---|---|
+| 11:19 | `90eeaa8d` | phiên **LNCK/BANGSAT2** (`Phantich Caibang skill 120`) |
+| 11:27 | `15bd934d` | **tôi** — build `origin/main` `0747c8e6` + `e2a03fc0`; ⊇ `90eeaa8d` vì `0747c8e6` đã chứa `bc1a8224` |
+| 11:37 | **`1ca74e6e`** | phiên **DELTA** — build `origin/main` `be72d6b6`; ⊇ `15bd934d` |
+
+Đã kiểm bản `1ca74e6e` bằng tay, không nhận suông:
+
+- `git merge-base --is-ancestor e2a03fc0 be72d6b6` = **CÓ**; `be72d6b6` nằm trên `origin/main`.
+- `git diff e2a03fc0..origin/main` trên ba tệp của tôi: **không đụng dòng TUKICH nào**
+  (`KNpc.cpp` có đổi 44/−4 dòng nhưng là phần khác — DELTA g).
+- Đếm chuỗi trong nhị phân `1ca74e6e`: `TUKICH` ×2, `bo qua lenh nham o quai vua chet` ×1,
+  `chet luc dang duoi -> dung tai` ×1 — **đúng bằng** bản `15bd934d` của tôi.
+- Các bản cũ giữ nguyên cạnh đó: `.moi.tukich_15bd934d`, `.moi.lnck_90eeaa8d_1122`.
+
+Ai đặt lại `.moi` phải `git fetch origin` và kiểm siêu tập trước khi đè.
 
 ---
 
@@ -139,5 +149,6 @@ mọi đường đánh nhau · `GotoWhereDirect` (đường tìm đường của
 
 ## 7. Chưa test thật
 
-Mới build xong (`Client Release|Win32` Core: COMPILE PASS / LINK PASS) và đặt `.moi` lúc 11:27 —
-**chủ chưa swap, chưa đánh thử**. Mục 5 là các bước cần chạy khi vào game.
+Mới build xong (`Client Release|Win32` Core: COMPILE PASS / LINK PASS); khe `.moi` hiện là
+`1ca74e6e` của phiên DELTA (siêu tập, xem mục 1) — **chủ chưa swap, chưa đánh thử**.
+Mục 5 là các bước cần chạy khi vào game.
