@@ -741,3 +741,27 @@ Chủ swap 10:08 (bản MATDO b c37a0b1b, gồm TOCDO + SKEXP + DELTA a–e); tr
 **Vá f đã build (từ `origin/main` b666656b + vá f = a6d62a3c):** `bin\server\CoreServer.dll.moi` = **bc6b2b80** (18.481.664), `bin\client\CoreClient.dll.moi` = **9916d00f** (2.611.712); đổi cỡ gói 221 (25 → 28) nên phải swap CẢ HAI (máy chủ mới chỉ phát 221 khi client đã chào, nên lệch vẫn không sập). Nghiệm thu trận kế: `[PS-BO]` cột `nhieu` gần như đứng yên, gói 75 dưới 2 % byte trong `[BC-TOP]`; `[NS-BO] 10s` có `gon_them=`; bot lên/xuống ngựa vẫn hiện đúng trên client.
 
 **Cập nhật 10:42:** phiên BANGSAT2 thay khe bằng bản từ `origin/main` 34b58589 (⊇ vá f a6d62a3c + Chiến Lệnh 10a55613 + BANGSAT2): **`CoreServer.dll.moi` = 8008e14d, `CoreClient.dll.moi` = 7bcf5119** (đã kiểm có `gon_them`, đủ dấu hiệu DELTA; bản f giữ tên `.moi.delta_f_*_1028`). Kèm `Game.exe.moi` 610a1b63 của phiên Chiến Lệnh. Swap cả ba bằng hai bat.
+
+### 8.11 Trận 11:12 trên bản có vá f (live e8130f46 từ 11:09 + client 7bcf5119 từ 10:43): kết quả và bước tiếp
+
+58 cửa sổ 10 s (11:09–11:19, trận từ 11:12, chủ giữa đám đánh dồn). Không sập, 0 `Net Msg Error`, TICK 6,5 ms (một nhịp 414 ms lúc 11:21 là script, `tre` 2/11 phút).
+
+| Chỉ số | 01:00 (a) | 10:11 (a–e) | 11:12 (a–f) |
+|---|---|---|---|
+| Gói 75 ngoại hình, % byte | 15 | 11,8 | **7,3** |
+| Gói 75, số lần phát (máy chủ) | – | 51.700 / 11 phút | **19.800 / 10 phút** (−62 %) |
+| `[PS-BO] nhom nhieu` (lên/xuống ngựa) | – | 32.649 | **131** |
+| Gói 77 đầy đủ, % byte | 17 | 9,9 | **6,9** |
+| 221 gọn | 46 | 61 | 53,6 |
+| 207 số sát thương | 10 | 8,5 | **25** (đánh dồn: một cửa sổ 13.229 gói = 219 KB) |
+| Client trung bình / đỉnh | 24,8 / 51,3 KB/s | 8,5 / 42,5 | 17,6 / **64,7** @ 3.337 gói/s |
+| `gon_them` | – | – | ~700 / 10 s |
+
+**Đọc:** vá f đúng thủ phạm: số lần gói 75 phát lại vì lên/xuống ngựa từ 32.649 xuống 131. Phần còn lại của 75 (19.800 lần/10 phút ≈ 1.000 bot ÷ 30 s) **chính là kỳ làm mới 30 giây**, không còn là thay đổi thật; các nguyên nhân thật chỉ còn rank 678, tên/cấp 530, cờ khác 3.897 (bit PK/ngủ/bang), khác 1.342.
+
+**Bước tiếp (theo lợi/công):**
+
+1. **Chỉ config, không build:** `config.ini [Server] BroadCastLamMoi=300` (kỳ làm mới ngoại hình 30 → 300 s). An toàn vì gói 75 không còn nằm trong lớp bị van bỏ và người mới thấy NPC đã nhận ngoại hình đầy đủ qua `PLAYER_SYNC` lúc hỏi NPC. Kỳ vọng 75 còn ~1 % byte. Chủ thêm dòng vào `[Server]` (không có dấu cách trước `=`).
+2. **207 giờ là gói lớn thứ hai khi đánh dồn (25 %, đỉnh 219 KB/10 s).** Cách giảm không mất gì: bản phát tán cho người xem bỏ `dwLauncher` (client `s2cShowDamage` chỉ dùng người nhận, số, loại, chí mạng; `dwLauncher` chỉ để ghi log), 17 → 13 byte (−24 % phần 207, ≈ −6 % tổng lúc đánh dồn); người đánh/nạn nhân vẫn nhận bản đầy đủ riêng. Đổi giao thức nhỏ (mã mới, gated hello). Làm khi chủ muốn.
+3. `gon_them` ~700/10 s (gói gọn kèm sau gói đầy đủ) là chi phí nhỏ (25 B), giữ.
+4. Đỉnh 64,7 KB/s @ 3.337 gói/s là "giá" của không cắt số sát thương khi 250 bot đánh dồn quanh chủ; client vẫn 124 lượt vẽ/giây, 2,2 ms mỗi lượt.
