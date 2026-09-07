@@ -209,9 +209,9 @@ Chủ: *"bug làm mất đồ người chơi thật? bạn kiểm tra ngay"* · 
 ### 10.5e Nhị phân đợt 4 (gộp 4 + 4b + 4c)
 | tệp | md5 | kích thước | swap |
 |---|---|---|---|
-| `bin\server\CoreServer.dll.moi` | **62313d60e45ce37dc6c8267c9bfb515e** | 18.460.672 | tắt GameServer → `ChayGameServer.bat` (thay bản 4ce83dd5 đang chạy — bản này còn ném đồ) |
+| `bin\server\CoreServer.dll.moi` | **6ab3dfbf6a3f78b13bfe5438df693b91** | 18.460.672 | tắt GameServer → `ChayGameServer.bat` (thay bản 4ce83dd5 đang chạy — bản này còn ném đồ) |
 
-Nhãn kiểm: đủ nhãn đợt 1-3 + `[BotMac]` (9), `chuc vu JX2` (1); `InsertEquipment` chỉ còn 1 (dòng include). **Không restart bằng bản 4ce83dd5 nữa** (mỗi restart tái kích 5 lượt ném đồ cho 346 bot).
+Build từ `origin/main` 80079cc1 (gồm cả CoreShell.cpp / ipc_shared.h của phiên khác đẩy sau 19:0x). Nhãn kiểm: đủ nhãn đợt 1-3 + `[BotMac]` (9), `chuc vu JX2` (1); `InsertEquipment` chỉ còn 1 (dòng include). **Không restart bằng bản 4ce83dd5 nữa** (mỗi restart tái kích 5 lượt ném đồ cho 346 bot).
 
 ### 10.6 Nghiệm thu đợt 3 (sau restart)
 ```bash
