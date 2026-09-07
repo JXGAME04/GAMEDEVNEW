@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/lib_map.lua
+-- Muc dich  : BAN DO: ten/id map, toa do, dich chuyen, kiem tra vung an toan.
+-- Duoc nap  : Include tu 40 tep (vd chuyensinhdaisu.lua, lib.lua, lib_vt.lua, tieudau.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : npcposarray.lua
+-- Ham (dong): CountPlayerInMaps (61), MoveNPC (75), AddNpcEx1 (92), AddNpcEx2 (120), AddNpcEx3 (136), AddNpcEx4 (194), AddNpcEx5 (216), AddNpcNew (274), AddTrapEx1 (353), AddTrapEx2 (365), AddTrapEx3 (377), AddTrapEx4 (389), AddTrapEx5 (401), AddObstacleEx1 (407), GetMapName (688), CheckMapNoForTDP (698), CheckMapNoForTHP (707), CheckMapNoForTKCT (716), AddObjEx1 (725)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- Author: Fong KiÒu
 -- Date: 28/11/2016
 -- Chuc nang: Ham ho tro map

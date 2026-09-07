@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/progressbar.lua
+-- Muc dich  : Thanh tien trinh (progress bar) - port Linux, Hoa Son 01/09.
+-- Duoc nap  : Include tu 5 tep (vd npc_lmbiaobox.lua, npc_lmbiaowu.lua, box.lua, item_yaobao.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): tbProgressBar:OpenByConfig (23), tbProgressBar:Open (30), tbProgressBar:Start (33), tbProgressBar_OnTime (41), tbProgressBar_OnBreak (48)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- [HOASON 01/09] port tu Linux script\lib\progressbar.lua (bo IncludeLib TIMER/FILESYS, cau hinh settings\progressconfig.txt nhung thang vao bang)
 -- JX1 OpenProgressBar (KJx2WarInfra.cpp LuaHD3_OpenProgressBar) = hop dem gio TimeBox: chi dung szTitle, nFrame va ten ham OnTime.
 local tbData = {}

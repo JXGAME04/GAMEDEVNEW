@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/log_game/danhsach_bang.lua
+-- Muc dich  : Danh sach bang (du lieu).
+-- Duoc nap  : Include tu 1 tep (vd log_tong.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham       : (khong co - tep du lieu/cau hinh)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 BANGHOI_DANHSACH_CR={
 	[1]={
 		[1] = 321451775,

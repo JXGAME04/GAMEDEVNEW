@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/global/signet_head.lua
+-- Muc dich  : An (signet).
+-- Duoc nap  : Include tu 1 tep (vd bossdeath.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): getSignetDropRate (5), IsDoubledMoneyBox (15), getSignetYMD (22)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 IncludeLib("TONG")
 TASKID_MONEYBOX_LASTTIME = 2446	--Ã’÷Ï«Æ¥¸–ß¡¶Ωÿ÷π ±º‰
 TONGTSK_MONEYBOX_DROPMAX = 1035	--Ã’÷Ï«Æ¥¸∑≠±∂µÙ¬‰boss±¶”°µƒœﬁ÷∆

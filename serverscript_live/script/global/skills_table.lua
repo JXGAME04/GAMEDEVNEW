@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/skills_table.lua
+-- Muc dich  : BANG KY NANG (1539 dong): ten, id, he, cap.
+-- Duoc nap  : Include tu 1 tep (vd hotrotest.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : save_log.lua
+-- Ham (dong): check_update (4), skills_update (17), check_faction (66), add_misc (113), update_tw (125), update_gb (150), update_wd (175), update_em (199), update_sl (223), update_wu (247), update_cy (271), update_tm (295), update_tr (319), update_kl (343), add_tw (367), add_sl (437), add_tm (498), add_wu (567), add_em (644), add_cy (712), add_tr (769), add_gb (837), add_wd (894), add_kl (951) ... (29 ham)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong Ki“u
 
 Include("\\script\\log_game\\save_log.lua")

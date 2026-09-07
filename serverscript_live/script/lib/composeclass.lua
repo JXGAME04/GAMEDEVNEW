@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/composeclass.lua
+-- Muc dich  : CHE TAO / GHEP DO co giao dien (compose class).
+-- Duoc nap  : Include tu 2 tep (vd yandituteng.lua, composelistclass.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : task_string.lua, awardtemplet.lua, baseclass.lua
+-- Ham (dong): transferDigit2CnNum (33), tbComposeClass:_init (86), tbComposeClass:CheckMaterial (102), tbComposeClass:CanMakeMaxCount (149), tbComposeClass:ConsumeMaterial (163), tbComposeClass:GetMaterialList (203), tbComposeClass:Compose (228), tbComposeClass:ComposeDailog (280), tbComposeClass:ConsumeLog (305), tbComposeClass:AskNumber (308), tbComposeClass:ComposeCountComfirm (319), tbComposeClass:MakeAskNumberFunction (342), tbComposeClass:GetProductName (349), tbComposeClass:GetFormulaByString (356)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- ==========================================================================
 -- composeclass.lua - PORT tu ban Linux sang JX1  (Viem De, 26/08)
 -- Sinh boi ReverseTools\viemde\v21_port_composeclass.py - DUNG SUA TAY

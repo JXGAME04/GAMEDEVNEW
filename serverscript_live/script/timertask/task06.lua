@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/timertask/task06.lua
+-- Muc dich  : VIEC THEO LICH goi tu timerserver.lua (RunTime): taskNN.lua = nhom viec so NN (task04-07 rong tu 30/08).
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng)
+-- Ham (dong): OnTimer (6), OnMissionTimer (10)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --[GOHECU 30/08] Tep nay DA RUT VE KHUNG RONG.
 --   He cu: hen gio Loi Dai + Vuot Ai cu
 --   Ban thay: citywar_arena timer JX2 (TimerTask 16/17) + timer_match ban Linux (41)

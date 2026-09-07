@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/timertask/task01.lua
+-- Muc dich  : VIEC THEO LICH goi tu timerserver.lua (RunTime): taskNN.lua = nhom viec so NN (task04-07 rong tu 30/08).
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng) + C++ goi truc tiep theo ten tep
+-- Include   : lib_task.lua, lib_tktc.lua, lib_ctc.lua, lib_vuotai.lua, save_log.lua, tongkim.lua
+-- Ham (dong): OnTimer (13), OnMissionTimer (18), ontime_tongkim (26)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong Ki“u
 --Date: 2021
 --Function: 

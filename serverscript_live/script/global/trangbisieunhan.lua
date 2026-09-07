@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/global/trangbisieunhan.lua
+-- Muc dich  : TRANG BI SIEU NHAN (70 ham).
+-- Duoc nap  : Include tu 1 tep (vd hotrotest.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): TrangBiCaoCap (1), NhanHkmp (8), NhanHkmps (29), SetTHkmp (48), SetTHkmp2 (54), NhanBachKim (59), NhanBachKims (81), SetTBachKim (100), SetTBachKim2 (106), DoHoangKim (111), ThanhCau (133), ThanhCaus (152), SetThanhCauMin (170), SetThanhCauMin2 (175), VanLoc (181), VanLocs (200), SetVanLocMin (218), SetVanLocMin2 (224), ThuongLang (230), ThuongLangs (249), SetThuongLangMin (267), SetThuongLangMin2 (272), HuyenVien (278), HuyenViens (297) ... (70 ham)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 function TrangBiCaoCap()
 	local tab_Content = {
 		"Trang BÞ  Thuéc TÝnh/DoHoangKim",

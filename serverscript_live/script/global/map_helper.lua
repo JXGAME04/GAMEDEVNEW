@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/map_helper.lua
+-- Muc dich  : Tro giup map (ban global).
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng)
+-- Include   : npcdailog.lua
+-- Ham (dong): map_help (57), skill_help (74), main (119), want2cd_signmap (151), sure2cd_signmap (159), bt_getsignpos (177), cd_about_compose (186), CallRescrptFunc (190), DoRescriptFunc (198), no (223)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- map_helper.lua
 -- By: Dan_Deng(2004-06-28)
 -- 主维护表，各五行、等级练级迷宫

@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/vng_lib/files_lib.lua
+-- Muc dich  : Doc/ghi tep (VNG).
+-- Duoc nap  : Include tu 1 tep (vd vngtranslog.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): loadsavevalue (2), savevalue (17), tbVngLib_File:Table2File (28), tbVngLib_File:TableFromFile (56), tbVngLib_File:TableFromFile2 (77)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 IncludeLib("FILESYS")
 function loadsavevalue(szPath)
 		handle = openfile(szPath, "r")

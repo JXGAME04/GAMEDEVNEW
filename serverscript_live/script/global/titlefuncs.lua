@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/global/titlefuncs.lua
+-- Muc dich  : DANH HIEU (title).
+-- Duoc nap  : Include tu 4 tep (vd npc_shizhe.lua, playerlogin.lua, changge_people.lua, bangthanh_f.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): title_jx1_id (28), title_jx1_apply (40), OnCancel (61), change_title (64), title_ShowTitleList (68), title_choose (105), title_loginactive (111)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- DOT E (E5): goc ghi IL("TITLE") nhung IL khong ton tai o dau ca (lo goc thu 5
 -- - file nay CHET tu dau o ban goc); doi sang IncludeLib de file nap duoc.
 IncludeLib("TITLE");

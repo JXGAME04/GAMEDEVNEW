@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/lib_vatpham.lua
+-- Muc dich  : VAT PHAM: them/xoa/kiem/dem vat pham trong tui.
+-- Duoc nap  : Include tu 51 tep (vd chuyensinhdaisu.lua, cauhoi.lua, drop_npc.lua, drop_tieu.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): DropNpcItemEx1 (62), DropNpcItemEx2 (66), DropSpecialItem (70)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- Author: Fong KiÒu
 -- Date: 28/11/2020
 -- Chuc nang: Ham ho tro vat pham

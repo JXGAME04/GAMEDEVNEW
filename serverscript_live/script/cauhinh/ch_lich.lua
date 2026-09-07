@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/cauhinh/ch_lich.lua
+-- Muc dich  : LICH HOAT DONG (gio mo/dong theo ngay).
+-- Duoc nap  : Include tu 4 tep (vd ch_all.lua, head.lua, mission.lua, lib_tktc.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham       : (khong co - tep du lieu/cau hinh)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- ============================================================================
 -- CH_LICH.LUA - THOI GIAN moi hoat dong / su kien
 -- [CAUHINH 29/08]
@@ -64,7 +72,7 @@ TK_PHUT_TRAN          = 30    ,	-- so PHUT ca tran. !! chu thich trong ma ghi 70
 TK_PHUT_NGUYENSOAI    = 1     ,	-- so PHUT den luc ra Nguyen Soai. !! chu thich ghi 30 - dang chay 1
 TK_PHUT_XOANPC        = 1     ,	-- so PHUT xoa NPC sau tran
 TK_NGUOI_MOI_PHE      = 2000  ,	-- so nguoi toi da moi phe
-TK_LICH               = {{14,36,19,1}, {17,50,18,3}, {20,50,21,4}, {22,50,23,5}},
+TK_LICH               = {{18,13,19,1}, {17,50,18,3}, {20,50,21,4}, {22,50,23,5}},
 -- [CONGTAC 29/08] CONG TAC BAT/TAT HOAT DONG
 -- 1 = bat, 0 = tat. Gia tri duoi day DUNG BANG trang thai dang chay
 -- hom nay, nen file nay khong lam doi gi ca cho toi khi ban sua.

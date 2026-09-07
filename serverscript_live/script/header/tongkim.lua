@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/header/tongkim.lua
+-- Muc dich  : TONG KIM: cau hinh dau truong, gio mo, map.
+-- Duoc nap  : Include tu 8 tep (vd mission01.lua, timerserver.lua, task01.lua, task02.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : LIMITED_1_ACCOUNT.lua, worldlibrary.lua, lib_ham.lua
+-- Ham (dong): CheckLimited_Join (6), ExcuteCheck (17), SAVEDULIEU (33), DELDULIEU (57), Split (63)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Kinnox
 --Date: 17/09/2020
 Include("\\script\\tinhnang\\tong_kim_tcap\\LIMITED_1_ACCOUNT.lua")

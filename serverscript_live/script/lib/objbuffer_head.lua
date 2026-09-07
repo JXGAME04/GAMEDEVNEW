@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/objbuffer_head.lua
+-- Muc dich  : OBJBUFFER: dong goi tham so khi goi RemoteExecute sang Relay (RELAYHT 06/09).
+-- Duoc nap  : Include tu 26 tep (vd activitydetail.lua, extend.lua, refresh_npc.lua, auction_manager.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): ObjBuffer:New (7), ObjBuffer:Destroy (17), ObjBuffer:Clear (24), ObjBuffer:IsEmpty (28), ObjBuffer:Push (32), ObjBuffer:Pop (36), ObjBuffer:PopObject (42), ObjBuffer:PushObject (63), ObjBuffer:PopNumber (80), ObjBuffer:PushNumber (84), ObjBuffer:PopString (88), ObjBuffer:PushString (92), ObjBuffer:PopTable (96), ObjBuffer:PushTable (107), ObjBuffer:PushByType (123), ObjBuffer:PopByType (137)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 OBJTYPE_NUMBER	= 1
 OBJTYPE_STRING	= 2
 OBJTYPE_TABLE	= 3

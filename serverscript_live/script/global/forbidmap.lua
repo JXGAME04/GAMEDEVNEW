@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/global/forbidmap.lua
+-- Muc dich  : Map cam (ban global).
+-- Duoc nap  : Include tu 2 tep (vd bosscharm.lua, seasonnpc_item.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): checkActMaps (15), checkYDBZMaps (26), checkSJMaps (33), checkBWMaps (44), checkZQMaps (54), checkXSMaps (63), checkHFMaps (71), checkTONGMaps (79), checkNEWPRACTICEMaps (86), CheckAllMaps (93)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --by yfeng
 if not BAN_HEAD then
 BAN_HEAD = 1

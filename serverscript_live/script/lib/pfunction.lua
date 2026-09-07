@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/pfunction.lua
+-- Muc dich  : Ham NGUOI CHOI (player function) goc JX2.
+-- Duoc nap  : Include tu 2 tep (vd activitydetail.lua, functionset.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : baseclass.lua
+-- Ham (dong): FunctionClass:_init (4), FunctionClass:GetGlobal (14), FunctionClass:exec (34), FunctionClass:Match (55), FunctionClass:ParseParam (62), FunctionClass:ParseFunction (120), FunctionClass:Parse (133)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\lib\\baseclass.lua")
 
 FunctionClass = tbBaseClass:new()

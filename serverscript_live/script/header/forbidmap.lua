@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/header/forbidmap.lua
+-- Muc dich  : MAP CAM (khong dung phu/PK/giao dich).
+-- Duoc nap  : Include tu 66 tep (vd baiguolu.lua, armor_huo.lua, armor_jin.lua, armor_mu.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): checkActMaps (12), checkYDBZMaps (24), checkSJMaps (31), checkBWMaps (41), checkZQMaps (51), checkXSMaps (58), checkHFMaps (65), checkTONGMaps (72), checkNEWPRACTICEMaps (79), checkTRAINMaps (86), check3HDMaps (103), CheckAllMaps (115)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong Ki“u
 
 SJMAPS = {44,326,327,328,329,330,331,344,345,346,347,348,349,350,351,352,353,354,355,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,863}

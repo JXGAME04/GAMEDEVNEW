@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/header/timerhead.lua
+-- Muc dich  : Ham thoi gian dung chung cho timer.
+-- Duoc nap  : Include tu 1 tep (vd laodau.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): GetRestSec (6), GetRestCTime (10), GetTimerTask (20)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- TimerHead.lua
 -- By: Dan_Deng(2003-08-23) 计时器相关工具
 

@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/cauhinh/ch_thuong_lib.lua
+-- Muc dich  : HAM PHAT THUONG theo bang ch_thuong.
+-- Duoc nap  : Include tu 2 tep (vd ch_all.lua, ch_thuong_lib.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : ch_lib.lua, ch_thuong.lua, ch_thuong_lib.lua
+-- Ham (dong): G_Chuoi (27), G_LogThuong (45), G_DemMonThuong (58), G_TraoMotMon (72), G_TraoThuong (128), G_TraoMon (187)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- ============================================================================
 -- CH_THUONG_LIB.LUA - CONG TRAO THUONG dung chung
 -- [CONGTHUONG 29/08] + [PHANBIEN 29/08] (sua 5 loi bo phan bien bat duoc)

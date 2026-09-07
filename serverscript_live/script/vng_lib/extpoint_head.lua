@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/vng_lib/extpoint_head.lua
+-- Muc dich  : Dinh nghia diem mo rong.
+-- Duoc nap  : Include tu 1 tep (vd extpoint.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham       : (khong co - tep du lieu/cau hinh)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 if not tbExtPointLib then 
 	tbExtPointLib = {}
 end

@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/bot_tongkim.lua
+-- Muc dich  : BOT tham gia Tong Kim (21/08).
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng) + C++ goi truc tiep theo ten tep
+-- Include   : lib_task.lua, lib_tktc.lua
+-- Ham (dong): bot_tk_thoat (29), bot_tk_muamau (73)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- Author: phien bot 21/08/2026
 -- Function: ham phu tro cho BOT KPlayer tham gia Tong Kim.
 --

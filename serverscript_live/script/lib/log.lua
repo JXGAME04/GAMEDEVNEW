@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/log.lua
+-- Muc dich  : Ghi LOG script (WriteLog) theo loai.
+-- Duoc nap  : Include tu 31 tep (vd wuxingyin.lua, seasonnpc.lua, huoyuedu.lua, honnguyenchandon.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): _WritePlayerLog (18), getItemInfo (34), tbLog:TabFormatLog (56), tbLog:PlayerAwardLog (65), tbLog:PlayerActionLog (85), tbLog:VngGetItemID (120), tbLog:VngReduceFormatLog (129), tbLog:VngActionFormatLog (137)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 IncludeLib("ITEM");
 
 local tbFactionNumber2Name = 

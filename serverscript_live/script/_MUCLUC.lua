@@ -1,0 +1,42 @@
+-- =====================================================================================================
+-- _MUCLUC.lua - MUC LUC CAY SCRIPT MAY CHU (sap xep 06/09/2026). Tep nay CHI LA CHU THICH, engine bo qua ten bat dau '_'.
+-- =====================================================================================================
+-- BO CUC (tieng Viet khong dau):
+--   (goc)         timerserver.lua (dong ho moi phut), timerserver_ctc.lua, protocol.lua, startgame.lua (boot), gmscript.lua, gb_taskfuncs.lua
+--   lib/          thu vien dung chung (lib_task, lib_ham, lib_map, lib_vatpham, awardtemplet, objbuffer_head, remoteexc...)
+--   header/       dinh nghia dau (taskid = ID bien nhiem vu, factionhead = mon phai, cauhinh_hoatdong, tongkim, map_helper...)
+--   cauhinh/      CAU HINH may chu (ch_chung, ch_exp, ch_drop, ch_lich, ch_thuong) - sua o day, web CFGW co the ghi de
+--   cauhinh_web/  CFGW: nap bang gcfg tu MySQL + tu dien khoa
+--   class/        ktabfile (doc bang .txt), lerror
+--   script_protocol/  giao thuc script GS <-> client
+--   startgame/    dat NPC/trap luc boot (npcpos.lua 27k dong = toa do NPC, traplib.lua)
+--   global/       thu vien toan cuc (hocvocong, trangbi*, itemset, seasonnpc = Da Tau, smelt_system = dung luyen, station...)
+--   npclevelscript/  AI + thuoc tinh NPC theo cap (npclevelscript.lua = mac dinh, C++ nap truc tiep)
+--   timertask/    viec theo lich goi tu timerserver; misc/ taskmanager JX2; maps/ script map mac dinh; log_game/ ghi log; vng_lib/
+--   nhanvat/      kynang (skill), nguoichoi (player), thucung (petsys), donghanh (partner)
+--   vatpham/      script vat pham (item cu) - dung khi dung vat pham; con: kiemthu/ chua *_admin
+--   giaodich/     thu (mail), daugia (auction_house)
+--   tinhnang/     phuban (missions), sukien (event), chientruong (battles), liendau, songbac, activitysys, chienlenh, congthanh,
+--                 vng_event, vng_feature, nationalwar, huoyuedu, baucua, bonusvlmc, trapcu (trap chuyen map cu), 3hoatdong, tong_kim_tcap, pubg...
+--   nhiemvu/      task cu (tollgate, newtask, partner, system, metempsychosis...), hoithoai (dailogsys), tanthu (tagnewplayer)
+--   npc/          npcthon cu (npcmonphai, balanghuyen...), thanhthi, khac
+--   dulieu/       codenew.lua (32k dong), giftcode_new.lua, giftcode_fancung.lua - CHI DU LIEU
+--   kiemthu/      test/, *_admin.lua, tmp - KHONG dung cho nguoi choi
+--   ../scriptjx2/ lib (ban JX2 khi script/lib thieu - remap C++), tong_vn (bang hoi JX2, engine nap rieng)
+--   ../_luutru/0609/  kho: 1.371 tep Han khong dung, ban cu, backup, Lua 4
+--
+-- DUONG DAN CU VAN CHAY: script/_duongdan_cu.txt (dong "--@ cu=moi"). Include/dofile/ID bam (trap, settings) tu tra bi danh.
+--   Them tep MOI: ghi thang vao thu muc moi. Doi cho tep: them dong bi danh. Kiem: python tools/sapxep/kiem_duongdan_cu.py
+--
+-- QUY UOC VIET SCRIPT (Lua 5.4 + lop tuong thich lua4compat):
+--   - ten ham cu (getn, tinsert, format, floor, random, strfind, date, call...) van dung; KHONG dung %x (viet x); for k, v in pairs(t) do;
+--     ham '...' khai local arg = {n = select("#", ...), ...}; chuoi co '\' phai la thoat hop le.
+--   - Moi tep .lua = MOT lua_State rieng: bien toan cuc cua tep khac KHONG thay duoc; muon dung chung thi Include.
+--   - Include KHONG khu trung nhung da co cache (Lua54Dll): Include lai van chay lai than tep -> dung "X = X or {}" khi khai bang.
+--   - Sua nong: tep trong chuoi Include cua timerserver.lua tu nap lai <= 1 phut; tep khac can restart.
+--   - Kiem truoc khi ghi: python ReverseTools/lua54/kiem_54.py <tep|thu muc>; loi luc chay ghi ScriptError.log trong THU MUC cua tep loi.
+--   - Chu Viet trong chuoi: TCVN3 raw (dung vn_edit.py), chu thich: ASCII khong dau.
+--
+-- DO HIEU NANG: jx_perf_server.log moi phut (TICK, SW_ACTIVATE, LUA_CALL = tong ms Lua/tick, SCRIPT_TIME = RunTime);
+--   console luc boot: "[script] LoadAllScript: N tep, M ms; cache Include ..." va "[script] Bi danh duong dan: ...".
+-- =====================================================================================================

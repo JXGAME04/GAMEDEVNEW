@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/cauhinh_web/cfgw_driver.lua
+-- Muc dich  : CFGW: nap bang gcfg (MySQL) va ap len bien cau hinh Lua khi boot / theo lenh (04-05/09).
+-- Duoc nap  : Include tu 1 tep (vd timerserver.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : ch_all.lua, cauhinh_hoatdong.lua, cfgw_meta.lua
+-- Ham (dong): CFGW_KhaiBang (30), CFGW_KhaiTatCa (79), CFGW_MoTaCpp (99), CFGW_LoiLua (114), CFGW_Body (118), CFGW_Tick30 (127)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- ============================================================================
 -- CFGW_DRIVER.LUA - [CFGW 04/09] CAU HINH GAME chinh tu WEB ADMIN (bang MySQL gcfg)
 --

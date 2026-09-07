@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/npclevelscript/property.lua
+-- Muc dich  : Ham tinh thuoc tinh NPC theo cap (23 ham).
+-- Duoc nap  : Include tu 18 tep (vd animal_userdef.lua, bairenleitai.lua, dragonboat_boss1.lua, dragonboat_boss2.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : lib.lua
+-- Ham (dong): SetLife (4), SetExp (9), SetAR (14), SetDP (19), SetMinDamage (24), SetMaxDamage (29), SetFireResist (34), SetPhysicsResist (39), SetColdResist (44), SetLightResist (49), SetPoisonResist (54), SetPhysicalDamageBase (59), SetPoisonDamageBase (64), SetColdDamageBase (69), SetFireDamageBase (74), SetLightingDamageBase (79), SetSkillLevel1 (84), SetSkillLevel2 (89), SetSkillLevel3 (94), SetSkillLevel4 (99), SetAuraSkillLevel (104), SetPasstSkillLevel (109), SetLifeReplenish (114)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\npclevelscript\\lib.lua");
 
 -- script viet hoa By http://tranhba.com  thi’t tr› sinh mπng 

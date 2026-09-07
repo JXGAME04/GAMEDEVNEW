@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/remoteexc.lua
+-- Muc dich  : REMOTEEXECUTE: goi ham tu GameServer sang Relay va nguoc lai (RELAYHT 06/09).
+-- Duoc nap  : Include tu 2 tep (vd tongcastle.lua, hundred_arena.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : objbuffer_head.lua, baseclass.lua, common.lua
+-- Ham (dong): RemoteExc (12), RemoteExc_CallBack (29), ReceiveExc (62)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\lib\\objbuffer_head.lua")
 Include("\\script\\lib\\baseclass.lua")
 Include("\\script\\lib\\common.lua")

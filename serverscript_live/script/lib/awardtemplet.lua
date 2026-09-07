@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/awardtemplet.lua
+-- Muc dich  : MAU PHAT THUONG (award templet) cho nhiem vu/hoat dong: dinh nghia loai thuong va cach trao (awardtype/*.lua).
+-- Duoc nap  : Include tu 75 tep (vd activity.lua, partysupport.lua, extend.lua, item_addproperty.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : item_jx1.lua, zhenyuan_jx1.lua, exp_jx1.lua
+-- Ham (dong): tbAwardTemplet:RegType (12), tbAwardTemplet:GivByRandom (16), tbAwardTemplet:Give (31), tbAwardTemplet:GiveAwardByList (58)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 
 
 -- ÎÄ¼þÃû¡¡£ºawardtemplet.lua

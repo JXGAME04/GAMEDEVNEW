@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/lib_task.lua
+-- Muc dich  : BIEN NHIEM VU: GetTask/SetTask, bit, chuoi nhiem vu. Tep duoc Include nhieu nhat (~500 tep).
+-- Duoc nap  : Include tu 164 tep (vd eventlib2010.lua, npcevent.lua, eventlib.lua, tuongquan.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): CheckPlayerTitle (367)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong KiÒu
 --Date 07/06/2021
 --Function: §Þnh nghÜa ID_Task trong Source vµ Script

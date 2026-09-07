@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/cauhinh/ch_lib.lua
+-- Muc dich  : HAM DOC/GHI CAU HINH (CH_*), noi voi web CFGW.
+-- Duoc nap  : Include tu 26 tep (vd ch_all.lua, ch_thuong_lib.lua, tieudau.lua, lib.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): G_CFG (24), G_CFG_BUOC (60), G_GioPhut (81), G_HHMM2Phut (86), G_TrongKhoangGio (92)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- ============================================================================
 -- CH_LIB.LUA - bo doc cau hinh dung chung
 -- [CAUHINH 29/08]

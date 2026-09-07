@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/npclevelscript/supernpc.lua
+-- Muc dich  : Tinh thuoc tinh NPC dac biet (super).
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng)
+-- Ham (dong): GetParam (9), GetNpcLevelData (31), GetNpcKeyData (181), GetData (213), GetExp (220), GetLife (288), GetAttackRating (357), GetDefense (426), GetMinDamage (494), GetMaxDamage (562)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- script viet hoa By http://tranhba.com  t›nh to∏n NPC thuÈc t›nh 
 -- script viet hoa By http://tranhba.com  c„ th” t›nh to∏n Æ›ch thuÈc t›nh bao gÂm # 
 -- script viet hoa By http://tranhba.com Exp#Life#LifeReplenish#AttackRating#Defense#MinDamage#MaxDamage# 

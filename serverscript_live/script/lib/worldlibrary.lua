@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/worldlibrary.lua
+-- Muc dich  : THONG TIN THE GIOI: SERVER_OPEN (ngay mo may), mua giai, tinh so ngay mo, mui gio.
+-- Duoc nap  : Include tu 28 tep (vd npcevent.lua, tuongquan.lua, main_noel.lua, script_protocol.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): GetParam (7), CallPlayerFunction (28), CallTeamFunction (36), CreateTaskSay (49), CreateNewSayEx (59), AddNpcNew (71), AddTrapEx1 (149), AddTrapEx2 (160), AddTrapEx3 (171), AddTrapEx4 (182), AddTrapEx5 (193), AddQuestKey (207), AddMagicScript (211), DropQuestKey (215), DropMagicScript (221), no (282)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 SERVER_NAME	= "Vâ L©m Thiªn §iÓu"
 SERVER_MODE = 0
 -- SERVER_OPEN = 2103141900 -- yy/mm/dd - hh//mm [21-nam] [03-thang] [14-ngay] [19gio] [00phut]

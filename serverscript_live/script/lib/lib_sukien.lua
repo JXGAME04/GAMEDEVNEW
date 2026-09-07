@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/lib_sukien.lua
+-- Muc dich  : Ham SU KIEN dung chung (event): mo/dong, kiem gio, phat thuong.
+-- Duoc nap  : Include tu 13 tep (vd drop_npc.lua, tieusu.lua, droprate_normal.lua, droprate_pubg.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : lib_vatpham.lua, ch_lib.lua, ch_drop.lua
+-- Ham (dong): SKD_CFG (14), dropeventmap (37), droptrangbihiepcotnhutinh (43), dropeventPUBG (51), droptrangbihkmp (56), dropeventHMD (61), dropmanhhkmp (71), dropeventPLD (84), dropeventboss (87), dropother (107), dropntiendong (113), dropeventTK (125), dropeventVA (132), dropnvdt (135), dropnvdt01 (142)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- Author: 
 -- Date: 28/11/2016
 -- Chuc nang: Rot them vat pham khi co su kien

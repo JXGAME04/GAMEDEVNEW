@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/misc/league_cityinfo.lua
+-- Muc dich  : Thong tin thanh LIEN DAU.
+-- Duoc nap  : Include tu 1 tep (vd citywar_boot.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham (dong): cityID2LeagueName (20), debug_print (23), buildCityInfoLeague (30), OnBuildCityLeague (47), OnSetCityLeagueTask (57), buildAllCityInfoLeague (65), set_citybonus_date (74), get_maincitybonus_date (92), get_citybonus_date (108), get_citybonus_task (122), set_citybonus_task (137), add_citybonus_task (158)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --------------------------------------------------------------------
 -- 使用社团结构来记录城市的信息 (记录在社团的任务变量上)
 -- 每个城市采用一个社团组织(League)

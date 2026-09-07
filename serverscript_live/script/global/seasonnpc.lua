@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/seasonnpc.lua
+-- Muc dich  : DA TAU - chuoi nhiem vu theo mua (1439 dong, 53 ham).
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng) + C++ goi truc tiep theo ten tep
+-- Include   : cl_def.lua, tasklink_head.lua, tasklink_award.lua, function.lua, awardtemplet.lua, log.lua, g_activity.lua, playerfunlib.lua, exp.lua, item_jx1.lua, mailmanager.lua
+-- Ham (dong): storm_goon_start (22), checkTask_Limit (36), Task_NewVersionAward (100), main (136), menglanjie (155), process (178), make_round (199), tasklink_entence (233), Task_Confirm (291), Task_TaskProcess (312), Task_MainDialog (331), Task_CancelConfirm (366), Task_NormalCancel (396), Task_TotalCancel (404), Task_TotalCancel_Main (407), Task_ProcessInfo (433), Task_Accept (463), Task_Accept_01 (494), Task_Accept_02 (530), Task_Accept_03 (574), Task_Accept_04 (615), Task_Accept_05 (629), Task_Accept_06 (644), Task_Cancel (661) ... (53 ham)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\chienlenh\\cl_def.lua")	-- [CL 04/09] so hieu nhiem vu Chien Lenh
 -- “∞€≈»ŒŒÒ¡¥Ω≈±æ
 -- Edited by peres

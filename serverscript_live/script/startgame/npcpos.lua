@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/startgame/npcpos.lua
+-- Muc dich  : TOA DO NPC toan the gioi (27.304 dong, DU LIEU). Sua toa do NPC o day.
+-- Duoc nap  : Include tu 3 tep (vd trainingmap - copy.lua, trainingmap.lua, pubgaddnpc.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham       : (khong co - tep du lieu/cau hinh)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 BALANGHUYEN = {
 {45815,93147},
 {51235,93153},

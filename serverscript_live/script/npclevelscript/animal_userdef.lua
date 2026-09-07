@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/npclevelscript/animal_userdef.lua
+-- Muc dich  : AI + THUOC TINH NPC theo cap (cot LevelScript trong settings/npcs.txt tro toi tep nay theo ID bam). 14 ham chuan: OnCreate/OnDeath/GetAttrib...
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng)
+-- Include   : property.lua
+-- Ham (dong): Line (14), Conic (29), Extrac (47), Link (64), GetParam (100), GetNpcLevelData (122), GetNpcKeyData (356), GetData (392), GetExp (399), GetLife (404), GetAttackRating (409), GetDefense (478), GetMinDamage (546), GetMaxDamage (614)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\npclevelscript\\property.lua")
 
 -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com -- script viet hoa By http://tranhba.com - 

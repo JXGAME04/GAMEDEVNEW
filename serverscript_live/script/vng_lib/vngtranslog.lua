@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/vng_lib/vngtranslog.lua
+-- Muc dich  : Log giao dich VNG.
+-- Duoc nap  : Include tu 6 tep (vd activitydetail.lua, partysupport.lua, simple.lua, honour.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : files_lib.lua
+-- Ham (dong): tbVngTransLog:Write (19)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\vng_lib\\files_lib.lua")
 IncludeLib("SETTING")
 local tbVngFactionName = 

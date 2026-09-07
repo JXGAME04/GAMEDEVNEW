@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/startgame/citywar_boot.lua
+-- Muc dich  : Boot CONG THANH JX2 luc khoi dong (dot E5).
+-- Duoc nap  : Include tu 1 tep (vd startgame.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : league_cityinfo.lua, citywar_function.lua
+-- Ham (dong): CityWar_Boot (8), CityWar_ArenaNpc (24)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- citywar_boot.lua - DOT E (E5): boot cong thanh JX2.
 -- Goc autoexec.lua:142 OpenGlbMission(8) + :147 buildAllCityInfoLeague; rieng
 -- checkCityWarLeague GS goc KHONG ai goi (league 508/509 do relay tao 0h) -

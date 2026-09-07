@@ -1,3 +1,11 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/lib_trap.lua
+-- Muc dich  : BANG TRAP CHUYEN MAP (1766 dong, du lieu) - dung boi startgame/traplib.lua.
+-- Duoc nap  : Include tu 1 tep (vd lib_vt.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Ham       : (khong co - tep du lieu/cau hinh)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong Ki“u
 --Date: 2021
 --DMEM ENTERTAINMENT

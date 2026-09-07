@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/timertask/pubgend.lua
+-- Muc dich  : PUBG: ket thuc tran.
+-- Duoc nap  : Include tu 1 tep (vd pubgdeath.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : pubgutils.lua
+-- Ham (dong): OnTimer (2), OnMissionTimer (18), ontime_pubgend (24)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\tinhnang\\pubg\\pubgutils.lua")
 
 function OnTimer()

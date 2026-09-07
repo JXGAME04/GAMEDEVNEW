@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/global/station.lua
+-- Muc dich  : DICH TRAM (dich chuyen thanh thi).
+-- Duoc nap  : Include tu 8 tep (vd xaphu.lua, thodiafu.lua, thodiaphuvh.lua, xaloi.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : lib_task.lua, lib_ham.lua, lib_vatpham.lua, save_log.lua, map_index.lua, lib_datau.lua, lib_kmq.lua, station_ctc.lua, wagoner.lua
+-- Ham (dong): WayPointFun (34), WharfFun (66), SelWharf (87), GetCurStation (110), StationFun (121), SelStation (149), TownPortalFun (168), SelWayPoint (172), didaotaytuy (190), okaytaytuy (204), tayall (263), go_HSBattle (295), wuda (303), wud (307), tiw (312), emi (317), tag (322), tir (327), Cancel (332), OnCancel (335), godatau (338), LuyenCongFun (474), xp_moc (488), xp_go (500) ... (27 ham)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 --Author: Fong Ki?u
 --Date: 11/07/2021
 --Function: Xa Phu

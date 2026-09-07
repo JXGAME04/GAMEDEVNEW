@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/npclevelscript/partner_task.lua
+-- Muc dich  : AI + THUOC TINH NPC theo cap (cot LevelScript trong settings/npcs.txt tro toi tep nay theo ID bam). 14 ham chuan: OnCreate/OnDeath/GetAttrib...
+-- Duoc nap  : engine nap luc boot (moi tep .lua = 1 lua_State rieng)
+-- Include   : property.lua
+-- Ham (dong): Line (2), Link (9), GetNpcLevelData (36), GetNpcKeyData (236)
+-- Sua nong  : KHONG - can restart GameServer (hoac lenh GM nap lai script)
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 Include("\\script\\npclevelscript\\property.lua")
 
 function Line(x,x1,y1,x2,y2)

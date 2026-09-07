@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/header/cauhinh_hoatdong.lua
+-- Muc dich  : CAU HINH HOAT DONG (lich, phan thuong, cua so gio) - timerserver va cac hoat dong doc; sua nong duoc.
+-- Duoc nap  : Include tu 43 tep (vd npc_canhan.lua, cfgw_driver.lua, vt_chinam.lua, headinfo.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : cauhinh_hoatdong.lua
+-- Ham (dong): HD_CFG (509), HD_GioPhut (524), HD_TC_Ngay (529), HD_NapLaiCauHinh (536)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- ============================================================================
 -- CAUHINH_HOATDONG.LUA - CONFIG TRUNG TAM 4 HOAT DONG PORT 23-24/08/2026
 --   1) BANG CHIEN / VO LAM DE NHAT BANG (tongwar)  - tien to TW_

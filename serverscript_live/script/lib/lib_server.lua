@@ -1,3 +1,12 @@
+-- ================================================================================================
+-- [HE THONG] script/lib/lib_server.lua
+-- Muc dich  : CAU HINH MAY CHU (CFGNEN 30/08): nap cauhinh/ch_*.lua; sua cau hinh -> sua cauhinh/, KHONG sua o day.
+-- Duoc nap  : Include tu 46 tep (vd eventlib2010.lua, npcevent.lua, eventlib.lua, tuongquan.lua); engine nap moi .lua thanh 1 lua_State luc boot
+-- Include   : ch_lib.lua, ch_chung.lua
+-- Ham (dong): GLB_CFG (6)
+-- Sua nong  : CO - trong chuoi Include cua timerserver.lua, tu nap lai trong <= 1 phut sau khi ghi tep
+-- Quy uoc   : Lua 5.4 + lop tuong thich lua4compat (getn/format/floor/tinsert van dung); KHONG dung %x; duyet bang pairs(); ham '...' khai local arg. Kiem: ReverseTools/lua54/kiem_54.py
+-- ================================================================================================
 -- [CFGNEN 30/08] hai tep duoi day la LA (khong Include gi).
 Include("\\script\\cauhinh\\ch_lib.lua")
 Include("\\script\\cauhinh\\ch_chung.lua")
