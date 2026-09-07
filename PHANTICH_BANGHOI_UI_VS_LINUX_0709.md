@@ -285,3 +285,23 @@ Chủ game chốt: "làm toàn bộ theo linux 100%" và "phần xem tin tức t
 - Menu người chơi khi bấm kép: gốc JX2 có nhiều mục (giao dịch, tổ đội, kết bạn…); JX1 client không có hạ tầng đó → chỉ "Mật đàm".
 - `帮会改造系统.ini` (trợ giúp), `BtnTongChallenge/Detect`, Liveness/DailyCost/BtnHelp: chết trong chính bản gốc — không port.
 - Cửa sổ thuế Thái thú (`城市管理界面`) thuộc hệ công thành — ngoài phạm vi bang hội.
+
+
+### 7.5 Rà soát lại sau khi chủ hỏi "còn thiếu không / nút đã đủ chưa" (đối chiếu exe lần 2)
+Nguồn: `cm_funuse.txt` (74 control exe nạp ở trang chức năng), `wp_funuse_refresh` + `dis_refresh_tail*.txt` (0x4ea120),
+`wp_funuse.txt` (bấm trang con), `wp_main.txt` (cửa sổ chính), `cm_baseinfo.txt`, `cm_zhaomu/workshop/otherzm`.
+
+**Kết quả — mọi nút exe có xử lý đều đã nối; các chỗ chỉnh thêm ở vá 4 (`Game.exe.moi` mới):**
+- Trang chức năng, đúng `refresh` gốc: mặt nạ tên trang con + nhóm tiền + nhóm trang con chỉ hiện với bang chủ/trưởng lão;
+  sau đó **bật/tắt theo quyền** (2001 nâng cấp; 3001 rút/phát/chuyển quỹ/phát cống hiến; 1901 đuổi; 1902 ép thoái ẩn;
+  1002 bổ nhiệm; 1004 danh hiệu; 1003 đổi phe; 2004 lãnh địa; 2006 kỹ năng; 1101 liên minh; chuyển vị chỉ bang chủ);
+  nút nhân sự chỉ sáng khi đã chọn thành viên (không phải bản thân). Rời bang / Thoái ẩn ẩn với bang chủ (`figure > 0`).
+- `BtnRecruit` và `BtnHelp` trang chức năng: exe **không nạp** → tắt (chiêu mộ ở tab riêng). `Van1/Van2` "vạn lượng": exe không nạp → bỏ.
+- Bấm trang con gốc = `SetMode(0/1/2/0)` cho panel phải: trang con 2 → **danh sách toàn bộ bang** (nay có, `RenderTongListPanel`,
+  sắp xếp theo `[Fun_BtnTongSortMenu]`), trang con 3 → bang liên minh, 1/4 → thành viên.
+- Cửa sổ chính gốc 13 control: `BtnTongHelp` (562,3) exe mở hệ trợ giúp chi tiết JX2 (`详细帮助界面.ini`, chủ đề `帮会改造系统.ini`
+  = 4 ảnh 800×600 trong `update03.pak`) → ta thêm `KUiTongHelpJX2` (ini `TH_*`) lật 4 ảnh Trước/Kế/Đóng. `BtnOtherZhaoMu`
+  = tab duy nhất khi **chưa có bang** (ẩn 6 tab, chỉ trang 2×2). `m_Bot[2]` (trùng section `BtnTongList`) ẩn khi nút Danh sách bang hiện.
+- `BtnAcceptUnionReq` không có trong exe (relay gốc duyệt kiểu khác) — giữ của ta vì luồng xin/duyệt liên minh của ta cần nút này.
+- Không port (chết trong exe / không phải bang hội): `BtnTongChallenge/Detect` (Enable=0), `TitleWeeklyAim/TxtWeeklyOffer*`
+  (không có trong ini VN), hàng Liveness/DailyCost/ServiceFee, thuế Thái thú.

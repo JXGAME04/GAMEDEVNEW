@@ -53,6 +53,27 @@ private:
 
 class KUiTongJX2;
 
+// [BH100] cua so TRO GIUP bang hoi (nut BtnTongHelp goc mo he tro giup chi tiet cua JX2;
+// noi dung chu de bang hoi trong ban VN chi con 4 trang anh 800x600 - hien lan luot)
+class KUiTongHelpJX2 : public KWndImage
+{
+public:
+	static KUiTongHelpJX2*	OpenWindow();
+	static KUiTongHelpJX2*	GetIfVisible();
+	static void				CloseWindow(bool bDestroy = true);
+	static void				LoadScheme(const char* pScheme);
+	virtual int				WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+private:
+	void	Initialize();
+	void	ShowPage(int nPage);
+private:
+	static KUiTongHelpJX2*	ms_pSelf;
+	KWndLabeledButton	m_BtnClose, m_BtnPrev, m_BtnNext;
+	char				m_szPage[4][160];
+	int					m_nPage;
+	int					m_nPages;
+};
+
 // [BH100] cua so DANH SACH BANG (blueprint "guild-list": 120x463, 25 ten/trang) - mo
 // bang nut BtnTongList tren cua so chinh; chon mot bang -> cua so chinh xem bang do.
 class KUiTongListJX2 : public KWndImage
@@ -119,6 +140,8 @@ private:
 	void	RenderWeekGoal();		// [BH100] bao cao muc tieu tuan vao m_RcList
 	void	RenderTongList();
 	void	RenderUnionList();		// [BH100] panel phai = bang trong lien minh
+	void	RenderTongListPanel();	// [BH100] panel phai = toan bo bang (trang con 2)
+	BOOL	HasMyRight(unsigned long dwRightID);	// [BH100] bang chu = moi quyen; con lai theo mat na INFO
 	void	RenderOtherZM();
 	void	RenderMembers(int nOffset = 0);
 	void	RenderWorkshop();
@@ -161,6 +184,8 @@ private:
 	KWndLabeledButton	m_RecToggle;			// dong/mo tuyen (trang chieu mo) - an
 	KWndButton			m_BtnRowSel[TJX2_UI_ROWS];	// vung bam chon dong (trong suot)
 	KWndLabeledButton	m_BtnTab[TJX2_UI_TABS];
+	KWndLabeledButton	m_BtnOtherZm;			// [BH100] tab 'chieu mo bang khac' khi CHUA co bang (BtnOtherZhaoMu)
+	KWndButton			m_BtnHelp;				// [BH100] nut tro giup goc tren cua so chinh (BtnTongHelp)
 	KWndLabeledButton	m_BtnAct[TJX2_UI_ACTS];
 	KWndLabeledButton	m_BtnPrev, m_BtnNext;
 	// hang dieu khien duoi panel danh sach
@@ -274,7 +299,8 @@ private:
 	int		m_nMDetRows;
 	// [BH100] xem bang khac + tooltip + menu
 	unsigned long	m_dwViewTong;		// bang KHAC dang xem (0 = bang minh)
-	int		m_nListMode;			// panel phai: 0 thanh vien / 2 bang lien minh
+	int		m_nListMode;			// panel phai: 0 thanh vien / 1 toan bo bang / 2 bang lien minh
+	int		m_bNoTong;				// [BH100] mo khi chua co bang: chi tab chieu mo bang khac
 	int		m_nTipMember;			// thanh vien dang hien tooltip (-1 = khong)
 	unsigned long	m_dwLastRowClick;	// tick lan bam dong gan nhat (phat hien bam kep)
 	int		m_nLastRowClick;

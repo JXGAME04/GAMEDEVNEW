@@ -174,7 +174,7 @@ static const TJX2InfoCtl s_sInfoCtl[TJX2_INFO_NUM] =
 	{"TitlePersonalOffer","Cèng hiÕn c¸ nh©n"}, {"TxtPersonalOffer", NULL},
 	{"TitleWeeklyOffer",  "Cèng hiÕn tuÇn"}, {"TxtWeeklyOffer", NULL},
 	{"TxtHelpTitle",      "Gióp ®ì"},
-	{"Van1",              "v¹n l­îng"},   {"Van2",             "v¹n l­îng"},
+	{"Van1",              ""},   {"Van2",             ""},	// [BH100] exe khong nap Van1/Van2 - don vi ' van' nam trong so
 	// 15/08 (+4): 2 hang TRONG SAN cua blueprint, khong chong toa do hang nao
 	// dang hien (BattleFund Top=188, StoredBuildFund Top=245; DailyCost chong
 	// BattleFund nen khong nap). Quy chien bi dang la cau hoi van hanh ma UI
@@ -295,7 +295,7 @@ static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 	{"BtnGetTongMoney",      "Rót", 9},
 	{"BtnAssignTongMoney",   "Ph¸t", 10},
 	{"BtnTransformMoney",    "ChuyÓn", 21},
-	{"BtnRecruit",           "Chiªu mé", 4},
+	{"BtnRecruit",           "Chiªu mé", -1},	// [BH100] exe KHONG nap nut nay (cm_funuse) - chieu mo o tab rieng
 	{"BtnKickOut",           "§uæi ng­êi", 2},
 	{"BtnDepose",            "TruÊt chøc", 3},
 	{"Btn_DispenseOffer",    "Ph¸t cèng hiÕn", 1},
@@ -402,6 +402,7 @@ KUiTongJX2::KUiTongJX2()
 	m_nSexTitle = 0;
 	m_nTongSort = 0;
 	m_bHasUnion = 0;
+	m_bNoTong = 0;
 	m_bHasWeek = 0;
 	memset(m_byUnion, 0, sizeof(m_byUnion));
 	memset(m_byWeek, 0, sizeof(m_byWeek));
@@ -453,14 +454,21 @@ void KUiTongJX2::ToggleFromIcon()
 		return;
 	}
 	if (g_pCoreShell && g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_INFO, 0))
+	{
+		if (ms_pSelf)
+			ms_pSelf->m_bNoTong = 0;
 		OpenWindow();
+	}
 	else
 	{
-		// chua vao bang: mo trang 2x2 Xem tin Bang khac (dung vai tro
-		// [BtnOtherZhaoMu] cua ban goc); nut Tao moi van mo don tao bang
+		// chua vao bang: ban goc chi hien tab [BtnOtherZhaoMu] (2x2 chieu mo bang khac);
+		// nut Tao moi van mo don tao bang
 		KUiTongJX2* pWnd = OpenWindow();
 		if (pWnd)
+		{
+			pWnd->m_bNoTong = 1;
 			pWnd->SwitchPage(TJX2_UI_PAGE_OTHERZM);
+		}
 	}
 }
 
@@ -534,6 +542,7 @@ void KUiTongJX2::Initialize()
 	AddChild(&m_RecToggle);
 	for (i = 0; i < TJX2_UI_TABS; i++)
 		AddChild(&m_BtnTab[i]);
+	AddChild(&m_BtnOtherZm);	// [BH100]
 	for (i = 0; i < TJX2_UI_ROWS; i++)
 		AddChild(&m_Row[i]);
 	// nen do phai AddChild TRUOC chu, vi AddChild noi vao CUOI danh sach va
@@ -596,6 +605,7 @@ void KUiTongJX2::Initialize()
 	AddChild(&m_RcLeaveWord);
 	AddChild(&m_RcSave);
 	AddChild(&m_BtnList);
+	AddChild(&m_BtnHelp);	// [BH100] BtnTongHelp
 	// nen mo phai nam TREN ten (m_MList da add truoc) va DUOI chu panel
 	AddChild(&m_MShade);
 	m_MShade.Enable(false);
@@ -971,6 +981,11 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	ms_pSelf->m_RcLeaveWord.Init(&Ini, "Rc_BtnLeaveWord");
 	ms_pSelf->m_RcSave.Init(&Ini, "Rc_BtnEditAnnounce");
 	ms_pSelf->m_BtnList.Init(&Ini, "BtnTongList");
+	ms_pSelf->m_BtnOtherZm.Init(&Ini, "BtnOtherZhaoMu");	// [BH100]
+	ms_pSelf->m_BtnOtherZm.SetLabel("");
+	ms_pSelf->m_BtnHelp.Init(&Ini, "BtnTongHelp");
+	KUiTongListJX2::LoadScheme(pScheme);
+	KUiTongHelpJX2::LoadScheme(pScheme);
 	ms_pSelf->m_BtnFun.Init(&Ini, "BtnFunUse");
 	ms_pSelf->m_RecJiyu.Init(&Ini, "Rec_Jiyu");
 	ms_pSelf->m_RecAuto.Init(&Ini, "Rec_AutoAcceptLevel");
@@ -1080,7 +1095,8 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 		// trang chuc nang can CA thong tin bang CA danh sach (thanh vien hoac bang lien minh)
 		sV.nPage = defTONG_JX2_PAGE_INFO; sV.nStart = 0;
 		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (unsigned int)&sV, 0);
-		nPage = (m_nListMode == 2) ? defTONG_JX2_PAGE_UNIONLIST : defTONG_JX2_PAGE_MEMBER;
+		nPage = (m_nListMode == 2) ? defTONG_JX2_PAGE_UNIONLIST :
+			(m_nListMode == 1) ? defTONG_JX2_PAGE_TONGLIST : defTONG_JX2_PAGE_MEMBER;
 	}
 	else if (nPage == TJX2_UI_PAGE_TONGLIST)
 		nPage = defTONG_JX2_PAGE_TONGLIST;
@@ -1236,6 +1252,8 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 			ms_pSelf->m_bHasList = 1;
 			if (KUiTongListJX2::GetIfVisible())	// [BH100] cua so danh sach bang
 				KUiTongListJX2::OnListData(pData, nLen);
+			else if (ms_pSelf->m_nPage == TJX2_UI_PAGE_FUNUSE && ms_pSelf->m_nListMode == 1)
+				ms_pSelf->RenderTongListPanel();
 			else if (ms_pSelf->m_nPage == TJX2_UI_PAGE_TONGLIST)
 				ms_pSelf->RenderTongList();
 		}
@@ -1392,8 +1410,10 @@ void KUiTongJX2::SwitchPage(int nPage)
 	m_nRecStart = 0;
 	m_nSel = 0;
 	m_nSelWs = 1;
-	if (nPage != TJX2_UI_PAGE_FUNUSE || m_nFunSub != 3)
+	if (nPage != TJX2_UI_PAGE_FUNUSE)
 		m_nListMode = 0;
+	else
+		m_nListMode = (m_nFunSub == 2) ? 1 : (m_nFunSub == 3) ? 2 : 0;	// exe: trang con 1..4 -> mode 0/1/2/0
 	// nen phan trang: 0 tin tuc / 1 chieu mo / 2 phan phoi / 3 tac phuong / 4 nhat ky
 	{
 		int nBg = 0;
@@ -1517,7 +1537,7 @@ void KUiTongJX2::SwitchPage(int nPage)
 			m_MDet[i].Hide();
 		for (i = 0; i < 3; i++)
 			if (bL) m_ColHdr[i].Show(); else m_ColHdr[i].Hide();
-		BOOL bUnion = (bL && m_nListMode == 2);
+		BOOL bUnion = (bL && m_nListMode >= 1);	// mode 1/2: danh sach bang -> menu sap xep bang, khong co online/thanh vien
 		if (bL && !bUnion) { m_MOnline.Show(); m_MOnline.Enable(true); } else { m_MOnline.Hide(); m_MOnline.Enable(false); }
 		if (bL && !bUnion) { m_MSort.Show(); m_MSort.Enable(true); } else { m_MSort.Hide(); m_MSort.Enable(false); }
 		if (bUnion) { m_MTongSort.Show(); m_MTongSort.Enable(true); } else { m_MTongSort.Hide(); m_MTongSort.Enable(false); }
@@ -1531,10 +1551,18 @@ void KUiTongJX2::SwitchPage(int nPage)
 		// tieu de cot theo che do (Fun_TitleName cua ban goc)
 		{
 			char szH[64];
-			if (bUnion)
+			if (bUnion && m_nListMode == 2)
 			{
 				m_ColHdr[1].SetText(GetIniString("Fun_TitleName", "TongTitle", szH, sizeof(szH)));
 				m_ColHdr[2].SetText(GetIniString("Fun_TitleName", "UnionTongFigureTitle", szH, sizeof(szH)));
+			}
+			else if (bUnion)
+			{
+				// mode 1 (toan bo bang): cot 3 = tieu chi dang chon o menu Fun_BtnTongSortMenu
+				char szKey[16];
+				sprintf(szKey, "Item_%d", m_nTongSort % 5);
+				m_ColHdr[1].SetText(GetIniString("Fun_TitleName", "TongTitle", szH, sizeof(szH)));
+				m_ColHdr[2].SetText(GetIniString("Fun_BtnTongSortMenu", szKey, szH, sizeof(szH)));
 			}
 			else
 			{
@@ -1630,7 +1658,11 @@ void KUiTongJX2::SwitchPage(int nPage)
 		{
 			m_BtnTab[t].CheckButton(t == nTabOn ? 1 : 0);
 			m_BtnTab[t].Enable(m_dwViewTong ? false : true);
+			// [BH100] chua co bang: an 6 tab, chi con tab 'chieu mo bang khac' (BtnOtherZhaoMu)
+			if (m_bNoTong) m_BtnTab[t].Hide(); else m_BtnTab[t].Show();
 		}
+		if (m_bNoTong) { m_BtnOtherZm.Show(); m_BtnOtherZm.Enable(true); m_BtnOtherZm.CheckButton(1); }
+		else { m_BtnOtherZm.Hide(); m_BtnOtherZm.Enable(false); }
 	}
 	// nut phan trang danh sach + nut day
 	{
@@ -1642,6 +1674,9 @@ void KUiTongJX2::SwitchPage(int nPage)
 		// [BH100] nut Danh sach bang (BtnTongList) cua ban goc: mo/dong cua so danh sach
 		BOOL bTL = (nPage != TJX2_UI_PAGE_OTHERZM && nPage != TJX2_UI_PAGE_TONGLIST);
 		if (bTL) { m_BtnList.Show(); m_BtnList.Enable(true); } else { m_BtnList.Hide(); m_BtnList.Enable(false); }
+		// m_Bot[2] (cung section BtnTongList) chi con dung o trang 2x2 / danh sach cu - an khi nut Danh sach bang hien
+		if (bTL) { m_Bot[2].Hide(); m_Bot[2].Enable(false); } else { m_Bot[2].Show(); m_Bot[2].Enable(true); }
+		if (m_bNoTong) { m_BtnHelp.Hide(); m_BtnHelp.Enable(false); } else { m_BtnHelp.Show(); m_BtnHelp.Enable(true); }
 		// anh nut vao bang: 'Vao bon bang' / 'Vao bang khac' (ImageEnterMapSelf/Other)
 		{
 			char szImg[160];
@@ -1685,35 +1720,60 @@ void KUiTongJX2::UpdateRightSub()
 	m_RtAll.CheckButton(0);
 }
 
-// [BH100] nut trang chuc nang: nhom tien + nhom trang con chi cho BANG CHU / TRUONG LAO;
-// khoi ca nhan (gui / roi bang / thoai an) cho moi nguoi; o (31,228) trang con 1 la
-// Chuyen vi (bang chu) hoac Chieu mo (nguoi khac); lien minh theo trang thai.
+// [BH100 07/09] Theo dung FunUse refresh cua game_y.exe (0x4ea120):
+//  - bLead = bang chu hoac truong lao: mat na ten trang con + nhom tien + nhom trang con chi hien khi bLead
+//  - nhom trang con hien theo trang con dang chon (0/1/2/3); khoi ca nhan hien voi moi nguoi,
+//    rieng Roi bang / Thoai an an voi bang chu (figure > 0)
+//  - sau do BAT/TAT (Enable) theo quyen: 2001 nang cap; 3001 tien; 1901 duoi; 1902 ep thoai an;
+//    1002 bo nhiem; 1004 danh hieu; 1003 doi phe; 2004 lanh dia; 2006 ky nang; 1101 lien minh;
+//    chuyen vi chi bang chu; nut nhan su can co nguoi dang chon (khong phai ban than)
+BOOL KUiTongJX2::HasMyRight(unsigned long dwRightID)
+{
+	if (!m_bHasInfo)
+		return FALSE;
+	TONG_JX2_INFO_SYNC* pI = (TONG_JX2_INFO_SYNC*)m_byInfo;
+	if (pI->m_btMyFigure == 0)
+		return TRUE;
+	for (int r = 0; r < defTONG_JX2_RIGHT_COUNT; r++)
+		if (s_dwRightId[r] == dwRightID)
+			return (pI->m_wMyRights & (1 << r)) ? TRUE : FALSE;
+	return FALSE;
+}
+
 void KUiTongJX2::UpdateFunButtons()
 {
 	BOOL bFun = (m_nPage == TJX2_UI_PAGE_FUNUSE);
 	int nMyFig = 3;
 	BOOL bIn = FALSE, bLead = FALSE;
+	const char* pszSelf = "";
 	if (m_bHasInfo)
 	{
 		TONG_JX2_INFO_SYNC* pI = (TONG_JX2_INFO_SYNC*)m_byInfo;
 		nMyFig = pI->m_btMyFigure;
 		bIn = (pI->m_dwUnionID != 0);
 		bLead = (pI->m_bUnionLeader != 0);
+		pszSelf = pI->m_szSelf;
 	}
 	BOOL bLead2 = (nMyFig <= 1);	// bang chu / truong lao
+	TONG_JX2_MEMBER_SYNC* pM = (TONG_JX2_MEMBER_SYNC*)m_byMember;
+	BOOL bSel = (m_nListMode == 0 && m_bHasMember && m_nSel >= 0 && m_nSel < (int)pM->m_btCount);
+	BOOL bSelSelf = bSel && (strcmp(pM->m_sMember[m_nSel].m_szName, pszSelf) == 0);
+	if (bFun && bLead2) m_FunMask.Show(); else m_FunMask.Hide();
 	for (int i = 0; i < TJX2_FUN_BTNS; i++)
 	{
 		int nAct = s_sFunBtn[i].nAct;
 		int nSub = s_nFunBtnSub[i];
 		BOOL bShow = bFun && nAct >= 0 && (nSub == 0 || nSub == m_nFunSub);
+		BOOL bEn = TRUE;
 		if (bShow)
 		{
 			switch (nAct)
 			{
-			case 7: case 8: case 11: case 13: case 30:
+			case 7: case 11: case 13:
 				break;	// khoi ca nhan: ai cung thay
-			case 4:  bShow = !(nMyFig == 0); break;	// Chieu mo: khong phai bang chu (bang chu thay Chuyen vi o cung o)
-			case 26: bShow = (nMyFig == 0); break;	// Chuyen vi: chi bang chu
+			case 8: case 30:
+				bShow = (nMyFig != 0);	// exe: figure > 0 (bang chu phai chuyen vi truoc)
+				break;
 			case 14: bShow = bLead2 && !bIn; break;
 			case 15: bShow = bLead2 && !bIn; break;
 			case 16: bShow = bLead2 && bIn && bLead; break;
@@ -1722,13 +1782,33 @@ void KUiTongJX2::UpdateFunButtons()
 			default: bShow = bLead2; break;
 			}
 		}
+		if (bShow)
+		{
+			switch (nAct)
+			{
+			case 0: bEn = HasMyRight(2001); break;
+			case 1: case 9: case 10: case 21: case 22: bEn = HasMyRight(3001); break;
+			case 2: bEn = HasMyRight(1901) && bSel && !bSelSelf; break;
+			case 3: bEn = HasMyRight(1002) && bSel && !bSelSelf; break;
+			case 25: bEn = HasMyRight(1902) && bSel && !bSelSelf; break;
+			case 26: bEn = (nMyFig == 0) && bSel && !bSelSelf; break;
+			case 27: bEn = (!bSel || bSelSelf) ? TRUE : HasMyRight(1004); break;
+			case 28: case 29: bEn = HasMyRight(1004); break;
+			case 12: bEn = HasMyRight(1003); break;
+			case 5: case 23: bEn = HasMyRight(2004); break;
+			case 24: bEn = HasMyRight(2006); break;
+			case 14: case 15: case 16: case 17: case 18: bEn = HasMyRight(1101); break;
+			case 19: case 20: bEn = (nMyFig == 0) || HasMyRight(2003); break;
+			default: break;
+			}
+		}
 		if (nAct == 30 && bShow)
 		{
 			// nhan Thoai an / Huy bo thoai an theo trang thai ban than (RetireLabel/UnRetireLabel)
 			char szLb[48];
 			m_FunBtn[i].SetLabel(GetIniString("Fun_BtnRetire", nMyFig == 4 ? "UnRetireLabel" : "RetireLabel", szLb, sizeof(szLb)));
 		}
-		if (bShow) { m_FunBtn[i].Show(); m_FunBtn[i].Enable(true); }
+		if (bShow) { m_FunBtn[i].Show(); m_FunBtn[i].Enable(bEn ? true : false); }
 		else { m_FunBtn[i].Hide(); m_FunBtn[i].Enable(false); }
 	}
 }
@@ -1964,6 +2044,8 @@ void KUiTongJX2::RenderMembers(int nOffset)
 	// Phan quyen chi giao duoc cho TRUONG LAO: nut Phan quyen chi sang khi chon truong lao
 	if (m_nPage == defTONG_JX2_PAGE_MEMBER || m_nPage == defTONG_JX2_PAGE_RIGHT)
 		m_RtApply.Enable(m_nSel < nCnt && p->m_sMember[m_nSel].m_btFigure == 1);
+	if (m_nPage == TJX2_UI_PAGE_FUNUSE)
+		UpdateFunButtons();	// [BH100] nut nhan su bat/tat theo nguoi dang chon (nhu exe)
 }
 
 // [BH100] tooltip thanh vien (MemberPanel WndProc LIST_ITEM_ACTIVE -> ShowMemberTip cua ban goc):
@@ -2389,6 +2471,11 @@ void KUiTongJX2::RenderFunUse()
 		if (m_bHasUnion)
 			RenderUnionList();
 	}
+	else if (m_nListMode == 1)
+	{
+		if (m_bHasList)
+			RenderTongListPanel();
+	}
 	else if (m_bHasMember)
 		RenderMembers();
 }
@@ -2624,6 +2711,65 @@ void KUiTongJX2::RenderTongList()
 }
 
 //////////////////////////////////////////////////////////////////////
+
+// [BH100] panel phai o trang con 2 (exe: SetMode(1) = danh sach TOAN BO bang, 25/trang): Hang / ten
+// bang / gia tri theo menu Fun_BtnTongSortMenu (0 cap / 1 nhan so / 2 cap / 3 lien minh / 4 so luong)
+void KUiTongJX2::RenderTongListPanel()
+{
+	if (!m_bHasList)
+		return;
+	TONG_JX2_TONGLIST_SYNC* p = (TONG_JX2_TONGLIST_SYNC*)m_byList;
+	char sz[120];
+	ClearMemberRows();
+	int i, nCnt = (int)p->m_btCount;
+	if (nCnt > defTONG_JX2_LIST_ROWS)
+		nCnt = defTONG_JX2_LIST_ROWS;
+	for (i = 0; i < nCnt; i++)
+		m_nOrd[i] = i;
+	for (int a = 1; a < nCnt; a++)
+	{
+		int nKey = m_nOrd[a], b;
+		for (b = a - 1; b >= 0; b--)
+		{
+			TONG_JX2_ONE_TONG* p1 = &p->m_sTong[m_nOrd[b]];
+			TONG_JX2_ONE_TONG* p2 = &p->m_sTong[nKey];
+			int nCmp = 0;
+			switch (m_nTongSort)
+			{
+			case 1: case 4: nCmp = (int)p2->m_wMember - (int)p1->m_wMember; break;
+			case 3: nCmp = (int)p2->m_btUnionLeader - (int)p1->m_btUnionLeader; break;
+			default: nCmp = (int)p2->m_btLevel - (int)p1->m_btLevel; break;
+			}
+			if (nCmp <= 0)
+				break;
+			m_nOrd[b + 1] = m_nOrd[b];
+		}
+		m_nOrd[b + 1] = nKey;
+	}
+	for (i = 0; i < TJX2_UI_ROWS; i++)
+		m_BtnRowSel[i].Enable(i < nCnt);
+	for (i = 0; i < nCnt; i++)
+	{
+		TONG_JX2_ONE_TONG* pT = &p->m_sTong[m_nOrd[i]];
+		unsigned int uCol = (m_nOrd[i] == m_nSel) ?
+			(0xFF000000 | (34 << 16) | (228 << 8) | 36) : (0xFF000000 | (236 << 16) | (238 << 8) | 111);
+		sprintf(sz, "%d", (int)p->m_wStart + i + 1);
+		m_Row[i].SetTextColor(uCol);
+		m_Row[i].SetText(sz);
+		m_MList[i].SetTextColor(uCol);
+		m_MList[i].SetText(pT->m_szName);
+		switch (m_nTongSort)
+		{
+		case 1: case 4: sprintf(sz, "%d", (int)pT->m_wMember); break;
+		case 3: strcpy(sz, pT->m_btUnionLeader ? " Minh Chñ " : "-"); break;
+		default: sprintf(sz, "%d", (int)pT->m_btLevel); break;
+		}
+		m_RowDim[i].SetTextColor(uCol);
+		m_RowDim[i].SetText(sz);
+	}
+	sprintf(sz, "%d", m_nStart / defTONG_JX2_LIST_ROWS + 1);
+	m_MPage.SetText(sz);
+}
 
 // Trang 2x2 Xem tin Bang khac: do du lieu 4 the theo blueprint
 // (Name/Info/JiYu/QingXiang/HuoDong + 2 nut moi the).
@@ -2890,8 +3036,16 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				break;
 			case 2:	// sap xep danh sach bang lien minh (client)
 				m_nTongSort = nItem % 5;
-				if (m_bHasUnion)
+				{
+					char szH[64], szKey[16];
+					sprintf(szKey, "Item_%d", m_nTongSort);
+					if (m_nListMode == 1)
+						m_ColHdr[2].SetText(GetIniString("Fun_BtnTongSortMenu", szKey, szH, sizeof(szH)));
+				}
+				if (m_nListMode == 2 && m_bHasUnion)
 					RenderUnionList();
+				else if (m_nListMode == 1 && m_bHasList)
+					RenderTongListPanel();
 				break;
 			case 3:	// khuynh huong chieu mo (menu 1..6 -> gia tri 1..6)
 				m_nRecQX = (nItem + 1) % TJX2_QX_NUM;
@@ -2962,12 +3116,14 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 						m_nPage == defTONG_JX2_PAGE_INFO ||
 						m_nPage == defTONG_JX2_PAGE_WS)
 					{
-						if (m_nListMode == 2)
+						if (m_nListMode >= 1)
 						{
-							// panel bang lien minh: chon dong (khong co tooltip)
+							// panel danh sach bang (toan bo / lien minh): chon dong, khong co tooltip
 							m_nSel = (i < TJX2_UI_ROWS) ? m_nOrd[i] : i;
-							if (m_bHasUnion)
+							if (m_nListMode == 2 && m_bHasUnion)
 								RenderUnionList();
+							else if (m_nListMode == 1 && m_bHasList)
+								RenderTongListPanel();
 							return 1;
 						}
 						// [BH100] LIST_ITEM_ACTIVE cua ban goc = bam ten: chon + tooltip; bam kep
@@ -3014,6 +3170,17 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					return 1;
 				}
 			}
+		}
+		if (uParam == (unsigned int)&m_BtnHelp)
+		{
+			KUiTongHelpJX2::OpenWindow();	// [BH100] BtnTongHelp goc
+			return 1;
+		}
+		if (uParam == (unsigned int)&m_BtnOtherZm)
+		{
+			m_BtnOtherZm.CheckButton(1);
+			SwitchPage(TJX2_UI_PAGE_OTHERZM);
+			return 1;
 		}
 		if (uParam == (unsigned int)&m_BtnList)
 		{
@@ -3085,7 +3252,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				if (uParam == (unsigned int)&m_FunSub[q])
 				{
 					m_nFunSub = q + 1;
-					m_nListMode = (m_nFunSub == 3) ? 2 : 0;	// [BH100] trang con Lien minh: panel = bang lien minh
+					m_nListMode = (m_nFunSub == 2) ? 1 : (m_nFunSub == 3) ? 2 : 0;	// [BH100] exe: 0/1/2/0 = thanh vien / toan bo bang / bang lien minh
 					LoadFunMaskImage();
 					// radio: chi nut dang chon sang (xem ghi chu o m_RcSub)
 					for (int z = 0; z < 4; z++)
@@ -3652,6 +3819,8 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			int nTot = m_bHasMember ? (int)pM->m_wTotal : 0;
 			if (m_nListMode == 2 && m_bHasUnion)
 				nTot = (int)((TONG_JX2_TONGLIST_SYNC*)m_byUnion)->m_wTotal;
+			else if (m_nListMode == 1 && m_bHasList)
+				nTot = (int)((TONG_JX2_TONGLIST_SYNC*)m_byList)->m_wTotal;
 			if (m_nStart + defTONG_JX2_VIEW_MEMBERS < nTot)
 			{
 				m_nStart += defTONG_JX2_VIEW_MEMBERS;
@@ -3833,6 +4002,125 @@ int KUiTongListJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				}
 				return 1;
 			}
+		}
+	}
+	return KWndImage::WndProc(uMsg, uParam, nParam);
+}
+
+//////////////////////////////////////////////////////////////////////
+// [BH100 07/09] Cua so TRO GIUP bang hoi: nut BtnTongHelp cua cua so chinh goc mo he tro giup
+// chi tiet cua JX2 (xiangxi bangzhu jiemian) o chu de bang hoi; ban VN cua chu de do chi con 4 trang anh
+// 800x600 (banghui gaizao xitong.ini) -> hien lan luot, Truoc/Ke/Dong.
+//////////////////////////////////////////////////////////////////////
+
+KUiTongHelpJX2* KUiTongHelpJX2::ms_pSelf = NULL;
+
+KUiTongHelpJX2* KUiTongHelpJX2::OpenWindow()
+{
+	if (ms_pSelf == NULL)
+	{
+		ms_pSelf = new KUiTongHelpJX2;
+		if (ms_pSelf)
+			ms_pSelf->Initialize();
+	}
+	if (ms_pSelf)
+	{
+		ms_pSelf->Show();
+		ms_pSelf->BringToTop();
+		ms_pSelf->ShowPage(0);
+	}
+	return ms_pSelf;
+}
+
+KUiTongHelpJX2* KUiTongHelpJX2::GetIfVisible()
+{
+	if (ms_pSelf && ms_pSelf->IsVisible())
+		return ms_pSelf;
+	return NULL;
+}
+
+void KUiTongHelpJX2::CloseWindow(bool bDestroy)
+{
+	if (ms_pSelf)
+	{
+		ms_pSelf->Hide();
+		if (bDestroy)
+		{
+			ms_pSelf->Destroy();
+			ms_pSelf = NULL;
+		}
+	}
+}
+
+void KUiTongHelpJX2::Initialize()
+{
+	m_nPage = 0;
+	m_nPages = 0;
+	memset(m_szPage, 0, sizeof(m_szPage));
+	AddChild(&m_BtnPrev);
+	AddChild(&m_BtnNext);
+	AddChild(&m_BtnClose);
+	char Scheme[256];
+	g_UiBase.GetCurSchemePath(Scheme, 256);
+	LoadScheme(Scheme);
+	Wnd_AddWindow(this);
+}
+
+void KUiTongHelpJX2::LoadScheme(const char* pScheme)
+{
+	if (!ms_pSelf)
+		return;
+	char Buff[128];
+	KIniFile Ini;
+	sprintf(Buff, "%s\\%s", pScheme, TONG_JX2_INI);
+	if (!Ini.Load(Buff))
+		return;
+	ms_pSelf->Init(&Ini, (SCREEN_WIDTH == 1024) ? "TH_Main1024" : "TH_Main");
+	ms_pSelf->m_BtnClose.Init(&Ini, "TH_BtnClose");
+	ms_pSelf->m_BtnPrev.Init(&Ini, "TH_BtnPrev");
+	ms_pSelf->m_BtnNext.Init(&Ini, "TH_BtnNext");
+	ms_pSelf->m_nPages = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		char szKey[16];
+		sprintf(szKey, "Page%d", i + 1);
+		ms_pSelf->m_szPage[i][0] = 0;
+		Ini.GetString("TH_Main", szKey, "", ms_pSelf->m_szPage[i], sizeof(ms_pSelf->m_szPage[i]));
+		if (ms_pSelf->m_szPage[i][0])
+			ms_pSelf->m_nPages = i + 1;
+	}
+}
+
+void KUiTongHelpJX2::ShowPage(int nPage)
+{
+	if (m_nPages <= 0)
+		return;
+	if (nPage < 0)
+		nPage = m_nPages - 1;
+	if (nPage >= m_nPages)
+		nPage = 0;
+	m_nPage = nPage;
+	SetImage(ISI_T_SPR, m_szPage[m_nPage], false);
+}
+
+int KUiTongHelpJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+{
+	if (uMsg == WND_N_BUTTON_CLICK)
+	{
+		if (uParam == (unsigned int)&m_BtnClose)
+		{
+			CloseWindow(false);
+			return 1;
+		}
+		if (uParam == (unsigned int)&m_BtnPrev)
+		{
+			ShowPage(m_nPage - 1);
+			return 1;
+		}
+		if (uParam == (unsigned int)&m_BtnNext)
+		{
+			ShowPage(m_nPage + 1);
+			return 1;
 		}
 	}
 	return KWndImage::WndProc(uMsg, uParam, nParam);
