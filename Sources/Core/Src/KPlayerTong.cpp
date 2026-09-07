@@ -143,7 +143,17 @@ BOOL	KPlayerTong::ApplyCreateTong(int nCamp, char *lpszTongName)
 // ==== JX2 port: cua so bang hoi kieu JX2 (client) ====
 void KPlayerTong::JX2_RequestView(int nPage, int nStart)
 {
+	JX2_RequestViewEx(nPage, nStart, 0, 0, 0);
+}
+
+// [BH100 07/09] dwTarget = bang khac (INFO/MEMBER chi doc), nSort/nOnline = sap xep tren GS (25 dong/trang)
+void KPlayerTong::JX2_RequestViewEx(int nPage, int nStart, DWORD dwTarget, int nSort, int nOnline)
+{
 	TONG_JX2VIEW_COMMAND sCmd;
+	memset(&sCmd, 0, sizeof(sCmd));
+	sCmd.m_dwTarget = dwTarget;
+	sCmd.m_btSort = (BYTE)nSort;
+	sCmd.m_btOnline = (BYTE)(nOnline ? 1 : 0);
 	sCmd.ProtocolType = c2s_extendtong;
 	sCmd.m_wLength = sizeof(TONG_JX2VIEW_COMMAND) - 1;
 	sCmd.m_btMsgId = enumTONG_COMMAND_ID_JX2VIEW;

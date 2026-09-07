@@ -996,6 +996,7 @@ enum GAME_TONG_OPERATION_INDEX
 	GTOI_TONG_GET_RECRUIT,
 	GTOI_TONG_JX2_VIEW,	// JX2 port: uParam = page (4 = trang thong bao dung INFO), nParam = start
 	GTOI_TONG_JX2_OP,		// JX2 port: uParam = (KUiTongJX2Op*)
+	GTOI_TONG_JX2_VIEW2,	// [BH100 07/09] uParam = (KUiTongJX2View*): trang + bang dich + sap xep
 };
 
 // JX2 port: goi thao tac cua so bang hoi JX2 (UI -> Core -> GS)
@@ -1007,6 +1008,16 @@ typedef struct
 	int	nParam2;
 	char	szText[128];
 } KUiTongJX2Op;
+
+// [BH100 07/09] yeu cau trang cua so JX2 day du (UI -> Core -> GS)
+typedef struct
+{
+	int	nPage;
+	int	nStart;
+	unsigned long	dwTarget;	// bang muon xem (0 = bang minh)
+	int	nSort;
+	int	nOnline;
+} KUiTongJX2View;
 
 //=========================================================
 // Core外部客户对core的组队相关的操作请求的索引定义

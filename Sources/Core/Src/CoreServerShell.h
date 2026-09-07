@@ -234,6 +234,19 @@ struct iCoreServerShell
 #define SGDI_TONG_JX2VIEW		0x4A583202
 // GetGameData: thao tac cua so JX2 (uParam = TONG_JX2OP_COMMAND*, nParam = playerIdx)
 #define SGDI_TONG_JX2OP			0x4A583203
+// [BH100 07/09] GetGameData: dung trang cua so JX2 co bang dich / sap xep (uParam = SJX2_VIEW_REQ*)
+#define SGDI_TONG_JX2VIEW2		0x4A583204
+struct SJX2_VIEW_REQ
+{
+	int		nPlayerIdx;
+	int		nPage;
+	int		nStart;
+	unsigned long	dwTarget;	// bang muon xem (0 = bang minh)
+	int		nSort;			// 0..6
+	int		nOnline;		// 1 = online len truoc
+	void*	pOut;
+	int		nOutSize;
+};
 
 // ==== Bot la KPlayer that (KPlayerBot.*) - tien to PB_ ====
 // Dat NGOAI enum, cung khuon voi cac ma JX2 o tren, de KHONG them ham thuan ao.

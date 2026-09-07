@@ -12,6 +12,7 @@ struct JX2MemberBrief
 	char	szName[32];
 	BYTE	btFigure;		// 0 bang chu / 1 truong lao / 2 doi truong / 3 bang chung
 	BYTE	btSex;
+	char	szTitle[32];	// [BH100] danh hieu ghe (GetMasterTitle / GetDirectorTitle / GetManagerTitle / GetMemberTitle)
 };
 
 class CTongConnect;

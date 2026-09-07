@@ -28,6 +28,7 @@
 #include <KTongProtocol.h>
 #include "KNewProtocolProcess.h"
 #include "KTongJX2.h"
+#include <vector>
 
 KTongJX2Mgr g_TongJX2;
 
@@ -247,6 +248,8 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 				sMember.szName[31] = 0;
 				sMember.btFigure = pOne->m_btFigure;
 				sMember.btSex = pOne->m_btSex;
+				memcpy(sMember.szTitle, pOne->m_szTitle, sizeof(sMember.szTitle));	// [BH100]
+				sMember.szTitle[31] = 0;
 				sMember.mapField.clear();
 				sMember.setRight.clear();
 				int k;
@@ -2246,12 +2249,216 @@ static KTongJX2Tong* sJX2_PlayerTong(int nPlayerIdx, KTongJX2Member** ppMe)
 	return pTong;
 }
 
+// [BH100 07/09] chuc vu HIEN THI: bang chung co KV16 (ngay thoai an) = an si (4)
+static int sJX2_DispFigure(KTongJX2Member* pM)
+{
+	if (!pM)
+		return 3;
+	if (pM->btFigure == 3 && g_TongJX2.GetMemberField(pM, 16))
+		return 4;
+	return pM->btFigure;
+}
+
+// KV15: GS ghi epoch giay (BuildClientView), Lua TONGM_ApplySetLastOnlineDate ghi NGAY - quy ve epoch
+static DWORD sJX2_LastOnlineEpoch(KTongJX2Member* pM)
+{
+	DWORD v = g_TongJX2.GetMemberField(pM, 15);
+	if (v && v < 1000000)
+		v = v * 86400;
+	return v;
+}
+
+// so thanh vien KHONG tinh an si (ban goc MemberNum = truong lao + doi truong + bang chung + 1)
+static int sJX2_CountActive(KTongJX2Tong* pT, int* pnRetired)
+{
+	int nA = 0, nR = 0;
+	if (pT)
+	{
+		std::map<DWORD, KTongJX2Member>::iterator it;
+		for (it = pT->mapMember.begin(); it != pT->mapMember.end(); ++it)
+		{
+			if (sJX2_DispFigure(&it->second) == 4)
+				nR++;
+			else
+				nA++;
+		}
+	}
+	if (pnRetired)
+		*pnRetired = nR;
+	return nA;
+}
+
+// tran quyen gop kien thiet tuan (field 42; 0 = chua thang cap -> tra bang tong_level_data)
+static DWORD sJX2_WeekBuildUpper(DWORD dwTongID)
+{
+	DWORD dwUpper = g_TongJX2.GetField(dwTongID, 42);
+	if (dwUpper == 0)
+	{
+		static const DWORD dwWk[6] = {3360, 3360, 6720, 10080, 16800, 25200};
+		int nBLv = (int)g_TongJX2.GetField(dwTongID, 13);
+		if (nBLv < 0) nBLv = 0;
+		if (nBLv > 5) nBLv = 5;
+		dwUpper = dwWk[nBLv];
+	}
+	return dwUpper;
+}
+
+// mot dong danh sach thanh vien da tinh san de sap xep tren GS (ban goc 25 dong/trang)
+struct SJX2Row
+{
+	KTongJX2Member*	p;
+	int		nOnIdx;
+	int		nLevel;
+	int		nFaction;
+	int		nFig;		// chuc vu hien thi (4 = an si)
+	DWORD	dwOffer;	// KV 7
+	DWORD	dwWeekGoal;	// KV 9
+	DWORD	dwWeekly;	// KV 11
+	DWORD	dwLastOn;	// epoch
+	DWORD	dwJoin;		// KV 2
+	double	dAvg;		// cong hien / ngay
+};
+
+// so sanh theo menu Fun_BtnMemberSortMenu: 0 cap / 1 TB ngay / 2 tuan (KV11) / 3 muc tieu tuan (KV9)
+// / 4 an si / 5 chuc vu / 6 lan cuoi tren mang; nOnline = nguoi online len truoc. Tra <0 khi a truoc b.
+static int sJX2_CmpRow(const SJX2Row& a, const SJX2Row& b, int nSort, int nOnline)
+{
+	if (nOnline && (a.nOnIdx > 0) != (b.nOnIdx > 0))
+		return (a.nOnIdx > 0) ? -1 : 1;
+	switch (nSort)
+	{
+	case 1: return (a.dAvg > b.dAvg) ? -1 : (a.dAvg < b.dAvg) ? 1 : 0;
+	case 2: return (a.dwWeekly > b.dwWeekly) ? -1 : (a.dwWeekly < b.dwWeekly) ? 1 : 0;
+	case 3: return (a.dwWeekGoal > b.dwWeekGoal) ? -1 : (a.dwWeekGoal < b.dwWeekGoal) ? 1 : 0;
+	case 4: return ((a.nFig == 4) ? 0 : 1) - ((b.nFig == 4) ? 0 : 1);
+	case 5: return a.nFig - b.nFig;
+	case 6: return (a.dwLastOn > b.dwLastOn) ? -1 : (a.dwLastOn < b.dwLastOn) ? 1 : 0;
+	default: return b.nLevel - a.nLevel;
+	}
+}
+
 int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pOut, int nOutSize)
+{
+	return BuildClientViewEx(nPlayerIdx, nPage, nStart, 0, 0, 0, pOut, nOutSize);
+}
+
+// [BH100 07/09] dwTarget = bang khac -> trang INFO/MEMBER chi doc (nut Danh sach bang /
+// Xem chi tiet cua ban goc); nSort/nOnline = sap xep danh sach tren GS, 25 dong/trang.
+int KTongJX2Mgr::BuildClientViewEx(int nPlayerIdx, int nPage, int nStart, DWORD dwTarget, int nSort, int nOnline, void* pOut, int nOutSize)
 {
 	if (!pOut)
 		return 0;
 	KTongJX2Member* pMe = NULL;
 	KTongJX2Tong* pTong = sJX2_PlayerTong(nPlayerIdx, &pMe);
+	BOOL bOther = FALSE;
+	if (dwTarget != 0 && (!pTong || pTong->dwNameID != dwTarget) &&
+		(nPage == defTONG_JX2_PAGE_INFO || nPage == defTONG_JX2_PAGE_MEMBER))
+	{
+		KTongJX2Tong* pT = FindTong(dwTarget);
+		if (!pT)
+			return 0;
+		pTong = pT;
+		pMe = NULL;
+		bOther = TRUE;
+	}
+	if (nPage == defTONG_JX2_PAGE_UNIONLIST)
+	{
+		// danh sach bang trong LIEN MINH cua minh (panel phai trang lien minh ban goc)
+		if (!pTong || nOutSize < (int)sizeof(TONG_JX2_TONGLIST_SYNC))
+			return 0;
+		TONG_JX2_TONGLIST_SYNC* pSync = (TONG_JX2_TONGLIST_SYNC*)pOut;
+		memset(pSync, 0, sizeof(TONG_JX2_TONGLIST_SYNC));
+		pSync->ProtocolType = s2c_extendtong;
+		pSync->m_btMsgId = enumTONG_SYNC_ID_JX2;
+		pSync->m_btPage = defTONG_JX2_PAGE_UNIONLIST;
+		pSync->m_wStart = (WORD)nStart;
+		DWORD dwUnion = GetField(pTong->dwNameID, 10);
+		int nIdx = 0;
+		if (dwUnion)
+		{
+			std::map<DWORD, KTongJX2Tong>::iterator it;
+			for (it = m_mapTong.begin(); it != m_mapTong.end(); ++it)
+			{
+				KTongJX2Tong* pT = &it->second;
+				if (GetField(pT->dwNameID, 10) != dwUnion)
+					continue;
+				if (nIdx >= nStart && pSync->m_btCount < defTONG_JX2_LIST_ROWS)
+				{
+					TONG_JX2_ONE_TONG* pOne = &pSync->m_sTong[pSync->m_btCount];
+					memcpy(pOne->m_szName, pT->szName, 32);
+					pOne->m_szName[31] = 0;
+					std::map<DWORD, KTongJX2Member>::iterator im;
+					for (im = pT->mapMember.begin(); im != pT->mapMember.end(); ++im)
+					{
+						if (im->second.btFigure == 0)
+						{
+							memcpy(pOne->m_szMaster, im->second.szName, 32);
+							pOne->m_szMaster[31] = 0;
+							break;
+						}
+					}
+					pOne->m_dwNameID = pT->dwNameID;
+					pOne->m_btCamp = pT->btCamp;
+					pOne->m_btLevel = (BYTE)GetField(pT->dwNameID, 13);
+					pOne->m_wMember = (WORD)sJX2_CountActive(pT, NULL);
+					pOne->m_btUnionLeader = GetField(pT->dwNameID, 50) ? 1 : 0;
+					pSync->m_btCount++;
+				}
+				nIdx++;
+			}
+		}
+		pSync->m_wTotal = (WORD)nIdx;
+		pSync->m_wLength = sizeof(TONG_JX2_TONGLIST_SYNC) - 1;
+		return (int)sizeof(TONG_JX2_TONGLIST_SYNC);
+	}
+	if (nPage == defTONG_JX2_PAGE_WEEKGOAL)
+	{
+		// bao cao muc tieu tuan (field 20-36 + KV 9/10 + co 1006), chi bang minh
+		if (!pTong || bOther || nOutSize < (int)sizeof(TONG_JX2_WEEKGOAL_SYNC))
+			return 0;
+		TONG_JX2_WEEKGOAL_SYNC* pSync = (TONG_JX2_WEEKGOAL_SYNC*)pOut;
+		memset(pSync, 0, sizeof(TONG_JX2_WEEKGOAL_SYNC));
+		pSync->ProtocolType = s2c_extendtong;
+		pSync->m_btMsgId = enumTONG_SYNC_ID_JX2;
+		pSync->m_btPage = defTONG_JX2_PAGE_WEEKGOAL;
+		DWORD dwT = pTong->dwNameID;
+		pSync->m_nWeek = (int)GetField(dwT, 21);
+		pSync->m_nDay = (int)GetField(dwT, 20);
+		pSync->m_dwCurLevel = GetField(dwT, 36);
+		pSync->m_dwEvent = GetField(dwT, 22);
+		pSync->m_dwLevel = GetField(dwT, 23);
+		pSync->m_dwTotal = GetField(dwT, 24);
+		pSync->m_dwPlayer = GetField(dwT, 25);
+		pSync->m_dwValue = GetField(dwT, 26);
+		pSync->m_dwPriceTong = GetField(dwT, 27);
+		pSync->m_dwPricePlayer = GetField(dwT, 28);
+		pSync->m_dwLEvent = GetField(dwT, 29);
+		pSync->m_dwLLevel = GetField(dwT, 30);
+		pSync->m_dwLTotal = GetField(dwT, 31);
+		pSync->m_dwLPlayer = GetField(dwT, 32);
+		pSync->m_dwLValue = GetField(dwT, 33);
+		pSync->m_dwLPriceTong = GetField(dwT, 34);
+		pSync->m_dwLPricePlayer = GetField(dwT, 35);
+		pSync->m_dwMyWeekGoal = GetMemberField(pMe, 9);
+		pSync->m_dwMyLWeekGoal = GetMemberField(pMe, 10);
+		pSync->m_btLComplete = GetField(dwT, 1006) ? 1 : 0;	// TONGTSK_WEEKGOAL_COMPLETE
+		{
+			// so ngay con lai: tinh tu moc bao tri tuan gan nhat (field 1292, don vi ngay
+			// theo nua dem local nhu relay); chua co moc thi theo thu trong tuan (thu Hai = 0)
+			time_t tNow = time(NULL);
+			struct tm* pTm = localtime(&tNow);
+			struct tm sMid = *pTm;
+			sMid.tm_hour = 0; sMid.tm_min = 0; sMid.tm_sec = 0;
+			int nToday = (int)(mktime(&sMid) / 86400);
+			int nLast = (int)GetField(dwT, defTONGTSK_LAST_WM_DAY);
+			int nSince = (nLast > 0 && nToday >= nLast) ? (nToday - nLast) : ((pTm->tm_wday + 6) % 7);
+			if (nSince < 0) nSince = 0;
+			if (nSince > 6) nSince = 6;
+			pSync->m_nDaysLeft = 7 - nSince;
+		}
+		pSync->m_wLength = sizeof(TONG_JX2_WEEKGOAL_SYNC) - 1;
+		return (int)sizeof(TONG_JX2_WEEKGOAL_SYNC);
+	}
 	if (nPage == defTONG_JX2_PAGE_TONGLIST)
 	{
 		// danh sach bang: KHONG can thuoc bang
@@ -2291,7 +2498,7 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 				pOne->m_dwNameID = pT->dwNameID;
 				pOne->m_btCamp = pT->btCamp;
 				pOne->m_btLevel = (BYTE)GetField(pT->dwNameID, 13);
-				pOne->m_wMember = (WORD)pT->mapMember.size();
+				pOne->m_wMember = (WORD)sJX2_CountActive(pT, NULL);	// [BH100] khong tinh an si
 				pSync->m_btCount++;
 			}
 			nIdx++;
@@ -2339,7 +2546,7 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 				pOne->m_dwNameID = pT->dwNameID;
 				pOne->m_btCamp = pT->btCamp;
 				pOne->m_btLevel = (BYTE)GetField(pT->dwNameID, 13);
-				pOne->m_wMember = (WORD)pT->mapMember.size();
+				pOne->m_wMember = (WORD)sJX2_CountActive(pT, NULL);	// [BH100] khong tinh an si
 				pOne->m_btTendency = (BYTE)GetField(pT->dwNameID, 60);
 				pOne->m_btAct[0] = (BYTE)GetField(pT->dwNameID, 61);
 				pOne->m_btAct[1] = (BYTE)GetField(pT->dwNameID, 62);
@@ -2389,17 +2596,25 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 			pSync->m_nWeek = (int)GetField(pTong->dwNameID, 21);
 			pSync->m_dwStuntID = GetField(pTong->dwNameID, defTONGTSK_STUNT_ID);
 			pSync->m_dwStuntOn = GetField(pTong->dwNameID, defTONGTSK_STUNT_ENABLED);
-			pSync->m_wMemberTotal = (WORD)pTong->mapMember.size();
-			pSync->m_btMyFigure = pMe ? pMe->btFigure : 3;
+			{
+				int nRet = 0;
+				pSync->m_wMemberTotal = (WORD)sJX2_CountActive(pTong, &nRet);	// [BH100] khong tinh an si
+				pSync->m_wRetired = (WORD)nRet;
+			}
+			pSync->m_btMyFigure = (BYTE)sJX2_DispFigure(pMe);
 			pSync->m_dwMyOffer = GetMemberField(pMe, 7);
 			pSync->m_wMyRights = sJX2_RightMask(pMe);
 			strncpy(pSync->m_szSelf, Player[nPlayerIdx].m_PlayerName, 31);
 			pSync->m_dwMyWeekOffer = GetMemberField(pMe, 9);
 			// "Dang cap" bang (khac "Dang cap kien thiet" = m_nLevel field 13)
-			pSync->m_nTongLevel = Player[nPlayerIdx].m_cTong.GetTongLevel();
+			pSync->m_nTongLevel = bOther ? 0 : Player[nPlayerIdx].m_cTong.GetTongLevel();
 			pSync->m_dwUnionID = GetField(pTong->dwNameID, 10);
 			strncpy(pSync->m_szUnionName, pTong->szUnionName, sizeof(pSync->m_szUnionName) - 1);
 			pSync->m_bUnionLeader = GetField(pTong->dwNameID, 50) ? 1 : 0;
+			// [BH100 07/09] bang dang xem + chi doc khi la bang khac; chien bi bao tri TUAN = duy tri ngay x 7
+			pSync->m_dwTongID = pTong->dwNameID;
+			pSync->m_btViewOther = bOther ? 1 : 0;
+			pSync->m_dwStandFund = (DWORD)sJX2_CountActive(pTong, NULL) * GetField(pTong->dwNameID, 17);	// (TV - an si) x tro cap moi nguoi (field 17) - theo game_y.exe
 			memcpy(pSync->m_szAnnounce, pTong->szAnnounce, sizeof(pSync->m_szAnnounce));
 			pSync->m_szAnnounce[127] = 0;
 			// tim ten bang chu
@@ -2419,6 +2634,8 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 	case defTONG_JX2_PAGE_MEMBER:
 	case defTONG_JX2_PAGE_RIGHT:
 		{
+			// [BH100 07/09] sap xep + online-truoc lam TREN GS (ban goc 25 dong/trang,
+			// menu sap xep doi thu tu toan bang chu khong chi trang dang xem)
 			if (nOutSize < (int)sizeof(TONG_JX2_MEMBER_SYNC))
 				return 0;
 			TONG_JX2_MEMBER_SYNC* pSync = (TONG_JX2_MEMBER_SYNC*)pOut;
@@ -2428,7 +2645,9 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 			pSync->m_btPage = (BYTE)nPage;
 			pSync->m_wStart = (WORD)nStart;
 
-			int nIdx = 0;
+			std::vector<SJX2Row> vRow;
+			vRow.reserve(pTong->mapMember.size());
+			DWORD dwNow = (DWORD)time(NULL);
 			std::map<DWORD, KTongJX2Member>::iterator it;
 			for (it = pTong->mapMember.begin(); it != pTong->mapMember.end(); ++it)
 			{
@@ -2436,66 +2655,97 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 				// trang RIGHT: chi liet ke bang chu + truong lao
 				if (nPage == defTONG_JX2_PAGE_RIGHT && pMember->btFigure > 1)
 					continue;
-				if (nIdx < nStart)
+				SJX2Row r;
+				r.p = pMember;
+				r.nOnIdx = sFindPlayerIdxByNameID(pMember->dwNameID);
+				r.nFig = sJX2_DispFigure(pMember);
+				r.dwOffer = GetMemberField(pMember, 7);
+				r.dwWeekGoal = GetMemberField(pMember, 9);
+				r.dwWeekly = GetMemberField(pMember, 11);
+				r.dwJoin = GetMemberField(pMember, 2);
+				r.dwLastOn = sJX2_LastOnlineEpoch(pMember);
+				if (r.nOnIdx > 0 && Player[r.nOnIdx].m_nIndex > 0)
 				{
-					nIdx++;
-					continue;
-				}
-				if (pSync->m_btCount < defTONG_JX2_VIEW_MEMBERS)
-				{
-					TONG_JX2_ONE_MEMBER* pOne = &pSync->m_sMember[pSync->m_btCount];
-					strncpy(pOne->m_szName, pMember->szName, 31);
-					pOne->m_dwNameID = pMember->dwNameID;
-					pOne->m_btFigure = pMember->btFigure;
-					int nOnIdx = sFindPlayerIdxByNameID(pMember->dwNameID);
-					pOne->m_btOnline = (nOnIdx > 0) ? 1 : 0;
-					pOne->m_dwOffer = GetMemberField(pMember, 7);
-					pOne->m_wRights = sJX2_RightMask(pMember);
-					pOne->m_dwJoinTime = GetMemberField(pMember, 2);
-					pOne->m_dwWeekOffer = GetMemberField(pMember, 9);
-					pOne->m_dwLastActive = GetMemberField(pMember, 15);
-					pOne->m_dwWeekGoal = GetMemberField(pMember, 10);
-					if (nOnIdx > 0 && Player[nOnIdx].m_nIndex > 0)
+					// online: lay truc tiep + cap nhat cache de nguoi offline van xem duoc
+					r.nLevel = Npc[Player[r.nOnIdx].m_nIndex].m_Level;
+					r.nFaction = Player[r.nOnIdx].m_cFaction.m_nFirstAddFaction;
+					if (!bOther)
 					{
-						// online: lay truc tiep + cap nhat cache de nguoi offline van xem duoc
-						pOne->m_btLevel = (BYTE)Npc[Player[nOnIdx].m_nIndex].m_Level;
-						pOne->m_btFaction = (BYTE)Player[nOnIdx].m_cFaction.m_nFirstAddFaction;
-						if (GetMemberField(pMember, 1010) != (DWORD)pOne->m_btLevel)
+						if (GetMemberField(pMember, 1010) != (DWORD)r.nLevel)
 							sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, 1010,
-								(DWORD)pOne->m_btLevel, defTONG_JX2_OP_SET, 0);
-						if (GetMemberField(pMember, 1011) != (DWORD)pOne->m_btFaction)
+								(DWORD)r.nLevel, defTONG_JX2_OP_SET, 0);
+						if (GetMemberField(pMember, 1011) != (DWORD)r.nFaction)
 							sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, 1011,
-								(DWORD)pOne->m_btFaction, defTONG_JX2_OP_SET, 0);
-						DWORD dwNow = (DWORD)time(NULL);
-						if (dwNow > pOne->m_dwLastActive + 600)
+								(DWORD)r.nFaction, defTONG_JX2_OP_SET, 0);
+						if (dwNow > r.dwLastOn + 600)
 						{
 							// online: cap nhat moc hoat dong gan day (toi da 10 phut/lan)
 							sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, 15,
 								dwNow, defTONG_JX2_OP_SET, 0);
-							pOne->m_dwLastActive = dwNow;
+							r.dwLastOn = dwNow;
 						}
 					}
-					else
-					{
-						pOne->m_btLevel = (BYTE)GetMemberField(pMember, 1010);
-						pOne->m_btFaction = (BYTE)GetMemberField(pMember, 1011);
-					}
-					// "Ngay gia nhap" (khoa 2) truoc day KHONG CHO NAO GHI nen
-					// client luon hien dau gach, va con keo theo dong "Diem
-					// cong hien trung binh hang ngay" sai (so ngay bi ep = 1).
-					// Tu lanh: thay ai thieu thi dat mot lan, luu ben vung.
-					if (pOne->m_dwJoinTime == 0)
-					{
-						DWORD dwJoin = (DWORD)time(NULL);
-						sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, 2,
-							dwJoin, defTONG_JX2_OP_SET, 0);
-						pOne->m_dwJoinTime = dwJoin;
-					}
-					pSync->m_btCount++;
 				}
-				nIdx++;
+				else
+				{
+					r.nLevel = (int)GetMemberField(pMember, 1010);
+					r.nFaction = (int)GetMemberField(pMember, 1011);
+				}
+				// "Ngay gia nhap" (khoa 2) thieu thi dat mot lan, luu ben vung (nhu truoc)
+				if (r.dwJoin == 0 && !bOther)
+				{
+					r.dwJoin = dwNow;
+					sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, 2,
+						r.dwJoin, defTONG_JX2_OP_SET, 0);
+				}
+				{
+					long nDays = 1;
+					if (r.dwJoin && dwNow > r.dwJoin)
+						nDays = (long)((dwNow - r.dwJoin) / 86400) + 1;
+					r.dAvg = (double)r.dwOffer / (double)nDays;
+				}
+				vRow.push_back(r);
 			}
-			pSync->m_wTotal = (WORD)nIdx;
+			// chen truc tiep (on dinh) theo kieu sap xep
+			{
+				int a, b;
+				for (a = 1; a < (int)vRow.size(); a++)
+				{
+					SJX2Row key = vRow[a];
+					for (b = a - 1; b >= 0; b--)
+					{
+						if (sJX2_CmpRow(vRow[b], key, nSort, nOnline) <= 0)
+							break;
+						vRow[b + 1] = vRow[b];
+					}
+					vRow[b + 1] = key;
+				}
+			}
+			int nTotal = (int)vRow.size();
+			if (nStart < 0)
+				nStart = 0;
+			for (int q = nStart; q < nTotal && pSync->m_btCount < defTONG_JX2_VIEW_MEMBERS; q++)
+			{
+				SJX2Row& r = vRow[q];
+				TONG_JX2_ONE_MEMBER* pOne = &pSync->m_sMember[pSync->m_btCount];
+				strncpy(pOne->m_szName, r.p->szName, 31);
+				pOne->m_dwNameID = r.p->dwNameID;
+				pOne->m_btFigure = (BYTE)r.nFig;
+				pOne->m_btOnline = (r.nOnIdx > 0) ? 1 : 0;
+				pOne->m_dwOffer = r.dwOffer;
+				pOne->m_wRights = bOther ? 0 : sJX2_RightMask(r.p);
+				pOne->m_btLevel = (BYTE)r.nLevel;
+				pOne->m_btFaction = (BYTE)r.nFaction;
+				pOne->m_dwJoinTime = r.dwJoin;
+				pOne->m_dwWeekOffer = r.dwWeekGoal;
+				pOne->m_dwLastActive = r.dwLastOn;
+				pOne->m_dwWeekGoal = GetMemberField(r.p, 10);
+				pOne->m_dwWeeklyOffer = r.dwWeekly;
+				pOne->m_dwRetireDate = GetMemberField(r.p, 16);
+				strncpy(pOne->m_szTitle, r.p->szTitle, 31);
+				pSync->m_btCount++;
+			}
+			pSync->m_wTotal = (WORD)nTotal;
 			pSync->m_wLength = sizeof(TONG_JX2_MEMBER_SYNC) - 1;
 			return (int)sizeof(TONG_JX2_MEMBER_SYNC);
 		}
@@ -3704,7 +3954,9 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			// lanh dia bang minh. Field 45 giu map bang (dat qua PublicMap /
 			// TONG_ApplySetTongMap). Ban goc chan khi dang o trang thai chien
 			// dau (tong_mix.lua:980 GetFightState).
-			DWORD dwMap = GetField(dwTongID, 45);
+			// [BH100 07/09] dwTarget = bang khac (nut 'Vao bang khac' khi dang xem bang do)
+			DWORD dwMapTong = (pCmd->m_dwTarget && FindTong(pCmd->m_dwTarget)) ? pCmd->m_dwTarget : dwTongID;
+			DWORD dwMap = GetField(dwMapTong, 45);
 			if (dwMap == 0)
 			{
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
@@ -3731,6 +3983,226 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			}
 			// diem vao mac dinh cua ban goc (aMapEnterPosDef trong addtongnpc.lua)
 			Npc[nNpcIdx].ChangeWorld((DWORD)dwMap, 1718 * 32, 3313 * 32);
+			return 20;
+		}
+	case defTONG_JX2_COP_TRANSFORM_MONEY:
+		{
+			// [BH100 07/09] ngan quy -> ngan sach kien thiet = MONEYFUND2BUILDFUND ban goc
+			// (tong_mix.lua:133-178): quyen 3001/bang chu; toi thieu 1 van; 1000 luong = 1
+			// kien thiet (COEF_CONTRIB_TO_VALUE); khong duoc vuot tran tuan (field 42).
+			if (!bMaster && !sJX2_HasRight(pMe, 3001))
+				return 3;
+			int nVan = pCmd->m_nParam1;
+			if (nVan <= 0 || nVan > 200000)
+				return 5;
+			__int64 nOffer = (__int64)nVan * 10000;
+			__int64 nMoney = (__int64)GetField(dwTongID, 3) | ((__int64)GetField(dwTongID, 4) << 32);
+			if (nMoney < nOffer)
+			{
+				static const char szNo[] = "Ng©n s∏ch bang hÈi kh´ng ÆÒ";
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char*)szNo, (int)strlen(szNo));
+				return 20;
+			}
+			DWORD dwAdd = (DWORD)(nOffer / 1000);
+			if (GetField(dwTongID, 41) + dwAdd > sJX2_WeekBuildUpper(dwTongID))
+			{
+				static const char szUp[] = "Kh´ng th” chuy”n ng©n, v◊ sœ lµm ng©n s∏ch ki’n thi’t bang v≠Ót qu∏ giÌi hπn tu«n!";
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char*)szUp, (int)strlen(szUp));
+				return 20;
+			}
+			sSendMoneyCmd(dwTongID, -nOffer, defTONG_JX2_OP_ADD, dwParam);
+			{
+				__int64 nLeft = nMoney - nOffer;
+				pTong->mapField[3] = (DWORD)(nLeft & 0xFFFFFFFF);
+				pTong->mapField[4] = (DWORD)((nLeft >> 32) & 0xFFFFFFFF);
+			}
+			sSendFieldCmd(dwTongID, 12, dwAdd, defTONG_JX2_OP_ADDU, dwParam);
+			sSendFieldCmd(dwTongID, 41, dwAdd, defTONG_JX2_OP_ADDU, dwParam);
+			sSendFieldCmd(dwTongID, 1105, dwAdd, defTONG_JX2_OP_ADDU, dwParam);	// TONGTSK_MONEYFUND2BF
+			pTong->mapField[12] = GetField(dwTongID, 12) + dwAdd;
+			pTong->mapField[41] = GetField(dwTongID, 41) + dwAdd;
+			{
+				char szLog[200];
+				sprintf(szLog, "%s lµm cho %.0f Ng©n s∏ch bang chuy”n %u vπn l≠Óng vµo ng©n s∏ch ki’n thi’t",
+					Player[nPlayerIdx].m_PlayerName, (double)nOffer, dwAdd);
+				sJX2_Msg2Tong(pTong, szLog);
+				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			}
+			return 20;
+		}
+	case defTONG_JX2_COP_TRANSFORM_BUILD:
+		{
+			// [BH100 07/09] kien thiet -> chien bi = BUILDFUND2WARFUND ban goc (tong_mix.lua:182-211)
+			if (!bMaster && !sJX2_HasRight(pMe, 3001))
+				return 3;
+			int nVan = pCmd->m_nParam1;
+			if (nVan <= 0 || nVan > 10000000)
+				return 5;
+			DWORD dwBuild = GetField(dwTongID, 12);
+			if (dwBuild < (DWORD)nVan)
+			{
+				static const char szNo[] = "Ng©n s∏ch ki’n thi’t bang kh´ng ÆÒ!";
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char*)szNo, (int)strlen(szNo));
+				return 20;
+			}
+			sSendFieldCmd(dwTongID, 12, (DWORD)(-nVan), defTONG_JX2_OP_ADD, dwParam);
+			sSendFieldCmd(dwTongID, 15, (DWORD)nVan, defTONG_JX2_OP_ADDU, dwParam);
+			sSendFieldCmd(dwTongID, 1107, (DWORD)nVan, defTONG_JX2_OP_ADDU, dwParam);	// TONGTSK_BF2WF
+			pTong->mapField[12] = dwBuild - (DWORD)nVan;
+			pTong->mapField[15] = GetField(dwTongID, 15) + (DWORD)nVan;
+			{
+				char szLog[200];
+				sprintf(szLog, "%s lµm cho %d vπn ng©n s∏ch ki’n thi’t chuy”n sang ng©n s∏ch chi’n bﬁ.",
+					Player[nPlayerIdx].m_PlayerName, nVan);
+				sJX2_Msg2Tong(pTong, szLog);
+				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			}
+			return 20;
+		}
+	case defTONG_JX2_COP_RETIRE:
+	case defTONG_JX2_COP_FORCE_RETIRE:
+		{
+			// [BH100 07/09] thoai an / huy thoai an = MEMBER_RETIRE_R ban goc (tong_mix.lua:553-606):
+			// chi doi truong & bang chung; an si <= 50% tong; ep nguoi khac (quyen 1902 / bang
+			// chu) thi nguoi do phai offline >= 7 ngay; huy thoai an sau >= 7 ngay. KV16 = ngay.
+			DWORD dwT = pCmd->m_dwTarget ? pCmd->m_dwTarget : pMe->dwNameID;
+			KTongJX2Member* pTarget = FindMember(pTong, dwT);
+			if (!pTarget)
+				return 4;
+			BOOL bSelf = (pTarget == pMe);
+			if (!bSelf && !bMaster && !sJX2_HasRight(pMe, 1902))
+				return 3;
+			int nRetire = (pCmd->m_btOp == defTONG_JX2_COP_FORCE_RETIRE) ? 1 : (pCmd->m_nParam1 ? 1 : 0);
+			int nToday = (int)(time(NULL) / 86400);
+			int nFig = sJX2_DispFigure(pTarget);
+			char szMsg[256];
+			if (nRetire)
+			{
+				if (nFig != 2 && nFig != 3)
+				{
+					sprintf(szMsg, "%s Æ∂m nhi÷m ch¯c vÙ quan tr‰ng, kh´ng th” tho∏i »n, chÿ c„ ÆÈi tr≠Îng vµ bang chÛng mÌi c„ th” tho∏i »n!",
+						bSelf ? "Bπn " : pTarget->szName);
+					KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char*)szMsg, (int)strlen(szMsg));
+					return 20;
+				}
+				int nRet = 0;
+				int nAct = sJX2_CountActive(pTong, &nRet);
+				if (nRet >= (nAct + nRet) / 2)
+				{
+					sprintf(szMsg, "Tr≠Ìc mæt sË ng≠Íi tho∏i »n cÒa bang Æ∑ Æπt giÌi hπn, kh´ng th” ti’p tÙc sˆ dÙng thao t∏c tho∏i »n %d", nRet);
+					KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char*)szMsg, (int)strlen(szMsg));
+					return 20;
+				}
+				if (!bSelf)
+				{
+					int nOnIdx = sFindPlayerIdxByNameID(dwT);
+					int nLastDay = (int)(sJX2_LastOnlineEpoch(pTarget) / 86400);
+					if (nOnIdx > 0 || nToday - nLastDay < 7)
+					{
+						static const char szD[] = "Chÿ c„ th” cho tho∏i »n ÆËi vÌi thµnh vi™n kh´ng l™n mπng tı 7 ngµy trÎ l™n!";
+						KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char*)szD, (int)strlen(szD));
+						return 20;
+					}
+					sprintf(szMsg, "%s vs %s Ti’n hµnh thao t∏c tho∏i »n", Player[nPlayerIdx].m_PlayerName, pTarget->szName);
+				}
+				else
+					sprintf(szMsg, "%s Tho∏i »n kh·i bang hÈi", pTarget->szName);
+				sJX2_Msg2Tong(pTong, szMsg);
+				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szMsg, dwParam);
+				sSendMemberFieldCmd(dwTongID, dwT, 16, (DWORD)nToday, defTONG_JX2_OP_SET, dwParam);
+				pTarget->mapField[16] = (DWORD)nToday;
+				return 20;
+			}
+			if (nFig != 4)
+			{
+				static const char szN[] = "Kh´ng Î trπng th∏i tho∏i »n.";
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char*)szN, (int)strlen(szN));
+				return 20;
+			}
+			if (nToday - (int)GetMemberField(pTarget, 16) < 7)
+			{
+				static const char szW[] = "K” tı ngµy tho∏i »n 7 ngµy sau ngµy tho∏i »n mÌi c„ th” hÒy b· tho∏i »n!";
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char*)szW, (int)strlen(szW));
+				return 20;
+			}
+			sSendMemberFieldCmd(dwTongID, dwT, 16, 0, defTONG_JX2_OP_SET, dwParam);
+			pTarget->mapField[16] = 0;
+			{
+				static const char szOK[] = " HÒy b· tho∏i »n thµnh c´ng!";
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char*)szOK, (int)strlen(szOK));
+			}
+			return 20;
+		}
+	case defTONG_JX2_COP_DEMISE:
+		{
+			// [BH100 07/09] chuyen ngoi bang chu: chi bang chu; relay doi cho + phat CHANGE_AS
+			if (!bMaster)
+				return 3;
+			KTongJX2Member* pTarget = FindMember(pTong, pCmd->m_dwTarget);
+			if (!pTarget || pTarget == pMe)
+				return 4;
+			sSendTongOp(dwTongID, pCmd->m_dwTarget, defTONG_JX2_TOP_DEMISE, 0, 0, dwParam);
+			{
+				char szLog[200];
+				sprintf(szLog, "%s chuy”n nh≠Óng vﬁ tr› Bang ChÒ cho %s.", Player[nPlayerIdx].m_PlayerName, pTarget->szName);
+				sSendStringCmd(dwTongID, defTONG_JX2_STR_HISTORY, szLog, dwParam);
+			}
+			return 20;	// relay tu noi tren kenh bang
+		}
+	case defTONG_JX2_COP_SET_TITLE:
+		{
+			// [BH100 07/09] danh hieu GHE (bang chu / truong lao / doi truong): tu doi cua
+			// minh, hoac bang chu / quyen 1004 doi cho nguoi khac (tip ban goc BtnChangeTitle)
+			DWORD dwT = pCmd->m_dwTarget ? pCmd->m_dwTarget : pMe->dwNameID;
+			KTongJX2Member* pTarget = FindMember(pTong, dwT);
+			if (!pTarget)
+				return 4;
+			if (pTarget->btFigure > 2)
+			{
+				static const char szF[] = "Chÿ bang chÒ, tr≠Îng l∑o ho∆c ÆÈi tr≠Îng mÌi c„ danh hi÷u ri™ng!";
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char*)szF, (int)strlen(szF));
+				return 20;
+			}
+			if (pTarget != pMe && !bMaster && !sJX2_HasRight(pMe, 1004))
+				return 3;
+			if (!pCmd->m_szText[0])
+				return 5;
+			char szT[32];
+			memset(szT, 0, sizeof(szT));
+			strncpy(szT, pCmd->m_szText, 31);
+			sSendTongOp(dwTongID, dwT, defTONG_JX2_TOP_SET_TITLE, 0, 0, dwParam, szT);
+			return 20;	// relay noi tren kenh bang
+		}
+	case defTONG_JX2_COP_SET_SEX_TITLE:
+		{
+			// [BH100 07/09] danh hieu chung nam (0) / nu (1): bang chu hoac quyen 1004
+			if (!bMaster && !sJX2_HasRight(pMe, 1004))
+				return 3;
+			if (!pCmd->m_szText[0])
+				return 5;
+			char szT[32];
+			memset(szT, 0, sizeof(szT));
+			strncpy(szT, pCmd->m_szText, 31);
+			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_SET_SEX_TITLE, pCmd->m_nParam1 ? 1 : 0, 0, dwParam, szT);
+			return 20;
+		}
+	case defTONG_JX2_COP_MAP_MANAGE:
+		{
+			// [BH100 07/09] nut Thiet lap lanh dia cua ban goc = hop thoai tongmap_management
+			// (map/map_management.lua; Lua tu kiem bang chu). Dung ExecuteScript2 nhu MAP_CREATE.
+			if (nPlayerIdx > 0 && Player[nPlayerIdx].m_nIndex > 0)
+				Player[nPlayerIdx].ExecuteScript2(
+					(char*)"\\scriptjx2\\tong_vn\\map\\map_management.lua",
+					(char*)"tongmap_management", 0, 0);
+			return 20;
+		}
+	case defTONG_JX2_COP_STUNT_NPC:
+		{
+			// [BH100 07/09] nut Ky nang cua ban goc = hop thoai cot bieu tuong bang (tong_totempole.lua main)
+			if (nPlayerIdx > 0 && Player[nPlayerIdx].m_nIndex > 0)
+				Player[nPlayerIdx].ExecuteScript2(
+					(char*)"\\scriptjx2\\tong_vn\\npc\\tong_totempole.lua",
+					(char*)"main", 0, 0);
 			return 20;
 		}
 	case defTONG_JX2_COP_STORE_OFFER:

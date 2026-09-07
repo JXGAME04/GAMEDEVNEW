@@ -221,6 +221,10 @@ public:
 	void	JX2_LoadFromStruct(const TTongStruct* pStruct);
 	void	JX2_LoadMemberFromStruct(const void* pMemberRecord);
 	int	JX2_CollectMembers(struct JX2MemberBrief* pArr, int nMax);
+	// [BH100 07/09]
+	BOOL	JX2_SetTitleByNameID(DWORD dwNameID, const char* pszTitle);	// danh hieu ghe (bang chu / truong lao / doi truong)
+	BOOL	JX2_SetSexTitle(int nSex, const char* pszTitle);			// danh hieu chung nam (0) / nu (1)
+	BOOL	JX2_DemiseByNameID(DWORD dwNameID);						// chuyen ngoi bang chu
 	int	JX2_BuildTongSync(void* pBuffer, int nBufSize, int nMemberTotal);
 	int	JX2_BuildMemberSync(void* pBuffer, int nBufSize,
 			const struct JX2MemberBrief* pArr, int nTotal, int* pnStartIdx, int nMaxPerPacket);

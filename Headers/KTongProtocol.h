@@ -915,6 +915,7 @@ struct STONG_JX2_ONE_MEMBER
 	BYTE	m_btSex;
 	BYTE	m_btFieldCount;
 	BYTE	m_btRightCount;
+	char	m_szTitle[32];	// [BH100 07/09] danh hieu GHE: bang chu / truong lao i / doi truong j / nam-nu
 };
 
 // Bo cuc: header + m_btCount x [STONG_JX2_ONE_MEMBER + fields + rights]
@@ -985,6 +986,9 @@ struct STONG_JX2_STRING_COMMAND : EXTEND_HEADER
 #define defTONG_JX2_TOP_MINISTER	21	// dai than: nParam1 = 1 ThuaTuong/2 NguyenSoai/3 TienPhong -> field 50+slot; nParam2 = 1 phong / 0 cach
 #define defTONG_JX2_TOP_UNION_APPLY	22	// ghi field 54 = UnionID bang DANG XIN vao (nParam1) - minh chu chi duyet duoc bang da xin
 #define defTONG_JX2_TOP_WS_OP		23	// tac phuong: nParam1 = loai khu 1..7, nParam2 = 0 lap / 1 mo / 2 dong / 3 nang cap (relay kiem dieu kien + tru quy)
+#define defTONG_JX2_TOP_SET_TITLE	24	// [BH100] danh hieu ghe cua m_dwMemberNameID (m_szName = danh hieu)
+#define defTONG_JX2_TOP_SET_SEX_TITLE	25	// [BH100] danh hieu chung: nParam1 = 0 nam / 1 nu, m_szName = danh hieu
+#define defTONG_JX2_TOP_DEMISE		26	// [BH100] chuyen ngoi bang chu cho m_dwMemberNameID (AcceptMaster truc tiep)
 
 struct STONG_JX2_TONG_OP_COMMAND : EXTEND_HEADER
 {

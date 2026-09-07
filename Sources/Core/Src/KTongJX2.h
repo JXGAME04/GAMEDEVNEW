@@ -23,6 +23,7 @@ struct KTongJX2Member
 	char	szName[32];
 	BYTE	btFigure;		// 0 bang chu / 1 truong lao / 2 doi truong / 3 bang chung / 4 an si
 	BYTE	btSex;
+	char	szTitle[32];	// [BH100] danh hieu ghe do relay gui (STONG_JX2_ONE_MEMBER.m_szTitle)
 	std::map<WORD, DWORD>	mapField;
 	std::set<DWORD>			setRight;
 };
@@ -70,6 +71,8 @@ public:
 	// Phuc vu cua so client JX2 (SGDI_TONG_JX2VIEW / SGDI_TONG_JX2OP):
 	// dung goi TONG_JX2_*_SYNC vao pOut tu ban sao -> tra so byte (0 = loi)
 	int		BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pOut, int nOutSize);
+	// [BH100 07/09] ban day du: dwTarget = bang khac (chi doc), nSort/nOnline = sap xep danh sach
+	int		BuildClientViewEx(int nPlayerIdx, int nPage, int nStart, DWORD dwTarget, int nSort, int nOnline, void* pOut, int nOutSize);
 	void	PushViewTo(DWORD dwPlayerIdx, DWORD dwTongNameID, int nPage);
 	DWORD	NextTongID(DWORD dwPrev);	// duyet bang (0 = dau; tra 0 khi het)
 	// thao tac tu cua so (kiem quyen theo bang ID JX2 roi push len relay) -> 0 = ok

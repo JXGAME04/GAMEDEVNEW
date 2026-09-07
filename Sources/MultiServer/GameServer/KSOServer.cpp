@@ -4311,8 +4311,20 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 		BYTE byOut[2048];
 		int nLen = 0;
 		if (m_pCoreServerShell)
-			nLen = m_pCoreServerShell->GetGameData(SGDI_TONG_JX2VIEW, (intptr_t)byOut,
-				(intptr_t)(((unsigned)nPlayerIdx & 0xFFFF) | (((unsigned)pView->m_btPage & 0xF) << 16) | (((unsigned)pView->m_wStart & 0xFFF) << 20)));
+		{
+			// [BH100 07/09] goi VIEW mang them bang dich / kieu sap xep / online truoc
+			SJX2_VIEW_REQ sReq;
+			memset(&sReq, 0, sizeof(sReq));
+			sReq.nPlayerIdx = (int)nPlayerIdx;
+			sReq.nPage = (int)pView->m_btPage;
+			sReq.nStart = (int)pView->m_wStart;
+			sReq.dwTarget = pView->m_dwTarget;
+			sReq.nSort = (int)pView->m_btSort;
+			sReq.nOnline = (int)pView->m_btOnline;
+			sReq.pOut = byOut;
+			sReq.nOutSize = (int)sizeof(byOut);
+			nLen = m_pCoreServerShell->GetGameData(SGDI_TONG_JX2VIEW2, (intptr_t)&sReq, 0);
+		}
 		if (nLen > 0 && m_pServer)
 		{
 			int nNetID = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NETID, nPlayerIdx, 0);

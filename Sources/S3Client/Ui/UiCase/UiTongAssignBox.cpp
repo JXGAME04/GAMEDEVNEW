@@ -37,6 +37,7 @@ KUiTongAssignBox* KUiTongAssignBox::ms_pSelf = NULL;
 KUiTongAssignBox::KUiTongAssignBox()
 {
 	m_bJX2Mode = false;
+	m_bMinisterMode = false;
 	m_dwJX2Target = 0;
 	m_pMain = NULL;
 	m_nSelectFigure = -1;
@@ -305,6 +306,10 @@ void KUiTongAssignBox::ArrangeDataJX2(const char* szName, unsigned long dwNameID
 	if (!ms_pSelf || !szName || !szName[0] || dwNameID == 0)
 		return;
 	ms_pSelf->m_bJX2Mode = true;
+	ms_pSelf->m_bMinisterMode = false;
+	ms_pSelf->m_BtnElder.SetText("Tr­ëng l·o");
+	ms_pSelf->m_BtnCaptain.SetText("§­êng chñ ");
+	ms_pSelf->m_BtnPilgarlic.SetText("M«n ®Ö");
 	ms_pSelf->m_dwJX2Target = dwNameID;
 	strncpy(ms_pSelf->m_szTargetPlayerName, szName,
 		sizeof(ms_pSelf->m_szTargetPlayerName) - 1);
@@ -324,6 +329,18 @@ void KUiTongAssignBox::ArrangeDataJX2(const char* szName, unsigned long dwNameID
 }
 
 
+// [BH100 07/09] uy nhiem dai than: cung khung, doi nhan 3 o (Official_A/B/C cua blueprint)
+void KUiTongAssignBox::ArrangeDataMinister(const char* szName, unsigned long dwNameID)
+{
+	if (!ms_pSelf || !szName || !szName[0] || dwNameID == 0)
+		return;
+	ArrangeDataJX2(szName, dwNameID, 3);
+	ms_pSelf->m_bMinisterMode = true;
+	ms_pSelf->m_BtnElder.SetText("Thõa T­íng");
+	ms_pSelf->m_BtnCaptain.SetText("Nguyªn So¸i");
+	ms_pSelf->m_BtnPilgarlic.SetText("Tiªn Phong");
+}
+
 /*********************************************************************
 * ¹¦ÄÜ£ºCheck¹ÜÀíº¯Êý
 **********************************************************************/
@@ -388,8 +405,13 @@ void KUiTongAssignBox::OnConfirm()
 			nFig = 1;
 		else if (m_nSelectFigure == enumTONG_FIGURE_MANAGER)
 			nFig = 2;
-		KUiTongJX2::SendOpStatic(defTONG_JX2_COP_SET_FIGURE, m_dwJX2Target,
-			nFig, 0, NULL);
+		if (m_bMinisterMode)
+			// [BH100] 1 Thua Tuong / 2 Nguyen Soai / 3 Tien Phong (cung thu tu 3 o)
+			KUiTongJX2::SendOpStatic(defTONG_JX2_COP_MINISTER_SET, m_dwJX2Target, nFig, 0, NULL);
+		else
+			KUiTongJX2::SendOpStatic(defTONG_JX2_COP_SET_FIGURE, m_dwJX2Target,
+				nFig, 0, NULL);
+		m_bMinisterMode = false;
 		if (m_pMain)
 		{
 			m_pMain->Show();

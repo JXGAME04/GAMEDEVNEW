@@ -383,6 +383,8 @@ int CTongControl::JX2_CollectMembers(JX2MemberBrief* pArr, int nMax)
 			pArr[nCount].szName[31] = 0;
 			pArr[nCount].btFigure = 0;
 			pArr[nCount].btSex = (BYTE)m_nMasterSex;
+			memset(pArr[nCount].szTitle, 0, 32);
+			GetMasterTitle(pArr[nCount].szTitle);
 		}
 		nCount++;
 	}
@@ -398,6 +400,8 @@ int CTongControl::JX2_CollectMembers(JX2MemberBrief* pArr, int nMax)
 			pArr[nCount].szName[31] = 0;
 			pArr[nCount].btFigure = 1;
 			pArr[nCount].btSex = (BYTE)m_nDirectorSex[i];
+			memset(pArr[nCount].szTitle, 0, 32);
+			GetDirectorTitle(pArr[nCount].szTitle, i);
 		}
 		nCount++;
 	}
@@ -413,6 +417,8 @@ int CTongControl::JX2_CollectMembers(JX2MemberBrief* pArr, int nMax)
 			pArr[nCount].szName[31] = 0;
 			pArr[nCount].btFigure = 2;
 			pArr[nCount].btSex = (BYTE)m_nManagerSex[i];
+			memset(pArr[nCount].szTitle, 0, 32);
+			GetManagerTitle(pArr[nCount].szTitle, i);
 		}
 		nCount++;
 	}
@@ -448,6 +454,8 @@ int CTongControl::JX2_CollectMembers(JX2MemberBrief* pArr, int nMax)
 			pArr[nCount].szName[31] = 0;
 			pArr[nCount].btFigure = 3;
 			pArr[nCount].btSex = (BYTE)m_psMember[i].m_nSex;
+			memset(pArr[nCount].szTitle, 0, 32);
+			GetMemberTitle(pArr[nCount].szTitle, m_psMember[i].m_nSex);
 		}
 		nCount++;
 	}
@@ -519,6 +527,8 @@ int CTongControl::JX2_BuildMemberSync(void* pBuffer, int nBufSize,
 		strncpy(pOne->m_szName, pArr[i].szName, 31);
 		pOne->m_btFigure = pArr[i].btFigure;
 		pOne->m_btSex = pArr[i].btSex;
+		memset(pOne->m_szTitle, 0, sizeof(pOne->m_szTitle));
+		strncpy(pOne->m_szTitle, pArr[i].szTitle, 31);
 		pOne->m_btFieldCount = (BYTE)nFields;
 		pOne->m_btRightCount = (BYTE)nRights;
 		pOut += sizeof(STONG_JX2_ONE_MEMBER);
@@ -1228,15 +1238,184 @@ BOOL CTongControl::JX2_SetString(int nKind, const char* pszText)
 		strncpy(m_szJX2Recruit, pszText, defTONG_JX2_ANNOUNCE_LEN - 1);
 		return TRUE;
 	case defTONG_JX2_STR_EVENT:
-		memset(m_szJX2Event[m_nJX2EventHead], 0, defTONG_JX2_RECORD_LEN);
-		strncpy(m_szJX2Event[m_nJX2EventHead], pszText, defTONG_JX2_RECORD_LEN - 1);
-		m_nJX2EventHead = (m_nJX2EventHead + 1) % defTONG_JX2_RECORD_NUM;
-		return TRUE;
 	case defTONG_JX2_STR_HISTORY:
+		{
+			// [BH100 07/09] ban goc ve moi dong "%04d-%02d-%02d: %s" (RecordShow game_y.exe)
+			// - ring chi giu chuoi nen ghi san ngay vao dau dong luc them.
+			char szLine[defTONG_JX2_RECORD_LEN];
+			memset(szLine, 0, sizeof(szLine));
+			if (strlen(pszText) > 11 && pszText[4] == '-' && pszText[7] == '-' && pszText[10] == ':')
+				strncpy(szLine, pszText, defTONG_JX2_RECORD_LEN - 1);	// da co ngay
+			else
+			{
+				time_t tNow = time(NULL);
+				struct tm* pTm = localtime(&tNow);
+				sprintf(szLine, "%04d-%02d-%02d: ", pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday);
+				strncat(szLine, pszText, defTONG_JX2_RECORD_LEN - 1 - strlen(szLine));
+			}
+			if (nKind == defTONG_JX2_STR_EVENT)
+			{
+				memset(m_szJX2Event[m_nJX2EventHead], 0, defTONG_JX2_RECORD_LEN);
+				strncpy(m_szJX2Event[m_nJX2EventHead], szLine, defTONG_JX2_RECORD_LEN - 1);
+				m_nJX2EventHead = (m_nJX2EventHead + 1) % defTONG_JX2_RECORD_NUM;
+				return TRUE;
+			}
+		}
 		memset(m_szJX2History[m_nJX2HistoryHead], 0, defTONG_JX2_RECORD_LEN);
-		strncpy(m_szJX2History[m_nJX2HistoryHead], pszText, defTONG_JX2_RECORD_LEN - 1);
+		{
+			char szLine2[defTONG_JX2_RECORD_LEN];
+			memset(szLine2, 0, sizeof(szLine2));
+			if (strlen(pszText) > 11 && pszText[4] == '-' && pszText[7] == '-' && pszText[10] == ':')
+				strncpy(szLine2, pszText, defTONG_JX2_RECORD_LEN - 1);
+			else
+			{
+				time_t tNow = time(NULL);
+				struct tm* pTm = localtime(&tNow);
+				sprintf(szLine2, "%04d-%02d-%02d: ", pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday);
+				strncat(szLine2, pszText, defTONG_JX2_RECORD_LEN - 1 - strlen(szLine2));
+			}
+			strncpy(m_szJX2History[m_nJX2HistoryHead], szLine2, defTONG_JX2_RECORD_LEN - 1);
+		}
 		m_nJX2HistoryHead = (m_nJX2HistoryHead + 1) % defTONG_JX2_RECORD_NUM;
 		return TRUE;
+	}
+	return FALSE;
+}
+
+// [BH100 07/09] Danh hieu GHE theo NameID: bang chu / truong lao i / doi truong j.
+// Khuon DBChangeTitle (KTongControl.cpp:1648) nhung tim ghe bang NameID va KHONG
+// can nguoi bi doi dang online (ban goc JX2 doi thang tren relay).
+BOOL CTongControl::JX2_SetTitleByNameID(DWORD dwNameID, const char* pszTitle)
+{
+	if (dwNameID == 0 || !pszTitle || !pszTitle[0])
+		return FALSE;
+	char szTitle[32];
+	memset(szTitle, 0, sizeof(szTitle));
+	strncpy(szTitle, pszTitle, 31);
+	const char* pszWho = NULL;
+	const char* pszRank = NULL;
+	int i;
+	if (dwNameID == m_dwMasterID)
+	{
+		strcpy(m_szMasterTitle, szTitle);
+		pszWho = m_szMasterName;
+		pszRank = defTONG_MASTER_TITLE;
+	}
+	for (i = 0; !pszWho && i < defTONG_MAX_DIRECTOR; i++)
+	{
+		if (m_dwDirectorID[i] == dwNameID)
+		{
+			strcpy(m_szDirectorTitle[i], szTitle);
+			pszWho = m_szDirectorName[i];
+			pszRank = defTONG_DIRECTOR_TITLE;
+		}
+	}
+	for (i = 0; !pszWho && i < defTONG_MAX_MANAGER; i++)
+	{
+		if (m_dwManagerID[i] == dwNameID)
+		{
+			strcpy(m_szManagerTitle[i], szTitle);
+			pszWho = m_szManagerName[i];
+			pszRank = defTONG_MANAGER_TITLE;
+		}
+	}
+	if (!pszWho)
+		return FALSE;	// bang chung khong co danh hieu rieng (dung danh hieu nam/nu)
+	{
+		// bao cho nguoi bi doi (neu online) de KPlayerTong::BeChangedTitle cap nhat
+		CNetConnectDup conndup;
+		DWORD nameid = 0;
+		unsigned long param = 0;
+		if (g_TongServer.FindPlayerByRole(NULL, std::_tstring(pszWho), &conndup, NULL, &nameid, &param))
+		{
+			CNetConnectDup tongconndup = g_TongServer.FindTongConnectByIP(conndup.GetIP());
+			if (tongconndup.IsValid())
+			{
+				STONG_BE_CHANGED_TITLE_SYNC sSync;
+				sSync.ProtocolFamily = pf_tong;
+				sSync.ProtocolID = enumS2C_TONG_BE_CHANGED_TITLE;
+				sSync.m_dwParam = param;
+				memset(sSync.m_szTitle, 0, sizeof(sSync.m_szTitle));
+				strncpy(sSync.m_szTitle, szTitle, sizeof(sSync.m_szTitle) - 1);
+				tongconndup.SendPackage((const void*)&sSync, sizeof(sSync));
+			}
+		}
+	}
+	{
+		char szMsg[160];
+		sprintf(szMsg, "\\O%u", m_dwNameID);
+		DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
+		if (channid != -1)
+		{
+			sprintf(szMsg, "Thay ®æi danh hiÖu %s cho %s %s thµnh c«ng.", szTitle, pszRank, pszWho);
+			g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
+		}
+	}
+	return TRUE;
+}
+
+// [BH100 07/09] danh hieu chung nam/nu: di dung DBChangeSexTitle (co san) - ham do
+// tu bao tung thanh vien online cung gioi + noi tren kenh bang.
+BOOL CTongControl::JX2_SetSexTitle(int nSex, const char* pszTitle)
+{
+	if (!pszTitle || !pszTitle[0])
+		return FALSE;
+	STONG_ACCEPT_SEX_TITLE_COMMAND sAccept;
+	memset(&sAccept, 0, sizeof(sAccept));
+	sAccept.ProtocolFamily = pf_tong;
+	sAccept.ProtocolID = enumC2S_TONG_ACCEPT_SEX_TITLE;
+	sAccept.m_dwTongNameID = m_dwNameID;
+	sAccept.m_btSex = (BYTE)(nSex ? 1 : 0);
+	strncpy(sAccept.m_szTitle, pszTitle, sizeof(sAccept.m_szTitle) - 1);
+	return DBChangeSexTitle(&sAccept);
+}
+
+// [BH100 07/09] chuyen ngoi bang chu cho dwNameID: dung AcceptMaster (co san) voi
+// co chap nhan = 1 - no doi cho trong mang JX1, ghi DB, phat CHANGE_AS cho hai
+// nguoi + CHANGE_MASTER cho moi GS, noi tren kenh bang.
+BOOL CTongControl::JX2_DemiseByNameID(DWORD dwNameID)
+{
+	if (dwNameID == 0 || dwNameID == m_dwMasterID)
+		return FALSE;
+	STONG_ACCEPT_MASTER_COMMAND sAccept;
+	memset(&sAccept, 0, sizeof(sAccept));
+	sAccept.ProtocolFamily = pf_tong;
+	sAccept.ProtocolID = enumC2S_TONG_ACCEPT_MASTER;
+	sAccept.m_dwTongNameID = m_dwNameID;
+	sAccept.m_btAcceptFalg = 1;
+	int i;
+	for (i = 0; i < defTONG_MAX_DIRECTOR; i++)
+	{
+		if (m_dwDirectorID[i] == dwNameID)
+		{
+			sAccept.m_btFigure = enumTONG_FIGURE_DIRECTOR;
+			sAccept.m_btPos = (BYTE)i;
+			strncpy(sAccept.m_szName, m_szDirectorName[i], 31);
+			return AcceptMaster(&sAccept);
+		}
+	}
+	for (i = 0; i < defTONG_MAX_MANAGER; i++)
+	{
+		if (m_dwManagerID[i] == dwNameID)
+		{
+			sAccept.m_btFigure = enumTONG_FIGURE_MANAGER;
+			sAccept.m_btPos = (BYTE)i;
+			strncpy(sAccept.m_szName, m_szManagerName[i], 31);
+			return AcceptMaster(&sAccept);
+		}
+	}
+	if (m_psMember)
+	{
+		for (i = 0; i < m_nMemberPointSize; i++)
+		{
+			if (m_psMember[i].m_dwNameID == dwNameID)
+			{
+				sAccept.m_btFigure = enumTONG_FIGURE_MEMBER;
+				sAccept.m_btPos = 0;
+				strncpy(sAccept.m_szName, m_psMember[i].m_szName, 31);
+				return AcceptMaster(&sAccept);
+			}
+		}
 	}
 	return FALSE;
 }
@@ -2377,6 +2556,18 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 				pCmd->m_nParam2 ? pCmd->m_dwMemberNameID : 0);
 			bOK = TRUE;
 		}
+		break;
+	case defTONG_JX2_TOP_SET_TITLE:	// [BH100 07/09]
+		bOK = pTong->JX2_SetTitleByNameID(pCmd->m_dwMemberNameID, pCmd->m_szName);
+		bMembersChanged = bOK;
+		break;
+	case defTONG_JX2_TOP_SET_SEX_TITLE:	// [BH100 07/09]
+		bOK = pTong->JX2_SetSexTitle(pCmd->m_nParam1, pCmd->m_szName);
+		bMembersChanged = bOK;
+		break;
+	case defTONG_JX2_TOP_DEMISE:	// [BH100 07/09]
+		bOK = pTong->JX2_DemiseByNameID(pCmd->m_dwMemberNameID);
+		bMembersChanged = bOK;
 		break;
 	case defTONG_JX2_TOP_FEATURE:
 		// doi ngoai hinh toan bang: can duong ve client - lam o giai doan cua so client

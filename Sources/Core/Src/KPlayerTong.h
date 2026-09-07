@@ -46,6 +46,7 @@ public:
 #ifndef _SERVER
 	// ==== JX2 port: cua so bang hoi kieu JX2 ====
 	void		JX2_RequestView(int nPage, int nStart);
+	void		JX2_RequestViewEx(int nPage, int nStart, DWORD dwTarget, int nSort, int nOnline);	// [BH100]
 	void		JX2_SendOp(int nOp, DWORD dwTarget, int nParam1, int nParam2, const char* pszText);
 #endif
 	int			CheckIn() {return m_nFlag;};

@@ -1674,9 +1674,11 @@ typedef struct
 #define defTONG_JX2_PAGE_RECORD	5	// trang nhat ky (wStart = 0 su kien / 1 lich su)
 #define defTONG_JX2_PAGE_TONGLIST	6	// danh sach bang (KHONG can thuoc bang; wStart phan trang)
 #define defTONG_JX2_PAGE_OTHERZM	7	// trang 2x2 xem chieu mo bang khac (4 bang/goi; KHONG can thuoc bang)
-#define defTONG_JX2_LIST_ROWS		10
+#define defTONG_JX2_PAGE_UNIONLIST	8	// [BH100] danh sach bang trong LIEN MINH cua minh (goi TONGLIST_SYNC)
+#define defTONG_JX2_PAGE_WEEKGOAL	9	// [BH100] bao cao muc tieu tuan (goi TONG_JX2_WEEKGOAL_SYNC)
+#define defTONG_JX2_LIST_ROWS		25	// [BH100] 25 dong/trang nhu ban goc
 #define defTONG_JX2_RECORD_LINES	16	// = defTONG_JX2_RECORD_NUM: ve du 16 dong ring	// so dong gui moi goi
-#define defTONG_JX2_VIEW_MEMBERS	10	// so thanh vien moi goi trang MEMBER/RIGHT
+#define defTONG_JX2_VIEW_MEMBERS	25	// so thanh vien moi goi trang MEMBER/RIGHT
 #define defTONG_JX2_RIGHT_COUNT	14	// 14 RightID ban goc (truoc 12, chua 1000/2007 khong co trong blueprint)
 // thu tu 14 quyen trong mat na (bit i) - PHAI trung s_dwJX2RightList/s_dwRightId:
 // 1002,1003,1004,1901,1903,1101,2001,1902,2004,9001,3001,2005,2003,2006
@@ -1719,6 +1721,17 @@ typedef struct
 #define defTONG_JX2_COP_MINISTER_FIRE	35	// cach chuc dai than: nParam1 = 1..3
 #define defTONG_JX2_COP_ENTER_MAP	36	// vao lanh dia bang (khong tham so; field 45 = map cua bang)
 #define defTONG_JX2_COP_GRANT_GROUP	37	// phat theo CHUC VU: m_szText "e|c|m"; nParam1 bit0-2 tong-so tung nhom, bit3 chi-online, bit4 ngan luong
+// [BH100 07/09] cac thao tac con thieu so voi ban Linux (game_y.exe trang chuc nang)
+#define defTONG_JX2_COP_TRANSFORM_MONEY	38	// ngan quy -> ngan sach kien thiet: nParam1 = so VAN (MONEYFUND2BUILDFUND)
+#define defTONG_JX2_COP_TRANSFORM_BUILD	39	// ngan sach kien thiet -> chien bi: nParam1 = so VAN (BUILDFUND2WARFUND)
+#define defTONG_JX2_COP_RETIRE		40	// thoai an: dwTarget = thanh vien (0 = ban than), nParam1 = 1 thoai an / 0 huy
+#define defTONG_JX2_COP_FORCE_RETIRE	41	// bang chu / quyen 1902 ep thoai an: dwTarget
+#define defTONG_JX2_COP_DEMISE		42	// chuyen ngoi bang chu cho dwTarget
+#define defTONG_JX2_COP_SET_TITLE	43	// danh hieu ghe: dwTarget (0 = ban than), szText
+#define defTONG_JX2_COP_SET_SEX_TITLE	44	// danh hieu chung nam/nu: nParam1 = 0 nam / 1 nu, szText
+#define defTONG_JX2_COP_MAP_MANAGE	45	// hop thoai quan ly lanh dia (map_management.lua tongmap_management)
+#define defTONG_JX2_COP_STUNT_NPC	46	// hop thoai tuyet ky (tong_totempole.lua main)
+// ENTER_MAP (36): [BH100] dwTarget = bang khac muon vao (0 = bang minh)
 
 typedef struct
 {
@@ -1727,6 +1740,9 @@ typedef struct
 	BYTE	m_btMsgId;	// enumTONG_COMMAND_ID_JX2VIEW
 	BYTE	m_btPage;
 	WORD	m_wStart;	// trang MEMBER: chi so bat dau
+	DWORD	m_dwTarget;	// [BH100] bang muon xem (0 = bang minh) - trang INFO/MEMBER cua bang khac chi doc
+	BYTE	m_btSort;	// [BH100] kieu sap xep danh sach thanh vien 0..6 (menu Fun_BtnMemberSortMenu)
+	BYTE	m_btOnline;	// [BH100] 1 = nguoi dang online len truoc
 } TONG_JX2VIEW_COMMAND;
 
 typedef struct
@@ -1777,6 +1793,10 @@ typedef struct
 	DWORD	m_dwUnionID;		// field 10 (0 = chua vao lien minh)
 	char	m_szUnionName[32];
 	BYTE	m_bUnionLeader;		// field 50 (bang minh chu)
+	DWORD	m_dwTongID;			// [BH100] NameID bang dang xem
+	BYTE	m_btViewOther;		// [BH100] 1 = dang xem bang KHAC (chi doc)
+	DWORD	m_dwStandFund;		// [BH100] chien bi bao tri TUAN = field 16 x 7 (o TitleStandFund; BattleFund do khi thap hon)
+	WORD	m_wRetired;			// [BH100] so an si (khong tinh vao Nhan so)
 } TONG_JX2_INFO_SYNC;
 
 typedef struct
@@ -1793,6 +1813,9 @@ typedef struct
 	DWORD	m_dwWeekOffer;	// KV 9 - cong hien tuan nay
 	DWORD	m_dwLastActive;	// KV 15 - hoat dong gan day (epoch, cache khi online)
 	DWORD	m_dwWeekGoal;	// KV 10 - hoan thanh muc tieu tuan
+	DWORD	m_dwWeeklyOffer;	// [BH100] KV 11 - cong hien tuan nay (menu Item_2)
+	DWORD	m_dwRetireDate;	// [BH100] KV 16 - ngay thoai an (don vi NGAY; 0 = khong)
+	char	m_szTitle[32];	// [BH100] danh hieu ghe (relay: bang chu / truong lao / doi truong / nam-nu)
 } TONG_JX2_ONE_MEMBER;
 
 typedef struct
@@ -1871,6 +1894,7 @@ typedef struct
 	BYTE	m_btCamp;
 	BYTE	m_btLevel;
 	WORD	m_wMember;
+	BYTE	m_btUnionLeader;	// [BH100] trang UNIONLIST: 1 = bang minh chu (cot 3 ' Minh Chu ' / 'Lien minh bang hoi')
 } TONG_JX2_ONE_TONG;
 
 // Danh sach bang hoi toan may chu (xem + xin gia nhap tu ben ngoai)
@@ -1914,6 +1938,24 @@ typedef struct
 	BYTE	m_btCount;
 	TONG_JX2_ONE_ZM	m_sZM[4];
 } TONG_JX2_OTHERZM_SYNC;
+
+// [BH100 07/09] bao cao muc tieu tuan (trang Nhat ky > Muc tieu tuan cua ban goc)
+typedef struct
+{
+	BYTE	ProtocolType;
+	WORD	m_wLength;
+	BYTE	m_btMsgId;
+	BYTE	m_btPage;	// defTONG_JX2_PAGE_WEEKGOAL
+	int		m_nWeek;		// field 21
+	int		m_nDay;			// field 20
+	int		m_nDaysLeft;	// so ngay con lai cua tuan muc tieu (1..7)
+	DWORD	m_dwCurLevel;	// field 36 do kho
+	DWORD	m_dwEvent, m_dwLevel, m_dwTotal, m_dwPlayer, m_dwValue, m_dwPriceTong, m_dwPricePlayer;	// 22..28
+	DWORD	m_dwLEvent, m_dwLLevel, m_dwLTotal, m_dwLPlayer, m_dwLValue, m_dwLPriceTong, m_dwLPricePlayer;	// 29..35
+	DWORD	m_dwMyWeekGoal;	// member KV 9
+	DWORD	m_dwMyLWeekGoal;	// member KV 10
+	BYTE	m_btLComplete;	// TONGTSK_WEEKGOAL_COMPLETE (1006) tuan truoc
+} TONG_JX2_WEEKGOAL_SYNC;
 
 typedef struct
 {

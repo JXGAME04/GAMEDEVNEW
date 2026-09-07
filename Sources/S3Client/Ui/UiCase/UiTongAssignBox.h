@@ -36,6 +36,9 @@ public:
 	// (1 Truong lao / 2 Doi truong / 3 Bang chung), khong go lai ten.
 	static void   ArrangeDataJX2(const char* szName, unsigned long dwNameID,
 								int nCurJX2Figure);
+	// [BH100 07/09] che do UY NHIEM DAI THAN (blueprint 'uy nhiem dai than' dung cung khung):
+	// 3 o = Thua Tuong / Nguyen Soai / Tien Phong -> COP_MINISTER_SET
+	static void   ArrangeDataMinister(const char* szName, unsigned long dwNameID);
 	static void   ArrangeData(                      //为任命案的书写安排数据
 		                      int nType, char* szTarName, char* szTarAgName, int nCurrentFigure, int nCurrentPosition = 0);
 
@@ -78,6 +81,7 @@ private:
 	int                      m_nSelectFigure;
 	bool                     m_bJX2Mode;
 	unsigned long            m_dwJX2Target;	// NameID muc tieu (che do JX2)
+	bool                     m_bMinisterMode;	// [BH100] dang uy nhiem dai than
 
 	char                     m_szErrorNotSelectFigure[32];
 };

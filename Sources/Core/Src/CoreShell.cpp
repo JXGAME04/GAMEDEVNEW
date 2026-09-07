@@ -24651,6 +24651,17 @@ int	KCoreShell::TongOperation(unsigned int uOper, unsigned int uParam, int nPara
 		Player[CLIENT_PLAYER_INDEX].m_cTong.JX2_RequestView((int)uParam, nParam);
 		return 1;
 	}
+	if (uOper == GTOI_TONG_JX2_VIEW2 && uParam)
+	{
+		// [BH100 07/09] trang co bang dich: xem bang khac / danh sach bang KHONG can thuoc bang
+		KUiTongJX2View* pV = (KUiTongJX2View*)uParam;
+		if (Player[CLIENT_PLAYER_INDEX].m_cTong.GetTongNameID() == 0 && pV->dwTarget == 0 &&
+			pV->nPage != defTONG_JX2_PAGE_TONGLIST && pV->nPage != defTONG_JX2_PAGE_OTHERZM)
+			return 0;
+		Player[CLIENT_PLAYER_INDEX].m_cTong.JX2_RequestViewEx(pV->nPage, pV->nStart,
+			(DWORD)pV->dwTarget, pV->nSort, pV->nOnline);
+		return 1;
+	}
 	if (uOper == GTOI_TONG_JX2_OP && uParam)
 	{
 		KUiTongJX2Op* pOp = (KUiTongJX2Op*)uParam;

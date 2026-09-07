@@ -371,6 +371,14 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, intptr_t
 		return g_TongJX2.BuildClientView((int)(nParam & 0xFFFF),
 			(int)((nParam >> 16) & 0xF), (int)((nParam >> 20) & 0xFFF),
 			(void*)uParam, 2048);
+	case SGDI_TONG_JX2VIEW2:	// [BH100 07/09]
+		{
+			SJX2_VIEW_REQ* pReq = (SJX2_VIEW_REQ*)uParam;
+			if (!pReq)
+				return 0;
+			return g_TongJX2.BuildClientViewEx(pReq->nPlayerIdx, pReq->nPage, pReq->nStart,
+				(DWORD)pReq->dwTarget, pReq->nSort, pReq->nOnline, pReq->pOut, pReq->nOutSize);
+		}
 	case SGDI_TONG_JX2OP:	// JX2 port
 		return g_TongJX2.DoClientOp((int)nParam, (const void*)uParam);
 	case SGDI_PBOT_IS_BOT:	// khe Player[] nay co phai bot khong
