@@ -6739,6 +6739,26 @@ static DWORD s_adwNSBamCham[MAX_NPC];	// bam nhom cham lan phat DAY DU truoc
 static DWORD s_adwNSLucGui[MAX_NPC];	// GetTickCount lan phat truoc (gon hoac day)
 static DWORD s_adwNSLucDay[MAX_NPC];	// GetTickCount lan phat DAY DU truoc
 static DWORD s_adwNSNgua[MAX_NPC];	// [DELTA 07/09 f] bam ngua+toc do lan phat truoc (de gui them goi gon sau goi day du)
+// [DELTA 07/09 k] bam cham voi tung NHOM truong xoa trang, luu cung luc voi s_adwNSBamCham (lan phat DAY DU truoc):
+// 0 toc do, 1 trang thai ky nang, 2 chi so toi da, 3 phe/loai, 4 vong bat tu. Nhom nao khong doi = thu pham.
+#define NS_SO_NHOM	5
+static DWORD s_adwNSNhom[NS_SO_NHOM][MAX_NPC];
+static int   s_anNSNhom[NS_SO_NHOM] = { 0, 0, 0, 0, 0 };
+static int   s_nNSNhomNhieu = 0;
+// bam cham voi nhom k xoa trang (k < 0: khong xoa gi)
+static DWORD NS_BamNhom(const NPC_NORMAL_SYNC* pCham, int k)
+{
+	NPC_NORMAL_SYNC sN = *pCham;
+	switch (k)
+	{
+	case 0: sN.m_WalkSpeed = 0; sN.m_RunSpeed = 0; sN.m_ASpeed = 0; sN.m_CSpeed = 0; break;
+	case 1: memset(sN.StateInfo, 0, sizeof(sN.StateInfo)); break;
+	case 2: sN.m_CurrentLifeMax = 0; sN.m_LifeMax = 0; sN.m_CurrentManaMax = 0; sN.m_ManaMax = 0; break;
+	case 3: sN.Camp = 0; sN.m_bySeries = 0; sN.NpcEnchant = 0; sN.MissionGroup = 0; break;
+	default: sN.m_nProtectedTime = 0; break;
+	}
+	return PS_Bam(&sN, (int)sizeof(sN));
+}
 static int   s_nNSGonThem = 0;
 static int   s_nNSLamMoi = -1, s_nNSLamMoiDay = 60000, s_nNSGon = 1;	// [DELTA 07/09 i] day du 10 s -> 60 s
 static int   s_nNSBo = 0, s_nNSGonDem = 0, s_nNSDay = 0;
@@ -7110,6 +7130,20 @@ BOOL KNpc::NormalSync()
 			// client khong dem nguoc, chi can biet dang bat tu hay khong (goi day du khi bat va khi het).
 			sCham.m_nProtectedTime = (NpcSync.m_nProtectedTime > 0) ? 1 : 0;
 			const DWORD dwBamCham = PS_Bam(&sCham, (int)sizeof(sCham));
+			// [DELTA 07/09 k] bam cham DOI thi doi nam o nhom nao (chi dem, khong doi quyet dinh phat)
+			DWORD adwNSNhom[NS_SO_NHOM];
+			{
+				for (int k = 0; k < NS_SO_NHOM; k++)
+					adwNSNhom[k] = NS_BamNhom(&sCham, k);
+				if (s_adwNSBamCham[m_Index] != 0 && dwBamCham != s_adwNSBamCham[m_Index] && s_adwNSNhom[0][m_Index] != 0)
+				{
+					int nTim = -1;
+					for (int k = 0; k < NS_SO_NHOM && nTim < 0; k++)
+						if (adwNSNhom[k] == s_adwNSNhom[k][m_Index])
+							nTim = k;
+					if (nTim >= 0) s_anNSNhom[nTim]++; else s_nNSNhomNhieu++;
+				}
+			}
 			const BOOL bNguoiMoi = NS_CoNguoiVuaVao(this, dwLuc);
 			if (dwBamTat == s_adwNSBamTat[m_Index] && !bNguoiMoi && (dwLuc - s_adwNSLucGui[m_Index]) < (DWORD)s_nNSLamMoi)
 				bPhat = FALSE;
@@ -7126,6 +7160,8 @@ BOOL KNpc::NormalSync()
 				{
 					s_adwNSBamCham[m_Index] = dwBamCham;
 					s_adwNSLucDay[m_Index] = dwLuc;
+					for (int k = 0; k < NS_SO_NHOM; k++)	// [DELTA 07/09 k] moc nhom luu CUNG LUC voi bam cham
+						s_adwNSNhom[k][m_Index] = adwNSNhom[k];
 				}
 			}
 		}
@@ -7154,8 +7190,12 @@ BOOL KNpc::NormalSync()
 			else if (dwLuc - s_dwNSMoc >= 10000)
 			{
 				s_dwNSMoc = dwLuc;
-				AUTOLOG("[NS-BO] 10s dong bo theo thay doi: bo=%d gon=%d day=%d gon_them=%d (lam moi %d ms, day du %d ms, gon=%d, client cu=%d)",
-					s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSGonThem, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon, NS_SoClientCu(dwLuc));
+				AUTOLOG("[NS-BO] 10s dong bo theo thay doi: bo=%d gon=%d day=%d gon_them=%d (lam moi %d ms, day du %d ms, gon=%d, client cu=%d) | bam cham doi o nhom: toc_do=%d trang_thai=%d chi_so_max=%d phe_loai=%d bat_tu=%d nhieu=%d",
+					s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSGonThem, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon, NS_SoClientCu(dwLuc),
+					s_anNSNhom[0], s_anNSNhom[1], s_anNSNhom[2], s_anNSNhom[3], s_anNSNhom[4], s_nNSNhomNhieu);
+				for (int k = 0; k < NS_SO_NHOM; k++)	// dem lai moi 10 giay cho de doc (y het cac so khac tren dong nay)
+					s_anNSNhom[k] = 0;
+				s_nNSNhomNhieu = 0;
 				s_nNSBo = 0; s_nNSGonDem = 0; s_nNSDay = 0; s_nNSGonThem = 0;
 			}
 		}
@@ -7391,7 +7431,8 @@ BOOL KNpc::NormalSync()
 			}
 		}
 		AUTOLOG_EVERY(10000, "[PS-BO] goi ngoai hinh: gui=%d bo=%d (%d%% bo) lam moi moi %d giay | doi: chi_co_chien_dau=%d co_khac_hoac_ngua=%d khac=%d | nhom: toc_do=%d rank=%d chi_so=%d trang_bi=%d ten=%d nhieu=%d | bit: 01=%d 02=%d 04=%d 08=%d 10=%d 20=%d 40=%d 80=%d | bot=%d nguoi=%d",
-			s_nPSGui, s_nPSBo, (s_nPSGui + s_nPSBo) > 0 ? (s_nPSBo * 100 / (s_nPSGui + s_nPSBo)) : 0, s_nPSLamMoi,
+			// [DELTA 07/09 k] truoc day 's_nPSBo * 100' tran so nguyen 32 bit khi bo > 21 trieu (in ra '-24% bo')
+			s_nPSGui, s_nPSBo, (s_nPSGui + s_nPSBo) > 0 ? (int)(((__int64)s_nPSBo * 100) / (__int64)(s_nPSGui + s_nPSBo)) : 0, s_nPSLamMoi,
 			s_nPSDoiFight, s_nPSDoiCoNgua, s_nPSDoiKhac,
 			s_anPSNhom[0], s_anPSNhom[1], s_anPSNhom[2], s_anPSNhom[3], s_anPSNhom[4], s_nPSNhomNhieu,
 			s_anPSBit[0], s_anPSBit[1], s_anPSBit[2], s_anPSBit[3], s_anPSBit[4], s_anPSBit[5], s_anPSBit[6], s_anPSBit[7], s_nPSDoiBot, s_nPSDoiNguoi);
