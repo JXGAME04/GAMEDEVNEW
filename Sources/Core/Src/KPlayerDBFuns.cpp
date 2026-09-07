@@ -792,7 +792,7 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 			KASSERT(0);
 			continue ;
 		}
-		m_ItemList.AddKIL(nIndex, nLocal, nItemX, nItemY);
+		m_ItemList.AddKIL(nIndex, nLocal, nItemX, nItemY, TRUE);	// [MATDO 07/09] bInit = NAP DB: duoc khu ban ghi kep / cuu mon trung o (xem AddKIL)
 
 	}
 

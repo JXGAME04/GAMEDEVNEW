@@ -239,6 +239,8 @@ c.thay(
     L('\tcase pos_hand:',
       '\t\tif (m_Hand)',
       '\t\t{',
+      '\t\t\tif (!bInit)\t// [MATDO 07/09] luc CHAY giu hanh vi cu (nguoi goi tu xu ly); chi NAP DB (bInit) moi khu kep / cuu',
+      '\t\t\t\treturn 0;',
       '\t\t\t// [MATDO 07/09] ban luu co HAI mon "tren tay" (m_Hand lech luc luu): kep -> bo + log; khac -> cuu.',
       '\t\t\tif (CungMotMon(nIdx, m_Hand))',
       '\t\t\t{',
@@ -259,8 +261,10 @@ c.thay_doan(
     L('\t\t// [MATDO 07/09] O da co mon, HOAC mon khong hop o (bua "dang mac", mu o o giay... = ban ghi MA do entry',
       '\t\t// treo chi so - xem PHANTICH_MATDO_CAIBANG_GOC_THAT_0609.md). Cung mon voi mon dang o o = ban ghi KEP',
       '\t\t// -> bo + log (khong nhan ban); khac -> cuu vao hanh trang/ruong + log; het cho moi bo (co log).',
-      '\t\tif (m_EquipItem[nX] || item_equip != Item[nIdx].GetGenre() || !Fit(nIdx, nX))',
+      '\t\tif (m_EquipItem[nX] || (bInit && (item_equip != Item[nIdx].GetGenre() || !Fit(nIdx, nX))))',
       '\t\t{',
+      '\t\t\tif (!bInit)\t// luc CHAY: giu hanh vi cu',
+      '\t\t\t\treturn 0;',
       '\t\t\tif (m_EquipItem[nX] && CungMotMon(nIdx, m_EquipItem[nX]))',
       '\t\t\t{',
       '\t\t\t\tKIL_Log("%s: ban ghi KEP o trang bi %d (item %d = %d) -> bo", KIL_Ten(m_PlayerIdx), nX, nIdx, m_EquipItem[nX]);',
@@ -275,8 +279,10 @@ c.thay_doan(
 # pos_equipback
 c.thay(
     L('\t\tif (m_AltEquipmentItem[nX])', '\t\t\treturn 0;', '\t\tm_Items[i].nPlace = pos_equipback;'),
-    L('\t\tif (m_AltEquipmentItem[nX] || item_equip != Item[nIdx].GetGenre() || !Fit(nIdx, nX))',
+    L('\t\tif (m_AltEquipmentItem[nX] || (bInit && (item_equip != Item[nIdx].GetGenre() || !Fit(nIdx, nX))))',
       '\t\t{',
+      '\t\t\tif (!bInit)\t// luc CHAY: giu hanh vi cu',
+      '\t\t\t\treturn 0;',
       '\t\t\t// [MATDO 07/09] nhu pos_equip: kep -> bo + log; khac -> cuu vao hanh trang/ruong.',
       '\t\t\tif (m_AltEquipmentItem[nX] && CungMotMon(nIdx, m_AltEquipmentItem[nX]))',
       '\t\t\t{',
@@ -298,6 +304,8 @@ c.thay_doan(
       '\t\t// khac -> cuu sang o trong khac (hanh trang, roi ruong) + log; het cho moi bo (co log).',
       '\t\tif (!m_Room[room_equipment].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))',
       '\t\t{',
+      '\t\t\tif (!bInit)\t// luc CHAY (nhat do, script...): giu hanh vi cu - nguoi goi tu xu ly that bai',
+      '\t\t\t\treturn 0;',
       '\t\t\tif (MonKepTrongLuoi(room_equipment, nIdx, nX, nY))',
       '\t\t\t\treturn 0;',
       '\t\t\tif (!CuuMonKhiNap(i, nIdx, nPlace, nX, nY, room_equipment, "hanh trang"))',
@@ -313,6 +321,8 @@ c.thay_doan(
     L('\t\t// [MATDO 07/09] nhu hanh trang: kep -> bo + log; khac -> cuu (ruong, roi hanh trang) + log.',
       '\t\tif (!m_Room[room_repository].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))',
       '\t\t{',
+      '\t\t\tif (!bInit)\t// luc CHAY: giu hanh vi cu',
+      '\t\t\t\treturn 0;',
       '\t\t\tif (MonKepTrongLuoi(room_repository, nIdx, nX, nY))',
       '\t\t\t\treturn 0;',
       '\t\t\tif (!CuuMonKhiNap(i, nIdx, nPlace, nX, nY, room_repository, "ruong"))',
@@ -328,7 +338,9 @@ for room, ten in (('room_exbox1', 'ruong mo rong 1'), ('room_exbox2', 'ruong mo 
             '\t\t\treturn 0;')
     new = L('\t\tif (!m_Room[%s].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))' % room,
             '\t\t{',
-            '\t\t\tif (MonKepTrongLuoi(%s, nIdx, nX, nY))\t// [MATDO 07/09] kep -> bo; khac -> cuu; co log' % room,
+            '\t\t\tif (!bInit)\t// luc CHAY: giu hanh vi cu',
+            '\t\t\t\treturn 0;',
+            '\t\t\tif (MonKepTrongLuoi(%s, nIdx, nX, nY))\t// [MATDO 07/09] NAP DB: kep -> bo; khac -> cuu; co log' % room,
             '\t\t\t\treturn 0;',
             '\t\t\tif (!CuuMonKhiNap(i, nIdx, nPlace, nX, nY, %s, "%s"))' % (room, ten),
             '\t\t\t\treturn 0;',
@@ -382,4 +394,16 @@ o.thay(
       '\t}'),
     'KObjSet::Add tu choi')
 o.luu()
+
+# ------------------------------------------------------------------ KPlayerDBFuns.cpp (nap DB -> bInit = TRUE)
+# Chi duong NAP DB duoc phep khu kep / cuu mon; luc chay (nhat do, script, c2sdnmbr...) AddKIL giu
+# hanh vi cu (that bai -> nguoi goi tu xu ly). Do that 07/09 08:05-09:29: 12 lan nhat do cua
+# CaiBang bi cuu vi client de xuat o tui da bi chiem -> mon roi vao ruong, doi hanh vi ngoai y dinh.
+DB = os.path.join(ROOT, 'Sources', 'Core', 'Src', 'KPlayerDBFuns.cpp')
+d = Va(DB)
+d.thay(
+    '\t\tm_ItemList.AddKIL(nIndex, nLocal, nItemX, nItemY);' + NL,
+    L('\t\tm_ItemList.AddKIL(nIndex, nLocal, nItemX, nItemY, TRUE);\t// [MATDO 07/09] bInit = NAP DB: duoc khu ban ghi kep / cuu mon trung o (xem AddKIL)'),
+    'nItemX, nItemY, TRUE);')
+d.luu()
 print('XONG')
