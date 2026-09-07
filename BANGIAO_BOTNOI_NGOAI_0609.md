@@ -137,3 +137,51 @@ grep "\[BotNoi\]" bot.log | grep -c "Ngu Doc"
 | `bin\server\CoreServer.dll.moi` | **e86f3de72e727f1fdfcb0c07866d38ec** | 18.448.896 | tắt GameServer → `ChayGameServer.bat` (thay bản đợt 1 d7c406dc) |
 
 Nhãn kiểm: đủ nhãn đợt 1 + `[BotTayDiem]`, `[NGUDOC-NOI]` không phải chuỗi; kiểm `duong NOI` (2) + `BotTayDiem` (1).
+
+---
+
+## 10. ĐỢT 3 (06/09 tối) — 4 việc mới của chủ
+
+Chủ: *"tôi muốn viết thêm hàm nâng mạch cho toàn bộ bot"* · *"bot cấp 110 sẽ cho mặc ngựa chiếu dạ"* · *"bot có vũ khí sẽ cho random tỉ lệ nMagicLevel từ 7 - 8"* · *"bot lên 120 sẽ có skill 120 full skill"*.
+
+Bản vá: `ReverseTools/goi_va_botnoi_dot3_0609.py` (C++: `KPlayerBot.cpp` H9–H14, `KPlayerBot.h`, `ScriptFuns.cpp`) + `goi_va_botnoi_dot3_lua_0609.py` (Lua: `hocvocong.lua`, `simcity_admin.lua` — áp cho **cả** cây chạy thật `bin\server\script` **và** gương git `serverscript_live\script`, hai bên bằng nhau byte-đối-byte; `kiem_54.py` 0 lỗi).
+
+### 10.1 Hàm nâng kinh mạch cho toàn bộ bot — `PB_NangMach(nCap [, nMach])`
+- Hệ kinh mạch: 12 mạch × 32 cấp (`MAX_MERIDIAN` / `MAX_MERIDIAN_LEVEL`, `meridian_level.txt` 384 hàng); người chơi xung huyệt qua `setmeridian.lua` (chỉ tốn tài nguyên, **không** gate theo cấp nhân vật).
+- Hàm C mới đi đúng đường `SetMeridian` của Lua (`ScriptFuns.cpp:315`): `m_cMeridian.setMeridian` (mã mạch đếm từ 0) → `ApplyMaridianToNPC` / `RemoveMaridianFromNPC` (đếm từ 1, [KM 27/08b]) → `UpdataCurData`; xong gọi `PB_SaveAll` để ghi blob (cấp mạch nằm ở `szStringduphong2`, `KPlayer.cpp:3103` áp lại lúc đăng nhập) → **bền qua restart**. Trả số bot có mạch đổi; log `[BotMach] nang mach M (0 = ca 12) len cap C: n/N bot doi`.
+- Đăng ký Lua `PB_NangMach` (`ScriptFuns.cpp` cạnh `PB_SaveAll`). **Menu lệnh bài** (`simcity_admin.lua` → Bot người chơi thật → *Nâng kinh mạch bot*): cấp 32 / 24 / 16 / 8 / xoá (0); bấm là áp cho mọi bot đang sống. Gọi tay: `PB_NangMach(32)` hoặc `PB_NangMach(16, 3)` (chỉ Xung mạch).
+- **Chưa** tự động theo cấp bot (chủ chưa chốt mức); muốn tự động thì thêm khoá web `BOT_MACH_CAP` vào `bot_auto.lua` (mỗi phút gọi `PB_NangMach`, rẻ vì mạch đã đúng thì không làm gì) — chờ chủ chốt cấp.
+- Lưu ý sức mạnh: memory 01/09 đo full mạch (sau khi cắt bảng 01/09) ≈ ×14 sức mạnh nhân vật → bot mạch 32 mạnh hơn hẳn bot hiện tại; chủ chọn mức phù hợp người chơi.
+
+### 10.2 Bot cấp 110 cưỡi Chiếu Dạ — `pb_TrangBiTheoCap` bước 3
+- `horse.txt` dòng 61: *Chiếu Dạ Ngọc Sư Tử* = detail 10 (`equip_horse`), **particular 5, cấp 10** (dòng 56 là bản cấp 5; dòng 130 *Hoàng Kim* particular 12 không dùng). Túc Sương = particular 2.
+- Cấp < 110: Túc Sương cấp 10 như cũ; **cấp ≥ 110**: Chiếu Dạ cấp 10. Ngựa cũ (không Hoàng Kim) bị **tháo huỷ** rồi mặc ngựa mới — kiểm `CanEquip` ngựa mới **trước** khi huỷ, đang cưỡi thì `CheckRideHorse(TRUE)` xuống ngựa trước. Log `[BotTrangBi] … cuoi ngua Chieu Da Ngoc Su Tu cap 10`. 1000 bot hiện tại (114-118) sẽ đổi ngựa ngay lần `pb_TrangBiTheoCap` đầu sau restart.
+
+### 10.3 Vũ khí bot có dòng cấp 7-8 — `pb_MagicVuKhi`
+- Mảng `nMagicLevel[MAX_ITEM_MAGICLEVEL]` của `ItemSet.Add` → `Gen_Equipment` → `Gen_MagicAttrib` (`KItemGenerator.CPP:593`): ô `[i]` (i < 6) = **cấp dòng thuộc tính** thứ i (1..10, tra bảng magicattrib theo tiền/hậu tố, loại, hệ, cấp; 0 = dừng). Bot trước đây truyền toàn 0 → vũ khí **trắng**.
+- Nay `pb_MagicVuKhi`: 6 ô đầu = 7 hoặc 8 ngẫu nhiên từng ô (tương ứng bậc "Hoàng Kim"/"Bạch Kim" của bảng), 6 ô sau 0. Áp cho vũ khí nhập môn (`pb_GiveFactionWeapon`) và vũ khí cấp 10 ở bước 4.
+- Bot đang chạy: vũ khí cấp 10 cũ **không có dòng** (`GetTotalMagicLevel() == 0`) được sinh lại **một lần** cùng loại/hệ/cấp với dòng 7-8 (sau đó tổng dòng > 0 → không lặp). Log `[BotTrangBi] … len vu khi cap 10 (detail d parti p, dong 7-8 tong T)`. Bot nội (tay không) không liên quan.
+
+### 10.4 Bot cấp 120 học kỹ năng 120 — `bot_hoc120`
+- `SKILL120AR` (`hocvocong.lua:817`) = **một** chiêu/phái: 709 708 710 711 712 713 714 715 716 717 (10 phái), 1365 Hoa Sơn, 1984 Vũ Hồn, 2127 Tiêu Dao; đều là bị động / tự buff (style 3/2, rq 120, MaxLevel 20) — không phải chiêu đánh nên không đụng `pb_PickSkill`.
+- `bot_hoc120(nCurFac)`: `AddMagic(SKILL120AR[nCurFac], 20)` = cấp 20 = **max** ("full"), giống dòng `show_kynang90` cấp cho người chơi. Không kèm 210 khinh công / `SKILL150_ARRAY` (chủ nói "skill 120"; muốn thêm 150 thì một dòng).
+- C++: bước 1c `pb_TrangBiTheoCap`: `nLevel >= 120 && !b.nHoc120` → `ExecuteScript(hocvocong.lua, bot_hoc120, phái+1)` → log `[BotSkill120]`. Bot hiện cao nhất 118 → chưa bot nào kích hoạt.
+
+### 10.5 Nhị phân đợt 3
+| tệp | md5 | kích thước | swap |
+|---|---|---|---|
+| `bin\server\CoreServer.dll.moi` | **4ce83dd57edd1cb714f464e855c3a0b3** | 18.458.112 | tắt GameServer → `ChayGameServer.bat` (thay bản đợt 2 e86f3de7) |
+
+Build từ `origin/main` e41c0262 (đã rebase, gồm cả các commit vận tiêu / WAuto TK / lua54 của các phiên khác) + nhánh `botnoi-0609`. Nhãn kiểm mới: `[BotMach]`, `[BotSkill120]`, `bot_hoc120`, `Chieu Da Ngoc Su Tu`, `dong 7-8 tong`, `PB_NangMach` (mỗi nhãn 1) + đủ nhãn đợt 1-2. Script Lua đã ghi thẳng cây chạy thật (`hocvocong.lua` nạp lúc boot → hiệu lực sau restart; menu lệnh bài dùng ngay nhưng báo "chưa có PB_NangMach" cho tới khi swap).
+
+### 10.6 Nghiệm thu đợt 3 (sau restart)
+```bash
+grep -c "cuoi ngua Chieu Da" bot.log
+```
+≈ số bot cấp ≥ 110 có vũ khí hoặc không (mọi bot) ≈ 1000, mỗi bot một lần.
+```bash
+grep -c "dong 7-8 tong" bot.log
+```
+≈ số bot ngoại (~600), tổng dòng ≥ 42 (6 dòng × 7..8).
+- Lệnh bài → Nâng kinh mạch bot → cấp 32: `grep "\[BotMach\]" bot.log` một dòng `n/1000 bot doi`, sau đó `[BotLuu] xep hang luu 1000 bot`; restart lại thì mạch còn nguyên (kiểm `GetMeridian` hoặc xem chỉ số bot).
+- Khi bot đầu tiên lên 120: `[BotSkill120]` một dòng/bot.

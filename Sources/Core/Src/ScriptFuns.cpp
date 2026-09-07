@@ -14196,6 +14196,7 @@ extern int LuaPB_SetFight(Lua_State* L);
 extern int LuaPB_SetNhapMon(Lua_State* L);
 extern int LuaPB_SetChat(Lua_State* L);
 extern int LuaPB_SaveAll(Lua_State* L);
+extern int LuaPB_NangMach(Lua_State* L);	// [NANGMACH 06/09]
 extern int LuaPB_SetBuff(Lua_State* L);
 extern int LuaPB_SetDaTau(Lua_State* L);
 extern int LuaPB_SetBanSap(Lua_State* L);
@@ -15377,6 +15378,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"PB_SetNhapMon",	LuaPB_SetNhapMon},	// [TATNHAPMON] tat che do vao phai (bot da du cap)
 	{"PB_SetChat",		LuaPB_SetChat},
 	{"PB_SaveAll",		LuaPB_SaveAll},
+	{"PB_NangMach",		LuaPB_NangMach},	// [NANGMACH 06/09] (nCap[,nMach]) nang kinh mach toan bo bot, ghi blob
 	{"PB_SetBuff",		LuaPB_SetBuff},		// (19/08) bat/tat cham TTL + Que Hoa Tuu
 	{"PB_SetDaTau",		LuaPB_SetDaTau},	// (19/08) gioi han so bot lam Da Tau
 	{"PB_SetBanSap",	LuaPB_SetBanSap},	// (19/08) so bot ra thanh ngoi ban sap
