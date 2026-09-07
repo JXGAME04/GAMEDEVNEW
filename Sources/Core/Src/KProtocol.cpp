@@ -290,6 +290,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(DICE_CHOICE_DATA),				// c2s_diceitem
 	sizeof(PARTNER_OP_DATA),				// c2s_partnerop [BDH-G4]
 	-1,							// c2s_scriptdata [MAIL 03/09] do dai dong: WORD sau ProtocolType
+	sizeof(C2S_DELTA_HELLO),	// c2s_deltahello = 175 [DELTA 07/09] - o 110 = ma 175 (ngay sau 174), KHONG chen gi giua
 
 #endif
 };

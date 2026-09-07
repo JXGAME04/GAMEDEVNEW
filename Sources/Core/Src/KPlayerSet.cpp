@@ -213,6 +213,10 @@ int KPlayerSet::Add(LPSTR szPlayerID, void* pGuid)
 		Player[i].Release();
 		Player[i].m_dwID = dwID;
 		Player[i].m_nNetConnectIdx = -1;
+		{	// [DELTA 07/09] khe moi cap: chua biet client co hieu goi vi tri gon khong
+			extern BYTE g_abyDeltaHello[MAX_PLAYER];
+			g_abyDeltaHello[i] = 0;
+		}
 		Player[i].m_dwLoginTime = g_SubWorldSet.GetGameTime();
 		memcpy(&Player[i].m_Guid, pGuid, sizeof(GUID));
 		Player[i].SetPlayerIndex(i);

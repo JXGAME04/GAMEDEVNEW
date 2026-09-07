@@ -184,6 +184,7 @@ public:
 #else
 	void	RemoveRole(int nIndex, BYTE * pProtocol);
 	void	NpcRequestCommand(int nIndex, BYTE* pMsg);
+	void	DeltaHello(int nIndex, BYTE* pMsg);	// [DELTA 07/09] client bao hieu goi vi tri gon
 	void	ObjRequestCommand(int nIndex, BYTE* pProtocol);
 	void	NpcWalkCommand(int nIndex, BYTE* pProtocol);
 	void	NpcRunCommand(int nIndex, BYTE* pProtocol);

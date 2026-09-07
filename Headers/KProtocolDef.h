@@ -373,6 +373,8 @@ enum c2s_PROTOCOL
 	c2s_diceitem,			// nguoi choi chon: tham du nhan / huy bo
 	c2s_partnerop,		// [BDH-G4] lenh cua so ban dong hanh
 	c2s_scriptdata,		// [MAIL 03/09] goi ScriptProtocol (ObjBuffer) client -> may chu, do dai dong (-1)
+	c2s_deltahello = 175,	// [DELTA 07/09] client bao 'hieu goi vi tri gon' (C2S_DELTA_HELLO). Ma 175 = o dau doan trong
+							// 175-249, khong doi ma cu; g_nProtocolSize (KProtocol.cpp, phan may chu) phai co o 110 cho ma nay.
 
 
 

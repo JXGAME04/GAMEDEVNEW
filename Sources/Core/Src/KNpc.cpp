@@ -6612,6 +6612,23 @@ static void NS_DocCauHinh()
 	if (s_nNSLamMoiDay > 60000) s_nNSLamMoiDay = 60000;
 	s_nNSGon = (int)GetPrivateProfileIntA("Server", "DongBoGoiGon", 1, ".\\config.ini");
 }
+// so client that dang noi ma CHUA bao hieu goi gon (client cu) - dem lai moi giay; > 0 thi khong phat goi gon cho ai
+extern BYTE g_abyDeltaHello[MAX_PLAYER];
+static int NS_SoClientCu(DWORD dwLuc)
+{
+	static DWORD s_dwMoc = 0;
+	static int   s_nCu = 0;
+	if (s_dwMoc == 0 || (dwLuc - s_dwMoc) >= 1000)
+	{
+		s_dwMoc = dwLuc;
+		int n = 0;
+		for (int i = 1; i < MAX_PLAYER; i++)
+			if (Player[i].m_nNetConnectIdx >= 0 && !g_abyDeltaHello[i])
+				n++;
+		s_nCu = n;
+	}
+	return s_nCu;
+}
 // co nguoi vua vao vung nay hoac 8 vung ke trong ky lam moi -> phai phat de ho biet NPC (client chi biet NPC la qua goi 77)
 static BOOL NS_CoNguoiVuaVao(const KNpc* pNpc, DWORD dwLuc)
 {
@@ -6924,7 +6941,7 @@ BOOL KNpc::NormalSync()
 			const BOOL bNguoiMoi = NS_CoNguoiVuaVao(this, dwLuc);
 			if (dwBamTat == s_adwNSBamTat[m_Index] && !bNguoiMoi && (dwLuc - s_adwNSLucGui[m_Index]) < (DWORD)s_nNSLamMoi)
 				bPhat = FALSE;
-			else if (s_nNSGon && dwBamCham == s_adwNSBamCham[m_Index] && (dwLuc - s_adwNSLucDay[m_Index]) < (DWORD)s_nNSLamMoiDay)
+			else if (s_nNSGon && NS_SoClientCu(dwLuc) == 0 && dwBamCham == s_adwNSBamCham[m_Index] && (dwLuc - s_adwNSLucDay[m_Index]) < (DWORD)s_nNSLamMoiDay)
 				bGon = TRUE;
 			if (bPhat)
 			{
@@ -6951,8 +6968,8 @@ BOOL KNpc::NormalSync()
 			sGon.m_CurrentMana = NpcSync.m_CurrentMana;
 		}
 		if (!bPhat) s_nNSBo++; else if (bGon) s_nNSGonDem++; else s_nNSDay++;
-		AUTOLOG_EVERY(10000, "[NS-BO] dong bo theo thay doi: bo=%d gon=%d day=%d (lam moi %d ms, day du %d ms, gon=%d)",
-			s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon);
+		AUTOLOG_EVERY(10000, "[NS-BO] dong bo theo thay doi: bo=%d gon=%d day=%d (lam moi %d ms, day du %d ms, gon=%d, client cu=%d)",
+			s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon, NS_SoClientCu(dwLuc));
 	}
 	BOOL bNSKq = bPhat;
 	static const POINT	POff[8] = 	//MAX_PLAYER

@@ -547,6 +547,14 @@ typedef struct
 	int		m_CurrentMana;
 } NPC_POS_SYNC;						// 25 byte (pack 1)
 
+// [DELTA 07/09] client -> may chu ngay sau c2s_syncend: 'toi hieu goi s2c_syncnpcpos'. May chu chi phat goi gon khi
+// MOI client dang noi deu da bao (KProtocolProcess::DeltaHello), nen client cu khong bao gio nhan ma 221.
+typedef struct
+{
+	BYTE	ProtocolType;	// c2s_deltahello
+	BYTE	byPhienBan;		// 1
+} C2S_DELTA_HELLO;
+
 typedef struct
 {
 	BYTE		ProtocolType;

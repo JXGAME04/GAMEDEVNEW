@@ -394,6 +394,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[c2s_requestworld] = NULL;
 	ProcessFunc[c2s_requestplayer] = NULL;
 	ProcessFunc[c2s_requestnpc] = &KProtocolProcess::NpcRequestCommand;
+	ProcessFunc[c2s_deltahello] = &KProtocolProcess::DeltaHello;	// [DELTA 07/09]
 	ProcessFunc[c2s_requestobj] = &KProtocolProcess::ObjRequestCommand;
 	ProcessFunc[c2s_npcwalk] = &KProtocolProcess::NpcWalkCommand;
 	ProcessFunc[c2s_npcrun] = &KProtocolProcess::NpcRunCommand;
@@ -3287,6 +3288,14 @@ void KProtocolProcess::SyncEnd(BYTE* pMsg)
 	BYTE	SyncEnd = (BYTE)c2s_syncend;
 	if (g_pClient)
 		g_pClient->SendPackToServer(&SyncEnd, sizeof(BYTE));
+	// [DELTA 07/09] bao may chu: client nay hieu goi vi tri gon s2c_syncnpcpos (may chu cu khong co handler -> bo qua)
+	{
+		C2S_DELTA_HELLO sHello;
+		sHello.ProtocolType = (BYTE)c2s_deltahello;
+		sHello.byPhienBan = 1;
+		if (g_pClient)
+			g_pClient->SendPackToServer((BYTE*)&sHello, sizeof(sHello));
+	}
 	Player[CLIENT_PLAYER_INDEX].SetDefaultImmedSkill();
 	g_DebugLog("[TRACE]SyncEnd to Server");
 	CoreDataChanged(GDCNI_GAME_START, 0, 0);	
@@ -5824,6 +5833,16 @@ void KProtocolProcess::LadderResult(BYTE* pMsg)
 void KProtocolProcess::RemoveRole(int nIndex, BYTE * pProtocol)
 {
 
+}
+
+// [DELTA 07/09] client moi bao da hieu goi vi tri gon s2c_syncnpcpos. KNpc::NormalSync chi phat goi gon khi MOI client
+// dang noi deu da bao (NS_SoClientCu() == 0), nen client cu (chua swap CoreClient.dll) khong bao gio nhan ma 221.
+// KPlayerSet::Add xoa co khi cap khe moi (khe dung lai cho ket noi khac).
+BYTE g_abyDeltaHello[MAX_PLAYER];
+void KProtocolProcess::DeltaHello(int nIndex, BYTE* pMsg)
+{
+	if (nIndex > 0 && nIndex < MAX_PLAYER)
+		g_abyDeltaHello[nIndex] = 1;
 }
 
 void KProtocolProcess::NpcRequestCommand(int nIndex, BYTE* pProtocol)
