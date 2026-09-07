@@ -17,13 +17,17 @@
 --   vatpham/      script vat pham (item cu) - dung khi dung vat pham; con: kiemthu/ chua *_admin
 --   giaodich/     thu (mail), daugia (auction_house)
 --   tinhnang/     phuban (missions), sukien (event), chientruong (battles), liendau, songbac, activitysys, chienlenh, congthanh,
---                 vng_event, vng_feature, nationalwar, huoyuedu, baucua, bonusvlmc, trapcu (trap chuyen map cu), 3hoatdong, tong_kim_tcap, pubg...
+--                 vng_event, vng_feature, nationalwar, huoyuedu, baucua, bonusvlmc, 3hoatdong, tong_kim_tcap, pubg...
 --   nhiemvu/      task cu (tollgate, newtask, partner, system, metempsychosis...), hoithoai (dailogsys), tanthu (tagnewplayer)
 --   npc/          npcthon cu (npcmonphai, balanghuyen...), thanhthi, khac
 --   dulieu/       codenew.lua (32k dong), giftcode_new.lua, giftcode_fancung.lua - CHI DU LIEU
+--   bando/        script BAN DO goc JX (1.316 tep, 06/09 toi): <khu>/<thanh>/{trap,obj,npc} - trap chuyen map, bien chi duong, NPC dat trong
+--                 du lieu map (Pak/maps.pak tro theo ID bam duong dan CU -> bi danh). Ten Viet khong dau dich Han-Viet tung chu;
+--                 doi chieu ten goc: bando/_DOICHIEU_TEN.txt. Khu: trungnguyen_bac/nam, taynam_bac/nam, taybac_bac/nam, luongho, giangnam, dongbac, dacthu
 --   kiemthu/      test/, *_admin.lua, tmp - KHONG dung cho nguoi choi
 --   ../scriptjx2/ lib (ban JX2 khi script/lib thieu - remap C++), tong_vn (bang hoi JX2, engine nap rieng)
---   ../_luutru/0609/  kho: 1.371 tep Han khong dung, ban cu, backup, Lua 4
+--   ../_luutru/0609/  kho: ban cu, backup, Lua 4 (1.369 tep Han tung bi xep 'khong dung' DA PHUC HOI 06/09 toi -> bando/: pak map goi theo ID)
+--   KHONG XOA/CHUYEN script chi dua vao quet chu: trap + NPC trong Pak/maps.pak goi script theo ID bam. Kiem: python tools/sapxep/kiem_trap_map.py
 --
 -- DUONG DAN CU VAN CHAY: script/_duongdan_cu.txt (dong "--@ cu=moi"). Include/dofile/ID bam (trap, settings) tu tra bi danh.
 --   Them tep MOI: ghi thang vao thu muc moi. Doi cho tep: them dong bi danh. Kiem: python tools/sapxep/kiem_duongdan_cu.py

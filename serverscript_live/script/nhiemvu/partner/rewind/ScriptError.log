@@ -1,0 +1,30 @@
+error: [string "?"]:38: attempt to call a nil value (global 'inherit')
+stack traceback:
+	[string "?"]:38: in main chunk
+2026/09/06 17:53:18.527 	 ScriptError 4:[1] (\script\nhiemvu\partner\rewind\partner_reward_main_01.lua) 
+
+error: [string "?"]:36: attempt to call a nil value (global 'inherit')
+stack traceback:
+	[string "?"]:36: in main chunk
+2026/09/06 17:53:18.529 	 ScriptError 4:[1] (\script\nhiemvu\partner\rewind\partner_reward_main_03.lua) 
+
+error: [string "?"]:34: attempt to call a nil value (global 'inherit')
+stack traceback:
+	[string "?"]:34: in main chunk
+2026/09/06 17:53:18.530 	 ScriptError 4:[1] (\script\nhiemvu\partner\rewind\partner_reward_main_04.lua) 
+
+error: [string "?"]:38: attempt to call a nil value (global 'inherit')
+stack traceback:
+	[string "?"]:38: in main chunk
+2026/09/06 17:54:04.881 	 ScriptError 4:[1] (\script\nhiemvu\partner\rewind\partner_reward_main_01.lua) 
+
+error: [string "?"]:36: attempt to call a nil value (global 'inherit')
+stack traceback:
+	[string "?"]:36: in main chunk
+2026/09/06 17:54:04.882 	 ScriptError 4:[1] (\script\nhiemvu\partner\rewind\partner_reward_main_03.lua) 
+
+error: [string "?"]:34: attempt to call a nil value (global 'inherit')
+stack traceback:
+	[string "?"]:34: in main chunk
+2026/09/06 17:54:04.883 	 ScriptError 4:[1] (\script\nhiemvu\partner\rewind\partner_reward_main_04.lua) 
+

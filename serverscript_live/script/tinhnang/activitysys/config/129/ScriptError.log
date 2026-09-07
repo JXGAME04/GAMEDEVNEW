@@ -1,0 +1,70 @@
+error: [string "?"]:17: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:17: in main chunk
+2026/09/06 17:53:18.750 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\award.lua) 
+
+error: [string "?"]:24: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:24: in main chunk
+2026/09/06 17:53:18.753 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\extend.lua) 
+
+error: [string "?"]:2: attempt to index a nil value (global 'ActivityClass')
+stack traceback:
+	[string "?"]:2: in main chunk
+2026/09/06 17:53:18.754 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\head.lua) 
+
+error: [string "?"]:53: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:53: in main chunk
+2026/09/06 17:53:18.758 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\npc_canhan.lua) 
+
+error: [string "?"]:18: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:18: in main chunk
+2026/09/06 17:53:18.759 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\npc_consigner.lua) 
+
+error: [string "?"]:18: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:18: in main chunk
+2026/09/06 17:53:18.765 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\npc_receiver.lua) 
+
+error: [string "?"]:5: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:5: in main chunk
+2026/09/06 17:53:18.766 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\registe.lua) 
+
+error: [string "?"]:17: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:17: in main chunk
+2026/09/06 17:54:05.099 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\award.lua) 
+
+error: [string "?"]:24: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:24: in main chunk
+2026/09/06 17:54:05.102 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\extend.lua) 
+
+error: [string "?"]:2: attempt to index a nil value (global 'ActivityClass')
+stack traceback:
+	[string "?"]:2: in main chunk
+2026/09/06 17:54:05.103 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\head.lua) 
+
+error: [string "?"]:53: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:53: in main chunk
+2026/09/06 17:54:05.107 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\npc_canhan.lua) 
+
+error: [string "?"]:18: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:18: in main chunk
+2026/09/06 17:54:05.108 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\npc_consigner.lua) 
+
+error: [string "?"]:18: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:18: in main chunk
+2026/09/06 17:54:05.114 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\npc_receiver.lua) 
+
+error: [string "?"]:5: attempt to index a nil value (global 'pActivity')
+stack traceback:
+	[string "?"]:5: in main chunk
+2026/09/06 17:54:05.117 	 ScriptError 4:[1] (\script\tinhnang\activitysys\config\129\registe.lua) 
+

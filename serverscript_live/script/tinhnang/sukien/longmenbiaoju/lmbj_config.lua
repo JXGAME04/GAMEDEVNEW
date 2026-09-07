@@ -194,7 +194,7 @@ LongMenBiaoJu.MAX_BIAO_WU_PICK_COUNT = 5
 --     lang.lua:98 "dang cap cua nguoi van chua den cap 120 va chua trong sinh..."
 --     (box.lua:64 truyen hang nay lam nguong cho PlayerFunLib:CheckTotalLevel)
 --     Chu y: nhanh BANG dung 150 (npc_lmbiaowu.lua:74) - hai nhanh von khac nhau.
-LongMenBiaoJu.MIN_LEVEL = 120
+LongMenBiaoJu.MIN_LEVEL = 90	-- [VTCN 06/09] chu: cap ha xuong 90 (Linux 120)
 
 -- [L] chi loan bao toan server voi Tieu Xa tu 7 sao tro len - dung y het
 --     script\global\yunbiao_system.lua:47-59 (getLevel chi tra ve 7/8/9/10)

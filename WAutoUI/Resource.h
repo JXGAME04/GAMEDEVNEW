@@ -334,6 +334,7 @@ using namespace std;
 #define IDC_STRING_9_RH			476
 #define IDC_COMBO_9_RH			477
 #define IDC_CHECKBOX_9_RCAT		478
+#define IDC_CHECKBOX_7_KHIEN	479	// (06/09) tab PK: bo qua muc tieu dang co khien bao ve (hien rieng trong ShowTab tab 7)
 // ==== tab 10 Lien dau / WLLS (24/08/2026) - PHAI nam trong dai an/hien ====
 #define IDC_CHECKBOX_10_ON	481
 #define IDC_STRING_10_K1	482

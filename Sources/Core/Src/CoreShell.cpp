@@ -8655,6 +8655,67 @@ static int TK_AnThuoc(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 // choi bat o cau hinh. Tra 0 = khong co dich hop le -> may se di chuyen tiep.
 // (03/09) nLoai: 0 = nhu cu (gan nhat, tuong truoc neu 'Uu tien'), 1 = CHI tuong
 // NPC trong bang g_TKQuanRes, 2 = CHI nguoi choi khac mau.
+// ============ (06/09) TAB PK: BO QUA MUC TIEU DANG CO KHIEN BAO VE ============
+// Chu game: "them tinh nang o tab pk bo qua doi tuong dang co khien bao ve AddSkillState(963, 1, 0, 18*3)".
+// Khien = "vong tron bat tu": script dich chuyen goi SetProtectTime(18*3) + AddSkillState(963, 1, 0, 18*3)
+// (station.lua Xa Phu, shenxingfu.lua, trap cong thanh, trap ra trai Tong Kim kimratrai/tongratrai.lua,
+// trinhsat.lua, playerlogin.lua; dichuyenmap.lua 18*6; pubg 18*180). Skill 963 StateSpecialId = 159.
+// Client biet khien cua nguoi khac qua NPC_NORMAL_SYNC: KProtocolProcess.cpp:2453 m_nProtectedTime va
+// :2465 SetNpcState -> m_btStateInfo. Client KHONG tu dem lui m_nProtectedTime (KNpc.cpp:1626 nam trong
+// #ifdef _SERVER) nen gia tri co the DINH toi lan dong bo sau -> tu uoc HAN het khien = luc thay + so khung
+// con lai / 18 khung moi giay (chi co state 159 -> PK_KHIEN_MS), va chi tinh lai han khi gia tri dong bo
+// THAY DOI (dong bo moi). Het han thi danh binh thuong du co con dinh - khong bao gio bo qua ai mai mai.
+#define PK_KHIEN_STATE	159
+#define PK_KHIEN_MS		3500u
+struct PKKhienNho { UINT uHan; int nProt; };
+static std::map<UINT, PKKhienNho> s_mPKKhien;	// dwID -> han het khien uoc tinh
+static int PK_CoKhien(int nIdx)
+{
+	if (nIdx <= 0 || nIdx >= MAX_NPC || !Npc[nIdx].m_dwID)
+		return 0;
+	const int nProt = Npc[nIdx].m_nProtectedTime;
+	int nCoState = 0;
+	for (int s = 0; s < MAX_NPC_RECORDER_STATE; ++s)
+		if (Npc[nIdx].m_btStateInfo[s] == (BYTE)PK_KHIEN_STATE)
+		{
+			nCoState = 1;
+			break;
+		}
+	const UINT uID = Npc[nIdx].m_dwID;
+	std::map<UINT, PKKhienNho>::iterator it = s_mPKKhien.find(uID);
+	if (nProt <= 0 && !nCoState)
+	{	// dong bo moi nhat noi khong con khien
+		if (it != s_mPKKhien.end())
+			s_mPKKhien.erase(it);
+		return 0;
+	}
+	const UINT uNow = timeGetTime();
+	const UINT uHan = uNow + ((nProt > 0) ? ((UINT)nProt * 1000u / 18u) : PK_KHIEN_MS);
+	if (it == s_mPKKhien.end())
+	{
+		if (s_mPKKhien.size() > 256)
+			s_mPKKhien.clear();
+		PKKhienNho nho;
+		nho.uHan = uHan;
+		nho.nProt = nProt;
+		s_mPKKhien[uID] = nho;
+		return 1;
+	}
+	if (nProt > 0 && nProt != it->second.nProt)
+	{	// gia tri dong bo doi = may chu vua gui lai -> tinh lai han (khien moi hoac con lai it hon)
+		it->second.nProt = nProt;
+		it->second.uHan = uHan;
+	}
+	return ((int)(it->second.uHan - uNow) > 0) ? 1 : 0;
+}
+
+// (06/09) [HC-BAN] HAU CAN buoc 1 (ban rac): mon gui lenh ban ma KHONG MAT (may chu tu choi im lang)
+// truoc day bi gui lai 300 ms/lan MAI MAI, nhan vat dung yen trong thanh ("ve thanh la dung yen" - log
+// 19:22 map 78: [HC-STATE] buoc=1 hang phut, tui 28 o trong). Nay dem so lan gui theo dwID, qua
+// HC_BAN_THU lan van con trong tui thi bo qua mon do trong luot nay; buoc 0 xoa bo dem de luot sau thu lai.
+#define HC_BAN_THU	6
+static std::map<DWORD, int> s_mHCBanThu;	// dwID -> so lan da gui lenh ban trong luot Hau can nay
+
 static int TK_ChonDich(int nPlayerIdx, const autoData* pAp, int nLoai)
 {
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
@@ -8686,6 +8747,8 @@ static int TK_ChonDich(int nPlayerIdx, const autoData* pAp, int nLoai)
 			if (!pAp->bPKPlayer || nLoai == 1)
 				continue;
 		}
+		if (pAp->bPKBoQuaKhien && PK_CoKhien(nIdx))
+			continue;	// (06/09) dang co khien bao ve - danh khong trung
 		else if (!pAp->bPKNpc || nLoai == 2)
 			continue;
 		if (nLoai == 1)
@@ -8806,6 +8869,8 @@ static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
 			++nLoaiPhe;
 			continue;	// cung phe (hoac chua co phe) - dung phep thu cua bot
 		}
+		if (pAp->bPKBoQuaKhien && PK_CoKhien(nIdx))
+			continue;	// (06/09) vua ra trai / vua dich chuyen, con khien bao ve 3 giay - danh khong trung
 		if (Npc[nIdx].m_CurrentLife <= 0)
 			continue;	// bot bo xac theo ca mau, khong chi theo m_Doing (KPlayerBot.cpp:9703)
 		Npc[nIdx].GetMpsPos(&x, &y);
@@ -12199,6 +12264,8 @@ static int LD_ChonDich(int nPlayerIdx, const autoData* pAp)
 			continue;	// [S11] dang bi loai (khong toi duoc / ma) - het han purge se tha
 		if (Npc[nIdx].m_Kind != kind_player)
 			continue;		// trong san chi co nguoi choi
+		if (pAp->bPKBoQuaKhien && PK_CoKhien(nIdx))
+			continue;	// (06/09) dang co khien bao ve - danh khong trung
 		if (nMyGrp > 0)
 		{
 			if (Npc[nIdx].m_nMissionGroup <= 0 || Npc[nIdx].m_nMissionGroup == nMyGrp)
@@ -18989,7 +19056,8 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						nTGNpcIdx = NpcSet.SearchID(Player[nPlayerIdx].m_sExtAuto.uNpcID);
 						if(!nTGNpcIdx || Npc[nTGNpcIdx].m_RegionIndex < 0
 						|| Npc[nTGNpcIdx].m_Doing == do_death || Npc[nTGNpcIdx].m_Doing == do_revive
-							|| !(NpcSet.GetRelation(nNpcIdx, nTGNpcIdx) == relation_enemy))
+							|| !(NpcSet.GetRelation(nNpcIdx, nTGNpcIdx) == relation_enemy)
+							|| (pApData->bPKBoQuaKhien && PK_CoKhien(nTGNpcIdx)))	// (06/09) muc tieu vua co khien bao ve -> bo, tim nguoi khac
 							Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
 					}
 					if(!Player[nPlayerIdx].m_sExtAuto.uNpcID)
@@ -19015,6 +19083,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						pApData->nPKVision, pApData->bPKPlayer,
 						pApData->nPKVision, 0, pApData->bPKNpc);
 						AUTOLOG_EVERY(1000, "[PK-FIND] t=%u ret=%d prio=%d pkvis=%d pkplayer=%d pknpc=%d me=(%d,%d)", uCurTime, nTGNpcIdx, pApData->nPriority, pApData->nPKVision, pApData->bPKPlayer, pApData->bPKNpc, nX, nY);
+						if(nTGNpcIdx && pApData->bPKBoQuaKhien && PK_CoKhien(nTGNpcIdx))
+						{	// (06/09) nguoi tim duoc dang co KHIEN BAO VE (vua dich chuyen / ra trai): loai khoi
+							// danh sach tim vai giay (FindTargetNpc bo qua m_mAutoExcludeNpcID) roi nhip sau tim nguoi khac
+							Player[nPlayerIdx].m_mAutoExcludeNpcID[Npc[nTGNpcIdx].m_dwID] = uCurTime + PK_KHIEN_MS;
+							AUTOLOG_EVERY(1000, "[PK-KHIEN] bo qua id=%u dang co khien bao ve (protect=%d)", Npc[nTGNpcIdx].m_dwID, Npc[nTGNpcIdx].m_nProtectedTime);
+							return 0;
+						}
+
 						if(!nTGNpcIdx)
 							return 0;
 						Player[nPlayerIdx].m_sExtAuto.uNpcID = Npc[nTGNpcIdx].m_dwID;
@@ -20521,6 +20597,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					{	//cÊt hoÆc qu¨ng mãn trªn tay nÕu cã
 						g_ScenePlace.RemoveFlag();
 						++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+						s_mHCBanThu.clear();	// (06/09) [HC-BAN] luot moi - thu ban lai moi mon
 						int nIdx = Player[nPlayerIdx].m_ItemList.Hand();
 						if(nIdx > 0)
 						{
@@ -20564,6 +20641,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 										// (20/08) item dat yeu cau nhiem vu Da Tau dang lam: CAM ban
 										if(DT_IsQuestItem(nPlayerIdx, pApData, nIdx))
 											continue;
+										{	// (06/09) [HC-BAN] mon da gui lenh ban HC_BAN_THU lan ma van con -> bo qua
+											std::map<DWORD, int>::iterator itBan = s_mHCBanThu.find((DWORD)Item[nIdx].GetID());
+											if(itBan != s_mHCBanThu.end() && itBan->second >= HC_BAN_THU)
+												continue;
+										}
 										int nDetail = Item[nIdx].GetDetailType();
 										if(!pApData->bSellHorse)
 										{
@@ -20633,6 +20715,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							}
 							if(nSelIdx)
 							{
+								// (06/09) [HC-BAN] dem so lan gui; toi HC_BAN_THU ma mon van con la bo qua (khoi lap vo han)
+								const int nBanThu = ++s_mHCBanThu[(DWORD)Item[nSelIdx].GetID()];
+								if(nBanThu == 1 || nBanThu == HC_BAN_THU)
+									AUTOLOG("[HC-BAN] gui ban id=%u '%s' genre=%d detail=%d mau=%d khoa=%d/%d lan %d/%d%s",
+										Item[nSelIdx].GetID(), Item[nSelIdx].GetName(), (int)Item[nSelIdx].GetGenre(),
+										(int)Item[nSelIdx].GetDetailType(), (int)Item[nSelIdx].GetColorItem(),
+										(int)Item[nSelIdx].GetPlayerItemLock(), (int)Item[nSelIdx].GetPlayerItemHLock(),
+										nBanThu, HC_BAN_THU, (nBanThu >= HC_BAN_THU) ? " - VAN CON TRONG TUI, bo qua mon nay" : "");
 								SendClientCmdSell(Item[nSelIdx].GetID());
 								return 1;
 							}

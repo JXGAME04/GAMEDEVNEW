@@ -136,3 +136,20 @@ Console phải có `[script] Bi danh duong dan: 1238 dong, dang ky ID cu 1238, t
 | Gương git | `serverscript_live` = cây sau sắp xếp (commit sau 18:20) |
 
 Còn lại nhỏ: `nhiemvu\partner\train\bdh_jitan_driver.lua` (và 2 tệp kiemthu) ghi `script\bdh_test.log` vào trong cây script → nên đổi sang `logs\`. Các phiên khác từ nay ghi tệp theo đường dẫn MỚI (`kiem_duongdan_cu.py sua` trước mỗi restart nếu nghi ngờ).
+
+## 9. SỰ CỐ TỐI 06/09: mất trap các map — gốc là dữ liệu bản đồ trong PAK (đã khắc phục, cần restart)
+
+Chủ báo *"kiểm tra các file trap trước, dọn script làm mất trap các map"*. Đúng: từ restart 18:04, **761 ID trap + 152 script NPC** đặt sẵn trong dữ liệu bản đồ trỏ vào tệp đã ra kho `_luutru09\disan_jx`.
+
+**Gốc:** `settings\MapList.ini` có 1.021 bản đồ, chỉ 53 có thư mục trên đĩa; 968 map nằm trong `Pak\maps.pak` (+`maps_tieu_bang_chien.pak`) — `KPakFile::Open` lùi về pak khi thiếu `Maps\<khu>\<thành>_XXX\XXX_Region_S.dat`. Tệp vùng (combined: DWORD count + {off,len}) đoạn 1 = trap `KSPTrap{cX,cY,cNumCell,res,uTrapId}` với `uTrapId = g_FileName2Id(đường dẫn cũ)`, đoạn 2 = NPC `KSPNpc` 60 byte + tên script (`AddNpcSet3` → `g_FileName2Id`). Mọi cách grep văn bản đều mù. `kiem_disan.py` cũ chỉ quét region trên đĩa (28 ID) + token chữ → xếp nhầm 1.369 tệp là "không ai gọi". Memory `jx1-pak-vltk-ucl-nrv2b` (30/08) đã cảnh báo đúng chuyện này.
+
+**Khắc phục (cây chạy thật, 19:50–20:40):**
+1. `tools\sapxep\phuchoi_disan.py sua`: 1.369 tệp về đúng đường dẫn cũ, 13 tệp `tinhnang	rapcu` về chỗ cũ, bỏ 13 dòng bí danh. Kho `disan_jx` trống.
+2. Chủ: *"có cách nào cho nó gọn không, bỏ các file trap cũ đó vào nhìn lộn xộn"* → `gom_bando.py sua`: 9 khu Hán + `global\特殊用地` → `scriptando\<khu>\<thành>\{trap,obj,npc}\<tên Việt không dấu>.lua` (dịch Hán-Việt từng chữ, bảng 463 chữ; 1.316 tệp; đối chiếu `bando\_DOICHIEU_TEN.txt`), thêm 1.316 dòng `--@` → bí danh 2.541 dòng. Khu: trungnguyen_bac/nam, taynam_bac/nam, taybac_bac/nam, luongho, giangnam, dongbac, dacthu.
+3. Kiểm: `kiem_trap_map.py` (quét 5.008 `*_Region_S.dat` trên đĩa + `pak_region.py` giải nén NRV2B mọi entry ≤128 KB của `Pak\*.pak`, 1 phút 50 s): 829 ID trap = **793 tra được qua bí danh** + 36 chết từ trước (`.laa`); 1.151 tên NPC = 165 tra được + 986 chết từ trước. `kiem_duongdan_cu.py`: 0 lỗi. `boot_gia.py` (BOOT_CHDIR=1) + `so_boot.py` so mốc trước sắp xếp: 0 dòng chỉ-TRƯỚC, 34 dòng chỉ-SAU = lỗi giả lập có sẵn (stub GetTimeNow/tbBaseClass) hiện thêm ở tệp vừa phục hồi + `_DOICHIEU_TEN.txt` (engine bỏ qua tên `_`).
+4. Bằng chứng bí danh chạy thật: `settings\item\magicscript.txt` trỏ `\script\item\lenhbaiadmin.lua` (cũ) mà ScriptError 18:58 ghi `\scriptatpham\lenhbaiadmin.lua` (mới); `npc_lmbiaoche.lua` cũng vậy.
+5. Gương git `serverscript_live` cập nhật.
+
+**Cần chủ làm:** restart GameServer (hoặc GM `ReLoadAllSct`/`RLAS` = `ReLoadAllScript()` → `g_IniScriptEngine()` nạp lại + đăng ký bí danh; lệnh này huỷ mọi state đang chạy, chỉ nên dùng lúc vắng). Sau khi mở: console phải in `[script] Bi danh duong dan: 2541 dong, dang ky ID cu 2541, ten moi chua nap 0` (dòng này KHÔNG ra tệp log nào — `g_DebugLog` chỉ ra cửa sổ debug).
+
+**Luật rút ra:** không xoá/chuyển script chỉ dựa quét chữ; trước khi dọn phải chạy `kiem_trap_map.py` ra `NAM TRONG kho 0`; dọn thật sự chỉ sau khi đo động (ghi script nào được `g_GetScript` chạm trong vài tuần). Công cụ ở `bin\server	ools\sapxep\` và `ReverseTools\lua54\danhgia_0609\`.

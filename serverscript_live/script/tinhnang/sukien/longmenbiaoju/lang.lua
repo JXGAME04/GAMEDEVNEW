@@ -51,7 +51,7 @@ LongMenBiaoJu.LANG = {
 	DLG_RANDOM_REFRESH_FREE = "Lµm míi nhiÖm vô miÔn phÝ",
 	DLG_RANDOM_REFRESH_CHARGE = "Sö dông Ho¸n Tiªu ChØ lµm míi nhiÖm vô",
 	DLG_CANCEL_CONFIRM = "§¹i hiÖp x¸c ®Þnh lÇn nµy kh«ng thÓ xuÊt Tiªu kh«ng?",
-	DLG_TOO_YONG = "Ng­¬i vÉn ch­a ®Õn cÊp 120, h·y cè g¾ng h¬n n÷a.",
+	DLG_TOO_YONG = "Ng­¬i vÉn ch­a ®Õn cÊp 90, h·y cè g¾ng h¬n n÷a.",	-- [VTCN 06/09] chu: cap ha xuong 90 (Linux 120)
 	DLG_CAMP_ERROR = "ThiÕu HiÖp, hiÖn t¹i ThiÕu HiÖp kh«ng thÓ l·nh nhËn nhiÖm vô Long M«n Tiªu Côc.",
 	DLG_GET_AWARD_NOT_FINISH_CONTENT = "NhiÖm vô ch­a kÕt thóc. Tiªu Xa vµ Tiªu Kú ®Òu mÊt hÕt råi th× cã thÓ kÕt thóc nhiÖm vô vµ nhËn 100 v¹n kinh nghiÖm. Tiªu Xa bÞ c­íp th× t×m l¹i <color=red> Tiªu Kú <color> cã thÓ nhËn 1 phÇn cña phÇn th­ëng",
 	DLG_GET_AWARD_QUERY = "KÕt thóc nhiÖm vô, nhËn kinh nghiÖm",
@@ -95,7 +95,7 @@ LongMenBiaoJu.LANG = {
 	MSG_ROUTE_INFO = "Ng­¬i ®· nhËn nhiÖm vô ¸p Tiªu %d sao, %s - %s.",
 	MSG_REFRESH_COMFIRM = "Cã ph¶i lµm míi nhiÖm vô?",
 	
-	MSG_CAN_NOT_PICK = "§¼ng cÊp cña ng­¬i vÉn ch­a ®Õn cÊp 120 vµ ch­a trïng sinh, kh«ng thÓ nhÆt Tiªu vËt rít ra",
+	MSG_CAN_NOT_PICK = "§¼ng cÊp cña ng­¬i vÉn ch­a ®Õn cÊp 90 vµ ch­a trïng sinh, kh«ng thÓ nhÆt Tiªu vËt rít ra",	-- [VTCN 06/09] chu: cap ha xuong 90 (Linux 120)
 	MSG_CAN_NOT_PICK2 = "§¹i hiÖp vÉn ch­a gia nhËp m«n ph¸i, kh«ng thÓ nhËn Tiªu vËt rít ra.",
 	MSG_CAN_NOT_PICK_NOW = "HiÖn t¹i ng­¬i kh«ng thÓ nhËn Tiªu vËt nµy.",
 	MSG_START_PICK = "B¾t ®Çu nhËn Tiªu vËt",

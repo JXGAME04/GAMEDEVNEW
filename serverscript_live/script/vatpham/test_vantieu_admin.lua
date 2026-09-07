@@ -74,7 +74,7 @@ function VT_ADM_XeBat() VT_ADM_XeGoi("XT_Bat") end
 
 -- ---------------------------------------------------------------- 2. nhanh ca nhan
 function VT_ADM_CaNhan()
-	SayEx({"<color=yellow>Nh¸nh c¸ nh©n 1-9 sao<color>: cÊp 120 trë lªn, cã m«n ph¸i, 10:00-23:00, 3 lÇn mét ngµy, 5 lÇn lµm míi miÔn phİ. NhËn ë ¤ng chñ Tiªu côc (Long M«n trÊn), xuÊt ph¸t ë Tiªu S­ ®iÓm ®Çu, tr¶ ë Tiªu S­ ®iÓm cuèi trong 30 phót.",
+	SayEx({"<color=yellow>Nh¸nh c¸ nh©n 1-9 sao<color>: cÊp 90 trë lªn, cã m«n ph¸i, 10:00-23:00, 3 lÇn mét ngµy, 5 lÇn lµm míi miÔn phİ. NhËn ë ¤ng chñ Tiªu côc (Long M«n trÊn), xuÊt ph¸t ë Tiªu S­ ®iÓm ®Çu, tr¶ ë Tiªu S­ ®iÓm cuèi trong 30 phót.",
 	"DŞch chuyÓn tíi ¤ng chñ Tiªu côc Lôc Tam C©n (Long M«n trÊn)/VT_ADM_ToiChuongQuy",
 	"NhËn vËt phÈm: 5 Ho¸n Tiªu ChØ, 2 ¸p tiªu ñy nhiÖm tr¹ng cao cÊp, 20 Hé Tiªu LÖnh/VT_ADM_ItemCaNhan",
 	"NhËn 3 ®¹o cô Tiªu côc: Kho¸i M· Gia Tiªn, Kiªn BÊt Kh¶ Táa, Tiªu Xa Di VŞ/VT_ADM_ItemDaoCu",
@@ -184,7 +184,7 @@ end
 
 -- ---------------------------------------------------------------- 3. nhanh bang hoi
 function VT_ADM_Bang()
-	SayEx({"<color=yellow>Nh¸nh bang héi 10 sao<color>: thø b¶y vµ chñ nhËt 12:00-23:00, bang ph¶i ®ang chiÕm thµnh, bang chñ më (sè l­ît = (sè thµnh chiÕm tuÇn + 1) chia 2), tr­ëng l·o hoÆc bang chñ nhËn, cÊp 150, vµo bang 7 ngµy. BiÕn bang 1149 hiÖn ch­a ®­îc c«ng thµnh chiÕn ghi nªn ph¶i ®Æt tay ®Ó test.",
+	SayEx({"<color=yellow>Nh¸nh bang héi 10 sao<color>: thø b¶y vµ chñ nhËt 12:00-23:00, bang ph¶i ®ang chiÕm thµnh, bang chñ më (sè l­ît = (sè thµnh chiÕm tuÇn + 1) chia 2), tr­ëng l·o hoÆc bang chñ nhËn, cÊp 90, vµo bang 7 ngµy. BiÕn bang 1149 hiÖn ch­a ®­îc c«ng thµnh chiÕn ghi nªn ph¶i ®Æt tay ®Ó test.",
 	"§Æt sè thµnh chiÕm tuÇn nµy cña bang m×nh = 1 (biÕn bang 1149, ®­îc 1 l­ît)/VT_ADM_Bang1149_1",
 	"§Æt sè thµnh chiÕm tuÇn nµy = 3 (®­îc 2 l­ît)/VT_ADM_Bang1149_3",
 	"Reset tr¹ng th¸i tuÇn cña bang: 1150 më, 1151 l­ît cßn, 1152 mèc nhËn, 1154 tuyÕn/VT_ADM_BangReset",

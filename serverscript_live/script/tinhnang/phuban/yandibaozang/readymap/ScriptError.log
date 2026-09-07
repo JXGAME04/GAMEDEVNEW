@@ -1,0 +1,10 @@
+error: [string "?"]:5: attempt to index a nil value (global 'Dungeon')
+stack traceback:
+	[string "?"]:5: in main chunk
+2026/09/06 17:53:19.008 	 ScriptError 4:[1] (\script\tinhnang\phuban\yandibaozang\readymap\readymap.lua) 
+
+error: [string "?"]:5: attempt to index a nil value (global 'Dungeon')
+stack traceback:
+	[string "?"]:5: in main chunk
+2026/09/06 17:54:05.356 	 ScriptError 4:[1] (\script\tinhnang\phuban\yandibaozang\readymap\readymap.lua) 
+

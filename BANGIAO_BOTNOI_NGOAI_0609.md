@@ -182,6 +182,37 @@ Bản `CoreServer.dll` đang chạy (md5 3cb5a6a3, phiên lua54 build từ origi
 - `tay khong giua doi -> phat lai` = **0**; `[BotCast] BI TU CHOI` = **0** ✔.
 - `ScriptError.log` sau 18:07 chỉ có 1 lỗi của `npc_lmbiaoche.lua` (vận tiêu, phiên khác) — không liên quan bot.
 
+### 10.5b ĐỢT 4 — sửa "vũ khí bot 7 dòng" (chủ chụp Kim Cô Bổng cấp 10 có 7 dòng, 19:1x)
+Chủ: *"vũ khí add cho bot có 7 dòng thuộc tính trong khi đồ xanh mặc định nhiều nhất 6 dòng thuộc tính"*.
+- **Gốc:** `MAX_ITEM_MAGICATTRIB` của dự án = **8** (`GameDataDef.h:40`), không phải 6 như tôi giả định; `pb_MagicVuKhi` đợt 3 lặp tới hằng đó → điền 8 ô → `Gen_MagicAttrib` (bản 7 tham số, lặp tới `MAX_ITEM_MAGICATTRIB`) sinh tới 8 dòng (ảnh: 7 dòng, một ô không tìm được dòng khác loại). "tong 45" trong log = `GetTotalMagicLevel` chỉ cộng 6 ô đầu.
+- **Gốc phụ:** `g_Random(2)` là LCG `seed*IA+IC % 2` → trả 0,1,0,1… → mọi vũ khí đều 7,8,7,8,7,8 (143/143 "tong 45") — không ngẫu nhiên.
+- **Sửa** (`ReverseTools/goi_va_botnoi_dot4_0609.py`, 2 hunk): `PB_VK_SO_DONG 6` — `pb_MagicVuKhi` điền đúng 6 ô, ô 7-8 = 0 (bộ sinh dừng ở ô thứ 7); ngẫu nhiên lấy bit 8 của `g_Random(65536)` (mẹo băm sẵn có trong tệp). Bước 4: vũ khí đã lỡ 7-8 dòng (`nGeneratorLevel[6]` hoặc `[7]` > 0 — chỉ bản 18:53 sinh ra) được sinh lại **một lần** 6 dòng (`pb_VuKhiQuaDong`).
+- Nhị phân đợt 4: `bin\server\CoreServer.dll.moi` gộp vào bản đợt 4 (mục 10.5e), thay bản 4ce83dd5 đang chạy. Nghiệm thu: `grep "dong 7-8 tong" bot.log` sau restart ≈ 143+ dòng mới, tổng dòng 42..48 **thay đổi** (không còn toàn 45); vũ khí bot xem trong game đúng 6 dòng.
+
+### 10.5c ĐỢT 4b — KHẨN: "bot ném đồ ra lúc đổi đồ, nhặt vào hiển thị lỗi item, out vào mất" (19:1x–19:3x)
+Chủ: *"bug làm mất đồ người chơi thật? bạn kiểm tra ngay"* · *"bot ném đồ ra lúc đổi đồ thì tôi nhặt vào hiển thị lỗi item rồi tôi out ra vào lại thì mất đồ"*.
+
+**Kiểm tra mã bot có đụng đồ người thật không:** mọi lệnh huỷ/thay đồ chỉ chạy trong `pb_DriveBot` cho khe bot đã kiểm `Player[nIdx].m_dwID == b.dwID` (khe cấp lại cho người khác thì bỏ); soát toàn bộ bot.log 06/09: **0** tên ngoài danh sách bot trong các dòng `[BotNoi]` (384) / `[BotTayDiem]` (379) / `[BotTrangBi]` (776) / `[BotVuKhi]` (346) / `[BotDiem]` / `[BotSkill90]`. `PB_NangMach` thiếu kiểm dwID → đã thêm (H22).
+
+**Gốc "ném đồ" (KItemList.cpp):** bot mặc đồ bằng `InsertEquipment` + `Equip`. `InsertEquipment` (~4603) khi túi không còn dải ô: món khoá thì thử kho, rồi đặt món vào **TAY** (`pos_hand`) và **NÉM MÓN ĐANG Ở TAY xuống đất** thành Object công khai. `Equip` (1252) đổi `nPlace` sang `pos_equip` nhưng **không xoá `m_Hand`** → `m_Hand` trỏ vào món **đã mặc**. Lần `InsertEquipment` sau (bước 4 vũ khí ngay sau bước 3 ngựa; hoặc phát lại vũ khí 60 s × 5): `Remove(m_Hand)` = **tháo + ném ngựa/vũ khí đã mặc xuống đất**, `AddKIL(pos_hand)` trả 0 vì `m_Hand != 0` → món mới không vào danh sách → bot tay không; `m_Hand` vẫn lệch → mỗi lần phát lại lại ném tiếp `Item[m_Hand]` — chỉ số cũ có thể **đã cấp cho món của người khác** → người chơi nhặt được "item lỗi", out vào mất; nguy cơ dính chỉ số món của người thật (thấp nhưng có thật). Đo 19:04: **346 bot tay không** (đúng = số bot vừa nhận ngựa mà túi đầy), 1.531 lượt phát lại, 1.049 `dang cam=0`; 299 bot không có dòng ngựa = 200 bot sạp + 99 bot ở trạng thái khác chưa chạy `pb_TrangBiTheoCap` (không phải lỗi). Lỗi này **có từ 18/08** (Kim Phong/ngựa/vũ khí cấp 81 đều qua đường này) nhưng chỉ bùng khi đợt 3 đổi ngựa + vũ khí cho 1.000 bot cùng lúc.
+
+**Sửa (`goi_va_botnoi_dot4b_0609.py`, 8 hunk):**
+- `pb_MacVaoNguoi` viết lại: **chỉ đặt vào ô túi** (`CheckCanPlaceInEquipment` + `AddKIL(pos_equiproom)`) → `Equip` → nhả ô lưới; **không bao giờ** qua `InsertEquipment`/tay; hết chỗ → `pb_LamChoTui` xoá rác túi (cùng bộ lọc giữ của `pb_DonTui`) rồi thử lại; mọi thất bại có log `[BotMac]` kèm yêu cầu món + chỉ số bot.
+- `pb_DonChoMac`: kiểm đủ điều kiện + có chỗ **trước** khi huỷ món cũ (bước 3 ngựa, bước 4 vũ khí, vũ khí nhập môn); tay đang giữ rác thì huỷ, `m_Hand` lệch thì chỉ báo.
+- `pb_GiveFactionWeapon` và sạp tạo hàng: bỏ `InsertEquipment`, dùng đường trên. Trong `KPlayerBot.cpp` không còn lời gọi `InsertEquipment` nào.
+- Sau restart: 346 bot tay không tự nhận lại vũ khí nhập môn rồi lên cấp 10 (6 dòng) trong 10 giây; đồ đã rơi trên đất mất khi restart (là đồ bot, khoá). Người chơi đã nhặt "item lỗi" thì món đó mất — đó là đồ của bot, không phải đồ của họ.
+
+### 10.5d ĐỢT 4c — "bot vào bang người chơi hiển thị thành bang chủ"
+- **Gốc:** bản sao relay JX2 (`KTongJX2.h:24`) dùng chức vụ 0 bang chủ / 1 trưởng lão / 2 đội trưởng / 3 bang chúng / 4 ẩn sĩ; còn `KPlayerTong::m_nFigure` (đồng bộ lên mọi client qua `PlayerSync.TongFigure`, `KNpc.cpp:6705`; relay cho người thật cũng dùng enum này) là enum JX1 `GameDataDef.h:1616`: 0 MEMBER / 1 MANAGER / 2 DIRECTOR / 3 MASTER. `pb_BangDongBo` chép thô `t.m_nFigure = btFigure` → bot bang chúng (3) = MASTER = "Bang chủ"; bang chủ bot (0) = MEMBER. bot.log: 2.952 dòng "chức vụ 3" của bang TESTGAME.
+- **Sửa** (`goi_va_botnoi_dot4c_0609.py`): đổi bảng 0→MASTER, 1→DIRECTOR, 2→MANAGER, 3/4→MEMBER trước khi gán và so sánh; log ghi cả hai mã. Bot đang ở TESTGAME tự đồng bộ lại trong ≤ 15 phút sau restart (hoặc ngay khi bản sao relay đổi).
+
+### 10.5e Nhị phân đợt 4 (gộp 4 + 4b + 4c)
+| tệp | md5 | kích thước | swap |
+|---|---|---|---|
+| `bin\server\CoreServer.dll.moi` | **6ab3dfbf6a3f78b13bfe5438df693b91** | 18.460.672 | tắt GameServer → `ChayGameServer.bat` (thay bản 4ce83dd5 đang chạy — bản này còn ném đồ) |
+
+Build từ `origin/main` 80079cc1 (gồm cả CoreShell.cpp / ipc_shared.h của phiên khác đẩy sau 19:0x). Nhãn kiểm: đủ nhãn đợt 1-3 + `[BotMac]` (9), `chuc vu JX2` (1); `InsertEquipment` chỉ còn 1 (dòng include). **Không restart bằng bản 4ce83dd5 nữa** (mỗi restart tái kích 5 lượt ném đồ cho 346 bot).
+
 ### 10.6 Nghiệm thu đợt 3 (sau restart)
 ```bash
 grep -c "cuoi ngua Chieu Da" bot.log

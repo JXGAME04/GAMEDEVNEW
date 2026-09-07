@@ -182,3 +182,64 @@ không đặt lại**; từ `5a4d0d24` họ không sửa `Sources\Core` nữa n�
 bằng bản 18:43 (`3da2169e`, chỉ mã S3Client, không liên quan WAuto). Máy chủ: `bin\server\CoreServer.dll.moi`
 `6439ba82` (sha256 `61bc3e0f`) là của họ, giữ nguyên. Lưu ý sổ hash: tôi ghi **md5**, họ ghi **sha256[:8]**
 — cùng tệp khác hàm băm, đừng tưởng lệch bản.
+
+---
+
+## 7. (19:05) Tính năng mới tab PK — BỎ QUA MỤC TIÊU ĐANG CÓ KHIÊN BẢO VỆ
+
+> Chủ giao: *"thêm tính năng ở tab pk bỏ qua đối tượng đang có khiên bảo vệ AddSkillState(963, 1, 0, 18*3)"*.
+
+### 7.1 Khiên là gì, client biết bằng cách nào
+
+- Mọi script dịch chuyển cấp **vòng tròn bất tử 3 giây**: `SetProtectTime(18*3)` + `AddSkillState(963, 1, 0, 18*3)`
+  — `station.lua` (Xa Phu), `shenxingfu.lua` (Thần Hành Phù), trap cổng thành, **trap ra trại Tống Kim**
+  `maps/tongkim/trap/kimratrai.lua` / `tongratrai.lua`, `trinhsat.lua`, `playerlogin.lua`; `dichuyenmap.lua` 18*6;
+  pubg 18*180. Skill 963 = *Thánh Quang Bình Thuẫn (chỉ hiệu ứng)*, `StateSpecialId = 159`. Đánh vào không trúng.
+- Client nhận khiên của người khác qua gói **NPC_NORMAL_SYNC**: `m_nProtectedTime` (`KProtocolProcess.cpp:2453`) và
+  `StateInfo` → `m_btStateInfo` (`:2465`, có 159). **Bẫy:** client KHÔNG tự đếm lùi `m_nProtectedTime` (`KNpc.cpp:1626`
+  nằm trong `#ifdef _SERVER`) nên giá trị có thể "đứng" tới lần đồng bộ sau → `PK_CoKhien` tự ước **hạn hết khiên** =
+  lúc thấy + số khung còn lại / 18, chỉ tính lại khi giá trị đồng bộ **đổi**; hết hạn thì đánh bình thường dù cờ còn
+  đứng — không bao giờ bỏ qua ai mãi mãi.
+
+### 7.2 Đã làm (commit `aed31625`, bộ vá `ReverseTools\goi_va_pk_khien_0609.py`)
+
+| Chỗ | Nội dung |
+|---|---|
+| `ipc_shared.h` (Core + WAuto) | `int bPKBoQuaKhien` ở **cuối** `autoData`, mặc định 1 → struct **7.640 → 7.644 byte**: `WAuto.exe` và `CoreClient.dll` phải đổi **cùng lúc** |
+| `CoreShell.cpp` | `PK_CoKhien(nIdx)`; máy PK `ATYPE_PKFIGHT`: mục tiêu đang giữ có khiên → bỏ; mục tiêu mới có khiên → đưa vào `m_mAutoExcludeNpcID` 3,5 s (FindTargetNpc tự bỏ qua) + log `[PK-KHIEN]`; tầng săn TK `TK_SanNguoi`, `TK_ChonDich`, `LD_ChonDich` bỏ qua người có khiên |
+| WAuto tab PK | ô tick **Bỏ qua mục tiêu đang có khiên bảo vệ** (ID 479, hàng y=351 vì hàng 336 bị `ShowTab` dời cụm *Đổi với tay trái* tới — bản đầu chồng lên combo, chủ báo 19:10; `s_aTabDay[7]` 350 → 365; `do_wauto_bo_cuc.py` 0 nhãn cắt), lưu ngay (khối lưu chung), mặc định **BẬT** cho tệp mới và tệp cũ, tooltip + note tab PK |
+
+Mặc định BẬT vì đánh người có khiên chỉ tốn lượt; chủ không muốn thì bỏ tick.
+
+### 7.3 Trạng thái swap
+
+Lúc 18:50 và 19:01 chủ đã chạy `ChoiGame.bat`: bản đang chạy = `CoreClient.dll` `9cb2f51f` + `Game.exe` `3da2169e`
+(Vận tiêu) + `WAuto.exe` `807e4007` — tức **đợt 1 (lưu ngay + về thành) đã lên máy**. `.moi` mới chờ đợt 2:
+
+| Tệp | md5 | sha256[:8] | cỡ |
+|---|---|---|---|
+| `WAuto.exe.moi` | `c692b1de` | `9cf5e921` | 466.944 |
+| `CoreClient.dll.moi` | `e233e443` | `ba2f2f11` | 2.586.112 |
+
+Cách đổi: thoát Game.exe **và** WAuto.exe → `ChoiGame.bat` (đổi cả hai). **PHẢI đổi cả hai cùng lúc** vì gói IPC
+`IPCGameLoop` dài thêm 4 byte. Nếu lỡ chỉ đổi một: `S3Client.cpp:1232` (PRT_GAMELOOP) đã có lưới — gói NGẮN hơn
+(WAuto cũ → CoreClient mới) được chép vào bản sao xoá trắng nên ô mới đọc ra 0 = tính năng tắt, gói DÀI hơn (WAuto mới
+→ CoreClient cũ) bị bỏ 4 byte cuối; không sập, chỉ là tính năng khiên im lặng không chạy cho tới khi đổi đủ cả hai.
+Tệp `.dat` 7.640 byte cũ nạp được, ô mới mặc định bật. Chưa test thật; kiểm bằng `findstr /C:"[PK-KHIEN]" jx_auto.log` khi PK gần người vừa dịch chuyển.
+`origin/main` sau `aed31625` có thêm bot nội đợt 3 (server) — không ảnh hưởng client, chưa build lại.
+
+---
+
+## 8. (19:35) Chủ báo sau swap đợt 2: "về thành là đứng yên" + "tới NPC Dã Tẩu xong đứng yên"
+
+Đo `jx_auto.log` pid 47140 (game mở 19:14, map 78 Tương Dương), 19:22-19:25:
+
+| Máy | Thấy gì | Gốc | Xử lý |
+|---|---|---|---|
+| **Hậu cần** | `[HC-STATE] buoc=1` đứng yên hàng phút ở cùng toạ độ, túi còn 28-29 ô trống | Bước 1 (bán rác) quét túi, gặp một món trang bị ≤ xanh không khoá → `SendClientCmdSell` rồi `return 1`; 300 ms sau quét lại, món **vẫn còn** (máy chủ từ chối im lặng: `KBuySell::Sell` trả FALSE khi khoá/-2/FightMode, hoặc lệnh không tới) → gửi lại **mãi mãi**, không sang bước 2. Lúc 18:43 bước 1 qua trong 3 s vì túi không có món đó. | **Đã vá** (commit `42262294`, `goi_va_hc_ban_0609.py`): đếm số lần gửi theo dwID, tới 6 lần mà món vẫn còn thì bỏ qua món đó trong lượt này; bước 0 xoá bộ đếm. Log `[HC-BAN] gui ban id=… 'tên' genre/detail/mau/khoa lan k/6` — lần sau đọc là biết món nào và vì sao. |
+| **Dã Tẩu** | `pha=1` tới NPC 108, thoại, rồi `pha=14` treo 3.598 s, `du40=260906/260906` | NPC nói đúng câu `seasonnpc.lua:62` *"Mỗi ngày làm 40 lần là đủ rồi! Ngày mai trở lại nhé!"* (mốc `DTM_MSG_LIMIT` = "Mỗi ngày làm 40 lần"). Nhân vật này **đã làm đủ 40 nhiệm vụ hôm nay** (từ 18:04 log đã treo vì đủ 40). Auto báo trong chat *"Tuyệt! Đã đủ 40 nhiệm vụ Dã Tẩu hôm nay - nghỉ, qua ngày auto tự chạy lại."* | Đúng thiết kế, **không sửa**. Qua ngày mới (`DT_Today()` đổi) tự chạy lại. |
+| **Cả hai bị "khởi động lại"** mỗi 57-100 s | `[DT-STATE] pha=0 … du40=0 dlg=17/0` = `ExtAuto` bị `memset` (`ATYPE_CLEAR`) | `ATYPE_CLEAR` chỉ phát khi ô tick auto trong danh sách WAuto đổi trạng thái: bấm ô tick, hoặc **Ctrl+A trong game** (`UiGame.cpp:91` → `PRG_AUTOONOFF` → WAuto đổi tick → `PRT_TICKSTART` → xoá trạng thái). Mỗi lần như vậy Dã Tẩu quên "đủ 40" → đi lại tới NPC → hỏi → treo lại; Hậu cần về bước 0. | Không phải lỗi mã; là hệ quả của việc bật/tắt auto liên tục khi thấy nhân vật đứng. Ghi nhận để chủ biết. |
+
+`.moi` đợt 3 (chỉ CoreClient): `CoreClient.dll.moi` **`b425fb53`** (sha256 `076e8550`, 2.593.280 B). Struct IPC không đổi
+(7.644) nên đổi một mình CoreClient là đủ; `WAuto.exe` `9ff7c4e6` đang chạy giữ nguyên (tệp `WAuto.exe.moi` còn
+lại cùng md5, vô hại). Cách đổi: thoát game → `ChoiGame.bat`.
