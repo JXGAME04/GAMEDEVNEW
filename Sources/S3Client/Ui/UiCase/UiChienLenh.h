@@ -132,7 +132,7 @@ private:
 	KWndText80			m_Remain;					// [TxtRemainTime]
 	KWndLabeledButton	m_BtnBuy;					// [BtnBuyVipCard]
 	// khu moc thuong
-	KWndImage			m_AwardBg;					// [ImgAwardListBG] 580x176
+	KUiCLScrollWnd		m_AwardBg;					// [ImgAwardListBG] 580x176 - [CL 07/09] KUiCLScrollWnd: chuyen tiep click o moc / ScrollBar len KUiChienLenh (KWndImage thuong NUOT WND_N_BUTTON_CLICK)
 	KWndImage			m_RankBox;					// [ImgPlayerRankBG] hop nen cl_04 duoi "Cap/LVn" - [CL 04/09 DOT2f] (2.0 ve qua Image= cua WndText)
 	KWndText32			m_RankTitle;				// [TxtPlayerRankTitle]
 	KWndText32			m_Rank;						// [TxtPlayerRank] "LV30"
@@ -146,7 +146,7 @@ private:
 	KWndText80			m_DayTab;					// [TxtDailyMission]
 	KWndButton			m_WeekTabBg;				// [ImgWeeklyMissionBG]
 	KWndText80			m_WeekTab;					// [TxtWeeklyMission]
-	KWndImage			m_ListBg;					// [DlyList] 582x173
+	KUiCLScrollWnd		m_ListBg;					// [DlyList] 582x173 - [CL 07/09] KUiCLScrollWnd: nut Nhan/Den cua dong nhiem vu + DlyScr bao len KUiChienLenh (truoc: KWndImage nuot, bam Nhan khong gui gi)
 	KWndScrollBar		m_Scroll;					// [DlyScr]
 	KUiCLMissionRow		m_Row[CLUI_ROW_COUNT];
 	KWndText80			m_Msg;						// thong bao ngan (dung [TxtRemainTime] lam mau)

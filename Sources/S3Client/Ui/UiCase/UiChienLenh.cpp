@@ -97,6 +97,10 @@ void KUiCLAwardCell::LoadScheme(KIniFile* pIni, int bVip)
 	sprintf(sz, "ElemImg%sAwardBG", szP);		Init(pIni, sz);
 	sprintf(sz, "ElemImg%sAwardLight", szP);	m_Light.Init(pIni, sz);
 	sprintf(sz, "ElemImg%sAwardEffect", szP);	m_Effect.Init(pIni, sz);
+	// [CL 07/09] hieu ung nhap nhay 44x44 nam TREN nut sang m_Light (AddChild sau): KWndWindow::TopChildFromPoint lay con
+	// tren cung chua diem va KHONG Disable -> nua thoi gian (Blink hien) click roi vao KWndImage nay va chet. Disable de
+	// bo qua khi tim cua so nhan click; KWndWindow::PaintWindow khong xet Disable nen van ve binh thuong.
+	m_Effect.Enable(0);
 	sprintf(sz, "ElemImg%sAwardIconBG", szP);	m_IconBg.Init(pIni, sz);
 	sprintf(sz, "ElemImg%sAwardIcon", szP);		m_Icon.Init(pIni, sz);
 	m_Box.Init(pIni, sz);						// cung hinh chu nhat 24x24 voi anh mac dinh
