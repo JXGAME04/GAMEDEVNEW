@@ -356,6 +356,8 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	case pos_hand:
 		if (m_Hand)
 		{
+			if (!bInit)	// [MATDO 07/09] luc CHAY giu hanh vi cu (nguoi goi tu xu ly); chi NAP DB (bInit) moi khu kep / cuu
+				return 0;
 			// [MATDO 07/09] ban luu co HAI mon "tren tay" (m_Hand lech luc luu): kep -> bo + log; khac -> cuu.
 			if (CungMotMon(nIdx, m_Hand))
 			{
@@ -377,8 +379,10 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		// [MATDO 07/09] O da co mon, HOAC mon khong hop o (bua "dang mac", mu o o giay... = ban ghi MA do entry
 		// treo chi so - xem PHANTICH_MATDO_CAIBANG_GOC_THAT_0609.md). Cung mon voi mon dang o o = ban ghi KEP
 		// -> bo + log (khong nhan ban); khac -> cuu vao hanh trang/ruong + log; het cho moi bo (co log).
-		if (m_EquipItem[nX] || item_equip != Item[nIdx].GetGenre() || !Fit(nIdx, nX))
+		if (m_EquipItem[nX] || (bInit && (item_equip != Item[nIdx].GetGenre() || !Fit(nIdx, nX))))
 		{
+			if (!bInit)	// luc CHAY: giu hanh vi cu
+				return 0;
 			if (m_EquipItem[nX] && CungMotMon(nIdx, m_EquipItem[nX]))
 			{
 				KIL_Log("%s: ban ghi KEP o trang bi %d (item %d = %d) -> bo", KIL_Ten(m_PlayerIdx), nX, nIdx, m_EquipItem[nX]);
@@ -395,8 +399,10 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	case pos_equipback:
 		if (nX < 0 || nX >= itempart_num)
 			return 0;
-		if (m_AltEquipmentItem[nX] || item_equip != Item[nIdx].GetGenre() || !Fit(nIdx, nX))
+		if (m_AltEquipmentItem[nX] || (bInit && (item_equip != Item[nIdx].GetGenre() || !Fit(nIdx, nX))))
 		{
+			if (!bInit)	// luc CHAY: giu hanh vi cu
+				return 0;
 			// [MATDO 07/09] nhu pos_equip: kep -> bo + log; khac -> cuu vao hanh trang/ruong.
 			if (m_AltEquipmentItem[nX] && CungMotMon(nIdx, m_AltEquipmentItem[nX]))
 			{
@@ -416,6 +422,8 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		// khac -> cuu sang o trong khac (hanh trang, roi ruong) + log; het cho moi bo (co log).
 		if (!m_Room[room_equipment].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
 		{
+			if (!bInit)	// luc CHAY (nhat do, script...): giu hanh vi cu - nguoi goi tu xu ly that bai
+				return 0;
 			if (MonKepTrongLuoi(room_equipment, nIdx, nX, nY))
 				return 0;
 			if (!CuuMonKhiNap(i, nIdx, nPlace, nX, nY, room_equipment, "hanh trang"))
@@ -441,6 +449,8 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		// [MATDO 07/09] nhu hanh trang: kep -> bo + log; khac -> cuu (ruong, roi hanh trang) + log.
 		if (!m_Room[room_repository].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
 		{
+			if (!bInit)	// luc CHAY: giu hanh vi cu
+				return 0;
 			if (MonKepTrongLuoi(room_repository, nIdx, nX, nY))
 				return 0;
 			if (!CuuMonKhiNap(i, nIdx, nPlace, nX, nY, room_repository, "ruong"))
@@ -454,7 +464,9 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	case pos_exbox1room: // ruong mo rong 1
 		if (!m_Room[room_exbox1].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
 		{
-			if (MonKepTrongLuoi(room_exbox1, nIdx, nX, nY))	// [MATDO 07/09] kep -> bo; khac -> cuu; co log
+			if (!bInit)	// luc CHAY: giu hanh vi cu
+				return 0;
+			if (MonKepTrongLuoi(room_exbox1, nIdx, nX, nY))	// [MATDO 07/09] NAP DB: kep -> bo; khac -> cuu; co log
 				return 0;
 			if (!CuuMonKhiNap(i, nIdx, nPlace, nX, nY, room_exbox1, "ruong mo rong 1"))
 				return 0;
@@ -467,7 +479,9 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	case pos_exbox2room: // ruong mo rong 2
 		if (!m_Room[room_exbox2].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
 		{
-			if (MonKepTrongLuoi(room_exbox2, nIdx, nX, nY))	// [MATDO 07/09] kep -> bo; khac -> cuu; co log
+			if (!bInit)	// luc CHAY: giu hanh vi cu
+				return 0;
+			if (MonKepTrongLuoi(room_exbox2, nIdx, nX, nY))	// [MATDO 07/09] NAP DB: kep -> bo; khac -> cuu; co log
 				return 0;
 			if (!CuuMonKhiNap(i, nIdx, nPlace, nX, nY, room_exbox2, "ruong mo rong 2"))
 				return 0;
@@ -480,7 +494,9 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	case pos_exbox3room: // ruong mo rong 3
 		if (!m_Room[room_exbox3].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
 		{
-			if (MonKepTrongLuoi(room_exbox3, nIdx, nX, nY))	// [MATDO 07/09] kep -> bo; khac -> cuu; co log
+			if (!bInit)	// luc CHAY: giu hanh vi cu
+				return 0;
+			if (MonKepTrongLuoi(room_exbox3, nIdx, nX, nY))	// [MATDO 07/09] NAP DB: kep -> bo; khac -> cuu; co log
 				return 0;
 			if (!CuuMonKhiNap(i, nIdx, nPlace, nX, nY, room_exbox3, "ruong mo rong 3"))
 				return 0;
@@ -493,7 +509,9 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	case pos_equiproomex:  // mo rong hanh trang
 		if (!m_Room[room_equipmentex].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
 		{
-			if (MonKepTrongLuoi(room_equipmentex, nIdx, nX, nY))	// [MATDO 07/09] kep -> bo; khac -> cuu; co log
+			if (!bInit)	// luc CHAY: giu hanh vi cu
+				return 0;
+			if (MonKepTrongLuoi(room_equipmentex, nIdx, nX, nY))	// [MATDO 07/09] NAP DB: kep -> bo; khac -> cuu; co log
 				return 0;
 			if (!CuuMonKhiNap(i, nIdx, nPlace, nX, nY, room_equipmentex, "hanh trang mo rong"))
 				return 0;

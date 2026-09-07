@@ -56,6 +56,19 @@ Phiên DELTA swap lúc 00:50 bản `4b89f185` build từ main sau `225bf978` →
 
 Món "Xà Khiếp" sau khi vào rương đã được auto xử lý (không còn trong bản lưu 01:01), là đồ rác của bot nên không cần giữ. Lưu ý đọc số liệu: bản lưu `role_history` đầu tiên sau đăng nhập (00:58:25) là bản CŨ trước khi tắt máy chủ (thứ tự bản ghi trùng 00:48); bản 01:01:25 mới là trạng thái sau nạp (thứ tự đảo ngược, không còn bản ghi ma).
 
+## 6. Bổ sung b (10:00) — cứu/khử kép CHỈ khi nạp DB, commit `c37a0b1b`
+
+Đo 08:05–09:29 thấy 12 dòng `[MATDO] CaiBang: CUU mon ... tu hanh trang (place 3,x,y) -> ...` lúc **nhặt đồ**, không phải lúc nạp: client (auto) đề xuất ô túi đã bị chiếm trên máy chủ (lệch đồng bộ) → trước đây nhặt thất bại và auto nhặt lại sau; bản `225bf978` lại "cứu" sang ô khác, có lúc rơi thẳng vào rương (0,2)/(0,4) = đổi hành vi lúc chạy ngoài ý định (người chơi thấy món "biến" vào rương; bot có thể làm đầy rương).
+
+Sửa: `LoadPlayerItemList` truyền `bInit = TRUE`; `AddKIL` chỉ khử bản ghi kép / cứu / kiểm `Fit` khi `bInit`; lúc chạy (nhặt đồ, script phát thưởng, `c2sdnmbr`, xếp đồ) trùng ô → `return 0` như cũ, người gọi tự xử lý. `Hand()` tự chữa, `InsertEquipment` kiểm `Remove`, `KObjSet::Add` từ chối chỉ số rỗng giữ nguyên (đó mới là phần chặn gốc).
+
+| tệp | md5 | cỡ | ghi chú |
+|---|---|---|---|
+| `bin\server\CoreServer.dll.moi` | `db5d064f5e45994450ea7b91a1049429` | 18 481 664 | đặt 10:01, thay TOCDO e37ab486 (họ giữ `.moi.tocdo_*`); build cây chung = main `c37a0b1b` (SKEXP + TOCDO + MATDO b) |
+| `bin\client\CoreClient.dll.moi` | `563c127ea160dc5c883760a3a32b0da6` | 2 611 712 | đặt 10:01, thay ab99660c |
+
+Sau swap: dòng `CUU mon ... tu hanh trang` lúc chơi phải **hết**; chỉ còn (nếu có) lúc đăng nhập cho bản ghi ma cũ.
+
 ## 4. Còn mở (chờ chủ)
 
 - **Khôi phục đồ CaiBang** từ `role_history` id **693958** (19:03:00 06/09, trước bão: 14 mặc + 31 rương + 35 túi). Phải tắt nhân vật, mất đồ nhặt sau mốc đó. Chưa làm.
