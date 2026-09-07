@@ -426,3 +426,42 @@ Ma loi : 0xC0000005 (Access Violation), DOC dia chi 0x69CAAE93
 - Máy chủ (`ScriptFuns.cpp`): số hạng dùng biến đếm thật (ô ladder trống làm `i+1` nhảy số); `szBattleDesc` khởi tạo rỗng.
   **Chưa đặt `.moi` máy chủ**: khe đang có bản chờ 10:23 của phiên khác dựng từ commit mới hơn; mã đã lên main, ai build sau sẽ có.
 - `Game.exe.moi` = **ff05d3b4** (md5 bc19244a). Chủ chỉ cần `ChoiGame.bat`. Ini + 2 sprite là tệp rời, đã đặt trên cây chạy thật.
+## 19. 06/09 22:10 — Chủ báo 3 việc ở cửa sổ Thông Tin Trận (đợt tối)
+
+Chủ (06/09 tối): *"nút thu nhỏ chưa thu nhỏ được hoàn toàn / nền màu tối quá fix lại màu sáng hơn tí cho có thể
+nhìn xuyên / nhấn xem chiến báo chưa hiện thông tin lên đó nên bỏ luôn phần xem chiến báo đi"*.
+
+### 19a. Đo trên ảnh chụp THẬT trước khi sửa (không đoán)
+- Ba ảnh chủ gửi chính là `bin\client\JxCap\2026-09-06_{21-45-41, 21-46-55, 21-47-17}.jpg`, **1024×768** →
+  cửa sổ đang dùng mục `[Main1024]` (`Left=5 Top=215`).
+- Nút thu gọn của đợt 06/09 sáng **có chạy**: đo được dải còn đúng 221×27 px. "Chưa thu nhỏ hoàn toàn" là vì dải
+  đó **vẫn rộng nguyên 221 px**. Đã hỏi chủ và chốt: thu về **chỉ còn ô nút nhỏ ở góc**.
+- Nền: điểm ảnh trong thân đo được (24,23,19)…(29,28,24) trên nền đất (108,89,56) — khớp đúng công thức
+  alpha 232/255 = 91 % ⇒ gần như đặc. (Dải tiêu đề đo ra đúng (48,42,28) = alpha 255.)
+- Phát hiện thêm (chủ chưa báo): nhãn `[StageLabel]` **bị cắt cụt còn "Giai đo"**. Không phải hỏng chữ mà thiếu
+  bề rộng: `TEncodeText` (`Engine\Src\Text.cpp:468`) ghép **mọi byte > 0x80 với byte kế sau** thành một cặp rộng
+  gấp đôi, nên "Giai đoạn:" ở font 12 tốn ~65 px > `Width=62`.
+
+### 19b. Đã sửa
+| Việc | Chỗ sửa |
+|---|---|
+| 1. Thu nhỏ hoàn toàn | `UiTongKimInfo.{h,cpp}`: thêm `m_nWidthFull` / `m_nWidthFold`, đọc khoá mới `[Main] WidthFold=27`, `SetFold` gọi `SetSize(rộng, cao)` **cả hai chiều** và **ẩn cả tiêu đề** (chữ tiêu đề cần 221 px sẽ tràn ra ngoài ô 27 px). Ảnh `thongtin20_thu.spr` 221×27 → **27×27**, đúng bằng ô nút `[BtnFold]` (Left=6 Top=8 15×11) nên không phải dời nút. |
+| 2. Nền sáng hơn, nhìn xuyên | `ve_thongtin20.py`: thân `(20,20,20,232)` → `(42,40,34,168)` (~66 %, trên nền đất ra ~(65,62,53)); dải tiêu đề `(48,42,28,255)` → `(72,63,42,216)`; viền `(112,92,52)` → `(150,124,70)` cho khung vẫn rõ. Alpha nằm ngay trong RLE của SPR nên **chỉ cần đổi ảnh, không đụng mã vẽ**. |
+| 3. Bỏ xem Chiến Báo | Xoá hẳn `m_BtnReport` (thành viên, `AddChild`, `Init`, nhánh `WndProc`, `#include "UiBattleReport.h"`) và mục `[BtnReport]` trong ini. `KUiBattleReport` **vẫn còn đường mở riêng của nó**: `GameSpaceChangedNotify.cpp:810` (`GDCNI_UPDATE_BATTLE_BOX` với `nKind = 0`) — không bị mồ côi. |
+| Kèm theo | Cửa sổ thấp lại `Height 268 → 232` (hết hàng nút); `[StageLabel] Width 62 → 78`, `[Stage] Left 74 → 92 / Width 139 → 121`; `PtInWindow` khi **mở** chỉ còn **ô nút** bắt chuột — cả dải tiêu đề lẫn thân đều cho xuyên xuống thế giới game. |
+
+### 19c. Kiểm
+- `kiem_spr()` đọc ngược cả hai sprite: `221x232` và `27x27`, 1 khung, đủ 256 màu, RLE phủ đúng số dòng
+  (luật từ mục 17: mọi tệp nhị phân tự sinh phải đọc ngược kiểm trước khi đặt vào cây chạy thật).
+- Ghép thử sprite mới lên nền đất cắt từ chính ảnh chụp game: thân đã nhìn xuyên thấy địa hình/hiệu ứng.
+- Build `S3Client | Release | Win32` từ **origin/main 9e3f1c85**: 0 `error C`, link ra `Game.exe` 1.481.728 byte
+  (bước post-build chỉ báo lỗi copy sang `bin\client\release\` — thư mục đó không có trong worktree, vô hại).
+- **So chuỗi với `Game.exe` đang chạy** (4.201 chuỗi "có nghĩa" mỗi bên): chênh đúng 2 — mất `BtnReport`,
+  thêm `WidthFold` (cộng đường dẫn PDB). Bản đang chạy dựng từ `wt_vtcn`; bản mới là **tập cha**, không rơi
+  tính năng nào của phiên khác.
+- **Chưa thử trong trận thật** — phải đợi tới giờ Tống Kim.
+
+### 19d. Triển khai
+- `Game.exe.moi` md5 **d0cc24e19b79fdd7446e2bb4defadae7** đã đặt. Chủ chỉ cần `ChoiGame.bat`
+  (CoreClient.dll / máy chủ **không** đổi).
+- `UiTongKimInfo.ini` + 2 sprite là tệp rời, đã đặt trên cây chạy thật; bản cũ giữ ở `*.truoc_tkinfo_0609toi`.

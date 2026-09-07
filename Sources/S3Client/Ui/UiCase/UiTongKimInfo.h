@@ -12,7 +12,7 @@
 //   kind 8 = "n;hang|ten|phe|diem;..."        -> toi da TKINFO_MAX_ROW hang (top tich luy tu m_MissionLadder may chu)
 //   kind 9 = an (dung chung voi bang diem KUiTongKimScore)
 // May chu: ScriptFuns.cpp UpdateBattleInfo / UpdateBattleInfoAll (Lua lib_tktc.lua TK_GuiThongTin*).
-// Nut "Nhan xem Chien Bao" mo/dong bang chien bao co san KUiBattleReport (top 10 day du).
+// (Nut "Nhan xem Chien Bao" da bi bo o ban 06/09 toi - xem muc 3 ben duoi.)
 //
 // [TKINFO 06/09] Chu bao ba loi sau khi choi that:
 //   1. "con thieu hien ten cac cot"  -> 8 NHAN TINH khai bang KWndText TRAN nen khong bao gio hien:
@@ -26,6 +26,20 @@
 //      bao duoc them nut "Dong" cua rieng no (UiBattleReport.*) + tu dong khi het tran (kind 9).
 //   Kem: PtInWindow chi bat chuot o dai tieu de + hai nut, con lai cho xuyen xuong the gioi game (truoc day
 //   cua so TOPMOST 221x268 nuot moi cu bam vao goc trai man hinh suot tran).
+//
+// [TKINFO 06/09 toi] Chu bao tiep ba viec sau khi choi that (anh JxCap 21:45-21:47):
+//   1. "nut thu nho chua thu nho duoc hoan toan" -> ban 06/09 chi ha CHIEU CAO (con dai 221x27 rong bang ca
+//      cua so). Nay thu ca BE NGANG: chi con dung o nut 27x27 ([Main] WidthFold/HeightFold), tieu de cung an
+//      (chu can 221 px se tran ra ngoai o). Bam lai o do thi bung ra nhu cu.
+//   2. "nen mau toi qua ... cho co the nhin xuyen" -> ve lai thongtin20.spr: than sang hon va alpha 232 -> 168
+//      (~66% -> nhin thay dia hinh ben duoi), dai tieu de 255 -> 216. Alpha nam trong RLE cua SPR, xem ghi_spr.py.
+//   3. "nhan xem chien bao chua hien thong tin ... bo luon phan xem chien bao di" -> XOA han nut [BtnReport]
+//      (thanh vien, AddChild, Init, nhanh WndProc, muc ini). KUiBattleReport VAN con duong mo rieng cua no:
+//      GameSpaceChangedNotify.cpp GDCNI_UPDATE_BATTLE_BOX voi nKind = 0.
+//   Kem theo: cua so thap lai 268 -> 232 (khong con hang nut), va [StageLabel] rong 62 -> 78 vi "Giai doan:"
+//   bi cat cut con "Giai do" (font 12: 5 ky tu ASCII ~6,5 px + 2 cap byte cao ~13 px + ":" = 65 px > 62 px;
+//   TEncodeText Text.cpp:468 ghep MOI byte > 0x80 voi byte ke sau thanh mot cap rong gap doi).
+//   PtInWindow: khi MO chi con o nut thu gon bat chuot, ca than cua so cho xuyen xuong the gioi game.
 //////////////////////////////////////////////////////////////////////
 #ifndef UITONGKIMINFO_H
 #define UITONGKIMINFO_H
@@ -34,7 +48,6 @@
 #include "../elem/wndimage.h"
 #include "../elem/wndtext.h"
 #include "../Elem/WndButton.h"
-#include "../Elem/WndLabeledButton.h"
 
 #define TKINFO_MAX_ROW	5
 
@@ -76,12 +89,13 @@ private:
 	KWndText80	m_Name[TKINFO_MAX_ROW];		// [Name_i]  ten 12 ky tu TCVN3 co the toi 24 byte -> 80 cho thoai mai
 	KWndText32	m_Camp[TKINFO_MAX_ROW];		// [Camp_i]
 	KWndText32	m_Point[TKINFO_MAX_ROW];	// [Point_i]
-	KWndLabeledButton m_BtnReport;	// [BtnReport] Label=Nhan xem Chien Bao (nut chu) -> bat/tat KUiBattleReport
 	KWndButton	m_BtnFold;			// [BtnFold]   nut thu gon o dai tieu de (switch.spr 15x11, 3 khung)
 	char	m_szPhase[4][32];		// [Phase] P0..P3 (TCVN3)
 	char	m_szCamp[4][16];		// [Camp]  C0..C3 (TCVN3: Tong / Kim)
 	char	m_szImgFull[128];		// [Main] Image=      nen day du 221x268
 	char	m_szImgFold[128];		// [Main] ImageFold=  nen khi thu gon 221x27
+	int		m_nWidthFull;			// be ngang khi mo ([Main] Width)
+	int		m_nWidthFold;			// [TKINFO 06/09 toi] be ngang khi thu gon ([Main] WidthFold, mac dinh 27)
 	int		m_nHeightFull;			// chieu cao khi mo ([Main] Height)
 	int		m_nHeightFold;			// chieu cao khi thu gon ([Main] HeightFold, mac dinh 27)
 	int		m_bFold;				// dang thu gon?
