@@ -6913,13 +6913,14 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 			}
 			else
 			{
-				// [VTCN 06/09] bang F11 muc Van tieu: dan duong (vt_goto_canhan) / nut Bo nhiem vu
-				// (vt_quit_canhan, vt_quit_bang) -> script\event\lmbiaoche\vt_chinam.lua. Chep ra bo dem
+				// [VTCN 06/09 v2] bang F11 muc Van tieu: nut Bo nhiem vu (vt_quit_canhan, vt_quit_bang)
+				// -> script\event\lmbiaoche\vt_chinam.lua. (Khong con vt_goto_canhan: chu game cam nhay map,
+				// client tu di bang phu ve thanh + Xa Phu.) Chep ra bo dem
 				// co ket thuc vi szFunc[32] tu client khong chac co NUL (khuon case 7).
 				char szFunVT[sizeof(pUiCmd->szFunc) + 1];
 				memcpy(szFunVT, pUiCmd->szFunc, sizeof(pUiCmd->szFunc));
 				szFunVT[sizeof(pUiCmd->szFunc)] = 0;
-				if (!strcmp(szFunVT, "vt_goto_canhan") || !strcmp(szFunVT, "vt_quit_canhan") || !strcmp(szFunVT, "vt_quit_bang"))
+				if (!strcmp(szFunVT, "vt_quit_canhan") || !strcmp(szFunVT, "vt_quit_bang"))
 					Player[nIndex].ExecuteScript("\\script\\event\\lmbiaoche\\vt_chinam.lua", szFunVT, 0);
 			}
 			break;

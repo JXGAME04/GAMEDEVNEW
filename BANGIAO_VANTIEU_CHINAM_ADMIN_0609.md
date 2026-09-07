@@ -16,23 +16,34 @@ Trong lúc làm, phát hiện **nhánh cá nhân của đợt port không thể 
 
 ---
 
+## 1b. CẬP NHẬT 06/09 TỐI (v2) — CHỦ CHỐT HAI LUẬT MỚI
+
+1. **Chỉ nam KHÔNG được nhảy map.** Bấm dòng nhiệm vụ nay chỉ đi bằng đường người chơi vẫn đi: đang ở **thành/thôn** (map có bến Xa Phu trong `g_MoveStation`) → chạy tới Xa Phu, tự chọn "Những thành thị đã đi qua" → tên bến của map đích (cột DESC `settings\Station.txt`, ví dụ "Trấn Long Môn", "Lâm An Phủ"; tốn tiền xe như thường) → sang map rồi đi bộ tới NPC; đang ở **map luyện công** → dùng phù về thành trước, về tới thành mới ra Xa Phu. Máy chủ không còn `vt_goto_canhan` (đã xoá khỏi `vt_chinam.lua` và danh sách trắng C++); nhánh bang chọn thành = thành có `szOwner` (CITYINFO) trùng tên bang mình.
+2. **Map sự kiện chặn mọi tự-di-chuyển của Chỉ nam** (Dã Tẩu → Xa Phu, Sát Thủ → boss, Vận tiêu): `TG_ChanMapSuKien` dùng bảng `KMapSuKien.h` (`WA_MapSuKien`), báo "[Chỉ nam] Đang ở map sự kiện (<tên>) - Chỉ nam không tự di chuyển ở đây."
+
+Đồng thời phiên SAPXEP đã **sắp xếp lại cây script** (restart 18:04): `script\activitysys` → `script\tinhnang\activitysys`, `script\item` → `script\vatpham` (lệnh bài + bộ test vận tiêu nằm ở `script\vatpham\`), `script\event\lmbiaoche` → `script\tinhnang\sukien\lmbiaoche`; đường cũ chạy qua bí danh `script\_duongdan_cu.txt` (dòng `--@ cũ=mới`, engine R2). Mọi đường dẫn ở các mục dưới hiểu theo bí danh; **ghi tệp mới phải ghi vào đường dẫn mới** rồi chạy `tools\sapxep\kiem_duongdan_cu.py` (đã chạy sau khi dời `vt_chinam.lua` v2: 1238 bí danh, 0 tệp ở đường cũ, 0 đích thiếu).
+
+**Máy chủ 18:04 đang chạy `CoreServer.dll` 6ba06754 (phiên SAPXEP build từ origin/main sau khi tôi đẩy) = đã có engine xe tiêu + bí danh + lệnh `vt_quit_*`; client 18:05 đang chạy `Game.exe` 3c4daa2c + `CoreClient.dll` 8afed3eb (v1 của tôi).** Bản v2 (không nhảy map + chặn map sự kiện) chỉ đổi **client** → chủ chỉ cần `ChoiGame.bat` lần nữa; `CoreServer.dll.moi` v2 (bỏ `vt_goto_canhan`, siêu tập origin/main c4761ea5) đặt sẵn cho lần restart sau, không bắt buộc.
+
 ## 2. CÁCH CHẠY (chủ làm)
 
 | Bước | Lệnh | Ghi chú |
 |---|---|---|
-| Máy chủ | tắt GameServer → `bin\server\ChayGameServer.bat` | `CoreServer.dll.moi` mới đã đặt (mục 2.1), build từ `origin/main` 75b1091d (đã có BOTNOI + cache Include LUA54 + vận tiêu + relay) + nhánh này. Bản `.moi` 15:21 của phiên LUA54b (có engine xe tiêu nhưng thiếu 3 lệnh `vt_*` của F11) được **đổi tên** `CoreServer.dll.moi.lua54b_4fcb02f9_1521` (không xoá). `Lua54Dll.dll.moi` (server + client) của phiên LUA54b **giữ nguyên** — bản tôi build link đúng thư viện đó (`Lib\lua54` cùng commit). Bản 14:23 của phiên relay (`.moi.relay_f807aa12_1423`) **không có engine xe tiêu**, đã được phiên khác đổi tên trước. |
-| Client | thoát game → `bin\client\ChoiGame.bat` | `Game.exe.moi` + `CoreClient.dll.moi` đã đặt. `Ui\uitasklist.ini` đã thêm 3 mục (tệp rời, không cần pak). |
+| Máy chủ | (không bắt buộc) tắt GameServer → `bin\server\ChayGameServer.bat` | Nhận `CoreServer.dll.moi` v2 61bc3e0f; chỉ khác bản đang chạy ở chỗ bỏ lệnh chết `vt_goto_canhan`. Máy chủ 18:04 đã có mọi thứ cần cho test. |
+| Client | **BẮT BUỘC** thoát game → `bin\client\ChoiGame.bat` | Nhận `Game.exe.moi` acc36aba + `CoreClient.dll.moi` 96dc5115 (v2: không nhảy map, chặn map sự kiện). `Ui\uitasklist.ini` đã có 3 mục. |
 | Sau khi lên | Lệnh bài admin → "Bộ test hoạt động" → "Vận tiêu Long Môn Tiêu Cục" | mục 5 |
 
-### 2.1 Nhị phân (build từ `origin/main` + nhánh này, worktree sạch)
+### 2.1 Nhị phân v2 (build từ `origin/main` c4761ea5 = đã có SAPXEP R2 bí danh + LUA54b + BOTNOI + vận tiêu + relay, cộng nhánh này; worktree sạch)
 
-| Tệp | Đặt ở | SHA-256 (8 đầu) | Có đủ |
+| Tệp | Đặt ở | SHA-256 (8 đầu) | Có đủ (kiểm bằng `ReverseTools\vantieu\deploy_vtcn2_0609.py`) |
 |---|---|---|---|
-| `CoreServer.dll.moi` | `bin\server` | **a9db7810** (18.450.432 B, 15:34) | CreateBiaoChe/BC_SetEnable (xe tiêu), AUC_MsgTong, CL_Cong, UpdateBattleInfo, st3_goboss, Lua54Dll, [RELAYHT], LUA_CALL (LUA54b), BOTNOI, **vt_goto_canhan** |
-| `Game.exe.moi` | `bin\client` | **3c4daa2c** (1.480.704 B, 15:34) | NewTask/F11, tg_quit/st3_quit, **vt_quit_canhan/vt_quit_bang + bài hướng dẫn vận tiêu**; `re_pe_crt` UCRT-RELEASE đúng |
-| `CoreClient.dll.moi` | `bin\client` | **8afed3eb** (2.568.192 B, 15:34) | TG_VanTieu (dẫn đường), st3_goboss |
+| `CoreServer.dll.moi` | `bin\server` | **61bc3e0f** (18.455.552 B, 18:12) | CreateBiaoChe/BC_SetEnable, AUC_MsgTong, CL_Cong, UpdateBattleInfo, st3_goboss, Lua54Dll, [RELAYHT], LUA_CALL, `_duongdan_cu` (R2), **vt_quit_canhan/vt_quit_bang**, KHÔNG còn vt_goto_canhan. Không bắt buộc swap ngay: bản 6ba06754 đang chạy chỉ thừa lệnh chết. |
+| `Game.exe.moi` | `bin\client` | **acc36aba** (1.481.216 B, 18:12) | NewTask/F11, tg_quit/st3_quit, vt_quit_*, bài hướng dẫn vận tiêu v2 (gợi ý Xa Phu / phù về thành / map sự kiện); `re_pe_crt` UCRT-RELEASE đúng |
+| `CoreClient.dll.moi` | `bin\client` | **96dc5115** (2.577.408 B, 18:12) | TG_VanTieu v2 (6 pha, không nhảy map), TG_ChanMapSuKien cho Dã Tẩu/Sát Thủ/Vận tiêu, tên bến Xa Phu |
 
-Cặp thư viện: `Lib\lua54\x64\Lua54Dll.dll` 2fe07c19 = `bin\server\Lua54Dll.dll.moi`; `Lib\lua54\Win32\Lua54Dll.dll` 2e8a2677 = `bin\client\Lua54Dll.dll.moi` (của phiên LUA54b, giữ nguyên để swap cùng lúc).
+Cặp thư viện: `Lib\lua54\x64\Lua54Dll.dll` 5db18c30 = `bin\server\Lua54Dll.dll` đang chạy; `Lib\lua54\Win32\Lua54Dll.dll` 462453cf = `bin\client\Lua54Dll.dll` đang chạy (không cần đổi thư viện).
+
+Bản v1 (15:34: CoreServer a9db7810, Game 3c4daa2c, CoreClient 8afed3eb) đã được chủ swap lúc 18:04/18:05; CoreServer v1 sau đó bị phiên SAPXEP thay bằng 6ba06754 (siêu tập, có bí danh) trước khi restart.
 
 Kiểm nhanh sau restart: `Logs\ScriptError.log` không có dòng mới về `lmbiaoche`, `longmenbiaoju`, `config\129`, `lenhbaiadmin`; vào game bấm **F11** thấy nhóm "Long Môn Tiêu Cục".
 

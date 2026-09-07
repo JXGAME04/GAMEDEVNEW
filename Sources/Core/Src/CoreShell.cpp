@@ -3317,6 +3317,8 @@ static int DT_WalkTo(int nPlayerIdx, int nX, int nY, int nNear, UINT uCurTime)
 // chung cua engine Da Tau: g_MoveStation / DT_FindNpcName / DT_WalkTo / DialogNpc.
 //---------------------------------------------------------------------------
 static void DT_Answer(int nPlayerIdx, int nIdx);	// dinh nghia o duoi (dung chung voi engine)
+#include "KVanTieuMsg.h"	// [VTCN 06/09] thong bao [Chi nam] + ten ben Xa Phu (sinh tu settings\Station.txt)
+static int TG_ChanMapSuKien(int nPlayerIdx);	// [VTCN 06/09] dinh nghia sau KMapSuKien.h: 1 = dang o map su kien (da bao)
 
 static int	g_nTGXaFuOn = 0;
 static UINT	g_uTGXaFuNext = 0;
@@ -3348,6 +3350,8 @@ static int TG_XaFuStart()
 		DT_Msg(nPlayerIdx, "<color=Yellow>[ChØ nam] Auto D· TÈu ®ang ch¹y - ®Ó auto tù lo viÖc di chuyÓn.");
 		return 0;
 	}
+	if (TG_ChanMapSuKien(nPlayerIdx))	// [VTCN 06/09] map su kien: Chi nam khong tu di chuyen
+		return 0;
 	int nMap = SubWorld[0].m_SubWorldID;
 	MapStation::iterator it = g_MoveStation.find(nMap);
 	if (it == g_MoveStation.end() || it->second.empty())
@@ -3456,6 +3460,21 @@ static void TG_XaFuTick()
 #include "KTuiDuocPham.h"		// ban do KHONG mo duoc Tui duoc pham (sinh tu tuiduocpham.lua)
 #include "KMapSuKien.h"	// bang MAP SU KIEN (sinh tu map_type.txt cua may chu)
 
+// [VTCN 06/09] Chu game: MOI tu-di-chuyen cua bang Chi nam (Xa Phu Da Tau, boss Sat Thu,
+// van tieu) bi CHAN khi dang o MAP SU KIEN (KMapSuKien.h, nChan = 1). Tra 1 va bao nguoi choi.
+static int WA_MapSuKien(int nPlayerIdx);	// dinh nghia duoi (bang KMapSuKien.h)
+static int TG_ChanMapSuKien(int nPlayerIdx)
+{
+	int nSK = WA_MapSuKien(nPlayerIdx);
+	if (nSK <= 0)
+		return 0;
+	char szBuf[256];
+	_snprintf(szBuf, sizeof(szBuf) - 1, VT_MSG_SUKIEN_FMT, s_aTenSuKien[nSK - 1]);
+	szBuf[sizeof(szBuf) - 1] = 0;
+	DT_Msg(nPlayerIdx, szBuf);
+	return 1;
+}
+
 //---------------------------------------------------------------------------
 // [3HD C24] Bam nhiem vu 'San Boss Sat Thu' tren F11 -> dan duong DUNG luong
 // nguoi choi that: chay toi Xa Phu -> BAM MENU (luyen cong -> moc -> ten map)
@@ -3519,6 +3538,8 @@ static int TG_SatThuStart()
 		return 0;
 	}
 	if (Player[nPlayerIdx].m_nIndex <= 0)
+		return 0;
+	if (TG_ChanMapSuKien(nPlayerIdx))	// [VTCN 06/09] map su kien: Chi nam khong tu di chuyen
 		return 0;
 	int nBoss = (int)Player[nPlayerIdx].m_cTask.GetSaveVal(1082);
 	if (nBoss < 1 || nBoss > ST3_POS_MAX)
@@ -3741,27 +3762,34 @@ static void TG_SatThuTick()
 }
 
 //---------------------------------------------------------------------------
-// [VTCN 06/09] Bam muc Van tieu tren bang F11 -> tu dan duong toi NPC nhan nhiem vu:
-//   nhanh CA NHAN (TaskId 11): chua nhan -> Ong chu Tieu cuc (Long Mon tran; khac map thi
-//     nho may chu thue xe qua UI_CMD 'vt_goto_canhan'); da nhan, xe chua xuat phat -> Tieu Su
-//     diem dau (may chu dua di, mien phi); xe da xuat phat -> Tieu Su diem cuoi neu cung map.
-//   nhanh BANG (TaskId 12): chua giu xe -> Tiep Dan ap Tieu Bang o thanh dang dung (ngoai
-//     thanh thi dung phu ve thanh nhu TG_SatThu pha 10); dang giu xe -> Nhan Hang diem cuoi
-//     neu cung map (xe phai di bo, khong dan qua ban do).
-// So lieu KVanTieuPos.h sinh tu extend.lua cua may chu (task 4179 = tuyen*10 + dao chieu,
-// 4180 = moc xuat phat). Tai dung DT_WalkTo / TG_SatThuTimNpc / DT_UsePortal. Bam lai = huy.
+// [VTCN 06/09 v2] Bam muc Van tieu tren bang F11 -> tu dan duong toi NPC nhan nhiem vu.
+// Chu game 06/09: "KHONG DUOC NHAY MAP": dang o thanh/thon -> chay toi Xa Phu, chon
+// 'thanh thi da di qua' -> ten ben cua map dich; dang o map luyen cong -> dung phu ve
+// thanh truoc roi moi ra Xa Phu; toi map dich thi di bo toi NPC. Map su kien: khong
+// dan duong (TG_ChanMapSuKien, ap cho ca Da Tau / Sat Thu / van tieu).
+//   nhanh CA NHAN (TaskId 11): chua nhan -> Ong chu Tieu cuc (Tran Long Mon, map 121);
+//     da nhan, xe chua xuat phat -> Tieu Su diem dau; xe da xuat phat -> Tieu Su diem
+//     cuoi neu dang cung map (xe phai di bo).
+//   nhanh BANG (TaskId 12): chua giu xe -> Tiep Dan o THANH BANG DANG CHIEM
+//     (g_ClientCityInfo[].szOwner == ten bang cua minh, CITYINFO 21/08); dang giu xe ->
+//     Nhan Hang diem cuoi neu cung map.
+// So lieu KVanTieuPos.h (extend.lua) + ten ben Xa Phu KVanTieuMsg.h (settings\Station.txt).
+// Tai dung do nghe Da Tau: DT_WalkTo / DT_FindNpcName / DT_TramGan / DT_UsePortal /
+// DT_Split / DT_FindAns / DT_Answer (khuon TG_SatThu pha 2-4). Bam lai = huy.
 //---------------------------------------------------------------------------
 #include "KVanTieuPos.h"
-#include "KVanTieuMsg.h"
 
 static int  g_nTGVTOn = 0;
-static int  g_nTGVTPhase = 0;		// 1 doi may chu doi map, 2 doi phu ve thanh, 3 di bo toi NPC
-static int  g_nTGVTMap = 0;			// map dich
+static int  g_nTGVTPhase = 0;	// 10 phu ve thanh; 20 di toi Xa Phu; 21 chon 'thanh thi da di qua'; 22 chon ten ben; 23 doi doi map; 3 di bo toi NPC
+static int  g_nTGVTMap = 0;		// map dich
 static int  g_nTGVTX = 0, g_nTGVTY = 0;	// o cell NPC dich
-static int  g_nTGVTTpl = 0;			// template NPC dich
+static int  g_nTGVTTpl = 0;		// template NPC dich
 static const char* g_szTGVTTen = "";
 static int  g_nTGVTTry = 0;
+static int  g_nTGVTDlgTry = 0;
 static UINT g_uTGVTNext = 0;
+static UINT g_uTGVTDlgSeen = 0;
+static int  g_nTGVTNpcXaPhu = 0;
 
 static void TG_VanTieuStop(const char* szMsg)
 {
@@ -3779,6 +3807,15 @@ static int TG_VanTieuDiemTiepDan(int nMap)
 	return 0;
 }
 
+// ten ben Xa Phu cua map (settings\Station.txt cot DESC) - NULL neu map khong co ben
+static const char* TG_VanTieuTenBen(int nMap)
+{
+	for (int i = 0; i < VT_XAPHU_SO; i++)
+		if (s_nVTXaPhuMap[i] == nMap)
+			return s_szVTXaPhuTen[i];
+	return NULL;
+}
+
 static void TG_VanTieuDatDich(int nMap, int nX, int nY, int nTpl, const char* szTen)
 {
 	g_nTGVTMap = nMap;
@@ -3786,6 +3823,45 @@ static void TG_VanTieuDatDich(int nMap, int nX, int nY, int nTpl, const char* sz
 	g_nTGVTY = nY;
 	g_nTGVTTpl = nTpl;
 	g_szTGVTTen = szTen;
+}
+
+// chon mot muc trong thoai Xa Phu dang mo (khuon TG_SatThuPickAns):
+// 1 da bam, 0 chua co thoai moi (cu ~3,2 s go lai NPC), -1 thoai co ma KHONG co muc
+static int TG_VanTieuPickAns(int nPlayerIdx, const char* szMark)
+{
+	if (g_sDTCap.uDlgSeq == g_uTGVTDlgSeen)
+	{
+		if (g_nTGVTNpcXaPhu > 0 && (++g_nTGVTDlgTry % 8) == 0)
+			Player[nPlayerIdx].DialogNpc(g_nTGVTNpcXaPhu);
+		return 0;
+	}
+	g_uTGVTDlgSeen = g_sDTCap.uDlgSeq;
+	g_nTGVTDlgTry = 0;
+	char szBuf[2048];
+	char* apAns[24];
+	g_StrCpyLen(szBuf, g_sDTCap.szDlg, sizeof(szBuf));
+	int nAns = DT_Split(szBuf, apAns, 24);
+	int nOpt = DT_FindAns(apAns, nAns, szMark);
+	if (nOpt < 0)
+		return -1;
+	DT_Answer(nPlayerIdx, nOpt);
+	return 1;
+}
+
+// map dang dung co ben Xa Phu (bang g_MoveStation cua engine Da Tau) khong
+static int TG_VanTieuCoXaPhu(int nMap)
+{
+	MapStation::iterator it = g_MoveStation.find(nMap);
+	return (it != g_MoveStation.end() && !it->second.empty()) ? 1 : 0;
+}
+
+static void TG_VanTieuBaoXaPhu(int nPlayerIdx)
+{
+	const char* szBen = TG_VanTieuTenBen(g_nTGVTMap);
+	char szBuf[256];
+	_snprintf(szBuf, sizeof(szBuf) - 1, VT_MSG_XAPHU_DI_FMT, szBen ? szBen : "");
+	szBuf[sizeof(szBuf) - 1] = 0;
+	DT_Msg(nPlayerIdx, szBuf);
 }
 
 // nTaskId = 11 (ca nhan) / 12 (bang). Tra 1 neu vua bat.
@@ -3804,8 +3880,10 @@ static int TG_VanTieuStart(int nTaskId)
 		DT_Msg(nPlayerIdx, VT_MSG_DT);
 		return 0;
 	}
+	if (TG_ChanMapSuKien(nPlayerIdx))
+		return 0;
 	int nMapNow = SubWorld[0].m_SubWorldID;
-	int nFlag = (int)Player[nPlayerIdx].m_cTask.GetSaveVal(4179);	// TSK_LMBJTaskFlag
+	int nFlag = (int)Player[nPlayerIdx].m_cTask.GetSaveVal(4179);	// TSK_LMBJTaskFlag = tuyen*10 + dao chieu
 	int nTuyen = nFlag / 10;
 	int nDao = nFlag % 10;
 	int nSao = 0, nDiemDau = 0, nDiemCuoi = 0;
@@ -3816,9 +3894,6 @@ static int TG_VanTieuStart(int nTaskId)
 		nDiemCuoi = nDao ? s_nVTTuyenDau[nTuyen] : s_nVTTuyenCuoi[nTuyen];
 	}
 	int nXuatPhat = (int)Player[nPlayerIdx].m_cTask.GetSaveVal(4180);	// TSK_LMBJTaskTime
-	g_nTGVTTry = 0;
-	g_uTGVTNext = 0;
-	g_nTGVTPhase = 3;
 
 	if (nTaskId == 11)
 	{
@@ -3834,26 +3909,10 @@ static int TG_VanTieuStart(int nTaskId)
 				TG_VanTieuDatDich(nMapNow, s_nVTDiemX[nDiemCuoi], s_nVTDiemY[nDiemCuoi], VT_TPL_TIEUSU, VT_NPC_TIEUSU);
 			}
 			else
-			{
 				TG_VanTieuDatDich(s_nVTDiemMap[nDiemDau], s_nVTDiemX[nDiemDau], s_nVTDiemY[nDiemDau], VT_TPL_TIEUSU, VT_NPC_TIEUSU);
-				if (g_nTGVTMap != nMapNow)
-				{
-					DT_Msg(nPlayerIdx, VT_MSG_CN_DIEMDAU);
-					SendUiCmdScript(6, (char*)"vt_goto_canhan");	// may chu dua toi Tieu Su diem dau (mien phi)
-					g_nTGVTPhase = 1;
-				}
-			}
 		}
 		else
-		{
 			TG_VanTieuDatDich(VT_MAP_LONGMON, VT_CQ_X, VT_CQ_Y, VT_TPL_CHUONGQUY, VT_NPC_CHUONGQUY);
-			if (nMapNow != VT_MAP_LONGMON)
-			{
-				DT_Msg(nPlayerIdx, VT_MSG_XE_THUE);
-				SendUiCmdScript(6, (char*)"vt_goto_canhan");	// may chu thue xe (tru tien) toi Long Mon tran
-				g_nTGVTPhase = 1;
-			}
-		}
 	}
 	else
 	{
@@ -3868,17 +3927,55 @@ static int TG_VanTieuStart(int nTaskId)
 		}
 		else
 		{
-			int nDiem = TG_VanTieuDiemTiepDan(nMapNow);
-			if (nDiem)
-				TG_VanTieuDatDich(nMapNow, s_nVTDiemX[nDiem], s_nVTDiemY[nDiem], VT_TPL_TIEPDAN, VT_NPC_TIEPDAN);
-			else
+			// thanh bang minh dang chiem (ban sao 7 thanh CITYINFO tren client)
+			char szTong[64];
+			szTong[0] = 0;
+			Player[nPlayerIdx].m_cTong.GetTongName(szTong);
+			if (!szTong[0])
 			{
-				TG_VanTieuDatDich(0, 0, 0, VT_TPL_TIEPDAN, VT_NPC_TIEPDAN);	// chot map sau khi ve thanh
-				DT_Msg(nPlayerIdx, VT_MSG_PHU);
-				g_nTGVTPhase = 2;
+				DT_Msg(nPlayerIdx, VT_MSG_BANG_KHONGBANG);
+				return 0;
 			}
+			int nMapBang = 0;
+			for (int c = 1; c <= 7; c++)
+			{
+				if (g_ClientCityInfo[c].nCityId && g_ClientCityInfo[c].szOwner[0] &&
+					strcmp(g_ClientCityInfo[c].szOwner, szTong) == 0)
+				{
+					nMapBang = g_ClientCityInfo[c].nMapId;
+					break;
+				}
+			}
+			if (!nMapBang)
+			{
+				DT_Msg(nPlayerIdx, VT_MSG_BANG_KHONGTHANH);
+				return 0;
+			}
+			int nDiem = TG_VanTieuDiemTiepDan(nMapBang);
+			if (!nDiem)
+			{
+				DT_Msg(nPlayerIdx, VT_MSG_KHONG_NPC);
+				return 0;
+			}
+			TG_VanTieuDatDich(nMapBang, s_nVTDiemX[nDiem], s_nVTDiemY[nDiem], VT_TPL_TIEPDAN, VT_NPC_TIEPDAN);
 		}
 	}
+	if (g_nTGVTMap != nMapNow && !TG_VanTieuTenBen(g_nTGVTMap))
+	{
+		DT_Msg(nPlayerIdx, VT_MSG_XAPHU_KHONGBEN);
+		return 0;
+	}
+	g_nTGVTTry = 0;
+	g_nTGVTDlgTry = 0;
+	g_uTGVTNext = 0;
+	g_nTGVTNpcXaPhu = 0;
+	g_uTGVTDlgSeen = g_sDTCap.uDlgSeq;
+	if (nMapNow == g_nTGVTMap)
+		g_nTGVTPhase = 3;
+	else if (TG_VanTieuCoXaPhu(nMapNow))
+		g_nTGVTPhase = 20;
+	else
+		g_nTGVTPhase = 10;
 	g_nTGVTOn = 1;
 	if (g_nTGVTPhase == 3)
 	{
@@ -3887,6 +3984,10 @@ static int TG_VanTieuStart(int nTaskId)
 		szBuf[sizeof(szBuf) - 1] = 0;
 		DT_Msg(nPlayerIdx, szBuf);
 	}
+	else if (g_nTGVTPhase == 20)
+		TG_VanTieuBaoXaPhu(nPlayerIdx);
+	else
+		DT_Msg(nPlayerIdx, VT_MSG_PHU);
 	return 1;
 }
 
@@ -3904,34 +4005,27 @@ static void TG_VanTieuTick()
 	if (uCur < g_uTGVTNext)
 		return;
 	g_uTGVTNext = uCur + 400;
-	if (++g_nTGVTTry > 450)	// ~3 phut
+	if (++g_nTGVTTry > 900)	// ~6 phut ca chuoi
 	{
 		TG_VanTieuStop(VT_MSG_LAU);
 		return;
 	}
 	int nMapNow = SubWorld[0].m_SubWorldID;
-	// --- pha 1: doi may chu doi map (thue xe / dua toi Tieu Su) ---
-	if (g_nTGVTPhase == 1)
+	// bat ky pha nao: da dung map dich thi chuyen sang di bo
+	if (g_nTGVTPhase != 3 && nMapNow == g_nTGVTMap)
 	{
-		if (nMapNow == g_nTGVTMap)
-		{
-			g_nTGVTPhase = 3;
-			g_nTGVTTry = 0;
-			return;
-		}
-		if (g_nTGVTTry > 25)	// ~10 giay khong doi map: thieu tien / may chu tu choi
-			TG_VanTieuStop(VT_MSG_CHUYENMAP);
+		g_nTGVTPhase = 3;
+		g_nTGVTTry = 0;
 		return;
 	}
-	// --- pha 2: ngoai thanh -> dung phu ve thanh roi chot Tiep Dan cua thanh do ---
-	if (g_nTGVTPhase == 2)
+	// --- pha 10: map luyen cong -> dung phu ve thanh, toi map co Xa Phu thi sang pha 20 ---
+	if (g_nTGVTPhase == 10)
 	{
-		int nDiem = TG_VanTieuDiemTiepDan(nMapNow);
-		if (nDiem)
+		if (TG_VanTieuCoXaPhu(nMapNow))
 		{
-			TG_VanTieuDatDich(nMapNow, s_nVTDiemX[nDiem], s_nVTDiemY[nDiem], VT_TPL_TIEPDAN, VT_NPC_TIEPDAN);
-			g_nTGVTPhase = 3;
+			g_nTGVTPhase = 20;
 			g_nTGVTTry = 0;
+			TG_VanTieuBaoXaPhu(nPlayerIdx);
 			return;
 		}
 		if ((g_nTGVTTry % 12) == 1)	// ~5 giay thu dung phu mot lan
@@ -3942,6 +4036,64 @@ static void TG_VanTieuTick()
 				return;
 			}
 		}
+		return;
+	}
+	// --- pha 20: chay toi Xa Phu gan nhat roi mo thoai ---
+	if (g_nTGVTPhase == 20)
+	{
+		MapStation::iterator it = g_MoveStation.find(nMapNow);
+		if (it == g_MoveStation.end() || it->second.empty())
+		{
+			g_nTGVTPhase = 10;	// bi keo ra map khong co ben
+			return;
+		}
+		sStation& s = DT_TramGan(it->second, nPlayerIdx);
+		int nIdx = DT_FindNpcName(nPlayerIdx, "xa phu", s.x, s.y, 400);
+		if (nIdx)
+		{
+			int nX, nY, dX, dY;
+			Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
+			Npc[nIdx].GetMpsPos(&dX, &dY);
+			if (g_GetDistance(nX, nY, dX, dY) <= 160)
+			{
+				g_nTGVTNpcXaPhu = nIdx;
+				g_nTGVTTry = 0;
+				g_nTGVTDlgTry = 0;
+				g_uTGVTDlgSeen = g_sDTCap.uDlgSeq;
+				Player[nPlayerIdx].DialogNpc(nIdx);
+				g_nTGVTPhase = 21;
+				return;
+			}
+			DT_WalkTo(nPlayerIdx, dX, dY, 128, uCur);
+			return;
+		}
+		DT_WalkTo(nPlayerIdx, s.x, s.y, 200, uCur);
+		return;
+	}
+	// --- pha 21/22: bam 2 cap menu cua Xa Phu: 'thanh thi da di qua' -> ten ben map dich ---
+	if (g_nTGVTPhase == 21 || g_nTGVTPhase == 22)
+	{
+		const char* szMark = (g_nTGVTPhase == 21) ? VT_MENU_THANHTHI : TG_VanTieuTenBen(g_nTGVTMap);
+		int nRet = TG_VanTieuPickAns(nPlayerIdx, szMark ? szMark : "");
+		if (nRet == 1)
+		{
+			g_nTGVTTry = 0;
+			g_nTGVTPhase++;	// 21 -> 22 -> 23 (da bam ten ben, cho doi map)
+		}
+		else if (nRet < 0)
+		{
+			char szBuf[256];
+			_snprintf(szBuf, sizeof(szBuf) - 1, VT_MSG_XAPHU_KHONGCO_FMT, szMark ? szMark : "");
+			szBuf[sizeof(szBuf) - 1] = 0;
+			TG_VanTieuStop(szBuf);
+		}
+		return;
+	}
+	// --- pha 23: doi Xa Phu cho di (map doi -> bat o dau ham) ---
+	if (g_nTGVTPhase == 23)
+	{
+		if (g_nTGVTTry > 25)	// ~10 giay khong doi map: thieu tien xe / tu choi
+			TG_VanTieuStop(VT_MSG_XAPHU_CHUADI);
 		return;
 	}
 	// --- pha 3: di bo toi NPC dich (cung map) ---
