@@ -889,3 +889,5 @@ Khac va i mot diem quan trong: **moc so sanh cua tung nhom duoc luu DUNG LUC luu
 Kem theo: sua dong `[PS-BO]` in `-24% bo` do `bo * 100` tran so nguyen 32 bit khi bo vuot 21 trieu (tinh bang `__int64`).
 
 **Chua dat vao khe `.moi`:** khe may chu dang giu ban `1ed4d726` cua phien BH100 (cap bang theo kinh nghiem) va commit cua ho **chua len origin/main**, nen toi khong the build sieu tap. Va k da push len origin/main; dat `.moi` sau khi chu swap ban cua ho, hoac sau khi ho push va toi build gop.
+
+**Da dat 16:22:** `CoreServer.dll.moi` **b1308b4c** = origin/main 552bab7e (gom ca BHLV 40eb50c1 cua phien BH100 - ho da push nen build gop duoc; ban 1ed4d726 doi ten `.moi.bhlv_1ed4d726`). Kiem chuoi: co du `TONG_GetLevelExpNeed`, `tong_setting.ini`, `TONG_GetExpLevel`. `S3Relay.exe.moi` 26d7df5d cua ho giu nguyen, phai swap cung. Sau tran ke doc `[NS-BO] ... | bam cham doi o nhom:` de biet truong nao lam goi 77 phat lai.
