@@ -152,3 +152,53 @@ mọi đường đánh nhau · `GotoWhereDirect` (đường tìm đường của
 Mới build xong (`Client Release|Win32` Core: COMPILE PASS / LINK PASS); khe `.moi` hiện là
 `1ca74e6e` của phiên DELTA (siêu tập, xem mục 1) — **chủ chưa swap, chưa đánh thử**.
 Mục 5 là các bước cần chạy khi vào game.
+
+---
+
+## 8. (14:40) 🔴 BẢN VÁ a SỬA CHƯA ĐÚNG CHỖ — chủ báo *"kích đánh xong vẫn chạy tới vị trí quái"*
+
+### 8.1 Đo bản đang chạy trước
+
+`CoreClient.dll` `673a5275` (12:29) **có đủ** mã TUKICH (đếm chuỗi nhị phân: `TUKICH` ×2), nhưng
+`jx_auto.log` **không có lấy một dòng `[TUKICH]` nào** — trong khi AUTOLOG client vẫn ghi bình
+thường (`CHECKOBJ-ENTRY` 19, `E4_SKILL_ABORT` 11, `NET-DEATH` 57 ⇒ `KNpc::DoDeath` **có** chạy trên
+client). Nghĩa là nhánh chứa lệnh dừng của bản a chưa bao giờ được vào.
+
+### 8.2 Gốc thật — bản a bỏ lọt
+
+Lệnh di chuyển của **người chơi thật** không nằm ở `m_Command` mà ở **khe riêng**
+`s_S13Move[m_Index]` (`KNpc.cpp:133`, chú thích `[S13]`): `KNpc::SendCommand` (`:5980`) đẩy mọi
+`do_walk`/`do_run` của người chơi thật vào khe đó rồi `return`. Khe này **không** bị xoá khi
+`m_Command` được tiêu thụ (`:1238`), nên nó **sống sót qua cả khung hình đánh** — đánh xong,
+`ProcCommand` (`:1109`) thi hành nó ⇒ nhân vật chạy tới chỗ con quái đã chết.
+
+Bản a chỉ gửi lệnh dừng khi `m_Doing == do_walk || do_run`. Lúc giết được quái thì `m_Doing` đang
+là hoạt ảnh đánh ⇒ **không gửi gì**, khe `s_S13Move` còn nguyên ⇒ vẫn chạy tới xác. Và vì nhánh đó
+không chạy nên cũng **không sinh dòng log nào** — khớp đúng với đo ở 8.1.
+
+Lỗ thứ hai: `m_nPeopleIdx` có thể bị xoá **trước** khi quái chết (`KNpc.cpp:3015` `DoSkill` bỏ chiêu,
+`:3090` `CastMeleeSkill` thất bại) ⇒ điều kiện `m_nPeopleIdx == m_Index` ở `DoDeath` trượt luôn.
+
+Lỗ thứ ba: bản a đặt chốt dự phòng ở nhánh `m_Doing == do_death` của `FollowPeople`, nhưng nhánh
+`CheckNpc` (gọi `IsAlive()`) đứng **trước** và luôn ăn trọn ⇒ nhánh kia không bao giờ tới.
+
+### 8.3 Sửa (commit `41c068e2`, bộ vá `ReverseTools\goi_va_tukich_chuot_b_0709.py`)
+
+| Tệp | Nội dung |
+|---|---|
+| `KNpc.cpp` | Thêm `S13_HuyLenhDiToiXac()` đặt cạnh `S13_ClearCmd` (chỗ duy nhất nhìn thấy `s_S13Move`): **vứt cả khe di chuyển lẫn `m_Command`** khi đích của lệnh treo — hoặc đích đang chạy `m_DesX/m_DesY` — nằm quanh xác quái. Chạy đi chỗ khác (né, kite) thì **giữ**. |
+| `KNpc.cpp` | `DoDeath` gọi `g_OnLockedTargetDead` **vô điều kiện**, để hàm tự lọc. |
+| `CoreShell.cpp` | Nhớ con vừa bấm vào theo `m_dwID` trong 15 s (`g_TuKichGhiMucTieu`, ghi từ `LockSomeoneUseSkill`) + `TuKichLaMucTieuCuaToi()` lọc con chết ngang đường (Tống Kim) để **không** chặn nhầm người chơi. `g_OnLockedTargetDead` bỏ điều kiện `m_Doing`, vứt khe lệnh rồi mới báo máy chủ dừng. |
+| `CoreShell.cpp` | Log `[TUKICH] chot o quai chet: quai=… o=(…) toi=… doing=… huylenh=…` chạy **mỗi lần** (kể cả khi không vứt gì) — lần sau đọc log là biết ngay. |
+| `KNpcAI.cpp` | Bắt chốt ở nhánh `CheckNpc` (nhánh thật sự bắt mục tiêu chết). |
+
+### 8.4 Trạng thái đợt b
+
+`bin\client\CoreClient.dll.moi` = **`52a55d89`** (2.613.760 B), build từ `origin/main` `4cf86a6c`
+\+ `41c068e2`. Khe lúc đặt (14:43) **trống**, không đè của ai. Chỉ CoreClient.
+
+Sau swap, kiểm: `findstr /C:"[TUKICH]" bin\client\jx_auto.log`
+- **phải có** dòng `chot o quai chet …` mỗi lần giết được quái mình đang đánh;
+- `huylenh=1` = đã vứt lệnh chạy treo (đây là thứ bản a thiếu); `huylenh=0` = lúc đó không có lệnh
+  di chuyển nào nhắm vào xác (đúng, không cần làm gì).
+- Nếu **vẫn không có dòng nào** thì chốt chưa bật được — gửi log, tôi soi tiếp từ đó.
