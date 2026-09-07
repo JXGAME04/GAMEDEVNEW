@@ -4888,7 +4888,11 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	AUTOLOG_IDX_EVERY(nLauncher, 1000, "[S1-PHYS-POST] tgt=%d lch=%d physmin=%d physmax=%d lifesau=%d doing=%d armorsau=%d", m_Index, nLauncher, ((KMagicAttrib *)pData)[9].nValue[0], ((KMagicAttrib *)pData)[9].nValue[2], m_CurrentLife, (int)m_Doing, m_PhysicsArmor.nValue[0]);
 
 	pTemp++; //cold damage[10]
-	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg))
+	// [BANGSAT2 07/09] Linux ReceiveDamage 0x0808A6D1 -> 0x0808B1E0: dat bang KHONG phu thuoc sat thuong bang > 0
+	// (CalcDamage Linux 0x08089C90 tra 1 khi min+max <= 0, chi tra 0 khi muc tieu chet / hoi sinh / khong hop le).
+	// JX1 CalcDamage tra FALSE khi sat thuong <= 0 (bao ne) => truoc day bi khang het bang thi khong dong bang.
+	BOOL bBangTrung = CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);
+	if (bBangTrung || (m_Doing != do_death && m_Doing != do_revive && m_RegionIndex >= 0 && !Owner[0]))
 	{
 		// [BANGSAT 01/09] LAM CHUAN THEO LINUX (0x0808B1E0-0x0808B280).
 		// Ban cu: reduce > 75 thi nhay sang nhanh CHIA 4 -> thoi luong tut ve 1-2 tick.
@@ -4897,7 +4901,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		// van an sat thuong bang nhung khong he thay bi dong bang.
 		// Linux khong co nhanh /4: no KEP muc giam tai FreezeTimeReduceMax (gamesetting.ini
 		// cua ban Linux = 77) roi tru tuyen tinh -> bang LUON con it nhat 23% thoi luong.
-		if (m_FreezeState.nTime <= 0)
+		if (m_FreezeState.nTime <= 0 && pTemp->nValue[1] > 0)	// [BANGSAT2 07/09] Linux: v1 > 0 moi dat
 		{
 			const int FREEZE_TIME_REDUCE_MAX = 77;	// Linux [ServerConfig] FreezeTimeReduceMax
 			int nGiam = m_CurrentFreezeTimeReducePercent;

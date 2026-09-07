@@ -187,9 +187,9 @@ SKILLS={
 		addcoldmagic_v={{{1,60},{30,315}},{{1,-1},{2,-1}}},
 		addcolddamage_v={{{1,30},{30,275}},{{1,-1},{2,-1}}},
 		addphysicsmagic_v={{{1,30},{30,275}},{{1,-1},{2,-1}}},
-		deadlystrikeenhance_p={{{1,5},{30,45,Conic}},{{1,-1},{2,-1}}},
-		fasthitrecover_v={{{1,5},{30,25},{31,25}},{{1,-1},{2,-1}}},
-		coldenhance_p={{{1,8},{30,80}},{{1,-1},{2,-1}}}
+		deadlystrikeenhance_p={{{1,5},{30,60,Conic}},{{1,-1},{2,-1}}},--[BANGSAT2 07/09] nhu Linux
+		fasthitrecover_v={{{1,5},{30,49},{31,49}},{{1,-1},{2,-1}}},--[BANGSAT2 07/09] nhu Linux (fasthitrecover_yan_v gap vao Am)
+		coldenhance_p={{{1,10},{30,140}},{{1,-1},{2,-1}}}--[BANGSAT2 07/09] nhu Linux (thoi gian bang = khung)
 	},
 	bingzong_wuying={ --Bang Tung vo anh
 		--physicsenhance_p={{{1,15},{15,100},{20,146}}},
