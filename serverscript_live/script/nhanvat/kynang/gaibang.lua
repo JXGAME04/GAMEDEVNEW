@@ -168,7 +168,7 @@ SKILLS={
 			[3]={{1,389},{20,389}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,4},{20,4}}},
-		addskillexp1={{{1,357},{2,357}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(8600,1.15,1,1,1)},
 							{2,SkillExpFunc(8600,1.15,2,1,1)},
 							{3,SkillExpFunc(8600,1.16,3,1,1)},
@@ -226,7 +226,7 @@ SKILLS={
 		missle_speed_v={{{1,20},{20,24},{21,24}}},
 		skill_attackradius={{{1,448},{20,512},{21,512}}},
 		skill_cost_v={{{1,20},{20,50}}},
-		addskillexp1={{{1,359},{2,359}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(7000,1.15,1,1,1)},
 							{2,SkillExpFunc(7000,1.15,2,1,1)},
 							{3,SkillExpFunc(7000,1.16,3,1,1)},
@@ -316,7 +316,7 @@ SKILLS={
 			[3]={{1,1072},{20,1072}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,4},{20,4}}},
-		addskillexp1={{{1,1073},{2,1073}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,1073},{2,1073}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		skill_skillexp_v={{	{1,10500},
 							{2,12180},
 							{3,14373},
@@ -340,6 +340,7 @@ SKILLS={
 						}},
 	},
 	zhanggaibang150_2={ --Ngu Dieu Can Khon-150 tang 2
+		addskillexp1={{{1,1073},{2,1073}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{20,80},{21,82}}},
 		firedamage_v={
 			[1]={{1,20},{20,450},{23,585},{26,653}},
@@ -363,7 +364,7 @@ SKILLS={
 		missle_speed_v={{{1,24},{20,24},{21,24}}},
 		skill_attackradius={{{1,448},{20,512},{21,512}}},
 		skill_cost_v={{{1,20},{20,50},{23,59}}},
-		addskillexp1={{{1,1074},{2,1074}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,1074},{2,1074}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		skill_skillexp_v={{	{1,10500},
 							{2,12180},
 							{3,14373},

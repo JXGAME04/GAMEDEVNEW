@@ -1448,6 +1448,9 @@ BOOL KMissle::ProcessDamage(int nNpcId)
 			{
 				Npc[nNpcId].SetImmediatelySkillEffect(m_nLauncher, m_pMagicAttribsData->m_pImmediateAttribs, m_pMagicAttribsData->m_nImmediateMagicAttribsNum);
 			}
+			// [SKEXP 07/09] exp ky nang khi TRUNG (Linux ReceiveDamage 0x0808AA3C): moi lan trung moi muc tieu, theo o addskillexp1/2 cua chieu.
+			if (m_nLauncher > 0 && m_nLauncher < MAX_NPC)
+				Npc[m_nLauncher].CongExpKyNangKhiTrung(m_nSkillId, m_nLevel, nNpcId);
 		}
 		return TRUE;
 	}

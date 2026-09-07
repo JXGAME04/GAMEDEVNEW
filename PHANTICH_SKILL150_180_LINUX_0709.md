@@ -94,3 +94,72 @@ Kết luận: bản Linux này không chứa "bộ skill 180"; NPC "Skill 180" c
 1. Chạy `ChayGameServer.bat` + `ChoiGame.bat` (chỉ dữ liệu; `.moi` CoreServer 1a33f617 của đợt SK120 vẫn đang chờ swap — đi cùng lần này).
 2. Kiểm mục 3.
 3. Chọn phương án mục 4 (a/e đi cặp; b; c; d) — tôi thi công ngay khi có quyết định.
+
+
+---
+
+# PHẦN 7 (07/09, sau khi chủ chọn) — CÔNG THỨC LUYỆN KỸ NĂNG 90/120/150 + 2 công thức sát thương đã đổi
+
+Quyết định của chủ: (a) giữ nguyên nội công (A2); (b) `physicsenhance_p` đổi như Linux; (c) hoả sát như Linux; (d) rà công thức luyện kỹ năng 90/120/150 vì "một số phái luyện rất lâu, một số rất nhanh".
+
+## 7.1 Gốc "phái nhanh / phái chậm" — JX1 cộng exp theo TỪNG HỆ sát thương
+
+JX1 (`KNpc.cpp` `CalcDamage` ~4590, đã bỏ): mỗi lần `CalcDamage` có sát thương > 0 ⇒ `AddSkillExp90(Skill90Rate × hệ số)` cho kỹ năng đang dùng (`m_ActiveSkillID`, kể cả 150) và `AddSkillExp120(...)` cho **mọi** kỹ năng kinh nghiệm không nhắm địch. `CalcDamage` được gọi **riêng cho từng hệ** (vật lý, băng, hoả, lôi, độc — `KNpc.cpp:4905‑4941`), cho **từng mục tiêu**, từng viên đạn, và **cả từng nhịp độc** ⇒ với `Skill90Rate = 10` (gamesetting.ini):
+
+| Kiểu chiêu | exp / lần đánh (JX1 cũ) |
+|---|---|
+| 1 hệ, 1 mục tiêu (Thiếu Lâm côn, Thúy Yên đao, Đường Môn phi tiêu) | 10 |
+| 2‑3 hệ (Thiên Vương chuỳ, Nga My kiếm, Côn Lôn đao…) | 20‑30 |
+| AoE 5 mục tiêu (Cái Bang, Thiên Vương) | 50‑150 |
+| Độc DoT (Ngũ Độc): mỗi nhịp độc lại +10 | hàng trăm |
+
+Thêm 2 lỗi phụ: đọc hệ số x2 của `Player[CLIENT_PLAYER_INDEX]` (người chơi ngẫu nhiên ở khe 1) thay vì của người đánh; chặn ở `MAX_TRAIN_SKILLEXPLEVEL = 20` nên kỹ năng 150 **không bao giờ lên 21‑26** dù đã mở MaxLevel 26.
+
+## 7.2 Luật Linux (mổ `jx_linux_y`)
+
+| Mục | Linux | Địa chỉ |
+|---|---|---|
+| Ngưỡng lên cấp | `skill_skillexp_v` (idx 8) đọc từ Lua, `GetSkillNextExp` trả `KSkill+0x11c` ở **cấp hiện tại**; **không** đọc `magic_level_exp.txt` (không có chuỗi `LEVEL%d`) | `0x0812AC50` |
+| So với JX1 | JX1 dùng `magic_level_exp.txt`: tính lại 62 kỹ năng có cả hai nguồn (kể cả `SkillExpFunc(6312, 1.15…)`) ⇒ **62/62 trùng** ⇒ ngưỡng không phải nguyên nhân | |
+| Exp khi đánh (90) | trong `ReceiveDamage`, sau khe choáng: duyệt ô sát thương 16/17 `addskillexp1/2` của chiêu: `v0 > 0`, `rand(100) > 59 ⇒ bỏ` (**60 %**), cờ `v2 & 2` ⇒ cộng cho **nạn nhân** nếu là người chơi, không thì cho **người phát** (phải là người chơi/đồ đệ). `KSkillList::AddSkillExp`: chỉ kỹ năng kinh nghiệm, cấp < MaxLevel, `exp += v1` (cờ 0), đủ ngưỡng ⇒ lên cấp | `0x0808AA3C‑0x0808AA97`, `0x080E5D90` |
+| Dữ liệu 90 | `addskillexp1 = {{1,0(=chính chiêu) hoặc id chính},{1,1},{20,1}}` ⇒ **1 exp / lần trúng / mục tiêu**, không nhân theo hệ; 2 chiêu `{20,10}` (qianfo_qianye Nga My, wusuo_kunlun Côn Lôn) | 47 bảng / 14 tệp Lua |
+| 120 | không có exp khi đánh. `Add120SkillExp(nExp)` (`0x080A9B50`): cộng cho **1 kỹ năng 120 đã chọn** (task 2463), có **trần ngày** (task 2464/2465, trần toàn cục `0x8fbf4a0`), `add120skillexpenhance_p` (+%); gọi từ `task_award_extend.lua` (½ exp nhiệm vụ) và tu luyện ngoại tuyến | `0x0811C710` |
+| 150 | **không có exp khi đánh** (không dòng nào có `addskillexp`); tu luyện qua NPC tốn exp nhân vật (`event/skillexp_150/skillexp_150_main.lua`, `vng_feature/skill_150_training.lua`, giới hạn ngày) và vật phẩm Thiên Sơn Thánh Thủy 30314 (50 exp) / 30449 (6 000 exp) | script VN |
+
+## 7.3 Đã thi công — commit `[SKEXP 07/09]` origin/main, `CoreServer.dll` **fd2d4893** (18 480 640) đặt vào khe `.moi` (thay 1a33f617 của đợt SK120, cùng nguồn), CoreClient build riêng (xem trạng thái cuối)
+
+Engine (`ReverseTools/goi_va_sk150_luyen_0709.py`, 16 hunk):
+
+| # | Tệp | Thay đổi |
+|---|---|---|
+| H1‑H2 | `KSkills.h/.cpp` | `m_AddSkillExp[2]` đọc thẳng tên `LvlSetting` `addskillexp1/2` trong `LoadSkillLevelData` (JX1 không có tên này trong `KMagicDesc`; **không** thêm vào enum để không đổi số thứ tự thuộc tính đang đồng bộ client) |
+| H3 | `KNpc.h/.cpp` | `CongExpKyNangKhiTrung(skill, level, victim)` = luật Linux 7.2 (60 %, cờ 2, chỉ người chơi, bỏ qua bot SimCity); `exp = v1 × Skill90Rate × x2 của chính người nhận` (`Skill90Rate = 1` ⇒ đúng Linux; ini hiện 10) |
+| H4 | `KPlayer.h/.cpp` | `AddSkillExpKhiTrung`: chỉ IsExp, chặn theo **MaxLevel thật** (150 lên được 26), đồng bộ client |
+| H5 | `KMissle.cpp` | gọi H3 ngay sau khi `ReceiveDamage` trả TRUE (mỗi lần trúng mỗi mục tiêu) |
+| H6 | `KNpc.cpp` | **bỏ** hai khối `AddSkillExp120/90` theo hệ; `AddSkillExp120/90` cũ giữ nhưng không còn ai gọi; `Skill120Rate` không còn dùng |
+| H7 | `KNpc.cpp` + `KPlayer.cpp` (tooltip) | `physicsenhance_p`: `(gốc+add)(100+p)/100 × (100+tăng)/100`; hoả sát chỉ nhân **max**, hoả vũ khí không nhân — cùng công thức ở server và bảng hiển thị client |
+
+Dữ liệu (server + client, sao lưu `*.truoc_skexp_0709`; gương commit cùng):
+
+| Nhóm | Sửa |
+|---|---|
+| 90 | 24 bảng có ở cả hai bản chép nguyên dòng Linux (`v1 = 1`, riêng qianfo_qianye/wusuo_kunlun `1 → 10`); các bảng Hoa Sơn/Vũ Hồn/Tiêu Dao (JX1) đã sẵn dạng `{0},{1,1}` — giữ |
+| 150 | Linux không có exp khi đánh (7.2). **Dự án giữ luyện bằng đánh** nhưng theo đúng luật Linux: 40 bảng họ 150 (chính + tầng 2/3 + đạn con) thêm `addskillexp1 = {{1,<id chính>},…},{{1,1},{20,1}}` và 54 dòng `skills.txt` thêm `LvlSetting addskillexp1` (4 dòng đạn con 1094/1096/1098/1131 hết ô trống — không cộng, không ảnh hưởng vì chiêu chính có) ⇒ mỗi lần trúng = 1 × Skill90Rate, 60 %, không nhân hệ. Nếu chủ muốn **đúng hệt Linux** (NPC tu luyện tốn exp nhân vật + vật phẩm) thì port `skillexp_150_main.lua` + item 30314/30449 — việc riêng |
+| 120 | như Linux: không exp khi đánh (khối cũ đã bỏ); `Add120SkillExp` Lua của JX1 (nhiệm vụ) giữ nguyên — JX1 cộng cho **mọi** kỹ năng 120 không nhắm địch, Linux cộng 1 kỹ năng đã chọn có trần ngày (cần NPC chọn kỹ năng — chưa port) |
+
+Kiểm: `kiem_54.py` 0 lỗi 14 tệp; mã hoá không đổi; client byte‑một (trừ `kunlun.lua` dòng 176 sẵn khác). Sự cố trong lúc làm: bộ chèn coi `SKILLS` là bảng ⇒ chèn dòng lạc dưới `SKILLS={` và bước sửa xoá nhầm dòng gốc của Hoa Sơn/Vũ Hồn/Tiêu Dao ⇒ đã khôi phục 3 tệp từ sao lưu, rà lại từng dòng theo bảng chủ: 0 vấn đề.
+
+## 7.4 Kết quả mong đợi sau restart
+
+| | Trước | Sau |
+|---|---|---|
+| Thiếu Lâm côn (1 hệ, 1 mục tiêu), Skill90Rate 10 | 10 exp/đòn | 6 exp/đòn (10 × 60 %) |
+| Thiên Vương chuỳ (2 hệ) | 20 | 6 |
+| Cái Bang AoE 5 mục tiêu | 50 | 30 (5 mục tiêu × 6) — Linux cũng theo mục tiêu |
+| Ngũ Độc độc DoT | +10 mỗi nhịp độc | chỉ lúc trúng |
+| Kỹ năng 150 cấp 21‑26 | không lên được | lên được (exp 90k … 300k / cấp) |
+| Kỹ năng 120 | +10 mỗi hệ mỗi đòn cho mọi buff (vô nghĩa với ngưỡng 17,8 triệu) | chỉ qua nhiệm vụ (`Add120SkillExp`) |
+
+Muốn đúng Linux 100 % về tốc độ: đặt `Skill90Rate = 1` trong gamesetting.ini (1 exp/đòn, 60 %).
+
+**Trạng thái nhị phân lúc 07:55 07/09**: origin/main `217202f0` (= `b4e6277c` của DELTA + `[SKEXP 07/09]`). `bin/server/CoreServer.dll.moi` = **`ce462519`** (18 481 152; thay bản DELTA `bdc8ae53`, giữ ở `CoreServer.dll.moi.delta_e_bdc8ae53_0749`; bản mới là tập cha vì build từ origin/main sau merge của DELTA). `bin/client/CoreClient.dll.moi` = **`e7c70880`** (2 611 200; tooltip + KSkill thêm 2 trường, không đổi giao thức; khe trước đó trống). Đang chạy: server `1a33f617` (đợt SK120 đã được swap), client `5f86a7f7`. Chủ chạy cả `ChayGameServer.bat` lẫn `ChoiGame.bat`.

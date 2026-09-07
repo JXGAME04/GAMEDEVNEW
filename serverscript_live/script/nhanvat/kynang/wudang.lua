@@ -181,7 +181,7 @@ SKILLS={
 --			[3]={{1,367},{20,367}}
 --		},
 --		skill_showevent={{{1,0},{5,0},{5,2},{20,2}}},
-		addskillexp1={{{1,365},{2,365}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,180},
 							{2,460},
 							{3,920},
@@ -272,7 +272,7 @@ SKILLS={
 			[3]={{1,1},{20,35}}
 		},
 		skill_showevent={{{1,0},{10,0},{10,1},{15,1},{15,5},{20,5}}},
-		addskillexp1={{{1,368},{2,368}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,180},
 							{2,460},
 							{3,920},
@@ -376,6 +376,7 @@ SKILLS={
 		},
 	},
 	qiwudang150={ --Tao Hoa Thai thanh -150
+		addskillexp1={{{1,1078},{2,1078}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		lightingdamage_v={
 			[1]={{1,6},{20,10},{23,100}},
@@ -413,6 +414,7 @@ SKILLS={
 												}},	
 	},
 	jianwudang150={ --Kiem Thuy Tinh Ha-150
+		addskillexp1={{{1,1079},{2,1079}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,12},{15,115},{20,280},{23,478},{26,577}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		lightingdamage_v={
@@ -464,6 +466,7 @@ SKILLS={
 												}},	
 	},
 	jianwudang150_2={ --Kiem Minh thuong khung-150 tang 2
+		addskillexp1={{{1,1079},{2,1079}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		seriesdamage_p={{{1,40},{20,80},{21,82}}},
 		stun_p={{{1,1},{20,34},{23,42},{26,47}},{{1,1},{19,9},{20,10}}},
 		lightingdamage_v={
@@ -472,6 +475,7 @@ SKILLS={
 		},
 	},
 	jianwudang150_3={ --Kiem Vu Dieu Nguyet-150 tang 3
+		addskillexp1={{{1,1079},{2,1079}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		stun_p={{{1,1},{20,24},{23,31},{26,34}},{{1,1},{19,9},{20,10}}},
 		lightingdamage_v={
 			[1]={{1,20},{20,60},{23,72},{26,78}},

@@ -334,7 +334,7 @@ SKILLS={
 		missle_lifetime_v={{{1,4},{20,4}}},
 		skill_attackradius={{{1,90},{20,90}}},
 		skill_cost_v={{{1,15},{20,30}}},
-		addskillexp1={{{1,322},{2,322}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,322},{2,322}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(7280,1.25,1,2.5,1)},
 							{2,SkillExpFunc(7280,1.25,2,2.5,1)},
 							{3,SkillExpFunc(7280,1.25,3,2.5,1)},
@@ -378,7 +378,7 @@ SKILLS={
 		missle_lifetime_v={{{1,4},{20,4}}},
 		skill_attackradius={{{1,90},{20,90}}},
 		skill_cost_v={{{1,10},{20,65}}},
-		addskillexp1={{{1,323},{2,323}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,323},{2,323}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(6550,1.25,1,5,1)},
 							{2,SkillExpFunc(6550,1.25,2,5,1)},
 							{3,SkillExpFunc(6550,1.25,3,5,1)},
@@ -421,7 +421,7 @@ SKILLS={
 		missle_speed_v={{{1,30},{20,30}}},
 		missle_lifetime_v={{{1,4},{20,4}}},
 		skill_attackradius={{{1,90},{20,90}}},
-		addskillexp1={{{1,325},{2,325}},{{1,EXP_PER},{20,EXP_PER}},{{1,0},{2,0}}},
+		addskillexp1={{{1,325},{2,325}},{{1,1},{20,1}},{{1,0},{2,0}}},
 		skill_skillexp_v={{	{1,SkillExpFunc(7750,1.25,1,2.5,1)},
 							{2,SkillExpFunc(7750,1.25,2,2.5,1)},
 							{3,SkillExpFunc(7750,1.25,3,2.5,1)},
@@ -481,6 +481,7 @@ SKILLS={
 							}},	
 	},
 	daotianwang150={ --Hao hung tram 150
+		addskillexp1={{{1,1058},{2,1058}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,52},{15,285},{20,545},{23,836},{26,992}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		deadlystrike_p={{{1,5},{20,30},{23,37},{26,41}}},
@@ -523,6 +524,7 @@ SKILLS={
 												}},	
 	},
 	qiangtianwang150={ --Ba vuong Tam kim 150
+		addskillexp1={{{1,1060},{2,1060}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,68},{15,360},{20,640},{23,929},{26,1028}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		attackrating_p={{{1,95},{20,360},{23,443},{26,485}}},
@@ -559,6 +561,7 @@ SKILLS={
 												}},	
 	},
 	chuitianwang150={ --Tung hoanh bat hoang 150
+		addskillexp1={{{1,1059},{2,1059}},{{1,1},{20,1}},{{1,0},{2,0}}},--[SKEXP 07/09] exp khi trung nhu Linux (ky nang 90): 1 exp x Skill90Rate, 60 %
 		physicsenhance_p={{{1,40},{15,360},{20,655},{23,979},{26,1156}}},
 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
 		ignoredefense_p={{{1,12},{20,90},{21,94},{22,98},{23,99},{24,99}}},
