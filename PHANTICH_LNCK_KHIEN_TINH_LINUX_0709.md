@@ -38,3 +38,27 @@ Kết quả mong đợi: đang có Lưỡng Nghi Chân Khí thì độc/cháy ch
 **11:3x**: phiên TUKICH thay khe client bằng `15bd934d` (origin/main `e2a03fc0`, chứa `bc1a8224` ⇒ vẫn có LNCK; bản 90eeaa8d giữ tên `.moi.lnck_*`); khe server vẫn `a71d3305`. Build sau: base ≥ `e2a03fc0`.
 
 **11:38**: DELTA đợt g thay cả hai khe: `CoreServer.dll.moi` = `1d06f7f0` (origin/main `be72d6b6`, đã kiểm chứa `bc1a8224` ⇒ LNCK còn nguyên; bản a71d3305 giữ tên `.moi.lnck_*`), `CoreClient.dll.moi` = `1ca74e6e` (⊇ TUKICH). Chờ chủ swap cả hai.
+
+
+---
+
+# 4. "Lưỡng Nghi còn 8 s vẫn bị đánh chết" — đo trên live (14:xx 07/09, bản 9408925d đã có [LNCK])
+
+`jx_auto_server.log` (AutoLog đang bật) ghi khiên tĩnh của nhân vật `pidx=1` (cấp 156, máu 17 795, `Npc 91527`) — 5 lần Lưỡng Nghi Chân Khí bật rồi vỡ trong ~4 phút:
+
+| t (ms) | Sự kiện |
+|---|---|
+| …547 801 | khiên hấp thụ trọn 3, **còn 156 397** (khiên vừa bật = 156 400) |
+| …548 194 (+0,4 s) | **khiên vỡ**: đòn 8 770 > khiên còn 6 568 |
+| …577 414 (+29 s, bật lại sau hồi 20 s) | hấp thụ 4, còn 156 396 |
+| …578 362 (+0,9 s) | vỡ: 6 732 > 405 |
+| …717 588 | hấp thụ 8 770, còn 147 630 |
+| …718 023 (+0,4 s) | vỡ: 6 732 > 4 678 |
+| …757 751 / …758 035 | hấp thụ 968 còn 155 432 → vỡ 8 770 > 1 410 |
+| …790 144 / …790 299 | hấp thụ 2 332 còn 154 068 → vỡ 1 736 > 214 |
+
+Kết luận: khiên **hoạt động đúng** (hấp thụ trước kháng, trừ dần, vỡ khi hết), nhưng **bể chỉ có 156 400 điểm** = nội lực tối đa 8 689 × 18 (`staticmagicshield_p = 1800` ⇒ Lưỡng Nghi Chân Khí 717 đang ở **cấp 1**), và nhân vật bị nhiều bot đánh dồn ~6 700–8 800 mỗi đòn ⇒ ~17 đòn trong 0,4 s làm cạn bể trong **dưới 1 giây**, trong khi biểu tượng vẫn đếm 10 s. Linux cùng công thức (`+0x1468 += max(manamax Âm +0x1a1c, Dương +0x1a20) × v0 / 100`, handler `0x08096DC0`, tiêu hao `0x08089D5D` cùng trước kháng) và cũng **không** gỡ biểu tượng khi khiên vỡ ⇒ Linux trong cùng tình huống (bị đánh dồn) cũng chết như vậy. "Bất tử 10 s" chỉ đúng khi tổng sát thương nhận trong 10 s < bể: cấp 1 = 18 lần nội lực, cấp 20 = 100 lần (nhân vật này ≈ 869 000).
+
+Không có đường sát thương nào khác né khiên ngoài các đường Linux cũng né: chí tử (25 % máu hiện tại, ghi thẳng máu `0x0808B0F8` = `KNpc.cpp:5057`), `life_v` tức thời âm, rút máu theo nhịp (`lifereplenish_v` âm). Độc/cháy theo nhịp và phản đòn đã qua khiên từ bản [LNCK].
+
+Nếu chủ muốn Lưỡng Nghi Chân Khí "bất tử" thật khi bị đánh dồn: nâng cấp kỹ năng 717 (cấp 20 → 100 lần nội lực) hoặc đổi dữ liệu `staticmagicshield_p` (ví dụ 100000 = 1 000 lần) — đây là **thay đổi ngoài Linux**, chờ chủ quyết; có thể thêm tuỳ chọn gỡ biểu tượng 721 khi khiên vỡ để người chơi khỏi hiểu nhầm (Linux không gỡ).
