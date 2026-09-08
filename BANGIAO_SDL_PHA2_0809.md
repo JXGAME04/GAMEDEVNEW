@@ -104,3 +104,47 @@ vì mp3lib chỉ có x86). `ThirdParty/miniaudio` = `miniaudio.h` master 15:30 0
 Backend: WASAPI (Windows), AAudio/OpenSL (Android) — `MA_ENABLE_ONLY_SPECIFIC_BACKENDS`. Engine.dll bản SDL không còn phụ thuộc dsound.dll.
 Chạy thử 15:37 (25 s): không sập, chỉ nạp Engine.dll + SDL3.dll. Chờ chủ nghe thử (hiệu ứng, nhạc, âm lượng).
 Chưa làm: log SDL ra tệp (`SDL_SetLogOutputFunction` → `jx_sdl.log`), mạng (2b-2), IME/WndEdit, S3Client.cpp (GetPrivateProfileInt/timeBeginPeriod/CrashLog/AntiHack).
+
+## 9. Lát 2b-2 (16:0x): mạng `Rainbow.dll` qua BSD socket + SDL3 — cùng bộ thử `bin\client64sdl`
+
+**Nơi mã thật:** `Rainbow.vcxproj` chỉ biên dịch 3 tệp (`ClientStage.cpp` = `CGameClient : IClient + CSocketClient`, `IClient.cpp`, `Rainbow.cpp`)
+và link `Lib\release64\common.lib` với include `..\Common` ⇒ lớp mạng nằm ở **`Sources\MultiServer\Common`** (SocketClient/EventSelect/Thread/Event/
+CriticalSection/IOBuffer…), KHÔNG phải `Sources\Network\Rainbow\ESClient` (bản sao cũ, khác 400+ dòng, không có bắt tay khoá). Common cũng là lib của
+máy chủ (Heaven/Goddess/…) ⇒ mọi thay đổi nằm trong `#ifdef JX_PLATFORM_SDL`, cấu hình `Release|x64` không đổi một byte.
+
+**Luồng gốc (Win32):** `ConnectTo` → socket chặn `connect` → `WaitAndVerifyCipher` (select+recv 34 byte `ACCOUNT_BEGIN`, khoá XOR cố định) →
+`WSAEventSelect(FD_CONNECT|FD_CLOSE|FD_READ)` → luồng I/O `Run()`: `WaitForMultipleObjects(shutdown, đã-kết-nối)` rồi `WaitForEnumEvent 1 s` →
+`OnRead` = `WSARecv` một phát vào `CIOBuffer` 10 KB → `ReadCompleted` đẩy vào `m_pRecvBuffer` (khoá `m_csReadAction`), luồng chính `GetPackFromServer`
+mỗi khung tách gói `[WORD len][payload]`. Gửi: `Write()` = `WSASend` + vòng `select` khi WOULDBLOCK.
+
+**Bản SDL (một mã nguồn; chạy được trên Windows vì Winsock 2 tương thích BSD):**
+
+| Lớp | Win32 | SDL | Tệp |
+|---|---|---|---|
+| `CEventSelect` | `WSAEventSelect/WSAWaitForMultipleEvents/WSAEnumNetworkEvents` | socket non-blocking + `select(rd,ex)`; `recv(MSG_PEEK)`: >0 = FD_READ, 0 = FD_CLOSE (FIN), lỗi = FD_CLOSE+mã; **FD_CONNECT báo 1 lần sau `AssociateEvent`** (WSAEventSelect ghi nhận cả khi đã nối → callback `enumServerConnectCreate` như bản Win32) | `EventSelect.h` (lớp SDL inline), `EventSelect.cpp` chắn |
+| `CThread` | `_beginthreadex/WaitForSingleObject/TerminateThread` | `SDL_CreateThread` (friend `JxThreadProcSdl`), `Wait(ms)` thăm `m_nDone`, `SDL_WaitThread`; `Terminate` = TRACE | `Thread.h` (+2 member SDL), `Thread.cpp` |
+| `CEvent` | `CreateEvent/SetEvent/WaitForSingleObject` | `SDL_Mutex + SDL_Condition` + trạng thái manual/auto, `Pulse` bằng bộ đếm thế hệ | `Event.cpp` |
+| `CCriticalSection` | `CRITICAL_SECTION` | `SDL_Mutex` (đệ quy) trong `void *m_crit` | `CriticalSection.h` |
+| `Run()` | `WaitForMultipleObjects` 2 handle | thăm `shutdown.Wait(0)` + `đã-kết-nối.Wait(50)` (Cleanup trễ ≤ 50 ms) | `SocketClient.cpp` |
+| `OnRead` | `WSARecv` | `recv()`; 0 → `StopConnections`; WOULDBLOCK bỏ qua; RESET/ABORTED/NOTCONN → `StopConnections` | `SocketClient.cpp` |
+| `Write` | `WSASend` + `select(fd_count/fd_array)` | `send()`; **lỗi ⇒ `dwSendNumBytes = 0`** (bản Win32 giữ số byte cũ → có thể trừ hai lần khi WOULDBLOCK); `FD_ZERO/FD_SET` nạp lại mỗi vòng, `timeval` bản sao; **quá 5 s không gửi được → đóng kết nối** (bản Win32 cũng kết thúc ở đó vì `select` đã xoá fd_set → lỗi) | `SocketClient.cpp` |
+| tạo socket / cipher | `WSASocket`, `select(0,…)` | `JxNetCreateTcpSocket()` (Windows vẫn `WSASocket`), `select(s+1,…)` | `SocketClient.cpp`, `JxNetShim.h` |
+| khác | `::Sleep(1)` trong `ReadCompleted`, `DllMain` | `SDL_Delay(1)`, `DllMain` chỉ `_WIN32` | `ClientStage.cpp`, `Rainbow.cpp` |
+
+`Sources/MultiServer/Common/JxNetShim.h`: Windows = vài inline (`JxNetLastError/SetNonBlocking/SockError/CreateTcpSocket`, mã lỗi `JX_NET_*`);
+khối POSIX (SOCKET/WSABUF/OVERLAPPED/closesocket/FD_*/Interlocked…) **chưa biên dịch** — hoàn thiện ở pha Android cùng lớp đệm kiểu Win32 chung.
+Chưa đổi: `Utils.cpp` (`FormatMessage`, `OutputDebugString`, `atlbase.h`), `CUsesWinsock` (WSAStartup), `IOBuffer` (`OVERLAPPED`/`WSABUF`/Interlocked) —
+trên Windows chạy nguyên; POSIX qua shim. Các tệp máy chủ trong Common (IOCompletionPort, SocketServer, KSocketClient2…) vẫn biên dịch trong cấu hình
+SDL trên Windows nhưng Android sẽ chỉ lấy tập con Rainbow cần.
+
+**Build:** `them_cfg_sdl_net.py` thêm `ReleaseSDL|x64` cho `Common.vcxproj` (→ `Lib\release64sdl\common.lib`) và `Rainbow.vcxproj` (link common.lib SDL +
+SDL3.lib → `bin\client64sdl\Rainbow.dll`, import SDL3.dll). `build_chuoi_sdl.ps1` nay: common → rainbow → engine → core → s3client. `tao_client64sdl.ps1`
+không chép đè Rainbow.dll nữa. BẪY: post-build gốc của Rainbow dùng `..\..\..\..\bin` (4 cấp = `D:\bin`, đường của cây dự án gốc); bản SDL dùng 3 cấp.
+
+**Kiểm tự động (không cần máy chủ game):** `ReverseTools/mobile_x64/test_rainbow/` — `may_chu_gia.py` (TCP 127.0.0.1, gửi bắt tay `ACCOUNT_BEGIN`, giải mã XOR
+khoá client, trả `ECHO:` mã hoá khoá server, `BYE` → đóng; tuỳ chọn `--gop` gộp gói, `--cham` trễ) + `test_rainbow.cpp` (nạp `Rainbow.dll` qua `CreateInterface` →
+`IClientFactory` → `IClient` y như `NetConnectAgent`: cổng sai → E_FAIL, kết nối, 5 gói + gói 9.000 B + 1 B, máy chủ đóng → callback Close, `Shutdown/Cleanup/Release`,
+kết nối lần 2) + `chay_test.ps1` (dịch cl x64, chạy cho từng thư mục). Kết quả 16:0x: **PASS cả `bin\client64` (Win32) lẫn `bin\client64sdl` (SDL)** — cùng
+hành vi: cổng sai thất bại sau ~2 s, trễ hồi đáp 0–16 ms, gói 9.005 B nguyên vẹn, callback Close ~15 ms sau khi máy chủ đóng, kết nối lại OK. Khác biệt duy nhất
+lúc đầu: bản SDL thiếu callback `enumServerConnectCreate` (Win32 có vì WSAEventSelect ghi nhận FD_CONNECT sau khi đã nối) → tái hiện ở 2b-2b. Game
+(`ClientCallBack` trong `NetConnectAgent.cpp`) chỉ dùng `enumServerConnectClose`.

@@ -66,6 +66,6 @@ W = ROOT + "\\Sources\\MultiServer\\"
 clone(W + "Common\\Common.vcxproj",
       post_cmd="if not exist ..\\..\\..\\Lib\\release64sdl md ..\\..\\..\\Lib\\release64sdl\ncopy x64\\ReleaseSDL\\Common.lib ..\\..\\..\\Lib\\release64sdl\\common.lib")
 clone(W + "Rainbow\\Rainbow.vcxproj",
-      post_cmd="if not exist ..\\..\\..\\..\\bin\\client64sdl md ..\\..\\..\\..\\bin\\client64sdl\ncopy x64\\ReleaseSDL\\Rainbow.dll ..\\..\\..\\..\\bin\\client64sdl\\Rainbow.dll\nif exist x64\\ReleaseSDL\\Rainbow.pdb copy x64\\ReleaseSDL\\Rainbow.pdb ..\\..\\..\\..\\bin\\client64sdl\\Rainbow.pdb",
+      post_cmd="if not exist ..\\..\\..\\bin\\client64sdl md ..\\..\\..\\bin\\client64sdl\ncopy x64\\ReleaseSDL\\Rainbow.dll ..\\..\\..\\bin\\client64sdl\\Rainbow.dll\nif exist x64\\ReleaseSDL\\Rainbow.pdb copy x64\\ReleaseSDL\\Rainbow.pdb ..\\..\\..\\bin\\client64sdl\\Rainbow.pdb",
       link_edits=[(r"..\..\..\Lib\release64\common.lib", r"..\..\..\Lib\release64sdl\common.lib")])
 print("XONG cau hinh SDL Common + Rainbow")

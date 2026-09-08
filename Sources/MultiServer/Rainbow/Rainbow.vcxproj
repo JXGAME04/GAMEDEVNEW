@@ -339,9 +339,9 @@ copy .\x64\release\Rainbow.pdb ..\..\..\..\bin\server\release\Rainbow.pdb</Comma
       <ProgramDataBaseFileName>.\x64\ReleaseSDL\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>if not exist ..\..\..\..\bin\client64sdl md ..\..\..\..\bin\client64sdl
-copy x64\ReleaseSDL\Rainbow.dll ..\..\..\..\bin\client64sdl\Rainbow.dll
-if exist x64\ReleaseSDL\Rainbow.pdb copy x64\ReleaseSDL\Rainbow.pdb ..\..\..\..\bin\client64sdl\Rainbow.pdb</Command>
+      <Command>if not exist ..\..\..\bin\client64sdl md ..\..\..\bin\client64sdl
+copy x64\ReleaseSDL\Rainbow.dll ..\..\..\bin\client64sdl\Rainbow.dll
+if exist x64\ReleaseSDL\Rainbow.pdb copy x64\ReleaseSDL\Rainbow.pdb ..\..\..\bin\client64sdl\Rainbow.pdb</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
