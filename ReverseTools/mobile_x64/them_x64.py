@@ -56,7 +56,7 @@ def fix_clone(s):
     s = s.replace(cond32, cond64)
     # thu muc dau ra: .\Release\ -> .\x64\Release\ ; Release/Game.exe ; ClientRelease -> x64\ClientRelease
     s = re.sub(r"(?i)(?<![\\\w])\.\\(Release|Debug|ClientRelease|ClientDebug)\\", r".\\x64\\\1\\", s)
-    s = re.sub(r"(?i)(?<![\\\w.])(Release|ClientRelease)\\(Game\.\w+|Engine\.\w+|CoreClient\.\w+|Represent3\.\w+|Core\.\w+|S3Client\.\w+|FilterText_StaticLib\.\w+)", r"x64\\\1\\\2", s)
+    s = re.sub(r"(?i)(?<![\\\w.])(Release|ClientRelease)\\(\w+\.(?:dll|lib|exe|pdb|map|bsc|pch))", r"x64\\\1\\\2", s)
     s = s.replace("Release/Game.exe", "x64/Release/Game.exe")
     s = re.sub(r"\\[Ll]ib\\[Rr]elease\\", r"\\Lib\\release64\\", s)
     s = re.sub(r"/lib/release/", "/lib/release64/", s)

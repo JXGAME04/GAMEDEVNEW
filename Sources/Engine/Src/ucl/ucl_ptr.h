@@ -86,6 +86,12 @@ extern "C" {
 
 
 /* Unsigned type that has *exactly* the same number of bits as a ucl_voidp */
+/* [X64 08/09] Win64: unsigned long chi 4 byte -> dung kieu 8 byte cho ucl_ptr_t/ucl_sptr_t */
+#if !defined(__UCL_HAVE_PTR_T) && defined(_WIN64)
+     typedef unsigned __int64   ucl_ptr_t;
+     typedef __int64            ucl_sptr_t;
+#    define __UCL_HAVE_PTR_T
+#endif
 #if !defined(__UCL_HAVE_PTR_T)
 #  if defined(ucl_ptr_t)
 #    define __UCL_HAVE_PTR_T

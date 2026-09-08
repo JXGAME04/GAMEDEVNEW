@@ -48,8 +48,8 @@ DWORD KCodecLzo::Compress(
 		dindex = ((0x21*(((((((unsigned)(ip[3])<<6)^ip[2])<<5)^ip[1])<<5)^ip[0]))>>5) & 0x3fff;
 		m_pos = dict [dindex];
 		
-		if	(((unsigned)m_pos < (unsigned)pIn)  ||
-			((m_off = (unsigned)((unsigned)ip-(unsigned)m_pos) ) <= 0) ||
+		if	(((KUPARAM)m_pos < (KUPARAM)pIn)  ||	// [X64 08/09] so sanh/tru con tro bang KUPARAM (uintptr_t)
+			((m_off = (unsigned)((KUPARAM)ip-(KUPARAM)m_pos) ) <= 0) ||
 			(m_off > 0xbfff))
 			goto literal;
 		
@@ -60,8 +60,8 @@ DWORD KCodecLzo::Compress(
 		
 		m_pos  =  dict [dindex];
 		
-		if ((unsigned)(m_pos)  < (unsigned)(pIn)   ||
-			((m_off = (unsigned)( (int)((unsigned)ip-(unsigned)m_pos))) <= 0)||
+		if ((KUPARAM)(m_pos)  < (KUPARAM)(pIn)   ||
+			((m_off = (unsigned)( (int)((KUPARAM)ip-(KUPARAM)m_pos))) <= 0)||
 			(m_off > 0xbfff))
 			goto literal;
 		

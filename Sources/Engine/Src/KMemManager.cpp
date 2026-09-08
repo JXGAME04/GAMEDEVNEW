@@ -120,7 +120,7 @@ void* KMemManager::Malloc(int size)
 		{
             KBlockHeader *bh = (KBlockHeader *)p;
             KBlockTailer *bp = (KBlockTailer *)(p + size + sizeof(KBlockHeader));
-            bh->next = (void *) -1L;// 表示只有一块
+            bh->next = (void *)(KNPARAM)-1L;// 表示只有一块
             bh->size = size;
             bh->magic = HEAD_MAGIC;
             bp->magic = TAIL_MAGIC;
@@ -146,7 +146,7 @@ void* KMemManager::Malloc(int size)
 		KBlockHeader *bh = (KBlockHeader *)p;
 		KBlockTailer *bp = (KBlockTailer *)(p + size + sizeof(KBlockHeader));
 		m_blocks[i] = bh->next;
-		bh->next = (void *)i;
+		bh->next = (void *)(KNPARAM)i;	// [X64 08/09] chi so nam trong con tro next
 		bh->size = size;
 		bh->magic = HEAD_MAGIC;
 		bp->magic = TAIL_MAGIC;
@@ -188,7 +188,7 @@ void KMemManager::Free(void* p)
         g_MessageBox("Memory Corrupted : Size = %d", bh->size);
 
 	// 单独分配的内存块
-    if (((int)bh->next) == -1L)
+    if (((KNPARAM)bh->next) == -1L)
 	{
         KChunkHeader *ch = (KChunkHeader *)(((char *)bh) - sizeof(KChunkHeader));
         bh->size = 0;
@@ -196,7 +196,7 @@ void KMemManager::Free(void* p)
     }
 	else
 	{
-        int i = (int)bh->next;
+        int i = (int)(KNPARAM)bh->next;
         KBlockHeader* next = (KBlockHeader *)m_blocks[i];
         m_blocks[i] = bh;
         bh->next = next;
