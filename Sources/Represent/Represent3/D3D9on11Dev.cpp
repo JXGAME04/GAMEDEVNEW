@@ -17,6 +17,9 @@ unsigned g_uRep3Presents = 0;
 unsigned g_uRep3PresentSkip = 0;
 unsigned g_uRep3BatchQuads = 0;
 unsigned g_uRep3BatchDraws = 0;
+static int s_nRep3BuffersUsed = 0;
+static int sd_BufferCount_log() { return s_nRep3BuffersUsed; }
+
 double   g_dRep3DrawMs = 0.0;
 unsigned g_uRep3Draws = 0;
 
@@ -127,7 +130,7 @@ bool CDev11::Init()
 	if (!CreatePipelineObjects()) return false;
 	if (g_nRep3Atlas) m_pAtlas = new CAtlasMgr(this);
 	R11Log("thiet bi: feature level 0x%X, %ux%u, windowed=%d, vsync=%d, tearing=%d", (unsigned)m_fl, m_bbW, m_bbH, (int)(m_pp.Windowed != FALSE), (int)(m_pp.PresentationInterval != D3DPRESENT_INTERVAL_IMMEDIATE), (int)m_bTearing);
-	R11Log("atlas: %s", m_pAtlas ? "BAT (trang 1024x1024 BGRA8, texture <= 512 khong RT)" : "tat");
+	R11Log("atlas: %s | %d buffer, do tre trinh chieu %d khung, khong cho %d | gop lenh %d", m_pAtlas ? "BAT (trang 1024x1024 BGRA8, texture <= 512 khong RT)" : "tat", (int)sd_BufferCount_log(), g_nRep3Latency, g_nRep3NoWait, g_nRep3Batch);
 	return true;
 }
 
@@ -140,12 +143,13 @@ bool CDev11::CreateSwapChain(UINT w, UINT h, bool bWindowed)
 	m_swapFlags = m_bTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 	DXGI_SWAP_CHAIN_DESC1 sd; memset(&sd, 0, sizeof(sd));
 	sd.Width = w; sd.Height = h; sd.Format = DXGI_FORMAT_B8G8R8A8_UNORM; sd.SampleDesc.Count = 1;
-	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; sd.BufferCount = 2; sd.Scaling = DXGI_SCALING_STRETCH;
+	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; sd.BufferCount = (g_nRep3Buffers < 2) ? 2 : ((g_nRep3Buffers > 4) ? 4 : g_nRep3Buffers); sd.Scaling = DXGI_SCALING_STRETCH;	// [m]
 	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; sd.AlphaMode = DXGI_ALPHA_MODE_IGNORE; sd.Flags = m_swapFlags;
 	if (!g_nRep3Flip)	// kieu bitblt cu: Present = chep vao be mat DWM, khong xep hang khung
 	{
 		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; sd.BufferCount = 1; sd.Flags = 0; m_swapFlags = 0; m_bTearing = false;
 	}
+	s_nRep3BuffersUsed = (int)sd.BufferCount;
 	HRESULT hr = m_pFactory->CreateSwapChainForHwnd(m_pDev, m_hWnd, &sd, NULL, NULL, &m_pSwap);
 	if (FAILED(hr))
 	{
@@ -162,7 +166,7 @@ bool CDev11::CreateSwapChain(UINT w, UINT h, bool bWindowed)
 	m_pFactory->MakeWindowAssociation(m_hWnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 	{	// [D3D11 08/09 g] toi da 1 khung cho trinh chieu -> Present(DO_NOT_WAIT) bo khung thua thay vi chan
 		IDXGIDevice1* pDev1 = NULL;
-		if (SUCCEEDED(m_pDev->QueryInterface(__uuidof(IDXGIDevice1), (void**)&pDev1)) && pDev1) { pDev1->SetMaximumFrameLatency(2); pDev1->Release(); }
+		if (SUCCEEDED(m_pDev->QueryInterface(__uuidof(IDXGIDevice1), (void**)&pDev1)) && pDev1) { pDev1->SetMaximumFrameLatency(g_nRep3Latency < 1 ? 1 : (g_nRep3Latency > 16 ? 16 : g_nRep3Latency)); pDev1->Release(); }
 	}
 	if (!bWindowed)
 	{
@@ -336,7 +340,7 @@ HRESULT CDev11::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDe
 	UINT flags = 0;
 	BOOL bFull = FALSE; m_pSwap->GetFullscreenState(&bFull, NULL);
 	if (interval == 0 && m_bTearing && !bFull) flags |= DXGI_PRESENT_ALLOW_TEARING;
-	if (interval == 0 && g_nRep3Flip) flags |= DXGI_PRESENT_DO_NOT_WAIT;	// [D3D11 08/09 g] hang day -> bo khung, khong chan
+	if (interval == 0 && g_nRep3Flip && g_nRep3NoWait) flags |= DXGI_PRESENT_DO_NOT_WAIT;	// [D3D11 08/09 l] chi khi Rep3NoWait=1: hang day -> bo khung (game ve theo dot -> giat)
 	HRESULT hr = m_pSwap->Present(interval, flags);
 	if (hr == DXGI_ERROR_WAS_STILL_DRAWING) { g_uRep3PresentSkip++; hr = S_OK; }
 	m_bRtBound = false;

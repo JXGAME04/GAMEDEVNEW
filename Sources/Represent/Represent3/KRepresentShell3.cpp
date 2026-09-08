@@ -52,6 +52,9 @@ int  g_nRep3Api       = 9;	// [D3D11 08/09]
 int  g_nRep3ApiOn     = 9;	// [D3D11 08/09]
 int  g_nRep3Atlas     = 1;	// [D3D11 08/09 d] gom texture nho vao trang atlas (chi khi Rep3Api=11)
 int  g_nRep3Flip      = 1;	// [D3D11 08/09 f] 1 = flip model (DWM ghep khung tron ven, khong xe hinh; mac dinh), 0 = bitblt cu
+int  g_nRep3Buffers   = 3;	// [D3D11 08/09 m] so backbuffer flip
+int  g_nRep3NoWait    = 0;	// [D3D11 08/09 l] 0 = Present cho nhu D3D9 (khong bo khung)
+int  g_nRep3Latency   = 3;	// [D3D11 08/09 k] so khung toi da cho trinh chieu
 int  g_nRep3Batch     = 1;	// [D3D11 08/09 j] gop quad cung trang thai thanh mot Draw
 int  g_nRep3Tearing   = 0;	// [D3D11 08/09 f] 1 = ALLOW_TEARING khi flip + vsync 0 (xe hinh, do tre thap nhat)
 int  g_nRep3Ex        = 0;	// [RAM 08/09] 1 = tao D3D9Ex (ky vong driver khong giu ban sao texture trong RAM)
@@ -502,6 +505,9 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Flip      = Rep3Ini("Rep3Flip", 1);	// [D3D11 08/09 f] bitblt DISCARD bi DWM ghep giua chung -> "gon song" khi di chuyen
 	g_nRep3Tearing   = Rep3Ini("Rep3Tearing", 0);	// [D3D11 08/09 f]
 	g_nRep3Batch     = Rep3Ini("Rep3Batch", 1);	// [D3D11 08/09 j]
+	g_nRep3Latency   = Rep3Ini("Rep3Latency", 3);	// [D3D11 08/09 k]
+	g_nRep3NoWait    = Rep3Ini("Rep3NoWait", 0);	// [D3D11 08/09 l]
+	g_nRep3Buffers   = Rep3Ini("Rep3Buffers", 3);	// [D3D11 08/09 m]
 	g_nRep3Ex        = Rep3Ini("Rep3Ex", 0);		// [RAM 08/09]
 	if (g_nRep3Ex)
 		g_nRep3Pool = 1;	// D3D9Ex khong co POOL_MANAGED: bat buoc dem SYSTEMMEM + DEFAULT

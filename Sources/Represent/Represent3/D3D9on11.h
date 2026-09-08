@@ -21,6 +21,9 @@ void Rep3_D3D11VramInfo(unsigned* puUsedMB, unsigned* puBudgetMB);   // VRAM tie
 extern int      g_nRep3Batch;        // [Client] Rep3Batch: 1 = gop quad cung trang thai thanh mot Draw (mac dinh), 0 = tat
 extern unsigned g_uRep3BatchQuads;   // so quad da gop trong ky
 extern unsigned g_uRep3BatchDraws;   // so Draw thuc te tu cac lo gop
+extern int      g_nRep3Buffers;      // [Client] Rep3Buffers: so backbuffer flip (2..4), mac dinh 3
+extern int      g_nRep3NoWait;       // [Client] Rep3NoWait: 1 = Present khong cho (hang day thi bo khung); mac dinh 0 = cho nhu D3D9
+extern int      g_nRep3Latency;      // [Client] Rep3Latency: so khung toi da cho trinh chieu (1..3), mac dinh 3
 extern int      g_nRep3Flip;         // [Client] Rep3Flip: 1 = swapchain flip (mac dinh), 0 = kieu bitblt cu (DISCARD)
 extern double   g_dRep3PresentMs;    // tong ms trong Present ke tu lan in thong ke truoc
 extern unsigned g_uRep3Presents;     // so lan Present
