@@ -83,3 +83,36 @@ Lần sau họ đẩy tiếp: cứ `git rebase origin/main`; nếu xung đột t
 - Post-build của dự án dùng `..\..\..\bin` = **`D:\bin`** (ngoài cây), không phải cây live; cấu hình x64 đã đổi về `..\..\bin\client64`.
 - Tệp có cả LF lẫn CRLF → tách theo `\n`, giữ `\r` từng dòng (`va_x64_nguon2.py`).
 - Regex `(unsigned)(ip[3])` suýt bị đổi (giá trị byte, không phải con trỏ) — script tự dừng nhờ đếm số khớp.
+
+## 7. Chạy thử 12:3x–13:1x (chủ chạy `ChoiGame64.bat`) — kết quả và việc còn mở
+
+| Chủ báo | Kết luận | Trạng thái |
+|---|---|---|
+| Hộp thoại "KMp3Music: mp3 decode head fail" | x64 chưa có mp3lib → `Mp3Init` trả FALSE êm, ghi log một lần | sửa (daedb46e) |
+| "đã vào game oke nhưng di chuyển màn hình bị gợn sóng" | cả live lẫn x64 chạy lớp D3D9on11 (`Rep3Api=11`); đổi client64 sang `Rep3Api=9` → "di chuyển đã oke" ⇒ thuộc phiên D3D11, đã ghi `PHOICHOP` (250a2e5a) | chuyển phiên D3D11 |
+| "crash khi thoát game đăng nhập lại" | dump 12:42 `KUiMailList::AddHeader` đọc `FFFFFFFFFCB9D3F0` = con trỏ 64-bit bị cắt: `sNotify(int nCmd, int nParam)` (KMailClient/KAuctionClient/KChienLenhClient) và `sSendOp(..., int nParam)` (UiAuction/UiChienLenh/UiMail) nhận `(KNPARAM)&struct` → `KNPARAM` | sửa (8d4bef4d), Game.exe 13:02 |
+| "lúc vào game nhân vật hiển thị sai hình ảnh (như đang mang mặt nạ), tháo 1 món mặc lại thì bình thường" | chưa rõ gốc; đã loại `Option.GetLow(LowPlayer)` (ini `GiamPlayer=0`), diff x64 ở tệp ngoại hình chỉ là ép kiểu, cỡ `PLAYER_SYNC` bằng nhau; **đã gắn bộ đếm `[NGOAIHINH]`** (6ad17f4b) | MỞ — chờ log |
+
+**Mẫu nhận diện sập x64:** địa chỉ dạng `FFFFFFFFxxxxxxxx` trong `jx_crash.log` = con trỏ bị cắt còn 32 bit rồi mở rộng dấu qua tham số `int`.
+Đã rà tĩnh 25 chỗ gọi của 6 hàm tiện ích có `int nParam` nhận con trỏ — đều đã đổi; cảnh báo C4244 còn lại là `__int64 → int` của giá trị nhỏ.
+
+**Cỡ gói x86 vs x64 (đo lại 12:5x, `do_sizeof_goi.py` nay lấy tên struct ở cả `Sources/Core/Src/KProtocol.h` — bản client biên dịch; bản
+`Headers/` là của Goddess):** chỉ 3 struct lệch, đều vì chứa `LPVOID m_lpBuf`: `S2C_PLAYER_SYNC`, `PLAYER_COMMAND`, `SHOW_MSG_SYNC` (9 → 13 byte).
+Mã hai phía đặt payload ngay sau 5 byte đầu (`sizeof(X) - 1 - sizeof(LPVOID)`, client đọc `&pSync->m_lpBuf`) nên trung lập kiến trúc; máy chủ vốn
+đã x64 nên client x64 khớp máy chủ hơn cả Win32. Ba chỗ gửi `m_wLength = sizeof(SHOW_MSG_SYNC) - 1` (CoreShell SUPERSHOP/MASKFEATURE, KItemList 5678)
+chỉ dư 4 byte rác, không đổi nghĩa. Không sửa gì ở gói (Gate 2).
+
+**Bộ đếm chẩn đoán `[NGOAIHINH]` (chỉ client, chỉ nhân vật của mình, ghi vào `bin\client64\jx_auto.log`):** `SyncPlayer`/`SyncPlayerMin`
+(armor/helm/weapon/mask(gói)/mantle/horse/fig/low), `KItemList::Equip`/`UnEquip` (item/detail/part/place → các *Type + `m_nMaskLock`),
+`KNpc::Activate` ngay trước `ReSetRes` vì mặt nạ, `SwitchMaskFeature`, `SyncMaskLock`. Cách đọc: sau khi chủ vào game bằng x64, lọc
+`grep NGOAIHINH jx_auto.log` — dòng nào đặt `mask` ≠ 0 (hoặc `fig`/`armor`/`helm` lạ) cho nhân vật mình là thủ phạm; so với thứ tự gói lúc đăng nhập.
+Câu hỏi cho chủ: nhân vật có đeo mặt nạ / bật "ẩn mặt nạ" không; PC 32-bit có bị không.
+
+**Đồng bộ với main (luật chủ 12:3x):** đã rebase 3 lần trong ngày (D3D11 j 25dc505a, k+l+m 9ab32606); Represent3 x64 build lại 13:01 (j);
+run20 (hẹn 13:41, sau trận TK, `build_sau_tran.ps1`) dựng Core (bộ đếm) + Represent3 (k+l+m) + Game.exe.
+
+**Bẫy mới:** `Lib/release/CoreClient.lib` (Win32, theo dõi trong git) trong worktree bị **chép từ cây chính `D:\GAMEDEVNEW`** (bản build 07/09 17:58
+của phiên khác, chưa commit) → hiện là bản 62.140 B khác HEAD; x64 không dùng nó (`Lib/release64/`) → đã `git checkout --` lại, KHÔNG commit.
+`Lib/lua54/x64/Lua54Dll.*` trong git là bản cũ (thiếu `lua4_pushboolean`) → đã thay bằng bản dựng lại (bacbdcb2). Post-build S3Client x64 luôn báo
+6 lỗi MSB3073 (copy `Game.map` không tồn tại) — chỉ tin `error C`/`LNK`. Công cụ PowerShell nền có trần 10 phút → script chờ-rồi-build phải chạy tách
+rời bằng `Start-Process`.
