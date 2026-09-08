@@ -1210,6 +1210,43 @@ Thành phần byte tới client (`[BC-TOP]`, 182 cửa sổ): **221: 66,7 %** ·
    thể nói vá j là gốc — chỉ nói được là **chưa tái hiện**.
 5. Mất hiệu ứng: `LoadImage FAIL` = 0, cache 159–419 MB trên 1.500 → về phía số liệu không còn dấu hiệu; cần chủ xác nhận bằng mắt.
 
+### 8.25 Trận Tống Kim 04:21–04:51 (08/09) trên TOÀN BỘ bản mới, so với trận 20:27 (07/09) — chủ yêu cầu "kéo log so sánh"
+
+Chủ nói "trận 3h27 sáng"; theo `[GUI-DO]` lúc 03:27 client chỉ nhận 100–250 gói/s (không có trận), trận thật của sáng nay là **04:21–04:51**
+(timer `tongkim=1` 04:21, thư thưởng 04:51). Máy chủ pid 67684 khởi động 04:15 (`CoreServer.dll` **27e5415e** [FX-SV] + `heaven.dll`
+9fc84e88 khoá riêng), client pid 47564 khởi động 04:10 (`CoreClient.dll` **19731ad4** [FX], `Represent3.dll` **f4c10a85** trần cache
+1024 + `fx:`; chưa có Rep3Ex). 1.000 bot, Tống Kim trận 500, chủ CaiBang.
+
+**Mất dữ liệu:** `jx_auto.log` client xoay vòng 64 MB **mỗi ~27 phút** (`[S6-SYNC]` 385.596 dòng/27 phút = 238 dòng/giây, chiếm 68 %; rồi
+`DATAU-GATE` 25k, `MOVE-RESET` 25k, `S6-ME` 24k, `S6-CMD` 14k), máy chủ mỗi ~40 phút (`SPICK-WORLD/RECV/FAR` 37k mỗi nhãn, `SPICK-BELONG`
+25k, `SPICK-BAG` 23k, rồi 14 nhãn `E4_*/E3_*` mỗi nhãn 5–13k). Tới 08:47 cả hai tệp chỉ còn từ 07:29/08:20 → **`[FX]`, `[FX-SV]`, `[NS-BO]`,
+`[S7-*]` của trận này không còn**. Còn lại: `jx_gui_server.log` (đường gửi), `jx_perf_server.log`, `jx_rep3.log`, `jx_paint.log`, `hethong.log`.
+
+| Đại lượng | 20:27 07/09 (heaven cũ, CoreClient vá m) | **04:21 08/09 (tất cả bản mới)** |
+|---|---|---|
+| Gói tới client TB / p95 / max | 778 / 1.990 / 2.691 gói/s | **1.064 / — / 4.134 gói/s** (trận đông hơn) |
+| Byte tới client TB / max | 36,8 / 74,1 KB/s | **43,5 / 102,7 KB/s** |
+| Đường gửi mỗi nhịp TB (goi + xả) | 0,010 ms | 0,011 ms; nhịp nặng nhất goi 0,767 + xả 1,374 ms |
+| `Write` µs TB / max | 4,4 / 5,9 | 4,7 / 33,4 |
+| Đệm đầy gửi ngay | 233 lần | 1.125 lần (cửa sổ 66 lần khi 2.930 gói/s) |
+| TICK từng phút | 8,2–10,05 ms, max 54 | **7,9–9,05 ms, max 48** trong trận; **04:21 13,6 ms (max 128, trễ 17 nhịp)** và **04:25 18,8 ms (p95 45, max 98,6, trễ 27 nhịp)** = SW_ACTIVATE 123 / 68,8 ms lúc 500 bot vào và dàn trận |
+| Client RAM riêng | 656 MB max (phiên 20:23) | 373 → **761 MB**, texture 135 → **735 MB**; hồi quy trong trận `RAM = 246 + 0,76 × (texture+raw)` |
+| Vẽ | 124 lượt/s, 5 khung giật, max 125 ms | 124 lượt/s, **10 khung giật** (3 lần ≥ 100 ms, max 133), 7/10 do logic > paint |
+| fps TB thấp nhất | 55 | 58 |
+| `LoadImage FAIL` | 0 | 0 |
+| Lớp vẽ `fx:` | — | **tex_null 0, tao_hong 0, khung_khong_tex 0** → không bỏ hình nào; giải mã đồng bộ 107.449 khung = 3,4 s cả trận = **1,8 ms mỗi giây** (~0,03 ms/khung vẽ) |
+| `anh_null` | — | **37,6 triệu** = ~311 lần/khung vẽ: 200 sprite biểu cảm `\spr\Ui3\表情\140–339.spr` **không có trên đĩa lẫn pak** (thư mục GBK "表情" = biểu cảm), UI vẫn xin mỗi khung |
+| Chết / nằm bẹp, `[FX]`, `[FX-SV]`, `[NS-BO]` | 9 chết, 0 nằm bẹp | **mất log** |
+
+**Đọc số:** trận nặng hơn 37 % về gói và 39 % về byte tới client mà đường gửi vẫn ~0,01 ms/nhịp, TICK giữ 8–9 ms, lớp vẽ không bỏ hình,
+fps không tụt → các phần tối ưu (khoá riêng Heaven, DELTA, trần cache 1024, bộ đếm) **không gây hồi quy**. Hai điểm mới cần làm:
+1. **Hạ tần suất nhãn tràn log** ở cả hai bên (client `[S6-SYNC]`/`S6-ME`/`S6-CMD`/`MOVE-RESET`/`DATAU-GATE`, máy chủ `SPICK-*`) về
+   `AUTOLOG_EVERY(1000)`, nếu không mọi bộ đếm 10 s của một trận 30 phút sẽ mất nửa đầu. Không đổi hành vi game.
+2. **200 sprite biểu cảm thiếu** (`spr\Ui3\表情\140–339.spr`): hoặc bổ sung tệp, hoặc UI đừng xin mỗi khung; hiện tốn 311 lần tra
+   cache mỗi khung vẽ (nhỏ nhưng vô ích) và biểu cảm không hiện.
+Hai nhịp nặng 04:21/04:25 (SW_ACTIVATE tới 123 ms) là lúc 500 bot vào và dàn trận, không thuộc đường gửi — nếu chủ thấy giật lúc bắt đầu
+trận thì đó là chỗ để soi (`KRegion::Activate` lúc nạp 500 NPC cùng nhịp).
+
 ---
 
 > **PHIEN SAU DOC TRUOC:** `D:\GAMEDEVNEW\BANGIAO_PHIEN_SAU_BANGTHONG_0709.md` — ban giao gon: trang thai hien tai, duong loi chu chot, chuoi va a-m, viec dang treo theo thu tu, cach do, cach chung khe .moi, bay da dinh, ban do ma. Tep nay (8.x) la so lieu chi tiet tung dot de tra cuu.
