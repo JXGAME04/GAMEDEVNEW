@@ -3577,7 +3577,8 @@ void	KProtocolProcess::s2cSkillFired(BYTE * pMsg)
 		else if (pGoi->nTgtMpsX > 0 && pGoi->nTgtMpsY > 0)
 		{	// [HUSK 08/09 c] khong co NPC muc tieu tren client (chua nap / mo coi): ve chieu bay toi toa do muc tieu
 			bVe = pSkill->Cast(nIdx, pGoi->nTgtMpsX, pGoi->nTgtMpsY);
-			g_nFX_husk_toado++;
+			if (bVe) g_nFX_husk_toado++;	// [HUSK 08/09 d] chi dem khi ve duoc; 've' KHONG gom so nay nua (ban 32da0130 've' gom ca toado)
+			if (bVe) return;
 		}
 		else { g_nFX_husk_notgt++; return; }
 	}
