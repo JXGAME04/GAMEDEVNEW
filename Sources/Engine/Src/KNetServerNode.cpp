@@ -179,7 +179,7 @@ bool KNetServerNode::Listen(void)
 			&addr_len);
         if (m_AcceptSocket != INVALID_SOCKET)
 		{
-            g_DebugLog("client %d: connection accepted from %s.\n", (int) this,
+            g_DebugLog("client %d: connection accepted from %s.\n", (int)(KNPARAM) this,	// [X64 08/09] chi in so nhan dang
                      inet_ntoa(m_ClientAddr.sin_addr));
             retval = TRUE;
         } 

@@ -105,7 +105,7 @@ int LuaGotoLabel(Lua_State * L)
 KStepLuaScript * LuaGetScript(Lua_State * L)
 {
 	KStepLuaScript * pOrScript = (KStepLuaScript *)g_StoryScriptList.GetScript(L);
-	unsigned int Addr = (unsigned int )lua_tonumber(pOrScript->m_LuaState, 1);
+	KUPARAM Addr = (KUPARAM)lua_tonumber(pOrScript->m_LuaState, 1);	// [X64 08/09] dia chi lua_State di qua so Lua (double), x64 phai rong bang con tro
 	Lua_State * pResultState = (Lua_State * )Addr;
 	return  (KStepLuaScript *) g_StoryScriptList.GetScript(pResultState);
 }
@@ -144,7 +144,7 @@ int LuaNewScript(Lua_State * L)
 	pNode->pScript = pScript;
 	g_StoryScriptList.AddTail(pNode);
 	pScript->RunMain();
-	Lua_PushNumber(L, (unsigned int) pScript->m_LuaState);
+	Lua_PushNumber(L, (lua_Number)(KUPARAM) pScript->m_LuaState);	// [X64 08/09]
 	return 1;
 
 }

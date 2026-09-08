@@ -73,14 +73,14 @@ void UiSoundPlayItem(int idx)
 		
 	if (CItem.m_dwRandomSeed)
 		if (g_pCoreShell)
-			g_pCoreShell->OperationRequest(GOI_PLAY_SOUND, (unsigned int)(&s_SoundFileName[soundIdx]), 0);
+			g_pCoreShell->OperationRequest(GOI_PLAY_SOUND, (KUPARAM)(&s_SoundFileName[soundIdx]), 0);
 }
 
 //播放指定的声音
 void UiSoundPlay(UI_SOUND_INDEX eIndex)
 {
 	if (g_pCoreShell)
-		g_pCoreShell->OperationRequest(GOI_PLAY_SOUND, (unsigned int)(&s_SoundFileName[eIndex]), 0);
+		g_pCoreShell->OperationRequest(GOI_PLAY_SOUND, (KUPARAM)(&s_SoundFileName[eIndex]), 0);
 }
 
 //播放指定的声音

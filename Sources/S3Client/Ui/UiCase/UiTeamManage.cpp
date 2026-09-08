@@ -407,7 +407,7 @@ void KUiTeamManage::OnInvite()
 	{		
 		if (m_Info.cNumMember == 0)
 			g_pCoreShell->TeamOperation(TEAM_OI_CREATE, 0, 0);
-		g_pCoreShell->TeamOperation(TEAM_OI_INVITE,	(unsigned int)(&m_pNearbyPlayersList[nCurSel]), 0);
+		g_pCoreShell->TeamOperation(TEAM_OI_INVITE,	(KUPARAM)(&m_pNearbyPlayersList[nCurSel]), 0);
 	}
 }
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- [X64 08/09] JpgLib static lib (tu JpgLib.dsp VC6). Chi dung cho ban client x64; ban Win32 van dung Lib\release\JpgLib.lib co san. -->
+  <!-- [X64 08/09] JpgLib static lib (tu JpgLib.dsp VC6). Win32: bo giai ma hop ngu cu (giu de doi chieu, ban PC van dung Lib\release\JpgLib.lib co san).
+       x64: KJpegLib_wic.cpp (giai ma bang WIC cua Windows, cung 4 ham API), cac .c hop ngu bi loai khoi build x64. -->
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
@@ -37,7 +38,6 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <CompileAs>CompileAsC</CompileAs>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Lib>
@@ -49,14 +49,42 @@ copy $(Platform)\$(Configuration)\JpgLib.lib ..\..\Lib\release64\JpgLib.lib</Com
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Src\KJpegColor.c" />
-    <ClCompile Include="Src\KJpegDecode.c" />
-    <ClCompile Include="Src\KJpegHuffman.c" />
-    <ClCompile Include="Src\KJpegIdct.c" />
-    <ClCompile Include="Src\KJpegIdct2d.c" />
-    <ClCompile Include="Src\KJpegLib.c" />
-    <ClCompile Include="Src\KJpegQuanty.c" />
-    <ClCompile Include="Src\KJpegSegment.c" />
+    <ClCompile Include="Src\KJpegColor.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\KJpegDecode.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\KJpegHuffman.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\KJpegIdct.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\KJpegIdct2d.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\KJpegLib.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\KJpegQuanty.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\KJpegSegment.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\KJpegLib_wic.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\KJpegLib.h" />

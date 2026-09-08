@@ -155,7 +155,7 @@ void KUiSelNativePlace::LoadList(int nPlaceId)
 	}
 	if (nNumValid)
 	{
-		m_List.SetContent((BYTE*)m_pPlaceList, nNumValid, sizeof(KNativePlace), (int)(&((KNativePlace*)0)->szName));
+		m_List.SetContent((BYTE*)m_pPlaceList, nNumValid, sizeof(KNativePlace), (int)(KNPARAM)(&((KNativePlace*)0)->szName));
 		m_List.SetCurSel(m_nLastSelPlace);
 	}
 	else

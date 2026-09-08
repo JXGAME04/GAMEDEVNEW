@@ -857,7 +857,7 @@ void KUiSuperShop::BuyItem()
 		//
 		if(nCheckGH)
 		{
-			g_pCoreShell->OperationRequest(GOI_SUPPERSHOP_TRADE_NPC_BUY, (unsigned int)(&m_pSelf->m_pSelf->m_GioHang), nCheckGH);
+			g_pCoreShell->OperationRequest(GOI_SUPPERSHOP_TRADE_NPC_BUY, (KUPARAM)(&m_pSelf->m_pSelf->m_GioHang), nCheckGH);
 		}
 	}
 }

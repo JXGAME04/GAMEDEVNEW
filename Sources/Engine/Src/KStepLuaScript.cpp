@@ -283,7 +283,11 @@ int KStepLuaScript::Active()
 	{
 		char MsgFuncName[40];
 		sprintf_s(MsgFuncName, "On%s", (char *)pNode->szMessage);
+#ifdef _WIN64	// [X64 08/09] dia chi lua_State di qua so Lua: 'd' doc va_arg int (cat cut tren x64) -> dung 'n' (double)
+		if (!CallFunction(MsgFuncName, 0, "ns", (double)(KUPARAM)pNode->StateAddr,  pNode->szMsgData))
+#else
 		if (!CallFunction(MsgFuncName, 0, "ds", (unsigned int)pNode->StateAddr,  pNode->szMsgData))
+#endif
 		{
 			;
 		}
