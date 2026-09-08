@@ -220,6 +220,17 @@ DWORD KMp3Music::Mp3FileSeek(LONG lOffset)
 //---------------------------------------------------------------------------
 BOOL KMp3Music::Mp3Init()
 {
+#ifdef _WIN64
+	// [X64 08/09] Mp3Init: x64 chua co bo giai ma mp3 (mp3lib.lib chi x86) -> that bai EM, ghi log mot lan,
+	// khong bat g_MessageBox 'mp3 decode head fail' nhu duong cu; game chay khong nhac mp3.
+	static BOOL s_bDaBaoX64 = FALSE;
+	if (!s_bDaBaoX64)
+	{
+		g_DebugLog("KMp3Music: ban x64 chua co mp3lib, bo qua nhac mp3");
+		s_bDaBaoX64 = TRUE;
+	}
+	return FALSE;
+#endif
 	MPEG_HEAD mpeg_head;
 	DEC_INFO  dec_info;
 	
