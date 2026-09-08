@@ -11,6 +11,8 @@ $W = "$WT\Sources"
 $thap = Join-Path $PSScriptRoot "build_thap.ps1"
 if (-not (Test-Path $thap)) { $thap = "$sp\build_thap.ps1" }
 $steps = @(
+  # lua54 truoc: Lib\lua54\Win32\Lua54Dll.lib trong git CU (thieu lua4_pushboolean...; main cung the) - post-build cua Lua54Dll.vcxproj tu chep vao Lib\lua54\Win32 (KHONG commit)
+  @{ key="lua54";    proj="$W\Library\Lua54\Lua54Dll.vcxproj";           cfg="Release";        tag="lua54_win32";    lib=@() },
   @{ key="engine";   proj="$W\Engine\Engine.vcxproj";                   cfg="Release";        tag="engine_win32";   lib=@("$W\Engine\Release\Engine.lib") },
   @{ key="core";     proj="$W\Core\Core.vcxproj";                       cfg="Client Release"; tag="core_win32";     lib=@("$W\Core\ClientRelease\CoreClient.lib") },
   @{ key="rep3";     proj="$W\Represent\Represent3\Represent3.vcxproj"; cfg="Release";        tag="rep3_win32";     lib=@() },
@@ -21,7 +23,8 @@ foreach ($s in $steps) {
   if ($s.key -eq $From) { $go = $true }
   if (-not $go) { continue }
   "===== [$(Get-Date -Format HH:mm:ss)] " + $s.key + " (" + $s.cfg + "|Win32, khong post-build) ====="
-  $out = & powershell -NoProfile -ExecutionPolicy Bypass -File $thap -Proj $s.proj -Cfg $s.cfg -Plat Win32 -Target $Target -Tag $s.tag -MaxErr 80 -Props "PostBuildEventUseInBuild=false"
+  if ($s.key -eq "lua54") { $out = & powershell -NoProfile -ExecutionPolicy Bypass -File $thap -Proj $s.proj -Cfg $s.cfg -Plat Win32 -Target $Target -Tag $s.tag -MaxErr 80 }
+  else { $out = & powershell -NoProfile -ExecutionPolicy Bypass -File $thap -Proj $s.proj -Cfg $s.cfg -Plat Win32 -Target $Target -Tag $s.tag -MaxErr 80 -Props "PostBuildEventUseInBuild=false" }
   $out
   $first = ($out | Select-Object -First 1)
   if ($first -notmatch "exit=0") { "DUNG chuoi tai " + $s.key; break }
@@ -31,6 +34,6 @@ foreach ($s in $steps) {
 }
 # tra lai cac .lib theo doi trong git (Engine.lib / CoreClient.lib Win32)
 Set-Location $WT
-& git checkout -- Lib/release/CoreClient.lib Lib/release/Engine.lib 2>$null
+& git checkout -- Lib/release/CoreClient.lib Lib/release/Engine.lib Lib/lua54/Win32/Lua54Dll.lib Lib/lua54/Win32/Lua54Dll.dll 2>$null
 "  git checkout -- Lib/release/CoreClient.lib Lib/release/Engine.lib : " + (& git status --short -- Lib/release | Out-String).Trim()
 "===== [$(Get-Date -Format HH:mm:ss)] het chuoi Win32 ====="
