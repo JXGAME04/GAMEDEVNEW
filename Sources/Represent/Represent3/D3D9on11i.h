@@ -387,6 +387,9 @@ public:
 	D3D_FEATURE_LEVEL      m_fl;
 	bool            m_bTearing;
 	UINT            m_swapFlags;
+	HANDLE          m_hWaitable;			// [n] doi tuong cho khung (NULL = khong dung)
+	unsigned        m_uStillLogged;
+	LARGE_INTEGER   m_liLastPresent;
 	ID3D11Texture2D*        m_pBackTex;
 	ID3D11RenderTargetView* m_pBackRtv;
 	ID3D11Texture2D*        m_pLastFrame;	// ban sao khung vua Present (chup man hinh)

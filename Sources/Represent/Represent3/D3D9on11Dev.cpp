@@ -36,7 +36,7 @@ CDev11::CDev11(CD3D11Shim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_ref = 1; m_pParent = pParent; m_hWnd = hWnd; m_pp = pp; m_dwBehavior = dwBehavior;
 	InitializeCriticalSection(&m_cs);
 	m_pDev = NULL; m_pCtx = NULL; m_pSwap = NULL; m_pFactory = NULL; m_pAdapter3 = NULL; m_fl = D3D_FEATURE_LEVEL_10_0;
-	m_bTearing = false; m_swapFlags = 0;
+	m_bTearing = false; m_swapFlags = 0; m_hWaitable = NULL; m_uStillLogged = 0; m_liLastPresent.QuadPart = 0;
 	m_pBackTex = NULL; m_pBackRtv = NULL; m_pLastFrame = NULL; m_pStaging = NULL; m_bbW = pp.BackBufferWidth; m_bbH = pp.BackBufferHeight;
 	m_pBackSurf = NULL; m_pRt = NULL; m_bRtBound = false;
 	m_pVS = NULL; m_pPS = NULL; m_pVsCb = NULL; m_pPsCb = NULL; m_pRing = NULL; m_ringSize = R11_RING_SIZE; m_ringPos = 0; m_bRingDiscard = true; m_pAtlas = NULL; m_pDummy = NULL; m_pDss = NULL;
@@ -84,6 +84,7 @@ CDev11::~CDev11()
 	R11_SAFE_RELEASE(m_pDss); R11_SAFE_RELEASE(m_pDummy); R11_SAFE_RELEASE(m_pRing); R11_SAFE_RELEASE(m_pPsCb); R11_SAFE_RELEASE(m_pVsCb);
 	R11_SAFE_RELEASE(m_pPS); R11_SAFE_RELEASE(m_pVS);
 	ReleaseSwapBuffers();
+	if (m_hWaitable) { CloseHandle(m_hWaitable); m_hWaitable = NULL; }
 	if (m_pSwap) { m_pSwap->SetFullscreenState(FALSE, NULL); m_pSwap->Release(); m_pSwap = NULL; }
 	if (g_pRep3Dev11 == this) g_pRep3Dev11 = NULL;
 	R11_SAFE_RELEASE(m_pAdapter3); R11_SAFE_RELEASE(m_pFactory);
@@ -137,10 +138,12 @@ bool CDev11::Init()
 bool CDev11::CreateSwapChain(UINT w, UINT h, bool bWindowed)
 {
 	ReleaseSwapBuffers();
+	if (m_hWaitable) { CloseHandle(m_hWaitable); m_hWaitable = NULL; }
 	if (m_pSwap) { m_pSwap->SetFullscreenState(FALSE, NULL); m_pSwap->Release(); m_pSwap = NULL; }
 	if (w == 0) w = 1; if (h == 0) h = 1;
 	m_bbW = w; m_bbH = h;
 	m_swapFlags = m_bTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+	if (g_nRep3Flip && g_nRep3Waitable) m_swapFlags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;	// [n]
 	DXGI_SWAP_CHAIN_DESC1 sd; memset(&sd, 0, sizeof(sd));
 	sd.Width = w; sd.Height = h; sd.Format = DXGI_FORMAT_B8G8R8A8_UNORM; sd.SampleDesc.Count = 1;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; sd.BufferCount = (g_nRep3Buffers < 2) ? 2 : ((g_nRep3Buffers > 4) ? 4 : g_nRep3Buffers); sd.Scaling = DXGI_SCALING_STRETCH;	// [m]
@@ -164,6 +167,22 @@ bool CDev11::CreateSwapChain(UINT w, UINT h, bool bWindowed)
 		if (FAILED(hr)) { R11Log("CreateSwapChainForHwnd that bai 0x%08X", (unsigned)hr); return false; }
 	}
 	m_pFactory->MakeWindowAssociation(m_hWnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
+	if (m_swapFlags & DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT)
+	{	// [n]
+		IDXGISwapChain2* pSc2 = NULL;
+		if (SUCCEEDED(m_pSwap->QueryInterface(__uuidof(IDXGISwapChain2), (void**)&pSc2)) && pSc2)
+		{
+			pSc2->SetMaximumFrameLatency(g_nRep3Latency < 1 ? 1 : (g_nRep3Latency > 16 ? 16 : g_nRep3Latency));
+			m_hWaitable = pSc2->GetFrameLatencyWaitableObject();
+			pSc2->Release();
+		}
+	}
+	{	// [n] chan doan cua so
+		struct R11Cnt { static BOOL CALLBACK Enum(HWND, LPARAM lp) { (*(int*)lp)++; return TRUE; } };
+		int nChild = 0; EnumChildWindows(m_hWnd, R11Cnt::Enum, (LPARAM)&nChild);
+		RECT rcC = { 0, 0, 0, 0 }; GetClientRect(m_hWnd, &rcC);
+		R11Log("cua so: style 0x%08X exstyle 0x%08X con %d client %dx%d | swapchain %ux%u flags 0x%X waitable=%d", (unsigned)GetWindowLongA(m_hWnd, GWL_STYLE), (unsigned)GetWindowLongA(m_hWnd, GWL_EXSTYLE), nChild, (int)(rcC.right - rcC.left), (int)(rcC.bottom - rcC.top), w, h, (unsigned)m_swapFlags, m_hWaitable ? 1 : 0);
+	}
 	{	// [D3D11 08/09 g] toi da 1 khung cho trinh chieu -> Present(DO_NOT_WAIT) bo khung thua thay vi chan
 		IDXGIDevice1* pDev1 = NULL;
 		if (SUCCEEDED(m_pDev->QueryInterface(__uuidof(IDXGIDevice1), (void**)&pDev1)) && pDev1) { pDev1->SetMaximumFrameLatency(g_nRep3Latency < 1 ? 1 : (g_nRep3Latency > 16 ? 16 : g_nRep3Latency)); pDev1->Release(); }
@@ -309,6 +328,7 @@ HRESULT CDev11::Reset(D3DPRESENT_PARAMETERS* pp)
 	if (bWin && bCurFull) m_pSwap->SetFullscreenState(FALSE, NULL);
 	hr = m_pSwap->ResizeBuffers(0, w, h, DXGI_FORMAT_UNKNOWN, m_swapFlags);
 	if (FAILED(hr)) { R11Log("Reset: ResizeBuffers %ux%u that bai 0x%08X", w, h, (unsigned)hr); Unlock(); return D3DERR_INVALIDCALL; }
+	if (m_hWaitable) WaitForSingleObjectEx(m_hWaitable, 1000, TRUE);	// [n] sau resize, cho lan dau
 	m_bbW = w; m_bbH = h;
 	if (!AcquireBackBuffer()) { Unlock(); return D3DERR_INVALIDCALL; }
 	m_vp.X = 0; m_vp.Y = 0; m_vp.Width = w; m_vp.Height = h; m_vp.MinZ = 0.0f; m_vp.MaxZ = 1.0f; m_bVsDirty = true;
@@ -342,6 +362,13 @@ HRESULT CDev11::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDe
 	if (interval == 0 && m_bTearing && !bFull) flags |= DXGI_PRESENT_ALLOW_TEARING;
 	if (interval == 0 && g_nRep3Flip && g_nRep3NoWait) flags |= DXGI_PRESENT_DO_NOT_WAIT;	// [D3D11 08/09 l] chi khi Rep3NoWait=1: hang day -> bo khung (game ve theo dot -> giat)
 	HRESULT hr = m_pSwap->Present(interval, flags);
+	if (hr != S_OK && m_uStillLogged < 12)
+	{	// [n] chan doan: ma tra ve + ms tu Present truoc
+		LARGE_INTEGER tq; QueryPerformanceCounter(&tq);
+		R11Log("Present tra 0x%08X, %.2f ms sau Present truoc, flags 0x%X", (unsigned)hr, m_liLastPresent.QuadPart ? R11Ms(m_liLastPresent, tq) : 0.0, (unsigned)flags);
+		m_uStillLogged++;
+	}
+	QueryPerformanceCounter(&m_liLastPresent);
 	if (hr == DXGI_ERROR_WAS_STILL_DRAWING) { g_uRep3PresentSkip++; hr = S_OK; }
 	m_bRtBound = false;
 	m_ringPos = 0; m_bRingDiscard = true;
@@ -568,6 +595,7 @@ HRESULT CDev11::GetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9** ppR
 void CDev11::BindRenderTarget()
 {
 	if (m_bRtBound) return;
+	if (m_hWaitable) WaitForSingleObjectEx(m_hWaitable, 1000, TRUE);	// [n] cho toi khi hang trinh chieu con cho (nhu D3D9 day hang)
 	ID3D11RenderTargetView* pRtv = (m_pRt && m_pRt->m_pTex) ? m_pRt->m_pTex->m_pRtv : m_pBackRtv;
 	ID3D11ShaderResourceView* pNull[2] = { NULL, NULL };
 	m_pCtx->PSSetShaderResources(0, 2, pNull);		// tranh texture vua la RT vua la nguon
