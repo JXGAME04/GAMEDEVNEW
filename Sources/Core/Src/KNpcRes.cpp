@@ -264,20 +264,6 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 
 	if (!m_pcResNode)
 		return;
-#ifndef _SERVER
-	// [X64 08/09 NGOAIHINH b] moi 3 s ghi ten sprite + khung/huong tung bo phan cua chinh minh (chan doan 'nhu dang mang mat na' tren x64)
-	if (nNpcIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)
-	{
-		static DWORD s_uNgoaiHinhLuc = 0;
-		DWORD uNgoaiHinhNow = GetTickCount();
-		if ((DWORD)(uNgoaiHinhNow - s_uNgoaiHinhLuc) >= 3000)
-		{
-			s_uNgoaiHinhLuc = uNgoaiHinhNow;
-			for (int k = 0; k < MAX_PART; k++)
-				AUTOLOG("[NGOAIHINH] Draw self part%d: name='%s' frames=%d dirs=%d exist=%d change=%d | fx='%s' fxframes=%d | act=%d", k, m_cNpcImage[k].m_szName, m_cNpcImage[k].m_nTotalFrame, m_cNpcImage[k].m_nTotalDir, (int)m_cNpcImage[k].CheckExist(), (int)m_cNpcImage[k].m_bChange, m_cNpcEffectImage[k].m_szName, m_cNpcEffectImage[k].m_nTotalFrame, (int)m_nAction);
-		}
-	}
-#endif
 
 	if (nAllFrame > 0)
 	{
