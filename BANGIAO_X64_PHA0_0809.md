@@ -26,6 +26,12 @@ Phương án gốc: `PHUONGAN_NANG_MOBILE_0809.md` (pha 0 = Game.exe 64-bit). Ch
 3. Biết trước KHÔNG có trên x64 (không phải lỗi): nhạc MP3 (mp3lib.lib chỉ x86, stub im lặng), video mở đầu (KLVideo.dll x86, rad.h chỉ để biên dịch),
    JXReplay/UpdateDLL (không có bản x64, nạp động thất bại êm), Represent2 (không build x64; chỉ Represent3).
 4. Nếu sập: `bin\client64\DumpInfo\` + `CrashLog` đã ghi thanh ghi x64 (RIP/RSP/RBP, StackWalk64 máy 0x8664).
+5. **Chạy thử 12:2x (chủ): vào game OK.** Lần đầu vướng hộp thoại "KMp3Music: mp3 decode head fail" → vá `Mp3Init` thất bại êm trên x64
+   (commit 33f631eb). Sau đó chủ báo **"di chuyển màn hình bị gợn sóng"**. Log `client64\jx_rep3.log` cho thấy bản x64 đang chạy
+   **`Rep3Api=11` (lớp D3D9on11 của phiên kia, vsync=0, atlas BẬT)** vì `config.ini` chép từ cây live có `Rep3Api=11` — và **cây live Win32 cũng
+   đang chạy D3D9on11** (`Represent3.dll` live swap 12:08, log live cùng dòng API D3D11). Để tách x64 khỏi D3D11: đã đặt `Rep3Api=9` trong
+   `client64\config.ini`, chờ chủ chạy lại; đồng thời hỏi chủ bản PC 32-bit (cũng D3D11) có gợn sóng không. Nếu D3D9 x64 hết gợn ⇒ lỗi thuộc
+   lớp D3D9on11/atlas (phiên D3D11); nếu vẫn gợn ⇒ lỗi riêng x64, điều tra `KRepresentShell3`/`TextureRes` đường D3D9.
 
 ## 2. Cơ chế đã đổi (đọc trước khi sửa vùng này)
 
