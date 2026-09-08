@@ -16,6 +16,7 @@
 #include "KNpcResList.h"
 #include "KNpcRes.h"
 #include <new>	// [RAMTINH 08/09] std::nothrow
+#include <stdlib.h>	// [RAMTINH 08/09 b] calloc/free
 #include "ImgRef.h"
 #include "../../Represent/iRepresent/iRepresentshell.h"
 #include "scene/KScenePlaceC.h"
@@ -1464,9 +1465,14 @@ KNpcBlur* KNpcRes::CapBongMo()
 {
 	if (!m_pcNpcBlur)
 	{
-		m_pcNpcBlur = new(std::nothrow) KNpcBlur();
-		if (m_pcNpcBlur)
+		// [RAMTINH 08/09 b] PHAI bang 0 truoc khi ctor chay (nhu khi nam trong Npc[] tinh): ctor KNpcBlur khong gan m_SceneID[] /
+		// m_SceneIDNpcIdx[] / m_nMapXpos.. -> new thuong de RAC -> SetMapPos goi MoveObject voi id rac -> SAP (15:41 08/09).
+		void* pMem = calloc(1, sizeof(KNpcBlur));
+		if (pMem)
+		{
+			m_pcNpcBlur = new (pMem) KNpcBlur();
 			m_pcNpcBlur->Init();
+		}
 	}
 	return m_pcNpcBlur;
 }
@@ -1474,7 +1480,8 @@ void KNpcRes::ThaBongMo()
 {
 	if (m_pcNpcBlur)
 	{
-		delete m_pcNpcBlur;
+		m_pcNpcBlur->~KNpcBlur();	// [RAMTINH 08/09 b] cap bang calloc + placement new
+		free(m_pcNpcBlur);
 		m_pcNpcBlur = NULL;
 	}
 }

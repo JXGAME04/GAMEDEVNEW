@@ -30,6 +30,7 @@ extern void			S13_ClearCmd(int nIdx);	// [S13] KNpc.cpp: xoa khe lenh dang giu c
 #endif
 #include "KSubWorld.h"
 #include <new>	// [RAMTINH 08/09] std::nothrow
+#include <stdlib.h>	// [RAMTINH 08/09 b] calloc/free
 
 #ifndef TOOLVERSION
 	#ifdef _SERVER
@@ -149,17 +150,20 @@ BOOL KSubWorld::CapLuoi(int nAllCell)
 	if (m_GridNode && m_nGridCellCap == nAllCell)
 	{
 		if (!m_pTempCover)
-			m_pTempCover = new(std::nothrow) int[nAllCell];
+			m_pTempCover = (int*)calloc((size_t)nAllCell, sizeof(int));
 		return m_pTempCover != NULL;
 	}
 	ThaLuoi();
-	m_GridNode = new(std::nothrow) VGridNode[nAllCell];
-	m_pTempCover = new(std::nothrow) int[nAllCell];
+	// [RAMTINH 08/09 b] bang 0 roi moi chay ctor (y het mang tinh .bss): ctor VGridNode chi gan w/h/connStart/connCount
+	m_GridNode = (VGridNode*)calloc((size_t)nAllCell, sizeof(VGridNode));
+	m_pTempCover = (int*)calloc((size_t)nAllCell, sizeof(int));
 	if (!m_GridNode || !m_pTempCover)
 	{
 		ThaLuoi();
 		return FALSE;
 	}
+	for (int i = 0; i < nAllCell; i++)
+		new (&m_GridNode[i]) VGridNode();
 	m_nGridCellCap = nAllCell;
 	return TRUE;
 }
@@ -167,7 +171,7 @@ void KSubWorld::ThaLuoi()
 {
 	if (m_GridNode)
 	{
-		delete [] m_GridNode;
+		free(m_GridNode);	// [RAMTINH 08/09 b] calloc
 		m_GridNode = NULL;
 	}
 	ThaTempCover();
@@ -178,7 +182,7 @@ void KSubWorld::ThaTempCover()
 {
 	if (m_pTempCover)
 	{
-		delete [] m_pTempCover;
+		free(m_pTempCover);	// [RAMTINH 08/09 b] calloc
 		m_pTempCover = NULL;
 	}
 }
