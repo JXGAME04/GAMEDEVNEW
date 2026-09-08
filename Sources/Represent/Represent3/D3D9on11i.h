@@ -388,6 +388,7 @@ public:
 	bool            m_bTearing;
 	UINT            m_swapFlags;
 	HANDLE          m_hWaitable;			// [n] doi tuong cho khung (NULL = khong dung)
+	bool            m_bWaitedThisFrame;		// [o] da cho doi tuong trong khung nay
 	unsigned        m_uStillLogged;
 	LARGE_INTEGER   m_liLastPresent;
 	ID3D11Texture2D*        m_pBackTex;

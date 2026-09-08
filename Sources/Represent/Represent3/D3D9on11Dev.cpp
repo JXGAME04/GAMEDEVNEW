@@ -36,7 +36,7 @@ CDev11::CDev11(CD3D11Shim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_ref = 1; m_pParent = pParent; m_hWnd = hWnd; m_pp = pp; m_dwBehavior = dwBehavior;
 	InitializeCriticalSection(&m_cs);
 	m_pDev = NULL; m_pCtx = NULL; m_pSwap = NULL; m_pFactory = NULL; m_pAdapter3 = NULL; m_fl = D3D_FEATURE_LEVEL_10_0;
-	m_bTearing = false; m_swapFlags = 0; m_hWaitable = NULL; m_uStillLogged = 0; m_liLastPresent.QuadPart = 0;
+	m_bTearing = false; m_swapFlags = 0; m_hWaitable = NULL; m_bWaitedThisFrame = false; m_uStillLogged = 0; m_liLastPresent.QuadPart = 0;
 	m_pBackTex = NULL; m_pBackRtv = NULL; m_pLastFrame = NULL; m_pStaging = NULL; m_bbW = pp.BackBufferWidth; m_bbH = pp.BackBufferHeight;
 	m_pBackSurf = NULL; m_pRt = NULL; m_bRtBound = false;
 	m_pVS = NULL; m_pPS = NULL; m_pVsCb = NULL; m_pPsCb = NULL; m_pRing = NULL; m_ringSize = R11_RING_SIZE; m_ringPos = 0; m_bRingDiscard = true; m_pAtlas = NULL; m_pDummy = NULL; m_pDss = NULL;
@@ -172,7 +172,7 @@ bool CDev11::CreateSwapChain(UINT w, UINT h, bool bWindowed)
 		IDXGISwapChain2* pSc2 = NULL;
 		if (SUCCEEDED(m_pSwap->QueryInterface(__uuidof(IDXGISwapChain2), (void**)&pSc2)) && pSc2)
 		{
-			pSc2->SetMaximumFrameLatency(g_nRep3Latency < 1 ? 1 : (g_nRep3Latency > 16 ? 16 : g_nRep3Latency));
+			pSc2->SetMaximumFrameLatency(g_nRep3Latency < 1 ? 3 : (g_nRep3Latency > 16 ? 16 : g_nRep3Latency));
 			m_hWaitable = pSc2->GetFrameLatencyWaitableObject();
 			pSc2->Release();
 		}
@@ -185,7 +185,7 @@ bool CDev11::CreateSwapChain(UINT w, UINT h, bool bWindowed)
 	}
 	{	// [D3D11 08/09 g] toi da 1 khung cho trinh chieu -> Present(DO_NOT_WAIT) bo khung thua thay vi chan
 		IDXGIDevice1* pDev1 = NULL;
-		if (SUCCEEDED(m_pDev->QueryInterface(__uuidof(IDXGIDevice1), (void**)&pDev1)) && pDev1) { pDev1->SetMaximumFrameLatency(g_nRep3Latency < 1 ? 1 : (g_nRep3Latency > 16 ? 16 : g_nRep3Latency)); pDev1->Release(); }
+		if (g_nRep3Latency > 0 && SUCCEEDED(m_pDev->QueryInterface(__uuidof(IDXGIDevice1), (void**)&pDev1)) && pDev1) { pDev1->SetMaximumFrameLatency(g_nRep3Latency > 16 ? 16 : g_nRep3Latency); pDev1->Release(); }	// [o] 0 = khong dong (mac dinh DXGI, Present tu chan)
 	}
 	if (!bWindowed)
 	{
@@ -328,7 +328,7 @@ HRESULT CDev11::Reset(D3DPRESENT_PARAMETERS* pp)
 	if (bWin && bCurFull) m_pSwap->SetFullscreenState(FALSE, NULL);
 	hr = m_pSwap->ResizeBuffers(0, w, h, DXGI_FORMAT_UNKNOWN, m_swapFlags);
 	if (FAILED(hr)) { R11Log("Reset: ResizeBuffers %ux%u that bai 0x%08X", w, h, (unsigned)hr); Unlock(); return D3DERR_INVALIDCALL; }
-	if (m_hWaitable) WaitForSingleObjectEx(m_hWaitable, 1000, TRUE);	// [n] sau resize, cho lan dau
+	m_bWaitedThisFrame = false;	// [o] sau resize
 	m_bbW = w; m_bbH = h;
 	if (!AcquireBackBuffer()) { Unlock(); return D3DERR_INVALIDCALL; }
 	m_vp.X = 0; m_vp.Y = 0; m_vp.Width = w; m_vp.Height = h; m_vp.MinZ = 0.0f; m_vp.MaxZ = 1.0f; m_bVsDirty = true;
@@ -370,7 +370,7 @@ HRESULT CDev11::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDe
 	}
 	QueryPerformanceCounter(&m_liLastPresent);
 	if (hr == DXGI_ERROR_WAS_STILL_DRAWING) { g_uRep3PresentSkip++; hr = S_OK; }
-	m_bRtBound = false;
+	m_bRtBound = false; m_bWaitedThisFrame = false;
 	m_ringPos = 0; m_bRingDiscard = true;
 	QueryPerformanceCounter(&t1); g_dRep3PresentMs += R11Ms(t0, t1); g_uRep3Presents++;
 	if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
@@ -595,7 +595,7 @@ HRESULT CDev11::GetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9** ppR
 void CDev11::BindRenderTarget()
 {
 	if (m_bRtBound) return;
-	if (m_hWaitable) WaitForSingleObjectEx(m_hWaitable, 1000, TRUE);	// [n] cho toi khi hang trinh chieu con cho (nhu D3D9 day hang)
+	if (m_hWaitable && !m_bWaitedThisFrame) { WaitForSingleObjectEx(m_hWaitable, 1000, TRUE); m_bWaitedThisFrame = true; }	// [o] MOT lan moi khung (moi lan cho tieu mot suat)
 	ID3D11RenderTargetView* pRtv = (m_pRt && m_pRt->m_pTex) ? m_pRt->m_pTex->m_pRtv : m_pBackRtv;
 	ID3D11ShaderResourceView* pNull[2] = { NULL, NULL };
 	m_pCtx->PSSetShaderResources(0, 2, pNull);		// tranh texture vua la RT vua la nguon
