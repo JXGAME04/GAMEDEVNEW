@@ -65,6 +65,14 @@ static int Rep3Ini(const char* szKey, int nDef)
 	return (int)GetPrivateProfileIntA("Client", szKey, nDef, s_szRep3Ini);
 }
 
+// [FX 07/09] bo dem lop ve (in them vao dong thong ke 30 s, roi dat lai 0). Chi luong ve cham.
+unsigned g_uRep3FxTexNull = 0;		// DrawSprite*: texture NULL -> bo qua quad
+unsigned g_uRep3FxAnhNull = 0;		// DrawImage2D*: GetImage NULL / khung ngoai tam -> break
+unsigned g_uRep3FxTaoHong = 0;		// CreateTexture16Bit vao nhanh error
+unsigned g_uRep3FxKhungKhongTex = 0;	// PrepareFrameData xong ma khung khong co texture
+unsigned g_uRep3FxGiaiMa = 0;		// so khung giai ma dong bo tren luong ve
+double   g_dRep3FxGiaiMaMs = 0.0;	// tong ms giai ma + tao texture
+
 void Rep3Log(const char* fmt, ...)
 {
 	if (!g_nRep3Log)
@@ -858,7 +866,7 @@ void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 							pTemp->szImage,	pTemp->uImage,
 							pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 						if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-							break;
+							{ g_uRep3FxAnhNull++; break; }
 
 						int nX = pTemp->oPosition.nX;
 						int nY = pTemp->oPosition.nY;
@@ -1019,7 +1027,7 @@ void KRepresentShell3::DrawImage2D(int nPrimitiveCount, KRepresentUnit* pPrimiti
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 				if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-					continue;
+					{ g_uRep3FxAnhNull++; continue; }
 
 				int nX = pTemp->oPosition.nX;
 				int nY = pTemp->oPosition.nY;
@@ -1096,7 +1104,7 @@ void KRepresentShell3::DrawImage2DFlat(int nPrimitiveCount, KRepresentUnit* pPri
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 				if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-					break;
+					{ g_uRep3FxAnhNull++; break; }
 
 				int nX = pTemp->oPosition.nX;
 				int nY = pTemp->oPosition.nY;
@@ -1239,7 +1247,7 @@ void KRepresentShell3::DrawImage2DStretch(int nPrimitiveCount, KRepresentUnit* p
 				pTemp->szImage,	pTemp->uImage,
 				pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 			if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-				continue;
+				{ g_uRep3FxAnhNull++; continue; }
 			int nW = pTemp->oEndPos.nX - pTemp->oPosition.nX;
 			int nH = pTemp->oEndPos.nY - pTemp->oPosition.nY;
 			if (nW <= 0 || nH <= 0)
@@ -1318,7 +1326,7 @@ void KRepresentShell3::GetBoundBox2D(int nPrimitiveCount, KRepresentUnit* pPrimi
 			pTemp->szImage,	pTemp->uImage,
 			pTemp->nISPosition, pTemp->nFrame, pTemp->nType, false);
 		if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-			continue;
+			{ g_uRep3FxAnhNull++; continue; }
 
 		int nX = pTemp->oPosition.nX;
 		int nY = pTemp->oPosition.nY;
@@ -1423,7 +1431,7 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 			pTemp->szImage, pTemp->uImage,
 			pTemp->nISPosition, pTemp->nFrame, pTemp->nType, false);
 		if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-			continue;
+			{ g_uRep3FxAnhNull++; continue; }
 		if (pSprite->m_bNew) {
 			sprNew = true;
 			PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
@@ -1642,7 +1650,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 
 				if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-					break;
+					{ g_uRep3FxAnhNull++; break; }
 
 				if(!(pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT) && (pTemp->oEndPos.nX == 0 || pTemp->oEndPos.nY == 0))
 					break;
@@ -1868,7 +1876,7 @@ void KRepresentShell3::GetBoundBox3D(int nPrimitiveCount, KRepresentUnit* pPrimi
 			pTemp->szImage,	pTemp->uImage,
 			pTemp->nISPosition, pTemp->nFrame, pTemp->nType, false);
 		if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-			continue;
+			{ g_uRep3FxAnhNull++; continue; }
 
 		if(!(pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT) && (pTemp->oEndPos.nX == 0 || pTemp->oEndPos.nY == 0))
 			continue;
@@ -2580,9 +2588,11 @@ void KRepresentShell3::RepresentEnd()
 			GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 			uint32 uNodes = 0, uTexMB = 0, uRawMB = 0, uDrawMB = 0, uBudgetMB = 0;
 			m_TextureResMgr.GetStat(uNodes, uTexMB, uRawMB, uDrawMB, uBudgetMB);
-			Rep3Log("[REP3] RAM rieng %u MB, WS %u MB | VRAM con %u MB | cache %u muc: texture %u MB (ve khung nay %u MB, ngan sach %u MB), raw spr %u MB | nap %u, bo %u | fps TB %.0f",
+			Rep3Log("[REP3] RAM rieng %u MB, WS %u MB | VRAM con %u MB | cache %u muc: texture %u MB (ve khung nay %u MB, ngan sach %u MB), raw spr %u MB | nap %u, bo %u | fps TB %.0f | fx: tex_null %u anh_null %u tao_hong %u khung_khong_tex %u giai_ma %u khung %.1f ms",
 				(unsigned)(pmc.PrivateUsage >> 20), (unsigned)(pmc.WorkingSetSize >> 20), (unsigned)(PD3DDEVICE->GetAvailableTextureMem() >> 20),
-				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg);
+				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg,
+				g_uRep3FxTexNull, g_uRep3FxAnhNull, g_uRep3FxTaoHong, g_uRep3FxKhungKhongTex, g_uRep3FxGiaiMa, g_dRep3FxGiaiMaMs);
+			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
 		}
 	}
 }
@@ -2976,7 +2986,10 @@ void KRepresentShell3::DrawSpriteAlpha(int32 nX, int32 nY, int32 nWidth, int32 n
 	{
 		LPDIRECT3DTEXTURE9 pTex = pSprite->GetTexture(nFrame, i);
 		if(!pTex)
+		{
+			g_uRep3FxTexNull++;	// [FX 07/09] truoc day bo qua im lang
 			continue;
+		}
 		PD3DDEVICE->SetTexture( 0, pTex );
 		PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, i*4, 2 );
 	}
@@ -3954,7 +3967,10 @@ void KRepresentShell3::RIO_CopySprToBufferAlpha(TextureResSpr* pSprite, int32 nF
 	{
 		LPDIRECT3DTEXTURE9 pTex = pSprite->GetTexture(nFrame, i);
 		if(!pTex)
+		{
+			g_uRep3FxTexNull++;	// [FX 07/09]
 			return;
+		}
 		PD3DDEVICE->SetTexture( 0, pTex );
 		PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, i*4, 2 );
 	}

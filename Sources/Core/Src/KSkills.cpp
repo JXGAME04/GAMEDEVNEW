@@ -715,8 +715,11 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 	SkillParam.eParentType = (eSkillLauncherType)0;
 	SkillParam.nWaitTime = nWaitTime;
 	SkillParam.nTargetId = 0;
-	AUTOLOG_EVERY(1000, "[E3_MISSLES_BADLAUNCHER] skill=%d launcher=%d ltype=%d p1=%d p2=%d", (int)m_nId, nLauncher, (int)eLauncherType, nParam1, nParam2);
-	if (nLauncher <= 0) return FALSE;
+	if (nLauncher <= 0)
+	{	// [FX 07/09] nhan nay truoc day dat TRUOC dieu kien nen in ca khi binh thuong
+		AUTOLOG_EVERY(1000, "[E3_MISSLES_BADLAUNCHER] skill=%d launcher=%d ltype=%d p1=%d p2=%d", (int)m_nId, nLauncher, (int)eLauncherType, nParam1, nParam2);
+		return FALSE;
+	}
 	// FIX 21/08 (sap game 0xC0000005 tai KSkills.cpp:681, jx_crash.log 13:52:25):
 	// nLauncher CHI la chi so Npc khi eLauncherType == SKILL_SLT_Npc. Voi
 	// SKILL_SLT_Missle (OnMissleEvent goi o KSkills.cpp:630) no la chi so VIEN DAN
@@ -1243,7 +1246,8 @@ int KSkill::CastZone(TOrdinSkillParam * pSkillParam , int nDir, int nRefPX, int 
 					// Add THANH CONG (co dong 'Add tra ve 1 -> BO QUA'). Dat vao trong than if.
 					if (nMissleIndex < 0)
 					{
-						AUTOLOG_EVERY(1000, "[MISSLE-POOL-FULL] sk=%d launcher=%d subworld=%d des(%d,%d) i=%d j=%d Add tra ve %d -> BO QUA vien dan THAT", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, nMissleIndex);
+						{ extern int g_nFX_style_zone; g_nFX_style_zone++; }	// [FX 07/09]
+						AUTOLOG_EVERY(1000, "[MISSLE-ADD-FAIL] (het be HOAC vi tri ngoai vung da nap - xem [FX] add_full/add_vung) sk=%d launcher=%d subworld=%d des(%d,%d) i=%d j=%d Add tra ve %d -> BO QUA vien dan THAT", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, nMissleIndex);
 						continue;
 					}
 					
@@ -1366,7 +1370,7 @@ int		KSkill::CastLine(TOrdinSkillParam *pSkillParam, int nDir, int nRefPX, int n
 			if (nSubWorldId < 0)	goto exit;
 			nMissleIndex = MissleSet.Add(nSubWorldId, nDesSubX, nDesSubY);
 			
-			if (nMissleIndex < 0)	continue;
+			if (nMissleIndex < 0)	{ extern int g_nFX_style_line; g_nFX_style_line++; continue; }	// [FX 07/09] truoc day im lang
 			
 			Missle[nMissleIndex].m_nDir				= nDir;
 			Missle[nMissleIndex].m_nDirIndex		= nDirIndex;
@@ -1461,7 +1465,7 @@ int		KSkill::CastExtractiveLineMissle(TOrdinSkillParam* pSkillParam,  int nDir,i
 			if (nSubWorldId < 0)	goto exit;
 			nMissleIndex = MissleSet.Add(nSubWorldId, nSrcX, nSrcY);
 			
-			if (nMissleIndex < 0)	goto exit;
+			if (nMissleIndex < 0)	{ extern int g_nFX_style_ext; g_nFX_style_ext++; goto exit; }	// [FX 07/09]
 			
 			Missle[nMissleIndex].m_nDir				= nDir;
 			Missle[nMissleIndex].m_nDirIndex		= nDirIndex;
@@ -1591,6 +1595,7 @@ int KSkill::CastWall(TOrdinSkillParam * pSkillParam,  int nDir , int nRefPX , in
 			nMissleIndex = MissleSet.Add(nSubWorldId, nDesSubX, nDesSubY);
 			if (nMissleIndex < 0)	
 			{
+				extern int g_nFX_style_wall; g_nFX_style_wall++;	// [FX 07/09]
 				continue;
 			}
 
@@ -1718,6 +1723,7 @@ int		KSkill::CastCircle(TOrdinSkillParam * pSkillParam, int nDir, int nRefPX, in
 			
 			if (nMissleIndex < 0)	
 			{
+				extern int g_nFX_style_circle; g_nFX_style_circle++;	// [FX 07/09]
 				continue;
 			}
 			
@@ -1887,7 +1893,7 @@ int		KSkill::CastSpread(TOrdinSkillParam * pSkillParam, int nDir, int nRefPX, in
 			
 			nMissleIndex = MissleSet.Add(nSubWorldId, nDesSubX, nDesSubY);
 			
-			if (nMissleIndex < 0)	continue;
+			if (nMissleIndex < 0)	{ extern int g_nFX_style_spread; g_nFX_style_spread++; continue; }	// [FX 07/09]
 			
 			Missle[nMissleIndex].m_nDir				= nCurSubDir;
 			Missle[nMissleIndex].m_nDirIndex		= g_Dir2DirIndex(nCurSubDir, MaxMissleDir);

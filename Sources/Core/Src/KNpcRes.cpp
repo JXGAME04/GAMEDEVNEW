@@ -1354,6 +1354,10 @@ void KNpcRes::SetState(BYTE *pNpcStateList, KNpcResList *pNpcResList)//edit by p
 				break;
 			}
 		}
+		if (j >= nType * (MAX_SKILL_STATE/3) + (MAX_SKILL_STATE/3))
+		{
+			extern int g_nFX_buff_heto; g_nFX_buff_heto++;	// [FX 07/09] het 6 o hieu ung/loai -> buff nay khong ve (truoc day im lang)
+		}
 	}
 }
 

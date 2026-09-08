@@ -473,7 +473,7 @@ int KMissle::Activate()
 	_ASSERT(m_nLauncher > 0);
 	AUTOLOG_EVERY(1000, "[MIS-ACT-NOLAUNCHER] id=%d skill=%d lv=%d launcher=%d launcherId=%lu life=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, m_dwLauncherId, m_nCurrentLife);
 	if (m_nLauncher <= 0)
-		return 0;
+	{ extern int g_nFX_msl_nolauncher; g_nFX_msl_nolauncher++; return 0; }	// [FX 07/09]
 	
 	AUTOLOG_EVERY(2000, "[MSL-OWNER-LOST] msl=%d sk=%d launcher=%d wantid=%u realid=%u sw=%d/%d region=%d life=%d/%d -> DoVanish", m_nMissleId, m_nSkillId, m_nLauncher, m_dwLauncherId, Npc[m_nLauncher].m_dwID, Npc[m_nLauncher].m_SubWorldIndex, m_nSubWorldId, Npc[m_nLauncher].m_RegionIndex, m_nCurrentLife, m_nLifeTime);
 	if (!Npc[m_nLauncher].IsMatch(m_dwLauncherId) || 
@@ -481,6 +481,7 @@ int KMissle::Activate()
 		(Npc[m_nLauncher].m_SubWorldIndex != m_nSubWorldId) || 
 		(Npc[m_nLauncher].m_RegionIndex < 0))
 	{
+		{ extern int g_nFX_msl_ownerlost; g_nFX_msl_ownerlost++; }	// [FX 07/09]
 		DoVanish();
 		return 0;	
 	}
@@ -509,6 +510,7 @@ int KMissle::Activate()
 			|| Npc[m_nFollowNpcIdx].m_nProtectedTime > 0			//vong tron bat tu, vßng trßn bÊt tö
 			|| Npc[m_nFollowNpcIdx].m_HideState.nTime > 0)
 		{
+			{ extern int g_nFX_msl_tgtlost; g_nFX_msl_tgtlost++; }	// [FX 07/09]
 			m_nFollowNpcIdx = 0;
 		}
 	}

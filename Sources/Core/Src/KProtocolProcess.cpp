@@ -1007,6 +1007,7 @@ void KProtocolProcess::NetCommandSkill(BYTE* pMsg)
 	MapX = *(int *)&pMsg[13];
 	MapY = *(int *)&pMsg[17];
 	nSkillEnChance = *(int *)&pMsg[21];
+	{ extern int g_nFX_rx95; g_nFX_rx95++; }	// [FX 07/09]
 	if ((nSkillID >= 1363 && nSkillID <= 1384) || (nSkillID >= 1965 && nSkillID <= 1991) || (nSkillID >= 2114 && nSkillID <= 2143))	// [VHTD 02/09k]
 		AUTOLOG("[VH-CL-CAST-NET] npc=%u idx=%d skill=%d lv=%d map=(%d,%d) ench=%d me=%d t=%u", dwNpcID, NpcSet.SearchID(dwNpcID), nSkillID, nSkillLevel, MapX, MapY, nSkillEnChance, Player[CLIENT_PLAYER_INDEX].m_nIndex, SubWorld[0].m_dwCurrentTime);
 	AUTOLOG_EVERY(200, "NETSKILL-RX npc=%u idx=%d skill=%d lv=%d mapx=%d mapy=%d muctieuidx=%d ench=%d t=%u", dwNpcID, NpcSet.SearchID(dwNpcID), nSkillID, nSkillLevel, MapX, MapY, NpcSet.SearchID(MapY), nSkillEnChance, SubWorld[0].m_dwCurrentTime);
@@ -1035,12 +1036,16 @@ void KProtocolProcess::NetCommandSkill(BYTE* pMsg)
 	
 	AUTOLOG_EVERY(1000, "NETSKILL-NOIDX npc=%u idx=%d skill=%d lv=%d mapx=%d mapy=%d t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, MapX, MapY, SubWorld[0].m_dwCurrentTime);
 	if (nIdx <= 0) 
+	{
+		extern int g_nFX_rx95_noidx; g_nFX_rx95_noidx++;	// [FX 07/09]
 		return;
+	}
 
 	if (Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx))
 	{
 		AUTOLOG_EVERY(1000, "NETSKILL-DO npc=%u idx=%d skill=%d lv=%d mapx=%d mapy=%d caster_cell=(%d,%d) off=(%d,%d) reg=%d me_idx=%d me_cell=(%d,%d) t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, MapX, MapY, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, Player[CLIENT_PLAYER_INDEX].m_nIndex, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY, SubWorld[0].m_dwCurrentTime);
 		Npc[nIdx].m_SkillList.SetSkillLevel(nSkillID, nSkillLevel);
+		{ extern int g_nFX_rx95_start; g_nFX_rx95_start++; }	// [FX 07/09]
 		Npc[nIdx].SendCommand(do_skill, nSkillID, MapX, MapY);
 		Npc[nIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;
 	}
@@ -3495,6 +3500,7 @@ void	KProtocolProcess::s2cDirectlyCastSkill(BYTE * pMsg)
 	}
 	
 	int nIdx = NpcSet.SearchID(dwNpcID);
+	{ extern int g_nFX_rx148; g_nFX_rx148++; }	// [FX 07/09]
 	if ((nSkillID >= 1363 && nSkillID <= 1384) || (nSkillID >= 1965 && nSkillID <= 1991) || (nSkillID >= 2114 && nSkillID <= 2143))	// [VHTD 02/09k] log nhan lenh phong ky nang 3 phai (client)
 		AUTOLOG("[VH-CL-CAST-DIRECT] npc=%u idx=%d skill=%d lv=%d mps=(%d,%d) tgt=%d me=%d t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)MapX, (int)MapY, nVhtdTargetIdx, Player[CLIENT_PLAYER_INDEX].m_nIndex, SubWorld[0].m_dwCurrentTime);
 	
@@ -3503,13 +3509,21 @@ void	KProtocolProcess::s2cDirectlyCastSkill(BYTE * pMsg)
 	KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(nSkillID, nSkillLevel);
 	AUTOLOG_EVERY(1000, "CAST-NOSKILL npc=%u idx=%d skill=%d lv=%d mps=(%d,%d) t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
 	if (!pOrdinSkill) 
-        return ;
+	{
+		extern int g_nFX_rx148_noskill; g_nFX_rx148_noskill++;	// [FX 07/09]
+		return ;
+	}
 	
     AUTOLOG_EVERY(1000, "CAST-DO npc=%u idx=%d skill=%d lv=%d style=%d aura=%d mps=(%d,%d) t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)pOrdinSkill->GetSkillStyle(), (int)pOrdinSkill->IsAura(), (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
-    if (nVhtdTargetIdx > 0)
-        pOrdinSkill->Cast(nIdx, -1, nVhtdTargetIdx);	// [VHTD 02/09g] nhu KNpc::Cast(int,int)/CastAutoSkillAt tren server (KSkill::Cast nhan -1 + chi so)
-    else
-        pOrdinSkill->Cast(nIdx, MapX, MapY);
+    {
+        extern int g_nFX_rx148_cast, g_nFX_rx148_fail;	// [FX 07/09]
+        BOOL bFXCast;
+        if (nVhtdTargetIdx > 0)
+            bFXCast = pOrdinSkill->Cast(nIdx, -1, nVhtdTargetIdx);	// [VHTD 02/09g] nhu KNpc::Cast(int,int)/CastAutoSkillAt tren server (KSkill::Cast nhan -1 + chi so)
+        else
+            bFXCast = pOrdinSkill->Cast(nIdx, MapX, MapY);
+        if (bFXCast) g_nFX_rx148_cast++; else g_nFX_rx148_fail++;
+    }
 
 	if(!pOrdinSkill->IsAura())
 	{

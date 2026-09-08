@@ -22977,7 +22977,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		}
 		else if(uParam == OPTION_QUALITY_GIAMSKILL)
 		{
-			Option.SetLow(LowEstMissle, nParam);
+			Option.SetLow(LowMissle, nParam);	// [FX 07/09] truoc ghi LowEstMissle nhung 8 cho doc LowMissle -> tuy chon 'Giam skill' chua bao gio co tac dung
 		}
 	
 		break;

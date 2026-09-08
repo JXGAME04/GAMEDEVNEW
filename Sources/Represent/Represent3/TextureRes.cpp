@@ -6,6 +6,18 @@
 #include <cstdint>
 #include <new>
 
+// [FX 07/09] bo dem lop ve, dinh nghia o KRepresentShell3.cpp
+extern unsigned g_uRep3FxTaoHong;
+extern unsigned g_uRep3FxKhungKhongTex;
+extern unsigned g_uRep3FxGiaiMa;
+extern double   g_dRep3FxGiaiMaMs;
+static double Rep3FxMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
+{
+	static LARGE_INTEGER s_liTanSo = {0};
+	if (!s_liTanSo.QuadPart) QueryPerformanceFrequency(&s_liTanSo);
+	return s_liTanSo.QuadPart ? (1000.0 * (double)(b.QuadPart - a.QuadPart) / (double)s_liTanSo.QuadPart) : 0.0;
+}
+
 // [REP3 03/09] giai nen RLE spr -> A8R8G8B8: [n][alpha] roi n chi so palette neu alpha != 0 (alpha 0..255)
 static void RenderToA8R8G8B8(DWORD* pDest, BYTE* pSrc, int nSrcLen, int nTotal, KPAL24* pPal, int nColors)
 {
@@ -591,7 +603,11 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 	}
 
 	if(bPrepareTex)
+	{
 		CreateTexture16Bit(szImage, nFrame);
+		if (!m_pFrameInfo[nFrame].texInfo[0].pTexture)
+			g_uRep3FxKhungKhongTex++;	// [FX 07/09] truoc day: van tra true, ve bo qua im lang
+	}
 
 	return true;
 }
@@ -617,6 +633,9 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 		return;
 
 	SplitTexture(nFrame);
+
+	LARGE_INTEGER liFx0, liFx1;	// [FX 07/09] do giai ma dong bo tren luong ve
+	QueryPerformanceCounter(&liFx0);
 
 	// [REP3 03/09] texture 8888 (dung mau palette 24 bit nhu Represent2) hoac 4444 nhu cu
 	int nBpp = g_nRep3Tex32 ? 4 : 2;
@@ -646,7 +665,7 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 	for(i=0; i<m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		TextureInfo& ti = m_pFrameInfo[nFrame].texInfo[i];
-		m_nTexMemUsed += ti.nWidth * ti.nHeight * nBpp;
+		// [FX 07/09] m_nTexMemUsed chi cong SAU khi tao texture thanh cong (xem cuoi vong lap)
 
 		SAFE_RELEASE(ti.pTexture);
 		// [REP3 03/09 RAM] Rep3Pool=1: do vao texture tam SYSTEMMEM roi UpdateTexture sang texture POOL_DEFAULT (chi o VRAM).
@@ -688,6 +707,7 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 		}
 		else
 			ti.pTexture = pFill;
+		m_nTexMemUsed += ti.nWidth * ti.nHeight * nBpp;	// [FX 07/09] cong sau khi tao thanh cong
 	}
 	SAFE_DELETE_ARRAY(pTempData);
 	if(m_pHeader)
@@ -696,9 +716,15 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 		m_pFrameInfo[nFrame].pFrame = NULL;
 		m_pFrameInfo[nFrame].pRawData = NULL;
 	}
+	QueryPerformanceCounter(&liFx1);	// [FX 07/09]
+	g_uRep3FxGiaiMa++;
+	g_dRep3FxGiaiMaMs += Rep3FxMs(liFx0, liFx1);
 	return;
 
 error:
+	QueryPerformanceCounter(&liFx1);	// [FX 07/09] truoc day hong im lang
+	g_uRep3FxTaoHong++;
+	g_dRep3FxGiaiMaMs += Rep3FxMs(liFx0, liFx1);
 	SAFE_DELETE_ARRAY(pTempData);
 	return;
 }

@@ -74,8 +74,17 @@ void TextureResMgr::CheckBalance()
 			continue;
 		m_nReleaseCount++;
 		nDone++;
-		if (node.m_pTextureRes->ReleaseAFrameData())
-			continue;
+		{
+			// [FX 07/09] tru ngay phan vua tha (truoc: m_uTexCacheMemUsed chi tinh lai o EndProfile nen 'vuot ngan sach' keo dai ca khung)
+			unsigned long uTruoc = node.m_pTextureRes->m_nTexMemUsed;
+			if (node.m_pTextureRes->ReleaseAFrameData())
+			{
+				unsigned long uSau = node.m_pTextureRes->m_nTexMemUsed;
+				if (uTruoc > uSau && m_uTexCacheMemUsed >= (uTruoc - uSau))
+					m_uTexCacheMemUsed -= (uint32)(uTruoc - uSau);
+				continue;
+			}
+		}
 		if (m_uTexCacheMemUsed >= node.m_pTextureRes->m_nTexMemUsed)
 			m_uTexCacheMemUsed -= node.m_pTextureRes->m_nTexMemUsed;
 		node.m_pTextureRes->Release();
@@ -456,7 +465,7 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 	if (
         (m_uTexCacheMemUsed > m_nBalanceNum) && 
 		(
-            (tmCur <= m_tmLastCheckBalance) || 
+            (tmCur < m_tmLastCheckBalance) || 	// [FX 07/09] truoc la <= : cung mili giay goi bao nhieu lan bo bay nhieu khung
             ((tmCur - m_tmLastCheckBalance) > m_uCheckPoint)
         )
     )

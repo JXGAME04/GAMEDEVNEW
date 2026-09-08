@@ -134,6 +134,64 @@ KNpcTemplate	* g_pNpcTemplate[MAX_NPCSTYLE][MAX_NPC_LEVEL][MAX_NPC_SERIES];
 // (chieu: giu lenh moi nhat; chay: giu dich moi nhat). Moi NPC khac (quai, bot, SimCity) di NGUYEN
 // duong cu. Khe bi xoa khi: Init/Remove, chet, SetPos/ChangeWorld (server), dat lai vi tri / doi map
 // (client, goi tu KProtocolProcess.cpp va KSubWorld.cpp qua S13_ClearCmd).
+// [FX 07/09] Bo dem HIEU UNG KY NANG - dem CHINH XAC (khong rate-limit), in moi 10 s:
+//   client: [FX] trong KNpc::Activate cua chinh nhan vat; may chu: [FX-SV] canh [NS-BO] trong NormalSync.
+// Dinh nghia ngoai moi #ifdef de ca hai ban lien ket duoc; tep khac dung 'extern int g_nFX_...;' tai cho dung.
+int g_nFX_rx95 = 0, g_nFX_rx95_noidx = 0, g_nFX_rx95_start = 0;
+int g_nFX_rx148 = 0, g_nFX_rx148_noskill = 0, g_nFX_rx148_cast = 0, g_nFX_rx148_fail = 0;
+int g_nFX_fire_khac = 0, g_nFX_fire_minh = 0, g_nFX_firefail_khac = 0, g_nFX_firefail_minh = 0;
+int g_nFX_botgt_khac = 0, g_nFX_botgt_minh = 0;
+int g_nFX_huyhurt_khac = 0, g_nFX_huyhurt_minh = 0, g_nFX_huyhurt_truoc = 0;
+int g_nFX_huylenh_di = 0, g_nFX_huylenh_dung = 0, g_nFX_huylenh_skill = 0, g_nFX_huylenh_khac = 0;
+int g_nFX_huychet = 0;
+int g_nFX_add_full = 0, g_nFX_add_vung = 0;
+int g_nFX_style_line = 0, g_nFX_style_ext = 0, g_nFX_style_wall = 0, g_nFX_style_circle = 0, g_nFX_style_spread = 0, g_nFX_style_zone = 0;
+int g_nFX_msl_nolauncher = 0, g_nFX_msl_ownerlost = 0, g_nFX_msl_tgtlost = 0;
+int g_nFX_buff_heto = 0;
+int g_nFX_sv_start = 0, g_nFX_sv_fire = 0, g_nFX_sv_huyhurt = 0, g_nFX_sv_start_all = 0, g_nFX_sv_fire_all = 0;
+DWORD g_uFXMoc = 0;
+#ifdef _SERVER
+// NPC co nam trong 32 o (tam phat tan) quanh mot nguoi choi THAT khong - de so thang voi [FX] cua client
+static int   s_anFXNguoiThat[8];
+static int   s_nFXNguoiThat = 0;
+static DWORD s_uFXNguoiThatMoc = 0;
+static BOOL FX_GanNguoiThat(KNpc* pNpc)
+{
+	const DWORD uNay = timeGetTime();
+	if (s_uFXNguoiThatMoc == 0 || (DWORD)(uNay - s_uFXNguoiThatMoc) >= 2000)
+	{
+		s_uFXNguoiThatMoc = uNay;
+		s_nFXNguoiThat = 0;
+		for (int i = 1; i < MAX_PLAYER && s_nFXNguoiThat < 8; i++)
+		{
+			if (Player[i].m_nIndex > 0 && Player[i].m_nNetConnectIdx >= 0)
+				s_anFXNguoiThat[s_nFXNguoiThat++] = Player[i].m_nIndex;
+		}
+	}
+	if (!pNpc || pNpc->m_Index <= 0 || pNpc->m_RegionIndex < 0 || pNpc->m_SubWorldIndex < 0)
+		return FALSE;
+	for (int k = 0; k < s_nFXNguoiThat; k++)
+	{
+		const int nIdx = s_anFXNguoiThat[k];
+		if (nIdx <= 0 || nIdx >= MAX_NPC)
+			continue;
+		KNpc* pP = &Npc[nIdx];
+		if (pP->m_Index <= 0 || pP->m_RegionIndex < 0 || pP->m_SubWorldIndex != pNpc->m_SubWorldIndex)
+			continue;
+		int nX1 = 0, nY1 = 0, nX2 = 0, nY2 = 0;
+		SubWorld[pNpc->m_SubWorldIndex].Map2Mps(pNpc->m_RegionIndex, pNpc->m_MapX, pNpc->m_MapY, 0, 0, &nX1, &nY1);
+		SubWorld[pP->m_SubWorldIndex].Map2Mps(pP->m_RegionIndex, pP->m_MapX, pP->m_MapY, 0, 0, &nX2, &nY2);
+		const int nTamX = 32 * SubWorld[pNpc->m_SubWorldIndex].m_nCellWidth;
+		const int nTamY = 32 * SubWorld[pNpc->m_SubWorldIndex].m_nCellHeight;
+		const int nDX = (nX1 > nX2) ? (nX1 - nX2) : (nX2 - nX1);
+		const int nDY = (nY1 > nY2) ? (nY1 - nY2) : (nY2 - nY1);
+		if (nDX <= nTamX && nDY <= nTamY)
+			return TRUE;
+	}
+	return FALSE;
+}
+#endif
+
 static NPC_COMMAND	s_S13Move[MAX_NPC];
 static BOOL S13_IsRealPlayer(KNpc* pNpc)
 {
@@ -933,6 +991,31 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 	// Doc: resdoing=8 => loi o lop ve; cdoing=8 => loi o KNpc; ca ba deu 1 ma van nam => Represent.
 	if (m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex)
 	{
+		{	// [FX 07/09] bao cao bo dem hieu ung moi 10 s (dem chinh xac; doc BANGIAO_HIEUUNG_KHAOSAT_0709.md)
+			const DWORD uFXNay = timeGetTime();
+			if (g_uFXMoc == 0)
+				g_uFXMoc = uFXNay;
+			else if ((DWORD)(uFXNay - g_uFXMoc) >= 10000)
+			{
+				g_uFXMoc = uFXNay;
+				AUTOLOG("[FX] 10s KHAC: rx95=%d noidx=%d start=%d fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d (truoc60=%d ca hai) huy_lenh(di=%d dung=%d skill=%d khac=%d) huy_chet=%d | MINH: fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d | 148: rx=%d noskill=%d cast=%d fail=%d | dan: add_full=%d add_vung=%d kieu(line=%d ext=%d wall=%d circle=%d spread=%d zone=%d) chet_som(nolauncher=%d ownerlost=%d tgtlost=%d) | buff_het_o=%d",
+					g_nFX_rx95, g_nFX_rx95_noidx, g_nFX_rx95_start, g_nFX_fire_khac, g_nFX_firefail_khac, g_nFX_botgt_khac, g_nFX_huyhurt_khac, g_nFX_huyhurt_truoc,
+					g_nFX_huylenh_di, g_nFX_huylenh_dung, g_nFX_huylenh_skill, g_nFX_huylenh_khac, g_nFX_huychet,
+					g_nFX_fire_minh, g_nFX_firefail_minh, g_nFX_botgt_minh, g_nFX_huyhurt_minh,
+					g_nFX_rx148, g_nFX_rx148_noskill, g_nFX_rx148_cast, g_nFX_rx148_fail,
+					g_nFX_add_full, g_nFX_add_vung, g_nFX_style_line, g_nFX_style_ext, g_nFX_style_wall, g_nFX_style_circle, g_nFX_style_spread, g_nFX_style_zone,
+					g_nFX_msl_nolauncher, g_nFX_msl_ownerlost, g_nFX_msl_tgtlost, g_nFX_buff_heto);
+				g_nFX_rx95 = 0; g_nFX_rx95_noidx = 0; g_nFX_rx95_start = 0;
+				g_nFX_rx148 = 0; g_nFX_rx148_noskill = 0; g_nFX_rx148_cast = 0; g_nFX_rx148_fail = 0;
+				g_nFX_fire_khac = 0; g_nFX_fire_minh = 0; g_nFX_firefail_khac = 0; g_nFX_firefail_minh = 0;
+				g_nFX_botgt_khac = 0; g_nFX_botgt_minh = 0;
+				g_nFX_huyhurt_khac = 0; g_nFX_huyhurt_minh = 0; g_nFX_huyhurt_truoc = 0;
+				g_nFX_huylenh_di = 0; g_nFX_huylenh_dung = 0; g_nFX_huylenh_skill = 0; g_nFX_huylenh_khac = 0;
+				g_nFX_huychet = 0; g_nFX_add_full = 0; g_nFX_add_vung = 0;
+				g_nFX_style_line = 0; g_nFX_style_ext = 0; g_nFX_style_wall = 0; g_nFX_style_circle = 0; g_nFX_style_spread = 0; g_nFX_style_zone = 0;
+				g_nFX_msl_nolauncher = 0; g_nFX_msl_ownerlost = 0; g_nFX_msl_tgtlost = 0; g_nFX_buff_heto = 0;
+			}
+		}
 		// [NAMBEP 07/09 m] Ghi trang thai SAU HOI SINH o +1 s / +3 s / +6 s - moc chac chan nhat de doi chieu
 		// voi cai chu nhin thay (va j dat nhan theo 'con mau' nhung 11 lan chet khong ghi dong nao vi khi ket
 		// o trang thai chet thi client cung dang giu mau = 0).
@@ -1220,6 +1303,19 @@ void KNpc::ProcCommand(int nAI)
 		AUTOLOG_EVERY(1000, "[E4_PROCCMD_NOREGION] npc=%d id=%u cmd=%d rgn=%d sw=%d map=(%d,%d)", m_Index, m_dwID, (int)m_Command.CmdKind, m_RegionIndex, m_SubWorldIndex, m_MapX, m_MapY);
 		if (m_RegionIndex < 0)
 			return;
+#ifndef _SERVER
+		if (m_Doing == do_magic && m_Frames.nCurrentFrame < m_Frames.nTotalFrame * ATTACKACTION_EFFECT_PERCENT / 100)
+		{	// [FX 07/09] lenh moi de len thi trien chua toi khung 60% -> hieu ung khong bao gio ra
+			switch (m_Command.CmdKind)
+			{
+			case do_walk: case do_run: case do_jump: g_nFX_huylenh_di++; break;
+			case do_stand: g_nFX_huylenh_dung++; break;
+			case do_skill: g_nFX_huylenh_skill++; break;
+			case do_hurt: case do_death: break;	// dem rieng o DoHurt / DoDeath
+			default: g_nFX_huylenh_khac++; break;
+			}
+		}
+#endif
 		switch (m_Command.CmdKind)
 		{
 		case do_stand:
@@ -1897,6 +1993,9 @@ void KNpc::DoDeath(int nMode/* = 0*/, int nAttacker)
 		//this->SetBlood(this->m_CurrentLife);
 #endif
 	//
+#ifndef _SERVER
+	if (m_Doing == do_magic) g_nFX_huychet++;	// [FX 07/09]
+#endif
 	m_Doing = do_death;
 	m_ProcessAI	= 0;
 	m_ProcessState = 0;
@@ -2149,6 +2248,15 @@ void KNpc::DoHurt(int nHurtFrames, int nX, int nY,int nHurtI)
 	if (m_CurrentIgnoreNegativeStateP > 0 && g_RandPercent(m_CurrentIgnoreNegativeStateP))
 		return;
 #endif
+	if (m_Doing == do_magic)	// [FX 07/09] trung don NGAT thi trien (luat JX1, ca hai ben) - dem de biet mat hieu ung do dau
+	{
+#ifndef _SERVER
+		if (S13_IsRealPlayer(this)) g_nFX_huyhurt_minh++; else g_nFX_huyhurt_khac++;
+		if (m_Frames.nCurrentFrame < m_Frames.nTotalFrame * ATTACKACTION_EFFECT_PERCENT / 100) g_nFX_huyhurt_truoc++;
+#else
+		if (FX_GanNguoiThat(this)) g_nFX_sv_huyhurt++;
+#endif
+	}
 	m_Doing = do_hurt;
 	m_ProcessAI	= 0;
 
@@ -3016,6 +3124,10 @@ void KNpc::DoSkill(int nX, int nY)
 					NPC_SKILL_SYNC	NetCommand;
 					
 					NetCommand.ProtocolType = (BYTE)s2c_skillcast;
+#ifdef _SERVER
+					g_nFX_sv_start_all++;	// [FX 07/09] chieu bat dau (phat 95) - so voi [FX] rx95 cua client
+					if (FX_GanNguoiThat(this)) g_nFX_sv_start++;
+#endif
 					NetCommand.ID = m_dwID;
 					NetCommand.nSkillID = m_ActiveSkillID;
 					NetCommand.nSkillLevel = m_SkillList.GetCurrentLevel(m_ActiveSkillID);
@@ -3417,17 +3529,34 @@ void KNpc::OnSkill()
 		if (m_DesX == -1) 
 		{
 			if (m_DesY <= 0) 
+			{
+#ifndef _SERVER
+				if (S13_IsRealPlayer(this)) g_nFX_botgt_minh++; else g_nFX_botgt_khac++;	// [FX 07/09]
+#endif
 				goto Label_ProcessAI;
+			}
 			
 			if (Npc[m_DesY].m_RegionIndex < 0) 
+			{
+#ifndef _SERVER
+				if (S13_IsRealPlayer(this)) g_nFX_botgt_minh++; else g_nFX_botgt_khac++;	// [FX 07/09] muc tieu mo coi (cuon vung) - truoc day bo im lang
+#endif
 				goto Label_ProcessAI;
+			}
 		}
 			
 		pSkill =(KSkill*) GetActiveSkill();
 
 		if (pSkill)
 		{
-			pSkill->Cast(m_Index, m_DesX, m_DesY);
+			const BOOL bFXCast = pSkill->Cast(m_Index, m_DesX, m_DesY);	// [FX 07/09] dem chieu that su BAN o khung 60%
+#ifndef _SERVER
+			if (S13_IsRealPlayer(this)) { if (bFXCast) g_nFX_fire_minh++; else g_nFX_firefail_minh++; }
+			else { if (bFXCast) g_nFX_fire_khac++; else g_nFX_firefail_khac++; }
+#else
+			g_nFX_sv_fire_all++;
+			if (FX_GanNguoiThat(this)) g_nFX_sv_fire++;
+#endif
 
 			DWORD dwCastTime = 0;
 			eSkillStyle eStyle = (eSkillStyle)pSkill->GetSkillStyle();
@@ -7304,6 +7433,9 @@ BOOL KNpc::NormalSync()
 					s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSGonThem, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon, NS_SoClientCu(dwLuc),
 					s_anNSNhom[0], s_anNSNhom[1], s_anNSNhom[2], s_anNSNhom[3], s_anNSNhom[4], s_nNSNhomNhieu);
 				AUTOLOG("[NS-TT] 10s goi trang thai gon (223): %d lan (client chua bao phien ban 3: %d)", s_nNSTT, NS_SoClientCu3(dwLuc));
+				AUTOLOG("[FX-SV] 10s gan nguoi that (32 o): bat_dau=%d ban=%d ngat_vi_trung_don=%d | toan may chu: bat_dau=%d ban=%d",
+					g_nFX_sv_start, g_nFX_sv_fire, g_nFX_sv_huyhurt, g_nFX_sv_start_all, g_nFX_sv_fire_all);
+				g_nFX_sv_start = 0; g_nFX_sv_fire = 0; g_nFX_sv_huyhurt = 0; g_nFX_sv_start_all = 0; g_nFX_sv_fire_all = 0;
 				s_nNSTT = 0;
 				for (int k = 0; k < NS_SO_NHOM; k++)	// dem lai moi 10 giay cho de doc (y het cac so khac tren dong nay)
 					s_anNSNhom[k] = 0;

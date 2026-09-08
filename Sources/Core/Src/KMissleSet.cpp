@@ -75,12 +75,17 @@ int KMissleSet::Add(int nSubWorldId, int nPX, int nPY)
 	{
 		AUTOLOG_EVERY(2000, "[MSL-SET-FULL] HET KHE DAN THAT: MAX_MISSLE=%d dang dung=%d subworld=%d mps(%d,%d)", MAX_MISSLE, GetCount(), nSubWorldId, nPX, nPY);
 		printf("MissleSet Have Full!!!, It Maybe A Error!");
+		{ extern int g_nFX_add_full; g_nFX_add_full++; }	// [FX 07/09]
 		return -1;
 	}
 	
 	SubWorld[nSubWorldId].Mps2Map(nPX, nPY, &Missle[nFreeIndex].m_nRegionId, &Missle[nFreeIndex].m_nCurrentMapX, &Missle[nFreeIndex].m_nCurrentMapY, &Missle[nFreeIndex].m_nXOffset, &Missle[nFreeIndex].m_nYOffset);
 	
-	if (Missle[nFreeIndex].m_nRegionId < 0) return -1;
+	if (Missle[nFreeIndex].m_nRegionId < 0)
+	{
+		extern int g_nFX_add_vung; g_nFX_add_vung++;	// [FX 07/09] vi tri ngoai vung da nap - [MISSLE-POOL-FULL] cu bao nham la het be
+		return -1;
+	}
 	
 	Missle[nFreeIndex].m_nMissleId = nFreeIndex;
 	Missle[nFreeIndex].m_nCurrentMapZ = Missle[nFreeIndex].m_nHeight;
