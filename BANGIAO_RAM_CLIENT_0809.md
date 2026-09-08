@@ -276,3 +276,23 @@ kể cả 2 Present/khung: 0. Game chỉ gọi RepresentEnd một lần/khung (U
 → Present luôn có buffer; chờ ở đây tương đương D3D9 chờ khi hàng đầy. Kèm chẩn đoán: 12 lần đầu Present trả mã khác S_OK ghi
 `Present tra 0x..., N ms sau Present truoc, flags`; lúc tạo swapchain ghi style/exstyle/số cửa sổ con/client/flags.
 `Represent3.dll.moi` f43f8bfd chờ restart. Bản đang chạy hiện hình cập nhật ~32 lần/s → nên restart sớm.
+
+### 6.12 ĐÍNH CHÍNH — "bỏ 31 khung/s" là ĐỌC NHẦM CỘT; bản [m] 13:05 đúng là cấu hình tốt nhất
+
+Dòng `[REP3]` có HAI trường "bo": `nap %u, bo %u` (texture cache nạp/THẢI, cộng dồn) đứng trước, và `present TB x ms bo %u`
+(khung bị Present từ chối). Script đọc log bắt "bo" đầu tiên → 30/s là số texture bị thải mỗi giây. Đọc lại đúng cột:
+
+| Phiên | Cấu hình | Present TB | Khung bỏ THẬT | fps |
+|---|---|---|---|---|
+| 11:51 [d] | bitblt | 0,11 ms | 0 | 63 |
+| 12:19 [f] | flip 2 buffer, không đặt hàng đợi | 10,0 ms (chặn chờ vsync) | 0 | 60 |
+| 12:38 [g] | + latency 1 + DO_NOT_WAIT | 0,27 ms | 6,8/s | 63 |
+| 12:49 [j] | + latency 2 + DO_NOT_WAIT | 0,17 ms | 2,6/s | 63 |
+| **13:05 [m]** | **3 buffer, SetMaximumFrameLatency(3), KHÔNG DO_NOT_WAIT** | **0,15 ms** | **0** | **63** |
+| 13:1x [n] | + đối tượng chờ (chờ nhiều lần/khung) | — | 0 | 40–55, khung 2 s = HỎNG |
+| 13:20 [o] | 2 buffer, không đặt hàng đợi | 9,9 ms (chặn) | 0 | 60 |
+
+Kết luận: **[m] = không chặn, không bỏ khung, app 63 fps, DXGI tự thay khung thừa lúc 63 > 60 Hz.** Bản [n] hỏng do lỗi chờ nhiều
+lần mỗi khung (mỗi lần chờ tiêu một suất) — đã sửa còn tối đa 1 lần, và tắt mặc định. **[p] = trở lại cấu hình [m]**
+(`Rep3Buffers=3`, `Rep3Latency=3`, `Rep3NoWait=0`, `Rep3Waitable=0`), `Represent3.dll.moi` chờ restart.
+BẪY ghi nhớ: bắt trường trong dòng `[REP3]` phải neo theo ngữ cảnh (`present TB .* bo`), không bắt "bo" trần.
