@@ -255,3 +255,14 @@ phí chỉ do làm tròn chiều cao (≤ 1,5×) + đoạn thừa cuối hàng; 
   trạng thái, lệnh khác loại, Present, Clear, SetRenderTarget, đọc lại khung, cập nhật/thu texture. Harness: ảnh trùng D3D9,
   1,9 µs/sprite. Trong game kỳ vọng số Draw giảm vài lần (thống kê `gop N quad -> M Draw`). `Rep3Batch=0` tắt.
   `Represent3.dll.moi` ff84f787 chờ restart.
+
+### 6.10 12:49 (bản [j]) — "có bị giảm FPS không?" → CÓ ở bản j, sửa ở bản [m]
+
+- Bản [j] trong game: app 63 fps, present 0,1 ms, **bỏ đúng 31 khung/s** (bất kể độ trễ 1 hay 2) → hình chỉ cập nhật ~32 lần/s
+  = giật, dù số fps ghi 63. Gộp lệnh: 2,8 triệu quad → 2,16 triệu Draw (−23 %), 0,3–0,4 µs/lệnh, pass vẽ avg 1 ms = ngang D3D9.
+- Harness nhịp 63 fps (REP_FPS=63, cửa sổ hiện hoặc trước): độ trễ 1 → present 0,7 ms bỏ 0; độ trễ 2/3/4 → 0,07 ms bỏ 0; bitblt 0,14 ms.
+  Không tái hiện → game vẽ theo TỪNG ĐỢT nhiều khung sát nhau; DO_NOT_WAIT vứt khung thừa của đợt thay vì trải lên các vsync kế.
+- **[m] mặc định như D3D9 cửa sổ:** 3 backbuffer (`Rep3Buffers`), hàng đợi 3 khung (`Rep3Latency`), Present CHỜ khi hàng đầy
+  (`Rep3NoWait=0`) → không bỏ khung, mọi khung đều lên màn hình, app khoá ở 60 = tần số màn hình (63 → 60 là số trên log, không
+  phải trải nghiệm: màn 59,94 Hz không hiện hơn 60). Thời gian trong Present sẽ ghi vài ms = thời gian chờ vsync thay cho ngủ nhịp.
+  `Represent3.dll.moi` e900d5cf chờ restart. Muốn không chờ (độ trễ thấp, chấp nhận vứt khung): `Rep3NoWait=1`.
