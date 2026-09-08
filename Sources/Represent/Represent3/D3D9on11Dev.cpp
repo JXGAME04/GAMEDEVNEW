@@ -32,7 +32,7 @@ CDev11::CDev11(CD3D11Shim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_bTearing = false; m_swapFlags = 0;
 	m_pBackTex = NULL; m_pBackRtv = NULL; m_pLastFrame = NULL; m_pStaging = NULL; m_bbW = pp.BackBufferWidth; m_bbH = pp.BackBufferHeight;
 	m_pBackSurf = NULL; m_pRt = NULL; m_bRtBound = false;
-	m_pVS = NULL; m_pPS = NULL; m_pVsCb = NULL; m_pPsCb = NULL; m_pRing = NULL; m_ringSize = R11_RING_SIZE; m_ringPos = 0; m_pDummy = NULL; m_pDss = NULL;
+	m_pVS = NULL; m_pPS = NULL; m_pVsCb = NULL; m_pPsCb = NULL; m_pRing = NULL; m_ringSize = R11_RING_SIZE; m_ringPos = 0; m_bRingDiscard = true; m_pAtlas = NULL; m_pDummy = NULL; m_pDss = NULL;
 	memset(m_rs, 0, sizeof(m_rs)); memset(m_tss, 0, sizeof(m_tss)); memset(m_ss, 0, sizeof(m_ss)); memset(m_tex, 0, sizeof(m_tex));
 	m_fvf = 0; m_pStream = NULL; m_streamOffset = 0; m_streamStride = 0;
 	memset(&m_vp, 0, sizeof(m_vp)); m_vp.Width = m_bbW; m_vp.Height = m_bbH; m_vp.MaxZ = 1.0f;
@@ -72,6 +72,7 @@ CDev11::~CDev11()
 	std::map<DWORD, ID3D11BlendState*>::iterator ib; for (ib = m_blends.begin(); ib != m_blends.end(); ++ib) if (ib->second) ib->second->Release();
 	std::map<DWORD, ID3D11SamplerState*>::iterator is; for (is = m_samplers.begin(); is != m_samplers.end(); ++is) if (is->second) is->second->Release();
 	std::map<DWORD, ID3D11RasterizerState*>::iterator ir; for (ir = m_rasters.begin(); ir != m_rasters.end(); ++ir) if (ir->second) ir->second->Release();
+	if (m_pAtlas) { delete m_pAtlas; m_pAtlas = NULL; }
 	R11_SAFE_RELEASE(m_pDss); R11_SAFE_RELEASE(m_pDummy); R11_SAFE_RELEASE(m_pRing); R11_SAFE_RELEASE(m_pPsCb); R11_SAFE_RELEASE(m_pVsCb);
 	R11_SAFE_RELEASE(m_pPS); R11_SAFE_RELEASE(m_pVS);
 	ReleaseSwapBuffers();
@@ -117,7 +118,9 @@ bool CDev11::Init()
 	}
 	if (!CreateSwapChain(m_bbW, m_bbH, m_pp.Windowed != FALSE)) return false;
 	if (!CreatePipelineObjects()) return false;
+	if (g_nRep3Atlas) m_pAtlas = new CAtlasMgr(this);
 	R11Log("thiet bi: feature level 0x%X, %ux%u, windowed=%d, vsync=%d, tearing=%d", (unsigned)m_fl, m_bbW, m_bbH, (int)(m_pp.Windowed != FALSE), (int)(m_pp.PresentationInterval != D3DPRESENT_INTERVAL_IMMEDIATE), (int)m_bTearing);
+	R11Log("atlas: %s", m_pAtlas ? "BAT (trang 1024x1024 BGRA8, texture <= 512 khong RT)" : "tat");
 	return true;
 }
 
@@ -313,7 +316,7 @@ HRESULT CDev11::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDe
 	if (interval == 0 && m_bTearing && !bFull) flags |= DXGI_PRESENT_ALLOW_TEARING;
 	HRESULT hr = m_pSwap->Present(interval, flags);
 	m_bRtBound = false;
-	m_ringPos = 0;
+	m_ringPos = 0; m_bRingDiscard = true;
 	QueryPerformanceCounter(&t1); g_dRep3PresentMs += R11Ms(t0, t1); g_uRep3Presents++;
 	if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
 	{
@@ -354,6 +357,7 @@ HRESULT CDev11::CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage,
 	R11Fmt fi = R11FormatInfo(Format);
 	if (fi.bpp == 0 && fi.blockBytes == 0) { R11Log("CreateTexture: dinh dang %d khong ho tro", (int)Format); return D3DERR_NOTAVAILABLE; }
 	CTex11* pTex = new CTex11(this, Width, Height, Usage, Format, Pool);
+	if (m_pAtlas && CAtlasMgr::Eligible(Width, Height, Usage, Format, Pool)) pTex->m_bVirtual = true;	// [d]
 	Lock();
 	HRESULT hr = D3D_OK;
 	if (Pool == D3DPOOL_SYSTEMMEM || Pool == D3DPOOL_SCRATCH || Pool == D3DPOOL_MANAGED || (Usage & D3DUSAGE_DYNAMIC))
@@ -398,6 +402,11 @@ HRESULT CDev11::UpdateTexture(IDirect3DBaseTexture9* pSourceTexture, IDirect3DBa
 		pD->m_bDirty = true; SetRect(&pD->m_rcDirty, 0, 0, pD->m_w, pD->m_h);
 		hr = pD->m_pGpu ? pD->UploadRect(NULL) : D3D_OK;
 		if (pD->m_pGpu) pD->m_bDirty = false;
+	}
+	else if (pD->m_bVirtual)
+	{
+		if (!pD->m_pPage) hr = pD->EnsureGpu(pS->m_pCpu);
+		else { BYTE* pSave = pD->m_pCpu; pD->m_pCpu = pS->m_pCpu; hr = pD->UploadRect(NULL); pD->m_pCpu = pSave; }
 	}
 	else if (!pD->m_pGpu)
 		hr = pD->EnsureGpu(pS->m_pCpu);				// duong chinh: tao texture GPU kem du lieu (khong ban sao RAM)
@@ -895,11 +904,24 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 	UINT pos = m_ringPos;
 	if (pos % stride) pos += stride - (pos % stride);
 	D3D11_MAP mapType = D3D11_MAP_WRITE_NO_OVERWRITE;
-	if (pos + bytes > m_ringSize) { pos = 0; mapType = D3D11_MAP_WRITE_DISCARD; }
+	// [D3D11 08/09 c] dau moi khung (sau Present) hoac het ring: DISCARD de driver cap vung moi. Truoc day sau Present dat m_ringPos = 0
+	// roi ghi NO_OVERWRITE de len dinh GPU con dang doc cua khung truoc -> o den, manh rac, giat den khi di chuyen / qua map.
+	if (m_bRingDiscard || pos + bytes > m_ringSize) { pos = 0; mapType = D3D11_MAP_WRITE_DISCARD; m_bRingDiscard = false; }
 	D3D11_MAPPED_SUBRESOURCE ms;
 	HRESULT hr = m_pCtx->Map(m_pRing, 0, mapType, 0, &ms);
 	if (FAILED(hr)) { R11Log("Map ring that bai 0x%08X", (unsigned)hr); return D3DERR_INVALIDCALL; }
 	memcpy((BYTE*)ms.pData + pos, pVerts, bytes);
+	if (m_tex[0] && m_tex[0]->m_bVirtual && m_tex[0]->m_pPage && ((m_fvf & D3DFVF_TEXCOUNT_MASK) >> D3DFVF_TEXCOUNT_SHIFT) >= 1)
+	{	// [d] uv cua texture ao -> uv trong trang
+		UINT uvOff = ((m_fvf & D3DFVF_POSITION_MASK) == D3DFVF_XYZRHW) ? 16 : 12;
+		DWORD pt = m_fvf & D3DFVF_POSITION_MASK;
+		if (pt == D3DFVF_XYZB1) uvOff += 4; else if (pt == D3DFVF_XYZB2) uvOff += 8; else if (pt == D3DFVF_XYZB3) uvOff += 12; else if (pt == D3DFVF_XYZB4) uvOff += 16; else if (pt == D3DFVF_XYZB5) uvOff += 20;
+		if (m_fvf & D3DFVF_NORMAL) uvOff += 12; if (m_fvf & D3DFVF_PSIZE) uvOff += 4; if (m_fvf & D3DFVF_DIFFUSE) uvOff += 4; if (m_fvf & D3DFVF_SPECULAR) uvOff += 4;
+		const float fPage = (float)m_pAtlas->m_pageSize;
+		const float sx = (float)m_tex[0]->m_w / fPage, sy = (float)m_tex[0]->m_h / fPage, ox = (float)m_tex[0]->m_ax / fPage, oy = (float)m_tex[0]->m_ay / fPage;
+		BYTE* pV = (BYTE*)ms.pData + pos;
+		for (UINT i = 0; i < nVerts; i++) { float* uv = (float*)(pV + i * stride + uvOff); uv[0] = uv[0] * sx + ox; uv[1] = uv[1] * sy + oy; }
+	}
 	m_pCtx->Unmap(m_pRing, 0);
 	m_ringPos = pos + bytes;
 	ApplyState();

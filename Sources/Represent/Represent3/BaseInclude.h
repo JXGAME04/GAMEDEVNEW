@@ -58,6 +58,8 @@ extern int  g_nRep3Api;         // [D3D11 08/09] [Client] Rep3Api: 9 = D3D9 (mac
 extern int  g_nRep3ApiOn;       // API thuc chay sau D3D_Shell::Create
 extern unsigned g_uRep3GpuTexCount;          // [D3D11 08/09] so texture GPU dang song
 extern unsigned __int64 g_uRep3GpuTexBytes;  // [D3D11 08/09] byte texture GPU
+extern int  g_nRep3Atlas;       // [D3D11 08/09 d] gom texture nho vao trang atlas
+extern unsigned g_uRep3AtlasPages; extern unsigned __int64 g_uRep3AtlasBytes;
 extern int  g_nRep3Flip;        // [D3D11 08/09 b] 1 = swapchain flip, 0 = bitblt cu
 extern double g_dRep3PresentMs; extern unsigned g_uRep3Presents; extern double g_dRep3DrawMs; extern unsigned g_uRep3Draws;	// [D3D11 08/09 b] thong ke
 void Rep3Log(const char* fmt, ...);

@@ -117,6 +117,7 @@ CTex11::CTex11(CDev11* pDev, UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL
 	m_pitch = R11Pitch(fmt, w);
 	m_pCpu = NULL; m_pGpu = NULL; m_pSrv = NULL; m_pRtv = NULL;
 	m_dxgi = DXGI_FORMAT_UNKNOWN; m_bConvert = false; m_bDirty = false; m_bLocked = false; m_uGpuBytes = 0; m_pSurf0 = NULL;
+	m_bVirtual = false; m_pPage = NULL; m_slot = 0; m_ax = 0; m_ay = 0;
 	SetRect(&m_rcDirty, 0, 0, 0, 0); SetRect(&m_rcLock, 0, 0, 0, 0);
 	pDev->AddRef();
 }
@@ -137,6 +138,13 @@ void CTex11::AllocCpu()
 
 void CTex11::ReleaseGpu()
 {
+	if (m_bVirtual)
+	{
+		if (m_pPage && m_pDev->m_pAtlas) m_pDev->m_pAtlas->Free(m_pPage, m_slot);
+		m_pPage = NULL; m_pSrv = NULL;	// SRV cua trang, khong so huu
+		if (m_uGpuBytes) { if (g_uRep3GpuTexCount) g_uRep3GpuTexCount--; g_uRep3GpuTexBytes -= m_uGpuBytes; m_uGpuBytes = 0; }
+		return;
+	}
 	if (m_pRtv) { m_pRtv->Release(); m_pRtv = NULL; }
 	if (m_pSrv) { m_pSrv->Release(); m_pSrv = NULL; }
 	if (m_pGpu)
@@ -150,6 +158,27 @@ void CTex11::ReleaseGpu()
 HRESULT CTex11::EnsureGpu(const BYTE* pInit)
 {
 	if (m_pGpu) return D3D_OK;
+	if (m_bVirtual)
+	{
+		if (m_pPage) return D3D_OK;
+		if (!m_pDev->m_pAtlas || !m_pDev->m_pAtlas->Alloc(m_w, m_h, &m_pPage, &m_slot, &m_ax, &m_ay))
+		{
+			m_bVirtual = false;	// het cach: texture rieng
+		}
+		else
+		{
+			m_pSrv = m_pPage->m_pSrv; m_dxgi = DXGI_FORMAT_B8G8R8A8_UNORM;
+			m_bConvert = (m_fmt != D3DFMT_A8R8G8B8 && m_fmt != D3DFMT_X8R8G8B8);
+			m_uGpuBytes = m_w * m_h * 4; g_uRep3GpuTexCount++; g_uRep3GpuTexBytes += m_uGpuBytes;
+			m_bDirty = false;
+			if (pInit) { BYTE* pSave = m_pCpu; m_pCpu = (BYTE*)pInit; HRESULT hrU = UploadRect(NULL); m_pCpu = pSave; return hrU; }
+			// khong co du lieu: xoa o (tranh rac cua texture cu)
+			BYTE* pZero = (BYTE*)calloc(1, (size_t)m_w * m_h * 4);
+			if (pZero) { D3D11_BOX bz; bz.left = m_ax; bz.top = m_ay; bz.right = m_ax + m_w; bz.bottom = m_ay + m_h; bz.front = 0; bz.back = 1;
+				m_pDev->m_pCtx->UpdateSubresource(m_pPage->m_pTex, 0, &bz, pZero, m_w * 4, 0); free(pZero); }
+			return D3D_OK;
+		}
+	}
 	bool bRt = (m_usage & D3DUSAGE_RENDERTARGET) != 0;
 	R11Fmt fi = R11FormatInfo(m_fmt);
 	bool bNative = (fi.dxgi != DXGI_FORMAT_UNKNOWN) && m_pDev->FormatTexOK(m_fmt, bRt);
@@ -205,7 +234,8 @@ HRESULT CTex11::EnsureGpu(const BYTE* pInit)
 HRESULT CTex11::UploadRect(const RECT* prc)
 {
 	if (!m_pCpu) return D3DERR_INVALIDCALL;
-	if (!m_pGpu) return EnsureGpu(m_pCpu);
+	if (m_bVirtual && !m_pPage) return EnsureGpu(m_pCpu);
+	if (!m_bVirtual && !m_pGpu) return EnsureGpu(m_pCpu);
 	RECT rc = { 0, 0, (LONG)m_w, (LONG)m_h };
 	if (prc)
 	{
@@ -220,7 +250,9 @@ HRESULT CTex11::UploadRect(const RECT* prc)
 		m_pDev->m_pCtx->UpdateSubresource(m_pGpu, 0, NULL, m_pCpu, m_pitch, 0);
 		return D3D_OK;
 	}
-	D3D11_BOX box; box.left = rc.left; box.top = rc.top; box.right = rc.right; box.bottom = rc.bottom; box.front = 0; box.back = 1;
+	UINT ox = m_bVirtual ? m_ax : 0, oy = m_bVirtual ? m_ay : 0;
+	ID3D11Texture2D* pDst = m_bVirtual ? m_pPage->m_pTex : m_pGpu;
+	D3D11_BOX box; box.left = ox + rc.left; box.top = oy + rc.top; box.right = ox + rc.right; box.bottom = oy + rc.bottom; box.front = 0; box.back = 1;
 	UINT w = rc.right - rc.left, h = rc.bottom - rc.top;
 	if (m_bConvert)
 	{
@@ -228,16 +260,22 @@ HRESULT CTex11::UploadRect(const RECT* prc)
 		if (!pConv) return E_OUTOFMEMORY;
 		for (UINT y = 0; y < h; y++)
 			R11ConvertRowToBgra(m_fmt, m_pCpu + (rc.top + y) * m_pitch + rc.left * fi.bpp, (DWORD*)(pConv + y * w * 4), w);
-		m_pDev->m_pCtx->UpdateSubresource(m_pGpu, 0, &box, pConv, w * 4, 0);
+		m_pDev->m_pCtx->UpdateSubresource(pDst, 0, &box, pConv, w * 4, 0);
 		free(pConv);
 	}
 	else
-		m_pDev->m_pCtx->UpdateSubresource(m_pGpu, 0, &box, m_pCpu + rc.top * m_pitch + rc.left * fi.bpp, m_pitch, 0);
+		m_pDev->m_pCtx->UpdateSubresource(pDst, 0, &box, m_pCpu + rc.top * m_pitch + rc.left * fi.bpp, m_pitch, 0);
 	return D3D_OK;
 }
 
 HRESULT CTex11::PrepareForBind()
 {
+	if (m_bVirtual)
+	{
+		if (!m_pPage) { HRESULT hr = EnsureGpu(m_pCpu); m_bDirty = false; return hr; }
+		if (m_bDirty && m_pCpu) { HRESULT hr = UploadRect(&m_rcDirty); m_bDirty = false; return hr; }
+		return D3D_OK;
+	}
 	if (!m_pGpu)
 	{
 		if (m_pCpu) { HRESULT hr = EnsureGpu(m_pCpu); m_bDirty = false; return hr; }
@@ -321,7 +359,7 @@ HRESULT CTex11::UnlockRect(UINT Level)
 	// MANAGED / DYNAMIC: gop vung ban, day len khi bind (hoac ngay neu GPU da co)
 	if (m_bDirty) UnionRect(&m_rcDirty, &m_rcDirty, &m_rcLock); else m_rcDirty = m_rcLock;
 	m_bDirty = true;
-	if (m_pGpu)
+	if (m_pGpu || (m_bVirtual && m_pPage))
 	{
 		m_pDev->Lock();
 		UploadRect(&m_rcDirty);

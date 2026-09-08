@@ -209,6 +209,7 @@ copy Release\Represent3.dll ..\..\..\..\bin\client\Represent3.dll</Command>
     <ClCompile Include="D3D9on11.cpp" />
     <ClCompile Include="D3D9on11Dev.cpp" />
     <ClCompile Include="D3D9on11D3D.cpp" />
+    <ClCompile Include="D3D9on11Atlas.cpp" />
     <ClCompile Include="KRepresentShell3.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
     </ClCompile>

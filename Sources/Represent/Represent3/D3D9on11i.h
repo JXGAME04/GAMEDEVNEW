@@ -10,6 +10,8 @@
 class CDev11;
 class CTex11;
 class CSurf11;
+class CAtlasPage;
+class CAtlasMgr;
 
 void R11Log(const char* fmt, ...);
 void R11Stub(const char* szName);			// ghi log MOT lan moi ham chua cai
@@ -25,6 +27,27 @@ R11Fmt R11FormatInfo(D3DFORMAT f);
 UINT   R11Pitch(D3DFORMAT f, UINT w);			// pitch CPU theo D3D9 (byte)
 UINT   R11Rows(D3DFORMAT f, UINT h);			// so hang du lieu (DXT: (h+3)/4)
 void   R11ConvertRowToBgra(D3DFORMAT f, const BYTE* pSrc, DWORD* pDst, UINT w);
+
+// ---------------------------------------------------------------- atlas [D3D11 08/09 d]
+class CAtlasPage
+{
+public:
+	ID3D11Texture2D* m_pTex; ID3D11ShaderResourceView* m_pSrv;
+	UINT m_binW, m_binH, m_cols, m_rows, m_used;
+	std::vector<UINT> m_free;
+};
+class CAtlasMgr
+{
+public:
+	CAtlasMgr(CDev11* pDev);
+	~CAtlasMgr();
+	static bool Eligible(UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL pool);
+	bool Alloc(UINT w, UINT h, CAtlasPage** ppPage, UINT* pSlot, UINT* pX, UINT* pY);
+	void Free(CAtlasPage* pPage, UINT slot);
+	void ReleaseAll();
+	CAtlasPage* NewPage(UINT binW, UINT binH);
+	CDev11* m_pDev; std::vector<CAtlasPage*> m_pages; UINT m_pageSize;
+};
 
 // ---------------------------------------------------------------- texture
 class CTex11 : public IDirect3DTexture9
@@ -87,6 +110,8 @@ public:
 	RECT        m_rcLock;
 	UINT        m_uGpuBytes;
 	CSurf11*    m_pSurf0;			// mat level 0 (khong giu ref; surface giu ref texture)
+	bool        m_bVirtual;			// [d] o trong trang atlas (m_pSrv = SRV cua trang, khong so huu)
+	CAtlasPage* m_pPage; UINT m_slot, m_ax, m_ay;
 };
 
 // ---------------------------------------------------------------- surface
@@ -362,6 +387,8 @@ public:
 	ID3D11Buffer*           m_pPsCb;
 	ID3D11Buffer*           m_pRing;		// vertex ring (dynamic)
 	UINT            m_ringSize, m_ringPos;
+	bool            m_bRingDiscard;
+	CAtlasMgr*      m_pAtlas;				// [d] NULL = tat			// dau khung: Map DISCARD (GPU co the con doc dinh cua khung truoc - KHONG duoc ghi de NO_OVERWRITE)
 	ID3D11Buffer*           m_pDummy;		// mau trang + uv 0 cho FVF thieu thanh phan
 	ID3D11DepthStencilState* m_pDss;
 	std::map<DWORD, ID3D11InputLayout*>     m_layouts;

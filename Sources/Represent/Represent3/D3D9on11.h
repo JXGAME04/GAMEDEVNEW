@@ -13,6 +13,9 @@ extern int      g_nRep3ApiOn;        // API thuc te dang chay sau D3D_Shell::Cre
 extern int      g_nRep3D3D11FL;      // feature level D3D11 (0xB000 = 11.0, 0xA000 = 10.0)
 extern unsigned g_uRep3GpuTexCount;  // so texture GPU dang song (D3D11)
 extern unsigned __int64 g_uRep3GpuTexBytes;   // tong byte texture GPU (D3D11)
+extern int      g_nRep3Atlas;        // [Client] Rep3Atlas: 1 = gom texture nho vao trang (mac dinh), 0 = tat
+extern unsigned g_uRep3AtlasPages;   // so trang atlas
+extern unsigned __int64 g_uRep3AtlasBytes;
 extern int      g_nRep3Flip;         // [Client] Rep3Flip: 1 = swapchain flip (mac dinh), 0 = kieu bitblt cu (DISCARD)
 extern double   g_dRep3PresentMs;    // tong ms trong Present ke tu lan in thong ke truoc
 extern unsigned g_uRep3Presents;     // so lan Present
