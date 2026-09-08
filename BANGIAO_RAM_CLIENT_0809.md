@@ -296,3 +296,17 @@ Kết luận: **[m] = không chặn, không bỏ khung, app 63 fps, DXGI tự th
 lần mỗi khung (mỗi lần chờ tiêu một suất) — đã sửa còn tối đa 1 lần, và tắt mặc định. **[p] = trở lại cấu hình [m]**
 (`Rep3Buffers=3`, `Rep3Latency=3`, `Rep3NoWait=0`, `Rep3Waitable=0`), `Represent3.dll.moi` chờ restart.
 BẪY ghi nhớ: bắt trường trong dòng `[REP3]` phải neo theo ngữ cảnh (`present TB .* bo`), không bắt "bo" trần.
+
+### 6.13 13:41 — bản [p] c48939e0 (cấu hình 13:05 + mọi sửa lỗi): KẾT QUẢ CUỐI, 9 phút
+
+| | Giá trị |
+|---|---|
+| Present | 0,06–0,07 ms, **0 khung bị từ chối** (đọc đúng cột) |
+| fps app | 63 (59–66) |
+| RAM riêng | **345–351 MB ở texture 500–526 MB** (D3D9 cùng mức ~680 MB) |
+| VRAM | 597–633 MB (trang atlas kệ ≈ 1,2× texture) |
+| Lệnh vẽ | 0,3–0,4 µs/lệnh; gộp 7,3 triệu quad → 5,6 triệu Draw (−24 %) |
+| Pass vẽ | avg 3–4 ms, max 20 ms; 0 khung giật, 0 crash, 0 lỗi |
+
+Đây là trạng thái mặc định trong mã (`Rep3Api=11`, `Rep3Atlas=1`, `Rep3Batch=1`, `Rep3Flip=1`, `Rep3Buffers=3`, `Rep3Latency=3`,
+`Rep3NoWait=0`, `Rep3Waitable=0`, `Rep3Tearing=0`). Lùi toàn bộ: `Rep3Api=9`.
