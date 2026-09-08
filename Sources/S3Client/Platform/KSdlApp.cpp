@@ -135,6 +135,10 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 	strcat_s(m_szTitle, " Title");
 
 	// SDL3: khong con SDL_SetMainReady; SDL_MAIN_HANDLED (define cua cau hinh) la du vi WinMain cua S3Client tu goi Init/Run
+	// [SDL 08/09 WAUTO] WAuto ngoai tim game bang EnumWindows + GetClassNameA == "JXWC Class" (WAuto.cpp EnumWindowsProc) roi lay PID -> mo
+	// Local\Auto_Name_MMFSV_<pid>. Dang ky lop cua so cua SDL bang dung ten m_szClass TRUOC SDL_Init(VIDEO) (SDL chi tu dang ky khi chua co).
+	if (!SDL_RegisterApp(m_szClass, CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_OWNDC, hInstance))
+		g_DebugLog("[SDL] SDL_RegisterApp(%s) loi: %s", m_szClass, SDL_GetError());
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
 	{
 		g_DebugLog("[SDL] SDL_Init loi: %s", SDL_GetError());
@@ -285,6 +289,7 @@ void KSdlApp::Run()
 		m_pWindow = NULL;
 	}
 	SDL_Quit();
+	SDL_UnregisterApp();	// doi voi SDL_RegisterApp o Init
 }
 
 //---------------------------------------------------------------------------
