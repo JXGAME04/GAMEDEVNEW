@@ -1610,6 +1610,10 @@ BOOL KItemList::Equip(int nIdx, int nPlace /* = -1 */)
 		break;
 	}
 	// 更新装备自身坐标
+#ifndef _SERVER
+	if (m_PlayerIdx == CLIENT_PLAYER_INDEX)	// [X64 08/09 NGOAIHINH] chan doan ngoai hinh
+		AUTOLOG("[NGOAIHINH] Equip item=%u detail=%d part=%d lv=%d place=%d -> armor=%d helm=%d weapon=%d mask=%d(lock %d) mantle=%d horse=%d", (unsigned)Item[nIdx].m_dwID, (int)Item[nIdx].GetDetailType(), (int)Item[nIdx].GetParticular(), (int)Item[nIdx].GetLevel(), nEquipPlace, (int)Npc[nNpcIdx].m_ArmorType, (int)Npc[nNpcIdx].m_HelmType, (int)Npc[nNpcIdx].m_WeaponType, (int)Npc[nNpcIdx].m_MaskType, (int)m_nMaskLock, (int)Npc[nNpcIdx].m_MantleType, (int)Npc[nNpcIdx].m_HorseType);
+#endif
 	// [MATDO 06/09] O DICH DA CO MON KHAC -> phai go mon cu ra TRUOC. Truoc day gan de len:
 	// mon cu van con nPlace = pos_equip / nX = o nay -> HAI mon mot o -> luu xuong DB ca hai ->
 	// lan nap sau AddKIL(pos_equip) thay o da chiem va BO mon thu hai = MAT DO (do that tren
@@ -1833,6 +1837,10 @@ BOOL KItemList::UnEquip(int nIdx, int nPos/* = -1*/)
 	default:
 		break;
 	}
+#ifndef _SERVER
+	if (m_PlayerIdx == CLIENT_PLAYER_INDEX)	// [X64 08/09 NGOAIHINH] chan doan ngoai hinh
+		AUTOLOG("[NGOAIHINH] UnEquip item=%u detail=%d pos=%d -> armor=%d helm=%d weapon=%d mask=%d(lock %d) mantle=%d horse=%d", (unsigned)Item[nIdx].m_dwID, (int)Item[nIdx].GetDetailType(), nPos, (int)Npc[nNpcIdx].m_ArmorType, (int)Npc[nNpcIdx].m_HelmType, (int)Npc[nNpcIdx].m_WeaponType, (int)Npc[nNpcIdx].m_MaskType, (int)m_nMaskLock, (int)Npc[nNpcIdx].m_MantleType, (int)Npc[nNpcIdx].m_HorseType);
+#endif
 
 	if (itempart_weapon == i)
 	{

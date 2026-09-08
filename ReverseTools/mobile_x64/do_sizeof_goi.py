@@ -36,9 +36,10 @@ def names_from(path):
 files = ["KProtocol.h", "KProtocolDef.h", "KRelayProtocol.h", "KDiceProtocol.h", "KPartnerProtocol.h", "KMantleProtocol.h"]
 names = set()
 for f in files:
-    p = os.path.join(HDR, f)
-    if os.path.exists(p):
-        names |= names_from(p)
+    for d in (HDR, os.path.join(ROOT, "Sources", "Core", "Src")):  # [08/09] lay ten o CA ban Core (ban client bien dich, /I Core/Src truoc Headers)
+        p = os.path.join(d, f)
+        if os.path.exists(p):
+            names |= names_from(p)
 names = sorted(names)
 print("so ten:", len(names))
 

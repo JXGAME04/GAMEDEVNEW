@@ -972,6 +972,10 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 		}
 	}
 #endif
+#ifndef _SERVER
+	if (m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex && m_MaskType != m_MaskMark)	// [X64 08/09 NGOAIHINH] sap ReSetRes vi mat na
+		AUTOLOG("[NGOAIHINH] Activate self: mask=%d mark=%d fig=%d armor=%d helm=%d weapon=%d t=%u", (int)m_MaskType, (int)m_MaskMark, (int)m_NpcSettingIdx, (int)m_ArmorType, (int)m_HelmType, (int)m_WeaponType, (unsigned)SubWorld[0].m_dwCurrentTime);
+#endif
 	if (m_MaskType > 0 && m_MaskMark != 0 && m_MaskMark != m_MaskType)//#mat na
 	{
 		ReSetRes(1);
@@ -6932,6 +6936,9 @@ BOOL KNpc::SetPlayerIdx(int nIdx)
 void KNpc::SwitchMaskFeature()
 {
 	m_bMaskFeature = !m_bMaskFeature;
+#ifndef _SERVER
+	AUTOLOG("[NGOAIHINH] SwitchMaskFeature -> %d mask=%d", (int)m_bMaskFeature, (int)m_MaskType);	// [X64 08/09 NGOAIHINH]
+#endif
 #ifdef _SERVER
 	int nIdx = Player[m_nPlayerIdx].m_ItemList.GetEquipment(itempart_mask);
 	if (m_bMaskFeature)

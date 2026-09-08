@@ -3050,6 +3050,10 @@ void KProtocolProcess::SyncPlayer(BYTE* pMsg) //sync player 1 lÇn ®Çu tiªn
 	}
 	else
 		Npc[nIdx].m_MaskType	= pPlaySync->MaskType;		//#mat na
+#ifndef _SERVER
+	if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)	// [X64 08/09 NGOAIHINH] chan doan ngoai hinh cua chinh minh
+		AUTOLOG("[NGOAIHINH] SyncPlayer self: armor=%d helm=%d weapon=%d mask=%d(goi %d) mantle=%d/%d horse=%d fig=%d low=%d t=%u", (int)Npc[nIdx].m_ArmorType, (int)Npc[nIdx].m_HelmType, (int)Npc[nIdx].m_WeaponType, (int)Npc[nIdx].m_MaskType, (int)pPlaySync->MaskType, (int)pPlaySync->MantleType, (int)pPlaySync->MantleLevel, (int)(char)pPlaySync->HorseType, (int)Npc[nIdx].m_NpcSettingIdx, (int)Option.GetLow(LowPlayer), (unsigned)SubWorld[0].m_dwCurrentTime);
+#endif
 	Npc[nIdx].m_MantleType		= pPlaySync->MantleType;				//#phi phong
 	Npc[nIdx].m_byMantleLevel	= pPlaySync->MantleLevel;
 	Npc[nIdx].m_HorseType			= (char)pPlaySync->HorseType;
@@ -3156,6 +3160,10 @@ void KProtocolProcess::SyncPlayerMin(BYTE* pMsg) //Sync Player liªn tôc
 	}
 	else
 		Npc[nIdx].m_MaskType			= pPlaySync->MaskType;				//#mat na
+#ifndef _SERVER
+	if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)	// [X64 08/09 NGOAIHINH] chan doan ngoai hinh cua chinh minh
+		AUTOLOG("[NGOAIHINH] SyncPlayerMin self: armor=%d helm=%d weapon=%d mask=%d(goi %d) mantle=%d/%d horse=%d fig=%d low=%d t=%u", (int)Npc[nIdx].m_ArmorType, (int)Npc[nIdx].m_HelmType, (int)Npc[nIdx].m_WeaponType, (int)Npc[nIdx].m_MaskType, (int)pPlaySync->MaskType, (int)pPlaySync->MantleType, (int)pPlaySync->MantleLevel, (int)(char)pPlaySync->HorseType, (int)Npc[nIdx].m_NpcSettingIdx, (int)Option.GetLow(LowPlayer), (unsigned)SubWorld[0].m_dwCurrentTime);
+#endif
 	Npc[nIdx].m_HorseType			= (char)pPlaySync->HorseType;
 	if (Npc[nIdx].m_HorseType >= 0)		//edit by phong kieu len xuong ngua
     {
@@ -4654,6 +4662,7 @@ void KProtocolProcess::SyncMaskLock(BYTE* pMsg)
 {
 	NPC_SIT_SYNC *pInfo = (NPC_SIT_SYNC *)pMsg;
 	Player[CLIENT_PLAYER_INDEX].m_ItemList.SetMaskLock(pInfo->ID);
+	AUTOLOG("[NGOAIHINH] SyncMaskLock id=%d", (int)pInfo->ID);	// [X64 08/09 NGOAIHINH]
 }
 
 void	KProtocolProcess::s2cTaskValueSync(BYTE* pMsg)
