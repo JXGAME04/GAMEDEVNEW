@@ -216,6 +216,9 @@ enum s2c_PROTOCOL
 	s2c_syncnpcstate,		// [DELTA 07/09 l] = 223: trang thai ky nang + chi so toi da (NPC_STATE_SYNC 39 byte).
 							// Thay goi day du 98 byte khi CHI hai nhom nay doi (do live: 98 % so lan bam cham doi).
 							// g_nProtocolSize (KProtocol.cpp) phai co o 158 cho ma nay. Chi phat khi client bao hello phien ban 3.
+	s2c_skillfired,			// [HUSK 08/09] = 224: may chu bao 'chieu DA BAN' dung luc KSkill::Cast (S2C_SKILL_FIRED 16 byte). Client ve
+							// hieu ung cua NPC KHAC theo goi nay (khong tu mo phong o khung 60 %). g_nProtocolSize (KProtocol.cpp) phai co o 159.
+							// Chi phat khi moi client dang noi da bao hello phien ban 4.
 //	s2c_dynamic_structure,	//dynamic structure
 
 //	s2c_gmgateway2relaysvr,		//GM

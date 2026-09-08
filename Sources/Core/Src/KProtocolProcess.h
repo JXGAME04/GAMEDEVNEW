@@ -103,6 +103,7 @@ public:
 	void	s2cGamblePressOkSync(BYTE* pMsg);
 	void	s2cPing(BYTE* pMsg);
 	void	s2cDirectlyCastSkill(BYTE * pMsg);
+	void	s2cSkillFired(BYTE * pMsg);	// [HUSK 08/09] goi 224: chieu DA BAN tu may chu
 	void	s2cShowMsg(BYTE * pMsg);
 	void	SyncStateEffect(BYTE* pMsg);
 	void	PlayerRevive(BYTE* pMsg);

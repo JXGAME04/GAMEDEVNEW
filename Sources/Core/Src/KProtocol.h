@@ -1288,6 +1288,18 @@ typedef struct
 	int				m_ManaMax;
 } NPC_STATE_SYNC;
 
+// [HUSK 08/09] s2c_skillfired = 224: may chu bao chieu DA BAN (phat dung luc KSkill::Cast o may chu). nMpsX == -1 -> nMpsY = dwID
+// muc tieu (nhu s2c_castskilldirectly); khac -1 -> toa do MPS. Client: KProtocolProcess::s2cSkillFired.
+typedef struct
+{
+	BYTE	ProtocolType;
+	DWORD	ID;				// dwID nguoi phat
+	WORD	wSkillID;
+	BYTE	bySkillLevel;
+	int		nMpsX;
+	int		nMpsY;
+} S2C_SKILL_FIRED;			// 16 byte (pack 1)
+
 typedef struct
 {
 	BYTE	ProtocolType;

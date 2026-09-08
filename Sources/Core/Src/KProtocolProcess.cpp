@@ -231,6 +231,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_syncnpcpos] = &KProtocolProcess::SyncNpcPos;	// [DELTA 07/09]
 	ProcessFunc[s2c_showdamagegon] = &KProtocolProcess::s2cShowDamageGon;	// [DELTA 07/09 g]
 	ProcessFunc[s2c_syncnpcstate] = &KProtocolProcess::SyncNpcState;	// [DELTA 07/09 l]
+	ProcessFunc[s2c_skillfired] = &KProtocolProcess::s2cSkillFired;	// [HUSK 08/09]
 	ProcessFunc[s2c_objadd] = &KProtocolProcess::SyncObjectAdd;
 	ProcessFunc[s2c_syncobjstate] = &KProtocolProcess::SyncObjectState;
 	ProcessFunc[s2c_syncobjdir] = &KProtocolProcess::SyncObjectDir;
@@ -3355,7 +3356,7 @@ void KProtocolProcess::SyncEnd(BYTE* pMsg)
 	{
 		C2S_DELTA_HELLO sHello;
 		sHello.ProtocolType = (BYTE)c2s_deltahello;
-		sHello.byPhienBan = 3;	// [DELTA 07/09 l] 3 = hieu them s2c_syncnpcstate (223); 2 = 222; may chu cu coi moi gia tri nhu nhau
+		{ extern int HUSK_ClientBat(); sHello.byPhienBan = (BYTE)(HUSK_ClientBat() ? 4 : 3); }	// [HUSK 08/09] 4 = hieu them s2c_skillfired (224) khi [Client] HieuUngSuKien=1; [DELTA 07/09 l] 3 = 223; 2 = 222
 		if (g_pClient)
 			g_pClient->SendPackToServer((BYTE*)&sHello, sizeof(sHello));
 	}
@@ -3548,6 +3549,34 @@ void	KProtocolProcess::s2cDirectlyCastSkill(BYTE * pMsg)
 		}
 		Npc[nIdx].m_SkillList.SetNextCastTime(nSkillID, SubWorld[0].m_dwCurrentTime, SubWorld[0].m_dwCurrentTime + dwCastTime);
 	}
+}
+
+// [HUSK 08/09] Goi 224: may chu bao chieu DA BAN (dung luc KSkill::Cast o may chu). Ve hieu ung cua NPC KHAC ngay, khong phu thuoc
+// client dang o khung nao / dang ban / hoi chieu / lech nhip. Chinh minh: bo qua (client tu mo phong nhu cu). Khong SetNextCastTime
+// (hoi chieu client van do OnSkill/148 lo). Bo dem in trong dong [FX] 10s (HUSK(224): ...).
+void	KProtocolProcess::s2cSkillFired(BYTE * pMsg)
+{
+	extern int g_nFX_husk_rx, g_nFX_husk_noidx, g_nFX_husk_minh, g_nFX_husk_noskill, g_nFX_husk_notgt, g_nFX_husk_fire, g_nFX_husk_fail;
+	extern int HUSK_ClientBat();
+	g_nFX_husk_rx++;
+	if (!pMsg || !HUSK_ClientBat())
+		return;
+	S2C_SKILL_FIRED* pGoi = (S2C_SKILL_FIRED*)pMsg;
+	int nIdx = NpcSet.SearchID(pGoi->ID);
+	if (nIdx <= 0 || nIdx >= MAX_NPC) { g_nFX_husk_noidx++; return; }
+	if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex) { g_nFX_husk_minh++; return; }
+	KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill((int)pGoi->wSkillID, (int)pGoi->bySkillLevel);
+	if (!pSkill) { g_nFX_husk_noskill++; return; }
+	BOOL bVe;
+	if (pGoi->nMpsX == -1)
+	{
+		int nTgt = (pGoi->nMpsY > 0) ? NpcSet.SearchID((DWORD)pGoi->nMpsY) : 0;
+		if (nTgt <= 0 || nTgt >= MAX_NPC || Npc[nTgt].m_RegionIndex < 0) { g_nFX_husk_notgt++; return; }
+		bVe = pSkill->Cast(nIdx, -1, nTgt);
+	}
+	else
+		bVe = pSkill->Cast(nIdx, pGoi->nMpsX, pGoi->nMpsY);
+	if (bVe) g_nFX_husk_fire++; else g_nFX_husk_fail++;
 }
 
 void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)

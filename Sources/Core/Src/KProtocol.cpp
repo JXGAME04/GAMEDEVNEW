@@ -175,6 +175,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(NPC_POS_SYNC),		// s2c_syncnpcpos = 221 [DELTA 07/09] - o 156 = ma 221 (ngay sau 220), KHONG chen gi giua
 	sizeof(DAMAGESHOW_GON),		// s2c_showdamagegon = 222 [DELTA 07/09 g] - o 157 = ma 222 (ngay sau 221), KHONG chen gi giua
 	sizeof(NPC_STATE_SYNC),		// s2c_syncnpcstate = 223 [DELTA 07/09 l] - o 158 = ma 223 (ngay sau 222), KHONG chen gi giua
+	sizeof(S2C_SKILL_FIRED),	// s2c_skillfired = 224 [HUSK 08/09] - o 159 = ma 224 (ngay sau 223), KHONG chen gi giua
 	
 #else
 	sizeof(LOGIN_COMMAND),		//	c2s_login,

@@ -152,6 +152,8 @@ int g_nFX_huy_sync = 0;		// [FX 08/09] lenh mang (do_stand/walk/run/jump qua Pro
 int g_nFX_msl_max = 0;		// [FX 08/09] muc day cao nhat cua be dan client trong 10 s
 int g_nFX_msl_ol_trong = 0, g_nFX_msl_ol_khacid = 0, g_nFX_msl_ol_mocoi = 0;	// [FX 08/09] tach ownerlost
 int g_nFX_sv_start = 0, g_nFX_sv_fire = 0, g_nFX_sv_huyhurt = 0, g_nFX_sv_start_all = 0, g_nFX_sv_fire_all = 0;
+int g_nFX_husk_rx = 0, g_nFX_husk_noidx = 0, g_nFX_husk_minh = 0, g_nFX_husk_noskill = 0, g_nFX_husk_notgt = 0, g_nFX_husk_fire = 0, g_nFX_husk_fail = 0, g_nFX_husk_bocuc = 0;	// [HUSK 08/09] client: goi 224
+int g_nFX_sv_husk = 0, g_nFX_sv_husk_cu = 0;	// [HUSK 08/09] may chu: goi 224 da phat / lan bo qua vi con client cu (hello < 4)
 DWORD g_uFXMoc = 0;
 #ifdef _SERVER
 // NPC co nam trong 32 o (tam phat tan) quanh mot nguoi choi THAT khong - de so thang voi [FX] cua client
@@ -211,6 +213,82 @@ static BOOL S13_IsRealPlayer(KNpc* pNpc)
 	return pNpc->m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex;
 #endif
 }
+// [HUSK 08/09] HIEU UNG THEO SU KIEN MAY CHU: may chu phat goi 224 (s2c_skillfired) dung luc KSkill::Cast thuc su chay o cac diem ban
+// theo hoat anh (OnSkill, OnSpecial1, DoBlurMove, OnManyAttack, OnRunAttack, OnJumpAttack); client ve hieu ung cua NPC KHAC theo goi do
+// (KProtocolProcess::s2cSkillFired) va KHONG tu mo phong o khung 60 % nua. Truoc: client tu doan -> mat 3-4 % chieu vi bi tu choi im lang
+// (dang ban / trung don truoc 60 % / hoi chieu lech / hai goi 95 mot nhip). Chinh nhan vat: van tu mo phong (cam giac khong doi).
+// Cong lui: client [Client] HieuUngSuKien=0 (client bao hello 3 -> may chu khong phat 224 cho AI); may chu [Server] HieuUngSuKien=0
+// (doc lai moi 10 s; khi tat PHAI tat ca client, neu khong hieu ung NPC khac khong hien).
+#ifndef _SERVER
+int HUSK_ClientBat()
+{
+	static int s_nBat = -1;
+	if (s_nBat < 0)
+		s_nBat = GetPrivateProfileIntA("Client", "HieuUngSuKien", 1, ".\\config.ini") ? 1 : 0;
+	return s_nBat;
+}
+static BOOL HUSK_BoCastCuc(KNpc* pNpc)	// NPC khac + che do bat -> khong Cast cuc bo, cho goi 224
+{
+	return HUSK_ClientBat() && !S13_IsRealPlayer(pNpc);
+}
+#define HUSK_CAST(pSk, id, lv, p1, p2)	do { if (HUSK_BoCastCuc(this)) g_nFX_husk_bocuc++; else (pSk)->Cast(m_Index, (p1), (p2)); } while (0)
+#else
+static int HUSK_SvBat(DWORD dwLuc)	// [Server] HieuUngSuKien (doc lai moi 10 s) va khong con client hello < 4
+{
+	static DWORD s_dwMoc = 0;
+	static int   s_nBat = 1, s_nCu = 0;
+	extern BYTE g_abyDeltaHello[MAX_PLAYER];
+	if (s_dwMoc == 0 || (dwLuc - s_dwMoc) >= 10000)
+	{
+		s_dwMoc = dwLuc;
+		s_nBat = GetPrivateProfileIntA("Server", "HieuUngSuKien", 1, ".\\config.ini") ? 1 : 0;
+		int n = 0;
+		for (int i = 1; i < MAX_PLAYER; i++)
+			if (Player[i].m_nNetConnectIdx >= 0 && g_abyDeltaHello[i] < 4)
+				n++;
+		s_nCu = n;
+	}
+	if (!s_nBat)
+		return 0;
+	if (s_nCu > 0) { g_nFX_sv_husk_cu++; return 0; }
+	return 1;
+}
+void KNpc::HUSK_PhatDaBan(int nSkillId, int nLevel, int nParam1, int nParam2)
+{
+	if (m_Index <= 0 || m_RegionIndex < 0 || m_SubWorldIndex < 0 || nSkillId <= 0 || nSkillId >= MAX_SKILL || nLevel <= 0 || nLevel >= MAX_SKILLLEVEL)
+		return;
+	if (!HUSK_SvBat(SubWorld[m_SubWorldIndex].m_dwCurrentTime))
+		return;
+	S2C_SKILL_FIRED sGoi;
+	sGoi.ProtocolType = (BYTE)s2c_skillfired;
+	sGoi.ID = m_dwID;
+	sGoi.wSkillID = (WORD)nSkillId;
+	sGoi.bySkillLevel = (BYTE)nLevel;
+	if (nParam1 == -1)
+	{
+		if (nParam2 <= 0 || nParam2 >= MAX_NPC || Npc[nParam2].m_Index <= 0)
+			return;
+		sGoi.nMpsX = -1;
+		sGoi.nMpsY = (int)Npc[nParam2].m_dwID;
+	}
+	else
+	{
+		sGoi.nMpsX = nParam1;
+		sGoi.nMpsY = nParam2;
+	}
+	static const POINT POff[8] = { {0, 32}, {-16, 32}, {-16, 0}, {-16, -32}, {0, -32}, {16, -32}, {16, 0}, {16, 32} };
+	int nMaxCount = MAX_BROADCAST_COUNT;
+	CURREGION.BroadCast(&sGoi, sizeof(sGoi), nMaxCount, m_MapX, m_MapY);
+	for (int i = 0; i < 8; i++)
+	{
+		if (CONREGIONIDX(i) == -1)
+			continue;
+		CONREGION(i).BroadCast(&sGoi, sizeof(sGoi), nMaxCount, m_MapX - POff[i].x, m_MapY - POff[i].y);
+	}
+	g_nFX_sv_husk++;
+}
+#define HUSK_CAST(pSk, id, lv, p1, p2)	do { if ((pSk)->Cast(m_Index, (p1), (p2))) HUSK_PhatDaBan((id), (lv), (p1), (p2)); } while (0)
+#endif
 // Goi tu tep khac (client): xoa CA hai khe cua chinh minh khi bi dat lai vi tri / doi map.
 void S13_ClearCmd(int nIdx)
 {
@@ -1001,13 +1079,14 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 			else if ((DWORD)(uFXNay - g_uFXMoc) >= 10000)
 			{
 				g_uFXMoc = uFXNay;
-				AUTOLOG("[FX] 10s KHAC: rx95=%d noidx=%d start=%d fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d (truoc60=%d ca hai) huy_lenh(di=%d dung=%d skill=%d khac=%d) huy_chet=%d | MINH: fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d | 148: rx=%d noskill=%d cast=%d fail=%d | dan: add_full=%d add_vung=%d kieu(line=%d ext=%d wall=%d circle=%d spread=%d zone=%d) chet_som(nolauncher=%d ownerlost=%d[trong=%d khacid=%d mocoi=%d] tgtlost=%d) | buff_het_o=%d | huy_sync=%d msl_max=%d/%d",
+				AUTOLOG("[FX] 10s KHAC: rx95=%d noidx=%d start=%d fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d (truoc60=%d ca hai) huy_lenh(di=%d dung=%d skill=%d khac=%d) huy_chet=%d | MINH: fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d | 148: rx=%d noskill=%d cast=%d fail=%d | dan: add_full=%d add_vung=%d kieu(line=%d ext=%d wall=%d circle=%d spread=%d zone=%d) chet_som(nolauncher=%d ownerlost=%d[trong=%d khacid=%d mocoi=%d] tgtlost=%d) | buff_het_o=%d | huy_sync=%d msl_max=%d/%d | HUSK(224): rx=%d ve=%d hong=%d noidx=%d minh=%d noskill=%d notgt=%d bo_cuc=%d",
 					g_nFX_rx95, g_nFX_rx95_noidx, g_nFX_rx95_start, g_nFX_fire_khac, g_nFX_firefail_khac, g_nFX_botgt_khac, g_nFX_huyhurt_khac, g_nFX_huyhurt_truoc,
 					g_nFX_huylenh_di, g_nFX_huylenh_dung, g_nFX_huylenh_skill, g_nFX_huylenh_khac, g_nFX_huychet,
 					g_nFX_fire_minh, g_nFX_firefail_minh, g_nFX_botgt_minh, g_nFX_huyhurt_minh,
 					g_nFX_rx148, g_nFX_rx148_noskill, g_nFX_rx148_cast, g_nFX_rx148_fail,
 					g_nFX_add_full, g_nFX_add_vung, g_nFX_style_line, g_nFX_style_ext, g_nFX_style_wall, g_nFX_style_circle, g_nFX_style_spread, g_nFX_style_zone,
-					g_nFX_msl_nolauncher, g_nFX_msl_ownerlost, g_nFX_msl_ol_trong, g_nFX_msl_ol_khacid, g_nFX_msl_ol_mocoi, g_nFX_msl_tgtlost, g_nFX_buff_heto, g_nFX_huy_sync, g_nFX_msl_max, (int)MAX_MISSLE);
+					g_nFX_msl_nolauncher, g_nFX_msl_ownerlost, g_nFX_msl_ol_trong, g_nFX_msl_ol_khacid, g_nFX_msl_ol_mocoi, g_nFX_msl_tgtlost, g_nFX_buff_heto, g_nFX_huy_sync, g_nFX_msl_max, (int)MAX_MISSLE,
+					g_nFX_husk_rx, g_nFX_husk_fire, g_nFX_husk_fail, g_nFX_husk_noidx, g_nFX_husk_minh, g_nFX_husk_noskill, g_nFX_husk_notgt, g_nFX_husk_bocuc);
 				g_nFX_rx95 = 0; g_nFX_rx95_noidx = 0; g_nFX_rx95_start = 0;
 				g_nFX_rx148 = 0; g_nFX_rx148_noskill = 0; g_nFX_rx148_cast = 0; g_nFX_rx148_fail = 0;
 				g_nFX_fire_khac = 0; g_nFX_fire_minh = 0; g_nFX_firefail_khac = 0; g_nFX_firefail_minh = 0;
@@ -1018,6 +1097,7 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 				g_nFX_style_line = 0; g_nFX_style_ext = 0; g_nFX_style_wall = 0; g_nFX_style_circle = 0; g_nFX_style_spread = 0; g_nFX_style_zone = 0;
 				g_nFX_msl_nolauncher = 0; g_nFX_msl_ownerlost = 0; g_nFX_msl_tgtlost = 0; g_nFX_buff_heto = 0;
 				g_nFX_msl_ol_trong = 0; g_nFX_msl_ol_khacid = 0; g_nFX_msl_ol_mocoi = 0; g_nFX_huy_sync = 0; g_nFX_msl_max = 0;
+				g_nFX_husk_rx = 0; g_nFX_husk_fire = 0; g_nFX_husk_fail = 0; g_nFX_husk_noidx = 0; g_nFX_husk_minh = 0; g_nFX_husk_noskill = 0; g_nFX_husk_notgt = 0; g_nFX_husk_bocuc = 0;	// [HUSK 08/09]
 			}
 		}
 		// [NAMBEP 07/09 m] Ghi trang thai SAU HOI SINH o +1 s / +3 s / +6 s - moc chac chan nhat de doi chieu
@@ -2400,7 +2480,7 @@ void KNpc::OnSpecial1()
 				KSkill * pChildSkill = (KSkill*)g_SkillManager.GetSkill(nChildSkill, nChildSkillLevel);
 				if (pChildSkill)
 				{
-					pChildSkill->Cast(m_Index, m_SkillParam1, m_SkillParam2);
+					HUSK_CAST(pChildSkill, nChildSkill, nChildSkillLevel, m_SkillParam1, m_SkillParam2);	// [HUSK 08/09]
 				}
 			}
 		}
@@ -2611,7 +2691,7 @@ BOOL KNpc::DoBlurMove()
 		{
 			KSkill* pChildBlur = (KSkill*)g_SkillManager.GetSkill(pSkill->GetChildSkillId(), pSkill->GetSkillLevel());
 			if (pChildBlur)
-				pChildBlur->Cast(m_Index, -1, m_Index);
+				HUSK_CAST(pChildBlur, pSkill->GetChildSkillId(), (int)pSkill->GetSkillLevel(), -1, m_Index);	// [HUSK 08/09]
 		}
 #ifndef _SERVER
 		m_DataRes.CreateBlur(m_Index, g_GetDistance(nX, nY, m_DesX, m_DesY), m_Dir);
@@ -3553,7 +3633,15 @@ void KNpc::OnSkill()
 
 		if (pSkill)
 		{
-			const BOOL bFXCast = pSkill->Cast(m_Index, m_DesX, m_DesY);	// [FX 07/09] dem chieu that su BAN o khung 60%
+			BOOL bFXCast;
+#ifndef _SERVER
+			if (HUSK_BoCastCuc(this)) { g_nFX_husk_bocuc++; bFXCast = TRUE; }	// [HUSK 08/09] NPC khac: hieu ung ve theo goi 224 cua may chu, khong tu mo phong
+			else
+#endif
+			bFXCast = pSkill->Cast(m_Index, m_DesX, m_DesY);	// [FX 07/09] dem chieu that su BAN o khung 60%
+#ifdef _SERVER
+			if (bFXCast) HUSK_PhatDaBan(m_ActiveSkillID, (int)pSkill->m_ulLevel, m_DesX, m_DesY);	// [HUSK 08/09]
+#endif
 #ifndef _SERVER
 			if (S13_IsRealPlayer(this)) { if (bFXCast) g_nFX_fire_minh++; else g_nFX_firefail_minh++; }
 			else { if (bFXCast) g_nFX_fire_khac++; else g_nFX_firefail_khac++; }
@@ -7437,9 +7525,9 @@ BOOL KNpc::NormalSync()
 					s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSGonThem, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon, NS_SoClientCu(dwLuc),
 					s_anNSNhom[0], s_anNSNhom[1], s_anNSNhom[2], s_anNSNhom[3], s_anNSNhom[4], s_nNSNhomNhieu);
 				AUTOLOG("[NS-TT] 10s goi trang thai gon (223): %d lan (client chua bao phien ban 3: %d)", s_nNSTT, NS_SoClientCu3(dwLuc));
-				AUTOLOG("[FX-SV] 10s gan nguoi that (32 o): bat_dau=%d ban=%d ngat_vi_trung_don=%d | toan may chu: bat_dau=%d ban=%d",
-					g_nFX_sv_start, g_nFX_sv_fire, g_nFX_sv_huyhurt, g_nFX_sv_start_all, g_nFX_sv_fire_all);
-				g_nFX_sv_start = 0; g_nFX_sv_fire = 0; g_nFX_sv_huyhurt = 0; g_nFX_sv_start_all = 0; g_nFX_sv_fire_all = 0;
+				AUTOLOG("[FX-SV] 10s gan nguoi that (32 o): bat_dau=%d ban=%d ngat_vi_trung_don=%d | toan may chu: bat_dau=%d ban=%d | goi 224 da ban: phat=%d bo_vi_client_cu=%d",
+					g_nFX_sv_start, g_nFX_sv_fire, g_nFX_sv_huyhurt, g_nFX_sv_start_all, g_nFX_sv_fire_all, g_nFX_sv_husk, g_nFX_sv_husk_cu);
+				g_nFX_sv_start = 0; g_nFX_sv_fire = 0; g_nFX_sv_huyhurt = 0; g_nFX_sv_start_all = 0; g_nFX_sv_fire_all = 0; g_nFX_sv_husk = 0; g_nFX_sv_husk_cu = 0;
 				s_nNSTT = 0;
 				for (int k = 0; k < NS_SO_NHOM; k++)	// dem lai moi 10 giay cho de doc (y het cac so khac tren dong nay)
 					s_anNSNhom[k] = 0;
@@ -9386,7 +9474,7 @@ void KNpc::OnManyAttack()
 			KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(nPhySkillId, pSkill->m_ulLevel, SKILL_SS_Missles);
 			if (pOrdinSkill)
             {
-				pOrdinSkill->Cast(m_Index, m_SkillParam1, m_SkillParam2);
+				HUSK_CAST(pOrdinSkill, nPhySkillId, (int)pSkill->m_ulLevel, m_SkillParam1, m_SkillParam2);	// [HUSK 08/09]
             }
 		}
 		m_SpecialSkillStep ++;
@@ -9525,7 +9613,7 @@ void	KNpc::OnRunAttack()
 				KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(nCurPhySkillId, pSkill->m_ulLevel, SKILL_SS_Missles);
 				if (pOrdinSkill)
                 {
-				    pOrdinSkill->Cast(m_Index, m_SkillParam1, m_SkillParam2);
+				    HUSK_CAST(pOrdinSkill, nCurPhySkillId, (int)pSkill->m_ulLevel, m_SkillParam1, m_SkillParam2);	// [HUSK 08/09]
                 }
 			}
 			DoStand();
@@ -9645,7 +9733,7 @@ BOOL KNpc::OnJumpAttack()
 				KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(nCurPhySkillId, pSkill->m_ulLevel, SKILL_SS_Missles);
 				if (pOrdinSkill)
                 {
-					pOrdinSkill->Cast(m_Index, m_SkillParam1, m_SkillParam2);
+					HUSK_CAST(pOrdinSkill, nCurPhySkillId, (int)pSkill->m_ulLevel, m_SkillParam1, m_SkillParam2);	// [HUSK 08/09]
                 }
 			}
 			FixPos();

@@ -887,6 +887,7 @@ public:
 	void				AttackSkill(int nUnderAttacker);
 	void				DeathSkill();
 	void				CastAutoSkillAt(int nSkillId, int nSkillLevel, int nTarget);	// [HOASON 02/09] tu phong nham muc tieu: phat s2c_castskilldirectly (client ve dan) roi Cast(m_Index, -1, nTarget)
+	void				HUSK_PhatDaBan(int nSkillId, int nLevel, int nParam1, int nParam2);	// [HUSK 08/09] may chu: phat goi 224 'chieu da ban' cho client trong tam (chi dinh nghia khi _SERVER)
 	// mode == 0 npc  == 1 player  == 2 player 	// DoDeath enumDEATH_MODE
 	void				DeathPunish(int nMode, int nBelongPlayer);		//edit by phong kieu hut hit
 	void				RestoreLiveData();								// 重生后恢复Npc的基本数据
