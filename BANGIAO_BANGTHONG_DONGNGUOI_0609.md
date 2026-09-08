@@ -916,3 +916,24 @@ Nghi ngo o muc 8.16 ve toc do buff **SAI**: toc do khong doi lan nao. Thu pham l
 **Ky vong:** 90 % so lan phat goi 77 chuyen tu 98 byte xuong 28 + 39 = 67 byte (goi gon + goi trang thai), tuc goi 77 tu 16,4 % xuong con vai phan tram va tong byte giam khoang 7 %. Muon huong loi phai swap **ca hai** ban.
 
 **Da dat 17:05 (CA HAI, chu chay ca hai bat):** `CoreServer.dll.moi` **6693429f** + `CoreClient.dll.moi` **ae11479a** (origin/main + va l; ban BHWS 55c9c3fd cua phien BH100 doi ten `.moi.bhws_55c9c3fd`, da kiem co du `TONG_GetTongMap`, `TONG_GetLevelExpNeed`, `tong_setting.ini`). `S3Relay.exe.moi` 18de36e5 cua ho giu nguyen, swap cung. Sau tran ke doc `[NS-TT]` va ti le byte goi 77.
+
+### 8.19 Va l chay that (ca hai ban swap 17:04, client vao lai 17:12): goi day du gan nhu bien mat
+
+**So lieu may chu (dem quyet dinh, khong phu thuoc chu dung o dau):**
+
+| Chi so /10 s | Va k (16:21-17:04) | Va l (17:05-17:21) |
+|---|---|---|
+| `day` (quyet dinh phat goi DAY DU 98 byte) | 4.372-4.886 | **584-843** (-83 %) |
+| `day/(gon+day)` | 1,9 % | **0,4 %** |
+| `gon_them` | 640-1.000 | 45 |
+| Goi trang thai 223 phat | - | ~2.800 lan |
+| Bam cham doi o nhom | trang_thai 74,7 % / chi_so_max 15,2 % | **trang_thai 0 / chi_so_max 0** (da roi khoi bam cham dung nhu thiet ke), con toc_do 24, bat_tu 242, phe_loai 15 |
+| `client chua bao phien ban 3` | - | 0 (cong hello hoat dong) |
+
+**Byte toi client cua chu (47 cua so, 7,7 phut):** 221 gon 61,3 % - 75 ngoai hinh 12,1 % - 222 so sat thuong 8,5 % - 148 chieu 5,3 % - **223 trang thai 5,0 %** - 86 lenh chay 4,2 % - 95 chieu 3,0 %. **Goi 77 day du khong con trong bang** (truoc do 16,4 %, dung thu ba); ca doan chi thay mot cua so co 63 goi 77.
+
+**Thanh that ve phep do:** doan nay chu o cho thua nguoi hon doan truoc (BroadCast 1,09 trieu/10 s so voi 1,75 trieu; goi sat thuong 656 so voi 1.697/10 s) nen **khong so thang** trung binh KB/s duoc (10,1 / dinh 40,2 KB/s so voi 22,9 / 58,9 truoc do). Con so chac chan la hai dong dau bang tren: quyet dinh phat goi day du giam 83 % va ti le goi day du con 0,4 %, ca hai deu la dem tren toan bo 1.000 bot nen khong lech vi chu dung dau.
+
+**Suc khoe:** TICK 8,5 ms (15 %), client 1.250 luot ve/10 s, 0 `Net Msg Error`, 0 giat, khong sap. Nhan `[S7-NAMBEP]` cua va j chua ghi dong nao nhung moi co 1 lan chet sau 17:12 - chua du de ket luan ve loi nam bep.
+
+**Con lai gi:** goi 221 gon dang la 61 %, do la "gia" cua dong bo vi tri day gap doi (`DongBoMoiTick=10`), khong cat neu khong muon mat muot. Goi 75 ngoai hinh 12,1 % (nhung tuyet doi chi 11,8 KB/10 s) - phan con lai la cap co PK va nhom rank cua nguoi that, da do o muc 8.16.
