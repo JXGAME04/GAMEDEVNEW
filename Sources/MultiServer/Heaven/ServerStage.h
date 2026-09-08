@@ -25,6 +25,8 @@
 /*
  * class CIOCPServer
  */
+struct NB_NODE;	// [GUI 07/09] node gia cua phep thu nhan ban (dinh nghia trong ServerStage.cpp)
+
 class CIOCPServer : public IServer, public OnlineGameLib::Win32::CSocketServer
 {
 public:
@@ -223,6 +225,25 @@ private:
 
 	bool _HelperAddClient();
 	bool _HelperDelClient();
+
+	/*
+	 * [GUI 07/09] Duong gui cho dong nguoi:
+	 *  - m_ppNode: bang tra nhanh node, cap mot lan trong ctor va KHONG BAO GIO doi (node chi bi huy o dtor),
+	 *    nen tra node khong can khoa. Cung con tro voi m_theClientManager.
+	 *  - m_nGuiKhoaRieng ([Server] GuiKhoaRieng, mac dinh 1): duong nong (PackDataToClient, SendPackToClient,
+	 *    SendData, GetPackFromClient, ReadCompleted, ProcessCommand/Message) chi giu khoa RIENG cua node
+	 *    (csWriteAction / csReadAction); noi dat pSocket (them/bot client, ShutdownClient) giu m_csCM + ca hai
+	 *    khoa rieng. Thu tu khoa toan cuc: m_csCM < csWriteAction < csReadAction. Dat 0 de lui ve khoa chung.
+	 *  - _GuiDoBaoCao: bo dem [GUI-DO] moi 10 s (jx_gui_server.log) + doc lai [Server] MoPhongNhanBan.
+	 *  - _NhanBan*: phep thu nhan ban - moi lan gui that lam them N-1 lan vao node gia (khong WSASend).
+	 */
+	LPCLIENT_NODE	*m_ppNode;
+	int				m_nGuiKhoaRieng;
+	LPCLIENT_NODE	_Node( size_t idx ) const { return ( m_ppNode && idx < m_nPlayerMaxCount ) ? m_ppNode[idx] : NULL; }
+	void			_GuiDoBaoCao();
+	void			_NhanBanGoi( const void * const pData, const size_t &datalength, const unsigned long &ulnClientID );
+	void			_NhanBanXa();
+	void			_NhanBanXaMot( NB_NODE &nb );
 	
 };
 
