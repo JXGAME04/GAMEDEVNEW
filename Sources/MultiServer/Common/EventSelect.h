@@ -49,6 +49,7 @@ public:
 
 	void AssociateEvent( SOCKET s, long lNetworkEvents )
 	{
+		JX_NET_TRACE( "[evsel] AssociateEvent s=%d mask=%lx", ( int )s, lNetworkEvents );	// [SDL 08/09 2b-2c]
 		m_lMask = lNetworkEvents; m_lEvents = 0; m_nErrorCode = 0; m_bAssociated = true;
 		m_bPendingConnect = ( lNetworkEvents & FD_CONNECT ) != 0;	// [SDL 08/09 2b-2b] WSAEventSelect ghi nhan FD_CONNECT ca khi socket da noi -> bao 1 lan o WaitForEnumEvent dau
 
@@ -58,7 +59,7 @@ public:
 		}
 	}
 
-	void DissociateEvent() { m_bAssociated = false; m_lEvents = 0; m_bPendingConnect = false; }
+	void DissociateEvent() { JX_NET_TRACE( "[evsel] DissociateEvent" ); m_bAssociated = false; m_lEvents = 0; m_bPendingConnect = false; }
 
 	bool WaitForEnumEvent( SOCKET s, DWORD dwTimeout );
 
@@ -130,6 +131,7 @@ inline bool CEventSelect::WaitForEnumEvent( SOCKET s, DWORD dwTimeout )
 	tv.tv_sec = ( long )( dwTimeout / 1000 ); tv.tv_usec = ( long )( ( dwTimeout % 1000 ) * 1000 );
 
 	int n = ::select( JxSelectNfds( s ), &rd, bWantWrite ? &wr : NULL, &ex, &tv );
+	if ( 0 != n ) JX_NET_TRACE( "[sel] s=%d cho<=%u ms -> n=%d rd=%d ex=%d", ( int )s, ( unsigned )dwTimeout, n, ( int )( n > 0 && FD_ISSET( s, &rd ) ), ( int )( n > 0 && FD_ISSET( s, &ex ) ) );	// [SDL 08/09 2b-2c]
 	if ( 0 == n ) return 0 != m_lEvents;
 	if ( n < 0 )
 	{
@@ -146,6 +148,7 @@ inline bool CEventSelect::WaitForEnumEvent( SOCKET s, DWORD dwTimeout )
 	{
 		char c;
 		int r = ::recv( s, &c, 1, MSG_PEEK );
+		JX_NET_TRACE( "[peek] r=%d err=%d", r, r < 0 ? JxNetLastError() : 0 );	// [SDL 08/09 2b-2c]
 		if ( r > 0 )       m_lEvents |= FD_READ;
 		else if ( 0 == r ) m_lEvents |= FD_CLOSE;				// FIN: dong binh thuong, khong loi
 		else

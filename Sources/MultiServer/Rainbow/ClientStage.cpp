@@ -113,6 +113,9 @@ STDMETHODIMP CGameClient::Startup()
 STDMETHODIMP CGameClient::Cleanup()
 {
 	HRESULT hr = E_FAIL;
+#ifdef JX_PLATFORM_SDL
+	JX_NET_TRACE( "[api] Cleanup bat dau" );
+#endif
 
 	try
 	{
@@ -121,6 +124,9 @@ STDMETHODIMP CGameClient::Cleanup()
 		WaitForShutdownToComplete();
 
 		hr = S_OK;
+#ifdef JX_PLATFORM_SDL
+		JX_NET_TRACE( "[api] Cleanup xong" );
+#endif
 	}
 	catch( const CException &e )
 	{
@@ -224,6 +230,9 @@ STDMETHODIMP_( const void * ) CGameClient::GetPackFromServer( size_t &datalength
 
 STDMETHODIMP CGameClient::Shutdown()
 {
+#ifdef JX_PLATFORM_SDL
+	JX_NET_TRACE( "[api] Shutdown" );
+#endif
 	StopConnections();
 
 	return S_OK;
@@ -432,6 +441,9 @@ void CGameClient::ReadCompleted( OnlineGameLib::Win32::CIOBuffer *pBuffer )
 
 				if ( nCho == 0 )
 				{
+#ifdef JX_PLATFORM_SDL
+					JX_NET_TRACE( "[rc] bo dem nhan DAY: giu %u, can %u", ( unsigned )m_pRecvBuffer->GetUsed(), ( unsigned )used );	// [SDL 08/09 2b-2c]
+#endif
 					printf( "--CGameClient::ReadCompleted: bo dem nhan %u KB DAY (dang giu %u byte, can them %u) -> CHO luong chinh lay bot, KHONG vut--\n",
 						(unsigned)( m_pRecvBuffer->GetSize() / 1024 ), (unsigned)m_pRecvBuffer->GetUsed(), (unsigned)used );
 				}

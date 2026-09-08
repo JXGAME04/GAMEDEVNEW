@@ -39,8 +39,10 @@
 		return 0 == ::ioctlsocket( s, FIONBIO, &v );
 	}
 
-	/* giu nguyen cach tao socket cua ban Win32 (WSASocket khong overlapped) */
-	inline SOCKET JxNetCreateTcpSocket() { return ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_IP, NULL, 0, 0 ); }
+	/* [SDL 08/09 2b-2d] PHAI la socket OVERLAPPED (nhu socket() mac dinh): handle khong overlapped bi Windows xep hang MOI I/O
+	   (send/setsockopt/shutdown/closesocket tu luong chinh phai doi select() cua luong I/O het han -> tre toi 1 s moi goi gui).
+	   Ban Win32 khong dinh vi WSAEventSelect cho tren EVENT, khong giu I/O tren socket. */
+	inline SOCKET JxNetCreateTcpSocket() { return ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_IP, NULL, 0, WSA_FLAG_OVERLAPPED ); }
 
 	inline int JxNetSockError( SOCKET s )
 	{
@@ -113,6 +115,11 @@
 	inline long InterlockedDecrement( volatile long *p ) { return __sync_sub_and_fetch( p, 1 ); }
 
 #endif	/* _WIN32 */
+
+/* [SDL 08/09 2b-2c] dau vet mang (bat khi co tep "jx_net_trace.on" trong thu muc lam viec hoac JX_NET_TRACE=1): ghi jx_net_sdl.log */
+int  JxNetTraceOn();
+void JxNetTrace( const char *fmt, ... );
+#define JX_NET_TRACE( ... ) do { if ( JxNetTraceOn() ) JxNetTrace( __VA_ARGS__ ); } while ( 0 )
 
 /* nfds cho select(): Windows bo qua, POSIX can s + 1 */
 inline int JxSelectNfds( SOCKET s ) { return ( int )s + 1; }

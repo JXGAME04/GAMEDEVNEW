@@ -7,6 +7,37 @@
 #ifdef JX_PLATFORM_SDL
 #include "JxNetShim.h"	// [SDL 08/09 2b-2]
 #endif
+#ifdef JX_PLATFORM_SDL
+#include <stdarg.h>
+#include <stdio.h>
+/* [SDL 08/09 2b-2c] dau vet mang ban SDL: jx_net_sdl.log trong thu muc lam viec; bat bang tep jx_net_trace.on hoac JX_NET_TRACE=1 */
+static int s_nJxNetTrace = -1;
+int JxNetTraceOn()
+{
+	if ( s_nJxNetTrace < 0 )
+	{
+		const char *e = SDL_getenv( "JX_NET_TRACE" );
+		FILE *f = fopen( "jx_net_trace.on", "rb" );
+		s_nJxNetTrace = ( ( e && *e == '1' ) || f ) ? 1 : 0;
+		if ( f ) fclose( f );
+	}
+	return s_nJxNetTrace;
+}
+void JxNetTrace( const char *fmt, ... )
+{
+	static SDL_Mutex *s_mu = SDL_CreateMutex();
+	static FILE *s_f = NULL;
+	SDL_LockMutex( s_mu );
+	if ( !s_f ) s_f = fopen( "jx_net_sdl.log", "a" );
+	if ( s_f )
+	{
+		fprintf( s_f, "[%8llu][%lu] ", ( unsigned long long )SDL_GetTicks(), ( unsigned long )SDL_GetCurrentThreadID() );
+		va_list ap; va_start( ap, fmt ); vfprintf( s_f, fmt, ap ); va_end( ap );
+		fputc( '\n', s_f ); fflush( s_f );
+	}
+	SDL_UnlockMutex( s_mu );
+}
+#endif
 
 #include <vector>
 
@@ -91,7 +122,14 @@ bool CSocketClient::StartConnections()
 		/*
 		 * call to unqualified virtual function
 		 */
+#ifdef JX_PLATFORM_SDL
+		Uint64 uT0 = SDL_GetTicks();	// [SDL 08/09 2b-2c]
+#endif
 		m_connectSocket = CreateConnectionSocket( m_address, m_port );
+#ifdef JX_PLATFORM_SDL
+		JX_NET_TRACE( "[conn] %s:%u connect -> s=%d (%llu ms)", m_address.c_str(), ( unsigned )m_port, ( int )m_connectSocket, ( unsigned long long )( SDL_GetTicks() - uT0 ) );
+		uT0 = SDL_GetTicks();
+#endif
 
 		if (INVALID_SOCKET == m_connectSocket )
 		{
@@ -100,9 +138,15 @@ bool CSocketClient::StartConnections()
 
 		if ( !WaitAndVerifyCipher() )
 		{
+#ifdef JX_PLATFORM_SDL
+			JX_NET_TRACE( "[conn] cipher THAT BAI (%llu ms)", ( unsigned long long )( SDL_GetTicks() - uT0 ) );
+#endif
 			return false;
 		}
 
+#ifdef JX_PLATFORM_SDL
+		JX_NET_TRACE( "[conn] cipher OK (%llu ms) mode=%u", ( unsigned long long )( SDL_GetTicks() - uT0 ), m_uKeyMode );
+#endif
 		m_eventSelect.AssociateEvent( m_connectSocket, FD_CONNECT | FD_CLOSE | FD_READ );
 
 		m_successConnectionsEvent.Set();
@@ -148,6 +192,10 @@ void CSocketClient::StopConnections()
 			OnError( _T("CSocketClient::setsockopt( SO_LINGER ) - ") + GetLastErrorMessage( ::WSAGetLastError() ) );
 		}
 
+#ifdef JX_PLATFORM_SDL
+		JX_NET_TRACE( "[conn] StopConnections s=%d", ( int )m_connectSocket );
+		::shutdown( m_connectSocket, 2 /* SD_BOTH */ );	// [SDL 08/09 2b-2c] danh thuc select cua luong I/O (Win32: WSACloseEvent lam viec nay)
+#endif
 		m_successConnectionsEvent.Reset();
 
 		m_eventSelect.DissociateEvent();
@@ -259,10 +307,17 @@ int CSocketClient::Run()
 				 * Allocate a buffer for required read
 				 */
 				CIOBuffer *pReadContext = Allocate();
+#ifdef JX_PLATFORM_SDL
+				JX_NET_TRACE( "[run] vao vong doc s=%d", ( int )m_connectSocket );
+#endif
 
 				while ( !m_shutdownEvent.Wait( 0 ) && m_successConnectionsEvent.Wait( 0 ) )
 				{
+#ifdef JX_PLATFORM_SDL
+					if ( m_eventSelect.WaitForEnumEvent( m_connectSocket, 200 ) )
+#else
 					if ( m_eventSelect.WaitForEnumEvent( m_connectSocket, 1000 ) )
+#endif
 					{
 						/*
 						 * Find some events and process it
@@ -313,6 +368,9 @@ int CSocketClient::Run()
 
 						if ( m_eventSelect.IsError() )
 						{
+#ifdef JX_PLATFORM_SDL
+							JX_NET_TRACE( "[run] IsError -> thoat luong" );
+#endif
 							m_shutdownEvent.Set();
 							
 							StopConnections();
@@ -326,6 +384,9 @@ int CSocketClient::Run()
 
 				} // while (...
 
+#ifdef JX_PLATFORM_SDL
+				JX_NET_TRACE( "[run] ra vong doc" );
+#endif
 				pReadContext->Release();
 			}
 #ifndef JX_PLATFORM_SDL
@@ -386,6 +447,7 @@ void CSocketClient::OnRead( CIOBuffer *pBuffer )
 	{
 		WSABUF *pWsa = pBuffer->GetWSABUF();
 		int nRecv = ::recv( m_connectSocket, pWsa->buf, ( int )pWsa->len, 0 );
+		JX_NET_TRACE( "[recv] %d B (bo dem %u)", nRecv, ( unsigned )pWsa->len );
 
 		if ( nRecv > 0 )
 		{
@@ -504,6 +566,7 @@ void CSocketClient::Write( CIOBuffer *pBuffer )
 #ifdef JX_PLATFORM_SDL
 			{	// [SDL 08/09 2b-2] send() thay WSASend; loi -> dwSendNumBytes = 0 de vong lap khong tru lai so byte cu
 				int nSent = ::send( m_connectSocket, wsa.buf, ( int )wsa.len, JX_SEND_FLAGS );
+				JX_NET_TRACE( "[send] %u B -> %d%s", ( unsigned )wsa.len, nSent, nSent < 0 ? " LOI" : "" );
 				if ( nSent < 0 ) { nError = SOCKET_ERROR; dwSendNumBytes = 0; }
 				else             { nError = 0; dwSendNumBytes = ( DWORD )nSent; }
 			}
@@ -584,6 +647,7 @@ void CSocketClient::Write( CIOBuffer *pBuffer )
 				struct timeval tvCho = gs_CheckRW_timeout;
 				FD_ZERO( &writefds ); FD_SET( m_connectSocket, &writefds );
 				nError = ::select( JxSelectNfds( m_connectSocket ), NULL, &writefds, NULL, &tvCho );
+				JX_NET_TRACE( "[send] WOULDBLOCK -> cho ghi duoc: select=%d", nError );
 			}
 #else
 			nError = select( 1, NULL, &writefds, NULL, &gs_CheckRW_timeout );

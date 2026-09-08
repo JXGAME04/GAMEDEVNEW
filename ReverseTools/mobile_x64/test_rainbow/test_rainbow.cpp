@@ -1,10 +1,12 @@
 // [SDL 08/09 2b-2] Harness kiem Rainbow.dll qua dung giao dien IClient ma Game.exe dung (NetConnectAgent):
 //   CreateInterface -> IClientFactory -> SetEnvironment -> CreateClientInterface(IID_IESClient) -> Startup
 //   -> RegisterMsgFilter -> ConnectTo -> SendPackToServer / GetPackFromServer -> (may chu dong) -> Shutdown -> Cleanup -> Release
-// Dung voi may_chu_gia.py. Chay: test_rainbow.exe <thu muc chua Rainbow.dll> <port> [so goi] [giay ap luc]
-//   giay ap luc > 0: che do AP LUC (may chu chay --day N): trong N giay, moi 50 ms gui "ping" (nhu lenh di chuyen), tham
-//   GetPackFromServer moi 1 ms nhu vong khung; do RTT ping (tb/max/p99), khoang cach den cua goi PUSH (max), goi PUSH mat.
-// Ma thoat 0 = PASS. Dung duoc cho ca Rainbow.dll Win32 thuong (bin\client64) va ban SDL (bin\client64sdl) de so sanh.
+// Dung voi may_chu_gia.py. Chay: test_rainbow.exe <thu muc chua Rainbow.dll> <port> [so goi] [giay ap luc] [ip] [lan]
+//   giay ap luc > 0 : che do AP LUC (may chu chay --day N): trong N giay, moi 50 ms gui "ping" (nhu lenh di chuyen), tham
+//                     GetPackFromServer moi 1 ms nhu vong khung; do RTT ping (tb/max/p99), khoang cach den cua goi PUSH (max), goi PUSH mat.
+//   giay ap luc = -1 : che do CHI KET NOI: ConnectTo(ip, port) [lan] lan (do thoi gian connect + bat tay khoa ACCOUNT_BEGIN) roi
+//                     Shutdown/Cleanup ngay, khong gui gi - dung do tren may chu THAT (cong dang nhap / cong game) mot cach vo hai.
+// Goi timeBeginPeriod(1) nhu Game.exe de tham 1 ms. Ma thoat 0 = PASS.
 #define INITGUID
 #include <windows.h>
 #include <objbase.h>
@@ -14,6 +16,7 @@
 #include <vector>
 #include <algorithm>
 #include "Interface/IClient.h"
+#pragma comment( lib, "winmm.lib" )
 
 typedef HRESULT ( __stdcall *pfnCreateClientInterface )( REFIID riid, void **ppv );
 
@@ -76,7 +79,6 @@ static int ApLuc( IClient *c, int giay )
 			{
 				int id = 0; double ts = 0; if ( 2 == sscanf( p + 10, "%d:%lf", &id, &ts ) ) rtt.push_back( tn - ts );
 			}
-			else if ( n > 10 && 0 == memcmp( p, "ECHO:PUSH:", 10 ) ) { /* khong xay ra */ }
 			else if ( n > 5 && 0 == memcmp( p, "PUSH:", 5 ) )
 			{
 				int seq = atoi( p + 5 ); nPush++;
@@ -104,10 +106,12 @@ static int ApLuc( IClient *c, int giay )
 
 int main( int argc, char **argv )
 {
-	if ( argc < 3 ) { printf( "dung: test_rainbow.exe <thu muc Rainbow.dll> <port> [so goi] [giay ap luc]\n" ); return 2; }
+	if ( argc < 3 ) { printf( "dung: test_rainbow.exe <thu muc Rainbow.dll> <port> [so goi] [giay ap luc|-1 chi ket noi] [ip] [lan]\n" ); return 2; }
 	const char *dir = argv[1]; unsigned short port = ( unsigned short )atoi( argv[2] ); int nGoi = argc > 3 ? atoi( argv[3] ) : 5; int giayApLuc = argc > 4 ? atoi( argv[4] ) : 0;
+	const char *ip = argc > 5 ? argv[5] : "127.0.0.1"; int nLan = argc > 6 ? atoi( argv[6] ) : 1;
 	char path[MAX_PATH]; _snprintf( path, MAX_PATH, "%s\\Rainbow.dll", dir );
 	int fails = 0;
+	timeBeginPeriod( 1 );
 
 	SetDllDirectoryA( dir );
 	HMODULE h = LoadLibraryExA( path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH );
@@ -115,6 +119,33 @@ int main( int argc, char **argv )
 	printf( "nap %s OK (luong chinh %lu)\n", path, GetCurrentThreadId() );
 	pfnCreateClientInterface pfn = ( pfnCreateClientInterface )GetProcAddress( h, "CreateInterface" );
 	if ( !pfn ) { printf( "FAIL khong co CreateInterface\n" ); return 1; }
+
+	if ( giayApLuc < 0 )
+	{
+		// CHI KET NOI: nhu NetConnectAgent::ClientConnectByNumericIp / ConnectToGameSvr, roi ngat ngay
+		for ( int lan = 1; lan <= nLan; lan++ )
+		{
+			IClientFactory *f = NULL; IClient *c = NULL;
+			pfn( IID_IClientFactory, ( void ** )&f ); f->SetEnvironment( 1024 * 512 ); f->CreateClientInterface( IID_IESClient, ( void ** )&c );
+			c->Startup(); c->RegisterMsgFilter( NULL, Cb );
+			double t0 = Now();
+			HRESULT hr = c->ConnectTo( ip, port );
+			double t1 = Now();
+			// cho toi da 300 ms xem may chu co gui gi them ngay sau bat tay khong (chi dem, khong xu ly)
+			size_t nTong = 0; int nGoiNhan = 0; double t2 = t1;
+			while ( Now() - t1 < 300.0 ) { size_t n = 0; c->GetPackFromServer( n ); if ( n ) { nTong += n; nGoiNhan++; t2 = Now(); } Sleep( 1 ); }
+			printf( "  lan %d: ConnectTo %s:%u -> 0x%lx sau %.1f ms (connect + bat tay khoa); 300 ms sau nhan %d goi / %u byte (goi cuoi luc +%.1f ms)\n",
+				lan, ip, port, hr, t1 - t0, nGoiNhan, ( unsigned )nTong, t2 - t1 );
+			if ( FAILED( hr ) ) fails++;
+			if ( t1 - t0 > 2000.0 ) { printf( "  CHAM: ket noi qua 2 s\n" ); fails++; }
+			double t3 = Now(); c->Shutdown(); double t4 = Now(); c->Cleanup(); double t5 = Now(); c->Release(); f->Release(); double t6 = Now();
+			printf( "  lan %d: Shutdown %.1f ms, Cleanup %.1f ms, Release %.1f ms\n", lan, t4 - t3, t5 - t4, t6 - t5 );
+			Sleep( 500 );
+		}
+		FreeLibrary( h );
+		printf( "%s (chi ket noi): %d loi\n", fails ? "FAIL" : "PASS", fails );
+		return fails ? 1 : 0;
+	}
 
 	IClientFactory *f = NULL;
 	HRESULT hr = pfn( IID_IClientFactory, ( void ** )&f );
@@ -138,8 +169,8 @@ int main( int argc, char **argv )
 
 	// 2) ket noi dung
 	DWORD t0 = GetTickCount();
-	hr = c->ConnectTo( "127.0.0.1", port );
-	printf( "ConnectTo 127.0.0.1:%u -> 0x%lx sau %lu ms\n", port, hr, GetTickCount() - t0 );
+	hr = c->ConnectTo( ip, port );
+	printf( "ConnectTo %s:%u -> 0x%lx sau %lu ms\n", ip, port, hr, GetTickCount() - t0 );
 	if ( FAILED( hr ) ) { printf( "FAIL ket noi\n" ); return 1; }
 
 	if ( giayApLuc > 0 )
@@ -190,7 +221,7 @@ int main( int argc, char **argv )
 	// 6) tao lai client, ket noi lan 2 (kiem dung/hoi sinh luong + khoa)
 	pfn( IID_IClientFactory, ( void ** )&f ); f->SetEnvironment( 1024 * 512 ); f->CreateClientInterface( IID_IESClient, ( void ** )&c );
 	c->Startup(); c->RegisterMsgFilter( NULL, Cb );
-	hr = c->ConnectTo( "127.0.0.1", port ); printf( "ket noi lan 2 -> 0x%lx\n", hr ); if ( FAILED( hr ) ) fails++;
+	hr = c->ConnectTo( ip, port ); printf( "ket noi lan 2 -> 0x%lx\n", hr ); if ( FAILED( hr ) ) fails++;
 	else { DWORD ms = 0; c->SendPackToServer( "lan2", 4 ); if ( !DoiGoi( c, "ECHO:lan2", 2000, &ms ) ) fails++; }
 	c->Shutdown(); c->Cleanup(); c->Release(); f->Release();
 
