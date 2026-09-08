@@ -279,9 +279,11 @@ Con số không phụ thuộc chỗ đứng là các bộ đếm máy chủ (`da
 
 ## 7. Câu hỏi đang chờ chủ trả lời
 
-1. **Máy chủ thật đặt ở đường mạng bao nhiêu Mbps?** Số đo trọn trận (8.24): 500 người một chiến trường ở mật độ này cần 147 Mbps ra
-   trung bình, 275 Mbps ở p95, 383 Mbps đỉnh 10 s. Nếu đường dưới ~400 Mbps thì mới cần **thưa đồng bộ vị trí theo khoảng cách khi vùng
-   đông** (gói 221 = 66,7 % byte; đụng trải nghiệm, chưa làm); 1 Gbps thì không cần làm gì thêm về băng thông.
+1. ~~Máy chủ thật đặt ở đường mạng bao nhiêu?~~ **Chủ trả lời 21:15: đường truyền 10 Gbps.** So với số đo 8.24 (147 Mbps TB, 275 p95,
+   383 đỉnh cho 500 người một chiến trường) thì băng thông ra **không còn là việc phải làm**; thưa đồng bộ vị trí theo khoảng cách **bỏ**,
+   thu nhỏ gói 221 / tách gói 75 chỉ còn là việc phụ (giảm 74 KB/s đỉnh mỗi người chơi cho máy yếu), không ưu tiên. Việc kế tiếp là
+   **kiểm đường socket thật** (mục 4.3 phần "không đo được"): WSASend ở luồng IOCP và đường nhận từ nhiều client — cần công cụ mở N kết
+   nối loopback đăng nhập bằng tài khoản bot; chưa khảo sát luồng đăng nhập nên chưa ước được công sức.
 2. Có nâng luôn trần bộ nhớ ảnh 512 trong mã (theo VRAM trống) không, hay để mỗi máy tự sửa `Rep3CacheMB`?
 3. Chủ còn thấy **mất hiệu ứng kỹ năng khi đánh** sau khi có `Rep3CacheMB=1500` không? Lần chết 20:27 không nằm bẹp; còn lần nào
    **chết về thành nằm bẹp** nữa không (đọc `[S7-SAUHOISINH]`)?
