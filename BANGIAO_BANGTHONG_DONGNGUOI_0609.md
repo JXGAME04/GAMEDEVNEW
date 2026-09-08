@@ -1005,3 +1005,7 @@ cung dang giu `m_CurrentLife = 0` (`NetCommandDeath` dat 0), nen cong "con mau" 
    trong ~1 giay (tu dong 5 giay) nen qua 10 giay chac chan la ket. Ghi lai moi 5 giay + mot dong khi dung day.
 
 **Da dat 17:47:** `CoreClient.dll.moi` **43ba6ef9** (⊇ ae11479a dang chay, chi them 3 nhan log). Chi swap client.
+
+---
+
+> **PHIEN SAU DOC TRUOC:** `D:\GAMEDEVNEW\BANGIAO_PHIEN_SAU_BANGTHONG_0709.md` — ban giao gon: trang thai hien tai, duong loi chu chot, chuoi va a-m, viec dang treo theo thu tu, cach do, cach chung khe .moi, bay da dinh, ban do ma. Tep nay (8.x) la so lieu chi tiet tung dot de tra cuu.
