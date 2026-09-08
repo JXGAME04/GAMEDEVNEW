@@ -51,6 +51,12 @@ extern int  g_nRep3Vsync;       // 0 = Present ngay (client tu dieu nhip PaintFp
 extern int  g_nRep3CacheMB;     // 0 = tu tinh theo RAM, >0 = ngan sach cache texture (MB)
 extern int  g_nRep3Log;         // 1 = ghi jx_rep3.log
 extern int  g_nRep3Pool;       // [REP3 03/09 RAM] 1 = texture sprite o D3DPOOL_DEFAULT (chi VRAM, khong ban sao RAM), 0 = MANAGED cu
+// [NAP 08/09 a] do thoi gian NAP tai nguyen tren luong ve (tep spr, jpeg, rut khung, giai ma, tao GPU)
+struct Rep3NapDo { unsigned n; double ms; double max; };
+extern Rep3NapDo g_napSpr, g_napJpeg, g_napKhung, g_napGiaiMa, g_napGpu;
+extern double g_dRep3NapKhung, g_dRep3NapKhungMax; extern unsigned g_uRep3NapKhung5, g_uRep3NapKhung16;
+void   Rep3NapCong(Rep3NapDo& d, double ms);
+double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
 extern int  g_nRep3StatSec;    // [REP3 03/09 RAM] chu ky ghi thong ke RAM/VRAM/cache vao jx_rep3.log (giay), 0 = tat
 extern bool g_bNpotOK;          // card + thiet bi da qua thu NPOT
 extern int  g_nMaxTexW, g_nMaxTexH;

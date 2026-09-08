@@ -586,11 +586,15 @@ TextureRes* TextureResMgr::LoadImage( const char* pszImageFile, uint32 nType) co
 		pRet = new TextureResSpr;
 		if (!pRet)
 			break;
-		if (!pRet->LoadImage((LPSTR)pszImageFile, nType))
+		{	LARGE_INTEGER liA, liB; QueryPerformanceCounter(&liA);	// [NAP 08/09 a] tep spr: pak + giai nen
+			bool bNap = pRet->LoadImage((LPSTR)pszImageFile, nType);
+			QueryPerformanceCounter(&liB); Rep3NapCong(g_napSpr, Rep3NapMs(liA, liB));
+		if (!bNap)
 		{
 			delete pRet;
 			pRet = NULL;
 			break;
+		}
 		}
 		break;
 	case ISI_T_BITMAP16:
@@ -598,7 +602,10 @@ TextureRes* TextureResMgr::LoadImage( const char* pszImageFile, uint32 nType) co
 			pRet = new TextureResBmp;
 			if (!pRet)
 				break;
-			if (!pRet->LoadImage((LPSTR)pszImageFile, nType))
+			LARGE_INTEGER liA, liB; QueryPerformanceCounter(&liA);	// [NAP 08/09 a] jpeg nen
+			bool bNap = pRet->LoadImage((LPSTR)pszImageFile, nType);
+			QueryPerformanceCounter(&liB); Rep3NapCong(g_napJpeg, Rep3NapMs(liA, liB));
+			if (!bNap)
 			{
 				delete pRet;
 				pRet = NULL;

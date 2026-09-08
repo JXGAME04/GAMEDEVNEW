@@ -48,7 +48,7 @@ int  g_nRep3Tex32     = 1;
 int  g_nRep3Npot      = 1;
 int  g_nRep3Vsync     = 0;
 int  g_nRep3CacheMB   = 0;
-int  g_nRep3Api       = 9;	// [D3D11 08/09]
+int  g_nRep3Api       = 11;	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11: CD3D11Shim::Init do IDXGIFactory2 + feature level, khong du -> tu lui D3D9
 int  g_nRep3ApiOn     = 9;	// [D3D11 08/09]
 int  g_nRep3Atlas     = 1;	// [D3D11 08/09 d] gom texture nho vao trang atlas (chi khi Rep3Api=11)
 int  g_nRep3Flip      = 1;	// [D3D11 08/09 f] 1 = flip model (DWM ghep khung tron ven, khong xe hinh; mac dinh), 0 = bitblt cu
@@ -84,6 +84,16 @@ unsigned g_uRep3FxTaoHong = 0;		// CreateTexture16Bit vao nhanh error
 unsigned g_uRep3FxKhungKhongTex = 0;	// PrepareFrameData xong ma khung khong co texture
 unsigned g_uRep3FxGiaiMa = 0;		// so khung giai ma dong bo tren luong ve
 double   g_dRep3FxGiaiMaMs = 0.0;	// tong ms giai ma + tao texture
+// [NAP 08/09 a] do NAP tren luong ve, in [REP3-NAP] moi Rep3StatSec giay
+Rep3NapDo g_napSpr = {0, 0, 0}, g_napJpeg = {0, 0, 0}, g_napKhung = {0, 0, 0}, g_napGiaiMa = {0, 0, 0}, g_napGpu = {0, 0, 0};
+double g_dRep3NapKhung = 0.0, g_dRep3NapKhungMax = 0.0; unsigned g_uRep3NapKhung5 = 0, g_uRep3NapKhung16 = 0;
+void Rep3NapCong(Rep3NapDo& d, double ms) { d.n++; d.ms += ms; if (ms > d.max) d.max = ms; g_dRep3NapKhung += ms; }
+double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
+{
+	static LARGE_INTEGER s_liTanSo = {0};
+	if (!s_liTanSo.QuadPart) QueryPerformanceFrequency(&s_liTanSo);
+	return s_liTanSo.QuadPart ? (1000.0 * (double)(b.QuadPart - a.QuadPart) / (double)s_liTanSo.QuadPart) : 0.0;
+}
 
 // [REP3 08/09 h] top ten anh bi bo qua (GetImage NULL hoac khung ngoai tam) trong ky thong ke
 struct Rep3AnhNullMuc { char szTen[64]; int nKhung; unsigned uDem; };
@@ -502,7 +512,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3CacheMB   = Rep3Ini("Rep3CacheMB", 0);
 	g_nRep3Log       = Rep3Ini("Rep3Log", 1);
 	g_nRep3Pool      = Rep3Ini("Rep3Pool", 1);		// [REP3 03/09 RAM]
-	g_nRep3Api       = Rep3Ini("Rep3Api", 9);	// [D3D11 08/09]
+	g_nRep3Api       = Rep3Ini("Rep3Api", 11);	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11, tu lui D3D9 khi may khong du
 	g_nRep3Atlas     = Rep3Ini("Rep3Atlas", 1);	// [D3D11 08/09 d]
 	g_nRep3Flip      = Rep3Ini("Rep3Flip", 1);	// [D3D11 08/09 f] bitblt DISCARD bi DWM ghep giua chung -> "gon song" khi di chuyen
 	g_nRep3Tearing   = Rep3Ini("Rep3Tearing", 0);	// [D3D11 08/09 f]
@@ -2582,6 +2592,11 @@ bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 
 void KRepresentShell3::RepresentEnd()
 {
+	{	// [NAP 08/09 a] tong ms nap trong khung nay -> max / dem khung nang
+		if (g_dRep3NapKhung > g_dRep3NapKhungMax) g_dRep3NapKhungMax = g_dRep3NapKhung;
+		if (g_dRep3NapKhung > 16.0) g_uRep3NapKhung16++; else if (g_dRep3NapKhung > 5.0) g_uRep3NapKhung5++;
+		g_dRep3NapKhung = 0.0;
+	}
 	if(m_bDeviceLost)
 		return;
 
@@ -2657,6 +2672,11 @@ void KRepresentShell3::RepresentEnd()
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);
 			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0; g_uRep3BatchQuads = 0; g_uRep3BatchDraws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
+			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung",	// [NAP 08/09 a]
+				g_nRep3StatSec, g_napSpr.n, g_napSpr.ms, g_napSpr.max, g_napJpeg.n, g_napJpeg.ms, g_napJpeg.max, g_napKhung.n, g_napKhung.ms, g_napKhung.max,
+				g_napGiaiMa.n, g_napGiaiMa.ms, g_napGiaiMa.max, g_napGpu.n, g_napGpu.ms, g_napGpu.max, g_uRep3NapKhung5, g_uRep3NapKhung16, g_dRep3NapKhungMax);
+			memset(&g_napSpr, 0, sizeof(g_napSpr)); memset(&g_napJpeg, 0, sizeof(g_napJpeg)); memset(&g_napKhung, 0, sizeof(g_napKhung)); memset(&g_napGiaiMa, 0, sizeof(g_napGiaiMa)); memset(&g_napGpu, 0, sizeof(g_napGpu));
+			g_dRep3NapKhungMax = 0.0; g_uRep3NapKhung5 = 0; g_uRep3NapKhung16 = 0;
 			Rep3AnhNullIn();	// [REP3 08/09 h]
 		}
 	}

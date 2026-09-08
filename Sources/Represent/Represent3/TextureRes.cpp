@@ -609,7 +609,9 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 		if(!m_pHeader)
 			return false;
 
+		LARGE_INTEGER liK0, liK1; QueryPerformanceCounter(&liK0);	// [NAP 08/09 a] rut khung tu pak
 		SPRFRAME *pFrame = (SPRFRAME *)SprGetFrame((SPRHEAD*)m_pHeader, nFrame);
+		QueryPerformanceCounter(&liK1); Rep3NapCong(g_napKhung, Rep3NapMs(liK0, liK1));
 
 		if(!pFrame)
 			return false;
@@ -667,8 +669,8 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 
 	SplitTexture(nFrame);
 
-	LARGE_INTEGER liFx0, liFx1;	// [FX 07/09] do giai ma dong bo tren luong ve
-	QueryPerformanceCounter(&liFx0);
+	LARGE_INTEGER liFx0, liFx1, liFxDec;	// [FX 07/09] do giai ma dong bo tren luong ve; [NAP 08/09 a] liFxDec = xong giai ma RLE
+	QueryPerformanceCounter(&liFx0); liFxDec = liFx0;
 
 	// [REP3 03/09] texture 8888 (dung mau palette 24 bit nhu Represent2) hoac 4444 nhu cu
 	int nBpp = g_nRep3Tex32 ? 4 : 2;
@@ -704,6 +706,7 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 	else
 		RenderToA4R4G4B4Safe((WORD*)pTempData, m_pFrameInfo[nFrame].pRawData, m_pFrameInfo[nFrame].nRawDataLen,
 						nW * nH, m_pPal16, (int)m_nColors);	// [REP3 03/09 RAM2] ban co kiem bien
+	QueryPerformanceCounter(&liFxDec);	// [NAP 08/09 a]
 
 	for(i=0; i<m_pFrameInfo[nFrame].nTexNum; i++)
 	{
@@ -763,12 +766,14 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 	QueryPerformanceCounter(&liFx1);	// [FX 07/09]
 	g_uRep3FxGiaiMa++;
 	g_dRep3FxGiaiMaMs += Rep3FxMs(liFx0, liFx1);
+	Rep3NapCong(g_napGiaiMa, Rep3FxMs(liFx0, liFxDec)); Rep3NapCong(g_napGpu, Rep3FxMs(liFxDec, liFx1));	// [NAP 08/09 a]
 	return;
 
 error:
 	QueryPerformanceCounter(&liFx1);	// [FX 07/09] truoc day hong im lang
 	g_uRep3FxTaoHong++;
 	g_dRep3FxGiaiMaMs += Rep3FxMs(liFx0, liFx1);
+	Rep3NapCong(g_napGpu, Rep3FxMs(liFx0, liFx1));	// [NAP 08/09 a] nhanh hong: tinh ca vao tao GPU
 	SAFE_DELETE_ARRAY(pTempData);
 	return;
 }
