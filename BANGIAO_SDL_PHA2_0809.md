@@ -175,3 +175,5 @@ khoảng cách gói đẩy max 14,6 ms (Win32 19,5). Harness cơ bản PASS, cal
 
 **Bài học:** khi thay `WSAEventSelect` bằng `select` trên Windows, socket PHẢI overlapped; và phải đo áp lực + đo trên máy chủ thật, harness echo
 đơn lẻ không lộ lỗi xếp hàng I/O. Ghi nhớ `[[jx1-sdl-socket-overlapped-0809]]`.
+
+**Chủ xác nhận 16:5x:** *"đã vào game và mượt rồi hãy tiếp tục"* (bộ client64sdl dựng 16:50: SDL fix + main tới NAP a; Represent3 NAP b chép sau khi game tắt).
