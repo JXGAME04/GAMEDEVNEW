@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """[X64 08/09 NGOAIHINH b] KNpcRes::Draw(nNpcIdx,...): moi 3 s ghi ten sprite + so khung/huong + CheckExist/m_bChange tung bo phan
-cua CHINH MINH (Npc kind_player co m_nPlayerIdx > 0 tren client) -> biet Core dua ten gi cho bo ve luc dang nhap vs sau khi mac lai.
+cua CHINH MINH (Npc kind_player co GetPlayerIdx() > 0 tren client) -> biet Core dua ten gi cho bo ve luc dang nhap vs sau khi mac lai.
 Chi client (#ifndef _SERVER). Byte-safe, neo duy nhat, chay lai an toan."""
 import io, re, sys
 ROOT = sys.argv[1] if len(sys.argv) > 1 else r"D:\GAMEDEVNEW_wt_mobile"
@@ -18,7 +18,7 @@ assert i > 0 and i - m.end() < 600, "khong thay neo m_pcResNode gan dau ham"
 ins = nl.join([
     b"#ifndef _SERVER",
     b"\t// " + TAG + b" moi 3 s ghi ten sprite + khung/huong tung bo phan cua chinh minh (chan doan 'nhu dang mang mat na' tren x64)",
-    b"\tif (Npc[nNpcIdx].m_Kind == kind_player && Npc[nNpcIdx].m_nPlayerIdx > 0)",
+    b"\tif (Npc[nNpcIdx].m_Kind == kind_player && Npc[nNpcIdx].GetPlayerIdx() > 0)",
     b"\t{",
     b"\t\tstatic DWORD s_uNgoaiHinhLuc = 0;",
     b"\t\tDWORD uNgoaiHinhNow = GetTickCount();",
