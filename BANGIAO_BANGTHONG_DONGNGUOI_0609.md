@@ -1124,6 +1124,92 @@ lên chính mình. Cần thêm vài lần chết nữa mới kết luận đư�
 
 **Rep3:** đỉnh 303 MB trong trận này (ngân sách 1500), `bo` cộng dồn 9.597 sau 13 phút ≈ 12/s. Chờ chủ xác nhận hiệu ứng.
 
+### 8.24 Số đo TRỌN MỘT TRẬN Tống Kim (20:27:0x–20:57:0x, 30,2 phút, 182 cửa sổ 10 s) — chủ yêu cầu số chính xác, không kết luận vội
+
+Điều kiện: máy chủ pid 53112 (`heaven.dll` 9fc84e88 khoá riêng, `GuiKhoaRieng=1`), 1.000 bot + chủ (CaiBang), Tống Kim trận 500,
+`MoPhongNhanBan=500` bật 20:27:21–20:29:01 và 20:39:52–20:57:19 (**113/182 cửa sổ = 18,8 phút**), tắt lúc 20:57:19. Cửa sổ trận lấy theo
+`t=1118820000..1120640000` (thư thưởng Tống Kim lúc 20:57:00). Log nguồn: `jx_gui_server.log`, `jx_auto_server.log` (pid 53112, chưa xoay
+trong trận), `jx_perf_server.log`, client `jx_auto.log(.1)`, `jx_paint.log`, `jx_rep3.log`.
+
+#### 8.24.1 Đường gửi thật tới client của chủ (1 kết nối), 182 cửa sổ
+
+| Đại lượng | TB | p95 | max | Tổng cả trận |
+|---|---|---|---|---|
+| Gói `PackDataToClient` tới client | 778 gói/s | 1.990 gói/s | 2.691 gói/s | 1.416.403 gói |
+| Byte (trước đầu gói 2 B/lần xả) | 36,8 KB/s | 66,1 KB/s | 74,1 KB/s | 70.951.007 B = 67,7 MB |
+| Thời gian `PackDataToClient` mỗi nhịp | 0,003 ms | — | 0,109 ms | — |
+| Thời gian `SendPackToClient` mỗi nhịp (xả 1 client) | 0,007 ms | — | 0,280 ms | — |
+| `pSocket->Write` (đưa vào hàng đợi IOCP) | 4,4 µs/lần | — | 5,9 µs/lần | 180 lần/10 s = mỗi nhịp |
+| Đệm 10.208 B đầy → gửi ngay giữa nhịp | — | — | 72 lần/10 s (cửa sổ 2.690 gói/s) | 233 lần |
+
+Đối chiếu bộ đếm phát tán `[BC-DEM]`/`[BC-NGUOI]` (chỉ gói **phát vùng**, không tính gói gửi thẳng): gửi thật 891.734 gói (TB 489/s,
+max 2.009/s), 12,8 KB/s TB, 59,5 KB/s max. Chênh với `[GUI-DO]` (1.416.403) là gói gửi thẳng (sát thương của chính mình, vật phẩm, chat...).
+
+#### 8.24.2 Nhân bản ×500 (499 client giả), 113 cửa sổ — CPU luồng chính và byte ra
+
+| Đại lượng | TB | Trung vị | p95 | max |
+|---|---|---|---|---|
+| **Đường gửi mỗi nhịp** (goi + xả, chia đều 180 nhịp/10 s) | **0,545 ms** | 0,473 ms | **1,262 ms** | **1,593 ms** |
+| Nhịp nặng nhất trong cửa sổ (max goi + max xả) | 1,370 ms | — | 2,661 ms | **10,339 ms** (một lần, 20:46:4x) |
+| Byte ra mô phỏng (499 client giả, kể đầu gói) | 17.923 KB/s = **147 Mbps** | — | 33.533 KB/s = **275 Mbps** | 46.744 KB/s = **383 Mbps** |
+| Cửa sổ có đường gửi > 1 ms/nhịp | 9 / 113 | | | |
+| Số lần chép (memcpy + khoá riêng) | — | — | — | max 12.425.599 / 10 s (cửa sổ 20:49:5x) |
+
+Hai cửa sổ nặng nhất: 20:49:2x–20:49:5x (client thật 2.490 gói/s, 70,9 KB/s → ×500: 1,579 và 1,593 ms/nhịp, 46,7 và 35,9 MB/s) và
+20:52:5x–20:53:2x (1,318 → 1,501 ms/nhịp, 33–35 MB/s). Tốc độ chép: 129 ms cho 8,61 triệu lần ≈ 15 ns/lần (gói TB 39 B).
+
+#### 8.24.3 Nhịp máy chủ `[PERF] TICK` từng phút
+
+| Khoảng | TICK TB | p95 | max từng phút |
+|---|---|---|---|
+| 20:29–20:39 trận này, **không** nhân bản | 8,24–9,30 ms | 11–12 ms | 19,4–53,9 ms |
+| 20:40–20:57 trận này, **có** nhân bản ×500 | 8,52–10,05 ms | 11–13 ms | 19,4–33,0 ms (235 ms một lần lúc 20:57:32 = kết trận, phát thưởng) |
+| 19:04–19:30 trận trước, heaven **cũ** 096fdeb2 | 8,50–9,70 ms | 11–13 ms | 20,5–45,3 ms |
+| 20:27:31 phút đầu trận | 7,61 ms | 11 ms | 90,3 ms (SW_ACTIVATE 25,9 + LUA_CALL 19,7 + BAUCUA 12,5) |
+
+SW_ACTIVATE TB 6,0–7,2 ms; LUA_CALL 0,3–0,7 ms. Không có phút nào `tre` > 1 nhịp.
+
+#### 8.24.4 Phát tán và quyết định đồng bộ (toàn máy chủ, 182 cửa sổ)
+
+| | Tổng cả trận | TB / 10 s | max / 10 s |
+|---|---|---|---|
+| Lượt phát (`BroadCast`) | 276.528.329 | 1.519.386 | 1.975.148 |
+| Node duyệt | — | 6.160.039 | 8.937.432 |
+| Cắt vì hết ngân sách / bỏ vị trí | 0 / 0 | | |
+| Quyết định đồng bộ: bỏ / gọn / đầy đủ / gọn thêm | 23.177.951 / 30.637.572 / 145.068 / 5.972 | 168.338 gọn, 797 đầy đủ | |
+| `day/(gon+day)` | **0,47 %** | | |
+| Gói trạng thái 223 | 552.028 | 3.033 | |
+| Số sát thương phát gọn 222 (cộng dồn từ 20:23) | 2.441.082 gọn / 0 đầy đủ | | |
+| Gói ngoại hình 75 (cộng dồn từ 20:23) | gửi 28.161 / bỏ 27.232.954 (99,9 %) | | |
+
+Thành phần byte tới client (`[BC-TOP]`, 182 cửa sổ): **221: 66,7 %** · 75: 10,7 % · 222: 7,6 % · 148: 3,9 % · 95: 3,6 % · 86: 3,4 % ·
+223: 3,1 % · 77: 0,8 % · 85: 0,2 %.
+
+#### 8.24.5 Client của chủ
+
+| | Số đo |
+|---|---|
+| Chết / hồi sinh | **9 lần**, hồi sinh sau 0,71–0,77 s; `[S7-SAUHOISINH]` +3 s và +6 s **9/9 lần đứng** (`doing=1 cdoing=1 resdoing=1`); 4 dòng +1 s `cdoing=2 resdoing=2` = đang chạy (chủ bấm đi ngay) |
+| `[S7-NAMBEP-CHAN]` / `[S7-NAMBEP-LAU]` | 0 / 0 |
+| `Net Msg Error` / sập | 0 / 0 |
+| Vẽ (`jx_paint` `[SUM]`) | 225.156 lượt vẽ (124/s), **5 khung giật** cả trận, khung lâu nhất 125 ms, cross 513 |
+| Bộ nhớ ảnh (`jx_rep3`) | texture 159 → 419 MB (ngân sách 1.500), 60 mẫu; `LoadImage FAIL` **0** trong trận; bỏ 54.894 mục / 30 phút ≈ 30/s; fps TB 55–63 |
+| Đồng bộ NPC (`[S6-*]`) | SYNC 20.066, CMD 3.292, GANNHANH 1.774, ME 1.698, ATK 719, ADD 415 |
+
+#### 8.24.6 Đọc số (chỉ những gì số cho phép nói)
+
+1. Với đúng mật độ trận này, đường gửi cho 500 client tốn của luồng chính **0,545 ms/nhịp trung bình, 1,262 ms ở p95 cửa sổ, 1,593 ms ở cửa
+   sổ nặng nhất, và 10,3 ms ở đúng một nhịp** trong 18,8 phút đo. Ngân sách nhịp 55 ms, TICK đang 8–10 ms. Phần này **không mô phỏng**
+   WSASend (chạy ở luồng IOCP worker, 500 × 18 = 9.000 lần/s) và tranh chấp khoá riêng từ 500 client gửi lên; 499 lần chép chạy gộp nên
+   cache nóng hơn thực tế. Nhân 3 cho hai điều đó vẫn dưới 5 ms/nhịp.
+2. Byte ra của máy chủ ở mật độ này với 500 người: **147 Mbps trung bình, 275 Mbps ở p95, 383 Mbps đỉnh 10 s** — đây là phép nhân
+   thẳng số đo của một client, không phải giả định. Đường 1 Gbps chịu được; đường 100–200 Mbps thì không.
+3. TICK khi có và không có nhân bản chênh dưới 0,8 ms, cùng dải với trận 19:00 trên heaven cũ → bỏ khoá chung **không làm chậm** gì với
+   một client, và phần nhân bản đúng bằng số `[GUI-NB]` đo được.
+4. Nằm bẹp: 9 lần chết, 0 lần tái hiện trên client 43ba6ef9; không có lần nào gói đồng bộ đầy đủ bị chặn (`NAMBEP-CHAN` = 0) nên chưa
+   thể nói vá j là gốc — chỉ nói được là **chưa tái hiện**.
+5. Mất hiệu ứng: `LoadImage FAIL` = 0, cache 159–419 MB trên 1.500 → về phía số liệu không còn dấu hiệu; cần chủ xác nhận bằng mắt.
+
 ---
 
 > **PHIEN SAU DOC TRUOC:** `D:\GAMEDEVNEW\BANGIAO_PHIEN_SAU_BANGTHONG_0709.md` — ban giao gon: trang thai hien tai, duong loi chu chot, chuoi va a-m, viec dang treo theo thu tu, cach do, cach chung khe .moi, bay da dinh, ban do ma. Tep nay (8.x) la so lieu chi tiet tung dot de tra cuu.

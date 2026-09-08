@@ -1,9 +1,10 @@
-# BÀN GIAO CHO PHIÊN SAU — Băng thông đông người + đường gửi Heaven + hai lỗi client (07/09/2026, 20:35)
+# BÀN GIAO CHO PHIÊN SAU — Băng thông đông người + đường gửi Heaven + hai lỗi client (07/09/2026, 21:05)
 
 Tệp này viết cho một phiên **không có ngữ cảnh gì**. Đọc hết mục 1 → 4 trước khi gõ dòng lệnh đầu tiên.
-Chi tiết số liệu từng đợt nằm ở `D:\GAMEDEVNEW\BANGIAO_BANGTHONG_DONGNGUOI_0609.md` mục 6 → 8.23 (mục này gọi tắt là **BG-GỐC**).
-Phiên 19:00–20:35 đã làm xong **4.3 bước 1 + 2** (đường gửi Heaven.dll, BG-GỐC 8.22) và **chạy phép thử ×500 thật** trong Tống Kim
-(BG-GỐC 8.23): **đường gửi cho 500 người ≈ 1 ms/nhịp → luồng chính gánh được, không cần luồng gửi riêng; giới hạn còn lại là băng thông ra.**
+Chi tiết số liệu từng đợt nằm ở `D:\GAMEDEVNEW\BANGIAO_BANGTHONG_DONGNGUOI_0609.md` mục 6 → 8.24 (mục này gọi tắt là **BG-GỐC**).
+Phiên 19:00–21:05 đã làm xong **4.3 bước 1 + 2** (đường gửi Heaven.dll, BG-GỐC 8.22) và **đo trọn một trận Tống Kim 30 phút với nhân bản
+×500** (BG-GỐC 8.24, số chính xác theo yêu cầu của chủ: đường gửi 500 người TB 0,545 / p95 1,26 / max 1,59 ms mỗi nhịp; byte ra 147 Mbps TB,
+275 p95, 383 đỉnh). **Chủ dặn: đưa số, không kết luận vội** — mọi kết luận phải kèm số đo và nêu rõ cái gì chưa đo được.
 
 ---
 
@@ -102,10 +103,11 @@ bào khung nhanh gấp bội rồi nạp lại không kịp. (Mô tả "8 khung 
 Kiểm khi chủ báo: nếu **vẫn** mất hiệu ứng mà cache không ở trần → bệnh chỗ khác: đo `LoadImage FAIL` trong `jx_rep3.log` và luồng nạp.
 Câu hỏi 3 cho chủ (nâng kẹp 512 trong mã theo VRAM trống) vẫn chờ.
 
-### 4.2 Nghiệm thu vá m (nằm bẹp) — mới có 1 lần chết (20:27), lần đó bình thường
+### 4.2 Nghiệm thu vá m (nằm bẹp) — 9 lần chết trong trận 20:27–20:57, 0 lần nằm bẹp
 
-Lần chết 20:27 trong Tống Kim: hồi sinh sau 0,72 s, ba dòng `[S7-SAUHOISINH]` đều `doing=1 cdoing=1 resdoing=1`, `[S7-NAMBEP-CHAN]` = 0
-→ không nằm bẹp, gói đồng bộ đầy đủ cũng không thử áp trạng thái chết. Cần thêm vài lần chết nữa mới kết luận (BG-GỐC 8.23).
+9 lần chết, hồi sinh sau 0,71–0,77 s; `[S7-SAUHOISINH]` +3 s và +6 s cả 9 lần đều `doing=1 cdoing=1 resdoing=1` (4 dòng +1 s ghi
+`cdoing=2 resdoing=2` = đang chạy, chủ bấm di chuyển ngay sau hồi sinh); `[S7-NAMBEP-CHAN]` = 0, `[S7-NAMBEP-LAU]` = 0. Bản client 43ba6ef9
+(có vá j) chưa tái hiện nằm bẹp lần nào; chưa thể nói vá j là gốc vì không có lần nào bị chặn (`NAMBEP-CHAN` = 0). Giữ nhãn, chờ chủ báo.
 
 ```bash
 grep -a "S7-SAUHOISINH\|S7-NAMBEP" "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/client/jx_auto.log" | tail -30
@@ -122,20 +124,22 @@ Mỗi lần chết phải có đúng 3 dòng `[S7-SAUHOISINH]` ở +1 s, +3 s, +
 
 `do_death = 10`, `do_revive = 21`, `do_stand = 1`; `cdo_stand = 1`, `cdo_death = 8`.
 
-### 4.3 Đường gửi — ĐÃ ĐO THẬT ×500 (20:27, BG-GỐC 8.23): luồng chính gánh được, giới hạn còn lại là băng thông ra
+### 4.3 Đường gửi — ĐÃ ĐO TRỌN MỘT TRẬN Tống Kim 30,2 phút (20:27–20:57, BG-GỐC 8.24), chủ yêu cầu số chính xác
 
-Kết quả trong Tống Kim, client thật nhận đỉnh 1.725 gói/s = 66 KB/s:
+Trận 500, 1.000 bot + chủ, nhân bản ×500 bật 18,8/30,2 phút (113 cửa sổ 10 s). Số đo thật, không ngoại suy trừ dòng cuối:
 
-| | Thật (1 client) | Nhân bản ×500 |
+| Đại lượng | Thật (1 client), 182 cửa sổ | Nhân bản ×500, 113 cửa sổ |
 |---|---|---|
-| Đường gửi mỗi nhịp | 0,008–0,012 ms | **≈ 1 ms, đỉnh 2,6 ms** (< 5 % ngân sách 55 ms) |
-| Byte ra | 66 KB/s | **33 MB/s = 264 Mbps** đỉnh, 80–180 Mbps trung bình |
-| TICK máy chủ | 8,2 ms | 7,6–8,6 ms (không đổi) |
+| Gói tới client | TB 778/s, p95 1.990/s, max 2.691/s (1.416.403 gói, 67,7 MB cả trận) | ×499 |
+| Byte tới client | TB 36,8 KB/s, p95 66,1, max 74,1 | TB 17,9 MB/s (147 Mbps), p95 32,7 MB/s (275 Mbps), max 45,6 MB/s (383 Mbps) |
+| Đường gửi mỗi nhịp, TB cửa sổ | 0,010 ms | **TB 0,545 ms, trung vị 0,473, p95 1,262, max 1,593 ms** (9/113 cửa sổ > 1 ms) |
+| Đường gửi nhịp nặng nhất trong cửa sổ | max 0,109 + 0,280 ms | TB 1,37 ms, p95 2,66 ms, max **10,34 ms** (một lần, 20:46) |
+| `Write` (đưa vào IOCP) | TB 4,4 µs, max 5,9 µs/lần, 18 lần/s | không mô phỏng (không có socket) |
+| TICK máy chủ từng phút | 8,24–9,30 ms khi không nhân bản | 8,52–10,05 ms khi có nhân bản; trận 19:00 bản cũ 8,50–9,70 |
 
-Kết luận: **không cần** luồng gửi riêng, **không cần** tách map ra nhân CPU riêng. Chỗ vỡ tiếp theo là **băng thông ra** của máy chủ thật:
-đường 1 Gbps đủ cho 500 người một chiến trường; đường 100 Mbps thì phải thưa đồng bộ vị trí (gói 221 = 61 % byte) — đụng trải nghiệm,
-**hỏi chủ** và hỏi luôn máy chủ thật đặt ở đường mạng bao nhiêu. Giới hạn phép thử: cache nóng hơn thực tế (×3 vẫn < 3 ms) và không đo
-WSASend ở luồng IOCP (~9.000 lần/s, chạy ở luồng worker, không chạm luồng chính).
+Cho 500 người ở đúng mật độ trận này, luồng chính tốn thêm **0,5 ms TB, 1,6 ms ở cửa sổ nặng nhất, 10 ms ở một nhịp cá biệt** trên
+ngân sách 55 ms. Byte ra của máy chủ sẽ là **147 Mbps TB, 275 Mbps ở p95, 383 Mbps đỉnh 10 s**. Không đo được: WSASend ở luồng IOCP
+(9.000 lần/s cho 500 người) và tranh chấp khoá từ 500 client gửi lên; cache nóng hơn thực tế vì 499 lần chép chạy gộp.
 
 Muốn đo lại: sửa `MoPhongNhanBan=500` trong `bin\server\config.ini` lúc chủ ở đám đông, chờ 10–20 s, đọc `[GUI-NB]`, đặt lại `0`:
 
@@ -275,8 +279,9 @@ Con số không phụ thuộc chỗ đứng là các bộ đếm máy chủ (`da
 
 ## 7. Câu hỏi đang chờ chủ trả lời
 
-1. **Máy chủ thật đặt ở đường mạng bao nhiêu Mbps?** 500 người một chiến trường cần tới 264 Mbps ra ở đỉnh. Nếu dưới 300 Mbps thì mới
-   cần **thưa đồng bộ vị trí theo khoảng cách khi vùng đông** (đụng trải nghiệm, chưa làm); nếu 1 Gbps thì không cần làm gì thêm.
+1. **Máy chủ thật đặt ở đường mạng bao nhiêu Mbps?** Số đo trọn trận (8.24): 500 người một chiến trường ở mật độ này cần 147 Mbps ra
+   trung bình, 275 Mbps ở p95, 383 Mbps đỉnh 10 s. Nếu đường dưới ~400 Mbps thì mới cần **thưa đồng bộ vị trí theo khoảng cách khi vùng
+   đông** (gói 221 = 66,7 % byte; đụng trải nghiệm, chưa làm); 1 Gbps thì không cần làm gì thêm về băng thông.
 2. Có nâng luôn trần bộ nhớ ảnh 512 trong mã (theo VRAM trống) không, hay để mỗi máy tự sửa `Rep3CacheMB`?
 3. Chủ còn thấy **mất hiệu ứng kỹ năng khi đánh** sau khi có `Rep3CacheMB=1500` không? Lần chết 20:27 không nằm bẹp; còn lần nào
    **chết về thành nằm bẹp** nữa không (đọc `[S7-SAUHOISINH]`)?
