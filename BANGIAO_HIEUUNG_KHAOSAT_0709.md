@@ -21,8 +21,9 @@ Khảo sát bằng 3 tác tử đọc mã song song + tự kiểm lại từng d
    texture không tạo được thì vẽ bỏ qua im lặng.
 4. Theo luật chủ "đo trước, sửa sau": bước đầu là **build client có bộ đếm `[FX]` chính xác** (mục 6.1) chạy một trận, rồi mới sửa. Song song
    có 5 việc sửa chắc chắn, không đụng luật chơi (mục 6.2). Việc lớn cần chủ duyệt: gói "skill đã bắn" từ máy chủ và nạp trước ảnh chiêu (6.3).
-5. Cần chủ trả lời 4 câu ở mục 6.4, nhất là: hiện tượng còn xảy ra sau `Rep3CacheMB=1500` không, và mất hiệu ứng của **chính mình** hay của
-   **người khác**.
+5. ~~Cần chủ trả lời 4 câu ở mục 6.4~~ **Chủ trả lời 08/09 04:01: "chưa thấy mất hiệu ứng kỹ năng lại"** sau `Rep3CacheMB=1500`, qua 5 lượt
+   Tống Kim, cache đỉnh 768 MB (mục 7.0). Trần 512 MB được coi là gốc theo hiện tượng; đã sửa trong mã 512 → 1024 + kẹp theo VRAM (mục 7.2).
+   Bản đo `[FX]` vẫn đáng swap để có số chắc và để bắt các chỗ rớt khác (hurt ngắt, mồ côi, đạn) nếu có.
 
 ---
 
@@ -180,7 +181,25 @@ script tái áp `ReverseTools/goi_va_fx1_core_bodem_0709.py` (Core) và `goi_va_
 |---|---|---|---|
 | `bin\server\CoreServer.dll.moi` | **27e5415e** | ⊇ 7361e2dd (XEPHANG + DELTA), chỉ thêm `[FX-SV]`, `[MISSLE-ADD-FAIL]` | `ChayGameServer.bat` |
 | `bin\client\CoreClient.dll.moi` | **19731ad4** | ⊇ 43ba6ef9 (vá m), thêm `[FX]`, `[MISSLE-ADD-FAIL]`, KLadder LECH CO (XEPHANG) | `ChoiGame.bat` |
-| `bin\client\Represent3.dll.moi` | **3728dfec** | ⊇ c4474ed5 (04/09 12:17, cùng nguồn 18e717ae), thêm `fx:` vào dòng 30 s | `ChoiGame.bat` |
+| `bin\client\Represent3.dll.moi` | **f4c10a85** (thay 3728dfec) | ⊇ c4474ed5 (04/09 12:17, cùng nguồn 18e717ae), thêm `fx:` vào dòng 30 s **+ trần cache 512 → 1024 MB, kẹp ≤ ½ VRAM còn (mục 7.2)** | `ChoiGame.bat` |
+
+### 7.0 Chủ xác nhận 08/09 04:01: *"chưa thấy mất hiệu ứng kỹ năng lại"*
+
+Từ 17:48 07/09 (`Rep3CacheMB=1500`) tới 04:00 08/09 chủ đánh **5 lượt Tống Kim** (thư thưởng 20:57, 21:20, 21:38, 22:15, 23:20, 23:44),
+cache texture đỉnh **768 MB**, RAM riêng đỉnh 789 MB, VRAM còn ≥ 3.322 MB, 0 lần chết sau 20:57, `LoadImage FAIL` đúng 200 dòng và
+đều là ảnh UI `\spr\Ui3\<thư mục GBK>\140–339.spr` lúc khởi động 20:23 (thiếu tệp, không phải hiệu ứng). Trước đó (17:xx) cache kẹt 508–511/512.
+→ Bằng chứng theo hiện tượng: **trần 512 MB là gốc** (cache kẹt trần → nhánh vượt ngân sách bào hết khung hiệu ứng nghỉ > 10 s → nạp lại
+không kịp). Không có bộ đếm lúc 17:xx nên chưa phải chứng minh; bản `[FX]` (mục 7) sẽ nói chắc khi có trận đông tương tự.
+Ba khe `.moi` **chưa được swap** tính đến 04:01 (client và máy chủ vẫn chạy từ 20:23).
+
+### 7.2 Sửa trong mã để máy khác không phải sửa ini (commit `[FX 08/09]`, script `goi_va_fx3_rep3_nganSach_0709.py`)
+
+- `TextureResMgr::SetBudget`: kẹp mặc định **512 → 1024 MB** (RAM riêng ≈ 240 + 0,66 × texture → ~920 MB, dưới 2 GB vì Game.exe chưa LAA).
+- `TextureResMgr::CapBudgetByVram(VRAM còn)`: gọi trong `KRepresentShell3::Create` ngay sau `CreateDevice`; nếu **không** có `Rep3CacheMB`
+  thì kẹp thêm ≤ ½ VRAM còn (texture ở POOL_DEFAULT = VRAM), ghi `[REP3] cache texture: VRAM con X -> kep ngan sach A -> B`. Máy chủ vẫn giữ
+  ini 1500 nên trên máy chủ không đổi gì.
+- Còn lại (chưa làm, cần chủ quyết): **LARGEADDRESSAWARE cho Game.exe** để 1500 MB thật sự an toàn (+2 GB địa chỉ trên Windows 64-bit;
+  phải rà mã dùng bit dấu con trỏ; là cờ linker của `S3Client.vcxproj`, đụng khe `Game.exe.moi` của phiên UITOADO).
 
 **Bẫy build Represent3:** gói NuGet `Sources\packages\Microsoft.DXSDK.D3DX.9.29.952.8` trong git **thiếu** `build\native\release\` và `debug\`
 (bị `.gitignore` dòng 46 `Release/` nuốt) → `LNK1181 d3dx9.lib`. Chép hai thư mục đó từ `C:\Users\nguye\.nuget\packages\microsoft.dxsdk.d3dx\9.29.952.8\build\native\`
