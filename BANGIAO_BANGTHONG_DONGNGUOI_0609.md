@@ -1006,6 +1006,80 @@ cung dang giu `m_CurrentLife = 0` (`NetCommandDeath` dat 0), nen cong "con mau" 
 
 **Da dat 17:47:** `CoreClient.dll.moi` **43ba6ef9** (⊇ ae11479a dang chay, chi them 3 nhan log). Chi swap client.
 
+### 8.22 [GUI] Heaven.dll: bỏ khoá chung khỏi đường gửi + bộ đếm + phép thử nhân bản (19:00–19:25, phiên tiếp theo)
+
+**Trạng thái lúc vào phiên (19:01):** `CoreClient.dll` 43ba6ef9 (vá m) đã live từ 17:48. `CoreServer.dll` live là **7361e2dd** = bản
+XEPHANG build từ origin/main sau 02eb802d (⊇ DELTA l — kiểm đủ chuỗi `NS-BO/NS-TT/PS-BO/DMG-GON/BC-DEM/BC-LOAI` trong nhị phân),
+swap 18:05 cùng `GameServer.exe` d07555ad; `bin\multiserver\Goddess.exe.moi` (XEPHANG) chờ chủ đổi tay. Chưa có lần chết nào sau
+swap client (0 dòng `[S7-*]`) → vá m chưa có số. Git: delta-0709 = origin/main (fast-forward), không phải merge tay.
+
+**Rep3 (mục 4.1 bàn giao gọn) — trần đã hết kẹp:** `[REP3] cache texture ... ngan sach 1500 MB` từ 17:48 và 18:58. Từ 18:58 tới
+19:21 cache texture 238 → 402 MB, **đỉnh 685 MB** (trước kẹt 508–511/512) trong Tống Kim trận 500. Số mục bỏ ~31/s đều
+(`bo` là cộng dồn: 36.376 → 39.184 trong 90 s). Đọc lại `TextureResMgr::CheckBalance` (bản [REP3 03/09 SOC], Represent3.dll live
+04/09 12:17 build sau commit 695db480 03/09): chỉ **một** chế độ — mỗi lượt bỏ đúng **1 khung** của **1** tài nguyên nghỉ > 10 s; khi
+**vượt ngân sách** thì ngoài nhịp định kỳ, **mỗi lần nạp ảnh** gọi thêm CheckBalance (dòng 457) → tại trần, hiệu ứng nghỉ > 10 s bị bào
+khung nhanh gấp bội rồi nạp lại không kịp. (Mô tả "8 khung / nghỉ 1 s" ở 8.21 là chế độ `bOver` CŨ đã bị bỏ trong commit 03/09.)
+Còn phải chờ chủ xác nhận có còn mất hiệu ứng khi đánh không.
+
+**Việc làm: 4.3 bước 1 + bước 2, gộp trong Heaven.dll** (commit **9538e72c** origin/main, script tái áp
+`ReverseTools/goi_va_gui1_khoarieng_nhanban_0709.py`, chỉ `Sources/MultiServer/Heaven/ServerStage.cpp/.h`, thuần ASCII CRLF, không đổi
+giao diện `IServer` nên **không cần build GameServer.exe**):
+
+1. **Bảng node cố định** `m_ppNode[]`: cấp trong ctor, không bao giờ đổi (node chỉ huỷ ở dtor) → tra node không cần khoá.
+2. **Đường gửi** (`PackDataToClient`, `SendPackToClient`, `SendData`) chỉ giữ `csWriteAction`; **đường nhận** (`GetPackFromClient`,
+   `ReadCompleted`, `ProcessCommand`, `ProcessMessage`) chỉ giữ `csReadAction`. `pSocket` được đọc **và dùng** dưới khoá riêng.
+3. Nơi **đặt** `pSocket` (`_HelperAddClient`: khoá mã + xoá đệm trước, `pSocket` sau cùng) và nơi **tha** (`_HelperDelClient`,
+   `ShutdownClient`) lấy `m_csCM` + **cả hai** khoá riêng → không luồng nào còn giữ socket lúc `SAFE_RELEASE`. Thứ tự khoá toàn cục
+   `m_csCM < csWriteAction < csReadAction`, không chỗ nào đảo chiều (`ProcessCommand` lấy lại `csReadAction` từ `GetPackFromClient` là
+   đệ quy, CRITICAL_SECTION cho phép).
+4. `SendPackToClient(-1)`: chụp danh sách client dưới `m_csCM` (vài µs, ≤ 1.510 phần tử) rồi xả từng client; chỉ `Allocate()` khi
+   thật sự có dữ liệu (trước: cấp + tha một bộ đệm cho MỌI client mỗi nhịp dù rỗng). `ReadCompleted` với `dwIndex = -1` (kết nối bị
+   từ chối vì hết chỗ) không còn chèn mục NULL vào `std::map`.
+5. **Bộ đếm `[GUI-DO]`** mỗi 10 s vào `bin\server\jx_gui_server.log` (mở-ghi-đóng từng dòng, không giữ handle → không cản xoay tệp
+   của Core; ~500 B/10 s): `goi` (số PackDataToClient tới client thật), `dem day gui ngay`, `byte`, `t_goi` (ms cộng dồn), `xa` (số nhịp),
+   `client_xa`, `byte_xa` (KB/s), `t_xa`, `Write N lan, X us/lan` (chỉ là PostQueuedCompletionStatus — WSASend chạy ở luồng IOCP nên
+   luồng chính đo được gần trọn), `moi nhip: goi/xa (max)`, `khoa_rieng`, `client`. Dòng khởi động in `client toi da`, `dem ghi`.
+6. **Phép thử nhân bản** `[Server] MoPhongNhanBan=N` (**đọc lại mỗi 10 s — đổi số rồi lưu là có hiệu lực, không cần khởi động lại**, kẹp
+   0..2000): mỗi lần gửi thật làm thêm N−1 lần **y hệt** vào node giả (khoá chung nếu chế độ cũ → tra node → khoá riêng → kiểm đệm đầy →
+   memcpy; đệm đầy thì `Allocate` + đầu gói + mã hoá KSG + `Release`), mỗi nhịp xả N−1 node giả như thật, chỉ **không WSASend**.
+   `[GUI-NB]` in `goi/t`, `xa/byte/t`, `moi nhip goi (max) + xa (max)` và **`duong gui uoc tinh moi nhip X ms (that A + gia B)`**.
+   Bộ nhớ N=500: 499 × 16 KB ≈ 8 MB.
+7. **Cổng lùi** `[Server] GuiKhoaRieng=0` (đọc lúc khởi động) → mọi đường nóng lấy lại `m_csCM` trước khoá riêng, đúng thứ tự cũ.
+
+**Bản và cấu hình:** `bin\server\heaven.dll.moi` **9fc84e88** (1.145.856 B, live 096fdeb2 từ 00:50; `chk2` thiếu 0 chuỗi, thêm 8 chuỗi
+GUI). `bat` `ChayGameServer.bat` đã sẵn `call :capnhat heaven.dll` → swap cùng lượt với Goddess (đổi tay) lần khởi động tới.
+`bin\server\config.ini` đã thêm mục `[Server]` với `GuiKhoaRieng=1`, `MoPhongNhanBan=0` (bản lưu `config.ini.truoc_gui`); các khoá
+DELTA khác vẫn mặc định trong mã.
+
+**Số nền ngay trước swap (19:22, Tống Kim trận 500, chủ CaiBang đứng chỗ thưa):** TICK 9,17 ms TB / max 24,7 / p95 12 (16,5 %
+ngân sách); BroadCast 2,25–2,42 triệu/10 s, node duyệt 2,9–3,2 triệu/10 s, gửi thật 266–2.760/10 s; client nhận 2–6 KB/s.
+
+**Cách đo sau swap (theo thứ tự):**
+
+```bash
+grep -a "GUI-DO" "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/server/jx_gui_server.log" | tail -5
+```
+
+1. Dòng khởi động phải có `GuiKhoaRieng=1`. Khi chủ đánh: ghi lại `moi nhip: goi X ms + xa Y ms` — đó là chi phí đường gửi thật hôm nay
+   (dự kiến dưới 0,2 ms/nhịp).
+2. Lúc chủ đang ở đám đông, sửa `MoPhongNhanBan=500` trong `bin\server\config.ini`, chờ 10–20 s, đọc dòng `[GUI-NB]`; lấy
+   **`duong gui uoc tinh moi nhip`** và `max`. Xong đặt lại `0`. Đọc theo bảng:
+
+| `duong gui uoc tinh moi nhip` | Nghĩa | Bước tiếp |
+|---|---|---|
+| < 15 ms (cộng TICK 9 ms vẫn < 55) | luồng chính gánh được 500 người | không cần luồng gửi riêng; còn lại là băng thông ra 80–240 Mbps |
+| 15–30 ms | sát ngưỡng khi có đỉnh | đưa phần **xả** (Allocate + mã hoá + Write) sang luồng riêng, phần `goi` (memcpy) giữ luồng chính |
+| > 30 ms hoặc `max` > 40 | vượt | luồng gửi riêng **và** hỏi chủ về thưa đồng bộ vị trí theo khoảng cách (bước 3) |
+
+3. Kiểm hồi quy khoá riêng: client vào/ra vài lần, `grep -a -c "Net Msg Error" jx_auto.log` phải là 0, `jx_crash.log` không có sập,
+   `GameServer` console không in `Socket is closed`/`Unexpected exception`. Nếu nghi ngờ khoá riêng: `GuiKhoaRieng=0` + khởi động lại
+   là về đúng hành vi cũ, không cần đổi nhị phân.
+
+**Bẫy phiên này:** (a) Git Bash đổi `/p:` của MSBuild thành đường dẫn (`MSB1008 Only one project`) → dùng `-p:`/`-t:` và
+`MSYS_NO_PATHCONV=1`; (b) `Heaven.vcxproj` Release|x64 có post-build `copy x64\release\heaven.dll ..\..\..\..in\server\` — vào `bin`
+của **cây build**, không phải cây live, nhưng vẫn tắt bằng `-p:PostBuildEventUseInBuild=false`; (c) Heaven link
+`Lib\release64\common.lib` (Common post-build chép sang), Common chưa đổi từ 00:31 nên không cần build lại.
+
 ---
 
 > **PHIEN SAU DOC TRUOC:** `D:\GAMEDEVNEW\BANGIAO_PHIEN_SAU_BANGTHONG_0709.md` — ban giao gon: trang thai hien tai, duong loi chu chot, chuoi va a-m, viec dang treo theo thu tu, cach do, cach chung khe .moi, bay da dinh, ban do ma. Tep nay (8.x) la so lieu chi tiet tung dot de tra cuu.
