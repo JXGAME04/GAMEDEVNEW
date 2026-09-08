@@ -1,0 +1,221 @@
+s3client Release|x64: 186 tep, 148 tep co loi, 1362 loi, 25s
+
+== LOAI LOI (theo so lan) ==
+   361  x101 tep  virtual function 'X' has a different return type ('X') than the function it overrides (which has return type 'X')
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\S3Client/Ui/UiCase/UiMsgCentrePad.h(95,17): error: virtual function 'CloseWindow' has a different return type ('void') than the function it overrides (which has return type 'int')
+   361  x101 tep  'X' member function 'X' overrides a virtual function in a base class
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\S3Client/Ui/UiCase/UiMsgCentrePad.h(95,17): error: 'static' member function 'CloseWindow' overrides a virtual function in a base class
+   143  x143 tep  [HEADER HE THONG] static_assert failed "get<T>(tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(939,9): error: static_assert failed "get<T>(tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]
+   143  x143 tep  [HEADER HE THONG] static_assert failed "get<T>(const tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(951,9): error: static_assert failed "get<T>(const tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple
+   143  x143 tep  [HEADER HE THONG] static_assert failed "get<T>(tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(963,9): error: static_assert failed "get<T>(tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem
+   143  x143 tep  [HEADER HE THONG] static_assert failed "get<T>(const tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(975,9): error: static_assert failed "get<T>(const tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tupl
+    56  x1   tep  expected expression
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\S3Client\Ui\Elem\WndObjContainer.cpp(831,7): error: expected expression
+     3  x3   tep  ordered comparison between pointer and zero ('X' (aka 'X') and 'X')
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\S3Client\AntiHack\DetectHide\DetectHide.cpp(25,12): error: ordered comparison between pointer and zero ('HWND' (aka 'HWND__ *') and 'int')
+     2  x1   tep  expected 'X'
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\S3Client\Ui\Elem\WndObjContainer.cpp(879,51): error: expected ')'
+     2  x1   tep  \U used with no following hex digits
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\S3Client\Ui\Elem\UiToaDo.cpp(455,45): error: \U used with no following hex digits
+     1  x1   tep  character <U+00BB> not allowed in an identifier
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\S3Client\Ui\Elem\MouseHover.cpp(1,6): error: character <U+00BB> not allowed in an identifier
+     1  x1   tep  character <U+00BF> not allowed in an identifier
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\S3Client\Ui\Elem\MouseHover.cpp(1,8): error: character <U+00BF> not allowed in an identifier
+     1  x1   tep  unknown type name 'X'
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\S3Client\Ui\Elem\MouseHover.cpp(1,4): error: unknown type name 'Ã¯Â»Â¿'
+     1  x1   tep  [HEADER HE THONG] expected unqualified-id
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/sal.h(2361,8): error: expected unqualified-id
+     1  x1   tep  expected unqualified-id
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\S3Client\Ui\Elem\WndObjContainer.cpp(826,7): error: expected unqualified-id
+
+== TEP (so loi) ==
+  104  S3Client\Ui\UiShell.cpp
+   90  S3Client\Ui\GameSpaceChangedNotify.cpp
+   67  S3Client\Ui\Elem\WndObjContainer.cpp
+   40  S3Client\Ui\ShortcutKey.cpp
+   34  S3Client\Ui\UiCase\UiPlayerBar.cpp
+   30  S3Client\Ui\UiBase.cpp
+   24  S3Client\ui\uicase\UiTongJX2.cpp
+   20  S3Client\Ui\UiCase\UiContainer.cpp
+   20  S3Client\Ui\UiCase\UiGame.cpp
+   20  S3Client\Ui\UiCase\UiSysMsgCentre.cpp
+   18  S3Client\Ui\UiCase\UiESCDlg.cpp
+   18  S3Client\Ui\UiCase\UiItem.cpp
+   16  S3Client\Ui\UiCase\UiConnectInfo.cpp
+   16  S3Client\ui\uicase\UiTongManager.cpp
+   14  S3Client\S3Client.cpp
+   14  S3Client\Ui\UiCase\UiChatCentre.cpp
+   14  S3Client\Ui\UiCase\UiInit.cpp
+   14  S3Client\Ui\UiCase\UiStatus.cpp
+   14  S3Client\ui\uicase\UiTongAssignBox.cpp
+   12  S3Client\Ui\UiCase\UiLogin.cpp
+   12  S3Client\Ui\UiCase\UiNewPlayer.cpp
+   12  S3Client\Ui\UiCase\UiSelPlayer.cpp
+   12  S3Client\Ui\UiCase\UiSuperShop.cpp
+   12  S3Client\Ui\UiCase\UiTaskTrace.cpp
+   12  S3Client\Ui\UiCase\UiTongGrant.cpp
+   10  S3Client\Ui\UiCase\UiMantleInlay.cpp
+   10  S3Client\Ui\UiCase\UiMantleWash.cpp
+   10  S3Client\Ui\UiCase\UiSmelt.cpp
+   10  S3Client\Ui\UiCase\UiHelper.cpp
+   10  S3Client\Ui\uicase\UiMsgCentrePad.cpp
+   10  S3Client\Ui\UiCase\UiNotice.cpp
+   10  S3Client\Ui\UiCase\UiSelNativePlace.cpp
+   10  S3Client\Ui\UiCase\UiSelServer.cpp
+   10  S3Client\Ui\UIcase\UiShop.cpp
+   10  S3Client\Ui\UiCase\UiShopGold.cpp
+    8  S3Client\Ui\Elem\MouseHover.cpp
+    8  S3Client\Ui\Elem\WndMessageListBox.cpp
+    8  S3Client\Ui\UiCase\UiAffairItem.cpp
+    8  S3Client\Ui\UiCase\UiAutoPlay.cpp
+    8  S3Client\Ui\UiCase\UiCompoundItem.cpp
+    8  S3Client\Ui\UiCase\UiExBox1.cpp
+    8  S3Client\Ui\UiCase\UiExBox2.cpp
+    8  S3Client\Ui\UiCase\UiExBox3.cpp
+    8  S3Client\Ui\UiCase\UiHelper2.cpp
+    8  S3Client\Ui\UiCase\UiNewPlayerStartMsg.cpp
+    8  S3Client\Ui\UiCase\UiPlayerShop.cpp
+    8  S3Client\Ui\uicase\UiStoreBox.cpp
+    8  S3Client\Ui\UiCase\UiTaskGuide.cpp
+    8  S3Client\Ui\UiCase\UiTeamManage.cpp
+    8  S3Client\ui\uicase\UiAuction.cpp
+    8  S3Client\ui\uicase\UiTrembleItem.cpp
+    6  S3Client\Ui\Elem\WndChessPanel.cpp
+    6  S3Client\Ui\UiCase\KUiKtc.cpp
+    6  S3Client\Ui\UiCase\UiAddPoint.cpp
+    6  S3Client\Ui\UiCase\UiAuto.cpp
+    6  S3Client\Ui\UiCase\UiAutoParty.cpp
+    6  S3Client\Ui\UiCase\UiBattleReport.cpp
+    6  S3Client\Ui\UiCase\UiBreakItem.cpp
+    6  S3Client\Ui\UiCase\UiChangePWBox.cpp
+    6  S3Client\Ui\UiCase\UiChooseFace.cpp
+    6  S3Client\Ui\UiCase\UiCityWar.cpp
+    6  S3Client\Ui\UiCase\UiFaceSelector.cpp
+    6  S3Client\Ui\UiCase\UiFindPos.cpp
+    6  S3Client\Ui\UiCase\UiGetMoney.cpp
+    6  S3Client\Ui\UiCase\UiGetNumber.cpp
+    6  S3Client\Ui\UiCase\UiGetString.cpp
+    6  S3Client\Ui\UiCase\UiGetString2.cpp
+    6  S3Client\Ui\UiCase\UiHeaderControlBar.cpp
+    6  S3Client\Ui\UiCase\UiInformation3.cpp
+    6  S3Client\Ui\UiCase\UiItemEX.cpp
+    6  S3Client\Ui\UiCase\UiLoginBg.cpp
+    6  S3Client\Ui\uicase\UiMiniMap.cpp
+    6  S3Client\Ui\UiCase\UiMsgSel.cpp
+    6  S3Client\Ui\UiCase\UiMsgSel2.cpp
+    6  S3Client\Ui\UiCase\UiMsgSel3.cpp
+    6  S3Client\Ui\UiCase\UiMsgSel4.cpp
+    6  S3Client\Ui\UiCase\UiParadeItem.cpp
+    6  S3Client\ui\uicase\UiPopupPasswordQuery.cpp
+    6  S3Client\Ui\UiCase\UiQuestDT.cpp
+    6  S3Client\Ui\UiCase\UiQuestDT1.cpp
+    6  S3Client\Ui\UiCase\UiRankData.cpp
+    6  S3Client\Ui\UiCase\UiResetPass.cpp
+    6  S3Client\Ui\UiCase\UiSelPlayerNearby.cpp
+    6  S3Client\Ui\UiCase\UiSkills.cpp
+    6  S3Client\Ui\UiCase\UiSkillsNew.cpp
+    6  S3Client\Ui\UiCase\UiSkillTree.cpp
+    6  S3Client\Ui\UiCase\UiStrengthRank.cpp
+    6  S3Client\Ui\UiCase\UiTargetInfo.cpp
+    6  S3Client\Ui\UiCase\UiTaskNote.cpp
+    6  S3Client\Ui\UiCase\UiTeamManager2.cpp
+    6  S3Client\Ui\UiCase\UiTimeBox.cpp
+    6  S3Client\Ui\UiCase\UiTongChangeTitle.cpp
+    6  S3Client\ui\uicase\UiTongCreateSheet.cpp
+    6  S3Client\Ui\UiCase\UiTongGetString.cpp
+    6  S3Client\Ui\UiCase\UiToolsControlBar.cpp
+    6  S3Client\Ui\UiCase\UiTradeConfirmWnd.cpp
+    6  S3Client\ui\uicase\UiDiceItem.cpp
+    6  S3Client\ui\uicase\UiMail.cpp
+    6  S3Client\ui\uicase\UiChienLenh.cpp
+    6  S3Client\ui\uicase\UiPartnerBag.cpp
+    6  S3Client\Ui\UiCase\UiUnlockBox.cpp
+    4  S3Client\Login\Login.cpp
+    4  S3Client\NetConnect\NetConnectAgent.cpp
+    4  S3Client\TextCtrlCmd\TextCtrlCmd.cpp
+    4  S3Client\Ui\Elem\SpecialFuncs.cpp
+    4  S3Client\Ui\Elem\WndButton.cpp
+    4  S3Client\Ui\Elem\WndList2.cpp
+    4  S3Client\Ui\Elem\WndPureTextBtn.cpp
+    4  S3Client\Ui\Elem\Wnds.cpp
+    4  S3Client\Ui\Elem\WndText.cpp
+    4  S3Client\Ui\Elem\WndWindow.cpp
+    4  S3Client\Ui\GourdCrabFishTigerLogic.cpp
+    4  S3Client\Ui\UiCase\SpringGame.cpp
+    4  S3Client\Ui\UiCase\UiJxrPlayer.cpp
+    4  S3Client\JxReplay.cpp
+    4  S3Client\Ui\UiCase\UiChatItem.cpp
+    4  S3Client\Ui\UiCase\UiChatStatus.cpp
+    4  S3Client\Ui\UiCase\UiFinishQuest.cpp
+    4  S3Client\Ui\UiCase\UiFlashMessage.cpp
+    4  S3Client\Ui\UiCase\UiTongKimScore.cpp
+    4  S3Client\Ui\UiCase\UiTongKimInfo.cpp
+    4  S3Client\Ui\UiCase\UiGamble.cpp
+    4  S3Client\Ui\UiCase\UiInformation.cpp
+    4  S3Client\Ui\UiCase\UiInformation2.cpp
+    4  S3Client\Ui\UiCase\UiMapCave.cpp
+    4  S3Client\Ui\UiCase\UiMeridian.cpp
+    4  S3Client\Ui\UiCase\UiNewsMessage.cpp
+    4  S3Client\Ui\UiCase\UiNewsMessage1.cpp
+    4  S3Client\Ui\UiCase\UiOptions.cpp
+    4  S3Client\Ui\UiCase\UiOptions2.cpp
+    4  S3Client\Ui\UiCase\UiPK.cpp
+    4  S3Client\Ui\UiCase\UiReconnect.cpp
+    4  S3Client\Ui\UiCase\UiSelColor.cpp
+    4  S3Client\Ui\UiCase\UiTaskDataFile.cpp
+    4  S3Client\Ui\UiCase\UiTrade.cpp
+    4  S3Client\ui\uicase\UiPartnerCommon.cpp
+    4  S3Client\ui\uicase\UiPartnerAttr.cpp
+    4  S3Client\ui\uicase\UiPartnerSkill.cpp
+    4  S3Client\ui\uicase\UiPartnerBar.cpp
+    4  S3Client\ui\uicase\UiPet.cpp
+    4  S3Client\Ui\UiCase\UiWorldMap.cpp
+    4  S3Client\Ui\UiChatPhrase.cpp
+    4  S3Client\Ui\UiSoundSetting.cpp
+    2  S3Client\Ui\Elem\UiToaDo.cpp
+    2  S3Client\Ui\UiCase\UiPlayVideo.cpp
+    1  S3Client\AntiHack\DetectHide\DetectHide.cpp
+    1  S3Client\AntiHack\DetectWindowsClassName\DetectWindowsClassName.cpp
+    1  S3Client\AntiHack\DetectWindowsTitle\DetectWindowsTitle.cpp
+    0  S3Client\AntiHack\CheckSumCRC\CheckSumCRC.cpp
+    0  S3Client\AntiHack\CheckSumCRC\CRC32.cpp
+    0  S3Client\AntiHack\CheckSumCRC\ShowLogCRC.cpp
+    0  S3Client\AntiHack\DetectWindowsText\DetectWindowsText.cpp
+    0  S3Client\AntiHack\DumpMemory\DumpMemory.cpp
+    0  S3Client\AntiHack\ExistMainName\ExistMainName.cpp
+    0  S3Client\AntiHack\Splash\Splash.cpp
+    0  S3Client\AntiHack\Splash\splash2.cpp
+    0  S3Client\ErrorCode.cpp
+    0  S3Client\Platform\KSdlApp.cpp
+    0  S3Client\stdafx.cpp
+    0  S3Client\Ui\ChatFilter.cpp
+    0  S3Client\Ui\Elem\AutoLocateWnd.cpp
+    0  S3Client\Ui\Elem\ComWindow.cpp
+    0  S3Client\Ui\Elem\PopupMenu.cpp
+    0  S3Client\Ui\Elem\TextPic.cpp
+    0  S3Client\Ui\Elem\UiCursor.cpp
+    0  S3Client\Ui\Elem\UiImage.cpp
+    0  S3Client\Ui\Elem\vongsang.cpp
+    0  S3Client\Ui\Elem\WndEdit.cpp
+    0  S3Client\Ui\Elem\WndImage.cpp
+    0  S3Client\Ui\Elem\WndImagePart.cpp
+    0  S3Client\Ui\Elem\WndLabeledButton.cpp
+    0  S3Client\Ui\Elem\WndLine.cpp
+    0  S3Client\Ui\Elem\WndList.cpp
+    0  S3Client\Ui\Elem\WndMovingImage.cpp
+    0  S3Client\Ui\Elem\WndPage.cpp
+    0  S3Client\Ui\Elem\WndScrollBar.cpp
+    0  S3Client\Ui\elem\WndShadow.cpp
+    0  S3Client\Ui\Elem\WndShowAnimate.cpp
+    0  S3Client\Ui\Elem\WndToolBar.cpp
+    0  S3Client\Ui\Elem\WndValueImage.cpp
+    0  S3Client\Ui\FilterTextLib.cpp
+    0  S3Client\Ui\TrayMode.cpp
+    0  S3Client\JxrDrawAdapter.cpp
+    0  S3Client\Ui\UiCase\UiChannelSubscibe.cpp
+    0  S3Client\CrashLog.cpp
+    0  S3Client\Ui\PerfHud.cpp

@@ -1,0 +1,32 @@
+rep3 Release|x64: 19 tep, 5 tep co loi, 20 loi, 2s
+
+== LOAI LOI (theo so lan) ==
+     5  x5   tep  [HEADER HE THONG] static_assert failed "get<T>(tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(939,9): error: static_assert failed "get<T>(tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]
+     5  x5   tep  [HEADER HE THONG] static_assert failed "get<T>(const tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(951,9): error: static_assert failed "get<T>(const tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple
+     5  x5   tep  [HEADER HE THONG] static_assert failed "get<T>(tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(963,9): error: static_assert failed "get<T>(tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem
+     5  x5   tep  [HEADER HE THONG] static_assert failed "get<T>(const tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(975,9): error: static_assert failed "get<T>(const tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tupl
+
+== TEP (so loi) ==
+    4  Represent\Represent3\D3D9on11.cpp
+    4  Represent\Represent3\D3D9on11Dev.cpp
+    4  Represent\Represent3\D3D9on11D3D.cpp
+    4  Represent\Represent3\D3D9on11Atlas.cpp
+    4  Represent\Represent3\D3D9on11Pal.cpp
+    0  Represent\iRepresent\Font\KCharSet.cpp
+    0  Represent\iRepresent\Font\KFont3.cpp
+    0  Represent\iRepresent\Font\KFontData.cpp
+    0  Represent\iRepresent\Font\KFontRes.cpp
+    0  Represent\iRepresent\Font\KMRU.cpp
+    0  Represent\iRepresent\RepresentUtility.cpp
+    0  Represent\iRepresent\Text\TextProcess.cpp
+    0  Represent\Represent3\D3D_Device.cpp
+    0  Represent\Represent3\D3D_Shell.cpp
+    0  Represent\Represent3\D3D_Utils.cpp
+    0  Represent\Represent3\KRepresentShell3.cpp
+    0  Represent\Represent3\precompile.cpp
+    0  Represent\Represent3\TextureRes.cpp
+    0  Represent\Represent3\TextureResMgr.cpp

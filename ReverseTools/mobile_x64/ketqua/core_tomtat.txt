@@ -1,0 +1,128 @@
+core Client Release|x64: 103 tep, 101 tep co loi, 541 loi, 16s
+
+== LOAI LOI (theo so lan) ==
+   101  x101 tep  [HEADER HE THONG] static_assert failed "get<T>(tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(939,9): error: static_assert failed "get<T>(tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]
+   101  x101 tep  [HEADER HE THONG] static_assert failed "get<T>(const tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(951,9): error: static_assert failed "get<T>(const tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple
+   101  x101 tep  [HEADER HE THONG] static_assert failed "get<T>(tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(963,9): error: static_assert failed "get<T>(tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem
+   101  x101 tep  [HEADER HE THONG] static_assert failed "get<T>(const tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/N)"
+        vd: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include/tuple(975,9): error: static_assert failed "get<T>(const tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tupl
+    66  x6   tep  [HEADER HE THONG] redefinition of 'X'
+        vd: C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared/ws2def.h(246,16): error: redefinition of 'sockaddr'
+    60  x6   tep  [HEADER HE THONG] expected identifier
+        vd: C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared/ws2def.h(448,5): error: expected identifier
+     7  x1   tep  cannot initialize a parameter of type 'X' (aka 'X') with an lvalue of type 'X'
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\Core\Src\KPlayerChat.cpp(2584,14): error: cannot initialize a parameter of type 'LPVOID' (aka 'void *') with an lvalue of type 'const char[3]'
+     2  x2   tep  'X' file not found
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\Core\Src\BauCua.cpp(8,10): fatal error: 'nlohmann/json.hpp' file not found
+     1  x1   tep  cannot initialize a parameter of type 'X' (aka 'X') with an rvalue of type 'X'
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\Core\Src\KItemGenerator.CPP(71,15): error: cannot initialize a parameter of type 'LPSTR' (aka 'char *') with an rvalue of type 'const char *'
+     1  x1   tep  left operand to ? is void, but right operand is of type 'X' (aka 'X')
+        vd: D:\GAMEDEVNEW_wt_mobile\Sources\Core\Src\KNpcRes.cpp(309,43): error: left operand to ? is void, but right operand is of type 'BOOL' (aka 'int')
+
+== TEP (so loi) ==
+   26  Core\Src\KItemGenerator.CPP
+   25  Core\Src\KBuySell.cpp
+   25  Core\Src\KPlayerPet.cpp
+   25  Core\Src\KProtocolProcess.cpp
+   25  Core\Src\KSkillList.cpp
+   25  Core\Src\ScriptFuns.cpp
+   11  Core\Src\KPlayerChat.cpp
+    5  Core\Src\BauCua.cpp
+    5  Core\Src\KJx2SharedStore.cpp
+    5  Core\Src\KNpcRes.cpp
+    4  Core\KMeridian.cpp
+    4  Core\Src\KBiaoChe.cpp
+    4  Core\Src\base64.cpp
+    4  Core\Src\KScriptProtocol.cpp
+    4  Core\Src\KMailClient.cpp
+    4  Core\Src\KAuctionClient.cpp
+    4  Core\Src\KChienLenhClient.cpp
+    4  Core\Src\KMailServer.cpp
+    4  Core\Src\KAuctionServer.cpp
+    4  Core\Src\KChienLenh.cpp
+    4  Core\Src\KCauHinhWeb.cpp
+    4  Core\Src\CoreDrawGameObj.cpp
+    4  Core\Src\CoreShell.cpp
+    4  Core\Src\GiftCodeManager.cpp
+    4  Core\Src\ImgRef.cpp
+    4  Core\Src\kautoai.cpp
+    4  Core\Src\KBasPropTbl.CPP
+    4  Core\Src\KCore.cpp
+    4  Core\Src\KFaction.cpp
+    4  Core\Src\KGMCommand.cpp
+    4  Core\Src\KInventory.cpp
+    4  Core\Src\KItem.cpp
+    4  Core\Src\KItemChangeRes.cpp
+    4  Core\Src\KItemList.cpp
+    4  Core\Src\KItemSet.cpp
+    4  Core\Src\KJXPathFinder.cpp
+    4  Core\Src\KLadder.cpp
+    4  Core\Src\KLittleMap.cpp
+    4  Core\Src\KMagicDesc.cpp
+    4  Core\Src\KMapMusic.cpp
+    4  Core\Src\KMath.cpp
+    4  Core\Src\KMissle.cpp
+    4  Core\Src\KMissleRes.cpp
+    4  Core\Src\KMissleSet.cpp
+    4  Core\Src\KNpc.cpp
+    4  Core\Src\KNpcAI.cpp
+    4  Core\Src\KNpcAttribModify.cpp
+    4  Core\Src\KNpcDeathCalcExp.cpp
+    4  Core\Src\KNpcFindPath.cpp
+    4  Core\Src\KNpcGold.cpp
+    4  Core\Src\KNpcResList.cpp
+    4  Core\Src\KNpcResNode.cpp
+    4  Core\Src\KNpcSet.cpp
+    4  Core\Src\KNpcTemplate.cpp
+    4  Core\Src\KObj.cpp
+    4  Core\Src\KObjSet.cpp
+    4  Core\Src\KOption.cpp
+    4  Core\Src\KPartnerSkill.cpp
+    4  Core\Src\KPerfTick.cpp
+    4  Core\Src\KPlayer.cpp
+    4  Core\Src\KPlayerAuto.cpp
+    4  Core\Src\KPlayerDBFuns.cpp
+    4  Core\Src\KPlayerFaction.cpp
+    4  Core\Src\KPlayerFuYuan.cpp
+    4  Core\Src\KPlayerMenuState.cpp
+    4  Core\Src\KPlayerPartner.cpp
+    4  Core\Src\KPlayerPK.cpp
+    4  Core\Src\KPlayerReBorn.cpp
+    4  Core\Src\KPlayerRepute.cpp
+    4  Core\Src\KPlayerSet.cpp
+    4  Core\Src\KPlayerTask.cpp
+    4  Core\Src\KPlayerTeam.cpp
+    4  Core\Src\KPlayerTong.cpp
+    4  Core\Src\KPlayerTrade.cpp
+    4  Core\Src\KProtocol.cpp
+    4  Core\Src\KRegion.cpp
+    4  Core\Src\KScriptValueSet.cpp
+    4  Core\Src\KSellItem.cpp
+    4  Core\Src\KSkillManager.cpp
+    4  Core\Src\KSkills.cpp
+    4  Core\Src\KSkillSpecial.cpp
+    4  Core\Src\KSortScript.cpp
+    4  Core\Src\KSprControl.cpp
+    4  Core\Src\KSubWorld.cpp
+    4  Core\Src\KSubWorldSet.cpp
+    4  Core\Src\KTaskFuns.cpp
+    4  Core\Src\KThiefSkill.cpp
+    4  Core\Src\KViewItem.cpp
+    4  Core\Src\KWeatherMgr.cpp
+    4  Core\Src\KWorldMsg.cpp
+    4  Core\Src\MapHandler.cpp
+    4  Core\Src\Scene\KIpotBranch.cpp
+    4  Core\Src\Scene\KIpotLeaf.cpp
+    4  Core\Src\Scene\KIpoTree.cpp
+    4  Core\Src\Scene\KScenePlaceC.cpp
+    4  Core\Src\Scene\KScenePlaceRegionC.cpp
+    4  Core\Src\Scene\KWeather.cpp
+    4  Core\Src\Scene\SceneMath.cpp
+    4  Core\Src\Scene\ScenePlaceMapC.cpp
+    4  Core\Src\Skill.cpp
+    4  Core\Src\stdafx.cpp
+    0  Core\Src\KMySQLDB.cpp
+    0  Core\Src\KGameKV.cpp
