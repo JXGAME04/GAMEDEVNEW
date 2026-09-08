@@ -34,3 +34,14 @@ của nhau**.
 
 Chỉ build ở worktree riêng, ưu tiên thấp (BelowNormal), `-m:1`, `CL_MPCount` ≤ 3, tránh giờ trận Tống Kim (bot vào ~x:10, hết ~x:40).
 Không đụng `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin`.
+
+## Ghi nhận 08/09 12:3x–12:5x (wauto-45, từ bản test Game.exe x64 trong `D:\GAMEDEVNEW_wt_mobilein\client64`)
+
+- **Gợn sóng khi cuộn màn hình** xuất hiện khi chạy lớp D3D9on11 (`Rep3Api=11`, vsync=0, atlas bật — cùng cấu hình `config.ini` với cây live,
+  và cây live Win32 cũng đang chạy D3D9on11 từ 12:08). Đổi riêng bản x64 sang `Rep3Api=9` (D3D9 thuần) thì **hết gợn** ⇒ hiện tượng thuộc lớp
+  D3D9on11/atlas, không phải x64. Bản x64 lúc thử là mã main tới 8be73705 (chưa có g+h+i 56e7ecf0); bản g+h+i đã được gộp vào nhánh mobile
+  12:37 và dựng lại, chưa thử lại với `Rep3Api=11`.
+- Mã D3D9on11 (kể cả g+h+i) biên dịch sạch trên x64 với `/we4311 /we4312 /we4302` — không có chỗ ép con trỏ vào int.
+- Việc x64 đã sửa cùng lúc (không đụng Represent3): sập khi đăng nhập lại do `sNotify(int nCmd, int nParam)` trong KMailClient/KAuctionClient/
+  KChienLenhClient và `sSendOp` ở UiAuction/UiChienLenh/UiMail nhận con trỏ qua `int` (dump 12:42 `KUiMailList::AddHeader`, địa chỉ
+  `FFFFFFFFFCB9D3F0` = con trỏ 64-bit bị cắt) → đổi sang `KNPARAM`.
