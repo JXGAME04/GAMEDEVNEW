@@ -95,3 +95,33 @@ UI/chữ/hiệu ứng. Đây là cách duy nhất còn lại giảm phần textu
 | LARGEADDRESSAWARE cho Game.exe | không giảm RAM, chỉ nới trần 2 GB | rà bit dấu con trỏ |
 
 Bàn giao liên quan: `BANGIAO_HIEUUNG_KHAOSAT_0709.md` (mục 7: bản đo `[FX]`), `BANGIAO_BANGTHONG_DONGNGUOI_0609.md` 8.24.
+
+## 5. So với client 2.0 mẫu (chủ 08/09 10:5x: "2.0 đông lắm cũng < 250 MB, sao bản tôi cao hơn nhiều")
+
+Bằng chứng: bản mổ `represent3free.dll`/`gamecl.exe` 03/09 (`BANGIAO_REPRESENT3_VLTK2_0309.md` mục 4), PE header hai bên, `jx_rep3.log`
+pid 8916 lúc 10:5x (sau trận): **RAM riêng 744 MB = texture 610 MB (vẽ khung này 201 MB) + raw spr 44 MB + phần còn lại**.
+
+| | Client 2.0 mẫu (Level Up) | Bản dự án đang chạy | Hệ quả RAM |
+|---|---|---|---|
+| Định dạng texture sprite | **A4R4G4B4, 2 byte/điểm** (16 bit, màu 4 bit/kênh) | **A8R8G8B8, 4 byte/điểm** (`Rep3Tex32=1` mặc định) | ×2 |
+| Ngân sách cache texture | **30/50/80/120 MB** theo RAM máy (máy này 120), TTL 10 s, bỏ 1 khung/lượt | **`Rep3CacheMB=1500`** (chủ đặt 07/09 để hết mất hiệu ứng; mặc định RAM/16 kẹp 1024) → giữ 610 MB, trong đó một khung chỉ cần 201 | ×5 |
+| Pool | MANAGED: RAM giữ bản sao = VRAM (≤ 120 MB) | DEFAULT (VRAM) + bản sao driver ~0,8× | tương đương nhau |
+| Raw SPR (RLE nén) giữ trong RAM | có, cache engine nhỏ | 44–57 MB, chỉ thả khi node bị xoá | +50 |
+| Mảng tĩnh | `gamecl.exe` ảnh 33 MB (UPX, cả mã) → tĩnh ≈ 20–30 MB | `CoreClient.dll` `.bss` **110 MB** (lưới đường A* 58 + `Npc[800]` 42 + `Missle[3000]`) | +80 |
+| Đám đông lúc đo | người chơi thật, trang bị lặp | **1.000 bot** trang bị/phái ngẫu nhiên → 2.100+ sprite khác nhau, 201 MB/khung ở 32 bit | working set lớn hơn |
+
+Cộng lại: 2.0 ≈ 60 nền + 30 tĩnh + heap + **≤ 120 texture** ≈ 250 MB. Dự án ≈ 177 nền/heap + tĩnh + **0,8 × (610 + 44)** ≈ 740 MB.
+**Khác biệt không phải rò rỉ hay lỗi, là chính sách: 2.0 đổi CPU (giải mã lại sprite khi bị thải, màu 16 bit) lấy RAM; dự án đang
+giữ mọi thứ đã giải mã ở 32 bit với ngân sách 1,5 GB.** Ngân sách 1.500 là do tôi đề xuất và chủ đặt để chữa "mất hiệu ứng" 17:xx
+07/09 — mà gốc thật của lần đó là hai lỗi dọn cache (`<=` và không trừ bộ nhớ đã thả) + trần 512, nay đã sửa trong mã.
+
+### 5.1 Hai đường về mức 2.0, chủ chọn
+
+| | Cách | RAM dự kiến trong trận 1.000 bot | Mất gì | Công |
+|---|---|---|---|---|
+| **Thử ngay 5 phút** | `config.ini [Client]`: `Rep3Tex32=0` (đúng 4444 như 2.0, bộ giải mã có kiểm biên `RenderToA4R4G4B4Safe` đã có) + `Rep3CacheMB=160` (2.0 dùng 120; working set 16 bit của ta ~100 MB/khung) | ≈ 177 + 0,8 × (200 + 44) ≈ **370 MB**; đám đông thường ≈ 300 | màu 4 bit/kênh **y như 2.0 chủ đang chấp nhận**; giải mã lại nhiều hơn (đo `giai_ma` trong `jx_rep3.log`, hiện 12–393 khung/30 s) | 0 build |
+| **Không mất màu** (B2 mục 3.3) | texture bảng màu A8L8 2 B/px + shader tra bảng; cùng ngân sách 160 | như trên, **màu đúng 100 %** | không | 1–2 ngày |
+| + thêm | bỏ raw SPR sau khi tạo texture (đọc lại pak khi cần) −44; lưới đường cấp theo map −50; `KNpc` bọc `_SERVER` −20 | **≈ 250 MB** | không | 2–3 ngày |
+
+Lưu ý: ngân sách 160 chỉ là "mềm" — khung nào cần hơn thì cache vẫn vượt (dọn chỉ đụng khung nghỉ > 10 s, 1 khung/lượt), nên
+không lặp lại lỗi 17:xx; theo dõi `[REP3] ... fx: tex_null tao_hong` phải = 0 và `giai_ma` ms/30 s không tăng đột biến.
