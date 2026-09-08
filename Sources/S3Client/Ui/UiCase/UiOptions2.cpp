@@ -238,6 +238,14 @@ void KUiOptions2::LoadSetting(bool bReload, bool bUpdateOption)
 				pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[i], false, &bOptionsEnable[i]);
 			g_UiBase.CloseAutoSettingFile(true);
 		}		
+		else
+		{
+			// [X64 08/09 NGOAIHINH FIX] Chua biet tai khoan (vua khoi dong UiInit.cpp:69, WM_ACTIVATEAPP UiShell.cpp:430 truoc dang nhap)
+			// -> khong co tep cau hinh -> KHONG day mac dinh {true,true,true,true} (giam chi tiet nguoi choi / an NPC / an nguoi choi /
+			// giam skill) xuong Core. Truoc day no lam Option.GetLow(LowPlayer)=1 -> SyncPlayer gan m_MaskType = ManTypeNameIdx (94)
+			// cho CHINH MINH -> ve bang mau NPC enemy067 ('nhu dang mang mat na') toi lan dong bo sau (mac lai do). Do that x64 13:5x 08/09.
+			return;
+		}
 	}
 
 	if (bUpdateOption && g_pCoreShell)
