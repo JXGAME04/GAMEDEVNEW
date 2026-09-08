@@ -15,6 +15,10 @@ extern void Partner_OnNpcDeath(int nNpcIdx);	// [BDH 27/08] KPlayerPartner.cpp
 #include "KPlayerSet.h"
 #include "KBiaoChe.h"	// [VTCN 06/09] xe tieu: BC_OnPlayerTrap (chu vua dap trap)
 #include "KNpc.h"
+// [NAMBEP 07/09 m] moc luc CHINH MINH nhan goi hoi sinh (KProtocolProcess::PlayerRevive dat) + so buoc da ghi.
+// Phai nam NGOAI moi khoi #ifdef _SERVER vi ca hai ban (client ghi log, may chu khong dung) deu bien dich tep nay.
+DWORD g_uS7LucHoiSinh = 0;
+int   g_nS7BuocHoiSinh = 0;
 #include "GameDataDef.h"
 #include "KSubWorldSet.h"
 #include "KPlayerBot.h"	// PB_IsBot / PB_TrapLog - bot mien trap
@@ -929,6 +933,53 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 	// Doc: resdoing=8 => loi o lop ve; cdoing=8 => loi o KNpc; ca ba deu 1 ma van nam => Represent.
 	if (m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex)
 	{
+		// [NAMBEP 07/09 m] Ghi trang thai SAU HOI SINH o +1 s / +3 s / +6 s - moc chac chan nhat de doi chieu
+		// voi cai chu nhin thay (va j dat nhan theo 'con mau' nhung 11 lan chet khong ghi dong nao vi khi ket
+		// o trang thai chet thi client cung dang giu mau = 0).
+		{
+			extern DWORD g_uS7LucHoiSinh;	// dinh nghia gan NormalSync (duoi ham nay trong cung tep)
+			extern int   g_nS7BuocHoiSinh;
+			if (g_uS7LucHoiSinh)
+			{
+				static const DWORD s_auMoc[3] = { 1000, 3000, 6000 };
+				const DWORD uNay = timeGetTime();
+				while (g_nS7BuocHoiSinh < 3 && (DWORD)(uNay - g_uS7LucHoiSinh) >= s_auMoc[g_nS7BuocHoiSinh])
+				{
+					AUTOLOG("[S7-SAUHOISINH] +%u ms: doing=%d cdoing=%d resdoing=%d resaction=%d frame=%d/%d life=%d/%d reg=%d cell=(%d,%d) t=%u",
+						(unsigned int)s_auMoc[g_nS7BuocHoiSinh], (int)m_Doing, (int)m_ClientDoing, m_DataRes.GetResDoing(), m_DataRes.GetAction(),
+						m_Frames.nCurrentFrame, m_Frames.nTotalFrame, m_CurrentLife, m_CurrentLifeMax, m_RegionIndex, m_MapX, m_MapY, SubWorld[0].m_dwCurrentTime);
+					g_nS7BuocHoiSinh++;
+				}
+				if (g_nS7BuocHoiSinh >= 3)
+					g_uS7LucHoiSinh = 0;
+			}
+		}
+		// [NAMBEP 07/09 m] O tu the chet qua 10 giay lien tuc - KHONG can con mau (khi ket thi mau cung ket 0).
+		// Chet that luon duoc hoi sinh trong ~1 giay (tu dong 5 giay) nen qua 10 giay chac chan la ket.
+		{
+			static DWORD s_uLauBatDau = 0, s_uLauGhi = 0;
+			const DWORD uLauNay = timeGetTime();
+			const BOOL bChet = (m_Doing == do_death || m_ClientDoing == cdo_death || m_DataRes.GetResDoing() == (int)cdo_death);
+			if (bChet)
+			{
+				if (s_uLauBatDau == 0)
+					s_uLauBatDau = uLauNay;
+				else if ((DWORD)(uLauNay - s_uLauBatDau) >= 10000 && (DWORD)(uLauNay - s_uLauGhi) >= 5000)
+				{
+					s_uLauGhi = uLauNay;
+					AUTOLOG("[S7-NAMBEP-LAU] o tu the chet %u ms lien tuc: doing=%d cdoing=%d resdoing=%d resaction=%d frame=%d/%d life=%d/%d reg=%d cell=(%d,%d) t=%u",
+						(unsigned int)(uLauNay - s_uLauBatDau), (int)m_Doing, (int)m_ClientDoing, m_DataRes.GetResDoing(), m_DataRes.GetAction(),
+						m_Frames.nCurrentFrame, m_Frames.nTotalFrame, m_CurrentLife, m_CurrentLifeMax, m_RegionIndex, m_MapX, m_MapY, SubWorld[0].m_dwCurrentTime);
+				}
+			}
+			else if (s_uLauBatDau)
+			{
+				if ((DWORD)(uLauNay - s_uLauBatDau) >= 10000)
+					AUTOLOG("[S7-NAMBEP-LAU-HET] dung day sau %u ms t=%u", (unsigned int)(uLauNay - s_uLauBatDau), SubWorld[0].m_dwCurrentTime);
+				s_uLauBatDau = 0;
+				s_uLauGhi = 0;
+			}
+		}
 		// [NAMBEP 07/09 j] Bao dong tu the CHET khi CON MAU: chu bao 'chet ve thanh roi van nam bep duoi dat'
 		// ma 15/15 lan chet trong nhat ky 07/09 deu dung day trong 0,2 s => phai bat duoc dung luc no xay ra.
 		// Dieu kien: chinh minh, m_CurrentLife > 0 (da hoi sinh: may chu tra mau ve) nhung logic hoac LOP VE

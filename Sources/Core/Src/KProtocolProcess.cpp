@@ -946,6 +946,16 @@ void KProtocolProcess::PlayerRevive(BYTE* pMsg)
 			if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)
 				AUTOLOG("[S7-REV-CLI] id=%u type=%d doing=%d cdoing=%d frame=%d/%d reg=%d t=%u", pSync->ID, (int)pSync->Type, (int)Npc[nIdx].m_Doing, (int)Npc[nIdx].m_ClientDoing, Npc[nIdx].m_Frames.nCurrentFrame, Npc[nIdx].m_Frames.nTotalFrame, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
 #endif
+			// [NAMBEP 07/09 m] moc de ghi trang thai o +1 s / +3 s / +6 s sau hoi sinh (KNpc::Activate)
+#ifndef _SERVER
+			if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)
+			{
+				extern DWORD g_uS7LucHoiSinh;
+				extern int   g_nS7BuocHoiSinh;
+				g_uS7LucHoiSinh = timeGetTime();
+				g_nS7BuocHoiSinh = 0;
+			}
+#endif
 			Npc[nIdx].ProcNetCommand(do_revive);
 #ifndef _SERVER
 			if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)

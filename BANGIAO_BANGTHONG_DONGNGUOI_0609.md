@@ -967,3 +967,41 @@ Nghi ngo o muc 8.16 ve toc do buff **SAI**: toc do khong doi lan nao. Thu pham l
 2. **Bo khoa chung `m_csCM` khoi duong nong** (chi giu khoa rieng tung client). Don bay CPU lon nhat, nhung dung vao loi mang nen phai lam can than va thu ky.
 3. **Thua theo khoang cach khi dong**: qua 16 o thi ha nhip dong bo vi tri con mot nua (goi 221 dang chiem 61 % byte). Chi bat khi vung dong nguoi nen luc it nguoi khong mat gi.
 4. **Chia chien truong cho nhieu GameServer** (da co san `GameServer1_cfg.ini`/`GameServer2_cfg.ini`, `MaxPlayer=290` moi ban).
+
+### 8.21 Chu bao 17:40: (a) danh nhau mat het hinh anh ky nang, (b) chet ve thanh van nam duoi dat
+
+**(a) Mat hinh anh ky nang - do duoc, la LOP VE CUA CLIENT, khong phai mang.** Goi chieu van toi day du:
+may chu gui 148 (chieu) 1.029-1.696 goi/10 s va 95 (chieu) 906-1.076 goi/10 s cho client cua chu trong dung
+khoang do. Nhung `jx_rep3.log` cho thay bo nho anh **dinh o tran suot tran**:
+
+| | |
+|---|---|
+| Cache texture | **508-511 MB / ngan sach 512 MB** (khong luc nao roi khoi tran) |
+| Ve khung nay | 92-200 MB (mot khung dong nguoi cham toi 200 MB anh) |
+| So muc trong cache | 1.955-1.997 (bi ep giu quanh muc do) |
+| Bo (giai phong) | 900-2.600 muc moi 30 giay, trong khi nap chi 40-90 |
+
+`TextureResMgr::CheckBalance` khi VUOT ngan sach chuyen sang che do manh tay: moi luot bo toi 8 khung anh cua
+**moi tai nguyen nghi qua 1 giay** (binh thuong la 10 giay). Hieu ung chieu dung thua - moi lan dung cach nhau
+hon 1 giay - nen bi bo lien tuc roi phai nap lai; dong nguoi thi nap khong kip => **mat hieu ung, chi con dong
+tac danh** (anh nhan vat ve moi khung nen khong bao gio bi bo). Ngan sach bi **kep cung 512 MB** trong
+`TextureResMgr.cpp:97` du may co RAM 32 GB va VRAM con trong 3.580 MB.
+
+**Sua (chi cau hinh, khong build):** them `Rep3CacheMB=1500` vao muc `[Client]` cua `bin\client\config.ini`
+(khoa nay doc SAU cai kep 512 nen co hieu luc). Da them 17:45, ban luu `config.ini.truoc_rep3cache`. Chu thoat
+game vao lai la co hieu luc; kiem bang dong `[REP3] cache texture: ... -> ngan sach 1500 MB` va sau do cache
+khong con dinh o tran.
+
+**(b) Nam bep: nhan cua va j SAI DIEU KIEN.** 11 lan chet trong nhat ky 17:00-17:40 khong ghi mot dong
+`[S7-NAMBEP]` nao, vi dieu kien la "con mau ma van o tu the chet" - ma khi ket o trang thai chet thi client
+cung dang giu `m_CurrentLife = 0` (`NetCommandDeath` dat 0), nen cong "con mau" chan mat bao dong.
+
+**Va m (chi client, chi them log, `ReverseTools/goi_va_nambep_m_0709.py`):**
+
+1. `[S7-SAUHOISINH]` - moc chac chan nhat: sau MOI lan chinh minh nhan goi hoi sinh, ghi trang thai day du o
+   **+1 s, +3 s, +6 s** (`doing/cdoing/resdoing/resaction/frame/life/reg/o`). Ba dong moi lan chet: nam bep hay
+   khong deu thay ro, khong con phu thuoc dieu kien doan truoc.
+2. `[S7-NAMBEP-LAU]` - o tu the chet qua **10 giay lien tuc**, KHONG can con mau; chet that luon duoc hoi sinh
+   trong ~1 giay (tu dong 5 giay) nen qua 10 giay chac chan la ket. Ghi lai moi 5 giay + mot dong khi dung day.
+
+**Da dat 17:47:** `CoreClient.dll.moi` **43ba6ef9** (⊇ ae11479a dang chay, chi them 3 nhan log). Chi swap client.
