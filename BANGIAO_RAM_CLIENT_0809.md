@@ -266,3 +266,13 @@ phí chỉ do làm tròn chiều cao (≤ 1,5×) + đoạn thừa cuối hàng; 
   (`Rep3NoWait=0`) → không bỏ khung, mọi khung đều lên màn hình, app khoá ở 60 = tần số màn hình (63 → 60 là số trên log, không
   phải trải nghiệm: màn 59,94 Hz không hiện hơn 60). Thời gian trong Present sẽ ghi vài ms = thời gian chờ vsync thay cho ngủ nhịp.
   `Represent3.dll.moi` e900d5cf chờ restart. Muốn không chờ (độ trễ thấp, chấp nhận vứt khung): `Rep3NoWait=1`.
+
+### 6.11 13:05 (bản [m]: 3 buffer, Present CHỜ) — VẪN bỏ 31 khung/s → bản [n] đối tượng chờ + chẩn đoán
+
+Log 13:05: `khong cho 0`, 3 buffer, độ trễ 3 — nhưng `present 0,06 ms` (không chờ) và `bo 31,2/s` y hệt: DXGI trả
+`DXGI_ERROR_WAS_STILL_DRAWING` cho `Present(0, 0)` dù KHÔNG có DO_NOT_WAIT. Harness cùng DLL, cùng nhịp 63 fps, cùng cửa sổ 1024×768,
+kể cả 2 Present/khung: 0. Game chỉ gọi RepresentEnd một lần/khung (UiShell.cpp:361). Chưa rõ vì sao chỉ game bị.
+**[n]:** swapchain có `FRAME_LATENCY_WAITABLE_OBJECT` (`Rep3Waitable=1`): đầu mỗi khung chờ tới khi hàng trình chiếu còn chỗ
+→ Present luôn có buffer; chờ ở đây tương đương D3D9 chờ khi hàng đầy. Kèm chẩn đoán: 12 lần đầu Present trả mã khác S_OK ghi
+`Present tra 0x..., N ms sau Present truoc, flags`; lúc tạo swapchain ghi style/exstyle/số cửa sổ con/client/flags.
+`Represent3.dll.moi` f43f8bfd chờ restart. Bản đang chạy hiện hình cập nhật ~32 lần/s → nên restart sớm.
