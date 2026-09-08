@@ -1,0 +1,26 @@
+# [08/09] Doi qua tran TK (14:10-14:40) roi chay lan luot, uu tien thap:
+#  1. chuoi x64 tu rep3 (REP3 q cua phien D3D11) + chep Represent3.dll/Game.exe vao bin\client64
+#  2. chuoi Win32 tu mobile-0809 (chung minh Win32 con bien dich/link duoc; khong post-build)
+#  3. khao sat clang-cl 4 du an (pha 1)
+param([string]$Den = "14:41")
+$sp = 'C:\Users\nguye\AppData\Local\Temp\claude\J--CayChay-Src-Auto-Ngoai-WAuto-WAuto\f7fe3690-d1f7-481d-b4f6-845330c7c14f\scratchpad'
+$log = Join-Path $sp 'logs\sau_tran_1441.log'
+$wt = 'D:\GAMEDEVNEW_wt_mobile'
+$tools = Join-Path $wt 'ReverseTools\mobile_x64'
+function L($s) { "[$(Get-Date -Format HH:mm:ss)] $s" | Out-File $log -Append -Encoding utf8 }
+"[$(Get-Date -Format HH:mm:ss)] doi den $Den" | Out-File $log -Encoding utf8
+$muc = [datetime]::ParseExact($Den, "HH:mm", $null); if ($muc -lt (Get-Date)) { $muc = $muc.AddDays(1) }
+while ((Get-Date) -lt $muc) { Start-Sleep -Seconds 20 }
+try { (Get-Process -Id $PID).PriorityClass = 'BelowNormal' } catch {}
+Set-Location $tools
+L "1. x64 tu rep3"
+& .\build_chuoi_x64.ps1 -From rep3 2>&1 | ForEach-Object { "$_" } | Out-File $log -Append -Encoding utf8
+foreach ($c in @(@('Sources\Represent\Represent3\x64\Release\Represent3.dll','Represent3.dll'), @('Sources\S3Client\x64\Release\Game.exe','Game.exe'), @('Sources\Core\x64\ClientRelease\CoreClient.dll','CoreClient.dll'))) {
+  $src = Join-Path $wt $c[0]
+  if (Test-Path $src) { try { Copy-Item $src (Join-Path $wt ('bin\client64\' + $c[1])) -Force; L ("chep " + $c[1] + " (" + (Get-Item $src).LastWriteTime.ToString('HH:mm:ss') + ")") } catch { L ("KHONG chep duoc " + $c[1] + ": " + $_.Exception.Message) } }
+}
+L "2. Win32 tu engine (khong post-build)"
+& .\build_chuoi_win32.ps1 -From engine 2>&1 | ForEach-Object { "$_" } | Out-File $log -Append -Encoding utf8
+L "3. khao sat clang-cl (engine,core,rep3,s3client; 3 song song)"
+& python .\clang_survey.py $wt "engine,core,rep3,s3client" 3 2>&1 | ForEach-Object { "$_" } | Out-File $log -Append -Encoding utf8
+L "XONG sau_tran_1441"
