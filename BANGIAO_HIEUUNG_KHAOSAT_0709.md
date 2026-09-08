@@ -285,3 +285,10 @@ sau khi máy chủ đã restart**.
 
 **Đọc sau một trận:** `grep -a "\[FX\] 10s" bin\client\jx_auto.log | tail` — cột `HUSK(224)` phải có `rx` > 0 và `ve` ≈ `rx`;
 `hong`/`noidx`/`notgt` là phần còn lại (người phóng / mục tiêu không có trong bảng NPC client — cùng loại với `bo_tgt` cũ).
+
+**7.4.1 Đo thật trận TK 15:5x (client fa5a9711 + máy chủ 45bbadfb):** máy chủ phát 2.500–3.400 gói 224 / 10 s, `bo_vi_client_cu` 0; client
+90 s: rx 2.140, vẽ 1.866 (87,2 %), chính mình 2,9 % (đúng thiết kế), người phóng thiếu 0,2 %, **mục tiêu không có trong bảng NPC client
+9,7 % (cửa sổ tới 24 %)**. Đường gửi máy chủ bình thường (8–9k gói/10 s, 35–43 KB/s, không đầy). **[c] 16:01:** gói 224 mang thêm toạ độ
+MPS mục tiêu (24 byte), client không có NPC mục tiêu vẫn vẽ chiêu bay tới điểm đó (đếm `notgt_ve_toado`); hello phiên bản 5. `.moi`:
+`CoreClient.dll.moi` 32da0130 + `CoreServer.dll.moi` 91c28d73, commit 65a40615. RAM client sau [RAMTINH]: 273–280 MB ở texture 209–246 MB
+(trước 345–349) = **−65…−70 MB**. Máy chủ mới 8,7 GB WS (không tăng trong 2,5 phút; cũ 2,6 GB đo lúc không trận) — so lại ở trận sau.
