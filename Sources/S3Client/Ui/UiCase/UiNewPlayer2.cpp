@@ -212,7 +212,7 @@ void KUiNewPlayer2::OnOk()
 			pTool->NewCharacter(&m_Info);
 			UIMessageBox("正在新建角色...请稍候。", this, "取消", 0, LOGIN_CANCEL_OPER);
 			KUiMsgCentrePad::OpenWindow();
-			KUiMsgCentrePad::CloseWindow(false);
+			KUiMsgCentrePad::CloseWnd(false);
 		}
 	}
 }

@@ -92,7 +92,7 @@ class KUiMsgCentrePad : public KWndWindow
 {
 public:
 	static KUiMsgCentrePad* OpenWindow();					
-	static void				CloseWindow(bool bDestroy);	
+	static void				CloseWnd(bool bDestroy);	// [CLANG 08/09] doi ten: ham static che virtual KWndWindow::CloseWindow (clang loi)	
 	static void				Clear();
 	static void				LoadScheme(const char* pScheme);
 	static void				DefaultScheme(const char* pScheme);

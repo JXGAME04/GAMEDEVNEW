@@ -139,7 +139,7 @@ KUiMsgCentrePad* KUiMsgCentrePad::OpenWindow()
 	return m_pSelf;
 }
 
-void KUiMsgCentrePad::CloseWindow(bool bDestroy)
+void KUiMsgCentrePad::CloseWnd(bool bDestroy)
 {
 	if (m_pSelf)
 	{

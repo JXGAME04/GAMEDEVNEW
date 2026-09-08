@@ -17,7 +17,7 @@ void Msg_Windows_Title()
 bool TitleWindows(LPCSTR WindowTitle)
 {
 	HWND WinTitle = FindWindowA(NULL,WindowTitle);
-	if( WinTitle > 0)
+	if( WinTitle != NULL)	// [CLANG 08/09] so sanh con tro voi 0 bang > (clang loi)
 	{
 		if (GAME_GUARD_LOG)
 		{	

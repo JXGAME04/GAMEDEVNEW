@@ -2581,16 +2581,17 @@ void	KCHAT_RECORDER::SaveSentenceSingle(char *lpszSelfName, char *lpszTarget, ch
 	if ( !cFile.Append(szBuf) )
 		return;
 	cFile.Write(m_szDay, sizeof(m_szDay) - 1);
-	cFile.Write("  ", 2);
+	// [CLANG 08/09] (LPVOID) cho chuoi hang: KFile::Write(LPVOID,...) - clang khong cho const->non-const
+	cFile.Write((LPVOID)"  ", 2);
 	cFile.Write(this->m_szTime, sizeof(m_szTime) - 1);
-	cFile.Write("  ", 2);
+	cFile.Write((LPVOID)"  ", 2);
 	cFile.Write(lpszTalkerName, strlen(lpszTalkerName));
-	cFile.Write("\r\n", 1);
+	cFile.Write((LPVOID)"\r\n", 1);
 	if (strlen(lpszSentence) < MAX_SENTENCE_LENGTH)
 		cFile.Write(lpszSentence, strlen(lpszSentence));
 	else
 		cFile.Write(lpszSentence, MAX_SENTENCE_LENGTH - 1);
-	cFile.Write("\r\n", 1);
+	cFile.Write((LPVOID)"\r\n", 1);
 	cFile.Close();
 }
 
@@ -2624,14 +2625,14 @@ void	KCHAT_RECORDER::SaveSentenceChannel(char *lpszSelfName, char *lpszTalkerNam
 	if ( !cFile.Append(szBuf) )
 		return;
 	cFile.Write(m_szTime, sizeof(m_szTime) - 1);
-	cFile.Write("  ", 2);
+	cFile.Write((LPVOID)"  ", 2);
 	cFile.Write(lpszTalkerName, strlen(lpszTalkerName));
-	cFile.Write("\r\n", 1);
+	cFile.Write((LPVOID)"\r\n", 1);
 	if (strlen(lpszSentence) < MAX_SENTENCE_LENGTH)
 		cFile.Write(lpszSentence, strlen(lpszSentence));
 	else
 		cFile.Write(lpszSentence, MAX_SENTENCE_LENGTH - 1);
-	cFile.Write("\r\n", 1);
+	cFile.Write((LPVOID)"\r\n", 1);
 	cFile.Close();
 }
 #endif

@@ -31,7 +31,7 @@ PROJ = {
 
 def env():
     e = dict(os.environ)
-    e["INCLUDE"] = ";".join([os.path.join(MSVC, "include"), os.path.join(KITS, "ucrt"), os.path.join(KITS, "shared"), os.path.join(KITS, "um"), os.path.join(KITS, "winrt")])
+    e["INCLUDE"] = ";".join([os.path.join(MSVC, "include"), os.path.join(MSVC, "atlmfc", "include"), os.path.join(KITS, "ucrt"), os.path.join(KITS, "shared"), os.path.join(KITS, "um"), os.path.join(KITS, "winrt")])
     return e
 
 def cond_match(cond, cfg, plat):

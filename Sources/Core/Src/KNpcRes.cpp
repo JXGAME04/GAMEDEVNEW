@@ -356,7 +356,10 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 					}
 				}
 				if (!m_cNpcEffectImage[i].m_bChange)
-					m_cNpcEffectImage[i].m_nTotalDir > 1 ? m_cNpcEffectImage[i].SetCurFrame(nCurFrameNo) : m_cNpcEffectImage[i].GetNextFrame();
+					if (m_cNpcEffectImage[i].m_nTotalDir > 1)	// [CLANG 08/09] ?: co ve void (clang loi) -> if/else
+						m_cNpcEffectImage[i].SetCurFrame(nCurFrameNo);
+					else
+						m_cNpcEffectImage[i].GetNextFrame();
 			}
 		}
 	}

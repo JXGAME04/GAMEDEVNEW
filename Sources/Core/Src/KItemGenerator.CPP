@@ -68,7 +68,7 @@ static BOOL PF_GetRowInfo(BOOL bPlatina, int nIndex, KPfRowInfo* pOut)
 	{
 		s_bLoaded[t] = TRUE;
 		KTabFile tf;
-		if (tf.Load(bPlatina ? PLATINA_EQUIP_FILE : TABFILE_GOLDITEM_FULL_N))
+		if (tf.Load((LPSTR)(bPlatina ? PLATINA_EQUIP_FILE : TABFILE_GOLDITEM_FULL_N))	/* [CLANG 08/09] LPSTR cho const char* */)
 		{
 			// Moi bang mot bo cot rieng -- xem khoi #define o tren.
 			const int nColStar  = bPlatina ? PF_PCOL_CANUPSTAR : PF_GCOL_CANUPSTAR;

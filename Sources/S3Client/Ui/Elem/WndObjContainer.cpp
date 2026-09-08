@@ -823,42 +823,42 @@ int KWndObjectMatrix::DropObject(int x, int y, bool bTestOnly)
 	if (DragObj.DataW > m_nNumUnitHori || DragObj.DataH > m_nNUmUnitVert)
 		return false;
 
-	RECT	or;
+	RECT	rcOr;	// [CLANG 08/09] 'or' la tu khoa thay the C++ (clang), doi ten
 	KUiDraggedObject* pOverlaped = NULL;
 
 	x = (x - m_nAbsoluteLeft) / m_nUnitWidth;
 	y = (y - m_nAbsoluteTop) / m_nUnitHeight;
-	if ((or.right = x + (DragObj.DataW + 1) / 2) > m_nNumUnitHori)
-		or.right = m_nNumUnitHori;
-	if ((or.bottom = y + (DragObj.DataH + 1) / 2) > m_nNUmUnitVert)
-		or.bottom = m_nNUmUnitVert;
-	if (or.right >= DragObj.DataW)
-		or.left = or.right - DragObj.DataW;
+	if ((rcOr.right = x + (DragObj.DataW + 1) / 2) > m_nNumUnitHori)
+		rcOr.right = m_nNumUnitHori;
+	if ((rcOr.bottom = y + (DragObj.DataH + 1) / 2) > m_nNUmUnitVert)
+		rcOr.bottom = m_nNUmUnitVert;
+	if (rcOr.right >= DragObj.DataW)
+		rcOr.left = rcOr.right - DragObj.DataW;
 	else
 	{
-		or.left = 0;
-		or.right = DragObj.DataW;
+		rcOr.left = 0;
+		rcOr.right = DragObj.DataW;
 	}
-	if (or.bottom >= DragObj.DataH)
-		or.top = or.bottom - DragObj.DataH;
+	if (rcOr.bottom >= DragObj.DataH)
+		rcOr.top = rcOr.bottom - DragObj.DataH;
 	else
 	{
-		or.top = 0;
-		or.bottom = DragObj.DataH;
+		rcOr.top = 0;
+		rcOr.bottom = DragObj.DataH;
 	}
 
-	if (TryDropObjAtPos(or, pOverlaped))
+	if (TryDropObjAtPos(rcOr, pOverlaped))
 	{
 		if (bTestOnly == false)
-			DropObject(or.left, or.top, pOverlaped);
+			DropObject(rcOr.left, rcOr.top, pOverlaped);
 		else if (pOverlaped)
 		{
 			m_nPutPosX = REPLACE_ITEM_POS(pOverlaped - m_pObjects);
 		}
 		else
 		{
-			m_nPutPosX = or.left;
-			m_nPutPosY = or.top;
+			m_nPutPosX = rcOr.left;
+			m_nPutPosY = rcOr.top;
 			m_nPutWidth = DragObj.DataW;
 			m_nPutHeight = DragObj.DataH;
 		}
@@ -876,16 +876,16 @@ int KWndObjectMatrix::DropObject(int x, int y, bool bTestOnly)
 	if ((Try.top = y - DragObj.DataH + 1) < 0)
 		Try.top = 0;
 
-	for (or.left = Try.left; or.left <= Try.right; or.left ++)
+	for (rcOr.left = Try.left; rcOr.left <= Try.right; rcOr.left ++)
 	{
-		or.right = or.left + DragObj.DataW;
-		for (or.top = Try.top; or.top <= Try.bottom; or.top ++)
+		rcOr.right = rcOr.left + DragObj.DataW;
+		for (rcOr.top = Try.top; rcOr.top <= Try.bottom; rcOr.top ++)
 		{
-			or.bottom = or.top + DragObj.DataH;
-			if (TryDropObjAtPos(or, pOverlaped))
+			rcOr.bottom = rcOr.top + DragObj.DataH;
+			if (TryDropObjAtPos(rcOr, pOverlaped))
 			{
 				if (bTestOnly == false)
-					DropObject(or.left, or.top, pOverlaped);
+					DropObject(rcOr.left, rcOr.top, pOverlaped);
 				return true;
 			}
 		}

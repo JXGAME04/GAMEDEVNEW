@@ -22,7 +22,7 @@ void Detect_Hide_Scanner()
     CHAR szClass[255];
 	
 	hWnd = FindWindow(0,0);
-	if ( hWnd > 0)
+	if ( hWnd != NULL)	// [CLANG 08/09] so sanh con tro voi 0 bang > (clang loi)
 	{
 		if (GetParent(hWnd) == 0)
 		{

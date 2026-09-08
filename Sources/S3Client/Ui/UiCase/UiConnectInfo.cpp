@@ -423,7 +423,7 @@ void KUiConnectInfo::Breathe()
 		break;
 	case LL_R_LOGIN_TO_GAMESERVER:
 		KUiMsgCentrePad::OpenWindow();
-		KUiMsgCentrePad::CloseWindow(false);
+		KUiMsgCentrePad::CloseWnd(false);
 		break;
 	}
 }

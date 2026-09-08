@@ -452,10 +452,10 @@ void UiToaDo_BatTat()
 
 		nSo = GhiTep();
 		if (nSo < 0)
-			DatThongBao("Lçi: kh«ng ghi ®­îc UserData\UiToaDo.ini");
+			DatThongBao("Lçi: kh«ng ghi ®­îc UserData\\UiToaDo.ini");
 		else
 		{
-			_snprintf(szChu, sizeof(szChu), "§· l­u %d môc vµo UserData\UiToaDo.ini", nSo);
+			_snprintf(szChu, sizeof(szChu), "§· l­u %d môc vµo UserData\\UiToaDo.ini", nSo);
 			szChu[sizeof(szChu) - 1] = 0;
 			DatThongBao(szChu);
 		}

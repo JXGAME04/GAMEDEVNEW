@@ -568,7 +568,7 @@ bool UiCloseWndsInGame(bool bAll)
 		KUiMsgSel4::CloseWindow(true);
 		KUiTrade::CloseWindow();
 		KUiPlayerBar::CloseWindow(true);
-		KUiMsgCentrePad::CloseWindow(true);
+		KUiMsgCentrePad::CloseWnd(true);
 		KUiHeaderControlBar::CloseWindow();
 		KUiToolsControlBar::CloseWindow();
 		KUiESCDlg::CloseWindow(true);
