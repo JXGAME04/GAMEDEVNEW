@@ -72,7 +72,7 @@ def parse(vcx, cfg, plat):
                 if cond_match(ex.get("Condition", ""), cfg, plat) and (ex.text or "").strip().lower() == "true": excl = True
             if excl: continue
             files.append(os.path.normpath(os.path.join(projdir, f)))
-    return projdir, defs, incs, forced, std, charset, files
+    return projdir, defs, incs, forced, std, charset, files, undef
 
 def run_one(cmd_base, f, projdir):
     cmd = cmd_base + [f]
@@ -92,7 +92,7 @@ def normalize(msg):
 
 def survey(key):
     vcx, cfg, plat = PROJ[key]
-    projdir, defs, incs, forced, std, charset, files = parse(vcx, cfg, plat)
+    projdir, defs, incs, forced, std, charset, files, undef = parse(vcx, cfg, plat)
     cmd = [CLANGCL, "-fsyntax-only", "/nologo", "-m64", "-fms-compatibility-version=19.44", "/EHsc", "/W0", "-ferror-limit=0",
            "-Wno-everything", "/D_CRT_SECURE_NO_WARNINGS", "/D_CRT_NONSTDC_NO_WARNINGS",
            "/D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH"]   # STL MSVC 14.44 doi clang >= 16, NDK r25 la clang 14

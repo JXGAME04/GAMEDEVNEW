@@ -21,7 +21,7 @@ foreach ($s in $steps) {
   if ($s.key -eq $From) { $go = $true }
   if (-not $go) { continue }
   "===== [$(Get-Date -Format HH:mm:ss)] " + $s.key + " (" + $s.cfg + "|Win32, khong post-build) ====="
-  $out = & powershell -NoProfile -ExecutionPolicy Bypass -File $thap -Proj $s.proj -Cfg $s.cfg -Plat Win32 -Target $Target -Tag $s.tag -MaxErr 80 -Props @("-p:PostBuildEventUseInBuild=false")
+  $out = & powershell -NoProfile -ExecutionPolicy Bypass -File $thap -Proj $s.proj -Cfg $s.cfg -Plat Win32 -Target $Target -Tag $s.tag -MaxErr 80 -Props "PostBuildEventUseInBuild=false"
   $out
   $first = ($out | Select-Object -First 1)
   if ($first -notmatch "exit=0") { "DUNG chuoi tai " + $s.key; break }

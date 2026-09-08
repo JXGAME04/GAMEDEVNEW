@@ -13,6 +13,7 @@
 #include "../S3Client.h"
 #include "KStrBase.h"		// g_StrCpy
 #include "KWin32Wnd.h"	// g_SetMainHWnd / g_SetDrawHWnd / g_GetMainHWnd
+extern int SCREEN_WIDTH, SCREEN_HEIGHT;	// S3Client.cpp (WND_INIT_* cua Engine khong export)
 #include <SDL3/SDL.h>
 
 static KSdlApp* s_pSdlApp = NULL;
@@ -118,6 +119,11 @@ KSdlApp::KSdlApp()
 {
 	m_pWindow = NULL;
 	m_uMsgQuit = 0;
+	m_uHoverSetting = 0;
+	m_uHoverStart = 0;
+	m_uHoverLastStatus = 0;
+	m_nHoverLastPos = 0;
+	m_cHoverCounter = 0;
 	s_pSdlApp = this;
 }
 
@@ -135,7 +141,7 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 		return FALSE;
 	}
 	// cua so co dung kich thuoc vung ve nhu KWin32App::InitWindow (WND_INIT_WIDTH x WND_INIT_HEIGHT), khong doi co
-	m_pWindow = SDL_CreateWindow(m_szTitle, WND_INIT_WIDTH, WND_INIT_HEIGHT, 0);
+	m_pWindow = SDL_CreateWindow(m_szTitle, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 	if (!m_pWindow)
 	{
 		g_DebugLog("[SDL] SDL_CreateWindow loi: %s", SDL_GetError());
@@ -152,7 +158,7 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 	SDL_SetWindowsMessageHook(KSdlApp_WinMsgHook, this);
 	SDL_StartTextInput(m_pWindow);	// WM_CHAR tu SDL_EVENT_TEXT_INPUT (o mobile se bat/tat theo o nhap)
 	SDL_ShowCursor();
-	g_DebugLog("[SDL] cua so %dx%d, SDL %d.%d.%d, HWND %p", WND_INIT_WIDTH, WND_INIT_HEIGHT,
+	g_DebugLog("[SDL] cua so %dx%d, SDL %d.%d.%d, HWND %p", SCREEN_WIDTH, SCREEN_HEIGHT,
 		SDL_VERSIONNUM_MAJOR(SDL_GetVersion()), SDL_VERSIONNUM_MINOR(SDL_GetVersion()), SDL_VERSIONNUM_MICRO(SDL_GetVersion()), hWnd);
 	return GameInit();
 }
@@ -164,6 +170,54 @@ void KSdlApp::ShowMouse(BOOL bShow)
 		SDL_ShowCursor();
 	else
 		SDL_HideCursor();
+}
+
+//---------------------------------------------------------------------------
+// Hover chuot: ban sao dung logic KWin32App::MsgProc (bookkeeping) + GenerateMsgHoverMsg (private ben Engine, khong goi duoc
+// ma khong doi Engine.dll). 0 = chua co, 1 = vua co su kien chuot, 2 = da gui WM_MOUSEHOVER (gui lai moi 7 nhip), >= 3 = moc bat dau dung yen.
+//---------------------------------------------------------------------------
+void KSdlApp::SetMouseHoverTime(unsigned int uHoverTime)
+{
+	m_uHoverSetting = uHoverTime;
+	KWin32App::SetMouseHoverTime(uHoverTime);
+}
+
+void KSdlApp::GhiChuot(WPARAM wParam, LPARAM lParam)
+{
+	m_uHoverLastStatus = (unsigned int)wParam;
+	m_nHoverLastPos = (int)lParam;
+	m_uHoverStart = 1;
+}
+
+void KSdlApp::SinhHover()
+{
+	if (m_uHoverStart == 2)
+	{
+		if ((++m_cHoverCounter) == 7)
+		{
+			m_cHoverCounter = 0;
+			HandleInput(WM_MOUSEHOVER, m_uHoverLastStatus, m_nHoverLastPos);
+		}
+	}
+	else if (m_uHoverStart >= 3)
+	{
+		unsigned int uNow = (unsigned int)GetTickCount();
+		if ((uNow - m_uHoverStart) >= m_uHoverSetting)
+		{
+			HandleInput(WM_MOUSEHOVER, m_uHoverLastStatus, m_nHoverLastPos);
+			m_uHoverStart = 2;
+		}
+	}
+	else if (m_uHoverStart == 1)
+	{
+		m_uHoverStart = 0;
+	}
+	else if (m_uHoverSetting)
+	{
+		m_uHoverStart = (unsigned int)GetTickCount();
+		if (m_uHoverStart < 3)
+			m_uHoverStart = 3;
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -209,7 +263,7 @@ void KSdlApp::Run()
 			}
 			if (bTick)
 			{
-				GenerateMsgHoverMsg();
+				SinhHover();
 				if (!GameLoop())
 				{
 					// KWin32App: PostMessage(WM_CLOSE) -> MsgProc -> HandleInput(WM_CLOSE) (hoi thoat neu chua thoat)
@@ -254,7 +308,12 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 		break;
 
 	case SDL_EVENT_MOUSE_MOTION:
-		MsgProc(hWnd, WM_MOUSEMOVE, SdlMouseFlags(ev.motion.state), MAKELPARAM((int)ev.motion.x, (int)ev.motion.y));
+	{
+		WPARAM w = SdlMouseFlags(ev.motion.state); LPARAM l = MAKELPARAM((int)ev.motion.x, (int)ev.motion.y);
+		GhiChuot(w, l);
+		MsgProc(hWnd, WM_MOUSEMOVE, w, l);
+		break;
+	}
 		break;
 
 	case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -270,7 +329,11 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 		case SDL_BUTTON_MIDDLE:	uMsg = bDown ? (bDbl ? WM_MBUTTONDBLCLK : WM_MBUTTONDOWN) : WM_MBUTTONUP; break;
 		default: return true;
 		}
-		MsgProc(hWnd, uMsg, SdlMouseFlags(SDL_GetMouseState(NULL, NULL)), MAKELPARAM((int)ev.button.x, (int)ev.button.y));
+		{
+			WPARAM w = SdlMouseFlags(SDL_GetMouseState(NULL, NULL)); LPARAM l = MAKELPARAM((int)ev.button.x, (int)ev.button.y);
+			GhiChuot(w, l);
+			MsgProc(hWnd, uMsg, w, l);
+		}
 		break;
 	}
 
@@ -280,6 +343,7 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 		if (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
 			nDelta = -nDelta;
 		WPARAM w = MAKEWPARAM(SdlMouseFlags(SDL_GetMouseState(NULL, NULL)), (WORD)(short)nDelta);
+		GhiChuot(w, MAKELPARAM((int)ev.wheel.mouse_x, (int)ev.wheel.mouse_y));
 		MsgProc(hWnd, WM_MOUSEWHEEL, w, MAKELPARAM((int)ev.wheel.mouse_x, (int)ev.wheel.mouse_y));
 		break;
 	}

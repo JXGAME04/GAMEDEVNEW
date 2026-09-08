@@ -16,10 +16,11 @@ $msb = "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\
 if (-not (Test-Path $msb)) { $msb = "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" }
 $logDir = "C:\Users\nguye\AppData\Local\Temp\claude\J--CayChay-Src-Auto-Ngoai-WAuto-WAuto\f7fe3690-d1f7-481d-b4f6-845330c7c14f\scratchpad\logs"
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+$PropsArgs = @($Props | ForEach-Object { "-p:$_" })   # truyen 'Ten=GiaTri' (powershell.exe -File coi token bat dau bang '-' la tham so)
 $stamp = Get-Date -Format "HHmmss"
 $log = Join-Path $logDir ("{0}_{1}.log" -f $Tag, $stamp)
 $t0 = Get-Date
-& $msb "$Proj" "-t:$Target" "-m:1" "-nologo" "-v:m" "-p:Configuration=$Cfg" "-p:Platform=$Plat" "-p:SolutionDir=$SolutionDir" "-p:UseMultiToolTask=false" "-p:CL_MPCount=1" @Props "-clp:NoSummary;ErrorsOnly;NoItemAndPropertyList" "-fl" "-flp:logfile=$log;verbosity=normal" | Out-Null
+& $msb "$Proj" "-t:$Target" "-m:1" "-nologo" "-v:m" "-p:Configuration=$Cfg" "-p:Platform=$Plat" "-p:SolutionDir=$SolutionDir" "-p:UseMultiToolTask=false" "-p:CL_MPCount=1" @PropsArgs "-clp:NoSummary;ErrorsOnly;NoItemAndPropertyList" "-fl" "-flp:logfile=$log;verbosity=normal" | Out-Null
 $code = $LASTEXITCODE
 $dt = [int]((Get-Date) - $t0).TotalSeconds
 $txt = Get-Content $log -ErrorAction SilentlyContinue

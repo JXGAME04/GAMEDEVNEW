@@ -46,7 +46,7 @@ public:
 	UINT			g_uTaskbarCreated;
 	BOOL			g_bTrayActive;
 	char			g_szTip[64];
-protected:	// [SDL 08/09] private -> protected: KSdlApp (lop nen SDL3) dung lai hover/timer; bo cuc lop khong doi
+private:
 	void			GenerateMsgHoverMsg();
 	KTimer			m_gTimer;
 	unsigned int	m_uMouseHoverTimeSetting;
