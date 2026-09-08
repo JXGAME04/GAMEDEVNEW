@@ -63,7 +63,7 @@ extern unsigned g_uRep3AtlasPages; extern unsigned __int64 g_uRep3AtlasBytes;
 extern int  g_nRep3Tearing;     // [D3D11 08/09 f]
 void Rep3_D3D11VramInfo(unsigned* puUsedMB, unsigned* puBudgetMB);
 extern int  g_nRep3Flip;        // [D3D11 08/09 b] 1 = swapchain flip, 0 = bitblt cu
-extern double g_dRep3PresentMs; extern unsigned g_uRep3Presents; extern double g_dRep3DrawMs; extern unsigned g_uRep3Draws;	// [D3D11 08/09 b] thong ke
+extern double g_dRep3PresentMs; extern unsigned g_uRep3Presents; extern unsigned g_uRep3PresentSkip; extern double g_dRep3DrawMs; extern unsigned g_uRep3Draws;	// [D3D11 08/09 b] thong ke
 void Rep3Log(const char* fmt, ...);
 
 #define YESNO(X) (X ? "Yes" : "No")

@@ -14,6 +14,7 @@
 static CDev11* g_pRep3Dev11 = NULL;
 double   g_dRep3PresentMs = 0.0;
 unsigned g_uRep3Presents = 0;
+unsigned g_uRep3PresentSkip = 0;
 double   g_dRep3DrawMs = 0.0;
 unsigned g_uRep3Draws = 0;
 
@@ -156,6 +157,10 @@ bool CDev11::CreateSwapChain(UINT w, UINT h, bool bWindowed)
 		if (FAILED(hr)) { R11Log("CreateSwapChainForHwnd that bai 0x%08X", (unsigned)hr); return false; }
 	}
 	m_pFactory->MakeWindowAssociation(m_hWnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
+	{	// [D3D11 08/09 g] toi da 1 khung cho trinh chieu -> Present(DO_NOT_WAIT) bo khung thua thay vi chan
+		IDXGIDevice1* pDev1 = NULL;
+		if (SUCCEEDED(m_pDev->QueryInterface(__uuidof(IDXGIDevice1), (void**)&pDev1)) && pDev1) { pDev1->SetMaximumFrameLatency(1); pDev1->Release(); }
+	}
 	if (!bWindowed)
 	{
 		hr = m_pSwap->SetFullscreenState(TRUE, NULL);
@@ -326,7 +331,9 @@ HRESULT CDev11::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDe
 	UINT flags = 0;
 	BOOL bFull = FALSE; m_pSwap->GetFullscreenState(&bFull, NULL);
 	if (interval == 0 && m_bTearing && !bFull) flags |= DXGI_PRESENT_ALLOW_TEARING;
+	if (interval == 0 && g_nRep3Flip) flags |= DXGI_PRESENT_DO_NOT_WAIT;	// [D3D11 08/09 g] hang day -> bo khung, khong chan
 	HRESULT hr = m_pSwap->Present(interval, flags);
+	if (hr == DXGI_ERROR_WAS_STILL_DRAWING) { g_uRep3PresentSkip++; hr = S_OK; }
 	m_bRtBound = false;
 	m_ringPos = 0; m_bRingDiscard = true;
 	QueryPerformanceCounter(&t1); g_dRep3PresentMs += R11Ms(t0, t1); g_uRep3Presents++;

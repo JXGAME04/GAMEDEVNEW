@@ -79,6 +79,31 @@ unsigned g_uRep3FxKhungKhongTex = 0;	// PrepareFrameData xong ma khung khong co 
 unsigned g_uRep3FxGiaiMa = 0;		// so khung giai ma dong bo tren luong ve
 double   g_dRep3FxGiaiMaMs = 0.0;	// tong ms giai ma + tao texture
 
+// [REP3 08/09 h] top ten anh bi bo qua (GetImage NULL hoac khung ngoai tam) trong ky thong ke
+struct Rep3AnhNullMuc { char szTen[64]; int nKhung; unsigned uDem; };
+static Rep3AnhNullMuc s_Rep3AnhNull[8];
+static int s_nRep3AnhNull = 0;
+static void Rep3AnhNullGhi(const char* szTen, int nKhung)
+{
+	if (!szTen) szTen = "?";
+	int i;
+	for (i = 0; i < s_nRep3AnhNull; i++)
+		if (strncmp(s_Rep3AnhNull[i].szTen, szTen, 63) == 0 && s_Rep3AnhNull[i].nKhung == nKhung) { s_Rep3AnhNull[i].uDem++; return; }
+	if (s_nRep3AnhNull < 8)
+	{
+		strncpy(s_Rep3AnhNull[s_nRep3AnhNull].szTen, szTen, 63); s_Rep3AnhNull[s_nRep3AnhNull].szTen[63] = 0;
+		s_Rep3AnhNull[s_nRep3AnhNull].nKhung = nKhung; s_Rep3AnhNull[s_nRep3AnhNull].uDem = 1; s_nRep3AnhNull++;
+	}
+}
+static void Rep3AnhNullIn()
+{
+	if (s_nRep3AnhNull <= 0) return;
+	char sz[640]; int n = 0;
+	for (int i = 0; i < s_nRep3AnhNull && n < 560; i++)
+		n += sprintf(sz + n, "%s%s(k%d) x%u", i ? " ; " : "", s_Rep3AnhNull[i].szTen, s_Rep3AnhNull[i].nKhung, s_Rep3AnhNull[i].uDem);
+	Rep3Log("[REP3] anh_null top: %s", sz);
+	s_nRep3AnhNull = 0;
+}
 void Rep3Log(const char* fmt, ...)
 {
 	if (!g_nRep3Log)
@@ -882,7 +907,7 @@ void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 							pTemp->szImage,	pTemp->uImage,
 							pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 						if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-							{ g_uRep3FxAnhNull++; break; }
+							{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); break; }
 
 						int nX = pTemp->oPosition.nX;
 						int nY = pTemp->oPosition.nY;
@@ -1043,7 +1068,7 @@ void KRepresentShell3::DrawImage2D(int nPrimitiveCount, KRepresentUnit* pPrimiti
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 				if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-					{ g_uRep3FxAnhNull++; continue; }
+					{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
 
 				int nX = pTemp->oPosition.nX;
 				int nY = pTemp->oPosition.nY;
@@ -1120,7 +1145,7 @@ void KRepresentShell3::DrawImage2DFlat(int nPrimitiveCount, KRepresentUnit* pPri
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 				if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-					{ g_uRep3FxAnhNull++; break; }
+					{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); break; }
 
 				int nX = pTemp->oPosition.nX;
 				int nY = pTemp->oPosition.nY;
@@ -1263,7 +1288,7 @@ void KRepresentShell3::DrawImage2DStretch(int nPrimitiveCount, KRepresentUnit* p
 				pTemp->szImage,	pTemp->uImage,
 				pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 			if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-				{ g_uRep3FxAnhNull++; continue; }
+				{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
 			int nW = pTemp->oEndPos.nX - pTemp->oPosition.nX;
 			int nH = pTemp->oEndPos.nY - pTemp->oPosition.nY;
 			if (nW <= 0 || nH <= 0)
@@ -1342,7 +1367,7 @@ void KRepresentShell3::GetBoundBox2D(int nPrimitiveCount, KRepresentUnit* pPrimi
 			pTemp->szImage,	pTemp->uImage,
 			pTemp->nISPosition, pTemp->nFrame, pTemp->nType, false);
 		if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-			{ g_uRep3FxAnhNull++; continue; }
+			{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
 
 		int nX = pTemp->oPosition.nX;
 		int nY = pTemp->oPosition.nY;
@@ -1447,7 +1472,7 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 			pTemp->szImage, pTemp->uImage,
 			pTemp->nISPosition, pTemp->nFrame, pTemp->nType, false);
 		if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-			{ g_uRep3FxAnhNull++; continue; }
+			{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
 		if (pSprite->m_bNew) {
 			sprNew = true;
 			PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
@@ -1666,7 +1691,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 
 				if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-					{ g_uRep3FxAnhNull++; break; }
+					{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); break; }
 
 				if(!(pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT) && (pTemp->oEndPos.nX == 0 || pTemp->oEndPos.nY == 0))
 					break;
@@ -1892,7 +1917,7 @@ void KRepresentShell3::GetBoundBox3D(int nPrimitiveCount, KRepresentUnit* pPrimi
 			pTemp->szImage,	pTemp->uImage,
 			pTemp->nISPosition, pTemp->nFrame, pTemp->nType, false);
 		if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
-			{ g_uRep3FxAnhNull++; continue; }
+			{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
 
 		if(!(pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT) && (pTemp->oEndPos.nX == 0 || pTemp->oEndPos.nY == 0))
 			continue;
@@ -2605,13 +2630,14 @@ void KRepresentShell3::RepresentEnd()
 			uint32 uNodes = 0, uTexMB = 0, uRawMB = 0, uDrawMB = 0, uBudgetMB = 0;
 			unsigned uVramUsed = 0, uVramBudget = 0; Rep3_D3D11VramInfo(&uVramUsed, &uVramBudget);	// [D3D11 08/09 f]
 			m_TextureResMgr.GetStat(uNodes, uTexMB, uRawMB, uDrawMB, uBudgetMB);
-			Rep3Log("[REP3] RAM rieng %u MB, WS %u MB | VRAM con %u MB | cache %u muc: texture %u MB (ve khung nay %u MB, ngan sach %u MB), raw spr %u MB | nap %u, bo %u | fps TB %.0f | fx: tex_null %u anh_null %u tao_hong %u khung_khong_tex %u giai_ma %u khung %.1f ms | gpu tex %u (%u MB, %u trang %u MB) | vram %u/%u MB | d3d11: present TB %.2f ms, ve %u lenh %.1f us/lenh",
+			Rep3Log("[REP3] RAM rieng %u MB, WS %u MB | VRAM con %u MB | cache %u muc: texture %u MB (ve khung nay %u MB, ngan sach %u MB), raw spr %u MB | nap %u, bo %u | fps TB %.0f | fx: tex_null %u anh_null %u tao_hong %u khung_khong_tex %u giai_ma %u khung %.1f ms | gpu tex %u (%u MB, %u trang %u MB) | vram %u/%u MB | d3d11: present TB %.2f ms bo %u, ve %u lenh %.1f us/lenh",
 				(unsigned)(pmc.PrivateUsage >> 20), (unsigned)(pmc.WorkingSetSize >> 20), (unsigned)(PD3DDEVICE->GetAvailableTextureMem() >> 20),
 				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg,
 				g_uRep3FxTexNull, g_uRep3FxAnhNull, g_uRep3FxTaoHong, g_uRep3FxKhungKhongTex, g_uRep3FxGiaiMa, g_dRep3FxGiaiMaMs, g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), uVramUsed, uVramBudget,
-				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0);
-			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0;
+				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0);
+			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
+			Rep3AnhNullIn();	// [REP3 08/09 h]
 		}
 	}
 }

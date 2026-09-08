@@ -33,8 +33,8 @@ class CAtlasPage
 {
 public:
 	ID3D11Texture2D* m_pTex; ID3D11ShaderResourceView* m_pSrv;
-	UINT m_binW, m_binH, m_cols, m_rows, m_used;
-	std::vector<UINT> m_free;
+	UINT m_binH, m_rows, m_used;
+	std::vector<std::vector<std::pair<UINT, UINT> > > m_free;	// moi hang: cac doan trong (x0, x1)
 };
 class CAtlasMgr
 {
@@ -42,10 +42,10 @@ public:
 	CAtlasMgr(CDev11* pDev);
 	~CAtlasMgr();
 	static bool Eligible(UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL pool);
-	bool Alloc(UINT w, UINT h, CAtlasPage** ppPage, UINT* pSlot, UINT* pX, UINT* pY);
-	void Free(CAtlasPage* pPage, UINT slot);
+	bool Alloc(UINT w, UINT h, CAtlasPage** ppPage, UINT* pX, UINT* pY);
+	void Free(CAtlasPage* pPage, UINT x, UINT y, UINT w);
 	void ReleaseAll();
-	CAtlasPage* NewPage(UINT binW, UINT binH);
+	CAtlasPage* NewPage(UINT binH);
 	CDev11* m_pDev; std::vector<CAtlasPage*> m_pages; UINT m_pageSize;
 };
 

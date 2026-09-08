@@ -21,6 +21,7 @@ void Rep3_D3D11VramInfo(unsigned* puUsedMB, unsigned* puBudgetMB);   // VRAM tie
 extern int      g_nRep3Flip;         // [Client] Rep3Flip: 1 = swapchain flip (mac dinh), 0 = kieu bitblt cu (DISCARD)
 extern double   g_dRep3PresentMs;    // tong ms trong Present ke tu lan in thong ke truoc
 extern unsigned g_uRep3Presents;     // so lan Present
+extern unsigned g_uRep3PresentSkip;  // so khung bo vi hang trinh chieu day (DO_NOT_WAIT)
 extern double   g_dRep3DrawMs;       // tong ms trong DrawPrimitive/UP (ca ApplyState + Map)
 extern unsigned g_uRep3Draws;        // so lenh ve
 

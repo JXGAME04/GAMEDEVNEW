@@ -140,7 +140,7 @@ void CTex11::ReleaseGpu()
 {
 	if (m_bVirtual)
 	{
-		if (m_pPage && m_pDev->m_pAtlas) m_pDev->m_pAtlas->Free(m_pPage, m_slot);
+		if (m_pPage && m_pDev->m_pAtlas) m_pDev->m_pAtlas->Free(m_pPage, m_ax, m_ay, m_w);
 		m_pPage = NULL; m_pSrv = NULL;	// SRV cua trang, khong so huu
 		if (m_uGpuBytes) { if (g_uRep3GpuTexCount) g_uRep3GpuTexCount--; g_uRep3GpuTexBytes -= m_uGpuBytes; m_uGpuBytes = 0; }
 		return;
@@ -161,7 +161,7 @@ HRESULT CTex11::EnsureGpu(const BYTE* pInit)
 	if (m_bVirtual)
 	{
 		if (m_pPage) return D3D_OK;
-		if (!m_pDev->m_pAtlas || !m_pDev->m_pAtlas->Alloc(m_w, m_h, &m_pPage, &m_slot, &m_ax, &m_ay))
+		if (!m_pDev->m_pAtlas || !m_pDev->m_pAtlas->Alloc(m_w, m_h, &m_pPage, &m_ax, &m_ay))
 		{
 			m_bVirtual = false;	// het cach: texture rieng
 		}
