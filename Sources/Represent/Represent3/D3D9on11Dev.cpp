@@ -11,6 +11,7 @@
 #define R11_SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = NULL; } }
 #define R11_RING_SIZE (4 * 1024 * 1024)
 
+static CDev11* g_pRep3Dev11 = NULL;
 double   g_dRep3PresentMs = 0.0;
 unsigned g_uRep3Presents = 0;
 double   g_dRep3DrawMs = 0.0;
@@ -77,6 +78,7 @@ CDev11::~CDev11()
 	R11_SAFE_RELEASE(m_pPS); R11_SAFE_RELEASE(m_pVS);
 	ReleaseSwapBuffers();
 	if (m_pSwap) { m_pSwap->SetFullscreenState(FALSE, NULL); m_pSwap->Release(); m_pSwap = NULL; }
+	if (g_pRep3Dev11 == this) g_pRep3Dev11 = NULL;
 	R11_SAFE_RELEASE(m_pAdapter3); R11_SAFE_RELEASE(m_pFactory);
 	if (m_pCtx) { m_pCtx->ClearState(); m_pCtx->Flush(); m_pCtx->Release(); m_pCtx = NULL; }
 	R11_SAFE_RELEASE(m_pDev);
@@ -113,9 +115,10 @@ bool CDev11::Init()
 	if (SUCCEEDED(m_pFactory->QueryInterface(__uuidof(IDXGIFactory5), (void**)&pF5)) && pF5)
 	{
 		BOOL bAllow = FALSE;
-		if (SUCCEEDED(pF5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &bAllow, sizeof(bAllow)))) m_bTearing = bAllow != FALSE;
+		if (SUCCEEDED(pF5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &bAllow, sizeof(bAllow)))) m_bTearing = (bAllow != FALSE) && (g_nRep3Tearing != 0);
 		pF5->Release();
 	}
+	g_pRep3Dev11 = this;
 	if (!CreateSwapChain(m_bbW, m_bbH, m_pp.Windowed != FALSE)) return false;
 	if (!CreatePipelineObjects()) return false;
 	if (g_nRep3Atlas) m_pAtlas = new CAtlasMgr(this);
@@ -250,6 +253,15 @@ UINT CDev11::GetAvailableTextureMem()
 		}
 	}
 	return 1024u * 1024u * 1024u;
+}
+
+void Rep3_D3D11VramInfo(unsigned* puUsedMB, unsigned* puBudgetMB)
+{
+	if (puUsedMB) *puUsedMB = 0; if (puBudgetMB) *puBudgetMB = 0;
+	if (!g_pRep3Dev11 || !g_pRep3Dev11->m_pAdapter3) return;
+	DXGI_QUERY_VIDEO_MEMORY_INFO mi;
+	if (SUCCEEDED(g_pRep3Dev11->m_pAdapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &mi)))
+	{ if (puUsedMB) *puUsedMB = (unsigned)(mi.CurrentUsage >> 20); if (puBudgetMB) *puBudgetMB = (unsigned)(mi.Budget >> 20); }
 }
 
 HRESULT CDev11::GetDirect3D(IDirect3D9** ppD3D9) { if (!ppD3D9) return E_POINTER; *ppD3D9 = m_pParent; m_pParent->AddRef(); return D3D_OK; }

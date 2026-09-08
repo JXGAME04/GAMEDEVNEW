@@ -198,3 +198,17 @@ Present 0,06–0,10 ms; 0,6–0,8 µs mỗi lệnh vẽ (800–3.600 lệnh/khun
 Còn lại: (1) phí VRAM trang 2,3× (bin pow2(w+1)) → bản [e] bin 16/24/32/48/64/96/128/192/256/384/512 (≤ 1,5× mỗi chiều), bỏ +1 px
 (sprite vẽ POINT); (2) `anh_null` 200k–1,3M/30 s = 700 lượt/khung xin 200 sprite biểu cảm THIẾU TỆP (spr/Ui3/<GBK>/140–339.spr) — tốn
 CPU vô ích, cần chép tệp hoặc sửa UI không xin; (3) `Rep3CacheMB=1500` → trang có thể tới ~2,5 GB VRAM: theo dõi (`VRAM con` hiện kẹp 4095).
+
+### 6.7 12:xx — "gợn sóng khi di chuyển", VRAM, 200 sprite biểu cảm
+
+- **Gợn sóng = xé hình (tearing):** swapchain bitblt DISCARD (Rep3Flip=0) + Present(0) ở chế độ cửa sổ bị DWM ghép giữa chừng khi game
+  vẽ 63 fps trên màn 59 Hz. **Bản [f]:** mặc định `Rep3Flip=1` (flip model), `Rep3Tearing=0` (không ALLOW_TEARING) → DWM chỉ ghép khung
+  trọn vẹn, Present không chặn (interval 0). Harness: ảnh trùng D3D9, present 1,8 ms khi cửa sổ hiện (cửa sổ game thật đo sau).
+  `Represent3.dll.moi` e57998dc chờ restart. Muốn độ trễ thấp nhất chấp nhận xé: `Rep3Tearing=1`.
+- **VRAM thật (Windows counter GPU Process Memory, Game.exe pid 5684, bản [e]):** 1.083 MB dedicated; card 10 GB, tổng máy dùng 3,1 GB.
+  Dòng `[REP3]` cũ ghi `VRAM con 4095` là do kẹp UINT; bản [f] ghi `vram dùng/ngân sách MB` thật (harness: ngân sách tiến trình 9.283 MB).
+- **Biểu cảm:** `ui/ChatPics.ini` khai 911 (`spr/Ui3/<GBK>/N.spr`), pak đang mount chỉ có 0..139; **140..322 nằm trong `vltkcache.pak`
+  KHÔNG có trong package.ini**; 323..910 không có ở đâu (kể cả client Level Up / 2.0). Đã rút 184 tệp rời vào `spr/Ui3/<GBK>` (tệp rời
+  được ưu tiên trước pak; tên thư mục = byte GBK giải theo ACP 1252) bằng `ReverseTools/pak_vltk/rut_bieucam_0809.py --rut`, và
+  `Count=911 → 323` (bản lưu `ChatPics.ini.truoc_bieucam`). Cần restart client (TextPic nạp lúc khởi động).
+- `anh_null` trong dòng `[REP3]` gồm cả "khung ngoài tầm" (`nFrame >= m_nFrameNum`) chứ không chỉ ảnh thiếu — chưa tách.

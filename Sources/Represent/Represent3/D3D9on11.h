@@ -16,6 +16,8 @@ extern unsigned __int64 g_uRep3GpuTexBytes;   // tong byte texture GPU (D3D11)
 extern int      g_nRep3Atlas;        // [Client] Rep3Atlas: 1 = gom texture nho vao trang (mac dinh), 0 = tat
 extern unsigned g_uRep3AtlasPages;   // so trang atlas
 extern unsigned __int64 g_uRep3AtlasBytes;
+extern int      g_nRep3Tearing;      // [Client] Rep3Tearing: 1 = cho phep xe hinh (ALLOW_TEARING) khi flip + vsync 0; mac dinh 0
+void Rep3_D3D11VramInfo(unsigned* puUsedMB, unsigned* puBudgetMB);   // VRAM tien trinh (0/0 neu khong phai D3D11)
 extern int      g_nRep3Flip;         // [Client] Rep3Flip: 1 = swapchain flip (mac dinh), 0 = kieu bitblt cu (DISCARD)
 extern double   g_dRep3PresentMs;    // tong ms trong Present ke tu lan in thong ke truoc
 extern unsigned g_uRep3Presents;     // so lan Present
