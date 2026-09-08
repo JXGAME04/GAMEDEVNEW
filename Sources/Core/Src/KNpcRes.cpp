@@ -338,6 +338,17 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 							m_cNpcImage[i].m_nTotalDir = sImage.nNumFramesGroup;
 							m_cNpcImage[i].m_nTotalFrame = sImage.nNumFrames;
 							m_cNpcImage[i].m_bChange = FALSE;
+#ifndef _SERVER
+							if (Npc[nNpcIdx].m_Kind == kind_player && Npc[nNpcIdx].m_nPlayerIdx > 0)	// [X64 08/09 NGOAIHINH c]
+								AUTOLOG("[NGOAIHINH] GetImageParam OK part%d name='%s' frames=%d dirs=%d", i, m_cNpcImage[i].m_szName, m_cNpcImage[i].m_nTotalFrame, m_cNpcImage[i].m_nTotalDir);
+#endif
+						}
+						else
+						{
+#ifndef _SERVER
+							if (Npc[nNpcIdx].m_Kind == kind_player && Npc[nNpcIdx].m_nPlayerIdx > 0)	// [X64 08/09 NGOAIHINH c] that bai -> m_bChange ket, khong SetCurFrame
+								AUTOLOG_EVERY(2000, "[NGOAIHINH] GetImageParam FAIL part%d name='%s' (frames=%d dirs=%d)", i, m_cNpcImage[i].m_szName, m_cNpcImage[i].m_nTotalFrame, m_cNpcImage[i].m_nTotalDir);
+#endif
 						}
 					}
 					if (!m_cNpcImage[i].m_bChange)
