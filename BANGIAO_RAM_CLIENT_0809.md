@@ -67,6 +67,22 @@ python D:/GAMEDEVNEW_wt_delta/ReverseTools/do_ram_client_0809.py
 
 ---
 
+## 3.2 KẾT QUẢ ĐO 09:11–09:35 (Rep3Ex=1 thật, `[REP3] D3D9Ex: BAT`): **KHÔNG giảm**
+
+31 mẫu 30 s trong trận Tống Kim 09:22: `RAM riêng = 208 + 0,77 × (texture + raw)` — đúng hệ số 0,76 của bản D3D9 cũ. Bản đồ vùng nhớ
+vẫn 18 vùng 15,8 MB không đọc được, tăng theo cache. Hình ảnh không lỗi (`tex_null 0, tao_hong 0`, fps 63), tức 8 chỗ MANAGED → DYNAMIC
+chạy đúng, nhưng **driver vẫn giữ bản sao texture trong RAM dù là D3D9Ex**. Đã đặt lại `Rep3Ex=0` trong config (không lợi thì không giữ
+biến số). Giả thuyết "D3D9Ex bỏ bản sao" bị **bác bỏ** bằng số đo.
+
+## 3.3 Đòn bẩy còn lại KHÔNG đổi hình ảnh: texture bảng màu 2 byte/điểm (lossless)
+
+`RenderToA8R8G8B8` (`TextureRes.cpp`) cho thấy điểm ảnh SPR = **chỉ số bảng màu 8 bit + alpha 8 bit theo run**; hiện được bung ra
+A8R8G8B8 4 byte/điểm. Lưu **A8L8** (L = chỉ số, A = alpha, 2 byte/điểm) + bảng màu 256×1 (1 KB/sprite) và tra bảng trong **pixel shader
+ps_2_0** (point sampling — đúng cách vẽ 1:1 không lọc của DirectDraw gốc) → cùng màu y hệt, **texture giảm một nửa**: 735 → ~370 MB,
+bản sao driver −280 MB, VRAM −370 MB, giải mã nhanh hơn (không bung palette). Việc: shader + đường vẽ `DrawSpriteAlpha`/`DrawImage2DFlat`
+đặt stage 1 = bảng màu, `CreateTexture16Bit` sinh A8L8; giữ đường 8888 cũ làm dự phòng (`Rep3Pal=0`). Công ~1–2 ngày, cần test toàn bộ
+UI/chữ/hiệu ứng. Đây là cách duy nhất còn lại giảm phần texture mà không mất gì.
+
 ## 4. Các đòn bẩy khác cho RAM (chưa làm, xếp theo lợi)
 
 | Việc | Giảm | Rủi ro / giá |
