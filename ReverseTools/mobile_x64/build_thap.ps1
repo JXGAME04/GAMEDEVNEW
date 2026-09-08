@@ -8,7 +8,8 @@ param(
   [string]$Target = "Build",
   [string]$Tag = "build",
   [string]$SolutionDir = "D:\GAMEDEVNEW_wt_mobile\Sources\",
-  [int]$MaxErr = 60
+  [int]$MaxErr = 60,
+  [string[]]$Props = @()      # [08/09] them -p:... (vd -p:PostBuildEventUseInBuild=false cho build Win32 thu nghiem, khong chep vao D:in / Libelease)
 )
 try { (Get-Process -Id $PID).PriorityClass = 'BelowNormal' } catch { Write-Host "khong ha duoc uu tien: $_" }
 $msb = "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe"
@@ -18,7 +19,7 @@ New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 $stamp = Get-Date -Format "HHmmss"
 $log = Join-Path $logDir ("{0}_{1}.log" -f $Tag, $stamp)
 $t0 = Get-Date
-& $msb "$Proj" "-t:$Target" "-m:1" "-nologo" "-v:m" "-p:Configuration=$Cfg" "-p:Platform=$Plat" "-p:SolutionDir=$SolutionDir" "-p:UseMultiToolTask=false" "-p:CL_MPCount=1" "-clp:NoSummary;ErrorsOnly;NoItemAndPropertyList" "-fl" "-flp:logfile=$log;verbosity=normal" | Out-Null
+& $msb "$Proj" "-t:$Target" "-m:1" "-nologo" "-v:m" "-p:Configuration=$Cfg" "-p:Platform=$Plat" "-p:SolutionDir=$SolutionDir" "-p:UseMultiToolTask=false" "-p:CL_MPCount=1" @Props "-clp:NoSummary;ErrorsOnly;NoItemAndPropertyList" "-fl" "-flp:logfile=$log;verbosity=normal" | Out-Null
 $code = $LASTEXITCODE
 $dt = [int]((Get-Date) - $t0).TotalSeconds
 $txt = Get-Content $log -ErrorAction SilentlyContinue
