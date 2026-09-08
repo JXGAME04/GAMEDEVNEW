@@ -64,7 +64,7 @@ static void sAucLog(const char* szFmt, ...)
 	fclose(f);
 }
 
-static void sSendOp(int nOp, int nParam)
+static void sSendOp(int nOp, KNPARAM nParam)	// [X64 08/09] nParam mang con tro
 {
 	if (g_pCoreShell)
 		g_pCoreShell->OperationRequest(GOI_AUCTION_UI, (unsigned int)nOp, nParam);

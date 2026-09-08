@@ -40,7 +40,7 @@ static int  s_bGameStarted = 0;
 static int  s_bPendingOpen = 0;
 static int  s_nPendingIcon = -1;
 
-static void sSendOp(int nOp, int nParam)
+static void sSendOp(int nOp, KNPARAM nParam)	// [X64 08/09] nParam mang con tro
 {
 	if (g_pCoreShell)
 		g_pCoreShell->OperationRequest(GOI_CHIENLENH_UI, (unsigned int)nOp, nParam);

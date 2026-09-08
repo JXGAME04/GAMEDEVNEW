@@ -70,7 +70,7 @@ static int s_bMailGameStarted = 0;
 static int s_bMailPendingOpen = 0;
 static int s_nMailPendingIcon = -1;
 
-static void sSendOp(int nOp, int nExtra, int nParam)
+static void sSendOp(int nOp, int nExtra, KNPARAM nParam)	// [X64 08/09] nParam mang con tro
 {
     if (g_pCoreShell)
         g_pCoreShell->OperationRequest(GOI_MAIL_UI, MAILUI_OP_MAKE(nOp, nExtra), nParam);

@@ -49,9 +49,9 @@ static int sArgInt(Lua_State* L, int n)
 	return (Lua_GetTopIndex(L) >= n && Lua_IsNumber(L, n)) ? (int)Lua_ValueToNumber(L, n) : 0;
 }
 
-static void sNotify(int nCmd, int nParam)
+static void sNotify(int nCmd, KNPARAM nParam)	// [X64 08/09] nParam mang con tro struct -> rong bang con tro
 {
-	SP_ClientLog("[MAILUI] Lua->UI cmd=%d param=%d", nCmd, nParam);	// [D4] chan doan
+	SP_ClientLog("[MAILUI] Lua->UI cmd=%d param=%d", nCmd, (int)nParam);	// [D4] chan doan
 	CoreDataChanged(GDCNI_MAIL_UI, (unsigned int)nCmd, nParam);
 }
 
