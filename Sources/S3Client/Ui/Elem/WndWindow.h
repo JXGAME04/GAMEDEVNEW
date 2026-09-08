@@ -20,6 +20,11 @@
 #define	WND_S_SIZE_WITH_B_EDGE		0x00200000	//跟随父窗口大小的变化调整窗口大小
 #define	WND_S_SIZE_WITH_ALL_CHILD	0x00100000	//以子窗口的范围测试的集合作为自己的范围测试的集合
 
+// [UITOADO] o giao dien bi nguoi choi "xoa" (an han). Bit nay TRONG:
+// khong lop nao trong S3Client\Ui dung 0x08000000, va Show()/Hide() chi
+// dung WND_S_VISIBLE nen ma game khong the bat lai duoc.
+#define	WND_S_UITOADO_AN			0x08000000
+
 extern	int WND_SHOW_DEBUG_FRAME_TEXT;
 
 class KIniFile;
@@ -42,6 +47,12 @@ protected:
 	// [UITOADO] ten muc ini ma cua so nay duoc Init tu do - dinh danh ben
 	// de luu / ap lai toa do trong UserData\UiToaDo.ini
 	char		m_szMucIni[64];
+	// [UITOADO] ti le do nguoi choi dat, phan nghin (1000 = 100%).
+	// m_nUiGocW/H chup kich thuoc goc DUNG MOT LAN de ap lai bao nhieu
+	// lan cung ra cung ket qua (khong nhan don).
+	int			m_nUiTiLe;
+	int			m_nUiGocW;
+	int			m_nUiGocH;
 
 	int			m_bMoving;
 	int			m_nLastMouseHoldPosX;
@@ -110,6 +121,15 @@ public:
 #endif
 	// [UITOADO] ten muc ini dat cho cua so nay (rong = chua Init tu ini)
 	const char*		GetMucIni() const { return m_szMucIni; }
+	// [UITOADO] dat lai ti le (phan nghin), kep trong 300..3000
+	void			UiDatTiLe(int nTiLe);
+	int				UiLayTiLe() const { return m_nUiTiLe; }
+	// [UITOADO] an han / hien lai o nay
+	void			UiDatAn(int bAn);
+	int				UiDangAn() const { return (m_Style & WND_S_UITOADO_AN) != 0; }
+	// [UITOADO] goi ngay sau khi toa do bi doi tu ben ngoai, de lop con
+	// (KWndMovingImage) chup lai vi tri goc cua hoat hinh mo cua so
+	virtual void	UiNhoViTri() {}
 	int				IsDisable() { return (m_Style & WND_S_DISABLE); }
 	int				GetStyle() { return m_Style; }
 	int				SetStyle(unsigned int nStyle)

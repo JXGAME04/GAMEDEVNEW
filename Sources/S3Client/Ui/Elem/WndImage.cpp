@@ -7,6 +7,7 @@
 #include "KWin32.h"
 #include "KIniFile.h"
 #include "WndImage.h"
+#include "UiToaDo.h"	// [UITOADO]
 
 #include "../../../Represent/iRepresent/iRepresentShell.h"
 extern iRepresentShell*	g_pRepresentShell;
@@ -86,6 +87,11 @@ int KWndImage::PtInWindow(int x, int y)
 {
 	int	bIn = KWndWindow::PtInWindow(x, y);
 	
+	// [UITOADO] menh de thu hai tu kiem WND_S_VISIBLE nen phai kiem them
+	// bit an, khong thi o da "xoa" van bat duoc chuot
+	if ((m_Style & WND_S_UITOADO_AN) && !UiToaDo_DangSua())
+		return 0;
+
 	if ((bIn &&
 			(m_Style & WND_S_SIZE_WITH_ALL_CHILD) == 0) || 
 		((m_Style & WND_S_VISIBLE) &&
@@ -93,7 +99,18 @@ int KWndImage::PtInWindow(int x, int y)
 			(m_Style & WND_S_SIZE_WITH_ALL_CHILD)))
 	{
 		if ((m_Style & WNDIMG_ES_EXCLUDE_TRANS) && g_pRepresentShell)
-				bIn =  g_pRepresentShell->GetImagePixelAlpha(m_Image.szImage, m_Image.nFrame, x - m_nAbsoluteLeft, y - m_nAbsoluteTop, m_Image.nType);
+		{
+			// [UITOADO] anh dang ve to/nho => quy diem cham ve he toa do goc
+			// cua anh truoc khi do alpha, khong thi bam lech
+			int nDx = x - m_nAbsoluteLeft;
+			int nDy = y - m_nAbsoluteTop;
+			if (m_nUiTiLe != 1000 && m_nUiTiLe > 0)
+			{
+				nDx = nDx * 1000 / m_nUiTiLe;
+				nDy = nDy * 1000 / m_nUiTiLe;
+			}
+			bIn =  g_pRepresentShell->GetImagePixelAlpha(m_Image.szImage, m_Image.nFrame, nDx, nDy, m_Image.nType);
+		}
 	}
 	return bIn;
 }
@@ -155,6 +172,37 @@ void KWndImage::PaintWindow()
 	{
 		m_Image.oPosition.nX = m_nAbsoluteLeft;
 		m_Image.oPosition.nY = m_nAbsoluteTop;
+
+		// [UITOADO] ti le 1000 (= 100%) thi giu NGUYEN duong ve cu, khong
+		// lech mot diem anh nao. Chi khi nguoi choi that su chinh to/nho moi
+		// doi sang RU_T_IMAGE_STRETCH:
+		//   RU_T_IMAGE        -> DrawSpriteAlpha     : mien nguon = mien dich,
+		//                        ti le LUON 1, khong bao gio co gian
+		//   RU_T_IMAGE_STRETCH-> DrawSpritePartAlpha : mien nguon la khung anh
+		//                        => co gian that (KItem::PaintItem dang dung)
+		// Duong STRETCH KHONG tu cong offset cua khung anh nen phai cong tay.
+		// Represent2 (DirectDraw) khong co duong co gian cho SPR => bo qua.
+		if (m_nUiTiLe > 0 && m_nUiTiLe != 1000 &&
+			m_Image.szImage[0] && g_pRepresentShell->IsRep3D())
+		{
+			KRPosition2	oOff = {0, 0};
+			KRPosition2	oCo  = {0, 0};
+
+			if (g_pRepresentShell->GetImageFrameParam(m_Image.szImage,
+					m_Image.nFrame, &oOff, &oCo, m_Image.nType) &&
+				oCo.nX > 0 && oCo.nY > 0)
+			{
+				int nX = m_nAbsoluteLeft + oOff.nX * m_nUiTiLe / 1000;
+				int nY = m_nAbsoluteTop  + oOff.nY * m_nUiTiLe / 1000;
+
+				m_Image.oPosition.nX = nX;
+				m_Image.oPosition.nY = nY;
+				m_Image.oEndPos.nX   = nX + oCo.nX * m_nUiTiLe / 1000;
+				m_Image.oEndPos.nY   = nY + oCo.nY * m_nUiTiLe / 1000;
+				g_pRepresentShell->DrawPrimitives(1, &m_Image, RU_T_IMAGE_STRETCH, true);
+				return;
+			}
+		}
 		g_pRepresentShell->DrawPrimitives(1, &m_Image, RU_T_IMAGE, true);
 	}
 }
