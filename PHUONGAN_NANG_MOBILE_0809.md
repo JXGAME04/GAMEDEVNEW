@@ -206,3 +206,45 @@ bớt mô phỏng lại chiêu/đạn, CPU điện thoại yếu hơn PC hưởn
 - Tài liệu liên quan: `PHUONGAN_KIENTRUC_HIEUUNG_RAM_0809.md` (hiệu ứng theo sự kiện, A8L8), `BANGIAO_HIEUUNG_KHAOSAT_0709.md` (RAM/LAA, bể đạn),
   `D:\USVOLAM\REPRESENT3_UPGRADE.md` §1 (khoá hình học 1:1), `D:\USVOLAM\JX1M_PHANTICH_NANG_ENGINE.md` (vì sao không nâng cocos),
   `D:\USVOLAM\JX1M_BANGIAO_IOS.md` (7 bẫy iOS + pháp lý), `D:\USVOLAM\JX1M_PROTOCOL_SYNC.md` (cơ chế `CheckProtocolSize`, desync stream).
+
+---
+
+## 9. Chọn công nghệ — chủ hỏi 08/09: *"công nghệ nào hiện nay tốt nhất nên dùng"*
+
+Tiêu chí xuất phát từ chính dự án: mã C++ 400 nghìn dòng phải giữ nguyên (loại mọi engine bắt viết bằng C#/script), game sprite 2D palette
+8-bit (không cần engine 3D), một người + AI (ưu tiên API nhỏ, một nhà cung cấp, ít lớp ghép), ba nền Android/iOS/Windows, giấy phép mở không thu phí.
+
+### 9.1 Bộ công nghệ chốt (đề xuất)
+
+| Lớp | Chọn | Vì sao | Thay thế nếu cần |
+|---|---|---|---|
+| Nền tảng (cửa sổ, chạm, bàn phím/IME, tệp, luồng, timer, đường dẫn) | **SDL3** (zlib, bản 3.2 ổn định từ 01/2025) | chuẩn công nghiệp cho C/C++ đa nền, Android/iOS/Windows cùng một API, tài liệu và cộng đồng lớn nhất | không có lý do đổi |
+| Bộ vẽ | **SDL_GPU** (Vulkan trên Android, Metal trên iOS, D3D12/Vulkan trên Windows) | cùng nhà với SDL3 nên ít lớp ghép nhất; API hiện đại nhưng gọn hơn Vulkan thuần nhiều lần; shader viết HLSL, dịch bằng `SDL_shadercross` sang SPIR-V/MSL/DXIL | **bgfx** (BSD-2) nếu phải chạy máy Android không Vulkan hoặc PC cũ không D3D12/Vulkan: có thêm GLES 2/3, GL 2.1, D3D11 |
+| Bộ vẽ PC | giữ **Represent3 (D3D9)** làm mặc định cho máy yếu, `Represent4` là tuỳ chọn cho máy mạnh | công tắc `[Render]` đã có; không đánh cược người chơi PC cũ | nếu muốn một bộ vẽ cho tất cả kể cả PC cũ thì chọn bgfx cho cả hai |
+| Định dạng texture | R8 chỉ số + bảng màu 256 trong shader | sprite đã là palette 8-bit, giữ lossless, RAM ÷4 so với RGBA8888; không cần ETC2/ASTC | |
+| Âm thanh | **miniaudio** (MIT-0, một tệp) hoặc SDL3 audio + bộ giải mã | giải mã WAV/MP3 sẵn, chạy AAudio/Core Audio, không giấy phép | FMOD có sẵn ở JX1M nhưng cần license thương mại |
+| Mạng | BSD socket + khung gói/mã hoá XOR hiện có | giao thức không đổi, TCP đủ; TLS cho tải dữ liệu qua libcurl | |
+| Tải dữ liệu / cập nhật | **libcurl** (đã có trong vcpkg của S3Client) + `paklist.ini` như JX1M | resume, HTTPS, tự cập nhật APK theo mẫu R180 | |
+| Script | **Lua 5.4** hiện có | đã chuyển, C thuần | |
+| UI người chơi | **hệ KWnd hiện có** | 134 cửa sổ dùng lại nguyên; Dear ImGui chỉ dùng cho bảng gỡ lỗi nếu cần | |
+| Build | **CMake** một cây cho mọi nền; clang/NDK cho Android, Xcode cho iOS, MSVC hoặc clang-cl cho Windows; C++17 | JX1M đã chạy CMake+Gradle và `cmake -GXcode` | |
+| Báo sập | Crashpad hoặc Sentry Native (tuỳ chọn) | dump máy thật thay `/proc` tự chế của JX1M | |
+
+### 9.2 Vì sao không phải các thứ khác
+
+| Công nghệ | Lý do không chọn cho dự án này |
+|---|---|
+| Unity, Unreal, Godot làm engine chính | phải viết lại logic + 134 cửa sổ hoặc dùng engine chỉ làm vỏ; C#/Blueprint/GDScript không nhúng được Core; engine 3D không mang lại gì cho sprite 2D palette; Unity/Unreal có phí theo doanh thu |
+| cocos2d-x, Axmol, Cocos Creator | cùng dòng cocos, chủ đã loại; JX1M đã chứng minh fork không nâng được |
+| OpenGL ES trực tiếp hoặc ANGLE | Apple bỏ dần GLES; ANGLE là GLES giả lập trên Metal, thêm một lớp mà không thêm gì |
+| Vulkan thuần + MoltenVK | đúng chuẩn nhưng mã gấp 3–5 lần SDL_GPU, một người khó giữ |
+| WebGPU (wgpu-native / Dawn) | mới nhất nhưng API C còn đổi, ít bài học cho game native 2D |
+| sokol_gfx | rất gọn, có GLES3/D3D11/Metal, **không có Vulkan**; ghép với SDL3 thêm việc nối ngữ cảnh; chỉ cân nhắc nếu bgfx bị coi là to |
+
+### 9.3 Điều chưa chắc, và cách chốt bằng số
+
+- Lớp Vulkan-trên-Android của SDL_GPU là phần trẻ nhất (ra 2025). Chốt bằng **phép thử 1 tuần ở pha 1**: vẽ 2.000 sprite palette + text bitmap
+  bằng SDL_GPU trên LDPlayer và 2 điện thoại thật; nếu lỗi driver, đổi sang bgfx mà không mất gì khác vì `Represent4` nằm sau `iRepresentShell`.
+- Phủ máy: Metal có từ iPhone 5s; Vulkan gần như có trên mọi máy Android 64-bit từ khoảng 2017 nhưng **quyết bằng thống kê máy người chơi**
+  (Google Play Console hoặc log đăng nhập), không đoán. JX1M đã đặt minSdk 25 + arm64 nên nền người chơi hiện tại rất có thể đã đủ.
+- Windows: D3D12 cần Windows 10; vì thế PC giữ Represent3 mặc định (9.1).
