@@ -24,6 +24,7 @@ IN_OUT mp3_decode_frame(unsigned char* mp3, unsigned char* pcm) { IN_OUT r; (voi
 }
 #endif
 #include "KMp3Music.h"
+#ifndef JX_PLATFORM_SDL	// [SDL 08/09 2b-3] ban SDL dung miniaudio o KSoundMa.cpp; than DirectSound duoi day chi cho Win32 thuong
 //---------------------------------------------------------------------------
 #define MP3_BUFSIZE 60000 // mp3 data buffer
 //---------------------------------------------------------------------------
@@ -379,3 +380,4 @@ BOOL KMp3Music::Mp3FillBuffer()
 }
 //---------------------------------------------------------------------------
 #endif
+#endif // JX_PLATFORM_SDL [SDL 08/09 2b-3]

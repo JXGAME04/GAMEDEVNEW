@@ -13,6 +13,7 @@
 #include "KDError.h"
 #include "KWavFile.h"
 #include "KWavSound.h"
+#ifndef JX_PLATFORM_SDL	// [SDL 08/09 2b-3] ban SDL dung miniaudio o KSoundMa.cpp; than DirectSound duoi day chi cho Win32 thuong
 //---------------------------------------------------------------------------
 // 函数:	KWavSound
 // 功能:	购造函数
@@ -244,3 +245,4 @@ BOOL KWavSound::IsPlaying()
 	return (i < BUFFER_COUNT);
 }
 //---------------------------------------------------------------------------
+#endif // JX_PLATFORM_SDL [SDL 08/09 2b-3]

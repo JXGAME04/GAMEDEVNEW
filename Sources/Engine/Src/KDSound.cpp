@@ -12,6 +12,7 @@
 #include "KWin32Wnd.h"
 #include "KDError.h"
 #include "KDSound.h"
+#ifndef JX_PLATFORM_SDL	// [SDL 08/09 2b-3] ban SDL dung miniaudio o KSoundMa.cpp; than DirectSound duoi day chi cho Win32 thuong
 //---------------------------------------------------------------------------
 ENGINE_API KDirectSound* g_pDirectSound = NULL;
 //---------------------------------------------------------------------------
@@ -147,3 +148,4 @@ BOOL KDirectSound::CreatePrimarySoundBuffer()
 	return TRUE;
 }
 //---------------------------------------------------------------------------
+#endif // JX_PLATFORM_SDL [SDL 08/09 2b-3]

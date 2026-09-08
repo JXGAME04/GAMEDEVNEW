@@ -1091,6 +1091,7 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\KSortBinTree.cpp" />
     <ClCompile Include="Src\KSortList.cpp" />
     <ClCompile Include="Src\KSoundCache.cpp" />
+    <ClCompile Include="Src\KSoundMa.cpp" />
     <ClCompile Include="Src\KSprite.cpp" />
     <ClCompile Include="Src\KSpriteCache.cpp" />
     <ClCompile Include="Src\KSpriteCodec.cpp" />
