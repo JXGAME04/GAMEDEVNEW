@@ -154,6 +154,7 @@ int g_nFX_msl_ol_trong = 0, g_nFX_msl_ol_khacid = 0, g_nFX_msl_ol_mocoi = 0;	// 
 int g_nFX_sv_start = 0, g_nFX_sv_fire = 0, g_nFX_sv_huyhurt = 0, g_nFX_sv_start_all = 0, g_nFX_sv_fire_all = 0;
 int g_nFX_husk_rx = 0, g_nFX_husk_noidx = 0, g_nFX_husk_minh = 0, g_nFX_husk_noskill = 0, g_nFX_husk_notgt = 0, g_nFX_husk_fire = 0, g_nFX_husk_fail = 0, g_nFX_husk_bocuc = 0;	// [HUSK 08/09] client: goi 224
 int g_nFX_sv_husk = 0, g_nFX_sv_husk_cu = 0;	// [HUSK 08/09] may chu: goi 224 da phat / lan bo qua vi con client cu (hello < 4)
+int g_nHUSK_daNhan = 0;	// [HUSK 08/09 b] client: da nhan >= 1 goi 224 tu may chu dang noi -> moi ngung tu mo phong; dat lai 0 khi gui hello
 DWORD g_uFXMoc = 0;
 #ifdef _SERVER
 // NPC co nam trong 32 o (tam phat tan) quanh mot nguoi choi THAT khong - de so thang voi [FX] cua client
@@ -218,7 +219,8 @@ static BOOL S13_IsRealPlayer(KNpc* pNpc)
 // (KProtocolProcess::s2cSkillFired) va KHONG tu mo phong o khung 60 % nua. Truoc: client tu doan -> mat 3-4 % chieu vi bi tu choi im lang
 // (dang ban / trung don truoc 60 % / hoi chieu lech / hai goi 95 mot nhip). Chinh nhan vat: van tu mo phong (cam giac khong doi).
 // Cong lui: client [Client] HieuUngSuKien=0 (client bao hello 3 -> may chu khong phat 224 cho AI); may chu [Server] HieuUngSuKien=0
-// (doc lai moi 10 s; khi tat PHAI tat ca client, neu khong hieu ung NPC khac khong hien).
+// (doc lai moi 10 s). [b] Client chi ngung tu mo phong sau khi DA NHAN goi 224 dau tien (g_nHUSK_daNhan) -> may chu cu / tat co / chua
+// restart: client van tu mo phong nhu cu, khong bao gio mat hieu ung.
 #ifndef _SERVER
 int HUSK_ClientBat()
 {
@@ -227,9 +229,10 @@ int HUSK_ClientBat()
 		s_nBat = GetPrivateProfileIntA("Client", "HieuUngSuKien", 1, ".\\config.ini") ? 1 : 0;
 	return s_nBat;
 }
-static BOOL HUSK_BoCastCuc(KNpc* pNpc)	// NPC khac + che do bat -> khong Cast cuc bo, cho goi 224
+static BOOL HUSK_BoCastCuc(KNpc* pNpc)	// NPC khac + che do bat + may chu DA gui 224 -> khong Cast cuc bo, cho goi 224
 {
-	return HUSK_ClientBat() && !S13_IsRealPlayer(pNpc);
+	// [HUSK 08/09 b] chua nhan goi 224 nao (may chu cu / [Server] HieuUngSuKien=0 / chua restart) -> tu mo phong nhu cu, khong mat hieu ung
+	return HUSK_ClientBat() && g_nHUSK_daNhan && !S13_IsRealPlayer(pNpc);
 }
 #define HUSK_CAST(pSk, id, lv, p1, p2)	do { if (HUSK_BoCastCuc(this)) g_nFX_husk_bocuc++; else (pSk)->Cast(m_Index, (p1), (p2)); } while (0)
 #else

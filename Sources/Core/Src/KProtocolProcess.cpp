@@ -3356,7 +3356,7 @@ void KProtocolProcess::SyncEnd(BYTE* pMsg)
 	{
 		C2S_DELTA_HELLO sHello;
 		sHello.ProtocolType = (BYTE)c2s_deltahello;
-		{ extern int HUSK_ClientBat(); sHello.byPhienBan = (BYTE)(HUSK_ClientBat() ? 4 : 3); }	// [HUSK 08/09] 4 = hieu them s2c_skillfired (224) khi [Client] HieuUngSuKien=1; [DELTA 07/09 l] 3 = 223; 2 = 222
+		{ extern int HUSK_ClientBat(); extern int g_nHUSK_daNhan; g_nHUSK_daNhan = 0; sHello.byPhienBan = (BYTE)(HUSK_ClientBat() ? 4 : 3); }	// [HUSK 08/09] 4 = hieu them s2c_skillfired (224) khi [Client] HieuUngSuKien=1; [DELTA 07/09 l] 3 = 223; 2 = 222
 		if (g_pClient)
 			g_pClient->SendPackToServer((BYTE*)&sHello, sizeof(sHello));
 	}
@@ -3561,6 +3561,7 @@ void	KProtocolProcess::s2cSkillFired(BYTE * pMsg)
 	g_nFX_husk_rx++;
 	if (!pMsg || !HUSK_ClientBat())
 		return;
+	{ extern int g_nHUSK_daNhan; g_nHUSK_daNhan = 1; }	// [HUSK 08/09 b] may chu nay co phat 224 -> tu day NPC khac khong tu mo phong nua
 	S2C_SKILL_FIRED* pGoi = (S2C_SKILL_FIRED*)pMsg;
 	int nIdx = NpcSet.SearchID(pGoi->ID);
 	if (nIdx <= 0 || nIdx >= MAX_NPC) { g_nFX_husk_noidx++; return; }
