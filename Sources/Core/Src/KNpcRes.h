@@ -129,7 +129,7 @@ public:
 	int				m_nSortTable[MAX_PART];				// 排序表
 
 	KRUImage		m_cDrawFile[MAX_NPC_IMAGE_NUM];// 绘制列表 身体部件 + 阴影 + 魔法状态 + 特殊动画 + 头顶状态
-	KNpcBlur		m_cNpcBlur;							// npc 残影
+	KNpcBlur*		m_pcNpcBlur;	// [RAMTINH 08/09] bong mo (23.708 B) cap phat lan dau NPC luot (CapBongMo), tha khi NPC bi go; truoc: co dinh trong moi KNpc = 800 x 23,7 KB.							// npc 残影
 
 	KNpcResNode		*m_pcResNode;						// npc 资源
 
@@ -165,6 +165,8 @@ public:
 	void			SetFrameSpr(char *lpszSprName, int nX, int nY, int nHeight);
 	void			SetBlur(BOOL bBlur);								
 	void			CreateBlur(int nNpcIdx, int nRange, int nDir);
+	KNpcBlur*		CapBongMo();		// [RAMTINH 08/09] cap bong mo lan dau can (NULL = het bo nho)
+	void			ThaBongMo();
 	void			SetAdjustColorId(unsigned long ulColorId){m_ulAdjustColorId = ulColorId;};			// 设置偏色情况，如果为0表示不偏色.
 	int				GetAction(){return m_nAction;};
 	// [S9-VE 26/08] chi de doc trang thai lop ve khi chan doan (khong doi bo cuc lop).

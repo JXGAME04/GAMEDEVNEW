@@ -204,6 +204,8 @@ public:
 			return -1;
 		if (m_hLoadPathGrid && WaitForSingleObject(m_hLoadPathGrid, 0) == WAIT_TIMEOUT)
 			return -1;
+		if (!m_GridNode)
+			return -1;	// [RAMTINH 08/09] luoi chua cap
 		const int nW = m_nGridW * REGION_GRID_WIDTH;
 		const int nH = m_nGridH * REGION_GRID_HEIGHT;
 		const int cx = nMpsX / 32 - m_nRegionBeginX * REGION_GRID_WIDTH;
@@ -314,7 +316,8 @@ private:
 	char		m_szPathName[FILE_NAME_LENGTH];
 	std::vector<VGridNeighbour> m_vNeighbour;
 	std::vector<int> m_vRetPath;
-	VGridNode	m_GridNode[MAX_CELL];
+	VGridNode*	m_GridNode;		// [RAMTINH 08/09] cap phat HEAP dung co luoi ban do dang dung (CapLuoi); truoc: mang tinh MAX_CELL = 48 MB .bss
+	int			m_nGridCellCap;	// [RAMTINH 08/09] so o da cap cho m_GridNode
 	// Vung nhap A* dung lai - PHAI co o ca nhanh CLIENT vi FindPath_Block/
 	// FindPath_NpcObs (KSubWorld.cpp) khong nam trong #ifdef _SERVER.
 	std::vector<int>			m_aGCost;
@@ -322,9 +325,12 @@ private:
 	std::vector<unsigned char>	m_aClosed;
 	std::vector<unsigned int>	m_aTheHe;
 	unsigned int				m_nTheHe;
-	int		m_pTempCover[MAX_CELL];
+	int*		m_pTempCover;		// [RAMTINH 08/09] chi dung luc dung luoi (ProcLoadPathGrid), tha ngay sau (ThaTempCover); truoc: 9,6 MB .bss
 	BOOL	m_bHavePath;
 	BOOL	m_uPaintTime;
+	BOOL		CapLuoi(int nAllCell);	// [RAMTINH 08/09] cap m_GridNode + m_pTempCover dung nAllCell o (cap lai neu khac co), FALSE = het bo nho
+	void		ThaLuoi();			// tha ca hai + m_bHavePath = FALSE
+	void		ThaTempCover();		// tha rieng m_pTempCover sau khi dung luoi xong
 #endif
 };
 

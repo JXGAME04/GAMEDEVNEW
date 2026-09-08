@@ -138,28 +138,28 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 	// DETAIL(0) rut gon DUNG BANG CGOG_NPC_BLUR = 8 nhung switch nay truoc gio chi co case 1..7
 	// -> anh o o 0 roi vao default va bi vut, vet bong mo thieu deu 1/7 (ca chieu luot).
 	case CGOG_NPC_BLUR:
-		Npc[uId].GetNpcRes()->m_cNpcBlur.Draw(0);
+		if (Npc[uId].GetNpcRes()->m_pcNpcBlur) Npc[uId].GetNpcRes()->m_pcNpcBlur->Draw(0);	// [RAMTINH 08/09]
 		break;
 	case CGOG_NPC_BLUR_DETAIL(1):
-		Npc[uId].GetNpcRes()->m_cNpcBlur.Draw(1);
+		if (Npc[uId].GetNpcRes()->m_pcNpcBlur) Npc[uId].GetNpcRes()->m_pcNpcBlur->Draw(1);	// [RAMTINH 08/09]
 		break;
 	case CGOG_NPC_BLUR_DETAIL(2):
-		Npc[uId].GetNpcRes()->m_cNpcBlur.Draw(2);
+		if (Npc[uId].GetNpcRes()->m_pcNpcBlur) Npc[uId].GetNpcRes()->m_pcNpcBlur->Draw(2);	// [RAMTINH 08/09]
 		break;
 	case CGOG_NPC_BLUR_DETAIL(3):
-		Npc[uId].GetNpcRes()->m_cNpcBlur.Draw(3);
+		if (Npc[uId].GetNpcRes()->m_pcNpcBlur) Npc[uId].GetNpcRes()->m_pcNpcBlur->Draw(3);	// [RAMTINH 08/09]
 		break;
 	case CGOG_NPC_BLUR_DETAIL(4):
-		Npc[uId].GetNpcRes()->m_cNpcBlur.Draw(4);
+		if (Npc[uId].GetNpcRes()->m_pcNpcBlur) Npc[uId].GetNpcRes()->m_pcNpcBlur->Draw(4);	// [RAMTINH 08/09]
 		break;
 	case CGOG_NPC_BLUR_DETAIL(5):
-		Npc[uId].GetNpcRes()->m_cNpcBlur.Draw(5);
+		if (Npc[uId].GetNpcRes()->m_pcNpcBlur) Npc[uId].GetNpcRes()->m_pcNpcBlur->Draw(5);	// [RAMTINH 08/09]
 		break;
 	case CGOG_NPC_BLUR_DETAIL(6):
-		Npc[uId].GetNpcRes()->m_cNpcBlur.Draw(6);
+		if (Npc[uId].GetNpcRes()->m_pcNpcBlur) Npc[uId].GetNpcRes()->m_pcNpcBlur->Draw(6);	// [RAMTINH 08/09]
 		break;
 	case CGOG_NPC_BLUR_DETAIL(7):
-		Npc[uId].GetNpcRes()->m_cNpcBlur.Draw(7);
+		if (Npc[uId].GetNpcRes()->m_pcNpcBlur) Npc[uId].GetNpcRes()->m_pcNpcBlur->Draw(7);	// [RAMTINH 08/09]
 		break;
 	case CGOG_SKILL:
 	case CGOG_SKILL_FIGHT:

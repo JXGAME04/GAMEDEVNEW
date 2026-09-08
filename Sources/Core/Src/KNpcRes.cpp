@@ -15,6 +15,7 @@
 #include "KNpc.h"
 #include "KNpcResList.h"
 #include "KNpcRes.h"
+#include <new>	// [RAMTINH 08/09] std::nothrow
 #include "ImgRef.h"
 #include "../../Represent/iRepresent/iRepresentshell.h"
 #include "scene/KScenePlaceC.h"
@@ -35,6 +36,7 @@ KNpcRes::KNpcRes()
 	m_nHorseType = 0;
 	m_bRideHorse = FALSE;
 	m_nBlurState = 0;
+	m_pcNpcBlur = NULL;	// [RAMTINH 08/09]
 	memset(m_szSoundName, 0, sizeof(m_szSoundName));
 	memset(m_nSortTable, 0, sizeof(m_nSortTable));
 	m_pSoundNode = NULL;
@@ -148,7 +150,9 @@ BOOL	KNpcRes::Init(char *lpszNpcName, KNpcResList *pNpcResList)
 		m_cDrawFile[i].nISPosition = IMAGE_IS_POSITION_INIT;
 		m_cDrawFile[i].bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
 	}
-	return m_cNpcBlur.Init();
+	if (m_pcNpcBlur)	// [RAMTINH 08/09] bong mo cap khi can (CapBongMo); da co thi dat lai nhu cu
+		m_pcNpcBlur->Init();
+	return TRUE;
 
 }
 
@@ -159,7 +163,11 @@ void	KNpcRes::Remove(int nNpcIdx)
 		g_ScenePlace.RemoveObject(CGOG_NPC, nNpcIdx, m_SceneID);
 		m_SceneID = 0;
 	}
-	m_cNpcBlur.Remove();
+	if (m_pcNpcBlur)	// [RAMTINH 08/09] tra 23,7 KB khi NPC bi go
+	{
+		m_pcNpcBlur->Remove();
+		ThaBongMo();
+	}
 }
 
 BOOL	KNpcRes::IgnoreShowRes()
@@ -721,23 +729,24 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 
 // ----------------------------------- 处理残影 ----------------------------------
 	int j = 0;
-	m_cNpcBlur.ChangeAlpha();
-	if (m_nBlurState == TRUE && m_cNpcBlur.NowGetBlur() && HaBongMoNhipNay(nNpcIdx))	// [VHTD 02/09w] A-2
+	if (m_pcNpcBlur)	// [RAMTINH 08/09] chua tung luot = chua co bong mo
+		m_pcNpcBlur->ChangeAlpha();
+	if (m_nBlurState == TRUE && CapBongMo() && m_pcNpcBlur->NowGetBlur() && HaBongMoNhipNay(nNpcIdx))	// [VHTD 02/09w] A-2
 	{
-		m_cNpcBlur.ClearCurNo();
+		m_pcNpcBlur->ClearCurNo();
 		for (i = 0, j = 0; i < MAX_PART; i++)
 		{
 			if (m_nSortTable[i] >= 0 && m_nSortTable[i] < MAX_PART)
 			{
-				m_cNpcBlur.SetFile(j, m_cNpcImage[m_nSortTable[i]].m_szName, m_cNpcImage[m_nSortTable[i]].m_dwNameID, m_cNpcImage[m_nSortTable[i]].m_nCurFrame, nScreenX, nScreenY, nScreenZ);
+				m_pcNpcBlur->SetFile(j, m_cNpcImage[m_nSortTable[i]].m_szName, m_cNpcImage[m_nSortTable[i]].m_dwNameID, m_cNpcImage[m_nSortTable[i]].m_nCurFrame, nScreenX, nScreenY, nScreenZ);
 				j++;
 			}
 		}
-		m_cNpcBlur.SetMapPos(m_nXpos, m_nYpos, m_nZpos, nNpcIdx);
+		m_pcNpcBlur->SetMapPos(m_nXpos, m_nYpos, m_nZpos, nNpcIdx);
 
-		m_cNpcBlur.SetNextNo();
+		m_pcNpcBlur->SetNextNo();
 	}
-//	m_cNpcBlur.Draw();
+//	m_pcNpcBlur->Draw();
 // --------------------------------- 处理残影 end --------------------------------
 	// 绘制
 
@@ -752,6 +761,7 @@ void	KNpcRes::GetShadowName(char *lpszShadow, char *lpszSprName)
 
 KNpcRes::~KNpcRes()
 {
+	ThaBongMo();	// [RAMTINH 08/09]
     // 因为NPC中会自动调用Remove
     //if (m_SceneID)
     //{
@@ -1439,11 +1449,33 @@ void	KNpcRes::SetBlur(BOOL bBlur)
 	m_nBlurState = bBlur;
 	if (bBlur)
 	{
-		m_cNpcBlur.AddObj();
+		if (CapBongMo())
+			m_pcNpcBlur->AddObj();
 	}
 	else
 	{
-		m_cNpcBlur.RemoveObj();
+		if (m_pcNpcBlur)
+			m_pcNpcBlur->RemoveObj();
+	}
+}
+
+// [RAMTINH 08/09] Bong mo cap phat lan dau NPC nay luot (23.708 B), tha khi NPC bi go (Remove) hoac huy.
+KNpcBlur* KNpcRes::CapBongMo()
+{
+	if (!m_pcNpcBlur)
+	{
+		m_pcNpcBlur = new(std::nothrow) KNpcBlur();
+		if (m_pcNpcBlur)
+			m_pcNpcBlur->Init();
+	}
+	return m_pcNpcBlur;
+}
+void KNpcRes::ThaBongMo()
+{
+	if (m_pcNpcBlur)
+	{
+		delete m_pcNpcBlur;
+		m_pcNpcBlur = NULL;
 	}
 }
 
@@ -1451,6 +1483,8 @@ void KNpcRes::CreateBlur(int nNpcIdx, int nRange, int nDir)
 {
 	if(nNpcIdx <= 0 || nRange <= 0)
 		return;
+	if (!CapBongMo())
+		return;	// [RAMTINH 08/09]
 
 	int	nSin = g_DirSin(nDir, 64);
 	int	nCos = g_DirCos(nDir, 64);
@@ -1467,17 +1501,17 @@ void KNpcRes::CreateBlur(int nNpcIdx, int nRange, int nDir)
 		int		nScreenY = m_nYpos + ((nSin * nNo * nBlurRange) >> 10);
 		int		nScreenZ = m_nZpos;
 
-		//m_cNpcBlur.ClearCurNo();
+		//m_pcNpcBlur->ClearCurNo();
 		for (i = 0, j = 0; i < MAX_PART; i++)
 		{
 			if (m_nSortTable[i] >= 0 && m_nSortTable[i] < MAX_PART)
 			{
-				m_cNpcBlur.SetFile(j, m_cNpcImage[m_nSortTable[i]].m_szName, m_cNpcImage[m_nSortTable[i]].m_dwNameID, m_cNpcImage[m_nSortTable[i]].m_nCurFrame, nScreenX, nScreenY, nScreenZ, START_BLUR_ALPHA + nNo * BLUR_ALPHA_CHANGE);
+				m_pcNpcBlur->SetFile(j, m_cNpcImage[m_nSortTable[i]].m_szName, m_cNpcImage[m_nSortTable[i]].m_dwNameID, m_cNpcImage[m_nSortTable[i]].m_nCurFrame, nScreenX, nScreenY, nScreenZ, START_BLUR_ALPHA + nNo * BLUR_ALPHA_CHANGE);
 				j++;
 			}
 		}
-		m_cNpcBlur.SetMapPos(nScreenX, nScreenY, m_nZpos, nNpcIdx);
-		m_cNpcBlur.SetNextNo();
+		m_pcNpcBlur->SetMapPos(nScreenX, nScreenY, m_nZpos, nNpcIdx);
+		m_pcNpcBlur->SetNextNo();
 	}
 }
 

@@ -29,6 +29,7 @@ extern BOOL			g_bPaintInterpFocus;	// CoreShell.cpp: PaintFps interpolation driv
 extern void			S13_ClearCmd(int nIdx);	// [S13] KNpc.cpp: xoa khe lenh dang giu cua chinh minh
 #endif
 #include "KSubWorld.h"
+#include <new>	// [RAMTINH 08/09] std::nothrow
 
 #ifndef TOOLVERSION
 	#ifdef _SERVER
@@ -98,6 +99,7 @@ KSubWorld::KSubWorld()
 	m_nIndex = -1;
 #ifndef _SERVER
 	m_hLoadPathGrid = NULL;
+	m_GridNode = NULL; m_pTempCover = NULL; m_nGridCellCap = 0;	// [RAMTINH 08/09]
     m_bStopThread = FALSE;
 	m_nTargetX = 0;
 	m_nTargetY = 0;
@@ -131,10 +133,55 @@ KSubWorld::~KSubWorld()
         m_hLoadPathGrid = NULL;
 	}
 	m_bHavePath = FALSE;
+	ThaLuoi();	// [RAMTINH 08/09]
 #endif
 }
 
 #ifndef _SERVER
+
+// [RAMTINH 08/09] Luoi tim duong client: cap phat HEAP dung co luoi cua ban do dang dung. Truoc: VGridNode[MAX_CELL] 48 MB +
+// int[MAX_CELL] 9,6 MB nam trong .bss CoreClient -> RAM rieng +57,6 MB du ban do nho (12x12 region = 73.728 o = 1,5 MB).
+// Cap lai khi doi sang ban do khac co (tha ban cu), tha han khi huy KSubWorld. m_pTempCover chi can luc dung luoi -> tha ngay sau.
+BOOL KSubWorld::CapLuoi(int nAllCell)
+{
+	if (nAllCell <= 0 || nAllCell > 16000000)
+		return FALSE;
+	if (m_GridNode && m_nGridCellCap == nAllCell)
+	{
+		if (!m_pTempCover)
+			m_pTempCover = new(std::nothrow) int[nAllCell];
+		return m_pTempCover != NULL;
+	}
+	ThaLuoi();
+	m_GridNode = new(std::nothrow) VGridNode[nAllCell];
+	m_pTempCover = new(std::nothrow) int[nAllCell];
+	if (!m_GridNode || !m_pTempCover)
+	{
+		ThaLuoi();
+		return FALSE;
+	}
+	m_nGridCellCap = nAllCell;
+	return TRUE;
+}
+void KSubWorld::ThaLuoi()
+{
+	if (m_GridNode)
+	{
+		delete [] m_GridNode;
+		m_GridNode = NULL;
+	}
+	ThaTempCover();
+	m_nGridCellCap = 0;
+	m_bHavePath = FALSE;
+}
+void KSubWorld::ThaTempCover()
+{
+	if (m_pTempCover)
+	{
+		delete [] m_pTempCover;
+		m_pTempCover = NULL;
+	}
+}
 
 DWORD WINAPI LoadPathGrid(void* pParam)
 {
@@ -212,6 +259,10 @@ void KSubWorld::ProcLoadPathGrid()
 	int nAllCellW = m_nGridW*m_nRegionWidth;
 	int nAllCellH = m_nGridH*m_nRegionHeight;
 	int nAllCell  = nAllCellW * nAllCellH;
+#ifndef _SERVER
+	if (!CapLuoi(nAllCell))	// [RAMTINH 08/09] cap phat dung co (server cap trong LoadPathGridSrv)
+		return;
+#endif
 	char	File[MAX_PATH];
 	int		ObstacleInfo[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];
 	int		nRegThieu = 0, nRegKhongObs = 0;	// (20/08) nRegThieu = region KHONG mo duoc TEP nao (ngoai map that -> vat can); nRegKhongObs = CO tep ma thieu doan vat can (dat trong co that -> DI DUOC)
@@ -2218,6 +2269,9 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			if(uVersion == FINDPATH_VERSION)
 			{
 				File.Read(&uVersion, sizeof(UINT));
+				const int nAllCellCache = m_nGridW*m_nRegionWidth * m_nGridH*m_nRegionHeight;	// [RAMTINH 08/09] cap dung co + doi chieu kich thuoc (cache lech -> dung lai)
+				if (uVersion == (UINT)(sizeof(VGridNode) * nAllCellCache) && CapLuoi(nAllCellCache))
+				{
 				File.Read(m_GridNode, uVersion);
 				File.Read(&uVersion, sizeof(UINT));
 				if (uVersion > 0)
@@ -2227,6 +2281,8 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 					m_bHavePath = TRUE;
 				}
 				bLoadData = true;
+				ThaTempCover();	// [RAMTINH 08/09]
+				}
 			}
 			//g_DebugLog("Filesan 2");
 		}
@@ -2237,6 +2293,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			//	LoadPathGrid, this, 0, NULL);
 			//WaitForSingleObject(m_hLoadPathGrid, INFINITE);
 			ProcLoadPathGrid();
+			ThaTempCover();	// [RAMTINH 08/09] chi can luc dung luoi
 			g_CreatePath("\\maps");
 			g_SetFilePath("\\maps");
 			sprintf(szFile, "%d.fp", m_SubWorldID);
