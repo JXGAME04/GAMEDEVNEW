@@ -99,7 +99,7 @@ def survey(key):
     for extra in EXTRA_INC: cmd.append("/I" + extra)
     # include cua vcpkg: MSBuild tu them (manifest: <proj>cpkg_installed\<triplet>\include; classic: VCPKG_ROOT\installed\<triplet>\include)
     vinc = []
-    for pat in (os.path.join(projdir, "vcpkg_installed", "x64-windows-static", "include"), os.path.join(projdir, "vcpkg_installed", "x64-windows", "include"),
+    for pat in (os.path.join(projdir, "vcpkg_installed", "x64-windows-static", "x64-windows-static", "include"), os.path.join(projdir, "vcpkg_installed", "x64-windows-static", "include"), os.path.join(projdir, "vcpkg_installed", "x64-windows", "include"),
                 os.path.join(os.environ.get("VCPKG_ROOT", r"E:cpkg-master"), "installed", "x64-windows-static", "include"),
                 os.path.join(os.environ.get("VCPKG_ROOT", r"E:cpkg-master"), "installed", "x64-windows", "include"),
                 r"C:cpkg\installedd-windows-static\include", r"C:cpkg\installedd-windows\include"):

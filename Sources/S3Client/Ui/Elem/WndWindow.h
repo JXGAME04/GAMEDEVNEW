@@ -73,7 +73,7 @@ public:
 
 	//====可重载的函数====
 	// flying add this function
-	virtual int		CloseWindow(bool bDestory){return 0;};
+	int			CloseWindow(bool bDestory){return 0;};	// [CLANG 08/09] bo virtual: khong lop nao override khong-static, khong goi ao; 123 lop KUi* khai bao static CloseWindow(bool) che no (clang/GCC cam static trung ham ao lop cha)
 
 	virtual int		Init(KIniFile* pIniFile, const char* pSection);//初始化
 	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数

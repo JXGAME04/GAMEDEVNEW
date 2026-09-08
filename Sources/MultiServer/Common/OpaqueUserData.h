@@ -40,7 +40,7 @@ public:
 	 */
 	void *GetUserPtr() const
 	{
-		return InterlockedExchangePointer( &(const_cast<void *>(m_pUserData)), m_pUserData );
+		return const_cast<void *>(m_pUserData);	// [CLANG 08/09] truoc: InterlockedExchangePointer(&(const_cast<>(x)), x) = doc x qua dia chi cua rvalue (MSVC cho, clang khong); doc con tro can le la nguyen tu
 	}
 	
 	/*
