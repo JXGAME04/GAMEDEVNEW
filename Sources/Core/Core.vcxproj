@@ -497,7 +497,7 @@
 if not exist ..\..\bin\client64sdl md ..\..\bin\client64sdl
 copy x64\ClientReleaseSDL\CoreClient.lib ..\..\Lib\release64sdl\CoreClient.lib
 copy x64\ClientReleaseSDL\CoreClient.dll ..\..\bin\client64sdl\CoreClient.dll
-copy x64\ClientReleaseSDL\CoreClient.pdb ..\..\bin\client64sdl\CoreClient.pdb</Command>
+if exist x64\ClientReleaseSDL\CoreClient.pdb copy x64\ClientReleaseSDL\CoreClient.pdb ..\..\bin\client64sdl\CoreClient.pdb</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
