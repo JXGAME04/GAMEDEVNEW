@@ -1,13 +1,18 @@
 // [SDL 08/09 2b-2] Harness kiem Rainbow.dll qua dung giao dien IClient ma Game.exe dung (NetConnectAgent):
 //   CreateInterface -> IClientFactory -> SetEnvironment -> CreateClientInterface(IID_IESClient) -> Startup
 //   -> RegisterMsgFilter -> ConnectTo -> SendPackToServer / GetPackFromServer -> (may chu dong) -> Shutdown -> Cleanup -> Release
-// Dung voi may_chu_gia.py. Chay: test_rainbow.exe <thu muc chua Rainbow.dll> <port> [so goi]
+// Dung voi may_chu_gia.py. Chay: test_rainbow.exe <thu muc chua Rainbow.dll> <port> [so goi] [giay ap luc]
+//   giay ap luc > 0: che do AP LUC (may chu chay --day N): trong N giay, moi 50 ms gui "ping" (nhu lenh di chuyen), tham
+//   GetPackFromServer moi 1 ms nhu vong khung; do RTT ping (tb/max/p99), khoang cach den cua goi PUSH (max), goi PUSH mat.
 // Ma thoat 0 = PASS. Dung duoc cho ca Rainbow.dll Win32 thuong (bin\client64) va ban SDL (bin\client64sdl) de so sanh.
 #define INITGUID
 #include <windows.h>
 #include <objbase.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <vector>
+#include <algorithm>
 #include "Interface/IClient.h"
 
 typedef HRESULT ( __stdcall *pfnCreateClientInterface )( REFIID riid, void **ppv );
@@ -22,6 +27,8 @@ static void __stdcall Cb( LPVOID lpParam, const unsigned long &ev )
 	else if ( ev == enumServerConnectClose ) InterlockedIncrement( &g_nClose );
 	printf( "  [cb] su kien 0x%lx (luong %lu)\n", ev, GetCurrentThreadId() );
 }
+
+static double Now() { static LARGE_INTEGER f = { 0 }; if ( !f.QuadPart ) QueryPerformanceFrequency( &f ); LARGE_INTEGER c; QueryPerformanceCounter( &c ); return ( double )c.QuadPart * 1000.0 / ( double )f.QuadPart; }
 
 static bool DoiGoi( IClient *c, const char *mong, DWORD msToiDa, DWORD *msMat )
 {
@@ -42,10 +49,63 @@ static bool DoiGoi( IClient *c, const char *mong, DWORD msToiDa, DWORD *msMat )
 	}
 }
 
+// che do ap luc: tra ve so loi
+static int ApLuc( IClient *c, int giay )
+{
+	std::vector<double> rtt; rtt.reserve( 4096 );
+	double t0 = Now(), tPingCuoi = t0, tPushCuoi = 0, gapMax = 0; int nPing = 0, nPush = 0, nPushMat = 0, nGoiLa = 0, seqCuoi = 0; double bytes = 0;
+	double gapPingMax = 0, tNhanCuoi = t0; int nGapLon = 0;
+	std::vector<double> gapPush; gapPush.reserve( 4096 );
+	printf( "  ap luc %d s: gui ping moi 50 ms, tham GetPackFromServer moi ~1 ms\n", giay );
+	while ( Now() - t0 < giay * 1000.0 )
+	{
+		double now = Now();
+		if ( now - tPingCuoi >= 50.0 )
+		{
+			char msg[64]; int len = _snprintf( msg, sizeof( msg ), "ping:%d:%.3f", ++nPing, now );
+			c->SendPackToServer( msg, ( size_t )len ); tPingCuoi = now;
+		}
+		for ( int k = 0; k < 64; k++ )		// rut het goi dang co (nhu Breathe)
+		{
+			size_t n = 0; const char *p = ( const char * )c->GetPackFromServer( n );
+			if ( 0 == n ) break;
+			bytes += ( double )n; double tn = Now();
+			if ( tn - tNhanCuoi > gapPingMax ) gapPingMax = tn - tNhanCuoi;
+			tNhanCuoi = tn;
+			if ( n > 10 && 0 == memcmp( p, "ECHO:ping:", 10 ) )
+			{
+				int id = 0; double ts = 0; if ( 2 == sscanf( p + 10, "%d:%lf", &id, &ts ) ) rtt.push_back( tn - ts );
+			}
+			else if ( n > 10 && 0 == memcmp( p, "ECHO:PUSH:", 10 ) ) { /* khong xay ra */ }
+			else if ( n > 5 && 0 == memcmp( p, "PUSH:", 5 ) )
+			{
+				int seq = atoi( p + 5 ); nPush++;
+				if ( seqCuoi && seq != seqCuoi + 1 ) nPushMat += ( seq - seqCuoi - 1 );
+				seqCuoi = seq;
+				if ( tPushCuoi > 0 ) { double g = tn - tPushCuoi; gapPush.push_back( g ); if ( g > gapMax ) gapMax = g; if ( g > 200.0 ) nGapLon++; }
+				tPushCuoi = tn;
+			}
+			else nGoiLa++;
+		}
+		Sleep( 1 );
+	}
+	std::sort( rtt.begin(), rtt.end() ); std::sort( gapPush.begin(), gapPush.end() );
+	double rttTb = 0; for ( size_t i = 0; i < rtt.size(); i++ ) rttTb += rtt[i]; if ( rtt.size() ) rttTb /= rtt.size();
+	double rttP99 = rtt.size() ? rtt[( size_t )( rtt.size() * 0.99 )] : 0, rttMax = rtt.size() ? rtt.back() : 0;
+	double gapP99 = gapPush.size() ? gapPush[( size_t )( gapPush.size() * 0.99 )] : 0;
+	printf( "  KET QUA AP LUC: ping gui %d, hoi %u, RTT tb %.1f ms, p99 %.1f ms, max %.1f ms | PUSH nhan %d, mat %d, khoang cach p99 %.1f ms, max %.1f ms, >200 ms: %d lan | %.0f KB, goi la %d\n",
+		nPing, ( unsigned )rtt.size(), rttTb, rttP99, rttMax, nPush, nPushMat, gapP99, gapMax, nGapLon, bytes / 1024.0, nGoiLa );
+	int fails = 0;
+	if ( ( int )rtt.size() < nPing - 2 ) { printf( "  FAIL: mat ping (%d/%d)\n", ( int )rtt.size(), nPing ); fails++; }
+	if ( nPushMat > 0 ) { printf( "  FAIL: mat goi PUSH\n" ); fails++; }
+	if ( rttMax > 1000.0 ) { printf( "  FAIL: RTT max > 1 s\n" ); fails++; }
+	return fails;
+}
+
 int main( int argc, char **argv )
 {
-	if ( argc < 3 ) { printf( "dung: test_rainbow.exe <thu muc Rainbow.dll> <port> [so goi]\n" ); return 2; }
-	const char *dir = argv[1]; unsigned short port = ( unsigned short )atoi( argv[2] ); int nGoi = argc > 3 ? atoi( argv[3] ) : 5;
+	if ( argc < 3 ) { printf( "dung: test_rainbow.exe <thu muc Rainbow.dll> <port> [so goi] [giay ap luc]\n" ); return 2; }
+	const char *dir = argv[1]; unsigned short port = ( unsigned short )atoi( argv[2] ); int nGoi = argc > 3 ? atoi( argv[3] ) : 5; int giayApLuc = argc > 4 ? atoi( argv[4] ) : 0;
 	char path[MAX_PATH]; _snprintf( path, MAX_PATH, "%s\\Rainbow.dll", dir );
 	int fails = 0;
 
@@ -67,17 +127,28 @@ int main( int argc, char **argv )
 	hr = c->Startup(); printf( "Startup -> 0x%lx\n", hr ); if ( FAILED( hr ) ) fails++;
 	c->RegisterMsgFilter( NULL, Cb );
 
-	// 1) ket noi sai cong: phai tra E_FAIL nhanh (khong treo)
-	DWORD t0 = GetTickCount();
-	hr = c->ConnectTo( "127.0.0.1", ( unsigned short )( port + 1 ) );
-	printf( "ConnectTo cong sai -> 0x%lx sau %lu ms %s\n", hr, GetTickCount() - t0, FAILED( hr ) ? "(OK, mong that bai)" : "(SAI: le ra that bai)" );
-	if ( !FAILED( hr ) ) fails++;
+	if ( giayApLuc <= 0 )
+	{
+		// 1) ket noi sai cong: phai tra E_FAIL nhanh (khong treo)
+		DWORD t0 = GetTickCount();
+		hr = c->ConnectTo( "127.0.0.1", ( unsigned short )( port + 1 ) );
+		printf( "ConnectTo cong sai -> 0x%lx sau %lu ms %s\n", hr, GetTickCount() - t0, FAILED( hr ) ? "(OK, mong that bai)" : "(SAI: le ra that bai)" );
+		if ( !FAILED( hr ) ) fails++;
+	}
 
 	// 2) ket noi dung
-	t0 = GetTickCount();
+	DWORD t0 = GetTickCount();
 	hr = c->ConnectTo( "127.0.0.1", port );
 	printf( "ConnectTo 127.0.0.1:%u -> 0x%lx sau %lu ms\n", port, hr, GetTickCount() - t0 );
 	if ( FAILED( hr ) ) { printf( "FAIL ket noi\n" ); return 1; }
+
+	if ( giayApLuc > 0 )
+	{
+		fails += ApLuc( c, giayApLuc );
+		c->Shutdown(); c->Cleanup(); c->Release(); f->Release(); FreeLibrary( h );
+		printf( "%s (ap luc): %d loi\n", fails ? "FAIL" : "PASS", fails );
+		return fails ? 1 : 0;
+	}
 
 	// 3) gui / nhan
 	DWORD msTong = 0, msMax = 0;
