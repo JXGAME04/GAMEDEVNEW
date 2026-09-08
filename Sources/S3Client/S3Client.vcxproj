@@ -98,7 +98,7 @@
     <OutDir>.\x64\ReleaseSDL\</OutDir>
     <IntDir>.\x64\ReleaseSDL\</IntDir>
     <TargetName>GameSDL</TargetName>
-    <JX_SDL3_DIR Condition="'$(JX_SDL3_DIR)'==''">E:\vcpkg-master\installed\x64-windows</JX_SDL3_DIR>
+    <JX_SDL3_DIR Condition="'$(JX_SDL3_DIR)'==''">$(ProjectDir)..\..\ThirdParty\SDL3</JX_SDL3_DIR>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
@@ -296,7 +296,7 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
       <Command>if not exist ..\..\bin\client64\ md ..\..\bin\client64\
 copy x64\ReleaseSDL\GameSDL.exe ..\..\bin\client64\GameSDL.exe
 copy x64\ReleaseSDL\GameSDL.pdb ..\..\bin\client64\GameSDL.pdb
-copy "$(JX_SDL3_DIR)\bin\SDL3.dll" ..\..\bin\client64\SDL3.dll</Command>
+copy "$(JX_SDL3_DIR)\lib\x64\SDL3.dll" ..\..\bin\client64\SDL3.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -320,7 +320,7 @@ copy "$(JX_SDL3_DIR)\bin\SDL3.dll" ..\..\bin\client64\SDL3.dll</Command>
       <SubSystem>Windows</SubSystem>
       <OutputFile>x64/ReleaseSDL/GameSDL.exe</OutputFile>
       <AdditionalLibraryDirectories>..\..\Lib\release64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(JX_SDL3_DIR)\lib\SDL3.lib;..\..\Lib\release64\CoreClient.lib;..\..\Lib\release64\engine.lib;..\..\Lib\release64\FilterText_StaticLib.lib;odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(JX_SDL3_DIR)\lib\x64\SDL3.lib;..\..\Lib\release64\CoreClient.lib;..\..\Lib\release64\engine.lib;..\..\Lib\release64\FilterText_StaticLib.lib;odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -11,7 +11,7 @@ t = io.open(p, encoding="utf-8-sig").read()
 if "ReleaseSDL|x64" in t:
     print("S3Client.vcxproj: da co ReleaseSDL|x64"); sys.exit(0)
 nl = "\r\n" if "\r\n" in t else "\n"
-SDL_DIR_DEF = r"E:\vcpkg-master\installed\x64-windows"
+SDL_DIR_DEF = r"$(ProjectDir)..\..\ThirdParty\SDL3"   # goi SDL3-devel-3.2.14-VC (include + lib\x64), khong can vcpkg
 
 # a) ProjectConfiguration
 m = re.search(r'(\s*<ProjectConfiguration Include="Release\|x64">.*?</ProjectConfiguration>)', t, re.S)
@@ -33,12 +33,12 @@ def clone_block(mm):
     if tag == "ItemDefinitionGroup":
         c = c.replace("<PreprocessorDefinitions>S3_CLIENT;", "<PreprocessorDefinitions>S3_CLIENT;JX_PLATFORM_SDL;SDL_MAIN_HANDLED;", 1)
         c = c.replace("<AdditionalIncludeDirectories>", "<AdditionalIncludeDirectories>$(JX_SDL3_DIR)\\include;", 1)
-        c = c.replace("<AdditionalDependencies>", "<AdditionalDependencies>$(JX_SDL3_DIR)\\lib\\SDL3.lib;", 1)
+        c = c.replace("<AdditionalDependencies>", "<AdditionalDependencies>$(JX_SDL3_DIR)\\lib\\x64\\SDL3.lib;", 1)
         c = re.sub(r"<Command>.*?</Command>",
                    "<Command>if not exist ..\\\\..\\\\bin\\\\client64\\\\ md ..\\\\..\\\\bin\\\\client64\\\\" + nl +
                    "copy x64\\\\ReleaseSDL\\\\GameSDL.exe ..\\\\..\\\\bin\\\\client64\\\\GameSDL.exe" + nl +
                    "copy x64\\\\ReleaseSDL\\\\GameSDL.pdb ..\\\\..\\\\bin\\\\client64\\\\GameSDL.pdb" + nl +
-                   "copy \"$(JX_SDL3_DIR)\\\\bin\\\\SDL3.dll\" ..\\\\..\\\\bin\\\\client64\\\\SDL3.dll</Command>", c, count=1, flags=re.S)
+                   "copy \"$(JX_SDL3_DIR)\\\\lib\\\\x64\\\\SDL3.dll\" ..\\\\..\\\\bin\\\\client64\\\\SDL3.dll</Command>", c, count=1, flags=re.S)
     if tag == "PropertyGroup" and "<OutDir>" in c and "Label=" not in c.split(">")[0]:
         c = c.replace("<LinkIncremental>", "<TargetName>GameSDL</TargetName>" + nl + "    <JX_SDL3_DIR Condition=\"'$(JX_SDL3_DIR)'==''\">" + SDL_DIR_DEF + "</JX_SDL3_DIR>" + nl + "    <LinkIncremental>", 1)
     return src + c

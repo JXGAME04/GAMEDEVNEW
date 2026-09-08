@@ -1,0 +1,7 @@
+@echo off
+rem [SDL 08/09] Chay thu GameSDL.exe (client 64-bit tren lop nen SDL3, hinh van Represent3) trong bin\client64.
+rem Cung du lieu/cau hinh voi Game.exe x64 (ChoiGame64.bat). Can SDL3.dll cung thu muc (post-build tu chep).
+cd /d "%~dp0"
+if not exist GameSDL.exe (echo Chua co GameSDL.exe - build ReleaseSDL^|x64 chua xong & pause & exit /b 1)
+if not exist SDL3.dll (echo Thieu SDL3.dll canh GameSDL.exe & pause & exit /b 1)
+start "" GameSDL.exe
