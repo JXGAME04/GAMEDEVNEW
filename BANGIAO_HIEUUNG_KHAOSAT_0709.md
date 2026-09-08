@@ -292,3 +292,13 @@ sau khi máy chủ đã restart**.
 MPS mục tiêu (24 byte), client không có NPC mục tiêu vẫn vẽ chiêu bay tới điểm đó (đếm `notgt_ve_toado`); hello phiên bản 5. `.moi`:
 `CoreClient.dll.moi` 32da0130 + `CoreServer.dll.moi` 91c28d73, commit 65a40615. RAM client sau [RAMTINH]: 273–280 MB ở texture 209–246 MB
 (trước 345–349) = **−65…−70 MB**. Máy chủ mới 8,7 GB WS (không tăng trong 2,5 phút; cũ 2,6 GB đo lúc không trận) — so lại ở trận sau.
+
+**7.4.2 Đo thật trận TK 16:0x–16:18 với bản [c] (client 32da0130 + máy chủ 91c28d73, 2 phút đông nhất):** client rx 1.586 gói 224,
+vẽ 1.441 (**90,9 %**); 117 (7,4 %) là chiêu của chính chủ (client tự mô phỏng); 28 (1,8 %) người phóng không có trong bảng NPC client;
+**mục tiêu thiếu = 0** (251 chiêu, 16 %, vẽ theo toạ độ nhờ [c]; bản 32da0130 đếm số này CẢ trong `ve` lẫn `notgt_ve_toado` — sửa
+đếm tách ở commit [d], chưa build). Trừ chiêu của chính mình: **98,1 % chiêu máy chủ bắn đều có hình**, `hong` 0. Máy chủ: 2.300–3.400
+gói 224/10 s, `bo_vi_client_cu` 0, đường gửi 5,7–6,2k gói/10 s, 24–36 KB/s, không đầy. Client RAM riêng 278–285 MB ở texture 240–279 MB
+(trước [RAMTINH] 345–349), fps 63, present 0,06 ms, không sập. Máy chủ WS 8,76 GB / commit 10,9 GB, không tăng (mức nền khởi động,
+dữ liệu tĩnh CoreServer.dll 1,7 GB; tiến trình 08:55 đo 2,6 GB nhiều khả năng là working set bị cắt).
+Còn lại 1,8 % = người phóng không có trên client (NPC chưa nạp / đã gỡ) — chỉ vẽ được nếu gói mang cả vị trí người phóng và
+tạo đạn không cần ô NPC (bước A2 "lớp hiệu ứng riêng" trong PHUONGAN_KIENTRUC_HIEUUNG_RAM_0809.md); phần lớn số này ở ngoài màn hình.
