@@ -13,6 +13,19 @@
 
 #include "windows.h"
 
+#ifdef JX_PLATFORM_SDL
+// [SDL 08/09 2b-1] SDL_Mutex (reentrant nhu CRITICAL_SECTION)
+class KCriticalSection
+{
+private:
+	SDL_Mutex*	m_pMutex;
+public:
+    KCriticalSection() { m_pMutex = SDL_CreateMutex(); }
+    ~KCriticalSection() { if (m_pMutex) SDL_DestroyMutex(m_pMutex); m_pMutex = NULL; }
+    int Lock() { SDL_LockMutex(m_pMutex); return true; }
+    int UnLock() { SDL_UnlockMutex(m_pMutex); return false; }
+};
+#else
 class KCriticalSection
 {
 
@@ -43,6 +56,7 @@ public:
         return false;
     }
 };
+#endif
 
 class KAutoCriticalSection
 {

@@ -17,7 +17,11 @@
 //---------------------------------------------------------------------------
 KEvent::KEvent()
 {
+#ifdef JX_PLATFORM_SDL	// [SDL 08/09 2b-1] event auto-reset ~ semaphore (HANDLE chua SDL_Semaphore*)
+    m_hEvent = (HANDLE)SDL_CreateSemaphore(0);
+#else
     m_hEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
+#endif
     if (!m_hEvent)
 		g_DebugLog("KEvent::KEvent(): CreateEvent() failed!");
 }
@@ -29,7 +33,11 @@ KEvent::KEvent()
 //---------------------------------------------------------------------------
 KEvent::~KEvent()
 {
+#ifdef JX_PLATFORM_SDL
+    SDL_DestroySemaphore((SDL_Semaphore*)m_hEvent);
+#else
     CloseHandle(m_hEvent);
+#endif
 }
 //---------------------------------------------------------------------------
 // º¯Êý:	Signal
@@ -39,7 +47,11 @@ KEvent::~KEvent()
 //---------------------------------------------------------------------------
 inline void KEvent::Signal(void)
 {
+#ifdef JX_PLATFORM_SDL
+    if (SDL_GetSemaphoreValue((SDL_Semaphore*)m_hEvent) == 0) SDL_SignalSemaphore((SDL_Semaphore*)m_hEvent);	// auto-reset: khong don
+#else
     SetEvent(m_hEvent);
+#endif
 }
 //---------------------------------------------------------------------------
 // º¯Êý:	Wait
@@ -49,7 +61,11 @@ inline void KEvent::Signal(void)
 //---------------------------------------------------------------------------
 inline void KEvent::Wait(void)
 {
+#ifdef JX_PLATFORM_SDL
+    SDL_WaitSemaphore((SDL_Semaphore*)m_hEvent);
+#else
     WaitForSingleObject(m_hEvent,INFINITE);
+#endif
 }
 //---------------------------------------------------------------------------
 // º¯Êý:	TimedWait
@@ -59,7 +75,11 @@ inline void KEvent::Wait(void)
 //---------------------------------------------------------------------------
 inline bool KEvent::TimedWait(long ms)
 {
+#ifdef JX_PLATFORM_SDL
+    return SDL_WaitSemaphoreTimeout((SDL_Semaphore*)m_hEvent, (Sint32)ms);
+#else
     int r = WaitForSingleObject(m_hEvent, ms);
     return (WAIT_TIMEOUT == r) ? false : true;
+#endif
 }
 //---------------------------------------------------------------------------

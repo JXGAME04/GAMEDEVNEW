@@ -18,7 +18,12 @@
 
 KTimer::KTimer()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)	// [SDL 08/09 2b-1]
+	m_nTimeStart.QuadPart = 0;
+	m_nTimeStop.QuadPart = 0;
+	m_nFPS = 0;
+	m_nFrequency.QuadPart = (LONGLONG)SDL_GetPerformanceFrequency();
+#elif defined(WIN32)
 	m_nFrequency.QuadPart = 200 * 1024 * 1024;
 	m_nTimeStart.QuadPart = 0;
 	m_nTimeStop.QuadPart = 0;
@@ -36,7 +41,9 @@ KTimer::KTimer()
 //---------------------------------------------------------------------------
 void KTimer::Start()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	m_nTimeStart.QuadPart = (LONGLONG)SDL_GetPerformanceCounter();
+#elif defined(WIN32)
 	QueryPerformanceCounter(&m_nTimeStart);
 #else
     gettimeofday(&m_nTimeStart, NULL);
@@ -50,7 +57,9 @@ void KTimer::Start()
 //---------------------------------------------------------------------------
 void KTimer::Stop()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	m_nTimeStop.QuadPart = (LONGLONG)SDL_GetPerformanceCounter();
+#elif defined(WIN32)
 	QueryPerformanceCounter(&m_nTimeStop);
 #else
 	gettimeofday(&m_nTimeStop, NULL);
@@ -64,7 +73,9 @@ void KTimer::Stop()
 //---------------------------------------------------------------------------
 DWORD KTimer::GetElapse()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	return (DWORD)(((LONGLONG)SDL_GetPerformanceCounter() - m_nTimeStart.QuadPart) * 1000 / m_nFrequency.QuadPart);
+#elif defined(WIN32)
 	LARGE_INTEGER nTime;
 	QueryPerformanceCounter(&nTime);
 	return (DWORD)((nTime.QuadPart - m_nTimeStart.QuadPart) 
@@ -83,7 +94,9 @@ DWORD KTimer::GetElapse()
 //---------------------------------------------------------------------------
 DWORD KTimer::GetElapseFrequency()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	return (DWORD)((LONGLONG)SDL_GetPerformanceCounter() - m_nTimeStart.QuadPart);
+#elif defined(WIN32)
 	LARGE_INTEGER nTime;
 	QueryPerformanceCounter(&nTime);
 	return (DWORD)(nTime.QuadPart - m_nTimeStart.QuadPart);

@@ -80,9 +80,26 @@ DWORD KThread::ThreadFunction()
 //			arg 		线程参数
 // 返回:	BOOL
 //---------------------------------------------------------------------------
+#ifdef JX_PLATFORM_SDL
+// [SDL 08/09 2b-1] luong SDL: HANDLE m_ThreadHandle chua SDL_Thread*; m_ThreadId = 1 khi dang chay, 0 khi xong
+static int SDLCALL KThread_SdlProc(void* pParam)
+{
+	KThread* pThread = (KThread*)pParam;
+	pThread->ThreadFunction();
+	pThread->m_ThreadId = 0;
+	return 0;
+}
+#endif
 BOOL KThread::Create(TThreadFunc lpFunc, void* lpParam)
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	m_ThreadFunc   = lpFunc;
+	m_ThreadParam  = lpParam;
+	m_ThreadId     = 1;
+	m_ThreadHandle = (HANDLE)SDL_CreateThread(KThread_SdlProc, "KThread", this);
+	if (!m_ThreadHandle) m_ThreadId = 0;
+	return (m_ThreadHandle != NULL);
+#elif defined(WIN32)
 	m_ThreadFunc   = lpFunc;
 	m_ThreadParam  = lpParam;
 	m_ThreadHandle = (HANDLE)_beginthreadex(
@@ -108,7 +125,9 @@ BOOL KThread::Create(TThreadFunc lpFunc, void* lpParam)
 //---------------------------------------------------------------------------
 void KThread::Destroy()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	SDL_Log("[SDL] KThread::Destroy: SDL khong co TerminateThread - luong phai tu thoat bang co");
+#elif defined(WIN32)
 	TerminateThread(m_ThreadHandle, 0);
 #endif
 }
@@ -120,7 +139,9 @@ void KThread::Destroy()
 //---------------------------------------------------------------------------
 void KThread::Suspend()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	SDL_Log("[SDL] KThread::Suspend: khong ho tro");
+#elif defined(WIN32)
 	 SuspendThread(m_ThreadHandle);
 #endif
 }
@@ -132,7 +153,9 @@ void KThread::Suspend()
 //---------------------------------------------------------------------------
 void KThread::Resume()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	SDL_Log("[SDL] KThread::Resume: khong ho tro");
+#elif defined(WIN32)
 	ResumeThread(m_ThreadHandle);
 #endif
 }
@@ -144,7 +167,9 @@ void KThread::Resume()
 //---------------------------------------------------------------------------
 BOOL KThread::IsRunning()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	return (m_ThreadHandle != NULL && m_ThreadId != 0);
+#elif defined(WIN32)
 	DWORD dwResult = WaitForSingleObject(m_ThreadHandle, 0);
 	return (dwResult == WAIT_OBJECT_0);
 #endif
@@ -158,7 +183,9 @@ BOOL KThread::IsRunning()
 //---------------------------------------------------------------------------
 void KThread::WaitForExit()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	if (m_ThreadHandle) { SDL_WaitThread((SDL_Thread*)m_ThreadHandle, NULL); m_ThreadHandle = NULL; }
+#elif defined(WIN32)
 	WaitForSingleObject(m_ThreadHandle, INFINITE);
 #endif
 }
@@ -170,7 +197,9 @@ void KThread::WaitForExit()
 //---------------------------------------------------------------------------
 int KThread::GetPriority()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	return 0;
+#elif defined(WIN32)
 	return GetThreadPriority(m_ThreadHandle);
 #endif
 //	return 0;

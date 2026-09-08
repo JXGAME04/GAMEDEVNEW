@@ -12,7 +12,9 @@
 
 KMutex::KMutex()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)	// [SDL 08/09 2b-1] (m_CriticalSection dung lam cho chua con tro SDL_Mutex, xem KMutex.h)
+	*(SDL_Mutex**)&m_CriticalSection = SDL_CreateMutex();
+#elif defined(WIN32)
 #ifdef SINGLE_PROCESS
 	InitializeCriticalSection(&m_CriticalSection);
 #else
@@ -32,7 +34,9 @@ KMutex::KMutex()
 //---------------------------------------------------------------------------
 KMutex::~KMutex()
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	SDL_DestroyMutex(*(SDL_Mutex**)&m_CriticalSection);
+#elif defined(WIN32)
 #ifdef SINGLE_PROCESS
 	DeleteCriticalSection(&m_CriticalSection);
 #else
@@ -51,7 +55,9 @@ KMutex::~KMutex()
 //---------------------------------------------------------------------------
 void KMutex::Lock(void)
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	SDL_LockMutex(*(SDL_Mutex**)&m_CriticalSection);
+#elif defined(WIN32)
 #ifdef SINGLE_PROCESS
 	EnterCriticalSection(&m_CriticalSection);
 #else
@@ -69,7 +75,9 @@ void KMutex::Lock(void)
 //---------------------------------------------------------------------------
 void KMutex::Unlock(void)
 {
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	SDL_UnlockMutex(*(SDL_Mutex**)&m_CriticalSection);
+#elif defined(WIN32)
 #ifdef SINGLE_PROCESS
 	LeaveCriticalSection(&m_CriticalSection);
 #else

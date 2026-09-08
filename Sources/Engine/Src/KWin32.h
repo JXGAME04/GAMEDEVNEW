@@ -39,6 +39,13 @@
         #include <dsound.h>
         #include <dinput.h>
         #include <ddraw.h>
+#ifdef JX_PLATFORM_SDL
+	// [SDL 08/09 2b-1] ban SDL (GameSDL.exe / mobile): thoi gian, luong, khoa, tep di qua SDL3 ngay ca tren Windows de kiem truoc khi sang Android.
+	#include <SDL3/SDL.h>
+	#define timeGetTime()   ((DWORD)SDL_GetTicks())
+	#define GetTickCount()  ((DWORD)SDL_GetTicks())
+	#define Sleep(ms)       SDL_Delay((Uint32)(ms))
+#endif
 #else
         #define LONG long
 		#define INT int

@@ -43,6 +43,18 @@ HWND g_FindDebugWindow(char* lpClassName, char* lpWindowName)
 //---------------------------------------------------------------------------
 void g_DebugLog(LPSTR Fmt, ...)
 {
+#ifdef JX_PLATFORM_SDL	// [SDL 08/09 2b-1] ra SDL_Log (Windows: OutputDebugString + stderr; Android: logcat), van gui DebugWin neu co
+	{
+		char szSdl[2048];
+		va_list vaSdl;
+		va_start(vaSdl, Fmt);
+		int nSdl = _vsnprintf(szSdl, sizeof(szSdl) - 1, Fmt, vaSdl);
+		va_end(vaSdl);
+		if (nSdl < 0) nSdl = (int)sizeof(szSdl) - 1;
+		szSdl[nSdl] = 0;
+		SDL_Log("%s", szSdl);
+	}
+#endif
 #ifndef __linux
 	if (m_hWndDebug)
 	{
@@ -92,7 +104,11 @@ void g_MessageBox(LPSTR lpMsg, ...)
 	va_end(va);
 	g_DebugLog(szMsg);
 //	MessageBox(g_GetMainHWnd(), szMsg, 0, MB_OK);
+#ifdef JX_PLATFORM_SDL
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "JXWC", szMsg, NULL);	// [SDL 08/09 2b-1]
+#else
 	MessageBox(NULL, szMsg, 0, MB_OK);
+#endif
 #endif
 }
 //---------------------------------------------------------------------------
