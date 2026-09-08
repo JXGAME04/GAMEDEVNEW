@@ -116,3 +116,22 @@ của phiên khác, chưa commit) → hiện là bản 62.140 B khác HEAD; x64 
 `Lib/lua54/x64/Lua54Dll.*` trong git là bản cũ (thiếu `lua4_pushboolean`) → đã thay bằng bản dựng lại (bacbdcb2). Post-build S3Client x64 luôn báo
 6 lỗi MSB3073 (copy `Game.map` không tồn tại) — chỉ tin `error C`/`LNK`. Công cụ PowerShell nền có trần 10 phút → script chờ-rồi-build phải chạy tách
 rời bằng `Start-Process`.
+
+## 8. Gốc lỗi 'mặt nạ' — TÌM RA và ĐÃ SỬA (13:5x, chủ xác nhận "đã oke rồi")
+
+Log `[NGOAIHINH]` phiên x64 pid 68092 (`doc_ngoaihinh_log.py`): ngay lúc đăng nhập `m_MaskType = 94` (= `ManTypeNameIdx`, KOption.h) → `Activate self:
+mask=94` → `Draw self`: mọi bộ phận trang bị rỗng, part5 = `\spr\npcres\enemy\enemy067\enemy067_st.spr` — nhân vật bị vẽ bằng mẫu NPC enemy067. 94 chỉ
+được gán ở nhánh `Option.GetLow(LowPlayer)` ("giảm chi tiết người chơi") trong `KProtocolProcess::SyncPlayer/SyncPlayerMin`. 19 s sau (chủ tháo món đầu)
+`SyncPlayerMin self: mask=0 low=0` → bình thường.
+
+**Vì sao cờ bật lúc khởi động:** `KUiOptions2::LoadSetting` (UiOptions2.cpp:217) khởi tạo `bOptionsEnable = {true,true,true,true}`; được gọi ở
+`UiInit.cpp:69` (vừa mở game) và `UiShell.cpp:430` (mỗi WM_ACTIVATEAPP) — lúc đó `g_UiBase.GetAutoSettingFile()` trả NULL vì chưa biết tài khoản, hàm vẫn
+đẩy 4 mặc định TRUE xuống Core qua `GOI_OPTION_SETTING`. Đến `GDCNI_GAME_START` (GameSpaceChangedNotify.cpp:509) mới đọc được ini (`GiamPlayer=0`), nhưng
+gói đồng bộ đầu tiên của chính mình đã áp mặt nạ 94 và giữ tới lần đồng bộ sau.
+
+**Vá 1cb276dd** (`ReverseTools/mobile_x64/va_uioptions2_khong_day_mac_dinh.py`): không có tệp cấu hình tài khoản → `return`, không đẩy mặc định. Một chỗ,
+S3Client. **Mã này là mã chung — bản PC 32-bit cũng có tiềm ẩn** (lộ hay không tuỳ thứ tự gói đồng bộ so với GDCNI_GAME_START); chủ quyết đưa về main.
+Sập đăng nhập lại (mục 7) chủ cũng xác nhận hết. Bộ đếm còn giữ: `[NGOAIHINH]` SyncPlayer/Equip/UnEquip/Activate/SwitchMaskFeature/SyncMaskLock +
+GetImageParam OK/FAIL (đều hiếm); ảnh chụp `Draw self` mỗi 3 s đã bỏ (a72602c4).
+
+**Trạng thái pha 0:** Game.exe x64 vào game, chơi, thoát/đăng nhập lại, ngoại hình đúng. Còn: chứng minh Win32 không đổi (mục 5.1), vá nhỏ (5.4), pha 1.
