@@ -18,7 +18,7 @@ assert i > 0 and i - m.end() < 600, "khong thay neo m_pcResNode gan dau ham"
 ins = nl.join([
     b"#ifndef _SERVER",
     b"\t// " + TAG + b" moi 3 s ghi ten sprite + khung/huong tung bo phan cua chinh minh (chan doan 'nhu dang mang mat na' tren x64)",
-    b"\tif (Npc[nNpcIdx].m_Kind == kind_player && Npc[nNpcIdx].GetPlayerIdx() > 0)",
+    b"\tif (nNpcIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)",
     b"\t{",
     b"\t\tstatic DWORD s_uNgoaiHinhLuc = 0;",
     b"\t\tDWORD uNgoaiHinhNow = GetTickCount();",

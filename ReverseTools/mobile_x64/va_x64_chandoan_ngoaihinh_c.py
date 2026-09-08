@@ -23,13 +23,13 @@ m = ms[0]
 ind_in = m.group(2)   # thut le trong khoi (7 tab)
 ind_out = m.group(3)  # thut le cua dau '}' (6 tab)
 ok_log = (b"#ifndef _SERVER" + nl +
-          ind_in + b"if (Npc[nNpcIdx].m_Kind == kind_player && Npc[nNpcIdx].GetPlayerIdx() > 0)\t// " + TAG + nl +
+          ind_in + b"if (nNpcIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)\t// " + TAG + nl +
           ind_in + b"\tAUTOLOG(\"[NGOAIHINH] GetImageParam OK part%d name='%s' frames=%d dirs=%d\", i, m_cNpcImage[i].m_szName, m_cNpcImage[i].m_nTotalFrame, m_cNpcImage[i].m_nTotalDir);" + nl +
           b"#endif" + nl)
 fail_log = (ind_out + b"else" + nl +
             ind_out + b"{" + nl +
             b"#ifndef _SERVER" + nl +
-            ind_in + b"if (Npc[nNpcIdx].m_Kind == kind_player && Npc[nNpcIdx].GetPlayerIdx() > 0)\t// " + TAG + b" that bai -> m_bChange ket, khong SetCurFrame" + nl +
+            ind_in + b"if (nNpcIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)\t// " + TAG + b" that bai -> m_bChange ket, khong SetCurFrame" + nl +
             ind_in + b"\tAUTOLOG_EVERY(2000, \"[NGOAIHINH] GetImageParam FAIL part%d name='%s' (frames=%d dirs=%d)\", i, m_cNpcImage[i].m_szName, m_cNpcImage[i].m_nTotalFrame, m_cNpcImage[i].m_nTotalDir);" + nl +
             b"#endif" + nl +
             ind_out + b"}" + nl)

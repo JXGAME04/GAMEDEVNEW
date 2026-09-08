@@ -13,6 +13,7 @@
 
 #include "KSprite.h"
 #include "KNpc.h"
+#include "KPlayer.h"	// [X64 08/09 NGOAIHINH] Player[CLIENT_PLAYER_INDEX] cho bo chan doan
 #include "KNpcResList.h"
 #include "KNpcRes.h"
 #include <new>	// [RAMTINH 08/09] std::nothrow
@@ -265,7 +266,7 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 		return;
 #ifndef _SERVER
 	// [X64 08/09 NGOAIHINH b] moi 3 s ghi ten sprite + khung/huong tung bo phan cua chinh minh (chan doan 'nhu dang mang mat na' tren x64)
-	if (Npc[nNpcIdx].m_Kind == kind_player && Npc[nNpcIdx].GetPlayerIdx() > 0)
+	if (nNpcIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)
 	{
 		static DWORD s_uNgoaiHinhLuc = 0;
 		DWORD uNgoaiHinhNow = GetTickCount();
@@ -339,14 +340,14 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 							m_cNpcImage[i].m_nTotalFrame = sImage.nNumFrames;
 							m_cNpcImage[i].m_bChange = FALSE;
 #ifndef _SERVER
-							if (Npc[nNpcIdx].m_Kind == kind_player && Npc[nNpcIdx].GetPlayerIdx() > 0)	// [X64 08/09 NGOAIHINH c]
+							if (nNpcIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)	// [X64 08/09 NGOAIHINH c]
 								AUTOLOG("[NGOAIHINH] GetImageParam OK part%d name='%s' frames=%d dirs=%d", i, m_cNpcImage[i].m_szName, m_cNpcImage[i].m_nTotalFrame, m_cNpcImage[i].m_nTotalDir);
 #endif
 						}
 						else
 						{
 #ifndef _SERVER
-							if (Npc[nNpcIdx].m_Kind == kind_player && Npc[nNpcIdx].GetPlayerIdx() > 0)	// [X64 08/09 NGOAIHINH c] that bai -> m_bChange ket, khong SetCurFrame
+							if (nNpcIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)	// [X64 08/09 NGOAIHINH c] that bai -> m_bChange ket, khong SetCurFrame
 								AUTOLOG_EVERY(2000, "[NGOAIHINH] GetImageParam FAIL part%d name='%s' (frames=%d dirs=%d)", i, m_cNpcImage[i].m_szName, m_cNpcImage[i].m_nTotalFrame, m_cNpcImage[i].m_nTotalDir);
 #endif
 						}
