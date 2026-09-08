@@ -381,3 +381,9 @@ cập `Npc[]`/`SubWorld[]`), vì vậy có 3 `.moi`: `CoreClient.dll.moi`, `Game
 [HUSK], BANGIAO_HIEUUNG_KHAOSAT_0709.md 7.4). Máy chủ không đổi bố cục (`KNpcRes` chỉ có ở client; nhánh client của `KSubWorld`).
 Kỳ vọng "RAM riêng" client giảm ~60–75 MB (345 → ~275 MB ở texture 250 MB). Cần kéo log sau khi chủ chơi để chốt. Commit 9b507190.
 Rủi ro: A* chạy bộ xuyên map / Dã Tẩu / bản đồ thế giới dùng lưới → phải thử một lần đi bộ tự động sau swap.
+
+**7.1 SẬP 15:41 ngay sau swap (jx_crash.log): `KNpcBlur::SetMapPos` → `KScenePlaceC::MoveObject` ghi địa chỉ rác.** Gốc: `KNpcBlur` trước
+nằm trong `Npc[]` tĩnh (.bss = 0 trước khi ctor chạy) nên `m_SceneID[]`/`m_SceneIDNpcIdx[]`/`m_nMapXpos..` = 0; ctor không gán các mảng
+đó → cấp bằng `new` trên heap = rác → `MoveObject` với id rác. Sửa [b]: `calloc` + placement new (= y hệt tĩnh), thả bằng dtor + `free`;
+lưới `VGridNode` cũng cấp `calloc` + placement new từng ô (ctor chỉ gán w/h/connStart). `CoreClient.dll.moi` **fa5a9711** thay a73f7849,
+commit f3be4f4c. **Bài học:** dời một đối tượng từ vùng tĩnh sang heap thì phải xoá 0 trước khi chạy ctor, vì mã cũ ngầm dựa vào .bss = 0.
