@@ -15,6 +15,7 @@
 #include "KWin32Wnd.h"	// g_SetMainHWnd / g_SetDrawHWnd / g_GetMainHWnd
 extern int SCREEN_WIDTH, SCREEN_HEIGHT;	// S3Client.cpp (WND_INIT_* cua Engine khong export)
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>	// SDL_RegisterApp/SDL_UnregisterApp (SDL.h khong include SDL_main.h; SDL_MAIN_HANDLED da define nen khong dinh nghia lai main)
 
 static KSdlApp* s_pSdlApp = NULL;
 
