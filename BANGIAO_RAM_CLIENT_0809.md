@@ -212,3 +212,26 @@ CPU vô ích, cần chép tệp hoặc sửa UI không xin; (3) `Rep3CacheMB=150
   được ưu tiên trước pak; tên thư mục = byte GBK giải theo ACP 1252) bằng `ReverseTools/pak_vltk/rut_bieucam_0809.py --rut`, và
   `Count=911 → 323` (bản lưu `ChatPics.ini.truoc_bieucam`). Cần restart client (TextPic nạp lúc khởi động).
 - `anh_null` trong dòng `[REP3]` gồm cả "khung ngoài tầm" (`nFrame >= m_nFrameNum`) chứ không chỉ ảnh thiếu — chưa tách.
+
+### 6.8 12:19 (bản [f] flip) — Present CHẶN; bản [g+h+i]
+
+Log phiên 12:19 (flip, không tearing): `present TB 6–16 ms`, fps ghim 60 (màn 59 Hz), `jx_paint` passes avg 9 ms (trước 1 ms):
+DXGI xếp hàng tối đa 3 khung rồi CHẶN Present khi game vẽ 63 fps > 60 Hz. RAM 371–378 MB ở texture 525 MB (D3D9 ~680); VRAM thật
+1.021 MB / ngân sách 9.283 (atlas 283 trang = 1.132 MB, 2,16× texture); gpu tex 48.439.
+
+**[g]** `IDXGIDevice1::SetMaximumFrameLatency(1)` + `Present(0, DXGI_PRESENT_DO_NOT_WAIT)`: hàng đầy → `WAS_STILL_DRAWING` → bỏ khung
+(đếm `bo`), không chờ, không xé hình → giống D3D9 cửa sổ. Harness: present 0,03 ms.
+**[h]** dòng `[REP3] anh_null top:` 8 tên ảnh + khung bị bỏ qua nhiều nhất mỗi 30 s (để biết 900 lượt/khung là gì).
+**[i]** atlas xếp kệ: trang theo lớp chiều cao (16…512), hàng rộng 1024, ảnh chiếm đoạn rộng w (first-fit), thả thì gộp đoạn →
+phí chỉ do làm tròn chiều cao (≤ 1,5×) + đoạn thừa cuối hàng; kỳ vọng ~1,3× thay vì 2,16×.
+`Represent3.dll.moi` 0ef5b550 chờ restart. Harness ảnh vẫn trùng D3D9 (0,004 %).
+
+**Bảng so sánh các phiên (cùng máy, cùng cache 1500):**
+
+| Phiên | Lớp vẽ | RAM riêng theo texture | RAM ở ~500 MB texture | Present | fps |
+|---|---|---|---|---|---|
+| 09:35 | D3D9 | 177 + 0,95× | ~650 | không đo (không chặn, không xé) | 63 |
+| 11:34 | D3D11, chưa atlas | 185 + 0,74× | ~555 | flip + tearing, 0,1 ms | 63 |
+| 11:51 | D3D11 + atlas [d] | ~300 + 0,1× | **347 @ 479** | bitblt 0,07 ms, có "gợn sóng" | 63 |
+| 12:19 | + flip không tearing [f] | ~300 + 0,1× | **375 @ 525** | 6–16 ms, CHẶN | 60 |
+| chờ | + [g] DO_NOT_WAIT, [i] kệ | như trên | như trên | ~0,05 ms, bỏ ~3 khung/s | 63 |
