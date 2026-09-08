@@ -11,6 +11,7 @@
 #include "shlwapi.h"
 #include "Wnds.h"
 #include "MouseHover.h"
+#include "UiToaDo.h"	// [UITOADO]
 
 #include "../../../Represent/iRepresent/iRepresentShell.h"
 #include "../../../Represent/iRepresent/KRepresentUnit.h"
@@ -38,6 +39,9 @@ KWndWindow::KWndWindow()
 	m_nAbsoluteTop	= 0;
 
 	m_szMucIni[0]	= 0;			// [UITOADO]
+	m_nUiTiLe		= 1000;			// [UITOADO] 1000 = 100%, chua doi
+	m_nUiGocW		= 0;
+	m_nUiGocH		= 0;
 
 	m_bMoving = false;
 	m_nLastMouseHoldPosX = m_nLastMouseHoldPosY = 0;
@@ -128,6 +132,43 @@ void KWndWindow::GetSize(int* pWidth, int* pHeight)
 //--------------------------------------------------------------------------
 //	功能：设置窗口大小
 //--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+//	[UITOADO] dat lai ti le cua o nay (phan nghin, 1000 = 100%)
+//--------------------------------------------------------------------------
+void KWndWindow::UiDatTiLe(int nTiLe)
+{
+	if (nTiLe < 300)
+		nTiLe = 300;
+	if (nTiLe > 3000)
+		nTiLe = 3000;
+
+	// chup kich thuoc goc dung mot lan, sau do luon tinh TU GOC
+	// => ap lai bao nhieu lan cung ra mot ket qua, khong nhan don
+	if (m_nUiGocW == 0 && m_nUiGocH == 0)
+	{
+		m_nUiGocW = m_Width;
+		m_nUiGocH = m_Height;
+	}
+	m_nUiTiLe = nTiLe;
+	SetSize(m_nUiGocW * nTiLe / 1000, m_nUiGocH * nTiLe / 1000);
+}
+
+//--------------------------------------------------------------------------
+//	[UITOADO] an han / hien lai o nay
+//--------------------------------------------------------------------------
+void KWndWindow::UiDatAn(int bAn)
+{
+	if (bAn)
+	{
+		m_Style |= WND_S_UITOADO_AN;
+		// khong di qua Hide() nen phai tu don chuot / tieu diem dang giu
+		if (Wnd_GetFocusWnd() == this)
+			Wnd_SetFocusWnd(NULL);
+	}
+	else
+		m_Style &= ~WND_S_UITOADO_AN;
+}
+
 void KWndWindow::SetSize(int nWidth, int nHeight)
 {
 	if (nWidth < 0)
@@ -319,6 +360,10 @@ int KWndWindow::Init(KIniFile* pIniFile, const char* pSection)
 int KWndWindow::PtInWindow(int x, int y)
 {
 	int nRet = 0;
+	// [UITOADO] o da bi "xoa" thi khong bat chuot nua - tru khi dang o
+	// che do sua giao dien, luc do van phai bam duoc de bat hien lai
+	if ((m_Style & WND_S_UITOADO_AN) && !UiToaDo_DangSua())
+		return 0;
 	if (m_Style & WND_S_VISIBLE)
 	{
 		if ((m_Style & WND_S_SIZE_WITH_ALL_CHILD) == 0)
@@ -348,7 +393,10 @@ int KWndWindow::PtInWindow(int x, int y)
 //--------------------------------------------------------------------------
 void KWndWindow::Paint()
 {
-	if (m_Style & WND_S_VISIBLE)
+	// [UITOADO] o da bi "xoa" thi khong ve nua (ca o con cua no) - tru khi
+	// dang o che do sua giao dien, luc do van ve de con thay ma hien lai
+	if ((m_Style & WND_S_VISIBLE) &&
+		((m_Style & WND_S_UITOADO_AN) == 0 || UiToaDo_DangSua()))
 	{
 		PaintWindow();
 		if (m_pFirstChild)

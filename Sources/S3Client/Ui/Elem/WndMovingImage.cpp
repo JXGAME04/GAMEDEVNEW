@@ -51,6 +51,13 @@ int KWndMovingImage::Init(KIniFile* pIniFile, const char* pSection)
 	return false;
 }
 
+// [UITOADO] xem chu thich o WndMovingImage.h
+void KWndMovingImage::UiNhoViTri()
+{
+	m_oFixPos.x = m_Left;
+	m_oFixPos.y = m_Top;
+}
+
 void KWndMovingImage::SetMoveValue(int nCurrentValue, int nFullValue)
 {
 	m_nFullValue = nFullValue ? nFullValue : 1;

@@ -210,6 +210,8 @@ void Wnd_OnWindowDelete(KWndWindow* pWnd)
 {
 	if (pWnd)
 	{		
+		// [UITOADO] bo moi con tro che do sua giao dien dang giu toi cua so nay
+		UiToaDo_QuenCuaSo(pWnd);
 		if (s_WndStation.pMouseOverWnd == pWnd)
 			s_WndStation.pMouseOverWnd = NULL;
 		if (s_WndStation.pCaptureMouseWnd == pWnd)
