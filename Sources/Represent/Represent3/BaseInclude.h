@@ -60,6 +60,7 @@ extern unsigned g_uRep3GpuTexCount;          // [D3D11 08/09] so texture GPU dan
 extern unsigned __int64 g_uRep3GpuTexBytes;  // [D3D11 08/09] byte texture GPU
 extern int  g_nRep3Atlas;       // [D3D11 08/09 d] gom texture nho vao trang atlas
 extern unsigned g_uRep3AtlasPages; extern unsigned __int64 g_uRep3AtlasBytes;
+extern int  g_nRep3Batch; extern unsigned g_uRep3BatchQuads; extern unsigned g_uRep3BatchDraws;	// [D3D11 08/09 j]
 extern int  g_nRep3Tearing;     // [D3D11 08/09 f]
 void Rep3_D3D11VramInfo(unsigned* puUsedMB, unsigned* puBudgetMB);
 extern int  g_nRep3Flip;        // [D3D11 08/09 b] 1 = swapchain flip, 0 = bitblt cu

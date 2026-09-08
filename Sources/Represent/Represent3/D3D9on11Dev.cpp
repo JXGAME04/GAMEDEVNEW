@@ -15,6 +15,8 @@ static CDev11* g_pRep3Dev11 = NULL;
 double   g_dRep3PresentMs = 0.0;
 unsigned g_uRep3Presents = 0;
 unsigned g_uRep3PresentSkip = 0;
+unsigned g_uRep3BatchQuads = 0;
+unsigned g_uRep3BatchDraws = 0;
 double   g_dRep3DrawMs = 0.0;
 unsigned g_uRep3Draws = 0;
 
@@ -60,6 +62,7 @@ CDev11::CDev11(CD3D11Shim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 		m_ss[s][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP; m_ss[s][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP; m_ss[s][D3DSAMP_ADDRESSW] = D3DTADDRESS_WRAP;
 		m_ss[s][D3DSAMP_MAGFILTER] = D3DTEXF_POINT; m_ss[s][D3DSAMP_MINFILTER] = D3DTEXF_POINT; m_ss[s][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
 	}
+	m_bAppliedValid = false; m_batchVerts = 0; memset(&m_batchState, 0, sizeof(m_batchState)); memset(&m_lastApplied, 0, sizeof(m_lastApplied));
 	ResetAppliedState();
 }
 
@@ -159,7 +162,7 @@ bool CDev11::CreateSwapChain(UINT w, UINT h, bool bWindowed)
 	m_pFactory->MakeWindowAssociation(m_hWnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 	{	// [D3D11 08/09 g] toi da 1 khung cho trinh chieu -> Present(DO_NOT_WAIT) bo khung thua thay vi chan
 		IDXGIDevice1* pDev1 = NULL;
-		if (SUCCEEDED(m_pDev->QueryInterface(__uuidof(IDXGIDevice1), (void**)&pDev1)) && pDev1) { pDev1->SetMaximumFrameLatency(1); pDev1->Release(); }
+		if (SUCCEEDED(m_pDev->QueryInterface(__uuidof(IDXGIDevice1), (void**)&pDev1)) && pDev1) { pDev1->SetMaximumFrameLatency(2); pDev1->Release(); }
 	}
 	if (!bWindowed)
 	{
@@ -291,6 +294,7 @@ HRESULT CDev11::Reset(D3DPRESENT_PARAMETERS* pp)
 {
 	if (!pp) return D3DERR_INVALIDCALL;
 	Lock();
+	FlushIfPending();
 	m_pp = *pp;
 	UINT w = pp->BackBufferWidth ? pp->BackBufferWidth : m_bbW, h = pp->BackBufferHeight ? pp->BackBufferHeight : m_bbH;
 	bool bWin = pp->Windowed != FALSE;
@@ -325,6 +329,7 @@ void CDev11::UpdateLastFrame()
 HRESULT CDev11::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion)
 {
 	Lock();
+	FlushIfPending();
 	LARGE_INTEGER t0, t1; QueryPerformanceCounter(&t0);
 	UpdateLastFrame();
 	UINT interval = (m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE) ? 0 : 1;
@@ -414,6 +419,7 @@ HRESULT CDev11::UpdateTexture(IDirect3DBaseTexture9* pSourceTexture, IDirect3DBa
 	if (!pS || !pD || !pS->m_pCpu) return D3DERR_INVALIDCALL;
 	if (pS->m_w != pD->m_w || pS->m_h != pD->m_h || pS->m_fmt != pD->m_fmt) { R11Log("UpdateTexture: kich thuoc/dinh dang lech"); return D3DERR_INVALIDCALL; }
 	Lock();
+	FlushIfPending();
 	HRESULT hr;
 	if (pD->m_pCpu)
 	{
@@ -450,6 +456,7 @@ HRESULT CDev11::GetRenderTargetData(IDirect3DSurface9* pRenderTarget, IDirect3DS
 	if (!pSrcTex || !pOut) return D3DERR_INVALIDCALL;
 	if (outFmt != D3DFMT_A8R8G8B8 && outFmt != D3DFMT_X8R8G8B8) { R11Stub("GetRenderTargetData dinh dang dich khong 32 bit"); return D3DERR_INVALIDCALL; }
 	Lock();
+	FlushIfPending();
 	D3D11_TEXTURE2D_DESC td; pSrcTex->GetDesc(&td);
 	td.BindFlags = 0; td.Usage = D3D11_USAGE_STAGING; td.CPUAccessFlags = D3D11_CPU_ACCESS_READ; td.MiscFlags = 0;
 	ID3D11Texture2D* pSt = NULL;
@@ -475,6 +482,7 @@ HRESULT CDev11::GetFrontBufferData(UINT iSwapChain, IDirect3DSurface9* pDestSurf
 	CSurf11* pDst = (CSurf11*)pDestSurface;
 	if (!pDst || pDst->m_kind != R11SURF_OFFSCREEN || !pDst->m_pCpu || !m_pLastFrame) return D3DERR_INVALIDCALL;
 	Lock();
+	FlushIfPending();
 	if (!m_pStaging)
 	{
 		D3D11_TEXTURE2D_DESC td; m_pLastFrame->GetDesc(&td);
@@ -528,6 +536,7 @@ HRESULT CDev11::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRen
 	CSurf11* pS = (CSurf11*)pRenderTarget;
 	if (!pS) return D3DERR_INVALIDCALL;
 	Lock();
+	FlushIfPending();
 	R11_SAFE_RELEASE(m_pRt);
 	UINT w = m_bbW, h = m_bbH;
 	if (pS->m_kind == R11SURF_TEX && pS->m_pTex)
@@ -569,6 +578,7 @@ HRESULT CDev11::Clear(DWORD Count, CONST D3DRECT* pRects, DWORD Flags, D3DCOLOR 
 {
 	if (!(Flags & D3DCLEAR_TARGET)) return D3D_OK;
 	Lock();
+	FlushIfPending();
 	BindRenderTarget();
 	ID3D11RenderTargetView* pRtv = (m_pRt && m_pRt->m_pTex) ? m_pRt->m_pTex->m_pRtv : m_pBackRtv;
 	float c[4] = { ((Color >> 16) & 255) / 255.0f, ((Color >> 8) & 255) / 255.0f, (Color & 255) / 255.0f, ((Color >> 24) & 255) / 255.0f };
@@ -784,67 +794,24 @@ void CDev11::ResetAppliedState()
 	m_lastBlendKey = 0xFFFFFFFF; m_lastRasterKey = 0xFFFFFFFF; m_lastSampKey[0] = m_lastSampKey[1] = 0xFFFFFFFF;
 	m_lastSrv[0] = m_lastSrv[1] = (ID3D11ShaderResourceView*)1; m_lastIL = NULL; m_lastTopo = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	memset(&m_lastVp, 0xFF, sizeof(m_lastVp)); m_bPipeBound = false;
+	m_bAppliedValid = false;
 }
 
-void CDev11::ApplyState()
+// [j] tinh trang thai D3D11 cho lenh ve hien tai (khong goi context)
+void CDev11::ComputeApplied(R11Applied& a, ID3D11InputLayout* pIL, UINT stride)
 {
-	if (!m_bRtBound) { BindRenderTarget(); ResetAppliedState(); }
-	if (!m_bPipeBound)
-	{
-		m_pCtx->VSSetShader(m_pVS, NULL, 0); m_pCtx->PSSetShader(m_pPS, NULL, 0);
-		m_pCtx->VSSetConstantBuffers(0, 1, &m_pVsCb); m_pCtx->PSSetConstantBuffers(0, 1, &m_pPsCb);
-		m_pCtx->OMSetDepthStencilState(m_pDss, 0);
-		m_bPipeBound = true;
-	}
-	if (memcmp(&m_lastVp, &m_vp, sizeof(m_vp)) != 0)
-	{
-		D3D11_VIEWPORT vp; vp.TopLeftX = (float)m_vp.X; vp.TopLeftY = (float)m_vp.Y; vp.Width = (float)m_vp.Width; vp.Height = (float)m_vp.Height; vp.MinDepth = 0.0f; vp.MaxDepth = 1.0f;
-		m_pCtx->RSSetViewports(1, &vp);
-		m_lastVp = m_vp;
-	}
-	{
-		DWORD cull = m_rs[D3DRS_CULLMODE] & 3, fill = m_rs[D3DRS_FILLMODE] & 3, sc = m_rs[D3DRS_SCISSORTESTENABLE] ? 1 : 0;
-		DWORD key = cull | (fill << 2) | (sc << 4);
-		if (key != m_lastRasterKey)
-		{
-			if (sc) { D3D11_RECT r = { m_scissor.left, m_scissor.top, m_scissor.right, m_scissor.bottom }; m_pCtx->RSSetScissorRects(1, &r); }
-			m_pCtx->RSSetState(GetRasterState());
-			m_lastRasterKey = key;
-		}
-	}
-	{
-		DWORD en = m_rs[D3DRS_ALPHABLENDENABLE] ? 1 : 0, src = m_rs[D3DRS_SRCBLEND] & 31, dst = m_rs[D3DRS_DESTBLEND] & 31, op = m_rs[D3DRS_BLENDOP] & 7, wm = m_rs[D3DRS_COLORWRITEENABLE] & 15;
-		DWORD key = en | (src << 1) | (dst << 6) | (op << 11) | (wm << 14);
-		if (key != m_lastBlendKey)
-		{
-			float bf[4] = { 0, 0, 0, 0 };
-			m_pCtx->OMSetBlendState(GetBlendState(), bf, 0xFFFFFFFF);
-			m_lastBlendKey = key;
-		}
-	}
-	for (UINT s = 0; s < 2; s++)
-	{
-		DWORD key = (m_ss[s][D3DSAMP_MINFILTER] & 7) | ((m_ss[s][D3DSAMP_MAGFILTER] & 7) << 3) | ((m_ss[s][D3DSAMP_MIPFILTER] & 7) << 6) | ((m_ss[s][D3DSAMP_ADDRESSU] & 7) << 9) | ((m_ss[s][D3DSAMP_ADDRESSV] & 7) << 12);
-		if (key != m_lastSampKey[s])
-		{
-			ID3D11SamplerState* p = GetSamplerState(s);
-			m_pCtx->PSSetSamplers(s, 1, &p);
-			m_lastSampKey[s] = key;
-		}
-	}
-	// texture
-	ID3D11ShaderResourceView* srv[2] = { NULL, NULL };
+	memset(&a, 0, sizeof(a));
+	a.pIL = pIL; a.stride = stride;
+	a.vp = m_vp;
+	a.bScissor = m_rs[D3DRS_SCISSORTESTENABLE] ? 1 : 0; a.rcScissor = m_scissor;
+	a.pRaster = GetRasterState();
+	a.pBlend = GetBlendState();
+	a.pSamp[0] = GetSamplerState(0); a.pSamp[1] = GetSamplerState(1);
 	for (int s = 0; s < 2; s++)
 	{
-		if (m_tex[s]) { m_tex[s]->PrepareForBind(); srv[s] = m_tex[s]->m_pSrv; }
-		if (m_pRt && m_pRt->m_pTex && m_tex[s] == m_pRt->m_pTex) srv[s] = NULL;
+		if (m_tex[s]) { m_tex[s]->PrepareForBind(); a.srv[s] = m_tex[s]->m_pSrv; }
+		if (m_pRt && m_pRt->m_pTex && m_tex[s] == m_pRt->m_pTex) a.srv[s] = NULL;
 	}
-	if (srv[0] != m_lastSrv[0] || srv[1] != m_lastSrv[1])
-	{
-		m_pCtx->PSSetShaderResources(0, 2, srv);
-		m_lastSrv[0] = srv[0]; m_lastSrv[1] = srv[1];
-	}
-	// hang so VS
 	bool bRhw = ((m_fvf & D3DFVF_POSITION_MASK) == D3DFVF_XYZRHW);
 	if (m_bVsDirty || (m_vsCb.flags[0] > 0.5f) != bRhw)
 	{
@@ -854,27 +821,100 @@ void CDev11::ApplyState()
 		D3DXMatrixMultiply(&wvp, &wv, (const D3DXMATRIX*)&m_matProj);
 		memcpy(m_vsCb.wvp, &wvp, sizeof(float) * 16);
 		m_vsCb.flags[0] = bRhw ? 1.0f : 0.0f;
-		D3D11_MAPPED_SUBRESOURCE ms;
-		if (SUCCEEDED(m_pCtx->Map(m_pVsCb, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms))) { memcpy(ms.pData, &m_vsCb, sizeof(m_vsCb)); m_pCtx->Unmap(m_pVsCb, 0); }
 		m_bVsDirty = false;
 	}
-	// hang so PS
-	if (m_bPsDirty)
+	a.vs = m_vsCb;
+	R11PsCb& cb = a.ps;
+	cb.st0[0] = (int)m_tss[0][D3DTSS_COLOROP]; cb.st0[1] = (int)m_tss[0][D3DTSS_COLORARG1]; cb.st0[2] = (int)m_tss[0][D3DTSS_COLORARG2]; cb.st0[3] = (int)m_tss[0][D3DTSS_ALPHAOP];
+	cb.st0b[0] = (int)m_tss[0][D3DTSS_ALPHAARG1]; cb.st0b[1] = (int)m_tss[0][D3DTSS_ALPHAARG2]; cb.st0b[2] = a.srv[0] ? 1 : 0; cb.st0b[3] = 0;
+	cb.st1[0] = (int)m_tss[1][D3DTSS_COLOROP]; cb.st1[1] = (int)m_tss[1][D3DTSS_COLORARG1]; cb.st1[2] = (int)m_tss[1][D3DTSS_COLORARG2]; cb.st1[3] = (int)m_tss[1][D3DTSS_ALPHAOP];
+	cb.st1b[0] = (int)m_tss[1][D3DTSS_ALPHAARG1]; cb.st1b[1] = (int)m_tss[1][D3DTSS_ALPHAARG2]; cb.st1b[2] = a.srv[1] ? 1 : 0; cb.st1b[3] = 0;
+	cb.at[0] = m_rs[D3DRS_ALPHATESTENABLE] ? 1.0f : 0.0f; cb.at[1] = (float)(m_rs[D3DRS_ALPHAFUNC] & 15); cb.at[2] = (float)(m_rs[D3DRS_ALPHAREF] & 255); cb.at[3] = 0.0f;
+}
+
+// [j] gan len context nhung gi khac voi lan gan truoc
+void CDev11::ApplyComputed(const R11Applied& a)
+{
+	if (!m_bRtBound) { BindRenderTarget(); m_bAppliedValid = false; m_bPipeBound = false; }
+	if (!m_bPipeBound)
 	{
-		R11PsCb cb;
-		cb.st0[0] = (int)m_tss[0][D3DTSS_COLOROP]; cb.st0[1] = (int)m_tss[0][D3DTSS_COLORARG1]; cb.st0[2] = (int)m_tss[0][D3DTSS_COLORARG2]; cb.st0[3] = (int)m_tss[0][D3DTSS_ALPHAOP];
-		cb.st0b[0] = (int)m_tss[0][D3DTSS_ALPHAARG1]; cb.st0b[1] = (int)m_tss[0][D3DTSS_ALPHAARG2]; cb.st0b[2] = srv[0] ? 1 : 0; cb.st0b[3] = 0;
-		cb.st1[0] = (int)m_tss[1][D3DTSS_COLOROP]; cb.st1[1] = (int)m_tss[1][D3DTSS_COLORARG1]; cb.st1[2] = (int)m_tss[1][D3DTSS_COLORARG2]; cb.st1[3] = (int)m_tss[1][D3DTSS_ALPHAOP];
-		cb.st1b[0] = (int)m_tss[1][D3DTSS_ALPHAARG1]; cb.st1b[1] = (int)m_tss[1][D3DTSS_ALPHAARG2]; cb.st1b[2] = srv[1] ? 1 : 0; cb.st1b[3] = 0;
-		cb.at[0] = m_rs[D3DRS_ALPHATESTENABLE] ? 1.0f : 0.0f; cb.at[1] = (float)(m_rs[D3DRS_ALPHAFUNC] & 15); cb.at[2] = (float)(m_rs[D3DRS_ALPHAREF] & 255); cb.at[3] = 0.0f;
-		if (memcmp(&cb, &m_psCb, sizeof(cb)) != 0)
-		{
-			m_psCb = cb;
-			D3D11_MAPPED_SUBRESOURCE ms;
-			if (SUCCEEDED(m_pCtx->Map(m_pPsCb, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms))) { memcpy(ms.pData, &m_psCb, sizeof(m_psCb)); m_pCtx->Unmap(m_pPsCb, 0); }
-		}
-		m_bPsDirty = false;
+		m_pCtx->VSSetShader(m_pVS, NULL, 0); m_pCtx->PSSetShader(m_pPS, NULL, 0);
+		m_pCtx->VSSetConstantBuffers(0, 1, &m_pVsCb); m_pCtx->PSSetConstantBuffers(0, 1, &m_pPsCb);
+		m_pCtx->OMSetDepthStencilState(m_pDss, 0);
+		m_bPipeBound = true;
 	}
+	const bool v = m_bAppliedValid;
+	const R11Applied& L = m_lastApplied;
+	if (!v || memcmp(&a.vp, &L.vp, sizeof(a.vp)) != 0)
+	{
+		D3D11_VIEWPORT vp; vp.TopLeftX = (float)a.vp.X; vp.TopLeftY = (float)a.vp.Y; vp.Width = (float)a.vp.Width; vp.Height = (float)a.vp.Height; vp.MinDepth = 0.0f; vp.MaxDepth = 1.0f;
+		m_pCtx->RSSetViewports(1, &vp);
+	}
+	if (!v || a.pRaster != L.pRaster || a.bScissor != L.bScissor || memcmp(&a.rcScissor, &L.rcScissor, sizeof(RECT)) != 0)
+	{
+		if (a.bScissor) { D3D11_RECT r = { a.rcScissor.left, a.rcScissor.top, a.rcScissor.right, a.rcScissor.bottom }; m_pCtx->RSSetScissorRects(1, &r); }
+		m_pCtx->RSSetState(a.pRaster);
+	}
+	if (!v || a.pBlend != L.pBlend) { float bf[4] = { 0, 0, 0, 0 }; m_pCtx->OMSetBlendState(a.pBlend, bf, 0xFFFFFFFF); }
+	if (!v || a.pSamp[0] != L.pSamp[0] || a.pSamp[1] != L.pSamp[1]) m_pCtx->PSSetSamplers(0, 2, a.pSamp);
+	if (!v || a.srv[0] != L.srv[0] || a.srv[1] != L.srv[1]) m_pCtx->PSSetShaderResources(0, 2, a.srv);
+	if (!v || memcmp(&a.vs, &L.vs, sizeof(a.vs)) != 0)
+	{
+		D3D11_MAPPED_SUBRESOURCE ms;
+		if (SUCCEEDED(m_pCtx->Map(m_pVsCb, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms))) { memcpy(ms.pData, &a.vs, sizeof(a.vs)); m_pCtx->Unmap(m_pVsCb, 0); }
+	}
+	if (!v || memcmp(&a.ps, &L.ps, sizeof(a.ps)) != 0)
+	{
+		D3D11_MAPPED_SUBRESOURCE ms;
+		if (SUCCEEDED(m_pCtx->Map(m_pPsCb, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms))) { memcpy(ms.pData, &a.ps, sizeof(a.ps)); m_pCtx->Unmap(m_pPsCb, 0); }
+	}
+	if (!v || a.pIL != L.pIL) m_pCtx->IASetInputLayout(a.pIL);
+	m_lastApplied = a; m_bAppliedValid = true;
+}
+
+void CDev11::ApplyState()
+{
+	R11Applied a;
+	ComputeApplied(a, m_lastIL, m_streamStride);
+	ApplyComputed(a);
+}
+
+// chep dinh vao ring; tra vi tri byte
+void CDev11::UploadRing(const BYTE* pData, UINT bytes, UINT stride, UINT* pPos)
+{
+	UINT pos = m_ringPos;
+	if (stride && (pos % stride)) pos += stride - (pos % stride);
+	D3D11_MAP mapType = D3D11_MAP_WRITE_NO_OVERWRITE;
+	// [D3D11 08/09 c] dau moi khung (sau Present) hoac het ring: DISCARD de driver cap vung moi.
+	if (m_bRingDiscard || pos + bytes > m_ringSize) { pos = 0; mapType = D3D11_MAP_WRITE_DISCARD; m_bRingDiscard = false; }
+	D3D11_MAPPED_SUBRESOURCE ms;
+	HRESULT hr = m_pCtx->Map(m_pRing, 0, mapType, 0, &ms);
+	if (FAILED(hr)) { R11Log("Map ring that bai 0x%08X", (unsigned)hr); *pPos = 0xFFFFFFFF; return; }
+	memcpy((BYTE*)ms.pData + pos, pData, bytes);
+	m_pCtx->Unmap(m_pRing, 0);
+	m_ringPos = pos + bytes;
+	*pPos = pos;
+}
+
+// [j] ve lo quad dang cho bang MOT Draw voi trang thai da chup luc dua lenh
+void CDev11::FlushBatch()
+{
+	if (!m_batchVerts) return;
+	Lock();
+	UINT nVerts = m_batchVerts, stride = m_batchState.stride, bytes = nVerts * stride;
+	m_batchVerts = 0;
+	if (bytes > m_ringSize) { m_batch.clear(); Unlock(); return; }
+	UINT pos = 0;
+	UploadRing(&m_batch[0], bytes, stride, &pos);
+	m_batch.clear();
+	if (pos == 0xFFFFFFFF) { Unlock(); return; }
+	ApplyComputed(m_batchState);
+	ID3D11Buffer* bufs[2] = { m_pRing, m_pDummy }; UINT strides[2] = { stride, 16 }; UINT offs[2] = { pos, 0 };
+	m_pCtx->IASetVertexBuffers(0, 2, bufs, strides, offs);
+	if (m_lastTopo != D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST) { m_pCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); m_lastTopo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST; }
+	m_pCtx->Draw(nVerts, 0);
+	g_uRep3BatchDraws++;
+	Unlock();
 }
 
 static UINT R11VertexCount(D3DPRIMITIVETYPE t, UINT n)
@@ -898,54 +938,73 @@ struct R11DrawTimer
 	~R11DrawTimer() { LARGE_INTEGER t1; QueryPerformanceCounter(&t1); g_dRep3DrawMs += R11Ms(t0, t1); g_uRep3Draws++; }
 };
 
+// uv cua texture ao (stage 0) -> uv trong trang atlas, sua tai cho tren dinh da chep
+static void R11AtlasUv(BYTE* pV, UINT nVerts, UINT stride, DWORD fvf, CTex11* pTex, float fPage)
+{
+	if (!pTex || !pTex->m_bVirtual || !pTex->m_pPage || ((fvf & D3DFVF_TEXCOUNT_MASK) >> D3DFVF_TEXCOUNT_SHIFT) < 1) return;
+	UINT uvOff = ((fvf & D3DFVF_POSITION_MASK) == D3DFVF_XYZRHW) ? 16 : 12;
+	DWORD pt = fvf & D3DFVF_POSITION_MASK;
+	if (pt == D3DFVF_XYZB1) uvOff += 4; else if (pt == D3DFVF_XYZB2) uvOff += 8; else if (pt == D3DFVF_XYZB3) uvOff += 12; else if (pt == D3DFVF_XYZB4) uvOff += 16; else if (pt == D3DFVF_XYZB5) uvOff += 20;
+	if (fvf & D3DFVF_NORMAL) uvOff += 12; if (fvf & D3DFVF_PSIZE) uvOff += 4; if (fvf & D3DFVF_DIFFUSE) uvOff += 4; if (fvf & D3DFVF_SPECULAR) uvOff += 4;
+	const float sx = (float)pTex->m_w / fPage, sy = (float)pTex->m_h / fPage, ox = (float)pTex->m_ax / fPage, oy = (float)pTex->m_ay / fPage;
+	for (UINT i = 0; i < nVerts; i++) { float* uv = (float*)(pV + i * stride + uvOff); uv[0] = uv[0] * sx + ox; uv[1] = uv[1] * sy + oy; }
+}
+
 HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVerts, UINT stride)
 {
 	R11DrawTimer timer;
 	if (!pVerts || nVerts == 0 || stride == 0) return D3DERR_INVALIDCALL;
 	ID3D11InputLayout* pIL = GetInputLayout(m_fvf, stride);
 	if (!pIL) return D3DERR_INVALIDCALL;
-	// TRIANGLEFAN -> danh sach tam giac
-	std::vector<BYTE> fan;
+	const float fPage = m_pAtlas ? (float)m_pAtlas->m_pageSize : 1024.0f;
+	// ---- [j] quad (strip 4 dinh): gop
+	if (g_nRep3Batch && type == D3DPT_TRIANGLESTRIP && nVerts == 4)
+	{
+		R11Applied a;
+		ComputeApplied(a, pIL, stride);
+		if (m_batchVerts && (memcmp(&a, &m_batchState, sizeof(a)) != 0 || m_batch.size() + 6 * stride > 2 * 1024 * 1024))
+			FlushBatch();
+		if (!m_batchVerts) m_batchState = a;
+		size_t base = m_batch.size();
+		m_batch.resize(base + 6 * stride);
+		BYTE* d = &m_batch[base];
+		static const int s_idx[6] = { 0, 1, 2, 2, 1, 3 };
+		for (int i = 0; i < 6; i++) memcpy(d + i * stride, pVerts + s_idx[i] * stride, stride);
+		R11AtlasUv(d, 6, stride, m_fvf, m_tex[0], fPage);
+		m_batchVerts += 6;
+		g_uRep3BatchQuads++;
+		return D3D_OK;
+	}
+	FlushIfPending();
+	// ---- lenh khac: ve ngay
+	std::vector<BYTE> tmp;
 	if (type == D3DPT_TRIANGLEFAN)
 	{
 		UINT nTri = nVerts - 2;
-		fan.resize((size_t)nTri * 3 * stride);
+		tmp.resize((size_t)nTri * 3 * stride);
 		for (UINT i = 0; i < nTri; i++)
 		{
-			memcpy(&fan[(i * 3 + 0) * stride], pVerts, stride);
-			memcpy(&fan[(i * 3 + 1) * stride], pVerts + (i + 1) * stride, stride);
-			memcpy(&fan[(i * 3 + 2) * stride], pVerts + (i + 2) * stride, stride);
+			memcpy(&tmp[(i * 3 + 0) * stride], pVerts, stride);
+			memcpy(&tmp[(i * 3 + 1) * stride], pVerts + (i + 1) * stride, stride);
+			memcpy(&tmp[(i * 3 + 2) * stride], pVerts + (i + 2) * stride, stride);
 		}
-		pVerts = &fan[0]; nVerts = nTri * 3; type = D3DPT_TRIANGLELIST;
+		pVerts = &tmp[0]; nVerts = nTri * 3; type = D3DPT_TRIANGLELIST;
 	}
+	else
+	{
+		tmp.assign(pVerts, pVerts + (size_t)nVerts * stride);
+		pVerts = &tmp[0];
+	}
+	R11AtlasUv(&tmp[0], nVerts, stride, m_fvf, m_tex[0], fPage);
 	UINT bytes = nVerts * stride;
 	if (bytes > m_ringSize) { R11Log("DrawInternal: %u byte vuot ring", bytes); return D3DERR_INVALIDCALL; }
-	UINT pos = m_ringPos;
-	if (pos % stride) pos += stride - (pos % stride);
-	D3D11_MAP mapType = D3D11_MAP_WRITE_NO_OVERWRITE;
-	// [D3D11 08/09 c] dau moi khung (sau Present) hoac het ring: DISCARD de driver cap vung moi. Truoc day sau Present dat m_ringPos = 0
-	// roi ghi NO_OVERWRITE de len dinh GPU con dang doc cua khung truoc -> o den, manh rac, giat den khi di chuyen / qua map.
-	if (m_bRingDiscard || pos + bytes > m_ringSize) { pos = 0; mapType = D3D11_MAP_WRITE_DISCARD; m_bRingDiscard = false; }
-	D3D11_MAPPED_SUBRESOURCE ms;
-	HRESULT hr = m_pCtx->Map(m_pRing, 0, mapType, 0, &ms);
-	if (FAILED(hr)) { R11Log("Map ring that bai 0x%08X", (unsigned)hr); return D3DERR_INVALIDCALL; }
-	memcpy((BYTE*)ms.pData + pos, pVerts, bytes);
-	if (m_tex[0] && m_tex[0]->m_bVirtual && m_tex[0]->m_pPage && ((m_fvf & D3DFVF_TEXCOUNT_MASK) >> D3DFVF_TEXCOUNT_SHIFT) >= 1)
-	{	// [d] uv cua texture ao -> uv trong trang
-		UINT uvOff = ((m_fvf & D3DFVF_POSITION_MASK) == D3DFVF_XYZRHW) ? 16 : 12;
-		DWORD pt = m_fvf & D3DFVF_POSITION_MASK;
-		if (pt == D3DFVF_XYZB1) uvOff += 4; else if (pt == D3DFVF_XYZB2) uvOff += 8; else if (pt == D3DFVF_XYZB3) uvOff += 12; else if (pt == D3DFVF_XYZB4) uvOff += 16; else if (pt == D3DFVF_XYZB5) uvOff += 20;
-		if (m_fvf & D3DFVF_NORMAL) uvOff += 12; if (m_fvf & D3DFVF_PSIZE) uvOff += 4; if (m_fvf & D3DFVF_DIFFUSE) uvOff += 4; if (m_fvf & D3DFVF_SPECULAR) uvOff += 4;
-		const float fPage = (float)m_pAtlas->m_pageSize;
-		const float sx = (float)m_tex[0]->m_w / fPage, sy = (float)m_tex[0]->m_h / fPage, ox = (float)m_tex[0]->m_ax / fPage, oy = (float)m_tex[0]->m_ay / fPage;
-		BYTE* pV = (BYTE*)ms.pData + pos;
-		for (UINT i = 0; i < nVerts; i++) { float* uv = (float*)(pV + i * stride + uvOff); uv[0] = uv[0] * sx + ox; uv[1] = uv[1] * sy + oy; }
-	}
-	m_pCtx->Unmap(m_pRing, 0);
-	m_ringPos = pos + bytes;
-	ApplyState();
+	UINT pos = 0;
+	UploadRing(pVerts, bytes, stride, &pos);
+	if (pos == 0xFFFFFFFF) return D3DERR_INVALIDCALL;
+	R11Applied a;
+	ComputeApplied(a, pIL, stride);
+	ApplyComputed(a);
 	ID3D11Buffer* bufs[2] = { m_pRing, m_pDummy }; UINT strides[2] = { stride, 16 }; UINT offs[2] = { pos, 0 };
-	if (pIL != m_lastIL) { m_pCtx->IASetInputLayout(pIL); m_lastIL = pIL; }
 	m_pCtx->IASetVertexBuffers(0, 2, bufs, strides, offs);
 	D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	switch (type)

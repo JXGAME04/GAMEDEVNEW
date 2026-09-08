@@ -138,6 +138,7 @@ void CTex11::AllocCpu()
 
 void CTex11::ReleaseGpu()
 {
+	if (m_pDev && (m_pSrv || m_pPage)) m_pDev->FlushIfPending();	// [j] SRV cua texture/trang co the nam trong lo dang cho
 	if (m_bVirtual)
 	{
 		if (m_pPage && m_pDev->m_pAtlas) m_pDev->m_pAtlas->Free(m_pPage, m_ax, m_ay, m_w);
@@ -234,6 +235,7 @@ HRESULT CTex11::EnsureGpu(const BYTE* pInit)
 HRESULT CTex11::UploadRect(const RECT* prc)
 {
 	if (!m_pCpu) return D3DERR_INVALIDCALL;
+	m_pDev->FlushIfPending();	// [j] lenh dang cho co the dang doc texture nay
 	if (m_bVirtual && !m_pPage) return EnsureGpu(m_pCpu);
 	if (!m_bVirtual && !m_pGpu) return EnsureGpu(m_pCpu);
 	RECT rc = { 0, 0, (LONG)m_w, (LONG)m_h };

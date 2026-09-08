@@ -206,6 +206,21 @@ public:
 // ---------------------------------------------------------------- device
 struct R11VsCb { float vp[4]; float wvp[16]; float flags[4]; };
 struct R11PsCb { int st0[4]; int st0b[4]; int st1[4]; int st1b[4]; float at[4]; };
+// [j] trang thai D3D11 da tinh cho mot lenh ve (so sanh memcmp => khoa gop lenh)
+struct R11Applied
+{
+	ID3D11ShaderResourceView* srv[2];
+	ID3D11BlendState* pBlend;
+	ID3D11SamplerState* pSamp[2];
+	ID3D11RasterizerState* pRaster;
+	ID3D11InputLayout* pIL;
+	UINT stride;
+	UINT bScissor;
+	RECT rcScissor;
+	D3DVIEWPORT9 vp;
+	R11VsCb vs;
+	R11PsCb ps;
+};
 
 class CD3D11Shim;
 
@@ -422,6 +437,14 @@ public:
 	D3DVIEWPORT9    m_lastVp;
 	bool            m_bPipeBound;			// shader + CB + depth da gan sau Present/Reset
 	void            ResetAppliedState();
+	// [j] gop lenh ve
+	R11Applied      m_lastApplied; bool m_bAppliedValid;
+	std::vector<BYTE> m_batch; UINT m_batchVerts; R11Applied m_batchState;
+	void            ComputeApplied(R11Applied& a, ID3D11InputLayout* pIL, UINT stride);
+	void            ApplyComputed(const R11Applied& a);
+	void            UploadRing(const BYTE* pData, UINT bytes, UINT stride, UINT* pPos);
+	void            FlushBatch();
+	void            FlushIfPending() { if (m_batchVerts) FlushBatch(); }
 };
 
 // ---------------------------------------------------------------- IDirect3D9

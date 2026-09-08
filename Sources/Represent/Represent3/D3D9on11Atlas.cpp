@@ -123,6 +123,7 @@ void CAtlasMgr::Free(CAtlasPage* pPage, UINT x, UINT y, UINT w)
 			if (m_pages[i] != pPage && m_pages[i]->m_binH == pPage->m_binH && m_pages[i]->m_used == 0) nEmptySameClass++;
 		if (nEmptySameClass >= 1)
 		{
+			m_pDev->FlushIfPending();
 			for (size_t i = 0; i < m_pages.size(); i++)
 				if (m_pages[i] == pPage) { m_pages.erase(m_pages.begin() + i); break; }
 			if (pPage->m_pSrv) pPage->m_pSrv->Release();
