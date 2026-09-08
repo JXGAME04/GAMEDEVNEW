@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -47,6 +47,10 @@
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseSDL|x64">
+      <Configuration>ReleaseSDL</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Template|Win32">
@@ -104,6 +108,11 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
@@ -183,6 +192,9 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -247,6 +259,11 @@
     <OutDir>.\x64\Release\</OutDir>
     <IntDir>.\x64\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">
+    <OutDir>.\x64\ReleaseSDL\</OutDir>
+    <IntDir>.\x64\ReleaseSDL\</IntDir>
+    <JX_SDL3_DIR Condition="'$(JX_SDL3_DIR)'==''">$(ProjectDir)..\..\ThirdParty\SDL3</JX_SDL3_DIR>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">
     <OutDir>.\Engine___Win32_OuRead_Release\</OutDir>
@@ -275,6 +292,8 @@
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|x64'">
@@ -709,6 +728,59 @@ copy x64\release\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
       <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\release64\JpgLib.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+  </ItemDefinitionGroup>  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">
+    <ClCompile>
+      <AdditionalOptions>/we4311 /we4312 /we4302 %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <Optimization>MinSpace</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(JX_SDL3_DIR)\include;include;src;..\Core\Src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;JX_PLATFORM_SDL;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\x64\ReleaseSDL\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\x64\ReleaseSDL\Engine.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\x64\ReleaseSDL\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\ReleaseSDL\</ProgramDataBaseFileName>
+      <PrecompiledHeaderFile>KWin32.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <MinimalRebuild>true</MinimalRebuild>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>if not exist ..\..\Lib\release64sdl md ..\..\Lib\release64sdl
+if not exist ..\..\bin\client64sdl md ..\..\bin\client64sdl
+copy x64\ReleaseSDL\Engine.lib ..\..\Lib\release64sdl\engine.lib
+copy x64\ReleaseSDL\Engine.dll ..\..\bin\client64sdl\Engine.dll
+copy x64\ReleaseSDL\Engine.pdb ..\..\bin\client64sdl\Engine.pdb</Command>
+    </PostBuildEvent>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\x64\ReleaseSDL\Engine.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0804</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\x64\ReleaseSDL\Engine.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkDLL>true</LinkDLL>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>.\x64\ReleaseSDL\Engine.dll</OutputFile>
+      <ImportLibrary>.\x64\ReleaseSDL\Engine.lib</ImportLibrary>
+      <AdditionalDependencies>$(JX_SDL3_DIR)\lib\x64\SDL3.lib;ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\release64\JpgLib.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">
     <ClCompile>
@@ -1060,8 +1132,10 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Engine Server Release|x64'">kwin32.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">kwin32.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">kwin32.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">kwin32.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OuRead Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">kwin32.h</PrecompiledHeaderFile>

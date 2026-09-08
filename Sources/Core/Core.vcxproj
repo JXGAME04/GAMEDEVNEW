@@ -17,6 +17,10 @@
       <Configuration>Client Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Client ReleaseSDL|x64">
+      <Configuration>Client ReleaseSDL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Server Debug|Win32">
       <Configuration>Server Debug</Configuration>
       <Platform>Win32</Platform>
@@ -94,6 +98,11 @@
     <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -141,6 +150,9 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -167,6 +179,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">
     <OutDir>.\x64\ClientRelease\</OutDir>
     <IntDir>.\x64\ClientRelease\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">
+    <OutDir>.\x64\ClientReleaseSDL\</OutDir>
+    <IntDir>.\x64\ClientReleaseSDL\</IntDir>
+    <JX_SDL3_DIR Condition="'$(JX_SDL3_DIR)'==''">$(ProjectDir)..\..\ThirdParty\SDL3</JX_SDL3_DIR>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">
@@ -211,6 +228,8 @@
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">
@@ -451,6 +470,60 @@
       <ImportLibrary>.\x64\ClientRelease\CoreClient.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/release64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Shlwapi.lib;Winmm.lib;ws2_32.lib;crypt32.lib;..\..\Lib\release64\engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">
+    <ClCompile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level2</WarningLevel>
+      <AdditionalIncludeDirectories>$(JX_SDL3_DIR)\include;..\engine\src;..\engine\include;..\Network;..\..\Headers;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;JX_PLATFORM_SDL;WIN32;_WINDOWS;_USRDLL;CORE_EXPORTS;SWORDONLINE_SHOW_DBUG_INFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\x64\ClientReleaseSDL\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\x64\ClientReleaseSDL\Core.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>KCore.h</PrecompiledHeaderFile>
+      <ObjectFileName>.\x64\ClientReleaseSDL\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\ClientReleaseSDL\</ProgramDataBaseFileName>
+      <AdditionalOptions>/we4311 /we4312 /we4302 /source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>if not exist ..\..\Lib\release64sdl md ..\..\Lib\release64sdl
+if not exist ..\..\bin\client64sdl md ..\..\bin\client64sdl
+copy x64\ClientReleaseSDL\CoreClient.lib ..\..\Lib\release64sdl\CoreClient.lib
+copy x64\ClientReleaseSDL\CoreClient.dll ..\..\bin\client64sdl\CoreClient.dll
+copy x64\ClientReleaseSDL\CoreClient.pdb ..\..\bin\client64sdl\CoreClient.pdb</Command>
+    </PostBuildEvent>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\x64\ClientReleaseSDL\Core.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0804</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\x64\ClientReleaseSDL\Core.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkDLL>true</LinkDLL>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>x64\ClientReleaseSDL\CoreClient.dll</OutputFile>
+      <ImportLibrary>.\x64\ClientReleaseSDL\CoreClient.lib</ImportLibrary>
+      <AdditionalLibraryDirectories>../../lib/release64sdl/;../../lib/release64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(JX_SDL3_DIR)\lib\x64\SDL3.lib;odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Shlwapi.lib;Winmm.lib;ws2_32.lib;crypt32.lib;..\..\Lib\release64sdl\engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">
@@ -718,6 +791,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\CoreShell.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
@@ -749,6 +823,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KInventory.cpp">
     </ClCompile>
@@ -779,10 +854,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KMissle.cpp">
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">AssemblyAndSourceCode</AssemblerOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">AssemblyAndSourceCode</AssemblerOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <ClCompile Include="Src\KMissleRes.cpp">
     </ClCompile>
@@ -793,54 +870,63 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KJx2Title.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KJx2WarInfra.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KSimCity.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KPlayerBot.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KJx2CityWar.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KItemCompound.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KItemDice.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KJx2League.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KJx2SharedStore.cpp" />
     <ClCompile Include="Src\KTongJX2.cpp">
@@ -848,12 +934,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KNewProtocolProcess.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\KNpc.cpp">
     </ClCompile>
@@ -964,6 +1052,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
@@ -991,9 +1080,12 @@
       </PrecompiledHeader>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">AssemblyAndSourceCode</AssemblerOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">AssemblyAndSourceCode</AssemblerOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">AssemblyAndSourceCode</AssemblerOutput>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">
       </PrecompiledHeader>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
@@ -1043,8 +1135,10 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">KCore.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">KCore.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">KCore.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">KCore.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">KCore.h</PrecompiledHeaderFile>
@@ -1086,12 +1180,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="src\CoreServerShell.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Src\CoreShell.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
@@ -1139,12 +1235,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Src\KMissionArray.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Src\KMissle.h" />
     <ClInclude Include="Src\KMissleMagicAttribsData.h" />
@@ -1177,6 +1275,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Src\KNpc.h" />
     <ClInclude Include="Src\KNpcAI.h" />
@@ -1301,19 +1400,24 @@
     <Library Include="..\..\Lib\debug64\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\debug\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\debug\engine.lib" >
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\release64\common.lib" >
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\release\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
@@ -1321,6 +1425,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\release\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
@@ -1328,21 +1433,27 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\x64\Engine Server Debug\engine.lib" >
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\x64\Engine Server Release\engine.lib" >
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\lua54\$(Platform)\Lua54Dll.lib" >
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="Src\USBKey\EP1KDL20.LIB" >
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="Src\USBKey\EpsForJoLib.lib" >
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

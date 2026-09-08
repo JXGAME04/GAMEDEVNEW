@@ -293,10 +293,10 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
       <AdditionalOptions>/we4311 /we4312 /we4302 /source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>if not exist ..\..\bin\client64\ md ..\..\bin\client64\
-copy x64\ReleaseSDL\GameSDL.exe ..\..\bin\client64\GameSDL.exe
-copy x64\ReleaseSDL\GameSDL.pdb ..\..\bin\client64\GameSDL.pdb
-copy "$(JX_SDL3_DIR)\lib\x64\SDL3.dll" ..\..\bin\client64\SDL3.dll</Command>
+      <Command>if not exist ..\..\bin\client64sdl md ..\..\bin\client64sdl
+copy x64\ReleaseSDL\GameSDL.exe ..\..\bin\client64sdl\GameSDL.exe
+copy x64\ReleaseSDL\GameSDL.pdb ..\..\bin\client64sdl\GameSDL.pdb
+copy "$(JX_SDL3_DIR)\lib\x64\SDL3.dll" ..\..\bin\client64sdl\SDL3.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -319,8 +319,8 @@ copy "$(JX_SDL3_DIR)\lib\x64\SDL3.dll" ..\..\bin\client64\SDL3.dll</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>x64/ReleaseSDL/GameSDL.exe</OutputFile>
-      <AdditionalLibraryDirectories>..\..\Lib\release64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(JX_SDL3_DIR)\lib\x64\SDL3.lib;..\..\Lib\release64\CoreClient.lib;..\..\Lib\release64\engine.lib;..\..\Lib\release64\FilterText_StaticLib.lib;odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\Lib\release64sdl;..\..\Lib\release64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(JX_SDL3_DIR)\lib\x64\SDL3.lib;..\..\Lib\release64sdl\CoreClient.lib;..\..\Lib\release64sdl\engine.lib;..\..\Lib\release64\FilterText_StaticLib.lib;odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
