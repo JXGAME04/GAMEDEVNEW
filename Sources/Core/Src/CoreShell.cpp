@@ -22299,7 +22299,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				}
 				case ATYPE_RESETMOVE:
 				{
-					AUTOLOG("[MOVE-RESET] t2cu=%u now=%u doing=%d", Player[nPlayerIdx].m_sExtAuto.uTFollMove2, uCurTime, (int)Npc[nNpcIdx].m_Doing);
+					AUTOLOG_EVERY(1000, "[MOVE-RESET] t2cu=%u now=%u doing=%d", Player[nPlayerIdx].m_sExtAuto.uTFollMove2, uCurTime, (int)Npc[nNpcIdx].m_Doing);
 					Player[nPlayerIdx].m_sExtAuto.uTFollMove2 = 0;
 					break;
 				}

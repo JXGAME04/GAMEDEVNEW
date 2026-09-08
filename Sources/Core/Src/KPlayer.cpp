@@ -4918,7 +4918,7 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 	
 	int		nObjIndex, nNpcX, nNpcY, nObjX, nObjY;
 	nObjIndex = ObjSet.FindID(pPickUp->m_nObjID);
-	AUTOLOG("SPICK-RECV objid=%d idx=%d lic=%d place=%d px=%d py=%d player=%d", pPickUp->m_nObjID, nObjIndex, (int)m_nLicReg, (int)pPickUp->m_btPosType, (int)pPickUp->m_btPosX, (int)pPickUp->m_btPosY, m_nPlayerIndex);
+	AUTOLOG_EVERY(1000, "SPICK-RECV objid=%d idx=%d lic=%d place=%d px=%d py=%d player=%d", pPickUp->m_nObjID, nObjIndex, (int)m_nLicReg, (int)pPickUp->m_btPosType, (int)pPickUp->m_btPosX, (int)pPickUp->m_btPosY, m_nPlayerIndex);
 	if (nObjIndex == 0)
 		return FALSE;
 	if(!m_nLicReg)
@@ -4927,7 +4927,7 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 	{
 		if (!m_cTeam.m_nFlag)
 		{
-			AUTOLOG("SPICK-BELONG objid=%d idx=%d belong=%d me=%d btime=%d kind=%d teamflag=%d", pPickUp->m_nObjID, nObjIndex, Object[nObjIndex].m_nBelong, m_nPlayerIndex, Object[nObjIndex].m_nBelongTime, Object[nObjIndex].m_nKind, m_cTeam.m_nFlag);
+			AUTOLOG_EVERY(1000, "SPICK-BELONG objid=%d idx=%d belong=%d me=%d btime=%d kind=%d teamflag=%d", pPickUp->m_nObjID, nObjIndex, Object[nObjIndex].m_nBelong, m_nPlayerIndex, Object[nObjIndex].m_nBelongTime, Object[nObjIndex].m_nKind, m_cTeam.m_nFlag);
 			if (Object[nObjIndex].m_nBelong != m_nPlayerIndex)
 			{
 				SHOW_MSG_SYNC	sMsg;
@@ -4985,7 +4985,7 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 		}
 	}
 
-	AUTOLOG("SPICK-WORLD objid=%d objsw=%d npcsw=%d objreg=%d npcreg=%d", pPickUp->m_nObjID, Object[nObjIndex].m_nSubWorldID, Npc[m_nIndex].m_SubWorldIndex, Object[nObjIndex].m_nRegionIdx, Npc[m_nIndex].m_RegionIndex);
+	AUTOLOG_EVERY(1000, "SPICK-WORLD objid=%d objsw=%d npcsw=%d objreg=%d npcreg=%d", pPickUp->m_nObjID, Object[nObjIndex].m_nSubWorldID, Npc[m_nIndex].m_SubWorldIndex, Object[nObjIndex].m_nRegionIdx, Npc[m_nIndex].m_RegionIndex);
 	if (Object[nObjIndex].m_nSubWorldID != Npc[m_nIndex].m_SubWorldIndex)
 		return FALSE;
 	SubWorld[Object[nObjIndex].m_nSubWorldID].Map2Mps(
@@ -5004,7 +5004,7 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 		Npc[m_nIndex].m_OffY,
 		&nNpcX,
 		&nNpcY);
-	AUTOLOG("SPICK-FAR objid=%d d2=%d limit=%d npcx=%d npcy=%d objx=%d objy=%d", pPickUp->m_nObjID, ((nNpcX - nObjX) * (nNpcX - nObjX) + (nNpcY - nObjY) * (nNpcY - nObjY)), PLAYER_PICKUP_SERVER_DISTANCE, nNpcX, nNpcY, nObjX, nObjY);
+	AUTOLOG_EVERY(1000, "SPICK-FAR objid=%d d2=%d limit=%d npcx=%d npcy=%d objx=%d objy=%d", pPickUp->m_nObjID, ((nNpcX - nObjX) * (nNpcX - nObjX) + (nNpcY - nObjY) * (nNpcY - nObjY)), PLAYER_PICKUP_SERVER_DISTANCE, nNpcX, nNpcY, nObjX, nObjY);
 	if (PLAYER_PICKUP_SERVER_DISTANCE < (nNpcX - nObjX) * (nNpcX - nObjX) + (nNpcY - nObjY) * (nNpcY - nObjY))
 	{
 		SHOW_MSG_SYNC	sMsg;
@@ -5103,7 +5103,7 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 				}
 			}
 			int nItemIdx = m_ItemList.AddKIL(Object[nObjIndex].m_nItemDataID, pPickUp->m_btPosType, pPickUp->m_btPosX, pPickUp->m_btPosY, false, true);
-			AUTOLOG("SPICK-BAG objid=%d itemidx=%d itemdata=%d place=%d px=%d py=%d maxitem=%d", pPickUp->m_nObjID, nItemIdx, Object[nObjIndex].m_nItemDataID, (int)pPickUp->m_btPosType, (int)pPickUp->m_btPosX, (int)pPickUp->m_btPosY, MAX_PLAYER_ITEM);
+			AUTOLOG_EVERY(1000, "SPICK-BAG objid=%d itemidx=%d itemdata=%d place=%d px=%d py=%d maxitem=%d", pPickUp->m_nObjID, nItemIdx, Object[nObjIndex].m_nItemDataID, (int)pPickUp->m_btPosType, (int)pPickUp->m_btPosX, (int)pPickUp->m_btPosY, MAX_PLAYER_ITEM);
 			if (nItemIdx <= 0 || nItemIdx >= MAX_PLAYER_ITEM)
 			{
 				//_ASSERT(0); //khong du khoang trong hanh trang

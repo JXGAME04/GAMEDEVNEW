@@ -839,7 +839,7 @@ void KProtocolProcess::NetCommandRun(BYTE* pMsg)
 #ifndef _SERVER
 	// [S6] Ghi TRUOC cua chan: ap=0 nghia la client CHUA CO npc nay nen lenh di chuyen
 	// BI VUT. Do chinh la luc NPC moi vao tam nhin va chi con nhay theo goi dong bo.
-	AUTOLOG("[S6-CMD] lenh=run npc=%u idx=%d ap=%d dich=(%d,%d) t=%u", dwNpcID, nIdx, (int)(Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx) ? 1 : 0), (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "[S6-CMD] lenh=run npc=%u idx=%d ap=%d dich=(%d,%d) t=%u", dwNpcID, nIdx, (int)(Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx) ? 1 : 0), (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
 #endif
 	BOOL bS12Self = FALSE;
 #ifndef _SERVER
@@ -1061,7 +1061,7 @@ void KProtocolProcess::NetCommandWalk(BYTE* pMsg)
 	MapY = *(int *)&pMsg[9];
 	int nIdx = NpcSet.SearchID(dwNpcID);
 #ifndef _SERVER
-	AUTOLOG("[S6-CMD] lenh=walk npc=%u idx=%d ap=%d dich=(%d,%d) t=%u", dwNpcID, nIdx, (int)(Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx) ? 1 : 0), (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "[S6-CMD] lenh=walk npc=%u idx=%d ap=%d dich=(%d,%d) t=%u", dwNpcID, nIdx, (int)(Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx) ? 1 : 0), (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
 #endif
 	BOOL bS12Self = FALSE;
 #ifndef _SERVER
@@ -2435,7 +2435,7 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 #ifndef _SERVER
 		// [S6] Ban KHONG TIET CHE cua SYNCMIN-DRIFT. "nan=1" = client se ghi de toa do
 		// (chi khi m_nNeedFixPos > 0 VA cung region) - do la luc nguoi choi thay NPC GIUT.
-		AUTOLOG("[S6-SYNC] npc=%u idx=%d kind=%u cl=(%d,%d,%d,%d) sv=(%d,%d,%d,%d) reg=%d/%d fix=%d doing=%d nan=%d t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, nMapX, nMapY, NpcSync->m_fkOffX, NpcSync->m_fkOffY, Npc[nIdx].m_RegionIndex, nRegion, Npc[nIdx].m_nNeedFixPos, (int)Npc[nIdx].m_Doing, (int)((Npc[nIdx].m_nNeedFixPos > 0 && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex && Npc[nIdx].m_RegionIndex >= 0 && Npc[nIdx].m_RegionIndex == nRegion) ? 1 : 0), SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(1000, "[S6-SYNC] npc=%u idx=%d kind=%u cl=(%d,%d,%d,%d) sv=(%d,%d,%d,%d) reg=%d/%d fix=%d doing=%d nan=%d t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, nMapX, nMapY, NpcSync->m_fkOffX, NpcSync->m_fkOffY, Npc[nIdx].m_RegionIndex, nRegion, Npc[nIdx].m_nNeedFixPos, (int)Npc[nIdx].m_Doing, (int)((Npc[nIdx].m_nNeedFixPos > 0 && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex && Npc[nIdx].m_RegionIndex >= 0 && Npc[nIdx].m_RegionIndex == nRegion) ? 1 : 0), SubWorld[0].m_dwCurrentTime);
 #endif
 #ifndef _SERVER
 		// [S10 26/08] Khoi doan dich S9 cu (r1/r2/r3) DA XOA - no doan dich tu vi tri
@@ -2611,7 +2611,7 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 	// / con lai = GIU NGUYEN toa do client, KHONG nan. Nhanh thu ba chinh la nghi can cua loi
 	// "chet hoi sinh hoac phu ve thanh thi nhay vai toa do bay": may chu doi cho nhung neu
 	// diem den nam trong region DA NAP thi client van giu vi tri cu.
-	AUTOLOG("[S6-ME] nhanh=%s cl=(%d,%d,%d,%d) reg=%d sv=(%d,%d,%d,%d) reg=%d doing=%d t=%u", (Npc[nNpcIdx].m_RegionIndex == -1) ? "vaolandau" : ((nRegion == -1) ? "loadmap" : "GIUNGUYEN"), Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nNpcIdx].m_OffX, Npc[nNpcIdx].m_OffY, Npc[nNpcIdx].m_RegionIndex, nMapX, nMapY, pSync->m_wOffX, pSync->m_wOffY, nRegion, (int)Npc[nNpcIdx].m_Doing, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "[S6-ME] nhanh=%s cl=(%d,%d,%d,%d) reg=%d sv=(%d,%d,%d,%d) reg=%d doing=%d t=%u", (Npc[nNpcIdx].m_RegionIndex == -1) ? "vaolandau" : ((nRegion == -1) ? "loadmap" : "GIUNGUYEN"), Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nNpcIdx].m_OffX, Npc[nNpcIdx].m_OffY, Npc[nNpcIdx].m_RegionIndex, nMapX, nMapY, pSync->m_wOffX, pSync->m_wOffY, nRegion, (int)Npc[nNpcIdx].m_Doing, SubWorld[0].m_dwCurrentTime);
 #endif
 #ifndef _SERVER
 	// [S6 26/08] Bang tong 5 s/lan: tra loi "chet co xoa khong hay tich luy dan toi tran".
