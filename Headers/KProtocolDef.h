@@ -213,6 +213,9 @@ enum s2c_PROTOCOL
 							// KHONG doi so hieu goi nao khac. g_nProtocolSize (KProtocol.cpp) phai co o 156 cho ma nay.
 	s2c_showdamagegon,		// [DELTA 07/09 g] = 222: so sat thuong GON cho nguoi xem (DAMAGESHOW_GON 13 byte = DAMAGESHOW bo dwLauncher).
 							// g_nProtocolSize (KProtocol.cpp) phai co o 157 cho ma nay. Chi phat khi moi client noi da bao hello phien ban 2.
+	s2c_syncnpcstate,		// [DELTA 07/09 l] = 223: trang thai ky nang + chi so toi da (NPC_STATE_SYNC 39 byte).
+							// Thay goi day du 98 byte khi CHI hai nhom nay doi (do live: 98 % so lan bam cham doi).
+							// g_nProtocolSize (KProtocol.cpp) phai co o 158 cho ma nay. Chi phat khi client bao hello phien ban 3.
 //	s2c_dynamic_structure,	//dynamic structure
 
 //	s2c_gmgateway2relaysvr,		//GM

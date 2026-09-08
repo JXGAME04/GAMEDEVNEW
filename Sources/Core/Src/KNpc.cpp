@@ -6744,6 +6744,9 @@ static DWORD s_adwNSNgua[MAX_NPC];	// [DELTA 07/09 f] bam ngua+toc do lan phat t
 #define NS_SO_NHOM	5
 static DWORD s_adwNSNhom[NS_SO_NHOM][MAX_NPC];
 static int   s_anNSNhom[NS_SO_NHOM] = { 0, 0, 0, 0, 0 };
+// [DELTA 07/09 l] bam nhom TRANG THAI KY NANG + CHI SO TOI DA lan phat truoc (goi 223 thay goi day du 98 byte)
+static DWORD s_adwNSBamTT[MAX_NPC];
+static int   s_nNSTT = 0;
 static int   s_nNSNhomNhieu = 0;
 // bam cham voi nhom k xoa trang (k < 0: khong xoa gi)
 static DWORD NS_BamNhom(const NPC_NORMAL_SYNC* pCham, int k)
@@ -6776,6 +6779,23 @@ static void NS_DocCauHinh()
 	if (s_nNSLamMoiDay < 1000) s_nNSLamMoiDay = 1000;
 	if (s_nNSLamMoiDay > 600000) s_nNSLamMoiDay = 600000;
 	s_nNSGon = (int)GetPrivateProfileIntA("Server", "DongBoGoiGon", 1, ".\\config.ini");
+}
+// [DELTA 07/09 l] so client that dang noi ma chua bao phien ban >= 3 (chua hieu goi trang thai 223)
+static int NS_SoClientCu3(DWORD dwLuc)
+{
+	static DWORD s_dwMoc3 = 0;
+	static int   s_nCu3 = 0;
+	extern BYTE g_abyDeltaHello[MAX_PLAYER];
+	if (s_dwMoc3 == 0 || (dwLuc - s_dwMoc3) >= 1000)
+	{
+		s_dwMoc3 = dwLuc;
+		int n = 0;
+		for (int i = 1; i < MAX_PLAYER; i++)
+			if (Player[i].m_nNetConnectIdx >= 0 && g_abyDeltaHello[i] < 3)
+				n++;
+		s_nCu3 = n;
+	}
+	return s_nCu3;
 }
 // so client that dang noi ma CHUA bao hieu goi gon (client cu) - dem lai moi giay; > 0 thi khong phat goi gon cho ai
 extern BYTE g_abyDeltaHello[MAX_PLAYER];
@@ -7110,7 +7130,9 @@ BOOL KNpc::NormalSync()
 
 	// [DELTA 07/09] quyet dinh: bo qua / goi GON / goi DAY DU (xem chu thich tren cac bien s_adwNS*).
 	BOOL bPhat = TRUE, bGon = FALSE, bGonThem = FALSE;
+	BOOL bTT = FALSE;	// [DELTA 07/09 l] co phat goi trang thai gon 223
 	NPC_POS_SYNC sGon;
+	NPC_STATE_SYNC sTT;
 	// [DELTA 07/09 f] ngua + toc do hien tai: doi lien tuc (bot len/xuong ngua, buff) -> di theo goi gon, khong qua goi 75
 	BYTE abyNgua[3];
 	abyNgua[0] = (BYTE)(m_bRideHorse ? m_HorseType : -1);
@@ -7129,6 +7151,24 @@ BOOL KNpc::NormalSync()
 			// [DELTA 07/09 c] vong bat tu: may chu tru moi tick (KNpc.cpp:1627) nen chi coi la 'doi' khi bat/tat;
 			// client khong dem nguoc, chi can biet dang bat tu hay khong (goi day du khi bat va khi het).
 			sCham.m_nProtectedTime = (NpcSync.m_nProtectedTime > 0) ? 1 : 0;
+			// [DELTA 07/09 l] TRANG THAI KY NANG + CHI SO TOI DA la 98 % so lan bam cham doi (do live 16:21-16:58:
+			// trang_thai 30.400 + chi_so_max 9.457 tren 40.490 lan / 100 giay). Bo ca hai khoi bam cham va gui rieng
+			// goi 223 (39 byte) thay vi goi day du 98 byte. Chi lam khi moi client deu hieu goi 223.
+			const BOOL bTTMoi = (NS_SoClientCu3(dwLuc) == 0);
+			DWORD dwBamTT = 0;
+			if (bTTMoi)
+			{
+				NPC_STATE_SYNC sTTBam;
+				memset(&sTTBam, 0, sizeof(sTTBam));
+				memcpy(sTTBam.StateInfo, NpcSync.StateInfo, sizeof(sTTBam.StateInfo));
+				sTTBam.m_CurrentLifeMax = NpcSync.m_CurrentLifeMax;
+				sTTBam.m_LifeMax = NpcSync.m_LifeMax;
+				sTTBam.m_CurrentManaMax = NpcSync.m_CurrentManaMax;
+				sTTBam.m_ManaMax = NpcSync.m_ManaMax;
+				dwBamTT = PS_Bam(&sTTBam, (int)sizeof(sTTBam));
+				memset(sCham.StateInfo, 0, sizeof(sCham.StateInfo));
+				sCham.m_CurrentLifeMax = 0; sCham.m_LifeMax = 0; sCham.m_CurrentManaMax = 0; sCham.m_ManaMax = 0;
+			}
 			const DWORD dwBamCham = PS_Bam(&sCham, (int)sizeof(sCham));
 			// [DELTA 07/09 k] bam cham DOI thi doi nam o nhom nao (chi dem, khong doi quyet dinh phat)
 			DWORD adwNSNhom[NS_SO_NHOM];
@@ -7163,6 +7203,14 @@ BOOL KNpc::NormalSync()
 					for (int k = 0; k < NS_SO_NHOM; k++)	// [DELTA 07/09 k] moc nhom luu CUNG LUC voi bam cham
 						s_adwNSNhom[k][m_Index] = adwNSNhom[k];
 				}
+				// [DELTA 07/09 l] trang thai/chi so toi da doi: goi DAY DU da mang san -> chi cap nhat moc;
+				// goi GON khong mang -> phat them goi 223 (39 byte).
+				if (bTTMoi && dwBamTT != s_adwNSBamTT[m_Index])
+				{
+					if (bGon)
+						bTT = TRUE;
+					s_adwNSBamTT[m_Index] = dwBamTT;
+				}
 			}
 		}
 		if (bGon || bGonThem)
@@ -7181,6 +7229,17 @@ BOOL KNpc::NormalSync()
 			sGon.WalkSpeed = abyNgua[1];
 			sGon.RunSpeed = abyNgua[2];
 		}
+		if (bTT)
+		{	// [DELTA 07/09 l] goi trang thai gon
+			s_nNSTT++;
+			sTT.ProtocolType = (BYTE)s2c_syncnpcstate;
+			sTT.ID = m_dwID;
+			memcpy(sTT.StateInfo, NpcSync.StateInfo, sizeof(sTT.StateInfo));
+			sTT.m_CurrentLifeMax = NpcSync.m_CurrentLifeMax;
+			sTT.m_LifeMax = NpcSync.m_LifeMax;
+			sTT.m_CurrentManaMax = NpcSync.m_CurrentManaMax;
+			sTT.m_ManaMax = NpcSync.m_ManaMax;
+		}
 		if (bGonThem) s_nNSGonThem++;
 		if (!bPhat) s_nNSBo++; else if (bGon) s_nNSGonDem++; else s_nNSDay++;
 		{	// [DELTA 07/09 c] in so trong 10 giay (truoc: cong don tu luc boot, kho doc)
@@ -7193,6 +7252,8 @@ BOOL KNpc::NormalSync()
 				AUTOLOG("[NS-BO] 10s dong bo theo thay doi: bo=%d gon=%d day=%d gon_them=%d (lam moi %d ms, day du %d ms, gon=%d, client cu=%d) | bam cham doi o nhom: toc_do=%d trang_thai=%d chi_so_max=%d phe_loai=%d bat_tu=%d nhieu=%d",
 					s_nNSBo, s_nNSGonDem, s_nNSDay, s_nNSGonThem, s_nNSLamMoi, s_nNSLamMoiDay, s_nNSGon, NS_SoClientCu(dwLuc),
 					s_anNSNhom[0], s_anNSNhom[1], s_anNSNhom[2], s_anNSNhom[3], s_anNSNhom[4], s_nNSNhomNhieu);
+				AUTOLOG("[NS-TT] 10s goi trang thai gon (223): %d lan (client chua bao phien ban 3: %d)", s_nNSTT, NS_SoClientCu3(dwLuc));
+				s_nNSTT = 0;
 				for (int k = 0; k < NS_SO_NHOM; k++)	// dem lai moi 10 giay cho de doc (y het cac so khac tren dong nay)
 					s_anNSNhom[k] = 0;
 				s_nNSNhomNhieu = 0;
@@ -7225,12 +7286,14 @@ BOOL KNpc::NormalSync()
 	if (bPhat)
 	{
 		// [DELTA 07/09 f] lan 0 = goi da chon (gon/day du); lan 1 = goi gon them khi goi day du khong mang ngua/toc do vua doi
-		for (int nNSLan = 0; nNSLan < 2; nNSLan++)
+		for (int nNSLan = 0; nNSLan < 3; nNSLan++)	// [DELTA 07/09 l] them luot 2 = goi trang thai 223
 		{
 			if (nNSLan == 1 && !bGonThem)
+				continue;	// [DELTA 07/09 l] van con luot 2 (goi trang thai)
+			if (nNSLan == 2 && !bTT)
 				break;
-			const void* pB = (nNSLan == 0) ? pNSBuf : (const void*)&sGon;
-			const DWORD dwB = (nNSLan == 0) ? dwNSSize : (DWORD)sizeof(NPC_POS_SYNC);
+			const void* pB = (nNSLan == 0) ? pNSBuf : ((nNSLan == 1) ? (const void*)&sGon : (const void*)&sTT);
+			const DWORD dwB = (nNSLan == 0) ? dwNSSize : ((nNSLan == 1) ? (DWORD)sizeof(NPC_POS_SYNC) : (DWORD)sizeof(NPC_STATE_SYNC));
 			int nMaxLan = NPC_SYNC_BROADCAST_LIMIT;
 			CURREGION.BroadCast(pB, dwB, nMaxLan, m_MapX, m_MapY);
 			for (j = 0; j < 8; j++)

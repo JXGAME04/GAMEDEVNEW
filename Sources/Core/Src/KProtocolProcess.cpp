@@ -230,6 +230,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_syncnpcminplayer] = &KProtocolProcess::SyncNpcMinPlayer;
 	ProcessFunc[s2c_syncnpcpos] = &KProtocolProcess::SyncNpcPos;	// [DELTA 07/09]
 	ProcessFunc[s2c_showdamagegon] = &KProtocolProcess::s2cShowDamageGon;	// [DELTA 07/09 g]
+	ProcessFunc[s2c_syncnpcstate] = &KProtocolProcess::SyncNpcState;	// [DELTA 07/09 l]
 	ProcessFunc[s2c_objadd] = &KProtocolProcess::SyncObjectAdd;
 	ProcessFunc[s2c_syncobjstate] = &KProtocolProcess::SyncObjectState;
 	ProcessFunc[s2c_syncobjdir] = &KProtocolProcess::SyncObjectDir;
@@ -2547,6 +2548,22 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 	}
 }
 
+// [DELTA 07/09 l] Goi trang thai gon (223): dat y het phan tuong ung cua SyncNpcMin. May chu chi phat goi nay
+// khi bam trang thai doi MA khong phai gui goi day du (goi day du da mang san trang thai).
+void KProtocolProcess::SyncNpcState(BYTE* pMsg)
+{
+	NPC_STATE_SYNC* pSync = (NPC_STATE_SYNC*)pMsg;
+	int nIdx = NpcSet.SearchID(pSync->ID);
+	if (nIdx <= 0 || nIdx >= MAX_NPC)
+		return;
+	Npc[nIdx].SetNpcState(pSync->StateInfo);
+	Npc[nIdx].m_CurrentLifeMax	= pSync->m_CurrentLifeMax;
+	Npc[nIdx].m_LifeMax			= pSync->m_LifeMax;
+	Npc[nIdx].m_CurrentManaMax	= pSync->m_CurrentManaMax;
+	Npc[nIdx].m_ManaMax			= pSync->m_ManaMax;
+	Npc[nIdx].m_SyncSignal		= SubWorld[0].m_dwCurrentTime;
+}
+
 void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?l?khi vµo c¸c region < 0
 {	
 	NPC_PLAYER_TYPE_NORMAL_SYNC	*pSync = (NPC_PLAYER_TYPE_NORMAL_SYNC*)pMsg;
@@ -3323,7 +3340,7 @@ void KProtocolProcess::SyncEnd(BYTE* pMsg)
 	{
 		C2S_DELTA_HELLO sHello;
 		sHello.ProtocolType = (BYTE)c2s_deltahello;
-		sHello.byPhienBan = 2;	// [DELTA 07/09 g] 2 = hieu them s2c_showdamagegon (222); may chu cu coi moi gia tri nhu nhau
+		sHello.byPhienBan = 3;	// [DELTA 07/09 l] 3 = hieu them s2c_syncnpcstate (223); 2 = 222; may chu cu coi moi gia tri nhu nhau
 		if (g_pClient)
 			g_pClient->SendPackToServer((BYTE*)&sHello, sizeof(sHello));
 	}

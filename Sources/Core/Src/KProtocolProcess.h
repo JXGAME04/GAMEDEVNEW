@@ -165,6 +165,7 @@ public:
 	void	s2cSyncRankData2(BYTE* pMsg);
 	void	s2cShowDamage(BYTE* pMsg);
 	void	s2cShowDamageGon(BYTE* pMsg);	// [DELTA 07/09 g] so sat thuong GON 13 byte (khong dwLauncher)
+	void	SyncNpcState(BYTE* pMsg);		// [DELTA 07/09 l] goi trang thai ky nang + chi so toi da (223)
 	void	s2cSyncMagic(BYTE* pMsg);
 	void	s2cSyncMeridian(BYTE* pMsg);
 	void	s2cSyncBauCuaResult(BYTE* pMsg);

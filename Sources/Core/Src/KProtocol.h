@@ -1275,6 +1275,19 @@ typedef struct tagDamageShowGon
 	DWORD			dwReceiver;
 } DAMAGESHOW_GON;
 
+// [DELTA 07/09 l] s2c_syncnpcstate = 223: chi trang thai ky nang + chi so toi da (39 byte thay vi 98 byte cua
+// NPC_NORMAL_SYNC). Client ap y het phan tuong ung trong SyncNpcMin.
+typedef struct
+{
+	BYTE			ProtocolType;
+	DWORD			ID;
+	BYTE			StateInfo[MAX_SKILL_STATE];
+	int				m_CurrentLifeMax;
+	int				m_LifeMax;
+	int				m_CurrentManaMax;
+	int				m_ManaMax;
+} NPC_STATE_SYNC;
+
 typedef struct
 {
 	BYTE	ProtocolType;
