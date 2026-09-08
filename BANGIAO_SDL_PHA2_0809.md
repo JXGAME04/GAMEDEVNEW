@@ -93,3 +93,14 @@ IME (`KIme`), `S3Client.cpp` (`GetPrivateProfileInt`, `timeBeginPeriod`, CrashLo
 
 Chạy thử 15:28 (25 s, màn đăng nhập): không sập, tiêu đề cửa sổ "Vo Lam Truyen Ky", Represent3 nạp ảnh bình thường. Build: `build_chuoi_sdl.ps1`.
 Bẫy: post-build Core ReleaseSDL không có .pdb → `copy` lỗi chặn chuỗi (đã `if exist`); overload inline `LPCVOID` làm MSVC C2666 (đã bỏ, ép kiểu tại chỗ gọi).
+
+## 8. Lát 2b-3 (15:3x): âm thanh qua miniaudio — cùng bộ thử `bin\client64sdl`
+
+`Sources/Engine/Src/KSoundMa.cpp` (chỉ khi `JX_PLATFORM_SDL`; 4 tệp DirectSound `KDSound/KWavSound/KMusic/KMp3Music.cpp` chắn `#ifndef`) cài lại
+đúng các lớp đang có, **giữ nguyên header và bố cục lớp** (Core/S3Client không đổi): `KDirectSound` = `ma_engine`; `KWavSound` = PCM trong bộ nhớ +
+`BUFFER_COUNT` (3) `ma_sound` phát chồng, pan/volume đổi từ đơn vị DirectSound (1/100 dB → 10^(v/2000)); `KMusic/KMp3Music` = `ma_decoder` từ bộ nhớ
+(đọc qua `KPakFile`, mp3/wav tự nhận) + `ma_sound` stream, `Seek(%)` theo độ dài. Kết quả phụ: **mp3 chạy lại trên 64-bit** (bản x64 thường vẫn stub
+vì mp3lib chỉ có x86). `ThirdParty/miniaudio` = `miniaudio.h` master 15:30 08/09 (MIT-0, tải từ github.com/mackron/miniaudio, chủ cho phép tự tải).
+Backend: WASAPI (Windows), AAudio/OpenSL (Android) — `MA_ENABLE_ONLY_SPECIFIC_BACKENDS`. Engine.dll bản SDL không còn phụ thuộc dsound.dll.
+Chạy thử 15:37 (25 s): không sập, chỉ nạp Engine.dll + SDL3.dll. Chờ chủ nghe thử (hiệu ứng, nhạc, âm lượng).
+Chưa làm: log SDL ra tệp (`SDL_SetLogOutputFunction` → `jx_sdl.log`), mạng (2b-2), IME/WndEdit, S3Client.cpp (GetPrivateProfileInt/timeBeginPeriod/CrashLog/AntiHack).
