@@ -22,6 +22,11 @@ extern int      g_nRep3Batch;        // [Client] Rep3Batch: 1 = gop quad cung tr
 extern unsigned g_uRep3BatchQuads;   // so quad da gop trong ky
 extern unsigned g_uRep3BatchDraws;   // so Draw thuc te tu cac lo gop
 extern int      g_nRep3Waitable;     // [Client] Rep3Waitable: 1 = dung doi tuong cho khung cua DXGI (mac dinh), 0 = tat
+extern int      g_nRep3Pal;          // [Client] Rep3Pal: 1 = texture sprite bang mau 2 B/px (mac dinh khi D3D11), 0 = BGRA8
+int  Rep3_D3D11PaletteOK();
+int  Rep3_D3D11AllocPalette(const unsigned char* pPal24, int nColors);	// hang bang mau (-1 = het)
+void Rep3_D3D11FreePalette(int nRow);
+void Rep3_D3D11TagPalette(IDirect3DTexture9* pTex, int nRow);
 extern int      g_nRep3Buffers;      // [Client] Rep3Buffers: so backbuffer flip (2..4), mac dinh 3
 extern int      g_nRep3NoWait;       // [Client] Rep3NoWait: 1 = Present khong cho (hang day thi bo khung); mac dinh 0 = cho nhu D3D9
 extern int      g_nRep3Latency;      // [Client] Rep3Latency: so khung toi da cho trinh chieu (1..3), mac dinh 3

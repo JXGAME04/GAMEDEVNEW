@@ -47,6 +47,7 @@ R11Fmt R11FormatInfo(D3DFORMAT f)
 	case D3DFMT_X1R5G5B5: case D3DFMT_A1R5G5B5: r.dxgi = DXGI_FORMAT_B5G5R5A1_UNORM; r.bpp = 2; break;
 	case D3DFMT_R8G8B8:   r.dxgi = DXGI_FORMAT_UNKNOWN; r.bpp = 3; break;	// luon doi sang BGRA8
 	case D3DFMT_A8:       r.dxgi = DXGI_FORMAT_A8_UNORM; r.bpp = 1; break;
+	case D3DFMT_A8L8:     r.dxgi = DXGI_FORMAT_R8G8_UNORM; r.bpp = 2; break;	// [r] chi so + alpha
 	case D3DFMT_L8:       r.dxgi = DXGI_FORMAT_R8_UNORM; r.bpp = 1; break;
 	case D3DFMT_P8:       r.dxgi = DXGI_FORMAT_UNKNOWN; r.bpp = 1; break;
 	case D3DFMT_DXT1:     r.dxgi = DXGI_FORMAT_BC1_UNORM; r.bpp = 0; r.blockBytes = 8; break;
@@ -117,7 +118,7 @@ CTex11::CTex11(CDev11* pDev, UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL
 	m_pitch = R11Pitch(fmt, w);
 	m_pCpu = NULL; m_pGpu = NULL; m_pSrv = NULL; m_pRtv = NULL;
 	m_dxgi = DXGI_FORMAT_UNKNOWN; m_bConvert = false; m_bDirty = false; m_bLocked = false; m_uGpuBytes = 0; m_pSurf0 = NULL;
-	m_bVirtual = false; m_pPage = NULL; m_slot = 0; m_ax = 0; m_ay = 0;
+	m_bVirtual = false; m_pPage = NULL; m_slot = 0; m_ax = 0; m_ay = 0; m_nPalRow = -1;
 	SetRect(&m_rcDirty, 0, 0, 0, 0); SetRect(&m_rcLock, 0, 0, 0, 0);
 	pDev->AddRef();
 }
@@ -162,21 +163,22 @@ HRESULT CTex11::EnsureGpu(const BYTE* pInit)
 	if (m_bVirtual)
 	{
 		if (m_pPage) return D3D_OK;
-		if (!m_pDev->m_pAtlas || !m_pDev->m_pAtlas->Alloc(m_w, m_h, &m_pPage, &m_ax, &m_ay))
+		DXGI_FORMAT fmtPage = (m_fmt == D3DFMT_A8L8) ? DXGI_FORMAT_R8G8_UNORM : DXGI_FORMAT_B8G8R8A8_UNORM;	// [r]
+		if (!m_pDev->m_pAtlas || !m_pDev->m_pAtlas->Alloc(m_w, m_h, fmtPage, &m_pPage, &m_ax, &m_ay))
 		{
 			m_bVirtual = false;	// het cach: texture rieng
 		}
 		else
 		{
-			m_pSrv = m_pPage->m_pSrv; m_dxgi = DXGI_FORMAT_B8G8R8A8_UNORM;
-			m_bConvert = (m_fmt != D3DFMT_A8R8G8B8 && m_fmt != D3DFMT_X8R8G8B8);
-			m_uGpuBytes = m_w * m_h * 4; g_uRep3GpuTexCount++; g_uRep3GpuTexBytes += m_uGpuBytes;
+			m_pSrv = m_pPage->m_pSrv; m_dxgi = m_pPage->m_fmt;
+			m_bConvert = (m_pPage->m_bpp == 4) && (m_fmt != D3DFMT_A8R8G8B8 && m_fmt != D3DFMT_X8R8G8B8);
+			m_uGpuBytes = m_w * m_h * m_pPage->m_bpp; g_uRep3GpuTexCount++; g_uRep3GpuTexBytes += m_uGpuBytes;
 			m_bDirty = false;
 			if (pInit) { BYTE* pSave = m_pCpu; m_pCpu = (BYTE*)pInit; HRESULT hrU = UploadRect(NULL); m_pCpu = pSave; return hrU; }
 			// khong co du lieu: xoa o (tranh rac cua texture cu)
-			BYTE* pZero = (BYTE*)calloc(1, (size_t)m_w * m_h * 4);
+			BYTE* pZero = (BYTE*)calloc(1, (size_t)m_w * m_h * m_pPage->m_bpp);
 			if (pZero) { D3D11_BOX bz; bz.left = m_ax; bz.top = m_ay; bz.right = m_ax + m_w; bz.bottom = m_ay + m_h; bz.front = 0; bz.back = 1;
-				m_pDev->m_pCtx->UpdateSubresource(m_pPage->m_pTex, 0, &bz, pZero, m_w * 4, 0); free(pZero); }
+				m_pDev->m_pCtx->UpdateSubresource(m_pPage->m_pTex, 0, &bz, pZero, m_w * m_pPage->m_bpp, 0); free(pZero); }
 			return D3D_OK;
 		}
 	}

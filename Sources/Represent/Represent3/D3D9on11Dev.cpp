@@ -11,7 +11,7 @@
 #define R11_SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = NULL; } }
 #define R11_RING_SIZE (4 * 1024 * 1024)
 
-static CDev11* g_pRep3Dev11 = NULL;
+CDev11* g_pRep3Dev11 = NULL;
 double   g_dRep3PresentMs = 0.0;
 unsigned g_uRep3Presents = 0;
 unsigned g_uRep3PresentSkip = 0;
@@ -39,7 +39,7 @@ CDev11::CDev11(CD3D11Shim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_bTearing = false; m_swapFlags = 0; m_hWaitable = NULL; m_bWaitedThisFrame = false; m_uStillLogged = 0; m_liLastPresent.QuadPart = 0;
 	m_pBackTex = NULL; m_pBackRtv = NULL; m_pLastFrame = NULL; m_pStaging = NULL; m_bbW = pp.BackBufferWidth; m_bbH = pp.BackBufferHeight;
 	m_pBackSurf = NULL; m_pRt = NULL; m_bRtBound = false;
-	m_pVS = NULL; m_pPS = NULL; m_pVsCb = NULL; m_pPsCb = NULL; m_pRing = NULL; m_ringSize = R11_RING_SIZE; m_ringPos = 0; m_bRingDiscard = true; m_pAtlas = NULL; m_pDummy = NULL; m_pDss = NULL;
+	m_pVS = NULL; m_pPS = NULL; m_pVsCb = NULL; m_pPsCb = NULL; m_pRing = NULL; m_ringSize = R11_RING_SIZE; m_ringPos = 0; m_bRingDiscard = true; m_pAtlas = NULL; m_pPalTex = NULL; m_pPalSrv = NULL; m_pDummy = NULL; m_pDss = NULL;
 	memset(m_rs, 0, sizeof(m_rs)); memset(m_tss, 0, sizeof(m_tss)); memset(m_ss, 0, sizeof(m_ss)); memset(m_tex, 0, sizeof(m_tex));
 	m_fvf = 0; m_pStream = NULL; m_streamOffset = 0; m_streamStride = 0;
 	memset(&m_vp, 0, sizeof(m_vp)); m_vp.Width = m_bbW; m_vp.Height = m_bbH; m_vp.MaxZ = 1.0f;
@@ -80,6 +80,7 @@ CDev11::~CDev11()
 	std::map<DWORD, ID3D11BlendState*>::iterator ib; for (ib = m_blends.begin(); ib != m_blends.end(); ++ib) if (ib->second) ib->second->Release();
 	std::map<DWORD, ID3D11SamplerState*>::iterator is; for (is = m_samplers.begin(); is != m_samplers.end(); ++is) if (is->second) is->second->Release();
 	std::map<DWORD, ID3D11RasterizerState*>::iterator ir; for (ir = m_rasters.begin(); ir != m_rasters.end(); ++ir) if (ir->second) ir->second->Release();
+	PalRelease();	// [r]
 	if (m_pAtlas) { delete m_pAtlas; m_pAtlas = NULL; }
 	R11_SAFE_RELEASE(m_pDss); R11_SAFE_RELEASE(m_pDummy); R11_SAFE_RELEASE(m_pRing); R11_SAFE_RELEASE(m_pPsCb); R11_SAFE_RELEASE(m_pVsCb);
 	R11_SAFE_RELEASE(m_pPS); R11_SAFE_RELEASE(m_pVS);
@@ -372,6 +373,7 @@ HRESULT CDev11::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDe
 	if (hr == DXGI_ERROR_WAS_STILL_DRAWING) { g_uRep3PresentSkip++; hr = S_OK; }
 	m_bRtBound = false; m_bWaitedThisFrame = false;
 	m_ringPos = 0; m_bRingDiscard = true;
+	PalFrameEnd();	// [r] hang bang mau thu trong khung -> dung lai duoc
 	QueryPerformanceCounter(&t1); g_dRep3PresentMs += R11Ms(t0, t1); g_uRep3Presents++;
 	if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
 	{
@@ -735,9 +737,10 @@ HRESULT CDev11::GetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9** ppSt
 // ---------------------------------------------------------------- doi tuong trang thai D3D11
 ID3D11InputLayout* CDev11::GetInputLayout(DWORD fvf, UINT stride)
 {
-	std::map<DWORD, ID3D11InputLayout*>::iterator it = m_layouts.find(fvf);
+	DWORD keyIL = (fvf & 0xFFFF) | (stride << 16);	// [r] layout phu thuoc stride (PALROW o cuoi)
+	std::map<DWORD, ID3D11InputLayout*>::iterator it = m_layouts.find(keyIL);
 	if (it != m_layouts.end()) return it->second;
-	D3D11_INPUT_ELEMENT_DESC ie[3]; int n = 0; UINT off = 0;
+	D3D11_INPUT_ELEMENT_DESC ie[4]; int n = 0; UINT off = 0;
 	DWORD posType = fvf & D3DFVF_POSITION_MASK;
 	bool bRhw = (posType == D3DFVF_XYZRHW);
 	ie[n].SemanticName = "POSITION"; ie[n].SemanticIndex = 0; ie[n].Format = bRhw ? DXGI_FORMAT_R32G32B32A32_FLOAT : DXGI_FORMAT_R32G32B32_FLOAT;
@@ -755,10 +758,11 @@ ID3D11InputLayout* CDev11::GetInputLayout(DWORD fvf, UINT stride)
 	if (((fvf & D3DFVF_TEXCOUNT_MASK) >> D3DFVF_TEXCOUNT_SHIFT) >= 1) { ie[n].InputSlot = 0; ie[n].AlignedByteOffset = off; ie[n].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA; ie[n].InstanceDataStepRate = 0; }
 	else { ie[n].InputSlot = 1; ie[n].AlignedByteOffset = 4; ie[n].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA; ie[n].InstanceDataStepRate = 0; }
 	n++;
+	ie[n].SemanticName = "PALROW"; ie[n].SemanticIndex = 0; ie[n].Format = DXGI_FORMAT_R32_UINT; ie[n].InputSlot = 0; ie[n].AlignedByteOffset = stride; ie[n].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA; ie[n].InstanceDataStepRate = 0; n++;	// [r] hang bang mau, 4 byte sau dinh D3D9
 	ID3D11InputLayout* pIL = NULL;
 	HRESULT hr = m_pDev->CreateInputLayout(ie, n, g_Rep3VS11, sizeof(g_Rep3VS11), &pIL);
 	if (FAILED(hr)) { R11Log("CreateInputLayout fvf 0x%X that bai 0x%08X", (unsigned)fvf, (unsigned)hr); pIL = NULL; }
-	m_layouts[fvf] = pIL;
+	m_layouts[keyIL] = pIL;
 	return pIL;
 }
 
@@ -873,6 +877,7 @@ void CDev11::ApplyComputed(const R11Applied& a)
 		m_pCtx->VSSetShader(m_pVS, NULL, 0); m_pCtx->PSSetShader(m_pPS, NULL, 0);
 		m_pCtx->VSSetConstantBuffers(0, 1, &m_pVsCb); m_pCtx->PSSetConstantBuffers(0, 1, &m_pPsCb);
 		m_pCtx->OMSetDepthStencilState(m_pDss, 0);
+		if (m_pPalSrv) m_pCtx->PSSetShaderResources(2, 1, &m_pPalSrv);	// [r]
 		m_bPipeBound = true;
 	}
 	const bool v = m_bAppliedValid;
@@ -933,7 +938,7 @@ void CDev11::FlushBatch()
 {
 	if (!m_batchVerts) return;
 	Lock();
-	UINT nVerts = m_batchVerts, stride = m_batchState.stride, bytes = nVerts * stride;
+	UINT nVerts = m_batchVerts, stride = m_batchState.stride + 4, bytes = nVerts * stride;	// [r] +4 byte PALROW moi dinh
 	m_batchVerts = 0;
 	if (bytes > m_ringSize) { m_batch.clear(); Unlock(); return; }
 	UINT pos = 0;
@@ -997,12 +1002,14 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 		if (m_batchVerts && (memcmp(&a, &m_batchState, sizeof(a)) != 0 || m_batch.size() + 6 * stride > 2 * 1024 * 1024))
 			FlushBatch();
 		if (!m_batchVerts) m_batchState = a;
+		const UINT s11 = stride + 4;	// [r] +4 byte PALROW
+		const UINT uPal = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? (UINT)m_tex[0]->m_nPalRow : 0xFFFFu;
 		size_t base = m_batch.size();
-		m_batch.resize(base + 6 * stride);
+		m_batch.resize(base + 6 * s11);
 		BYTE* d = &m_batch[base];
 		static const int s_idx[6] = { 0, 1, 2, 2, 1, 3 };
-		for (int i = 0; i < 6; i++) memcpy(d + i * stride, pVerts + s_idx[i] * stride, stride);
-		R11AtlasUv(d, 6, stride, m_fvf, m_tex[0], fPage);
+		for (int i = 0; i < 6; i++) { memcpy(d + i * s11, pVerts + s_idx[i] * stride, stride); *(UINT*)(d + i * s11 + stride) = uPal; }
+		R11AtlasUv(d, 6, s11, m_fvf, m_tex[0], fPage);
 		m_batchVerts += 6;
 		g_uRep3BatchQuads++;
 		return D3D_OK;
@@ -1010,33 +1017,34 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 	FlushIfPending();
 	// ---- lenh khac: ve ngay
 	std::vector<BYTE> tmp;
+	const UINT s11 = stride + 4;	// [r] +4 byte PALROW
+	const UINT uPal = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? (UINT)m_tex[0]->m_nPalRow : 0xFFFFu;
 	if (type == D3DPT_TRIANGLEFAN)
 	{
 		UINT nTri = nVerts - 2;
-		tmp.resize((size_t)nTri * 3 * stride);
+		tmp.resize((size_t)nTri * 3 * s11);
 		for (UINT i = 0; i < nTri; i++)
 		{
-			memcpy(&tmp[(i * 3 + 0) * stride], pVerts, stride);
-			memcpy(&tmp[(i * 3 + 1) * stride], pVerts + (i + 1) * stride, stride);
-			memcpy(&tmp[(i * 3 + 2) * stride], pVerts + (i + 2) * stride, stride);
+			const UINT src[3] = { 0, i + 1, i + 2 };
+			for (int k = 0; k < 3; k++) { memcpy(&tmp[(i * 3 + k) * s11], pVerts + src[k] * stride, stride); *(UINT*)(&tmp[(i * 3 + k) * s11 + stride]) = uPal; }
 		}
-		pVerts = &tmp[0]; nVerts = nTri * 3; type = D3DPT_TRIANGLELIST;
+		nVerts = nTri * 3; type = D3DPT_TRIANGLELIST;
 	}
 	else
 	{
-		tmp.assign(pVerts, pVerts + (size_t)nVerts * stride);
-		pVerts = &tmp[0];
+		tmp.resize((size_t)nVerts * s11);
+		for (UINT i = 0; i < nVerts; i++) { memcpy(&tmp[i * s11], pVerts + i * stride, stride); *(UINT*)(&tmp[i * s11 + stride]) = uPal; }
 	}
-	R11AtlasUv(&tmp[0], nVerts, stride, m_fvf, m_tex[0], fPage);
-	UINT bytes = nVerts * stride;
+	R11AtlasUv(&tmp[0], nVerts, s11, m_fvf, m_tex[0], fPage);
+	UINT bytes = nVerts * s11;
 	if (bytes > m_ringSize) { R11Log("DrawInternal: %u byte vuot ring", bytes); return D3DERR_INVALIDCALL; }
 	UINT pos = 0;
-	UploadRing(pVerts, bytes, stride, &pos);
+	UploadRing(&tmp[0], bytes, s11, &pos);
 	if (pos == 0xFFFFFFFF) return D3DERR_INVALIDCALL;
 	R11Applied a;
 	ComputeApplied(a, pIL, stride);
 	ApplyComputed(a);
-	ID3D11Buffer* bufs[2] = { m_pRing, m_pDummy }; UINT strides[2] = { stride, 16 }; UINT offs[2] = { pos, 0 };
+	ID3D11Buffer* bufs[2] = { m_pRing, m_pDummy }; UINT strides[2] = { s11, 16 }; UINT offs[2] = { pos, 0 };
 	m_pCtx->IASetVertexBuffers(0, 2, bufs, strides, offs);
 	D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	switch (type)

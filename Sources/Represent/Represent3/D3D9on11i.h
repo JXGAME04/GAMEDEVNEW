@@ -33,6 +33,7 @@ class CAtlasPage
 {
 public:
 	ID3D11Texture2D* m_pTex; ID3D11ShaderResourceView* m_pSrv;
+	DXGI_FORMAT m_fmt; UINT m_bpp;	// [r] trang BGRA8 (4) hoac R8G8 (2)
 	UINT m_binH, m_rows, m_used;
 	std::vector<std::vector<std::pair<UINT, UINT> > > m_free;	// moi hang: cac doan trong (x0, x1)
 };
@@ -42,10 +43,10 @@ public:
 	CAtlasMgr(CDev11* pDev);
 	~CAtlasMgr();
 	static bool Eligible(UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL pool);
-	bool Alloc(UINT w, UINT h, CAtlasPage** ppPage, UINT* pX, UINT* pY);
+	bool Alloc(UINT w, UINT h, DXGI_FORMAT fmt, CAtlasPage** ppPage, UINT* pX, UINT* pY);
 	void Free(CAtlasPage* pPage, UINT x, UINT y, UINT w);
 	void ReleaseAll();
-	CAtlasPage* NewPage(UINT binH);
+	CAtlasPage* NewPage(UINT binH, DXGI_FORMAT fmt);
 	CDev11* m_pDev; std::vector<CAtlasPage*> m_pages; UINT m_pageSize;
 };
 
@@ -111,6 +112,7 @@ public:
 	UINT        m_uGpuBytes;
 	CSurf11*    m_pSurf0;			// mat level 0 (khong giu ref; surface giu ref texture)
 	bool        m_bVirtual;			// [d] o trong trang atlas (m_pSrv = SRV cua trang, khong so huu)
+	int         m_nPalRow;			// [r] hang bang mau (-1 = khong phai texture chi so)
 	CAtlasPage* m_pPage; UINT m_slot, m_ax, m_ay;
 };
 
@@ -223,6 +225,8 @@ struct R11Applied
 };
 
 class CD3D11Shim;
+extern CDev11* g_pRep3Dev11;
+extern unsigned g_uRep3PalRows;
 
 class CDev11 : public IDirect3DDevice9
 {
@@ -407,6 +411,9 @@ public:
 	ID3D11Buffer*           m_pRing;		// vertex ring (dynamic)
 	UINT            m_ringSize, m_ringPos;
 	bool            m_bRingDiscard;
+	// [r] atlas bang mau (D3D9on11Pal.cpp)
+	ID3D11Texture2D* m_pPalTex; ID3D11ShaderResourceView* m_pPalSrv; std::vector<int> m_palFree, m_palDeferred;
+	bool    PalInit(); void PalRelease(); void PalFrameEnd(); int PalAlloc(const unsigned char* pPal24, int nColors); void PalFree(int row);
 	CAtlasMgr*      m_pAtlas;				// [d] NULL = tat			// dau khung: Map DISCARD (GPU co the con doc dinh cua khung truoc - KHONG duoc ghi de NO_OVERWRITE)
 	ID3D11Buffer*           m_pDummy;		// mau trang + uv 0 cho FVF thieu thanh phan
 	ID3D11DepthStencilState* m_pDss;

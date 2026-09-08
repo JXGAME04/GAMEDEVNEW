@@ -60,6 +60,10 @@ extern unsigned g_uRep3GpuTexCount;          // [D3D11 08/09] so texture GPU dan
 extern unsigned __int64 g_uRep3GpuTexBytes;  // [D3D11 08/09] byte texture GPU
 extern int  g_nRep3Atlas;       // [D3D11 08/09 d] gom texture nho vao trang atlas
 extern unsigned g_uRep3AtlasPages; extern unsigned __int64 g_uRep3AtlasBytes;
+extern int  g_nRep3Pal;	// [D3D11 08/09 r]
+extern unsigned g_uRep3PalRows;
+struct IDirect3DTexture9;
+int  Rep3_D3D11PaletteOK(); int Rep3_D3D11AllocPalette(const unsigned char* pPal24, int nColors); void Rep3_D3D11FreePalette(int nRow); void Rep3_D3D11TagPalette(IDirect3DTexture9* pTex, int nRow);
 extern int  g_nRep3Waitable;	// [D3D11 08/09 n]
 extern int  g_nRep3Buffers;	// [D3D11 08/09 m]
 extern int  g_nRep3NoWait;	// [D3D11 08/09 l]

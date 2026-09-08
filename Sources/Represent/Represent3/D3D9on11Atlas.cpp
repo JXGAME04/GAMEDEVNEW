@@ -44,18 +44,19 @@ bool CAtlasMgr::Eligible(UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL poo
 	if (w == 0 || h == 0 || w > 512 || h > 512) return false;
 	switch (fmt)
 	{
-	case D3DFMT_A8R8G8B8: case D3DFMT_X8R8G8B8: case D3DFMT_A4R4G4B4: case D3DFMT_R5G6B5: case D3DFMT_X1R5G5B5: case D3DFMT_A1R5G5B5: return true;
+	case D3DFMT_A8R8G8B8: case D3DFMT_X8R8G8B8: case D3DFMT_A4R4G4B4: case D3DFMT_R5G6B5: case D3DFMT_X1R5G5B5: case D3DFMT_A1R5G5B5: case D3DFMT_A8L8: return true;
 	default: return false;
 	}
 }
 
-CAtlasPage* CAtlasMgr::NewPage(UINT binH)
+CAtlasPage* CAtlasMgr::NewPage(UINT binH, DXGI_FORMAT fmt)
 {
+	UINT bpp = (fmt == DXGI_FORMAT_R8G8_UNORM) ? 2 : 4;	// [r]
 	D3D11_TEXTURE2D_DESC td; memset(&td, 0, sizeof(td));
-	td.Width = m_pageSize; td.Height = m_pageSize; td.MipLevels = 1; td.ArraySize = 1; td.Format = DXGI_FORMAT_B8G8R8A8_UNORM; td.SampleDesc.Count = 1;
+	td.Width = m_pageSize; td.Height = m_pageSize; td.MipLevels = 1; td.ArraySize = 1; td.Format = fmt; td.SampleDesc.Count = 1;
 	td.Usage = D3D11_USAGE_DEFAULT; td.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	BYTE* pZero = (BYTE*)calloc(1, (size_t)m_pageSize * m_pageSize * 4);	// trang tao kem du lieu 0 (khong de rac)
-	D3D11_SUBRESOURCE_DATA sr; memset(&sr, 0, sizeof(sr)); sr.pSysMem = pZero; sr.SysMemPitch = m_pageSize * 4;
+	BYTE* pZero = (BYTE*)calloc(1, (size_t)m_pageSize * m_pageSize * bpp);	// trang tao kem du lieu 0 (khong de rac)
+	D3D11_SUBRESOURCE_DATA sr; memset(&sr, 0, sizeof(sr)); sr.pSysMem = pZero; sr.SysMemPitch = m_pageSize * bpp;
 	ID3D11Texture2D* pTex = NULL;
 	HRESULT hr = m_pDev->m_pDev->CreateTexture2D(&td, pZero ? &sr : NULL, &pTex);
 	if (pZero) free(pZero);
@@ -64,15 +65,15 @@ CAtlasPage* CAtlasMgr::NewPage(UINT binH)
 	hr = m_pDev->m_pDev->CreateShaderResourceView(pTex, NULL, &pSrv);
 	if (FAILED(hr)) { pTex->Release(); R11Log("atlas: CreateShaderResourceView trang that bai 0x%08X", (unsigned)hr); return NULL; }
 	CAtlasPage* p = new CAtlasPage();
-	p->m_pTex = pTex; p->m_pSrv = pSrv; p->m_binH = binH; p->m_rows = m_pageSize / binH; p->m_used = 0;
+	p->m_pTex = pTex; p->m_pSrv = pSrv; p->m_fmt = fmt; p->m_bpp = bpp; p->m_binH = binH; p->m_rows = m_pageSize / binH; p->m_used = 0;
 	p->m_free.resize(p->m_rows);
 	for (UINT r = 0; r < p->m_rows; r++) p->m_free[r].push_back(std::make_pair(0u, m_pageSize));	// ca hang trong
 	m_pages.push_back(p);
-	g_uRep3AtlasPages++; g_uRep3AtlasBytes += (unsigned __int64)m_pageSize * m_pageSize * 4;
+	g_uRep3AtlasPages++; g_uRep3AtlasBytes += (unsigned __int64)m_pageSize * m_pageSize * bpp;
 	return p;
 }
 
-bool CAtlasMgr::Alloc(UINT w, UINT h, CAtlasPage** ppPage, UINT* pX, UINT* pY)
+bool CAtlasMgr::Alloc(UINT w, UINT h, DXGI_FORMAT fmt, CAtlasPage** ppPage, UINT* pX, UINT* pY)
 {
 	UINT binH = R11Bin(h);
 	if (h > binH || w > m_pageSize) return false;
@@ -81,7 +82,7 @@ bool CAtlasMgr::Alloc(UINT w, UINT h, CAtlasPage** ppPage, UINT* pX, UINT* pY)
 		for (size_t i = 0; i < m_pages.size(); i++)
 		{
 			CAtlasPage* p = m_pages[i];
-			if (p->m_binH != binH) continue;
+			if (p->m_binH != binH || p->m_fmt != fmt) continue;
 			for (UINT r = 0; r < p->m_rows; r++)
 			{
 				std::vector<std::pair<UINT, UINT> >& fr = p->m_free[r];
@@ -97,7 +98,7 @@ bool CAtlasMgr::Alloc(UINT w, UINT h, CAtlasPage** ppPage, UINT* pX, UINT* pY)
 				}
 			}
 		}
-		if (!NewPage(binH)) return false;	// lan 2: thu lai voi trang moi
+		if (!NewPage(binH, fmt)) return false;	// lan 2: thu lai voi trang moi
 	}
 	return false;
 }
@@ -120,7 +121,7 @@ void CAtlasMgr::Free(CAtlasPage* pPage, UINT x, UINT y, UINT w)
 		// giu toi da MOT trang rong moi lop chieu cao; trang rong thu hai thi tra lai VRAM
 		int nEmptySameClass = 0;
 		for (size_t i = 0; i < m_pages.size(); i++)
-			if (m_pages[i] != pPage && m_pages[i]->m_binH == pPage->m_binH && m_pages[i]->m_used == 0) nEmptySameClass++;
+			if (m_pages[i] != pPage && m_pages[i]->m_binH == pPage->m_binH && m_pages[i]->m_fmt == pPage->m_fmt && m_pages[i]->m_used == 0) nEmptySameClass++;
 		if (nEmptySameClass >= 1)
 		{
 			m_pDev->FlushIfPending();
@@ -130,7 +131,7 @@ void CAtlasMgr::Free(CAtlasPage* pPage, UINT x, UINT y, UINT w)
 			if (pPage->m_pTex) pPage->m_pTex->Release();
 			delete pPage;
 			if (g_uRep3AtlasPages) g_uRep3AtlasPages--;
-			g_uRep3AtlasBytes -= (unsigned __int64)m_pageSize * m_pageSize * 4;
+			g_uRep3AtlasBytes -= (unsigned __int64)m_pageSize * m_pageSize * pPage->m_bpp;
 		}
 	}
 }

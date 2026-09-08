@@ -157,6 +157,7 @@ public:
 	uint32		m_nInterval;
 
 	KPAL24*		m_pPal24;					// 调色板
+	int			m_nPalRow;					// [D3D11 08/09 r] hang bang mau trong atlas bang mau (-1 = chua cap)
 	WORD*		m_pPal16;					// 4444调色板
 	int32		m_nFrameNum;				// 资源帧数
 	bool		m_bNew;

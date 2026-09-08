@@ -54,6 +54,38 @@ static void RenderToA8R8G8B8(DWORD* pDest, BYTE* pSrc, int nSrcLen, int nTotal, 
 		*d++ = 0;
 }
 
+// [D3D11 08/09 r] giai RLE spr -> (chi so 8 bit, alpha 8 bit) = D3DFMT_A8L8 (L = chi so o byte thap, A o byte cao). Khong bung mau:
+// mau tra bang trong shader (D3D9on11Pal.cpp) -> y het 8888, VRAM mot nua.
+static void RenderToIndexAlpha(WORD* pDest, BYTE* pSrc, int nSrcLen, int nTotal, int nColors)
+{
+	BYTE*  p    = pSrc;
+	BYTE*  pEnd = pSrc + nSrcLen;
+	WORD*  d    = pDest;
+	WORD*  dEnd = pDest + nTotal;
+	while (p + 2 <= pEnd && d < dEnd)
+	{
+		int n = *p++;
+		int a = *p++;
+		if (a == 0)
+		{
+			for (int k = 0; k < n && d < dEnd; k++)
+				*d++ = 0;
+		}
+		else
+		{
+			for (int k = 0; k < n && d < dEnd; k++)
+			{
+				if (p >= pEnd) { *d++ = 0; continue; }
+				int idx = *p++;
+				if (idx >= nColors) idx = 0;
+				*d++ = (WORD)(((DWORD)a << 8) | (DWORD)idx);
+			}
+		}
+	}
+	while (d < dEnd)
+		*d++ = 0;
+}
+
 // [REP3 03/09 RAM2] giai RLE spr -> A4R4G4B4, CO KIEM BIEN. Ban hop ngu RenderToA4R4G4B4 ben duoi
 // khong kiem mot bien nao: no tin RLE lap vua dung width*height, sai mot nhip la ghi tran pTempData.
 // Dung ban nay de co the bat [Client] Rep3Tex32=0 (4444) an toan - 4444 chi ton mot NUA so byte
@@ -407,6 +439,7 @@ TextureResSpr::~TextureResSpr()
 // 将成员变量置为初始值
 void TextureResSpr::ResetVar()
 {
+	m_nPalRow		= -1;	// [D3D11 08/09 r]
 	m_nWidth		= 0;
 	m_nHeight		= 0;
 	m_nFrameNum		= 1;
@@ -640,6 +673,14 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 	// [REP3 03/09] texture 8888 (dung mau palette 24 bit nhu Represent2) hoac 4444 nhu cu
 	int nBpp = g_nRep3Tex32 ? 4 : 2;
 	D3DFORMAT eFmt = g_nRep3Tex32 ? D3DFMT_A8R8G8B8 : D3DFMT_A4R4G4B4;
+	// [D3D11 08/09 r] bang mau: 2 byte/diem (chi so + alpha), mau tra bang trong shader = y het 8888
+	bool bPal = false;
+	if (g_nRep3Pal && g_nRep3ApiOn == 11 && g_nRep3Pool && m_pPal24 && Rep3_D3D11PaletteOK())
+	{
+		if (m_nPalRow < 0)
+			m_nPalRow = Rep3_D3D11AllocPalette((const unsigned char*)m_pPal24, (int)m_nColors);
+		if (m_nPalRow >= 0) { bPal = true; nBpp = 2; eFmt = D3DFMT_A8L8; }
+	}
 	int nW = m_pFrameInfo[nFrame].nWidth;
 	int nH = m_pFrameInfo[nFrame].nHeight;
 	if (nW <= 0 || nH <= 0)
@@ -655,7 +696,9 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 	if(!pTempData)
 		return;
 
-	if (g_nRep3Tex32)
+	if (bPal)
+		RenderToIndexAlpha((WORD*)pTempData, m_pFrameInfo[nFrame].pRawData, m_pFrameInfo[nFrame].nRawDataLen, nW * nH, (int)m_nColors);
+	else if (g_nRep3Tex32)
 		RenderToA8R8G8B8((DWORD*)pTempData, m_pFrameInfo[nFrame].pRawData, m_pFrameInfo[nFrame].nRawDataLen,
 						nW * nH, m_pPal24, (int)m_nColors);
 	else
@@ -704,6 +747,7 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 			}
 			pFill->Release();
 			ti.pTexture = pVram;
+			if (bPal) Rep3_D3D11TagPalette(pVram, m_nPalRow);	// [D3D11 08/09 r]
 		}
 		else
 			ti.pTexture = pFill;
@@ -1179,6 +1223,7 @@ int32 TextureResSpr::GetPixelAlpha(int32 nFrame, int32 x, int32 y)
 // 释放内存
 void TextureResSpr::Release()
 {
+	if (m_nPalRow >= 0) { Rep3_D3D11FreePalette(m_nPalRow); m_nPalRow = -1; }	// [D3D11 08/09 r] tra hang bang mau
 	SAFE_DELETE_ARRAY(m_pPal24);
 	SAFE_DELETE_ARRAY(m_pPal16);
 

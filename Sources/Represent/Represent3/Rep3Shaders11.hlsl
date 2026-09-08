@@ -10,8 +10,8 @@ cbuffer VSCB : register(b0)
     float4          g_flags;  // x = 1 -> dinh XYZRHW, 0 -> XYZ
 };
 
-struct VSIn  { float4 pos : POSITION; float4 col : COLOR0; float2 uv : TEXCOORD0; };
-struct VSOut { float4 pos : SV_Position; float4 col : COLOR0; float2 uv : TEXCOORD0; };
+struct VSIn  { float4 pos : POSITION; float4 col : COLOR0; float2 uv : TEXCOORD0; uint palrow : PALROW; };
+struct VSOut { float4 pos : SV_Position; float4 col : COLOR0; float2 uv : TEXCOORD0; nointerpolation uint palrow : PALROW; };
 
 VSOut VS(VSIn i)
 {
@@ -28,6 +28,7 @@ VSOut VS(VSIn i)
     }
     o.col = i.col;
     o.uv = i.uv;
+    o.palrow = i.palrow;
     return o;
 }
 
@@ -45,6 +46,7 @@ Texture2D    g_t0 : register(t0);
 SamplerState g_s0 : register(s0);
 Texture2D    g_t1 : register(t1);
 SamplerState g_s1 : register(s1);
+Texture2D    g_pal : register(t2);   // [r] atlas bang mau 256 x N (BGRA8), hang = palrow
 
 float4 Arg(int a, float4 dif, float4 cur, float4 tex)
 {
@@ -104,6 +106,12 @@ float4 PS(VSOut i) : SV_Target
     if (g_st0.x != 1)   // stage 0 khong DISABLE
     {
         float4 tex0 = (g_st0b.z != 0) ? g_t0.Sample(g_s0, i.uv) : float4(1, 1, 1, 1);
+        if (i.palrow != 0xFFFFu && g_st0b.z != 0)
+        {   // [r] texture chi so (R8G8): R = chi so bang mau, G = alpha
+            uint idx = (uint)(tex0.r * 255.0 + 0.5);
+            float4 c = g_pal.Load(int3(idx, i.palrow, 0));
+            tex0 = float4(c.rgb, tex0.g);
+        }
         cur = Stage(g_st0, g_st0b, dif, dif, tex0);
         if (g_st1.x != 1)
         {
