@@ -413,6 +413,7 @@ public:
 	bool            m_bRingDiscard;
 	// [r] atlas bang mau (D3D9on11Pal.cpp)
 	ID3D11Texture2D* m_pPalTex; ID3D11ShaderResourceView* m_pPalSrv; std::vector<int> m_palFree, m_palDeferred;
+	bool    m_bPalLinForce;	// [r2] REP3_PALLIN=1: ep duong loc tuyen tinh bang mau (thu)
 	bool    PalInit(); void PalRelease(); void PalFrameEnd(); int PalAlloc(const unsigned char* pPal24, int nColors); void PalFree(int row);
 	CAtlasMgr*      m_pAtlas;				// [d] NULL = tat			// dau khung: Map DISCARD (GPU co the con doc dinh cua khung truoc - KHONG duoc ghi de NO_OVERWRITE)
 	ID3D11Buffer*           m_pDummy;		// mau trang + uv 0 cho FVF thieu thanh phan

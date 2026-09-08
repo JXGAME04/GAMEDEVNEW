@@ -6,6 +6,7 @@
 #include "Rep3Shaders11_vs.h"
 #include "Rep3Shaders11_ps.h"
 #include <stdio.h>
+#include <stdlib.h>	// [r2] getenv
 #include <string.h>
 
 #define R11_SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = NULL; } }
@@ -39,7 +40,8 @@ CDev11::CDev11(CD3D11Shim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_bTearing = false; m_swapFlags = 0; m_hWaitable = NULL; m_bWaitedThisFrame = false; m_uStillLogged = 0; m_liLastPresent.QuadPart = 0;
 	m_pBackTex = NULL; m_pBackRtv = NULL; m_pLastFrame = NULL; m_pStaging = NULL; m_bbW = pp.BackBufferWidth; m_bbH = pp.BackBufferHeight;
 	m_pBackSurf = NULL; m_pRt = NULL; m_bRtBound = false;
-	m_pVS = NULL; m_pPS = NULL; m_pVsCb = NULL; m_pPsCb = NULL; m_pRing = NULL; m_ringSize = R11_RING_SIZE; m_ringPos = 0; m_bRingDiscard = true; m_pAtlas = NULL; m_pPalTex = NULL; m_pPalSrv = NULL; m_pDummy = NULL; m_pDss = NULL;
+	m_pVS = NULL; m_pPS = NULL; m_pVsCb = NULL; m_pPsCb = NULL; m_pRing = NULL; m_ringSize = R11_RING_SIZE; m_ringPos = 0; m_bRingDiscard = true; m_pAtlas = NULL; m_pPalTex = NULL; m_pPalSrv = NULL; m_pDummy = NULL;
+	{ const char* e = getenv("REP3_PALLIN"); m_bPalLinForce = (e && atoi(e) != 0); }	// [r2] m_pDss = NULL;
 	memset(m_rs, 0, sizeof(m_rs)); memset(m_tss, 0, sizeof(m_tss)); memset(m_ss, 0, sizeof(m_ss)); memset(m_tex, 0, sizeof(m_tex));
 	m_fvf = 0; m_pStream = NULL; m_streamOffset = 0; m_streamStride = 0;
 	memset(&m_vp, 0, sizeof(m_vp)); m_vp.Width = m_bbW; m_vp.Height = m_bbH; m_vp.MaxZ = 1.0f;
@@ -862,7 +864,8 @@ void CDev11::ComputeApplied(R11Applied& a, ID3D11InputLayout* pIL, UINT stride)
 	a.vs = m_vsCb;
 	R11PsCb& cb = a.ps;
 	cb.st0[0] = (int)m_tss[0][D3DTSS_COLOROP]; cb.st0[1] = (int)m_tss[0][D3DTSS_COLORARG1]; cb.st0[2] = (int)m_tss[0][D3DTSS_COLORARG2]; cb.st0[3] = (int)m_tss[0][D3DTSS_ALPHAOP];
-	cb.st0b[0] = (int)m_tss[0][D3DTSS_ALPHAARG1]; cb.st0b[1] = (int)m_tss[0][D3DTSS_ALPHAARG2]; cb.st0b[2] = a.srv[0] ? 1 : 0; cb.st0b[3] = 0;
+	cb.st0b[0] = (int)m_tss[0][D3DTSS_ALPHAARG1]; cb.st0b[1] = (int)m_tss[0][D3DTSS_ALPHAARG2]; cb.st0b[2] = a.srv[0] ? 1 : 0;
+	cb.st0b[3] = (m_bPalLinForce || (m_ss[0][D3DSAMP_MAGFILTER] & 7) >= D3DTEXF_LINEAR || (m_ss[0][D3DSAMP_MINFILTER] & 7) >= D3DTEXF_LINEAR) ? 1 : 0;	// [r2] loc tuyen tinh stage 0 -> shader tu noi suy texture bang mau
 	cb.st1[0] = (int)m_tss[1][D3DTSS_COLOROP]; cb.st1[1] = (int)m_tss[1][D3DTSS_COLORARG1]; cb.st1[2] = (int)m_tss[1][D3DTSS_COLORARG2]; cb.st1[3] = (int)m_tss[1][D3DTSS_ALPHAOP];
 	cb.st1b[0] = (int)m_tss[1][D3DTSS_ALPHAARG1]; cb.st1b[1] = (int)m_tss[1][D3DTSS_ALPHAARG2]; cb.st1b[2] = a.srv[1] ? 1 : 0; cb.st1b[3] = 0;
 	cb.at[0] = m_rs[D3DRS_ALPHATESTENABLE] ? 1.0f : 0.0f; cb.at[1] = (float)(m_rs[D3DRS_ALPHAFUNC] & 15); cb.at[2] = (float)(m_rs[D3DRS_ALPHAREF] & 255); cb.at[3] = 0.0f;
