@@ -258,3 +258,30 @@ bể đạn **3000**, 6,9 phút tới hết trận). Log không còn bị xoay. 
 | Tuỳ chọn giảm | `Sources/Core/Src/KOption.h`, `CoreShell.cpp:22960-22982`, `Sources/S3Client/Ui/UiCase/UiOptions2.cpp` |
 | Máy chủ phát chiêu | `Sources/Core/Src/KNpc.cpp` `DoSkill` 3018-3070, `CastAutoSkillAt` 3723, `Cast(id,lv)` ~6290 |
 | Log | `jx_auto.log` (client, xoay 64 MB — trận 20:27 nằm ở cả `.log.1` và `.log`), `jx_rep3.log`, `jx_paint.log` |
+
+## 7.4 08/09 15:3x — [HUSK] HIỆU ỨNG THEO SỰ KIỆN MÁY CHỦ (chủ: "làm hiệu ứng theo sự kiện máy chủ để hết 3 % mất chiêu")
+
+**Cách làm (đúng thiết kế PHUONGAN_KIENTRUC_HIEUUNG_RAM_0809.md 1.2, bước A1):**
+- Gói mới `s2c_skillfired = 224` (`S2C_SKILL_FIRED` 16 byte: ProtocolType, dwID người phát, WORD skill, BYTE cấp, nMpsX, nMpsY;
+  nMpsX = −1 → nMpsY = dwID mục tiêu, như gói 148). Máy chủ phát đúng lúc `KSkill::Cast` thật sự chạy ở 6 điểm bắn theo hoạt ảnh:
+  `OnSkill` (khung 60 %), `OnSpecial1` (chiêu con), `DoBlurMove` (chiêu con tại điểm đến), `OnManyAttack`, `OnRunAttack`, `OnJumpAttack`
+  (2 điểm `Cast(id,lv)`/`CastAutoSkillAt` vẫn dùng 148 như cũ). Phát cho vùng hiện tại + 8 vùng kề như gói 95.
+- Client (`KProtocolProcess::s2cSkillFired`): NPC **khác** → `pSkill->Cast` ngay, không phụ thuộc client đang ở khung nào / đang bận /
+  hồi chiêu / lệch nhịp; **chính mình** → bỏ qua (vẫn tự mô phỏng, cảm giác không đổi). Ở 6 điểm bắn, client **không** tự `Cast`
+  cho NPC khác nữa (macro `HUSK_CAST`, đếm `bo_cuc`).
+- [b] An toàn khi lệch phiên bản: client chỉ ngừng tự mô phỏng **sau khi đã nhận gói 224 đầu tiên** từ máy chủ đang nối
+  (`g_nHUSK_daNhan`, đặt lại 0 khi gửi hello). Máy chủ cũ / chưa restart / `[Server] HieuUngSuKien=0` → client chạy y như cũ,
+  không bao giờ mất hiệu ứng. Hello phiên bản 4; máy chủ chỉ phát 224 khi **không còn** client nào báo < 4 (client cũ không hiểu mã 224
+  sẽ hỏng luồng gói).
+- Cổng lùi: `[Client] HieuUngSuKien=0` (client báo hello 3 → máy chủ không phát cho ai), `[Server] HieuUngSuKien=0` (đọc lại mỗi 10 s).
+- Bộ đếm: dòng `[FX] 10s ... | HUSK(224): rx ve hong noidx minh noskill notgt bo_cuc` (client, `jx_auto.log`);
+  `[FX-SV] ... | goi 224 da ban: phat=N bo_vi_client_cu=N` (máy chủ). Kỳ vọng: `ve` ≈ số chiêu máy chủ `ban` gần chủ; `bo_cuc` = số
+  lần client đã giao cho máy chủ (trước đây là `fire` KHÁC).
+
+**Bản build:** `CoreServer.dll.moi` 45bbadfb (bin\server), `CoreClient.dll.moi` (bin\client, bản [b]), `Game.exe.moi` c7b6a21f
+(Game.exe phải build lại vì [RAMTINH] đổi bố cục `KNpc`/`KSubWorld`, xem BANGIAO_RAM_CLIENT_0809.md mục 7). Commit 6707507c (+[b]).
+Thứ tự swap: client (ChoiGame.bat) trước hay máy chủ (ChayGameServer.bat) trước đều an toàn nhờ [b]; **hiệu ứng theo sự kiện chỉ chạy
+sau khi máy chủ đã restart**.
+
+**Đọc sau một trận:** `grep -a "\[FX\] 10s" bin\client\jx_auto.log | tail` — cột `HUSK(224)` phải có `rx` > 0 và `ve` ≈ `rx`;
+`hong`/`noidx`/`notgt` là phần còn lại (người phóng / mục tiêu không có trong bảng NPC client — cùng loại với `bo_tgt` cũ).

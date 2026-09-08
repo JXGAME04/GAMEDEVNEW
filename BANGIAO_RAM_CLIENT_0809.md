@@ -363,3 +363,21 @@ Khung từ chối 0; giải mã 107.904 khung, nặng nhất 190 ms/30 s lúc m�
 Draw (−26 %). So với [p] cùng lượng điểm ảnh (texture 500–526 MB 4 B/điểm ↔ 250–263 MB nay): **VRAM 597–633 → 342–370 MB (−43 %)**,
 RAM 345–351 → 345–349 (không đổi: phần còn lại theo SỐ texture + mảng tĩnh CoreClient), FPS/present giữ nguyên. Nhịp thải texture ~31/s
 đều = khung lâu không dùng (bản trước cũng vậy), nạp sprite mới 1–2/s. Kết luận: giữ `Rep3Pal=1` làm mặc định.
+
+## 7. 08/09 15:3x — [RAMTINH] cắt mảng tĩnh CoreClient (mục 4, đòn bẩy B3)
+
+Đo bố cục lớp bằng chính trình biên dịch (`cl /d1reportSingleClassLayoutKNpc`, script scratchpad `layout_report.py` lấy dòng lệnh từ
+`ClientRelease\Core.tlog`): `KSubWorld` = **57.600.820 B** (lưới đường `VGridNode m_GridNode[2.400.000]` 48 MB + `int m_pTempCover[2.400.000]`
+9,6 MB), `KNpc` = **44.400 B** × 800 = 35,5 MB, trong đó `KNpcRes m_DataRes` 37.132 B mà `KNpcBlur m_cNpcBlur` chiếm **23.708 B**
+(7 khung × 20 phần ảnh bóng mờ, chỉ dùng khi lướt); `KMissle` 2.956 B × 3000 = 8,9 MB (để nguyên).
+
+| Việc | Trước | Sau | Tiết kiệm |
+|---|---|---|---|
+| Lưới đường: `CapLuoi(nAllCell)` cấp heap đúng cỡ bản đồ đang đứng, cấp lại khi đổi cỡ, `m_pTempCover` thả ngay sau khi dựng lưới; cache `.fp` kiểm đúng kích thước trước khi đọc (trước đọc bừa vào mảng tĩnh) | 57,6 MB tĩnh | cỡ bản đồ (12×12 region = 1,5 MB; lớn nhất 48 MB, chỉ khi đứng ở đó) | 45–57 MB |
+| Bóng mờ NPC: `KNpcBlur* m_pcNpcBlur` cấp lần đầu NPC lướt (`CapBongMo`), thả khi NPC bị gỡ (`Remove`) | 19 MB (800 × 23,7 KB) | số NPC đang sống đã từng lướt × 23,7 KB | ~15–19 MB |
+
+`sizeof(KNpc)` 44.400 → 20.692 B, `sizeof(KSubWorld)` 57,6 MB → ~0,3 MB. **Đổi bố cục lớp ⇒ phải build lại cả `Game.exe`** (S3Client truy
+cập `Npc[]`/`SubWorld[]`), vì vậy có 3 `.moi`: `CoreClient.dll.moi`, `Game.exe.moi` c7b6a21f, và `CoreServer.dll.moi` 45bbadfb (cho
+[HUSK], BANGIAO_HIEUUNG_KHAOSAT_0709.md 7.4). Máy chủ không đổi bố cục (`KNpcRes` chỉ có ở client; nhánh client của `KSubWorld`).
+Kỳ vọng "RAM riêng" client giảm ~60–75 MB (345 → ~275 MB ở texture 250 MB). Cần kéo log sau khi chủ chơi để chốt. Commit 9b507190.
+Rủi ro: A* chạy bộ xuyên map / Dã Tẩu / bản đồ thế giới dùng lưới → phải thử một lần đi bộ tự động sau swap.
