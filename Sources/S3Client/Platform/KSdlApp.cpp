@@ -11,6 +11,8 @@
 #include "KWin32.h"		// PCH cua S3Client (/Yu"KWin32.h"): phai la dong include DAU TIEN, moi thu truoc no bi bo qua
 #ifdef JX_PLATFORM_SDL
 #include "../S3Client.h"
+#include "KStrBase.h"		// g_StrCpy
+#include "KWin32Wnd.h"	// g_SetMainHWnd / g_SetDrawHWnd / g_GetMainHWnd
 #include <SDL3/SDL.h>
 
 static KSdlApp* s_pSdlApp = NULL;
@@ -126,7 +128,7 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 	g_StrCpy(m_szTitle, AppName);
 	strcat_s(m_szTitle, " Title");
 
-	SDL_SetMainReady();
+	// SDL3: khong con SDL_SetMainReady; SDL_MAIN_HANDLED (define cua cau hinh) la du vi WinMain cua S3Client tu goi Init/Run
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
 	{
 		g_DebugLog("[SDL] SDL_Init loi: %s", SDL_GetError());
