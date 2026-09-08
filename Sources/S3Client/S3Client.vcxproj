@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -11,6 +11,10 @@
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseSDL|x64">
+      <Configuration>ReleaseSDL</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Template|Win32">
@@ -40,6 +44,11 @@
     <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -59,6 +68,9 @@
     <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
   </ImportGroup>
@@ -82,6 +94,12 @@
     <OutDir>.\x64\Release\</OutDir>
     <IntDir>.\x64\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">
+    <OutDir>.\x64\ReleaseSDL\</OutDir>
+    <IntDir>.\x64\ReleaseSDL\</IntDir>
+    <TargetName>GameSDL</TargetName>
+    <JX_SDL3_DIR Condition="'$(JX_SDL3_DIR)'==''">E:\vcpkg-master\installed\x64-windows</JX_SDL3_DIR>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
@@ -94,6 +112,8 @@
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -251,6 +271,57 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
       <AdditionalLibraryDirectories>..\..\Lib\release64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>..\..\Lib\release64\CoreClient.lib;..\..\Lib\release64\engine.lib;..\..\Lib\release64\FilterText_StaticLib.lib;odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+  </ItemDefinitionGroup>  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">
+    <ClCompile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(JX_SDL3_DIR)\include;../Engine/src;../Core/src;../Engine/include;../../Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>S3_CLIENT;JX_PLATFORM_SDL;SDL_MAIN_HANDLED;WIN32;_WINDOWS;SWORDONLINE_USE_MD5_PASSWORD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\x64\ReleaseSDL\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\x64\ReleaseSDL\S3Client.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>KWin32.h</PrecompiledHeaderFile>
+      <ObjectFileName>.\x64\ReleaseSDL\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\ReleaseSDL\</ProgramDataBaseFileName>
+      <AdditionalOptions>/we4311 /we4312 /we4302 /source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>if not exist ..\..\bin\client64\ md ..\..\bin\client64\
+copy x64\ReleaseSDL\GameSDL.exe ..\..\bin\client64\GameSDL.exe
+copy x64\ReleaseSDL\GameSDL.pdb ..\..\bin\client64\GameSDL.pdb
+copy "$(JX_SDL3_DIR)\bin\SDL3.dll" ..\..\bin\client64\SDL3.dll</Command>
+    </PostBuildEvent>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\x64\ReleaseSDL\S3Client.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0804</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\x64\ReleaseSDL\S3Client.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>x64/ReleaseSDL/GameSDL.exe</OutputFile>
+      <AdditionalLibraryDirectories>..\..\Lib\release64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(JX_SDL3_DIR)\lib\SDL3.lib;..\..\Lib\release64\CoreClient.lib;..\..\Lib\release64\engine.lib;..\..\Lib\release64\FilterText_StaticLib.lib;odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AntiHack\CheckSumCRC\CheckSumCRC.cpp" />
@@ -268,13 +339,18 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
     <ClCompile Include="Login\Login.cpp" />
     <ClCompile Include="NetConnect\NetConnectAgent.cpp" />
     <ClCompile Include="S3Client.cpp" />
+    <ClCompile Include="Platform\KSdlApp.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'!='ReleaseSDL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">KWin32.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">KWin32.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">KWin32.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">KWin32.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="TextCtrlCmd\TextCtrlCmd.cpp" />
     <ClCompile Include="Ui\ChatFilter.cpp" />
@@ -372,6 +448,7 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Ui\UiCase\UiMapCave.cpp" />
     <ClCompile Include="Ui\UiCase\UiMeridian.cpp" />
@@ -402,6 +479,8 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Ui\UiCase\UiQuestDT.cpp" />
@@ -440,6 +519,8 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">
+      </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Ui\UiCase\UiTongGetString.cpp" />
     <ClCompile Include="ui\uicase\UiTongJX2.cpp">
@@ -448,6 +529,8 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Ui\UiCase\UiToolsControlBar.cpp" />
@@ -473,6 +556,7 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
     <ClCompile Include="Ui\UiSoundSetting.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Platform\KSdlApp.h" />
     <ClInclude Include="AntiHack\CheckSumCRC\CheckSumCRC.h" />
     <ClInclude Include="AntiHack\CheckSumCRC\CRC32.h" />
     <ClInclude Include="AntiHack\CheckSumCRC\ShowLogCRC.h" />
@@ -588,6 +672,7 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Ui\UiCase\UiMapCave.h" />
     <ClInclude Include="Ui\UiCase\UiMeridian.h" />
@@ -670,31 +755,41 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
     <Library Include="..\..\Lib\debug\CoreClient.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\debug\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\debug\FilterText_StaticLib.lib" >
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\lua54\$(Platform)\Lua54Dll.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\release\CoreClient.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\release\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\lua54\$(Platform)\Lua54Dll.lib" >
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">true</ExcludedFromBuild>
     </Library>
   </ItemGroup>
   <ItemGroup>
@@ -707,6 +802,9 @@ copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgEnableManifest>false</VcpkgEnableManifest>
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='ReleaseSDL|x64'">
     <VcpkgEnableManifest>false</VcpkgEnableManifest>
     <VcpkgEnabled>false</VcpkgEnabled>
   </PropertyGroup>

@@ -443,7 +443,11 @@ BOOL KMyApp::GameInit()
 			sprintf(strCounterG, "%s", processInfo.szExeFile);
 			//MessageBox(g_GetMainHWnd(), strCounterG, strCounterG, MB_ICONEXCLAMATION);
 
+#ifdef JX_PLATFORM_SDL
+			if (strcmp("Game.exe", strCounterG) != 0 && strcmp("GameSDL.exe", strCounterG) != 0)	// [SDL 08/09]
+#else
 			if (strcmp("Game.exe", strCounterG) != 0)
+#endif
 			{
 				return FALSE;
 			}

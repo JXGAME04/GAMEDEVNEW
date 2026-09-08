@@ -6,7 +6,13 @@
 #include "../../Core/Src/CoreShell.h"
 #include "../../Core/Src/ipc_shared.h"
 class KInlinePicSink;
-class KMyApp : public KWin32App
+#ifdef JX_PLATFORM_SDL
+#include "Platform/KSdlApp.h"	// [SDL 08/09] lop nen SDL3 (GameSDL.exe, cau hinh ReleaseSDL|x64); ban PC thuong van KWin32App
+typedef KSdlApp		KPlatformApp;
+#else
+typedef KWin32App	KPlatformApp;
+#endif
+class KMyApp : public KPlatformApp
 {
 private:
 	KMp3Music			m_Music;
