@@ -133,6 +133,9 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 				pCmd->m_wKey < defTONG_JX2_WS_ATTR_BASE + (defTONG_JX2_WS_MAX_TYPE + 1) * 10)
 				PushViewTo(pCmd->m_dwParam, pCmd->m_dwTongNameID,
 					defTONG_JX2_PAGE_WS);
+			// [BHMAP 07/09] echo field ban do (45/46, co m_dwParam) -> day lai trang Tin tuc: nut 'Vao bon bang' doi ngay
+			if (pCmd->m_dwParam != 0 && (pCmd->m_wKey == 45 || pCmd->m_wKey == 46))
+				PushViewTo(pCmd->m_dwParam, pCmd->m_dwTongNameID, defTONG_JX2_PAGE_INFO);
 		}
 		break;
 
@@ -344,6 +347,14 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 				// day nguoc trang Chieu mo cho nguoi vua bam Luu
 				PushViewTo(pCmd->m_dwParam, pCmd->m_dwTongNameID,
 					defTONG_JX2_PAGE_RECRUIT);
+			}
+			else if (pCmd->m_btKind == defTONG_JX2_STR_NOTIFY)
+			{
+				// [BHWS 07/09] ket qua thao tac tu relay, nhan rieng nguoi bam (m_dwParam = chi so nguoi choi tren GS nay)
+				int nIdx = (int)pCmd->m_dwParam;
+				if (nIdx > 0 && nIdx < MAX_PLAYER && Player[nIdx].m_nIndex > 0 && pCmd->m_szText[0])
+					KPlayerChat::SendSystemInfo(1, nIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+						pCmd->m_szText, (int)strlen(pCmd->m_szText));
 			}
 			else if (pCmd->m_btKind == defTONG_JX2_STR_UNION)
 			{
@@ -1471,6 +1482,39 @@ static int sApplyAddFieldArg2(Lua_State* L, WORD wKey, BOOL bUnsigned)
 // ---- getters theo bang field JX2 (2.1) ----
 DEF_TONG_GETF(SelfCamp, 1)
 DEF_TONG_GETF(CurCamp, 2)
+// [BHMAP 07/09] SetMapType/GetMapType/SetMapParam/GetMapParam/SetWorldName cua ban Linux (KSubWorld JX2) -
+// JX1 KHONG co nen entrance_trap.lua cua lanh dia (GetMapType(SubWorld) == 1, GetMapParam(SubWorld, 0) = bang chu)
+// va MAP_CREATED_G_2 goi ham nil -> trap chet. Luu trong g_TongJX2 (khong dong bo). SetWorldName: chi ghi nhan.
+int LuaSetMapType(Lua_State* L)
+{
+	if (Lua_IsNumber(L, 1) && Lua_IsNumber(L, 2))
+		g_TongJX2.SetMapType((int)Lua_ValueToNumber(L, 1), (int)Lua_ValueToNumber(L, 2));
+	return 0;
+}
+int LuaGetMapType(Lua_State* L)
+{
+	Lua_PushNumber(L, Lua_IsNumber(L, 1) ? (double)g_TongJX2.GetMapType((int)Lua_ValueToNumber(L, 1)) : 0);
+	return 1;
+}
+int LuaSetMapParam(Lua_State* L)
+{
+	if (Lua_IsNumber(L, 1) && Lua_IsNumber(L, 2) && Lua_IsNumber(L, 3))
+		g_TongJX2.SetMapParam((int)Lua_ValueToNumber(L, 1), (int)Lua_ValueToNumber(L, 2), (DWORD)Lua_ValueToNumber(L, 3));
+	return 0;
+}
+int LuaGetMapParam(Lua_State* L)
+{
+	DWORD dw = 0;
+	if (Lua_IsNumber(L, 1))
+		dw = g_TongJX2.GetMapParam((int)Lua_ValueToNumber(L, 1), Lua_IsNumber(L, 2) ? (int)Lua_ValueToNumber(L, 2) : 0);
+	Lua_PushNumber(L, (double)dw);
+	return 1;
+}
+int LuaSetWorldName(Lua_State* L)
+{
+	return 0;
+}
+
 // [BHLV 07/09] TONG_GetExpLevel(nTongID) -> cap bang theo kinh nghiem (field 6), bang [LevelExp]
 // settings\tong\tong_setting.ini (Linux infocenter_head.lua:719 dung). Cung luat voi relay (JX2_ExpLevelOf).
 static int   s_nLvExpMax = -1;
@@ -4036,6 +4080,10 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 					(int)strlen("B¶n ®å khu vùc bang héi ch­a ®­îc n¹p trªn m¸y chñ nµy."));
 				return 20;
 			}
+			// [BHMAP 07/09] gan ban do cho bang (ban goc: MAP_CREATED_G_2 SetMapType/SetMapParam khi relay tao ban do
+			// dong; JX1 dung ban do tinh nen gan luc vao): khu rieng (field 46) = bang chu, khu chung = 0.
+			// entrance_trap.lua cua lanh dia doc GetMapType/GetMapParam de chan 'cam dia'.
+			SetMapOwner(g_SubWorldSet.SearchWorld((int)dwMap), 1, GetField(dwMapTong, 46) ? dwMapTong : 0);
 			// diem vao mac dinh cua ban goc (aMapEnterPosDef trong addtongnpc.lua)
 			Npc[nNpcIdx].ChangeWorld((DWORD)dwMap, 1718 * 32, 3313 * 32);
 			return 20;

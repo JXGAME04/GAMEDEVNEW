@@ -13,8 +13,8 @@ Toàn bộ khối việc này **chưa được test lần nào**. Chủ game nó
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `7efb5720` | 2.466.816 | commit `4d7b1df6` — gồm TẤT CẢ việc bên dưới |
-| `WAuto.exe.moi` | `237f6281` | 403.968 | commit `1ed55c62` — tab 13 "Chiêu KH" + vá 3 ô "Bật hỗ trợ" |
+| `CoreClient.dll.moi` | `a6a9e29d` | 2.615.808 | **do phiên NAMBEP đặt** — build từ `origin/main` đã gồm `a361c024` của tôi (kiểm đủ 9/9 dấu vết) |
+| `WAuto.exe.moi` | `dd0ba36f` | 466.968 | commit `1ed55c62` — tab 13 "Chiêu KH" + vá 3 ô "Bật hỗ trợ" (build sạch bằng `-t:Rebuild`) |
 
 `Game.exe` (`0411771f`) **không đổi**, không cần đụng.
 
@@ -22,8 +22,8 @@ Toàn bộ khối việc này **chưa được test lần nào**. Chủ game nó
 
 1. Thoát **hẳn** `Game.exe` **và** `WAuto.exe` (kiểm Task Manager, không còn tiến trình nào).
 2. Chạy `ChoiGame.bat` — nó tự đổi tên `CoreClient.dll.moi` → `CoreClient.dll`.
-3. `ChoiGame.bat` **KHÔNG** đổi `WAuto.exe.moi` (nó chỉ biết `WAuto.dll.moi`).
-   Phải **đổi tay**: xoá/đổi tên `WAuto.exe` cũ rồi rename `WAuto.exe.moi` → `WAuto.exe`.
+3. `ChoiGame.bat` **có** đổi cả `WAuto.exe.moi` (dòng 25 `call :capnhat WAuto.exe`) — không
+   cần đổi tay. *(Ghi chú cũ bảo phải đổi tay là sai, đã sửa 07/09.)*
 4. Mở WAuto, vào tab **"Chiêu KH"** (tab thứ 13) — nếu tab hiện ra là đã swap đúng
    `WAuto.exe`. Nếu không thấy tab đó thì bước 3 chưa xong.
 5. Cấu hình cũ trong `APdata\<ID>.dat` **vẫn dùng được** — WAuto tự di trú (xem mục 5.3).

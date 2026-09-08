@@ -847,6 +847,7 @@ struct STONG_GET_EXTPOINT_SYNC : EXTEND_HEADER
 #define defTONG_JX2_STR_HISTORY	2	// so lich su (chi luu tren relay)
 #define defTONG_JX2_STR_RECRUIT	3	// van an chieu mo (dong bo toi GS)
 #define defTONG_JX2_STR_UNION		4	// ten lien minh (dong bo toi GS, luu m_szLeagueTName)
+#define defTONG_JX2_STR_NOTIFY		5	// [BHWS 07/09] relay -> GS: nhan rieng nguoi bam (m_dwParam = chi so nguoi choi), khong luu
 #define defTONG_JX2_ANNOUNCE_LEN	128
 #define defTONG_JX2_RECORD_LEN		96
 #define defTONG_JX2_RECORD_NUM		16

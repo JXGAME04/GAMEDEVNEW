@@ -9543,21 +9543,48 @@ static int TK_TimRuongObj(int nMpsX, int nMpsY, int nR)
 {
 	int nBest = 0, nBd = nR + 1;
 	int nObj = ObjSet.GetNext(0);
+	// (03/09) [TK-RUONGDO] Chu game bao "tinh nang luu ruong o tab tong kim chua hoat dong".
+	// Do tren jx_auto.log hom nay: pha DA CHAY ([TK-PHA] 9 -> 10 map=78) va nhan vat DA TOI
+	// dung moc ruong Tuong Duong/Trung Tam - [DT-STATE] toi=(50084,103016) so voi
+	// tgt=(50080,103008), cach ~9 mps - the ma ham nay tra 0 du 12 lan, nen CheckObject
+	// khong bao gio chay: ruong khong mo, diem hoi sinh khong duoc dat lai, va ra cau
+	// "Dung dung cho nhung khong thay ruong" (CoreShell.cpp, buoc 1 cua TKP_RUONG).
+	// Toa do dich thi DUNG: g_TKRuong[4][0] = {1565,3219} khop nguyen van RUONG_ARRAY cua
+	// script\vatpham\ib\shenxingfu.lua (hang "tuong duong", cot dau).
+	// Con BA kha nang va KHONG duoc doan:
+	//   (a) client chua nap OBJ do vao ObjSet luc quet;
+	//   (b) ruong that nam xa hon 320 mps so voi moc;
+	//   (c) ruong dang o trang thai OPEN nen bi bo loc loai.
+	// Ba bien dem duoi day tach bach dung ba kha nang do, chi ton mot dong log khi THAT BAI.
+	int nTong = 0, nBox = 0, nBoxMo = 0;
+	int nGanNhat = -1, nKindGan = 0, nStateGan = 0;
 	while (nObj)
 	{
-		if (Object[nObj].m_nKind == Obj_Kind_Box && Object[nObj].m_nState == OBJ_BOX_STATE_CLOSE)
+		++nTong;
+		int dX = 0, dY = 0;
+		Object[nObj].GetMpsPos(&dX, &dY);
+		const int dd = g_GetDistance(nMpsX, nMpsY, dX, dY);
+		if (nGanNhat < 0 || dd < nGanNhat)
 		{
-			int dX = 0, dY = 0;
-			Object[nObj].GetMpsPos(&dX, &dY);
-			int d = g_GetDistance(nMpsX, nMpsY, dX, dY);
-			if (d < nBd)
+			nGanNhat = dd;
+			nKindGan = Object[nObj].m_nKind;
+			nStateGan = Object[nObj].m_nState;
+		}
+		if (Object[nObj].m_nKind == Obj_Kind_Box)
+		{
+			++nBox;
+			if (Object[nObj].m_nState != OBJ_BOX_STATE_CLOSE)
+				++nBoxMo;
+			else if (dd < nBd)
 			{
-				nBd = d;
+				nBd = dd;
 				nBest = nObj;
 			}
 		}
 		nObj = ObjSet.GetNext(nObj);
 	}
+	if (!nBest)
+		AUTOLOG_EVERY(2000, "[TK-RUONGDO] khong thay ruong quanh (%d,%d) tam=%d | ObjSet: tong=%d box=%d box-dang-mo=%d | obj gan nhat: xa=%d kind=%d state=%d", nMpsX, nMpsY, nR, nTong, nBox, nBoxMo, nGanNhat, nKindGan, nStateGan);
 	return nBest;
 }
 
