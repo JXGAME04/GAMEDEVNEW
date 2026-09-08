@@ -235,3 +235,23 @@ phí chỉ do làm tròn chiều cao (≤ 1,5×) + đoạn thừa cuối hàng; 
 | 11:51 | D3D11 + atlas [d] | ~300 + 0,1× | **347 @ 479** | bitblt 0,07 ms, có "gợn sóng" | 63 |
 | 12:19 | + flip không tearing [f] | ~300 + 0,1× | **375 @ 525** | 6–16 ms, CHẶN | 60 |
 | chờ | + [g] DO_NOT_WAIT, [i] kệ | như trên | như trên | ~0,05 ms, bỏ ~3 khung/s | 63 |
+
+### 6.9 12:38 (bản g+h+i) — kết quả, và bản [j] gộp lệnh vẽ
+
+| Mốc | texture | RAM | gpu tex | trang atlas (kệ) | VRAM dùng | present | bỏ khung | fps |
+|---|---|---|---|---|---|---|---|---|
+| +1 phút | 329 MB | 345 | 25.179 | 99 (396 MB) | 482 | 0,19 ms | ~30/s | 63 |
+| +4 phút | 461 MB | 344 | 43.849 | 144 (576 MB) | 573 | 0,15 ms | ~31/s | 63 |
+
+- Atlas xếp kệ: **576 MB trang cho 461 MB texture = 1,25×** (ô cố định cũ 2,16×). RAM 344 MB.
+- Present không chặn (0,15 ms) nhưng **độ trễ 1 khung làm bỏ ~30 khung/s** (DWM chỉ nhận mỗi vsync thứ hai) → hiển thị ~32 fps
+  dù logic 63. **Bản [j]: độ trễ 2** → bỏ ~3 khung/s, hiển thị 60.
+- `anh_null top`: (1) tên RỖNG khung 0: ~35.000 lượt/s (~550/khung) = đơn vị vẽ không có ảnh (ô trang bị trống?) — GetImage trả
+  NULL ngay, rẻ; (2) `MA_HR_015_*` / `FM_HR_015_*` / `FM_HR_012_HR01` 0,5–1k/s: **bộ sprite tóc/mũ HR_015 (nam+nữ) và FM_HR_012
+  KHÔNG CÓ trong pak nào** (kể cả client Level Up / 2.0) → bot đội kiểu 15 không vẽ phần đó; (3) `MA_LW_000_AT05 (k107)`: xin
+  khung 107 vượt số khung của sprite → dữ liệu hoạt ảnh lệch. Đây là việc dữ liệu, chủ quyết.
+- **[j] gộp lệnh vẽ:** quad (strip 4 đỉnh: sprite, bitmap, ô màu) liên tiếp cùng trạng thái (cùng trang atlas, blend, sampler,
+  raster, hằng số VS/PS, viewport, layout) → gom thành MỘT Draw danh sách tam giác; trạng thái chụp lúc đưa lệnh; xả khi đổi
+  trạng thái, lệnh khác loại, Present, Clear, SetRenderTarget, đọc lại khung, cập nhật/thu texture. Harness: ảnh trùng D3D9,
+  1,9 µs/sprite. Trong game kỳ vọng số Draw giảm vài lần (thống kê `gop N quad -> M Draw`). `Rep3Batch=0` tắt.
+  `Represent3.dll.moi` ff84f787 chờ restart.
