@@ -230,7 +230,7 @@ bool TextureResBmp::RestoreDeviceObjects()
 {
 	if(!m_FrameInfo.texInfo[0].pTexture)
 	{
-		if (FAILED(D3DXCreateTexture(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
+		if (FAILED(Rep3CreateTex(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
 								D3DUSAGE_RENDERTARGET , g_16BitFormat, D3DPOOL_DEFAULT, &m_FrameInfo.texInfo[0].pTexture)))
 			return false;
 	}
@@ -266,10 +266,10 @@ bool TextureResBmp::CreateImage(const char* szImage, int nWidth, int nHeight, ui
 	m_FrameInfo.texInfo[0].nWidth = FitTextureSize(nWidth);
 	m_FrameInfo.texInfo[0].nHeight = FitTextureSize(nHeight);
 
-	if (FAILED(D3DXCreateTexture(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
+	if (FAILED(Rep3CreateTex(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
 								D3DUSAGE_RENDERTARGET , g_16BitFormat, D3DPOOL_DEFAULT, &m_FrameInfo.texInfo[0].pTexture)))
 		goto error;
-	if (FAILED(D3DXCreateTexture(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
+	if (FAILED(Rep3CreateTex(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
 								0 , g_16BitFormat, D3DPOOL_SYSTEMMEM, &m_pSysMemTexture)))
 		goto error;
 
@@ -326,10 +326,10 @@ bool TextureResBmp::LoadJpegFile(char* szImage)
 		goto error;
 
 	// 创建贴图
-	if (FAILED(D3DXCreateTexture(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
+	if (FAILED(Rep3CreateTex(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
 								D3DUSAGE_RENDERTARGET, g_16BitFormat, D3DPOOL_DEFAULT, &m_FrameInfo.texInfo[0].pTexture)))
 		goto error;
-	if (FAILED(D3DXCreateTexture(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
+	if (FAILED(Rep3CreateTex(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
 								0, g_16BitFormat, D3DPOOL_SYSTEMMEM, &m_pSysMemTexture)))
 		goto error;
 
@@ -918,7 +918,7 @@ LPDIRECT3DTEXTURE8 TextureResSpr::CreateTexture16Bit(uint32 nFrame)
 	LPDIRECT3DTEXTURE8 pTexture = NULL;
 
 	// 创建贴图
-	if (FAILED(D3DXCreateTexture(PD3DDEVICE, m_pTextureInfo[nFrame].nWidth, m_pTextureInfo[nFrame].nHeight, 1,
+	if (FAILED(Rep3CreateTex(PD3DDEVICE, m_pTextureInfo[nFrame].nWidth, m_pTextureInfo[nFrame].nHeight, 1,
 								0, D3DFMT_A4R4G4B4, D3DPOOL_SYSTEMMEM, &pTexture)))
 		return NULL;
 
@@ -989,7 +989,7 @@ LPDIRECT3DTEXTURE8 TextureResSpr::CreateTexture16Bit(uint32 nFrame)
 	IDirect3DSurface8* pSrcSurface = NULL, *pDesSurface = NULL;
 
 	// 创建贴图
-	if (FAILED(D3DXCreateTexture(PD3DDEVICE, m_pTextureInfo[nFrame].nWidth, m_pTextureInfo[nFrame].nHeight, 1,
+	if (FAILED(Rep3CreateTex(PD3DDEVICE, m_pTextureInfo[nFrame].nWidth, m_pTextureInfo[nFrame].nHeight, 1,
 								REP3_USAGE_MANAGED, D3DFMT_DXT5, REP3_POOL_MANAGED, &m_pTextureInfo[nFrame].pTexture)))
 		goto error;
 
@@ -1029,7 +1029,7 @@ LPDIRECT3DTEXTURE8 TextureResSpr::CreateTexture32Bit(uint32 nFrame)
 	LPDIRECT3DTEXTURE8 pTexture = NULL;
 
 	// 创建贴图
-	if (FAILED(D3DXCreateTexture(PD3DDEVICE, m_pTextureInfo[nFrame].nWidth, m_pTextureInfo[nFrame].nHeight, 1,
+	if (FAILED(Rep3CreateTex(PD3DDEVICE, m_pTextureInfo[nFrame].nWidth, m_pTextureInfo[nFrame].nHeight, 1,
 								0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pTexture)))
 		return NULL;
 
@@ -1097,7 +1097,7 @@ LPDIRECT3DTEXTURE8 TextureResSpr::CreateTexture32Bit(uint32 nFrame)
 	IDirect3DSurface8* pSrcSurface = NULL, *pDesSurface = NULL;
 
 	// 创建贴图
-	if (FAILED(D3DXCreateTexture(PD3DDEVICE, m_pTextureInfo[nFrame].nWidth, m_pTextureInfo[nFrame].nHeight, 1,
+	if (FAILED(Rep3CreateTex(PD3DDEVICE, m_pTextureInfo[nFrame].nWidth, m_pTextureInfo[nFrame].nHeight, 1,
 								REP3_USAGE_MANAGED, D3DFMT_DXT5, REP3_POOL_MANAGED, &m_pTextureInfo[nFrame].pTexture)))
 		goto error;
 

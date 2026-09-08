@@ -110,7 +110,7 @@ copy Debug\Represent3.dll ..\..\..\..\bin\client\Represent3.dll</Command>
       <OutputFile>.\Debug\Represent3.dll</OutputFile>
       <ImportLibrary>.\Debug\Represent3.lib</ImportLibrary>
       <AdditionalLibraryDirectories>..\..\..\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3d9.lib;winmm.lib;dxguid.lib;ddraw.lib;GdiPlus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3d9.lib;d3d11.lib;dxgi.lib;winmm.lib;dxguid.lib;ddraw.lib;GdiPlus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -157,7 +157,7 @@ copy Release\Represent3.dll ..\..\..\..\bin\client\Represent3.dll</Command>
       <OutputFile>.\Release\Represent3.dll</OutputFile>
       <ImportLibrary>.\Release\Represent3.lib</ImportLibrary>
       <AdditionalLibraryDirectories>..\..\..\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3d9.lib;winmm.lib;dxguid.lib;ddraw.lib;GdiPlus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3d9.lib;d3d11.lib;dxgi.lib;winmm.lib;dxguid.lib;ddraw.lib;GdiPlus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -206,6 +206,9 @@ copy Release\Represent3.dll ..\..\..\..\bin\client\Represent3.dll</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="D3D_Utils.cpp" />
+    <ClCompile Include="D3D9on11.cpp" />
+    <ClCompile Include="D3D9on11Dev.cpp" />
+    <ClCompile Include="D3D9on11D3D.cpp" />
     <ClCompile Include="KRepresentShell3.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
     </ClCompile>
@@ -226,6 +229,10 @@ copy Release\Represent3.dll ..\..\..\..\bin\client\Represent3.dll</Command>
     <ClInclude Include="D3D_Device.h" />
     <ClInclude Include="D3D_Shell.h" />
     <ClInclude Include="D3D_Utils.h" />
+    <ClInclude Include="D3D9on11.h" />
+    <ClInclude Include="D3D9on11i.h" />
+    <ClInclude Include="Rep3Shaders11_vs.h" />
+    <ClInclude Include="Rep3Shaders11_ps.h" />
     <ClInclude Include="KRepresentShell3.h" />
     <ClInclude Include="precompile.h" />
     <ClInclude Include="TextureRes.h" />

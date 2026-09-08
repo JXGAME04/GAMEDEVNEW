@@ -5,6 +5,7 @@
 #define __D3D_DEVICE_H__
 
 #include <d3d9.h>
+#include <d3dx9.h>
 
 // PROTOTYPES
 struct D3DAdapterInfo;
@@ -81,6 +82,14 @@ extern CD3D_Device g_Device;					// The global D3D Device...
 extern int g_nRep3ExOn;
 #define REP3_POOL_MANAGED  (g_nRep3ExOn ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED)
 #define REP3_USAGE_MANAGED (g_nRep3ExOn ? D3DUSAGE_DYNAMIC : 0)
+extern int g_nRep3ApiOn;
+// [D3D11 08/09] D3DXCreateTexture khong biet thiet bi gia lap -> goi thang CreateTexture khi chay D3D11; D3D9 giu nguyen D3DX
+static inline HRESULT Rep3CreateTex(LPDIRECT3DDEVICE9 pDev, UINT w, UINT h, UINT mip, DWORD usage, D3DFORMAT fmt, D3DPOOL pool, LPDIRECT3DTEXTURE9* pp)
+{
+	if (g_nRep3ApiOn == 11)
+		return pDev->CreateTexture(w, h, mip, usage, fmt, pool, pp, NULL);
+	return D3DXCreateTexture(pDev, w, h, mip, usage, fmt, pool, pp);
+}
 #define PD3DDEVICE (g_Device.m_pD3DDevice)		// Use for quick access to the D3DDevice...
 static LPDIRECT3DDEVICE9 d3d_GetD3DDevice() { return PD3DDEVICE; }	// For the RenderStruct...
 

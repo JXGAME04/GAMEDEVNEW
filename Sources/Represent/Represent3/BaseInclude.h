@@ -54,6 +54,12 @@ extern int  g_nRep3Pool;       // [REP3 03/09 RAM] 1 = texture sprite o D3DPOOL_
 extern int  g_nRep3StatSec;    // [REP3 03/09 RAM] chu ky ghi thong ke RAM/VRAM/cache vao jx_rep3.log (giay), 0 = tat
 extern bool g_bNpotOK;          // card + thiet bi da qua thu NPOT
 extern int  g_nMaxTexW, g_nMaxTexH;
+extern int  g_nRep3Api;         // [D3D11 08/09] [Client] Rep3Api: 9 = D3D9 (mac dinh), 11 = D3D9 tren D3D11
+extern int  g_nRep3ApiOn;       // API thuc chay sau D3D_Shell::Create
+extern unsigned g_uRep3GpuTexCount;          // [D3D11 08/09] so texture GPU dang song
+extern unsigned __int64 g_uRep3GpuTexBytes;  // [D3D11 08/09] byte texture GPU
+extern int  g_nRep3Flip;        // [D3D11 08/09 b] 1 = swapchain flip, 0 = bitblt cu
+extern double g_dRep3PresentMs; extern unsigned g_uRep3Presents; extern double g_dRep3DrawMs; extern unsigned g_uRep3Draws;	// [D3D11 08/09 b] thong ke
 void Rep3Log(const char* fmt, ...);
 
 #define YESNO(X) (X ? "Yes" : "No")

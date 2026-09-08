@@ -81,6 +81,8 @@ D3D9Ex **không** bỏ được bản sao (đo 08/09 09:11–09:35). Chủ chố
 
 **Lộ trình đề xuất:** B2 + B3 ngay (3–4 ngày) → client ~400–450 MB trong trận nặng; B0 chạy song song; nếu B0 dương → B1 → ~300 MB.
 
+**Cập nhật 08/09 12:xx — chủ chọn B1 ngay:** B0 DƯƠNG (D3D11 tạo kèm dữ liệu 0,04× vs D3D9 0,2–0,56×), lớp "D3D9 trên D3D11" đã thi công, harness trùng ảnh 99,995 %, nhanh hơn D3D9; `Represent3.dll.moi` + `Rep3Api=11` chờ chủ restart (BANGIAO_RAM_CLIENT_0809.md mục 6).
+
 ---
 
 ## 3. MÁY CHỦ — không có việc cấp bách; chỉ quy trình

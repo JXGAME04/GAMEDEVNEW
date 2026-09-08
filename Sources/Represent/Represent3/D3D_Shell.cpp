@@ -4,6 +4,7 @@
 
 #include "precompile.h"
 #include "d3d_shell.h"
+#include "D3D9on11.h"	// [D3D11 08/09]
 #include <algorithm>
 
 // [RAM 08/09] Rep3Ex doc tu config.ini trong KRepresentShell3::Create (chay truoc g_D3DShell.Create); g_nRep3ExOn = da tao duoc Ex
@@ -23,7 +24,16 @@ bool CD3D_Shell::Create()
 	m_pD3D = NULL;
 	m_pD3DEx = NULL;
 	g_nRep3ExOn = 0;
-	if (g_nRep3Ex)
+	g_nRep3ApiOn = 9;
+	if (g_nRep3Api == 11)	// [D3D11 08/09] lop D3D9 tren D3D11: driver khong giu ban sao texture trong RAM
+	{
+		m_pD3D = Rep3_CreateD3D9on11();
+		if (m_pD3D)
+			g_nRep3ApiOn = 11;
+		else
+			Rep3Log("[REP3] Rep3Api=11 nhung khong tao duoc D3D11 -> lui ve D3D9");
+	}
+	if (!m_pD3D && g_nRep3Ex)
 	{
 		typedef HRESULT (WINAPI *PFN_REP3_D3DC9EX)(UINT, IDirect3D9Ex**);
 		HMODULE hD3D9 = GetModuleHandleA("d3d9.dll");

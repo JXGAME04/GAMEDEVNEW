@@ -125,3 +125,43 @@ giữ mọi thứ đã giải mã ở 32 bit với ngân sách 1,5 GB.** Ngân s
 
 Lưu ý: ngân sách 160 chỉ là "mềm" — khung nào cần hơn thì cache vẫn vượt (dọn chỉ đụng khung nghỉ > 10 s, 1 khung/lượt), nên
 không lặp lại lỗi 17:xx; theo dõi `[REP3] ... fx: tex_null tao_hong` phải = 0 và `giai_ma` ms/30 s không tăng đột biến.
+
+## 6. D3D11 — thí nghiệm quyết định B0 và lớp "D3D9 trên D3D11" (08/09 11:xx–12:xx, chủ: "bắt tay làm luôn d3d11")
+
+### 6.1 B0 (`ReverseTools/represent3/b0_d3d11_ram.cpp`, 32 bit, RTX 3080, RAM riêng của tiến trình)
+
+| Cách tạo 700 MB texture 256² | RAM riêng tăng | 20.000 texture 64² (312 MB) | 10.000 texture 128² (625 MB) |
+|---|---|---|---|
+| D3D9 DEFAULT qua SYSTEMMEM + UpdateTexture (đường game) | **+143 MB** (0,2×) | +176 MB (0,56×, ~9 KB/texture) | +176 MB |
+| D3D9 MANAGED + LockRect | +750 MB (1:1) | — | — |
+| **D3D11 DEFAULT tạo kèm dữ liệu** / IMMUTABLE | **+25…36 MB (0,04×)** | +119 MB (6 KB/texture) | +78 MB |
+| D3D11 DEFAULT rỗng + UpdateSubresource dồn 2.800 lần | +457 MB (đệm upload không trả) | +Flush mỗi 16: +40 | — |
+| D3D11 STAGING + CopyResource mỗi texture | +590 (còn 333 sau thả) | — | — |
+| D3D11 DYNAMIC (Map) | +749 committed | — | — |
+
+Đọc: hệ số 0,8×/MB đo trong game là do **hàng vạn texture nhỏ**, D3D9 tốn ~9–44 KB cố định mỗi texture; D3D11 tạo kèm dữ liệu gần như
+không tốn RAM theo byte, còn ~6 KB mỗi texture. Thiết kế: tạo texture GPU **đúng lúc UpdateTexture với dữ liệu sẵn**, không dùng
+UpdateSubresource/STAGING hàng loạt.
+
+### 6.2 Thi công: lớp "D3D9 trên D3D11" — Represent3 và KFont3 giữ NGUYÊN VĂN
+
+`D3D9on11i.h` + `D3D9on11.cpp` (CTex11/CSurf11/CVB11/CSB11) + `D3D9on11Dev.cpp` (CDev11) + `D3D9on11D3D.cpp` (CD3D11Shim) cài tập con
+`IDirect3D9`/`IDirect3DDevice9`/`Texture9`/`Surface9`/`VertexBuffer9`/`StateBlock9`; shader `Rep3Shaders11.hlsl` (VS: XYZRHW +0,5 px
+để texel khớp D3D9, XYZ nhân W·V·P; PS: 2 stage COLOROP/ALPHAOP + alpha test so 8 bit). Nối: `D3D_Shell::Create` → `Rep3_CreateD3D9on11()`
+khi `[Client] Rep3Api=11` (lỗi → lùi D3D9 tự động); `Rep3CreateTex` thay `D3DXCreateTexture`; `Rep3Flip` (0 = bitblt, mặc định; 1 = flip).
+Hàm chưa cài ghi log `[D3D11] CHUA CAI: ...` một lần (harness: 0 dòng).
+
+### 6.3 Kiểm bằng harness (cùng sprite, cùng DLL, đổi `Rep3Api`)
+
+| | D3D9 | D3D11 |
+|---|---|---|
+| Ảnh 1024×768 (8 sprite × 7 kiểu vẽ + chữ) | tham chiếu | khác **0,005 %** điểm (7 hàng cuối vùng chữ), không lệch nửa điểm |
+| Vẽ 96 sprite/khung, cửa sổ hiện | 4,5 µs/sprite | **2,7 µs/sprite** (bitblt); flip 8,8 (Present +0,6 ms/khung) |
+| tex32=0 (4444) / tex32=1 (8888) | đúng | đúng (4444 native trên card này, RT 16 bit đổi BGRA8) |
+| Chụp `SaveScreenToFile` ngoài màn hình | thất bại | chạy (bản sao khung cuối) |
+
+### 6.4 Đưa vào game
+`bin\client\Represent3.dll.moi` + `config.ini [Client] Rep3Api=11` — chủ restart `ChoiGame.bat`, đọc `jx_rep3.log`: `[REP3] API: Direct3D 11`,
+`[D3D11] thiet bi: ...`, dòng `RAM rieng ... | gpu tex N (MB) | d3d11: present TB ms, ve N lenh`. Kỳ vọng: RAM riêng ≈ nền + 0,05 × texture
+(+6 KB × số texture) thay vì + 0,8 × texture → **−350…−450 MB** ở cache 570 MB. Lùi: `Rep3Api=9`. Chưa test trong game: bản đồ nhỏ
+(render-to-image), toàn màn hình, gamma, Alt+Tab, mất thiết bị.
