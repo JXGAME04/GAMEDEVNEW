@@ -78,12 +78,12 @@ BOOL KGifFile::read_header()
 	aspect_ratio	= read_byte();
 
 	// check signature
-	if (!g_MemComp(signature, "GIF", 3))
+	if (!g_MemComp(signature, (LPVOID)"GIF", 3))
 		return FALSE;
 
 	// check version
-	if ((!g_MemComp(version, "87a", 3)) &&
-		(!g_MemComp(version, "89a", 3)))
+	if ((!g_MemComp(version, (LPVOID)"87a", 3)) &&
+		(!g_MemComp(version, (LPVOID)"89a", 3)))
 		return FALSE;
 
 	// If there isn't a global colour table, exit.

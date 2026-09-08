@@ -62,7 +62,7 @@ BOOL KSprite::Load(LPSTR FileName)
 
 	// check file header setup sprite member
 	pHeader = (SPRHEAD*)pTemp;
-	if (!g_MemComp(pHeader->Comment, "SPR", 3))
+	if (!g_MemComp(pHeader->Comment, (LPVOID)"SPR", 3))
 		return FALSE;
 
 	// get sprite info
@@ -121,7 +121,7 @@ BOOL KSprite::LoadFor3D(LPSTR FileName)
 
 	// check file header setup sprite member
 	pHeader = (SPRHEAD*)pTemp;
-	if (!g_MemComp(pHeader->Comment, "SPR", 3))
+	if (!g_MemComp(pHeader->Comment, (LPVOID)"SPR", 3))
 		return FALSE;
 
 	// get sprite info

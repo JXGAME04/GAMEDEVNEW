@@ -56,7 +56,7 @@ BOOL KPakData::Open(LPSTR FileName)
 	m_File.Read(&Header, sizeof(Header));
 
 	// check file signature
-	if (!g_MemComp(Header.Signature, "PACKAGE", 7))
+	if (!g_MemComp(Header.Signature, (LPVOID)"PACKAGE", 7))
 		return FALSE;
 
 	// get file number in pack

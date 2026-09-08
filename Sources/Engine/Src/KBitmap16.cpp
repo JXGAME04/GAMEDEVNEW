@@ -149,7 +149,7 @@ BOOL KBitmap16::Load(LPSTR lpFileName)
 	File.Open(lpFileName);
 	File.Read(&Header, sizeof(Header));
 	
-	if (!g_MemComp(Header.Id, "BM16", 4))
+	if (!g_MemComp(Header.Id, (LPVOID)"BM16", 4))
 		return FALSE;
 
 	if (!Init(Header.Width, Header.Height))
@@ -180,7 +180,7 @@ BOOL KBitmap16::Save(LPSTR lpFileName)
 	File.Create(lpFileName);
 
 	g_MemZero(&Header, sizeof(Header));
-	g_MemCopy(Header.Id, "BM16", 4);
+	g_MemCopy(Header.Id, (LPVOID)"BM16", 4);
 	Header.Width = m_nWidth;
 	Header.Height = m_nHeight;
 	Header.RGBMask = g_pDirectDraw->GetRGBBitMask16();

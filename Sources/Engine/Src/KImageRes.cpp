@@ -227,7 +227,7 @@ bool ImageResSpr::LoadSprFile(char* szImage)
 
 		// check file header setup sprite member
 		pHeader = (SPRHEAD*)pTemp;
-		if (!g_MemComp(pHeader->Comment, "SPR", 3))
+		if (!g_MemComp(pHeader->Comment, (LPVOID)"SPR", 3))
 			goto error;
 
 		m_Header = *pHeader;

@@ -119,7 +119,7 @@ BOOL KBitmap::Load(LPSTR lpFileName)
 	File.Open(lpFileName);
 	File.Read(&Header, sizeof(Header));
 
-	if (!g_MemComp(Header.Id, "BM08", 4))
+	if (!g_MemComp(Header.Id, (LPVOID)"BM08", 4))
 		return FALSE;
 	
 	if (!Init(Header.Width, Header.Height, Header.Colors))
@@ -144,7 +144,7 @@ BOOL KBitmap::Save(LPSTR lpFileName)
 	File.Create(lpFileName);
 	
 	g_MemZero(&Header, sizeof(Header));
-	g_MemCopy(Header.Id, "BM08", 4);
+	g_MemCopy(Header.Id, (LPVOID)"BM08", 4);
 	Header.Width  = m_nWidth;
 	Header.Height = m_nHeight;
 	Header.Colors = m_nColors;

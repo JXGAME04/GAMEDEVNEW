@@ -109,7 +109,7 @@ BOOL KPakMake::PackFileList(LPSTR lpPackFileName)
 	// write file header
 	TPakFileHeader Header;
 	g_MemZero(&Header, sizeof(Header));
-	g_MemCopy(Header.Signature, "PACKAGE", 7);
+	g_MemCopy(Header.Signature, (LPVOID)"PACKAGE", 7);
 	Header.FilesInPack = m_nFileNum;
 	Header.CompressMethod = m_nCompressMethod;
 	m_PackFile.Write(&Header, sizeof(Header));

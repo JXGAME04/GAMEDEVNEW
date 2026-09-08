@@ -88,7 +88,7 @@ BOOL KPakTool::Pack(LPSTR pInFile, LPSTR pOutFile, int nMethod)
 	File.Read(DataBuf.GetMemPtr(), CodeInfo.dwDataLen);
 
 	// is it a packed file ?
-	if (g_MemComp(DataBuf.GetMemPtr(), "PACK", 4))
+	if (g_MemComp(DataBuf.GetMemPtr(), (LPVOID)"PACK", 4))
 		return FALSE;
 
 	// close input file

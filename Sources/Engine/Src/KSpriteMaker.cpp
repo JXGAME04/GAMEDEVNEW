@@ -61,7 +61,7 @@ BOOL KSpriteMaker::Load(LPSTR FileName)
 	File.Read(&Header, sizeof(Header));
 
 	// check file header
-	if (!g_MemComp(Header.Comment, "SPR\0", 4))
+	if (!g_MemComp(Header.Comment, (LPVOID)"SPR\0", 4))
 		return FALSE;
 
 	// setup class member
@@ -112,7 +112,7 @@ BOOL KSpriteMaker::Save(LPSTR FileName)
 
 	// setup file header
 	g_MemZero(&Header, sizeof(Header));
-	g_MemCopy(Header.Comment, "SPR\0", 4);
+	g_MemCopy(Header.Comment, (LPVOID)"SPR\0", 4);
 	Header.Width = m_nWidth;
 	Header.Height = m_nHeight;
 	Header.CenterX = m_nCenterX;
