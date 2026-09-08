@@ -1080,6 +1080,50 @@ grep -a "GUI-DO" "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/server/jx_gui_
 của **cây build**, không phải cây live, nhưng vẫn tắt bằng `-p:PostBuildEventUseInBuild=false`; (c) Heaven link
 `Lib\release64\common.lib` (Common post-build chép sang), Common chưa đổi từ 00:31 nên không cần build lại.
 
+### 8.23 Phép thử nhân bản ×500 chạy THẬT (20:27:21–20:29:01, Tống Kim, heaven.dll 9fc84e88 live từ 20:23)
+
+Chủ khởi động lại cụm 20:23 (`ChayGameServer.bat` nuốt `heaven.dll.moi`; Goddess **không** đổi tay nên bảng xếp hạng vẫn trống).
+Tiến trình mới pid 53112, `[GUI-DO] khoi dong ... GuiKhoaRieng=1`, client nối bình thường, 0 `Net Msg Error`. Một tiến trình nền canh
+`[GUI-DO] goi ≥ 2.500/10 s` (chủ đã vào đám đông) rồi tự đặt `MoPhongNhanBan=500` trong 100 s và trả về 0 — kích 20:27:21 khi `goi=6.433`.
+
+| Cửa sổ 10 s | Client thật nhận | Nhân bản ×500: `goi` / t | `xa` / byte / t | Ước tính **mỗi nhịp** (max goi + max xa) |
+|---|---|---|---|---|
+| 20:27:21 (bắt đầu) | 268 gói, 0,6 KB/s | 133.732 / 2,3 ms | 89.820 / 2,8 MB (277 KB/s) / 9,3 ms | 0,072 ms |
+| +10 s | 1.173, 4,4 KB/s | 585.327 / 9,5 ms | 89.820 / 22,6 MB / 13,6 ms | 0,135 ms |
+| +20 s | 9.358, 50,6 KB/s | 4,67 triệu / 76 ms | 91.317 / 274 MB (26,7 MB/s) / 38,5 ms | 0,648 ms (1,74 + 0,62) |
+| **+30 s** | **17.253, 66,1 KB/s** | **8,61 triệu / 129 ms** | 89.820 / 338 MB (**33 MB/s = 264 Mbps**) / 46 ms | **0,987 ms (1,88 + 0,73)** |
+| +40 s | 8.616, 45,6 KB/s | 4,30 triệu / 67 ms | 90.319 / 238 MB / 37 ms | 0,584 ms (1,73 + 0,53) |
+| +50 s | 5.702, 18,8 KB/s | 2,85 triệu / 43 ms | 90.818 / 106 MB / 23 ms | 0,377 ms (2,63 + 0,29) |
+| +60 s | 7.017, 44,5 KB/s | 3,50 triệu / 57 ms | 89.820 / 227 MB / 36 ms | 0,526 ms (0,79 + 0,54) |
+
+`xa = 89.820 = 499 × 180` nhịp: mọi node giả đều có dữ liệu mỗi nhịp, đúng như client thật (`client_xa = 180`). Gói trung bình 39 byte,
+mỗi lần chép + khoá ≈ 15 ns.
+
+**Máy chủ trong lúc thử:** TICK 7,61 ms TB (kỳ 20:27:31, max 90,3 ms một lần do SW_ACTIVATE 25,9 + LUA_CALL 19,7 + BAUCUA 12,5 —
+không phải đường gửi, đường gửi max 2,6 ms), kỳ 20:28:31 8,57 ms max 23; kỳ 20:29:31 sau khi tắt 8,24 ms max 21. Tức **TICK không đổi**
+khi có hay không nhân bản. Đường gửi thật (không nhân bản): 0,008–0,012 ms/nhịp, `Write` 3,3–4,7 µs/lần.
+
+**Kết luận:**
+
+1. Chi phí luồng chính của đường gửi cho **500 client** ở mật độ đỉnh hôm nay ≈ **1 ms/nhịp, đỉnh 2,6 ms** — dưới 5 % ngân sách 55 ms.
+   Sau khi bỏ khoá chung, **luồng chính gánh được 500 người**; **không cần** đưa đường gửi sang luồng riêng, càng không cần tách map ra
+   nhân CPU riêng (4.4).
+2. Giới hạn của phép thử: 499 lần chép chạy gộp trong một vòng nên cache nóng hơn thực tế (bộ đệm ghi 500 × 10 KB = 5 MB vẫn nằm trong
+   L3), và không đo WSASend ở luồng IOCP (500 × 18 lần/s = 9.000 WSASend/s, ~10–20 µs mỗi lần trên luồng worker ≈ 10–20 % một nhân,
+   không chạm luồng chính). Kể cả nhân 3 cho cache lạnh vẫn < 3 ms/nhịp.
+3. **Giới hạn còn lại là băng thông ra:** 66 KB/s/người ở đỉnh × 500 = **33 MB/s = 264 Mbps**; trung bình 20–45 KB/s → 80–180 Mbps.
+   Đường 1 Gbps đủ; đường 100 Mbps thì phải thưa đồng bộ vị trí (gói 221 chiếm 61 % byte) — câu hỏi 1 cho chủ chỉ cần trả lời khi biết
+   máy chủ thật đặt ở đường mạng bao nhiêu.
+4. `MoPhongNhanBan` đã trả về 0 lúc 20:29:01 (`doi MoPhongNhanBan 500 -> 0`). 499 node giả (10.208 byte/node ≈ 5 MB) vẫn được giữ tới
+   khi tắt máy chủ, không tốn CPU khi N = 0.
+
+**Nằm bẹp (4.2) — lần chết đầu tiên có nhãn, 20:27:3x:** `[S7-CHET-CLI] doing=9 cdoing=7` → `[S7-REV-CLI]` sau 0,72 s → `DoStand`
+→ `[S7-SAUHOISINH]` +1/+3/+6 s đều `doing=1 cdoing=1 resdoing=1 resaction=3`, khung 19/45 → 10/45 → 19/45 (hoạt ảnh đứng đang chạy),
+`[S7-NAMBEP-CHAN]` = 0, `[S7-NAMBEP-LAU]` = 0. Lần này **không** nằm bẹp và gói đồng bộ đầy đủ cũng không thử áp trạng thái chết
+lên chính mình. Cần thêm vài lần chết nữa mới kết luận được vá j đã chữa hay bệnh chỉ thỉnh thoảng.
+
+**Rep3:** đỉnh 303 MB trong trận này (ngân sách 1500), `bo` cộng dồn 9.597 sau 13 phút ≈ 12/s. Chờ chủ xác nhận hiệu ứng.
+
 ---
 
 > **PHIEN SAU DOC TRUOC:** `D:\GAMEDEVNEW\BANGIAO_PHIEN_SAU_BANGTHONG_0709.md` — ban giao gon: trang thai hien tai, duong loi chu chot, chuoi va a-m, viec dang treo theo thu tu, cach do, cach chung khe .moi, bay da dinh, ban do ma. Tep nay (8.x) la so lieu chi tiet tung dot de tra cuu.

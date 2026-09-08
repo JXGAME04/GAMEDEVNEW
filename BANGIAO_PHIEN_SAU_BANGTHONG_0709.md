@@ -1,8 +1,9 @@
-# BÀN GIAO CHO PHIÊN SAU — Băng thông đông người + đường gửi Heaven + hai lỗi client (07/09/2026, 19:30)
+# BÀN GIAO CHO PHIÊN SAU — Băng thông đông người + đường gửi Heaven + hai lỗi client (07/09/2026, 20:35)
 
 Tệp này viết cho một phiên **không có ngữ cảnh gì**. Đọc hết mục 1 → 4 trước khi gõ dòng lệnh đầu tiên.
-Chi tiết số liệu từng đợt nằm ở `D:\GAMEDEVNEW\BANGIAO_BANGTHONG_DONGNGUOI_0609.md` mục 6 → 8.22 (mục này gọi tắt là **BG-GỐC**).
-Phiên 19:00–19:30 đã làm xong **4.3 bước 1 + 2** (đường gửi Heaven.dll) và ghi ở BG-GỐC 8.22; bản này cập nhật theo đó.
+Chi tiết số liệu từng đợt nằm ở `D:\GAMEDEVNEW\BANGIAO_BANGTHONG_DONGNGUOI_0609.md` mục 6 → 8.23 (mục này gọi tắt là **BG-GỐC**).
+Phiên 19:00–20:35 đã làm xong **4.3 bước 1 + 2** (đường gửi Heaven.dll, BG-GỐC 8.22) và **chạy phép thử ×500 thật** trong Tống Kim
+(BG-GỐC 8.23): **đường gửi cho 500 người ≈ 1 ms/nhịp → luồng chính gánh được, không cần luồng gửi riêng; giới hạn còn lại là băng thông ra.**
 
 ---
 
@@ -14,7 +15,7 @@ Phiên 19:00–19:30 đã làm xong **4.3 bước 1 + 2** (đường gửi Heave
 |---|---|---|---|
 | `bin\server\CoreServer.dll` | **7361e2dd** | 18:05 | bản XEPHANG build từ origin/main sau 02eb802d = **⊇ DELTA a→l** + LNCK + TUKICH + TRANPHAI60 + BHLV/BHWS/BHMAP + XEPHANG (đã kiểm đủ chuỗi NS-BO/NS-TT/PS-BO/DMG-GON/BC-DEM/BC-LOAI) |
 | `bin\server\GameServer.exe` | d07555ad | 18:05 | XEPHANG (có xả mỗi tick của DELTA b) |
-| `bin\server\heaven.dll` | 096fdeb2 | 00:50 | **cũ** (chưa có [GUI]) |
+| `bin\server\heaven.dll` | **9fc84e88** | 20:23 | [GUI] khoá riêng + `[GUI-DO]` + nhân bản; bản cũ 096fdeb2 còn ở `heaven.dll.truoc` |
 | `bin\client\CoreClient.dll` | **43ba6ef9** | 17:48 | DELTA a→m (vá m = 3 nhãn nằm bẹp) |
 | `bin\multiserver\Goddess.exe` | 73f10c62 | 01/09 | **cũ**, bảng xếp hạng còn rỗng tới khi đổi tay |
 | `bin\multiserver\S3Relay.exe` | 99cf217d | 14:14 | cũ |
@@ -24,11 +25,10 @@ Phiên 19:00–19:30 đã làm xong **4.3 bước 1 + 2** (đường gửi Heave
 
 | Khe | Băm | Của ai | Ghi chú |
 |---|---|---|---|
-| `bin\server\heaven.dll.moi` | **9fc84e88** | phiên này ([GUI]) | `ChayGameServer.bat` tự đổi (`call :capnhat heaven.dll` đã có sẵn). Không cần đổi GameServer.exe |
-| `bin\multiserver\Goddess.exe.moi` | 2ffeb6e4 | phiên XEPHANG | **đổi tay** (bat không quản `multiserver`), xem `BANGIAO_XEPHANG_0709.md` mục 1 |
+| `bin\multiserver\Goddess.exe.moi` | 2ffeb6e4 | phiên XEPHANG | **đổi tay** (bat không quản `multiserver`), xem `BANGIAO_XEPHANG_0709.md` mục 1. Chủ chưa đổi lúc 20:23 → bảng xếp hạng vẫn trống |
 | `bin\multiserver\S3Relay.exe.moi` | 18de36e5 | phiên BH100 | (nếu còn) swap cùng CoreServer có BHLV |
 
-Khe `CoreServer.dll.moi` và `CoreClient.dll.moi` **đang trống**.
+Khe `CoreServer.dll.moi`, `CoreClient.dll.moi` và `heaven.dll.moi` **đang trống** (heaven đã nuốt 20:23).
 
 ### 1.3 Cấu hình
 
@@ -38,7 +38,7 @@ Khe `CoreServer.dll.moi` và `CoreClient.dll.moi` **đang trống**.
 
 ### 1.4 Git
 
-Nhánh `delta-0709` trong worktree `D:\GAMEDEVNEW_wt_delta` = `origin/main` = **9538e72c**.
+Nhánh `delta-0709` trong worktree `D:\GAMEDEVNEW_wt_delta` = `origin/main` (9538e72c mã Heaven + bee6144c bàn giao + bàn giao 8.23).
 Cây chạy thật là `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin`, **không phải** nơi build.
 
 ---
@@ -102,7 +102,10 @@ bào khung nhanh gấp bội rồi nạp lại không kịp. (Mô tả "8 khung 
 Kiểm khi chủ báo: nếu **vẫn** mất hiệu ứng mà cache không ở trần → bệnh chỗ khác: đo `LoadImage FAIL` trong `jx_rep3.log` và luồng nạp.
 Câu hỏi 3 cho chủ (nâng kẹp 512 trong mã theo VRAM trống) vẫn chờ.
 
-### 4.2 Nghiệm thu vá m (nằm bẹp) — chưa có lần chết nào sau swap 17:48
+### 4.2 Nghiệm thu vá m (nằm bẹp) — mới có 1 lần chết (20:27), lần đó bình thường
+
+Lần chết 20:27 trong Tống Kim: hồi sinh sau 0,72 s, ba dòng `[S7-SAUHOISINH]` đều `doing=1 cdoing=1 resdoing=1`, `[S7-NAMBEP-CHAN]` = 0
+→ không nằm bẹp, gói đồng bộ đầy đủ cũng không thử áp trạng thái chết. Cần thêm vài lần chết nữa mới kết luận (BG-GỐC 8.23).
 
 ```bash
 grep -a "S7-SAUHOISINH\|S7-NAMBEP" "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/client/jx_auto.log" | tail -30
@@ -119,31 +122,30 @@ Mỗi lần chết phải có đúng 3 dòng `[S7-SAUHOISINH]` ở +1 s, +3 s, +
 
 `do_death = 10`, `do_revive = 21`, `do_stand = 1`; `cdo_stand = 1`, `cdo_death = 8`.
 
-### 4.3 Đo đường gửi sau khi swap `heaven.dll.moi` (việc chính kế tiếp)
+### 4.3 Đường gửi — ĐÃ ĐO THẬT ×500 (20:27, BG-GỐC 8.23): luồng chính gánh được, giới hạn còn lại là băng thông ra
+
+Kết quả trong Tống Kim, client thật nhận đỉnh 1.725 gói/s = 66 KB/s:
+
+| | Thật (1 client) | Nhân bản ×500 |
+|---|---|---|
+| Đường gửi mỗi nhịp | 0,008–0,012 ms | **≈ 1 ms, đỉnh 2,6 ms** (< 5 % ngân sách 55 ms) |
+| Byte ra | 66 KB/s | **33 MB/s = 264 Mbps** đỉnh, 80–180 Mbps trung bình |
+| TICK máy chủ | 8,2 ms | 7,6–8,6 ms (không đổi) |
+
+Kết luận: **không cần** luồng gửi riêng, **không cần** tách map ra nhân CPU riêng. Chỗ vỡ tiếp theo là **băng thông ra** của máy chủ thật:
+đường 1 Gbps đủ cho 500 người một chiến trường; đường 100 Mbps thì phải thưa đồng bộ vị trí (gói 221 = 61 % byte) — đụng trải nghiệm,
+**hỏi chủ** và hỏi luôn máy chủ thật đặt ở đường mạng bao nhiêu. Giới hạn phép thử: cache nóng hơn thực tế (×3 vẫn < 3 ms) và không đo
+WSASend ở luồng IOCP (~9.000 lần/s, chạy ở luồng worker, không chạm luồng chính).
+
+Muốn đo lại: sửa `MoPhongNhanBan=500` trong `bin\server\config.ini` lúc chủ ở đám đông, chờ 10–20 s, đọc `[GUI-NB]`, đặt lại `0`:
 
 ```bash
 grep -a "GUI-DO\|GUI-NB" "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/server/jx_gui_server.log" | tail -6
 ```
 
-1. Dòng khởi động phải có `GuiKhoaRieng=1`. Khi chủ đánh, ghi lại `moi nhip: goi X ms (max) + xa Y ms (max)` = chi phí đường gửi thật hôm
-   nay (dự kiến < 0,2 ms/nhịp) và `Write N lan, X us/lan` (chỉ là PostQueuedCompletionStatus, WSASend chạy ở luồng IOCP).
-2. Lúc chủ đang ở đám đông, sửa `MoPhongNhanBan=500` trong `bin\server\config.ini`, chờ 10–20 s, đọc `[GUI-NB]`, lấy
-   **`duong gui uoc tinh moi nhip`** và `max`. Xong đặt lại `0`. Đọc theo bảng:
-
-| `duong gui uoc tinh moi nhip` | Nghĩa | Bước tiếp |
-|---|---|---|
-| < 15 ms (cộng TICK 9 ms vẫn < 55) | luồng chính gánh được 500 người | không cần luồng gửi riêng; còn lại là băng thông ra 80–240 Mbps (máy 1 Gbps thì đủ) |
-| 15–30 ms | sát ngưỡng khi có đỉnh | đưa phần **xả** (Allocate + mã hoá + Write) sang luồng riêng, phần `goi` (memcpy) giữ luồng chính |
-| > 30 ms hoặc `max` > 40 | vượt | luồng gửi riêng **và** hỏi chủ về thưa đồng bộ vị trí theo khoảng cách (bước 3 dưới) |
-
-3. Kiểm hồi quy khoá riêng: client vào/ra vài lần; `grep -a -c "Net Msg Error" jx_auto.log` = 0; `jx_crash.log` không sập; console
-   GameServer không in `Socket is closed` / `Unexpected exception`. Nghi ngờ → `GuiKhoaRieng=0` + khởi động lại là về hành vi cũ, không
-   cần đổi nhị phân.
-4. **Thưa theo khoảng cách khi vùng đông** (quá 16 ô thì hạ nhịp đồng bộ vị trí còn một nửa, chỉ bật khi đông): gói 221 chiếm 61 % byte,
-   là chỗ duy nhất còn nhiều mỡ. **Đụng trải nghiệm → phải hỏi chủ trước, chưa làm.**
-
-Giới hạn của phép thử: chỉ đo luồng chính. Chi phí luồng IOCP (WSASend thật, tranh chấp khoá từ 500 client gửi lên) không mô phỏng được;
-nhưng khoá chung đã bỏ nên tranh chấp ấy chỉ còn ở khoá riêng từng client.
+Kiểm hồi quy khoá riêng (chưa thấy gì sau 12 phút): client vào/ra vài lần; `grep -a -c "Net Msg Error" jx_auto.log` = 0; `jx_crash.log`
+không sập; console GameServer không in `Socket is closed` / `Unexpected exception`. Nghi ngờ → `GuiKhoaRieng=0` + khởi động lại là về
+hành vi cũ, không cần đổi nhị phân.
 
 ### 4.4 Tách map chiến trường ra một nhân CPU riêng — chủ hỏi 17:50, trả lời: không an toàn
 
@@ -273,10 +275,8 @@ Con số không phụ thuộc chỗ đứng là các bộ đếm máy chủ (`da
 
 ## 7. Câu hỏi đang chờ chủ trả lời
 
-1. Có cho **thưa đồng bộ vị trí theo khoảng cách khi vùng đông** không (4.3 bước 4)? Chỗ duy nhất còn giảm được nhiều, nhưng đụng trải
-   nghiệm nên chưa làm.
-2. Sau khi swap `heaven.dll.moi`: cho phép **bật `MoPhongNhanBan=500` trong ~1 phút lúc chủ đang đánh đông** để lấy số thật? (Chỉ đổi số
-   trong config.ini, không cần khởi động lại; tắt lại bằng `0`.)
-3. Có nâng luôn trần bộ nhớ ảnh 512 trong mã (theo VRAM trống) không, hay để mỗi máy tự sửa `Rep3CacheMB`?
-4. Chủ còn thấy **mất hiệu ứng kỹ năng khi đánh** sau khi có `Rep3CacheMB=1500` không? Có lần **chết về thành nằm bẹp** nào sau 17:48
-   không (để đọc `[S7-SAUHOISINH]`)?
+1. **Máy chủ thật đặt ở đường mạng bao nhiêu Mbps?** 500 người một chiến trường cần tới 264 Mbps ra ở đỉnh. Nếu dưới 300 Mbps thì mới
+   cần **thưa đồng bộ vị trí theo khoảng cách khi vùng đông** (đụng trải nghiệm, chưa làm); nếu 1 Gbps thì không cần làm gì thêm.
+2. Có nâng luôn trần bộ nhớ ảnh 512 trong mã (theo VRAM trống) không, hay để mỗi máy tự sửa `Rep3CacheMB`?
+3. Chủ còn thấy **mất hiệu ứng kỹ năng khi đánh** sau khi có `Rep3CacheMB=1500` không? Lần chết 20:27 không nằm bẹp; còn lần nào
+   **chết về thành nằm bẹp** nữa không (đọc `[S7-SAUHOISINH]`)?
