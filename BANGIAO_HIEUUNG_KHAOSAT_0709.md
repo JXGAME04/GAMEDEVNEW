@@ -223,6 +223,27 @@ là chi phí giải mã đồng bộ mỗi 30 s (chia 30 × fps để ra ms mỗ
 Từ đó chọn cách sửa: `huy_hurt/huy_lenh` lớn → gói "skill đã bắn" từ máy chủ (6.3); `bo_tgt` lớn → giữ mục tiêu mồ côi lâu hơn khi cuộn vùng;
 `add_vung` lớn → đạn nhắm ngoài vùng đã nạp (bình thường nếu ngoài màn hình); `buff_het_o` > 0 → nới 6 ô; `tex_null/tao_hong` > 0 → lớp vẽ.
 
+### 7.3 KẾT QUẢ ĐO CẢ TRẬN — Tống Kim 09:22–09:42 08/09 (số đầy đủ ở BANGIAO_BANGTHONG_DONGNGUOI_0609.md 8.26)
+
+Máy chủ CoreServer 352b207f (pid 22664); client pid 27684 (CoreClient 1fddde04, bể đạn 500, 12,2 phút) rồi pid 8916 (CoreClient **b670be43**,
+bể đạn **3000**, 6,9 phút tới hết trận). Log không còn bị xoay. Đọc theo công thức mục 7.0.
+
+| Tầng | Số đo | Kết luận |
+|---|---|---|
+| Máy chủ, 32 ô quanh chủ (`[FX-SV]`) | bắt đầu 57.501 → bắn **54.049 (94,0 %)**; toàn máy chủ 374.451 → 327.243 (87,4 %); ngắt vì trúng đòn 1.125 | 6 % chiêu bị huỷ ngay trên máy chủ (trúng đòn/chết) = luật, client không thể hiện hơn 94 % |
+| Client nhận 95 → bắt đầu | 36.999 → 35.494 (noidx 128) / 14.462 → 13.226 (noidx 44) | ~4 % gói 95 tới khi NPC không có trong bảng client (`noidx`) hoặc bị đè ngay — cần đếm lý do `start < rx95` |
+| Client bắt đầu → bắn (`fire`) | 32.234 / 35.494 = **90,8 %** ; 11.890 / 13.226 = **89,9 %** | client mất thêm 3–4 % so với máy chủ; giải thích được 1/3: bo_tgt 115/122, hurt < 60 % 426/142, chết 574/202, huy_sync 30; **2.145 + 840 chiêu chưa rõ** |
+| Chiêu của chủ, gói 148 | fire_fail 0; 148 rx = cast (54.651 / 29.485), fail 0 | tầng "bắn thẳng" không mất |
+| **Bể đạn** (`add_full`) | pid 27684: **36.127 lần Add hỏng** (đỉnh 2.853/10 s: zone 17.316, circle 8.706, wall 4.401, spread 3.902, line 1.381, ext 741); pid 8916: **0**, mức dùng cao nhất **1.593/3000** | **GỐC LỚN NHẤT của "mất hiệu ứng khi đông"** — máy chủ 20.000 ô nên sát thương vẫn tính, chỉ client không thấy. Nới 3000 giải quyết hết, còn dư gấp đôi |
+| Đạn chết sớm vì mất người phóng | pid 8916: **3.262 viên** = ô NPC trống 3.088 + mồ côi 174 (client gỡ NPC 6,9 phút: DEL 2.532, ORPHAN 2.771, XOAXA 136; bảng NPC đỉnh 375/800) | ~8 viên/s tan sớm vì NPC phóng rời bảng client (ORPHAN cuộn vùng ≈ DEL máy chủ) — bước tiếp: đếm theo loại gỡ, cân nhắc cho đạn bay nốt khi chỉ client gỡ |
+| Đạn mất mục tiêu bám | 52.065 / 25.566 | không mất hình, đạn bay thẳng — luật gốc |
+| buff hết 6 ô/loại | 203 / 173 | hiếm, chờ chủ nếu muốn nới `m_cStateSpr` |
+| Vẽ (`jx_rep3.log`) | `tex_null 0 tao_hong 0 khung_khong_tex 0`; giải mã 12–393 khung/30 s (1–14 ms); fps 62–63; `anh_null` 165–170k/30 s = 200 sprite biểu cảm thiếu tệp | lớp vẽ không rớt; D3D9Ex (`Rep3Ex=1`) không giảm RAM → đã tắt |
+
+**Đã chốt:** giữ `MAX_MISSLE` client 3000 (live 09:35, +15 MB tĩnh). **Còn lại theo thứ tự lợi:** (1) bộ đếm "NPC bị gỡ giữa thi triển" +
+"hết diễn hoạt chưa bắn" + lý do `start < rx95` để đóng 3 % chưa rõ; (2) tách `ownerlost trong` theo DEL/ORPHAN/XOAXA; (3) `noidx`;
+(4) 200 sprite biểu cảm thiếu (`spr/Ui3/<GBK>/140–339.spr`) — mỗi khung vẽ xin lại ~300 lần.
+
 ## 8. Bản đồ mã
 
 | Việc | Tệp và chỗ |

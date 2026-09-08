@@ -1247,6 +1247,46 @@ fps không tụt → các phần tối ưu (khoá riêng Heaven, DELTA, trần c
 Hai nhịp nặng 04:21/04:25 (SW_ACTIVATE tới 123 ms) là lúc 500 bot vào và dàn trận, không thuộc đường gửi — nếu chủ thấy giật lúc bắt đầu
 trận thì đó là chỗ để soi (`KRegion::Activate` lúc nạp 500 NPC cùng nhịp).
 
+### 8.26 Trận Tống Kim 09:22 08/09 — trận đầu tiên đo được `[FX]` trọn vẹn; bể đạn client 500 → 3000; D3D9Ex không giảm RAM
+
+Máy chủ pid 22664 (CoreServer **352b207f**, hạ tần suất log), client pid 27684 (09:11–09:35, CoreClient 1fddde04, Represent3 72f81e3e
+`Rep3Ex=1`) rồi pid 8916 (09:35–, CoreClient **b670be43** bể đạn 3000, `Rep3Ex=0`). Log **không còn bị xoay** (client 26 MB/19 phút).
+Trận 09:22 → 09:42 (20 phút, 122 cửa sổ máy chủ), số **cả trận**.
+
+**Hiệu ứng — máy chủ vs client trong 32 ô quanh chủ (`[FX-SV]` / `[FX]`):**
+
+| | Máy chủ (gần người thật) | Client cũ pid 27684 (12,3 phút) | Client mới pid 8916 (6,2 phút) |
+|---|---|---|---|
+| Chiêu bắt đầu / bắn | gần chủ 57.501 / **54.049 (94,0 %)**; toàn máy chủ 374.451 / 327.243 (87,4 %) | rx95 36.999 → start 35.494 → **fire 32.234 (90,8 % start)** | 14.462 → 13.226 → **11.890 (89,9 %)** |
+| Mất trên đường diễn hoạt (start − fire) | ngắt vì trúng đòn 1.125 | 3.260, giải thích được 1.115 (bo_tgt 115 + hurt<60 % 426 + chết 574) → **2.145 chưa rõ** | 1.336, giải thích được 496 (122 + 142 + 202 + huy_sync 30) → **840 chưa rõ** |
+| Chiêu của chủ / gói 95 không có NPC | — | fail 0 / noidx 128 | fail 0 / noidx 44 |
+| Gói 148 bắn thẳng | — | 54.651 rx = 54.651 cast, fail 0 | 29.485 = 29.485, fail 0 |
+| **Đạn không tạo được (`add_full`)** | — | **36.127** (đỉnh 2.853/10 s): zone 17.316, circle 8.706, wall 4.401, spread 3.902, line 1.381, ext 741; ngoài vùng nạp 320 | **0** (bể 3000, mức dùng cao nhất **1.593**); ngoài vùng 5 |
+| Đạn chết sớm: mất người phóng | — | 168.593 (đếm theo nhịp, phóng to) | **3.262 viên** = ô NPC trống 3.088 + mồ côi 174 + ô bị NPC khác dùng 0 (client gỡ NPC 6,9 phút: DEL máy chủ 2.532, ORPHAN 2.771, XOAXA 136; bảng NPC đỉnh 375/800) |
+| Đạn mất mục tiêu bám (bay thẳng, không mất hình) | — | 52.065 | 25.566 |
+| buff hết 6 ô/loại | — | 203 | 173 |
+
+Đọc: **bể đạn 500 là gốc lớn nhất của "mất hiệu ứng khi đông"** — 36.127 lần tạo đạn hỏng trong 12 phút (máy chủ có 20.000 ô nên sát thương
+vẫn tính, chỉ client không thấy); nới 3000 → 0 hỏng, cần thật tới ~1.600 ô. Tầng diễn hoạt client ra được ~90–91 % chiêu so với máy chủ 94 %
+→ client mất thêm ~3–4 %, mới giải thích được 1/3 (mục tiêu mồ côi, trúng đòn trước 60 %, chết, gói đồng bộ đè); phần còn lại **chưa có bộ đếm**
+(nghi: NPC bị gỡ khỏi bảng client giữa lúc thi triển — `ownerlost trong` 3.060 cho thấy gỡ NPC ~8/s; `nTotalFrame` lệch/`=1`). Đạn mất
+người phóng do **ô NPC trống** (server gỡ NPC chết / XOAXA > 40 ô / ORPHAN cuộn vùng) — cần tách tiếp theo loại gỡ.
+
+**Đường gửi / máy chủ / client:**
+
+| | Số |
+|---|---|
+| Client nặng nhất nhận (`[GUI-DO]`) | TB **1.440 gói/s**, max 3.142; TB 50,4 KB/s, max 112,3 (trận nặng nhất tới nay); `[NS-BO]` gói đầy 0,4 % |
+| Đường gửi mỗi nhịp | goi TB 0,010 ms (max 9,2 trong phút trễ), xả TB 0,014 (max 5,8); Write TB 8,9 µs max 39,8; 405 lần đệm đầy gửi ngay |
+| Thành phần byte | 221 58,7 % · 222 14,1 % · 75 7,4 % · 148 5,5 % · 223 5,3 % · 86 4,7 % · 95 3,3 % |
+| TICK máy chủ | 09:11–09:16 và 09:29→ **8 ms**; **09:17–09:28 (trừ 09:24): 20–31 ms, p95 50–77, trễ 38–145 nhịp/phút** = pha 500 bot giao chiến dày (bot.log: BotTrap 13k, BotTK 8k, Bot chết/hồi sinh 8k trong 12 phút); `[BC-DEM]`/`[NS-BO]` không đổi giữa phút nặng và phút thường → không phải đường gửi/đồng bộ, là AI + đạn bot trong `SW_ACTIVATE` (19–22 ms), cần đo pha con |
+| Client mới (6,9 phút) | 9 lần chết / 18 hồi sinh, 0 nằm bẹp, 0 lỗi mạng; fps TB 62–63; `tex_null 0 tao_hong 0 khung_khong_tex 0`; `anh_null` 165–170k/30 s = 200 sprite biểu cảm thiếu tệp (mục 8.24) |
+| RAM client | pid 27684 (Ex BẬT): RAM = 150 + 0,89 × texture; pid 8916 (Ex TẮT): 177 + 0,95 × texture, sau trận 688 MB với texture 571 + raw 55 MB → **D3D9Ex không bỏ được bản sao driver** (BANGIAO_RAM_CLIENT_0809.md 3.2) |
+
+**Việc tiếp theo đã chốt từ số này:** (1) giữ bể 3000 (đã live 09:35); (2) thêm bộ đếm "NPC bị gỡ giữa thi triển" + "tới hết diễn hoạt mà chưa
+bắn" để đóng nốt ~3 % chưa giải thích (2.145 + 840 chiêu); (3) tách `ownerlost trong` theo loại gỡ (DEL của server / XOAXA / ORPHAN) rồi quyết có giữ đạn bay
+tiếp khi người phóng chỉ rời bảng client; (4) đo pha con trong `SW_ACTIVATE` cho pha bot giao chiến; (5) RAM: texture bảng màu 2 B/px.
+
 ---
 
 > **PHIEN SAU DOC TRUOC:** `D:\GAMEDEVNEW\BANGIAO_PHIEN_SAU_BANGTHONG_0709.md` — ban giao gon: trang thai hien tai, duong loi chu chot, chuoi va a-m, viec dang treo theo thu tu, cach do, cach chung khe .moi, bay da dinh, ban do ma. Tep nay (8.x) la so lieu chi tiet tung dot de tra cuu.
