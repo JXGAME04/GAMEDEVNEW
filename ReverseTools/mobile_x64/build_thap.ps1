@@ -9,7 +9,7 @@ param(
   [string]$Tag = "build",
   [string]$SolutionDir = "D:\GAMEDEVNEW_wt_mobile\Sources\",
   [int]$MaxErr = 60,
-  [string[]]$Props = @()      # [08/09] them -p:... (vd -p:PostBuildEventUseInBuild=false cho build Win32 thu nghiem, khong chep vao D:in / Libelease)
+  [string[]]$Props = @()      # [08/09] them -p:... (vi du -p:PostBuildEventUseInBuild=false cho build Win32 thu nghiem: khong chep ra ngoai)
 )
 try { (Get-Process -Id $PID).PriorityClass = 'BelowNormal' } catch { Write-Host "khong ha duoc uu tien: $_" }
 $msb = "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe"
