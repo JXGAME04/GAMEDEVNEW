@@ -61,3 +61,19 @@ nhờ pha 0 (x64 không có hợp ngữ nội tuyến). Lớp thay thế theo đ
 2. Chạy clang với `--target=aarch64-linux-android24` + sysroot NDK để ra danh sách thiếu header/ký hiệu Windows theo tệp (chỉ biên dịch, chưa link);
    cần một `windows.h` giả tối thiểu (kiểu `DWORD/BOOL/HWND…` + `KWin32.h`) — chính là bộ khung của Platform4.
 3. Cài LLVM ≥ 16 trên Windows (hoặc dùng clang-cl của VS khi có) để bỏ nhiễu STL và bật `-Wall` xem cảnh báo thật.
+
+## 5. Kết quả sau khi sửa (15:0x) — đã làm xong §1, thêm đợt b
+
+Hai đợt `va_pha1_clang.py` + `va_pha1_clang_b.py` (commit e42f0456, 4d046198). Khảo sát lại: **Engine 0 lỗi thật, Represent3 0, Core 0
+(còn 1 dòng thiếu include nlohmann = cấu hình công cụ, đã thêm `vcpkg_installed\<triplet>\<triplet>\include`), S3Client 0.**
+Điểm đáng chú ý ngoài §1: (a) `g_MemComp/g_MemCopy` giải bằng **overload inline `LPCVOID`** trong `KMemBase.h` — không đổi chữ ký hàm xuất của
+Engine.dll (tên xáo trộn MSVC phụ thuộc kiểu tham số/mức truy cập; bài học từ `KWin32App.h`); (b) `KWndWindow::CloseWindow` **bỏ `virtual`**
+thay vì đổi tên 123 lớp `KUi*` có `static void CloseWindow(bool)` (315 chỗ gọi): đã kiểm không lớp nào override không-static, không chỗ nào gọi ảo
+qua con trỏ lớp cha; vtable KWndWindow bớt 1 khe, chỉ nội bộ Game.exe; (c) `OpaqueUserData.h` (chung với server): `GetUserPtr()` đọc thẳng thay
+`InterlockedExchangePointer(&(const_cast<>(x)), x)` (lấy địa chỉ rvalue); (d) `MouseHover.cpp` có BOM thật + 6 byte "BOM bọc UTF-8" → bỏ 6 byte bọc.
+Nhiễu còn lại chỉ là STL 14.44 vs clang 14 (biến mất với clang ≥ 16 / libc++).
+
+**Chứng minh Win32 (14:5x, `build_chuoi_win32.ps1`, không post-build):** từ nhánh mobile, `Lua54Dll` → `Engine.dll` (402.432 B — đúng cỡ Engine.dll
+của cây chính) → `CoreClient.dll` → `Represent3.dll` → `Game.exe` Win32 đều biên dịch và link. Lưu ý: `Lib\lua54\Win32\Lua54Dll.lib` trong git (và cả
+cây chính) **cũ, thiếu `lua4_pushboolean`…** — Engine Win32 build từ git sạch sẽ không link; chuỗi này build `Library/Lua54` trước (post-build tự chép
+vào `Lib\lua54\Win32`, sau đó `git checkout --` trả lại). Chủ cân nhắc commit bản lib mới lên main như đã làm cho x64 (bacbdcb2).
