@@ -238,7 +238,7 @@ void KUiFightSkillSub::UpdateSkill(KUiSkillData* pSkill, int nIndex)
 void KUiFightSkillSub::UpdateData()
 {
 	KUiSkillData	Skills[FIGHT_SKILL_COUNT];
-	g_pCoreShell->GetGameData(GDI_FIGHT_SKILLS, (unsigned int)Skills, 0);
+	g_pCoreShell->GetGameData(GDI_FIGHT_SKILLS, (KUPARAM)Skills, 0);
 	for (int i = 0; i < FIGHT_SKILL_SUB_PAGE_COUNT; i++)
 		m_SubPages[i].UpdateData(&Skills[i * FIGHT_SKILL_COUNT_PER_PAGE]);
 }
@@ -388,7 +388,7 @@ void KUiLiveSkill::UpdateData()
 {
 	UpdateBaseData();
 	KUiSkillData	Skills[LIVE_SKILL_COUNT];
-	g_pCoreShell->GetGameData(GDI_LIVE_SKILLS, (unsigned int)Skills, 0);
+	g_pCoreShell->GetGameData(GDI_LIVE_SKILLS, (KUPARAM)Skills, 0);
 	for (int i = 0; i < LIVE_SKILL_COUNT; i++)
 		m_LiveSkill[i].HoldObject(Skills[i].uGenre, Skills[i].uId, Skills[i].nLevel, 0);
 }

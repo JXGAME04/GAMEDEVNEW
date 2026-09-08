@@ -1228,7 +1228,7 @@ struct _declspec (novtable) iCoreShell
 	virtual int	TongOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam) = 0;
 	virtual int TeamOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam) = 0;
 	virtual int	 GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam) = 0;
-	virtual void DrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, int nParam) = 0;
+	virtual void DrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, KNPARAM nParam) = 0;
 	virtual void DrawGameSpace() = 0;
 	virtual DWORD GetPing() = 0;
 	//virtual void SendPing() = 0;
@@ -1249,9 +1249,9 @@ struct _declspec (novtable) iCoreShell
 	virtual BOOL GetAutoFlag() = 0;
 	virtual BOOL GetFightFlag() = 0;
 	virtual void SetActiveAutoPlay(BOOL nActive = FALSE) = 0;
-	virtual	void SetMoveMap(int nType, int nPos, int nValue) = 0;
-	virtual	void SetSortItem(int nType, int nPos, int nValue) = 0;
-	virtual	void FkAutoSetFillterMagic(int nType, int nPos, int nValue) = 0;
+	virtual	void SetMoveMap(int nType, int nPos, KNPARAM nValue) = 0;
+	virtual	void SetSortItem(KNPARAM nType, int nPos, int nValue) = 0;
+	virtual	void FkAutoSetFillterMagic(KNPARAM nType, int nPos, int nValue) = 0;
 	virtual int FindSkillInfo(int nType, int nIndex) = 0;
 	virtual	void GetSkillName(int nSkillId, char* szSkillName) = 0;
 	virtual	BOOL GetSkillData(int nSkillId, int *nLevel) = 0;

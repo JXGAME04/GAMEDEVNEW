@@ -92,7 +92,7 @@ int KUiDaTau::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			if (g_pCoreShell)
 			{
 				strcpy(m_pSelf->szFunc1, "finish_exp");
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 3, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 3, (KUPARAM)m_pSelf->szFunc1);
 			}
 		}
 		else if (uParam == (KUPARAM)(KWndWindow*)&money)
@@ -102,7 +102,7 @@ int KUiDaTau::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			if (g_pCoreShell)
 			{
 				strcpy(m_pSelf->szFunc1, "finish_money");
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 3, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 3, (KUPARAM)m_pSelf->szFunc1);
 			}
 		}
 		else if (uParam == (KUPARAM)(KWndWindow*)&random)
@@ -112,7 +112,7 @@ int KUiDaTau::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			if (g_pCoreShell)
 			{
 				strcpy(m_pSelf->szFunc1, "quest_random");
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 3, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 3, (KUPARAM)m_pSelf->szFunc1);
 			}
 		}
 		break;

@@ -118,7 +118,7 @@ void SprReleaseFrame(SPRFRAME* pFrame)
     if (pFrame)
 		free(pFrame);
 }
-#ifndef _WIN64
+#if 1	// [X64 08/09] JpgLib x64 (WIC) da co -> mo lai JPEG tren x64 (truoc la #ifndef _WIN64)
 #include "JpgLib.h"
 #include "KDDraw.h"
 

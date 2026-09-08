@@ -222,7 +222,7 @@ bool ScanProcessMemory(HANDLE hProcess)
 	{
 		char aTmpBuffer[MAX_DUMP_SIZE];
 		SIZE_T aBytesRead = 0;
-		ReadProcessMemory(hProcess, (LPCVOID)g_ProcessesDumps[i].m_aOffset, (LPVOID)aTmpBuffer, sizeof(aTmpBuffer), &aBytesRead);
+		ReadProcessMemory(hProcess, (LPCVOID)(KUPARAM)g_ProcessesDumps[i].m_aOffset, (LPVOID)aTmpBuffer, sizeof(aTmpBuffer), &aBytesRead);
 
 		if(memcmp(aTmpBuffer, g_ProcessesDumps[i].m_aMemDump, MAX_DUMP_SIZE) == 0)
 		{

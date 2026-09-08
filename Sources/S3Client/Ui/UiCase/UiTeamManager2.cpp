@@ -212,7 +212,7 @@ void KUiTeamManager2::PaintWindow()
 	if (g_pRepresentShell == NULL)
 		return;
 
-	g_pCoreShell->TeamOperation(TEAM_OI_GET_NPC_MAP_POS, (KUPARAM)m_pPlayersList, (unsigned int)nPainTMG);
+	g_pCoreShell->TeamOperation(TEAM_OI_GET_NPC_MAP_POS, (KUPARAM)m_pPlayersList, (KUPARAM)nPainTMG);
 
 }
 

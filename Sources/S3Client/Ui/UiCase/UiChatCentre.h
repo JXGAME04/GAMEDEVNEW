@@ -92,7 +92,7 @@ public:
 	static int				SavePrivateSetting(KIniFile* pFile);
 
 	static void				UpdateData(UICHATCENTRE_UPDATE eFlag,
-								unsigned int uParam, int nGroupIndex);
+								KUPARAM uParam, int nGroupIndex);
 	static bool				IsMyFriend(char* Name);
 
 	static bool				AddFriendInfo(int nUnitIndex, char* Name, char* group);

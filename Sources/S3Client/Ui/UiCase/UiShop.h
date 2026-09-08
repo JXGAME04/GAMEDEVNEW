@@ -21,7 +21,7 @@ public:
 	static void			CloseWindow();				
 	static void			LoadScheme(const char* pScheme);	
 	static void			CancelTrade();
-	static void			FkAutoOnBuyItem(unsigned int szItemName);
+	static void			FkAutoOnBuyItem(KUPARAM szItemName);
 	void				UpdateData();	
 	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateItem1(KUiObjAtContRegion* pItem, int bAdd);

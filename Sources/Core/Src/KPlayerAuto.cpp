@@ -2584,7 +2584,7 @@ void KPlayerAuto::DoUseTownPortal()
 	if (checkTDP && this->m_RingTDPCheckBox)//rung chu«ng khi thæ ®Þa phï
 	{
 		char* SoundFileName = SOUND_RING_TDP;
-		CoreDataChanged(GDCNI_PLAY_SOUND, (unsigned int)(SoundFileName), 0);
+		CoreDataChanged(GDCNI_PLAY_SOUND, (KUPARAM)(SoundFileName), 0);
 	}
 }
 

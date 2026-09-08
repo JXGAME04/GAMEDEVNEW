@@ -1369,7 +1369,7 @@ static KUiAuctionManager* sEnsureManager()
 	return KUiAuctionManager::GetSelf();
 }
 
-void KUiAuction_OnCoreCmd(unsigned int uCmd, int nParam)
+void KUiAuction_OnCoreCmd(unsigned int uCmd, KNPARAM nParam)
 {
 	KUiAuctionManager* p;
 	if (!s_bAucGameStarted)

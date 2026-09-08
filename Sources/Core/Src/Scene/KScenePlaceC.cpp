@@ -952,7 +952,7 @@ void KScenePlaceC::SetRegionsToLoad()
 }
 
 //##ModelId=3DCAA6B90196
-unsigned int KScenePlaceC::AddObject(unsigned int uGenre, int nId, int x, int y, int z,
+KSCENEID KScenePlaceC::AddObject(unsigned int uGenre, int nId, int x, int y, int z,
 									 int eLayerParam)
 {
 	POINT	ri;
@@ -989,8 +989,8 @@ unsigned int KScenePlaceC::AddObject(unsigned int uGenre, int nId, int x, int y,
 }
 
 //##ModelId=3DCAA7000085
-unsigned int KScenePlaceC::MoveObject(unsigned int uGenre, int nId,  int x, int y, int z,
-									  unsigned int& uRtoid, int eLayerParam)
+KSCENEID KScenePlaceC::MoveObject(unsigned int uGenre, int nId,  int x, int y, int z,
+									  KSCENEID& uRtoid, int eLayerParam)
 {
 	if (uRtoid == 0)
 	{
@@ -1033,7 +1033,7 @@ unsigned int KScenePlaceC::MoveObject(unsigned int uGenre, int nId,  int x, int 
 }
 
 //##ModelId=3DCAA70603E3
-void KScenePlaceC::RemoveObject(unsigned int uGenre, int nId, unsigned int& uRtoid)
+void KScenePlaceC::RemoveObject(unsigned int uGenre, int nId, KSCENEID& uRtoid)
 {
 	if (uRtoid)
 	{

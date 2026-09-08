@@ -353,7 +353,7 @@ void Wnd_ProcessInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 					if (pOverParent)
 					{
 						pOverParent->WndProc(WND_N_MOUSE_LEAVE_CHILD,
-							(unsigned int)s_WndStation.pMouseOverWnd, 0);
+							(KUPARAM)s_WndStation.pMouseOverWnd, 0);
 					}
 				}
 				if (pTopWnd)
@@ -581,7 +581,7 @@ void Wnd_SetFocusWnd(KWndWindow* pWnd)
 		if (s_WndStation.pFocusWnd)
 			s_WndStation.pFocusWnd->WndProc(WND_M_KILL_FOCUS, (KUPARAM)pWnd, 0);
 		if (pWnd)
-			pWnd->WndProc(WND_M_SET_FOCUS, (unsigned int)s_WndStation.pFocusWnd, 0);
+			pWnd->WndProc(WND_M_SET_FOCUS, (KUPARAM)s_WndStation.pFocusWnd, 0);
 		s_WndStation.pFocusWnd = pWnd;
 	}
 }

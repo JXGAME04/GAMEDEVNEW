@@ -33,9 +33,9 @@ public:
 	void	Clone(KWndMessageListBox* pCopy);
 	int		GetMaxShowLine() {return m_nNumMaxShowLine;}
 	int		GetItemLineCount(int nIndex);
-	unsigned int	SplitData();
-	unsigned int	BindData(unsigned int	hData);
-	static void		FreeData(unsigned int	hData);
+	KUPARAM	SplitData();
+	KUPARAM	BindData(KUPARAM	hData);
+	static void		FreeData(KUPARAM	hData);
 	virtual int		PtInWindow(int x, int y);
 	void ClearHideLine();
 	void HideNextLine();

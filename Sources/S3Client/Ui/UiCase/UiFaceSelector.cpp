@@ -212,7 +212,7 @@ void KUiFaceSelector::OnSelFace()
 	if (m_pCallerWnd && m_nCurrIndex >= 0 && m_nCurrIndex < ms_nNumFaces)
 	{
 		m_pCallerWnd->WndProc(WND_M_OTHER_WORK_RESULT,
-			(unsigned int)m_pvCallerParam, (int)ms_pFaceList[m_nCurrIndex].szFaceText);
+			(KUPARAM)m_pvCallerParam, (KNPARAM)ms_pFaceList[m_nCurrIndex].szFaceText);
 	}
 	CloseWindow(false);
 }

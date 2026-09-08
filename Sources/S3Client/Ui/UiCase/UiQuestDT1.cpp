@@ -88,7 +88,7 @@ int KUiDaTau1::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			if (g_pCoreShell)
 			{
 				strcpy(m_pSelf->szFunc1, "finish_point");
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 4, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 4, (KUPARAM)m_pSelf->szFunc1);
 			}
 		}
 		else if (uParam == (KUPARAM)(KWndWindow*)&bonv)
@@ -98,7 +98,7 @@ int KUiDaTau1::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			if (g_pCoreShell)
 			{
 				strcpy(m_pSelf->szFunc1, "finish_lucky");
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 4, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 4, (KUPARAM)m_pSelf->szFunc1);
 			}
 		}
 		else if (uParam == (KUPARAM)(KWndWindow*)&item)
@@ -108,7 +108,7 @@ int KUiDaTau1::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			if (g_pCoreShell)
 			{
 				strcpy(m_pSelf->szFunc1, "finish_item");
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 4, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 4, (KUPARAM)m_pSelf->szFunc1);
 			}
 		}
 		break;

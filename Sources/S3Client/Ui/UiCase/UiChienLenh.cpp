@@ -898,7 +898,7 @@ static KUiChienLenh* sEnsure()
 	return KUiChienLenh::Prepare();
 }
 
-void KUiChienLenh_OnCoreCmd(unsigned int uCmd, int nParam)
+void KUiChienLenh_OnCoreCmd(unsigned int uCmd, KNPARAM nParam)
 {
 	KUiChienLenh* p;
 	if (!s_bGameStarted)

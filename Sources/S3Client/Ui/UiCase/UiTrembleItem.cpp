@@ -287,7 +287,7 @@ void KUiTrembleItem::ProcessAssemble()
 	}
 
 	//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)TREMBLE_SCRIPT_FILE, (unsigned int)"TrembleItem"); 
-	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 5, (unsigned int)"TrembleItem");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 5, (KUPARAM)"TrembleItem");
 }
 //--------------------------------------------------------
 // Ham chay thuc thi

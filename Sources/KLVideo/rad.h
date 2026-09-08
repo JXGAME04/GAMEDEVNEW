@@ -369,7 +369,28 @@ RADDEFSTART
       #define radstrlwr _strlwr
       #define BreakPoint() __asm {int 3}
 
-      #ifdef _MSC_VER
+      #if defined(_M_X64)   /* [X64 08/09] ban C thay khoi hop ngu x86 ben duoi (KLVideo.dll van x86 nen video khong chay tren x64) */
+        #include <intrin.h>
+        #undef BreakPoint
+        #define BreakPoint() __debugbreak()
+        typedef char* RADPCHAR;
+        u32 __inline radsqr(u32 m) { return m * m; }
+        u32 __inline mult64anddiv(u32 m1, u32 m2, u32 d) { return d ? (u32)(((unsigned __int64)m1 * m2) / d) : 0; }
+        s32 __inline radabs(s32 ab) { return ab < 0 ? -ab : ab; }
+        u8  __inline radinp(u16 p) { (void)p; return 0; }
+        void __inline radoutp(u16 p, u8 v) { (void)p; (void)v; }
+        RADPCHAR __inline radstpcpy(char* p1, char* p2) { while ((*p1 = *p2) != 0) { p1++; p2++; } return p1; }
+        RADPCHAR __inline radstpcpyrs(char* p1, char* p2) { while ((*p1 = *p2) != 0) { p1++; p2++; } return p2; }
+        void __inline radmemset16(void* dest, u16 value, u32 sizeb) { u16* d = (u16*)dest; while (sizeb--) *d++ = value; }
+        void __inline radmemset32(void* dest, u32 value, u32 sizeb) { u32* d = (u32*)dest; while (sizeb--) *d++ = value; }
+        u32 __inline RADsqrt(u32 sq) { u32 r = 0, bit = 1u << 30; while (bit > sq) bit >>= 2; while (bit) { if (sq >= r + bit) { sq -= r + bit; r = (r >> 1) + bit; } else r >>= 1; bit >>= 2; } return r; }
+        void __inline RADCycleTimerStartAddr(u32* addr) { *addr = (u32)__rdtsc(); }
+        u32 __inline RADCycleTimerDeltaAddr(u32* addr) { u32 d = (u32)__rdtsc() - *addr; *addr = d; return d; }
+        #define RADCycleTimerStart(var) RADCycleTimerStartAddr(&var)
+        #define RADCycleTimerDelta(var) RADCycleTimerDeltaAddr(&var)
+      #endif
+
+      #if defined(_MSC_VER) && !defined(_M_X64)
 
         #pragma warning( disable : 4035)
 
@@ -652,7 +673,12 @@ RADEXPFUNC void RADEXPLINK radfree(void PTR4* ptr);
 
 // for multi-processor machines
 
-#ifdef __RADNT__
+#if defined(__RADNT__) && defined(_M_X64)   /* [X64 08/09] Locked*: dung Interlocked* thay hop ngu lock inc/dec */
+  #define LockedIncrement(var) InterlockedIncrement((volatile long*)&(var))
+  #define LockedDecrement(var) InterlockedDecrement((volatile long*)&(var))
+  void __inline LockedIncrementFunc(void PTR4* var) { InterlockedIncrement((volatile long*)var); }
+  void __inline LockedDecrementFunc(void PTR4* var) { InterlockedDecrement((volatile long*)var); }
+#elif defined(__RADNT__)
   #define LockedIncrement(var) __asm { lock inc [var] }
   #define LockedDecrement(var) __asm { lock dec [var] }
   void __inline LockedIncrementFunc(void PTR4* var) { 

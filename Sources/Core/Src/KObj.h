@@ -178,7 +178,7 @@ public:
 	KSprControl	m_cImageDrop;			// 如果是item类型，掉出来的时候播放的动画的图像控制
 	int			m_nDropState;			// 如果是item类型，当前是掉出动画状态(1)还是放置在地板上状态(0)
 	KRUImage	m_Image;
-	unsigned int	m_SceneID;
+	KSCENEID	m_SceneID;
 	int			m_nLayer;				// 物件位于第几层
 	int			m_nHeight;				// 物件的逻辑高度
 	OBJ_LIGHT	m_sObjLight;			// 物件与亮度、发光相关的数据

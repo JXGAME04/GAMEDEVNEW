@@ -22,7 +22,7 @@ KUiInformation2	g_UiInformation2;
 void UIMessageBox2(const char* pMsg, int nMsgLen, const char* pBtnLabel,
 				   KWndWindow* pCaller, unsigned int uParam)
 {
-	if (pCaller && (unsigned int)pCaller != WND_GAMESPACE)
+	if (pCaller && (KUPARAM)pCaller != WND_GAMESPACE)
 		pCaller->Enable(false);
 	g_UiInformation2.Show(pMsg, nMsgLen, pBtnLabel, pCaller, uParam);
 }
@@ -133,7 +133,7 @@ void KUiInformation2::Hide()
 {
 	if (m_pCallerWnd)
 	{
-		if ((unsigned int)m_pCallerWnd == WND_GAMESPACE)
+		if ((KUPARAM)m_pCallerWnd == WND_GAMESPACE)
 			g_pCoreShell->OperationRequest(GOI_INFORMATION_CONFIRM_NOTIFY, 0, 0);
 		else
 		{

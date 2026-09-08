@@ -95,7 +95,7 @@ public:
 	int	TongOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam);
 	int TeamOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam);
 	int	 GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam);
-	void DrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, int nParam);
+	void DrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, KNPARAM nParam);
 	void DrawGameSpace();
 	DWORD GetPing();
 	//void SendPing();
@@ -116,9 +116,9 @@ public:
 	BOOL GetAutoFlag();
 	BOOL GetFightFlag();
 	void SetActiveAutoPlay(BOOL nActive = FALSE);
-	void SetMoveMap(int nType, int nPos, int nValue);
-	void SetSortItem(int nType, int nPos, int nValue);
-	void FkAutoSetFillterMagic(int nType, int nPos, int nValue);
+	void SetMoveMap(int nType, int nPos, KNPARAM nValue);
+	void SetSortItem(KNPARAM nType, int nPos, int nValue);
+	void FkAutoSetFillterMagic(KNPARAM nType, int nPos, int nValue);
 	int FindSkillInfo(int nType, int nIndex);
 	void GetSkillName(int nSkillId, char* szSkillName);
 	BOOL GetSkillData(int nSkillId, int *nLevel);
@@ -24554,7 +24554,7 @@ int KCoreShell::GetNPCRelation(int nIndex)
 	return NpcSet.GetRelation(Player[CLIENT_PLAYER_INDEX].m_nIndex, nIndex);
 }
 
-void KCoreShell::DrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, int nParam)
+void KCoreShell::DrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, KNPARAM nParam)
 {
 	if (g_pRepresent)
 		CoreDrawGameObj(uObjGenre, uId, x, y, Width, Height, nParam);
@@ -24746,7 +24746,7 @@ BOOL KCoreShell::GetFightFlag()
 	return Player[CLIENT_PLAYER_INDEX].GetFightFlag();
 }
 
-void KCoreShell::SetMoveMap(int nType, int nPos, int nValue)
+void KCoreShell::SetMoveMap(int nType, int nPos, KNPARAM nValue)
 {
 	switch(nType)
 	{
@@ -24800,7 +24800,7 @@ void KCoreShell::SetMoveMap(int nType, int nPos, int nValue)
 	}
 }
 
-void KCoreShell::SetSortItem(int nType, int nValue, int nPos)
+void KCoreShell::SetSortItem(KNPARAM nType, int nValue, int nPos)
 {
 	int nIndex = (int)g_MagicDesc.String2MagicID((char*)nType);
 	if (nIndex >= magic_skill_begin && nIndex < magic_normal_end)
@@ -24815,7 +24815,7 @@ void KCoreShell::SetSortItem(int nType, int nValue, int nPos)
 	}
 }
 
-void KCoreShell::FkAutoSetFillterMagic(int nType, int nValue, int nPos)//fkauto
+void KCoreShell::FkAutoSetFillterMagic(KNPARAM nType, int nValue, int nPos)//fkauto
 {
 	int nIndex = (int)g_MagicDesc.String2MagicID((char*)nType);
 	if (nIndex >= magic_skill_begin && nIndex < magic_normal_end)

@@ -2115,7 +2115,7 @@ void KUiAutoPlayPick::SetFilterMagicList()
 		g_pCoreShell->FkAutoSetFillterMagic(NULL, 0, i);
 		if (m_cFilterMagic[i][0])
 		{
-			g_pCoreShell->FkAutoSetFillterMagic((unsigned int)m_cFilterMagic[i], m_FilterMagicV[i], Count);
+			g_pCoreShell->FkAutoSetFillterMagic((KNPARAM)m_cFilterMagic[i], m_FilterMagicV[i], Count);
 
 			sprintf(Buff, MSG_FORMAT_MAGIC, g_ArrayData2_Magic[FindSameMagic(m_cFilterMagic[i])][0], m_FilterMagicV[i]);
 			m_PickOptionList.AddString(Count, Buff);
@@ -2709,7 +2709,7 @@ void KUiAutoPlayMove::PopUpFollow()
 		m_fkNearbyPlayersList = (KUiPlayerItem*)malloc(sizeof(KUiPlayerItem) * nActionDataCount);
 		if (m_fkNearbyPlayersList)
 		{
-			g_pCoreShell->GetGameData(GDI_NEARBY_PLAYER_LIST, (unsigned int)m_fkNearbyPlayersList, nActionDataCount);
+			g_pCoreShell->GetGameData(GDI_NEARBY_PLAYER_LIST, (KUPARAM)m_fkNearbyPlayersList, nActionDataCount);
 			for (int i = 0; i< nActionDataCount;i++)
 			{
 				strncpy(pSelUnitMenu->Items[i].szData, m_fkNearbyPlayersList[i].Name, 63);
@@ -3787,7 +3787,7 @@ void KUiAutoPlayTeam::PopUpTeamPlayerName()
 		m_fkNearbyPlayersList = (KUiPlayerItem*)malloc(sizeof(KUiPlayerItem) * nActionDataCount);
 		if (m_fkNearbyPlayersList)
 		{
-			g_pCoreShell->GetGameData(GDI_NEARBY_PLAYER_LIST, (unsigned int)m_fkNearbyPlayersList, nActionDataCount);
+			g_pCoreShell->GetGameData(GDI_NEARBY_PLAYER_LIST, (KUPARAM)m_fkNearbyPlayersList, nActionDataCount);
 			for (int i = 0; i< nActionDataCount;i++)
 			{
 				strncpy(pSelUnitMenu->Items[i].szData, m_fkNearbyPlayersList[i].Name, 63);
@@ -4004,7 +4004,7 @@ void KUiAutoPlayBlackItem::PopUpBlackItemName()
 		m_fkItemEquipRoomList = (FKUiObjectName*)calloc(nActionDataCount, sizeof(FKUiObjectName));
 		if (m_fkItemEquipRoomList)
 		{
-			g_pCoreShell->GetGameData(GDI_ITEM_EQUIP_ROOM_LIST, (unsigned int)m_fkItemEquipRoomList, nActionDataCount);
+			g_pCoreShell->GetGameData(GDI_ITEM_EQUIP_ROOM_LIST, (KUPARAM)m_fkItemEquipRoomList, nActionDataCount);
 			for (int i = 0; i< nActionDataCount;i++)
 			{
 				if(m_fkItemEquipRoomList[i].FkName[0]) //fix by phong kiÒu lçi item name rçng

@@ -15,7 +15,7 @@
 #define  PHYSICSSKILLICON "\\spr\\Ui\\¼¼ÄÜÍ¼±ê\\icon_sk_ty_ap.spr"
 #define SHOW_SPACE_HEIGHT 5
 
-void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, int nParam)
+void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, KNPARAM nParam)
 {
 	switch(uObjGenre)
 	{

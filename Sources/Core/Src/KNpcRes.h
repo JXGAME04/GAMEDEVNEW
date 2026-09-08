@@ -43,7 +43,7 @@ public:
 	int				m_nMapYpos[MAX_BLUR_FRAME];			// 对应的地图坐标 y
 	int				m_nMapZpos[MAX_BLUR_FRAME];			// 对应的地图坐标 z
 	unsigned int	m_SceneIDNpcIdx[MAX_BLUR_FRAME];
-	unsigned int	m_SceneID[MAX_BLUR_FRAME];			// 
+	KSCENEID	m_SceneID[MAX_BLUR_FRAME];			// 
 	// So o THAT SU duoc nap cho tung khung tan anh. Vong nap o KNpcRes.cpp:653-659
 	// chi dien j phan hop le (j = 6-12 voi nhan vat thuong) nhung Draw truoc day
 	// gui cung MAX_PART = 20 => thua 8-14 anh RONG moi khung tan anh, x7 khung,
@@ -89,7 +89,7 @@ private:
 	int				m_nYpos;							// 坐标 y
 	int				m_nZpos;							// 坐标 z
 	unsigned int 	m_SceneID_NPCIdx;                   // 在场景中的ID 对应的NPCidx
-	unsigned int	m_SceneID;							// 在场景中的ID
+	KSCENEID	m_SceneID;							// 在场景中的ID
 	int				m_nHelmType;						// 当前头部类型
 	int				m_nArmorType;						// 当前身体类型
 	int				m_nMantleType;						// 当前马匹类型

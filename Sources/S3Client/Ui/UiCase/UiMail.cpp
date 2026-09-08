@@ -1133,7 +1133,7 @@ void KUiMailIcon::Release()
     }
 }
 
-void KUiMail_OnCoreCmd(unsigned int uCmd, int nParam)
+void KUiMail_OnCoreCmd(unsigned int uCmd, KNPARAM nParam)
 {
     KUiMailManager* pMgr;
     sMailLog("[UI] cmd=%u param=%d", uCmd, nParam);

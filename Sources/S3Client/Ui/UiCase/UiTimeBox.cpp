@@ -128,7 +128,7 @@ void KUiTimeBox::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 void KUiTimeBox::OnOk()
 {
-	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 2, (unsigned int)m_pSelf->szAction);
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 2, (KUPARAM)m_pSelf->szAction);
 	CloseWindow(false);
 }
 

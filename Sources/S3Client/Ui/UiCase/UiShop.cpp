@@ -162,7 +162,7 @@ int	KUiShop::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	return 0;
 }
 
-void KUiShop::FkAutoOnBuyItem(unsigned int szItemName)
+void KUiShop::FkAutoOnBuyItem(KUPARAM szItemName)
 {
 	if (szItemName == 0 || g_pCoreShell == NULL)
 		return;

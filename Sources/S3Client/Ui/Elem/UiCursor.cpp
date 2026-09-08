@@ -49,7 +49,7 @@ void KUiCursor::Cleanup()
 {
     #ifdef  KUI_USE_HARDWARE_MOUSE
 	{
-		::SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+		::SetCursor(LoadCursor(NULL, IDC_ARROW));
 		for (int i = 0; i < MAX_CURSOR_IMAGE; i++)
 			m_CursorImages[i] = NULL;
 	}
@@ -248,12 +248,12 @@ int	KUiCursor::SwitchImage(int nIndex)
 			}
 			else
 			{
-				SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+				SetCursor(LoadCursor(NULL, IDC_ARROW));
 			}
 		}
 		else
 		{
-			SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+			SetCursor(LoadCursor(NULL, IDC_ARROW));
 		}
 		return m_nCurImage;
 	}

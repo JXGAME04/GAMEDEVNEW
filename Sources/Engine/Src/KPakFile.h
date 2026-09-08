@@ -47,7 +47,7 @@ private:
 		int				nHeight;
 		unsigned short	Data[1];
 	};
-	#define	KSG_IMAGE_CONTENT_SIZE(w, h)    ((unsigned)((&((KSGImageContent *)0)->Data[0])) + w * h * 2)
+	#define	KSG_IMAGE_CONTENT_SIZE(w, h)    ((unsigned)(KUPARAM)((&((KSGImageContent *)0)->Data[0])) + w * h * 2)	// [X64 08/09] offsetof qua KUPARAM
 
 	ENGINE_API SPRHEAD*		SprGetHeader(const char* pszFileName, SPROFFS*& pOffsetTable);
 	ENGINE_API void			SprReleaseHeader(SPRHEAD* pSprHeader);

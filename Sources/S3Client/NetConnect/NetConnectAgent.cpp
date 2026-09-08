@@ -290,7 +290,7 @@ void KNetConnectAgent::Breathe()
 		return;
 	}
 
-	unsigned int nSize;
+	size_t nSize;	// [X64 08/09] IClient::GetPackFromServer(size_t&)
 	const char* pBuffer = NULL;
 
 	if (m_bIsClientConnecting)
@@ -398,7 +398,7 @@ void __stdcall ClientCallBack(LPVOID lpParam, const unsigned long &ulnEventType)
 		break;
 	case enumServerConnectClose:
 		{
-			int	bGameServ = (int)lpParam;
+			int	bGameServ = (KNPARAM)lpParam;
 			if (g_NetConnectAgent.IsConnecting(bGameServ))
 			{
 				g_bDisconnect = true;

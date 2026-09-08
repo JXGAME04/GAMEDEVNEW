@@ -320,7 +320,7 @@ int KUiMantleInlay::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 void KUiMantleInlay::OnOk()
 {
 	if (g_pCoreShell)
-		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_pSelf->m_szFunc);
+		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)m_pSelf->m_szFunc);
 }
 
 //--------------------------------------------------------------------------

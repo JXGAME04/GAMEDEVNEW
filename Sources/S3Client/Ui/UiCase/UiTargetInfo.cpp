@@ -163,7 +163,7 @@ void KUiTargetInfo::PaintWindow()
 	if (g_pRepresentShell == NULL)
 		return;
 
-	g_pCoreShell->OperationRequest(GOI_DRAW_TARGET_INFO, (KUPARAM)m_pPlayersList, (unsigned int)nPainTMG);
+	g_pCoreShell->OperationRequest(GOI_DRAW_TARGET_INFO, (KUPARAM)m_pPlayersList, (KUPARAM)nPainTMG);
 
 }
 

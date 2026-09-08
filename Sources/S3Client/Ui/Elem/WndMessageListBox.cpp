@@ -828,7 +828,7 @@ int KWndMessageListBox::GetOneMessage(int nIndex, char* pBuffer, int nLen, bool 
 	return -1;
 }
 
-unsigned int KWndMessageListBox::SplitData()
+KUPARAM KWndMessageListBox::SplitData()
 {
 	KMessageListData* pData = NULL;
 	if (m_nCapability)
@@ -863,7 +863,7 @@ unsigned int KWndMessageListBox::SplitData()
 	return ((KUPARAM)pData);
 }
 
-unsigned int KWndMessageListBox::BindData(unsigned int hData)
+KUPARAM KWndMessageListBox::BindData(KUPARAM hData)
 {
 	if (hData == NULL)
 		return SplitData();
@@ -911,7 +911,7 @@ unsigned int KWndMessageListBox::BindData(unsigned int hData)
 	return hData;
 }
 
-void KWndMessageListBox::FreeData(unsigned int	hData)
+void KWndMessageListBox::FreeData(KUPARAM	hData)
 {
 	if (hData)
 	{

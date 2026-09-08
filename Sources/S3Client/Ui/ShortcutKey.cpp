@@ -733,7 +733,7 @@ int LuaRegisterEvent(Lua_State * L)
 	if (Lua_GetTopIndex(L) == 2)
 	{
 		char * szName = (char *)Lua_ValueToString(L, 1);
-		int hWnd = (int)Lua_ValueToNumber(L, 2);
+		KNPARAM hWnd = (KNPARAM)Lua_ValueToNumber(L, 2);	// [X64 08/09]
 
 		g_UiBase.RegisterEvent(szName, (HANDLE)hWnd);
 	}
@@ -746,7 +746,7 @@ int LuaUnregisterEvent(Lua_State * L)
 	if (Lua_GetTopIndex(L) == 2)
 	{
 		char * szName = (char *)Lua_ValueToString(L, 1);
-		int hWnd = (int)Lua_ValueToNumber(L, 2);
+		KNPARAM hWnd = (KNPARAM)Lua_ValueToNumber(L, 2);	// [X64 08/09]
 
 		g_UiBase.UnregisterEvent(szName, (HANDLE)hWnd);
 	}

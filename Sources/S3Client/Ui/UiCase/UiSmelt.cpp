@@ -355,7 +355,7 @@ void KUiSmelt::OnDo(int nMode)
 	}
 	if (g_pCoreShell)
 		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1,
-			(unsigned int)(nMode == 0 ? "doSmeltBox" : "doUnSmeltBox"));
+			(KUPARAM)(nMode == 0 ? "doSmeltBox" : "doUnSmeltBox"));
 	pg.BatHieuUng();
 }
 

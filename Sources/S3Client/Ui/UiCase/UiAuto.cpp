@@ -565,7 +565,7 @@ void KUiFight::OnArrayRadius()
 		IsCheck = TRUE;
 		g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,7,m_Range.GetIntNumber());
 		char	cQDiemXY[32];
-		g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,47, (unsigned int)cQDiemXY);
+		g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,47, (KUPARAM)cQDiemXY);
 		m_QDiemBtn.CheckButton(true);
 		m_QDiemXY.SetText(cQDiemXY);
 		
@@ -859,7 +859,7 @@ void KUiFight::LoadFightSetting()
 		if (m_bQDiemBtn)
 		{
 			char	cQDiemXY[32];
-			g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,47, (unsigned int)cQDiemXY);
+			g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,47, (KUPARAM)cQDiemXY);
 			m_QDiemBtn.CheckButton(true);
 			m_QDiemXY.SetText(cQDiemXY);
 		}
@@ -2228,7 +2228,7 @@ void KUiPick::SetFilterMagicList()
 		g_pCoreShell->SetSortItem(NULL, 0, i);
 		if (m_cFilterMagic[i][0])
 		{
-			g_pCoreShell->SetSortItem((unsigned int)m_cFilterMagic[i], m_FilterMagicV[i], Count);
+			g_pCoreShell->SetSortItem((KNPARAM)m_cFilterMagic[i], m_FilterMagicV[i], Count);
 
 			sprintf(Buff, MSG_FORMAT_MAGIC, Data_Magic[FindSameMagic(m_cFilterMagic[i])][0], m_FilterMagicV[i]);
 			m_FilterL.AddString(Count, Buff);

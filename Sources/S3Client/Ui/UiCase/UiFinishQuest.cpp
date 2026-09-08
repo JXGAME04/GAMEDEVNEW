@@ -205,7 +205,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)EXP_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
 			{
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)m_pSelf->szFunc1);
 			}
 			CloseWindow();
 		}
@@ -214,7 +214,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)POINT_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
 			{
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)m_pSelf->szFunc1);
 			}
 			CloseWindow();
 		}
@@ -223,7 +223,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)LUCKY_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
 			{
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)m_pSelf->szFunc1);
 			}
 			CloseWindow();
 		}
@@ -232,7 +232,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)RANDOM_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
 			{
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)m_pSelf->szFunc1);
 			}
 			CloseWindow();
 		}
@@ -241,7 +241,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)ITEM_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
 			{
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)m_pSelf->szFunc1);
 			}
 			CloseWindow();
 		}
@@ -250,7 +250,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)MONEY_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
 			{
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_pSelf->szFunc1);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)m_pSelf->szFunc1);
 			}
 			CloseWindow();
 		}

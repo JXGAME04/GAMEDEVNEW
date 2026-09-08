@@ -565,7 +565,7 @@ void	KProtocolProcess::s2cViewSellItem(BYTE* pMsg)
 void KProtocolProcess::s2cBattleBox(BYTE* pMsg)
 {
 	S2C_BATTLE_BOX	*Cmd = (S2C_BATTLE_BOX *)pMsg;
-	CoreDataChanged(GDCNI_UPDATE_BATTLE_BOX, (unsigned int)Cmd->szBattleDesc, Cmd->nType);
+	CoreDataChanged(GDCNI_UPDATE_BATTLE_BOX, (KUPARAM)Cmd->szBattleDesc, Cmd->nType);
 }
 
 void    KProtocolProcess::s2cPlayerStop(BYTE * pMsg)
@@ -3763,7 +3763,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			sprintf(sMsg.szMessage, MSG_DEC_MONEY, (int)pShowMsg->m_lpBuf);
+			sprintf(sMsg.szMessage, MSG_DEC_MONEY, (int)(KNPARAM)pShowMsg->m_lpBuf);
 			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
@@ -3863,7 +3863,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 	break;
 	case enumMSG_ID_ITEM_DAMAGED:
 		{
-			int nItemID = (int)pShowMsg->m_lpBuf;
+			int nItemID = (int)(KNPARAM)pShowMsg->m_lpBuf;
 			int nIdx = ItemSet.SearchID(nItemID);
 			if (!nIdx)
 				break;
@@ -4673,7 +4673,7 @@ void KProtocolProcess::s2cSetMissionData(BYTE* pMsg)
 void KProtocolProcess::s2cReturnCityOwnTong(BYTE* pMsg)
 {
 	RETURN_CITY_OWN_TONG	*pData = (RETURN_CITY_OWN_TONG*)pMsg;
-	CoreDataChanged(GDCNI_RETURN_CITY_OWN_TONG, 0, (unsigned int)pData->szTongName);
+	CoreDataChanged(GDCNI_RETURN_CITY_OWN_TONG, 0, (KUPARAM)pData->szTongName);
 }
 
 void KProtocolProcess::s2cPlayerLoginReplay(BYTE* pMsg) //fix by phong kiÒu chuyÓn gs bÞ mÊt skill
@@ -4769,7 +4769,7 @@ void KProtocolProcess::s2cSyncMeridian(BYTE* pMsg)
 		return;
 	Player[CLIENT_PLAYER_INDEX].m_cMeridian.setMeridian(pMeridianSync->m_nMeridian);
 	Player[CLIENT_PLAYER_INDEX].UpdataCurData();
-	CoreDataChanged(GDCNI_PLAYER_MERIDIAN_SYNC, (unsigned int)pMeridianSync->m_nMeridian, pMeridianSync->ProtocolType);
+	CoreDataChanged(GDCNI_PLAYER_MERIDIAN_SYNC, (KUPARAM)pMeridianSync->m_nMeridian, pMeridianSync->ProtocolType);
 }
 
 void KProtocolProcess::s2cSyncBauCuaResult(BYTE* pMsg)
@@ -4898,7 +4898,7 @@ void KProtocolProcess::s2cOpenQuestFinishDlg(BYTE* pMsg)
 		return;
 
 	QUEST_FINISH_DLG_SYNC *pFinish = (QUEST_FINISH_DLG_SYNC *)pMsg;
-	CoreDataChanged(GDCNI_FINISH_QUEST_DLG, (unsigned int)pFinish->m_szNotice, pFinish->m_bType);
+	CoreDataChanged(GDCNI_FINISH_QUEST_DLG, (KUPARAM)pFinish->m_szNotice, pFinish->m_bType);
 	// [DaTau] bao cho auto: cua so 3 ruong dang mo
 	g_sDTCap.nFinType = pFinish->m_bType;
 	++g_sDTCap.uFinSeq;
@@ -4947,10 +4947,10 @@ void KProtocolProcess::s2cInPutBox(BYTE* pMsg)
 			g_StrCpyLen(g_sDTCap.szInpHoi, (char*)InPutBoxCmd->Value, sizeof(g_sDTCap.szInpHoi));
 			g_StrCpyLen(g_sDTCap.szInpFunc, (char*)InPutBoxCmd->Value1, sizeof(g_sDTCap.szInpFunc));
 			++g_sDTCap.uInpSeq;
-			CoreDataChanged(GDCNI_OPEN_INPUT, (unsigned int)InPutBoxCmd->Value, (unsigned int)InPutBoxCmd->Value1);
+			CoreDataChanged(GDCNI_OPEN_INPUT, (KUPARAM)InPutBoxCmd->Value, (KNPARAM)InPutBoxCmd->Value1);
 			break;
 		case 2:
-			CoreDataChanged(GDCNI_OPEN_INPUT2, (unsigned int)InPutBoxCmd->Value, (unsigned int)InPutBoxCmd->Value1);
+			CoreDataChanged(GDCNI_OPEN_INPUT2, (KUPARAM)InPutBoxCmd->Value, (KNPARAM)InPutBoxCmd->Value1);
 			break;
 		default:
 			break;
@@ -5131,7 +5131,7 @@ void KProtocolProcess::s2cTimeBox(BYTE* pMsg)
 void KProtocolProcess::s2cTalkEx(BYTE* pMsg)
 {
 	S2C_TALK_EX	*TalkExCmd = (S2C_TALK_EX *)pMsg;
-	CoreDataChanged(GDCNI_OPEN_TALK_EX, (unsigned int)TalkExCmd->Value, (unsigned int)TalkExCmd->Value1);
+	CoreDataChanged(GDCNI_OPEN_TALK_EX, (KUPARAM)TalkExCmd->Value, (KNPARAM)TalkExCmd->Value1);
 }
 
 //=====================================
@@ -5566,7 +5566,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 				sItem[i].btOnline = pInfo->m_sMember[i + 1].m_btOnline;
 			}
 
-			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (KUPARAM)&sObj, (unsigned int)sItem);
+			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (KUPARAM)&sObj, (KUPARAM)sItem);
 		}
 		break;
 	case enumTONG_SYNC_ID_SELF_INFO:
@@ -5598,7 +5598,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 				sItem[i].btOnline = pInfo->m_sMember[i].m_btOnline;
 			}
 
-			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (KUPARAM)&sObj, (unsigned int)sItem);
+			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (KUPARAM)&sObj, (KUPARAM)sItem);
 		}
 		break;
 	case enumTONG_SYNC_ID_MEMBER_INFO:
@@ -5628,7 +5628,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 				sItem[i].btOnline = pInfo->m_sMember[i].m_btOnline;
 			}
 
-			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (KUPARAM)&sObj, (unsigned int)sItem);
+			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (KUPARAM)&sObj, (KUPARAM)sItem);
 		}
 		break;
 	case enumTONG_SYNC_ID_INSTATE:

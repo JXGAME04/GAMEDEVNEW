@@ -434,13 +434,13 @@ void KUiMantleWash::OnKeepOld()
 	// [PB 01/09] giu nguyen -> server khoi phuc dong cu = dong hien tai -> xoa snapshot
 	m_bDaTay = false;
 	if (g_pCoreShell)
-		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)"doWashKeep");
+		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)"doWashKeep");
 }
 
 void KUiMantleWash::OnApplyNew()
 {
 	if (g_pCoreShell)
-		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)"doWashApply");
+		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)"doWashApply");
 	CloseWindow(true);
 }
 

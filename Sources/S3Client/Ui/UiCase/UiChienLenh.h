@@ -179,7 +179,7 @@ private:
 	KWndButton			m_Btn;						// [BtnIcon]
 };
 
-void KUiChienLenh_OnCoreCmd(unsigned int uCmd, int nParam);
+void KUiChienLenh_OnCoreCmd(unsigned int uCmd, KNPARAM nParam);
 void KUiChienLenh_OnGameStart();
 void KUiChienLenh_OnGameExit();
 

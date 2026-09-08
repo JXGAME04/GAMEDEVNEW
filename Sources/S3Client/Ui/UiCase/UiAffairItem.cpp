@@ -367,7 +367,7 @@ void KUiAffairItem::OnOk()
 	}
 	if (g_pCoreShell)
 	{
-		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_pSelf->szFunc1);
+		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)m_pSelf->szFunc1);
 	}
 }
 

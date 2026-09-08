@@ -87,5 +87,5 @@ void UiSoundPlay(UI_SOUND_INDEX eIndex)
 void UiSoundPlay(char* SoundFileName)
 {
 	if (g_pCoreShell)
-		g_pCoreShell->OperationRequest(GOI_PLAY_SOUND, (unsigned int)(SoundFileName), 0);
+		g_pCoreShell->OperationRequest(GOI_PLAY_SOUND, (KUPARAM)(SoundFileName), 0);
 }

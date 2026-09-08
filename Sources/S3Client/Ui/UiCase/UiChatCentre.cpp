@@ -474,7 +474,7 @@ void KUiChatCentre::LoadScheme(class KIniFile* pIni)
 
 	m_GroupBtn[0].GetPosition(&m_nFirstGroupBtnLeft, &m_nFirstGroupBtnTop);
 
-	m_FriendList.SetCustomColorOffset((int)&(((KUiPlayerItem*)0)->nData));
+	m_FriendList.SetCustomColorOffset((KNPARAM)&(((KUiPlayerItem*)0)->nData));
 
 	//ºÃÓÑÁÐ±í±³¾°Í¼
 	const char* SectionTitle = "ListBgImg";
@@ -777,7 +777,7 @@ void KUiChatCentre::SendFriendMsg(int nFriendIndex, bool bDBClick)
 	}
 }
 							
-void KUiChatCentre::UpdateData(UICHATCENTRE_UPDATE eFlag, unsigned int uParam, int nGroupIndex)
+void KUiChatCentre::UpdateData(UICHATCENTRE_UPDATE eFlag, KUPARAM uParam, int nGroupIndex)
 {
 	if (m_pSelf)
 	{
@@ -1546,7 +1546,7 @@ void KUiChatCentre::UpdateGroup(int nGroupIndex)
 			}
 
 			m_FriendList.SetContent((unsigned char*)m_pFriendList, m_nNumFriendInList, sizeof(KUiPlayerItem),
-				(int)&(((KUiPlayerItem*)0)->Name));
+				(KNPARAM)&(((KUiPlayerItem*)0)->Name));
 		}
 	}
 }

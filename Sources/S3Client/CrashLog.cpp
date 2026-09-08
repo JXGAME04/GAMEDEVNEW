@@ -177,6 +177,21 @@ static void CL_DumpModules()
 }
 
 //--- di nguoc ngan xep ---
+// [X64 08/09] thanh ghi / khung ngan xep theo kien truc
+#ifdef _WIN64
+	typedef DWORD64 CL_ADDR;
+	#define CL_CTX_IP(c) ((c)->Rip)
+	#define CL_CTX_BP(c) ((c)->Rbp)
+	#define CL_CTX_SP(c) ((c)->Rsp)
+	#define CL_MACHINE   0x8664
+#else
+	typedef DWORD CL_ADDR;
+	#define CL_CTX_IP(c) ((c)->Eip)
+	#define CL_CTX_BP(c) ((c)->Ebp)
+	#define CL_CTX_SP(c) ((c)->Esp)
+	#define CL_MACHINE   0x014c
+#endif
+
 static void CL_DumpStack(CONTEXT* pCtx)
 {
     char  szLine[640];
@@ -187,12 +202,12 @@ static void CL_DumpStack(CONTEXT* pCtx)
     if (!s_pStackWalk64)
     {
         CL_WriteLine("  -- ngan xep (theo chuoi EBP) --");
-        DWORD* pFrame = (DWORD*)pCtx->Ebp;
+        CL_ADDR* pFrame = (CL_ADDR*)CL_CTX_BP(pCtx);
         for (int i = 0; i < 24 && pFrame; i++)
         {
-            if (IsBadReadPtr(pFrame, sizeof(DWORD) * 2))
+            if (IsBadReadPtr(pFrame, sizeof(CL_ADDR) * 2))
                 break;
-            DWORD dwRet = pFrame[1];
+            CL_ADDR dwRet = pFrame[1];
             if (!dwRet)
                 break;
             CL_ModuleOf((void*)dwRet, szMod, sizeof(szMod), &dwRva);
@@ -201,7 +216,7 @@ static void CL_DumpStack(CONTEXT* pCtx)
                       i, (unsigned)dwRet, szMod[0] ? szMod : "?", (unsigned)dwRva, szSym);
             szLine[sizeof(szLine) - 1] = 0;
             CL_WriteLine(szLine);
-            pFrame = (DWORD*)pFrame[0];
+            pFrame = (CL_ADDR*)pFrame[0];
         }
         return;
     }
@@ -209,13 +224,13 @@ static void CL_DumpStack(CONTEXT* pCtx)
     CL_WriteLine("  -- ngan xep goi ham --");
     STACKFRAME64 sf;
     memset(&sf, 0, sizeof(sf));
-    sf.AddrPC.Offset    = pCtx->Eip;  sf.AddrPC.Mode    = AddrModeFlat;
-    sf.AddrFrame.Offset = pCtx->Ebp;  sf.AddrFrame.Mode = AddrModeFlat;
-    sf.AddrStack.Offset = pCtx->Esp;  sf.AddrStack.Mode = AddrModeFlat;
+    sf.AddrPC.Offset    = CL_CTX_IP(pCtx);  sf.AddrPC.Mode    = AddrModeFlat;
+    sf.AddrFrame.Offset = CL_CTX_BP(pCtx);  sf.AddrFrame.Mode = AddrModeFlat;
+    sf.AddrStack.Offset = CL_CTX_SP(pCtx);  sf.AddrStack.Mode = AddrModeFlat;
 
     for (int i = 0; i < 32; i++)
     {
-        if (!s_pStackWalk64(0x014c, GetCurrentProcess(), GetCurrentThread(),
+        if (!s_pStackWalk64(CL_MACHINE, GetCurrentProcess(), GetCurrentThread(),
                             &sf, pCtx, NULL,
                             (PVOID)s_pSymFuncTable, (PVOID)s_pSymGetModBase, NULL))
             break;
@@ -330,6 +345,21 @@ static void CL_Report(const char* pszWhy, EXCEPTION_POINTERS* pEP)
             pCtx = &ctxLocal;
         }
 
+#ifdef _WIN64
+        _snprintf(szLine, sizeof(szLine) - 1,
+                  "  Thanh ghi: RAX=%016llX RBX=%016llX RCX=%016llX RDX=%016llX",
+                  (unsigned long long)pCtx->Rax, (unsigned long long)pCtx->Rbx,
+                  (unsigned long long)pCtx->Rcx, (unsigned long long)pCtx->Rdx);
+        szLine[sizeof(szLine) - 1] = 0;
+        CL_WriteLine(szLine);
+
+        _snprintf(szLine, sizeof(szLine) - 1,
+                  "             RSI=%016llX RDI=%016llX RBP=%016llX RSP=%016llX RIP=%016llX",
+                  (unsigned long long)pCtx->Rsi, (unsigned long long)pCtx->Rdi,
+                  (unsigned long long)pCtx->Rbp, (unsigned long long)pCtx->Rsp, (unsigned long long)pCtx->Rip);
+        szLine[sizeof(szLine) - 1] = 0;
+        CL_WriteLine(szLine);
+#else
         _snprintf(szLine, sizeof(szLine) - 1,
                   "  Thanh ghi: EAX=%08X EBX=%08X ECX=%08X EDX=%08X",
                   (unsigned)pCtx->Eax, (unsigned)pCtx->Ebx,
@@ -343,6 +373,7 @@ static void CL_Report(const char* pszWhy, EXCEPTION_POINTERS* pEP)
                   (unsigned)pCtx->Ebp, (unsigned)pCtx->Esp, (unsigned)pCtx->Eip);
         szLine[sizeof(szLine) - 1] = 0;
         CL_WriteLine(szLine);
+#endif
 
         if (s_pSymRefresh)
             s_pSymRefresh(GetCurrentProcess());

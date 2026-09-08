@@ -887,7 +887,7 @@ void KUiCompoundOne::ProcessComp()
 		return;
 	}
 	
-	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_MotOre");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (KUPARAM)"LR_UI_MotOre");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -1368,7 +1368,7 @@ void KUiCompoundTwo::ProcessComp()
 		return;
 	}
 	
-	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_HaiOre");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (KUPARAM)"LR_UI_HaiOre");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -1927,7 +1927,7 @@ void KUiCompoundThree::ProcessComp()
 		m_nStatus = STATUS_BEGIN_COMPOUND;
 		return;
 	}
-	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_BaOre");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (KUPARAM)"LR_UI_BaOre");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -2518,7 +2518,7 @@ void KUiDistill::ProcessDistill()
 		return;
 	}
 	
-	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Distill");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (KUPARAM)"LR_UI_Distill");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -2908,7 +2908,7 @@ void KUiForge::ProcessForge()
 		return;
 	}
 	
-	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Forge");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (KUPARAM)"LR_UI_Forge");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -3248,7 +3248,7 @@ int KUiAtlas::WndProc( unsigned int uMsg, KUPARAM uParam, KNPARAM nParam )
 			// mon nao con thieu (LR_UI_AtlasPreview trong test_loren_admin.lua).
 			sDoPhoLog("[DOPHO] WndProc: bam nut Xem truoc");
 			if (g_pCoreShell)
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_AtlasPreview");
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (KUPARAM)"LR_UI_AtlasPreview");
 		}
 		break;
 	case WND_N_ITEM_PICKDROP:
@@ -3266,7 +3266,7 @@ void KUiAtlas::ProcessAtlas()
 	// May chu kiem toan bo luat (KFoundryResDemand + atlas.lua), client chi gui.
 	sDoPhoLog("[DOPHO] ProcessAtlas: GUI LENH LR_UI_Atlas len may chu");
 	if (g_pCoreShell)
-		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Atlas");
+		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (KUPARAM)"LR_UI_Atlas");
 }
 
 void KUiAtlas::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos)
@@ -4096,7 +4096,7 @@ void KUiEnchase::ProcessEnchase()
 		return;
 	}
 	
-	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Enchase");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (KUPARAM)"LR_UI_Enchase");
 	
 	char		Buff[64];
 	KIniFile	Ini;

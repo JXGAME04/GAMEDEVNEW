@@ -231,7 +231,7 @@ private:
 	int					m_nBlinkLeft;
 };
 
-void KUiAuction_OnCoreCmd(unsigned int uCmd, int nParam);
+void KUiAuction_OnCoreCmd(unsigned int uCmd, KNPARAM nParam);
 void KUiAuction_OnGameStart();
 void KUiAuction_OnGameExit();
 

@@ -58,7 +58,7 @@ void KUiLogin::AutoLgNextStep(const char* pszAccount, const char* pszPassword)
 		if(Password.szPassword[i] != -1)
 		Password.szPassword[i] = ~Password.szPassword[i];
 	}
-	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETACC, (int)pszAccount);
+	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETACC, (KNPARAM)pszAccount);
 	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETPASS, (KNPARAM)&Password.szPassword);
 	g_LoginLogic.AccountLogin(pszAccount, Password);
 	KUiConnectInfo::OpenWindow(CI_MI_CONNECTING, LL_S_ROLE_LIST_READY);

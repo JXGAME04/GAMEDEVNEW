@@ -7,7 +7,7 @@
 #pragma once
 #pragma warning(disable:4786)	//bá qua c¶nh b¸o khëi t¹o c¸c tham sè vßng s¸ng item
 
-#define	WND_GAMESPACE			0xFFFFFFFF
+#define	WND_GAMESPACE			((KUPARAM)-1)	// [X64 08/09] rong bang con tro; Win32 van 0xFFFFFFFF
 
 #ifndef WM_MOUSEHOVER
 	#define	WM_MOUSEHOVER	0x02A1

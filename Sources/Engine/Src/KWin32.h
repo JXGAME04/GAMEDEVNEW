@@ -124,6 +124,13 @@ typedef struct _GUID {          // size is 16
 #include <stdint.h>
 typedef uintptr_t KUPARAM;
 typedef intptr_t  KNPARAM;
+// [X64 08/09] ID vat the tren canh (KScenePlaceC::AddObject) thuc chat la con tro KIpotRuntimeObj:
+// client x64 phai rong 8 byte; may chu (_SERVER) khong dung canh, giu unsigned int de bo cuc khong doi.
+#ifdef _SERVER
+typedef unsigned int KSCENEID;
+#else
+typedef KUPARAM      KSCENEID;
+#endif
 
 //---------------------------------------------------------------------------
 #include <stdio.h>

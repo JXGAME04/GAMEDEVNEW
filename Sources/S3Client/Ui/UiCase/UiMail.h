@@ -223,7 +223,7 @@ private:
 };
 
 // GameSpaceChangedNotify.cpp: case GDCNI_MAIL_UI
-void KUiMail_OnCoreCmd(unsigned int uCmd, int nParam);
+void KUiMail_OnCoreCmd(unsigned int uCmd, KNPARAM nParam);
 // [MAIL 03/09 D4] GameSpaceChangedNotify.cpp: GDCNI_GAME_START / GDCNI_EXIT_GAME
 void KUiMail_OnGameStart();
 void KUiMail_OnGameExit();

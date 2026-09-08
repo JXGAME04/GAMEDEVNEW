@@ -169,7 +169,7 @@ class KScenePlaceC
 	//##Documentation
 	//## 添加运行时对象(存在于场景中但是不隶属于场景地图的对象)到场景中。
 	//## 返回添加对象添加到场景中获得的标记。如果返回0值表示添加对象失败。或者对象没有不在场景落在场景当前的处理区域中，添加操作被忽略。
-	unsigned int AddObject(
+	KSCENEID AddObject(
 		//##Documentation
 		//## 要加入的对象类属。
 		unsigned int uGenre, 
@@ -185,7 +185,7 @@ class KScenePlaceC
 	//##Documentation
 	//## 移动存在于场景中但是不隶属于场景地图的对象在场景中的位置。
 	//## 如果对象移动成功则返回对象在场景地图中的标记数值，为非0值；如果失败则返回0；如果对象移出了场景当前处理的区域也返回0。
-	unsigned int MoveObject(
+	KSCENEID MoveObject(
 		//##Documentation
 		//## 要移动的对象类属。
 		unsigned int uGenre, 
@@ -197,7 +197,7 @@ class KScenePlaceC
 		int x, int y, int z, 		 
 		//##Documentation
 		//## 移动前对象在场景中的标记数值。如果对象是新加入，则传入0值。
-		unsigned int& uRtoid,
+		KSCENEID& uRtoid,
 		int eLayerParam = IPOT_RL_OBJECT);
 
 	//##ModelId=3DCAA70603E3
@@ -212,7 +212,7 @@ class KScenePlaceC
 		int nId, 
 		//##Documentation
 		//## 对象被清除前在场景中的标记数值。
-		unsigned int& uRtoid);
+		KSCENEID& uRtoid);
 
 	void Breathe();
 	void SetRepresentAreaSize(int nWidth, int nHeight);

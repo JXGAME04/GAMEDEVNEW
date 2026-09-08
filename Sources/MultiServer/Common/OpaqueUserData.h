@@ -52,12 +52,12 @@ public:
 		InterlockedExchangePointer( &m_pUserData, pData );
 	}
 	
-	unsigned long GetUserData() const
+	ULONG_PTR GetUserData() const	// [X64 08/09] rong bang con tro (Win32 van 4 byte)
 	{
-		return reinterpret_cast<unsigned long>( GetUserPtr() );
+		return reinterpret_cast<ULONG_PTR>( GetUserPtr() );
 	}
 	
-	void SetUserData( unsigned long data )
+	void SetUserData( ULONG_PTR data )
 	{
 		SetUserPtr( reinterpret_cast<void *>( data ) );
 	}

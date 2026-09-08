@@ -1835,7 +1835,7 @@ void KUiPlayerBar::Breathe()
 	// tooltip 'ten / mo ta / tang/tran'. Du lieu tu s2c_syncvhtd (GDI_HS_SP).
 	{
 		KHsSpView sp[MAX_HS_SP];
-		int nSp = g_pCoreShell->GetGameData(GDI_HS_SP, (unsigned int)sp, MAX_HS_SP);
+		int nSp = g_pCoreShell->GetGameData(GDI_HS_SP, (KUPARAM)sp, MAX_HS_SP);
 		if (nSp > MAX_HS_SP) nSp = MAX_HS_SP;
 		int nBase = nCount;
 		if (nBase < 0) nBase = 0;
