@@ -25,6 +25,8 @@ struct FrameToTexture
 	void	*pFrame;					// 保存SprGetFrame返回的指针，供SprReleaseFrame使用
 };
 
+struct KSGImageContent;	// [NAP 08/09 b] KPakFile.h (anh JPEG da giai ma)
+
 class TextureRes
 {
 public:
@@ -48,6 +50,9 @@ public:
 	virtual bool RestoreDeviceObjects(){return true;}
 
 	virtual bool ReleaseAFrameData() = 0;
+
+	// [NAP 08/09 b] luong ve goi sau khi luong nen nap xong (BMP: tao texture tu anh da giai ma); false = hong
+	virtual bool NapNenHoanTat() { return true; }
 
 	int32 GetWidth(){ return (int32)m_nWidth; }
 	int32 GetHeight(){ return (int32)m_nHeight; }
@@ -106,10 +111,15 @@ public:
 //private:
 public:
 	FrameToTexture		m_FrameInfo;		// 帧到铁图映射信息
+	KSGImageContent*	m_pJpgCho;		// [NAP 08/09 b] JPEG da giai ma o luong nen, cho luong ve tao texture (LoadJpegFinish)
 	LPDIRECT3DTEXTURE9	m_pSysMemTexture;	// 系统内存中的对应贴图，用于更新和清除显存中的贴图
 
 private:
 	bool LoadJpegFile(char* szImage);
+public:
+	bool LoadJpegDecode(char* szImage);	// [NAP 08/09 b] luong nen: chi giai ma JPEG vao m_pJpgCho (khong dung device)
+	bool LoadJpegFinish();				// luong ve: tao texture tu m_pJpgCho
+	virtual bool NapNenHoanTat() { return LoadJpegFinish(); }
 	
 };
 

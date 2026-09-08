@@ -3,6 +3,7 @@
 #include "TextureRes.h"
 #include "TextureResMgr.h"
 #include <tlhelp32.h>	// [REP3 08/09 q] dem so client dang mo
+#include <process.h>	// [NAP 08/09 b] _beginthreadex
 
 
 // [REP3 03/09 LOAD] ghi ten anh nap that bai vao jx_rep3.log (toi da 200 dong) - truoc day im lang va cache NULL vinh vien
@@ -27,6 +28,8 @@ TextureResMgr::TextureResMgr()
 	m_uTexCacheMemUsed = 0;
     m_nMaxReleaseCount = 0;
 	m_uBudgetFloorMB = 60;	// [REP3 08/09 q]
+	m_bVeDangDien = false; m_nNapNenGui = 0; m_nNapNenXong = 0; m_nNapNenHong = 0; m_nNapNenBoVe = 0;	// [NAP 08/09 b]
+	m_hNapLuong = NULL; m_hNapCo = NULL; m_lNapDung = 0; m_bNapNenLoi = false;
 	
 	// 根据物理内存大小决定资源缓冲区的大小
 	// [REP3 03/09] ngan sach cache texture theo RAM (2.0: 30/50/80/120 MB); may 4 GB+ cho rong hon vi texture 8888
@@ -334,6 +337,7 @@ void TextureResMgr::FreeImage( const char* pszImage)
 void TextureResMgr::Free()
 {
     KAutoCriticalSection AutoLock(m_ImageProcessLock);
+	NapNenDung();	// [NAP 08/09 b]
 
 	for(int i=0; i<m_TextureResList.size(); i++)
 		SAFE_DELETE(m_TextureResList[i].m_pTextureRes);
@@ -349,7 +353,9 @@ bool TextureResMgr::GetImageParam( const char* pszImage, KImageParam* pImageData
 
 	unsigned int uImage = 0;
 	short nPos = 0;
+	const bool bVeLuu = m_bVeDangDien; m_bVeDangDien = false;	// [NAP 08/09 b] hoi dong bo: nap ngay
 	void* pTemp = GetImage(pszImage, uImage, nPos, 0, nType, false);
+	m_bVeDangDien = bVeLuu;
 	if (!pTemp)
 		return false;
 
@@ -385,7 +391,9 @@ bool TextureResMgr::GetImageFrameParam(const char* pszImage,	int nFrame,
 
 	unsigned int uImage = 0;
 	short nPos = 0;
+	const bool bVeLuu = m_bVeDangDien; m_bVeDangDien = false;	// [NAP 08/09 b] hoi dong bo: nap ngay
 	void* pTemp = GetImage(pszImage, uImage, nPos, 0, nType, false);
+	m_bVeDangDien = bVeLuu;
 	if (!pTemp)
 		return false;
 	bool bRet = false;
@@ -446,6 +454,15 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 		if (m_TextureResList[nImagePosition].m_nType == nType)
 		{
 			m_TextureResList[nImagePosition].m_nLastUsedTime = GetTickCount();
+			if (m_TextureResList[nImagePosition].m_bDangNap)	// [NAP 08/09 b] dang nap o luong nen
+			{
+				if (m_bVeDangDien) { m_nNapNenBoVe++; return NULL; }	// dang ve: bo anh nay khung nay, khung sau co
+				// hoi dong bo (kich thuoc / alpha): nap ngay; ket qua luong nen ve sau se bi bo (NapNenNhan thay muc het 'dang nap')
+				m_TextureResList[nImagePosition].m_bDangNap = false;
+				m_TextureResList[nImagePosition].m_pTextureRes = LoadImage(pszImage, nType);
+				if (m_TextureResList[nImagePosition].m_pTextureRes) { m_nLoadCount++; m_uTexCacheMemUsed += m_TextureResList[nImagePosition].m_pTextureRes->m_nTexMemUsed; }
+				else Rep3LogLoadFail(pszImage, nType);
+			}
 			pObject = m_TextureResList[nImagePosition].m_pTextureRes;
 			if (!pObject)	// [REP3 03/09 LAG] muc NULL = lan truoc nap that bai. CHI thu lai moi 10 giay.
 			{				// Truoc day thu lai MOI KHUNG VE: 200 anh thieu x 62 fps = ~19.000 luot
@@ -454,6 +471,11 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 				if ((tmNow - m_TextureResList[nImagePosition].m_nRetryTime) >= REP3_RELOAD_COOLDOWN)
 				{
 					m_TextureResList[nImagePosition].m_nRetryTime = tmNow;
+					if (g_nRep3NapNen && m_bVeDangDien && NapNenGiao(pszImage, uImage, nType))	// [NAP 08/09 b]
+					{
+						m_TextureResList[nImagePosition].m_bDangNap = true;
+						return NULL;
+					}
 					pObject = LoadImage(pszImage, nType);
 					if (pObject)
 					{
@@ -494,12 +516,17 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 	}
 	else
 	{
+		const bool bNapNen = (g_nRep3NapNen && m_bVeDangDien && NapNenGiao(pszImage, uImage, nType));	// [NAP 08/09 b] dang ve: giao luong nen
+		if (!bNapNen)
+		{
 		pObject = LoadImage(pszImage, nType);
 		m_nLoadCount++;
 		if (!pObject)	// [REP3 03/09 LAG] VAN chen muc NULL: lan sau FindImage thay ngay, khoi quet lai 40 pak.
 			Rep3LogLoadFail(pszImage, nType);	// van nap lai duoc, nhung theo nhip REP3_RELOAD_COOLDOWN
+		}
 
 		ResNode node;
+		node.m_bDangNap = bNapNen;
 		node.m_bCacheable = true;
 		node.m_nLastUsedTime = GetTickCount();
 		node.m_nRetryTime = GetTickCount();	// [REP3 03/09 LAG]
@@ -508,6 +535,8 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 		node.m_pTextureRes = pObject;
 		nImagePosition = - nImagePosition - 1;	// FindImage时已经找好位置了
 		m_TextureResList.insert(m_TextureResList.begin() + nImagePosition, node);
+		if (bNapNen)
+			return NULL;	// [NAP 08/09 b] khung sau NapNenNhan gan ket qua vao muc
 
         
 		if(pObject && m_bDoProfile)
@@ -556,13 +585,13 @@ int32 TextureResMgr::GetImagePixelAlpha( const char* pszImage, int nFrame, int n
 	switch(nType)
 	{
 	case ISI_T_SPR:
-		pTemp = GetImage(pszImage, uImage, nPos, nFrame, ISI_T_SPR);
+		{ const bool bVeLuu = m_bVeDangDien; m_bVeDangDien = false; pTemp = GetImage(pszImage, uImage, nPos, nFrame, ISI_T_SPR); m_bVeDangDien = bVeLuu; }	// [NAP 08/09 b]
 		if (!pTemp)
 			break;
 		nRet = ((TextureResSpr *)pTemp)->GetPixelAlpha(nFrame, nX, nY);	// 在Spr的方法里已经处理了范围
 		break;
 	case ISI_T_BITMAP16:
-		pTemp = GetImage(pszImage, uImage, nPos, nFrame, ISI_T_BITMAP16);
+		{ const bool bVeLuu = m_bVeDangDien; m_bVeDangDien = false; pTemp = GetImage(pszImage, uImage, nPos, nFrame, ISI_T_BITMAP16); m_bVeDangDien = bVeLuu; }	// [NAP 08/09 b]
 		if (!pTemp)
 			break;
 		if (nX < 0 || nY < 0 || nX >= ((TextureResBmp *)pTemp)->GetWidth() || nY >= ((TextureResBmp *)pTemp)->GetHeight())
@@ -698,4 +727,150 @@ bool TextureResMgr::RestoreDeviceObjects()
 		}
 	}
 	return true;
+}
+// ============================ [NAP 08/09 b] nap tai nguyen o luong nen ============================
+// Chay o luong nen: chi doc pak + giai ma, KHONG dung device (ZCache/XPackFile co khoa san; JPEG khoa rieng trong LoadJpegDecode).
+static TextureRes* NapNenTai(const char* pszTen, uint32 nType)
+{
+	if (nType == ISI_T_SPR)
+	{
+		TextureResSpr* p = new TextureResSpr;
+		if (!p->LoadImage((LPSTR)pszTen, nType)) { delete p; return NULL; }
+		return p;
+	}
+	if (nType == ISI_T_BITMAP16)
+	{
+		TextureResBmp* p = new TextureResBmp;
+		p->Release();
+		p->m_nType = nType;
+		if (!p->LoadJpegDecode((LPSTR)pszTen)) { delete p; return NULL; }
+		return p;
+	}
+	return NULL;
+}
+
+unsigned __stdcall TextureResMgr::NapNenLuong(void* p)
+{
+	((TextureResMgr*)p)->NapNenChay();
+	return 0;
+}
+
+void TextureResMgr::NapNenChay()
+{
+	for (;;)
+	{
+		WaitForSingleObject(m_hNapCo, INFINITE);
+		if (m_lNapDung)
+			break;
+		for (;;)
+		{
+			NapViec v;
+			{
+				KAutoCriticalSection k(m_napKhoa);
+				if (m_napViec.empty())
+					break;
+				v = m_napViec.front();
+				m_napViec.erase(m_napViec.begin());
+			}
+			NapKetQua kq;
+			memcpy(kq.szTen, v.szTen, sizeof(kq.szTen)); kq.uId = v.uId; kq.nType = v.nType;
+			kq.pRes = NapNenTai(v.szTen, v.nType);
+			{
+				KAutoCriticalSection k(m_napKhoa);
+				m_napXong.push_back(kq);
+			}
+			if (m_lNapDung)
+				break;
+		}
+	}
+}
+
+bool TextureResMgr::NapNenGiao(const char* pszImage, uint32 uId, uint32 nType)
+{
+	if (m_bNapNenLoi || !pszImage)
+		return false;
+	if (!m_hNapLuong)
+	{
+		m_hNapCo = CreateEventA(NULL, FALSE, FALSE, NULL);
+		m_lNapDung = 0;
+		unsigned uTid = 0;
+		m_hNapLuong = m_hNapCo ? (HANDLE)_beginthreadex(NULL, 0, NapNenLuong, this, 0, &uTid) : NULL;
+		if (!m_hNapLuong)
+		{
+			m_bNapNenLoi = true;
+			if (m_hNapCo) { CloseHandle(m_hNapCo); m_hNapCo = NULL; }
+			Rep3Log("[REP3] nap nen: khong tao duoc luong -> nap ngay tren luong ve");
+			return false;
+		}
+		SetThreadPriority(m_hNapLuong, THREAD_PRIORITY_BELOW_NORMAL);
+		Rep3Log("[REP3] nap nen: luong nen da chay (Rep3NapNen=1)");
+	}
+	NapViec v;
+	strncpy(v.szTen, pszImage, MAX_PATH - 1); v.szTen[MAX_PATH - 1] = 0; v.uId = uId; v.nType = nType;
+	{
+		KAutoCriticalSection k(m_napKhoa);
+		m_napViec.push_back(v);
+	}
+	m_nNapNenGui++;
+	SetEvent(m_hNapCo);
+	return true;
+}
+
+// Luong ve, dau moi khung (RepresentBegin): gan ket qua vao muc; BMP tao texture tai day (can device).
+void TextureResMgr::NapNenNhan()
+{
+	vector<NapKetQua> xong;
+	{
+		KAutoCriticalSection k(m_napKhoa);
+		if (m_napXong.empty())
+			return;
+		xong.swap(m_napXong);
+	}
+	KAutoCriticalSection AutoLock(m_ImageProcessLock);
+	for (size_t i = 0; i < xong.size(); i++)
+	{
+		NapKetQua& kq = xong[i];
+		int nIdx = FindImage(kq.uId, 0);
+		if (nIdx < 0 || m_TextureResList[nIdx].m_nType != kq.nType || !m_TextureResList[nIdx].m_bDangNap)
+		{	// muc da bi bo (CheckBalance/Free) hoac da nap dong bo trong luc cho -> bo ket qua
+			if (kq.pRes) delete kq.pRes;
+			continue;
+		}
+		ResNode& node = m_TextureResList[nIdx];
+		node.m_bDangNap = false;
+		TextureRes* pRes = kq.pRes;
+		if (pRes && !pRes->NapNenHoanTat()) { delete pRes; pRes = NULL; }
+		if (pRes)
+		{
+			node.m_pTextureRes = pRes;
+			node.m_nLastUsedTime = GetTickCount();
+			m_uTexCacheMemUsed += pRes->m_nTexMemUsed;
+			m_nLoadCount++;
+			m_nNapNenXong++;
+		}
+		else
+		{
+			node.m_pTextureRes = NULL;
+			node.m_nRetryTime = GetTickCount();
+			m_nNapNenHong++;
+			Rep3LogLoadFail(kq.szTen, kq.nType);
+		}
+	}
+}
+
+void TextureResMgr::NapNenDung()
+{
+	if (m_hNapLuong)
+	{
+		InterlockedExchange(&m_lNapDung, 1);
+		if (m_hNapCo) SetEvent(m_hNapCo);
+		WaitForSingleObject(m_hNapLuong, 5000);
+		CloseHandle(m_hNapLuong); m_hNapLuong = NULL;
+	}
+	if (m_hNapCo) { CloseHandle(m_hNapCo); m_hNapCo = NULL; }
+	KAutoCriticalSection k(m_napKhoa);
+	for (size_t i = 0; i < m_napXong.size(); i++)
+		if (m_napXong[i].pRes) delete m_napXong[i].pRes;
+	m_napXong.clear(); m_napViec.clear();
+	m_lNapDung = 0;
 }

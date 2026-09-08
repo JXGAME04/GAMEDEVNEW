@@ -232,6 +232,7 @@ TextureResBmp::TextureResBmp()
 {
 	m_FrameInfo.texInfo[0].pTexture = NULL;
 	m_pSysMemTexture = NULL;
+	m_pJpgCho = NULL;	// [NAP 08/09 b]
 	ResetVar();
 }
 
@@ -329,46 +330,59 @@ bool TextureResBmp::LoadImage(char* szImage, uint32 nType)
 	return true;
 }
 
-bool TextureResBmp::LoadJpegFile(char* szImage)
+// [NAP 08/09 b] LoadJpegFile tach lam hai: LoadJpegDecode (luong nen, chi giai ma - get_jpg_image doc pak co khoa) + LoadJpegFinish
+// (luong ve, tao texture). Giai ma JPEG khoa rieng vi bo giai ma co the khong reentrant khi luong ve hoi dong bo cung luc.
+static CRITICAL_SECTION* Rep3JpgKhoa()
+{
+	static CRITICAL_SECTION s_cs; static bool s_bInit = false;
+	if (!s_bInit) { InitializeCriticalSection(&s_cs); s_bInit = true; }
+	return &s_cs;
+}
+bool TextureResBmp::LoadJpegDecode(char* szImage)
+{
+	if (m_pJpgCho) { release_image(m_pJpgCho); m_pJpgCho = NULL; }
+	EnterCriticalSection(Rep3JpgKhoa());
+	if(g_16BitFormat == D3DFMT_R5G6B5)
+		m_pJpgCho = get_jpg_image(szImage, RGB_565);
+	else
+		m_pJpgCho = get_jpg_image(szImage, RGB_555);
+	LeaveCriticalSection(Rep3JpgKhoa());
+	if(!m_pJpgCho)
+		return false;
+	m_nWidth = m_pJpgCho->nWidth;
+	m_nHeight = m_pJpgCho->nHeight;
+	m_FrameInfo.nWidth = m_pJpgCho->nWidth;
+	m_FrameInfo.nHeight = m_pJpgCho->nHeight;
+	m_FrameInfo.nTexNum = 1;
+	m_FrameInfo.texInfo[0].nWidth = FitTextureSize(m_nWidth);
+	m_FrameInfo.texInfo[0].nHeight = FitTextureSize(m_nHeight);
+	if(m_FrameInfo.texInfo[0].nWidth == 0 || m_FrameInfo.texInfo[0].nHeight == 0)
+	{
+		release_image(m_pJpgCho); m_pJpgCho = NULL;
+		return false;
+	}
+	return true;
+}
+
+bool TextureResBmp::LoadJpegFinish()
 {
 	KSGImageContent *pImageContent;
 	int i;
 	BYTE *pDes;
 	BYTE *pSrc;
-	if(g_16BitFormat == D3DFMT_R5G6B5)
-		pImageContent = get_jpg_image(szImage, RGB_565);
-	else
-		pImageContent = get_jpg_image(szImage, RGB_555);
-
-	if(!pImageContent)
-		return false;
-
-	m_nWidth = pImageContent->nWidth;
-	m_nHeight = pImageContent->nHeight;
-
-	m_FrameInfo.nWidth = pImageContent->nWidth;
-	m_FrameInfo.nHeight = pImageContent->nHeight;
-	m_FrameInfo.nTexNum = 1;
-
-	// 获得贴图尺寸，符合2的幂次
-	m_FrameInfo.texInfo[0].nWidth = FitTextureSize(m_nWidth);
-	m_FrameInfo.texInfo[0].nHeight = FitTextureSize(m_nHeight);
-
-	if(m_FrameInfo.texInfo[0].nWidth == 0 || m_FrameInfo.texInfo[0].nHeight == 0)
-		goto error;
-
-	// 创建贴图
+	D3DLOCKED_RECT LockedRect;
+	if (!m_pJpgCho)
+		return m_FrameInfo.texInfo[0].pTexture != NULL;
+	pImageContent = m_pJpgCho;
+	m_pJpgCho = NULL;
 	if (FAILED(Rep3CreateTex(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
 								D3DUSAGE_RENDERTARGET, g_16BitFormat, D3DPOOL_DEFAULT, &m_FrameInfo.texInfo[0].pTexture)))
 		goto error;
 	if (FAILED(Rep3CreateTex(PD3DDEVICE, m_FrameInfo.texInfo[0].nWidth, m_FrameInfo.texInfo[0].nHeight, 1,
 								0, g_16BitFormat, D3DPOOL_SYSTEMMEM, &m_pSysMemTexture)))
 		goto error;
-
-	D3DLOCKED_RECT LockedRect;
 	if (FAILED(m_pSysMemTexture->LockRect(0, &LockedRect, NULL, 0)))
 		goto error;
-
 	pDes = (BYTE*)LockedRect.pBits;
 	pSrc = (BYTE*)pImageContent->Data;
 	for(i=0; i<m_nHeight; i++)
@@ -377,12 +391,9 @@ bool TextureResBmp::LoadJpegFile(char* szImage)
 		pSrc += m_nWidth * 2;
 		pDes += LockedRect.Pitch;
 	}
-
 	release_image(pImageContent);
 	m_pSysMemTexture->UnlockRect(0);
-
 	PD3DDEVICE->UpdateTexture(m_pSysMemTexture, m_FrameInfo.texInfo[0].pTexture);
-
 	m_nTexMemUsed = m_FrameInfo.texInfo[0].nWidth * m_FrameInfo.texInfo[0].nHeight * 2;
 	return true;
 
@@ -390,6 +401,11 @@ error:
 	release_image(pImageContent);
 	Release();
 	return false;
+}
+
+bool TextureResBmp::LoadJpegFile(char* szImage)
+{
+	return LoadJpegDecode(szImage) && LoadJpegFinish();
 }
 
 bool TextureResBmp::LockData(void** pData, int32& nPitch)
@@ -421,6 +437,7 @@ void TextureResBmp::Release()
 {
 	SAFE_RELEASE(m_FrameInfo.texInfo[0].pTexture);
 	SAFE_RELEASE(m_pSysMemTexture);
+	if (m_pJpgCho) { release_image(m_pJpgCho); m_pJpgCho = NULL; }	// [NAP 08/09 b]
 	ResetVar();
 }
 

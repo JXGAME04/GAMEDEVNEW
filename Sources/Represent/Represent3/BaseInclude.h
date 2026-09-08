@@ -57,6 +57,7 @@ extern Rep3NapDo g_napSpr, g_napJpeg, g_napKhung, g_napGiaiMa, g_napGpu;
 extern double g_dRep3NapKhung, g_dRep3NapKhungMax; extern unsigned g_uRep3NapKhung5, g_uRep3NapKhung16;
 void   Rep3NapCong(Rep3NapDo& d, double ms);
 double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
+extern int  g_nRep3NapNen;	// [NAP 08/09 b] [Client] Rep3NapNen: 1 = nap sprite/jpeg o luong nen (mac dinh), 0 = nap ngay tren luong ve nhu cu
 extern int  g_nRep3StatSec;    // [REP3 03/09 RAM] chu ky ghi thong ke RAM/VRAM/cache vao jx_rep3.log (giay), 0 = tat
 extern bool g_bNpotOK;          // card + thiet bi da qua thu NPOT
 extern int  g_nMaxTexW, g_nMaxTexH;

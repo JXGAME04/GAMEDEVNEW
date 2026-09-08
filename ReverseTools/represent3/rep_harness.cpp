@@ -19,6 +19,7 @@
 // REP_OFFSCREEN=1: cua so dat ngoai man hinh, khong chiem foreground, khong chup BitBlt (chi do RAM / SaveScreenToFile)
 // REP_OFFSCREEN=2: cua so tren man hinh, TOPMOST nhung KHONG chiem focus (SWP_NOACTIVATE), co chup BitBlt + SaveScreenToFile
 static int RepMode() { const char* e = getenv("REP_OFFSCREEN"); return e ? atoi(e) : 0; }
+static double g_dFrameMs = (getenv("REP_FPS") && atof(getenv("REP_FPS")) > 0.0) ? 1000.0 / atof(getenv("REP_FPS")) : 0.0;	// [08/09] REP_FPS=63
 #define REP_OFF (RepMode() == 1)
 #define REP_NOACT (RepMode() != 0)
 
@@ -224,6 +225,7 @@ int main(int argc, char** argv)
 	int nCols = (int)tbl.size();
 	int nRowH = 0; for (int k = 0; k < nCols; k++) if (sprs[tbl[k]].h > nRowH) nRowH = sprs[tbl[k]].h;
 	nRowH += 8; if (nRowH > 95) nRowH = 95;
+	for (int nWarm = 0, nWarmMax = (getenv("REP_WARM") ? atoi(getenv("REP_WARM")) : 0); nWarm <= nWarmMax; nWarm++) {	// [NAP 08/09] REP_WARM=N: ve canh N lan truoc khi chup (nap nen)
 	rs->RepresentBegin(1, 0x00000000);
 	for (int s = 0; s < 7; s++)
 	{
@@ -282,6 +284,7 @@ int main(int argc, char** argv)
 	if (nFontId) rs->OutputText(nFontId, "Represent test ABC xyz 0123", 27, 10, 745, 0xffffffff, 0, TEXT_IN_SINGLE_PLANE_COORD, 0xff000000);
 	if (nFontId) { char szVN[] = "KiÕm tra ch÷ ViÖt TCVN3: ThÖ Giíedi Vâ L©m"; rs->OutputVNText(nFontId, szVN, (int)strlen(szVN), 400, 745, 0xffffff80, 0, TEXT_IN_SINGLE_PLANE_COORD, 0xff000000); }
 	rs->RepresentEnd();
+	if (nWarm < nWarmMax) { Pump(); Sleep(50); Pump(); } }
 	Pump(); Sleep(300); Pump();
 
 	std::string outPw = szOut; outPw.insert(outPw.size() - 4, "_pw");
@@ -324,6 +327,15 @@ int main(int argc, char** argv)
 		}
 		rs->RepresentEnd();
 		Pump();
+		if (getenv("REP_DOUBLE")) { rs->RepresentBegin(1, 0x00000000); rs->RepresentEnd(); Pump(); }	// [08/09] 2 Present moi khung nhu game?
+		if (g_dFrameMs > 0.0)
+		{	// [08/09] nhip khung nhu game (REP_FPS): ngu roi quay cho du thoi gian khung
+			LARGE_INTEGER tn; QueryPerformanceCounter(&tn);
+			double dNext = (double)t0.QuadPart + (double)(fr + 1) * g_dFrameMs * (double)f.QuadPart / 1000.0;
+			double dLeft = (dNext - (double)tn.QuadPart) * 1000.0 / (double)f.QuadPart;
+			if (dLeft > 2.0) Sleep((DWORD)(dLeft - 1.0));
+			do { QueryPerformanceCounter(&tn); } while ((double)tn.QuadPart < dNext);
+		}
 	}
 	QueryPerformanceCounter(&t1);
 	PrintMem("sau PERF (moi sprite, moi khung)");

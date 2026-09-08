@@ -23,6 +23,8 @@ class TextureRes;
 // 资源链表的节点
 struct ResNode
 {
+	ResNode() : m_bDangNap(false) {}	// [NAP 08/09 b]
+	bool		m_bDangNap;				// [NAP 08/09 b] dang nap o luong nen (m_pTextureRes NULL tam thoi)
 	uint32		m_nRetryTime;				// [REP3 03/09 LAG] moc thu nap lai khi nap that bai
 	uint32		m_nLastUsedTime;			// 上一次渲染的时间标签
 	bool		m_bCacheable;				// 是否是无硬盘对应文件的资源
@@ -51,6 +53,20 @@ public:
     void PressureByVram(unsigned __int64 uVramFreeMB);	// [REP3 08/09 q] luc chay: VRAM con thap -> ha ngan sach (che do tu dong)
     unsigned __int64 m_uBudgetFloorMB;	// [REP3 08/09 q] san ngan sach tu dong
     void GetStat(uint32& uNodes, uint32& uTexMB, uint32& uRawMB, uint32& uDrawMB, uint32& uBudgetMB);
+	// [NAP 08/09 b] NAP O LUONG NEN: GetImage gap anh chua nap khi dang ve -> giao viec, tra NULL (anh do bo ve khung nay, hien o khung sau);
+	// luong nen doc pak + giai ma (SPR: LoadSprFile; JPEG: LoadJpegDecode), khong dung device; luong ve nhan ket qua o RepresentBegin.
+	struct NapViec   { char szTen[MAX_PATH]; uint32 uId; uint32 nType; };
+	struct NapKetQua { char szTen[MAX_PATH]; uint32 uId; uint32 nType; TextureRes* pRes; };
+	void NapNenNhan();			// luong ve, dau moi khung: nhan ket qua luong nen
+	void NapNenDung();			// dung luong nen, bo viec/ket qua con lai (Free)
+	bool m_bVeDangDien;			// true giua RepresentBegin/End: cho phep giao viec cho luong nen
+	unsigned m_nNapNenGui, m_nNapNenXong, m_nNapNenHong, m_nNapNenBoVe;	// thong ke ky ([REP3-NAP])
+private:
+	bool NapNenGiao(const char* pszImage, uint32 uId, uint32 nType);	// false = khong tao duoc luong -> nap ngay
+	static unsigned __stdcall NapNenLuong(void* p);
+	void NapNenChay();
+	vector<NapViec> m_napViec; vector<NapKetQua> m_napXong; KCriticalSection m_napKhoa; HANDLE m_hNapLuong; HANDLE m_hNapCo; volatile long m_lNapDung; bool m_bNapNenLoi;
+public:
 
 	//## 设置图形动态加载平衡参数。
     void SetBalanceParam(
