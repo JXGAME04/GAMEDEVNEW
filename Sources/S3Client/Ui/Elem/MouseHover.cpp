@@ -73,7 +73,7 @@ void SetMouseHoverObjectDesc(void* pWnd, int nObj, unsigned int uGenre,
 		else if (g_UiBase.GetStatus() != UIS_S_IDLE)
 			uIndex = GDI_GAME_OBJ_DESC_INCLUDE_TRADEINFO;
 
-		g_pCoreShell->GetGameData(uIndex, (unsigned int)&Obj, (int)&Desc);
+		g_pCoreShell->GetGameData(uIndex, (KUPARAM)&Obj, (KNPARAM)&Desc);
 
 		g_MouseOver.SetMouseHoverInfo(pWnd, nObj, x, y, true, false);
 		if (Desc.szTitle[0])
@@ -96,7 +96,7 @@ void SetMouseHoverObjectDesc(void* pWnd, int nObj, unsigned int uGenre,
 			compareIdx = g_pCoreShell->GetGameData(GDI_ITEM_EQUIP_SAME_GERNE, NULL, Obj.Obj.uId);
 			if (compareIdx != -1) {
 				ObjCompare.Obj.uId = compareIdx;
-				g_pCoreShell->GetGameData(uIndex, (unsigned int)&ObjCompare, (int)&DescCompare);
+				g_pCoreShell->GetGameData(uIndex, (KUPARAM)&ObjCompare, (KNPARAM)&DescCompare);
 				g_MouseOverCompare.SetMouseHoverInfo(pWnd, nObj, x, y, true, false);
 				if (DescCompare.szTitle[0])
 				{

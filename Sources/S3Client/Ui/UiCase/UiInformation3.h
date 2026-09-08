@@ -15,7 +15,7 @@ private:
 	KUiInformation3() {}
 	~KUiInformation3() {}
 	void			Initialize();						
-	int				WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int				WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	virtual void	Breathe();
 	void			ShowUi(const char* pszInitString, BYTE nImage);
 	static KUiInformation3*		m_pSelf;	

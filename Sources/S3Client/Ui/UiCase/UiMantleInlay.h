@@ -29,7 +29,7 @@ struct KUiObjAtRegion;
 class KUiMantleInlayPad : public KWndImage
 {
 protected:
-	int WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+	int WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	{
 		if (m_pParentWnd)
 			return m_pParentWnd->WndProc(uMsg, uParam, nParam);
@@ -63,7 +63,7 @@ private:
 	KUiMantleInlay();
 	~KUiMantleInlay() {}
 	void	Initialize();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnCancel();
 	void	OnOk();
 private:

@@ -208,13 +208,13 @@ void KUiTradeConfirm::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口消息函数
 //--------------------------------------------------------------------------
-int KUiTradeConfirm::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTradeConfirm::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_OkBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_OkBtn)
 		{
 			if (m_BuyImg.IsVisible())
 				OnBuy();
@@ -225,11 +225,11 @@ int KUiTradeConfirm::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			else
 				OnBreak();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BreakAll)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BreakAll)
 			m_bBreakAll = !m_bBreakAll;
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 			OnCancel();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Increase && (m_BuyImg.IsVisible() || m_BreakImg.IsVisible()) && !KUiPlayerShop::GetIfVisible())
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Increase && (m_BuyImg.IsVisible() || m_BreakImg.IsVisible()) && !KUiPlayerShop::GetIfVisible())
 		{
 			m_BuyNumber++;
 			if (m_BuyNumber > 60)
@@ -242,7 +242,7 @@ int KUiTradeConfirm::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				m_uNormalPriceColor : m_uNotEnoughMoneyPriceColor);
 			m_Number.SetIntText(m_BuyNumber);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Decrease && (m_BuyImg.IsVisible() || m_BreakImg.IsVisible()) && !KUiPlayerShop::GetIfVisible())
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Decrease && (m_BuyImg.IsVisible() || m_BreakImg.IsVisible()) && !KUiPlayerShop::GetIfVisible())
 		{
 			m_BuyNumber--;
 			if (m_BuyNumber > 60)
@@ -313,7 +313,7 @@ void KUiTradeConfirm::OnBuy()
 		m_Mark = m_Number.GetIntNumber() * 3;
 		if (g_pCoreShell && nBuyNumber)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (unsigned int)(&m_ItemInfo), nBuyNumber);
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (KUPARAM)(&m_ItemInfo), nBuyNumber);
 		}
 		CloseWindow(false);
 	}
@@ -321,7 +321,7 @@ void KUiTradeConfirm::OnBuy()
 	{
 		if (g_pCoreShell)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_PLAYER_BUY, (unsigned int)(&m_ItemInfo), m_uId);
+			g_pCoreShell->OperationRequest(GOI_TRADE_PLAYER_BUY, (KUPARAM)(&m_ItemInfo), m_uId);
 		}
 		CloseWindow(false);
 	}
@@ -340,7 +340,7 @@ void KUiTradeConfirm::Breathe()
 		{
 			if (g_pCoreShell && (m_Mark % 3 == 0))
 			{
-				g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (unsigned int)(&m_ItemInfo), 0);
+				g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (KUPARAM)(&m_ItemInfo), 0);
 			}
 			m_Mark--;
 			if (m_Mark == 0)
@@ -362,7 +362,7 @@ void KUiTradeConfirm::OnSale()
 {
 	if (g_pCoreShell)
 	{
-		g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (unsigned int)(&m_ItemInfo), 0);
+		g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (KUPARAM)(&m_ItemInfo), 0);
 	}
 	CloseWindow(false);
 }
@@ -374,7 +374,7 @@ void KUiTradeConfirm::OnRepair()
 {
 	if (g_pCoreShell)
 	{
-		g_pCoreShell->OperationRequest(GOI_TRADE_NPC_REPAIR, (unsigned int)(&m_ItemInfo), 0);
+		g_pCoreShell->OperationRequest(GOI_TRADE_NPC_REPAIR, (KUPARAM)(&m_ItemInfo), 0);
 	}
 	CloseWindow(false);
 }
@@ -417,7 +417,7 @@ void KUiTradeConfirm::OnBreak()
 		breakOption.num = m_BuyNumber;
 		breakOption.isbreakall = m_bBreakAll;
 		//
-		g_pCoreShell->OperationRequest(GOI_NPC_ITEM_BREAK, (unsigned int)(&m_ItemInfo), (unsigned int)(&breakOption));
+		g_pCoreShell->OperationRequest(GOI_NPC_ITEM_BREAK, (KUPARAM)(&m_ItemInfo), (KUPARAM)(&breakOption));
 	}
 	CloseWindow(false);
 }

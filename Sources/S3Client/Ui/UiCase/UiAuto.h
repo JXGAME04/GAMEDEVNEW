@@ -21,7 +21,7 @@ public:
 	void					LoadProSettting();
 
 private:
-	int						WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int						WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 public:
 
 private:
@@ -43,7 +43,7 @@ public:
 	void					SavePickSetting();
 
 private:
-	int						WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int						WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void					OnPick();
 	void					OnGiveItem();//gi÷ trang søc
 	//void					OnPickInFightState();//nhÆt trong thµnh
@@ -113,7 +113,7 @@ public:
 	void				SaveFightSetting();
 
 private:
-	int					WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int					WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	BOOL				FilterSameMps(int nSubW, int nMpsX, int nMpsY);
 	BOOL				InsertMoveMpsList(int nSubWorldId, int nMpsX, int nMpsY);
 	void				SetMoveMpsList();
@@ -183,7 +183,7 @@ public:
 	void				LoadRecoverSetting();
 	void				SaveRecoverSetting();
 private:
-	int					WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int					WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void				OnBuff();
 	void 				OnDurability();
 	void				OnCheckInput();
@@ -279,7 +279,7 @@ public:
 private:
 	~KUiAuto() {}
 	void	Initialize();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:
 	static KUiAuto* m_pSelf;
 private:

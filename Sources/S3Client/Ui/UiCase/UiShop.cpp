@@ -126,7 +126,7 @@ void KUiShop::CancelTrade()
 	CloseWindow();
 }
 
-int	KUiShop::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiShop::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
@@ -137,7 +137,7 @@ int	KUiShop::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnBuyItem((KUiDraggedObject*)uParam, g_UiBase.GetStatus() == UIS_S_TRADE_BUY);
 		break;
 	case WND_N_RIGHT_CLICK_ITEM:
-		if (nParam == (int)(KWndWindow*)&m_ItemsBox)
+		if (nParam == (KNPARAM)(KWndWindow*)&m_ItemsBox)
 			OnBuyItem((KUiDraggedObject*)uParam, true);
 		break;
 	case WM_KEYDOWN:
@@ -175,7 +175,7 @@ void KUiShop::FkAutoOnBuyItem(unsigned int szItemName)
 		Obj.Obj.uGenre = CGOG_NPCSELLITEM;
 		Obj.Obj.uId = nIdx;
 		Obj.eContainer = UOC_NPC_SHOP;
-		g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (unsigned int)(&Obj), 1);
+		g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (KUPARAM)(&Obj), 1);
 		g_UiBase.SetStatus(UIS_S_IDLE);
 	}
 }
@@ -199,7 +199,7 @@ void KUiShop::OnBuyItem(KUiDraggedObject* pItem, bool bDoImmed)
 		{	
 			KUiItemBuySelInfo	Price = { 0 };
 			if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE,
-				(unsigned int)(&Obj), (int)(&Price)) && eStatus != UIS_S_TRADE_SALE && eStatus != UIS_S_TRADE_REPAIR)
+				(KUPARAM)(&Obj), (KNPARAM)(&Price)) && eStatus != UIS_S_TRADE_SALE && eStatus != UIS_S_TRADE_REPAIR)
 			{
 				KUiTradeConfirm::OpenWindow(&Obj, &Price, TCA_BUY);
 			}			
@@ -208,14 +208,14 @@ void KUiShop::OnBuyItem(KUiDraggedObject* pItem, bool bDoImmed)
 		{
 			if (eStatus == UIS_S_TRADE_BUY)
 			{
-				g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (unsigned int)(&Obj), 1);	
+				g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (KUPARAM)(&Obj), 1);	
 				return;
 			}		
 			else
 			{
 				if ((GetKeyState(VK_SHIFT) & 0x8000) != 0)
 				{
-					g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (unsigned int)(&Obj), 1);
+					g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (KUPARAM)(&Obj), 1);
 					return;
 				}
 				else
@@ -335,7 +335,7 @@ void KUiShop::UpdateData()
 
 	if (m_pObjsList = (KUiObjAtContRegion*)malloc(sizeof(KUiObjAtContRegion) * m_nObjCount))
 	{
-		g_pCoreShell->GetGameData(GDI_TRADE_NPC_ITEM, (unsigned int)m_pObjsList, m_nObjCount);
+		g_pCoreShell->GetGameData(GDI_TRADE_NPC_ITEM, (KUPARAM)m_pObjsList, m_nObjCount);
 		m_nPageCount = m_pObjsList[m_nObjCount - 1].nContainer + 1;
 		SetPage(0);
 		m_PreBtn.Enable(m_nPageCount > 1);

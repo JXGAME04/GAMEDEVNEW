@@ -41,7 +41,7 @@ private:
 	void	Initialize();								//	
 	void	SwitchExpand(BOOL bShow);
 	void	UseRemainPoint(UI_PLAYER_ATTRIBUTE type, int numpoint);	//升级某项属性 //void	UseRemainPoint(UI_PLAYER_ATTRIBUTE type);	//升级某项属性
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);	//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);	//窗口函数
 	void	LoadScheme(class KIniFile* pIni);			//载入界面方案
 	void	OnEquiptChanged(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);//响应界面操作引起装备的改变
 	void	OnLockItem(ITEM_PICKDROP_PLACE* pItem, int lock);

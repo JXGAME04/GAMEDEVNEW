@@ -23,7 +23,7 @@ public:
 	static void			LoadScheme(const char* pScheme);	//载入界面方案
 	static void			CancelTrade();
 	void				UpdateData();	
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 private:
 	KUiShopGold();
 	~KUiShopGold() {}

@@ -17,7 +17,7 @@
 //--------------------------------------------------------------------------
 //		当点击页面切换按钮或在页面空白区时需要将消息转发给PageSet处理
 //--------------------------------------------------------------------------
-int KWndPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndPage::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if ((uMsg == WM_LBUTTONDOWN || uMsg == WM_MOUSEMOVE ||
 		uMsg == WM_LBUTTONUP || uMsg == WND_N_BUTTON_CLICK) && m_pParentWnd)
@@ -56,7 +56,7 @@ KWndPageSet::~KWndPageSet()
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KWndPageSet::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndPageSet::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg != WND_N_BUTTON_CLICK)
 		return KWndImage::WndProc(uMsg, uParam, nParam);

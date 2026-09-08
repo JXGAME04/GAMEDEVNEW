@@ -33,7 +33,7 @@ private:
 
 	static KUiHelper* m_pSelf;
 	static int ms_nImgFrame;
-	int					WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int					WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 	void Initialize();
 	void	Breathe() {NextFrame();}

@@ -162,21 +162,21 @@ void KUiSelPlayerNearby::LoadScheme(KIniFile* pIni)
 	}
 }
 
-int KUiSelPlayerNearby::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSelPlayerNearby::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 			CloseWindow(false);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_RefreshBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_RefreshBtn)
 			UpdateData();
 		else
 		{
 			for (int i = 0; i < m_nActionCount; i++)
 			{
-				if (uParam == (unsigned int)(KWndWindow*)&m_ActionBtns[i])
+				if (uParam == (KUPARAM)(KWndWindow*)&m_ActionBtns[i])
 				{
 					OnClickXButton(i);
 					break;
@@ -185,11 +185,11 @@ int KUiSelPlayerNearby::WndProc(unsigned int uMsg, unsigned int uParam, int nPar
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_ListScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_ListScroll)
 			m_PlayerList.SetTopItemIndex(nParam);
 		break;
 	case WND_N_LIST_ITEM_SEL:
-		if (uParam == (unsigned int)(KWndWindow*)&m_PlayerList)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_PlayerList)
 		{
 			char szCurText[256];
 			szCurText[0] = 0;
@@ -260,7 +260,7 @@ void KUiSelPlayerNearby::UpdateData()
 		if (m_pDataList)
 		{
 			KUiPlayerItem Item;
-			m_nPlayerCount = g_pCoreShell->GetGameData(GDI_NEARBY_PLAYER_LIST, (unsigned int)m_pDataList, nCount);
+			m_nPlayerCount = g_pCoreShell->GetGameData(GDI_NEARBY_PLAYER_LIST, (KUPARAM)m_pDataList, nCount);
 			_ASSERT(m_nPlayerCount == nCount);
 			m_PlayerList.SetContent((unsigned char*)m_pDataList, m_nPlayerCount,
 				sizeof(KUiPlayerItem), (char*)(&Item.Name) - (char*)&Item);

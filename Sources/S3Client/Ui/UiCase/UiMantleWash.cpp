@@ -139,7 +139,7 @@ void KUiMantleWashPageShift::VeHaiCot(const char szTruoc[PF_WASH_LINE][128], con
 	}
 }
 
-int KUiMantleWashPageShift::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMantleWashPageShift::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_ITEM_PICKDROP)
 	{
@@ -237,7 +237,7 @@ void KUiMantleWashPageActivate::VeDongAn(const char szDong[PF_WASH_LINE][128], i
 	}
 }
 
-int KUiMantleWashPageActivate::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMantleWashPageActivate::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_ITEM_PICKDROP)
 	{
@@ -364,32 +364,32 @@ void KUiMantleWash::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiMantleWash::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMantleWash::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Close)
 		{
 			CloseWindow(true);
 			return 0;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_PageShift.m_BtnWash)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_PageShift.m_BtnWash)
 		{
 			OnWash();
 			return 0;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_PageShift.m_BtnKeep)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_PageShift.m_BtnKeep)
 		{
 			OnKeepOld();
 			return 0;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_PageShift.m_BtnApply)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_PageShift.m_BtnApply)
 		{
 			OnApplyNew();
 			return 0;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_PageActivate.m_BtnActivate)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_PageActivate.m_BtnActivate)
 			return 0;	// JX1 khong co kich hoat co thoi han
 		// con lai: 2 nut tab -> KWndPageSet tu doi trang
 		return KWndPageSet::WndProc(uMsg, uParam, nParam);
@@ -426,7 +426,7 @@ void KUiMantleWash::OnWash()
 	}
 	m_bDaTay = true;
 	if (g_pCoreShell)
-		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_szFunc);
+		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (KUPARAM)m_szFunc);
 }
 
 void KUiMantleWash::OnKeepOld()
@@ -485,8 +485,8 @@ void KUiMantleWash::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_
 	}
 	if (g_pCoreShell)
 		g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-			pPickPos ? (unsigned int)&Pick : 0,
-			pDropPos ? (int)&Drop : 0);
+			pPickPos ? (KUPARAM)&Pick : 0,
+			pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 void KUiMantleWash::UpdateData()
@@ -504,7 +504,7 @@ void KUiMantleWash::UpdateData()
 	KUiObjAtRegion* pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount);
 	if (!pObjs)
 		return;
-	g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, (unsigned int)pObjs, nCount);
+	g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, (KUPARAM)pObjs, nCount);
 	for (int i = 0; i < nCount; i++)
 		UpdateItem(&pObjs[i], 1);
 	free(pObjs);
@@ -546,7 +546,7 @@ int KUiMantleWash::LayDongAn(KWndObjectBox& Slot, char szDong[PF_WASH_LINE][128]
 		return 0;
 	char szBuf[512];
 	szBuf[0] = 0;
-	int nCo = g_pCoreShell->GetGameData(GDI_MANTLE_HIDDEN_DESC, (unsigned int)Obj.uId, (int)szBuf);
+	int nCo = g_pCoreShell->GetGameData(GDI_MANTLE_HIDDEN_DESC, (unsigned int)Obj.uId, (KNPARAM)szBuf);
 	if (nCo <= 0)
 		return 0;
 	int nLine = 0;

@@ -1707,7 +1707,7 @@ int Mouse_Action(Lua_State * L)
 		{
 			KUiPlayerImmedItemSkill immedItemSkillInfo;
 			memset(&immedItemSkillInfo, 0, sizeof(KUiPlayerImmedItemSkill));
-			g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (int)&immedItemSkillInfo, 0);
+			g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (KNPARAM)&immedItemSkillInfo, 0);
 
 			if (!g_pCoreShell->LockSomeoneUseSkill(SelectPlayer.nIndex, immedItemSkillInfo.IMmediaSkill[0].uId))	
 				g_pCoreShell->LockSomeoneAction(0);	
@@ -1747,7 +1747,7 @@ int Mouse_Force0(Lua_State * L)
 
 	KUiPlayerImmedItemSkill immedItemSkillInfo;
 	memset(&immedItemSkillInfo, 0, sizeof(KUiPlayerImmedItemSkill));
-	g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (int)&immedItemSkillInfo, 0);
+	g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (KNPARAM)&immedItemSkillInfo, 0);
 
 	g_pCoreShell->UseSkill(KShortcutKeyCentre::ms_MouseX, KShortcutKeyCentre::ms_MouseY, immedItemSkillInfo.IMmediaSkill[0].uId);
 
@@ -1767,7 +1767,7 @@ int Mouse_Force1(Lua_State * L)
 
 	KUiPlayerImmedItemSkill immedItemSkillInfo;
 	memset(&immedItemSkillInfo, 0, sizeof(KUiPlayerImmedItemSkill));
-	g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (int)&immedItemSkillInfo, 0);
+	g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (KNPARAM)&immedItemSkillInfo, 0);
 
 	g_pCoreShell->UseSkill(KShortcutKeyCentre::ms_MouseX, KShortcutKeyCentre::ms_MouseY, immedItemSkillInfo.IMmediaSkill[1].uId);
 

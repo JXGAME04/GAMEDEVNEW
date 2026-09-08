@@ -84,7 +84,7 @@ public:
 	KWndButton				m_DownButton;
 	
 	KWndMessageListBox		m_SysRoom;
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void ScrollBottom();
 };
 
@@ -148,7 +148,7 @@ private:
 		ReleaseActivateChannelAll();
 	}
 	void	Initialize();							
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	int		ChanageHeight(int nOffsetY, bool bAtTop);
 	void	LoadScheme(KIniFile* pIni);
 	int		PtInWindow(int x, int y);			

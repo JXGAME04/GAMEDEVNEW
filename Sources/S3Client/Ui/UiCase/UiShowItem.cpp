@@ -94,7 +94,7 @@ void KUiShowItem::Initialize()
 }
 
 
-int KUiShowItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiShowItem::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nResult = false;
 	switch(uMsg)

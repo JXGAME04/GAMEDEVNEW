@@ -219,7 +219,7 @@ void KUiInit::Initialize()
 	Wnd_AddWindow(this, WL_TOPMOST);
 }
 
-int KUiInit::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiInit::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)

@@ -29,7 +29,7 @@ private:
 public:
 	KWndScrollBar();
 	virtual int		Init(KIniFile* pIniFile, const char* pSection);	//初始化
-	virtual int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	virtual void	PaintWindow();							//窗体绘制
 	void			SetSize(int nWidth, int nHeight);		//设置窗口大小
 

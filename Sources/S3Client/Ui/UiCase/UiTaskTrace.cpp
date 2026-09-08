@@ -186,13 +186,13 @@ void KUiTaskTrace::UpdateView()
 }
 
 
-int KUiTaskTrace::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTaskTrace::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
 	case WND_N_LIST_ITEM_SEL:
 	case WND_N_LIST_ITEM_D_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_List)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_List)
 		{
 			// nhu ClickTraceItemFunc cua ban goc: mo bang Chi nam dung nhiem vu
 			KUiTaskGuide::OpenWindow();

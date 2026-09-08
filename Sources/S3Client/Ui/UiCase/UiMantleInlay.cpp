@@ -274,19 +274,19 @@ void KUiMantleInlay::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	Su kien
 //--------------------------------------------------------------------------
-int KUiMantleInlay::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMantleInlay::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_OkBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_OkBtn)
 			OnOk();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 			CloseWindow(true);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Close)
 			CloseWindow(true);		// nut X cua lop ngoai
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TabStone)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TabStone)
 			m_TabStone.CheckButton(TRUE);	// [VA 31/08b] the duy nhat -> giu CHECKED
 		break;
 	case WM_KEYDOWN:
@@ -305,7 +305,7 @@ int KUiMantleInlay::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnItemPickDrop((ITEM_PICKDROP_PLACE*)uParam, (ITEM_PICKDROP_PLACE*)nParam);
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_GuideScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_GuideScroll)
 			m_Guide.SetFirstShowLine(nParam);
 		break;
 	default:
@@ -388,8 +388,8 @@ void KUiMantleInlay::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP
 	}
 	if (g_pCoreShell)
 		g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-			pPickPos ? (unsigned int)&Pick : 0,
-			pDropPos ? (int)&Drop : 0);
+			pPickPos ? (KUPARAM)&Pick : 0,
+			pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 //--------------------------------------------------------------------------
@@ -412,7 +412,7 @@ void KUiMantleInlay::UpdateData()
 	KUiObjAtRegion* pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount);
 	if (!pObjs)
 		return;
-	g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, (unsigned int)pObjs, nCount);
+	g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, (KUPARAM)pObjs, nCount);
 	for (i = 0; i < nCount; i++)
 		UpdateItem(&pObjs[i], 1);
 	free(pObjs);

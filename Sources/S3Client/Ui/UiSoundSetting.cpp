@@ -62,7 +62,7 @@ void UiSoundPlayItem(int idx)
 	ChatItem CItem;
 	int soundIdx = UI_SI_PICKPUT_ITEM;
 	CItem.m_btDetail = 99; //flag for call GDI_GET_ITEM_PARAM from UiSoundPlayItem
-	if (g_pCoreShell->GetGameData(GDI_GET_ITEM_PARAM, (unsigned int)&CItem, idx)) {
+	if (g_pCoreShell->GetGameData(GDI_GET_ITEM_PARAM, (KUPARAM)&CItem, idx)) {
 		if (CItem.m_dwRandomSeed) {	
 			if (CItem.m_btGenre == 0) //equip
 				soundIdx = CItem.m_btDetail + 6;

@@ -37,7 +37,7 @@ KUiChatItem* KUiChatItem::OpenWindow(int nIdx)
 	if (m_pSelf)
 	{
 		char szImage[80];
-		if(g_pCoreShell->GetGameData(GDI_CHAT_ITEM_IMAGE, (unsigned int)&szImage, nIdx))
+		if(g_pCoreShell->GetGameData(GDI_CHAT_ITEM_IMAGE, (KUPARAM)&szImage, nIdx))
 		{
 			m_pSelf->m_ItemImage.SetImage(ISI_T_SPR, szImage, true);
 		}
@@ -86,7 +86,7 @@ void KUiChatItem::SetInfomation(int nIdx)
 	szTitle[0] = 0;
 	int	nLenTitle = 0;
 	m_nMaxLineLen = 0;
-	g_pCoreShell->GetGameData(GDI_CHAT_ITEM_DESC, (unsigned int)nIdx, (int)&szTitle);
+	g_pCoreShell->GetGameData(GDI_CHAT_ITEM_DESC, (unsigned int)nIdx, (KNPARAM)&szTitle);
 	nLenTitle = TEncodeText(szTitle, strlen(szTitle));
 	if (nLenTitle > 0 && szTitle[0] && nLenTitle <= (int)sizeof(m_ObjTitle))
 	{
@@ -225,13 +225,13 @@ void KUiChatItem::LoadScheme(const char* pScheme)
 	m_uTitleBgColor = ((GetColor("0,30,19") & 0xffffff) | 0x0a000000);
 }
 
-int KUiChatItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiChatItem::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 		CloseWindow();
 		break;
 	default:

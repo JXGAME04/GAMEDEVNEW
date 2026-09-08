@@ -155,7 +155,7 @@ void KUiItem::UpdateData()
 
 	if (pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount)) //cÊp ph¸t vïng nhí kh«ng g¸n gi¸ trÞ
 	{
-		g_pCoreShell->GetGameData(GDI_ITEM_TAKEN_WITH, (unsigned int)pObjs, nCount);
+		g_pCoreShell->GetGameData(GDI_ITEM_TAKEN_WITH, (KUPARAM)pObjs, nCount);
 		for (int i = 0; i < nCount; i++)
 		{
 			KUiDraggedObject no;
@@ -238,7 +238,7 @@ void KUiItem::OnClickItem(KUiDraggedObject* pItem, bool bDoImmed)
 	if (bDoImmed == false)
 	{
 		KUiItemBuySelInfo	Price = { 0 };
-		if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE, (unsigned int)(&Obj), (int)(&Price)))
+		if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE, (KUPARAM)(&Obj), (KNPARAM)(&Price)))
 		{
 			KUiTradeConfirm::OpenWindow(&Obj, &Price, TCA_SALE); //hiÓn thÞ hép tho¹i x¸c nhËn tr­íc khi b¸n
 		}
@@ -248,11 +248,11 @@ void KUiItem::OnClickItem(KUiDraggedObject* pItem, bool bDoImmed)
 		UISYS_STATUS eStatus = g_UiBase.GetStatus();
 		if ((GetKeyState(VK_SHIFT) & 0x8000) != 0 && eStatus == UIS_S_TRADE_NPC)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (unsigned int)(&Obj), 0); //b¸n nhanh lu«n
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (KUPARAM)(&Obj), 0); //b¸n nhanh lu«n
 		}
 		else if (eStatus == UIS_S_TRADE_SALE)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (unsigned int)(&Obj), 0); //b¸n nhanh lu«n
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (KUPARAM)(&Obj), 0); //b¸n nhanh lu«n
 		}
 		else if (g_UiBase.IsOperationEnable(UIS_O_USE_ITEM))
 		{
@@ -262,7 +262,7 @@ void KUiItem::OnClickItem(KUiDraggedObject* pItem, bool bDoImmed)
 				uParam[0] = Obj.Obj.uId;
 				uParam[1] = pos_equiproom;
 				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
-								(unsigned int)&uParam, pos_exbox1room);
+								(KUPARAM)&uParam, pos_exbox1room);
 			}
 			else if (KUiExBox2::GetIfVisible())
 			{
@@ -270,7 +270,7 @@ void KUiItem::OnClickItem(KUiDraggedObject* pItem, bool bDoImmed)
 				uParam[0] = Obj.Obj.uId;
 				uParam[1] = pos_equiproom;
 				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
-								(unsigned int)&uParam, pos_exbox2room);
+								(KUPARAM)&uParam, pos_exbox2room);
 			}
 			else if (KUiExBox3::GetIfVisible())
 			{
@@ -278,7 +278,7 @@ void KUiItem::OnClickItem(KUiDraggedObject* pItem, bool bDoImmed)
 				uParam[0] = Obj.Obj.uId;
 				uParam[1] = pos_equiproom;
 				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
-								(unsigned int)&uParam, pos_exbox3room);
+								(KUPARAM)&uParam, pos_exbox3room);
 			}
 			else if (KUiStoreBox::GetIfVisible())
 			{
@@ -286,7 +286,7 @@ void KUiItem::OnClickItem(KUiDraggedObject* pItem, bool bDoImmed)
 				uParam[0] = Obj.Obj.uId;
 				uParam[1] = pos_equiproom;
 				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
-								(unsigned int)&uParam, pos_repositoryroom);
+								(KUPARAM)&uParam, pos_repositoryroom);
 			}
 			else
 			{
@@ -295,7 +295,7 @@ void KUiItem::OnClickItem(KUiDraggedObject* pItem, bool bDoImmed)
 				else
 				Obj.Region.Width = pos_equipback;
 				g_pCoreShell->OperationRequest(GOI_USE_ITEM,
-					(unsigned int)(&Obj), UOC_ITEM_TAKE_WITH);
+					(KUPARAM)(&Obj), UOC_ITEM_TAKE_WITH);
 			}
 
 				//if (Obj.Obj.uId)
@@ -328,7 +328,7 @@ void KUiItem::OnLockItem(KUiDraggedObject* pItem, int lock)
 	Obj.Region.Width  = pItem->DataW;
 	Obj.Region.Height = pItem->DataH;
 	Obj.eContainer = UOC_ITEM_TAKE_WITH;
-	g_pCoreShell->OperationRequest(GOI_LOCK_PLAYER_ITEM, (unsigned int)(&Obj), lock);
+	g_pCoreShell->OperationRequest(GOI_LOCK_PLAYER_ITEM, (KUPARAM)(&Obj), lock);
 }
 
 void KUiItem::OnRepairItem(KUiDraggedObject* pItem)
@@ -346,7 +346,7 @@ void KUiItem::OnRepairItem(KUiDraggedObject* pItem)
 
 	KUiItemBuySelInfo	Price = { 0 };
 	if (g_pCoreShell->GetGameData(GDI_REPAIR_ITEM_PRICE,
-		(unsigned int)(&Obj), (int)(&Price)))
+		(KUPARAM)(&Obj), (KNPARAM)(&Price)))
 	{
 		if(Price.nCurPrice > 0) //edit by phong kieu fix doan nay
 		{
@@ -355,7 +355,7 @@ void KUiItem::OnRepairItem(KUiDraggedObject* pItem)
 	}
 }
 
-int KUiItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiItem::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -405,21 +405,21 @@ int KUiItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnItemPickDrop((ITEM_PICKDROP_PLACE*)uParam, (ITEM_PICKDROP_PLACE*)nParam);
 		break;
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn && g_UiBase.GetStatus() != UIS_S_TRADE_SETPRICE && !m_MakeStallBtn.IsButtonChecked())
+		if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn && g_UiBase.GetStatus() != UIS_S_TRADE_SETPRICE && !m_MakeStallBtn.IsButtonChecked())
 			Hide();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_OpenStatusPadBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_OpenStatusPadBtn)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_STATUS);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_GetMoneyBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_GetMoneyBtn)
 		{
 			if (KUiStoreBox::GetIfVisible())
 				KUiGetMoney::OpenWindow(0, m_nMoney, this, UIITEM_WAIT_GETMONEY, &m_Money);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_MakeAdvBtn && !KUiPlayerShop::GetIfVisible())
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_MakeAdvBtn && !KUiPlayerShop::GetIfVisible())
 		{
 			if (!KUiStoreBox::GetIfVisible())
 				KUiGetString::OpenWindow("NhËp lêi rao","",(KWndWindow*)this,UIITEM_WAIT_GETNAME,1,20);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_MakeStallBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_MakeStallBtn)
 		{
 			if (KUiPlayerShop::GetIfVisible())
 			{
@@ -429,13 +429,13 @@ int KUiItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 
 			if (g_pCoreShell)
 			{
-				if(g_pCoreShell->OperationRequest(GDI_PLAYER_TRADE,(unsigned int)(&m_ShopName), 0) == 0)
+				if(g_pCoreShell->OperationRequest(GDI_PLAYER_TRADE,(KUPARAM)(&m_ShopName), 0) == 0)
 				{
 					m_MakeStallBtn.CheckButton(FALSE);
 				}
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_MarkPriceBtn && !KUiPlayerShop::GetIfVisible()&& !m_MakeStallBtn.IsButtonChecked() )
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_MarkPriceBtn && !KUiPlayerShop::GetIfVisible()&& !m_MakeStallBtn.IsButtonChecked() )
 		{
 			if (g_UiBase.GetStatus() != UIS_S_TRADE_SETPRICE && !KUiStoreBox::GetIfVisible() )
 			{
@@ -504,12 +504,12 @@ void KUiItem::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE*
 
 		if (eStatus == UIS_S_TRADE_SALE)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (unsigned int)(&Pick), 0);
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (KUPARAM)(&Pick), 0);
 			return;
 		}
 		else if (eStatus == UIS_S_TRADE_REPAIR)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_REPAIR,(unsigned int)(&Pick), 0);
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_REPAIR,(KUPARAM)(&Pick), 0);
 			return;
 		}
 		else if (eStatus == UIS_S_TRADE_BUY)
@@ -528,7 +528,7 @@ void KUiItem::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE*
 		Drop.eContainer = UOC_ITEM_TAKE_WITH;	
 	}
 	
-	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, pPickPos ? (unsigned int)&Pick : 0, pDropPos ? (int)&Drop : 0);
+	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, pPickPos ? (KUPARAM)&Pick : 0, pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 void KUiItem::OnSetItem(KUiDraggedObject* pItem ,int nPrice)
@@ -545,7 +545,7 @@ void KUiItem::OnSetItem(KUiDraggedObject* pItem ,int nPrice)
 	Obj.Region.Height = pItem->DataH;
 	Obj.eContainer = UOC_ITEM_TAKE_WITH;
 
-	g_pCoreShell->OperationRequest(GDI_SET_TRADE_ITEM, (unsigned int)(&Obj), nPrice);
+	g_pCoreShell->OperationRequest(GDI_SET_TRADE_ITEM, (KUPARAM)(&Obj), nPrice);
 }
 
 void KUiItem::OnThrowAllItem( KUiDraggedObject* pItem )
@@ -562,7 +562,7 @@ void KUiItem::OnThrowAllItem( KUiDraggedObject* pItem )
 	Obj.Region.Height = pItem->DataH;
 	Obj.eContainer = UOC_ITEM_TAKE_WITH;
 
-	g_pCoreShell->OperationRequest(GDI_THROW_ALL_ITEM, (unsigned int)(&Obj), 0);
+	g_pCoreShell->OperationRequest(GDI_THROW_ALL_ITEM, (KUPARAM)(&Obj), 0);
 }
 
 void KUiItem::OnBreakItem( KUiDraggedObject* pItem )
@@ -590,7 +590,7 @@ void KUiItem::FkAutoSellItem(int nIdx)
 	Pick.Obj.uGenre = CGOG_ITEM;
 	Pick.Obj.uId = nIdx;
 	Pick.eContainer = UOC_ITEM_TAKE_WITH;
-	g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (unsigned int)(&Pick), 0);
+	g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (KUPARAM)(&Pick), 0);
 	g_UiBase.SetStatus(UIS_S_IDLE);
 }
 
@@ -601,6 +601,6 @@ void KUiItem::FkAutoRepairItem(int nIdx)
 	Pick.Obj.uGenre = CGOG_ITEM;
 	Pick.Obj.uId = nIdx;
 	Pick.eContainer = UOC_ITEM_TAKE_WITH;
-	g_pCoreShell->OperationRequest(GOI_TRADE_NPC_REPAIR,(unsigned int)(&Pick), 0);
+	g_pCoreShell->OperationRequest(GOI_TRADE_NPC_REPAIR,(KUPARAM)(&Pick), 0);
 	g_UiBase.SetStatus(UIS_S_IDLE);
 }

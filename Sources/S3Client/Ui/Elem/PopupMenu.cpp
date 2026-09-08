@@ -380,7 +380,7 @@ void KPopupMenu::PaintMenu()
 }
 
 //´°¿Úº¯Êý
-int	KPopupMenu::HandleInput(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KPopupMenu::HandleInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	if (m_pMenu)
@@ -446,7 +446,7 @@ bool KPopupMenu::SelectItem(int nIndex, bool bApply)
 
 		if (pCaller)
 		{
-			pCaller->WndProc(nMID, (DWORD)pCaller, MAKELONG(nID, uCallerParam));
+			pCaller->WndProc(nMID, (KUPARAM)pCaller, MAKELONG(nID, uCallerParam));
 		}
 	}
 	return bRet;
@@ -492,7 +492,7 @@ bool KPopupMenu::SelectItem(int x, int y, bool bApply)
 
 		if (pCaller)
 		{
-			pCaller->WndProc(nMID, (DWORD)pCaller, MAKELONG(nID, uCallerParam));
+			pCaller->WndProc(nMID, (KUPARAM)pCaller, MAKELONG(nID, uCallerParam));
 		}
 	}
 	return bRet;

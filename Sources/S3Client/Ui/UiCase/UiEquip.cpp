@@ -82,7 +82,7 @@ void KUiHorsePage::UpdateEquip(KUiObjAtRegion* pEquip, int bAdd)
 			m_UpDownHorseBtn.Enable(true);
 			char	Desc[1024];
 			int		nLen = 0;
-			g_pCoreShell->GetGameData(GDI_GAME_OBJ_DESC, (unsigned int)pEquip, (int)&Desc);
+			g_pCoreShell->GetGameData(GDI_GAME_OBJ_DESC, (KUPARAM)pEquip, (KNPARAM)&Desc);
 			if (Desc[0])
 				nLen = TEncodeText(Desc, strlen(Desc));
 			m_HorseDesc.SetText(Desc, nLen);
@@ -110,7 +110,7 @@ void KUiHorsePage::Clear()
 // -------------------------------------------------------------------------
 // 功能	: 窗口函数
 // -------------------------------------------------------------------------
-int	KUiHorsePage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiHorsePage::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	if (uMsg == WND_N_ITEM_PICKDROP)
@@ -152,12 +152,12 @@ void KUiHorsePage::OnEquiptChanged(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_
 
 		if (eStatus == UIS_S_TRADE_REPAIR)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_REPAIR, (unsigned int)(&Pick), 0);
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_REPAIR, (KUPARAM)(&Pick), 0);
 			return;
 		}
 		else if (eStatus == UIS_S_TRADE_SALE)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (unsigned int)(&Pick), 0);
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (KUPARAM)(&Pick), 0);
 			return;
 		}
 		else if (eStatus == UIS_S_TRADE_NPC || eStatus == UIS_S_TRADE_BUY)
@@ -183,8 +183,8 @@ void KUiHorsePage::OnEquiptChanged(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_
 	}
 
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 // -------------------------------------------------------------------------
@@ -254,7 +254,7 @@ void KUiEquipPage::LoadScheme(const char* pScheme)
 // -------------------------------------------------------------------------
 // 功能	: 窗口函数
 // -------------------------------------------------------------------------
-int	KUiEquipPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiEquipPage::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -289,12 +289,12 @@ void KUiEquipPage::OnEquiptChanged(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_
 
 		if (eStatus == UIS_S_TRADE_REPAIR)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_REPAIR, (unsigned int)(&Pick), 0);
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_REPAIR, (KUPARAM)(&Pick), 0);
 			return;
 		}
 		else if (eStatus == UIS_S_TRADE_SALE)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (unsigned int)(&Pick), 0);
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (KUPARAM)(&Pick), 0);
 			return;
 		}
 		else if (eStatus == UIS_S_TRADE_NPC)
@@ -333,8 +333,8 @@ void KUiEquipPage::OnEquiptChanged(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_
 	_ASSERT(i < _ITEM_COUNT);
 
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 
@@ -358,7 +358,7 @@ KUiEquip* KUiEquip::OpenWindow()
 		m_pSelf->m_HorsePage.Clear();
 		
 		KUiObjAtRegion	Equips[_ITEM_COUNT + 1];
-		int nCount = g_pCoreShell->GetGameData(GDI_EQUIPMENT, (unsigned int)&Equips, 0);
+		int nCount = g_pCoreShell->GetGameData(GDI_EQUIPMENT, (KUPARAM)&Equips, 0);
 		for (int i = 0; i < nCount; i++)
 		{
 			if (Equips[i].Obj.uGenre != CGOG_NOTHING)
@@ -444,7 +444,7 @@ void KUiEquip::LoadScheme(const char* pScheme)
 // -------------------------------------------------------------------------
 // 功能	: 窗口函数
 // -------------------------------------------------------------------------
-int	KUiEquip::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiEquip::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK && (KWndWindow*)uParam == (KWndWindow*)&m_Close)
 	{

@@ -103,7 +103,7 @@ void KUiPartnerBag::UpdateData()
     KUiObjAtRegion* pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount);
     if (pObjs)
     {
-        g_pCoreShell->GetGameData(GDI_ITEM_IN_PARTNER_BAG, (unsigned int)pObjs, nCount);
+        g_pCoreShell->GetGameData(GDI_ITEM_IN_PARTNER_BAG, (KUPARAM)pObjs, nCount);
         for (int i = 0; i < nCount; i++)
             UpdateItem(&pObjs[i], 1);
         free(pObjs);
@@ -133,7 +133,7 @@ void KUiPartnerBag::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
         UpdateData();
 }
 
-int KUiPartnerBag::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiPartnerBag::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     switch (uMsg)
     {
@@ -147,7 +147,7 @@ int KUiPartnerBag::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
             uPr[0] = pItem->uId;
             uPr[1] = pos_partnerbag;
             g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
-                (unsigned int)&uPr, pos_equiproom);
+                (KUPARAM)&uPr, pos_equiproom);
         }
     }
     break;
@@ -155,7 +155,7 @@ int KUiPartnerBag::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
         OnItemPickDrop((ITEM_PICKDROP_PLACE*)uParam, (ITEM_PICKDROP_PLACE*)nParam);
         break;
     case WND_N_BUTTON_CLICK:
-        if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+        if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
             CloseWindow();
         break;
     default:
@@ -196,6 +196,6 @@ void KUiPartnerBag::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_
     }
 
     g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-        pPickPos ? (unsigned int)&Pick : 0,
-        pDropPos ? (int)&Drop : 0);
+        pPickPos ? (KUPARAM)&Pick : 0,
+        pDropPos ? (KNPARAM)&Drop : 0);
 }

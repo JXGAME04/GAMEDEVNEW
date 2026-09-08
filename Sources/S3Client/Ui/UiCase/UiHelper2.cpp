@@ -127,28 +127,28 @@ void KUiHelper2::LoadScheme(const char* pScheme)
 }
 
 //´°¿Úº¯Êý
-int KUiHelper2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiHelper2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;	
 	switch(uMsg)
 	{
 	// A button is clicked.
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnClose)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnClose)
 			CloseWindow(false);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnPic)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BtnPic)
 		{
 			CloseWindow(false);
 			KUiHelper::SelectInterfacePic();
 			KUiHelper::OpenWindow(true);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnKeyboard)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BtnKeyboard)
 		{
 			CloseWindow(false);
 			KUiHelper::SelectKeyboardPic();
 			KUiHelper::OpenWindow(true);
 		}
-		else if(uParam == (unsigned int)(KWndWindow*)&m_BtnWuxing)
+		else if(uParam == (KUPARAM)(KWndWindow*)&m_BtnWuxing)
 		{
 			CloseWindow(false);
 			KUiHelper::SelectWuxingPic();
@@ -157,14 +157,14 @@ int KUiHelper2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		break;
 	// scrollbar's position changed.	
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_IndexScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_IndexScroll)
 			m_IndexList.SetTopItemIndex(nParam);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_MessageScroll)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_MessageScroll)
 			m_MessageList.SetFirstShowLine(nParam);
 		break;
 	// list's click
 	case WND_N_LIST_ITEM_SEL:
-		if (uParam == (unsigned int)(KWndWindow*)&m_IndexList)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_IndexList)
 		{
 			int nIndex = nParam;
 			if (nIndex < 0)
@@ -177,7 +177,7 @@ int KUiHelper2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		{
 			int nCurIdx = 0;
 			int nTotal = 0;
-//			if (nParam == (unsigned int)(KWndWindow*)&m_IndexList)
+//			if (nParam == (KUPARAM)(KWndWindow*)&m_IndexList)
 //			{
 				nCurIdx = m_IndexList.GetCurSel();
 				nTotal = m_IndexList.GetCount();
@@ -201,7 +201,7 @@ int KUiHelper2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					break;
 				}
 //			}
-//			else if (nParam == (unsigned int)(KWndWindow*)&m_MessageList)
+//			else if (nParam == (KUPARAM)(KWndWindow*)&m_MessageList)
 //			{
 //				nCurIdx = m_MessageList.GetCurSel();
 //				nTotal = m_IndexList.GetCount();

@@ -160,7 +160,7 @@ int	KWndButton::IsButtonActive()
 //--------------------------------------------------------------------------
 //	功能：窗口函数（处理消息）
 //--------------------------------------------------------------------------
-int KWndButton::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndButton::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (IsDisable())
 		return KWndWindow::WndProc(uMsg, uParam, nParam);
@@ -183,7 +183,7 @@ int KWndButton::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		if ((m_Flag & WNDBTN_F_OVER) == 0 && m_pPressedDownBtn != this)
 		{
 			if (m_pParentWnd)
-				m_pParentWnd->WndProc(WND_N_BUTTON_OVER, (unsigned int)(KWndWindow*)this, 0);
+				m_pParentWnd->WndProc(WND_N_BUTTON_OVER, (KUPARAM)(KWndWindow*)this, 0);
 			m_Flag |= WNDBTN_F_OVER;
 
 			if ((m_Flag & WNDBTN_ES_NO_OVERSOUND) == 0)
@@ -216,7 +216,7 @@ int KWndButton::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		if (m_pPressedDownBtn == this &&
 			(m_Flag & WNDBTN_ES_SEND_HOLD_MSG) && m_pParentWnd)
 		{
-			m_pParentWnd->WndProc(WND_N_BUTTON_HOLD, (unsigned int)(KWndWindow*)this, 0);
+			m_pParentWnd->WndProc(WND_N_BUTTON_HOLD, (KUPARAM)(KWndWindow*)this, 0);
 		}
 		else if (ms_nDisableBtnTip == false && m_szTip[0] && !g_MouseOver.IsMoseHoverWndObj((void*)(KWndWindow*)this, 0))
 		{
@@ -306,7 +306,7 @@ void KWndButton::OnLBtnDown(bool bDoubleClick)
 		if (m_pParentWnd)
 		{
 			m_pParentWnd->WndProc(bDoubleClick ? WND_N_BUTTON_DB_CLICK : WND_N_BUTTON_DOWN,
-				(unsigned int)(KWndWindow*)this, 0);
+				(KUPARAM)(KWndWindow*)this, 0);
 		}
 	}
 	else
@@ -324,7 +324,7 @@ void KWndButton::OnLBtnDown(bool bDoubleClick)
 		OnButtonClick();
 		if (m_pParentWnd)
 			m_pParentWnd->WndProc(WND_N_BUTTON_CLICK,
-				(unsigned int)(KWndWindow*)this, (m_Flag & WNDBTN_F_CHECKED));
+				(KUPARAM)(KWndWindow*)this, (m_Flag & WNDBTN_F_CHECKED));
 	}
 }
 
@@ -333,7 +333,7 @@ void KWndButton::OnRButtonDown()
 	OnButtonClick();
 	if (m_pParentWnd)
 		m_pParentWnd->WndProc(WND_N_BUTTON_RCLICK,
-			(unsigned int)(KWndWindow*)this, (m_Flag & WNDBTN_F_CHECKED));
+			(KUPARAM)(KWndWindow*)this, (m_Flag & WNDBTN_F_CHECKED));
 }
 
 //--------------------------------------------------------------------------
@@ -347,7 +347,7 @@ void KWndButton::OnLBtnUp()
 		SetFrame(m_nUpFrame);
 		OnButtonClick();
 		if (m_pParentWnd)
-			m_pParentWnd->WndProc(WND_N_BUTTON_CLICK, (unsigned int)(KWndWindow*)this, 0);
+			m_pParentWnd->WndProc(WND_N_BUTTON_CLICK, (KUPARAM)(KWndWindow*)this, 0);
 	}
 	m_pPressedDownBtn = NULL;
 }

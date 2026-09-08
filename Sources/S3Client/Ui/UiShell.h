@@ -13,7 +13,7 @@ void		UiExit();
 void		UiPaint(int nGameLoop);					
 void		UiSetScreenSize(int nWidth, int nHeight);
 int			UiHeartBeat();							
-void		UiProcessInput(unsigned int uMsg, unsigned int uParam, int nParam);
+void		UiProcessInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 void		UiSetGraphicDevice(void* pDevice);		
 void		UiStartGame();							
 void		UiOnGameServerConnected();				

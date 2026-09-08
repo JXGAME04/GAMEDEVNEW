@@ -664,7 +664,7 @@ void KWndMessageListBox::PaintWindow()
 		//-------------------------------------------------------------------------------------------------------
 }
 
-int KWndMessageListBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndMessageListBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -764,7 +764,7 @@ void KWndMessageListBox::OnLButtonDown(int x, int y)
 {	
 	int nSel = HitTextAtPoint(x, y);
 	if (nSel >= 0 && m_pParentWnd)
-		m_pParentWnd->WndProc(WND_N_LIST_ITEM_ACTIVE, (unsigned int)(KWndWindow*)this, m_nSelMsgIndex);
+		m_pParentWnd->WndProc(WND_N_LIST_ITEM_ACTIVE, (KUPARAM)(KWndWindow*)this, m_nSelMsgIndex);
 	SetCurSel(nSel);
 }
 
@@ -773,7 +773,7 @@ void KWndMessageListBox::OnLButtonDClick(int x, int y)
 	int nSel = HitTextAtPoint(x, y);
 	if (nSel >= 0 && m_pParentWnd)
 	{
-		m_pParentWnd->WndProc(WND_N_LIST_ITEM_D_CLICK, (unsigned int)(KWndWindow*)this, nSel);
+		m_pParentWnd->WndProc(WND_N_LIST_ITEM_D_CLICK, (KUPARAM)(KWndWindow*)this, nSel);
 	}
 }
 
@@ -787,7 +787,7 @@ int	KWndMessageListBox::SetCurSel(int nIndex)
 	}
 
 	if (m_pParentWnd)
-		m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (unsigned int)(KWndWindow*)this, m_nSelMsgIndex);
+		m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (KUPARAM)(KWndWindow*)this, m_nSelMsgIndex);
 
 	return m_nSelMsgIndex;
 }
@@ -800,7 +800,7 @@ void KWndMessageListBox::OnMouseMove(int x, int y)
 		m_nHLMsgIndex = nSel;
 		if (m_pParentWnd)
 		{
-			m_pParentWnd->WndProc(WND_N_LIST_ITEM_HIGHLIGHT, (unsigned int)(KWndWindow*)this, m_nHLMsgIndex);
+			m_pParentWnd->WndProc(WND_N_LIST_ITEM_HIGHLIGHT, (KUPARAM)(KWndWindow*)this, m_nHLMsgIndex);
 		}
 	}
 }
@@ -860,7 +860,7 @@ unsigned int KWndMessageListBox::SplitData()
 			}
 		}
 	}
-	return ((unsigned int)pData);
+	return ((KUPARAM)pData);
 }
 
 unsigned int KWndMessageListBox::BindData(unsigned int hData)
@@ -1026,12 +1026,12 @@ int KScrollMessageListBox::Init(KIniFile* pIniFile, const char* pSection)
 	return false;
 }
 
-int KScrollMessageListBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KScrollMessageListBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Scroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Scroll)
 		{
 			m_MsgList.SetFirstShowLine(nParam);
 		}
@@ -1049,16 +1049,16 @@ int KScrollMessageListBox::WndProc(unsigned int uMsg, unsigned int uParam, int n
 		}
 
 		if (m_pParentWnd)
-			m_pParentWnd->WndProc(uMsg, (unsigned int)(KWndWindow*)this, nParam);
+			m_pParentWnd->WndProc(uMsg, (KUPARAM)(KWndWindow*)this, nParam);
 		break;
 	case WND_N_LIST_ITEM_D_CLICK:
 		if (m_pParentWnd)
-			m_pParentWnd->WndProc(uMsg, (unsigned int)(KWndWindow*)this, nParam);
+			m_pParentWnd->WndProc(uMsg, (KUPARAM)(KWndWindow*)this, nParam);
 		break;
 	case WND_M_POPUPMENU:
 		if (m_pParentWnd)
 		{
-			m_pParentWnd->WndProc(WND_M_POPUPMENU, (unsigned int)(KWndWindow*)this, nParam);
+			m_pParentWnd->WndProc(WND_M_POPUPMENU, (KUPARAM)(KWndWindow*)this, nParam);
 		}
 		break;
 	default:

@@ -32,7 +32,7 @@ private:
 	virtual ~KUiTaskTrace();
 	void	Initialize();
 	void	LoadSchemeSelf(const char* pScheme);
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateView();
 	void	SnapToButton();		// neo sat trai + ngang hang nut theo doi
 private:

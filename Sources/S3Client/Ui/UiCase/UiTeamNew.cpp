@@ -94,21 +94,21 @@ void KUiTeamNew::LoadScheme(const char* pScheme)
 }
 
 //´°¿Úº¯Êý
-int KUiTeamNew::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTeamNew::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_OkBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_OkBtn)
 			OnOk();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 			CloseWindow();
 		break;
 	case WND_N_EDIT_SPECIAL_KEY_DOWN:
 		if (nParam == VK_RETURN)
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_TeamName)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_TeamName)
 				OnOk();
 		}
 		else if (nParam == VK_ESCAPE)

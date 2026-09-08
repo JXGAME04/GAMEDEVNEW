@@ -141,7 +141,7 @@ void KUiShopGold::CancelTrade()
 }
 
 //窗口函数
-int	KUiShopGold::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiShopGold::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
@@ -153,7 +153,7 @@ int	KUiShopGold::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			g_UiBase.GetStatus() == UIS_S_TRADE_BUY);
 		break;
 	case WND_N_RIGHT_CLICK_ITEM:
-		if (nParam == (int)(KWndWindow*)&m_ItemsBox)
+		if (nParam == (KNPARAM)(KWndWindow*)&m_ItemsBox)
 			OnBuyItem((KUiDraggedObject*)uParam, true);
 		break;
 	case WM_KEYDOWN:
@@ -193,14 +193,14 @@ void KUiShopGold::OnBuyItem(KUiDraggedObject* pItem, bool bDoImmed)
 	if (bDoImmed == false)
 	{
 		KUiItemBuySelInfo	Price = { 0 };
-		//if (g_pCoreShell->GetGameData(GDI_SHOP_ITEM_PRICE_GOLD, (unsigned int)(&Obj), (int)(&Price)) == 1)
+		//if (g_pCoreShell->GetGameData(GDI_SHOP_ITEM_PRICE_GOLD, (KUPARAM)(&Obj), (KNPARAM)(&Price)) == 1)
 		//{
 			KUiTradeConfirm::OpenWindow(&Obj, &Price, TCA_BUY,1);
 		//}
 	}
 	else
 	{
-		g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (unsigned int)(&Obj), 1);
+		g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (KUPARAM)(&Obj), 1);
 	}
 }
 
@@ -252,7 +252,7 @@ void KUiShopGold::UpdateData()
 
 	if (m_pObjsList = (KUiObjAtContRegion*)malloc(sizeof(KUiObjAtContRegion) * m_nObjCount))
 	{
-		g_pCoreShell->GetGameData(GDI_TRADE_NPC_ITEM, (unsigned int)m_pObjsList, m_nObjCount);//单线程执行，nCount值不变
+		g_pCoreShell->GetGameData(GDI_TRADE_NPC_ITEM, (KUPARAM)m_pObjsList, m_nObjCount);//单线程执行，nCount值不变
 		m_nPageCount = m_pObjsList[m_nObjCount - 1].nContainer + 1;
 		SetPage(0);
 		m_PreBtn.Enable(m_nPageCount > 1);

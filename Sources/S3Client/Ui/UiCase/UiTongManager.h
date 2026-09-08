@@ -42,7 +42,7 @@ public:
 	static int    RemoveTempFile();                 
 	static void   ResponseResult(KUiGameObjectWithName *pResult, int nbIsSucceed);
 public:
-	virtual int   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int   WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void          ArrangeComposition(char* pszPlayerName);
 private:
 	void          Initialize();

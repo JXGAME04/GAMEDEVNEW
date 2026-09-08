@@ -21,7 +21,7 @@ private:
 	void	Initialize();						
 	void	LoadScheme(const char* pScheme);	
 	void    ShowCompleted();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);	
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);	
 	void	OnLogin();
 	void	OnCancel();
 	int		OnKeyDown(unsigned int uKey);

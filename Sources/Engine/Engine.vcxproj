@@ -244,6 +244,8 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>.\x64\Release\</OutDir>
+    <IntDir>.\x64\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">
@@ -648,6 +650,7 @@ copy release\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
+      <AdditionalOptions>/we4311 /we4312 /we4302 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <StringPooling>true</StringPooling>
@@ -657,26 +660,35 @@ copy release\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>include;src;..\Core\Src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
-      <PrecompiledHeaderOutputFile>.\Release\Engine.pch</PrecompiledHeaderOutputFile>
-      <ObjectFileName>.\Release\</ObjectFileName>
-      <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <AssemblerListingLocation>.\x64\Release\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\x64\Release\Engine.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\x64\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\Release\</ProgramDataBaseFileName>
       <PrecompiledHeaderFile>KWin32.h</PrecompiledHeaderFile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy release\engine.lib ..\..\lib\release\engine.lib
+      <Command>copy x64\release\engine.lib ..\..\Lib\release64\engine.lib
 
-copy release\engine.dll ..\..\..\bin\server\engine.dll
-copy release\engine.dll ..\..\..\bin\server\release\engine.dll
-copy release\engine.pdb ..\..\..\bin\server\release\engine.pdb
-copy release\engine.map ..\..\..\bin\server\release\engine.map</Command>
+copy x64\release\engine.dll ..\..\..\bin\client64\engine.dll
+copy x64\release\engine.dll ..\..\..\bin\client64\release\engine.dll
+copy x64\release\engine.pdb ..\..\..\bin\client64\release\engine.pdb
+copy x64\release\engine.map ..\..\..\bin\client64\release\engine.map
+
+copy x64\release\engine.dll ..\..\..\bin\client64\engine.dll
+copy x64\release\engine.dll ..\..\..\bin\client64\release\engine.dll
+copy x64\release\engine.pdb ..\..\..\bin\client64\release\engine.pdb
+copy x64\release\engine.map ..\..\..\bin\client64\release\engine.map
+
+copy x64\release\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <TypeLibraryName>.\Release\Engine.tlb</TypeLibraryName>
+      <TypeLibraryName>.\x64\Release\Engine.tlb</TypeLibraryName>
       <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
@@ -684,16 +696,17 @@ copy release\engine.map ..\..\..\bin\server\release\engine.map</Command>
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Release\Engine.bsc</OutputFile>
+      <OutputFile>.\x64\Release\Engine.bsc</OutputFile>
     </Bscmake>
     <Link>
+      <TargetMachine>MachineX64</TargetMachine>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\Engine.dll</OutputFile>
-      <ImportLibrary>.\Release\Engine.lib</ImportLibrary>
-      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\x64\Release\Engine.dll</OutputFile>
+      <ImportLibrary>.\x64\Release\Engine.lib</ImportLibrary>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;..\..\Lib\release64\JpgLib.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>

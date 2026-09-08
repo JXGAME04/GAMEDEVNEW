@@ -82,7 +82,7 @@ void KUiInformation3::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	Su kien
 //--------------------------------------------------------------------------
-int KUiInformation3::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiInformation3::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)

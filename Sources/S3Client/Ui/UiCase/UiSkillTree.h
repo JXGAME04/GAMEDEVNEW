@@ -37,7 +37,7 @@ private:
 	void	UpdateWndRect();
 	void	Hide();									//隐藏窗口
 	int		GetSkillAtPos(int x, int y);			//得到指定位置的技能的索引
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 private:
 	static KUiSkillTree*	m_pSelf;
 private:

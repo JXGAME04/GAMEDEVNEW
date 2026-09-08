@@ -176,7 +176,7 @@ void KUiSysMsgCentre::LoadScheme(KIniFile* pIni)
 	m_SysMsgParam.cChatPrefixLen = 4;
 }
 
-int KUiSysMsgCentre::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSysMsgCentre::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int i, nRet = 0;
 	switch(uMsg)
@@ -185,7 +185,7 @@ int KUiSysMsgCentre::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	case WND_N_BUTTON_CLICK:
 		for (i = 0; i < MAX_SYS_MSG_TYPE; i++)
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_MsgIconBtn[i])
+			if (uParam == (KUPARAM)(KWndWindow*)&m_MsgIconBtn[i])
 			{
 				DeleteMsgInHeap(i, 0, (uMsg == WND_N_BUTTON_MR_DOWN), true);
 				break;
@@ -195,7 +195,7 @@ int KUiSysMsgCentre::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	case WND_N_BUTTON_RCLICK:
 		for (i = 0; i < MAX_SYS_MSG_TYPE; i++)
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_MsgIconBtn[i])
+			if (uParam == (KUPARAM)(KWndWindow*)&m_MsgIconBtn[i])
 			{
 				DeleteMsgInHeap(i, 0, (uMsg == WND_N_BUTTON_MR_DOWN), false);
 				break;
@@ -205,7 +205,7 @@ int KUiSysMsgCentre::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	case WND_N_MOUSE_ENTER_CHILD:
 		for (i = 0; i < MAX_SYS_MSG_TYPE; i++)
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_MsgIconBtn[i])
+			if (uParam == (KUPARAM)(KWndWindow*)&m_MsgIconBtn[i])
 			{
 				m_MsgTextWnd.SetText("", 0);
 				if (m_MsgHeap[i].nNumValid)
@@ -246,7 +246,7 @@ void KUiSysMsgCentre::OnConfirmOperFinished(unsigned int uParam, int nSelAction)
 			//_ASSERT(m_pHandlingMsg->byParamSize >= sizeof(KUiPlayerItem))
 			pPlayer = (KUiPlayerItem*)(&m_pHandlingMsg[1]);
 			g_pCoreShell->TeamOperation(TEAM_OI_INVITE_RESPONSE,
-				(unsigned int)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
+				(KUPARAM)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
 		}
 		break;
 	case SMCT_UI_TEAM_APPLY:
@@ -255,7 +255,7 @@ void KUiSysMsgCentre::OnConfirmOperFinished(unsigned int uParam, int nSelAction)
 			//_ASSERT(m_pHandlingMsg->byParamSize >= sizeof(KUiPlayerItem))
 			pPlayer = (KUiPlayerItem*)(&m_pHandlingMsg[1]);
 			g_pCoreShell->TeamOperation(TEAM_OI_APPLY_RESPONSE,
-				(unsigned int)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
+				(KUPARAM)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
 		}
 		break;
 	case SMCT_UI_FRIEND_INVITE:	
@@ -264,7 +264,7 @@ void KUiSysMsgCentre::OnConfirmOperFinished(unsigned int uParam, int nSelAction)
 			//_ASSERT(m_pHandlingMsg->byParamSize >= sizeof(KUiPlayerItem));
 			pPlayer = (KUiPlayerItem*)(&m_pHandlingMsg[1]);
 			g_pCoreShell->OperationRequest(GOI_CHAT_FRIEND_INVITE,
-				(unsigned int)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
+				(KUPARAM)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
 			if (nSelAction == 0)
 			{
 				int nUnit = KUiChatCentre::FindUnitIndexByRoleNameAtServerUnit(pPlayer->Name);
@@ -283,7 +283,7 @@ void KUiSysMsgCentre::OnConfirmOperFinished(unsigned int uParam, int nSelAction)
 			//_ASSERT(m_pHandlingMsg->byParamSize >= sizeof(KUiPlayerItem));
 			pPlayer = (KUiPlayerItem*)(&m_pHandlingMsg[1]);
 			g_pCoreShell->OperationRequest(GOI_TRADE_INVITE_RESPONSE,
-				(unsigned int)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
+				(KUPARAM)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
 		}
 		break;
 	case SMCT_UI_GAMBLE:
@@ -292,7 +292,7 @@ void KUiSysMsgCentre::OnConfirmOperFinished(unsigned int uParam, int nSelAction)
 			//_ASSERT(m_pHandlingMsg->byParamSize >= sizeof(KUiPlayerItem));
 			pPlayer = (KUiPlayerItem*)(&m_pHandlingMsg[1]);
 			g_pCoreShell->OperationRequest(GOI_GAMBLE_INVITE_RESPONSE,
-				(unsigned int)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
+				(KUPARAM)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
 		}
 		break;
 	case SMCT_UI_TONG_JOIN_APPLY:
@@ -301,7 +301,7 @@ void KUiSysMsgCentre::OnConfirmOperFinished(unsigned int uParam, int nSelAction)
 			//_ASSERT(m_pHandlingMsg->byParamSize >= sizeof(KUiPlayerItem))
 			pPlayer = (KUiPlayerItem*)(&m_pHandlingMsg[1]);
 			g_pCoreShell->TongOperation(GTOI_TONG_JOIN_REPLY,
-				(unsigned int)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
+				(KUPARAM)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
 		}
 		break;
 	case SMCT_UI_ASKASSEMBLE:

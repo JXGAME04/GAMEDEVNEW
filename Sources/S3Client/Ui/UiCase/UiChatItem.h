@@ -20,7 +20,7 @@ private:
 	~KUiChatItem() {}
 	int		Initialize();							
 	void	LoadScheme(const char* pScheme);		
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	PaintWindow();
 	void	SetInfomation(int nIdx);
 private:

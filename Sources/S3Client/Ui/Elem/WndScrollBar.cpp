@@ -109,7 +109,7 @@ void KWndScrollBar::SetSize(int nWidth, int nHeight)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KWndScrollBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndScrollBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (IsDisable())
 		return KWndImage::WndProc(uMsg, uParam, nParam);
@@ -132,14 +132,14 @@ int KWndScrollBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		break;
 	case WND_N_BUTTON_CLICK:
 		if (m_Flag & WNDSCROLL_F_DRAGGING_SLIDE &&
-			uParam == (unsigned int)(KWndWindow*)&m_SlideBtn)
+			uParam == (KUPARAM)(KWndWindow*)&m_SlideBtn)
 		{
 			m_Flag &= ~WNDSCROLL_F_DRAGGING_SLIDE;
 			Wnd_ReleaseCapture();
 		}
 		break;
 	case WND_N_BUTTON_DOWN:
-		if (uParam == (unsigned int)(KWndWindow*)&m_SlideBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_SlideBtn)
 			OnSlideBtnPressed();
 		break;
 	default:
@@ -214,7 +214,7 @@ void KWndScrollBar::SetScrollPos(int nPosition)
 			SetSlideBtnPos();
 			if (m_pParentWnd)
 			{
-				m_pParentWnd->WndProc(WND_N_SCORLLBAR_POS_CHANGED, (unsigned int)(KWndWindow*)this, m_nCurValue);
+				m_pParentWnd->WndProc(WND_N_SCORLLBAR_POS_CHANGED, (KUPARAM)(KWndWindow*)this, m_nCurValue);
 			}
 		}
 	}

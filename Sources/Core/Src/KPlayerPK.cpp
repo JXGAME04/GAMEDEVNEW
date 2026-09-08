@@ -435,7 +435,7 @@ void	KPlayerPK::SetNormalPKState(BYTE bFlag, BOOL bLock, BOOL bShowMsg/* = TRUE*
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 }
 
@@ -492,7 +492,7 @@ void	KPlayerPK::ApplyEnmityPK(int nNpcID)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return;
 	}
 	if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode)
@@ -503,7 +503,7 @@ void	KPlayerPK::ApplyEnmityPK(int nNpcID)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return;
 	}
 	int		nIdx = NpcSet.SearchID(nNpcID);
@@ -532,7 +532,7 @@ void	KPlayerPK::SetEnmityPKState(int nState, int nNpcID/* = 0*/, char *lpszName/
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_PK_ENMITY_CLOSE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 
 		m_nEnmityPKState = enumPK_ENMITY_STATE_CLOSE;
@@ -555,9 +555,9 @@ void	KPlayerPK::SetEnmityPKState(int nState, int nNpcID/* = 0*/, char *lpszName/
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
 		sprintf(sMsg.szMessage, MSG_PK_ENMITY_SUCCESS_1, m_szEnmityAimName);
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		sprintf(sMsg.szMessage, MSG_PK_ENMITY_SUCCESS_2);
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 	else	// if (nState == enumPK_ENMITY_STATE_PKING)
 	{
@@ -574,7 +574,7 @@ void	KPlayerPK::SetEnmityPKState(int nState, int nNpcID/* = 0*/, char *lpszName/
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
 		sprintf(sMsg.szMessage, MSG_PK_ENMITY_OPEN);
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 }
 
@@ -632,7 +632,7 @@ void	KPlayerPK::SetPKValue(int nValue)
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 }
 

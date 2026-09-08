@@ -142,29 +142,29 @@ void KUiTongCreateSheet::LoadScheme(const char* pScheme)
 /*********************************************************************
 * 功能：窗口函数
 **********************************************************************/
-int KUiTongCreateSheet::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTongCreateSheet::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_BtnOrder )
+		if(uParam == (KUPARAM)&m_BtnOrder )
 		{
 			AlignmentButtonCheck(camp_justice);
 		}
-		else if(uParam == (unsigned int)&m_BtnChaos)
+		else if(uParam == (KUPARAM)&m_BtnChaos)
 		{
 			AlignmentButtonCheck( camp_evil  );
 		}
-		else if(uParam == (unsigned int)&m_BtnNatural  )
+		else if(uParam == (KUPARAM)&m_BtnNatural  )
 		{
 			AlignmentButtonCheck(camp_balance);
 		}
 		/*----------------------------------------------------------*/
-		else if(uParam == (unsigned int)&m_BtnCancel)
+		else if(uParam == (KUPARAM)&m_BtnCancel)
 		{
 			CloseWindow();
 		}
-		else if(uParam == (unsigned int)&m_BtnDone)
+		else if(uParam == (KUPARAM)&m_BtnDone)
 		{
 			OnDone();
 		}

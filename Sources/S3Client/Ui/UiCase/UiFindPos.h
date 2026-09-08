@@ -27,7 +27,7 @@ private:
 	KUiFindPos() {}
 	~KUiFindPos() {}
 	void	Initialize();								//Khoi tao hop thoai
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//Xu ly trong qua trinh hop thoai dang chay
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//Xu ly trong qua trinh hop thoai dang chay
 	void	OnOK();										//Gui goi tin mo khoa toi Server
 	void	SavePosSetting(char *m_PosMiniMap);
 	void	LoadPosSetting(char *m_PosMiniMap);

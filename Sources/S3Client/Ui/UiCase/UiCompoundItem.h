@@ -38,7 +38,7 @@ public:
 	void	UpdateData();
 	void    Breathe();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	PaintWindow();	
 	void	OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 	void	OnCancel();
@@ -87,7 +87,7 @@ public:
 	void	UpdateData();
 	void    Breathe();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	PaintWindow();	
 	void	OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 	void	OnCancel();
@@ -135,7 +135,7 @@ public:
 	void	UpdateData();
 	void    Breathe();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	PaintWindow();
 	void	OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 	void	OnCancel();
@@ -185,7 +185,7 @@ public:
 	void	UpdateData();
 	void    Breathe();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	PaintWindow();		
 	void	OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 	void	OnCancel();
@@ -232,7 +232,7 @@ public:
 	void	UpdateData();
 	void    Breathe();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	PaintWindow();	
 	void	OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 	void	OnCancel();
@@ -274,7 +274,7 @@ public:
 	void	UpdateData();
 	void    Breathe();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	PaintWindow();	
 	void	OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 	void	OnCancel();
@@ -326,7 +326,7 @@ public:
 	void	UpdateData();
 	void	Breathe();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	PaintWindow();
 	void	OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 	void	ProcessAtlas();
@@ -369,7 +369,7 @@ public:
 private:
 	virtual void  Breathe();
 	void	Initialize();							
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	PopUpContextComMenu();
 	void	ProcessCom(int nWindow);
 private:

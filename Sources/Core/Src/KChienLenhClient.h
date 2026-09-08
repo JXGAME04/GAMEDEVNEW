@@ -18,7 +18,7 @@ int LuaCLUi_Refresh(Lua_State* L);			// () ve lai
 int LuaCLUi_Msg(Lua_State* L);				// (szMsg) thong bao ngan
 
 // CoreShell.cpp: case GOI_CHIENLENH_UI -> ChienLenhUi_OnRequest(uParam, nParam)
-void ChienLenhUi_OnRequest(unsigned int uParam, int nParam);
+void ChienLenhUi_OnRequest(KUPARAM uParam, KNPARAM nParam);
 #endif
 
 #endif // KCHIENLENHCLIENT_H

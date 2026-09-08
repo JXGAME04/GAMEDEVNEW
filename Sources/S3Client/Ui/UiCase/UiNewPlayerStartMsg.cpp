@@ -130,7 +130,7 @@ void KUiNewPlayerStartMsg::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KUiNewPlayerStartMsg::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiNewPlayerStartMsg::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)

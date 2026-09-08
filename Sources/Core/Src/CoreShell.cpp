@@ -62,9 +62,9 @@ class KCoreShell : public iCoreShell
 {
 public:
 	int	 GetProtocolSize(BYTE byProtocol);
-	int	 Debug(unsigned int uDataId, unsigned int uParam, int nParam);
-	int	 OperationRequest(unsigned int uOper, unsigned int uParam, int nParam);
-	void ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam);
+	int	 Debug(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam);
+	int	 OperationRequest(unsigned int uOper, KUPARAM uParam, KNPARAM nParam);
+	void ProcessInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	int	 FindSelectNPC(int x, int y, int nRelation, bool bSelect, void* pReturn, int& nKind);
 	int FindSelectObject(int x, int y, bool bSelect, int& nObjectIdx, int& nKind);
 	int FindSpecialNPC(char* Name, void* pReturn, int& nKind);
@@ -91,10 +91,10 @@ public:
 	int GetPriceSell(unsigned int uId);
 	int GetNatureItem(unsigned int uItemId, unsigned int uGenre);
 	int GetGenreItem(unsigned int uItemId, unsigned int uGenre);
-	int	SceneMapOperation(unsigned int uOper, unsigned int uParam, int nParam);
-	int	TongOperation(unsigned int uOper, unsigned int uParam, int nParam);
-	int TeamOperation(unsigned int uOper, unsigned int uParam, int nParam);
-	int	 GetGameData(unsigned int uDataId, unsigned int uParam, int nParam);
+	int	SceneMapOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam);
+	int	TongOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam);
+	int TeamOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam);
+	int	 GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam);
 	void DrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, int nParam);
 	void DrawGameSpace();
 	DWORD GetPing();
@@ -109,9 +109,9 @@ public:
 	void SetClient(LPVOID pClient);
 	void SendNewDataToServer(void* pData, int nLength);
 	int	GetOwnValue(int nMoneyUnit);
-	int GetDataSuperShop(int nSaleId, unsigned int uParam, int nParam);
-	int GetObjAtCountRegionInSuperShop(int nSaleId, unsigned int uParam, int nParam);
-	int GetDataDynamicShop(int nSaleId, unsigned int uParam, int nParam);
+	int GetDataSuperShop(int nSaleId, KUPARAM uParam, KNPARAM nParam);
+	int GetObjAtCountRegionInSuperShop(int nSaleId, KUPARAM uParam, KNPARAM nParam);
+	int GetDataDynamicShop(int nSaleId, KUPARAM uParam, KNPARAM nParam);
 	int GetItemIdxNpcShop(char* szItemName);//fkauto
 	BOOL GetAutoFlag();
 	BOOL GetFightFlag();
@@ -124,10 +124,10 @@ public:
 	BOOL GetSkillData(int nSkillId, int *nLevel);
 	BOOL GetFlagMode();
 	void SetFlagMode(bool nIndex);
-	void DirectFindPos(unsigned int uParam, int nParam, BOOL bSync, BOOL bPaintLine);
+	void DirectFindPos(KUPARAM uParam, KNPARAM nParam, BOOL bSync, BOOL bPaintLine);
 	BYTE GetPaintMode();
 	void SetPaintMode(BYTE nIndex);
-	int AutoPlayOperation(unsigned int uOper, unsigned int uParam, int nParam);//fkauto
+	int AutoPlayOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam);//fkauto
 	//BOOL AutoMove();
 	void ClearPathFinder();
 	void GotoWhereDirect(int x, int y, int mode);	//mode 0 is auto, 1 is walk, 2 is run
@@ -748,7 +748,7 @@ iCoreShell* CoreGetShell(char * nParmName)
 	return &g_CoreShell;
 }
 
-int CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam)
+int CoreDataChanged(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam)
 {
 	if (l_pDataChangedNotifyFunc)
 		return l_pDataChangedNotifyFunc->CoreDataChanged(uDataId, uParam, nParam);
@@ -804,7 +804,7 @@ void KCoreShell::SetFlagMode(bool bFlag)
 	g_ScenePlace.bFlagMode = bFlag;
 }
 
-void KCoreShell::DirectFindPos(unsigned int uParam, int nParam, BOOL bSync, BOOL bPaintLine)
+void KCoreShell::DirectFindPos(KUPARAM uParam, KNPARAM nParam, BOOL bSync, BOOL bPaintLine)
 {
 	g_ScenePlace.DirectFindPos(uParam, nParam, bSync, bPaintLine);
 }
@@ -823,7 +823,7 @@ void KCoreShell::SetPaintMode(BYTE bFlag)
 // [CITYINFO 21/08] ban sao 7 thanh phia client (ghi o KPlayer.cpp case UI_CITYINFO)
 KCityInfoView g_ClientCityInfo[8];
 
-int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nParam)
+int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uDataId)
@@ -950,7 +950,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 				sMsg.byConfirmType = SMCT_NONE;
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			}
 		}
 		else
@@ -16803,7 +16803,7 @@ void WA_HoatDong(int nPlayerIdx, char* szOut, int nMax)
 
 
 
-int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nParam)
+int	KCoreShell::OperationRequest(unsigned int uOper, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 1;
 	switch(uOper)
@@ -16865,7 +16865,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				sMsg.byConfirmType = SMCT_CLICK;
 				sMsg.byPriority = 1;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			}
 			
@@ -16879,7 +16879,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				sMsg.byConfirmType = SMCT_CLICK;
 				sMsg.byPriority = 1;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 				
 			}
@@ -16917,7 +16917,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 					return 0;
 				}
 				if(Item[nIdx].GetPlayerItemLock() > 0 || Item[nIdx].GetPlayerItemHLock() >0 || Item[nIdx].GetPlayerItemLock() == -2)
@@ -16928,7 +16928,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 					return 0;
 				}
 				Item[nIdx].SetPrice(nParam);
@@ -16947,7 +16947,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				sMsg.byConfirmType = SMCT_NONE;
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				return 0;
 			}
 
@@ -16959,7 +16959,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				sMsg.byConfirmType = SMCT_NONE;
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				return 0;
 			}
 			
@@ -16971,7 +16971,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				sMsg.byConfirmType = SMCT_NONE;
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				return 0;
 			}
 			
@@ -17009,7 +17009,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				}
 			}
 			else
@@ -17132,7 +17132,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 					return 0;
 				}
 				SendClientCmdSell(Item[nIdx].GetID());
@@ -17409,7 +17409,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 					return 0;
 				}
 				return 1;
@@ -17445,7 +17445,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 					return 0;
 				}
 				else if (Item[nIdx].GetRepairPrice() <= Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipmentMoney())
@@ -17460,7 +17460,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 					return 0;
 				}
 				
@@ -17667,7 +17667,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						sMsg.byConfirmType = SMCT_CLICK;
 						sMsg.byPriority = 1;
 						sMsg.byParamSize = 0;
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 						break;
 					}
 					if (Pos.nPlace != pos_equiproom)
@@ -17680,7 +17680,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						sMsg.byConfirmType = SMCT_CLICK;
 						sMsg.byPriority = 1;
 						sMsg.byParamSize = 0;
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 						break;
 					}
 					if (Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipmentMoney() < pItem->GetPrice())
@@ -17693,7 +17693,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						sMsg.byConfirmType = SMCT_CLICK;
 						sMsg.byPriority = 1;
 						sMsg.byParamSize = 0;
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 						break;
 					}
 					
@@ -18968,7 +18968,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					Skill.uGenre = CGOG_SKILL_FIGHT;
 					Skill.uId = nParam;
 					OperationRequest(GOI_SET_IMMDIA_SKILL,
-						(unsigned int)&Skill, 0);
+						(KUPARAM)&Skill, 0);
 					return 1;
 				}
 				case ATYPE_RIGHTSKILL:
@@ -18980,7 +18980,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					Skill.uGenre = CGOG_SKILL_FIGHT;
 					Skill.uId = nParam;
 					OperationRequest(GOI_SET_IMMDIA_SKILL,
-						(unsigned int)&Skill, 1);
+						(KUPARAM)&Skill, 1);
 					return 1;
 				}
 				case ATYPE_CHANGEAURA:
@@ -18999,7 +18999,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Skill.uGenre = CGOG_SKILL_FIGHT;
 						Skill.uId = pValue[0];
 						OperationRequest(GOI_SET_IMMDIA_SKILL,
-							(unsigned int)&Skill, 1);
+							(KUPARAM)&Skill, 1);
 					}
 					else
 					{
@@ -19009,7 +19009,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Skill.uGenre = CGOG_SKILL_FIGHT;
 						Skill.uId = pValue[1];
 						OperationRequest(GOI_SET_IMMDIA_SKILL,
-							(unsigned int)&Skill, 1);
+							(KUPARAM)&Skill, 1);
 					}
 					return 1;
 				}
@@ -21403,7 +21403,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								uSrcPr[0] = nSaveIdx;
 								uSrcPr[1] = pos_equiproom;
 								OperationRequest(GOI_EXCHANGEITEM,
-								(unsigned int)&uSrcPr, nDstPos);
+								(KUPARAM)&uSrcPr, nDstPos);
 								return 1;
 							}
 							else
@@ -22197,7 +22197,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							for(int i=0;i < CoreDataChanged(GDCNI_UI_ACT, 4, 0);++i)
 							{
 								CoreDataChanged(GDCNI_UI_ACT, 5, i);
-								CoreDataChanged(GDCNI_UI_ACT, 6, (int)&szBuff);
+								CoreDataChanged(GDCNI_UI_ACT, 6, (KNPARAM)&szBuff);
 								g_StrLower(szBuff);
 								if((pApData->nSelStation == 0 && strstr(szBuff, "l¹i"))
 								|| (pApData->nSelStation == 4 && strstr(szBuff, "n¬i lµm")))
@@ -22841,7 +22841,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				}
 			}
 			else
@@ -22852,7 +22852,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				sMsg.byConfirmType = SMCT_NONE;
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			}
 		}
 		break;
@@ -22912,7 +22912,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				sMsg.byConfirmType = SMCT_NONE;
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			}
 		}
 		break;
@@ -22927,7 +22927,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 
@@ -23320,7 +23320,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Msg.byPriority = 1;
 						Msg.byParamSize = 0;
 						sprintf(Msg.szMessage, "B¹n qu¸ mÖt mái, kh«ng thÓ tiÕp tôc lªn xuèng ngùa!");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 					 }
 				}
 				else
@@ -23331,7 +23331,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					Msg.byPriority = 1;
 					Msg.byParamSize = 0;
 					sprintf(Msg.szMessage, "B¹n ®ang ngåi thiÒn kh«ng thÓ lªn ngùa");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 				}
 				break;
 			case PW_NOT_SAME: // mat khau ko trung nhau
@@ -23342,7 +23342,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Msg.byPriority = 1;
 						Msg.byParamSize = 0;
 						strcpy(Msg.szMessage, "MËt khÈu x¸c thùc kh«ng gièng nhau");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 					}
 				break;
 			case PW_NOT_LONG: // mat khau ko du do dai
@@ -23353,7 +23353,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Msg.byPriority = 1;
 						Msg.byParamSize = 0;
 						strcpy(Msg.szMessage, "MËt khÈu ph¶i ®ñ 6 ch÷ sè");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 					}
 				break;
 			case PW_ACCEPTED: // mat khau dc chap nhan
@@ -23364,7 +23364,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Msg.byPriority = 1;
 						Msg.byParamSize = 0;
 						strcpy(Msg.szMessage, "MËt khÈu ®­îc chÊp nhËn");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 					}
 				break;
 			case HT_CN:
@@ -23375,7 +23375,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Msg.byPriority = 1;
 						Msg.byParamSize = 0;
 						strcpy(Msg.szMessage, "Chøc n¨ng nµy ®ang ®­îc hoµn thiÖn");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 					}
 				break;
 
@@ -23387,7 +23387,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Msg.byPriority = 1;
 						Msg.byParamSize = 0;
 						strcpy(Msg.szMessage, "Ch­a më khãa r­¬ng. Kh«ng thÓ thùc hiÖn thao t¸c nµy !");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 					}
 				break;
 			case EX_BOX:
@@ -23401,7 +23401,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Msg.byPriority = 1;
 						Msg.byParamSize = 0;
 						strcpy(Msg.szMessage, "B¹n ch­a më réng r­¬ng ®Õn gÆp ThÈm Cöu t¹i Ba L¨ng HuyÖn 188/198");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 					}
 					else 
 						CoreDataChanged(GDCNI_OPEN_EX_BOX, NULL, NULL);
@@ -23418,7 +23418,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Msg.byPriority = 1;
 						Msg.byParamSize = 0;
 						strcpy(Msg.szMessage, "B¹n ch­a më réng r­¬ng 2 ®Õn gÆp ThÈm Cöu t¹i Ba L¨ng HuyÖn 188/198");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 					}
 					else if(nExbox == 1 || nExbox == 2 || nExbox == 3)
 							CoreDataChanged(GDCNI_OPEN_EX_BOX2, NULL, NULL);
@@ -23435,7 +23435,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Msg.byPriority = 1;
 						Msg.byParamSize = 0;
 						strcpy(Msg.szMessage, "B¹n ch­a më réng r­¬ng 3 ®Õn gÆp ThÈm Cöu t¹i Ba L¨ng HuyÖn 188/198");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 					}
 					else if(nExbox == 1 || nExbox == 2 || nExbox == 3)
 							CoreDataChanged(GDCNI_OPEN_EX_BOX3, NULL, NULL);
@@ -23452,7 +23452,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Msg.byPriority = 1;
 						Msg.byParamSize = 0;
 						strcpy(Msg.szMessage, "B¹n ch­a mua më réng hµnh trang ë ThÈm Cöu");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 					}
 					else if(nItemEX >= 1)
 							CoreDataChanged(GDCNI_OPEN_ITEMEX, NULL, NULL);
@@ -23481,7 +23481,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					Msg.byPriority = 1;
 					Msg.byParamSize = 0;
 					strcpy(Msg.szMessage, "Trong lóc ®i ngùa kh«ng thÓ thùc hiÖn");//edit by phong kieu dang tren ngua khong the ngoi
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 				}
 				break;
 			}
@@ -23516,7 +23516,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							Msg.byPriority = 1;
 							Msg.byParamSize = 0;
 							sprintf(Msg.szMessage, "PK luyÖn c«ng chuyÓn sang phi luyÖn c«ng mÊt 3 phót !");
-							CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+							CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 						}
 					}
 				}
@@ -23529,7 +23529,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				Msg.byPriority = 1;
 				Msg.byParamSize = 0;
 				strcpy(Msg.szMessage, "Khu vùc nµy kh«ng cho phÐp ®æi PK!");
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, 0);
 			}
 		}
 		break;
@@ -23837,7 +23837,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	return nRet;
 }
 
-void KCoreShell::ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam)
+void KCoreShell::ProcessInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	Player[CLIENT_PLAYER_INDEX].ProcessInputMsg(uMsg, uParam, nParam);
 }
@@ -24850,7 +24850,7 @@ int KCoreShell::GetProtocolSize(BYTE byProtocol)
 extern int		g_bShowObstacle;
 extern bool		g_bShowGameInfo;	
 #endif
-int KCoreShell::Debug(unsigned int uDataId, unsigned int uParam, int nParam)
+int KCoreShell::Debug(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam)
 {
 #ifdef SWORDONLINE_SHOW_DBUG_INFO
 	switch(uDataId)
@@ -24893,7 +24893,7 @@ void KCoreShell::SendNewDataToServer(void* pData, int nLength)
 		g_pClient->SendPackToServer(pData, nLength);
 }
 
-int	KCoreShell::SceneMapOperation(unsigned int uOper, unsigned int uParam, int nParam)
+int	KCoreShell::SceneMapOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uOper)
@@ -24961,7 +24961,7 @@ int	KCoreShell::SceneMapOperation(unsigned int uOper, unsigned int uParam, int n
 	return nRet;
 }
 
-int	KCoreShell::TongOperation(unsigned int uOper, unsigned int uParam, int nParam)
+int	KCoreShell::TongOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam)
 {
 	// ==== JX2 port: cua so bang hoi kieu JX2 ====
 	if (uOper == GTOI_TONG_JX2_VIEW)
@@ -25179,7 +25179,7 @@ int	KCoreShell::TongOperation(unsigned int uOper, unsigned int uParam, int nPara
 	return nRet;
 }
 
-int KCoreShell::TeamOperation(unsigned int uOper, unsigned int uParam, int nParam)
+int KCoreShell::TeamOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uOper)
@@ -25221,7 +25221,7 @@ int KCoreShell::TeamOperation(unsigned int uOper, unsigned int uParam, int nPara
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case TEAM_OI_KICK:			
@@ -25348,7 +25348,7 @@ int KCoreShell::GetGenreItem(unsigned int uItemId, unsigned int uGenre /* = CGOG
 	return Item[nIndex].GetGenre();
 }
 
-int KCoreShell::GetObjAtCountRegionInSuperShop(int nSaleId, unsigned int uParam, int nParam)
+int KCoreShell::GetObjAtCountRegionInSuperShop(int nSaleId, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	int	nBuyIdx = Player[CLIENT_PLAYER_INDEX].m_BuyInfo.m_nShopIdx[nSaleId];
@@ -25383,7 +25383,7 @@ int KCoreShell::GetObjAtCountRegionInSuperShop(int nSaleId, unsigned int uParam,
 	return nRet;
 }
 
-int KCoreShell::GetDataSuperShop(int nSaleId, unsigned int uParam, int nParam)
+int KCoreShell::GetDataSuperShop(int nSaleId, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	int	nBuyIdx = Player[CLIENT_PLAYER_INDEX].m_BuyInfo.m_nShopIdx[nSaleId];
@@ -25459,7 +25459,7 @@ int KCoreShell::GetItemIdxNpcShop(char* szItemName)//fkauto
 	return -1;
 }
 
-int KCoreShell::GetDataDynamicShop(int nSaleId, unsigned int uParam, int nParam)
+int KCoreShell::GetDataDynamicShop(int nSaleId, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	int	nBuyIdx = Player[CLIENT_PLAYER_INDEX].m_BuyInfo.m_nShopIdx[nSaleId];
@@ -25559,7 +25559,7 @@ int KCoreShell::GetOwnValue(int nMoneyUnit)
 	return nRet;
 }
 
-int KCoreShell::AutoPlayOperation(unsigned int uOper, unsigned int uParam, int nParam)//fkauto
+int KCoreShell::AutoPlayOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam)//fkauto
 {
 	int nRet = 0, i = 0;
 	switch(uOper)

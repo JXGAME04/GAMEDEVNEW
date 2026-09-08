@@ -87,13 +87,13 @@ void KUiFightSkillSubPage::UpdateData(KUiSkillData* pSkills)
 		m_FightSkills[i].HoldObject(pSkills[i].uGenre, pSkills[i].uId, pSkills[i].nLevel, 0);
 }
 
-int	KUiFightSkillSubPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiFightSkillSubPage::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK && uParam && m_nRemainSkillPoint)
 	{
 		for (int i = 0; i < FIGHT_SKILL_COUNT_PER_PAGE; i++)
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_btnFightSkills[i])
+			if (uParam == (KUPARAM)(KWndWindow*)&m_btnFightSkills[i])
 			{
 				KUiDraggedObject	Obj;
 				m_FightSkills[i].GetObject(Obj);
@@ -146,7 +146,7 @@ void KUiFightSkillSubPage::OnSkillPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_P
 		Drop.eContainer = UOC_SKILL_TAKE_WITH;		
 	}
 	
-	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, pPickPos ? (unsigned int)&Pick : 0, pDropPos ? (int)&Drop : 0);
+	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, pPickPos ? (KUPARAM)&Pick : 0, pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 void KUiFightSkillSubPage::PaintWindow()
@@ -325,7 +325,7 @@ void KUiLiveSkill::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiLiveSkill::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiLiveSkill::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_LEFT_CLICK_ITEM && uParam && m_nRemainSkillPoint)
 	{
@@ -372,7 +372,7 @@ void KUiLiveSkill::PaintWindow()
 void KUiLiveSkill::UpdateBaseData()
 {
 	KUiPlayerLiveSkillBase	Info;
-	g_pCoreShell->GetGameData(GDI_LIVE_SKILL_BASE, (unsigned int)&Info, 0);
+	g_pCoreShell->GetGameData(GDI_LIVE_SKILL_BASE, (KUPARAM)&Info, 0);
 	m_RemainSkillPoint.SetIntText(m_nRemainSkillPoint = Info.nRemainPoint);
 }
 
@@ -483,10 +483,10 @@ void KUiSkills::UpdateSkill(KUiSkillData* pSkill, int nIndex)
 		{
 			KUiPlayerAttribute	Info;
 			memset(&Info, 0, sizeof(KUiPlayerAttribute));
-			g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (unsigned int)&Info, 0);
+			g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (KUPARAM)&Info, 0);
 			if (Info.nLevel <= SET_NEW_SKILL_TO_IMMED_SKILL_LEVEL_RANGE)
 			{
-				g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (unsigned int)pSkill, 1);
+				g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)pSkill, 1);
 				KSystemMessage	Msg;
 				Msg.byConfirmType = SMCT_NONE;
 				Msg.byParamSize = 0;
@@ -518,7 +518,7 @@ void KUiSkills::UpdateLiveBaseData()
 	m_LiveSkillPad.UpdateBaseData();
 }
 
-int KUiSkills::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSkills::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK && (KWndWindow*)uParam == (KWndWindow*)&m_Close)
 	{

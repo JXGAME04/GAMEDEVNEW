@@ -238,7 +238,7 @@ void KUiDiceItem::ShowRow(int nRow, int nDiceId, void* pChatItem, int nTimeLeft)
     // Dung lai vat pham trong mang Item[] cua CLIENT tu ban mo ta - dung duong
     // co san GDI_ITEM_CHAT (CoreShell.cpp:2226). Nho vay bieu tuong va CHU GIAI
     // hoat dong nhu vat pham binh thuong, khong phai viet them gi.
-    int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)pChatItem);
+    int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (KNPARAM)pChatItem);
     if (nIdx <= 0)
         return;
 
@@ -336,19 +336,19 @@ void KUiDiceItem::OnDiceMsg(void* pSync)
 }
 
 //------------------------------------------------------------------
-int KUiDiceItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiDiceItem::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     switch (uMsg)
     {
     case WND_N_BUTTON_CLICK:
         for (int i = 0; i < DICE_ROW_COUNT; i++)
         {
-            if (uParam == (unsigned int)(KWndWindow*)&m_BtnNeed[i])
+            if (uParam == (KUPARAM)(KWndWindow*)&m_BtnNeed[i])
             {
                 SendChoice(i, DICE_CHOICE_NEED);
                 return 1;
             }
-            if (uParam == (unsigned int)(KWndWindow*)&m_BtnGiveUp[i])
+            if (uParam == (KUPARAM)(KWndWindow*)&m_BtnGiveUp[i])
             {
                 SendChoice(i, DICE_CHOICE_GIVEUP);
                 return 1;

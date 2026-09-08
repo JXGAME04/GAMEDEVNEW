@@ -238,7 +238,7 @@ void KReconnectWnd::Breathe()
 	}
 }
 
-int KReconnectWnd::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KReconnectWnd::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_M_OTHER_WORK_RESULT)
 	{

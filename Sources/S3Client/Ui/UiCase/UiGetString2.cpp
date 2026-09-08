@@ -106,15 +106,15 @@ void KUiGetString2::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiGetString2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiGetString2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_OkBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_OkBtn)
 			OnOk();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 			OnCancel();
 		break;
 	case WM_KEYDOWN:
@@ -142,7 +142,7 @@ void KUiGetString2::OnOk()
 		InPutCmd.nNum = 0;
 		strcpy(InPutCmd.nValue, m_pSelf->m_nScriptIndex);
 		strcpy(InPutCmd.szAction, szString);
-		g_pCoreShell->OperationRequest(GOI_INPUT_INFO, 1, (unsigned int)(&InPutCmd));
+		g_pCoreShell->OperationRequest(GOI_INPUT_INFO, 1, (KUPARAM)(&InPutCmd));
 		CloseWindow(false);
 	}
 	else

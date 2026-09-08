@@ -142,7 +142,7 @@ void	KViewItem::GetData(BYTE* pMsg)
 	}
 
 	// 通知界面
-	CoreDataChanged(GDCNI_VIEW_PLAYERITEM, (DWORD)&sPlayer, 0);
+	CoreDataChanged(GDCNI_VIEW_PLAYERITEM, (KUPARAM)&sPlayer, 0);
 }
 
 

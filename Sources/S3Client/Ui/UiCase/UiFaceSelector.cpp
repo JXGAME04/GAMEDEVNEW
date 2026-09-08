@@ -217,7 +217,7 @@ void KUiFaceSelector::OnSelFace()
 	CloseWindow(false);
 }
 
-int KUiFaceSelector::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiFaceSelector::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nResult = false;
 	switch(uMsg)
@@ -249,9 +249,9 @@ int KUiFaceSelector::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_MoreBtn)
+		if(uParam == (KUPARAM)&m_MoreBtn)
 			OnExpandWnd();
-		else if(uParam == (unsigned int)&m_LessBtn)
+		else if(uParam == (KUPARAM)&m_LessBtn)
 			OnUnExpandWnd();
 		nResult = true;
 		break;

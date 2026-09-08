@@ -42,7 +42,7 @@ private:
 	KUiHelper2();
 	~KUiHelper2();
 	void	Initialize();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	LoadIndexList(const char* pScheme);
 	void	Clear();
 	void	UpdateData(int nIndex);

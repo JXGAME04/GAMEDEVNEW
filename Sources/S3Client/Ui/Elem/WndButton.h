@@ -37,7 +37,7 @@ public:
 	KWndButton();
 	virtual int		Init(KIniFile* pIniFile, const char* pSection);//初始化
 	virtual const char*	GetShortKey() {return NULL;}	//取快捷键,用于Tip显示
-	virtual int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	virtual void	PaintWindow();							//窗体绘制
 	int				IsButtonChecked();						//按钮是否出于按下状态
 	int				IsButtonActive();

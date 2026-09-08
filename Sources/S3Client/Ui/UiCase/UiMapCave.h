@@ -23,7 +23,7 @@ private:
 	KUiMapCave() {}
 	~KUiMapCave() {}
 	void	Initialize();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	Breathe();	
 	void	PaintWindow();		// [BANDO20 06/09] ve anh + ten dia diem dang tro chuot
 	void	UpdateData();

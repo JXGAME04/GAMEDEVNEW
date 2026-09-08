@@ -985,7 +985,7 @@ unsigned int KScenePlaceC::AddObject(unsigned int uGenre, int nId, int x, int y,
 		}
 	}
 
-	return ((unsigned int)pLeaf);
+	return ((KUPARAM)pLeaf);
 }
 
 //##ModelId=3DCAA7000085

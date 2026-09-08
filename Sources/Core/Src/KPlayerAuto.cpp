@@ -910,7 +910,7 @@ void KPlayerAuto::FkAutoIdleTalk()
 		char fk_cIdleTalk[Def_MAXLEN_STRING_CHAT];
 		strcpy(fk_cIdleTalk, g_Array_IdleTalk[fkIndex_Ran]);
 		//
-		CoreDataChanged(GDCNI_FK_AUTO_TALK, (unsigned int)&fk_cIdleTalk, 0);
+		CoreDataChanged(GDCNI_FK_AUTO_TALK, (KUPARAM)&fk_cIdleTalk, 0);
 	}
 }
 
@@ -3403,12 +3403,12 @@ void KPlayerAuto::FkAutoMapGetMoney()
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			strcpy(sMsg.szMessage, "Auto ®ang rót tiÒn.");
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			//nÕu kho¸ r­¬ng th× më b»ng mËt khÈu thiÕt lËp trong auto
 			if (!Player[CLIENT_PLAYER_INDEX].m_CUnlocked)
 			{
 				strcpy(sMsg.szMessage, "Auto ®ang më r­¬ng.");
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				SendClientCPUnlockCmd(m_nPwdMoneyEditBox);
 			}
 			//
@@ -3446,7 +3446,7 @@ void KPlayerAuto::FkAutoMapRepairItem()
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			strcpy(sMsg.szMessage, "Auto ®ang söa ®å.");
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			//
 			PlayerItem* pItem = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetFirstItem();
 			if (pItem)
@@ -3491,16 +3491,16 @@ void KPlayerAuto::FkAutoMapBuyItemMM()
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			strcpy(sMsg.szMessage, "Auto ®ang m¸u mana gi¶i ®éc.");
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			//
 			if (m_bBuyHPCheckBox && FkAutoCountItemName(pos_equiproom, m_BuyHPTxtSelect) < m_nBuyHPEditBox) {
-				CoreDataChanged(GDCNI_FK_AUTO_ITEM, (unsigned int)&m_BuyHPTxtSelect, 2); // mua m¸u
+				CoreDataChanged(GDCNI_FK_AUTO_ITEM, (KUPARAM)&m_BuyHPTxtSelect, 2); // mua m¸u
 			}
 			else if (m_bBuyMPCheckBox && FkAutoCountItemName(pos_equiproom, m_BuyMPTxtSelect) < m_nBuyMPEditBox) {
-				CoreDataChanged(GDCNI_FK_AUTO_ITEM, (unsigned int)&m_BuyMPTxtSelect, 2); // mua mana
+				CoreDataChanged(GDCNI_FK_AUTO_ITEM, (KUPARAM)&m_BuyMPTxtSelect, 2); // mua mana
 			}
 			else if (m_bBuyToxicCheckBox && FkAutoCountItemName(pos_equiproom, m_BuyToxicTxtSelect) < m_nBuyToxicEditBox) {
-				CoreDataChanged(GDCNI_FK_AUTO_ITEM, (unsigned int)&m_BuyToxicTxtSelect, 2); // mua gi¶i ®éc
+				CoreDataChanged(GDCNI_FK_AUTO_ITEM, (KUPARAM)&m_BuyToxicTxtSelect, 2); // mua gi¶i ®éc
 			}
 			else
 				m_bCheck = TRUE;
@@ -3565,14 +3565,14 @@ void KPlayerAuto::FkAutoMapBuyItemTDP()
 				strcpy(m_BuyTownTxtSelect, "Thæ §Þa Phï ");
 				if (m_bBuyTownCheckBox && FkAutoCountItemName(pos_equiproom, m_BuyTownTxtSelect) < m_nBuyTownEditBox)
 				{
-					CoreDataChanged(GDCNI_FK_AUTO_ITEM, (unsigned int)&m_BuyTownTxtSelect, 2); // mua thæ ®Þa phï
+					CoreDataChanged(GDCNI_FK_AUTO_ITEM, (KUPARAM)&m_BuyTownTxtSelect, 2); // mua thæ ®Þa phï
 					//
 					sMsg.eType = SMT_NORMAL;
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
 					strcpy(sMsg.szMessage, "fkauto ®ang mua thæ ®Þa phï.");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				}
 				else
 					m_bCheck = TRUE;
@@ -4165,7 +4165,7 @@ BOOL KPlayerAuto::FkAutoCheckItemSellAll()
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
 	strcpy(sMsg.szMessage, "Auto Tù §éng b¸n ®å .");
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	//
 	PlayerItem* pItem = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetFirstItem();
 	if (pItem)

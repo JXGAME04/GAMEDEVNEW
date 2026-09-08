@@ -119,7 +119,7 @@ void KUiTargetInfo::UpdateData(KUiTargetDetailInfo* pInfo)
 		
 	if (pInfo)
 		m_Info = *pInfo;
-	else if (!g_pCoreShell->GetGameData(NPC_OI_TARGET_INFO, (unsigned int)&m_Info, 0)) //m_Info.sTargetName = NULL if no target
+	else if (!g_pCoreShell->GetGameData(NPC_OI_TARGET_INFO, (KUPARAM)&m_Info, 0)) //m_Info.sTargetName = NULL if no target
 	{
 		memset(&m_Info, 0, sizeof(m_Info));
 	}
@@ -129,7 +129,7 @@ void KUiTargetInfo::UpdateData(KUiTargetDetailInfo* pInfo)
 		if (m_pPlayersList)
 		{
 			memset(m_pPlayersList, 0, sizeof(m_pPlayersList));
-			int nCount = 1;// g_pCoreShell->TeamOperation(TEAM_OI_GD_MEMBER_LIST, (unsigned int)m_pPlayersList, m_Info.cNumMember);
+			int nCount = 1;// g_pCoreShell->TeamOperation(TEAM_OI_GD_MEMBER_LIST, (KUPARAM)m_pPlayersList, m_Info.cNumMember);
 			nCountS = 1;
 			//m_btnCaptainFlag.Show();
 			strcpy_s(m_pPlayersList[0].Name, sizeof(m_pPlayersList[0].Name), m_Info.sTargetName);
@@ -163,7 +163,7 @@ void KUiTargetInfo::PaintWindow()
 	if (g_pRepresentShell == NULL)
 		return;
 
-	g_pCoreShell->OperationRequest(GOI_DRAW_TARGET_INFO, (unsigned int)m_pPlayersList, (unsigned int)nPainTMG);
+	g_pCoreShell->OperationRequest(GOI_DRAW_TARGET_INFO, (KUPARAM)m_pPlayersList, (unsigned int)nPainTMG);
 
 }
 
@@ -239,14 +239,14 @@ KUiTargetInfo* KUiTargetInfo::GetIfVisible()
 	return NULL;
 }
 
-int KUiTargetInfo::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTargetInfo::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     int nRet = 0;
     switch (uMsg)
     {
 		case WND_N_BUTTON_CLICK:
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_btnSwitch)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_btnSwitch)
 			{
 				if(eShowTMG == 1)
 					eShowTMG = 0;

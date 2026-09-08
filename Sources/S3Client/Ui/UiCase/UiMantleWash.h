@@ -38,7 +38,7 @@ public:
 	void	VeHaiCot(const char szTruoc[PF_WASH_LINE][128], const char szSau[PF_WASH_LINE][128]);
 private:
 	friend class KUiMantleWash;
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:
 	KWndImage		m_ImgBg;
 	KWndText80		m_DescTitle;
@@ -68,7 +68,7 @@ public:
 	void	VeDongAn(const char szDong[PF_WASH_LINE][128], int nCo);
 private:
 	friend class KUiMantleWash;
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:
 	KWndImage		m_ImgBg;
 	KWndText80		m_DescTitle;
@@ -101,7 +101,7 @@ private:
 	KUiMantleWash();
 	~KUiMantleWash() {}
 	void	Initialize();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnCancel();
 	void	OnWash();		// "Tay luyen": chup dong hien tai -> cot TRUOC, goi Lua roll
 	void	OnKeepOld();	// "Giu nguyen": Lua doWashKeep

@@ -54,7 +54,7 @@ private:
 	~KUiMsgSel() {}
 	void	Show(KUiQuestionAndAnswer* pContent);
 	int		Initialize();								
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnClickMsg(int nMsg);		
 	void	ChangeCurSel(bool bNext);
 	virtual void	Breathe();

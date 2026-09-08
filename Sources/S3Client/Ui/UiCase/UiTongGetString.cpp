@@ -142,15 +142,15 @@ void KUiTongGetString::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口消息函数
 //--------------------------------------------------------------------------
-int KUiTongGetString::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTongGetString::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_OkBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_OkBtn)
 			OnOk();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 			OnCancel();
 		break;
 	case WM_KEYDOWN:
@@ -167,7 +167,7 @@ int KUiTongGetString::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 		break;
 	case WND_N_EDIT_SPECIAL_KEY_DOWN:
 		if (nParam == VK_RETURN &&
-			uParam == (unsigned int)(KWndWindow*)&m_StringEdit)
+			uParam == (KUPARAM)(KWndWindow*)&m_StringEdit)
 		{
 			OnOk();
 			return 1;
@@ -190,7 +190,7 @@ void KUiTongGetString::OnOk()
 	if (nLen >= m_nMinLen && nLen <= m_nMaxLen)
 	{
 		if (m_pRequester)
-			m_pRequester->WndProc(WND_M_OTHER_WORK_RESULT, m_uRequesterParam, (int)&szString);
+			m_pRequester->WndProc(WND_M_OTHER_WORK_RESULT, m_uRequesterParam, (KNPARAM)&szString);
 		CloseWindow(true);
 	}
 	else

@@ -28,7 +28,7 @@ private:
 	KUiAutoParty();
 	~KUiAutoParty();
 	void		Initialize();						
-	int			WndProc(unsigned int uMsg, unsigned int uParam, int nParam);	
+	int			WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);	
 	void		OnClickButton(KWndButton* pBtn);
 	void		PopUpInsertPlayerTeam();
 	void		SetPlayerListTeam();

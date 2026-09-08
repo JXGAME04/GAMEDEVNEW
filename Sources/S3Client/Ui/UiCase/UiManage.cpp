@@ -47,7 +47,7 @@ void KUiCliqueManage::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int	KUiCliqueManage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiCliqueManage::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	return KWndPage::WndProc(uMsg, uParam, nParam);
 }
@@ -77,7 +77,7 @@ void KUiConfraternityManage::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int	KUiConfraternityManage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)//窗口函数
+int	KUiConfraternityManage::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)//窗口函数
 {
 	return KWndPage::WndProc(uMsg, uParam, nParam);
 }
@@ -186,10 +186,10 @@ void KUiManage::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KUiManage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiManage::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK &&
-		uParam == (unsigned int)(KWndWindow*)&m_Close)
+		uParam == (KUPARAM)(KWndWindow*)&m_Close)
 	{
 		Hide();
 		return 0;
@@ -228,7 +228,7 @@ void KUiManage::UpdateToJoinChange(const KUiPlayerItem* playerItem,int bAdd)
 void KUiManage::UpdateLeaderData()
 {
 	KUiPlayerLeaderShip	Leader = { 0 };	
-	g_pCoreShell->OperationRequest(GDI_PLAYER_LEADERSHIP, (unsigned int)&Leader, 0);
+	g_pCoreShell->OperationRequest(GDI_PLAYER_LEADERSHIP, (KUPARAM)&Leader, 0);
 	m_LeaderShipLevel.SetIntText(Leader.nLeaderShipLevel);
 
 	m_LeaderShipExperience.SetPart(Leader.nLeaderShipExperience,

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- [X64 08/09] JpgLib static lib (tu JpgLib.dsp VC6). Chi dung cho ban client x64; ban Win32 van dung Lib\release\JpgLib.lib co san. -->
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7C3E2B7A-6D2F-4E3B-9A61-2B1F0C9D5E41}</ProjectGuid>
+    <RootNamespace>JpgLib</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <OutDir>.\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>.\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>JpgLib</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_MBCS;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)JpgLib.lib</OutputFile>
+    </Lib>
+    <PostBuildEvent Condition="'$(Platform)'=='x64'">
+      <Command>if not exist ..\..\Lib\release64 md ..\..\Lib\release64
+copy $(Platform)\$(Configuration)\JpgLib.lib ..\..\Lib\release64\JpgLib.lib</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Src\KJpegColor.c" />
+    <ClCompile Include="Src\KJpegDecode.c" />
+    <ClCompile Include="Src\KJpegHuffman.c" />
+    <ClCompile Include="Src\KJpegIdct.c" />
+    <ClCompile Include="Src\KJpegIdct2d.c" />
+    <ClCompile Include="Src\KJpegLib.c" />
+    <ClCompile Include="Src\KJpegQuanty.c" />
+    <ClCompile Include="Src\KJpegSegment.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Src\KJpegLib.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

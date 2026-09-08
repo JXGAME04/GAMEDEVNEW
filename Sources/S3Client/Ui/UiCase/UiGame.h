@@ -15,7 +15,7 @@ class KUiGameSpace : public KWndWindow
 {
 public:
 	//输入处理消息以及一些特定窗口消息的响应
-	int	WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int	WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	//绘制游戏世界
 	void PaintWindow();
 

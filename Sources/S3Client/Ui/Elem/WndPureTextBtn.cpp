@@ -146,7 +146,7 @@ int KWndPureTextBtn::IsButtonChecked()
 	return (m_Flag & WNDPTB_F_CHECK);
 }
 
-int KWndPureTextBtn::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndPureTextBtn::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (IsDisable())
 	{
@@ -165,7 +165,7 @@ int KWndPureTextBtn::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				{
 					KUiChatItem::CloseWindow();
 				}
-				int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&m_Item);
+				int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (KNPARAM)&m_Item);
 				if(nIdx)
 				{
 					KUiChatItem::OpenWindow(nIdx);
@@ -174,7 +174,7 @@ int KWndPureTextBtn::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			else if(m_pParentWnd)
 			{
-				m_pParentWnd->WndProc(WND_N_BUTTON_CLICK, (unsigned int)(KWndWindow*)this, 0);
+				m_pParentWnd->WndProc(WND_N_BUTTON_CLICK, (KUPARAM)(KWndWindow*)this, 0);
 			}
 		}
 		break;

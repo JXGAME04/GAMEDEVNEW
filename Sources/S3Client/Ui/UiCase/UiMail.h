@@ -108,7 +108,7 @@ private:
 class KUiMailScrollWnd : public KWndImage
 {
 public:
-	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int  WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 };
 
 //------------------------------------------------------------------
@@ -120,7 +120,7 @@ public:
 	KUiMailList();
 	void	Build();
 	void	LoadScheme(const char* pScheme);
-	virtual int WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 	// lenh tu Core
 	void	AddHeader(const KMailUiHeader* p);
@@ -190,7 +190,7 @@ public:
 private:
 	static KUiMailManager* ms_pSelf;
 	void	Initialize();
-	virtual int WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 	KWndText80			m_Title;				// [Title]
 	KWndLabeledButton	m_InBox;				// [InBox]
@@ -212,7 +212,7 @@ public:
 private:
 	static KUiMailIcon* ms_pSelf;
 	void	Initialize();
-	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int  WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	virtual void Breathe();
 
 	KWndButton			m_Btn;					// [MailBtn]

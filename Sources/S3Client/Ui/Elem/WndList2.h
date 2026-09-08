@@ -16,7 +16,7 @@ class KWndList2 : public KWndWindow
 {
 public:
 	virtual int		Init(KIniFile* pIniFile, const char* pSection);//初始化
-	virtual int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	virtual void	PaintWindow();							//绘制窗口
 	int				AddString(int nIndex, const char* pszString, bool bIsNode = false);//添加项
 	int				GetString(int nIndex, char* pBuffer, unsigned int nSize);//获取列表项的字符串内容

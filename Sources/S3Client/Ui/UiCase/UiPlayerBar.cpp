@@ -174,7 +174,7 @@ void GameWorld_DateTime::UpdateData()
 	    {
     		KUiSceneTimeInfo Info;
 		    memset(&Info, 0, sizeof(KUiSceneTimeInfo));
-			g_pCoreShell->SceneMapOperation(GSMOI_SCENE_TIME_INFO, (unsigned int)&Info, 0);
+			g_pCoreShell->SceneMapOperation(GSMOI_SCENE_TIME_INFO, (KUPARAM)&Info, 0);
 		    int nLen = GetFormatedTimeString(Info.nGameSpaceTime, szTime);
 	    }
 	    else
@@ -400,7 +400,7 @@ void KUiPlayerBar::UpdateData()
 	//_ASSERT(g_pCoreShell);
 	KUiPlayerBaseInfo	Info;
 	memset(&Info, 0, sizeof(KUiPlayerBaseInfo));
-	g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (int)&Info, 0);
+	g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KNPARAM)&Info, 0);
 	strcpy(m_szSelfName, Info.Name);
 
 	int nA;
@@ -409,7 +409,7 @@ void KUiPlayerBar::UpdateData()
 
 	KUiPlayerImmedItemSkill immedItemSkillInfo;
 	memset(&immedItemSkillInfo, 0, sizeof(KUiPlayerImmedItemSkill));
-	g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (int)&immedItemSkillInfo, 0);
+	g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (KNPARAM)&immedItemSkillInfo, 0);
 	for (int i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
 	{
 		m_ImmediaItem[i].HoldObject(immedItemSkillInfo.ImmediaItem[i].uGenre, immedItemSkillInfo.ImmediaItem[i].uId, 0, 0);
@@ -427,7 +427,7 @@ void KUiPlayerBar::UpdateData()
 	{
 		KUiPlayerRuntimeInfo	Info;
 		memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
-		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (KNPARAM)&Info, 0);
 		m_Horse.CheckButton(Info.byAction & PA_RIDE);
 	}
 }
@@ -740,23 +740,23 @@ void KUiPlayerBar::Initialize()
 	Wnd_AddWindow(this);
 }
 
-int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_M_POPUPMENU:
-		if (uParam == (unsigned int)(KWndWindow*)(&m_InputEdit))
+		if (uParam == (KUPARAM)(KWndWindow*)(&m_InputEdit))
 		{
 			PopupPhraseMenu(LOWORD(nParam), HIWORD(nParam), true);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ChannelSwitchBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ChannelSwitchBtn)
 		{
 			int x, y;
 			m_ChannelSwitchBtn.GetAbsolutePos(&x, &y);
 			PopupChannelMenu(x, y);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ChannelOpenBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ChannelOpenBtn)
 		{
 		}
 		break;
@@ -765,56 +765,56 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			OnObjPickedDropped((ITEM_PICKDROP_PLACE*)uParam, (ITEM_PICKDROP_PLACE*)nParam);
 		break;
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Face)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Face)
 			KUiFaceSelector::OpenWindow(this, 0);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Market)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Market)
 		{	
 			g_pCoreShell->OperationRequest(GOI_SUPERSHOP, 0, 0);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Friend)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Friend)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_FRIEND);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Options)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Options)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SYSTEM);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Auto)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Auto)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_AUTO);
-		//else if (uParam == (unsigned int)(KWndWindow*)&m_ChatRoom)		
+		//else if (uParam == (KUPARAM)(KWndWindow*)&m_ChatRoom)		
 		//	g_pCoreShell->OperationRequest(GOI_MSG_HTCN, 0, 0);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Status)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Status)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_STATUS);	
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Items)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Items)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_ITEMS);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ItemEx)	
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ItemEx)	
 			g_pCoreShell->OperationRequest(GOI_PLAYER_ACTION, ITEMEX, 0);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Skills)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Skills)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SKILLSNEW);	
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Team)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Team)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_TEAM);	
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Faction)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Faction)
 			KUiTongJX2::ToggleFromIcon();	// JX2 port: co bang -> cua so JX2, chua co -> cua so cu
-		else if (uParam == (unsigned int)(KWndWindow*)&m_SendBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_SendBtn)
 			OnSend(false);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Run)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Run)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_RUN);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Sit)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Sit)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SIT);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Horse)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Horse)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_HORSE);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Exchange)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Exchange)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_TRADE);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_PK)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_PK)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_PK);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ChannelSwitchBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ChannelSwitchBtn)
 		{
 			int x, y;
 			m_ChannelSwitchBtn.GetAbsolutePos(&x, &y);
 			PopupChannelMenu(x, y);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ChannelOpenBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ChannelOpenBtn)
 		{
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_SwitchBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_SwitchBtn)
 			OnSwitchSize();
-        else if (uParam == (unsigned int)(KWndWindow*)&m_HideWindow)
+        else if (uParam == (KUPARAM)(KWndWindow*)&m_HideWindow)
 		{
 			gTrayMode.HideNotify(hInst);			
 		}
@@ -881,16 +881,16 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_LEFT_CLICK_ITEM:
-		if (nParam == (int)(KWndWindow*)&m_ImmediaSkill[0])
+		if (nParam == (KNPARAM)(KWndWindow*)&m_ImmediaSkill[0])
 			KUiSkillTree::OpenWindow(true);
-		else if (nParam == (int)(KWndWindow*)&m_ImmediaSkill[1])
+		else if (nParam == (KNPARAM)(KWndWindow*)&m_ImmediaSkill[1])
 			KUiSkillTree::OpenWindow(false);
 		break;
 	case WND_N_RIGHT_CLICK_ITEM:
 		if (g_UiBase.IsOperationEnable(UIS_O_USE_ITEM))
 		{
 			for (int i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
-				if (nParam == (int)(KWndWindow*)&m_ImmediaItem[i])
+				if (nParam == (KNPARAM)(KWndWindow*)&m_ImmediaItem[i])
 					OnUseItem(i);
 		}
 		break;
@@ -944,7 +944,7 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		m_cPreMsgCounter = 0;
 		break;		
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == SEL_CHANNEL_MENU)
 			{
@@ -967,7 +967,7 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_M_MENUITEMRIGHT_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == SEL_CHANNEL_MENU)
 			{
@@ -1181,7 +1181,7 @@ void KUiPlayerBar::OnSend(BOOL bDirectSend)
 	if (strstr(Buffer, "%dbio"))
 	{
 		m_InputEdit.ClearText();
-		g_pCoreShell->OperationRequest(GOI_PLAYER_ACTIONCHAT, (unsigned int)&Buffer, NULL);
+		g_pCoreShell->OperationRequest(GOI_PLAYER_ACTIONCHAT, (KUPARAM)&Buffer, NULL);
 		return;
 	}	
 		
@@ -1511,8 +1511,8 @@ void KUiPlayerBar::OnObjPickedDropped(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDR
 	_ASSERT(i < UPB_IMMEDIA_ITEM_COUNT);
 	
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, 
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 void KUiPlayerBar::OnUseItem(int nIndex)
@@ -1529,7 +1529,7 @@ void KUiPlayerBar::OnUseItem(int nIndex)
 			Info.Region.v = 0;
 			Info.Region.Width = Info.Region.Height = 0;
 		}
-		g_pCoreShell->OperationRequest(GOI_USE_ITEM, (int)&Info, UOC_IMMEDIA_ITEM);
+		g_pCoreShell->OperationRequest(GOI_USE_ITEM, (KNPARAM)&Info, UOC_IMMEDIA_ITEM);
 	}
 }
 
@@ -1658,7 +1658,7 @@ void KUiPlayerBar::UpdateXXXNumber(int& nMana, int& nFullMana)
 	KUiPlayerRuntimeInfo	Info;
 	memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
 
-	g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+	g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (KNPARAM)&Info, 0);
 
 	m_nExperienceFull = Info.nExperienceFull;
 	m_nCurLevelExperience = Info.nCurLevelExperience;
@@ -1669,7 +1669,7 @@ void KUiPlayerBar::UpdateXXXNumber(int& nMana, int& nFullMana)
 		pStatus->UpdateRuntimeInfo(&Info);
 
 	KUiSceneTimeInfo	Spot;
-	g_pCoreShell->SceneMapOperation(GSMOI_SCENE_TIME_INFO, (unsigned int)&Spot, 0);
+	g_pCoreShell->SceneMapOperation(GSMOI_SCENE_TIME_INFO, (KUPARAM)&Spot, 0);
 	KUiMiniMap::UpdateSceneTimeInfo(&Spot);
 	//KUiAuto::UpdateSceneTimeInfo(&Spot);
 	//KUiAutoPlay::UpdateSceneTimeInfo(&Spot);
@@ -1682,7 +1682,7 @@ void KUiPlayerBar::UpdateRuntimeAttribute(int& nMoney, int& nLevel)
 {
 	KUiPlayerAttribute	Info;
 	memset(&Info, 0, sizeof(KUiPlayerAttribute));
-	g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (unsigned int)&Info, 0);
+	g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (KUPARAM)&Info, 0);
 	KUiStatus* pStatus = KUiStatus::GetIfVisible();
 	if (pStatus)
 	{
@@ -1786,7 +1786,7 @@ void KUiPlayerBar::Breathe()
 		if (i < nCount)
 		{
 			pNode = (KStateTempNode*)malloc(sizeof(KStateTempNode) * nCount);
-			g_pCoreShell->GetGameData(GDI_NPC_STATE_SKILL, (unsigned int)pNode, nCount);
+			g_pCoreShell->GetGameData(GDI_NPC_STATE_SKILL, (KUPARAM)pNode, nCount);
 			if(nCount > MAX_BUTTON_STATE - 5) 
 				nCount = MAX_BUTTON_STATE - 5;//add by phong ki“u
 			for (i = 0; i < nCount; i++)
@@ -2308,7 +2308,7 @@ void KUiPlayerBar::SetChatItem(ChatItem CItem, unsigned int uId)
 		m_pSelf->m_ChatItemInfo[nOffset] = '\0';
 		char szName[64];
 		char szName2[64];
-		g_pCoreShell->GetGameData(GDI_ITEM_NAME, (unsigned int)&szName, uId);
+		g_pCoreShell->GetGameData(GDI_ITEM_NAME, (KUPARAM)&szName, uId);
 		int nLen = strlen(szName);
 		szName2[0] = '<';
 		strncpy(szName2+1,szName,nLen);
@@ -2325,7 +2325,7 @@ void KUiPlayerBar::SetItemBtnInfo(int nBtnNo, ChatItem * pItem)
 	if(nBtnNo >=0 && nBtnNo < MAX_ITEMBUTTON && g_pCoreShell && m_pSelf && pItem)
 	{
 		m_pSelf->m_ItemBtn[nBtnNo].SetItemInfo(pItem);
-		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&m_pSelf->m_ItemBtn[nBtnNo].m_Item);
+		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (KNPARAM)&m_pSelf->m_ItemBtn[nBtnNo].m_Item);
 		if(!nIdx) 
 			return;
 		char szName[64];
@@ -2356,7 +2356,7 @@ void KUiPlayerBar::SetItemBtnInfo(int nBtnNo, ChatItem * pItem)
 			m_pSelf->m_ItemBtn[nBtnNo].SetColor(0xffffffff,0xff000000,0xff00ffff,0xff000000,0xffff6699,0xff000000);		
 			break;	
 		}
-		g_pCoreShell->GetGameData(GDI_ITEM_NAME, (unsigned int)&szName, nIdx);
+		g_pCoreShell->GetGameData(GDI_ITEM_NAME, (KUPARAM)&szName, nIdx);
 		int nLen = strlen(szName);
 		szName2[0] = '<';
 		strncpy(szName2+1,szName,nLen);
@@ -2467,7 +2467,7 @@ void KUiPlayerBar::UpdateStateTip(int x, int y)
 		if (nCount)
 		{
 			pNode = (KStateTempNode*)malloc(sizeof(KStateTempNode) * nCount);
-			g_pCoreShell->GetGameData(GDI_NPC_STATE_SKILL, (unsigned int)pNode, nCount);
+			g_pCoreShell->GetGameData(GDI_NPC_STATE_SKILL, (KUPARAM)pNode, nCount);
 			sprintf(szToolTip, "%s \n%s", ms_pStateList[pNode[m_nCurrIndex].nSkillId].szName, ms_pStateList[pNode[m_nCurrIndex].nSkillId].szDesc);
 			free(pNode);
 			pNode = NULL;

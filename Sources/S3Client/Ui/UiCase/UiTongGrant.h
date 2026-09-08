@@ -26,7 +26,7 @@ public:
 	static void				CloseWindow(bool bDestory = true);
 	static void				LoadScheme(const char* pScheme);
 
-	virtual int	WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int	WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 private:
 	static KUiTongGrant*	ms_pSelf;

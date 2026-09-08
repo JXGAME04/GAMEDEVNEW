@@ -291,86 +291,86 @@ void KUiAutoPlayFight::LoadScheme(const char* pScheme)
 	UpdateData();
 }
 
-int KUiAutoPlayFight::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAutoPlayFight::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_FightCheckBox)//tù ®¸nh
+			if (uParam == (KUPARAM)(KWndWindow*)&m_FightCheckBox)//tù ®¸nh
 			{
 				m_bFightCheckBox = !m_bFightCheckBox;
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_FightDistanceCheckBox)//tiÕp cËn
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_FightDistanceCheckBox)//tiÕp cËn
 			{
 				m_bFightDistance = !m_bFightDistance;
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_FightSelfDefCheckBox)//tù vÖ
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_FightSelfDefCheckBox)//tù vÖ
 			{
 				m_bFightSelfDef = !m_bFightSelfDef;
 			}
-			else if(uParam == (unsigned int)(KWndWindow*)&m_FightMenuDownBtn)//tù ®¸nh
+			else if(uParam == (KUPARAM)(KWndWindow*)&m_FightMenuDownBtn)//tù ®¸nh
 			{
 				PopupFightOptionMenu();
 			}
-			else if(uParam == (unsigned int)(KWndWindow*)&m_FightMenuDistanceDownBtn)//tiÕp cËn
+			else if(uParam == (KUPARAM)(KWndWindow*)&m_FightMenuDistanceDownBtn)//tiÕp cËn
 			{
 				PopupFightDistanceMenu();
 			}
-			else if(uParam == (unsigned int)(KWndWindow*)&m_FightMenuSelfDefDownBtn)//tù vÖ
+			else if(uParam == (KUPARAM)(KWndWindow*)&m_FightMenuSelfDefDownBtn)//tù vÖ
 			{
 				PopupFightSelfDefMenu();
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_BuffSkillMenuDown1Btn)//support1
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_BuffSkillMenuDown1Btn)//support1
 			{
 				PopupSupportSkill(enumMagic_ID1);
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_BuffSkillMenuDown2Btn)//support2
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_BuffSkillMenuDown2Btn)//support2
 			{
 				PopupSupportSkill(enumMagic_ID2);
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_BuffSkillMenuDown3Btn)//support3
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_BuffSkillMenuDown3Btn)//support3
 			{
 				PopupSupportSkill(enumMagic_ID3);
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_LeftSkillMenuDown)//leftskill
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_LeftSkillMenuDown)//leftskill
 			{
 				PopupLeftSkill();
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_RightSkillMenuDown)//right
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_RightSkillMenuDown)//right
 			{
 				PopupRightSkill();
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_AuraSkillMenuDown1)//aura1
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_AuraSkillMenuDown1)//aura1
 			{
 				PopupAuraSkill1();
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_AuraSkillMenuDown2)//aura2
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_AuraSkillMenuDown2)//aura2
 			{
 				PopupAuraSkill2();
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_ShortcutKeyMenuDown1)//shortkey1
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_ShortcutKeyMenuDown1)//shortkey1
 			{
 				PopupShortKey1Menu();
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_ShortcutKeyMenuDown2)//shortkey2
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_ShortcutKeyMenuDown2)//shortkey2
 			{
 				PopupShortKey2Menu();
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_ShortcutOptMenuDown1)//shortcut1
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_ShortcutOptMenuDown1)//shortcut1
 			{
 				PopupShortCut1Menu();
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_ShortcutOptMenuDown2)//shortkey2
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_ShortcutOptMenuDown2)//shortkey2
 			{
 				PopupShortCut2Menu();
 			}
-			if (uParam == (unsigned int)(KWndWindow*)&m_SkillRightCheckBox)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_SkillRightCheckBox)
 			{
 				m_bSkillRightCheckBox = !m_bSkillRightCheckBox;
 			}
-			if (uParam == (unsigned int)(KWndWindow*)&m_NRDoSkillCheckBox)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_NRDoSkillCheckBox)
 			{
 				m_bNRDoSkillCheckBox = !m_bNRDoSkillCheckBox;
 			}
@@ -378,7 +378,7 @@ int KUiAutoPlayFight::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 		}
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == SELECT_TYPE_FIGHT_OPTION && (short)(LOWORD(nParam)) >= 0)
 			{
@@ -1382,88 +1382,88 @@ void KUiAutoPlayRestore::UpdateData()
 	m_RingTDPCheckBox.CheckButton(m_bRingTDPCheckBox);
 }
 
-int KUiAutoPlayRestore::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAutoPlayRestore::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_ReHPCheckBox)//b¬m sl
+		if (uParam == (KUPARAM)(KWndWindow*)&m_ReHPCheckBox)//b¬m sl
 		{
 			m_bReHPCheckBox = !m_bReHPCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ReMPCheckBox)//b¬m nl
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ReMPCheckBox)//b¬m nl
 		{
 			m_bReMPCheckBox = !m_bReMPCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TownHPVCheckBox)//phï sl <
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TownHPVCheckBox)//phï sl <
 		{
 			m_bTownHPVCheckBox = !m_bTownHPVCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TownMPVCheckBox)//phï nl <
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TownMPVCheckBox)//phï nl <
 		{
 			m_bTownMPVCheckBox = !m_bTownMPVCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TownHPNCheckBox)//phï hÕt b×nh sl
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TownHPNCheckBox)//phï hÕt b×nh sl
 		{
 			m_bTownHPNCheckBox = !m_bTownHPNCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TownMPNCheckBox)//phï hÕt b×nh nl
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TownMPNCheckBox)//phï hÕt b×nh nl
 		{
 			m_bTownMPNCheckBox = !m_bTownMPNCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TownFCellCheckBox)//phï hÕt kho¶ng trèng
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TownFCellCheckBox)//phï hÕt kho¶ng trèng
 		{
 			m_bTownFCellCheckBox = !m_bTownFCellCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TowMoneyCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TowMoneyCheckBox)
 		{
 			m_bTowMoneyCheckBox = !m_bTowMoneyCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TownAbradeCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TownAbradeCheckBox)
 		{
 			m_bTownAbradeCheckBox = !m_bTownAbradeCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TownFCellMenuDown)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TownFCellMenuDown)
 		{
 			PopupFCellMenu();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_UseHPCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_UseHPCheckBox)
 		{
 			m_bUseHPCheckBox = !m_bUseHPCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_UseAntiToxicCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_UseAntiToxicCheckBox)
 		{
 			m_bUseAntiToxicCheckBox = !m_bUseAntiToxicCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_UseExpCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_UseExpCheckBox)
 		{
 			m_bUseExpCheckBox = !m_bUseExpCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_UseSkillCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_UseSkillCheckBox)
 		{
 			m_bUseSkillCheckBox = !m_bUseSkillCheckBox;
 		}				
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BuffCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BuffCheckBox)
 		{
 			m_bBuffCheckBox = !m_bBuffCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BuffTeamCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BuffTeamCheckBox)
 		{
 			m_bBuffTeamCheckBox = !m_bBuffTeamCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_OpenBagHPCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_OpenBagHPCheckBox)
 		{
 			m_bOpenBagHPCheckBox = !m_bOpenBagHPCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_RingTDPCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_RingTDPCheckBox)
 		{
 			m_bRingTDPCheckBox = !m_bRingTDPCheckBox;
 		}
 		OnActive();
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == 1 && (short)(LOWORD(nParam)) >= 0)
 			{
@@ -1897,37 +1897,37 @@ void KUiAutoPlayPick::UpdateData()
 	LoadConfig();
 }
 
-int KUiAutoPlayPick::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAutoPlayPick::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)(KWndWindow*)&m_AutoPickCheckBox)
+		if(uParam == (KUPARAM)(KWndWindow*)&m_AutoPickCheckBox)
 		{
 			m_bAutoPickCheckBox = !m_bAutoPickCheckBox;
 		}
-		else if(uParam == (unsigned int)(KWndWindow*)&m_PickAllCheckBox)
+		else if(uParam == (KUPARAM)(KWndWindow*)&m_PickAllCheckBox)
 		{
 			m_bPickAllCheckBox = !m_bPickAllCheckBox;
 		}
-		else if(uParam == (unsigned int)(KWndWindow*)&m_PickSpeCheckBox)
+		else if(uParam == (KUPARAM)(KWndWindow*)&m_PickSpeCheckBox)
 		{
 			m_bPickSpeCheckBox = !m_bPickSpeCheckBox;
 		}
-		else if(uParam == (unsigned int)(KWndWindow*)&m_NoneFightCheckBox)
+		else if(uParam == (KUPARAM)(KWndWindow*)&m_NoneFightCheckBox)
 		{
 			m_bNoneFightCheckBox = !m_bNoneFightCheckBox;
 		}
-		else if(uParam == (unsigned int)(KWndWindow*)&m_PickSelMenuDown)
+		else if(uParam == (KUPARAM)(KWndWindow*)&m_PickSelMenuDown)
 		{
 			PopupPickMenu();
 		}
-		else if(uParam == (unsigned int)(KWndWindow*)&m_PickOptionMenuDown)
+		else if(uParam == (KUPARAM)(KWndWindow*)&m_PickOptionMenuDown)
 		{
 			PopupListMagicMenu();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_AddBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_AddBtn)
 		{
 			int i = FilterSameMagic(g_ArrayData2_Magic[m_nPickOptionTxtSelect][1]);
 
@@ -1950,7 +1950,7 @@ int KUiAutoPlayPick::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			SetFilterMagicList();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DelBtn)
 		{
 			int nSel = m_PickOptionList.GetCurSel();
 			if(nSel < 0) nSel = 0; //fix by phong kiÒu
@@ -1958,48 +1958,48 @@ int KUiAutoPlayPick::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_FilterMagicV[m_FilterMagicIndex[nSel]] = 0;
 			SetFilterMagicList();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DelAllBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DelAllBtn)
 		{
 			memset(m_cFilterMagic, 0, sizeof(m_cFilterMagic));
 			memset(m_FilterMagicV, 0, sizeof(m_FilterMagicV));
 			SetFilterMagicList();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_PriceCellCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_PriceCellCheckBox)
 		{
 			m_bPriceCellCheckBox = !m_bPriceCellCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_LevelCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_LevelCheckBox)
 		{
 			m_bLevelCheckBox = !m_bLevelCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_RiAmPeCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_RiAmPeCheckBox)
 		{
 			m_bRiAmPeCheckBox = !m_bRiAmPeCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_SortBagCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_SortBagCheckBox)
 		{
 			m_bSortBagCheckBox = !m_bSortBagCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_NPickBackLCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_NPickBackLCheckBox)
 		{
 			m_bNPickBackLCheckBox = !m_bNPickBackLCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_NPickBackLBtn)//thªm bít vËt phÈm ®en
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_NPickBackLBtn)//thªm bít vËt phÈm ®en
 		{
 			KUiAutoPlay::ShowPageBlackItem(true);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FillterItemCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FillterItemCheckBox)
 		{
 			m_bFillterItemCheckBox = !m_bFillterItemCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_KeepPurpleCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_KeepPurpleCheckBox)
 		{
 			m_bKeepPurpleCheckBox = !m_bKeepPurpleCheckBox;
 		}	
 		OnActive();
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == SELECT_TYPE_PICK_OPTION && (short)(LOWORD(nParam)) >= 0)
 			{
@@ -2013,13 +2013,13 @@ int KUiAutoPlayPick::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnActive();
 		break;
 	case WND_N_LIST_ITEM_SEL:
-		if(uParam == (unsigned int)&m_PickOptionList)
+		if(uParam == (KUPARAM)&m_PickOptionList)
 		{
 			//m_nPickOptionTxtSelect = nParam; //kh«ng sö dông n÷a
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)&m_PickOptionScroll)
+		if (uParam == (KUPARAM)&m_PickOptionScroll)
 			m_PickOptionList.SetTopItemIndex(nParam);
 		break;
 	default:
@@ -2404,21 +2404,21 @@ void KUiAutoPlayMove::UpdateData()
 	m_FlAnnyPTCheckBox.CheckButton(m_bFlAnnyPTCheckBox);
 }
 
-int KUiAutoPlayMove::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAutoPlayMove::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_FollowCheckBox)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_FollowCheckBox)
 		{
 			m_bFollowCheckBox = !m_bFollowCheckBox;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_FollowNameMenuDown)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_FollowNameMenuDown)
 		{
 			PopUpFollow();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_LoopPosCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_LoopPosCheckBox)
 		{
 			m_bLoopPosCheckBox = !m_bLoopPosCheckBox;
 			if(m_bLoopPosCheckBox)
@@ -2428,15 +2428,15 @@ int KUiAutoPlayMove::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				m_LoopPosTxt.Set2IntText(m_nXLoopPosTxt/8/32, m_nYLoopPosTxt/16/32, '/');
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ConstPosCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ConstPosCheckBox)
 		{
 			m_bConstPosCheckBox = !m_bConstPosCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_AddBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_AddBtn)
 		{
 			InsertMoveMpsList(m_CurrentMps.nSceneId, m_CurrentMps.nScenePos0*32, m_CurrentMps.nScenePos1*64);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_MoveMapsCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_MoveMapsCheckBox)
 		{
 			m_bMoveMapsCheckBox = !m_bMoveMapsCheckBox;
 			if(m_bMoveMapsCheckBox)
@@ -2446,7 +2446,7 @@ int KUiAutoPlayMove::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				m_MoveMapNameTxt.SetText(m_charMoveMapNameTxt);
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DelBtn)
 		{
 			int nSel = m_ConstPosList.GetCurSel();
 			int nCount = 0;
@@ -2470,39 +2470,39 @@ int KUiAutoPlayMove::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			nCount--;			
 			SetMoveMpsList();			
 		}		
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DelAllBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DelAllBtn)
 		{
 			memset(m_MoveMpsTrain, 0, sizeof(m_MoveMpsTrain));
 			SetMoveMpsList();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_IRMoveCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_IRMoveCheckBox)
 		{
 			m_bIRMoveCheckBox = !m_bIRMoveCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FMORCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FMORCheckBox)
 		{
 			m_bFMORCheckBox = !m_bFMORCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DamnMonterCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DamnMonterCheckBox)
 		{
 			m_bDamnMonterCheckBox = !m_bDamnMonterCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TalkAnnyCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TalkAnnyCheckBox)
 		{
 			m_bTalkAnnyCheckBox = !m_bTalkAnnyCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FlCaptainCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FlCaptainCheckBox)
 		{
 			m_bFlCaptainCheckBox = !m_bFlCaptainCheckBox;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FlAnnyPTCheckBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FlAnnyPTCheckBox)
 		{
 			m_bFlAnnyPTCheckBox = !m_bFlAnnyPTCheckBox;
 		}
 		OnActive();
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == 1 && (short)(LOWORD(nParam)) >= 0)
 			{
@@ -2512,7 +2512,7 @@ int KUiAutoPlayMove::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnActive();
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)&m_ConstPosScroll)
+		if (uParam == (KUPARAM)&m_ConstPosScroll)
 			m_ConstPosList.SetTopItemIndex(nParam);
 		break;
 	default:
@@ -2528,7 +2528,7 @@ void KUiAutoPlayMove::OnActive()
 	{
 		m_nFollowEditBox = m_FollowEditBox.GetIntNumber(); //ph¹m vi theo sau
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MOVE_1, m_bFollowCheckBox, m_nFollowEditBox);
-		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MOVE_2, (unsigned int)&m_nFollowNameTxt, 0);
+		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MOVE_2, (KUPARAM)&m_nFollowNameTxt, 0);
 		//Quanh ®iÓm // Kho¶ng c¸ch quanh ®iÓm // nX // nY
 		m_nLoopPosRangEBox = m_LoopPosRangEBox.GetIntNumber();
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MOVE_3, m_bLoopPosCheckBox, m_nLoopPosRangEBox);
@@ -2978,61 +2978,61 @@ void KUiAutoPlayMap::UpdateData()
 	ProcessStationSelect(m_GoFarAwayTxtSelect);
 }
 
-int KUiAutoPlayMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAutoPlayMap::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_ReturnCheckBox)
+		if(uParam == (KUPARAM)&m_ReturnCheckBox)
 		{
 			m_bReturnCheckBox = !m_bReturnCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_SellCheckBox)
+		else if(uParam == (KUPARAM)&m_SellCheckBox)
 		{
 			m_bSellCheckBox = !m_bSellCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_RepairCheckBox)
+		else if(uParam == (KUPARAM)&m_RepairCheckBox)
 		{
 			m_bRepairCheckBox = !m_bRepairCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_QuickRepairCheckBox)
+		else if(uParam == (KUPARAM)&m_QuickRepairCheckBox)
 		{
 			m_bQuickRepairCheckBox = !m_bQuickRepairCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_GetMoneyCheckBox)
+		else if(uParam == (KUPARAM)&m_GetMoneyCheckBox)
 		{
 			m_bGetMoneyCheckBox = !m_bGetMoneyCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_BuyHPMenuDown)
+		else if(uParam == (KUPARAM)&m_BuyHPMenuDown)
 		{
 			PopUpBuyHPSelect();
 		}
-		else if(uParam == (unsigned int)&m_BuyHPCheckBox)
+		else if(uParam == (KUPARAM)&m_BuyHPCheckBox)
 		{
 			m_bBuyHPCheckBox = !m_bBuyHPCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_BuyMPMenuDown)
+		else if(uParam == (KUPARAM)&m_BuyMPMenuDown)
 		{
 			PopUpBuyMPSelect();
 		}
-		else if(uParam == (unsigned int)&m_BuyMPCheckBox)
+		else if(uParam == (KUPARAM)&m_BuyMPCheckBox)
 		{
 			m_bBuyMPCheckBox = !m_bBuyMPCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_BuyToxicMenuDown)
+		else if(uParam == (KUPARAM)&m_BuyToxicMenuDown)
 		{
 			PopUpBuyToxicSelect();
 		}
-		else if(uParam == (unsigned int)&m_BuyToxicCheckBox)
+		else if(uParam == (KUPARAM)&m_BuyToxicCheckBox)
 		{
 			m_bBuyToxicCheckBox = !m_bBuyToxicCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_BuyTownCheckBox)
+		else if(uParam == (KUPARAM)&m_BuyTownCheckBox)
 		{
 			m_bBuyTownCheckBox = !m_bBuyTownCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_MapRunPosCheckBox)
+		else if(uParam == (KUPARAM)&m_MapRunPosCheckBox)
 		{
 			m_bMapRunPosCheckBox = !m_bMapRunPosCheckBox;
 			if(m_bMapRunPosCheckBox)
@@ -3042,11 +3042,11 @@ int KUiAutoPlayMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				m_MapTxt.SetText(m_cMapTxtName);
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_AddBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_AddBtn)
 		{
 			InsertMoveMpsList(m_CurrentMps.nSceneId, m_CurrentMps.nScenePos0*32, m_CurrentMps.nScenePos1*64);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DelBtn)
 		{
 			int nSel = m_ConstPosList.GetCurSel();
 			int nCount = 0;
@@ -3070,31 +3070,31 @@ int KUiAutoPlayMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			nCount--;			
 			SetMoveMpsList();			
 		}		
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DelAllBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DelAllBtn)
 		{
 			memset(m_MoveMpsMap, 0, sizeof(m_MoveMpsMap));
 			SetMoveMpsList();
 		}
-		else if(uParam == (unsigned int)&m_KeepMoneyCheckBox)
+		else if(uParam == (KUPARAM)&m_KeepMoneyCheckBox)
 		{
 			m_bKeepMoneyCheckBox = !m_bKeepMoneyCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_GetFYCheckBox)
+		else if(uParam == (KUPARAM)&m_GetFYCheckBox)
 		{
 			m_bGetFYCheckBox = !m_bGetFYCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_GoFarAwayCheckBox)
+		else if(uParam == (KUPARAM)&m_GoFarAwayCheckBox)
 		{
 			m_bGoFarAwayCheckBox = !m_bGoFarAwayCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_GoFarAwayMenuDown)
+		else if(uParam == (KUPARAM)&m_GoFarAwayMenuDown)
 		{
 			PopUpStationSelect();
 		}
 		OnActive();
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == SELECT_TYPE_MAP_STATION && (short)(LOWORD(nParam)) >= 0)
 			{
@@ -3116,7 +3116,7 @@ int KUiAutoPlayMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)&m_ConstPosScroll)
+		if (uParam == (KUPARAM)&m_ConstPosScroll)
 			m_ConstPosList.SetTopItemIndex(nParam);
 		break;
 	default:
@@ -3142,15 +3142,15 @@ void KUiAutoPlayMap::OnActive()
 		m_nBuyHPEditBox = m_BuyHPEditBox.GetIntNumber();
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_7, m_bBuyHPCheckBox, m_nBuyHPEditBox);
 		//
-		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_8, (unsigned int)&g_ArraySelectBuyHPOption[m_BuyHPTxtSelect], 0);
+		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_8, (KUPARAM)&g_ArraySelectBuyHPOption[m_BuyHPTxtSelect], 0);
 		//
 		m_nBuyMPEditBox = m_BuyMPEditBox.GetIntNumber();
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_9, m_bBuyMPCheckBox, m_nBuyMPEditBox);
-		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_10, (unsigned int)&g_ArraySelectBuyMPOption[m_BuyMPTxtSelect], 0);
+		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_10, (KUPARAM)&g_ArraySelectBuyMPOption[m_BuyMPTxtSelect], 0);
 		//
 		m_nBuyToxicEditBox = m_BuyToxicEditBox.GetIntNumber();
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_11, m_bBuyToxicCheckBox, m_nBuyToxicEditBox);
-		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_12, (unsigned int)&g_ArraySelectBuyToxicOption[m_BuyToxicTxtSelect], 0);
+		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_12, (KUPARAM)&g_ArraySelectBuyToxicOption[m_BuyToxicTxtSelect], 0);
 		//
 		m_nBuyTownEditBox = m_BuyTownEditBox.GetIntNumber();
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_13, m_bBuyTownCheckBox, m_nBuyTownEditBox);
@@ -3578,38 +3578,38 @@ void KUiAutoPlayTeam::UpdateData()
 	m_PTTongCheckBox.CheckButton(m_bPTTongCheckBox);
 }
 
-int KUiAutoPlayTeam::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAutoPlayTeam::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_AutoCTeamCheckBox)
+		if(uParam == (KUPARAM)&m_AutoCTeamCheckBox)
 		{
 			m_bAutoCTeamCheckBox = !m_bAutoCTeamCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_AlwayLeaderCheckBox)
+		else if(uParam == (KUPARAM)&m_AlwayLeaderCheckBox)
 		{
 			m_bAlwayLeaderCheckBox = !m_bAlwayLeaderCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_PTAllCheckBox)
+		else if(uParam == (KUPARAM)&m_PTAllCheckBox)
 		{
 			m_bPTAllCheckBox = !m_bPTAllCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_DecAllInviCheckBox)
+		else if(uParam == (KUPARAM)&m_DecAllInviCheckBox)
 		{
 			m_bDecAllInviCheckBox = !m_bDecAllInviCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_TPNameMenuDown)
+		else if(uParam == (KUPARAM)&m_TPNameMenuDown)
 		{
 			PopUpTeamPlayerName();
 		}
-		else if(uParam == (unsigned int)&m_AddBtn)
+		else if(uParam == (KUPARAM)&m_AddBtn)
 		{
 			if(m_cTPlayerNameTxt[0])
 				InsertPlayerListTeam(m_cTPlayerNameTxt);			
 		}
-		else if(uParam == (unsigned int)&m_DelBtn)
+		else if(uParam == (KUPARAM)&m_DelBtn)
 		{
 			int nSel = m_ConstPosList.GetCurSel();
 			int nCount = 0;
@@ -3633,31 +3633,31 @@ int KUiAutoPlayTeam::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 								
 			SetPlayerListTeam();
 		}
-		else if(uParam == (unsigned int)&m_DelAllBtn)
+		else if(uParam == (KUPARAM)&m_DelAllBtn)
 		{
 			memset(m_TeamPlayerList, 0, sizeof(m_TeamPlayerList));
 			SetPlayerListTeam();
 		}
-		else if(uParam == (unsigned int)&m_LeaveTeamCheckBox)
+		else if(uParam == (KUPARAM)&m_LeaveTeamCheckBox)
 		{
 			m_bLeaveTeamCheckBox = !m_bLeaveTeamCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_KickTeamCheckBox)
+		else if(uParam == (KUPARAM)&m_KickTeamCheckBox)
 		{
 			m_bKickTeamCheckBox = !m_bKickTeamCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_SCountTeamCheckBox)
+		else if(uParam == (KUPARAM)&m_SCountTeamCheckBox)
 		{
 			m_bSCountTeamCheckBox = !m_bSCountTeamCheckBox;
 		}
-		else if(uParam == (unsigned int)&m_PTTongCheckBox)
+		else if(uParam == (KUPARAM)&m_PTTongCheckBox)
 		{
 			m_bPTTongCheckBox = !m_bPTTongCheckBox;
 		}				
 		OnActive();
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == 1 && (short)(LOWORD(nParam)) >= 0)
 			{
@@ -3666,7 +3666,7 @@ int KUiAutoPlayTeam::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		OnActive();
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)&m_ConstPosScroll)
+		if (uParam == (KUPARAM)&m_ConstPosScroll)
 			m_ConstPosList.SetTopItemIndex(nParam);
 		break;
 	default:
@@ -3851,7 +3851,7 @@ void KUiAutoPlayTeam::SetPlayerListTeam()
 	m_ConstPosList.ResetContent();
 	for (int i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
 	{
-		g_pCoreShell->SetMoveMap(GAUTO_AUTO_PT_PLAYERTEAM, i,(unsigned int)&m_TeamPlayerList[i]);//qu¶n lý tæ ®éi
+		g_pCoreShell->SetMoveMap(GAUTO_AUTO_PT_PLAYERTEAM, i,(KUPARAM)&m_TeamPlayerList[i]);//qu¶n lý tæ ®éi
 
 		if(m_TeamPlayerList[i][0])
 		{
@@ -3922,22 +3922,22 @@ void KUiAutoPlayBlackItem::UpdateData()
 	//
 }
 
-int KUiAutoPlayBlackItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAutoPlayBlackItem::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_BlackItemMenuDown)
+		if(uParam == (KUPARAM)&m_BlackItemMenuDown)
 		{
 			PopUpBlackItemName();
 		}
-		else if(uParam == (unsigned int)&m_BlackItemAddBtn)
+		else if(uParam == (KUPARAM)&m_BlackItemAddBtn)
 		{
 			if(m_cBlackItemNameTxt[0])
 				InsertItemListBlack(m_cBlackItemNameTxt);					
 		}
-		else if(uParam == (unsigned int)&m_BlackItemDelBtn)
+		else if(uParam == (KUPARAM)&m_BlackItemDelBtn)
 		{	
 			int nSel = m_BlackItemConstPosList.GetCurSel();
 			int nCount = 0;
@@ -3961,14 +3961,14 @@ int KUiAutoPlayBlackItem::WndProc(unsigned int uMsg, unsigned int uParam, int nP
 								
 			SetItemListBlack();	
 		}
-		else if(uParam == (unsigned int)&m_BlackItemCloseBtn)
+		else if(uParam == (KUPARAM)&m_BlackItemCloseBtn)
 		{
 			KUiAutoPlay::ShowPageBlackItem(false);
 		}
 		OnActive();
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == 1 && (short)(LOWORD(nParam)) >= 0)
 			{
@@ -4071,7 +4071,7 @@ void KUiAutoPlayBlackItem::SetItemListBlack()
 	m_BlackItemConstPosList.ResetContent();
 	for (int i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
 	{
-		g_pCoreShell->SetMoveMap(GAUTO_AUTO_BLACK_ITEM, i,(unsigned int)&m_BlackItemList[i]);//qu¶n lý vËt phÈm ®en
+		g_pCoreShell->SetMoveMap(GAUTO_AUTO_BLACK_ITEM, i,(KUPARAM)&m_BlackItemList[i]);//qu¶n lý vËt phÈm ®en
 
 		if(m_BlackItemList[i][0])
 		{
@@ -4427,17 +4427,17 @@ char* KUiAutoPlay::GetFilenameFromIndex(int index) {
 }
 
 
-int KUiAutoPlay::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAutoPlay::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_ActiveBtn)
+		if(uParam == (KUPARAM)&m_ActiveBtn)
 		{
 			OnActive(m_bActive);
 		}
-		else if (uParam == (unsigned int)&m_GlobalBtn)
+		else if (uParam == (KUPARAM)&m_GlobalBtn)
 		{
 			g_UiBase.SetGlobalConfigFile(!g_UiBase.GetGlobalConfigFile());
 			if (g_UiBase.GetGlobalConfigFile()) {
@@ -4448,7 +4448,7 @@ int KUiAutoPlay::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			OpenWindow();
 
 		}
-		else if (uParam == (unsigned int)&m_SaveGlobalConfigBtn)
+		else if (uParam == (KUPARAM)&m_SaveGlobalConfigBtn)
 		{
 			char* tmp = g_UiBase.GetGlobalConfigFilename();
 			if (tmp[0]) {
@@ -4466,42 +4466,42 @@ int KUiAutoPlay::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				KUiGetString::OpenWindow("NhËp tªn tÖp", "", (KWndWindow*)this, UIITEM_WAIT_GETFILENAME, 1, 20);
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ConfigFileBtn)//support1
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ConfigFileBtn)//support1
 		{
 			PopupListConfigFile();
 		}
-		else if(uParam == (unsigned int)&m_CloseBtn)
+		else if(uParam == (KUPARAM)&m_CloseBtn)
 		{
 			OnSave();
 		}
-		else if(uParam == (unsigned int)&m_AutoFightBtn) //chiÕn ®Êu
+		else if(uParam == (KUPARAM)&m_AutoFightBtn) //chiÕn ®Êu
 		{
 			ShowPage(AP_FIGHT);
 		}
-		else if(uParam == (unsigned int)&m_AutoRestoreBtn) //phôc håi
+		else if(uParam == (KUPARAM)&m_AutoRestoreBtn) //phôc håi
 		{
 			ShowPage(AP_RESTORE);
 		}
-		else if(uParam == (unsigned int)&m_AutoPickBtn) //nhÆt ®å
+		else if(uParam == (KUPARAM)&m_AutoPickBtn) //nhÆt ®å
 		{
 			ShowPage(AP_PICK);
 		}
-		else if(uParam == (unsigned int)&m_AutoMoveBtn) //di chuyÓn
+		else if(uParam == (KUPARAM)&m_AutoMoveBtn) //di chuyÓn
 		{
 			ShowPage(AP_MOVE);
 		}
-		else if(uParam == (unsigned int)&m_AutoMapBtn) //di chuyÓn
+		else if(uParam == (KUPARAM)&m_AutoMapBtn) //di chuyÓn
 		{
 			ShowPage(AP_MAP);
 		}
-		else if(uParam == (unsigned int)&m_AutoTeamBtn) //tæ ®éi
+		else if(uParam == (KUPARAM)&m_AutoTeamBtn) //tæ ®éi
 		{
 			ShowPage(AP_TEAM);
 		}
 		SaveConfig();
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == SELECT_CONFIG_FILENAME)
 			{

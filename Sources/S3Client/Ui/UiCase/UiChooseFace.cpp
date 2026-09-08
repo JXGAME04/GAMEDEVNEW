@@ -227,125 +227,125 @@ void KUiChooseFace::ShowWindow(int nNum)
 	}
 }
 
-int KUiChooseFace::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiChooseFace::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nResult = false;
 	switch(uMsg)
 	{
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Scroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Scroll)
 			m_List.SetTopItemIndex(nParam);
 		break;
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 			CloseWindow();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_OkBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_OkBtn)
 			OnOK();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_OneFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_OneFemaleBtn)
 		{
 			nCheck = 1;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TwoFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TwoFemaleBtn)
 		{
 			nCheck = 2;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ThreeFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ThreeFemaleBtn)
 		{
 			nCheck = 3;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FourFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FourFemaleBtn)
 		{
 			nCheck = 4;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FiveFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FiveFemaleBtn)
 		{
 			nCheck = 5;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_SixFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_SixFemaleBtn)
 		{
 			nCheck = 6;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_SevenFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_SevenFemaleBtn)
 		{
 			nCheck = 7;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_EightFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_EightFemaleBtn)
 		{
 			nCheck = 8;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_NineFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_NineFemaleBtn)
 		{
 			nCheck = 9;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TenFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TenFemaleBtn)
 		{
 			nCheck = 10;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ElevenFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ElevenFemaleBtn)
 		{
 			nCheck = 11;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TwelveFemaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TwelveFemaleBtn)
 		{
 			nCheck = 12;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_OneMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_OneMaleBtn)
 		{
 			nCheck = 13;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TwoMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TwoMaleBtn)
 		{
 			nCheck = 14;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ThreeMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ThreeMaleBtn)
 		{
 			nCheck = 15;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FourMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FourMaleBtn)
 		{
 			nCheck = 16;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FiveMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FiveMaleBtn)
 		{
 			nCheck = 17;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_SixMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_SixMaleBtn)
 		{
 			nCheck = 18;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_SevenMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_SevenMaleBtn)
 		{
 			nCheck = 19;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_EightMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_EightMaleBtn)
 		{
 			nCheck = 20;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_NineMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_NineMaleBtn)
 		{
 			nCheck = 21;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TenMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TenMaleBtn)
 		{
 			nCheck = 22;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ElevenMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ElevenMaleBtn)
 		{
 			nCheck = 23;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TwelveMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TwelveMaleBtn)
 		{
 			nCheck = 24;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ThirteenMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ThirteenMaleBtn)
 		{
 			nCheck = 25;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FourteenMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FourteenMaleBtn)
 		{
 			nCheck = 26;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FifteenMaleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FifteenMaleBtn)
 		{
 			nCheck = 27;
 		}

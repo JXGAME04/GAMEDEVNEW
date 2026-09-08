@@ -54,7 +54,7 @@ void KUiSelDlg::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口消息函数
 //--------------------------------------------------------------------------
-int KUiSelDlg::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSelDlg::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg != WND_N_BUTTON_CLICK)
 		return KWndWindow::WndProc(uMsg, uParam, nParam);

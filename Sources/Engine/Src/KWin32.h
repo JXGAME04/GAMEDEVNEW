@@ -118,6 +118,13 @@ typedef struct _GUID {          // size is 16
 //---------------------------------------------------------------------------
 // Insert your headers here
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+// [X64 08/09] Tham so mang con tro cua he cua so KWnd (WndProc uParam/nParam) va CoreDataChanged:
+// Win32 giu nguyen unsigned int / int (kieu va ten xao tron y het -> nhi phan khong doi),
+// x64 rong bang con tro de khong cat cut dia chi. Dung KUPARAM/KNPARAM thay cho (unsigned int)/(int) khi ep con tro.
+#include <stdint.h>
+typedef uintptr_t KUPARAM;
+typedef intptr_t  KNPARAM;
+
 //---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>

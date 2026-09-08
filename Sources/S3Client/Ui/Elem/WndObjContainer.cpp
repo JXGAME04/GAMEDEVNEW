@@ -155,7 +155,7 @@ void KWndObjectBox::PaintWindow()
 			Obj.Region.Width = Obj.Region.Height = 0;
 			Obj.nContainer = m_nContainerId;
 
-			ITEM_IN_ENVIRO_PROP eProp = (ITEM_IN_ENVIRO_PROP)g_pCoreShell->GetGameData(GDI_ITEM_IN_ENVIRO_PROP, (unsigned int)&Obj, 0);
+			ITEM_IN_ENVIRO_PROP eProp = (ITEM_IN_ENVIRO_PROP)g_pCoreShell->GetGameData(GDI_ITEM_IN_ENVIRO_PROP, (KUPARAM)&Obj, 0);
 			if (eProp == IIEP_NORMAL)
 				Shadow.Color.Color_dw = l_BgColors[0];
 			else if (eProp == IIEP_NOT_USEABLE)
@@ -256,7 +256,7 @@ void KWndObjectBox::EnablePickPut(bool bEnable)
 		m_Style &= ~OBJCONT_S_DISABLE_PICKPUT;
 }
 
-int KWndObjectBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndObjectBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -271,7 +271,7 @@ int KWndObjectBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					if(GetKeyState(VK_CONTROL) & 0x8000)
 					{
 						ChatItem CItem;
-						if(g_pCoreShell->GetGameData(GDI_GET_ITEM_PARAM, (unsigned int)&CItem, m_Object.uId))
+						if(g_pCoreShell->GetGameData(GDI_GET_ITEM_PARAM, (KUPARAM)&CItem, m_Object.uId))
 						{
 							KUiPlayerBar::SetChatItem(CItem, m_Object.uId);
 						}
@@ -290,7 +290,7 @@ int KWndObjectBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					Pick.h = 0;
 					Pick.v = 0;
 					m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP,
-						(unsigned int)&Pick, NULL);
+						(KUPARAM)&Pick, NULL);
 				}
 			}
 			else if (m_Object.uGenre != CGOG_NOTHING)
@@ -298,12 +298,12 @@ int KWndObjectBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				KUiDraggedObject	Obj;
 				Obj = m_Object;
 				m_pParentWnd->WndProc(WND_N_LEFT_CLICK_ITEM,
-					(unsigned int)&Obj, (int)(KWndWindow*)this);
+					(KUPARAM)&Obj, (KNPARAM)(KWndWindow*)this);
 			}
 			else if (m_Style & OBJCONT_S_ENABLE_CLICK_EMPTY)
 			{
 				m_pParentWnd->WndProc(WND_N_LEFT_CLICK_ITEM,
-					NULL, (int)(KWndWindow*)this);
+					NULL, (KNPARAM)(KWndWindow*)this);
 			}				
 		}
 		break;
@@ -315,12 +315,12 @@ int KWndObjectBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				KUiDraggedObject	Obj;
 				Obj = m_Object;
 				m_pParentWnd->WndProc(WND_N_RIGHT_CLICK_ITEM,
-					(unsigned int)&m_Object, (int)(KWndWindow*)this);
+					(KUPARAM)&m_Object, (KNPARAM)(KWndWindow*)this);
 			}
 			else if (m_Style & OBJCONT_S_ENABLE_CLICK_EMPTY)
 			{
 				m_pParentWnd->WndProc(WND_N_LEFT_CLICK_ITEM,
-					NULL, (int)(KWndWindow*)this);
+					NULL, (KNPARAM)(KWndWindow*)this);
 			}
 		}
 		break;
@@ -352,13 +352,13 @@ int KWndObjectBox::DropObject(bool bTestOnly)
 		Drop.pWnd = this;
 		Drop.h = Drop.v = 0;
 		if (m_Object.uGenre == CGOG_NOTHING)
-			m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, NULL, (int)&Drop);
+			m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, NULL, (KNPARAM)&Drop);
 		else
 		{
 			Pick.pWnd = this;
 			Pick.h = 0;
 			Pick.v = 0;
-			m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, (unsigned int)&Pick, (int)&Drop);
+			m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, (KUPARAM)&Pick, (KNPARAM)&Drop);
 		}
 		return true;
 	}
@@ -375,13 +375,13 @@ int KWndObjectBox::DropObject(bool bTestOnly)
 	Drop.pWnd = this;
 	Drop.h = Drop.v = 0;
 	if (m_Object.uGenre == CGOG_NOTHING)
-		m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, NULL, (int)&Drop);
+		m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, NULL, (KNPARAM)&Drop);
 	else
 	{
 		Pick.pWnd = this;
 		Pick.h = 0;
 		Pick.v = 0;
-		m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, (unsigned int)&Pick, (int)&Drop);
+		m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, (KUPARAM)&Pick, (KNPARAM)&Drop);
 	}		
 	return true;
 }
@@ -507,7 +507,7 @@ void KWndObjectMatrix::PaintWindow() // edit by phong kieu vong sang item
 			Obj.Region.Width = Obj.Region.Height = 0;
 			Obj.nContainer = m_nContainerId;
 
-			ITEM_IN_ENVIRO_PROP eProp = (ITEM_IN_ENVIRO_PROP)g_pCoreShell->GetGameData(GDI_ITEM_IN_ENVIRO_PROP, (unsigned int)&Obj, 0);
+			ITEM_IN_ENVIRO_PROP eProp = (ITEM_IN_ENVIRO_PROP)g_pCoreShell->GetGameData(GDI_ITEM_IN_ENVIRO_PROP, (KUPARAM)&Obj, 0);
 			if (eProp == IIEP_NORMAL)
 				Shadow.Color.Color_dw = l_BgColors[0];
 			else if (eProp == IIEP_NOT_USEABLE)
@@ -680,7 +680,7 @@ void KWndObjectMatrix::Clear()
 	}
 }
 
-int KWndObjectMatrix::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndObjectMatrix::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -698,7 +698,7 @@ int KWndObjectMatrix::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 					KUiDraggedObject	Obj;
 					Obj = m_pObjects[nObj];
 					ChatItem CItem;
-					if(g_pCoreShell->GetGameData(GDI_GET_ITEM_PARAM, (unsigned int)&CItem, Obj.uId))
+					if(g_pCoreShell->GetGameData(GDI_GET_ITEM_PARAM, (KUPARAM)&CItem, Obj.uId))
 					{
 						KUiPlayerBar::SetChatItem(CItem, Obj.uId);
 					}
@@ -721,7 +721,7 @@ int KWndObjectMatrix::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 				KUiDraggedObject	Obj;
 				Obj = m_pObjects[nObj];
 				m_pParentWnd->WndProc(WND_N_LEFT_CLICK_ITEM,
-					(unsigned int)&Obj, (int)(KWndWindow*)this);
+					(KUPARAM)&Obj, (KNPARAM)(KWndWindow*)this);
 			}
 		}
 		break;
@@ -735,7 +735,7 @@ int KWndObjectMatrix::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 				KUiDraggedObject	Obj;
 				Obj = m_pObjects[nObj];
 				m_pParentWnd->WndProc(WND_N_RIGHT_CLICK_ITEM,
-					(unsigned int)&Obj, (int)(KWndWindow*)this);
+					(KUPARAM)&Obj, (KNPARAM)(KWndWindow*)this);
 			}
 		}
 		break;
@@ -801,7 +801,7 @@ int KWndObjectMatrix::PickUpObjectAt(int x, int y)
 		Pick.pWnd = this;
 		Pick.h = m_pObjects[nPicked].DataX;
 		Pick.v = m_pObjects[nPicked].DataY;
-		m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, (unsigned int)&Pick, NULL);
+		m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, (KUPARAM)&Pick, NULL);
 		return true;
 	}
 	return false;
@@ -924,10 +924,10 @@ void KWndObjectMatrix::DropObject(int x, int y, KUiDraggedObject* pToPickUpObj)
 		Pick.pWnd = this;
 		Pick.h = pToPickUpObj->DataX;
 		Pick.v = pToPickUpObj->DataY;
-		m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, (unsigned int)&Pick, (int)&Drop);
+		m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, (KUPARAM)&Pick, (KNPARAM)&Drop);
 	}
 	else
-		m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, NULL, (int)&Drop);
+		m_pParentWnd->WndProc(WND_N_ITEM_PICKDROP, NULL, (KNPARAM)&Drop);
 }
 
 void KWndObjectMatrix::EnableTracePutPos(bool bEnable)

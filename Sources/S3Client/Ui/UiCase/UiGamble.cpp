@@ -236,7 +236,7 @@ void KUiGamble::UpdateTakewithItems()
 
 	if (pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount))
 	{
-		g_pCoreShell->GetGameData(GDI_ITEM_TAKEN_WITH, (unsigned int)pObjs, nCount);
+		g_pCoreShell->GetGameData(GDI_ITEM_TAKEN_WITH, (KUPARAM)pObjs, nCount);
 		for (int i = 0; i < nCount; i++)
 		{
 			KUiDraggedObject no;
@@ -375,59 +375,59 @@ void KUiGamble::UpdateOperData()
 // -------------------------------------------------------------------------
 // ¹¦ÄÜ	: ´°¿Úº¯Êư
 // -------------------------------------------------------------------------
-int	KUiGamble::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiGamble::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Cancel)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Cancel)
 			OnCancelTrade();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Ok) {
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Ok) {
 			OnOk(nParam);
 			m_Result.SetFrame(0);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Trade)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Trade)
 			OnTrade();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_AddMoney)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_AddMoney)
 		{
 			OnAdjustMoney(true);
 			m_bAdjustingMoney = 1;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ReduceMoney)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ReduceMoney)
 		{
 			OnAdjustMoney(false);
 			m_bAdjustingMoney = 1;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Rock) {
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Rock) {
 			m_bPick = enumGAMBLE_Rock;
 			m_Paper.SetFrame(0);
 			m_Scissors.SetFrame(0);
 			m_SelfPick.SetFrame(2);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Paper) {
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Paper) {
 			m_bPick = enumGAMBLE_Paper;
 			m_Rock.SetFrame(0);
 			m_Scissors.SetFrame(0);
 			m_SelfPick.SetFrame(1);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Scissors) {
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Scissors) {
 			m_bPick = enumGAMBLE_Scissors;
 			m_Rock.SetFrame(0);
 			m_Paper.SetFrame(0);
 			m_SelfPick.SetFrame(3);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Result || uParam == (unsigned int)(KWndWindow*)&m_SelfPick) {
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Result || uParam == (KUPARAM)(KWndWindow*)&m_SelfPick) {
 			m_SelfPick.SetFrame(0);
 			m_Result.SetFrame(0);
 		}
 		break;
 	case WND_N_BUTTON_HOLD:
-		if (uParam == (unsigned int)(KWndWindow*)&m_AddMoney)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_AddMoney)
 		{			
 			OnAdjustMoney(true);
 			m_bAdjustingMoney = 1;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ReduceMoney)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ReduceMoney)
 		{
 			OnAdjustMoney(false);
 			m_bAdjustingMoney = 1;
@@ -496,8 +496,8 @@ void KUiGamble::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLAC
 	}
 	
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 void KUiGamble::OnAdjustMoney(bool bAdd)
@@ -530,7 +530,7 @@ void KUiGamble::OnAdjustedMoney()
 		Obj.Obj.uGenre = CGOG_MONEY;
 		Obj.Obj.uId = m_nSelfTradeMoney;
 		g_pCoreShell->OperationRequest(GOI_GAMBLE_DESIRE_ITEM,
-			(unsigned int)&Obj, 0);
+			(KUPARAM)&Obj, 0);
 	}
 }
 
@@ -565,7 +565,7 @@ void KUiGamble::OnResetMoney()
 		Obj.Obj.uGenre = CGOG_MONEY;
 		Obj.Obj.uId = m_nSelfTradeMoney;
 		g_pCoreShell->OperationRequest(GOI_GAMBLE_DESIRE_ITEM,
-			(unsigned int)&Obj, 0);
+			(KUPARAM)&Obj, 0);
 	}
 }
 

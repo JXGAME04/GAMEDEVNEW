@@ -164,7 +164,7 @@ void	KPlayerTeam::ReceiveInvite(TEAM_INVITE_ADD_SYNC *pInvite)
 		sMsg.byConfirmType = SMCT_UI_TEAM_INVITE;
 		sMsg.byPriority = 3;
 		sMsg.byParamSize = sizeof(KUiPlayerItem);
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&sPlayer);
 		if(Player[CLIENT_PLAYER_INDEX].m_sExtAuto.uUnFightTime)
 		{
 			ExtAutoTeamRecv s;
@@ -213,7 +213,7 @@ void	KPlayerTeam::SetAutoRefuseInvite(BOOL bFlag)//0 t¾t tù ®éng tõ chèi lêi mêi
 		sprintf(sMsg.szMessage, MSG_TEAM_NOT_AUTO_REFUSE_INVITE);
 	}
 
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 }
 #endif
 
@@ -280,7 +280,7 @@ void	KPlayerTeam::UpdateInterface()
 	}
 	else
 	{
-		CoreDataChanged(GDCNI_TEAM, (unsigned int)&sTeam, 0);
+		CoreDataChanged(GDCNI_TEAM, (KUPARAM)&sTeam, 0);
 	}
 }
 #endif

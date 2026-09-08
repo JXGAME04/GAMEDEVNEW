@@ -124,7 +124,7 @@ void KUiSkillTree::LoadConfig(KIniFile* pIni)
 		bLeft = !bLeft;
 		
 		KUiSkillData	Skills[SKILLTREE_MAX_SKILL_COUNT];
-		int nNum = g_pCoreShell->GetGameData(bLeft ? GDI_LEFT_ENABLE_SKILLS : GDI_RIGHT_ENABLE_SKILLS, (unsigned int)&Skills, 0);
+		int nNum = g_pCoreShell->GetGameData(bLeft ? GDI_LEFT_ENABLE_SKILLS : GDI_RIGHT_ENABLE_SKILLS, (KUPARAM)&Skills, 0);
 
 		if (bEncounter)
 		{
@@ -153,7 +153,7 @@ void KUiSkillTree::LoadConfig(KIniFile* pIni)
 			{
 				if (Skills[i].uId == Skill.uId && Skills[i].uGenre == Skill.uGenre)
 				{
-					g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL,(unsigned int)&Skill, bLeft ? 0 : 1);
+					g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL,(KUPARAM)&Skill, bLeft ? 0 : 1);
 					break;
 				}
 			}
@@ -183,7 +183,7 @@ void KUiSkillTree::SaveConfig(KIniFile* pIni)
 	if(g_pCoreShell)
 	{
 	    KUiPlayerImmedItemSkill Skill;
-		g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (unsigned int)&Skill, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (KUPARAM)&Skill, 0);
 
 		if (Skill.IMmediaSkill[0].uGenre != CGOG_NOTHING)
 			pIni->WriteStruct("Player", "LeftSkill", &Skill.IMmediaSkill[0], sizeof(KUiGameObject));
@@ -251,7 +251,7 @@ void KUiSkillTree::UpdateData()
 	int i = 0;
 	int j = 0;
 	m_nNumSkills = g_pCoreShell->GetGameData(
-		m_bLeft ? GDI_LEFT_ENABLE_SKILLS : GDI_RIGHT_ENABLE_SKILLS, (unsigned int)&m_Skills, 0);
+		m_bLeft ? GDI_LEFT_ENABLE_SKILLS : GDI_RIGHT_ENABLE_SKILLS, (KUPARAM)&m_Skills, 0);
 
 	for (i = 0; i < SKILLTREE_SHORTCUT_SKILL_COUNT; i++)
 	{
@@ -344,7 +344,7 @@ void KUiSkillTree::LoadScheme(const char* pScheme)
 // 函数		: KUiSkillTree::WndProc
 // 功能		: 窗口函数
 // -------------------------------------------------------------------------
-int KUiSkillTree::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSkillTree::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int x, y, nIndex;
 	int	nRet = 0;
@@ -359,7 +359,7 @@ int KUiSkillTree::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			Skill.uGenre = m_Skills[nIndex].uGenre;
 			Skill.uId = m_Skills[nIndex].uId;
 			g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL,
-				(unsigned int)&Skill, m_bLeft ? 0 : 1);
+				(KUPARAM)&Skill, m_bLeft ? 0 : 1);
 		}		
 		Hide();
 		break;
@@ -427,7 +427,7 @@ void KUiSkillTree::HandleShortcutKey(int nIndex)
 	else if (ms_ShortcutSkills[nIndex].uGenre != CGOG_NOTHING)
 	{
 		g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL,
-			(unsigned int)&ms_ShortcutSkills[nIndex],
+			(KUPARAM)&ms_ShortcutSkills[nIndex],
 			ms_ShortcutSkills[nIndex].IS_LEFT_SKILL ? 0 : 1);
 	}
 }

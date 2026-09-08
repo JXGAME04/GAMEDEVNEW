@@ -1181,17 +1181,17 @@ void KUiTaskGuide::BuildDaTauText()
 	AddLine(szSub);
 }
 
-int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTaskGuide::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnClose)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnClose)
 		{
 			CloseWindow(false);
 			return true;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnQuit)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnQuit)
 		{
 			// server mo hop xac nhan huy chuan (Da Tau) / huy truc tiep (Sat Thu)
 			if (g_pCoreShell)
@@ -1206,11 +1206,11 @@ int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				if (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount &&
 					m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_VT_BANG_TASKID)
 					pCmd = "vt_quit_bang";	// [VTCN 06/09] -> CancelTongTask
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 6, (int)pCmd);
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 6, (KNPARAM)pCmd);
 			}
 			return true;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnTrace)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnTrace)
 		{
 			if (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount)
 				SetTracedTask(m_Entries[m_nCurEntry].nTaskId, true);	// [C33] them he
@@ -1218,7 +1218,7 @@ int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			UpdateButtons();
 			return true;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnCancelTrace)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnCancelTrace)
 		{
 			// [C33] chi bo HE DANG CHON; con he khac thi khung van mo
 			if (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount)
@@ -1235,12 +1235,12 @@ int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_LIST_ITEM_SEL:
-		if (uParam == (unsigned int)(KWndWindow*)&m_TaskList)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_TaskList)
 		{
 			ShowTask(m_TaskList.GetMessageListBox()->GetCurSel());
 			return true;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_Content)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Content)
 		{
 			// bam vao dong noi dung nhiem vu -> dan duong den Xa Phu (chi loai 4)
 			TryGoXaFu();
@@ -1248,7 +1248,7 @@ int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_LIST_ITEM_D_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_TaskList)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_TaskList)
 		{
 			// nhap dup ten nhiem vu ben trai cung co tac dung nhu bam noi dung
 			TryGoXaFu();

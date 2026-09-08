@@ -361,7 +361,7 @@ static void JxrVerb_Rec()
 	{
 		KUiPlayerBaseInfo Info;
 		memset(&Info, 0, sizeof(Info));
-		g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (unsigned int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KUPARAM)&Info, 0);
 		strncpy(szName, Info.Name, sizeof(szName) - 1);
 		szName[sizeof(szName) - 1] = 0;
 	}

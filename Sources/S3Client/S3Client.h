@@ -34,7 +34,7 @@ protected:
 
 struct KClientCallback : public IClientCallback
 {
-	int CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam);
+	int CoreDataChanged(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam);
 	void ChannelMessageArrival(DWORD nChannelID, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength, bool bSucc, bool isNpcChat = false, bool bIsShowMsgPad = false);
 	void MSNMessageArrival(char* szSourceName, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength, bool bSucc);
 	void NotifyChannelID(char* ChannelName, DWORD channelid, BYTE cost);

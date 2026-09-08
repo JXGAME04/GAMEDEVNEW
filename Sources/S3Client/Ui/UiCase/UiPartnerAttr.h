@@ -38,7 +38,7 @@ private:
 
     void          Initialize();
     void          UpdateData();
-    virtual int   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+    virtual int   WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 private:
     KWndImage     m_Title;

@@ -188,16 +188,16 @@ void KUiConnectInfo::OnClickConfirmBtn()
 	}
 }
 
-int KUiConnectInfo::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiConnectInfo::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_ConfirmBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_ConfirmBtn)
 			OnClickConfirmBtn();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DelRoleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DelRoleBtn)
 			OnDelRole();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CancelDelRoleBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CancelDelRoleBtn)
 			OnCancelDelRole();
 		break;
 	case WM_KEYDOWN:

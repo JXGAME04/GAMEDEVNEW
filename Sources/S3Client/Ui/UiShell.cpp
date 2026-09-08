@@ -408,7 +408,7 @@ int UiHeartBeat()
 	return false;
 }
 
-void	UiProcessInput(unsigned int uMsg, unsigned int uParam, int nParam)
+void	UiProcessInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WM_COPYDATA)
 	{
@@ -710,7 +710,7 @@ void Player_Life::UpdateData()
 	{
 		KUiPlayerRuntimeInfo	Info;
 		memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
-		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (KNPARAM)&Info, 0);
 
 		Info.nLife = max(Info.nLife, 0);
 		Info.nLifeFull = max(Info.nLifeFull, 0);
@@ -737,7 +737,7 @@ void Player_Mana::UpdateData()
 	{
 		KUiPlayerRuntimeInfo	Info;
 		memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
-		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (KNPARAM)&Info, 0);
 
 		Info.nMana = max(Info.nMana, 0);
 		Info.nManaFull = max(Info.nManaFull, 0);
@@ -765,7 +765,7 @@ void Player_Shield::UpdateData()
 	{
 		KUiPlayerRuntimeInfo	Info;
 		memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
-		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (KNPARAM)&Info, 0);
 		if (Info.nShield <= 0 || Info.nShieldFull <= 0)
 		{
 			Hide();
@@ -792,7 +792,7 @@ void Player_Stamina::UpdateData()
 	{
 		KUiPlayerRuntimeInfo	Info;
 		memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
-		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (KNPARAM)&Info, 0);
 
 		Info.nStamina = max(Info.nStamina, 0);
 		Info.nStaminaFull = max(Info.nStaminaFull, 0);
@@ -824,7 +824,7 @@ void Player_Exp::UpdateData()
 		//==================== edit by phong kieu cot exp dang thap phan
 		KUiPlayerAttribute	Info;
 		memset(&Info, 0, sizeof(KUiPlayerAttribute));
-		g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (unsigned int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (KUPARAM)&Info, 0);
 		if (Info.nLevel >= 80)
 		{
 		//============================
@@ -895,7 +895,7 @@ void Player_Level::UpdateData()
 	{
 		KUiPlayerAttribute	Info;
 		memset(&Info, 0, sizeof(KUiPlayerAttribute));
-		g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (unsigned int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (KUPARAM)&Info, 0);
 		SetIntText(Info.nLevel, 0);
 	}
 }
@@ -907,7 +907,7 @@ void Player_WorldSort::UpdateData()
 	{
 		KUiPlayerBaseInfo	Info;
 		memset(&Info, 0, sizeof(KUiPlayerBaseInfo));
-		g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (unsigned int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KUPARAM)&Info, 0);
 		//edit by phong kieu set hang the gioi mac dinh 0 thanh dau ?
 		if(Info.nRankInWorld > 0 && Info.nRankInWorld < 1000)
 		{
@@ -1083,7 +1083,7 @@ void Player_Sit::UpdateData()
 	{
 		KUiPlayerRuntimeInfo	Info;
 		memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
-		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (KNPARAM)&Info, 0);
 		CheckButton(Info.byAction & PA_SIT);
 	}
 }
@@ -1107,7 +1107,7 @@ void Player_Run::UpdateData()
 	{
 		KUiPlayerRuntimeInfo	Info;
 		memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
-		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (KNPARAM)&Info, 0);
 		CheckButton(Info.byAction & PA_RUN);
 	}
 }
@@ -1131,7 +1131,7 @@ void Player_Horse::UpdateData()
 	{
 		KUiPlayerRuntimeInfo	Info;
 		memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
-		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (KNPARAM)&Info, 0);
 		CheckButton(Info.byAction & PA_RIDE);
 	}
 }

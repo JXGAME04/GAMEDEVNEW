@@ -427,7 +427,7 @@ void KUiSelPlayer::GetRoleImageName(char* pszName, const char* pszPrefix, unsign
 // -------------------------------------------------------------------------
 // 函数	: 消息处理
 // -------------------------------------------------------------------------
-int KUiSelPlayer::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSelPlayer::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)

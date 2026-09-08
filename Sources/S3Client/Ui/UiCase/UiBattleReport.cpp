@@ -229,18 +229,18 @@ void KUiBattleReport::LoadScheme(KIniFile* pIni, BATTLE_MODE eMode)
 	}
 }
 
-int KUiBattleReport::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiBattleReport::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_SwitchBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_SwitchBtn)
 			SetMode(s_eBattleMode == BATTLE_M_SMALL ? BATTLE_M_BIG : BATTLE_M_SMALL);
 		// [TKINFO 06/09] nut dong cua rieng bang chien bao. Truoc day cua so nay khong co duong dong nao:
 		// [SwitchBtn] chi doi che do To/Nho, con nhanh VK_ESCAPE ben duoi hau nhu khong bao gio chay vi
 		// KShortcutKeyCentre an phim ESC truoc (Wnds.cpp) - ESC thuc te dong SACH moi cua so qua UiShell.
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 			CloseWindow(false);	// false = chi an, giu du lieu (true se Destroy va bo m_pSelf)
 		break;
 	case WM_KEYDOWN:

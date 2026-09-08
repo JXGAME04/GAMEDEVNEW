@@ -29,7 +29,7 @@ private:
 	void	Initialize();
 	void	Breathe();
 	void	LoadScheme(KIniFile* pIni);
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void UpdateDiceImages(const std::vector<DiceFace>& roll); // Helper function declaration
 
 	void OnReceiveDiceRollFromServer(const std::vector<DiceFace>& serverRoll, int netWinnings);

@@ -304,43 +304,43 @@ void KUiCompoundItem::Breathe()
 //------------------------------------------------------------------------------
 // Tuong tac hop thoai
 //------------------------------------------------------------------------------
-int KUiCompoundItem::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
+int KUiCompoundItem::WndProc( unsigned int uMsg, KUPARAM uParam, KNPARAM nParam )
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_Close)
+		if(uParam == (KUPARAM)&m_Close)
 		{
 			CloseWindow();
 		}
-		else if(uParam == (unsigned int)&m_CompoundPadBtn)
+		else if(uParam == (KUPARAM)&m_CompoundPadBtn)
 		{
 			PopUpContextComMenu();
 		}
-		else if (uParam == (unsigned int)&m_DistillPadBtn)
+		else if (uParam == (KUPARAM)&m_DistillPadBtn)
 		{
 			ShowWindow(WINDOWS_DISTILL);
 			m_pSelf->nWindow = WINDOWS_DISTILL;
 		}
-		else if (uParam == (unsigned int)&m_ForgePadBtn)
+		else if (uParam == (KUPARAM)&m_ForgePadBtn)
 		{
 			ShowWindow(WINDOWS_FORGE);
 			m_pSelf->nWindow = WINDOWS_FORGE;
 		}
-		else if (uParam == (unsigned int)&m_EnchasePadBtn)
+		else if (uParam == (KUPARAM)&m_EnchasePadBtn)
 		{
 		
 			ShowWindow(WINDOWS_ENCHASE);
 			m_pSelf->nWindow = WINDOWS_ENCHASE;
 		}
-		else if (uParam == (unsigned int)&m_AtlasPadBtn)
+		else if (uParam == (KUPARAM)&m_AtlasPadBtn)
 		{
 			ShowWindow(WINDOWS_ATLAS);
 			m_pSelf->nWindow = WINDOWS_ATLAS;
 		}
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == SEL_COM_MENU && short(LOWORD(nParam)) >= 0)
 			{	
@@ -760,22 +760,22 @@ int KUiCompoundOne::PlayEffect()
 //-----------------------------------------------------------------------------
 // Tuong tac hop thoai
 //-----------------------------------------------------------------------------
-int KUiCompoundOne::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
+int KUiCompoundOne::WndProc( unsigned int uMsg, KUPARAM uParam, KNPARAM nParam )
 {
 	switch(uMsg)
 	{
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if(uParam == (unsigned int)&m_ListScroll)
+		if(uParam == (KUPARAM)&m_ListScroll)
 		{
 			m_Guide.SetFirstShowLine(nParam);
 		}
 		break;
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_Cancel)
+		if(uParam == (KUPARAM)&m_Cancel)
 		{
 			OnCancel();
 		}
-		else if(uParam == (unsigned int)&m_Compound)
+		else if(uParam == (KUPARAM)&m_Compound)
 		{
 			ProcessComp();
 		}
@@ -965,8 +965,8 @@ void KUiCompoundOne::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP
 		}
 	}
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-	pPickPos ? (unsigned int)&Pick : 0,
-	pDropPos ? (int)&Drop : 0);
+	pPickPos ? (KUPARAM)&Pick : 0,
+	pDropPos ? (KNPARAM)&Drop : 0);
 
 }
 //----------------------------------------------------
@@ -983,7 +983,7 @@ void KUiCompoundOne::UpdateData()
 void KUiCompoundOne::UpdateAllItem()
 {
 	KUiObjAtRegion	Item[_ITEM_COMP_COUNT];
-	int nCount = g_pCoreShell->GetGameData(GDI_COMPONE_ITEM, (unsigned int)&Item, 0);
+	int nCount = g_pCoreShell->GetGameData(GDI_COMPONE_ITEM, (KUPARAM)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_COMP_COUNT; i++)
 		m_ItemBox[i].Celar();
@@ -1195,22 +1195,22 @@ int KUiCompoundTwo::PlayEffect()
 //-----------------------------------------------------------------------------
 // Tuong tac hop thoai
 //-----------------------------------------------------------------------------
-int KUiCompoundTwo::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
+int KUiCompoundTwo::WndProc( unsigned int uMsg, KUPARAM uParam, KNPARAM nParam )
 {
 	switch(uMsg)
 	{
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if(uParam == (unsigned int)&m_ListScroll)
+		if(uParam == (KUPARAM)&m_ListScroll)
 		{
 			m_Guide.SetFirstShowLine(nParam);
 		}
 		break;
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_Cancel)
+		if(uParam == (KUPARAM)&m_Cancel)
 		{
 			OnCancel();
 		}
-		else if(uParam == (unsigned int)&m_Compound)
+		else if(uParam == (KUPARAM)&m_Compound)
 		{
 			ProcessComp();
 		}
@@ -1254,7 +1254,7 @@ void KUiCompoundTwo::ProcessComp()
 		return;
 	}
 	
-	//nDetail[UIEP_BOX1] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(unsigned int)(&pObj), 0);
+	//nDetail[UIEP_BOX1] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(KUPARAM)(&pObj), 0);
 
 	memset(&pObj, 0, sizeof(pObj));
 	nDetail[UIEP_BOX2] = 0;
@@ -1276,7 +1276,7 @@ void KUiCompoundTwo::ProcessComp()
 		ZeroMemory(Buff,sizeof(Buff));
 		return;
 	}
-	//nDetail[UIEP_BOX2] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(unsigned int)(&pObj), 0);
+	//nDetail[UIEP_BOX2] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(KUPARAM)(&pObj), 0);
 
 	memset(&pObj, 0, sizeof(pObj));
 	nDetail[UIEP_BOX3] = 0;
@@ -1298,7 +1298,7 @@ void KUiCompoundTwo::ProcessComp()
 		ZeroMemory(Buff,sizeof(Buff));
 		return;
 	}
-	//nDetail[UIEP_BOX3] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(unsigned int)(&pObj), 0);
+	//nDetail[UIEP_BOX3] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(KUPARAM)(&pObj), 0);
 
 	memset(&pObj, 0, sizeof(pObj));
 	if(nDetail[UIEP_BOX1] != nDetail[UIEP_BOX2] ||  nDetail[UIEP_BOX1] != nDetail[UIEP_BOX3] || 
@@ -1447,8 +1447,8 @@ void KUiCompoundTwo::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP
 		}
 	}
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-	pPickPos ? (unsigned int)&Pick : 0,
-	pDropPos ? (int)&Drop : 0);
+	pPickPos ? (KUPARAM)&Pick : 0,
+	pDropPos ? (KNPARAM)&Drop : 0);
 
 }
 //----------------------------------------------------
@@ -1465,7 +1465,7 @@ void KUiCompoundTwo::UpdateData()
 void KUiCompoundTwo::UpdateAllItem()
 {
 	KUiObjAtRegion	Item[_ITEM_COMP_COUNT];
-	int nCount = g_pCoreShell->GetGameData(GDI_COMPTWO_ITEM, (unsigned int)&Item, 0);
+	int nCount = g_pCoreShell->GetGameData(GDI_COMPTWO_ITEM, (KUPARAM)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_COMP_COUNT; i++)
 		m_ItemBox[i].Celar();
@@ -1678,22 +1678,22 @@ int KUiCompoundThree::PlayEffect()
 //-----------------------------------------------------------------------------
 // Tuong tac hop thoai
 //-----------------------------------------------------------------------------
-int KUiCompoundThree::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
+int KUiCompoundThree::WndProc( unsigned int uMsg, KUPARAM uParam, KNPARAM nParam )
 {
 	switch(uMsg)
 	{
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if(uParam == (unsigned int)&m_ListScroll)
+		if(uParam == (KUPARAM)&m_ListScroll)
 		{
 			m_Guide.SetFirstShowLine(nParam);
 		}
 		break;
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_Cancel)
+		if(uParam == (KUPARAM)&m_Cancel)
 		{
 			OnCancel();		
 		}
-		else if(uParam == (unsigned int)&m_Compound)
+		else if(uParam == (KUPARAM)&m_Compound)
 		{
 			ProcessComp();			
 		}
@@ -1742,10 +1742,10 @@ void KUiCompoundThree::ProcessComp()
 		ZeroMemory(Buff,sizeof(Buff));
 		return;
 	}
-	//nDetail[UIEP_BOX1] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(unsigned int)(&pObj), 0);
-	//nSeries[UIEP_BOX1] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(unsigned int)(&pObj), 0);
-	//nLevel[UIEP_BOX1] = g_pCoreShell->GetGameData(GDI_ITEM_LEVEL,(unsigned int)(&pObj), 0);
-	//nOption[UIEP_BOX1] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj), 0);
+	//nDetail[UIEP_BOX1] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(KUPARAM)(&pObj), 0);
+	//nSeries[UIEP_BOX1] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(KUPARAM)(&pObj), 0);
+	//nLevel[UIEP_BOX1] = g_pCoreShell->GetGameData(GDI_ITEM_LEVEL,(KUPARAM)(&pObj), 0);
+	//nOption[UIEP_BOX1] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj), 0);
 
 	memset(&pObj, 0, sizeof(pObj));
 	nDetail[UIEP_BOX2] = 0;
@@ -1770,10 +1770,10 @@ void KUiCompoundThree::ProcessComp()
 		ZeroMemory(Buff,sizeof(Buff));
 		return;
 	}
-	//nDetail[UIEP_BOX2] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(unsigned int)(&pObj), 0);
-	//nSeries[UIEP_BOX2] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(unsigned int)(&pObj), 0);
-	//nLevel[UIEP_BOX2] = g_pCoreShell->GetGameData(GDI_ITEM_LEVEL,(unsigned int)(&pObj), 0);
-	//nOption[UIEP_BOX2] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj), 0);
+	//nDetail[UIEP_BOX2] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(KUPARAM)(&pObj), 0);
+	//nSeries[UIEP_BOX2] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(KUPARAM)(&pObj), 0);
+	//nLevel[UIEP_BOX2] = g_pCoreShell->GetGameData(GDI_ITEM_LEVEL,(KUPARAM)(&pObj), 0);
+	//nOption[UIEP_BOX2] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj), 0);
 
 	memset(&pObj, 0, sizeof(pObj));
 	nDetail[UIEP_BOX3] = 0;
@@ -1798,10 +1798,10 @@ void KUiCompoundThree::ProcessComp()
 		ZeroMemory(Buff,sizeof(Buff));
 		return;
 	}
-	//nDetail[UIEP_BOX3] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(unsigned int)(&pObj), 0);
-	//nSeries[UIEP_BOX3] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(unsigned int)(&pObj), 0);
-	//nLevel[UIEP_BOX3] = g_pCoreShell->GetGameData(GDI_ITEM_LEVEL,(unsigned int)(&pObj), 0);
-	//nOption[UIEP_BOX3] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj), 0);
+	//nDetail[UIEP_BOX3] = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(KUPARAM)(&pObj), 0);
+	//nSeries[UIEP_BOX3] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(KUPARAM)(&pObj), 0);
+	//nLevel[UIEP_BOX3] = g_pCoreShell->GetGameData(GDI_ITEM_LEVEL,(KUPARAM)(&pObj), 0);
+	//nOption[UIEP_BOX3] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj), 0);
 
 	if(nDetail[UIEP_BOX1] != nDetail[UIEP_BOX2] ||  nDetail[UIEP_BOX1] != nDetail[UIEP_BOX3] || 
 		nDetail[UIEP_BOX2] != nDetail[UIEP_BOX3])
@@ -2009,8 +2009,8 @@ void KUiCompoundThree::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDR
 		}
 	}
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-	pPickPos ? (unsigned int)&Pick : 0,
-	pDropPos ? (int)&Drop : 0);
+	pPickPos ? (KUPARAM)&Pick : 0,
+	pDropPos ? (KNPARAM)&Drop : 0);
 
 }
 //----------------------------------------------------
@@ -2027,7 +2027,7 @@ void KUiCompoundThree::UpdateData()
 void KUiCompoundThree::UpdateAllItem()
 {
 	KUiObjAtRegion	Item[_ITEM_COMP_COUNT];
-	int nCount = g_pCoreShell->GetGameData(GDI_COMPTHREE_ITEM, (unsigned int)&Item, 0);
+	int nCount = g_pCoreShell->GetGameData(GDI_COMPTHREE_ITEM, (KUPARAM)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_COMP_COUNT; i++)
 		m_ItemBox[i].Celar();
@@ -2233,22 +2233,22 @@ int KUiDistill::PlayEffect()
 //----------------------------------------------------------------------------
 // Tuong tac hop thoai
 //----------------------------------------------------------------------------
-int KUiDistill::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
+int KUiDistill::WndProc( unsigned int uMsg, KUPARAM uParam, KNPARAM nParam )
 {	
 	switch(uMsg)
 	{
 		case WND_N_SCORLLBAR_POS_CHANGED:
-			if(uParam == (unsigned int)&m_ListScroll)
+			if(uParam == (KUPARAM)&m_ListScroll)
 			{
 				m_Guide.SetFirstShowLine(nParam);
 			}
 			break;
 		case WND_N_BUTTON_CLICK:
-			if(uParam == (unsigned int)&m_Cancle)
+			if(uParam == (KUPARAM)&m_Cancle)
 			{
 				OnCancel();
 			}
-			else if(uParam == (unsigned int)&m_Distill)
+			else if(uParam == (KUPARAM)&m_Distill)
 			{ 
 				ProcessDistill();
 			}
@@ -2292,13 +2292,13 @@ void KUiDistill::ProcessDistill()
 		ZeroMemory(Buff,sizeof(Buff));
 		return;
 	}
-	//nSeries[0] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(unsigned int)(&pObj), 0);
-	//nOption[0] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj), 0);
-	//nOption[1] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj), 1); 
-	//nOption[2] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj), 2); 
-	//nOption[3] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj), 3);
-	//nOption[4] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj), 4); 
-	//nOption[5] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj), 5); 
+	//nSeries[0] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(KUPARAM)(&pObj), 0);
+	//nOption[0] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj), 0);
+	//nOption[1] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj), 1); 
+	//nOption[2] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj), 2); 
+	//nOption[3] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj), 3);
+	//nOption[4] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj), 4); 
+	//nOption[5] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj), 5); 
 	
 	memset(&pObj, 0, sizeof(pObj));
 	m_ItemBox[UIEP_CRYOLITE].GetObject(pObj);
@@ -2340,8 +2340,8 @@ void KUiDistill::ProcessDistill()
 		ZeroMemory(Buff,sizeof(Buff));
 		return;
 	}
-	//nSeries[1] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(unsigned int)(&pObj), 0);
-	//nDetail = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(unsigned int)(&pObj), 0);
+	//nSeries[1] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(KUPARAM)(&pObj), 0);
+	//nDetail = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(KUPARAM)(&pObj), 0);
 
 	nDetail = 0;
 	switch(nDetail)
@@ -2599,8 +2599,8 @@ void KUiDistill::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLA
 		}
 	}
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-	pPickPos ? (unsigned int)&Pick : 0,
-	pDropPos ? (int)&Drop : 0);
+	pPickPos ? (KUPARAM)&Pick : 0,
+	pDropPos ? (KNPARAM)&Drop : 0);
 
 }
 //----------------------------------------------------
@@ -2617,7 +2617,7 @@ void KUiDistill::UpdateData()
 void KUiDistill::UpdateAllItem()
 {
 	KUiObjAtRegion	Item[_ITEM_OUTIN_COUNT];
-	int nCount = g_pCoreShell->GetGameData(GDI_DISTILL_ITEM, (unsigned int)&Item, 0);
+	int nCount = g_pCoreShell->GetGameData(GDI_DISTILL_ITEM, (KUPARAM)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_OUTIN_COUNT; i++)
 		m_ItemBox[i].Celar();
@@ -2801,22 +2801,22 @@ int KUiForge::PlayEffect()
 //---------------------------------------------------------------------------
 // Tuong tac hop thoai
 //---------------------------------------------------------------------------
-int KUiForge::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
+int KUiForge::WndProc( unsigned int uMsg, KUPARAM uParam, KNPARAM nParam )
 {
 	switch(uMsg)
 	{
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if(uParam == (unsigned int)&m_ListScroll)
+		if(uParam == (KUPARAM)&m_ListScroll)
 		{
 			m_Guide.SetFirstShowLine(nParam);
 		}
 		break;
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_Cancle)
+		if(uParam == (KUPARAM)&m_Cancle)
 		{
 			OnCancel();
 		}
-		else if(uParam == (unsigned int)&m_ForgeBtn)
+		else if(uParam == (KUPARAM)&m_ForgeBtn)
 		{
 			ProcessForge();
 		}
@@ -2986,8 +2986,8 @@ void KUiForge::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE
 		}
 	}
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-	pPickPos ? (unsigned int)&Pick : 0,
-	pDropPos ? (int)&Drop : 0);
+	pPickPos ? (KUPARAM)&Pick : 0,
+	pDropPos ? (KNPARAM)&Drop : 0);
 
 }
 //----------------------------------------------------
@@ -3004,7 +3004,7 @@ void KUiForge::UpdateData()
 void KUiForge::UpdateAllItem()
 {
 	KUiObjAtRegion	Item[_ITEM_FORGE_COUNT];
-	int nCount = g_pCoreShell->GetGameData(GDI_FORGE_ITEM, (unsigned int)&Item, 0);
+	int nCount = g_pCoreShell->GetGameData(GDI_FORGE_ITEM, (KUPARAM)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_FORGE_COUNT; i++)
 		m_ItemBox[i].Celar();
@@ -3219,20 +3219,20 @@ int KUiAtlas::PlayEffect()
 	return 1;
 }
 
-int KUiAtlas::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
+int KUiAtlas::WndProc( unsigned int uMsg, KUPARAM uParam, KNPARAM nParam )
 {
 	switch(uMsg)
 	{
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)&m_ListScroll)
+		if (uParam == (KUPARAM)&m_ListScroll)
 		{
 			m_Guide.SetFirstShowLine(nParam);
 		}
 		break;
 	case WND_N_BUTTON_CLICK:
 		sDoPhoLog("[DOPHO] WndProc: BUTTON_CLICK, la nut Ket hop = %d, m_nStatus=%d",
-			(uParam == (unsigned int)&m_Atlas) ? 1 : 0, m_nStatus);
-		if (uParam == (unsigned int)&m_Atlas)
+			(uParam == (KUPARAM)&m_Atlas) ? 1 : 0, m_nStatus);
+		if (uParam == (KUPARAM)&m_Atlas)
 		{
 			// Nhip "nap": bam nut -> hien hieu ung -> het 25 khung moi GUI lenh,
 			// dung may trang thai goc (xem KUiCompoundOne::Breathe).
@@ -3242,7 +3242,7 @@ int KUiAtlas::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
 				return 1;
 			}
 		}
-		else if (uParam == (unsigned int)&m_Preview)
+		else if (uParam == (KUPARAM)&m_Preview)
 		{
 			// [LOREN 28/08] chu giai + xem truoc Do pho: nho may chu doi chieu o voi cong thuc va bao ro
 			// mon nao con thieu (LR_UI_AtlasPreview trong test_loren_admin.lua).
@@ -3313,8 +3313,8 @@ void KUiAtlas::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE
 		}
 	}
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 void KUiAtlas::UpdateData()
@@ -3325,7 +3325,7 @@ void KUiAtlas::UpdateData()
 void KUiAtlas::UpdateAllItem()
 {
 	KUiObjAtRegion	Item[_ITEM_OUTIN_COUNT];
-	int nCount = g_pCoreShell->GetGameData(GDI_ATLAS_ITEM, (unsigned int)&Item, 0);
+	int nCount = g_pCoreShell->GetGameData(GDI_ATLAS_ITEM, (KUPARAM)&Item, 0);
 	sDoPhoLog("[DOPHO] UpdateAllItem: GDI tra nCount=%d", nCount);
 	int	i;
 	for (i = 0; i < _ITEM_OUTIN_COUNT; i++)
@@ -3595,22 +3595,22 @@ int KUiEnchase::PlayEffect()
 //-----------------------------------------------------------------------------
 // Tuong tac hop thoai
 //-----------------------------------------------------------------------------
-int KUiEnchase::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
+int KUiEnchase::WndProc( unsigned int uMsg, KUPARAM uParam, KNPARAM nParam )
 {
 	switch(uMsg)
 	{
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if(uParam == (unsigned int)&m_ListScroll)
+		if(uParam == (KUPARAM)&m_ListScroll)
 		{
 			m_Guide.SetFirstShowLine(nParam);
 		}
 		break;
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_Cancle)
+		if(uParam == (KUPARAM)&m_Cancle)
 		{
 			OnCancel();
 		}
-		else if(uParam == (unsigned int)&m_Enchase)
+		else if(uParam == (KUPARAM)&m_Enchase)
 		{
 			ProcessEnchase();	
 		}
@@ -3655,13 +3655,13 @@ void KUiEnchase::ProcessEnchase()
 		ZeroMemory(Buff,sizeof(Buff));
 		return;
 	}
-	//nSeries[0] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(unsigned int)(&pObj1), 0);
-	//nOption[0] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj1), 0);
-	//nOption[1] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj1), 1); 
-	//nOption[2] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj1), 2); 
-	//nOption[3] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj1), 3);
-	//nOption[4] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj1), 4); 
-	//nOption[5] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj1), 5); 
+	//nSeries[0] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(KUPARAM)(&pObj1), 0);
+	//nOption[0] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj1), 0);
+	//nOption[1] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj1), 1); 
+	//nOption[2] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj1), 2); 
+	//nOption[3] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj1), 3);
+	//nOption[4] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj1), 4); 
+	//nOption[5] = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj1), 5); 
 
 	memset(&pObj2, 0, sizeof(pObj2));
 	m_ItemBox[UIEP_CRYOLITE].GetObject(pObj2);
@@ -3703,10 +3703,10 @@ void KUiEnchase::ProcessEnchase()
 		ZeroMemory(Buff,sizeof(Buff));
 		return;
 	}
-	//nSeries[1] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(unsigned int)(&pObj2), 0);
-	//nDetail = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(unsigned int)(&pObj2), 0);
-	//nOpProp = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj2), 0);
-	//bCanSet = g_pCoreShell->GetGameData(GDI_OPTION_CAN_SET,(unsigned int)(&pObj1), nOpProp);
+	//nSeries[1] = g_pCoreShell->GetGameData(GDI_ITEM_SERIES,(KUPARAM)(&pObj2), 0);
+	//nDetail = g_pCoreShell->GetGameData(GDI_ITEM_DETAIL,(KUPARAM)(&pObj2), 0);
+	//nOpProp = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(KUPARAM)(&pObj2), 0);
+	//bCanSet = g_pCoreShell->GetGameData(GDI_OPTION_CAN_SET,(KUPARAM)(&pObj1), nOpProp);
 	
 	// [UILOREN-L1] nDetail = 0 (cung) roi vao case 0 doi nOption[0] == 53, ma
 	// ca mang nOption bi memset 0 va moi dong doc GDI_ITEM_* con bi chu thich
@@ -4180,8 +4180,8 @@ void KUiEnchase::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLA
 		}
 	}
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-	pPickPos ? (unsigned int)&Pick : 0,
-	pDropPos ? (int)&Drop : 0);
+	pPickPos ? (KUPARAM)&Pick : 0,
+	pDropPos ? (KNPARAM)&Drop : 0);
 
 }
 //----------------------------------------------------
@@ -4198,7 +4198,7 @@ void KUiEnchase::UpdateData()
 void KUiEnchase::UpdateAllItem()
 {
 	KUiObjAtRegion	Item[_ITEM_OUTIN_COUNT];
-	int nCount = g_pCoreShell->GetGameData(GDI_ENCHASE_ITEM, (unsigned int)&Item, 0);
+	int nCount = g_pCoreShell->GetGameData(GDI_ENCHASE_ITEM, (KUPARAM)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_OUTIN_COUNT; i++)
 		m_ItemBox[i].Celar();

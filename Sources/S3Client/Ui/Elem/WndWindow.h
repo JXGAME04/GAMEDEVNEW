@@ -76,7 +76,7 @@ public:
 	virtual int		CloseWindow(bool bDestory){return 0;};
 
 	virtual int		Init(KIniFile* pIniFile, const char* pSection);//初始化
-	virtual int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	virtual int		PtInWindow(int x, int y);				//判断一个点是否在窗口范围内,传入的是绝对坐标
 
 	virtual void	PaintWindow();							//窗体绘制

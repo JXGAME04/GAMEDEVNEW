@@ -39,7 +39,7 @@ public:
 	void	Breathe();
 private:
 	friend class KUiSmelt;
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:
 	int			m_nMode;			// 0 dung luyen | 1 thi luyen
 	char		m_szIni[64];
@@ -72,7 +72,7 @@ private:
 	KUiSmelt();
 	~KUiSmelt() {}
 	void	Initialize();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnCancel();
 	void	OnDo(int nMode);
 private:

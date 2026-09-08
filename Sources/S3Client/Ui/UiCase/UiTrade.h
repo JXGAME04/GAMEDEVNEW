@@ -35,7 +35,7 @@ private:
 	~KUiTrade();
 	void	Initialize();						//初始化
 	void	LoadScheme(KIniFile* pIni);			//载入界面方案
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 
 //	void	Clear();						//清除内容
 	void	Breathe();

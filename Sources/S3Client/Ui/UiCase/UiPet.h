@@ -59,7 +59,7 @@ private:
     void          UpdateData();
     virtual void  Breathe();	// [29/08] quay frame hinh pet
     void          SendOp(int nOp);
-    virtual int   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+    virtual int   WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 private:
     KWndButton        m_CloseBtn;

@@ -26,7 +26,7 @@ public:
 	void					PaintWindow();
 	virtual			int	Init(KIniFile* pIniFile, const char* pSection);
 	int				PtInWindow(int x, int y);
-	int				WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int				WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:
 	KWndChessPanel();
 	virtual ~KWndChessPanel();

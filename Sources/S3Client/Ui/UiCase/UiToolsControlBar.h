@@ -26,7 +26,7 @@ private:
 	~KUiToolsControlBar() {}
 	void	Initialize();							//≥ı ºªØ
 	void	Breathe();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:
 	static KUiToolsControlBar*	m_pSelf;
 	KWndButton	m_PK;

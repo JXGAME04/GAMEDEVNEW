@@ -25,7 +25,7 @@ private:
 	void	Initialize();						
 	void	LoadScheme(const char* pScheme);	
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnClickButton(KWndButton* pWnd);	
 	KWndButton*	GetActiveBtn();
 	void	OnAutoLogin();

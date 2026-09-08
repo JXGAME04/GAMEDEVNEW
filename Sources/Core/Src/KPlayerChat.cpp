@@ -703,7 +703,7 @@ void	KPlayerChat::GetChat(PLAYER_SEND_CHAT_SYNC *pChat)
 			memcpy(Param.cChatPrefix, &pChat->m_szSentence[pChat->m_btNameLen], pChat->m_btChatPrefixLen);
 			memcpy(Param.szName, &pChat->m_szSentence[0], pChat->m_btNameLen);
 			Param.szName[pChat->m_btNameLen] = 0;
-			CoreDataChanged(GDCNI_MSG_ARRIVAL, (unsigned int)szBuf, (int)&Param);
+			CoreDataChanged(GDCNI_MSG_ARRIVAL, (KUPARAM)szBuf, (KNPARAM)&Param);
 		}
 		break;
 	case CHAT_CUR_CHANNEL_SCREEN:
@@ -718,7 +718,7 @@ void	KPlayerChat::GetChat(PLAYER_SEND_CHAT_SYNC *pChat)
 			memcpy(Param.szName, &pChat->m_szSentence[0], pChat->m_btNameLen);
 			Param.szName[pChat->m_btNameLen] = 0;
 
-			CoreDataChanged(GDCNI_MSG_ARRIVAL, (unsigned int)szBuf, (int)&Param);
+			CoreDataChanged(GDCNI_MSG_ARRIVAL, (KUPARAM)szBuf, (KNPARAM)&Param);
 		}
 		break;
 	case CHAT_CUR_CHANNEL_SINGLE:
@@ -760,7 +760,7 @@ void	KPlayerChat::GetChat(PLAYER_SEND_CHAT_SYNC *pChat)
 				sPlayer.nIndex = 0;
 				sPlayer.nData = 0;
 				
-				CoreDataChanged(GDCNI_CHAT_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+				CoreDataChanged(GDCNI_CHAT_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&sPlayer);
 				break;
 			}
 
@@ -786,7 +786,7 @@ void	KPlayerChat::GetChat(PLAYER_SEND_CHAT_SYNC *pChat)
 			sPlayer.nIndex = pFriend->m_nPlayerIdx;
 			sPlayer.nData = 0;
 
-			CoreDataChanged(GDCNI_CHAT_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+			CoreDataChanged(GDCNI_CHAT_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&sPlayer);
 		}
 		break;
 	case CHAT_CUR_CHANNEL_TEAM:
@@ -796,7 +796,7 @@ void	KPlayerChat::GetChat(PLAYER_SEND_CHAT_SYNC *pChat)
 			memcpy(Param.cChatPrefix, &pChat->m_szSentence[pChat->m_btNameLen], pChat->m_btChatPrefixLen);
 			memcpy(Param.szName, &pChat->m_szSentence[0], pChat->m_btNameLen);
 			Param.szName[pChat->m_btNameLen] = 0;
-			CoreDataChanged(GDCNI_MSG_ARRIVAL, (unsigned int)szBuf, (int)&Param);
+			CoreDataChanged(GDCNI_MSG_ARRIVAL, (KUPARAM)szBuf, (KNPARAM)&Param);
 		}
 		break;
 	case CHAT_CUR_CHANNEL_FACTION:
@@ -806,7 +806,7 @@ void	KPlayerChat::GetChat(PLAYER_SEND_CHAT_SYNC *pChat)
 			memcpy(Param.cChatPrefix, &pChat->m_szSentence[pChat->m_btNameLen], pChat->m_btChatPrefixLen);
 			memcpy(Param.szName, &pChat->m_szSentence[0], pChat->m_btNameLen);
 			Param.szName[pChat->m_btNameLen] = 0;
-			CoreDataChanged(GDCNI_MSG_ARRIVAL, (unsigned int)szBuf, (int)&Param);
+			CoreDataChanged(GDCNI_MSG_ARRIVAL, (KUPARAM)szBuf, (KNPARAM)&Param);
 		}
 		break;
 	case CHAT_CUR_CHANNEL_TONG:
@@ -816,7 +816,7 @@ void	KPlayerChat::GetChat(PLAYER_SEND_CHAT_SYNC *pChat)
 			memcpy(Param.cChatPrefix, &pChat->m_szSentence[pChat->m_btNameLen], pChat->m_btChatPrefixLen);
 			memcpy(Param.szName, &pChat->m_szSentence[0], pChat->m_btNameLen);
 			Param.szName[pChat->m_btNameLen] = 0;
-			CoreDataChanged(GDCNI_MSG_ARRIVAL, (unsigned int)szBuf, (int)&Param);
+			CoreDataChanged(GDCNI_MSG_ARRIVAL, (KUPARAM)szBuf, (KNPARAM)&Param);
 		}
 		break;
 	case CHAT_CUR_CHANNEL_SCREENSINGLE:
@@ -824,7 +824,7 @@ void	KPlayerChat::GetChat(PLAYER_SEND_CHAT_SYNC *pChat)
 			memcpy(Param.cChatPrefix, &pChat->m_szSentence[pChat->m_btNameLen], pChat->m_btChatPrefixLen);
 			memcpy(Param.szName, &pChat->m_szSentence[0], pChat->m_btNameLen);
 			Param.szName[pChat->m_btNameLen] = 0;
-			CoreDataChanged(GDCNI_MSG_ARRIVAL, (unsigned int)szBuf, (int)&Param);
+			CoreDataChanged(GDCNI_MSG_ARRIVAL, (KUPARAM)szBuf, (KNPARAM)&Param);
 		}
 		break;
 	case CHAT_CUR_CHANNEL_SYSTEM:
@@ -832,7 +832,7 @@ void	KPlayerChat::GetChat(PLAYER_SEND_CHAT_SYNC *pChat)
 			memcpy(Param.cChatPrefix, &pChat->m_szSentence[pChat->m_btNameLen], pChat->m_btChatPrefixLen);
 			memcpy(Param.szName, &pChat->m_szSentence[0], pChat->m_btNameLen);
 			Param.szName[pChat->m_btNameLen] = 0;
-			CoreDataChanged(GDCNI_MSG_ARRIVAL, (unsigned int)szBuf, (int)&Param);
+			CoreDataChanged(GDCNI_MSG_ARRIVAL, (KUPARAM)szBuf, (KNPARAM)&Param);
 		}
 		break;
 	}
@@ -879,7 +879,7 @@ void	KPlayerChat::ApplyAddFriend(DWORD dwNpcID, char *lpszSentence/* = NULL*/)
 		sMsg.byConfirmType = SMCT_CLICK;
 		sMsg.byPriority = 1;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return;
 	}
 
@@ -1524,9 +1524,9 @@ int		KPlayerChat::AddTeam(char *lpszPlayerName, char *lpszTeamName)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			sprintf(sMsg.szMessage, MSG_CHAT_CREATE_TEAM_FAIL2);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			return -1;
 		}
 	}
@@ -1548,9 +1548,9 @@ int		KPlayerChat::AddTeam(char *lpszPlayerName, char *lpszTeamName)
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	sprintf(sMsg.szMessage, MSG_CHAT_CREATE_TEAM_FAIL3);
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	return -1;
 }
 #endif
@@ -1586,9 +1586,9 @@ BOOL	KPlayerChat::RenameTeam(int nTeamNo, char *lpszTeamName, char *lpszPlayerNa
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			sprintf(sMsg.szMessage, MSG_CHAT_CREATE_TEAM_FAIL2);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			return FALSE;
 		}
 	}
@@ -1616,9 +1616,9 @@ BOOL	KPlayerChat::DeleteTeam(int nTeamNo, char *lpszPlayerName)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		sprintf(sMsg.szMessage, MSG_CHAT_DELETE_TEAM_FAIL2);
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return FALSE;
 	}
 	if (nTeamNo < 1 || nTeamNo >= MAX_FRIEND_TEAM)
@@ -1700,7 +1700,7 @@ void	KPlayerChat::GetMsgOffLine(DWORD dwID)
 				sPlayer.uId = dwID;
 				sPlayer.nIndex = 0;
 				sPlayer.nData = CHAT_S_DISCONNECT;
-				CoreDataChanged(GDCNI_CHAT_FRIEND_STATUS, (unsigned int)&sPlayer, i);
+				CoreDataChanged(GDCNI_CHAT_FRIEND_STATUS, (KUPARAM)&sPlayer, i);
 
 				KSystemMessage	sMsg;
 				sprintf(sMsg.szMessage, MSG_CHAT_FRIEND_OFFLINE, pFriend->m_szName);
@@ -1708,7 +1708,7 @@ void	KPlayerChat::GetMsgOffLine(DWORD dwID)
 				sMsg.byConfirmType = SMCT_NONE;
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 				return;
 			}

@@ -52,13 +52,13 @@ int VerticalSplitTwoWindow(KWndWindow* pLeft, KWndWindow* pRight, int nAt)
 	return nAt;
 }
 
-int KSysMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KSysMsgCentrePad::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	static int nUpSpeed = 0;
 	static int nDownSpeed = 0;
 	if (uMsg == WND_N_BUTTON_CLICK)
 	{
-		if (uParam == (unsigned int)(KWndWindow*)&m_OpenSysButton)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_OpenSysButton)
 		{
 			if (m_OpenSysButton.IsButtonChecked())
 				m_SysRoom.Show();
@@ -66,12 +66,12 @@ int KSysMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 				m_SysRoom.Hide();
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_UpButton)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_UpButton)
 		{
 			nUpSpeed = 0;
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_DownButton)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_DownButton)
 		{
 			nDownSpeed = 0;
 			return 1;
@@ -79,7 +79,7 @@ int KSysMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 	}
 	else if (uMsg == WND_N_BUTTON_DOWN || WND_N_BUTTON_HOLD)
 	{
-		if (uParam == (unsigned int)(KWndWindow*)&m_UpButton)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_UpButton)
 		{
 			if (nUpSpeed % 5 == 0)
 			{
@@ -89,7 +89,7 @@ int KSysMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 			nUpSpeed++;
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_DownButton)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_DownButton)
 		{
 			if (nDownSpeed % 5 == 0)
 			{
@@ -234,7 +234,7 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 		memset(&szGTongMasterName, 0, sizeof(szGTongMasterName));
 		if(nChannelIndex == 5) 
 		{
-			g_pCoreShell->GetGameData(GDI_IS_TONG_MASTER, (unsigned int)&szGTongMasterName, 0);
+			g_pCoreShell->GetGameData(GDI_IS_TONG_MASTER, (KUPARAM)&szGTongMasterName, 0);
 			if(strcmp(szGTongMasterName, szSendName) == 0)
 				isMasterName = true;
 		}
@@ -683,7 +683,7 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 		FUSCHAT_Giai(szFus, &CItem);
 	}
 
-	nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&CItem);
+	nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (KNPARAM)&CItem);
 	if(nIdx)
 		bOk = TRUE;
 	else 
@@ -717,7 +717,7 @@ else//--------------------Co dinh Item------------------------------------------
 		nPos = nLen + 5;
 
 	char szName[64];
-	g_pCoreShell->GetGameData(GDI_ITEM_NAME, (unsigned int)&szName, nIdx);
+	g_pCoreShell->GetGameData(GDI_ITEM_NAME, (KUPARAM)&szName, nIdx);
 	int nItemLen = strlen(szName) + 2;
 	if((nPos + nItemLen) <= nW-3)
 	{
@@ -1196,7 +1196,7 @@ void KUiMsgCentrePad::ShowMSNMessage(char* szName, const char* pMsgBuff, unsigne
 		FUSCHAT_Giai(szFus, &CItem);
 	}
 
-	nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&CItem);
+	nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (KNPARAM)&CItem);
 	if(nIdx)
 		bOk = TRUE;
 	else 
@@ -1230,7 +1230,7 @@ else//--------------------Co dinh Item------------------------------------------
 		nPos = nLen + 5;
 
 	char szName[64];
-	g_pCoreShell->GetGameData(GDI_ITEM_NAME, (unsigned int)&szName, nIdx);
+	g_pCoreShell->GetGameData(GDI_ITEM_NAME, (KUPARAM)&szName, nIdx);
 	int nItemLen = strlen(szName) + 2;
 	if((nPos + nItemLen) <= nW-3)
 	{
@@ -1464,14 +1464,14 @@ bool KUiMsgCentrePad::ReplaceSpecialField(char* szDest, char* szSrc)
 
 	KUiPlayerTeam	Team;
 	Team.nTeamServerID = -1;
-	g_pCoreShell->TeamOperation(TEAM_OI_GD_INFO, (unsigned int)&Team, 0);
+	g_pCoreShell->TeamOperation(TEAM_OI_GD_INFO, (KUPARAM)&Team, 0);
 	if (Team.nTeamServerID >= 0)
 	{
 		sprintf(s_keyDests[0], "%d", Team.nTeamServerID);
 	}
 	KUiPlayerBaseInfo self;
 	self.nCurFaction = -1;
-	g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (unsigned int)&self, 0);
+	g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KUPARAM)&self, 0);
 	if (self.nCurFaction >= 0 )
 	{
 		sprintf(s_keyDests[1], "%d", self.nCurFaction);
@@ -2471,12 +2471,12 @@ int	KUiMsgCentrePad::PtInWindow(int x, int y)
 	return nRet;
 }
 
-int KUiMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMsgCentrePad::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == SEL_CHANNEL_MENU)
 			{
@@ -2495,9 +2495,9 @@ int KUiMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_CHILD_MOVE:
-		if (uParam == (unsigned int)(KWndWindow*)&m_SizeBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_SizeBtn)
 			DragWndSize(nParam);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_MoveImg)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_MoveImg)
 			DragWndPos(nParam);
 		break;
 	case WND_N_LIST_ITEM_SEL:
@@ -2555,12 +2555,12 @@ int KUiMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_BgShadowBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BgShadowBtn)
 		{
 			ShowAllMessage();
 			m_bShowShadow = m_BgShadowBtn.IsButtonChecked();
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_TabButton[0])
+		if (uParam == (KUPARAM)(KWndWindow*)&m_TabButton[0])
 		{
 			m_TabButton[0].CheckButton(true);
 			m_ChatRoom.SetPosition(15,-2);
@@ -2582,7 +2582,7 @@ int KUiMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_pSelf->m_Phai.GetMessageListBox()->m_bItemActived = FALSE;
 			m_pSelf->m_Khac.GetMessageListBox()->m_bItemActived = FALSE;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TabButton[1])
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TabButton[1])
 		{
 			m_TabButton[0].CheckButton(false);
 			m_ChatRoom.SetPosition(INVISIBLE_POS_X,0);
@@ -2604,7 +2604,7 @@ int KUiMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_pSelf->m_Phai.GetMessageListBox()->m_bItemActived = FALSE;
 			m_pSelf->m_Khac.GetMessageListBox()->m_bItemActived = FALSE;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TabButton[2])
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TabButton[2])
 		{
 			m_TabButton[0].CheckButton(false);
 			m_ChatRoom.SetPosition(INVISIBLE_POS_X,0);
@@ -2626,7 +2626,7 @@ int KUiMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_pSelf->m_Phai.GetMessageListBox()->m_bItemActived = FALSE;
 			m_pSelf->m_Khac.GetMessageListBox()->m_bItemActived = FALSE;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TabButton[3])
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TabButton[3])
 		{
 			m_TabButton[0].CheckButton(false);
 			m_ChatRoom.SetPosition(INVISIBLE_POS_X,0);
@@ -2648,7 +2648,7 @@ int KUiMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_pSelf->m_Phai.GetMessageListBox()->m_bItemActived = FALSE;
 			m_pSelf->m_Khac.GetMessageListBox()->m_bItemActived = FALSE;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TabButton[4])
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TabButton[4])
 		{
 			m_TabButton[0].CheckButton(false);
 			m_ChatRoom.SetPosition(INVISIBLE_POS_X,0);
@@ -2670,7 +2670,7 @@ int KUiMsgCentrePad::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_pSelf->m_Phai.GetMessageListBox()->m_bItemActived = TRUE;
 			m_pSelf->m_Khac.GetMessageListBox()->m_bItemActived = FALSE;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TabButton[5])
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TabButton[5])
 		{
 			m_TabButton[0].CheckButton(false);
 			m_ChatRoom.SetPosition(INVISIBLE_POS_X,0);

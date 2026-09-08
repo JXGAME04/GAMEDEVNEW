@@ -198,7 +198,7 @@ int KUiTongKimScore::PtInWindow(int x, int y)
 	return 0;
 }
 
-int KUiTongKimScore::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTongKimScore::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{

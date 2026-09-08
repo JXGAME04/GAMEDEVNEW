@@ -26,7 +26,7 @@ private:
 private:
 	KUiCityWar();
 	~KUiCityWar();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void    Initialize();       
 	void	LoadScheme(const char* pScheme);	
 	void	PaintWindow();

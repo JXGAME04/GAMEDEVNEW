@@ -32,7 +32,7 @@ private:
 	int		Initialize();								//初始化
 	void	CloseSelf();
 	void	CloneTheme(KUiFriendInterview* pCopy);
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	void	PaintWindow();
 	int		IsRecyclable();
 	void	OnSend();

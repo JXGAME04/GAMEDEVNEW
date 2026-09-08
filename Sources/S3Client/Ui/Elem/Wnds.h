@@ -56,11 +56,11 @@ void		Wnd_AddWindow(KWndWindow* pWnd, WND_LAYER_LIST eLayer = WL_NORMAL);	//添加
 void		Wnd_OnWindowDelete(KWndWindow* pWnd);		//响应窗口的删除
 void		Wnd_SetGameSpaceWnd(KWndWindow* pWnd);	//设置运行游戏窗口
 void		Wnd_GameSpaceHandleInput(bool bHandle);
-void		Wnd_TransmitInputToGameSpace(unsigned int uMsg, unsigned int uParam, int nParam);
+void		Wnd_TransmitInputToGameSpace(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 void		Wnd_ShowHideGameSpace(bool bShow);
 //----输入事件处理----
 //处理输入，界面系统如果处理了输入事件，则返回非0值，否则返回0值。
-void		Wnd_ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam);
+void		Wnd_ProcessInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 void		Wnd_Heartbeat();
 //----鼠标指针操作----
 void		Wnd_ShowCursor(int bShow);						//改变鼠标指针显示状态

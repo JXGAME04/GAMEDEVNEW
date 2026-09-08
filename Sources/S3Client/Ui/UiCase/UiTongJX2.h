@@ -78,7 +78,7 @@ public:
 	static KUiTongHelpJX2*	GetIfVisible();
 	static void				CloseWindow(bool bDestroy = true);
 	static void				LoadScheme(const char* pScheme);
-	virtual int				WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int				WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:
 	void	Initialize();
 	void	ShowPage(int nPage);
@@ -100,7 +100,7 @@ public:
 	static void				CloseWindow(bool bDestroy = true);
 	static void				LoadScheme(const char* pScheme);
 	static void				OnListData(unsigned char* pData, int nLen);	// TONG_JX2_TONGLIST_SYNC
-	virtual int				WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int				WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:
 	void	Initialize();
 	void	Render();
@@ -138,7 +138,7 @@ public:
 	// [BH100] xem bang khac (chi trang Tin tuc, chi doc); 0 = ve bang minh
 	static void			ViewTong(unsigned long dwTongID);
 
-	virtual int			WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int			WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void				LoadFunMaskImage();	// nap anh ten trang con theo m_nFunSub
 	int				GetMemberTip(int nRow, char* szOut, int nMax);	// [BH100] chu tooltip (da TEncodeText) cua dong nRow, 0 = khong co
 

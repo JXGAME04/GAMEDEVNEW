@@ -1079,9 +1079,9 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 	{
 		// [BH100] dang xem bang khac: chi trang Tin tuc (+ danh sach thanh vien chi doc)
 		sV.nPage = defTONG_JX2_PAGE_INFO; sV.nStart = 0;
-		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (unsigned int)&sV, 0);
+		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (KUPARAM)&sV, 0);
 		sV.nPage = defTONG_JX2_PAGE_MEMBER; sV.nStart = m_nStart;
-		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (unsigned int)&sV, 0);
+		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (KUPARAM)&sV, 0);
 		return;
 	}
 	if (nPage == TJX2_UI_PAGE_RECRUIT)
@@ -1100,7 +1100,7 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 	{
 		// trang chuc nang can CA thong tin bang CA danh sach (thanh vien hoac bang lien minh)
 		sV.nPage = defTONG_JX2_PAGE_INFO; sV.nStart = 0;
-		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (unsigned int)&sV, 0);
+		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (KUPARAM)&sV, 0);
 		nPage = (m_nListMode == 2) ? defTONG_JX2_PAGE_UNIONLIST :
 			(m_nListMode == 1) ? defTONG_JX2_PAGE_TONGLIST : defTONG_JX2_PAGE_MEMBER;
 	}
@@ -1115,18 +1115,18 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 		if (nUiPage != defTONG_JX2_PAGE_MEMBER && nUiPage != defTONG_JX2_PAGE_RIGHT)
 		{
 			sV.nPage = defTONG_JX2_PAGE_MEMBER; sV.nStart = m_nStart;
-			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (unsigned int)&sV, 0);
+			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (KUPARAM)&sV, 0);
 		}
 		if (nUiPage == defTONG_JX2_PAGE_INFO)
 		{
 			sV.nPage = defTONG_JX2_PAGE_INFO; sV.nStart = 0;
-			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (unsigned int)&sV, 0);
+			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (KUPARAM)&sV, 0);
 			return;
 		}
 	}
 	sV.nPage = nPage;
 	sV.nStart = nStart;
-	g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (unsigned int)&sV, 0);
+	g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (KUPARAM)&sV, 0);
 }
 
 // Ma nhan dien hop xac nhan cua rieng cua so nay (tra ve qua WND_M_OTHER_WORK_RESULT)
@@ -1187,7 +1187,7 @@ void KUiTongJX2::SendOp(int nOp, unsigned long dwTarget, int nP1, int nP2, const
 	sOp.nParam2 = nP2;
 	if (pszText)
 		strncpy(sOp.szText, pszText, sizeof(sOp.szText) - 1);
-	g_pCoreShell->TongOperation(GTOI_TONG_JX2_OP, (unsigned int)&sOp, 0);
+	g_pCoreShell->TongOperation(GTOI_TONG_JX2_OP, (KUPARAM)&sOp, 0);
 	sTJX2Log("[OP ] op=%d target=%u p1=%d p2=%d", nOp, (unsigned)dwTarget, nP1, nP2);
 	// Xin lai trang sau khi thao tac - NHUNG BO QUA voi cac lenh mang CHUOI.
 	// GameServer tra loi goi VIEW tu ban sao cuc bo, ma ban sao chi doi khi
@@ -2932,7 +2932,7 @@ void KUiTongJX2::OnAction(int nIdx)
 				sParam.nData[0] = pI->m_btMyFigure;
 				sParam.nData[1] = -1;
 				strncpy(sMe.Name, pI->m_szSelf, sizeof(sMe.Name) - 1);
-				g_pCoreShell->TongOperation(GTOI_TONG_ACTION, (unsigned int)&sParam, (int)&sMe);
+				g_pCoreShell->TongOperation(GTOI_TONG_ACTION, (KUPARAM)&sParam, (KNPARAM)&sMe);
 				CloseWindow(false);
 			}
 		}
@@ -3000,7 +3000,7 @@ void KUiTongJX2::OnAction(int nIdx)
 	}
 }
 
-int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTongJX2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
@@ -3088,7 +3088,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 
 	case WND_M_MENUITEM_SELECTED:
 		// [BH100] menu tha xuong: HIWORD = TJX2_MENU_ID + loai, LOWORD = muc (-1 = huy)
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			int nKind = (int)HIWORD(nParam) - TJX2_MENU_ID;
 			int nItem = (short)LOWORD(nParam);
@@ -3139,7 +3139,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		break;
 
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)&m_BtnClose)
+		if (uParam == (KUPARAM)&m_BtnClose)
 		{
 			CloseWindow(false);
 			return 1;
@@ -3159,7 +3159,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			};
 			for (i = 0; i < TJX2_UI_TABS; i++)
 			{
-				if (uParam == (unsigned int)&m_BtnTab[i])
+				if (uParam == (KUPARAM)&m_BtnTab[i])
 				{
 					if (m_dwViewTong)
 						return 1;	// dang xem bang khac: khoa tab
@@ -3170,7 +3170,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			for (i = 0; i < TJX2_UI_ACTS; i++)
 			{
-				if (uParam == (unsigned int)&m_BtnAct[i])
+				if (uParam == (KUPARAM)&m_BtnAct[i])
 				{
 					OnAction(i);
 					return 1;
@@ -3179,7 +3179,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			// bam vao dong: chon thanh vien (tooltip) / bam kep = menu nguoi choi / don xin / bang
 			for (i = 0; i < TJX2_UI_ROWS; i++)
 			{
-				if (uParam == (unsigned int)&m_BtnRowSel[i])
+				if (uParam == (KUPARAM)&m_BtnRowSel[i])
 				{
 					if (m_nPage == defTONG_JX2_PAGE_MEMBER || m_nPage == defTONG_JX2_PAGE_RIGHT ||
 						m_nPage == TJX2_UI_PAGE_FUNUSE ||
@@ -3238,18 +3238,18 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				}
 			}
 		}
-		if (uParam == (unsigned int)&m_BtnHelp)
+		if (uParam == (KUPARAM)&m_BtnHelp)
 		{
 			KUiTongHelpJX2::OpenWindow();	// [BH100] BtnTongHelp goc
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_BtnOtherZm)
+		if (uParam == (KUPARAM)&m_BtnOtherZm)
 		{
 			m_BtnOtherZm.CheckButton(1);
 			SwitchPage(TJX2_UI_PAGE_OTHERZM);
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_BtnList)
+		if (uParam == (KUPARAM)&m_BtnList)
 		{
 			// [BH100] BtnTongList cua ban goc: mo/dong cua so danh sach bang (chon bang -> xem)
 			if (KUiTongListJX2::GetIfVisible())
@@ -3266,7 +3266,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			int q;
 			for (q = 0; q < 14; q++)
 			{
-				if (uParam == (unsigned int)&m_Rt[q])
+				if (uParam == (KUPARAM)&m_Rt[q])
 				{
 					// KHONG lat lai o kiem o day: nut co CheckBox=1 nen
 					// KWndButton::OnLBtnDown da tu lat truoc khi bao len
@@ -3274,7 +3274,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					return 1;
 				}
 			}
-			if (uParam == (unsigned int)&m_RtAll)
+			if (uParam == (KUPARAM)&m_RtAll)
 			{
 				// nut co CheckBox=1 nen da TU LAT truoc khi bao len; [BH100] chi bat/tat
 				// cac o cua TRANG CON dang mo (BtnSelectAll ban goc)
@@ -3286,7 +3286,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			for (q = 0; q < 2; q++)
 			{
-				if (uParam == (unsigned int)&m_RtSub[q])
+				if (uParam == (KUPARAM)&m_RtSub[q])
 				{
 					// [BH100] 2 trang con Quyen han / Phan phat (radio)
 					m_nRtSub = q;
@@ -3295,7 +3295,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					return 1;
 				}
 			}
-			if (uParam == (unsigned int)&m_RtApply)
+			if (uParam == (KUPARAM)&m_RtApply)
 			{
 				// [BH100] hoi truoc nhu ban goc: [PageBg2] PromptInfo 'Xac nhan muon giao quyen nay cho %s?'
 				TONG_JX2_MEMBER_SYNC* pRM = (TONG_JX2_MEMBER_SYNC*)m_byMember;
@@ -3316,7 +3316,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			for (q = 0; q < 4; q++)
 			{
-				if (uParam == (unsigned int)&m_FunSub[q])
+				if (uParam == (KUPARAM)&m_FunSub[q])
 				{
 					m_nFunSub = q + 1;
 					m_nListMode = (m_nFunSub == 2) ? 1 : (m_nFunSub == 3) ? 2 : 0;	// [BH100] exe: 0/1/2/0 = thanh vien / toan bo bang / bang lien minh
@@ -3328,7 +3328,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					return 1;
 				}
 			}
-			if (uParam == (unsigned int)&m_RecToggle)
+			if (uParam == (KUPARAM)&m_RecToggle)
 			{
 				if (g_pCoreShell)
 				{
@@ -3338,7 +3338,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				}
 				return 1;
 			}
-			if (uParam == (unsigned int)&m_Bot[0])
+			if (uParam == (KUPARAM)&m_Bot[0])
 			{
 				// Vao bang nay: dang o danh sach bang -> xin vao bang dang chon
 				if (m_nPage == TJX2_UI_PAGE_TONGLIST)
@@ -3354,7 +3354,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					SendOp(defTONG_JX2_COP_ENTER_MAP, m_dwViewTong, 0, 0, NULL);
 				return 1;
 			}
-			if (uParam == (unsigned int)&m_Bot[1])
+			if (uParam == (KUPARAM)&m_Bot[1])
 			{
 				// O nay cua ban goc la [BtnRefresh] = LAM MOI (chu game da xac
 				// nhan chu tren nut). Rieng o trang Danh sach bang - noi nguoi
@@ -3366,13 +3366,13 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					RequestPage(m_nPage, m_nStart);
 				return 1;
 			}
-			if (uParam == (unsigned int)&m_Bot[2])
+			if (uParam == (KUPARAM)&m_Bot[2])
 			{
 				// ban goc = trang 2x2 xem chieu mo bang khac, khong phai bang cot
 				SwitchPage(TJX2_UI_PAGE_OTHERZM);
 				return 1;
 			}
-			if (uParam == (unsigned int)&m_Bot[3])
+			if (uParam == (KUPARAM)&m_Bot[3])
 			{
 				if (m_dwViewTong)
 				{
@@ -3388,7 +3388,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			int f;
 			for (f = 0; f < TJX2_FUN_BTNS; f++)
 			{
-				if (uParam != (unsigned int)&m_FunBtn[f])
+				if (uParam != (KUPARAM)&m_FunBtn[f])
 					continue;
 				TONG_JX2_MEMBER_SYNC* pFM = (TONG_JX2_MEMBER_SYNC*)m_byMember;
 				DWORD dwFT = 0;
@@ -3621,14 +3621,14 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			int rc;
 			for (rc = 0; rc < 4; rc++)
 			{
-				if (uParam == (unsigned int)&m_RcSub[rc])
+				if (uParam == (KUPARAM)&m_RcSub[rc])
 				{
 					m_nRcSub = rc;
 					SwitchPage(4);
 					return 1;
 				}
 			}
-			if (uParam == (unsigned int)&m_RcSave)
+			if (uParam == (KUPARAM)&m_RcSave)
 			{
 				// [BH100] BtnEditAnnounce ban goc: bat/tat khung sua (khong tu luu)
 				if (m_nRcSub != 1)
@@ -3646,7 +3646,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				RenderRecord();
 				return 1;
 			}
-			if (uParam == (unsigned int)&m_RcLeaveWord)
+			if (uParam == (KUPARAM)&m_RcLeaveWord)
 			{
 				// [BH100] BtnLeaveWord ban goc: dang sua thong bao -> GUI thong bao; o so su kien -> loi nhan
 				if (m_nRcSub == 1)
@@ -3675,7 +3675,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			int w;
 			for (w = 1; w <= 7; w++)
 			{
-				if (uParam == (unsigned int)&m_WsIcon[w])
+				if (uParam == (KUPARAM)&m_WsIcon[w])
 				{
 					m_nSelWs = w;
 					RenderWorkshop();
@@ -3684,7 +3684,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			for (w = 0; w < 6; w++)
 			{
-				if (uParam != (unsigned int)&m_WsBtn[w])
+				if (uParam != (KUPARAM)&m_WsBtn[w])
 					continue;
 				if (m_nSelWs < 1 || m_nSelWs > 7)
 					return 1;
@@ -3727,7 +3727,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				return 1;
 			}
 		}
-		if (uParam == (unsigned int)&m_RecQX)
+		if (uParam == (KUPARAM)&m_RecQX)
 		{
 			PopupIniMenu(3, "Rec_QingXiangMenu", "MenuText", 6);	// [BH100] menu tha xuong nhu ban goc
 			return 1;
@@ -3736,14 +3736,14 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			int r;
 			for (r = 0; r < 4; r++)
 			{
-				if (uParam == (unsigned int)&m_RecHD[r])
+				if (uParam == (KUPARAM)&m_RecHD[r])
 				{
 					PopupIniMenu(4 + r, "Rec_HuoDongMenu", "MenuText", 11);
 					return 1;
 				}
 			}
 		}
-		if (uParam == (unsigned int)&m_RecSave)
+		if (uParam == (KUPARAM)&m_RecSave)
 		{
 			// thu thap noi dung trang chieu mo -> COP_SAVE_RECRUIT
 			char szJiyu[256];
@@ -3768,22 +3768,22 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			SendOp(defTONG_JX2_COP_SAVE_RECRUIT, 0, nP1, nP2, szJiyu);
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_RecAccept || uParam == (unsigned int)&m_RecDeny)
+		if (uParam == (KUPARAM)&m_RecAccept || uParam == (KUPARAM)&m_RecDeny)
 		{
 			TONG_JX2_RECRUIT_SYNC* pR = (TONG_JX2_RECRUIT_SYNC*)m_byRecruit;
 			if (m_bHasRecruit && m_nSel >= 0 && m_nSel < (int)pR->m_btApplyCount)
-				SendOp(uParam == (unsigned int)&m_RecAccept ?
+				SendOp(uParam == (KUPARAM)&m_RecAccept ?
 					defTONG_JX2_COP_ACCEPT_APPLY : defTONG_JX2_COP_REFUSE_APPLY,
 					pR->m_sApply[m_nSel].m_dwNameID, 0, 0, NULL);
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_RecPrev || uParam == (unsigned int)&m_RecNext)
+		if (uParam == (KUPARAM)&m_RecPrev || uParam == (KUPARAM)&m_RecNext)
 		{
 			// PHAN TRANG THAT: hang doi don gio nam o relay (toi 64 don),
 			// server cat lat 8 don/trang theo wStart va bao ve wApplyTotal.
 			TONG_JX2_RECRUIT_SYNC* pRp = (TONG_JX2_RECRUIT_SYNC*)m_byRecruit;
 			int nTotal = m_bHasRecruit ? (int)pRp->m_wApplyTotal : 0;
-			if (uParam == (unsigned int)&m_RecNext)
+			if (uParam == (KUPARAM)&m_RecNext)
 			{
 				if (m_nRecStart + 8 < nTotal)
 					m_nRecStart += 8;
@@ -3797,7 +3797,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			return 1;
 		}
 		// --- hang dieu khien duoi panel danh sach thanh vien ---
-		if (uParam == (unsigned int)&m_MOnline)
+		if (uParam == (KUPARAM)&m_MOnline)
 		{
 			// nut co CheckBox=1 nen no TU LAT truoc khi bao len day
 			m_bOnlineFirst = m_MOnline.IsButtonChecked() ? 1 : 0;
@@ -3807,12 +3807,12 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			RequestPage(m_nPage, 0);	// [BH100] server sap xep toan bang
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_MSort)
+		if (uParam == (KUPARAM)&m_MSort)
 		{
 			PopupIniMenu(1, "Fun_BtnMemberSortMenu", "Item_", 7);	// [BH100] menu 7 muc cua ban goc
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_MTongSort)
+		if (uParam == (KUPARAM)&m_MTongSort)
 		{
 			PopupIniMenu(2, "Fun_BtnTongSortMenu", "Item_", 5);
 			return 1;
@@ -3821,14 +3821,14 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			int z;
 			for (z = 0; z < 4; z++)
 			{
-				if (uParam == (unsigned int)&m_ZmApply[z])
+				if (uParam == (KUPARAM)&m_ZmApply[z])
 				{
 					TONG_JX2_OTHERZM_SYNC* pZ = (TONG_JX2_OTHERZM_SYNC*)m_byZM;
 					if (m_bHasZM && z < (int)pZ->m_btCount)
 						SendOp(defTONG_JX2_COP_APPLY_JOIN, pZ->m_sZM[z].m_dwNameID, 0, 0, NULL);
 					return 1;
 				}
-				if (uParam == (unsigned int)&m_ZmLook[z])
+				if (uParam == (KUPARAM)&m_ZmLook[z])
 				{
 					// [BH100] 'Xem chi tiet' ban goc = mo cua so chinh o che do xem bang do
 					TONG_JX2_OTHERZM_SYNC* pZ = (TONG_JX2_OTHERZM_SYNC*)m_byZM;
@@ -3838,7 +3838,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				}
 			}
 		}
-		if (uParam == (unsigned int)&m_ZmPrev)
+		if (uParam == (KUPARAM)&m_ZmPrev)
 		{
 			if (m_nZmStart >= 4)
 			{
@@ -3847,7 +3847,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_ZmNext)
+		if (uParam == (KUPARAM)&m_ZmNext)
 		{
 			TONG_JX2_OTHERZM_SYNC* pZ = (TONG_JX2_OTHERZM_SYNC*)m_byZM;
 			if (m_bHasZM && m_nZmStart + 4 < (int)pZ->m_wTotal)
@@ -3857,7 +3857,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_MJump)
+		if (uParam == (KUPARAM)&m_MJump)
 		{
 			char szPg[16];
 			szPg[0] = 0;
@@ -3870,7 +3870,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			RequestPage(m_nPage, m_nStart);
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_BtnPrev)
+		if (uParam == (KUPARAM)&m_BtnPrev)
 		{
 			if (m_nStart >= defTONG_JX2_VIEW_MEMBERS)
 				m_nStart -= defTONG_JX2_VIEW_MEMBERS;
@@ -3880,7 +3880,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			RequestPage(m_nPage, m_nStart);
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_BtnNext)
+		if (uParam == (KUPARAM)&m_BtnNext)
 		{
 			TONG_JX2_MEMBER_SYNC* pM = (TONG_JX2_MEMBER_SYNC*)m_byMember;
 			int nTot = m_bHasMember ? (int)pM->m_wTotal : 0;
@@ -4012,7 +4012,7 @@ void KUiTongListJX2::Request(int nStart)
 	memset(&sV, 0, sizeof(sV));
 	sV.nPage = defTONG_JX2_PAGE_TONGLIST;
 	sV.nStart = nStart;
-	g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (unsigned int)&sV, 0);
+	g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW2, (KUPARAM)&sV, 0);
 }
 
 void KUiTongListJX2::OnListData(unsigned char* pData, int nLen)
@@ -4046,24 +4046,24 @@ void KUiTongListJX2::Render()
 	}
 }
 
-int KUiTongListJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTongListJX2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK)
 	{
-		if (uParam == (unsigned int)&m_BtnClose)
+		if (uParam == (KUPARAM)&m_BtnClose)
 		{
 			CloseWindow(false);
 			KUiTongJX2::ViewTong(0);
 			return 1;
 		}
 		TONG_JX2_TONGLIST_SYNC* p = (TONG_JX2_TONGLIST_SYNC*)m_byList;
-		if (uParam == (unsigned int)&m_BtnPrev)
+		if (uParam == (KUPARAM)&m_BtnPrev)
 		{
 			if (m_nStart >= defTONG_JX2_LIST_ROWS)
 				Request(m_nStart - defTONG_JX2_LIST_ROWS);
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_BtnNext)
+		if (uParam == (KUPARAM)&m_BtnNext)
 		{
 			if (m_bHas && m_nStart + defTONG_JX2_LIST_ROWS < (int)p->m_wTotal)
 				Request(m_nStart + defTONG_JX2_LIST_ROWS);
@@ -4071,7 +4071,7 @@ int KUiTongListJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		for (int i = 0; i < TJX2_UI_ROWS; i++)
 		{
-			if (uParam == (unsigned int)&m_RowSel[i])
+			if (uParam == (KUPARAM)&m_RowSel[i])
 			{
 				if (m_bHas && i < (int)p->m_btCount)
 				{
@@ -4182,21 +4182,21 @@ void KUiTongHelpJX2::ShowPage(int nPage)
 	SetImage(ISI_T_SPR, m_szPage[m_nPage], false);
 }
 
-int KUiTongHelpJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTongHelpJX2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK)
 	{
-		if (uParam == (unsigned int)&m_BtnClose)
+		if (uParam == (KUPARAM)&m_BtnClose)
 		{
 			CloseWindow(false);
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_BtnPrev)
+		if (uParam == (KUPARAM)&m_BtnPrev)
 		{
 			ShowPage(m_nPage - 1);
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_BtnNext)
+		if (uParam == (KUPARAM)&m_BtnNext)
 		{
 			ShowPage(m_nPage + 1);
 			return 1;

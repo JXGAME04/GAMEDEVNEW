@@ -186,7 +186,7 @@ void KUiMiniMap::LoadScheme(KIniFile* pIni)
 		pIni->GetString("BtnFlag", "FlagImage", "", m_szFlagImage, sizeof(m_szFlagImage));
 		pIni->GetInteger("BtnFlag", "FlagOffset", 14, &m_nFlagOffset);
 		if (g_pCoreShell)
-			g_pCoreShell->SceneMapOperation(GSMOI_IS_SCENE_MAP_FLAGIMG, (unsigned int)&m_szFlagImage, m_nFlagOffset);
+			g_pCoreShell->SceneMapOperation(GSMOI_IS_SCENE_MAP_FLAGIMG, (KUPARAM)&m_szFlagImage, m_nFlagOffset);
 	}
 	if (IsVisible() && g_pCoreShell)
 	{
@@ -196,19 +196,19 @@ void KUiMiniMap::LoadScheme(KIniFile* pIni)
 	}
 }
 
-int KUiMiniMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMiniMap::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_SwitchBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_SwitchBtn)
 			MapSetMode(s_eMapMode == MINIMAP_M_BRIEF_PIC ? MINIMAP_M_BRIEF_PIC_BROWSE : MINIMAP_M_BRIEF_PIC);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_WorldMapBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_WorldMapBtn)
 			MapSetMode(MINIMAP_M_WORLD_MAP);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CaveMapBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CaveMapBtn)
 			MapSetMode(MINIMAP_M_CAVELIST_MAP);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FlagBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FlagBtn)
 		{
 			/*BOOL bFlag = g_pCoreShell->GetFlagMode();
 			g_pCoreShell->SetFlagMode(!bFlag);
@@ -218,11 +218,11 @@ int KUiMiniMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				g_pCoreShell->SetPaintMode(1);*/
 			m_bFlagging = !m_bFlagging;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ScenePos)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ScenePos)
 		{
 			KUiFindPos::OpenWindow();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_LockBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_LockBtn)
 		{
 			if (g_pCoreShell->GetGameData(GDI_IS_CHEST_UNLOCKED, 0, 0))
 			{
@@ -293,9 +293,9 @@ int KUiMiniMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;*/
 	case WND_N_CHILD_MOVE:
-		if (uParam == (unsigned int)(KWndWindow*)&m_SceneName ||
-			uParam == (unsigned int)(KWndWindow*)&m_ScenePos ||
-			uParam == (unsigned int)(KWndWindow*)&m_Shadow)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_SceneName ||
+			uParam == (KUPARAM)(KWndWindow*)&m_ScenePos ||
+			uParam == (KUPARAM)(KWndWindow*)&m_Shadow)
 		{
 			KWndWindow* pWnd = (KWndWindow*)uParam;
 			int nMoveOffsetX = (short)(nParam & 0xffff);
@@ -481,7 +481,7 @@ void KUiMiniMap::UpdateSceneTimeInfo(KUiSceneTimeInfo* pInfo)
 		if (g_pCoreShell->GetFlagMode() && g_pCoreShell->GetPaintMode())
 		{
 			KUiSceneTimeInfoOften Spot;
-			g_pCoreShell->SceneMapOperation(GSMOI_SCENE_TIME_INFO_OFTEN, (unsigned int)&Spot, 0);
+			g_pCoreShell->SceneMapOperation(GSMOI_SCENE_TIME_INFO_OFTEN, (KUPARAM)&Spot, 0);
 			if (Spot.nScenePos0 && Spot.nScenePos1)
 				sprintf(Buff, defMSG_FORMAT_SCENEPOSF, Spot.nScenePos0, Spot.nScenePos1);
 			else
@@ -532,7 +532,7 @@ void KUiMiniMap::UpdateCityInfo()
 		return;
 	KCityInfoView sV;
 	memset(&sV, 0, sizeof(sV));
-	int nCity = g_pCoreShell->GetGameData(GDI_CITY_INFO_CURMAP, 0, (int)&sV);
+	int nCity = g_pCoreShell->GetGameData(GDI_CITY_INFO_CURMAP, 0, (KNPARAM)&sV);
 	if (nCity <= 0)
 	{
 		ms_pSelf->m_CityInfo1.Hide();
@@ -575,7 +575,7 @@ void KUiMiniMap::Hide()
 void KUiMiniMap::MapScroll(int nbScrollScene)
 {
 	KSceneMapInfo MapInfo;
-    if(g_pCoreShell && g_pCoreShell->SceneMapOperation(GSMOI_SCENE_MAP_INFO, (unsigned int)&MapInfo, 0))
+    if(g_pCoreShell && g_pCoreShell->SceneMapOperation(GSMOI_SCENE_MAP_INFO, (KUPARAM)&MapInfo, 0))
 	{
 		int nX = MapInfo.nOrigFocusH + MapInfo.nFocusOffsetH + MapInfo.nScallH * m_nOffsetX;
 		int nY = MapInfo.nOrigFocusV + MapInfo.nFocusOffsetV + MapInfo.nScallV * m_nOffsetY;

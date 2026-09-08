@@ -28,7 +28,7 @@ class KIniFile;
 class KUiCLScrollWnd : public KWndImage
 {
 public:
-	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int  WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 };
 
 // ---- MOT O THUONG (nhanh Thuong hoac Hao Hoa) trong mot cot ----
@@ -118,7 +118,7 @@ public:
 private:
 	static KUiChienLenh* ms_pSelf;
 	void	Initialize();
-	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int  WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	virtual void Breathe();
 	void	RefreshAwards();
 	void	RefreshMissions();
@@ -175,7 +175,7 @@ public:
 private:
 	static KUiCLIcon* ms_pSelf;
 	void	Initialize();
-	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int  WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	KWndButton			m_Btn;						// [BtnIcon]
 };
 

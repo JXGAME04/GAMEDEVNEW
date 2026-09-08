@@ -125,32 +125,32 @@ void KUiTeamApply::OnNewTeam()
 }
 
 //´°¿Úº¯Êý
-int KUiTeamApply::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTeamApply::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_NewBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_NewBtn)
 		{
 			OnNewTeam();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_RefuseBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_RefuseBtn)
 		{
 			g_pCoreShell->OperationRequest(GOI_TRAM_REFUSE_INVITE, 0, nParam);
 			m_ApplyBtn.Enable(!nParam);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ApplyBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ApplyBtn)
 			OnApply();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 			CloseWindow();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_RefreshBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_RefreshBtn)
 		{
 			g_pCoreShell->OperationRequest(GOI_TEAM_COLLECT_NEARBY_LIST, 0, 0);
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_ListScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_ListScroll)
 			m_TeamList.SetTopItemIndex(nParam);
 		break;
 	default:
@@ -186,7 +186,7 @@ void KUiTeamApply::OnApply()
 	if (nSel >= 0 && nSel < m_nCount)
 	{
 		g_pCoreShell->OperationRequest(GOI_TEAM_APPLY,
-			(unsigned int)&m_pDataList[nSel], 0);
+			(KUPARAM)&m_pDataList[nSel], 0);
 		CloseWindow();
 	}
 }

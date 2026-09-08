@@ -189,7 +189,7 @@ void KWndEdit::Enable(int bEnable)
 //--------------------------------------------------------------------------
 //	功能：窗口函数（处理消息）
 //--------------------------------------------------------------------------
-int KWndEdit::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndEdit::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)
@@ -379,7 +379,7 @@ int KWndEdit::OnKeyDown(int nKeyCode, int nModifiers)
 			FmtForShow();
 		}
 		else if (m_pParentWnd)
-			nRet = m_pParentWnd->WndProc(WND_N_EDIT_SPECIAL_KEY_DOWN, (unsigned int)(KWndWindow*)this, VK_UP);
+			nRet = m_pParentWnd->WndProc(WND_N_EDIT_SPECIAL_KEY_DOWN, (KUPARAM)(KWndWindow*)this, VK_UP);
 		break;
 	case VK_DOWN:
 		if (MULTI_LINE)
@@ -405,22 +405,22 @@ int KWndEdit::OnKeyDown(int nKeyCode, int nModifiers)
 			FmtForShow();
 		}
 		else if (m_pParentWnd)
-			nRet = m_pParentWnd->WndProc(WND_N_EDIT_SPECIAL_KEY_DOWN, (unsigned int)(KWndWindow*)this, VK_DOWN);
+			nRet = m_pParentWnd->WndProc(WND_N_EDIT_SPECIAL_KEY_DOWN, (KUPARAM)(KWndWindow*)this, VK_DOWN);
 		break;
 	case VK_TAB:
 	case VK_PRIOR:
 	case VK_NEXT:
 	case VK_ESCAPE:
 		if (m_pParentWnd)
-			nRet = m_pParentWnd->WndProc(WND_N_EDIT_SPECIAL_KEY_DOWN, (unsigned int)(KWndWindow*)this, nKeyCode);
+			nRet = m_pParentWnd->WndProc(WND_N_EDIT_SPECIAL_KEY_DOWN, (KUPARAM)(KWndWindow*)this, nKeyCode);
 		break;
 	case VK_RETURN:
 		if (m_pParentWnd)
 		{
 			if ((m_Flag & WNDEDIT_ES_MULTI_LINE) == 0)
-				nRet = m_pParentWnd->WndProc(WND_N_EDIT_SPECIAL_KEY_DOWN, (unsigned int)(KWndWindow*)this, VK_RETURN);
+				nRet = m_pParentWnd->WndProc(WND_N_EDIT_SPECIAL_KEY_DOWN, (KUPARAM)(KWndWindow*)this, VK_RETURN);
 			else if ((GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0)
-				nRet = m_pParentWnd->WndProc(WND_N_EDIT_SPECIAL_KEY_DOWN, (unsigned int)(KWndWindow*)this, VK_RETURN);
+				nRet = m_pParentWnd->WndProc(WND_N_EDIT_SPECIAL_KEY_DOWN, (KUPARAM)(KWndWindow*)this, VK_RETURN);
 			else if (InsertChar(0x0a, 0))
 			{
 				UpdateData();
@@ -512,7 +512,7 @@ void KWndEdit::UpdateData()
 	FmtForShow();
 	if (m_pParentWnd)
 	{	//发送更新消息
-		m_pParentWnd->WndProc(WND_N_EDIT_CHANGE, (unsigned int)(KWndWindow*)this, 0);
+		m_pParentWnd->WndProc(WND_N_EDIT_CHANGE, (KUPARAM)(KWndWindow*)this, 0);
 	}
 }
 

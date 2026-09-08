@@ -112,12 +112,12 @@ void KUiChatStatus::LoadScheme(const char* pScheme)
 
 
 //´°¿Úº¯Êý
-int KUiChatStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiChatStatus::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_OnLineBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_OnLineBtn)
 		{
 			m_OnLineBtn.CheckButton(true);
 			m_LeaveBtn.CheckButton(false);
@@ -125,7 +125,7 @@ int KUiChatStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_AutoReplyBtn.CheckButton(false);
 			m_HideBtn.CheckButton(false);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_LeaveBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_LeaveBtn)
 		{
 			m_OnLineBtn.CheckButton(false);
 			m_LeaveBtn.CheckButton(true);
@@ -133,7 +133,7 @@ int KUiChatStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_AutoReplyBtn.CheckButton(false);
 			m_HideBtn.CheckButton(false);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BusyBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BusyBtn)
 		{
 			m_OnLineBtn.CheckButton(false);
 			m_LeaveBtn.CheckButton(false);
@@ -141,7 +141,7 @@ int KUiChatStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_AutoReplyBtn.CheckButton(false);
 			m_HideBtn.CheckButton(false);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_AutoReplyBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_AutoReplyBtn)
 		{
 			m_OnLineBtn.CheckButton(false);
 			m_LeaveBtn.CheckButton(false);
@@ -149,7 +149,7 @@ int KUiChatStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_AutoReplyBtn.CheckButton(true);
 			m_HideBtn.CheckButton(false);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_HideBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_HideBtn)
 		{
 			m_OnLineBtn.CheckButton(false);
 			m_LeaveBtn.CheckButton(false);
@@ -157,13 +157,13 @@ int KUiChatStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_AutoReplyBtn.CheckButton(false);
 			m_HideBtn.CheckButton(true);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_AddMsg)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_AddMsg)
 			OnAddMsg();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_RemoveMsg)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_RemoveMsg)
 			m_MsgList.RemoveAMessage(m_MsgList.GetCurSel());
-		else if (uParam == (unsigned int)(KWndWindow*)&m_SetDefaultMsg)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_SetDefaultMsg)
 			OnSetDefMsg();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 			CloseWindow();
 		break;
 	case WND_N_EDIT_SPECIAL_KEY_DOWN:
@@ -174,7 +174,7 @@ int KUiChatStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnSelMsg(nParam);
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam = (unsigned int)(KWndWindow*)(&m_MsgScroll))
+		if (uParam = (KUPARAM)(KWndWindow*)(&m_MsgScroll))
 			m_MsgList.SetFirstShowLine(nParam);
 		break;
 	default:

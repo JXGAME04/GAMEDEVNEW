@@ -2876,7 +2876,7 @@ void KNpc::DoRevive()
 			Msg.byPriority = 255;
 			Msg.eType = SMT_PLAYER;
 			sprintf(Msg.szMessage, MSG_NPC_DEATH, Name);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, NULL); //Th«ng b¸o vÒ thµnh d­ìng søc
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, NULL); //Th«ng b¸o vÒ thµnh d­ìng søc
 		}
 		m_Frames.nTotalFrame = m_DeathFrame;
 		m_ClientDoing = cdo_death;
@@ -3205,7 +3205,7 @@ void KNpc::DoSkill(int nX, int nY)
 					sMsgSp.byConfirmType = SMCT_NONE;
 					sMsgSp.byPriority = 0;
 					sMsgSp.byParamSize = 0;
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsgSp, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsgSp, 0);
 					goto Exit;
 				}
 #endif
@@ -6499,7 +6499,7 @@ BOOL KNpc::Cost(NPCATTRIB nType, int nCost, BOOL bOnlyCheckCanCast)
 				default:
 					break;
 			}
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, NULL);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, NULL);
 #endif
 			return FALSE;
 		}

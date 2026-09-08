@@ -103,7 +103,7 @@ void KUiPartnerBar::Initialize()
     Wnd_AddWindow(this);
 }
 
-int KUiPartnerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiPartnerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     switch (uMsg)
     {
@@ -111,7 +111,7 @@ int KUiPartnerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
     {
         int nBtn = -1;
         for (int i = 0; i < PARTNER_BAR_BTN_NUM; i++)
-            if (uParam == (unsigned int)(KWndWindow*)&m_Btn[i])
+            if (uParam == (KUPARAM)(KWndWindow*)&m_Btn[i])
             {
                 nBtn = i;
                 break;

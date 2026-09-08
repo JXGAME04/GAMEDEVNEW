@@ -88,7 +88,7 @@ void KUiHelper::Initialize()
 	return;
 }
 
-int KUiHelper::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiHelper::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nResult = false;
 

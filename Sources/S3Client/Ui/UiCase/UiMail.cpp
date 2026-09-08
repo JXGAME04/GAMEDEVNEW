@@ -380,7 +380,7 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
         if (pA->nKind == MAILAWARD_ITEM)
         {
             // dung lai vat pham trong Item[] cua client tu ChatItem (CoreShell.cpp GDI_ITEM_CHAT)
-            int nIdx = g_pCoreShell ? g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&pA->Item) : 0;
+            int nIdx = g_pCoreShell ? g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (KNPARAM)&pA->Item) : 0;
             if (nIdx > 0)
             {
                 m_nAwardItemIdx[i] = nIdx;
@@ -449,7 +449,7 @@ KUiMailList::KUiMailList()
 }
 
 // [MAIL 03/09 D7] khung cuon chuyen tiep thong bao cua hang / thanh cuon len KUiMailList
-int KUiMailScrollWnd::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMailScrollWnd::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     if ((uMsg == WND_N_BUTTON_CLICK || uMsg == WND_N_SCORLLBAR_POS_CHANGED) && m_pParentWnd)
         return m_pParentWnd->WndProc(uMsg, uParam, nParam);
@@ -740,7 +740,7 @@ void KUiMailList::PopupFilter()
     KPopupMenu::Popup(pMenu, this, MAILUI_MENU_FILTER);
 }
 
-int KUiMailList::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMailList::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     switch (uMsg)
     {
@@ -770,23 +770,23 @@ int KUiMailList::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
                 }
                 return 1;
             }
-            if (uParam == (unsigned int)(KWndWindow*)&m_BtnAccept)
+            if (uParam == (KUPARAM)(KWndWindow*)&m_BtnAccept)
             {
                 if (m_nSelId > 0)
                     SendOp(MAILUI_OP_ACCEPT, 0, m_nSelId);
                 return 1;
             }
-            if (uParam == (unsigned int)(KWndWindow*)&m_BtnDelOne)
+            if (uParam == (KUPARAM)(KWndWindow*)&m_BtnDelOne)
             {
                 SendOp(MAILUI_OP_DELETE_ONE, 0, 0);
                 return 1;
             }
-            if (uParam == (unsigned int)(KWndWindow*)&m_BtnDelAll)
+            if (uParam == (KUPARAM)(KWndWindow*)&m_BtnDelAll)
             {
                 SendOp(MAILUI_OP_DELETE_CHECKED, 0, 0);
                 return 1;
             }
-            if (uParam == (unsigned int)(KWndWindow*)&m_SelAllChk)
+            if (uParam == (KUPARAM)(KWndWindow*)&m_SelAllChk)
             {
                 int bOn = m_SelAllChk.IsButtonChecked() ? 1 : 0;
                 for (int i = 0; i < m_nCount; i++)
@@ -798,12 +798,12 @@ int KUiMailList::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
                 SendOp(MAILUI_OP_UPDATE, 0, 0);
                 return 1;
             }
-            if (uParam == (unsigned int)(KWndWindow*)&m_AutoDelChk)
+            if (uParam == (KUPARAM)(KWndWindow*)&m_AutoDelChk)
             {
                 SendOp(MAILUI_OP_AUTO_DELETE, 0, m_AutoDelChk.IsButtonChecked() ? 1 : 0);
                 return 1;
             }
-            if (uParam == (unsigned int)(KWndWindow*)&m_FilterBtn)
+            if (uParam == (KUPARAM)(KWndWindow*)&m_FilterBtn)
             {
                 PopupFilter();
                 return 1;
@@ -811,7 +811,7 @@ int KUiMailList::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
         }
         break;
     case WND_N_SCORLLBAR_POS_CHANGED:
-        if (uParam == (unsigned int)(KWndWindow*)&m_Scroll)
+        if (uParam == (KUPARAM)(KWndWindow*)&m_Scroll)
         {
             m_nTop = nParam;
             Refresh();
@@ -956,17 +956,17 @@ void KUiMailManager::LoadScheme(const char* pScheme)
     ms_pSelf->m_List.LoadScheme(pScheme);
 }
 
-int KUiMailManager::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMailManager::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     switch (uMsg)
     {
     case WND_N_BUTTON_CLICK:
-        if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+        if (uParam == (KUPARAM)(KWndWindow*)&m_Close)
         {
             CloseWindow(false);
             return 1;
         }
-        if (uParam == (unsigned int)(KWndWindow*)&m_InBox)
+        if (uParam == (KUPARAM)(KWndWindow*)&m_InBox)
         {
             m_InBox.CheckButton(1);     // chi co mot tab
             return 1;
@@ -1084,9 +1084,9 @@ void KUiMailIcon::Breathe()
     }
 }
 
-int KUiMailIcon::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMailIcon::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
-    if (uMsg == WND_N_BUTTON_CLICK && uParam == (unsigned int)(KWndWindow*)&m_Btn)
+    if (uMsg == WND_N_BUTTON_CLICK && uParam == (KUPARAM)(KWndWindow*)&m_Btn)
     {
         m_bBlink = 0;
         m_Btn.Show();

@@ -79,13 +79,13 @@ void KUiDaTau::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiDaTau::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiDaTau::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&EXP)
+		if (uParam == (KUPARAM)(KWndWindow*)&EXP)
 		{
 			Hide();
 			//g_pCoreShell->OperationRequest(GOI_DATAU, 1, 0);
@@ -95,7 +95,7 @@ int KUiDaTau::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 3, (unsigned int)m_pSelf->szFunc1);
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&money)
+		else if (uParam == (KUPARAM)(KWndWindow*)&money)
 		{
 			Hide();
 			//g_pCoreShell->OperationRequest(GOI_DATAU, 2, 0);
@@ -105,7 +105,7 @@ int KUiDaTau::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 3, (unsigned int)m_pSelf->szFunc1);
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&random)
+		else if (uParam == (KUPARAM)(KWndWindow*)&random)
 		{
 			Hide();
 			//g_pCoreShell->OperationRequest(GOI_DATAU, 3, 0);
@@ -136,7 +136,7 @@ int KUiDaTau::AutoPick(int nIdx)
 		pNut = (KWndWindow*)&m_pSelf->money;			// 1: tien (finish_money)
 	else if (nIdx == 2)
 		pNut = (KWndWindow*)&m_pSelf->random;			// 2: ngau nhien (quest_random)
-	m_pSelf->WndProc(WND_N_BUTTON_CLICK, (unsigned int)pNut, 0);
+	m_pSelf->WndProc(WND_N_BUTTON_CLICK, (KUPARAM)pNut, 0);
 	return 1;
 }
 

@@ -608,7 +608,7 @@ static bool TrongBang(int x, int y)
 //--------------------------------------------------------------------------
 //	Nhan chuot khi dang sua
 //--------------------------------------------------------------------------
-bool UiToaDo_NhanChuot(unsigned int uMsg, unsigned int uParam, int nParam)
+bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int		x, y;
 	char	szKhoa[UITOADO_CO_KHOA];

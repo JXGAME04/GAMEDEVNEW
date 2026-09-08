@@ -33,7 +33,7 @@ private:
 	~KUiSelPlayerNearby() {}
 	void	Initialize();					//初始化
 	void	LoadScheme(class KIniFile* pIni);//载入界面方案
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	void	OnClickXButton(int nAction);
 	void	UpdateData();
 	void	Clear();

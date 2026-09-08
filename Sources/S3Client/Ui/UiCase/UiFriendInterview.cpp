@@ -244,7 +244,7 @@ void KUiFriendInterview::LoadScheme(const char* pScheme)
 	memset(&Info, 0, sizeof(KUiPlayerBaseInfo));
 	if (g_pCoreShell)
 	{
-		g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KNPARAM)&Info, 0);
 		SetSelfName(Info.Name);
 	}
 
@@ -287,19 +287,19 @@ void KUiFriendInterview::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KUiFriendInterview::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiFriendInterview::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_SendBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_SendBtn)
 			OnSend();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 			CloseSelf();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FaceBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FaceBtn)
 			PopupFaceMenu();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ColorBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ColorBtn)
 		{
 			int x, y, nWidth;
 			m_ColorBtn.GetAbsolutePos(&x, &y);
@@ -315,11 +315,11 @@ int KUiFriendInterview::WndProc(unsigned int uMsg, unsigned int uParam, int nPar
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_MsgScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_MsgScroll)
 			m_MsgList.SetFirstShowLine(nParam);
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == SEL_COLOR_MENU && short(LOWORD(nParam)) >= 0)
 			{
@@ -385,7 +385,7 @@ void KUiFriendInterview::OnSend()
 		m_InputWnd.ClearText();
 
 		g_pCoreShell->OperationRequest(GOI_CHAT_WORDS_TO_FRIEND,
-			(unsigned int)(&Msg), (int)(&m_FriendData));
+			(KUPARAM)(&Msg), (KNPARAM)(&m_FriendData));
 	}
 }
 

@@ -154,43 +154,43 @@ void KUiTeamManage::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KUiTeamManage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTeamManage::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_btnInvite)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_btnInvite)
 			OnInvite();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_btnKick)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnKick)
 			OnKick();
-//		else if (uParam == (unsigned int)(KWndWindow*)&m_btnApplyJoin)
+//		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnApplyJoin)
 //			OnApplyJoin();
-		if (uParam == (unsigned int)(KWndWindow*)&m_btnAppoint)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_btnAppoint)
 			OnAppoint();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_btnLeave ||
-			uParam == (unsigned int)(KWndWindow*)&m_btnDismiss)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnLeave ||
+			uParam == (KUPARAM)(KWndWindow*)&m_btnDismiss)
 			OnLeave();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_btnRefresh)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnRefresh)
 			OnRefresh();
-//		else if (uParam == (unsigned int)(KWndWindow*)&m_NearbyPlayerTab)
+//		else if (uParam == (KUPARAM)(KWndWindow*)&m_NearbyPlayerTab)
 //			SwitchNearbyMode(true);
-//		else if (uParam == (unsigned int)(KWndWindow*)&m_NearbyTeamTab)
+//		else if (uParam == (KUPARAM)(KWndWindow*)&m_NearbyTeamTab)
 //			SwitchNearbyMode(false);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_btnCloseTeam)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnCloseTeam)
 			g_pCoreShell->TeamOperation(TEAM_OI_CLOSE, 0, nParam);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_btnCancel)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnCancel)
 			CloseWindow();
 		break;
 	case WND_N_LIST_ITEM_SEL:
-		if (uParam == (unsigned int)(KWndWindow*)&m_TeamMember)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_TeamMember)
 			OnSelTeamMember(nParam);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_NearbyList)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_NearbyList)
 			OnSelNearby(nParam);
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_MemberScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_MemberScroll)
 			m_TeamMember.SetTopItemIndex(nParam);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_NearbyScroll)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_NearbyScroll)
 			m_NearbyList.SetTopItemIndex(nParam);
 		break;
 	default:
@@ -272,12 +272,12 @@ void KUiTeamManage::UpdateData(KUiPlayerTeam* pInfo)
 	KUiPlayerLeaderShip	LeaderShip;
 	memset(&LeaderShip, 0, sizeof(KUiPlayerLeaderShip));
 	g_pCoreShell->GetGameData(GDI_PLAYER_LEADERSHIP,
-		(unsigned int)&LeaderShip, 0);
+		(KUPARAM)&LeaderShip, 0);
 	m_LeaderAbility.SetIntText(LeaderShip.nLeaderShipLevel);
 
 	if (pInfo)
 		m_Info = *pInfo;
-	else if (!g_pCoreShell->TeamOperation(TEAM_OI_GD_INFO, (unsigned int)&m_Info, 0))
+	else if (!g_pCoreShell->TeamOperation(TEAM_OI_GD_INFO, (KUPARAM)&m_Info, 0))
 	{
 		memset(&m_Info, 0, sizeof(m_Info));
 	}
@@ -302,7 +302,7 @@ void KUiTeamManage::UpdateData(KUiPlayerTeam* pInfo)
 		m_pPlayersList = (KUiPlayerItem*)malloc(sizeof(KUiPlayerItem) * (m_Info.cNumMember));
 		if (m_pPlayersList)
 		{
-			int nCount = g_pCoreShell->TeamOperation(TEAM_OI_GD_MEMBER_LIST, (unsigned int)m_pPlayersList, m_Info.cNumMember);
+			int nCount = g_pCoreShell->TeamOperation(TEAM_OI_GD_MEMBER_LIST, (KUPARAM)m_pPlayersList, m_Info.cNumMember);
 			_ASSERT(nCount == m_Info.cNumMember);
 			m_TeamMember.SetContent((unsigned char*)m_pPlayersList, m_Info.cNumMember, sizeof(KUiPlayerItem),
 				((char*)&m_pPlayersList->Name - (char*)m_pPlayersList));
@@ -371,7 +371,7 @@ void KUiTeamManage::OnAppoint()
 {
 	int nCurSel = m_TeamMember.GetCurSel();
 	if (nCurSel >= 0)
-		g_pCoreShell->TeamOperation(TEAM_OI_APPOINT, (unsigned int)&m_pPlayersList[nCurSel], 0);
+		g_pCoreShell->TeamOperation(TEAM_OI_APPOINT, (KUPARAM)&m_pPlayersList[nCurSel], 0);
 }
 
 //--------------------------------------------------------------------------
@@ -381,7 +381,7 @@ void KUiTeamManage::OnKick()
 {
 	int nCurSel = m_TeamMember.GetCurSel();
 	if (nCurSel >= 0)
-		g_pCoreShell->TeamOperation(TEAM_OI_KICK, (unsigned int)&m_pPlayersList[nCurSel], 0);
+		g_pCoreShell->TeamOperation(TEAM_OI_KICK, (KUPARAM)&m_pPlayersList[nCurSel], 0);
 }
 
 //--------------------------------------------------------------------------
@@ -393,7 +393,7 @@ void KUiTeamManage::OnKick()
 	if (nCurSel >= 0)
 	{
 		g_pCoreShell->OperationRequest(GOI_TEAM_APPLY,
-			(unsigned int)&m_pNearbyTeamsList[nCurSel], 0);
+			(KUPARAM)&m_pNearbyTeamsList[nCurSel], 0);
 	}
 }*/
 
@@ -433,7 +433,7 @@ void KUiTeamManage::OnRefresh()
 			m_pNearbyPlayersList = (KUiPlayerItem*)malloc(sizeof(KUiPlayerItem) * nCount);
 			if (m_pNearbyPlayersList)
 			{
-				g_pCoreShell->GetGameData(GDI_NEARBY_IDLE_PLAYER_LIST, (unsigned int)m_pNearbyPlayersList, nCount);
+				g_pCoreShell->GetGameData(GDI_NEARBY_IDLE_PLAYER_LIST, (KUPARAM)m_pNearbyPlayersList, nCount);
 				m_NearbyList.SetContent((unsigned char*)m_pNearbyPlayersList, nCount,
 					sizeof(KUiPlayerItem), ((char*)&m_pNearbyPlayersList->Name - (char*)m_pNearbyPlayersList));
 			}

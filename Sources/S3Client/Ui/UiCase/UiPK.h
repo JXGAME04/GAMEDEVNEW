@@ -16,7 +16,7 @@ private:
 	void	LoadScheme(const char* pScheme);	
 	void	CancelMenu();
 
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 
 private:

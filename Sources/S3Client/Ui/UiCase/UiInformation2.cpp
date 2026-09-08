@@ -167,14 +167,14 @@ void KUiInformation2::Hide()
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KUiInformation2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiInformation2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
 	case WM_LBUTTONDOWN:
-//		if (uParam == (unsigned int)(KWndWindow*)&m_OKBtn)
+//		if (uParam == (KUPARAM)(KWndWindow*)&m_OKBtn)
 		Hide();
 		break;
 	case WM_KEYDOWN:

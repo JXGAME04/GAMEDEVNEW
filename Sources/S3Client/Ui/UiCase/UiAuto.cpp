@@ -159,12 +159,12 @@ void KUiAuto::LoadScheme()
 	}
 }
 
-int KUiAuto::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAuto::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_StartBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_StartBtn)
 		{
 			if (IsAuto == FALSE)
 			{
@@ -179,7 +179,7 @@ int KUiAuto::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				OnStop();
 			}
 		}		
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 			CloseWindow();		
 		break;
 	}
@@ -317,7 +317,7 @@ void KUiFight::LoadScheme()
 	
 }
 
-int KUiFight::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiFight::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -325,39 +325,39 @@ int KUiFight::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,7,m_Range.GetIntNumber());
 		break;
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_AutoAttackBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_AutoAttackBtn)
 			OnAutoAttack();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_AutoAttackList)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_AutoAttackList)
 			PopUpAutoAttack();			
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FollowBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FollowBtn)
 			OnFollowPeople();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Support1Btn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Support1Btn)
 			OnBuffSkill1();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Support2Btn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Support2Btn)
 			OnBuffSkill2();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Support3Btn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Support3Btn)
 			OnBuffSkill3();	
-		else if (uParam == (unsigned int)(KWndWindow*)&m_AutoRightSkill)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_AutoRightSkill)
 			OnAutoRightSkill();//®¸nh chiªu bªn ph¶i
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Support1List)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Support1List)
 			SupportSkillPopup(enumMagic_ID1);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Support2List)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Support2List)
 			SupportSkillPopup(enumMagic_ID2);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Support3List)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Support3List)
 			SupportSkillPopup(enumMagic_ID3);			
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FollowListBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FollowListBtn)
 			PopUpFollow();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DiChuyenToaDoBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DiChuyenToaDoBtn)
 			OnActiveMove();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FightCBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FightCBtn)
 			OnFightRadius();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_QDiemBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_QDiemBtn)
 			OnArrayRadius();						
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CoordGetBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CoordGetBtn)
 		{
 			InsertMoveMpsList(m_CurrentMps.nSceneId, m_CurrentMps.nScenePos0*32, m_CurrentMps.nScenePos1*64);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CoordDelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CoordDelBtn)
 		{
 			int nSel = m_CoordL.GetCurSel();
 			int nCount = 0;
@@ -384,7 +384,7 @@ int KUiFight::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 							
 			SetMoveMpsList();			
 		}		
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CoordDelAllBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CoordDelAllBtn)
 		{
 			memset(m_MoveMpsList, 0, sizeof(m_MoveMpsList));
 			SetMoveMpsList();
@@ -393,7 +393,7 @@ int KUiFight::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		break;
 	
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == MENU_SELECT_FOLLOW_PEOPLE && (short)(LOWORD(nParam)) >= 0)
 				ProcessPopUpFollow(LOWORD(nParam));
@@ -408,7 +408,7 @@ int KUiFight::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)&m_CoordL_Scroll)
+		if (uParam == (KUPARAM)&m_CoordL_Scroll)
 			m_CoordL.SetTopItemIndex(nParam);
 		break;
 	default:
@@ -605,7 +605,7 @@ void KUiFight::PopUpFollow()
 		m_pNearbyPlayersList = (KUiPlayerItem*)malloc(sizeof(KUiPlayerItem) * nActionDataCount);
 		if (m_pNearbyPlayersList)
 		{
-			g_pCoreShell->GetGameData(GDI_NEARBY_PLAYER_LIST, (unsigned int)m_pNearbyPlayersList, nActionDataCount);
+			g_pCoreShell->GetGameData(GDI_NEARBY_PLAYER_LIST, (KUPARAM)m_pNearbyPlayersList, nActionDataCount);
 			for (int i = 0; i< nActionDataCount;i++)
 			{
 				strncpy(pSelUnitMenu->Items[i].szData, m_pNearbyPlayersList[i].Name, 63);
@@ -643,7 +643,7 @@ void KUiFight::ProcessPopUpFollow(int nAction)
 {
 	strcpy(m_cFollowName, m_pNearbyPlayersList[nAction].Name);
 	m_NameFollowPeople.SetText(m_cFollowName);
-	g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,4,(unsigned int)&m_cFollowName);
+	g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,4,(KUPARAM)&m_cFollowName);
 }
 
 void KUiFight::PopUpAutoAttack()
@@ -938,7 +938,7 @@ void KUiFight::LoadFightSetting()
 		else
 		{
 			m_NameFollowPeople.SetText(m_cFollowName);
-			g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,4,(unsigned int)&m_cFollowName);
+			g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,4,(KUPARAM)&m_cFollowName);
 		}	
 	
 		pConfigFile->GetInteger("Fighting", "AutoAttack", 0, (int*)(&m_bAutoAttack));
@@ -1170,14 +1170,14 @@ void KUiRecover::LoadScheme()
 	}	
 }
 
-int KUiRecover::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiRecover::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_BuffBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BuffBtn)
 			OnBuff();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BuyItemBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BuyItemBtn)
 		{
 			if(IsBuyItem == FALSE)
 			{
@@ -1191,7 +1191,7 @@ int KUiRecover::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}	
 			g_pCoreShell->OperationRequest(GOI_AUTO_PLAY, eBuyItem, IsBuyItem);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ReturnPortalBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ReturnPortalBtn)
 		{
 			if(IsReturnPortal == FALSE)
 			{
@@ -1205,7 +1205,7 @@ int KUiRecover::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}	
 			g_pCoreShell->OperationRequest(GOI_AUTO_PLAY, eReturnPortal, IsReturnPortal);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_InventoryMIBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_InventoryMIBtn)
 		{
 			if(IsInventoryMI == FALSE)
 			{
@@ -1219,7 +1219,7 @@ int KUiRecover::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}	
 			g_pCoreShell->OperationRequest(GOI_AUTO_PLAY, eInventoryIM, IsInventoryMI);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_RepairBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_RepairBtn)
 		{
 			if(IsRepairItem == FALSE)
 			{
@@ -1233,42 +1233,42 @@ int KUiRecover::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}	
 			g_pCoreShell->OperationRequest(GOI_AUTO_PLAY, eRepairEquip, IsRepairItem);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DurabilityBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DurabilityBtn)
 			OnDurability();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_LifeBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_LifeBtn)
 			OnCheckLife();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ManaBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ManaBtn)
 			OnCheckMana();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_LifeBtn2)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_LifeBtn2)
 			OnCheckLife2();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ManaBtn2)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ManaBtn2)
 			OnCheckMana2();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Aura1Btn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Aura1Btn)
 			AuraSkillPopup(enumMagic_ID1);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Aura2Btn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Aura2Btn)
 			AuraSkillPopup(enumMagic_ID2);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ChuyenVongSangBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ChuyenVongSangBtn)
 			OnActiveChangeAura();			
-		else if (uParam == (unsigned int)(KWndWindow*)&m_GDBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_GDBtn)
 			OnUseGD();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TTLBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TTLBtn)
 			OnUseTTL();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_MoreMoneyBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_MoreMoneyBtn)
 			OnMoreMoney();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_NoLifeBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_NoLifeBtn)
 			OnNoLife();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_NoManaBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_NoManaBtn)
 			OnNoMana();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TeamBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TeamBtn)
 			OnChooseTeam();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_TeamBtnMore)//qu¶n lý tæ ®éi
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_TeamBtnMore)//qu¶n lý tæ ®éi
 		{
 			if(KUiAutoParty::GetIfVisible() == NULL)
 				KUiAutoParty::OpenWindow(true);
 			else
 				KUiAutoParty::CloseWindow(false);
 		}
-		//else if (uParam == (unsigned int)(KWndWindow*)&m_TeamListBtn)
+		//else if (uParam == (KUPARAM)(KWndWindow*)&m_TeamListBtn)
 		//	PopUpChooseTeam();
 		SaveRecoverSetting();
 		break;
@@ -1276,7 +1276,7 @@ int KUiRecover::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnCheckInput();
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			//if (HIWORD(nParam) == MENU_SELECT_CHOOSE_TEAM && (short)(LOWORD(nParam)) >= 0)
 			//	ProcessPopUpChooseTeam(LOWORD(nParam));
@@ -2074,24 +2074,24 @@ void KUiPick::LoadScheme()
 	}	
 }
 
-int KUiPick::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiPick::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_PickBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_PickBtn)
 			OnPick();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ReturnBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ReturnBtn)
 			OnGiveItem();//gi÷ trang søc
-		//else if (uParam == (unsigned int)(KWndWindow*)&m_PickInFightState)
+		//else if (uParam == (KUPARAM)(KWndWindow*)&m_PickInFightState)
 		//	OnPickInFightState();//nhÆt trong thµnh
-		else if (uParam == (unsigned int)(KWndWindow*)&m_PutBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_PutBtn)
 			OnFillterItem();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_PickListBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_PickListBtn)
 			OnSelectPickType(MENU_SELECT_PICK_TYPE);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_PutListBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_PutListBtn)
 			OnSelectPickType(MENU_SELECT_SORT_MAGIC);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FilterAddBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FilterAddBtn)
 		{
 			int i = FilterSameMagic(Data_Magic[m_CurrentSelMagic][1]);
 
@@ -2114,14 +2114,14 @@ int KUiPick::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			SetFilterMagicList();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FilterDelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FilterDelBtn)
 		{
 			int nSel = m_FilterL.GetCurSel();
 			memset(m_cFilterMagic[m_FilterMagicIndex[nSel]], 0, sizeof(m_cFilterMagic[nSel]));
 			m_FilterMagicV[m_FilterMagicIndex[nSel]] = 0;
 			SetFilterMagicList();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_FilterDelAll)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_FilterDelAll)
 		{
 			memset(m_cFilterMagic, 0, sizeof(m_cFilterMagic));
 			memset(m_FilterMagicV, 0, sizeof(m_FilterMagicV));
@@ -2130,7 +2130,7 @@ int KUiPick::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		SavePickSetting();
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if ((short)(LOWORD(nParam)) >= 0)
 			{
@@ -2139,13 +2139,13 @@ int KUiPick::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_LIST_ITEM_SEL:
-		if(uParam == (unsigned int)&m_FilterL)
+		if(uParam == (KUPARAM)&m_FilterL)
 		{
 			m_nSelectIndex = nParam;
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if(uParam == (unsigned int)&m_FilterL_Scroll)
+		if(uParam == (KUPARAM)&m_FilterL_Scroll)
 		{
     		m_FilterL.SetTopItemIndex(nParam);
 		}
@@ -2449,12 +2449,12 @@ void KUiOther::LoadScheme()
 	LoadProSettting();
 }
 
-int KUiOther::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiOther::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 		case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_SortITemBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_SortITemBtn)
 		{
 			if(IsSortItem == FALSE)
 			{
@@ -2468,7 +2468,7 @@ int KUiOther::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}	
 			g_pCoreShell->OperationRequest(GOI_AUTO_PLAY, eSortItem, IsSortItem);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_OpenTuiDPBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_OpenTuiDPBtn)
 		{
 			if(IsOpenTuiDP == FALSE)
 			{
@@ -2482,7 +2482,7 @@ int KUiOther::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}	
 			g_pCoreShell->OperationRequest(GOI_AUTO_PLAY, eAutoTuiDuocPham, IsOpenTuiDP);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BanItemBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BanItemBtn)
 		{
 			if(IsBanItem == FALSE)
 			{

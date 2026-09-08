@@ -21,7 +21,7 @@ private:
 	~KUiSelServer();
 	void	Initialize();						//初始化
 	void	LoadScheme(const char* pScheme);	//载入界面方案
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);	//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);	//窗口函数
 	void	OnLogin();
 	void	OnCancel();
 	int		OnKeyDown(unsigned int uKey);

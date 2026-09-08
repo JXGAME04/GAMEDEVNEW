@@ -21,7 +21,7 @@
 #include <string.h>
 #include <time.h>
 
-extern int CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam);
+extern int CoreDataChanged(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam);
 
 #define UIAUCTION_SCRIPT	"\\script\\ui\\uiauction_house.lua"
 
@@ -115,7 +115,7 @@ int LuaAuc_AuctionAddActivity(Lua_State* L)
 	a.nType = sArgInt(L, 1);
 	sCopyStr(a.szName, sizeof(a.szName), sArgStr(L, 2));
 	a.nStartTime = sArgInt(L, 3);
-	sNotify(AUCUI_CMD_ADD_ACTIVITY, (int)&a);
+	sNotify(AUCUI_CMD_ADD_ACTIVITY, (KNPARAM)&a);
 	return 0;
 }
 
@@ -126,7 +126,7 @@ int LuaAuc_AuctionDelActivity(Lua_State* L)
 	memset(&a, 0, sizeof(a));
 	a.nType = sArgInt(L, 1);
 	sCopyStr(a.szName, sizeof(a.szName), sArgStr(L, 2));
-	sNotify(AUCUI_CMD_DEL_ACTIVITY, (int)&a);
+	sNotify(AUCUI_CMD_DEL_ACTIVITY, (KNPARAM)&a);
 	return 0;
 }
 
@@ -143,7 +143,7 @@ int LuaAuc_AuctionOnActivitySelect(Lua_State* L)
 	memset(&a, 0, sizeof(a));
 	a.nType = sArgInt(L, 1);
 	sCopyStr(a.szName, sizeof(a.szName), sArgStr(L, 2));
-	sNotify(AUCUI_CMD_SELECT_ACTIVITY, (int)&a);
+	sNotify(AUCUI_CMD_SELECT_ACTIVITY, (KNPARAM)&a);
 	return 0;
 }
 
@@ -276,7 +276,7 @@ int LuaAuc_AuctionAddEnglishItem(Lua_State* L)
 	KAucUiItem it;
 	sFillEnglish(L, &it);
 	sFillItem(L, 11, &it);
-	sNotify(AUCUI_CMD_ADD_ITEM, (int)&it);
+	sNotify(AUCUI_CMD_ADD_ITEM, (KNPARAM)&it);
 	return 0;
 }
 
@@ -285,7 +285,7 @@ int LuaAuc_AuctionAddDutchItem(Lua_State* L)
 	KAucUiItem it;
 	sFillDutch(L, &it);
 	sFillItem(L, 11, &it);
-	sNotify(AUCUI_CMD_ADD_ITEM, (int)&it);
+	sNotify(AUCUI_CMD_ADD_ITEM, (KNPARAM)&it);
 	return 0;
 }
 
@@ -295,7 +295,7 @@ int LuaAuc_AuctionSetEnglishItem(Lua_State* L)
 	KAucUiItem it;
 	sFillEnglish(L, &it);
 	sCopyStr(it.szCurrency, sizeof(it.szCurrency), sArgStr(L, 11));
-	sNotify(AUCUI_CMD_SET_ITEM, (int)&it);
+	sNotify(AUCUI_CMD_SET_ITEM, (KNPARAM)&it);
 	return 0;
 }
 
@@ -304,7 +304,7 @@ int LuaAuc_AuctionSetDutchItem(Lua_State* L)
 	KAucUiItem it;
 	sFillDutch(L, &it);
 	sCopyStr(it.szCurrency, sizeof(it.szCurrency), sArgStr(L, 11));
-	sNotify(AUCUI_CMD_SET_ITEM, (int)&it);
+	sNotify(AUCUI_CMD_SET_ITEM, (KNPARAM)&it);
 	return 0;
 }
 
@@ -331,7 +331,7 @@ int LuaAuc_AuctionAddActivityMember(Lua_State* L)
 	m.nLevel = sArgInt(L, 2);
 	m.nFigure = sArgInt(L, 3);
 	m.bOnline = sArgInt(L, 4);
-	sNotify(AUCUI_CMD_ADD_MEMBER, (int)&m);
+	sNotify(AUCUI_CMD_ADD_MEMBER, (KNPARAM)&m);
 	return 0;
 }
 
@@ -347,7 +347,7 @@ int LuaAuc_AuctionSetSalaryAndCount(Lua_State* L)
 	KAucUiSalary s;
 	s.nCount = sArgInt(L, 1);
 	s.nSalary = sArgInt(L, 2);
-	sNotify(AUCUI_CMD_SET_SALARY, (int)&s);
+	sNotify(AUCUI_CMD_SET_SALARY, (KNPARAM)&s);
 	return 0;
 }
 
@@ -356,7 +356,7 @@ int LuaAuc_AuctionSetCurrentPageTxt(Lua_State* L)
 {
 	char szTxt[64];
 	sCopyStr(szTxt, sizeof(szTxt), sArgStr(L, 2));
-	sNotify(AUCUI_CMD_SET_PAGE_TXT, (int)szTxt);
+	sNotify(AUCUI_CMD_SET_PAGE_TXT, (KNPARAM)szTxt);
 	return 0;
 }
 
@@ -379,7 +379,7 @@ int LuaAuc_AuctionSetMoney(Lua_State* L)
 	KAucUiSalary s;
 	s.nCount = sArgInt(L, 1);
 	s.nSalary = sArgInt(L, 2);
-	sNotify(AUCUI_CMD_SET_MONEY, (int)&s);
+	sNotify(AUCUI_CMD_SET_MONEY, (KNPARAM)&s);
 	return 0;
 }
 
@@ -405,7 +405,7 @@ int LuaAuc_PopBlackTips(Lua_State* L)
 }
 
 // ---------------------------------------------------------------- UI -> Lua
-void AuctionUi_OnRequest(unsigned int uParam, int nParam)
+void AuctionUi_OnRequest(KUPARAM uParam, KNPARAM nParam)
 {
 	int nOp = (int)uParam;
 	const KAucUiReq* pReq = (const KAucUiReq*)nParam;

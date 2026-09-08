@@ -1179,7 +1179,7 @@ enum GAME_AUTOPLAY_OPERATION_INDEX //add by phong ki“u using fkauto
 
 struct IClientCallback
 {
-	virtual int CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam) = 0;
+	virtual int CoreDataChanged(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam) = 0;
 	virtual void ChannelMessageArrival(DWORD nChannelID, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength, bool bSucc, bool isNpcChat = false, bool isShowMsgPad = false) = 0;
 	virtual void MSNMessageArrival(char* szSourceName, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength, bool bSucc) = 0;
 	virtual void NotifyChannelID(char* ChannelName, DWORD channelid, BYTE cost) = 0;
@@ -1194,9 +1194,9 @@ struct IClientCallback
 struct _declspec (novtable) iCoreShell
 {
 	virtual	int	 GetProtocolSize(BYTE byProtocol) = 0;
-	virtual int	 Debug(unsigned int uDataId, unsigned int uParam, int nParam) = 0;
-	virtual int	 OperationRequest(unsigned int uOper, unsigned int uParam, int nParam) = 0;
-	virtual void ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam) = 0;
+	virtual int	 Debug(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam) = 0;
+	virtual int	 OperationRequest(unsigned int uOper, KUPARAM uParam, KNPARAM nParam) = 0;
+	virtual void ProcessInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam) = 0;
 	virtual int FindSelectNPC(int x, int y, int nRelation, bool bSelect, void* pReturn, int& nKind) = 0;
 	virtual int FindSpecialNPC(char* Name, void* pReturn, int& nKind) = 0;
 	virtual int FindSelectObject(int x, int y, bool bSelect, int& nObjectIdx, int& nKind) = 0;
@@ -1224,10 +1224,10 @@ struct _declspec (novtable) iCoreShell
 	virtual int GetNatureItem(unsigned int uItemId, unsigned int uGenre = 0) = 0;
 	virtual int GetGenreItem(unsigned int uItemId, unsigned int uGenre = 0) = 0;
 	//=====================
-	virtual int	SceneMapOperation(unsigned int uOper, unsigned int uParam, int nParam) = 0;
-	virtual int	TongOperation(unsigned int uOper, unsigned int uParam, int nParam) = 0;
-	virtual int TeamOperation(unsigned int uOper, unsigned int uParam, int nParam) = 0;
-	virtual int	 GetGameData(unsigned int uDataId, unsigned int uParam, int nParam) = 0;
+	virtual int	SceneMapOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam) = 0;
+	virtual int	TongOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam) = 0;
+	virtual int TeamOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam) = 0;
+	virtual int	 GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam) = 0;
 	virtual void DrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, int nParam) = 0;
 	virtual void DrawGameSpace() = 0;
 	virtual DWORD GetPing() = 0;
@@ -1242,9 +1242,9 @@ struct _declspec (novtable) iCoreShell
 	virtual void SetClient(LPVOID pClient) = 0;
 	virtual void SendNewDataToServer(void* pData, int nLength) = 0;	
 	virtual int GetOwnValue(int nMoneyUnit) = 0;
-	virtual int GetDataSuperShop(int nSaleId, unsigned int uParam, int nParam) = 0;
-	virtual int GetObjAtCountRegionInSuperShop(int nSaleId, unsigned int uParam, int nParam) = 0;
-	virtual int GetDataDynamicShop(int nSaleId, unsigned int uParam, int nParam) = 0;
+	virtual int GetDataSuperShop(int nSaleId, KUPARAM uParam, KNPARAM nParam) = 0;
+	virtual int GetObjAtCountRegionInSuperShop(int nSaleId, KUPARAM uParam, KNPARAM nParam) = 0;
+	virtual int GetDataDynamicShop(int nSaleId, KUPARAM uParam, KNPARAM nParam) = 0;
 	virtual	int GetItemIdxNpcShop(char* szItemName) = 0; //fkauto
 	virtual BOOL GetAutoFlag() = 0;
 	virtual BOOL GetFightFlag() = 0;
@@ -1257,10 +1257,10 @@ struct _declspec (novtable) iCoreShell
 	virtual	BOOL GetSkillData(int nSkillId, int *nLevel) = 0;
 	virtual	BOOL GetFlagMode() = 0;
 	virtual	void SetFlagMode(bool nIndex) = 0;
-	virtual void DirectFindPos(unsigned int uParam, int nParam, BOOL bSync, BOOL bPaintLine) = 0;
+	virtual void DirectFindPos(KUPARAM uParam, KNPARAM nParam, BOOL bSync, BOOL bPaintLine) = 0;
 	virtual	BYTE GetPaintMode() = 0;
 	virtual	void SetPaintMode(BYTE nIndex) = 0;
-	virtual int AutoPlayOperation(unsigned int uOper, unsigned int uParam, int nParam) = 0;//fkauto
+	virtual int AutoPlayOperation(unsigned int uOper, KUPARAM uParam, KNPARAM nParam) = 0;//fkauto
 	//virtual BOOL AutoMove() = 0;
 //	virtual void ClearPathFinder() = 0;
 	virtual int CheckMapLoiDai() = 0;
@@ -1272,7 +1272,7 @@ struct _declspec (novtable) iCoreShell
 
 #else
 
-	int	CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam);
+	int	CoreDataChanged(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam);
 	void SendDataToTool(const void * const pData, const size_t &datalength);
 #endif
 

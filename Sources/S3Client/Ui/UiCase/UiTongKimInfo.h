@@ -70,7 +70,7 @@ private:
 	void	RefreshCountdown();
 	void	SetFold(int bFold);				// [TKINFO 06/09] thu gon con dai tieu de / mo ra
 	virtual void Breathe();
-	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int  WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	virtual int  PtInWindow(int x, int y);	// [TKINFO 06/09] chi bat chuot o dai tieu de + hai nut
 
 	// [TKINFO 06/09] MOI o chu deu phai la KWndText32/80 (co bo dem trong lop). KWndText TRAN im lang:

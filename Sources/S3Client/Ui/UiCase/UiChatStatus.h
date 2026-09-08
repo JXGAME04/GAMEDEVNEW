@@ -22,7 +22,7 @@ private:
 	KUiChatStatus() {}
 	~KUiChatStatus() {}
 	void	Initialize();							
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnAddMsg();
 	void	OnSetDefMsg();
 	void	OnSelMsg(int nIndex);

@@ -59,7 +59,7 @@ void KUiLogin::AutoLgNextStep(const char* pszAccount, const char* pszPassword)
 		Password.szPassword[i] = ~Password.szPassword[i];
 	}
 	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETACC, (int)pszAccount);
-	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETPASS, (int)&Password.szPassword);
+	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETPASS, (KNPARAM)&Password.szPassword);
 	g_LoginLogic.AccountLogin(pszAccount, Password);
 	KUiConnectInfo::OpenWindow(CI_MI_CONNECTING, LL_S_ROLE_LIST_READY);
 	CloseWindow(false);
@@ -189,17 +189,17 @@ void KUiLogin::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KUiLogin::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiLogin::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Login)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Login)
 			OnLogin();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Cancel)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Cancel)
 			OnCancel();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_OpenRep)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_OpenRep)
 		{
 			// Xem lai ban dien .jxr: chon tep roi phat. Play thanh cong thi an man login.
 			if (JxReplay_OpenFileAndPlay())
@@ -212,7 +212,7 @@ int KUiLogin::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
             if ((GetKeyState(VK_SHIFT) & 0x8000) == 0)
             {
                 // 如果没有按住Shift
-			    if (uParam == (unsigned int)(KWndWindow*)&m_Account)
+			    if (uParam == (KUPARAM)(KWndWindow*)&m_Account)
 			    {
 				    int x, y, cx;
 				    m_PassWord.GetAbsolutePos(&x, &y);
@@ -221,7 +221,7 @@ int KUiLogin::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				    Wnd_SetFocusWnd(&m_PassWord);
 				    nRet = 1;
 			    }
-			    else if (uParam == (unsigned int)(KWndWindow*)&m_PassWord)
+			    else if (uParam == (KUPARAM)(KWndWindow*)&m_PassWord)
 			    {
 				    Wnd_SetFocusWnd(NULL);
 				    m_Login.SetCursorAbove();
@@ -231,13 +231,13 @@ int KUiLogin::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
             else
             {   
                 // 如果按住Shift
-			    if (uParam == (unsigned int)(KWndWindow*)&m_Account)
+			    if (uParam == (KUPARAM)(KWndWindow*)&m_Account)
 			    {
  				    Wnd_SetFocusWnd(NULL);
       			    m_Cancel.SetCursorAbove();
 				    nRet = 1;
 			    }
-			    else if (uParam == (unsigned int)(KWndWindow*)&m_PassWord)
+			    else if (uParam == (KUPARAM)(KWndWindow*)&m_PassWord)
 			    {
 			        int x, y, cx;
 			        m_Account.GetAbsolutePos(&x, &y);
@@ -251,12 +251,12 @@ int KUiLogin::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		else if (nParam == VK_RETURN)
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_Account)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_Account)
 			{
 				Wnd_SetFocusWnd(&m_PassWord);
 				nRet = 1;
 			}
-			else if (uParam == (unsigned int)(KWndWindow*)&m_PassWord)
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_PassWord)
 			{
 				OnLogin();
 				nRet = 1;
@@ -386,8 +386,8 @@ void KUiLogin::OnLogin()
         Password.szPassword[sizeof(Password.szPassword) - 1] = '\0';
 
         #endif
-		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETACC, (int)&szAccount);
-		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETPASS, (int)&Password.szPassword);
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETACC, (KNPARAM)&szAccount);
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETPASS, (KNPARAM)&Password.szPassword);
 		g_LoginLogic.AccountLogin(szAccount, Password);
 		KUiConnectInfo::OpenWindow(CI_MI_CONNECTING, LL_S_ROLE_LIST_READY);
 		memset(&szPassword, 0, sizeof(szPassword));	

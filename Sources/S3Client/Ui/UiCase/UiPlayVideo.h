@@ -42,7 +42,7 @@ private:
 	//活动函数
 	void	Breathe();
 	//输入处理消息以及一些特定窗口消息的响应
-	int	WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int	WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	//绘制
 	void	PaintWindow();
 	//初始化

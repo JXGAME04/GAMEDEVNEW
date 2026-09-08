@@ -97,21 +97,21 @@ void KUiPK::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiPK::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiPK::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&LuyenCong)
+		if (uParam == (KUPARAM)(KWndWindow*)&LuyenCong)
 		{
 
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&ChienDau)
+		else if (uParam == (KUPARAM)(KWndWindow*)&ChienDau)
 		{
 
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&DoSat)
+		else if (uParam == (KUPARAM)(KWndWindow*)&DoSat)
 		{
 
 		}

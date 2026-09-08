@@ -63,7 +63,7 @@ void KUiWorldmap::RefreshCityLabels()
 	{
 		KCityInfoView sV;
 		memset(&sV, 0, sizeof(sV));
-		if (!g_pCoreShell->GetGameData(GDI_CITY_INFO, c, (int)&sV))
+		if (!g_pCoreShell->GetGameData(GDI_CITY_INFO, c, (KNPARAM)&sV))
 			continue;
 		char szBuffer[160];
 		_snprintf(szBuffer, sizeof(szBuffer) - 1, "Bang héi chiÕm lÜnh: %s - ThuÕ %d%%", sV.szOwner[0] ? sV.szOwner : "V« chñ", sV.nTax);
@@ -188,7 +188,7 @@ void KUiWorldmap::Initialize()
 	return;
 }
 
-int KUiWorldmap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiWorldmap::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nResult = false;
 
@@ -241,7 +241,7 @@ void KUiWorldmap::UpdateData()
 				char szMapType[32];
 				char szTongInfo[32] = "Bang héi chiÕm lÜnh: %s";
 				KUiSceneTimeInfo Info;
-				g_pCoreShell->SceneMapOperation(GSMOI_SCENE_TIME_INFO, (unsigned int)&Info, 0);
+				g_pCoreShell->SceneMapOperation(GSMOI_SCENE_TIME_INFO, (KUPARAM)&Info, 0);
 				sprintf(szBuffer, "%d_MapPos", Info.nSceneId);
 				Ini.GetInteger2("List", szBuffer, &nAreaX, &nAreaY);
 				sprintf(szBuffer, "%d_MapType", Info.nSceneId);

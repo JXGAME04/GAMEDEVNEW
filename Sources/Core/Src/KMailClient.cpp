@@ -20,7 +20,7 @@
 #include <string.h>
 #include <time.h>
 
-extern int CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam);
+extern int CoreDataChanged(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam);
 
 #define UIMAIL_SCRIPT	"\\script\\ui\\uimail.lua"
 
@@ -72,7 +72,7 @@ int LuaMail_AddMailHeader(Lua_State* L)
 {
 	KMailUiHeader h;
 	sFillHeader(L, &h);
-	sNotify(MAILUI_CMD_ADD_HEADER, (int)&h);
+	sNotify(MAILUI_CMD_ADD_HEADER, (KNPARAM)&h);
 	return 0;
 }
 
@@ -80,7 +80,7 @@ int LuaMail_SetMailHeader(Lua_State* L)
 {
 	KMailUiHeader h;
 	sFillHeader(L, &h);
-	sNotify(MAILUI_CMD_SET_HEADER, (int)&h);
+	sNotify(MAILUI_CMD_SET_HEADER, (KNPARAM)&h);
 	return 0;
 }
 
@@ -160,7 +160,7 @@ int LuaMail_SetMailBntStatus(Lua_State* L)
 	s.nDelOneEnable = sArgInt(L, 4);
 	s.nDelAllShow = sArgInt(L, 5);
 	s.nDelAllEnable = sArgInt(L, 6);
-	sNotify(MAILUI_CMD_BTN_STATUS, (int)&s);
+	sNotify(MAILUI_CMD_BTN_STATUS, (KNPARAM)&s);
 	return 0;
 }
 
@@ -254,7 +254,7 @@ int LuaMail_UpdateMailDetail(Lua_State* L)
 	}
 	if (d.nAwardCount == 0)
 		d.nAwardCount = sArgInt(L, 8) > 0 && d.bHasAward ? 0 : 0;
-	sNotify(MAILUI_CMD_UPDATE_DETAIL, (int)&d);
+	sNotify(MAILUI_CMD_UPDATE_DETAIL, (KNPARAM)&d);
 	return 0;
 }
 
@@ -307,7 +307,7 @@ int LuaMail_MailConfirm(Lua_State* L)
 	}
 	else
 		sCopyStr(c.szNo, sizeof(c.szNo), szNo);
-	sNotify(MAILUI_CMD_CONFIRM, (int)&c);
+	sNotify(MAILUI_CMD_CONFIRM, (KNPARAM)&c);
 	return 0;
 }
 
@@ -321,12 +321,12 @@ int LuaMail_Msg2Player(Lua_State* L)
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	return 0;
 }
 
 // CoreShell.cpp: case GOI_MAIL_UI -> MailUi_OnRequest(uParam, nParam)
-void MailUi_OnRequest(unsigned int uParam, int nParam)
+void MailUi_OnRequest(KUPARAM uParam, KNPARAM nParam)
 {
 	int nOp = MAILUI_OP_CODE(uParam);
 	int nExtra = MAILUI_OP_EXTRA(uParam);

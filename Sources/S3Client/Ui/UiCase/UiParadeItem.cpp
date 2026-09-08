@@ -276,13 +276,13 @@ void KUiParadeItem::LoadScheme(class KIniFile* pIni)
 	}
 }
 
-int KUiParadeItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiParadeItem::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Close)
 			Hide();
 		break;
 	default:
@@ -298,7 +298,7 @@ void KUiParadeItem::UpdateBaseData(KUiPlayerItem* pDest)
 
 	KUiPlayerBaseInfo	Info;
 	memset(&Info, 0, sizeof(KUiPlayerBaseInfo));
-	g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (int)&Info, pDest->uId);
+	g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KNPARAM)&Info, pDest->uId);
 	m_Name  .SetText(Info.Name);
 	m_Title .SetText(Info.Title);
 
@@ -339,7 +339,7 @@ void KUiParadeItem::UpdateAllEquips(KUiPlayerItem* pDest)
 		return;
 
 	KUiObjAtRegion	Equips[_ITEM_COUNT];
-	int nCount = g_pCoreShell->GetGameData(GDI_PARADE_EQUIPMENT, (unsigned int)&Equips, 0);
+	int nCount = g_pCoreShell->GetGameData(GDI_PARADE_EQUIPMENT, (KUPARAM)&Equips, 0);
 	int	i;
 	for (i = 0; i < _ITEM_COUNT; i++)
 		m_EquipBox[i].Celar();

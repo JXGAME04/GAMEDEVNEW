@@ -616,7 +616,7 @@ void	KProtocolProcess::s2cAutoPlaySync(BYTE* pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, "§· bËt auto!");
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		else
 		{
@@ -626,7 +626,7 @@ void	KProtocolProcess::s2cAutoPlaySync(BYTE* pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, "T¾t auto!");
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);		
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);		
 		}
 		Player[CLIENT_PLAYER_INDEX].SetAutoFlag((BOOL)bActive);
 	}*/
@@ -721,7 +721,7 @@ void	KProtocolProcess::s2cChatScreenSingleError(BYTE* pMsg)
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 }
 
 void KProtocolProcess::NetCommandChgCamp(BYTE* pMsg)
@@ -923,7 +923,7 @@ void KProtocolProcess::s2cPlayerItemLockSync(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 }
 
@@ -1105,7 +1105,7 @@ void KProtocolProcess::s2cApplyCreateTeamFalse(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		break;
 
 
@@ -1115,7 +1115,7 @@ void KProtocolProcess::s2cApplyCreateTeamFalse(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		break;
 	}
 }
@@ -1151,7 +1151,7 @@ void KProtocolProcess::s2cChatAddFriend(BYTE* pMsg)
 	sMsg.byConfirmType = SMCT_UI_INTERVIEW;
 	sMsg.byPriority = 2;
 	sMsg.byParamSize = sizeof(KUiPlayerItem);
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&sPlayer);
 }
 
 //-------------------------------------------------------------------------
@@ -1177,7 +1177,7 @@ void KProtocolProcess::s2cChatAddFriendFail(BYTE* pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 			return;
 		}
@@ -1220,7 +1220,7 @@ void KProtocolProcess::s2cChatBeRefusedAddFriend(BYTE* pMsg)
 	sMsg.byConfirmType = SMCT_CLICK;
 	sMsg.byPriority = 1;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 }
 
 //-------------------------------------------------------------------------
@@ -1267,7 +1267,7 @@ void KProtocolProcess::s2cChatGetApplyAddFriend(BYTE* pMsg)
 	sMsg.byConfirmType = SMCT_UI_FRIEND_INVITE;
 	sMsg.byPriority = 3;
 	sMsg.byParamSize = sizeof(KUiPlayerItem);
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&sPlayer);
 }
 
 //-------------------------------------------------------------------------
@@ -1347,14 +1347,14 @@ void KProtocolProcess::s2cCreateTeam(BYTE* pMsg)
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 	sprintf(sMsg.szMessage, MSG_TEAM_CREATE);
 	sMsg.eType = SMT_TEAM;
 	sMsg.byConfirmType = SMCT_CLICK;
 	sMsg.byPriority = 1;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetInstantSpr(enumINSTANT_STATE_CREATE_TEAM);
 }
@@ -1431,7 +1431,7 @@ void KProtocolProcess::s2cGetLeadExp(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_CLICK;
 		sMsg.byPriority = 1;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 }
 
@@ -1493,7 +1493,7 @@ void KProtocolProcess::s2cGetSkillLevel(BYTE* pMsg)
 	SkillData.uId = pSkill->m_nSkillID;
 	SkillData.nLevel = pSkill->m_nSkillLevel;
 	if(nSkillPosition < 0) return;
-	CoreDataChanged(GDCNI_SKILL_CHANGE, (unsigned int)&SkillData, nSkillPosition);
+	CoreDataChanged(GDCNI_SKILL_CHANGE, (KUPARAM)&SkillData, nSkillPosition);
 }
 //-------------------------------------------------------------------------
 //	
@@ -1652,7 +1652,7 @@ void KProtocolProcess::s2cSetTeamState(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 	else
 	{
@@ -1664,7 +1664,7 @@ void KProtocolProcess::s2cSetTeamState(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 }
 
@@ -1850,7 +1850,7 @@ void KProtocolProcess::s2cTeamAddMember(BYTE* pMsg)
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 }
 
 //-------------------------------------------------------------------------
@@ -1885,7 +1885,7 @@ void KProtocolProcess::s2cTeamChangeCaptain(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_UI_TEAM;
 		sMsg.byPriority = 3;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 	else	// 
 	{
@@ -1895,7 +1895,7 @@ void KProtocolProcess::s2cTeamChangeCaptain(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_UI_TEAM;
 		sMsg.byPriority = 3;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 
 	// 
@@ -3302,7 +3302,7 @@ void	KProtocolProcess::s2cChatDeleteFriend(BYTE* pMsg)
 				sMsg.byConfirmType = SMCT_NONE;
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 				delete pFriend;
 				return;
@@ -3401,7 +3401,7 @@ void	KProtocolProcess::s2cNpcSetMenuState(BYTE* pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		else if (pState->m_btState == PLAYER_MENU_STATE_NORMAL)
 		{
@@ -3413,7 +3413,7 @@ void	KProtocolProcess::s2cNpcSetMenuState(BYTE* pMsg)
 				sMsg.byConfirmType = SMCT_NONE;
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			}
 		}
 	}
@@ -3617,7 +3617,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 				sMsg.byPriority = 0;
 			}
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TEAM_DISMISS:
@@ -3637,7 +3637,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_CLICK;
 			sMsg.byPriority = 1;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TEAM_LEAVE:
@@ -3666,7 +3666,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TEAM_REFUSE_INVITE:
@@ -3681,7 +3681,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TEAM_SELF_ADD:
@@ -3692,7 +3692,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_UI_TEAM;
 			sMsg.byPriority = 3;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TEAM_CHANGE_CAPTAIN_FAIL:
@@ -3709,9 +3709,9 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byParamSize = 0;
 
 			sprintf(sMsg.szMessage, MSG_TEAM_CHANGE_CAPTAIN_FAIL1);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			sprintf(sMsg.szMessage, MSG_TEAM_CHANGE_CAPTAIN_FAIL2, g_Team[0].m_szMemName[nMember + 1]);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TEAM_CHANGE_CAPTAIN_FAIL2:
@@ -3728,9 +3728,9 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byParamSize = 0;
 
 			sprintf(sMsg.szMessage, MSG_TEAM_CHANGE_CAPTAIN_FAIL1);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			sprintf(sMsg.szMessage, MSG_TEAM_CHANGE_CAPTAIN_FAIL3);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_OBJ_CANNOT_PICKUP:
@@ -3742,7 +3742,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byParamSize = 0;
 
 			strcpy(sMsg.szMessage, MSG_OBJ_CANNOT_PICKUP);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_OBJ_TOO_FAR:
@@ -3753,7 +3753,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			strcpy(sMsg.szMessage, MSG_OBJ_TOO_FAR);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_DEC_MONEY:
@@ -3764,7 +3764,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_DEC_MONEY, (int)pShowMsg->m_lpBuf);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TRADE_SELF_ROOM_FULL:
@@ -3775,7 +3775,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_CLICK;
 			sMsg.byPriority = 1;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TRADE_DEST_ROOM_FULL:
@@ -3786,7 +3786,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TRADE_REFUSE_APPLY:
@@ -3800,7 +3800,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TRADE_TASK_ITEM:
@@ -3811,7 +3811,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_GAMBLE_SELF_ROOM_FULL:
@@ -3822,7 +3822,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 		sMsg.byConfirmType = SMCT_CLICK;
 		sMsg.byPriority = 1;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 	break;
 	case enumMSG_ID_GAMBLE_DEST_ROOM_FULL:
@@ -3833,7 +3833,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 	break;
 	case enumMSG_ID_GAMBLE_REFUSE_APPLY:
@@ -3847,7 +3847,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 	break;
 	case enumMSG_ID_GAMBLE_TASK_ITEM:
@@ -3858,7 +3858,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 	break;
 	case enumMSG_ID_ITEM_DAMAGED:
@@ -3874,7 +3874,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 1;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_ITEM_DAMAGED, Item[nIdx].GetName());
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_GET_ITEM:
@@ -3898,7 +3898,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_ADD_ITEM, szName);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_MONEY_CANNOT_PICKUP:
@@ -3910,7 +3910,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byParamSize = 0;
 
 			strcpy(sMsg.szMessage, MSG_MONEY_CANNOT_PICKUP);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_CANNOT_ADD_TEAM:
@@ -3921,7 +3921,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TEAM_CANNOT_CREATE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TARGET_CANNOT_ADD_TEAM:
@@ -3932,7 +3932,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TEAM_TARGET_CANNOT_ADD_TEAM);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_PK_ERROR_1:
@@ -3943,7 +3943,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_PK_ERROR_1);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_PK_ERROR_2:
@@ -3954,7 +3954,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_PK_ERROR_2);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_PK_ERROR_3:
@@ -3965,7 +3965,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_PK_ERROR_3);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_PK_ERROR_4:
@@ -3976,7 +3976,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_PK_ERROR_4);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_PK_ERROR_5:
@@ -3987,7 +3987,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_PK_ERROR_5);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_PK_ERROR_6:
@@ -3998,7 +3998,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_PK_ERROR_6);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_PK_ERROR_7:
@@ -4009,7 +4009,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_PK_ERROR_7);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_DEATH_LOSE_ITEM:
@@ -4024,7 +4024,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_DEATH_LOSE_ITEM, szName);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_TONG_RECRUIT_CLOSE:
@@ -4040,7 +4040,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, "Bang héi cña %s ®ãng gia nhËp thµnh viªn", szName);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_REFUSE_ADD:
@@ -4056,7 +4056,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_REFUSE_ADD, szName);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_BE_KICK:
@@ -4067,7 +4067,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_BE_KICKED);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 			KUiGameObjectWithName	sUi;
 			strcpy(sUi.szName, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].Name);
@@ -4075,7 +4075,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sUi.nParam = 0;
 			sUi.uParam = 0;
 			sUi.szString[0] = 0;
-			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (unsigned int)&sUi, 1);
+			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (KUPARAM)&sUi, 1);
 		}
 		break;
 	case enumMSG_ID_TONG_LEAVE_SUCCESS:
@@ -4086,7 +4086,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_LEAVE_SUCCESS);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_LEAVE_FAIL:
@@ -4097,7 +4097,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_LEAVE_FAIL);
-//			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+//			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_CHANGE_AS_MASTER:
@@ -4108,7 +4108,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_CHANGE_AS_MASTER);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 			KUiGameObjectWithName	sUi;
 			strcpy(sUi.szName, Player[CLIENT_PLAYER_INDEX].m_cTong.m_szMasterName);
@@ -4116,7 +4116,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sUi.nParam = 0;
 			sUi.uParam = 0;
 			sUi.szString[0] = 0;
-			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (unsigned int)&sUi, 1);
+			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (KUPARAM)&sUi, 1);
 		}
 		break;
 	case enumMSG_ID_TONG_CHANGE_AS_MEMBER:
@@ -4127,7 +4127,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_CHANGE_AS_MEMBER);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 			KUiGameObjectWithName	sUi;
 			strcpy(sUi.szName, Player[CLIENT_PLAYER_INDEX].m_cTong.m_szMasterName);
@@ -4135,7 +4135,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sUi.nParam = 0;
 			sUi.uParam = 0;
 			sUi.szString[0] = 0;
-			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (unsigned int)&sUi, 1);
+			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (KUPARAM)&sUi, 1);
 		}
 		break;
 	case enumMSG_ID_TONG_APPLY_ADD_ERROR:
@@ -4151,7 +4151,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_APPLY_ADD_ERROR, szName);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_APPLY_ADD_ERROR1:
@@ -4162,7 +4162,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_APPLY_ADD_ERROR1);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_APPLY_ADD_ERROR2:
@@ -4173,7 +4173,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_APPLY_ADD_ERROR2);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_APPLY_ADD_ERROR3:
@@ -4184,7 +4184,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_APPLY_ADD_ERROR3);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_APPLY_ADD_ERROR4:
@@ -4195,7 +4195,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_APPLY_ADD_ERROR4);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_APPLY_ADD_ERROR5:
@@ -4206,7 +4206,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_APPLY_ADD_ERROR5);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_APPLY_ADD_ERROR6:
@@ -4217,7 +4217,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_APPLY_ADD_ERROR6);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_TONG_APPLY_ADD_ERROR7:
@@ -4228,7 +4228,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_TONG_APPLY_ADD_ERROR7);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_FIGHT_MODE_ERROR1:
@@ -4239,7 +4239,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_FIGHT_MODE_ERROR1);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_FIGHT_MODE_ERROR2:
@@ -4250,7 +4250,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_FIGHT_MODE_ERROR2);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_FIGHT_MODE_ERROR3:
@@ -4265,7 +4265,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_FIGHT_MODE_ERROR3, Npc[nIdx].Name);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_SHOP_NO_ROOM:
@@ -4276,7 +4276,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_SHOP_NO_ROOM);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			Player[CLIENT_PLAYER_INDEX].m_ItemList.UnlockOperation();
 		}
 		break;
@@ -4288,7 +4288,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_SHOP_NO_MONEY);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			Player[CLIENT_PLAYER_INDEX].m_ItemList.UnlockOperation();
 		}
 		break;
@@ -4300,7 +4300,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_SHOP_NO_EXTPOINT);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			Player[CLIENT_PLAYER_INDEX].m_ItemList.UnlockOperation();
 		}
 		break;
@@ -4312,7 +4312,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_SHOP_NO_FUYUAN);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			Player[CLIENT_PLAYER_INDEX].m_ItemList.UnlockOperation();
 		}
 		break;
@@ -4324,7 +4324,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_SHOP_NO_REPUTE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			Player[CLIENT_PLAYER_INDEX].m_ItemList.UnlockOperation();
 		}
 		break;
@@ -4336,7 +4336,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_SHOP_NO_ACCUM);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			Player[CLIENT_PLAYER_INDEX].m_ItemList.UnlockOperation();
 		}
 		break;
@@ -4348,7 +4348,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_SHOP_NO_HONOR);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			Player[CLIENT_PLAYER_INDEX].m_ItemList.UnlockOperation();
 		}
 		break;
@@ -4360,7 +4360,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_SHOP_NO_RESPECT);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			Player[CLIENT_PLAYER_INDEX].m_ItemList.UnlockOperation();
 		}
 		break;
@@ -4375,7 +4375,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			strftime(sMsg.szMessage, sizeof(sMsg.szMessage), MSG_NPC_NOT_PAY_FOR_SPEECH, timeinfo);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_FUNCTION_FOBIDDENED:
@@ -4386,7 +4386,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_FUNCTION_FOBIDDENED);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_FUNCTION_LOCKED:
@@ -4397,7 +4397,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_FUNCTION_LOCKED);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_LOCK_NOT_TRADE:
@@ -4408,7 +4408,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_LOCK_NOT_TRADE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_LOCK_NOT_SETPRICE:
@@ -4419,7 +4419,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_LOCK_NOT_SETPRICE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_LOCK_NOT_THROW:
@@ -4430,7 +4430,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_LOCK_NOT_THROW);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_ITEM_TOWNPORTAL:
@@ -4441,7 +4441,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_NPC_NOT_USE_TOWNPORTAL);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_ITEM_CANTREPAIR:
@@ -4452,7 +4452,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_BROKEN_CANTREPAIR);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_ITEM_SAME_IMMEDIATE:
@@ -4463,7 +4463,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_ITEM_SAME_IN_IMMEDIATE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_SKILL_SAME_IMMEDIATE:
@@ -4474,7 +4474,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_SKILL_SAME_IN_IMMEDIATE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_ITEM_CANTPUT_IMMEDIATE:
@@ -4485,7 +4485,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_ITEM_PUT_IN_IMMEDIATE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_HORSE_CANT_SWITCH1:
@@ -4496,7 +4496,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_CANT_SWITCH_HORSE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_HORSE_CANT_SWITCH2:
@@ -4507,7 +4507,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_CANT_SWITCH_HORSE_SIT);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_CHATROOM_JOIN:
@@ -4522,7 +4522,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 			CoreDataChanged(GDCNI_CHATROOM_UPDATE_INTERFACE, 0, 0);
 		}
@@ -4539,7 +4539,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 			CoreDataChanged(GDCNI_CHATROOM_UPDATE_INTERFACE, 0, 0);
 		}
@@ -4556,7 +4556,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 			CoreDataChanged(GDCNI_CHATROOM_UPDATE_INTERFACE, 0, 0);
 		}
@@ -4569,7 +4569,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_CHATROOM_OPENGAME, (int)*((DWORD*)&pShowMsg->m_lpBuf));
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 			CoreDataChanged(GDCNI_CHATROOM_UPDATE_INTERFACE, 0, 0);
 		}
@@ -4586,7 +4586,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 			CoreDataChanged(GDCNI_CHATROOM_UPDATE_INTERFACE, 0, 0);
 		}
@@ -4603,7 +4603,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 				sprintf(sMsg.szMessage, MSG_NPC_RENASCENCE_SOMEONE, Npc[nIdx].Name);
 			else
 				sprintf(sMsg.szMessage, MSG_NPC_RENASCENCE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	case enumMSG_ID_NPC_RENASCENCE:
@@ -4614,7 +4614,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byPriority = 0;
 			sMsg.eType = SMT_PLAYER;
 			sprintf(sMsg.szMessage, MSG_NPC_RENASCENCE);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		break;
 	default:
@@ -4777,7 +4777,7 @@ void KProtocolProcess::s2cSyncBauCuaResult(BYTE* pMsg)
 	BAUCUA_RESULT_SYNC* pBauCuaResultSync = (BAUCUA_RESULT_SYNC*)pMsg;
 	if (pBauCuaResultSync->ProtocolType != s2c_syncbaucuaresult && pBauCuaResultSync->ProtocolType != s2c_syncbaucuainfo)
 		return;
-	CoreDataChanged(GDCNI_PLAYER_BAUCUA_RESULT_SYNC, (unsigned int)pBauCuaResultSync, pBauCuaResultSync->ProtocolType);
+	CoreDataChanged(GDCNI_PLAYER_BAUCUA_RESULT_SYNC, (KUPARAM)pBauCuaResultSync, pBauCuaResultSync->ProtocolType);
 }
 
 // He XUC XAC chia do (DICEITEM) - may chu bao client mo/dong/cap nhat mot o.
@@ -4788,7 +4788,7 @@ void KProtocolProcess::s2cDiceItem(BYTE* pMsg)
 	DICE_ITEM_SYNC* pSync = (DICE_ITEM_SYNC*)pMsg;
 	if (pSync->ProtocolType != s2c_diceitem)
 		return;
-	CoreDataChanged(GDCNI_DICE_ITEM, (unsigned int)pSync, 0);
+	CoreDataChanged(GDCNI_DICE_ITEM, (KUPARAM)pSync, 0);
 }
 
 // [PFSYNC 31/08] nhan goi sao/lo/da phi phong - khuon y het s2cSyncMagic:
@@ -5071,7 +5071,7 @@ void KProtocolProcess::OpenAffairBox(BYTE* pMsg)
 			strcpy(pInfo.szTitle, GiveBoxCmd->Value); 
 			strcpy(pInfo.szInitString, GiveBoxCmd->Value1); 
 			strcpy(pInfo.szAction1, GiveBoxCmd->Value2); 
-			CoreDataChanged(GDCNI_OPEN_AFFAIR_BOX, (unsigned int)&pInfo, NULL);
+			CoreDataChanged(GDCNI_OPEN_AFFAIR_BOX, (KUPARAM)&pInfo, NULL);
 			// [DaTau] give-box mo, luu ten ham nop
 			g_StrCpyLen(g_sDTCap.szBoxFunc, GiveBoxCmd->Value2, sizeof(g_sDTCap.szBoxFunc));
 			g_sDTCap.nBoxOpen = 1;
@@ -5090,7 +5090,7 @@ void KProtocolProcess::OpenAffairBox(BYTE* pMsg)
 			strcpy(pInfo.szTitle, GiveBoxCmd->Value);
 			strcpy(pInfo.szInitString, GiveBoxCmd->Value1);
 			strcpy(pInfo.szAction1, GiveBoxCmd->Value2);
-			CoreDataChanged(GDCNI_OPEN_MANTLE_INLAY, (unsigned int)&pInfo, NULL);
+			CoreDataChanged(GDCNI_OPEN_MANTLE_INLAY, (KUPARAM)&pInfo, NULL);
 		}
 		break;
 	case 4:
@@ -5100,7 +5100,7 @@ void KProtocolProcess::OpenAffairBox(BYTE* pMsg)
 			strcpy(pInfo.szTitle, GiveBoxCmd->Value);
 			strcpy(pInfo.szInitString, GiveBoxCmd->Value1);
 			strcpy(pInfo.szAction1, GiveBoxCmd->Value2);
-			CoreDataChanged(GDCNI_OPEN_MANTLE_WASH, (unsigned int)&pInfo, NULL);
+			CoreDataChanged(GDCNI_OPEN_MANTLE_WASH, (KUPARAM)&pInfo, NULL);
 		}
 		break;
 	case 5:
@@ -5110,7 +5110,7 @@ void KProtocolProcess::OpenAffairBox(BYTE* pMsg)
 			strcpy(pInfo.szTitle, GiveBoxCmd->Value);
 			strcpy(pInfo.szInitString, GiveBoxCmd->Value1);
 			strcpy(pInfo.szAction1, GiveBoxCmd->Value2);
-			CoreDataChanged(GDCNI_OPEN_SMELT_BOX, (unsigned int)&pInfo, NULL);
+			CoreDataChanged(GDCNI_OPEN_SMELT_BOX, (KUPARAM)&pInfo, NULL);
 		}
 		break;
 	default:
@@ -5125,7 +5125,7 @@ void KProtocolProcess::s2cTimeBox(BYTE* pMsg)
 	strcpy(pInfo.szTitle, TimeBoxCmd->Value); 
 	pInfo.nTime = TimeBoxCmd->Value1;
 	strcpy(pInfo.szAction, TimeBoxCmd->Value2); 
-	CoreDataChanged(GDCNI_OPEN_TIME_BOX, (unsigned int)&pInfo, 0);
+	CoreDataChanged(GDCNI_OPEN_TIME_BOX, (KUPARAM)&pInfo, 0);
 }
 
 void KProtocolProcess::s2cTalkEx(BYTE* pMsg)
@@ -5401,7 +5401,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			sMsg.byParamSize = 0;
 
 			sprintf(sMsg.szMessage, "Thµnh lËp bang héi thÊt b¹i!");
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 			switch (pFail->m_btFailId)
 			{
@@ -5411,49 +5411,49 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 				break;
 			case enumTONG_CREATE_ERROR_ID3:		// °ï»áÃûÎÊÌâ
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR09);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			case enumTONG_CREATE_ERROR_ID4:		// °ï»áÕóÓªÎÊÌâ
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR02);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			case enumTONG_CREATE_ERROR_ID5:		// ÒÑ¾­ÊÇ°ï»á³ÉÔ±
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR03);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			case enumTONG_CREATE_ERROR_ID6:		// ×Ô¼ºµÄÕóÓªÎÊÌâ
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR04);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			case enumTONG_CREATE_ERROR_ID7:		// µÈ¼¶ÎÊÌâ
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR05);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			case enumTONG_CREATE_ERROR_ID8:		// Ç®ÎÊÌâ
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR10);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			case enumTONG_CREATE_ERROR_ID9:		// ×é¶Ó²»ÄÜ½¨°ï»á
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR08);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			case enumTONG_CREATE_ERROR_ID10:	// °ï»áÄ£¿é³ö´í
 				break;
 			case enumTONG_CREATE_ERROR_ID11:	// Ãû×Ö×Ö·û´®³ö´í
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR11);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			case enumTONG_CREATE_ERROR_ID12:	// Ãû×Ö×Ö·û´®¹ý³¤
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR11);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			case enumTONG_CREATE_ERROR_ID13:	// °ï»áÍ¬Ãû´íÎó
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR11);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			case enumTONG_CREATE_ERROR_ID14:	// °ï»á²úÉúÊ§°Ü
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR12);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				break;
 			}
 		}
@@ -5483,7 +5483,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			strcpy(player.Name, szName);
 			player.nIndex = pApply->m_nPlayerIdx;
 			player.uId = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&player);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&player);
 
 		}
 		break;
@@ -5503,7 +5503,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			strcpy(sUi.szName, szName);
 			sUi.nData = TONG_ACTION_APPLY;
 			strcpy(sUi.szString, szTitle);
-			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (unsigned int)&sUi, 1);
+			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (KUPARAM)&sUi, 1);
 		/*------------------------------*/
 			CoreDataChanged(GDCNI_PLAYER_BASE_INFO, 0, 0);
 		}
@@ -5547,7 +5547,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			sInfo.nTongLevel = pInfo->m_nTongLevel;
 			strcpy(sInfo.szLeagueTName, pInfo->m_szLeagueTName);
 			// == end add by Fong KiÒu ==
-			CoreDataChanged(GDCNI_TONG_INFO, (unsigned int)&sUi, (unsigned int)&sInfo);
+			CoreDataChanged(GDCNI_TONG_INFO, (KUPARAM)&sUi, (KUPARAM)&sInfo);
 			//
 			KUiGameObjectWithName	sObj;
 			strcpy(sObj.szName, pInfo->m_szTongName);
@@ -5566,7 +5566,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 				sItem[i].btOnline = pInfo->m_sMember[i + 1].m_btOnline;
 			}
 
-			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (unsigned int)&sObj, (unsigned int)sItem);
+			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (KUPARAM)&sObj, (unsigned int)sItem);
 		}
 		break;
 	case enumTONG_SYNC_ID_SELF_INFO:
@@ -5598,7 +5598,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 				sItem[i].btOnline = pInfo->m_sMember[i].m_btOnline;
 			}
 
-			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (unsigned int)&sObj, (unsigned int)sItem);
+			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (KUPARAM)&sObj, (unsigned int)sItem);
 		}
 		break;
 	case enumTONG_SYNC_ID_MEMBER_INFO:
@@ -5628,7 +5628,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 				sItem[i].btOnline = pInfo->m_sMember[i].m_btOnline;
 			}
 
-			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (unsigned int)&sObj, (unsigned int)sItem);
+			CoreDataChanged(GDCNI_TONG_MEMBER_LIST, (KUPARAM)&sObj, (unsigned int)sItem);
 		}
 		break;
 	case enumTONG_SYNC_ID_INSTATE:
@@ -5641,7 +5641,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			sUi.nParam = pInstate->m_btNewFigure;
 			sUi.uParam = pInstate->m_btOldFigure;
 			strcpy(sUi.szString, pInstate->m_szTitle);
-			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (unsigned int)&sUi, pInstate->m_btSuccessFlag);
+			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (KUPARAM)&sUi, pInstate->m_btSuccessFlag);
 		}
 		break;
 	case enumTONG_SYNC_ID_KICK:
@@ -5654,7 +5654,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			sUi.nParam = pKick->m_btFigure;
 			sUi.uParam = pKick->m_btPos;
 			sUi.szString[0] = 0;
-			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (unsigned int)&sUi, pKick->m_btSuccessFlag);
+			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (KUPARAM)&sUi, pKick->m_btSuccessFlag);
 		}
 		break;
 	case enumTONG_SYNC_ID_CHANGE_MASTER_FAIL:
@@ -5671,7 +5671,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
 					sprintf(sMsg.szMessage, "Phong chøc thÊt b¹i, ®èi ph­¬ng kh«ng online!");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				}
 				break;
 			case 1:		// ¶Ô·½ÄÜÁ¦²»¹»£¡
@@ -5682,7 +5682,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
 					sprintf(sMsg.szMessage, "Phong chøc thÊt b¹i, ®èi ph­¬ng kh«ng ®ñ tµi l·nh ®¹o!");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				}
 				break;
 			case 2:		// Ãû×Ö²»¶Ô£¡
@@ -5693,7 +5693,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
 					sprintf(sMsg.szMessage, "Phong chøc thÊt b¹i, bæn bang kh«ng cã ng­êi nµy!");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				}
 				break;
 
@@ -5716,7 +5716,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
 					sprintf(sMsg.szMessage, "§æi tªn thÊt b¹i, ®èi ph­¬ng kh«ng trªn m¹ng.");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				}
 				break;
 			case 1:		
@@ -5727,7 +5727,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
 					sprintf(sMsg.szMessage, "§æi tªn thÊt b¹i, ®èi ph­¬ng kh«ng ®ñ tµi l·nh ®¹o.");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				}
 				break;
 			case 2:		
@@ -5738,7 +5738,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
 					sprintf(sMsg.szMessage, "§æi tªn thÊt b¹i, bæn bang kh«ng cã ng­êi nµy.");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				}
 				break;
 			default:
@@ -5757,7 +5757,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byParamSize = 0;
 					
 					sprintf(sMsg.szMessage, "Kh«ng thÓ thay ®æi mµu bang héi ");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 					
 					switch (pFail->m_btFailID)
 					{
@@ -5773,15 +5773,15 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 						break;
 					case enumTONG_CHANGE_CAMP_ERROR_ID6:
 						sprintf(sMsg.szMessage, MSG_TONG_CHANGE_CAMP_ERROR1);
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 						break;
 					case enumTONG_CHANGE_CAMP_ERROR_ID7:
 						sprintf(sMsg.szMessage, MSG_TONG_CHANGE_CAMP_ERROR2);
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 						break;
 					case enumTONG_CHANGE_CAMP_ERROR_ID8:
 						sprintf(sMsg.szMessage, MSG_TONG_CHANGE_CAMP_ERROR3);
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 						break;
 					}
 				}
@@ -5794,7 +5794,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 				break;	// thieu break lam goi CHANGE_CAMP roi tiep vao nhanh JX2 ben duoi
 			case enumTONG_SYNC_ID_JX2:	// JX2 port: chuyen nguyen goi len UI
 		{
-			CoreDataChanged(GDCNI_TONG_JX2, (unsigned int)pMsg, (int)pHead->m_wLength + 1);
+			CoreDataChanged(GDCNI_TONG_JX2, (KUPARAM)pMsg, (int)pHead->m_wLength + 1);
 		}
 		break;
 		case enumTONG_SYNC_ID_CHANGE_RECRUIT:
@@ -5905,7 +5905,7 @@ void	KProtocolProcess::ItemChangeDurability(BYTE* pMsg)
 			sMsg.byPriority = 1;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_ITEM_NEARLY_DAMAGED, Item[nIdx].GetName());
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 	}
 }
@@ -5927,7 +5927,7 @@ void KProtocolProcess::LadderList(BYTE* pMsg)
 			pLadderListIndex[i].bValueAppened = true;
 			pLadderListIndex[i].bSortFlag = true;
 		}
-		CoreDataChanged(GDCNII_RANK_INDEX_LIST_ARRIVE, pList->nCount, (int)pLadderListIndex);
+		CoreDataChanged(GDCNII_RANK_INDEX_LIST_ARRIVE, pList->nCount, (KNPARAM)pLadderListIndex);
 		delete [] pLadderListIndex;
 		pLadderListIndex = NULL;
 	}
@@ -5949,7 +5949,7 @@ void KProtocolProcess::LadderResult(BYTE* pMsg)
 			pLadderMessage[i].cSortFlag = (char)pLadderData->StatData[i].bySort;
 		}
 		unsigned int uParam = 10 | (((WORD)pLadderData->dwLadderID) << 16);
-		CoreDataChanged(GDCNII_RANK_INFORMATION_ARRIVE, uParam, (int)pLadderMessage);
+		CoreDataChanged(GDCNII_RANK_INFORMATION_ARRIVE, uParam, (KNPARAM)pLadderMessage);
 		delete [] pLadderMessage;
 		pLadderMessage = NULL;
 	}

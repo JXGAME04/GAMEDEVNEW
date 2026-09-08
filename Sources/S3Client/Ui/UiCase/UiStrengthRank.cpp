@@ -222,13 +222,13 @@ void KUiStrengthRank::Breathe()
 /****************************************************************************
 *功能：响应窗口消息的窗口函数
 *****************************************************************************/
-int	KUiStrengthRank::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiStrengthRank::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_LIST_ITEM_SEL:
-		if (uParam == (unsigned int)(KWndWindow*)&m_IndexList)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_IndexList)
 		{
 			int nIndex = nParam;
 			if (nIndex < 0)
@@ -251,14 +251,14 @@ int	KUiStrengthRank::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		break;
 
     case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_IndexScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_IndexScroll)
 			m_IndexList.SetTopItemIndex(nParam);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_RankScroll)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_RankScroll)
 			m_RankList.SetFirstShowLine(nParam);
 		break;
 
     case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnClose)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnClose)
 			CloseWindow(false);
 		break;
 

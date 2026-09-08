@@ -200,7 +200,7 @@ void KUiSelServer::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KUiSelServer::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSelServer::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)
@@ -215,7 +215,7 @@ int KUiSelServer::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		nRet = OnKeyDown(uParam);
 		break;
 	case WND_N_LIST_ITEM_D_CLICK:
-		if (nParam >= 0 && uParam == (unsigned int)(KWndWindow*)&m_List)
+		if (nParam >= 0 && uParam == (KUPARAM)(KWndWindow*)&m_List)
 			OnLogin();
 		break;
 	default:

@@ -118,7 +118,7 @@ void KUiExBox2::UpdateData()
 
 	if (pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount))
 	{
-		g_pCoreShell->GetGameData(GDI_ITEM_IN_EX_BOX2, (unsigned int)pObjs, nCount);//单线程执行，nCount值不变
+		g_pCoreShell->GetGameData(GDI_ITEM_IN_EX_BOX2, (KUPARAM)pObjs, nCount);//单线程执行，nCount值不变
 		for (int i = 0; i < nCount; i++)
 			UpdateItem(&pObjs[i], 2);
 		free(pObjs);
@@ -195,7 +195,7 @@ void KUiExBox2::LoadScheme(const char* pScheme)
 // -------------------------------------------------------------------------
 // 功能	: 窗口函数
 // -------------------------------------------------------------------------
-int KUiExBox2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiExBox2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -208,7 +208,7 @@ int KUiExBox2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				uPr[0] = pItem->uId;
 				uPr[1] = pos_exbox2room;
 				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
-								(unsigned int)&uPr, pos_equiproom);
+								(KUPARAM)&uPr, pos_equiproom);
 			}
 		}
 		break;
@@ -221,14 +221,14 @@ int KUiExBox2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			g_pCoreShell->OperationRequest(GOI_PLAYER_ACTION, CN_GH, 0);
 				break;
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 			CloseWindow();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BuyOne)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BuyOne)
 		{
 			KUiExBox1::OpenWindow2();
 			CloseWindow();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BuyThree)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BuyThree)
 			
 			g_pCoreShell->OperationRequest(GOI_PLAYER_ACTION, EX_BOX3, 0);
 		
@@ -276,6 +276,6 @@ void KUiExBox2::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLAC
 	}
 	
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 }

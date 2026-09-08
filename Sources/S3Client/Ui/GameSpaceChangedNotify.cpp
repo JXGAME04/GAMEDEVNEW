@@ -95,9 +95,9 @@ bool UiCloseWndsInGame(bool bAll);
 
 extern iCoreShell* g_pCoreShell;
 
-void GameWorldTips(unsigned int uParam, int nParam);
+void GameWorldTips(KUPARAM uParam, KNPARAM nParam);
 
-int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nParam)
+int CoreDataChangedCallback(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	KUiTrade* pTradeBar = NULL;
@@ -124,7 +124,7 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 
 			KUiPlayerBaseInfo	Info;
 			memset(&Info, 0, sizeof(KUiPlayerBaseInfo));
-			g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (int)&Info, 0);
+			g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KNPARAM)&Info, 0);
 
 			if ((Info.nCurFaction >= 0) || 
 				(Info.nCurTong != 0) 
@@ -1048,7 +1048,7 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 
 //////////////////////////////////////////////////////
 
-int KClientCallback::CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam)
+int KClientCallback::CoreDataChanged(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam)
 {
 	return CoreDataChangedCallback(uDataId, uParam, nParam);
 }
@@ -1356,7 +1356,7 @@ void KClientCallback::FriendInvite(char* roleName)
 		sMsg.byConfirmType = SMCT_UI_FRIEND_INVITE;
 		sMsg.byPriority = 3;
 		sMsg.byParamSize = sizeof(KUiPlayerItem);
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&sPlayer);
 	}
 }
 
@@ -1379,7 +1379,7 @@ void KClientCallback::AddFriend(char* roleName, BYTE answer)
 			sMsg.byConfirmType = SMCT_UI_INTERVIEW;
 			sMsg.byPriority = 2;
 			sMsg.byParamSize = sizeof(KUiPlayerItem);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&sPlayer);
 
 			int nUnit = KUiChatCentre::FindUnitIndexByRoleNameAtServerUnit(roleName);
 			if (nUnit >= 0)
@@ -1400,7 +1400,7 @@ void KClientCallback::AddFriend(char* roleName, BYTE answer)
 			sMsg.byConfirmType = SMCT_CLICK;
 			sMsg.byPriority = 1;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		else if (answer == answerUnable)
 		{
@@ -1411,7 +1411,7 @@ void KClientCallback::AddFriend(char* roleName, BYTE answer)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 	}
 }
@@ -1436,7 +1436,7 @@ void KClientCallback::FriendStatus(char* roleName, BYTE state)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 	}
 }
@@ -1531,7 +1531,7 @@ void FactionTips(int nbJoin)
 //--------------------------------------------------------------------------
 //	功能：贴士老大
 //--------------------------------------------------------------------------
-void GameWorldTips(unsigned int uParam, int nParam)
+void GameWorldTips(KUPARAM uParam, KNPARAM nParam)
 {
 	if(uParam == PBP_LEVEL)
 		LevelTips(nParam);

@@ -43,7 +43,7 @@ KUiGameSpace	g_WndGameSpace;
 //--------------------------------------------------------------------------
 //	功能：输入处理消息以及一些特定窗口消息的响应
 //--------------------------------------------------------------------------
-int KUiGameSpace::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiGameSpace::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	bool bDefault = true;
 	int nKind = -1;
@@ -121,7 +121,7 @@ int KUiGameSpace::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == SEL_ACTION_MENU && short(LOWORD(nParam)) >= 0)
 			{
@@ -240,7 +240,7 @@ void ProcessPeople(KUiPlayerItem* pDest, int nAction)
 			{
 				if (pDest->uId != 0 )
 				{
-					g_pCoreShell->OperationRequest(GOI_FOLLOW_SOMEONE, (unsigned int)pDest, 0);
+					g_pCoreShell->OperationRequest(GOI_FOLLOW_SOMEONE, (KUPARAM)pDest, 0);
 					g_pCoreShell->OperationRequest(GOI_VIEW_PLAYERSELLITEM, (unsigned int)pDest->uId, 0);
 				}
 			}
@@ -249,7 +249,7 @@ void ProcessPeople(KUiPlayerItem* pDest, int nAction)
 		break;
 	case ACTION_MAKEFRIEND:		//	1
 		if (g_pCoreShell && !KUiChatCentre::IsMyFriend(pDest->Name))
-			g_pCoreShell->OperationRequest(GOI_CHAT_FRIEND_ADD,	(unsigned int)pDest, 0);
+			g_pCoreShell->OperationRequest(GOI_CHAT_FRIEND_ADD,	(KUPARAM)pDest, 0);
 		break;
 	case ACTION_TRADE:		//	2
 		if (g_pCoreShell && pDest->nData == PLAYER_MENU_STATE_TRADEOPEN && pDest->nIndex != -1)
@@ -268,19 +268,19 @@ void ProcessPeople(KUiPlayerItem* pDest, int nAction)
 		{
 			KUiPlayerTeam	TeamInfo;
 			TeamInfo.cNumMember = 0;
-			g_pCoreShell->TeamOperation(TEAM_OI_GD_INFO, (unsigned int)&TeamInfo, 0);
+			g_pCoreShell->TeamOperation(TEAM_OI_GD_INFO, (KUPARAM)&TeamInfo, 0);
 			if (TeamInfo.cNumMember == 0)
 				g_pCoreShell->TeamOperation(TEAM_OI_CREATE, 0, 0);
-			g_pCoreShell->TeamOperation(TEAM_OI_INVITE, (unsigned int)pDest, 0);
+			g_pCoreShell->TeamOperation(TEAM_OI_INVITE, (KUPARAM)pDest, 0);
 		}
 		break;
 	case ACTION_FOLLOW:		//	5
 		if (g_pCoreShell && pDest->nIndex != -1)
-			g_pCoreShell->OperationRequest(GOI_FOLLOW_SOMEONE, (unsigned int)pDest, 0);
+			g_pCoreShell->OperationRequest(GOI_FOLLOW_SOMEONE, (KUPARAM)pDest, 0);
 		break;
 	case ACTION_REVENGE:			//c鮱 s竧	6
 		if (g_pCoreShell && pDest->uId != 0)
-			g_pCoreShell->OperationRequest(GOI_REVENGE_SOMEONE, (unsigned int)pDest, 0);
+			g_pCoreShell->OperationRequest(GOI_REVENGE_SOMEONE, (KUPARAM)pDest, 0);
 		break;
 	case ACTION_VIEWITEM:				//	7
 		if (g_pCoreShell && pDest->uId != 0)
@@ -317,7 +317,7 @@ void ProcessEmote(char* szDest, char *szDestChannel, int nEmoteIndex)
 			int nChannelCount = KUiMsgCentrePad::GetChannelCount();
 			int nChannelID    = KUiMsgCentrePad::GetChannelID(nChannelIndex);
 			//开始获取和转换字串
-			g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (unsigned int)&MyInfo, 0);
+			g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KUPARAM)&MyInfo, 0);
        		if(szDest[0])
 	            nStringLen = g_UiChatPhrase.GetEmote(nEmoteIndex, szBuff, sizeof(szBuff));
 		    else
@@ -377,7 +377,7 @@ void PopUpContextPeopleMenu(const KUiPlayerItem& SelectPlayer, int x, int y)
 	if (KUiPlayerBar::IsSelfName((char*)SelectPlayer.Name))
 		return;
 
-	int nbIsRecruit = g_pCoreShell->TongOperation(GTOI_TONG_IS_RECRUIT, (unsigned int)&SelectPlayer, 0);
+	int nbIsRecruit = g_pCoreShell->TongOperation(GTOI_TONG_IS_RECRUIT, (KUPARAM)&SelectPlayer, 0);
 	int nActionDataCount = sizeof(g_ActionName) / 32;
 
 	KPopupMenuData* pMenuData = (KPopupMenuData*)malloc(MENU_DATA_SIZE(nActionDataCount));
@@ -390,7 +390,7 @@ void PopUpContextPeopleMenu(const KUiPlayerItem& SelectPlayer, int x, int y)
 
 	KUiPlayerTeam TeamInfo;
 	TeamInfo.nCaptainPower = 0;
-	g_pCoreShell->TeamOperation(TEAM_OI_GD_INFO, (unsigned int)&TeamInfo, 0);
+	g_pCoreShell->TeamOperation(TEAM_OI_GD_INFO, (KUPARAM)&TeamInfo, 0);
 	int nMenuCount = 0;
 	int i;
 	pMenuData->nItemHeight = 0;

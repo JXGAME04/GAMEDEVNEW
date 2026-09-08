@@ -332,12 +332,12 @@ int KUiTongKimInfo::PtInWindow(int x, int y)
 	return m_BtnFold.PtInWindow(x, y) ? 1 : 0;
 }
 
-int KUiTongKimInfo::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTongKimInfo::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnFold)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnFold)
 		{
 			// [TKINFO 06/09 toi] "nut an vao": thu con dung o nut 27x27, bam lan nua thi mo ra
 			m_bUserFold = m_bFold ? 0 : 1;

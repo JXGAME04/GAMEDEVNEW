@@ -182,7 +182,7 @@ void KWndList::SetCustomColorOffset(int nOffset)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KWndList::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndList::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -245,7 +245,7 @@ void KWndList::OnLButtonDown(int x, int y)
 			if (m_pParentWnd)
 			{
 				m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL,
-					(unsigned int)(KWndWindow*)this, m_nSelItemIndex);
+					(KUPARAM)(KWndWindow*)this, m_nSelItemIndex);
 			}
 		}
 		else if (nSel >= 0)
@@ -258,7 +258,7 @@ void KWndList::OnLButtonDown(int x, int y)
 			if (m_pParentWnd)
 			{
 				m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL,
-					(unsigned int)(KWndWindow*)this, nSel);
+					(KUPARAM)(KWndWindow*)this, nSel);
 			}
 		}
 	}
@@ -284,7 +284,7 @@ void KWndList::OnRButtonDown(int x, int y)
 	if (nSel >= 0 && m_pParentWnd)
 	{
 		m_pParentWnd->WndProc(WND_N_LIST_ITEM_R_CLICK,
-			(unsigned int)(KWndWindow*)this, nSel);
+			(KUPARAM)(KWndWindow*)this, nSel);
 	}
 }
 
@@ -295,7 +295,7 @@ void KWndList::OnLButtonDClick(int x, int y)
 	if (nSel >= 0 && m_pParentWnd)
 	{
 		m_pParentWnd->WndProc(WND_N_LIST_ITEM_D_CLICK,
-			(unsigned int)(KWndWindow*)this, nSel);
+			(KUPARAM)(KWndWindow*)this, nSel);
 	}
 }
 
@@ -321,7 +321,7 @@ int KWndList::SetCurSel(int nSel)
 		m_nSelItemIndex = nSel;
 		UpdateData();
 		if (m_pParentWnd)
-			m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (unsigned int)(KWndWindow*)this, m_nSelItemIndex);
+			m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (KUPARAM)(KWndWindow*)this, m_nSelItemIndex);
 	}
 	return nSel;
 }
@@ -348,7 +348,7 @@ void KWndList::OnMouseMove(int x, int y)
 		m_nHighLightItemIndex = nIndex;
 		if (m_pParentWnd)
 		{
-			m_pParentWnd->WndProc(WND_N_LIST_ITEM_HIGHLIGHT, (unsigned int)(KWndWindow*)this, m_nHighLightItemIndex);
+			m_pParentWnd->WndProc(WND_N_LIST_ITEM_HIGHLIGHT, (KUPARAM)(KWndWindow*)this, m_nHighLightItemIndex);
 		}
 	}
 }
@@ -467,8 +467,8 @@ void KWndList::SetContent(BYTE* pContent, int nNumItem, int nItemSize, int nStri
 	if (m_pParentWnd)
 	{
 		if (m_Style & WNDLIST_ES_HIGHLIGHT_ENABLE)
-			m_pParentWnd->WndProc(WND_N_LIST_ITEM_HIGHLIGHT, (unsigned int)(KWndWindow*)this, m_nHighLightItemIndex);
-		m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (unsigned int)(KWndWindow*)this, m_nSelItemIndex);
+			m_pParentWnd->WndProc(WND_N_LIST_ITEM_HIGHLIGHT, (KUPARAM)(KWndWindow*)this, m_nHighLightItemIndex);
+		m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (KUPARAM)(KWndWindow*)this, m_nSelItemIndex);
 	}
 	if (bRestoreMultiSel)
 		EnableMultiSel(true);

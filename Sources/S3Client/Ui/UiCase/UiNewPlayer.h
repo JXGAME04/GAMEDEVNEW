@@ -27,7 +27,7 @@ private:
 	~KUiNewPlayer();
 	void	Initialize();						//初始化
 	void	LoadScheme(const char* pScheme);	//载入界面方案
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnClickButton(KWndWindow* pWnd);	//响应点击按钮
 	int		GetInputInfo();
 	void	OnOk();								//完成角色选择界面

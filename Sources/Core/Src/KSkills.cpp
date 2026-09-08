@@ -260,7 +260,7 @@ relationisvalid:
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 #endif
 			return 0;
 		}
@@ -300,7 +300,7 @@ relationisvalid:
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 #endif
 			return 0;
 			}
@@ -332,7 +332,7 @@ relationisvalid:
 						sMsg.byConfirmType = SMCT_NONE;
 						sMsg.byPriority = 0;
 						sMsg.byParamSize = 0;
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 #endif
 						return 0;
 					}
@@ -349,7 +349,7 @@ relationisvalid:
 						sMsg.byConfirmType = SMCT_NONE;
 						sMsg.byPriority = 0;
 						sMsg.byParamSize = 0;
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 #endif
 						return 0;
 					}
@@ -398,7 +398,7 @@ relationisvalid:
 						sMsg.byConfirmType = SMCT_NONE;
 						sMsg.byPriority = 0;
 						sMsg.byParamSize = 0;
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 #endif
 						return 0;
 					}

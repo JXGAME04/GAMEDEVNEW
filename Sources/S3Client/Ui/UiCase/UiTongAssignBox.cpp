@@ -170,16 +170,16 @@ void KUiTongAssignBox::LoadScheme(const char* pScheme)
 /*********************************************************************
 * 功能：窗口函数
 **********************************************************************/
-int KUiTongAssignBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTongAssignBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_BtnConfirm)
+		if(uParam == (KUPARAM)&m_BtnConfirm)
 		{
 			OnConfirm();
 		}
-		else if(uParam == (unsigned int)&m_BtnCancel)
+		else if(uParam == (KUPARAM)&m_BtnCancel)
 		{
 			if(m_pMain)
 			{
@@ -188,15 +188,15 @@ int KUiTongAssignBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 			}
 			CloseWindow();
 		}
-		else if(uParam == (unsigned int)&m_BtnElder)
+		else if(uParam == (KUPARAM)&m_BtnElder)
 		{
 			UpdateCheckButton(enumTONG_FIGURE_DIRECTOR);
 		}
-		else if(uParam == (unsigned int)&m_BtnCaptain)
+		else if(uParam == (KUPARAM)&m_BtnCaptain)
 		{
 			UpdateCheckButton(enumTONG_FIGURE_MANAGER);
 		}
-		else if(uParam == (unsigned int)&m_BtnPilgarlic)
+		else if(uParam == (KUPARAM)&m_BtnPilgarlic)
 		{
 			UpdateCheckButton(enumTONG_FIGURE_MEMBER);
 		}
@@ -219,7 +219,7 @@ int KUiTongAssignBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 			    memset(&Member, 0, sizeof(KTongMemberItem));
 			    strcpy(Member.Name, (char *)nParam);
 
- 			    g_pCoreShell->TongOperation(GTOI_TONG_ACTION, (unsigned int)&Param, (int)&Member);
+ 			    g_pCoreShell->TongOperation(GTOI_TONG_ACTION, (KUPARAM)&Param, (KNPARAM)&Member);
 			}
 			if(m_pMain)
 			{

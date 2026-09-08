@@ -125,6 +125,7 @@ static void RenderToA4R4G4B4Safe(WORD* pDest, BYTE* pSrc, int nSrcLen, int nTota
 	while (d < dEnd)
 		*d++ = 0;
 }
+#ifndef _WIN64	// [X64 08/09] RenderToA4R4G4B4 la hop ngu x86 va KHONG con duoc goi (dung RenderToA4R4G4B4Safe); x64 bo qua
 inline void RenderToA4R4G4B4(WORD* pDest, BYTE* pSrc, int width, int height, BYTE* pPalette)
 {
 	__asm
@@ -213,6 +214,7 @@ loc_DrawSprite_0103:
 loc_DrawSprite_exit:
 	}
 }
+#endif
 
 TextureRes::TextureRes()
 {

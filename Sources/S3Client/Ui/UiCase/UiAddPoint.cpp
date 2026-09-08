@@ -117,19 +117,19 @@ void KUiAddPoint::OnOK()
 // -------------------------------------------------------------------------
 // Xu ly khi hop thoai dang mo
 // -------------------------------------------------------------------------
-int KUiAddPoint::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAddPoint::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 		{
 			// Click len nut cancel ~> dong hop thoai
 			CloseWindow();
 			nRet = 1;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_OKBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_OKBtn)
 		{
 			// Click len nut OK ~> Gui goi tin yeu cau mo khoa
 			OnOK();
@@ -137,12 +137,12 @@ int KUiAddPoint::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_EDIT_SPECIAL_KEY_DOWN:
-		if (nParam == VK_RETURN && uParam == (unsigned int)(KWndWindow*)&m_Password) // Click len nut OK ~> Gui goi tin yeu cau mo khoa
+		if (nParam == VK_RETURN && uParam == (KUPARAM)(KWndWindow*)&m_Password) // Click len nut OK ~> Gui goi tin yeu cau mo khoa
 		{
 			OnOK();
 			return 1;
 		}
-		else if (nParam == VK_ESCAPE && uParam == (unsigned int)(KWndWindow*)&m_Password)
+		else if (nParam == VK_ESCAPE && uParam == (KUPARAM)(KWndWindow*)&m_Password)
 		{
 			CloseWindow();
 			nRet = 1;

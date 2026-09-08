@@ -499,25 +499,25 @@ void KUiPet::SendOp(int nOp)
     g_pCoreShell->OperationRequest(GOI_PARTNER_OP, PARTNER_OP_PETSYS, nOp);
 }
 
-int KUiPet::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiPet::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     switch (uMsg)
     {
     case WND_N_BUTTON_CLICK:
-        if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+        if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
         {
             CloseWindow();
             break;
         }
         for (int i = 0; i < PET_UI_BTN_NUM; i++)
         {
-            if (uParam == (unsigned int)(KWndWindow*)&m_Btn[i])
+            if (uParam == (KUPARAM)(KWndWindow*)&m_Btn[i])
             {
                 SendOp(s_nBtnOp[i]);
                 break;
             }
         }
-        if (uParam == (unsigned int)(KWndWindow*)&m_CompanionBtn)
+        if (uParam == (KUPARAM)(KWndWindow*)&m_CompanionBtn)
             SendOp(10);	// menu trang bi Dong Hanh (server)
         break;
     case WM_MOUSEMOVE:

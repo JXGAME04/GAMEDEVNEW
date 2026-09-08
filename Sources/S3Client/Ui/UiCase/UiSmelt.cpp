@@ -130,7 +130,7 @@ void KUiSmeltPage::HienThongTinMon(unsigned uId)
 		return;
 	char szBuf[1100];
 	szBuf[0] = 0;
-	int nCo = g_pCoreShell->GetGameData(GDI_FUSION_INFO, uId, (int)szBuf);
+	int nCo = g_pCoreShell->GetGameData(GDI_FUSION_INFO, uId, (KNPARAM)szBuf);
 	m_Guide.Clear();
 	ThemGuide(m_szRule, false);
 	if (nCo > 0 && szBuf[0])
@@ -158,7 +158,7 @@ void KUiSmeltPage::Breathe()
 		m_Effect.NextFrame();
 }
 
-int KUiSmeltPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSmeltPage::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_ITEM_PICKDROP)
 	{
@@ -168,7 +168,7 @@ int KUiSmeltPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	}
 	if (uMsg == WND_N_SCORLLBAR_POS_CHANGED)
 	{
-		if (uParam == (unsigned int)(KWndWindow*)&m_Scroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Scroll)
 			m_Guide.SetFirstShowLine(nParam);
 		return 0;
 	}
@@ -298,28 +298,28 @@ void KUiSmelt::Breathe()
 	// KWndWindow::Breathe la virtual PRIVATE (rong) - khong goi len lop cha
 }
 
-int KUiSmelt::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSmelt::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Close)
 		{
 			CloseWindow(true);
 			return 0;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_Page[0].m_BtnDo)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Page[0].m_BtnDo)
 		{
 			OnDo(0);
 			return 0;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_Page[1].m_BtnDo)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Page[1].m_BtnDo)
 		{
 			OnDo(1);
 			return 0;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_Page[0].m_BtnCancel ||
-			uParam == (unsigned int)(KWndWindow*)&m_Page[1].m_BtnCancel)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Page[0].m_BtnCancel ||
+			uParam == (KUPARAM)(KWndWindow*)&m_Page[1].m_BtnCancel)
 		{
 			CloseWindow(true);	// [DUNGLUYEN-PB 01/09] Huy = thu hoi do + DONG box (RecoveryBoxCmd server xoa m_dwGiveBoxId -> box mo tiep bi nuot im lang); y het UiAffairItem/UiMantleInlay/UiMantleWash
 			return 0;
@@ -416,8 +416,8 @@ void KUiSmelt::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE
 	Drop.Region.h = nSlot;
 	if (g_pCoreShell)
 		g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-			pPickPos ? (unsigned int)&Pick : 0,
-			pDropPos ? (int)&Drop : 0);
+			pPickPos ? (KUPARAM)&Pick : 0,
+			pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 void KUiSmelt::UpdateData()
@@ -438,7 +438,7 @@ void KUiSmelt::UpdateData()
 	KUiObjAtRegion* pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount);
 	if (!pObjs)
 		return;
-	g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, (unsigned int)pObjs, nCount);
+	g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, (KUPARAM)pObjs, nCount);
 	for (i = 0; i < nCount; i++)
 		UpdateItem(&pObjs[i], 1);
 	free(pObjs);

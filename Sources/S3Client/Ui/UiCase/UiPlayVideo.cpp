@@ -65,7 +65,7 @@ KUiPlayVideo* KUiPlayVideo::OpenWindow()
 //--------------------------------------------------------------------------
 //	功能：输入处理消息以及一些特定窗口消息的响应
 //--------------------------------------------------------------------------
-int KUiPlayVideo::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiPlayVideo::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 

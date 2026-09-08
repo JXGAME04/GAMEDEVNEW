@@ -23,7 +23,7 @@ public:
 	static void			CancelTrade();
 	static void			FkAutoOnBuyItem(unsigned int szItemName);
 	void				UpdateData();	
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateItem1(KUiObjAtContRegion* pItem, int bAdd);
 private:
 	KUiShop();

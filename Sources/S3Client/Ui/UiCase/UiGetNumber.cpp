@@ -128,15 +128,15 @@ void KUiGetNumber::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口消息函数
 //--------------------------------------------------------------------------
-int KUiGetNumber::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiGetNumber::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_OkBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_OkBtn)
 			OnOk();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 			OnCancel();
 		break;
 	case WM_KEYDOWN:
@@ -153,7 +153,7 @@ int KUiGetNumber::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		break;
 	case WND_N_EDIT_SPECIAL_KEY_DOWN:
 		if (nParam == VK_RETURN &&
-			uParam == (unsigned int)(KWndWindow*)&m_NumIn)
+			uParam == (KUPARAM)(KWndWindow*)&m_NumIn)
 		{
 			OnOk();
 			nRet = 1;
@@ -181,7 +181,7 @@ void KUiGetNumber::OnOk()
 	strcpy(InPutCmd.nValue, m_pSelf->szFunc);
 	strcpy(InPutCmd.szAction, "");
 	if (g_pCoreShell)
-		g_pCoreShell->OperationRequest(GOI_INPUT_INFO, 2, (unsigned int)(&InPutCmd));
+		g_pCoreShell->OperationRequest(GOI_INPUT_INFO, 2, (KUPARAM)(&InPutCmd));
 	CloseWindow(false);
 }
 

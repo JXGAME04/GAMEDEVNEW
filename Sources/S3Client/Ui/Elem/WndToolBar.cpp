@@ -73,7 +73,7 @@ int KWndToolBar::Init(KIniFile* pIniFile, const char* pSection)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KWndToolBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndToolBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (!KWndImage::WndProc(uMsg, uParam, nParam))
 	{

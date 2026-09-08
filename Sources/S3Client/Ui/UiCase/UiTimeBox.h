@@ -22,7 +22,7 @@ private:
 	void	Show();	
 	void	Breathe();	
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:	
 	static KUiTimeBox*	m_pSelf;
 	KWndText32			m_Title;

@@ -110,17 +110,17 @@ void KUiToolsControlBar::Breathe()
 	UpdateData();
 }
 
-int KUiToolsControlBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiToolsControlBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_PK)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_PK)
 			PopUpPK();
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) >= PK_MENU_SELECT_BASE && (short)(LOWORD(nParam)) >= 0)
 				ProcessPopUpPK(LOWORD(nParam));

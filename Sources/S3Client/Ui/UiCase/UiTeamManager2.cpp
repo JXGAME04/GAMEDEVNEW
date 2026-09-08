@@ -142,7 +142,7 @@ void KUiTeamManager2::UpdateData(KUiPlayerTeam* pInfo)
 
 	if (pInfo)
 		m_Info = *pInfo;
-	else if (!g_pCoreShell->TeamOperation(TEAM_OI_GD_INFO, (unsigned int)&m_Info, 0))
+	else if (!g_pCoreShell->TeamOperation(TEAM_OI_GD_INFO, (KUPARAM)&m_Info, 0))
 	{
 		memset(&m_Info, 0, sizeof(m_Info));
 	}
@@ -176,7 +176,7 @@ void KUiTeamManager2::UpdateData(KUiPlayerTeam* pInfo)
 		m_pPlayersList = (KUiPlayerItem*)malloc(sizeof(KUiPlayerItem) * (m_Info.cNumMember));
 		if (m_pPlayersList)
 		{
-			int nCount = g_pCoreShell->TeamOperation(TEAM_OI_GD_MEMBER_LIST, (unsigned int)m_pPlayersList, m_Info.cNumMember);
+			int nCount = g_pCoreShell->TeamOperation(TEAM_OI_GD_MEMBER_LIST, (KUPARAM)m_pPlayersList, m_Info.cNumMember);
 			_ASSERT(nCount == m_Info.cNumMember);
 			nCountS = nCount;
 			m_btnCaptainFlag.Show();
@@ -212,7 +212,7 @@ void KUiTeamManager2::PaintWindow()
 	if (g_pRepresentShell == NULL)
 		return;
 
-	g_pCoreShell->TeamOperation(TEAM_OI_GET_NPC_MAP_POS, (unsigned int)m_pPlayersList, (unsigned int)nPainTMG);
+	g_pCoreShell->TeamOperation(TEAM_OI_GET_NPC_MAP_POS, (KUPARAM)m_pPlayersList, (unsigned int)nPainTMG);
 
 }
 
@@ -292,14 +292,14 @@ KUiTeamManager2* KUiTeamManager2::GetIfVisible()
 	return NULL;
 }
 
-int KUiTeamManager2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTeamManager2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     int nRet = 0;
     switch (uMsg)
     {
 		case WND_N_BUTTON_CLICK:
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_btnSwitch)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_btnSwitch)
 			{
 				if(eShowTMG == 1)
 					eShowTMG = 0;

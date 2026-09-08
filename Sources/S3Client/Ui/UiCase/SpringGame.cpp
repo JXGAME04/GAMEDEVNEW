@@ -36,7 +36,7 @@ KUiSpringGame* KUiSpringGame::OpenWindow()
 		BauCuaData	Data;
 
 		Data.nActionType = BAUCUA_GET_INFO;
-		g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+		g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 	}
 	return m_pSelf;
 }
@@ -137,7 +137,7 @@ void KUiSpringGame::Initialize()
 
 	KUiPlayerBaseInfo	Info;
 	memset(&Info, 0, sizeof(KUiPlayerBaseInfo));
-	g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (int)&Info, 0);
+	g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KNPARAM)&Info, 0);
 	strncpy(m_currentPlayerName, Info.Name, sizeof(m_currentPlayerName));
 }
 extern int SCREEN_WIDTH;
@@ -406,7 +406,7 @@ void KUiSpringGame::Breathe()
 
     // Check if a second has passed
     if (currentTick - this->lastTick >= 1000) {
-		g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+		g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 		this->lastTick += 1000;
         if (remainSeconds > 0) {
             remainSeconds--;
@@ -457,7 +457,7 @@ void KUiSpringGame::Breathe()
 	m_HostCoin.SetText(buff);
 }
 
-int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSpringGame::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	KIniFile	Ini;
 	char		Buff[128];
@@ -482,13 +482,13 @@ int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		char coinStr[16]; // For updating coin display
 		int betAmount = m_BetAmountInput.GetIntNumber(); // Fixed bet amount for now
 
-		if (uParam == (unsigned int)(KWndWindow*)&m_Close) {
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Close) {
 			KUiSpringGame::CloseWindow();
 			break;
 		}
 
 		// Betting Logic
-		if (uParam == (unsigned int)(KWndWindow*)&m_BetBtn_0) { // DEER
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BetBtn_0) { // DEER
 			DiceFace targetFace = DiceFace::DEER;
 			if (m_playerCoins >= betAmount) {
 				m_playerCoins -= betAmount;
@@ -509,9 +509,9 @@ int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				Data.nActionType = BAUCUA_BET;
 				Data.nBetType = (int)DiceFace::DEER;
 				Data.nMoney = betAmount;
-				g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+				g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 			}
-		} else if (uParam == (unsigned int)(KWndWindow*)&m_BetBtn_1) { // GOURD
+		} else if (uParam == (KUPARAM)(KWndWindow*)&m_BetBtn_1) { // GOURD
 			DiceFace targetFace = DiceFace::GOURD;
 			if (m_playerCoins >= betAmount) {
 				m_playerCoins -= betAmount;
@@ -531,9 +531,9 @@ int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				Data.nActionType = BAUCUA_BET;
 				Data.nBetType = (int)DiceFace::GOURD;
 				Data.nMoney = betAmount;
-				g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+				g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 			}
-		} else if (uParam == (unsigned int)(KWndWindow*)&m_BetBtn_2) { // ROOSTER
+		} else if (uParam == (KUPARAM)(KWndWindow*)&m_BetBtn_2) { // ROOSTER
 			DiceFace targetFace = DiceFace::ROOSTER;
 			if (m_playerCoins >= betAmount) {
 				m_playerCoins -= betAmount;
@@ -553,9 +553,9 @@ int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				Data.nActionType = BAUCUA_BET;
 				Data.nBetType = (int)DiceFace::ROOSTER;
 				Data.nMoney = betAmount;
-				g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+				g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 			}
-		} else if (uParam == (unsigned int)(KWndWindow*)&m_BetBtn_3) { // FISH
+		} else if (uParam == (KUPARAM)(KWndWindow*)&m_BetBtn_3) { // FISH
 			DiceFace targetFace = DiceFace::FISH;
 			if (m_playerCoins >= betAmount) {
 				m_playerCoins -= betAmount;
@@ -575,9 +575,9 @@ int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				Data.nActionType = BAUCUA_BET;
 				Data.nBetType = (int)DiceFace::FISH;
 				Data.nMoney = betAmount;
-				g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+				g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 			}
-		} else if (uParam == (unsigned int)(KWndWindow*)&m_BetBtn_4) { // CRAB
+		} else if (uParam == (KUPARAM)(KWndWindow*)&m_BetBtn_4) { // CRAB
 			DiceFace targetFace = DiceFace::CRAB;
 			if (m_playerCoins >= betAmount) {
 				m_playerCoins -= betAmount;
@@ -597,9 +597,9 @@ int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				Data.nActionType = BAUCUA_BET;
 				Data.nBetType = (int)DiceFace::CRAB;
 				Data.nMoney = betAmount;
-				g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+				g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 			}
-		} else if (uParam == (unsigned int)(KWndWindow*)&m_BetBtn_5) { // SHRIMP
+		} else if (uParam == (KUPARAM)(KWndWindow*)&m_BetBtn_5) { // SHRIMP
 			DiceFace targetFace = DiceFace::SHRIMP;
 			if (m_playerCoins >= betAmount) {
 				m_playerCoins -= betAmount;
@@ -619,10 +619,10 @@ int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				Data.nActionType = BAUCUA_BET;
 				Data.nBetType = (int)DiceFace::SHRIMP;
 				Data.nMoney = betAmount;
-				g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+				g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_MakeHostBtn) { //Gianh quyen lam cai
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_MakeHostBtn) { //Gianh quyen lam cai
 			if (m_playerCoins < m_HostCoinAmount)
 			{
 				//thong bao("Khong du tien de lam cai!");
@@ -631,9 +631,9 @@ int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			BauCuaData	Data;
 
 			Data.nActionType = BAUCUA_MAKE_HOST;
-			g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+			g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_HostGetCoinBtn) { //Gianh quyen lam cai
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_HostGetCoinBtn) { //Gianh quyen lam cai
 			if (m_playerCoins < m_HostCoinAmount)
 			{
 				//thong bao("Khong du tien de lam cai!");
@@ -642,9 +642,9 @@ int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			BauCuaData	Data;
 
 			Data.nActionType = BAUCUA_NO_HOST;
-			g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+			g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CancelBetBtn) { //Cancel all bets
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBetBtn) { //Cancel all bets
 			if (m_playerCoins < m_HostCoinAmount)
 			{
 				//thong bao("Khong du tien de lam cai!");
@@ -653,23 +653,23 @@ int KUiSpringGame::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			BauCuaData	Data;
 
 			Data.nActionType = BAUCUA_CANCEL_BET;
-			g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+			g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 			for (i = 0; i < 6; i++) {
 				m_CoinInput[i].SetText("");
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_DepositBtn) {
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_DepositBtn) {
 			BauCuaData	Data;
 
 			Data.nActionType = BAUCUA_DEPOSIT;
 			Data.nMoney = m_DepositAmount.GetIntNumber();
-			g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+			g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_WithdrawBtn) {
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_WithdrawBtn) {
 			BauCuaData	Data;
 
 			Data.nActionType = BAUCUA_WITHDRAW;
-			g_pCoreShell->OperationRequest(GOI_BAUCUA, (unsigned int)&Data, 0);
+			g_pCoreShell->OperationRequest(GOI_BAUCUA, (KUPARAM)&Data, 0);
 		}
 		break;
 	}

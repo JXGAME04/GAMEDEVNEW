@@ -109,19 +109,19 @@ void KUiPopupPasswordQuery::LoadScheme(const char* pScheme)
 }
 
 
-int KUiPopupPasswordQuery::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiPopupPasswordQuery::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_Confirm)
+		if(uParam == (KUPARAM)&m_Confirm)
 		{
 			OnConfirm();
 		}
 		break;
 
 	case WND_N_EDIT_SPECIAL_KEY_DOWN:
-		if(uParam == (unsigned int)&m_Password && nParam == VK_RETURN)
+		if(uParam == (KUPARAM)&m_Password && nParam == VK_RETURN)
 		{
 			OnConfirm();
 		}
@@ -144,7 +144,7 @@ void KUiPopupPasswordQuery::OnConfirm()
 		{
     		KSG_StringToMD5String(szMD5, Buff);
 			Wnd_ReleaseExclusive((KWndWindow*)this);
-	    	m_pCaller->WndProc(WND_M_OTHER_WORK_RESULT, m_uParam, (int)szMD5);
+	    	m_pCaller->WndProc(WND_M_OTHER_WORK_RESULT, m_uParam, (KNPARAM)szMD5);
 		}
 		else
 		{

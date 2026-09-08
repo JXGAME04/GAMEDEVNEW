@@ -76,11 +76,11 @@ void KUiTaskNote_Personal::UpdateData()
 	OnSave();
 }
 
-int KUiTaskNote_Personal::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTaskNote_Personal::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nResult = false;
 	if (uMsg ==  WND_N_BUTTON_CLICK &&
-		uParam == (unsigned int)(KWndWindow*)&m_BtnSave)
+		uParam == (KUPARAM)(KWndWindow*)&m_BtnSave)
 	{
 		OnSave();
 		nResult = true;
@@ -136,18 +136,18 @@ void KUiTaskNote_System::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiTaskNote_System::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTaskNote_System::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nResult = 0;
 	switch (uMsg)
 	{
 	case WND_N_LIST_ITEM_SEL:
-		if (uParam == (unsigned int)(KWndWindow*)&m_RecordList)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_RecordList)
 			m_BtnDelete.Enable(nParam >= 0);
 		nResult = 1;
 		break;
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnDelete)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnDelete)
 		{
 			OnDelete(m_RecordList.GetMessageListBox()->GetCurSel());
 			nResult = 1;
@@ -303,19 +303,19 @@ void KUiTaskNote::Initialize()
 }
 
 // Deal with the window messages.
-int KUiTaskNote::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTaskNote::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nResult = false;
 	if (uMsg == WND_N_BUTTON_CLICK)
 	{
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnClose)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnClose)
 		{
 			OnClose();
 			nResult = true;
 		}
 		else
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_BtnPersonal)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_BtnPersonal)
 				m_PersonalPad.Show();
 			nResult = KWndPageSet::WndProc(uMsg, uParam, nParam);
 		}

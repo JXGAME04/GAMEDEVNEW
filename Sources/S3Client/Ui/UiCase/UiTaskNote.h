@@ -32,7 +32,7 @@ public:
 	void	LoadScheme(const char* pScheme);			//载入界面方案
 	void	UpdateView();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnDelete(int nIndex);
 
 	KScrollMessageListBox	m_RecordList;
@@ -49,7 +49,7 @@ public:
 	void	Show();
 	void	Hide();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnSave();
 	KTaskEdit				m_Editor;	
 	KWndButton				m_BtnSave;
@@ -70,7 +70,7 @@ public:
 private:
 	KUiTaskNote();
 	virtual ~KUiTaskNote();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	Initialize();
 	void	OnClose();
 	void	InitData();		//初始化相关存档数据

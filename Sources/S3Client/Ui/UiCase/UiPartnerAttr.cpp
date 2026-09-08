@@ -324,16 +324,16 @@ void KUiPartnerAttr::UpdateData()
     m_Field[23].SetText(szBuf);
 }
 
-int KUiPartnerAttr::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiPartnerAttr::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     switch (uMsg)
     {
     case WND_N_BUTTON_CLICK:
-        if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+        if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
         {
             CloseWindow();
         }
-        else if (uParam == (unsigned int)(KWndWindow*)&m_SwitchBtn)
+        else if (uParam == (KUPARAM)(KWndWindow*)&m_SwitchBtn)
         {
             int nView = m_nView;
             CloseWindow();
@@ -341,7 +341,7 @@ int KUiPartnerAttr::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
             if (pSkill)
                 pSkill->SetView(nView);
         }
-        else if (uParam == (unsigned int)(KWndWindow*)&m_SaveBtn)
+        else if (uParam == (KUPARAM)(KWndWindow*)&m_SaveBtn)
         {
             // luu ten (neu doi) + chon lam duong nhiem
             if (m_nView >= 1 && PT_P(m_nView, PTP_USED) > 0)
@@ -356,7 +356,7 @@ int KUiPartnerAttr::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
                         g_pCoreShell->OperationRequest(GOI_PARTNER_OP,
                             PARTNER_OP_SELECT, m_nView);
                     g_pCoreShell->OperationRequest(GOI_PARTNER_OP,
-                        PARTNER_OP_RENAME, (int)szMoi);
+                        PARTNER_OP_RENAME, (KNPARAM)szMoi);
                 }
                 else if (m_nView != PT_Cur())
                 {
@@ -365,11 +365,11 @@ int KUiPartnerAttr::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
                 }
             }
         }
-        else if (uParam == (unsigned int)(KWndWindow*)&m_DeleteBtn)
+        else if (uParam == (KUPARAM)(KWndWindow*)&m_DeleteBtn)
         {
             g_pCoreShell->OperationRequest(GOI_PARTNER_OP, PARTNER_OP_DELETE, m_nView);
         }
-        else if (uParam == (unsigned int)(KWndWindow*)&m_Forget)
+        else if (uParam == (KUPARAM)(KWndWindow*)&m_Forget)
         {
             g_pCoreShell->OperationRequest(GOI_PARTNER_OP, PARTNER_OP_FORGETSKILL, m_nView);
         }
@@ -377,7 +377,7 @@ int KUiPartnerAttr::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
         {
             for (int i = 0; i < PARTNER_UI_SLOT; i++)
             {
-                if (uParam == (unsigned int)(KWndWindow*)&m_BtnTab[i])
+                if (uParam == (KUPARAM)(KWndWindow*)&m_BtnTab[i])
                 {
                     m_nView = i + 1;
                     UpdateData();

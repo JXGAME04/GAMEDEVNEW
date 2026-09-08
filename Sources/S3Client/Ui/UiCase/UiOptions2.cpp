@@ -278,14 +278,14 @@ void KUiOptions2::UpdateAllStatusImg()
 	}
 }
 
-int	 KUiOptions2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	 KUiOptions2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 		{
 			CloseWindow();
 		}
@@ -293,7 +293,7 @@ int	 KUiOptions2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		{
 			for (int i = 0; i < m_nToggleBtnValidCount; i++)
 			{
-				if (uParam == (unsigned int)(KWndWindow*)&m_ToggleBtn[i])
+				if (uParam == (KUPARAM)(KWndWindow*)&m_ToggleBtn[i])
 				{
 					ToggleOption(m_nFirstControlableIndex + i);
 				}

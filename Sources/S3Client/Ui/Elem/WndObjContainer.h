@@ -40,7 +40,7 @@ public:
 	void DrawPoint(int x, int y, unsigned int wColor);
 	// Ket thuc
 protected:
-	virtual int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	int		DropObject(bool bTestOnly);				
 	void	PaintWindow();							
 	unsigned int		m_uAcceptableGenre;			
@@ -80,7 +80,7 @@ public:
 protected:
 	void			Clone(KWndObjectMatrix* pCopy);
 private:
-	virtual int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);	
+	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);	
 	void	PaintWindow();										
 	int		GetObjectAt(int x, int y);							
 	int		PickUpObjectAt(int x, int y);						

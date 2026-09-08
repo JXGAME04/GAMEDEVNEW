@@ -564,7 +564,7 @@ int	KUiChatCentre::SavePrivateSetting(KIniFile* pFile)
 //--------------------------------------------------------------------------
 //	功能：窗口消息函数
 //--------------------------------------------------------------------------
-int KUiChatCentre::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiChatCentre::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
@@ -573,9 +573,9 @@ int KUiChatCentre::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnClickButton((KWndWindow*)uParam);
 		break;
 	case WND_N_BUTTON_HOLD:
-		if (uParam == (unsigned int)(KWndWindow*)&m_ScrollUpBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_ScrollUpBtn)
 			OnScrollList(true);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ScrollDownBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ScrollDownBtn)
 			OnScrollList(false);
 		break;
 	case WND_M_POPUPMENU:
@@ -591,7 +591,7 @@ int KUiChatCentre::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		PopupFriendMenu(nParam);
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			m_bPopupMenu = false;
 			if (HIWORD(nParam) >= SEL_UNIT_MENU_SELECT_BASE && (short)(LOWORD(nParam)) >= 0)
@@ -627,7 +627,7 @@ int KUiChatCentre::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_CHILD_MOVE:
-		if (uParam == (unsigned int)(KWndWindow*)&m_TailImg)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_TailImg)
 			DragWndSize(nParam);
 		break;
 	default:

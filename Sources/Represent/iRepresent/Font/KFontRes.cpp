@@ -225,6 +225,34 @@ void KFontRes::Update(unsigned char* pCharImage, unsigned char* pTexData, int nT
 	TextureOffset = nTexPitch - m_nFontW * 2;
 	int bEnableTextBorder = m_bEnableTextBorder;
 
+#ifdef _WIN64
+	// [X64 08/09] KFontRes::Update ban C (x64 khong co __asm), cung ngu nghia voi khoi hop ngu ben duoi:
+	// moi byte RLE = (alpha 3 bit << 5) | so diem (5 bit); alpha 7 -> 0xFFFF, co vien: alpha 1..6 -> 0xEFFF, alpha 0 -> 0;
+	// khong vien: chi alpha 7 -> 0xFFFF, con lai 0. Moi dong ghi nWidth diem roi nhay TextureOffset byte.
+	{
+		unsigned char*  s = pCharImage;
+		unsigned short* d = (unsigned short*)pTexData;
+		for (int y = 0; y < nHeight; y++)
+		{
+			int nRemain = nWidth;
+			while (nRemain > 0)
+			{
+				unsigned int  uRle   = *s++;
+				int           nCount = (int)(uRle & 0x1f);
+				unsigned int  uAlpha = uRle >> 5;
+				unsigned short wPix;
+				if (bEnableTextBorder)
+					wPix = (uAlpha == 0) ? 0 : ((uAlpha == 7) ? 0xffff : 0xefff);
+				else
+					wPix = (uAlpha == 7) ? 0xffff : 0;
+				for (int k = 0; k < nCount; k++)
+					*d++ = wPix;
+				nRemain -= nCount;
+			}
+			d = (unsigned short*)((unsigned char*)d + TextureOffset);
+		}
+	}
+#else
 	__asm
 	{
 		//初始化 EDI 指向贴图数据起点
@@ -313,4 +341,5 @@ void KFontRes::Update(unsigned char* pCharImage, unsigned char* pTexData, int nT
 			jg		without_border_start_line
 		}
 	}
+#endif
 }

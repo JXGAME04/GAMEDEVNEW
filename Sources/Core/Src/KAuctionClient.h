@@ -39,7 +39,7 @@ int LuaAuc_GetLocalTime(Lua_State* L);			// () -> time_t
 int LuaAuc_PopBlackTips(Lua_State* L);			// (szMsg) -> thong bao he thong
 
 // CoreShell.cpp: case GOI_AUCTION_UI -> AuctionUi_OnRequest(uParam, nParam)
-void AuctionUi_OnRequest(unsigned int uParam, int nParam);
+void AuctionUi_OnRequest(KUPARAM uParam, KNPARAM nParam);
 int  AuctionUi_IsOpen();
 void AuctionUi_SetOpen(int bOpen);
 #endif

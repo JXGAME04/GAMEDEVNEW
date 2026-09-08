@@ -417,7 +417,7 @@ void KUiRankData::Breathe()
 {
 	TMissionLadderSelfInfo		tmp;
 	memset(tmp.szMissionName,0,sizeof(tmp.szMissionName));
-	g_pCoreShell->GetGameData(GDI_MISSION_SELFDATA, (unsigned int)(&tmp), NULL);
+	g_pCoreShell->GetGameData(GDI_MISSION_SELFDATA, (KUPARAM)(&tmp), NULL);
 	if(tmp.szMissionName[0])
 	{
 		m_BattleWarTxt.SetText(tmp.szMissionName);
@@ -448,7 +448,7 @@ void KUiRankData::Breathe()
 		{
 			TMissionLadderInfo		tmp;
 			memset(tmp.Name,0,sizeof(tmp.Name));
-			g_pCoreShell->GetGameData(GDI_MISSION_RANKDATA, (unsigned int)(&tmp), i);
+			g_pCoreShell->GetGameData(GDI_MISSION_RANKDATA, (KUPARAM)(&tmp), i);
 			if(tmp.Name[0])
 			{
 				tmp.nParam[MISSION_PARAM_AVAILABLE]?m_TopTenPlayFaction[i].SetText(m_szFaction[tmp.ucGroup-1]):m_TopTenPlayFaction[i].Clear();
@@ -465,7 +465,7 @@ void KUiRankData::Breathe()
 	}
 }
 
-int KUiRankData::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiRankData::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	return 0;
 }

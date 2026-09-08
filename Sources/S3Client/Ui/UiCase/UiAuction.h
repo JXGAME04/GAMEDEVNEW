@@ -21,7 +21,7 @@ class KIniFile;
 class KUiAuctionScrollWnd : public KWndImage
 {
 public:
-	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int  WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 };
 
 // ---- mot hang PHIEN (auction_activity_header.ini) ----
@@ -112,7 +112,7 @@ public:
 	KUiAuctionMemberWnd();
 	void	Build();
 	void	LoadScheme(const char* pScheme);
-	virtual int WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	AddMember(const KAucUiMember* p);
 	void	Clear();
 	void	SetSalary(const KAucUiSalary* p);
@@ -139,7 +139,7 @@ public:
 	KUiAuctionPage();
 	void	Build();
 	void	LoadScheme(const char* pScheme, int nType);
-	virtual int WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	virtual void Breathe();
 	// phien
 	void	AddActivity(const KAucUiActivity* p);
@@ -202,7 +202,7 @@ public:
 private:
 	static KUiAuctionManager* ms_pSelf;
 	void	Initialize();
-	virtual int WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	KWndText80			m_Title;					// [Title]
 	KWndLabeledButton	m_TabTong;					// [AuctionTong]
 	KWndLabeledButton	m_TabWorld;					// [AuctionWorld]
@@ -223,7 +223,7 @@ public:
 private:
 	static KUiAuctionIcon* ms_pSelf;
 	void	Initialize();
-	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int  WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	virtual void Breathe();
 	KWndButton			m_Btn;						// [AuctionBtn]
 	int					m_bBlink;

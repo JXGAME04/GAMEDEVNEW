@@ -194,7 +194,7 @@ void KUiTrade::UpdateTakewithItems()
 
 	if (pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount))
 	{
-		g_pCoreShell->GetGameData(GDI_ITEM_TAKEN_WITH, (unsigned int)pObjs, nCount);
+		g_pCoreShell->GetGameData(GDI_ITEM_TAKEN_WITH, (KUPARAM)pObjs, nCount);
 		for (int i = 0; i < nCount; i++)
 		{
 			KUiDraggedObject no;
@@ -323,35 +323,35 @@ void KUiTrade::UpdateOperData()
 // -------------------------------------------------------------------------
 // 功能	: 窗口函数
 // -------------------------------------------------------------------------
-int	KUiTrade::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiTrade::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Cancel)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Cancel)
 			OnCancelTrade();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Ok)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Ok)
 			OnOk(nParam);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Trade)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Trade)
 			OnTrade();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_AddMoney)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_AddMoney)
 		{
 			OnAdjustMoney(true);
 			m_bAdjustingMoney = 1;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ReduceMoney)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ReduceMoney)
 		{
 			OnAdjustMoney(false);
 			m_bAdjustingMoney = 1;
 		}
 		break;
 	case WND_N_BUTTON_HOLD:
-		if (uParam == (unsigned int)(KWndWindow*)&m_AddMoney)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_AddMoney)
 		{			
 			OnAdjustMoney(true);
 			m_bAdjustingMoney = 1;
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ReduceMoney)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ReduceMoney)
 		{
 			OnAdjustMoney(false);
 			m_bAdjustingMoney = 1;
@@ -420,8 +420,8 @@ void KUiTrade::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE
 	}
 	
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 void KUiTrade::OnAdjustMoney(bool bAdd)
@@ -454,7 +454,7 @@ void KUiTrade::OnAdjustedMoney()
 		Obj.Obj.uGenre = CGOG_MONEY;
 		Obj.Obj.uId = m_nSelfTradeMoney;
 		g_pCoreShell->OperationRequest(GOI_TRADE_DESIRE_ITEM,
-			(unsigned int)&Obj, 0);
+			(KUPARAM)&Obj, 0);
 	}
 }
 

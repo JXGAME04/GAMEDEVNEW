@@ -168,7 +168,7 @@ void KUiCityWar::Breathe()
 {
 	TMissionLadderSelfInfo		tmp;
 	memset(tmp.szMissionName,0,sizeof(tmp.szMissionName));
-	g_pCoreShell->GetGameData(GDI_MISSION_SELFDATA, (unsigned int)(&tmp), NULL);
+	g_pCoreShell->GetGameData(GDI_MISSION_SELFDATA, (KUPARAM)(&tmp), NULL);
 	if(tmp.szMissionName[0])
 	{
 		m_table3val[0].SetIntText(tmp.nParam[2]);//player giÕt ®­îc
@@ -178,7 +178,7 @@ void KUiCityWar::Breathe()
 		{
 			TMissionLadderInfo		tmp;
 			memset(tmp.Name,0,sizeof(tmp.Name));
-			g_pCoreShell->GetGameData(GDI_MISSION_RANKDATA, (unsigned int)(&tmp), i);
+			g_pCoreShell->GetGameData(GDI_MISSION_RANKDATA, (KUPARAM)(&tmp), i);
 			if(tmp.Name[0])
 			{
 				tmp.nParam[MISSION_PARAM_AVAILABLE]?m_table4val[i].SetText(tmp.Name):m_table4val[i].Clear();//tªn player
@@ -187,7 +187,7 @@ void KUiCityWar::Breathe()
 	}
 }
 
-int KUiCityWar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiCityWar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	return 0;
 }

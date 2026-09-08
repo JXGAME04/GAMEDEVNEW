@@ -84,7 +84,7 @@ void KUiMsgSel3::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiMsgSel3::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMsgSel3::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
@@ -156,7 +156,7 @@ int KUiMsgSel3::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_InfoScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_InfoScroll)
 			m_InfoText.SetFirstShowLine(nParam);
 		break;
 	default:

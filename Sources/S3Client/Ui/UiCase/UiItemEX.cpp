@@ -102,7 +102,7 @@ void KUiItemEX::UpdateData()
 
 	if (pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount))
 	{
-		g_pCoreShell->GetGameData(GDI_ITEM_EX, (unsigned int)pObjs, nCount);//单线程执行，nCount值不变
+		g_pCoreShell->GetGameData(GDI_ITEM_EX, (KUPARAM)pObjs, nCount);//单线程执行，nCount值不变
 		for (int i = 0; i < nCount; i++)
 			UpdateItem(&pObjs[i], true);
 		free(pObjs);
@@ -163,7 +163,7 @@ void KUiItemEX::LoadScheme(const char* pScheme)
 // -------------------------------------------------------------------------
 // 功能	: 窗口函数
 // -------------------------------------------------------------------------
-int KUiItemEX::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiItemEX::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -178,7 +178,7 @@ int KUiItemEX::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				break;
 	}
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 			CloseWindow();
 		break;
 	default:
@@ -222,6 +222,6 @@ void KUiItemEX::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLAC
 	}
 	
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 }

@@ -180,30 +180,30 @@ void KUiTongGrant::OnConfirm()
 	CloseWindow();
 }
 
-int KUiTongGrant::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTongGrant::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)&m_BtnConfirm)
+		if (uParam == (KUPARAM)&m_BtnConfirm)
 		{
 			OnConfirm();
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_BtnCancel)
+		if (uParam == (KUPARAM)&m_BtnCancel)
 		{
 			CloseWindow();
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_BtnDirectorTotal ||
-			uParam == (unsigned int)&m_BtnManagerTotal ||
-			uParam == (unsigned int)&m_BtnMemberTotal)
+		if (uParam == (KUPARAM)&m_BtnDirectorTotal ||
+			uParam == (KUPARAM)&m_BtnManagerTotal ||
+			uParam == (KUPARAM)&m_BtnMemberTotal)
 		{
 			KWndButton* pBtn = (KWndButton*)uParam;
 			pBtn->CheckButton(!pBtn->IsButtonChecked());
 			return 1;
 		}
-		if (uParam == (unsigned int)&m_BtnTotalMember)
+		if (uParam == (KUPARAM)&m_BtnTotalMember)
 		{
 			m_BtnTotalMember.CheckButton(!m_BtnTotalMember.IsButtonChecked());
 			UpdateDescription();

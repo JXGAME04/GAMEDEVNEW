@@ -252,10 +252,10 @@ static int sAucMultiplier(int nCur)
 //--------------------------------------------------------------------------
 //	Su kien
 //--------------------------------------------------------------------------
-int KUiAffairItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAffairItem::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	// [A6] nut doi loai tien cua che do ky gui
-	if (uMsg == WND_N_BUTTON_CLICK && uParam == (unsigned int)(KWndWindow*)&m_AucCur)
+	if (uMsg == WND_N_BUTTON_CLICK && uParam == (KUPARAM)(KWndWindow*)&m_AucCur)
 	{
 		m_nAucCur = (m_nAucCur == AUCUI_CUR_XU) ? AUCUI_CUR_MONEY : AUCUI_CUR_XU;
 		m_AucCur.SetLabel(sAucCurName(m_nAucCur));
@@ -267,9 +267,9 @@ int KUiAffairItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_OkBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_OkBtn)
 			OnOk();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 			CloseWindow(true);
 		break;
 	case WM_KEYDOWN:
@@ -288,7 +288,7 @@ int KUiAffairItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnItemPickDrop((ITEM_PICKDROP_PLACE*)uParam, (ITEM_PICKDROP_PLACE*)nParam);
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_ContentScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_ContentScroll)
 			m_ContentList.SetFirstShowLine(nParam);
 		break;			
 	default:
@@ -362,7 +362,7 @@ void KUiAffairItem::OnOk()
 		if (dB > 2000000000.0)
 			dB = 2000000000.0;
 		r.nId = (int)dB;
-		g_pCoreShell->OperationRequest(GOI_AUCTION_UI, (unsigned int)AUCUI_OP_SET_PRICE, (int)&r);
+		g_pCoreShell->OperationRequest(GOI_AUCTION_UI, (unsigned int)AUCUI_OP_SET_PRICE, (KNPARAM)&r);
 		m_bAucMode = 0;
 	}
 	if (g_pCoreShell)
@@ -429,7 +429,7 @@ void KUiAffairItem::UpdateData()
 
 	if (pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount))
 	{
-		g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, (unsigned int)pObjs, nCount);
+		g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, (KUPARAM)pObjs, nCount);
 		for (int i = 0; i < nCount; i++)
 			UpdateItem(&pObjs[i], 2);
 		free(pObjs);
@@ -473,6 +473,6 @@ void KUiAffairItem::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_
 	}
 	
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 }

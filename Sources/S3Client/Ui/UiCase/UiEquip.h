@@ -34,7 +34,7 @@ public:
 	void	UpdateData();									//更新数据
 	void	Clear();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	void	OnEquiptChanged(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);//响应界面操作引起装备的改变
 
 private:
@@ -52,8 +52,8 @@ public:
 	void	Clear();
 	void	UpdateRideStatus(int bRiding);	//更新骑马状态
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
-	int		OnClickItem(unsigned int uMsg, unsigned int uParam, int nParam);//响应点击按钮
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
+	int		OnClickItem(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//响应点击按钮
 	void	OnEquiptChanged(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);//响应界面操作引起装备的改变
 private:
 	KWndObjectBox	m_HorseBox;
@@ -76,7 +76,7 @@ private:
 	KUiEquip() {}
 	~KUiEquip() {}
 	void	Initialize();							//初始化	
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 private:
 	static KUiEquip*	m_pSelf;
 private:

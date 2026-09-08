@@ -37,7 +37,7 @@ private:
 	void	UpdateData();						//更新
 
 	void	Hide();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//消息处理
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//消息处理
 	void	OnClickButton(KWndButton* pWnd, bool bDoubleClick);	//响应点击按钮
 	void	OnNew();
 	void	OnDel();

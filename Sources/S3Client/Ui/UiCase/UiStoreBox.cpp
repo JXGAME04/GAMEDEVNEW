@@ -102,7 +102,7 @@ void KUiStoreBox::UpdateData()
 
 	if (pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount))
 	{
-		g_pCoreShell->GetGameData(GDI_ITEM_IN_STORE_BOX, (unsigned int)pObjs, nCount);//单线程执行，nCount值不变
+		g_pCoreShell->GetGameData(GDI_ITEM_IN_STORE_BOX, (KUPARAM)pObjs, nCount);//单线程执行，nCount值不变
 		for (int i = 0; i < nCount; i++)
 			UpdateItem(&pObjs[i], 2);
 		free(pObjs);
@@ -181,7 +181,7 @@ void KUiStoreBox::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiStoreBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiStoreBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -194,7 +194,7 @@ int KUiStoreBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				uPr[0] = pItem->uId;
 				uPr[1] = pos_repositoryroom;
 				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
-								(unsigned int)&uPr, pos_equiproom);
+								(KUPARAM)&uPr, pos_equiproom);
 			}
 		}
 		break;
@@ -207,9 +207,9 @@ int KUiStoreBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		g_pCoreShell->OperationRequest(GOI_PLAYER_ACTION, CN_GH, 0);
 		break;
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 			CloseWindow();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_GetMoneyBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_GetMoneyBtn)
 		{
 			if (g_pCoreShell->GetGameData(GDI_IS_CHEST_UNLOCKED, 0, 0))
 			{
@@ -220,7 +220,7 @@ int KUiStoreBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				g_pCoreShell->OperationRequest(GOI_PLAYER_ACTION, CN_GH, 0);
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnLock)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BtnLock)
 		{
 			if (g_pCoreShell->GetGameData(GDI_IS_CHEST_UNLOCKED, 0, 0))
 			{
@@ -231,7 +231,7 @@ int KUiStoreBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				KUiUnlockBox::OpenWindow();// Ruong dang khoa ~> Mo cua so nhap pass ruong
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ChangePWBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ChangePWBtn)
 		{
 			if (g_pCoreShell->GetGameData(GDI_IS_CHEST_UNLOCKED, 0, 0))
 			{
@@ -242,7 +242,7 @@ int KUiStoreBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				g_pCoreShell->OperationRequest(GOI_PLAYER_ACTION, CN_GH, 0);
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnBox)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BtnBox)
 		{	
 			g_pCoreShell->OperationRequest(GOI_PLAYER_ACTION, EX_BOX, 0);
 		}
@@ -308,6 +308,6 @@ void KUiStoreBox::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PL
 	}
 	
 	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 }

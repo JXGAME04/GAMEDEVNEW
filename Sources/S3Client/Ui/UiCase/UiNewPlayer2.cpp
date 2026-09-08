@@ -152,7 +152,7 @@ void KUiNewPlayer2::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口消息函数
 //--------------------------------------------------------------------------
-int KUiNewPlayer2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiNewPlayer2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)

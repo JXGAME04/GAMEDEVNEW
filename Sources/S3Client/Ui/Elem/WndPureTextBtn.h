@@ -23,7 +23,7 @@ public:
 	virtual int		Init(KIniFile* pIniFile, const char* pSection);	//初始化
 	virtual void	PaintWindow();									//绘制窗口
 	void			SetText(const char* pText, int nLen = -1);		//设置文本文字
-	virtual int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	void			CheckButton(int bChecked);
 	void			Clone(KWndPureTextBtn* pCopy);
 	int				IsButtonChecked();

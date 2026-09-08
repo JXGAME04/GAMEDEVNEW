@@ -18,7 +18,7 @@ public:
 	int		Init();									//初始化
 	void	LoadScheme(const char* pScheme);		//载入界面方案	
 protected:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 };
 
 // -------------------------------------------------------------------------
@@ -29,7 +29,7 @@ public:
 	int		Init();									//初始化
 	void	LoadScheme(const char* pScheme);		//载入界面方案	
 protected:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 };
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -51,7 +51,7 @@ private:
 	KUiManage(){}
 	~KUiManage(){ m_pSelf = 0;}
 	void	Initialize();								//初始化
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	
 private:
 	static KUiManage* m_pSelf;

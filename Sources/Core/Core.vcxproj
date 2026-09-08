@@ -165,6 +165,8 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">
+    <OutDir>.\x64\ClientRelease\</OutDir>
+    <IntDir>.\x64\ClientRelease\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">
@@ -206,6 +208,9 @@
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">
@@ -389,42 +394,43 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">
     <ClCompile>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level2</WarningLevel>
       <AdditionalIncludeDirectories>..\engine\src;..\engine\include;..\Network;..\..\Headers;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;CORE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\ClientRelease\</AssemblerListingLocation>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;CORE_EXPORTS;SWORDONLINE_SHOW_DBUG_INFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\x64\ClientRelease\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\ClientRelease\Core.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\x64\ClientRelease\Core.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>KCore.h</PrecompiledHeaderFile>
-      <ObjectFileName>.\ClientRelease\</ObjectFileName>
-      <ProgramDataBaseFileName>.\ClientRelease\</ProgramDataBaseFileName>
-      <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
+      <ObjectFileName>.\x64\ClientRelease\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\ClientRelease\</ProgramDataBaseFileName>
+      <AdditionalOptions>/we4311 /we4312 /we4302 /source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
       <Command>
-        md ..\..\..\bin\client\release
+        md ..\..\..\bin\client64\release
         md ..\..\lib\release
-        copy ClientRelease\CoreClient.pdb ..\..\..\bin\client\CoreClient.pdb
-        copy ClientRelease\CoreClient.map ..\..\..\bin\client\CoreClient.map
-        copy ClientRelease\CoreClient.dll ..\..\..\bin\client\CoreClient.dll
-        copy ClientRelease\CoreClient.pdb ..\..\..\bin\client\release\CoreClient.pdb
-        copy ClientRelease\CoreClient.map ..\..\..\bin\client\release\CoreClient.map
-        copy ClientRelease\CoreClient.dll ..\..\..\bin\client\release\CoreClient.dll
-        copy ClientRelease\CoreClient.lib ..\..\lib\release\CoreClient.lib
+        copy x64\ClientRelease\CoreClient.pdb ..\..\..\bin\client64\CoreClient.pdb
+        copy x64\ClientRelease\CoreClient.map ..\..\..\bin\client64\CoreClient.map
+        copy x64\ClientRelease\CoreClient.dll ..\..\..\bin\client64\CoreClient.dll
+        copy x64\ClientRelease\CoreClient.pdb ..\..\..\bin\client64\release\CoreClient.pdb
+        copy x64\ClientRelease\CoreClient.map ..\..\..\bin\client64\release\CoreClient.map
+        copy x64\ClientRelease\CoreClient.dll ..\..\..\bin\client64\release\CoreClient.dll
+        copy x64\ClientRelease\CoreClient.lib ..\..\Lib\release64\CoreClient.lib
       </Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <TypeLibraryName>.\ClientRelease\Core.tlb</TypeLibraryName>
+      <TypeLibraryName>.\x64\ClientRelease\Core.tlb</TypeLibraryName>
       <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
@@ -432,17 +438,18 @@
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\ClientRelease\Core.bsc</OutputFile>
+      <OutputFile>.\x64\ClientRelease\Core.bsc</OutputFile>
     </Bscmake>
     <Link>
+      <TargetMachine>MachineX64</TargetMachine>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>ClientRelease\CoreClient.dll</OutputFile>
-      <ImportLibrary>.\ClientRelease\CoreClient.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>../../lib/release/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Shlwapi.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>x64\ClientRelease\CoreClient.dll</OutputFile>
+      <ImportLibrary>.\x64\ClientRelease\CoreClient.lib</ImportLibrary>
+      <AdditionalLibraryDirectories>../../lib/release64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\Lib\lua54\$(Platform)\Lua54Dll.lib;Shlwapi.lib;Winmm.lib;ws2_32.lib;crypt32.lib;..\..\Lib\release64\engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">
@@ -1292,32 +1299,50 @@
   <ItemGroup>
     <Library Include="..\..\Lib\debug64\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\debug\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="..\..\Lib\debug\engine.lib" />
-    <Library Include="..\..\Lib\release64\common.lib" />
+    <Library Include="..\..\Lib\debug\engine.lib" >
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+    </Library>
+    <Library Include="..\..\Lib\release64\common.lib" >
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+    </Library>
     <Library Include="..\..\Lib\release\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\release\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="..\..\Lib\x64\Engine Server Debug\engine.lib" />
-    <Library Include="..\..\Lib\x64\Engine Server Release\engine.lib" />
-    <Library Include="..\..\Lib\lua54\$(Platform)\Lua54Dll.lib" />
-    <Library Include="Src\USBKey\EP1KDL20.LIB" />
-    <Library Include="Src\USBKey\EpsForJoLib.lib" />
+    <Library Include="..\..\Lib\x64\Engine Server Debug\engine.lib" >
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+    </Library>
+    <Library Include="..\..\Lib\x64\Engine Server Release\engine.lib" >
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+    </Library>
+    <Library Include="..\..\Lib\lua54\$(Platform)\Lua54Dll.lib" >
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+    </Library>
+    <Library Include="Src\USBKey\EP1KDL20.LIB" >
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+    </Library>
+    <Library Include="Src\USBKey\EpsForJoLib.lib" >
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+    </Library>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

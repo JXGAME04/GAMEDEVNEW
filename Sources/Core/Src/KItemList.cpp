@@ -829,11 +829,11 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	}
 	if (nPlace != pos_equipback) {
 		if (nPlace != pos_trade1)
-			CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo, 1);
+			CoreDataChanged(GDCNI_OBJECT_CHANGED, (KUPARAM)&pInfo, 1);
 		else
 		{
-			CoreDataChanged(GDCNI_TRADE_DESIRE_ITEM, (DWORD)&pInfo, 1);
-			CoreDataChanged(GDCNI_GAMBLE_DESIRE_ITEM, (DWORD)&pInfo, 1);
+			CoreDataChanged(GDCNI_TRADE_DESIRE_ITEM, (KUPARAM)&pInfo, 1);
+			CoreDataChanged(GDCNI_GAMBLE_DESIRE_ITEM, (KUPARAM)&pInfo, 1);
 		}
 	}
 
@@ -1162,12 +1162,12 @@ BOOL KItemList::Remove(int nGameIdx)
 	}
 	if (m_Items[nIdx].nPlace != pos_trade1)
 	{
-		CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo, 0);
+		CoreDataChanged(GDCNI_OBJECT_CHANGED, (KUPARAM)&pInfo, 0);
 	}
 	else
 	{
-		CoreDataChanged(GDCNI_TRADE_DESIRE_ITEM, (DWORD)&pInfo, 0);
-		CoreDataChanged(GDCNI_GAMBLE_DESIRE_ITEM, (DWORD)&pInfo, 0);
+		CoreDataChanged(GDCNI_TRADE_DESIRE_ITEM, (KUPARAM)&pInfo, 0);
+		CoreDataChanged(GDCNI_GAMBLE_DESIRE_ITEM, (KUPARAM)&pInfo, 0);
 	}
 #endif
 	m_Items[nIdx].nIdx = 0;
@@ -2319,7 +2319,7 @@ BOOL KItemList::EatMecidine(int nIdx)
 			Msg.byPriority = 1;
 			Msg.eType = SMT_PLAYER;
 			strcpy(Msg.szMessage, MSG_NPC_NOT_USE_TOWNPORTAL);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, NULL);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, NULL);
 #endif
 			return FALSE;
 		}
@@ -2723,7 +2723,7 @@ void KItemList::SetMoney(int nMoney1, int nMoney2, int nMoney3)
 	sMoney.Obj.uGenre = CGOG_MONEY;
 	sMoney.Obj.uId = nMoney2;
 	sMoney.eContainer = UOC_STORE_BOX;
-	CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&sMoney, 1);
+	CoreDataChanged(GDCNI_OBJECT_CHANGED, (KUPARAM)&sMoney, 1);
 #endif
 }
 
@@ -2915,7 +2915,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
 				sprintf(sMsg.szMessage, MSG_ITEM_SAME_DETAIL_IN_IMMEDIATE);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 #endif
 				return;
 			}
@@ -4374,10 +4374,10 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			pInfo2.eContainer = UOC_FORGE_ITEM;
 			break;
 		}
-		CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo1, 0);
-		CoreDataChanged(GDCNI_HOLD_OBJECT, (DWORD)&pInfo2, 0);
-		CoreDataChanged(GDCNI_HOLD_OBJECT, (DWORD)&pInfo1, 1);
-		CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo2, 1);
+		CoreDataChanged(GDCNI_OBJECT_CHANGED, (KUPARAM)&pInfo1, 0);
+		CoreDataChanged(GDCNI_HOLD_OBJECT, (KUPARAM)&pInfo2, 0);
+		CoreDataChanged(GDCNI_HOLD_OBJECT, (KUPARAM)&pInfo1, 1);
+		CoreDataChanged(GDCNI_OBJECT_CHANGED, (KUPARAM)&pInfo2, 1);
 	}
 	//
 	if(m_HandSkill != nTempHandSkill)
@@ -4423,8 +4423,8 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			pInfo2.eContainer = UOC_IMMEDIA_ITEM;
 			break;
 		}
-		CoreDataChanged(GDCNI_HOLD_OBJECT, (DWORD)&pInfo2, 0);
-		CoreDataChanged(GDCNI_HOLD_OBJECT, (DWORD)&pInfo1, 1);
+		CoreDataChanged(GDCNI_HOLD_OBJECT, (KUPARAM)&pInfo2, 0);
+		CoreDataChanged(GDCNI_HOLD_OBJECT, (KUPARAM)&pInfo1, 1);
 	}
 #endif
 	if (Npc[Player[m_PlayerIdx].m_nIndex].m_Doing == do_sit)
@@ -4500,8 +4500,8 @@ BOOL	KItemList::AutoMoveItem(ItemPos SrcPos,ItemPos DesPos)
 	sDestInfo.Region.v		= DesPos.nY;
 	sDestInfo.eContainer	= UOC_IMMEDIA_ITEM;
 
-	CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&sSrcInfo, 0);
-	CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&sDestInfo, 1);
+	CoreDataChanged(GDCNI_OBJECT_CHANGED, (KUPARAM)&sSrcInfo, 0);
+	CoreDataChanged(GDCNI_OBJECT_CHANGED, (KUPARAM)&sDestInfo, 1);
 
 	return bMove;
 }
@@ -4527,7 +4527,7 @@ void	KItemList::MenuSetMouseItem()
 		sInfo.Region.h = 0;
 		sInfo.Region.v = 0;
 		sInfo.eContainer = UOC_IN_HAND;
-		CoreDataChanged(GDCNI_HOLD_OBJECT, (DWORD)&sInfo, 0);
+		CoreDataChanged(GDCNI_HOLD_OBJECT, (KUPARAM)&sInfo, 0);
 	}
 }
 #endif

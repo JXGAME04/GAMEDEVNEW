@@ -198,13 +198,13 @@ void KUiUpdataPatch::Breathe()
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KUiUpdataPatch::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiUpdataPatch::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)(KWndWindow*)&m_OkBtn ||
-			uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		if(uParam == (KUPARAM)(KWndWindow*)&m_OkBtn ||
+			uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 		{
 			if (m_bQuit)
 			{
@@ -219,7 +219,7 @@ int KUiUpdataPatch::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_MsgScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_MsgScroll)
 			m_MsgList.SetFirstShowLine(nParam);
 		break;
 	default:

@@ -40,7 +40,7 @@ public:
 private:
 	KUiOptions2();
 	~KUiOptions2() {}
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);	
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);	
 	void	Initialize();					
 	void	LoadScheme(KIniFile* pIni);
 	void	StoreSetting();

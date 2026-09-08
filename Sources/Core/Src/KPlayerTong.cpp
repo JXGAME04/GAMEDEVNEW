@@ -31,7 +31,7 @@
 		sMsg.byPriority = 0;				\
 		sMsg.byParamSize = 0;				\
 		sprintf(sMsg.szMessage, str);		\
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);\
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);\
 	}
 
 //-------------------------------------------------------------------------
@@ -980,7 +980,7 @@ void	KPlayerTong::SetSelfInfo(TONG_SELF_INFO_SYNC *pInfo)
 			sUi.nParam = m_nFigure;
 			sUi.uParam = 0;
 			sUi.szString[0] = 0;
-			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (unsigned int)&sUi, 1);
+			CoreDataChanged(GDCNI_TONG_ACTION_RESULT, (KUPARAM)&sUi, 1);
 
 			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_Camp = camp_free;
 			if (!Player[CLIENT_PLAYER_INDEX].m_cTeam.m_nFlag)
@@ -1552,7 +1552,7 @@ BOOL KPlayerTong::ApplySaveMoney(DWORD nMoney)
 	//	sMsg.byConfirmType = SMCT_NONE;
 	//	sMsg.byPriority = 0;
 	//	sMsg.byParamSize = 0;
-	//	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	//	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	//	return FALSE;
 	//}
 	if (Player[CLIENT_PLAYER_INDEX].m_ItemList.GetMoney(room_equipment) < nMoney)
@@ -1563,7 +1563,7 @@ BOOL KPlayerTong::ApplySaveMoney(DWORD nMoney)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return FALSE;
 	}
 	TONG_APPLY_SAVE_COMMAND	sSave;
@@ -1595,7 +1595,7 @@ BOOL KPlayerTong::ApplyGetMoney(DWORD nMoney)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return FALSE;
 	}
 	
@@ -1607,7 +1607,7 @@ BOOL KPlayerTong::ApplyGetMoney(DWORD nMoney)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return FALSE;
 	}
 	
@@ -1660,7 +1660,7 @@ BOOL KPlayerTong::ApplySndMoney(DWORD nMoney)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return FALSE;
 	}
 
@@ -1672,7 +1672,7 @@ BOOL KPlayerTong::ApplySndMoney(DWORD nMoney)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return FALSE;
 	}
 	
@@ -1684,7 +1684,7 @@ BOOL KPlayerTong::ApplySndMoney(DWORD nMoney)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return FALSE;
 	}
 	
@@ -1710,7 +1710,7 @@ BOOL KPlayerTong::ApplySndMoney(DWORD nMoney)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return FALSE;	
 	}
 	
@@ -1722,7 +1722,7 @@ BOOL KPlayerTong::ApplySndMoney(DWORD nMoney)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return FALSE;	
 	}	*/
 	

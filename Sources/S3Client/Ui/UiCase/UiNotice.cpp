@@ -107,7 +107,7 @@ void KUiNotice::UpdateNotice()
     MsgListBox_LoadContent(m_Notice.GetMessageListBox(), &File, "RuleList");
 }
 
-int KUiNotice::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiNotice::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)

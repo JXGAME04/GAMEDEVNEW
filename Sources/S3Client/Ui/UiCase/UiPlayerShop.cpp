@@ -130,7 +130,7 @@ void KUiPlayerShop::CancelTrade()
 }
 
 //窗口函数
-int	KUiPlayerShop::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiPlayerShop::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
@@ -178,7 +178,7 @@ void KUiPlayerShop::OnBuyItem(KUiDraggedObject* pItem, bool bDoImmed)
 	{
 		KUiItemBuySelInfo	Price = { 0 };
 		if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE,
-			(unsigned int)(&Obj), (int)(&Price)))
+			(KUPARAM)(&Obj), (KNPARAM)(&Price)))
 		{
 			KUiTradeConfirm::OpenWindow(&Obj, &Price, TCA_BUY,m_Dest.uId);
 		}
@@ -186,7 +186,7 @@ void KUiPlayerShop::OnBuyItem(KUiDraggedObject* pItem, bool bDoImmed)
 	else
 	{
 		g_pCoreShell->OperationRequest(GOI_TRADE_PLAYER_BUY,
-			(unsigned int)(&Obj), m_Dest.uId);
+			(KUPARAM)(&Obj), m_Dest.uId);
 	}
 	m_nMark = 0;
 }
@@ -244,7 +244,7 @@ void KUiPlayerShop::UpdateItem()
 
 		if (m_pObjsList = (KUiObjAtContRegion*)malloc(sizeof(KUiObjAtContRegion) * nCount))
 		{
-			g_pCoreShell->GetGameData(GDI_TRADE_PLAYER_ITEM, (unsigned int)m_pObjsList, nCount);//单线程执行，nCount值不变
+			g_pCoreShell->GetGameData(GDI_TRADE_PLAYER_ITEM, (KUPARAM)m_pObjsList, nCount);//单线程执行，nCount值不变
 
 			for (int i = 0; i < nCount; i++)
 			{

@@ -33,7 +33,7 @@ private:
 	void	DeleteMsgInHeap(int nHeapIndex, int nMsgIndex, bool bImmedDel, bool bTobeConfirm);
 	void	ConfirmMsg(KSystemMessage* pMsg, bool bImmedDel);
 	void	MovePopupedMsgToHeap();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 
 	void	OnConfirmOperFinished(unsigned int uParam, int nSelAction);	//响应操作结束，玩家已经做出选择。
 	void	SetPopupMsgDest();

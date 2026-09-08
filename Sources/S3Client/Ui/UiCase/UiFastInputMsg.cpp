@@ -119,7 +119,7 @@ void KUiFastInputMsg::UpdateCurrentChannel()
 		KUiChatChannel	Channel;
 		memset(&Channel, 0, sizeof(KUiChatChannel));
 		g_pCoreShell->GetGameData(GDI_CHAT_CURRENT_SEND_CHANNEL, 
-			(unsigned int)&Channel, 0);
+			(KUPARAM)&Channel, 0);
 		m_pSelf->m_ChannelName.SetText(Channel.cTitle);
 	}
 }
@@ -208,21 +208,21 @@ void KUiFastInputMsg::LoadScheme(class KIniFile* pIni)
 }
 
 //´°¿Úº¯Êý
-int KUiFastInputMsg::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiFastInputMsg::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_SendBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_SendBtn)
 			OnSend();			
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ChannelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ChannelBtn)
 		{
 			if (m_bChannelMenu)
 				CancelMenu();
 			else
 				PopupChannelMenu();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ColorBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ColorBtn)
 		{
 			if (m_bColorMenu)
 				CancelMenu();
@@ -256,7 +256,7 @@ int KUiFastInputMsg::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		else if (uParam == SEL_CHANNEL_MENU && m_pChannelData && nParam >= 0)
 		{
 			g_pCoreShell->OperationRequest(GOI_SET_SEND_CHAT_CHANNEL,
-				(unsigned int)&m_pChannelData[nParam], 0);
+				(KUPARAM)&m_pChannelData[nParam], 0);
 		}
 		CancelMenu();
 		break;
@@ -331,7 +331,7 @@ void KUiFastInputMsg::PopupChannelMenu()
 	if (m_pChannelData == NULL)
 		return;
 	nCount = g_pCoreShell->GetGameData(GDI_CHAT_SEND_CHANNEL_LIST,
-		(unsigned int)m_pChannelData, nCount);
+		(KUPARAM)m_pChannelData, nCount);
 	_ASSERT(nCount > 0);
 	m_pMenuData = (KPopupMenuData*)malloc(MENU_DATA_SIZE(nCount));
 	if (m_pMenuData == NULL)
@@ -395,7 +395,7 @@ void KUiFastInputMsg::OnSend()
 					Param.nMsgLength = TEncodeText(Buffer, Param.nMsgLength);
 					KUiMsgCentrePad::MessageArrival((const char*)Buffer, &Param);
 				}
-				g_pCoreShell->OperationRequest(GOI_SEND_MSG, (unsigned int)Buffer, (int)&Param);
+				g_pCoreShell->OperationRequest(GOI_SEND_MSG, (unsigned int)Buffer, (KNPARAM)&Param);
 			}
 		}
 	}

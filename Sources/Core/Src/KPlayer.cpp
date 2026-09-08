@@ -3256,7 +3256,7 @@ void	KPlayer::ApplyAddTeam(int nNpcIndex)
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 }
 #endif
 
@@ -3645,7 +3645,7 @@ BOOL	KPlayer::ApplyUseItem(int nItemID, ItemPos SrcPos, int nTargetPos)
 		//sMsg.eType = SMT_NORMAL;
 		//sMsg.byParamSize = 0;
 		//sMsg.byPriority = 0;
-		//CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		//CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 		m_ItemList.LockOperation();	
 
@@ -3724,7 +3724,7 @@ void	KPlayer::PickUpObj(int nObjIndex)
 			
 			AUTOLOG("PICKOBJ-NOROOM obj=%d dataid=%d name=%.79s w=%d h=%d", Object[nObjIndex].m_nID, Object[nObjIndex].m_nItemDataID, Object[nObjIndex].m_szName, Object[nObjIndex].m_nItemWidth, Object[nObjIndex].m_nItemHeight);
 			strcpy(sMsg.szMessage, MSG_SHOP_NO_ROOM);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			return;
 		}
 		sPickUp.ProtocolType = c2s_playerpickupitem;
@@ -3779,7 +3779,7 @@ void KPlayer::MoveItem(ItemPos DownPos, ItemPos UpPos)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 			return;
 		}
 	}
@@ -3797,7 +3797,7 @@ void KPlayer::MoveItem(ItemPos DownPos, ItemPos UpPos)
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
 				sprintf(sMsg.szMessage, MSG_ITEM_NOT_STACK_IN_IMMEDIATE);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				return;
 			}*/
 			//
@@ -3810,7 +3810,7 @@ void KPlayer::MoveItem(ItemPos DownPos, ItemPos UpPos)
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
 				sprintf(sMsg.szMessage, MSG_ITEM_NOT_STACK_IN_IMMEDIATE);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				return;					
 			}
 			//
@@ -3823,7 +3823,7 @@ void KPlayer::MoveItem(ItemPos DownPos, ItemPos UpPos)
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
 				sprintf(sMsg.szMessage, MSG_ITEM_SAME_DETAIL_IN_IMMEDIATE);
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				return;
 			}
 		}
@@ -3877,7 +3877,7 @@ if (SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_SubWorldID == 996 || SubWorld[Npc[
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return 0;
 	}
 
@@ -3889,7 +3889,7 @@ if (SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_SubWorldID == 996 || SubWorld[Npc[
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		return 0;
 	}	
 	else
@@ -4018,7 +4018,7 @@ void	KPlayer::TradeApplyStart(int nNpcIdx)
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 }
 #endif
 
@@ -4041,7 +4041,7 @@ void	KPlayer::GambleApplyStart(int nNpcIdx)
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 }
 #endif
 
@@ -4252,7 +4252,7 @@ void	KPlayer::s2cApplyAddTeam(BYTE* pProtocol)
 	strcpy(player.Name, Npc[nNpcNo].Name);
 	player.nIndex = 0;
 	player.uId = pAddTeam->m_dwTarNpcID;
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&player);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&player);
 	
 	return;
 }
@@ -4430,7 +4430,7 @@ void	KPlayer::SetLeftSkill(int nSkillID)
 	KUiGameObject Info;
 	Info.uGenre = CGOG_SKILL_SHORTCUT;
 	Info.uId = m_nLeftSkillID;
-	CoreDataChanged(GDCNI_PLAYER_IMMED_ITEMSKILL, (unsigned int)&Info, -1);
+	CoreDataChanged(GDCNI_PLAYER_IMMED_ITEMSKILL, (KUPARAM)&Info, -1);
 }
 
 void	KPlayer::SetRightSkill(int nSkillID)
@@ -4455,7 +4455,7 @@ void	KPlayer::SetRightSkill(int nSkillID)
 	KUiGameObject Info;
 	Info.uGenre = CGOG_SKILL_SHORTCUT;
 	Info.uId = m_nRightSkillID;
-	CoreDataChanged(GDCNI_PLAYER_IMMED_ITEMSKILL, (unsigned int)&Info, -2);
+	CoreDataChanged(GDCNI_PLAYER_IMMED_ITEMSKILL, (KUPARAM)&Info, -2);
 }
 
 void KPlayer::UpdateWeaponSkill()
@@ -7818,7 +7818,7 @@ void	KPlayer::ChatFriendOnLine(DWORD dwID, int nFriendIdx)
 				sPlayer.uId = dwID;
 				sPlayer.nIndex = nFriendIdx;
 				sPlayer.nData = CHAT_S_ONLINE;
-				CoreDataChanged(GDCNI_CHAT_FRIEND_STATUS, (unsigned int)&sPlayer, i);
+				CoreDataChanged(GDCNI_CHAT_FRIEND_STATUS, (KUPARAM)&sPlayer, i);
 				
 				KSystemMessage	sMsg;
 				sprintf(sMsg.szMessage, MSG_CHAT_FRIEND_ONLINE, pFriend->m_szName);
@@ -7826,7 +7826,7 @@ void	KPlayer::ChatFriendOnLine(DWORD dwID, int nFriendIdx)
 				sMsg.byConfirmType = SMCT_NONE;
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 #endif
 				return;
 			}
@@ -8012,9 +8012,9 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 						{
 							// [TIN SU 25/08] thoai co tag <link=image...> -> mo hop CO ANH nhu Linux
 							if (bTagNpcImage)
-								CoreDataChanged(GDCNI_QUESTION_CHOOSE,(unsigned int) pQuest, (int) pImage);
+								CoreDataChanged(GDCNI_QUESTION_CHOOSE,(KUPARAM)pQuest, (KNPARAM)pImage);
 							else
-								CoreDataChanged(GDCNI_QUESTION_CHOOSE,(unsigned int) pQuest, 0);
+								CoreDataChanged(GDCNI_QUESTION_CHOOSE,(KUPARAM)pQuest, 0);
 						}
 						break;
 					case 1:
@@ -8049,14 +8049,14 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 									}
 								}
 							}
-							CoreDataChanged(GDCNI_QUESTION_CHOOSE,(unsigned int) pQuest, (int) pImage);
+							CoreDataChanged(GDCNI_QUESTION_CHOOSE,(KUPARAM)pQuest, (KNPARAM)pImage);
 							free(pImage); 
 							pImage = NULL; 
 						}
 						break;
 					case 2:
-						//CoreDataChanged(GDCNI_QUESTION_CHOOSE_3,(unsigned int) pQuest, m_ImageId);
-						CoreDataChanged(GDCNI_QUESTION_CHOOSE_4,(unsigned int) pQuest, m_ImageId);
+						//CoreDataChanged(GDCNI_QUESTION_CHOOSE_3,(KUPARAM)pQuest, m_ImageId);
+						CoreDataChanged(GDCNI_QUESTION_CHOOSE_4,(KUPARAM)pQuest, m_ImageId);
 						break;
 					}
 
@@ -8162,7 +8162,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 						pBackupAnswer = NULL;
 					}
 					g_bUISpeakActiveWithServer = pScriptAction->m_bParam2;
-					CoreDataChanged(GDCNI_SPEAK_WORDS,(unsigned int)pSpeakList, nCount);
+					CoreDataChanged(GDCNI_SPEAK_WORDS,(KUPARAM)pSpeakList, nCount);
 					if (pSpeakList)
 					{
 						delete pSpeakList;	
@@ -8229,7 +8229,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 					
 					g_bUISelIntelActiveWithServer = pScriptAction->m_bParam2;
 					g_bUISelLastSelCount = pQuest->AnswerCount;
-					CoreDataChanged(GDCNI_QUESTION_CHOOSE_4,(unsigned int) pQuest, 0);
+					CoreDataChanged(GDCNI_QUESTION_CHOOSE_4,(KUPARAM)pQuest, 0);
 					free(pQuest);
 					pQuest = NULL;
 				}
@@ -8256,7 +8256,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 					//TReplaceText(Record.szContent, SEXNAME_KEY, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nSex? "C« n­¬ng":"ThiÕu hiÖp");	
 					
 					Record.nContentLen = TEncodeText(Record.sContent, strlen(Record.sContent));
-					CoreDataChanged(GDCNI_MISSION_RECORD, (unsigned long)&Record, 0);
+					CoreDataChanged(GDCNI_MISSION_RECORD, (KUPARAM)&Record, 0);
 				}
 				break;
 			case UI_MSGINFO:
@@ -8281,7 +8281,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 					sMsg.byParamSize = 0;
 					g_StrCpyLen(sMsg.szMessage, strContent, sizeof(sMsg.szMessage));
 					
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 					
 				}
 				break;
@@ -8314,7 +8314,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							++g_sDTCap.uNewsSeq;
 
 							News.nMsgLen = TEncodeText(News.sMsg, strlen(News.sMsg));
-							CoreDataChanged(GDCNI_NEWS_MESSAGE, (unsigned int)&News, 0);
+							CoreDataChanged(GDCNI_NEWS_MESSAGE, (KUPARAM)&News, 0);
 						}
 						break;
 
@@ -8345,7 +8345,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							memset(&systime, 0, sizeof(SYSTEMTIME));
 							systime.wSecond = *(int *)((pScriptAction->m_pContent + pScriptAction->m_nBufferLen - sizeof(int)));
 							
-							CoreDataChanged(GDCNI_NEWS_MESSAGE, (unsigned int)&News, (unsigned int)&systime);
+							CoreDataChanged(GDCNI_NEWS_MESSAGE, (KUPARAM)&News, (KUPARAM)&systime);
 							
 						}
 						break;
@@ -8374,7 +8374,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							News.nMsgLen = TEncodeText(News.sMsg, strlen(News.sMsg));
 							SYSTEMTIME systime;
 							systime = *(SYSTEMTIME*)((pScriptAction->m_pContent + pScriptAction->m_nBufferLen - sizeof(SYSTEMTIME)));
-							CoreDataChanged(GDCNI_NEWS_MESSAGE, (unsigned int)&News, (unsigned int)&systime);
+							CoreDataChanged(GDCNI_NEWS_MESSAGE, (KUPARAM)&News, (KUPARAM)&systime);
 							
 						}
 						break;
@@ -8410,7 +8410,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							++g_sDTCap.uNewsSeq;
 
 							News.nMsgLen = TEncodeText(News.sMsg, strlen(News.sMsg));
-							CoreDataChanged(GDCNI_NEWS_MESSAGE_1, (unsigned int)&News, 0);
+							CoreDataChanged(GDCNI_NEWS_MESSAGE_1, (KUPARAM)&News, 0);
 						}
 						break;
 
@@ -8441,7 +8441,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							memset(&systime, 0, sizeof(SYSTEMTIME));
 							systime.wSecond = *(int *)((pScriptAction->m_pContent + pScriptAction->m_nBufferLen - sizeof(int)));
 							
-							CoreDataChanged(GDCNI_NEWS_MESSAGE_1, (unsigned int)&News, (unsigned int)&systime);
+							CoreDataChanged(GDCNI_NEWS_MESSAGE_1, (KUPARAM)&News, (KUPARAM)&systime);
 							
 						}
 						break;
@@ -8469,7 +8469,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							News.nMsgLen = TEncodeText(News.sMsg, strlen(News.sMsg));
 							SYSTEMTIME systime;
 							systime = *(SYSTEMTIME*)((pScriptAction->m_pContent + pScriptAction->m_nBufferLen - sizeof(SYSTEMTIME)));
-							CoreDataChanged(GDCNI_NEWS_MESSAGE_1, (unsigned int)&News, (unsigned int)&systime);
+							CoreDataChanged(GDCNI_NEWS_MESSAGE_1, (KUPARAM)&News, (KUPARAM)&systime);
 						}
 						break;
 					}
@@ -8660,7 +8660,7 @@ void	KPlayer::s2cTradeChangeState(BYTE* pMsg)
 			sTradePlayer.nIndex = 0;
 			sTradePlayer.uId = 0;
 			sTradePlayer.nData = 0;
-			CoreDataChanged(GDCNI_TRADE_START, (unsigned int)(&sTradePlayer), 0);
+			CoreDataChanged(GDCNI_TRADE_START, (KUPARAM)(&sTradePlayer), 0);
 			
 			if (Npc[m_nIndex].m_Doing == do_sit)
 			{
@@ -8699,7 +8699,7 @@ void	KPlayer::s2cTradeChangeState(BYTE* pMsg)
 			sTradePlayer.nIndex = 0;
 			sTradePlayer.uId = 0;
 			sTradePlayer.nData = 0;
-			CoreDataChanged(GDCNI_TRADE_START, (unsigned int)(&sTradePlayer), 0);
+			CoreDataChanged(GDCNI_TRADE_START, (KUPARAM)(&sTradePlayer), 0);
 			
 			if (Npc[m_nIndex].m_Doing == do_sit)
 			{
@@ -8742,7 +8742,7 @@ void	KPlayer::s2cTradeChangeState(BYTE* pMsg)
 			sTradePlayer.nIndex = 0;
 			sTradePlayer.uId = 0;
 			sTradePlayer.nData = 0;
-			CoreDataChanged(GDCNI_TRADE_START, (unsigned int)(&sTradePlayer), 0);
+			CoreDataChanged(GDCNI_TRADE_START, (KUPARAM)(&sTradePlayer), 0);
 			
 			if (Npc[m_nIndex].m_Doing == do_sit)
 			{
@@ -8790,7 +8790,7 @@ void	KPlayer::s2cGambleChangeState(BYTE* pMsg)
 			sGamblePlayer.nIndex = 0;
 			sGamblePlayer.uId = 0;
 			sGamblePlayer.nData = 0;
-			CoreDataChanged(GDCNI_GAMBLE_START, (unsigned int)(&sGamblePlayer), 0);
+			CoreDataChanged(GDCNI_GAMBLE_START, (KUPARAM)(&sGamblePlayer), 0);
 
 			if (Npc[m_nIndex].m_Doing == do_sit)
 			{
@@ -8829,7 +8829,7 @@ void	KPlayer::s2cGambleChangeState(BYTE* pMsg)
 			sGamblePlayer.nIndex = 0;
 			sGamblePlayer.uId = 0;
 			sGamblePlayer.nData = 0;
-			CoreDataChanged(GDCNI_GAMBLE_START, (unsigned int)(&sGamblePlayer), 0);
+			CoreDataChanged(GDCNI_GAMBLE_START, (KUPARAM)(&sGamblePlayer), 0);
 
 			if (Npc[m_nIndex].m_Doing == do_sit)
 			{
@@ -8872,7 +8872,7 @@ void	KPlayer::s2cGambleChangeState(BYTE* pMsg)
 			sGamblePlayer.nIndex = 0;
 			sGamblePlayer.uId = 0;
 			sGamblePlayer.nData = 0;
-			CoreDataChanged(GDCNI_GAMBLE_START, (unsigned int)(&sGamblePlayer), 0);
+			CoreDataChanged(GDCNI_GAMBLE_START, (KUPARAM)(&sGamblePlayer), 0);
 
 			if (Npc[m_nIndex].m_Doing == do_sit)
 			{
@@ -8897,7 +8897,7 @@ void	KPlayer::s2cLevelUp(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 	
 	m_nExp = 0;
@@ -8916,7 +8916,7 @@ void	KPlayer::s2cLevelUp(BYTE* pMsg)
 		Msg.byConfirmType = SMCT_UI_ATTRIBUTE;
 		Msg.byPriority = 3;
 		Msg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, NULL);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, NULL);
 	}
 	m_nAttributePoint = pLevel->m_nAttributePoint;
 	
@@ -8929,7 +8929,7 @@ void	KPlayer::s2cLevelUp(BYTE* pMsg)
 		Msg.byConfirmType = SMCT_UI_SKILLS;
 		Msg.byPriority = 3;
 		Msg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, NULL);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, NULL);
 	}
 	m_nSkillPoint = pLevel->m_nSkillPoint;
 	
@@ -9002,7 +9002,7 @@ void	KPlayer::s2cLevelUp(BYTE* pMsg)
 	Msg.byPriority = 1;
 	Msg.eType = SMT_PLAYER;
 	sprintf(Msg.szMessage, MSG_LEVEL_UP, Npc[m_nIndex].m_Level);
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, NULL);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&Msg, NULL);
 	
 	Npc[this->m_nIndex].SetInstantSpr(enumINSTANT_STATE_LEVELUP);
 	CoreDataChanged(GDCNI_PLAYER_RT_ATTRIBUTE, 0, 0);
@@ -9162,7 +9162,7 @@ void	KPlayer::s2cSetExp(double nExp)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 	else if (nExp < m_nExp)
 	{
@@ -9172,7 +9172,7 @@ void	KPlayer::s2cSetExp(double nExp)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 	}
 	
 	this->m_nExp = nExp;
@@ -9213,7 +9213,7 @@ void	KPlayer::s2cSyncMoney(BYTE* pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, MSG_EARN_MONEY, pMoney->m_nMoney1 - nMoney1);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		}
 		m_ItemList.SetMoney(pMoney->m_nMoney1, pMoney->m_nMoney2, pMoney->m_nMoney3);
 	}
@@ -9244,7 +9244,7 @@ void	KPlayer::s2cTradeApplyStart(BYTE* pMsg)
 	sMsg.byConfirmType = SMCT_UI_TRADE;
 	sMsg.byPriority = 3;
 	sMsg.byParamSize = sizeof(KUiPlayerItem);
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&sPlayer);
 }
 #endif
 
@@ -9272,7 +9272,7 @@ void	KPlayer::s2cGambleApplyStart(BYTE* pMsg)
 	sMsg.byConfirmType = SMCT_UI_GAMBLE;
 	sMsg.byPriority = 3;
 	sMsg.byParamSize = sizeof(KUiPlayerItem);
-	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, (KNPARAM)&sPlayer);
 }
 #endif
 
@@ -9286,7 +9286,7 @@ void	KPlayer::s2cTradeMoneySync(BYTE* pMsg)
 	KUiObjAtRegion	sMoney;
 	sMoney.Obj.uGenre = CGOG_MONEY;
 	sMoney.Obj.uId = pMoney->m_nMoney;
-	CoreDataChanged(GDCNI_TRADE_DESIRE_ITEM, (unsigned int)&sMoney, 0);
+	CoreDataChanged(GDCNI_TRADE_DESIRE_ITEM, (KUPARAM)&sMoney, 0);
 }
 #endif
 
@@ -9300,7 +9300,7 @@ void	KPlayer::s2cGambleMoneySync(BYTE* pMsg)
 	KUiObjAtRegion	sMoney;
 	sMoney.Obj.uGenre = CGOG_MONEY;
 	sMoney.Obj.uId = pMoney->m_nMoney;
-	CoreDataChanged(GDCNI_GAMBLE_DESIRE_ITEM, (unsigned int)&sMoney, 0);
+	CoreDataChanged(GDCNI_GAMBLE_DESIRE_ITEM, (KUPARAM)&sMoney, 0);
 }
 #endif
 
@@ -9317,7 +9317,7 @@ void	KPlayer::s2cTradeDecision(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		
 		//m_ItemList.ClearRoom(room_trade);
 		m_ItemList.RemoveAllInOneRoom(room_trade1);
@@ -9341,7 +9341,7 @@ void	KPlayer::s2cTradeDecision(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		
 		m_ItemList.RecoverTrade();
 		m_ItemList.SetMoney(m_cTrade.m_nBackEquipMoney, m_cTrade.m_nBackRepositoryMoney, 0);
@@ -9391,7 +9391,7 @@ void	KPlayer::s2cGambleDecision(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 		CoreDataChanged(GDCNI_GAMBLE_RESULT, 0, pSync->m_btOtherChoice+1 );
 
 		//m_ItemList.RemoveAllInOneRoom(room_trade);
@@ -9418,7 +9418,7 @@ void	KPlayer::s2cGambleDecision(BYTE* pMsg)
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
 		sMsg.byParamSize = 0;
-		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 		m_ItemList.RecoverTrade();
 		m_ItemList.SetMoney(m_cTrade.m_nBackEquipMoney, m_cTrade.m_nBackRepositoryMoney, 0);
@@ -10758,8 +10758,8 @@ void	KPlayer::SwitchEquipSet(int setnum)
 		pInfo.Region.v = i;
 		pInfo.eContainer = UOC_EQUIPTMENT;
 
-		CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo, 0);
-		CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo, 1);
+		CoreDataChanged(GDCNI_OBJECT_CHANGED, (KUPARAM)&pInfo, 0);
+		CoreDataChanged(GDCNI_OBJECT_CHANGED, (KUPARAM)&pInfo, 1);
 	}
 	CoreDataChanged(GDCNI_PLAYER_RT_ATTRIBUTE, 0, 0);
 
@@ -11594,7 +11594,7 @@ void KPlayer::PlayerAuto()
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
 					sprintf(sMsg.szMessage, "Kh«ng thÓ theo sau nh©n vËt tr¹ng th¸i PK phi chiÕn ®Êu");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);					
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);					
 				}
 				else
 				{
@@ -12565,7 +12565,7 @@ void KPlayer::PlayerFollowActack(int i)
 				//sMsg.byConfirmType = SMCT_NONE;
 				//sMsg.byPriority = 0;
 				//sMsg.byParamSize = 0;
-				//CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				//CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 				AUTOLOG("AUTO-BLACKLIST npc=%d slot=%d cntlag=%d timelag=%d lifelag=%d life=%d dist=%d t=%u", i, j, m_Count_Acttack_Lag, m_nTimeRunLag, m_nLifeLag, Npc[i].m_CurrentLife, NpcSet.GetDistance(m_nIndex, i), GetTickCount());
 				m_ArrayNpcLag[j] = i;
 				m_ArrayTimeNpcLag[j] = GetTickCount();
@@ -12659,7 +12659,7 @@ void KPlayer::PlayerFollowActack(int i)
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
 					sprintf(sMsg.szMessage, "Kh«ng thÓ theo sau nh©n vËt tr¹ng th¸i PK phi chiÕn ®Êu");
-					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);					
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);					
 				}
 				else
 				{
@@ -12721,7 +12721,7 @@ void KPlayer::PlayerFollowActack(int i)
 				sMsg.byPriority = 0;
 				sMsg.byParamSize = 0;
 				sprintf(sMsg.szMessage, "Kh«ng thÓ theo sau nh©n vËt tr¹ng th¸i PK phi chiÕn ®Êu");
-				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);					
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);					
 			}
 			else
 			{
@@ -13100,7 +13100,7 @@ BOOL KPlayer::ReturnFromPortal()
 					if (m_bRepairEquip)
 					{
 						strcpy(sMsg.szMessage, "->.Rót tiÒn, söa trang bÞ háng");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 						if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipmentMoney() < 200000)
 							Player[CLIENT_PLAYER_INDEX].m_ItemList.ExchangeMoney(room_repository,room_equipment, 200000);
@@ -13118,7 +13118,7 @@ BOOL KPlayer::ReturnFromPortal()
 					if(m_bBuyEquip)
 					{
 						strcpy(sMsg.szMessage, "->.Rót tiÒn, mua m¸u, mana, thæ ®Þa phï.");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 
 						if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipmentMoney() < 200000)
 							Player[CLIENT_PLAYER_INDEX].m_ItemList.ExchangeMoney(room_repository,room_equipment, 200000);
@@ -13137,7 +13137,7 @@ BOOL KPlayer::ReturnFromPortal()
 					if(m_Auto_BanItem)//tu dong ban vat pham
 					{
 						strcpy(sMsg.szMessage, "->.B¸n vËt phÈm kh«ng cã trong läc thuéc tÝnh");
-						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+						CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (KUPARAM)&sMsg, 0);
 						AutoSellItem();
 					}
 					

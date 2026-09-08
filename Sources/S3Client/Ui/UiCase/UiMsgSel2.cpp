@@ -123,7 +123,7 @@ void KUiMsgSel2::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口消息函数
 //--------------------------------------------------------------------------
-int KUiMsgSel2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMsgSel2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)

@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-extern int CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam);
+extern int CoreDataChanged(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam);
 
 #define UICHIENLENH_SCRIPT	"\\script\\ui\\uichienlenh.lua"
 
@@ -103,7 +103,7 @@ int LuaCLUi_SetInfo(Lua_State* L)
 	inf.nCloseTime	= sArgInt(L, 8);
 	inf.nDangMo		= sArgInt(L, 9);
 	inf.nVipPriceXu	= sArgInt(L, 10);
-	sNotify(CLUI_CMD_SET_INFO, (int)&inf);
+	sNotify(CLUI_CMD_SET_INFO, (KNPARAM)&inf);
 	return 0;
 }
 
@@ -125,7 +125,7 @@ int LuaCLUi_SetAward(Lua_State* L)
 		a.Item.m_nID = 1;	// co bieu tuong
 		a.Item.m_bStack = (a.nCount > 0 && a.nCount <= 255) ? (unsigned char)a.nCount : 1;
 	}
-	sNotify(CLUI_CMD_SET_AWARD, (int)&a);
+	sNotify(CLUI_CMD_SET_AWARD, (KNPARAM)&a);
 	return 0;
 }
 
@@ -142,7 +142,7 @@ int LuaCLUi_SetMission(Lua_State* L)
 	m.nState	= sArgInt(L, 6);
 	sCopyStr(m.szTitle, sizeof(m.szTitle), sArgStr(L, 7));
 	sCopyStr(m.szTips, sizeof(m.szTips), sArgStr(L, 8));
-	sNotify(CLUI_CMD_SET_MISSION, (int)&m);
+	sNotify(CLUI_CMD_SET_MISSION, (KNPARAM)&m);
 	return 0;
 }
 
@@ -155,12 +155,12 @@ int LuaCLUi_Refresh(Lua_State* L)
 int LuaCLUi_Msg(Lua_State* L)
 {
 	const char* sz = sArgStr(L, 1);
-	sNotify(CLUI_CMD_MSG, (int)sz);
+	sNotify(CLUI_CMD_MSG, (KNPARAM)sz);
 	return 0;
 }
 
 // ---------------------------------------------------------------- UI -> Lua
-void ChienLenhUi_OnRequest(unsigned int uParam, int nParam)
+void ChienLenhUi_OnRequest(KUPARAM uParam, KNPARAM nParam)
 {
 	int nOp = (int)uParam;
 	const KCLUiReq* pReq = (const KCLUiReq*)nParam;

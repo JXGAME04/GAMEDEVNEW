@@ -76,7 +76,7 @@ public:
 	static void Cancel();
 	static void	PaintMenu();
 	static void	LoadTheme(const char* pScheme);		//载入界面方案
-	static int	HandleInput(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	static int	HandleInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	static void OnWndDelete(KWndWindow* pWnd);
 	static void	InitMenuData(KPopupMenuData* pMenu, int nNumItem);
 	static KPopupMenuData*	GetMenuData() {	return m_pMenu;}

@@ -42,7 +42,7 @@ public:
 	static void   ArrangeData(                      //为任命案的书写安排数据
 		                      int nType, char* szTarName, char* szTarAgName, int nCurrentFigure, int nCurrentPosition = 0);
 
-	virtual int   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int   WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 private:
 	static        KUiTongAssignBox* ms_pSelf;

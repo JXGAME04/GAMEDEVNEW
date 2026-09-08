@@ -23,7 +23,7 @@ private:
 	void	Initialize();								
 	void	Show();
 	void	Hide();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnCancel();
 	void	OnOk();
 //	void	Breathe();	

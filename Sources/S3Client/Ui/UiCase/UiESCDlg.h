@@ -22,7 +22,7 @@ private:
 	void	Hide();
 	int		Initialize();						
 	void	LoadScheme(const char* pScheme);
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnClickButton(KWndWindow* pWnd);
 	int		OnKeyDown(unsigned int uKey);
 	KWndButton*	GetActiveBtn();

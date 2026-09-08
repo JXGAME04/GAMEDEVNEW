@@ -122,7 +122,7 @@ void KUiTongManager::ArrangeComposition(char* pszPlayerName)
 	    else
 	    {
     		KUiPlayerBaseInfo Me;
-		    g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (unsigned int)&Me, 0);
+		    g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KUPARAM)&Me, 0);
 			if(g_pCoreShell->FindSpecialNPC(Me.Name, &Player, nKind))
 				m_nIndex = Player.nIndex;
 	    }
@@ -131,7 +131,7 @@ void KUiTongManager::ArrangeComposition(char* pszPlayerName)
 			strcpy(m_szPlayerName, Player.Name);
 	        ms_pSelf->UpdateBtnTheme(0, TRUE);
 
-	        g_pCoreShell->TongOperation(GTOI_REQUEST_PLAYER_TONG, (unsigned int)&Player, (int)TRUE);
+	        g_pCoreShell->TongOperation(GTOI_REQUEST_PLAYER_TONG, (KUPARAM)&Player, (int)TRUE);
 		}
 		else
 		{
@@ -406,12 +406,12 @@ void KUiTongManager::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiTongManager::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTongManager::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_LIST_ITEM_SEL:
-		if(uParam == (unsigned int)&m_List)
+		if(uParam == (KUPARAM)&m_List)
 		{
 			if(nParam == -1)
 			{
@@ -435,11 +435,11 @@ int KUiTongManager::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		break;
 
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_BtnDismiss)
+		if(uParam == (KUPARAM)&m_BtnDismiss)
 		{
 			PopupConfirmWindow(m_szDismiss, RESULT_T_DISMISS);
 		}
-		else if(uParam == (unsigned int)&m_BtnAssign)
+		else if(uParam == (KUPARAM)&m_BtnAssign)
 		{
 			KPilgarlicItem *pNode = GetSelectedPlayer();
 
@@ -447,94 +447,94 @@ int KUiTongManager::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			KUiTongAssignBox::LinkToMainWindow(this);
 			KUiTongAssignBox::ArrangeData(m_nRelation, pNode->Name, pNode->szAgname, m_nCurrentCheckBox, m_nIndex);
 		}
-		else if(uParam == (unsigned int)&m_BtnDemise)
+		else if(uParam == (KUPARAM)&m_BtnDemise)
 		{
 			PopupConfirmWindow(m_szDemise, RESULT_T_DEMISE);
 		}
-		else if(uParam == (unsigned int)&m_BtnLeave)
+		else if(uParam == (KUPARAM)&m_BtnLeave)
 		{
 			PopupConfirmWindow(m_szLeave, RESULT_T_LEAVE);
 		}
-		else if(uParam == (unsigned int)&m_BtnRecruit)
+		else if(uParam == (KUPARAM)&m_BtnRecruit)
 		{
 			g_pCoreShell->TongOperation(GTOI_TONG_RECRUIT, m_BtnRecruit.IsButtonChecked(), 0);
 		}
-		else if(uParam == (unsigned int)&m_BtnApply)
+		else if(uParam == (KUPARAM)&m_BtnApply)
 		{
 			OnAction(TONG_ACTION_APPLY);
 		}
-		else if(uParam == (unsigned int)&m_BtnCancel || uParam == (unsigned int)&m_BtnClose)
+		else if(uParam == (KUPARAM)&m_BtnCancel || uParam == (KUPARAM)&m_BtnClose)
 		{
 			CloseWindow();
 		}
-		else if(uParam == (unsigned int)&m_BtnRefresh)
+		else if(uParam == (KUPARAM)&m_BtnRefresh)
 		{
 			OnRefresh();
 		}
-		else if (uParam == (unsigned int)&m_OnlineBtn)
+		else if (uParam == (KUPARAM)&m_OnlineBtn)
 		{
 			OnCheckOnline();					
 		}				
-		else if(uParam == (unsigned int)&m_BtnElderList)
+		else if(uParam == (KUPARAM)&m_BtnElderList)
 		{
 			UpdateListCheckButton(enumTONG_FIGURE_DIRECTOR);
 			if(m_ElderData.GetCount() == 0)
 			    LoadData(enumTONG_FIGURE_DIRECTOR);
 		}
-		else if(uParam == (unsigned int)&m_BtnCaptainList)
+		else if(uParam == (KUPARAM)&m_BtnCaptainList)
 		{
 			UpdateListCheckButton(enumTONG_FIGURE_MANAGER);
 			if(m_CaptainData.GetCount() == 0)
 			    LoadData(enumTONG_FIGURE_MANAGER);
 		}
-		else if(uParam == (unsigned int)&m_BtnMemberList)
+		else if(uParam == (KUPARAM)&m_BtnMemberList)
 		{
 			UpdateListCheckButton(enumTONG_FIGURE_MEMBER);
 			if(m_MemberData.GetCount() == 0)
 			    LoadData(enumTONG_FIGURE_MEMBER);
 		}
-		else if(uParam == (unsigned int)&m_BtnLeagueList)//lien minh
+		else if(uParam == (KUPARAM)&m_BtnLeagueList)//lien minh
 		{
 			UpdateListCheckButton(enumTONG_FIGURE_LEAGUE);
 			g_pCoreShell->OperationRequest(GOI_PLAYER_ACTION, HT_CN, 0);
 		}
-		else if (uParam == (unsigned int)&m_DistriMoneyBtn)
+		else if (uParam == (KUPARAM)&m_DistriMoneyBtn)
 		{
 			KUiGetMoney::OpenWindow(0,1000000000, this, RESULT_T_SND_MONEY, NULL);
 		}
-		else if (uParam == (unsigned int)&m_GetMoneyBtn)
+		else if (uParam == (KUPARAM)&m_GetMoneyBtn)
 		{
 			KUiGetMoney::OpenWindow(0,1000000000, this, RESULT_T_GET_MONEY, NULL);
 		}
-		else if (uParam == (unsigned int)&m_DonateMoneyBtn)
+		else if (uParam == (KUPARAM)&m_DonateMoneyBtn)
 		{
 			KUiGetMoney::OpenWindow(0,1000000000, this, RESULT_T_SAVE_MONEY, NULL);
 		}
-		else if (uParam == (unsigned int)&m_ChangeTitle)
+		else if (uParam == (KUPARAM)&m_ChangeTitle)
 		{
 			KUiTongChangeTitle::OpenWindow("", "", (KWndWindow*)this, ISP_NEW_TITLE, 4, 16);			
 		}							
-		else if (uParam == (unsigned int)&m_ChangeFemaleTitle)
+		else if (uParam == (KUPARAM)&m_ChangeFemaleTitle)
 		{
 			KUiTongChangeTitle::OpenWindow("", "", (KWndWindow*)this, ISP_NEW_FEMALETITLE, 4, 16);	
 		}							
-		else if (uParam == (unsigned int)&m_ChangeMaleTitle)
+		else if (uParam == (KUPARAM)&m_ChangeMaleTitle)
 		{
 			KUiTongChangeTitle::OpenWindow("", "", (KWndWindow*)this, ISP_NEW_MALETITLE, 4, 16);				
 		}							
-		else if (uParam == (unsigned int)&m_FaceBtn)
+		else if (uParam == (KUPARAM)&m_FaceBtn)
 		{
 			char TargetString[128];
 			sprintf(TargetString, "Muèn ®æi thµnh Ch¸nh Ph¸i cña bang héi cÇn %d l­îng tõ tr­¬ng môc ng©n khè ®Ó ®æi ", 100000);
 			UIMessageBox(TargetString, this, "X¸c nhËn ", "Hñy bá ", ISP_CHANGE_CAMP_JUSTIE);		
 		}							
-		else if (uParam == (unsigned int)&m_HealBtn)
+		else if (uParam == (KUPARAM)&m_HealBtn)
 		{
 			char TargetString[128];
 			sprintf(TargetString, "Muèn ®æi thµnh Tµ Ph¸i cña bang héi cÇn %d l­îng tõ tr­¬ng môc ng©n khè ®Ó ®æi ",100000);
 			UIMessageBox(TargetString, this, "X¸c nhËn ", "Hñy bá ", ISP_CHANGE_CAMP_EVIL);
 		}							
-		else if (uParam == (unsigned int)&m_CenterBtn)
+		else if (uParam == (KUPARAM)&m_CenterBtn)
 		{
 			char TargetString[128];
 			sprintf(TargetString, "Muèn ®æi thµnh Trung LËp cña bang héi cÇn %d l­îng tõ tr­¬ng môc ng©n khè ®Ó ®æi ",100000);
@@ -646,7 +646,7 @@ int KUiTongManager::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		break;
 
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if(uParam == (unsigned int)&m_ListScroll)
+		if(uParam == (KUPARAM)&m_ListScroll)
 		{
     		m_List.SetTopItemIndex(nParam);
 	//		m_List2.SetTopItemIndex(nParam);
@@ -791,7 +791,7 @@ void KUiTongManager::UpdateBtnTheme(int nType, BOOL IsDissable)
 		KUiPlayerItem Player;
 		memset(&Player, 0, sizeof(KUiPlayerItem));
 		strcpy(Player.Name, m_szPlayerName);
-		//int res = g_pCoreShell->TongOperation(GTOI_TONG_GET_RECRUIT, (unsigned int)&Player, 0);
+		//int res = g_pCoreShell->TongOperation(GTOI_TONG_GET_RECRUIT, (KUPARAM)&Player, 0);
 		//if(res)
 		//{
 			m_BtnApply.Show();
@@ -807,7 +807,7 @@ void KUiTongManager::UpdateBtnTheme(int nType, BOOL IsDissable)
 		KUiPlayerItem Player;
 		memset(&Player, 0, sizeof(KUiPlayerItem));
 		strcpy(Player.Name, m_szPlayerName);
-		m_BtnRecruit.CheckButton(g_pCoreShell->TongOperation(GTOI_TONG_GET_RECRUIT, (unsigned int)&Player, 0));
+		m_BtnRecruit.CheckButton(g_pCoreShell->TongOperation(GTOI_TONG_GET_RECRUIT, (KUPARAM)&Player, 0));
 	}
 }
 
@@ -1378,7 +1378,7 @@ void KUiTongManager::RequestData(int nType, int nIndex)
     	strcpy(ParamInfo.szName, m_TongData.szName);
     	ParamInfo.nData = nType;
     	ParamInfo.nParam = nIndex;
-    	g_pCoreShell->TongOperation(GTOI_REQUEST_TONG_DATA, (unsigned int)&ParamInfo, 0);
+    	g_pCoreShell->TongOperation(GTOI_REQUEST_TONG_DATA, (KUPARAM)&ParamInfo, 0);
 	}
 }
 
@@ -1446,7 +1446,7 @@ void KUiTongManager::OnAction(int nType)
 			m_NextTargetEdit.GetText(szBuff, sizeof(szBuff), true);
 			strcpy(Param.lpszParam, szBuff);
 		}
-		g_pCoreShell->TongOperation(GTOI_TONG_ACTION, (unsigned int)&Param, (int)&Player);
+		g_pCoreShell->TongOperation(GTOI_TONG_ACTION, (KUPARAM)&Param, (KNPARAM)&Player);
 		memset(m_szPassword, 0, sizeof(m_szPassword));
 	}
 }
@@ -1747,7 +1747,7 @@ void KUiTongManager::OnMoney(int nType ,int nMoney)
 		Param.nIndex = 0;
 		Param.nData = nMoney;
 		Param.uId = 0;
-		g_pCoreShell->TongOperation(GTOI_TONG_MONEY_ACTION, (unsigned int)&Param, nType);
+		g_pCoreShell->TongOperation(GTOI_TONG_MONEY_ACTION, (KUPARAM)&Param, nType);
 	}
 }
 

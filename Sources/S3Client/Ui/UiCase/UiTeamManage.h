@@ -30,7 +30,7 @@ private:
 	void	Initialize();							//初始化
 	void	LoadScheme(class KIniFile* pSetting);	//载入界面方案
 protected:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	//void	OnApplyJoin();					//申请加入
 	void	OnKick();						//踢除队员
 	void	OnAppoint();					//任命队长

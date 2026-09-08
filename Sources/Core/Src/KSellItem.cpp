@@ -212,7 +212,7 @@ void	KSellItem::GetData(BYTE* pMsg ,int nUpdate)
 	}
 
 	if (!nUpdate)
-		CoreDataChanged(GDCNI_VIEW_PLAYERSELLITEM, (unsigned int)&sPlayer, 0);
+		CoreDataChanged(GDCNI_VIEW_PLAYERSELLITEM, (KUPARAM)&sPlayer, 0);
 	else
 		CoreDataChanged(GDCNI_VIEW_PLAYERUPDATEITEM, 0 ,0);
 }

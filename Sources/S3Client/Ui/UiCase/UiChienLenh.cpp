@@ -51,13 +51,13 @@ static void sSendReq(int nOp, int nA, int nB)
 	KCLUiReq req;
 	req.nA = nA;
 	req.nB = nB;
-	sSendOp(nOp, (int)&req);
+	sSendOp(nOp, (KNPARAM)&req);
 }
 
 //////////////////////////////////////////////////////////////////////
 // KUiCLScrollWnd - chuyen tiep len cha (KWndButton chi bao cha TRUC TIEP)
 //////////////////////////////////////////////////////////////////////
-int KUiCLScrollWnd::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiCLScrollWnd::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if ((uMsg == WND_N_BUTTON_CLICK || uMsg == WND_N_SCORLLBAR_POS_CHANGED) && m_pParentWnd)
 		return m_pParentWnd->WndProc(uMsg, uParam, nParam);
@@ -154,7 +154,7 @@ void KUiCLAwardCell::Fill(const KCLUiAward* p, int nScore, int nGot, int bVipOk)
 	m_Icon.Show();
 	if (g_pCoreShell && p->Item.m_nID)
 	{
-		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&p->Item);
+		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (KNPARAM)&p->Item);
 		if (nIdx > 0)
 		{
 			m_nTempItemIdx = nIdx;
@@ -713,48 +713,48 @@ void KUiChienLenh::Breathe()
 	}
 }
 
-int KUiChienLenh::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiChienLenh::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int i;
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Close)
 		{
 			CloseWindow(false);
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_Help)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Help)
 		{
 			sSendOp(CLUI_OP_HELP, 0);
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnBuy)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnBuy)
 		{
 			sSendOp(CLUI_OP_BUY_VIP, 0);
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_Prev)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Prev)
 		{
 			if (m_nPage > 0)
 				m_nPage--;
 			RefreshAwards();
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_Next)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Next)
 		{
 			m_nPage++;
 			RefreshAwards();
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_DayTabBg)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_DayTabBg)
 		{
 			m_nTab = CLUI_KIND_DAY;
 			m_nScrollTop = 0;
 			RefreshMissions();
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_WeekTabBg)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_WeekTabBg)
 		{
 			m_nTab = CLUI_KIND_WEEK;
 			m_nScrollTop = 0;
@@ -765,11 +765,11 @@ int KUiChienLenh::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		for (i = 0; i < CLUI_COL_COUNT; i++)
 		{
 			KUiCLAwardCell* pCell = NULL;
-			if (uParam == (unsigned int)(KWndWindow*)&m_Col[i].m_Low.m_Light ||
-				uParam == (unsigned int)(KWndWindow*)&m_Col[i].m_Low.m_Icon)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_Col[i].m_Low.m_Light ||
+				uParam == (KUPARAM)(KWndWindow*)&m_Col[i].m_Low.m_Icon)
 				pCell = &m_Col[i].m_Low;
-			else if (uParam == (unsigned int)(KWndWindow*)&m_Col[i].m_Vip.m_Light ||
-				uParam == (unsigned int)(KWndWindow*)&m_Col[i].m_Vip.m_Icon)
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_Col[i].m_Vip.m_Light ||
+				uParam == (KUPARAM)(KWndWindow*)&m_Col[i].m_Vip.m_Icon)
 				pCell = &m_Col[i].m_Vip;
 			if (pCell)
 			{
@@ -783,12 +783,12 @@ int KUiChienLenh::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		{
 			if (m_Row[i].m_Data.nId <= 0)
 				continue;
-			if (uParam == (unsigned int)(KWndWindow*)&m_Row[i].m_BtnGet)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_Row[i].m_BtnGet)
 			{
 				sSendOp(CLUI_OP_GET_MISSION, m_Row[i].m_Data.nId);
 				return 1;
 			}
-			if (uParam == (unsigned int)(KWndWindow*)&m_Row[i].m_BtnGoto)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_Row[i].m_BtnGoto)
 			{
 				// "Den": hien goi y cach lam (tips tu may chu) roi bao Lua
 				if (m_Row[i].m_Data.szTips[0])
@@ -799,7 +799,7 @@ int KUiChienLenh::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Scroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Scroll)
 		{
 			m_nScrollTop = m_Scroll.GetScrollPos();
 			for (i = 0; i < CLUI_ROW_COUNT; i++)
@@ -867,9 +867,9 @@ void KUiCLIcon::SetVisible(int bVisible)
 		ms_pSelf->Hide();
 }
 
-int KUiCLIcon::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiCLIcon::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
-	if (uMsg == WND_N_BUTTON_CLICK && uParam == (unsigned int)(KWndWindow*)&m_Btn)
+	if (uMsg == WND_N_BUTTON_CLICK && uParam == (KUPARAM)(KWndWindow*)&m_Btn)
 	{
 		KUiChienLenh* p = KUiChienLenh::GetIfVisible();
 		if (p)

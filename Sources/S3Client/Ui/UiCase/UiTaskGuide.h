@@ -54,7 +54,7 @@ private:
 	KUiTaskGuide();
 	virtual ~KUiTaskGuide();
 	void	Initialize();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	LoadSchemeSelf(const char* pScheme);
 	void	LoadTaskList();				// doc \UI\uitasklist.ini -> m_Entries
 	void	FillTaskList();				// do m_Entries vao khung trai

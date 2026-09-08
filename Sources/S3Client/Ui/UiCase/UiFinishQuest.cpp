@@ -194,13 +194,13 @@ void KUiFinishQuest::LoadScheme(const char* pScheme)
 // -------------------------------------------------------------------------
 // Xu ly khi hop thoai dang mo
 // -------------------------------------------------------------------------
-int KUiFinishQuest::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiFinishQuest::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {	
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_ExpBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_ExpBtn)
 		{	
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)EXP_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
@@ -209,7 +209,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			CloseWindow();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_PointBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_PointBtn)
 		{	
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)POINT_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
@@ -218,7 +218,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			CloseWindow();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_LuckyBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_LuckyBtn)
 		{	
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)LUCKY_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
@@ -227,7 +227,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			CloseWindow();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_RandomBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_RandomBtn)
 		{	
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)RANDOM_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
@@ -236,7 +236,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			CloseWindow();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ItemBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ItemBtn)
 		{	
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)ITEM_SCRIPT_FILE, 0);
 			if (g_pCoreShell)
@@ -245,7 +245,7 @@ int KUiFinishQuest::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			CloseWindow();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_MoneyBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_MoneyBtn)
 		{	
 			//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)MONEY_SCRIPT_FILE, 0);
 			if (g_pCoreShell)

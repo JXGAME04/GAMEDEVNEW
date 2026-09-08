@@ -28,7 +28,7 @@ class KWndList : public KWndWindow
 {
 public:
 	virtual int		Init(KIniFile* pIniFile, const char* pSection);//初始化
-	virtual int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	virtual void	PaintWindow();							//绘制窗口
 	//设置列表显示的内容
 	void			SetContent(BYTE* pContent, int nNumItem, int nItemSize, int nStringOffset);

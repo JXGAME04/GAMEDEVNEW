@@ -11,7 +11,9 @@
 
 #define FILTERTEXT_STATICLIB	//use static lib
 #include "../../FilterText/FilterText.h"
-#ifdef _DEBUG
+#if defined(_WIN64)
+#pragma comment(lib, "../../Lib/release64/FilterText_StaticLib.lib")	// [X64 08/09]
+#elif defined(_DEBUG)
 #pragma comment(lib, "../../Lib/Debug/FilterText_StaticLib.lib")
 #else
 #pragma comment(lib, "../../Lib/Release/FilterText_StaticLib.lib")

@@ -42,7 +42,7 @@ private:
 	void          Initialize();               //初始化
 	                      /*------------------------------------------------*/
 	                                          //窗口函数
-	virtual int   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int   WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 private:
 	void          AlignmentButtonCheck(       //正中邪CheckBox的管理函数

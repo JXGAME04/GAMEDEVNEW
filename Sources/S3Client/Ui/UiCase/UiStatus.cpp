@@ -361,20 +361,20 @@ void KUiStatus::Breathe()
 	}
 }
 
-int KUiStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiStatus::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	int numpoint = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Close)
 		{
 			Hide();
 			g_UiBase.SetStatus(UIS_S_IDLE);
 			KUiItem::OnNpcTradeMode(false);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Avatar)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Avatar)
 		{
 			if (g_pCoreShell->GetGameData(GDI_PLAYER_IS_MALE, 0, 0))
 			{
@@ -385,19 +385,19 @@ int KUiStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				KUiChooseFace::OpenWindow(1);
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_OpenItemPad)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_OpenItemPad)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_ITEMS);
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Bind)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Bind)
 		{
 			KUiItem::OnNpcTradeMode(true);
 			g_UiBase.SetStatus(UIS_S_TRADE_LOCKITEM);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_UnBind)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_UnBind)
 		{
 			KUiItem::OnNpcTradeMode(true);
 			g_UiBase.SetStatus(UIS_S_TRADE_UNLOCKITEM);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnLock)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BtnLock)
 		{
 			if (g_pCoreShell->GetGameData(GDI_IS_CHEST_UNLOCKED, 0, 0))
 			{
@@ -410,7 +410,7 @@ int KUiStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				KUiUnlockBox::OpenWindow();
 			}
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnSet1)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BtnSet1)
 		{
 			if (g_pCoreShell->GetGameData(GDI_EQUIPMENT_SETNUM, 0, 0) != 1) {
 				g_pCoreShell->OperationRequest(GOI_CP_SWITCH_EQUIPSET, 0, 1); //request switch equip set
@@ -419,7 +419,7 @@ int KUiStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			m_BtnSet1.SetFrame(0);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnSet2)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_BtnSet2)
 		{
 			if (g_pCoreShell->GetGameData(GDI_EQUIPMENT_SETNUM, 0, 0) != 2) {
 				g_pCoreShell->OperationRequest(GOI_CP_SWITCH_EQUIPSET, 0, 2); //request switch equip set
@@ -428,22 +428,22 @@ int KUiStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			m_BtnSet2.SetFrame(0);
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_EquipExpandBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_EquipExpandBtn)
 			SwitchExpand(m_EquipExpandBtn.IsButtonChecked());
-		else if (uParam == (unsigned int)(KWndWindow*)&m_MaskFeature)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_MaskFeature)
 			g_pCoreShell->OperationRequest(GOI_MASKFEATURE, 0, 0);
 		else if (m_nRemainPoint > numpoint)//else if (m_nRemainPoint > 0)
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_AddStrength)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_AddStrength)
 				KUiAddPoint::OpenWindow(UIPA_STRENGTH);
 				//UseRemainPoint(UIPA_STRENGTH,numpoint);//UseRemainPoint(UIPA_STRENGTH);
-			else if (uParam == (unsigned int)(KWndWindow*)&m_AddDexterity)
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_AddDexterity)
 				KUiAddPoint::OpenWindow(UIPA_DEXTERITY);
 				//UseRemainPoint(UIPA_DEXTERITY,numpoint);//UseRemainPoint(UIPA_DEXTERITY);
-			else if (uParam == (unsigned int)(KWndWindow*)&m_AddVitality)
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_AddVitality)
 				KUiAddPoint::OpenWindow(UIPA_VITALITY);
 				//UseRemainPoint(UIPA_VITALITY,numpoint);//UseRemainPoint(UIPA_VITALITY);
-			else if (uParam == (unsigned int)(KWndWindow*)&m_AddEnergy)
+			else if (uParam == (KUPARAM)(KWndWindow*)&m_AddEnergy)
 				KUiAddPoint::OpenWindow(UIPA_ENERGY);
 				//UseRemainPoint(UIPA_ENERGY,numpoint);//UseRemainPoint(UIPA_ENERGY);
 		}
@@ -456,7 +456,7 @@ int KUiStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			Obj.Obj.uId = pItem->uId;
 			Obj.Region.Width = pos_equiproom;
 			if (g_UiBase.IsOperationEnable(UIS_O_USE_ITEM))
-				g_pCoreShell->OperationRequest(GOI_USE_ITEM, (unsigned int)(&Obj), UOC_EQUIPTMENT);
+				g_pCoreShell->OperationRequest(GOI_USE_ITEM, (KUPARAM)(&Obj), UOC_EQUIPTMENT);
 		}break;
 	case WND_N_ITEM_PICKDROP:
 		if (g_pCoreShell->GetGameData(GDI_IS_CHEST_UNLOCKED, 0, 0))
@@ -496,7 +496,7 @@ void KUiStatus::OnLockItem(ITEM_PICKDROP_PLACE* pItem, int lock)
 	//Obj.Region.Width  = pItem->DataW;
 	//Obj.Region.Height = pItem->DataH;
 	//Obj.eContainer = UOC_ITEM_TAKE_WITH;
-	g_pCoreShell->OperationRequest(GOI_LOCK_PLAYER_ITEM, (unsigned int)(&Obj), lock);
+	g_pCoreShell->OperationRequest(GOI_LOCK_PLAYER_ITEM, (KUPARAM)(&Obj), lock);
 }
 
 //--------------------------------------------------------------------------
@@ -520,7 +520,7 @@ void KUiStatus::UpdateBaseData()
 {
 	KUiPlayerBaseInfo	Info;
 	memset(&Info, 0, sizeof(KUiPlayerBaseInfo));
-	g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (int)&Info, 0);
+	g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KNPARAM)&Info, 0);
 	m_Agname.SetText(Info.Agname);
 	m_Name  .SetText(Info.Name);
 	m_Title .SetText(Info.Title);
@@ -553,14 +553,14 @@ void KUiStatus::UpdateData()
 
 	KUiPlayerAttribute	Info;
 	memset(&Info, 0, sizeof(KUiPlayerAttribute));
-	g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (unsigned int)&Info, 0);
+	g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (KUPARAM)&Info, 0);
 	UpdateRuntimeAttribute(&Info);
 }
 
 void KUiStatus::UpdateAllEquips()
 {
 	KUiObjAtRegion	Equips[_ITEM_COUNT];
-	int nCount = g_pCoreShell->GetGameData(GDI_EQUIPMENT, (unsigned int)&Equips, 0);
+	int nCount = g_pCoreShell->GetGameData(GDI_EQUIPMENT, (KUPARAM)&Equips, 0);
 	int	i;
 	for (i = 0; i < _ITEM_COUNT; i++)
 		m_EquipBox[i].Celar();
@@ -635,7 +635,7 @@ void KUiStatus::UpdateRuntimeAttribute(KUiPlayerAttribute* pInfo)
 		{
 			KUiPlayerBaseInfo	Info;
 			memset(&Info, 0, sizeof(KUiPlayerBaseInfo));
-			g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (unsigned int)&Info, 0);
+			g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KUPARAM)&Info, 0);
 			
 			if(Info.nRankInWorld > 0 && Info.nRankInWorld < 1000)//edit by phong kieu set hang the gioi mac dinh 0 thanh dau ?
 			{
@@ -700,7 +700,7 @@ void KUiStatus::OnEquiptChanged(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLA
 	{
 		KUiItemBuySelInfo      Price = { 0 };
 		{
-			if (g_pCoreShell->GetGameData(GDI_REPAIR_ITEM_PRICE, (unsigned int)(&Pick), (int)(&Price)))
+			if (g_pCoreShell->GetGameData(GDI_REPAIR_ITEM_PRICE, (KUPARAM)(&Pick), (KNPARAM)(&Price)))
 			{
 				if(Price.nCurPrice >0) //edit by phong kieu fix doan nay
 				{
@@ -712,7 +712,7 @@ void KUiStatus::OnEquiptChanged(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLA
 	else
 	{
 		//_ASSERT(i < _ITEM_COUNT);
-		g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, pPickPos ? (unsigned int)&Pick : 0, pDropPos ? (int)&Drop : 0);
+		g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, pPickPos ? (KUPARAM)&Pick : 0, pDropPos ? (KNPARAM)&Drop : 0);
 		UiSoundPlayItem(Obj.uId);
 	}
 }

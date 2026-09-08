@@ -33,7 +33,7 @@ private:
 	virtual		~KUiFaceSelector() {}
 	static int	ConvertFace(char* pDest, int& nConvertCount, const char* pSrc, int nCount, int& nReadPos);
 	void		PaintWindow();
-	int			WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int			WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void		Show();
 	void		Hide();
 

@@ -37,7 +37,7 @@ private:
 	void	Initialize();
 	void	SetScore(int nTong, int nKim);
 	void	ApplyBar();
-	virtual int  WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int  WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	virtual int  PtInWindow(int x, int y);	// 0 = trong suot voi chuot (bam xuyen qua nhu KUiFlashMessage)
 
 	// [TKDIEM 04/09 2.0] bo cuc lay NGUYEN tu ini fight_bar cua 2.0 (\script\ui\tong_battle_2023\fight_bar.lua, uid A652C52E):

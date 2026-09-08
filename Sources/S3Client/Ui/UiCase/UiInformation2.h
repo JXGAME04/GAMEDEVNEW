@@ -30,7 +30,7 @@ public:
 	KUiInformation2();
 	~KUiInformation2();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 private:
 	KWndText256			m_Information;
 	KWndPureTextBtn		m_OKBtn;

@@ -65,7 +65,7 @@ private:
 		                                 KRankIndex *pInData);
 
 private:
-	int	   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int	   WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	virtual void Breathe();                                    //咦？为什么这里也有？
 
 private:

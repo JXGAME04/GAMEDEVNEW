@@ -16,7 +16,7 @@ private:
 
 	void	Initialize();										
 	void	LoadScheme(const char* pScheme);	
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	ShowWindow(int nNum);
 	void 	OnOK();
 	void 	PaintWindow();

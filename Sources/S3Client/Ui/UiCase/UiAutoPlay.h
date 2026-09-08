@@ -26,7 +26,7 @@ public:
 	void	LoadScheme(const char* pScheme);
 	void	SaveConfig(BOOL bGlobal = false);
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateData();
 	void	ProcessFightOption(BYTE btSelect);
 	void	PopupFightOptionMenu();
@@ -158,7 +158,7 @@ public:
 	void	LoadScheme(const char* pScheme);
 	void	SaveConfig(BOOL bGlobal = false);
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateData();
 	void	PopupFCellMenu();
 	void	ProcessFCell(BYTE btSelect);
@@ -245,7 +245,7 @@ public:
 	void	LoadScheme(const char* pScheme);
 	void	SaveConfig(BOOL bGlobal = false);
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateData();
 	void	PopupPickMenu();
 	void	ProcessPick(BYTE btSelect);	
@@ -345,7 +345,7 @@ public:
 	void	LoadScheme(const char* pScheme);
 	void	SaveConfig(BOOL bGlobal = false);
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateData();
 	void	LoadConfig();
 	BOOL	InsertMoveMpsList(int nSubWorldId, int nMpsX, int nMpsY);
@@ -416,7 +416,7 @@ public:
 	void	SaveConfig(BOOL bGlobal = false);
 	KUiSceneTimeInfo	m_CurrentMps;
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateData();
 	void	LoadConfig();
 	void	PopUpBuyHPSelect();
@@ -518,7 +518,7 @@ public:
 	BOOL InsertPlayerListTeam(char *playerName);
 	void	SetPlayerListTeam();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateData();
 private:
 	KWndButton	m_AutoCTeamCheckBox;
@@ -577,7 +577,7 @@ public:
 	BOOL InsertItemListBlack(char *ItemName);
 	void	SetItemListBlack();
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateData();
 private:
 
@@ -619,7 +619,7 @@ private:
 	void	Initialize();
 	void	PopupListConfigFile();
 	char*	GetFilenameFromIndex(int index);
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	LoadScheme(class KIniFile* pIni);
 	void	ShowPage(int nSubPage);
 	void	UpdateData();

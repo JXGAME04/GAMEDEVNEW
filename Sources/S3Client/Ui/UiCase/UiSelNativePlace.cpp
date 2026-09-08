@@ -197,15 +197,15 @@ void KUiSelNativePlace::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KUiSelNativePlace::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSelNativePlace::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Ok)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Ok)
 			OnOk();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Cancel)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Cancel)
 			OnCancel();
 		break;
 	case WM_KEYDOWN:
@@ -233,7 +233,7 @@ int KUiSelNativePlace::WndProc(unsigned int uMsg, unsigned int uParam, int nPara
 		break;
 	case WND_N_LIST_ITEM_SEL:
 		if (nParam != m_nLastSelPlace &&
-			uParam == (unsigned int)(KWndWindow*)&m_List)
+			uParam == (KUPARAM)(KWndWindow*)&m_List)
 		{
 			if (nParam >= 0)
 			{
@@ -247,7 +247,7 @@ int KUiSelNativePlace::WndProc(unsigned int uMsg, unsigned int uParam, int nPara
 		}
 		break;
 	case WND_N_LIST_ITEM_D_CLICK:
-		if (nParam >= 0 && uParam == (unsigned int)(KWndWindow*)&m_List)
+		if (nParam >= 0 && uParam == (KUPARAM)(KWndWindow*)&m_List)
 			OnOk();
 		break;
 	default:

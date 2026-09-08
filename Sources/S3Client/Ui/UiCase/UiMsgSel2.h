@@ -28,7 +28,7 @@ private:
 	~KUiMsgSel2() {}
 	void	Show(KUiQuestionAndAnswer* pContent);
 	int		Initialize();								//初始化
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnClickMsg(int nMsg);			//响应点击消息
 	void	ChangeCurSel(bool bNext);
 	virtual void	Breathe();

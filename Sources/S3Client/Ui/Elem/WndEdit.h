@@ -23,7 +23,7 @@ public:
 	KWndEdit();
 	~KWndEdit();
 	virtual int	Init(KIniFile* pIniFile, const char* pSection);//初始化
-	virtual int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	virtual void	PaintWindow();							//绘制窗口
 	void			SetColor(unsigned int uColor);
 	void			SetText(const char* pText);				//设置文本文字

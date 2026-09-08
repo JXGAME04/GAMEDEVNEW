@@ -12,7 +12,7 @@ PropertiePage
 class KWndPage : public KWndImage
 {
 public:
-	virtual int	WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	virtual int	WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 };
 
 //------------------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ class KWndButton;
 class KWndPageSet : public KWndShowAnimate
 {
 public:
-	virtual int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	virtual int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	bool			AddPage(KWndPage* pPage, KWndButton* pPageBtn);	//添加页面
 	bool			ActivePage(int nPageIndex);						//激活指定的页面
 	int				GetActivePageIndex() { return m_nAcitvePage; }	//取得当前激活页面的索引

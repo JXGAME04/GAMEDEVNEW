@@ -1361,7 +1361,7 @@ void	KNpcSet::GetAroundOpenCaptain(int nCamp)
 					break;
 			}
 		}
-		CoreDataChanged(GDCNI_TEAM_NEARBY_LIST, (unsigned int)pTeamList, nNo);
+		CoreDataChanged(GDCNI_TEAM_NEARBY_LIST, (KUPARAM)pTeamList, nNo);
 		delete []pTeamList;
 	}
 }

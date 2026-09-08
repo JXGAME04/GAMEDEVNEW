@@ -466,7 +466,7 @@ void KBuySell::OpenSale(int nSaleType, BuySellInfo *pInfo)
 	Player[CLIENT_PLAYER_INDEX].m_BuyInfo.Clear();
 	Player[CLIENT_PLAYER_INDEX].m_BuyInfo = *pInfo;
 	Player[CLIENT_PLAYER_INDEX].m_BuyInfo.m_nCurShop = 0;
-	CoreDataChanged(GDCNI_SUPERSHOP, (unsigned int)pInfo, nSaleType);
+	CoreDataChanged(GDCNI_SUPERSHOP, (KUPARAM)pInfo, nSaleType);
 }
 #endif
 

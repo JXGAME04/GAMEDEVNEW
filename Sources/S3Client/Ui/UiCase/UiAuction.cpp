@@ -82,7 +82,7 @@ static void sSendReq(int nOp, int nType, int nId, int nPrice, const char* szName
 		strncpy(r.szName, szName, sizeof(r.szName) - 1);
 		r.szName[sizeof(r.szName) - 1] = 0;
 	}
-	sSendOp(nOp, (int)&r);
+	sSendOp(nOp, (KNPARAM)&r);
 }
 
 // [DAUGIA 04/09 A23] chu: "thong tin gia nen rut gon lai thay vi 1000000 thi thanh 100 van".
@@ -145,7 +145,7 @@ static void sFmtLeft(char* sz, int nSize, int nEndAbs)
 //////////////////////////////////////////////////////////////////////
 // KUiAuctionScrollWnd
 //////////////////////////////////////////////////////////////////////
-int KUiAuctionScrollWnd::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAuctionScrollWnd::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if ((uMsg == WND_N_BUTTON_CLICK || uMsg == WND_N_SCORLLBAR_POS_CHANGED) && m_pParentWnd)
 		return m_pParentWnd->WndProc(uMsg, uParam, nParam);
@@ -377,7 +377,7 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 	m_IconBg.Hide();
 	if (!bSameItem && g_pCoreShell && p->Item.m_nID)
 	{
-		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&p->Item);
+		int nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (KNPARAM)&p->Item);
 		if (nIdx > 0)
 		{
 			m_nTempItemIdx = nIdx;
@@ -613,19 +613,19 @@ void KUiAuctionMemberWnd::LoadScheme(const char* pScheme)
 	Hide();
 }
 
-int KUiAuctionMemberWnd::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAuctionMemberWnd::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Close)
 		{
 			Hide();
 			return 1;
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Scroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Scroll)
 		{
 			m_nTop = nParam;
 			Refresh();
@@ -824,7 +824,7 @@ int KUiAuctionPage::FindItem(int nId)
 	return -1;
 }
 
-int KUiAuctionPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAuctionPage::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
@@ -876,17 +876,17 @@ int KUiAuctionPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				}
 				return 1;
 			}
-			if (uParam == (unsigned int)(KWndWindow*)&m_BtnPrev)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_BtnPrev)
 			{
 				sSendOp(AUCUI_OP_PREV_PAGE, 0);
 				return 1;
 			}
-			if (uParam == (unsigned int)(KWndWindow*)&m_BtnNext)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_BtnNext)
 			{
 				sSendOp(AUCUI_OP_NEXT_PAGE, 0);
 				return 1;
 			}
-			if (uParam == (unsigned int)(KWndWindow*)&m_BtnTip)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_BtnTip)
 			{
 				// [DAUGIA 04/09 A4] khong con NPC: nut nay mo thang luong dat ban tren may chu
 				sSendOp(AUCUI_OP_PUT_ON, m_nType);
@@ -895,13 +895,13 @@ int KUiAuctionPage::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)(KWndWindow*)&m_ActScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_ActScroll)
 		{
 			m_nActTop = nParam;
 			RefreshAct();
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_ItemScroll)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_ItemScroll)
 		{
 			m_nItemTop = nParam;
 			RefreshItem();
@@ -1214,27 +1214,27 @@ void KUiAuctionManager::Switch(int nType)
 	m_Page.Show();
 }
 
-int KUiAuctionManager::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAuctionManager::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Close)
 		{
 			CloseWindow(false);
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_TabTong)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_TabTong)
 		{
 			sSendOp(AUCUI_OP_PAGE_BTN, AUCUI_TYPE_TONG);
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_TabWorld)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_TabWorld)
 		{
 			sSendOp(AUCUI_OP_PAGE_BTN, AUCUI_TYPE_WORLD);
 			return 1;
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_TabPersonal)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_TabPersonal)
 		{
 			sSendOp(AUCUI_OP_PAGE_BTN, AUCUI_TYPE_PERSONAL);
 			return 1;
@@ -1336,9 +1336,9 @@ void KUiAuctionIcon::Breathe()
 	}
 }
 
-int KUiAuctionIcon::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAuctionIcon::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
-	if (uMsg == WND_N_BUTTON_CLICK && uParam == (unsigned int)(KWndWindow*)&m_Btn)
+	if (uMsg == WND_N_BUTTON_CLICK && uParam == (KUPARAM)(KWndWindow*)&m_Btn)
 	{
 		m_bBlink = 0;
 		m_Btn.Show();

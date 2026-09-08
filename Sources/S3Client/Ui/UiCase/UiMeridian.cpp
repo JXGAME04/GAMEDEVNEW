@@ -123,7 +123,7 @@ void KUiMeridianBuff::DungNoiDung(KIniFile* pIni)
 
 	memset(m_CapMach, 0, sizeof(m_CapMach));
 	if (g_pCoreShell)
-		g_pCoreShell->GetGameData(GDI_PLAYER_MERIDIAN, (unsigned int)&m_CapMach, sizeof(m_CapMach));
+		g_pCoreShell->GetGameData(GDI_PLAYER_MERIDIAN, (KUPARAM)&m_CapMach, sizeof(m_CapMach));
 	int nSeries = g_pCoreShell ? g_pCoreShell->GetGameData(GDI_PLAYER_SERIES, 0, 0) : -1;
 	strcpy_s(szHe, "h\326 ");
 	if (nSeries >= 0 && nSeries <= 4)
@@ -160,12 +160,12 @@ void KUiMeridianBuff::DungNoiDung(KIniFile* pIni)
 	m_DanhSach.SetText(m_szDanhSach);
 }
 
-int KUiMeridianBuff::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMeridianBuff::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_Dong)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_Dong)
 			KUiMeridianBuff::CloseWindow();
 		break;
 	default:
@@ -249,7 +249,7 @@ void KUiMeridian::Initialize()
 	KMLOG("[KM-UI] 03 da them con xong");
 	memset(m_MeridianLevel, 0, sizeof(m_MeridianLevel));
 	//Get Meridian data
-	g_pCoreShell->GetGameData(GDI_PLAYER_MERIDIAN, (unsigned int)&m_MeridianLevel, sizeof(m_MeridianLevel));
+	g_pCoreShell->GetGameData(GDI_PLAYER_MERIDIAN, (KUPARAM)&m_MeridianLevel, sizeof(m_MeridianLevel));
 }
 extern int SCREEN_WIDTH;
 //ÔØÈë½çĂæ·½°¸
@@ -329,7 +329,7 @@ void KUiMeridian::DefaultScheme(const char* pScheme)
 void KUiMeridian::UpdateMeridianLevel() {
 
 	//Get Meridian data
-	g_pCoreShell->GetGameData(GDI_PLAYER_MERIDIAN, (unsigned int)&m_MeridianLevel, sizeof(m_MeridianLevel));
+	g_pCoreShell->GetGameData(GDI_PLAYER_MERIDIAN, (KUPARAM)&m_MeridianLevel, sizeof(m_MeridianLevel));
 }
 void KUiMeridian::UpdateMeridian()
 {
@@ -628,7 +628,7 @@ static void KM_DatCuaSoKeBen(KWndWindow* pChinh, KWndWindow* pPhu)
 	pPhu->SetPosition(nX, nT + 56);				// ngang hang vung ve cua bang mach
 }
 
-int KUiMeridian::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMeridian::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	KIniFile	Ini;
 	char		Buff[128];
@@ -652,7 +652,7 @@ int KUiMeridian::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	{
 		//
 		for (i = 0; i < MAX_MERIDIAN + 1; i++) {
-			if (uParam == (unsigned int)(KWndWindow*)&m_Btn[i])
+			if (uParam == (KUPARAM)(KWndWindow*)&m_Btn[i])
 			{
 				m_Btn[i].CheckButton(true);
 				btnNo = i+1;
@@ -672,7 +672,7 @@ int KUiMeridian::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			int nLvCur = m_MeridianLevel[btnNo - 2];
 			for (i = 0; i < KM_SLOT; i++) {
 				int nMuc = (nLvCur >= KM_SLOT) ? (i + 1 + KM_SLOT) : (i + 1);
-				if (uParam == (unsigned int)(KWndWindow*)&m_Points[i] && nMuc > nLvCur) {
+				if (uParam == (KUPARAM)(KWndWindow*)&m_Points[i] && nMuc > nLvCur) {
 					if (KUiMeridianConfirm::GetIfVisible())
 					{
 						KUiMeridianConfirm::CloseWindow();	// [KM 27/08b] khong con day bang mach
@@ -699,7 +699,7 @@ int KUiMeridian::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		// [KM 27/08] 4 nut trang Khi Doanh Dan Dien (theo game_y.exe 0x4870C0):
 		// 1/7/30 ngay - dieu kien chuan: ca 8 mach dau dat cap >= 16.
 		// Goi 0xB4 + bo ky nang 1501-1505 thuoc dot may chu - ghi log cho vet.
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnViewBuff)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_BtnViewBuff)
 		{
 			if (KUiMeridianBuff::GetIfVisible())
 				KUiMeridianBuff::CloseWindow();
@@ -708,7 +708,7 @@ int KUiMeridian::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		for (i = 0; i < 3; i++)
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_BtnBreath[i])
+			if (uParam == (KUPARAM)(KWndWindow*)&m_BtnBreath[i])
 			{
 				int nDu = 1, j;
 				for (j = 0; j < 8; j++)
@@ -756,13 +756,13 @@ int KUiMeridian::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 						Mua.WayEnhanced = 0;
 						Mua.Type = 100 + i;
 						Mua.Level = 0;
-						g_pCoreShell->OperationRequest(GOI_SET_PLAYER_MERIDIAN, (unsigned int)&Mua, 0);
+						g_pCoreShell->OperationRequest(GOI_SET_PLAYER_MERIDIAN, (KUPARAM)&Mua, 0);
 					}
 				}
 			}
 		}
 		m_Btn[btnNo-1].CheckButton(true);
-		if(uParam == (unsigned int)(KWndWindow*)&m_Close)
+		if(uParam == (KUPARAM)(KWndWindow*)&m_Close)
 			KUiMeridian::CloseWindow();
 		break;
 	}
@@ -1188,7 +1188,7 @@ void KUiMeridianConfirm::SetInfo()
 	}
 }
 
-int KUiMeridianConfirm::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiMeridianConfirm::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int i;
 	switch (uMsg)
@@ -1197,14 +1197,14 @@ int KUiMeridianConfirm::WndProc(unsigned int uMsg, unsigned int uParam, int nPar
 	{
 		for (i = 0; i < 3; i++)
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_cbWay[i])
+			if (uParam == (KUPARAM)(KWndWindow*)&m_cbWay[i])
 			{
 				m_nWay = (i == 0) ? 0 : i;			// o 0 = pho thong, o 1 = bao ve, o 2 = Long Hon
 				SetInfo();
 			}
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_btnOk ||
-			uParam == (unsigned int)(KWndWindow*)&m_btnOkOne)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_btnOk ||
+			uParam == (KUPARAM)(KWndWindow*)&m_btnOkOne)
 		{
 			// [KM 27/08] van dung goi GOI_SET_PLAYER_MERIDIAN co san (khong dung day
 			// protocol): way 1 -> WayProtected, way 2 -> WayEnhanced, way 0/3 -> thuong.
@@ -1213,10 +1213,10 @@ int KUiMeridianConfirm::WndProc(unsigned int uMsg, unsigned int uParam, int nPar
 			Data.WayEnhanced = (m_nWay == 2) ? enhancedway : normalway;
 			Data.Type = m_nType;
 			Data.Level = m_nLevel;
-			g_pCoreShell->OperationRequest(GOI_SET_PLAYER_MERIDIAN, (unsigned int)&Data, 0);
+			g_pCoreShell->OperationRequest(GOI_SET_PLAYER_MERIDIAN, (KUPARAM)&Data, 0);
 			KUiMeridianConfirm::CloseWindow();		// [KM 27/08b] khong con day bang mach
 		}
-		if (uParam == (unsigned int)(KWndWindow*)&m_btnClose)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_btnClose)
 		{
 			KUiMeridianConfirm::CloseWindow();		// [KM 27/08b] khong con day bang mach
 		}

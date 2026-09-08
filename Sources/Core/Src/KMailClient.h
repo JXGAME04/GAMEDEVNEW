@@ -26,7 +26,7 @@ int LuaMail_MailConfirm(Lua_State* L);
 int LuaMail_Msg2Player(Lua_State* L);
 
 // CoreShell.cpp: case GOI_MAIL_UI
-void MailUi_OnRequest(unsigned int uParam, int nParam);
+void MailUi_OnRequest(KUPARAM uParam, KNPARAM nParam);
 #endif
 
 #endif // KMAILCLIENT_H

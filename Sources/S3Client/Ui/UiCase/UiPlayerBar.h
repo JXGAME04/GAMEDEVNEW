@@ -121,7 +121,7 @@ private:
 	void	UpdateData();								
 	void	UpdateXXXNumber(int& nMana, int& nFullMana);							
 	void	UpdateRuntimeAttribute(int& nMoney, int& nLevel);
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	OnObjPickedDropped(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 	void	LoadScheme(KIniFile* pIni);
 	void	OnSend(BOOL bDirectSend);

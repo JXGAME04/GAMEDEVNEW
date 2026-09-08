@@ -197,12 +197,12 @@ void KUiShoppingCart::UpdateData()
 			{
 				//KUiObjAtContRegion fkobjInfo;8
 				//memset(&fkobjInfo, 0, sizeof(fkobjInfo));
-				//if(g_pCoreShell->GetObjAtCountRegionInSuperShop(m_GioHangNew.m_ListShopId[i], (unsigned int)&fkobjInfo, m_GioHangNew.m_ListItemInfo[i].Obj.uId))
+				//if(g_pCoreShell->GetObjAtCountRegionInSuperShop(m_GioHangNew.m_ListShopId[i], (KUPARAM)&fkobjInfo, m_GioHangNew.m_ListItemInfo[i].Obj.uId))
 				//{
 				//	m_GoodsInfo_ItemBox[i].HoldObject(fkobjInfo.Obj.uGenre, fkobjInfo.Obj.uId, fkobjInfo.Region.Width, fkobjInfo.Region.Height);
 				//}
 				char szImage[80];
-				if(g_pCoreShell->GetObjAtCountRegionInSuperShop(m_GioHangNew.m_ListShopId[i], (unsigned int)&szImage, m_GioHangNew.m_ListItemInfo[i].Obj.uId))
+				if(g_pCoreShell->GetObjAtCountRegionInSuperShop(m_GioHangNew.m_ListShopId[i], (KUPARAM)&szImage, m_GioHangNew.m_ListItemInfo[i].Obj.uId))
 				{
 					m_pSelf->m_GoodsInfo_ItemImg[i].SetImage(ISI_T_SPR, szImage, true);
 				}
@@ -413,7 +413,7 @@ void KUiShoppingCart::CartRelease(int nIndex)
 	}
 }
 
-int	KUiShoppingCart::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiShoppingCart::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK )
 	{
@@ -451,7 +451,7 @@ int	KUiShoppingCart::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	}
 	else if (uMsg == WND_N_SCORLLBAR_POS_CHANGED)
 	{
-		if (uParam == (unsigned int)(KWndWindow*)&m_GH_ScrollBar)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_GH_ScrollBar)
 		{
 			m_GH_ListGoodsWnd.SetTopItemIndex(nParam);
 			return 0;
@@ -537,7 +537,7 @@ void KWndSellItem::PaintWindow()
 	KWndObjectBox::PaintWindow();
 }
 
-int	KWndSellItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)//´°¿Úº¯Êý
+int	KWndSellItem::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)//´°¿Úº¯Êý
 {
 	if (uMsg == WND_N_BUTTON_CLICK )
 	{
@@ -555,7 +555,7 @@ int	KWndSellItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)//´
 			Obj.Region.Height = pItem.DataH;
 			Obj.eContainer = UOC_NPC_SHOP;
 			KUiItemBuySelInfo	Price = { 0 };
-			if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE, (unsigned int)(&Obj), (int)(&Price)))
+			if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE, (KUPARAM)(&Obj), (KNPARAM)(&Price)))
 			{
 				if(KUiSuperShop::PutItem(&Obj, &Price) == true)
 					KUiShoppingCart::OpenWindow(&Obj, &Price);
@@ -896,7 +896,7 @@ void KUiSuperShop::UpdateItem(KUiObjAtContRegion* pItem, int nAdd)
 			Obj.Region.Height = pItem->Region.Height;
 			Obj.eContainer = UOC_NPC_SHOP;
 			KUiItemBuySelInfo	Price = { 0 };
-			if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE, (unsigned int)(&Obj), (int)(&Price)))
+			if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE, (KUPARAM)(&Obj), (KNPARAM)(&Price)))
 			{
 				m_WndSellItem[nAdd].m_GoodsNameText.SetText(Price.szItemName);
 				m_WndSellItem[nAdd].m_OriginalPriceText.SetText("Gi¸ gèc:");
@@ -936,7 +936,7 @@ void KUiSuperShop::UpdateData()
 
 	if (m_pObjsList = (KUiObjAtContRegion*)malloc(sizeof(KUiObjAtContRegion) * m_nObjCount))
 	{
-		m_nPageCount = g_pCoreShell->GetDataSuperShop(m_nCurrentShopId, (unsigned int)m_pObjsList, m_nObjCount) + 1;
+		m_nPageCount = g_pCoreShell->GetDataSuperShop(m_nCurrentShopId, (KUPARAM)m_pObjsList, m_nObjCount) + 1;
 		SetPage(0);
 	}
 	else
@@ -975,7 +975,7 @@ void KUiSuperShop::CancelTrade()
 	CloseWindow(true);
 }
 
-int	KUiSuperShop::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiSuperShop::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK )
 	{	
@@ -1012,7 +1012,7 @@ int	KUiSuperShop::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			if (m_pItemInfo.Obj.uGenre != CGOG_NOTHING)
 			{
 				KUiItemBuySelInfo	Price = { 0 };
-				if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE, (unsigned int)(&m_pItemInfo), (int)(&Price)))
+				if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE, (KUPARAM)(&m_pItemInfo), (KNPARAM)(&Price)))
 				{
 					KUiShoppingCart::OpenWindow(&m_pItemInfo, &Price);
 					m_pSelf->m_ShoppingCartBtn.CheckButton(true);
@@ -1256,7 +1256,7 @@ void KUiDynamicShop::CancelTrade()
 	CloseWindow();
 }
 
-int	KUiDynamicShop::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiDynamicShop::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch (uMsg)
 	{
@@ -1267,7 +1267,7 @@ int	KUiDynamicShop::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnBuyItem((KUiDraggedObject*)uParam, g_UiBase.GetStatus() == UIS_S_TRADE_BUY);
 		break;
 	case WND_N_RIGHT_CLICK_ITEM:
-		if (nParam == (int)(KWndWindow*)&m_ItemsBox)
+		if (nParam == (KNPARAM)(KWndWindow*)&m_ItemsBox)
 			OnBuyItem((KUiDraggedObject*)uParam, true);
 		break;
 	case WM_KEYDOWN:
@@ -1310,7 +1310,7 @@ void KUiDynamicShop::OnBuyItem(KUiDraggedObject* pItem, bool bDoImmed)
 	if (bDoImmed == false)
 	{		
 		KUiItemBuySelInfo	Price = { 0 };
-		if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE, (unsigned int)(&Obj), (int)(&Price)) && eStatus != UIS_S_TRADE_SALE && eStatus != UIS_S_TRADE_REPAIR)
+		if (g_pCoreShell->GetGameData(GDI_TRADE_ITEM_PRICE, (KUPARAM)(&Obj), (KNPARAM)(&Price)) && eStatus != UIS_S_TRADE_SALE && eStatus != UIS_S_TRADE_REPAIR)
 		{
 			KUiTradeConfirm::OpenWindow(&Obj, &Price, TCA_BUY);
 		}		
@@ -1319,14 +1319,14 @@ void KUiDynamicShop::OnBuyItem(KUiDraggedObject* pItem, bool bDoImmed)
 	{
 		if (eStatus == UIS_S_TRADE_BUY)
 		{
-			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (unsigned int)(&Obj), 1);
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (KUPARAM)(&Obj), 1);
 			return;
 		}		
 		else
 		{
 			if ((GetKeyState(VK_SHIFT) & 0x8000) != 0)
 			{
-				g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (unsigned int)(&Obj), 1);
+				g_pCoreShell->OperationRequest(GOI_TRADE_NPC_BUY, (KUPARAM)(&Obj), 1);
 				return;
 			}
 			else
@@ -1505,7 +1505,7 @@ void KUiDynamicShop::UpdateData()
 
 	if (m_pObjsList = (KUiObjAtContRegion*)malloc(sizeof(KUiObjAtContRegion) * m_nObjCount))
 	{
-		g_pCoreShell->GetDataDynamicShop(m_nCurrentShopId, (unsigned int)m_pObjsList, m_nObjCount);
+		g_pCoreShell->GetDataDynamicShop(m_nCurrentShopId, (KUPARAM)m_pObjsList, m_nObjCount);
 		m_nPageCount = m_pObjsList[m_nObjCount - 1].nContainer + 1;
 		SetPage(0);
 	}

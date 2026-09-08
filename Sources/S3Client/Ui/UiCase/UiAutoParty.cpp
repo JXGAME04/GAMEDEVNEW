@@ -237,7 +237,7 @@ void KUiAutoParty::PopUpInsertPlayerTeam()
 		m_pNearbyPlayersList2 = (KUiPlayerItem*)malloc(sizeof(KUiPlayerItem) * nActionDataCount);
 		if (m_pNearbyPlayersList2)
 		{
-			g_pCoreShell->GetGameData(GDI_NEARBY_PLAYER_LIST, (unsigned int)m_pNearbyPlayersList2, nActionDataCount);
+			g_pCoreShell->GetGameData(GDI_NEARBY_PLAYER_LIST, (KUPARAM)m_pNearbyPlayersList2, nActionDataCount);
 			for (int i = 0; i< nActionDataCount;i++)
 			{
 				strncpy(pSelUnitMenu->Items[i].szData, m_pNearbyPlayersList2[i].Name, 63);
@@ -266,7 +266,7 @@ void KUiAutoParty::PopUpInsertPlayerTeam()
 	}
 }
 
-int KUiAutoParty::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiAutoParty::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)
@@ -277,11 +277,11 @@ int KUiAutoParty::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	case WM_KEYDOWN:
 		break;
 	case WND_N_SCORLLBAR_POS_CHANGED:
-		if (uParam == (unsigned int)&m_CoordL_Scroll)
+		if (uParam == (KUPARAM)&m_CoordL_Scroll)
 			m_CoordL.SetTopItemIndex(nParam);
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == MENU_SELECT_FOLLOW_PEOPLE && (short)(LOWORD(nParam)) >= 0)
 				ProcessPopUpSelectInsertPlayerJoinTeam(LOWORD(nParam));
@@ -383,7 +383,7 @@ void KUiAutoParty::SetPlayerListTeam()
 	m_CoordL.ResetContent();
 	for (int i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
 	{
-		g_pCoreShell->SetMoveMap(GAUTO_AUTO_PT_PLAYERTEAM, i,(unsigned int)&m_MoveMpsList[i]);//qu¶n lý tæ ®éi
+		g_pCoreShell->SetMoveMap(GAUTO_AUTO_PT_PLAYERTEAM, i,(KUPARAM)&m_MoveMpsList[i]);//qu¶n lý tæ ®éi
 
 		if(m_MoveMpsList[i][0])
 		{

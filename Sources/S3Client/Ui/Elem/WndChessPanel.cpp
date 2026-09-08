@@ -139,7 +139,7 @@ int KWndChessPanel::PtInWindow(int x, int y)
 	return nResult;
 }
 
-int KWndChessPanel::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndChessPanel::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nResult = false;
 	switch (uMsg)

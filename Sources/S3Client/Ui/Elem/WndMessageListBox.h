@@ -60,7 +60,7 @@ public:
 	BOOL m_bItemActived;		//kich hoat chuc nang item chat
 
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateData();					
 	virtual void	PaintWindow();			
 	void	OnMouseMove(int x, int y);
@@ -121,7 +121,7 @@ public:
 	KScrollMessageListBox();
 
 	virtual int		Init(KIniFile* pIniFile, const char* pSection);
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	
 	KWndMessageListBox* GetMessageListBox()
 	{

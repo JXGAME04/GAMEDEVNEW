@@ -28,7 +28,7 @@ public:
 	bool PushReviveButton();
 private:
 	void	Hide(int nBtnIndex);					//隐藏窗口
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 private:
 	KWndText256			m_Information;
 	KWndPureTextBtn		m_FirstBtn;

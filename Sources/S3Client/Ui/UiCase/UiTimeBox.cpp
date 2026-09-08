@@ -135,7 +135,7 @@ void KUiTimeBox::OnOk()
 //--------------------------------------------------------------------------
 // chuc nang: su kien
 //--------------------------------------------------------------------------
-int KUiTimeBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTimeBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nResult = false;
 	switch(uMsg)

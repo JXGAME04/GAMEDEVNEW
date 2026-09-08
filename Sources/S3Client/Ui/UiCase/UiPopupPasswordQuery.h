@@ -29,7 +29,7 @@ private:
 	static KUiPopupPasswordQuery* ms_pSelf;
 private:
 	void          Initialize();                         
-	virtual int   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int   WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:
 	void          OnConfirm();
 private:

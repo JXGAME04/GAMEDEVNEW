@@ -162,16 +162,16 @@ void KUiTrembleItem::LoadScheme(const char* pScheme)
 //-------------------------------------------------
 // Cac tuong tac hop thoai
 //-------------------------------------------------
-int KUiTrembleItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiTrembleItem::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if(uParam == (unsigned int)&m_Confirm)
+		if(uParam == (KUPARAM)&m_Confirm)
 		{	
 			ProcessAssemble();		
 		}
-		else if(uParam == (unsigned int)&m_Cancel)
+		else if(uParam == (KUPARAM)&m_Cancel)
 		{	
 			CloseWindow();
 		}
@@ -380,8 +380,8 @@ void KUiTrembleItem::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP
 		}
 	}
 		g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
-		pPickPos ? (unsigned int)&Pick : 0,
-		pDropPos ? (int)&Drop : 0);
+		pPickPos ? (KUPARAM)&Pick : 0,
+		pDropPos ? (KNPARAM)&Drop : 0);
 
 }
 //-------------------------------------
@@ -390,7 +390,7 @@ void KUiTrembleItem::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP
 void KUiTrembleItem::UpdateAllItem()
 {
 	KUiObjAtRegion	Item[_ITEM_TREMBLE_COUNT];
-	int nCount = g_pCoreShell->GetGameData(GDI_TREMBLE_ITEM, (unsigned int)&Item, 0);
+	int nCount = g_pCoreShell->GetGameData(GDI_TREMBLE_ITEM, (KUPARAM)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_TREMBLE_COUNT; i++)
 		m_ItemBox[i].Celar();

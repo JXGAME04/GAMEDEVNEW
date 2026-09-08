@@ -29,7 +29,7 @@ private:
 	~KUiShoppingCart() {}
 	void					Initialize();
 	void					LoadScheme(const char* pScheme);
-	int						WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int						WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void					UpdateData();
 	void					Breathe();
 	void					OnCheckInput();
@@ -101,7 +101,7 @@ public:
 	KWndText80            		m_Price_NumberText;
 	KWndLabeledButton			m_MarketGoods_Buy;
 private: 
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
     
 };
 
@@ -122,7 +122,7 @@ private:
 	KUiSuperShop();
 	~KUiSuperShop();
 	void					Initialize();
-	int						WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int						WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void					UpdateData();
 	void					SetSellTypeStart(int nStart);
 	void					SetCurrSellSort(int nSaleId);	
@@ -178,7 +178,7 @@ public:
 	void				UpdateShop(BuySellInfo* pBSinfo);
 	void				UpdateData();
 	void				UpdateItem(KUiObjAtContRegion* pItem, int bAdd);
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 private:
 	KUiDynamicShop();
 	~KUiDynamicShop() {}

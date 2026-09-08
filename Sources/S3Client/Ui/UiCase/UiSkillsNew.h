@@ -30,7 +30,7 @@ public:
 	void	UpdateData(KUiSkillData* pSkills);			//更新数据
 	void	UpdateFaction(int faction);
 private:
-	int		   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		   WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	void	 PaintWindow();								//绘制窗口
 	void	 OnSkillPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 private:
@@ -87,7 +87,7 @@ public:
 	void	UpdateSkill(KUiSkillData* pSkill, int nIndex);	//更新技能
 	void	UpdateData();								//更新数据
 private:
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	void	PaintWindow();								//绘制窗口
 private:
 	KWndText32		m_RemainSkillPoint;
@@ -119,7 +119,7 @@ private:
 	KUiSkillsNew(){}
 	~KUiSkillsNew() {}
 	void	 Initialize();							//初始化
-	int		   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		   WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 private:
 	static KUiSkillsNew* m_pSelf;
 private:

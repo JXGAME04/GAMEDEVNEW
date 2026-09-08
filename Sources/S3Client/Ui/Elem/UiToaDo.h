@@ -47,7 +47,7 @@ void	UiToaDo_XoaHet();
 
 //	Nhan chuot khi dang o che do sua.
 //	Tra ve true = da xu ly, khong chuyen tiep cho giao dien phia duoi nua.
-bool	UiToaDo_NhanChuot(unsigned int uMsg, unsigned int uParam, int nParam);
+bool	UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 //	Ve khung + dong huong dan + bang danh sach (goi o cuoi Wnd_RenderWindows).
 void	UiToaDo_Ve();

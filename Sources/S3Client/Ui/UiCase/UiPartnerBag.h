@@ -40,7 +40,7 @@ private:
 
     void          Initialize();
     void          OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
-    virtual int   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+    virtual int   WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 private:
     KWndButton       m_CloseBtn;

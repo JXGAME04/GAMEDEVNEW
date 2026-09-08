@@ -258,7 +258,7 @@ void KUiOptions::LoadScheme(KIniFile* pIni)
 	m_pSelf->m_uInvalidTextColor = GetColor(Buff);
 }
 
-int	 KUiOptions::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	 KUiOptions::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	
@@ -268,11 +268,11 @@ int	 KUiOptions::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		OnScrollBarPosChanged((KWndWindow*)uParam, nParam);
 		break;
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_CloseBtn)
 			CloseWindow();
-		//else if (uParam == (unsigned int)(KWndWindow*)&m_SkinBtn)
+		//else if (uParam == (KUPARAM)(KWndWindow*)&m_SkinBtn)
 		//	PopupSkinMenu();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_ShortcutSetView)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ShortcutSetView)
 		{
 			int nX, nY, nWidth, nHeight;
 			m_ShortcutSetView.GetPosition(&nX, &nY);
@@ -285,7 +285,7 @@ int	 KUiOptions::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		{
 			for (int i = 0; i < m_nToggleBtnValidCount; i++)
 			{
-				if (uParam == (unsigned int)(KWndWindow*)&m_ToggleBtn[i])
+				if (uParam == (KUPARAM)(KWndWindow*)&m_ToggleBtn[i])
 				{
 					ToggleOption(m_nFirstControlableIndex + i);
 				}
@@ -298,7 +298,7 @@ int	 KUiOptions::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		nRet = true;
 		break;
 	case WND_M_MENUITEM_SELECTED:
-		if (uParam == (unsigned int)(KWndWindow*)this)
+		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
 			if (HIWORD(nParam) == 1)
 			{

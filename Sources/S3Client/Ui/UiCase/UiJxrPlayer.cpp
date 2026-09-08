@@ -100,37 +100,37 @@ void KUiJxrPlayer::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiJxrPlayer::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiJxrPlayer::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK)
 	{
-		if (uParam == (unsigned int)(KWndWindow*)&m_btnGoOn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_btnGoOn)
 		{
 			JxReplay_DoVerb("pause");	// bam lai de chay tiep khi dang tam dung
 			IJXReplay* p = JxReplay_Get();
 			if (p)
 				p->Resume();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_btnPause)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnPause)
 		{
 			JxReplay_DoVerb("pause");
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_btnSpeedUp)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnSpeedUp)
 		{
 			// LUU Y: o vtable nay la HAM RONG trong jxreplay.dll ban tham chieu.
 			JxReplay_DoVerb("speedup");
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_btnSlowDown)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnSlowDown)
 		{
 			// LUU Y: cung la ham rong trong jxreplay.dll.
 			JxReplay_DoVerb("slowdown");
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_btnStop)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnStop)
 		{
 			JxReplay_DoVerb("stop");
 			CloseWindow();
 		}
-		else if (uParam == (unsigned int)(KWndWindow*)&m_btnOpen)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_btnOpen)
 		{
 			// KHAC ban tham chieu: o do nut nay bi Enable(0) vo hieu hoa vi
 			// nguoi choi mo tep tu man hinh dang nhap. Client cua ta khong co

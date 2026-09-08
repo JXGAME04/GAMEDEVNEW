@@ -146,21 +146,21 @@ void KUiBreakItem::LoadScheme(const char* pScheme)
 //--------------------------------------------------------------------------
 //	功能：窗口消息函数
 //--------------------------------------------------------------------------
-int KUiBreakItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiBreakItem::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_OkBtn)
+		if (uParam == (KUPARAM)(KWndWindow*)&m_OkBtn)
 			OnOk();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CancelBtn)
 			OnCancel();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Increase)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Increase)
 			OnIncrease();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Decrease)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_Decrease)
 			OnDecrease();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_CheckBtn)
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_CheckBtn)
 			OnCheck();			
 		break;
 	case WM_KEYDOWN:
@@ -177,7 +177,7 @@ int KUiBreakItem::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		break;
 	case WND_N_EDIT_SPECIAL_KEY_DOWN:
 		if (nParam == VK_RETURN &&
-			uParam == (unsigned int)(KWndWindow*)&m_Number)
+			uParam == (KUPARAM)(KWndWindow*)&m_Number)
 		{
 			OnOk();
 			nRet = 1;
@@ -234,7 +234,7 @@ void KUiBreakItem::OnOk()
 		int nNumber = m_Number.GetIntNumber();
 		breakOption.num = nNumber;
 		breakOption.isbreakall = IsCheck;
-		g_pCoreShell->OperationRequest(GOI_NPC_ITEM_BREAK, (unsigned int)(&m_ItemInfo), (unsigned int)(&breakOption));
+		g_pCoreShell->OperationRequest(GOI_NPC_ITEM_BREAK, (KUPARAM)(&m_ItemInfo), (KUPARAM)(&breakOption));
 	}
 	CloseWindow(false);
 }

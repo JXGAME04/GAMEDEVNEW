@@ -30,7 +30,7 @@ private:
 
 	void					Initialize();
 	void					LoadScheme(const char* pScheme);
-	virtual int				WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	virtual int				WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 private:
 	KWndButton	m_btnPause;

@@ -157,7 +157,7 @@ void KWndList2::SetScrollbar(KWndScrollBar* pScroll)
 //--------------------------------------------------------------------------
 //	功能：窗口函数
 //--------------------------------------------------------------------------
-int KWndList2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndList2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
@@ -263,7 +263,7 @@ int KWndList2::SetCurSel(int nSel)
 				m_nTopItemIndex = 0;
 		}
 		if (m_pParentWnd)
-			m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (unsigned int)(KWndWindow*)this, m_nSelItemIndex);
+			m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (KUPARAM)(KWndWindow*)this, m_nSelItemIndex);
 	}
 	return m_nSelItemIndex;
 }
@@ -328,7 +328,7 @@ void KWndList2::OnLButtonDown(int x, int y)
 		{
 			m_nSelItemIndex = nSel;
 			if (m_pParentWnd)
-				m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (unsigned int)(KWndWindow*)this, m_nSelItemIndex);
+				m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (KUPARAM)(KWndWindow*)this, m_nSelItemIndex);
 		}
 		if (ms_nDisableBtnTip == false && pItem->Tip[0] && !g_MouseOver.IsMoseHoverWndObj((void*)(KWndWindow*)this, 0))
 		{
@@ -395,7 +395,7 @@ void KWndList2::OnLButtonDClick(int x, int y)
 		}
 		m_nSelItemIndex = nSel;
 		if (m_pParentWnd)
-			m_pParentWnd->WndProc(WND_N_LIST_ITEM_D_CLICK, (unsigned int)(KWndWindow*)this, m_nSelItemIndex);
+			m_pParentWnd->WndProc(WND_N_LIST_ITEM_D_CLICK, (KUPARAM)(KWndWindow*)this, m_nSelItemIndex);
 	}
 }
 
@@ -533,7 +533,7 @@ int KWndList2::AddString(int nIndex, const char* pszString, bool bIsNode/* = fal
 		{
 			m_nSelItemIndex ++;
 			if (m_pParentWnd)
-				m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (unsigned int)(KWndWindow*)this, m_nSelItemIndex);
+				m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (KUPARAM)(KWndWindow*)this, m_nSelItemIndex);
 		}
 		if (m_pScrollbar)
 	    {
@@ -573,7 +573,7 @@ int	KWndList2::DeleteString(int nIndex)
 		else if (m_nSelItemIndex == nIndex)
 			m_nSelItemIndex = -1;
 		if (m_pParentWnd)
-				m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (unsigned int)(KWndWindow*)this, m_nSelItemIndex);
+				m_pParentWnd->WndProc(WND_N_LIST_ITEM_SEL, (KUPARAM)(KWndWindow*)this, m_nSelItemIndex);
 		if (m_pScrollbar)
 	    {
     		if(GetCurCount() > GetVisibleLineCount())

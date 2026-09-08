@@ -29,7 +29,7 @@ private:
 	KUiItem() {}
 	~KUiItem() {}
 	void	Initialize();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateData();
 	void	OnClickItem(KUiDraggedObject* pItem, bool bDoImmed);
 	void	OnSetItem(KUiDraggedObject* pItem, int nPrice);

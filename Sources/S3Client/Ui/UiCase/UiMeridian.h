@@ -30,7 +30,7 @@ private:
 	void	RebuildPage();							// [KM 27/08] dung lai trang mach theo ban chuan
 	void	CapNhatNguyenLuc();						// [KM 27/08] 2 dong Chan Nguyen / Huyen Nguyen
 	void	DungChuKhiDoanh(KIniFile* pIni);			// [KM 27/08] 3 dong mo ta trang Khi Doanh
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 	int btnNo = 1;
 private:
@@ -85,7 +85,7 @@ private:
 	~KUiMeridianBuff() {}
 	void	Initialize();
 	void	DungNoiDung(KIniFile* pIni);
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 private:
 	static KUiMeridianBuff* m_pSelf;
 	KWndImage	m_Nen;
@@ -115,7 +115,7 @@ private:
 	void	Initialize();
 	void	Breathe();
 	void	LoadScheme(KIniFile* pIni);
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 
 private:
 	static KUiMeridianConfirm* m_pSelf;

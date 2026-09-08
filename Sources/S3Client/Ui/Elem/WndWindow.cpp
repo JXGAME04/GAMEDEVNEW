@@ -519,7 +519,7 @@ void KWndWindow::SplitSmaleFamily()
 //--------------------------------------------------------------------------
 //	功能：窗口函数（处理消息）
 //--------------------------------------------------------------------------
-int KWndWindow::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KWndWindow::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int	nRet = 0;
 	switch(uMsg)
@@ -531,7 +531,7 @@ int KWndWindow::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	case WM_RBUTTONDOWN:
 		if (m_pParentWnd)
 		{
-			m_pParentWnd->WndProc(WND_M_POPUPMENU, (unsigned int)(KWndWindow*)this, nParam);
+			m_pParentWnd->WndProc(WND_M_POPUPMENU, (KUPARAM)(KWndWindow*)this, nParam);
 			nRet = 1;
 		}
 		break;
@@ -549,7 +549,7 @@ int KWndWindow::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_bMoving = false;
 			if (m_pParentWnd)
 			{
-				m_pParentWnd->WndProc(WND_N_CHILD_MOVE, (unsigned int)(KWndWindow*)this, 0);
+				m_pParentWnd->WndProc(WND_N_CHILD_MOVE, (KUPARAM)(KWndWindow*)this, 0);
 			}
 		}
 		nRet = 1;
@@ -594,7 +594,7 @@ void KWndWindow::OnMoveWnd()
 		x = ((x & 0xffff) | ((y & 0xffff) << 16));
 		if (x && m_pParentWnd)
 		{
-			m_pParentWnd->WndProc(WND_N_CHILD_MOVE, (unsigned int)(KWndWindow*)this, x);
+			m_pParentWnd->WndProc(WND_N_CHILD_MOVE, (KUPARAM)(KWndWindow*)this, x);
 		}
 	}
 }

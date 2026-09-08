@@ -397,13 +397,13 @@ void KUiFightSkillSubPageNew::UpdateFaction(int faction)
 	m_nFaction = faction;
 }
 
-int	KUiFightSkillSubPageNew::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int	KUiFightSkillSubPageNew::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK && uParam && m_nRemainSkillPoint)
 	{
 		for (int i = 0; i < FIGHT_SKILL_UI_MAX; i++)
 		{
-			if (uParam == (unsigned int)(KWndWindow*)&m_btnFightSkills[i])
+			if (uParam == (KUPARAM)(KWndWindow*)&m_btnFightSkills[i])
 			{
 				KUiDraggedObject	Obj;
 				m_FightSkills[i].GetObject(Obj);
@@ -456,7 +456,7 @@ void KUiFightSkillSubPageNew::OnSkillPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITE
 		Drop.eContainer = UOC_SKILL_TAKE_WITH;		
 	}
 	
-	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, pPickPos ? (unsigned int)&Pick : 0, pDropPos ? (int)&Drop : 0);
+	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, pPickPos ? (KUPARAM)&Pick : 0, pDropPos ? (KNPARAM)&Drop : 0);
 }
 
 void KUiFightSkillSubPageNew::PaintWindow()
@@ -651,7 +651,7 @@ void KUiLiveSkillNew::LoadScheme(const char* pScheme)
 	}
 }
 
-int KUiLiveSkillNew::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiLiveSkillNew::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_LEFT_CLICK_ITEM && uParam && m_nRemainSkillPoint)
 	{
@@ -698,7 +698,7 @@ void KUiLiveSkillNew::PaintWindow()
 void KUiLiveSkillNew::UpdateBaseData()
 {
 	KUiPlayerLiveSkillBase	Info;
-	g_pCoreShell->GetGameData(GDI_LIVE_SKILL_BASE, (unsigned int)&Info, 0);
+	g_pCoreShell->GetGameData(GDI_LIVE_SKILL_BASE, (KUPARAM)&Info, 0);
 	m_RemainSkillPoint.SetIntText(m_nRemainSkillPoint = Info.nRemainPoint);
 }
 
@@ -788,7 +788,7 @@ void KUiSkillsNew::LoadScheme(const char* pScheme)
 		
 		KUiPlayerBaseInfo	Info;
 		memset(&Info, 0, sizeof(KUiPlayerBaseInfo));
-		g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (int)&Info, 0);
+		g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (KNPARAM)&Info, 0);
 		if (Info.nFirstAddFaction == -1) {
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SKILLS);
 			return;
@@ -845,10 +845,10 @@ void KUiSkillsNew::UpdateSkill(KUiSkillData* pSkill, int nIndex)
 		{
 			KUiPlayerAttribute	Info;
 			memset(&Info, 0, sizeof(KUiPlayerAttribute));
-			g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (unsigned int)&Info, 0);
+			g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (KUPARAM)&Info, 0);
 			if (Info.nLevel <= SET_NEW_SKILL_TO_IMMED_SKILL_LEVEL_RANGE)
 			{
-				g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (unsigned int)pSkill, 1);
+				g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)pSkill, 1);
 				KSystemMessage	Msg;
 				Msg.byConfirmType = SMCT_NONE;
 				Msg.byParamSize = 0;
@@ -880,7 +880,7 @@ void KUiSkillsNew::UpdateLiveBaseData()
 	m_LiveSkillPad.UpdateBaseData();
 }
 
-int KUiSkillsNew::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiSkillsNew::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (uMsg == WND_N_BUTTON_CLICK && (KWndWindow*)uParam == (KWndWindow*)&m_Close)
 	{

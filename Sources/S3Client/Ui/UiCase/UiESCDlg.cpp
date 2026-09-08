@@ -137,7 +137,7 @@ void KUiESCDlg::LoadScheme(const char* pScheme)
 	}	
 }
 
-int KUiESCDlg::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+int KUiESCDlg::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int nRet = 0;
 	switch(uMsg)

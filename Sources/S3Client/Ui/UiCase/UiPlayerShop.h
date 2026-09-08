@@ -24,7 +24,7 @@ public:
 	static void			LoadScheme(const char* pScheme);	//载入界面方案
 	static void			CancelTrade();
 	void				UpdateData(KUiPlayerItem* pDest);	
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//窗口函数
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);//窗口函数
 	void			Breathe();									//活动函数
 	void			UpdateItem();
 	void			UpdateItem1(KUiObjAtRegion* pItem, int bAdd);

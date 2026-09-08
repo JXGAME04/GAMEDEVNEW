@@ -281,7 +281,7 @@ void Wnd_DragFinished()
 //--------------------------------------------------------------------------
 //	功能：处理输入
 //--------------------------------------------------------------------------
-void Wnd_ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam)
+void Wnd_ProcessInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	KWndWindow* pActiveWnd = NULL;
 	static bool bLastCursorEventProcessedByGameSpace = false;
@@ -363,7 +363,7 @@ void Wnd_ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam)
 					if (pOverParent)
 					{
 						pOverParent->WndProc(WND_N_MOUSE_ENTER_CHILD,
-							(unsigned int)pTopWnd, 0);
+							(KUPARAM)pTopWnd, 0);
 					}
 				}
 				s_WndStation.pMouseOverWnd = pTopWnd;
@@ -486,7 +486,7 @@ void Wnd_ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam)
 	}
 }
 
-void Wnd_TransmitInputToGameSpace(unsigned int uMsg, unsigned int uParam, int nParam)
+void Wnd_TransmitInputToGameSpace(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	s_WndStation.pGameSpaceWnd->WndProc(uMsg, uParam, nParam);
 }
@@ -579,7 +579,7 @@ void Wnd_SetFocusWnd(KWndWindow* pWnd)
 	if (s_WndStation.pFocusWnd != pWnd)
 	{
 		if (s_WndStation.pFocusWnd)
-			s_WndStation.pFocusWnd->WndProc(WND_M_KILL_FOCUS, (unsigned int)pWnd, 0);
+			s_WndStation.pFocusWnd->WndProc(WND_M_KILL_FOCUS, (KUPARAM)pWnd, 0);
 		if (pWnd)
 			pWnd->WndProc(WND_M_SET_FOCUS, (unsigned int)s_WndStation.pFocusWnd, 0);
 		s_WndStation.pFocusWnd = pWnd;
