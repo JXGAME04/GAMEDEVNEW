@@ -39,15 +39,25 @@ public:
 	bool opened;
 	ZFile(const char *name, ZCache *cache) {
 		opened = false;
+#ifdef JX_PLATFORM_SDL	// [SDL 08/09 2b-1b] HANDLE chua SDL_IOStream*
+		{ SDL_IOStream* pIO = SDL_IOFromFile(name, "rb"); m_hFile = pIO ? (HANDLE)pIO : INVALID_HANDLE_VALUE; }
+		if(m_hFile != INVALID_HANDLE_VALUE) {
+			m_Size = (unsigned long)SDL_GetIOSize((SDL_IOStream*)m_hFile);
+#else
 		m_hFile = CreateFile(name, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 		if(m_hFile != INVALID_HANDLE_VALUE) {
 			m_Size = GetFileSize(m_hFile, NULL);
+#endif
 			m_Cache = cache;
 			opened = true;
 		}
 	}
 	virtual ~ZFile() {
+#ifdef JX_PLATFORM_SDL
+		if(m_hFile != INVALID_HANDLE_VALUE) SDL_CloseIO((SDL_IOStream*)m_hFile);
+#else
 		if(m_hFile != INVALID_HANDLE_VALUE) CloseHandle(m_hFile);
+#endif
 	}
 	char *read(unsigned long offset, int size);
 	int read(char *buffer, unsigned long offset, int size);

@@ -349,7 +349,11 @@ ENGINE_API	void	g_CreatePath(LPSTR lpPathName)
 #ifdef WIN32
 		if (szFullPath[i] == '\\') {
 			szFullPath[i] = 0;
+#ifdef JX_PLATFORM_SDL
+			SDL_CreateDirectory(szFullPath);	// [SDL 08/09 2b-1b]
+#else
 			CreateDirectory(szFullPath, NULL);
+#endif
 			szFullPath[i] = '\\';
 		}
 #else
@@ -359,7 +363,9 @@ ENGINE_API	void	g_CreatePath(LPSTR lpPathName)
 		}
 #endif
 	}
-#ifdef WIN32
+#if defined(JX_PLATFORM_SDL)
+	SDL_CreateDirectory(szFullPath);
+#elif defined(WIN32)
 	CreateDirectory(szFullPath, NULL);
 #else
 	// flying comment
@@ -422,7 +428,11 @@ ENGINE_API BOOL g_FileExists(LPSTR FileName)
 		{
 			#ifdef	WIN32
 				g_GetFullPath(szFullName, FileName);
-				bExist = !(GetFileAttributes(szFullName) & FILE_ATTRIBUTE_DIRECTORY);// || dword == INVALID_FILE_ATTRIBUTES)
+#ifdef JX_PLATFORM_SDL
+				{ SDL_PathInfo sInfo; bExist = SDL_GetPathInfo(szFullName, &sInfo) && sInfo.type != SDL_PATHTYPE_DIRECTORY; }	// [SDL 08/09 2b-1b]
+#else
+				bExist = !(GetFileAttributes(szFullName) & FILE_ATTRIBUTE_DIRECTORY);
+#endif// || dword == INVALID_FILE_ATTRIBUTES)
 			#endif
 		}
 	}

@@ -8,6 +8,22 @@
 #include "XPackFile.h"
 #include "ucl/ucl.h"
 #include <crtdbg.h>
+#ifdef JX_PLATFORM_SDL
+// [SDL 08/09 2b-1b] CRITICAL_SECTION cua tep nay chua SDL_Mutex* o 8 byte dau; HANDLE m_hFile chua SDL_IOStream*
+#undef InitializeCriticalSection
+#undef DeleteCriticalSection
+#undef EnterCriticalSection
+#undef LeaveCriticalSection
+#define InitializeCriticalSection(p)  (*(SDL_Mutex**)(p) = SDL_CreateMutex())
+#define DeleteCriticalSection(p)      SDL_DestroyMutex(*(SDL_Mutex**)(p))
+#define EnterCriticalSection(p)       SDL_LockMutex(*(SDL_Mutex**)(p))
+#define LeaveCriticalSection(p)       SDL_UnlockMutex(*(SDL_Mutex**)(p))
+static inline HANDLE XP_Open(const char* pszName) { SDL_IOStream* p = SDL_IOFromFile(pszName, "rb"); return p ? (HANDLE)p : INVALID_HANDLE_VALUE; }
+static inline unsigned int XP_Size(HANDLE h) { Sint64 s = SDL_GetIOSize((SDL_IOStream*)h); return (s < 0) ? (unsigned int)INVALID_FILE_SIZE : (unsigned int)s; }
+static inline bool XP_Read(HANDLE h, void* pBuf, unsigned int uLen) { return SDL_ReadIO((SDL_IOStream*)h, pBuf, uLen) == (size_t)uLen; }
+static inline bool XP_ReadAt(HANDLE h, unsigned int uOff, void* pBuf, unsigned int uLen) { return SDL_SeekIO((SDL_IOStream*)h, (Sint64)uOff, SDL_IO_SEEK_SET) == (Sint64)uOff && XP_Read(h, pBuf, uLen); }
+static inline void XP_Close(HANDLE h) { SDL_CloseIO((SDL_IOStream*)h); }
+#endif
 
 //一个Pack文件具有的头结构:
 struct XPackFileHeader
@@ -84,10 +100,18 @@ bool XPackFile::Open(const char* pszPackFileName, int nSelfIndex)
 	Close();
 	EnterCriticalSection(&ms_ReadCritical);
 	m_nSelfIndex = nSelfIndex;
+#ifdef JX_PLATFORM_SDL
+	m_hFile = XP_Open(pszPackFileName);
+#else
 	m_hFile = ::CreateFile(pszPackFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+#endif
 	while (m_hFile != INVALID_HANDLE_VALUE)
 	{
+#ifdef JX_PLATFORM_SDL
+		m_uFileSize = XP_Size(m_hFile);
+#else
 		m_uFileSize = ::GetFileSize(m_hFile, NULL);
+#endif
 		if (m_uFileSize == 0 || m_uFileSize == INVALID_FILE_SIZE ||
 			m_uFileSize <= sizeof(XPackFileHeader))
 		{
@@ -96,7 +120,12 @@ bool XPackFile::Open(const char* pszPackFileName, int nSelfIndex)
 		XPackFileHeader	Header;
 		DWORD			dwListSize, dwReaded;
 		//--读取包文件头--
+#ifdef JX_PLATFORM_SDL
+		dwReaded = XP_Read(m_hFile, &Header, sizeof(Header)) ? (DWORD)sizeof(Header) : 0;
+		if (dwReaded == 0)
+#else
 		if (::ReadFile(m_hFile, &Header, sizeof(Header), &dwReaded, NULL) == FALSE)
+#endif
 			break;
 		//--包文件标记与内容的合法性判断--
 		if (dwReaded != sizeof(Header) ||
@@ -113,6 +142,11 @@ bool XPackFile::Open(const char* pszPackFileName, int nSelfIndex)
 		//--读取索引信息表--
 		dwListSize = sizeof(XPackIndexInfo) * Header.uCount;
 		m_pIndexList = (XPackIndexInfo*)malloc(dwListSize);
+#ifdef JX_PLATFORM_SDL
+		if (m_pIndexList == NULL)
+			break;
+		dwReaded = XP_ReadAt(m_hFile, Header.uIndexTableOffset, m_pIndexList, dwListSize) ? dwListSize : 0;
+#else
 		if (m_pIndexList == NULL ||
 			::SetFilePointer(m_hFile, Header.uIndexTableOffset, NULL, FILE_BEGIN) != Header.uIndexTableOffset)
 		{
@@ -120,6 +154,7 @@ bool XPackFile::Open(const char* pszPackFileName, int nSelfIndex)
 		}
 		if (::ReadFile(m_hFile, m_pIndexList, dwListSize, &dwReaded, NULL) == FALSE)
 			break;
+#endif
 		if (dwReaded != dwListSize)
 			break;
 		m_nElemFileCount = Header.uCount;
@@ -159,7 +194,11 @@ void XPackFile::Close()
 
 	if (m_hFile != INVALID_HANDLE_VALUE)
 	{
+#ifdef JX_PLATFORM_SDL
+		XP_Close(m_hFile);
+#else
 		::CloseHandle(m_hFile);
+#endif
 		m_hFile = INVALID_HANDLE_VALUE;
 	}
 	m_uFileSize = 0;
@@ -194,6 +233,11 @@ bool XPackFile::DirectRead(void* pBuffer, unsigned int uOffset, unsigned int uSi
 	bool bResult = false;
 	DWORD dwReaded;
 	_ASSERT(pBuffer && m_hFile != INVALID_HANDLE_VALUE);
+#ifdef JX_PLATFORM_SDL
+	dwReaded = 0;
+	if (uOffset + uSize <= m_uFileSize && XP_ReadAt(m_hFile, uOffset, pBuffer, uSize))
+		bResult = true;
+#else
 	if (uOffset + uSize <= m_uFileSize &&
 		::SetFilePointer(m_hFile, uOffset, 0, FILE_BEGIN) == uOffset)
 	{
@@ -203,6 +247,7 @@ bool XPackFile::DirectRead(void* pBuffer, unsigned int uOffset, unsigned int uSi
 				bResult = true;
 		}
 	}
+#endif
 	return bResult;
 }
 

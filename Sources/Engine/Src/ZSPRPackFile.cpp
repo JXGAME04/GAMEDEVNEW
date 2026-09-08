@@ -159,8 +159,14 @@ int ZFile::read(char *buffer, unsigned long offset, int size) {
 	memset(&overlapped, 0, sizeof(overlapped));
 	overlapped.Offset = offset;*/
 	DWORD read_size;
+#ifdef JX_PLATFORM_SDL
+	read_size = 0;
+	if (SDL_SeekIO((SDL_IOStream*)m_hFile, (Sint64)offset, SDL_IO_SEEK_SET) == (Sint64)offset) read_size = (DWORD)SDL_ReadIO((SDL_IOStream*)m_hFile, buffer, (size_t)size);
+	return read_size;
+#else
 	SetFilePointer(m_hFile, offset, 0, SEEK_SET);
 	if(ReadFile(m_hFile, buffer, size, &read_size, NULL)) return read_size;
+#endif
 	return read_size;
 }
 
@@ -180,6 +186,17 @@ unsigned long ZPackFile::getSize(unsigned long index) {
 }
 
 #include "ucl/ucl.h"
+#ifdef JX_PLATFORM_SDL
+// [SDL 08/09 2b-1b] CRITICAL_SECTION cua tep nay chua SDL_Mutex* o 8 byte dau; HANDLE m_hFile chua SDL_IOStream*
+#undef InitializeCriticalSection
+#undef DeleteCriticalSection
+#undef EnterCriticalSection
+#undef LeaveCriticalSection
+#define InitializeCriticalSection(p)  (*(SDL_Mutex**)(p) = SDL_CreateMutex())
+#define DeleteCriticalSection(p)      SDL_DestroyMutex(*(SDL_Mutex**)(p))
+#define EnterCriticalSection(p)       SDL_LockMutex(*(SDL_Mutex**)(p))
+#define LeaveCriticalSection(p)       SDL_UnlockMutex(*(SDL_Mutex**)(p))
+#endif
 bool ZPackFile::_readData(int node_index, char *node) {
 	char *source = read(index_list[node_index].offset, (index_list[node_index].compress_size & 0x00FFFFFF));
 	if(!source) 
