@@ -20,6 +20,9 @@
 #endif
 
 #include "Utils.h"
+#ifdef JX_PLATFORM_SDL
+#include "JxNetShim.h"
+#endif
 
 /*
  * namespace OnlineGameLib::Win32
@@ -68,7 +71,11 @@ public:
 	  
 private:
 		
+#ifdef JX_PLATFORM_SDL
+	void *m_crit;	// [SDL 08/09 2b-2] SDL_Mutex* (de quy nhu CRITICAL_SECTION)
+#else
 	CRITICAL_SECTION	m_crit;
+#endif
 		
 	/*
 	 * No copies do not implement
@@ -78,6 +85,15 @@ private:
 
 };
 
+#ifdef JX_PLATFORM_SDL
+inline void CCriticalSection::Enter() { SDL_LockMutex( ( SDL_Mutex * )m_crit ); }
+inline void CCriticalSection::Leave() { SDL_UnlockMutex( ( SDL_Mutex * )m_crit ); }
+inline CCriticalSection::CCriticalSection() { m_crit = SDL_CreateMutex(); }
+inline CCriticalSection::~CCriticalSection() { if ( m_crit ) SDL_DestroyMutex( ( SDL_Mutex * )m_crit ); m_crit = NULL; }
+#if ( _WIN32_WINNT >= 0x0400 )
+inline bool CCriticalSection::TryEnter() { return SDL_TryLockMutex( ( SDL_Mutex * )m_crit ); }
+#endif
+#else	// JX_PLATFORM_SDL
 inline void CCriticalSection::Enter()
 {
 	::EnterCriticalSection( &m_crit );
@@ -104,6 +120,7 @@ inline bool CCriticalSection::TryEnter()
 	return BOOL_to_bool( ::TryEnterCriticalSection( &m_crit ) );
 }
 #endif
+#endif	// JX_PLATFORM_SDL [SDL 08/09 2b-2]
 
 /*
  * CCriticalSection::Owner

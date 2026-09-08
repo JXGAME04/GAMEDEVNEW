@@ -53,7 +53,13 @@ private:
 
 	static unsigned int __stdcall ThreadFunction( void *pV );
 
+#ifdef JX_PLATFORM_SDL
+	mutable HANDLE m_hThread;	// [SDL 08/09 2b-2] SDL_Thread*; mutable de Wait() const thu hoi luong
+	volatile int m_nDone;
+	friend int JxThreadProcSdl( void *pV );
+#else
 	HANDLE m_hThread;
+#endif
 
 	/*
 	 * No copies do not implement

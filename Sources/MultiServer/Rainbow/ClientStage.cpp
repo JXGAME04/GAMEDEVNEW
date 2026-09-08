@@ -6,6 +6,9 @@
 
 #include "Utils.h"
 #include "Exception.h"
+#ifdef JX_PLATFORM_SDL
+#include "JxNetShim.h"	// [SDL 08/09 2b-2]
+#endif
 
 using OnlineGameLib::Win32::CIOBuffer;
 
@@ -438,7 +441,11 @@ void CGameClient::ReadCompleted( OnlineGameLib::Win32::CIOBuffer *pBuffer )
 					StopConnections();
 					break;
 				}
+#ifdef JX_PLATFORM_SDL
+				SDL_Delay( 1 );
+#else
 				::Sleep( 1 );
+#endif
 			}
 		}
 		

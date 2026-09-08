@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "EventSelect.h"
+#ifndef JX_PLATFORM_SDL	// [SDL 08/09 2b-2] ban SDL: lop inline trong EventSelect.h
 
 /*
  * namespace OnlineGameLib::Win32
@@ -48,3 +49,4 @@ void CEventSelect::DissociateEvent()
 
 } // End of namespace OnlineGameLib
 } // End of namespace Win32
+#endif	// JX_PLATFORM_SDL [SDL 08/09 2b-2]

@@ -4,6 +4,9 @@
 #include "Utils.h"
 #include "Socket.h"
 #include "Macro.h"
+#ifdef JX_PLATFORM_SDL
+#include "JxNetShim.h"	// [SDL 08/09 2b-2]
+#endif
 
 #include <vector>
 
@@ -170,7 +173,11 @@ SOCKET CSocketClient::CreateConnectionSocket(
 					  const OnlineGameLib::Win32::_tstring &addressToConnectServer,
 					  unsigned short port)
 {
+#ifdef JX_PLATFORM_SDL
+	SOCKET s = JxNetCreateTcpSocket();	// [SDL 08/09 2b-2]
+#else
 	SOCKET s = ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_IP, NULL, 0, 0 );
+#endif
 	
 	if ( INVALID_SOCKET == s )
 	{
@@ -218,6 +225,17 @@ int CSocketClient::Run()
 {
 	try
 	{		
+#ifdef JX_PLATFORM_SDL
+		// [SDL 08/09 2b-2] khong co WaitForMultipleObjects: tham dinh ky 2 su kien (shutdown / da ket noi), 50 ms moi nhip
+		while ( !m_shutdownEvent.Wait( 0 ) )
+		{
+			if ( !m_successConnectionsEvent.Wait( 50 ) )
+			{
+				continue;
+			}
+
+			{
+#else
 		HANDLE handlesToWaitFor[2];
 		
 		handlesToWaitFor[0] = m_shutdownEvent.GetEvent();
@@ -236,6 +254,7 @@ int CSocketClient::Run()
 			}
 			else if ( waitResult == WAIT_OBJECT_0 + 1 )
 			{
+#endif
 				/*
 				 * Allocate a buffer for required read
 				 */
@@ -309,6 +328,7 @@ int CSocketClient::Run()
 
 				pReadContext->Release();
 			}
+#ifndef JX_PLATFORM_SDL
 			else
 			{
 				/*
@@ -316,6 +336,7 @@ int CSocketClient::Run()
 				 */
 				OnError( _T("CSocketClient::Run() - WaitForMultipleObjects: ") + GetLastErrorMessage( ::GetLastError() ) );
 			}
+#endif
 			
 		} // while ( ... 		
 	}
@@ -360,6 +381,41 @@ void CSocketClient::OnRead( CIOBuffer *pBuffer )
 	
 	pBuffer->SetupRead();
 	
+#ifdef JX_PLATFORM_SDL
+	// [SDL 08/09 2b-2] recv() tren socket non-blocking (thay WSARecv); 0 = ben kia dong; WOULDBLOCK = chua co du lieu
+	{
+		WSABUF *pWsa = pBuffer->GetWSABUF();
+		int nRecv = ::recv( m_connectSocket, pWsa->buf, ( int )pWsa->len, 0 );
+
+		if ( nRecv > 0 )
+		{
+			pBuffer->Use( ( size_t )nRecv );
+
+			ReadCompleted( pBuffer );
+		}
+		else if ( 0 == nRecv )
+		{
+			StopConnections();
+		}
+		else
+		{
+			int lastError = JxNetLastError();
+
+			if ( lastError != JX_NET_WOULDBLOCK && lastError != JX_NET_EINTR )
+			{
+				Output( _T("CSocketClient::OnRead() - recv: ") + GetLastErrorMessage( ( DWORD )lastError ) );
+
+				if ( lastError == JX_NET_CONNABORTED ||
+					lastError == JX_NET_CONNRESET ||
+					lastError == JX_NET_DISCON ||
+					lastError == JX_NET_NOTCONN )
+				{
+					StopConnections();
+				}
+			}
+		}
+	}
+#else
 	if ( SOCKET_ERROR == ::WSARecv(
 				m_connectSocket,
 				pBuffer->GetWSABUF(), 
@@ -391,6 +447,7 @@ void CSocketClient::OnRead( CIOBuffer *pBuffer )
 		
 		ReadCompleted( pBuffer );
 	}
+#endif
 }
 
 void CSocketClient::Write( const char *pData, size_t dataLength )
@@ -444,6 +501,13 @@ void CSocketClient::Write( CIOBuffer *pBuffer )
 			wsa.buf		+= dwSendNumBytes;
 			uDataLength	-= dwSendNumBytes;
 			
+#ifdef JX_PLATFORM_SDL
+			{	// [SDL 08/09 2b-2] send() thay WSASend; loi -> dwSendNumBytes = 0 de vong lap khong tru lai so byte cu
+				int nSent = ::send( m_connectSocket, wsa.buf, ( int )wsa.len, JX_SEND_FLAGS );
+				if ( nSent < 0 ) { nError = SOCKET_ERROR; dwSendNumBytes = 0; }
+				else             { nError = 0; dwSendNumBytes = ( DWORD )nSent; }
+			}
+#else
 			nError = ::WSASend(
 						m_connectSocket,
 						&wsa, 
@@ -453,6 +517,7 @@ void CSocketClient::Write( CIOBuffer *pBuffer )
 						NULL, 
 						NULL
 						);
+#endif
 			
 			if ( SOCKET_ERROR != nError && dwSendNumBytes >= uDataLength )
 			{
@@ -502,15 +567,27 @@ void CSocketClient::Write( CIOBuffer *pBuffer )
 		fd_set writefds;
 		memset( &writefds, 0, sizeof( writefds ) );
 		
+#ifdef JX_PLATFORM_SDL
+		FD_ZERO( &writefds ); FD_SET( m_connectSocket, &writefds );	// [SDL 08/09 2b-2]
+#else
 		writefds.fd_count = 1;
 		writefds.fd_array[0] = m_connectSocket;
+#endif
 		
 		do
 		{
 			/*
 			 * Check socket status
 			 */
+#ifdef JX_PLATFORM_SDL
+			{	// [SDL 08/09 2b-2] select sua fd_set/timeout -> nap lai moi vong; nfds = s + 1 cho POSIX
+				struct timeval tvCho = gs_CheckRW_timeout;
+				FD_ZERO( &writefds ); FD_SET( m_connectSocket, &writefds );
+				nError = ::select( JxSelectNfds( m_connectSocket ), NULL, &writefds, NULL, &tvCho );
+			}
+#else
 			nError = select( 1, NULL, &writefds, NULL, &gs_CheckRW_timeout );
+#endif
 			
 			if ( SOCKET_ERROR == nError )
 			{
@@ -530,6 +607,14 @@ void CSocketClient::Write( CIOBuffer *pBuffer )
 			{
 				break;
 			}
+#ifdef JX_PLATFORM_SDL
+			if ( 0 == nError )
+			{	// [SDL 08/09 2b-2] qua 5 s khong gui duoc: dong ket noi (ban Win32 cung ket thuc o day vi fd_set da bi select xoa)
+				Output( _T("CSocketClient::Write() - send cho qua han -> dong ket noi") );
+				StopConnections();
+				return;
+			}
+#endif
 			
 			/*
 			 * If timeout
@@ -579,7 +664,11 @@ bool CSocketClient::WaitAndVerifyCipher()
 		FD_ZERO( &fdRead );
 		FD_SET( s, &fdRead );
 
+#ifdef JX_PLATFORM_SDL
+		int res = ::select( JxSelectNfds( s ), &fdRead, NULL, NULL, pstTime );	// [SDL 08/09 2b-2]
+#else
 		int res = select( 0, &fdRead, NULL, NULL, pstTime );
+#endif
 		if ( res > 0)
 		{
 			res = recv( s, ( LPSTR )&m_theSendAccountBegin + dwTotalLength, sizeof( m_theSendAccountBegin ) - dwTotalLength, 0 );
