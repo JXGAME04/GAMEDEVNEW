@@ -153,6 +153,7 @@ int g_nFX_msl_max = 0;		// [FX 08/09] muc day cao nhat cua be dan client trong 1
 int g_nFX_msl_ol_trong = 0, g_nFX_msl_ol_khacid = 0, g_nFX_msl_ol_mocoi = 0;	// [FX 08/09] tach ownerlost
 int g_nFX_sv_start = 0, g_nFX_sv_fire = 0, g_nFX_sv_huyhurt = 0, g_nFX_sv_start_all = 0, g_nFX_sv_fire_all = 0;
 int g_nFX_husk_rx = 0, g_nFX_husk_noidx = 0, g_nFX_husk_minh = 0, g_nFX_husk_noskill = 0, g_nFX_husk_notgt = 0, g_nFX_husk_fire = 0, g_nFX_husk_fail = 0, g_nFX_husk_bocuc = 0;	// [HUSK 08/09] client: goi 224
+int g_nFX_husk_toado = 0;	// [HUSK 08/09 c] client: muc tieu khong co -> ve theo toa do trong goi
 int g_nFX_sv_husk = 0, g_nFX_sv_husk_cu = 0;	// [HUSK 08/09] may chu: goi 224 da phat / lan bo qua vi con client cu (hello < 4)
 int g_nHUSK_daNhan = 0;	// [HUSK 08/09 b] client: da nhan >= 1 goi 224 tu may chu dang noi -> moi ngung tu mo phong; dat lai 0 khi gui hello
 DWORD g_uFXMoc = 0;
@@ -247,7 +248,7 @@ static int HUSK_SvBat(DWORD dwLuc)	// [Server] HieuUngSuKien (doc lai moi 10 s) 
 		s_nBat = GetPrivateProfileIntA("Server", "HieuUngSuKien", 1, ".\\config.ini") ? 1 : 0;
 		int n = 0;
 		for (int i = 1; i < MAX_PLAYER; i++)
-			if (Player[i].m_nNetConnectIdx >= 0 && g_abyDeltaHello[i] < 4)
+			if (Player[i].m_nNetConnectIdx >= 0 && g_abyDeltaHello[i] < 5)	// [HUSK 08/09 c] 5 = goi 24 byte co toa do muc tieu
 				n++;
 		s_nCu = n;
 	}
@@ -273,11 +274,16 @@ void KNpc::HUSK_PhatDaBan(int nSkillId, int nLevel, int nParam1, int nParam2)
 			return;
 		sGoi.nMpsX = -1;
 		sGoi.nMpsY = (int)Npc[nParam2].m_dwID;
+		sGoi.nTgtMpsX = 0; sGoi.nTgtMpsY = 0;
+		if (Npc[nParam2].m_RegionIndex >= 0 && Npc[nParam2].m_SubWorldIndex == m_SubWorldIndex)
+			Npc[nParam2].GetMpsPos(&sGoi.nTgtMpsX, &sGoi.nTgtMpsY);	// [HUSK 08/09 c] du phong khi client khong co NPC muc tieu
 	}
 	else
 	{
 		sGoi.nMpsX = nParam1;
 		sGoi.nMpsY = nParam2;
+		sGoi.nTgtMpsX = nParam1;
+		sGoi.nTgtMpsY = nParam2;
 	}
 	static const POINT POff[8] = { {0, 32}, {-16, 32}, {-16, 0}, {-16, -32}, {0, -32}, {16, -32}, {16, 0}, {16, 32} };
 	int nMaxCount = MAX_BROADCAST_COUNT;
@@ -1082,14 +1088,14 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 			else if ((DWORD)(uFXNay - g_uFXMoc) >= 10000)
 			{
 				g_uFXMoc = uFXNay;
-				AUTOLOG("[FX] 10s KHAC: rx95=%d noidx=%d start=%d fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d (truoc60=%d ca hai) huy_lenh(di=%d dung=%d skill=%d khac=%d) huy_chet=%d | MINH: fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d | 148: rx=%d noskill=%d cast=%d fail=%d | dan: add_full=%d add_vung=%d kieu(line=%d ext=%d wall=%d circle=%d spread=%d zone=%d) chet_som(nolauncher=%d ownerlost=%d[trong=%d khacid=%d mocoi=%d] tgtlost=%d) | buff_het_o=%d | huy_sync=%d msl_max=%d/%d | HUSK(224): rx=%d ve=%d hong=%d noidx=%d minh=%d noskill=%d notgt=%d bo_cuc=%d",
+				AUTOLOG("[FX] 10s KHAC: rx95=%d noidx=%d start=%d fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d (truoc60=%d ca hai) huy_lenh(di=%d dung=%d skill=%d khac=%d) huy_chet=%d | MINH: fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d | 148: rx=%d noskill=%d cast=%d fail=%d | dan: add_full=%d add_vung=%d kieu(line=%d ext=%d wall=%d circle=%d spread=%d zone=%d) chet_som(nolauncher=%d ownerlost=%d[trong=%d khacid=%d mocoi=%d] tgtlost=%d) | buff_het_o=%d | huy_sync=%d msl_max=%d/%d | HUSK(224): rx=%d ve=%d hong=%d noidx=%d minh=%d noskill=%d notgt=%d notgt_ve_toado=%d bo_cuc=%d",
 					g_nFX_rx95, g_nFX_rx95_noidx, g_nFX_rx95_start, g_nFX_fire_khac, g_nFX_firefail_khac, g_nFX_botgt_khac, g_nFX_huyhurt_khac, g_nFX_huyhurt_truoc,
 					g_nFX_huylenh_di, g_nFX_huylenh_dung, g_nFX_huylenh_skill, g_nFX_huylenh_khac, g_nFX_huychet,
 					g_nFX_fire_minh, g_nFX_firefail_minh, g_nFX_botgt_minh, g_nFX_huyhurt_minh,
 					g_nFX_rx148, g_nFX_rx148_noskill, g_nFX_rx148_cast, g_nFX_rx148_fail,
 					g_nFX_add_full, g_nFX_add_vung, g_nFX_style_line, g_nFX_style_ext, g_nFX_style_wall, g_nFX_style_circle, g_nFX_style_spread, g_nFX_style_zone,
 					g_nFX_msl_nolauncher, g_nFX_msl_ownerlost, g_nFX_msl_ol_trong, g_nFX_msl_ol_khacid, g_nFX_msl_ol_mocoi, g_nFX_msl_tgtlost, g_nFX_buff_heto, g_nFX_huy_sync, g_nFX_msl_max, (int)MAX_MISSLE,
-					g_nFX_husk_rx, g_nFX_husk_fire, g_nFX_husk_fail, g_nFX_husk_noidx, g_nFX_husk_minh, g_nFX_husk_noskill, g_nFX_husk_notgt, g_nFX_husk_bocuc);
+					g_nFX_husk_rx, g_nFX_husk_fire, g_nFX_husk_fail, g_nFX_husk_noidx, g_nFX_husk_minh, g_nFX_husk_noskill, g_nFX_husk_notgt, g_nFX_husk_toado, g_nFX_husk_bocuc);
 				g_nFX_rx95 = 0; g_nFX_rx95_noidx = 0; g_nFX_rx95_start = 0;
 				g_nFX_rx148 = 0; g_nFX_rx148_noskill = 0; g_nFX_rx148_cast = 0; g_nFX_rx148_fail = 0;
 				g_nFX_fire_khac = 0; g_nFX_fire_minh = 0; g_nFX_firefail_khac = 0; g_nFX_firefail_minh = 0;
@@ -1100,7 +1106,7 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 				g_nFX_style_line = 0; g_nFX_style_ext = 0; g_nFX_style_wall = 0; g_nFX_style_circle = 0; g_nFX_style_spread = 0; g_nFX_style_zone = 0;
 				g_nFX_msl_nolauncher = 0; g_nFX_msl_ownerlost = 0; g_nFX_msl_tgtlost = 0; g_nFX_buff_heto = 0;
 				g_nFX_msl_ol_trong = 0; g_nFX_msl_ol_khacid = 0; g_nFX_msl_ol_mocoi = 0; g_nFX_huy_sync = 0; g_nFX_msl_max = 0;
-				g_nFX_husk_rx = 0; g_nFX_husk_fire = 0; g_nFX_husk_fail = 0; g_nFX_husk_noidx = 0; g_nFX_husk_minh = 0; g_nFX_husk_noskill = 0; g_nFX_husk_notgt = 0; g_nFX_husk_bocuc = 0;	// [HUSK 08/09]
+				g_nFX_husk_rx = 0; g_nFX_husk_fire = 0; g_nFX_husk_fail = 0; g_nFX_husk_noidx = 0; g_nFX_husk_minh = 0; g_nFX_husk_noskill = 0; g_nFX_husk_notgt = 0; g_nFX_husk_toado = 0; g_nFX_husk_bocuc = 0;	// [HUSK 08/09]
 			}
 		}
 		// [NAMBEP 07/09 m] Ghi trang thai SAU HOI SINH o +1 s / +3 s / +6 s - moc chac chan nhat de doi chieu

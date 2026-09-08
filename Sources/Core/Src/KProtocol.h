@@ -1298,7 +1298,9 @@ typedef struct
 	BYTE	bySkillLevel;
 	int		nMpsX;
 	int		nMpsY;
-} S2C_SKILL_FIRED;			// 16 byte (pack 1)
+	int		nTgtMpsX;		// [HUSK 08/09 c] toa do MPS muc tieu (hoac = nMpsX/nMpsY khi phong theo toa do): client khong co NPC muc tieu
+	int		nTgtMpsY;		// (chua nap / mo coi) van ve chieu bay toi diem nay. Hello phien ban 5.
+} S2C_SKILL_FIRED;			// 24 byte (pack 1)
 
 typedef struct
 {

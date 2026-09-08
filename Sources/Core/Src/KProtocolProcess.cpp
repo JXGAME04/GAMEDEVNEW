@@ -3356,7 +3356,7 @@ void KProtocolProcess::SyncEnd(BYTE* pMsg)
 	{
 		C2S_DELTA_HELLO sHello;
 		sHello.ProtocolType = (BYTE)c2s_deltahello;
-		{ extern int HUSK_ClientBat(); extern int g_nHUSK_daNhan; g_nHUSK_daNhan = 0; sHello.byPhienBan = (BYTE)(HUSK_ClientBat() ? 4 : 3); }	// [HUSK 08/09] 4 = hieu them s2c_skillfired (224) khi [Client] HieuUngSuKien=1; [DELTA 07/09 l] 3 = 223; 2 = 222
+		{ extern int HUSK_ClientBat(); extern int g_nHUSK_daNhan; g_nHUSK_daNhan = 0; sHello.byPhienBan = (BYTE)(HUSK_ClientBat() ? 5 : 3); }	// [HUSK 08/09 c] 5 = goi 224 24 byte co toa do muc tieu	// [HUSK 08/09] 4 = hieu them s2c_skillfired (224) khi [Client] HieuUngSuKien=1; [DELTA 07/09 l] 3 = 223; 2 = 222
 		if (g_pClient)
 			g_pClient->SendPackToServer((BYTE*)&sHello, sizeof(sHello));
 	}
@@ -3556,7 +3556,7 @@ void	KProtocolProcess::s2cDirectlyCastSkill(BYTE * pMsg)
 // (hoi chieu client van do OnSkill/148 lo). Bo dem in trong dong [FX] 10s (HUSK(224): ...).
 void	KProtocolProcess::s2cSkillFired(BYTE * pMsg)
 {
-	extern int g_nFX_husk_rx, g_nFX_husk_noidx, g_nFX_husk_minh, g_nFX_husk_noskill, g_nFX_husk_notgt, g_nFX_husk_fire, g_nFX_husk_fail;
+	extern int g_nFX_husk_rx, g_nFX_husk_noidx, g_nFX_husk_minh, g_nFX_husk_noskill, g_nFX_husk_notgt, g_nFX_husk_fire, g_nFX_husk_fail, g_nFX_husk_toado;
 	extern int HUSK_ClientBat();
 	g_nFX_husk_rx++;
 	if (!pMsg || !HUSK_ClientBat())
@@ -3572,8 +3572,14 @@ void	KProtocolProcess::s2cSkillFired(BYTE * pMsg)
 	if (pGoi->nMpsX == -1)
 	{
 		int nTgt = (pGoi->nMpsY > 0) ? NpcSet.SearchID((DWORD)pGoi->nMpsY) : 0;
-		if (nTgt <= 0 || nTgt >= MAX_NPC || Npc[nTgt].m_RegionIndex < 0) { g_nFX_husk_notgt++; return; }
-		bVe = pSkill->Cast(nIdx, -1, nTgt);
+		if (nTgt > 0 && nTgt < MAX_NPC && Npc[nTgt].m_RegionIndex >= 0)
+			bVe = pSkill->Cast(nIdx, -1, nTgt);
+		else if (pGoi->nTgtMpsX > 0 && pGoi->nTgtMpsY > 0)
+		{	// [HUSK 08/09 c] khong co NPC muc tieu tren client (chua nap / mo coi): ve chieu bay toi toa do muc tieu
+			bVe = pSkill->Cast(nIdx, pGoi->nTgtMpsX, pGoi->nTgtMpsY);
+			g_nFX_husk_toado++;
+		}
+		else { g_nFX_husk_notgt++; return; }
 	}
 	else
 		bVe = pSkill->Cast(nIdx, pGoi->nMpsX, pGoi->nMpsY);
