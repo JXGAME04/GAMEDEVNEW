@@ -165,3 +165,36 @@ Hàm chưa cài ghi log `[D3D11] CHUA CAI: ...` một lần (harness: 0 dòng).
 `[D3D11] thiet bi: ...`, dòng `RAM rieng ... | gpu tex N (MB) | d3d11: present TB ms, ve N lenh`. Kỳ vọng: RAM riêng ≈ nền + 0,05 × texture
 (+6 KB × số texture) thay vì + 0,8 × texture → **−350…−450 MB** ở cache 570 MB. Lùi: `Rep3Api=9`. Chưa test trong game: bản đồ nhỏ
 (render-to-image), toàn màn hình, gamma, Alt+Tab, mất thiết bị.
+
+### 6.5 Lần chạy thật đầu tiên (11:34) — lỗi hình và số RAM thật
+
+- **Chủ báo:** "lỗi hình ảnh 1 số map", "mới qua map mới sẽ bị lỗi", "di chuyển hay bị giật đen màn". Ảnh: ô nền đen, mảnh rác.
+  **Gốc:** ring đỉnh — sau Present đặt `m_ringPos = 0` rồi Map `NO_OVERWRITE` ghi đè vùng GPU còn đang đọc của khung trước
+  (harness không lộ vì mỗi khung vẽ y hệt). **Sửa [c]:** Map đầu tiên mỗi khung dùng `DISCARD`.
+- **RAM thật với D3D11 (chưa atlas):** hồi quy 14 mẫu `RAM = 185 + 0,74 × (texture+raw)` — KHÔNG giảm so với D3D9 (0,77–0,95).
+  Lý do (đo được): dòng `gpu tex` cho thấy game giữ **25.000–32.000 texture GPU, trung bình 14 KB**; B0 đo thêm texture nhỏ:
+  64² × 20.000 → D3D9 +176 MB, D3D11 +119 MB (~6 KB/texture); 100² NPOT × 10.000 → D3D9 +165, D3D11 +76. Tức driver tốn ~6–9 KB
+  RAM **mỗi texture** bất kể API; với 30.000 texture 14 KB thì phần cố định ≈ 0,5× byte texture. D3D11 chỉ bỏ được phần tỉ lệ theo
+  byte, không bỏ được phần theo số lượng.
+- **Sửa [d] — atlas trong lớp shim:** texture DEFAULT ≤ 512 px không phải render target = một ô trong trang BGRA8 1024×1024
+  (lớp bin luỹ thừa 2 + 1 px chống tràn mẫu), uv được nhân/dịch lúc chép đỉnh vào ring (Represent3 không đổi); trang rỗng giữ tối đa
+  một trang mỗi lớp. Kỳ vọng: vài trăm đối tượng GPU thay vì hàng vạn → RAM ≈ nền + ~0,05 × texture. `Rep3Atlas=0` để tắt.
+  Harness: ảnh trùng D3D9 99,996 %, 4,3 µs/sprite. Dòng `[REP3]`: `gpu tex N (MB, P trang MB)`.
+- `Represent3.dll.moi` (c+d) đặt lại, chờ chủ restart; nếu còn lỗi hình → `Rep3Atlas=0` (chỉ còn sửa c), rồi `Rep3Api=9`.
+
+### 6.6 Lần chạy 11:51 (bản c+d: ring DISCARD + atlas) — KẾT QUẢ
+
+| Mốc (30 s) | texture cache | RAM riêng | gpu tex | trang atlas | fps |
+|---|---|---|---|---|---|
+| +0,5 phút | 193 MB | 315 MB | 11.390 | 118 (472 MB VRAM) | 63 |
+| +1,5 phút | 369 MB | 340 MB | 29.328 | 214 (856 MB) | 61 |
+| +3 phút | 433 MB | 352 MB | 38.313 | 248 (992 MB) | 63 |
+| +6,5 phút | 479 MB | **347 MB** | 45.113 | 273 (1.092 MB) | 63 |
+
+Hồi quy: **RAM ≈ 300 + 0,1 × texture** (trước: 185 + 0,74; D3D9: 177 + 0,95). Ở texture 480 MB: **347 MB thay vì ~640 MB (−45 %)**.
+Present 0,06–0,10 ms; 0,6–0,8 µs mỗi lệnh vẽ (800–3.600 lệnh/khung); khung giật 0–1/10 s (max 27 ms); 0 hàm thiếu, 0 lỗi tạo texture,
+0 crash. Chủ chưa báo lại về hình sau bản c.
+
+Còn lại: (1) phí VRAM trang 2,3× (bin pow2(w+1)) → bản [e] bin 16/24/32/48/64/96/128/192/256/384/512 (≤ 1,5× mỗi chiều), bỏ +1 px
+(sprite vẽ POINT); (2) `anh_null` 200k–1,3M/30 s = 700 lượt/khung xin 200 sprite biểu cảm THIẾU TỆP (spr/Ui3/<GBK>/140–339.spr) — tốn
+CPU vô ích, cần chép tệp hoặc sửa UI không xin; (3) `Rep3CacheMB=1500` → trang có thể tới ~2,5 GB VRAM: theo dõi (`VRAM con` hiện kẹp 4095).

@@ -9,11 +9,14 @@
 unsigned g_uRep3AtlasPages = 0;
 unsigned __int64 g_uRep3AtlasBytes = 0;
 
-static UINT R11Pow2(UINT v, UINT lo, UINT hi)
+// [D3D11 08/09 e] lop bin: luy thua 2 va 1,5 x luy thua 2 (16..512) -> phi VRAM <= 1,5 moi chieu thay vi 2 (do 11:51: 481 MB texture
+// chiem 1.092 MB trang = 2,3x voi bin pow2(w+1)). Sprite ve POINT nen khong can them 1 px chong tran.
+static UINT R11Bin(UINT v)
 {
-	UINT p = lo;
-	while (p < v && p < hi) p <<= 1;
-	return p;
+	static const UINT s_bins[] = { 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512 };
+	for (int i = 0; i < (int)(sizeof(s_bins) / sizeof(s_bins[0])); i++)
+		if (v <= s_bins[i]) return s_bins[i];
+	return 512;
 }
 
 CAtlasMgr::CAtlasMgr(CDev11* pDev) { m_pDev = pDev; m_pageSize = 1024; }
@@ -72,8 +75,7 @@ CAtlasPage* CAtlasMgr::NewPage(UINT binW, UINT binH)
 
 bool CAtlasMgr::Alloc(UINT w, UINT h, CAtlasPage** ppPage, UINT* pSlot, UINT* pX, UINT* pY)
 {
-	// o rong hon anh 1 diem moi chieu (chong tran mau khi loc LINEAR); bin luy thua 2 trong [16, 512]
-	UINT binW = R11Pow2(w + 1, 16, 512), binH = R11Pow2(h + 1, 16, 512);
+	UINT binW = R11Bin(w), binH = R11Bin(h);
 	if (w > binW || h > binH) return false;
 	CAtlasPage* pPage = NULL;
 	for (size_t i = 0; i < m_pages.size(); i++)
