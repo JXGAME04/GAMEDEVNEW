@@ -148,6 +148,9 @@ int g_nFX_add_full = 0, g_nFX_add_vung = 0;
 int g_nFX_style_line = 0, g_nFX_style_ext = 0, g_nFX_style_wall = 0, g_nFX_style_circle = 0, g_nFX_style_spread = 0, g_nFX_style_zone = 0;
 int g_nFX_msl_nolauncher = 0, g_nFX_msl_ownerlost = 0, g_nFX_msl_tgtlost = 0;
 int g_nFX_buff_heto = 0;
+int g_nFX_huy_sync = 0;		// [FX 08/09] lenh mang (do_stand/walk/run/jump qua ProcNetCommand) de len thi trien chua toi 60%
+int g_nFX_msl_max = 0;		// [FX 08/09] muc day cao nhat cua be dan client trong 10 s
+int g_nFX_msl_ol_trong = 0, g_nFX_msl_ol_khacid = 0, g_nFX_msl_ol_mocoi = 0;	// [FX 08/09] tach ownerlost
 int g_nFX_sv_start = 0, g_nFX_sv_fire = 0, g_nFX_sv_huyhurt = 0, g_nFX_sv_start_all = 0, g_nFX_sv_fire_all = 0;
 DWORD g_uFXMoc = 0;
 #ifdef _SERVER
@@ -998,13 +1001,13 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 			else if ((DWORD)(uFXNay - g_uFXMoc) >= 10000)
 			{
 				g_uFXMoc = uFXNay;
-				AUTOLOG("[FX] 10s KHAC: rx95=%d noidx=%d start=%d fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d (truoc60=%d ca hai) huy_lenh(di=%d dung=%d skill=%d khac=%d) huy_chet=%d | MINH: fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d | 148: rx=%d noskill=%d cast=%d fail=%d | dan: add_full=%d add_vung=%d kieu(line=%d ext=%d wall=%d circle=%d spread=%d zone=%d) chet_som(nolauncher=%d ownerlost=%d tgtlost=%d) | buff_het_o=%d",
+				AUTOLOG("[FX] 10s KHAC: rx95=%d noidx=%d start=%d fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d (truoc60=%d ca hai) huy_lenh(di=%d dung=%d skill=%d khac=%d) huy_chet=%d | MINH: fire=%d fire_fail=%d bo_tgt=%d huy_hurt=%d | 148: rx=%d noskill=%d cast=%d fail=%d | dan: add_full=%d add_vung=%d kieu(line=%d ext=%d wall=%d circle=%d spread=%d zone=%d) chet_som(nolauncher=%d ownerlost=%d[trong=%d khacid=%d mocoi=%d] tgtlost=%d) | buff_het_o=%d | huy_sync=%d msl_max=%d/%d",
 					g_nFX_rx95, g_nFX_rx95_noidx, g_nFX_rx95_start, g_nFX_fire_khac, g_nFX_firefail_khac, g_nFX_botgt_khac, g_nFX_huyhurt_khac, g_nFX_huyhurt_truoc,
 					g_nFX_huylenh_di, g_nFX_huylenh_dung, g_nFX_huylenh_skill, g_nFX_huylenh_khac, g_nFX_huychet,
 					g_nFX_fire_minh, g_nFX_firefail_minh, g_nFX_botgt_minh, g_nFX_huyhurt_minh,
 					g_nFX_rx148, g_nFX_rx148_noskill, g_nFX_rx148_cast, g_nFX_rx148_fail,
 					g_nFX_add_full, g_nFX_add_vung, g_nFX_style_line, g_nFX_style_ext, g_nFX_style_wall, g_nFX_style_circle, g_nFX_style_spread, g_nFX_style_zone,
-					g_nFX_msl_nolauncher, g_nFX_msl_ownerlost, g_nFX_msl_tgtlost, g_nFX_buff_heto);
+					g_nFX_msl_nolauncher, g_nFX_msl_ownerlost, g_nFX_msl_ol_trong, g_nFX_msl_ol_khacid, g_nFX_msl_ol_mocoi, g_nFX_msl_tgtlost, g_nFX_buff_heto, g_nFX_huy_sync, g_nFX_msl_max, (int)MAX_MISSLE);
 				g_nFX_rx95 = 0; g_nFX_rx95_noidx = 0; g_nFX_rx95_start = 0;
 				g_nFX_rx148 = 0; g_nFX_rx148_noskill = 0; g_nFX_rx148_cast = 0; g_nFX_rx148_fail = 0;
 				g_nFX_fire_khac = 0; g_nFX_fire_minh = 0; g_nFX_firefail_khac = 0; g_nFX_firefail_minh = 0;
@@ -1014,6 +1017,7 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 				g_nFX_huychet = 0; g_nFX_add_full = 0; g_nFX_add_vung = 0;
 				g_nFX_style_line = 0; g_nFX_style_ext = 0; g_nFX_style_wall = 0; g_nFX_style_circle = 0; g_nFX_style_spread = 0; g_nFX_style_zone = 0;
 				g_nFX_msl_nolauncher = 0; g_nFX_msl_ownerlost = 0; g_nFX_msl_tgtlost = 0; g_nFX_buff_heto = 0;
+				g_nFX_msl_ol_trong = 0; g_nFX_msl_ol_khacid = 0; g_nFX_msl_ol_mocoi = 0; g_nFX_huy_sync = 0; g_nFX_msl_max = 0;
 			}
 		}
 		// [NAMBEP 07/09 m] Ghi trang thai SAU HOI SINH o +1 s / +3 s / +6 s - moc chac chan nhat de doi chieu
@@ -12511,6 +12515,12 @@ void	KNpc::HurtAutoMove()
 #ifndef _SERVER
 void KNpc::ProcNetCommand(NPCCMD cmd, int x /* = 0 */, int y /* = 0 */, int z /* = 0 */)
 {
+#ifndef _SERVER
+	// [FX 08/09] goi dong bo / lenh mang de len thi trien chua toi khung 60% (SyncNpcMin do_stand, NetCommandWalk/Run) -> hieu ung khong ra
+	if (m_Doing == do_magic && m_Frames.nCurrentFrame < m_Frames.nTotalFrame * ATTACKACTION_EFFECT_PERCENT / 100
+		&& (cmd == do_stand || cmd == do_walk || cmd == do_run || cmd == do_jump))
+		g_nFX_huy_sync++;
+#endif
 	switch (cmd)
 	{
 	case do_death:

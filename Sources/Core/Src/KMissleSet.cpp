@@ -69,6 +69,16 @@ int KMissleSet::Add(int nSubWorldId, int nPX, int nPY)
 	if (nSubWorldId < 0) return -1;
 	
 	int nFreeIndex = FindFree();
+	{	// [FX 08/09] muc day cao nhat cua be (lay mau 1/32 lan Add; GetCount duyet ca be)
+		extern int g_nFX_msl_max;
+		static int s_nFXMau = 0;
+		if ((++s_nFXMau & 31) == 0)
+		{
+			const int nFXDung = GetCount();
+			if (nFXDung > g_nFX_msl_max)
+				g_nFX_msl_max = nFXDung;
+		}
+	}
 	// [FIX-4 26/08] Nhan nay truoc day dat TRUOC cua chan nen in ra o MOI lan Add THANH CONG
 	// (co dong 'khong con khe' voi dang dung=0/20000). Dat vao trong than if.
 	if (nFreeIndex <= 0) 

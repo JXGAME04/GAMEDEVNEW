@@ -7,7 +7,7 @@
 #ifdef  _SERVER
 #define MAX_MISSLE  20000
 #else
-#define MAX_MISSLE 500
+#define MAX_MISSLE 3000	// [FX 08/09] 500 -> 3000: [FX] tran TK 09:22 08/09 add_full 1.400-2.850 lan/10 s (be day lien tuc) => dan/hieu ung khong tao duoc. ~6 KB/o = +15 MB tinh. Be cuc bo, khong len goi tin.
 #endif
 #include "KCore.h"
 #include "SkillDef.h"

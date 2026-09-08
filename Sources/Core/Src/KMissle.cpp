@@ -481,7 +481,17 @@ int KMissle::Activate()
 		(Npc[m_nLauncher].m_SubWorldIndex != m_nSubWorldId) || 
 		(Npc[m_nLauncher].m_RegionIndex < 0))
 	{
-		{ extern int g_nFX_msl_ownerlost; g_nFX_msl_ownerlost++; }	// [FX 07/09]
+		if (m_eMissleStatus != MS_DoVanish)	// [FX 08/09 c] chi dem LAN DAU: Activate goi lai moi nhip khi dan dang tan -> truoc day dem theo nhip
+		{	// [FX 07/09] + [FX 08/09] tach ly do: o NPC trong (da bi go) / o bi NPC khac dung / con NPC nhung mo coi
+			extern int g_nFX_msl_ownerlost, g_nFX_msl_ol_trong, g_nFX_msl_ol_khacid, g_nFX_msl_ol_mocoi;
+			g_nFX_msl_ownerlost++;
+			if (Npc[m_nLauncher].m_Index <= 0)
+				g_nFX_msl_ol_trong++;
+			else if (!Npc[m_nLauncher].IsMatch(m_dwLauncherId))
+				g_nFX_msl_ol_khacid++;
+			else
+				g_nFX_msl_ol_mocoi++;
+		}
 		DoVanish();
 		return 0;	
 	}
