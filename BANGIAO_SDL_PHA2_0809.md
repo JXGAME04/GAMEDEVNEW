@@ -70,3 +70,26 @@ powershell -File ReverseTools\mobile_x64\build_thap.ps1 -Proj Sources\S3Client\S
 
 **15:1x — chủ xác nhận sau bản 15:11:33 (SDL_RegisterApp): *"đã nhận Auto và mọi thứ đã oke hết"* → LÁT 2a NGHIỆM THU.** Quy tắc build mới của
 chủ 15:1x: mặc định được build, chỉ dừng khi chủ báo đang có trận Tống Kim.
+
+## 7. Lát 2b-1 (15:2x): thời gian / luồng / khóa / sự kiện / log / tệp pak qua SDL3 — bộ thử riêng `bin\client64sdl`
+
+**Mốc test:** `D:\GAMEDEVNEW_wt_mobile\bin\client64sdl\ChoiGameSDL64.bat`. Khác `bin\client64`: ở đây **Engine.dll và CoreClient.dll là bản SDL**
+(cấu hình `ReleaseSDL|x64` / `Client ReleaseSDL|x64`, define `JX_PLATFORM_SDL`, import lib `Lib\release64sdl`), GameSDL.exe cùng loại. Dữ liệu: junction
+tới cây live như client64; `config.ini`/settings/script/Ui/UserData là bản sao riêng (`tao_client64sdl.ps1`). Hành vi phải giống hệt bản x64 thường.
+
+Những gì đã đổi khi `JX_PLATFORM_SDL` (Win32 thường: không đổi một byte, mọi khối trong `#ifdef`; chuỗi Win32 chứng minh vẫn build):
+| Phân hệ | Cũ (Win32) | Mới (SDL3) | Tệp |
+|---|---|---|---|
+| thời gian | `timeGetTime/GetTickCount/Sleep`, `QueryPerformanceCounter` | shim macro trong `KWin32.h` → `SDL_GetTicks`, `SDL_Delay`; `KTimer` → `SDL_GetPerformanceCounter` | KWin32.h, KTimer.cpp |
+| khóa | `CRITICAL_SECTION` | `SDL_Mutex` (reentrant) | KCriticalSection.h, KMutex.cpp |
+| sự kiện | `CreateEvent` auto-reset | `SDL_Semaphore` (Signal chỉ khi đếm 0) | KEvent.cpp |
+| luồng | `_beginthreadex/TerminateThread/Suspend` | `SDL_CreateThread/SDL_WaitThread`; Destroy/Suspend/Resume = ghi log (SDL không có) | KThread.cpp |
+| log/hộp thoại | DebugWin `WM_COPYDATA`, `MessageBox` | `SDL_Log` (+ DebugWin nếu có), `SDL_ShowSimpleMessageBox` | KDebug.cpp |
+| pak | `CreateFile/ReadFile/SetFilePointer`, `CRITICAL_SECTION m_ReadCritical` | `SDL_IOFromFile/SDL_ReadIO/SDL_SeekIO`, `SDL_Mutex` (HANDLE/CRITICAL_SECTION giữ nguyên trong header: chứa con trỏ SDL) | XPackFile.cpp, ZSPRPackFile.h/.cpp |
+| thư mục | `CreateDirectory`, `GetFileAttributes` | `SDL_CreateDirectory`, `SDL_GetPathInfo` | KFilePath.cpp |
+
+Chưa đổi (lát sau): `KFile` (đã là stdio), `ZPackFile` (mmap), `KScanDir` (client không dùng), mạng (Rainbow ESClient), âm thanh (DirectSound/mp3),
+IME (`KIme`), `S3Client.cpp` (`GetPrivateProfileInt`, `timeBeginPeriod`, CrashLog, AntiHack, con trỏ chuột).
+
+Chạy thử 15:28 (25 s, màn đăng nhập): không sập, tiêu đề cửa sổ "Vo Lam Truyen Ky", Represent3 nạp ảnh bình thường. Build: `build_chuoi_sdl.ps1`.
+Bẫy: post-build Core ReleaseSDL không có .pdb → `copy` lỗi chặn chuỗi (đã `if exist`); overload inline `LPCVOID` làm MSVC C2666 (đã bỏ, ép kiểu tại chỗ gọi).
