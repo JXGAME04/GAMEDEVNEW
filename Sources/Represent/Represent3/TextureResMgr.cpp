@@ -2,6 +2,7 @@
 #include <crtdbg.h>
 #include "TextureRes.h"
 #include "TextureResMgr.h"
+#include <tlhelp32.h>	// [REP3 08/09 q] dem so client dang mo
 
 
 // [REP3 03/09 LOAD] ghi ten anh nap that bai vao jx_rep3.log (toi da 200 dong) - truoc day im lang va cache NULL vinh vien
@@ -25,6 +26,7 @@ TextureResMgr::TextureResMgr()
 	m_nReleaseCount = 0;
 	m_uTexCacheMemUsed = 0;
     m_nMaxReleaseCount = 0;
+	m_uBudgetFloorMB = 60;	// [REP3 08/09 q]
 	
 	// 根据物理内存大小决定资源缓冲区的大小
 	// [REP3 03/09] ngan sach cache texture theo RAM (2.0: 30/50/80/120 MB); may 4 GB+ cho rong hon vi texture 8888
@@ -122,14 +124,35 @@ void TextureResMgr::SetBudget()
 
 // [FX 08/09] Kep them theo VRAM con trong luc tao device (texture o POOL_DEFAULT = VRAM): toi da 1/2 VRAM con.
 // Chi ap khi KHONG co [Client] Rep3CacheMB (ini ghi de thi giu nguyen y chu). Goi tu KRepresentShell3::Create sau CreateDevice.
+// [REP3 08/09 q] dem tien trinh cung ten exe (4 tab game): moi client chia nhau VRAM
+static int Rep3DemClient()
+{
+	char szMe[MAX_PATH] = ""; GetModuleFileNameA(NULL, szMe, MAX_PATH);
+	const char* pMe = strrchr(szMe, '\\'); pMe = pMe ? pMe + 1 : szMe;
+	int n = 0;
+	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (hSnap == INVALID_HANDLE_VALUE) return 1;
+	PROCESSENTRY32 pe; pe.dwSize = sizeof(pe);
+	if (Process32First(hSnap, &pe)) { do { if (_stricmp(pe.szExeFile, pMe) == 0) n++; } while (Process32Next(hSnap, &pe)); }
+	CloseHandle(hSnap);
+	return n < 1 ? 1 : n;
+}
 void TextureResMgr::CapBudgetByVram(unsigned __int64 uVramFreeMB)
 {
 	if (g_nRep3CacheMB > 0 || uVramFreeMB == 0)
 		return;
 	unsigned __int64 uBudgetMB = ((unsigned __int64)(uint32)m_nBalanceNum) >> 20;
-	unsigned __int64 uCapMB = uVramFreeMB / 2;
-	if (uCapMB < 60)
-		uCapMB = 60;
+	// [REP3 08/09 q] chia cho so client dang mo va he so trang atlas (1,3); san 256 MB (khung TK nang ~200 MB) hoac VRAM/2
+	int nClients = Rep3DemClient();
+	unsigned __int64 uHeSo10 = (g_nRep3ApiOn == 11 && g_nRep3Atlas) ? 13 : 10;
+	unsigned __int64 uCapMB = uVramFreeMB * 10 / (unsigned __int64)nClients / 2 / uHeSo10;
+	unsigned __int64 uFloorMB = 256;
+	if (uFloorMB > uVramFreeMB / 2) uFloorMB = uVramFreeMB / 2;
+	if (uFloorMB < 60) uFloorMB = 60;
+	m_uBudgetFloorMB = uFloorMB;
+	if (uCapMB < uFloorMB)
+		uCapMB = uFloorMB;
+	Rep3Log("[REP3] cache texture: VRAM con %I64u MB, %d client dang mo, he so atlas %I64u/10 -> tran %I64u MB (san %I64u)", uVramFreeMB, nClients, uHeSo10, uCapMB, uFloorMB);
 	if (uBudgetMB > uCapMB)
 	{
 		m_nBalanceNum = (int32)(uCapMB * 1024 * 1024);
@@ -137,6 +160,21 @@ void TextureResMgr::CapBudgetByVram(unsigned __int64 uVramFreeMB)
 	}
 }
 
+// [REP3 08/09 q] luc chay: VRAM con < 128 MB (may yeu, nhieu tab) -> ha ngan sach 25 % toi san, dep bot khung ngay. Chi che do tu dong.
+void TextureResMgr::PressureByVram(unsigned __int64 uVramFreeMB)
+{
+	if (g_nRep3CacheMB > 0 || uVramFreeMB == 0 || uVramFreeMB >= 128)
+		return;
+	unsigned __int64 uBudgetMB = ((unsigned __int64)(uint32)m_nBalanceNum) >> 20;
+	if (uBudgetMB <= m_uBudgetFloorMB)
+		return;
+	unsigned __int64 uNewMB = uBudgetMB * 3 / 4;
+	if (uNewMB < m_uBudgetFloorMB) uNewMB = m_uBudgetFloorMB;
+	m_nBalanceNum = (int32)(uNewMB * 1024 * 1024);
+	Rep3Log("[REP3] cache texture: VRAM con %I64u MB thap -> ha ngan sach %I64u -> %I64u MB", uVramFreeMB, uBudgetMB, uNewMB);
+	m_tmLastCheckBalance = 0;
+	CheckBalance();
+}
 void TextureResMgr::GetStat(uint32& uNodes, uint32& uTexMB, uint32& uRawMB, uint32& uDrawMB, uint32& uBudgetMB)
 {
 	// [REP3 03/09 RAM] cho dong thong ke trong jx_rep3.log

@@ -2627,6 +2627,14 @@ void KRepresentShell3::RepresentEnd()
 	m_dwLastPresent = dwNow;
 	if (m_fFpsAvg >= 25.0f)
 		m_TextureResMgr.CheckBalanceFrame();
+	{	// [REP3 08/09 q] moi 5 s: VRAM con thap -> ha ngan sach (che do tu dong)
+		static DWORD s_dwLastVram = 0;
+		if (s_dwLastVram == 0 || (dwNow - s_dwLastVram) >= 5000)
+		{
+			s_dwLastVram = dwNow;
+			m_TextureResMgr.PressureByVram((unsigned __int64)(PD3DDEVICE->GetAvailableTextureMem() >> 20));
+		}
+	}
 
 	// [REP3 03/09 RAM] thong ke dinh ky: RAM rieng tien trinh, VRAM con trong, cache texture (VRAM) + raw spr (RAM), so nap/bo, fps
 	if (g_nRep3StatSec > 0)
