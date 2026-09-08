@@ -1480,13 +1480,17 @@ typedef struct
 	TRoleList KillerStat[10];			//杀人最多排名列表
 	
 	//[门派号][玩家数]，其中[0]是没有加入门派的玩家
-	TRoleList MoneyStatBySect[11][10];	//各门派金钱最多排名列表
-	TRoleList LevelStatBySect[11][10];	//各门派级别最多排名列表
+	// [XEPHANG 07/09] [11] -> [MAX_FACTION_NUM+1]: ban Core\Src\KProtocol.h da doi tu dot
+	// [HOASON 01/09] nhung ban NAY thi sot, ma Goddess lai bien dich dung ban nay
+	// (Goddess.vcxproj chi co include ..\Headers) -> Goddess gui 6382, CoreServer doi 7918,
+	// KLadder::Init tu choi im lang -> bang xep hang rong. PHAI bang Core\Src\KProtocol.h.
+	TRoleList MoneyStatBySect[MAX_FACTION_NUM + 1][10];	//各门派金钱最多排名列表
+	TRoleList LevelStatBySect[MAX_FACTION_NUM + 1][10];	//各门派级别最多排名列表
 
 	//[门派号]，其中[0]是没有加入门派的玩家
-	int SectPlayerNum[11];				//各个门派的玩家数
-	int SectMoneyMost[11];				//财富排名前一百玩家中各门派所占比例数
-	int SectLevelMost[11];				//级别排名前一百玩家中各门派所占比例数
+	int SectPlayerNum[MAX_FACTION_NUM + 1];				//各个门派的玩家数
+	int SectMoneyMost[MAX_FACTION_NUM + 1];				//财富排名前一百玩家中各门派所占比例数
+	int SectLevelMost[MAX_FACTION_NUM + 1];				//级别排名前一百玩家中各门派所占比例数
 }  TGAME_STAT_DATA;
 
 typedef struct

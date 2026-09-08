@@ -18,7 +18,13 @@ KLadder::~KLadder()
 BOOL KLadder::Init(void* pData, size_t uSize)
 {
 	if (uSize != sizeof(TGAME_STAT_DATA))
+	{
+		// [XEPHANG 07/09] truoc day tu choi IM LANG: bang xep hang rong ma khong co lay mot dau vet
+		// nao trong log, mat nhieu gio moi lan ra. Gio in mot dong - khong the im lang nua.
+		printf("--KLadder::Init: LECH CO, nhan %u byte, doi %u byte -> BO bang xep hang (Goddess va CoreServer bien dich hai ban TGAME_STAT_DATA khac nhau)--\n",
+			(unsigned)uSize, (unsigned)sizeof(TGAME_STAT_DATA));
 		return FALSE;
+	}
 
 	memcpy(&GameStatData, pData, uSize);
 	return TRUE;

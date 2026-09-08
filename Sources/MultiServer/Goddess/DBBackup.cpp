@@ -732,11 +732,11 @@ void CDBBackup::Backup()
 	ListSort(aStatData.MoneyStat, MONEYSTATNUM, stMoney);
 	ListSort(aStatData.LevelStat, LEVELSTATNUM, stLevel);
 	ListSort(aStatData.KillerStat, KILLERSTATNUM, stKiller);
-	for(i=0;i<11;++i)
+	for(i=0;i<MAX_FACTION_NUM + 1;++i)
 	{//各门派金钱排序
 		ListSort(aStatData.MoneyStatBySect[i], SECTMAXSTATNUM, stMoney);
 	}
-	for(i=0;i<11;++i)
+	for(i=0;i<MAX_FACTION_NUM + 1;++i)
 	{//各门派级别排序
 		ListSort(aStatData.LevelStatBySect[i], SECTMAXSTATNUM, stLevel);
 	}
@@ -806,7 +806,7 @@ void CDBBackup::Backup()
 		else
 			newGameStatData.KillerStat[i].Sort = 1;
 
-		for(j=0;j<11;++j)
+		for(j=0;j<MAX_FACTION_NUM + 1;++j)
 		{//各个门派
 			//等级
 			aIndex = CDBBackup::GetIndexByName(
@@ -875,7 +875,7 @@ void CDBBackup::Backup()
 				SendStatData.KillerStat[i].nValue<<"\t"<<
 				(int)SendStatData.KillerStat[i].bySort<<endl;
 		}
-		for(i=0;i<11;++i)
+		for(i=0;i<MAX_FACTION_NUM + 1;++i)
 		{
 			aLogFile<<"--------------Sect "<<i<<" Level--------------"<<endl;
 			for(j=0;j<10;++j)
@@ -893,17 +893,17 @@ void CDBBackup::Backup()
 			}
 		}
 		aLogFile<<"各个门派的玩家数"<<endl;
-		for(i=0;i<11;++i)
+		for(i=0;i<MAX_FACTION_NUM + 1;++i)
 		{
 			aLogFile<<"Sect "<<i<<" ："<<SendStatData.SectPlayerNum[i]<<endl;
 		}
 		aLogFile<<"财富排名前 "<<MONEYSTATNUM<<" 玩家中各门派所占比例数"<<endl;
-		for(i=0;i<11;++i)
+		for(i=0;i<MAX_FACTION_NUM + 1;++i)
 		{
 			aLogFile<<"Sect "<<i<<" ："<<SendStatData.SectMoneyMost[i]<<endl;
 		}
 		aLogFile<<"级别排名前 "<<MONEYSTATNUM<<" 玩家中各门派所占比例数"<<endl;
-		for(i=0;i<11;++i)
+		for(i=0;i<MAX_FACTION_NUM + 1;++i)
 		{
 			aLogFile<<"Sect "<<i<<" ："<<SendStatData.SectLevelMost[i]<<endl;
 		}
@@ -931,7 +931,7 @@ void CDBBackup::MakeSendStatData()
 		SendStatData.KillerStat[i].nValue = newGameStatData.KillerStat[i].KillNum;
 		SendStatData.KillerStat[i].bySort = newGameStatData.KillerStat[i].Sort;
 		
-		for(j=0;j<11;++j)
+		for(j=0;j<MAX_FACTION_NUM + 1;++j)
 		{//各个门派
 			strcpy(SendStatData.LevelStatBySect[j][i].Name, newGameStatData.LevelStatBySect[j][i].Name);
 			SendStatData.LevelStatBySect[j][i].nValue = newGameStatData.LevelStatBySect[j][i].Level;
@@ -1003,7 +1003,7 @@ void CDBBackup::SaveStatInfo()
 
 
 	//把门派等级排名写到指定玩家角色中
-	for(i=0;i<11;++i)
+	for(i=0;i<MAX_FACTION_NUM + 1;++i)
 	{
 		for(j=0;j<SECTMAXSTATNUM;++j)
 		{

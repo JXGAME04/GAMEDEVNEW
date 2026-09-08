@@ -2264,7 +2264,30 @@ void KSwordOnLineSever::DatabaseLargePackProcess(const char* pData, size_t dataL
 #else
 				TProcessData*	pRD	= (TProcessData *)pBuffer;
 #endif
-				_ASSERT( pRD->nDataLen == sizeof(TGAME_STAT_DATA) );
+				_ASSERT( pRD->nDataLen == sizeof(TGAME_STAT_DATA) );	// vo hieu o ban NDEBUG
+
+#ifndef _STANDALONE
+				// [XEPHANG 07/09] Goi thong ke phong tu 6382 -> 7918 byte (13 -> 16 khung 512) sau khi
+				// TGAME_STAT_DATA len [MAX_FACTION_NUM+1]. Truoc day khong ai kiem do dai o day: mat mot
+				// khung giua duong (lop su co Rainbow 04/09) thi KLadder::Init van memcpy theo nDataLen
+				// KHAI BAO -> DOC TRAN. Chep dung mau chot da co o s2c_roleserver_getroleinfo_result.
+				{
+					const size_t nDauTP = (size_t)((const char*)&pRD->pDataBuffer[0] - (const char*)pRD);
+					const size_t nDung = pBuffer->GetUsed();
+					if (nDung < nDauTP || nDung - nDauTP != (size_t)pRD->nDataLen)
+					{
+						printf("--XepHang: goi thong ke ghep duoc %u byte nhung khai bao %u -> BO (mat khung Goddess->GameServer)--\n",
+							(unsigned)(nDung > nDauTP ? nDung - nDauTP : 0), (unsigned)pRD->nDataLen);
+						break;
+					}
+				}
+#endif
+				// [XEPHANG 07/09] in mot dong de doi chieu co hai ben; truoc day lech co bi nuot hoan toan.
+				if ((size_t)pRD->nDataLen != sizeof(TGAME_STAT_DATA))
+				{
+					printf("--XepHang: LECH CO! Goddess gui %u byte, GameServer doi %u byte -> bang xep hang se RONG. Build lai Goddess sau khi sua Headers/KProtocol.h--\n",
+						(unsigned)pRD->nDataLen, (unsigned)sizeof(TGAME_STAT_DATA));
+				}
 
 				if (m_pCoreServerShell)
 				{

@@ -36,11 +36,13 @@ public:
 		TRoleList MoneyStat[MONEYSTATNUM];			//金钱最多排名列表
 		TRoleList KillerStat[KILLERSTATNUM];			//杀人最多排名列表
 		// [HOASON 01/09] [11] -> [14] = 13 phai + o [0] chua vao phai; PHAI = Core KProtocol.h TGAME_STAT_DATA (MAX_FACTION_NUM+1)
-		TRoleList MoneyStatBySect[14][SECTMAXSTATNUM];	//各门派金钱最多排名列表[门派][玩家数]
-		TRoleList LevelStatBySect[14][SECTMAXSTATNUM];	//各门派级别最多排名列表[门派][玩家数]
-		int SectPlayerNum[14];				//各个门派的玩家数
-		int SectMoneyMost[14];				//财富排名前MONEYSTATNUM玩家中各门派所占比例数
-		int SectLevelMost[14];				//级别排名前LEVELSTATNUM玩家中各门派所占比例数
+		// [XEPHANG 07/09] bo hang so roi 14 -> dung thang MAX_FACTION_NUM+1 nhu hai ban
+		// KProtocol.h, de lan sau doi so phai khong con cho nao troi lai.
+		TRoleList MoneyStatBySect[MAX_FACTION_NUM + 1][SECTMAXSTATNUM];	//各门派金钱最多排名列表[门派][玩家数]
+		TRoleList LevelStatBySect[MAX_FACTION_NUM + 1][SECTMAXSTATNUM];	//各门派级别最多排名列表[门派][玩家数]
+		int SectPlayerNum[MAX_FACTION_NUM + 1];				//各个门派的玩家数
+		int SectMoneyMost[MAX_FACTION_NUM + 1];				//财富排名前MONEYSTATNUM玩家中各门派所占比例数
+		int SectLevelMost[MAX_FACTION_NUM + 1];				//级别排名前LEVELSTATNUM玩家中各门派所占比例数
 		
 	};
 private:
