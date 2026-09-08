@@ -57,3 +57,13 @@ powershell -File ReverseTools\mobile_x64\build_thap.ps1 -Proj Sources\S3Client\S
 - Heredoc Bash cắt `\\` → mọi vá phải viết ra tệp `.py`; `.gitignore` nuốt thư mục `x64/` (ThirdParty/SDL3/lib/x64 phải `add -f`).
 - S3Client dùng PCH `/Yu"KWin32.h"`: `KSdlApp.cpp` phải có `#include "KWin32.h"` là dòng include đầu tiên (mọi thứ trước nó bị bỏ qua).
 - Công cụ PowerShell nền có trần 10 phút → build/chờ dài chạy tách rời bằng `Start-Process`; log MSBuild qua `*>>` ra UTF-16, phải `| Out-File -Encoding utf8`.
+
+## 6. Kết quả test lát 2a (chủ, 15:0x): *"oke hết, chỉ có không kết nối được với WAuto ngoài"*
+
+- Toàn bộ bảng kiểm §0 đạt (vào game, chuột/phím/chat, Alt+Tab, thoát, vào lại) trên `GameSDL.exe` 14:47/15:00.
+- **WAuto ngoài không thấy game**: `WAuto.cpp EnumWindowsProc` dò cửa sổ bằng `GetClassNameA(hWnd) == "JXWC Class"` (lớp do `KWin32App::InitClass`
+  đăng ký) → lấy PID → mở `Local\Auto_Name_MMFSV_<pid>`; cửa sổ SDL mang lớp `SDL_app` nên bị bỏ qua. Sửa (cdee4558): `KSdlApp::Init` gọi
+  `SDL_RegisterApp(m_szClass /* "JXWC Class" */, CS_DBLCLKS|CS_BYTEALIGNCLIENT|CS_OWNDC, hInstance)` TRƯỚC `SDL_Init(VIDEO)` (SDL chỉ tự đăng ký khi
+  chưa có) + `SDL_UnregisterApp()` sau `SDL_Quit()`; cần `#include <SDL3/SDL_main.h>` (SDL.h không tự include). Bản GameSDL mới dựng sau trận 15:10.
+- Bài học: mọi thứ dựa vào **lớp/tiêu đề cửa sổ Win32** (WAuto, chống multibox `ThreadWindowsClassName`, `FindWindow` khác) đều phải được cho
+  lớp SDL mang tên cũ; trên Android không có, WAuto ngoài không tồn tại (auto trong game ở Core vẫn chạy).
