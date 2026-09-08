@@ -310,3 +310,56 @@ BẪY ghi nhớ: bắt trường trong dòng `[REP3]` phải neo theo ngữ cả
 
 Đây là trạng thái mặc định trong mã (`Rep3Api=11`, `Rep3Atlas=1`, `Rep3Batch=1`, `Rep3Flip=1`, `Rep3Buffers=3`, `Rep3Latency=3`,
 `Rep3NoWait=0`, `Rep3Waitable=0`, `Rep3Tearing=0`). Lùi toàn bộ: `Rep3Api=9`.
+
+### 6.14 14:17 — bản [r]/[r2] 0921f57d: TEXTURE BẢNG MÀU không mất màu (mục 3.3 đã làm) → VRAM texture −50 %, ảnh y hệt
+
+**Cách làm.** SPR vốn là RLE (chỉ số 8 bit + alpha 8 bit); trước đây bung thành BGRA8 4 B/điểm. Nay giữ nguyên 2 B/điểm:
+`D3DFMT_A8L8` (shim → DXGI R8G8: R = chỉ số, G = alpha) nằm trong trang atlas R8G8 riêng; bảng màu của sprite (256 × RGB) đặt
+vào "atlas bảng màu" 256×8192 BGRA8 (8 MB, tối đa 8192 sprite đang sống) — hàng cấp khi sprite nạp, trả khi sprite bị thải
+(trả trễ tới sau Present để lô lệnh đang chờ không tra nhầm hàng mới). Mỗi đỉnh mang thêm 4 byte PALROW (0xFFFF = texture thường,
+vẫn gộp lô được); pixel shader: `màu = pal[hàng][chỉ số], alpha = G`. Bảng màu 24 bit → kết quả bằng đúng đường 8888.
+
+**Lọc LINEAR** (DrawImage3D chế độ phối cảnh, vẽ bitmap co giãn): nội suy chỉ số thì ra màu bậy → [r2] shim báo cờ lọc tuyến tính
+stage 0 (`g_st0b.w`), shader tự lấy 4 điểm, tra bảng từng điểm rồi nội suy (đúng như phần cứng làm với BGRA8). Ép thử
+`REP3_PALLIN=1` trong harness: ảnh y hệt đường điểm (0 điểm khác). Chế độ phẳng (Rep3Flat=1) không dùng LINEAR cho sprite.
+
+**Đo harness** (cùng cảnh 911 texture, cùng DLL 0921f57d, chỉ đổi `Rep3Pal`):
+
+| | Rep3Pal=0 (BGRA8) | Rep3Pal=1 (bảng màu) |
+|---|---|---|
+| texture GPU | 46 MB | 23 MB |
+| trang atlas | 26 trang, 104 MB | 26 trang, 52 MB |
+| VRAM dùng | 124 MB | 80 MB (đã gồm 8 MB bảng màu) |
+| fps / present | 62,9 / 0,08 ms | 62,9 / 0,08 ms |
+| ảnh so với D3D11 32-bit (a11_tex32.bmp) | — | 0 điểm khác |
+| ảnh so với D3D9 32-bit (a9_tex32.bmp) | — | 0,005 % (đúng bằng bản D3D11 32-bit trước) |
+
+**Kỳ vọng trong game** (13:41 [p]: texture 500–526 MB, VRAM 597–633 MB): VRAM còn ~300–330 MB; RAM giảm thêm phần texture
+SYSTEMMEM tạm lúc nạp (2 B/điểm) và giải mã nhanh hơn (không bung màu). Ngân sách `Rep3CacheMB` đếm theo 2 B/điểm → cùng
+1500 MB giữ được gấp đôi số khung (ít nạp lại hơn). Cần kéo log sau khi chủ chơi để chốt số thật.
+
+- Cổng lùi: `[Client] Rep3Pal=0` (không cần build). Chỉ tác dụng khi `Rep3Api=11` và `Rep3Pool=1`.
+- Thống kê: dòng `[REP3]` thêm `| pal N hang`; lúc tạo có `[D3D11] bang mau: atlas 256x8192 BGRA8 (8 MB)`.
+- Giới hạn: 8192 sprite sống cùng lúc (quá → sprite đó tự về BGRA8); atlas không đệm 1 px giữa các ô (như [d]) → chỉ ảnh hưởng
+  khi vẽ LINEAR co giãn, chế độ phẳng không dùng.
+- Tệp: `D3D9on11Pal.cpp` (mới), `TextureRes.cpp` (`RenderToIndexAlpha`, `m_nPalRow`), `Rep3Shaders11.hlsl` (`PalTex`, PALROW),
+  atlas theo định dạng trang; script `ReverseTools/goi_va_d3d11r_palette_0809.py` + `goi_va_d3d11r2_palette_linear_0809.py`.
+  Commit 23f686be + e8a3b8e9 (origin/main). `.moi` 0921f57d 14:17 CHỜ SWAP (⊇ [q] ngân sách tự động 8f7fdfb0, ⊇ [p]).
+
+**Đo thật 14:28–15:00 (bản 0921f57d LIVE, chủ chơi trọn nửa sau trận TK 14:00 + về thành; 63 mẫu × 30 s = 31,5 phút, 0 lỗi):**
+
+| | min | max | TB |
+|---|---|---|---|
+| RAM riêng | 262 MB | 380 MB | 345 MB |
+| Texture đếm (2 B/điểm) | 73 MB | 329 MB | 253 MB |
+| Texture GPU | 854 | 52.186 (336 MB) | 44.774 (257 MB) |
+| Trang atlas | 30 (60 MB) | 223 (446 MB) | 167 (334 MB) |
+| VRAM dùng | 143 MB | 466 MB | 345 MB |
+| Present | 0,06 ms | 0,08 ms | 0,06 ms |
+| FPS | 58 | 68 | 63 |
+| Hàng bảng màu | 135 | 1.220 | 937 |
+
+Khung từ chối 0; giải mã 107.904 khung, nặng nhất 190 ms/30 s lúc mới vào map; 214 triệu lệnh vẽ, gộp 140,8 triệu quad → 104,4 triệu
+Draw (−26 %). So với [p] cùng lượng điểm ảnh (texture 500–526 MB 4 B/điểm ↔ 250–263 MB nay): **VRAM 597–633 → 342–370 MB (−43 %)**,
+RAM 345–351 → 345–349 (không đổi: phần còn lại theo SỐ texture + mảng tĩnh CoreClient), FPS/present giữ nguyên. Nhịp thải texture ~31/s
+đều = khung lâu không dùng (bản trước cũng vậy), nạp sprite mới 1–2/s. Kết luận: giữ `Rep3Pal=1` làm mặc định.
