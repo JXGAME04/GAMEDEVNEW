@@ -67,3 +67,6 @@ powershell -File ReverseTools\mobile_x64\build_thap.ps1 -Proj Sources\S3Client\S
   chưa có) + `SDL_UnregisterApp()` sau `SDL_Quit()`; cần `#include <SDL3/SDL_main.h>` (SDL.h không tự include). Bản GameSDL mới dựng sau trận 15:10.
 - Bài học: mọi thứ dựa vào **lớp/tiêu đề cửa sổ Win32** (WAuto, chống multibox `ThreadWindowsClassName`, `FindWindow` khác) đều phải được cho
   lớp SDL mang tên cũ; trên Android không có, WAuto ngoài không tồn tại (auto trong game ở Core vẫn chạy).
+
+**15:1x — chủ xác nhận sau bản 15:11:33 (SDL_RegisterApp): *"đã nhận Auto và mọi thứ đã oke hết"* → LÁT 2a NGHIỆM THU.** Quy tắc build mới của
+chủ 15:1x: mặc định được build, chỉ dừng khi chủ báo đang có trận Tống Kim.
