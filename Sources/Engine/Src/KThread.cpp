@@ -71,6 +71,9 @@ void * MyThreadProc(LPVOID lpParam)
 DWORD KThread::ThreadFunction()
 {
 	m_ThreadFunc(m_ThreadParam);
+#ifdef JX_PLATFORM_SDL
+	m_ThreadId = 0;	// [SDL 08/09 2b-1] luong da xong (IsRunning)
+#endif
 	return 0;
 }
 //---------------------------------------------------------------------------
@@ -85,8 +88,7 @@ DWORD KThread::ThreadFunction()
 static int SDLCALL KThread_SdlProc(void* pParam)
 {
 	KThread* pThread = (KThread*)pParam;
-	pThread->ThreadFunction();
-	pThread->m_ThreadId = 0;
+	pThread->ThreadFunction();	// ThreadFunction tu dat m_ThreadId = 0 khi xong
 	return 0;
 }
 #endif

@@ -14,6 +14,7 @@
 #include "windows.h"
 
 #ifdef JX_PLATFORM_SDL
+#include <SDL3/SDL.h>
 // [SDL 08/09 2b-1] SDL_Mutex (reentrant nhu CRITICAL_SECTION)
 class KCriticalSection
 {
