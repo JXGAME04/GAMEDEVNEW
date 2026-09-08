@@ -170,7 +170,41 @@ số chủ hỏi.
 
 ---
 
-## 7. Bản đồ mã
+## 7. BẢN ĐO ĐÃ BUILD (23:40) — ba khe `.moi` chờ swap
+
+Chủ nói 21:30: *"đang test local nên chưa đo được máy chủ"* → máy chủ chạy cùng máy, bộ đếm phía máy chủ nằm trong CoreServer.dll, đo local là đủ.
+Đã làm 6.1 + 3 sửa chắc chắn của 6.2 (không đổi luật chơi, không đổi giao thức), commit `[FX 07/09]` trên origin/main,
+script tái áp `ReverseTools/goi_va_fx1_core_bodem_0709.py` (Core) và `goi_va_fx2_rep3_bodem_0709.py` (Represent3).
+
+| Khe | Băm | Bao trùm bản live | Bat tự đổi |
+|---|---|---|---|
+| `bin\server\CoreServer.dll.moi` | **27e5415e** | ⊇ 7361e2dd (XEPHANG + DELTA), chỉ thêm `[FX-SV]`, `[MISSLE-ADD-FAIL]` | `ChayGameServer.bat` |
+| `bin\client\CoreClient.dll.moi` | **19731ad4** | ⊇ 43ba6ef9 (vá m), thêm `[FX]`, `[MISSLE-ADD-FAIL]`, KLadder LECH CO (XEPHANG) | `ChoiGame.bat` |
+| `bin\client\Represent3.dll.moi` | **3728dfec** | ⊇ c4474ed5 (04/09 12:17, cùng nguồn 18e717ae), thêm `fx:` vào dòng 30 s | `ChoiGame.bat` |
+
+**Bẫy build Represent3:** gói NuGet `Sources\packages\Microsoft.DXSDK.D3DX.9.29.952.8` trong git **thiếu** `build\native\release\` và `debug\`
+(bị `.gitignore` dòng 46 `Release/` nuốt) → `LNK1181 d3dx9.lib`. Chép hai thư mục đó từ `C:\Users\nguye\.nuget\packages\microsoft.dxsdk.d3dx\9.29.952.8\build\native\`
+vào là link được (đã chép trong worktree delta, không commit được vì bị ignore).
+
+### 7.1 Đọc gì sau khi chủ đánh một trận (đúng luật "đo trước")
+
+```bash
+grep -a "\[FX\] 10s" "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/client/jx_auto.log" | tail -20
+grep -a "\[FX-SV\]" "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/server/jx_auto_server.log" | tail -20
+grep -a "fx:" "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/client/jx_rep3.log" | tail -10
+```
+
+Cách suy: với NPC KHÁC, mỗi 10 s: `rx95` (máy chủ báo bắt đầu) → `start` (client ra lệnh) → `fire` (client tới khung 60 %, tạo đạn).
+Hiệu số `start − fire − fire_fail` = số chiêu **mất trên đường diễn hoạt**, phải bằng `bo_tgt + huy_hurt(truoc60) + huy_lenh(*) + huy_chet`
+(±1 vì lệch cửa sổ). Đối chiếu máy chủ: `[FX-SV] ban` (gần người thật) so với client `fire`: **máy chủ bắn mà client không bắn** = số
+hiệu ứng mất thật sự; ngược lại là hiệu ứng "ảo". `add_*`/`kieu(*)` > 0 là đạn không tạo được dù đã tới khung 60 %. `chet_som` là đạn
+đã tạo rồi biến mất. Phía vẽ (`jx_rep3.log`): `tex_null`/`anh_null`/`tao_hong`/`khung_khong_tex` > 0 là lớp vẽ bỏ hình; `giai_ma N khung X ms`
+là chi phí giải mã đồng bộ mỗi 30 s (chia 30 × fps để ra ms mỗi khung vẽ).
+
+Từ đó chọn cách sửa: `huy_hurt/huy_lenh` lớn → gói "skill đã bắn" từ máy chủ (6.3); `bo_tgt` lớn → giữ mục tiêu mồ côi lâu hơn khi cuộn vùng;
+`add_vung` lớn → đạn nhắm ngoài vùng đã nạp (bình thường nếu ngoài màn hình); `buff_het_o` > 0 → nới 6 ô; `tex_null/tao_hong` > 0 → lớp vẽ.
+
+## 8. Bản đồ mã
 
 | Việc | Tệp và chỗ |
 |---|---|
