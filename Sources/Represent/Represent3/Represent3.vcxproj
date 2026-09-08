@@ -200,8 +200,8 @@ copy Release\Represent3.dll ..\..\..\..\bin\client\Represent3.dll</Command>
       <ProgramDataBaseFileName>.\x64\Release\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\..\bin\client64\release\
-copy x64\Release\Represent3.dll ..\..\..\..\bin\client64\Represent3.dll</Command>
+      <Command>md ..\..\..\bin\client64\release\
+copy x64\Release\Represent3.dll ..\..\..\bin\client64\Represent3.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

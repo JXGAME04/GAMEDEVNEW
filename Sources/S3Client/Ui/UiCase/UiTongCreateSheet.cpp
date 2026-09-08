@@ -217,7 +217,7 @@ void KUiTongCreateSheet::OnDone()
 	{
 		if(m_nSelectSide != -1)
 		{
-			g_pCoreShell->TongOperation(GTOI_TONG_CREATE, (unsigned int)Buff, (int)m_nSelectSide);
+			g_pCoreShell->TongOperation(GTOI_TONG_CREATE, (KUPARAM)Buff, (int)m_nSelectSide);
 			CloseWindow();
 		}
 		else

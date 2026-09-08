@@ -671,15 +671,15 @@ copy release\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
     <PostBuildEvent>
       <Command>copy x64\release\engine.lib ..\..\Lib\release64\engine.lib
 
-copy x64\release\engine.dll ..\..\..\bin\client64\engine.dll
-copy x64\release\engine.dll ..\..\..\bin\client64\release\engine.dll
-copy x64\release\engine.pdb ..\..\..\bin\client64\release\engine.pdb
-copy x64\release\engine.map ..\..\..\bin\client64\release\engine.map
+copy x64\release\engine.dll ..\..\bin\client64\engine.dll
+copy x64\release\engine.dll ..\..\bin\client64\release\engine.dll
+copy x64\release\engine.pdb ..\..\bin\client64\release\engine.pdb
+copy x64\release\engine.map ..\..\bin\client64\release\engine.map
 
-copy x64\release\engine.dll ..\..\..\bin\client64\engine.dll
-copy x64\release\engine.dll ..\..\..\bin\client64\release\engine.dll
-copy x64\release\engine.pdb ..\..\..\bin\client64\release\engine.pdb
-copy x64\release\engine.map ..\..\..\bin\client64\release\engine.map
+copy x64\release\engine.dll ..\..\bin\client64\engine.dll
+copy x64\release\engine.dll ..\..\bin\client64\release\engine.dll
+copy x64\release\engine.pdb ..\..\bin\client64\release\engine.pdb
+copy x64\release\engine.map ..\..\bin\client64\release\engine.map
 
 copy x64\release\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
     </PostBuildEvent>

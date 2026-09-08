@@ -221,11 +221,11 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
       <AdditionalOptions>/we4311 /we4312 /we4302 /source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client64\release\
-copy x64\Release\Game.exe ..\..\..\bin\client64\Game.exe
-copy x64\Release\Game.exe ..\..\..\bin\client64\release\Game.exe
-copy x64\Release\Game.pdb ..\..\..\bin\client64\release\Game.pdb
-copy x64\Release\Game.map ..\..\..\bin\client64\release\Game.map</Command>
+      <Command>md ..\..\bin\client64\release\
+copy x64\Release\Game.exe ..\..\bin\client64\Game.exe
+copy x64\Release\Game.exe ..\..\bin\client64\release\Game.exe
+copy x64\Release\Game.pdb ..\..\bin\client64\release\Game.pdb
+copy x64\Release\Game.map ..\..\bin\client64\release\Game.map</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

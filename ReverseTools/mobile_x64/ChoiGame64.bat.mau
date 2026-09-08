@@ -1,0 +1,6 @@
+@echo off
+rem [X64 08/09] Chay thu Game.exe 64-bit trong thu muc rieng bin\client64 (khong dung khe .moi, khong dung cay live).
+rem data\ Spr\ maps\ maps2\ la junction toi cay live (chi doc); settings\ script\ Ui\ UserData\ la ban sao rieng.
+cd /d "%~dp0"
+if not exist Game.exe (echo Chua co Game.exe x64 - build chua xong & pause & exit /b 1)
+start "" Game.exe

@@ -262,9 +262,9 @@ copy Release\FilterText.dll ..\..\..\bin\Client\release\FilterText.dll</Command>
       <ProgramDataBaseFileName>.\x64\Release\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client64\release\
-copy x64\Release\FilterText.dll ..\..\..\bin\client64\FilterText.dll
-copy x64\Release\FilterText.dll ..\..\..\bin\client64\release\FilterText.dll</Command>
+      <Command>md ..\..\bin\client64\release\
+copy x64\Release\FilterText.dll ..\..\bin\client64\FilterText.dll
+copy x64\Release\FilterText.dll ..\..\bin\client64\release\FilterText.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

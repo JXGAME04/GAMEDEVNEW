@@ -10,8 +10,19 @@
 #include "KDebug.h"
 #include "KMemBase.h"
 #include "KFilePath.h"
-#ifndef _WIN64
+#if 1	// [X64 08/09] KMp3Music mo lai tren x64: chi nap mp3lib.dll dong qua GetProcAddress (truoc la #ifndef _WIN64)
 #include "mp3lib.h"
+#ifdef _WIN64
+// [X64 08/09] mp3lib stub: mp3lib.lib chi co ban x86 va khong co ma nguon -> tren x64 chua co bo giai ma MP3.
+// Bon ham tra that bai de KMp3Music::Mp3Init that bai em (khong phat nhac mp3), moi thu khac cua Engine van chay.
+extern "C" {
+int    mp3_decode_head(unsigned char* buf, MPEG_HEAD* head) { (void)buf; (void)head; return 0; }
+int    mp3_decode_init(MPEG_HEAD* head, int framebytes_arg, int reduction_code, int transform_code, int convert_code, int freq_limit)
+       { (void)head; (void)framebytes_arg; (void)reduction_code; (void)transform_code; (void)convert_code; (void)freq_limit; return 0; }
+void   mp3_decode_info(DEC_INFO* info) { if (info) { info->channels = 0; info->outvalues = 0; info->samprate = 0; info->bits = 0; info->framebytes = 0; } }
+IN_OUT mp3_decode_frame(unsigned char* mp3, unsigned char* pcm) { IN_OUT r; (void)mp3; (void)pcm; r.in_bytes = 0; r.out_bytes = 0; return r; }
+}
+#endif
 #include "KMp3Music.h"
 //---------------------------------------------------------------------------
 #define MP3_BUFSIZE 60000 // mp3 data buffer

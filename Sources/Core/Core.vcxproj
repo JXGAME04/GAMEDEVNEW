@@ -415,14 +415,14 @@
     </ClCompile>
     <PostBuildEvent>
       <Command>
-        md ..\..\..\bin\client64\release
+        if not exist ..\..\bin\client64\release md ..\..\bin\client64\release
         md ..\..\lib\release
-        copy x64\ClientRelease\CoreClient.pdb ..\..\..\bin\client64\CoreClient.pdb
-        copy x64\ClientRelease\CoreClient.map ..\..\..\bin\client64\CoreClient.map
-        copy x64\ClientRelease\CoreClient.dll ..\..\..\bin\client64\CoreClient.dll
-        copy x64\ClientRelease\CoreClient.pdb ..\..\..\bin\client64\release\CoreClient.pdb
-        copy x64\ClientRelease\CoreClient.map ..\..\..\bin\client64\release\CoreClient.map
-        copy x64\ClientRelease\CoreClient.dll ..\..\..\bin\client64\release\CoreClient.dll
+        copy x64\ClientRelease\CoreClient.pdb ..\..\bin\client64\CoreClient.pdb
+        copy x64\ClientRelease\CoreClient.map ..\..\bin\client64\CoreClient.map
+        copy x64\ClientRelease\CoreClient.dll ..\..\bin\client64\CoreClient.dll
+        copy x64\ClientRelease\CoreClient.pdb ..\..\bin\client64\release\CoreClient.pdb
+        copy x64\ClientRelease\CoreClient.map ..\..\bin\client64\release\CoreClient.map
+        copy x64\ClientRelease\CoreClient.dll ..\..\bin\client64\release\CoreClient.dll
         copy x64\ClientRelease\CoreClient.lib ..\..\Lib\release64\CoreClient.lib
       </Command>
     </PostBuildEvent>
