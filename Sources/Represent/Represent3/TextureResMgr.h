@@ -47,6 +47,7 @@ public:
     void CheckBalanceFrame();
     // [REP3 03/09 RAM] ngan sach cache (goi sau khi doc ini) + thong ke cho jx_rep3.log
     void SetBudget();
+    void CapBudgetByVram(unsigned __int64 uVramFreeMB);	// [FX 08/09] kep them theo VRAM con, goi sau khi tao device
     void GetStat(uint32& uNodes, uint32& uTexMB, uint32& uRawMB, uint32& uDrawMB, uint32& uBudgetMB);
 
 	//## 设置图形动态加载平衡参数。

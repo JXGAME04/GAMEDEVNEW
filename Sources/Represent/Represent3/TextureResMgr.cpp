@@ -103,7 +103,11 @@ void TextureResMgr::SetBudget()
 	unsigned __int64 uPhysMB = stat.ullTotalPhys / (1024 * 1024);
 	unsigned __int64 uBudgetMB = uPhysMB / 16;
 	if (uBudgetMB < 60)  uBudgetMB = 60;
-	if (uBudgetMB > 512) uBudgetMB = 512;	// [REP3 03/09 RAM2] DINH CHINH: chu thich cu noi POOL_DEFAULT
+	if (uBudgetMB > 1024) uBudgetMB = 1024;	// [FX 08/09] 512 -> 1024: tran 512 lam cache KET (508-511/512, 07/09 17:xx) va nhanh vuot
+											// ngan sach bao het khung hieu ung nghi > 10 s -> 'mat het hinh anh ky nang'. Chu xac nhan
+											// Rep3CacheMB=1500 het loi qua 5 tran (dinh 768 MB, RAM rieng 789 MB). 1024 MB ~ 240 + 0,66 x 1024
+											// = ~920 MB RAM rieng, duoi 2 GB (Game.exe chua LARGEADDRESSAWARE). Kep them theo VRAM: CapBudgetByVram.
+											// [REP3 03/09 RAM2] DINH CHINH: chu thich cu noi POOL_DEFAULT
 											// "khong an RAM" la SAI. Do 12 mau trong jx_rep3.log cua game that:
 											//   RAM rieng = 240,9 + 0,657 x (texture + raw spr)
 											// tuc moi MB texture o VRAM VAN keo theo ~0,66 MB RAM tien trinh, do WDDM
@@ -114,6 +118,23 @@ void TextureResMgr::SetBudget()
 		uBudgetMB = (unsigned __int64)g_nRep3CacheMB;
 	m_nBalanceNum = (int32)(uBudgetMB * 1024 * 1024);
 	Rep3Log("[REP3] cache texture: RAM %I64u MB -> ngan sach %I64u MB (%s)", uPhysMB, uBudgetMB, g_nRep3Pool ? "VRAM, POOL_DEFAULT" : "RAM+VRAM, POOL_MANAGED");
+}
+
+// [FX 08/09] Kep them theo VRAM con trong luc tao device (texture o POOL_DEFAULT = VRAM): toi da 1/2 VRAM con.
+// Chi ap khi KHONG co [Client] Rep3CacheMB (ini ghi de thi giu nguyen y chu). Goi tu KRepresentShell3::Create sau CreateDevice.
+void TextureResMgr::CapBudgetByVram(unsigned __int64 uVramFreeMB)
+{
+	if (g_nRep3CacheMB > 0 || uVramFreeMB == 0)
+		return;
+	unsigned __int64 uBudgetMB = ((unsigned __int64)(uint32)m_nBalanceNum) >> 20;
+	unsigned __int64 uCapMB = uVramFreeMB / 2;
+	if (uCapMB < 60)
+		uCapMB = 60;
+	if (uBudgetMB > uCapMB)
+	{
+		m_nBalanceNum = (int32)(uCapMB * 1024 * 1024);
+		Rep3Log("[REP3] cache texture: VRAM con %I64u MB -> kep ngan sach %I64u -> %I64u MB", uVramFreeMB, uBudgetMB, uCapMB);
+	}
 }
 
 void TextureResMgr::GetStat(uint32& uNodes, uint32& uTexMB, uint32& uRawMB, uint32& uDrawMB, uint32& uBudgetMB)

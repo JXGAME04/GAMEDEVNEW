@@ -556,6 +556,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	if (!RestoreDeviceObjects())
 		return false;
 	g_DebugLog("[D3DRender]RestoreDeviceObjects ok!");
+	m_TextureResMgr.CapBudgetByVram((unsigned __int64)(PD3DDEVICE->GetAvailableTextureMem() >> 20));	// [FX 08/09] kep ngan sach theo VRAM con
 
 	if (!InitDeviceObjects())
 		return false;
