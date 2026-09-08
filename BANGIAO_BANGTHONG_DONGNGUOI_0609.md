@@ -891,3 +891,28 @@ Kem theo: sua dong `[PS-BO]` in `-24% bo` do `bo * 100` tran so nguyen 32 bit kh
 **Chua dat vao khe `.moi`:** khe may chu dang giu ban `1ed4d726` cua phien BH100 (cap bang theo kinh nghiem) va commit cua ho **chua len origin/main**, nen toi khong the build sieu tap. Va k da push len origin/main; dat `.moi` sau khi chu swap ban cua ho, hoac sau khi ho push va toi build gop.
 
 **Da dat 16:22:** `CoreServer.dll.moi` **b1308b4c** = origin/main 552bab7e (gom ca BHLV 40eb50c1 cua phien BH100 - ho da push nen build gop duoc; ban 1ed4d726 doi ten `.moi.bhlv_1ed4d726`). Kiem chuoi: co du `TONG_GetLevelExpNeed`, `tong_setting.ini`, `TONG_GetExpLevel`. `S3Relay.exe.moi` 26d7df5d cua ho giu nguyen, phai swap cung. Sau tran ke doc `[NS-BO] ... | bam cham doi o nhom:` de biet truong nao lam goi 77 phat lai.
+
+### 8.18 Va l: goi TRANG THAI gon 223 - tra loi cua bo dem va k
+
+**Bo dem nhom cua va k (b1308b4c chay that tu 16:21), 20 cua so = 200 giay:**
+
+| Nhom truong lam BAM CHAM doi | So lan | Ti le |
+|---|---|---|
+| Trang thai ky nang (`StateInfo[18]`) | 50.527 | **74,7 %** |
+| Chi so toi da (LifeMax/ManaMax) | 10.287 | 15,2 % |
+| Nhieu nhom cung luc | 4.799 | 7,1 % |
+| Vong bat tu | 1.988 | 2,9 % |
+| Phe/he/phu phep | 6 | 0,0 % |
+| **Toc do (Walk/Run/A/CSpeed)** | **0** | **0,0 %** |
+
+Nghi ngo o muc 8.16 ve toc do buff **SAI**: toc do khong doi lan nao. Thu pham la trang thai ky nang - dung nhu Tong Kim: bot dong buff/trung debuff lien tuc, moi lan doi mot byte trong `StateInfo` la phat ca goi `NPC_NORMAL_SYNC` 98 byte du toa do khong doi.
+
+**Va l (`ReverseTools/goi_va_delta12_goitrangthai_0709.py`, ca hai ben):**
+
+1. Goi moi `s2c_syncnpcstate = 223`, cau truc `NPC_STATE_SYNC` **39 byte** = ma + ID + `StateInfo[18]` + 4 chi so toi da (o 158 bang co goi client).
+2. May chu bo hai nhom nay khoi bam cham, giu bam rieng; khi chung doi ma dang gui goi GON thi gui them goi 223; khi gui goi DAY DU thi thoi (goi day du da mang san). Dem `[NS-TT] 10s goi trang thai gon (223): n lan`.
+3. Hello len **phien ban 3**; chi bat khi MOI client dang noi deu bao 3 (`NS_SoClientCu3`). Swap mot ben khong sao: may chu moi + client cu thi giu nguyen cach cu; client moi + may chu cu thi khong ai phat 223.
+
+**Ky vong:** 90 % so lan phat goi 77 chuyen tu 98 byte xuong 28 + 39 = 67 byte (goi gon + goi trang thai), tuc goi 77 tu 16,4 % xuong con vai phan tram va tong byte giam khoang 7 %. Muon huong loi phai swap **ca hai** ban.
+
+**Da dat 17:05 (CA HAI, chu chay ca hai bat):** `CoreServer.dll.moi` **6693429f** + `CoreClient.dll.moi` **ae11479a** (origin/main + va l; ban BHWS 55c9c3fd cua phien BH100 doi ten `.moi.bhws_55c9c3fd`, da kiem co du `TONG_GetTongMap`, `TONG_GetLevelExpNeed`, `tong_setting.ini`). `S3Relay.exe.moi` 18de36e5 cua ho giu nguyen, swap cung. Sau tran ke doc `[NS-TT]` va ti le byte goi 77.
