@@ -148,3 +148,30 @@ kết nối lần 2) + `chay_test.ps1` (dịch cl x64, chạy cho từng thư m�
 hành vi: cổng sai thất bại sau ~2 s, trễ hồi đáp 0–16 ms, gói 9.005 B nguyên vẹn, callback Close ~15 ms sau khi máy chủ đóng, kết nối lại OK. Khác biệt duy nhất
 lúc đầu: bản SDL thiếu callback `enumServerConnectCreate` (Win32 có vì WSAEventSelect ghi nhận FD_CONNECT sau khi đã nối) → tái hiện ở 2b-2b. Game
 (`ClientCallBack` trong `NetConnectAgent.cpp`) chỉ dùng `enumServerConnectClose`.
+
+## 10. Lỗi chủ báo 16:2x với bộ `client64sdl` và cách sửa (2b-2c/2b-2d)
+
+**Chủ báo:** đăng nhập đứng ~5 s mới vào; di chuyển lag; phù về/qua map lag "như mạng yếu".
+
+**Cách tìm:** rà 3 lát (2b-1 thời gian/pak, 2b-3 âm thanh, 2b-2 mạng) — `KThread/KEvent` Engine chỉ dùng ở máy chủ, pak đọc cùng số lần
+`ReadFile`; harness echo cơ bản PASS nhưng **đo áp lực** (máy chủ giả đẩy 40–80 gói/s, ping 20/s, `chay_apluc.ps1`) thấy bản SDL đuôi RTT 40–100 ms
+(Win32 ≤ 17 ms); rồi **đo trên máy chủ thật** (`test_rainbow.exe <dir> 5622 5 -1 127.0.0.1 3`: chỉ nối + bắt tay khoá rồi ngắt, vô hại): `ConnectTo`
+2–10 ms cả hai bản, nhưng **`Shutdown+Cleanup` bản SDL 1.750 ms** (Win32 0,2 ms). Dấu vết `jx_net_sdl.log` (bật bằng tệp `jx_net_trace.on`) cho thấy
+`Shutdown` gọi lúc 302 ms, `setsockopt` xong lúc 602, `shutdown()` xong lúc 803 — **mỗi lệnh Winsock từ luồng chính đợi đúng đến lúc `select()` của luồng
+I/O hết hạn**.
+
+**Gốc:** `JxNetCreateTcpSocket()` tạo socket bằng `WSASocket(..., 0)` (bắt chước bản Win32) = handle **không overlapped** → Windows xếp hàng MỌI I/O trên
+handle đó: `send()`/`setsockopt`/`shutdown`/`closesocket` từ luồng chính phải chờ `select()` (1 s) của luồng I/O trả về. Bản Win32 không dính vì
+`WSAEventSelect` chờ trên EVENT (không giữ I/O trên socket). Hệ quả: mỗi gói client gửi trễ tới 1 s (trung bình ~0,5 s khi máy chủ im) → đăng nhập
+vài lượt hỏi-đáp = ~5 s; lệnh di chuyển/phù về trễ như mạng yếu.
+
+**Sửa (chỉ `JX_PLATFORM_SDL`):** (1) `WSASocket(..., WSA_FLAG_OVERLAPPED)` (như `socket()` mặc định; POSIX không có vấn đề này); (2) `StopConnections`
+gọi `::shutdown(SD_BOTH)` trước `closesocket` để `select` thức ngay; (3) `WaitForEnumEvent` 1000 → 200 ms làm lưới an toàn; (4) dấu vết mạng
+`JxNetTraceOn()/JxNetTrace()` (`JxNetShim.h` khai báo, `SocketClient.cpp` định nghĩa) ghi `jx_net_sdl.log` `[ms][luồng] ...` cho conn/cipher/AssociateEvent/
+select/peek/recv/send/StopConnections/Cleanup/backpressure; bật khi có tệp `jx_net_trace.on` trong thư mục làm việc hoặc `JX_NET_TRACE=1`.
+
+**Đo sau sửa (16:4x):** `Shutdown 0,2 ms / Cleanup 0,1 ms`; áp lực 80 gói/s 10 s: SDL RTT tb 1,7 ms, p99 2,5, max 2,6 (Win32 1,9 / 6,7 / 10,3);
+khoảng cách gói đẩy max 14,6 ms (Win32 19,5). Harness cơ bản PASS, callback create/close như Win32.
+
+**Bài học:** khi thay `WSAEventSelect` bằng `select` trên Windows, socket PHẢI overlapped; và phải đo áp lực + đo trên máy chủ thật, harness echo
+đơn lẻ không lộ lỗi xếp hàng I/O. Ghi nhớ `[[jx1-sdl-socket-overlapped-0809]]`.
