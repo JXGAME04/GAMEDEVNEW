@@ -26,7 +26,31 @@ bool CD3D_Device::CreateDevice(D3DAdapterInfo* pAdapter,D3DDeviceInfo* pDevice,D
 	
 	SetPresentationParams(m_PresentationParam,pMode);
 
-	HRESULT hResult = PDIRECT3D->CreateDevice(pAdapter->iAdapterNum,pDevice->DeviceType,g_hWnd,BehaviorFlags,&m_PresentationParam,&m_pD3DDevice);
+	// [RAM 08/09] co D3D9Ex thi CreateDeviceEx (windowed: khong can display mode; fullscreen: D3DDISPLAYMODEEX theo pMode); hong thi lui ve CreateDevice
+	HRESULT hResult = E_FAIL;
+	if (g_nRep3ExOn && g_D3DShell.m_pD3DEx)
+	{
+		D3DDISPLAYMODEEX modeEx;
+		ZeroMemory(&modeEx, sizeof(modeEx));
+		modeEx.Size = sizeof(modeEx);
+		modeEx.Width = pMode->Width;
+		modeEx.Height = pMode->Height;
+		modeEx.RefreshRate = 0;
+		modeEx.Format = pMode->Format;
+		modeEx.ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
+		IDirect3DDevice9Ex* pDevEx = NULL;
+		hResult = g_D3DShell.m_pD3DEx->CreateDeviceEx(pAdapter->iAdapterNum, pDevice->DeviceType, g_hWnd, BehaviorFlags, &m_PresentationParam,
+			m_PresentationParam.Windowed ? NULL : &modeEx, &pDevEx);
+		if (SUCCEEDED(hResult) && pDevEx)
+			m_pD3DDevice = pDevEx;
+		else
+		{
+			g_DebugLog("[D3DRender]CreateDeviceEx that bai 0x%08X -> lui ve CreateDevice", (unsigned)hResult);
+			m_pD3DDevice = NULL;
+		}
+	}
+	if (!m_pD3DDevice)
+		hResult = PDIRECT3D->CreateDevice(pAdapter->iAdapterNum,pDevice->DeviceType,g_hWnd,BehaviorFlags,&m_PresentationParam,&m_pD3DDevice);
 	if ((hResult != D3D_OK) || !m_pD3DDevice) 
 	{
 		// 创建设备失败
@@ -53,7 +77,7 @@ bool CD3D_Device::CreateDevice(D3DAdapterInfo* pAdapter,D3DDeviceInfo* pDevice,D
 		if (g_nRep3Npot && (bFull || bCond))
 		{
 			LPDIRECT3DTEXTURE9 pProbe = NULL;
-			HRESULT hrProbe = m_pD3DDevice->CreateTexture(33, 17, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &pProbe, NULL);
+			HRESULT hrProbe = m_pD3DDevice->CreateTexture(33, 17, 1, 0, D3DFMT_A8R8G8B8, REP3_POOL_MANAGED, &pProbe, NULL);	// [RAM 08/09] Ex: DEFAULT
 			if (SUCCEEDED(hrProbe) && pProbe)
 			{
 				pProbe->Release();

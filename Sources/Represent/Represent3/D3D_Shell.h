@@ -76,6 +76,7 @@ public:
 
 	// Note: m_pD3D is public for quick access...
     LPDIRECT3D9				m_pD3D;			// The main D3D object
+    LPDIRECT3D9EX			m_pD3DEx;		// [RAM 08/09] khac NULL khi tao duoc D3D9Ex (Rep3Ex=1); cung doi tuong voi m_pD3D
 
 private:
 	D3DDISPLAYMODE			m_DesktopFormat;// Desktop display mode (mainly for window mode)...

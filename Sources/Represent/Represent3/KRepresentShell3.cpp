@@ -48,6 +48,7 @@ int  g_nRep3Tex32     = 1;
 int  g_nRep3Npot      = 1;
 int  g_nRep3Vsync     = 0;
 int  g_nRep3CacheMB   = 0;
+int  g_nRep3Ex        = 0;	// [RAM 08/09] 1 = tao D3D9Ex (ky vong driver khong giu ban sao texture trong RAM)
 int  g_nRep3Log       = 1;
 int  g_nRep3Pool      = 1;	// [REP3 03/09 RAM]
 int  g_nRep3StatSec   = 30;
@@ -465,14 +466,17 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3CacheMB   = Rep3Ini("Rep3CacheMB", 0);
 	g_nRep3Log       = Rep3Ini("Rep3Log", 1);
 	g_nRep3Pool      = Rep3Ini("Rep3Pool", 1);		// [REP3 03/09 RAM]
+	g_nRep3Ex        = Rep3Ini("Rep3Ex", 0);		// [RAM 08/09]
+	if (g_nRep3Ex)
+		g_nRep3Pool = 1;	// D3D9Ex khong co POOL_MANAGED: bat buoc dem SYSTEMMEM + DEFAULT
 	g_nRep3StatSec   = Rep3Ini("Rep3StatSec", 30);
 	m_TextureResMgr.SetBudget();	// [REP3 03/09 RAM] doc Rep3CacheMB SAU khi doc ini (ctor chay truoc Create)
 	g_bUse4444Texture = (g_nRep3Tex32 == 0);
 	if (g_nRep3Flat)
 		g_renderModel = RenderModel2D;
-	Rep3Log("[REP3] Create %dx%d full=%d flat=%d composite=%d tex32=%d npot=%d vsync=%d cacheMB=%d pool=%s statSec=%d",
+	Rep3Log("[REP3] Create %dx%d full=%d flat=%d composite=%d tex32=%d npot=%d vsync=%d cacheMB=%d pool=%s statSec=%d ex=%d",
 		nWidth, nHeight, (int)bFullScreen, g_nRep3Flat, g_nRep3Composite, g_nRep3Tex32, g_nRep3Npot, g_nRep3Vsync, g_nRep3CacheMB,
-		g_nRep3Pool ? "DEFAULT(VRAM)" : "MANAGED(RAM+VRAM)", g_nRep3StatSec);	// [REP3 03/09 RAM]
+		g_nRep3Pool ? "DEFAULT(VRAM)" : "MANAGED(RAM+VRAM)", g_nRep3StatSec, g_nRep3Ex);	// [REP3 03/09 RAM]
 	if (!g_D3DShell.Create())
 		return false;
 	g_DebugLog("[D3DRender]g_D3DShell create ok!");
@@ -556,6 +560,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	if (!RestoreDeviceObjects())
 		return false;
 	g_DebugLog("[D3DRender]RestoreDeviceObjects ok!");
+	Rep3Log("[REP3] D3D9Ex: %s", g_nRep3ExOn ? "BAT (Rep3Ex=1, texture MANAGED -> DYNAMIC+DEFAULT)" : "tat");	// [RAM 08/09]
 	m_TextureResMgr.CapBudgetByVram((unsigned __int64)(PD3DDEVICE->GetAvailableTextureMem() >> 20));	// [FX 08/09] kep ngan sach theo VRAM con
 
 	if (!InitDeviceObjects())
@@ -578,13 +583,13 @@ bool KRepresentShell3::InitDeviceObjects()
 {
 	// ´´½¨Ô¤äÖÈ¾Ö÷½ÇµÄÌùÍ¼
 	if (FAILED(PD3DDEVICE->CreateTexture(SPR_PRERENDER_TEXSIZE1, SPR_PRERENDER_TEXSIZE1, 1,
-								0, D3DFMT_A4R4G4B4, D3DPOOL_MANAGED, &m_pPreRenderTexture128, NULL)))
+								REP3_USAGE_MANAGED, D3DFMT_A4R4G4B4, REP3_POOL_MANAGED, &m_pPreRenderTexture128, NULL)))
 		return false;
 	if (FAILED(PD3DDEVICE->CreateTexture(SPR_PRERENDER_TEXSIZE2, SPR_PRERENDER_TEXSIZE2, 1,
-								0, D3DFMT_A4R4G4B4, D3DPOOL_MANAGED, &m_pPreRenderTexture256, NULL)))
+								REP3_USAGE_MANAGED, D3DFMT_A4R4G4B4, REP3_POOL_MANAGED, &m_pPreRenderTexture256, NULL)))
 		return false;
 	if (FAILED(PD3DDEVICE->CreateTexture(SPR_PRERENDER_TEXSIZE3, SPR_PRERENDER_TEXSIZE3, 1,
-								0, D3DFMT_A4R4G4B4, D3DPOOL_MANAGED, &m_pPreRenderTexture512, NULL)))
+								REP3_USAGE_MANAGED, D3DFMT_A4R4G4B4, REP3_POOL_MANAGED, &m_pPreRenderTexture512, NULL)))
 		return false;
 	return true;
 }

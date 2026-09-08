@@ -6,6 +6,10 @@
 #include "d3d_shell.h"
 #include <algorithm>
 
+// [RAM 08/09] Rep3Ex doc tu config.ini trong KRepresentShell3::Create (chay truoc g_D3DShell.Create); g_nRep3ExOn = da tao duoc Ex
+extern int g_nRep3Ex;
+int g_nRep3ExOn = 0;
+
 CD3D_Shell g_D3DShell;						// The global D3D Shell...
 D3DFORMAT g_PixelFormat[3] = {D3DFMT_X1R5G5B5, D3DFMT_R5G6B5, D3DFMT_X8R8G8B8};
 
@@ -15,7 +19,27 @@ bool CD3D_Shell::Create()
 	FreeAll();								// Make sure everything is all clean before we start...
 
 	// 创建 D3D 对象(通过它可以查询和创建D3D设备)...
-	m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+	// [RAM 08/09] Rep3Ex=1: thu D3D9Ex truoc (tra ham dong de khong phu thuoc lib); hong thi ve D3D9 cu
+	m_pD3D = NULL;
+	m_pD3DEx = NULL;
+	g_nRep3ExOn = 0;
+	if (g_nRep3Ex)
+	{
+		typedef HRESULT (WINAPI *PFN_REP3_D3DC9EX)(UINT, IDirect3D9Ex**);
+		HMODULE hD3D9 = GetModuleHandleA("d3d9.dll");
+		if (!hD3D9)
+			hD3D9 = LoadLibraryA("d3d9.dll");
+		PFN_REP3_D3DC9EX pfnEx = hD3D9 ? (PFN_REP3_D3DC9EX)GetProcAddress(hD3D9, "Direct3DCreate9Ex") : NULL;
+		IDirect3D9Ex* pEx = NULL;
+		if (pfnEx && SUCCEEDED(pfnEx(D3D_SDK_VERSION, &pEx)) && pEx)
+		{
+			m_pD3DEx = pEx;
+			m_pD3D = pEx;
+			g_nRep3ExOn = 1;
+		}
+	}
+	if (!m_pD3D)
+		m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
 	if (!m_pD3D) return false;
 
 	// 取得桌面显示模式...
@@ -31,6 +55,7 @@ bool CD3D_Shell::Create()
 void CD3D_Shell::Reset()
 {
 	m_pD3D = NULL;
+	m_pD3DEx = NULL;	// [RAM 08/09] cung doi tuong, da Release qua m_pD3D
 
 	m_AdapterList.clear();
 }

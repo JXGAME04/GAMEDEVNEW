@@ -77,6 +77,10 @@ private:
 };
 
 extern CD3D_Device g_Device;					// The global D3D Device...
+// [RAM 08/09] D3D9Ex khong co POOL_MANAGED: cac texture 'MANAGED' cu dung DYNAMIC + DEFAULT khi Ex bat (van LockRect duoc)
+extern int g_nRep3ExOn;
+#define REP3_POOL_MANAGED  (g_nRep3ExOn ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED)
+#define REP3_USAGE_MANAGED (g_nRep3ExOn ? D3DUSAGE_DYNAMIC : 0)
 #define PD3DDEVICE (g_Device.m_pD3DDevice)		// Use for quick access to the D3DDevice...
 static LPDIRECT3DDEVICE9 d3d_GetD3DDevice() { return PD3DDEVICE; }	// For the RenderStruct...
 

@@ -6,6 +6,8 @@
 // Revision Count	:	2002-9-4改写，改为基于d3d。Wooy
 *******************************************************************************/
 #include "KFontRes.h"
+// [RAM 08/09] D3D9Ex khong co POOL_MANAGED (xem Represent3/D3D_Device.h)
+extern int g_nRep3ExOn;
 
 #define	DESIRE_TEXTURE_SIDE_WIDTH	512
 
@@ -74,7 +76,7 @@ bool KFontRes::Init(const char* pszFontFile, LPDIRECT3DDEVICE9 pd3dDevice)
 
     // Create a new texture for the font
     hr = m_pd3dDevice->CreateTexture( m_nTextureSideWidth, m_nTextureSideWidth, 1,
-                                      0, D3DFMT_A4R4G4B4, D3DPOOL_MANAGED, &m_pCharTexture, NULL);
+                                      (g_nRep3ExOn ? D3DUSAGE_DYNAMIC : 0), D3DFMT_A4R4G4B4, (g_nRep3ExOn ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED), &m_pCharTexture, NULL);	// [RAM 08/09]
     if (FAILED(hr))
 	{
 		Terminate();
