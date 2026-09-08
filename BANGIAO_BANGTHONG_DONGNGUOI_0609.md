@@ -937,3 +937,33 @@ Nghi ngo o muc 8.16 ve toc do buff **SAI**: toc do khong doi lan nao. Thu pham l
 **Suc khoe:** TICK 8,5 ms (15 %), client 1.250 luot ve/10 s, 0 `Net Msg Error`, 0 giat, khong sap. Nhan `[S7-NAMBEP]` cua va j chua ghi dong nao nhung moi co 1 lan chet sau 17:12 - chua du de ket luan ve loi nam bep.
 
 **Con lai gi:** goi 221 gon dang la 61 %, do la "gia" cua dong bo vi tri day gap doi (`DongBoMoiTick=10`), khong cat neu khong muon mat muot. Goi 75 ngoai hinh 12,1 % (nhung tuyet doi chi 11,8 KB/10 s) - phan con lai la cap co PK va nhom rank cua nguoi that, da do o muc 8.16.
+
+### 8.20 Neu 500 NGUOI THAT cung danh thi sao? (chu hoi 17:30) - ngoai suy tu so do that
+
+**Diem mau chot: hom nay chi co MOT ket noi that.** 1.000 bot chay trong long may chu, `m_nNetConnectIdx = -1`, nen **duong GUI chua bao gio bi thu**. Do that: `[BC-DEM]` 175.000 lan phat/giay, 500.000 node duyet/giay, nhung chi **1.421 lan gui that/giay** (mot client).
+
+**Ngoai suy** (500 nguoi cung mot chien truong Tong Kim, mat do quanh moi nguoi bang muc do that hom nay ~250 thuc the):
+
+| | 1 nguoi (do that) | 500 nguoi (ngoai suy) |
+|---|---|---|
+| Byte moi client | 10-23 KB/s, dinh 40-65 | khong doi (day la thanh qua cua DELTA) |
+| Goi moi client | 400-900/s, dinh 1.500-3.300 | khong doi |
+| **Byte ra tong** | 10-23 KB/s | **10 MB/s TB, dinh 30 MB/s = 80-240 Mbps** |
+| **So lan `PackDataToClient`/giay** | 1.421 | **400.000 TB, dinh 1,5 trieu** |
+| Trong MOT nhip 55 ms | 79 lan | **~83.000 lan** |
+| Lan phat / node duyet | 175k / 500k moi giay | gan nhu khong doi (do so NPC quyet dinh) |
+
+**Cai vo dau tien khong phai bang thong ma la MOT O KHOA CHUNG.** `CIOCPServer::PackDataToClient` (`MultiServer/Heaven/ServerStage.cpp:390`) lay **hai** khoa moi goi: `m_csCM` (khoa CHUNG toan bo bang client) roi `csWriteAction` (khoa rieng client). Voi 83.000 lan trong mot nhip: neu moi lan ton 150 ns thi mat 12 ms/nhip, con neu bi tranh chap voi luong IOCP nhan goi (500 ns) thi 42 ms - cong voi 8,5 ms hien tai la **vuot ngan sach 55 ms**, tuc tre nhip, giat, nguoi vo hinh. `SendPackToClient(-1)` moi nhip cung giu chinh khoa chung do trong khi duyet ca 500 client va goi `WSASend` cho tung nguoi.
+
+**Thu tu vo:** (1) o khoa chung trong duong gui; (2) duong truyen ra 80-240 Mbps (may 100 Mbps la nghen, 1 Gbps thi du); (3) may cua nguoi choi yeu (400-3.000 goi/giay/nguoi - may chu game chay 125 khung/giay nhung may nguoi choi thuong yeu hon).
+
+**Khong con la van de:** tran nguoi nhan moi lan phat da la 100.000 (`BroadCastDongBo`, do `cat_vi_het_ngan_sach=0`); van 5.000 goi/giay moi client chua bao gio cham; `MaxPlayer=1500` trong `GameServer_cfg.ini`. Neu 500 nguoi **tan ra khap the gioi** thay vi don mot cho thi khong co van de gi ca - phat tan tinh theo vung.
+
+**DELTA da mua duoc bao nhieu:** truoc hom nay moi client an 24,8 KB/s TB (dinh 51-65) voi so lan dong bo vi tri chi bang MOT NUA. Cung tran 500 nguoi do, ban cu can khoang 2,5 lan bang thong va 2 lan so goi -> ~600 Mbps va ~3 trieu lan gui/giay. Noi cach khac: 500 nguoi tu **khong the** thanh **sat nguong**.
+
+**Muon chac thi do, dung doan** (chua lam, cho chu quyet):
+
+1. **Phep thu nhan ban duong gui** (`[Server] MoPhongNhanBan=500`, mac dinh 0): moi lan `PackDataToClient` thi chep them 499 lan vao bo dem rac va dem byte. Do dung chi phi CPU + byte cua 500 client ma khong can 500 may. Re nhat, ket qua chac chan nhat.
+2. **Bo khoa chung `m_csCM` khoi duong nong** (chi giu khoa rieng tung client). Don bay CPU lon nhat, nhung dung vao loi mang nen phai lam can than va thu ky.
+3. **Thua theo khoang cach khi dong**: qua 16 o thi ha nhip dong bo vi tri con mot nua (goi 221 dang chiem 61 % byte). Chi bat khi vung dong nguoi nen luc it nguoi khong mat gi.
+4. **Chia chien truong cho nhieu GameServer** (da co san `GameServer1_cfg.ini`/`GameServer2_cfg.ini`, `MaxPlayer=290` moi ban).
