@@ -2952,6 +2952,7 @@ static POINT	s_InterpTo[MAX_NPC];
 static DWORD	s_InterpNpcID[MAX_NPC];
 static BYTE	s_InterpValid[MAX_NPC];	// 1 = snapshot hop le (ClientOnly npc co m_dwID = 0 van hop le)
 BOOL	g_bPaintInterpFocus = FALSE;
+unsigned g_uPaintFrameSeq = 0;	// [VETRUNG 08/09] tang mot lan moi khung ve (POSSHIFT chay dung mot lan/khung)
 int		g_nPaintAlpha = 0;	// [MAU 08/09] phan le tick (0..1000) cua khung ve hien tai, POSSHIFT dat moi khung; 0 khi tat noi suy (KNpc::PaintBlood dung)
 // Probe gia cap Lock/Unlock surface - dinh nghia trong Engine (KCanvas.cpp).
 // Khai bao thang (dung ENGINE_API tu KWin32.h, KHONG extern "C" de khop ten
@@ -23633,6 +23634,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		if (nAlpha > 1000)
 			nAlpha = 1000;
 		g_nPaintAlpha = nAlpha;	// [MAU 08/09]
+		g_uPaintFrameSeq++;	// [VETRUNG 08/09]
 		int	nPlayerNpcIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
 		int	nIdx = 0;
 		while (nIdx = NpcSet.GetNextIdx(nIdx))

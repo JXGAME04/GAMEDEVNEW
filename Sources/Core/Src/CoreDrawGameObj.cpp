@@ -15,6 +15,51 @@
 #define  PHYSICSSKILLICON "\\spr\\Ui\\¼¼ÄÜÍ¼±ê\\icon_sk_ty_ap.spr"
 #define SHOW_SPACE_HEIGHT 5
 
+// [VETRUNG 08/09] DEM ve trung: mot chi so NPC duoc goi bao nhieu lan trong CUNG mot khung o nhanh ve CHU.
+// Gia thuyet dang kiem: nut canh du -> NPC ve hai lan -> chu chong len nhau nen dam va ngA ve kenh do.
+extern int g_nCorePaintLog;
+extern unsigned g_uPaintFrameSeq;
+static unsigned s_uVTSeq = 0xFFFFFFFF;
+static unsigned char s_abyVTLan[MAX_NPC];
+static unsigned g_uVeTrungGan = 0, g_uVeTrungXa = 0, g_uVTKhung = 0, g_uVTLuot = 0, g_uVTMax = 0;
+static void VeTrungGhi(unsigned uId)
+{
+	if (uId >= MAX_NPC) return;
+	if (s_uVTSeq != g_uPaintFrameSeq)
+	{
+		s_uVTSeq = g_uPaintFrameSeq;
+		memset(s_abyVTLan, 0, sizeof(s_abyVTLan));
+		g_uVTKhung++;
+	}
+	g_uVTLuot++;
+	if (s_abyVTLan[uId] < 255) s_abyVTLan[uId]++;
+	if (s_abyVTLan[uId] > g_uVTMax) g_uVTMax = s_abyVTLan[uId];
+	if (s_abyVTLan[uId] == 2)
+	{	// lan thu hai trong cung khung = ve trung; xet khoang cach toi nhan vat cua minh
+		int nX = 0, nY = 0, nMeX = 0, nMeY = 0;
+		Npc[uId].GetDrawPos(&nX, &nY);
+		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetDrawPos(&nMeX, &nMeY);
+		const int ddx = nX - nMeX, ddy = (nY - nMeY) * 2;
+		if ((double)ddx * ddx + (double)ddy * ddy < 400.0 * 400.0) g_uVeTrungGan++; else g_uVeTrungXa++;
+	}
+}
+static void VeTrungInDong()
+{
+	static DWORD s_dwLan = 0;
+	const DWORD dwNow = GetTickCount();
+	if (s_dwLan == 0) { s_dwLan = dwNow; return; }
+	if (dwNow - s_dwLan < 10000 || g_uVTKhung == 0) return;
+	s_dwLan = dwNow;
+	FILE* pLog = fopen("jx_paint.log", "a");
+	if (pLog)
+	{
+		fprintf(pLog, "[VETRUNG] t=%u khung=%u | luot ve chu %.1f/khung | TRUNG gan %.2f xa %.2f moi khung | mot npc ve toi da %u lan/khung\n",
+			dwNow, g_uVTKhung, (double)g_uVTLuot / g_uVTKhung,
+			(double)g_uVeTrungGan / g_uVTKhung, (double)g_uVeTrungXa / g_uVTKhung, g_uVTMax);
+		fclose(pLog);
+	}
+	g_uVeTrungGan = g_uVeTrungXa = g_uVTKhung = g_uVTLuot = g_uVTMax = 0;
+}
 void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, int nParam)
 {
 	switch(uObjGenre)
@@ -27,6 +72,7 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 
 			if ((nParam & IPOT_RL_INFRONTOF_ALL) == IPOT_RL_INFRONTOF_ALL)
 			{
+				if (g_nCorePaintLog > 0) { VeTrungGhi(uId); VeTrungInDong(); }	// [VETRUNG 08/09]
 				Npc[uId].PaintBlood(nHeight / 2);
 				nHeight = Npc[uId].PaintChat(nnHeight);	
 
