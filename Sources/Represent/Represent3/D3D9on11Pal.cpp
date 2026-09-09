@@ -71,7 +71,15 @@ void CDev11::PalFree(int row)
 
 unsigned g_uRep3PalRows = 0;
 
+#ifdef JX_PLATFORM_SDL	// [GPU 08/09] thiet bi SDL_GPU (Rep3Api=100) dung cung API bang mau
+#include "D3D9onGPU.h"
+int Rep3_D3D11PaletteOK() { if (Rep3_GpuPaletteOK()) return 1; return (g_pRep3Dev11 && g_pRep3Dev11->m_pDev) ? 1 : 0; }
+int Rep3_D3D11AllocPalette(const unsigned char* pPal24, int nColors) { if (Rep3_GpuPaletteOK()) return Rep3_GpuAllocPalette(pPal24, nColors); return g_pRep3Dev11 ? g_pRep3Dev11->PalAlloc(pPal24, nColors) : -1; }
+void Rep3_D3D11FreePalette(int nRow) { if (Rep3_GpuPaletteOK()) { Rep3_GpuFreePalette(nRow); return; } if (g_pRep3Dev11) g_pRep3Dev11->PalFree(nRow); }
+void Rep3_D3D11TagPalette(IDirect3DTexture9* pTex, int nRow) { if (Rep3_GpuPaletteOK()) { Rep3_GpuTagPalette(pTex, nRow); return; } if (pTex) ((CTex11*)pTex)->m_nPalRow = nRow; }
+#else
 int Rep3_D3D11PaletteOK() { return (g_pRep3Dev11 && g_pRep3Dev11->m_pDev) ? 1 : 0; }
 int Rep3_D3D11AllocPalette(const unsigned char* pPal24, int nColors) { return g_pRep3Dev11 ? g_pRep3Dev11->PalAlloc(pPal24, nColors) : -1; }
 void Rep3_D3D11FreePalette(int nRow) { if (g_pRep3Dev11) g_pRep3Dev11->PalFree(nRow); }
 void Rep3_D3D11TagPalette(IDirect3DTexture9* pTex, int nRow) { if (pTex) ((CTex11*)pTex)->m_nPalRow = nRow; }
+#endif	// JX_PLATFORM_SDL [GPU 08/09]

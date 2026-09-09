@@ -696,7 +696,11 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 	D3DFORMAT eFmt = g_nRep3Tex32 ? D3DFMT_A8R8G8B8 : D3DFMT_A4R4G4B4;
 	// [D3D11 08/09 r] bang mau: 2 byte/diem (chi so + alpha), mau tra bang trong shader = y het 8888
 	bool bPal = false;
+#ifdef JX_PLATFORM_SDL
+	if (g_nRep3Pal && (g_nRep3ApiOn == 11 || g_nRep3ApiOn == 100) && g_nRep3Pool && m_pPal24 && Rep3_D3D11PaletteOK())	// [GPU 08/09] bang mau ca tren SDL_GPU
+#else
 	if (g_nRep3Pal && g_nRep3ApiOn == 11 && g_nRep3Pool && m_pPal24 && Rep3_D3D11PaletteOK())
+#endif
 	{
 		if (m_nPalRow < 0)
 			m_nPalRow = Rep3_D3D11AllocPalette((const unsigned char*)m_pPal24, (int)m_nColors);
