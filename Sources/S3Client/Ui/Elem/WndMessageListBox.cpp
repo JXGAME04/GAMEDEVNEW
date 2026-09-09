@@ -285,7 +285,7 @@ int KWndMessageListBox::Init(KIniFile* pIniFile, const char* pSection)
 		m_nNumBytesPerLine = (m_Width * 2) / m_nFontSize;
 		if (m_nNumBytesPerLine < 2)
 			m_nNumBytesPerLine = 2;
-		m_nNumMaxShowLine = m_Height / (m_nFontSize + 1);
+		m_nNumMaxShowLine = m_Height / (CaoDong());
 
 		char	Buff[16];
 		pIniFile->GetString(pSection, "MsgColor", "", Buff, 16);
@@ -376,7 +376,7 @@ void KWndMessageListBox::SetSize(int nWidth, int nHeight)
 	int nNumBytesPerLine = (m_Width * 2) / m_nFontSize;
 	if (nNumBytesPerLine < 2)
 		nNumBytesPerLine = 2;
-	int nLines = m_Height / (m_nFontSize + 1);
+	int nLines = m_Height / (CaoDong());
 
 	if (nLines != m_nNumMaxShowLine || m_nNumBytesPerLine != nNumBytesPerLine)
 	{
@@ -552,7 +552,7 @@ void KWndMessageListBox::PaintWindow()
 	if (m_Style & MSGLISTBOX_S_TEXTBOTTOM)
 	{
 		nNumVisibleTextLine = m_nNumVisibleTextLine - m_nHideNumLine;
-		y += m_nHideNumLine * (m_nFontSize + 1);
+		y += m_nHideNumLine * (CaoDong());
 	}
 	else
 	{
@@ -566,7 +566,7 @@ void KWndMessageListBox::PaintWindow()
 		bg.oPosition.nX = m_nAbsoluteLeft;
 		bg.oEndPos.nX = bg.oPosition.nX + m_Width;
 		bg.oPosition.nY = y;
-		bg.oEndPos.nY = bg.oPosition.nY + nNumVisibleTextLine * (m_nFontSize + 1);
+		bg.oEndPos.nY = bg.oPosition.nY + nNumVisibleTextLine * (CaoDong());
 		g_pRepresentShell->DrawPrimitives(1, &bg, RU_T_SHADOW, true);
 	}
 	while (nViewLines > 0 && nCurMsg < m_nNumMessage)
@@ -598,7 +598,7 @@ void KWndMessageListBox::PaintWindow()
 					bg.oPosition.nX = Param.nX;
 					bg.oPosition.nY = Param.nY;
 					bg.oEndPos.nX = bg.oPosition.nX + m_Width;
-					bg.oEndPos.nY = bg.oPosition.nY + Param.nNumLine * (m_nFontSize + 1);
+					bg.oEndPos.nY = bg.oPosition.nY + Param.nNumLine * (CaoDong());
 					g_pRepresentShell->DrawPrimitives(1, &bg, RU_T_SHADOW, true);
 				}
 				Param.Color = m_SelMsgColor;
@@ -622,7 +622,7 @@ void KWndMessageListBox::PaintWindow()
 				bg.oPosition.nX = Param.nX;
 				bg.oPosition.nY = Param.nY;
 				bg.oEndPos.nX = bg.oPosition.nX + (pCurMsg->nCharWidth * m_nFontSize / 2);
-				bg.oEndPos.nY = bg.oPosition.nY + Param.nNumLine * (m_nFontSize + 1);
+				bg.oEndPos.nY = bg.oPosition.nY + Param.nNumLine * (CaoDong());
 				g_pRepresentShell->DrawPrimitives(1, &bg, RU_T_SHADOW, true);
 			}
 		
@@ -643,7 +643,7 @@ void KWndMessageListBox::PaintWindow()
 					KUiPlayerBar::SetItemBtnPos(nCurMsg,INVISIBLE_POS);
 			}
 			//---------------------------------------------------------------------------------------------------------------------------------
-			y += Param.nNumLine * (m_nFontSize + 1);
+			y += Param.nNumLine * (CaoDong());
 		}
 		else if (m_bItemActived) 
 			KUiPlayerBar::SetItemBtnPos(nCurMsg,INVISIBLE_POS);
@@ -702,7 +702,7 @@ int	KWndMessageListBox::GetMsgAtPoint(int x, int y)
 {
 	int nSelLine = 0;
 
-	nSelLine = (y - m_nAbsoluteTop - GetOffsetTextHeight()) / (m_nFontSize + 1);
+	nSelLine = (y - m_nAbsoluteTop - GetOffsetTextHeight()) / (CaoDong());
 
 	if (nSelLine < 0 || nSelLine >= m_nNumVisibleTextLine)
 		return -1;
@@ -926,7 +926,7 @@ unsigned int KWndMessageListBox::GetOffsetTextHeight()
 	if (m_Style & MSGLISTBOX_S_TEXTBOTTOM)
 	{
 		if (m_nNumVisibleTextLine < m_nNumMaxShowLine)
-			return (m_nNumMaxShowLine - m_nNumVisibleTextLine) * (m_nFontSize + 1);
+			return (m_nNumMaxShowLine - m_nNumVisibleTextLine) * (CaoDong());
 	}
 	return 0;
 }
@@ -981,7 +981,7 @@ void KWndMessageListBox::HideAllLine()
 
 int KWndMessageListBox::GetMinHeight()
 {
-	return max(m_nFontSize + 1, 0);
+	return max(CaoDong(), 0);
 }
 
 KScrollMessageListBox::KScrollMessageListBox()

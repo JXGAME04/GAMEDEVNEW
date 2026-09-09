@@ -45,6 +45,13 @@ public:
 	void UpdateDataP();
 	void SetFontSize(int nFontSize);
 	int GetFontSize()	{return m_nFontSize;}
+	// [ANDROID 09/09 CHAM] BUOC DONG cua danh sach: ve, do trung va cuon deu dung ham nay nen
+	// khong bao gio lech nhau. Tren dien thoai cong them cho dong cao hon, ngon tay de cham.
+#ifdef JX_ANDROID
+	int CaoDong() const	{ return m_nFontSize + 1 + 5; }
+#else
+	int CaoDong() const	{ return m_nFontSize + 1; }
+#endif
 
 public:
 	int 	GetFirstVMsg() { return m_nFisrtVisId; }//lay id dau tien ko bi an cua tin nhan' khi so dong an == 0
