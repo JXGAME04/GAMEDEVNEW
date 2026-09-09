@@ -9,10 +9,14 @@
 #include <windows.h>
 #include <assert.h>
 #define WIN32_LEAN_AND_MEAN
+#ifdef JX_D3D9MINI	// [GPU 08/09] khong co DirectX SDK (Android / kiem tren Windows): tap con d3d9 + d3dx9
+#include "d3d9mini.h"
+#else
 #include <d3d9types.h>
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <d3d9caps.h>
+#endif
 
 #include "..\..\engine\src\KEngine.h"
 #include "..\..\engine\src\KBmpFile24.h"

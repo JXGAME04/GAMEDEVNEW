@@ -12,7 +12,11 @@
 #pragma once
 #ifdef JX_PLATFORM_SDL
 
+#ifdef JX_D3D9MINI
+#include "d3d9mini.h"
+#else
 #include <d3d9.h>
+#endif
 #include <SDL3/SDL.h>
 #include <vector>
 #include <map>
