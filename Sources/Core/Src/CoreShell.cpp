@@ -8,6 +8,7 @@
 #include "GameDataDef.h"
 #include "CoreShell.h"
 #include "CoreDrawGameObj.h"
+#include "KDoLuot.h"	// [DOLUOT 09/09 c]
 #include "ImgRef.h"
 #include "KPlayer.h"
 #include "KPlayerSet.h"
@@ -24591,6 +24592,7 @@ static void CoreProbeTick(DWORD dwStart, DWORD dwNet, DWORD dwWorld, DWORD dwSce
 void KCoreShell::DrawGameSpace()
 {
 #ifndef _SERVER
+	DoLuotPham doLuotVe(2);	// [DOLUOT 09/09 c] ve the gioi that (g_ScenePlace.Paint)
 	if (g_nCorePaintLog > 0)
 	{
 		DWORD dwDrawT0 = timeGetTime();

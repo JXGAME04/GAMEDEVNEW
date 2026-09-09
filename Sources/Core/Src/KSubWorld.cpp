@@ -11,6 +11,7 @@
 #include "KMissleSet.h"
 #ifndef _STANDALONE
 #include "crtdbg.h"
+#include "KDoLuot.h"	// [DOLUOT 09/09 c]
 #endif
 #include "Scene/ObstacleDef.h"
 // KCombinFileSection / REGION_ELEM_FILE_COUNT dung trong ProcLoadPathGrid. Truoc day
@@ -1293,8 +1294,11 @@ static void DoLuotIn(FILE* pLog, int nPha, DoLuotDem* aDem, int nDem, unsigned u
 			PFN_DoLuotSymSetOptions pOpt = (PFN_DoLuotSymSetOptions)GetProcAddress(h, "SymSetOptions");
 			PFN_DoLuotSymInitialize pInit = (PFN_DoLuotSymInitialize)GetProcAddress(h, "SymInitialize");
 			if (pOpt) pOpt(0x00000002 | 0x00000004);	// SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS
-			if (pInit && pInit(GetCurrentProcess(), NULL, TRUE))
-				s_pfnTu = (PFN_DoLuotSymFromAddr)GetProcAddress(h, "SymFromAddr");
+			if (pInit) pInit(GetCurrentProcess(), NULL, TRUE);	// [DOLUOT 09/09 c] FALSE = da khoi tao san (CrashLog.cpp) -> van dung duoc
+			typedef BOOL (WINAPI *PFN_DoLuotSymRefresh)(HANDLE);
+			PFN_DoLuotSymRefresh pRefresh = (PFN_DoLuotSymRefresh)GetProcAddress(h, "SymRefreshModuleList");
+			if (pRefresh) pRefresh(GetCurrentProcess());
+			s_pfnTu = (PFN_DoLuotSymFromAddr)GetProcAddress(h, "SymFromAddr");
 		}
 	}
 	// sap xep giam dan theo so mau (chon dan 12)
@@ -1321,43 +1325,39 @@ static void DoLuotIn(FILE* pLog, int nPha, DoLuotDem* aDem, int nDem, unsigned u
 	}
 	fprintf(pLog, "\n");
 }
-// Luong chinh: RAII quanh tick (KSubWorld::Activate) va ve (KSubWorld::Paint)
-struct DoLuotPham
+// [DOLUOT 09/09 c] Luong chinh: DoLuotPham (KDoLuot.h) goi 2 ham nay quanh tick (KSubWorld::Activate) va ve (KCoreShell::DrawGameSpace)
+LONG DoLuotBatDau(int nPha, LARGE_INTEGER* pLi0)
 {
-	LARGE_INTEGER m_li0; int m_nPha; LONG m_lSeq;
-	DoLuotPham(int nPha) : m_nPha(0), m_lSeq(0)
+	if (g_nDoLuot < 0)
 	{
-		if (g_nDoLuot < 0)
+		g_nDoLuot = GetPrivateProfileIntA("Client", "DoLuot", 0, ".\\config.ini") ? 1 : 0;
+		g_nDoLuotNguong = GetPrivateProfileIntA("Client", "DoLuotNguong", 20, ".\\config.ini");
+		if (g_nDoLuot)
 		{
-			g_nDoLuot = GetPrivateProfileIntA("Client", "DoLuot", 0, ".\\config.ini") ? 1 : 0;
-			g_nDoLuotNguong = GetPrivateProfileIntA("Client", "DoLuotNguong", 20, ".\\config.ini");	// [DOLUOT 09/09 b]
-			if (g_nDoLuot)
+			if (!DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_hDoLuotChinh, THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION, FALSE, 0))
+				g_nDoLuot = 0;
+			else
 			{
-				if (!DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_hDoLuotChinh, THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION, FALSE, 0))
-					g_nDoLuot = 0;
-				else
-				{
-					unsigned uTid = 0; HANDLE h = (HANDLE)_beginthreadex(NULL, 0, DoLuotLuong, NULL, 0, &uTid);
-					if (!h) g_nDoLuot = 0; else CloseHandle(h);
-					FILE* pB = fopen("jx_paint.log", "a");	// [DOLUOT 09/09 b]
-					if (pB) { fprintf(pB, "[DOLUOT] bat: %s, nguong %d ms (0 = gom moi tick/khung)\n", g_nDoLuot ? "luong lay mau da chay" : "KHONG tao duoc luong", g_nDoLuotNguong); fclose(pB); }
-				}
+				unsigned uTid = 0; HANDLE h = (HANDLE)_beginthreadex(NULL, 0, DoLuotLuong, NULL, 0, &uTid);
+				if (!h) g_nDoLuot = 0; else CloseHandle(h);
 			}
+			FILE* pB = fopen("jx_paint.log", "a");
+			if (pB) { fprintf(pB, "[DOLUOT] bat: %s, nguong %d ms (0 = gom moi tick/khung)\n", g_nDoLuot ? "luong lay mau da chay" : "KHONG tao duoc luong", g_nDoLuotNguong); fclose(pB); }
 		}
-		if (!g_nDoLuot) return;
-		m_nPha = nPha; m_lSeq = InterlockedIncrement(&g_lDoLuotSeq);
-		QueryPerformanceCounter(&m_li0);
-		InterlockedExchange(&g_lDoLuotPha, (LONG)nPha);
 	}
-	~DoLuotPham()
-	{
-		if (!m_nPha) return;
-		InterlockedExchange(&g_lDoLuotPha, 0);
-		LARGE_INTEGER li1, f; QueryPerformanceCounter(&li1); QueryPerformanceFrequency(&f);
-		const double dMs = (double)(li1.QuadPart - m_li0.QuadPart) * 1000.0 / (double)f.QuadPart;
-		if (g_nDoLuotNguong <= 0 || dMs >= (double)g_nDoLuotNguong) { g_aDoLuotNangPha[m_lSeq & (DOLUOT_NANG - 1)] = m_nPha; InterlockedExchange(&g_aDoLuotNang[m_lSeq & (DOLUOT_NANG - 1)], m_lSeq); }	// [DOLUOT 09/09 b] nguong 0 = danh dau moi tick/khung
-	}
-};
+	if (!g_nDoLuot || nPha < 1 || nPha > 2) return 0;
+	const LONG lSeq = InterlockedIncrement(&g_lDoLuotSeq);
+	QueryPerformanceCounter(pLi0);
+	InterlockedExchange(&g_lDoLuotPha, (LONG)nPha);
+	return lSeq;
+}
+void DoLuotKetThuc(int nPha, LONG lSeq, const LARGE_INTEGER& li0)
+{
+	InterlockedExchange(&g_lDoLuotPha, 0);
+	LARGE_INTEGER li1, f; QueryPerformanceCounter(&li1); QueryPerformanceFrequency(&f);
+	const double dMs = (double)(li1.QuadPart - li0.QuadPart) * 1000.0 / (double)f.QuadPart;
+	if (g_nDoLuotNguong <= 0 || dMs >= (double)g_nDoLuotNguong) { g_aDoLuotNangPha[lSeq & (DOLUOT_NANG - 1)] = nPha; InterlockedExchange(&g_aDoLuotNang[lSeq & (DOLUOT_NANG - 1)], lSeq); }
+}
 
 void WorldTickXong(double dQuet)
 {
@@ -2913,7 +2913,6 @@ int CORE_API g_ScreenY  = 0;
 extern struct iRepresentShell*	g_pRepresent;
 void KSubWorld::Paint()
 {
-	DoLuotPham doLuotVe(2);	// [DOLUOT 09/09] ve the gioi
 	if(m_uPaintTime > timeGetTime())
 		return;
 	int nIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
