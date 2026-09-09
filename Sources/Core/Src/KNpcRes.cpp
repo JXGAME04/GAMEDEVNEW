@@ -377,15 +377,19 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 	// doi o nay sang ALPHA_COLOR_ADJUST + mau doc/bong/dong bang roi khong tra lai,
 	// nen hieu ung buff an theo mau con sot => moi lan buff ra mot mau khac.
 	// Tra ve dung mac dinh cua Init: ALPHA + alpha 255 (tang hinh van mo).
-	m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
-	m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
-	strcpy(m_cDrawFile[nPos].szImage, this->m_cNpcShadow.m_szName);
-	m_cDrawFile[nPos].uImage = m_cNpcShadow.m_dwNameID;
-	m_cDrawFile[nPos].nFrame = this->m_cNpcShadow.m_nCurFrame;
-	m_cDrawFile[nPos].oPosition.nX = nScreenX;
-	m_cDrawFile[nPos].oPosition.nY = nScreenY;
-	m_cDrawFile[nPos].oPosition.nZ = 0;//nScreenZ;
-	nPos++;
+	// [VE 08/09 c] NPC khong co sprite bong thi dung gui o rong (Represent3 nap khong ra anh roi bo).
+	if (m_cNpcShadow.m_szName[0])
+	{
+		m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+		m_cDrawFile[nPos].Color.Color_b.a = Npc[nNpcIdx].m_HideState.nTime ? START_BLUR_ALPHA : 255;
+		strcpy(m_cDrawFile[nPos].szImage, this->m_cNpcShadow.m_szName);
+		m_cDrawFile[nPos].uImage = m_cNpcShadow.m_dwNameID;
+		m_cDrawFile[nPos].nFrame = this->m_cNpcShadow.m_nCurFrame;
+		m_cDrawFile[nPos].oPosition.nX = nScreenX;
+		m_cDrawFile[nPos].oPosition.nY = nScreenY;
+		m_cDrawFile[nPos].oPosition.nZ = 0;//nScreenZ;
+		nPos++;
+	}
 
 	int tmp = -1;
 	int tmp1 = -1;
@@ -512,7 +516,7 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 			nPos++;
 		}
 	}*/
-	g_pRepresent->DrawPrimitives(nPos, m_cDrawFile, RU_T_IMAGE, bInMenu); //vÏ hiÖu øng d­íi ch©n
+	if (nPos)	g_pRepresent->DrawPrimitives(nPos, m_cDrawFile, RU_T_IMAGE, bInMenu); //vÏ hiÖu øng d­íi ch©n
 	nPos = 0;
 
 	for (i = 6; i < 12; i++)
@@ -587,6 +591,11 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 		{
 			if (m_nSortTable[i] >= 0 && m_nSortTable[i] < MAX_PART)
 			{
+				// [VE 08/09 c] Bo qua o KHONG co anh (phan trang bi nguoi choi khong mac, NPC thieu bo phan):
+				// truoc day van gui di anh ten RONG - do duoc 300-900 o rong moi khung luc dong nguoi.
+				// Cua chan nay vong ve HIEU UNG trang bi ngay tren da co tu truoc, vong than nguoi bi bo sot.
+				if (!m_cNpcImage[m_nSortTable[i]].m_szName[0])
+					continue;
 				// [MAUBUFF 04/09] dung nPos, KHONG dung i: anh gan vao m_cDrawFile[nPos] nen kieu ve/mau
 				// cung phai vao dung o do. Bang thu tu co 'lo' (i != nPos) thi than nguoi nhan mau
 				// cua o khac, con mau dinh cho no roi vao o dang giu hieu ung buff - dung loi ma
@@ -616,7 +625,7 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 		}
 	}
 
-	g_pRepresent->DrawPrimitives(nPos, m_cDrawFile, RU_T_IMAGE, bInMenu);
+	if (nPos)	g_pRepresent->DrawPrimitives(nPos, m_cDrawFile, RU_T_IMAGE, bInMenu);	// [VE 08/09 c]
 	nPos = 0;
 	bool gb_skill_150_draw = true;
 	for (i = 6; i < 12; i++)
