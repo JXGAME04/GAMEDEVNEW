@@ -559,6 +559,110 @@ APK: `android/apk/jx1mobile-0909-kynang.apk`.
 
 ---
 
+## 12. (09/09 chiều) NÚT KỸ NĂNG LÀM LẠI THEO ĐÚNG NGUỒN THAM KHẢO
+
+Chủ chê bản đầu: *"chưa thấy đúng các nút chọn kỹ năng để đánh — tôi đã kêu có nút sẵn ở
+vnku rồi. Vị trí nút — chức năng các nút. Bạn sắp xếp đều sai vị trí."* Chủ đúng: lần đầu
+tôi **tự nghĩ ra** bố cục (ô vuông xếp lưới 2 cột ở mép phải) thay vì mở nguồn ra đọc.
+
+### 12.1. Nguồn tham khảo nằm ở đâu — ghi lại để khỏi tìm lại
+
+**Không phải** `D:\USVOLAM\Sources` (đó là nhánh PC; `UiMiniSkill` bên đó là **bảng buff**).
+Bản mobile nằm ở **`D:\USVOLAM\Jx1mClientMobile`** (bản Cocos). Các chỗ đã dùng:
+
+| Việc | Chỗ đọc |
+|---|---|
+| Bố cục cụm nút | `vn/gamescence/KgameWorldVN.cpp:1688` — *"phím kỹ năng phụ — vòng tròn skill quanh mainskill"* |
+| Độ lệch từng ô | `gamescene/KgameWorld.cpp:13877` (ô 0–4) và `:13908` (ô 5–7) |
+| **Cỡ thật của ô** | `gamescene/KgameWorld.cpp:13821` — nền tròn **40 px**, nhân **1.5** (ô 0–4) và **1.2** (ô 5–7) ⇒ **60** và **48** |
+| Nút đánh chính | `KgameWorldVN.cpp:802` (vị trí) + `KgameWorld.cpp:3015` `mianSkillCallback` → `MainAttack` |
+| Nút phụ | `KgameWorld.cpp:4364` `auxiliaryskillCallback` → `SetRightSkill` + `UseSkill(x,y,id)` |
+| Kiểu dùng kỹ năng | `gameui/KuiMyMenu.cpp:251` — 0 = chạm là đánh, 1 = ngắm đánh **một** phát, 2 = ngắm đánh **liên tục**, 3 = hướng nhìn |
+| Phép tính điểm ngắm | `KuiMyMenu.cpp:847–912` — điểm = chỗ nhân vật + độ lệch kéo × (tầm đánh / bán kính cần), **ép trục Y còn một nửa** |
+| Đánh liên tục khi đè | `KuiMyMenu.cpp:1000` `updateMode` |
+| Luật ngựa | **có sẵn trong bản này**: `Core/Src/KPlayer.cpp:12610` (hệ tự đánh) |
+
+Ảnh nút: **`\spr\Ui3\UiSkillControl\`** của VNKU — `assign_skill_70x70/100x100/140x140/200x200`,
+`effect_skill`, `switch_assign_mode`, `joystick_bg/ctrl`. Tên *"assign skill"* của cả bộ đã
+nói rõ: các ô là để **người chơi gán**.
+
+### 12.2. Đã làm
+
+**Bố cục** — một **nút đánh chính** (92 px) ở góc phải dưới, **8 ô kỹ năng phụ xếp thành
+cung** quanh nó; ô 0–4 (cung trong) **60 px**, ô 5–7 (cung ngoài) **48 px**. Độ lệch lấy
+nguyên số của nguồn. Vẽ bằng `RU_T_IMAGE_STRETCH` nên đặt được **đúng cỡ** bất kể cỡ sẵn
+của tệp ảnh — nhờ vậy chỉ cần một tệp khung cho cả ba cấp, và màn hình cỡ nào cũng đúng.
+
+**Chức năng** —
+- *Nút chính*: đánh thường bằng kỹ năng đánh **trái**, tự chọn mục tiêu.
+- *Nút phụ*: đặt làm kỹ năng đánh **phải** rồi đánh **theo điểm**. Hai bên không giẫm chân nhau.
+- **Đè là đánh liên tục** (kiểu 2 của nguồn), nhịp 200 ms.
+- **Kéo để ngắm**: ô xanh chạy tới đâu thả kỹ năng ở đó; có **vòng tầm đánh** (`attack_radius`)
+  và **mũi tên định hướng đánh** (`attack_direction`, chọn khung theo góc).
+- **Nghiêng theo hướng**: bỏ vạch đỏ, thay bằng **núm** chạy trong lòng nút (đúng cách
+  `KuiMyMenu jsSprite` của nguồn).
+- **Kiểm tra ngựa** trước khi đánh — luật lấy đúng của hệ tự đánh: kỹ năng chỉ dùng được
+  dưới ngựa mà đang cưỡi thì **tự xuống ngựa** rồi thôi phát đó; có chặn 5 giây `TIME_RIDE`.
+
+**Hai ngón cùng lúc** — SDL chỉ giả lập chuột cho ngón **thứ nhất**, nên trước đây giữ cần
+thì không bấm được nút kỹ năng. Mở thêm đường riêng đọc thẳng sự kiện ngón tay cho ngón
+**thứ hai trở đi**: đặt vào nút kỹ năng thì ngón đó điều khiển nút, đặt vào vùng cần thì
+ngón đó cầm cần. Ngón thứ nhất giữ nguyên đường cũ.
+
+**Tự gán kỹ năng vào ô** — nút **đổi chế độ gán** (`switch_assign_mode.spr`): bật chế độ →
+chạm ô (ô sáng vàng) → mở bảng kỹ năng → chạm kỹ năng ⇒ vào ô đó. Ghi ra
+`UserData\KyNangMobile.ini` nên lần sau mở game vẫn còn. Ô chưa gán thì vẫn lấy theo danh
+sách kỹ năng đánh, để dùng được ngay không phải gán tay.
+
+**Mũi tên nhỏ dưới chân theo hướng di chuyển** (`direction_arrow.spr` — chính chủ chỉ rõ
+đây là ảnh hướng *di chuyển*, khác `attack_direction` dùng cho hướng *đánh*).
+
+### 12.3. Ba lỗi tìm ra khi đo
+
+1. **Biểu tượng kỹ năng lệch lên góc trái**: `KSkill::DrawSkillIcon` (`KSkills.cpp:2861`)
+   **bỏ qua** `Width/Height` — nó vẽ ảnh ở cỡ thật, lấy `(x,y)` làm góc trái trên. Phải tự
+   canh giữa theo cỡ thật.
+2. **Tên lớp C++ khác nhau giữa hai bản**: `typeid().name()` cho `"class KUiFoo"` trên MSVC
+   nhưng `"16KUiFoo"` trên GCC ⇒ khoá lưu khác nhau ⇒ giao diện đặt ở máy tính không dùng
+   lại được trên điện thoại. Đã bỏ chữ số đầu tên.
+3. **Chỉnh toạ độ: nhiều icon không kéo riêng được, kéo thì đi cả cụm.** Khoá của một ô là
+   `<lớp cửa sổ gốc>|<tên mục ini>`, mà tên mục ini chỉ có khi ô đó nạp từ ini; ô tạo thẳng
+   bằng mã thì `TaoKhoa` trả false ⇒ `TimODuoiChuot` **leo lên cha**. Đã thêm tên thay thế
+   theo vị trí trong cây cửa sổ (`<lớp>|#<thứ tự cha>.<thứ tự nó>`).
+   Kèm theo: thêm **bảng ô vẽ tay** vào `UiToaDo` — bất cứ thứ gì vẽ tay (cụm nút kỹ năng,
+   sau này là nút auto/nhặt đồ…) chỉ cần đăng ký **một dòng** là dời chỗ được và được lưu.
+
+### 12.4. Đã đo tận mắt
+
+| Việc | Kết quả |
+|---|---|
+| Ba cấp ô đúng cỡ, hết chồng nhau | **đạt** |
+| Chạm nút đánh → chém trúng quái, hiện **−200** | **đạt** |
+| Đè nút → đánh liên tục (thấy quỹ đạo chiêu + **−760**) | **đạt** |
+| Kéo → vòng sáng quanh nút, ô xanh ngắm chạy theo hướng | **đạt** |
+| Hai ngón: giữ cần + đè nút kỹ năng cùng lúc | **đạt** |
+| Mũi tên hướng di chuyển nằm **phía trước** khi đi lên (đo được y=249 so với giữa màn 302) | **đạt** |
+| Gán kỹ năng: bật chế độ → chọn ô → chạm kỹ năng ⇒ log `gan ky nang 1380 vao o 0`, tệp ghi `O0=262148,1380`, ô đổi biểu tượng | **đạt** |
+| Nút HUD sẵn có (Chạy/Đi, Ngồi, Ngựa, Giao dịch, PK) có ăn cú chạm | **đạt** (thử nút Chạy/Đi, nhân vật đổi trạng thái) |
+
+APK mới nhất: `android/apk/jx1mobile-0909-gan.apk`.
+
+### 12.5. Còn lại
+
+- **Kỹ năng trợ (aura / nội công)**: chạm chỉ đặt làm kỹ năng đang dùng, **chưa bật/tắt được**
+  từ nút — Core chưa mở đường cho client gọi `SetAuraSkill`.
+- **Nút nhặt đồ nhanh** và **nút bật/tắt auto** trên HUD: bản tham khảo có (`nhatnhanh.png`,
+  `autoplay.png`); bản này chưa có nút chạm riêng (vẫn nhặt được bằng cách chạm vào món đồ).
+- **Thời gian hồi chiêu** chưa vẽ trên nút (Core vẫn tự chặn, chỉ là không nhìn thấy).
+- **Sắp xếp lại thứ tự ô** trong cụm: hiện dời được **cả cụm**; muốn đổi chỗ từng ô với nhau
+  thì phải thêm.
+- Chủ hỏi *"mũi tên xanh dài"*: hiện dùng `attack_direction.spr` (nhiều khung theo hướng).
+  Nếu ý chủ là một ảnh khác thì cho tôi đường dẫn, đổi bằng `config.ini [Cham] KyNangAnhTen`
+  là xong, không phải dựng lại.
+
+
+---
+
 ## 7. (09/09) ĐIỀU KHIỂN BẰNG NGÓN TAY
 
 > Bản vá nguồn: `android/va_nguon_android_12.py`. APK đã kiểm: `android/apk/jx1mobile-0909-cham-c.apk`.
