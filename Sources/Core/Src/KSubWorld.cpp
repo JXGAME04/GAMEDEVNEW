@@ -1208,6 +1208,7 @@ void WorldNpcXong(int nIdx, const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 #include <process.h>
 #include <dbghelp.h>
 static int            g_nDoLuot = -1;	// -1 chua doc ini
+static int            g_nDoLuotNguong = 20;	// [DOLUOT 09/09 b] [Client] DoLuotNguong ms; 0 = gom moi tick/khung
 static volatile LONG  g_lDoLuotPha = 0;	// 0 ngoai, 1 tick, 2 ve
 static volatile LONG  g_lDoLuotSeq = 0;
 struct DoLuotMau { DWORD_PTR uEip; LONG lPha; LONG lSeq; DWORD dwLuc; };
@@ -1297,7 +1298,7 @@ static void DoLuotIn(FILE* pLog, int nPha, DoLuotDem* aDem, int nDem, unsigned u
 		}
 	}
 	// sap xep giam dan theo so mau (chon dan 12)
-	fprintf(pLog, "[DOLUOT] t=%u pha %s: %u lan nang, %u mau:", (unsigned)GetTickCount(), nPha == 1 ? "TICK" : "VE", uLan, uMau);
+	fprintf(pLog, "[DOLUOT] t=%u pha %s: %u lan >= %d ms, %u mau:", (unsigned)GetTickCount(), nPha == 1 ? "TICK" : "VE", uLan, g_nDoLuotNguong, uMau);
 	for (int r = 0; r < 12 && r < nDem; r++)
 	{
 		int nMax = r;
@@ -1329,6 +1330,7 @@ struct DoLuotPham
 		if (g_nDoLuot < 0)
 		{
 			g_nDoLuot = GetPrivateProfileIntA("Client", "DoLuot", 0, ".\\config.ini") ? 1 : 0;
+			g_nDoLuotNguong = GetPrivateProfileIntA("Client", "DoLuotNguong", 20, ".\\config.ini");	// [DOLUOT 09/09 b]
 			if (g_nDoLuot)
 			{
 				if (!DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_hDoLuotChinh, THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION, FALSE, 0))
@@ -1337,6 +1339,8 @@ struct DoLuotPham
 				{
 					unsigned uTid = 0; HANDLE h = (HANDLE)_beginthreadex(NULL, 0, DoLuotLuong, NULL, 0, &uTid);
 					if (!h) g_nDoLuot = 0; else CloseHandle(h);
+					FILE* pB = fopen("jx_paint.log", "a");	// [DOLUOT 09/09 b]
+					if (pB) { fprintf(pB, "[DOLUOT] bat: %s, nguong %d ms (0 = gom moi tick/khung)\n", g_nDoLuot ? "luong lay mau da chay" : "KHONG tao duoc luong", g_nDoLuotNguong); fclose(pB); }
 				}
 			}
 		}
@@ -1351,7 +1355,7 @@ struct DoLuotPham
 		InterlockedExchange(&g_lDoLuotPha, 0);
 		LARGE_INTEGER li1, f; QueryPerformanceCounter(&li1); QueryPerformanceFrequency(&f);
 		const double dMs = (double)(li1.QuadPart - m_li0.QuadPart) * 1000.0 / (double)f.QuadPart;
-		if (dMs >= 20.0) { g_aDoLuotNangPha[m_lSeq & (DOLUOT_NANG - 1)] = m_nPha; InterlockedExchange(&g_aDoLuotNang[m_lSeq & (DOLUOT_NANG - 1)], m_lSeq); }
+		if (g_nDoLuotNguong <= 0 || dMs >= (double)g_nDoLuotNguong) { g_aDoLuotNangPha[m_lSeq & (DOLUOT_NANG - 1)] = m_nPha; InterlockedExchange(&g_aDoLuotNang[m_lSeq & (DOLUOT_NANG - 1)], m_lSeq); }	// [DOLUOT 09/09 b] nguong 0 = danh dau moi tick/khung
 	}
 };
 
