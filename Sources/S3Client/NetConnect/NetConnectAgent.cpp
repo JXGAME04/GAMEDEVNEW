@@ -109,9 +109,16 @@ void KNetConnectAgent::Exit()
 	}
 }
 
+#ifdef JX_POSIX
+// [ANDROID 08/09] Dia chi may chu TAI KHOAN dang dung (de thay dia chi vong lap may chu game tra ve).
+static unsigned char s_abyIpTaiKhoan[4] = { 0, 0, 0, 0 };
+#endif
 int	KNetConnectAgent::ClientConnectByNumericIp(const unsigned char* pIpAddress, unsigned short nPort)
 {	
 	DisconnectClient();
+#ifdef JX_POSIX
+	if (pIpAddress) memcpy(s_abyIpTaiKhoan, pIpAddress, 4);
+#endif
 	
     if (!pIpAddress || !nPort)
         return false;
@@ -196,8 +203,25 @@ int KNetConnectAgent::ConnectToGameSvr(const unsigned char* pIpAddress, unsigned
 
 
 	char	Address[128];
+#ifdef JX_POSIX
+	// [ANDROID 08/09] May chu tai khoan tra dia chi may chu game theo GameServer_cfg.ini (thuong 127.0.0.1).
+	// Tren PC do la cung may nen dung; tren dien thoai/gia lap 127.0.0.1 la CHINH THIET BI -> khong noi duoc.
+	// Dia chi vong lap / rong => dung lai dia chi may chu tai khoan vua dang nhap.
+	unsigned char abyIp[4] = { pIpAddress[0], pIpAddress[1], pIpAddress[2], pIpAddress[3] };
+	if ((abyIp[0] == 127 || (abyIp[0] == 0 && abyIp[1] == 0 && abyIp[2] == 0 && abyIp[3] == 0)) &&
+		s_abyIpTaiKhoan[0] != 0 && s_abyIpTaiKhoan[0] != 127)
+	{
+		g_DebugLog("[Gateway] may chu game tra %d.%d.%d.%d (vong lap) -> dung dia chi may chu tai khoan %d.%d.%d.%d",
+			abyIp[0], abyIp[1], abyIp[2], abyIp[3],
+			s_abyIpTaiKhoan[0], s_abyIpTaiKhoan[1], s_abyIpTaiKhoan[2], s_abyIpTaiKhoan[3]);
+		memcpy(abyIp, s_abyIpTaiKhoan, 4);
+	}
+	sprintf(Address, "%d.%d.%d.%d", abyIp[0], abyIp[1], abyIp[2], abyIp[3]);
+	g_DebugLog("[Gateway] noi may chu game %s:%d", Address, (int)uPort);
+#else
 	sprintf(Address, "%d.%d.%d.%d", pIpAddress[0], pIpAddress[1],
 		pIpAddress[2], pIpAddress[3]);
+#endif
 	
 	if (FAILED(m_pGameSvrClient->ConnectTo(Address, uPort)))
 		return false;
