@@ -198,6 +198,7 @@ static KUiSkillData	s_KNBang[KYNANG_DS_TOI_DA];
 static int			s_nKNCo1 = 0;		// so ky nang doc duoc
 static unsigned int	s_uKNDocLuc = 0;
 static KUiGameObject s_KNChinh;		// ky nang danh TRAI dang hien tren thanh trang thai
+static KUiGameObject s_KNPhai;		// [ANDROID 10/09 LUAN c] ky nang danh PHAI = vong sang dang bat (neu la aura)
 static int			s_nKNDangCam = -1;	// 0 = nut chinh, 1..8 = o phu; -1 = khong giu
 static int			s_nKNNgonX = 0, s_nKNNgonY = 0;
 static int			s_nKNDichIdx = 0;	// chi so NPC dang ngam
@@ -767,6 +768,7 @@ static void KyNang_DocBang()
 	memset(&oTay, 0, sizeof(oTay));
 	g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (KNPARAM)&oTay, 0);
 	s_KNChinh = oTay.IMmediaSkill[0];
+	s_KNPhai  = oTay.IMmediaSkill[1];	// [ANDROID 10/09 LUAN c]
 	// [ANDROID 10/09 BANGCHON] o chinh nguoi choi tu gan (Chinh= trong KyNangMobile.ini): ap MOT lan khi da vao game
 	// (co danh sach ky nang) va ky nang danh trai hien tai khac.
 	KyNang_DocGan();
@@ -1658,7 +1660,8 @@ void JxKyNang_Ve()
 				nX - nIcon / 2, nY - nIcon / 2, nIcon, nIcon, 0);
 		}
 		// [ANDROID 10/09 LUAN] o phu giu VONG SANG: vong xoay (16 khung, ~1 vong/giay) nhu ban tham khao (CCRotateBy 360/1s)
-		if (bCo && i > 0 && KyNang_OLaAura(i, &o) && CoAnh(s_szKNAnhXoay))
+		// [ANDROID 10/09 LUAN c] chi o vong sang DANG BAT (= ky nang phai) moi co vong xoay - KgameWorldVN.cpp:8642
+		if (bCo && i > 0 && KyNang_OLaAura(i, &o) && o.uId == s_KNPhai.uId && CoAnh(s_szKNAnhXoay))
 			VeAnhCo(s_szKNAnhXoay, nX, nY, nR * 2 + 12, (int)(((unsigned int)GetTickCount() / 62) % KYNANG_XOAY_KHUNG));
 	}
 
