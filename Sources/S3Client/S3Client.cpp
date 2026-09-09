@@ -1586,7 +1586,14 @@ BOOL KMyApp::GameLoop()
 				// leo theo do dai vong bom (53..58 ms canh nhe, 45..69 canh nang, 474 khi nap map). Chia cho mot
 				// khoang le -> alpha chua toi 1000 da sang tick moi (nhay mot doan = "toc bien") hoac toi som
 				// roi dong bang. Nhan 0,97 de toi 1000 hoi som: dong bang 2-4 ms de chiu hon mot cu nhay.
-				if (g_nPaintSmooth > 0 && s_dSpanAvg > 0.0 && nPaintElapse >= s_dwLastTickAt)
+				// [NHIP 08/09 d] PaintSmooth = 2: DONG HO LY TUONG. Do 900 khung cho thay khoang cach hai tick
+				// KHONG deu (47 / 62 / 63 ms vi tick chi duoc kiem moi vong bom, ma vong bom khoa theo vsync 6,94 ms),
+				// nen 57/115 lan sang tick moi xay ra khi alpha chua toi 900 => vi tri VE nhay toi mot doan, 18 lan/giay
+				// -> nguoi va ten dang di chuyen bi nhoe. Neo vao MOC LY TUONG cua tick va chia cho nhip danh dinh thi
+				// alpha chay deu 0..1000 dung 55,56 ms, tick den muon chi lam giu 1000 toi da mot khung - het nhay.
+				if (g_nPaintSmooth == 2 && m_GameCounter > 0)
+					nAlpha = (int)((double)nPaintElapse * (double)GAME_FPS - (double)(m_GameCounter - 1) * 1000.0);
+				else if (g_nPaintSmooth > 0 && s_dSpanAvg > 0.0 && nPaintElapse >= s_dwLastTickAt)
 					nAlpha = (int)((double)(nPaintElapse - s_dwLastTickAt) * 1000.0 / (s_dSpanAvg * 0.97));
 				else if (s_dwTickSpan >= 20 && s_dwTickSpan <= 200 && nPaintElapse >= s_dwLastTickAt)
 					nAlpha = (int)((nPaintElapse - s_dwLastTickAt) * 1000 / s_dwTickSpan);
