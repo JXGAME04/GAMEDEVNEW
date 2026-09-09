@@ -7,8 +7,8 @@ máy chủ (98,1 % chiêu có hình). Chi tiết đo ở `BANGIAO_RAM_CLIENT_080
 |---|---|---|---|---|
 | 0 | Mặc định `Rep3Api=11` trong mã + tự lùi D3D9 khi máy không đủ (đã có bước dò) | người chơi không phải sửa config | 0,5 giờ | XONG 16:35, Represent3.dll.moi 8bbe8f5f |
 | 1 | **Nạp/giải mã sprite và ảnh nền ở luồng nền**, luồng vẽ chỉ đẩy lên GPU | hết giật khi qua map / lúc đông (đo trước: tách thời gian pak, giải mã, tạo GPU, JPEG nền) | 2 ngày | THI CÔNG XONG 16:50, Represent3.dll.moi 219abc27 CHỜ SWAP + đo lại (xem nhật ký dưới) |
-| 2 | **Nướng lớp nền bản đồ từng vùng vào render target**, mỗi khung vẽ một tấm | giảm lệnh vẽ + CPU, lợi cho máy yếu / 4 tab | 2 ngày | sau #1 |
-| 3 | Vẽ 120–144 Hz với nội suy PaintFps (flip model + VRR) | mượt trên màn tần số cao | 1 ngày | |
+| 2 | **Nướng lớp nền bản đồ từng vùng vào render target**, mỗi khung vẽ một tấm | giảm lệnh vẽ + CPU, lợi cho máy yếu / 4 tab | 2 ngày | ĐO XONG 17:3x: nền đã ghép sẵn, DrawPrimitives 1,0 ms/khung → đề nghị BỎ (xem dưới) |
+| 3 | Vẽ 120–144 Hz với nội suy PaintFps (flip model + VRR) | mượt trên màn tần số cao | 1 ngày | THI CÔNG 17:4x (c9025f86), 3 `.moi` chờ swap + đo |
 | 4 | Độ phân giải lớn + phóng bằng shader (2K/4K), toàn màn hình không viền | sắc nét, chuyển cửa sổ nhanh | 1–2 ngày | |
 | 5 | Hiệu ứng shader: phát sáng chiêu, ngày/đêm, đổi màu trang phục theo bảng màu, mờ nền khi mở bảng | đẹp hơn không cần sprite | 0,5–1 ngày/thứ | |
 | 6 | Instancing hàng nghìn sprite một lệnh | CPU vẽ (đã 0,3 µs/lệnh, lợi ít) | 1 ngày | |
@@ -65,3 +65,23 @@ Lớp nền vùng đã được engine ghép sẵn (một ảnh `_*PlaceGround*_
 khung ~1.000 đơn vị vẽ đến từ đâu và tốn bao nhiêu CPU. Bản [VE a/b] đếm đơn vị vẽ mỗi khung theo loại ảnh (npc / skill / ui / map /
 ảnh tạo / khác) và đo CPU luồng vẽ (tổng `DrawPrimitives` mỗi khung, cả khung Begin→End) trong dòng `[REP3-NAP]`. Harness: 96 sprite =
 0,48 ms/khung ⇒ ~5 µs mỗi đơn vị; trong game ~1.000 đơn vị ≈ 5 ms/khung là chỗ đáng cắt cho máy yếu. Quyết định hướng #2 sau khi có số.
+
+**Kết quả đo #2 (43aac5d2, 11,5 phút, 17:3x):** mỗi khung 2.154 đơn vị vẽ = npc 982, skill 525, ui 134, map 0, ảnh tạo 16, khác 497;
+CPU `DrawPrimitives` 1,0 ms/khung, cả pass vẽ Begin→End 2,33 ms/khung. Lớp nền đã là MỘT ảnh ghép sẵn mỗi vùng (`l_bPrerenderGround`,
+`map 0`), nên "nướng nền" không còn gì để cắt; phần CPU vẽ 1 ms/khung không đáng một render target riêng. **Đề nghị bỏ #2.**
+
+## Việc #3 — vẽ 120–144 Hz với nội suy (thi công 17:4x, commit c9025f86 + 77a72547; chờ swap + đo)
+Nội suy `PaintInterp=1` (15/08) đã có; rào cản là: trần `PaintFps` 60 trong mã, lưới vòng bơm 8 ms của `KWin32App::Run` (tối đa ~125 khung/giây
+và nhịp lệch), Present luôn interval 0. Sửa (`goi_va_nhip1_ve_144hz_0809.py`):
+- `S3Client.cpp`: trần 60 → 240; `PaintFps=-1` = tự theo tần số màn hình (`EnumDisplaySettings`, 59 → 60); `PaintVsync=1` = vẽ mỗi vòng, Represent3
+  `Present(1)` dẫn nhịp theo vblank (không phụ thuộc đồng hồ), `Rep3Latency` mặc định 1 khi vsync (3 khi không, ini vẫn ghi đè);
+  > 60 fps hoặc vsync → `g_SetLoopInterval(1)` (lưới 1 ms) và mốc vẽ phần lẻ (144 = 6,94 ms, nhịp trung bình đúng); ≤ 60 giữ cách cũ
+  (neo lúc vẽ thật trên lưới 8 ms, khoảng cách đều). `timeBeginPeriod(1)` khi > 30 fps hoặc vsync.
+- `Engine/KWin32App`: hàm xuất `g_SetLoopInterval(ms)` (kẹp 1..16), `Run()` đọc lại mỗi vòng — không đổi bố cục lớp.
+- `PaintLog=1` → `jx_paint.log` `[SUM]` thêm: `ve: N khung, cach min/TB/max ms | span tick min..max | PaintFps vsync` để kiểm nhịp.
+- Kèm việc 1 [NAP e]: `ResNode.m_nLanHong` — tệp thiếu sẵn từ lần hỏng thứ 3 thử lại mỗi 10 phút thay vì 10 giây (11 phút đo: 334 lượt vô ích).
+Bản: `Engine.dll.moi` aeb99715, `Game.exe.moi` 72bb7bd4, `Represent3.dll.moi` 39bce13f (Game.exe cần Engine mới vì import `g_SetLoopInterval`;
+CoreClient 32da0130 giữ nguyên, bố cục không đổi). Harness: ảnh y hệt `pal11b.bmp`. Config test: `PaintFps=120` (đo nhịp trên màn 59 Hz —
+chỉ kiểm cơ chế, mắt không thấy khác), `PaintLog=1` sẵn; sau khi đo nên để `PaintFps=-1`. Người dùng màn 120/144 Hz: `PaintFps=-1` hoặc
+`PaintVsync=1`. Cách đọc `[SUM]`: `cach TB` ≈ 8,3 ms ở 120, max không quá ~2 lần TB; `span tick` 56 quanh 48–64 ms.
+Lib: `Lib/release/engine.lib` (+`g_SetLoopInterval`) và `CoreClient.lib` (RAMTINH) đã commit để build Game.exe từ origin/main.
