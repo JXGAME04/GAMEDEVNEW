@@ -3994,10 +3994,10 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 							continue;
 						}
 						char szAward[64], szContent[256];
-						_snprintf(szAward, sizeof(szAward) - 1, "money:%I64d", nPer[g]);
+						_snprintf(szAward, sizeof(szAward) - 1, "money:%lld", nPer[g]);
 						szAward[sizeof(szAward) - 1] = 0;
 						_snprintf(szContent, sizeof(szContent) - 1,
-							"Bang héi ph¸t l­¬ng kú nµy: %I64d Ng©n l­îng, ®Ýnh kÌm trong th­.<enter>Tr©n träng", nPer[g]);
+							"Bang héi ph¸t l­¬ng kú nµy: %lld Ng©n l­îng, ®Ýnh kÌm trong th­.<enter>Tr©n träng", nPer[g]);
 						szContent[sizeof(szContent) - 1] = 0;
 						if (Mail_Send(itPay->second.szName, szSender, "L­¬ng bang héi",
 								szContent, szAward, 1, 30 * 86400, "bangluong") > 0)
@@ -4009,7 +4009,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				{
 					char szLog[192];
 					_snprintf(szLog, sizeof(szLog) - 1,
-						"Bang %.32s: phat luong qua thu, ok %d, that bai %d, tru quy %I64d",
+						"Bang %.32s: phat luong qua thu, ok %d, that bai %d, tru quy %lld",
 						pTong->szName, nMailOk, nMailFail, nNeed);
 					szLog[sizeof(szLog) - 1] = 0;
 					g_GhiLogHeThong("MAIL", szLog);

@@ -8964,7 +8964,7 @@ static int pb_BangThau(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned int 
 		bb.nThauNgay = nToday;                                   // xong / khong con gi de thu hom nay
 	else
 		bb.uThauNghi = (unsigned int)GetTickCount() + 60000;    // thieu quy... -> 60 giay sau thu lai neu con trong cua so
-	pb_Log("[BotBang5] %s DAU THAU thanh %d cho bang '%s' phi %d: ket qua %d (%s), quy bang %I64d\n",
+	pb_Log("[BotBang5] %s DAU THAU thanh %d cho bang '%s' phi %d: ket qua %d (%s), quy bang %lld\n",
 	       Player[nIdx].m_PlayerName, bb.nThanh, bb.szTen, nPhi, nKq, pb_BbTenKq(nKq), KTongJX2_GetMoneyC(bb.dwTongID));
 	pb_BbXoaViec(b);
 	return 0;
@@ -9153,7 +9153,7 @@ static void pb_BangNhip()
 		pL->nBangTick = 0;  pL->nBangThu = 0;  pL->nBangNghiToi = 0;  pL->nBangDoiMapTick = 0;
 		pL->walk.Reset();
 		bb.uThauNghi = dwNow + 120000;      // bot dang di - khong giao lai trong 2 phut
-		pb_Log("[BotBang5] 18h%02d: bang chu %s cua '%s' di dau thau thanh %d (phi %d, quy %I64d, %d thanh vien)\n",
+		pb_Log("[BotBang5] 18h%02d: bang chu %s cua '%s' di dau thau thanh %d (phi %d, quy %lld, %d thanh vien)\n",
 		       pTm->tm_min, Player[nL].m_PlayerName, bb.szTen, bb.nThanh, bb.nPhi,
 		       KTongJX2_GetMoneyC(bb.dwTongID), (int)(g_TongJX2.FindTong(bb.dwTongID) ? g_TongJX2.FindTong(bb.dwTongID)->mapMember.size() : 0));
 	}
@@ -9267,7 +9267,7 @@ int PB_BangNap(int nStt, int nLuong, unsigned int dwTongIDKhac)
 		return 0;
 	const __int64 nTruoc = KTongJX2_GetMoneyC(dwID);
 	KTongJX2_AddMoneyC(dwID, (__int64)nLuong);
-	pb_Log("[BotBang5] ADMIN NAP QUY %d luong vao bang '%s' (id %u), quy truoc khi nap %I64d (relay dong bo lai sau vai giay)\n",
+	pb_Log("[BotBang5] ADMIN NAP QUY %d luong vao bang '%s' (id %u), quy truoc khi nap %lld (relay dong bo lai sau vai giay)\n",
 	       nLuong, pT->szName, (unsigned int)dwID, nTruoc);
 	return 1;
 }
@@ -9348,7 +9348,7 @@ int LuaPB_BangTT(Lua_State* L)
 		PB_BotBang& bb = s_bb[k];
 		KTongJX2Tong* pT = g_TongJX2.FindTong(bb.dwTongID);
 		const int nL = pb_BbLeaderIdx(bb);
-		nLen += sprintf(sz + nLen, "%d.%s %s %dng %I64dtr T%d %.10s%s\n",
+		nLen += sprintf(sz + nLen, "%d.%s %s %dng %lldtr T%d %.10s%s\n",
 		                bb.nStt, bb.szTen, s_szTao[(bb.nTao >= 0 && bb.nTao <= 4) ? bb.nTao : 0],
 		                pb_BbSoNguoi(bb),
 		                pT ? KTongJX2_GetMoneyC(bb.dwTongID) / 1000000 : (__int64)0,

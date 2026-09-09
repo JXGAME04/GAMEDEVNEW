@@ -123,7 +123,7 @@ void TextureResMgr::SetBudget()
 	if (g_nRep3CacheMB > 0)
 		uBudgetMB = (unsigned __int64)g_nRep3CacheMB;
 	m_nBalanceNum = (int32)(uBudgetMB * 1024 * 1024);
-	Rep3Log("[REP3] cache texture: RAM %I64u MB -> ngan sach %I64u MB (%s)", uPhysMB, uBudgetMB, g_nRep3Pool ? "VRAM, POOL_DEFAULT" : "RAM+VRAM, POOL_MANAGED");
+	Rep3Log("[REP3] cache texture: RAM %llu MB -> ngan sach %llu MB (%s)", uPhysMB, uBudgetMB, g_nRep3Pool ? "VRAM, POOL_DEFAULT" : "RAM+VRAM, POOL_MANAGED");
 }
 
 // [FX 08/09] Kep them theo VRAM con trong luc tao device (texture o POOL_DEFAULT = VRAM): toi da 1/2 VRAM con.
@@ -160,11 +160,11 @@ void TextureResMgr::CapBudgetByVram(unsigned __int64 uVramFreeMB)
 	m_uBudgetFloorMB = uFloorMB;
 	if (uCapMB < uFloorMB)
 		uCapMB = uFloorMB;
-	Rep3Log("[REP3] cache texture: VRAM con %I64u MB, %d client dang mo, he so atlas %I64u/10 -> tran %I64u MB (san %I64u)", uVramFreeMB, nClients, uHeSo10, uCapMB, uFloorMB);
+	Rep3Log("[REP3] cache texture: VRAM con %llu MB, %d client dang mo, he so atlas %llu/10 -> tran %llu MB (san %llu)", uVramFreeMB, nClients, uHeSo10, uCapMB, uFloorMB);
 	if (uBudgetMB > uCapMB)
 	{
 		m_nBalanceNum = (int32)(uCapMB * 1024 * 1024);
-		Rep3Log("[REP3] cache texture: VRAM con %I64u MB -> kep ngan sach %I64u -> %I64u MB", uVramFreeMB, uBudgetMB, uCapMB);
+		Rep3Log("[REP3] cache texture: VRAM con %llu MB -> kep ngan sach %llu -> %llu MB", uVramFreeMB, uBudgetMB, uCapMB);
 	}
 }
 
@@ -179,7 +179,7 @@ void TextureResMgr::PressureByVram(unsigned __int64 uVramFreeMB)
 	unsigned __int64 uNewMB = uBudgetMB * 3 / 4;
 	if (uNewMB < m_uBudgetFloorMB) uNewMB = m_uBudgetFloorMB;
 	m_nBalanceNum = (int32)(uNewMB * 1024 * 1024);
-	Rep3Log("[REP3] cache texture: VRAM con %I64u MB thap -> ha ngan sach %I64u -> %I64u MB", uVramFreeMB, uBudgetMB, uNewMB);
+	Rep3Log("[REP3] cache texture: VRAM con %llu MB thap -> ha ngan sach %llu -> %llu MB", uVramFreeMB, uBudgetMB, uNewMB);
 	m_tmLastCheckBalance = 0;
 	CheckBalance();
 }

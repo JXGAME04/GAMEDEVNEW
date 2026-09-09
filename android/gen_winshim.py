@@ -23,6 +23,10 @@ pshpack1.h pshpack2.h pshpack4.h pshpack8.h poppack.h""".split()
 SPECIAL = {"pshpack1.h": "#pragma pack(push, 1)\n", "pshpack2.h": "#pragma pack(push, 2)\n", "pshpack4.h": "#pragma pack(push, 4)\n",
            "pshpack8.h": "#pragma pack(push, 8)\n", "poppack.h": "#pragma pack(pop)\n",
            "initguid.h": "#define INITGUID\n#include \"../KPosixCompat.h\"\n"}
+# intrinsics x86: tren x86/x86_64 (LDPlayer, may ao) phai lay header THAT cua clang (#include_next), chi aarch64 moi thay bang compat
+for _n in ("xmmintrin.h", "emmintrin.h", "mmintrin.h", "pmmintrin.h"):
+    SPECIAL[_n] = ("#if defined(__x86_64__) || defined(__i386__)\n#include_next <%s>\n#else\n#include \"../KPosixCompat.h\"\n#endif\n" % _n)
+SPECIAL["intrin.h"] = "#if defined(__x86_64__) || defined(__i386__)\n#include <x86intrin.h>\n#endif\n#include \"../KPosixCompat.h\"\n"
 # d3d9*.h / d3dx9.h: khi JX_D3D9MINI (Represent3 tren SDL_GPU) -> tap con d3d9mini.h (thu muc Represent3 phai co trong duong include)
 for _n in ("d3d9.h", "d3dx9.h", "d3d9types.h", "d3d9caps.h"):
     SPECIAL[_n] = "#include \"../KPosixCompat.h\"\n#ifdef JX_D3D9MINI\n#include \"d3d9mini.h\"\n#endif\n"

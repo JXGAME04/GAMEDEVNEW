@@ -631,10 +631,12 @@ static inline BOOL WaitMessage(void) { return 1; }
 #define PAGE_READONLY 0x02
 #define PAGE_READWRITE 0x04
 #endif
-static inline HANDLE CreateFileMappingA(HANDLE h, LPSECURITY_ATTRIBUTES sa, DWORD prot, DWORD hi, DWORD lo, LPCSTR name) { (void)h; (void)sa; (void)prot; (void)hi; (void)lo; (void)name; return (HANDLE)0; }
-static inline HANDLE OpenFileMappingA(DWORD access, BOOL inherit, LPCSTR name) { (void)access; (void)inherit; (void)name; return (HANDLE)0; }
-static inline LPVOID MapViewOfFile(HANDLE h, DWORD access, DWORD hi, DWORD lo, SIZE_T n) { (void)h; (void)access; (void)hi; (void)lo; (void)n; return (LPVOID)0; }
-static inline BOOL UnmapViewOfFile(LPCVOID p) { (void)p; return 1; }
+/* CreateFileMapping(INVALID_HANDLE_VALUE, ..., ten) = bo nho chia se co ten (WAuto) -> tren Android gia lap bang bo nho thuong
+   trong tien trinh (KMyApp::InitMapping phai thanh cong); OpenFileMapping (phia WAuto) luon NULL */
+HANDLE CreateFileMappingA(HANDLE h, LPSECURITY_ATTRIBUTES sa, DWORD prot, DWORD hi, DWORD lo, LPCSTR name);
+HANDLE OpenFileMappingA(DWORD access, BOOL inherit, LPCSTR name);
+LPVOID MapViewOfFile(HANDLE h, DWORD access, DWORD hi, DWORD lo, SIZE_T n);
+BOOL   UnmapViewOfFile(LPCVOID p);
 static inline HANDLE OpenEventA(DWORD access, BOOL inherit, LPCSTR name) { (void)access; (void)inherit; (void)name; return (HANDLE)0; }
 static inline HANDLE OpenMutexA(DWORD access, BOOL inherit, LPCSTR name) { (void)access; (void)inherit; (void)name; return (HANDLE)0; }
 static inline HANDLE CreateMutexA(LPSECURITY_ATTRIBUTES sa, BOOL own, LPCSTR name) { (void)sa; (void)own; (void)name; return (HANDLE)0; }

@@ -31,6 +31,8 @@
 #define JX_MAGIC_EVENT  0x5645584Au   /* 'JXEV' */
 #define JX_MAGIC_THREAD 0x4854584Au   /* 'JXTH' */
 #define JX_MAGIC_FIND   0x4446584Au   /* 'JXFD' */
+#define JX_MAGIC_MAP    0x504D584Au   /* 'JXMP' */
+struct JxMapping { uint32_t magic; size_t size; void* p; };
 
 JxGetKeyStateFn g_pfnJxGetKeyState = NULL;
 JxWinMsgFn      g_pfnJxWinMsg = NULL;
@@ -189,6 +191,7 @@ BOOL CloseHandle(HANDLE h)
 	if (magic == JX_MAGIC_EVENT) { JxEvent* e = (JxEvent*)h; pthread_cond_destroy(&e->cv); pthread_mutex_destroy(&e->mu); e->magic = 0; free(e); return TRUE; }
 	if (magic == JX_MAGIC_THREAD) { JxThread* t = (JxThread*)h; if (t->th && !t->joined) SDL_DetachThread(t->th); t->magic = 0; free(t); return TRUE; }
 	if (magic == JX_MAGIC_FIND) return FindClose(h);
+	if (magic == JX_MAGIC_MAP) { JxMapping* m = (JxMapping*)h; free(m->p); m->magic = 0; free(m); return TRUE; }
 	return TRUE;
 }
 static int SDLCALL jx_thread_thunk(void* p)
@@ -837,6 +840,26 @@ DWORD MsgWaitForMultipleObjects(DWORD n, const HANDLE* p, BOOL bAll, DWORD ms, D
 	(void)mask; if (n == 0) { SDL_Delay(ms == INFINITE ? 1 : ms); return WAIT_TIMEOUT; }
 	return WaitForMultipleObjects(n, p, bAll, ms);
 }
+
+/*---------------------------------------------------------------- bo nho chia se co ten (WAuto) -> bo nho thuong trong tien trinh */
+HANDLE CreateFileMappingA(HANDLE h, LPSECURITY_ATTRIBUTES sa, DWORD prot, DWORD hi, DWORD lo, LPCSTR name)
+{
+	(void)h; (void)sa; (void)prot; (void)name;
+	size_t n = ((size_t)hi << 32) | lo; if (n == 0) return NULL;
+	JxMapping* m = (JxMapping*)calloc(1, sizeof(JxMapping)); if (!m) return NULL;
+	m->magic = JX_MAGIC_MAP; m->size = n; m->p = calloc(1, n);
+	if (!m->p) { free(m); return NULL; }
+	return (HANDLE)m;
+}
+HANDLE OpenFileMappingA(DWORD access, BOOL inherit, LPCSTR name) { (void)access; (void)inherit; (void)name; SetLastError(ERROR_FILE_NOT_FOUND); return NULL; }
+LPVOID MapViewOfFile(HANDLE h, DWORD access, DWORD hi, DWORD lo, SIZE_T n)
+{
+	(void)access; (void)n; JxMapping* m = (JxMapping*)h;
+	if (!m || h == INVALID_HANDLE_VALUE || m->magic != JX_MAGIC_MAP) return NULL;
+	size_t off = ((size_t)hi << 32) | lo; if (off >= m->size) return NULL;
+	return (BYTE*)m->p + off;
+}
+BOOL UnmapViewOfFile(LPCVOID p) { (void)p; return TRUE; }
 
 UINT GetACP(void) { return 1258; }
 BOOL IsDBCSLeadByte(BYTE c) { return c >= 0x81; }

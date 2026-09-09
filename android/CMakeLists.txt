@@ -72,6 +72,7 @@ include(lists/s3client.cmake)
 # ---- Lua 5.4 (+ lua4compat) : libLua54.so, dung chung cho Engine/Core/main nhu Lua54Dll.dll ----
 add_library(Lua54 SHARED ${JX_LUA54_SOURCES}
     ${JX_SRC}/Library/Lua54/jx_lua_fopen.c)   # moi fopen trong Lua -> JxPathPosix (script goi bang duong dan Windows)
+set_target_properties(Lua54 PROPERTIES OUTPUT_NAME Lua54Dll)   # libLua54Dll.so: GetModuleHandleA("Lua54Dll.dll") (KSortScript/KPerfTick) -> dlopen("libLua54Dll.so")
 target_include_directories(Lua54 PUBLIC ${JX_LUA54_INCS})
 target_compile_definitions(Lua54 PRIVATE ${JX_LUA54_DEFS} LUA_USE_LINUX fopen=jx_lua_fopen)
 target_compile_options(Lua54 PRIVATE -fsigned-char -fms-extensions -w)

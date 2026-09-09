@@ -24,10 +24,16 @@ static char			s_szErrorString[32] = "";
 void Error_SetErrorCode(unsigned int uCode)
 {
 	s_uErrorCode = uCode;
+#ifdef JX_POSIX
+	g_DebugLog("[ERR] ma loi %u", uCode);	// [ANDROID 08/09] khong co hop thoai loi -> ghi logcat
+#endif
 }
 
 void Error_SetErrorString(const char* pcszString)
 {
+#ifdef JX_POSIX
+	g_DebugLog("[ERR] %s", pcszString ? pcszString : "");
+#endif
 	strncpy(s_szErrorString, pcszString, sizeof(s_szErrorString));
 	s_szErrorString[sizeof(s_szErrorString) - 1] = 0;
 }

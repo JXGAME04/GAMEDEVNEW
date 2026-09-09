@@ -525,7 +525,7 @@ static int sApCpp()
 		if (n < s_aCpp[i].nMin || n > s_aCpp[i].nMax)
 		{
 			char szMsg[200];
-			_snprintf(szMsg, sizeof(szMsg) - 1, "gia tri %I64d ngoai khoang %d..%d - giu %s", n, s_aCpp[i].nMin, s_aCpp[i].nMax, szCu);
+			_snprintf(szMsg, sizeof(szMsg) - 1, "gia tri %lld ngoai khoang %d..%d - giu %s", n, s_aCpp[i].nMin, s_aCpp[i].nMax, szCu);
 			szMsg[sizeof(szMsg) - 1] = 0;
 			CauHinhWeb_Log(2, s_aCpp[i].k, szMsg);
 			it->second.v = szCu;			// s_Val cung giu gia tri dang dung
@@ -535,7 +535,7 @@ static int sApCpp()
 		if (*s_aCpp[i].p != (int)n)
 		{
 			char szMsg[200];
-			_snprintf(szMsg, sizeof(szMsg) - 1, "%s -> %I64d (ap ngay)", szCu, n);
+			_snprintf(szMsg, sizeof(szMsg) - 1, "%s -> %lld (ap ngay)", szCu, n);
 			szMsg[sizeof(szMsg) - 1] = 0;
 			CauHinhWeb_Log(0, s_aCpp[i].k, szMsg);
 			*s_aCpp[i].p = (int)n;

@@ -749,7 +749,7 @@ static void sLadderLoad()
 			memset(&e, 0, sizeof(e));
 			__int64 v = 0;
 			int nSect = -1, nGender = 0, nType = 0, nPos = 0;
-			if (sscanf(szLine + 2, "%I64d %d %d %d %n", &v, &nSect, &nGender, &nType, &nPos) >= 4 && nPos > 0)
+			if (sscanf(szLine + 2, "%lld %d %d %d %n", &v, &nSect, &nGender, &nType, &nPos) >= 4 && nPos > 0)
 			{
 				char* szName = szLine + 2 + nPos;
 				int nLen = (int)strlen(szName);
@@ -788,7 +788,7 @@ static void sLadderSave()
 		for (size_t i = 0; i < it->second.size(); i++)
 		{
 			KJx2LadderEntry& e = it->second[i];
-			fprintf(f, "E %I64d %d %d %d %s\n", e.i64Value, e.nSect,
+			fprintf(f, "E %lld %d %d %d %s\n", e.i64Value, e.nSect,
 				(int)e.btGender, (int)e.btType, e.szName);
 		}
 	}

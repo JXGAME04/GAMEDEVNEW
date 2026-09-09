@@ -176,7 +176,10 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 	SDL_ShowCursor();
 	g_DebugLog("[SDL] cua so %dx%d, SDL %d.%d.%d, HWND %p", SCREEN_WIDTH, SCREEN_HEIGHT,
 		SDL_VERSIONNUM_MAJOR(SDL_GetVersion()), SDL_VERSIONNUM_MINOR(SDL_GetVersion()), SDL_VERSIONNUM_MICRO(SDL_GetVersion()), hWnd);
-	return GameInit();
+	BOOL bInit = GameInit();
+	if (!bInit)
+		g_DebugLog("[SDL] KMyApp::GameInit that bai -> khong vao Run (xem cac dong [REP3]/[script] truoc do)");	// [ANDROID 08/09]
+	return bInit;
 }
 
 void KSdlApp::ShowMouse(BOOL bShow)

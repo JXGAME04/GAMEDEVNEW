@@ -36,7 +36,7 @@ echo "=== mo app"; "$ADB" -s $D shell am start -n vn.jx1.mobile/org.libsdl.app.S
 sleep "$CHO"
 "$ADB" -s $D exec-out screencap -p > "$OUT/shot1.png" 2>/dev/null; ls -la "$OUT/shot1.png" | awk '{print "shot1", $5}'
 echo "=== tien trinh:"; "$ADB" -s $D shell "ps -A | grep jx1" | head -2
-echo "=== logcat (JX1/SDL/loi):"; "$ADB" -s $D logcat -d -s JX1:* SDL:* DEBUG:* AndroidRuntime:* libc:* 2>/dev/null | tail -60
+echo "=== logcat (JX1/SDL/loi):"; "$ADB" -s $D logcat -d -s JX1:* SDL:* SDL/APP:* DEBUG:* AndroidRuntime:* libc:* 2>/dev/null | grep -v 'V SDL     : \(Manufacturer\|Device\|Model\|onCreate\|nativeSetup\|AUDIO\|CONTROLLER\|onStart\|onResume\|surface\|Window size\|Device size\|nativeInit\)' | tail -80
 echo "=== jx_android.log:"; cat "$DATA/jx_android.log" 2>/dev/null | tail -20
 echo "=== jx_rep3.log:"; cat "$DATA/jx_rep3.log" 2>/dev/null | grep -a 'GPU\|REP3\|API\|loi\|FAIL' | head -20
 echo "=== jx_crash.log:"; cat "$DATA/jx_crash.log" 2>/dev/null | tail -5
