@@ -1002,17 +1002,7 @@ void KProtocolProcess::RequestNpcFail(BYTE* pMsg)
 // Chi muc dan = m_nChildSkillId (giong CreateMissle); LowMissle -> kieu 1 (giong KMissleRes::Draw).
 static void NapTruocAnhChieu(int nSkillID, int nSkillLevel)
 {
-	typedef int (*PFN_Rep3NapTruoc)(const char*);
-	static PFN_Rep3NapTruoc s_pfn = NULL;
-	static int s_nTra = 0;
-	if (!s_pfn)
-	{
-		if (s_nTra >= 8) return;	// Represent3.dll chua nap luc dau: thu lai vai lan roi thoi
-		s_nTra++;
-		HMODULE h = GetModuleHandleA("Represent3.dll");
-		if (h) s_pfn = (PFN_Rep3NapTruoc)GetProcAddress(h, "Rep3_NapTruoc");
-		if (!s_pfn) return;
-	}
+	extern int Rep3NapTruocAnh(const char*, int);	// [NAPNPC 09/09] dung chung (KNpcRes.cpp), nguon 1 = anh chieu
 	if (nSkillID <= 0 || nSkillLevel <= 0) return;
 	KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(nSkillID, nSkillLevel);
 	if (!pSkill) return;
@@ -1022,7 +1012,7 @@ static void NapTruocAnhChieu(int nSkillID, int nSkillLevel)
 	for (int s = 0; s < MAX_MISSLE_STATUS * 2; s++)
 	{
 		const char* psz = g_MisslesLib[nStyle].m_MissleRes.m_MissleRes[s].AnimFileName;
-		if (psz[0]) s_pfn(psz);
+		if (psz[0]) Rep3NapTruocAnh(psz, 1);
 	}
 }
 #endif

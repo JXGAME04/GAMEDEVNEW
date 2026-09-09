@@ -30,7 +30,7 @@ TextureResMgr::TextureResMgr()
     m_nMaxReleaseCount = 0;
 	m_uBudgetFloorMB = 60;	// [REP3 08/09 q]
 	m_bVeDangDien = false; m_nNapNenGui = 0; m_nNapNenXong = 0; m_nNapNenHong = 0; m_nNapNenBoVe = 0;	// [NAP 08/09 b]
-	m_nNapTruocKip = 0; m_nNapTruocTre = 0;	// [NAPCHIEU 09/09 b]
+	m_nNapTruocKip[0] = m_nNapTruocKip[1] = m_nNapTruocKip[2] = 0; m_nNapTruocTre[0] = m_nNapTruocTre[1] = m_nNapTruocTre[2] = 0;	// [NAPCHIEU 09/09 b] [NAPNPC 09/09]
 	m_hNapLuong = NULL; m_hNapCo = NULL; m_lNapDung = 0; m_bNapNenLoi = false;
 	
 	// 根据物理内存大小决定资源缓冲区的大小
@@ -457,11 +457,12 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 		if (m_TextureResList[nImagePosition].m_nType == nType)
 		{
 			m_TextureResList[nImagePosition].m_nLastUsedTime = GetTickCount();
-			if (m_TextureResList[nImagePosition].m_bNapTruoc)	// [NAPCHIEU 09/09 b] lan hoi dau tien cua muc nap truoc
+			if (m_TextureResList[nImagePosition].m_nNapTruoc)	// [NAPCHIEU 09/09 b] lan hoi dau tien cua muc nap truoc; [NAPNPC 09/09] dem theo nguon
 			{
-				m_TextureResList[nImagePosition].m_bNapTruoc = false;
-				if (m_TextureResList[nImagePosition].m_bDangNap) m_nNapTruocTre++;
-				else if (m_TextureResList[nImagePosition].m_pTextureRes) m_nNapTruocKip++;
+				const int nNg = (m_TextureResList[nImagePosition].m_nNapTruoc < 3) ? (int)m_TextureResList[nImagePosition].m_nNapTruoc : 0;
+				m_TextureResList[nImagePosition].m_nNapTruoc = 0;
+				if (m_TextureResList[nImagePosition].m_bDangNap) m_nNapTruocTre[nNg]++;
+				else if (m_TextureResList[nImagePosition].m_pTextureRes) m_nNapTruocKip[nNg]++;
 			}
 			if (m_TextureResList[nImagePosition].m_bDangNap)	// [NAP 08/09 b] dang nap o luong nen
 			{
@@ -781,10 +782,11 @@ void TextureResMgr::NapNenChay()
 			NapViec v;
 			{
 				KAutoCriticalSection k(m_napKhoa);
-				if (m_napViec.empty())
+				vector<NapViec>& q = m_napViec.empty() ? m_napViecSau : m_napViec;	// [NAPNPC 09/09] hang TRUOC (anh dang ve can) het roi moi den hang SAU (nap truoc)
+				if (q.empty())
 					break;
-				v = m_napViec.front();
-				m_napViec.erase(m_napViec.begin());
+				v = q.front();
+				q.erase(q.begin());
 			}
 			NapKetQua kq;
 			memcpy(kq.szTen, v.szTen, sizeof(kq.szTen)); kq.uId = v.uId; kq.nType = v.nType;
@@ -799,7 +801,7 @@ void TextureResMgr::NapNenChay()
 	}
 }
 
-bool TextureResMgr::NapNenGiao(const char* pszImage, uint32 uId, uint32 nType)
+bool TextureResMgr::NapNenGiao(const char* pszImage, uint32 uId, uint32 nType, bool bSau)	// [NAPNPC 09/09] bSau = hang sau (nap truoc)
 {
 	if (m_bNapNenLoi || !pszImage)
 		return false;
@@ -823,7 +825,7 @@ bool TextureResMgr::NapNenGiao(const char* pszImage, uint32 uId, uint32 nType)
 	strncpy(v.szTen, pszImage, MAX_PATH - 1); v.szTen[MAX_PATH - 1] = 0; v.uId = uId; v.nType = nType;
 	{
 		KAutoCriticalSection k(m_napKhoa);
-		m_napViec.push_back(v);
+		if (bSau) m_napViecSau.push_back(v); else m_napViec.push_back(v);	// [NAPNPC 09/09]
 	}
 	m_nNapNenGui++;
 	SetEvent(m_hNapCo);
@@ -833,7 +835,7 @@ bool TextureResMgr::NapNenGiao(const char* pszImage, uint32 uId, uint32 nType)
 // [NAPCHIEU 09/09] Nap truoc mot anh o luong nen (luong ve/luong chinh goi, vd ngay khi nhan goi 95 'phong chieu').
 // Giong duong chen muc cua GetImage khi bNapNen, nhung KHONG phu thuoc m_bVeDangDien va KHONG nap dong bo:
 // nap truoc chi la goi y, khong giao duoc thi thoi (GetImage se nap nhu cu). Tra 1 = da co muc, 2 = da giao, 0 = khong.
-int TextureResMgr::NapTruoc(const char* pszImage, uint32 nType)
+int TextureResMgr::NapTruoc(const char* pszImage, uint32 nType, int nNguon)	// [NAPNPC 09/09] nNguon 1 = chieu, 2 = NPC; vao hang SAU
 {
 	if (!pszImage || !pszImage[0] || !g_nRep3NapNen)
 		return 0;
@@ -842,11 +844,11 @@ int TextureResMgr::NapTruoc(const char* pszImage, uint32 nType)
 	const int nIdx = FindImage(uImage, 0);	// >= 0: da co; < 0: -(vi tri chen)-1
 	if (nIdx >= 0)
 		return 1;	// da co (dang nap, da nap, hoac muc nap hong dang cho thu lai)
-	if (!NapNenGiao(pszImage, uImage, nType))
+	if (!NapNenGiao(pszImage, uImage, nType, true))
 		return 0;
 	ResNode node;
 	node.m_bDangNap = true;
-	node.m_bNapTruoc = true;	// [NAPCHIEU 09/09 b]
+	node.m_nNapTruoc = (unsigned char)((nNguon >= 1 && nNguon <= 2) ? nNguon : 0);	// [NAPCHIEU 09/09 b] [NAPNPC 09/09]
 	node.m_bCacheable = true;
 	node.m_nLastUsedTime = GetTickCount();
 	node.m_nRetryTime = GetTickCount();
@@ -915,6 +917,6 @@ void TextureResMgr::NapNenDung()
 	KAutoCriticalSection k(m_napKhoa);
 	for (size_t i = 0; i < m_napXong.size(); i++)
 		if (m_napXong[i].pRes) delete m_napXong[i].pRes;
-	m_napXong.clear(); m_napViec.clear();
+	m_napXong.clear(); m_napViec.clear(); m_napViecSau.clear();	// [NAPNPC 09/09]
 	m_lNapDung = 0;
 }

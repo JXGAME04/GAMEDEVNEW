@@ -57,6 +57,28 @@ KNpcRes::KNpcRes()
 //---------------------------------------------------------------------------
 //	功能：	初始化
 //---------------------------------------------------------------------------
+#ifndef _SERVER
+// [NAPNPC 09/09] Goi Represent3 xep hang nap nen mot anh, TRUOC lan ve dau (nguon 1 = anh chieu tu goi 95, 2 = anh than NPC tu
+// KSprControl::SetSprFile). Tra GetProcAddress "Rep3_NapTruoc2" mot lan (thu toi da 8 lan neu DLL chua nap); thieu -> 0, im lang.
+// Represent3 khong bao gio nap dong bo vi loi goi nay; nap truoc chi la goi y (xem TextureResMgr::NapTruoc).
+int Rep3NapTruocAnh(const char* psz, int nNguon)
+{
+	typedef int (*PFN_Rep3NapTruoc2)(const char*, int);
+	static PFN_Rep3NapTruoc2 s_pfn = NULL;
+	static int s_nTra = 0;
+	if (!psz || !psz[0]) return 0;
+	if (!s_pfn)
+	{
+		if (s_nTra >= 8) return 0;
+		s_nTra++;
+		HMODULE h = GetModuleHandleA("Represent3.dll");
+		if (h) s_pfn = (PFN_Rep3NapTruoc2)GetProcAddress(h, "Rep3_NapTruoc2");
+		if (!s_pfn) return 0;
+	}
+	return s_pfn(psz, nNguon);
+}
+#endif
+
 BOOL	KNpcRes::Init(char *lpszNpcName, KNpcResList *pNpcResList)
 {
 	// 初始化 NpcResNode
