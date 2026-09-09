@@ -2894,6 +2894,45 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 #ifndef _SERVER
 	case NPC_OI_TARGET_INFO:
 	{
+#ifdef JX_ANDROID
+		// [ANDROID 09/09 ICON] nParam == 1: tra ve NPC DOI THOAI gan nhat (khong phai muc tieu dang
+		// chon) de client ve icon "noi chuyen" tren dau no. Dung lai ma so nay chu khong them ma moi -
+		// them vao giua enum se day moi ma so phia sau lech di.
+		if (nParam == 1)
+		{
+			KUiTargetDetailInfo* pGan = (KUiTargetDetailInfo*)uParam;
+			int nMe = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+			if (pGan == NULL || nMe <= 0 || nMe >= MAX_NPC)
+				break;
+			int nX0 = 0, nY0 = 0;
+			Npc[nMe].GetDrawPos(&nX0, &nY0);
+			int nChon = 0;
+			__int64 nXaNhat = 0;
+			int nDuyet = 0;
+			while (nDuyet = NpcSet.GetNextIdx(nDuyet))
+			{
+				if (nDuyet == nMe || Npc[nDuyet].m_Kind != kind_dialoger || Npc[nDuyet].m_RegionIndex < 0)
+					continue;
+				int x = 0, y = 0;
+				Npc[nDuyet].GetDrawPos(&x, &y);
+				__int64 dx = (__int64)(x - nX0), dy = (__int64)(y - nY0);
+				__int64 d = dx * dx + dy * dy;
+				if (!nChon || d < nXaNhat)
+				{
+					nChon = nDuyet;
+					nXaNhat = d;
+				}
+			}
+			if (nChon)
+			{
+				strcpy_s(pGan->sTargetName, sizeof(pGan->sTargetName), Npc[nChon].Name);
+				Npc[nChon].GetDrawPos(&pGan->nViTriVeX, &pGan->nViTriVeY);
+				pGan->nDangKhoa = 0;
+				nRet = 1;
+			}
+			break;
+		}
+#endif
 		int idx = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx;
 		int idx_hover = Player[CLIENT_PLAYER_INDEX].GetTargetNpc();
 		if (idx_hover)

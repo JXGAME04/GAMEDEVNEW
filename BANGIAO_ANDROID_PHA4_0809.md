@@ -464,6 +464,7 @@ APK: `android/apk/jx1mobile-0909-nutto.apk` (đã cài sẵn trên LDPlayer).
 6. Bấm Enter (hoặc chạm ô chat) → **bàn phím ảo phải bật**; bấm ESC → phải tắt.
 7. **Chạm một NPC** (Dã Tẩu, NPC Chuyển Sinh…) → khung thoại mở, các dòng lựa chọn giãn rộng;
    **vuốt dọc trong khung** → danh sách cuộn.
+8. Nhìn quanh: NPC đối thoại gần nhất có **chấm tròn vàng trên đầu**.
 
 ### 8.9. Vòng tròn dưới chân đối tượng — **đã làm**
 
@@ -510,7 +511,35 @@ dò trúng và cuộn đều dùng chung một hàm nên **không bao giờ lệ
 trong khung → danh sách **cuộn**, dòng thứ ba (*"Ta bận rồi, không rảnh ngồi tán gẫu với ông"*) hiện ra.
 Đây cũng là phép thử xác nhận cơ chế **vuốt = lăn chuột** ở §8.5 chạy đúng.
 
-### 8.11. Còn lại (theo lời chủ, chưa làm)
+### 8.11. Tới gần NPC thì hiện icon trên đầu — **đã làm**
+
+Chủ: *"tới gần npc nào phải hiện icon để kích vào chọn đối thoại hay không"*.
+Bản vá `android/va_nguon_android_22.py`.
+
+Chạm vào NPC thì thoại **đã mở được sẵn** (§8.10), nên icon này để người chơi **biết chỗ nào chạm
+được** — và vì nó nằm ngay trên đầu NPC nên chạm vào icon cũng là chạm trúng NPC.
+
+- **Core** — dùng lại mã số `NPC_OI_TARGET_INFO` với `nParam == 1` = *"trả về NPC đối thoại gần
+  nhất"* thay vì mục tiêu đang chọn. **Không thêm mã số GDI mới**: thêm vào giữa enum sẽ đẩy mọi mã
+  số phía sau lệch đi. Quét bằng `NpcSet.GetNextIdx`, lọc `kind_dialoger`, lấy cái gần nhất theo
+  khoảng cách vẽ.
+- **Client** — `JxIconNpc_Ve()` đổi toạ độ thế giới → màn hình bằng
+  `iRepresentShell::CoordinateTransform` rồi vẽ icon cao hơn chân NPC `IconNpcCao` điểm ảnh.
+  NPC nào ra ngoài khung vẽ thì không vẽ (tức là chỉ hiện cho NPC đang nhìn thấy).
+
+`config.ini [Cham]`: `IconNpc` / `IconNpcAnh` / `IconNpcCao`.
+
+> **Chọn ảnh mất ba lượt** — ghi lại để khỏi thử lại: `\spr\Ui3\UiGui\NpcTalk.spr` là **ảnh minh
+> hoạ 711 KB** (che góc màn hình), `nut_theo_doi.spr` và `giao_tiep.spr` là **nút chữ dài**. Đang
+> dùng `\spr\obj\box\YellowPoint.spr` (896 byte) — đúng một **chấm tròn nhỏ** như chủ tả.
+> Đổi ảnh khác thì sửa `IconNpcAnh`, không phải dựng lại.
+
+**Đã đo tận mắt:** chấm vàng hiện trên đầu NPC lính gần nhất.
+
+**Còn có thể làm thêm:** hiện chỉ đánh dấu **một** NPC gần nhất. Muốn đánh dấu mọi NPC đối thoại
+đang nhìn thấy thì cho Core trả về một **danh sách** thay vì một cái.
+
+### 8.12. Còn lại (theo lời chủ, chưa làm)
 
 - **Tới gần NPC hiện icon để chạm chọn đối thoại** (`UiNpcBar` bên USVOLAM, 350 dòng).
 - **Nút chọn kỹ năng** riêng cho mobile (`UiMiniSkill`, 1141 dòng + `UiAssignSkill.ini` +

@@ -44,6 +44,10 @@ static int	s_nVongBat = 1;
 static int	s_nVongCoAnh = -1;
 static char	s_szVongAnh[128]    = "\\spr\\npcres\\focused_non_enemy_circle.spr";
 static char	s_szVongAnhDich[128] = "\\spr\\npcres\\focused_enemy_circle.spr";
+static int	s_nIconBat = 1;
+static int	s_nIconCoAnh = -1;
+static int	s_nIconCao = 62;	// icon cao hon chan NPC bao nhieu diem anh
+static char	s_szIconAnh[128] = "\\spr\\obj\\box\\YellowPoint.spr";
 
 // --- trang thai --------------------------------------------------------------
 static bool	s_bCam = false;
@@ -70,6 +74,9 @@ static void DocCaiDat()
 	s_nVongBat   = GetPrivateProfileInt("Cham", "VongChon", 1, szCfg);
 	GetPrivateProfileString("Cham", "VongChonAnh", s_szVongAnh, s_szVongAnh, sizeof(s_szVongAnh), szCfg);
 	GetPrivateProfileString("Cham", "VongChonAnhDich", s_szVongAnhDich, s_szVongAnhDich, sizeof(s_szVongAnhDich), szCfg);
+	s_nIconBat   = GetPrivateProfileInt("Cham", "IconNpc", 1, szCfg);
+	s_nIconCao   = GetPrivateProfileInt("Cham", "IconNpcCao", 62, szCfg);
+	GetPrivateProfileString("Cham", "IconNpcAnh", s_szIconAnh, s_szIconAnh, sizeof(s_szIconAnh), szCfg);
 	if (s_nVungRong < 10) s_nVungRong = 10;
 	if (s_nVungRong > 100) s_nVungRong = 100;
 	if (s_nBanKinh < 30) s_nBanKinh = 30;
@@ -275,6 +282,63 @@ void JxVongChon_Ve()
 	a.oPosition.nY = tt.nViTriVeY - nLuiY;
 	// FALSE = toa do THE GIOI (khong phai toa do man hinh) -> Represent3 tu dat dung cho
 	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE, false);
+}
+
+
+//---------------------------------------------------------------------------
+// [ANDROID 09/09 ICON] ICON "NOI CHUYEN" TREN DAU NPC DOI THOAI GAN NHAT
+//
+// Chu: "toi gan npc nao phai hien icon de kich vao chon doi thoai hay khong". Cham vao NPC thi thoai
+// da mo duoc san, nen icon nay de nguoi choi BIET cho nao cham duoc - va vi no nam ngay tren dau NPC
+// nen cham vao icon cung la cham trung NPC.
+//
+// Core tra vi tri NPC theo toa do THE GIOI (NPC_OI_TARGET_INFO voi nParam = 1); doi sang toa do man
+// hinh bang CoordinateTransform roi ve cao hon dau mot chut. NPC ra ngoai khung ve thi khong ve -
+// tuc la chi hien cho NPC dang nhin thay.
+//
+// config.ini [Cham]: IconNpc=1 / IconNpcAnh / IconNpcCao (cao hon chan NPC bao nhieu diem anh)
+//---------------------------------------------------------------------------
+void JxIconNpc_Ve()
+{
+	DocCaiDat();
+	if (!s_nIconBat || g_pCoreShell == NULL || g_pRepresentShell == NULL)
+		return;
+	KUiTargetDetailInfo gan;
+	memset(&gan, 0, sizeof(gan));
+	if (!g_pCoreShell->GetGameData(NPC_OI_TARGET_INFO, (KUPARAM)&gan, 1))
+		return;
+	if (gan.sTargetName[0] == 0)
+		return;
+	if (s_nIconCoAnh < 0)
+	{
+		s_nIconCoAnh = CoAnh(s_szIconAnh) ? 1 : 0;
+		g_DebugLog("[ICON] anh icon NPC: %s -> co anh=%d", s_szIconAnh, s_nIconCoAnh);
+	}
+	if (!s_nIconCoAnh)
+		return;
+	int x = gan.nViTriVeX, y = gan.nViTriVeY;
+	g_pRepresentShell->CoordinateTransform(x, y, 0);	// the gioi -> man hinh
+	y -= s_nIconCao;
+	if (x < 0 || y < 0 || x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT)
+		return;		// NPC ra ngoai khung ve
+	static KRUImage s_Icon;
+	if (s_Icon.szImage[0] == 0)
+	{
+		memset(&s_Icon, 0, sizeof(s_Icon));
+		s_Icon.nType = ISI_T_SPR;
+		s_Icon.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+		s_Icon.Color.Color_dw = 0xffffffff;
+		s_Icon.nISPosition = IMAGE_IS_POSITION_INIT;
+		s_Icon.nFrame = 0;
+		strncpy(s_Icon.szImage, s_szIconAnh, sizeof(s_Icon.szImage) - 1);
+	}
+	KRPosition2 oOffI = { 0, 0 }, oCoI = { 0, 0 };
+	int nLui = 0;
+	if (g_pRepresentShell->GetImageFrameParam(s_Icon.szImage, 0, &oOffI, &oCoI, s_Icon.nType) && oCoI.nX > 0)
+		nLui = oCoI.nX / 2;
+	s_Icon.oPosition.nX = x - nLui;
+	s_Icon.oPosition.nY = y;
+	g_pRepresentShell->DrawPrimitives(1, &s_Icon, RU_T_IMAGE, true);	// true = toa do MAN HINH
 }
 
 void JxCan_Ve()

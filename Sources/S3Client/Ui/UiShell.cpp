@@ -363,6 +363,7 @@ void UiPaint(int nGameLoop)
 
 #ifdef JX_ANDROID
 	JxVongChon_Ve();	// [ANDROID 09/09 VONG] vong chon duoi chan muc tieu (toa do the gioi)
+	JxIconNpc_Ve();	// [ANDROID 09/09 ICON] icon "noi chuyen" tren dau NPC doi thoai gan nhat
 	JxCan_Ve();	// [ANDROID 09/09 CAN] ve can len tren cung, ngay truoc khi ket khung
 #endif
 	g_pRepresentShell->RepresentEnd();

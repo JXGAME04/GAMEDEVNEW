@@ -34,6 +34,8 @@ void JxCan_Nhip();
 void JxCan_Ve();
 // Goi cuoi moi khung ve: ve vong chon duoi chan muc tieu dang chon.
 void JxVongChon_Ve();
+// Goi cuoi moi khung ve: ve icon "noi chuyen" tren dau NPC doi thoai gan nhat.
+void JxIconNpc_Ve();
 
 #endif // JX_ANDROID
 #endif
