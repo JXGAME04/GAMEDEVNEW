@@ -102,3 +102,21 @@ Chủ cũng báo "nội suy thiếu phần kỹ năng": vị trí ám khí đã 
 18/s (dữ liệu chỉ có bấy nhiêu khung); chưa rõ chủ thấy gì (chiêu bay giật nấc / hiệu ứng lệch thân khi chạy / hiệu ứng bám người chạy
 trước / hoạt ảnh giật) → đã hỏi lại.
 Màn hình chủ: RTX 3080, 2560x1440 hỗ trợ 59/60/120/144 Hz (đang 59) → chủ tự đổi trong Settings → Display → Advanced display → 144 Hz.
+
+**[NHIP c] 19:3x chủ báo “khi fps cao thấy người chơi và bot di chuyển như tốc biến” (đã để `PaintFps=-1` → 144 trên màn 144 Hz).**
+Đo `[SUM]`: 1.440 khung/10 s (đúng 144), khoảng cách 4/6/10 ms, **span tick 53..58 ms** (cảnh nặng 45..69, nạp map 474).
+Gốc: (1) mốc tick lấy SAU `Breathe()`+`UiHeartBeat()` nên xê dịch theo thời gian chạy logic; (2) nội suy chia cho khoảng tick
+LIỀN TRƯỚC — khoảng thật ngắn hơn thì alpha chưa tới 1000 đã sang tick mới → **vị trí nhảy một đoạn mỗi tick (18 lần/giây)**;
+dài hơn thì đóng băng cuối chu kỳ. Sau một cú giật (474 ms) số chia sai gấp 8 lần → nhảy rất mạnh.
+Sửa (96e651f2): mốc tick lấy TRƯỚC `Breathe`; số chia = **trung bình trượt** của khoảng tick (kẹp 40..90 ms) × 0,97 (tới 1000 hơi
+sớm: đóng băng 2–4 ms dễ chịu hơn một cú nhảy). Lùi: `[Client] PaintSmooth=0`. `[SUM]` thêm `kep N` = số khung bị kẹp trần alpha.
+Kèm: bật `PaintVsync=1` trong config — ở 144 fps không vsync, khung được vẽ cách nhau 4–10 ms trong khi màn quét đều 6,94 ms nên
+khung bị nhân đôi/bỏ bớt (judder). Chỉ đổi S3Client → `Game.exe.moi` 3b470554 (CoreClient e7a8124d giữ nguyên).
+
+**Rà soát kèm theo (`quet_bo_dem_theo_khung_ve_0809.py`):** quét mọi bộ đếm chạy theo khung vẽ trong Core + S3Client + Represent3.
+Không còn chỗ nào: `m_nFrame` trong `PaintInfo` (sao trùng sinh) chốt `GetTickCount`, `ServerImage::GetNextFrame` chốt
+`m_dwCurrentTime`, `m_nPointPos` của bản đồ nhỏ chỉ là chỉ số đệm. Ba chỗ sai đã sửa hết (hướng quay, alpha bóng mờ, số sát thương).
+
+**Số liệu vẽ để dành cho việc #2 kiểu khác:** `[REP3]` đếm `anh_null` 0,2–4,7 triệu mỗi 30 s, phần lớn là **tên ảnh RỖNG** (`(k0)`)
+— tức mỗi khung có hàng trăm đơn vị vẽ được gửi xuống Represent3 rồi bỏ vì không có ảnh. Đây là chỗ cắt CPU vẽ rẻ nhất còn lại
+(chưa truy nguồn gọi). Ghi lại để làm sau.
