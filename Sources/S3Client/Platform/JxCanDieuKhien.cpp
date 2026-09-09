@@ -35,6 +35,10 @@ static int	s_nVungTren = 25;	// % chieu cao: tu day tro xuong moi la vung can
 static int	s_nVungDuoi = 88;	// % chieu cao: qua day la thanh cong cu, khong lay
 static int	s_nBanKinh = 90;		// ban kinh can, tinh theo khung ve
 static int	s_nNguong = 14;		// lech qua bao nhieu diem anh thi bat dau di
+static int	s_nDaBaoAnh = 0;
+static int	s_nCoAnh = -1;		// -1 = chua kiem, 0 = khong co anh (ve o mau), 1 = co anh
+static char	s_szAnhNen[128] = "\\spr\\Ui3\\UiSkillControl\\joystick_bg.spr";
+static char	s_szAnhNum[128] = "\\spr\\Ui3\\UiSkillControl\\joystick_ctrl.spr";
 
 // --- trang thai --------------------------------------------------------------
 static bool	s_bCam = false;
@@ -56,6 +60,8 @@ static void DocCaiDat()
 	s_nVungDuoi = GetPrivateProfileInt("Cham", "CanVungDuoi", 88, szCfg);
 	s_nBanKinh  = GetPrivateProfileInt("Cham", "CanBanKinh", 90, szCfg);
 	s_nNguong   = GetPrivateProfileInt("Cham", "CanNguong", 14, szCfg);
+	GetPrivateProfileString("Cham", "CanAnhNen", s_szAnhNen, s_szAnhNen, sizeof(s_szAnhNen), szCfg);
+	GetPrivateProfileString("Cham", "CanAnhNum", s_szAnhNum, s_szAnhNum, sizeof(s_szAnhNum), szCfg);
 	if (s_nVungRong < 10) s_nVungRong = 10;
 	if (s_nVungRong > 100) s_nVungRong = 100;
 	if (s_nBanKinh < 30) s_nBanKinh = 30;
@@ -146,9 +152,50 @@ void JxCan_Nhip()
 }
 
 //---------------------------------------------------------------------------
-// Ve can: mot o vuong to (than can) + mot o vuong nho (num) o phia ngon tay.
-// Dung KRUShadow (o mau trong suot) nen khong can tep anh nao.
+// Ve can dieu khien.
+//
+// Uu tien ANH THAT: chu da co san bo anh giao dien mobile VNKU, trong do co
+//     \spr\Ui3\UiSkillControl\joystick_bg.spr    (than can)
+//     \spr\Ui3\UiSkillControl\joystick_ctrl.spr  (num)
+// Anh o dung dinh dang .spr cua engine nay nen ve thang duoc, khong phai doi gi.
+// Neu thieu anh (chua chep vao thu muc du lieu) thi lui ve ve o mau trong suot -
+// van dung duoc, chi la xau hon.
+//
+// Doi anh khac: config.ini [Cham] CanAnhNen / CanAnhNum (duong dan .spr).
 //---------------------------------------------------------------------------
+static void VeAnh(const char* pszAnh, int nX, int nY)
+{
+	KRUImage a;
+	memset(&a, 0, sizeof(a));
+	a.nType = ISI_T_SPR;
+	a.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+	a.Color.Color_dw = 0xffffffff;
+	a.nISPosition = IMAGE_IS_POSITION_INIT;
+	a.nFrame = 0;
+	strncpy(a.szImage, pszAnh, sizeof(a.szImage) - 1);
+	// Anh .spr co diem neo rieng; lay co khung de dat tam anh vao dung cho ngon tay.
+	KRPosition2 oOff = { 0, 0 }, oCo = { 0, 0 };
+	if (g_pRepresentShell->GetImageFrameParam(a.szImage, 0, &oOff, &oCo, a.nType) && oCo.nX > 0)
+	{
+		a.oPosition.nX = nX - oCo.nX / 2;
+		a.oPosition.nY = nY - oCo.nY / 2;
+	}
+	else
+	{
+		a.oPosition.nX = nX;
+		a.oPosition.nY = nY;
+	}
+	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE, true);
+}
+
+static bool CoAnh(const char* pszAnh)
+{
+	if (!pszAnh || !pszAnh[0] || !g_pRepresentShell)
+		return false;
+	KRPosition2 oOff = { 0, 0 }, oCo = { 0, 0 };
+	return g_pRepresentShell->GetImageFrameParam((char*)pszAnh, 0, &oOff, &oCo, ISI_T_SPR) && oCo.nX > 0;
+}
+
 static void OVuong(int nX, int nY, int nNua, unsigned int uMau)
 {
 	KRUShadow o;
@@ -164,9 +211,7 @@ void JxCan_Ve()
 {
 	if (!s_bCam || g_pRepresentShell == NULL)
 		return;
-	// than can
-	OVuong(s_nTamX, s_nTamY, s_nBanKinh / 2, 0x30202020);
-	// num: keo theo ngon tay nhung khong ra khoi ban kinh
+	// num keo theo ngon tay nhung khong ra khoi ban kinh
 	int dx = s_nNgonX - s_nTamX, dy = s_nNgonY - s_nTamY;
 	double d = sqrt((double)(dx * dx + dy * dy));
 	if (d > s_nBanKinh / 2)
@@ -174,6 +219,16 @@ void JxCan_Ve()
 		dx = (int)(dx * (s_nBanKinh / 2) / d);
 		dy = (int)(dy * (s_nBanKinh / 2) / d);
 	}
+	if (s_nCoAnh < 0)
+		s_nCoAnh = (CoAnh(s_szAnhNen) && CoAnh(s_szAnhNum)) ? 1 : 0;
+	if (s_nCoAnh >= 0 && !s_nDaBaoAnh) { s_nDaBaoAnh = 1; g_DebugLog("[CAN] anh nen=%s num=%s -> dung anh=%d", s_szAnhNen, s_szAnhNum, s_nCoAnh); }
+	if (s_nCoAnh)
+	{
+		VeAnh(s_szAnhNen, s_nTamX, s_nTamY);
+		VeAnh(s_szAnhNum, s_nTamX + dx, s_nTamY + dy);
+		return;
+	}
+	OVuong(s_nTamX, s_nTamY, s_nBanKinh / 2, 0x30202020);
 	OVuong(s_nTamX + dx, s_nTamY + dy, s_nBanKinh / 6, 0x60d0c090);
 }
 
