@@ -37,3 +37,13 @@ gọi ngoài lúc vẽ vẫn nạp ngay; mục đang nạp mà bị hỏi đồn
 Harness: thêm `REP_WARM=N` (vẽ cảnh N lần trước khi chụp) → ảnh **y hệt** bản trước (0 điểm khác), fps 63.
 Đọc sau khi chủ chơi: dòng `[REP3-NAP]` — `tep spr`/`jpeg` trên luồng vẽ phải ≈ 0, `khung co nap >16 ms` và `max ms/khung` giảm,
 `nen: giao/xong/bo_ve` cho biết số ảnh đã giao / xong / số lượt bỏ vẽ vì đang nạp.
+
+**[c] 16:5x SỰ CỐ sau khi bật [b]: bản đồ đen nửa màn hình.** Không phải nạp hỏng (`LoadImage FAIL` chỉ là các tệp thiếu sẵn). Gốc ở Engine:
+`XPackFile` giữ cache phần tử **tĩnh dùng chung mọi pak** (`ms_ElemFileCache`) nhưng khoá là **khoá riêng từng pak** (`m_ReadCritical`) →
+luồng nền đọc pak sprite và luồng vẽ đọc pak bản đồ (`get_jpg_image` ảnh toàn cục lúc vào map) cùng lúc, `AddElemFileToCache`/`FreeElemCache`
+của pak này ghi đè ô cache pak kia đang memcpy → ảnh bản đồ đọc rác → nửa đen. Sửa: một khoá TĨNH dùng chung cho mọi `XPackFile`
+(`ms_ReadCritical`, khởi tạo một lần, giữ nguyên bố cục lớp) → `Engine.dll.moi` 8b9407ad (commit 95ca4520). Kèm: `Lib/lua54/Win32/Lua54Dll.lib`
+trong git thiếu `lua4_pushboolean/pushinteger/toboolean` (DLL live có) → Engine không link; đã dựng lại lib từ nguồn và commit.
+Tạm thời đã đặt `Rep3NapNen=0` trong config lúc 16:5x để chủ chơi tiếp; sau khi có Engine.dll.moi đã bỏ dòng đó (mặc định 1) → lần ChoiGame.bat
+tới nhận cả Engine + Represent3 219abc27 và bật lại nạp nền. Harness (Engine mới + 40 sprite, làm nóng 3 khung): ảnh y hệt, fps 63.
+Bài học: lớp pak KHÔNG an toàn đa luồng dù có CS — CS theo pak nhưng cache theo tiến trình; mọi thứ đọc pak từ luồng khác phải qua khoá chung.
