@@ -91,6 +91,18 @@ double g_dRep3NapKhung = 0.0, g_dRep3NapKhungMax = 0.0; unsigned g_uRep3NapKhung
 void Rep3NapCong(Rep3NapDo& d, double ms) { d.n++; d.ms += ms; if (ms > d.max) d.max = ms; g_dRep3NapKhung += ms; }
 // [NAP 08/09 d] trong pham vi ham GHEP/GHI anh mot lan: bat buoc nap dong bo (ket qua chi dung mot lan, nap nen tra NULL = mat vinh vien)
 struct Rep3NapDongBo { TextureResMgr& m; bool b; Rep3NapDongBo(TextureResMgr& mm) : m(mm), b(mm.m_bVeDangDien) { m.m_bVeDangDien = false; } ~Rep3NapDongBo() { m.m_bVeDangDien = b; } };
+unsigned g_uRep3VeLoai[6] = {0, 0, 0, 0, 0, 0}; unsigned g_uRep3VeKhung = 0;	// [VE 08/09 a]
+void Rep3VeDem(const char* p)
+{
+	if (!p) { g_uRep3VeLoai[5]++; return; }
+	if (*p == '\\' || *p == '/') p++;
+	if (*p == '*' || *p == '_') { g_uRep3VeLoai[4]++; return; }
+	if (_strnicmp(p, "spr\\npcres", 10) == 0 || _strnicmp(p, "spr/npcres", 10) == 0) { g_uRep3VeLoai[0]++; return; }
+	if (_strnicmp(p, "spr\\skill", 9) == 0 || _strnicmp(p, "spr/skill", 9) == 0) { g_uRep3VeLoai[1]++; return; }
+	if (_strnicmp(p, "spr\\ui", 6) == 0 || _strnicmp(p, "spr/ui", 6) == 0) { g_uRep3VeLoai[2]++; return; }
+	if (_strnicmp(p, "maps", 4) == 0) { g_uRep3VeLoai[3]++; return; }
+	g_uRep3VeLoai[5]++;
+}
 double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 {
 	static LARGE_INTEGER s_liTanSo = {0};
@@ -2603,6 +2615,7 @@ bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 void KRepresentShell3::RepresentEnd()
 {
 	m_TextureResMgr.m_bVeDangDien = false;	// [NAP 08/09 b] ngoai luc ve: hoi anh nap ngay
+	g_uRep3VeKhung++;	// [VE 08/09 a]
 	{	// [NAP 08/09 a] tong ms nap trong khung nay -> max / dem khung nang
 		if (g_dRep3NapKhung > g_dRep3NapKhungMax) g_dRep3NapKhungMax = g_dRep3NapKhung;
 		if (g_dRep3NapKhung > 16.0) g_uRep3NapKhung16++; else if (g_dRep3NapKhung > 5.0) g_uRep3NapKhung5++;
@@ -2683,10 +2696,13 @@ void KRepresentShell3::RepresentEnd()
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);
 			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0; g_uRep3BatchQuads = 0; g_uRep3BatchDraws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
-			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u",	// [NAP 08/09 a/b]
+			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung %u)",	// [NAP 08/09 a/b] [VE 08/09 a]
 				g_nRep3StatSec, g_napSpr.n, g_napSpr.ms, g_napSpr.max, g_napJpeg.n, g_napJpeg.ms, g_napJpeg.max, g_napKhung.n, g_napKhung.ms, g_napKhung.max,
 				g_napGiaiMa.n, g_napGiaiMa.ms, g_napGiaiMa.max, g_napGpu.n, g_napGpu.ms, g_napGpu.max, g_uRep3NapKhung5, g_uRep3NapKhung16, g_dRep3NapKhungMax,
-				m_TextureResMgr.m_nNapNenGui, m_TextureResMgr.m_nNapNenXong, m_TextureResMgr.m_nNapNenHong, m_TextureResMgr.m_nNapNenBoVe);
+				m_TextureResMgr.m_nNapNenGui, m_TextureResMgr.m_nNapNenXong, m_TextureResMgr.m_nNapNenHong, m_TextureResMgr.m_nNapNenBoVe,
+				g_uRep3VeKhung ? (double)g_uRep3VeLoai[0] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[1] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[2] / g_uRep3VeKhung : 0.0,
+				g_uRep3VeKhung ? (double)g_uRep3VeLoai[3] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[4] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[5] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung);
+			memset(g_uRep3VeLoai, 0, sizeof(g_uRep3VeLoai)); g_uRep3VeKhung = 0;
 			m_TextureResMgr.m_nNapNenGui = 0; m_TextureResMgr.m_nNapNenXong = 0; m_TextureResMgr.m_nNapNenHong = 0; m_TextureResMgr.m_nNapNenBoVe = 0;
 			memset(&g_napSpr, 0, sizeof(g_napSpr)); memset(&g_napJpeg, 0, sizeof(g_napJpeg)); memset(&g_napKhung, 0, sizeof(g_napKhung)); memset(&g_napGiaiMa, 0, sizeof(g_napGiaiMa)); memset(&g_napGpu, 0, sizeof(g_napGpu));
 			g_dRep3NapKhungMax = 0.0; g_uRep3NapKhung5 = 0; g_uRep3NapKhung16 = 0;

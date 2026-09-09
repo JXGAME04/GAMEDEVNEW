@@ -56,6 +56,9 @@ struct Rep3NapDo { unsigned n; double ms; double max; };
 extern Rep3NapDo g_napSpr, g_napJpeg, g_napKhung, g_napGiaiMa, g_napGpu;
 extern double g_dRep3NapKhung, g_dRep3NapKhungMax; extern unsigned g_uRep3NapKhung5, g_uRep3NapKhung16;
 void   Rep3NapCong(Rep3NapDo& d, double ms);
+extern unsigned g_uRep3VeLoai[6];	// [VE 08/09 a] don vi ve theo loai: 0 npc, 1 skill, 2 ui, 3 maps, 4 anh tao, 5 khac
+extern unsigned g_uRep3VeKhung;		// so khung ve trong ky
+void   Rep3VeDem(const char* pszImage);
 double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
 extern int  g_nRep3NapNen;	// [NAP 08/09 b] [Client] Rep3NapNen: 1 = nap sprite/jpeg o luong nen (mac dinh), 0 = nap ngay tren luong ve nhu cu
 extern int  g_nRep3StatSec;    // [REP3 03/09 RAM] chu ky ghi thong ke RAM/VRAM/cache vao jx_rep3.log (giay), 0 = tat

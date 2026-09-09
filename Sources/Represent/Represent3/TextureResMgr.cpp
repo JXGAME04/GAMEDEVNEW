@@ -447,6 +447,7 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 	}
 
     KAutoCriticalSection AutoLock(m_ImageProcessLock);
+	if (m_bVeDangDien) Rep3VeDem(pszImage);	// [VE 08/09 a] dem don vi ve theo loai
 
 	TextureRes* pObject = NULL;
 	if ((nImagePosition = FindImage(uImage, nImagePosition)) >= 0)
