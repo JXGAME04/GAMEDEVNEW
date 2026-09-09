@@ -56,6 +56,9 @@ void JxKyNang_Keo(int x, int y);
 // [ANDROID 09/09 GAN] Bang ky nang goi vao day khi nguoi choi cham mot ky nang.
 // Tra ve true = da gan vao o dang cho, ben goi khoi lam viec cua no nua.
 bool JxKyNang_GanKyNang(unsigned int uGenre, unsigned int uId);
+// [ANDROID 10/09 BANGCHON] bang 3 nut (gan chinh / gan phu / go) khi cham mot ky nang trong bang ky nang.
+void JxKyNang_MoBangChon(unsigned int uGenre, unsigned int uId, int x, int y);
+int  JxKyNang_ChamBangChon(int x, int y);	// 1 = bang dang mo da nhan cu cham nay
 void JxKyNang_Nhip();
 // Nha ngon = thoi danh. Tra ve true neu vua nha mot nut ky nang.
 bool JxKyNang_Nha();

@@ -1365,6 +1365,9 @@ struct KJxKyNangHoi
 						//       3 = khong dung duoc (con han len/xuong ngua, hoac gioi han khac)
 	int	nTamDanh;	// RA  : tam danh cua ky nang (dung de biet diem ngam nam dau khi keo)
 	int	nLaAura;	// RA  : 1 = ky nang TRO (bat/tat) chu khong phai danh
+	// [ANDROID 10/09 BUFF] them o CUOI de khong doi bo cuc phan tren
+	int	nTuDung;	// RA  : 1 = ky nang TU DUNG (buff / hoi phuc len minh hoac dong doi, khong nham ke dich)
+	char szTen[64];	// RA  : ten ky nang (ghi tren bang chon)
 };
 
 //==================================

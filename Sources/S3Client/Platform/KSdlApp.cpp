@@ -676,6 +676,13 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			// [ANDROID 09/09 KYNANG] Dat ngon trung mot nut ky nang thi bat NGAY, khong doi
 			// xe dich: nut la mot o cu the nen dat trung no la chac chan muon dung no.
 			// Nho vay cham vao nut cung khong lot mot cu bam chuot xuong duoi game.
+			// [ANDROID 10/09 BANGCHON] bang 3 nut canh ky nang dang mo: cham vao no thi bang nhan, khong cho roi
+			// xuong cua so ky nang ben duoi; cham ra ngoai thi bang tu dong, cu cham di tiep.
+			if (JxKyNang_ChamBangChon(m_nChamX0, m_nChamY0))
+			{
+				m_nCham = CHAM_KHONG;
+				return true;
+			}
 			// [ANDROID 10/09 GANTOADO] Dang sua giao dien thi KHONG cho nut ky nang nuot
 			// cu cham - phai de no di xuong UiToaDo thi moi keo cum nut di duoc.
 			if (!UiToaDo_DangSua())

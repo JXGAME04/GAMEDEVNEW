@@ -826,6 +826,17 @@ APK: `android\apk\jx1mobile-1009-anicon.apk` (vá 56–62). PC x64 + SDL dựng 
   y+7 tràn xuống, dòng sau vẽ đè. Sửa trong `PopupMenu.cpp` (JX_ANDROID): dòng đặt sẵn mà thấp hơn
   `chữ × số dòng + 2 × đệm` thì nới lên. APK `android\apk\jx1mobile-1009-menukenh.apk` (vá 56–64).
 
+### 12.14. (10/09 14:xx) Sáu yêu cầu về kỹ năng — chỉ mobile (`va_nguon_android_65.py`, APK `jx1mobile-1009-bangchon.apk`)
+
+| Chủ nói | Làm |
+|---|---|
+| *"ô kỹ năng chính không đổi kỹ năng được"* | Chế độ gán giờ nhận cả **ô chính** (`s_nKNOChon = KYNANG_CHON_CHINH`): gán = đặt làm kỹ năng đánh **trái** của Core (`GOI_SET_IMMDIA_SKILL`, nParam 0) và ghi `Chinh=<loại>,<mã>` vào `UserData\KyNangMobile.ini`; mở game áp lại một lần khi đã có danh sách kỹ năng. |
+| *"mở bảng kỹ năng, bấm kỹ năng nào thì hiện thông tin và kèm 3 nút gắn chính – gắn phụ – gỡ"* | **Bảng 3 nút vẽ tay** (`JxKyNang_MoBangChon/ChamBangChon/VeBangChon`), mở từ `OnSkillPickDrop` của cả `UiSkillsNew` lẫn `UiSkills`, đặt cạnh ô vừa chạm, tiêu đề = tên kỹ năng (Core trả `szTen`). *Gắn ô chính* → như trên. *Gắn ô phụ* → ô đã chọn trước (chạm ô trống) thì gắn luôn; không thì ô trống đầu tiên; hết ô thì nhớ kỹ năng, báo "chạm ô phụ muốn thay" (chạm ô nào gắn ô đó). *Gỡ khỏi ô* → xoá khỏi mọi ô phụ đang giữ nó; ô chính chỉ thay được. Thông tin kỹ năng vẫn hiện như cũ (con trỏ đứng trên ô khi chạm). Bảng tự đóng khi chạm ra ngoài hoặc cửa sổ kỹ năng đóng. `KSdlApp` hỏi bảng **trước** mọi thứ khi đặt ngón. |
+| *"không cho lấy kỹ năng lên tay khi bấm vào xem thông tin"* | Trên Android `OnSkillPickDrop` (nhấc lên) **không bao giờ nhấc nữa** — chỉ gán (chế độ gán) hoặc mở bảng 3 nút. |
+| *"ô phụ bỏ kỹ năng buff thì chỉ cần kích vào sẽ tự sử dụng"* | Core `GDI_KYNANG_MOBILE` trả thêm `nTuDung` = không nhắm kẻ địch mà lên mình/đồng đội (`!IsTargetEnemy && (IsTargetSelf ‖ IsTargetAlly ‖ style InitiativeNpcState)`). Chạm → `UseSkill` ngay tại chỗ nhân vật (giữa khung vẽ), không cần kéo ngắm, không cần có địch; một lần mỗi chạm. Trước đây buff không có mục tiêu địch nên **không bắn gì cả**. |
+| *"các ô phím phụ nếu bỏ kỹ năng vòng sáng thì sẽ tự luân chuyển đối với phái Nga My"* | **Chưa làm — chưa rõ ý** ("vòng sáng" = kỹ năng hào quang/trạng thái? "tự luân chuyển" = tự đổi qua lại giữa các hào quang, hay tự quay về kỹ năng đánh sau khi bật?). Đã hỏi lại chủ. |
+| *"chỉ làm cho bản mobile"* | UI kỹ năng guard `JX_ANDROID`; Core chỉ thêm trường/tính thêm, không đổi hành vi PC. PC x64 + SDL dựng sạch. |
+
 ### 12.6. Còn lại thật sự
 
 

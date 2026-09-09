@@ -131,8 +131,18 @@ void KUiFightSkillSubPage::OnSkillPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_P
 	{
 		KUiDraggedObject oGan;
 		((KWndObjectBox*)(pPickPos->pWnd))->GetObject(oGan);
-		if (oGan.uGenre != CGOG_NOTHING && JxKyNang_GanKyNang(oGan.uGenre, oGan.uId))
-			return;
+		if (oGan.uGenre != CGOG_NOTHING && !JxKyNang_GanKyNang(oGan.uGenre, oGan.uId))
+		{
+			// [ANDROID 10/09 BANGCHON] khong o che do gan: mo bang 3 nut (gan chinh / gan phu / go) ngay canh o.
+			// Va KHONG BAO GIO nhac ky nang len tay nua (chu: "khong cho lay ky nang len tay khi bam
+			// vao xem thong tin ky nang") - thong tin ky nang van hien nhu cu (con tro dung tren o).
+			int nX = 0, nY = 0, nW = 0, nH = 0;
+
+			pPickPos->pWnd->GetAbsolutePos(&nX, &nY);
+			pPickPos->pWnd->GetSize(&nW, &nH);
+			JxKyNang_MoBangChon(oGan.uGenre, oGan.uId, nX + nW, nY);
+		}
+		return;
 	}
 #endif
 
