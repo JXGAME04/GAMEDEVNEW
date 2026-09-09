@@ -588,7 +588,10 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3CacheMB   = Rep3Ini("Rep3CacheMB", 0);
 	g_nRep3Log       = Rep3Ini("Rep3Log", 1);
 	g_nRep3Pool      = Rep3Ini("Rep3Pool", 1);		// [REP3 03/09 RAM]
-	g_nRep3Api       = Rep3Ini("Rep3Api", 11);	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11, tu lui D3D9 khi may khong du
+	g_nRep3Api       = Rep3Ini("Rep3Api", 11);
+#ifdef JX_ANDROID
+	g_nRep3Api = 100;	// [ANDROID 11/09 c] Android chi co SDL_GPU; doc ini co luc hong (khoi dong lai ngay sau khi dong app) -> "Rep3Api=11 ... lui ve D3D9" -> GameInit that bai
+#endif	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11, tu lui D3D9 khi may khong du
 	g_nRep3Atlas     = Rep3Ini("Rep3Atlas", 1);	// [D3D11 08/09 d]
 	g_nRep3Flip      = Rep3Ini("Rep3Flip", 1);	// [D3D11 08/09 f] bitblt DISCARD bi DWM ghep giua chung -> "gon song" khi di chuyen
 	g_nRep3Tearing   = Rep3Ini("Rep3Tearing", 0);	// [D3D11 08/09 f]

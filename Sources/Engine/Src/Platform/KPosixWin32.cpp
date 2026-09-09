@@ -523,7 +523,13 @@ static char* jx_trim(char* s)
 /* tim [section] key = -> chep gia tri (khong co dau nhay) vao out; tra ve TRUE khi thay */
 static BOOL jx_ini_get(LPCSTR sec, LPCSTR key, LPCSTR file, LPSTR out, DWORD n)
 {
-	FILE* f = jx_fopen(file, "rb"); if (!f) return FALSE;
+	FILE* f = jx_fopen(file, "rb");
+	if (!f)
+	{	/* [ANDROID 11/09 c] mo ini hong -> ghi errno (toi da 20 dong) de biet vi sao config.ini co luc khong doc duoc */
+		static int s_nIniLoi = 0;
+		if (s_nIniLoi < 20) { s_nIniLoi++; jx_log("[INI] khong mo duoc %s: errno %d (%s)", file, errno, strerror(errno)); }
+		return FALSE;
+	}
 	char line[2048]; int in = 0; BOOL found = FALSE;
 	while (fgets(line, sizeof(line), f))
 	{
