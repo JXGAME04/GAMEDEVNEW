@@ -17,16 +17,19 @@
 
 ---
 
-## 1. ĐIỀU KHIỂN BẰNG NGÓN TAY — chặn đường, làm trước hết
+## 1. ~~ĐIỀU KHIỂN BẰNG NGÓN TAY~~ — **1.1–1.4 ĐÃ XONG 09/09** (xem `BANGIAO_ANDROID_PHA4_0809.md` §7)
 
-Hiện game chỉ nhận chạm qua kiểu "giả lập chuột" của SDL: **một ngón = chuột trái, hết**. Đây là việc lớn nhất còn lại.
+Trước đó game chỉ nhận chạm qua kiểu "giả lập chuột" của SDL: **một ngón = chuột trái, hết**.
+Nay đã có bộ nhận cử chỉ: chạm = chuột trái, chạm hai lần = bấm đúp, kéo = giữ trái + rê,
+giữ tại chỗ trên bản đồ = **chuột phải**, nút Back = ESC, bàn phím ảo chỉ bật khi có ô nhập.
+**Còn lại 1.5 và 1.6.**
 
 | # | Việc | Vì sao chặn | Ghi chú kỹ thuật |
 |---|---|---|---|
-| 1.1 | **Bàn phím ảo bật suốt** → che nửa màn hình | `KSdlApp::Init` gọi `SDL_StartTextInput` một lần rồi giữ đến lúc thoát. Trên LDPlayer có bàn phím cứng nên không lộ; **trên điện thoại thật bàn phím sẽ bật ngay từ màn hình chính và không tắt** | Chỉ bật khi ô nhập (`KWndEdit`) có tiêu điểm, tắt khi mất tiêu điểm. `Wnd_SetFocusWnd` là điểm móc |
-| 1.2 | **Chuột phải** | JX1 dùng chuột phải để *đánh ép* (`Mouse_Force1`) và mở *menu chuột phải* (`Mouse_Menu`). Không có chuột phải thì không đánh được quái đã bị người khác đánh, không mở được menu người chơi | Chạm giữ ~400 ms mà ngón không xê dịch → sinh `WM_RBUTTONDOWN/UP` tại chỗ đó |
-| 1.3 | **Rê chuột (hover)** | Thông tin vật phẩm, tên NPC, gợi ý nút — đều hiện khi *rê* chuột. Ngón tay không rê được | Chạm giữ trên ô đồ = hiện thông tin; hoặc gửi `WM_MOUSEMOVE` theo ngón trước khi nhả |
-| 1.4 | **Nút Back của Android** | Hiện không làm gì (`SDLK_AC_BACK` không có trong `SdlKeyToVk`) | Ánh xạ thành `VK_ESCAPE` (mở bảng hệ thống / đóng cửa sổ) |
+| 1.1 ✅ | **Bàn phím ảo bật suốt** → che nửa màn hình | `KSdlApp::Init` gọi `SDL_StartTextInput` một lần rồi giữ đến lúc thoát. Trên LDPlayer có bàn phím cứng nên không lộ; **trên điện thoại thật bàn phím sẽ bật ngay từ màn hình chính và không tắt** | Chỉ bật khi ô nhập (`KWndEdit`) có tiêu điểm, tắt khi mất tiêu điểm. `Wnd_SetFocusWnd` là điểm móc |
+| 1.2 ✅ | **Chuột phải** | JX1 dùng chuột phải để *đánh ép* (`Mouse_Force1`) và mở *menu chuột phải* (`Mouse_Menu`). Không có chuột phải thì không đánh được quái đã bị người khác đánh, không mở được menu người chơi | Chạm giữ ~400 ms mà ngón không xê dịch → sinh `WM_RBUTTONDOWN/UP` tại chỗ đó |
+| 1.3 ✅ một phần | **Rê chuột (hover)** | Thông tin vật phẩm, tên NPC, gợi ý nút — đều hiện khi *rê* chuột. Ngón tay không rê được | Chạm giữ trên ô đồ = hiện thông tin; hoặc gửi `WM_MOUSEMOVE` theo ngón trước khi nhả |
+| 1.4 ✅ | **Nút Back của Android** | Hiện không làm gì (`SDLK_AC_BACK` không có trong `SdlKeyToVk`) | Ánh xạ thành `VK_ESCAPE` (mở bảng hệ thống / đóng cửa sổ) |
 | 1.5 | Kéo–thả và bấm đúp | Chuyển đồ giữa túi, bán đồ, dùng vật phẩm | SDL đã sinh down/move/up nên **có thể đã chạy** — phải kiểm tay |
 | 1.6 | Hai ngón: phóng to / kéo bản đồ | Không bắt buộc nhưng rất tiện trên màn nhỏ | `SetZoom` đã có sẵn trong `autoexec.lua` |
 
@@ -104,7 +107,7 @@ Hiệu ứng chạy (miniaudio). **Chưa có thư mục `Music`** nên không c�
 
 ## Thứ tự đề nghị
 
-1. **§1 Điều khiển bằng ngón tay** (1.1 → 1.4 trước) — không có thì không gọi là chơi được.
+1. ~~**§1 Điều khiển bằng ngón tay** (1.1 → 1.4)~~ — **xong 09/09**; còn 1.5 (kéo–thả, bấm đúp: phải kiểm tay) và 1.6 (hai ngón).
 2. **§2.1 Kiểm dữ liệu trùng** — rẻ, có thể cắt 102.633 tệp còn ~50.
 3. **§3.1 Bộ nhớ ảnh theo RAM máy** — không sửa thì điện thoại sẽ bị giết giữa chừng.
 4. **§4 Chủ chạy thử trên điện thoại thật** — chốt xem còn gì vỡ.

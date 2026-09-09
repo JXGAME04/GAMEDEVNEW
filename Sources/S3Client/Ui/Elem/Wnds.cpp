@@ -495,6 +495,17 @@ void Wnd_TransmitInputToGameSpace(unsigned int uMsg, KUPARAM uParam, KNPARAM nPa
 //	功能：把处于某个位置的窗口带到最上层
 //	返回：最上层窗口的指针
 //--------------------------------------------------------------------------
+#ifdef JX_ANDROID
+// [ANDROID 09/09 CHAM] Diem (x, y) co nam tren mot cua so GIAO DIEN khong (khac vung ban do)?
+// KSdlApp dung de quyet dinh y nghia cua "cham giu tai cho": tren ban do thi la CHUOT PHAI,
+// con tren giao dien thi chi he ra xem thong tin - vi chuot phai trong tui do la DUNG vat pham.
+extern "C" int JxUi_CoGiaoDienTaiDiem(int x, int y)
+{
+	KWndWindow* pWnd = Wnd_GetActive(x, y, false);
+	return (pWnd != NULL && pWnd != s_WndStation.pGameSpaceWnd) ? 1 : 0;
+}
+#endif
+
 KWndWindow* Wnd_GetActive(int x, int y, bool bBringToTop)
 {
 	KWndWindow* pActive = NULL;

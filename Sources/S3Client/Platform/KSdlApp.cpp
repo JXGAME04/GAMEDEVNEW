@@ -38,6 +38,11 @@ static WORD SdlKeyToVk(SDL_Keycode key)
 	case SDLK_RETURN:		return VK_RETURN;
 	case SDLK_KP_ENTER:		return VK_RETURN;
 	case SDLK_ESCAPE:		return VK_ESCAPE;
+#ifdef JX_ANDROID
+	// [ANDROID 09/09 CHAM] nut Back cua may = ESC (mo bang he thong / dong cua so dang mo).
+	// Manifest da dat SDL_ANDROID_TRAP_BACK_BUTTON=1 nen SDL dua nut nay vao day thay vi thoat app.
+	case SDLK_AC_BACK:		return VK_ESCAPE;
+#endif
 	case SDLK_BACKSPACE:	return VK_BACK;
 	case SDLK_TAB:			return VK_TAB;
 	case SDLK_SPACE:		return VK_SPACE;
@@ -129,6 +134,13 @@ KSdlApp::KSdlApp()
 	m_uHoverLastStatus = 0;
 	m_nHoverLastPos = 0;
 	m_cHoverCounter = 0;
+#ifdef JX_ANDROID
+	m_nCham = CHAM_KHONG;
+	m_nChamX0 = m_nChamY0 = m_nChamX = m_nChamY = 0;
+	m_uChamDat = 0;
+	m_uChamNhaTruoc = 0;
+	m_nChamNhaX = m_nChamNhaY = 0;
+#endif
 	s_pSdlApp = this;
 }
 
@@ -268,7 +280,13 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 #ifndef JX_POSIX
 	SDL_SetWindowsMessageHook(KSdlApp_WinMsgHook, this);
 #endif
-	SDL_StartTextInput(m_pWindow);	// WM_CHAR tu SDL_EVENT_TEXT_INPUT (o mobile se bat/tat theo o nhap)
+#ifdef JX_ANDROID
+	// [ANDROID 09/09 CHAM] KHONG bat go chu san: tren dien thoai SDL_StartTextInput = BAT BAN PHIM AO ngay
+	// va no che nua man hinh cho toi luc thoat. Chi bat khi mot o nhap co tieu diem - KWndEdit goi
+	// JxSdl_BanPhimAo() o WND_M_SET_FOCUS / WND_M_KILL_FOCUS.
+#else
+	SDL_StartTextInput(m_pWindow);	// WM_CHAR tu SDL_EVENT_TEXT_INPUT
+#endif
 	SDL_ShowCursor();
 	g_DebugLog("[SDL] cua so %dx%d, SDL %d.%d.%d, HWND %p", SCREEN_WIDTH, SCREEN_HEIGHT,
 		SDL_VERSIONNUM_MAJOR(SDL_GetVersion()), SDL_VERSIONNUM_MINOR(SDL_GetVersion()), SDL_VERSIONNUM_MICRO(SDL_GetVersion()), hWnd);
@@ -356,6 +374,9 @@ void KSdlApp::Run()
 		}
 		if (bQuit)
 			break;
+#ifdef JX_ANDROID
+		NhipCham();		// [ANDROID 09/09 CHAM] giu ngon du lau ma khong xe dich -> chuot phai
+#endif
 		if (m_bActive || m_bMultiGame)
 		{
 			uInterval = g_GetLoopInterval();	// [NHIP->SDL 08/09] doc lai moi vong nhu KWin32App::Run
@@ -423,6 +444,141 @@ static void SdlToLogical(SDL_Window* pWin, float& x, float& y)
 	if (x > (float)(SCREEN_WIDTH - 1)) x = (float)(SCREEN_WIDTH - 1); if (y > (float)(SCREEN_HEIGHT - 1)) y = (float)(SCREEN_HEIGHT - 1);
 }
 
+#ifdef JX_ANDROID
+//---------------------------------------------------------------------------
+// [ANDROID 09/09 CHAM] BAN PHIM AO
+// Tren dien thoai SDL_StartTextInput = day ban phim ao len ngay. Nen chi goi khi mot o nhap co tieu diem.
+// KWndEdit::WndProc goi ham nay o WND_M_SET_FOCUS (bat) va WND_M_KILL_FOCUS (tat).
+//---------------------------------------------------------------------------
+extern "C" void JxSdl_BanPhimAo(int bBat)
+{
+	SDL_Window* pWin = (SDL_Window*)JxPosix_MainWindow();
+	if (!pWin)
+		return;
+	if (bBat)
+		SDL_StartTextInput(pWin);
+	else
+		SDL_StopTextInput(pWin);
+}
+
+//---------------------------------------------------------------------------
+// [ANDROID 09/09 CHAM] BO NHAN CU CHI NGON TAY -> CHUOT
+//
+// SDL tu gia lap chuot tu ngon tay, nhung chi ra duoc CHUOT TRAI. JX1 thi song bang chuot phai
+// (danh ep, menu chuot phai) va bang re chuot (thong tin vat pham, ten NPC) - ngon tay khong co
+// hai thu do. Nen chan cac su kien chuot DO NGON TAY sinh ra (which == SDL_TOUCH_MOUSEID) va dich lai:
+//
+//   cham nhanh roi nha      -> chuot trai, bam tai CHO DAT NGON (khong phai cho nha: ngon tay hay
+//                              truot vai diem anh luc nhac len)
+//   cham hai lan lien       -> bam dup (dung vat pham)
+//   cham roi keo di         -> giu chuot trai roi re: di chuyen lien tuc, keo tha vat pham
+//   giu tai cho tren BAN DO -> CHUOT PHAI (danh ep quai da co nguoi danh, mo menu nguoi choi)
+//   giu tai cho tren GIAO DIEN -> KHONG bam chuot phai (chuot phai trong tui do la DUNG vat pham -
+//                              bam nham la mat do); "chuot" van nam do nen game kip hien thong tin vat pham,
+//                              va khi nha ngon van bam chuot TRAI nhu mot cai cham thuong - vi tren dien
+//                              thoai nguoi ta hay an nut lau hon 400 ms, khong the vi the ma nut chet.
+//
+// Vi sao cham nhanh lai doi den luc NHA moi bam: neu bam ngay luc dat ngon thi khong the phan biet
+// duoc voi "giu de bam chuot phai" - se bam trai roi lai bam phai, tren NPC la mo thoai roi danh.
+// Doi den luc nha (thuong duoi 150 ms) la cach moi giao dien cam ung deu lam.
+//---------------------------------------------------------------------------
+extern "C" int JxUi_CoGiaoDienTaiDiem(int x, int y);	// Wnds.cpp
+
+static const unsigned int CHAM_GIU_MS = 400;	// giu lau bao nhieu thi thanh chuot phai
+static const int          CHAM_NGUONG = 12;		// xe dich qua bao nhieu diem anh thi coi la KEO
+static const unsigned int CHAM_HAI_MS = 400;	// hai lan cham cach nhau duoi bao nhieu = bam dup
+static const int          CHAM_HAI_XA = 24;		// ... va cach nhau khong qua bao nhieu diem anh
+
+bool KSdlApp::ChamSuKien(const SDL_Event& ev)
+{
+	HWND hWnd = g_GetMainHWnd();
+	if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN || ev.type == SDL_EVENT_MOUSE_BUTTON_UP)
+	{
+		if (ev.button.which != SDL_TOUCH_MOUSEID || ev.button.button != SDL_BUTTON_LEFT)
+			return false;
+		float fx = ev.button.x, fy = ev.button.y; SdlToLogical(m_pWindow, fx, fy);
+		if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+		{
+			m_nCham = CHAM_CHO;
+			m_nChamX0 = m_nChamX = (int)fx; m_nChamY0 = m_nChamY = (int)fy;
+			m_uChamDat = (unsigned int)SDL_GetTicks();
+			// Dua "chuot" toi cho ngon tay ngay: de game biet dang tro vao dau (dem hover, thong tin vat pham).
+			GhiChuot(0, MAKELPARAM(m_nChamX0, m_nChamY0));
+			MsgProc(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(m_nChamX0, m_nChamY0));
+			return true;
+		}
+		int nTruoc = m_nCham;
+		m_nCham = CHAM_KHONG;
+		if (nTruoc == CHAM_KEO)
+		{
+			GhiChuot(0, MAKELPARAM((int)fx, (int)fy));
+			MsgProc(hWnd, WM_LBUTTONUP, 0, MAKELPARAM((int)fx, (int)fy));
+		}
+		else if (nTruoc == CHAM_PHAI)
+		{
+			GhiChuot(0, MAKELPARAM(m_nChamX0, m_nChamY0));
+			MsgProc(hWnd, WM_RBUTTONUP, 0, MAKELPARAM(m_nChamX0, m_nChamY0));
+		}
+		else if (nTruoc == CHAM_CHO || nTruoc == CHAM_RE)
+		{
+			// CHAM_RE = da giu lau tren GIAO DIEN. Van bam chuot trai khi nha: tren dien thoai nguoi ta
+			// hay an nut lau hon 400 ms, khong the vi the ma nut chet. (Trong luc giu thi "chuot" da nam
+			// san o do nen game da kip hien thong tin vat pham.)
+			unsigned int uNay = (unsigned int)SDL_GetTicks();
+			bool bDup = (uNay - m_uChamNhaTruoc <= CHAM_HAI_MS) &&
+				(abs(m_nChamX0 - m_nChamNhaX) <= CHAM_HAI_XA) &&
+				(abs(m_nChamY0 - m_nChamNhaY) <= CHAM_HAI_XA);
+			LPARAM l = MAKELPARAM(m_nChamX0, m_nChamY0);
+			GhiChuot(MK_LBUTTON, l);
+			MsgProc(hWnd, bDup ? WM_LBUTTONDBLCLK : WM_LBUTTONDOWN, MK_LBUTTON, l);
+			GhiChuot(0, l);
+			MsgProc(hWnd, WM_LBUTTONUP, 0, l);
+			m_uChamNhaTruoc = uNay; m_nChamNhaX = m_nChamX0; m_nChamNhaY = m_nChamY0;
+		}
+		return true;
+	}
+	if (ev.type == SDL_EVENT_MOUSE_MOTION)
+	{
+		if (ev.motion.which != SDL_TOUCH_MOUSEID)
+			return false;
+		if (m_nCham == CHAM_KHONG)
+			return true;	// nuot: ngon tay da nhac len roi, dung de con tro chay lung tung
+		float fx = ev.motion.x, fy = ev.motion.y; SdlToLogical(m_pWindow, fx, fy);
+		m_nChamX = (int)fx; m_nChamY = (int)fy;
+		if (m_nCham == CHAM_CHO &&
+			(abs(m_nChamX - m_nChamX0) > CHAM_NGUONG || abs(m_nChamY - m_nChamY0) > CHAM_NGUONG))
+		{
+			m_nCham = CHAM_KEO;		// da xe dich -> giu chuot trai tu CHO DAT NGON roi keo
+			GhiChuot(MK_LBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
+			MsgProc(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
+		}
+		WPARAM w = (m_nCham == CHAM_KEO) ? MK_LBUTTON : (WPARAM)((m_nCham == CHAM_PHAI) ? MK_RBUTTON : 0);
+		GhiChuot(w, MAKELPARAM(m_nChamX, m_nChamY));
+		MsgProc(hWnd, WM_MOUSEMOVE, w, MAKELPARAM(m_nChamX, m_nChamY));
+		return true;
+	}
+	return false;
+}
+
+void KSdlApp::NhipCham()
+{
+	if (m_nCham != CHAM_CHO)
+		return;
+	if ((unsigned int)SDL_GetTicks() - m_uChamDat < CHAM_GIU_MS)
+		return;
+	if (JxUi_CoGiaoDienTaiDiem(m_nChamX0, m_nChamY0))
+	{
+		m_nCham = CHAM_RE;	// tren giao dien: chi he ra xem, khong bam chuot phai
+		g_DebugLog("[CHAM] giu tai %d,%d tren GIAO DIEN -> chi he ra xem (khong bam chuot phai)", m_nChamX0, m_nChamY0);
+		return;
+	}
+	g_DebugLog("[CHAM] giu tai %d,%d tren BAN DO -> chuot phai", m_nChamX0, m_nChamY0);
+	m_nCham = CHAM_PHAI;
+	GhiChuot(MK_RBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
+	MsgProc(g_GetMainHWnd(), WM_RBUTTONDOWN, MK_RBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
+}
+#endif
+
 bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 {
 	HWND hWnd = g_GetMainHWnd();
@@ -434,6 +590,10 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 		if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN && s_nChuot < 10)
 			{ s_nChuot++; g_DebugLog("[GO] chuot xuong tai %d,%d", (int)ev.button.x, (int)ev.button.y); }
 	}
+#endif
+#ifdef JX_ANDROID
+	if (ChamSuKien(ev))		// [ANDROID 09/09 CHAM] su kien chuot do NGON TAY sinh ra di duong rieng
+		return true;
 #endif
 	switch (ev.type)
 	{

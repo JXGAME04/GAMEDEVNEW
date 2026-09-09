@@ -296,3 +296,61 @@ cỡ backbuffer/cửa sổ nằm ở `D:\jx1_android_data\jx_rep3.log` (`[GPU] c
 - `ChieuCaoMucTieu=640` là con số chọn theo lý (giữa 604 đã chạy tốt và 768 gốc), **chưa ai cầm điện thoại
   thật soi**. Đây là con số duy nhất cần chỉnh nếu chủ thấy chữ to/nhỏ quá.
 - Chưa gỡ nhật ký chẩn đoán `[DPG]`/`[LOGIN]` (rẻ, mỗi lần chạy vài dòng) — gỡ khi phát hành.
+
+
+---
+
+## 7. (09/09) ĐIỀU KHIỂN BẰNG NGÓN TAY
+
+> Bản vá nguồn: `android/va_nguon_android_12.py`. APK đã kiểm: `android/apk/jx1mobile-0909-cham-c.apk`.
+> Đây là mục 1 của `LOTRINH_MOBILE_0909.md`.
+
+Trước đó game chỉ nhận chạm qua kiểu "giả lập chuột" của SDL, tức là **một ngón = chuột trái, hết**.
+JX1 thì sống bằng chuột phải (đánh ép, menu chuột phải) và bằng rê chuột (thông tin vật phẩm, tên NPC).
+
+### Bộ nhận cử chỉ (`KSdlApp::ChamSuKien` / `NhipCham`)
+
+Chặn các sự kiện chuột **do ngón tay sinh ra** (`which == SDL_TOUCH_MOUSEID`) rồi dịch lại:
+
+| Cử chỉ | Thành | Đã đo |
+|---|---|---|
+| Chạm nhanh rồi nhả | Chuột trái **tại chỗ đặt ngón** | ✔ bấm nút "TRỞ LẠI" đóng được bảng |
+| Chạm hai lần liền (≤400 ms, ≤24 px) | Bấm đúp (dùng vật phẩm) | chưa kiểm tay |
+| Chạm rồi kéo đi (>12 px) | Giữ chuột trái từ chỗ đặt ngón rồi rê → đi chuyển liên tục, kéo–thả | ✔ nhân vật đi |
+| **Giữ tại chỗ ≥400 ms trên BẢN ĐỒ** | **Chuột phải** (đánh ép, chọn mục tiêu) | ✔ hiện bảng mục tiêu người chơi |
+| Giữ tại chỗ trên **GIAO DIỆN** | **Không** bấm chuột phải; nhả ngón vẫn bấm chuột trái như thường | ✔ nhật ký `[CHAM]` + nút ấn 900 ms vẫn ăn |
+
+**Vì sao chạm nhanh phải đợi đến lúc NHẢ mới bấm:** nếu bấm ngay lúc đặt ngón thì không phân biệt được
+với "giữ để bấm chuột phải" — sẽ bấm trái rồi lại bấm phải, trên NPC là mở thoại rồi đánh. Đợi đến lúc
+nhả (thường dưới 150 ms) là cách mọi giao diện cảm ứng đều làm.
+
+**Vì sao giữ trên giao diện lại không sinh chuột phải:** chuột phải trong túi đồ là **dùng vật phẩm** —
+bấm nhầm là mất đồ. `Wnds.cpp` thêm `JxUi_CoGiaoDienTaiDiem(x, y)` (dùng chính `Wnd_GetActive` mà game
+vẫn dùng để dò trúng) để phân biệt. Nhưng **nhả ngón vẫn bấm chuột trái**: trên điện thoại người ta hay
+ấn nút lâu hơn 400 ms, không thể vì thế mà nút chết.
+
+### Bàn phím ảo
+
+`KSdlApp::Init` **không** còn gọi `SDL_StartTextInput` sẵn — trên điện thoại lệnh đó **đẩy bàn phím ảo lên
+ngay từ màn hình chính và không tắt cho tới lúc thoát** (trên LDPlayer có bàn phím cứng nên không lộ).
+Nay `KWndEdit::WndProc` gọi `JxSdl_BanPhimAo(1)` ở `WND_M_SET_FOCUS` và `(0)` ở `WND_M_KILL_FOCUS`.
+Đo bằng `adb shell dumpsys input_method`: mở dòng chat → `mInputShown=true`; bấm ESC → `mInputShown=false`.
+
+### Nút Back của máy
+
+`SdlKeyToVk` thêm `SDLK_AC_BACK → VK_ESCAPE` (manifest đã đặt `SDL_ANDROID_TRAP_BACK_BUTTON=1` nên SDL
+đưa nút này vào game thay vì thoát app). Đo: bấm Back → mở bảng THOÁT / GIÚP ĐỠ / TÙY CHỌN / TRỞ LẠI.
+
+### Số có thể chỉnh (đầu `KSdlApp.cpp`, phần `#ifdef JX_ANDROID`)
+
+| Hằng | Đang là | Ý nghĩa |
+|---|---|---|
+| `CHAM_GIU_MS` | 400 ms | giữ bao lâu thì thành chuột phải |
+| `CHAM_NGUONG` | 12 px | xê dịch quá bao nhiêu thì coi là kéo |
+| `CHAM_HAI_MS` / `CHAM_HAI_XA` | 400 ms / 24 px | hai lần chạm thế nào thì là bấm đúp |
+
+### Còn lại của mục này
+
+- Kéo–thả vật phẩm giữa các ô túi và bấm đúp để dùng đồ: **chưa kiểm bằng tay** (chỉ mới suy ra từ thiết kế).
+- Hai ngón: phóng to / kéo bản đồ (`SetZoom` đã có sẵn trong `autoexec.lua`).
+- Nhật ký `[CHAM]` còn bật, mỗi lần giữ ngón ghi một dòng — gỡ khi phát hành.
