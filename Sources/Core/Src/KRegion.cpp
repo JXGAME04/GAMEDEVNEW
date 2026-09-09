@@ -845,6 +845,12 @@ void KRegion::Activate()
     nCounter = 0;
     KIndexNode *pObjNode = NULL;
     KIndexNode *pObjTmpNode = NULL;
+#ifndef _SERVER
+    LARGE_INTEGER liK0, liK1;	// [WORLD 09/09 c] thoi gian vong OBJECT va vong DAN (client, PaintLog=1)
+    extern int g_nCorePaintLog; extern void WorldKhacXong(int nLoai, const LARGE_INTEGER& a, const LARGE_INTEGER& b, unsigned uSo);
+    const bool bKhacDo = (g_nCorePaintLog > 0);
+    if (bKhacDo) QueryPerformanceCounter(&liK0);
+#endif
     pObjNode = (KIndexNode *)m_ObjList.GetHead();
 
     while (pObjNode)
@@ -883,11 +889,17 @@ void KRegion::Activate()
         pObjNode = pObjTmpNode;
     }
     m_nObjSyncCounter++;
+#ifndef _SERVER
+    if (bKhacDo) { QueryPerformanceCounter(&liK1); WorldKhacXong(0, liK0, liK1, (unsigned)m_ObjList.GetNodeCount()); }
+#endif
     if (m_nObjSyncCounter > m_ObjList.GetNodeCount() * 2)
     {
         m_nObjSyncCounter = 0;
     }
 
+#ifndef _SERVER
+    if (bKhacDo) QueryPerformanceCounter(&liK0);	// [WORLD 09/09 c] vong DAN
+#endif
     pNode = (KIndexNode *)m_MissleList.GetHead();
     while (pNode)
     {
@@ -899,6 +911,9 @@ void KRegion::Activate()
         pNode = pTmpNode;
     }
 
+#ifndef _SERVER
+    if (bKhacDo) { QueryPerformanceCounter(&liK1); WorldKhacXong(1, liK0, liK1, (unsigned)m_MissleList.GetNodeCount()); }
+#endif
 #ifdef _SERVER
     pNode = (KIndexNode *)m_PlayerList.GetHead();
     while (pNode)
@@ -915,7 +930,9 @@ void KRegion::Activate()
 #ifndef _SERVER
 	if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_RegionIndex == m_nIndex)	// Player Region
 	{
+		if (bKhacDo) QueryPerformanceCounter(&liK0);	// [WORLD 09/09 c] nguoi choi (auto nhat / quet muc tieu / tim duong ...)
 		Player[CLIENT_PLAYER_INDEX].Active();
+		if (bKhacDo) { QueryPerformanceCounter(&liK1); WorldKhacXong(2, liK0, liK1, 1u); }
 	}
 #endif
 }

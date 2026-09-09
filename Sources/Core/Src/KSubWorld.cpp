@@ -1177,6 +1177,15 @@ int      g_nNpcMaxIdx = 0;
 static double   t_dNpcTong = 0.0, t_dNpcMax = 0.0, t_dPha[4] = { 0.0, 0.0, 0.0, 0.0 };
 static unsigned t_uNpc = 0;
 static int      t_nNpcMaxIdx = 0;
+// [WORLD 09/09 c] vong OBJECT (0), vong DAN (1), Player.Active() (2): thoi gian + so phan tu, ky 10 s (g_) va moi tick (t_)
+double   g_dKhacMs[3] = { 0.0, 0.0, 0.0 }; unsigned g_uKhacSo[3] = { 0, 0, 0 };
+static double t_dKhacMs[3] = { 0.0, 0.0, 0.0 }; static unsigned t_uKhacSo[3] = { 0, 0, 0 };
+void WorldKhacXong(int nLoai, const LARGE_INTEGER& a, const LARGE_INTEGER& b, unsigned uSo)
+{
+	if (nLoai < 0 || nLoai > 2) return;
+	const double d = WorldMs(a, b);
+	g_dKhacMs[nLoai] += d; g_uKhacSo[nLoai] += uSo; t_dKhacMs[nLoai] += d; t_uKhacSo[nLoai] += uSo;
+}
 void NpcDoPha(int nPha, LARGE_INTEGER& t0)
 {
 	LARGE_INTEGER t1; QueryPerformanceCounter(&t1);
@@ -1202,14 +1211,16 @@ void WorldTickXong(double dQuet)
 			const int i = t_nNpcMaxIdx;
 			const bool bCo = (i > 0 && i < MAX_NPC);
 			fprintf(pLog, "[WORLD-TICK] t=%u quet_vung %.1f ms | npc %u tong %.1f ms (khac %.1f) | pha PS %.1f AI %.1f PC %.1f ST %.1f"
-				" | nang nhat %.2f ms idx %d kind %d doing %d\n",
+				" | nang nhat %.2f ms idx %d kind %d doing %d | object %u %.1f ms | dan %u %.1f ms | nguoi choi %.1f ms\n",
 				(unsigned)GetTickCount(), dQuet, t_uNpc, t_dNpcTong, dQuet - t_dNpcTong, t_dPha[0], t_dPha[1], t_dPha[2], t_dPha[3],
-				t_dNpcMax, i, bCo ? (int)Npc[i].m_Kind : -1, bCo ? (int)Npc[i].m_Doing : -1);
+				t_dNpcMax, i, bCo ? (int)Npc[i].m_Kind : -1, bCo ? (int)Npc[i].m_Doing : -1,
+				t_uKhacSo[0], t_dKhacMs[0], t_uKhacSo[1], t_dKhacMs[1], t_dKhacMs[2]);
 			fclose(pLog);
 		}
 	}
 	t_dNpcTong = t_dNpcMax = 0.0; t_uNpc = 0; t_nNpcMaxIdx = 0;
 	t_dPha[0] = t_dPha[1] = t_dPha[2] = t_dPha[3] = 0.0;
+	t_dKhacMs[0] = t_dKhacMs[1] = t_dKhacMs[2] = 0.0; t_uKhacSo[0] = t_uKhacSo[1] = t_uKhacSo[2] = 0;	// [WORLD 09/09 c]
 }
 #endif
 extern int g_nCorePaintLog;
