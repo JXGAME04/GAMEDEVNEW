@@ -7921,14 +7921,14 @@ void	KNpc::PaintSeriesNpc(char* szName, int nFontSize, int nHeightOff)
 // [CHUDAM/TENNEN 09/09] Nhoe bam mat: moi khung deu dung nhung mat bam vat truot lam net 1 diem anh tron voi
 // vien den va nen dat nau do => am do. Hai cach lam chu chiu duoc vet: (1) CHU DAM - net 2 diem anh giu duoc
 // loi mau; (2) NEN MO TOI sau chu - vet tron voi nen toi thanh xam thay vi tron voi dat thanh do.
-// [Client] ChuDam = 1 (mac dinh) | 0 tat.   [Client] TenNen = do dac 0..255 (mac dinh 128) | 0 tat.
+// [Client] ChuDam = 1 | 0 (MAC DINH - chu che "net chu to hon... rat xau").   [Client] TenNen = do dac 0..255 | 0 (MAC DINH).
 static int s_nChuDam = -1, s_nTenNen = -1;
 static void DocCauHinhChu()
 {
 	if (s_nChuDam >= 0)
 		return;
-	s_nChuDam = (int)GetPrivateProfileIntA("Client", "ChuDam", 1, ".\\config.ini");
-	s_nTenNen = (int)GetPrivateProfileIntA("Client", "TenNen", 128, ".\\config.ini");
+	s_nChuDam = (int)GetPrivateProfileIntA("Client", "ChuDam", 0, ".\\config.ini");
+	s_nTenNen = (int)GetPrivateProfileIntA("Client", "TenNen", 0, ".\\config.ini");
 	if (s_nTenNen < 0) s_nTenNen = 0;
 	if (s_nTenNen > 255) s_nTenNen = 255;
 }
