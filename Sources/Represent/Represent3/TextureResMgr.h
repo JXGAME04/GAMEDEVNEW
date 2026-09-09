@@ -195,6 +195,17 @@ private:
 	uint32 m_uMemDrawingUsed;			// 上一帧用于渲染的内存（包括贴图的空白区域）,单位字节
 
     KCriticalSection    m_ImageProcessLock;
+public:
+	// [VE 09/09 d] khoa NGOAI: KRepresentShell3::DrawPrimitives giu m_ImageProcessLock mot lan cho ca lo; GetImage tren cung luong bo khoa
+	DWORD	m_dwKhoaNgoai;	// id luong dang giu khoa ngoai, 0 = khong
+	void KhoaNgoaiVao() { m_ImageProcessLock.Lock(); m_dwKhoaNgoai = GetCurrentThreadId(); }
+	void KhoaNgoaiRa()  { m_dwKhoaNgoai = 0; m_ImageProcessLock.UnLock(); }
+	struct KhoaTuyChon	// khoa neu luong nay KHONG dang giu khoa ngoai
+	{
+		KCriticalSection* m_p;
+		KhoaTuyChon(KCriticalSection& k, bool bKhoa) : m_p(bKhoa ? &k : NULL) { if (m_p) m_p->Lock(); }
+		~KhoaTuyChon() { if (m_p) m_p->UnLock(); }
+	};
 };
 
 #endif

@@ -106,7 +106,8 @@ unsigned g_uRep3VeLoai[6] = {0, 0, 0, 0, 0, 0}; unsigned g_uRep3VeKhung = 0;	// 
 // [VE 08/09 b] thoi gian CPU luong ve: DrawPrimitives (tong trong khung) va ca khung Begin->End
 double g_dRep3VeDpKhung = 0.0, g_dRep3VeDpTong = 0.0, g_dRep3VeDpMax = 0.0, g_dRep3VeKhungTong = 0.0, g_dRep3VeKhungMax = 0.0;
 LARGE_INTEGER g_liRep3VeBegin = {0};
-struct Rep3VeDpTimer { LARGE_INTEGER a; Rep3VeDpTimer() { QueryPerformanceCounter(&a); } ~Rep3VeDpTimer() { LARGE_INTEGER b; QueryPerformanceCounter(&b); g_dRep3VeDpKhung += Rep3NapMs(a, b); } };
+int g_nRep3VeMau = 0;	// [VE 09/09 d] 1 = khung nay la khung MAU (1/8): moi do [VE] theo don vi/lenh chi chay tren khung mau (QPC 2 lan/lenh x 5 000 lenh/khung = 4 % thoi gian ve)
+struct Rep3VeDpTimer { LARGE_INTEGER a; Rep3VeDpTimer() { if (g_nRep3VeMau) QueryPerformanceCounter(&a); } ~Rep3VeDpTimer() { if (g_nRep3VeMau) { LARGE_INTEGER b; QueryPerformanceCounter(&b); g_dRep3VeDpKhung += Rep3NapMs(a, b); } } };
 void Rep3VeDem(const char* p)
 {
 	if (!p) { g_uRep3VeLoai[5]++; return; }
@@ -955,9 +956,12 @@ unsigned int KRepresentShell3::CreateImage(const char* pszName, int nWidth, int 
 	return m_TextureResMgr.CreateImage(pszName, nWidth, nHeight, nType);
 }
 
+// [VE 09/09 d] giu khoa TextureResMgr mot lan cho ca lo lenh (GetImage tren cung luong bo khoa; ~3 000 cap Enter/Leave/khung)
+struct Rep3KhoaNgoai { TextureResMgr& m; Rep3KhoaNgoai(TextureResMgr& t) : m(t) { m.KhoaNgoaiVao(); } ~Rep3KhoaNgoai() { m.KhoaNgoaiRa(); } };
 void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrimitives, unsigned int uGenre, int bSinglePlaneCoord)
 {
 	Rep3VeDpTimer veDp;	// [VE 08/09 b]
+	Rep3KhoaNgoai khoaNgoai(m_TextureResMgr);	// [VE 09/09 d]
 	if(!pPrimitives)
 	{
 		assert(pPrimitives);
@@ -2623,6 +2627,7 @@ bool KRepresentShell3::CopyDeviceImageToImage(const char* pszName, int nDeviceX,
 bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 {
 	QueryPerformanceCounter(&g_liRep3VeBegin);	// [VE 08/09 b]
+	{ static unsigned s_uKhung = 0; g_nRep3VeMau = ((++s_uKhung) & 7) == 0; }	// [VE 09/09 d]
 	HRESULT hr;
 	g_ntest = 0;
     // Test the cooperative level to see if it's okay to render
@@ -2713,9 +2718,10 @@ bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 void KRepresentShell3::RepresentEnd()
 {
 	m_TextureResMgr.m_bVeDangDien = false;	// [NAP 08/09 b] ngoai luc ve: hoi anh nap ngay
-	g_uRep3VeKhung++;	// [VE 08/09 a]
-	{	// [VE 08/09 b] CPU pass ve khung nay
-		LARGE_INTEGER liNow; QueryPerformanceCounter(&liNow);
+	if (g_nRep3VeMau)	// [VE 09/09 d] chi khung mau: dem don vi + thoi gian DrawPrimitives + thoi gian khung (TB/khung khong doi, so khung in = khung mau)
+	{
+		g_uRep3VeKhung++;	// [VE 08/09 a]
+		LARGE_INTEGER liNow; QueryPerformanceCounter(&liNow);	// [VE 08/09 b] CPU pass ve khung nay
 		const double dKhung = g_liRep3VeBegin.QuadPart ? Rep3NapMs(g_liRep3VeBegin, liNow) : 0.0;
 		g_dRep3VeKhungTong += dKhung; if (dKhung > g_dRep3VeKhungMax) g_dRep3VeKhungMax = dKhung;
 		g_dRep3VeDpTong += g_dRep3VeDpKhung; if (g_dRep3VeDpKhung > g_dRep3VeDpMax) g_dRep3VeDpMax = g_dRep3VeDpKhung;
@@ -2812,7 +2818,7 @@ void KRepresentShell3::RepresentEnd()
 			}
 			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0; g_uRep3BatchQuads = 0; g_uRep3BatchDraws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
-			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung %u) | cpu ve: DrawPrimitives %.2f ms/khung (max %.1f), khung %.2f ms (max %.1f)",	// [NAP 08/09 a/b] [VE 08/09 a/b]
+			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung mau %u) | cpu ve: DrawPrimitives %.2f ms/khung (max %.1f), khung %.2f ms (max %.1f)",	// [NAP 08/09 a/b] [VE 08/09 a/b]
 				g_nRep3StatSec, g_napSpr.n, g_napSpr.ms, g_napSpr.max, g_napJpeg.n, g_napJpeg.ms, g_napJpeg.max, g_napKhung.n, g_napKhung.ms, g_napKhung.max,
 				g_napGiaiMa.n, g_napGiaiMa.ms, g_napGiaiMa.max, g_napGpu.n, g_napGpu.ms, g_napGpu.max, g_uRep3NapKhung5, g_uRep3NapKhung16, g_dRep3NapKhungMax,
 				m_TextureResMgr.m_nNapNenGui, m_TextureResMgr.m_nNapNenXong, m_TextureResMgr.m_nNapNenHong, m_TextureResMgr.m_nNapNenBoVe,

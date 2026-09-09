@@ -224,6 +224,7 @@ class KIpoTree
 
 	DWORD pLightingArray[LIGHTING_GRID_WIDTH * LIGHTING_GRID_HEIGHT];	// 光照图信息数组
 	list<KLightBase*> m_LightList;
+	int m_nDenDong;	// [SANGTAT 09/09 b] so den DONG (cua NPC/dan) trong m_LightList; 0 = PluckRto khong can duyet
 
 	// 计算光照阻挡的回调函数
 	static void ObjectsCallback(void* p, KIpotLeaf* pLeaf);
