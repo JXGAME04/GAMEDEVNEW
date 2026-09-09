@@ -545,6 +545,7 @@ private:
     void __fastcall SetPoint3dLighting(VERTEX3D& pDes, VERTEX3D& pSrc, DWORD color);
     inline unsigned int GetPoint3dLighting(D3DXVECTOR3& v);
     unsigned int GetPoint3dLightingLerp(D3DXVECTOR3& v);
+    inline unsigned int GetPoint3dLightingTron(D3DXVECTOR3& v);	// [SANGTRON 09/09] noi suy tron 4 o lan can
 
 
     void RIO_CopyBitmap16ToBuffer(TextureResBmp* pBitmap, TextureResBmp* pDestBitmap, int32 nX, int32 nY);

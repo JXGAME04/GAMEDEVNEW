@@ -52,6 +52,10 @@ int  g_nRep3Api       = 11;	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11: CD3D11S
 int  g_nRep3ApiOn     = 9;	// [D3D11 08/09]
 int  g_nRep3Atlas     = 1;	// [D3D11 08/09 d] gom texture nho vao trang atlas (chi khi Rep3Api=11)
 int  g_nRep3Flip      = 1;	// [D3D11 08/09 f] 1 = flip model (DWM ghep khung tron ven, khong xe hinh; mac dinh), 0 = bitblt cu
+// [SANGTRON 09/09] 1 = lay do sang NOI SUY TRON 4 o lan can (mac dinh), 0 = lay O GAN NHAT nhu cu.
+int  g_nRep3SangTron  = 1;
+unsigned g_uRep3SangMax = 0, g_uRep3SangLay = 0;	// do bien do bac nhay ma ban nay xoa di
+double   g_dRep3SangTong = 0.0;
 int  g_nRep3Pal       = 1;	// [D3D11 08/09 r] texture sprite bang mau 2 B/px (chi D3D11)
 int  g_nRep3Waitable  = 0;	// [D3D11 08/09 o] 0 = khong dung doi tuong cho (ban n giat)
 int  g_nRep3Buffers   = 3;	// [D3D11 08/09 o] 2 nhu ban f
@@ -243,10 +247,63 @@ inline unsigned int KRepresentShell3::GetPoint3dLighting(D3DXVECTOR3& v)
     ];
 }
 
+// [SANGTRON 09/09] Do sang NOI SUY TRON theo 4 o lan can, neo vao TAM o. Xem dau tep goi_va_sangtron_0909.py.
+// O luoi 32 don vi ma ban goc lay O GAN NHAT => vat di chuyen nhay BAC do sang moi lan vuot bien o;
+// PaintInterp=1 lam hinh di 45 don vi trong mot nhip tick nen vuot 1-2 bien o ngay giua tick = doi mau.
+inline unsigned int KRepresentShell3::GetPoint3dLightingTron(D3DXVECTOR3& v)
+{
+	if (!m_bDoLighting)
+		return 0xff404040;
+	const int nX = ((int)v.x) - m_nLightingAreaX;
+	const int nY = ((int)v.y) - m_nLightingAreaY;
+	if ((unsigned)nX >= 1536 || (unsigned)nY >= 3072)
+		return pLightingArray[0];
+	// neo vao TAM o: tam o thu i nam o toa do i*SIZE + SIZE/2
+	const int gx = nX - (LIGHTING_GRID_SIZEX / 2);
+	const int gy = nY - (LIGHTING_GRID_SIZEY / 2);
+	int ix, iy, fx, fy;
+	if (gx < 0) { ix = 0; fx = 0; } else { ix = gx / LIGHTING_GRID_SIZEX; fx = gx - ix * LIGHTING_GRID_SIZEX; }
+	if (gy < 0) { iy = 0; fy = 0; } else { iy = gy / LIGHTING_GRID_SIZEY; fy = gy - iy * LIGHTING_GRID_SIZEY; }
+	int ix1 = ix + 1, iy1 = iy + 1;
+	if (ix  > LIGHTING_GRID_WIDTH  - 1) ix  = LIGHTING_GRID_WIDTH  - 1;
+	if (ix1 > LIGHTING_GRID_WIDTH  - 1) ix1 = LIGHTING_GRID_WIDTH  - 1;
+	if (iy  > LIGHTING_GRID_HEIGHT - 1) iy  = LIGHTING_GRID_HEIGHT - 1;
+	if (iy1 > LIGHTING_GRID_HEIGHT - 1) iy1 = LIGHTING_GRID_HEIGHT - 1;
+	const DWORD c00 = pLightingArray[iy  * LIGHTING_GRID_WIDTH + ix ];
+	const DWORD c10 = pLightingArray[iy  * LIGHTING_GRID_WIDTH + ix1];
+	const DWORD c01 = pLightingArray[iy1 * LIGHTING_GRID_WIDTH + ix ];
+	const DWORD c11 = pLightingArray[iy1 * LIGHTING_GRID_WIDTH + ix1];
+	const int wx1 = fx, wx0 = LIGHTING_GRID_SIZEX - fx;
+	const int wy1 = fy, wy0 = LIGHTING_GRID_SIZEY - fy;
+	DWORD dwOut = 0xff000000;
+	int nCa;
+	for (nCa = 16; nCa >= 0; nCa -= 8)
+	{
+		const int a = (int)((c00 >> nCa) & 0xFF), b = (int)((c10 >> nCa) & 0xFF);
+		const int c = (int)((c01 >> nCa) & 0xFF), d = (int)((c11 >> nCa) & 0xFF);
+		const int t = (a * wx0 + b * wx1) * wy0 + (c * wx0 + d * wx1) * wy1;
+		dwOut |= ((DWORD)(t / (LIGHTING_GRID_SIZEX * LIGHTING_GRID_SIZEY))) << nCa;
+	}
+	{	// do bien do BAC NHAY ma ban nay xoa di (o gan nhat so voi noi suy)
+		const DWORD dwGan = pLightingArray[(nY / LIGHTING_GRID_SIZEY) * LIGHTING_GRID_WIDTH + (nX / LIGHTING_GRID_SIZEX)];
+		int nMax = 0;
+		for (nCa = 16; nCa >= 0; nCa -= 8)
+		{
+			int e = (int)((dwGan >> nCa) & 0xFF) - (int)((dwOut >> nCa) & 0xFF);
+			if (e < 0) e = -e;
+			if (e > nMax) nMax = e;
+		}
+		g_uRep3SangLay++;
+		g_dRep3SangTong += (double)nMax;
+		if ((unsigned)nMax > g_uRep3SangMax) g_uRep3SangMax = (unsigned)nMax;
+	}
+	return dwOut;
+}
+
 void __fastcall KRepresentShell3::SetPoint3dLighting(VERTEX3D& pDes, VERTEX3D& pSrc, DWORD color)
 {
 	pDes = pSrc;
-	pDes.color = GetPoint3dLighting(pDes.position);
+	pDes.color = g_nRep3SangTron ? GetPoint3dLightingTron(pDes.position) : GetPoint3dLighting(pDes.position);	// [SANGTRON 09/09]
 	if(color != 0xffffffff)
 		pDes.color = ScaleColor(pDes.color, color);
 }
@@ -543,6 +600,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Buffers   = Rep3Ini("Rep3Buffers", 3);	// [D3D11 08/09 o]
 	g_nRep3Waitable  = Rep3Ini("Rep3Waitable", 0);	// [D3D11 08/09 o]
 	g_nRep3Pal       = Rep3Ini("Rep3Pal", 1);	// [D3D11 08/09 r]
+	g_nRep3SangTron  = Rep3Ini("Rep3SangTron", 1);	// [SANGTRON 09/09]
 	g_nRep3Ex        = Rep3Ini("Rep3Ex", 0);		// [RAM 08/09]
 	if (g_nRep3Ex)
 		g_nRep3Pool = 1;	// D3D9Ex khong co POOL_MANAGED: bat buoc dem SYSTEMMEM + DEFAULT
@@ -1537,7 +1595,7 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 				v.x = (float)(pTemp->oPosition.nX);
 				v.y = (float)(pTemp->oPosition.nY);
 				v.z = (float)(pTemp->oPosition.nZ);
-				color = (GetPoint3dLighting(v) & 0x00ffffff) | alpha;
+				color = ((g_nRep3SangTron ? GetPoint3dLightingTron(v) : GetPoint3dLighting(v)) & 0x00ffffff) | alpha;	// [SANGTRON 09/09]
 			}
 
 			if (pTemp->bRenderStyle == IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST)
@@ -2709,6 +2767,9 @@ void KRepresentShell3::RepresentEnd()
 				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg,
 				g_uRep3FxTexNull, g_uRep3FxAnhNull, g_uRep3FxTaoHong, g_uRep3FxKhungKhongTex, g_uRep3FxGiaiMa, g_dRep3FxGiaiMaMs, g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), uVramUsed, uVramBudget,
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);
+			Rep3Log("[SANGTRON] tron=%d | lay mau %u lan | chenh lech O GAN NHAT so voi NOI SUY: TB %.1f max %u (thang 0..255)",
+				g_nRep3SangTron, g_uRep3SangLay, g_uRep3SangLay ? g_dRep3SangTong / g_uRep3SangLay : 0.0, g_uRep3SangMax);
+			g_uRep3SangLay = 0; g_dRep3SangTong = 0.0; g_uRep3SangMax = 0;
 			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0; g_uRep3BatchQuads = 0; g_uRep3BatchDraws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
 			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung %u) | cpu ve: DrawPrimitives %.2f ms/khung (max %.1f), khung %.2f ms (max %.1f)",	// [NAP 08/09 a/b] [VE 08/09 a/b]
