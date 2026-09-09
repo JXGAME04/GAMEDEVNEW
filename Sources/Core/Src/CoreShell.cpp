@@ -2952,6 +2952,7 @@ static POINT	s_InterpTo[MAX_NPC];
 static DWORD	s_InterpNpcID[MAX_NPC];
 static BYTE	s_InterpValid[MAX_NPC];	// 1 = snapshot hop le (ClientOnly npc co m_dwID = 0 van hop le)
 BOOL	g_bPaintInterpFocus = FALSE;
+static int g_nDoNhipVe = -1;	// [NHIPVE 08/09] so khung con phai ghi (-1 = chua doc cau hinh)
 unsigned g_uPaintFrameSeq = 0;	// [VETRUNG 08/09] tang mot lan moi khung ve (POSSHIFT chay dung mot lan/khung)
 int		g_nPaintAlpha = 0;	// [MAU 08/09] phan le tick (0..1000) cua khung ve hien tai, POSSHIFT dat moi khung; 0 khi tat noi suy (KNpc::PaintBlood dung)
 // Probe gia cap Lock/Unlock surface - dinh nghia trong Engine (KCanvas.cpp).
@@ -23635,6 +23636,26 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			nAlpha = 1000;
 		g_nPaintAlpha = nAlpha;	// [MAU 08/09]
 		g_uPaintFrameSeq++;	// [VETRUNG 08/09]
+		if (g_nDoNhipVe < 0)
+			g_nDoNhipVe = (int)GetPrivateProfileIntA("Client", "DoNhipVe", 0, ".\\config.ini");
+		if (g_nDoNhipVe > 0)
+		{	// [NHIPVE 08/09] ghi vi tri VE cua nhan vat cua minh tung khung: cot ve_x phai TANG DEU
+			g_nDoNhipVe--;
+			const int nMe = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+			if (nMe > 0 && nMe < MAX_NPC && s_InterpValid[nMe])
+			{
+				const int nVeX = s_InterpFrom[nMe].x + (s_InterpTo[nMe].x - s_InterpFrom[nMe].x) * nAlpha / 1000;
+				const int nVeY = s_InterpFrom[nMe].y + (s_InterpTo[nMe].y - s_InterpFrom[nMe].y) * nAlpha / 1000;
+				FILE* pLog = fopen("jx_paint.log", "a");
+				if (pLog)
+				{
+					fprintf(pLog, "[NHIPVE] t=%u khung=%u alpha=%4d | tick truoc (%d,%d) sau (%d,%d) | ve (%d,%d)\n",
+						GetTickCount(), g_uPaintFrameSeq, nAlpha,
+						s_InterpFrom[nMe].x, s_InterpFrom[nMe].y, s_InterpTo[nMe].x, s_InterpTo[nMe].y, nVeX, nVeY);
+					fclose(pLog);
+				}
+			}
+		}
 		int	nPlayerNpcIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
 		int	nIdx = 0;
 		while (nIdx = NpcSet.GetNextIdx(nIdx))
