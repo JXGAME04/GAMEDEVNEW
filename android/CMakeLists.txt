@@ -52,7 +52,7 @@ function(jx_setup tgt)
     target_link_libraries(${tgt} PRIVATE JxPosix)
   endif()
   # '#pragma comment(lib, "ws2_32")' cua ma Windows -> clang ghi ".deplibs"; lld ELF phai bo qua
-  target_link_options(${tgt} PRIVATE -Wl,--no-dependent-libraries)
+  target_link_options(${tgt} PRIVATE -Wl,--no-dependent-libraries -Wl,--error-limit=0)
 endfunction()
 
 # ---- libJxPosix.so: lop tuong thich Win32 (KPosixWin32.cpp) - MOT ban duy nhat (thu muc du lieu, cua so chinh, moc phim) cho moi .so ----
@@ -108,7 +108,8 @@ target_link_libraries(Engine PRIVATE JpgLib Lua54)
 
 # ---- Represent3.so (D3D9 tren SDL_GPU: Rep3Api=100, d3d9mini.h) ----
 add_library(Represent3 SHARED ${JX_REPRESENT3_SOURCES}
-    ${JX_SRC}/Represent/Represent3/RepresentUtilityStub.cpp)   # thay iRepresent/RepresentUtility.cpp (GDI+)
+    ${JX_SRC}/Represent/Represent3/RepresentUtilityStub.cpp    # thay iRepresent/RepresentUtility.cpp (GDI+)
+    ${JX_SRC}/Represent/Represent3/D3D9on11Stub.cpp)           # thay D3D9on11*.cpp (bo dem thong ke + API bang mau -> SDL_GPU)
 jx_setup(Represent3)
 target_compile_definitions(Represent3 PRIVATE ${JX_REPRESENT3_DEFS})
 target_include_directories(Represent3 PRIVATE ${JX_REPRESENT3_INCS} ${JX_SRC}/Represent/Represent3)   # winshim/d3d9.h -> d3d9mini.h
@@ -124,7 +125,8 @@ target_link_libraries(CoreClient PRIVATE Engine Lua54)
 
 # ---- main (S3Client -> libmain.so, SDLActivity nap "SDL3" + "main", SDL_main trong Platform/JxAndroidMain.cpp) ----
 add_library(main SHARED ${JX_S3CLIENT_SOURCES}
-    ${JX_SRC}/S3Client/Platform/JxAndroidMain.cpp)
+    ${JX_SRC}/S3Client/Platform/JxAndroidMain.cpp
+    ${JX_SRC}/S3Client/Platform/JxAndroidStubs.cpp)   # JxReplay / PerfHud / TrayMode (chi Windows)
 jx_setup(main)
 target_compile_definitions(main PRIVATE ${JX_S3CLIENT_DEFS})
 target_include_directories(main PRIVATE ${JX_S3CLIENT_INCS})

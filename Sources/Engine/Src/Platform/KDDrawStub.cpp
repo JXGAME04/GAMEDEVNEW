@@ -9,7 +9,27 @@
 #include "KMemBase.h"
 #include "KDDraw.h"
 
+#include "Kime.h"
+
 ENGINE_API KDirectDraw* g_pDirectDraw = NULL;
+// KDDraw.cpp cung la noi giu kich thuoc cua so ban dau (S3Client goi SetEngineResolution truoc KSdlApp::Init)
+int WND_INIT_WIDTH = 800;
+int WND_INIT_HEIGHT = 600;
+ENGINE_API void SetEngineResolution(int width, int height) { WND_INIT_WIDTH = width; WND_INIT_HEIGHT = height; }
+// Kime.cpp (IME Windows) bi loai: KWin32App::MsgProc chi hoi g_pIme khi khac NULL
+ENGINE_API KIme* g_pIme = NULL;
+int KIme::WndMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { (void)hWnd; (void)uMsg; (void)wParam; (void)lParam; return 0; }
+KIme::KIme() { m_bNoLanguageChange = false; m_bIsWorking = false; m_bCloseFlag = false; m_bCloseFlagForCanChange = false; m_dwConversion = 0; m_dwSentence = 0; m_bCloseIMESimHotKey = false; m_nCaretX = 0; m_nCaretY = 0; }
+KIme::~KIme() {}
+void KIme::ResetIme(void) {}
+void KIme::EnableLanguageChange() {}
+void KIme::DisableLanguageChange() {}
+void KIme::CloseIME() {}
+void KIme::OpenIME() {}
+BOOL KIme::IsIme() { return FALSE; }
+void KIme::TurnOff() {}
+void KIme::TurnOn() {}
+void KIme::SetCaretPos(int X, int Y) { m_nCaretX = X; m_nCaretY = Y; }
 
 KDirectDraw::KDirectDraw()
 {
