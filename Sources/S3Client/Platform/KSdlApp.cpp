@@ -14,6 +14,8 @@
 #include "KStrBase.h"		// g_StrCpy
 #include "KWin32Wnd.h"	// g_SetMainHWnd / g_SetDrawHWnd / g_GetMainHWnd
 extern int SCREEN_WIDTH, SCREEN_HEIGHT;	// S3Client.cpp (WND_INIT_* cua Engine khong export)
+ENGINE_API void SetEngineResolution(int width, int height);	// KDDraw.h (Engine)
+extern int g_nDoPhanGiaiTheoManHinh;	// S3Client.cpp
 #include <SDL3/SDL.h>
 #ifndef JX_POSIX
 #include <SDL3/SDL_main.h>	// SDL_RegisterApp/SDL_UnregisterApp (SDL.h khong include SDL_main.h; SDL_MAIN_HANDLED da define nen khong dinh nghia lai main)
@@ -130,6 +132,51 @@ KSdlApp::KSdlApp()
 	s_pSdlApp = this;
 }
 
+#ifdef JX_ANDROID
+// [ANDROID 08/09] Do phan giai game = DUNG co cua so that cua thiet bi => ve 1:1, chu net o moi may.
+// Goi TRE, ngay truoc khi tao thiet bi ve (KMyApp::GameInit): luc KSdlApp::Init vua tao cua so thi Android
+// chua dan trang xong (bao 1040x604) roi thanh trang thai hien lai (con 1040x568) -> chot som se bi co.
+// Lui ve nhu cu: dat [Resolution] TheoManHinh=0 trong config.ini.
+extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void)
+{
+	SDL_Window* pWin = (SDL_Window*)JxPosix_MainWindow();
+	if (!pWin)
+		return;
+	char szCfg[MAX_PATH] = { 0 };
+	GetCurrentDirectory(MAX_PATH, szCfg);
+	strcat(szCfg, "\\Config.ini");
+	if (!GetPrivateProfileInt("Resolution", "TheoManHinh", 1, szCfg))
+		return;
+	// Xin toan man hinh o DAY (khong phai luc tao cua so): Android chi an duoc thanh he thong khi be mat da co.
+	// Roi doi co cua so DUNG YEN moi chot - Android con doi co vai tram ms sau khi doi che do.
+	// KHONG doi che do toan man hinh o day: tren Android doi che do = Activity bi tao lai -> game khoi dong vong lap.
+	// Chi doi co cua so dung yen roi chot (Android tra co that sau khi bo cuc xong).
+	int nW = 0, nH = 0, nWTruoc = -1, nHTruoc = -1, nYen = 0;
+	for (int nLan = 0; nLan < 150; nLan++)
+	{
+		SDL_PumpEvents();
+		SDL_Delay(10);
+		SDL_GetWindowSizeInPixels(pWin, &nW, &nH);
+		if (nW == nWTruoc && nH == nHTruoc) { if (++nYen >= 25 && nLan >= 40) break; }
+		else { nYen = 0; nWTruoc = nW; nHTruoc = nH; }
+	}
+	{
+		SDL_Rect rcCa = { 0, 0, 0, 0 };
+		SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &rcCa);
+		g_DebugLog("[SDL] man hinh %dx%d, cua so ve %dx%d", rcCa.w, rcCa.h, nW, nH);
+	}
+	if (nW < 640 || nH < 480)
+	{
+		g_DebugLog("[SDL] cua so %dx%d qua nho, giu %dx%d cua config.ini", nW, nH, SCREEN_WIDTH, SCREEN_HEIGHT);
+		return;
+	}
+	if (nW != SCREEN_WIDTH || nH != SCREEN_HEIGHT)
+		g_DebugLog("[SDL] do phan giai theo man hinh: %dx%d -> %dx%d (ve 1:1)", SCREEN_WIDTH, SCREEN_HEIGHT, nW, nH);
+	SCREEN_WIDTH = nW; SCREEN_HEIGHT = nH;
+	SetEngineResolution(nW, nH);
+	g_nDoPhanGiaiTheoManHinh = 1;	// S3Client.cpp: chan LoadResolutionFromConfig doc lai config.ini
+}
+#endif
 BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 {
 	g_StrCpy(m_szClass, AppName);
@@ -156,6 +203,9 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 		g_DebugLog("[SDL] SDL_CreateWindow loi: %s", SDL_GetError());
 		return FALSE;
 	}
+#ifdef JX_ANDROID
+	SDL_SetWindowFullscreen(m_pWindow, true);	// an thanh he thong; co that duoc chot trong JxSdl_ChotDoPhanGiaiTheoManHinh()
+#endif
 #ifdef JX_POSIX
 	HWND hWnd = (HWND)m_pWindow;	// [ANDROID 08/09] tren POSIX "HWND" = SDL_Window* (KPosixWin32: GetClientRect/SetWindowText... hieu no)
 	JxPosix_SetMainWindow(m_pWindow);

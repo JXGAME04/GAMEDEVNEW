@@ -93,7 +93,15 @@ KClientCallback g_ClientCallback;
 int SCREEN_WIDTH = 800;  // Default width
 int SCREEN_HEIGHT = 600; // Default height
 
+// [ANDROID 08/09] 1 = do phan giai da duoc dat theo man hinh thiet bi (KSdlApp::Init), KHONG doc lai config.ini
+// (GameInit goi LoadResolutionFromConfig lan hai, se de len 1024x768 lam khung ve bi co lai -> chu mo).
+int g_nDoPhanGiaiTheoManHinh = 0;
+#ifdef JX_ANDROID
+extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void);	// KSdlApp.cpp
+#endif
 void LoadResolutionFromConfig() {
+	if (g_nDoPhanGiaiTheoManHinh)
+		return;
 	char configPath[MAX_PATH] = { 0 };
 	GetCurrentDirectory(MAX_PATH, configPath);
 	strcat(configPath, "\\");
@@ -570,6 +578,9 @@ BOOL KMyApp::GameInit()
 		|| !g_ChatFilter.Initialize())
 		return FALSE;
 	LoadResolutionFromConfig();
+#ifdef JX_ANDROID
+	JxSdl_ChotDoPhanGiaiTheoManHinh();	// [ANDROID 08/09] do phan giai = co cua so that (ve 1:1, chu net)
+#endif
 	if (!InitRepresentShell(g_bScreen, SCREEN_WIDTH, SCREEN_HEIGHT))
 	{
 		return FALSE;
