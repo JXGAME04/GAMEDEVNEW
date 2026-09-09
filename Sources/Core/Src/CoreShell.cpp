@@ -2905,6 +2905,8 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 		pHoi->nTuDung = 0;	// [ANDROID 10/09 BUFF]
 		pHoi->szTen[0] = 0;
 		pHoi->nCanDiem = 0;	// [ANDROID 10/09 KHINHCONG]
+		pHoi->nHuong = 0;
+		pHoi->nTamCap = 0;
 
 		int nToi = Player[CLIENT_PLAYER_INDEX].m_nIndex;
 		if (nToi <= 0 || nToi >= MAX_NPC)
@@ -2919,7 +2921,15 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 		pHoi->nTuDung = (!pKN->IsTargetEnemy() && (pKN->IsTargetSelf() || pKN->IsTargetAlly()
 			|| pKN->GetSkillStyle() == SKILL_SS_InitiativeNpcState)) ? 1 : 0;
 		// [ANDROID 10/09 KHINHCONG] ky nang khong nham AI (khinh cong 210, dat bay...): can mot diem tren dat
-		pHoi->nCanDiem = (!pKN->IsAura() && !pKN->IsTargetEnemy() && !pKN->IsTargetSelf() && !pKN->IsTargetAlly()) ? 1 : 0;
+		// [ANDROID 10/09 KHINHCONG b] dung dieu kien bPointCast cua ban tham khao (KgameWorld.cpp:4394): khong nham AI ca
+		pHoi->nCanDiem = (!pKN->IsAura() && !pKN->IsTargetEnemy() && !pKN->IsTargetSelf() && !pKN->IsTargetAlly()
+			&& !pKN->IsTargetObj()) ? 1 : 0;
+		pHoi->nHuong = Npc[nToi].m_Dir;
+		{	// tam theo CAP DA HOC (ban tham khao R171: GetSkill(id, cap)->radius)
+			int nCap = Npc[nToi].m_SkillList.GetCurrentLevel(pHoi->nSkillId);
+			KSkill* pCap = (nCap > 1) ? (KSkill*)g_SkillManager.GetSkill(pHoi->nSkillId, nCap) : NULL;
+			pHoi->nTamCap = pCap ? pCap->GetAttackRadius() : pKN->GetAttackRadius();
+		}
 		if (pKN->GetSkillName())
 		{
 			strncpy(pHoi->szTen, pKN->GetSkillName(), sizeof(pHoi->szTen) - 1);

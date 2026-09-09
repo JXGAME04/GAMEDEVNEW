@@ -1369,6 +1369,8 @@ struct KJxKyNangHoi
 	int	nTuDung;	// RA  : 1 = ky nang TU DUNG (buff / hoi phuc len minh hoac dong doi, khong nham ke dich)
 	char szTen[64];	// RA  : ten ky nang (ghi tren bang chon)
 	int	nCanDiem;	// RA  : 1 = ky nang can mot DIEM (khinh cong...): khong nham ai ca (khong dich/minh/dong doi)
+	int	nHuong;		// RA  : huong nhan vat dang quay (Npc.m_Dir 0..63: 0 xuong, 16 trai, 32 len, 48 phai)
+	int	nTamCap;	// RA  : tam danh theo CAP DA HOC (ban tham khao R171: radius theo cap)
 };
 
 //==================================
