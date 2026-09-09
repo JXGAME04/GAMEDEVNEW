@@ -54,6 +54,8 @@ struct XPackSprFrameInfo
 
 XPackFile::XPackElemFileCache	XPackFile::ms_ElemFileCache[MAX_XPACKFILE_CACHE];
 int								XPackFile::ms_nNumElemFileCache = 0;
+CRITICAL_SECTION				XPackFile::ms_ReadCritical;		// [NAP 08/09 c] khoa chung moi pak
+long							XPackFile::ms_lReadCriticalInit = 0;
 
 XPackFile::XPackFile()
 {
@@ -62,6 +64,8 @@ XPackFile::XPackFile()
 	m_pIndexList = NULL;
 	m_nElemFileCount = 0;
 	InitializeCriticalSection(&m_ReadCritical);
+	if (InterlockedCompareExchange(&ms_lReadCriticalInit, 1, 0) == 0)	// [NAP 08/09 c] khoa chung khoi tao mot lan, khong xoa
+		InitializeCriticalSection(&ms_ReadCritical);
 }
 
 XPackFile::~XPackFile()
@@ -78,7 +82,7 @@ bool XPackFile::Open(const char* pszPackFileName, int nSelfIndex)
 {
 	bool bResult = false;
 	Close();
-	EnterCriticalSection(&m_ReadCritical);
+	EnterCriticalSection(&ms_ReadCritical);
 	m_nSelfIndex = nSelfIndex;
 	m_hFile = ::CreateFile(pszPackFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	while (m_hFile != INVALID_HANDLE_VALUE)
@@ -124,7 +128,7 @@ bool XPackFile::Open(const char* pszPackFileName, int nSelfIndex)
 	};
 	if (bResult == false)
 		Close();
-	LeaveCriticalSection(&m_ReadCritical);
+	LeaveCriticalSection(&ms_ReadCritical);
 	return bResult;
 }
 
@@ -133,7 +137,7 @@ bool XPackFile::Open(const char* pszPackFileName, int nSelfIndex)
 //-------------------------------------------------
 void XPackFile::Close()
 {
-	EnterCriticalSection(&m_ReadCritical);
+	EnterCriticalSection(&ms_ReadCritical);
 
 	if (m_pIndexList)
 	{
@@ -160,7 +164,7 @@ void XPackFile::Close()
 	}
 	m_uFileSize = 0;
 
-	LeaveCriticalSection(&m_ReadCritical);
+	LeaveCriticalSection(&ms_ReadCritical);
 }
 
 //-------------------------------------------------
@@ -300,7 +304,7 @@ bool XPackFile::FindElemFile(unsigned long uId, XPackElemFileRef& ElemRef)
 	ElemRef.nElemIndex = -1;
 	if (uId)
 	{
-		EnterCriticalSection(&m_ReadCritical);
+		EnterCriticalSection(&ms_ReadCritical);
 		ElemRef.nCacheIndex = FindElemFileInCache(uId, -1);
 		if (ElemRef.nCacheIndex >= 0)
 		{
@@ -321,7 +325,7 @@ bool XPackFile::FindElemFile(unsigned long uId, XPackElemFileRef& ElemRef)
 				ElemRef.nSize = m_pIndexList[ElemRef.nElemIndex].lSize;
 			}
 		}
-		LeaveCriticalSection(&m_ReadCritical);
+		LeaveCriticalSection(&ms_ReadCritical);
 	}
 	return (ElemRef.nElemIndex >= 0);
 }
@@ -427,7 +431,7 @@ int XPackFile::ElemFileRead(XPackElemFileRef& ElemRef, void* pBuffer, unsigned u
 	int nResult = 0;
 	if (pBuffer && ElemRef.uId &&ElemRef.nElemIndex >= 0)
 	{
-		EnterCriticalSection(&m_ReadCritical);
+		EnterCriticalSection(&ms_ReadCritical);
 
 		//--先看是否已经在cache里了---
 		ElemRef.nCacheIndex = FindElemFileInCache(ElemRef.uId, ElemRef.nCacheIndex);
@@ -471,7 +475,7 @@ int XPackFile::ElemFileRead(XPackElemFileRef& ElemRef, void* pBuffer, unsigned u
 				ElemRef.nOffset = ElemRef.nSize;
 			}
 		}
-		LeaveCriticalSection(&m_ReadCritical);
+		LeaveCriticalSection(&ms_ReadCritical);
 	}
 	return nResult;
 }
@@ -487,7 +491,7 @@ SPRHEAD* XPackFile::GetSprHeader(XPackElemFileRef& ElemRef, SPROFFS*& pOffsetTab
 	if (ElemRef.uId == 0 || ElemRef.nElemIndex < 0)
 		return NULL;
 
-	EnterCriticalSection(&m_ReadCritical);
+	EnterCriticalSection(&ms_ReadCritical);
 	if(ElemRef.nElemIndex < m_nElemFileCount &&
 		m_pIndexList[ElemRef.nElemIndex].uId == ElemRef.uId)
 	{
@@ -539,7 +543,7 @@ SPRHEAD* XPackFile::GetSprHeader(XPackElemFileRef& ElemRef, SPROFFS*& pOffsetTab
 			}
 		}
 	}
-	LeaveCriticalSection(&m_ReadCritical);
+	LeaveCriticalSection(&ms_ReadCritical);
     return pSpr;
 }
 
@@ -548,7 +552,7 @@ SPRFRAME* XPackFile::GetSprFrame(SPRHEAD* pSprHeader, int nFrame)
 	SPRFRAME*	pFrame = NULL;
 	if (pSprHeader && nFrame >= 0 && nFrame < pSprHeader->Frames)
 	{
-		EnterCriticalSection(&m_ReadCritical);
+		EnterCriticalSection(&ms_ReadCritical);
 		int nNodeIndex = *((WORD*)&pSprHeader->Reserved[NODE_INDEX_STORE_IN_RESERVED]);
 		if (nNodeIndex >= 0 && nNodeIndex < m_nElemFileCount)
 		{
@@ -587,7 +591,7 @@ SPRFRAME* XPackFile::GetSprFrame(SPRHEAD* pSprHeader, int nFrame)
 				}
 			}
 		}
-		LeaveCriticalSection(&m_ReadCritical);
+		LeaveCriticalSection(&ms_ReadCritical);
 	}
 	return pFrame;	
 }

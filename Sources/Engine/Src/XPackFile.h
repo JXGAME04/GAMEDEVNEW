@@ -90,6 +90,10 @@ private:
 	static	XPackElemFileCache	ms_ElemFileCache[MAX_XPACKFILE_CACHE];
 	//子文件被cache的数目
 	static	int					ms_nNumElemFileCache;
+	// [NAP 08/09 c] khoa TINH dung chung cho moi pak: cache phan tu ms_ElemFileCache la tinh dung chung nen khoa rieng tung pak
+	// (m_ReadCritical) KHONG bao ve duoc khi hai luong doc hai pak khac nhau (luong nen nap sprite + luong ve nap anh ban do).
+	static	CRITICAL_SECTION	ms_ReadCritical;
+	static	long				ms_lReadCriticalInit;
 };
 
 #endif
