@@ -93,6 +93,8 @@ KIpoTree::~KIpoTree()
     }
 }
 
+double   g_dSangMs = 0.0, g_dSangMax = 0.0;	// [SANGCPU 09/09]
+unsigned g_uSangLan = 0;
 //##ModelId=3DD9ECFD00E6
 void KIpoTree::Paint(RECT* pRepresentArea, IPOT_RENDER_LAYER eLayer)
 {
@@ -103,7 +105,17 @@ void KIpoTree::Paint(RECT* pRepresentArea, IPOT_RENDER_LAYER eLayer)
 	if(eLayer == IPOT_RL_COVER_GROUND && m_bDynamicLighting && g_pRepresent && g_pRepresent->IsRep3D())
 	{
 		// 渲染光照图
+		LARGE_INTEGER liSang0, liSang1, liSangF;	// [SANGCPU 09/09] do CPU dung ban do sang moi khung
+		QueryPerformanceCounter(&liSang0);
 		RenderLightMap();
+		QueryPerformanceCounter(&liSang1);
+		QueryPerformanceFrequency(&liSangF);
+		extern double g_dSangMs, g_dSangMax; extern unsigned g_uSangLan;
+		{
+			const double dMs = (double)(liSang1.QuadPart - liSang0.QuadPart) * 1000.0 / (double)liSangF.QuadPart;
+			g_dSangMs += dMs; g_uSangLan++;
+			if (dMs > g_dSangMax) g_dSangMax = dMs;
+		}
 		// 设置表现模块的光照信息
 		g_pRepresent->SetLightInfo(m_nLeftTopX, m_nLeftTopY, (unsigned int*)pLightingArray);
 		{	// [SANGDO 09/09] He chieu sang la duong DUY NHAT trong engine nhan vao mau tung anh SPR
@@ -139,13 +151,14 @@ void KIpoTree::Paint(RECT* pRepresentArea, IPOT_RENDER_LAYER eLayer)
 					FILE* pLog = fopen("jx_paint.log", "a");
 					if (pLog)
 					{
-						fprintf(pLog, "[SANGDO] t=%u khung=%u | o giua luoi DOI %u lan | sang min %08X max %08X"
+						fprintf(pLog, "[SANGDO] t=%u khung=%u | CPU dung ban do sang %.2f ms/khung (max %.2f) | o giua luoi DOI %u lan | sang min %08X max %08X"
 							" | goc cua so doi %u lan | den TB %.1f max %u | nen %08X\n",
-							dwNow, s_uKhung, s_uDoi, s_dwMin, s_dwMax, s_uGocDoi,
+							dwNow, s_uKhung, g_uSangLan ? g_dSangMs / g_uSangLan : 0.0, g_dSangMax, s_uDoi, s_dwMin, s_dwMax, s_uGocDoi,
 							s_uKhung ? (double)s_uDenTong / s_uKhung : 0.0, s_uDenMax, m_dwAmbient);
 						fclose(pLog);
 					}
 					s_uKhung = s_uDoi = s_uGocDoi = s_uDenTong = s_uDenMax = 0;
+					g_dSangMs = 0.0; g_dSangMax = 0.0; g_uSangLan = 0;
 					s_dwMin = 0xFFFFFFFF; s_dwMax = 0;
 				}
 			}
