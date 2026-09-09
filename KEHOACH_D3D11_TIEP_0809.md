@@ -119,4 +119,12 @@ Không còn chỗ nào: `m_nFrame` trong `PaintInfo` (sao trùng sinh) chốt `G
 
 **Số liệu vẽ để dành cho việc #2 kiểu khác:** `[REP3]` đếm `anh_null` 0,2–4,7 triệu mỗi 30 s, phần lớn là **tên ảnh RỖNG** (`(k0)`)
 — tức mỗi khung có hàng trăm đơn vị vẽ được gửi xuống Represent3 rồi bỏ vì không có ảnh. Đây là chỗ cắt CPU vẽ rẻ nhất còn lại
-(chưa truy nguồn gọi). Ghi lại để làm sau.
+— **đã truy ra và sửa, xem [VE c] dưới**.
+
+**[VE 08/09 c] (4b17bdc9) — đây chính là việc #2 dạng đúng: bớt đơn vị vẽ, không nướng nền.** Nguồn `KNpcRes::Draw`:
+ô BÓNG gửi vô điều kiện dù NPC không có sprite bóng; vòng vẽ THÂN NGƯỜI gửi mọi ô trong bảng thứ tự, kể cả phần trang bị
+người chơi KHÔNG mặc (tên rỗng). Vòng vẽ HIỆU ỨNG trang bị ngay trên đã có cửa chặn này từ 04/09, vòng thân người bị bỏ sót.
+An toàn: `KSprControl::Release()` xoá CẢ tên lẫn `m_dwNameID`, và `SetSprFile`/`SetFileName` với tên rỗng đều gọi `Release()`
+→ tên rỗng thì id cũng 0, `GetImage` không thể ra ảnh. Kèm: không gọi `DrawPrimitives` khi `nPos = 0`.
+Kỳ vọng: `khac` trong `[REP3-NAP]` về gần 0, `anh_null` giảm mạnh, `DrawPrimitives` bớt ~20–25 % thời gian.
+`CoreClient.dll.moi` 30109252 + `Game.exe.moi` 3b470554 (swap cùng lúc).
