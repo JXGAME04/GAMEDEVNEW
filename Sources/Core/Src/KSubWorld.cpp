@@ -1224,7 +1224,7 @@ struct DoLuotDem { DWORD_PTR uEip; unsigned uSo; };
 static void DoLuotIn(FILE* pLog, int nPha, DoLuotDem* aDem, int nDem, unsigned uMau, unsigned uLan);
 static unsigned __stdcall DoLuotLuong(void*)
 {
-	static DoLuotDem aDem[2][4096]; static int nDem[2] = { 0, 0 }; static unsigned uMau[2] = { 0, 0 }, uLan[2] = { 0, 0 };
+	static DoLuotDem aDem[2][8192]; static int nDem[2] = { 0, 0 }; static unsigned uMau[2] = { 0, 0 }, uLan[2] = { 0, 0 };	// [DOLUOT 09/09 d] 8192 EIP
 	static LONG aLanDem[2][DOLUOT_NANG];	// seq da dem lan nang (khoi dem 2 lan)
 	LONG lDaGom = 0; DWORD dwIn = GetTickCount();
 	for (;;)
@@ -1263,7 +1263,7 @@ static unsigned __stdcall DoLuotLuong(void*)
 			if (aLanDem[p][m.lSeq & (DOLUOT_NANG - 1)] != m.lSeq) { aLanDem[p][m.lSeq & (DOLUOT_NANG - 1)] = m.lSeq; uLan[p]++; }
 			uMau[p]++;
 			int k = 0; for (; k < nDem[p]; k++) if (aDem[p][k].uEip == m.uEip) { aDem[p][k].uSo++; break; }
-			if (k == nDem[p] && nDem[p] < 4096) { aDem[p][k].uEip = m.uEip; aDem[p][k].uSo = 1; nDem[p]++; }
+			if (k == nDem[p] && nDem[p] < 8192) { aDem[p][k].uEip = m.uEip; aDem[p][k].uSo = 1; nDem[p]++; }
 		}
 		if ((DWORD)(dwNow - dwIn) >= 30000)
 		{
@@ -1284,44 +1284,39 @@ typedef BOOL  (WINAPI *PFN_DoLuotSymInitialize)(HANDLE, PCSTR, BOOL);
 typedef BOOL  (WINAPI *PFN_DoLuotSymFromAddr)(HANDLE, DWORD64, PDWORD64, PSYMBOL_INFO);
 static void DoLuotIn(FILE* pLog, int nPha, DoLuotDem* aDem, int nDem, unsigned uMau, unsigned uLan)
 {
-	static PFN_DoLuotSymFromAddr s_pfnTu = NULL; static int s_nThu = 0;
-	if (!s_pfnTu && s_nThu == 0)	// dbghelp: nap 1 lan tren luong nay (khong dung o luong chinh)
+	// [DOLUOT 09/09 e] KHONG dung dbghelp trong game (giu Core.pdb cua thu muc build -> linker LNK1201 khi game dang chay).
+	// Tong theo module (GetModuleHandleEx) + top 240 dia chi 'mod+rva:so' -> tra ten offline bang CoreClient.map (doluot_tra_map.py).
+	struct DoLuotMod { HMODULE hMod; unsigned uSo; char szTen[48]; };
+	static DoLuotMod aMod[48]; int nMod = 0;
+	static HMODULE aEipMod[8192];
+	for (int k = 0; k < nDem; k++)
 	{
-		s_nThu = 1;
-		HMODULE h = LoadLibraryA("dbghelp.dll");
-		if (h)
+		HMODULE hMod = NULL;
+		GetModuleHandleExA(0x00000004 | 0x00000002, (LPCSTR)aDem[k].uEip, &hMod);	// FROM_ADDRESS | UNCHANGED_REFCOUNT
+		aEipMod[k] = hMod;
+		int m = 0; for (; m < nMod; m++) if (aMod[m].hMod == hMod) break;
+		if (m == nMod && nMod < 48)
 		{
-			PFN_DoLuotSymSetOptions pOpt = (PFN_DoLuotSymSetOptions)GetProcAddress(h, "SymSetOptions");
-			PFN_DoLuotSymInitialize pInit = (PFN_DoLuotSymInitialize)GetProcAddress(h, "SymInitialize");
-			if (pOpt) pOpt(0x00000002 | 0x00000004);	// SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS
-			if (pInit) pInit(GetCurrentProcess(), NULL, TRUE);	// [DOLUOT 09/09 c] FALSE = da khoi tao san (CrashLog.cpp) -> van dung duoc
-			typedef BOOL (WINAPI *PFN_DoLuotSymRefresh)(HANDLE);
-			PFN_DoLuotSymRefresh pRefresh = (PFN_DoLuotSymRefresh)GetProcAddress(h, "SymRefreshModuleList");
-			if (pRefresh) pRefresh(GetCurrentProcess());
-			s_pfnTu = (PFN_DoLuotSymFromAddr)GetProcAddress(h, "SymFromAddr");
+			aMod[m].hMod = hMod; aMod[m].uSo = 0; strcpy(aMod[m].szTen, "?");
+			char szDuong[MAX_PATH]; if (hMod && GetModuleFileNameA(hMod, szDuong, MAX_PATH)) { const char* p = strrchr(szDuong, '\\'); strncpy(aMod[m].szTen, p ? p + 1 : szDuong, 47); aMod[m].szTen[47] = 0; }
+			nMod++;
 		}
+		if (m < nMod) aMod[m].uSo += aDem[k].uSo;
 	}
-	// sap xep giam dan theo so mau (chon dan 12)
-	fprintf(pLog, "[DOLUOT] t=%u pha %s: %u lan >= %d ms, %u mau:", (unsigned)GetTickCount(), nPha == 1 ? "TICK" : "VE", uLan, g_nDoLuotNguong, uMau);
-	for (int r = 0; r < 12 && r < nDem; r++)
+	fprintf(pLog, "[DOLUOT] t=%u pha %s: %u lan >= %d ms, %u mau | module:", (unsigned)GetTickCount(), nPha == 1 ? "TICK" : "VE", uLan, g_nDoLuotNguong, uMau);
+	for (int r = 0; r < nMod; r++)
 	{
-		int nMax = r;
-		for (int k = r + 1; k < nDem; k++) if (aDem[k].uSo > aDem[nMax].uSo) nMax = k;
-		if (nMax != r) { DoLuotDem t = aDem[r]; aDem[r] = aDem[nMax]; aDem[nMax] = t; }
-		char szMod[MAX_PATH] = "?"; DWORD_PTR uRva = aDem[r].uEip; HMODULE hMod = NULL;
-		if (GetModuleHandleExA(0x00000004 | 0x00000002, (LPCSTR)aDem[r].uEip, &hMod) && hMod)	// FROM_ADDRESS | UNCHANGED_REFCOUNT
-		{
-			char szDuong[MAX_PATH]; if (GetModuleFileNameA(hMod, szDuong, MAX_PATH)) { const char* p = strrchr(szDuong, '\\'); strncpy(szMod, p ? p + 1 : szDuong, MAX_PATH - 1); szMod[MAX_PATH - 1] = 0; }
-			uRva = aDem[r].uEip - (DWORD_PTR)hMod;
-		}
-		char szTen[256] = ""; DWORD64 uLech = 0;
-		if (s_pfnTu)
-		{
-			char aBuf[sizeof(SYMBOL_INFO) + 200]; SYMBOL_INFO* pSym = (SYMBOL_INFO*)aBuf; memset(aBuf, 0, sizeof(aBuf));
-			pSym->SizeOfStruct = sizeof(SYMBOL_INFO); pSym->MaxNameLen = 199;
-			if (s_pfnTu(GetCurrentProcess(), (DWORD64)aDem[r].uEip, &uLech, pSym)) { strncpy(szTen, pSym->Name, 255); szTen[255] = 0; }
-		}
-		fprintf(pLog, " | %.1f%% %s+%X %s+%u", aDem[r].uSo * 100.0 / uMau, szMod, (unsigned)uRva, szTen[0] ? szTen : "?", (unsigned)uLech);
+		int nMax = r; for (int k = r + 1; k < nMod; k++) if (aMod[k].uSo > aMod[nMax].uSo) nMax = k;
+		if (nMax != r) { DoLuotMod t = aMod[r]; aMod[r] = aMod[nMax]; aMod[nMax] = t; }
+		fprintf(pLog, " %s %.1f%%", aMod[r].szTen, aMod[r].uSo * 100.0 / uMau);
+	}
+	fprintf(pLog, "\n[DOLUOT-EIP] pha %s mau %u:", nPha == 1 ? "TICK" : "VE", uMau);
+	for (int r = 0; r < 240 && r < nDem; r++)
+	{
+		int nMax = r; for (int k = r + 1; k < nDem; k++) if (aDem[k].uSo > aDem[nMax].uSo) nMax = k;
+		if (nMax != r) { DoLuotDem t = aDem[r]; aDem[r] = aDem[nMax]; aDem[nMax] = t; HMODULE hm = aEipMod[r]; aEipMod[r] = aEipMod[nMax]; aEipMod[nMax] = hm; }
+		const char* szMod = "?"; for (int m = 0; m < nMod; m++) if (aMod[m].hMod == aEipMod[r]) { szMod = aMod[m].szTen; break; }
+		fprintf(pLog, " %s+%X:%u", szMod, (unsigned)(aDem[r].uEip - (DWORD_PTR)aEipMod[r]), aDem[r].uSo);
 	}
 	fprintf(pLog, "\n");
 }
