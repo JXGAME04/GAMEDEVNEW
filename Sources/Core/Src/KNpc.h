@@ -810,6 +810,10 @@ public:
 	void				UpdateGameTitle();		// Update GameTitle based on faction and level
 	void				SetStateSkillEffect(int nLauncher, int nSkillID, int nLevel, void *pData, int nDataNum, int nTime = -1, BOOL bOverLook = FALSE);	// 主动辅助技能与被动技能
 
+	// [SAP 09/09] Duyet danh sach trang thai AN TOAN truoc tai nhap (xem KNpc.cpp).
+	// Khong ao, khong them truong => bo cuc KNpc KHONG doi.
+	bool				ClearOneStateNode(int nLoai, int nSkillId);
+	void				ClearStateNodesLoop(int nLoai, int nSkillId);
 	void				ForceClearStateSkillEffect();
 
 	void				ForceClearStateSkillEffect(int nSkillId);

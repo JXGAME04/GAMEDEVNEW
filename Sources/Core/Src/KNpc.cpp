@@ -12107,37 +12107,81 @@ BOOL KNpc::IsAlive()
 	return TRUE;
 }
 
-void KNpc::ForceClearStateSkillEffect() {
-	KStateNode* pNode;
-	pNode = (KStateNode*)m_StateSkillList.GetTail();
+//---------------------------------------------------------------------------
+// [SAP 09/09] GOC SAP (dump 09/09 14:49, AV doc 0x10 tai KNpc.cpp ClearStateSkillEffect):
+// 4 ham xoa trang thai duoi day deu giu san con tro nut KE (pNode) roi MOI goi
+// ModifyAttrib(). ModifyAttrib di vong ra ngoai va co the GO dung cai nut dang giu
+// (KNode::Remove() dat m_pPrev/m_pNext = NULL); nhip sau pNode->GetPrev() doc
+// [NULL+0x10] -> sap may chu. Nut nan nhan trong dump: skill 36 Thien Vuong Chien Y
+// (m_LeftTime = -1, magic_lifemax_p -21), ca hai con tro NULL ma vptr con nguyen.
+//
+// Cach sua: GO nut ra khoi danh sach TRUOC roi moi goi ra ngoai.
+//  - vong tim ben duoi KHONG goi ham ngoai nao => danh sach khong the doi giua chung;
+//  - nut da go la RIENG cua ta => moi duong go khac (deu duyet danh sach) khong cham
+//    toi duoc => khong the go/xoa hai lan.
+// Khac biet duy nhat so voi ban cu: nut duoc go TRUOC khi ModifyAttrib chay (truoc day
+// go sau) - dang neu co thuoc tinh nao doc lai chinh danh sach nay trong luc do.
+//---------------------------------------------------------------------------
+// nLoai: 0 = moi nut | 1 = dung m_SkillID == nSkillId | 2 = het han (!OverLook, LeftTime > 0)
+// Tra ve TRUE neu da go+xu ly duoc mot nut (goi lai de xu ly tiep).
+bool KNpc::ClearOneStateNode(int nLoai, int nSkillId)
+{
+	KStateNode* pKill = NULL;
+	KStateNode* pNode = (KStateNode*)m_StateSkillList.GetTail();
+	while (pNode)
+	{
+		KStateNode* pPrev = (KStateNode*)pNode->GetPrev();
+		bool bHop;
+		if (nLoai == 0)
+			bHop = true;
+		else if (nLoai == 1)
+			bHop = (pNode->m_SkillID == nSkillId);
+		else
+			bHop = (!pNode->m_bOverLook && pNode->m_LeftTime != -1 && pNode->m_LeftTime > 0);
+		if (bHop)
+		{
+			pKill = pNode;
+			break;
+		}
+		pNode = pPrev;
+	}
+	if (pKill == NULL)
+		return false;
+	pKill->Remove();		// GO TRUOC khi goi ra ngoai
+	for (int i = 0; i < MAX_SKILL_STATE; i++)
+	{
+		if (pKill->m_State[i].nAttribType)
+			ModifyAttrib(m_Index, &pKill->m_State[i]);
+	}
+	delete pKill;
+	return true;
+}
+
+void KNpc::ClearStateNodesLoop(int nLoai, int nSkillId)
+{
 #ifdef _SERVER
 	bool bStateRemove = false;
 #endif
-	while (pNode)
+	// Chan 256 vong: ban cu duyet DUNG mot luot nen khong the lap vo tan; ban nay tim lai
+	// tu duoi moi lan nen phai tu chan phong khi ModifyAttrib lai SINH them trang thai hop dieu kien.
+	for (int nBaoVe = 0; nBaoVe < 256; nBaoVe++)
 	{
-		KStateNode* pTempNode = pNode;
-		pNode = (KStateNode*)pNode->GetPrev();
-		if (pTempNode)
-		{
-			for (int i = 0; i < MAX_SKILL_STATE; i++)
-			{
-				if (pTempNode->m_State[i].nAttribType)
-					ModifyAttrib(m_Index, &pTempNode->m_State[i]);
-			}
-			_ASSERT(pTempNode != NULL);
-			pTempNode->Remove();
-			delete pTempNode;
+		if (!ClearOneStateNode(nLoai, nSkillId))
+			break;
 #ifdef _SERVER
-			bStateRemove = true;
+		bStateRemove = true;
 #endif
-			pTempNode = NULL;
-			continue;
-		}
 	}
 #ifdef _SERVER
-	if(bStateRemove)
+	if (bStateRemove)
 		UpdateNpcStateInfo();
 #endif
+}
+
+void KNpc::ForceClearStateSkillEffect()
+{
+	// [SAP 09/09] xem ClearOneStateNode / ClearStateNodesLoop o tren.
+	ClearStateNodesLoop(0, 0);
 }
 
 // [WLLS 20/08] tra level trang thai skill dang treo (GetSkillState):
@@ -12156,117 +12200,21 @@ int KNpc::GetStateSkillLevel(int nSkillId)
 
 void KNpc::ForceClearStateSkillEffect(int nSkillId)
 {
-#ifdef _SERVER
-	bool bStateRemove = false;
-#endif
-	KStateNode* pNode;
-	pNode = (KStateNode*)m_StateSkillList.GetTail();
-	while (pNode)
-	{
-		KStateNode* pTempNode = pNode;
-		pNode = (KStateNode*)pNode->GetPrev();
-		if (nSkillId != pTempNode->m_SkillID)
-			continue;
-		//
-		if (pTempNode)
-		{
-			for (int i = 0; i < MAX_SKILL_STATE; i++)
-			{
-				if (pTempNode->m_State[i].nAttribType)
-					ModifyAttrib(m_Index, &pTempNode->m_State[i]);
-			}
-			_ASSERT(pTempNode != NULL);
-			pTempNode->Remove();
-			delete pTempNode;
-#ifdef _SERVER
-			bStateRemove = true;
-#endif
-			pTempNode = NULL;
-			continue;
-		}
-	}
-#ifdef _SERVER
-	if(bStateRemove)
-		UpdateNpcStateInfo();
-#endif
+	// [SAP 09/09] xem ClearOneStateNode / ClearStateNodesLoop o tren.
+	ClearStateNodesLoop(1, nSkillId);
 }
 
 void KNpc::ClearStateSkillEffect()
 {
-#ifdef _SERVER
-	bool bStateRemove = false;
-#endif
-	KStateNode* pNode;
-	pNode = (KStateNode *)m_StateSkillList.GetTail();
-	while(pNode)
-	{
-		KStateNode* pTempNode = pNode;
-		pNode = (KStateNode *)pNode->GetPrev();
-		//
-		//pNode->m_LeftTime = nTime;
-		if (pTempNode->m_bOverLook)	//KhÂ«ng xoÂ¸ nhÃ·ng skill c? OverLook
-			continue;
-
-		if (pTempNode->m_LeftTime == -1)	
-			continue;
-		//
-		if (pTempNode->m_LeftTime > 0)
-		{
-			for (int i = 0; i < MAX_SKILL_STATE; i++)
-			{
-				if (pTempNode->m_State[i].nAttribType)
-					ModifyAttrib(m_Index, &pTempNode->m_State[i]);
-			}
-			_ASSERT(pTempNode != NULL);
-			pTempNode->Remove();
-			delete pTempNode;
-#ifdef _SERVER
-			bStateRemove = true;
-#endif
-			pTempNode = NULL;
-			continue;
-		}
-	}
-#ifdef _SERVER
-	if(bStateRemove)
-		UpdateNpcStateInfo();
-#endif
+	// [SAP 09/09] xem ClearOneStateNode / ClearStateNodesLoop o tren.
+	ClearStateNodesLoop(2, 0);
 }
 
 
 void KNpc::ClearStateSkillEffect(int nSkillId)
 {
-#ifdef _SERVER
-	bool bStateRemove = false;
-#endif
-	KStateNode* pNode;
-	pNode = (KStateNode*)m_StateSkillList.GetTail();
-	while (pNode)
-	{
-		KStateNode* pTempNode = pNode;
-		pNode = (KStateNode*)pNode->GetPrev();
-		if (nSkillId != pTempNode->m_SkillID)
-			continue;
-		//
-			for (int i = 0; i < MAX_SKILL_STATE; i++)
-			{
-				if (pTempNode->m_State[i].nAttribType)
-					ModifyAttrib(m_Index, &pTempNode->m_State[i]);
-			}
-			_ASSERT(pTempNode != NULL);
-			
-			pTempNode->Remove();
-			delete pTempNode;
-			pTempNode = NULL;
-#ifdef _SERVER
-			bStateRemove = true;
-#endif
-			continue;
-	}
-#ifdef _SERVER
-	if(bStateRemove)
-		UpdateNpcStateInfo();
-#endif
+	// [SAP 09/09] xem ClearOneStateNode / ClearStateNodesLoop o tren.
+	ClearStateNodesLoop(1, nSkillId);
 }
 
 
