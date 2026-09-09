@@ -72,7 +72,7 @@ bool KPakList::FindElemFile(unsigned long uId, XPackElemFileRef& ElemRef)
 unsigned long KPakList::FileNameToId(const char* pszFileName)
 {
 	_ASSERT(pszFileName && pszFileName[0]);
-	unsigned long id = 0;
+	JX_ULONG id = 0;	// [ANDROID 08/09] 32 bit nhu Windows: unsigned long LP64 (8 byte) khong tran -> id khac chi muc pak
 	const char *ptr = pszFileName;
 	int index = 0;
 	while(*ptr)

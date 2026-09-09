@@ -4,7 +4,7 @@
 
 unsigned long FileNameHash(const char *file_name)
 {
-	unsigned long id = 0;
+	JX_ULONG id = 0;	// [ANDROID 08/09] 32 bit nhu Windows (LP64)
 	const char *ptr = file_name;
 	int index = 0;
 	// flying  comment here

@@ -100,6 +100,30 @@ char* JxPathPosix(const char* pszIn, char* pszOut, size_t nOut)
 		}
 	}
 	for (size_t k = nLow; k < o; k++) pszOut[k] = (char)tolower((unsigned char)pszOut[k]);
+	/* Ten co byte >= 0x80 (thu muc GBK "\spr\Ui3\<GBK>\" hay TCVN3 trong ma nguon): tren dia, Windows da doi
+	   byte ANSI (cp1252) -> Unicode, chep sang Android thanh UTF-8. Thu duong dan byte tho truoc (tep do game
+	   tu ghi), khong co thi thu ban cp1252 -> UTF-8. Tep trong pak khong qua day (tim theo id bam). */
+	{
+		int bCao = 0;
+		for (size_t k = nLow; k < o; k++) if ((unsigned char)pszOut[k] >= 0x80) { bCao = 1; break; }
+		if (bCao && access(pszOut, F_OK) != 0)
+		{
+			static const unsigned short s_cp1252_80[32] = {
+				0x20AC,0x0081,0x201A,0x0192,0x201E,0x2026,0x2020,0x2021,0x02C6,0x2030,0x0160,0x2039,0x0152,0x008D,0x017D,0x008F,
+				0x0090,0x2018,0x2019,0x201C,0x201D,0x2022,0x2013,0x2014,0x02DC,0x2122,0x0161,0x203A,0x0153,0x009D,0x017E,0x0178 };
+			char szU[1024]; size_t u = 0;
+			for (size_t k = 0; k < o && u + 4 < sizeof(szU); k++)
+			{
+				unsigned int c = (unsigned char)pszOut[k];
+				if (k < nLow || c < 0x80) { szU[u++] = (char)c; continue; }
+				if (c < 0xA0) c = s_cp1252_80[c - 0x80];
+				if (c < 0x800) { szU[u++] = (char)(0xC0 | (c >> 6)); szU[u++] = (char)(0x80 | (c & 0x3F)); }
+				else { szU[u++] = (char)(0xE0 | (c >> 12)); szU[u++] = (char)(0x80 | ((c >> 6) & 0x3F)); szU[u++] = (char)(0x80 | (c & 0x3F)); }
+			}
+			szU[u] = 0;
+			if (u < nOut && access(szU, F_OK) == 0) memcpy(pszOut, szU, u + 1);
+		}
+	}
 	return pszOut;
 }
 FILE* jx_fopen(const char* pszPath, const char* pszMode)
