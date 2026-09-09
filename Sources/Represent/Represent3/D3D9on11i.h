@@ -398,6 +398,16 @@ public:
 	ID3D11Texture2D*        m_pBackTex;
 	ID3D11RenderTargetView* m_pBackRtv;
 	ID3D11Texture2D*        m_pLastFrame;	// ban sao khung vua Present (chup man hinh)
+	ID3D11Texture2D*        m_pLocCur;	// [LOCTG 09/09] ban sao khung hien tai (co SRV)
+	void    LocThoiGian();	// [LOCTG 09/09] loc thoi gian, goi ngay truoc Present
+	void    LocRelease();
+	ID3D11ShaderResourceView* m_pLocCurSrv;
+	ID3D11Texture2D*        m_pLocHist;	// [LOCTG] lich su da tron (co SRV)
+	ID3D11ShaderResourceView* m_pLocHistSrv;
+	ID3D11VertexShader*     m_pLocVS;
+	ID3D11PixelShader*      m_pLocPS;
+	ID3D11Buffer*           m_pLocCb;
+	double                  m_dLocLast;	// thoi diem Present truoc (ms) de tinh dt
 	ID3D11Texture2D*        m_pStaging;		// doc lai khung ve CPU
 	UINT            m_bbW, m_bbH;
 	CSurf11*        m_pBackSurf;

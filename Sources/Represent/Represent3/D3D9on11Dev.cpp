@@ -5,6 +5,9 @@
 #include "D3D9on11i.h"
 #include "Rep3Shaders11_vs.h"
 #include "Rep3Shaders11_ps.h"
+#include "Rep3LocTG11_vs.h"	// [LOCTG 09/09]
+#include "Rep3LocTG11_ps.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>	// [r2] getenv
 #include <string.h>
@@ -38,7 +41,8 @@ CDev11::CDev11(CD3D11Shim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	InitializeCriticalSection(&m_cs);
 	m_pDev = NULL; m_pCtx = NULL; m_pSwap = NULL; m_pFactory = NULL; m_pAdapter3 = NULL; m_fl = D3D_FEATURE_LEVEL_10_0;
 	m_bTearing = false; m_swapFlags = 0; m_hWaitable = NULL; m_bWaitedThisFrame = false; m_uStillLogged = 0; m_liLastPresent.QuadPart = 0;
-	m_pBackTex = NULL; m_pBackRtv = NULL; m_pLastFrame = NULL; m_pStaging = NULL; m_bbW = pp.BackBufferWidth; m_bbH = pp.BackBufferHeight;
+	m_pBackTex = NULL; m_pBackRtv = NULL; m_pLastFrame = NULL; m_pStaging = NULL;
+	m_pLocCur = NULL; m_pLocCurSrv = NULL; m_pLocHist = NULL; m_pLocHistSrv = NULL; m_pLocVS = NULL; m_pLocPS = NULL; m_pLocCb = NULL; m_dLocLast = 0.0;	// [LOCTG 09/09] m_bbW = pp.BackBufferWidth; m_bbH = pp.BackBufferHeight;
 	m_pBackSurf = NULL; m_pRt = NULL; m_bRtBound = false;
 	m_pVS = NULL; m_pPS = NULL; m_pVsCb = NULL; m_pPsCb = NULL; m_pRing = NULL; m_ringSize = R11_RING_SIZE; m_ringPos = 0; m_bRingDiscard = true; m_pAtlas = NULL; m_pPalTex = NULL; m_pPalSrv = NULL; m_pDummy = NULL;
 	{ const char* e = getenv("REP3_PALLIN"); m_bPalLinForce = (e && atoi(e) != 0); }	// [r2] m_pDss = NULL;
@@ -203,6 +207,7 @@ void CDev11::ReleaseSwapBuffers()
 {
 	if (m_pCtx) { ID3D11RenderTargetView* pNull = NULL; m_pCtx->OMSetRenderTargets(1, &pNull, NULL); }
 	R11_SAFE_RELEASE(m_pBackRtv); R11_SAFE_RELEASE(m_pBackTex); R11_SAFE_RELEASE(m_pLastFrame); R11_SAFE_RELEASE(m_pStaging);
+	LocRelease();	// [LOCTG 09/09] texture theo kich thuoc back buffer -> tao lai khi doi
 	m_bRtBound = false;
 }
 
@@ -353,11 +358,83 @@ void CDev11::UpdateLastFrame()
 	m_pCtx->CopyResource(m_pLastFrame, m_pBackTex);
 }
 
+// [LOCTG 09/09] Bo loc thoi gian luc trinh khung: back = lerp(back, lich_su, a), a = exp(-dt/tau).
+// Xem dau tep Rep3LocTG11.hlsl. Pass rieng (shader rieng, khong vertex buffer); xong lam mat hieu luc
+// cache trang thai cua lop de lan ve sau gan lai het (ApplyComputed).
+unsigned g_uRep3LocKhung = 0;
+void CDev11::LocRelease()
+{
+	R11_SAFE_RELEASE(m_pLocCurSrv); R11_SAFE_RELEASE(m_pLocCur);
+	R11_SAFE_RELEASE(m_pLocHistSrv); R11_SAFE_RELEASE(m_pLocHist);
+	m_dLocLast = 0.0;
+}
+
+void CDev11::LocThoiGian()
+{
+	if (!m_pBackTex || !m_pBackRtv || !m_pDev || !m_pCtx)
+		return;
+	LARGE_INTEGER q, f; QueryPerformanceCounter(&q); QueryPerformanceFrequency(&f);
+	const double dNow = (double)q.QuadPart * 1000.0 / (double)f.QuadPart;
+	const double dt = (m_dLocLast > 0.0) ? (dNow - m_dLocLast) : 1000.0;
+	m_dLocLast = dNow;
+	if (!m_pLocVS)
+	{
+		if (FAILED(m_pDev->CreateVertexShader(g_Rep3LocVS11, sizeof(g_Rep3LocVS11), NULL, &m_pLocVS))) { m_pLocVS = NULL; g_nRep3LocMs = 0; R11Log("[LOCTG] VS that bai -> tat"); return; }
+		if (FAILED(m_pDev->CreatePixelShader(g_Rep3LocPS11, sizeof(g_Rep3LocPS11), NULL, &m_pLocPS))) { m_pLocPS = NULL; g_nRep3LocMs = 0; R11Log("[LOCTG] PS that bai -> tat"); return; }
+		D3D11_BUFFER_DESC bd; memset(&bd, 0, sizeof(bd));
+		bd.Usage = D3D11_USAGE_DYNAMIC; bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER; bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; bd.ByteWidth = 16;
+		if (FAILED(m_pDev->CreateBuffer(&bd, NULL, &m_pLocCb))) { m_pLocCb = NULL; g_nRep3LocMs = 0; R11Log("[LOCTG] cbuffer that bai -> tat"); return; }
+	}
+	if (!m_pLocCur || !m_pLocHist)
+	{
+		D3D11_TEXTURE2D_DESC td; m_pBackTex->GetDesc(&td);
+		td.BindFlags = D3D11_BIND_SHADER_RESOURCE; td.Usage = D3D11_USAGE_DEFAULT; td.CPUAccessFlags = 0; td.MiscFlags = 0; td.SampleDesc.Count = 1; td.SampleDesc.Quality = 0;
+		if (!m_pLocCur && (FAILED(m_pDev->CreateTexture2D(&td, NULL, &m_pLocCur)) || FAILED(m_pDev->CreateShaderResourceView(m_pLocCur, NULL, &m_pLocCurSrv))))
+		{ LocRelease(); g_nRep3LocMs = 0; R11Log("[LOCTG] texture that bai -> tat"); return; }
+		if (!m_pLocHist && (FAILED(m_pDev->CreateTexture2D(&td, NULL, &m_pLocHist)) || FAILED(m_pDev->CreateShaderResourceView(m_pLocHist, NULL, &m_pLocHistSrv))))
+		{ LocRelease(); g_nRep3LocMs = 0; R11Log("[LOCTG] texture lich su that bai -> tat"); return; }
+		m_pCtx->CopyResource(m_pLocHist, m_pBackTex);	// lich su ban dau = chinh khung nay
+		R11Log("[LOCTG] bat: tau = %d ms, %ux%u", g_nRep3LocMs, (unsigned)td.Width, (unsigned)td.Height);
+	}
+	// trong so lich su; dt lon (khung dau / treo / doi map) -> khong tron, chi cap nhat lich su
+	float a = 0.0f;
+	if (dt > 0.0 && dt < 100.0)
+		a = (float)exp(-dt / (double)g_nRep3LocMs);
+	if (a > 0.9f) a = 0.9f;
+	if (a <= 0.001f) { m_pCtx->CopyResource(m_pLocHist, m_pBackTex); return; }
+	m_pCtx->CopyResource(m_pLocCur, m_pBackTex);
+	D3D11_MAPPED_SUBRESOURCE ms;
+	if (SUCCEEDED(m_pCtx->Map(m_pLocCb, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms))) { float v[4] = { a, 0.0f, 0.0f, 0.0f }; memcpy(ms.pData, v, 16); m_pCtx->Unmap(m_pLocCb, 0); }
+	ID3D11ShaderResourceView* srv[2] = { m_pLocCurSrv, m_pLocHistSrv };
+	ID3D11RenderTargetView* rtv = m_pBackRtv;
+	m_pCtx->OMSetRenderTargets(1, &rtv, NULL);
+	D3D11_VIEWPORT vp; vp.TopLeftX = 0.0f; vp.TopLeftY = 0.0f; vp.Width = (float)m_bbW; vp.Height = (float)m_bbH; vp.MinDepth = 0.0f; vp.MaxDepth = 1.0f;
+	m_pCtx->RSSetViewports(1, &vp);
+	m_pCtx->RSSetState(NULL);
+	float bf[4] = { 0.0f, 0.0f, 0.0f, 0.0f }; m_pCtx->OMSetBlendState(NULL, bf, 0xFFFFFFFF);
+	m_pCtx->OMSetDepthStencilState(NULL, 0);
+	m_pCtx->IASetInputLayout(NULL);
+	m_pCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_pCtx->VSSetShader(m_pLocVS, NULL, 0); m_pCtx->PSSetShader(m_pLocPS, NULL, 0);
+	m_pCtx->PSSetConstantBuffers(0, 1, &m_pLocCb);
+	m_pCtx->PSSetShaderResources(0, 2, srv);
+	m_pCtx->Draw(3, 0);
+	ID3D11ShaderResourceView* nul[2] = { NULL, NULL }; m_pCtx->PSSetShaderResources(0, 2, nul);
+	m_pCtx->CopyResource(m_pLocHist, m_pBackTex);	// lich su = ket qua da tron
+	// cache trang thai cua lop khong con dung -> lan ve sau gan lai het
+	m_bAppliedValid = false; m_bPipeBound = false; m_bRtBound = false;
+	m_lastSrv[0] = m_lastSrv[1] = (ID3D11ShaderResourceView*)1; m_lastIL = NULL; m_lastTopo = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+	memset(&m_lastVp, 0xFF, sizeof(m_lastVp));
+	g_uRep3LocKhung++;
+}
+
 HRESULT CDev11::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion)
 {
 	Lock();
 	FlushIfPending();
 	LARGE_INTEGER t0, t1; QueryPerformanceCounter(&t0);
+	if (g_nRep3LocMs > 0)
+		LocThoiGian();	// [LOCTG 09/09] tron voi lich su TRUOC khi chup / trinh
 	UpdateLastFrame();
 	UINT interval = (m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE) ? 0 : 1;
 	UINT flags = 0;

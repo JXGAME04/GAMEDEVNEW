@@ -23692,7 +23692,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		// logic coordinates (m_MapX/m_MapY/m_OffX/m_OffY) are never touched here.
 	{
 		// [NHIP60 09/09] Chu: "van ve theo Hz man hinh (giao dien, hieu ung muot) nhung vi tri the gioi chi cap nhat
-		// o nhip 60 Hz". Nhoe bam mat = toc do truot x thoi gian giu khung; PaintInterp=0 (18 buoc/giay) het han vi
+		// o nhip 60 Hz". [LOCTG 09/09] MAC DINH 0 (tat) - cach chung la bo loc thoi gian Rep3LocMs; giu lam cong tac thu.
 		// mat khong bam noi buoc nhay. Muc trung gian: POSSHIFT chi chay o nhip [Client] NhipTheGioi (mac dinh 60;
 		// 0 = moi khung ve nhu cu; 72 hoac 48 cho buoc DEU o 144 Hz). Khung bo qua giu nguyen vi tri ve cu.
 		{
@@ -23702,7 +23702,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			static int    s_nDemKhung = 0;
 			if (s_nNhipTG < 0)
 			{
-				s_nNhipTG = (int)GetPrivateProfileIntA("Client", "NhipTheGioi", 60, ".\\config.ini");
+				s_nNhipTG = (int)GetPrivateProfileIntA("Client", "NhipTheGioi", 0, ".\\config.ini");
 				if (s_nNhipTG < 0) s_nNhipTG = 0;
 				if (s_nNhipTG > 1000) s_nNhipTG = 1000;
 			}
