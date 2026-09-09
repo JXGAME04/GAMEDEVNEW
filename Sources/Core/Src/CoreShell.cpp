@@ -2965,6 +2965,7 @@ int	g_nCorePaintLog = 0;
 static double   s_dIpAlpha = 0.0;
 static unsigned s_uIpFrame = 0, s_uIpKep = 0, s_uIpNpc = 0, s_uIpNpcMax = 0, s_uIpNpcKhung = 0, s_uIpVuot = 0;
 static int      s_nIpLechMax = 0, s_nIpLechNguoi = 0;
+int             g_nIpBuocK = 1;	// [NHIP60 b] so khung ve moi buoc the gioi (1 = moi khung)
 static void IpInDong()
 {
 	if (g_nCorePaintLog <= 0 || s_uIpFrame == 0)
@@ -2979,9 +2980,9 @@ static void IpInDong()
 	if (pLog)
 	{
 		fprintf(pLog, "[INTERP] t=%u khung=%u | alpha TB %.0f, cham tran 1000 %u lan | npc dich TB %.1f max %u"
-			" | lech VE-TICK: npc max %d, nguoi choi max %d | vuot bien vung %u\n",
+			" | lech VE-TICK: npc max %d, nguoi choi max %d | vuot bien vung %u | buoc the gioi moi %d khung\n",
 			dwNow, s_uIpFrame, s_dIpAlpha / s_uIpFrame, s_uIpKep,
-			(double)s_uIpNpc / s_uIpFrame, s_uIpNpcMax, s_nIpLechMax, s_nIpLechNguoi, s_uIpVuot);
+			(double)s_uIpNpc / s_uIpFrame, s_uIpNpcMax, s_nIpLechMax, s_nIpLechNguoi, s_uIpVuot, g_nIpBuocK);
 		fclose(pLog);
 	}
 	s_dIpAlpha = 0.0; s_uIpFrame = s_uIpKep = s_uIpNpc = s_uIpNpcMax = s_uIpVuot = 0;
@@ -23696,7 +23697,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		// 0 = moi khung ve nhu cu; 72 hoac 48 cho buoc DEU o 144 Hz). Khung bo qua giu nguyen vi tri ve cu.
 		{
 			static int    s_nNhipTG = -1;
-			static double s_dKeTiep = 0.0;
+			static double s_dKhungMs = 0.0;	// [NHIP60 b] khoang cach khung ve trung binh (EMA)
+			static DWORD  s_dwKhungTruoc = 0;
+			static int    s_nDemKhung = 0;
 			if (s_nNhipTG < 0)
 			{
 				s_nNhipTG = (int)GetPrivateProfileIntA("Client", "NhipTheGioi", 60, ".\\config.ini");
@@ -23705,12 +23708,28 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			}
 			if (s_nNhipTG > 0)
 			{
-				const double dNow = (double)timeGetTime();
-				if (s_dKeTiep == 0.0 || dNow - s_dKeTiep > 250.0 || dNow < s_dKeTiep - 250.0)
-					s_dKeTiep = dNow;	// lan dau / treo lau / dong ho quay vong: neo lai
-				if (dNow < s_dKeTiep)
+				// [NHIP60 b] Buoc theo SO KHUNG CHAN: K = lam tron(paintHz / NhipTheGioi). Theo dong ho thi 60 tren
+				// man 143 Hz ra buoc xen ke 3 khung - 2 khung (20,97 / 13,98 ms) => chu manh 'nhay' (chu bao).
+				// 143 Hz: 60 -> K=2 (71,5 Hz deu), 48 -> K=3 (47,7), 40 -> K=4 (35,8).
+				const DWORD dwNow = timeGetTime();
+				if (s_dwKhungTruoc)
+				{
+					const double dt = (double)(dwNow - s_dwKhungTruoc);
+					if (dt > 0.0 && dt < 100.0)
+						s_dKhungMs = (s_dKhungMs > 0.0) ? (s_dKhungMs * 0.95 + dt * 0.05) : dt;
+				}
+				s_dwKhungTruoc = dwNow;
+				int nK = 1;
+				if (s_dKhungMs > 0.0)
+				{
+					nK = (int)(1000.0 / (s_dKhungMs * (double)s_nNhipTG) + 0.5);
+					if (nK < 1) nK = 1;
+					if (nK > 8) nK = 8;
+				}
+				g_nIpBuocK = nK;
+				if (++s_nDemKhung < nK)
 					break;	// chua toi luot: giu vi tri ve cua khung truoc (nRet giu 1)
-				s_dKeTiep += 1000.0 / (double)s_nNhipTG;	// tich luy, khong neo vao khung => trung binh dung nhip
+				s_nDemKhung = 0;
 			}
 		}
 		int	nAlpha = (int)uParam;
