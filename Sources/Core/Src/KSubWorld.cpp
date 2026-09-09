@@ -1166,6 +1166,52 @@ double WorldMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 	if (!s_liWorldFreq.QuadPart) QueryPerformanceFrequency(&s_liWorldFreq);
 	return s_liWorldFreq.QuadPart ? (double)(b.QuadPart - a.QuadPart) * 1000.0 / (double)s_liWorldFreq.QuadPart : 0.0;
 }
+#ifndef _SERVER
+// [WORLD 09/09 b] Chia nho chi phi tick client theo NPC va theo pha (xem ReverseTools/goi_va_world_b_0909.py).
+// Chi ghi so khi PaintLog=1. g_* = tich luy ky 10 s (in o WorldInDong), t_* = tich luy MOT tick (in [WORLD-TICK] khi >= 20 ms).
+double   g_dWorldNhac = 0.0;
+double   g_dNpcPha[4] = { 0.0, 0.0, 0.0, 0.0 };	// ProcessState / NpcAI / ProcCommand / ProcStatus
+double   g_dNpcTong = 0.0, g_dNpcMax = 0.0;
+unsigned g_uNpcLan = 0;
+int      g_nNpcMaxIdx = 0;
+static double   t_dNpcTong = 0.0, t_dNpcMax = 0.0, t_dPha[4] = { 0.0, 0.0, 0.0, 0.0 };
+static unsigned t_uNpc = 0;
+static int      t_nNpcMaxIdx = 0;
+void NpcDoPha(int nPha, LARGE_INTEGER& t0)
+{
+	LARGE_INTEGER t1; QueryPerformanceCounter(&t1);
+	const double d = WorldMs(t0, t1);
+	if (nPha >= 0 && nPha < 4) { g_dNpcPha[nPha] += d; t_dPha[nPha] += d; }
+	t0 = t1;
+}
+void WorldNpcXong(int nIdx, const LARGE_INTEGER& a, const LARGE_INTEGER& b)
+{
+	const double d = WorldMs(a, b);
+	g_dNpcTong += d; g_uNpcLan++; t_dNpcTong += d; t_uNpc++;
+	if (d > g_dNpcMax) { g_dNpcMax = d; g_nNpcMaxIdx = nIdx; }
+	if (d > t_dNpcMax) { t_dNpcMax = d; t_nNpcMaxIdx = nIdx; }
+}
+void WorldTickXong(double dQuet)
+{
+	extern int g_nCorePaintLog;
+	if (g_nCorePaintLog > 0 && dQuet >= 20.0)
+	{
+		FILE* pLog = fopen("jx_paint.log", "a");
+		if (pLog)
+		{
+			const int i = t_nNpcMaxIdx;
+			const bool bCo = (i > 0 && i < MAX_NPC);
+			fprintf(pLog, "[WORLD-TICK] t=%u quet_vung %.1f ms | npc %u tong %.1f ms (khac %.1f) | pha PS %.1f AI %.1f PC %.1f ST %.1f"
+				" | nang nhat %.2f ms idx %d kind %d doing %d\n",
+				(unsigned)GetTickCount(), dQuet, t_uNpc, t_dNpcTong, dQuet - t_dNpcTong, t_dPha[0], t_dPha[1], t_dPha[2], t_dPha[3],
+				t_dNpcMax, i, bCo ? (int)Npc[i].m_Kind : -1, bCo ? (int)Npc[i].m_Doing : -1);
+			fclose(pLog);
+		}
+	}
+	t_dNpcTong = t_dNpcMax = 0.0; t_uNpc = 0; t_nNpcMaxIdx = 0;
+	t_dPha[0] = t_dPha[1] = t_dPha[2] = t_dPha[3] = 0.0;
+}
+#endif
 extern int g_nCorePaintLog;
 #endif
 void KSubWorld::Activate()
@@ -1232,6 +1278,7 @@ void KSubWorld::Activate()
 		const double dQuet = WorldMs(liW1, liW2);
 		g_dWorldQuetVung += dQuet;
 		if (dQuet > g_dWorldMaxTick) g_dWorldMaxTick = dQuet;
+		WorldTickXong(dQuet);	// [WORLD 09/09 b] in rieng tick >= 20 ms, dat lai bo dem tick
 	}
 #endif
 

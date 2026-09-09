@@ -914,13 +914,27 @@ void KNpc::Activate()
 	//m_bActivateFlag = TRUE;
 
 	m_LoopFrames++;
+#ifndef _SERVER
+	// [WORLD 09/09 b] do 4 pha cua mot NPC (client, chi khi PaintLog=1): ProcessState / NpcAI / ProcCommand / ProcStatus
+	extern int g_nCorePaintLog; extern void NpcDoPha(int nPha, LARGE_INTEGER& t0);
+	LARGE_INTEGER liNa0; const bool bNaDo = (g_nCorePaintLog > 0);
+	if (bNaDo) QueryPerformanceCounter(&liNa0);
+#endif
 
 	//g_DebugLog("[DEATH] m_ProcessState: %d", m_ProcessState);
 	if (m_ProcessState)
 	{
 		if (ProcessState())
+		{
+#ifndef _SERVER
+			if (bNaDo) NpcDoPha(0, liNa0);
+#endif
 			return;
+		}
 	}
+#ifndef _SERVER
+	if (bNaDo) NpcDoPha(0, liNa0);
+#endif
 
 	if (m_ProcessAI)
 	{
@@ -930,9 +944,18 @@ void KNpc::Activate()
 	{
 		NpcAI.NotActivate(m_Index);
 	}
+#ifndef _SERVER
+	if (bNaDo) NpcDoPha(1, liNa0);
+#endif
 
 	ProcCommand(m_ProcessAI);
+#ifndef _SERVER
+	if (bNaDo) NpcDoPha(2, liNa0);
+#endif
 	ProcStatus();
+#ifndef _SERVER
+	if (bNaDo) NpcDoPha(3, liNa0);
+#endif
 
 #ifdef _SERVER
 	// [24/08] Truoc day ham nay bi goi HAI LAN trong cung mot lan KNpc::Activate

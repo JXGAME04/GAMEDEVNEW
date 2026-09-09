@@ -111,6 +111,22 @@ static void WorldInDong()
 			(double)g_uWorldVung / g_uWorldTick, (double)g_uWorldVungTong / g_uWorldTick, (double)g_uWorldNpc / g_uWorldTick);
 		fclose(pLog);
 	}
+	{	// [WORLD 09/09 b] dong trung binh theo NPC / pha
+		extern double g_dWorldNhac, g_dNpcPha[4], g_dNpcTong, g_dNpcMax; extern unsigned g_uNpcLan; extern int g_nNpcMaxIdx;
+		FILE* p2 = fopen("jx_paint.log", "a");
+		if (p2)
+		{
+			fprintf(p2, "[WORLD b] t=%u tick=%u | nhac %.2f ms/tick | npc %.1f/tick, tong %.2f ms/tick = %.1f us/NPC"
+				" | pha PS %.2f AI %.2f PC %.2f ST %.2f ms/tick | nang nhat %.2f ms idx %d\n",
+				dwNow, g_uWorldTick, g_dWorldNhac / g_uWorldTick, (double)g_uNpcLan / g_uWorldTick, g_dNpcTong / g_uWorldTick,
+				g_uNpcLan ? g_dNpcTong * 1000.0 / g_uNpcLan : 0.0,
+				g_dNpcPha[0] / g_uWorldTick, g_dNpcPha[1] / g_uWorldTick, g_dNpcPha[2] / g_uWorldTick, g_dNpcPha[3] / g_uWorldTick,
+				g_dNpcMax, g_nNpcMaxIdx);
+			fclose(p2);
+		}
+		g_dWorldNhac = 0.0; g_dNpcPha[0] = g_dNpcPha[1] = g_dNpcPha[2] = g_dNpcPha[3] = 0.0;
+		g_dNpcTong = 0.0; g_dNpcMax = 0.0; g_uNpcLan = 0; g_nNpcMaxIdx = 0;
+	}
 	g_dWorldXoaCo = g_dWorldQuetVung = g_dWorldMaxTick = g_dWorldCanBang = 0.0;
 	g_uWorldTick = g_uWorldVung = g_uWorldNpc = g_uWorldVungTong = 0;
 }
@@ -124,7 +140,13 @@ void KSubWorldSet::MainLoop()
 	//if (!(m_nLoopRate % 20))
 	//	SendClientCmdPing();
 	
-	this->m_cMusic.Play(SubWorld[0].m_SubWorldID, SubWorld[0].m_dwCurrentTime, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode);
+	{	// [WORLD 09/09 b] do nhac (client)
+		extern double g_dWorldNhac; extern double WorldMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
+		LARGE_INTEGER a, b; const bool bDo = (g_nCorePaintLog > 0);
+		if (bDo) QueryPerformanceCounter(&a);
+		this->m_cMusic.Play(SubWorld[0].m_SubWorldID, SubWorld[0].m_dwCurrentTime, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode);
+		if (bDo) { QueryPerformanceCounter(&b); g_dWorldNhac += WorldMs(a, b); }
+	}
 
 #endif
 #ifdef _SERVER

@@ -814,7 +814,22 @@ void KRegion::Activate()
 			}
 #endif
 			// Always activate
+#ifndef _SERVER
+			{	// [WORLD 09/09 b] thoi gian tung NPC (client, chi khi PaintLog=1)
+				extern int g_nCorePaintLog; extern void WorldNpcXong(int nIdx, const LARGE_INTEGER& a, const LARGE_INTEGER& b);
+				if (g_nCorePaintLog > 0)
+				{
+					LARGE_INTEGER liN0, liN1; QueryPerformanceCounter(&liN0);
+					Npc[nNpcIdx].Activate();
+					QueryPerformanceCounter(&liN1);
+					WorldNpcXong(nNpcIdx, liN0, liN1);
+				}
+				else
+					Npc[nNpcIdx].Activate();
+			}
+#else
 			Npc[nNpcIdx].Activate();
+#endif
 			currentIndex++;
 		}
 		pNode = pNpcTmpNode;	// dung ban da lay TRUOC Activate (xem chu thich dau vong)
