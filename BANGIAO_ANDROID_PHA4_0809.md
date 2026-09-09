@@ -727,34 +727,51 @@ Hai lớp tệp, nạp chồng lên nhau lúc mở game:
 - Bẫy đã gặp: chuỗi C `"Ui\UiToaDo_MacDinh.ini"` → clang đọc `\U` là mã Unicode → lỗi dịch; phải viết
   `\\U`. (Bash tool nuốt dấu `\`, sửa bằng script Python `va_nguon_android_59b.py`.)
 
-### 12.10. (10/09) "Xoá cái main này, để lại các icon, thay vào cái main của VNKU" + "thanh đó nhỏ chứ không to như vậy" — **đã làm, chưa xem trong game**
+### 12.10. (10/09) HUD ĐIỆN THOẠI THEO BỐ CỤC VNKU — **đã làm, chưa xem trong game**
 
-Chỉ đổi **dữ liệu Android** (`ui/ui3/uiplayerbar.ini`, `uitoolscontrolbar.ini` + một ảnh mới), **không
-đổi mã C++, bản PC không đổi**. Công cụ sinh: `android\thanh_duoi_mobile.py [k]`.
+Ba câu của chủ, theo thứ tự: *"xoá cái main này, để lại các icon, thay vào cái main của VNKU"* →
+*"thanh đó nhỏ chứ không to như vậy"* → *"bạn thiết kế theo bố cục VNKU được không"*. Làm theo câu cuối.
 
-- Khung Main của `KUiPlayerBar` = `\Spr\UiNew\UiPlayerBar\khung_chat_new.spr` của VNKU (1343×211, hai
-  con rồng + dải giấy + hai ô vuông) **thu nhỏ k = 0,5 → 672×106**, đặt **góc trái dưới** trên nền trong
-  suốt 1040×604 (`spr/uinew/uiplayerbar/khung_chat_mobile.spr`, 60 KB). Bên phải để trống cho cụm kỹ năng.
-  Lần dựng đầu tôi kéo khung **đầy bề ngang** (1040×191) — chủ: *"thanh đó nhỏ chứ không to như vậy"* →
-  thu về 0,5 (cao ngang thanh cũ). `k = 0,6` (806×127) cũng đã dựng thử, chỉ là tham số.
-- Icon **giữ nguyên ảnh cũ**, đặt lại chỗ (toạ độ màn hình, ini = màn hình − (3,1) vì chủ đặt
-  `KUiPlayerBar|Main=3,1`):
+**Mẫu để bám:** ảnh chụp JX1M thật `D:\USVOLAM\JX1M_VNKU_DOCS\anh_mau_bo_cuc_hud.jpeg` (1034×584). Đọc từ
+ảnh đó: hàng **icon tròn có nhãn** ngay dưới thanh trạng thái (Nhân vật, Hành trang, Võ công, Bang hội,
+Tổ đội, Ngồi, Hảo hữu, Cài đặt…), **cột icon bên phải** dưới bản đồ nhỏ (Trao đổi, Auto, Nhiệm vụ, PK…),
+**khung chat nhỏ giữa đáy** (~41 % bề ngang, chỉ có nút kênh + ô gõ + biểu cảm + gửi), cụm kỹ năng góc
+phải dưới, cần đi góc trái dưới (chỉ hiện khi chạm).
 
-  | Ô | Chỗ mới |
-  |---|---|
-  | Vật phẩm 1–9 (`Item_0..8`, 36 px) | trên **dải giấy**, x 162.. bước 37, y 549 |
-  | Ký năng trái/phải T/P (`ImediaLeftSkill/RightSkill`) | **hai ô vuông phải** (513 / 561, 549) |
-  | Chọn kênh chat (`ChannelBtn`) | **ô vuông trái** (99, 557) |
-  | Ô gõ chat (`InputEdit`) 305×18, biểu cảm, gửi | **dải hoa văn trên** (162,527 / 479,525 / 509,525) |
-  | 10 icon chức năng (Nhân vật…Ẩn chat) + 6 nút công cụ (Chạy…Ghi hình) | **một hàng ngay trên khung**, y 468, x 16.. bước 30 (28 px) |
+**Chỉ đổi dữ liệu Android** (`ui/ui3/uiplayerbar.ini`, `uitoolscontrolbar.ini` + 13 ảnh `.spr` sinh ra),
+**không đổi C++, bản PC không đổi**. Công cụ sinh ra tất cả: `android\bo_cuc_vnku_mobile.py` (thêm `mock`
+để ghép ảnh dựng thử lên ảnh chụp máy ảo). Chạy lại là ra y hệt; đổi số trong `bo_cuc()` rồi chạy lại.
 
-- `KUiToolsControlBar` Main về (0,0) 1040×604 (trước là 450,440 200×150) — sáu nút có toạ độ tuyệt đối.
-- Ảnh dựng thử (ghép icon thật lên khung, chưa chạy game): `mock_hai_co.png` đã gửi chủ.
-- **Chưa xem trong game** vì đổi ini phải **khởi động lại** app mà chủ đang dùng máy ảo suốt buổi. Khi
-  chủ thoát: `adb shell am force-stop vn.jx1.mobile` rồi mở lại (dữ liệu đọc thẳng từ `/mnt/shared/Misc`),
-  chụp màn hình so với `mock_k50.png`. Chỗ nào lệch thì **kéo bằng chế độ sửa giao diện**, không cần dựng.
-- Muốn quay về thanh cũ: xoá 3 tệp trong `android\du_lieu_ghi_de\ui\ui3\` và chạy lại
-  `chuan_bi_du_lieu.ps1`, hoặc chép lại `uiplayerbar.ini`/`uitoolscontrolbar.ini` từ cây client PC.
+Hai điều phải biết trước khi động vào ảnh VNKU (đã ghi ở `JX1M_VNKU_DOCS\anh_xa_cua_so.md`):
+- Ảnh `.spr` của VNKU **to gấp 5/3** so với `Width/Height` trong `.ini` của họ (bộ vẽ của họ co giãn).
+  Bộ vẽ của ta vẽ ảnh **đúng cỡ gốc** → phải **thu nhỏ sẵn**: công cụ đọc `.spr` (mọi khung), thu nhỏ,
+  ghi lại `.spr` **nhiều khung, bảng màu chung 256** (`ghi_spr_nhieu_khung`) — bảng màu luôn ghi đủ
+  768 byte (bẫy 06/09 ở `ghi_spr.py`).
+- Icon tròn có nhãn cao 168 → **50 px** (tròn ≈ 40 px như ảnh mẫu); `pk.spr` 74 → 44 px, 3 khung.
+
+| Vùng | Ô (ini) | Ảnh | Toạ độ màn hình 1040×604 |
+|---|---|---|---|
+| Hàng icon tròn (tâm y 72) | Status, Items, Skills, Faction, Team, **Sit**, Friend, Options | `spr/uinew/uitoolscontrolbar/{nhanvat,hanhtrang,vocong,banghoi,todoi,ngoixuong,haohuu,caidat}_m.spr` (2 khung: thường / bấm) | tâm x 400 + 56·i (i = 0..7), kết thúc trước bản đồ nhỏ (854) |
+| Lưới phải 3×2 (ô 46, bước 50) | Exchange, Horse, Run / PK, AutoPlay, Rec | `icon_traodoi_m`, `lenngua_m`, `dichuyen_m`, `pk_m`; Auto + Ghi hình giữ ảnh cũ 28 px | góc (868,215) — **dưới** nút "Sửa giao diện" (172..200), **trên** cụm kỹ năng (~320) |
+| Khung chat giữa đáy | `[Main]` Image = `khung_chat_mobile.spr` (khung_chat_new thu 0,32 = 430×68 trên nền trong suốt 1040×604) | | (305,536) |
+| Trên khung chat | ChannelBtn ô vuông trái; InputEdit 218×18 trên dải giấy; Face, SendBtn hai ô vuông phải | ảnh cũ | 365,570 / 406,571 / 634,569 / 664,569 |
+| Cạnh khung, bên phải | ImediaLeftSkill, ImediaRightSkill (T/P), ItemEx, HideChat | ảnh cũ | 745,562 / 785,562 / 834,566 / 868,566 |
+| Hàng vật phẩm nhanh 1–9 | Item_0..8 (36 px, bước 33) | | (2 + 33·i, 562) — góc trái dưới, vùng cần đi |
+
+`KUiToolsControlBar` Main về (0,0) 1040×604 (trước là 450,440 200×150), sáu nút toạ độ tuyệt đối.
+Ini = màn hình − (3,1) vì chủ đặt `KUiPlayerBar|Main=3,1`. Các cửa sổ chủ **đã tự xếp** (bản đồ nhỏ, khung
+chat trái, Chiến lệnh, Đấu giá, Thư, Nhiệm vụ, Kỳ trân các, "Sửa giao diện") **không đụng**.
+
+- Ảnh dựng thử `mock_vnku.png` đã gửi chủ (ghép icon thật lên ảnh chụp, chưa chạy game).
+- **Chưa xem trong game**: đổi ini phải **mở lại app** mà chủ dùng máy ảo suốt buổi (nhật ký chạm liên
+  tục tới 11:32). Khi máy ảo rảnh: `adb shell am force-stop vn.jx1.mobile` → mở lại → chụp so với
+  `mock_vnku.png`. Chỗ nào lệch: **kéo bằng chế độ sửa giao diện** rồi bấm **"Mặc định"** — không dựng lại.
+- Cách vẽ nút của ta: `KWndButton` vẽ ảnh **đúng cỡ** từ góc trên-trái, `Width/Height` chỉ là vùng bấm →
+  công cụ đặt `Width/Height` = cỡ ảnh đã thu. Nhãn "Hành trang" rộng 73 px nên bước 56 (ảnh mẫu bước 50
+  thì đè chữ nhau).
+- Muốn quay về thanh cũ: bỏ hai ini trong `android\du_lieu_ghi_de\ui\ui3\` rồi chạy lại
+  `chuan_bi_du_lieu.ps1` (hoặc chép lại từ cây client PC). Muốn thanh dưới kiểu "khung VNKU to, giữ icon
+  cũ" (bản dựng đầu, `mock_hai_co.png`): xem lịch sử git `20af1a01` (`thanh_duoi_mobile.py`, đã bỏ).
 
 ### 12.11. (10/09) Dữ liệu Android là SINH RA — lớp ghi đè `android\du_lieu_ghi_de\`
 
@@ -978,9 +995,11 @@ APK mới nhất: `android/apk/jx1mobile-0909-suakeo.apk` (đã cài sẵn trên
     **"Dời khối"**: kéo → cả cụm dịch. Lưu → `UserData\UiToaDo.ini` có dòng `KyNang<n>=x,y`.
 16. (10/09) Bấm **"Xoá hết"** → giao diện về **đúng bố cục anh đã sắp** (không về bản PC). Sắp lại tuỳ ý
     rồi bấm **"Mặc định"** → từ đó "Xoá hết" về bố cục mới đó.
-17. (10/09) Thanh dưới: khung rồng của VNKU (nhỏ, góc trái dưới), vật phẩm 1–9 trên dải giấy, T/P ở hai
-    ô vuông phải, gõ chat ở dải trên, hàng icon chức năng + công cụ ngay trên khung. Chỗ nào chưa ưng →
-    kéo trong chế độ sửa giao diện rồi bấm "Mặc định".
+17. (10/09) HUD theo bố cục VNKU: hàng icon tròn có nhãn dưới thanh trạng thái (bấm Nhân vật → mở bảng
+    nhân vật…; Ngồi là nút bật/tắt), lưới Trao đổi/Lên ngựa/Chạy/PK/Auto/Ghi hình bên phải dưới nút "Sửa
+    giao diện", khung chat nhỏ giữa đáy (gõ được, chọn kênh, biểu cảm, gửi), vật phẩm 1–9 hàng trái dưới
+    (chạm dùng được), T/P + túi mở rộng + ẩn chat cạnh khung. Chỗ nào chưa ưng → kéo trong chế độ sửa
+    giao diện rồi bấm "Mặc định".
 
 ### 8.9. Vòng tròn dưới chân đối tượng — **đã làm**
 
