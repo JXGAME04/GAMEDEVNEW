@@ -21,7 +21,7 @@
 #include <vector>
 #include <map>
 
-class CDevGpu; class CTexGpu; class CSurfGpu; class CVBGpu; class CSBGpu; class CGpuShim;
+class CDevGpu; class CTexGpu; class CSurfGpu; class CVBGpu; class CSBGpu; class CGpuShim; class CAtlasPageGpu; class CAtlasMgrGpu;
 
 void RgLog(const char* fmt, ...);
 void RgStub(const char* szName);			// ghi log MOT lan moi ham chua cai
@@ -37,6 +37,32 @@ RgFmt RgFormatInfo(D3DFORMAT f);
 UINT  RgPitch(D3DFORMAT f, UINT w);				// pitch CPU theo D3D9 (byte)
 UINT  RgGpuBpp(SDL_GPUTextureFormat f);
 void  RgConvertRowToBgra(D3DFORMAT f, const BYTE* pSrc, DWORD* pDst, UINT w);
+
+// ---------------------------------------------------------------- atlas [GPU 11/09 ATLAS] (mang CAtlasMgr cua D3D9on11Atlas.cpp sang SDL_GPU)
+// Gom texture sprite nho (POOL_DEFAULT, <= 512, khong RT/DYNAMIC) vao trang 1024x1024 cung dinh dang GPU (R8G8 bang mau /
+// BGRA8). Xep theo KE: trang thuoc mot lop chieu cao (16..512), moi hang cao H, anh chiem mot doan rong w (first-fit).
+// Texture ao (CTexGpu::m_bVirtual): m_pPage + (m_ax, m_ay); uv nhan/dich khi chep dinh vao ring (RgAtlasUv).
+// Tra cho: SAU khung (CDevGpu::m_atlasFrees, xu ly o FrameReset) vi lenh ve trong khung con tham chieu trang.
+class CAtlasPageGpu
+{
+public:
+	CAtlasPageGpu() : m_pTex(NULL), m_fmt(SDL_GPU_TEXTUREFORMAT_INVALID), m_bpp(0), m_binH(0), m_rows(0), m_used(0) {}
+	SDL_GPUTexture* m_pTex; SDL_GPUTextureFormat m_fmt; UINT m_bpp; UINT m_binH, m_rows, m_used;
+	std::vector<std::vector<std::pair<UINT, UINT> > > m_free;	// moi hang: cac doan trong [x0, x1)
+};
+class CAtlasMgrGpu
+{
+public:
+	CAtlasMgrGpu(CDevGpu* pDev);
+	~CAtlasMgrGpu();
+	static bool Eligible(UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL pool);
+	bool Alloc(UINT w, UINT h, SDL_GPUTextureFormat fmt, CAtlasPageGpu** ppPage, UINT* pX, UINT* pY);
+	void Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w);
+	void ReleaseAll();			// huy thiet bi: tra trang ngay
+	CAtlasPageGpu* NewPage(UINT binH, SDL_GPUTextureFormat fmt);
+	CDevGpu* m_pDev; std::vector<CAtlasPageGpu*> m_pages; UINT m_pageSize;
+};
+struct RgAtlasFree { CAtlasPageGpu* pPage; UINT x, y, w; };
 
 // ---------------------------------------------------------------- texture
 class CTexGpu : public IDirect3DTexture9
@@ -78,6 +104,9 @@ public:
 	void  ReleaseGpu();
 	void  MarkUsed() { m_bUsedThisFrame = true; }
 	void  FrameEnd()  { m_bUsedThisFrame = false; }
+	void  BoAtlas();						// [GPU 11/09 ATLAS] texture ao -> texture rieng (truoc khi lam render target)
+	bool  ThuLaiCpu();						// [GPU 11/09 BOCPU] ban CPU da bo: doc lai tu GPU (dong bo, hiem)
+	SDL_GPUTexture* GpuTex() const { return m_bVirtual ? (m_pPage ? m_pPage->m_pTex : NULL) : m_pGpu; }
 	bool  NewVersion(bool bTarget);			// tao SDL_GPUTexture moi (ban cu vao danh sach tra sau Present)
 	void  QueueUpload(const RECT* prc);		// chep CPU (vung prc) vao staging cua khung + ghi lenh tai
 
@@ -104,6 +133,9 @@ public:
 	UINT        m_uGpuBytes;
 	CSurfGpu*   m_pSurf0;			// mat level 0 (khong giu ref; surface giu ref texture)
 	int         m_nPalRow;			// hang bang mau (-1 = khong phai texture chi so)
+	bool        m_bVirtual;			// [GPU 11/09 ATLAS] o trong trang atlas (m_pPage), khong co m_pGpu rieng
+	CAtlasPageGpu* m_pPage; UINT m_ax, m_ay;
+	bool        m_bCpuBo;			// [GPU 11/09 BOCPU] ban CPU da bo sau khi tai len (LockRect phai doc lai tu GPU)
 };
 
 // ---------------------------------------------------------------- surface
@@ -372,6 +404,10 @@ public:
 	void    QueueTexUpload(const RgTexUpload& u) { m_texUploads.push_back(u); }
 	void    DeferRelease(SDL_GPUTexture* p) { if (p) m_release.push_back(p); }
 	void    TouchTex(CTexGpu* p);
+	void    UntouchTex(CTexGpu* p);					// [GPU 11/09 ATLAS] texture bi huy giua khung: rut khoi m_touched
+	void    DeferAtlasFree(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w) { RgAtlasFree f = { pPage, x, y, w }; m_atlasFrees.push_back(f); }
+	void    QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp);	// tai vung 0 (trang moi / o chua co du lieu)
+	bool    ReadbackRegion(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, BYTE* pDst, UINT dstPitch);	// [GPU 11/09 BOCPU]
 	bool    ReadbackTexture(SDL_GPUTexture* pTex, UINT w, UINT h, BYTE* pDst, UINT dstPitch);	// dong bo (chup man hinh)
 	// bang mau
 	bool    PalInit(); void PalRelease(); void PalFrameEnd(); int PalAlloc(const unsigned char* pPal24, int nColors); void PalFree(int row);
@@ -408,6 +444,8 @@ public:
 	std::vector<RgCmd>  m_cmds;
 	std::vector<SDL_GPUTexture*> m_release;		// phien ban cu, tra sau submit
 	std::vector<CTexGpu*> m_touched;				// texture co lenh ve tham chieu trong khung
+	CAtlasMgrGpu*   m_pAtlas;						// [GPU 11/09 ATLAS] NULL = tat (Rep3AtlasGpu=0)
+	std::vector<RgAtlasFree> m_atlasFrees;			// cho trong trang tra SAU khung
 	bool            m_bFrameOpen;
 	// bang mau
 	SDL_GPUTexture* m_pPalTex; std::vector<int> m_palFree, m_palDeferred; std::vector<std::pair<int, std::vector<DWORD> > > m_palPending;
@@ -430,6 +468,7 @@ public:
 	// thong ke
 	unsigned        m_uFrames, m_uDrawCmds, m_uQuads, m_uUploads;
 	unsigned __int64 m_uTexBytes;
+	unsigned        m_uCpuBoSo, m_uCpuBoThuLai; unsigned __int64 m_uCpuBoBytes;	// [GPU 11/09 BOCPU] so texture da bo ban CPU / phai doc lai / byte da bo
 };
 
 // ---------------------------------------------------------------- IDirect3D9

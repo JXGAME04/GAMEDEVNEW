@@ -122,6 +122,25 @@ void TextureResMgr::SetBudget()
 											// Van tren muc cache thuc te (438-451 MB) nen khong quay lai loi giat cua tran 384.
 	if (g_nRep3CacheMB > 0)
 		uBudgetMB = (unsigned __int64)g_nRep3CacheMB;
+#ifdef JX_POSIX
+	{	// [ANDROID 11/09 CACHE] dien thoai: texture nam trong RAM chung CPU/GPU (khong co VRAM rieng), he thong giet app khi
+		// tien trinh qua lon -> kep <= RAM/3 KE CA khi [Client] Rep3CacheMB ep (config Android tung chep 1500 MB tu PC 32 GB).
+		if (g_nRep3CacheMB <= 0)
+		{	// tu tinh: RAM/8 kep [128, 512] MB (PC: RAM/16 kep 60..1024 - dien thoai it RAM hon nhieu, ma texture la thu an nhieu nhat;
+			// ban CPU cua texture da bo (BOCPU) nen so nay ~ RAM that texture chiem). CapBudgetByVram con kep theo 'VRAM' ao cua SDL_GPU.
+			uBudgetMB = uPhysMB / 8;
+			if (uBudgetMB < 128) uBudgetMB = 128;
+			if (uBudgetMB > 512) uBudgetMB = 512;
+		}
+		unsigned __int64 uTranMB = uPhysMB / 3;
+		if (uTranMB < 128) uTranMB = 128;
+		if (uBudgetMB > uTranMB)
+		{
+			Rep3Log("[REP3] cache texture: %llu MB (Rep3CacheMB=%d) qua lon so voi RAM %llu MB cua may -> kep %llu MB", uBudgetMB, g_nRep3CacheMB, uPhysMB, uTranMB);
+			uBudgetMB = uTranMB;
+		}
+	}
+#endif
 	m_nBalanceNum = (int32)(uBudgetMB * 1024 * 1024);
 	Rep3Log("[REP3] cache texture: RAM %llu MB -> ngan sach %llu MB (%s)", uPhysMB, uBudgetMB, g_nRep3Pool ? "VRAM, POOL_DEFAULT" : "RAM+VRAM, POOL_MANAGED");
 }
@@ -152,7 +171,11 @@ void TextureResMgr::CapBudgetByVram(unsigned __int64 uVramFreeMB)
 	unsigned __int64 uBudgetMB = ((unsigned __int64)(uint32)m_nBalanceNum) >> 20;
 	// [REP3 08/09 q] chia cho so client dang mo va he so trang atlas (1,3); san 256 MB (khung TK nang ~200 MB) hoac VRAM/2
 	int nClients = Rep3DemClient();
+#ifdef JX_PLATFORM_SDL
+	unsigned __int64 uHeSo10 = ((g_nRep3ApiOn == 11 && g_nRep3Atlas) || (g_nRep3ApiOn == 100 && g_nRep3AtlasGpu)) ? 13 : 10;	// [GPU 11/09 ATLAS] trang atlas SDL_GPU cung ton them ~1,3x
+#else
 	unsigned __int64 uHeSo10 = (g_nRep3ApiOn == 11 && g_nRep3Atlas) ? 13 : 10;
+#endif
 	unsigned __int64 uCapMB = uVramFreeMB * 10 / (unsigned __int64)nClients / 2 / uHeSo10;
 	unsigned __int64 uFloorMB = 256;
 	if (uFloorMB > uVramFreeMB / 2) uFloorMB = uVramFreeMB / 2;

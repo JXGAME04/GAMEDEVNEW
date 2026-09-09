@@ -70,6 +70,10 @@ extern unsigned g_uRep3GpuTexCount;          // [D3D11 08/09] so texture GPU dan
 extern unsigned __int64 g_uRep3GpuTexBytes;  // [D3D11 08/09] byte texture GPU
 extern int  g_nRep3Atlas;       // [D3D11 08/09 d] gom texture nho vao trang atlas
 extern unsigned g_uRep3AtlasPages; extern unsigned __int64 g_uRep3AtlasBytes;
+#ifdef JX_PLATFORM_SDL
+extern int  g_nRep3AtlasGpu;	// [GPU 11/09 ATLAS] [Client] Rep3AtlasGpu: atlas cho lop SDL_GPU (Rep3Api=100); mac dinh 1 Android, 0 Windows
+extern int  g_nRep3GpuBoBanCpu;	// [GPU 11/09 BOCPU] [Client] Rep3GpuBoBanCpu: bo ban CPU cua texture DEFAULT sau khi tai len; mac dinh 1 Android, 0 Windows
+#endif
 extern int  g_nRep3Pal;	// [D3D11 08/09 r]
 extern unsigned g_uRep3PalRows;
 struct IDirect3DTexture9;

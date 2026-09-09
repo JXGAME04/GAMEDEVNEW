@@ -55,6 +55,15 @@ int  g_nRep3Flip      = 1;	// [D3D11 08/09 f] 1 = flip model (DWM ghep khung tro
 unsigned g_uRep3VeCoSang = 0;	// [SANGDUNG 09/09] so lan that su ve qua nhanh CO chieu sang
 int  g_nRep3LocMs     = 8;	// [LOCTG 09/09] hang so thoi gian bo loc trinh khung (ms); 0 = tat
 unsigned g_uRep3LocKhung = 0;	// [LOCTG 09/09] so khung da tron. [ANDROID 10/09 LOCTG] dinh nghia o DAY (nhu g_nRep3LocMs ben tren) chu khong o D3D9on11Dev.cpp - tep do chi co tren Windows, Android link thieu ky hieu.
+#ifdef JX_PLATFORM_SDL
+#ifdef JX_ANDROID
+int g_nRep3AtlasGpu = 1;	// [GPU 11/09 ATLAS] Android: mac dinh BAT
+int g_nRep3GpuBoBanCpu = 1;	// [GPU 11/09 BOCPU] Android: mac dinh BAT
+#else
+int g_nRep3AtlasGpu = 0;	// [GPU 11/09 ATLAS] GameSDL.exe tren Windows: mac dinh TAT (khong doi hanh vi PC); bat bang [Client] Rep3AtlasGpu=1
+int g_nRep3GpuBoBanCpu = 0;	// [GPU 11/09 BOCPU] nhu tren
+#endif
+#endif
 int  g_nRep3Pal       = 1;	// [D3D11 08/09 r] texture sprite bang mau 2 B/px (chi D3D11)
 int  g_nRep3Waitable  = 0;	// [D3D11 08/09 o] 0 = khong dung doi tuong cho (ban n giat)
 int  g_nRep3Buffers   = 3;	// [D3D11 08/09 o] 2 nhu ban f
@@ -553,6 +562,10 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Buffers   = Rep3Ini("Rep3Buffers", 3);	// [D3D11 08/09 o]
 	g_nRep3Waitable  = Rep3Ini("Rep3Waitable", 0);	// [D3D11 08/09 o]
 	g_nRep3Pal       = Rep3Ini("Rep3Pal", 1);	// [D3D11 08/09 r]
+#ifdef JX_PLATFORM_SDL
+	g_nRep3AtlasGpu    = Rep3Ini("Rep3AtlasGpu", g_nRep3AtlasGpu) ? 1 : 0;	// [GPU 11/09 ATLAS]
+	g_nRep3GpuBoBanCpu = Rep3Ini("Rep3GpuBoBanCpu", g_nRep3GpuBoBanCpu) ? 1 : 0;	// [GPU 11/09 BOCPU]
+#endif
 	g_nRep3LocMs     = Rep3Ini("Rep3LocMs", 8);	// [LOCTG 09/09]
 	if (g_nRep3LocMs < 0) g_nRep3LocMs = 0;
 	if (g_nRep3LocMs > 100) g_nRep3LocMs = 100;

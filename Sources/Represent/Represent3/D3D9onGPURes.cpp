@@ -18,6 +18,7 @@ CTexGpu::CTexGpu(CDevGpu* pDev, UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DP
 	m_pitch = RgPitch(fmt, w);
 	m_pCpu = NULL; m_pGpu = NULL; m_gpuFmt = m_fi.gpu; m_bGpuTarget = false; m_bGpuHasData = false; m_bGpuNewer = false;
 	m_bDirty = false; m_bLocked = false; m_bLockRO = false; m_bUsedThisFrame = false; m_uGpuBytes = 0; m_pSurf0 = NULL; m_nPalRow = -1;
+	m_bVirtual = false; m_pPage = NULL; m_ax = m_ay = 0; m_bCpuBo = false;	// [GPU 11/09 ATLAS] [GPU 11/09 BOCPU]
 	SetRect(&m_rcDirty, 0, 0, 0, 0); SetRect(&m_rcLock, 0, 0, 0, 0);
 	if (!(usage & D3DUSAGE_RENDERTARGET))
 		m_pCpu = (BYTE*)calloc((size_t)m_pitch * h, 1);	// render target: khong ban CPU, cap khi Lock
@@ -26,6 +27,13 @@ CTexGpu::CTexGpu(CDevGpu* pDev, UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DP
 
 CTexGpu::~CTexGpu()
 {
+	if (m_pDev && m_bUsedThisFrame) m_pDev->UntouchTex(this);	// [GPU 11/09 ATLAS] dang trong m_touched cua khung -> rut ra (tranh con tro treo o FrameReset)
+	if (m_bVirtual && m_pPage && m_pDev)
+	{	// [GPU 11/09 ATLAS] tra cho trong trang SAU khung (lenh ve trong khung co the con tham chieu)
+		m_pDev->DeferAtlasFree(m_pPage, m_ax, m_ay, m_w);
+		m_pDev->m_uTexBytes -= m_uGpuBytes; g_uRep3GpuTexCount--; g_uRep3GpuTexBytes -= m_uGpuBytes;
+		m_pPage = NULL; m_uGpuBytes = 0;
+	}
 	ReleaseGpu();
 	if (m_pCpu) { free(m_pCpu); m_pCpu = NULL; }
 	if (m_pDev) m_pDev->Release();
@@ -63,13 +71,15 @@ bool CTexGpu::NewVersion(bool bTarget)
 // chep CPU (vung prc, NULL = toan bo) vao staging cua khung + ghi lenh tai len phien ban hien tai
 void CTexGpu::QueueUpload(const RECT* prc)
 {
-	if (!m_pCpu || !m_pGpu) return;
+	SDL_GPUTexture* pDst = GpuTex();	// [GPU 11/09 ATLAS] texture ao: tai vao trang tai (m_ax, m_ay)
+	if (!m_pCpu || !pDst) return;
 	RECT rc; if (prc) rc = *prc; else SetRect(&rc, 0, 0, (int)m_w, (int)m_h);
 	if (rc.left < 0) rc.left = 0; if (rc.top < 0) rc.top = 0; if (rc.right > (int)m_w) rc.right = (int)m_w; if (rc.bottom > (int)m_h) rc.bottom = (int)m_h;
 	if (rc.right <= rc.left || rc.bottom <= rc.top) return;
 	const UINT rw = (UINT)(rc.right - rc.left), rh = (UINT)(rc.bottom - rc.top);
-	const bool bConv = (m_gpuFmt != m_fi.gpu) || m_fi.bConvert;
-	const UINT gbpp = RgGpuBpp(m_gpuFmt);
+	const SDL_GPUTextureFormat gf = m_bVirtual ? m_pPage->m_fmt : m_gpuFmt;	// [GPU 11/09 ATLAS]
+	const bool bConv = (gf != m_fi.gpu) || m_fi.bConvert;
+	const UINT gbpp = RgGpuBpp(gf);
 	const UINT bytes = rw * rh * gbpp;
 	std::vector<BYTE>& st = m_pDev->m_texStage;
 	const UINT off = ((UINT)st.size() + 15) & ~15u;
@@ -81,15 +91,49 @@ void CTexGpu::QueueUpload(const RECT* prc)
 		if (bConv) RgConvertRowToBgra(m_fmt, pSrc, (DWORD*)pDst, rw);
 		else memcpy(pDst, pSrc, rw * gbpp);
 	}
-	RgTexUpload u = { m_pGpu, (UINT)rc.left, (UINT)rc.top, rw, rh, off, bytes };
+	RgTexUpload u = { pDst, (UINT)rc.left + (m_bVirtual ? m_ax : 0), (UINT)rc.top + (m_bVirtual ? m_ay : 0), rw, rh, off, bytes };	// [GPU 11/09 ATLAS]
 	m_pDev->QueueTexUpload(u);
 	m_bGpuHasData = true;
 }
 
 SDL_GPUTexture* CTexGpu::PrepareForBind()
 {
+	if (m_bVirtual)
+	{	// [GPU 11/09 ATLAS] texture ao: o trong trang atlas
+		if (!m_pPage)
+		{
+			CAtlasMgrGpu* pA = m_pDev->m_pAtlas;
+			if (!pA || !pA->Alloc(m_w, m_h, m_fi.gpu, &m_pPage, &m_ax, &m_ay))
+				m_bVirtual = false;	// het cach (khong tao duoc trang): texture rieng nhu cu
+			else
+			{
+				m_uGpuBytes = m_w * m_h * m_pPage->m_bpp; m_pDev->m_uTexBytes += m_uGpuBytes; g_uRep3GpuTexCount++; g_uRep3GpuTexBytes += m_uGpuBytes;
+				if (m_pCpu) QueueUpload(NULL); else m_pDev->QueueZeroUpload(m_pPage->m_pTex, m_ax, m_ay, m_w, m_h, m_pPage->m_bpp);
+				m_bDirty = false; m_bGpuHasData = true;
+			}
+		}
+		if (m_bVirtual)
+		{
+			if (m_bDirty)
+			{
+				if (m_bUsedThisFrame && m_pCpu)
+				{	// lenh ve dau khung da tham chieu cho cu -> xin cho MOI trong trang (cho cu tra sau khung), tai toan bo
+					CAtlasPageGpu* pNew = NULL; UINT x = 0, y = 0;
+					if (m_pDev->m_pAtlas && m_pDev->m_pAtlas->Alloc(m_w, m_h, m_fi.gpu, &pNew, &x, &y))
+					{ m_pDev->DeferAtlasFree(m_pPage, m_ax, m_ay, m_w); m_pPage = pNew; m_ax = x; m_ay = y; QueueUpload(NULL); }
+					else QueueUpload(&m_rcDirty);	// khong xin duoc: tai de len cho cu (lenh truoc trong khung thay noi dung moi - hiem)
+				}
+				else QueueUpload(&m_rcDirty);
+				m_bDirty = false;
+			}
+			m_pDev->TouchTex(this);
+			m_bUsedThisFrame = true;
+			return m_pPage->m_pTex;
+		}
+	}
 	if (!m_pGpu)
 	{
+		if (m_bCpuBo && !m_pCpu) { m_pCpu = (BYTE*)calloc((size_t)m_pitch * m_h, 1); if (m_pCpu) ThuLaiCpu(); }	// [GPU 11/09 BOCPU] (khong xay ra voi sprite: m_pGpu chi mat khi NewVersion)
 		if (!NewVersion(false)) return NULL;
 		if (m_pCpu) QueueUpload(NULL);
 		m_bDirty = false;
@@ -112,6 +156,8 @@ SDL_GPUTexture* CTexGpu::PrepareForBind()
 
 SDL_GPUTexture* CTexGpu::PrepareAsTarget()
 {
+	if (m_bVirtual) BoAtlas();	// [GPU 11/09 ATLAS] render target khong o trong trang
+	if (m_bCpuBo && !m_pCpu) { m_pCpu = (BYTE*)calloc((size_t)m_pitch * m_h, 1); if (m_pCpu) ThuLaiCpu(); }	// [GPU 11/09 BOCPU]
 	if (!m_pGpu || !m_bGpuTarget)
 	{
 		const bool bKeep = (m_pGpu != NULL && m_bGpuNewer);	// noi dung GPU moi hon CPU: khong tai de lai (hiem; chi khi da la target)
@@ -167,6 +213,7 @@ HRESULT CTexGpu::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, CONST RECT* p
 	{
 		m_pCpu = (BYTE*)calloc((size_t)m_pitch * m_h, 1);
 		if (!m_pCpu) return E_OUTOFMEMORY;
+		if (m_bCpuBo) ThuLaiCpu();	// [GPU 11/09 BOCPU] ban CPU da bo sau khi tai len: doc lai tu GPU (hiem; sprite chi ghi mot lan)
 	}
 	if (m_bGpuNewer && m_pGpu)
 	{	// render target da ve tren GPU: doc lai ve CPU (dong bo, hiem)
@@ -198,6 +245,160 @@ HRESULT CTexGpu::UnlockRect(UINT Level)
 		else { m_rcDirty = m_rcLock; m_bDirty = true; }
 	}
 	return D3D_OK;
+}
+
+// [GPU 11/09 ATLAS] texture ao -> texture rieng (truoc khi lam render target). Noi dung: ban CPU (doc lai tu trang neu da bo).
+void CTexGpu::BoAtlas()
+{
+	if (!m_bVirtual) return;
+	if (m_pPage)
+	{
+		if (!m_pCpu) { m_pCpu = (BYTE*)calloc((size_t)m_pitch * m_h, 1); if (m_pCpu) { m_bCpuBo = true; ThuLaiCpu(); } }
+		else if (m_bCpuBo) ThuLaiCpu();
+		m_pDev->DeferAtlasFree(m_pPage, m_ax, m_ay, m_w);
+		m_pDev->m_uTexBytes -= m_uGpuBytes; g_uRep3GpuTexCount--; g_uRep3GpuTexBytes -= m_uGpuBytes; m_uGpuBytes = 0;
+		m_pPage = NULL;
+	}
+	m_bVirtual = false; m_bGpuHasData = false;
+	if (m_pCpu) { SetRect(&m_rcDirty, 0, 0, (int)m_w, (int)m_h); m_bDirty = true; }
+}
+
+// [GPU 11/09 BOCPU] ban CPU da bo: doc lai tu GPU (texture rieng hoac vung trong trang). Dong bo - chi cho duong hiem (LockRect sprite).
+bool CTexGpu::ThuLaiCpu()
+{
+	// m_bCpuBo giu = true trong luc doc (ReadbackRegion -> SubmitFrame(false) -> FrameReset khong bo ban CPU vua cap), xong moi ha
+	SDL_GPUTexture* pSrc = GpuTex();
+	if (!pSrc || !m_pCpu || !m_bGpuHasData) { m_bCpuBo = false; return false; }
+	const SDL_GPUTextureFormat gf = m_bVirtual ? m_pPage->m_fmt : m_gpuFmt;
+	const UINT gbpp = RgGpuBpp(gf), ox = m_bVirtual ? m_ax : 0, oy = m_bVirtual ? m_ay : 0;
+	if (gbpp == 0) { m_bCpuBo = false; return false; }
+	std::vector<BYTE> tmp((size_t)m_w * m_h * gbpp);
+	if (!m_pDev->ReadbackRegion(pSrc, ox, oy, m_w, m_h, gbpp, &tmp[0], m_w * gbpp)) { m_bCpuBo = false; return false; }
+	const bool bConv = (gf != m_fi.gpu) || m_fi.bConvert;
+	for (UINT y = 0; y < m_h; y++)
+	{
+		const BYTE* ps = &tmp[(size_t)y * m_w * gbpp]; BYTE* pd = m_pCpu + (size_t)y * m_pitch;
+		if (bConv) RgConvertRowFromBgra(m_fmt, (const DWORD*)ps, pd, m_w); else memcpy(pd, ps, (size_t)m_w * m_fi.bpp);
+	}
+	m_bCpuBo = false;
+	m_pDev->m_uCpuBoThuLai++;
+	return true;
+}
+
+// ---------------------------------------------------------------- atlas [GPU 11/09 ATLAS] (thuat toan y het CAtlasMgr cua D3D9on11Atlas.cpp)
+static UINT RgAtlasBin(UINT v)
+{
+	static const UINT s_bins[] = { 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512 };
+	for (int i = 0; i < (int)(sizeof(s_bins) / sizeof(s_bins[0])); i++)
+		if (v <= s_bins[i]) return s_bins[i];
+	return 512;
+}
+
+CAtlasMgrGpu::CAtlasMgrGpu(CDevGpu* pDev) { m_pDev = pDev; m_pageSize = 1024; }
+CAtlasMgrGpu::~CAtlasMgrGpu() { ReleaseAll(); }
+
+void CAtlasMgrGpu::ReleaseAll()
+{
+	for (size_t i = 0; i < m_pages.size(); i++)
+	{
+		CAtlasPageGpu* p = m_pages[i];
+		if (p->m_pTex && m_pDev->m_pGpu) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, p->m_pTex);
+		delete p;
+	}
+	m_pages.clear();
+	g_uRep3AtlasPages = 0; g_uRep3AtlasBytes = 0;
+}
+
+bool CAtlasMgrGpu::Eligible(UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL pool)
+{
+	if (pool != D3DPOOL_DEFAULT) return false;
+	if (usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DYNAMIC | D3DUSAGE_DEPTHSTENCIL)) return false;
+	if (w == 0 || h == 0 || w > 512 || h > 512) return false;
+	switch (fmt)
+	{
+	case D3DFMT_A8R8G8B8: case D3DFMT_X8R8G8B8: case D3DFMT_A4R4G4B4: case D3DFMT_R5G6B5: case D3DFMT_X1R5G5B5: case D3DFMT_A1R5G5B5: case D3DFMT_A8L8: return true;
+	default: return false;
+	}
+}
+
+CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
+{
+	const UINT bpp = RgGpuBpp(fmt);
+	if (bpp == 0 || !m_pDev->m_pGpu) return NULL;
+	SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci));
+	ci.type = SDL_GPU_TEXTURETYPE_2D; ci.format = fmt; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+	ci.width = m_pageSize; ci.height = m_pageSize; ci.layer_count_or_depth = 1; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+	SDL_GPUTexture* pTex = SDL_CreateGPUTexture(m_pDev->m_pGpu, &ci);
+	if (!pTex) { RgLog("atlas: CreateGPUTexture trang %ux%u fmt %d that bai: %s", m_pageSize, m_pageSize, (int)fmt, SDL_GetError()); return NULL; }
+	m_pDev->QueueZeroUpload(pTex, 0, 0, m_pageSize, m_pageSize, bpp);	// trang moi = 0 (khong de rac; vien o khi loc tuyen tinh)
+	CAtlasPageGpu* p = new CAtlasPageGpu();
+	p->m_pTex = pTex; p->m_fmt = fmt; p->m_bpp = bpp; p->m_binH = binH; p->m_rows = m_pageSize / binH; p->m_used = 0;
+	p->m_free.resize(p->m_rows);
+	for (UINT r = 0; r < p->m_rows; r++) p->m_free[r].push_back(std::make_pair(0u, m_pageSize));	// ca hang trong
+	m_pages.push_back(p);
+	g_uRep3AtlasPages++; g_uRep3AtlasBytes += (unsigned __int64)m_pageSize * m_pageSize * bpp;
+	return p;
+}
+
+bool CAtlasMgrGpu::Alloc(UINT w, UINT h, SDL_GPUTextureFormat fmt, CAtlasPageGpu** ppPage, UINT* pX, UINT* pY)
+{
+	UINT binH = RgAtlasBin(h);
+	if (h > binH || w > m_pageSize) return false;
+	for (int lan = 0; lan < 2; lan++)
+	{
+		for (size_t i = 0; i < m_pages.size(); i++)
+		{
+			CAtlasPageGpu* p = m_pages[i];
+			if (p->m_binH != binH || p->m_fmt != fmt) continue;
+			for (UINT r = 0; r < p->m_rows; r++)
+			{
+				std::vector<std::pair<UINT, UINT> >& fr = p->m_free[r];
+				for (size_t k = 0; k < fr.size(); k++)
+				{
+					if (fr[k].second - fr[k].first < w) continue;
+					UINT x = fr[k].first;
+					fr[k].first += w;
+					if (fr[k].first >= fr[k].second) fr.erase(fr.begin() + k);
+					p->m_used++;
+					*ppPage = p; *pX = x; *pY = r * binH;
+					return true;
+				}
+			}
+		}
+		if (!NewPage(binH, fmt)) return false;	// lan 2: thu lai voi trang moi
+	}
+	return false;
+}
+
+void CAtlasMgrGpu::Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
+{
+	if (!pPage || pPage->m_binH == 0) return;
+	UINT r = y / pPage->m_binH;
+	if (r >= pPage->m_rows) return;
+	std::vector<std::pair<UINT, UINT> >& fr = pPage->m_free[r];
+	UINT x0 = x, x1 = x + w;
+	size_t k = 0;
+	while (k < fr.size() && fr[k].first < x0) k++;
+	fr.insert(fr.begin() + k, std::make_pair(x0, x1));
+	if (k + 1 < fr.size() && fr[k].second == fr[k + 1].first) { fr[k].second = fr[k + 1].second; fr.erase(fr.begin() + k + 1); }
+	if (k > 0 && fr[k - 1].second == fr[k].first) { fr[k - 1].second = fr[k].second; fr.erase(fr.begin() + k); }
+	if (pPage->m_used) pPage->m_used--;
+	if (pPage->m_used == 0)
+	{
+		// giu toi da MOT trang rong moi lop chieu cao; trang rong thu hai thi tra lai GPU (sau khung: DeferRelease)
+		int nEmptySameClass = 0;
+		for (size_t i = 0; i < m_pages.size(); i++)
+			if (m_pages[i] != pPage && m_pages[i]->m_binH == pPage->m_binH && m_pages[i]->m_fmt == pPage->m_fmt && m_pages[i]->m_used == 0) nEmptySameClass++;
+		if (nEmptySameClass >= 1)
+		{
+			for (size_t i = 0; i < m_pages.size(); i++)
+				if (m_pages[i] == pPage) { m_pages.erase(m_pages.begin() + i); break; }
+			if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
+			if (g_uRep3AtlasPages) g_uRep3AtlasPages--;
+			g_uRep3AtlasBytes -= (unsigned __int64)m_pageSize * m_pageSize * pPage->m_bpp;
+			delete pPage;
+		}
+	}
 }
 
 // ---------------------------------------------------------------- CSurfGpu
