@@ -907,6 +907,10 @@ bool KRepresentShell3::CreateAFont(const char* pszFontFile, CHARACTER_CODE_SET C
 	}
 	
 	m_FontTable[nFirstFree].nId = nId;
+#ifdef JX_POSIX	// [ANDROID 08/09] chan doan: font nao nap duoc
+	Rep3Log("[FONT] CreateAFont id=%d tep=%s -> %s", nId, pszFontFile,
+		m_FontTable[nFirstFree].pFontObj ? "OK" : "HONG");
+#endif
 	return (m_FontTable[nFirstFree].pFontObj != NULL);
 }
 
@@ -2329,6 +2333,17 @@ void KRepresentShell3::OutputText(int nFontId, const char* psText, int nCount, i
 		if (m_FontTable[i].nId == nFontId)
 			break;
 	}
+#ifdef JX_POSIX	// [ANDROID 08/09] chan doan: chu bi bo vi thieu font
+	if (i == RS2_MAX_FONT_ITEM_NUM || !m_FontTable[i].pFontObj)
+	{
+		static int s_nBoChu = 0;
+		if (s_nBoChu < 20)
+		{
+			s_nBoChu++;
+			Rep3Log("[FONT] BO chu (font id=%d chua nap): \"%.40s\"", nFontId, psText);
+		}
+	}
+#endif
 	if (i == RS2_MAX_FONT_ITEM_NUM)
 		return;
 

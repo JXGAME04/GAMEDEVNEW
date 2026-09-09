@@ -330,6 +330,15 @@ static void SdlToLogical(SDL_Window* pWin, float& x, float& y)
 bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 {
 	HWND hWnd = g_GetMainHWnd();
+#ifdef JX_POSIX	// [ANDROID 08/09] chan doan: su kien ban phim / chuot co toi khong
+	{
+		static int s_nPhim = 0, s_nChuot = 0;
+		if (ev.type >= SDL_EVENT_KEY_DOWN && ev.type <= SDL_EVENT_TEXT_EDITING_CANDIDATES && s_nPhim < 60)
+			{ s_nPhim++; g_DebugLog("[GO] su kien SDL 0x%X", (unsigned)ev.type); }
+		if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN && s_nChuot < 10)
+			{ s_nChuot++; g_DebugLog("[GO] chuot xuong tai %d,%d", (int)ev.button.x, (int)ev.button.y); }
+	}
+#endif
 	switch (ev.type)
 	{
 	case SDL_EVENT_QUIT:
@@ -392,6 +401,13 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 	case SDL_EVENT_KEY_UP:
 	{
 		WORD wVk = SdlKeyToVk(ev.key.key);
+#ifdef JX_POSIX	// [ANDROID 08/09] chan doan ban phim mem
+		{
+			static int s_nPhim = 0;
+			if (s_nPhim < 30) { s_nPhim++; g_DebugLog("[GO] phim %s key=0x%X scancode=%d -> vk=0x%X",
+				(ev.type == SDL_EVENT_KEY_DOWN) ? "xuong" : "len", (unsigned)ev.key.key, (int)ev.key.scancode, (unsigned)wVk); }
+		}
+#endif
 		if (!wVk)
 			break;
 		bool bDown = (ev.type == SDL_EVENT_KEY_DOWN);
@@ -424,6 +440,12 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 	case SDL_EVENT_TEXT_INPUT:
 	{
 		// UTF-8 -> bang ma he thong (nhu WM_CHAR cua cua so ANSI) -> WM_CHAR tung byte. Tieng Viet: game tu ghep (Telex) tu ASCII.
+#ifdef JX_POSIX	// [ANDROID 08/09] chan doan ban phim mem
+		{
+			static int s_nChu = 0;
+			if (s_nChu < 30) { s_nChu++; g_DebugLog("[GO] chu vao: \"%.20s\"", ev.text.text ? ev.text.text : "(rong)"); }
+		}
+#endif
 		wchar_t wBuf[64];
 		int n = MultiByteToWideChar(CP_UTF8, 0, ev.text.text, -1, wBuf, 64);
 		if (n <= 0)

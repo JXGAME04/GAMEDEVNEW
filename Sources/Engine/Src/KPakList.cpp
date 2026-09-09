@@ -99,12 +99,18 @@ bool KPakList::FindElemFile(const char* pszFileName, XPackElemFileRef& ElemRef)
 		// deu cap MAX_PATH. De 128 thi duong dan tai nguyen dai >127 ky tu se tran stack
 		// (ban debug bao "Stack around the variable 'szPackName' was corrupted").
 		char szPackName[MAX_PATH];
-		#ifdef WIN32
+		// [ANDROID 08/09] Ten trong CHI MUC pak luon kieu Windows (dau nguoc): id bam luc dong goi tren Windows.
+		// Ban Android (JX_POSIX) truoc day di nhanh #else -> ghep dau xuoi -> id khac -> KHONG tra duoc tep nao
+		// trong pak (chi tep roi tren dia mo duoc); font gbk_fs*.fnt chi nam trong pak nen mat het chu.
+		#if defined(WIN32) || defined(JX_POSIX)
 			szPackName[0] = '\\';
 		#else
 			szPackName[0] = '/';
 		#endif
 		g_GetPackPath(szPackName + 1, (char*)pszFileName);
+		#ifdef JX_POSIX	// duong dan hien hanh tren POSIX dung dau xuoi -> doi lai cho khop chi muc
+		for (char* pS = szPackName; *pS; pS++) if (*pS == '/') *pS = '\\';
+		#endif
 		unsigned long uId = FileNameToId(szPackName);
 		bFounded = FindElemFile(uId, ElemRef);
 	}

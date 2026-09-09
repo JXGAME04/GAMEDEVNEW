@@ -35,6 +35,12 @@ KFontData::~KFontData()
 // Return		: 是否成功
 // Argumant		: const char* pszFontFile      -> 字库文件名
 *****************************************************************************/
+#ifdef JX_POSIX	/* [ANDROID 08/09] chan doan nap font */
+extern void Rep3Log(const char* fmt, ...);
+#define FONTDIAG(...) Rep3Log(__VA_ARGS__)
+#else
+#define FONTDIAG(...) ((void)0)
+#endif
 bool KFontData::Load(const char* pszFontFile)
 {
 	Terminate();
@@ -47,15 +53,17 @@ bool KFontData::Load(const char* pszFontFile)
 
 		//打开字库文件
 		if (File.Open((char*)pszFontFile) == FALSE)
-			break;
+			{ FONTDIAG("[FONT] KFontData: khong mo duoc %s", pszFontFile); break; }
 		//读字库文件头结构
 		if (File.Read(&Header, sizeof(Header)) != sizeof(Header))
-			break;
+			{ FONTDIAG("[FONT] KFontData: doc dau tep hong (%d byte) %s", (int)sizeof(Header), pszFontFile); break; }
 
 		//检查字库文件ID
 		if (*((int*)(&Header.Id)) != 0x465341 ||	//"ASF"
 			Header.Count <= 0 || Header.Size <= 0)
 		{
+			FONTDIAG("[FONT] KFontData: dau tep sai id=%08X count=%u size=%u %s",
+				*((int*)(&Header.Id)), Header.Count, Header.Size, pszFontFile);
 			break;
 		}
 
@@ -78,6 +86,7 @@ bool KFontData::Load(const char* pszFontFile)
 		//读取字库点阵数据
 		if (File.Read(m_pFontData, m_dwDataSize) == m_dwDataSize)
 			bOk = true;
+		else FONTDIAG("[FONT] KFontData: thieu du lieu (%u byte) %s", m_dwDataSize, pszFontFile);
 
 		//关闭字库文件
 		File.Close();

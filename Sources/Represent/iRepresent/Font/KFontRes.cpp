@@ -48,11 +48,17 @@ KFontRes::~KFontRes()
 // Argumant		: const char* pszFontFile      -> 字库文件名
 // Argumant		: LPDIRECT3DDEVICE8 pd3dDevice -> directx 3d device接口的实例的指针
 *****************************************************************************/
+#ifdef JX_POSIX	/* [ANDROID 08/09] chan doan nap font */
+extern void Rep3Log(const char* fmt, ...);
+#define FONTDIAG(...) Rep3Log(__VA_ARGS__)
+#else
+#define FONTDIAG(...) ((void)0)
+#endif
 bool KFontRes::Init(const char* pszFontFile, LPDIRECT3DDEVICE9 pd3dDevice)
 {
 	Terminate();
 	if ((m_pd3dDevice = pd3dDevice) == NULL)
-		return false;
+		{ FONTDIAG("[FONT] KFontRes: khong co thiet bi ve"); return false; }
 	if (pszFontFile == NULL)
 		return false;
 
@@ -79,6 +85,8 @@ bool KFontRes::Init(const char* pszFontFile, LPDIRECT3DDEVICE9 pd3dDevice)
                                       (g_nRep3ExOn ? D3DUSAGE_DYNAMIC : 0), D3DFMT_A4R4G4B4, (g_nRep3ExOn ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED), &m_pCharTexture, NULL);	// [RAM 08/09]
     if (FAILED(hr))
 	{
+		FONTDIAG("[FONT] KFontRes: CreateTexture %ux%u A4R4G4B4 hong (hr=%08X) %s",
+			m_nTextureSideWidth, m_nTextureSideWidth, (unsigned)hr, pszFontFile);
 		Terminate();
 		return false;
 	}

@@ -169,11 +169,18 @@ void KFont3::Release()
 // Return		: bool 是否成功
 // Argumant		: cosnt char *pszFontFile 字库文件名
 *****************************************************************************/
+#ifdef JX_POSIX	/* [ANDROID 08/09] chan doan nap font */
+extern void Rep3Log(const char* fmt, ...);
+#define FONTDIAG(...) Rep3Log(__VA_ARGS__)
+#else
+#define FONTDIAG(...) ((void)0)
+#endif
 bool KFont3::Load(const char* pszFontFile)
 {
 	m_Resources.Terminate();
 	m_pTexture = NULL;
 	m_bLoaded = false;
+	if (!ms_pd3dDevice) FONTDIAG("[FONT] KFont3: ms_pd3dDevice NULL khi nap %s", pszFontFile);
 	if (ms_pd3dDevice)
 	{
 	//初始化字体字库资源
