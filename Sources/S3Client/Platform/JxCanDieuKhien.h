@@ -53,6 +53,9 @@ void JxKyNang_BatDau(int nNut, int x, int y);
 void JxKyNang_Keo(int x, int y);
 // [ANDROID 09/09 KYNANG I] Goi moi vong lap game: con de nut thi cu danh tiep,
 // tai cho o xanh dang dung.
+// [ANDROID 09/09 GAN] Bang ky nang goi vao day khi nguoi choi cham mot ky nang.
+// Tra ve true = da gan vao o dang cho, ben goi khoi lam viec cua no nua.
+bool JxKyNang_GanKyNang(unsigned int uGenre, unsigned int uId);
 void JxKyNang_Nhip();
 // Nha ngon = thoi danh. Tra ve true neu vua nha mot nut ky nang.
 bool JxKyNang_Nha();

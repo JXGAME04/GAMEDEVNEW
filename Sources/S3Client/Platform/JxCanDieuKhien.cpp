@@ -104,6 +104,17 @@ static char		s_szKNAnhPhuNho[128]= "\\spr\\Ui3\\UiSkillControl\\assign_skill_100
 static char		s_szKNAnhNgam[128]  = "\\spr\\Ui3\\UiSkillControl\\effect_skill.spr";
 //	[ANDROID 09/09 NGHIENG] num chay trong long nut theo huong ngon tay
 static char		s_szKNAnhNum[128]   = "\\spr\\Ui3\\UiSkillControl\\joystick_ctrl.spr";
+//	[ANDROID 09/09 GAN] nut doi che do GAN ky nang vao o (anh cua VNKU, cung bo)
+static char		s_szKNAnhGan[128]   = "\\spr\\Ui3\\UiSkillControl\\switch_assign_mode.spr";
+#define	KYNANG_NUT_GAN		100		// ma tra ve cua JxKyNang_TrungNut cho nut doi che do
+#define	KYNANG_GAN_DX		300		// cho dat nut doi che do, tinh tu goc phai duoi
+#define	KYNANG_GAN_DY		30
+#define	KYNANG_GAN_CO		40
+
+static int			s_nKNCheDoGan = 0;	// 1 = dang o che do gan
+static int			s_nKNOChon = -1;	// o dang cho gan (0..7), -1 = chua chon
+static KUiGameObject s_KNGan[KYNANG_SO_PHU];	// ky nang nguoi choi tu gan cho tung o
+static int			s_nKNDaDocGan = 0;
 //	[ANDROID 09/09 KYNANG H] direction_arrow.spr la huong DI CHUYEN cua nhan vat -
 //	khong phai cai nay. Mui ten dinh huong DANH la attack_direction.spr (nhieu khung
 //	theo huong) - chon khung theo goc ngam thi mui ten quay dung phia dang chi.
@@ -478,6 +489,66 @@ void JxVongChon_Ve()
 // Bo cuc va anh lay dung cua ban JX1 Mobile tham khao - xem android/va_nguon_android_38.py.
 //---------------------------------------------------------------------------
 
+//	[ANDROID 09/09 GAN] Doc / ghi bang gan ky nang: UserData\KyNangMobile.ini
+//	Moi dong: O<so>=<loai>,<ma ky nang>
+static void KyNang_DuongTepGan(char* pszRa, int nCo)
+{
+	pszRa[0] = 0;
+	GetCurrentDirectory(nCo, pszRa);
+	strncat(pszRa, "\\UserData\\KyNangMobile.ini", nCo - strlen(pszRa) - 1);
+}
+
+static void KyNang_DocGan()
+{
+	char szTep[MAX_PATH];
+	char szDong[128];
+	FILE* pTep;
+
+	if (s_nKNDaDocGan)
+		return;
+	s_nKNDaDocGan = 1;
+	memset(s_KNGan, 0, sizeof(s_KNGan));
+	KyNang_DuongTepGan(szTep, sizeof(szTep));
+	pTep = fopen(szTep, "rt");
+	if (pTep == NULL)
+		return;
+	while (fgets(szDong, sizeof(szDong), pTep))
+	{
+		int nO = 0, nLoai = 0, nMa = 0;
+
+		if (sscanf(szDong, "O%d=%d,%d", &nO, &nLoai, &nMa) == 3
+			&& nO >= 0 && nO < KYNANG_SO_PHU)
+		{
+			s_KNGan[nO].uGenre = (unsigned int)nLoai;
+			s_KNGan[nO].uId    = (unsigned int)nMa;
+		}
+	}
+	fclose(pTep);
+}
+
+static void KyNang_GhiGan()
+{
+	char szTep[MAX_PATH];
+	FILE* pTep;
+	int i;
+
+	KyNang_DuongTepGan(szTep, sizeof(szTep));
+	pTep = fopen(szTep, "wt");
+	if (pTep == NULL)
+	{
+		g_DebugLog("[KYNANG] khong ghi duoc %s", szTep);
+		return;
+	}
+	fprintf(pTep, "; [ANDROID] Ky nang nguoi choi tu gan cho tung o tren dien thoai.\n");
+	fprintf(pTep, "; Moi dong: O<so o 0..7>=<loai>,<ma ky nang>. Xoa tep = ve mac dinh.\n");
+	for (i = 0; i < KYNANG_SO_PHU; i++)
+	{
+		if (s_KNGan[i].uId)
+			fprintf(pTep, "O%d=%u,%u\n", i, s_KNGan[i].uGenre, s_KNGan[i].uId);
+	}
+	fclose(pTep);
+}
+
 //	Co THAT cua mot anh .spr (de neo o theo dung ban kinh cua no).
 static int KyNang_CoAnh(const char* pszAnh, int nMacDinh)
 {
@@ -550,6 +621,19 @@ static int KyNang_SoKhung(const char* pszAnh)
 	return 1;
 }
 
+//	[ANDROID 09/09 GAN] Tam nut doi che do gan.
+static void KyNang_TamNutGan(int* px, int* py)
+{
+	int nR = KYNANG_GAN_CO / 2;
+
+	*px = SCREEN_WIDTH  - (nR + KYNANG_GAN_DX * s_nKNGian / 100)
+		+ s_nKNSangPhai + (s_nKNX >= 0 ? s_nKNX : 0);
+	*py = SCREEN_HEIGHT - (nR + KYNANG_GAN_DY * s_nKNGian / 100)
+		- s_nKNLenTren + (s_nKNY >= 0 ? s_nKNY : 0);
+	if (*px < nR + 2) *px = nR + 2;
+	if (*py > SCREEN_HEIGHT - nR - 2) *py = SCREEN_HEIGHT - nR - 2;
+}
+
 //	Tam cua mot o, toa do MAN HINH. nNut: 0 = nut danh chinh, 1..8 = o phu.
 static void KyNang_TamNut(int nNut, int* px, int* py)
 {
@@ -613,6 +697,14 @@ static bool KyNang_CuaNut(int nNut, KUiGameObject* pRa)
 		*pRa = s_KNChinh;
 		return (pRa->uGenre != CGOG_NOTHING && pRa->uId != 0);
 	}
+	// [ANDROID 09/09 GAN] Uu tien ky nang NGUOI CHOI TU GAN cho o nay.
+	KyNang_DocGan();
+	if (s_KNGan[nNut - 1].uId)
+	{
+		*pRa = s_KNGan[nNut - 1];
+		return true;
+	}
+	// Chua gan thi lay theo danh sach ky nang danh, de dung duoc ngay khong phai gan tay.
 	if (nNut - 1 >= s_nKNCo1)
 	{
 		memset(pRa, 0, sizeof(*pRa));
@@ -669,14 +761,24 @@ int JxKyNang_TrungNut(int x, int y)
 	if (!s_nKNBat)
 		return 0;
 	KyNang_DocBang();
+	// [ANDROID 09/09 GAN] nut doi che do gan
+	{
+		int nGX, nGY, nGR = KYNANG_GAN_CO / 2;
+
+		KyNang_TamNutGan(&nGX, &nGY);
+		if ((x - nGX) * (x - nGX) + (y - nGY) * (y - nGY) <= nGR * nGR)
+			return KYNANG_NUT_GAN;
+	}
 	// Xet o phu TRUOC roi moi den nut chinh: cung o phu vong sat nut chinh, uu tien
 	// o nho de cham vao ria cung khong bi nut to nuot mat.
 	for (i = KYNANG_SO_PHU; i >= 0; i--)
 	{
 		KUiGameObject o;
 
-		if (!KyNang_CuaNut(i, &o))
-			continue;		// o trong thi khong bat cham
+		// Trong che do gan thi o TRONG cung phai bat duoc cham, khong thi khong gan
+		// duoc vao o trong.
+		if (!KyNang_CuaNut(i, &o) && !s_nKNCheDoGan)
+			continue;
 		KyNang_TamNut(i, &nX, &nY);
 		nR = KyNang_CoNut(i) / 2;
 		// khung tron -> do theo BAN KINH, khong phai hinh vuong
@@ -732,6 +834,22 @@ static bool KyNang_HoiCore(int nSkillId, int* pTamDanh, int* pLaAura)
 
 void JxKyNang_BatDau(int nNut, int x, int y)
 {
+	// [ANDROID 09/09 GAN] nut doi che do
+	if (nNut == KYNANG_NUT_GAN)
+	{
+		s_nKNCheDoGan = !s_nKNCheDoGan;
+		s_nKNOChon = -1;
+		s_nKNDangCam = -1;
+		g_DebugLog("[KYNANG] che do gan = %d", s_nKNCheDoGan);
+		return;
+	}
+	// Dang o che do gan: cham o la CHON o do de gan, khong danh.
+	if (s_nKNCheDoGan)
+	{
+		s_nKNOChon = (nNut - 1 > 0) ? (nNut - 2) : -1;	// chi o phu moi gan duoc
+		s_nKNDangCam = -1;
+		return;
+	}
 	s_nKNDangCam = nNut - 1;	// 0 = nut chinh, 1..8 = o phu
 	s_nKNNgonX = x;
 	s_nKNNgonY = y;
@@ -843,6 +961,24 @@ static void KyNang_DanhMotPhat()
 	if (nDich == 0)
 		return;
 	g_pCoreShell->LockSomeoneUseSkill(nDich, (int)o.uId);
+}
+
+//	[ANDROID 09/09 GAN] Bang ky nang goi vao day khi nguoi choi cham mot ky nang.
+//	Tra ve true = da gan vao o dang cho, ben goi khoi lam viec cua no nua.
+bool JxKyNang_GanKyNang(unsigned int uGenre, unsigned int uId)
+{
+	if (!s_nKNCheDoGan || s_nKNOChon < 0 || s_nKNOChon >= KYNANG_SO_PHU)
+		return false;
+	if (uId == 0)
+		return false;
+	KyNang_DocGan();
+	s_KNGan[s_nKNOChon].uGenre = uGenre;
+	s_KNGan[s_nKNOChon].uId    = uId;
+	KyNang_GhiGan();
+	g_DebugLog("[KYNANG] gan ky nang %u vao o %d", uId, s_nKNOChon);
+	s_nKNOChon = -1;
+	s_nKNCheDoGan = 0;		// gan xong thi ra khoi che do gan luon
+	return true;
 }
 
 //	[ANDROID 09/09 KYNANG I] Goi moi vong lap game: con de nut thi cu danh tiep.
@@ -980,6 +1116,10 @@ void JxKyNang_Ve()
 		else
 			OVuong(nX, nY, nR, (i == s_nKNDangCam) ? 0xB03A8A3A : 0x80202020);
 
+		// [ANDROID 09/09 GAN] o dang cho gan: to nen sang cho de nhan
+		if (s_nKNCheDoGan && i > 0 && (i - 1) == s_nKNOChon)
+			OVuong(nX, nY, nR, 0x80FFD24A);
+
 		// [ANDROID 09/09 KYNANG D] KSkill::DrawSkillIcon (KSkills.cpp:2861) BO QUA
 		// Width/Height - no ve anh o co THAT, lay (x, y) lam goc TRAI TREN. Nen phai
 		// tu canh giua theo co that (KyNangCoIcon), khong the nho ham do co lai.
@@ -989,6 +1129,17 @@ void JxKyNang_Ve()
 			g_pCoreShell->DrawGameObj(o.uGenre, o.uId,
 				nX - nIcon / 2, nY - nIcon / 2, nIcon, nIcon, 0);
 		}
+	}
+
+	// [ANDROID 09/09 GAN] nut doi che do gan - ve sau cung de nam tren
+	if (CoAnh(s_szKNAnhGan))
+	{
+		int nGX, nGY;
+
+		KyNang_TamNutGan(&nGX, &nGY);
+		if (s_nKNCheDoGan)
+			OVuong(nGX, nGY, KYNANG_GAN_CO / 2, 0x90FFD24A);
+		VeAnhCo(s_szKNAnhGan, nGX, nGY, KYNANG_GAN_CO, 0);
 	}
 
 	// Dang giu mot nut: vong sang ngam + vach chi huong + vong duoi chan con dich.

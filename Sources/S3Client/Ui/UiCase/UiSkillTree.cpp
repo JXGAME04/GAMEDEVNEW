@@ -10,6 +10,9 @@
 #include "../elem/wnds.h"
 #include "../Elem/MouseHover.h"
 #include "uiskilltree.h"
+#ifdef JX_ANDROID
+#include "../../Platform/JxCanDieuKhien.h"	// [ANDROID 09/09 GAN]
+#endif
 #include "../UiBase.h"
 #include "../ShortcutKey.h"
 #include "../UiSoundSetting.h"
@@ -358,6 +361,11 @@ int KUiSkillTree::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			KUiGameObject	Skill;
 			Skill.uGenre = m_Skills[nIndex].uGenre;
 			Skill.uId = m_Skills[nIndex].uId;
+#ifdef JX_ANDROID
+			// [ANDROID 09/09 GAN] Dang o che do gan tren dien thoai: cham ky nang la
+			// GAN vao o dang cho, khong phai dat lam ky nang danh trai/phai.
+			if (!JxKyNang_GanKyNang(Skill.uGenre, Skill.uId))
+#endif
 			g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL,
 				(KUPARAM)&Skill, m_bLeft ? 0 : 1);
 		}		
