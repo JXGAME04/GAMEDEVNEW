@@ -2904,6 +2904,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 		pHoi->nLaAura = 0;
 		pHoi->nTuDung = 0;	// [ANDROID 10/09 BUFF]
 		pHoi->szTen[0] = 0;
+		pHoi->nCanDiem = 0;	// [ANDROID 10/09 KHINHCONG]
 
 		int nToi = Player[CLIENT_PLAYER_INDEX].m_nIndex;
 		if (nToi <= 0 || nToi >= MAX_NPC)
@@ -2917,6 +2918,8 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 		// [ANDROID 10/09 BUFF] ky nang KHONG nham ke dich ma len MINH / DONG DOI (buff, hoi phuc, doi trang thai)
 		pHoi->nTuDung = (!pKN->IsTargetEnemy() && (pKN->IsTargetSelf() || pKN->IsTargetAlly()
 			|| pKN->GetSkillStyle() == SKILL_SS_InitiativeNpcState)) ? 1 : 0;
+		// [ANDROID 10/09 KHINHCONG] ky nang khong nham AI (khinh cong 210, dat bay...): can mot diem tren dat
+		pHoi->nCanDiem = (!pKN->IsAura() && !pKN->IsTargetEnemy() && !pKN->IsTargetSelf() && !pKN->IsTargetAlly()) ? 1 : 0;
 		if (pKN->GetSkillName())
 		{
 			strncpy(pHoi->szTen, pKN->GetSkillName(), sizeof(pHoi->szTen) - 1);

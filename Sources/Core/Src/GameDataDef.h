@@ -1368,6 +1368,7 @@ struct KJxKyNangHoi
 	// [ANDROID 10/09 BUFF] them o CUOI de khong doi bo cuc phan tren
 	int	nTuDung;	// RA  : 1 = ky nang TU DUNG (buff / hoi phuc len minh hoac dong doi, khong nham ke dich)
 	char szTen[64];	// RA  : ten ky nang (ghi tren bang chon)
+	int	nCanDiem;	// RA  : 1 = ky nang can mot DIEM (khinh cong...): khong nham ai ca (khong dich/minh/dong doi)
 };
 
 //==================================
