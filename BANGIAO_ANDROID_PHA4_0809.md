@@ -435,7 +435,7 @@ byte còn sót (mỗi `?` ăn một chữ + một dấu cách).
 | Chạm hai lần liền | Bấm đúp (dùng vật phẩm) | chưa kiểm tay |
 | Kéo ở **nửa trái**, ngoài giao diện | **Cần điều khiển** (đi chuyển) | ✔ ảnh |
 | Kéo ở chỗ khác trên bản đồ | Giữ chuột trái rồi rê (đi liên tục) | ✔ |
-| Kéo **dọc** trên giao diện | Cuộn danh sách | chưa kiểm tay |
+| Kéo **dọc** trên giao diện | Cuộn danh sách | ✔ khung thoại NPC |
 | Kéo **ngang** trên giao diện | Giữ chuột trái rồi rê | — |
 | **Giữ tại chỗ ≥400 ms** (bản đồ hoặc giao diện) | **Chuột phải** — đánh ép / chọn mục tiêu; trong túi đồ là **mặc / tháo / dùng** vật phẩm | ✔ |
 | Nút Back của máy | ESC (mở bảng hệ thống) | ✔ |
@@ -462,7 +462,8 @@ APK: `android/apk/jx1mobile-0909-nutto.apk` (đã cài sẵn trên LDPlayer).
 4. Mở túi đồ → **chạm giữ** một món → phải **dùng / mặc** được nó.
 5. Bấm **Back** của máy → bảng hệ thống; chạm *Trở lại* để đóng.
 6. Bấm Enter (hoặc chạm ô chat) → **bàn phím ảo phải bật**; bấm ESC → phải tắt.
-7. Mở một cửa sổ có danh sách (thoại NPC, danh sách máy chủ) → **vuốt dọc** để cuộn.
+7. **Chạm một NPC** (Dã Tẩu, NPC Chuyển Sinh…) → khung thoại mở, các dòng lựa chọn giãn rộng;
+   **vuốt dọc trong khung** → danh sách cuộn.
 
 ### 8.9. Vòng tròn dưới chân đối tượng — **đã làm**
 
@@ -490,7 +491,26 @@ thông tin"*. Bản vá `android/va_nguon_android_20.py`.
 `\spr\npcres\focused_non_enemy_circle.spr` và `focused_enemy_circle.spr` (dùng khi mục tiêu đang
 bị khoá đánh). Chỉnh trong `config.ini [Cham]`: `VongChon` / `VongChonAnh` / `VongChonAnhDich`.
 
-### 8.10. Còn lại (theo lời chủ, chưa làm)
+### 8.10. Thoại NPC: chạm mở được, dòng cao hơn, vuốt cuộn được
+
+Chủ: *"kích vào npc phải hiện các dòng chat với npc để dễ kích vào - vuốt lên xuống được"*.
+
+**Đo trước khi sửa:** chạm **đúng** dòng thì thoại chạy tiếp, nhưng chạm lệch 8 điểm ảnh là trượt.
+Dòng thoại **không phải** `KWndButton` (nên không hưởng phần nới vùng chạm ở §8.5) mà là **mục của
+`KWndMessageListBox`** — khung thoại NPC là `KUiMsgSayNew` với `KScrollMessageListBox`.
+
+Bước dòng của lớp đó tính bằng `m_nFontSize + 1` ở **10 chỗ** khác nhau (vẽ, dò trúng, cuộn). Gom hết
+về **một** hàm `CaoDong()` rồi trên Android cộng thêm 5 → dòng cao **18** thay vì 13 điểm ảnh. Vì vẽ,
+dò trúng và cuộn đều dùng chung một hàm nên **không bao giờ lệch nhau**. Bản PC: `CaoDong()` trả về
+đúng `m_nFontSize + 1` → không đổi một điểm ảnh nào.
+
+> Muốn dòng cao/thấp hơn: sửa số 5 trong `Sources/S3Client/Ui/Elem/WndMessageListBox.h` (`CaoDong`).
+
+**Đã đo tận mắt:** chạm NPC *Dã Tẩu* → khung thoại mở với các dòng lựa chọn giãn ra rõ; **vuốt dọc**
+trong khung → danh sách **cuộn**, dòng thứ ba (*"Ta bận rồi, không rảnh ngồi tán gẫu với ông"*) hiện ra.
+Đây cũng là phép thử xác nhận cơ chế **vuốt = lăn chuột** ở §8.5 chạy đúng.
+
+### 8.11. Còn lại (theo lời chủ, chưa làm)
 
 - **Tới gần NPC hiện icon để chạm chọn đối thoại** (`UiNpcBar` bên USVOLAM, 350 dòng).
 - **Nút chọn kỹ năng** riêng cho mobile (`UiMiniSkill`, 1141 dòng + `UiAssignSkill.ini` +
