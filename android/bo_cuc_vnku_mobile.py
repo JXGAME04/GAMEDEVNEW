@@ -146,16 +146,21 @@ def bo_cuc(co_icon):
     for i, o in enumerate(ICON_HANG):
         w, h = co_icon[o]
         ra[o] = (400 + 56 * i - w // 2, 72 - h // 2)
-    # 2. luoi 3x2 ben phai, DUOI nut "Sua giao dien" (y 172..200) va TREN cum ky nang (y ~320):
-    #    Trao doi, Len ngua, Chay / PK, Auto, Ghi hinh   (o 46, buoc 50)
-    LUOI = ["Exchange", "Horse", "Run", "PK", "AutoPlay", "Rec"]
-    for i, o in enumerate(LUOI):
+    # 2. cot phai duoi ban do nho, TREN cum ky nang (y ~320) - nhu anh mau VNKU: hang icon o y~165 roi
+    #    khoi vat pham 2x2 sat mep phai, hai icon nua o cot trai canh khoi do.
+    #    (nut "Sua giao dien" doi sang (200,40) trong config.ini de nhuong cho: SuaToaDoNutX/Y)
+    for o, (cx, cy) in {"Exchange": (891, 173), "PK": (941, 173), "AutoPlay": (991, 173),
+                        "Horse": (891, 223), "Run": (891, 273)}.items():
         w, h = co_icon.get(o, (28, 28))
-        cx, cy = 868 + 50 * (i % 3) + 23, 215 + 50 * (i // 3) + 23
         ra[o] = (cx - w // 2, cy - h // 2)
-    # 2b. tui hanh trang mo rong + an chat: canh T/P o day (duoi cum ky nang, x 830..900)
-    ra["ItemEx"] = (834, SH - 38)
-    ra["HideChat"] = (868, SH - 38)
+    # 2b. vat pham nhanh CHI 1..4 (chu: "phim so bo item de lai 1-4 thoi va de vao vi tri nhu vnku"): 2x2, o 36 buoc 40
+    for i in range(4):
+        ra["Item_%d" % i] = (932 + 40 * (i % 2), 205 + 40 * (i // 2))
+    # 2c. ghi hinh: goc trai duoi, it dung (chu dang an no)
+    ra["Rec"] = (8, SH - 38)
+    # 2d. BO (chu: "bo luon 4 cai tren hinh"): ky nang T/P, tui mo rong, an chat - va o vat pham 5..9 -> day ra ngoai man
+    for o in ["ImediaLeftSkill", "ImediaRightSkill", "ItemEx", "HideChat"] + ["Item_%d" % i for i in range(4, 9)]:
+        ra[o] = (-300, 0)
     # 3. khung chat giua day
     w, h = int(round(GOC_W * K_KHUNG)), int(round(GOC_H * K_KHUNG))
     L, T = (SW - w) // 2, SH - h
@@ -167,12 +172,6 @@ def bo_cuc(co_icon):
     ra["InputEdit"] = (X(303) + 4, gy - 9, X(1009) - X(303) - 8, 18)
     ra["Face"] = ((X(1029) + X(1097)) // 2 - 11, gy - 11)
     ra["SendBtn"] = ((X(1124) + X(1192)) // 2 - 11, gy - 11)
-    # 4. ky nang trai/phai (T/P) ngay ben phai khung chat
-    ra["ImediaLeftSkill"] = (L + w + 10, SH - 42)
-    ra["ImediaRightSkill"] = (L + w + 50, SH - 42)
-    # 5. vat pham nhanh 1..9: mot hang goc trai duoi (36 px, buoc 33) - vung can di chuyen chi hien khi cham
-    for i in range(9):
-        ra["Item_%d" % i] = (2 + 33 * i, SH - 42)
     return ra
 
 
@@ -181,6 +180,13 @@ def anh_khung():
     L, T, w, h = bo_cuc({o: (0, 0) for o in ICON_HANG})["khung"]
     nen = Image.new("RGBA", (SW, SH), (0, 0, 0, 0))
     nen.alpha_composite(ks[0].resize((w, h), Image.LANCZOS), (L, T))
+    # O vat pham trong (HaveBgColor=0) thi KHONG THAY o dau -> ve san nen o (o_item.spr cua VNKU, 54 -> 36)
+    # ngay vao anh Main (phu ca man hinh) - khong can C++.
+    bc = bo_cuc({o: (0, 0) for o in ICON_HANG})
+    _, _, o_item, _ = doc_spr(os.path.join(VNKU, "UiPlayerBar", "o_item.spr"))
+    o36 = o_item[0].resize((36, 36), Image.LANCZOS)
+    for ten in ["Item_%d" % i for i in range(4)]:
+        nen.alpha_composite(o36, bc[ten])
     return nen
 
 
@@ -294,13 +300,11 @@ def dung_thu(bc, anh_icon):
 
     for o, im in anh_icon.items():
         mh.alpha_composite(im, bc[o])
-    CU = {"ItemEx": (523, 559), "AutoPlay": (738, 559), "HideChat": (647, 559), "Rec": (692, 508)}
+    CU = {"AutoPlay": (738, 559), "Rec": (692, 508)}
     for o, (l, t) in CU.items():
         mh.alpha_composite(cat(l, t, 28, 28), bc[o])
-    for i in range(9):
+    for i in range(4):
         mh.alpha_composite(cat(11 + 38 * i, 545, 36, 36), bc["Item_%d" % i])
-    mh.alpha_composite(cat(372, 529, 36, 36), bc["ImediaLeftSkill"])
-    mh.alpha_composite(cat(410, 529, 36, 36), bc["ImediaRightSkill"])
     mh.alpha_composite(cat(281, 522, 22, 22), bc["Face"])
     mh.alpha_composite(cat(304, 522, 22, 22), bc["SendBtn"])
     mh.alpha_composite(cat(1, 520, 20, 20), bc["ChannelBtn"])

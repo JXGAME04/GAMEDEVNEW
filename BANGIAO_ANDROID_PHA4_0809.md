@@ -752,11 +752,13 @@ Hai điều phải biết trước khi động vào ảnh VNKU (đã ghi ở `JX
 | Vùng | Ô (ini) | Ảnh | Toạ độ màn hình 1040×604 |
 |---|---|---|---|
 | Hàng icon tròn (tâm y 72) | Status, Items, Skills, Faction, Team, **Sit**, Friend, Options | `spr/uinew/uitoolscontrolbar/{nhanvat,hanhtrang,vocong,banghoi,todoi,ngoixuong,haohuu,caidat}_m.spr` (2 khung: thường / bấm) | tâm x 400 + 56·i (i = 0..7), kết thúc trước bản đồ nhỏ (854) |
-| Lưới phải 3×2 (ô 46, bước 50) | Exchange, Horse, Run / PK, AutoPlay, Rec | `icon_traodoi_m`, `lenngua_m`, `dichuyen_m`, `pk_m`; Auto + Ghi hình giữ ảnh cũ 28 px | góc (868,215) — **dưới** nút "Sửa giao diện" (172..200), **trên** cụm kỹ năng (~320) |
+| Cột phải dưới bản đồ nhỏ (như ảnh mẫu) | hàng tâm y 173: Exchange (891), PK (941), AutoPlay (991); cột tâm x 891: Horse (223), Run (273) | `icon_traodoi_m`, `pk_m`, `lenngua_m`, `dichuyen_m`; Auto giữ ảnh cũ 28 px | **trên** cụm kỹ năng (~320) |
+| **Vật phẩm nhanh chỉ 1–4** (chủ: *"phím số bỏ item để lại 1–4 thôi và để vào vị trí như VNKU"*) | Item_0..3 khối **2×2** (36 px, bước 40), nền ô `o_item.spr` VNKU vẽ sẵn vào ảnh Main | | (932/972, 205/245) — sát mép phải, cạnh Lên ngựa / Chạy |
 | Khung chat giữa đáy | `[Main]` Image = `khung_chat_mobile.spr` (khung_chat_new thu 0,32 = 430×68 trên nền trong suốt 1040×604) | | (305,536) |
 | Trên khung chat | ChannelBtn ô vuông trái; InputEdit 218×18 trên dải giấy; Face, SendBtn hai ô vuông phải | ảnh cũ | 365,570 / 406,571 / 634,569 / 664,569 |
-| Cạnh khung, bên phải | ImediaLeftSkill, ImediaRightSkill (T/P), ItemEx, HideChat | ảnh cũ | 745,562 / 785,562 / 834,566 / 868,566 |
-| Hàng vật phẩm nhanh 1–9 | Item_0..8 (36 px, bước 33) | | (2 + 33·i, 562) — góc trái dưới, vùng cần đi |
+| Ghi hình (Rec) | góc trái dưới, chủ đang ẩn | ảnh cũ | (8,566) |
+| **BỎ** (chủ: *"bỏ luôn 4 cái trên hình"* = T/P, túi mở rộng, ẩn chat; và ô 5–9) | ImediaLeftSkill, ImediaRightSkill, ItemEx, HideChat, Item_4..8 | | đẩy ra ngoài màn `Left=-303` — muốn lấy lại thì đặt toạ độ trong ini hoặc kéo bằng chế độ sửa |
+| Nút "Sửa giao diện" | `config.ini [Ui] SuaToaDoNutX=200 / SuaToaDoNutY=40` | | (200,40) — nhường chỗ (SCREEN_WIDTH−98, 172) cho cột phải |
 
 `KUiToolsControlBar` Main về (0,0) 1040×604 (trước là 450,440 200×150), sáu nút toạ độ tuyệt đối.
 Ini = màn hình − (3,1) vì chủ đặt `KUiPlayerBar|Main=3,1`. Các cửa sổ chủ **đã tự xếp** (bản đồ nhỏ, khung
@@ -996,10 +998,10 @@ APK mới nhất: `android/apk/jx1mobile-0909-suakeo.apk` (đã cài sẵn trên
 16. (10/09) Bấm **"Xoá hết"** → giao diện về **đúng bố cục anh đã sắp** (không về bản PC). Sắp lại tuỳ ý
     rồi bấm **"Mặc định"** → từ đó "Xoá hết" về bố cục mới đó.
 17. (10/09) HUD theo bố cục VNKU: hàng icon tròn có nhãn dưới thanh trạng thái (bấm Nhân vật → mở bảng
-    nhân vật…; Ngồi là nút bật/tắt), lưới Trao đổi/Lên ngựa/Chạy/PK/Auto/Ghi hình bên phải dưới nút "Sửa
-    giao diện", khung chat nhỏ giữa đáy (gõ được, chọn kênh, biểu cảm, gửi), vật phẩm 1–9 hàng trái dưới
-    (chạm dùng được), T/P + túi mở rộng + ẩn chat cạnh khung. Chỗ nào chưa ưng → kéo trong chế độ sửa
-    giao diện rồi bấm "Mặc định".
+    nhân vật…; Ngồi là nút bật/tắt), cột phải dưới bản đồ nhỏ: Trao đổi / PK / Auto, Lên ngựa, Chạy và
+    **4 ô vật phẩm 2×2** (phím số 1–4, chạm dùng được; ô 5–9, T/P, túi mở rộng, ẩn chat đã bỏ), khung
+    chat nhỏ giữa đáy (gõ được, chọn kênh, biểu cảm, gửi), nút "Sửa giao diện" giờ ở (200,40) dưới thanh
+    trạng thái bên trái. Chỗ nào chưa ưng → kéo trong chế độ sửa giao diện rồi bấm "Mặc định".
 
 ### 8.9. Vòng tròn dưới chân đối tượng — **đã làm**
 
