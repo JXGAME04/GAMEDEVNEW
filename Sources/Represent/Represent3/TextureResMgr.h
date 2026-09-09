@@ -62,6 +62,8 @@ public:
 	void NapNenDung();			// dung luong nen, bo viec/ket qua con lai (Free)
 	bool m_bVeDangDien;			// true giua RepresentBegin/End: cho phep giao viec cho luong nen
 	unsigned m_nNapNenGui, m_nNapNenXong, m_nNapNenHong, m_nNapNenBoVe;	// thong ke ky ([REP3-NAP])
+	// [NAPCHIEU 09/09] nap truoc (goi y): 1 = da co muc, 2 = da giao luong nen + chen muc dang nap, 0 = khong giao duoc (khong nap dong bo)
+	int NapTruoc(const char* pszImage, uint32 nType);
 private:
 	bool NapNenGiao(const char* pszImage, uint32 uId, uint32 nType);	// false = khong tao duoc luong -> nap ngay
 	static unsigned __stdcall NapNenLuong(void* p);

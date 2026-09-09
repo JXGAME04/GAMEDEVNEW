@@ -823,6 +823,33 @@ bool TextureResMgr::NapNenGiao(const char* pszImage, uint32 uId, uint32 nType)
 	return true;
 }
 
+// [NAPCHIEU 09/09] Nap truoc mot anh o luong nen (luong ve/luong chinh goi, vd ngay khi nhan goi 95 'phong chieu').
+// Giong duong chen muc cua GetImage khi bNapNen, nhung KHONG phu thuoc m_bVeDangDien va KHONG nap dong bo:
+// nap truoc chi la goi y, khong giao duoc thi thoi (GetImage se nap nhu cu). Tra 1 = da co muc, 2 = da giao, 0 = khong.
+int TextureResMgr::NapTruoc(const char* pszImage, uint32 nType)
+{
+	if (!pszImage || !pszImage[0] || !g_nRep3NapNen)
+		return 0;
+	KAutoCriticalSection AutoLock(m_ImageProcessLock);
+	const uint32 uImage = g_FileName2Id((LPSTR)pszImage);
+	const int nIdx = FindImage(uImage, 0);	// >= 0: da co; < 0: -(vi tri chen)-1
+	if (nIdx >= 0)
+		return 1;	// da co (dang nap, da nap, hoac muc nap hong dang cho thu lai)
+	if (!NapNenGiao(pszImage, uImage, nType))
+		return 0;
+	ResNode node;
+	node.m_bDangNap = true;
+	node.m_bCacheable = true;
+	node.m_nLastUsedTime = GetTickCount();
+	node.m_nRetryTime = GetTickCount();
+	node.m_nLanHong = 0;
+	node.m_nType = nType;
+	node.m_nID = uImage;
+	node.m_pTextureRes = NULL;
+	m_TextureResList.insert(m_TextureResList.begin() + (-nIdx - 1), node);
+	return 2;
+}
+
 // Luong ve, dau moi khung (RepresentBegin): gan ket qua vao muc; BMP tao texture tai day (can device).
 void TextureResMgr::NapNenNhan()
 {

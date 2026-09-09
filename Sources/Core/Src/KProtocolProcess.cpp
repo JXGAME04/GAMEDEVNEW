@@ -996,6 +996,37 @@ void KProtocolProcess::RequestNpcFail(BYTE* pMsg)
 #endif
 }
 
+#ifndef _SERVER
+// [NAPCHIEU 09/09] Nhan goi 95 (chieu bat dau) -> xep hang nap SPR dan cua chieu o luong nen Represent3 ngay, truoc khi
+// dan duoc ve lan dau (1-2 khung sau). Tra Rep3_NapTruoc mot lan bang GetProcAddress; thieu -> bo qua im lang.
+// Chi muc dan = m_nChildSkillId (giong CreateMissle); LowMissle -> kieu 1 (giong KMissleRes::Draw).
+static void NapTruocAnhChieu(int nSkillID, int nSkillLevel)
+{
+	typedef int (*PFN_Rep3NapTruoc)(const char*);
+	static PFN_Rep3NapTruoc s_pfn = NULL;
+	static int s_nTra = 0;
+	if (!s_pfn)
+	{
+		if (s_nTra >= 8) return;	// Represent3.dll chua nap luc dau: thu lai vai lan roi thoi
+		s_nTra++;
+		HMODULE h = GetModuleHandleA("Represent3.dll");
+		if (h) s_pfn = (PFN_Rep3NapTruoc)GetProcAddress(h, "Rep3_NapTruoc");
+		if (!s_pfn) return;
+	}
+	if (nSkillID <= 0 || nSkillLevel <= 0) return;
+	KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(nSkillID, nSkillLevel);
+	if (!pSkill) return;
+	int nStyle = pSkill->GetChildSkillId();
+	if (Option.GetLow(LowMissle)) nStyle = 1;
+	if (nStyle <= 0 || nStyle >= MAX_MISSLESTYLE) return;
+	for (int s = 0; s < MAX_MISSLE_STATUS * 2; s++)
+	{
+		const char* psz = g_MisslesLib[nStyle].m_MissleRes.m_MissleRes[s].AnimFileName;
+		if (psz[0]) s_pfn(psz);
+	}
+}
+#endif
+
 void KProtocolProcess::NetCommandSkill(BYTE* pMsg)
 {
 	DWORD	dwNpcID;
@@ -1009,6 +1040,9 @@ void KProtocolProcess::NetCommandSkill(BYTE* pMsg)
 	MapY = *(int *)&pMsg[17];
 	nSkillEnChance = *(int *)&pMsg[21];
 	{ extern int g_nFX_rx95; g_nFX_rx95++; }	// [FX 07/09]
+#ifndef _SERVER
+	NapTruocAnhChieu(nSkillID, nSkillLevel);	// [NAPCHIEU 09/09]
+#endif
 	if ((nSkillID >= 1363 && nSkillID <= 1384) || (nSkillID >= 1965 && nSkillID <= 1991) || (nSkillID >= 2114 && nSkillID <= 2143))	// [VHTD 02/09k]
 		AUTOLOG("[VH-CL-CAST-NET] npc=%u idx=%d skill=%d lv=%d map=(%d,%d) ench=%d me=%d t=%u", dwNpcID, NpcSet.SearchID(dwNpcID), nSkillID, nSkillLevel, MapX, MapY, nSkillEnChance, Player[CLIENT_PLAYER_INDEX].m_nIndex, SubWorld[0].m_dwCurrentTime);
 	AUTOLOG_EVERY(200, "NETSKILL-RX npc=%u idx=%d skill=%d lv=%d mapx=%d mapy=%d muctieuidx=%d ench=%d t=%u", dwNpcID, NpcSet.SearchID(dwNpcID), nSkillID, nSkillLevel, MapX, MapY, NpcSet.SearchID(MapY), nSkillEnChance, SubWorld[0].m_dwCurrentTime);

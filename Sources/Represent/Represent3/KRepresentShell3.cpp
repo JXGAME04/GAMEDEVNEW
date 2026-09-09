@@ -57,6 +57,8 @@ float g_fRep3LocK     = 2.0f;	// [LOCTG b] 255 / Rep3LocToi
 int  g_nRep3LocMs     = 0;
 int  g_nRep3ChuGiuMs  = 12;	// [CHUGIU 09/09] giu vi tri man hinh cua chu (ms); 0 = tat
 unsigned g_uRep3ChuGiu = 0, g_uRep3ChuVe = 0;	// [LOCTG 09/09] hang so thoi gian bo loc trinh khung (ms); 0 = tat
+static KRepresentShell3* g_pRep3ShellDuyNhat = NULL;	// [NAPCHIEU 09/09] doi tuong shell (CreateRepresentShell tao dung 1)
+static unsigned g_uRep3NapTruoc[3] = { 0, 0, 0 };	// [NAPCHIEU 09/09] ket qua NapTruoc: [0] khong, [1] da co, [2] giao nen
 extern unsigned g_uRep3LocKhung;
 int  g_nRep3Pal       = 1;	// [D3D11 08/09 r] texture sprite bang mau 2 B/px (chi D3D11)
 int  g_nRep3Waitable  = 0;	// [D3D11 08/09 o] 0 = khong dung doi tuong cho (ban n giat)
@@ -443,6 +445,21 @@ iRepresentShell* CreateRepresentShell()
 	return (new KRepresentShell3);
 }
 
+// [NAPCHIEU 09/09] nap truoc anh chieu: Core goi qua GetProcAddress("Rep3_NapTruoc") de khong doi vtable iRepresentShell.
+int KRepresentShell3::NapTruoc(const char* pszImage)
+{
+	const int n = m_TextureResMgr.NapTruoc(pszImage, ISI_T_SPR);
+	g_uRep3NapTruoc[(n >= 0 && n <= 2) ? n : 0]++;
+	return n;
+}
+extern "C" __declspec(dllexport)
+int Rep3_NapTruoc(const char* pszImage)
+{
+	if (!g_pRep3ShellDuyNhat || !pszImage)
+		return 0;
+	return g_pRep3ShellDuyNhat->NapTruoc(pszImage);
+}
+
 IInlinePicEngineSink* g_pIInlinePicSinkRP = NULL;	//Ç¶ÈëÊ½Í¼Æ¬µÄ´¦Àí½Ó¿Ú[wxb 2003-6-20]
 HRESULT KRepresentShell3::AdviseRepresent(IInlinePicEngineSink* pSink)
 {
@@ -459,6 +476,7 @@ HRESULT KRepresentShell3::UnAdviseRepresent(IInlinePicEngineSink* pSink)
 
 KRepresentShell3::KRepresentShell3()
 {
+	g_pRep3ShellDuyNhat = this;	// [NAPCHIEU 09/09]
 	m_nLeft = 0;
 	m_nTop = 0;
 	m_pPreRenderTexture128 = NULL;
@@ -2770,6 +2788,8 @@ void KRepresentShell3::RepresentEnd()
 			g_uRep3LocKhung = 0;
 			Rep3Log("[CHUGIU] giu %d ms | dong chu giu %u, ve moi %u", g_nRep3ChuGiuMs, g_uRep3ChuGiu, g_uRep3ChuVe);
 			g_uRep3ChuGiu = 0; g_uRep3ChuVe = 0;
+			Rep3Log("[NAPCHIEU] nap truoc anh chieu: goi %u | da co %u, giao nen %u, khong %u", g_uRep3NapTruoc[0] + g_uRep3NapTruoc[1] + g_uRep3NapTruoc[2], g_uRep3NapTruoc[1], g_uRep3NapTruoc[2], g_uRep3NapTruoc[0]);
+			g_uRep3NapTruoc[0] = g_uRep3NapTruoc[1] = g_uRep3NapTruoc[2] = 0;
 			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0; g_uRep3BatchQuads = 0; g_uRep3BatchDraws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
 			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung %u) | cpu ve: DrawPrimitives %.2f ms/khung (max %.1f), khung %.2f ms (max %.1f)",	// [NAP 08/09 a/b] [VE 08/09 a/b]
