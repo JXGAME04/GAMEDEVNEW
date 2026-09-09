@@ -167,10 +167,11 @@ def bo_cuc(co_icon):
     # 2e. hai nut mui ten (chu: "nut an cac icon phia tren va nut an kenh chat nhu vnku"):
     #     chu: "may nut an phai nam phia TRONG". HideIcons o CUOI hang, ngay sau Cai dat (nhu VNKU HidenButton),
     #     truoc icon Chien lenh chu dat (811,57). HideChat nam TRONG khung chat trai (chu dat (2,119), rong 370):
-    #     goc tren-phai, ben phai cot chu (chu ket thuc ~x 306).
+    #     o CUOI HANG TAB kenh (Tat ca ... Khac ket thuc ~x 335, hang tab y 259..279) - chu: "cho vao ben trong"
+    #     (goc tren-phai canh dong chu dau tien trong nhu noi ngoai).
     w, h = co_icon.get("HideIcons", (24, 36))
     ra["HideIcons"] = (782, 72 - h // 2)
-    ra["HideChat"] = (340, 121)
+    ra["HideChat"] = (344, 269 - h // 2)
     # 3. khung chat giua day
     w, h = int(round(GOC_W * K_KHUNG)), int(round(GOC_H * K_KHUNG))
     L, T = (SW - w) // 2, SH - h
@@ -178,10 +179,12 @@ def bo_cuc(co_icon):
     X = lambda a: L + int(round(a * K_KHUNG))  # noqa: E731
     Y = lambda a: T + int(round(a * K_KHUNG))  # noqa: E731
     gy = (Y(100) + Y(175)) // 2
-    ra["ChannelBtn"] = ((X(185) + X(252)) // 2 - 10, gy - 10)
+    # +2 theo x: anh icon (01.spr, nut gui, nut kenh) co phan ve lech trai trong khung cua no -> chu thay
+    # "van con lech, di chuyen qua phai 1 ti" (10/09 13:3x) du toa do bang dung tam o vuong.
+    ra["ChannelBtn"] = ((X(185) + X(252)) // 2 - 10 + 2, gy - 10)
     ra["InputEdit"] = (X(303) + 4, gy - 9, X(1009) - X(303) - 8, 18)
-    ra["Face"] = ((X(1029) + X(1097)) // 2 - 11, gy - 11)
-    ra["SendBtn"] = ((X(1124) + X(1192)) // 2 - 11, gy - 11)
+    ra["Face"] = ((X(1029) + X(1097)) // 2 - 11 + 2, gy - 11)
+    ra["SendBtn"] = ((X(1124) + X(1192)) // 2 - 11 + 2, gy - 11)
     return ra
 
 
