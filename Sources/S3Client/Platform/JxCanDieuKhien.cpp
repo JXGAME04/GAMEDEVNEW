@@ -20,6 +20,7 @@
 #include "../../Represent/iRepresent/KRepresentUnit.h"
 #include "../../Core/src/coreshell.h"
 #include "../../Core/src/GameDataDef.h"
+#include "../../Core/src/CoreObjGenreDef.h"	// [ANDROID 09/09 KYNANG] CGOG_NOTHING
 #include "KDebug.h"
 #include <math.h>
 
@@ -50,6 +51,27 @@ static int	s_nIconCao = 62;	// icon cao hon chan NPC bao nhieu diem anh
 static char	s_szIconAnh[128] = "\\spr\\obj\\box\\YellowPoint.spr";
 
 // --- trang thai --------------------------------------------------------------
+// [ANDROID 09/09 KYNANG] bang nut ky nang
+#define	KYNANG_TOI_DA		12		// so nut nhieu nhat cho hien
+#define	KYNANG_DS_TOI_DA	65		// bang GDI_LEFT_ENABLE_SKILLS tra ve toi da 65 muc
+#define	KYNANG_CACH			6		// khe ho giua hai nut
+#define	KYNANG_LAM_MOI_MS	2000	// bao lau doc lai danh sach ky nang mot lan
+
+static int			s_nKNBat = 1;
+static int			s_nKNSo  = 6;
+static int			s_nKNCot = 2;
+static int			s_nKNCo  = 56;
+static int			s_nKNX   = -1;		// -1 = tu tinh
+static int			s_nKNY   = -1;
+
+static KUiSkillData	s_KNBang[KYNANG_DS_TOI_DA];
+static int			s_nKNCo1 = 0;		// so ky nang doc duoc
+static unsigned int	s_uKNDocLuc = 0;
+static int			s_nKNDangCam = -1;	// nut dang giu (0-based), -1 = khong
+static int			s_nKNNgonX = 0, s_nKNNgonY = 0;
+static int			s_nKNDichIdx = 0;	// chi so NPC dang ngam
+static int			s_nKNDichX = 0, s_nKNDichY = 0;	// vi tri VE cua no
+
 static bool	s_bCam = false;
 static int	s_nTamX = 0, s_nTamY = 0;	// tam can (cho dat ngon)
 static int	s_nNgonX = 0, s_nNgonY = 0;	// cho ngon dang o
@@ -77,6 +99,17 @@ static void DocCaiDat()
 	s_nIconBat   = GetPrivateProfileInt("Cham", "IconNpc", 1, szCfg);
 	s_nIconCao   = GetPrivateProfileInt("Cham", "IconNpcCao", 62, szCfg);
 	GetPrivateProfileString("Cham", "IconNpcAnh", s_szIconAnh, s_szIconAnh, sizeof(s_szIconAnh), szCfg);
+	// [ANDROID 09/09 KYNANG]
+	s_nKNBat = GetPrivateProfileInt("Cham", "KyNang", 1, szCfg);
+	s_nKNSo  = GetPrivateProfileInt("Cham", "KyNangSo", 6, szCfg);
+	s_nKNCot = GetPrivateProfileInt("Cham", "KyNangCot", 2, szCfg);
+	s_nKNCo  = GetPrivateProfileInt("Cham", "KyNangCo", 56, szCfg);
+	s_nKNX   = GetPrivateProfileInt("Cham", "KyNangX", -1, szCfg);
+	s_nKNY   = GetPrivateProfileInt("Cham", "KyNangY", -1, szCfg);
+	if (s_nKNSo  < 1)  s_nKNSo  = 1;
+	if (s_nKNSo  > KYNANG_TOI_DA) s_nKNSo = KYNANG_TOI_DA;
+	if (s_nKNCot < 1)  s_nKNCot = 1;
+	if (s_nKNCo  < 24) s_nKNCo  = 24;
 	if (s_nVungRong < 10) s_nVungRong = 10;
 	if (s_nVungRong > 100) s_nVungRong = 100;
 	if (s_nBanKinh < 30) s_nBanKinh = 30;
@@ -298,6 +331,220 @@ void JxVongChon_Ve()
 //
 // config.ini [Cham]: IconNpc=1 / IconNpcAnh / IconNpcCao (cao hon chan NPC bao nhieu diem anh)
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+// [ANDROID 09/09 KYNANG] NUT CHON KY NANG DANH
+//---------------------------------------------------------------------------
+
+// Doc lai danh sach ky nang danh trai. Khong doc moi khung: GDI nay quet ca cay
+// vo cong nen goi lien tuc la phi.
+static void KyNang_DocBang()
+{
+	unsigned int uNay = (unsigned int)GetTickCount();
+
+	if (g_pCoreShell == NULL)
+		return;
+	if (s_uKNDocLuc && uNay - s_uKNDocLuc < KYNANG_LAM_MOI_MS)
+		return;
+	s_uKNDocLuc = uNay;
+	memset(s_KNBang, 0, sizeof(s_KNBang));
+	s_nKNCo1 = g_pCoreShell->GetGameData(GDI_LEFT_ENABLE_SKILLS, (KUPARAM)&s_KNBang, 0);
+	if (s_nKNCo1 < 0)
+		s_nKNCo1 = 0;
+	if (s_nKNCo1 > KYNANG_DS_TOI_DA)
+		s_nKNCo1 = KYNANG_DS_TOI_DA;
+}
+
+// Goc trai tren cua bang nut. Mac dinh: goc phai duoi, chua len tren thanh cong cu.
+static void KyNang_GocBang(int* px, int* py)
+{
+	int nHang = (s_nKNSo + s_nKNCot - 1) / s_nKNCot;
+	int nRong = s_nKNCot * s_nKNCo + (s_nKNCot - 1) * KYNANG_CACH;
+	int nCao  = nHang * s_nKNCo + (nHang - 1) * KYNANG_CACH;
+
+	// SCREEN_WIDTH / SCREEN_HEIGHT = co khung ve that (KSdlApp dat), dung nhu JxCan_TrongVung.
+	*px = (s_nKNX >= 0) ? s_nKNX : (SCREEN_WIDTH - nRong - 12);
+	*py = (s_nKNY >= 0) ? s_nKNY : (SCREEN_HEIGHT - nCao - 96);
+}
+
+static void KyNang_HinhNut(int i, int* px, int* py)
+{
+	int nX0, nY0;
+
+	KyNang_GocBang(&nX0, &nY0);
+	*px = nX0 + (i % s_nKNCot) * (s_nKNCo + KYNANG_CACH);
+	*py = nY0 + (i / s_nKNCot) * (s_nKNCo + KYNANG_CACH);
+}
+
+// So nut thuc su ve ra: khong nhieu hon so ky nang dang co.
+static int KyNang_SoNutHien()
+{
+	int n = s_nKNSo;
+
+	if (n > s_nKNCo1)
+		n = s_nKNCo1;
+	return n;
+}
+
+int JxKyNang_TrungNut(int x, int y)
+{
+	int i, nX, nY, n;
+
+	DocCaiDat();
+	if (!s_nKNBat)
+		return 0;
+	KyNang_DocBang();
+	n = KyNang_SoNutHien();
+	for (i = 0; i < n; i++)
+	{
+		KyNang_HinhNut(i, &nX, &nY);
+		if (x >= nX && x < nX + s_nKNCo && y >= nY && y < nY + s_nKNCo)
+			return i + 1;
+	}
+	return 0;
+}
+
+// Hoi Core: con dich hop nhat theo huong ngam (0,0 = khong ngam -> gan nhat).
+// Tra ve chi so NPC, 0 neu khong co con nao.
+static int KyNang_TimDich(int nHuongX, int nHuongY, int* pVeX, int* pVeY)
+{
+	KUiTargetDetailInfo tt;
+
+	if (g_pCoreShell == NULL)
+		return 0;
+	memset(&tt, 0, sizeof(tt));
+	tt.nViTriVeX = nHuongX;
+	tt.nViTriVeY = nHuongY;
+	if (!g_pCoreShell->GetGameData(NPC_OI_TARGET_INFO, (KUPARAM)&tt, 2))
+		return 0;
+	if (pVeX) *pVeX = tt.nViTriVeX;
+	if (pVeY) *pVeY = tt.nViTriVeY;
+	return tt.nChiSoNpc;
+}
+
+void JxKyNang_BatDau(int nNut, int x, int y)
+{
+	s_nKNDangCam = nNut - 1;
+	s_nKNNgonX = x;
+	s_nKNNgonY = y;
+	s_nKNDichIdx = 0;
+}
+
+void JxKyNang_Keo(int x, int y)
+{
+	int nX, nY, dx, dy;
+
+	if (s_nKNDangCam < 0)
+		return;
+	s_nKNNgonX = x;
+	s_nKNNgonY = y;
+	KyNang_HinhNut(s_nKNDangCam, &nX, &nY);
+	dx = x - (nX + s_nKNCo / 2);
+	dy = y - (nY + s_nKNCo / 2);
+	// keo chua du xa thi coi nhu chua ngam - tranh rung tay lam doi muc tieu
+	if (dx * dx + dy * dy < 18 * 18)
+	{
+		s_nKNDichIdx = 0;
+		return;
+	}
+	s_nKNDichIdx = KyNang_TimDich(dx, dy, &s_nKNDichX, &s_nKNDichY);
+}
+
+bool JxKyNang_Nha()
+{
+	int nChon = s_nKNDangCam;
+	int nDich = s_nKNDichIdx;
+
+	s_nKNDangCam = -1;
+	s_nKNDichIdx = 0;
+	if (nChon < 0 || nChon >= s_nKNCo1 || g_pCoreShell == NULL)
+		return false;
+	if (s_KNBang[nChon].uGenre == CGOG_NOTHING)
+		return false;
+
+	// Chon lam ky nang danh TRAI - y het ban PC (UiSkillTree.cpp:156), nho vay o
+	// ky nang tren thanh trang thai cung doi theo va lan sau cham thang vao dich
+	// la danh bang dung ky nang nay.
+	g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&s_KNBang[nChon], 0);
+
+	// Khong ngam duoc con nao trong huong keo thi danh con gan nhat.
+	if (nDich == 0)
+		nDich = KyNang_TimDich(0, 0, NULL, NULL);
+	if (nDich == 0)
+		return true;		// khong co dich: van coi la da xu ly (da doi ky nang)
+	g_pCoreShell->LockSomeoneUseSkill(nDich, (int)s_KNBang[nChon].uId);
+	return true;
+}
+
+// Vong tron duoi chan con dang ngam - dung anh vong DICH nhu JxVongChon_Ve.
+static void KyNang_VeVongDich(int nVeX, int nVeY)
+{
+	static KRUImage s_VongNgam;
+	KRPosition2 oOff = { 0, 0 }, oCo = { 0, 0 };
+	int nLuiX = 0, nLuiY = 0;
+
+	if (s_nVongCoAnh < 0)
+		s_nVongCoAnh = (CoAnh(s_szVongAnh) && CoAnh(s_szVongAnhDich)) ? 1 : 0;
+	if (!s_nVongCoAnh)
+		return;
+	if (s_VongNgam.szImage[0] == 0)
+	{
+		memset(&s_VongNgam, 0, sizeof(s_VongNgam));
+		s_VongNgam.nType = ISI_T_SPR;
+		s_VongNgam.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+		s_VongNgam.Color.Color_dw = 0xffffffff;
+		s_VongNgam.nISPosition = IMAGE_IS_POSITION_INIT;
+		s_VongNgam.nFrame = 0;
+		strncpy(s_VongNgam.szImage, s_szVongAnhDich, sizeof(s_VongNgam.szImage) - 1);
+	}
+	if (g_pRepresentShell->GetImageFrameParam(s_VongNgam.szImage, 0, &oOff, &oCo, s_VongNgam.nType)
+		&& oCo.nX > 0)
+	{
+		nLuiX = oCo.nX / 2;
+		nLuiY = oCo.nY / 2;
+	}
+	s_VongNgam.oPosition.nX = nVeX - nLuiX;
+	s_VongNgam.oPosition.nY = nVeY - nLuiY;
+	// FALSE = toa do THE GIOI
+	g_pRepresentShell->DrawPrimitives(1, &s_VongNgam, RU_T_IMAGE, false);
+}
+
+void JxKyNang_Ve()
+{
+	int i, n, nX, nY;
+
+	DocCaiDat();
+	if (!s_nKNBat || g_pCoreShell == NULL || g_pRepresentShell == NULL)
+		return;
+	KyNang_DocBang();
+	n = KyNang_SoNutHien();
+	for (i = 0; i < n; i++)
+	{
+		KyNang_HinhNut(i, &nX, &nY);
+		// nen mo cho thay ranh o nut, dam hon khi dang giu
+		OVuong(nX + s_nKNCo / 2, nY + s_nKNCo / 2, s_nKNCo / 2,
+			(i == s_nKNDangCam) ? 0xB03A8A3A : 0x80202020);
+		g_pCoreShell->DrawGameObj(s_KNBang[i].uGenre, s_KNBang[i].uId,
+			nX, nY, s_nKNCo, s_nKNCo, 0);
+	}
+
+	// Dang ngam: vach chi huong tu nut toi ngon tay + vong tron duoi chan con dich.
+	if (s_nKNDangCam >= 0)
+	{
+		KRULine oVach;
+
+		KyNang_HinhNut(s_nKNDangCam, &nX, &nY);
+		oVach.oPosition.nX = nX + s_nKNCo / 2;
+		oVach.oPosition.nY = nY + s_nKNCo / 2;
+		oVach.oEndPos.nX   = s_nKNNgonX;
+		oVach.oEndPos.nY   = s_nKNNgonY;
+		oVach.Color.Color_dw = s_nKNDichIdx ? 0xFFFF6666 : 0xA0FFFFFF;
+		g_pRepresentShell->DrawPrimitives(1, &oVach, RU_T_LINE, true);
+
+		if (s_nKNDichIdx)
+			KyNang_VeVongDich(s_nKNDichX, s_nKNDichY);
+	}
+}
+
 void JxIconNpc_Ve()
 {
 	DocCaiDat();

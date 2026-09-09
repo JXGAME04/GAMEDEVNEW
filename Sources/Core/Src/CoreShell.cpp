@@ -2932,6 +2932,71 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 			}
 			break;
 		}
+
+		// [ANDROID 09/09 DANH] nParam == 2: tra ve con DICH hop nhat de danh.
+		// Vao : pInfo->nViTriVeX / nViTriVeY = vec to huong ngam (0,0 = khong ngam)
+		// Ra  : ten, vi tri VE, nChiSoNpc = chi so NPC, nDangKhoa = 1
+		// Khong ngam thi lay con GAN NHAT; co ngam thi lay con gan nhat NAM TRONG
+		// nón +-60 do quanh huong ngam. Dung lai ma so nay, khong them ma GDI moi.
+		if (nParam == 2)
+		{
+			KUiTargetDetailInfo* pDich = (KUiTargetDetailInfo*)uParam;
+			int nMe = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+			if (pDich == NULL || nMe <= 0 || nMe >= MAX_NPC)
+				break;
+
+			const __int64 XA_NHAT = 700 * 700;	// ngoai khung nhin thi khong tinh
+			int nX0 = 0, nY0 = 0;
+			Npc[nMe].GetDrawPos(&nX0, &nY0);
+			__int64 ax = (__int64)pDich->nViTriVeX;
+			__int64 ay = (__int64)pDich->nViTriVeY;
+			__int64 nDaiNgam = ax * ax + ay * ay;	// 0 = khong ngam
+
+			int nChonDich = 0;
+			__int64 nGanNhat = 0;
+			int nDuyetD = 0;
+			while (nDuyetD = NpcSet.GetNextIdx(nDuyetD))
+			{
+				if (nDuyetD == nMe || !Npc[nDuyetD].m_dwID || Npc[nDuyetD].m_RegionIndex < 0)
+					continue;
+				if (Npc[nDuyetD].m_Doing == do_death || Npc[nDuyetD].m_Doing == do_revive
+					|| Npc[nDuyetD].m_CurrentLife <= 0)
+					continue;
+				if (NpcSet.GetRelation(nMe, nDuyetD) != relation_enemy)
+					continue;
+
+				int x = 0, y = 0;
+				Npc[nDuyetD].GetDrawPos(&x, &y);
+				__int64 dx = (__int64)(x - nX0), dy = (__int64)(y - nY0);
+				__int64 d = dx * dx + dy * dy;
+				if (d > XA_NHAT)
+					continue;
+
+				if (nDaiNgam > 0 && d > 0)
+				{
+					// giu con nam trong nón +-60 do: cos >= 1/2  <=>  4*tich^2 >= dai*dai
+					__int64 tich = ax * dx + ay * dy;
+					if (tich <= 0 || 4 * tich * tich < nDaiNgam * d)
+						continue;
+				}
+
+				if (!nChonDich || d < nGanNhat)
+				{
+					nChonDich = nDuyetD;
+					nGanNhat = d;
+				}
+			}
+
+			pDich->nChiSoNpc = nChonDich;
+			if (nChonDich)
+			{
+				strcpy_s(pDich->sTargetName, sizeof(pDich->sTargetName), Npc[nChonDich].Name);
+				Npc[nChonDich].GetDrawPos(&pDich->nViTriVeX, &pDich->nViTriVeY);
+				pDich->nDangKhoa = 1;
+				nRet = 1;
+			}
+			break;
+		}
 #endif
 		int idx = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx;
 		int idx_hover = Player[CLIENT_PLAYER_INDEX].GetTargetNpc();

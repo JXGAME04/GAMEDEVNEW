@@ -489,6 +489,76 @@ APK: `android/apk/jx1mobile-0909-toado3.apk`.
 
 ---
 
+## 11. (09/09) NÚT CHỌN KỸ NĂNG ĐÁNH — chạm là đánh, kéo để ngắm hướng
+
+Chủ: *"Thiếu phần các nút chọn kỹ năng đánh bản mobile - chạm là đánh, điều chỉnh hướng
+đánh - mã nguồn mobile tham khảo đã có sẵn dựa vào viết lại cho phù hợp"*.
+
+### 11.1. Nguồn tham khảo
+
+`D:\USVOLAM\Jx1mClientMobile\Classes\gamescene\KSkillRocker.cpp` — đặt ngón lên nút rồi
+kéo để ngắm hướng, thả ngón là đánh. Bản ấy viết cho Cocos (và phần đi lại trong nó đã bị
+chú thích tắt), nên chỉ lấy **cách làm**; phần vẽ và phần chạm viết lại theo bộ của bản này.
+
+> Ghi lại cho khỏi tìm lại: `UiMiniSkill` bên `D:\USVOLAM\Sources` **không phải** thứ cần —
+> đó là bảng buff. Nút đánh nằm ở bản Cocos `Jx1mClientMobile`, không phải ở nhánh S3Client.
+
+### 11.2. Đã làm
+
+**Bảng nút** (bản vá 36): lấy danh sách từ `GDI_LEFT_ENABLE_SKILLS` — **đúng danh sách bản PC
+dùng cho ô đánh chuột trái**. Vẽ bằng chính hàm vẽ biểu tượng của game
+(`iCoreShell::DrawGameObj`) nên biểu tượng giống hệt bản PC và **không phải thêm ảnh nào**.
+Mặc định 6 nút, lưới 2 cột, cạnh 56 điểm ảnh, nằm góc phải dưới phía trên thanh công cụ.
+
+**Chạm một nút** = chọn kỹ năng đó làm kỹ năng đánh trái
+(`GOI_SET_IMMDIA_SKILL`, y hệt `UiSkillTree.cpp:156`) rồi **đánh ngay con địch gần nhất**.
+
+**Giữ rồi kéo** = ngắm: hướng kéo quyết định đánh con nào. Trong lúc kéo có **vạch chỉ hướng**
+(trắng = chưa ngắm được con nào, đỏ = đã có) và **vòng tròn dưới chân** con đang ngắm. Thả
+ngón là đánh.
+
+**Core** (bản vá 35): dùng lại mã số `NPC_OI_TARGET_INFO` với `nParam == 2` — *"trả về con
+địch hợp nhất"*. **Không thêm mã GDI mới** (thêm vào giữa enum sẽ đẩy mọi mã số phía sau lệch
+đi — đã ghi ở §8.11). Vào: `nViTriVeX/nViTriVeY` = véc tơ hướng ngắm (0,0 = không ngắm).
+Ra: tên, vị trí vẽ, `nChiSoNpc`. Lọc `relation_enemy`, bỏ con đã chết, trong tầm 700, và nếu
+có ngắm thì chỉ giữ con nằm trong **nón ±60°** quanh hướng kéo, rồi lấy con gần nhất.
+
+Đánh = `iCoreShell::LockSomeoneUseSkill(chỉ số NPC, mã kỹ năng)` — **đúng hàm bản PC dùng**
+ở `ShortcutKey.cpp:1712`, không đặt thêm đường đánh riêng cho mobile.
+
+**Bộ nhận chạm** (bản vá 37): thêm trạng thái `CHAM_KYNANG`, bật **ngay lúc đặt ngón** chứ
+không đợi xê dịch như cần điều khiển — nút là một ô cụ thể nên đặt trúng nó là chắc chắn muốn
+dùng nó. Nhờ vậy chạm vào nút cũng **không lọt một cú bấm chuột** xuống dưới game.
+
+`config.ini [Cham]`: `KyNang` / `KyNangSo` / `KyNangCot` / `KyNangCo` / `KyNangX` / `KyNangY`.
+
+### 11.3. Đã đo tận mắt — và phần **chưa** đo được
+
+| Việc | Kết quả |
+|---|---|
+| Bảng 6 nút hiện ở góc phải dưới, biểu tượng thật của từng kỹ năng | **đạt** |
+| Chạm nút → ô đánh trái trên thanh trạng thái đổi đúng biểu tượng vừa chạm (thử hai nút khác nhau, ô đổi theo đúng cả hai) | **đạt** |
+| Giữ nút → nút sáng xanh; kéo → có vạch chỉ hướng chạy theo ngón | **đạt** |
+| Không sập, không lỗi trong nhật ký sau khi thử | **đạt** |
+| **Đòn đánh thật rơi trúng quái** | **CHƯA đo được** |
+
+> **Nói thẳng chỗ chưa chắc:** nhân vật test đang đứng trong **Ba Lăng Huyện**, quanh đó không
+> có con nào `relation_enemy` nên vạch ngắm luôn màu trắng và không có con nào để đánh. Phần
+> tìm địch và lời gọi đánh **chưa được chạy thử với quái thật**. Lời gọi là đúng hàm bản PC
+> dùng, nhưng chủ nên thử lại: ra khỏi thành, chạm một nút kỹ năng xem có đánh không, rồi giữ
+> nút kéo về phía một con khác xem vạch có đỏ lên và có đánh đúng con đó không.
+
+APK: `android/apk/jx1mobile-0909-kynang.apk`.
+
+### 11.4. Còn có thể làm thêm
+
+- Chưa có **thời gian hồi** (cooldown) vẽ trên nút; hiện nút nào cũng bấm được, Core tự chặn.
+- Chưa cho **chủ tự chọn** kỹ năng nào vào nút nào — hiện lấy 6 kỹ năng đầu của danh sách.
+- Nón ngắm cố định ±60°; muốn đổi thì sửa số trong `CoreShell.cpp` (chưa đưa ra config).
+
+
+---
+
 ## 7. (09/09) ĐIỀU KHIỂN BẰNG NGÓN TAY
 
 > Bản vá nguồn: `android/va_nguon_android_12.py`. APK đã kiểm: `android/apk/jx1mobile-0909-cham-c.apk`.

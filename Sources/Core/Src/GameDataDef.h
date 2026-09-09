@@ -1347,6 +1347,8 @@ struct KUiTargetDetailInfo
 	int				nViTriVeX;
 	int				nViTriVeY;
 	int				nDangKhoa;	// 1 = muc tieu dang KHOA (m_nPeopleIdx); 0 = chi dang tro chuot vao
+	// [ANDROID 09/09 DANH] chi so NPC - can de goi LockSomeoneUseSkill(nChiSoNpc, ...)
+	int				nChiSoNpc;
 #endif
 };
 

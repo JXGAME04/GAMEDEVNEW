@@ -602,6 +602,18 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			m_nCham = CHAM_CHO;
 			m_nChamX0 = m_nChamX = (int)fx; m_nChamY0 = m_nChamY = (int)fy;
 			m_uChamDat = (unsigned int)SDL_GetTicks();
+			// [ANDROID 09/09 KYNANG] Dat ngon trung mot nut ky nang thi bat NGAY, khong doi
+			// xe dich: nut la mot o cu the nen dat trung no la chac chan muon dung no.
+			// Nho vay cham vao nut cung khong lot mot cu bam chuot xuong duoi game.
+			{
+				int nNutKN = JxKyNang_TrungNut(m_nChamX0, m_nChamY0);
+				if (nNutKN > 0)
+				{
+					m_nCham = CHAM_KYNANG;
+					JxKyNang_BatDau(nNutKN, m_nChamX0, m_nChamY0);
+					return true;
+				}
+			}
 			m_nNgonToiDa = m_nNgonDangDat;	// [ANDROID 09/09 HAINGON] bat dau dem lai cho lan cham nay
 			// Dua "chuot" toi cho ngon tay ngay: de game biet dang tro vao dau (dem hover, thong tin vat pham).
 			GhiChuot(0, MAKELPARAM(m_nChamX0, m_nChamY0));
@@ -610,7 +622,11 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		}
 		int nTruoc = m_nCham;
 		m_nCham = CHAM_KHONG;
-		if (nTruoc == CHAM_CAN)
+		if (nTruoc == CHAM_KYNANG)
+		{
+			JxKyNang_Nha();		// [ANDROID 09/09 KYNANG] nha ngon = danh
+		}
+		else if (nTruoc == CHAM_CAN)
 		{
 			JxCan_Nha();
 		}
@@ -676,6 +692,11 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			m_nCham = CHAM_KEO;		// da xe dich -> giu chuot trai tu CHO DAT NGON roi keo
 			GhiChuot(MK_LBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
 			MsgProc(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
+		}
+		if (m_nCham == CHAM_KYNANG)
+		{
+			JxKyNang_Keo(m_nChamX, m_nChamY);	// [ANDROID 09/09 KYNANG] ngam huong danh
+			return true;
 		}
 		if (m_nCham == CHAM_CAN)
 		{

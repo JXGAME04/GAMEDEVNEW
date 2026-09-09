@@ -37,5 +37,24 @@ void JxVongChon_Ve();
 // Goi cuoi moi khung ve: ve icon "noi chuyen" tren dau NPC doi thoai gan nhat.
 void JxIconNpc_Ve();
 
+//---------------------------------------------------------------------------
+// [ANDROID 09/09 KYNANG] Nut chon ky nang danh.
+//
+// Cham mot nut = chon ky nang do lam ky nang danh trai roi danh con dich gan nhat.
+// Giu roi keo = ngam: huong keo quyet dinh danh con nao; tha ngon la danh.
+// Cach lam theo lop KSkillRocker cua ban JX1 Mobile (D:\USVOLAM\Jx1mClientMobile).
+//---------------------------------------------------------------------------
+
+// (x, y) co trung mot nut ky nang khong. Tra ve so thu tu nut + 1, hoac 0.
+int  JxKyNang_TrungNut(int x, int y);
+// Dat ngon len nut thu (nNut - 1).
+void JxKyNang_BatDau(int nNut, int x, int y);
+// Ngon di chuyen - ngam huong danh.
+void JxKyNang_Keo(int x, int y);
+// Nha ngon = danh. Tra ve true neu da danh.
+bool JxKyNang_Nha();
+// Goi cuoi moi khung ve: ve bang nut + vach ngam + vong tron duoi chan con dang ngam.
+void JxKyNang_Ve();
+
 #endif // JX_ANDROID
 #endif
