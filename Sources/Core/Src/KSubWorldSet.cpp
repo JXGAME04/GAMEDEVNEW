@@ -86,6 +86,35 @@ BOOL KSubWorldSet::Load(LPSTR szFileName)//edit by phong kieu Load Maps LoadMaps
 int nActiveRegionCount;
 int nActiveNpcCount;	// [PerfLog 24/08] so NPC nam trong cac region hoat dong
 
+#ifndef _SERVER
+// [WORLD 08/09 a] gom so do tu KSubWorld.cpp/KRegion.cpp roi in moi 10 giay vao jx_paint.log
+double g_dWorldCanBang = 0.0;
+extern double g_dWorldXoaCo, g_dWorldQuetVung, g_dWorldMaxTick;
+extern unsigned g_uWorldTick, g_uWorldVung, g_uWorldNpc, g_uWorldVungTong;
+extern int g_nCorePaintLog;
+static void WorldInDong()
+{
+	if (g_nCorePaintLog <= 0 || g_uWorldTick == 0)
+		return;
+	static DWORD s_dwLan = 0;
+	const DWORD dwNow = timeGetTime();
+	if (s_dwLan == 0) { s_dwLan = dwNow; return; }
+	if (dwNow - s_dwLan < 10000)
+		return;
+	s_dwLan = dwNow;
+	FILE* pLog = fopen("jx_paint.log", "a");
+	if (pLog)
+	{
+		fprintf(pLog, "[WORLD] t=%u tick=%u | xoa_co %.2f ms | quet_vung %.2f ms (max %.1f) | can_bang %.2f ms | vung %.1f/%.0f dang chay | npc %.0f/tick\n",
+			dwNow, g_uWorldTick,
+			g_dWorldXoaCo / g_uWorldTick, g_dWorldQuetVung / g_uWorldTick, g_dWorldMaxTick, g_dWorldCanBang / g_uWorldTick,
+			(double)g_uWorldVung / g_uWorldTick, (double)g_uWorldVungTong / g_uWorldTick, (double)g_uWorldNpc / g_uWorldTick);
+		fclose(pLog);
+	}
+	g_dWorldXoaCo = g_dWorldQuetVung = g_dWorldMaxTick = g_dWorldCanBang = 0.0;
+	g_uWorldTick = g_uWorldVung = g_uWorldNpc = g_uWorldVungTong = 0;
+}
+#endif
 void KSubWorldSet::MainLoop()
 {
 	m_nLoopRate++;
@@ -122,10 +151,21 @@ void KSubWorldSet::MainLoop()
 			{
 				SubWorld[i].Activate();
 #ifndef _SERVER
-				NpcSet.CheckBalance();
+				{	// [WORLD 08/09 a] do rieng can bang cache NPC
+					extern double WorldMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
+					extern double g_dWorldCanBang; extern int g_nCorePaintLog;
+					LARGE_INTEGER a, b;
+					const bool bDo = (g_nCorePaintLog > 0);
+					if (bDo) QueryPerformanceCounter(&a);
+					NpcSet.CheckBalance();
+					if (bDo) { QueryPerformanceCounter(&b); g_dWorldCanBang += WorldMs(a, b); }
+				}
 #endif
 			}
 		}
+#ifndef _SERVER
+	WorldInDong();	// [WORLD 08/09 a] in [WORLD] moi 10 giay
+#endif
 	}
 
 //	if ((m_nLoopRate % 100) == 0)

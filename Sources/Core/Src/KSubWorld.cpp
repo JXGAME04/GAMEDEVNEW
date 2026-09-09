@@ -1155,6 +1155,19 @@ static void SubWorld_DanhThucQuetRegion(const KSubWorld* pSubWorld)
 // nguoi choi ngay luc doi vung, lech troi ~14 mps/s so voi client; bot/quai cung bi). Client xoa co dau moi khung.
 static int s_nS13iVungDangDuyet = -1;
 #endif
+#ifndef _SERVER
+// [WORLD 08/09 a] Do tick the gioi phia CLIENT. [TICK]/[LOGIC] cho biet khung nang nam o 'world'
+// (KSubWorldSet::MainLoop) chu khong phai o ve; day chia nho tiep de biet cat o dau.
+double   g_dWorldXoaCo = 0.0, g_dWorldQuetVung = 0.0, g_dWorldMaxTick = 0.0;
+unsigned g_uWorldTick = 0, g_uWorldVung = 0, g_uWorldNpc = 0, g_uWorldVungTong = 0;
+static LARGE_INTEGER s_liWorldFreq = {0};
+double WorldMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
+{
+	if (!s_liWorldFreq.QuadPart) QueryPerformanceFrequency(&s_liWorldFreq);
+	return s_liWorldFreq.QuadPart ? (double)(b.QuadPart - a.QuadPart) * 1000.0 / (double)s_liWorldFreq.QuadPart : 0.0;
+}
+extern int g_nCorePaintLog;
+#endif
 void KSubWorld::Activate()
 {
 	if (m_SubWorldID < 0)
@@ -1163,7 +1176,11 @@ void KSubWorld::Activate()
 
 #ifndef _SERVER
 	g_ScenePlace.SetCurrentTime(m_dwCurrentTime);
+	LARGE_INTEGER liW0, liW1, liW2;	// [WORLD 08/09 a]
+	const bool bWorldDo = (g_nCorePaintLog > 0);
+	if (bWorldDo) QueryPerformanceCounter(&liW0);
 	NpcSet.ClearActivateFlagOfAllNpc();
+	if (bWorldDo) { QueryPerformanceCounter(&liW1); g_dWorldXoaCo += WorldMs(liW0, liW1); g_uWorldTick++; g_uWorldVungTong += (unsigned)m_nTotalRegion; }
 #endif
 
 #ifdef _SERVER
@@ -1206,7 +1223,15 @@ void KSubWorld::Activate()
 //			g_DebugLog("[Region]%d Activating", i);
 			m_Region[i].Activate();
 			nActiveRegionCount++;
+			if (bWorldDo) g_uWorldVung++;	// [WORLD 08/09 a]
 		}
+	}
+	if (bWorldDo)
+	{	// [WORLD 08/09 a] thoi gian ca vong quet vung (gom moi thu chay ben trong vung: NPC, dan, dong bo)
+		QueryPerformanceCounter(&liW2);
+		const double dQuet = WorldMs(liW1, liW2);
+		g_dWorldQuetVung += dQuet;
+		if (dQuet > g_dWorldMaxTick) g_dWorldMaxTick = dQuet;
 	}
 #endif
 

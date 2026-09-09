@@ -757,6 +757,11 @@ void KRegion::Activate()
 #ifdef _SERVER
 	extern int nActiveNpcCount;	// [PerfLog 24/08] khoi luong tick (KSubWorldSet.cpp)
 	nActiveNpcCount += npcCount;
+#else
+	{	// [WORLD 08/09 a] dem NPC chay trong tick nay (client)
+		extern unsigned g_uWorldNpc; extern int g_nCorePaintLog;
+		if (g_nCorePaintLog > 0) g_uWorldNpc += (unsigned)npcCount;
+	}
 #endif
 
     int nCounter = 0;
