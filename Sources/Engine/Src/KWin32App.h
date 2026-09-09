@@ -56,5 +56,8 @@ private:
 };
 // [NHIP 08/09] luoi co hoi chay GameLoop trong KWin32App::Run (ms): mac dinh 8; S3Client dat 1 khi PaintFps > 60 / PaintVsync
 ENGINE_API void g_SetLoopInterval(unsigned int uMs);
+#ifdef JX_PLATFORM_SDL
+ENGINE_API unsigned int g_GetLoopInterval();	// [NHIP->SDL 08/09] KSdlApp::Run doc luoi vong bom (1 ms khi PaintFps > 60 / PaintVsync)
+#endif
 //---------------------------------------------------------------------------
 #endif

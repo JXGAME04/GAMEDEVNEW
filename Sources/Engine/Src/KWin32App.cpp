@@ -15,6 +15,9 @@
 // [NHIP 08/09] luoi vong bom: 8 ms giu nhip tick deu (56 ms); 1 ms khi ve > 60 fps (144 Hz = 6,94 ms/khung) - tick van deu (56 ms)
 static DWORD s_nLoopInterval = 8;
 ENGINE_API void g_SetLoopInterval(unsigned int uMs) { s_nLoopInterval = (uMs < 1) ? 1 : (uMs > 16 ? 16 : uMs); }
+#ifdef JX_PLATFORM_SDL
+ENGINE_API unsigned int g_GetLoopInterval() { return (unsigned int)s_nLoopInterval; }	// [NHIP->SDL 08/09] KSdlApp::Run doc luoi vong bom
+#endif
 #include "KWin32App.h"
 #include "KIme.h"
 #include "../../S3client/ui/TrayMode.h"

@@ -230,3 +230,31 @@ target, đổi map/Reset); toàn màn hình (hiện chạy cửa sổ); `Stretch
   (đặt `FullScreen=1` tạm, chụp `CopyFromScreen`, `mouse_event`, trả lại config). Cửa sổ SDL không có `SDL_WINDOW_RESIZABLE` nên không phóng
   được từ ngoài (SetWindowPos bị SDL chặn) — muốn thử cửa sổ khác cỡ thì đổi `Width/Height` trong config.
 - Đây chính là cơ chế "khung ảo + scale" trong phương án mobile (điện thoại render 1024×768 hoặc 1138×640 rồi phóng lên màn), đã chạy trên PC.
+
+## 12. (18:0x) `d3d9mini.h` cho Android + khảo sát NDK + rebase theo main NHIP (157f05b9)
+
+**`Sources/Represent/Represent3/d3d9mini.h` (bật bằng `JX_D3D9MINI`; PC không định nghĩa → không đổi gì):** tập con `d3d9.h + d3d9types.h + d3d9caps.h + d3dx9`
+đủ cho Represent3 (logic `KRepresentShell3/TextureRes*/D3D_*` và `D3D9onGPU*`) biên dịch **không cần DirectX SDK** — tức là biên dịch được bằng NDK.
+- Nội dung: mọi enum/cờ D3D9 với giá trị thật; struct (`D3DCAPS9`, `D3DPRESENT_PARAMETERS`, `D3DSURFACE_DESC`, `D3DLOCKED_RECT`, `D3DDISPLAYMODE(EX)`, …);
+  10 giao diện `IDirect3D9(Ex)`, `IDirect3DDevice9(Ex)`, `Resource9/BaseTexture9/Texture9/Surface9/VertexBuffer9/StateBlock9` đúng thứ tự vtable;
+  `Direct3DCreate9` trả NULL (không có D3D9 thật → chỉ `Rep3Api=100`); D3DX tập con (vector/matrix, `D3DXLoadSurfaceFromSurface` qua `UpdateSurface`,
+  `D3DXCreateTexture`). Trên POSIX nó kéo `Engine/Src/Platform/KPosixCompat.h` (khảo sát NDK) để có `DWORD/HRESULT/RECT/GUID/IUnknown`.
+- Nối vào: `precompile.h` và `D3D9onGPUi.h` — `#ifdef JX_D3D9MINI` → `d3d9mini.h`, không thì 4 include cũ. `D3D_Device.h`/`D3D_Utils.h` vẫn
+  `#include <d3d9.h>`/`<d3d9types.h>`: trên Windows chúng bị chặn bằng guard của SDK (`_D3D9_H_`, `_d3d9TYPES_H_`, `_d3d9CAPS_H` — **không có `_` cuối**,
+  `__D3DX9_H__`…); trên Android không có các header đó nên hai include này phải bọc `#ifndef JX_D3D9MINI` (việc pha 4, 2 dòng).
+- **Đã kiểm trên Windows:** `cl /Zs /DJX_D3D9MINI` 9 tệp Represent3 = 0 lỗi (`android_survey/kiem_d3d9mini_zs.py`); so với SDK thật
+  (`android_survey/so_d3d9mini_sdk.py`: sinh chương trình in 531 hằng/sizeof, biên dịch 2 lần SDK thật / mini, diff): **10 vtable trùng, 531 giá trị trùng, 0 khác**.
+  Hai tên không có trong D3D9 thật (`D3DPRESENT_RATE_UNLIMITED`, `D3DRS_SOFTWAREVERTEXPROCESSING` của D3D8) đã bỏ — mã chỉ nhắc chúng trong chú thích.
+
+**Khảo sát NDK (tác tử, `ReverseTools/mobile_x64/android_survey/TONGHOP_NDK.md`, `ndk_survey.py`):** clang NDK r25 `aarch64-linux-android24 -fsyntax-only`
+trên 443 TU client: nhánh `__linux` cũ của server gần như vô dụng cho client (DWORD 64 bit trên LP64…); với `KPosixCompat.h` nháp: 214/443 TU sạch, 341 nếu bỏ lỗi
+lan từ 9 header "độc" (`KDDraw.h` đứng đầu); 33 TU Windows-only theo bản chất (DDraw/DInput/DSound/IME/AVI/AntiHack/CrashLog/khay/PerfHud/JxReplay) cần loại;
+backlog thật 447 điểm gọi / 125 API (khoá luồng, phím/con trỏ, tệp/thư mục, giờ, DLL, `MultiByteToWideChar`, 42 `__asm` đều đã có nhánh C dưới `_WIN64`).
+Ước lượng ≈ 15 người-ngày (13–19) để 443 TU sạch. Hai bẫy nền: `char` không dấu trên aarch64 → `-fsigned-char`; LP64 (`long` 64 bit) → rà gói mạng.
+5 bước: (1) đưa `KPosixCompat.h` + 3 hunk header vào cây; (2) CMake NDK + loại 33 TU; (3) dịch vụ nền tảng SDL (luồng/tệp/giờ); (4) đầu vào/UI SDL;
+(5) link `.so` + chạy tới màn đăng nhập. **Quy tắc:** mọi thứ dưới `defined(__linux) && JX_PLATFORM_SDL` — KHÔNG đụng nhánh `__linux` của server.
+
+**Rebase theo main 157f05b9 ([NHIP 08/09] vẽ 120–144 Hz + `[NAP e]`):** 57 commit mobile áp lại sạch, không xung đột. Điểm chạm: `KWin32App::Run` nay đọc
+`g_SetLoopInterval` (1 ms khi `PaintFps > 60` hoặc `PaintVsync=1`), còn `KSdlApp::Run` đang cứng 8 ms → thêm `g_GetLoopInterval()` (chỉ `#ifdef JX_PLATFORM_SDL`
+trong `KWin32App.cpp/.h`) và `KSdlApp::Run` đọc lại mỗi vòng như `KWin32App::Run`. `S3Client.cpp` `PaintFps=-1` dùng `EnumDisplaySettingsA` (Win32) → trên
+Android thay bằng `SDL_GetCurrentDisplayMode` (pha 4). Sau rebase build lại cả hai chuỗi (`build_chuoi_x64.ps1 -Target Build`, `build_chuoi_sdl.ps1 -Target Rebuild`).

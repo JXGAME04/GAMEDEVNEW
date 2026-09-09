@@ -226,11 +226,11 @@ void KSdlApp::SinhHover()
 }
 
 //---------------------------------------------------------------------------
-// Vong lap: giong KWin32App::Run - luoi 8 ms, cho su kien toi da het khe, roi GameLoop
+// Vong lap: giong KWin32App::Run - luoi g_GetLoopInterval() ms (8; 1 khi ve > 60 fps), cho su kien toi da het khe, roi GameLoop
 //---------------------------------------------------------------------------
 void KSdlApp::Run()
 {
-	const Uint64 uInterval = 8;
+	Uint64 uInterval = g_GetLoopInterval();	// [NHIP->SDL 08/09] 8 ms mac dinh; 1 ms khi PaintFps > 60 / PaintVsync (S3Client GameInit)
 	Uint64 uNext = SDL_GetTicks() + uInterval;
 	bool bQuit = false;
 	while (!bQuit)
@@ -248,6 +248,7 @@ void KSdlApp::Run()
 			break;
 		if (m_bActive || m_bMultiGame)
 		{
+			uInterval = g_GetLoopInterval();	// [NHIP->SDL 08/09] doc lai moi vong nhu KWin32App::Run
 			Uint64 uNow = SDL_GetTicks();
 			bool bTick = false;
 			if (uNext > uNow)
