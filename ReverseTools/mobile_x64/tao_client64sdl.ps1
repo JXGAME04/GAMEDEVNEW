@@ -19,7 +19,7 @@ foreach ($c in @("settings", "script", "Ui", "UserData", "ini", "GameGuard", "so
   if ((Test-Path $s) -and -not (Test-Path $d)) { $it = Get-Item $s; if ($it.LinkType -eq "Junction") { New-Item -ItemType Junction -Path $d -Target ($it.Target | Select-Object -First 1) | Out-Null; "junction $c" } else { Copy-Item $s $d -Recurse; "chep $c" } }
 }
 # tep roi: config.ini + DLL dung chung (Represent3, Rainbow, Lua54Dll, FilterText, D3DX9_43) - luon lam moi DLL, config chi khi chua co
-foreach ($f in Get-ChildItem $src -File | Where-Object { $_.Extension -in ".dll", ".ini", ".txt", ".dat" -and $_.Name -notin @("Engine.dll", "CoreClient.dll", "SDL3.dll", "Rainbow.dll") }) {   # [2b-2] Rainbow.dll cung la ban SDL rieng
+foreach ($f in Get-ChildItem $src -File | Where-Object { $_.Extension -in ".dll", ".ini", ".txt", ".dat" -and $_.Name -notin @("Engine.dll", "CoreClient.dll", "SDL3.dll", "Rainbow.dll", "Represent3.dll") }) {   # [2b-2] Rainbow.dll cung la ban SDL rieng
   $d = Join-Path $dst $f.Name
   if ($f.Extension -eq ".dll" -or -not (Test-Path $d)) { Copy-Item $f.FullName $d -Force }
 }

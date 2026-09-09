@@ -5,6 +5,9 @@
 #include "precompile.h"
 #include "d3d_shell.h"
 #include "D3D9on11.h"	// [D3D11 08/09]
+#ifdef JX_PLATFORM_SDL
+#include "D3D9onGPU.h"	// [GPU 08/09] D3D9 tren SDL_GPU (Rep3Api=100)
+#endif
 #include <algorithm>
 
 // [RAM 08/09] Rep3Ex doc tu config.ini trong KRepresentShell3::Create (chay truoc g_D3DShell.Create); g_nRep3ExOn = da tao duoc Ex
@@ -25,6 +28,16 @@ bool CD3D_Shell::Create()
 	m_pD3DEx = NULL;
 	g_nRep3ExOn = 0;
 	g_nRep3ApiOn = 9;
+#ifdef JX_PLATFORM_SDL
+	if (g_nRep3Api == 100)	// [GPU 08/09] lop D3D9 tren SDL_GPU (Vulkan): bo ve cho mobile, thu tren PC
+	{
+		m_pD3D = Rep3_CreateD3D9onGPU();
+		if (m_pD3D)
+			g_nRep3ApiOn = 100;
+		else
+			Rep3Log("[REP3] Rep3Api=100 nhung khong tao duoc SDL_GPU -> lui ve D3D9");
+	}
+#endif
 	if (g_nRep3Api == 11)	// [D3D11 08/09] lop D3D9 tren D3D11: driver khong giu ban sao texture trong RAM
 	{
 		m_pD3D = Rep3_CreateD3D9on11();
