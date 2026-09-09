@@ -43,6 +43,10 @@ protected:
 	int				m_nChamNhaX, m_nChamNhaY;
 	int				m_nNgonDangDat;		// [ANDROID 09/09 HAINGON] so ngon dang cham man hinh
 	int				m_nNgonToiDa;		// [ANDROID 09/09 HAINGON] nhieu nhat may ngon trong lan cham nay
+	// [ANDROID 09/09 HAINGON] Ngon THU HAI tro di di duong rieng, khong qua chuot gia
+	// lap (SDL chi gia lap chuot cho ngon thu nhat). -1 = chua ngon nao giu.
+	long long	m_nNgonKyNang;	// ngon dang giu mot nut ky nang
+	long long	m_nNgonCan;		// ngon dang cam can dieu khien
 	int				m_nCuonDon;			// [ANDROID 09/09 CUON] so diem anh da vuot, con du chua thanh mot nac lan
 #endif
 	SDL_Window*		m_pWindow;

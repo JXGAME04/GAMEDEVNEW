@@ -16,6 +16,7 @@
 #include "KWin32.h"
 #ifdef JX_ANDROID
 #include "JxCanDieuKhien.h"
+#include "../Ui/Elem/UiToaDo.h"	// [UITOADO 09/09 E] dang ky o ve tay
 #include "../../Represent/iRepresent/iRepresentShell.h"
 #include "../../Represent/iRepresent/KRepresentUnit.h"
 #include "../../Core/src/coreshell.h"
@@ -101,10 +102,24 @@ static char		s_szKNAnhChinh[128] = "\\spr\\Ui3\\UiSkillControl\\assign_skill_100
 static char		s_szKNAnhPhu[128]   = "\\spr\\Ui3\\UiSkillControl\\assign_skill_100x100.spr";
 static char		s_szKNAnhPhuNho[128]= "\\spr\\Ui3\\UiSkillControl\\assign_skill_100x100.spr";
 static char		s_szKNAnhNgam[128]  = "\\spr\\Ui3\\UiSkillControl\\effect_skill.spr";
+//	[ANDROID 09/09 NGHIENG] num chay trong long nut theo huong ngon tay
+static char		s_szKNAnhNum[128]   = "\\spr\\Ui3\\UiSkillControl\\joystick_ctrl.spr";
 //	[ANDROID 09/09 KYNANG H] direction_arrow.spr la huong DI CHUYEN cua nhan vat -
 //	khong phai cai nay. Mui ten dinh huong DANH la attack_direction.spr (nhieu khung
 //	theo huong) - chon khung theo goc ngam thi mui ten quay dung phia dang chi.
 static char		s_szKNAnhTen[128]   = "\\spr\\npcres\\attack_direction.spr";
+//	[ANDROID 09/09 HUONGDI] vong ELIP xanh chi TAM DANH, ve tren mat dat o diem ngam
+//	(ban tham khao: JX1M_AimVeVong, KuiMyMenu.cpp:912).
+static char		s_szKNAnhTam[128]   = "\\spr\\attack_radius.spr";
+//	[ANDROID 09/09 HUONGDI] mui ten nho duoi chan nhan vat khi dang di chuyen.
+//	Chinh chu chi ro day la anh "huong di chuyen cua player".
+static char		s_szHuongDiAnh[128] = "\\spr\\npcres\\direction_arrow.spr";
+static int			s_nHuongDiBat = 1;
+static int			s_nHuongDiCoAnh = -1;
+static int			s_nHuongDiThap = 10;	// chan nhan vat thap hon giua man hinh bao nhieu
+//	[ANDROID 09/09 NGHIENG] do duoc: day 38 thi mui ten van roi NGAY TREN nguoi
+//	(tam (522,301) trong khi giua man hinh la (520,302)). Day xa hon.
+static int			s_nHuongDiXa = 56;		// day mui ten ra phia truoc bao nhieu diem anh
 
 //	Diem NGAM trong the gioi (toa do VE) khi dang keo - de ve mui ten va de danh.
 static int			s_nKNNgamX = 0, s_nKNNgamY = 0;
@@ -156,6 +171,13 @@ static void DocCaiDat()
 	s_nKNCoIcon  = GetPrivateProfileInt("Cham", "KyNangCoIcon", 32, szCfg);
 	s_nKNBanKinhKeo = GetPrivateProfileInt("Cham", "KyNangBanKinhKeo", 60, szCfg);
 	s_nKNNhip = GetPrivateProfileInt("Cham", "KyNangNhip", 200, szCfg);
+	s_nHuongDiBat  = GetPrivateProfileInt("Cham", "HuongDi", 1, szCfg);
+	s_nHuongDiThap = GetPrivateProfileInt("Cham", "HuongDiThap", 10, szCfg);
+	s_nHuongDiXa   = GetPrivateProfileInt("Cham", "HuongDiXa", 56, szCfg);
+	GetPrivateProfileString("Cham", "HuongDiAnh", s_szHuongDiAnh, s_szHuongDiAnh,
+		sizeof(s_szHuongDiAnh), szCfg);
+	GetPrivateProfileString("Cham", "KyNangAnhTam", s_szKNAnhTam, s_szKNAnhTam,
+		sizeof(s_szKNAnhTam), szCfg);
 	if (s_nKNNhip < 60) s_nKNNhip = 60;
 	s_nKNGian = GetPrivateProfileInt("Cham", "KyNangGian", 100, szCfg);
 	if (s_nKNGian < 50)  s_nKNGian = 50;
@@ -172,6 +194,8 @@ static void DocCaiDat()
 		sizeof(s_szKNAnhTen), szCfg);
 	GetPrivateProfileString("Cham", "KyNangAnhPhu", s_szKNAnhPhu, s_szKNAnhPhu,
 		sizeof(s_szKNAnhPhu), szCfg);
+	GetPrivateProfileString("Cham", "KyNangAnhNum", s_szKNAnhNum, s_szKNAnhNum,
+		sizeof(s_szKNAnhNum), szCfg);
 	GetPrivateProfileString("Cham", "KyNangAnhNgam", s_szKNAnhNgam, s_szKNAnhNgam,
 		sizeof(s_szKNAnhNgam), szCfg);
 	if (s_nVungRong < 10) s_nVungRong = 10;
@@ -298,6 +322,30 @@ static void VeAnh(const char* pszAnh, int nX, int nY)
 		a.oPosition.nY = nY;
 	}
 	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE, true);
+}
+
+//	[ANDROID 09/09 HUONGDI] Ve anh vao mot khung chu nhat (tam nX,nY; rong nR, cao nC).
+//	Dung cho vong elip tam danh - rong gap doi cao vi goc nhin nghieng.
+static void VeAnhKhung(const char* pszAnh, int nX, int nY, int nR, int nC, int nKhung)
+{
+	KRUImage a;
+
+	if (g_pRepresentShell == NULL || nR < 2 || nC < 2)
+		return;
+	memset(&a, 0, sizeof(a));
+	a.nType = ISI_T_SPR;
+	a.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+	a.Color.Color_dw = 0xffffffff;
+	a.nISPosition = IMAGE_IS_POSITION_INIT;
+	a.nFrame = nKhung;
+	strncpy(a.szImage, pszAnh, sizeof(a.szImage) - 1);
+	a.oPosition.nX = nX - nR / 2;
+	a.oPosition.nY = nY - nC / 2;
+	a.oPosition.nZ = 0;
+	a.oEndPos.nX = a.oPosition.nX + nR;
+	a.oEndPos.nY = a.oPosition.nY + nC;
+	a.oEndPos.nZ = 0;
+	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE_STRETCH, true);
 }
 
 //	[ANDROID 09/09 KYNANG H] nhu VeAnh nhung chon duoc KHUNG (anh nhieu huong).
@@ -575,6 +623,44 @@ static bool KyNang_CuaNut(int nNut, KUiGameObject* pRa)
 	return (pRa->uGenre != CGOG_NOTHING && pRa->uId != 0);
 }
 
+//---------------------------------------------------------------------------
+//	[UITOADO 09/09 E] Cho cum nut ky nang DOI CHO duoc bang che do sua giao dien.
+//	Chu: "cac nut ky nang moi them khong co trong phan di chuyen toa do".
+//	Vi tri cum = s_nKNX / s_nKNY (goc trai tren cua ca cum, tinh theo do doi).
+//---------------------------------------------------------------------------
+static bool KyNang_ORiengTrung(int x, int y)
+{
+	return JxKyNang_TrungNut(x, y) > 0;
+}
+
+static void KyNang_ORiengLay(int* px, int* py)
+{
+	KyNang_TamNut(0, px, py);	// lay tam nut danh chinh lam moc cua ca cum
+}
+
+static void KyNang_ORiengDat(int x, int y)
+{
+	int nX = 0, nY = 0;
+
+	KyNang_TamNut(0, &nX, &nY);
+	// s_nKNX/Y la do DOI so voi cho neo goc phai duoi, nen cong them phan chenh.
+	if (s_nKNX < 0) s_nKNX = 0;
+	if (s_nKNY < 0) s_nKNY = 0;
+	s_nKNX += (x - nX);
+	s_nKNY += (y - nY);
+}
+
+static void KyNang_DangKySuaToaDo()
+{
+	static bool s_bDaDangKy = false;
+
+	if (s_bDaDangKy)
+		return;
+	s_bDaDangKy = true;
+	UiToaDo_DangKyORieng("CumKyNang", KyNang_ORiengTrung,
+		KyNang_ORiengLay, KyNang_ORiengDat);
+}
+
 int JxKyNang_TrungNut(int x, int y)
 {
 	int i, nX, nY, nR;
@@ -817,6 +903,50 @@ static void KyNang_VeVongDich(int nVeX, int nVeY)
 	g_pRepresentShell->DrawPrimitives(1, &s_VongNgam, RU_T_IMAGE, false);
 }
 
+//---------------------------------------------------------------------------
+// [ANDROID 09/09 HUONGDI] MUI TEN NHO DUOI CHAN THEO HUONG DI CHUYEN
+//
+// Chu: "nguoi choi khi di chuyen duoi chan se co mui ten nho theo huong di chuyen".
+// Ban tham khao co role_dir rieng cho viec nay (KgameWorldVN.cpp:826).
+// Nhan vat luon o giua khung ve nen ve ngay duoi giua man hinh.
+//---------------------------------------------------------------------------
+void JxHuongDi_Ve()
+{
+	int nSo, nKhung;
+
+	DocCaiDat();
+	if (!s_nHuongDiBat || !s_bCam || g_pRepresentShell == NULL)
+		return;		// chi hien khi dang cam can dieu khien (tuc dang di)
+	if (s_nHuongDiCoAnh < 0)
+	{
+		s_nHuongDiCoAnh = CoAnh(s_szHuongDiAnh) ? 1 : 0;
+		g_DebugLog("[HUONGDI] anh mui ten: %s -> co anh=%d",
+			s_szHuongDiAnh, s_nHuongDiCoAnh);
+	}
+	if (!s_nHuongDiCoAnh)
+		return;
+	// s_nHuong la 0..63 theo loi cua game (0 = xuong, 16 = trai, 32 = len, 48 = phai).
+	nSo = KyNang_SoKhung(s_szHuongDiAnh);
+	nKhung = (nSo > 1) ? (s_nHuong * nSo / 64) % nSo : 0;
+	// [ANDROID 09/09 HUONGDI B] Mui ten phai nam PHIA TRUOC nhan vat, khong phai mot
+	// cho co dinh: day no ra theo dung huong dang di, chia doi truc Y vi goc nhin
+	// nghieng. (Truoc day ve o mot cho nen di len thi mui ten nam sau lung.)
+	{
+		double fGocD = (48.0 - (double)s_nHuong) * 5.625 * 3.14159265358979 / 180.0;
+		int nDay = s_nHuongDiXa;
+		int nX = SCREEN_WIDTH  / 2 + (int)(cos(fGocD) * nDay);
+		// [ANDROID 09/09 NGHIENG B] KHONG ep truc Y con mot nua nua. Ep 1/2 la dung ve
+		// hinh hoc cho vat nam tren MAT DAT, nhung lam dau hieu len/xuong gan nhu khong
+		// nhin thay: do duoc khi di LEN mui ten van roi ngay tren nguoi (tam (521,301)
+		// trong khi giua man hinh la (520,302)) - dung nhu chu ta "van nam sau dit".
+		int nY = SCREEN_HEIGHT / 2 + s_nHuongDiThap - (int)(sin(fGocD) * nDay);
+
+		// Ve theo KHUNG co dinh thay vi de anh tu neo: anh .spr nay co khung rong hon
+		// phan nhin thay nen neo theo co khung lam mui ten roi thap hon chan (da do).
+		VeAnhKhung(s_szHuongDiAnh, nX, nY, 34, 38, nKhung);
+	}
+}
+
 void JxKyNang_Ve()
 {
 	int i, nX, nY, nR, nIcon;
@@ -825,6 +955,7 @@ void JxKyNang_Ve()
 	DocCaiDat();
 	if (!s_nKNBat || g_pCoreShell == NULL || g_pRepresentShell == NULL)
 		return;
+	KyNang_DangKySuaToaDo();	// [UITOADO 09/09 E] cho doi cho duoc trong che do sua
 	if (s_nKNCoAnh < 0)
 	{
 		s_nKNCoAnh = (CoAnh(s_szKNAnhChinh) && CoAnh(s_szKNAnhPhu)
@@ -863,21 +994,59 @@ void JxKyNang_Ve()
 	// Dang giu mot nut: vong sang ngam + vach chi huong + vong duoi chan con dich.
 	if (s_nKNDangCam >= 0)
 	{
-		KRULine oVach;
-
 		KyNang_TamNut(s_nKNDangCam, &nX, &nY);
 		if (CoAnh(s_szKNAnhNgam))	// vong sang effect_skill.spr cua VNKU, vua khit nut
 			VeAnhCo(s_szKNAnhNgam, nX, nY, KyNang_CoNut(s_nKNDangCam) * 3 / 2, 0);
 
-		oVach.oPosition.nX = nX;
-		oVach.oPosition.nY = nY;
-		oVach.oEndPos.nX   = s_nKNNgonX;
-		oVach.oEndPos.nY   = s_nKNNgonY;
-		oVach.Color.Color_dw = s_nKNDichIdx ? 0xFFFF6666 : 0xA0FFFFFF;
-		g_pRepresentShell->DrawPrimitives(1, &oVach, RU_T_LINE, true);
+		// [ANDROID 09/09 NGHIENG] Khong ve vach nua. Thay bang NUM chay trong ban kinh
+		// nut theo huong ngon tay - dung cach cua ban tham khao (KuiMyMenu jsSprite,
+		// setSpritePiont): nut "nghieng" ve phia dang chi. Anh num la joystick_ctrl.spr
+		// cua VNKU, cung bo voi khung nut.
+		{
+			int dx = s_nKNNgonX - nX;
+			int dy = s_nKNNgonY - nY;
+			int nDai = (int)sqrt((double)(dx * dx + dy * dy));
+			int nBK = KyNang_CoNut(s_nKNDangCam) / 2;	// num chay trong long nut
+			int nNumX = nX, nNumY = nY;
+
+			if (nDai > nBK && nDai > 0)
+			{
+				nNumX = nX + dx * nBK / nDai;
+				nNumY = nY + dy * nBK / nDai;
+			}
+			else
+			{
+				nNumX = nX + dx;
+				nNumY = nY + dy;
+			}
+			if (CoAnh(s_szKNAnhNum))
+				VeAnhCo(s_szKNAnhNum, nNumX, nNumY, nBK, 0);
+		}
 
 		if (s_nKNDichIdx)
 			KyNang_VeVongDich(s_nKNDichX, s_nKNDichY);
+
+		// [ANDROID 09/09 HUONGDI] VONG TAM DANH tren mat dat o diem ngam - ban tham
+		// khao ve bang JX1M_AimVeVong(_BackAttackRadius, moveEndPoint). Anh la vong ELIP
+		// (det theo truc Y) vi goc nhin nghieng, nen ve rong gap doi chieu cao.
+		if (s_nKNCoNgam && CoAnh(s_szKNAnhTam))
+		{
+			KUiGameObject oT;
+			int nTamVe = 120;
+
+			if (KyNang_CuaNut(s_nKNDangCam, &oT))
+			{
+				KJxKyNangHoi oH;
+				memset(&oH, 0, sizeof(oH));
+				oH.nSkillId = (int)oT.uId;
+				if (g_pCoreShell->GetGameData(GDI_KYNANG_MOBILE, (KUPARAM)&oH, 0)
+					&& oH.nTamDanh > 0)
+					nTamVe = oH.nTamDanh;
+			}
+			if (nTamVe < 48)  nTamVe = 48;
+			if (nTamVe > 400) nTamVe = 400;
+			VeAnhKhung(s_szKNAnhTam, s_nKNNgamX, s_nKNNgamY, nTamVe, nTamVe / 2, 0);
+		}
 
 		// [ANDROID 09/09 KYNANG H] MUI TEN DINH HUONG DANH tai vi tri dang ngam.
 		// attack_direction.spr co mot khung cho moi huong - chon khung theo goc ngam

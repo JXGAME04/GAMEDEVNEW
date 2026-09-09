@@ -52,5 +52,20 @@ bool	UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 //	Ve khung + dong huong dan + bang danh sach (goi o cuoi Wnd_RenderWindows).
 void	UiToaDo_Ve();
 
+//---------------------------------------------------------------------------
+//	[UITOADO 09/09 E] O VE TAY (khong phai cua so KWnd)
+//
+//	Cum nut ky nang, can dieu khien... duoc ve thang bang DrawPrimitives nen he sua
+//	giao dien khong nhin thay chung. Dang ky o day thi chung doi cho duoc y nhu moi
+//	o giao dien khac, va vi tri cung duoc luu vao UserData\UiToaDo.ini.
+//---------------------------------------------------------------------------
+typedef bool (*PFN_UITOADO_TRUNG)(int x, int y);			// (x,y) co trung o nay khong
+typedef void (*PFN_UITOADO_LAYVITRI)(int* px, int* py);	// vi tri hien tai
+typedef void (*PFN_UITOADO_DATVITRI)(int x, int y);		// dat vi tri moi
+
+//	pszKhoa: ten rieng, dung lam khoa trong tep ini (vi du "CumKyNang").
+void	UiToaDo_DangKyORieng(const char* pszKhoa, PFN_UITOADO_TRUNG pfnTrung,
+			PFN_UITOADO_LAYVITRI pfnLay, PFN_UITOADO_DATVITRI pfnDat);
+
 //	Cua so sap bi xoa - bo moi con tro dang giu toi no (goi tu Wnd_OnWindowDelete).
 void	UiToaDo_QuenCuaSo(KWndWindow* pWnd);

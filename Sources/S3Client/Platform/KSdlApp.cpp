@@ -217,6 +217,8 @@ KSdlApp::KSdlApp()
 	m_nChamNhaX = m_nChamNhaY = 0;
 	m_nNgonDangDat = 0;
 	m_nNgonToiDa = 0;
+	m_nNgonKyNang = -1;	// [ANDROID 09/09 HAINGON]
+	m_nNgonCan = -1;
 	m_nCuonDon = 0;
 #endif
 	s_pSdlApp = this;
@@ -580,17 +582,83 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 	// [ANDROID 09/09 NGON] SDL chi gia lap chuot cho ngon THU NHAT, nen phai nghe su kien ngon tay that
 	// moi biet dang co may ngon. Dem de sau nay bo qua cham nhieu ngon lo tay (cham hai ngon KHONG dung
 	// lam loi tat nao: theo y chu, menu doi tuong di duong "cham doi tuong -> thanh thong tin -> menu").
-	if (ev.type == SDL_EVENT_FINGER_DOWN)
+	// [ANDROID 09/09 HAINGON] duong RIENG cho ngon THU HAI tro di: SDL chi gia lap
+	// chuot cho ngon thu nhat, nen muon vua giu can vua bam nut ky nang thi phai doc
+	// thang su kien ngon tay. Ngon thu nhat van di duong cu, khong doi gi.
+	if (ev.type == SDL_EVENT_FINGER_DOWN || ev.type == SDL_EVENT_FINGER_MOTION
+		|| ev.type == SDL_EVENT_FINGER_UP || ev.type == SDL_EVENT_FINGER_CANCELED)
 	{
-		m_nNgonDangDat++;
-		if (m_nNgonDangDat > m_nNgonToiDa)
-			m_nNgonToiDa = m_nNgonDangDat;
-		return false;	// van de su kien chuot gia lap di duong cua no
-	}
-	if (ev.type == SDL_EVENT_FINGER_UP || ev.type == SDL_EVENT_FINGER_CANCELED)
-	{
+		long long nNgon = (long long)ev.tfinger.fingerID;
+		int nW = 0, nH = 0;
+		float fx, fy;
+
+		SDL_GetWindowSize(m_pWindow, &nW, &nH);
+		fx = ev.tfinger.x * (float)nW;
+		fy = ev.tfinger.y * (float)nH;
+		SdlToLogical(m_pWindow, fx, fy);
+
+		if (ev.type == SDL_EVENT_FINGER_DOWN)
+		{
+			bool bNgonDau = (m_nNgonDangDat == 0);
+
+			m_nNgonDangDat++;
+			if (m_nNgonDangDat > m_nNgonToiDa)
+				m_nNgonToiDa = m_nNgonDangDat;
+			if (bNgonDau)
+				return false;	// ngon thu nhat: de chuot gia lap lo nhu cu
+
+			// Ngon thu hai tro di: uu tien nut ky nang, roi den can dieu khien.
+			if (m_nNgonKyNang < 0)
+			{
+				int nNut = JxKyNang_TrungNut((int)fx, (int)fy);
+				if (nNut > 0)
+				{
+					m_nNgonKyNang = nNgon;
+					JxKyNang_BatDau(nNut, (int)fx, (int)fy);
+					return true;
+				}
+			}
+			if (m_nNgonCan < 0 && !JxCan_DangCam()
+				&& JxCan_TrongVung((int)fx, (int)fy)
+				&& !JxUi_CoGiaoDienTaiDiem((int)fx, (int)fy))
+			{
+				m_nNgonCan = nNgon;
+				JxCan_BatDau((int)fx, (int)fy, (int)fx, (int)fy);
+				return true;
+			}
+			return false;
+		}
+
+		if (ev.type == SDL_EVENT_FINGER_MOTION)
+		{
+			if (nNgon == m_nNgonKyNang)
+			{
+				JxKyNang_Keo((int)fx, (int)fy);
+				return true;
+			}
+			if (nNgon == m_nNgonCan)
+			{
+				JxCan_Keo((int)fx, (int)fy);
+				return true;
+			}
+			return false;
+		}
+
+		// FINGER_UP / FINGER_CANCELED
 		if (m_nNgonDangDat > 0)
 			m_nNgonDangDat--;
+		if (nNgon == m_nNgonKyNang)
+		{
+			JxKyNang_Nha();
+			m_nNgonKyNang = -1;
+			return true;
+		}
+		if (nNgon == m_nNgonCan)
+		{
+			JxCan_Nha();
+			m_nNgonCan = -1;
+			return true;
+		}
 		return false;
 	}
 	if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN || ev.type == SDL_EVENT_MOUSE_BUTTON_UP)

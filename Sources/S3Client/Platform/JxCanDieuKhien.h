@@ -58,6 +58,9 @@ void JxKyNang_Nhip();
 bool JxKyNang_Nha();
 // Goi cuoi moi khung ve: ve bang nut + vach ngam + vong tron duoi chan con dang ngam.
 void JxKyNang_Ve();
+// [ANDROID 09/09 HUONGDI] Goi cuoi moi khung ve: mui ten nho duoi chan nhan vat
+// theo huong dang di chuyen.
+void JxHuongDi_Ve();
 
 #endif // JX_ANDROID
 #endif

@@ -124,6 +124,23 @@ static int			s_nMoY			= -1;
 extern int SCREEN_WIDTH;		// S3Client.cpp / KSdlApp.cpp: co khung ve that
 extern int SCREEN_HEIGHT;
 
+//--------------------------------------------------------------------------
+//	[UITOADO 09/09 E] Bang O VE TAY (khong phai cua so KWnd) - xem UiToaDo.h
+//--------------------------------------------------------------------------
+#define	UITOADO_ORIENG_MAX	8
+
+struct KORieng
+{
+	char					szKhoa[64];
+	PFN_UITOADO_TRUNG		pfnTrung;
+	PFN_UITOADO_LAYVITRI	pfnLay;
+	PFN_UITOADO_DATVITRI	pfnDat;
+};
+
+static KORieng		s_ORieng[UITOADO_ORIENG_MAX];
+static int			s_nSoORieng = 0;
+static int			s_nKeoORieng = -1;	// o rieng dang keo, -1 = khong
+
 static void DatThongBao(const char* pszChu);
 
 //--------------------------------------------------------------------------
@@ -205,6 +222,26 @@ static bool TaoKhoa(const char* pszLop, KWndWindow* pWnd, char* pszRa, int nCo)
 	return true;
 }
 
+//	[UITOADO 09/09 F] So thu tu cua mot o trong danh sach con cua cha no (-1 = khong ro).
+static int SoThuTuCon(KWndWindow* pWnd)
+{
+	KWndWindow*	pCha;
+	KWndWindow*	p;
+	int			i = 0;
+
+	if (pWnd == NULL)
+		return -1;
+	pCha = pWnd->GetParent();
+	if (pCha == NULL)
+		return -1;
+	for (p = pCha->GetFirstChild(); p; p = p->GetNextWnd(), i++)
+	{
+		if (p == pWnd)
+			return i;
+	}
+	return -1;
+}
+
 static bool TaoKhoaTuOCon(KWndWindow* pWnd, char* pszRa, int nCo)
 {
 	char szLop[64];
@@ -213,7 +250,27 @@ static bool TaoKhoaTuOCon(KWndWindow* pWnd, char* pszRa, int nCo)
 	if (pWnd == NULL)
 		return false;
 	LayTenLop(pWnd->GetOwner(), szLop, sizeof(szLop));
-	return TaoKhoa(szLop, pWnd, pszRa, nCo);
+	if (TaoKhoa(szLop, pWnd, pszRa, nCo))
+		return true;
+
+	//	[UITOADO 09/09 F] O nay khong nap tu ini nen khong co ten muc. Truoc day tra
+	//	false -> ben goi LEO LEN CHA -> keo mot icon thanh keo CA CUM, va nhieu icon
+	//	khong keo rieng duoc. Nay dat ten thay the theo VI TRI trong cay cua so:
+	//		<ten lop cua so goc>|#<thu tu cua cha>.<thu tu cua no>
+	//	Trinh tu dung giao dien co dinh moi lan chay nen khoa nay on dinh.
+	if (szLop[0])
+	{
+		int nToi = SoThuTuCon(pWnd);
+		int nCha = SoThuTuCon(pWnd->GetParent());
+
+		if (nToi >= 0)
+		{
+			_snprintf(pszRa, nCo, "%s|#%d.%d", szLop, nCha, nToi);
+			pszRa[nCo - 1] = 0;
+			return true;
+		}
+	}
+	return false;
 }
 
 //	Co nhung lop TUYET DOI khong duoc goi SetSize: chinh tac gia goc da canh bao
@@ -250,6 +307,36 @@ static bool CamAn(KWndWindow* pWnd)
 //--------------------------------------------------------------------------
 //	config.ini [Ui] SuaToaDo
 //--------------------------------------------------------------------------
+void UiToaDo_DangKyORieng(const char* pszKhoa, PFN_UITOADO_TRUNG pfnTrung,
+		PFN_UITOADO_LAYVITRI pfnLay, PFN_UITOADO_DATVITRI pfnDat)
+{
+	int i;
+
+	if (pszKhoa == NULL || pszKhoa[0] == 0 || pfnTrung == NULL
+		|| pfnLay == NULL || pfnDat == NULL)
+		return;
+	for (i = 0; i < s_nSoORieng; i++)
+	{
+		if (strcmp(s_ORieng[i].szKhoa, pszKhoa) == 0)
+			return;		// da dang ky roi
+	}
+	if (s_nSoORieng >= UITOADO_ORIENG_MAX)
+		return;
+	i = s_nSoORieng++;
+	strncpy(s_ORieng[i].szKhoa, pszKhoa, sizeof(s_ORieng[i].szKhoa) - 1);
+	s_ORieng[i].szKhoa[sizeof(s_ORieng[i].szKhoa) - 1] = 0;
+	s_ORieng[i].pfnTrung = pfnTrung;
+	s_ORieng[i].pfnLay   = pfnLay;
+	s_ORieng[i].pfnDat   = pfnDat;
+
+	//	Co vi tri da luu thi ap lai ngay
+	{
+		int n = TimKhoa(pszKhoa);
+		if (n >= 0)
+			pfnDat(s_Bang[n].nLeft, s_Bang[n].nTop);
+	}
+}
+
 bool UiToaDo_ChoPhep()
 {
 	if (s_bDaDocCauHinh == false)
@@ -416,8 +503,20 @@ void UiToaDo_ApChoCuaSo(KWndWindow* pCuaSoGoc)
 	ApChoCay(szLop, pCuaSoGoc->GetFirstChild());
 }
 
+//	[UITOADO 09/09 E] Ap lai vi tri da luu cho cac o ve tay.
+static void ApChoORieng()
+{
+	for (int i = 0; i < s_nSoORieng; i++)
+	{
+		int n = TimKhoa(s_ORieng[i].szKhoa);
+		if (n >= 0)
+			s_ORieng[i].pfnDat(s_Bang[n].nLeft, s_Bang[n].nTop);
+	}
+}
+
 void UiToaDo_ApChoTatCa()
 {
+	ApChoORieng();	// [UITOADO 09/09 E] ca cac o ve tay
 	if (s_nSo == 0)
 		return;
 
@@ -952,6 +1051,25 @@ bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			}
 
 			//	chuot trai = o nho nhat duoi con tro; chuot phai = ca khoi
+			//	[UITOADO 09/09 E] O VE TAY xet TRUOC: chung nam tren cung man hinh nen
+			//	phai duoc uu tien, khong thi cua so phia duoi cuop mat cu keo.
+			s_nKeoORieng = -1;
+			{
+				int k;
+				for (k = 0; k < s_nSoORieng; k++)
+				{
+					if (s_ORieng[k].pfnTrung(x, y))
+					{
+						s_nKeoORieng = k;
+						s_nKeoX = x;
+						s_nKeoY = y;
+						break;
+					}
+				}
+			}
+			if (s_nKeoORieng >= 0)
+				break;
+
 			//	[UITOADO 09/09 B] bam trai + cong cu "Doi khoi" = y nhu bam phai
 			pO = TimODuoiChuot(x, y,
 				uMsg == WM_RBUTTONDOWN || s_nCongCu == CONGCU_KHOI,
@@ -970,6 +1088,17 @@ bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 		break;
 
 	case WM_MOUSEMOVE:
+		//	[UITOADO 09/09 E] dang keo mot o ve tay
+		if (s_nKeoORieng >= 0)
+		{
+			int nX = 0, nY = 0;
+
+			s_ORieng[s_nKeoORieng].pfnLay(&nX, &nY);
+			s_ORieng[s_nKeoORieng].pfnDat(nX + (x - s_nKeoX), nY + (y - s_nKeoY));
+			s_nKeoX = x;
+			s_nKeoY = y;
+			break;
+		}
 		if (s_pKeo)
 		{
 			int nLeft, nTop;
@@ -984,6 +1113,21 @@ bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
+		//	[UITOADO 09/09 E] o ve tay: ghi vi tri moi vao bang de luc luu co trong tep
+		if (s_nKeoORieng >= 0)
+		{
+			int nX = 0, nY = 0;
+			char szB[192];
+
+			s_ORieng[s_nKeoORieng].pfnLay(&nX, &nY);
+			DatKhoa(s_ORieng[s_nKeoORieng].szKhoa, nX, nY, 1000, 0);
+			_snprintf(szB, sizeof(szB), "%s  =  %d,%d",
+				s_ORieng[s_nKeoORieng].szKhoa, nX, nY);
+			szB[sizeof(szB) - 1] = 0;
+			DatThongBao(szB);
+			s_nKeoORieng = -1;
+			break;
+		}
 		if (s_pKeo && s_szKhoaKeo[0])
 			GhiLaiO(s_pKeo, s_szKhoaKeo);
 		s_pKeo = NULL;
