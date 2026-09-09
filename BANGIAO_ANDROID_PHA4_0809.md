@@ -1144,3 +1144,90 @@ Chạm vào NPC thì thoại **đã mở được sẵn** (§8.10), nên icon n�
 - **Gửi / lấy vật phẩm** (`UiGive`, 1068 dòng).
 - **Bàn phím ảo trong game** (`UiVirtualKeyboard`, 353 dòng) — hiện đang dùng bàn phím hệ thống.
 - Kéo–thả vật phẩm và bấm đúp: **chưa kiểm bằng tay**.
+
+---
+
+## 13. (11/09) VÒNG SÁNG CHƯA LUÂN CHUYỂN + LAG TỐNG KIM TRÊN MOBILE (bản vá 71–73)
+
+> Nhánh: `mobile-0809` = commit cũ `cbe40fdb` (va 70) + **4 commit mới** (va 71, 72, 73, bàn giao). **Chưa rebase lên `origin/main`**
+> mới (`7c13d0a8`, 12 commit phiên tối ưu 09/09: LOCTG b, CHUGIU, DON/SANGTAT, WORLD b/c, NAPCHIEU, NAPNPC, NPCRES) — chủ
+> rebase theo quy trình mục 5 khi thấy tiện; đã thử rebase một lần: xung đột duy nhất ở `KRepresentShell3.cpp` (định nghĩa
+> `g_uRep3LocKhung`: giữ khối biến của main, giữ định nghĩa ở tệp này cho Android), sau đó dựng lại hai chuỗi Windows.
+> Bản vá: `android/va_nguon_android_71.py` (vòng sáng), `_72.py` (bộ đệm đọc pak), `_73.py` (atlas SDL_GPU + bỏ bản CPU + ngân sách cache).
+> Tất cả chỉ trong tệp/rào `JX_ANDROID` / `JX_POSIX` / `JX_PLATFORM_SDL` (và trong `JX_PLATFORM_SDL` thì mặc định **tắt** trên Windows
+> `GameSDL.exe`), nên **bản PC không đổi hành vi**.
+> **Chưa dựng APK, chưa chạy trên máy ảo/điện thoại** (không có NDK/LDPlayer ở đây). Đã kiểm cú pháp bằng clang + header SDL3
+> + libc++ (đúng bộ NDK dùng) cho 8 tệp đã sửa: 0 lỗi.
+
+### 13.1. Vòng sáng vẫn chưa luân chuyển — gốc thật (va 71)
+
+Toàn bộ đường luân chuyển (va 67–70) đúng, nhưng **không bao giờ chạy** vì một lỗi bộ đệm:
+
+- `KyNang_OLaAura(i)` hỏi Core "kỹ năng ở ô i có phải vòng sáng?" qua `KyNang_HoiCore()` rồi **ghi kết quả vào bộ đệm theo
+  mã kỹ năng** (`s_uKNAuraId[i]` / `s_nKNAuraLa[i]`). `KyNang_HoiCore()` **trả về kể cả khi Core chưa trả lời được**
+  (`GetGameData(GDI_KYNANG_MOBILE)` trả 0 vì `Player[CLIENT_PLAYER_INDEX].m_nIndex == 0` lúc **chưa vào game**) → `nAura = 0`
+  bị ghi vào bộ đệm **vĩnh viễn** cho mã đó.
+- `JxKyNang_Nhip()` (và trong đó `KyNang_LuanChuyen()`) chạy từ vòng lặp `KSdlApp::Run` **ngay từ màn hình đăng nhập**, mà
+  `UserData\KyNangMobile.ini` đã có sẵn 3 vòng sáng từ phiên trước → mỗi lần mở app, bộ đệm bị đọc sai **trước khi vào game**
+  → cả phiên coi 3 ô đó là "không phải vòng sáng": không luân chuyển, không vòng xoay. Đó là lý do mọi APK từ va 67 tới va 70
+  đều "vẫn chưa luân chuyển" — mỗi lần cài APK mới là mở app lại với ini đã có.
+
+**Sửa:** (1) `KyNang_OLaAura` hỏi thẳng Core và **chỉ ghi bộ đệm khi Core trả lời được** (`GetGameData` trả 1); (2)
+`KyNang_LuanChuyen` chỉ làm việc **mỗi `LuanChuyenMs`** (trước: quét 8 ô + hỏi Core mỗi vòng lặp ~1 ms), **không làm gì khi
+chưa vào game** (chưa có kỹ năng đánh trái), cập nhật `s_KNPhai` ngay khi đổi để **vòng xoay** chuyển theo (trước lấy từ
+`KyNang_DocBang` 2 s/lần nên vòng xoay chạy chậm hơn luân chuyển 0,5 s); (3) chạm ô vòng sáng / gỡ vòng sáng cũng cập nhật
+`s_KNPhai`; (4) nhật ký `[KYNANG] luan chuyen vong sang -> <mã> (k/n) lan N`: 20 dòng đầu rồi mỗi 200 lần một dòng.
+
+**Chủ kiểm:** gán 2–3 vòng sáng Nga My vào ô phụ → **tắt app, mở lại** → vào game → mỗi 0,5 s: ô kỹ năng **phải** trên thanh
+trạng thái đổi biểu tượng, vòng sáng dưới chân đổi, vòng xoay chuyển ô; logcat có `[KYNANG] luan chuyen vong sang`. Không thấy
+dòng đó = Core trả `nLaAura = 0` cho kỹ năng ấy (cột IsAura trong `settings\skills.txt`), báo tôi mã kỹ năng.
+Lưu ý: trong **Tống Kim** máy chủ cấm vòng sáng (`m_bTongForbidAura`, `KProtocolProcess::ChangeAuraSkill`) nên không thử ở đó.
+
+### 13.2. Lag Tống Kim: cùng một bản, PC 144 fps đều, mobile lag — phân tích
+
+Đã đọc lớp vẽ SDL_GPU (`D3D9onGPU*.cpp`), đường nạp sprite (`TextureRes*.cpp`, `XPackFile.cpp`), mạng SDL (`SocketClient.cpp`),
+chữ (`KFont3.cpp`) và số liệu cũ của máy ảo (§12.14). Bốn chỗ **mobile khác PC** và đều tăng theo số người trên màn hình:
+
+| # | Chỗ | Mobile | PC |
+|---|---|---|---|
+| 1 | **Đọc pak** (`XPackFile::GetSprFrame` → `DirectRead`) | mỗi khung sprite = 1 seek + 1 read xuống hệ thống tệp; trên LDPlayer dữ liệu nằm ở **thư mục chia sẻ** `/mnt/shared/Misc` → mỗi lần đọc là một chuyến máy ảo ↔ máy thật (~0,3–0,5 ms). Số liệu cũ: `[REP3-NAP] rút khung 4770 lần/30 s = 2,4 s trên luồng vẽ` | bộ đệm trang Windows, ~20 µs |
+| 2 | **Texture GPU** (`D3D9onGPUDev/Res.cpp`) | **không có atlas**: mỗi khung / mỗi ô cắt của sprite = một `SDL_GPUTexture` riêng (vkCreateImage + cấp bộ nhớ + upload + barrier) và một lệnh vẽ riêng; Tống Kim = hàng nghìn texture mới mỗi giây trên Vulkan, LDPlayer còn dịch Vulkan sang máy thật → `[PDET] end tới 105 ms` | D3D11 có atlas 1024×1024 từ 08/09 (`D3D9on11Atlas.cpp`), vài trăm texture GPU thay vì hàng vạn |
+| 3 | **RAM** | lớp SDL_GPU giữ **bản CPU của mọi texture** → RAM = 2× cache; `config.ini` Android chép `Rep3CacheMB=1500` từ PC 32 GB → máy ảo 2–4 GB / điện thoại thiếu RAM (hệ thống giết app hoặc máy ảo tráo trang) | 32 GB RAM, VRAM riêng |
+| 4 | Giải mã RLE khung + logic Core (tick NPC) trên **cùng luồng vẽ** | CPU máy ảo/điện thoại yếu hơn nhiều | — |
+
+Đã **loại trừ**: mạng (vòng đọc socket SDL `select` + `recv` không giới hạn thông lượng; đã đo 80 gói/s RTT 1,7 ms) và chữ
+(`KFont3` dùng **một** texture chung cho cả font, vẽ theo lô — không phải mỗi chữ một texture).
+
+### 13.3. Đã sửa (chỉ mobile) — 3 công tắc, đều A/B được không cần dựng lại
+
+| Bản vá | Việc | Tắt để A/B |
+|---|---|---|
+| **72** `XPackFile.cpp` (`JX_POSIX`) | **Bộ đệm khối đọc pak**: 512 khối × 64 KB (32 MB) LRU trong `DirectRead`; khung kề nhau của cùng sprite nằm cùng khối → lấy từ RAM. Yêu cầu > 64 KB (tệp nguyên, chỉ mục) đọc thẳng. Đóng pak thì bỏ khối của handle đó. Chạy trong khóa `ms_ReadCritical` sẵn có. Nhật ký logcat (`SDL/APP`) mỗi 30 s: `[PAK] 30s: doc N lan (trung khoi A, truot B, doc thang C) \| xuong dia D lan X MB Y ms \| khoi dang giu 512 x 64 KB` | tạo tệp `<thư mục dữ liệu>\jx_pak_khoi.off` |
+| **73** `D3D9onGPU*.cpp/.h` | **Atlas SDL_GPU**: texture `POOL_DEFAULT` ≤ 512 px (sprite, không RT/DYNAMIC) gom vào trang 1024×1024 cùng định dạng (R8G8 bảng màu / BGRA8), xếp kệ theo lớp chiều cao **y hệt** `CAtlasMgr` của D3D11; uv nhân/dịch khi chép đỉnh vào ring (`RgAtlasUv`); quad kề nhau cùng trang được **gộp lệnh** như trước; trả chỗ **sau khung** (`m_atlasFrees`), trang rỗng thứ hai mỗi lớp trả GPU. Texture bị huỷ giữa khung tự rút khỏi `m_touched` (trước đây là con trỏ treo tiềm ẩn). | `[Client] Rep3AtlasGpu=0` |
+| **73** | **Bỏ bản CPU** của texture DEFAULT sau khi lệnh tải đã submit (`FrameReset`) → RAM ≈ 1× cache. `LockRect` sau đó (hiếm: sprite chỉ ghi một lần) đọc lại từ GPU (`ReadbackRegion`, đồng bộ) — đếm `doc lai N` trong dòng `khung ...` của `jx_rep3.log`. | `[Client] Rep3GpuBoBanCpu=0` |
+| **73** `TextureResMgr.cpp` (`JX_POSIX`) + `config.ini` | Ngân sách cache: `Rep3CacheMB=0` (tự tính **RAM/8 kẹp 128–512 MB**, rồi `CapBudgetByVram` kẹp theo "VRAM" ảo 1024 MB của SDL_GPU); số ép trong ini vẫn được tôn trọng nhưng **kẹp ≤ RAM/3** (có dòng log `[REP3] cache texture: ... qua lon ... -> kep`). Hệ số 1,3× cho trang atlas áp cả cho `Rep3Api=100`. | đặt lại `Rep3CacheMB=<số>` |
+
+Thống kê để đối chiếu (`jx_rep3.log`): dòng `atlas: BAT ... \| bo ban CPU sau khi tai len: BAT` lúc tạo thiết bị; dòng
+`khung N: lenh ve .., quad .., tai texture .., texture GPU X (Y MB) \| atlas P trang (Q MB) \| bo ban CPU S texture (T MB), doc lai R`
+mỗi 1800 khung; dòng `[REP3] ... gpu tex X (Y MB, P trang Q MB)` mỗi `Rep3StatSec` (30 s).
+
+### 13.4. Chủ đo — theo thứ tự này
+
+1. Dựng APK (§4), vào thành: `jx_rep3.log` phải có `atlas: BAT`; **hình ảnh sprite / UI phải y như cũ**. Lệch uv, ô đen, viền lạ
+   → `Rep3AtlasGpu=0` rồi so; vẫn lỗi → `Rep3GpuBoBanCpu=0`. Báo tôi công tắc nào gây lỗi.
+2. Vào **Tống Kim 1 phút** với `PaintLog=1`, gửi `jx_paint.log` (`[SEC] painted`, `[PDET]`), `jx_rep3.log` (`[REP3-NAP]`,
+   `khung ...`), logcat (`[PAK]`). Số cần xem: `rút khung` ms/30 s và `[PAK] trung khoi` (I/O), `lenh ve`/`tai texture` mỗi khung
+   (GPU), `RAM rieng` (RAM), `khung >16 ms`.
+3. **Thử nhanh không cần dựng** (chỉ máy ảo): chép dữ liệu vào bộ nhớ trong của máy ảo (`adb push D:\jx1_android_data /sdcard/jx1`
+   + trỏ `jx_data_dir.txt`, xem 686c08cd) → nếu hết lag thì thủ phạm chính là I/O thư mục chia sẻ (điện thoại thật không bị).
+4. LDPlayer: cài đặt máy ảo ≥ 4 nhân CPU, ≥ 4 GB RAM (mặc định 2 nhân).
+
+### 13.5. Còn lại / rủi ro
+
+- **Bước 3 chưa làm:** giải mã RLE khung sprite (`TextureResSpr::PrepareFrameData` → `RenderToIndexAlpha`) vẫn trên luồng vẽ;
+  đưa sang luồng nền (`TextureResMgr::NapNenChay`) như đã làm với tệp SPR (NAP 08/09 b) — làm sau khi có số đo bước 2.
+- Atlas: texture ảo gán ở **stage 1** hoặc sampler WRAP với uv ngoài [0,1] sẽ sai (D3D11 trên PC cũng vậy, chưa thấy xảy ra).
+- Bỏ bản CPU: nếu `doc lai N` tăng đều mỗi khung → có chỗ ghi lại texture DEFAULT sau khi vẽ (không mong đợi), báo tôi.
+- Bộ đệm pak: 32 MB RAM thêm; nếu `[PAK] trung khoi` thấp (< 50 %) thì đổi `XP_KHOI_CO`/`XP_KHOI_SO` trong `XPackFile.cpp`.
+- Chưa có số đo runtime nào cho ba bản vá này — mọi kết luận "hết lag" phải chờ log của chủ.
+
