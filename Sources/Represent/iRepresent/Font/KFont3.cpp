@@ -508,8 +508,12 @@ void KFont3::SetBorderColor(unsigned int uColor)
 	unsigned char g = (uColor >> 8) & 0xFF;
 	unsigned char b = uColor & 0xFF;
 
-	if (a == 0) // 
-		a = 0xFF; //
+	// [CHU 08/09] Chu thich cua ham noi "alpha = 0 nghia la KHONG ve vien", nhung doan nay lai ep vien DEN DAC.
+	// KNpc::PaintInfo mac dinh dwBorderColor = 0 cho MOI nhan vat khong duoc chon => moi ten/danh hieu deu co
+	// them mot lop vien den (chu duoc ve hai luot) => nhin dam/toi hon. [Client] VienChu = 0 de tat.
+	extern int g_nRep3VienChu;
+	if (a == 0 && g_nRep3VienChu)
+		a = 0xFF;
 
 	ms_uBorderColor = (a << 24) | (r << 16) | (g << 8) | b;
 }

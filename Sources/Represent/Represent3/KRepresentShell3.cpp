@@ -47,6 +47,7 @@ int  g_nRep3Composite = 0;
 int  g_nRep3Tex32     = 1;
 int  g_nRep3Npot      = 1;
 int  g_nRep3Vsync     = 0;
+int  g_nRep3VienChu   = 1;	// [CHU 08/09] 1 = ep vien den cho moi chuoi chu (nhu tu truoc); 0 = ton trong ben goi (alpha 0 = khong vien)
 int  g_nRep3CacheMB   = 0;
 int  g_nRep3Api       = 11;	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11: CD3D11Shim::Init do IDXGIFactory2 + feature level, khong du -> tu lui D3D9
 int  g_nRep3ApiOn     = 9;	// [D3D11 08/09]
@@ -529,6 +530,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Tex32     = Rep3Ini("Rep3Tex32", 1);
 	g_nRep3Npot      = Rep3Ini("Rep3Npot", 1);
 	g_nRep3Vsync     = Rep3Ini("Rep3Vsync", 0);
+	g_nRep3VienChu   = Rep3Ini("VienChu", 1);	// [CHU 08/09]
 	if (Rep3Ini("PaintVsync", 0) > 0) g_nRep3Vsync = 1;	// [NHIP 08/09] Game.exe ve theo vblank -> Present(1)
 	g_nRep3CacheMB   = Rep3Ini("Rep3CacheMB", 0);
 	g_nRep3Log       = Rep3Ini("Rep3Log", 1);
