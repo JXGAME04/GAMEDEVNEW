@@ -27,13 +27,33 @@
 
 extern	int WND_SHOW_DEBUG_FRAME_TEXT;
 
+#ifdef JX_ANDROID
+// [ANDROID 09/09 NEO] Chinh sach neo cua so khi man hinh khac khung ve chuan 1024x768.
+// Mang tu ban JX1 Mobile cua chu (USVOLAM, "dot UI-1/UI-2").
+enum FitFlags
+{
+	FIT_NONE    = 0,
+	FIT_LEFT    = 1 << 0,	// giu nguyen Left (bam le trai)
+	FIT_RIGHT   = 1 << 1,	// bam le phai
+	FIT_HCENTER = 1 << 2,	// can giua ngang
+	FIT_TOP     = 1 << 3,	// giu nguyen Top (bam le tren)
+	FIT_BOTTOM  = 1 << 4,	// bam le duoi
+	FIT_VCENTER = 1 << 5,	// can giua doc
+	FIT_NOFIT   = 1 << 7,	// cua so tu dat cho, dung dung toi
+};
+#endif
+
 class KIniFile;
 
 class KWndWindow
 {
 protected:
 	//----窗口参数----
-	unsigned int m_Style;			//窗口风格,见Wnd.h中窗口风格的定义
+	unsigned int m_Style;
+#ifdef JX_ANDROID
+	unsigned char	m_FitFlags;		// [ANDROID 09/09 NEO] chinh sach neo (0 = mac dinh: dich vao giua)
+	unsigned char	m_bNeedFit;		// [ANDROID 09/09 NEO] Init vua dat lai khung -> con mot luot can
+#endif			//窗口风格,见Wnd.h中窗口风格的定义
 	int			m_Left;				//左上角X坐标，相对于父窗口
 	int			m_Top;				//左上角Y坐标，相对于父窗口
 	int			m_Width;			//宽度
@@ -104,6 +124,13 @@ public:
 	virtual KWndWindow*	TopChildFromPoint(int x, int y);	//得到处于指定坐标位置的最上层窗口，传入的坐标为绝对坐标
 
 	KWndWindow*		GetPreWnd() const { return m_pPreviousWnd; }	//得到前一个兄弟窗口
+#ifdef JX_ANDROID
+	// [ANDROID 09/09 NEO] dat chinh sach neo cho cua so nay (xem enum FitFlags)
+	void			SetFitFlags(unsigned char nFlags) { m_FitFlags = nFlags; }
+	// [ANDROID 09/09 NEO] dat lai mot cua so GOC tu khung ve chuan 1024x768 sang man hinh that
+	virtual void	FitToScreen();
+	void			ComputeFit(int nRefL, int nRefT, int* pOutL, int* pOutT);
+#endif
 	KWndWindow*		GetNextWnd() const { return m_pNextWnd; }		//得到后一个兄弟窗口
 	KWndWindow*		GetParent() const { return m_pParentWnd; }		//得到父窗口
 	KWndWindow*		GetFirstChild() const { return m_pFirstChild; }	//得到第一个子窗口

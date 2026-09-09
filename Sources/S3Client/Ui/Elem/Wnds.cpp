@@ -109,6 +109,23 @@ void Wnd_RenderWindows()
 
 	if (s_WndStation.pGameSpaceWnd && s_WndStation.bPaintGameSpace)
 		s_WndStation.pGameSpaceWnd->Paint();
+#ifdef JX_ANDROID
+	// [ANDROID 09/09 NEO] Dat lai moi cua so GOC tu khung ve chuan 1024x768 sang man hinh that,
+	// truoc khi ve. Moi cua so chi can mot lan (m_bNeedFit dat trong KWndWindow::Init).
+	// Cua so ban do (pGameSpaceWnd) dat rieng, khong nam trong ba chuoi nay.
+	{
+		KWndWindow* apGoc[3] = { &s_WndStation.LowLayerRoot, &s_WndStation.NormalLayerRoot, &s_WndStation.TopLayerRoot };
+		for (int nL = 0; nL < 3; nL++)
+		{
+			KWndWindow* pW = apGoc[nL]->GetNextWnd();
+			while (pW)
+			{
+				pW->FitToScreen();
+				pW = pW->GetNextWnd();
+			}
+		}
+	}
+#endif
 	s_WndStation.LowLayerRoot.Paint();
 	s_WndStation.NormalLayerRoot.Paint();
 	s_WndStation.TopLayerRoot.Paint();

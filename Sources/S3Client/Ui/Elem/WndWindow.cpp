@@ -51,6 +51,10 @@ KWndWindow::KWndWindow()
 	m_pFirstChild	= NULL;
 	m_pParentWnd	= NULL;
 	m_Style			= WND_S_VISIBLE;
+#ifdef JX_ANDROID
+	m_FitFlags = 0;		// [ANDROID 09/09 NEO]
+	m_bNeedFit = 0;
+#endif
 }
 
 //--------------------------------------------------------------------------
@@ -67,6 +71,118 @@ KWndWindow::~KWndWindow()
 //--------------------------------------------------------------------------
 //	功能：把窗口移动到最前面
 //--------------------------------------------------------------------------
+
+#ifdef JX_ANDROID
+//--------------------------------------------------------------------------
+// [ANDROID 09/09 NEO] TU CAN CHINH GIAO DIEN THEO MAN HINH
+//
+// Moi tep .ini giao dien duoc ve theo KHUNG CHUAN 1024x768. Tren dien thoai khung ve la thu khac
+// (vi du 1040x604, 1188x616, 1370x616) nen cua so nao neo goc tren-trai se nam sai cho, con cua so
+// le phai / le duoi thi hoac loi ra ngoai hoac de ho mot mang.
+//
+// Cach lam (mang tu ban JX1 Mobile cua chu, "dot UI-1/UI-2"):
+//   mac dinh              : dich ca khung 1024 vao GIUA man hinh -> giu nguyen bo cuc tuong doi
+//   FIT_LEFT / FIT_TOP    : giu nguyen goc (bam le trai / le tren)
+//   FIT_RIGHT / FIT_BOTTOM: bam le phai / le duoi
+//   FIT_HCENTER/VCENTER   : can giua that (theo be ngang thuc cua cua so)
+//   LEFT|RIGHT, TOP|BOTTOM: keo cang cho day man hinh
+//   FIT_NOFIT             : cua so tu dat cho (hop thoai tu can giua) - khong dung toi
+//
+// Moi cua so chi can MOT LAN: KWndWindow::Init dat m_bNeedFit, Wnd_RenderWindows quet mot luot.
+//--------------------------------------------------------------------------
+extern int SCREEN_WIDTH;
+extern int SCREEN_HEIGHT;
+
+void KWndWindow::ComputeFit(int nRefL, int nRefT, int* pOutL, int* pOutT)
+{
+	const int nRefW = 1024;		// khung ve chuan ma cac tep .ini duoc ve theo
+	const int nRefH = 768;
+	int nFlags = m_FitFlags & ~FIT_NOFIT;
+	int nDX = SCREEN_WIDTH - nRefW;
+	int nDY = SCREEN_HEIGHT - nRefH;
+
+	int eW = m_Width, eH = m_Height;
+	if ((m_Style & WND_S_SIZE_WITH_ALL_CHILD) || m_Width <= 0 || m_Height <= 0)
+	{
+		RECT rcAll;		// cua so "rong" (chi chua o con) phai lay be ngang that cua dam con
+		GetAllChildLayoutRect(&rcAll);
+		if (rcAll.right > rcAll.left) eW = rcAll.right - rcAll.left;
+		if (rcAll.bottom > rcAll.top) eH = rcAll.bottom - rcAll.top;
+	}
+
+	// Khong dat FitFlags thi TU SUY RA neo theo cho cua so nam trong khung chuan:
+	//   nam o mot phan ba dau  -> bam le tren / le trai
+	//   nam o mot phan ba cuoi -> bam le duoi / le phai
+	//   nam o giua             -> dich vao giua
+	// KHAC ban USVOLAM (ho mac dinh luon "dich ca khung vao giua"): ho chi bat he neo khi man hinh
+	// RONG VA CAO hon khung chuan. Man hinh dien thoai thi nguoc lai - rong hon nhung THAP hon
+	// nhieu (604 / 616 so voi 768), dich vao giua se keo thanh cong cu o day man hinh LEN ~82 diem
+	// anh (da nhin thay tan mat). Tu suy ra neo thi thanh tren o tren, thanh duoi o duoi, hop thoai
+	// van o giua - dung cho moi co man hinh ma khong phai danh dau tung cua so.
+	int nGiuaX = nRefL + (eW > 0 ? eW / 2 : 0);
+	int nGiuaY = nRefT + (eH > 0 ? eH / 2 : 0);
+
+	int nNewL;
+	if ((nFlags & FIT_LEFT) && (nFlags & FIT_RIGHT)) nNewL = nRefL;			// keo cang: giu goc
+	else if (nFlags & FIT_RIGHT)   nNewL = nRefL + nDX;						// bam le phai
+	else if (nFlags & FIT_LEFT)    nNewL = nRefL;							// bam le trai
+	else if (nFlags & FIT_HCENTER) nNewL = (SCREEN_WIDTH - eW) / 2;			// can giua that
+	else if (nGiuaX < nRefW / 3)   nNewL = nRefL;							// tu suy: nua trai -> giu goc
+	else if (nGiuaX > nRefW * 2 / 3) nNewL = nRefL + nDX;					// tu suy: nua phai -> bam le phai
+	else                           nNewL = nRefL + nDX / 2;					// tu suy: giua -> dich vao giua
+
+	int nNewT;
+	if ((nFlags & FIT_TOP) && (nFlags & FIT_BOTTOM)) nNewT = nRefT;
+	else if (nFlags & FIT_BOTTOM)  nNewT = nRefT + nDY;						// bam le duoi
+	else if (nFlags & FIT_TOP)     nNewT = nRefT;							// bam le tren
+	else if (nFlags & FIT_VCENTER) nNewT = (SCREEN_HEIGHT - eH) / 2;
+	else if (nGiuaY < nRefH / 3)   nNewT = nRefT;							// tu suy: phan tren -> giu goc
+	else if (nGiuaY > nRefH * 2 / 3) nNewT = nRefT + nDY;					// tu suy: phan duoi -> bam le duoi
+	else                           nNewT = nRefT + nDY / 2;
+
+	if (nNewL < 0) nNewL = 0;
+	if (nNewT < 0) nNewT = 0;
+	*pOutL = nNewL;
+	*pOutT = nNewT;
+}
+
+void KWndWindow::FitToScreen()
+{
+	if (!m_bNeedFit)
+		return;
+	m_bNeedFit = 0;
+	if (m_pParentWnd != NULL)		// chi cua so GOC (phong xa)
+		return;
+	// CHI neo cua so nao TU DANG KY (SetFitFlags). Da thu ap cho MOI cua so mot luot (nhu ban
+	// USVOLAM) va DO thay HONG: ban nay da tu chinh san nhieu cua so theo SCREEN_WIDTH/HEIGHT ngay
+	// trong ma (vi du UiPlayerBar co nhanh rieng cho 1024 va goi SetSize(SCREEN_WIDTH, ...)), nen neo
+	// lai tu khung chuan 1024x768 la CHINH HAI LAN: thanh cong cu duoi day bi keo len ~82 diem anh va
+	// khung trang tri lac cho. Vi vay de opt-in: cua so moi cua ban mobile goi SetFitFlags, cua so cu
+	// giu nguyen duong da chay.
+	if (m_FitFlags == 0)
+		return;
+	if (m_FitFlags & FIT_NOFIT)		// cua so tu dat cho
+		return;
+	if (SCREEN_WIDTH == 1024 && SCREEN_HEIGHT == 768)	// dung khung chuan: khong phai dich gi
+		return;
+
+	int nFlags = m_FitFlags & ~FIT_NOFIT;
+	if (((nFlags & FIT_LEFT) && (nFlags & FIT_RIGHT)) ||
+		((nFlags & FIT_TOP) && (nFlags & FIT_BOTTOM)))
+	{
+		int nNewW = ((nFlags & FIT_LEFT) && (nFlags & FIT_RIGHT)) ? SCREEN_WIDTH - m_Left : m_Width;
+		int nNewH = ((nFlags & FIT_TOP) && (nFlags & FIT_BOTTOM)) ? SCREEN_HEIGHT - m_Top : m_Height;
+		if (nNewW != m_Width || nNewH != m_Height)
+			SetSize(nNewW, nNewH);
+	}
+
+	int nNewL, nNewT;
+	ComputeFit(m_Left, m_Top, &nNewL, &nNewT);
+	if (nNewL != m_Left || nNewT != m_Top)
+		SetPosition(nNewL, nNewT);
+}
+#endif	// JX_ANDROID
+
 void KWndWindow::BringToTop()
 {
 	if (m_pNextWnd)
@@ -349,6 +465,9 @@ int KWndWindow::Init(KIniFile* pIniFile, const char* pSection)
 		else
 			m_Style |= WND_S_SIZE_WITH_ALL_CHILD;
 		
+#ifdef JX_ANDROID
+		m_bNeedFit = 1;	// [ANDROID 09/09 NEO] khung vua dat tu ini -> con mot luot can lai
+#endif
 		return true;
 	}
 	return false;

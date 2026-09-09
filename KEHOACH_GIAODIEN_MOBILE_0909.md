@@ -51,6 +51,25 @@ khách khác, **chỉ dùng để hiểu hành vi** (ví dụ cần điều khi�
   nên Ctrl+phải = menu người chơi, Shift+trái = đánh ép… đều chết, kể cả khi cắm bàn phím rời).
   Có sẵn `JxSdl_DatPhimDinh(mặt nạ)` để một nút ảo giữ hộ phím bổ trợ.
 
+## Hệ tự căn chỉnh giao diện (`FitFlags`) — đã mang sang, nhưng **opt-in**
+
+`KWndWindow` nay có `SetFitFlags(...)` + `FitToScreen()` mang từ USVOLAM ("đợt UI-1/UI-2"):
+mỗi tệp `.ini` giao diện được vẽ theo khung chuẩn **1024×768**, cửa sổ nào đăng ký thì được đặt lại
+theo màn hình thật (bám lề trái/phải/trên/dưới, căn giữa, hoặc kéo căng). Rào `#ifdef JX_ANDROID`.
+
+**Khác USVOLAM ở hai điểm, đều do đo thật rồi mới đổi:**
+
+1. **Mặc định tự suy ra neo** thay vì "dịch cả khung vào giữa". USVOLAM chỉ bật hệ neo khi màn hình
+   **rộng VÀ cao** hơn khung chuẩn; màn hình điện thoại thì ngược lại — rộng hơn nhưng **thấp hơn
+   nhiều** (604 / 616 so với 768). Dịch vào giữa kéo thanh công cụ dưới đáy **lên 82 điểm ảnh**
+   (đã nhìn tận mắt). Nay: cửa sổ ở một phần ba đầu → bám lề trên/trái, một phần ba cuối → bám lề
+   dưới/phải, ở giữa → dịch vào giữa.
+2. **Chỉ neo cửa sổ nào TỰ ĐĂNG KÝ** (`m_FitFlags != 0`). Đã thử áp cho mọi cửa sổ một lượt như
+   USVOLAM và **đo thấy hỏng**: bản này đã tự chỉnh sẵn nhiều cửa sổ theo `SCREEN_WIDTH/HEIGHT`
+   ngay trong mã (ví dụ `UiPlayerBar` có nhánh riêng cho 1024 và gọi `SetSize(SCREEN_WIDTH, ...)`),
+   nên neo lại từ khung chuẩn là **chỉnh hai lần** → khung trang trí thanh dưới lạc chỗ.
+   Cửa sổ cũ giữ nguyên đường đã chạy; cửa sổ mới của bản mobile gọi `SetFitFlags` là dùng được.
+
 ## Các lớp cần mang sang, theo thứ tự
 
 Đo bằng `wc -l` trên cây USVOLAM. Tất cả đều dùng `KWnd*` mà bản này đã có
