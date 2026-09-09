@@ -1562,7 +1562,10 @@ BOOL KMyApp::GameLoop()
 		const bool bLuoi1ms = (g_nPaintFps > 60 || g_nPaintVsync > 0);
 		const double dPaintStep = 1000.0 / (double)g_nPaintFps;
 		const int nLead = bLuoi1ms ? 0 : PAINT_LEAD_MS;
-		if (g_nPaintVsync > 0 || (double)nPaintElapse + nLead >= s_dNextPaint)
+		// [NHIP 08/09 e] Truoc day bat vsync la ve MOI vong bom va bo qua han PaintFps - chu dat mot con so ma no
+		// khong co tac dung gi. Nay PaintFps van chan tran: vsync chi lam nhip deu theo man hinh, con so khung/giay
+		// toi da do PaintFps quyet dinh (dat 72 tren man 144 Hz = dung mot khung moi hai lan quet, nhip deu tuyet doi).
+		if ((double)nPaintElapse + nLead >= s_dNextPaint)
 		{
 			if (bLuoi1ms)
 			{	// [NHIP 08/09] luoi 1 ms: cong deu tung buoc (144 fps = 6,94 ms, nhip trung binh dung); tut xa hon 1 khung thi dat lai
