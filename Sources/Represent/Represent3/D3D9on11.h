@@ -23,6 +23,8 @@ extern unsigned g_uRep3BatchQuads;   // so quad da gop trong ky
 extern unsigned g_uRep3BatchDraws;   // so Draw thuc te tu cac lo gop
 extern int      g_nRep3Waitable;     // [Client] Rep3Waitable: 1 = dung doi tuong cho khung cua DXGI (mac dinh), 0 = tat
 extern int      g_nRep3Pal;          // [Client] Rep3Pal: 1 = texture sprite bang mau 2 B/px (mac dinh khi D3D11), 0 = BGRA8
+extern int      g_nRep3LocKieu;      // [LOCTG b] 1 = chon loc (chi lam cham buoc len tu vung toi), 0 = doi xung
+extern float    g_fRep3LocK;         // [LOCTG b] k = 255 / Rep3LocToi
 extern int      g_nRep3LocMs;        // [LOCTG 09/09] [Client] Rep3LocMs: hang so thoi gian bo loc trinh khung (ms), 0 = tat
 int  Rep3_D3D11PaletteOK();
 int  Rep3_D3D11AllocPalette(const unsigned char* pPal24, int nColors);	// hang bang mau (-1 = het)

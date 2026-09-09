@@ -53,6 +53,8 @@ int  g_nRep3ApiOn     = 9;	// [D3D11 08/09]
 int  g_nRep3Atlas     = 1;	// [D3D11 08/09 d] gom texture nho vao trang atlas (chi khi Rep3Api=11)
 int  g_nRep3Flip      = 1;	// [D3D11 08/09 f] 1 = flip model (DWM ghep khung tron ven, khong xe hinh; mac dinh), 0 = bitblt cu
 unsigned g_uRep3VeCoSang = 0;	// [SANGDUNG 09/09] so lan that su ve qua nhanh CO chieu sang
+int  g_nRep3LocKieu   = 1;	// [LOCTG b] 1 = chon loc, 0 = doi xung
+float g_fRep3LocK     = 2.0f;	// [LOCTG b] 255 / Rep3LocToi
 int  g_nRep3LocMs     = 8;	// [LOCTG 09/09] hang so thoi gian bo loc trinh khung (ms); 0 = tat
 extern unsigned g_uRep3LocKhung;
 int  g_nRep3Pal       = 1;	// [D3D11 08/09 r] texture sprite bang mau 2 B/px (chi D3D11)
@@ -552,6 +554,8 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3LocMs     = Rep3Ini("Rep3LocMs", 8);	// [LOCTG 09/09]
 	if (g_nRep3LocMs < 0) g_nRep3LocMs = 0;
 	if (g_nRep3LocMs > 100) g_nRep3LocMs = 100;
+	g_nRep3LocKieu   = Rep3Ini("Rep3LocKieu", 1) ? 1 : 0;	// [LOCTG b]
+	{ int nToi = Rep3Ini("Rep3LocToi", 128); if (nToi < 8) nToi = 8; if (nToi > 255) nToi = 255; g_fRep3LocK = 255.0f / (float)nToi; }
 	g_nRep3Ex        = Rep3Ini("Rep3Ex", 0);		// [RAM 08/09]
 	if (g_nRep3Ex)
 		g_nRep3Pool = 1;	// D3D9Ex khong co POOL_MANAGED: bat buoc dem SYSTEMMEM + DEFAULT
@@ -2720,7 +2724,7 @@ void KRepresentShell3::RepresentEnd()
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);
 			Rep3Log("[SANGDUNG] m_bDoLighting=%d | so lan ve QUA NHANH CO CHIEU SANG: %u", (int)m_bDoLighting, g_uRep3VeCoSang);
 			g_uRep3VeCoSang = 0;
-			Rep3Log("[LOCTG] tau=%d ms | %u khung da tron", g_nRep3LocMs, g_uRep3LocKhung);
+			Rep3Log("[LOCTG] tau=%d ms kieu=%d toi=%d | %u khung da tron", g_nRep3LocMs, g_nRep3LocKieu, (int)(255.0f / g_fRep3LocK + 0.5f), g_uRep3LocKhung);
 			g_uRep3LocKhung = 0;
 			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0; g_uRep3BatchQuads = 0; g_uRep3BatchDraws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
