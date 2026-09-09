@@ -357,7 +357,7 @@ char g_ActionName[][32] =
 	"T¸n gÉu",
 	"H¶o h÷u",
 	"Giao dÞch",
-	"TØ thÝ",
+	"O¼n tï t×",
 	"NhËp ®éi",
 	"Tæ ®éi",
 	"Theo sau",

@@ -56,11 +56,11 @@ va(P, "CHAM] man hinh dien thoai nho",
 	// va lech sang trai - hai cai dem nay chinh la thu de dua chu vao giua.
 	//   cao mot dong = byFontSize * so_dong + 2 * byItemTitleUpSpace
 	//   rong mot dong = byFontSize * so_ky_tu / 2 + 2 * nItemTitleIndent + ...
-	// Voi chu co 12 thi dem 14 cho ra dong cao khoang 40 diem anh khung ve.
-	if (m_pMenu->byItemTitleUpSpace < 14)
-		m_pMenu->byItemTitleUpSpace = 14;
-	if (m_pMenu->nItemTitleIndent < 18)
-		m_pMenu->nItemTitleIndent = 18;
+	// Voi chu co 12 thi dem 7 cho ra dong cao khoang 26 diem anh khung ve (dem 14 chu bao QUA TO).
+	if (m_pMenu->byItemTitleUpSpace < 7)
+		m_pMenu->byItemTitleUpSpace = 7;
+	if (m_pMenu->nItemTitleIndent < 9)
+		m_pMenu->nItemTitleIndent = 9;
 #endif""", "noi rong dem dong menu")
 
 print("")
