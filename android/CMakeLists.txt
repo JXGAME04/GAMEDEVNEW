@@ -70,11 +70,12 @@ include(lists/core.cmake)
 include(lists/s3client.cmake)
 
 # ---- Lua 5.4 (+ lua4compat) : libLua54.so, dung chung cho Engine/Core/main nhu Lua54Dll.dll ----
-add_library(Lua54 SHARED ${JX_LUA54_SOURCES})
+add_library(Lua54 SHARED ${JX_LUA54_SOURCES}
+    ${JX_SRC}/Library/Lua54/jx_lua_fopen.c)   # moi fopen trong Lua -> JxPathPosix (script goi bang duong dan Windows)
 target_include_directories(Lua54 PUBLIC ${JX_LUA54_INCS})
-target_compile_definitions(Lua54 PRIVATE ${JX_LUA54_DEFS} LUA_USE_LINUX)
+target_compile_definitions(Lua54 PRIVATE ${JX_LUA54_DEFS} LUA_USE_LINUX fopen=jx_lua_fopen)
 target_compile_options(Lua54 PRIVATE -fsigned-char -fms-extensions -w)
-target_link_libraries(Lua54 PRIVATE dl m)
+target_link_libraries(Lua54 PRIVATE JxPosix dl m)
 
 # ---- FilterText (tinh, vao main nhu FilterText_StaticLib.lib) ----
 add_library(FilterText STATIC ${JX_FILTERTEXT_SOURCES})

@@ -40,7 +40,11 @@ public:
 	ZFile(const char *name, ZCache *cache) {
 		opened = false;
 #ifdef JX_PLATFORM_SDL	// [SDL 08/09 2b-1b] HANDLE chua SDL_IOStream*
-		{ SDL_IOStream* pIO = SDL_IOFromFile(name, "rb"); m_hFile = pIO ? (HANDLE)pIO : INVALID_HANDLE_VALUE; }
+		{
+#ifdef JX_POSIX
+			char szPosix[1024]; name = JxPathPosix(name, szPosix, sizeof(szPosix));	// [ANDROID 08/09]
+#endif
+			SDL_IOStream* pIO = SDL_IOFromFile(name, "rb"); m_hFile = pIO ? (HANDLE)pIO : INVALID_HANDLE_VALUE; }
 		if(m_hFile != INVALID_HANDLE_VALUE) {
 			m_Size = (unsigned long)SDL_GetIOSize((SDL_IOStream*)m_hFile);
 #else

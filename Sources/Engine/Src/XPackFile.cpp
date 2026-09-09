@@ -18,7 +18,13 @@
 #define DeleteCriticalSection(p)      SDL_DestroyMutex(*(SDL_Mutex**)(p))
 #define EnterCriticalSection(p)       SDL_LockMutex(*(SDL_Mutex**)(p))
 #define LeaveCriticalSection(p)       SDL_UnlockMutex(*(SDL_Mutex**)(p))
-static inline HANDLE XP_Open(const char* pszName) { SDL_IOStream* p = SDL_IOFromFile(pszName, "rb"); return p ? (HANDLE)p : INVALID_HANDLE_VALUE; }
+static inline HANDLE XP_Open(const char* pszName)
+{
+#ifdef JX_POSIX
+	char szPosix[1024]; pszName = JxPathPosix(pszName, szPosix, sizeof(szPosix));	// [ANDROID 08/09] \ -> /, ha chu thuong
+#endif
+	SDL_IOStream* p = SDL_IOFromFile(pszName, "rb"); return p ? (HANDLE)p : INVALID_HANDLE_VALUE;
+}
 static inline unsigned int XP_Size(HANDLE h) { Sint64 s = SDL_GetIOSize((SDL_IOStream*)h); return (s < 0) ? (unsigned int)INVALID_FILE_SIZE : (unsigned int)s; }
 static inline bool XP_Read(HANDLE h, void* pBuf, unsigned int uLen) { return SDL_ReadIO((SDL_IOStream*)h, pBuf, uLen) == (size_t)uLen; }
 static inline bool XP_ReadAt(HANDLE h, unsigned int uOff, void* pBuf, unsigned int uLen) { return SDL_SeekIO((SDL_IOStream*)h, (Sint64)uOff, SDL_IO_SEEK_SET) == (Sint64)uOff && XP_Read(h, pBuf, uLen); }

@@ -81,7 +81,21 @@ char* JxPathPosix(const char* pszIn, char* pszOut, size_t nOut)
 	{
 		size_t nd = strlen(s_szDataDir);
 		if (nd && strncmp(pszOut, s_szDataDir, nd) == 0 && (pszOut[nd] == '/' || pszOut[nd] == 0)) nLow = nd;
-		else return pszOut;   /* duong dan he thong tuyet doi: giu nguyen */
+		else
+		{
+			/* duong dan he thong Android that: giu nguyen */
+			static const char* s_goc[] = { "/storage/", "/sdcard/", "/proc/", "/dev/", "/system/", "/vendor/", "/apex/", "/product/", "/mnt/", "/tmp/",
+			                               "/data/user/", "/data/data/", "/data/local/", "/data/app/", "/data/misc/", NULL };
+			int bSys = 0;
+			for (int i2 = 0; s_goc[i2]; i2++) if (strncmp(pszOut, s_goc[i2], strlen(s_goc[i2])) == 0) { bSys = 1; break; }
+			if (bSys) return pszOut;
+			/* "\data\x.pak", "\settings\..." kieu Windows (goc o dia = thu muc game) -> tuong doi voi thu muc du lieu */
+			if (nd && o + nd + 1 < nOut)
+			{
+				memmove(pszOut + nd, pszOut, o + 1); memcpy(pszOut, s_szDataDir, nd); o += nd; nLow = nd;
+			}
+			else { memmove(pszOut, pszOut + 1, o); o--; nLow = 0; }
+		}
 	}
 	for (size_t k = nLow; k < o; k++) pszOut[k] = (char)tolower((unsigned char)pszOut[k]);
 	return pszOut;
