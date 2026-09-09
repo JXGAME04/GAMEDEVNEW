@@ -89,6 +89,8 @@ double   g_dRep3FxGiaiMaMs = 0.0;	// tong ms giai ma + tao texture
 Rep3NapDo g_napSpr = {0, 0, 0}, g_napJpeg = {0, 0, 0}, g_napKhung = {0, 0, 0}, g_napGiaiMa = {0, 0, 0}, g_napGpu = {0, 0, 0};
 double g_dRep3NapKhung = 0.0, g_dRep3NapKhungMax = 0.0; unsigned g_uRep3NapKhung5 = 0, g_uRep3NapKhung16 = 0;
 void Rep3NapCong(Rep3NapDo& d, double ms) { d.n++; d.ms += ms; if (ms > d.max) d.max = ms; g_dRep3NapKhung += ms; }
+// [NAP 08/09 d] trong pham vi ham GHEP/GHI anh mot lan: bat buoc nap dong bo (ket qua chi dung mot lan, nap nen tra NULL = mat vinh vien)
+struct Rep3NapDongBo { TextureResMgr& m; bool b; Rep3NapDongBo(TextureResMgr& mm) : m(mm), b(mm.m_bVeDangDien) { m.m_bVeDangDien = false; } ~Rep3NapDongBo() { m.m_bVeDangDien = b; } };
 double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 {
 	static LARGE_INTEGER s_liTanSo = {0};
@@ -2020,6 +2022,7 @@ void KRepresentShell3::GetBoundBox3D(int nPrimitiveCount, KRepresentUnit* pPrimi
 void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit* pPrimitives, 
         unsigned int uGenre, const char* pszImage, unsigned int uImage, short &nImagePosition)
 {
+	Rep3NapDongBo napDongBo(m_TextureResMgr);	// [NAP 08/09 d] ghep/ghi anh mot lan -> nap dong bo
 	if(!pPrimitives)
 	{
 		assert(pPrimitives);
@@ -2128,6 +2131,7 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 //## Çå³ýÍ¼ÐÎÊý¾Ý
 void KRepresentShell3::ClearImageData(const char* pszImage, unsigned int uImage, short nImagePosition)
 {
+	Rep3NapDongBo napDongBo(m_TextureResMgr);	// [NAP 08/09 d] ghep/ghi anh mot lan -> nap dong bo
 	if(!pszImage || !pszImage[0])
 		return;
 
@@ -2168,6 +2172,7 @@ void KRepresentShell3::FreeImage(const char* pszImage)
 
 void* KRepresentShell3::GetBitmapDataBuffer(const char* pszImage, KBitmapDataBuffInfo* pInfo, int nType)
 {
+	Rep3NapDongBo napDongBo(m_TextureResMgr);	// [NAP 08/09 d] ghep/ghi anh mot lan -> nap dong bo
 	if(!pszImage || !pszImage[0])
 		return NULL;
 
@@ -2203,6 +2208,7 @@ void* KRepresentShell3::GetBitmapDataBuffer(const char* pszImage, KBitmapDataBuf
 
 void KRepresentShell3::ReleaseBitmapDataBuffer(const char* pszImage, void* pBuffer)
 {
+	Rep3NapDongBo napDongBo(m_TextureResMgr);	// [NAP 08/09 d] ghep/ghi anh mot lan -> nap dong bo
 	if(!pszImage || !pszImage[0])
 		return;
 
