@@ -161,6 +161,9 @@ void KIpoTree::Clear()
 		m_pMainBranch = NULL;
 	}
 	m_DefaultBranch.Clear();
+#ifndef _SERVER
+	{ extern void CayDuongXoaHet(); CayDuongXoaHet(); }	// [CAY 09/09 c]
+#endif
 	RemoveRtoGroupWithPermanentLeaf();
 	
 	//clear all dyna light
@@ -215,6 +218,9 @@ void KIpoTree::Fell()
 	}
 	m_DefaultBranch.RemoveAllRtoLeafs(&m_PermanentLeaf);
 	m_DefaultBranch.Clear();
+#ifndef _SERVER
+	{ extern void CayDuongXoaHet(); CayDuongXoaHet(); }	// [CAY 09/09 c]
+#endif
 
 	//清除所有内建对象的光源
 	list<KLightBase*>::iterator i;
@@ -329,6 +335,24 @@ void KIpoTree::AddLeafPoint(KIpotLeaf* pLeaf)
 	}
 }
 
+#ifndef _SERVER
+// [CAY 09/09 c] doi toa do vat dong TAI CHO khi danh sach la dich (toa do moi) trung danh sach hien tai (toa do cu);
+// khong Pluck + chen lai (2 vong duyet ca danh sach ~1000 lan/tick luc dong). false = chua sua gi -> duong cu.
+extern bool CayDoiChoTaiCho(KIpotLeaf*& pFirst, KIpotRuntimeObj* pLeaf, const POINT& oMoi);
+extern unsigned g_uCayKhacDs, g_uCayNgoai, g_uCayKhacCha;
+bool KIpoTree::DoiViTri(KIpotRuntimeObj* pLeaf, const POINT& oMoi)
+{
+	if (m_nDenDong > 0) return false;	// dang co den dong (BanDoSang=1): duong cu xoa den + tao lai den o cho moi
+	if (pLeaf->pParentBranch == NULL && pLeaf->pParentLeaf == NULL) { g_uCayNgoai++; return false; }	// dang ngoai cay (m_PermanentLeaf)
+	KIpotBranch* pGoc = m_pMainBranch ? m_pMainBranch : &m_DefaultBranch;
+	KIpotBranch *pNhanhCu = NULL, *pNhanhMoi = NULL; KIpotLeaf *pChaCu = NULL, *pChaMoi = NULL;
+	KIpotLeaf** ppCu = pGoc->TimDanhSach(pLeaf->oPosition, pNhanhCu, pChaCu);
+	if (pNhanhCu != pLeaf->pParentBranch || pChaCu != pLeaf->pParentLeaf) { g_uCayKhacCha++; return false; }
+	KIpotLeaf** ppMoi = pGoc->TimDanhSach(oMoi, pNhanhMoi, pChaMoi);
+	if (ppMoi != ppCu) { g_uCayKhacDs++; return false; }
+	return CayDoiChoTaiCho(*ppMoi, pLeaf, oMoi);
+}
+#endif
 void KIpoTree::PluckRto(KIpotRuntimeObj* pLeaf)
 {
 	pLeaf->Pluck();

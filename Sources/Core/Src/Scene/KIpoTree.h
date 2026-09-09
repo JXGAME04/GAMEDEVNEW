@@ -138,6 +138,7 @@ class KIpoTree
 
 	// 删除一个KIpotRuntimeObj，同时删除附带的光源
 	void PluckRto(KIpotRuntimeObj* pLeaf);
+	bool DoiViTri(KIpotRuntimeObj* pLeaf, const POINT& oMoi);	// [CAY 09/09 c] doi toa do vat dong tai cho neu van cung danh sach la; false = chua sua gi, goi duong cu
 
 	// 设置九个焦点区域左上角坐标
 	void SetLightenAreaLeftTopPos(int nX, int nY)

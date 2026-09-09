@@ -21,6 +21,126 @@ unsigned g_uCayChen = 0, g_uCayDuyet1 = 0, g_uCayDuyet2 = 0, g_uCayKhop = 0, g_u
 
 unsigned int	KIpotBranch::m_BranchFlag[2] = {IPOT_BF_HAVE_LEFT_BRANCH, IPOT_BF_HAVE_RIGHT_BRANCH};
 #define	IS_BRANCH(i) (m_uFlag & m_BranchFlag[i])
+#ifndef _SERVER
+#include <map>
+#include <vector>
+// [CAY 09/09 c] chi muc 'vat duong' (BUILDIN sap xep theo duong) cua tung danh sach la; khoa = dia chi con tro dau danh sach.
+// Xay lan dau khi can, bo khi chen BUILDIN vao danh sach do, xoa het khi cay Clear/Fell (KIpoTree).
+extern unsigned g_uCayChen, g_uCayDuyet1, g_uCayDuyet2, g_uCayKhop, g_uCayCon;
+unsigned g_uCayTaiCho = 0, g_uCayDoiCho = 0, g_uCayBuoc = 0, g_uCayKhacDs = 0, g_uCayLuiTinh = 0, g_uCayKhacCha = 0, g_uCayNgoai = 0, g_uCayDo = 0, g_uCayLech = 0, g_uCayXayChiMuc = 0;
+struct KCayDsDuong { std::vector<KIpotBuildinObj*> aDuong; };
+static std::map<KIpotLeaf**, KCayDsDuong> s_CayDuong;
+void CayDuongXoaHet() { s_CayDuong.clear(); }
+static inline void CayDuongBo(KIpotLeaf** ppFirst) { if (!s_CayDuong.empty()) s_CayDuong.erase(ppFirst); }
+static inline bool CayLaDuong(const KIpotLeaf* pL)
+{
+	return pL->eLeafType == KIpotLeaf::IPOTL_T_BUILDIN_OBJ && (((const KIpotBuildinObj*)pL)->pBio->Props & SPBIO_P_SORTMANNER_MASK) == SPBIO_P_SORTMANNER_LINE;
+}
+static const std::vector<KIpotBuildinObj*>& CayDuongLay(KIpotLeaf** ppFirst)
+{
+	std::map<KIpotLeaf**, KCayDsDuong>::iterator it = s_CayDuong.find(ppFirst);
+	if (it != s_CayDuong.end()) return it->second.aDuong;
+	KCayDsDuong& d = s_CayDuong[ppFirst]; g_uCayXayChiMuc++;
+	for (KIpotLeaf* pL = *ppFirst; pL; pL = pL->pBrother) if (CayLaDuong(pL)) d.aDuong.push_back((KIpotBuildinObj*)pL);
+	return d.aDuong;
+}
+// khop vat duong: dung y vong 1 cua AddPointLeafToList (WIDTH_EXPAND 13, HEIGHT_UP_EXPAND 3, HEIGHT_DOWN_EXPAND 128)
+static inline bool CayKhopDuong(const POINT& lp, const KIpotBuildinObj* pL, RELATION_ENUM& eRelate)
+{
+	const POINT op1 = pL->oPosition, op2 = pL->oEndPos;
+	eRelate = SM_Relation_PointLine(lp, op1, op2);
+	RECT rcArea;
+	if (op1.x < op2.x) { rcArea.left = op1.x - 13; rcArea.right = op2.x + 13; } else { rcArea.left = op2.x - 13; rcArea.right = op1.x + 13; }
+	if (op1.y < op2.y) { rcArea.top = op1.y; rcArea.bottom = op2.y; } else { rcArea.top = op2.y; rcArea.bottom = op1.y; }
+	if (eRelate != RELATION_UP) { rcArea.top -= 3; rcArea.bottom += 128; }
+	return lp.x > rcArea.left && lp.x < rcArea.right && lp.y >= rcArea.top && lp.y <= rcArea.bottom;
+}
+// khoa sap xep cua mot nut trong danh sach: dung y vong 2 (BUILDIN khong phai POINT = min(y dau, y cuoi); con lai = y)
+static inline int CayKhoa(const KIpotLeaf* pL)
+{
+	if (pL->eLeafType == KIpotLeaf::IPOTL_T_BUILDIN_OBJ && (((const KIpotBuildinObj*)pL)->pBio->Props & SPBIO_P_SORTMANNER_MASK) != SPBIO_P_SORTMANNER_POINT)
+	{ const int a = pL->oPosition.y, b = ((const KIpotBuildinObj*)pL)->oEndPos.y; return a < b ? a : b; }
+	return pL->oPosition.y;
+}
+// dau do: duyet lai tu dau theo cach cu (chen truoc nut dau tien co khoa > y) va so voi cho hien tai cua pLeaf
+static void CayDoDung(KIpotLeaf* pFirst, KIpotRuntimeObj* pLeaf, int y)
+{
+	g_uCayDo++;
+	KIpotLeaf* pTr = NULL; KIpotLeaf* pL = pFirst; bool bThay = false;
+	for (; pL; pL = pL->pBrother) { if (pL == pLeaf) { bThay = true; continue; } if (y < CayKhoa(pL)) break; pTr = pL; }
+	if (!bThay) { for (KIpotLeaf* q = pL; q; q = q->pBrother) if (q == pLeaf) { bThay = true; break; } }
+	if (!bThay || pLeaf->pAheadBrother != pTr || pLeaf->pBrother != pL) g_uCayLech++;
+}
+// doi cho tai cho trong CUNG danh sach; tra ve false = chua sua gi, di duong cu (PluckRto + AddLeafPoint)
+bool CayDoiChoTaiCho(KIpotLeaf*& pFirst, KIpotRuntimeObj* pLeaf, const POINT& oMoi)
+{
+	const int y = oMoi.y;
+	KIpotLeaf* pTruoc = pLeaf->pAheadBrother;
+	KIpotLeaf* pSau = pLeaf->pBrother;
+	if (pTruoc == NULL ? (pFirst != pLeaf) : (pTruoc->pBrother != pLeaf)) { g_uCayKhacCha++; return false; }
+	if ((pTruoc == NULL || CayKhoa(pTruoc) <= y) && (pSau == NULL || y < CayKhoa(pSau)))
+	{
+		pLeaf->oPosition = oMoi; g_uCayTaiCho++;
+		if (((g_uCayTaiCho + g_uCayDoiCho) & 63) == 0) CayDoDung(pFirst, pLeaf, y);
+		return true;
+	}
+	if (pSau != NULL && CayKhoa(pSau) <= y)
+	{	// tien: chen SAU nut cuoi cung co khoa <= y
+		KIpotLeaf* pDich = pSau; g_uCayBuoc++;
+		while (pDich->pBrother && CayKhoa(pDich->pBrother) <= y) { pDich = pDich->pBrother; g_uCayBuoc++; }
+		if (pTruoc) pTruoc->pBrother = pSau; else pFirst = pSau;
+		if (pSau->eLeafType == KIpotLeaf::IPOTL_T_RUNTIME_OBJ) ((KIpotRuntimeObj*)pSau)->pAheadBrother = pTruoc;
+		pLeaf->pBrother = pDich->pBrother; pLeaf->pAheadBrother = pDich; pDich->pBrother = pLeaf;
+		if (pLeaf->pBrother && pLeaf->pBrother->eLeafType == KIpotLeaf::IPOTL_T_RUNTIME_OBJ) ((KIpotRuntimeObj*)pLeaf->pBrother)->pAheadBrother = pLeaf;
+	}
+	else
+	{	// lui (pTruoc != NULL, khoa(pTruoc) > y): chen TRUOC nut xa nhat (lui tu pTruoc) van co khoa > y
+		KIpotLeaf* pDich = pTruoc; g_uCayBuoc++;
+		for (;;)
+		{
+			if (pDich->eLeafType != KIpotLeaf::IPOTL_T_RUNTIME_OBJ) { g_uCayLuiTinh++; return false; }	// vat tinh khong co con tro nut truoc -> duong cu
+			KIpotLeaf* pTr = ((KIpotRuntimeObj*)pDich)->pAheadBrother;
+			if (pTr == NULL || CayKhoa(pTr) <= y) break;
+			pDich = pTr; g_uCayBuoc++;
+		}
+		KIpotLeaf* pTr = ((KIpotRuntimeObj*)pDich)->pAheadBrother;
+		pTruoc->pBrother = pSau;
+		if (pSau && pSau->eLeafType == KIpotLeaf::IPOTL_T_RUNTIME_OBJ) ((KIpotRuntimeObj*)pSau)->pAheadBrother = pTruoc;
+		if (pTr) pTr->pBrother = pLeaf; else pFirst = pLeaf;
+		pLeaf->pAheadBrother = pTr; pLeaf->pBrother = pDich; ((KIpotRuntimeObj*)pDich)->pAheadBrother = pLeaf;
+	}
+	pLeaf->oPosition = oMoi; g_uCayDoiCho++;
+	if (((g_uCayTaiCho + g_uCayDoiCho) & 63) == 0) CayDoDung(pFirst, pLeaf, y);
+	return true;
+}
+KIpotLeaf** KIpotBranch::TimDanhSach(const POINT& p, KIpotBranch*& pNhanh, KIpotLeaf*& pLaCha)
+{
+	KIpotBranch* pB = this; int nIndex;
+	for (;;)
+	{
+		const RELATION_ENUM e = SM_Relation_PointLine(p, pB->m_oHeadPoint, pB->m_oEndPoint);
+		nIndex = (e == RELATION_UP) ? 0 : 1;
+		if (pB->m_uFlag & m_BranchFlag[nIndex]) pB = pB->m_pSubBranch[nIndex]; else break;
+	}
+	KIpotLeaf** pp = &pB->m_pLeafs[nIndex];
+	pNhanh = pB; pLaCha = NULL;
+	for (int nSau = 0; *pp != NULL && nSau < 64; nSau++)
+	{
+		const std::vector<KIpotBuildinObj*>& aDuong = CayDuongLay(pp);
+		KIpotBuildinObj* pKhop = NULL; RELATION_ENUM eKhop = RELATION_UP, e;
+		for (size_t u = 0; u < aDuong.size(); u++)
+		{
+			if (!CayKhopDuong(p, aDuong[u], e)) continue;
+			pKhop = aDuong[u]; eKhop = e;
+			if (e == RELATION_UP) break;
+		}
+		if (pKhop == NULL) break;
+		pNhanh = NULL; pLaCha = pKhop;
+		pp = (eKhop == RELATION_DOWN) ? &pKhop->pRChild : &pKhop->pLChild;
+	}
+	return pp;
+}
+#endif
 
 //##ModelId=3DDAC4AC0238
 KIpotBranch::KIpotBranch()
@@ -419,6 +539,9 @@ void KIpotBranch::AddPointLeafToList(KIpotLeaf*& pFirst, KIpotLeaf* pLeaf,
 						KIpotLeaf* pParentLeaf)
 {
 	_ASSERT(pLeaf);
+#ifndef _SERVER
+	if (pLeaf->eLeafType == KIpotLeaf::IPOTL_T_BUILDIN_OBJ) CayDuongBo(&pFirst);	// [CAY 09/09 c]
+#endif
 	if (pFirst == NULL)
 	{
 		pFirst = pLeaf;
@@ -442,15 +565,19 @@ void KIpotBranch::AddPointLeafToList(KIpotLeaf*& pFirst, KIpotLeaf* pLeaf,
 	KIpotLeaf	*pL, *pMatchL = NULL;
 	RELATION_ENUM	eRelate, eMatchRelate;
 
+#ifndef _SERVER
+	const std::vector<KIpotBuildinObj*>& aDuong = CayDuongLay(&pFirst);	// [CAY 09/09 c] chi duyet vat duong (chi muc), khong duyet ca danh sach
+	for (size_t uD = 0; uD < aDuong.size(); uD++)
+	{
+		pL = aDuong[uD]; g_uCayDuyet1++;
+#else
 	for(pL = pFirst; pL; pL = pL->pBrother)
 	{
-#ifndef _SERVER
-		g_uCayDuyet1++;	// [CAY 09/09 do]
-#endif
 		if (pL->eLeafType != KIpotLeaf::IPOTL_T_BUILDIN_OBJ)
 			continue;
 		if ((((KIpotBuildinObj*)pL)->pBio->Props & SPBIO_P_SORTMANNER_MASK) != SPBIO_P_SORTMANNER_LINE)
 			continue;
+#endif
 		op1 = pL->oPosition;
 		op2 = ((KIpotBuildinObj*)pL)->oEndPos;
 
@@ -559,6 +686,9 @@ void KIpotBranch::AddPointLeafToList(KIpotLeaf*& pFirst, KIpotLeaf* pLeaf,
 void KIpotBranch::AddLineLeafToList(KIpotLeaf*& pFirst, KIpotBuildinObj* pLeaf)
 {
 	_ASSERT(pLeaf);
+#ifndef _SERVER
+	CayDuongBo(&pFirst);	// [CAY 09/09 c]
+#endif
 	if (pFirst == NULL)
 	{
 		pFirst = pLeaf;

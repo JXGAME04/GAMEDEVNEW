@@ -1013,10 +1013,18 @@ unsigned int KScenePlaceC::MoveObject(unsigned int uGenre, int nId,  int x, int 
 		if (pLeaf->oPosition.x != x || pLeaf->oPosition.y != y + POINT_LEAF_Y_ADJUST_VALUE)
 		{
 			EnterCriticalSection(&m_ProcessCritical);
+#ifndef _SERVER
+			POINT oMoi; oMoi.x = x; oMoi.y = y + POINT_LEAF_Y_ADJUST_VALUE;	// [CAY 09/09 c] doi cho tai cho neu cung danh sach la
+			if (!m_ObjectsTree.DoiViTri(pLeaf, oMoi))
+			{
+#endif
 			m_ObjectsTree.PluckRto(pLeaf);
 			pLeaf->oPosition.x = x;
 			pLeaf->oPosition.y = y + POINT_LEAF_Y_ADJUST_VALUE;
 			m_ObjectsTree.AddLeafPoint(pLeaf);
+#ifndef _SERVER
+			}
+#endif
 			LeaveCriticalSection(&m_ProcessCritical);
 		}
 	}

@@ -2801,11 +2801,22 @@ void KRepresentShell3::RepresentEnd()
 			s_dwLastStat = dwNow;
 			PROCESS_MEMORY_COUNTERS_EX pmc; memset(&pmc, 0, sizeof(pmc)); pmc.cb = sizeof(pmc);
 			GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+			// [CPU 09/09 do] CPU % tien trinh va luong chinh trong cua so thong ke (cpu ms / ms that x 100; tien trinh co the > 100 % vi nhieu luong)
+			static ULONGLONG s_uCpuTt = 0, s_uCpuLc = 0; static DWORD s_dwCpuMoc = 0; static int s_nNhan = 0;
+			double dCpuTt = 0.0, dCpuLc = 0.0;
+			{
+				FILETIME ftT, ftX, ftK, ftU; ULONGLONG uTt = 0, uLc = 0;
+				if (GetProcessTimes(GetCurrentProcess(), &ftT, &ftX, &ftK, &ftU)) uTt = (((ULONGLONG)ftK.dwHighDateTime << 32) | ftK.dwLowDateTime) + (((ULONGLONG)ftU.dwHighDateTime << 32) | ftU.dwLowDateTime);
+				if (GetThreadTimes(GetCurrentThread(), &ftT, &ftX, &ftK, &ftU)) uLc = (((ULONGLONG)ftK.dwHighDateTime << 32) | ftK.dwLowDateTime) + (((ULONGLONG)ftU.dwHighDateTime << 32) | ftU.dwLowDateTime);
+				if (s_nNhan == 0) { SYSTEM_INFO si; GetSystemInfo(&si); s_nNhan = (int)si.dwNumberOfProcessors; }
+				if (s_dwCpuMoc != 0 && dwNow > s_dwCpuMoc) { const double dMs = (double)(dwNow - s_dwCpuMoc); dCpuTt = (double)(uTt - s_uCpuTt) / 10000.0 * 100.0 / dMs; dCpuLc = (double)(uLc - s_uCpuLc) / 10000.0 * 100.0 / dMs; }
+				s_uCpuTt = uTt; s_uCpuLc = uLc; s_dwCpuMoc = dwNow;
+			}
 			uint32 uNodes = 0, uTexMB = 0, uRawMB = 0, uDrawMB = 0, uBudgetMB = 0;
 			unsigned uVramUsed = 0, uVramBudget = 0; Rep3_D3D11VramInfo(&uVramUsed, &uVramBudget);	// [D3D11 08/09 f]
 			m_TextureResMgr.GetStat(uNodes, uTexMB, uRawMB, uDrawMB, uBudgetMB);
-			Rep3Log("[REP3] RAM rieng %u MB, WS %u MB | VRAM con %u MB | cache %u muc: texture %u MB (ve khung nay %u MB, ngan sach %u MB), raw spr %u MB | nap %u, bo %u | fps TB %.0f | fx: tex_null %u anh_null %u tao_hong %u khung_khong_tex %u giai_ma %u khung %.1f ms | gpu tex %u (%u MB, %u trang %u MB) | vram %u/%u MB | d3d11: present TB %.2f ms bo %u, ve %u lenh %.1f us/lenh, gop %u quad -> %u Draw | pal %u hang",
-				(unsigned)(pmc.PrivateUsage >> 20), (unsigned)(pmc.WorkingSetSize >> 20), (unsigned)(PD3DDEVICE->GetAvailableTextureMem() >> 20),
+			Rep3Log("[REP3] RAM rieng %u MB, WS %u MB | cpu tien trinh %.0f %% (luong chinh %.0f %%, may %d nhan) | VRAM con %u MB | cache %u muc: texture %u MB (ve khung nay %u MB, ngan sach %u MB), raw spr %u MB | nap %u, bo %u | fps TB %.0f | fx: tex_null %u anh_null %u tao_hong %u khung_khong_tex %u giai_ma %u khung %.1f ms | gpu tex %u (%u MB, %u trang %u MB) | vram %u/%u MB | d3d11: present TB %.2f ms bo %u, ve %u lenh %.1f us/lenh, gop %u quad -> %u Draw | pal %u hang",
+				(unsigned)(pmc.PrivateUsage >> 20), (unsigned)(pmc.WorkingSetSize >> 20), dCpuTt, dCpuLc, s_nNhan, (unsigned)(PD3DDEVICE->GetAvailableTextureMem() >> 20),
 				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg,
 				g_uRep3FxTexNull, g_uRep3FxAnhNull, g_uRep3FxTaoHong, g_uRep3FxKhungKhongTex, g_uRep3FxGiaiMa, g_dRep3FxGiaiMaMs, g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), uVramUsed, uVramBudget,
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);

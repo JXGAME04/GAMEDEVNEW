@@ -115,26 +115,26 @@ static void WorldInDong()
 		extern double g_dWorldNhac, g_dNpcPha[4], g_dNpcTong, g_dNpcMax; extern unsigned g_uNpcLan; extern int g_nNpcMaxIdx;
 		extern double g_dKhacMs[3]; extern unsigned g_uKhacSo[3];	// [WORLD 09/09 c]
 		extern unsigned g_uVungSo, g_uVungLech, g_uVungXay;	// [VUNG 09/09]
-		extern unsigned g_uCayChen, g_uCayDuyet1, g_uCayDuyet2, g_uCayKhop, g_uCayCon; extern unsigned g_uAmNap; extern double g_dAmNapMs;	// [CAY 09/09 do] [AM 09/09 do]
+		extern unsigned g_uCayChen, g_uCayDuyet1, g_uCayDuyet2, g_uCayKhop, g_uCayCon; extern unsigned g_uAmNap; extern double g_dAmNapMs; extern unsigned g_uCayTaiCho, g_uCayDoiCho, g_uCayBuoc, g_uCayKhacDs, g_uCayLuiTinh, g_uCayKhacCha, g_uCayNgoai, g_uCayDo, g_uCayLech, g_uCayXayChiMuc; /* [CAY 09/09 c] */	// [CAY 09/09 do] [AM 09/09 do]
 		FILE* p2 = fopen("jx_paint.log", "a");
 		if (p2)
 		{
 			fprintf(p2, "[WORLD b] t=%u tick=%u | nhac %.2f ms/tick | npc %.1f/tick, tong %.2f ms/tick = %.1f us/NPC"
-				" | pha PS %.2f AI %.2f PC %.2f ST %.2f ms/tick | nang nhat %.2f ms idx %d | object %.1f/tick %.2f ms | dan %.1f/tick %.2f ms | nguoi choi %.2f ms/tick | vung: xay %u, hoi %u, lech %u | cay: chen %u duyet1 %u duyet2 %u khop %u con %u | am thanh %u lan %.2f ms\n",
+				" | pha PS %.2f AI %.2f PC %.2f ST %.2f ms/tick | nang nhat %.2f ms idx %d | object %.1f/tick %.2f ms | dan %.1f/tick %.2f ms | nguoi choi %.2f ms/tick | vung: xay %u, hoi %u, lech %u | cay: chen %u duyet1 %u duyet2 %u khop %u con %u | cay c: tai cho %u doi cho %u buoc %u | duong cu: khac ds %u lui tinh %u khac cha %u ngoai %u | do %u lech %u | chi muc xay %u | am thanh %u lan %.2f ms\n",
 				dwNow, g_uWorldTick, g_dWorldNhac / g_uWorldTick, (double)g_uNpcLan / g_uWorldTick, g_dNpcTong / g_uWorldTick,
 				g_uNpcLan ? g_dNpcTong * 1000.0 / g_uNpcLan : 0.0,
 				g_dNpcPha[0] / g_uWorldTick, g_dNpcPha[1] / g_uWorldTick, g_dNpcPha[2] / g_uWorldTick, g_dNpcPha[3] / g_uWorldTick,
 				g_dNpcMax, g_nNpcMaxIdx,
 				(double)g_uKhacSo[0] / g_uWorldTick, g_dKhacMs[0] / g_uWorldTick, (double)g_uKhacSo[1] / g_uWorldTick, g_dKhacMs[1] / g_uWorldTick, g_dKhacMs[2] / g_uWorldTick,
 				g_uVungXay, g_uVungSo, g_uVungLech,
-				g_uCayChen, g_uCayDuyet1, g_uCayDuyet2, g_uCayKhop, g_uCayCon, g_uAmNap, g_dAmNapMs);
+				g_uCayChen, g_uCayDuyet1, g_uCayDuyet2, g_uCayKhop, g_uCayCon, g_uCayTaiCho, g_uCayDoiCho, g_uCayBuoc, g_uCayKhacDs, g_uCayLuiTinh, g_uCayKhacCha, g_uCayNgoai, g_uCayDo, g_uCayLech, g_uCayXayChiMuc, g_uAmNap, g_dAmNapMs);
 			fclose(p2);
 		}
 		g_dWorldNhac = 0.0; g_dNpcPha[0] = g_dNpcPha[1] = g_dNpcPha[2] = g_dNpcPha[3] = 0.0;
 		g_dNpcTong = 0.0; g_dNpcMax = 0.0; g_uNpcLan = 0; g_nNpcMaxIdx = 0;
 		g_dKhacMs[0] = g_dKhacMs[1] = g_dKhacMs[2] = 0.0; g_uKhacSo[0] = g_uKhacSo[1] = g_uKhacSo[2] = 0;	// [WORLD 09/09 c]
 		g_uVungSo = 0; g_uVungLech = 0; g_uVungXay = 0;	// [VUNG 09/09]
-		g_uCayChen = g_uCayDuyet1 = g_uCayDuyet2 = g_uCayKhop = g_uCayCon = 0; g_uAmNap = 0; g_dAmNapMs = 0.0;	// [CAY 09/09 do] [AM 09/09 do]
+		g_uCayChen = g_uCayDuyet1 = g_uCayDuyet2 = g_uCayKhop = g_uCayCon = 0; g_uCayTaiCho = g_uCayDoiCho = g_uCayBuoc = g_uCayKhacDs = g_uCayLuiTinh = g_uCayKhacCha = g_uCayNgoai = g_uCayDo = g_uCayLech = g_uCayXayChiMuc = 0; g_uAmNap = 0; g_dAmNapMs = 0.0;	// [CAY 09/09 do] [AM 09/09 do]
 	}
 	g_dWorldXoaCo = g_dWorldQuetVung = g_dWorldMaxTick = g_dWorldCanBang = 0.0;
 	g_uWorldTick = g_uWorldVung = g_uWorldNpc = g_uWorldVungTong = 0;
