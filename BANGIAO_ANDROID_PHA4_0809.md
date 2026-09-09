@@ -812,6 +812,12 @@ APK: `android\apk\jx1mobile-1009-anicon.apk` (vá 56–62). PC x64 + SDL dựng 
   ngay sau Cài đặt (782,54) như `HidenButton` của VNKU (hàng icon dời trái 40: tâm 360 + 56·i); mũi tên ẩn chat
   vào **góc trên‑phải bên trong khung chat** (340,121) — khung chủ đặt (2,119) rộng 370, chữ kết thúc ~306.
 - APK: `android\apk\jx1mobile-1009-otrong.apk` (vá 56–63). PC x64 + SDL dựng sạch.
+- **(13:3x) "icon chọn kênh – mặt cười – gửi đều bị lệch"** — lỗi của tôi: công cụ trừ (3,1) khỏi mọi toạ độ vì
+  tưởng `KUiPlayerBar|Main=3,1` của chủ là gốc; nhưng **ảnh khung vẽ tại Main và nút con cũng tính từ Main** →
+  toạ độ ini phải bằng toạ độ **trong ảnh**, không trừ gì. Ba biểu tượng lệch 3 px trái, 1 px lên. Đã đặt
+  `DX, DY = 0, 0`, sinh lại; đo lại trên `.spr`: kênh 365..385 / mặt cười 634..655 / gửi 665..686 (y 569..590)
+  — ini 365,570 / 634,569 / 664,569 (≤ 1 px). Bỏ dòng `KUiPlayerBar|ChannelBtn=362,569` (chủ kéo bù 3 px)
+  khỏi tệp mặc định; trong `UserData\UiToaDo.ini` của chủ vẫn còn → "Xoá hết" hoặc xoá dòng đó.
 
 ### 12.6. Còn lại thật sự
 

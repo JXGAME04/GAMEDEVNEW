@@ -32,7 +32,9 @@ NGUON_PC = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client\ui\ui3"     
 GHI_DE = os.path.join(GOC, "du_lieu_ghi_de")
 DU_LIEU = r"D:\jx1_android_data"
 SW, SH = 1040, 604
-DX, DY = 3, 1          # chu dat KUiPlayerBar|Main=3,1 trong UiToaDo -> ini = man hinh - (3,1)
+DX, DY = 0, 0          # KHONG tru vi tri Main: anh khung ve tai Main va nut con cung tinh tu Main -> ini = toa do
+                       # trong anh. (Ban dau tru (3,1) theo entry KUiPlayerBar|Main cua chu -> kenh/mat cuoi/gui
+                       # lech 3 px trai 1 px len so voi o vuong - chu bao 10/09 13:3x.)
 
 # ----------------------------------------------------------------------------- doc / ghi SPR nhieu khung
 def doc_spr(path):
