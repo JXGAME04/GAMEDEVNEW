@@ -27,6 +27,20 @@ unsigned int		KFont3::ms_AlphaRef1	= 0;
 unsigned int		KFont3::ms_AlphaRef2	= 0;
 fnRenderText		KFont3::ms_RenderText	= KFont3::RenderTextDirect;
 unsigned int		KFont3::ms_uBorderColor	= 0xff000000;
+bool			KFont3::ms_bDam		= false;	// [CHUDAM 09/09]
+// [CHUDAM 09/09] Ve mot luot chu; neu dam thi ve them mot lan dich phai 1 diem anh roi tra lai.
+// Goi trong TUNG luot (vien roi ruot) nen thu tu van dung: vien(x) vien(x+1) roi ruot(x) ruot(x+1).
+static void VeLoChu(LPDIRECT3DDEVICE9 pDev, KFontVertex* p, unsigned int nNumPolys, bool bDam)
+{
+	pDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nNumPolys, p, sizeof(KFontVertex));
+	if (!bDam)
+		return;
+	const unsigned int n = nNumPolys * 3;
+	unsigned int i;
+	for (i = 0; i < n; i++) p[i].x += 1.0f;
+	pDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nNumPolys, p, sizeof(KFontVertex));
+	for (i = 0; i < n; i++) p[i].x -= 1.0f;
+}
 
 //检查绘图设设备所支持的alpha检测方法
 void KFont3::CheckAlphaCmpCaps()
@@ -376,15 +390,13 @@ void KFont3::RenderTextCmp(KFontVertex* pPolyVertices, unsigned int nNumPolys)
 	//_ASSERT(ms_pd3dDevice && pPolyVertices && nNumPolys);
 	ms_pd3dDevice->SetRenderState(D3DRS_ALPHAREF, ms_AlphaRef1);
 	ms_pd3dDevice->SetRenderState(D3DRS_ALPHAFUNC,  ms_AlphaCmpMethod);
-	ms_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nNumPolys,
-		pPolyVertices, sizeof(KFontVertex));
+	VeLoChu(ms_pd3dDevice, pPolyVertices, nNumPolys, ms_bDam);	// [CHUDAM 09/09]
 	ms_pd3dDevice->SetRenderState(D3DRS_ALPHAREF, ms_AlphaRef2);
 	ms_pd3dDevice->SetRenderState(D3DRS_ALPHAFUNC,  ms_AlphaCmpMethod);
 	unsigned int nNumVertex = nNumPolys * 3;
 	for (unsigned int i = 0; i < nNumVertex; i++)
 		pPolyVertices[i].color = ms_uBorderColor;
-	ms_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nNumPolys,
-		pPolyVertices, sizeof(KFontVertex));
+	VeLoChu(ms_pd3dDevice, pPolyVertices, nNumPolys, ms_bDam);	// [CHUDAM 09/09]
 }
 
 /*!*****************************************************************************
@@ -400,14 +412,12 @@ void KFont3::RenderTextCmpReverse(KFontVertex* pPolyVertices, unsigned int nNumP
 	unsigned int uColor = pPolyVertices[0].color;
 	for (i = 0; i < nNumVertex; i++)
 		pPolyVertices[i].color = ms_uBorderColor;
-	ms_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nNumPolys,
-		pPolyVertices, sizeof(KFontVertex));
+	VeLoChu(ms_pd3dDevice, pPolyVertices, nNumPolys, ms_bDam);	// [CHUDAM 09/09]
 	ms_pd3dDevice->SetRenderState(D3DRS_ALPHAREF, ms_AlphaRef2);
 	ms_pd3dDevice->SetRenderState(D3DRS_ALPHAFUNC,  ms_AlphaCmpMethod);
 	for (i = 0; i < nNumVertex; i++)
 		pPolyVertices[i].color = uColor;
-	ms_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nNumPolys,
-		pPolyVertices, sizeof(KFontVertex));
+	VeLoChu(ms_pd3dDevice, pPolyVertices, nNumPolys, ms_bDam);	// [CHUDAM 09/09]
 }
 
 /*!*****************************************************************************

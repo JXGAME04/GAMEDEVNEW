@@ -34,6 +34,7 @@ enum RepresentOption
 {
 	DYNAMICLIGHT = 0,
 	PERSPECTIVE,
+	TEXTBOLD,	// [CHUDAM 09/09] chu dam (them cuoi enum, khong doi vtable)
 };
 
 //-----数据缓冲区的数据格式枚举------

@@ -497,6 +497,9 @@ void KRepresentShell3::SetOption(RepresentOption eOption,	bool bOn)
 		else
 			m_bDoLighting = false;
 		break;
+	case TEXTBOLD:	// [CHUDAM 09/09] chu dam cho ten / danh hieu (KNpc::PaintInfo bat, ve xong tat)
+		KFont3::SetBold(bOn);
+		break;
 	case PERSPECTIVE:
 		{	if (g_nRep3Flat)			// [REP3 03/09] ve phang: khong doi sang 3D
 				g_renderModel = RenderModel2D;

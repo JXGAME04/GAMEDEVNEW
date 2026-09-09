@@ -72,6 +72,7 @@ public:
 	void	Terminate();
 	//设置绘制时字符边缘的颜色，如alpha为0表示字符边缘不单独处理
 	void	SetBorderColor(unsigned int uColor);
+	static void	SetBold(bool bDam) { ms_bDam = bDam; }	// [CHUDAM 09/09]
 	//获取字体大小信息
 	void	GetFontSize(int* pWidth, int* pHeight);
 	//设置字符绘制大小
@@ -111,6 +112,7 @@ private:
 	int					m_nOutputHeight;	//输出高度
 
 	static unsigned int	ms_uBorderColor;
+	static bool		ms_bDam;	// [CHUDAM 09/09] 1 = moi ky tu ve hai lan (x, x+1) o ca hai luot
 
 	LPDIRECT3DTEXTURE9	m_pTexture;			//字体贴图句柄
 	LPDIRECT3DSTATEBLOCK9 m_pStateBlockSaved;	//文字绘制前D3d device的状态纪录

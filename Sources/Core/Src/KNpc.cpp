@@ -7917,6 +7917,43 @@ void	KNpc::PaintSeriesNpc(char* szName, int nFontSize, int nHeightOff)
 }
 
 #include "scene/KScenePlaceC.h"
+#ifndef _SERVER
+// [CHUDAM/TENNEN 09/09] Nhoe bam mat: moi khung deu dung nhung mat bam vat truot lam net 1 diem anh tron voi
+// vien den va nen dat nau do => am do. Hai cach lam chu chiu duoc vet: (1) CHU DAM - net 2 diem anh giu duoc
+// loi mau; (2) NEN MO TOI sau chu - vet tron voi nen toi thanh xam thay vi tron voi dat thanh do.
+// [Client] ChuDam = 1 (mac dinh) | 0 tat.   [Client] TenNen = do dac 0..255 (mac dinh 128) | 0 tat.
+static int s_nChuDam = -1, s_nTenNen = -1;
+static void DocCauHinhChu()
+{
+	if (s_nChuDam >= 0)
+		return;
+	s_nChuDam = (int)GetPrivateProfileIntA("Client", "ChuDam", 1, ".\\config.ini");
+	s_nTenNen = (int)GetPrivateProfileIntA("Client", "TenNen", 128, ".\\config.ini");
+	if (s_nTenNen < 0) s_nTenNen = 0;
+	if (s_nTenNen > 255) s_nTenNen = 255;
+}
+// Ve nen mo toi phia sau mot dong chu. (nX, nY, nZ) la dung toa do dua cho OutputText; nRong = rong chu
+// (nFontSize * so byte / 2), nCao = nFontSize. Toa do y the gioi bi chia 2 khi ra man hinh nen cao nhan 2.
+static void VeNenChu(int nX, int nY, int nRong, int nCao, int nZ)
+{
+	if (s_nTenNen <= 0 || !g_pRepresent)
+		return;
+	KRUShadow nen;
+	memset(&nen, 0, sizeof(nen));
+	nen.oPosition.nX = nX - 2;
+	nen.oPosition.nY = nY - 2;
+	nen.oPosition.nZ = nZ;
+	nen.oEndPos.nX = nX + nRong + 2;
+	nen.oEndPos.nY = nY + (nCao + 1) * 2;
+	nen.oEndPos.nZ = nZ;
+	int nA = (255 - s_nTenNen) >> 3;	// RU_T_SHADOW ve voi alpha = 255 - (a << 3)
+	if (nA > 31) nA = 31;
+	nen.Color.Color_b.r = 0; nen.Color.Color_b.g = 0; nen.Color.Color_b.b = 0;
+	nen.Color.Color_b.a = (unsigned char)nA;
+	g_pRepresent->DrawPrimitives(1, &nen, RU_T_SHADOW, FALSE);
+}
+#endif
+
 int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBorderColor)
 {
 	if (m_Index != Player[CLIENT_PLAYER_INDEX].m_nIndex && m_HideState.nTime > 0)
@@ -7939,6 +7976,9 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		s_bInfoTabsLoaded = TRUE;
 	}
 	nFontSize = 13;
+	DocCauHinhChu();	// [CHUDAM/TENNEN 09/09]
+	if (g_pRepresent)
+		g_pRepresent->SetOption(TEXTBOLD, s_nChuDam != 0);
 	char Buff[128], cbBuffer[32];
 	int nMpsX, nMpsY, nMX, nMY, nNumFrames,  nXX, nYY;
 	GetDrawPos(&nMpsX, &nMpsY);
@@ -8102,6 +8142,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		{	
 			//		DWORD dwWhiteColor = 0xFFFFFFFF;
 			strcpy(szUpperLine, m_szTeamMem); //
+			VeNenChu(nMpsX - smallerFontSize * g_StrLen(szUpperLine) / 4, yOffset, smallerFontSize * g_StrLen(szUpperLine) / 2, smallerFontSize, nHeightOff);	// [TENNEN 09/09]
 			g_pRepresent->OutputText(smallerFontSize, szUpperLine, KRF_ZERO_END, nMpsX - smallerFontSize * g_StrLen(szUpperLine) / 4, yOffset, dwColor, 0, nHeightOff, dwBorderColor);
 			yOffset += smallerFontSize + 1;
 		}
@@ -8144,6 +8185,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 				//		strcpy(szTong, m_szTongName); 
 			}
 			//	g_pRepresent->OutputText(nFontSize, szTong, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(szTong) / 4, yOffset, dwColor, 0, nHeightOff, dwBorderColor);
+			VeNenChu(nMpsX - nFontSize * g_StrLen(szTong) / 4, nMpsY - 24, nFontSize * g_StrLen(szTong) / 2, nFontSize, nHeightOff);	// [TENNEN 09/09]
 			g_pRepresent->OutputText(nFontSize, szTong, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(szTong) / 4, nMpsY -24, dwColor, 0, nHeightOff, dwBorderColor);
 			nHeightOffset += nFontSize + 1;
 		}
@@ -8166,6 +8208,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 	       		 nYY -= nLineStep;
 	   			}
 
+				VeNenChu(nMpsX - nFontSize * g_StrLen(m_szGameTitle) / 4, nYY, nFontSize * g_StrLen(m_szGameTitle) / 2, nFontSize, nHeightOff);	// [TENNEN 09/09]
 				g_pRepresent->OutputText(nFontSize, m_szGameTitle, KRF_ZERO_END,
 					nMpsX - nFontSize * g_StrLen(m_szGameTitle) / 4, nYY,
 					dwGreenColor, 0, nHeightOff, dwBorderColor);
@@ -8337,6 +8380,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			nY = nMpsY - 24;
 			if (m_szTongName[0])
 				nY -= 30;
+			VeNenChu(nX, nY, nFontSize * g_StrLen(szString) / 2, nFontSize, nHeightOff);	// [TENNEN 09/09]
 			g_pRepresent->OutputText(nFontSize, szString, KRF_ZERO_END, nX, nY, dwColor, 0, nHeightOff, dwBorderColor);
 			nHeightOffset += nFontSize + 1;
 		}
@@ -8420,6 +8464,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		//int nNpcIdx = 0;
 		
 		dwColor = 0xffffffff;
+		VeNenChu(nMpsX - nFontSize * g_StrLen(Name) / 4, nMpsY, nFontSize * g_StrLen(Name) / 2, nFontSize, nHeightOff);	// [TENNEN 09/09]
 		g_pRepresent->OutputText(nFontSize, Name, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(Name) / 4, nMpsY, dwColor, 0, nHeightOff, dwBorderColor);
 		nHeightOffset += nFontSize + 1;
 		
@@ -8483,6 +8528,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			strcat(szString, ")");
 		}*/
 	
+		VeNenChu(nMpsX - nFontSize * g_StrLen(Name) / 4, nMpsY, nFontSize * g_StrLen(szString) / 2, nFontSize, nHeightOff);	// [TENNEN 09/09]
 		g_pRepresent->OutputText(nFontSize, szString, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(Name) / 4, nMpsY, dwColor, 0, nHeightOff, dwBorderColor);	
 		nHeightOffset += nFontSize + 1;
 		PaintSeriesNpc(Name, nFontSize, nHeightOff);
@@ -8581,6 +8627,8 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 	}
 #endif
 
+	if (g_pRepresent)
+		g_pRepresent->SetOption(TEXTBOLD, false);	// [CHUDAM 09/09] tra lai, khong de chu khac bi dam
 	return nHeightOffset;
 }
 

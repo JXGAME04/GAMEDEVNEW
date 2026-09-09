@@ -23690,6 +23690,29 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		// Moves ONLY the drawn position (KNpcRes / scene tree / camera focus);
 		// logic coordinates (m_MapX/m_MapY/m_OffX/m_OffY) are never touched here.
 	{
+		// [NHIP60 09/09] Chu: "van ve theo Hz man hinh (giao dien, hieu ung muot) nhung vi tri the gioi chi cap nhat
+		// o nhip 60 Hz". Nhoe bam mat = toc do truot x thoi gian giu khung; PaintInterp=0 (18 buoc/giay) het han vi
+		// mat khong bam noi buoc nhay. Muc trung gian: POSSHIFT chi chay o nhip [Client] NhipTheGioi (mac dinh 60;
+		// 0 = moi khung ve nhu cu; 72 hoac 48 cho buoc DEU o 144 Hz). Khung bo qua giu nguyen vi tri ve cu.
+		{
+			static int    s_nNhipTG = -1;
+			static double s_dKeTiep = 0.0;
+			if (s_nNhipTG < 0)
+			{
+				s_nNhipTG = (int)GetPrivateProfileIntA("Client", "NhipTheGioi", 60, ".\\config.ini");
+				if (s_nNhipTG < 0) s_nNhipTG = 0;
+				if (s_nNhipTG > 1000) s_nNhipTG = 1000;
+			}
+			if (s_nNhipTG > 0)
+			{
+				const double dNow = (double)timeGetTime();
+				if (s_dKeTiep == 0.0 || dNow - s_dKeTiep > 250.0 || dNow < s_dKeTiep - 250.0)
+					s_dKeTiep = dNow;	// lan dau / treo lau / dong ho quay vong: neo lai
+				if (dNow < s_dKeTiep)
+					break;	// chua toi luot: giu vi tri ve cua khung truoc (nRet giu 1)
+				s_dKeTiep += 1000.0 / (double)s_nNhipTG;	// tich luy, khong neo vao khung => trung binh dung nhip
+			}
+		}
 		int	nAlpha = (int)uParam;
 		if (nAlpha < 0)
 			nAlpha = 0;
