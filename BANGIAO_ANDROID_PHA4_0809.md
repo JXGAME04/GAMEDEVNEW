@@ -698,6 +698,74 @@ diện"* dưới tiểu bản đồ): đặt ngón **lên bất kỳ ô nào c�
 `CumKyNang=x,y` vào `UserData\UiToaDo.ini`. Muốn về chỗ mặc định: xoá dòng đó.
 Lưu ý: khi đang sửa giao diện, nút kỹ năng **không đánh** — đó là cố ý.
 
+### 12.8. (10/09) "Nút kỹ năng phải điều chỉnh từng nút được" — **đã làm** (`va_nguon_android_58.py`)
+
+Trước: cả cụm chỉ có **một** độ dời (`CumKyNang`). Nay **mỗi nút** (`KyNang0`..`KyNang8` = nút chính +
+8 ô phụ, `KyNangGan` = nút mũi tên vòng tròn) có độ dời riêng `s_nKNDoiX/Y[]`, đăng ký thành 10 "ô riêng"
+với hệ chỉnh toạ độ. Trong chế độ sửa giao diện:
+
+- **"Dời ô"** (công cụ mặc định): đặt ngón lên **một** nút → chỉ nút đó đi.
+- **"Dời khối"**: đặt ngón lên nút nào cũng kéo **cả cụm** (như trước).
+- Ghi vào `UserData\UiToaDo.ini` dạng `KyNang3=x,y` (toạ độ màn hình của nút); xoá dòng = nút về chỗ
+  trong cung mặc định. Cỡ (`TiLe`) và ẩn (`Co`) cũng nhận từng nút.
+
+### 12.9. (10/09) "Lưu config toạ độ hiện tại làm mặc định, có xoá cũng quay trở lại như này" — **đã làm** (`va_nguon_android_59.py`)
+
+Hai lớp tệp, nạp chồng lên nhau lúc mở game:
+
+| Lớp | Tệp | Ai ghi | Nạp |
+|---|---|---|---|
+| Mặc định của **game** | `\Ui\UiToaDo_MacDinh.ini` (trong dữ liệu Android: `ui/uitoado_macdinh.ini`) | chủ chốt bằng nút **"Mặc định"** trên thanh công cụ sửa giao diện | **trước** |
+| Người chơi tự đặt | `\UserData\UiToaDo.ini` | nút **Lưu** / Ctrl+U | **sau**, khoá trùng thì đè |
+
+- **"Xoá hết"** giờ chỉ xoá lớp người chơi rồi **nạp lại lớp mặc định và áp ngay** → về đúng bố cục chủ
+  đã chốt, không phải về ini gốc của bản PC nữa.
+- Tệp mặc định hiện tại = **bố cục chủ đang có trên máy ảo lúc 11:13 ngày 10/09** (chép nguyên
+  `UserData\UiToaDo.ini`). Muốn chốt lại: sắp xong → bấm **"Mặc định"** (không cần dựng lại).
+- Thanh công cụ sửa giờ có **9 nút**: Dời ô · Dời khối · To · Nhỏ · Giấu/hiện · Bảng · Lưu · Xoá hết ·
+  **Mặc định**. Bề rộng nút tự chia theo màn hình (56..124 px).
+- Bẫy đã gặp: chuỗi C `"Ui\UiToaDo_MacDinh.ini"` → clang đọc `\U` là mã Unicode → lỗi dịch; phải viết
+  `\\U`. (Bash tool nuốt dấu `\`, sửa bằng script Python `va_nguon_android_59b.py`.)
+
+### 12.10. (10/09) "Xoá cái main này, để lại các icon, thay vào cái main của VNKU" + "thanh đó nhỏ chứ không to như vậy" — **đã làm, chưa xem trong game**
+
+Chỉ đổi **dữ liệu Android** (`ui/ui3/uiplayerbar.ini`, `uitoolscontrolbar.ini` + một ảnh mới), **không
+đổi mã C++, bản PC không đổi**. Công cụ sinh: `android\thanh_duoi_mobile.py [k]`.
+
+- Khung Main của `KUiPlayerBar` = `\Spr\UiNew\UiPlayerBar\khung_chat_new.spr` của VNKU (1343×211, hai
+  con rồng + dải giấy + hai ô vuông) **thu nhỏ k = 0,5 → 672×106**, đặt **góc trái dưới** trên nền trong
+  suốt 1040×604 (`spr/uinew/uiplayerbar/khung_chat_mobile.spr`, 60 KB). Bên phải để trống cho cụm kỹ năng.
+  Lần dựng đầu tôi kéo khung **đầy bề ngang** (1040×191) — chủ: *"thanh đó nhỏ chứ không to như vậy"* →
+  thu về 0,5 (cao ngang thanh cũ). `k = 0,6` (806×127) cũng đã dựng thử, chỉ là tham số.
+- Icon **giữ nguyên ảnh cũ**, đặt lại chỗ (toạ độ màn hình, ini = màn hình − (3,1) vì chủ đặt
+  `KUiPlayerBar|Main=3,1`):
+
+  | Ô | Chỗ mới |
+  |---|---|
+  | Vật phẩm 1–9 (`Item_0..8`, 36 px) | trên **dải giấy**, x 162.. bước 37, y 549 |
+  | Ký năng trái/phải T/P (`ImediaLeftSkill/RightSkill`) | **hai ô vuông phải** (513 / 561, 549) |
+  | Chọn kênh chat (`ChannelBtn`) | **ô vuông trái** (99, 557) |
+  | Ô gõ chat (`InputEdit`) 305×18, biểu cảm, gửi | **dải hoa văn trên** (162,527 / 479,525 / 509,525) |
+  | 10 icon chức năng (Nhân vật…Ẩn chat) + 6 nút công cụ (Chạy…Ghi hình) | **một hàng ngay trên khung**, y 468, x 16.. bước 30 (28 px) |
+
+- `KUiToolsControlBar` Main về (0,0) 1040×604 (trước là 450,440 200×150) — sáu nút có toạ độ tuyệt đối.
+- Ảnh dựng thử (ghép icon thật lên khung, chưa chạy game): `mock_hai_co.png` đã gửi chủ.
+- **Chưa xem trong game** vì đổi ini phải **khởi động lại** app mà chủ đang dùng máy ảo suốt buổi. Khi
+  chủ thoát: `adb shell am force-stop vn.jx1.mobile` rồi mở lại (dữ liệu đọc thẳng từ `/mnt/shared/Misc`),
+  chụp màn hình so với `mock_k50.png`. Chỗ nào lệch thì **kéo bằng chế độ sửa giao diện**, không cần dựng.
+- Muốn quay về thanh cũ: xoá 3 tệp trong `android\du_lieu_ghi_de\ui\ui3\` và chạy lại
+  `chuan_bi_du_lieu.ps1`, hoặc chép lại `uiplayerbar.ini`/`uitoolscontrolbar.ini` từ cây client PC.
+
+### 12.11. (10/09) Dữ liệu Android là SINH RA — lớp ghi đè `android\du_lieu_ghi_de\`
+
+`chuan_bi_du_lieu.ps1` sinh `D:\jx1_android_data` từ cây client PC và **không có** bước nào giữ tệp
+chỉ-Android → chạy lại là mất: ảnh VNKU cho nút kỹ năng (`spr/ui3/uiskillcontrol`, `attack_direction`,
+`direction_arrow`, `attack_radius`), khung thanh dưới, hai ini thanh dưới, `ui/uitoado_macdinh.ini`,
+`config.ini` có `[Resolution] TheoManHinh` / `[Login]`. Nay tất cả nằm trong `android\du_lieu_ghi_de\`
+(cùng cây thư mục, tên **chữ thường** sẵn) và kịch bản chép đè lên **sau cùng** (`them_lop_ghi_de.py`).
+**Luật:** thêm/sửa tệp chỉ-Android → sửa ở lớp ghi đè rồi chép sang thư mục dữ liệu (hoặc ngược lại,
+nhưng phải có cả hai).
+
 ### 12.6. Còn lại thật sự
 
 
@@ -906,6 +974,13 @@ APK mới nhất: `android/apk/jx1mobile-0909-suakeo.apk` (đã cài sẵn trên
     (ô sáng vàng) → mở bảng kỹ năng (chạm ô kỹ năng đánh trên thanh trạng thái) → chạm một
     kỹ năng ⇒ vào ô đó. Nhớ luôn cho lần sau (`UserData\KyNangMobile.ini`).
 14. Đi bộ: dưới chân có **mũi tên nhỏ chỉ hướng đang đi**, luôn nằm phía trước.
+15. (10/09) Chế độ sửa giao diện, công cụ **"Dời ô"**: kéo **một** ô kỹ năng phụ → chỉ nó dịch; công cụ
+    **"Dời khối"**: kéo → cả cụm dịch. Lưu → `UserData\UiToaDo.ini` có dòng `KyNang<n>=x,y`.
+16. (10/09) Bấm **"Xoá hết"** → giao diện về **đúng bố cục anh đã sắp** (không về bản PC). Sắp lại tuỳ ý
+    rồi bấm **"Mặc định"** → từ đó "Xoá hết" về bố cục mới đó.
+17. (10/09) Thanh dưới: khung rồng của VNKU (nhỏ, góc trái dưới), vật phẩm 1–9 trên dải giấy, T/P ở hai
+    ô vuông phải, gõ chat ở dải trên, hàng icon chức năng + công cụ ngay trên khung. Chỗ nào chưa ưng →
+    kéo trong chế độ sửa giao diện rồi bấm "Mặc định".
 
 ### 8.9. Vòng tròn dưới chân đối tượng — **đã làm**
 

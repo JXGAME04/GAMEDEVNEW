@@ -23,6 +23,14 @@ foreach ($f in @("package.ini")) { if (Test-Path (Join-Path $Nguon $f)) { Copy-I
 if (Test-Path $ConfigTu) { Copy-Item $ConfigTu (Join-Path $Dich "config.ini") -Force; "config.ini lay tu $ConfigTu" }
 elseif (Test-Path (Join-Path $Nguon "config.ini")) { Copy-Item (Join-Path $Nguon "config.ini") $Dich -Force }
 
+# [ANDROID 10/09 GHIDE] Lop ghi de rieng cho Android (anh VNKU cho nut ky nang, khung thanh duoi, bo cuc mac dinh
+# UiToaDo, config.ini co [Resolution]/[Login]): chep DE LEN sau cung. Them tep chi-Android thi bo vao day.
+$GhiDe = Join-Path $PSScriptRoot "du_lieu_ghi_de"
+if (Test-Path $GhiDe) {
+  "chep lop ghi de Android tu $GhiDe ..."
+  robocopy $GhiDe $Dich /E /R:1 /W:1 /NFL /NDL /NJH /NJS | Out-Null
+} else { "  (khong co $GhiDe - bo qua lop ghi de)" }
+
 "ha chu thuong ten tep/thu muc ..."
 # doi ten tu sau ra truoc (tep truoc, thu muc sau) - qua ten tam vi NTFS khong phan biet hoa/thuong
 Get-ChildItem -LiteralPath $Dich -Recurse -File | Where-Object { $_.Name -cne $_.Name.ToLowerInvariant() } | ForEach-Object {

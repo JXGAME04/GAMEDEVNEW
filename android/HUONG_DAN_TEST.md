@@ -22,7 +22,7 @@ Trên máy Windows chạy (mất vài chục phút, ~9,6 GB):
 powershell -File D:\GAMEDEVNEW_wt_mobile\android\chuan_bi_du_lieu.ps1 -Nguon E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client -Dich D:\jx1_android_data
 ```
 Kịch bản chép `spr data maps maps2 script settings ui userdata (sound music nếu có)` + `config.ini` (bản SDL, `Rep3Api=100`) + `package.ini`,
-bỏ mọi .exe/.dll/.log, rồi **hạ chữ thường** toàn bộ tên. Sau đó chép lên máy:
+bỏ mọi .exe/.dll/.log, rồi **hạ chữ thường** toàn bộ tên. Trước khi hạ chữ thường, kịch bản chép đè **lớp ghi đè Android** `android\du_lieu_ghi_de\` (ảnh VNKU cho nút kỹ năng, khung thanh dưới, bố cục mặc định, `config.ini` Android) — tệp chỉ-Android **phải** nằm trong đó, không thì chạy lại là mất. Sau đó chép lên máy:
 ```bat
 adb push D:\jx1_android_data\. /storage/emulated/0/Android/data/vn.jx1.mobile/files/
 ```
