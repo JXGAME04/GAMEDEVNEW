@@ -7917,6 +7917,35 @@ void	KNpc::PaintSeriesNpc(char* szName, int nFontSize, int nHeightOff)
 }
 
 #include "scene/KScenePlaceC.h"
+// [TENMAU 08/09 a] Do mau ten theo khoang cach: chu bao nguoi choi O XA bi am do phan CHU (than nguoi van dung mau).
+// Mau ten sinh tu m_CurrentCamp; camp_free (4) = do dac, ra ngoai 0..6 = tim do. Dem xem NPC xa co roi vao do khong.
+extern int g_nCorePaintLog;	// CoreShell.cpp: S3Client dat qua GOI_PROCFRAME_BREATHE khi [Client] PaintLog=1
+static unsigned g_uTenMauGan[8] = {0,0,0,0,0,0,0,0};	// 0..6 = camp, 7 = ngoai pham vi
+static unsigned g_uTenMauXa[8]  = {0,0,0,0,0,0,0,0};
+static void TenMauGhi(int nCamp, int nKhoang)
+{
+	int i = (nCamp >= 0 && nCamp <= 6) ? nCamp : 7;
+	if (nKhoang < 400) g_uTenMauGan[i]++; else g_uTenMauXa[i]++;
+}
+static void TenMauInDong()
+{
+	static DWORD s_dwLan = 0;
+	const DWORD dwNow = GetTickCount();
+	if (s_dwLan == 0) { s_dwLan = dwNow; return; }
+	if (dwNow - s_dwLan < 10000) return;
+	s_dwLan = dwNow;
+	FILE* pLog = fopen("jx_paint.log", "a");
+	if (pLog)
+	{
+		fprintf(pLog, "[TENMAU] t=%u | GAN trang %u cam %u hong %u luc %u DO %u thu %u sukien %u NGOAI %u | XA trang %u cam %u hong %u luc %u DO %u thu %u sukien %u NGOAI %u\n",
+			dwNow,
+			g_uTenMauGan[0], g_uTenMauGan[1], g_uTenMauGan[2], g_uTenMauGan[3], g_uTenMauGan[4], g_uTenMauGan[5], g_uTenMauGan[6], g_uTenMauGan[7],
+			g_uTenMauXa[0], g_uTenMauXa[1], g_uTenMauXa[2], g_uTenMauXa[3], g_uTenMauXa[4], g_uTenMauXa[5], g_uTenMauXa[6], g_uTenMauXa[7]);
+		fclose(pLog);
+	}
+	memset(g_uTenMauGan, 0, sizeof(g_uTenMauGan));
+	memset(g_uTenMauXa, 0, sizeof(g_uTenMauXa));
+}
 int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBorderColor)
 {
 	if (m_Index != Player[CLIENT_PLAYER_INDEX].m_nIndex && m_HideState.nTime > 0)
@@ -8036,6 +8065,15 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		}
 		
 
+		if (g_nCorePaintLog > 0)
+		{	// [TENMAU 08/09 a] dem camp theo khoang cach toi nhan vat cua minh
+			int nMeX = 0, nMeY = 0;
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetDrawPos(&nMeX, &nMeY);
+			const int ddx = nMpsX - nMeX, ddy = (nMpsY - nMeY) * 2;	// truc Y nen 2 lan
+			const int nKc = (int)sqrt((double)ddx * ddx + (double)ddy * ddy);
+			TenMauGhi((int)m_CurrentCamp, nKc);
+			TenMauInDong();
+		}
 		char	szString[128];
 		if (SubWorld[Npc[CLIENT_PLAYER_INDEX].m_SubWorldIndex].m_SubWorldID == 209 && m_nPlayerIdx != CLIENT_PLAYER_INDEX)
 		{
