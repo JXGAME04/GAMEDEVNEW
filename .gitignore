@@ -96,3 +96,4 @@ android/gradle-project/app/build/
 android/gradle-project/app/.cxx/
 android/gradle-project/local.properties
 ThirdParty/SDL3-src/
+android/apk/
