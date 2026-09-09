@@ -6777,9 +6777,25 @@ void KNpc::GetMpsPos(int *pPosX, int *pPosY)
 // Drawn (interpolated) position - use ONLY in Paint* overlay code.
 // Identical to GetMpsPos when interpolation is off, because the logic tick
 // refreshes KNpcRes with the plain tick position every tick.
+// [CHUBUOC 08/09] Vi tri cho cac lop PHU (ten, danh hieu, ten bang, thanh mau, chat, so sat thuong).
+// Than nguoi ve thang tu m_DataRes nen KHONG di qua day - doi o day chi anh huong lop phu.
+// Ly do: net chu manh truot lien tuc 144 lan/giay thi khong bao gio dung yen nen bi nhoe tren man hinh
+// giu-mau; nhich theo BUOC thi giua hai buoc chu dung yen nen net lai, ma lech than nguoi khong dang ke.
+static int g_nChuBuoc = -1;
 void KNpc::GetDrawPos(int *pPosX, int *pPosY)
 {
 	m_DataRes.GetPos(pPosX, pPosY);
+	if (g_nChuBuoc < 0)
+	{
+		g_nChuBuoc = (int)GetPrivateProfileIntA("Client", "ChuBuoc", 0, ".\\config.ini");
+		if (g_nChuBuoc < 0) g_nChuBuoc = 0;
+		if (g_nChuBuoc > 16) g_nChuBuoc = 16;
+	}
+	if (g_nChuBuoc > 1 && pPosX && pPosY)
+	{	// neo ve boi so ChuBuoc (toa do mps luon duong)
+		if (*pPosX > 0) *pPosX -= (*pPosX % g_nChuBuoc);
+		if (*pPosY > 0) *pPosY -= (*pPosY % g_nChuBuoc);
+	}
 }
 #endif
 
