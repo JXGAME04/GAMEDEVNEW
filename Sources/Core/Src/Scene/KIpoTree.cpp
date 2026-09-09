@@ -94,29 +94,13 @@ KIpoTree::~KIpoTree()
 }
 
 //##ModelId=3DD9ECFD00E6
-// [SANG 08/09] hai nut cho he chieu sang dong (chu tu chinh roi chot; doc mot lan)
-static int g_nAnhSang = -1, g_nAnhSangNen = -1;
-static void AnhSangDocCauHinh()
-{
-	if (g_nAnhSang >= 0) return;
-	g_nAnhSang = (int)GetPrivateProfileIntA("Client", "AnhSang", 1, ".\\config.ini");
-	g_nAnhSangNen = (int)GetPrivateProfileIntA("Client", "AnhSangNen", 16, ".\\config.ini");
-	if (g_nAnhSangNen < 0) g_nAnhSangNen = 0;
-	if (g_nAnhSangNen > 64) g_nAnhSangNen = 64;
-}
 void KIpoTree::Paint(RECT* pRepresentArea, IPOT_RENDER_LAYER eLayer)
 {
 	// Represent2 (2D, mac dinh) co SetLightInfo la HAM RONG (KRepresentShell2.h:437)
 	// => toan bo RenderLightMap moi khung ve la cong toi: quet 48x96 o, moi nguon sang
 	// ~400 o kem sqrt, ma MOI npc/phi tieu deu la mot nguon ban kinh 320 (KIpoTree.cpp:290).
 	// Dong nguoi x 60 khung/giay = vai tram ms CPU/giay do di. Chi tinh khi shell that su dung.
-	AnhSangDocCauHinh();	// [SANG 08/09]
-	if (eLayer == IPOT_RL_COVER_GROUND && g_nAnhSang == 0 && g_pRepresent && g_pRepresent->IsRep3D())
-	{	// [SANG 08/09] tat han: bao bo ve dung mau trung tinh cho moi diem, va KHONG tinh ban do sang nua
-		static bool s_bDaTat = false;
-		if (!s_bDaTat) { g_pRepresent->SetLightInfo(0, 0, NULL); s_bDaTat = true; }
-	}
-	else if(eLayer == IPOT_RL_COVER_GROUND && m_bDynamicLighting && g_pRepresent && g_pRepresent->IsRep3D())
+	if(eLayer == IPOT_RL_COVER_GROUND && m_bDynamicLighting && g_pRepresent && g_pRepresent->IsRep3D())
 	{
 		// 渲染光照图
 		RenderLightMap();
@@ -956,13 +940,7 @@ void KIpoTree::RenderLightMap()
 	int nn = m_LightList.size();
 	int j, nLightID=1;
 
-	// [SANG 08/09] nen cua ban do sang. 0x40 la muc TRUNG TINH cua Represent3 (GetPoint3dLighting tra 0xff404040
-	// khi tat chieu sang), nen 0x10 = chi 25 % do sang o cho khong co den. [Client] AnhSangNen doi duoc.
-	{
-		AnhSangDocCauHinh();
-		const DWORD dwNen = (DWORD)g_nAnhSangNen;
-		m_dwAmbient = 0xff000000 | (dwNen << 16) | (dwNen << 8) | dwNen;
-	}
+	m_dwAmbient = 0xff101010;
 
 	// 按环境光清空光照图
 	DWORD dwR, dwG, dwB;

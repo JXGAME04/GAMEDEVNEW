@@ -47,11 +47,6 @@ int  g_nRep3Composite = 0;
 int  g_nRep3Tex32     = 1;
 int  g_nRep3Npot      = 1;
 int  g_nRep3Vsync     = 0;
-int  g_nRep3ChupThem  = 0;	// [CHUP 08/09] so khung chup THEM sau moi lan bam phim chup (0 = nhu cu)
-// [CHUP 08/09] chup lien tiep: giu ten goc + so khung con phai chup + kieu/chat luong
-static char  s_szChupGoc[260] = {0};
-static int   s_nChupConLai = 0, s_nChupKieu = 0, s_nChupChatLuong = 0, s_nChupSo = 0;
-int  g_nRep3VienChu   = 1;	// [CHU 08/09] 1 = ep vien den cho moi chuoi chu (nhu tu truoc); 0 = ton trong ben goi (alpha 0 = khong vien)
 int  g_nRep3CacheMB   = 0;
 int  g_nRep3Api       = 11;	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11: CD3D11Shim::Init do IDXGIFactory2 + feature level, khong du -> tu lui D3D9
 int  g_nRep3ApiOn     = 9;	// [D3D11 08/09]
@@ -534,10 +529,6 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Tex32     = Rep3Ini("Rep3Tex32", 1);
 	g_nRep3Npot      = Rep3Ini("Rep3Npot", 1);
 	g_nRep3Vsync     = Rep3Ini("Rep3Vsync", 0);
-	g_nRep3VienChu   = Rep3Ini("VienChu", 1);	// [CHU 08/09]
-	g_nRep3ChupThem  = Rep3Ini("ChupThem", 0);	// [CHUP 08/09] kep 0..30
-	if (g_nRep3ChupThem < 0) g_nRep3ChupThem = 0;
-	if (g_nRep3ChupThem > 30) g_nRep3ChupThem = 30;
 	if (Rep3Ini("PaintVsync", 0) > 0) g_nRep3Vsync = 1;	// [NHIP 08/09] Game.exe ve theo vblank -> Present(1)
 	g_nRep3CacheMB   = Rep3Ini("Rep3CacheMB", 0);
 	g_nRep3Log       = Rep3Ini("Rep3Log", 1);
@@ -2648,19 +2639,6 @@ void KRepresentShell3::RepresentEnd()
 	if(m_bDeviceLost)
 		return;
 
-	if (s_nChupConLai > 0 && s_szChupGoc[0])
-	{	// [CHUP 08/09] chup them khung ke tiep de so sanh giua cac khung (loi chi hien o mot so khung)
-		char szK[300]; const char* pCham = strrchr(s_szChupGoc, '.');
-		int nCat = pCham ? (int)(pCham - s_szChupGoc) : (int)strlen(s_szChupGoc);
-		if (nCat > 250) nCat = 250;
-		memcpy(szK, s_szChupGoc, nCat); szK[nCat] = 0;
-		sprintf(szK + nCat, "_k%02d%s", ++s_nChupSo, pCham ? pCham : ".jpg");
-		s_nChupConLai--;
-		const int nGiu = s_nChupConLai; s_nChupConLai = 0;	// tranh de quy hen lai
-		SaveScreenToFile(szK, (ScreenFileType)s_nChupKieu, (unsigned int)s_nChupChatLuong);
-		s_nChupConLai = nGiu;
-	}
-
 	char cc[200];
 
 	// ÖÕÖ¹ÐÔÄÜÍ³¼Æ
@@ -4146,11 +4124,6 @@ bool KRepresentShell3::SaveScreenToFile(const char* pszName, ScreenFileType eTyp
 {
 	if(!pszName || !pszName[0])
 		return 0;
-	if (g_nRep3ChupThem > 0 && s_nChupConLai == 0)
-	{	// [CHUP 08/09] lan bam dau: hen chup them g_nRep3ChupThem khung ke tiep
-		strncpy(s_szChupGoc, pszName, sizeof(s_szChupGoc) - 1); s_szChupGoc[sizeof(s_szChupGoc) - 1] = 0;
-		s_nChupConLai = g_nRep3ChupThem; s_nChupKieu = (int)eType; s_nChupChatLuong = (int)nQuality; s_nChupSo = 0;
-	}
 
 	if(m_bDeviceLost)
 		return false;
