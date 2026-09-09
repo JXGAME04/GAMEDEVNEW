@@ -526,6 +526,8 @@ void UiToaDo_BatTat()
 	}
 	else
 	{
+		// [ANDROID 09/09 PHIMMA] ghi vet: che do nay tung TU BAT tren Android
+		g_DebugLog("[UITOADO] BAT che do sua giao dien");
 		s_bDangSua = true;
 		s_pKeo     = NULL;
 		s_nStyleCu = WND_SHOW_DEBUG_FRAME_TEXT;
@@ -740,10 +742,13 @@ static void NutMoHinh(int* px, int* py, int* pw, int* ph)
 	}
 	*pw = UITOADO_MO_RONG;
 	*ph = UITOADO_MO_CAO;
+	//	[UITOADO 09/09 D] Mac dinh CU la mep phai GIUA man hinh - dung ngay vung
+	//	ngon cai phai, va tu 09/09 cum nut ky nang cung nam do. Do tren may ao da
+	//	cham nham that: che do sua bat len giua tran danh. Doi xuong ngay duoi tieu
+	//	ban do (goc phai tren), cho do khong co nut nao khac.
 	*px = (s_nMoX >= 0) ? s_nMoX
 		: (SCREEN_WIDTH > 0 ? SCREEN_WIDTH : 1024) - UITOADO_MO_RONG - 6;
-	*py = (s_nMoY >= 0) ? s_nMoY
-		: (SCREEN_HEIGHT > 0 ? SCREEN_HEIGHT : 768) / 2;
+	*py = (s_nMoY >= 0) ? s_nMoY : 172;
 }
 
 static bool TrongNutMo(int x, int y)

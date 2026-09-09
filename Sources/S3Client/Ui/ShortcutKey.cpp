@@ -8,6 +8,7 @@
 #include "ShortcutKey.h"
 #include "UiBase.h"
 #include "Elem/UiToaDo.h"	// [UITOADO]
+#include "KDebug.h"	// [ANDROID 09/09 PHIMMA] g_DebugLog
 #include "UiCase/UiTeamManage.h"
 #include "UiCase/UiPartnerCommon.h"	// [BDH-G4]
 #include "UiCase/UiPet.h"	// [PETSYS]
@@ -112,6 +113,13 @@ int	KShortcutKeyCentre::HandleKeyInput(unsigned int uKey, int nModifier)
 	int nIndex = FindCommand(MAKELONG(uKey, nModifier));
 	if (nIndex >= 0)
 	{
+#ifdef JX_ANDROID
+		// [ANDROID 09/09 PHIMMA] Tren dien thoai khong co ban phim ma van co phim tat
+		// tu kich (che do sua giao dien tu bat 09/09). Ghi lai ma phim + bo trong de
+		// lan sau nhin la biet ngay phim nao.
+		g_DebugLog("[PHIMTAT] ma phim=%u (0x%02X) bo tro=%d -> %.80s",
+			uKey, uKey, nModifier, ms_pCommands[nIndex].szDo);
+#endif
 		return ExcuteScript(ms_pCommands[nIndex].szDo);
 	}
 
