@@ -117,6 +117,10 @@ char* JxPathPosix(const char* pszIn, char* pszOut, size_t nOut)
 				unsigned int c = (unsigned char)pszOut[k];
 				if (k < nLow || c < 0x80) { szU[u++] = (char)c; continue; }
 				if (c < 0xA0) c = s_cp1252_80[c - 0x80];
+				/* chuan_bi_du_lieu.ps1 ha chu thuong ca chu Latin-1 (ToLower) -> dong bo o day */
+				if (c >= 0xC0 && c <= 0xDE && c != 0xD7) c += 0x20;
+				else if (c == 0x160 || c == 0x152 || c == 0x17D) c += 1;
+				else if (c == 0x178) c = 0xFF;
 				if (c < 0x800) { szU[u++] = (char)(0xC0 | (c >> 6)); szU[u++] = (char)(0x80 | (c & 0x3F)); }
 				else { szU[u++] = (char)(0xE0 | (c >> 12)); szU[u++] = (char)(0x80 | ((c >> 6) & 0x3F)); szU[u++] = (char)(0x80 | (c & 0x3F)); }
 			}
