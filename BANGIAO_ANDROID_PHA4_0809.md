@@ -647,10 +647,22 @@ sách kỹ năng đánh, để dùng được ngay không phải gán tay.
 
 APK mới nhất: `android/apk/jx1mobile-0909-gan.apk`.
 
-### 12.5. Còn lại
+### 12.5. Làm nốt sau khi viết mục này
 
-- **Kỹ năng trợ (aura / nội công)**: chạm chỉ đặt làm kỹ năng đang dùng, **chưa bật/tắt được**
-  từ nút — Core chưa mở đường cho client gọi `SetAuraSkill`.
+- **Kỹ năng trợ (aura / nội công)** — **đã xong**. Đường vốn có sẵn: `KPlayer::SetRightSkill`
+  (`KPlayer.cpp:4444`) tự gọi `SetAuraSkill(id)` khi kỹ năng là aura, và
+  `GOI_SET_IMMDIA_SKILL` với `nParam == 1` chính là gọi `SetRightSkill`. Trước đó tôi đặt
+  nhầm vào ô đánh **trái** (`nParam 0`) nên không bật gì. Đổi một tham số là xong.
+- **Không kéo được icon trong chế độ sửa** — **đã xong**, và nguyên nhân có **hai lớp**:
+  (a) cách đặt tên ô (§12.3 mục 3), và (b) **vuốt dọc trên giao diện bị hiểu thành cuộn
+  danh sách** (nhánh `CHAM_CUON` làm hôm nay cho khung thoại NPC). Đang ở chế độ sửa thì ý
+  định luôn là **kéo** — đã bỏ qua cả nhánh cần điều khiển lẫn nhánh cuộn.
+  Đo tận mắt: kéo riêng nút *Ngồi* → chỉ nó dịch, bốn nút kia đứng yên; tệp thêm đúng một
+  dòng `KUiToolsControlBar|Sit=...`.
+
+### 12.6. Còn lại thật sự
+
+
 - **Nút nhặt đồ nhanh** và **nút bật/tắt auto** trên HUD: bản tham khảo có (`nhatnhanh.png`,
   `autoplay.png`); bản này chưa có nút chạm riêng (vẫn nhặt được bằng cách chạm vào món đồ).
 - **Thời gian hồi chiêu** chưa vẽ trên nút (Core vẫn tự chặn, chỉ là không nhìn thấy).
@@ -814,7 +826,7 @@ cửa sổ theo `SCREEN_WIDTH/HEIGHT` trong mã → neo lại là chỉnh hai l�
 
 ### 8.8. Chủ test buổi sáng — làm theo thứ tự này
 
-APK mới nhất: `android/apk/jx1mobile-0909-kynang.apk` (đã cài sẵn trên LDPlayer).
+APK mới nhất: `android/apk/jx1mobile-0909-suakeo.apk` (đã cài sẵn trên LDPlayer).
 
 1. Mở app → phải **vào thẳng bản đồ** (nhớ mật mã + tự đăng nhập).
 2. **Kéo ngón nửa trái màn hình** → hiện vòng cần điều khiển, nhân vật đi theo hướng.
@@ -836,10 +848,26 @@ APK mới nhất: `android/apk/jx1mobile-0909-kynang.apk` (đã cài sẵn trên
     phía một con khác → vạch chỉ hướng chuyển **đỏ**, con đó có **vòng tròn dưới chân**, thả
     ngón là đánh đúng con đó. *(Phần đánh trúng quái tôi CHƯA thử được — quanh chỗ test không
     có quái. Xem §11.3.)*
-11. Chỉnh giao diện: `config.ini [Ui] SuaToaDo=1` (đã bật sẵn) → nút **"Sửa giao diện"** ở mép
-    phải giữa màn hình → hàng nút *Dời ô / Dời khối / To hơn / Nhỏ lại / Giấu hiện / Danh sách
-    / Lưu / Xoá hết*. Chọn công cụ rồi chạm vào thứ cần sửa, xong bấm **Lưu**. Không thích thì
-    **Xoá hết**. *(Muốn bản phát hành không có nút này thì để `SuaToaDo=0`.)*
+11. Chỉnh giao diện: `config.ini [Ui] SuaToaDo=1` (đã bật sẵn) → nút **"Sửa giao diện"**
+    (nay nằm **ngay dưới tiểu bản đồ**, không còn ở giữa mép phải vì chỗ đó giờ là cụm nút kỹ
+    năng) → hàng nút *Dời ô / Dời khối / To hơn / Nhỏ lại / Giấu hiện / Danh sách / Lưu / Xoá
+    hết*. Chọn công cụ rồi chạm vào thứ cần sửa, xong bấm **Lưu**.
+    → Kéo **từng icon một** phải dịch riêng nó, không kéo cả cụm (§12.6).
+    → **Cụm nút kỹ năng** cũng kéo được trong chế độ này.
+    *(Muốn bản phát hành không có nút này thì để `SuaToaDo=0`.)*
+12. **Cụm nút kỹ năng** (góc phải dưới): một nút đánh chính to + 8 ô phụ xếp thành cung
+    (ô trong 60 px, ô ngoài 48 px).
+    - **Chạm/đè** một ô → đánh, đè thì đánh liên tục.
+    - **Đè rồi kéo** → ô xanh ngắm chạy theo hướng, có vòng tầm đánh và mũi tên; thả ngón là
+      thả kỹ năng ở đó. Nút đang giữ có **núm nghiêng** theo hướng (không còn vạch đỏ).
+    - Kỹ năng chỉ dùng được **dưới ngựa** mà đang cưỡi → **tự xuống ngựa** rồi thôi phát đó,
+      bấm lại là đánh.
+    - Kỹ năng **trợ** (nội công) → chạm là **bật**.
+    - **Hai ngón cùng lúc**: một ngón giữ cần để chạy, ngón kia đè nút kỹ năng để đánh.
+13. **Tự chọn kỹ năng cho từng ô**: chạm nút **mũi tên vòng tròn** (bên trái cụm) → chạm ô
+    (ô sáng vàng) → mở bảng kỹ năng (chạm ô kỹ năng đánh trên thanh trạng thái) → chạm một
+    kỹ năng ⇒ vào ô đó. Nhớ luôn cho lần sau (`UserData\KyNangMobile.ini`).
+14. Đi bộ: dưới chân có **mũi tên nhỏ chỉ hướng đang đi**, luôn nằm phía trước.
 
 ### 8.9. Vòng tròn dưới chân đối tượng — **đã làm**
 
