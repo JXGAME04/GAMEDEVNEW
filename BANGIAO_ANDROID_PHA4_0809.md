@@ -660,6 +660,44 @@ APK mới nhất: `android/apk/jx1mobile-0909-gan.apk`.
   Đo tận mắt: kéo riêng nút *Ngồi* → chỉ nó dịch, bốn nút kia đứng yên; tệp thêm đúng một
   dòng `KUiToolsControlBar|Sit=...`.
 
+### 12.7. (10/09) Chủ báo "chưa đổi kỹ năng ô được, chưa chỉnh toạ độ nút được"
+
+Thử lại đúng thao tác của chủ trên máy ảo → **ba lỗi thật** (bản vá `va_nguon_android_56.py`):
+
+| # | Lỗi | Ở đâu | Sửa |
+|---|---|---|---|
+| 1 | Đang ở chế độ sửa, chạm vào nút kỹ năng bị **nút nuốt mất** cú chạm → hệ chỉnh toạ độ không bao giờ nhận được | `KSdlApp.cpp` bắt `CHAM_KYNANG` ngay lúc đặt ngón (cả đường ngón 1 lẫn ngón 2) | đang sửa thì không bắt nút kỹ năng |
+| 2 | Kéo cụm sang **trái / lên** là vô hiệu | `s_nKNX/Y` dùng −1 = "chưa đặt" và mọi chỗ đều `(x >= 0 ? x : 0)` → độ dời âm bị vứt | độ dời thường, mặc định 0, âm dương đều được |
+| 3 | Gán chỉ chạy với **bảng nhỏ**; **cửa sổ kỹ năng lớn** (mở từ thanh công cụ) bấm vào ô là *nhấc lên kéo* (`WND_N_ITEM_PICKDROP`), không phải bấm thường | `UiSkills.cpp` / `UiSkillsNew.cpp` `OnSkillPickDrop` | đang ở chế độ gán thì gán luôn, không nhấc lên |
+
+Thêm **chữ hướng dẫn trên màn** khi đang ở chế độ gán (bước tiếp theo phải làm gì).
+
+**Đã đo:** kéo cụm từ (913,433) về (791,370) → tệp ghi `CumKyNang=791,370` và sau Lưu cụm vẫn ở
+chỗ mới; gán từ cửa sổ kỹ năng lớn → `KyNangMobile.ini` đổi thành `O0=131076,1358`.
+
+> **Ghi lại một chuyện đáng nhớ:** lúc tôi thử bằng adb, nhật ký cho thấy chế độ sửa bật/tắt liên
+> tiếp và số mục lưu tăng 7→14 — **chủ đang trực tiếp kéo icon trên máy ảo cùng lúc**. Hai bên giẫm
+> lên nhau nên vài cú chạm của tôi "trượt". Lần sau trước khi lái máy ảo bằng adb, nhìn
+> `logcat | grep UITOADO` xem có ai đang dùng không.
+
+#### Hướng dẫn thao tác (cho chủ)
+
+**Đổi kỹ năng trong ô** — nút **mũi tên vòng tròn** nằm bên **trái** cụm nút:
+1. Chạm nút mũi tên vòng tròn → nút sáng vàng, hiện chữ *"Chế độ gán: chạm vào ô kỹ năng muốn đổi"*.
+2. Chạm **ô** muốn đổi (ô chính hay ô phụ đều được, kể cả ô trống) → ô sáng vàng, chữ đổi thành
+   *"Giờ mở bảng kỹ năng, chạm một kỹ năng để gán vào ô đang sáng"*.
+3. Mở bảng kỹ năng: **sách xanh** trên thanh công cụ dưới (ô thứ 4), *hoặc* chạm ô kỹ năng đánh
+   trên thanh trạng thái (bảng nhỏ) — cả hai đều được.
+4. Chạm kỹ năng muốn dùng → vào ô ngay, tự thoát chế độ gán. Lần sau mở game vẫn còn
+   (`UserData\KyNangMobile.ini`; xoá tệp = về mặc định).
+Muốn thoát mà không gán: chạm lại nút mũi tên vòng tròn.
+
+**Dời cụm nút kỹ năng** — trong chế độ sửa giao diện (Ctrl+U trên máy ảo, hoặc nút *"Sửa giao
+diện"* dưới tiểu bản đồ): đặt ngón **lên bất kỳ ô nào của cụm** rồi kéo — **cả cụm** đi theo
+(hình cung giữ nguyên). Kéo trái/phải/lên/xuống đều được. Bấm **Lưu** (hoặc Ctrl+U) → ghi
+`CumKyNang=x,y` vào `UserData\UiToaDo.ini`. Muốn về chỗ mặc định: xoá dòng đó.
+Lưu ý: khi đang sửa giao diện, nút kỹ năng **không đánh** — đó là cố ý.
+
 ### 12.6. Còn lại thật sự
 
 

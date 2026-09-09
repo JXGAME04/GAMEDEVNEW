@@ -86,8 +86,11 @@ static unsigned int	s_uKNDanhLuc = 0;	// luc danh phat gan nhat
 //	[ANDROID 09/09 KYNANG G] noi rong cum nut: do lech goc tinh cho khung 70x70 nhan
 //	ti le, con ta ve anh o co that (70/100/140) nen phai gian ra keo cac vong chong nhau.
 static int			s_nKNGian = 100;	// phan tram (co nut da dung roi nen khong can gian)
-static int			s_nKNX   = -1;		// -1 = neo goc phai duoi nhu ban tham khao
-static int			s_nKNY   = -1;
+// [ANDROID 10/09 GANTOADO] Do DOI ca cum so voi cho neo goc phai duoi cua ban tham khao.
+// Am duong deu duoc (truoc day -1 = "chua dat" nen keo sang trai/len tren la mat).
+// Che do sua giao dien keo cum di thi doi hai so nay, va luu vao UserData\UiToaDo.ini.
+static int			s_nKNX   = 0;
+static int			s_nKNY   = 0;
 
 //	Bo anh THAT cua VNKU - chu da chi san (\spr\Ui3\UiSkillControl)
 //	[ANDROID 09/09 KYNANG H] CO THAT lay tu ban tham khao (KgameWorld.cpp:13821):
@@ -195,8 +198,8 @@ static void DocCaiDat()
 	if (s_nKNGian > 300) s_nKNGian = 300;
 	if (s_nKNBanKinhKeo < 20) s_nKNBanKinhKeo = 20;
 	if (s_nKNCoIcon < 8) s_nKNCoIcon = 8;
-	s_nKNX       = GetPrivateProfileInt("Cham", "KyNangX", -1, szCfg);
-	s_nKNY       = GetPrivateProfileInt("Cham", "KyNangY", -1, szCfg);
+	s_nKNX       = GetPrivateProfileInt("Cham", "KyNangX", 0, szCfg);
+	s_nKNY       = GetPrivateProfileInt("Cham", "KyNangY", 0, szCfg);
 	GetPrivateProfileString("Cham", "KyNangAnhChinh", s_szKNAnhChinh, s_szKNAnhChinh,
 		sizeof(s_szKNAnhChinh), szCfg);
 	GetPrivateProfileString("Cham", "KyNangAnhPhuNho", s_szKNAnhPhuNho, s_szKNAnhPhuNho,
@@ -386,6 +389,18 @@ static void VeAnh2(const char* pszAnh, int nX, int nY, int nKhung)
 		a.oPosition.nY = nY;
 	}
 	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE, true);
+}
+
+//	[ANDROID 10/09 GANTOADO] Ve mot dong chu (toa do man hinh) - de huong dan ngay tren man.
+static void KyNang_VeChu(const char* pszChu, int nX, int nY, unsigned int uMau)
+{
+	int nDai = (int)strlen(pszChu);
+
+	if (nDai <= 0 || g_pRepresentShell == NULL)
+		return;
+	if (nX < 8) nX = 8;
+	g_pRepresentShell->OutputText(12, (char*)pszChu, nDai, nX, nY, uMau,
+		0, TEXT_IN_SINGLE_PLANE_COORD, 0xffffffff);
 }
 
 static bool CoAnh(const char* pszAnh)
@@ -627,9 +642,9 @@ static void KyNang_TamNutGan(int* px, int* py)
 	int nR = KYNANG_GAN_CO / 2;
 
 	*px = SCREEN_WIDTH  - (nR + KYNANG_GAN_DX * s_nKNGian / 100)
-		+ s_nKNSangPhai + (s_nKNX >= 0 ? s_nKNX : 0);
+		+ s_nKNSangPhai + s_nKNX;
 	*py = SCREEN_HEIGHT - (nR + KYNANG_GAN_DY * s_nKNGian / 100)
-		- s_nKNLenTren + (s_nKNY >= 0 ? s_nKNY : 0);
+		- s_nKNLenTren + s_nKNY;
 	if (*px < nR + 2) *px = nR + 2;
 	if (*py > SCREEN_HEIGHT - nR - 2) *py = SCREEN_HEIGHT - nR - 2;
 }
@@ -654,8 +669,8 @@ static void KyNang_TamNut(int nNut, int* px, int* py)
 	// [ANDROID 09/09 KYNANG G] gian do lech ra cho vua bo anh (giu nguyen hinh cung)
 	nDX = nDX * s_nKNGian / 100;
 	nDY = nDY * s_nKNGian / 100;
-	*px = SCREEN_WIDTH  - (nR + nDX) + s_nKNSangPhai + (s_nKNX >= 0 ? s_nKNX : 0);
-	*py = SCREEN_HEIGHT - (nR + nDY) - s_nKNLenTren + (s_nKNY >= 0 ? s_nKNY : 0);
+	*px = SCREEN_WIDTH  - (nR + nDX) + s_nKNSangPhai + s_nKNX;
+	*py = SCREEN_HEIGHT - (nR + nDY) - s_nKNLenTren + s_nKNY;
 	// [ANDROID 09/09 KYNANG E] giu han trong khung ve: da do thay o ngoai cung bi cat
 	// mat mot nua khi doi cum sang phai. Cung la de man hinh co nao cung khong loi o.
 	if (*px > SCREEN_WIDTH  - nR - 2)	*px = SCREEN_WIDTH  - nR - 2;
@@ -736,8 +751,7 @@ static void KyNang_ORiengDat(int x, int y)
 
 	KyNang_TamNut(0, &nX, &nY);
 	// s_nKNX/Y la do DOI so voi cho neo goc phai duoi, nen cong them phan chenh.
-	if (s_nKNX < 0) s_nKNX = 0;
-	if (s_nKNY < 0) s_nKNY = 0;
+	// [ANDROID 10/09 GANTOADO] am duong deu duoc - keo sang trai / len tren la do doi am.
 	s_nKNX += (x - nX);
 	s_nKNY += (y - nY);
 }
@@ -1140,7 +1154,14 @@ void JxKyNang_Ve()
 
 		KyNang_TamNutGan(&nGX, &nGY);
 		if (s_nKNCheDoGan)
+		{
 			OVuong(nGX, nGY, KYNANG_GAN_CO / 2, 0x90FFD24A);
+			// [ANDROID 10/09 GANTOADO] huong dan ngay tren man hinh, tung buoc mot
+			KyNang_VeChu(s_nKNOChon < 0
+				? "ChÕ ®é g¸n: ch¹m vµo « kü n¨ng muèn ®æi"
+				: "Giê më b¶ng kü n¨ng, ch¹m mét kü n¨ng ®Ó g¸n vµo « ®ang s¸ng",
+				nGX - 300, nGY - 38, 0xFFFFD24A);
+		}
 		VeAnhCo(s_szKNAnhGan, nGX, nGY, KYNANG_GAN_CO, 0);
 	}
 

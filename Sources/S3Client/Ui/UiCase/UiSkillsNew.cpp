@@ -9,6 +9,9 @@
 #include "../elem/wnds.h"
 #include "UiSkillsNew.h"
 #include "UiSysMsgCentre.h"
+#ifdef JX_ANDROID
+#include "../../Platform/JxCanDieuKhien.h"	// [ANDROID 10/09 GANTOADO] gan ky nang vao o
+#endif
 #include "../../../core/src/coreshell.h"
 #include "../UiBase.h"
 #include "crtdbg.h"
@@ -429,6 +432,19 @@ void KUiFightSkillSubPageNew::OnSkillPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITE
 {
 	KUiObjAtContRegion	Pick, Drop;
 	KUiDraggedObject	Obj;
+
+#ifdef JX_ANDROID
+	// [ANDROID 10/09 GANTOADO] Tren dien thoai, bam vao o ky nang o day la NHAC LEN de
+	// keo. Dang o che do GAN (nut mui ten vong tron canh cum nut ky nang) thi thay vi
+	// nhac len, gan luon ky nang do vao o dang cho - va khong bat dau keo.
+	if (pPickPos && !pDropPos && pPickPos->pWnd)
+	{
+		KUiDraggedObject oGan;
+		((KWndObjectBox*)(pPickPos->pWnd))->GetObject(oGan);
+		if (oGan.uGenre != CGOG_NOTHING && JxKyNang_GanKyNang(oGan.uGenre, oGan.uId))
+			return;
+	}
+#endif
 
 	UISYS_STATUS eStatus = g_UiBase.GetStatus();
 	if (pPickPos)
