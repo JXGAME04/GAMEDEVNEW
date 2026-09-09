@@ -22,6 +22,11 @@
 
 class KWndButton : public KWndImage
 {
+#ifdef JX_ANDROID
+public:
+	// [ANDROID 09/09 CHAM] noi rong vung cham cho nut nho - xem WndButton.cpp
+	virtual int	PtInWindow(int x, int y);
+#endif
 protected:
 	unsigned short	m_Flag;
 private:

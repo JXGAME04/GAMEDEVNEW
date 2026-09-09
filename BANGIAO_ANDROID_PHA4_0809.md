@@ -354,3 +354,128 @@ Nay `KWndEdit::WndProc` gọi `JxSdl_BanPhimAo(1)` ở `WND_M_SET_FOCUS` và `(0
 - Kéo–thả vật phẩm giữa các ô túi và bấm đúp để dùng đồ: **chưa kiểm bằng tay** (chỉ mới suy ra từ thiết kế).
 - Hai ngón: phóng to / kéo bản đồ (`SetZoom` đã có sẵn trong `autoexec.lua`).
 - Nhật ký `[CHAM]` còn bật, mỗi lần giữ ngón ghi một dòng — gỡ khi phát hành.
+
+
+---
+
+## 8. (09/09 tối) THAO TÁC TRONG GAME BẰNG NGÓN TAY — ĐỢT HAI
+
+> Bản vá: `android/va_nguon_android_13..19.py`. APK đã kiểm: `android/apk/jx1mobile-0909-nutto.apk`.
+> Nguồn tham khảo (**chỉ đọc, không sửa**): `D:\USVOLAM` (mã) và
+> `C:\Users\nguye\Downloads\NHACTAI\VNKU_ui` (ảnh `.spr`). Xem `KEHOACH_GIAODIEN_MOBILE_0909.md`.
+
+### 8.1. Một lỗi thật và nặng: `GetKeyState` trên Android luôn trả 0
+
+`KPosixWin32.cpp` có sẵn móc `g_pfnJxGetKeyState` nhưng **chưa ai nối vào**. Hệ quả: mọi chỗ trong
+game hỏi "đang giữ Shift/Ctrl/Alt không" đều trả lời KHÔNG — tức là Ctrl+chuột phải (menu người
+chơi), Shift+chuột trái (đánh ép), Alt+chuột (bạn đồng hành, biểu cảm) **đều chết, kể cả khi cắm bàn
+phím rời**. Nay nối vào bảng phím thật của SDL, kèm một *mặt nạ phím dính* (`JxSdl_DatPhimDinh`) để
+lớp chạm hoặc một nút ảo sau này giữ hộ phím bổ trợ.
+
+### 8.2. Cần điều khiển ảo (di chuyển)
+
+`Sources/S3Client/Platform/JxCanDieuKhien.cpp` — **kéo ngón ở nửa trái** màn hình (ngoài giao diện)
+là cần điều khiển; mỗi vòng lặp gọi `iCoreShell::Goto(nDir, 0)` với `nDir` là 1 trong 8 hướng của
+vòng 64 hướng — **đúng cách bản JX1 Mobile của chủ làm** (lớp `HRocker`). Lúc bắt đầu kéo thì
+`LockSomeoneAction(0)`/`LockObjectAction(0)` để nhân vật chịu rời chỗ.
+
+Vẽ bằng **ảnh thật của VNKU**: `\spr\Ui3\UiSkillControl\joystick_bg.spr` + `joystick_ctrl.spr`
+(đã chép vào `D:\jx1_android_data\spr\ui3\uiskillcontrol\`). Thiếu ảnh thì tự lùi về vẽ ô màu.
+Chỉnh trong `config.ini [Cham]`: `CanDieuKhien / CanVungRong / CanVungTren / CanVungDuoi /
+CanBanKinh / CanNguong / CanAnhNen / CanAnhNum`.
+
+**Chạm vẫn là chuột trái như thường** nên không mất thao tác nào của bản PC.
+
+### 8.3. Chạm đối tượng → thanh thông tin → chạm thanh → danh sách tuỳ chọn
+
+Đây là đường chủ chỉ theo bản mobile. Đọc kỹ thì **hai phần đầu đã có sẵn** trong bản này
+(`KUiTargetInfo` + `PopUpContextPeopleMenu`), chỉ thiếu mắt xích thứ ba → **không phải động vào
+Core** (bản USVOLAM thêm hẳn thông báo `GDCNI_SHOW_NPC_BAR` vào Core để làm việc này).
+
+**Bẫy đã đo tận mắt:** mục `[Main]` của `kuitargetinfo.ini` chỉ là một ô **27×23**, còn thân thanh
+(`BackGround0`, `Head0`…) là các ô **con nằm ngoài** ô đó. Nên chạm vào thân thanh **rơi ra ngoài
+cửa sổ**, xuống bản đồ, bỏ chọn mục tiêu thay vì mở menu. Phải bật cờ `WND_S_SIZE_WITH_ALL_CHILD`
+cho cửa sổ dò trúng theo cả đám con. Danh sách đặt **ngay dưới** thân thanh (lấy khung bao cả đám
+con), không đè lên thanh.
+
+### 8.4. Chữ hỏng trong menu — **lỗi nằm trong nguồn, không phải lỗi phông**
+
+Bảng `g_ActionName` (`UiGame.cpp`) có byte **0xE6** (chữ *ổ*) bị thay bằng `?` **và mất luôn dấu
+cách**:
+
+| Trong nguồn (hỏng) | Đúng ra là |
+|---|---|
+| `"T?<đ><ộ>i"` | `"Tổ đội"` |
+| `"S?<đ>en"` | `"Sổ đen"` |
+| `"O<ẳ>n t?t?"` | `"Oẳn tù tì"` |
+
+Hai dòng đầu đối chiếu **byte-for-byte** với bản tham khảo `D:\USVOLAM` thì nay đã khớp y hệt.
+Dòng thứ ba bản tham khảo không có; **chủ xác nhận chữ gốc là "Oẳn tù tì"**, và nó khớp đúng với
+byte còn sót (mỗi `?` ăn một chữ + một dấu cách).
+
+> **Đây là chỗ DUY NHẤT trong đợt này có đổi cả bản PC** — vì chuỗi hỏng cho cả hai bản.
+> Sửa bằng `unicode_to_tcvn3_bytes` của `skills/swordonline-dev/scripts`, không gõ tay byte nào.
+
+### 8.5. Cho dễ chạm
+
+- **Dòng trong danh sách tuỳ chọn**: nới hai cái **đệm** (`byItemTitleUpSpace` / `nItemTitleIndent`)
+  chứ **không** nhân thẳng `nItemHeight/nItemWidth` — làm vậy chữ mới còn nằm giữa dòng.
+  Đang để 7/9 (chữ cỡ 12 → dòng cao ~26 px). Bản đầu để 14/18, chủ bảo **quá to**.
+- **Nút nhỏ**: `KWndButton::PtInWindow` nới **vùng bắt chạm** (không đổi cách vẽ, không đụng bố cục)
+  cho nút nhỏ hơn 26 px, nới nhiều nhất 6 px mỗi bên để hai nút kề nhau không cướp chạm của nhau.
+- **Vuốt dọc trên giao diện = cuộn danh sách** (dịch thành lăn chuột): `WndList`, `WndList2`,
+  `WndMessageListBox` đều nhận `WM_MOUSEWHEEL` nên thoại NPC / chat / danh sách máy chủ đều vuốt
+  được. Vuốt **ngang** vẫn là giữ chuột trái rồi rê (kéo cửa sổ đi chỗ khác).
+
+### 8.6. Cử chỉ ngón tay — bảng đầy đủ hiện nay
+
+| Cử chỉ | Thành | Đã đo |
+|---|---|---|
+| Chạm nhanh | Chuột trái tại chỗ đặt ngón | ✔ |
+| Chạm hai lần liền | Bấm đúp (dùng vật phẩm) | chưa kiểm tay |
+| Kéo ở **nửa trái**, ngoài giao diện | **Cần điều khiển** (đi chuyển) | ✔ ảnh |
+| Kéo ở chỗ khác trên bản đồ | Giữ chuột trái rồi rê (đi liên tục) | ✔ |
+| Kéo **dọc** trên giao diện | Cuộn danh sách | chưa kiểm tay |
+| Kéo **ngang** trên giao diện | Giữ chuột trái rồi rê | — |
+| **Giữ tại chỗ ≥400 ms** (bản đồ hoặc giao diện) | **Chuột phải** — đánh ép / chọn mục tiêu; trong túi đồ là **mặc / tháo / dùng** vật phẩm | ✔ |
+| Nút Back của máy | ESC (mở bảng hệ thống) | ✔ |
+| Ô nhập có tiêu điểm | Bàn phím ảo bật; mất tiêu điểm thì tắt | ✔ `dumpsys` |
+
+### 8.7. Hệ tự căn chỉnh giao diện (`FitFlags`) — có, nhưng **opt-in**
+
+Xem `KEHOACH_GIAODIEN_MOBILE_0909.md`. Tóm tắt: mang từ USVOLAM, nhưng **mặc định tự suy ra neo**
+(một phần ba đầu → bám lề trên/trái, một phần ba cuối → bám lề dưới/phải) thay vì "dịch cả khung
+vào giữa" của họ, vì màn hình điện thoại **thấp hơn** khung chuẩn 768 chứ không cao hơn. Và **chỉ
+neo cửa sổ nào tự đăng ký** — đã thử áp đại trà rồi **đo thấy hỏng** (bản này tự chỉnh sẵn nhiều
+cửa sổ theo `SCREEN_WIDTH/HEIGHT` trong mã → neo lại là chỉnh hai lần).
+
+### 8.8. Chủ test buổi sáng — làm theo thứ tự này
+
+APK: `android/apk/jx1mobile-0909-nutto.apk` (đã cài sẵn trên LDPlayer).
+
+1. Mở app → phải **vào thẳng bản đồ** (nhớ mật mã + tự đăng nhập).
+2. **Kéo ngón nửa trái màn hình** → hiện vòng cần điều khiển, nhân vật đi theo hướng.
+3. **Chạm giữ** một người chơi → thanh thông tin hiện ở trên; **chạm vào thanh đó** → ra danh sách
+   *Tán gẫu / Hào hữu / Oẳn tù tì / Tổ đội / Theo sau / Cứu sát / Tin tức / Sổ đen*.
+   → Xem chữ đã đúng chưa, dòng đã vừa tay chưa.
+4. Mở túi đồ → **chạm giữ** một món → phải **dùng / mặc** được nó.
+5. Bấm **Back** của máy → bảng hệ thống; chạm *Trở lại* để đóng.
+6. Bấm Enter (hoặc chạm ô chat) → **bàn phím ảo phải bật**; bấm ESC → phải tắt.
+7. Mở một cửa sổ có danh sách (thoại NPC, danh sách máy chủ) → **vuốt dọc** để cuộn.
+
+### 8.9. Còn lại (theo lời chủ, chưa làm)
+
+- **Vòng tròn dưới chân đối tượng** để cố định lựa chọn. Bản USVOLAM làm bằng
+  `SetInstantSpr(enumINSTANT_STATE_SELECT_NPC)` + thông báo `GDCNI_SHOW_NPC_BAR` trong **Core**.
+  Bản này **chưa làm** vì: khe ảnh phụ `m_cSpecialSpr` của `KNpcRes` chỉ có **một** và đang dùng
+  chung với hiệu ứng kỹ năng (`KNpc.cpp:3383`), lại tự tắt sau một lúc → muốn vòng đứng yên phải
+  **thêm khe ảnh mới + chỗ vẽ** trong Core, rủi ro cao. Ảnh đã có sẵn:
+  `NHACTAI\VNKU_ui\spr\Spr\npcres\focused_enemy_circle.spr` và `focused_non_enemy_circle.spr`.
+  Bảng `settings\NpcRes\player_instant_special_file.txt` của bộ dữ liệu này **đang hỏng** (đường
+  dẫn cụt `\spr\skill\`, không có tên tệp) nên đường `SetInstantSpr` cũng không dùng được ngay.
+- **Tới gần NPC hiện icon để chạm chọn đối thoại** (`UiNpcBar` bên USVOLAM, 350 dòng).
+- **Nút chọn kỹ năng** riêng cho mobile (`UiMiniSkill`, 1141 dòng + `UiAssignSkill.ini` +
+  `\spr\Ui3\UiSkillControl\assign_skill_*.spr`).
+- **Gửi / lấy vật phẩm** (`UiGive`, 1068 dòng).
+- **Bàn phím ảo trong game** (`UiVirtualKeyboard`, 353 dòng) — hiện đang dùng bàn phím hệ thống.
+- Kéo–thả vật phẩm và bấm đúp: **chưa kiểm bằng tay**.

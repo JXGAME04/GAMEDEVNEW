@@ -160,6 +160,43 @@ int	KWndButton::IsButtonActive()
 //--------------------------------------------------------------------------
 //	功能：窗口函数（处理消息）
 //--------------------------------------------------------------------------
+
+#ifdef JX_ANDROID
+//--------------------------------------------------------------------------
+// [ANDROID 09/09 CHAM] Nut nho thi noi rong VUNG BAT CHAM (khong doi cach ve).
+//
+// Man hinh dien thoai nho ma nhieu nut trong giao dien nay chi 12-16 diem anh (nut dong cua so, mui
+// ten cuon, o ky nang, nut tab...), ngon tay bam rat truot. Chi noi vung bat cham cua rieng lop nut,
+// KHONG dong vao bo cuc va KHONG doi anh - nen nhin y nguyen, chi la bam hut hon.
+//
+// Nut da to san thi khong dong vao. Nut nho thi noi deu bon phia cho du NUT_CHAM_TOI_THIEU, nhung
+// khong bao gio noi qua NUT_CHAM_NOI_TOI_DA moi ben, de hai nut ke nhau khong cuop cham cua nhau.
+//--------------------------------------------------------------------------
+#define	NUT_CHAM_TOI_THIEU		26		// canh nho nhat mong muon cua vung cham (diem anh khung ve)
+#define	NUT_CHAM_NOI_TOI_DA		6		// noi nhieu nhat bao nhieu moi ben
+
+int KWndButton::PtInWindow(int x, int y)
+{
+	if (KWndImage::PtInWindow(x, y))
+		return 1;
+	if ((m_Style & WND_S_VISIBLE) == 0 || IsDisable())
+		return 0;
+	if (m_Width <= 0 || m_Height <= 0)
+		return 0;
+	int nNoiX = (NUT_CHAM_TOI_THIEU - m_Width) / 2;
+	int nNoiY = (NUT_CHAM_TOI_THIEU - m_Height) / 2;
+	if (nNoiX < 0) nNoiX = 0;
+	if (nNoiY < 0) nNoiY = 0;
+	if (nNoiX > NUT_CHAM_NOI_TOI_DA) nNoiX = NUT_CHAM_NOI_TOI_DA;
+	if (nNoiY > NUT_CHAM_NOI_TOI_DA) nNoiY = NUT_CHAM_NOI_TOI_DA;
+	if (nNoiX == 0 && nNoiY == 0)
+		return 0;
+	return (x >= m_nAbsoluteLeft - nNoiX && y >= m_nAbsoluteTop - nNoiY &&
+			x <  m_nAbsoluteLeft + m_Width + nNoiX &&
+			y <  m_nAbsoluteTop + m_Height + nNoiY) ? 1 : 0;
+}
+#endif
+
 int KWndButton::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	if (IsDisable())
