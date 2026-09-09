@@ -103,6 +103,11 @@ static KLuaScript* sClientLoad(const char* szLow)
 	Lua_PushNumber(p->m_LuaState, 1);
 	p->SetGlobalName((LPSTR)"MODEL_GAMECLIENT");
 	g_StrCpyLen(p->m_szScriptName, (char*)szLow, 100);
+	// [LUACLIENT 09/09 I] Giu lai dong nay: no la thu bat duoc benh 09/09 - bang ham C
+	// dang ky cho script client bi lech sang bang khac (80 ham phim tat cua S3Client
+	// thay vi 1351 ham cua Core, xem ban va 30). Lech bang la thay ngay o so nay.
+	SP_ClientLog("[SP] dang ky %d ham C (%s...) cho %s", g_GetGameScriptFunNum(),
+		GameScriptFuns[0].name ? GameScriptFuns[0].name : "(rong)", szLow);
 	int nOk = p->Load((char*)szLow);
 	s_SpClientScripts[szLow] = p;	// giu ca khi than chunk loi (nhu g_ScriptSet), khoi nap lai vo han
 	SP_ClientLog("[SP] nap %s vao bang rieng: %s", szLow, nOk ? "ok" : "LOI than chunk (xem ScriptError.log)");

@@ -300,6 +300,118 @@ cỡ backbuffer/cửa sổ nằm ở `D:\jx1_android_data\jx_rep3.log` (`[GPU] c
 
 ---
 
+## 9. (09/09) THƯ / ĐẤU GIÁ / CHIẾN LỆNH KHÔNG CHẠY — **đã sửa tận gốc**
+
+Chủ báo: *"khi đưa lên mobile một số tính năng mới không hoạt động: Mail - đấu giá -
+chiến lệnh"*.
+
+### 9.1. Bệnh: hai mảng toàn cục **trùng tên** trong cùng một tiến trình
+
+Có **hai** mảng toàn cục cùng mang tên `GameScriptFuns`:
+
+| Nơi khai báo | Vào thư viện | Nội dung |
+|---|---|---|
+| `Sources/Core/Src/ScriptFuns.cpp:14954` | `libCoreClient.so` | bảng hàm kịch bản lớn — `Include`, `OB_Create`, `Say`… |
+| `Sources/S3Client/Ui/ShortcutKey.cpp:2343` | `libmain.so` | 80 mục phím tắt — `Mouse_Action`, `Mouse_Menu`… |
+
+Hàm đếm `g_GetGameScriptFunNum()` cũng bị nhân đôi y hệt.
+
+Trên **Windows** mỗi DLL giữ bản riêng nên không ai va chạm — bản PC vẫn đúng suốt.
+Trên **Android** mọi thứ là thư viện chia sẻ ELF: ký hiệu để ở mức thấy được mặc định,
+bộ nạp động chỉ giữ **một** định nghĩa cho cả tiến trình, và `libmain.so` thắng.
+
+Hậu quả dây chuyền: Core đăng ký nhầm 80 hàm phím tắt cho **mọi** kịch bản phía client
+→ `Include` hoá nil → chunk chết ngay dòng đầu (`Include("\\script\\protocol.lua")`)
+→ `ScriptProtocol` nil → **mọi** tính năng chạy bằng Lua phía client đều chết.
+Thư, Đấu giá, Chiến Lệnh chỉ là ba cái nhìn thấy được; đo trên máy ảo: **0 chunk nạp
+được / 85 lần lỗi**.
+
+**Sửa** (`android/va_nguon_android_30.py`): cho bản của S3Client liên kết **nội bộ**
+(`static`). Cả mảng lẫn hàm đếm chỉ được dùng ngay trong `ShortcutKey.cpp`, nên không
+ảnh hưởng ai khác. Bản PC **không đổi hành vi**: trước giờ nó vẫn dùng đúng bảng của
+chính nó.
+
+> **Bài học để không lặp lại:** đây là loại lỗi *chỉ lộ ra khi chuyển từ DLL sang .so*.
+> Mọi biến/hàm toàn cục trùng tên giữa hai thư viện đều là bom hẹn giờ trên Android,
+> và nó **không** báo lỗi lúc dựng — chỉ sai lặng lẽ lúc chạy. Xem §9.4 để rà.
+
+### 9.2. Vì sao mất bốn vòng dựng mới tìm ra: lỗi Lua bị **câm hoàn toàn**
+
+Từ khi chuyển sang lõi Lua 5.4 (05/09), mọi câu lỗi Lua đều biến mất, chỉ còn lại
+`ScriptError 4:[1] (<tên tệp>)` — đúng một mã số. Ba chỗ cùng góp phần:
+
+| Chỗ | Vấn đề | Bản vá |
+|---|---|---|
+| `ScriptFuns.cpp` | ghi chú 21/08 định cho `_ALERT` bắt lỗi, nhưng `_ERRORMESSAGE` nội sinh **không hề gọi** `_ALERT` → dòng đăng ký ấy là **mã chết** từ 21/08 | 23 |
+| `lua4compat.c: lua4_outerrmsg` | chỉ `fputs(stderr)` — Windows còn thấy ở console, Android **mất trắng** | 24 |
+| `lua4compat.c: l4_report` | đi vòng qua `_ERRORMESSAGE`/`_ALERT`; đứt một mắt xích là mất sạch thông điệp | 26 |
+
+Thêm `lua4_execute` (bản vá 25): trước đây `if (!lua_isfunction(...)) return L4_ERRRUN;`
+— thoát **im lặng** với đúng mã lỗi của một lỗi chạy thật, nên từ ngoài không phân biệt
+được "chunk chạy rồi nổ" với "chunk chưa từng chạy".
+
+Bốn bản vá này **giữ lại** — chúng chính là thứ biến "lỗi câm" thành "lỗi đọc được", và
+có ích cho cả PC lẫn máy chủ. Sau khi sửa, `ScriptError.log` ghi thẳng:
+
+```
+\script\script_protocol\protocol_def_c.lua:10: attempt to call a nil value (global 'Include')
+stack traceback:
+        \script\script_protocol\protocol_def_c.lua:10: in main chunk
+```
+
+`KScriptProtocol.cpp` giữ một dòng nhật ký đếm số hàm C đăng ký — chính nó bắt được bệnh
+(**80** hàm bắt đầu bằng `Mouse_Action`, đáng lẽ phải là bảng của Core):
+
+```
+[SP] dang ky 133 ham C (Say...) cho \script\ui\uimail.lua     <- sau khi sua
+[SP] nap \script\ui\uimail.lua vao bang rieng: ok
+```
+
+### 9.3. Đã đo tận mắt trên máy ảo
+
+| Việc | Kết quả |
+|---|---|
+| Nạp kịch bản | cả `protocol_def_c.lua`, `uimail.lua`, `uichienlenh.lua` đều **ok**, `ScriptError.log` **rỗng** |
+| Chạm icon thư | hộp thư mở, **2 thư thật** (2/100); chạm một thư → đọc được nội dung, người gửi, ngày, vật phẩm kèm + nút **Nhận** |
+| Chạm icon đấu giá | mở đủ ba thẻ (Bang hội / Thế giới / Cá nhân), món đang đấu, giá khởi điểm/bước giá/mua ngay, đếm ngược, tiền nhân vật |
+| Chạm icon chiến lệnh | mở đủ: đếm ngược hoạt động, dải mốc thưởng theo cấp, Nhiệm Vụ Ngày / Nhiệm Vụ Tuần kèm tiến độ và nút **Đến** |
+
+APK: `android/apk/jx1mobile-0909-luafix.apk`.
+
+### 9.4. Việc nên làm tiếp (chưa làm)
+
+**Rà nốt các ký hiệu trùng tên khác.** Bệnh vừa rồi không báo gì lúc dựng, nên rất có thể
+còn cái khác đang sai lặng lẽ. Cách rà:
+
+```bash
+for f in android/gradle-project/app/build/intermediates/cxx/Release/*/obj/x86_64/*.so; do
+  nm -D --defined-only "$f" | awk '{print $3}' | sed "s|^|$(basename $f) |"
+done | sort -k2 | awk '{if ($2==p) print; p=$2}' | head -50
+```
+
+Cách chặn tận gốc: dựng các thư viện với `-fvisibility=hidden` rồi chỉ mở những ký hiệu
+thật sự cần xuất. Việc này đụng nhiều nên để chủ quyết.
+
+### 9.5. Một bẫy dựng APK cần nhớ
+
+Trong lúc truy lỗi có lúc APK **đóng gói thư viện cũ**: `stripDebugDebugSymbols` chạy
+nhưng không cập nhật đầu ra. Nếu nghi bản vá không vào APK thì kiểm bằng cách tìm một
+chuỗi mới ngay trong `.so` lấy từ APK:
+
+```bash
+python -c "
+import zipfile
+d = zipfile.ZipFile('android/gradle-project/app/build/outputs/apk/debug/app-debug.apk').read('lib/x86_64/libLua54Dll.so')
+print('co dau moi:', b'chuoi-danh-dau' in d)"
+```
+
+Cần ép làm lại thì xoá `android/gradle-project/app/build/intermediates/stripped_native_libs`
+rồi dựng lại. **Lưu ý:** `libmain.so` là thư viện của S3Client — sửa Core thì phải soi
+`libCoreClient.so`, sửa `lua4compat.c` thì soi `libLua54Dll.so`.
+
+
+---
+
 ## 7. (09/09) ĐIỀU KHIỂN BẰNG NGÓN TAY
 
 > Bản vá nguồn: `android/va_nguon_android_12.py`. APK đã kiểm: `android/apk/jx1mobile-0909-cham-c.apk`.

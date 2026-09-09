@@ -814,9 +814,18 @@ LUA_API int lua4_setdebugout(const char* szoutfile, const char* szerrfile)
 	return 1;
 }
 
+/* [LUACLIENT 09/09 B] Truoc day chi fputs(stderr): Android khong co stderr nen
+   cau loi Lua bay hoi, chi con ma so trong ScriptError.log. Ghi ra ca tep de
+   doc duoc o moi nen. Cung ten tep ma KLuaScript::ScriptError dang ghi. */
 LUA_API void lua4_outerrmsg(const char* szerrmsg)
 {
-	if (szerrmsg) { fputs(szerrmsg, stderr); fflush(stderr); }
+	FILE* f;
+	if (!szerrmsg) return;
+	fputs(szerrmsg, stderr); fflush(stderr);
+	f = fopen("ScriptError.log", "a");
+	if (!f) return;
+	fputs(szerrmsg, f);
+	fclose(f);
 }
 
 LUA_API void lua4_outoutmsg(const char* szoutmsg)
@@ -836,24 +845,29 @@ static void l4_report(lua_State* L)
 {
 	int top = lua_gettop(L);
 	if (top < 1) return;
+	/* [LUACLIENT 09/09 D] Ghi THANG ra nhat ky truoc tien. Duong vong qua
+	   _ERRORMESSAGE / _ALERT phu thuoc trang thai dang ky cua tung state;
+	   dut mot mat xich la mat sach cau loi (do duoc tren Android 09/09).
+	   lua4_outerrmsg ghi ra ca stderr lan ScriptError.log. */
+	lua4_outerrmsg(lua_tostring(L, top) ? lua_tostring(L, top) : "(loi khong phai chuoi)");
+	lua4_outerrmsg("\n");
 	lua4_getglobal(L, "_ERRORMESSAGE");		/* [LUA54 06/09 toi] theo E cua script (mot state) roi bang chu */
 	if (!lua_isfunction(L, -1))
 	{
 		lua_pop(L, 1);
 		lua4_getglobal(L, "_ALERT");
 	}
-	if (lua_isfunction(L, -1))
+	/* Chi goi moc rieng cua script (ham LUA). Moc ham C trong du an nay la
+	   LuaGameAlert - cung ghi vao ScriptError.log - goi nua thi ra hai dong
+	   trung nhau, nen bo qua. */
+	if (lua_isfunction(L, -1) && !lua_iscfunction(L, -1))
 	{
 		lua_pushvalue(L, top);
 		if (lua_pcall(L, 1, 0, 0) != LUA_OK)
 			lua_pop(L, 1);
 	}
 	else
-	{
 		lua_pop(L, 1);
-		lua4_outerrmsg(lua_tostring(L, top) ? lua_tostring(L, top) : "(loi khong phai chuoi)");
-		lua4_outerrmsg("\n");
-	}
 	lua_settop(L, top);
 }
 
@@ -1502,7 +1516,18 @@ LUA_API int lua4_compilefile(lua_State* L, const char* filename)
 
 LUA_API int lua4_execute(lua_State* L)
 {
-	if (!lua_isfunction(L, -1)) return L4_ERRRUN;
+	if (!lua_isfunction(L, -1))
+	{
+		/* [LUACLIENT 09/09 C] truoc day return im lang: ben goi chi thay ma loi 1,
+		   khong phan biet duoc voi loi chay that trong than chunk. Noi ro ra. */
+		char szBao[160];
+		int nTop = lua_gettop(L);
+		sprintf(szBao, "[lua4] execute: dinh stack khong phai ham "
+			"(so o tren stack = %d, kieu o tren cung = %s)\n",
+			nTop, nTop > 0 ? luaL_typename(L, -1) : "stack trong");
+		lua4_outerrmsg(szBao);
+		return L4_ERRRUN;
+	}
 	return lua4_call(L, 0, LUA_MULTRET);
 }
 

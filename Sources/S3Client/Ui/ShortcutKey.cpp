@@ -2340,7 +2340,12 @@ int LuaShowSomeoneMessage(Lua_State * L)
 	return 0;
 }
 
-TLua_Funcs GameScriptFuns[] = 
+// [LUACLIENT 09/09 H] PHAI la static: Core/Src/ScriptFuns.cpp cung co mot mang
+// toan cuc TEN Y HET (bang script lon, bat dau bang "Include"). Windows cho moi
+// DLL mot ban rieng nen khong sao; tren Android moi thu la .so chia se, bo nap dong
+// chi giu MOT dinh nghia va libmain.so thang -> Core dang ky nham 80 ham phim tat
+// nay cho moi script phia client, Include hoa nil, moi chunk chet o dong dau.
+static TLua_Funcs GameScriptFuns[] = 
 {
 	{"Mouse_Action", Mouse_Action},
 	{"Mouse_Force0", Mouse_Force0},
@@ -2426,7 +2431,8 @@ TLua_Funcs GameScriptFuns[] =
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int g_GetGameScriptFunNum()
+// [LUACLIENT 09/09 H] static vi ly do y het bang o tren - Core cung co ham nay.
+static int g_GetGameScriptFunNum()
 {
 	return sizeof(GameScriptFuns)  / sizeof(TLua_Funcs);
 }

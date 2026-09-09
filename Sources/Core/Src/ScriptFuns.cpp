@@ -14978,6 +14978,12 @@ TLua_Funcs GameScriptFuns[] =
 	// Loi CO SAN tu dot C; truoc hom nay khong lo vi boot chet som hon o cho khac.
 	{"IL",LuaIncludeLib},
 	{"_ALERT",LuaGameAlert},	// [WLLS 21/08] loi runtime Lua ghi nguyen van vao ScriptError.log
+	// [LUACLIENT 09/09] _ERRORMESSAGE: ban noi sinh cua thu vien (lstate.c:33)
+	// chi fprintf ra stderr - Windows con thay o console, Android thi MAT HAN,
+	// va no KHONG goi _ALERT nen dong tren mot minh khong bat duoc gi. Tro ve
+	// cung ham C thi cau loi that ("attempt to index global ...", so dong) vao
+	// thang ScriptError.log, canh dong "ScriptError 4:[1]" von chi co ma so.
+	{"_ERRORMESSAGE",LuaGameAlert},
 		{"GhiLog", LuaGhiLog},	// [HELOG2 29/08] script ghi vao logs\hethong.log
 	// == DA TAU TASKLINK (JX2 port) 15/08/2026 - xem DANHSACH_DATAU_PORT.md ==
 	{"C_Random",			LuaC_Random},
