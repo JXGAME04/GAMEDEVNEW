@@ -32,6 +32,8 @@ bool JxCan_DangCam();
 void JxCan_Nhip();
 // Goi cuoi moi khung ve (UiShell::UiPaint): ve can len man hinh.
 void JxCan_Ve();
+// Goi cuoi moi khung ve: ve vong chon duoi chan muc tieu dang chon.
+void JxVongChon_Ve();
 
 #endif // JX_ANDROID
 #endif

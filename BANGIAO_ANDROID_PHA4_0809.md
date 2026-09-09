@@ -455,7 +455,8 @@ APK: `android/apk/jx1mobile-0909-nutto.apk` (đã cài sẵn trên LDPlayer).
 
 1. Mở app → phải **vào thẳng bản đồ** (nhớ mật mã + tự đăng nhập).
 2. **Kéo ngón nửa trái màn hình** → hiện vòng cần điều khiển, nhân vật đi theo hướng.
-3. **Chạm giữ** một người chơi → thanh thông tin hiện ở trên; **chạm vào thanh đó** → ra danh sách
+3. **Chạm giữ** một đối tượng → **vòng tròn hiện dưới chân nó** và thanh thông tin hiện ở trên;
+   **chạm vào thanh đó** → ra danh sách
    *Tán gẫu / Hào hữu / Oẳn tù tì / Tổ đội / Theo sau / Cứu sát / Tin tức / Sổ đen*.
    → Xem chữ đã đúng chưa, dòng đã vừa tay chưa.
 4. Mở túi đồ → **chạm giữ** một món → phải **dùng / mặc** được nó.
@@ -463,16 +464,34 @@ APK: `android/apk/jx1mobile-0909-nutto.apk` (đã cài sẵn trên LDPlayer).
 6. Bấm Enter (hoặc chạm ô chat) → **bàn phím ảo phải bật**; bấm ESC → phải tắt.
 7. Mở một cửa sổ có danh sách (thoại NPC, danh sách máy chủ) → **vuốt dọc** để cuộn.
 
-### 8.9. Còn lại (theo lời chủ, chưa làm)
+### 8.9. Vòng tròn dưới chân đối tượng — **đã làm**
 
-- **Vòng tròn dưới chân đối tượng** để cố định lựa chọn. Bản USVOLAM làm bằng
-  `SetInstantSpr(enumINSTANT_STATE_SELECT_NPC)` + thông báo `GDCNI_SHOW_NPC_BAR` trong **Core**.
-  Bản này **chưa làm** vì: khe ảnh phụ `m_cSpecialSpr` của `KNpcRes` chỉ có **một** và đang dùng
-  chung với hiệu ứng kỹ năng (`KNpc.cpp:3383`), lại tự tắt sau một lúc → muốn vòng đứng yên phải
-  **thêm khe ảnh mới + chỗ vẽ** trong Core, rủi ro cao. Ảnh đã có sẵn:
-  `NHACTAI\VNKU_ui\spr\Spr\npcres\focused_enemy_circle.spr` và `focused_non_enemy_circle.spr`.
-  Bảng `settings\NpcRes\player_instant_special_file.txt` của bộ dữ liệu này **đang hỏng** (đường
-  dẫn cụt `\spr\skill\`, không có tên tệp) nên đường `SetInstantSpr` cũng không dùng được ngay.
+Chủ: *"bên mobile kích vào đối tượng là có vòng tròn dưới chân đối tượng nhằm cố định lại để hiện
+thông tin"*. Bản vá `android/va_nguon_android_20.py`.
+
+**Không đi đường của bản USVOLAM** (`SetInstantSpr(enumINSTANT_STATE_SELECT_NPC)` trong Core), vì:
+
+- `KNpcRes` chỉ có **một** khe ảnh phụ (`m_cSpecialSpr`) và đang dùng chung với hiệu ứng kỹ năng
+  (`KNpc.cpp:3383`), lại tự tắt sau một lúc → vòng sẽ chớp tắt và cướp chỗ của hiệu ứng kỹ năng;
+- bảng `\settings\NpcRes\player_instant_special_file.txt` của bộ dữ liệu này **đang hỏng** (đường
+  dẫn cụt `\spr\skill\`, không có tên tệp) nên `SetInstantSpr` cũng không lấy được ảnh.
+
+Đường đã đi, gọn hơn và không đụng vào hệ vẽ của Core:
+
+1. **Core** — `NPC_OI_TARGET_INFO` trả thêm **vị trí vẽ** của mục tiêu (toạ độ thế giới, lấy từ
+   `KNpc::GetDrawPos`) và cờ *đang khoá* (`m_nPeopleIdx == idx`). Ba trường thêm vào
+   `KUiTargetDetailInfo` đều trong `#ifdef JX_ANDROID` nên **cỡ struct bên PC không đổi**.
+2. **Client** — `JxVongChon_Ve()` vẽ ảnh vòng ngay tại vị trí đó bằng `DrawPrimitives` với
+   `bSinglePlaneCoord = FALSE`, tức là **toạ độ thế giới**, nên Represent3 tự đặt đúng chỗ và vòng
+   bám theo dù màn hình cuộn đi đâu. Ảnh lùi lại nửa khung để nằm giữa chân (bản dựng đầu chưa lùi
+   thì vòng lệch xuống dưới bên phải — đã nhìn tận mắt rồi mới sửa).
+
+Ảnh dùng của bộ VNKU (đã chép vào thư mục dữ liệu):
+`\spr\npcres\focused_non_enemy_circle.spr` và `focused_enemy_circle.spr` (dùng khi mục tiêu đang
+bị khoá đánh). Chỉnh trong `config.ini [Cham]`: `VongChon` / `VongChonAnh` / `VongChonAnhDich`.
+
+### 8.10. Còn lại (theo lời chủ, chưa làm)
+
 - **Tới gần NPC hiện icon để chạm chọn đối thoại** (`UiNpcBar` bên USVOLAM, 350 dòng).
 - **Nút chọn kỹ năng** riêng cho mobile (`UiMiniSkill`, 1141 dòng + `UiAssignSkill.ini` +
   `\spr\Ui3\UiSkillControl\assign_skill_*.spr`).

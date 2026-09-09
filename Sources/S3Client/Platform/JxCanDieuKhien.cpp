@@ -19,6 +19,7 @@
 #include "../../Represent/iRepresent/iRepresentShell.h"
 #include "../../Represent/iRepresent/KRepresentUnit.h"
 #include "../../Core/src/coreshell.h"
+#include "../../Core/src/GameDataDef.h"
 #include "KDebug.h"
 #include <math.h>
 
@@ -39,6 +40,10 @@ static int	s_nDaBaoAnh = 0;
 static int	s_nCoAnh = -1;		// -1 = chua kiem, 0 = khong co anh (ve o mau), 1 = co anh
 static char	s_szAnhNen[128] = "\\spr\\Ui3\\UiSkillControl\\joystick_bg.spr";
 static char	s_szAnhNum[128] = "\\spr\\Ui3\\UiSkillControl\\joystick_ctrl.spr";
+static int	s_nVongBat = 1;
+static int	s_nVongCoAnh = -1;
+static char	s_szVongAnh[128]    = "\\spr\\npcres\\focused_non_enemy_circle.spr";
+static char	s_szVongAnhDich[128] = "\\spr\\npcres\\focused_enemy_circle.spr";
 
 // --- trang thai --------------------------------------------------------------
 static bool	s_bCam = false;
@@ -62,6 +67,9 @@ static void DocCaiDat()
 	s_nNguong   = GetPrivateProfileInt("Cham", "CanNguong", 14, szCfg);
 	GetPrivateProfileString("Cham", "CanAnhNen", s_szAnhNen, s_szAnhNen, sizeof(s_szAnhNen), szCfg);
 	GetPrivateProfileString("Cham", "CanAnhNum", s_szAnhNum, s_szAnhNum, sizeof(s_szAnhNum), szCfg);
+	s_nVongBat   = GetPrivateProfileInt("Cham", "VongChon", 1, szCfg);
+	GetPrivateProfileString("Cham", "VongChonAnh", s_szVongAnh, s_szVongAnh, sizeof(s_szVongAnh), szCfg);
+	GetPrivateProfileString("Cham", "VongChonAnhDich", s_szVongAnhDich, s_szVongAnhDich, sizeof(s_szVongAnhDich), szCfg);
 	if (s_nVungRong < 10) s_nVungRong = 10;
 	if (s_nVungRong > 100) s_nVungRong = 100;
 	if (s_nBanKinh < 30) s_nBanKinh = 30;
@@ -205,6 +213,68 @@ static void OVuong(int nX, int nY, int nNua, unsigned int uMau)
 	o.oEndPos.nY   = nY + nNua;
 	o.Color.Color_dw = uMau;
 	g_pRepresentShell->DrawPrimitives(1, &o, RU_T_SHADOW, true);
+}
+
+
+//---------------------------------------------------------------------------
+// [ANDROID 09/09 VONG] VONG CHON DUOI CHAN MUC TIEU
+//
+// Chu: "kich vao doi tuong la co vong tron duoi chan doi tuong nham co dinh lai de hien thong tin".
+//
+// Ve bang DrawPrimitives voi bSinglePlaneCoord = FALSE, tuc la dua TOA DO THE GIOI - Represent3 tu
+// doi sang toa do man hinh, nen vong luon nam dung duoi chan du man hinh cuon di dau.
+// Vi tri do Core tra ve trong KUiTargetDetailInfo (NPC_OI_TARGET_INFO), xem dot va 20.
+//
+// config.ini [Cham]:
+//   VongChon=1                 ; 0 = tat
+//   VongChonAnh=\spr\npcres\focused_non_enemy_circle.spr
+//   VongChonAnhDich=\spr\npcres\focused_enemy_circle.spr   (dung khi muc tieu dang bi khoa danh)
+//---------------------------------------------------------------------------
+
+void JxVongChon_Ve()
+{
+	DocCaiDat();
+	if (!s_nVongBat || g_pCoreShell == NULL || g_pRepresentShell == NULL)
+		return;
+	KUiTargetDetailInfo tt;
+	memset(&tt, 0, sizeof(tt));
+	if (!g_pCoreShell->GetGameData(NPC_OI_TARGET_INFO, (KUPARAM)&tt, 0))
+		return;
+	if (tt.sTargetName[0] == 0)
+		return;
+	if (s_nVongCoAnh < 0)
+	{
+		s_nVongCoAnh = (CoAnh(s_szVongAnh) && CoAnh(s_szVongAnhDich)) ? 1 : 0;
+		g_DebugLog("[VONG] anh vong chon: %s -> co anh=%d", s_szVongAnh, s_nVongCoAnh);
+	}
+	if (!s_nVongCoAnh)
+		return;
+	static KRUImage s_Vong, s_VongDich;
+	KRUImage& a = tt.nDangKhoa ? s_VongDich : s_Vong;
+	const char* pszAnh = tt.nDangKhoa ? s_szVongAnhDich : s_szVongAnh;
+	if (a.szImage[0] == 0)
+	{
+		memset(&a, 0, sizeof(a));
+		a.nType = ISI_T_SPR;
+		a.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+		a.Color.Color_dw = 0xffffffff;
+		a.nISPosition = IMAGE_IS_POSITION_INIT;
+		a.nFrame = 0;
+		strncpy(a.szImage, pszAnh, sizeof(a.szImage) - 1);
+	}
+	// Anh .spr ve tu goc tren-trai cua no nen phai lui lai nua khung, khong thi vong nam lech
+	// xuong duoi ben phai chan doi tuong (da nhin tan mat o ban dung dau tien).
+	KRPosition2 oOffV = { 0, 0 }, oCoV = { 0, 0 };
+	int nLuiX = 0, nLuiY = 0;
+	if (g_pRepresentShell->GetImageFrameParam(a.szImage, 0, &oOffV, &oCoV, a.nType) && oCoV.nX > 0)
+	{
+		nLuiX = oCoV.nX / 2;
+		nLuiY = oCoV.nY / 2;
+	}
+	a.oPosition.nX = tt.nViTriVeX - nLuiX;
+	a.oPosition.nY = tt.nViTriVeY - nLuiY;
+	// FALSE = toa do THE GIOI (khong phai toa do man hinh) -> Represent3 tu dat dung cho
+	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE, false);
 }
 
 void JxCan_Ve()

@@ -2904,6 +2904,11 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 			strcpy_s(pTargetInfo->sTargetName, sizeof(pTargetInfo->sTargetName), Npc[idx].Name);
 			pTargetInfo->Series = Npc[idx].m_Series;
 			pTargetInfo->nLifePercent = (Npc[idx].m_CurrentLife * 100 / max(Npc[idx].m_CurrentLifeMax, 1));
+#ifdef JX_ANDROID
+			// [ANDROID 09/09 VONG] tra them vi tri VE de client ve vong chon duoi chan muc tieu
+			Npc[idx].GetDrawPos(&pTargetInfo->nViTriVeX, &pTargetInfo->nViTriVeY);
+			pTargetInfo->nDangKhoa = (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx == idx) ? 1 : 0;
+#endif
 			nRet = 1;
 		}
 		break;

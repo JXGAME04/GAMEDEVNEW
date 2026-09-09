@@ -362,6 +362,7 @@ void UiPaint(int nGameLoop)
 	PerfHud_Draw(s_nFrameRate, nGameLoop, dwPing);
 
 #ifdef JX_ANDROID
+	JxVongChon_Ve();	// [ANDROID 09/09 VONG] vong chon duoi chan muc tieu (toa do the gioi)
 	JxCan_Ve();	// [ANDROID 09/09 CAN] ve can len tren cung, ngay truoc khi ket khung
 #endif
 	g_pRepresentShell->RepresentEnd();
