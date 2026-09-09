@@ -30,7 +30,7 @@ protected:
 	void			SinhHover();							// ban sao KWin32App::GenerateMsgHoverMsg (private ben Engine)
 #ifdef JX_ANDROID
 	// [ANDROID 09/09 CHAM] bo nhan cu chi ngon tay -> chuot (xem KSdlApp.cpp)
-	enum { CHAM_KHONG = 0, CHAM_CHO, CHAM_KEO, CHAM_PHAI, CHAM_RE };
+	enum { CHAM_KHONG = 0, CHAM_CHO, CHAM_KEO, CHAM_PHAI, CHAM_RE, CHAM_CAN };
 	bool			ChamSuKien(const SDL_Event& ev);	// true = da nuot su kien, dung dich tiep
 	void			NhipCham();							// goi moi vong lap: giu du lau thi thanh chuot phai
 	int				m_nCham;			// mot trong CHAM_*

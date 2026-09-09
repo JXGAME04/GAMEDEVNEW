@@ -15,6 +15,9 @@
 //#include "../../core/src/coreshell.h"
 #include "../S3Client.h"
 #include "UiCase/UiInit.h"
+#ifdef JX_ANDROID
+#include "../Platform/JxCanDieuKhien.h"	// [ANDROID 09/09 CAN] can dieu khien ao
+#endif
 #include "UiCase/UiConnectInfo.h"
 #include "UiCase/UiInformation.h"
 #include "UiCase/UiInformation2.h"
@@ -358,6 +361,9 @@ void UiPaint(int nGameLoop)
 	// bang do hieu nang (config.ini [Client] PerfHud=1)
 	PerfHud_Draw(s_nFrameRate, nGameLoop, dwPing);
 
+#ifdef JX_ANDROID
+	JxCan_Ve();	// [ANDROID 09/09 CAN] ve can len tren cung, ngay truoc khi ket khung
+#endif
 	g_pRepresentShell->RepresentEnd();
 	if (g_nPaintLog > 0)
 	{

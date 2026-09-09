@@ -342,6 +342,9 @@ copy "$(JX_SDL3_DIR)\lib\x64\SDL3.dll" ..\..\bin\client64sdl\SDL3.dll</Command>
     <ClCompile Include="Platform\KSdlApp.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'!='ReleaseSDL|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Platform\JxCanDieuKhien.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'!='ReleaseSDL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">KWin32.h</PrecompiledHeaderFile>

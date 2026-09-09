@@ -26,6 +26,81 @@ static KSdlApp* s_pSdlApp = NULL;
 //---------------------------------------------------------------------------
 // SDL_Keycode -> ma phim ao Windows (VK_*) ma KWnd/ShortcutKey dang dung
 //---------------------------------------------------------------------------
+#ifdef JX_ANDROID
+#include "JxCanDieuKhien.h"	// [ANDROID 09/09 CAN] can dieu khien ao
+#endif
+
+#ifdef JX_ANDROID
+//---------------------------------------------------------------------------
+// [ANDROID 09/09 PHIM] BANG PHIM CHO GetKeyState()
+//
+// LOI THAT tim ra hom nay: KPosixWin32.cpp co san moc g_pfnJxGetKeyState nhung KHONG AI NOI vao,
+// nen GetKeyState()/GetAsyncKeyState() tren Android LUON tra 0. Hau qua: moi cho trong game hoi
+// "dang giu Shift/Ctrl/Alt khong" deu tra lai KHONG - tuc la
+//     Ctrl+chuot phai (menu nguoi choi: giao dich, to doi, ket ban)
+//     Shift+chuot trai (danh ep), Alt+chuot (ban dong hanh, menu bieu cam)
+// deu khong the lam duoc, KE CA khi cam ban phim roi vao may.
+//
+// Nay tra loi bang BANG PHIM THAT cua SDL, cong them MAT NA PHIM DINH de lop cham (hoac mot nut ao
+// sau nay) giu ho phim bo tro ma khong can ban phim.
+//---------------------------------------------------------------------------
+static unsigned int s_uPhimDinh = 0;	// bit 0 = Shift, 1 = Ctrl, 2 = Alt
+
+extern "C" void JxSdl_DatPhimDinh(unsigned int uMatNa) { s_uPhimDinh = uMatNa; }
+extern "C" unsigned int JxSdl_LayPhimDinh(void) { return s_uPhimDinh; }
+
+static SHORT JxSdl_TrangThaiPhim(int vk)
+{
+	int nSo = 0;
+	const bool* pPhim = SDL_GetKeyboardState(&nSo);
+	SDL_Scancode sc = SDL_SCANCODE_UNKNOWN;
+	bool bNhan = false;
+	switch (vk)
+	{
+	case VK_SHIFT:
+		bNhan = (s_uPhimDinh & 1) != 0;
+		if (pPhim) bNhan = bNhan || pPhim[SDL_SCANCODE_LSHIFT] || pPhim[SDL_SCANCODE_RSHIFT];
+		return bNhan ? (SHORT)0x8000 : 0;
+	case VK_CONTROL:
+		bNhan = (s_uPhimDinh & 2) != 0;
+		if (pPhim) bNhan = bNhan || pPhim[SDL_SCANCODE_LCTRL] || pPhim[SDL_SCANCODE_RCTRL];
+		return bNhan ? (SHORT)0x8000 : 0;
+	case VK_MENU:
+		bNhan = (s_uPhimDinh & 4) != 0;
+		if (pPhim) bNhan = bNhan || pPhim[SDL_SCANCODE_LALT] || pPhim[SDL_SCANCODE_RALT];
+		return bNhan ? (SHORT)0x8000 : 0;
+	case VK_LSHIFT:   sc = SDL_SCANCODE_LSHIFT;  break;
+	case VK_RSHIFT:   sc = SDL_SCANCODE_RSHIFT;  break;
+	case VK_LCONTROL: sc = SDL_SCANCODE_LCTRL;   break;
+	case VK_RCONTROL: sc = SDL_SCANCODE_RCTRL;   break;
+	case VK_LMENU:    sc = SDL_SCANCODE_LALT;    break;
+	case VK_RMENU:    sc = SDL_SCANCODE_RALT;    break;
+	case VK_RETURN:   sc = SDL_SCANCODE_RETURN;  break;
+	case VK_ESCAPE:   sc = SDL_SCANCODE_ESCAPE;  break;
+	case VK_SPACE:    sc = SDL_SCANCODE_SPACE;   break;
+	case VK_TAB:      sc = SDL_SCANCODE_TAB;     break;
+	case VK_BACK:     sc = SDL_SCANCODE_BACKSPACE; break;
+	case VK_LEFT:     sc = SDL_SCANCODE_LEFT;    break;
+	case VK_RIGHT:    sc = SDL_SCANCODE_RIGHT;   break;
+	case VK_UP:       sc = SDL_SCANCODE_UP;      break;
+	case VK_DOWN:     sc = SDL_SCANCODE_DOWN;    break;
+	default:
+		if (vk >= 'A' && vk <= 'Z')
+			sc = (SDL_Scancode)(SDL_SCANCODE_A + (vk - 'A'));
+		else if (vk == '0')
+			sc = SDL_SCANCODE_0;
+		else if (vk > '0' && vk <= '9')
+			sc = (SDL_Scancode)(SDL_SCANCODE_1 + (vk - '1'));
+		else if (vk >= VK_F1 && vk <= VK_F12)
+			sc = (SDL_Scancode)(SDL_SCANCODE_F1 + (vk - VK_F1));
+		break;
+	}
+	if (sc == SDL_SCANCODE_UNKNOWN || !pPhim || (int)sc >= nSo)
+		return 0;
+	return pPhim[sc] ? (SHORT)0x8000 : 0;
+}
+#endif
+
 static WORD SdlKeyToVk(SDL_Keycode key)
 {
 	if (key >= SDLK_A && key <= SDLK_Z)			return (WORD)('A' + (key - SDLK_A));
@@ -267,6 +342,9 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 #ifdef JX_POSIX
 	HWND hWnd = (HWND)m_pWindow;	// [ANDROID 08/09] tren POSIX "HWND" = SDL_Window* (KPosixWin32: GetClientRect/SetWindowText... hieu no)
 	JxPosix_SetMainWindow(m_pWindow);
+#ifdef JX_ANDROID
+	g_pfnJxGetKeyState = JxSdl_TrangThaiPhim;	// [ANDROID 09/09 PHIM] khong noi thi GetKeyState luon tra 0
+#endif
 #else
 	HWND hWnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_pWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 #endif
@@ -376,6 +454,7 @@ void KSdlApp::Run()
 			break;
 #ifdef JX_ANDROID
 		NhipCham();		// [ANDROID 09/09 CHAM] giu ngon du lau ma khong xe dich -> chuot phai
+		JxCan_Nhip();	// [ANDROID 09/09 CAN] dang cam can thi day nhan vat di theo huong
 #endif
 		if (m_bActive || m_bMultiGame)
 		{
@@ -484,6 +563,7 @@ extern "C" void JxSdl_BanPhimAo(int bBat)
 //---------------------------------------------------------------------------
 extern "C" int JxUi_CoGiaoDienTaiDiem(int x, int y);	// Wnds.cpp
 
+
 static const unsigned int CHAM_GIU_MS = 400;	// giu lau bao nhieu thi thanh chuot phai
 static const int          CHAM_NGUONG = 12;		// xe dich qua bao nhieu diem anh thi coi la KEO
 static const unsigned int CHAM_HAI_MS = 400;	// hai lan cham cach nhau duoi bao nhieu = bam dup
@@ -509,7 +589,11 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		}
 		int nTruoc = m_nCham;
 		m_nCham = CHAM_KHONG;
-		if (nTruoc == CHAM_KEO)
+		if (nTruoc == CHAM_CAN)
+		{
+			JxCan_Nha();
+		}
+		else if (nTruoc == CHAM_KEO)
 		{
 			GhiChuot(0, MAKELPARAM((int)fx, (int)fy));
 			MsgProc(hWnd, WM_LBUTTONUP, 0, MAKELPARAM((int)fx, (int)fy));
@@ -548,9 +632,22 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		if (m_nCham == CHAM_CHO &&
 			(abs(m_nChamX - m_nChamX0) > CHAM_NGUONG || abs(m_nChamY - m_nChamY0) > CHAM_NGUONG))
 		{
+			// [ANDROID 09/09 CAN] Keo o vung ben trai (ngoai giao dien) = CAN DIEU KHIEN;
+			// keo o cho khac = giu chuot trai roi re nhu ban PC (di lien tuc, keo tha vat pham).
+			if (JxCan_TrongVung(m_nChamX0, m_nChamY0) && !JxUi_CoGiaoDienTaiDiem(m_nChamX0, m_nChamY0))
+			{
+				m_nCham = CHAM_CAN;
+				JxCan_BatDau(m_nChamX0, m_nChamY0, m_nChamX, m_nChamY);
+				return true;
+			}
 			m_nCham = CHAM_KEO;		// da xe dich -> giu chuot trai tu CHO DAT NGON roi keo
 			GhiChuot(MK_LBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
 			MsgProc(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
+		}
+		if (m_nCham == CHAM_CAN)
+		{
+			JxCan_Keo(m_nChamX, m_nChamY);
+			return true;
 		}
 		WPARAM w = (m_nCham == CHAM_KEO) ? MK_LBUTTON : (WPARAM)((m_nCham == CHAM_PHAI) ? MK_RBUTTON : 0);
 		GhiChuot(w, MAKELPARAM(m_nChamX, m_nChamY));
@@ -566,13 +663,11 @@ void KSdlApp::NhipCham()
 		return;
 	if ((unsigned int)SDL_GetTicks() - m_uChamDat < CHAM_GIU_MS)
 		return;
-	if (JxUi_CoGiaoDienTaiDiem(m_nChamX0, m_nChamY0))
-	{
-		m_nCham = CHAM_RE;	// tren giao dien: chi he ra xem, khong bam chuot phai
-		g_DebugLog("[CHAM] giu tai %d,%d tren GIAO DIEN -> chi he ra xem (khong bam chuot phai)", m_nChamX0, m_nChamY0);
-		return;
-	}
-	g_DebugLog("[CHAM] giu tai %d,%d tren BAN DO -> chuot phai", m_nChamX0, m_nChamY0);
+	// CHAM_RE khong con dung: cham giu o DAU cung la chuot phai.
+	// Tren GIAO DIEN, chuot phai chinh la duong MAC / THAO / DUNG vat pham cua ban PC - bo no di thi
+	// nguoi choi khong mac duoc do. Tren BAN DO, chuot phai la danh ep / chon muc tieu.
+	g_DebugLog("[CHAM] giu tai %d,%d -> chuot phai (%s)", m_nChamX0, m_nChamY0,
+		JxUi_CoGiaoDienTaiDiem(m_nChamX0, m_nChamY0) ? "giao dien" : "ban do");
 	m_nCham = CHAM_PHAI;
 	GhiChuot(MK_RBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
 	MsgProc(g_GetMainHWnd(), WM_RBUTTONDOWN, MK_RBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
