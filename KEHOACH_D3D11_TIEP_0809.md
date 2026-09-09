@@ -85,3 +85,20 @@ CoreClient 32da0130 giữ nguyên, bố cục không đổi). Harness: ảnh y h
 chỉ kiểm cơ chế, mắt không thấy khác), `PaintLog=1` sẵn; sau khi đo nên để `PaintFps=-1`. Người dùng màn 120/144 Hz: `PaintFps=-1` hoặc
 `PaintVsync=1`. Cách đọc `[SUM]`: `cach TB` ≈ 8,3 ms ở 120, max không quá ~2 lần TB; `span tick` 56 quanh 48–64 ms.
 Lib: `Lib/release/engine.lib` (+`g_SetLoopInterval`) và `CoreClient.lib` (RAMTINH) đã commit để build Game.exe từ origin/main.
+
+**Nhật ký #3 (18:1x, chủ đã swap 3 `.moi`, chơi ở `PaintFps=120`, màn 59 Hz):** chủ báo "nội suy mượt hơn hẳn". `[SUM]` 25 kỳ: 1.190–1.201
+khung/10 s (đúng 120), khoảng cách 1/8/16 ms (min/TB/max), có kỳ đông người max 27–31 ms; span tick 45–69 ms (bình thường 48–68).
+Nguyên nhân max 16–19: một tick logic 10–25 ms hoặc một lượt vẽ nặng (2.000 đơn vị) chặn luồng chính, khung tới bị trễ rồi vẽ dồn.
+Sửa [NHIP b] (2865f840): trễ > 2 ms thì neo lại mốc, không vẽ dồn; `[SUM]` thêm `ve TB/max` và `tick TB/max` để thấy chi phí một lượt vẽ.
+Giới hạn thật: 120 khung/giây chỉ giữ được khi một lượt vẽ < 8 ms; vẽ nặng nhất đo được (Represent3) 4,7 ms + duyệt cảnh Core → chỗ đông
+~90–100 khung/giây, không hơn; muốn hơn phải cắt CPU vẽ (việc #2 dạng khác: bớt đơn vị vẽ/khung) hoặc tách luồng vẽ (lớn).
+
+**[MAU 08/09] lỗi lộ ra khi vẽ dày: "số mất máu trôi nhanh hơn"** — `KNpc::PaintBlood` giảm `m_nBloodTime` MỖI KHUNG VẼ (bản gốc vẽ = tick
+18/s, số bay 40 tick = 2,2 s); ở 60 fps số bay 0,67 s (nhanh 3,3 lần, từ 15/08 chưa ai để ý), 120 fps 0,33 s. Sửa (2865f840): giảm một lần
+mỗi tick logic (`m_dwBloodTick`, cùng kiểu `m_dwLastDirTick`), độ cao cộng phần lẻ tick `g_nPaintAlpha` (POSSHIFT đặt) để bay mượt. KNpc thêm
+1 DWORD → `CoreClient.dll.moi` e7a8124d + `Game.exe.moi` 49696247 cùng lúc. Đây là bộ đếm theo-khung-vẽ thứ 3 (sau làm mượt hướng và
+alpha bóng mờ 15/08): LUẬT mọi bộ đếm thời gian trong hàm vẽ phải chốt theo `SubWorld[0].m_dwCurrentTime`.
+Chủ cũng báo "nội suy thiếu phần kỹ năng": vị trí ám khí đã nội suy từ 15/08 (`KMissle` prev/tick/draw), khung hình sprite chiêu vẫn
+18/s (dữ liệu chỉ có bấy nhiêu khung); chưa rõ chủ thấy gì (chiêu bay giật nấc / hiệu ứng lệch thân khi chạy / hiệu ứng bám người chạy
+trước / hoạt ảnh giật) → đã hỏi lại.
+Màn hình chủ: RTX 3080, 2560x1440 hỗ trợ 59/60/120/144 Hz (đang 59) → chủ tự đổi trong Settings → Display → Advanced display → 144 Hz.
