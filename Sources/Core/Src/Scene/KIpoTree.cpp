@@ -100,7 +100,28 @@ void KIpoTree::Paint(RECT* pRepresentArea, IPOT_RENDER_LAYER eLayer)
 	// => toan bo RenderLightMap moi khung ve la cong toi: quet 48x96 o, moi nguon sang
 	// ~400 o kem sqrt, ma MOI npc/phi tieu deu la mot nguon ban kinh 320 (KIpoTree.cpp:290).
 	// Dong nguoi x 60 khung/giay = vai tram ms CPU/giay do di. Chi tinh khi shell that su dung.
-	if(eLayer == IPOT_RL_COVER_GROUND && m_bDynamicLighting && g_pRepresent && g_pRepresent->IsRep3D())
+	// [SANG2 08/09] Khoa [Client] DynamicLight LA KHOA CHET tu truoc toi nay: KIpoTree::EnableDynamicLights()
+	// KHONG CO AI GOI (grep ca cay = 0 cho goi) va m_bDynamicLighting khoi tao = true o ham dung, nen dat
+	// DynamicLight=0 trong config.ini khong tat duoc gi - he chieu sang dong VAN LUON CHAY. Nay doc dung khoa do.
+	// Vi sao khoa nay quan trong voi loi "SPR doi mau khi di chuyen": mau ve cua MOI anh trong the gioi bi
+	// NHAN voi gia tri ban do sang tai vi tri no (KRepresentShell3.cpp:1540 color = GetPoint3dLighting(v),
+	// roi shader MODULATE texture voi mau dinh do). Ban do sang duoc dung lai MOI KHUNG VE (RenderLightMap
+	// ngay duoi), moi NPC va moi phi tieu la MOT NGUON SANG ban kinh 320 (KIpoTree.cpp:290), con nen cua ban do
+	// la m_dwAmbient = 0xff101010 = 16 trong khi Represent3 coi 0x404040 = 64 la TRUNG TINH
+	// (GetPoint3dLighting tra 0xff404040 khi tat chieu sang). Nghia la cho khong co ai dung gan chi con 25 %
+	// do sang, va khi chi mot phan anh sang toi thi cac kenh len khong deu => vua toi vua LECH MAU; nguoi/vat
+	// di chuyen thi ban do doi moi khung => mau SPR doi theo. Tat di thi moi diem dung 0xff404040 = mau goc.
+	// DynamicLight = 1 (mac dinh) giu y nguyen nhu hien nay; 0 = tat han, va bo luon chi phi dung ban do sang
+	// moi khung ve (phan nay nang khi dong nguoi).
+	static int s_nDynLight = -1;
+	if (s_nDynLight < 0)
+		s_nDynLight = (int)GetPrivateProfileIntA("Client", "DynamicLight", 1, ".\\config.ini");
+	if (eLayer == IPOT_RL_COVER_GROUND && s_nDynLight == 0 && g_pRepresent && g_pRepresent->IsRep3D())
+	{	// SetLightInfo(..., NULL) dat m_bDoLighting = false mot lan roi giu, khong ai bat lai
+		static bool s_bDaTat = false;
+		if (!s_bDaTat) { g_pRepresent->SetLightInfo(0, 0, NULL); s_bDaTat = true; }
+	}
+	else if(eLayer == IPOT_RL_COVER_GROUND && m_bDynamicLighting && g_pRepresent && g_pRepresent->IsRep3D())
 	{
 		// ‰÷»æπ‚’’Õº
 		RenderLightMap();
