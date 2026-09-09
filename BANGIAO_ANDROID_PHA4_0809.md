@@ -22,7 +22,8 @@ chọn vùng → chọn máy chủ → đăng nhập → chọn nhân vật → 
 | Chuột/chạm (đổi toạ độ theo khung letterbox) | Xong |
 | Mạng: nối máy chủ tài khoản + máy chủ game | Xong (xem §2.3) |
 | Âm thanh miniaudio | Chạy, thiếu thư mục `Music` nên không có nhạc nền |
-| Độ phân giải theo màn hình thiết bị | Xong một phần (xem §3.1 — còn co 6 %) |
+| Độ phân giải theo màn hình thiết bị | **Xong** (09/09 — xem §6.1; hết co 6 %, có hệ số giao diện) |
+| Nhớ mật mã + tự đăng nhập trên điện thoại | **Xong** (09/09 — xem §6.2) |
 
 ---
 
@@ -86,7 +87,7 @@ Cổng Rainbow 6670 đã nghe `0.0.0.0` nên thiết bị ngoài vào được. 
 
 ## 3. ĐANG LỖI / CÒN LÀM
 
-### 3.1. Khung vẽ còn bị co 6 % (chữ chưa sắc tuyệt đối) — **việc tiếp theo quan trọng nhất**
+### 3.1. ~~Khung vẽ còn bị co 6 %~~ — **ĐÃ XONG 09/09, xem §6.1** (giữ lại phần dưới để hiểu quá trình)
 
 Đã làm: `JxSdl_ChotDoPhanGiaiTheoManHinh()` (`KSdlApp.cpp`, gọi trong `KMyApp::GameInit` ngay trước
 `InitRepresentShell`) lấy cỡ cửa sổ thật làm `SCREEN_WIDTH/HEIGHT` + `SetEngineResolution`, và
@@ -115,7 +116,7 @@ Hướng đi cho phiên sau (chưa làm):
 
 Lùi về như cũ: đặt `[Resolution] TheoManHinh=0` trong `config.ini`.
 
-### 3.2. Giao diện cho màn hình điện thoại thật
+### 3.2. ~~Giao diện cho màn hình điện thoại thật~~ — **ĐÃ XONG 09/09, xem §6.1** (hệ số giao diện)
 
 Chủ yêu cầu: *“phải để đúng độ phân giải của mobile để cỡ nào cũng nhìn rõ được hết”*. Trên điện
 thoại thật (ví dụ 2400×1080) vẽ 1:1 sẽ **sắc nhưng chữ/nút rất nhỏ**. Cần một hệ **tỉ lệ giao diện**
@@ -135,6 +136,9 @@ Trên bản arm64 dịch qua houdini sẽ không có tombstone ký hiệu, khó 
 - Nhật ký chẩn đoán còn bật (`#ifdef JX_POSIX`): `[FONT] CreateAFont/BO chu` trong `jx_rep3.log`,
   `[GO] su kien SDL / chu vao / chuot xuong` (có chặn số lần) trong logcat. Khi ổn định thì gỡ.
 - WAuto ngoài **không dùng được trên Android** (không có bộ nhớ chia sẻ liên tiến trình).
+
+
+---
 
 ---
 
@@ -176,3 +180,119 @@ bash android/ldplayer_chay_thu.sh D:/GAMEDEVNEW_wt_mobile/android/apk/jx1mobile-
    Edit/Write.
 4. Không dựng/đo khi đang có trận Tống Kim.
 5. Không đụng cây chạy thật `E:\SourceTuanLe\...\bin`.
+
+---
+
+## 6. (09/09) ĐỘ PHÂN GIẢI CHUẨN CHO ĐIỆN THOẠI + NHỚ MẬT MÃ / TỰ ĐĂNG NHẬP
+
+> Bản vá nguồn: `android/va_nguon_android_9.py`, `_10.py`, `_11.py` (chạy lại vô hại, đọc/ghi latin-1, giữ CRLF).
+> APK đã kiểm: `android/apk/jx1mobile-0909-dpg-login-d.apk`.
+> Hai chuỗi Windows dựng lại **0 lỗi** sau khi vá.
+
+### 6.1. Độ phân giải: hết co 6 %, và có **hệ số giao diện**
+
+**Thủ phạm của mục 3.1 không nằm ở phía Java mà ở Represent3.** `config.ini` để `FullScreen=0` nên
+`CDevGpu::ApplyWindowMode()` gọi `SDL_SetWindowFullscreen(pWin, false)` ngay sau khung hình đầu tiên →
+Android **trả lại thanh trạng thái** → cửa sổ tụt `1040x604` → `1040x568`, backbuffer 604 bị ép xuống 568
+(co 6 %, chữ mờ). Nhật ký cũ chứng minh: `[GPU] cua so: cua so, 1040x568 px (backbuffer 1040x604)`.
+
+Đã sửa (`D3D9onGPUDev.cpp`, rào `JX_ANDROID`): điện thoại **không có chế độ cửa sổ**, `ApplyWindowMode` chỉ
+đọc lại cỡ thật để ghi nhật ký, **không bao giờ đổi chế độ toàn màn hình**. Kết quả:
+`[GPU] cua so: toan man hinh (Android), 1040x604 px (backbuffer 1040x604)` — vẽ 1:1, chữ sắc.
+
+Kèm theo (`JxActivity.java`, mới): `SDLActivity.onCreate()` của SDL gọi `setWindowStyle(false)` (tức là BẬT
+thanh trạng thái, dù theme là `Theme.NoTitleBar.Fullscreen`) nên cửa sổ còn đổi cỡ giữa chừng. Lớp con
+`vn.jx1.mobile.JxActivity` xin **immersive sticky ngay ở `onCreate`** (trước khi bề mặt được tạo) và xin lại
+mỗi lần lấy lại tiêu điểm. `AndroidManifest.xml` và `ldplayer_chay_thu.sh` đã trỏ sang lớp này
+(`am start -n vn.jx1.mobile/vn.jx1.mobile.JxActivity`).
+
+**Hệ số giao diện** (`KSdlApp.cpp` `JxSdl_ChotDoPhanGiaiTheoManHinh`, viết lại): giao diện JX1 là giao diện
+"điểm ảnh cố định" (chữ 12 px, nút ~100 px). Vẽ 1:1 trên 2400×1080 thì sắc nhưng chữ cao ~1,5 mm — không đọc
+nổi; còn vẽ cố định 1024×768 rồi kéo căng thì to nhưng **mờ và méo**. Nên:
+
+> **khung vẽ = cỡ màn hình thật ÷ hệ số giao diện, GIỮ ĐÚNG tỉ lệ khung hình của máy**
+> (nên không viền đen, không méo), rồi Represent3 (`CDevGpu::Letterbox`) phóng lên màn hình và
+> `KSdlApp::SdlToLogical` đổi toạ độ chạm ngược lại.
+
+Hệ số chọn theo nấc 1,00 / 1,25 / 1,50 / 1,75 / 2,00 / 2,50 / 3,00 sao cho **chiều cao khung vẽ** gần
+`ChieuCaoMucTieu` (mặc định 640 px) nhất; luôn hạ hệ số nếu khung vẽ hẹp hơn 800×480.
+
+| Màn hình thiết bị | Hệ số | Khung vẽ | Đã đo |
+|---|---|---|---|
+| 1040×604 (LDPlayer) | 1,00 | 1040×604 (vẽ 1:1) | ✔ ảnh + nhật ký |
+| 2080×1080 (điện thoại) | 1,75 | 1188×616 | ✔ ảnh + nhật ký |
+| 2400×1080 | 1,75 | 1370×616 | (tính) |
+| 2048×1536 (máy tính bảng) | 2,50 | 818×614 | (tính) |
+
+`config.ini` (đã ghi sẵn vào `D:\jx1_android_data\config.ini`):
+
+```ini
+[Resolution]
+TheoManHinh=1        ; 0 = tắt hẳn, dùng Width/Height như bản PC
+ChieuCaoMucTieu=640  ; nhỏ hơn = giao diện TO hơn (mờ hơn); lớn hơn = nét hơn (nhỏ hơn)
+HeSoGiaoDien=0       ; 0 = tự chọn; 100/125/150/175/200/250/300 = ép (hệ số ×100)
+```
+
+**Lỗi sập moi ra được nhờ phép thử này** (`va_nguon_android_11.py`): đặt màn hình máy ảo 2080×1080 → khung vẽ
+1188×616 → **SIGSEGV, fault addr 0x0, trong `KRepresentShell3::Create`**. Gốc: `CD3D_Shell::PickDefaultMode()`
+chỉ trả về chế độ có `Width/Height` **đúng bằng** `g_nScreenWidth/Height`; nhưng khi vẽ trong cửa sổ thì cỡ
+backbuffer đâu bắt buộc phải là một chế độ màn hình → 1188×616 trả NULL → `Create` gọi `D3DTerm()`, mà
+`D3DTerm()` lại làm `PD3DDEVICE->SetGammaRamp(...)` **trong khi thiết bị chưa hề được tạo** → con trỏ NULL.
+Trước đây không lộ vì `Width/Height` trong `config.ini` luôn là độ phân giải chuẩn, có sẵn trong danh sách.
+
+- `PickDefaultMode` (rào `JX_PLATFORM_SDL`): vẽ trong cửa sổ mà không có chế độ khớp → **tự đặt** một bản ghi
+  `D3DModeInfo` đúng bằng cỡ khung vẽ, định dạng lấy của màn hình nền. **Không** lấy bừa một chế độ có sẵn:
+  `CD3D_Device::SetPresentationParams` đặt `BackBufferWidth/Height = pMode->Width/Height` (đã thử, ra
+  backbuffer 640×480 dù khung vẽ là 1188×616).
+- `D3DTerm` (**không rào theo nền tảng** — đây là sửa sập thuần tuý, đường này hiện giờ LUÔN sập): không gọi
+  `SetGammaRamp` khi `PD3DDEVICE` còn NULL. **Chủ soát lại giúp điểm này** nếu muốn mọi thứ đều có rào.
+
+### 6.2. Nhớ mật mã + tự đăng nhập (để tự vào test được)
+
+Máy đã có sẵn cơ chế nhưng bị khoá sau lối tắt của người làm game: ô "Ghi nhớ" chỉ nhớ **tài khoản**; nhớ cả
+mật mã phải bấm **Alt+A** và đặt `Ui\Setting.ini [Main] AutoLogin=6323` — điện thoại không có phím Alt.
+
+| Sửa | Ở đâu | Nội dung |
+|---|---|---|
+| Ô "Ghi nhớ" = nhớ cả mật mã | `UiLogin.cpp::CloseWindow` | Android: bấm "Ghi nhớ" thì `SetRememberAllFlag(true)`. Thứ ghi xuống đĩa **không phải mật mã chữ thường** mà là **bản băm MD5** (`OnLogin` băm trước khi gọi `AccountLogin`), lại được `EDOneTimePad_Encipher`. |
+| Lưu ngay, không đợi lúc thoát | `Login.cpp::SelectRole` | Android hay bị hệ thống giết / người chơi vuốt tắt app nên `SaveLoginChoice` ở `UiExit` rất hay không chạy. Chọn nhân vật xong là đủ cả ba thứ → lưu ngay. |
+| **Tên nhân vật phải nằm ở tệp CHUNG** | `Login.cpp::Load/SaveLoginChoice` | `IsAutoLoginEnable()` đòi cả tên nhân vật, mà tên đó vốn nằm trong `UserData\<mã>\UiConfig.ini` với `<mã> = băm(tài khoản)+băm(TÊN NHÂN VẬT)` → **muốn mở tệp thì phải biết trước thứ nằm trong tệp**. Trên PC không sao vì Alt+A chỉ dùng sau khi đã đăng nhập một lần trong cùng lần chạy. Nay chép thêm một bản vào `UserData\UiCommon.ini [Login] LastCharacter`. |
+| Tự đăng nhập | `UiInit.cpp` `JxUi_TuDangNhapAndroid()`, gọi từ `UiShell.cpp UiHeartBeat` | Đã nhớ đủ tài khoản + mật mã + nhân vật thì vào thẳng game. Gọi từ **nhịp vòng lặp**, KHÔNG gọi từ `ShowCompleted`/`WndProc` của chính `KUiInit` (ở đó mới được phép đóng cửa sổ đang hiện) — giống hệt `KMyApp::ExtAutoLogin` của WAuto. **Chỉ thử một lần mỗi lần chạy** nên đăng xuất về màn hình chính sẽ không bị vòng lặp. Tắt: bỏ dấu "Ghi nhớ", hoặc `config.ini [Login] TuDongDangNhap=0`. |
+
+Đã đo (LDPlayer, tài khoản `hinod1`): chủ gõ mật mã **một lần** với ô "Ghi nhớ" → `UserData\UiCommon.ini` có đủ
+`LastAccount` / `LastPassword` / `LastCharacter` → các lần mở app sau đều
+`[LOGIN] da nho du dang nhap -> vao thang game`, từ màn hình chính **vào thẳng bản đồ, không chạm cái nào**.
+
+### 6.3. Cách tự lái máy ảo để test (không cần chủ ngồi cạnh)
+
+`adb` bắn được cả chạm lẫn **chữ** vào cửa sổ SDL — đã kiểm:
+
+```bash
+ADB=C:/Users/nguye/AppData/Local/Android/Sdk/platform-tools/adb.exe
+"$ADB" -s emulator-5554 shell am force-stop vn.jx1.mobile; sleep 4   # sleep 2 LÀ ÍT: am start bắt lại tiến trình đang chết
+"$ADB" -s emulator-5554 shell am start -n vn.jx1.mobile/vn.jx1.mobile.JxActivity
+"$ADB" -s emulator-5554 shell input tap 408 148        # toạ độ MÀN HÌNH; engine tự đổi về khung vẽ
+"$ADB" -s emulator-5554 shell input text "matma"       # gõ vào ô đang có tiêu điểm
+"$ADB" -s emulator-5554 exec-out screencap -p > shot.png
+"$ADB" -s emulator-5554 logcat -d | grep -a "DPG]\|LOGIN]"
+```
+
+> **Bẫy đã mất 20 phút:** `am force-stop` rồi `sleep 2` rồi `am start` thì Android bắt lại **tiến trình cũ
+> đang chết**, app không khởi động lại mà chỉ hiện lên — nhìn cứ như game "tự đăng nhập được từ đầu".
+> Phải `sleep 4` và kiểm `pidof vn.jx1.mobile` trước/sau.
+
+Đổi cỡ màn hình máy ảo để thử độ phân giải khác: `adb shell wm size 2400x1080` + `wm density 440`, xong nhớ
+`wm size reset` / `wm density reset`. LDPlayer kẹp bề ngang: xin 2400 thì được 2080.
+
+Nhật ký của hai phần này: `adb logcat` (`SDL/APP`), lọc `[DPG]` (độ phân giải) và `[LOGIN]` (tự đăng nhập);
+cỡ backbuffer/cửa sổ nằm ở `D:\jx1_android_data\jx_rep3.log` (`[GPU] cua so:`).
+
+### 6.4. Còn lại
+
+- Ảnh nền màn hình chính / đăng nhập là ảnh **4:3**, trên khung 16:9–20:9 chỉ phủ hết chiều cao rồi neo trái,
+  chừa một dải đen bên phải (thấy rõ ở ảnh chụp 1040×604). Không phải lỗi độ phân giải — là chuyện tranh nền;
+  muốn kín thì kéo giãn hoặc làm ảnh nền rộng.
+- Chưa thử trên **điện thoại thật** (mới LDPlayer x86_64); bản arm64-v8a có trong APK nhưng chưa ai chạy.
+- `ChieuCaoMucTieu=640` là con số chọn theo lý (giữa 604 đã chạy tốt và 768 gốc), **chưa ai cầm điện thoại
+  thật soi**. Đây là con số duy nhất cần chỉnh nếu chủ thấy chữ to/nhỏ quá.
+- Chưa gỡ nhật ký chẩn đoán `[DPG]`/`[LOGIN]` (rẻ, mỗi lần chạy vài dòng) — gỡ khi phát hành.

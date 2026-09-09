@@ -387,6 +387,9 @@ int UiHeartBeat()
 		{
 			IR_UpdateTime();
 			Wnd_Heartbeat();
+#ifdef JX_ANDROID
+			JxUi_TuDangNhapAndroid();	// [ANDROID 09/09 LOGIN] da nho dang nhap thi vao thang, khong dung o man hinh chinh
+#endif
 		}
 		else
 		{

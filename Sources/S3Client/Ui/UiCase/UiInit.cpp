@@ -22,6 +22,9 @@
 #endif
 #include "../UiSoundSetting.h"
 #include "UiNotice.h"
+#ifdef JX_ANDROID
+#include "KDebug.h"		// [ANDROID 09/09 LOGIN] g_DebugLog cho JxUi_TuDangNhapAndroid()
+#endif
 
 extern KMusic*		g_pMusic;
 
@@ -313,6 +316,42 @@ void KUiInit::OnClickButton(KWndButton* pWnd)
 		UiPostQuitMsg();
 	}
 }
+
+#ifdef JX_ANDROID
+// [ANDROID 09/09 LOGIN] TU DANG NHAP TREN DIEN THOAI.
+// Ban PC: chi chay khi bam Alt+A VA Ui\Setting.ini [Main] AutoLogin=6323 (loi tat cua nguoi lam game).
+// Dien thoai: khong co phim Alt, va nguoi choi da chu dong bam "Ghi nho" o man dang nhap roi -> cu nho du
+// tai khoan + mat ma + nhan vat thi vao thang, khong bat go lai bang ban phim mem.
+// Muon tat: bo dau "Ghi nho" o man dang nhap, hoac dat config.ini [Login] TuDongDangNhap=0.
+//
+// Goi tu UiHeartBeat (nhip cua vong lap game), KHONG goi tu ShowCompleted/WndProc cua chinh KUiInit:
+// o day duoc phep dong cua so dang hien va mo cua so khac, giong het KMyApp::ExtAutoLogin cua WAuto.
+// CHI THU MOT LAN moi lan chay: dang xuat ve man hinh chinh thi khong tu dang nhap lai (tranh vong lap).
+void JxUi_TuDangNhapAndroid()
+{
+	static bool s_bDaThu = false;
+	if (s_bDaThu)
+		return;
+	if (!KUiInit::GetIfVisible())	// chi lam khi man hinh chinh dang hien (da nap xong giao dien)
+		return;
+	s_bDaThu = true;
+	char szCfg[MAX_PATH] = { 0 };
+	GetCurrentDirectory(MAX_PATH, szCfg);
+	strcat(szCfg, "\\Config.ini");
+	if (!GetPrivateProfileInt("Login", "TuDongDangNhap", 1, szCfg))
+		return;
+	g_LoginLogic.LoadLoginChoice();
+	if (!g_LoginLogic.IsAutoLoginEnable())
+	{
+		g_DebugLog("[LOGIN] chua nho du tai khoan/mat ma/nhan vat -> vao man hinh chinh nhu thuong");
+		return;
+	}
+	g_DebugLog("[LOGIN] da nho du dang nhap -> vao thang game");
+	KUiInit::CloseWindow();
+	KUiConnectInfo::OpenWindow(CI_MI_CONNECTING, LL_S_IN_GAME);
+	g_LoginLogic.AutoLogin();
+}
+#endif
 
 void KUiInit::OnAutoLogin()
 {

@@ -174,6 +174,13 @@ int	KLogin::SelectRole(int nIndex)
 		m_Status = LL_S_WAIT_TO_LOGIN_GAMESERVER;
 		m_Result = LL_R_NOTHING;
 		nRet = true;
+#ifdef JX_ANDROID
+		// [ANDROID 09/09 LOGIN] Luu NGAY chu khong doi luc thoat (UiShell.cpp UiExit): tren dien thoai nguoi choi
+		// vuot tat app hoac he thong giet tien trinh nen SaveLoginChoice luc thoat rat hay khong duoc chay, the la
+		// lan sau van phai go lai tu dau. Day cung la luc dau tien du CA BA thu de tu dang nhap:
+		// tai khoan + mat ma (da bam MD5) + ten nhan vat.
+		SaveLoginChoice();
+#endif
 	}
 	else
 	{
@@ -734,6 +741,18 @@ void KLogin::LoadLoginChoice()
 				}
 			}
 			g_UiBase.ClosePrivateSettingFile(false);
+#ifdef JX_ANDROID
+			// [ANDROID 09/09 LOGIN] Tep rieng (UserData\<ma>\UiConfig.ini) chi mo duoc khi DA biet ten nhan vat
+			// (vi <ma> = bam(tai khoan) + bam(ten nhan vat)) nen luc moi mo app no luon rong. Lay ban sao ten
+			// nhan vat da chep o tep chung -> du ca 4 thu cho IsAutoLoginEnable() ngay tu man hinh chinh.
+			if (m_Choices.szProcessingRoleName[0] == 0 &&
+				pSetting->GetString($LOGIN, "LastCharacter", "",
+					m_Choices.szProcessingRoleName, sizeof(m_Choices.szProcessingRoleName)) &&
+				m_Choices.szProcessingRoleName[0])
+			{
+				EDOneTimePad_Decipher(m_Choices.szProcessingRoleName, strlen(m_Choices.szProcessingRoleName));
+			}
+#endif
 		}
 
 		g_UiBase.CloseCommSettingFile(false);
@@ -777,6 +796,20 @@ void KLogin::SaveLoginChoice()
 				pSetting->WriteStruct($LOGIN, $LAST_PASSWORD, Password.szPassword, sizeof(Password.szPassword));
 			}
 
+#ifdef JX_ANDROID
+			// [ANDROID 09/09 LOGIN] chep them ten nhan vat vao tep chung (xem giai thich o LoadLoginChoice).
+			// Luu y: luc SelectRole goi SaveLoginChoice thi KUiBase::m_UserAccountId con RONG (no chi duoc dat
+			// sau khi may chu tra loi vao game), nen doan ghi "tep rieng" ben duoi khong chay - ban sao nay
+			// moi la cai thuc su giu duoc ten nhan vat qua cac lan mo app.
+			if (m_Choices.szProcessingRoleName[0])
+			{
+				i = strlen(m_Choices.szProcessingRoleName);
+				memcpy(szBuffer, m_Choices.szProcessingRoleName, i);
+				szBuffer[i] = 0;
+				EDOneTimePad_Encipher(szBuffer, i);
+				pSetting->WriteString($LOGIN, "LastCharacter", szBuffer);
+			}
+#endif
 			KIniFile*	pPrivate = g_UiBase.GetPrivateSettingFile();
 			if (pPrivate)
 			{

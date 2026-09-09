@@ -32,7 +32,7 @@ echo "=== /mnt/shared/Misc:"; "$ADB" -s $D shell "ls /mnt/shared/Misc | head; ls
 echo "=== cai APK: $APK"; "$ADB" -s $D install -r "$APK" 2>&1 | tail -1
 "$ADB" -s $D shell "rm -f /mnt/shared/Misc/jx_android.log /mnt/shared/Misc/jx_rep3.log /mnt/shared/Misc/jx_crash.log" 2>/dev/null
 "$ADB" -s $D logcat -c
-echo "=== mo app"; "$ADB" -s $D shell am start -n vn.jx1.mobile/org.libsdl.app.SDLActivity 2>&1 | tail -1
+echo "=== mo app"; "$ADB" -s $D shell am start -n vn.jx1.mobile/vn.jx1.mobile.JxActivity 2>&1 | tail -1
 sleep "$CHO"
 "$ADB" -s $D exec-out screencap -p > "$OUT/shot1.png" 2>/dev/null; ls -la "$OUT/shot1.png" | awk '{print "shot1", $5}'
 echo "=== tien trinh:"; "$ADB" -s $D shell "ps -A | grep jx1" | head -2

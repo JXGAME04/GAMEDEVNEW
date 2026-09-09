@@ -112,7 +112,16 @@ void KUiLogin::CloseWindow(bool bDestroy)
 {
 	if (m_pSelf)
 	{
-		g_LoginLogic.SetRememberAccountFlag(m_pSelf->m_RememberAccount.IsButtonChecked() != 0);
+		bool bGhiNho = (m_pSelf->m_RememberAccount.IsButtonChecked() != 0);
+		g_LoginLogic.SetRememberAccountFlag(bGhiNho);
+#ifdef JX_ANDROID
+		// [ANDROID 09/09 LOGIN] Tren dien thoai o "Ghi nho" = nho CA mat ma, nhu moi game mobile: bat go lai
+		// mat ma bang ban phim mem moi lan vao game la cuc hinh. Cai luu xuong dia KHONG phai mat ma chu thuong
+		// ma la ban bam MD5 (KUiLogin::OnLogin da bam truoc khi goi AccountLogin), lai duoc EDOneTimePad_Encipher.
+		// Ban PC khong doi: o do "Ghi nho" van chi nho tai khoan (nho ca mat ma phai Alt+A + AutoLogin=6323).
+		if (bGhiNho)
+			g_LoginLogic.SetRememberAllFlag(true);
+#endif
 		if (bDestroy)
 		{
 			m_pSelf->Destroy();

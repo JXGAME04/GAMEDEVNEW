@@ -289,6 +289,26 @@ D3DModeInfo* CD3D_Shell::PickDefaultMode(D3DDeviceInfo* pDeviceInfo,uint32 iBitD
 
 		return &(*itMode);
 	}
+#ifdef JX_PLATFORM_SDL
+	// [ANDROID 09/09 DPG] Ve trong CUA SO thi co khung ve (backbuffer) khong bat buoc phai la mot che do man
+	// hinh: tren dien thoai khung ve duoc tinh theo he so giao dien (vi du 1188x616) nen chac chan khong co
+	// trong danh sach che do. Vong tren tra NULL thi KRepresentShell3::Create goi D3DTerm() luc THIET BI CHUA
+	// TAO -> sap. Khi ve trong cua so, che do chi dung de lay DINH DANG diem anh -> lay che do man hinh nen.
+	if (g_bRunWindowed)
+	{
+		// KHONG lay bua mot che do trong danh sach: CD3D_Device::SetPresentationParams dat
+		// BackBufferWidth/Height = pMode->Width/Height, lay bua se ra backbuffer sai (640x480).
+		// Tu dat mot ban ghi che do dung bang co khung ve, dinh dang theo man hinh nen.
+		static D3DModeInfo s_TuDat;
+		s_TuDat.Width  = (uint32)g_nScreenWidth;
+		s_TuDat.Height = (uint32)g_nScreenHeight;
+		s_TuDat.Format = m_DesktopFormat.Format;
+		s_TuDat.bHWTnL = true;
+		g_DebugLog("[D3DRender] khung ve %dx%d khong co trong danh sach che do -> tu dat che do cua so %dx%d",
+			g_nScreenWidth, g_nScreenHeight, (int)s_TuDat.Width, (int)s_TuDat.Height);
+		return &s_TuDat;
+	}
+#endif
 	return NULL;
 }
 

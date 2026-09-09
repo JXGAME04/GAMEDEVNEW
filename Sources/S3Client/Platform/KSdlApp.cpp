@@ -133,10 +133,34 @@ KSdlApp::KSdlApp()
 }
 
 #ifdef JX_ANDROID
-// [ANDROID 08/09] Do phan giai game = DUNG co cua so that cua thiet bi => ve 1:1, chu net o moi may.
+// [ANDROID 09/09 DPG] DO PHAN GIAI CHUAN CHO DIEN THOAI.
+//
+// Giao dien JX1 la giao dien "diem anh co dinh": chu 12 px, nut ~100 px, thanh ky nang ~500 px.
+// Nen co hai cach SAI va mot cach DUNG:
+//   SAI 1 - ve co dinh 1024x768 roi keo cang len man hinh: chu to nhung MO va MEO (dien thoai 20:9,
+//           khong phai 4:3). Day la trang thai truoc pha nay.
+//   SAI 2 - ve dung 1:1 theo diem anh that (2400x1080): sac tuyet doi nhung chu chi cao ~1,5 mm,
+//           khong ai doc noi tren man 6,5 inch.
+//   DUNG  - ve o KHUNG NHO HON theo mot HE SO GIAO DIEN, GIU DUNG TI LE khung hinh cua may
+//           (nen khong co vien den, khong meo), roi de Represent3 phong len man hinh.
+//
+// He so duoc chon sao cho chieu cao khung ve roi vao quanh CHIEU CAO MUC TIEU (mac dinh 640 px: giua
+// 604 px da chay tot tren LDPlayer va 768 px goc cua game). Vi du:
+//     1040x604  (LDPlayer)      -> he so 1,00 -> khung ve 1040x604  (ve 1:1, net tuyet doi)
+//     2400x1080 (dien thoai)    -> he so 1,75 -> khung ve 1370x616  (chu to gap 1,75 lan so voi ve 1:1)
+//     1920x1080                 -> he so 1,75 -> khung ve 1096x616
+//     2048x1536 (may tinh bang) -> he so 2,50 -> khung ve  818x614
+//
+// Represent3 (CDevGpu::Letterbox) tu phong khung ve len swapchain va KSdlApp::SdlToLogical doi toa do cham
+// nguoc lai -> khong cho nao khac trong game phai biet den chuyen nay.
+//
 // Goi TRE, ngay truoc khi tao thiet bi ve (KMyApp::GameInit): luc KSdlApp::Init vua tao cua so thi Android
-// chua dan trang xong (bao 1040x604) roi thanh trang thai hien lai (con 1040x568) -> chot som se bi co.
-// Lui ve nhu cu: dat [Resolution] TheoManHinh=0 trong config.ini.
+// chua dan trang xong.
+//
+// config.ini:
+//   [Resolution] TheoManHinh=1       ; 0 = tat han, dung Width/Height nhu ban PC
+//                ChieuCaoMucTieu=640 ; nho hon = giao dien TO hon (mo hon); lon hon = net hon (nho hon)
+//                HeSoGiaoDien=0      ; 0 = tu chon theo muc tieu; 100/125/150/175/200/250/300 = ep (he so x100)
 extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void)
 {
 	SDL_Window* pWin = (SDL_Window*)JxPosix_MainWindow();
@@ -147,10 +171,8 @@ extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void)
 	strcat(szCfg, "\\Config.ini");
 	if (!GetPrivateProfileInt("Resolution", "TheoManHinh", 1, szCfg))
 		return;
-	// Xin toan man hinh o DAY (khong phai luc tao cua so): Android chi an duoc thanh he thong khi be mat da co.
-	// Roi doi co cua so DUNG YEN moi chot - Android con doi co vai tram ms sau khi doi che do.
+	// Doi co cua so DUNG YEN moi chot (Android tra co that sau khi dan trang xong: tai tho, thanh dieu huong...).
 	// KHONG doi che do toan man hinh o day: tren Android doi che do = Activity bi tao lai -> game khoi dong vong lap.
-	// Chi doi co cua so dung yen roi chot (Android tra co that sau khi bo cuc xong).
 	int nW = 0, nH = 0, nWTruoc = -1, nHTruoc = -1, nYen = 0;
 	for (int nLan = 0; nLan < 150; nLan++)
 	{
@@ -160,20 +182,44 @@ extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void)
 		if (nW == nWTruoc && nH == nHTruoc) { if (++nYen >= 25 && nLan >= 40) break; }
 		else { nYen = 0; nWTruoc = nW; nHTruoc = nH; }
 	}
+	if (nW < 640 || nH < 360)
+	{
+		g_DebugLog("[DPG] cua so %dx%d qua nho, giu %dx%d cua config.ini", nW, nH, SCREEN_WIDTH, SCREEN_HEIGHT);
+		return;
+	}
+	int nMucTieu = GetPrivateProfileInt("Resolution", "ChieuCaoMucTieu", 640, szCfg);
+	if (nMucTieu < 400) nMucTieu = 400;
+	if (nMucTieu > 1200) nMucTieu = 1200;
+	int nHeSo = GetPrivateProfileInt("Resolution", "HeSoGiaoDien", 0, szCfg);	// x100
+	if (nHeSo <= 0)
+	{
+		// Chi lay cac nac "chan" cho phep phong it rang cua nhat: 1,00 1,25 1,50 1,75 2,00 2,50 3,00.
+		// Hoa thi giu nac NHO hon (khung ve to hon = net hon) vi vong lap chi doi khi lech NHO HON HAN.
+		static const int aNac[] = { 100, 125, 150, 175, 200, 250, 300 };
+		int nChon = 100, nLechTotNhat = -1;
+		for (int i = 0; i < (int)(sizeof(aNac) / sizeof(aNac[0])); i++)
+		{
+			int nCao = nH * 100 / aNac[i];
+			int nLech = (nCao > nMucTieu) ? (nCao - nMucTieu) : (nMucTieu - nCao);
+			if (nLechTotNhat < 0 || nLech < nLechTotNhat) { nLechTotNhat = nLech; nChon = aNac[i]; }
+		}
+		nHeSo = nChon;
+	}
+	if (nHeSo < 100) nHeSo = 100;	// khong bao gio ve LON hon man hinh: ton bo nho ma khong net them
+	if (nHeSo > 400) nHeSo = 400;
+	// Giao dien JX1 can it nhat 800x480 moi bay du (thanh ky nang, tui do, cua so chat) -> ha he so cho du cho.
+	while (nHeSo > 100 && (nW * 100 / nHeSo < 800 || nH * 100 / nHeSo < 480))
+		nHeSo -= 25;
+	int nVeW = (nW * 100 / nHeSo) & ~1;
+	int nVeH = (nH * 100 / nHeSo) & ~1;
 	{
 		SDL_Rect rcCa = { 0, 0, 0, 0 };
 		SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &rcCa);
-		g_DebugLog("[SDL] man hinh %dx%d, cua so ve %dx%d", rcCa.w, rcCa.h, nW, nH);
+		g_DebugLog("[DPG] man hinh %dx%d | cua so %dx%d px | cao muc tieu %d -> he so %d,%02d -> khung ve %dx%d",
+			rcCa.w, rcCa.h, nW, nH, nMucTieu, nHeSo / 100, nHeSo % 100, nVeW, nVeH);
 	}
-	if (nW < 640 || nH < 480)
-	{
-		g_DebugLog("[SDL] cua so %dx%d qua nho, giu %dx%d cua config.ini", nW, nH, SCREEN_WIDTH, SCREEN_HEIGHT);
-		return;
-	}
-	if (nW != SCREEN_WIDTH || nH != SCREEN_HEIGHT)
-		g_DebugLog("[SDL] do phan giai theo man hinh: %dx%d -> %dx%d (ve 1:1)", SCREEN_WIDTH, SCREEN_HEIGHT, nW, nH);
-	SCREEN_WIDTH = nW; SCREEN_HEIGHT = nH;
-	SetEngineResolution(nW, nH);
+	SCREEN_WIDTH = nVeW; SCREEN_HEIGHT = nVeH;
+	SetEngineResolution(nVeW, nVeH);
 	g_nDoPhanGiaiTheoManHinh = 1;	// S3Client.cpp: chan LoadResolutionFromConfig doc lai config.ini
 }
 #endif

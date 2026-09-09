@@ -44,4 +44,8 @@ private:
 	int			m_nCurrentMovieIndex;		
 };
 
+#ifdef JX_ANDROID
+void JxUi_TuDangNhapAndroid();	// [ANDROID 09/09 LOGIN] UiInit.cpp - goi moi nhip tu UiHeartBeat
+#endif
+
 #endif // __UIINIT_H__

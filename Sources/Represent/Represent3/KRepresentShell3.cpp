@@ -2797,6 +2797,9 @@ void KRepresentShell3::D3DTerm()
 {
 	g_Device.ReleaseDevObjects();
 
+	// [09/09] D3DTerm con duoc goi tren duong LOI cua Create() (khong tim duoc card / che do man hinh),
+	// luc do chua tao duoc thiet bi nen PD3DDEVICE la NULL -> dong duoi day sap thay vi bao loi tu te.
+	if (PD3DDEVICE)
 	PD3DDEVICE->SetGammaRamp(0, D3DSGR_CALIBRATE, &m_ramp);
 	g_Device.FreeAll(); 					// Free the Device...
 	g_D3DShell.FreeAll();					// Free the Shell...

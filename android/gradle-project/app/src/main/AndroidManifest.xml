@@ -23,7 +23,7 @@
         <!-- SDL_ENV.*: bien moi truong cho SDL. JX_DATA_DIR co the dat o day de doi thu muc du lieu -->
         <meta-data android:name="SDL_ENV.SDL_ANDROID_TRAP_BACK_BUTTON" android:value="1"/>
 
-        <activity android:name="org.libsdl.app.SDLActivity"
+        <activity android:name="vn.jx1.mobile.JxActivity"
             android:label="@string/app_name"
             android:alwaysRetainTaskState="true"
             android:launchMode="singleInstance"

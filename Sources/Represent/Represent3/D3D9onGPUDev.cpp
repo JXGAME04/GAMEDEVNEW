@@ -226,6 +226,16 @@ bool CDevGpu::Init()
 // [GPU 08/09 khung ao] toan man hinh (desktop, khong doi che do) theo pp.Windowed; cua so theo backbuffer. Swapchain khac backbuffer -> letterbox.
 void CDevGpu::ApplyWindowMode()
 {
+#ifdef JX_ANDROID
+	// [ANDROID 09/09 DPG] Dien thoai KHONG co che do cua so: cua so da toan man hinh tu KSdlApp::Init.
+	// Vi config.ini de FullScreen=0 nen ham nay tung goi SDL_SetWindowFullscreen(false), lam Android HIEN LAI
+	// thanh trang thai ngay sau khung dau tien: cua so tut 1040x604 -> 1040x568, khung ve 604 bi ep xuong 568
+	// (co 6 %, chu mo). Do la muc 3.1 "con lam" cua BANGIAO_ANDROID_PHA4_0809.md.
+	// (Ghi chep pha 4 con canh: goi ham nay voi false sau khi be mat da co con co the lam Activity tao lai.)
+	int pwA = 0, phA = 0; SDL_GetWindowSizeInPixels(m_pWin, &pwA, &phA);
+	RgLog("cua so: toan man hinh (Android), %dx%d px (backbuffer %ux%u)", pwA, phA, m_bbW, m_bbH);
+	return;
+#else
 	const bool bFull = (m_pp.Windowed == FALSE);
 	if (!SDL_SetWindowFullscreen(m_pWin, bFull)) RgLog("SetWindowFullscreen(%d) that bai: %s", (int)bFull, SDL_GetError());
 	if (!bFull)
@@ -240,6 +250,7 @@ void CDevGpu::ApplyWindowMode()
 	SDL_SyncWindow(m_pWin);
 	int pw = 0, ph = 0; SDL_GetWindowSizeInPixels(m_pWin, &pw, &ph);
 	RgLog("cua so: %s, %dx%d px (backbuffer %ux%u)", bFull ? "toan man hinh" : "cua so", pw, ph, m_bbW, m_bbH);
+#endif
 }
 
 void CDevGpu::Letterbox(UINT swW, UINT swH, float* pScale, float* pOffX, float* pOffY)
