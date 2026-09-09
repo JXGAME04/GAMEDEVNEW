@@ -8,6 +8,7 @@
 #include "Wnds.h"
 #include "UiToaDo.h"
 #include "../../../Represent/iRepresent/iRepresentShell.h"
+#include "../../../Represent/iRepresent/KRepresentUnit.h"
 
 #include <typeinfo>
 #include <stdio.h>
@@ -67,6 +68,62 @@ static int			s_nSoDongBang	= 0;
 static char			s_szThongBao[192] = "";
 static unsigned int	s_uHetThongBao	= 0;
 
+
+//--------------------------------------------------------------------------
+//	[UITOADO 09/09] Thanh nut cham
+//
+//	Dien thoai khong co lan chuot / chuot phai / chuot giua / ban phim, ma ba
+//	thu do lai chinh la duong duy nhat de to nho, doi ca khoi, an va luu.
+//	Thanh nut nay lam duong THU HAI cho ca bon viec ay, chi can bam trai.
+//	Moi phim chuot cu van giu nguyen cho ban PC.
+//--------------------------------------------------------------------------
+#define	UITOADO_NUT_CAO		34
+#define	UITOADO_NUT_Y		4
+#define	UITOADO_NUT_CACH	2
+#define	UITOADO_MO_RONG		92		// nut "mo che do sua" luc chua sua
+#define	UITOADO_MO_CAO		30
+
+//	Cong cu dang chon: quyet dinh cham / keo vao mot o thi lam gi
+enum
+{
+	CONGCU_DOI = 0,		// keo = doi cho MOT o   (= keo trai cu)
+	CONGCU_KHOI,		// keo = doi cho CA KHOI (= keo phai cu)
+	CONGCU_TO,			// cham = to them mot nac (= lan chuot len)
+	CONGCU_NHO,			// cham = nho di mot nac  (= lan chuot xuong)
+	CONGCU_AN,			// cham = an / hien lai   (= bam chuot giua)
+	CONGCU_SO
+};
+
+//	Ma lenh cua nut khong phai cong cu
+#define	NUT_BANG		100		// bat / tat bang danh sach cua so
+#define	NUT_LUU			101		// luu va thoat (= Ctrl+U)
+#define	NUT_XOAHET		102		// xoa het (= Ctrl+K)
+#define	UITOADO_SO_NUT	8
+
+static const struct
+{
+	const char*	pszTen;
+	int			nMa;
+} s_Nut[UITOADO_SO_NUT] =
+{
+	{ "Dêi «",	CONGCU_DOI },
+	{ "Dêi khèi",	CONGCU_KHOI },
+	{ "To h¬n",		CONGCU_TO },
+	{ "Nhá l¹i",	CONGCU_NHO },
+	{ "GiÊu/hiÖn",	CONGCU_AN },
+	{ "Danh s¸ch",	NUT_BANG },
+	{ "L­u",		NUT_LUU },
+	{ "Xo¸ hÕt",	NUT_XOAHET },
+};
+
+static int			s_nCongCu		= CONGCU_DOI;
+static bool			s_bDaDocViTriNut = false;
+static int			s_nMoX			= -1;	// -1 = tu tinh (mep phai, giua man hinh)
+static int			s_nMoY			= -1;
+
+extern int SCREEN_WIDTH;		// S3Client.cpp / KSdlApp.cpp: co khung ve that
+extern int SCREEN_HEIGHT;
+
 static void DatThongBao(const char* pszChu);
 
 //--------------------------------------------------------------------------
@@ -122,7 +179,14 @@ static void LayTenLop(KWndWindow* pWnd, char* pszRa, int nCo)
 	const char*	p		= strrchr(pszTen, ' ');
 
 	if (p)
-		pszTen = p + 1;
+		pszTen = p + 1;				// MSVC: "class KUiFoo" -> "KUiFoo"
+
+	//	[UITOADO 09/09 C] GCC / Itanium ABI (Android) tra ten MA HOA dang
+	//	<do dai><ten>, vi du "16KUiMailManager" - khong co dau cach de cat.
+	//	Bo cac chu so dau thi khoa luu giong het ban PC, nho vay tep
+	//	UserData\UiToaDo.ini dung chung duoc cho ca hai ban.
+	while (*pszTen >= '0' && *pszTen <= '9')
+		pszTen++;
 	strncpy(pszRa, pszTen, nCo - 1);
 	pszRa[nCo - 1] = 0;
 }
@@ -606,16 +670,187 @@ static bool TrongBang(int x, int y)
 }
 
 //--------------------------------------------------------------------------
+//	[UITOADO 09/09] Thanh nut cham - hinh hoc, do trung, ve
+//--------------------------------------------------------------------------
+//	Khoi mau dac. Dung KRUShadow y nhu JxCanDieuKhien.cpp - o day khong co san
+//	nguyen thuy ve hinh nao khac ngoai OutputText.
+static void OKhoi(int x0, int y0, int x1, int y1, unsigned int uMau)
+{
+	KRUShadow o;
+
+	if (g_pRepresentShell == NULL)
+		return;
+	o.oPosition.nX = x0;
+	o.oPosition.nY = y0;
+	o.oEndPos.nX   = x1;
+	o.oEndPos.nY   = y1;
+	o.Color.Color_dw = uMau;
+	g_pRepresentShell->DrawPrimitives(1, &o, RU_T_SHADOW, true);
+}
+
+//	Be rong mot nut: chia deu ca hang theo be ngang man hinh, co chan tren duoi
+//	de man hinh rat hep van bam duoc, man hinh rong khong bi nut dai ngoang.
+static int NutRong()
+{
+	int nRong = (SCREEN_WIDTH > 0 ? SCREEN_WIDTH : 1024);
+
+	nRong = (nRong - 2 * UITOADO_NUT_CACH) / UITOADO_SO_NUT - UITOADO_NUT_CACH;
+	if (nRong < 56)		nRong = 56;
+	if (nRong > 124)	nRong = 124;
+	return nRong;
+}
+
+static void NutHinh(int i, int* px, int* py, int* pw, int* ph)
+{
+	int nRong = NutRong();
+
+	*pw = nRong;
+	*ph = UITOADO_NUT_CAO;
+	*px = UITOADO_NUT_CACH + i * (nRong + UITOADO_NUT_CACH);
+	*py = UITOADO_NUT_Y;
+}
+
+//	-1 = khong trung nut nao
+static int NutTrung(int x, int y)
+{
+	int i, nX, nY, nW, nH;
+
+	for (i = 0; i < UITOADO_SO_NUT; i++)
+	{
+		NutHinh(i, &nX, &nY, &nW, &nH);
+		if (x >= nX && x < nX + nW && y >= nY && y < nY + nH)
+			return i;
+	}
+	return -1;
+}
+
+//	Nut "mo che do sua" - chi co khi config cho phep va dang khong sua.
+//	Vi tri lay tu config.ini [Ui] SuaToaDoNutX / SuaToaDoNutY, de chu doi cho
+//	neu no che mat thu gi tren man hinh cua minh.
+static void NutMoHinh(int* px, int* py, int* pw, int* ph)
+{
+	if (s_bDaDocViTriNut == false)
+	{
+		char szDuongDan[MAX_PATH];
+
+		s_bDaDocViTriNut = true;
+		g_GetFullPath(szDuongDan, (char*)UITOADO_CAUHINH);
+		s_nMoX = GetPrivateProfileInt("Ui", "SuaToaDoNutX", -1, szDuongDan);
+		s_nMoY = GetPrivateProfileInt("Ui", "SuaToaDoNutY", -1, szDuongDan);
+	}
+	*pw = UITOADO_MO_RONG;
+	*ph = UITOADO_MO_CAO;
+	*px = (s_nMoX >= 0) ? s_nMoX
+		: (SCREEN_WIDTH > 0 ? SCREEN_WIDTH : 1024) - UITOADO_MO_RONG - 6;
+	*py = (s_nMoY >= 0) ? s_nMoY
+		: (SCREEN_HEIGHT > 0 ? SCREEN_HEIGHT : 768) / 2;
+}
+
+static bool TrongNutMo(int x, int y)
+{
+	int nX, nY, nW, nH;
+
+	if (s_bDangSua || UiToaDo_ChoPhep() == false)
+		return false;
+	NutMoHinh(&nX, &nY, &nW, &nH);
+	return (x >= nX && x < nX + nW && y >= nY && y < nY + nH);
+}
+
+//--------------------------------------------------------------------------
 //	Nhan chuot khi dang sua
 //--------------------------------------------------------------------------
+//	[UITOADO 09/09 B] Cham vao mot o khi dang chon cong cu to / nho / giau.
+//	Lam dung viec ma lan chuot va chuot giua van lam, chi khac duong vao.
+static void CongCuChamO(int x, int y)
+{
+	char		szKhoa[UITOADO_CO_KHOA];
+	char		szChu[192];
+	KWndWindow*	pO = TimODuoiChuot(x, y, false, szKhoa, sizeof(szKhoa));
+
+	if (pO == NULL)
+	{
+		DatThongBao("¤ nµy kh«ng ®Æt tªn ®­îc (kh«ng n¹p tõ ini)");
+		return;
+	}
+
+	if (s_nCongCu == CONGCU_AN)
+	{
+		if (pO->UiDangAn() == 0 && CamAn(pO))
+		{
+			DatThongBao("Kh«ng cho giÊu nót ®ãng / huû, giÊu xong sÏ kÑt cöa sæ");
+			return;
+		}
+		pO->UiDatAn(pO->UiDangAn() ? 0 : 1);
+		GhiLaiO(pO, szKhoa);
+		_snprintf(szChu, sizeof(szChu), "%s  %s", szKhoa,
+			pO->UiDangAn() ? "®· giÊu" : "hiÖn l¹i");
+		szChu[sizeof(szChu) - 1] = 0;
+		DatThongBao(szChu);
+		return;
+	}
+
+	//	CONGCU_TO / CONGCU_NHO
+	if (CamCoGian(pO))
+	{
+		DatThongBao("¤ nµy kh«ng co gi·n ®­îc (« danh s¸ch / thanh cuén)");
+		return;
+	}
+	pO->UiDatTiLe(pO->UiLayTiLe()
+		+ ((s_nCongCu == CONGCU_TO) ? UITOADO_TILE_NAC : -UITOADO_TILE_NAC));
+	GhiLaiO(pO, szKhoa);
+	_snprintf(szChu, sizeof(szChu), "%s  %d%%", szKhoa, pO->UiLayTiLe() / 10);
+	szChu[sizeof(szChu) - 1] = 0;
+	DatThongBao(szChu);
+}
+
+//	[UITOADO 09/09 B] Bam mot nut tren thanh. Tra ve true = da xu ly.
+static void BamNutThanh(int i)
+{
+	int nMa = s_Nut[i].nMa;
+	char szChu[192];
+
+	if (nMa < CONGCU_SO)
+	{
+		s_nCongCu = nMa;
+		_snprintf(szChu, sizeof(szChu), "C«ng cô: %s", s_Nut[i].pszTen);
+		szChu[sizeof(szChu) - 1] = 0;
+		DatThongBao(szChu);
+		return;
+	}
+	switch (nMa)
+	{
+	case NUT_BANG:
+		s_bHienBang = !s_bHienBang;
+		if (s_bHienBang)
+			DungBang();
+		break;
+	case NUT_LUU:
+		UiToaDo_BatTat();		// dang sua -> tat = tu dong ghi tep
+		break;
+	case NUT_XOAHET:
+		UiToaDo_XoaHet();
+		break;
+	}
+}
+
 bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	int		x, y;
 	char	szKhoa[UITOADO_CO_KHOA];
 	char	szChu[192];
 
+	//	[UITOADO 09/09 B] Chua sua: chi bat cu bam vao nut "mo che do sua".
+	//	Dien thoai khong co ban phim nen khong bam Ctrl+U duoc.
 	if (s_bDangSua == false)
-		return false;
+	{
+		if (uMsg != WM_LBUTTONDOWN)
+			return false;
+		Wnd_GetCursorPos(&x, &y);
+		if (TrongNutMo(x, y) == false)
+			return false;
+		UiToaDo_BatTat();
+		return true;
+	}
 
 	//	Dung Wnd_GetCursorPos cho MOI thong diep: voi WM_MOUSEWHEEL thi nParam
 	//	la toa do MAN HINH chu khong phai toa do cua so, lay LOWORD se tro nham o.
@@ -679,9 +914,27 @@ bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	case WM_RBUTTONDOWN:
 		{
 			KWndWindow*	pO;
+			int			nNut;
 
 			s_pKeo = NULL;
 			s_szKhoaKeo[0] = 0;
+
+			//	[UITOADO 09/09 B] thanh nut an tren het
+			nNut = (uMsg == WM_LBUTTONDOWN) ? NutTrung(x, y) : -1;
+			if (nNut >= 0)
+			{
+				BamNutThanh(nNut);
+				break;
+			}
+
+			//	[UITOADO 09/09 B] cong cu to / nho / giau: cham la lam ngay,
+			//	khong bat dau keo.
+			if (uMsg == WM_LBUTTONDOWN && s_nCongCu >= CONGCU_TO
+				&& TrongBang(x, y) == false)
+			{
+				CongCuChamO(x, y);
+				break;
+			}
 
 			//	bam vao bang danh sach = ep hien cua so o dong do
 			if (uMsg == WM_LBUTTONDOWN && TrongBang(x, y))
@@ -694,7 +947,10 @@ bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			}
 
 			//	chuot trai = o nho nhat duoi con tro; chuot phai = ca khoi
-			pO = TimODuoiChuot(x, y, uMsg == WM_RBUTTONDOWN, szKhoa, sizeof(szKhoa));
+			//	[UITOADO 09/09 B] bam trai + cong cu "Doi khoi" = y nhu bam phai
+			pO = TimODuoiChuot(x, y,
+				uMsg == WM_RBUTTONDOWN || s_nCongCu == CONGCU_KHOI,
+				szKhoa, sizeof(szKhoa));
 			if (pO == NULL)
 			{
 				DatThongBao("¤ nµy kh«ng ®Æt tªn ®­îc (kh«ng n¹p tõ ini)");
@@ -753,8 +1009,22 @@ void UiToaDo_Ve()
 
 	if (s_bDangSua)
 	{
-		VeChu("Söa giao diÖn: kÐo tr¸i = mét «, kÐo ph¶i = c¶ khèi, l¨n = to nhá, bÊm gi÷a = xo¸ / hiÖn l¹i", 8, 8, 0xFFFFD24A);
-		VeChu("BÊm gi÷a lªn chç trèng = b¶ng danh s¸ch cöa sæ. Ctrl+U = l­u vµ tho¸t. Ctrl+K = xo¸ hÕt", 8, 24, 0xFFFFD24A);
+		int i, nX, nY, nW, nH;
+
+		//	[UITOADO 09/09 B] thanh nut cham - ve truoc, chu huong dan tut xuong duoi
+		for (i = 0; i < UITOADO_SO_NUT; i++)
+		{
+			bool bDangChon = (s_Nut[i].nMa < CONGCU_SO && s_Nut[i].nMa == s_nCongCu);
+
+			NutHinh(i, &nX, &nY, &nW, &nH);
+			OKhoi(nX, nY, nX + nW, nY + nH,
+				bDangChon ? 0xC02A6E2A : 0xC0202020);
+			VeChu(s_Nut[i].pszTen, nX + 5, nY + 10,
+				bDangChon ? 0xFFAAFFAA : 0xFFDDDDDD);
+		}
+
+		VeChu("Chän c«ng cô ë trªn råi ch¹m vµo « cÇn söa. KÐo = dêi chç.", 8, UITOADO_NUT_Y + UITOADO_NUT_CAO + 4, 0xFFFFD24A);
+		VeChu("Chuét: kÐo ph¶i = c¶ khèi, l¨n = to nhá, bÊm gi÷a = giÊu / b¶ng. Ctrl+U l­u, Ctrl+K xo¸ hÕt", 8, UITOADO_NUT_Y + UITOADO_NUT_CAO + 18, 0xFFFFD24A);
 
 		if (s_pKeo && s_szKhoaKeo[0])
 		{
@@ -765,7 +1035,7 @@ void UiToaDo_Ve()
 			_snprintf(szChu, sizeof(szChu), "%s  =  %d,%d  %dx%d  %d%%",
 				s_szKhoaKeo, nLeft, nTop, nRong, nCao, s_pKeo->UiLayTiLe() / 10);
 			szChu[sizeof(szChu) - 1] = 0;
-			VeChu(szChu, 8, 40, 0xFF66FF66);
+			VeChu(szChu, 8, UITOADO_NUT_Y + UITOADO_NUT_CAO + 32, 0xFF66FF66);
 		}
 
 		if (s_bHienBang)
@@ -815,8 +1085,19 @@ void UiToaDo_Ve()
 		}
 	}
 
+	//	[UITOADO 09/09 B] Chua sua ma config da cho phep: hien nut nho de mo.
+	//	Dien thoai khong co Ctrl+U. Doi cho bang [Ui] SuaToaDoNutX / SuaToaDoNutY.
+	if (s_bDangSua == false && UiToaDo_ChoPhep())
+	{
+		int nX, nY, nW, nH;
+
+		NutMoHinh(&nX, &nY, &nW, &nH);
+		OKhoi(nX, nY, nX + nW, nY + nH, 0xA0202020);
+		VeChu("Söa giao diÖn", nX + 6, nY + 8, 0xFFFFD24A);
+	}
+
 	if (s_szThongBao[0] && GetTickCount() < s_uHetThongBao)
-		VeChu(s_szThongBao, 8, 56, 0xFFFF8080);
+		VeChu(s_szThongBao, 8, UITOADO_NUT_Y + UITOADO_NUT_CAO + 46, 0xFFFF8080);
 	else
 		s_szThongBao[0] = 0;
 }

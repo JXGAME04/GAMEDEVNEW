@@ -412,6 +412,83 @@ rồi dựng lại. **Lưu ý:** `libmain.so` là thư viện của S3Client —
 
 ---
 
+## 10. (09/09) CHỈNH ICON TRONG GAME BẰNG NGÓN TAY — **cả PC lẫn mobile**
+
+Chủ: *"làm thêm tính năng chỉnh toạ độ icon trong game ở bản mobile … chỉnh to nhỏ icon -
+di chuyển toạ độ - xoá icon - làm cả 2 bản pc và mobile luôn"*.
+
+### 10.1. Đã có sẵn những gì
+
+`Sources/S3Client/Ui/Elem/UiToaDo.cpp` (chế độ Ctrl+U) **đã làm đủ cả ba việc** từ trước.
+Vấn đề là nó bám hoàn toàn vào chuột và bàn phím:
+
+| Việc | Đường cũ | Điện thoại |
+|---|---|---|
+| to / nhỏ | lăn chuột | **không có** |
+| dời cả khối cửa sổ | kéo chuột phải | **không có** |
+| giấu / hiện lại một ô | bấm chuột giữa | **không có** |
+| bảng danh sách cửa sổ | bấm giữa lên chỗ trống | **không có** |
+| lưu và thoát / xoá hết | Ctrl+U / Ctrl+K | **không có bàn phím** |
+| dời một ô | kéo chuột trái | chạm kéo được |
+
+Nên trên điện thoại chỉ còn mỗi việc dời một ô.
+
+### 10.2. Đã thêm: thanh nút chạm (bản vá 32, 33)
+
+Một hàng **8 nút** vẽ ngay trên đầu màn hình khi đang ở chế độ sửa:
+
+```
+[ Dời ô ] [ Dời khối ] [ To hơn ] [ Nhỏ lại ] [ Giấu/hiện ] [ Danh sách ] [ Lưu ] [ Xoá hết ]
+```
+
+Năm nút đầu là **công cụ** (nút đang chọn tô xanh); chạm vào ô cần sửa thì công cụ ấy
+tác dụng. Ba nút sau là **lệnh**. Bề rộng nút tự chia theo `SCREEN_WIDTH`, chặn trong
+khoảng 56–124 điểm ảnh nên màn hẹp vẫn bấm được, màn rộng không bị nút dài ngoẵng.
+
+**Vào chế độ sửa trên điện thoại:** nút nhỏ **"Sửa giao diện"** ở mép phải, giữa màn hình,
+chỉ hiện khi `config.ini [Ui] SuaToaDo=1` (vẫn như trước) và đang không sửa. Đổi chỗ được
+bằng `[Ui] SuaToaDoNutX` / `SuaToaDoNutY` nếu nó che mất thứ gì.
+
+> **Không đụng gì tới đường chuột cũ.** Lăn / chuột phải / chuột giữa / Ctrl+U / Ctrl+K của
+> bản PC giữ nguyên từng dòng một; thanh nút chỉ là đường **thứ hai**, đi bằng bấm trái —
+> nên bản PC dùng được luôn cả hai kiểu. Khi `SuaToaDo=0` (mặc định bản phát hành) thì
+> `TrongNutMo` trả về false ngay, không vẽ gì, không bắt cú bấm nào.
+
+### 10.3. Một lỗi Android tìm ra khi thử (bản vá 34)
+
+Khoá lưu trong `UserData\UiToaDo.ini` là `<tên lớp C++>|<tên mục ini>`, lấy bằng
+`typeid(*pWnd).name()`. MSVC trả `"class KUiMailManager"` nên cắt ở dấu cách là ra tên;
+GCC/Itanium (Android) trả tên **mã hoá** dạng `<độ dài><tên>` — `"16KUiMailManager"` —
+không có dấu cách nào để cắt.
+
+Hậu quả thật: khoá khác nhau giữa hai bản → giao diện chủ tự đặt ở máy tính **không dùng
+lại được** trên điện thoại và ngược lại. Sửa: bỏ qua các chữ số đầu tên. Giờ hai bản ghi
+ra cùng một khoá, tệp `UiToaDo.ini` dùng chung được.
+
+### 10.4. Đã đo tận mắt
+
+Mở hộp thư → chạm **"Sửa giao diện"** → chọn **To hơn** → chạm hai lần vào khung nội dung
+→ chọn **Giấu/hiện** → chạm → **Lưu**. Tệp ghi ra:
+
+```
+[Pos]
+KUiMailManager|MailContentValue=0,130,1100,1
+```
+
+tên lớp sạch (giống PC), tỉ lệ 1100 = **110%** (đúng hai nấc 5%), cờ = 1 = **đã giấu**.
+Thanh báo trên màn hình hiện đúng từng bước: `KUiMailManager|MailContentValue  105%`.
+
+APK: `android/apk/jx1mobile-0909-toado3.apk`.
+
+### 10.5. Còn có thể làm thêm
+
+- Nút trên thanh hiện vẽ bằng khối màu + chữ (`KRUShadow` + `OutputText`) vì `UiToaDo.cpp`
+  không có sẵn nguyên thuỷ vẽ hình nào khác. Muốn đẹp hơn thì thay bằng ảnh `.spr`.
+- Chưa có nút **hoàn tác một bước**; hiện chỉ có **Xoá hết** (trả mọi thứ về gốc).
+
+
+---
+
 ## 7. (09/09) ĐIỀU KHIỂN BẰNG NGÓN TAY
 
 > Bản vá nguồn: `android/va_nguon_android_12.py`. APK đã kiểm: `android/apk/jx1mobile-0909-cham-c.apk`.
