@@ -47,3 +47,11 @@ trong git thiếu `lua4_pushboolean/pushinteger/toboolean` (DLL live có) → En
 Tạm thời đã đặt `Rep3NapNen=0` trong config lúc 16:5x để chủ chơi tiếp; sau khi có Engine.dll.moi đã bỏ dòng đó (mặc định 1) → lần ChoiGame.bat
 tới nhận cả Engine + Represent3 219abc27 và bật lại nạp nền. Harness (Engine mới + 40 sprite, làm nóng 3 khung): ảnh y hệt, fps 63.
 Bài học: lớp pak KHÔNG an toàn đa luồng dù có CS — CS theo pak nhưng cache theo tiến trình; mọi thứ đọc pak từ luồng khác phải qua khoá chung.
+
+**[d] 17:10 SỰ CỐ 2: "mới vào game map đang đứng đen, qua map khác bình thường".** Nền vùng của JX1 được GHÉP MỘT LẦN lúc vào vùng:
+`KScenePlaceRegionC` vẽ các sprite ô nền lên ảnh tạo sẵn `_*PlaceGround*_` qua `DrawPrimitivesOnImage`; gọi `GetImage` trong đó gặp sprite
+chưa nạp → nạp nền trả NULL → ô nền không được vẽ và không bao giờ vẽ lại → vùng đen. Qua map khác: lúc đó ghép ngoài RepresentBegin/End
+nên nạp ngay → bình thường. Sửa: `DrawPrimitivesOnImage`, `ClearImageData`, `GetBitmapDataBuffer`, `ReleaseBitmapDataBuffer` luôn nạp
+đồng bộ (RAII `Rep3NapDongBo` tắt `m_bVeDangDien` trong phạm vi hàm); chỉ `DrawPrimitives` (vẽ mỗi khung) mới được nạp nền.
+`Represent3.dll.moi` 0b765879 (harness y hệt). Bài học: nạp nền chỉ hợp với lệnh vẽ được gửi lại mỗi khung; mọi chỗ dùng ảnh MỘT LẦN
+(ghép lên texture, hỏi kích thước, alpha) phải đồng bộ.
