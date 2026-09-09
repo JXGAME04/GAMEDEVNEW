@@ -27,7 +27,8 @@ static KSdlApp* s_pSdlApp = NULL;
 // SDL_Keycode -> ma phim ao Windows (VK_*) ma KWnd/ShortcutKey dang dung
 //---------------------------------------------------------------------------
 #ifdef JX_ANDROID
-#include "JxCanDieuKhien.h"	// [ANDROID 09/09 CAN] can dieu khien ao
+#include "JxCanDieuKhien.h"
+#include "../Ui/Elem/UiToaDo.h"	// [ANDROID 09/09 SUAKEO] UiToaDo_DangSua	// [ANDROID 09/09 CAN] can dieu khien ao
 #endif
 
 #ifdef JX_ANDROID
@@ -739,6 +740,16 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		if (m_nCham == CHAM_CHO &&
 			(abs(m_nChamX - m_nChamX0) > CHAM_NGUONG || abs(m_nChamY - m_nChamY0) > CHAM_NGUONG))
 		{
+			// [ANDROID 09/09 SUAKEO] Dang sua giao dien: y dinh luon la KEO o giao dien,
+			// khong bao gio la cuon danh sach hay cam can. Khong co dong nay thi vuot doc
+			// tren mot o se thanh CUON (nhanh ngay duoi) va o do khong bao gio doi cho duoc.
+			if (UiToaDo_DangSua())
+			{
+				m_nCham = CHAM_KEO;
+				GhiChuot(MK_LBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
+				MsgProc(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
+				return true;	// khong duoc roi xuong nhanh CUON ben duoi
+			}
 			// [ANDROID 09/09 CAN] Keo o vung ben trai (ngoai giao dien) = CAN DIEU KHIEN;
 			// keo o cho khac = giu chuot trai roi re nhu ban PC (di lien tuc, keo tha vat pham).
 			if (JxCan_TrongVung(m_nChamX0, m_nChamY0) && !JxUi_CoGiaoDienTaiDiem(m_nChamX0, m_nChamY0))

@@ -931,9 +931,11 @@ static void KyNang_DanhMotPhat()
 		return;
 	if (nAura)
 	{
-		// Ky nang TRO (noi cong / trang thai): khong phai danh. Chi dat lam ky nang
-		// dang dung; bat/tat aura chua noi duoc tu day - xem muc "con lai" ban giao.
-		g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&o, 0);
+		// [ANDROID 09/09 AURA] Ky nang TRO (noi cong / trang thai) khong phai danh, ma
+		// la BAT len. Duong co san: dat lam ky nang danh PHAI (nParam = 1) ->
+		// KPlayer::SetRightSkill (KPlayer.cpp:4444) tu goi SetAuraSkill cho ky nang aura.
+		// (Ban truoc dat nham vao o danh TRAI nen khong bat gi ca.)
+		g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&o, 1);
 		return;
 	}
 
