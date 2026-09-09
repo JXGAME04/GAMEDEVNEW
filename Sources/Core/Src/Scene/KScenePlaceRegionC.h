@@ -8,6 +8,14 @@
 #ifndef KSCENEPLACEREGIONC_H_HEADER_INCLUDED_C22EB91D
 #define KSCENEPLACEREGIONC_H_HEADER_INCLUDED_C22EB91D
 
+#ifndef JX_LP64_TYPES	// [ANDROID 08/09] long tren dia/goi: Windows 4 byte (giu nguyen long), Android LP64 phai la 32 bit
+#define JX_LP64_TYPES
+#if defined(JX_POSIX)
+typedef int JX_LONG; typedef unsigned int JX_ULONG;
+#else
+typedef long JX_LONG; typedef unsigned long JX_ULONG;
+#endif
+#endif
 #include "SceneDataDef.h"
 struct KIpotRuntimeObj;
 struct KIpotBuildinObj;
@@ -286,8 +294,8 @@ class KScenePlaceRegionC
 	//## 预先渲染的地表层图形。
 	KRUImage* m_pPrerenderGroundImg;
 
-	long		m_ObstacleInfo[RWP_NUM_GROUND_CELL_H][RWP_NUM_GROUND_CELL_V * 2];
-	long		m_TrapInfo[RWP_NUM_GROUND_CELL_H][RWP_NUM_GROUND_CELL_V * 2];
+	JX_LONG		m_ObstacleInfo[RWP_NUM_GROUND_CELL_H][RWP_NUM_GROUND_CELL_V * 2];
+	JX_LONG		m_TrapInfo[RWP_NUM_GROUND_CELL_H][RWP_NUM_GROUND_CELL_V * 2];
 
 };
 

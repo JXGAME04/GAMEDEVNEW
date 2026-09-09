@@ -6,6 +6,14 @@
 #ifndef GAMEDATADEF_H
 #define GAMEDATADEF_H
 
+#ifndef JX_LP64_TYPES	// [ANDROID 08/09] long tren dia/goi: Windows 4 byte (giu nguyen long), Android LP64 phai la 32 bit
+#define JX_LP64_TYPES
+#if defined(JX_POSIX)
+typedef int JX_LONG; typedef unsigned int JX_ULONG;
+#else
+typedef long JX_LONG; typedef unsigned long JX_ULONG;
+#endif
+#endif
 #include "CoreObjGenreDef.h"
 #include "CoreUseNameDef.h"
 #include <iostream>
@@ -1460,7 +1468,7 @@ struct KLightInfo
 {
 	KPosition3 oPosition;			// 光源位置
 	DWORD dwColor;					// 光源颜色及亮度
-	long  nRadius;					// 作用半径
+	JX_LONG  nRadius;					// 作用半径
 };
 
 

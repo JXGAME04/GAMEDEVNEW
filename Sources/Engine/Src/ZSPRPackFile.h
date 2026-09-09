@@ -2,11 +2,19 @@
 #define ZSPRPACKFILE
 
 #include <windows.h>
+#ifndef JX_LP64_TYPES	// [ANDROID 08/09] long tren dia/goi: Windows 4 byte (giu nguyen long), Android LP64 phai la 32 bit
+#define JX_LP64_TYPES
+#if defined(JX_POSIX)
+typedef int JX_LONG; typedef unsigned int JX_ULONG;
+#else
+typedef long JX_LONG; typedef unsigned long JX_ULONG;
+#endif
+#endif
 typedef struct {
-	unsigned long index_high;
-	unsigned long index_low;
-	long offset; 
-	long size; 
+	JX_ULONG index_high;
+	JX_ULONG index_low;
+	JX_LONG offset; 
+	JX_LONG size; 
 } item_info;
 
 #include "KSprite.h"
@@ -17,8 +25,8 @@ typedef struct {
 class ZCache {
 	char *buffer;								//实际的缓冲区
 	item_info *free_items;						//空闲块
-	long cache_size;
-	unsigned long last_items[MAX_LAST];
+	JX_LONG cache_size;
+	JX_ULONG last_items[MAX_LAST];
 	int last;
 	CRITICAL_SECTION mutex;
 public:
@@ -33,7 +41,7 @@ public:
 class ZFile {
 protected:
 	HANDLE m_hFile;
-	unsigned long m_Size;
+	JX_ULONG m_Size;
 	ZCache *m_Cache;
 public:
 	bool opened;
@@ -74,10 +82,10 @@ public:
 //首先是四个字节的文件的头标志:字符串'PACK',然后是项的数目然后是索引开始的偏移量\数据开始的偏移量,然后是校验和,然后是保留的字节:
 //---------------------------------------------------------------------------------------------------------------------------------
 typedef struct {		//索引信息
-	unsigned long id;
-	unsigned long offset;
-	long size;
-	long compress_size;
+	JX_ULONG id;
+	JX_ULONG offset;
+	JX_LONG size;
+	JX_LONG compress_size;
 } index_info;
 
 #define TYPE_NONE			0					//没有压缩
@@ -87,10 +95,10 @@ typedef struct {		//索引信息
 
 typedef struct {
 	unsigned char signature[4];			//"PACK"
-	unsigned long count;				//数据的条目数
-	unsigned long index_offset;			//索引的偏移量
-	unsigned long data_offset;			//数据的偏移量
-	unsigned long crc32;
+	JX_ULONG count;				//数据的条目数
+	JX_ULONG index_offset;			//索引的偏移量
+	JX_ULONG data_offset;			//数据的偏移量
+	JX_ULONG crc32;
 	unsigned char reserved[12];
 } z_pack_header;
 
@@ -110,12 +118,12 @@ public:
 };
 
 typedef struct {
-	long compress_size;
-	long size;
+	JX_LONG compress_size;
+	JX_LONG size;
 } frame_info;
 
 typedef struct {
-	unsigned long	id;
+	JX_ULONG	id;
 	int				frame;
 } frame_index_info;
 

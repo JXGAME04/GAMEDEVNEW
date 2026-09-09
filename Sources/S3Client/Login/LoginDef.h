@@ -43,6 +43,14 @@
 	减小要网络传送数据的量。■■
 *****************************************************************************************/
 #pragma once
+#ifndef JX_LP64_TYPES	// [ANDROID 08/09] long tren dia/goi: Windows 4 byte (giu nguyen long), Android LP64 phai la 32 bit
+#define JX_LP64_TYPES
+#if defined(JX_POSIX)
+typedef int JX_LONG; typedef unsigned int JX_ULONG;
+#else
+typedef long JX_LONG; typedef unsigned long JX_ULONG;
+#endif
+#endif
 #pragma pack(push, 1)
 
 #include "KProtocol.h"
@@ -91,7 +99,7 @@ struct KLoginAccountInfo : KLoginStructHead
 {
 	char	        Account[32];	//account
 	KSG_PASSWORD    Password;
-	unsigned long   nLeftTime;     //剩余时间
+	JX_ULONG   nLeftTime;     //剩余时间
     
     #ifdef USE_KPROTOCOL_VERSION
     // Add by Freeway Chen in 2003.7.1

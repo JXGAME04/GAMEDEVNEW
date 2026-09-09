@@ -1,6 +1,14 @@
 #ifndef	KRegionH
 #define	KRegionH
 
+#ifndef JX_LP64_TYPES	// [ANDROID 08/09] long tren dia/goi: Windows 4 byte (giu nguyen long), Android LP64 phai la 32 bit
+#define JX_LP64_TYPES
+#if defined(JX_POSIX)
+typedef int JX_LONG; typedef unsigned int JX_ULONG;
+#else
+typedef long JX_LONG; typedef unsigned long JX_ULONG;
+#endif
+#endif
 //-----------------------------------------------------------------------
 #include "KEngine.h"
 #include "KWorldMsg.h"
@@ -70,7 +78,7 @@ public:
 	DWORD		m_dwLucCoNguoiVao;	// [DELTA 07/09] GetTickCount() lan cuoi co nguoi vao vung (AddPlayer); NormalSync xem 9 vung
 private:
 #ifdef _SERVER
-	long		m_Obstacle[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];	// 地图障碍信息表
+	JX_LONG		m_Obstacle[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];	// 地图障碍信息表
 	DWORD		m_dwTrap[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];	// 地图trap信息表
 	// [PORT5 23/08] tham so trap JX2 (AddMapTrap tham so 5 - Linux KRegion trap = {scriptId, nParam})
 	int			m_nTrapParam[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];

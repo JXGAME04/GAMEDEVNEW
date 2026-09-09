@@ -10,6 +10,14 @@
 *****************************************************************************************/
 #ifndef _XPACK_FILE_H_
 #define	_XPACK_FILE_H_
+#ifndef JX_LP64_TYPES	// [ANDROID 08/09] long tren dia/goi: Windows 4 byte (giu nguyen long), Android LP64 phai la 32 bit
+#define JX_LP64_TYPES
+#if defined(JX_POSIX)
+typedef int JX_LONG; typedef unsigned int JX_ULONG;
+#else
+typedef long JX_LONG; typedef unsigned long JX_ULONG;
+#endif
+#endif
 #include "KSprite.h"
 
 //--------------------------------------------------
@@ -17,7 +25,7 @@
 //--------------------------------------------------
 struct	XPackElemFileRef
 {
-	unsigned long	uId;			//文件id
+	JX_ULONG	uId;			//文件id
 	int				nPackIndex;		//包索引
 	int				nElemIndex;		//包内的子文件索引
 	int				nCacheIndex;	//缓冲索引
@@ -78,8 +86,8 @@ private:
 	struct XPackElemFileCache
 	{
 		void*			pBuffer;			//保存子文件数据的缓冲区
-		unsigned long	uId;				//子文件id
-		long			lSize;				//子文件大小
+		JX_ULONG	uId;				//子文件id
+		JX_LONG			lSize;				//子文件大小
 		int				nPackIndex;			//来自哪个包文件
 		int				nElemIndex;			//子文件在索引列表中的位置
 		unsigned int	uRefFlag;			//近期引用标记

@@ -1,6 +1,14 @@
 ﻿#ifndef KPROTOCOL_H
 #define KPROTOCOL_H
 
+#ifndef JX_LP64_TYPES	// [ANDROID 08/09] long tren dia/goi: Windows 4 byte (giu nguyen long), Android LP64 phai la 32 bit
+#define JX_LP64_TYPES
+#if defined(JX_POSIX)
+typedef int JX_LONG; typedef unsigned int JX_ULONG;
+#else
+typedef long JX_LONG; typedef unsigned long JX_ULONG;
+#endif
+#endif
 #ifndef __linux
 #ifdef _STANDALONE
 #include "GameDataDef.h"
@@ -1656,7 +1664,7 @@ struct tagEnterGame2 : public EXTEND_HEADER
 	char szAccountName[_NAME_LEN];
 	char szCharacterName[_NAME_LEN];
 	DWORD	dwNameID;
-	unsigned long	lnID;
+	JX_ULONG	lnID;
 	char szHWID[64];
 	unsigned int nSelServer;
 };
@@ -1756,7 +1764,7 @@ struct TProcessData
 {
 	unsigned char	nProtoId;
 	unsigned int		nDataLen;//TRoleNetMsgÊ±±íÊ¾¸ÃBlockµÄÊµ¼ÊÊý¾Ý³¤¶È,TProcessDataÊ±±íÊ¾StreamµÄÊµ¼ÊÊý¾Ý³¤¶È
-	unsigned long	ulIdentity;
+	JX_ULONG	ulIdentity;
 	bool			bLeave;
 	char			pDataBuffer[1];//Êµ¼ÊµÄÊý¾Ý
 };
@@ -1990,7 +1998,7 @@ typedef struct
 typedef struct //#Set VËt C¶n
 { 
 	BYTE ProtocolType;
-	long	pValue;
+	JX_LONG	pValue;
 	int		pMapX;
 	int		pMapY;
 } S2C_SET_OBSTACLE, S2C_SEND_POINT;
@@ -2423,7 +2431,7 @@ typedef struct
 	BYTE	ProtocolType;
 	WORD	wSize;
 	DWORD	nameid;
-	unsigned long lnID;
+	JX_ULONG lnID;
 	WORD	wChatLength;
 } CHAT_SPECMAN;
 

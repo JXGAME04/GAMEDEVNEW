@@ -35,10 +35,10 @@ static inline void XP_Close(HANDLE h) { SDL_CloseIO((SDL_IOStream*)h); }
 struct XPackFileHeader
 {
 	unsigned char cSignature[4];		//四个字节的文件的头标志，固定为字符串'PACK'
-	unsigned long uCount;				//数据的条目数
-	unsigned long uIndexTableOffset;	//索引的偏移量
-	unsigned long uDataOffset;			//数据的偏移量
-	unsigned long uCrc32;				//校验和
+	JX_ULONG uCount;				//数据的条目数
+	JX_ULONG uIndexTableOffset;	//索引的偏移量
+	JX_ULONG uDataOffset;			//数据的偏移量
+	JX_ULONG uCrc32;				//校验和
 	unsigned char cReserved[12];		//保留的字节
 };
 
@@ -47,10 +47,10 @@ struct XPackFileHeader
 //Pack中对应每个子文件的索引信息项
 struct XPackIndexInfo
 {
-	unsigned long	uId;				//子文件id
-	unsigned long	uOffset;			//子文件在包中的偏移位置
-	long			lSize;				//子文件的原始大小
-	long			lCompressSizeFlag;	//子文件压缩后的大小和压缩方法
+	JX_ULONG	uId;				//子文件id
+	JX_ULONG	uOffset;			//子文件在包中的偏移位置
+	JX_LONG			lSize;				//子文件的原始大小
+	JX_LONG			lCompressSizeFlag;	//子文件压缩后的大小和压缩方法
 										//最高字节表示压缩方法，见XPACK_METHOD
 										//低的三个字节表示子文件压缩后的大小
 };
@@ -70,8 +70,8 @@ enum XPACK_METHOD
 //pak包中保存的spr帧信息项
 struct XPackSprFrameInfo
 {
-	long lCompressSize;
-	long lSize;
+	JX_LONG lCompressSize;
+	JX_LONG lSize;
 } ;
 
 XPackFile::XPackElemFileCache	XPackFile::ms_ElemFileCache[MAX_XPACKFILE_CACHE];
