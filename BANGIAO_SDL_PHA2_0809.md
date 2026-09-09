@@ -177,3 +177,44 @@ khoảng cách gói đẩy max 14,6 ms (Win32 19,5). Harness cơ bản PASS, cal
 đơn lẻ không lộ lỗi xếp hàng I/O. Ghi nhớ `[[jx1-sdl-socket-overlapped-0809]]`.
 
 **Chủ xác nhận 16:5x:** *"đã vào game và mượt rồi hãy tiếp tục"* (bộ client64sdl dựng 16:50: SDL fix + main tới NAP a; Represent3 NAP b chép sau khi game tắt).
+
+## 11. Pha 3 (17:2x): bộ vẽ mobile = lớp **D3D9 trên SDL_GPU** (`Rep3Api=100`) — màn hình chính đã vẽ đúng trên Vulkan
+
+**Quyết định kiến trúc:** không viết `Represent4` mới. Phiên D3D11 đã tách Represent3 thành "logic" (`KRepresentShell3`, `TextureRes*`) gọi vtable D3D9,
+và lớp `D3D9on11` cài vtable đó trên D3D11 (`Rep3Api=11`). Mobile đi đúng đường ấy: lớp **`D3D9onGPU`** cài cùng vtable trên **SDL_GPU** (Vulkan
+trên Android/PC, Metal trên iOS). Represent3 giữ nguyên; điểm chạm với mã của phiên D3D11 chỉ là nhánh `Rep3Api == 100` trong `D3D_Shell.cpp`
+(trong `#ifdef JX_PLATFORM_SDL`) và 3 dòng `ClCompile` trong `Represent3.vcxproj`.
+
+**Tệp (Sources/Represent/Represent3, chỉ biên dịch khi `JX_PLATFORM_SDL`):**
+- `D3D9onGPU.h` (API: `Rep3_CreateD3D9onGPU`, `Rep3_GpuVramInfo`, `Rep3_Gpu*Palette`), `D3D9onGPUi.h` (lớp nội bộ),
+- `D3D9onGPU.cpp` (IDirect3D9: chế độ màn hình từ SDL, caps như D3D11, bảng định dạng, đổi hàng BGRA8 hai chiều),
+- `D3D9onGPURes.cpp` (texture/surface/vertex buffer/state block), `D3D9onGPUDev.cpp` (thiết bị),
+- `Rep3ShadersGPU.vert/.frag` (GLSL 450, chuyển từ `Rep3Shaders11.hlsl`) → `Rep3ShadersGPU_spv.h` sinh bởi `ReverseTools/mobile_x64/dich_shader_gpu.py`
+  (glslc + spirv-val trong Android NDK r25 `shader-tools`; một định dạng SPIR-V dùng cho cả PC lẫn Android).
+- Build: `them_cfg_sdl_rep3.py` thêm `ReleaseSDL|x64` cho Represent3 (→ `bin\client64sdl\Represent3.dll`, link `Lib\release64sdl\engine.lib` + SDL3.lib);
+  `build_chuoi_sdl.ps1` nay: common → rainbow → engine → **rep3** → core → s3client. Bật: `Rep3Api=100` trong `bin\client64sdl\config.ini` (lùi: 9).
+
+**Mô hình (khác D3D11 vì SDL_GPU ghi lệnh theo command buffer / render pass, tải dữ liệu phải đi TRƯỚC render pass):**
+- Mọi lệnh D3D9 chỉ ghi trạng thái; `Draw*` ghi một `RgCmd` (trạng thái đã tính `RgDrawState`: pipeline, sampler, texture, viewport, scissor, uniform VS/PS)
+  + đỉnh chép vào ring CPU (thêm 4 byte PALROW mỗi đỉnh). Quad (strip 4 đỉnh) → 6 đỉnh triangle list, **gộp** vào lệnh trước nếu cùng trạng thái và liền kề.
+- `Present` = `SubmitFrame`: 1 command buffer = [copy pass: hàng bảng màu + mọi vùng texture bẩn (transfer buffer) + ring đỉnh] → [render pass theo từng
+  target: `Clear` → load-op CLEAR, `SetRenderTarget` → đổi pass; mỗi lệnh chỉ bind phần khác lệnh trước] → [copy khung vừa vẽ sang `m_pLastFrame` để
+  `GetFrontBufferData` chụp màn hình] → submit. Cửa sổ thu nhỏ (không có swapchain) → bỏ lệnh khung.
+- Texture: **luôn giữ bản CPU** (định dạng D3D9); GPU là "phiên bản" `SDL_GPUTexture`. `LockRect/UnlockRect` chỉ đánh dấu vùng bẩn; lúc bind: nếu phiên bản
+  hiện tại đã bị lệnh vẽ trong khung tham chiếu mà CPU lại đổi → tạo phiên bản mới (bản cũ trả sau submit) — nhờ vậy mọi tải lên gom vào một copy pass
+  mà lệnh cũ vẫn thấy nội dung cũ. Render target = phiên bản có COLOR_TARGET (BGRA8); `Lock` một RT đã vẽ → đọc lại đồng bộ.
+- Định dạng: A8R8G8B8/X8R8G8B8 → BGRA8 trực tiếp; **16 bit (4444/1555/565) và 24 bit → đổi sang BGRA8 khi tải** (thứ tự kênh 4444/1555 khác nhau giữa
+  Vulkan PACK16 và D3D nên chưa dùng native; VRAM gấp đôi so với D3D9 4444 — bước sau: đường bảng màu A8L8 2 B/px như D3D11); A8L8 → R8G8; L8 → R8; A8 → A8.
+- Shader: uniform VS set 1 (viewport, W·V·P hàng-chính của D3D → GLSL `M * v`), sampler FS set 2 (t0, t1, bảng màu), uniform FS set 3 (2 stage
+  D3DTOP/D3DTA + alpha test như HLSL cũ); màu đỉnh D3DCOLOR → `UBYTE4_NORM` rồi `.bgra`; XYZRHW cộng 0,5 texel như D3D11; SDL_GPU chuẩn hoá NDC y-lên,
+  gốc viewport trên-trái trên mọi backend nên KHÔNG lật y. `gl_PointSize` cho POINTLIST. Đỉnh thiếu màu/uv lấy từ buffer "đỉnh giả" theo instance.
+- Pipeline cache theo (FVF, topology, blend src/dst/op/enable, mặt nạ ghi màu, cull, fill, định dạng target); sampler cache theo lọc/địa chỉ.
+
+**Chạy thử 17:27 (`GameSDL.exe`, `Rep3Api=100`):** `[GPU] thiết bị: driver vulkan, backbuffer 1024x768, swapchain BGRA8`; 22 s và 45 s không sập;
+**ảnh chụp cửa sổ: màn hình chính vẽ đúng** (nền, 4 nút, chữ Việt, alpha) — lần đầu client JX1 chạy trên Vulkan. `gpu_test` trước đó: máy này
+Vulkan OK, mọi định dạng 16 bit lấy mẫu được (4444 không làm target), vsync/immediate/mailbox đều có.
+
+**Chưa làm / cần chủ test:** vào game thật (sprite nhân vật, hiệu ứng blend INVDESTCOLOR/ONE và ONE/ONE, chữ, bản đồ, `DrawPrimitivesOnImage` → render
+target, đổi map/Reset); toàn màn hình (hiện chạy cửa sổ); `StretchRect`/`DrawIndexedPrimitive` chưa cài (log `CHUA CAI` nếu game gọi); bảng màu chỉ bật khi
+`g_nRep3ApiOn == 11` trong `TextureRes.cpp:699` → cần thêm `|| == 100` (một token, bàn với phiên D3D11); native 16 bit; Android: `d3d9mini.h` thay
+`<d3d9.h>` (chỉ enum/struct/vtable, mọi thứ đã có trong `D3D9onGPUi.h`).
