@@ -564,3 +564,81 @@ Mũi tên "ngươi ở đây" giờ hiện, và đặt **+30,+17** như bản đ
 - Heredoc Bash cắt `\\` → mọi bộ vá viết bằng Write rồi chạy tệp.
 
 *Đợt 2 xong: mã đã lên `origin/main` (`7aac074f`), cặp `.moi` đã đặt, chờ chủ swap và thử theo 11.4.*
+
+---
+
+## 12. 🔧 ĐỢT 3 (08/09 ~23:10) — SỬA 3 LỖI CHỦ BÁO SAU KHI CHẠY THẬT
+
+Chủ báo sau khi swap đợt 2: *"kích di chuyển thì di chuyển tới **góc chết**, không di chuyển đúng đường"* ·
+*"đang di chuyển tới bản đồ mà tôi kích vào màn hình thì sẽ **dừng tuyến trình**"* ·
+*"dí chuột kích vào vị trí **bị lệch**"* · *"cần kiểm tra lại kỹ hơn"*.
+
+Đã chạy **điều tra đa tác tử** (8 hướng độc lập, mỗi kết luận bị 2 góc nhìn phản biện) rồi **kiểm lại trên dữ liệu thật**.
+Commit **`7e5b884d`** trên `origin/main`. Cặp `.moi` đã đặt (khe trống, không đè bản phiên khác):
+
+| Tệp | Cỡ | md5 | Đang chạy |
+|---|---|---|---|
+| `Game.exe.moi` | 1.528.832 B | `a3891e79` | `ac0d4766` |
+| `CoreClient.dll.moi` | 2.626.048 B | `ebd160d8` | `1756f5e6` |
+
+### 12.1 (A) "Đi tới góc chết" — gốc lỗi là **thiếu gốc ảnh bản đồ**
+
+`BD_LoadLinks` đổi `k_Point` của `MapTraffic.ini` sang MPS bằng `Point*(16,32)`. Nhưng **`k_Point` là điểm trên
+ẢNH tiểu bản đồ của RIÊNG map đó (tương đối)**, không phải MPS tuyệt đối. Gốc ảnh = `m_EntireMapLTPosition`
+(`ScenePlaceMapC.cpp:247-276`: đọc `MapLTRegionIndex`, không có thì lấy `rect`, rồi nhân `RWPP_AREGION_WIDTH=512`
+/ `HEIGHT=1024`). Thiếu số hạng đó ⇒ `KSubWorld::FindPath` (`KSubWorld.cpp:965-974`) tính `cx/cy` **ÂM** rồi **KẸP về 0**
+⇒ mục tiêu **luôn là ô lưới (0,0) = góc trên-trái bản đồ**. Đó chính là "góc chết".
+
+> **Đo trên dữ liệu thật: 492/493 cửa map nằm ngoài lưới trước khi sửa; 493/493 nằm trong lưới sau khi sửa.**
+
+- `BD_LoadLinks` **giữ Point thô** — gốc ảnh khác nhau từng map và chỉ biết được khi map đó đang mở, nên
+  **không được** cộng sẵn trong vòng lặp 1.300 map.
+- Đổi sang MPS trong `TG_BanDoTick`, ưu tiên `GetMapRect()` (bọc `#ifndef _SERVER` vì `GetKScenePlaceMapC`
+  nằm trong guard đó — `KScenePlaceC.h:258-261`), lùi về `m_nRegionBeginX*(REGION_GRID_*×32)` khi map chưa có ảnh.
+- Thêm chặn: toạ độ ra ngoài `LuoiPhamViMps` thì báo *"Cửa map ghi sai toạ độ"* thay vì để `FindPath` âm thầm kẹp về góc.
+- `nNear` **20 → 48** mps: 20 nhỏ hơn 1 ô lưới (32) và nhỏ hơn sai số làm tròn của Point (16 ngang / 32 dọc),
+  nên nhánh "dò quanh cửa" gần như không bao giờ chạy.
+
+### 12.2 (B) Bấm màn hình không huỷ — **đã có sẵn nửa cơ chế**
+
+Bấm chuột **đã** xoá đường A* (`RemoveFlag` → `StopPath`) nên nhân vật dừng khựng, nhưng `g_nBDOn` vẫn = 1 nên
+**≤ 2,5 s sau `DT_WalkTo` path lại** — nhìn như không huỷ được. Đặt móc huỷ tại `case GSMOI_SCENE_MAP_REMOVE_FLAG`.
+Op này **chỉ** đến từ `UiGame.cpp` (bấm chuột trái xuống khung cảnh game); `DT_WalkTo` và `TG_BanDoStop` gọi
+**thẳng** `g_ScenePlace.RemoveFlag()` nên không đi qua đây ⇒ **móc này không thể tự huỷ chính nó** — đó là cái bẫy
+chính của việc đặt móc huỷ.
+
+### 12.3 (C) Trỏ/bấm bị lệch — **không phải sai hệ toạ độ**
+
+Giả thuyết "phải trừ (23,16)" đã bị **bác bỏ**: độ lệch hệ toạ độ = 0. Hai gốc thật, đo trên dữ liệu thật:
+
+1. **`MapList.ini` chỉ có 97 toạ độ khác nhau cho 222 địa điểm.** 142 địa điểm (**64%**) dùng chung toạ độ với map
+   khác; riêng `(452,314)` có **82 map** (chiến trường + điểm báo danh Tống Kim) ⇒ `Hit()` trả về map **khác** cái
+   người chơi nhắm. → **Gộp** các map trùng toạ độ làm 1 điểm, giữ map ưu tiên cao nhất
+   (Capital > City > Tong > Field > Cave > Country > Battlefield > Others).
+2. **21 địa điểm nằm DƯỚI 7 nhãn "Bang hội chiếm lĩnh"**, trong đó **6/7 thành lớn** (chỉ Tương Dương thoát).
+   `KWndWindow::TopChildFromPoint` chọn con trước cha nên nhãn **nuốt** chuột trái ⇒ bấm vào thành **không bao giờ**
+   tới được bản đồ. → `KUiWorldmap` xử lý `WND_N_BUTTON_CLICK` (`WndPureTextBtn.cpp:177` báo cha khi bấm) y hệt
+   `WM_LBUTTONDOWN`. Không đổi style, không ảnh hưởng cách vẽ nhãn.
+3. Bán kính bấm **14 → 24 px** (chữ tên thành vẽ sẵn trên ảnh rộng 24–74 px).
+
+### 12.4 Kiểm thử đề nghị
+
+1. Đứng Phượng Tường, mở bản đồ, **bấm thẳng vào nhãn "Bang hội chiếm lĩnh" của Thành Đô** → trước đây không ăn,
+   giờ phải chạy. 6/7 thành lớn đều phải bấm được.
+2. Đang chạy → **bấm chuột ra khung cảnh game** → phải báo *"Ngươi tự di chuyển - đã huỷ tự chạy"* và **không** tự chạy lại.
+3. Nhân vật phải chạy **đúng ra cửa map**, không còn lao về góc trên-trái.
+4. Trỏ vào giữa bản đồ (chỗ 82 map trùng toạ độ) → chỉ hiện **một** tên hợp lý, không nhảy lung tung.
+5. Nếu gặp map dữ liệu sai → báo *"Cửa map ghi sai toạ độ - dừng tự chạy"* thay vì chạy vào góc.
+
+**Lùi**: `Game.exe.truoc` / `CoreClient.dll.truoc` theo `ChoiGame.bat`.
+
+### 12.5 Ghi chú kỹ thuật còn mở
+
+- `MapList.ini` có 3 mục hỏng: `MapPos '503.,214'`, map 98 khai 2 lần, map 1057 nằm ngoài ảnh 752×576 — chưa đụng.
+- 46/96 địa điểm bấm được **không có đường bộ** trong `MapTraffic` (đảo, phó bản) → báo "phải đi bằng Xa Phu/thuyền".
+  Đúng thiết kế "chạy bộ như 2.0", không phải lỗi.
+- `g_GetDistance` (`KMath.h:91`) cộng bình phương bằng `int` **không ép kiểu** → tràn với hiệu toạ độ lớn.
+  Sau khi sửa (A) thì hiệu nằm trong một map nên không còn tràn. **Không sửa** `KMath.h` ở đợt này vì là hàm dùng
+  chung toàn engine (cả máy chủ) — cần chủ game quyết riêng.
+
+*Đợt 3 xong: mã lên `origin/main` (`7e5b884d`), `.moi` đã đặt, chờ chủ swap và thử theo 12.4.*
