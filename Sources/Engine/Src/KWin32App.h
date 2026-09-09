@@ -54,5 +54,7 @@ private:
 	int				m_nLastMousePos;
 	unsigned int	m_uLastMouseStatus;
 };
+// [NHIP 08/09] luoi co hoi chay GameLoop trong KWin32App::Run (ms): mac dinh 8; S3Client dat 1 khi PaintFps > 60 / PaintVsync
+ENGINE_API void g_SetLoopInterval(unsigned int uMs);
 //---------------------------------------------------------------------------
 #endif

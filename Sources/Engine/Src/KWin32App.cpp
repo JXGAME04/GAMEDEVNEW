@@ -12,6 +12,9 @@
 #include "KMemBase.h"
 #include "KStrBase.h"
 #include "KWin32Wnd.h"
+// [NHIP 08/09] luoi vong bom: 8 ms giu nhip tick deu (56 ms); 1 ms khi ve > 60 fps (144 Hz = 6,94 ms/khung) - tick van deu (56 ms)
+static DWORD s_nLoopInterval = 8;
+ENGINE_API void g_SetLoopInterval(unsigned int uMs) { s_nLoopInterval = (uMs < 1) ? 1 : (uMs > 16 ? 16 : uMs); }
 #include "KWin32App.h"
 #include "KIme.h"
 #include "../../S3client/ui/TrayMode.h"
@@ -222,12 +225,13 @@ void KWin32App::Run()
 	//   luoi  8ms -> tick THAT tai 56/112/168/224 => span DEU 56ms
 	// 8ms cung ha do tre tick tu 6,0ms xuong 2,0ms, tuc thoi gian alpha noi suy bi
 	// ket tran (vi tri dong bang) tu 10,8% xuong 3,6% so khung ve.
-	DWORD nInterval = 8;
+	DWORD nInterval = s_nLoopInterval;	// [NHIP 08/09] doc lai moi vong (g_SetLoopInterval)
 	//DWORD nInterval = 1000/60;	// cu: 16ms - sinh span tick 48/64 luan phien
 	//DWORD nInterval = 1000 / 45; 
 	DWORD nNextElapse = m_gTimer.GetElapse() + nInterval;
 	while (TRUE)
 	{
+		nInterval = s_nLoopInterval;	// [NHIP 08/09]
 		if (PeekMessage(&Msg, NULL, 0, 0, PM_REMOVE))
 		{
 			//if (!GetMessage(&Msg, NULL, 0, 0))

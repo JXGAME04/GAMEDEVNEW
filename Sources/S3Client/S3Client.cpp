@@ -66,6 +66,7 @@ CChatFilter g_ChatFilter;
 #define CONFIG_FILE_PATH	"Config.ini"			//duong dan file config.ini
 //static int m_PaintStep = GAME_FPS / 18;
 static int	g_nPaintFps = 30;		// paint frames per second, config.ini [Client] PaintFps; 0 = paint locked to logic tick (legacy)
+static int	g_nPaintVsync = 0;		// [NHIP 08/09] config.ini [Client] PaintVsync; 1 = ve moi vong bom, Represent3 Present(1) (vblank dan nhip)
 static int	g_nPaintInterp = 1;		// config.ini [Client] PaintInterp; 1 = interpolate drawn NPC positions between logic ticks
 int	g_nPaintLog = 0;		// config.ini [Client] PaintLog; 1 = write jx_paint.log frame-time probe
 //int gameNumber = 0; // Game number, initialized to 0
@@ -503,16 +504,27 @@ BOOL KMyApp::GameInit()
 #endif
 
 	IniFile.GetInteger("Client", "PaintFps", 30, &g_nPaintFps);
+	if (g_nPaintFps == -1)
+	{	// [NHIP 08/09] -1 = tu theo tan so man hinh hien tai (59 -> 60)
+		DEVMODEA dmNhip; memset(&dmNhip, 0, sizeof(dmNhip)); dmNhip.dmSize = sizeof(dmNhip);
+		int nHz = EnumDisplaySettingsA(NULL, ENUM_CURRENT_SETTINGS, &dmNhip) ? (int)dmNhip.dmDisplayFrequency : 60;
+		if (nHz == 59) nHz = 60;
+		if (nHz < 30) nHz = 60;
+		g_nPaintFps = nHz;
+	}
 	if (g_nPaintFps < 0)
 		g_nPaintFps = 0;
-	if (g_nPaintFps > 60)
-		g_nPaintFps = 60;
+	if (g_nPaintFps > 240)
+		g_nPaintFps = 240;	// [NHIP 08/09] tran 60 -> 240 (man hinh 120/144/240 Hz)
+	IniFile.GetInteger("Client", "PaintVsync", 0, &g_nPaintVsync);	// [NHIP 08/09] 1 = ve theo vblank (Represent3 doc cung khoa -> Present(1)); PaintFps khi do chi la nhan
+	if (g_nPaintFps > 60 || g_nPaintVsync > 0)
+		g_SetLoopInterval(1);	// [NHIP 08/09] luoi vong bom 1 ms: luoi 8 ms chi cho toi da ~125 khung/giay
 	IniFile.GetInteger("Client", "PaintInterp", 1, &g_nPaintInterp);
 	IniFile.GetInteger("Client", "PaintLog", 0, &g_nPaintLog);
 	int nPerfHud = 0;
 	IniFile.GetInteger("Client", "PerfHud", 0, &nPerfHud);
 	PerfHud_SetEnable(nPerfHud);
-	if (g_nPaintFps > 30)
+	if (g_nPaintFps > 30 || g_nPaintVsync > 0)
 		timeBeginPeriod(1);	// high paint rates need 1ms Sleep/wait resolution; paired with timeEndPeriod in GameExit
 
 	char	szPath[MAX_PATH];
@@ -606,7 +618,7 @@ BOOL KMyApp::GameInit()
 
 BOOL KMyApp::GameExit()
 {
-	if (g_nPaintFps > 30)
+	if (g_nPaintFps > 30 || g_nPaintVsync > 0)
 		timeEndPeriod(1);
 
 	if (m_pInlinePicSink)
@@ -1391,6 +1403,7 @@ BOOL KMyApp::GameLoop()
 	// alpha noi suy. Xem chu thich tai cho tinh nAlpha ben duoi.
 	static DWORD	s_dwLastTickAt = 0;
 	static DWORD	s_dwTickSpan = 0;
+	static DWORD	s_dwLastPaintAt = 0, s_LogGapMin = 0, s_LogGapMax = 0, s_LogGapSum = 0, s_LogGapCnt = 0, s_LogSpanMin = 0, s_LogSpanMax = 0;	// [NHIP 08/09] PaintLog: khoang cach khung ve + span tick
 	int	nLogCross = 0;
 	DWORD	nLogCntBefore = m_GameCounter;
 	g_NetConnectAgent.Breathe();
@@ -1488,7 +1501,10 @@ BOOL KMyApp::GameLoop()
 			// Chup moc tick THAT + khoang giua hai tick that, de lop noi suy neo dung
 			// vao no thay vi neo vao moc ly tuong (m_GameCounter-1)*55,56ms.
 			if (s_dwLastTickAt && (DWORD)nElapse > s_dwLastTickAt)
+			{
 				s_dwTickSpan = (DWORD)nElapse - s_dwLastTickAt;
+				if (g_nPaintLog > 0) { if (!s_LogSpanMin || s_dwTickSpan < s_LogSpanMin) s_LogSpanMin = s_dwTickSpan; if (s_dwTickSpan > s_LogSpanMax) s_LogSpanMax = s_dwTickSpan; }	// [NHIP 08/09]
+			}
 			s_dwLastTickAt = (DWORD)nElapse;
 			if (nElapse)
 				nGameFps = m_GameCounter * 1000 / nElapse;
@@ -1526,14 +1542,21 @@ BOOL KMyApp::GameLoop()
 		// dieu kien ve luon thoa va game ve moi luot bom (do that: 85-102 khung/giay
 		// thay vi 60, ngon thua 40-60% CPU ve ma man 60Hz khong hien duoc).
 		#define	PAINT_LEAD_MS	4	// nua chu ky vong bom (nInterval = 8)
-		static DWORD s_dwNextPaint = 0;
+		static double s_dNextPaint = 0.0;	// [NHIP 08/09] moc ve ke tiep (phan le)
 		DWORD	nPaintElapse = m_Timer.GetElapse();
-		DWORD	nPaintStep = 1000 / (DWORD)g_nPaintFps;
-		if (nPaintStep < 1)
-			nPaintStep = 1;
-		if ((int)(nPaintElapse + PAINT_LEAD_MS - s_dwNextPaint) >= 0)
+		const bool bLuoi1ms = (g_nPaintFps > 60 || g_nPaintVsync > 0);
+		const double dPaintStep = 1000.0 / (double)g_nPaintFps;
+		const int nLead = bLuoi1ms ? 0 : PAINT_LEAD_MS;
+		if (g_nPaintVsync > 0 || (double)nPaintElapse + nLead >= s_dNextPaint)
 		{
-			s_dwNextPaint = nPaintElapse + nPaintStep;
+			if (bLuoi1ms)
+			{	// [NHIP 08/09] luoi 1 ms: cong deu tung buoc (144 fps = 6,94 ms, nhip trung binh dung); tut xa hon 1 khung thi dat lai
+				s_dNextPaint += dPaintStep;
+				if (s_dNextPaint < (double)nPaintElapse - dPaintStep)
+					s_dNextPaint = (double)nPaintElapse + dPaintStep;
+			}
+			else
+				s_dNextPaint = (double)nPaintElapse + (double)(1000 / (DWORD)g_nPaintFps);	// nhu cu (<= 60): neo vao luc ve that, luoi 8 ms cho khoang cach deu
 			if (g_nPaintInterp > 0 && m_GameCounter > 0)
 			{
 				// alpha 0..1000: khung ve nay nam o dau giua hai tick logic.
@@ -1560,6 +1583,12 @@ BOOL KMyApp::GameLoop()
 			}
 			UiPaint(nGameFps);
 			bPainted = TRUE;
+			if (g_nPaintLog > 0)
+			{	// [NHIP 08/09] khoang cach giua hai lan ve
+				DWORD tVe = timeGetTime();
+				if (s_dwLastPaintAt) { DWORD g = tVe - s_dwLastPaintAt; s_LogGapSum += g; s_LogGapCnt++; if (!s_LogGapMin || g < s_LogGapMin) s_LogGapMin = g; if (g > s_LogGapMax) s_LogGapMax = g; }
+				s_dwLastPaintAt = tVe;
+			}
 		}
 	}
 
@@ -1605,8 +1634,10 @@ BOOL KMyApp::GameLoop()
 			FILE* pLog = fopen("jx_paint.log", "a");
 			if (pLog)
 			{
-				fprintf(pLog, "[SUM] t=%u passes=%u avg=%u max=%u spikes=%u cross=%u\n",
-					nLogT0, s_LogCnt, s_LogCnt ? s_LogSum / s_LogCnt : 0, s_LogMax, s_LogSpk, s_LogCross);
+				fprintf(pLog, "[SUM] t=%u passes=%u avg=%u max=%u spikes=%u cross=%u | ve: %u khung, cach %u/%u/%u ms (min/TB/max) | span tick %u..%u ms | PaintFps=%d vsync=%d\n",
+					nLogT0, s_LogCnt, s_LogCnt ? s_LogSum / s_LogCnt : 0, s_LogMax, s_LogSpk, s_LogCross,
+					s_LogGapCnt, s_LogGapMin, s_LogGapCnt ? s_LogGapSum / s_LogGapCnt : 0, s_LogGapMax, s_LogSpanMin, s_LogSpanMax, g_nPaintFps, g_nPaintVsync);	// [NHIP 08/09]
+				s_LogGapMin = s_LogGapMax = s_LogGapSum = s_LogGapCnt = s_LogSpanMin = s_LogSpanMax = 0;
 				fclose(pLog);
 			}
 			s_LogSum = s_LogCnt = s_LogMax = s_LogSpk = s_LogCross = 0;

@@ -529,6 +529,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Tex32     = Rep3Ini("Rep3Tex32", 1);
 	g_nRep3Npot      = Rep3Ini("Rep3Npot", 1);
 	g_nRep3Vsync     = Rep3Ini("Rep3Vsync", 0);
+	if (Rep3Ini("PaintVsync", 0) > 0) g_nRep3Vsync = 1;	// [NHIP 08/09] Game.exe ve theo vblank -> Present(1)
 	g_nRep3CacheMB   = Rep3Ini("Rep3CacheMB", 0);
 	g_nRep3Log       = Rep3Ini("Rep3Log", 1);
 	g_nRep3Pool      = Rep3Ini("Rep3Pool", 1);		// [REP3 03/09 RAM]
@@ -537,7 +538,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Flip      = Rep3Ini("Rep3Flip", 1);	// [D3D11 08/09 f] bitblt DISCARD bi DWM ghep giua chung -> "gon song" khi di chuyen
 	g_nRep3Tearing   = Rep3Ini("Rep3Tearing", 0);	// [D3D11 08/09 f]
 	g_nRep3Batch     = Rep3Ini("Rep3Batch", 1);	// [D3D11 08/09 j]
-	g_nRep3Latency   = Rep3Ini("Rep3Latency", 3);	// [D3D11 08/09 o]
+	{ int nLat = Rep3Ini("Rep3Latency", -1); g_nRep3Latency = (nLat >= 0) ? nLat : (g_nRep3Vsync ? 1 : 3); }	// [NHIP 08/09] vsync: hang 1 khung (do tre thap); khong vsync: 3 nhu cu	// [D3D11 08/09 o]
 	g_nRep3NoWait    = Rep3Ini("Rep3NoWait", 0);	// [D3D11 08/09 l]
 	g_nRep3Buffers   = Rep3Ini("Rep3Buffers", 3);	// [D3D11 08/09 o]
 	g_nRep3Waitable  = Rep3Ini("Rep3Waitable", 0);	// [D3D11 08/09 o]

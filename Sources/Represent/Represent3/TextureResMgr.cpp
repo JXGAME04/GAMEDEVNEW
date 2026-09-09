@@ -17,6 +17,7 @@ static void Rep3LogLoadFail(const char* pszImage, int nType)
 }
 // [REP3 03/09 LAG] anh nap that bai: nhip thu nap lai, tinh bang mili giay.
 #define REP3_RELOAD_COOLDOWN	10000
+#define REP3_RELOAD_COOLDOWN_LAU	600000	// [NAP 08/09 e] sau 3 lan hong: 10 phut
 
 TextureResMgr::TextureResMgr()
 {
@@ -469,7 +470,7 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 			{				// Truoc day thu lai MOI KHUNG VE: 200 anh thieu x 62 fps = ~19.000 luot
 								// quet 40 pak moi giay -> chinh la nguyen nhan giat.
 				uint32 tmNow = GetTickCount();
-				if ((tmNow - m_TextureResList[nImagePosition].m_nRetryTime) >= REP3_RELOAD_COOLDOWN)
+				if ((tmNow - m_TextureResList[nImagePosition].m_nRetryTime) >= (m_TextureResList[nImagePosition].m_nLanHong >= 3 ? (uint32)REP3_RELOAD_COOLDOWN_LAU : (uint32)REP3_RELOAD_COOLDOWN))	// [NAP 08/09 e]
 				{
 					m_TextureResList[nImagePosition].m_nRetryTime = tmNow;
 					if (g_nRep3NapNen && m_bVeDangDien && NapNenGiao(pszImage, uImage, nType))	// [NAP 08/09 b]
@@ -483,9 +484,13 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 						m_nLoadCount++;
 						m_TextureResList[nImagePosition].m_pTextureRes = pObject;
 						Rep3Log("[REP3] LoadImage OK sau khi that bai: %s", pszImage);
+						m_TextureResList[nImagePosition].m_nLanHong = 0;
 					}
 					else
+					{
+						if (m_TextureResList[nImagePosition].m_nLanHong < 255) m_TextureResList[nImagePosition].m_nLanHong++;	// [NAP 08/09 e]
 						Rep3LogLoadFail(pszImage, nType);
+					}
 				}
 			}
 		}
@@ -531,6 +536,7 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 		node.m_bCacheable = true;
 		node.m_nLastUsedTime = GetTickCount();
 		node.m_nRetryTime = GetTickCount();	// [REP3 03/09 LAG]
+		node.m_nLanHong = (!bNapNen && !pObject) ? 1 : 0;	// [NAP 08/09 e]
 		node.m_nType = nType;
 		node.m_nID = uImage;
 		node.m_pTextureRes = pObject;
@@ -848,11 +854,13 @@ void TextureResMgr::NapNenNhan()
 			m_uTexCacheMemUsed += pRes->m_nTexMemUsed;
 			m_nLoadCount++;
 			m_nNapNenXong++;
+			node.m_nLanHong = 0;	// [NAP 08/09 e]
 		}
 		else
 		{
 			node.m_pTextureRes = NULL;
 			node.m_nRetryTime = GetTickCount();
+			if (node.m_nLanHong < 255) node.m_nLanHong++;	// [NAP 08/09 e]
 			m_nNapNenHong++;
 			Rep3LogLoadFail(kq.szTen, kq.nType);
 		}
