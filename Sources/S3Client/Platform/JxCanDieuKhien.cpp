@@ -164,6 +164,7 @@ static char			s_szKNAnhXoay[128] = "\\spr\\Ui3\\UiSkillControl\\vong_xoay.spr";	
 //	[ANDROID 10/09 KHINHCONG b] xu ngua xong thi GIU LENH de tu danh khi da xuong (Core TIME_RIDE = 5 giay)
 static unsigned int	s_uKNDoiNguaDen = 0;	// > 0: dang cho xuong/len ngua, thu lai toi luc nay
 static int			s_nKNNgonGiu = 0;		// ngon tay dang that su de tren nut
+static int			s_nKNGiuCanDiem = 0;	// [ANDROID 10/09 KHINHCONG c] nut dang giu la ky nang CAN DIEM -> chi ban luc nha ngon
 
 static void KyNang_Bao(const char* pszChu)
 {
@@ -1054,6 +1055,16 @@ void JxKyNang_BatDau(int nNut, int x, int y)
 	s_nKNDangCam = nNut - 1;	// 0 = nut chinh, 1..8 = o phu
 	s_nKNNgonGiu = 1;			// [ANDROID 10/09 KHINHCONG b]
 	s_uKNDoiNguaDen = 0;
+	// [ANDROID 10/09 KHINHCONG c] ky nang can diem (khinh cong): khong ban luc dat ngon, doi nha ngon de con chon huong
+	s_nKNGiuCanDiem = 0;
+	{
+		KUiGameObject oCD;
+		int nCD = 0;
+
+		if (KyNang_CuaNut(nNut - 1, &oCD))
+			KyNang_HoiCore((int)oCD.uId, NULL, NULL, NULL, NULL, &nCD, 1);
+		s_nKNGiuCanDiem = nCD;
+	}
 	s_nKNNgonX = x;
 	s_nKNNgonY = y;
 	s_nKNDichIdx = 0;
@@ -1299,6 +1310,8 @@ void JxKyNang_Nhip()
 	KyNang_LuanChuyen();	// [ANDROID 10/09 LUAN] chay moi khung, khong phu thuoc dang giu nut hay khong
 	if (s_nKNDangCam < 0)
 		return;
+	if (s_nKNGiuCanDiem && s_nKNNgonGiu)
+		return;		// [ANDROID 10/09 KHINHCONG c] con de ngon: chua nhay, doi nha ngon (JxKyNang_Nha ban)
 	uNay = (unsigned int)GetTickCount();
 	if (s_uKNDanhLuc && uNay - s_uKNDanhLuc < (unsigned int)s_nKNNhip)
 		return;
@@ -1321,6 +1334,12 @@ bool JxKyNang_Nha()
 	bool bCo = (s_nKNDangCam >= 0);
 
 	s_nKNNgonGiu = 0;
+	// [ANDROID 10/09 KHINHCONG c] ky nang can diem: NHA ngon moi nhay - co keo ngam thi theo diem ngam, khong thi theo huong nhin
+	if (bCo && s_nKNGiuCanDiem && s_uKNDoiNguaDen == 0)
+	{
+		s_uKNDanhLuc = (unsigned int)GetTickCount();
+		KyNang_DanhMotPhat();	// ben trong tu dat s_nKNDangCam = -1 khi nhay xong
+	}
 	// [ANDROID 10/09 KHINHCONG b] dang cho xuong/len ngua: giu lenh, JxKyNang_Nhip thu lai roi tu nha
 	if (bCo && s_uKNDoiNguaDen && (unsigned int)GetTickCount() < s_uKNDoiNguaDen)
 		return bCo;
