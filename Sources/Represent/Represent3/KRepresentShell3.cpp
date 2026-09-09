@@ -47,10 +47,6 @@ int  g_nRep3Composite = 0;
 int  g_nRep3Tex32     = 1;
 int  g_nRep3Npot      = 1;
 int  g_nRep3Vsync     = 0;
-// [TRINH 08/09] do khoang cach giua hai lan trinh khung bang dong ho hieu nang
-static LARGE_INTEGER s_liTrinhTruoc = {0};
-static double g_dTrinhTong = 0.0, g_dTrinhBinh = 0.0, g_dTrinhMin = 0.0, g_dTrinhMax = 0.0;
-static unsigned g_uTrinhDem = 0, g_uTrinhTre = 0;
 int  g_nRep3CacheMB   = 0;
 int  g_nRep3Api       = 11;	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11: CD3D11Shim::Init do IDXGIFactory2 + feature level, khong du -> tu lui D3D9
 int  g_nRep3ApiOn     = 9;	// [D3D11 08/09]
@@ -2673,21 +2669,6 @@ void KRepresentShell3::RepresentEnd()
 	g_Device.End3D();
 	// ½»»»Ò³Ãæ
 	PD3DDEVICE->Present(NULL,NULL,NULL,NULL);
-	{	// [TRINH 08/09] khoang cach hai lan trinh khung (chinh xac hon timeGetTime 1 ms)
-		LARGE_INTEGER liNay; QueryPerformanceCounter(&liNay);
-		if (s_liTrinhTruoc.QuadPart)
-		{
-			const double dMs = Rep3NapMs(s_liTrinhTruoc, liNay);
-			if (dMs > 0.0 && dMs < 200.0)
-			{
-				g_dTrinhTong += dMs; g_dTrinhBinh += dMs * dMs; g_uTrinhDem++;
-				if (g_dTrinhMin <= 0.0 || dMs < g_dTrinhMin) g_dTrinhMin = dMs;
-				if (dMs > g_dTrinhMax) g_dTrinhMax = dMs;
-				if (g_uTrinhDem > 8 && dMs > (g_dTrinhTong / g_uTrinhDem) * 1.5) g_uTrinhTre++;
-			}
-		}
-		s_liTrinhTruoc = liNay;
-	}
 
 	// [REP3 03/09] fps trung binh (EMA ~100 khung); chi don cache khi may khong dang chay cham (theo 2.0: >= 25 fps)
 	DWORD dwNow = timeGetTime();
@@ -2728,15 +2709,6 @@ void KRepresentShell3::RepresentEnd()
 				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg,
 				g_uRep3FxTexNull, g_uRep3FxAnhNull, g_uRep3FxTaoHong, g_uRep3FxKhungKhongTex, g_uRep3FxGiaiMa, g_dRep3FxGiaiMaMs, g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), uVramUsed, uVramBudget,
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);
-			if (g_uTrinhDem > 1)
-			{	// [TRINH 08/09] nhip trinh khung: o 144 Hz co vsync phai la TB 6,94 va lech chuan gan 0
-				const double dTb = g_dTrinhTong / g_uTrinhDem;
-				double dPhuongSai = g_dTrinhBinh / g_uTrinhDem - dTb * dTb;
-				if (dPhuongSai < 0.0) dPhuongSai = 0.0;
-				Rep3Log("[REP3-TRINH] %u khung: nhip trinh TB %.2f ms, min %.2f, max %.2f, lech chuan %.2f | khung tre (> 1,5 lan TB): %u",
-					g_uTrinhDem, dTb, g_dTrinhMin, g_dTrinhMax, sqrt(dPhuongSai), g_uTrinhTre);
-			}
-			g_dTrinhTong = g_dTrinhBinh = g_dTrinhMin = g_dTrinhMax = 0.0; g_uTrinhDem = g_uTrinhTre = 0;
 			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0; g_uRep3BatchQuads = 0; g_uRep3BatchDraws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
 			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung %u) | cpu ve: DrawPrimitives %.2f ms/khung (max %.1f), khung %.2f ms (max %.1f)",	// [NAP 08/09 a/b] [VE 08/09 a/b]
