@@ -646,6 +646,10 @@ static inline BOOL ReleaseMutex(HANDLE h) { (void)h; return 1; }
 #define OpenMutex OpenMutexA
 #define CreateMutex CreateMutexA
 #endif
+/* sscanf_s: ma game chi dung voi %f/%d (KIniFile GetFloat3/4) - khong co %s/%c nen cung ngu nghia sscanf */
+#ifndef sscanf_s
+#define sscanf_s sscanf
+#endif
 /* CRT luong cua MSVC */
 uintptr_t _beginthreadex(void* security, unsigned stack_size, unsigned (*start_address)(void*), void* arglist, unsigned initflag, unsigned* thrdaddr);
 void _endthreadex(unsigned retval);

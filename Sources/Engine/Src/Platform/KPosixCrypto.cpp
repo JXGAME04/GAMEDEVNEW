@@ -10,7 +10,6 @@
 #ifndef JX_CRYPTO_TEST_HOST
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/random.h>
 #endif
 #include "posixssl/openssl/aes.h"
 #include "posixssl/openssl/sha.h"
@@ -150,18 +149,9 @@ unsigned char* SHA256(const unsigned char* d, size_t n, unsigned char* md)
 int RAND_bytes(unsigned char* buf, int num)
 {
 	if (!buf || num < 0) return 0;
-	int got = 0;
-	while (got < num)
-	{
-		ssize_t r = getrandom(buf + got, (size_t)(num - got), 0);
-		if (r <= 0) break;
-		got += (int)r;
-	}
-	if (got < num)
-	{
-		int fd = open("/dev/urandom", O_RDONLY);
-		if (fd >= 0) { while (got < num) { ssize_t r = read(fd, buf + got, (size_t)(num - got)); if (r <= 0) break; got += (int)r; } close(fd); }
-	}
+	int got = 0;   /* getrandom() chi co tu API 28 (bionic) -> doc /dev/urandom */
+	int fd = open("/dev/urandom", O_RDONLY);
+	if (fd >= 0) { while (got < num) { ssize_t r = read(fd, buf + got, (size_t)(num - got)); if (r <= 0) break; got += (int)r; } close(fd); }
 	return got == num ? 1 : 0;
 }
 int RAND_pseudo_bytes(unsigned char* buf, int num) { return RAND_bytes(buf, num); }

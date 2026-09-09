@@ -118,7 +118,8 @@ target_link_libraries(Represent3 PRIVATE Engine)
 add_library(CoreClient SHARED ${JX_CORE_SOURCES})
 jx_setup(CoreClient)
 target_compile_definitions(CoreClient PRIVATE ${JX_CORE_DEFS})
-target_include_directories(CoreClient PRIVATE ${JX_CORE_INCS})
+target_include_directories(CoreClient PRIVATE ${JX_CORE_INCS}
+    ${JX_SRC}/Core/vcpkg_installed/x64-windows-static/x64-windows-static/include)   # nlohmann/json.hpp (header-only; openssl/* da bi posixssl che truoc)
 target_link_libraries(CoreClient PRIVATE Engine Lua54)
 
 # ---- main (S3Client -> libmain.so, SDLActivity nap "SDL3" + "main", SDL_main trong Platform/JxAndroidMain.cpp) ----
