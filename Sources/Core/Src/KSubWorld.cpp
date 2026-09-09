@@ -1200,6 +1200,161 @@ void WorldNpcXong(int nIdx, const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 	if (d > g_dNpcMax) { g_dNpcMax = d; g_nNpcMaxIdx = nIdx; }
 	if (d > t_dNpcMax) { t_dNpcMax = d; t_nNpcMaxIdx = nIdx; }
 }
+// [DOLUOT 09/09] BO LAY MAU con tro lenh luong chinh ([Client] DoLuot=1; mac dinh 0 = khong tao luong, khong ton gi).
+// Luong rieng moi ~1 ms: SuspendThread/GetThreadContext luong chinh -> ghi (EIP, pha, so thu tu) vao vong 16384 mau
+// (chi khi luong chinh dang o pha 1 = tick the gioi hay 2 = ve). Luong chinh danh dau tick/khung >= 20 ms (DoLuotPham).
+// Luong lay mau gom mau cua cac tick/khung nang (tre >= 200 ms de moc kip), moi 30 s in [DOLUOT] top 12 dia chi:
+// module+RVA (tra offline bang pdb) + ten ham qua dbghelp (SymFromAddr, pdb ghi trong DLL). Khong doan nua.
+#include <process.h>
+#include <dbghelp.h>
+static int            g_nDoLuot = -1;	// -1 chua doc ini
+static volatile LONG  g_lDoLuotPha = 0;	// 0 ngoai, 1 tick, 2 ve
+static volatile LONG  g_lDoLuotSeq = 0;
+struct DoLuotMau { DWORD_PTR uEip; LONG lPha; LONG lSeq; DWORD dwLuc; };
+#define DOLUOT_MAU 16384
+#define DOLUOT_NANG 1024
+static DoLuotMau      g_aDoLuotMau[DOLUOT_MAU];
+static volatile LONG  g_lDoLuotGhi = 0;	// so mau da ghi (vong)
+static volatile LONG  g_aDoLuotNang[DOLUOT_NANG];	// vong so thu tu tick/khung nang (>= 20 ms)
+static volatile LONG  g_aDoLuotNangPha[DOLUOT_NANG];
+static HANDLE         g_hDoLuotChinh = NULL;
+struct DoLuotDem { DWORD_PTR uEip; unsigned uSo; };
+static void DoLuotIn(FILE* pLog, int nPha, DoLuotDem* aDem, int nDem, unsigned uMau, unsigned uLan);
+static unsigned __stdcall DoLuotLuong(void*)
+{
+	static DoLuotDem aDem[2][4096]; static int nDem[2] = { 0, 0 }; static unsigned uMau[2] = { 0, 0 }, uLan[2] = { 0, 0 };
+	static LONG aLanDem[2][DOLUOT_NANG];	// seq da dem lan nang (khoi dem 2 lan)
+	LONG lDaGom = 0; DWORD dwIn = GetTickCount();
+	for (;;)
+	{
+		Sleep(1);
+		if (g_lDoLuotPha)
+		{
+			CONTEXT c; memset(&c, 0, sizeof(c)); c.ContextFlags = CONTEXT_CONTROL;
+			if (SuspendThread(g_hDoLuotChinh) != (DWORD)-1)
+			{
+				const BOOL bOk = GetThreadContext(g_hDoLuotChinh, &c);
+				ResumeThread(g_hDoLuotChinh);
+				if (bOk)
+				{
+					const LONG i = InterlockedIncrement(&g_lDoLuotGhi);
+					DoLuotMau& m = g_aDoLuotMau[i & (DOLUOT_MAU - 1)];
+#if defined(_M_X64) || defined(_M_AMD64)
+					m.uEip = (DWORD_PTR)c.Rip;
+#else
+					m.uEip = (DWORD_PTR)c.Eip;
+#endif
+					m.lPha = g_lDoLuotPha; m.lSeq = g_lDoLuotSeq; m.dwLuc = GetTickCount();
+				}
+			}
+		}
+		// gom mau cu hon 200 ms (tick/khung da ket thuc, da danh dau nang hay chua)
+		const LONG lGhi = g_lDoLuotGhi; const DWORD dwNow = GetTickCount();
+		while (lDaGom < lGhi && lGhi - lDaGom < DOLUOT_MAU)
+		{
+			const DoLuotMau& m = g_aDoLuotMau[(lDaGom + 1) & (DOLUOT_MAU - 1)];
+			if ((DWORD)(dwNow - m.dwLuc) < 200) break;
+			lDaGom++;
+			const int p = (m.lPha == 1) ? 0 : ((m.lPha == 2) ? 1 : -1);
+			if (p < 0) continue;
+			if (g_aDoLuotNang[m.lSeq & (DOLUOT_NANG - 1)] != m.lSeq) continue;	// khong nang
+			if (aLanDem[p][m.lSeq & (DOLUOT_NANG - 1)] != m.lSeq) { aLanDem[p][m.lSeq & (DOLUOT_NANG - 1)] = m.lSeq; uLan[p]++; }
+			uMau[p]++;
+			int k = 0; for (; k < nDem[p]; k++) if (aDem[p][k].uEip == m.uEip) { aDem[p][k].uSo++; break; }
+			if (k == nDem[p] && nDem[p] < 4096) { aDem[p][k].uEip = m.uEip; aDem[p][k].uSo = 1; nDem[p]++; }
+		}
+		if ((DWORD)(dwNow - dwIn) >= 30000)
+		{
+			dwIn = dwNow;
+			FILE* pLog = fopen("jx_paint.log", "a");
+			if (pLog)
+			{
+				for (int p = 0; p < 2; p++) if (uMau[p]) DoLuotIn(pLog, p + 1, aDem[p], nDem[p], uMau[p], uLan[p]);
+				fclose(pLog);
+			}
+			nDem[0] = nDem[1] = 0; uMau[0] = uMau[1] = 0; uLan[0] = uLan[1] = 0;
+		}
+	}
+	return 0;
+}
+typedef DWORD (WINAPI *PFN_DoLuotSymSetOptions)(DWORD);
+typedef BOOL  (WINAPI *PFN_DoLuotSymInitialize)(HANDLE, PCSTR, BOOL);
+typedef BOOL  (WINAPI *PFN_DoLuotSymFromAddr)(HANDLE, DWORD64, PDWORD64, PSYMBOL_INFO);
+static void DoLuotIn(FILE* pLog, int nPha, DoLuotDem* aDem, int nDem, unsigned uMau, unsigned uLan)
+{
+	static PFN_DoLuotSymFromAddr s_pfnTu = NULL; static int s_nThu = 0;
+	if (!s_pfnTu && s_nThu == 0)	// dbghelp: nap 1 lan tren luong nay (khong dung o luong chinh)
+	{
+		s_nThu = 1;
+		HMODULE h = LoadLibraryA("dbghelp.dll");
+		if (h)
+		{
+			PFN_DoLuotSymSetOptions pOpt = (PFN_DoLuotSymSetOptions)GetProcAddress(h, "SymSetOptions");
+			PFN_DoLuotSymInitialize pInit = (PFN_DoLuotSymInitialize)GetProcAddress(h, "SymInitialize");
+			if (pOpt) pOpt(0x00000002 | 0x00000004);	// SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS
+			if (pInit && pInit(GetCurrentProcess(), NULL, TRUE))
+				s_pfnTu = (PFN_DoLuotSymFromAddr)GetProcAddress(h, "SymFromAddr");
+		}
+	}
+	// sap xep giam dan theo so mau (chon dan 12)
+	fprintf(pLog, "[DOLUOT] t=%u pha %s: %u lan nang, %u mau:", (unsigned)GetTickCount(), nPha == 1 ? "TICK" : "VE", uLan, uMau);
+	for (int r = 0; r < 12 && r < nDem; r++)
+	{
+		int nMax = r;
+		for (int k = r + 1; k < nDem; k++) if (aDem[k].uSo > aDem[nMax].uSo) nMax = k;
+		if (nMax != r) { DoLuotDem t = aDem[r]; aDem[r] = aDem[nMax]; aDem[nMax] = t; }
+		char szMod[MAX_PATH] = "?"; DWORD_PTR uRva = aDem[r].uEip; HMODULE hMod = NULL;
+		if (GetModuleHandleExA(0x00000004 | 0x00000002, (LPCSTR)aDem[r].uEip, &hMod) && hMod)	// FROM_ADDRESS | UNCHANGED_REFCOUNT
+		{
+			char szDuong[MAX_PATH]; if (GetModuleFileNameA(hMod, szDuong, MAX_PATH)) { const char* p = strrchr(szDuong, '\\'); strncpy(szMod, p ? p + 1 : szDuong, MAX_PATH - 1); szMod[MAX_PATH - 1] = 0; }
+			uRva = aDem[r].uEip - (DWORD_PTR)hMod;
+		}
+		char szTen[256] = ""; DWORD64 uLech = 0;
+		if (s_pfnTu)
+		{
+			char aBuf[sizeof(SYMBOL_INFO) + 200]; SYMBOL_INFO* pSym = (SYMBOL_INFO*)aBuf; memset(aBuf, 0, sizeof(aBuf));
+			pSym->SizeOfStruct = sizeof(SYMBOL_INFO); pSym->MaxNameLen = 199;
+			if (s_pfnTu(GetCurrentProcess(), (DWORD64)aDem[r].uEip, &uLech, pSym)) { strncpy(szTen, pSym->Name, 255); szTen[255] = 0; }
+		}
+		fprintf(pLog, " | %.1f%% %s+%X %s+%u", aDem[r].uSo * 100.0 / uMau, szMod, (unsigned)uRva, szTen[0] ? szTen : "?", (unsigned)uLech);
+	}
+	fprintf(pLog, "\n");
+}
+// Luong chinh: RAII quanh tick (KSubWorld::Activate) va ve (KSubWorld::Paint)
+struct DoLuotPham
+{
+	LARGE_INTEGER m_li0; int m_nPha; LONG m_lSeq;
+	DoLuotPham(int nPha) : m_nPha(0), m_lSeq(0)
+	{
+		if (g_nDoLuot < 0)
+		{
+			g_nDoLuot = GetPrivateProfileIntA("Client", "DoLuot", 0, ".\\config.ini") ? 1 : 0;
+			if (g_nDoLuot)
+			{
+				if (!DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_hDoLuotChinh, THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION, FALSE, 0))
+					g_nDoLuot = 0;
+				else
+				{
+					unsigned uTid = 0; HANDLE h = (HANDLE)_beginthreadex(NULL, 0, DoLuotLuong, NULL, 0, &uTid);
+					if (!h) g_nDoLuot = 0; else CloseHandle(h);
+				}
+			}
+		}
+		if (!g_nDoLuot) return;
+		m_nPha = nPha; m_lSeq = InterlockedIncrement(&g_lDoLuotSeq);
+		QueryPerformanceCounter(&m_li0);
+		InterlockedExchange(&g_lDoLuotPha, (LONG)nPha);
+	}
+	~DoLuotPham()
+	{
+		if (!m_nPha) return;
+		InterlockedExchange(&g_lDoLuotPha, 0);
+		LARGE_INTEGER li1, f; QueryPerformanceCounter(&li1); QueryPerformanceFrequency(&f);
+		const double dMs = (double)(li1.QuadPart - m_li0.QuadPart) * 1000.0 / (double)f.QuadPart;
+		if (dMs >= 20.0) { g_aDoLuotNangPha[m_lSeq & (DOLUOT_NANG - 1)] = m_nPha; InterlockedExchange(&g_aDoLuotNang[m_lSeq & (DOLUOT_NANG - 1)], m_lSeq); }
+	}
+};
+
 void WorldTickXong(double dQuet)
 {
 	extern int g_nCorePaintLog;
@@ -1233,6 +1388,7 @@ void KSubWorld::Activate()
 
 #ifndef _SERVER
 	g_ScenePlace.SetCurrentTime(m_dwCurrentTime);
+	DoLuotPham doLuotTick(1);	// [DOLUOT 09/09] tick the gioi
 	LARGE_INTEGER liW0, liW1, liW2;	// [WORLD 08/09 a]
 	const bool bWorldDo = (g_nCorePaintLog > 0);
 	if (bWorldDo) QueryPerformanceCounter(&liW0);
@@ -2753,6 +2909,7 @@ int CORE_API g_ScreenY  = 0;
 extern struct iRepresentShell*	g_pRepresent;
 void KSubWorld::Paint()
 {
+	DoLuotPham doLuotVe(2);	// [DOLUOT 09/09] ve the gioi
 	if(m_uPaintTime > timeGetTime())
 		return;
 	int nIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;

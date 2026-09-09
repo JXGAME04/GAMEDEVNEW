@@ -144,6 +144,7 @@ public:
 	BOOL		AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
 	BOOL		DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
 	int			FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation, int nPreferIdx = 0);
+	int			FindNpcDuyet(int nMapX, int nMapY, int nNpcIdx, int nRelation, int nPreferIdx);	// [VUNG 09/09] duong duyet danh sach cu (may chu dung; client dung de do lech)
 	int			FindEquip(int nMapX, int nMapY);
 	int			FindObject(int nMapX, int nMapY, bool bAutoFind = false);
 	int			FindObject(int nObjID);
@@ -188,6 +189,17 @@ public:
 
 #ifndef _SERVER
 	void		Paint();
+	// [VUNG 09/09] chi muc o -> NPC cho FindNpc: dan (CheckNearestCollision 9 o, ProcessCollision (2R+1)^2 o) hoi hang nghin
+	// o moi tick, moi lan duyet ca m_NpcList (130 NPC) = 1,2 trieu lan doc Npc[] / tick (do [WORLD-TICK] 14:28: dan 20-35 ms).
+	// Xay lai khi m_uNpcDoi != m_uNpcChiMuc (NPC vao/ra vung, doi o). Thu tu trong o = thu tu m_NpcList => y het duyet.
+	unsigned	m_uNpcDoi;		// tang o AddNpc/RemoveNpc/AddRef/DecRef(obj_npc)/Init/Close
+	unsigned	m_uNpcChiMuc;	// phien ban chi muc dang giu
+	int		m_nChiMucO;		// so o + 1 cua m_pChiMucODau (de biet khi kich thuoc vung doi)
+	int*		m_pChiMucODau;	// [so o + 1]: o k giu m_pChiMucNpc[ODau[k] .. ODau[k+1])
+	int*		m_pChiMucKe;		// [so o] con tro dien tam khi xay
+	int*		m_pChiMucNpc;		// [so NPC] chi so NPC, theo o roi theo thu tu danh sach
+	int		m_nChiMucNpcCap;
+	void		XayChiMucNpc();
 #endif
 	void		AddNpc(int nIdx);
 	void		RemoveNpc(int nIdx);
@@ -203,7 +215,53 @@ public:
 //--------------------------------------------------------------------------
 //	Find Npc
 //--------------------------------------------------------------------------
+#ifndef _SERVER
+extern int g_nCorePaintLog;
+extern unsigned g_uVungSo, g_uVungLech, g_uVungXay;	// [VUNG 09/09] bo do: so lan hoi, so lan chi muc khac duyet, so lan xay
+#endif
 inline int KRegion::FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation, int nPreferIdx)
+{
+#ifndef _SERVER
+	// [VUNG 09/09] client: tra chi muc o thay vi duyet ca danh sach (cung thu tu, cung phep chon)
+	if (nMapX < 0 || nMapY < 0 || nMapX >= m_nWidth || nMapY >= m_nHeight)
+		return 0;
+	if (m_pNpcRef[nMapY * m_nWidth + nMapX] == 0)
+		return 0;
+	if (m_uNpcChiMuc != m_uNpcDoi || !m_pChiMucODau)
+		XayChiMucNpc();
+	if (m_pChiMucODau)
+	{
+		const int nO = nMapY * m_nWidth + nMapX;
+		int nFallback = 0, nKq = 0;
+		bool bXong = false;
+		for (int k = m_pChiMucODau[nO]; k < m_pChiMucODau[nO + 1] && !bXong; k++)
+		{
+			const int nIdx = m_pChiMucNpc[k];
+			if (nIdx <= 0 || nIdx >= MAX_NPC || Npc[nIdx].m_MapX != nMapX || Npc[nIdx].m_MapY != nMapY)
+				continue;	// phong ho: NPC doi o ma khong qua AddRef/DecRef (chi muc cu) -> bo qua nhu m_pNpcRef
+			if (NpcSet.GetRelation(nNpcIdx, nIdx) & nRelation)
+			{
+				if (nPreferIdx <= 0) { nKq = nIdx; bXong = true; break; }	// con dau tien theo thu tu danh sach
+				if (nIdx == nPreferIdx) { nKq = nIdx; bXong = true; break; }
+				if (nFallback == 0)
+					nFallback = nIdx;
+				else if ((Npc[nFallback].m_Doing == do_death || Npc[nFallback].m_Doing == do_revive) &&
+					Npc[nIdx].m_Doing != do_death && Npc[nIdx].m_Doing != do_revive)
+					nFallback = nIdx;
+			}
+		}
+		if (!bXong) nKq = nFallback;
+		if (g_nCorePaintLog > 0)	// bo do: moi 64 lan so voi duyet cu
+		{
+			if ((++g_uVungSo & 63) == 0 && FindNpcDuyet(nMapX, nMapY, nNpcIdx, nRelation, nPreferIdx) != nKq)
+				g_uVungLech++;
+		}
+		return nKq;
+	}
+#endif
+	return FindNpcDuyet(nMapX, nMapY, nNpcIdx, nRelation, nPreferIdx);
+}
+inline int KRegion::FindNpcDuyet(int nMapX, int nMapY, int nNpcIdx, int nRelation, int nPreferIdx)
 {
 	// FIX 24/08: thieu chan CAN TREN => cac ham quet vung tam nhin lon co the doc tran m_pNpcRef.
 	if (nMapX < 0 || nMapY < 0 || nMapX >= m_nWidth || nMapY >= m_nHeight)

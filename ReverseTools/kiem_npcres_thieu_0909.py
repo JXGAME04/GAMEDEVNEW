@@ -38,7 +38,13 @@ NPCRES = CLIENT + "/settings/NpcRes"
 KIND = NPCRES + "/npc_res_kind_file_name.txt"
 PAKDIR = CLIENT + "/data"
 HANG_TOI_DA = 62
-BANG_SUA = ("Hair",)
+BANG_SUA = ("Hair", "Shoulder", "LeftWeapon", "RightWeapon")
+# [09/09 b] theo log sau khi sua toc: nap hong con lai = VAI (MA/FM_SH_015/017/012/002: hang 1-46 khong co art, 50/50 o)
+# va TAY KHONG (LW_000 AT04/AT05/IJ03/RN03/ST05/WK03 o moi hang) + vu khi phai DE02 (023/025). Chinh sach:
+#   Shoulder (hang <= 62): o thieu -> cung hang cung id cung ho, khong co -> DE TRONG (dang khong ve gi; het tra pak/nap hong moi khung)
+#   LeftWeapon (moi hang): o thieu mang id 000 (tay khong) -> DE TRONG; o khac -> cung hang cung id cung ho, khong co -> giu
+#   RightWeapon (hang <= 62): cung hang cung id cung ho (DE02 -> DE01), khong co -> giu
+#   Hair: nhu tren (chep hang du phong)
 HAU_TO_BAK = ".truoc_thieu_0909"
 
 
@@ -209,11 +215,32 @@ for ten_bang in sorted(bang_can):
                 return k
         return None
 
-    thay = []   # (ri, ci, rj, cj, cach)
+    loai = "Hair" if "Hair" in ten_bang else ("Shoulder" if "Shoulder" in ten_bang else ("LeftWeapon" if "LeftWeapon" in ten_bang else "RightWeapon"))
+    thay = []   # (ri, ci, rj, cj, cach); rj == -1: DE TRONG
     for ri in sorted(theo_hang):
-        if ri > HANG_TOI_DA:
+        if ri > HANG_TOI_DA and loai != "LeftWeapon":
             continue          # hang > 62: vat pham khong tham chieu -> chi bao cao, khong sua
         ds = theo_hang[ri]
+        if loai != "Hair":
+            # CHI sua nhung gi log da chi ra (khong doan): vai = de trong; tay khong (id 000) = de trong (dang khong ve gi);
+            # vu khi phai: chi ho DE (chet) cung vu khi (DE02 -> DE01). Moi thu khac giu nguyen (de bao cao).
+            for ci in ds:
+                t = tach(rows[ri][ci])
+                if loai == "Shoulder":
+                    k = cung_hang(ri, ci, True)
+                    if k is not None:
+                        thay.append((ri, ci, ri, k, "cung hang, ho %s <- cot %d" % (t[2], k))); continue
+                    thay.append((ri, ci, -1, -1, "DE TRONG")); continue
+                if loai == "LeftWeapon":
+                    if t and t[1] == 0:
+                        thay.append((ri, ci, -1, -1, "DE TRONG")); continue
+                    thay.append((ri, ci, None, None, "KHONG CO DE XUAT")); continue
+                if loai == "RightWeapon":
+                    k = cung_hang(ri, ci, True) if (t and t[2] == "DE") else None
+                    if k is not None:
+                        thay.append((ri, ci, ri, k, "cung hang, ho %s <- cot %d" % (t[2], k))); continue
+                    thay.append((ri, ci, None, None, "KHONG CO DE XUAT")); continue
+            continue
         idr = id_rieng(ri)
         # hang HONG THAT: khong co art rieng (vd toc 01..11, 15: chi con 9 o 'Guqin' 141) -> lay tu hang du phong gan nhat
         hong_that = idr is None
@@ -245,23 +272,33 @@ for ten_bang in sorted(bang_can):
     # tom tat theo hang: so o moi cach + id dich
     tom = {}
     for ri, ci, rj, cj, cach in thay:
-        loai = "chep hang" if cach.startswith("chep hang") else ("cung id" if cach.startswith("cung hang, ho") and "id khac" not in cach else ("id khac" if "id khac" in cach else "KHONG"))
+        kieu = "chep hang" if cach.startswith("chep hang") else ("cung id" if cach.startswith("cung hang, ho") and "id khac" not in cach else ("id khac" if "id khac" in cach else ("trong" if cach == "DE TRONG" else "KHONG")))
         d = tom.setdefault(ri, {})
-        d[loai] = d.get(loai, 0) + 1
-        if rj is not None:
+        d[kieu] = d.get(kieu, 0) + 1
+        if rj is not None and rj >= 0:
             t2 = tach(rows[rj][cj])
             if t2:
                 d.setdefault("id", {}); d["id"][t2[1]] = d["id"].get(t2[1], 0) + 1
+    tong_kieu = {}
     for ri in sorted(tom):
         d = tom[ri]
-        ids = ", ".join("%d x%d" % (k, v) for k, v in sorted(d.get("id", {}).items(), key=lambda kv: -kv[1]))
-        print("      hang %3d %-16s thieu %2d/%2d: chep hang %2d | cung id %2d | id khac %2d | khong %2d | id dich: %s" % (
-            ri, rows[ri][0][:16], len(theo_hang[ri]), so_o_hang[ri], d.get("chep hang", 0), d.get("cung id", 0), d.get("id khac", 0), d.get("KHONG", 0), ids))
+        for k, v in d.items():
+            if k != "id": tong_kieu[k] = tong_kieu.get(k, 0) + v
+        if loai == "Hair" or len(tom) <= 70:
+            ids = ", ".join("%d x%d" % (k, v) for k, v in sorted(d.get("id", {}).items(), key=lambda kv: -kv[1]))
+            print("      hang %3d %-16s thieu %2d/%2d: chep hang %2d | cung id %2d | id khac %2d | trong %2d | khong %2d | id dich: %s" % (
+                ri, rows[ri][0][:16], len(theo_hang[ri]), so_o_hang[ri], d.get("chep hang", 0), d.get("cung id", 0), d.get("id khac", 0), d.get("trong", 0), d.get("KHONG", 0), ids))
+    print("      TONG %s: %s (hang co de xuat: %d)" % (ten_bang, ", ".join("%s %d" % kv for kv in sorted(tong_kieu.items())), len(tom)))
     if SUA:
         n = 0
         for ri, ci, rj, cj, cach in thay:
             if rj is None:
                 continue
+            if rj < 0:
+                rows[ri][ci] = ""
+                if info and ri < len(info) and ci < len(info[ri]):
+                    info[ri][ci] = ""
+                n += 1; continue
             rows[ri][ci] = rows[rj][cj]
             if info and ri < len(info) and rj < len(info) and ci < len(info[ri]) and cj < len(info[rj]):
                 info[ri][ci] = info[rj][cj]
