@@ -55,7 +55,9 @@ int  g_nRep3Flip      = 1;	// [D3D11 08/09 f] 1 = flip model (DWM ghep khung tro
 unsigned g_uRep3VeCoSang = 0;	// [SANGDUNG 09/09] so lan that su ve qua nhanh CO chieu sang
 int  g_nRep3LocKieu   = 1;	// [LOCTG b] 1 = chon loc, 0 = doi xung
 float g_fRep3LocK     = 2.0f;	// [LOCTG b] 255 / Rep3LocToi
-int  g_nRep3LocMs     = 0;	// [LOCTG 09/09] hang so thoi gian bo loc trinh khung (ms); 0 = tat
+int  g_nRep3LocMs     = 0;
+int  g_nRep3ChuGiuMs  = 12;	// [CHUGIU 09/09] giu vi tri man hinh cua chu (ms); 0 = tat
+unsigned g_uRep3ChuGiu = 0, g_uRep3ChuVe = 0;	// [LOCTG 09/09] hang so thoi gian bo loc trinh khung (ms); 0 = tat
 extern unsigned g_uRep3LocKhung;
 int  g_nRep3Pal       = 1;	// [D3D11 08/09 r] texture sprite bang mau 2 B/px (chi D3D11)
 int  g_nRep3Waitable  = 0;	// [D3D11 08/09 o] 0 = khong dung doi tuong cho (ban n giat)
@@ -2319,8 +2321,6 @@ void KRepresentShell3::LookAt(int nX, int nY, int nZ)
 // Chu A/B: giu 14 ms thi het am ma khong toi; giu ca the gioi thi giat => chi giu CHU. Theo thoi gian nen
 // 60 Hz khong giu, 143 Hz giu 1 khung, 240 Hz giu 2 khung. Nhan dien dong chu = bam chuoi+font, va vi tri
 // man hinh moi cach vi tri dang giu <= 24 px.
-int      g_nRep3ChuGiuMs = 12;
-unsigned g_uRep3ChuGiu = 0, g_uRep3ChuVe = 0;
 struct KRep3ChuGiu { unsigned uBam; int nX, nY; double dLuc; };
 static KRep3ChuGiu s_ChuGiu[512];
 static int         s_nChuGiuKe = 0;
