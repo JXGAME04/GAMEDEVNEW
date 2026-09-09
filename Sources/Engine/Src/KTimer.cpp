@@ -111,7 +111,7 @@ DWORD KTimer::GetElapseFrequency()
 //---------------------------------------------------------------------------
 DWORD KTimer::GetInterval()
 {
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 	return (DWORD)((m_nTimeStop.QuadPart - m_nTimeStart.QuadPart) 
 		* 1000 / m_nFrequency.QuadPart);
 #endif

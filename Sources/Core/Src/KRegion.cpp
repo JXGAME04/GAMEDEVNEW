@@ -1215,11 +1215,15 @@ BOOL KRegion::AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 		int index = nMapY * m_nWidth + nMapX;
 		if (index >= m_nWidth * m_nHeight || index < 0)
 			return FALSE;
+#ifdef JX_POSIX	// [ANDROID 08/09] khong co SEH
+		nRef = (int)pBuffer[index];
+#else
 		__try {
 			nRef = (int)pBuffer[index];
 		} __except (EXCEPTION_EXECUTE_HANDLER) {
 			return FALSE;
 		}
+#endif
 		if (nRef == 255)
 			return FALSE;
 		pBuffer[index]++;
@@ -1262,11 +1266,15 @@ BOOL KRegion::DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 		int index = nMapY * m_nWidth + nMapX;
         if (index >= m_nWidth * m_nHeight || index < 0)
         	return FALSE;
+#ifdef JX_POSIX	// [ANDROID 08/09] khong co SEH
+		nRef = (int)pBuffer[index];
+#else
 		__try {
 			nRef = (int)pBuffer[index];
 		} __except (EXCEPTION_EXECUTE_HANDLER) {
 			return FALSE;
 		}
+#endif
 		if (nRef == 0)
 		{
 			// [DO 31/08] Ai do vua tru mot o VON DA RONG => ke toan AddRef/DecRef da lech.

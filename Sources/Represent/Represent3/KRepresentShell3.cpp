@@ -162,6 +162,9 @@ void Rep3Log(const char* fmt, ...)
 
 bool Test3D()
 {
+#ifdef JX_NO_DIRECTX
+	return true;	// [ANDROID 08/09] khong co DirectDraw7 de hoi VRAM
+#else
 	IDirectDraw7 *pDDraw7;
 	DirectDrawCreateEx(NULL, (void**)&pDDraw7, IID_IDirectDraw7, NULL);
 	DDCAPS hel_ddcaps, hal_ddcpas ;
@@ -185,6 +188,7 @@ bool Test3D()
 		return false;
 
 	return true;
+#endif
 }
 
 static inline void DOWRDToRGB(DWORD color, DWORD &a, DWORD &r, DWORD &g, DWORD &b)
@@ -441,13 +445,13 @@ iRepresentShell* CreateRepresentShell()
 }
 
 IInlinePicEngineSink* g_pIInlinePicSinkRP = NULL;	//Ç¶ÈëÊ½Í¼Æ¬µÄ´¦Àí½Ó¿Ú[wxb 2003-6-20]
-HRESULT KRepresentShell3::AdviseRepresent(IInlinePicEngineSink* pSink)
+long KRepresentShell3::AdviseRepresent(IInlinePicEngineSink* pSink)	// [ANDROID 08/09] khop 'long' cua iRepresentShell.h (LP64)
 {
 	assert(NULL == g_pIInlinePicSinkRP);	//Ò»°ã²»»á¹Ò½ÓÁ½´Î
 	g_pIInlinePicSinkRP = pSink;
 	return S_OK;
 }
-HRESULT KRepresentShell3::UnAdviseRepresent(IInlinePicEngineSink* pSink)
+long KRepresentShell3::UnAdviseRepresent(IInlinePicEngineSink* pSink)	// [ANDROID 08/09] khop 'long' cua iRepresentShell.h (LP64)
 {
 	if (pSink == g_pIInlinePicSinkRP)
 		g_pIInlinePicSinkRP = NULL;

@@ -44,6 +44,7 @@ ENGINE_API FILE *serr = NULL;
 
 bool IsWindows8OrGreater()
 {
+#ifndef JX_POSIX	// [ANDROID 08/09] ntdll/RtlGetVersion chi co tren Windows
 	typedef LONG(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
 	HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll");
 	if (hMod) {
@@ -57,6 +58,7 @@ bool IsWindows8OrGreater()
 			}
 		}
 	}
+#endif
 	return false; // default to "not Windows 8 or greater"
 }
 

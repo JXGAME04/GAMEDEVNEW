@@ -310,6 +310,15 @@ typedef const TCHAR        *PCTSTR, *LPCTSTR;
 #define _tcstol             strtol
 #define _tcstoul            strtoul
 #define _tcstod             strtod
+#define _tcsspn             strspn
+#define _tcscspn            strcspn
+#define _tcsnset            strnset_compat
+#define _tcsrev             strrev
+#define _tcspbrk            strpbrk
+#define _tcsinc(p)          ((p) + 1)
+#define _tcsnextc(p)        ((unsigned char)*(p))
+typedef unsigned char       _TUCHAR;
+#define _tstoi              atoi
 #define _stprintf           sprintf
 #define _sntprintf          snprintf
 #define _vstprintf          vsprintf
@@ -1326,4 +1335,9 @@ static inline int _strtime_s(char *b, size_t n) { time_t t = time(0); struct tm 
 #define DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
     EXTERN_C const GUID name
 #endif
+#endif
+
+/* [ANDROID 08/09] tap con ham Win32 cai that (su kien/luong/thoi gian/tep/INI/user32) */
+#if !defined(_WIN32)
+#include "KPosixWin32.h"
 #endif

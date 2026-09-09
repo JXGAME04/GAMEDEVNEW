@@ -12,7 +12,7 @@
 #include "../elem/WndObjContainer.h"
 #include "../../../core/src/gamedatadef.h"
 
-enum UI_PLAYER_ATTRIBUTE;
+enum UI_PLAYER_ATTRIBUTE : int;	// [ANDROID 08/09] C++11 (clang): khai bao truoc phai co kieu nen
 struct KUiObjAtRegion;
 
 #define _ITEM_COUNT 17

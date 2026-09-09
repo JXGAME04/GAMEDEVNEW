@@ -15,7 +15,9 @@
 #include "KWin32Wnd.h"	// g_SetMainHWnd / g_SetDrawHWnd / g_GetMainHWnd
 extern int SCREEN_WIDTH, SCREEN_HEIGHT;	// S3Client.cpp (WND_INIT_* cua Engine khong export)
 #include <SDL3/SDL.h>
+#ifndef JX_POSIX
 #include <SDL3/SDL_main.h>	// SDL_RegisterApp/SDL_UnregisterApp (SDL.h khong include SDL_main.h; SDL_MAIN_HANDLED da define nen khong dinh nghia lai main)
+#endif
 
 static KSdlApp* s_pSdlApp = NULL;
 
@@ -138,8 +140,10 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 	// SDL3: khong con SDL_SetMainReady; SDL_MAIN_HANDLED (define cua cau hinh) la du vi WinMain cua S3Client tu goi Init/Run
 	// [SDL 08/09 WAUTO] WAuto ngoai tim game bang EnumWindows + GetClassNameA == "JXWC Class" (WAuto.cpp EnumWindowsProc) roi lay PID -> mo
 	// Local\Auto_Name_MMFSV_<pid>. Dang ky lop cua so cua SDL bang dung ten m_szClass TRUOC SDL_Init(VIDEO) (SDL chi tu dang ky khi chua co).
+#ifndef JX_POSIX
 	if (!SDL_RegisterApp(m_szClass, CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_OWNDC, hInstance))
 		g_DebugLog("[SDL] SDL_RegisterApp(%s) loi: %s", m_szClass, SDL_GetError());
+#endif
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
 	{
 		g_DebugLog("[SDL] SDL_Init loi: %s", SDL_GetError());
@@ -152,7 +156,12 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 		g_DebugLog("[SDL] SDL_CreateWindow loi: %s", SDL_GetError());
 		return FALSE;
 	}
+#ifdef JX_POSIX
+	HWND hWnd = (HWND)m_pWindow;	// [ANDROID 08/09] tren POSIX "HWND" = SDL_Window* (KPosixWin32: GetClientRect/SetWindowText... hieu no)
+	JxPosix_SetMainWindow(m_pWindow);
+#else
 	HWND hWnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_pWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+#endif
 	if (!hWnd)
 	{
 		g_DebugLog("[SDL] khong lay duoc HWND tu cua so SDL");
@@ -160,7 +169,9 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 	}
 	g_SetMainHWnd(hWnd);	// Represent3 (D3D9) va cac chi SetWindowText/MessageBox cu van dung HWND nay
 	g_SetDrawHWnd(hWnd);
+#ifndef JX_POSIX
 	SDL_SetWindowsMessageHook(KSdlApp_WinMsgHook, this);
+#endif
 	SDL_StartTextInput(m_pWindow);	// WM_CHAR tu SDL_EVENT_TEXT_INPUT (o mobile se bat/tat theo o nhap)
 	SDL_ShowCursor();
 	g_DebugLog("[SDL] cua so %dx%d, SDL %d.%d.%d, HWND %p", SCREEN_WIDTH, SCREEN_HEIGHT,
@@ -291,7 +302,9 @@ void KSdlApp::Run()
 		m_pWindow = NULL;
 	}
 	SDL_Quit();
+#ifndef JX_POSIX
 	SDL_UnregisterApp();	// doi voi SDL_RegisterApp o Init
+#endif
 }
 
 //---------------------------------------------------------------------------

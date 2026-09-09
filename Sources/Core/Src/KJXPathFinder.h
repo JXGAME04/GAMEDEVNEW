@@ -85,7 +85,7 @@ public:
 	{
 		m_pNode = pNode;
 	}
-	bool operator<(CONST OpenNodePtr& p)
+	bool operator<(CONST OpenNodePtr& p) const
 	{
 		return m_pNode->fcost > p.m_pNode->fcost;
 	}

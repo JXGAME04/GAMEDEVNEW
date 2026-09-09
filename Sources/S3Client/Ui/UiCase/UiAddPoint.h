@@ -5,7 +5,7 @@
 #include "../elem/WndEdit.h"
 #include "../elem/WndObjContainer.h"
 #include "../Elem/WndShowAnimate.h"
-enum UI_PLAYER_ATTRIBUTE;
+enum UI_PLAYER_ATTRIBUTE : int;	// [ANDROID 08/09] C++11 (clang): khai bao truoc phai co kieu nen
 
 #define ADDPOINT_MAX_VALUE	250
 

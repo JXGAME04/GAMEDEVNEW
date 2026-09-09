@@ -91,11 +91,13 @@ bool KCanvas::Init(int nWidth, int nHeight)
 
 void KCanvas::Terminate()
 {
+#ifndef JX_NO_DIRECTX	// [ANDROID 08/09] khong co DirectDrawSurface (m_pSurface luon NULL)
 	if (m_pSurface)
 	{
 		m_pSurface->Release();
 		m_pSurface = NULL;
 	}
+#endif
 }
 
 /*
@@ -334,6 +336,7 @@ BOOL KCanvas::MakeClip(long nX, long nY, long nWidth, long nHeight, KClipper* pC
 //---------------------------------------------------------------------------
 void KCanvas::FillCanvas(WORD wColor)
 {
+#ifndef JX_NO_DIRECTX	// [ANDROID 08/09] khong co DirectDrawSurface (m_pSurface luon NULL)
 	if (m_pSurface)
 	{
 		DDBLTFX ddbltfx;
@@ -341,6 +344,7 @@ void KCanvas::FillCanvas(WORD wColor)
 		ddbltfx.dwFillColor = wColor;
 		m_pSurface->Blt(NULL, NULL, NULL, DDBLT_COLORFILL, &ddbltfx);
 	}
+#endif
 
 /*	if (m_pSurface)
 	{
@@ -427,10 +431,12 @@ void KCanvas::UpdateScreen(LPRECT lpRect)
 //---------------------------------------------------------------------------
 void KCanvas::BltSurface(LPDIRECTDRAWSURFACE pSurface, RECT* pDestRect)
 {
+#ifndef JX_NO_DIRECTX
 	if (m_pSurface && pSurface && pDestRect)
 	{
 		m_pSurface->Blt(pDestRect, pSurface, NULL, DDBLT_WAIT, NULL);
 	}
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -1274,6 +1280,7 @@ void KCanvas::DrawBitmap16win(int nX, int nY, int nWidth, int nHeight, void* lpB
 //---------------------------------------------------------------------------
 void KCanvas::Clear(int nX, int nY, int nWidth, int nHeight, int nColor)
 {
+#ifndef JX_NO_DIRECTX	// [ANDROID 08/09] khong co DirectDrawSurface (m_pSurface luon NULL)
 	DDBLTFX ddbltfx;
 	if (m_pSurface)
 	{
@@ -1281,6 +1288,7 @@ void KCanvas::Clear(int nX, int nY, int nWidth, int nHeight, int nColor)
 		ddbltfx.dwFillColor = nColor;
 		m_pSurface->Blt(NULL, NULL, NULL, DDBLT_COLORFILL, &ddbltfx);
 	}
+#endif
 
 /*	KDrawNode	Node;
 	Node.m_pPrev = NULL;
@@ -1379,6 +1387,7 @@ void g_GetCanvasLockStats(unsigned int* pnCount, unsigned int* pnMicroSec, int b
 void* KCanvas::LockCanvas(int& nPitch)
 {
 	void* pBuffer = NULL;
+#ifndef JX_NO_DIRECTX	// [ANDROID 08/09] khong co DirectDrawSurface (m_pSurface luon NULL)
 	if (m_pSurface)
 	{
 		LARGE_INTEGER	qpcT0;
@@ -1399,11 +1408,13 @@ void* KCanvas::LockCanvas(int& nPitch)
 			g_nCanvasLockCount++;
 		}
 	}
+#endif
 	return pBuffer;
 }
 
 void KCanvas::UnlockCanvas()
 {
+#ifndef JX_NO_DIRECTX	// [ANDROID 08/09] khong co DirectDrawSurface (m_pSurface luon NULL)
 	if (m_pSurface)
 	{
 		LARGE_INTEGER	qpcT0;
@@ -1417,4 +1428,5 @@ void KCanvas::UnlockCanvas()
 			g_nCanvasLockTicks += (qpcT1.QuadPart - qpcT0.QuadPart);
 		}
 	}
+#endif
 }

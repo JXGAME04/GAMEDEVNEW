@@ -1,0 +1,132 @@
+# [ANDROID 08/09] Client JX1 tren Android (SDL3 + SDL_GPU/Vulkan + miniaudio + BSD socket).
+# Cung nguon voi GameSDL.exe (cau hinh ReleaseSDL cua cac vcxproj); danh sach tep/dinh nghia sinh tu vcxproj boi gen_lists.py.
+# Cau truc .so giong cau truc DLL tren Windows: libLua54.so, libEngine.so, libCoreClient.so, libRepresent3.so, libRainbow.so, libmain.so
+# (Rainbow/Represent3 duoc nap luc chay qua LoadLibrary -> dlopen, nhu tren Windows).
+# Cach dung: Android Studio / gradle goi qua android/app (externalNativeBuild), hoac tay:
+#   cmake -S android -B build/arm64 -G Ninja -DCMAKE_TOOLCHAIN_FILE=<NDK>/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24
+cmake_minimum_required(VERSION 3.22)
+project(JX1Mobile C CXX)
+
+set(JX_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
+set(JX_SRC ${JX_ROOT}/Sources)
+set(JX_SDL3_SRC ${JX_ROOT}/ThirdParty/SDL3-src/SDL3-3.2.14 CACHE PATH "nguon SDL3 (tai bang android/tai_sdl3_src.ps1)")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_EXTENSIONS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# ---- SDL3 tu nguon (libSDL3.so vao APK) ----
+if(NOT TARGET SDL3::SDL3)
+  set(SDL_SHARED ON CACHE BOOL "" FORCE)
+  set(SDL_STATIC OFF CACHE BOOL "" FORCE)
+  set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
+  add_subdirectory(${JX_SDL3_SRC} SDL3 EXCLUDE_FROM_ALL)
+endif()
+
+# ---- co chung cho moi TU cua game ----
+# -fsigned-char : char CO DAU nhu MSVC (byte TCVN3 > 0x7F, moi phep 'if (c < 0)')
+# -U__linux     : tat cac nhanh port may chu Linux cu (#ifndef __linux) -> client di nhanh "Windows" tren lop tuong thich
+# -D_WIN64      : di dung nhanh x64 da kiem chung (hop ngu -> C, con tro 8 byte); KHONG phai la Windows
+# -fms-extensions: __int64, __forceinline, __super... ; -w: tat canh bao (nguon TCVN3 sinh 'illegal character encoding')
+set(JX_COMMON_DEFS JX_PLATFORM_SDL JX_POSIX JX_ANDROID JX_NO_DIRECTX JX_D3D9MINI _WIN64 NDEBUG _MBCS USE_STANDALONE_SPR
+    _LIBCPP_ENABLE_CXX17_REMOVED_FEATURES _LIBCPP_ENABLE_CXX20_REMOVED_FEATURES)
+set(JX_COMMON_OPTS -fsigned-char -fms-extensions -U__linux -w -Wno-register -Wno-address-of-temporary -fno-strict-aliasing -Wno-error)
+set(JX_COMMON_INCS
+    ${JX_SRC}/Engine/Src/Platform/winshim     # windows.h, winsock2.h, mmsystem.h ... -> KPosixCompat.h
+    ${JX_SRC}/Engine/Src/Platform
+    ${JX_SRC}/Engine/Src/Platform/posixssl   # openssl/aes.h sha.h rand.h hmac.h -> KPosixCrypto.cpp (thay OpenSSL vcpkg)
+    ${JX_ROOT}/ThirdParty/miniaudio
+    ${JX_ROOT}/ThirdParty/stb)
+
+function(jx_setup tgt)
+  target_compile_definitions(${tgt} PRIVATE ${JX_COMMON_DEFS})
+  target_compile_options(${tgt} PRIVATE ${JX_COMMON_OPTS})
+  target_include_directories(${tgt} PRIVATE ${JX_COMMON_INCS})
+  target_link_libraries(${tgt} PRIVATE SDL3::SDL3 log android dl m)
+  if(NOT "${tgt}" STREQUAL "JxPosix")
+    target_link_libraries(${tgt} PRIVATE JxPosix)
+  endif()
+  # '#pragma comment(lib, "ws2_32")' cua ma Windows -> clang ghi ".deplibs"; lld ELF phai bo qua
+  target_link_options(${tgt} PRIVATE -Wl,--no-dependent-libraries)
+endfunction()
+
+# ---- libJxPosix.so: lop tuong thich Win32 (KPosixWin32.cpp) - MOT ban duy nhat (thu muc du lieu, cua so chinh, moc phim) cho moi .so ----
+add_library(JxPosix SHARED ${JX_SRC}/Engine/Src/Platform/KPosixWin32.cpp
+    ${JX_SRC}/Engine/Src/Platform/KPosixCrypto.cpp)
+jx_setup(JxPosix)
+
+include(lists/lua54.cmake)
+include(lists/filtertext.cmake)
+include(lists/commonlib.cmake)
+include(lists/rainbow.cmake)
+include(lists/engine.cmake)
+include(lists/represent3.cmake)
+include(lists/core.cmake)
+include(lists/s3client.cmake)
+
+# ---- Lua 5.4 (+ lua4compat) : libLua54.so, dung chung cho Engine/Core/main nhu Lua54Dll.dll ----
+add_library(Lua54 SHARED ${JX_LUA54_SOURCES})
+target_include_directories(Lua54 PUBLIC ${JX_LUA54_INCS})
+target_compile_definitions(Lua54 PRIVATE ${JX_LUA54_DEFS} LUA_USE_LINUX)
+target_compile_options(Lua54 PRIVATE -fsigned-char -fms-extensions -w)
+target_link_libraries(Lua54 PRIVATE dl m)
+
+# ---- FilterText (tinh, vao main nhu FilterText_StaticLib.lib) ----
+add_library(FilterText STATIC ${JX_FILTERTEXT_SOURCES})
+jx_setup(FilterText)
+target_compile_definitions(FilterText PRIVATE ${JX_FILTERTEXT_DEFS})
+
+# ---- JpgLib: tren POSIX chi con ban stb_image (4 ham API cua KJpegLib.h) ----
+add_library(JpgLib STATIC ${JX_SRC}/JpgLib/Src/KJpegLib_stb.cpp)
+jx_setup(JpgLib)
+target_include_directories(JpgLib PRIVATE ${JX_SRC}/JpgLib/Src)
+
+# ---- Common (tinh) + Rainbow (.so, nap luc chay: LoadLibrary("Rainbow.dll") -> dlopen("libRainbow.so")) ----
+add_library(Common STATIC ${JX_COMMONLIB_SOURCES})
+jx_setup(Common)
+target_compile_definitions(Common PRIVATE ${JX_COMMONLIB_DEFS})
+target_include_directories(Common PRIVATE ${JX_COMMONLIB_INCS})
+
+add_library(Rainbow SHARED ${JX_RAINBOW_SOURCES})
+jx_setup(Rainbow)
+target_compile_definitions(Rainbow PRIVATE ${JX_RAINBOW_DEFS})
+target_include_directories(Rainbow PRIVATE ${JX_RAINBOW_INCS})
+target_link_libraries(Rainbow PRIVATE Common)
+
+# ---- Engine.so ----
+add_library(Engine SHARED ${JX_ENGINE_SOURCES}
+    ${JX_SRC}/Engine/Src/Platform/KDDrawStub.cpp)
+jx_setup(Engine)
+target_compile_definitions(Engine PRIVATE ${JX_ENGINE_DEFS})
+target_include_directories(Engine PRIVATE ${JX_ENGINE_INCS})
+target_link_libraries(Engine PRIVATE JpgLib Lua54)
+
+# ---- Represent3.so (D3D9 tren SDL_GPU: Rep3Api=100, d3d9mini.h) ----
+add_library(Represent3 SHARED ${JX_REPRESENT3_SOURCES}
+    ${JX_SRC}/Represent/Represent3/RepresentUtilityStub.cpp)   # thay iRepresent/RepresentUtility.cpp (GDI+)
+jx_setup(Represent3)
+target_compile_definitions(Represent3 PRIVATE ${JX_REPRESENT3_DEFS})
+target_include_directories(Represent3 PRIVATE ${JX_REPRESENT3_INCS} ${JX_SRC}/Represent/Represent3)   # winshim/d3d9.h -> d3d9mini.h
+target_link_libraries(Represent3 PRIVATE Engine)
+
+# ---- CoreClient.so ----
+add_library(CoreClient SHARED ${JX_CORE_SOURCES})
+jx_setup(CoreClient)
+target_compile_definitions(CoreClient PRIVATE ${JX_CORE_DEFS})
+target_include_directories(CoreClient PRIVATE ${JX_CORE_INCS})
+target_link_libraries(CoreClient PRIVATE Engine Lua54)
+
+# ---- main (S3Client -> libmain.so, SDLActivity nap "SDL3" + "main", SDL_main trong Platform/JxAndroidMain.cpp) ----
+add_library(main SHARED ${JX_S3CLIENT_SOURCES}
+    ${JX_SRC}/S3Client/Platform/JxAndroidMain.cpp)
+jx_setup(main)
+target_compile_definitions(main PRIVATE ${JX_S3CLIENT_DEFS})
+target_include_directories(main PRIVATE ${JX_S3CLIENT_INCS})
+target_link_libraries(main PRIVATE CoreClient Engine FilterText Lua54)
+# Rainbow / Represent3 khong link truc tiep (nap qua dlopen) nhung phai duoc build cung de vao APK
+add_dependencies(main Rainbow Represent3)

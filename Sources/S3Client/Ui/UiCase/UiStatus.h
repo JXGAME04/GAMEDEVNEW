@@ -10,7 +10,7 @@
 #include "../Elem/WndShowAnimate.h"
 #include "../elem/WndObjContainer.h"
 
-enum UI_PLAYER_ATTRIBUTE;
+enum UI_PLAYER_ATTRIBUTE : int;	// [ANDROID 08/09] C++11 (clang): khai bao truoc phai co kieu nen
 struct KUiPlayerRuntimeInfo;
 struct KUiObjAtRegion;
 struct KUiPlayerAttribute;

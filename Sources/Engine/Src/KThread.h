@@ -11,18 +11,18 @@
 //---------------------------------------------------------------------------
 typedef void (* TThreadFunc)(void* arg);
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(JX_PLATFORM_SDL)
 #include <pthread.h>
 #endif
 //---------------------------------------------------------------------------
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 class ENGINE_API KThread
 #else
 class KThread
 #endif
 {
 private:
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 	HANDLE			m_ThreadHandle;
 	DWORD			m_ThreadId;
 #else
@@ -43,7 +43,7 @@ public:
 	BOOL			SetPriority(int priority);
 //private:
 	DWORD			ThreadFunction();
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 //	static			DWORD __stdcall ThreadProc(LPVOID lpParam);
 #else
 //	void * ThreadProc(LPVOID lpParam);

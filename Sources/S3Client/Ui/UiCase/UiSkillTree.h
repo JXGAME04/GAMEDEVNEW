@@ -12,7 +12,7 @@
 
 #define	SKILLTREE_MAX_SKILL_COUNT		65
 #define	SKILLTREE_SHORTCUT_SKILL_COUNT	9
-enum SHORTCUT_KEY_INDEX;
+enum SHORTCUT_KEY_INDEX : int;	// [ANDROID 08/09] C++11 (clang): khai bao truoc phai co kieu nen
 
 class KUiSkillTree : protected KWndWindow
 {

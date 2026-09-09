@@ -133,6 +133,7 @@ static UINT g_DrawVisionTime = 0;
 static int g_ALGStep = 0;
 static UINT g_AGLNextTime = 0;
 
+#ifndef JX_POSIX	// [ANDROID 08/09] minidump/SEH chi Windows
 int GenerateMiniDump(HANDLE hFile, LPEXCEPTION_POINTERS lpExceptionPointer, PWCHAR pwAppName)
 {
 	BOOL bOwndumpFile = FALSE;
@@ -207,7 +208,22 @@ LONG WINAPI ExeptionFillert(LPEXCEPTION_POINTERS lpExceptionInfo)
 
 	return GenerateMiniDump(NULL, lpExceptionInfo, L"client");
 }
+#endif // JX_POSIX
 
+#ifdef JX_POSIX
+// [ANDROID 08/09] Diem vao POSIX (Platform/JxAndroidMain.cpp goi tu SDL_main): phan WinMain khong dinh Windows
+// (khong CrashLog/SEH/AntiHack/splash - cac tep do khong bien dich tren Android).
+int JxPosixMain(int argc, char* argv[])
+{
+	(void)argc; (void)argv;
+	hInst = NULL;
+	LoadResolutionFromConfig();
+	SetEngineResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
+	if (MyApp.Init(NULL))
+		MyApp.Run();
+	return 0;
+}
+#else
 int APIENTRY WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
 	LPSTR     lpCmdLine,
@@ -310,6 +326,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	return 0;
 }
+#endif // JX_POSIX
 
 KMyApp::KMyApp()
 {
@@ -422,6 +439,7 @@ BOOL KMyApp::GameInit()
 	g_bTrayActive = FALSE;
 	g_uTaskbarCreated = RegisterWindowMessageA("TaskbarCreated");
 
+#ifndef JX_POSIX	// [ANDROID 08/09] kiem ten tien trinh (Toolhelp) chi Windows
 	DWORD aPid = GetCurrentProcessId();
 	PROCESSENTRY32 processInfo;
 	processInfo.dwSize = sizeof(processInfo);
@@ -460,6 +478,7 @@ BOOL KMyApp::GameInit()
 	//return std::wstring();
 
 
+#endif // JX_POSIX
 	Error_SetErrorString("KMyApp::GameInit");
 #ifdef KUI_USE_HARDWARE_MOUSE
 

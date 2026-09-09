@@ -29,6 +29,10 @@
 #else
 #define LUA_API		extern __declspec(dllimport)
 #endif
+#if !defined(_WIN32)
+#undef LUA_API
+#define LUA_API		extern	/* [ANDROID 08/09] .so: khong co __declspec */
+#endif
 #define LUALIB_API	LUA_API
 
 #ifdef __cplusplus

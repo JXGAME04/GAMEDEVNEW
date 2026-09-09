@@ -83,6 +83,7 @@ public:
 // ·µ»Ø:	TRUE	³É¹¦
 //			FALSE	Ê§°Ü
 //---------------------------------------------------------------------------
+#ifndef JX_NO_DIRECTX
 inline LPVOID KDirectDraw::LockPrimaryBuffer()
 {
 	DDSURFACEDESC	ddsd;
@@ -178,6 +179,13 @@ inline void KDirectDraw::UpdateScreen(LPRECT lpRect)
 
 
 
+#else	// [ANDROID 08/09] JX_NO_DIRECTX: khong co DirectDraw, than ham trong (g_pDirectDraw luon NULL - xem Platform/KDDrawStub.cpp)
+inline LPVOID KDirectDraw::LockPrimaryBuffer() { return NULL; }
+inline void KDirectDraw::UnLockPrimaryBuffer() {}
+inline LPVOID KDirectDraw::LockBackBuffer() { return NULL; }
+inline void KDirectDraw::UnLockBackBuffer() {}
+inline void KDirectDraw::UpdateScreen(LPRECT lpRect) { (void)lpRect; }
+#endif // JX_NO_DIRECTX
 extern ENGINE_API KDirectDraw* g_pDirectDraw;
 
 //---------------------------------------------------------------------------

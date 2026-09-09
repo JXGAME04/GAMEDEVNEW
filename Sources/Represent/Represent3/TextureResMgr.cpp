@@ -131,6 +131,9 @@ void TextureResMgr::SetBudget()
 // [REP3 08/09 q] dem tien trinh cung ten exe (4 tab game): moi client chia nhau VRAM
 static int Rep3DemClient()
 {
+#ifdef JX_POSIX
+	return 1;	// [ANDROID 08/09] mot tien trinh
+#else
 	char szMe[MAX_PATH] = ""; GetModuleFileNameA(NULL, szMe, MAX_PATH);
 	const char* pMe = strrchr(szMe, '\\'); pMe = pMe ? pMe + 1 : szMe;
 	int n = 0;
@@ -140,6 +143,7 @@ static int Rep3DemClient()
 	if (Process32First(hSnap, &pe)) { do { if (_stricmp(pe.szExeFile, pMe) == 0) n++; } while (Process32Next(hSnap, &pe)); }
 	CloseHandle(hSnap);
 	return n < 1 ? 1 : n;
+#endif
 }
 void TextureResMgr::CapBudgetByVram(unsigned __int64 uVramFreeMB)
 {

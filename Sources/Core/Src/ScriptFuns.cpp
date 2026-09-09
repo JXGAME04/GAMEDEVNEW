@@ -68,7 +68,7 @@
 #include "KAuctionClient.h"	// [DAUGIA 04/09 A3] cua so dau gia (client)
 #include "KChienLenhClient.h"	// [CL 04/09 DOT2] cau noi Lua <-> cua so Chien Lenh (client)
 #include "KBiaoChe.h"	// [LMBC 06/09] xe tieu Long Mon
-#ifndef WIN32
+#if !defined(WIN32) && !defined(JX_POSIX)
 typedef struct  _SYSTEMTIME
 {
 	WORD wYear;

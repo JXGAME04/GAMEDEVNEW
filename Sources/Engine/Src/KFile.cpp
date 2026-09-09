@@ -9,7 +9,7 @@
 #include "KWin32.h"
 #include "KFilePath.h"
 #include "KFile.h"
-#ifndef WIN32
+#if !defined(WIN32) && !defined(JX_POSIX)
 #include "zport.h"
 #endif
 //---------------------------------------------------------------------------

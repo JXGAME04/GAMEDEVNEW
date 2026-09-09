@@ -11,14 +11,14 @@
 //---------------------------------------------------------------------------
 #define SINGLE_PROCESS
 //---------------------------------------------------------------------------
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 class ENGINE_API KMutex
 #else
 class KMutex
 #endif
 {
 private:
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 #ifdef SINGLE_PROCESS
 	CRITICAL_SECTION m_CriticalSection;//用于单进程的线程同步
 #else

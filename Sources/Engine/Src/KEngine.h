@@ -14,12 +14,16 @@
 #ifndef _SERVER
 #include "KDDraw.h"
 #include "KDSound.h"
+#ifndef JX_NO_DIRECTX	// [ANDROID 08/09] KDDraw.h/KDSound.h bien dich duoc (typedef + stub); DirectInput thi khong
 #include "KDInput.h"
+#endif
 #endif
 #include "KFile.h"
 #include "KFilePath.h"
 #ifndef _SERVER
+#ifndef JX_NO_DIRECTX
 #include "KFileDialog.h"
+#endif
 #endif
 #include "KTimer.h"
 #include "KMemBase.h"

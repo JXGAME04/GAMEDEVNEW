@@ -28,6 +28,9 @@ Point MapHandler::generateRandomPointInside() {
     }
 }
 
+#ifdef M_PI
+#undef M_PI	// [ANDROID 08/09] math.h co macro M_PI, ham nay dung bien cuc bo cung ten
+#endif
 void MapHandler::generateTrapLayers(Point center) {
     trap_layers.clear();
 	double M_PI = 3.14159265358979323846; // Define M_PI if not available

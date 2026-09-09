@@ -101,7 +101,7 @@ void KSpriteCodec::ConvertRect(LPRECT lpRect)
 //			pBuffer		缓存
 // 返回:	转换后的大小(in bytes)
 //---------------------------------------------------------------------------
-long KSpriteCodec::ConvertLine(int nX, int nY, int nWidth, PBYTE pBuffer)
+LONG KSpriteCodec::ConvertLine(int nX, int nY, int nWidth, PBYTE pBuffer)
 {
 	BYTE  byAlpha = 0;
 	BYTE  byCount = 0;

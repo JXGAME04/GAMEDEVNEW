@@ -87,3 +87,12 @@ ReverseTools/cauhinh/*.log
 ReverseTools/cauhinh/mocoi_*.txt
 ReverseTools/cauhinh/phuthuoc_*.txt
 ReverseTools/cauhinh/duongnap_*.txt
+
+# [ANDROID 08/09] san pham build Android + nguon SDL3 tai ve (android/tai_sdl3_src.ps1) + gradle
+android/build/
+android/gradle-project/.gradle/
+android/gradle-project/build/
+android/gradle-project/app/build/
+android/gradle-project/app/.cxx/
+android/gradle-project/local.properties
+ThirdParty/SDL3-src/

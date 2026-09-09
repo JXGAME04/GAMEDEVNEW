@@ -1139,7 +1139,7 @@ struct KUiPlayerRuntimeInfo
 	int		nShieldFull;	// [VHTD 02/09g] khien tinh toi da luc ap
 };
 
-enum UI_PLAYER_ATTRIBUTE
+enum UI_PLAYER_ATTRIBUTE : int	// [ANDROID 08/09] khop khai bao truoc 'enum UI_PLAYER_ATTRIBUTE : int' (UiAddPoint.h/UiStatus.h)
 {
 	UIPA_STRENGTH = 0,			//¡¶¡ø
 	UIPA_DEXTERITY,				//√ÙΩ›

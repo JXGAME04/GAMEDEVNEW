@@ -1,0 +1,50 @@
+// [ANDROID 08/09] Client JX1 Mobile - goi APK: Java cua SDL3 (org.libsdl.app.SDLActivity) + cac .so tu android/CMakeLists.txt
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace = "vn.jx1.mobile"
+    compileSdkVersion 34
+    ndkVersion "25.2.9519653"
+    defaultConfig {
+        applicationId "vn.jx1.mobile"
+        minSdkVersion 24
+        targetSdkVersion 34
+        versionCode 1
+        versionName "0.1"
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_PLATFORM=android-24", "-DANDROID_STL=c++_shared", "-DCMAKE_BUILD_TYPE=Release"
+                abiFilters 'arm64-v8a'
+                targets "main", "SDL3-shared", "JxPosix", "Engine", "CoreClient", "Represent3", "Rainbow", "Lua54"
+            }
+        }
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    applicationVariants.all { variant ->
+        tasks["merge${variant.name.capitalize()}Assets"]
+            .dependsOn("externalNativeBuild${variant.name.capitalize()}")
+    }
+    externalNativeBuild {
+        cmake {
+            path '../../CMakeLists.txt'
+            version '3.22.1'
+        }
+    }
+    lint {
+        abortOnError = false
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+}

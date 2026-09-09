@@ -10,13 +10,13 @@
 #include "KDebug.h"
 #include "KMemBase.h"
 #include "KThread.h"
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 #include "process.h"
 #endif
 
 KThread::KThread()
 {
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 	m_ThreadHandle	= NULL;
 	m_ThreadId		= 0;
 	m_ThreadFunc	= NULL;
@@ -31,7 +31,7 @@ KThread::KThread()
 //---------------------------------------------------------------------------
 KThread::~KThread()
 {
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 	if (m_ThreadHandle)
 	{
 		CloseHandle(m_ThreadHandle);
@@ -47,7 +47,7 @@ KThread::~KThread()
 // 参数:	lpParam		参数
 // 返回:	void
 //---------------------------------------------------------------------------
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 unsigned __stdcall MyThreadProc(LPVOID lpParam)
 #else
 void * MyThreadProc(LPVOID lpParam)
@@ -55,7 +55,7 @@ void * MyThreadProc(LPVOID lpParam)
 {
  printf("start thread %d\n", lpParam);
 	KThread* pThread = (KThread*)lpParam;
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 	return pThread->ThreadFunction();
 #else
 	return (void *)pThread->ThreadFunction();
@@ -214,7 +214,7 @@ int KThread::GetPriority()
 //---------------------------------------------------------------------------
 BOOL KThread::SetPriority(int priority)
 {
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 	return SetThreadPriority(m_ThreadHandle, priority);
 #endif
 //	return FALSE;

@@ -29,12 +29,10 @@
 	#ifndef CONST
 		#define CONST const
 	#endif
-	typedef void* HMONITOR;
 	#ifndef _RGNDATA_MINI
 	#define _RGNDATA_MINI
 	typedef struct _RGNDATAHEADER { DWORD dwSize; DWORD iType; DWORD nCount; DWORD nRgnSize; RECT rcBound; } RGNDATAHEADER;
 	typedef struct _RGNDATA { RGNDATAHEADER rdh; char Buffer[1]; } RGNDATA;
-	typedef struct tagPALETTEENTRY { BYTE peRed; BYTE peGreen; BYTE peBlue; BYTE peFlags; } PALETTEENTRY;
 	#ifndef _LUID_MINI
 	#define _LUID_MINI
 	typedef struct _LUID { DWORD LowPart; LONG HighPart; } LUID;
@@ -379,12 +377,8 @@ typedef struct _D3DCAPS9
 
 // ---------------------------------------------------------------- GUID
 #ifndef _WIN32
-inline bool IsEqualGUID(const GUID& a, const GUID& b) { return memcmp(&a, &b, sizeof(GUID)) == 0; }
 #endif
 #define JX_DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) static const GUID name = { l, w1, w2, { b1, b2, b3, b4, b5, b6, b7, b8 } }
-#ifndef _WIN32
-JX_DEFINE_GUID(IID_IUnknown, 0x00000000, 0x0000, 0x0000, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46);
-#endif
 JX_DEFINE_GUID(IID_IDirect3D9,             0x81bdcbca, 0x64d4, 0x426d, 0xae, 0x8d, 0xad, 0x01, 0x47, 0xf4, 0x27, 0x5c);
 JX_DEFINE_GUID(IID_IDirect3DDevice9,       0xd0223b96, 0xbf7a, 0x43fd, 0x92, 0xbd, 0xa4, 0x3b, 0x0d, 0x82, 0xb9, 0xeb);
 JX_DEFINE_GUID(IID_IDirect3DResource9,     0x05eec05d, 0x8f7d, 0x4362, 0xb9, 0x99, 0xd1, 0xba, 0xf3, 0x57, 0xc7, 0x04);
@@ -395,14 +389,7 @@ JX_DEFINE_GUID(IID_IDirect3DVertexBuffer9, 0xb64bb1b5, 0xfd70, 0x4df6, 0xbf, 0x9
 JX_DEFINE_GUID(IID_IDirect3DStateBlock9,   0xb07c4fe5, 0x310d, 0x4ba8, 0xa2, 0x3c, 0x4f, 0x0f, 0x20, 0x6f, 0x21, 0x8b);
 
 // ---------------------------------------------------------------- giao dien (thu tu vtable nhu d3d9.h)
-#ifndef _WIN32
-struct IUnknown
-{
-	virtual HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObj) = 0;
-	virtual ULONG   __stdcall AddRef() = 0;
-	virtual ULONG   __stdcall Release() = 0;
-};
-#endif
+/* IUnknown: KPosixCompat.h (POSIX) / unknwn.h (Windows) */
 struct IDirect3D9; struct IDirect3DDevice9; struct IDirect3DResource9; struct IDirect3DBaseTexture9; struct IDirect3DTexture9; struct IDirect3DSurface9;
 struct IDirect3DVertexBuffer9; struct IDirect3DIndexBuffer9; struct IDirect3DStateBlock9; struct IDirect3DSwapChain9; struct IDirect3DVolumeTexture9;
 struct IDirect3DCubeTexture9; struct IDirect3DVertexDeclaration9; struct IDirect3DVertexShader9; struct IDirect3DPixelShader9; struct IDirect3DQuery9;
@@ -629,6 +616,14 @@ inline IDirect3D9* Direct3DCreate9(UINT) { return (IDirect3D9*)0; }
 inline HRESULT Direct3DCreate9Ex(UINT, IDirect3D9Ex** pp) { if (pp) *pp = (IDirect3D9Ex*)0; return E_FAIL; }
 
 // ---------------------------------------------------------------- d3dx9 tap con
+#define D3DPCMPCAPS_NEVER        0x00000001
+#define D3DPCMPCAPS_LESS         0x00000002
+#define D3DPCMPCAPS_EQUAL        0x00000004
+#define D3DPCMPCAPS_LESSEQUAL    0x00000008
+#define D3DPCMPCAPS_GREATER      0x00000010
+#define D3DPCMPCAPS_NOTEQUAL     0x00000020
+#define D3DPCMPCAPS_GREATEREQUAL 0x00000040
+#define D3DPCMPCAPS_ALWAYS       0x00000080
 #define D3DX_PI            ((float)3.141592654f)
 #define D3DXToRadian(degree) ((degree) * (D3DX_PI / 180.0f))
 #define D3DXToDegree(radian) ((radian) * (180.0f / D3DX_PI))

@@ -17,7 +17,9 @@
 #include "UiOptions.h"
 #include "UiOptions2.h"
 #include "UiConnectInfo.h"
+#ifndef JX_POSIX	// [ANDROID 08/09] video mo dau (KLVideo) chi Windows
 #include "UiPlayVideo.h"
+#endif
 #include "../UiSoundSetting.h"
 #include "UiNotice.h"
 
@@ -108,6 +110,7 @@ void KUiInit::PlayStartMovie()
 		strcat(szMovieIndex, "_Skipable");
 		Ini.GetInteger("JustLaunched", szMovieIndex, 0, &nSkipable);
 
+#ifndef JX_POSIX
 		if (szFile[0])
 		{			
 			KUiPlayVideo* pPlayer = KUiPlayVideo::OpenWindow();
@@ -127,8 +130,11 @@ void KUiInit::PlayStartMovie()
 				}
 			}
 		}
+#endif
 	}
+#ifndef JX_POSIX
 	KUiPlayVideo::CloseWindow(true);
+#endif
 	Wnd_ShowCursor(true);
 	OpenWindow(true, false);
 }

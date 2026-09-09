@@ -1,0 +1,2 @@
+# [ANDROID 08/09] Tep loai them khoi ban Android (ngoai regex WINONLY trong gen_lists.py). Duong dan tuong doi goc kho, moi dong mot tep.
+Sources/Represent/iRepresent/RepresentUtility.cpp      # GDI+ luu JPG -> Represent3/RepresentUtilityStub.cpp

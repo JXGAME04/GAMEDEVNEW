@@ -9,14 +9,14 @@
 #ifndef KTimer_H
 #define KTimer_H
 //---------------------------------------------------------------------------
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 class ENGINE_API KTimer
 #else
 class KTimer
 #endif
 {
 private:
-#ifdef WIN32
+#if defined(WIN32) || defined(JX_PLATFORM_SDL)
 	LARGE_INTEGER	m_nFrequency;
 	LARGE_INTEGER	m_nTimeStart;
 	LARGE_INTEGER	m_nTimeStop;

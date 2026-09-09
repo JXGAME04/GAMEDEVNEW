@@ -69,12 +69,11 @@
 	typedef struct sockaddr_in	SOCKADDR_IN;
 	typedef struct linger		LINGER;
 	typedef struct timeval		TIMEVAL;
-	typedef struct { unsigned long len; char *buf; } WSABUF;	/* CIOBuffer::m_wsabuf */
-	typedef struct { void *Internal; void *InternalHigh; unsigned Offset; unsigned OffsetHigh; void *hEvent; } OVERLAPPED;	/* CIOBuffer ke thua, chi giu bo cuc */
-	typedef struct { int wVersion; } WSADATA;					/* CUsesWinsock::m_data */
+	/* [ANDROID 08/09] WSABUF: dung dinh nghia cua KPosixCompat.h */
+	/* [ANDROID 08/09] OVERLAPPED: dung dinh nghia cua KPosixCompat.h */
+	/* [ANDROID 08/09] WSADATA: dung dinh nghia cua KPosixCompat.h */
+	/* [ANDROID 08/09] closesocket / WSAGetLastError / Interlocked*: KPosixCompat.h + KPosixWin32.h da co */
 
-	#define closesocket( s )	::close( s )
-	#define WSAGetLastError()	errno
 
 	/* gia tri FD_* nhu Winsock, chi dung noi bo CEventSelect */
 	#define FD_READ		0x01
@@ -111,8 +110,6 @@
 		return err;
 	}
 
-	inline long InterlockedIncrement( volatile long *p ) { return __sync_add_and_fetch( p, 1 ); }
-	inline long InterlockedDecrement( volatile long *p ) { return __sync_sub_and_fetch( p, 1 ); }
 
 #endif	/* _WIN32 */
 

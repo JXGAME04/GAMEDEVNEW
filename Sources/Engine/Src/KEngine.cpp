@@ -22,7 +22,7 @@ BOOL g_InitEngine()
 
 	// set root path
 	g_SetRootPath(NULL);
-#ifndef _SERVER
+#if !defined(_SERVER) && !defined(JX_NO_DIRECTX)
 	// init ddraw
 	if (g_pDirectDraw)
 		if (!g_pDirectDraw->Init())
@@ -47,7 +47,7 @@ BOOL g_InitEngine()
 //---------------------------------------------------------------------------
 void g_ExitEngine()
 {
-#ifndef _SERVER
+#if !defined(_SERVER) && !defined(JX_NO_DIRECTX)
 	if (g_pDirectDraw)
 		g_pDirectDraw->Exit();
 	if (g_pDirectInput)
