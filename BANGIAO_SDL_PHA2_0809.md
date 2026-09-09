@@ -258,3 +258,50 @@ backlog thật 447 điểm gọi / 125 API (khoá luồng, phím/con trỏ, tệ
 `g_SetLoopInterval` (1 ms khi `PaintFps > 60` hoặc `PaintVsync=1`), còn `KSdlApp::Run` đang cứng 8 ms → thêm `g_GetLoopInterval()` (chỉ `#ifdef JX_PLATFORM_SDL`
 trong `KWin32App.cpp/.h`) và `KSdlApp::Run` đọc lại mỗi vòng như `KWin32App::Run`. `S3Client.cpp` `PaintFps=-1` dùng `EnumDisplaySettingsA` (Win32) → trên
 Android thay bằng `SDL_GetCurrentDisplayMode` (pha 4). Sau rebase build lại cả hai chuỗi (`build_chuoi_x64.ps1 -Target Build`, `build_chuoi_sdl.ps1 -Target Rebuild`).
+
+## 13. (19:5x→) PHA 4: dựng client cho Android (NDK r25, arm64-v8a) — chủ: *"hãy tiếp tục khi có bản test android"*
+
+**Hệ build (thư mục `android/`, đều đã commit):**
+- `CMakeLists.txt`: toolchain NDK (`android.toolchain.cmake`, Ninja của SDK 3.22.1), `.so` theo đúng cấu trúc DLL trên Windows: `libSDL3.so` (dựng từ nguồn
+  `ThirdParty/SDL3-src/SDL3-3.2.14`, tải bằng `android/tai_sdl3_src.ps1`, không vào git), **`libJxPosix.so`** (lớp tương thích Win32, một bản duy nhất cho mọi .so),
+  `libLua54.so`, `libEngine.so` (+ JpgLib stb, KDDrawStub), `libCoreClient.so`, `libRepresent3.so` (SDL_GPU, d3d9mini), `libRainbow.so` (+ Common tĩnh, nạp lúc chạy
+  qua `LoadLibrary("Rainbow.dll")` → `dlopen("libRainbow.so")`), `libmain.so` (S3Client + FilterText; `SDL_main` ở `S3Client/Platform/JxAndroidMain.cpp`).
+- `gen_lists.py` → `android/lists/*.cmake`: danh sách tệp/định nghĩa/include **sinh từ chính các vcxproj cấu hình ReleaseSDL** (cùng nguồn GameSDL.exe),
+  loại 33 TU Windows-only (DirectX/IME/video/AntiHack/CrashLog/khay/PerfHud/JxReplay) + `D3D9on11*` + JPEG WIC; loại thêm ghi ở `android/loai_tru.txt`.
+- `gen_winshim.py` → `Sources/Engine/Src/Platform/winshim/` (147 header tên Windows: `windows.h`, `winsock2.h`, `mmsystem.h`, `ddraw.h`… → `KPosixCompat.h`;
+  `d3d9*.h` → `d3d9mini.h`) — nên 60+ dòng `#include <windows.h>` trong nguồn không phải sửa. Chỉ vào đường include của bản Android.
+- `gradle-project/` (mẫu `android-project` của SDL3, Java `org.libsdl.app.SDLActivity`): gói `vn.jx1.mobile`, minSdk 24, `arm64-v8a`, cmake trỏ `../../CMakeLists.txt`,
+  màn ngang (`sensorLandscape`), quyền INTERNET. Gradle 8.12 + AGP 8.7.3 + JDK 17 (Temurin, đã có), SDK `C:\Users\nguye\AppData\Local\Android\Sdk` (NDK 25.2, build-tools 34,
+  platform 34, cmake 3.22.1). `local.properties` (không vào git): `sdk.dir=C:/Users/nguye/AppData/Local/Android/Sdk`.
+- Dựng tay: `cmake -S android -B android/build/arm64 -G Ninja -DCMAKE_TOOLCHAIN_FILE=<NDK>/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a
+  -DANDROID_PLATFORM=android-24 -DANDROID_STL=c++_shared` rồi `cmake --build android/build/arm64 -- -k 0`. APK: `gradlew.bat assembleDebug` trong `gradle-project`
+  (chạy bằng PowerShell, đặt `JAVA_HOME`).
+
+**Lớp tương thích (`Sources/Engine/Src/Platform/`):** `KPosixCompat.h` (kiểu/hằng/CRT, có từ khảo sát) + **`KPosixWin32.h/.cpp`** (hàm Win32 cài thật trên POSIX+SDL3:
+CRITICAL_SECTION (pthread đệ quy), CreateEvent/SetEvent/WaitForSingleObject/CloseHandle (handle có "magic"), CreateThread/_beginthreadex (SDL_Thread), GetLocalTime/
+FILETIME/QueryPerformanceCounter, LoadLibrary/GetProcAddress (dlopen, `X.dll` → `libX.so`), thư mục/tệp + FindFirstFile (opendir/fnmatch), GetPrivateProfile* (bộ đọc INI riêng),
+user32 (cửa sổ = SDL_Window của KSdlApp; GetKeyState/PostMessage qua móc `g_pfnJxGetKeyState`/`g_pfnJxWinMsg` để KSdlApp nối sau), clipboard/caret, MultiByteToWideChar
+(SDL_iconv, WCHAR = wchar_t 32 bit), MessageBox (SDL), stub registry/version/psapi/Toolhelp/file mapping (WAuto) — **đường dẫn**: `JxPathPosix()` đổi `\` → `/`, hạ chữ
+thường phần tương đối hoặc dưới thư mục dữ liệu; `fopen/_access/remove/rename/_mkdir/_chdir` bị macro sang `jx_*`) + `KDDrawStub.cpp` (g_pDirectDraw luôn NULL).
+Thay thế: `JpgLib/Src/KJpegLib_stb.cpp` (4 hàm API cũ trên `stb_image` — `ThirdParty/stb/stb_image.h`, public domain, tải 08/09), `Represent3/RepresentUtilityStub.cpp` (GDI+).
+
+**Vá nguồn có guard (5 đợt, `android/va_nguon_android_1..5.py`, byte-an-toàn, lặp lại vô hại; PC không đổi — hai chuỗi Windows build lại 0 lỗi sau mỗi đợt):**
+`KThread/KMutex/KTimer` (`#ifdef WIN32` → `|| JX_PLATFORM_SDL`), `KEngine.h` (KDInput/KFileDialog dưới `JX_NO_DIRECTX`), `KDDraw.h` (5 inline), `KCanvas.cpp` (6 khối surface),
+`KEngine.cpp`, `KWin32App.cpp` (RtlGetVersion), `KFile.cpp` (zport), `KSpriteCodec.cpp` (`long`→`LONG`), `KJXPathFinder.h` (`const`), `LuaLib.h` (LUA_API POSIX), `JxNetShim.h`,
+`KRegion.cpp` (SEH), `ScriptFuns.cpp`, `MapHandler.cpp` (M_PI), `GameDataDef.h` + 4 header UiCase (`enum X : int`), `S3Client.cpp` (JxPosixMain, minidump, Toolhelp),
+`UiInit.cpp` (video mở đầu), `KRepresentShell3.cpp` (Test3D, AdviseRepresent `long`), `TextureResMgr.cpp`, `d3d9mini.h`, `KSdlApp.cpp` (HWND = SDL_Window*, không RegisterApp/hook).
+
+**Quyết định kỹ thuật (xem thêm bộ nhớ `jx1-android-ndk-khaosat-0809`):** biên dịch với **`-U__linux -D_WIN64`** (client đi nhánh Windows/x64 đã kiểm chứng trên lớp tương thích,
+không đụng 17 nhánh `__linux` của port máy chủ cũ), `-fsigned-char -fms-extensions -Wno-register -Wno-address-of-temporary`, `-Wl,--no-dependent-libraries`
+(`#pragma comment(lib)`), `LP64`: `long` 64 bit — mọi định nghĩa hàm dùng `long` thay `LONG` phải khớp khai báo.
+
+**Kết quả (20:5x):** 12 vòng build (`android_build_1..12.log` scratch): 465 TU → 0 lỗi biên dịch, **link đủ 7 .so + libSDL3.so**, Gradle `assembleDebug`
+→ **`android/gradle-project/app/build/outputs/apk/debug/app-debug.apk` (9,1 MB; bản sao `android/apk/jx1mobile-debug-0809.apk`, không vào git)** chứa
+libmain 2,3 MB, libCoreClient 2,0 MB, libEngine 1,0 MB, libRepresent3 0,3 MB, libRainbow 0,1 MB, libLua54 0,35 MB, libJxPosix 0,06 MB, libSDL3 1,8 MB, libc++_shared.
+Máy này **không có thiết bị/máy ảo Android** (không system-image, chưa bật Hypervisor Platform) → **CHƯA CHẠY**; chủ test theo `android/HUONG_DAN_TEST.md`
+(cài APK, chép dữ liệu hạ chữ thường bằng `android/chuan_bi_du_lieu.ps1` vào `/storage/emulated/0/Android/data/vn.jx1.mobile/files/`, log `adb logcat -s JX1:* SDL:*`
++ `jx_android.log`/`jx_rep3.log`). Rủi ro chưa kiểm khi chạy thật: (1) đường dẫn/chữ hoa trong pak & script (`JxPathPosix` chỉ hạ chữ thường phần tương đối;
+pak lookup theo băm tên — xem `KFile.cpp`/`XPackFile`), (2) `GetKeyState`/phím (móc `g_pfnJxGetKeyState` chưa nối → 0), (3) IME/nhập chữ (SDL text input → WM_CHAR,
+chưa có bàn phím ảo tự bật), (4) Lua nạp script qua `fopen` với `\` → đã macro `jx_fopen` cho mã game nhưng **`libLua54` không đi qua macro** (luaL_loadfile
+dùng fopen thật) — nếu engine cho Lua tự mở tệp thì phải nối `jx_fopen` vào Lua54 (kiểm khi có log), (5) LP64 trong gói mạng (`long` thô), (6) hiệu năng Vulkan
+trên GPU di động (texture 2 B/px bảng màu đã bật). Bước tiếp: theo log của chủ → sửa; rồi bàn phím ảo (SDL_StartTextInput theo ô nhập), `GetKeyState`, đóng gói dữ liệu.
