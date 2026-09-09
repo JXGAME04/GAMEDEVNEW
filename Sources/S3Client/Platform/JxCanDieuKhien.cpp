@@ -34,7 +34,7 @@ extern iCoreShell*			g_pCoreShell;
 extern iRepresentShell*		g_pRepresentShell;
 extern int					SCREEN_WIDTH;
 extern int					SCREEN_HEIGHT;
-extern "C" int		JxCore_GotoHuong(int nDir, int mode, int nBuoc, int bEp);	// [ANDROID 11/09 CAN] CoreShell.cpp (chi Android)
+extern "C" int		JxCore_GotoHuong(int nDir, int mode, int nBuoc, int nGac);	// [ANDROID 11/09 CAN] CoreShell.cpp (chi Android)
 
 // --- cai dat, doc mot lan tu config.ini [Cham] -----------------------------
 static int	s_nDaDoc = 0;
@@ -44,7 +44,8 @@ static int	s_nVungTren = 25;	// % chieu cao: tu day tro xuong moi la vung can
 static int	s_nVungDuoi = 88;	// % chieu cao: qua day la thanh cong cu, khong lay
 static int	s_nBanKinh = 90;		// ban kinh can, tinh theo khung ve
 static int	s_nNguong = 14;		// lech qua bao nhieu diem anh thi bat dau di
-static int	s_nBuocXa = 8;		// [ANDROID 11/09 CAN] dich xa bao nhieu buoc moi lan gui lenh di (Goto cu = 2); [Cham] CanBuocXa
+static int	s_nBuocXa = 2;
+static int	s_nGacTick = 1;		// [ANDROID 11/09 b] [Cham] CanGacTick: gui toi da 1 lan / n tick (1 = ~18 goi/giay; chuot PC = 5)		// [ANDROID 11/09 CAN] dich xa bao nhieu buoc moi lan gui lenh di (Goto cu = 2); [Cham] CanBuocXa
 static int	s_nDaBaoAnh = 0;
 static int	s_nCoAnh = -1;		// -1 = chua kiem, 0 = khong co anh (ve o mau), 1 = co anh
 static char	s_szAnhNen[128] = "\\spr\\Ui3\\UiSkillControl\\joystick_bg.spr";
@@ -156,7 +157,7 @@ static KUiGameObject s_KNCho;			// ky nang dang cho nguoi choi cham o phu de gan
 static char			s_szKNBao[96];		// dong thong bao ngan tren man (3 giay)
 static unsigned int	s_uKNBaoLuc = 0;
 //	[ANDROID 10/09 LUAN] vong sang luan chuyen: 3 ky nang vong sang o o phu tu doi qua luan phien (chu, Nga My)
-static int			s_nKNLuanMs = 500;			// [Cham] LuanChuyenMs - ban tham khao KuiAutoPlay.cpp:92 MAX_SKILLAURA_COUNT 15 nhip ~0,5 s
+static int			s_nKNLuanMs = 300;			// [Cham] LuanChuyenMs - ban tham khao KuiAutoPlay.cpp:92 MAX_SKILLAURA_COUNT 15 nhip ~0,5 s
 static unsigned int	s_uKNLuanLuc = 0;
 static int			s_nKNLuanK = 0;
 static int			s_nKNLuanLog = 0;	// [ANDROID 11/09 LUAN d] so lan da luan chuyen (de han che nhat ky)
@@ -228,7 +229,8 @@ static void DocCaiDat()
 	s_nVungDuoi = GetPrivateProfileInt("Cham", "CanVungDuoi", 88, szCfg);
 	s_nBanKinh  = GetPrivateProfileInt("Cham", "CanBanKinh", 90, szCfg);
 	s_nNguong   = GetPrivateProfileInt("Cham", "CanNguong", 14, szCfg);
-	s_nBuocXa   = GetPrivateProfileInt("Cham", "CanBuocXa", 8, szCfg);	// [ANDROID 11/09 CAN]
+	s_nBuocXa   = GetPrivateProfileInt("Cham", "CanBuocXa", 2, szCfg);
+	s_nGacTick  = GetPrivateProfileInt("Cham", "CanGacTick", 1, szCfg);	// [ANDROID 11/09 b]	// [ANDROID 11/09 CAN]
 	GetPrivateProfileString("Cham", "CanAnhNen", s_szAnhNen, s_szAnhNen, sizeof(s_szAnhNen), szCfg);
 	GetPrivateProfileString("Cham", "CanAnhNum", s_szAnhNum, s_szAnhNum, sizeof(s_szAnhNum), szCfg);
 	s_nVongBat   = GetPrivateProfileInt("Cham", "VongChon", 1, szCfg);
@@ -246,7 +248,7 @@ static void DocCaiDat()
 	s_nKNCoIcon  = GetPrivateProfileInt("Cham", "KyNangCoIcon", 32, szCfg);
 	s_nKNBanKinhKeo = GetPrivateProfileInt("Cham", "KyNangBanKinhKeo", 60, szCfg);
 	s_nKNNhip = GetPrivateProfileInt("Cham", "KyNangNhip", 200, szCfg);
-	s_nKNLuanMs = GetPrivateProfileInt("Cham", "LuanChuyenMs", 500, szCfg);	// [ANDROID 10/09 LUAN] 0,5 s nhu ban tham khao
+	s_nKNLuanMs = GetPrivateProfileInt("Cham", "LuanChuyenMs", 300, szCfg);	// [ANDROID 11/09 b] chu muon nhanh hon 0,5 s	// [ANDROID 10/09 LUAN] 0,5 s nhu ban tham khao
 	if (s_nKNLuanMs < 100) s_nKNLuanMs = 100;
 	GetPrivateProfileString("Cham", "KyNangAnhXoay", s_szKNAnhXoay, s_szKNAnhXoay, sizeof(s_szKNAnhXoay), szCfg);
 	s_nHuongDiBat  = GetPrivateProfileInt("Cham", "HuongDi", 1, szCfg);
@@ -282,6 +284,8 @@ static void DocCaiDat()
 	if (s_nNguong < 4) s_nNguong = 4;
 	if (s_nBuocXa < 2) s_nBuocXa = 2;	// [ANDROID 11/09 CAN] 2 = dich gan nhu Goto cu (thi phai gui lien tuc moi khong dung)
 	if (s_nBuocXa > 30) s_nBuocXa = 30;
+	if (s_nGacTick < 1) s_nGacTick = 1;	// [ANDROID 11/09 b]
+	if (s_nGacTick > 10) s_nGacTick = 10;
 	g_DebugLog("[CAN] can dieu khien: bat=%d vung=%d%% x %d..%d%% ban kinh=%d nguong=%d",
 		s_nBat, s_nVungRong, s_nVungTren, s_nVungDuoi, s_nBanKinh, s_nNguong);
 }
@@ -357,7 +361,7 @@ static void JxCan_DungLai()
 	if (s_nHuongGui < 0)
 		return;
 	if (g_pCoreShell)
-		JxCore_GotoHuong(s_nHuongGui, 0, 2, 1);
+		JxCore_GotoHuong(s_nHuongGui, 0, 2, 0);
 	s_nHuongGui = -1;
 	s_uCanGuiLuc = (unsigned int)GetTickCount();
 }
@@ -385,7 +389,7 @@ void JxCan_Nhip()
 	// dich xa s_nBuocXa buoc nen nhan vat khong dung giua hai lan gui. Cam giac di chuyen giu nguyen.
 	unsigned int uNay = (unsigned int)GetTickCount();
 	int bEp = (s_nHuong != s_nHuongGui && (s_nHuongGui < 0 || uNay - s_uCanGuiLuc >= 110)) ? 1 : 0;
-	if (JxCore_GotoHuong(s_nHuong, 0, s_nBuocXa, bEp))
+	if (JxCore_GotoHuong(s_nHuong, 0, s_nBuocXa, bEp ? 0 : s_nGacTick))	// [ANDROID 11/09 b]
 	{
 		s_nHuongGui = s_nHuong;
 		s_uCanGuiLuc = uNay;

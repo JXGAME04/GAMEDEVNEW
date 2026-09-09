@@ -66,7 +66,7 @@ unsigned g_uRep3LocKhung = 0;	// [LOCTG 09/09] so khung da tron. [ANDROID 10/09 
 #ifdef JX_ANDROID
 int g_nRep3AtlasGpu = 1;	// [GPU 11/09 ATLAS] Android: mac dinh BAT
 int g_nRep3GpuBoBanCpu = 1;	// [GPU 11/09 BOCPU] Android: mac dinh BAT
-int g_nRep3GpuMailbox = 1;	// [ANDROID 11/09 MAILBOX] Android: mac dinh BAT
+int g_nRep3GpuMailbox = 0;	// [ANDROID 11/09 MAILBOX] [ANDROID 11/09 b] mac dinh TAT: nhip trinh chieu khong khop 60 Hz -> rung khi cuon; bat de A/B
 #else
 int g_nRep3AtlasGpu = 0;	// [GPU 11/09 ATLAS] GameSDL.exe tren Windows: mac dinh TAT (khong doi hanh vi PC); bat bang [Client] Rep3AtlasGpu=1
 int g_nRep3GpuBoBanCpu = 0;	// [GPU 11/09 BOCPU] nhu tren

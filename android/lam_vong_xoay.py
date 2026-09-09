@@ -14,10 +14,17 @@ GOC = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, GOC)
 from bo_cuc_vnku_mobile import doc_spr, ghi_spr_nhieu_khung  # noqa: E402
 
-NGUON = os.path.join(GOC, "du_lieu_ghi_de", "spr", "ui3", "uiskillcontrol", "effect_skill.spr")
+# [ANDROID 11/09 b] Chu: "hieu ung day xau qua", "vong xoay do da co o kho VNKU" -> mac dinh dung vong MONG
+# VNKU_extract\circle.png (40x40, chep vao lop ghi de la circle_vnku.png), phong len 150 de client keo ve co o.
+# Muon quay lai vong day: python android\lam_vong_xoay.py effect_skill.spr
+NGUON = os.path.join(GOC, "du_lieu_ghi_de", "spr", "ui3", "uiskillcontrol", sys.argv[1] if len(sys.argv) > 1 else "circle_vnku.png")
 SO_KHUNG = 16
-W, H, ks, _ = doc_spr(NGUON)
-goc = ks[0].convert("RGBA")
+if NGUON.lower().endswith(".png"):
+    goc = Image.open(NGUON).convert("RGBA")
+    goc = goc.resize((150, 150), Image.LANCZOS)
+else:
+    W, H, ks, _ = doc_spr(NGUON)
+    goc = ks[0].convert("RGBA")
 khung = [goc.rotate(-360.0 * k / SO_KHUNG, resample=Image.BICUBIC) for k in range(SO_KHUNG)]   # am = xoay thuan chieu kim
 tmp = os.path.join(GOC, "_vong_xoay_tmp.spr")
 print(ghi_spr_nhieu_khung(khung, tmp))

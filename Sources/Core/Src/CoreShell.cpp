@@ -24633,11 +24633,12 @@ void KCoreShell::Goto(int nDir, int mode)
 // Truoc day JxCan_Nhip goi Goto() MOI VONG LAP (1-8 ms): moi lan mot goi c2s_npcwalk, may chu tim duong + KNpc::DoWalk phat
 // s2c_npcwalk cho ca vung => hang tram goi/giay chi de di bo, trong Tong Kim nhan len theo so nguoi. bEp = 1: gui ngay
 // (doi huong / dung lai), dat lai cong gac. Tra 1 khi da gui. Chi Android: ban Windows khong co ham nay.
-extern "C" int JxCore_GotoHuong(int nDir, int mode, int nBuoc, int bEp)
+// [ANDROID 11/09 b] tham so 4: nGac = so tick toi thieu ke tu lan gui truoc (m_nSendMoveFrames); 0 = gui ngay.
+extern "C" int JxCore_GotoHuong(int nDir, int mode, int nBuoc, int nGac)
 {
 	if (nDir < 0 || nDir > 63 || mode < 0 || mode > 2 || nBuoc < 1)
 		return 0;
-	if (!bEp && Player[CLIENT_PLAYER_INDEX].m_nSendMoveFrames < defMAX_PLAYER_SEND_MOVE_FRAME)
+	if (nGac > 0 && Player[CLIENT_PLAYER_INDEX].m_nSendMoveFrames < nGac)
 		return 0;
 	int nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
 	if (nIndex <= 0 || nIndex >= MAX_NPC || Player[CLIENT_PLAYER_INDEX].CheckTrading())
