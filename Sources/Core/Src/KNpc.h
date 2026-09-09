@@ -618,6 +618,7 @@ public:
 	// se ghi de toa do that tu server roi ha co.
 	int					m_nNeedFixPos;
 	DWORD				m_dwLastDirTick;	// tick logic cuoi da lam muot m_ResDir
+	DWORD				m_dwBloodTick;		// [MAU 08/09] tick logic cuoi da giam m_nBloodTime (so sat thuong troi theo tick, khong theo khung ve)
 	BOOL				m_bProcPosShift;
 	static int			g_DrawVision;
 	static int			g_DrawVisionSkill;

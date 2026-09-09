@@ -62,6 +62,7 @@ int   g_nS7BuocHoiSinh = 0;
 extern KLuaScript		*g_pNpcLevelScript;
 #ifndef _SERVER
 extern BOOL			g_bPaintInterpFocus;	// CoreShell.cpp: PaintFps interpolation drives the camera
+extern int			g_nPaintAlpha;			// [MAU 08/09] CoreShell.cpp: phan le tick (0..1000) cua khung ve hien tai, 0 khi tat noi suy
 #endif
 
 #define	ATTACKACTION_EFFECT_PERCENT		60
@@ -610,6 +611,7 @@ void KNpc::Init()
 	m_sClientNpcID.m_nNo		= -1;
 	m_ResDir					= 0;
 	m_dwLastDirTick				= 0;
+	m_dwBloodTick				= 0;	// [MAU 08/09]
 	m_nNeedFixPos				= 0;
 	m_nPKFlag					= enumPKNormal;
 	m_nSleepFlag				= 0;
@@ -12711,11 +12713,16 @@ int ComputeFrameFromTime(int tick) {
 int	KNpc::PaintBlood(int nHeightOffset)
 {
 	int addbloodspace = 50;
+	// [MAU 08/09] giam bo dem MOT lan moi tick logic (18/s) nhu ban goc (ban goc ve = tick). Truoc day giam moi khung ve:
+	// PaintFps 60 -> so troi nhanh 3,3 lan, 120 -> 6,7 lan. Dat trong ham ve (khong phai Activate) cung ly do m_dwLastDirTick.
+	const BOOL bTickMoi = (m_dwBloodTick != SubWorld[0].m_dwCurrentTime);
+	if (bTickMoi)
+		m_dwBloodTick = SubWorld[0].m_dwCurrentTime;
 	auto RenderBlood = [&](int i) {
 		if (!m_szBloodNo[i][0])
 			return;
 
-		int nHeightOff = (int)(nHeightOffset + (defMAX_SHOW_BLOOD_TIME - m_nBloodTime[i]) * defSHOW_BLOOD_MOVE_SPEED / 3);
+		int nHeightOff = (int)(nHeightOffset + ((defMAX_SHOW_BLOOD_TIME - m_nBloodTime[i]) * 1000 + g_nPaintAlpha) * defSHOW_BLOOD_MOVE_SPEED / 3000);	// [MAU 08/09] + phan le tick: troi muot giua hai tick
 		DWORD dwColor = m_nBloodColor[i] | (m_nBloodAlpha[i] << 24); // Apply alpha to color
 		int nMpsX, nMpsY;
 		GetDrawPos(&nMpsX, &nMpsY);
@@ -12846,6 +12853,8 @@ int	KNpc::PaintBlood(int nHeightOffset)
 			g_pRepresent->DrawPrimitives(1, &pImage, RU_T_IMAGE, FALSE);
 		}
 NOTHING :
+		if (!bTickMoi)
+			return;	// [MAU 08/09] chua sang tick moi: chi ve, khong giam
 		m_nBloodTime[i]--;
 		if (m_nBloodTime[i] <= 0)
 		{

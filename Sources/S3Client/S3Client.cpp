@@ -1552,8 +1552,8 @@ BOOL KMyApp::GameLoop()
 			if (bLuoi1ms)
 			{	// [NHIP 08/09] luoi 1 ms: cong deu tung buoc (144 fps = 6,94 ms, nhip trung binh dung); tut xa hon 1 khung thi dat lai
 				s_dNextPaint += dPaintStep;
-				if (s_dNextPaint < (double)nPaintElapse - dPaintStep)
-					s_dNextPaint = (double)nPaintElapse + dPaintStep;
+				if (s_dNextPaint < (double)nPaintElapse - 2.0)
+					s_dNextPaint = (double)nPaintElapse + dPaintStep;	// [NHIP 08/09 b] tre > 2 ms (tick/khung nang): neo lai, khong ve don (khung 1 ms ngay sau khung 16 ms = giat kep)
 			}
 			else
 				s_dNextPaint = (double)nPaintElapse + (double)(1000 / (DWORD)g_nPaintFps);	// nhu cu (<= 60): neo vao luc ve that, luoi 8 ms cho khoang cach deu
@@ -1609,6 +1609,9 @@ BOOL KMyApp::GameLoop()
 	{
 		// pass >= 25ms is a visible hitch at 60fps; aggregate every 10s
 		static DWORD s_LogSum = 0, s_LogCnt = 0, s_LogMax = 0, s_LogSpk = 0, s_LogCross = 0, s_LogLast = 0;
+		static DWORD s_LogPaintSum = 0, s_LogPaintMax = 0, s_LogPaintCnt = 0, s_LogTickSum = 0, s_LogTickMax = 0, s_LogTickCnt = 0;	// [NHIP 08/09 b] thoi gian ve / tick moi luot
+		if (bPainted) { s_LogPaintSum += nLogPaint; s_LogPaintCnt++; if (nLogPaint > s_LogPaintMax) s_LogPaintMax = nLogPaint; }
+		if (m_GameCounter != nLogCntBefore) { s_LogTickSum += nLogTick; s_LogTickCnt++; if (nLogTick > s_LogTickMax) s_LogTickMax = nLogTick; }
 		DWORD	nLogTotal = timeGetTime() - nLogT0;
 		s_LogSum += nLogTotal;
 		s_LogCnt++;
@@ -1634,9 +1637,11 @@ BOOL KMyApp::GameLoop()
 			FILE* pLog = fopen("jx_paint.log", "a");
 			if (pLog)
 			{
-				fprintf(pLog, "[SUM] t=%u passes=%u avg=%u max=%u spikes=%u cross=%u | ve: %u khung, cach %u/%u/%u ms (min/TB/max) | span tick %u..%u ms | PaintFps=%d vsync=%d\n",
+				fprintf(pLog, "[SUM] t=%u passes=%u avg=%u max=%u spikes=%u cross=%u | ve: %u khung, cach %u/%u/%u ms (min/TB/max) | span tick %u..%u ms | ve %u/%u ms tick %u/%u ms (TB/max) | PaintFps=%d vsync=%d\n",
 					nLogT0, s_LogCnt, s_LogCnt ? s_LogSum / s_LogCnt : 0, s_LogMax, s_LogSpk, s_LogCross,
-					s_LogGapCnt, s_LogGapMin, s_LogGapCnt ? s_LogGapSum / s_LogGapCnt : 0, s_LogGapMax, s_LogSpanMin, s_LogSpanMax, g_nPaintFps, g_nPaintVsync);	// [NHIP 08/09]
+					s_LogGapCnt, s_LogGapMin, s_LogGapCnt ? s_LogGapSum / s_LogGapCnt : 0, s_LogGapMax, s_LogSpanMin, s_LogSpanMax,
+					s_LogPaintCnt ? s_LogPaintSum / s_LogPaintCnt : 0, s_LogPaintMax, s_LogTickCnt ? s_LogTickSum / s_LogTickCnt : 0, s_LogTickMax, g_nPaintFps, g_nPaintVsync);	// [NHIP 08/09 a/b]
+				s_LogPaintSum = s_LogPaintMax = s_LogPaintCnt = s_LogTickSum = s_LogTickMax = s_LogTickCnt = 0;
 				s_LogGapMin = s_LogGapMax = s_LogGapSum = s_LogGapCnt = s_LogSpanMin = s_LogSpanMax = 0;
 				fclose(pLog);
 			}
