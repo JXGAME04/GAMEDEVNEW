@@ -55,3 +55,13 @@ nên nạp ngay → bình thường. Sửa: `DrawPrimitivesOnImage`, `ClearImage
 đồng bộ (RAII `Rep3NapDongBo` tắt `m_bVeDangDien` trong phạm vi hàm); chỉ `DrawPrimitives` (vẽ mỗi khung) mới được nạp nền.
 `Represent3.dll.moi` 0b765879 (harness y hệt). Bài học: nạp nền chỉ hợp với lệnh vẽ được gửi lại mỗi khung; mọi chỗ dùng ảnh MỘT LẦN
 (ghép lên texture, hỏi kích thước, alpha) phải đồng bộ.
+
+**17:1x kết quả #1 sau [d] (0b765879, 3,5 phút):** kỳ vào map (ghép nền đồng bộ theo thiết kế): 3 khung > 16 ms, max 36,6 ms; **5 kỳ sau: 0 khung
+> 16 ms, max 13,9 / 11,2 / 1,7 / 4,8 / 3,0 ms** (trước: 8 khung > 16 ms trong 10 phút, max 75,5). Luồng nền: giao 726, xong 617, hỏng 94
+(tệp thiếu sẵn), 784 lượt bỏ vẽ vì đang nạp. Cần thêm 10 phút chơi để chốt.
+
+## Việc #2 — đo trước (bản 43aac5d2, chờ swap)
+Lớp nền vùng đã được engine ghép sẵn (một ảnh `_*PlaceGround*_` mỗi vùng, `l_bPrerenderGround`), nên "nướng nền" đã có; câu hỏi là mỗi
+khung ~1.000 đơn vị vẽ đến từ đâu và tốn bao nhiêu CPU. Bản [VE a/b] đếm đơn vị vẽ mỗi khung theo loại ảnh (npc / skill / ui / map /
+ảnh tạo / khác) và đo CPU luồng vẽ (tổng `DrawPrimitives` mỗi khung, cả khung Begin→End) trong dòng `[REP3-NAP]`. Harness: 96 sprite =
+0,48 ms/khung ⇒ ~5 µs mỗi đơn vị; trong game ~1.000 đơn vị ≈ 5 ms/khung là chỗ đáng cắt cho máy yếu. Quyết định hướng #2 sau khi có số.
