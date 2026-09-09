@@ -52,7 +52,6 @@ int  g_nRep3Api       = 11;	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11: CD3D11S
 int  g_nRep3ApiOn     = 9;	// [D3D11 08/09]
 int  g_nRep3Atlas     = 1;	// [D3D11 08/09 d] gom texture nho vao trang atlas (chi khi Rep3Api=11)
 int  g_nRep3Flip      = 1;	// [D3D11 08/09 f] 1 = flip model (DWM ghep khung tron ven, khong xe hinh; mac dinh), 0 = bitblt cu
-unsigned g_uRep3VeCoSang = 0;	// [SANGDUNG 09/09] so lan that su ve qua nhanh CO chieu sang
 int  g_nRep3LocKieu   = 1;	// [LOCTG b] 1 = chon loc, 0 = doi xung
 float g_fRep3LocK     = 2.0f;	// [LOCTG b] 255 / Rep3LocToi
 int  g_nRep3LocMs     = 0;
@@ -1839,7 +1838,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 						renderParam.m_pos[3] = D3DXVECTOR3( fX1,fY1, fZ3 );
 					}
 
-					if(m_bDoLighting && pTemp->bRenderStyle != IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT ? (++g_uRep3VeCoSang, true) : false)	// [SANGDUNG 09/09] dem
+					if(m_bDoLighting && pTemp->bRenderStyle != IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT)
 						DrawSpriteAlpha3DLighting(renderParam, pTemp->nFrame, pSprite,
 													pTemp->Color.Color_dw, pTemp->bRenderStyle, NULL);
 					else
@@ -1869,7 +1868,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					rc.right = pTemp4->oImgRBPos.nX;
 					rc.bottom= pTemp4->oImgRBPos.nY;
 
-					if(m_bDoLighting && pTemp->bRenderStyle != IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT ? (++g_uRep3VeCoSang, true) : false)	// [SANGDUNG 09/09] dem
+					if(m_bDoLighting && pTemp->bRenderStyle != IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT)
 						DrawSpriteAlpha3DLighting(renderParam, pTemp->nFrame, pSprite, 
 												pTemp->Color.Color_dw, pTemp->bRenderStyle, &rc);
 					else
@@ -1906,7 +1905,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					renderParam.m_pos[2] = D3DXVECTOR3( fX3,fY3, fZ3 );
 					renderParam.m_pos[3] = D3DXVECTOR3( fX1,fY1, fZ3 );
 				}
-				if(m_bDoLighting ? (++g_uRep3VeCoSang, true) : false)	// [SANGDUNG 09/09] dem
+				if(m_bDoLighting)
 					DrawBitmap163DLighting(renderParam, pBitmap);
 				else
 					DrawBitmap163D(renderParam, pBitmap);
@@ -2767,8 +2766,6 @@ void KRepresentShell3::RepresentEnd()
 				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg,
 				g_uRep3FxTexNull, g_uRep3FxAnhNull, g_uRep3FxTaoHong, g_uRep3FxKhungKhongTex, g_uRep3FxGiaiMa, g_dRep3FxGiaiMaMs, g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), uVramUsed, uVramBudget,
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);
-			Rep3Log("[SANGDUNG] m_bDoLighting=%d | so lan ve QUA NHANH CO CHIEU SANG: %u", (int)m_bDoLighting, g_uRep3VeCoSang);
-			g_uRep3VeCoSang = 0;
 			Rep3Log("[LOCTG] tau=%d ms kieu=%d toi=%d | %u khung da tron", g_nRep3LocMs, g_nRep3LocKieu, (int)(255.0f / g_fRep3LocK + 0.5f), g_uRep3LocKhung);
 			g_uRep3LocKhung = 0;
 			Rep3Log("[CHUGIU] giu %d ms | dong chu giu %u, ve moi %u", g_nRep3ChuGiuMs, g_uRep3ChuGiu, g_uRep3ChuVe);

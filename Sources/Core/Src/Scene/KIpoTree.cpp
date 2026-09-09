@@ -93,8 +93,18 @@ KIpoTree::~KIpoTree()
     }
 }
 
-double   g_dSangMs = 0.0, g_dSangMax = 0.0;	// [SANGCPU 09/09]
-unsigned g_uSangLan = 0;
+// [SANGTAT 09/09] He chieu sang dong da CHET tu lau: KRepresentShell3::SetOption(DYNAMICLIGHT) gan
+// m_bDoLighting = false o CA hai nhanh (dong 551-554) va CoreShell.cpp:23014 co goi, nen ket qua cua
+// RenderLightMap() (luoi 48x96 o, ~40 nguon sang, ~400 o/nguon kem sqrt) bi VUT DI - do duoc 0,5 ms/khung
+// o 143 Hz ([SANGDO]); bo do [SANGDUNG] xac nhan 0 lenh ve qua nhanh co chieu sang. Nay BO QUA mac dinh.
+// [Client] BanDoSang = 1 de dung lai nhu cu (chi co y nghia neu sau nay sua SetOption cho den song lai).
+static int s_nBanDoSang = -1;
+static int BanDoSang()
+{
+	if (s_nBanDoSang < 0)
+		s_nBanDoSang = (int)GetPrivateProfileIntA("Client", "BanDoSang", 0, ".\\config.ini") ? 1 : 0;
+	return s_nBanDoSang;
+}
 //##ModelId=3DD9ECFD00E6
 void KIpoTree::Paint(RECT* pRepresentArea, IPOT_RENDER_LAYER eLayer)
 {
@@ -104,64 +114,17 @@ void KIpoTree::Paint(RECT* pRepresentArea, IPOT_RENDER_LAYER eLayer)
 	// Dong nguoi x 60 khung/giay = vai tram ms CPU/giay do di. Chi tinh khi shell that su dung.
 	if(eLayer == IPOT_RL_COVER_GROUND && m_bDynamicLighting && g_pRepresent && g_pRepresent->IsRep3D())
 	{
-		// 渲染光照图
-		LARGE_INTEGER liSang0, liSang1, liSangF;	// [SANGCPU 09/09] do CPU dung ban do sang moi khung
-		QueryPerformanceCounter(&liSang0);
-		RenderLightMap();
-		QueryPerformanceCounter(&liSang1);
-		QueryPerformanceFrequency(&liSangF);
-		extern double g_dSangMs, g_dSangMax; extern unsigned g_uSangLan;
+		if (BanDoSang())
 		{
-			const double dMs = (double)(liSang1.QuadPart - liSang0.QuadPart) * 1000.0 / (double)liSangF.QuadPart;
-			g_dSangMs += dMs; g_uSangLan++;
-			if (dMs > g_dSangMax) g_dSangMax = dMs;
+			// 渲染光照图
+			RenderLightMap();
+			// 设置表现模块的光照信息
+			g_pRepresent->SetLightInfo(m_nLeftTopX, m_nLeftTopY, (unsigned int*)pLightingArray);
 		}
-		// 设置表现模块的光照信息
-		g_pRepresent->SetLightInfo(m_nLeftTopX, m_nLeftTopY, (unsigned int*)pLightingArray);
-		{	// [SANGDO 09/09] He chieu sang la duong DUY NHAT trong engine nhan vao mau tung anh SPR
-			// (KRepresentShell3.cpp:1540 color = GetPoint3dLighting(v), roi shader MODULATE voi texture).
-			// Do xem MOT O CO DINH giua luoi sang co bi doi gia tri khong va doi bao nhieu lan moi 10 giay.
-			// Neu SPR bay ban doi mau khi co nguoi di chuyen thi so o day phai doi theo. Chi ghi so.
-			extern int g_nCorePaintLog;
-			if (g_nCorePaintLog > 0)
-			{
-				static DWORD s_dwLan = 0, s_dwTruoc = 0xFFFFFFFF, s_dwMin = 0xFFFFFFFF, s_dwMax = 0;
-				static unsigned s_uKhung = 0, s_uDoi = 0, s_uGocDoi = 0, s_uDenTong = 0, s_uDenMax = 0;
-				static int s_nGocX = 0x7FFFFFFF, s_nGocY = 0;
-				const int nO = (LIGHTING_GRID_HEIGHT / 2) * LIGHTING_GRID_WIDTH + (LIGHTING_GRID_WIDTH / 2);
-				const DWORD dwO = pLightingArray[nO];
-				s_uKhung++;
-				if (s_dwTruoc != 0xFFFFFFFF && dwO != s_dwTruoc) s_uDoi++;
-				s_dwTruoc = dwO;
-				if (dwO < s_dwMin) s_dwMin = dwO;
-				if (dwO > s_dwMax) s_dwMax = dwO;
-				if (m_nLeftTopX != s_nGocX || m_nLeftTopY != s_nGocY)
-				{
-					if (s_nGocX != 0x7FFFFFFF) s_uGocDoi++;
-					s_nGocX = m_nLeftTopX; s_nGocY = m_nLeftTopY;
-				}
-				const unsigned uDen = (unsigned)m_LightList.size();
-				s_uDenTong += uDen;
-				if (uDen > s_uDenMax) s_uDenMax = uDen;
-				const DWORD dwNow = GetTickCount();
-				if (s_dwLan == 0) s_dwLan = dwNow;
-				else if (dwNow - s_dwLan >= 10000)
-				{
-					s_dwLan = dwNow;
-					FILE* pLog = fopen("jx_paint.log", "a");
-					if (pLog)
-					{
-						fprintf(pLog, "[SANGDO] t=%u khung=%u | CPU dung ban do sang %.2f ms/khung (max %.2f) | o giua luoi DOI %u lan | sang min %08X max %08X"
-							" | goc cua so doi %u lan | den TB %.1f max %u | nen %08X\n",
-							dwNow, s_uKhung, g_uSangLan ? g_dSangMs / g_uSangLan : 0.0, g_dSangMax, s_uDoi, s_dwMin, s_dwMax, s_uGocDoi,
-							s_uKhung ? (double)s_uDenTong / s_uKhung : 0.0, s_uDenMax, m_dwAmbient);
-						fclose(pLog);
-					}
-					s_uKhung = s_uDoi = s_uGocDoi = s_uDenTong = s_uDenMax = 0;
-					g_dSangMs = 0.0; g_dSangMax = 0.0; g_uSangLan = 0;
-					s_dwMin = 0xFFFFFFFF; s_dwMax = 0;
-				}
-			}
+		else
+		{	// [SANGTAT 09/09] khong dung ban do sang; bao shell mot lan de chac m_bDoLighting = false
+			static bool s_bDaBao = false;
+			if (!s_bDaBao) { g_pRepresent->SetLightInfo(0, 0, NULL); s_bDaBao = true; }
 		}
 	}
 	
@@ -431,7 +394,7 @@ void KIpoTree::StrewRtoLeafs(RECT& KeepRtoArea)
 	}
 
 	// xem chu thich o KIpoTree::Paint - khong tinh khi Represent2 vi ket qua bi vut di
-	if(m_bDynamicLighting && g_pRepresent && g_pRepresent->IsRep3D())
+	if(m_bDynamicLighting && BanDoSang() && g_pRepresent && g_pRepresent->IsRep3D())	// [SANGTAT 09/09]
 	{
 		// 清空遮挡信息
 		for(int j=0; j<LIGHTING_GRID_WIDTH*LIGHTING_GRID_HEIGHT; j++)
