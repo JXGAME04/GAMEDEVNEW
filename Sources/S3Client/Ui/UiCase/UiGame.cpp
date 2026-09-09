@@ -357,13 +357,13 @@ char g_ActionName[][32] =
 	"T¸n gÉu",
 	"H¶o h÷u",
 	"Giao dÞch",
-	"O½n t?t?",
+	"TØ thÝ",
 	"NhËp ®éi",
-	"T?®éi",
+	"Tæ ®éi",
 	"Theo sau",
 	"Cõu s¸t",
 	"Tin tøc",
-	"S?®en",
+	"Sæ ®en",
 	"Bang héi",
 }; //# thanh menu chuot trai + control len nguoi choi khac
 

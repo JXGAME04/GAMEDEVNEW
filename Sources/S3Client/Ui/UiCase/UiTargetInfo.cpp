@@ -12,6 +12,10 @@
 #include "../Elem/Wnds.h"
 #include "../Elem/WndMessage.h"
 #include "UiLoginBg.h"
+#ifdef JX_ANDROID
+#include "KDebug.h"
+#include "UiGame.h"		// [ANDROID 09/09 MENU] PopUpContextPeopleMenu
+#endif
 #include "UiSysMsgCentre.h"
 #include "../../../core/src/CoreShell.h"
 #include <crtdbg.h>
@@ -217,6 +221,13 @@ void KUiTargetInfo::LoadScheme(const char *pScheme)
 		Ini.GetInteger("Main", "nHei_mana",  4, &nHei_mana);
 
         KWndShowAnimate::Init(&Ini, "Main");
+#ifdef JX_ANDROID
+        // [ANDROID 09/09 MENU] O [Main] cua kuitargetinfo.ini chi la mot o 27x23, con than thanh
+        // (BackGround0, Head0...) la cac o CON nam ngoai o do. Nen cham vao than thanh se ROI RA
+        // NGOAI cua so, xuong ban do -> bo chon muc tieu thay vi mo menu (da do tan mat).
+        // Bat co "do trung theo ca dam con" de ca than thanh nhan duoc cham.
+        m_Style |= WND_S_SIZE_WITH_ALL_CHILD;
+#endif
 		// team_mananager
 		m_btnSwitch		.Init(&Ini, "ButtonSwitch");
 		m_btnCaptainFlag	.Init(&Ini, "CaptainFlag");
@@ -239,6 +250,48 @@ KUiTargetInfo* KUiTargetInfo::GetIfVisible()
 	return NULL;
 }
 
+#ifdef JX_ANDROID
+//--------------------------------------------------------------------------
+// [ANDROID 09/09 MENU] Cham vao thanh thong tin muc tieu -> ra danh sach tuy chon.
+//
+// Duong di tren dien thoai: cham doi tuong -> thanh nay hien len (da co san) -> cham vao thanh
+// -> danh sach giao dich / to doi / ket ban / xem trang bi. Tren ban PC danh sach do mo bang
+// Ctrl + chuot phai; ngon tay khong co phim Ctrl nen di duong nay.
+//
+// Cach dung KUiPlayerItem tu TEN muc tieu lay y het UiMsgCentrePad.cpp (bam vao ten nguoi trong
+// khung chat): hoi Core bang FindSpecialNPC, khong thay thi dien tay ten va de nIndex = -1.
+// Chi nguoi choi moi co danh sach nay; muc tieu la quai / NPC thuong thi khong lam gi.
+//--------------------------------------------------------------------------
+void KUiTargetInfo::MoMenuMucTieu()
+{
+	if (g_pCoreShell == NULL || m_Info.sTargetName[0] == 0)
+		return;
+	KUiPlayerItem SelectPlayer;
+	memset(&SelectPlayer, 0, sizeof(SelectPlayer));
+	int nKind = -1;
+	int nThay = g_pCoreShell->FindSpecialNPC(m_Info.sTargetName, &SelectPlayer, nKind);
+	g_DebugLog("[MENU] cham thanh muc tieu: ten=\"%s\" thay=%d kind=%d", m_Info.sTargetName, nThay, nKind);
+	if (!(nThay && nKind == kind_player))
+		return;		// khong phai nguoi choi thi khong co danh sach tuy chon
+	// Dat danh sach NGAY DUOI than thanh, khong de len thanh: o [Main] chi la mot o 27x23 con than
+	// thanh la cac o CON (BackGround0, Head0...), nen phai lay khung bao ca dam con moi ra dung day.
+	int x = 0, y = 0;
+	RECT rc;
+	GetAllChildLayoutRect(&rc);
+	if (rc.right > rc.left && rc.bottom > rc.top)
+	{
+		x = rc.left;
+		y = rc.bottom + 4;
+	}
+	else
+	{
+		GetAbsolutePos(&x, &y);
+		y += m_Height;
+	}
+	PopUpContextPeopleMenu(SelectPlayer, x, y);
+}
+#endif
+
 int KUiTargetInfo::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
     int nRet = 0;
@@ -246,6 +299,15 @@ int KUiTargetInfo::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
     {
 		case WND_N_BUTTON_CLICK:
 		{
+#ifdef JX_ANDROID
+			// [ANDROID 09/09 MENU] bam vao nen hoac anh dau cua thanh = mo danh sach tuy chon
+			if (uParam == (KUPARAM)(KWndWindow*)&a_btnBackGround ||
+				uParam == (KUPARAM)(KWndWindow*)&a_IconHead)
+			{
+				MoMenuMucTieu();
+				break;
+			}
+#endif
 			if (uParam == (KUPARAM)(KWndWindow*)&m_btnSwitch)
 			{
 				if(eShowTMG == 1)

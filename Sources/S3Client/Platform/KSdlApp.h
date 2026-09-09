@@ -30,7 +30,7 @@ protected:
 	void			SinhHover();							// ban sao KWin32App::GenerateMsgHoverMsg (private ben Engine)
 #ifdef JX_ANDROID
 	// [ANDROID 09/09 CHAM] bo nhan cu chi ngon tay -> chuot (xem KSdlApp.cpp)
-	enum { CHAM_KHONG = 0, CHAM_CHO, CHAM_KEO, CHAM_PHAI, CHAM_RE, CHAM_CAN };
+	enum { CHAM_KHONG = 0, CHAM_CHO, CHAM_KEO, CHAM_PHAI, CHAM_RE, CHAM_CAN, CHAM_CUON };
 	bool			ChamSuKien(const SDL_Event& ev);	// true = da nuot su kien, dung dich tiep
 	void			NhipCham();							// goi moi vong lap: giu du lau thi thanh chuot phai
 	int				m_nCham;			// mot trong CHAM_*
@@ -39,6 +39,9 @@ protected:
 	unsigned int	m_uChamDat;			// luc dat ngon (ms)
 	unsigned int	m_uChamNhaTruoc;	// luc nha ngon lan truoc (de nhan cham hai lan)
 	int				m_nChamNhaX, m_nChamNhaY;
+	int				m_nNgonDangDat;		// [ANDROID 09/09 HAINGON] so ngon dang cham man hinh
+	int				m_nNgonToiDa;		// [ANDROID 09/09 HAINGON] nhieu nhat may ngon trong lan cham nay
+	int				m_nCuonDon;			// [ANDROID 09/09 CUON] so diem anh da vuot, con du chua thanh mot nac lan
 #endif
 	SDL_Window*		m_pWindow;
 	unsigned int	m_uMsgQuit;			// dem WM_CLOSE da xu ly (chan doan)

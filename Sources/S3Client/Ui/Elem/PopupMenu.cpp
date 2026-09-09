@@ -75,6 +75,19 @@ void KPopupMenu::Popup(KPopupMenuData* pMenu, KWndWindow* pCaller, unsigned int 
 	if (m_pMenu->nItemTitleIndent == MENU_ITEM_DEFAULT_INDENT)
 		m_pMenu->nItemTitleIndent = m_nIndent;
 
+#ifdef JX_ANDROID
+	// [ANDROID 09/09 CHAM] man hinh dien thoai nho, ngon tay to: noi rong dem tren/duoi va trai/phai
+	// cua moi dong cho de cham. KHONG nhan thang nItemHeight/nItemWidth vi chu se dinh len canh tren
+	// va lech sang trai - hai cai dem nay chinh la thu de dua chu vao giua.
+	//   cao mot dong = byFontSize * so_dong + 2 * byItemTitleUpSpace
+	//   rong mot dong = byFontSize * so_ky_tu / 2 + 2 * nItemTitleIndent + ...
+	// Voi chu co 12 thi dem 14 cho ra dong cao khoang 40 diem anh khung ve.
+	if (m_pMenu->byItemTitleUpSpace < 14)
+		m_pMenu->byItemTitleUpSpace = 14;
+	if (m_pMenu->nItemTitleIndent < 18)
+		m_pMenu->nItemTitleIndent = 18;
+#endif
+
 	bool bCalcRightWidth = false;
 	if (m_pMenu->nItemRightWidth < 0)
 	{

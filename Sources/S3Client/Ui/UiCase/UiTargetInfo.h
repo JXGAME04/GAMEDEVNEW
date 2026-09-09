@@ -29,6 +29,9 @@ private:
 	void Clear();
 	void SetFactionIcon(BYTE series, KWndButton &btn);
 	void	PaintWindow();
+#ifdef JX_ANDROID
+	void	MoMenuMucTieu();	// [ANDROID 09/09 MENU] cham vao thanh thong tin -> danh sach tuy chon
+#endif
 public:
 	void UpdateData(KUiTargetDetailInfo* pInfo);
 	BYTE eShowTMG;

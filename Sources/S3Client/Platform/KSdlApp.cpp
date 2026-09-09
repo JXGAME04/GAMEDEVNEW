@@ -215,6 +215,9 @@ KSdlApp::KSdlApp()
 	m_uChamDat = 0;
 	m_uChamNhaTruoc = 0;
 	m_nChamNhaX = m_nChamNhaY = 0;
+	m_nNgonDangDat = 0;
+	m_nNgonToiDa = 0;
+	m_nCuonDon = 0;
 #endif
 	s_pSdlApp = this;
 }
@@ -562,6 +565,7 @@ extern "C" void JxSdl_BanPhimAo(int bBat)
 // Doi den luc nha (thuong duoi 150 ms) la cach moi giao dien cam ung deu lam.
 //---------------------------------------------------------------------------
 extern "C" int JxUi_CoGiaoDienTaiDiem(int x, int y);	// Wnds.cpp
+extern "C" void JxSdl_DatPhimDinh(unsigned int uMatNa);	// dinh nghia o khoi PHIM ben tren
 
 
 static const unsigned int CHAM_GIU_MS = 400;	// giu lau bao nhieu thi thanh chuot phai
@@ -572,6 +576,22 @@ static const int          CHAM_HAI_XA = 24;		// ... va cach nhau khong qua bao n
 bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 {
 	HWND hWnd = g_GetMainHWnd();
+	// [ANDROID 09/09 NGON] SDL chi gia lap chuot cho ngon THU NHAT, nen phai nghe su kien ngon tay that
+	// moi biet dang co may ngon. Dem de sau nay bo qua cham nhieu ngon lo tay (cham hai ngon KHONG dung
+	// lam loi tat nao: theo y chu, menu doi tuong di duong "cham doi tuong -> thanh thong tin -> menu").
+	if (ev.type == SDL_EVENT_FINGER_DOWN)
+	{
+		m_nNgonDangDat++;
+		if (m_nNgonDangDat > m_nNgonToiDa)
+			m_nNgonToiDa = m_nNgonDangDat;
+		return false;	// van de su kien chuot gia lap di duong cua no
+	}
+	if (ev.type == SDL_EVENT_FINGER_UP || ev.type == SDL_EVENT_FINGER_CANCELED)
+	{
+		if (m_nNgonDangDat > 0)
+			m_nNgonDangDat--;
+		return false;
+	}
 	if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN || ev.type == SDL_EVENT_MOUSE_BUTTON_UP)
 	{
 		if (ev.button.which != SDL_TOUCH_MOUSEID || ev.button.button != SDL_BUTTON_LEFT)
@@ -582,6 +602,7 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			m_nCham = CHAM_CHO;
 			m_nChamX0 = m_nChamX = (int)fx; m_nChamY0 = m_nChamY = (int)fy;
 			m_uChamDat = (unsigned int)SDL_GetTicks();
+			m_nNgonToiDa = m_nNgonDangDat;	// [ANDROID 09/09 HAINGON] bat dau dem lai cho lan cham nay
 			// Dua "chuot" toi cho ngon tay ngay: de game biet dang tro vao dau (dem hover, thong tin vat pham).
 			GhiChuot(0, MAKELPARAM(m_nChamX0, m_nChamY0));
 			MsgProc(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(m_nChamX0, m_nChamY0));
@@ -628,6 +649,7 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		if (m_nCham == CHAM_KHONG)
 			return true;	// nuot: ngon tay da nhac len roi, dung de con tro chay lung tung
 		float fx = ev.motion.x, fy = ev.motion.y; SdlToLogical(m_pWindow, fx, fy);
+		int nYTruoc = m_nChamY;		// [ANDROID 09/09 CUON] de tinh doan vua vuot duoc
 		m_nChamX = (int)fx; m_nChamY = (int)fy;
 		if (m_nCham == CHAM_CHO &&
 			(abs(m_nChamX - m_nChamX0) > CHAM_NGUONG || abs(m_nChamY - m_nChamY0) > CHAM_NGUONG))
@@ -640,6 +662,17 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 				JxCan_BatDau(m_nChamX0, m_nChamY0, m_nChamX, m_nChamY);
 				return true;
 			}
+			// [ANDROID 09/09 CUON] Vuot DOC tren giao dien = cuon danh sach (dich thanh lan chuot).
+			// Moi lop danh sach cua bo giao dien nay deu nhan WM_MOUSEWHEEL (WndList, WndList2,
+			// WndMessageListBox) nen thoai NPC / chat / danh sach may chu deu vuot duoc.
+			// Vuot NGANG thi van la giu chuot trai roi re (keo cua so di cho khac).
+			if (JxUi_CoGiaoDienTaiDiem(m_nChamX0, m_nChamY0) &&
+				abs(m_nChamY - m_nChamY0) > abs(m_nChamX - m_nChamX0))
+			{
+				m_nCham = CHAM_CUON;
+				m_nCuonDon = 0;
+				return true;
+			}
 			m_nCham = CHAM_KEO;		// da xe dich -> giu chuot trai tu CHO DAT NGON roi keo
 			GhiChuot(MK_LBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
 			MsgProc(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(m_nChamX0, m_nChamY0));
@@ -647,6 +680,20 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		if (m_nCham == CHAM_CAN)
 		{
 			JxCan_Keo(m_nChamX, m_nChamY);
+			return true;
+		}
+		if (m_nCham == CHAM_CUON)
+		{
+			// Ngon di XUONG = doc nguoc len = lan chuot VE PHIA TRUOC (delta duong), giong moi may.
+			const int CHAM_CUON_BUOC = 28;		// bao nhieu diem anh vuot thi thanh mot nac lan
+			m_nCuonDon += (m_nChamY - nYTruoc);
+			while (m_nCuonDon >= CHAM_CUON_BUOC || m_nCuonDon <= -CHAM_CUON_BUOC)
+			{
+				int nDau = (m_nCuonDon > 0) ? 1 : -1;
+				m_nCuonDon -= nDau * CHAM_CUON_BUOC;
+				WPARAM w = MAKEWPARAM(0, (WORD)(short)(nDau * WHEEL_DELTA));
+				MsgProc(hWnd, WM_MOUSEWHEEL, w, MAKELPARAM(m_nChamX0, m_nChamY0));
+			}
 			return true;
 		}
 		WPARAM w = (m_nCham == CHAM_KEO) ? MK_LBUTTON : (WPARAM)((m_nCham == CHAM_PHAI) ? MK_RBUTTON : 0);
