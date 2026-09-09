@@ -146,7 +146,7 @@ def bo_cuc(co_icon):
     #    cua anh mau bi de chu), tam y 72; ket thuc truoc ban do nho (x 854)
     for i, o in enumerate(ICON_HANG):
         w, h = co_icon[o]
-        ra[o] = (400 + 56 * i - w // 2, 72 - h // 2)
+        ra[o] = (360 + 56 * i - w // 2, 72 - h // 2)   # doi trai 40 de chua cho mui ten thu gon o CUOI hang
     # 2. cot phai duoi ban do nho, TREN cum ky nang (y ~320) - nhu anh mau VNKU: hang icon o y~165 roi
     #    khoi vat pham 2x2 sat mep phai, hai icon nua o cot trai canh khoi do.
     #    (nut "Sua giao dien" doi sang (200,40) trong config.ini de nhuong cho: SuaToaDoNutX/Y)
@@ -163,11 +163,12 @@ def bo_cuc(co_icon):
     for o in ["ImediaLeftSkill", "ImediaRightSkill", "ItemEx"] + ["Item_%d" % i for i in range(4, 9)]:
         ra[o] = (-300, 0)
     # 2e. hai nut mui ten (chu: "nut an cac icon phia tren va nut an kenh chat nhu vnku"):
-    #     HideIcons o DAU hang (ben trai Nhan vat) - cuoi hang la cho chu dat icon Chien lenh (811,57);
-    #     HideChat o mep phai khung chat trai (chu dat (2,119))
+    #     chu: "may nut an phai nam phia TRONG". HideIcons o CUOI hang, ngay sau Cai dat (nhu VNKU HidenButton),
+    #     truoc icon Chien lenh chu dat (811,57). HideChat nam TRONG khung chat trai (chu dat (2,119), rong 370):
+    #     goc tren-phai, ben phai cot chu (chu ket thuc ~x 306).
     w, h = co_icon.get("HideIcons", (24, 36))
-    ra["HideIcons"] = (344, 72 - h // 2)
-    ra["HideChat"] = (364, 122)
+    ra["HideIcons"] = (782, 72 - h // 2)
+    ra["HideChat"] = (340, 121)
     # 3. khung chat giua day
     w, h = int(round(GOC_W * K_KHUNG)), int(round(GOC_H * K_KHUNG))
     L, T = (SW - w) // 2, SH - h

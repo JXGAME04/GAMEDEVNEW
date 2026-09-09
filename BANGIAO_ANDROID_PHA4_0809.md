@@ -799,6 +799,20 @@ chỉ hiện ở **chế độ sửa**; tệp mặc định đã bỏ hai dòng 
 (kênh / biểu cảm / gửi) đo lại đúng ô vuông (lệch ≤ 2 px), chủ đã tự kéo `ChannelBtn` 3 px.
 APK: `android\apk\jx1mobile-1009-anicon.apk` (vá 56–62). PC x64 + SDL dựng sạch.
 
+### 12.13. (10/09 13:1x) "Mấy nút ẩn phải nằm phía trong", "mất một số nút kỹ năng phụ", "lưu cấu hình trước khi làm"
+
+- **Đã sao lưu nguyên vẹn** bố cục chủ lúc 13:11 (54 mục): `userdata\uitoado_sao_luu_1009_1311.ini` (thư mục dữ
+  liệu) + `android\du_lieu_ghi_de\ui\uitoado_sao_luu_1009_1311.ini`, và đặt luôn làm **mặc định**
+  (`ui\uitoado_macdinh.ini`). Từ đây "Xoá hết" về đúng bố cục này.
+- **"Mất" nút kỹ năng phụ** (`va_nguon_android_63.py`): không mất — vòng vẽ **bỏ qua ô phụ chưa gán kỹ năng** khi
+  không ở chế độ sửa (chủ xem 11:50 là đang ở chế độ sửa nên thấy đủ 8). VNKU luôn vẽ ô trống (vòng "+").
+  Nay: ô trống vẫn vẽ khung tròn; **chạm ô trống = vào chế độ gán cho đúng ô đó và mở luôn bảng kỹ năng**
+  (`SCK_SHORTCUT_SKILLSNEW`, như nút Võ công) — một chạm thay vì ba.
+- **Nút ẩn "phía trong"** (chỉ dữ liệu, `bo_cuc_vnku_mobile.py`): mũi tên thu gọn hàng icon dời về **cuối hàng**
+  ngay sau Cài đặt (782,54) như `HidenButton` của VNKU (hàng icon dời trái 40: tâm 360 + 56·i); mũi tên ẩn chat
+  vào **góc trên‑phải bên trong khung chat** (340,121) — khung chủ đặt (2,119) rộng 370, chữ kết thúc ~306.
+- APK: `android\apk\jx1mobile-1009-otrong.apk` (vá 56–63). PC x64 + SDL dựng sạch.
+
 ### 12.6. Còn lại thật sự
 
 

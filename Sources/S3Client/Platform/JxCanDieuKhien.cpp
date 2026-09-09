@@ -23,6 +23,7 @@
 #include "../../Core/src/GameDataDef.h"
 #include "../../Core/src/CoreObjGenreDef.h"	// [ANDROID 09/09 KYNANG] CGOG_NOTHING
 #include "KDebug.h"
+#include "../Ui/ShortcutKey.h"	// [ANDROID 10/09 OTRONG] mo bang ky nang khi cham o trong
 #include <math.h>
 #include <stdint.h>	// [UITOADO 10/09 F] intptr_t
 
@@ -865,8 +866,8 @@ int JxKyNang_TrungNut(int x, int y)
 
 		// Trong che do gan thi o TRONG cung phai bat duoc cham, khong thi khong gan
 		// duoc vao o trong.
-		if (!KyNang_CuaNut(i, &o) && !s_nKNCheDoGan)
-			continue;
+		// [ANDROID 10/09 OTRONG] o trong cung bat duoc cham (cham = vao che do gan cho dung o do)
+		KyNang_CuaNut(i, &o);
 		KyNang_TamNut(i, &nX, &nY);
 		nR = KyNang_CoNut(i) / 2;
 		// khung tron -> do theo BAN KINH, khong phai hinh vuong
@@ -937,6 +938,21 @@ void JxKyNang_BatDau(int nNut, int x, int y)
 		s_nKNOChon = (nNut - 1 > 0) ? (nNut - 2) : -1;	// chi o phu moi gan duoc
 		s_nKNDangCam = -1;
 		return;
+	}
+	// [ANDROID 10/09 OTRONG] cham o phu TRONG = chon o do de gan va mo bang ky nang luon (mot cham thay vi ba).
+	if (nNut > 1)
+	{
+		KUiGameObject oCo;
+
+		if (!KyNang_CuaNut(nNut - 1, &oCo))
+		{
+			s_nKNCheDoGan = 1;
+			s_nKNOChon = nNut - 2;
+			s_nKNDangCam = -1;
+			g_DebugLog("[KYNANG] cham o trong %d -> che do gan, mo bang ky nang", nNut - 1);
+			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SKILLSNEW);
+			return;
+		}
 	}
 	s_nKNDangCam = nNut - 1;	// 0 = nut chinh, 1..8 = o phu
 	s_nKNNgonX = x;
@@ -1195,8 +1211,8 @@ void JxKyNang_Ve()
 	{
 		bool bCo = KyNang_CuaNut(i, &o);
 
-		if (!bCo && i > 0 && !UiToaDo_DangSua())
-			continue;		// o phu trong thi khong ve; tru luc dang sua (de con keo duoc)
+		// [ANDROID 10/09 OTRONG] o phu TRONG van ve khung tron (VNKU ve vong "+"), chu: "mat mot so nut ky nang phu".
+		// (Truoc: khong o che do sua thi bo qua -> tuong mat nut.)
 		KyNang_TamNut(i, &nX, &nY);
 		nR = KyNang_CoNut(i) / 2;
 
