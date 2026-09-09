@@ -378,6 +378,9 @@ public:
         unsigned int* pLighting);
 
     //## 设置表现模块选项
+    // [NAPCHIEU 09/09] nap truoc anh (SPR) o luong nen; khong ao -> khong doi vtable iRepresentShell. Tra 0/1/2 (xem TextureResMgr::NapTruoc)
+    int NapTruoc(const char* pszImage, int nNguon);	// [NAPNPC 09/09] nNguon: 1 = anh chieu (Rep3NapChieu), 2 = anh than NPC (Rep3NapNpc)
+
     virtual void SetOption(
         //## 选项类型
         RepresentOption eOption,

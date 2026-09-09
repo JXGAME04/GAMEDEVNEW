@@ -11,6 +11,7 @@
 #include "KMissleSet.h"
 #ifndef _STANDALONE
 #include "crtdbg.h"
+#include "KDoLuot.h"	// [DOLUOT 09/09 c]
 #endif
 #include "Scene/ObstacleDef.h"
 // KCombinFileSection / REGION_ELEM_FILE_COUNT dung trong ProcLoadPathGrid. Truoc day
@@ -1166,6 +1167,216 @@ double WorldMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 	if (!s_liWorldFreq.QuadPart) QueryPerformanceFrequency(&s_liWorldFreq);
 	return s_liWorldFreq.QuadPart ? (double)(b.QuadPart - a.QuadPart) * 1000.0 / (double)s_liWorldFreq.QuadPart : 0.0;
 }
+#ifndef _SERVER
+// [WORLD 09/09 b] Chia nho chi phi tick client theo NPC va theo pha (xem ReverseTools/goi_va_world_b_0909.py).
+// Chi ghi so khi PaintLog=1. g_* = tich luy ky 10 s (in o WorldInDong), t_* = tich luy MOT tick (in [WORLD-TICK] khi >= 20 ms).
+double   g_dWorldNhac = 0.0;
+double   g_dNpcPha[4] = { 0.0, 0.0, 0.0, 0.0 };	// ProcessState / NpcAI / ProcCommand / ProcStatus
+double   g_dNpcTong = 0.0, g_dNpcMax = 0.0;
+unsigned g_uNpcLan = 0;
+int      g_nNpcMaxIdx = 0;
+static double   t_dNpcTong = 0.0, t_dNpcMax = 0.0, t_dPha[4] = { 0.0, 0.0, 0.0, 0.0 };
+static unsigned t_uNpc = 0;
+static int      t_nNpcMaxIdx = 0;
+// [WORLD 09/09 c] vong OBJECT (0), vong DAN (1), Player.Active() (2): thoi gian + so phan tu, ky 10 s (g_) va moi tick (t_)
+double   g_dKhacMs[3] = { 0.0, 0.0, 0.0 }; unsigned g_uKhacSo[3] = { 0, 0, 0 };
+static double t_dKhacMs[3] = { 0.0, 0.0, 0.0 }; static unsigned t_uKhacSo[3] = { 0, 0, 0 };
+void WorldKhacXong(int nLoai, const LARGE_INTEGER& a, const LARGE_INTEGER& b, unsigned uSo)
+{
+	if (nLoai < 0 || nLoai > 2) return;
+	const double d = WorldMs(a, b);
+	g_dKhacMs[nLoai] += d; g_uKhacSo[nLoai] += uSo; t_dKhacMs[nLoai] += d; t_uKhacSo[nLoai] += uSo;
+}
+void NpcDoPha(int nPha, LARGE_INTEGER& t0)
+{
+	LARGE_INTEGER t1; QueryPerformanceCounter(&t1);
+	const double d = WorldMs(t0, t1);
+	if (nPha >= 0 && nPha < 4) { g_dNpcPha[nPha] += d; t_dPha[nPha] += d; }
+	t0 = t1;
+}
+void WorldNpcXong(int nIdx, const LARGE_INTEGER& a, const LARGE_INTEGER& b)
+{
+	const double d = WorldMs(a, b);
+	g_dNpcTong += d; g_uNpcLan++; t_dNpcTong += d; t_uNpc++;
+	if (d > g_dNpcMax) { g_dNpcMax = d; g_nNpcMaxIdx = nIdx; }
+	if (d > t_dNpcMax) { t_dNpcMax = d; t_nNpcMaxIdx = nIdx; }
+}
+// [DOLUOT 09/09] BO LAY MAU con tro lenh luong chinh ([Client] DoLuot=1; mac dinh 0 = khong tao luong, khong ton gi).
+// Luong rieng moi ~1 ms: SuspendThread/GetThreadContext luong chinh -> ghi (EIP, pha, so thu tu) vao vong 16384 mau
+// (chi khi luong chinh dang o pha 1 = tick the gioi hay 2 = ve). Luong chinh danh dau tick/khung >= 20 ms (DoLuotPham).
+// Luong lay mau gom mau cua cac tick/khung nang (tre >= 200 ms de moc kip), moi 30 s in [DOLUOT] top 12 dia chi:
+// module+RVA (tra offline bang pdb) + ten ham qua dbghelp (SymFromAddr, pdb ghi trong DLL). Khong doan nua.
+#include <process.h>
+#include <dbghelp.h>
+static int            g_nDoLuot = -1;	// -1 chua doc ini
+static int            g_nDoLuotNguong = 20;	// [DOLUOT 09/09 b] [Client] DoLuotNguong ms; 0 = gom moi tick/khung
+static volatile LONG  g_lDoLuotPha = 0;	// 0 ngoai, 1 tick, 2 ve
+static volatile LONG  g_lDoLuotSeq = 0;
+struct DoLuotMau { DWORD_PTR uEip; LONG lPha; LONG lSeq; DWORD dwLuc; };
+#define DOLUOT_MAU 16384
+#define DOLUOT_NANG 1024
+static DoLuotMau      g_aDoLuotMau[DOLUOT_MAU];
+static volatile LONG  g_lDoLuotGhi = 0;	// so mau da ghi (vong)
+static volatile LONG  g_aDoLuotNang[DOLUOT_NANG];	// vong so thu tu tick/khung nang (>= 20 ms)
+static volatile LONG  g_aDoLuotNangPha[DOLUOT_NANG];
+static HANDLE         g_hDoLuotChinh = NULL;
+struct DoLuotDem { DWORD_PTR uEip; unsigned uSo; };
+static void DoLuotIn(FILE* pLog, int nPha, DoLuotDem* aDem, int nDem, unsigned uMau, unsigned uLan);
+static unsigned __stdcall DoLuotLuong(void*)
+{
+	static DoLuotDem aDem[2][8192]; static int nDem[2] = { 0, 0 }; static unsigned uMau[2] = { 0, 0 }, uLan[2] = { 0, 0 };	// [DOLUOT 09/09 d] 8192 EIP
+	static LONG aLanDem[2][DOLUOT_NANG];	// seq da dem lan nang (khoi dem 2 lan)
+	LONG lDaGom = 0; DWORD dwIn = GetTickCount();
+	for (;;)
+	{
+		Sleep(1);
+		if (g_lDoLuotPha)
+		{
+			CONTEXT c; memset(&c, 0, sizeof(c)); c.ContextFlags = CONTEXT_CONTROL;
+			if (SuspendThread(g_hDoLuotChinh) != (DWORD)-1)
+			{
+				const BOOL bOk = GetThreadContext(g_hDoLuotChinh, &c);
+				ResumeThread(g_hDoLuotChinh);
+				if (bOk)
+				{
+					const LONG i = InterlockedIncrement(&g_lDoLuotGhi);
+					DoLuotMau& m = g_aDoLuotMau[i & (DOLUOT_MAU - 1)];
+#if defined(_M_X64) || defined(_M_AMD64)
+					m.uEip = (DWORD_PTR)c.Rip;
+#else
+					m.uEip = (DWORD_PTR)c.Eip;
+#endif
+					m.lPha = g_lDoLuotPha; m.lSeq = g_lDoLuotSeq; m.dwLuc = GetTickCount();
+				}
+			}
+		}
+		// gom mau cu hon 200 ms (tick/khung da ket thuc, da danh dau nang hay chua)
+		const LONG lGhi = g_lDoLuotGhi; const DWORD dwNow = GetTickCount();
+		while (lDaGom < lGhi && lGhi - lDaGom < DOLUOT_MAU)
+		{
+			const DoLuotMau& m = g_aDoLuotMau[(lDaGom + 1) & (DOLUOT_MAU - 1)];
+			if ((DWORD)(dwNow - m.dwLuc) < 200) break;
+			lDaGom++;
+			const int p = (m.lPha == 1) ? 0 : ((m.lPha == 2) ? 1 : -1);
+			if (p < 0) continue;
+			if (g_aDoLuotNang[m.lSeq & (DOLUOT_NANG - 1)] != m.lSeq) continue;	// khong nang
+			if (aLanDem[p][m.lSeq & (DOLUOT_NANG - 1)] != m.lSeq) { aLanDem[p][m.lSeq & (DOLUOT_NANG - 1)] = m.lSeq; uLan[p]++; }
+			uMau[p]++;
+			int k = 0; for (; k < nDem[p]; k++) if (aDem[p][k].uEip == m.uEip) { aDem[p][k].uSo++; break; }
+			if (k == nDem[p] && nDem[p] < 8192) { aDem[p][k].uEip = m.uEip; aDem[p][k].uSo = 1; nDem[p]++; }
+		}
+		if ((DWORD)(dwNow - dwIn) >= 30000)
+		{
+			dwIn = dwNow;
+			FILE* pLog = fopen("jx_paint.log", "a");
+			if (pLog)
+			{
+				for (int p = 0; p < 2; p++) if (uMau[p]) DoLuotIn(pLog, p + 1, aDem[p], nDem[p], uMau[p], uLan[p]);
+				fclose(pLog);
+			}
+			nDem[0] = nDem[1] = 0; uMau[0] = uMau[1] = 0; uLan[0] = uLan[1] = 0;
+		}
+	}
+	return 0;
+}
+typedef DWORD (WINAPI *PFN_DoLuotSymSetOptions)(DWORD);
+typedef BOOL  (WINAPI *PFN_DoLuotSymInitialize)(HANDLE, PCSTR, BOOL);
+typedef BOOL  (WINAPI *PFN_DoLuotSymFromAddr)(HANDLE, DWORD64, PDWORD64, PSYMBOL_INFO);
+static void DoLuotIn(FILE* pLog, int nPha, DoLuotDem* aDem, int nDem, unsigned uMau, unsigned uLan)
+{
+	// [DOLUOT 09/09 e] KHONG dung dbghelp trong game (giu Core.pdb cua thu muc build -> linker LNK1201 khi game dang chay).
+	// Tong theo module (GetModuleHandleEx) + top 240 dia chi 'mod+rva:so' -> tra ten offline bang CoreClient.map (doluot_tra_map.py).
+	struct DoLuotMod { HMODULE hMod; unsigned uSo; char szTen[48]; };
+	static DoLuotMod aMod[48]; int nMod = 0;
+	static HMODULE aEipMod[8192];
+	for (int k = 0; k < nDem; k++)
+	{
+		HMODULE hMod = NULL;
+		GetModuleHandleExA(0x00000004 | 0x00000002, (LPCSTR)aDem[k].uEip, &hMod);	// FROM_ADDRESS | UNCHANGED_REFCOUNT
+		aEipMod[k] = hMod;
+		int m = 0; for (; m < nMod; m++) if (aMod[m].hMod == hMod) break;
+		if (m == nMod && nMod < 48)
+		{
+			aMod[m].hMod = hMod; aMod[m].uSo = 0; strcpy(aMod[m].szTen, "?");
+			char szDuong[MAX_PATH]; if (hMod && GetModuleFileNameA(hMod, szDuong, MAX_PATH)) { const char* p = strrchr(szDuong, '\\'); strncpy(aMod[m].szTen, p ? p + 1 : szDuong, 47); aMod[m].szTen[47] = 0; }
+			nMod++;
+		}
+		if (m < nMod) aMod[m].uSo += aDem[k].uSo;
+	}
+	fprintf(pLog, "[DOLUOT] t=%u pha %s: %u lan >= %d ms, %u mau | module:", (unsigned)GetTickCount(), nPha == 1 ? "TICK" : "VE", uLan, g_nDoLuotNguong, uMau);
+	for (int r = 0; r < nMod; r++)
+	{
+		int nMax = r; for (int k = r + 1; k < nMod; k++) if (aMod[k].uSo > aMod[nMax].uSo) nMax = k;
+		if (nMax != r) { DoLuotMod t = aMod[r]; aMod[r] = aMod[nMax]; aMod[nMax] = t; }
+		fprintf(pLog, " %s %.1f%%", aMod[r].szTen, aMod[r].uSo * 100.0 / uMau);
+	}
+	fprintf(pLog, "\n[DOLUOT-EIP] pha %s mau %u:", nPha == 1 ? "TICK" : "VE", uMau);
+	for (int r = 0; r < 240 && r < nDem; r++)
+	{
+		int nMax = r; for (int k = r + 1; k < nDem; k++) if (aDem[k].uSo > aDem[nMax].uSo) nMax = k;
+		if (nMax != r) { DoLuotDem t = aDem[r]; aDem[r] = aDem[nMax]; aDem[nMax] = t; HMODULE hm = aEipMod[r]; aEipMod[r] = aEipMod[nMax]; aEipMod[nMax] = hm; }
+		const char* szMod = "?"; for (int m = 0; m < nMod; m++) if (aMod[m].hMod == aEipMod[r]) { szMod = aMod[m].szTen; break; }
+		fprintf(pLog, " %s+%X:%u", szMod, (unsigned)(aDem[r].uEip - (DWORD_PTR)aEipMod[r]), aDem[r].uSo);
+	}
+	fprintf(pLog, "\n");
+}
+// [DOLUOT 09/09 c] Luong chinh: DoLuotPham (KDoLuot.h) goi 2 ham nay quanh tick (KSubWorld::Activate) va ve (KCoreShell::DrawGameSpace)
+LONG DoLuotBatDau(int nPha, LARGE_INTEGER* pLi0)
+{
+	if (g_nDoLuot < 0)
+	{
+		g_nDoLuot = GetPrivateProfileIntA("Client", "DoLuot", 0, ".\\config.ini") ? 1 : 0;
+		g_nDoLuotNguong = GetPrivateProfileIntA("Client", "DoLuotNguong", 20, ".\\config.ini");
+		if (g_nDoLuot)
+		{
+			if (!DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_hDoLuotChinh, THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION, FALSE, 0))
+				g_nDoLuot = 0;
+			else
+			{
+				unsigned uTid = 0; HANDLE h = (HANDLE)_beginthreadex(NULL, 0, DoLuotLuong, NULL, 0, &uTid);
+				if (!h) g_nDoLuot = 0; else CloseHandle(h);
+			}
+			FILE* pB = fopen("jx_paint.log", "a");
+			if (pB) { fprintf(pB, "[DOLUOT] bat: %s, nguong %d ms (0 = gom moi tick/khung)\n", g_nDoLuot ? "luong lay mau da chay" : "KHONG tao duoc luong", g_nDoLuotNguong); fclose(pB); }
+		}
+	}
+	if (!g_nDoLuot || nPha < 1 || nPha > 2) return 0;
+	const LONG lSeq = InterlockedIncrement(&g_lDoLuotSeq);
+	QueryPerformanceCounter(pLi0);
+	InterlockedExchange(&g_lDoLuotPha, (LONG)nPha);
+	return lSeq;
+}
+void DoLuotKetThuc(int nPha, LONG lSeq, const LARGE_INTEGER& li0)
+{
+	InterlockedExchange(&g_lDoLuotPha, 0);
+	LARGE_INTEGER li1, f; QueryPerformanceCounter(&li1); QueryPerformanceFrequency(&f);
+	const double dMs = (double)(li1.QuadPart - li0.QuadPart) * 1000.0 / (double)f.QuadPart;
+	if (g_nDoLuotNguong <= 0 || dMs >= (double)g_nDoLuotNguong) { g_aDoLuotNangPha[lSeq & (DOLUOT_NANG - 1)] = nPha; InterlockedExchange(&g_aDoLuotNang[lSeq & (DOLUOT_NANG - 1)], lSeq); }
+}
+
+void WorldTickXong(double dQuet)
+{
+	extern int g_nCorePaintLog;
+	if (g_nCorePaintLog > 0 && dQuet >= 20.0)
+	{
+		FILE* pLog = fopen("jx_paint.log", "a");
+		if (pLog)
+		{
+			const int i = t_nNpcMaxIdx;
+			const bool bCo = (i > 0 && i < MAX_NPC);
+			fprintf(pLog, "[WORLD-TICK] t=%u quet_vung %.1f ms | npc %u tong %.1f ms (khac %.1f) | pha PS %.1f AI %.1f PC %.1f ST %.1f"
+				" | nang nhat %.2f ms idx %d kind %d doing %d | object %u %.1f ms | dan %u %.1f ms | nguoi choi %.1f ms\n",
+				(unsigned)GetTickCount(), dQuet, t_uNpc, t_dNpcTong, dQuet - t_dNpcTong, t_dPha[0], t_dPha[1], t_dPha[2], t_dPha[3],
+				t_dNpcMax, i, bCo ? (int)Npc[i].m_Kind : -1, bCo ? (int)Npc[i].m_Doing : -1,
+				t_uKhacSo[0], t_dKhacMs[0], t_uKhacSo[1], t_dKhacMs[1], t_dKhacMs[2]);
+			fclose(pLog);
+		}
+	}
+	t_dNpcTong = t_dNpcMax = 0.0; t_uNpc = 0; t_nNpcMaxIdx = 0;
+	t_dPha[0] = t_dPha[1] = t_dPha[2] = t_dPha[3] = 0.0;
+	t_dKhacMs[0] = t_dKhacMs[1] = t_dKhacMs[2] = 0.0; t_uKhacSo[0] = t_uKhacSo[1] = t_uKhacSo[2] = 0;	// [WORLD 09/09 c]
+}
+#endif
 extern int g_nCorePaintLog;
 #endif
 void KSubWorld::Activate()
@@ -1176,6 +1387,7 @@ void KSubWorld::Activate()
 
 #ifndef _SERVER
 	g_ScenePlace.SetCurrentTime(m_dwCurrentTime);
+	DoLuotPham doLuotTick(1);	// [DOLUOT 09/09] tick the gioi
 	LARGE_INTEGER liW0, liW1, liW2;	// [WORLD 08/09 a]
 	const bool bWorldDo = (g_nCorePaintLog > 0);
 	if (bWorldDo) QueryPerformanceCounter(&liW0);
@@ -1232,6 +1444,7 @@ void KSubWorld::Activate()
 		const double dQuet = WorldMs(liW1, liW2);
 		g_dWorldQuetVung += dQuet;
 		if (dQuet > g_dWorldMaxTick) g_dWorldMaxTick = dQuet;
+		WorldTickXong(dQuet);	// [WORLD 09/09 b] in rieng tick >= 20 ms, dat lai bo dem tick
 	}
 #endif
 

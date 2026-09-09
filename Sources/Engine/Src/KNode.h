@@ -64,7 +64,13 @@ inline KNode* KNode::GetNext(void)
 //---------------------------------------------------------------------------
 inline KNode* KNode::GetPrev(void)
 {
-	if (m_pPrev->m_pPrev)
+	// [SAP 09/09] Them kiem m_pPrev NULL cho DOI XUNG voi GetNext() o tren (GetNext da kiem,
+	// GetPrev thi quen). Remove() dat CA m_pPrev lan m_pNext = NULL, nen goi GetPrev()
+	// tren mot nut DA BI GO (vd: bi go boi ma tai nhap trong luc dang duyet danh sach)
+	// se doc [NULL+0x10] va lam SAP MAY CHU.
+	// Dung vu dump 09/09 14:49 (KNpc::ClearStateSkillEffect, KNpc.cpp): AV doc dia chi 0x10.
+	// Danh sach lanh manh thi hanh vi khong doi; danh sach da hong thi dung duyet som thay vi no.
+	if (m_pPrev && m_pPrev->m_pPrev)
 		return m_pPrev;
 	return NULL;
 }

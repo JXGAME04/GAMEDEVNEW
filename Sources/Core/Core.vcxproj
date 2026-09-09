@@ -404,6 +404,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\ClientRelease\CoreClient.map</MapFileName>
       <SubSystem>Console</SubSystem>
       <OutputFile>ClientRelease\CoreClient.dll</OutputFile>
       <ImportLibrary>.\ClientRelease\CoreClient.lib</ImportLibrary>

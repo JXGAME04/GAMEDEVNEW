@@ -23,9 +23,10 @@ class TextureRes;
 // 资源链表的节点
 struct ResNode
 {
-	ResNode() : m_bDangNap(false), m_nLanHong(0) {}	// [NAP 08/09 b/e]
+	ResNode() : m_bDangNap(false), m_nLanHong(0), m_nNapTruoc(0) {}	// [NAP 08/09 b/e] [NAPCHIEU 09/09 b]
 	unsigned char	m_nLanHong;			// [NAP 08/09 e] so lan nap hong lien tiep: >= 3 -> thu lai moi 10 phut thay vi 10 giay
 	bool		m_bDangNap;				// [NAP 08/09 b] dang nap o luong nen (m_pTextureRes NULL tam thoi)
+	unsigned char	m_nNapTruoc;				// [NAPCHIEU 09/09 b] [NAPNPC 09/09] muc do NapTruoc chen, chua duoc hoi lan nao: 0 = khong, 1 = anh chieu, 2 = anh than NPC (lan hoi dau: kip/tre theo nguon)
 	uint32		m_nRetryTime;				// [REP3 03/09 LAG] moc thu nap lai khi nap that bai
 	uint32		m_nLastUsedTime;			// 上一次渲染的时间标签
 	bool		m_bCacheable;				// 是否是无硬盘对应文件的资源
@@ -62,11 +63,14 @@ public:
 	void NapNenDung();			// dung luong nen, bo viec/ket qua con lai (Free)
 	bool m_bVeDangDien;			// true giua RepresentBegin/End: cho phep giao viec cho luong nen
 	unsigned m_nNapNenGui, m_nNapNenXong, m_nNapNenHong, m_nNapNenBoVe;	// thong ke ky ([REP3-NAP])
+	unsigned m_nNapTruocKip[3], m_nNapTruocTre[3];	// [NAPCHIEU 09/09 b] [NAPNPC 09/09] lan hoi dau cua muc nap truoc theo nguon [1] chieu [2] NPC: da nap xong / con dang nap
+	// [NAPCHIEU 09/09] nap truoc (goi y): 1 = da co muc, 2 = da giao luong nen + chen muc dang nap, 0 = khong giao duoc (khong nap dong bo)
+	int NapTruoc(const char* pszImage, uint32 nType, int nNguon);	// [NAPNPC 09/09] nNguon: 1 = anh chieu, 2 = anh than NPC
 private:
-	bool NapNenGiao(const char* pszImage, uint32 uId, uint32 nType);	// false = khong tao duoc luong -> nap ngay
+	bool NapNenGiao(const char* pszImage, uint32 uId, uint32 nType, bool bSau = false);	// false = khong tao duoc luong -> nap ngay; [NAPNPC 09/09] bSau: hang SAU (nap truoc), mac dinh hang TRUOC (anh dang ve can)
 	static unsigned __stdcall NapNenLuong(void* p);
 	void NapNenChay();
-	vector<NapViec> m_napViec; vector<NapKetQua> m_napXong; KCriticalSection m_napKhoa; HANDLE m_hNapLuong; HANDLE m_hNapCo; volatile long m_lNapDung; bool m_bNapNenLoi;
+	vector<NapViec> m_napViec, m_napViecSau; vector<NapKetQua> m_napXong; KCriticalSection m_napKhoa; HANDLE m_hNapLuong; HANDLE m_hNapCo; volatile long m_lNapDung; bool m_bNapNenLoi;
 public:
 
 	//## 设置图形动态加载平衡参数。

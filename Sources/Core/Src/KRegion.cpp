@@ -96,6 +96,9 @@ KRegion::KRegion()
 	m_pObjRef		= NULL;
 	m_pObstacleRef	= NULL;
 	m_pMslRef		= NULL;
+#ifndef _SERVER
+	m_uNpcDoi = 1; m_uNpcChiMuc = 0; m_nChiMucO = 0; m_pChiMucODau = NULL; m_pChiMucKe = NULL; m_pChiMucNpc = NULL; m_nChiMucNpcCap = 0;	// [VUNG 09/09]
+#endif
 	m_nRegionX		= 0;
 	m_nRegionY		= 0;
 #ifdef _SERVER
@@ -110,6 +113,9 @@ KRegion::~KRegion()
 {
 	if (m_pMslRef)
 		delete [] m_pMslRef;
+#ifndef _SERVER
+	delete [] m_pChiMucODau; delete [] m_pChiMucKe; delete [] m_pChiMucNpc;	// [VUNG 09/09]
+#endif
 	if (m_pNpcRef)
 		delete [] m_pNpcRef;
 	if (m_pObjRef)
@@ -128,6 +134,9 @@ BOOL KRegion::Init(int nWidth, int nHeight)
 	if (!m_pNpcRef)
 		return FALSE;
 	ZeroMemory(m_pNpcRef, nWidth * nHeight);
+#ifndef _SERVER
+	m_uNpcDoi++;	// [VUNG 09/09] kich thuoc/du lieu vung doi -> xay lai chi muc
+#endif
 
 	if (!m_pObjRef)
 		m_pObjRef = new BYTE[nWidth * nHeight];
@@ -814,7 +823,22 @@ void KRegion::Activate()
 			}
 #endif
 			// Always activate
+#ifndef _SERVER
+			{	// [WORLD 09/09 b] thoi gian tung NPC (client, chi khi PaintLog=1)
+				extern int g_nCorePaintLog; extern void WorldNpcXong(int nIdx, const LARGE_INTEGER& a, const LARGE_INTEGER& b);
+				if (g_nCorePaintLog > 0)
+				{
+					LARGE_INTEGER liN0, liN1; QueryPerformanceCounter(&liN0);
+					Npc[nNpcIdx].Activate();
+					QueryPerformanceCounter(&liN1);
+					WorldNpcXong(nNpcIdx, liN0, liN1);
+				}
+				else
+					Npc[nNpcIdx].Activate();
+			}
+#else
 			Npc[nNpcIdx].Activate();
+#endif
 			currentIndex++;
 		}
 		pNode = pNpcTmpNode;	// dung ban da lay TRUOC Activate (xem chu thich dau vong)
@@ -830,6 +854,12 @@ void KRegion::Activate()
     nCounter = 0;
     KIndexNode *pObjNode = NULL;
     KIndexNode *pObjTmpNode = NULL;
+#ifndef _SERVER
+    LARGE_INTEGER liK0, liK1;	// [WORLD 09/09 c] thoi gian vong OBJECT va vong DAN (client, PaintLog=1)
+    extern int g_nCorePaintLog; extern void WorldKhacXong(int nLoai, const LARGE_INTEGER& a, const LARGE_INTEGER& b, unsigned uSo);
+    const bool bKhacDo = (g_nCorePaintLog > 0);
+    if (bKhacDo) QueryPerformanceCounter(&liK0);
+#endif
     pObjNode = (KIndexNode *)m_ObjList.GetHead();
 
     while (pObjNode)
@@ -868,11 +898,17 @@ void KRegion::Activate()
         pObjNode = pObjTmpNode;
     }
     m_nObjSyncCounter++;
+#ifndef _SERVER
+    if (bKhacDo) { QueryPerformanceCounter(&liK1); WorldKhacXong(0, liK0, liK1, (unsigned)m_ObjList.GetNodeCount()); }
+#endif
     if (m_nObjSyncCounter > m_ObjList.GetNodeCount() * 2)
     {
         m_nObjSyncCounter = 0;
     }
 
+#ifndef _SERVER
+    if (bKhacDo) QueryPerformanceCounter(&liK0);	// [WORLD 09/09 c] vong DAN
+#endif
     pNode = (KIndexNode *)m_MissleList.GetHead();
     while (pNode)
     {
@@ -884,6 +920,9 @@ void KRegion::Activate()
         pNode = pTmpNode;
     }
 
+#ifndef _SERVER
+    if (bKhacDo) { QueryPerformanceCounter(&liK1); WorldKhacXong(1, liK0, liK1, (unsigned)m_MissleList.GetNodeCount()); }
+#endif
 #ifdef _SERVER
     pNode = (KIndexNode *)m_PlayerList.GetHead();
     while (pNode)
@@ -900,10 +939,63 @@ void KRegion::Activate()
 #ifndef _SERVER
 	if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_RegionIndex == m_nIndex)	// Player Region
 	{
+		if (bKhacDo) QueryPerformanceCounter(&liK0);	// [WORLD 09/09 c] nguoi choi (auto nhat / quet muc tieu / tim duong ...)
 		Player[CLIENT_PLAYER_INDEX].Active();
+		if (bKhacDo) { QueryPerformanceCounter(&liK1); WorldKhacXong(2, liK0, liK1, 1u); }
 	}
 #endif
 }
+
+#ifndef _SERVER
+unsigned g_uVungSo = 0, g_uVungLech = 0, g_uVungXay = 0;	// [VUNG 09/09] bo do (in o [WORLD b])
+// [VUNG 09/09] Xay chi muc o -> NPC: counting sort ON DINH theo thu tu m_NpcList (con dau tien trong danh sach van la
+// con dau tien trong o). Chi chay khi phien ban doi (vai lan/tick luc dong, O(so NPC + so o)).
+void KRegion::XayChiMucNpc()
+{
+	const int nO = m_nWidth * m_nHeight;
+	m_uNpcChiMuc = m_uNpcDoi;
+	if (nO <= 0 || !m_pNpcRef)
+	{
+		delete [] m_pChiMucODau; m_pChiMucODau = NULL; m_nChiMucO = 0;
+		return;
+	}
+	if (!m_pChiMucODau || m_nChiMucO != nO + 1)
+	{
+		delete [] m_pChiMucODau; delete [] m_pChiMucKe;
+		m_pChiMucODau = new int[nO + 1]; m_pChiMucKe = new int[nO]; m_nChiMucO = nO + 1;
+	}
+	int nSo = 0;
+	KIndexNode* pNode = (KIndexNode*)m_NpcList.GetHead();
+	while (pNode) { nSo++; pNode = (KIndexNode*)pNode->GetNext(); }
+	if (nSo > m_nChiMucNpcCap)
+	{
+		delete [] m_pChiMucNpc; m_nChiMucNpcCap = nSo + 64; m_pChiMucNpc = new int[m_nChiMucNpcCap];
+	}
+	memset(m_pChiMucODau, 0, sizeof(int) * (nO + 1));
+	for (pNode = (KIndexNode*)m_NpcList.GetHead(); pNode; pNode = (KIndexNode*)pNode->GetNext())
+	{
+		const int i = pNode->m_nIndex;
+		if (i <= 0 || i >= MAX_NPC) continue;
+		const int x = Npc[i].m_MapX, y = Npc[i].m_MapY;
+		if (x < 0 || y < 0 || x >= m_nWidth || y >= m_nHeight) continue;
+		m_pChiMucODau[y * m_nWidth + x + 1]++;
+	}
+	for (int k = 0; k < nO; k++)
+	{
+		m_pChiMucODau[k + 1] += m_pChiMucODau[k];
+		m_pChiMucKe[k] = m_pChiMucODau[k];
+	}
+	for (pNode = (KIndexNode*)m_NpcList.GetHead(); pNode; pNode = (KIndexNode*)pNode->GetNext())
+	{
+		const int i = pNode->m_nIndex;
+		if (i <= 0 || i >= MAX_NPC) continue;
+		const int x = Npc[i].m_MapX, y = Npc[i].m_MapY;
+		if (x < 0 || y < 0 || x >= m_nWidth || y >= m_nHeight) continue;
+		m_pChiMucNpc[m_pChiMucKe[y * m_nWidth + x]++] = i;
+	}
+	g_uVungXay++;
+}
+#endif
 
 void KRegion::AddNpc(int nIdx)
 {
@@ -912,6 +1004,9 @@ void KRegion::AddNpc(int nIdx)
 		_ASSERT(Npc[nIdx].m_Node.m_Ref == 0);
 		if (Npc[nIdx].m_Node.m_Ref == 0)
 		{
+#ifndef _SERVER
+			m_uNpcDoi++;	// [VUNG 09/09]
+#endif
 			m_NpcList.AddTail(&Npc[nIdx].m_Node);
 			Npc[nIdx].m_Node.AddRef();
 		}
@@ -927,6 +1022,9 @@ void KRegion::RemoveNpc(int nIdx)
 
 	if (Npc[nIdx].m_Node.m_Ref > 0)
 	{
+#ifndef _SERVER
+		m_uNpcDoi++;	// [VUNG 09/09]
+#endif
 		Npc[nIdx].m_Node.Remove();
 		Npc[nIdx].m_Node.Release();
 	}
@@ -1197,6 +1295,9 @@ BOOL KRegion::AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 	{
 	case obj_npc:
 		pBuffer = m_pNpcRef;
+#ifndef _SERVER
+		m_uNpcDoi++;	// [VUNG 09/09]
+#endif
 		break;
 	case obj_object:
 		pBuffer = m_pObjRef;
@@ -1247,6 +1348,9 @@ BOOL KRegion::DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 	{
 	case obj_npc:
 		pBuffer = m_pNpcRef;
+#ifndef _SERVER
+		m_uNpcDoi++;	// [VUNG 09/09]
+#endif
 		break;
 	case obj_object:
 		pBuffer = m_pObjRef;

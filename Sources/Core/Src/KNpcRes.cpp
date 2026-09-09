@@ -27,31 +27,6 @@
 
 #define	PREFIX_MANTLE_LEVEL 1
 
-// [AMMAU 09/09] Dem so o ve bi AM MAU OAN: dung COLOR_ADJUST trong khi NPC do khong he
-// co trang thai bang / doc / chay. In moi 10 giay vao jx_paint.log khi [Client] PaintLog=1.
-extern int g_nCorePaintLog;
-static unsigned s_uAmDung = 0, s_uAmOan = 0;
-static int s_nSuaAmMau = -1;
-static void AmMauInDong()
-{
-	if (g_nCorePaintLog <= 0)
-		return;
-	static DWORD s_dwLan = 0;
-	const DWORD dwNow = GetTickCount();
-	if (s_dwLan == 0) { s_dwLan = dwNow; return; }
-	if (dwNow - s_dwLan < 10000)
-		return;
-	s_dwLan = dwNow;
-	FILE* pLog = fopen("jx_paint.log", "a");
-	if (pLog)
-	{
-		fprintf(pLog, "[AMMAU] t=%u | o ve dung doi mau: DUNG (co bang/doc/chay) %u | OAN (khong trang thai gi) %u | sua=%d\n",
-			dwNow, s_uAmDung, s_uAmOan, s_nSuaAmMau);
-		fclose(pLog);
-	}
-	s_uAmDung = s_uAmOan = 0;
-}
-
 KNpcRes::KNpcRes()
 {
 	m_nAction = 0;
@@ -83,6 +58,28 @@ KNpcRes::KNpcRes()
 //---------------------------------------------------------------------------
 //	功能：	初始化
 //---------------------------------------------------------------------------
+#ifndef _SERVER
+// [NAPNPC 09/09] Goi Represent3 xep hang nap nen mot anh, TRUOC lan ve dau (nguon 1 = anh chieu tu goi 95, 2 = anh than NPC tu
+// KSprControl::SetSprFile). Tra GetProcAddress "Rep3_NapTruoc2" mot lan (thu toi da 8 lan neu DLL chua nap); thieu -> 0, im lang.
+// Represent3 khong bao gio nap dong bo vi loi goi nay; nap truoc chi la goi y (xem TextureResMgr::NapTruoc).
+int Rep3NapTruocAnh(const char* psz, int nNguon)
+{
+	typedef int (*PFN_Rep3NapTruoc2)(const char*, int);
+	static PFN_Rep3NapTruoc2 s_pfn = NULL;
+	static int s_nTra = 0;
+	if (!psz || !psz[0]) return 0;
+	if (!s_pfn)
+	{
+		if (s_nTra >= 8) return 0;
+		s_nTra++;
+		HMODULE h = GetModuleHandleA("Represent3.dll");
+		if (h) s_pfn = (PFN_Rep3NapTruoc2)GetProcAddress(h, "Rep3_NapTruoc2");
+		if (!s_pfn) return 0;
+	}
+	return s_pfn(psz, nNguon);
+}
+#endif
+
 BOOL	KNpcRes::Init(char *lpszNpcName, KNpcResList *pNpcResList)
 {
 	// 初始化 NpcResNode
@@ -177,12 +174,7 @@ BOOL	KNpcRes::Init(char *lpszNpcName, KNpcResList *pNpcResList)
 	//memset(m_szSentence, 0, sizeof(m_szSentence));
 	//memset(m_szBackSentence, 0, sizeof(m_szBackSentence));
 
-	// [AMMAU 09/09] Khe NPC doi chu thi phai xoa mau bang/doc/chay cua NGUOI CU, neu khong nguoi
-	// moi bi ve dung mau do cho toi khi ProcessState cua chinh no chay. [Client] SuaAmMau = 0 de lui.
-	if (s_nSuaAmMau < 0)
-		s_nSuaAmMau = (int)GetPrivateProfileIntA("Client", "SuaAmMau", 1, ".\\config.ini");
-	if (s_nSuaAmMau)
-		m_ulAdjustColorId = 0;
+	m_ulAdjustColorId = 0;	// [AMMAU 09/09] khe NPC doi chu: xoa mau bang/doc/chay cua NGUOI CU (truoc day khong khoi tao)
 	for (i = 0; i < MAX_NPC_IMAGE_NUM; i++)
 	{
 		m_cDrawFile[i].nType = ISI_T_SPR;
@@ -192,7 +184,6 @@ BOOL	KNpcRes::Init(char *lpszNpcName, KNpcResList *pNpcResList)
 		m_cDrawFile[i].nISPosition = IMAGE_IS_POSITION_INIT;
 		m_cDrawFile[i].bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
 	}
-	AmMauInDong();	// [AMMAU 09/09]
 	if (m_pcNpcBlur)	// [RAMTINH 08/09] bong mo cap khi can (CapBongMo); da co thi dat lai nhu cu
 		m_pcNpcBlur->Init();
 	return TRUE;
@@ -619,13 +610,6 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 				// (i != nPos) thi anh nhan kieu blend cua mot o KHAC.
 				if (m_ulAdjustColorId > 0 && m_ulAdjustColorId <= g_ulAdjustColorCount)
 				{
-					if (g_nCorePaintLog > 0)
-					{	// [AMMAU 09/09] co that su dang bang/doc/chay khong?
-						if (Npc[nNpcIdx].m_FreezeState.nTime > 0 || Npc[nNpcIdx].m_PoisonState.nTime > 0 || Npc[nNpcIdx].m_BurnState.nTime > 0)
-							s_uAmDung++;
-						else
-							s_uAmOan++;
-					}
 					m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST;
 					m_cDrawFile[nPos].Color.Color_dw = g_pAdjustColorTab[m_ulAdjustColorId - 1];
 				}
@@ -665,13 +649,6 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 				// chu thich o khoi TRANG BI ngay tren da sua, khoi nay bi bo sot.
 				if (m_ulAdjustColorId > 0 && m_ulAdjustColorId <= g_ulAdjustColorCount)
 				{
-					if (g_nCorePaintLog > 0)
-					{	// [AMMAU 09/09] co that su dang bang/doc/chay khong?
-						if (Npc[nNpcIdx].m_FreezeState.nTime > 0 || Npc[nNpcIdx].m_PoisonState.nTime > 0 || Npc[nNpcIdx].m_BurnState.nTime > 0)
-							s_uAmDung++;
-						else
-							s_uAmOan++;
-					}
 					m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST;
 					m_cDrawFile[nPos].Color.Color_dw = g_pAdjustColorTab[m_ulAdjustColorId - 1];
 				}

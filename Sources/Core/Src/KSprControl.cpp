@@ -52,6 +52,7 @@ void	KSprControl::SetSprFile(char *lpszName, int nTotalFrame, int nTotalDir, int
 
 	strcpy(m_szName, lpszName);
 	m_dwNameID = g_FileName2Id(m_szName);
+	{ extern int Rep3NapTruocAnh(const char*, int); Rep3NapTruocAnh(m_szName, 2); }	// [NAPNPC 09/09] xep hang nap nen ngay khi doi anh bo phan (them NPC / doi do / doi dong tac), truoc lan ve dau
 	m_nTotalDir = nTotalDir;
 	if (m_nTotalDir < 1)
 		m_nTotalDir = 1;

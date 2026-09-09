@@ -8,6 +8,7 @@
 #include "GameDataDef.h"
 #include "CoreShell.h"
 #include "CoreDrawGameObj.h"
+#include "KDoLuot.h"	// [DOLUOT 09/09 c]
 #include "ImgRef.h"
 #include "KPlayer.h"
 #include "KPlayerSet.h"
@@ -3143,36 +3144,7 @@ int		g_nPaintAlpha = 0;	// [MAU 08/09] phan le tick (0..1000) cua khung ve hien 
 // C++ da mangle) thay vi include KCanvas.h - tranh keo DirectDraw vao Core.
 ENGINE_API void g_SetCanvasLockProbe(int nOn);
 ENGINE_API void g_GetCanvasLockStats(unsigned int* pnCount, unsigned int* pnMicroSec, int bReset);
-int	g_nCorePaintLog = 0;
-// [INTERP 09/09] Do TOAN BO phan khac nhau giua PaintInterp=1 va 0 de tim goc "am mau khi di chuyen".
-// Chu chot: PaintInterp=0 het bi (nhung giat), PaintInterp=1 thi bi => loi nam trong dung phan nay.
-// CHI GHI SO, khong doi cach ve. Bat bang [Client] PaintLog=1. In moi 10 giay vao jx_paint.log.
-static double   s_dIpAlpha = 0.0;
-static unsigned s_uIpFrame = 0, s_uIpKep = 0, s_uIpNpc = 0, s_uIpNpcMax = 0, s_uIpNpcKhung = 0, s_uIpVuot = 0;
-static int      s_nIpLechMax = 0, s_nIpLechNguoi = 0;
-int             g_nIpBuocK = 1;	// [NHIP60 b] so khung ve moi buoc the gioi (1 = moi khung)
-static void IpInDong()
-{
-	if (g_nCorePaintLog <= 0 || s_uIpFrame == 0)
-		return;
-	static DWORD s_dwLan = 0;
-	const DWORD dwNow = timeGetTime();
-	if (s_dwLan == 0) { s_dwLan = dwNow; return; }
-	if (dwNow - s_dwLan < 10000)
-		return;
-	s_dwLan = dwNow;
-	FILE* pLog = fopen("jx_paint.log", "a");
-	if (pLog)
-	{
-		fprintf(pLog, "[INTERP] t=%u khung=%u | alpha TB %.0f, cham tran 1000 %u lan | npc dich TB %.1f max %u"
-			" | lech VE-TICK: npc max %d, nguoi choi max %d | vuot bien vung %u | buoc the gioi moi %d khung\n",
-			dwNow, s_uIpFrame, s_dIpAlpha / s_uIpFrame, s_uIpKep,
-			(double)s_uIpNpc / s_uIpFrame, s_uIpNpcMax, s_nIpLechMax, s_nIpLechNguoi, s_uIpVuot, g_nIpBuocK);
-		fclose(pLog);
-	}
-	s_dIpAlpha = 0.0; s_uIpFrame = s_uIpKep = s_uIpNpc = s_uIpNpcMax = s_uIpVuot = 0;
-	s_nIpLechMax = s_nIpLechNguoi = 0;
-}	// mirror of [Client] PaintLog for Core-side probes (set via GOI_PROCFRAME_BREATHE nParam)	// TRUE = POSSHIFT drives the camera each paint frame; the logic tick must not touch the focus
+int	g_nCorePaintLog = 0;	// mirror of [Client] PaintLog for Core-side probes (set via GOI_PROCFRAME_BREATHE nParam)	// TRUE = POSSHIFT drives the camera each paint frame; the logic tick must not touch the focus
 
 // ==================== AUTO DA TAU (18/08/2026) ====================
 // May trang thai lam nhiem vu Da Tau, dieu khien bang NOI DUNG HOI THOAI
@@ -23911,7 +23883,6 @@ int	KCoreShell::OperationRequest(unsigned int uOper, KUPARAM uParam, KNPARAM nPa
 					if (nK < 1) nK = 1;
 					if (nK > 8) nK = 8;
 				}
-				g_nIpBuocK = nK;
 				if (++s_nDemKhung < nK)
 					break;	// chua toi luot: giu vi tri ve cua khung truoc (nRet giu 1)
 				s_nDemKhung = 0;
@@ -23923,13 +23894,6 @@ int	KCoreShell::OperationRequest(unsigned int uOper, KUPARAM uParam, KNPARAM nPa
 		if (nAlpha > 1000)
 			nAlpha = 1000;
 		g_nPaintAlpha = nAlpha;	// [MAU 08/09]
-		if (g_nCorePaintLog > 0)
-		{	// [INTERP 09/09] moi khung ve mot lan
-			s_uIpFrame++;
-			s_dIpAlpha += (double)nAlpha;
-			if (nAlpha >= 1000) s_uIpKep++;
-			s_uIpNpcKhung = 0;
-		}
 		int	nPlayerNpcIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
 		int	nIdx = 0;
 		while (nIdx = NpcSet.GetNextIdx(nIdx))
@@ -23944,16 +23908,6 @@ int	KCoreShell::OperationRequest(unsigned int uOper, KUPARAM uParam, KNPARAM nPa
 				continue;	// dung yen: tick da dat vi tri roi, khoi ton cong scene
 			int	nDrawX = s_InterpFrom[nIdx].x + (s_InterpTo[nIdx].x - s_InterpFrom[nIdx].x) * nAlpha / 1000;
 			int	nDrawY = s_InterpFrom[nIdx].y + (s_InterpTo[nIdx].y - s_InterpFrom[nIdx].y) * nAlpha / 1000;
-			if (g_nCorePaintLog > 0)
-			{	// [INTERP 09/09] nut cay canh VAN nam o vi tri TICK (chi SetDrawPos, khong MoveObject),
-				// nen day chinh la do lech giua thu duoc VE va thu cay canh / he chieu sang van tuong la no o do.
-				int nLx = nDrawX - s_InterpTo[nIdx].x; if (nLx < 0) nLx = -nLx;
-				int nLy = nDrawY - s_InterpTo[nIdx].y; if (nLy < 0) nLy = -nLy;
-				const int nL = (nLx > nLy) ? nLx : nLy;
-				s_uIpNpcKhung++;
-				if (nL > s_nIpLechMax) s_nIpLechMax = nL;
-				if (bIsPlayer && nL > s_nIpLechNguoi) s_nIpLechNguoi = nL;
-			}
 			if (!bIsPlayer)
 			{
 				// NPC thuong: chi doi vi tri VE. Goi SetPos se keo theo MoveObject ->
@@ -24004,13 +23958,6 @@ int	KCoreShell::OperationRequest(unsigned int uOper, KUPARAM uParam, KNPARAM nPa
 			Missle[nMsl].m_nDrawX = Missle[nMsl].m_nPrevX + nMdx * nAlpha / 1000;
 			Missle[nMsl].m_nDrawY = Missle[nMsl].m_nPrevY + nMdy * nAlpha / 1000;
 			Missle[nMsl].m_nDrawZ = Missle[nMsl].m_nPrevZ + nMdz * nAlpha / 1000;
-		}
-		if (g_nCorePaintLog > 0)
-		{	// [INTERP 09/09] chot ky va in moi 10 giay
-			s_uIpNpc += s_uIpNpcKhung;
-			if (s_uIpNpcKhung > s_uIpNpcMax) s_uIpNpcMax = s_uIpNpcKhung;
-			if (nRet == 2) s_uIpVuot++;
-			IpInDong();
 		}
 	}
 	break;
@@ -24830,6 +24777,7 @@ static void CoreProbeTick(DWORD dwStart, DWORD dwNet, DWORD dwWorld, DWORD dwSce
 void KCoreShell::DrawGameSpace()
 {
 #ifndef _SERVER
+	DoLuotPham doLuotVe(2);	// [DOLUOT 09/09 c] ve the gioi that (g_ScenePlace.Paint)
 	if (g_nCorePaintLog > 0)
 	{
 		DWORD dwDrawT0 = timeGetTime();

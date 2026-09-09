@@ -52,8 +52,15 @@ int  g_nRep3Api       = 11;	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11: CD3D11S
 int  g_nRep3ApiOn     = 9;	// [D3D11 08/09]
 int  g_nRep3Atlas     = 1;	// [D3D11 08/09 d] gom texture nho vao trang atlas (chi khi Rep3Api=11)
 int  g_nRep3Flip      = 1;	// [D3D11 08/09 f] 1 = flip model (DWM ghep khung tron ven, khong xe hinh; mac dinh), 0 = bitblt cu
-unsigned g_uRep3VeCoSang = 0;	// [SANGDUNG 09/09] so lan that su ve qua nhanh CO chieu sang
-int  g_nRep3LocMs     = 8;	// [LOCTG 09/09] hang so thoi gian bo loc trinh khung (ms); 0 = tat
+int  g_nRep3LocKieu   = 1;	// [LOCTG b] 1 = chon loc, 0 = doi xung
+float g_fRep3LocK     = 2.0f;	// [LOCTG b] 255 / Rep3LocToi
+int  g_nRep3LocMs     = 0;
+int  g_nRep3ChuGiuMs  = 12;	// [CHUGIU 09/09] giu vi tri man hinh cua chu (ms); 0 = tat
+unsigned g_uRep3ChuGiu = 0, g_uRep3ChuVe = 0;	// [LOCTG 09/09] hang so thoi gian bo loc trinh khung (ms); 0 = tat
+static KRepresentShell3* g_pRep3ShellDuyNhat = NULL;	// [NAPCHIEU 09/09] doi tuong shell (CreateRepresentShell tao dung 1)
+static unsigned g_uRep3NapTruoc[3][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };	// [NAPCHIEU 09/09] [NAPNPC 09/09] [nguon 1 chieu / 2 NPC][ket qua: 0 khong, 1 da co, 2 giao nen]
+int g_nRep3NapChieu = 1;	// [NAPCHIEU 09/09 b] cong tac [Client] Rep3NapChieu: 1 = nap truoc anh chieu khi nhan goi 95 (mac dinh), 0 = tat (A/B)
+int g_nRep3NapNpc = 1;	// [NAPNPC 09/09] cong tac [Client] Rep3NapNpc: 1 = nap truoc anh than NPC khi gan ten (mac dinh), 0 = tat (A/B)
 unsigned g_uRep3LocKhung = 0;	// [LOCTG 09/09] so khung da tron. [ANDROID 10/09 LOCTG] dinh nghia o DAY (nhu g_nRep3LocMs ben tren) chu khong o D3D9on11Dev.cpp - tep do chi co tren Windows, Android link thieu ky hieu.
 #ifdef JX_PLATFORM_SDL
 #ifdef JX_ANDROID
@@ -453,6 +460,32 @@ iRepresentShell* CreateRepresentShell()
 	return (new KRepresentShell3);
 }
 
+// [NAPCHIEU 09/09] nap truoc anh: Core goi qua GetProcAddress("Rep3_NapTruoc2") de khong doi vtable iRepresentShell.
+// [NAPNPC 09/09] nNguon 1 = anh chieu (goi 95, cong tac Rep3NapChieu), 2 = anh than NPC (SetSprFile, cong tac Rep3NapNpc).
+int KRepresentShell3::NapTruoc(const char* pszImage, int nNguon)
+{
+	if (nNguon < 1 || nNguon > 2) return 0;
+	if (nNguon == 1 && !g_nRep3NapChieu) return 0;	// cong tac tat: khong nap truoc, khong dem
+	if (nNguon == 2 && !g_nRep3NapNpc) return 0;
+	const int n = m_TextureResMgr.NapTruoc(pszImage, ISI_T_SPR, nNguon);
+	g_uRep3NapTruoc[nNguon][(n >= 0 && n <= 2) ? n : 0]++;
+	return n;
+}
+extern "C" __declspec(dllexport)
+int Rep3_NapTruoc(const char* pszImage)
+{
+	if (!g_pRep3ShellDuyNhat || !pszImage)
+		return 0;
+	return g_pRep3ShellDuyNhat->NapTruoc(pszImage, 1);
+}
+extern "C" __declspec(dllexport)
+int Rep3_NapTruoc2(const char* pszImage, int nNguon)	// [NAPNPC 09/09]
+{
+	if (!g_pRep3ShellDuyNhat || !pszImage)
+		return 0;
+	return g_pRep3ShellDuyNhat->NapTruoc(pszImage, nNguon);
+}
+
 IInlinePicEngineSink* g_pIInlinePicSinkRP = NULL;	//Ç¶ÈëÊ½Í¼Æ¬µÄ´¦Àí½Ó¿Ú[wxb 2003-6-20]
 long KRepresentShell3::AdviseRepresent(IInlinePicEngineSink* pSink)	// [ANDROID 08/09] khop 'long' cua iRepresentShell.h (LP64)
 {
@@ -469,6 +502,7 @@ long KRepresentShell3::UnAdviseRepresent(IInlinePicEngineSink* pSink)	// [ANDROI
 
 KRepresentShell3::KRepresentShell3()
 {
+	g_pRep3ShellDuyNhat = this;	// [NAPCHIEU 09/09]
 	m_nLeft = 0;
 	m_nTop = 0;
 	m_pPreRenderTexture128 = NULL;
@@ -566,9 +600,16 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3AtlasGpu    = Rep3Ini("Rep3AtlasGpu", g_nRep3AtlasGpu) ? 1 : 0;	// [GPU 11/09 ATLAS]
 	g_nRep3GpuBoBanCpu = Rep3Ini("Rep3GpuBoBanCpu", g_nRep3GpuBoBanCpu) ? 1 : 0;	// [GPU 11/09 BOCPU]
 #endif
-	g_nRep3LocMs     = Rep3Ini("Rep3LocMs", 8);	// [LOCTG 09/09]
+	g_nRep3LocMs     = Rep3Ini("Rep3LocMs", 0);	// [LOCTG 09/09] [CHUGIU] mac dinh TAT: chu che toi; giu lam cong tac
+	g_nRep3ChuGiuMs  = Rep3Ini("Rep3ChuGiuMs", 12);	// [CHUGIU 09/09]
+	g_nRep3NapChieu  = Rep3Ini("Rep3NapChieu", 1) ? 1 : 0;	// [NAPCHIEU 09/09 b]
+	g_nRep3NapNpc    = Rep3Ini("Rep3NapNpc", 1) ? 1 : 0;	// [NAPNPC 09/09]
+	if (g_nRep3ChuGiuMs < 0) g_nRep3ChuGiuMs = 0;
+	if (g_nRep3ChuGiuMs > 100) g_nRep3ChuGiuMs = 100;
 	if (g_nRep3LocMs < 0) g_nRep3LocMs = 0;
 	if (g_nRep3LocMs > 100) g_nRep3LocMs = 100;
+	g_nRep3LocKieu   = Rep3Ini("Rep3LocKieu", 1) ? 1 : 0;	// [LOCTG b]
+	{ int nToi = Rep3Ini("Rep3LocToi", 128); if (nToi < 8) nToi = 8; if (nToi > 255) nToi = 255; g_fRep3LocK = 255.0f / (float)nToi; }
 	g_nRep3Ex        = Rep3Ini("Rep3Ex", 0);		// [RAM 08/09]
 	if (g_nRep3Ex)
 		g_nRep3Pool = 1;	// D3D9Ex khong co POOL_MANAGED: bat buoc dem SYSTEMMEM + DEFAULT
@@ -1851,7 +1892,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 						renderParam.m_pos[3] = D3DXVECTOR3( fX1,fY1, fZ3 );
 					}
 
-					if(m_bDoLighting && pTemp->bRenderStyle != IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT ? (++g_uRep3VeCoSang, true) : false)	// [SANGDUNG 09/09] dem
+					if(m_bDoLighting && pTemp->bRenderStyle != IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT)
 						DrawSpriteAlpha3DLighting(renderParam, pTemp->nFrame, pSprite,
 													pTemp->Color.Color_dw, pTemp->bRenderStyle, NULL);
 					else
@@ -1881,7 +1922,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					rc.right = pTemp4->oImgRBPos.nX;
 					rc.bottom= pTemp4->oImgRBPos.nY;
 
-					if(m_bDoLighting && pTemp->bRenderStyle != IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT ? (++g_uRep3VeCoSang, true) : false)	// [SANGDUNG 09/09] dem
+					if(m_bDoLighting && pTemp->bRenderStyle != IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT)
 						DrawSpriteAlpha3DLighting(renderParam, pTemp->nFrame, pSprite, 
 												pTemp->Color.Color_dw, pTemp->bRenderStyle, &rc);
 					else
@@ -1918,7 +1959,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					renderParam.m_pos[2] = D3DXVECTOR3( fX3,fY3, fZ3 );
 					renderParam.m_pos[3] = D3DXVECTOR3( fX1,fY1, fZ3 );
 				}
-				if(m_bDoLighting ? (++g_uRep3VeCoSang, true) : false)	// [SANGDUNG 09/09] dem
+				if(m_bDoLighting)
 					DrawBitmap163DLighting(renderParam, pBitmap);
 				else
 					DrawBitmap163D(renderParam, pBitmap);
@@ -2329,6 +2370,44 @@ void KRepresentShell3::LookAt(int nX, int nY, int nZ)
 	}
 }
 
+// [CHUGIU 09/09] Giu vi tri MAN HINH cua chu toi thieu Rep3ChuGiuMs ms (xem ReverseTools/goi_va_chugiu_0909.py).
+// Chu A/B: giu 14 ms thi het am ma khong toi; giu ca the gioi thi giat => chi giu CHU. Theo thoi gian nen
+// 60 Hz khong giu, 143 Hz giu 1 khung, 240 Hz giu 2 khung. Nhan dien dong chu = bam chuoi+font, va vi tri
+// man hinh moi cach vi tri dang giu <= 24 px.
+struct KRep3ChuGiu { unsigned uBam; int nX, nY; double dLuc; };
+static KRep3ChuGiu s_ChuGiu[512];
+static int         s_nChuGiuKe = 0;
+static double      s_dChuGiuF = 0.0;
+static inline unsigned Rep3BamChu(const char* p, int n, int nFont)
+{
+	unsigned h = 2166136261u ^ (unsigned)nFont;
+	if (n < 0) { for (; *p; p++) { h ^= (unsigned char)*p; h *= 16777619u; } }
+	else       { for (int i = 0; i < n && p[i]; i++) { h ^= (unsigned char)p[i]; h *= 16777619u; } }
+	return h;
+}
+// tra ve true neu (nX, nY) da duoc thay bang vi tri dang giu
+static bool Rep3ChuGiu(const char* psText, int nCount, int nFont, int& nX, int& nY)
+{
+	if (g_nRep3ChuGiuMs <= 0) return false;
+	if (s_dChuGiuF == 0.0) { LARGE_INTEGER f; QueryPerformanceFrequency(&f); s_dChuGiuF = (double)f.QuadPart / 1000.0; }
+	LARGE_INTEGER q; QueryPerformanceCounter(&q);
+	const double dNow = (double)q.QuadPart / s_dChuGiuF;
+	const unsigned uBam = Rep3BamChu(psText, nCount, nFont);
+	for (int i = 0; i < 512; i++)
+	{
+		KRep3ChuGiu& e = s_ChuGiu[i];
+		if (e.uBam != uBam || e.dLuc == 0.0) continue;
+		int dx = nX - e.nX; if (dx < 0) dx = -dx;
+		int dy = nY - e.nY; if (dy < 0) dy = -dy;
+		if (dx > 24 || dy > 24) continue;
+		if (dNow - e.dLuc < (double)g_nRep3ChuGiuMs) { nX = e.nX; nY = e.nY; g_uRep3ChuGiu++; return true; }
+		e.nX = nX; e.nY = nY; e.dLuc = dNow; g_uRep3ChuVe++; return false;
+	}
+	KRep3ChuGiu& e = s_ChuGiu[s_nChuGiuKe]; s_nChuGiuKe = (s_nChuGiuKe + 1) & 511;
+	e.uBam = uBam; e.nX = nX; e.nY = nY; e.dLuc = dNow; g_uRep3ChuVe++;
+	return false;
+}
+
 void KRepresentShell3::OutputText(int nFontId, const char* psText, int nCount, int nX, 
 								  int nY, unsigned int Color, int nLineWidth, int nZ, unsigned int BorderColor)
 {
@@ -2378,6 +2457,8 @@ void KRepresentShell3::OutputText(int nFontId, const char* psText, int nCount, i
 		}
 	}
 	
+	if (nZ != TEXT_IN_SINGLE_PLANE_COORD)
+		Rep3ChuGiu(psText, nCount, nFontId, nX, nY);	// [CHUGIU 09/09] chi chu neo vao the gioi
 	m_FontTable[i].pFontObj->SetBorderColor(BorderColor);
 	m_FontTable[i].pFontObj->SetOutputSize(nFontId, nFontId + 1);
 	m_FontTable[i].pFontObj->OutputText(psText, nCount, nX, nY, Color, nLineWidth);
@@ -2750,10 +2831,17 @@ void KRepresentShell3::RepresentEnd()
 				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg,
 				g_uRep3FxTexNull, g_uRep3FxAnhNull, g_uRep3FxTaoHong, g_uRep3FxKhungKhongTex, g_uRep3FxGiaiMa, g_dRep3FxGiaiMaMs, g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), uVramUsed, uVramBudget,
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);
-			Rep3Log("[SANGDUNG] m_bDoLighting=%d | so lan ve QUA NHANH CO CHIEU SANG: %u", (int)m_bDoLighting, g_uRep3VeCoSang);
-			g_uRep3VeCoSang = 0;
-			Rep3Log("[LOCTG] tau=%d ms | %u khung da tron", g_nRep3LocMs, g_uRep3LocKhung);
+			Rep3Log("[LOCTG] tau=%d ms kieu=%d toi=%d | %u khung da tron", g_nRep3LocMs, g_nRep3LocKieu, (int)(255.0f / g_fRep3LocK + 0.5f), g_uRep3LocKhung);
 			g_uRep3LocKhung = 0;
+			Rep3Log("[CHUGIU] giu %d ms | dong chu giu %u, ve moi %u", g_nRep3ChuGiuMs, g_uRep3ChuGiu, g_uRep3ChuVe);
+			g_uRep3ChuGiu = 0; g_uRep3ChuVe = 0;
+			for (int ng = 1; ng <= 2; ng++)	// [NAPCHIEU 09/09 b] [NAPNPC 09/09] 1 = anh chieu (goi 95), 2 = anh than NPC (SetSprFile)
+			{
+				Rep3Log("%s nap truoc (bat=%d): goi %u | da co %u, giao nen %u, khong %u | lan dung dau: kip %u, tre %u", ng == 1 ? "[NAPCHIEU]" : "[NAPNPC]", ng == 1 ? g_nRep3NapChieu : g_nRep3NapNpc,
+					g_uRep3NapTruoc[ng][0] + g_uRep3NapTruoc[ng][1] + g_uRep3NapTruoc[ng][2], g_uRep3NapTruoc[ng][1], g_uRep3NapTruoc[ng][2], g_uRep3NapTruoc[ng][0],
+					m_TextureResMgr.m_nNapTruocKip[ng], m_TextureResMgr.m_nNapTruocTre[ng]);
+				g_uRep3NapTruoc[ng][0] = g_uRep3NapTruoc[ng][1] = g_uRep3NapTruoc[ng][2] = 0; m_TextureResMgr.m_nNapTruocKip[ng] = 0; m_TextureResMgr.m_nNapTruocTre[ng] = 0;
+			}
 			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0; g_uRep3BatchQuads = 0; g_uRep3BatchDraws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
 			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung %u) | cpu ve: DrawPrimitives %.2f ms/khung (max %.1f), khung %.2f ms (max %.1f)",	// [NAP 08/09 a/b] [VE 08/09 a/b]

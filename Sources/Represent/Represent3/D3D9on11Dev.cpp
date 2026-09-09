@@ -404,7 +404,7 @@ void CDev11::LocThoiGian()
 	if (a <= 0.001f) { m_pCtx->CopyResource(m_pLocHist, m_pBackTex); return; }
 	m_pCtx->CopyResource(m_pLocCur, m_pBackTex);
 	D3D11_MAPPED_SUBRESOURCE ms;
-	if (SUCCEEDED(m_pCtx->Map(m_pLocCb, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms))) { float v[4] = { a, 0.0f, 0.0f, 0.0f }; memcpy(ms.pData, v, 16); m_pCtx->Unmap(m_pLocCb, 0); }
+	if (SUCCEEDED(m_pCtx->Map(m_pLocCb, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms))) { float v[4] = { a, g_fRep3LocK, (float)g_nRep3LocKieu, 0.0f }; memcpy(ms.pData, v, 16); m_pCtx->Unmap(m_pLocCb, 0); }
 	ID3D11ShaderResourceView* srv[2] = { m_pLocCurSrv, m_pLocHistSrv };
 	ID3D11RenderTargetView* rtv = m_pBackRtv;
 	m_pCtx->OMSetRenderTargets(1, &rtv, NULL);
