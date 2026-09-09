@@ -128,3 +128,33 @@ An toàn: `KSprControl::Release()` xoá CẢ tên lẫn `m_dwNameID`, và `SetSp
 → tên rỗng thì id cũng 0, `GetImage` không thể ra ảnh. Kèm: không gọi `DrawPrimitives` khi `nPos = 0`.
 Kỳ vọng: `khac` trong `[REP3-NAP]` về gần 0, `anh_null` giảm mạnh, `DrawPrimitives` bớt ~20–25 % thời gian.
 `CoreClient.dll.moi` 30109252 + `Game.exe.moi` 3b470554 (swap cùng lúc).
+
+## 20:2x — Ba việc chủ báo sau khi lên 144 Hz
+
+**1. “fps 144 nhưng đông giảm mạnh” — ĐÃ ĐỊNH VỊ, không phải bộ vẽ.** Dấu dò có sẵn trong `jx_paint.log` trả lời ngay:
+dòng `[LOGIC]` cho biết khung nặng nằm ở TICK LOGIC (`bre` 30–39 ms, `uihb` và `sau` bằng 0); dòng `[TICK]` chia tiếp
+`world` **38–81 ms mỗi tick**, `net` và `scene` ≈ 0. `world` = `KSubWorldSet::MainLoop` → `SubWorld[0].Activate()`.
+Bộ vẽ lúc đông chỉ 5,1 ms/khung. Tick chạy 18 lần/giây nên 40 ms/tick đã ăn 72 % CPU, mỗi tick nuốt 5–6 khung ở 144 Hz.
+Bản đo tiếp `[WORLD]` (42c5ac95, `CoreClient.dll.moi` a620462a) chia nhỏ: xoá cờ NPC / quét vùng / cân bằng cache,
+kèm số vùng đang chạy và số NPC mỗi tick, in mỗi 10 giây khi `PaintLog=1`. Đo xong mới biết cắt chỗ nào.
+
+**2. “tên nhân vật – danh hiệu màu đậm tối hơn” — tìm ra một lỗi thật, nhưng chưa khớp hết triệu chứng.**
+`KFont3::SetBorderColor` lật ngược ý nghĩa alpha 0: chú thích ngay trên hàm ghi “alpha = 0 nghĩa là KHÔNG vẽ viền”,
+thân hàm lại `if (a == 0) a = 0xFF;` — ép viền ĐEN ĐẶC. `KNpc::PaintInfo` khai `dwBorderColor = 0` (KNpc.h:922) và mọi
+nhân vật không được chọn đều gọi không truyền màu viền, nên mọi tên, tên bang, danh hiệu đều bị vẽ thêm một lớp viền đen
+(KFont3 vẽ hai lượt: viền rồi thân chữ). Không bỏ cứng vì có thể là chủ ý cho chữ dễ đọc: thêm cờ `[Client] VienChu`
+(1 = như cũ, 0 = tôn trọng bên gọi), đã đặt 0 trong config test — `Represent3.dll.moi` 4e7bfdf6 (1dddd85a).
+Điều chưa giải thích được: cơ chế này làm MỌI tên đậm lên, không riêng nhân vật ở xa. Đã bác bỏ hai giả thuyết khác:
+hệ cảnh không thể gọi vẽ một NPC hai lần trong một khung, và lưới ánh sáng động (ứng viên “xa = tối”) đang bị tắt.
+
+**3. PAK — tôi đã sai, chủ đúng.** Trong 358 tệp client báo `LoadImage FAIL`, **184 tệp CÓ THẬT** (toàn bộ là biểu cảm
+chat `\spr\Ui3\<thư mục GBK>\140..323.spr`). Gốc nằm ở `bin\client\package.ini`: khai 40 pak, trong đó **4 pak không tồn tại**
+(`script.pak`, `settings.pak`, `sprvlngaothe2.pak`, `ui.pak`) và **bỏ sót 5 pak có thật** (`serverlistfree.pak`, `sprgame.pak`,
+`update05.pak`, `vlngaothe1.pak`, `vltkcache.pak`) — client không mở 5 pak đó. Cân nhắc trước khi thêm: `vltkcache.pak` là bản
+tháng 1, thêm vào có thể che tài nguyên mới hơn tuỳ thứ tự ưu tiên, nên để chủ quyết.
+174 tệp còn lại thiếu thật, truy được về bảng `settings\npcres\`: tóc 015 (nam+nữ) và 012 (nữ) → nhân vật đội kiểu tóc đó
+bị trọc; `LadyHorseFront/Middle/Back` ghép sai đường dẫn (ảnh ngựa chỉ nằm ở `\spr\npcres\man`) nên nữ cưỡi ngựa mất bộ phận;
+`LadyShoulder` thiếu 1.984/2.194 ô; `ManLeftWeapon` mã 000 (tay không); và bóng NPC do mã tự ghép tên `<tên>b.spr` mà
+không kiểm tra tồn tại (`KNpcResNode.cpp:579`, 4.918/8.455 ô bóng không có tệp).
+**Cách tra đúng, ghi lại để khỏi sai lần nữa:** một tệp chỉ thiếu khi vắng CẢ tệp loose LẪN chỉ mục pak; ID pak =
+`g_FileName2Id` của `'\' + đường dẫn đã bỏ '\' đầu, chữ thường` (`KPakList.cpp:93-107`). Script `scratchpad/kiem_thieu_that.py`.
