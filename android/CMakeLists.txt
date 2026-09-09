@@ -128,7 +128,8 @@ target_link_libraries(CoreClient PRIVATE Engine Lua54)
 # ---- main (S3Client -> libmain.so, SDLActivity nap "SDL3" + "main", SDL_main trong Platform/JxAndroidMain.cpp) ----
 add_library(main SHARED ${JX_S3CLIENT_SOURCES}
     ${JX_SRC}/S3Client/Platform/JxAndroidMain.cpp
-    ${JX_SRC}/S3Client/Platform/JxAndroidStubs.cpp)   # JxReplay / PerfHud / TrayMode (chi Windows)
+    ${JX_SRC}/S3Client/Platform/JxAndroidStubs.cpp    # JxReplay / TrayMode (chi Windows)
+    ${JX_SRC}/S3Client/Platform/JxPerfHudAndroid.cpp)  # [ANDROID 11/09 HUD] bang do FPS / CPU / RAM / pin / GPU
 jx_setup(main)
 target_compile_definitions(main PRIVATE ${JX_S3CLIENT_DEFS})
 target_include_directories(main PRIVATE ${JX_S3CLIENT_INCS})

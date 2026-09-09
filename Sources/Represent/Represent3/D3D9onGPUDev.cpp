@@ -8,6 +8,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef JX_ANDROID
+// [ANDROID 11/09 HUD] so lieu cho bang do hieu nang trong game (JxPerfHudAndroid.cpp goi Rep3_ThongKeGpu qua GetProcAddress)
+static char        s_szRep3GpuDriver[32] = "";
+static const char* s_szRep3GpuTrinhChieu = "?";
+static unsigned    s_uRep3GpuLenhVe = 0, s_uRep3GpuQuad = 0;
+#endif
 
 #define RG_PAL_ROWS 8192
 
@@ -226,6 +232,10 @@ bool CDevGpu::Init()
 	if (g_nRep3AtlasGpu) m_pAtlas = new CAtlasMgrGpu(this);	// [GPU 11/09 ATLAS]
 	RgLog("atlas: %s | bo ban CPU sau khi tai len: %s", m_pAtlas ? "BAT (trang 1024x1024, texture DEFAULT <= 512 khong RT; Rep3AtlasGpu=0 de tat)" : "tat", g_nRep3GpuBoBanCpu ? "BAT (Rep3GpuBoBanCpu=0 de tat)" : "tat");
 	g_pRep3DevGpu = this;
+#ifdef JX_ANDROID
+	{ const char* d = SDL_GetGPUDeviceDriver(m_pGpu); strncpy(s_szRep3GpuDriver, d ? d : "?", sizeof(s_szRep3GpuDriver) - 1); }	// [ANDROID 11/09 HUD]
+	s_szRep3GpuTrinhChieu = pm == SDL_GPU_PRESENTMODE_IMMEDIATE ? "ngay" : (pm == SDL_GPU_PRESENTMODE_MAILBOX ? "mailbox" : "vsync");
+#endif
 	RgLog("thiet bi: driver %s, backbuffer %ux%u, swapchain fmt %d, trinh chieu %s, windowed=%d", SDL_GetGPUDeviceDriver(m_pGpu), m_bbW, m_bbH, (int)m_swapFmt,
 		pm == SDL_GPU_PRESENTMODE_IMMEDIATE ? "ngay" : (pm == SDL_GPU_PRESENTMODE_MAILBOX ? "mailbox" : "vsync"), (int)(m_pp.Windowed != FALSE));
 	return true;
@@ -409,6 +419,9 @@ HRESULT CDevGpu::Reset(D3DPRESENT_PARAMETERS* pp)
 	if (m_pLastFrame) { DeferRelease(m_pLastFrame); m_pLastFrame = NULL; m_lastW = m_lastH = 0; }
 	memset(&m_vp, 0, sizeof(m_vp)); m_vp.Width = m_bbW; m_vp.Height = m_bbH; m_vp.MaxZ = 1.0f; m_bVsDirty = true;
 	SetRect(&m_scissor, 0, 0, (int)m_bbW, (int)m_bbH);
+#ifdef JX_ANDROID
+	s_szRep3GpuTrinhChieu = pm == SDL_GPU_PRESENTMODE_IMMEDIATE ? "ngay" : (pm == SDL_GPU_PRESENTMODE_MAILBOX ? "mailbox" : "vsync");	// [ANDROID 11/09 HUD]
+#endif
 	RgLog("Reset: %ux%u windowed=%d vsync=%d", m_bbW, m_bbH, (int)(m_pp.Windowed != FALSE), (int)(pm == SDL_GPU_PRESENTMODE_VSYNC));
 	Unlock();
 	return D3D_OK;
@@ -1094,6 +1107,9 @@ HRESULT CDevGpu::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hD
 	if (m_uFrames == 1 || (m_uFrames % 1800) == 0)
 		RgLog("khung %u: lenh ve %u, quad %u, tai texture %u, pipeline %u, texture GPU %u (%u MB) | atlas %u trang (%u MB) | bo ban CPU %u texture (%u MB), doc lai %u", m_uFrames, m_uDrawCmds, m_uQuads, m_uUploads, (unsigned)m_pipes.size(), g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20),
 			g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), m_uCpuBoSo, (unsigned)(m_uCpuBoBytes >> 20), m_uCpuBoThuLai);	// [GPU 11/09 ATLAS] [GPU 11/09 BOCPU]
+#ifdef JX_ANDROID
+	s_uRep3GpuLenhVe = m_uDrawCmds; s_uRep3GpuQuad = m_uQuads;	// [ANDROID 11/09 HUD]
+#endif
 	m_uDrawCmds = m_uQuads = m_uUploads = 0;
 	Unlock();
 	return D3D_OK;
@@ -1147,3 +1163,16 @@ void CDevGpu::PalFree(int row)
 }
 
 #endif // JX_PLATFORM_SDL
+
+#ifdef JX_ANDROID
+// [ANDROID 11/09 HUD] chuoi cho bang do hieu nang: driver | texture GPU | atlas | trinh chieu | lenh ve khung truoc. Tra do dai chuoi.
+extern "C" int Rep3_ThongKeGpu(char* sz, int n)
+{
+	if (!sz || n < 8) return 0;
+	snprintf(sz, (size_t)n, "GPU %s | texture %u MB (%u) | atlas %u trang | %s | lenh ve %u, quad %u",
+		s_szRep3GpuDriver[0] ? s_szRep3GpuDriver : "?", (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3GpuTexCount, g_uRep3AtlasPages,
+		s_szRep3GpuTrinhChieu, s_uRep3GpuLenhVe, s_uRep3GpuQuad);
+	sz[n - 1] = 0;
+	return (int)strlen(sz);
+}
+#endif
