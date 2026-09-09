@@ -4145,7 +4145,7 @@ static void TG_VanTieuTick()
 // Tick 400 ms tu KCoreShell::Breathe nhu cac TG_ khac; map su kien chan (TG_ChanMapSuKien);
 // mot nguoi mot duong: bat cai nay thi tat 3 dan duong F11 va nguoc lai. Bam lai dung map = huy.
 //---------------------------------------------------------------------------
-struct sBDLink { int nFrom; int nTo; int nX; int nY; };	// nX/nY = MPS cua cua
+struct sBDLink { int nFrom; int nTo; int nX; int nY; };	// nX/nY = diem tren ANH tieu ban do (tuong doi goc anh map nFrom)
 static std::vector<sBDLink> g_vBDLink;				// toan bo cua noi map (nap 1 lan)
 static int  g_nBDLinkLoaded = 0;
 static int  g_nBDOn = 0;
@@ -4190,8 +4190,11 @@ static void BD_LoadLinks()
 			sBDLink l;
 			l.nFrom = nMap;
 			l.nTo = nTo;
-			l.nX = nX * 16;
-			l.nY = nY * 32;
+			// [BANDO20 08/09] k_Point la diem tren ANH tieu ban do cua RIENG map nMap (TUONG DOI goc anh),
+			// goc anh khac nhau tung map va chi biet duoc khi map do dang mo => giu THO,
+			// doi sang MPS o TG_BanDoTick. (Truoc day nhan *16/*32 ngay tai day = THIEU goc anh.)
+			l.nX = nX;
+			l.nY = nY;
 			g_vBDLink.push_back(l);
 		}
 	}
@@ -4400,7 +4403,37 @@ static void TG_BanDoTick()
 		return;
 	}
 	const sBDLink& l = g_vBDPlan[g_nBDStep];
-	int nX = l.nX, nY = l.nY;
+	// [BANDO20 08/09] LOI "di toi GOC CHET": k_Point la diem tren ANH tieu ban do cua rieng map nay,
+	// KHONG phai MPS tuyet doi. MPS = Point*(16,32) + goc anh; goc anh = m_EntireMapLTPosition
+	// (ScenePlaceMapC.cpp:247-276 doc MapLTRegionIndex, khong co thi lay rect, roi nhan
+	// RWPP_AREGION_WIDTH=512 / RWPP_AREGION_HEIGHT=1024). Thieu so hang nay thi
+	// KSubWorld::FindPath (KSubWorld.cpp:965-974) tinh cx/cy AM roi KEP ve 0 => muc tieu luon la
+	// o luoi (0,0) = goc tren-trai ban do. Guard o tren da bao dam l.nFrom == map dang dung.
+	int nGx0 = SubWorld[0].m_nRegionBeginX * (REGION_GRID_WIDTH  * 32);	// = *512
+	int nGy0 = SubWorld[0].m_nRegionBeginY * (REGION_GRID_HEIGHT * 32);	// = *1024
+#ifndef _SERVER
+	// Uu tien goc THAT cua anh: co map dat MapLTRegionIndex KHAC rect, luc do suy tu
+	// m_nRegionBeginX se lech. GetMapRect tra m_bHavePicMap (0 = chua co anh -> giu fallback tren).
+	// GetKScenePlaceMapC nam trong #ifndef _SERVER (KScenePlaceC.h:258-261) nen phai guard.
+	RECT rcBD;
+	if (g_ScenePlace.GetKScenePlaceMapC()->GetMapRect(&rcBD))
+	{
+		nGx0 = rcBD.left;
+		nGy0 = rcBD.top;
+	}
+#endif
+	int nX = l.nX * KScenePlaceMapC::MAP_SCALE_H + nGx0;	// MAP_SCALE_H = 16
+	int nY = l.nY * KScenePlaceMapC::MAP_SCALE_V + nGy0;	// MAP_SCALE_V = 32
+	// Neu du lieu MapTraffic sai thi BAO ra thay vi de FindPath kep ve goc ban do.
+	{
+		int bx0 = 0, by0 = 0, bx1 = 0, by1 = 0;
+		if (SubWorld[0].LuoiPhamViMps(bx0, by0, bx1, by1) &&
+			(nX < bx0 || nX >= bx1 || nY < by0 || nY >= by1))
+		{
+			TG_BanDoStop("<color=Yellow>[B¶n ®å] Cöa map ghi sai to¹ ®é - dõng tù ch¹y.");
+			return;
+		}
+	}
 	if (g_nBDNudge > 0)
 	{
 		// do quanh cua: 8 huong x 1 o, roi 8 huong x 2 o
@@ -4411,7 +4444,9 @@ static void TG_BanDoTick()
 		nX += aDX[n] * nBuoc;
 		nY += aDY[n] * nBuoc;
 	}
-	if (DT_WalkTo(nPlayerIdx, nX, nY, 20, uCur))
+	// [BANDO20 08/09] 20 mps < 1 o luoi (32) va < sai so lam tron cua Point (16 ngang / 32 doc)
+	// => gan nhu khong bao gio "toi noi", nhanh do quanh cua khong chay. 48 = 1,5 o.
+	if (DT_WalkTo(nPlayerIdx, nX, nY, 48, uCur))
 	{
 		// dang dung tren cua ma map chua doi: doi ~2 s roi do sang o ben canh
 		if (++g_nBDWait >= 5)
@@ -24815,6 +24850,11 @@ int	KCoreShell::SceneMapOperation(unsigned int uOper, unsigned int uParam, int n
 		g_ScenePlace.SetFlagImage((char*)uParam, nParam);
 		break;
 	case GSMOI_SCENE_MAP_REMOVE_FLAG:
+		// [BANDO20 08/09] Op nay CHI den tu UiGame.cpp (bam chuot trai xuong khung canh game).
+		// DT_WalkTo va TG_BanDoStop goi THANG g_ScenePlace.RemoveFlag() nen khong qua day
+		// => dat moc huy o day khong the tu huy chinh no.
+		if (g_nBDOn)
+			TG_BanDoStop("<color=Cyan>[B¶n ®å] Ng­¬i tù di chuyÓn - ®· huû tù ch¹y.");
 		g_ScenePlace.RemoveFlag();
 		break;
 	case GSMOI_SCENE_MAP_GET_FLAGPOS:

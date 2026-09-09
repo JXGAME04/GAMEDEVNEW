@@ -17,6 +17,7 @@ struct KWorldMapLoc
 	int		nX, nY;			// tam tren anh (da cong +30,+17)
 	char	szName[48];		// ten Viet (TCVN3)
 	char	szType[16];		// City / Capital / Cave / Field / Battlefield / Tong / Country / Others
+	int		nGop;			// [BANDO20 08/09] so map khac dung chung dung toa do nay (gop lam 1 diem)
 };
 class KWorldMapLocs
 {

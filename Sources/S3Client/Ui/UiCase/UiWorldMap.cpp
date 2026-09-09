@@ -194,6 +194,10 @@ int KUiWorldmap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 
 	switch(uMsg)
 	{
+	case WND_N_BUTTON_CLICK:	// [BANDO20 08/09] 7 nhan "Bang hoi chiem linh" (KWndPureTextBtn) NAM DE
+		// len 6/7 thanh lon va NUOT chuot trai (TopChildFromPoint chon con truoc cha),
+		// nen bam Phuong Tuong / Thanh Do / Bien Kinh / Duong Chau / Lam An / Dai Ly
+		// truoc day KHONG bao gio toi duoc ban do. Nhan bao click thi xu ly y het.
 	case WM_LBUTTONDOWN:	// [BANDO20 06/09] bam dia diem -> Core tu chay bo toi map do; bam cho khac = dong (nhu cu)
 		{
 			int nCX = 0, nCY = 0;
@@ -367,6 +371,20 @@ void KUiWorldmap::Breathe()
 // ===========================================================================
 // [BANDO20 06/09] KWorldMapLocs - bang dia diem tren anh ban do (dung chung the gioi + son dong)
 // ===========================================================================
+// [BANDO20 08/09] Do dai dia diem: MapList.ini chi co 97 toa do KHAC NHAU cho 222 map -
+// 142 map (64%) dung chung toa do voi map khac, rieng (452,314) co 82 map (chien truong /
+// diem bao danh Tong Kim). Neu khong gop thi tro chuot va bam luon ra map DAU TIEN theo id,
+// khac han cai nguoi choi nham => chu game thay "bam bi lech". Gop lai 1 diem, giu map co
+// y nghia nhat de di toi (thanh/kinh do truoc, chien truong / khac sau cung).
+static int WML_UuTien(const char* szType)
+{
+	static const char* aTu[] = { "Capital", "City", "Tong", "Field", "Cave", "Country", "Battlefield", "Others" };
+	for (int i = 0; i < (int)(sizeof(aTu) / sizeof(aTu[0])); i++)
+		if (stricmp(szType, aTu[i]) == 0)
+			return i;
+	return 99;
+}
+
 static const char* WML_LoaiTen(const char* szType)
 {
 	static const char* aLoai[][2] =
@@ -417,13 +435,36 @@ void KWorldMapLocs::Load(KIniFile* pIni)
 		sprintf(szKey, "%d_MapType", i);
 		l.szType[0] = 0;
 		pIni->GetString("List", szKey, "", l.szType, sizeof(l.szType));
+		l.nGop = 0;
+		// [BANDO20 08/09] gop map trung toa do: giu cai uu tien cao hon, dem so cai bi gop
+		int nTrung = -1;
+		for (int k = 0; k < m_nCount; k++)
+		{
+			if (m_aLoc[k].nX == l.nX && m_aLoc[k].nY == l.nY)
+			{
+				nTrung = k;
+				break;
+			}
+		}
+		if (nTrung >= 0)
+		{
+			m_aLoc[nTrung].nGop++;
+			if (WML_UuTien(l.szType) < WML_UuTien(m_aLoc[nTrung].szType))
+			{
+				int nGiu = m_aLoc[nTrung].nGop;
+				m_aLoc[nTrung] = l;
+				m_aLoc[nTrung].nGop = nGiu;
+			}
+			continue;
+		}
 		m_nCount++;
 	}
 }
 
 int KWorldMapLocs::Hit(int nLocalX, int nLocalY) const
 {
-	int nBest = -1, nBestD = 14 * 14 + 1;
+	// [BANDO20 08/09] 14 px nho hon chu ten thanh ve san tren anh (24-74 px) -> rat kho tro trung.
+	int nBest = -1, nBestD = 24 * 24 + 1;
 	for (int i = 0; i < m_nCount; i++)
 	{
 		int dx = m_aLoc[i].nX - nLocalX;
