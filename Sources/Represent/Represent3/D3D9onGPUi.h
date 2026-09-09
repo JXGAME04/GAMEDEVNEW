@@ -351,6 +351,8 @@ public:
 	void    Lock()   { SDL_LockMutex(m_pMutex); }
 	void    Unlock() { SDL_UnlockMutex(m_pMutex); }
 	bool    CreateShaders();
+	void    ApplyWindowMode();						// [GPU 08/09 khung ao] toan man hinh / kich thuoc cua so theo backbuffer
+	void    Letterbox(UINT swW, UINT swH, float* pScale, float* pOffX, float* pOffY);
 	SDL_GPUGraphicsPipeline* GetPipeline(DWORD fvf, SDL_GPUPrimitiveType topo, SDL_GPUTextureFormat rtFmt);
 	SDL_GPUSampler* GetSampler(UINT stage);
 	void    ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo);

@@ -296,6 +296,20 @@ void KSdlApp::Run()
 //---------------------------------------------------------------------------
 // Dich su kien SDL -> WM_* -> MsgProc cu. Tra ve false khi thoat.
 //---------------------------------------------------------------------------
+// [GPU 08/09 khung ao] cua so (toan man hinh / dien thoai) co the khac khung logic SCREEN_WIDTH x SCREEN_HEIGHT: bo ve (D3D9onGPU) phong
+// khung logic len cua so voi letterbox (scale = min, can giua) -> toa do chuot phai doi nguoc lai cung cong thuc.
+static void SdlToLogical(SDL_Window* pWin, float& x, float& y)
+{
+	int w = 0, h = 0; SDL_GetWindowSize(pWin, &w, &h);
+	if (w <= 0 || h <= 0 || SCREEN_WIDTH <= 0 || SCREEN_HEIGHT <= 0 || (w == SCREEN_WIDTH && h == SCREEN_HEIGHT)) return;
+	float sx = (float)w / (float)SCREEN_WIDTH, sy = (float)h / (float)SCREEN_HEIGHT;
+	float sc = (sx < sy) ? sx : sy;
+	float ox = ((float)w - (float)SCREEN_WIDTH * sc) * 0.5f, oy = ((float)h - (float)SCREEN_HEIGHT * sc) * 0.5f;
+	x = (x - ox) / sc; y = (y - oy) / sc;
+	if (x < 0.0f) x = 0.0f; if (y < 0.0f) y = 0.0f;
+	if (x > (float)(SCREEN_WIDTH - 1)) x = (float)(SCREEN_WIDTH - 1); if (y > (float)(SCREEN_HEIGHT - 1)) y = (float)(SCREEN_HEIGHT - 1);
+}
+
 bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 {
 	HWND hWnd = g_GetMainHWnd();
@@ -315,7 +329,8 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 
 	case SDL_EVENT_MOUSE_MOTION:
 	{
-		WPARAM w = SdlMouseFlags(ev.motion.state); LPARAM l = MAKELPARAM((int)ev.motion.x, (int)ev.motion.y);
+		float mx = ev.motion.x, my = ev.motion.y; SdlToLogical(m_pWindow, mx, my);
+		WPARAM w = SdlMouseFlags(ev.motion.state); LPARAM l = MAKELPARAM((int)mx, (int)my);
 		GhiChuot(w, l);
 		MsgProc(hWnd, WM_MOUSEMOVE, w, l);
 		break;
@@ -336,7 +351,8 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 		default: return true;
 		}
 		{
-			WPARAM w = SdlMouseFlags(SDL_GetMouseState(NULL, NULL)); LPARAM l = MAKELPARAM((int)ev.button.x, (int)ev.button.y);
+			float bx = ev.button.x, by = ev.button.y; SdlToLogical(m_pWindow, bx, by);
+			WPARAM w = SdlMouseFlags(SDL_GetMouseState(NULL, NULL)); LPARAM l = MAKELPARAM((int)bx, (int)by);
 			GhiChuot(w, l);
 			MsgProc(hWnd, uMsg, w, l);
 		}
@@ -349,8 +365,9 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 		if (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
 			nDelta = -nDelta;
 		WPARAM w = MAKEWPARAM(SdlMouseFlags(SDL_GetMouseState(NULL, NULL)), (WORD)(short)nDelta);
-		GhiChuot(w, MAKELPARAM((int)ev.wheel.mouse_x, (int)ev.wheel.mouse_y));
-		MsgProc(hWnd, WM_MOUSEWHEEL, w, MAKELPARAM((int)ev.wheel.mouse_x, (int)ev.wheel.mouse_y));
+		float wx = ev.wheel.mouse_x, wy = ev.wheel.mouse_y; SdlToLogical(m_pWindow, wx, wy);
+		GhiChuot(w, MAKELPARAM((int)wx, (int)wy));
+		MsgProc(hWnd, WM_MOUSEWHEEL, w, MAKELPARAM((int)wx, (int)wy));
 		break;
 	}
 

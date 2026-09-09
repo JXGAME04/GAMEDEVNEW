@@ -218,3 +218,15 @@ Vulkan OK, mọi định dạng 16 bit lấy mẫu được (4444 không làm ta
 target, đổi map/Reset); toàn màn hình (hiện chạy cửa sổ); `StretchRect`/`DrawIndexedPrimitive` chưa cài (log `CHUA CAI` nếu game gọi); bảng màu chỉ bật khi
 `g_nRep3ApiOn == 11` trong `TextureRes.cpp:699` → cần thêm `|| == 100` (một token, bàn với phiên D3D11); native 16 bit; Android: `d3d9mini.h` thay
 `<d3d9.h>` (chỉ enum/struct/vtable, mọi thứ đã có trong `D3D9onGPUi.h`).
+
+### 11.1 Khung ảo (17:3x): toàn màn hình / màn hình khác backbuffer
+
+- `CDevGpu::ApplyWindowMode()` (gọi ở Init và Reset): `SDL_SetWindowFullscreen(pp.Windowed == FALSE)` (toàn màn hình kiểu desktop, không đổi chế độ);
+  cửa sổ thì `SDL_SetWindowSize` theo backbuffer. `Letterbox(swW, swH)`: khi swapchain khác backbuffer → scale = min(W/w, H/h), căn giữa; viewport và
+  scissor của lệnh vẽ lên swapchain được nhân scale + cộng offset (shader vẫn nhận viewport logic → NDC; phần cứng đặt viewport đã phóng).
+- `KSdlApp.cpp` `SdlToLogical()`: toạ độ chuột (motion/button/wheel) từ cửa sổ → khung logic `SCREEN_WIDTH × SCREEN_HEIGHT` cùng công thức letterbox, kẹp biên.
+- Test 17:39 (`FullScreen=1`, desktop 2560×1440, khung 1024×768 → scale 1,875, dải đen 320 px hai bên): ảnh chụp cả màn hình đúng; bấm chuột tại
+  (320 + 512·1,875 ; 275·1,875) mở đúng hộp "Tùy chọn" → ánh xạ chuột đúng. Kịch bản: `ReverseTools/mobile_x64/test_gpu/test_fullscreen.ps1`
+  (đặt `FullScreen=1` tạm, chụp `CopyFromScreen`, `mouse_event`, trả lại config). Cửa sổ SDL không có `SDL_WINDOW_RESIZABLE` nên không phóng
+  được từ ngoài (SetWindowPos bị SDL chặn) — muốn thử cửa sổ khác cỡ thì đổi `Width/Height` trong config.
+- Đây chính là cơ chế "khung ảo + scale" trong phương án mobile (điện thoại render 1024×768 hoặc 1138×640 rồi phóng lên màn), đã chạy trên PC.

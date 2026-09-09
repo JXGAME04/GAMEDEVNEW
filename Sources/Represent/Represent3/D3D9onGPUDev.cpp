@@ -197,6 +197,7 @@ bool CDevGpu::Init()
 	m_pGpu = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, (e && atoi(e) != 0), NULL);
 	if (!m_pGpu) { RgLog("SDL_CreateGPUDevice(SPIRV) that bai: %s", SDL_GetError()); return false; }
 	if (!SDL_ClaimWindowForGPUDevice(m_pGpu, m_pWin)) { RgLog("ClaimWindowForGPUDevice that bai: %s", SDL_GetError()); return false; }
+	ApplyWindowMode();
 	SDL_GPUPresentMode pm = SDL_GPU_PRESENTMODE_VSYNC;
 	if (m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_IMMEDIATE)) pm = SDL_GPU_PRESENTMODE_IMMEDIATE;
 	SDL_SetGPUSwapchainParameters(m_pGpu, m_pWin, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, pm);
@@ -219,8 +220,38 @@ bool CDevGpu::Init()
 	g_pRep3DevGpu = this;
 	RgLog("thiet bi: driver %s, backbuffer %ux%u, swapchain fmt %d, trinh chieu %s, windowed=%d", SDL_GetGPUDeviceDriver(m_pGpu), m_bbW, m_bbH, (int)m_swapFmt,
 		pm == SDL_GPU_PRESENTMODE_IMMEDIATE ? "ngay" : "vsync", (int)(m_pp.Windowed != FALSE));
-	if (!m_pp.Windowed) RgLog("toan man hinh: chay cua so (SDL_SetWindowFullscreen chua noi)");
 	return true;
+}
+
+// [GPU 08/09 khung ao] toan man hinh (desktop, khong doi che do) theo pp.Windowed; cua so theo backbuffer. Swapchain khac backbuffer -> letterbox.
+void CDevGpu::ApplyWindowMode()
+{
+	const bool bFull = (m_pp.Windowed == FALSE);
+	if (!SDL_SetWindowFullscreen(m_pWin, bFull)) RgLog("SetWindowFullscreen(%d) that bai: %s", (int)bFull, SDL_GetError());
+	if (!bFull)
+	{
+		int w = 0, h = 0; SDL_GetWindowSize(m_pWin, &w, &h);
+		if (w != (int)m_bbW || h != (int)m_bbH)
+		{
+			SDL_SetWindowSize(m_pWin, (int)m_bbW, (int)m_bbH);
+			SDL_SetWindowPosition(m_pWin, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+		}
+	}
+	SDL_SyncWindow(m_pWin);
+	int pw = 0, ph = 0; SDL_GetWindowSizeInPixels(m_pWin, &pw, &ph);
+	RgLog("cua so: %s, %dx%d px (backbuffer %ux%u)", bFull ? "toan man hinh" : "cua so", pw, ph, m_bbW, m_bbH);
+}
+
+void CDevGpu::Letterbox(UINT swW, UINT swH, float* pScale, float* pOffX, float* pOffY)
+{
+	float sc = 1.0f, ox = 0.0f, oy = 0.0f;
+	if (swW && swH && m_bbW && m_bbH && (swW != m_bbW || swH != m_bbH))
+	{
+		float sx = (float)swW / (float)m_bbW, sy = (float)swH / (float)m_bbH;
+		sc = (sx < sy) ? sx : sy;
+		ox = ((float)swW - (float)m_bbW * sc) * 0.5f; oy = ((float)swH - (float)m_bbH * sc) * 0.5f;
+	}
+	*pScale = sc; *pOffX = ox; *pOffY = oy;
 }
 
 bool CDevGpu::CreateShaders()
@@ -348,6 +379,7 @@ HRESULT CDevGpu::Reset(D3DPRESENT_PARAMETERS* pp)
 	if (m_pp.BackBufferWidth == 0 || m_pp.BackBufferHeight == 0) { RECT rc; GetClientRect(m_hWnd, &rc); m_pp.BackBufferWidth = rc.right - rc.left; m_pp.BackBufferHeight = rc.bottom - rc.top; }
 	m_bbW = m_pp.BackBufferWidth; m_bbH = m_pp.BackBufferHeight;
 	if (m_pBackSurf) { m_pBackSurf->m_w = m_bbW; m_pBackSurf->m_h = m_bbH; }
+	ApplyWindowMode();
 	SDL_GPUPresentMode pm = SDL_GPU_PRESENTMODE_VSYNC;
 	if (m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_IMMEDIATE)) pm = SDL_GPU_PRESENTMODE_IMMEDIATE;
 	SDL_SetGPUSwapchainParameters(m_pGpu, m_pWin, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, pm);
@@ -854,6 +886,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 	SDL_GPUTexture* pCur = pSwap; UINT curW = swW, curH = swH; bool bCurSwap = true;
 	bool bPendingClear = false; D3DCOLOR clearColor = 0;
 	RgDrawState last; bool bLast = false;
+	float lbScale = 1.0f, lbOffX = 0.0f, lbOffY = 0.0f; Letterbox(swW, swH, &lbScale, &lbOffX, &lbOffY);	// [GPU 08/09 khung ao]
 	for (size_t i = 0; i < m_cmds.size(); i++)
 	{
 		const RgCmd& c = m_cmds[i];
@@ -887,13 +920,15 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		if (!bLast || memcmp(&st.vp, &last.vp, sizeof(st.vp)) != 0)
 		{
 			SDL_GPUViewport vp; vp.x = (float)st.vp.X; vp.y = (float)st.vp.Y; vp.w = (float)st.vp.Width; vp.h = (float)st.vp.Height; vp.min_depth = 0.0f; vp.max_depth = 1.0f;
-			if (vp.w <= 0.0f) vp.w = (float)curW; if (vp.h <= 0.0f) vp.h = (float)curH;
+			if (vp.w <= 0.0f) vp.w = (float)m_bbW; if (vp.h <= 0.0f) vp.h = (float)m_bbH;
+			if (bCurSwap) { vp.x = lbOffX + vp.x * lbScale; vp.y = lbOffY + vp.y * lbScale; vp.w *= lbScale; vp.h *= lbScale; }	// [GPU 08/09 khung ao]
 			SDL_SetGPUViewport(pass, &vp);
 		}
 		if (!bLast || st.bScissor != last.bScissor || memcmp(&st.rcScissor, &last.rcScissor, sizeof(RECT)) != 0)
 		{
 			SDL_Rect r;
-			if (st.bScissor) { r.x = st.rcScissor.left; r.y = st.rcScissor.top; r.w = st.rcScissor.right - st.rcScissor.left; r.h = st.rcScissor.bottom - st.rcScissor.top; if (r.w < 0) r.w = 0; if (r.h < 0) r.h = 0; }
+			if (st.bScissor) { r.x = st.rcScissor.left; r.y = st.rcScissor.top; r.w = st.rcScissor.right - st.rcScissor.left; r.h = st.rcScissor.bottom - st.rcScissor.top; if (r.w < 0) r.w = 0; if (r.h < 0) r.h = 0;
+				if (bCurSwap) { r.x = (int)(lbOffX + r.x * lbScale); r.y = (int)(lbOffY + r.y * lbScale); r.w = (int)(r.w * lbScale + 0.5f); r.h = (int)(r.h * lbScale + 0.5f); } }	// [GPU 08/09 khung ao]
 			else { r.x = 0; r.y = 0; r.w = (int)curW; r.h = (int)curH; }
 			SDL_SetGPUScissor(pass, &r);
 		}
