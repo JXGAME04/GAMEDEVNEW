@@ -85,6 +85,14 @@ BOOL	KNpcRes::Init(char *lpszNpcName, KNpcResList *pNpcResList)
 	m_pSoundNode = NULL;
 	m_pWave = NULL;
 
+	// [MOCOI 08/09] PHAI go nut cu khoi cay canh truoc khi xoa id. Truoc day chi gan 0: khi mot khe NPC duoc dung lai
+	// (KNpc::Load goi Init MA KHONG goi Remove truoc - KNpc.cpp:6747; khe doi chu ~7,5 lan/giay) thi nut cu BI BO ROI
+	// trong cay canh, van tro dung chi so NPC nay => CoreDrawGameObj duoc goi HAI LAN moi khung cho NPC do.
+	// Than nguoi ve chong len chinh no thi kho thay, nhung CHU ten/bang/danh hieu ve hai lan (moi lan da la hai luot
+	// vien + than chu) thi dam han len va mau bi keo ve kenh manh nhat - hai mau phe deu co do = 255 nen ra 'am do'.
+	// Chi NPC o XA bi vi khe cua ho moi la khe hay bi dung lai (vao/ra tam dong bo).
+	if (m_SceneID && m_SceneID_NPCIdx > 0)
+		g_ScenePlace.RemoveObject(CGOG_NPC, m_SceneID_NPCIdx, m_SceneID);
 	m_SceneID_NPCIdx = 0;
 	m_SceneID = 0;
 
