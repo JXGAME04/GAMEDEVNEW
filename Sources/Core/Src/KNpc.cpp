@@ -7939,27 +7939,6 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		s_bInfoTabsLoaded = TRUE;
 	}
 	nFontSize = 13;
-	// [VIENCHU 08/09] Mau VIEN cua ten / danh hieu / ten bang / ten quai.
-	// KFont3::SetBorderColor EP alpha 0 thanh 0xFF, nen dwBorderColor mac dinh (= 0) bien thanh DEN TUYEN
-	// cho MOI ten. Do tren 9 khung chup LIEN TIEP (JxCap 2026-09-08_21-35-30, moc chup nam trong
-	// RepresentEnd nen moi khung ve mot anh): trong o chu 92x15 co 36,3 % diem la R23 G16 B9 (gan den),
-	// chi 8,2 % la net chu R214 G178 B147, con nen dat quanh do sang ~65. Ca 9 khung deu sac net va dung
-	// mau (lech so voi khung 1 chi 0-3 tren moi diem = nhieu JPEG) => loi KHONG nam trong khung game ve.
-	// Con lai la tam nen: moi khi chu truot qua, mot diem anh phai nhay 23 -> 214, tuc di len TU VUNG GAN
-	// DEN, dung vung tam VA chuyen cham nhat, nen keo theo vet toi - chinh la "nhoe ra, am do" chu ta thay.
-	// Nang muc den cua vien len xap xi muc nen thi ca bien do lan diem xuat phat deu ra khoi vung cham,
-	// ma vien van tach duoc chu khoi nen dat (nen co van, vien thi phang).
-	// [Client] TenVienDo = do sang vien chu 0..255. 0 = den tuyen, y het truoc 08/09. Mac dinh 56.
-	{
-		static int s_nTenVienDo = -1;
-		if (s_nTenVienDo < 0)
-		{
-			s_nTenVienDo = (int)GetPrivateProfileIntA("Client", "TenVienDo", 56, ".\\config.ini");
-			if (s_nTenVienDo < 0) s_nTenVienDo = 0;
-			if (s_nTenVienDo > 255) s_nTenVienDo = 255;
-		}
-		dwBorderColor = 0xFF000000 | ((DWORD)s_nTenVienDo << 16) | ((DWORD)s_nTenVienDo << 8) | (DWORD)s_nTenVienDo;
-	}
 	char Buff[128], cbBuffer[32];
 	int nMpsX, nMpsY, nMX, nMY, nNumFrames,  nXX, nYY;
 	GetDrawPos(&nMpsX, &nMpsY);
