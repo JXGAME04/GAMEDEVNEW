@@ -202,6 +202,10 @@ bool CDevGpu::Init()
 	ApplyWindowMode();
 	SDL_GPUPresentMode pm = SDL_GPU_PRESENTMODE_VSYNC;
 	if (m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_IMMEDIATE)) pm = SDL_GPU_PRESENTMODE_IMMEDIATE;
+#ifdef JX_ANDROID
+	if (pm == SDL_GPU_PRESENTMODE_VSYNC && m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && g_nRep3GpuMailbox && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_MAILBOX))
+		pm = SDL_GPU_PRESENTMODE_MAILBOX;	// [ANDROID 11/09 MAILBOX] IMMEDIATE khong co (LDPlayer / dien thoai): MAILBOX khong cho vblank, khong xe hinh; Rep3GpuMailbox=0 de tat
+#endif
 	SDL_SetGPUSwapchainParameters(m_pGpu, m_pWin, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, pm);
 	m_swapFmt = SDL_GetGPUSwapchainTextureFormat(m_pGpu, m_pWin);
 	if (!CreateShaders()) return false;
@@ -223,7 +227,7 @@ bool CDevGpu::Init()
 	RgLog("atlas: %s | bo ban CPU sau khi tai len: %s", m_pAtlas ? "BAT (trang 1024x1024, texture DEFAULT <= 512 khong RT; Rep3AtlasGpu=0 de tat)" : "tat", g_nRep3GpuBoBanCpu ? "BAT (Rep3GpuBoBanCpu=0 de tat)" : "tat");
 	g_pRep3DevGpu = this;
 	RgLog("thiet bi: driver %s, backbuffer %ux%u, swapchain fmt %d, trinh chieu %s, windowed=%d", SDL_GetGPUDeviceDriver(m_pGpu), m_bbW, m_bbH, (int)m_swapFmt,
-		pm == SDL_GPU_PRESENTMODE_IMMEDIATE ? "ngay" : "vsync", (int)(m_pp.Windowed != FALSE));
+		pm == SDL_GPU_PRESENTMODE_IMMEDIATE ? "ngay" : (pm == SDL_GPU_PRESENTMODE_MAILBOX ? "mailbox" : "vsync"), (int)(m_pp.Windowed != FALSE));
 	return true;
 }
 
@@ -397,6 +401,10 @@ HRESULT CDevGpu::Reset(D3DPRESENT_PARAMETERS* pp)
 	ApplyWindowMode();
 	SDL_GPUPresentMode pm = SDL_GPU_PRESENTMODE_VSYNC;
 	if (m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_IMMEDIATE)) pm = SDL_GPU_PRESENTMODE_IMMEDIATE;
+#ifdef JX_ANDROID
+	if (pm == SDL_GPU_PRESENTMODE_VSYNC && m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && g_nRep3GpuMailbox && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_MAILBOX))
+		pm = SDL_GPU_PRESENTMODE_MAILBOX;	// [ANDROID 11/09 MAILBOX] IMMEDIATE khong co (LDPlayer / dien thoai): MAILBOX khong cho vblank, khong xe hinh; Rep3GpuMailbox=0 de tat
+#endif
 	SDL_SetGPUSwapchainParameters(m_pGpu, m_pWin, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, pm);
 	if (m_pLastFrame) { DeferRelease(m_pLastFrame); m_pLastFrame = NULL; m_lastW = m_lastH = 0; }
 	memset(&m_vp, 0, sizeof(m_vp)); m_vp.Width = m_bbW; m_vp.Height = m_bbH; m_vp.MaxZ = 1.0f; m_bVsDirty = true;

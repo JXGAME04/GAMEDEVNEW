@@ -24627,6 +24627,44 @@ void KCoreShell::Goto(int nDir, int mode)
 	Player[CLIENT_PLAYER_INDEX].m_nSendMoveFrames = 0;
 }
 
+#ifdef JX_ANDROID
+// [ANDROID 11/09 CAN] Di theo huong cho CAN DIEU KHIEN AO (JxCanDieuKhien.cpp): nhu Goto() nhung dich xa nBuoc buoc (Goto = 2 buoc)
+// va co CONG GAC gui giong duong chuot cua ban PC (GotoWhere: m_nSendMoveFrames >= defMAX_PLAYER_SEND_MOVE_FRAME = 5 tick).
+// Truoc day JxCan_Nhip goi Goto() MOI VONG LAP (1-8 ms): moi lan mot goi c2s_npcwalk, may chu tim duong + KNpc::DoWalk phat
+// s2c_npcwalk cho ca vung => hang tram goi/giay chi de di bo, trong Tong Kim nhan len theo so nguoi. bEp = 1: gui ngay
+// (doi huong / dung lai), dat lai cong gac. Tra 1 khi da gui. Chi Android: ban Windows khong co ham nay.
+extern "C" int JxCore_GotoHuong(int nDir, int mode, int nBuoc, int bEp)
+{
+	if (nDir < 0 || nDir > 63 || mode < 0 || mode > 2 || nBuoc < 1)
+		return 0;
+	if (!bEp && Player[CLIENT_PLAYER_INDEX].m_nSendMoveFrames < defMAX_PLAYER_SEND_MOVE_FRAME)
+		return 0;
+	int nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nIndex <= 0 || nIndex >= MAX_NPC || Player[CLIENT_PLAYER_INDEX].CheckTrading())
+		return 0;
+	int nSubWorld = Npc[nIndex].m_SubWorldIndex;
+	if (nSubWorld < 0 || Npc[nIndex].m_RegionIndex < 0)
+		return 0;
+	int bRun = ((mode == 0 && Player[CLIENT_PLAYER_INDEX].m_RunStatus) || mode == 2) ? 1 : 0;
+	int nSpeed = (int)(bRun ? Npc[nIndex].m_CurrentRunSpeed : Npc[nIndex].m_CurrentWalkSpeed);
+	int nX = 0, nY = 0;
+	SubWorld[nSubWorld].Map2Mps(Npc[nIndex].m_RegionIndex, Npc[nIndex].m_MapX, Npc[nIndex].m_MapY, Npc[nIndex].m_OffX, Npc[nIndex].m_OffY, &nX, &nY);
+	SubWorld[nSubWorld].GetMps(&nX, &nY, nSpeed * nBuoc, nDir);
+	if (bRun)
+	{
+		Npc[nIndex].SendCommand(do_run, nX, nY);
+		SendClientCmdRun(nX, nY);
+	}
+	else
+	{
+		Npc[nIndex].SendCommand(do_walk, nX, nY);
+		SendClientCmdWalk(nX, nY);
+	}
+	Player[CLIENT_PLAYER_INDEX].m_nSendMoveFrames = 0;
+	return 1;
+}
+#endif	// JX_ANDROID
+
 void KCoreShell::Turn(int nDir)
 {
 	if (nDir < 0 || nDir > 3)

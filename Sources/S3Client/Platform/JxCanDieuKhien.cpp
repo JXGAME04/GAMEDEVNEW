@@ -34,6 +34,7 @@ extern iCoreShell*			g_pCoreShell;
 extern iRepresentShell*		g_pRepresentShell;
 extern int					SCREEN_WIDTH;
 extern int					SCREEN_HEIGHT;
+extern "C" int		JxCore_GotoHuong(int nDir, int mode, int nBuoc, int bEp);	// [ANDROID 11/09 CAN] CoreShell.cpp (chi Android)
 
 // --- cai dat, doc mot lan tu config.ini [Cham] -----------------------------
 static int	s_nDaDoc = 0;
@@ -43,6 +44,7 @@ static int	s_nVungTren = 25;	// % chieu cao: tu day tro xuong moi la vung can
 static int	s_nVungDuoi = 88;	// % chieu cao: qua day la thanh cong cu, khong lay
 static int	s_nBanKinh = 90;		// ban kinh can, tinh theo khung ve
 static int	s_nNguong = 14;		// lech qua bao nhieu diem anh thi bat dau di
+static int	s_nBuocXa = 8;		// [ANDROID 11/09 CAN] dich xa bao nhieu buoc moi lan gui lenh di (Goto cu = 2); [Cham] CanBuocXa
 static int	s_nDaBaoAnh = 0;
 static int	s_nCoAnh = -1;		// -1 = chua kiem, 0 = khong co anh (ve o mau), 1 = co anh
 static char	s_szAnhNen[128] = "\\spr\\Ui3\\UiSkillControl\\joystick_bg.spr";
@@ -207,6 +209,8 @@ static int			s_nKNDichX = 0, s_nKNDichY = 0;	// vi tri VE cua no
 
 static bool	s_bCam = false;
 static int	s_nTamX = 0, s_nTamY = 0;	// tam can (cho dat ngon)
+static int	s_nHuongGui = -1;		// [ANDROID 11/09 CAN] huong da gui may chu; -1 = chua gui / da gui lenh dung
+static unsigned int	s_uCanGuiLuc = 0;	// [ANDROID 11/09 CAN] luc gui gan nhat (doi huong lien tuc cung chi gui 1 lan / 110 ms)
 static int	s_nNgonX = 0, s_nNgonY = 0;	// cho ngon dang o
 static int	s_nHuong = 0;				// nDir 0..63
 
@@ -224,6 +228,7 @@ static void DocCaiDat()
 	s_nVungDuoi = GetPrivateProfileInt("Cham", "CanVungDuoi", 88, szCfg);
 	s_nBanKinh  = GetPrivateProfileInt("Cham", "CanBanKinh", 90, szCfg);
 	s_nNguong   = GetPrivateProfileInt("Cham", "CanNguong", 14, szCfg);
+	s_nBuocXa   = GetPrivateProfileInt("Cham", "CanBuocXa", 8, szCfg);	// [ANDROID 11/09 CAN]
 	GetPrivateProfileString("Cham", "CanAnhNen", s_szAnhNen, s_szAnhNen, sizeof(s_szAnhNen), szCfg);
 	GetPrivateProfileString("Cham", "CanAnhNum", s_szAnhNum, s_szAnhNum, sizeof(s_szAnhNum), szCfg);
 	s_nVongBat   = GetPrivateProfileInt("Cham", "VongChon", 1, szCfg);
@@ -275,6 +280,8 @@ static void DocCaiDat()
 	if (s_nVungRong > 100) s_nVungRong = 100;
 	if (s_nBanKinh < 30) s_nBanKinh = 30;
 	if (s_nNguong < 4) s_nNguong = 4;
+	if (s_nBuocXa < 2) s_nBuocXa = 2;	// [ANDROID 11/09 CAN] 2 = dich gan nhu Goto cu (thi phai gui lien tuc moi khong dung)
+	if (s_nBuocXa > 30) s_nBuocXa = 30;
 	g_DebugLog("[CAN] can dieu khien: bat=%d vung=%d%% x %d..%d%% ban kinh=%d nguong=%d",
 		s_nBat, s_nVungRong, s_nVungTren, s_nVungDuoi, s_nBanKinh, s_nNguong);
 }
@@ -344,9 +351,21 @@ void JxCan_Keo(int x, int y)
 	TinhHuong();
 }
 
+// [ANDROID 11/09 CAN] Dung lai: gui MOT lenh dich gan (2 buoc, dung nhu Goto() cu) roi thoi -> nhan vat dung trong ~0,1 s.
+static void JxCan_DungLai()
+{
+	if (s_nHuongGui < 0)
+		return;
+	if (g_pCoreShell)
+		JxCore_GotoHuong(s_nHuongGui, 0, 2, 1);
+	s_nHuongGui = -1;
+	s_uCanGuiLuc = (unsigned int)GetTickCount();
+}
+
 void JxCan_Nha()
 {
 	s_bCam = false;
+	JxCan_DungLai();
 }
 
 void JxCan_Nhip()
@@ -356,8 +375,21 @@ void JxCan_Nhip()
 	int dx = s_nNgonX - s_nTamX;
 	int dy = s_nNgonY - s_nTamY;
 	if (dx * dx + dy * dy < s_nNguong * s_nNguong)
-		return;		// ngon tay con o giua can -> dung yen
-	g_pCoreShell->Goto(s_nHuong, 0);	// mode 0 = tu chon di bo / chay nhu ban PC
+	{
+		JxCan_DungLai();	// ngon tay ve giua can -> dung lai
+		return;
+	}
+	// [ANDROID 11/09 CAN] Truoc: g_pCoreShell->Goto(s_nHuong, 0) MOI VONG LAP (1-8 ms) = moi lan mot goi c2s_npcwalk khong cong gac,
+	// may chu tim duong + phat s2c_npcwalk cho ca vung => hang tram goi/giay chi de di bo (PC giu chuot: 1 goi / 5 tick).
+	// Nay: doi huong -> gui ngay (toi da 1 lan / 110 ms); cung huong -> gui lai khi cong gac 5 tick mo (JxCore_GotoHuong);
+	// dich xa s_nBuocXa buoc nen nhan vat khong dung giua hai lan gui. Cam giac di chuyen giu nguyen.
+	unsigned int uNay = (unsigned int)GetTickCount();
+	int bEp = (s_nHuong != s_nHuongGui && (s_nHuongGui < 0 || uNay - s_uCanGuiLuc >= 110)) ? 1 : 0;
+	if (JxCore_GotoHuong(s_nHuong, 0, s_nBuocXa, bEp))
+	{
+		s_nHuongGui = s_nHuong;
+		s_uCanGuiLuc = uNay;
+	}
 }
 
 //---------------------------------------------------------------------------

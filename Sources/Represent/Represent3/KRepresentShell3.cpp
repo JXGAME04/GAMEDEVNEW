@@ -66,9 +66,11 @@ unsigned g_uRep3LocKhung = 0;	// [LOCTG 09/09] so khung da tron. [ANDROID 10/09 
 #ifdef JX_ANDROID
 int g_nRep3AtlasGpu = 1;	// [GPU 11/09 ATLAS] Android: mac dinh BAT
 int g_nRep3GpuBoBanCpu = 1;	// [GPU 11/09 BOCPU] Android: mac dinh BAT
+int g_nRep3GpuMailbox = 1;	// [ANDROID 11/09 MAILBOX] Android: mac dinh BAT
 #else
 int g_nRep3AtlasGpu = 0;	// [GPU 11/09 ATLAS] GameSDL.exe tren Windows: mac dinh TAT (khong doi hanh vi PC); bat bang [Client] Rep3AtlasGpu=1
 int g_nRep3GpuBoBanCpu = 0;	// [GPU 11/09 BOCPU] nhu tren
+int g_nRep3GpuMailbox = 0;	// [ANDROID 11/09 MAILBOX] Windows GameSDL.exe: tat
 #endif
 #endif
 int  g_nRep3Pal       = 1;	// [D3D11 08/09 r] texture sprite bang mau 2 B/px (chi D3D11)
@@ -599,6 +601,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 #ifdef JX_PLATFORM_SDL
 	g_nRep3AtlasGpu    = Rep3Ini("Rep3AtlasGpu", g_nRep3AtlasGpu) ? 1 : 0;	// [GPU 11/09 ATLAS]
 	g_nRep3GpuBoBanCpu = Rep3Ini("Rep3GpuBoBanCpu", g_nRep3GpuBoBanCpu) ? 1 : 0;	// [GPU 11/09 BOCPU]
+	g_nRep3GpuMailbox  = Rep3Ini("Rep3GpuMailbox", g_nRep3GpuMailbox) ? 1 : 0;	// [ANDROID 11/09 MAILBOX]
 #endif
 	g_nRep3LocMs     = Rep3Ini("Rep3LocMs", 0);	// [LOCTG 09/09] [CHUGIU] mac dinh TAT: chu che toi; giu lam cong tac
 	g_nRep3ChuGiuMs  = Rep3Ini("Rep3ChuGiuMs", 12);	// [CHUGIU 09/09]

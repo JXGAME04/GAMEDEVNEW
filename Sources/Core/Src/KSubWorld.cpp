@@ -1201,6 +1201,7 @@ void WorldNpcXong(int nIdx, const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 	if (d > g_dNpcMax) { g_dNpcMax = d; g_nNpcMaxIdx = nIdx; }
 	if (d > t_dNpcMax) { t_dNpcMax = d; t_nNpcMaxIdx = nIdx; }
 }
+#ifndef JX_POSIX	// [ANDROID 11/09 DOLUOT] SuspendThread/GetThreadContext/dbghelp/_beginthreadex chi co tren Windows; Android: hai ham rong o #else
 // [DOLUOT 09/09] BO LAY MAU con tro lenh luong chinh ([Client] DoLuot=1; mac dinh 0 = khong tao luong, khong ton gi).
 // Luong rieng moi ~1 ms: SuspendThread/GetThreadContext luong chinh -> ghi (EIP, pha, so thu tu) vao vong 16384 mau
 // (chi khi luong chinh dang o pha 1 = tick the gioi hay 2 = ve). Luong chinh danh dau tick/khung >= 20 ms (DoLuotPham).
@@ -1353,6 +1354,10 @@ void DoLuotKetThuc(int nPha, LONG lSeq, const LARGE_INTEGER& li0)
 	const double dMs = (double)(li1.QuadPart - li0.QuadPart) * 1000.0 / (double)f.QuadPart;
 	if (g_nDoLuotNguong <= 0 || dMs >= (double)g_nDoLuotNguong) { g_aDoLuotNangPha[lSeq & (DOLUOT_NANG - 1)] = nPha; InterlockedExchange(&g_aDoLuotNang[lSeq & (DOLUOT_NANG - 1)], lSeq); }
 }
+#else
+LONG DoLuotBatDau(int nPha, LARGE_INTEGER* pLi0) { (void)nPha; (void)pLi0; return 0; }	// [ANDROID 11/09 DOLUOT] khong lay mau tren Android (0 = tat)
+void DoLuotKetThuc(int nPha, LONG lSeq, const LARGE_INTEGER& li0) { (void)nPha; (void)lSeq; (void)li0; }
+#endif	// JX_POSIX
 
 void WorldTickXong(double dQuet)
 {
