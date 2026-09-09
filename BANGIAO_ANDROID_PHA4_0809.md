@@ -710,7 +710,7 @@ cửa sổ theo `SCREEN_WIDTH/HEIGHT` trong mã → neo lại là chỉnh hai l�
 
 ### 8.8. Chủ test buổi sáng — làm theo thứ tự này
 
-APK: `android/apk/jx1mobile-0909-nutto.apk` (đã cài sẵn trên LDPlayer).
+APK mới nhất: `android/apk/jx1mobile-0909-kynang.apk` (đã cài sẵn trên LDPlayer).
 
 1. Mở app → phải **vào thẳng bản đồ** (nhớ mật mã + tự đăng nhập).
 2. **Kéo ngón nửa trái màn hình** → hiện vòng cần điều khiển, nhân vật đi theo hướng.
@@ -724,6 +724,18 @@ APK: `android/apk/jx1mobile-0909-nutto.apk` (đã cài sẵn trên LDPlayer).
 7. **Chạm một NPC** (Dã Tẩu, NPC Chuyển Sinh…) → khung thoại mở, các dòng lựa chọn giãn rộng;
    **vuốt dọc trong khung** → danh sách cuộn.
 8. Nhìn quanh: NPC đối thoại gần nhất có **chấm tròn vàng trên đầu**.
+9. Chạm **biểu tượng thư** (mép phải, dưới búa đấu giá) → hộp thư mở, đọc được thư, nhận được
+   vật phẩm đính kèm. Chạm **búa đấu giá** → cửa sổ đấu giá. Chạm **Chiến Lệnh** (trên đầu) →
+   cửa sổ chiến lệnh. *(Trước đây cả ba đều không mở được — xem §9.)*
+10. **Nút kỹ năng đánh** (6 ô góc phải dưới): chạm một ô → ô đánh trái trên thanh trạng thái
+    đổi theo. **Ra khỏi thành**, chạm một ô → phải đánh con gần nhất; **giữ ô rồi kéo** về
+    phía một con khác → vạch chỉ hướng chuyển **đỏ**, con đó có **vòng tròn dưới chân**, thả
+    ngón là đánh đúng con đó. *(Phần đánh trúng quái tôi CHƯA thử được — quanh chỗ test không
+    có quái. Xem §11.3.)*
+11. Chỉnh giao diện: `config.ini [Ui] SuaToaDo=1` (đã bật sẵn) → nút **"Sửa giao diện"** ở mép
+    phải giữa màn hình → hàng nút *Dời ô / Dời khối / To hơn / Nhỏ lại / Giấu hiện / Danh sách
+    / Lưu / Xoá hết*. Chọn công cụ rồi chạm vào thứ cần sửa, xong bấm **Lưu**. Không thích thì
+    **Xoá hết**. *(Muốn bản phát hành không có nút này thì để `SuaToaDo=0`.)*
 
 ### 8.9. Vòng tròn dưới chân đối tượng — **đã làm**
 
