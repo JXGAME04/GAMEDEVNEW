@@ -30,6 +30,7 @@ TextureResMgr::TextureResMgr()
     m_nMaxReleaseCount = 0;
 	m_uBudgetFloorMB = 60;	// [REP3 08/09 q]
 	m_bVeDangDien = false; m_nNapNenGui = 0; m_nNapNenXong = 0; m_nNapNenHong = 0; m_nNapNenBoVe = 0;	// [NAP 08/09 b]
+	m_nNapTruocKip = 0; m_nNapTruocTre = 0;	// [NAPCHIEU 09/09 b]
 	m_hNapLuong = NULL; m_hNapCo = NULL; m_lNapDung = 0; m_bNapNenLoi = false;
 	
 	// 根据物理内存大小决定资源缓冲区的大小
@@ -456,6 +457,12 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 		if (m_TextureResList[nImagePosition].m_nType == nType)
 		{
 			m_TextureResList[nImagePosition].m_nLastUsedTime = GetTickCount();
+			if (m_TextureResList[nImagePosition].m_bNapTruoc)	// [NAPCHIEU 09/09 b] lan hoi dau tien cua muc nap truoc
+			{
+				m_TextureResList[nImagePosition].m_bNapTruoc = false;
+				if (m_TextureResList[nImagePosition].m_bDangNap) m_nNapTruocTre++;
+				else if (m_TextureResList[nImagePosition].m_pTextureRes) m_nNapTruocKip++;
+			}
 			if (m_TextureResList[nImagePosition].m_bDangNap)	// [NAP 08/09 b] dang nap o luong nen
 			{
 				if (m_bVeDangDien) { m_nNapNenBoVe++; return NULL; }	// dang ve: bo anh nay khung nay, khung sau co
@@ -839,6 +846,7 @@ int TextureResMgr::NapTruoc(const char* pszImage, uint32 nType)
 		return 0;
 	ResNode node;
 	node.m_bDangNap = true;
+	node.m_bNapTruoc = true;	// [NAPCHIEU 09/09 b]
 	node.m_bCacheable = true;
 	node.m_nLastUsedTime = GetTickCount();
 	node.m_nRetryTime = GetTickCount();
