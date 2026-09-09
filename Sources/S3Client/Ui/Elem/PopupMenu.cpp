@@ -149,6 +149,17 @@ void KPopupMenu::Popup(KPopupMenuData* pMenu, KWndWindow* pCaller, unsigned int 
 			m_pMenu->nItemHeight += 1;
 	}
 
+#ifdef JX_ANDROID
+	// [ANDROID 10/09 MENU] Dong cao do ben goi dat san (menu kenh chat = cao anh kenh ~22) nhung dem tren da noi
+	// len 7 ([ANDROID 09/09 CHAM]) -> chu 12 + dau tieng Viet tran xuong, dong sau ve de len ("mat 1/3
+	// chu"). Noi dong len cho vua chu.
+	{
+		int nCan = m_pMenu->byFontSize * nMaxItemHei + 2 * m_pMenu->byItemTitleUpSpace;
+
+		if (m_pMenu->nItemHeight < nCan)
+			m_pMenu->nItemHeight = nCan;
+	}
+#endif
 	if (m_pMenu->nItemHeight < 1)
 		m_pMenu->nItemHeight = 1;
 

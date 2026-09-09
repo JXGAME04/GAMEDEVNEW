@@ -818,6 +818,13 @@ APK: `android\apk\jx1mobile-1009-anicon.apk` (vá 56–62). PC x64 + SDL dựng 
   `DX, DY = 0, 0`, sinh lại; đo lại trên `.spr`: kênh 365..385 / mặt cười 634..655 / gửi 665..686 (y 569..590)
   — ini 365,570 / 634,569 / 664,569 (≤ 1 px). Bỏ dòng `KUiPlayerBar|ChannelBtn=362,569` (chủ kéo bù 3 px)
   khỏi tệp mặc định; trong `UserData\UiToaDo.ini` của chủ vẫn còn → "Xoá hết" hoặc xoá dòng đó.
+- **(13:4x)** chủ: *"vẫn còn lệch, dịch phải 1 tí"* → ba biểu tượng +2 px (phần vẽ trong ảnh icon lệch trái);
+  *"nút ẩn kênh chat cho vào bên trong"* → đặt ở **cuối hàng tab kênh** (344,251), ngay sau "Khác".
+- **(13:5x) Menu chọn kênh chat "bị chèn chữ – mất 1/3 chữ"** (`va_nguon_android_64.py`): `[ANDROID 09/09 CHAM]`
+  nới đệm trên/dưới dòng menu lên 7 cho dễ chạm nhưng chỉ nới **dòng** khi chiều cao dòng còn mặc định;
+  menu kênh (`PopupChannelMenu`) đặt sẵn `nItemHeight` = cao ảnh kênh (~22) → chữ 12 + dấu tiếng Việt vẽ từ
+  y+7 tràn xuống, dòng sau vẽ đè. Sửa trong `PopupMenu.cpp` (JX_ANDROID): dòng đặt sẵn mà thấp hơn
+  `chữ × số dòng + 2 × đệm` thì nới lên. APK `android\apk\jx1mobile-1009-menukenh.apk` (vá 56–64).
 
 ### 12.6. Còn lại thật sự
 
