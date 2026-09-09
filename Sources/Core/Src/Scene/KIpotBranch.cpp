@@ -10,6 +10,9 @@
 #include "KIpotLeaf.h"
 #include "KIpotBranch.h"
 #include "SceneMath.h"
+#ifndef _SERVER
+unsigned g_uCayChen = 0, g_uCayDuyet1 = 0, g_uCayDuyet2 = 0, g_uCayKhop = 0, g_uCayCon = 0;	// [CAY 09/09 do] in o [WORLD b]
+#endif
 #include <crtdbg.h>
 #include "../CoreDrawGameObj.h"
 #include "../ImgRef.h"
@@ -430,6 +433,9 @@ void KIpotBranch::AddPointLeafToList(KIpotLeaf*& pFirst, KIpotLeaf* pLeaf,
 	}
 
 
+#ifndef _SERVER
+	g_uCayChen++; if (pParentLeaf) g_uCayCon++;	// [CAY 09/09 do]
+#endif
 	POINT	lp, op1,op2;
 	lp = pLeaf->oPosition;
 
@@ -438,6 +444,9 @@ void KIpotBranch::AddPointLeafToList(KIpotLeaf*& pFirst, KIpotLeaf* pLeaf,
 
 	for(pL = pFirst; pL; pL = pL->pBrother)
 	{
+#ifndef _SERVER
+		g_uCayDuyet1++;	// [CAY 09/09 do]
+#endif
 		if (pL->eLeafType != KIpotLeaf::IPOTL_T_BUILDIN_OBJ)
 			continue;
 		if ((((KIpotBuildinObj*)pL)->pBio->Props & SPBIO_P_SORTMANNER_MASK) != SPBIO_P_SORTMANNER_LINE)
@@ -484,6 +493,9 @@ void KIpotBranch::AddPointLeafToList(KIpotLeaf*& pFirst, KIpotLeaf* pLeaf,
 		{
 			pMatchL = pL;
 			eMatchRelate = eRelate;
+#ifndef _SERVER
+			g_uCayKhop++;	// [CAY 09/09 do]
+#endif
 			if (eRelate == RELATION_UP)
 				break;
 		}
@@ -507,6 +519,9 @@ void KIpotBranch::AddPointLeafToList(KIpotLeaf*& pFirst, KIpotLeaf* pLeaf,
 	Header.pBrother = pFirst;
 	for(pL = pFirst; pL; pPreLeaf = pL, pL = pL->pBrother)
 	{
+#ifndef _SERVER
+		g_uCayDuyet2++;	// [CAY 09/09 do]
+#endif
 		if (pL->eLeafType == KIpotLeaf::IPOTL_T_BUILDIN_OBJ &&
 			(((KIpotBuildinObj*)pL)->pBio->Props & SPBIO_P_SORTMANNER_MASK)
 				!= SPBIO_P_SORTMANNER_POINT)

@@ -1,4 +1,5 @@
 #include "KCore.h"
+extern KCacheNode* AmThanhLay(KCache& cache, char* szTen, KCacheNode* pNode);	// [AM 09/09 do] (KSubWorld.cpp) boc g_SoundCache.GetNode de do nap dong bo
 #include <math.h>
 #include "KNpc.h"
 #include "KSubWorld.h"
@@ -1991,7 +1992,7 @@ void	KInstantSpecial::PlaySound(int nNo)
 	if ( !m_szSoundName[nNo][0] )
 		return;
 
-	m_pSoundNode = (KCacheNode*)g_SoundCache.GetNode(m_szSoundName[nNo], (KCacheNode*)m_pSoundNode);
+	m_pSoundNode = (KCacheNode*)AmThanhLay(g_SoundCache, m_szSoundName[nNo], (KCacheNode*)m_pSoundNode);
 	m_pWave = (KWavSound*)m_pSoundNode->m_lpData;
 	if (m_pWave)
 	{

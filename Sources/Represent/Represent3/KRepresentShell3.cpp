@@ -2358,7 +2358,7 @@ void KRepresentShell3::LookAt(int nX, int nY, int nZ)
 // 60 Hz khong giu, 143 Hz giu 1 khung, 240 Hz giu 2 khung. Nhan dien dong chu = bam chuoi+font, va vi tri
 // man hinh moi cach vi tri dang giu <= 24 px.
 struct KRep3ChuGiu { unsigned uBam; int nX, nY; double dLuc; };
-static KRep3ChuGiu s_ChuGiu[512];
+static KRep3ChuGiu s_ChuGiu[2048];	// [CHUGIU 09/09 b] bang bam mo, do tuyen tinh toi da 16 o (truoc: vong 512 o duyet tuyen tinh moi dong chu)
 static int         s_nChuGiuKe = 0;
 static double      s_dChuGiuF = 0.0;
 static inline unsigned Rep3BamChu(const char* p, int n, int nFont)
@@ -2373,20 +2373,24 @@ static bool Rep3ChuGiu(const char* psText, int nCount, int nFont, int& nX, int& 
 {
 	if (g_nRep3ChuGiuMs <= 0) return false;
 	if (s_dChuGiuF == 0.0) { LARGE_INTEGER f; QueryPerformanceFrequency(&f); s_dChuGiuF = (double)f.QuadPart / 1000.0; }
-	LARGE_INTEGER q; QueryPerformanceCounter(&q);
-	const double dNow = (double)q.QuadPart / s_dChuGiuF;
+	// [CHUGIU 09/09 b] gio dau khung (RepresentBegin) - cung mot gia tri cho moi dong chu trong khung, khong QPC moi dong
+	const double dNow = (double)g_liRep3VeBegin.QuadPart / s_dChuGiuF;
 	const unsigned uBam = Rep3BamChu(psText, nCount, nFont);
-	for (int i = 0; i < 512; i++)
+	int nTrong = -1; int nCu = -1; double dCuNhat = 0.0;
+	for (int k = 0; k < 16; k++)
 	{
+		const int i = (int)((uBam + (unsigned)k) & 2047);
 		KRep3ChuGiu& e = s_ChuGiu[i];
-		if (e.uBam != uBam || e.dLuc == 0.0) continue;
+		if (e.dLuc == 0.0) { if (nTrong < 0) nTrong = i; break; }	// o trong: chuoi do ket thuc
+		if (nCu < 0 || e.dLuc < dCuNhat) { nCu = i; dCuNhat = e.dLuc; }
+		if (e.uBam != uBam) continue;
 		int dx = nX - e.nX; if (dx < 0) dx = -dx;
 		int dy = nY - e.nY; if (dy < 0) dy = -dy;
 		if (dx > 24 || dy > 24) continue;
 		if (dNow - e.dLuc < (double)g_nRep3ChuGiuMs) { nX = e.nX; nY = e.nY; g_uRep3ChuGiu++; return true; }
 		e.nX = nX; e.nY = nY; e.dLuc = dNow; g_uRep3ChuVe++; return false;
 	}
-	KRep3ChuGiu& e = s_ChuGiu[s_nChuGiuKe]; s_nChuGiuKe = (s_nChuGiuKe + 1) & 511;
+	KRep3ChuGiu& e = s_ChuGiu[nTrong >= 0 ? nTrong : (nCu >= 0 ? nCu : (int)(uBam & 2047))];	// o trong, khong thi o cu nhat trong chuoi do
 	e.uBam = uBam; e.nX = nX; e.nY = nY; e.dLuc = dNow; g_uRep3ChuVe++;
 	return false;
 }

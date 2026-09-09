@@ -12,6 +12,7 @@
 #ifndef _STANDALONE
 #include "crtdbg.h"
 #include "KDoLuot.h"	// [DOLUOT 09/09 c]
+#include "KCache.h"	// [AM 09/09 do]
 #endif
 #include "Scene/ObstacleDef.h"
 // KCombinFileSection / REGION_ELEM_FILE_COUNT dung trong ProcLoadPathGrid. Truoc day
@@ -1354,6 +1355,10 @@ void DoLuotKetThuc(int nPha, LONG lSeq, const LARGE_INTEGER& li0)
 	if (g_nDoLuotNguong <= 0 || dMs >= (double)g_nDoLuotNguong) { g_aDoLuotNangPha[lSeq & (DOLUOT_NANG - 1)] = nPha; InterlockedExchange(&g_aDoLuotNang[lSeq & (DOLUOT_NANG - 1)], lSeq); }
 }
 
+// [AM 09/09 do] do nap AM THANH dong bo (g_SoundCache.GetNode -> KWavSound doc sound.pak khi chua co trong cache):
+// boc 6 diem goi trong KMissleRes/KNpcRes/KNpcSet/CoreShell bang AmThanhLay (dinh nghia truoc KSubWorld::Activate);
+// chi dem lan >= 0,5 ms (= that su nap). In o [WORLD-TICK] va [WORLD b].
+unsigned g_uAmNap = 0; double g_dAmNapMs = 0.0; unsigned t_uAmNap = 0; double t_dAmNapMs = 0.0;
 void WorldTickXong(double dQuet)
 {
 	extern int g_nCorePaintLog;
@@ -1365,20 +1370,39 @@ void WorldTickXong(double dQuet)
 			const int i = t_nNpcMaxIdx;
 			const bool bCo = (i > 0 && i < MAX_NPC);
 			fprintf(pLog, "[WORLD-TICK] t=%u quet_vung %.1f ms | npc %u tong %.1f ms (khac %.1f) | pha PS %.1f AI %.1f PC %.1f ST %.1f"
-				" | nang nhat %.2f ms idx %d kind %d doing %d | object %u %.1f ms | dan %u %.1f ms | nguoi choi %.1f ms\n",
+				" | nang nhat %.2f ms idx %d kind %d doing %d | object %u %.1f ms | dan %u %.1f ms | nguoi choi %.1f ms | am thanh %u lan %.1f ms\n",
 				(unsigned)GetTickCount(), dQuet, t_uNpc, t_dNpcTong, dQuet - t_dNpcTong, t_dPha[0], t_dPha[1], t_dPha[2], t_dPha[3],
 				t_dNpcMax, i, bCo ? (int)Npc[i].m_Kind : -1, bCo ? (int)Npc[i].m_Doing : -1,
-				t_uKhacSo[0], t_dKhacMs[0], t_uKhacSo[1], t_dKhacMs[1], t_dKhacMs[2]);
+				t_uKhacSo[0], t_dKhacMs[0], t_uKhacSo[1], t_dKhacMs[1], t_dKhacMs[2], t_uAmNap, t_dAmNapMs);
 			fclose(pLog);
 		}
 	}
 	t_dNpcTong = t_dNpcMax = 0.0; t_uNpc = 0; t_nNpcMaxIdx = 0;
 	t_dPha[0] = t_dPha[1] = t_dPha[2] = t_dPha[3] = 0.0;
 	t_dKhacMs[0] = t_dKhacMs[1] = t_dKhacMs[2] = 0.0; t_uKhacSo[0] = t_uKhacSo[1] = t_uKhacSo[2] = 0;	// [WORLD 09/09 c]
+	t_uAmNap = 0; t_dAmNapMs = 0.0;	// [AM 09/09 do]
 }
 #endif
 extern int g_nCorePaintLog;
 #endif
+// [AM 09/09 do] boc g_SoundCache.GetNode: do thoi gian (client, PaintLog=1); may chu goi thang
+KCacheNode* AmThanhLay(KCache& cache, char* szTen, KCacheNode* pNode)
+{
+#ifndef _SERVER
+	extern int g_nCorePaintLog; extern unsigned g_uAmNap, t_uAmNap; extern double g_dAmNapMs, t_dAmNapMs;
+	if (g_nCorePaintLog <= 0) return cache.GetNode(szTen, pNode);
+	static double s_dTanSo = 0.0;
+	if (s_dTanSo == 0.0) { LARGE_INTEGER f; QueryPerformanceFrequency(&f); s_dTanSo = (double)f.QuadPart / 1000.0; }
+	LARGE_INTEGER a, b; QueryPerformanceCounter(&a);
+	KCacheNode* p = cache.GetNode(szTen, pNode);
+	QueryPerformanceCounter(&b);
+	const double d = (double)(b.QuadPart - a.QuadPart) / s_dTanSo;
+	if (d >= 0.5) { g_uAmNap++; g_dAmNapMs += d; t_uAmNap++; t_dAmNapMs += d; }
+	return p;
+#else
+	return cache.GetNode(szTen, pNode);
+#endif
+}
 void KSubWorld::Activate()
 {
 	if (m_SubWorldID < 0)
