@@ -26,6 +26,16 @@ public:
 	void	LoadScheme(const char* pScheme);		//载入界面方案
 	void	UpdateCursorPos(int nX, int nY);		//鼠标的位置更新了
 	void	OnWndClosed(void* pWnd);
+	//	[ANDROID 10/09 LUAN] khung thong tin dang hien (de dat 4 nut gan ky nang ngay ben canh). 0 = khong hien.
+	int		JxLayKhung(int* pL, int* pT, int* pW, int* pH) const
+	{
+		if (!m_bShow) return 0;
+		if (pL) *pL = m_nLeft;
+		if (pT) *pT = m_nTop;
+		if (pW) *pW = m_nWndWidth;
+		if (pH) *pH = m_nWndHeight;
+		return 1;
+	}
 private:
 	void	Update(int nX, int nY, bool compare = false);
 private:

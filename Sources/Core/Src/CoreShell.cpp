@@ -2926,7 +2926,8 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 			pHoi->szTen[sizeof(pHoi->szTen) - 1] = 0;
 		}
 
-		int nHan = pKN->GetHorseLimit();
+		// [ANDROID 10/09 LUAN] nParam 1 = CHI HOI (bo dem aura, tam danh...), khong xu len/xuong ngua
+		int nHan = (nParam == 1) ? 0 : pKN->GetHorseLimit();
 		if (nHan)
 		{
 			DWORD dwTuLuc = GetTickCount() - (DWORD)Npc[nToi].m_TimeHorse;

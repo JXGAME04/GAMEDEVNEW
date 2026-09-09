@@ -26,6 +26,7 @@
 #include "../Ui/ShortcutKey.h"	// [ANDROID 10/09 OTRONG] mo bang ky nang khi cham o trong
 #include "../Ui/UiCase/UiSkillsNew.h"	// [ANDROID 10/09 BANGCHON] tu dong bang chon khi cua so ky nang dong
 #include "../Ui/UiCase/UiSkills.h"
+#include "../Ui/Elem/MouseHover.h"	// [ANDROID 10/09 LUAN] dat 4 nut canh khung thong tin ky nang
 #include <math.h>
 #include <stdint.h>	// [UITOADO 10/09 F] intptr_t
 
@@ -129,12 +130,13 @@ static int			s_nKNDaDocGan = 0;
 //	[ANDROID 10/09 BANGCHON] bang 3 nut khi cham mot ky nang trong bang ky nang; o CHINH cung gan duoc
 #define	KYNANG_CHON_CHINH	100		// s_nKNOChon = dang chon O CHINH
 //	[ANDROID 10/09 NUTVNKU] 4 nut anh cua VNKU (236x86, ve thu nua) thay cho chu tu ve - chu: "nhin khong ro chu"
-#define	BC_RONG				130
-#define	BC_CAO_NUT			46
-#define	BC_CAO_TEN			22
+//	[ANDROID 10/09 LUAN] nut nho (84x31), khong ten, khong nen, nam ngay canh khung thong tin ky nang
+#define	BC_RONG				88
+#define	BC_CAO_NUT			35
+#define	BC_CAO_TEN			0
 #define	BC_SO_NUT			4
-#define	BC_NUT_RONG			118
-#define	BC_NUT_CAO			43
+#define	BC_NUT_RONG			84
+#define	BC_NUT_CAO			31
 static const char* s_szBCAnh[BC_SO_NUT] =
 {
 	"\\Spr\\UiNew\\UiSkills\\nut_phim_chinh.spr",
@@ -151,6 +153,14 @@ static int			s_nKNDaApChinh = 0;
 static KUiGameObject s_KNCho;			// ky nang dang cho nguoi choi cham o phu de gan (tu bang chon)
 static char			s_szKNBao[96];		// dong thong bao ngan tren man (3 giay)
 static unsigned int	s_uKNBaoLuc = 0;
+//	[ANDROID 10/09 LUAN] vong sang luan chuyen: 3 ky nang vong sang o o phu tu doi qua luan phien (chu, Nga My)
+static int			s_nKNLuanMs = 3000;			// [Cham] LuanChuyenMs
+static unsigned int	s_uKNLuanLuc = 0;
+static int			s_nKNLuanK = 0;
+static unsigned int	s_uKNAuraId[KYNANG_SO_PHU + 1];	// bo dem: ma ky nang cua o -> co phai vong sang
+static int			s_nKNAuraLa[KYNANG_SO_PHU + 1];
+static char			s_szKNAnhXoay[128] = "\\spr\\Ui3\\UiSkillControl\\vong_xoay.spr";	// 16 khung, lam_vong_xoay.py
+#define	KYNANG_XOAY_KHUNG	16
 
 static void KyNang_Bao(const char* pszChu)
 {
@@ -225,6 +235,9 @@ static void DocCaiDat()
 	s_nKNCoIcon  = GetPrivateProfileInt("Cham", "KyNangCoIcon", 32, szCfg);
 	s_nKNBanKinhKeo = GetPrivateProfileInt("Cham", "KyNangBanKinhKeo", 60, szCfg);
 	s_nKNNhip = GetPrivateProfileInt("Cham", "KyNangNhip", 200, szCfg);
+	s_nKNLuanMs = GetPrivateProfileInt("Cham", "LuanChuyenMs", 3000, szCfg);	// [ANDROID 10/09 LUAN]
+	if (s_nKNLuanMs < 500) s_nKNLuanMs = 500;
+	GetPrivateProfileString("Cham", "KyNangAnhXoay", s_szKNAnhXoay, s_szKNAnhXoay, sizeof(s_szKNAnhXoay), szCfg);
 	s_nHuongDiBat  = GetPrivateProfileInt("Cham", "HuongDi", 1, szCfg);
 	s_nHuongDiThap = GetPrivateProfileInt("Cham", "HuongDiThap", 10, szCfg);
 	s_nHuongDiXa   = GetPrivateProfileInt("Cham", "HuongDiXa", 56, szCfg);
@@ -953,7 +966,7 @@ static int KyNang_TimDich(int nHuongX, int nHuongY, int* pVeX, int* pVeY)
 //	Tra ve true = danh tiep duoc; false = lan nay thoi (vua gui lenh len/xuong ngua,
 //	hoac ky nang khong dung duoc luc nay).
 static bool KyNang_HoiCore(int nSkillId, int* pTamDanh, int* pLaAura, int* pTuDung = NULL, char* pszTen = NULL,
-	int* pCanDiem = NULL)
+	int* pCanDiem = NULL, int bChiHoi = 0)
 {
 	KJxKyNangHoi oHoi;
 
@@ -966,7 +979,7 @@ static bool KyNang_HoiCore(int nSkillId, int* pTamDanh, int* pLaAura, int* pTuDu
 		return false;
 	memset(&oHoi, 0, sizeof(oHoi));
 	oHoi.nSkillId = nSkillId;
-	if (!g_pCoreShell->GetGameData(GDI_KYNANG_MOBILE, (KUPARAM)&oHoi, 0))
+	if (!g_pCoreShell->GetGameData(GDI_KYNANG_MOBILE, (KUPARAM)&oHoi, bChiHoi ? 1 : 0))	// [ANDROID 10/09 LUAN]
 		return true;		// khong hoi duoc thi cu danh, dung nhu truoc
 	if (pTamDanh) *pTamDanh = oHoi.nTamDanh;
 	if (pLaAura)  *pLaAura  = oHoi.nLaAura;
@@ -1068,7 +1081,7 @@ void JxKyNang_Keo(int x, int y)
 
 		memset(&oH, 0, sizeof(oH));
 		oH.nSkillId = (int)o.uId;
-		if (g_pCoreShell && g_pCoreShell->GetGameData(GDI_KYNANG_MOBILE, (KUPARAM)&oH, 0))
+		if (g_pCoreShell && g_pCoreShell->GetGameData(GDI_KYNANG_MOBILE, (KUPARAM)&oH, 1))
 			nTam = oH.nTamDanh;
 	}
 	if (nTam < 40)
@@ -1114,8 +1127,8 @@ static void KyNang_DanhMotPhat()
 		// [ANDROID 10/09 BUFF] ky nang TU DUNG (buff / hoi phuc len minh, dong doi): cham la dung NGAY tai
 		// cho nhan vat (nhan vat luon o giua khung ve), khong can keo ngam, khong can co ke dich - chu:
 		// "cac o phu bo cac ky nang buff thi chi can kich vao se tu su dung". Dung mot lan moi cham.
-		if (nNut > 0)
-			g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&o, 1);
+		// [ANDROID 10/09 LUAN] KHONG SetRightSkill nua: KPlayer::SetRightSkill(ky nang thuong) goi SetAuraSkill(0) = tat
+		// vong sang moi lan dung; UseSkill nhan ma ky nang truc tiep nen khong can.
 		g_pCoreShell->UseSkill(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, (int)o.uId);
 		s_nKNDangCam = -1;		// khong lap lai khi con giu
 		return;
@@ -1148,10 +1161,10 @@ static void KyNang_DanhMotPhat()
 	}
 	if (nNut > 0)
 	{
-		// NUT PHU: ban tham khao dat lam ky nang danh PHAI roi danh THEO DIEM
-		// (KgameWorld.cpp:4437 SetRightSkill + UseSkill). Nho the nut phu va nut chinh
-		// khong dam chan nhau: nut chinh van giu ky nang danh trai.
-		g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&o, 1);
+		// NUT PHU: truoc day dat lam ky nang danh PHAI roi danh theo diem (nhu ban tham khao).
+		// [ANDROID 10/09 LUAN] BO buoc SetRightSkill: KPlayer::SetRightSkill(ky nang thuong) goi SetAuraSkill(0)
+		// = TAT vong sang moi lan danh. UseSkill / LockSomeoneUseSkill nhan ma ky nang truc tiep
+		// (SetActiveSkill theo ma) nen nut phu van khong dam chan nut chinh.
 		if (bCoNgam)
 		{
 			g_pCoreShell->UseSkill(nNgamX, nNgamY, (int)o.uId);	// tha ky nang o cho o xanh
@@ -1210,10 +1223,63 @@ bool JxKyNang_GanKyNang(unsigned int uGenre, unsigned int uId)
 }
 
 //	[ANDROID 09/09 KYNANG I] Goi moi vong lap game: con de nut thi cu danh tiep.
+//	[ANDROID 10/09 LUAN] o phu i (1..8) dang giu VONG SANG (aura)? Bo dem theo ma ky nang; hoi Core kieu "chi hoi".
+static int KyNang_OLaAura(int i, KUiGameObject* pRa)
+{
+	if (i < 1 || i > KYNANG_SO_PHU || !KyNang_CuaNut(i, pRa))
+		return 0;
+	if (s_uKNAuraId[i] != pRa->uId)
+	{
+		int nAura = 0;
+
+		KyNang_HoiCore((int)pRa->uId, NULL, &nAura, NULL, NULL, NULL, 1);
+		s_uKNAuraId[i] = pRa->uId;
+		s_nKNAuraLa[i] = nAura;
+	}
+	return s_nKNAuraLa[i];
+}
+
+//	[ANDROID 10/09 LUAN] Vong sang luan chuyen: cac o phu dang giu vong sang thay nhau bat, moi s_nKNLuanMs.
+//	Mot vong sang: chi giu cho no bat (bi tat thi bat lai). Chu: "3 ky nang vong sang o o phu se tu doi
+//	qua luan phien lien tuc" (Nga My). Ban tham khao: AUTO goi lai nut vong sang lien tuc.
+static void KyNang_LuanChuyen()
+{
+	KUiGameObject aAura[KYNANG_SO_PHU];
+	KUiGameObject oMuon;
+	KUiPlayerImmedItemSkill oTay;
+	unsigned int uNay;
+	int i, n = 0;
+
+	if (g_pCoreShell == NULL)
+		return;
+	for (i = 1; i <= KYNANG_SO_PHU; i++)
+	{
+		KUiGameObject o;
+
+		if (KyNang_OLaAura(i, &o))
+			aAura[n++] = o;
+	}
+	if (n == 0)
+		return;
+	uNay = (unsigned int)GetTickCount();
+	if (s_uKNLuanLuc && uNay - s_uKNLuanLuc < (unsigned int)s_nKNLuanMs)
+		return;
+	s_uKNLuanLuc = uNay;
+	oMuon = aAura[s_nKNLuanK % n];
+	s_nKNLuanK++;
+	memset(&oTay, 0, sizeof(oTay));
+	g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (KNPARAM)&oTay, 0);
+	if (n == 1 && oTay.IMmediaSkill[1].uId == oMuon.uId)
+		return;		// mot vong sang va dang bat dung no
+	g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&oMuon, 1);	// SetRightSkill -> SetAuraSkill
+	g_DebugLog("[KYNANG] luan chuyen vong sang -> %u (%d/%d)", oMuon.uId, (s_nKNLuanK - 1) % n + 1, n);
+}
+
 void JxKyNang_Nhip()
 {
 	unsigned int uNay;
 
+	KyNang_LuanChuyen();	// [ANDROID 10/09 LUAN] chay moi khung, khong phu thuoc dang giu nut hay khong
 	if (s_nKNDangCam < 0)
 		return;
 	uNay = (unsigned int)GetTickCount();
@@ -1361,7 +1427,14 @@ static void KyNang_GoKhoiO(const KUiGameObject* p)
 	}
 	if (nGo)
 	{
+		int nAura = 0;
+
 		KyNang_GhiGan();
+		memset(s_uKNAuraId, 0, sizeof(s_uKNAuraId));	// [ANDROID 10/09 LUAN] bo dem aura cua cac o phai tinh lai
+		// go mot vong sang -> tat no: dat ky nang phai = ky nang danh chinh (SetRightSkill -> SetAuraSkill(0))
+		KyNang_HoiCore((int)p->uId, NULL, &nAura, NULL, NULL, NULL, 1);
+		if (nAura && s_KNChinh.uId && g_pCoreShell)
+			g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&s_KNChinh, 1);
 		KyNang_Bao("§· gì khái « phô");
 	}
 	else if (s_KNChinh.uId == p->uId)
@@ -1457,7 +1530,7 @@ int JxKyNang_ChamBangChon(int x, int y)
 
 static void KyNang_VeBangChon()
 {
-	int i, nY;
+	int i, nY, nL, nT, nW, nH;
 
 	if (!s_nBCBat || g_pRepresentShell == NULL)
 		return;
@@ -1467,16 +1540,25 @@ static void KyNang_VeBangChon()
 		s_nBCBat = 0;
 		return;
 	}
-	HopChuNhat(s_nBCX, s_nBCY, s_nBCX + BC_RONG, s_nBCY + BC_CAO_TEN + BC_CAO_NUT * BC_SO_NUT, 0xD0101820);
-	KyNang_VeChu(s_szBCTen[0] ? s_szBCTen : "Kü n¨ng", s_nBCX + 8, s_nBCY + 4, 0xFFFFD24A);
+	// [ANDROID 10/09 LUAN] dat NGAY CANH khung thong tin ky nang dang hien (ben phai; het cho thi ben trai)
+	if (g_MouseOver.JxLayKhung(&nL, &nT, &nW, &nH))
+	{
+		s_nBCX = nL + nW + 4;
+		if (s_nBCX + BC_RONG > SCREEN_WIDTH - 2)
+			s_nBCX = nL - 4 - BC_RONG;
+		s_nBCY = nT;
+		if (s_nBCX < 2)											s_nBCX = 2;
+		if (s_nBCY + BC_CAO_NUT * BC_SO_NUT > SCREEN_HEIGHT - 2)	s_nBCY = SCREEN_HEIGHT - 2 - BC_CAO_NUT * BC_SO_NUT;
+		if (s_nBCY < 2)											s_nBCY = 2;
+	}
 	nY = s_nBCY + BC_CAO_TEN;
-	// [ANDROID 10/09 NUTVNKU] 4 nut anh cua VNKU (khung 0 = binh thuong), ve thu nua co goc (236x86 -> 118x43)
+	// 4 nut anh cua VNKU (khung 0 = binh thuong), 236x86 -> 84x31
 	for (i = 0; i < BC_SO_NUT; i++, nY += BC_CAO_NUT)
 	{
 		if (CoAnh(s_szBCAnh[i]))
 			VeAnhKhung(s_szBCAnh[i], s_nBCX + BC_RONG / 2, nY + BC_CAO_NUT / 2, BC_NUT_RONG, BC_NUT_CAO, 0);
 		else
-			HopChuNhat(s_nBCX + 4, nY + 3, s_nBCX + BC_RONG - 4, nY + BC_CAO_NUT - 3, 0xC0304868);
+			HopChuNhat(s_nBCX + 2, nY + 2, s_nBCX + BC_RONG - 2, nY + BC_CAO_NUT - 2, 0xC0304868);
 	}
 }
 void JxKyNang_Ve()
@@ -1525,6 +1607,9 @@ void JxKyNang_Ve()
 			g_pCoreShell->DrawGameObj(o.uGenre, o.uId,
 				nX - nIcon / 2, nY - nIcon / 2, nIcon, nIcon, 0);
 		}
+		// [ANDROID 10/09 LUAN] o phu giu VONG SANG: vong xoay (16 khung, ~1 vong/giay) nhu ban tham khao (CCRotateBy 360/1s)
+		if (bCo && i > 0 && KyNang_OLaAura(i, &o) && CoAnh(s_szKNAnhXoay))
+			VeAnhCo(s_szKNAnhXoay, nX, nY, nR * 2 + 12, (int)(((unsigned int)GetTickCount() / 62) % KYNANG_XOAY_KHUNG));
 	}
 
 	// [ANDROID 09/09 GAN] nut doi che do gan - ve sau cung de nam tren
@@ -1593,7 +1678,7 @@ void JxKyNang_Ve()
 				KJxKyNangHoi oH;
 				memset(&oH, 0, sizeof(oH));
 				oH.nSkillId = (int)oT.uId;
-				if (g_pCoreShell->GetGameData(GDI_KYNANG_MOBILE, (KUPARAM)&oH, 0)
+				if (g_pCoreShell->GetGameData(GDI_KYNANG_MOBILE, (KUPARAM)&oH, 1)
 					&& oH.nTamDanh > 0)
 					nTamVe = oH.nTamDanh;
 			}
