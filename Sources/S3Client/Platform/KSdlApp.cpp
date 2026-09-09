@@ -458,6 +458,7 @@ void KSdlApp::Run()
 #ifdef JX_ANDROID
 		NhipCham();		// [ANDROID 09/09 CHAM] giu ngon du lau ma khong xe dich -> chuot phai
 		JxCan_Nhip();	// [ANDROID 09/09 CAN] dang cam can thi day nhan vat di theo huong
+		JxKyNang_Nhip();	// [ANDROID 09/09 KYNANG I] dang de nut ky nang thi cu danh tiep
 #endif
 		if (m_bActive || m_bMultiGame)
 		{

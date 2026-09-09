@@ -883,6 +883,11 @@ enum GAMEOPERATION_INDEX
 	// [VHTD 02/09g] so tang No (1976) / Am Luat (2116) cua chinh minh: uParam = KHsSpView[nParam], tra so muc co tran > 0. Dat CUOI enum.
 	GDI_HS_SP,
 
+	// [ANDROID 09/09 NGUA] NOI VAO CUOI BANG - khong chen giua (chen giua se day moi
+	// ma so phia sau lech di). uParam = KJxKyNangHoi* -> tra 1 neu doc duoc.
+	// Tra ve phan xu ngua + tam danh + co phai ky nang tro, cho nut ky nang tren dien thoai.
+	GDI_KYNANG_MOBILE,
+
 	// [MAIL 03/09 D2] cua so THU -> Lua uimail.lua (KMailClient.cpp): uParam = MAILUI_OP_MAKE(op, extra), nParam. Dat CUOI enum.
 	GOI_MAIL_UI,
 

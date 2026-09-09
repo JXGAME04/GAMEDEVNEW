@@ -2892,6 +2892,58 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 			break;
 		}
 #ifndef _SERVER
+	// [ANDROID 09/09 NGUA] Nut ky nang tren dien thoai hoi truoc khi danh.
+	// Luat ngua lay DUNG cua he tu danh (KPlayer.cpp:12610) de hai duong xu su giong nhau.
+	case GDI_KYNANG_MOBILE:
+	{
+		KJxKyNangHoi* pHoi = (KJxKyNangHoi*)uParam;
+		if (pHoi == NULL || pHoi->nSkillId <= 0)
+			break;
+		pHoi->nNgua = 0;
+		pHoi->nTamDanh = 0;
+		pHoi->nLaAura = 0;
+
+		int nToi = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+		if (nToi <= 0 || nToi >= MAX_NPC)
+			break;
+		KSkill* pKN = (KSkill*)g_SkillManager.GetSkill(pHoi->nSkillId, 1);
+		if (pKN == NULL)
+			break;
+
+		pHoi->nTamDanh = pKN->GetAttackRadius();
+		pHoi->nLaAura  = pKN->IsAura() ? 1 : 0;
+
+		int nHan = pKN->GetHorseLimit();
+		if (nHan)
+		{
+			DWORD dwTuLuc = GetTickCount() - (DWORD)Npc[nToi].m_TimeHorse;
+			if (nHan == 1 && Npc[nToi].m_bRideHorse)
+			{	// ky nang chi dung duoc DUOI ngua
+				if (dwTuLuc >= TIME_RIDE)
+				{
+					SendClientCmdRide(TRUE);	// xuong ngua
+					pHoi->nNgua = 1;
+				}
+				else
+					pHoi->nNgua = 3;	// con han 5 giay, lan nay chiu
+			}
+			else if (nHan == 2 && !Npc[nToi].m_bRideHorse)
+			{	// ky nang chi dung duoc TREN ngua
+				if (dwTuLuc >= TIME_RIDE)
+				{
+					SendClientCmdRide(FALSE);	// len ngua
+					pHoi->nNgua = 2;
+				}
+				else
+					pHoi->nNgua = 3;
+			}
+			else if (nHan != 1 && nHan != 2)
+				pHoi->nNgua = 3;
+		}
+		nRet = 1;
+		break;
+	}
+
 	case NPC_OI_TARGET_INFO:
 	{
 #ifdef JX_ANDROID

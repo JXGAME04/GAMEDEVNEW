@@ -51,7 +51,10 @@ int  JxKyNang_TrungNut(int x, int y);
 void JxKyNang_BatDau(int nNut, int x, int y);
 // Ngon di chuyen - ngam huong danh.
 void JxKyNang_Keo(int x, int y);
-// Nha ngon = danh. Tra ve true neu da danh.
+// [ANDROID 09/09 KYNANG I] Goi moi vong lap game: con de nut thi cu danh tiep,
+// tai cho o xanh dang dung.
+void JxKyNang_Nhip();
+// Nha ngon = thoi danh. Tra ve true neu vua nha mot nut ky nang.
 bool JxKyNang_Nha();
 // Goi cuoi moi khung ve: ve bang nut + vach ngam + vong tron duoi chan con dang ngam.
 void JxKyNang_Ve();

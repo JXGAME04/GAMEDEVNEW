@@ -1353,6 +1353,21 @@ struct KUiTargetDetailInfo
 };
 
 //==================================
+//	[ANDROID 09/09 NGUA] Hoi Core truoc khi bam nut ky nang tren dien thoai.
+//	GDI_KYNANG_MOBILE: uParam = KJxKyNangHoi*, nParam = 0.
+//==================================
+struct KJxKyNangHoi
+{
+	int	nSkillId;	// VAO : ma ky nang
+	int	nNgua;		// RA  : 0 = danh duoc luon
+						//       1 = ky nang chi dung duoc DUOI ngua, da gui lenh xuong -> lan nay thoi
+						//       2 = ky nang chi dung duoc TREN ngua, da gui lenh len   -> lan nay thoi
+						//       3 = khong dung duoc (con han len/xuong ngua, hoac gioi han khac)
+	int	nTamDanh;	// RA  : tam danh cua ky nang (dung de biet diem ngam nam dau khi keo)
+	int	nLaAura;	// RA  : 1 = ky nang TRO (bat/tat) chu khong phai danh
+};
+
+//==================================
 //	Ä§·¨ÊôÐÔ
 //==================================
 #ifndef MAGICATTRIB
