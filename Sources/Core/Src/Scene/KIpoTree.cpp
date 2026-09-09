@@ -106,6 +106,50 @@ void KIpoTree::Paint(RECT* pRepresentArea, IPOT_RENDER_LAYER eLayer)
 		RenderLightMap();
 		// 设置表现模块的光照信息
 		g_pRepresent->SetLightInfo(m_nLeftTopX, m_nLeftTopY, (unsigned int*)pLightingArray);
+		{	// [SANGDO 09/09] He chieu sang la duong DUY NHAT trong engine nhan vao mau tung anh SPR
+			// (KRepresentShell3.cpp:1540 color = GetPoint3dLighting(v), roi shader MODULATE voi texture).
+			// Do xem MOT O CO DINH giua luoi sang co bi doi gia tri khong va doi bao nhieu lan moi 10 giay.
+			// Neu SPR bay ban doi mau khi co nguoi di chuyen thi so o day phai doi theo. Chi ghi so.
+			extern int g_nCorePaintLog;
+			if (g_nCorePaintLog > 0)
+			{
+				static DWORD s_dwLan = 0, s_dwTruoc = 0xFFFFFFFF, s_dwMin = 0xFFFFFFFF, s_dwMax = 0;
+				static unsigned s_uKhung = 0, s_uDoi = 0, s_uGocDoi = 0, s_uDenTong = 0, s_uDenMax = 0;
+				static int s_nGocX = 0x7FFFFFFF, s_nGocY = 0;
+				const int nO = (LIGHTING_GRID_HEIGHT / 2) * LIGHTING_GRID_WIDTH + (LIGHTING_GRID_WIDTH / 2);
+				const DWORD dwO = pLightingArray[nO];
+				s_uKhung++;
+				if (s_dwTruoc != 0xFFFFFFFF && dwO != s_dwTruoc) s_uDoi++;
+				s_dwTruoc = dwO;
+				if (dwO < s_dwMin) s_dwMin = dwO;
+				if (dwO > s_dwMax) s_dwMax = dwO;
+				if (m_nLeftTopX != s_nGocX || m_nLeftTopY != s_nGocY)
+				{
+					if (s_nGocX != 0x7FFFFFFF) s_uGocDoi++;
+					s_nGocX = m_nLeftTopX; s_nGocY = m_nLeftTopY;
+				}
+				const unsigned uDen = (unsigned)m_LightList.size();
+				s_uDenTong += uDen;
+				if (uDen > s_uDenMax) s_uDenMax = uDen;
+				const DWORD dwNow = GetTickCount();
+				if (s_dwLan == 0) s_dwLan = dwNow;
+				else if (dwNow - s_dwLan >= 10000)
+				{
+					s_dwLan = dwNow;
+					FILE* pLog = fopen("jx_paint.log", "a");
+					if (pLog)
+					{
+						fprintf(pLog, "[SANGDO] t=%u khung=%u | o giua luoi DOI %u lan | sang min %08X max %08X"
+							" | goc cua so doi %u lan | den TB %.1f max %u | nen %08X\n",
+							dwNow, s_uKhung, s_uDoi, s_dwMin, s_dwMax, s_uGocDoi,
+							s_uKhung ? (double)s_uDenTong / s_uKhung : 0.0, s_uDenMax, m_dwAmbient);
+						fclose(pLog);
+					}
+					s_uKhung = s_uDoi = s_uGocDoi = s_uDenTong = s_uDenMax = 0;
+					s_dwMin = 0xFFFFFFFF; s_dwMax = 0;
+				}
+			}
+		}
 	}
 	
 	if (eLayer == IPOT_RL_OBJECT)
