@@ -83,14 +83,25 @@ new = NL.join([
 ])
 s = rep(s, old, new, "S bang giu")
 
-# 2) ap ngay sau doi toa do, truoc khi ve
+# 2) ap ngay sau doi toa do, truoc khi ve. Neo 'SetBorderColor(BorderColor);' co 2 lan trong tep =>
+#    lay lan DAU TIEN sau dau ham OutputText(int nFontId...) va phai nam TRUOC ham ke tiep.
 old = T + "m_FontTable[i].pFontObj->SetBorderColor(BorderColor);"
 new = NL.join([
     T + "if (nZ != TEXT_IN_SINGLE_PLANE_COORD)",
     T + T + "Rep3ChuGiu(psText, nCount, nFontId, nX, nY);" + T + "// [CHUGIU 09/09] chi chu neo vao the gioi",
     old,
 ])
-s = rep(s, old, new, "S ap dung")
+a = s.find("void KRepresentShell3::OutputText(int nFontId, const char* psText, int nCount, int nX, ")
+a = s.find("{", a)                                    # than ham (sau khoi bang giu vua chen o tren)
+b = s.find(NL + "}" + NL, a)                          # het ham
+if a < 0 or b < 0:
+    print("FAIL khong thay than OutputText"); sys.exit(1)
+p = s.find(old, a)
+if p < 0 or p > b:
+    print("FAIL neo S ap dung: khong nam trong OutputText (p=%d, a=%d, b=%d)" % (p, a, b)); sys.exit(1)
+if s[a:b].count(old) != 1:
+    print("FAIL neo S ap dung: trong OutputText co %d lan" % s[a:b].count(old)); sys.exit(1)
+s = s[:p] + new + s[p + len(old):]
 
 # 3) config: Rep3ChuGiuMs; Rep3LocMs mac dinh ve 0
 s = rep(s, T + "g_nRep3LocMs     = Rep3Ini(\"Rep3LocMs\", 8);" + T + "// [LOCTG 09/09]",
