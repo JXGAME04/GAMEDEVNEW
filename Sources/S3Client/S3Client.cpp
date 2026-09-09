@@ -66,6 +66,7 @@ CChatFilter g_ChatFilter;
 #define CONFIG_FILE_PATH	"Config.ini"			//duong dan file config.ini
 //static int m_PaintStep = GAME_FPS / 18;
 static int	g_nPaintFps = 30;		// paint frames per second, config.ini [Client] PaintFps; 0 = paint locked to logic tick (legacy)
+static int	g_nPaintSmooth = 1;		// [NHIP 08/09 c] 1 = so chia noi suy dung trung binh truot cua khoang tick (het nhay/dong bang moi tick); 0 = nhu cu
 static int	g_nPaintVsync = 0;		// [NHIP 08/09] config.ini [Client] PaintVsync; 1 = ve moi vong bom, Represent3 Present(1) (vblank dan nhip)
 static int	g_nPaintInterp = 1;		// config.ini [Client] PaintInterp; 1 = interpolate drawn NPC positions between logic ticks
 int	g_nPaintLog = 0;		// config.ini [Client] PaintLog; 1 = write jx_paint.log frame-time probe
@@ -516,6 +517,7 @@ BOOL KMyApp::GameInit()
 		g_nPaintFps = 0;
 	if (g_nPaintFps > 240)
 		g_nPaintFps = 240;	// [NHIP 08/09] tran 60 -> 240 (man hinh 120/144/240 Hz)
+	IniFile.GetInteger("Client", "PaintSmooth", 1, &g_nPaintSmooth);	// [NHIP 08/09 c]
 	IniFile.GetInteger("Client", "PaintVsync", 0, &g_nPaintVsync);	// [NHIP 08/09] 1 = ve theo vblank (Represent3 doc cung khoa -> Present(1)); PaintFps khi do chi la nhan
 	if (g_nPaintFps > 60 || g_nPaintVsync > 0)
 		g_SetLoopInterval(1);	// [NHIP 08/09] luoi vong bom 1 ms: luoi 8 ms chi cho toi da ~125 khung/giay
@@ -1403,6 +1405,8 @@ BOOL KMyApp::GameLoop()
 	// alpha noi suy. Xem chu thich tai cho tinh nAlpha ben duoi.
 	static DWORD	s_dwLastTickAt = 0;
 	static DWORD	s_dwTickSpan = 0;
+	static double	s_dSpanAvg = 0.0;	// [NHIP 08/09 c] trung binh truot khoang tick (ms)
+	static DWORD	s_LogKep = 0;		// [NHIP 08/09 c] so khung bi kep tran alpha trong ky
 	static DWORD	s_dwLastPaintAt = 0, s_LogGapMin = 0, s_LogGapMax = 0, s_LogGapSum = 0, s_LogGapCnt = 0, s_LogSpanMin = 0, s_LogSpanMax = 0;	// [NHIP 08/09] PaintLog: khoang cach khung ve + span tick
 	int	nLogCross = 0;
 	DWORD	nLogCntBefore = m_GameCounter;
@@ -1431,6 +1435,9 @@ BOOL KMyApp::GameLoop()
 		// Probe tach khoi logic: [SPIKE] do duoc nhung cu logic=59-108ms trong mot vong
 		// lap, trong khi ticksum (ben trong Breathe) chi 1-27ms MOI GIAY => cu do nam o
 		// phan khac. Tach ra de biet la Breathe hay UiHeartBeat hay phan sau do.
+		// [NHIP 08/09 c] Moc tick phai lay TRUOC Breathe/UiHeartBeat: lay sau thi moc xe dich theo
+		// thoi gian chay logic (0-25 ms) va lam khoang tick do duoc nhay len xuong.
+		const DWORD	nTickAt = (DWORD)m_Timer.GetElapse();
 		DWORD	dwLgT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
 		BOOL	bLgBre = g_pCoreShell->Breathe();
 		DWORD	dwLgT1 = g_nPaintLog > 0 ? timeGetTime() : 0;
@@ -1500,12 +1507,20 @@ BOOL KMyApp::GameLoop()
 			int	nElapse = m_Timer.GetElapse();
 			// Chup moc tick THAT + khoang giua hai tick that, de lop noi suy neo dung
 			// vao no thay vi neo vao moc ly tuong (m_GameCounter-1)*55,56ms.
-			if (s_dwLastTickAt && (DWORD)nElapse > s_dwLastTickAt)
+			if (s_dwLastTickAt && nTickAt > s_dwLastTickAt)
 			{
-				s_dwTickSpan = (DWORD)nElapse - s_dwLastTickAt;
+				s_dwTickSpan = nTickAt - s_dwLastTickAt;	// [NHIP 08/09 c] theo moc truoc Breathe
+				if (s_dwTickSpan >= 30 && s_dwTickSpan <= 120)
+				{	// [NHIP 08/09 c] trung binh truot: mot khoang le (giat, nap map) khong duoc lam sai so chia ca chu ky sau
+					if (s_dSpanAvg <= 0.0)
+						s_dSpanAvg = 1000.0 / (double)GAME_FPS;
+					s_dSpanAvg += ((double)s_dwTickSpan - s_dSpanAvg) * 0.125;
+					if (s_dSpanAvg < 40.0) s_dSpanAvg = 40.0;
+					if (s_dSpanAvg > 90.0) s_dSpanAvg = 90.0;
+				}
 				if (g_nPaintLog > 0) { if (!s_LogSpanMin || s_dwTickSpan < s_LogSpanMin) s_LogSpanMin = s_dwTickSpan; if (s_dwTickSpan > s_LogSpanMax) s_LogSpanMax = s_dwTickSpan; }	// [NHIP 08/09]
 			}
-			s_dwLastTickAt = (DWORD)nElapse;
+			s_dwLastTickAt = nTickAt;	// [NHIP 08/09 c]
 			if (nElapse)
 				nGameFps = m_GameCounter * 1000 / nElapse;
 			g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DRAWVISION, g_DrawVision);
@@ -1567,12 +1582,23 @@ BOOL KMyApp::GameLoop()
 				// chia cho khoang tick THAT do duoc => alpha trai deu 0..1000 dung mot lan
 				// giua hai tick, khong con doan ket tran.
 				int	nAlpha;
-				if (s_dwTickSpan >= 20 && s_dwTickSpan <= 200 && nPaintElapse >= s_dwLastTickAt)
+				// [NHIP 08/09 c] So chia = TRUNG BINH TRUOT chu khong phai khoang tick lien truoc: khoang do duoc
+				// leo theo do dai vong bom (53..58 ms canh nhe, 45..69 canh nang, 474 khi nap map). Chia cho mot
+				// khoang le -> alpha chua toi 1000 da sang tick moi (nhay mot doan = "toc bien") hoac toi som
+				// roi dong bang. Nhan 0,97 de toi 1000 hoi som: dong bang 2-4 ms de chiu hon mot cu nhay.
+				if (g_nPaintSmooth > 0 && s_dSpanAvg > 0.0 && nPaintElapse >= s_dwLastTickAt)
+					nAlpha = (int)((double)(nPaintElapse - s_dwLastTickAt) * 1000.0 / (s_dSpanAvg * 0.97));
+				else if (s_dwTickSpan >= 20 && s_dwTickSpan <= 200 && nPaintElapse >= s_dwLastTickAt)
 					nAlpha = (int)((nPaintElapse - s_dwLastTickAt) * 1000 / s_dwTickSpan);
 				else
 					nAlpha = (int)(nPaintElapse * (DWORD)GAME_FPS - (m_GameCounter - 1) * 1000);
 				if (nAlpha < 0)
 					nAlpha = 0;
+				if (nAlpha > 1000)
+				{
+					nAlpha = 1000;
+					if (g_nPaintLog > 0) s_LogKep++;	// [NHIP 08/09 c] khung dong bang cuoi chu ky
+				}
 				// Do rieng POSSHIFT: truoc day chi phi nay bi tinh vao "paint=" cua
 				// [SPIKE] du no chay TRUOC UiPaint (muc 12.5 DIEUTRA_KHUNG_DONG_NGUOI).
 				DWORD	nLogShiftT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
@@ -1637,10 +1663,11 @@ BOOL KMyApp::GameLoop()
 			FILE* pLog = fopen("jx_paint.log", "a");
 			if (pLog)
 			{
-				fprintf(pLog, "[SUM] t=%u passes=%u avg=%u max=%u spikes=%u cross=%u | ve: %u khung, cach %u/%u/%u ms (min/TB/max) | span tick %u..%u ms | ve %u/%u ms tick %u/%u ms (TB/max) | PaintFps=%d vsync=%d\n",
+				fprintf(pLog, "[SUM] t=%u passes=%u avg=%u max=%u spikes=%u cross=%u | ve: %u khung, cach %u/%u/%u ms (min/TB/max) | span tick %u..%u ms | ve %u/%u ms tick %u/%u ms (TB/max) | kep %u | PaintFps=%d smooth=%d vsync=%d\n",
 					nLogT0, s_LogCnt, s_LogCnt ? s_LogSum / s_LogCnt : 0, s_LogMax, s_LogSpk, s_LogCross,
 					s_LogGapCnt, s_LogGapMin, s_LogGapCnt ? s_LogGapSum / s_LogGapCnt : 0, s_LogGapMax, s_LogSpanMin, s_LogSpanMax,
-					s_LogPaintCnt ? s_LogPaintSum / s_LogPaintCnt : 0, s_LogPaintMax, s_LogTickCnt ? s_LogTickSum / s_LogTickCnt : 0, s_LogTickMax, g_nPaintFps, g_nPaintVsync);	// [NHIP 08/09 a/b]
+					s_LogPaintCnt ? s_LogPaintSum / s_LogPaintCnt : 0, s_LogPaintMax, s_LogTickCnt ? s_LogTickSum / s_LogTickCnt : 0, s_LogTickMax, s_LogKep, g_nPaintFps, g_nPaintSmooth, g_nPaintVsync);	// [NHIP 08/09 a/b/c]
+				s_LogKep = 0;
 				s_LogPaintSum = s_LogPaintMax = s_LogPaintCnt = s_LogTickSum = s_LogTickMax = s_LogTickCnt = 0;
 				s_LogGapMin = s_LogGapMax = s_LogGapSum = s_LogGapCnt = s_LogSpanMin = s_LogSpanMax = 0;
 				fclose(pLog);
