@@ -157,6 +157,7 @@ static unsigned int	s_uKNBaoLuc = 0;
 static int			s_nKNLuanMs = 500;			// [Cham] LuanChuyenMs - ban tham khao KuiAutoPlay.cpp:92 MAX_SKILLAURA_COUNT 15 nhip ~0,5 s
 static unsigned int	s_uKNLuanLuc = 0;
 static int			s_nKNLuanK = 0;
+static int			s_nKNLuanLog = 0;	// [ANDROID 11/09 LUAN d] so lan da luan chuyen (de han che nhat ky)
 static unsigned int	s_uKNAuraId[KYNANG_SO_PHU + 1];	// bo dem: ma ky nang cua o -> co phai vong sang
 static int			s_nKNAuraLa[KYNANG_SO_PHU + 1];
 static char			s_szKNAnhXoay[128] = "\\spr\\Ui3\\UiSkillControl\\vong_xoay.spr";	// 16 khung, lam_vong_xoay.py
@@ -1166,6 +1167,7 @@ static void KyNang_DanhMotPhat()
 		// KPlayer::SetRightSkill (KPlayer.cpp:4444) tu goi SetAuraSkill cho ky nang aura.
 		// (Ban truoc dat nham vao o danh TRAI nen khong bat gi ca.)
 		g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&o, 1);
+		s_KNPhai = o;	// [ANDROID 11/09 LUAN d] vong xoay chuyen ngay sang o vua cham
 		return;
 	}
 
@@ -1260,11 +1262,21 @@ static int KyNang_OLaAura(int i, KUiGameObject* pRa)
 		return 0;
 	if (s_uKNAuraId[i] != pRa->uId)
 	{
-		int nAura = 0;
+		// [ANDROID 11/09 LUAN d] Hoi THANG Core va CHI ghi bo dem khi Core TRA LOI DUOC (GetGameData tra 1).
+		// Truoc: KyNang_HoiCore tra ve (nAura = 0) ca khi Core chua tra loi duoc (chua vao game: Player.m_nIndex = 0
+		// -> Core break, nRet 0) -> 0 bi ghi vao bo dem theo MA KY NANG cho ca phien -> o vong sang bi coi la
+		// "khong phai vong sang" -> khong luan chuyen, khong vong xoay. JxKyNang_Nhip chay tu vong lap KSdlApp::Run
+		// ngay tu man hinh dang nhap (KyNangMobile.ini da co) nen bo dem luon bi doc sai truoc khi vao game.
+		KJxKyNangHoi oHoi;
 
-		KyNang_HoiCore((int)pRa->uId, NULL, &nAura, NULL, NULL, NULL, 1);
+		if (g_pCoreShell == NULL)
+			return 0;
+		memset(&oHoi, 0, sizeof(oHoi));
+		oHoi.nSkillId = (int)pRa->uId;
+		if (!g_pCoreShell->GetGameData(GDI_KYNANG_MOBILE, (KUPARAM)&oHoi, 1))
+			return 0;		// chua tra loi duoc: KHONG ghi bo dem, lan sau hoi lai
 		s_uKNAuraId[i] = pRa->uId;
-		s_nKNAuraLa[i] = nAura;
+		s_nKNAuraLa[i] = oHoi.nLaAura;
 	}
 	return s_nKNAuraLa[i];
 }
@@ -1282,6 +1294,16 @@ static void KyNang_LuanChuyen()
 
 	if (g_pCoreShell == NULL)
 		return;
+	// [ANDROID 11/09 LUAN d] moi s_nKNLuanMs chi lam MOT lan (truoc: quet 8 o + hoi Core moi vong lap ~1 ms)
+	uNay = (unsigned int)GetTickCount();
+	if (s_uKNLuanLuc && uNay - s_uKNLuanLuc < (unsigned int)s_nKNLuanMs)
+		return;
+	s_uKNLuanLuc = uNay;
+	memset(&oTay, 0, sizeof(oTay));
+	g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (KNPARAM)&oTay, 0);
+	if (oTay.IMmediaSkill[0].uId == 0)
+		return;		// [ANDROID 11/09 LUAN d] chua vao game (chua co ky nang danh trai): khong hoi, khong doi gi
+	s_KNPhai = oTay.IMmediaSkill[1];	// [ANDROID 11/09 LUAN d] vong xoay bam dung o dang bat, khong doi KyNang_DocBang (2 s)
 	for (i = 1; i <= KYNANG_SO_PHU; i++)
 	{
 		KUiGameObject o;
@@ -1291,18 +1313,15 @@ static void KyNang_LuanChuyen()
 	}
 	if (n == 0)
 		return;
-	uNay = (unsigned int)GetTickCount();
-	if (s_uKNLuanLuc && uNay - s_uKNLuanLuc < (unsigned int)s_nKNLuanMs)
-		return;
-	s_uKNLuanLuc = uNay;
 	oMuon = aAura[s_nKNLuanK % n];
 	s_nKNLuanK++;
-	memset(&oTay, 0, sizeof(oTay));
-	g_pCoreShell->GetGameData(GDI_PLAYER_IMMED_ITEMSKILL, (KNPARAM)&oTay, 0);
 	if (n == 1 && oTay.IMmediaSkill[1].uId == oMuon.uId)
 		return;		// mot vong sang va dang bat dung no
 	g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&oMuon, 1);	// SetRightSkill -> SetAuraSkill
-	g_DebugLog("[KYNANG] luan chuyen vong sang -> %u (%d/%d)", oMuon.uId, (s_nKNLuanK - 1) % n + 1, n);
+	s_KNPhai = oMuon;	// [ANDROID 11/09 LUAN d] vong xoay chuyen NGAY sang o vua bat
+	if (s_nKNLuanLog < 20 || (s_nKNLuanLog % 200) == 0)	// [ANDROID 11/09 LUAN d] 20 dong dau, sau do moi 200 lan mot dong
+		g_DebugLog("[KYNANG] luan chuyen vong sang -> %u (%d/%d) lan %d", oMuon.uId, (s_nKNLuanK - 1) % n + 1, n, s_nKNLuanLog);
+	s_nKNLuanLog++;
 }
 
 void JxKyNang_Nhip()
@@ -1486,7 +1505,10 @@ static void KyNang_GoKhoiO(const KUiGameObject* p)
 		// go mot vong sang -> tat no: dat ky nang phai = ky nang danh chinh (SetRightSkill -> SetAuraSkill(0))
 		KyNang_HoiCore((int)p->uId, NULL, &nAura, NULL, NULL, NULL, 1);
 		if (nAura && s_KNChinh.uId && g_pCoreShell)
+		{
 			g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&s_KNChinh, 1);
+			s_KNPhai = s_KNChinh;	// [ANDROID 11/09 LUAN d]
+		}
 		KyNang_Bao("§· gì khái « phô");
 	}
 	else if (s_KNChinh.uId == p->uId)
