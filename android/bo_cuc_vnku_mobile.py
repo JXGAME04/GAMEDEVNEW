@@ -132,6 +132,7 @@ ANH_VNKU = {            # o -> (tep VNKU, chieu cao muc tieu, so khung)
     "Horse":    ("UiToolsControlBar/lenngua.spr", ICON_CAO, 2),
     "Run":      ("UiToolsControlBar/dichuyen.spr", ICON_CAO, 2),
     "PK":       ("UiToolsControlBar/pk.spr", 44, 3),
+    "HideIcons": ("UiToolsControlBar/an_icon.spr", 36, 2),   # mui ten thu gon (VNKU HidenButton); HideChat dung chung
 }
 TEN_SPR = {o: os.path.splitext(os.path.basename(t[0]))[0] + "_m" for o, t in ANH_VNKU.items()}
 K_KHUNG = 0.32          # khung chat: 1343x211 -> 430x68, giua day (anh mau ~41% be ngang)
@@ -158,9 +159,15 @@ def bo_cuc(co_icon):
         ra["Item_%d" % i] = (932 + 40 * (i % 2), 205 + 40 * (i // 2))
     # 2c. ghi hinh: goc trai duoi, it dung (chu dang an no)
     ra["Rec"] = (8, SH - 38)
-    # 2d. BO (chu: "bo luon 4 cai tren hinh"): ky nang T/P, tui mo rong, an chat - va o vat pham 5..9 -> day ra ngoai man
-    for o in ["ImediaLeftSkill", "ImediaRightSkill", "ItemEx", "HideChat"] + ["Item_%d" % i for i in range(4, 9)]:
+    # 2d. BO (chu: "bo luon 4 cai tren hinh"): ky nang T/P, tui mo rong - va o vat pham 5..9 -> day ra ngoai man
+    for o in ["ImediaLeftSkill", "ImediaRightSkill", "ItemEx"] + ["Item_%d" % i for i in range(4, 9)]:
         ra[o] = (-300, 0)
+    # 2e. hai nut mui ten (chu: "nut an cac icon phia tren va nut an kenh chat nhu vnku"):
+    #     HideIcons o DAU hang (ben trai Nhan vat) - cuoi hang la cho chu dat icon Chien lenh (811,57);
+    #     HideChat o mep phai khung chat trai (chu dat (2,119))
+    w, h = co_icon.get("HideIcons", (24, 36))
+    ra["HideIcons"] = (344, 72 - h // 2)
+    ra["HideChat"] = (364, 122)
     # 3. khung chat giua day
     w, h = int(round(GOC_W * K_KHUNG)), int(round(GOC_H * K_KHUNG))
     L, T = (SW - w) // 2, SH - h
@@ -210,6 +217,13 @@ def dat_khoa(s, muc, khoa, gia_tri):
     if n == 0:
         raise SystemExit("khong co muc [%s]" % muc)
     return "".join(ra)
+
+
+def them_muc(s, muc, cac_khoa):
+    """Them mot muc moi (khong co trong ini goc) vao cuoi tep."""
+    assert re.search(r"^\[" + re.escape(muc) + r"\]", s, re.M) is None, "muc [%s] da co" % muc
+    than = "\r\n".join("%s=%s" % (k, v) for k, v in cac_khoa)
+    return s.rstrip("\r\n") + "\r\n\r\n[%s]\r\n%s\r\n" % (muc, than)
 
 
 def dat_vitri(s, muc, o, co=None):
@@ -265,10 +279,36 @@ def main(mock=False):
     for o in ["Status", "Items", "Skills", "Faction", "Team", "Friend", "Options"]:
         s = dat_anh_vnku(s, o, ANH_VNKU[o][2])
         s = dat_vitri(s, o, bc[o], co_icon[o])
-    for o in ["AutoPlay", "ItemEx", "HideChat", "ChannelBtn", "Face", "SendBtn", "ImediaLeftSkill", "ImediaRightSkill",
+    for o in ["AutoPlay", "ItemEx", "ChannelBtn", "Face", "SendBtn", "ImediaLeftSkill", "ImediaRightSkill",
               "InputEdit"] + ["Item_%d" % i for i in range(9)]:
         s = dat_vitri(s, o, bc[o])
+    # nut an chat: anh mui ten VNKU, giu Up=1 (frame "<" = dang hien) nhu ma cu (SetFrame 0/1)
+    s = dat_khoa(s, "HideChat", "Image", r"\Spr\UiNew\UiToolsControlBar\%s.spr" % TEN_SPR["HideIcons"])
+    for k, v in [("Up", 1), ("Down", 0), ("Over", 1), ("OverFrame", 1)]:
+        s = dat_khoa(s, "HideChat", k, v)
+    s = dat_vitri(s, "HideChat", bc["HideChat"], co_icon["HideIcons"])
+    # nut an hang icon tron: muc MOI [HideIcons] (KUiPlayerBar doc o va_nguon_android_61)
+    x, y = bc["HideIcons"]
+    s = them_muc(s, "HideIcons", [
+        ("Left", x - DX), ("Top", y - DY), ("Width", co_icon["HideIcons"][0]), ("Height", co_icon["HideIcons"][1]),
+        ("Image", r"\Spr\UiNew\UiToolsControlBar\%s.spr" % TEN_SPR["HideIcons"]),
+        ("Trans", 0), ("Up", 1), ("Down", 0), ("Over", 1), ("OverFrame", 1), ("Tip", ""),
+    ])
     ghi_moi_noi(os.path.join("ui", "ui3", "uiplayerbar.ini"), s.encode("latin-1"))
+    # ---- uimsgcentrepad_*.ini: bo NEN cac tab kenh chat (chu: "bo nen cac tab chuc nang kenh chat")
+    for ten in ["uimsgcentrepad_left.ini", "uimsgcentrepad_left1.ini", "uimsgcentrepad_right.ini"]:
+        p = os.path.join(NGUON_PC, ten)
+        if not os.path.isfile(p):
+            continue
+        s = io.open(p, encoding="latin-1", newline="").read()
+        n = 0
+        for i in range(6):
+            if re.search(r"^\[TabButton_%d\]" % i, s, re.M):
+                s = dat_khoa(s, "TabButton_%d" % i, "Image", "")
+                n += 1
+        if n:
+            s = "; [ANDROID 10/09] Tab kenh chat KHONG nen (Image rong) - chu: bo nen cac tab (bo_cuc_vnku_mobile.py)\r\n" + s
+            ghi_moi_noi(os.path.join("ui", "ui3", ten), s.encode("latin-1"))
     # ---- uitoolscontrolbar.ini
     s = io.open(os.path.join(NGUON_PC, "uitoolscontrolbar.ini"), encoding="latin-1", newline="").read()
     s = s.replace("; Ui Designed Muaroilangtham\r\n", "; Ui Designed Muaroilangtham\r\n; [ANDROID 10/09] HUD theo bo cuc VNKU: "
@@ -300,6 +340,7 @@ def dung_thu(bc, anh_icon):
 
     for o, im in anh_icon.items():
         mh.alpha_composite(im, bc[o])
+    mh.alpha_composite(anh_icon["HideIcons"], bc["HideChat"])
     CU = {"AutoPlay": (738, 559), "Rec": (692, 508)}
     for o, (l, t) in CU.items():
         mh.alpha_composite(cat(l, t, 28, 28), bc[o])

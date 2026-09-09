@@ -221,6 +221,11 @@ static bool TaoKhoa(const char* pszLop, KWndWindow* pWnd, char* pszRa, int nCo)
 		return false;
 	if (pWnd->GetMucIni()[0] == 0)
 		return false;
+	//	[UITOADO 10/09 H] O CON ma muc ini cung ten "Main" (ini con: mail_list.ini, auction_item_*.ini...)
+	//	thi khoa "<lop>|Main" TRUNG voi khoa cua cua so goc -> keo goc la RUOT bi doi theo (hop thu,
+	//	dau gia). Coi nhu chua dat ten -> ben goi dat ten thay the theo vi tri trong cay.
+	if (pWnd->GetOwner() != pWnd && strcmp(pWnd->GetMucIni(), "Main") == 0)
+		return false;
 
 	_snprintf(pszRa, nCo, "%s|%s", pszLop, pWnd->GetMucIni());
 	pszRa[nCo - 1] = 0;
@@ -495,7 +500,8 @@ static void ApChoCay(const char* pszLop, KWndWindow* pWnd)
 
 	while (pWnd)
 	{
-		if (TaoKhoa(pszLop, pWnd, szKhoa, sizeof(szKhoa)))
+		//	[UITOADO 10/09 H] dung ca ten thay the (#cha.con) - truoc day o khong ten ghi duoc ma khong ap lai
+		if (TaoKhoaTuOCon(pWnd, szKhoa, sizeof(szKhoa)))
 			ApMotO(pWnd, TimKhoa(szKhoa));
 		ApChoCay(pszLop, pWnd->GetFirstChild());
 		pWnd = pWnd->GetNextWnd();

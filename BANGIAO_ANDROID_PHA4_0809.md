@@ -785,6 +785,20 @@ chỉ-Android → chạy lại là mất: ảnh VNKU cho nút kỹ năng (`spr/u
 **Luật:** thêm/sửa tệp chỉ-Android → sửa ở lớp ghi đè rồi chép sang thư mục dữ liệu (hoặc ngược lại,
 nhưng phải có cả hai).
 
+### 12.12. (10/09 trưa) Bốn yêu cầu nối tiếp của chủ — **đã làm, chưa xem trong game**
+
+| Chủ nói | Nguyên nhân / cách làm | Bản vá |
+|---|---|---|
+| *"sửa lại vị trí đấu giá – mail về mặc định, mở box lên bị lỗi vị trí không điều chỉnh được"* | Ảnh chụp: khung hộp thư mở đúng chỗ chủ kéo (146,43) nhưng **ruột** (danh sách thư, trang đấu giá) bị dời thêm đúng (146,43)/(154,59) nữa. Khoá bảng toạ độ là `<lớp>\|<mục ini>`; cửa sổ gốc đọc `[Main]` của `mail_manager.ini`, còn **con bên trong đọc `[Main]` của `mail_list.ini`** → cùng khoá `KUiMailManager\|Main` → con bị `SetPosition` theo. Sửa: ô con mà mục ini tên `Main` thì dùng tên thay thế `#cha.con`; và `ApChoCay` cũng dùng tên thay thế (trước đây ô không tên ghi được mà **không áp lại lúc mở game** — lỗi ngầm). Cả PC lẫn Android. Đã bỏ hai dòng đó khỏi tệp mặc định (hộp mở ở chỗ ini gốc). | `va_nguon_android_60.py` |
+| *"làm thêm nút ẩn các icon phía trên và nút ẩn kênh chat như VNKU"* | Nút mũi tên `an_icon.spr` của VNKU (thu 24×36, 2 khung `>` / `<`). **`[HideIcons]`** (mục mới, `KUiPlayerBar::AnHienIconTron`) ở **đầu hàng icon tròn** (344,54) — cuối hàng là chỗ chủ đặt Chiến lệnh: bấm → ẩn/hiện 7 icon tròn + nút Ngồi (nằm ở `KUiToolsControlBar`, tìm theo mục ini `Sit`). **`[HideChat]`** có sẵn trong mã (bật/tắt khung chat trái), chỉ đổi sang ảnh mũi tên, đặt (364,122) mép phải khung chat. Ini PC không có `[HideIcons]` → nút 0×0, không ảnh hưởng. | `va_nguon_android_61.py` (+`61b`: biến tĩnh phải khai báo trước `WndProc`) |
+| *"bỏ nền các tab chức năng kênh chat"* | Nền tối sau `Tất cả / Mật / …` chính là ảnh của từng tab (`TabButton_i Image=…通用弹出字标签.spr`, 62×20, 2 khung). Đặt `Image=` rỗng trong `uimsgcentrepad_left*.ini` (chỉ dữ liệu Android) → còn chữ. | `bo_cuc_vnku_mobile.py` |
+| *"làm kênh chat có thể vuốt lên xuống xem tin tức"* | Vuốt dọc đã thành `CHAM_CUON` → `WM_MOUSEWHEEL`, nhưng **WM_MOUSEWHEEL không mang toạ độ**: `Wnd_ProcessInput` lấy vị trí **con trỏ**, mà con trỏ còn nằm ở lần chạm trước (chỗ khác) → lăn rơi vào cửa sổ khác. Thoại NPC cuộn được chỉ vì chạm trước đó là chạm mở thoại. Sửa: vào `CHAM_CUON` thì gửi `WM_MOUSEMOVE` về chỗ đặt ngón trước, thêm nhật ký `[CHAM] cuon tai x,y`. **Lưu ý:** trong chế độ sửa giao diện vuốt dọc luôn là KÉO (cố ý) — thử cuộn phải tắt chế độ sửa. | `va_nguon_android_62.py` |
+
+Thêm: T/P (`ImediaLeftSkill/RightSkill`) chủ thấy "sai chỗ" trong ảnh — chúng mang cờ **ẩn** trong bố cục của chủ nên
+chỉ hiện ở **chế độ sửa**; tệp mặc định đã bỏ hai dòng đó → bấm "Xoá hết" là mất hẳn. Ba biểu tượng trên khung chat
+(kênh / biểu cảm / gửi) đo lại đúng ô vuông (lệch ≤ 2 px), chủ đã tự kéo `ChannelBtn` 3 px.
+APK: `android\apk\jx1mobile-1009-anicon.apk` (vá 56–62). PC x64 + SDL dựng sạch.
+
 ### 12.6. Còn lại thật sự
 
 

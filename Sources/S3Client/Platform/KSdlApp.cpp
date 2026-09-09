@@ -771,6 +771,11 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			{
 				m_nCham = CHAM_CUON;
 				m_nCuonDon = 0;
+				// [ANDROID 10/09 CUON] WM_MOUSEWHEEL khong mang toa do - Wnd_ProcessInput lay cho CON TRO,
+				// ma con tro con o cham truoc (cho khac) -> lan chuot roi vao cua so khac, khung chat
+				// khong cuon. Dua con tro ve cho dat ngon truoc.
+				MsgProc(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(m_nChamX0, m_nChamY0));
+				g_DebugLog("[CHAM] cuon tai %d,%d", m_nChamX0, m_nChamY0);
 				return true;
 			}
 			m_nCham = CHAM_KEO;		// da xe dich -> giu chuot trai tu CHO DAT NGON roi keo

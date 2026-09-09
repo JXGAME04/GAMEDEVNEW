@@ -9,6 +9,8 @@
 #include "../Elem/WndMessage.h"
 #include <crtdbg.h>
 #include "UiPlayerBar.h"
+#include "UiToolsControlBar.h"	// [ANDROID 10/09 ANICON] tim nut Ngoi
+static int s_bIconTronAn = 0;	// [ANDROID 10/09 ANICON] hang icon tron dang an (1) hay hien (0)
 #include "UiPartnerBar.h"	// [BDH-G4]
 #include "UiPet.h"	// [PETSYS]
 #include "UiPartnerAttr.h"
@@ -548,6 +550,7 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 	m_Fb.Init(pIni, "Facebook");
 	m_TraceBtn.Init(pIni, "TraceBtn");	// [TaskGuide] vi tri [Zalo] cu, anh opentracebtn
 	m_HideChat.Init(pIni, "HideChat");
+	m_AnIcon.Init(pIni, "HideIcons");	// [ANDROID 10/09 ANICON]
 	m_SpringGame.Init(pIni, "SpringGame");
 	m_PartnerIcon.Init(pIni, "PartnerIcon");	// [BDH-G4]
 
@@ -715,6 +718,7 @@ void KUiPlayerBar::Initialize()
 	//AddChild(&m_Fb);
 	AddChild(&m_TraceBtn);
 	AddChild(&m_HideChat);
+	AddChild(&m_AnIcon);	// [ANDROID 10/09 ANICON]
 	AddChild(&m_HideGraphic);
 	AddChild(&m_SpringGame);
 	AddChild(&m_PartnerIcon);	// [BDH-G4]
@@ -843,6 +847,11 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			// [TaskGuide] bat/tat khung theo doi nhiem vu
 			KUiTaskTrace::SetTraced(!KUiTaskTrace::IsTraced());
 			KUiTaskGuide::RefreshButtons();
+		}
+		else if ((KWndWindow*)uParam == (KWndWindow*)&m_AnIcon)
+		{
+			// [ANDROID 10/09 ANICON] bam mui ten: an / hien hang icon tron (VNKU: HidenButton)
+			AnHienIconTron(!s_bIconTronAn);
 		}
 		else if ((KWndWindow*)uParam == (KWndWindow*)&m_HideChat)
 		{
@@ -1022,6 +1031,32 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	return nRet;
 }
 
+void KUiPlayerBar::AnHienIconTron(int bAn)
+{
+	KWndWindow*	aO[] = { &m_Status, &m_Items, &m_Skills, &m_Faction, &m_Team, &m_Friend, &m_Options };
+	int			i;
+
+	s_bIconTronAn = bAn ? 1 : 0;
+	for (i = 0; i < (int)(sizeof(aO) / sizeof(aO[0])); i++)
+	{
+		if (bAn)	aO[i]->Hide();
+		else		aO[i]->Show();
+	}
+	//	nut Ngoi nam o thanh cong cu (KUiToolsControlBar), khong co ten bien -> tim theo muc ini
+	KUiToolsControlBar* pCC = KUiToolsControlBar::GetSelf();
+	if (pCC)
+	{
+		for (KWndWindow* p = pCC->GetFirstChild(); p; p = p->GetNextWnd())
+		{
+			if (strcmp(p->GetMucIni(), "Sit") == 0)
+			{
+				if (bAn)	p->Hide();
+				else		p->Show();
+			}
+		}
+	}
+	m_AnIcon.SetFrame(bAn ? 0 : 1);	// 0 = ">" (dang an, bam de mo), 1 = "<" (dang hien)
+}
 void KUiPlayerBar::PaintWindow()
 {
 	KWndImage::PaintWindow();

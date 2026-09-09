@@ -178,6 +178,8 @@ private:
 	KWndButton		m_Fb;
 	KWndButton		m_TraceBtn;	// [TaskGuide] nut bat/tat khung theo doi (cho Zalo cu)
 	KWndButton		m_HideChat;
+	void			AnHienIconTron(int bAn);	// [ANDROID 10/09 ANICON]
+	KWndButton		m_AnIcon;	// [ANDROID 10/09 ANICON] nut mui ten an/hien hang icon tron (ini [HideIcons])
 	KWndButton		m_HideGraphic;
 	KWndButton		m_SpringGame;
 	KWndButton		m_PartnerIcon;	// [BDH-G4] icon dong hanh (tren icon bau cua)
