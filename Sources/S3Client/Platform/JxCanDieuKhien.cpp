@@ -24,6 +24,7 @@
 #include "../../Core/src/CoreObjGenreDef.h"	// [ANDROID 09/09 KYNANG] CGOG_NOTHING
 #include "KDebug.h"
 #include <math.h>
+#include <stdint.h>	// [UITOADO 10/09 F] intptr_t
 
 extern iCoreShell*			g_pCoreShell;
 extern iRepresentShell*		g_pRepresentShell;
@@ -91,6 +92,10 @@ static int			s_nKNGian = 100;	// phan tram (co nut da dung roi nen khong can gia
 // Che do sua giao dien keo cum di thi doi hai so nay, va luu vao UserData\UiToaDo.ini.
 static int			s_nKNX   = 0;
 static int			s_nKNY   = 0;
+// [UITOADO 10/09 F] Do doi RIENG cua tung nut (0 = nut chinh, 1..8 = o phu 0..7,
+// 9 = nut doi che do gan), cong them vao vi tri theo cung. Keo bang cong cu "Doi o".
+static int			s_nKNDoiX[KYNANG_SO_PHU + 2];
+static int			s_nKNDoiY[KYNANG_SO_PHU + 2];
 
 //	Bo anh THAT cua VNKU - chu da chi san (\spr\Ui3\UiSkillControl)
 //	[ANDROID 09/09 KYNANG H] CO THAT lay tu ban tham khao (KgameWorld.cpp:13821):
@@ -642,9 +647,9 @@ static void KyNang_TamNutGan(int* px, int* py)
 	int nR = KYNANG_GAN_CO / 2;
 
 	*px = SCREEN_WIDTH  - (nR + KYNANG_GAN_DX * s_nKNGian / 100)
-		+ s_nKNSangPhai + s_nKNX;
+		+ s_nKNSangPhai + s_nKNX + s_nKNDoiX[KYNANG_SO_PHU + 1];
 	*py = SCREEN_HEIGHT - (nR + KYNANG_GAN_DY * s_nKNGian / 100)
-		- s_nKNLenTren + s_nKNY;
+		- s_nKNLenTren + s_nKNY + s_nKNDoiY[KYNANG_SO_PHU + 1];
 	if (*px < nR + 2) *px = nR + 2;
 	if (*py > SCREEN_HEIGHT - nR - 2) *py = SCREEN_HEIGHT - nR - 2;
 }
@@ -669,8 +674,8 @@ static void KyNang_TamNut(int nNut, int* px, int* py)
 	// [ANDROID 09/09 KYNANG G] gian do lech ra cho vua bo anh (giu nguyen hinh cung)
 	nDX = nDX * s_nKNGian / 100;
 	nDY = nDY * s_nKNGian / 100;
-	*px = SCREEN_WIDTH  - (nR + nDX) + s_nKNSangPhai + s_nKNX;
-	*py = SCREEN_HEIGHT - (nR + nDY) - s_nKNLenTren + s_nKNY;
+	*px = SCREEN_WIDTH  - (nR + nDX) + s_nKNSangPhai + s_nKNX + s_nKNDoiX[nNut < 0 ? 0 : nNut];
+	*py = SCREEN_HEIGHT - (nR + nDY) - s_nKNLenTren + s_nKNY + s_nKNDoiY[nNut < 0 ? 0 : nNut];
 	// [ANDROID 09/09 KYNANG E] giu han trong khung ve: da do thay o ngoai cung bi cat
 	// mat mot nua khi doi cum sang phai. Cung la de man hinh co nao cung khong loi o.
 	if (*px > SCREEN_WIDTH  - nR - 2)	*px = SCREEN_WIDTH  - nR - 2;
@@ -731,27 +736,86 @@ static bool KyNang_CuaNut(int nNut, KUiGameObject* pRa)
 }
 
 //---------------------------------------------------------------------------
-//	[UITOADO 09/09 E] Cho cum nut ky nang DOI CHO duoc bang che do sua giao dien.
-//	Chu: "cac nut ky nang moi them khong co trong phan di chuyen toa do".
-//	Vi tri cum = s_nKNX / s_nKNY (goc trai tren cua ca cum, tinh theo do doi).
+//	[UITOADO 10/09 F] TUNG NUT ky nang doi cho RIENG duoc trong che do sua giao dien.
+//	Chu: "nut ky nang phai dieu chinh tung nut duoc".
+//	  - cong cu "Doi o"   : keo mot nut -> CHI nut do dich (do doi rieng s_nKNDoiX/Y[i]),
+//	                        luu khoa KyNang0 (nut chinh), KyNang1..8 (o phu 0..7), KyNangGan.
+//	  - cong cu "Doi khoi": keo bat ky nut nao -> CA CUM dich (s_nKNX/Y), luu khoa CumKyNang.
+//	Nut chua keo rieng bao gio thi van nam theo hinh cung cua ban tham khao.
 //---------------------------------------------------------------------------
-static bool KyNang_ORiengTrung(int x, int y)
+#define	KYNANG_ORIENG_GAN	(KYNANG_SO_PHU + 1)	// chi so cua nut doi che do trong bang do doi
+
+static void KyNang_TamORieng(int i, int* px, int* py, int* pR)
 {
-	return JxKyNang_TrungNut(x, y) > 0;
+	if (i == KYNANG_ORIENG_GAN)
+	{
+		KyNang_TamNutGan(px, py);
+		*pR = KYNANG_GAN_CO / 2;
+	}
+	else
+	{
+		KyNang_TamNut(i, px, py);
+		*pR = KyNang_CoNut(i) / 2;
+	}
 }
 
-static void KyNang_ORiengLay(int* px, int* py)
+static bool KyNang_ORiengTrungMot(void* pNgu, int x, int y)
+{
+	int i = (int)(intptr_t)pNgu;
+	int nX, nY, nR;
+
+	if (UiToaDo_CongCuKhoi())
+		return false;			// dang "Doi khoi" thi de muc CumKyNang bat
+	KyNang_TamORieng(i, &nX, &nY, &nR);
+	return (x - nX) * (x - nX) + (y - nY) * (y - nY) <= nR * nR;
+}
+
+static void KyNang_ORiengLayMot(void* pNgu, int* px, int* py)
+{
+	int nR;
+
+	KyNang_TamORieng((int)(intptr_t)pNgu, px, py, &nR);
+}
+
+static void KyNang_ORiengDatMot(void* pNgu, int x, int y)
+{
+	int i = (int)(intptr_t)pNgu;
+	int nX = 0, nY = 0, nR;
+
+	KyNang_TamORieng(i, &nX, &nY, &nR);
+	s_nKNDoiX[i] += (x - nX);
+	s_nKNDoiY[i] += (y - nY);
+}
+
+//	Ca cum - chi bat khi dang dung cong cu "Doi khoi".
+static bool KyNang_ORiengTrungCum(void* pNgu, int x, int y)
+{
+	int i;
+
+	if (!UiToaDo_CongCuKhoi())
+		return false;
+	for (i = 0; i <= KYNANG_ORIENG_GAN; i++)
+	{
+		int nX, nY, nR;
+
+		KyNang_TamORieng(i, &nX, &nY, &nR);
+		if ((x - nX) * (x - nX) + (y - nY) * (y - nY) <= nR * nR)
+			return true;
+	}
+	return false;
+}
+
+static void KyNang_ORiengLayCum(void* pNgu, int* px, int* py)
 {
 	KyNang_TamNut(0, px, py);	// lay tam nut danh chinh lam moc cua ca cum
 }
 
-static void KyNang_ORiengDat(int x, int y)
+static void KyNang_ORiengDatCum(void* pNgu, int x, int y)
 {
 	int nX = 0, nY = 0;
 
 	KyNang_TamNut(0, &nX, &nY);
-	// s_nKNX/Y la do DOI so voi cho neo goc phai duoi, nen cong them phan chenh.
-	// [ANDROID 10/09 GANTOADO] am duong deu duoc - keo sang trai / len tren la do doi am.
+	// s_nKNX/Y la do DOI cua ca cum so voi cho neo goc phai duoi; am duong deu duoc.
 	s_nKNX += (x - nX);
 	s_nKNY += (y - nY);
 }
@@ -759,14 +823,24 @@ static void KyNang_ORiengDat(int x, int y)
 static void KyNang_DangKySuaToaDo()
 {
 	static bool s_bDaDangKy = false;
+	static const char* s_szKhoa[KYNANG_SO_PHU + 2] =
+	{
+		"KyNang0", "KyNang1", "KyNang2", "KyNang3", "KyNang4",
+		"KyNang5", "KyNang6", "KyNang7", "KyNang8", "KyNangGan"
+	};
+	int i;
 
 	if (s_bDaDangKy)
 		return;
 	s_bDaDangKy = true;
-	UiToaDo_DangKyORieng("CumKyNang", KyNang_ORiengTrung,
-		KyNang_ORiengLay, KyNang_ORiengDat);
+	// Ca cum dang ky TRUOC: vi tri da luu cua cum ap truoc, roi moi den do doi rieng tung
+	// nut (do doi rieng tinh so voi cum) - thu tu nay phai giu.
+	UiToaDo_DangKyORieng("CumKyNang", KyNang_ORiengTrungCum,
+		KyNang_ORiengLayCum, KyNang_ORiengDatCum, NULL);
+	for (i = 0; i < KYNANG_SO_PHU + 2; i++)
+		UiToaDo_DangKyORieng(s_szKhoa[i], KyNang_ORiengTrungMot,
+			KyNang_ORiengLayMot, KyNang_ORiengDatMot, (void*)(intptr_t)i);
 }
-
 int JxKyNang_TrungNut(int x, int y)
 {
 	int i, nX, nY, nR;
@@ -1121,8 +1195,8 @@ void JxKyNang_Ve()
 	{
 		bool bCo = KyNang_CuaNut(i, &o);
 
-		if (!bCo && i > 0)
-			continue;		// o phu trong thi khong ve gi ca
+		if (!bCo && i > 0 && !UiToaDo_DangSua())
+			continue;		// o phu trong thi khong ve; tru luc dang sua (de con keo duoc)
 		KyNang_TamNut(i, &nX, &nY);
 		nR = KyNang_CoNut(i) / 2;
 

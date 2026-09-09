@@ -59,13 +59,18 @@ void	UiToaDo_Ve();
 //	giao dien khong nhin thay chung. Dang ky o day thi chung doi cho duoc y nhu moi
 //	o giao dien khac, va vi tri cung duoc luu vao UserData\UiToaDo.ini.
 //---------------------------------------------------------------------------
-typedef bool (*PFN_UITOADO_TRUNG)(int x, int y);			// (x,y) co trung o nay khong
-typedef void (*PFN_UITOADO_LAYVITRI)(int* px, int* py);	// vi tri hien tai
-typedef void (*PFN_UITOADO_DATVITRI)(int x, int y);		// dat vi tri moi
+typedef bool (*PFN_UITOADO_TRUNG)(void* pNgu, int x, int y);		// (x,y) co trung o nay khong
+typedef void (*PFN_UITOADO_LAYVITRI)(void* pNgu, int* px, int* py);	// vi tri hien tai
+typedef void (*PFN_UITOADO_DATVITRI)(void* pNgu, int x, int y);		// dat vi tri moi
 
 //	pszKhoa: ten rieng, dung lam khoa trong tep ini (vi du "CumKyNang").
+//	[UITOADO 10/09 F] pNgu = ngu canh tuy y, duoc dua nguyen ve ca ba ham (vi du: so thu
+//	tu cua nut, de mot bo ham dung chung cho nhieu nut).
 void	UiToaDo_DangKyORieng(const char* pszKhoa, PFN_UITOADO_TRUNG pfnTrung,
-			PFN_UITOADO_LAYVITRI pfnLay, PFN_UITOADO_DATVITRI pfnDat);
+			PFN_UITOADO_LAYVITRI pfnLay, PFN_UITOADO_DATVITRI pfnDat, void* pNgu);
+
+//	[UITOADO 10/09 F] Dang sua va cong cu dang chon la "Doi khoi" (keo = ca khoi).
+bool	UiToaDo_CongCuKhoi();
 
 //	Cua so sap bi xoa - bo moi con tro dang giu toi no (goi tu Wnd_OnWindowDelete).
 void	UiToaDo_QuenCuaSo(KWndWindow* pWnd);

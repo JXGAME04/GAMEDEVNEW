@@ -54,7 +54,7 @@ int  g_nRep3Atlas     = 1;	// [D3D11 08/09 d] gom texture nho vao trang atlas (c
 int  g_nRep3Flip      = 1;	// [D3D11 08/09 f] 1 = flip model (DWM ghep khung tron ven, khong xe hinh; mac dinh), 0 = bitblt cu
 unsigned g_uRep3VeCoSang = 0;	// [SANGDUNG 09/09] so lan that su ve qua nhanh CO chieu sang
 int  g_nRep3LocMs     = 8;	// [LOCTG 09/09] hang so thoi gian bo loc trinh khung (ms); 0 = tat
-extern unsigned g_uRep3LocKhung;
+unsigned g_uRep3LocKhung = 0;	// [LOCTG 09/09] so khung da tron. [ANDROID 10/09 LOCTG] dinh nghia o DAY (nhu g_nRep3LocMs ben tren) chu khong o D3D9on11Dev.cpp - tep do chi co tren Windows, Android link thieu ky hieu.
 int  g_nRep3Pal       = 1;	// [D3D11 08/09 r] texture sprite bang mau 2 B/px (chi D3D11)
 int  g_nRep3Waitable  = 0;	// [D3D11 08/09 o] 0 = khong dung doi tuong cho (ban n giat)
 int  g_nRep3Buffers   = 3;	// [D3D11 08/09 o] 2 nhu ban f

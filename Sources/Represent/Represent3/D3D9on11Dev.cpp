@@ -361,7 +361,7 @@ void CDev11::UpdateLastFrame()
 // [LOCTG 09/09] Bo loc thoi gian luc trinh khung: back = lerp(back, lich_su, a), a = exp(-dt/tau).
 // Xem dau tep Rep3LocTG11.hlsl. Pass rieng (shader rieng, khong vertex buffer); xong lam mat hieu luc
 // cache trang thai cua lop de lan ve sau gan lai het (ApplyComputed).
-unsigned g_uRep3LocKhung = 0;
+extern unsigned g_uRep3LocKhung;	// [ANDROID 10/09 LOCTG] dinh nghia da doi sang KRepresentShell3.cpp (bien dich o moi nen); tep nay chi co tren Windows
 void CDev11::LocRelease()
 {
 	R11_SAFE_RELEASE(m_pLocCurSrv); R11_SAFE_RELEASE(m_pLocCur);

@@ -17,6 +17,8 @@
 extern iRepresentShell*	g_pRepresentShell;
 
 #define	UITOADO_TEP			"\\UserData\\UiToaDo.ini"
+//	[UITOADO 10/09 G] bo cuc MAC DINH cua game (chu chot lai) - nap truoc tep nguoi choi
+#define	UITOADO_TEP_MACDINH	"\\Ui\\UiToaDo_MacDinh.ini"
 #define	UITOADO_CAUHINH		"\\config.ini"
 #define	UITOADO_MUC			"[Pos]"
 #define	UITOADO_MAX			2048
@@ -98,7 +100,8 @@ enum
 #define	NUT_BANG		100		// bat / tat bang danh sach cua so
 #define	NUT_LUU			101		// luu va thoat (= Ctrl+U)
 #define	NUT_XOAHET		102		// xoa het (= Ctrl+K)
-#define	UITOADO_SO_NUT	8
+#define	NUT_MACDINH		103		// [UITOADO 10/09 G] ghi bo cuc hien tai lam MAC DINH cua game
+#define	UITOADO_SO_NUT	9
 
 static const struct
 {
@@ -114,6 +117,7 @@ static const struct
 	{ "Danh s¸ch",	NUT_BANG },
 	{ "L­u",		NUT_LUU },
 	{ "Xo¸ hÕt",	NUT_XOAHET },
+	{ "MÆc ®Þnh",	NUT_MACDINH },
 };
 
 static int			s_nCongCu		= CONGCU_DOI;
@@ -127,7 +131,7 @@ extern int SCREEN_HEIGHT;
 //--------------------------------------------------------------------------
 //	[UITOADO 09/09 E] Bang O VE TAY (khong phai cua so KWnd) - xem UiToaDo.h
 //--------------------------------------------------------------------------
-#define	UITOADO_ORIENG_MAX	8
+#define	UITOADO_ORIENG_MAX	16	// [UITOADO 10/09 F] cum ky nang + 10 nut rieng
 
 struct KORieng
 {
@@ -135,6 +139,7 @@ struct KORieng
 	PFN_UITOADO_TRUNG		pfnTrung;
 	PFN_UITOADO_LAYVITRI	pfnLay;
 	PFN_UITOADO_DATVITRI	pfnDat;
+	void*					pNgu;	// [UITOADO 10/09 F] ngu canh dua ve ca ba ham
 };
 
 static KORieng		s_ORieng[UITOADO_ORIENG_MAX];
@@ -308,7 +313,7 @@ static bool CamAn(KWndWindow* pWnd)
 //	config.ini [Ui] SuaToaDo
 //--------------------------------------------------------------------------
 void UiToaDo_DangKyORieng(const char* pszKhoa, PFN_UITOADO_TRUNG pfnTrung,
-		PFN_UITOADO_LAYVITRI pfnLay, PFN_UITOADO_DATVITRI pfnDat)
+		PFN_UITOADO_LAYVITRI pfnLay, PFN_UITOADO_DATVITRI pfnDat, void* pNgu)
 {
 	int i;
 
@@ -328,12 +333,13 @@ void UiToaDo_DangKyORieng(const char* pszKhoa, PFN_UITOADO_TRUNG pfnTrung,
 	s_ORieng[i].pfnTrung = pfnTrung;
 	s_ORieng[i].pfnLay   = pfnLay;
 	s_ORieng[i].pfnDat   = pfnDat;
+	s_ORieng[i].pNgu     = pNgu;
 
 	//	Co vi tri da luu thi ap lai ngay
 	{
 		int n = TimKhoa(pszKhoa);
 		if (n >= 0)
-			pfnDat(s_Bang[n].nLeft, s_Bang[n].nTop);
+			pfnDat(pNgu, s_Bang[n].nLeft, s_Bang[n].nTop);
 	}
 }
 
@@ -355,15 +361,14 @@ bool UiToaDo_ChoPhep()
 //--------------------------------------------------------------------------
 //	Mot dong:  <khoa> = Left , Top [, TiLe [, Co]]
 //	Thieu TiLe -> 1000 (giu nguyen co).  Thieu Co -> 0.
-void UiToaDo_Nap()
+//	[UITOADO 10/09 G] Nap MOT tep vao bang - cong don, khoa trung thi tep nap sau de len.
+static void NapTep(const char* pszTep)
 {
 	char	szDuongDan[MAX_PATH];
 	char	szDong[320];
 	FILE*	pTep;
 
-	s_nSo   = 0;
-	s_bTran = 0;
-	g_GetFullPath(szDuongDan, (char*)UITOADO_TEP);
+	g_GetFullPath(szDuongDan, (char*)pszTep);
 	pTep = fopen(szDuongDan, "rt");
 	if (pTep == NULL)
 		return;
@@ -419,16 +424,26 @@ void UiToaDo_Nap()
 		DatKhoa(p, nGiaTri[0], nGiaTri[1], nGiaTri[2], nGiaTri[3]);
 	}
 	fclose(pTep);
-	g_DebugLog("[UITOADO] nap %d muc tu %s", s_nSo, szDuongDan);
+	g_DebugLog("[UITOADO] nap xong %s -> bang co %d muc", szDuongDan, s_nSo);
 }
 
-static int GhiTep()
+//	[UITOADO 10/09 G] Hai lop: mac dinh cua game truoc, nguoi choi tu dat de len sau.
+void UiToaDo_Nap()
+{
+	s_nSo   = 0;
+	s_bTran = 0;
+	NapTep(UITOADO_TEP_MACDINH);
+	NapTep(UITOADO_TEP);
+}
+
+//	[UITOADO 10/09 G] ghi bang hien tai vao mot tep (tep nguoi choi hoac tep mac dinh)
+static int GhiTepVao(const char* pszTep)
 {
 	char	szDuongDan[MAX_PATH];
 	FILE*	pTep;
 	int		i;
 
-	g_GetFullPath(szDuongDan, (char*)UITOADO_TEP);
+	g_GetFullPath(szDuongDan, (char*)pszTep);
 	pTep = fopen(szDuongDan, "wt");
 	if (pTep == NULL)
 	{
@@ -451,6 +466,11 @@ static int GhiTep()
 	fclose(pTep);
 	g_DebugLog("[UITOADO] ghi %d muc vao %s", s_nSo, szDuongDan);
 	return s_nSo;
+}
+
+static int GhiTep()
+{
+	return GhiTepVao(UITOADO_TEP);
 }
 
 //--------------------------------------------------------------------------
@@ -510,7 +530,7 @@ static void ApChoORieng()
 	{
 		int n = TimKhoa(s_ORieng[i].szKhoa);
 		if (n >= 0)
-			s_ORieng[i].pfnDat(s_Bang[n].nLeft, s_Bang[n].nTop);
+			s_ORieng[i].pfnDat(s_ORieng[i].pNgu, s_Bang[n].nLeft, s_Bang[n].nTop);
 	}
 }
 
@@ -584,6 +604,12 @@ void UiToaDo_QuenCuaSo(KWndWindow* pWnd)
 bool UiToaDo_DangSua()
 {
 	return s_bDangSua;
+}
+
+//	[UITOADO 10/09 F] dang sua VA cong cu dang chon la "Doi khoi"
+bool UiToaDo_CongCuKhoi()
+{
+	return s_bDangSua && s_nCongCu == CONGCU_KHOI;
 }
 
 static void DatThongBao(const char* pszChu)
@@ -677,7 +703,11 @@ void UiToaDo_XoaHet()
 	s_bTran = 0;
 	g_GetFullPath(szDuongDan, (char*)UITOADO_TEP);
 	remove(szDuongDan);
-	DatThongBao("§· xo¸ hÕt. Cì vµ « Èn vÒ nguyªn tr¹ng; to¹ ®é vÒ gèc sau khi më l¹i game");
+	// [UITOADO 10/09 G] xoa xong thi nap lai lop MAC DINH va ap ngay - "co xoa cung quay
+	// tro lai nhu nay" (chu). O nao khong co trong tep mac dinh thi giu cho hien tai.
+	UiToaDo_Nap();
+	UiToaDo_ApChoTatCa();
+	DatThongBao("§· xo¸ phÇn tù ®Æt, quay vÒ bè côc mÆc ®Þnh cña game");
 	g_DebugLog("[UITOADO] da xoa %s va hoi phuc trong phien", szDuongDan);
 }
 
@@ -934,6 +964,13 @@ static void BamNutThanh(int i)
 	case NUT_XOAHET:
 		UiToaDo_XoaHet();
 		break;
+	case NUT_MACDINH:
+		// [UITOADO 10/09 G] chot bo cuc dang co lam mac dinh cua game (cho moi may)
+		if (GhiTepVao(UITOADO_TEP_MACDINH) >= 0)
+			DatThongBao("§· l­u bè côc hiÖn t¹i lµm mÆc ®Þnh cña game");
+		else
+			DatThongBao("Lçi: kh«ng ghi ®­îc Ui\\UiToaDo_MacDinh.ini");
+		break;
 	}
 }
 
@@ -1058,7 +1095,7 @@ bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 				int k;
 				for (k = 0; k < s_nSoORieng; k++)
 				{
-					if (s_ORieng[k].pfnTrung(x, y))
+					if (s_ORieng[k].pfnTrung(s_ORieng[k].pNgu, x, y))
 					{
 						s_nKeoORieng = k;
 						s_nKeoX = x;
@@ -1093,8 +1130,9 @@ bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 		{
 			int nX = 0, nY = 0;
 
-			s_ORieng[s_nKeoORieng].pfnLay(&nX, &nY);
-			s_ORieng[s_nKeoORieng].pfnDat(nX + (x - s_nKeoX), nY + (y - s_nKeoY));
+			s_ORieng[s_nKeoORieng].pfnLay(s_ORieng[s_nKeoORieng].pNgu, &nX, &nY);
+			s_ORieng[s_nKeoORieng].pfnDat(s_ORieng[s_nKeoORieng].pNgu,
+				nX + (x - s_nKeoX), nY + (y - s_nKeoY));
 			s_nKeoX = x;
 			s_nKeoY = y;
 			break;
@@ -1119,7 +1157,7 @@ bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			int nX = 0, nY = 0;
 			char szB[192];
 
-			s_ORieng[s_nKeoORieng].pfnLay(&nX, &nY);
+			s_ORieng[s_nKeoORieng].pfnLay(s_ORieng[s_nKeoORieng].pNgu, &nX, &nY);
 			DatKhoa(s_ORieng[s_nKeoORieng].szKhoa, nX, nY, 1000, 0);
 			_snprintf(szB, sizeof(szB), "%s  =  %d,%d",
 				s_ORieng[s_nKeoORieng].szKhoa, nX, nY);
