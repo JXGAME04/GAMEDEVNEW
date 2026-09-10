@@ -124,16 +124,41 @@ def _mui_ten(a, w, h, sang):
     return a
 
 
+def _kho(rel):
+    return doc_spr(os.path.join(VNKU, *rel.split("/")))[2]
+
+
+def _nut_kho(khung, w, h, sang):
+    """nut lay NGUYEN anh kho VNKU (chu 11/09: "cac nut co san o kho vnku ban quen roi a"), chi thu ve w x h; sang=1 them vien vang mong"""
+    a = khung.resize((w, h), Image.LANCZOS)
+    if sang:
+        ImageDraw.Draw(a).rectangle((0, 0, w - 1, h - 1), outline=VANG)
+    return a
+
+
 def nut_do():
-    """[B2 b] Toan bo nut cua khung WAuto theo NEN DO (btn_1.spr): nut nhom 166x30, nut tab 84x22, nut hanh dong nut_do_W.spr
-    (W x 22, W trong NUT_RONG), hop chon hop_chon_W.spr (W x 24, mui ten vang, W trong CHON_RONG). Khung 0 = thuong, 1 = dang chon/bam."""
+    """[B2 c] Nut cua khung WAuto, TAT CA tu anh co san trong kho VNKU (chu 11/09: "cac nut co san o kho vnku ban quen roi a",
+    "tab chinh - phu phai mau xanh", "nen do lam mau do den"):
+      nut nhom 166x30 + nut tab 84x22  <- UiTong_Sheet0\\btn_noname.spr (nut tron xanh ngoc: khung 1 toi = thuong, khung 0 sang = dang chon)
+      nut hanh dong nut_do_W.spr (W x 22) <- UiTong_Sheet0\\btn_1.spr (do den, vien den) - khung 1 (dang bam) them vien vang
+      hop chon hop_chon_W.spr (W x 24)   <- btn_1.spr + o mui ten vang cat tu UiAutoNew\\nut_pop.spr (cot 414..476, khung 0)
+    Khung 0 = thuong, 1 = dang chon / bam."""
     goc = os.path.join("spr", "uinew", "uiautonew")
-    ghi(os.path.join(goc, "nut_nhom.spr"), [_nen_do(166, 30, 0, "xanh"), _nen_do(166, 30, 1, "xanh")])   # chu 11/09: tab chinh / phu mau xanh
-    ghi(os.path.join(goc, "nut_tab.spr"), [_nen_do(84, 22, 0, "xanh"), _nen_do(84, 22, 1, "xanh")])
+    kn = _kho("UiTong_Sheet0/btn_noname.spr")
+    toi, sang = kn[1], kn[0]
+    ghi(os.path.join(goc, "nut_nhom.spr"), [_nut_kho(toi, 166, 30, 0), _nut_kho(sang, 166, 30, 0)])
+    ghi(os.path.join(goc, "nut_tab.spr"), [_nut_kho(toi, 84, 22, 0), _nut_kho(sang, 84, 22, 0)])
+    b1 = _kho("UiTong_Sheet0/btn_1.spr")[0]
     for w in NUT_RONG:
-        ghi(os.path.join(goc, "nut_do_%d.spr" % w), [_nen_do(w, 22, 0), _nen_do(w, 22, 1)])
+        ghi(os.path.join(goc, "nut_do_%d.spr" % w), [_nut_kho(b1, w, 22, 0), _nut_kho(b1, w, 22, 1)])
+    pop = _kho("UiAutoNew/nut_pop.spr")[0].crop((414, 0, 476, 62))
     for w in CHON_RONG:
-        ghi(os.path.join(goc, "hop_chon_%d.spr" % w), [_mui_ten(_nen_do(w, 24, 0), w, 24, 0), _mui_ten(_nen_do(w, 24, 1), w, 24, 1)])
+        khung = []
+        for s in (0, 1):
+            a = _nut_kho(b1, w, 24, s)
+            a.alpha_composite(pop.resize((22, 22), Image.LANCZOS), (w - 23, 1))
+            khung.append(a)
+        ghi(os.path.join(goc, "hop_chon_%d.spr" % w), khung)
 
 
 def o_tick():

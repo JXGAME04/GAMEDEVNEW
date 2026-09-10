@@ -29,10 +29,12 @@ Hai chuỗi Windows dựng lại sau mỗi đợt (x64 4/4, SDL 6/6) **0 lỗi**
 "tab chính phụ phải có nút" → nút vẽ có khối (chuyển sắc, cạnh trên sáng, viền đen, chọn = viền vàng); (3) "mục nào đi kèm mục nào"
 → ưu tiên **không tách nhóm sang cột khác** (chỉ tách khi nhóm cao hơn cả cột), hàng con lùi thẳng ô thứ hai của hàng trên; (4) "có màu
 phân biệt các nhóm chức năng" → 6 bộ màu viền + nền tiêu đề, luân phiên theo nhóm (`Mau=` trong ini); (5) "các nút tab chính - phụ phải
-màu xanh, căn chỉnh chữ đúng ngay giữa" → `nut_nhom.spr` / `nut_tab.spr` tông xanh ngọc (cùng viền khung; `TONG["xanh"]` trong
-`anh_wauto_vnku.py`), hộp chọn / nút hành động giữ đỏ đen; chữ nút căn giữa dọc bằng `LabelYOffset` (nhóm 7, tab 4, hộp chọn 5, nút 4 —
-`KWndLabeledButton` vẽ chữ từ mép trên + offset, ngang đã tự căn theo `(Width − n·font/2)/2`). Hai việc (5) làm lúc 21:00 khi chủ đang
-Tống Kim nên **chưa có ảnh nghiệm thu** — soi lại ở đầu B3.
+màu xanh, căn chỉnh chữ đúng ngay giữa", rồi "các nút có sẵn ở kho VNKU bạn quên rồi à" → **bỏ nút vẽ tay, lấy nguyên ảnh kho**:
+`nut_nhom.spr` / `nut_tab.spr` = `UiTong_Sheet0\btn_noname.spr` (nút trơn xanh ngọc, khung tối = thường, khung sáng = đang chọn),
+`nut_do_W.spr` + `hop_chon_W.spr` = `UiTong_Sheet0\btn_1.spr` (đỏ đen viền đen) + ô mũi tên vàng cắt từ `UiAutoNew\nut_pop.spr`
+(cột 414..476), ô tick = `UiAutoNew\tick_chon.spr`; chữ nút căn giữa dọc bằng `LabelYOffset` (nhóm 7, tab 4, hộp chọn 5, nút 4 —
+`KWndLabeledButton` vẽ chữ từ mép trên + offset, ngang đã tự căn theo `(Width − n·font/2)/2`). Việc (5) làm lúc 21:00 khi chủ đang
+Tống Kim nên **chưa có ảnh nghiệm thu** — kịch bản `thu_b2d.sh` chụp lại sau 21:36; soi ở đầu B3.
 
 ---
 
