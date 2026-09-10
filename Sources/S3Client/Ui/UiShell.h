@@ -147,6 +147,19 @@ public:
 	const char*	GetShortKey();
 };
 
+#ifdef JX_ANDROID
+// [ANDROID 11/09 WAUTO B1] icon Auto tren thanh cong cu (uitoolscontrolbar.ini [WAuto] ClassType=Player_WAuto): mo / dong khung WAuto trong game;
+// CheckBox: sang khi may auto dang bat (JxWAuto_DangBat). fkauto (Player_AutoPlay) van de nguyen, khong dung.
+class Player_WAuto : public KWndButton
+{
+public:
+	DECLARE_COMCLASS(Player_WAuto)
+	void OnButtonClick();
+	void UpdateData();
+	const char*	GetShortKey();
+};
+#endif
+
 class Player_ItemEx : public KWndButton
 {
 public:

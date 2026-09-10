@@ -213,6 +213,9 @@ int	UiInit()
 	Player_PK::RegisterSelfClass();
 	Player_Faction::RegisterSelfClass();
 //	Player_AutoPlay::RegisterSelfClass();
+#ifdef JX_ANDROID
+	Player_WAuto::RegisterSelfClass();	// [ANDROID 11/09 WAUTO B1] icon Auto (khung WAuto trong game)
+#endif
 	Player_ItemEx::RegisterSelfClass();
 	Player_Recorder::RegisterSelfClass();
 	Player_Friend::RegisterSelfClass();
@@ -1044,6 +1047,27 @@ const char*	Player_AutoPlay::GetShortKey()
 {
 	return NULL;
 }
+
+#ifdef JX_ANDROID
+// [ANDROID 11/09 WAUTO B1] icon Auto tren thanh cong cu -> khung WAuto trong game (UiCase/UiWAuto.cpp)
+#include "UiCase/UiWAuto.h"
+#include "../Platform/JxWAutoNoiBo.h"
+IMPLEMENT_COMCLASS(Player_WAuto)
+void Player_WAuto::OnButtonClick()
+{
+	KUiWAuto::BatTatCuaSo();
+}
+
+void Player_WAuto::UpdateData()
+{
+	CheckButton(JxWAuto_DangBat() ? 1 : 0);
+}
+
+const char* Player_WAuto::GetShortKey()
+{
+	return NULL;
+}
+#endif
 
 IMPLEMENT_COMCLASS(Player_ItemEx)
 void Player_ItemEx::OnButtonClick()

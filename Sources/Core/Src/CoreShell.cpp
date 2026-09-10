@@ -24786,6 +24786,19 @@ extern "C" int JxCore_WAutoNhanVat(unsigned int* puId, int* pnLifeMax, int* pnMa
 		*pnManaMax = Npc[nIdx].m_CurrentManaMax;
 	return 1;
 }
+
+// [ANDROID 11/09 WAUTO B1] Dong "auto dang lam gi" (TCVN3, WA_HoatDong o tren - cung dong WAuto.exe hien o chan cua so) cho khung
+// WAuto trong game (S3Client/Ui/UiCase/UiWAuto.cpp). Tra 1 khi co chu. Chi Android.
+extern "C" int JxCore_WAutoHoatDong(char* szOut, int nMax)
+{
+	if (!szOut || nMax <= 0)
+		return 0;
+	szOut[0] = 0;
+	if (Player[CLIENT_PLAYER_INDEX].m_nIndex <= 0)
+		return 0;
+	WA_HoatDong(CLIENT_PLAYER_INDEX, szOut, nMax);
+	return szOut[0] ? 1 : 0;
+}
 #endif	// JX_ANDROID
 
 void KCoreShell::Turn(int nDir)
