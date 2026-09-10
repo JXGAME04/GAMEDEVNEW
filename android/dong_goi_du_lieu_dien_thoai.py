@@ -36,7 +36,12 @@ MB = 1048576
 HEADER = 32
 
 
+CHI_DEM = False        # --chi-dem: chi dem / phan loai, khong ghi gi
+TEN_UID = {}           # uid -> ten xin (tu dong 'P' trong nhat ky) de phan loai muc pak
+
+
 def doc_tham_so():
+    global CHI_DEM
     a = sys.argv[1:]
     nguon = r"D:\jx1_android_data"; dich = r"D:\jx1_android_data_dt"; logs = []; co_goi = 512
     i = 0
@@ -45,9 +50,31 @@ def doc_tham_so():
         elif a[i] == "--dich": dich = a[i + 1]; i += 2
         elif a[i] == "--co-goi": co_goi = int(a[i + 1]); i += 2
         elif a[i] == "--chi-dung": i += 1; logs = []
+        elif a[i] == "--chi-dem": CHI_DEM = True; i += 1
         else:
             logs.append(a[i]); i += 1
     return nguon, dich, logs, co_goi * MB
+
+
+def nhom_cua(ten):
+    r"""'\spr\npcres\man\x.spr' -> 'spr\npcres' (2 cap dau) de phan loai dung luong"""
+    p = [x for x in ten.replace("/", "\\").lower().split("\\") if x]
+    return "\\".join(p[:2]) if len(p) > 2 else (p[0] if p else "?")
+
+
+def bang_phan_loai(ds, nguon):
+    """in bang MB theo nhom (muc roi theo duong dan, muc pak theo ten trong nhat ky, con lai = 'pak (khong biet ten)')"""
+    tong = {}
+    for u, ng, size, cf in ds:
+        luu = ng[2] if isinstance(ng, tuple) else size
+        if isinstance(ng, tuple):
+            ten = TEN_UID.get(u)
+            k = ("pak " + nhom_cua(ten)) if ten else "pak (khong biet ten)"
+        else:
+            k = "roi " + nhom_cua(os.path.relpath(ng, nguon))
+        tong[k] = tong.get(k, 0) + luu
+    for k, v in sorted(tong.items(), key=lambda kv: -kv[1])[:25]:
+        print("   %8.0f MB  %s" % (v / MB, k))
 
 
 def ten_sang_l1(s):
@@ -83,7 +110,10 @@ def doc_nhat_ky_dung(logs):
             if ln.startswith("P "):
                 phan = ln[2:].split(" ", 1)
                 try:
-                    uid.add(int(phan[0], 16)); so_p += 1
+                    u = int(phan[0], 16)
+                    uid.add(u); so_p += 1
+                    if len(phan) > 1 and u not in TEN_UID:
+                        TEN_UID[u] = phan[1]
                 except ValueError:
                     pass
             elif ln.startswith("R "):
@@ -185,8 +215,13 @@ def ghi_goi(duong_dan, ds, tay_pak):
 def main():
     nguon, dich, logs, co_goi = doc_tham_so()
     loc_uid = doc_nhat_ky_dung(logs) if logs else None
-    os.makedirs(os.path.join(dich, "data"), exist_ok=True)
     t0 = time.time()
+    if CHI_DEM:
+        ds, tong = gom_muc(nguon, loc_uid)
+        print("phan loai (MB luu tru):")
+        bang_phan_loai(ds, nguon)
+        return
+    os.makedirs(os.path.join(dich, "data"), exist_ok=True)
     ds, tong = gom_muc(nguon, loc_uid)
     # chia goi <= co_goi (theo thu tu gom; sau khi bo trung thi thu tu goi khong con quan trong)
     goi = []; hien = []; co = 0

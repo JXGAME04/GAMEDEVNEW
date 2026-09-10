@@ -65,6 +65,15 @@ public class TaiDuLieuActivity extends Activity
         w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         w.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        // 1. du lieu do ngoai (may ao) -> mo JxActivity NGAY, khong hien gi ca (chu: "giu lai cac buoc dang nhap nhu truoc";
+        //    man hinh nay chi xuat hien khi phai tai / cap nhat). Tru khi tai_du_lieu.txt dong 2 = "ep" (ep tai de thu).
+        File ngoai = epTai() ? null : thuMucNgoai();
+        if (ngoai != null)
+        {
+            startActivity(new Intent(this, JxActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.tai_du_lieu);
         mTieuDe = findViewById(R.id.tieu_de);
         mTrangThai = findViewById(R.id.trang_thai);
@@ -74,15 +83,6 @@ public class TaiDuLieuActivity extends Activity
         mNut.setVisibility(View.INVISIBLE);
         mThanh.setMax(1000);
         mThanh.setProgress(0);
-
-        // 1. du lieu do ngoai (may ao) -> vao game ngay (tru khi tai_du_lieu.txt dong 2 = "ep": ep tai de thu)
-        File ngoai = epTai() ? null : thuMucNgoai();
-        if (ngoai != null)
-        {
-            mTrangThai.setText("Dữ liệu: " + ngoai.getAbsolutePath());
-            vaoGame(300);
-            return;
-        }
         mThuMuc = getExternalFilesDir(null);
         if (mThuMuc == null)
             mThuMuc = getFilesDir();
@@ -192,22 +192,18 @@ public class TaiDuLieuActivity extends Activity
         if (can.isEmpty())
         {
             donPakCu();
-            hien("Dữ liệu đã đủ (" + mb(coSan) + " MB)", "");
-            vaoGame(400);
+            vaoGame(0);
             return;
         }
-        final long tongTai = tong;
-        final List<Muc> danhSach = can;
         hien("Cần tải " + can.size() + " tệp, " + mb(tong) + " MB", "Đã có " + mb(coSan) + " MB");
-        nut("Cập nhật ngay", v -> { mNut.setVisibility(View.INVISIBLE); new Thread(() -> taiTatCa(danhSach, tongTai), "jx-tai2").start(); });
-        // tu bat dau sau 2 giay neu chu khong bam
-        mChinh.postDelayed(() -> { if (mNut.getVisibility() == View.VISIBLE) mNut.performClick(); }, 2000);
+        taiTatCa(can, tong);        // tu cap nhat ngay, khong cho bam (chu: "co ban cap nhat moi se tu cap nhat")
     }
 
     private List<Muc> docManifest() throws IOException
     {
         HttpURLConnection c = (HttpURLConnection) new URL(mUrl + "manifest.txt").openConnection();
-        c.setConnectTimeout(THOI_HAN_MS); c.setReadTimeout(THOI_HAN_MS);
+        int han = new File(mThuMuc, "config.ini").isFile() ? 3000 : THOI_HAN_MS;   // da co du lieu: khong bat cho lau
+        c.setConnectTimeout(han); c.setReadTimeout(han);
         if (c.getResponseCode() != 200)
             throw new IOException("HTTP " + c.getResponseCode());
         List<Muc> ds = new ArrayList<>();

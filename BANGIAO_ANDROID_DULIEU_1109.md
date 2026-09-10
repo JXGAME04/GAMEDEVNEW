@@ -117,12 +117,24 @@ Cần ~10 GB trống. Sau khi rút gọn theo nhật ký (mục 7) gói còn 2�
 `res/layout/tai_du_lieu.xml`; ảnh VNKU `res/drawable-nodpi/nen_cap_nhat.png` = khung `UiUpdateNow\main.png` che chữ gốc bằng hoa văn,
 `nut_cap_nhat.png` = `btn_update_f00.png` "Cập nhật ngay", `nut_trong.png` cho nút "Thử lại"; ống vàng `res/drawable/thanh_tai.xml`).
 `AndroidManifest.xml`: LAUNCHER chuyển sang activity này, `JxActivity` giữ nguyên (singleInstance) và được mở sau khi tải xong. Luồng:
-1. Có `config.ini` ở thư mục **ngoài** app (máy ảo `/mnt/shared/Misc`, `jx_data_dir.txt`…, cùng thứ tự `JxAndroidMain.cpp`) → vào game
-   ngay, không tải gì. Tệp `tai_du_lieu.txt` dòng 2 = `ep` → bỏ qua dữ liệu ngoài, ép tải vào thư mục app (để thử trên máy ảo).
-2. Tải `manifest.txt` (mỗi dòng `cỡ \t md5 \t đường dẫn`), so với `da_tai.txt` (md5 đã tải) + cỡ tệp trên máy → **chỉ tải tệp mới/đổi**.
-3. Tải **4 luồng song song**, tệp to trước, ghi `.part`, **HTTP Range tải tiếp** khi mở lại; ống tiến độ + MB/s + còn bao lâu; nút
-   "Cập nhật ngay" tự bấm sau 2 s. Xong: xoá pak trong `data/` không còn trong manifest (gói đổi tên / rút gọn) rồi mở `JxActivity`.
-4. Không nối được máy chủ: đã có dữ liệu → vào game luôn; chưa có → báo lỗi + nút Thử lại.
+1. Có `config.ini` ở thư mục **ngoài** app (máy ảo `/mnt/shared/Misc`, `jx_data_dir.txt`…, cùng thứ tự `JxAndroidMain.cpp`) → mở
+   `JxActivity` ngay trong `onCreate`, **không hiện gì** (chủ 01:00: "giữ lại các bước đăng nhập như trước" — menu, đăng nhập, chọn
+   nhân vật của game giữ nguyên; màn hình này chỉ hiện khi phải tải/cập nhật). Tệp `tai_du_lieu.txt` dòng 2 = `ep` → ép tải (để thử).
+2. Tải `manifest.txt` (mỗi dòng `cỡ \t md5 \t đường dẫn`), so với `da_tai.txt` (md5 đã tải) + cỡ tệp trên máy → **chỉ tải tệp mới/đổi**;
+   đủ rồi thì vào game ngay (đã có dữ liệu: chờ máy chủ tối đa 3 s, không có mạng cũng vào game).
+3. Có tệp mới → **tự tải ngay** (chủ: "có bản cập nhật mới sẽ tự cập nhật"), không chờ bấm nút: 4 luồng song song, tệp to trước, ghi
+   `.part`, **HTTP Range tải tiếp** khi mở lại; ống tiến độ + MB/s + còn bao lâu. Xong: xoá pak trong `data/` không còn trong manifest
+   (gói đổi tên / rút gọn) rồi mở `JxActivity`. Nút "Thử lại" chỉ hiện khi lỗi.
+4. Lần đầu chưa có dữ liệu mà không nối được máy chủ → báo lỗi + nút Thử lại. APK bản này: `android/apk/jx1mobile-1209-tai-c.apk`
+   (chưa cài lên máy ảo lúc 01:10 vì chủ đang chơi; `tai-b` đang cài chỉ khác ở chỗ hiện chữ 0,3 s và chờ nút 2 s).
+
+**Số đo để ước lượng rút gọn** (`--chi-dem --chi-dung`, 01:05): chủ chơi ~1 giờ trong thành Tương Dương với APK 1209 → nhật ký 1.155 id
+→ **70 MB** (bản đồ + ảnh bản đồ 30, nhân vật/NPC quanh đó 12, bảng vật phẩm/npcres 12, nhạc 5, kỹ năng 1…). Cả gói 8.417 MB gồm: ảnh
+nhân vật/NPC/quái ≈ 6.000 MB (`spr\npcres` rời 1.141 + updatejx14/15/16 ≈ 4.150 + spr.pak 880), bản đồ ≈ 1.000 MB cho 1.006 bản đồ
+(`maps` 350, `maps2` 300, maps.pak 80…), UI/vật phẩm/kỹ năng/âm thanh ≈ 700 MB. Ước phần **thực dùng của cả máy chủ sau vài tuần**:
+bản đồ ~100/1.006 (100–150 MB), nhân vật thường gặp 800–1.200 MB, quái/NPC 300–500, kỹ năng 200–300, UI/bảng/nhạc ~300 → **≈ 1,8–2,5 GB**
+(giảm 70–80 %). Chính xác đến đâu tuỳ nhật ký thu được; muốn cắt mạnh hơn (gói đầu 300–500 MB) cần thêm "tải bổ sung khi thiếu"
+(game xin tệp không có → tải từ máy chủ lúc chơi, bước sau).
 
 **Máy chủ tải** `android/may_chu_tai_du_lieu.py [--thu-muc D:\jx1_android_data_dt] [--cong 8765] [--chi-manifest]`: sinh `manifest.txt`
 (md5 đệm trong `manifest_cache.txt` theo cỡ + mtime → chạy lại không băm lại 9 GB), phục vụ HTTP đa luồng có Range; bỏ qua `userdata\`,
