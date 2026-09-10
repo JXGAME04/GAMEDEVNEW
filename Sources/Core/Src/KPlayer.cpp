@@ -631,7 +631,8 @@ void KPlayer::OnButtonDown(int x,int y, int Key, MOUSE_BUTTON nButton)
 	FindSelectNpc(x, y, relation_all);
 	FindSelectObject(x, y);
 #ifdef JX_ANDROID
-	g_nJxMucTieuKhoa = m_nPeapleIdx;	// [ANDROID 11/09 KHOAMT] cham trung ai thi KHOA muc tieu do; cham dat = bo khoa
+	if (m_nPeapleIdx)
+		g_nJxMucTieuKhoa = m_nPeapleIdx;	// [ANDROID 11/09 KHOAMT] [ANDROID 11/09 TTMT] cham trung ai thi KHOA; cham dat KHONG bo khoa
 #endif
 	//	Npc[m_nIndex].m_nPeopleIdx = m_nPeapleIdx;
 	ProcessMouse(x, y, Key, nButton);
@@ -683,18 +684,7 @@ void KPlayer::OnMouseMove(int x,int y)
 	m_nObjectIdx = 0;
 	FindSelectNpc(x, y, relation_all);
 	FindSelectObject(x, y);
-#ifdef JX_ANDROID
-	// [ANDROID 11/09 KHOAMT] dien thoai khong co "re chuot": ngon tay keo di (cam can, keo cua so, hover gia lap) KHONG doi muc tieu
-	// dang xem; giu muc tieu da cham cho toi khi cham cho khac (OnButtonDown). Chu: "kich vao hien thong tin
-	// neu lo di chuot di cho khac la no doi muc tieu".
-	if (g_nJxMucTieuKhoa > 0)
-	{
-		if (g_nJxMucTieuKhoa >= MAX_NPC || Npc[g_nJxMucTieuKhoa].m_dwID == 0 || Npc[g_nJxMucTieuKhoa].m_RegionIndex < 0)
-			g_nJxMucTieuKhoa = 0;
-		else
-			m_nPeapleIdx = g_nJxMucTieuKhoa;
-	}
-#endif
+	// [ANDROID 11/09 TTMT] [KHOAMT b] khong ep m_nPeapleIdx o day nua (hover/Walk giu nhu PC); khoa ap tai NPC_OI_TARGET_INFO (CoreShell.cpp)
 	if (m_nPeapleIdx)
 	{
 		if (Npc[m_nPeapleIdx].m_Kind == kind_dialoger)
