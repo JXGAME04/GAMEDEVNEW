@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [ANDROID 12/09 TAI] Man hinh tai du lieu: bang "Phat hien phien ban moi" cua VNKU (UiUpdateNow\main.png) + ong tien do vang -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0a0a0a">
+
+    <LinearLayout
+        android:layout_width="640dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:background="@drawable/nen_cap_nhat"
+        android:paddingLeft="48dp"
+        android:paddingRight="48dp"
+        android:paddingTop="34dp"
+        android:paddingBottom="30dp">
+
+        <TextView
+            android:id="@+id/tieu_de"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Tải dữ liệu game"
+            android:textColor="#F2D28C"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:shadowColor="#000000"
+            android:shadowDx="1" android:shadowDy="1" android:shadowRadius="2" />
+
+        <TextView
+            android:id="@+id/trang_thai"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="center"
+            android:text="Đang kiểm tra dữ liệu…"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:shadowColor="#000000"
+            android:shadowDx="1" android:shadowDy="1" android:shadowRadius="2" />
+
+        <ProgressBar
+            android:id="@+id/thanh_tai"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="22dp"
+            android:layout_marginTop="12dp"
+            android:progressDrawable="@drawable/thanh_tai"
+            android:max="1000"
+            android:progress="0" />
+
+        <TextView
+            android:id="@+id/chi_tiet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text=""
+            android:textColor="#C8C8C8"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/nut_cap_nhat"
+            android:layout_width="220dp"
+            android:layout_height="60dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/nut_cap_nhat"
+            android:text=""
+            android:textColor="#FFF4D0"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:shadowColor="#000000"
+            android:shadowDx="1" android:shadowDy="1" android:shadowRadius="2" />
+    </LinearLayout>
+</FrameLayout>

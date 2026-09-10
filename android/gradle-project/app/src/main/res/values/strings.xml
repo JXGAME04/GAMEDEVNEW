@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">JX1 Mobile</string>
+    <!-- [ANDROID 12/09 TAI] may chu tai du lieu mac dinh (ghi de bang <thu muc app>/tai_du_lieu.txt) -->
+    <string name="may_chu_tai" translatable="false">http://10.0.0.140:8765/</string>
 </resources>

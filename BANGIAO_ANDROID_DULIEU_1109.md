@@ -92,20 +92,70 @@ Muốn giảm mạnh phải theo hướng chủ nói — **"unpack ra chỉ lấ
 Rủi ro của cách 1-2: tài nguyên chưa từng gặp trong phiên ghi (trang bị hiếm, boss lạ) sẽ thiếu → hiện "ảnh null" chứ không sập
 (`Rep3AnhNullGhi` đếm và ghi log, có thể bổ sung sau). Việc này là một đợt riêng (~1 ngày làm + chạy phiên ghi); chủ duyệt thì làm.
 
-## 5. Bản cho điện thoại cùng mạng
+## 5. Bản cho điện thoại cùng mạng — nay tải qua màn hình tải (mục 7), không chép tay nữa
 
-Không cần bản dựng riêng: APK debug chạy được trên điện thoại (Android 7+, arm64, Vulkan) — dùng **`android/apk/jx1mobile-1109-ngua1.apk`**.
-Máy chủ lấy từ `settings\serverlist.ini` (đã là IP LAN 192.168.200.128/130/133) → điện thoại cùng mạng nối được. Các bước theo
-`android/HUONG_DAN_TEST.md` §2-3: cài APK → mở một lần để Android tạo thư mục → chép dữ liệu:
-```bat
-adb install -r D:\GAMEDEVNEW_wt_mobile\android\apk\jx1mobile-1109-ngua1.apk
-adb push D:\jx1_android_data\. /storage/emulated/0/Android/data/vn.jx1.mobile/files/
-```
-Cần ~11 GB trống và 30–60 phút chép qua dây (hoặc chép `D:\jx1_android_data` vào thẻ nhớ rồi dời vào đúng thư mục). Trước khi chép
-nên xoá log ở gốc (`jx_*.log`, 244 MB). Sau khi mục 4 làm xong, gói điện thoại còn 3–4 GB.
+APK debug chạy được trên điện thoại (Android 7+, arm64, Vulkan): **`android/apk/jx1mobile-1209-tai.apk`** (MD5 `0d50f50d…`). Máy chủ game
+lấy từ `settings\serverlist.ini` (IP LAN 192.168.200.128/130/133). Các bước:
+1. Trên PC: `python android\may_chu_tai_du_lieu.py` (phục vụ `D:\jx1_android_data_dt`, cổng 8765; mở tường lửa:
+   `netsh advfirewall firewall add rule name=jx1tai dir=in action=allow protocol=TCP localport=8765`).
+2. Cài APK lên điện thoại (`adb install -r …` hoặc chép tệp .apk sang). Mở game → màn hình tải tự tải ~9,4 GB từ
+   `http://10.0.0.140:8765/` (IP đặt ở `res/values/strings.xml` `may_chu_tai`; đổi không cần build lại bằng tệp
+   `/storage/emulated/0/Android/data/vn.jx1.mobile/files/tai_du_lieu.txt` dòng 1 = URL). Wi-Fi 5 GHz thường 30–60 MB/s → 3–5 phút;
+   tắt giữa chừng mở lại tải tiếp (`.part` + HTTP Range), lần sau chỉ tải tệp đổi.
+Cần ~10 GB trống. Sau khi rút gọn theo nhật ký (mục 7) gói còn 2–4 GB.
 
 ## 6. Việc đang chờ
-- Nghiệm thu ngựa + icon trên máy ảo (kịch bản `thu_ngua.sh` chạy sau Tống Kim 22:50): xem ngựa hiện, `jx_rep3.log` không còn
-  `woman\..\man`, và số ảnh null giảm sau khi đổi tên 1.136 tệp.
-- Gắn `1a04074c` + commit tên GBK vào `mobile-0809`.
+- Nghiệm thu ngựa + icon trên máy ảo: xem ngựa hiện, `jx_rep3.log` không còn `woman\..\man`, số ảnh null giảm sau khi đổi tên 1.136 tệp.
 - Bản đồ nhỏ Tống Kim: xem lại ở trận tới sau khi dữ liệu đã sửa.
+- Chủ chơi đủ kịch bản với APK 1209 để gom `jx_tep_dung.log` rồi đóng gói `--chi-dung` (mục 7).
+
+## 7. Màn hình tải dữ liệu (ống tiến độ như VNKU) + máy chủ tải + gói điện thoại — xong (`12/09 TAI`, `12/09 TEPDUNG`)
+
+**Chủ yêu cầu:** "rút gọn tối đa", "phần đăng nhập có ống load dữ liệu như VNKU", "người chơi tải về nhanh nhất không tốn thời gian".
+
+**APK mở bằng `TaiDuLieuActivity`** (Java, `android/gradle-project/app/src/main/java/vn/jx1/mobile/TaiDuLieuActivity.java`; layout
+`res/layout/tai_du_lieu.xml`; ảnh VNKU `res/drawable-nodpi/nen_cap_nhat.png` = khung `UiUpdateNow\main.png` che chữ gốc bằng hoa văn,
+`nut_cap_nhat.png` = `btn_update_f00.png` "Cập nhật ngay", `nut_trong.png` cho nút "Thử lại"; ống vàng `res/drawable/thanh_tai.xml`).
+`AndroidManifest.xml`: LAUNCHER chuyển sang activity này, `JxActivity` giữ nguyên (singleInstance) và được mở sau khi tải xong. Luồng:
+1. Có `config.ini` ở thư mục **ngoài** app (máy ảo `/mnt/shared/Misc`, `jx_data_dir.txt`…, cùng thứ tự `JxAndroidMain.cpp`) → vào game
+   ngay, không tải gì. Tệp `tai_du_lieu.txt` dòng 2 = `ep` → bỏ qua dữ liệu ngoài, ép tải vào thư mục app (để thử trên máy ảo).
+2. Tải `manifest.txt` (mỗi dòng `cỡ \t md5 \t đường dẫn`), so với `da_tai.txt` (md5 đã tải) + cỡ tệp trên máy → **chỉ tải tệp mới/đổi**.
+3. Tải **4 luồng song song**, tệp to trước, ghi `.part`, **HTTP Range tải tiếp** khi mở lại; ống tiến độ + MB/s + còn bao lâu; nút
+   "Cập nhật ngay" tự bấm sau 2 s. Xong: xoá pak trong `data/` không còn trong manifest (gói đổi tên / rút gọn) rồi mở `JxActivity`.
+4. Không nối được máy chủ: đã có dữ liệu → vào game luôn; chưa có → báo lỗi + nút Thử lại.
+
+**Máy chủ tải** `android/may_chu_tai_du_lieu.py [--thu-muc D:\jx1_android_data_dt] [--cong 8765] [--chi-manifest]`: sinh `manifest.txt`
+(md5 đệm trong `manifest_cache.txt` theo cỡ + mtime → chạy lại không băm lại 9 GB), phục vụ HTTP đa luồng có Range; bỏ qua `userdata\`,
+`apdata\`, `*.log`, `*.part`. Chạy nền được (`Start-Process python …`).
+
+**Gói điện thoại** `android/dong_goi_du_lieu_dien_thoai.py [--nguon D:\jx1_android_data] [--dich D:\jx1_android_data_dt] [--co-goi 512]
+[--chi-dung log…]` (dùng `android/pak_ghi.py`, `ReverseTools/pak_vltk/pakdump.py`): gom **tệp rời + 33 pak cũ thành một danh sách phẳng
+đúng thứ tự tìm của game** (rời thắng pak, pak trước thắng pak sau) → cùng id chỉ giữ bản đầu (bỏ mục bị che, không mất gì) → ghi lại
+thành `data\mobile_NN.pak` ≤ 512 MB (mục pak cũ chép nguyên byte, giữ nén UCL; `XPackFile` đọc như cũ). Giữ rời vì game mở bằng `fopen`
+không qua pak: `config.ini`, `package.ini` (mới), `settings\serverlist.ini`, `settings\datau_toado.txt` (Dã Tẩu), `ui\uitoado_macdinh.ini`,
+`userdata\`, `apdata\`. Id tính từ byte GBK của tên (`ten_sang_l1`: tên trên đĩa là cp1252 của byte GBK; `name2id` gốc chỉ đúng với Latin-1).
+Kết quả: 228.944 mục / 8.413 MB (bỏ mục bị che: 9.432 → **8.417 MB**, 17 gói `mobile_01..17.pak` + 5 tệp rời), ghi 211 s; chạy lại sau khi sửa lớp ghi đè (`chuan_bi_du_lieu.ps1`) rồi máy chủ tự sinh manifest mới.
+
+**Đo trên máy ảo LDPlayer** (mạng nội bộ PC, APK 1209 với `ep`): 37 tệp / 9.431 MB tải xong **45 s (~215 MB/s)**, game mở từ thư mục app,
+vào thẳng menu chính; `anh_null` giống bản thường (4 nút menu Trung Quốc `登入界面\…` vốn đã null từ trước). Bộ rút gọn theo nhật ký
+menu (`--chi-dung`, 440 id → **15 MB**) cũng tải + vào menu được, pak cũ trong `data/` bị xoá đúng.
+
+**"Rút gọn tối đa" — bước còn lại cần chủ:** APK 1209 đã ghi nhật ký tệp dùng `jx_tep_dung.log` ở thư mục dữ liệu (`[Client] TepDung=0`
+để tắt): chủ chơi đủ kịch bản (đăng nhập, mỗi thành, Tống Kim, Dã Tẩu, luyện công, 10 phái, Bảo vật, chợ…) trên máy ảo
+(`D:\jx1_android_data\jx_tep_dung.log`) và/hoặc điện thoại (thư mục app) → gộp log nhiều người/nhiều ngày →
+`python android\dong_goi_du_lieu_dien_thoai.py --chi-dung D:\jx1_android_data\jx_tep_dung.log <log khác…>` → máy chủ sinh manifest mới →
+điện thoại chỉ tải phần đổi. Thiếu mục → ảnh trống (`anh_null`), không sập; nếu **thêm** mục sau này nên đóng thành pak mới đặt **đầu**
+`package.ini` thay vì đóng gói lại toàn bộ (đóng gói lại làm md5 của nhiều gói đổi → điện thoại tải lại nhiều).
+
+## 8. Nút kỹ năng hiện ở menu / đăng nhập — chủ: "các nút kỹ năng bị ra ngoài phần vào game" (`12/09 KYNANG AN`)
+
+`UiShell.cpp` vẽ `JxKyNang_Ve()` + `JxCan_Ve()` (bảng nút kỹ năng, cần điều khiển, vòng chọn, mũi tên hướng đi, icon NPC) mỗi khung
+không xét trạng thái → ở menu chính (ảnh 4:3 chỉ phủ 800 px) các nút nằm trên dải đen bên phải. Sửa trong
+`Sources/S3Client/Platform/JxCanDieuKhien.cpp` (tệp chỉ Android, ngoài vcxproj; `android/va_nguon_android_kynang_an1.py`):
+`KyNang_TrongGame()` = `KUiToolsControlBar::GetSelf() != NULL` (thanh công cụ mở trong `UiStartGame`, huỷ khi rời thế giới) — chưa vào
+thế giới thì không vẽ và không nhận chạm (`JxCan_TrongVung`, `JxKyNang_TrungNut`, `JxKyNang_ChamBangChon` trả "không"). APK
+`android/apk/jx1mobile-1209-tai-b.apk`. Chủ kiểm: menu / đăng nhập / chọn nhân vật không còn nút; vào thế giới nút và cần hiện lại như cũ.
+
+**Lưu ý máy ảo:** thư mục app (`/storage/emulated/0/Android/data/vn.jx1.mobile/files/`) được `JxAndroidMain.cpp` ưu tiên TRƯỚC
+`/mnt/shared/Misc` — thử tải trên máy ảo xong phải xoá `data/`, `config.ini`, `package.ini`, `settings/`, `da_tai.txt`, `tai_du_lieu.txt`
+trong đó, nếu không máy ảo chạy bằng gói cũ và lớp ghi đè `android\du_lieu_ghi_de` hết tác dụng (đã dọn sau khi đo).

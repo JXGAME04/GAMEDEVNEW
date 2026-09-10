@@ -32,6 +32,15 @@
             android:preferMinimalPostProcessing="true"
             android:exported="true"
             >
+        </activity>
+
+        <!-- [ANDROID 12/09 TAI] man hinh tai du lieu (ong tien do nhu VNKU) chay truoc, tai xong moi mo JxActivity -->
+        <activity android:name="vn.jx1.mobile.TaiDuLieuActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="true"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

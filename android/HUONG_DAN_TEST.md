@@ -44,3 +44,9 @@ Kiểm nhanh: `adb shell ls /storage/emulated/0/Android/data/vn.jx1.mobile/files
 ## 6. Dựng lại
 - Native: `cmake --build android/build/arm64` (cấu hình ở đầu `android/CMakeLists.txt`); APK: `gradlew.bat assembleDebug` trong `android\gradle-project`
   (PowerShell, `JAVA_HOME` = JDK 17). Nguồn SDL3: `powershell -File android\tai_sdl3_src.ps1` nếu thư mục `ThirdParty\SDL3-src` chưa có.
+
+## 7. Màn hình tải dữ liệu (12/09)
+- APK mở bằng `TaiDuLieuActivity` (ống tiến độ VNKU) rồi mới tới `JxActivity`. Máy ảo có `/mnt/shared/Misc/config.ini` → vào game ngay, không tải.
+- Ép tải để thử trên máy ảo: tệp `files/tai_du_lieu.txt` dòng 1 = URL máy chủ (`http://<IP PC>:8765/`), dòng 2 = `ep`; xong phải xoá
+  `data/`, `config.ini`, `package.ini`, `settings/`, `da_tai.txt`, `tai_du_lieu.txt` trong thư mục app (game ưu tiên thư mục app trước Misc).
+- Máy chủ + gói: `python android\may_chu_tai_du_lieu.py`, `python android\dong_goi_du_lieu_dien_thoai.py` — xem `BANGIAO_ANDROID_DULIEU_1109.md` §7.
