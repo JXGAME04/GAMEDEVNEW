@@ -683,6 +683,23 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 				m_nCham = CHAM_KHONG;
 				return true;
 			}
+			{	// [ANDROID 11/09 ICON b] cham icon "Giao tiep" tren dau NPC = bam vao than NPC (di toi + mo thoai),
+				// ke ca khi icon nam ngoai hinh NPC. Chu: "khi bam vao icon do thi se tu di chuyen toi npc mo hoi thoai".
+				int nNpcX = 0, nNpcY = 0;
+				if (!UiToaDo_DangSua() && JxIconNpc_Cham(m_nChamX0, m_nChamY0, &nNpcX, &nNpcY))
+				{
+					LPARAM lNpc = MAKELPARAM(nNpcX, nNpcY);
+					GhiChuot(0, lNpc);
+					MsgProc(hWnd, WM_MOUSEMOVE, 0, lNpc);
+					GhiChuot(MK_LBUTTON, lNpc);
+					MsgProc(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, lNpc);
+					GhiChuot(0, lNpc);
+					MsgProc(hWnd, WM_LBUTTONUP, 0, lNpc);
+					g_DebugLog("[ICON] cham icon giao tiep -> bam NPC tai %d,%d", nNpcX, nNpcY);
+					m_nCham = CHAM_KHONG;
+					return true;
+				}
+			}
 			// [ANDROID 10/09 GANTOADO] Dang sua giao dien thi KHONG cho nut ky nang nuot
 			// cu cham - phai de no di xuong UiToaDo thi moi keo cum nut di duoc.
 			if (!UiToaDo_DangSua())

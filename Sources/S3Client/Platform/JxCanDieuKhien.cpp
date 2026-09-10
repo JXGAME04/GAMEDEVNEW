@@ -57,7 +57,11 @@ static char	s_szVongAnhDich[128] = "\\spr\\npcres\\focused_enemy_circle.spr";
 static int	s_nIconBat = 1;
 static int	s_nIconCoAnh = -1;
 static int	s_nIconCao = 62;	// icon cao hon chan NPC bao nhieu diem anh
-static char	s_szIconAnh[128] = "\\spr\\obj\\box\\YellowPoint.spr";
+static char	s_szIconAnh[128] = "\\spr\\UiNew\\InterRact\\giao_tiep.spr";	// [ANDROID 11/09 ICON b] nut "Giao tiep" cua kho VNKU (224x50)
+static int	s_nIconRong = 112;		// [ANDROID 11/09 ICON b] be rong ve icon (px); cao theo ti le anh. [Cham] IconNpcRong
+static int	s_nIconVeX0 = 0, s_nIconVeY0 = 0, s_nIconVeX1 = 0, s_nIconVeY1 = 0;	// [ANDROID 11/09 ICON b] khung icon vua ve (man hinh)
+static int	s_nIconNpcX = 0, s_nIconNpcY = 0;	// [ANDROID 11/09 ICON b] chan NPC (man hinh) cua icon vua ve
+static unsigned int	s_uIconVeLuc = 0;	// [ANDROID 11/09 ICON b] luc ve icon gan nhat (0 = chua ve)
 
 // --- trang thai --------------------------------------------------------------
 // [ANDROID 09/09 KYNANG C] Nut danh chinh + 8 o ky nang phu xep thanh CUNG
@@ -129,6 +133,7 @@ static char		s_szKNAnhGan[128]   = "\\spr\\Ui3\\UiSkillControl\\switch_assign_mo
 static int			s_nKNCheDoGan = 0;	// 1 = dang o che do gan
 static int			s_nKNOChon = -1;	// o dang cho gan (0..7), -1 = chua chon
 static KUiGameObject s_KNGan[KYNANG_SO_PHU];	// ky nang nguoi choi tu gan cho tung o
+static int			s_nKNTrong[KYNANG_SO_PHU];	// [ANDROID 11/09 OTRONG] 1 = nguoi choi da GO ky nang khoi o nay -> o TRONG that, khong tu lay theo danh sach (Trong<i>=1)
 static int			s_nKNDaDocGan = 0;
 //	[ANDROID 10/09 BANGCHON] bang 3 nut khi cham mot ky nang trong bang ky nang; o CHINH cung gan duoc
 #define	KYNANG_CHON_CHINH	100		// s_nKNOChon = dang chon O CHINH
@@ -237,7 +242,10 @@ static void DocCaiDat()
 	GetPrivateProfileString("Cham", "VongChonAnh", s_szVongAnh, s_szVongAnh, sizeof(s_szVongAnh), szCfg);
 	GetPrivateProfileString("Cham", "VongChonAnhDich", s_szVongAnhDich, s_szVongAnhDich, sizeof(s_szVongAnhDich), szCfg);
 	s_nIconBat   = GetPrivateProfileInt("Cham", "IconNpc", 1, szCfg);
-	s_nIconCao   = GetPrivateProfileInt("Cham", "IconNpcCao", 62, szCfg);
+	s_nIconCao   = GetPrivateProfileInt("Cham", "IconNpcCao", 72, szCfg);	// [ANDROID 11/09 ICON b] mep TREN cua icon cao hon chan NPC bao nhieu
+	s_nIconRong  = GetPrivateProfileInt("Cham", "IconNpcRong", 112, szCfg);	// [ANDROID 11/09 ICON b]
+	if (s_nIconRong < 24) s_nIconRong = 24;
+	if (s_nIconRong > 400) s_nIconRong = 400;
 	GetPrivateProfileString("Cham", "IconNpcAnh", s_szIconAnh, s_szIconAnh, sizeof(s_szIconAnh), szCfg);
 	// [ANDROID 09/09 KYNANG C]
 	s_nKNBat     = GetPrivateProfileInt("Cham", "KyNang", 1, szCfg);
@@ -618,6 +626,7 @@ static void KyNang_DocGan()
 		return;
 	s_nKNDaDocGan = 1;
 	memset(s_KNGan, 0, sizeof(s_KNGan));
+	memset(s_nKNTrong, 0, sizeof(s_nKNTrong));	// [ANDROID 11/09 OTRONG]
 	memset(&s_KNChinhGan, 0, sizeof(s_KNChinhGan));	// [ANDROID 10/09 BANGCHON]
 	KyNang_DuongTepGan(szTep, sizeof(szTep));
 	pTep = fopen(szTep, "rt");
@@ -633,6 +642,8 @@ static void KyNang_DocGan()
 			s_KNGan[nO].uGenre = (unsigned int)nLoai;
 			s_KNGan[nO].uId    = (unsigned int)nMa;
 		}
+		else if (sscanf(szDong, "Trong%d=%d", &nO, &nMa) == 2 && nO >= 0 && nO < KYNANG_SO_PHU)
+			s_nKNTrong[nO] = nMa ? 1 : 0;	// [ANDROID 11/09 OTRONG]
 		else if (sscanf(szDong, "Chinh=%d,%d", &nLoai, &nMa) == 2)
 		{	// [ANDROID 10/09 BANGCHON] ky nang gan cho O CHINH
 			s_KNChinhGan.uGenre = (unsigned int)nLoai;
@@ -661,6 +672,8 @@ static void KyNang_GhiGan()
 	{
 		if (s_KNGan[i].uId)
 			fprintf(pTep, "O%d=%u,%u\n", i, s_KNGan[i].uGenre, s_KNGan[i].uId);
+		else if (s_nKNTrong[i])
+			fprintf(pTep, "Trong%d=1\n", i);	// [ANDROID 11/09 OTRONG]
 	}
 	if (s_KNChinhGan.uId)	// [ANDROID 10/09 BANGCHON]
 		fprintf(pTep, "Chinh=%u,%u\n", s_KNChinhGan.uGenre, s_KNChinhGan.uId);
@@ -723,6 +736,29 @@ static void VeAnhCo(const char* pszAnh, int nX, int nY, int nCo, int nKhung)
 	a.oPosition.nZ = 0;
 	a.oEndPos.nX = a.oPosition.nX + nCo;
 	a.oEndPos.nY = a.oPosition.nY + nCo;
+	a.oEndPos.nZ = 0;
+	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE_STRETCH, true);
+}
+
+//	[ANDROID 11/09 ICON b] Ve anh keo can theo rong x cao (khong vuong) - cho nut "Giao tiep" tren dau NPC.
+static void VeAnhRong(const char* pszAnh, int nX, int nY, int nRong, int nCao)
+{
+	KRUImage a;
+
+	if (g_pRepresentShell == NULL || nRong < 2 || nCao < 2)
+		return;
+	memset(&a, 0, sizeof(a));
+	a.nType = ISI_T_SPR;
+	a.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+	a.Color.Color_dw = 0xffffffff;
+	a.nISPosition = IMAGE_IS_POSITION_INIT;
+	a.nFrame = 0;
+	strncpy(a.szImage, pszAnh, sizeof(a.szImage) - 1);
+	a.oPosition.nX = nX;
+	a.oPosition.nY = nY;
+	a.oPosition.nZ = 0;
+	a.oEndPos.nX = nX + nRong;
+	a.oEndPos.nY = nY + nCao;
 	a.oEndPos.nZ = 0;
 	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE_STRETCH, true);
 }
@@ -834,6 +870,11 @@ static bool KyNang_CuaNut(int nNut, KUiGameObject* pRa)
 	{
 		*pRa = s_KNGan[nNut - 1];
 		return true;
+	}
+	if (s_nKNTrong[nNut - 1])
+	{	// [ANDROID 11/09 OTRONG] nguoi choi da go -> o TRONG that (chu: "go ky nang la no tu add ky nang khac vao o da go")
+		memset(pRa, 0, sizeof(*pRa));
+		return false;
 	}
 	// Chua gan thi lay theo danh sach ky nang danh, de dung duoc ngay khong phai gan tay.
 	if (nNut - 1 >= s_nKNCo1)
@@ -1283,6 +1324,7 @@ bool JxKyNang_GanKyNang(unsigned int uGenre, unsigned int uId)
 	KyNang_DocGan();
 	s_KNGan[s_nKNOChon].uGenre = uGenre;
 	s_KNGan[s_nKNOChon].uId    = uId;
+	s_nKNTrong[s_nKNOChon] = 0;	// [ANDROID 11/09 OTRONG] gan lai thi het trong
 	KyNang_GhiGan();
 	g_DebugLog("[KYNANG] gan ky nang %u vao o %d", uId, s_nKNOChon);
 	s_nKNOChon = -1;
@@ -1526,9 +1568,13 @@ static void KyNang_GoKhoiO(const KUiGameObject* p)
 	KyNang_DocGan();
 	for (i = 0; i < KYNANG_SO_PHU; i++)
 	{
-		if (s_KNGan[i].uId == p->uId && s_KNGan[i].uGenre == p->uGenre)
+		KUiGameObject oO;
+		// [ANDROID 11/09 OTRONG] go ca ky nang dang hien o o do theo danh sach mac dinh (chua tu gan) - o nao dang HIEN ky nang nay thi go
+		if ((s_KNGan[i].uId == p->uId && s_KNGan[i].uGenre == p->uGenre)
+			|| (s_KNGan[i].uId == 0 && !s_nKNTrong[i] && KyNang_CuaNut(i + 1, &oO) && oO.uId == p->uId && oO.uGenre == p->uGenre))
 		{
 			memset(&s_KNGan[i], 0, sizeof(s_KNGan[i]));
+			s_nKNTrong[i] = 1;	// [ANDROID 11/09 OTRONG] o de trong, khong tu lay ky nang ke tiep
 			nGo++;
 		}
 	}
@@ -1853,24 +1899,29 @@ void JxIconNpc_Ve()
 	y -= s_nIconCao;
 	if (x < 0 || y < 0 || x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT)
 		return;		// NPC ra ngoai khung ve
-	static KRUImage s_Icon;
-	if (s_Icon.szImage[0] == 0)
-	{
-		memset(&s_Icon, 0, sizeof(s_Icon));
-		s_Icon.nType = ISI_T_SPR;
-		s_Icon.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
-		s_Icon.Color.Color_dw = 0xffffffff;
-		s_Icon.nISPosition = IMAGE_IS_POSITION_INIT;
-		s_Icon.nFrame = 0;
-		strncpy(s_Icon.szImage, s_szIconAnh, sizeof(s_Icon.szImage) - 1);
-	}
+	// [ANDROID 11/09 ICON b] ve nut "Giao tiep" keo can rong s_nIconRong, mep tren tai y (= chan - IconNpcCao); nho khung de cham
 	KRPosition2 oOffI = { 0, 0 }, oCoI = { 0, 0 };
-	int nLui = 0;
-	if (g_pRepresentShell->GetImageFrameParam(s_Icon.szImage, 0, &oOffI, &oCoI, s_Icon.nType) && oCoI.nX > 0)
-		nLui = oCoI.nX / 2;
-	s_Icon.oPosition.nX = x - nLui;
-	s_Icon.oPosition.nY = y;
-	g_pRepresentShell->DrawPrimitives(1, &s_Icon, RU_T_IMAGE, true);	// true = toa do MAN HINH
+	int nRong = s_nIconRong, nCao = s_nIconRong / 4;
+	if (g_pRepresentShell->GetImageFrameParam(s_szIconAnh, 0, &oOffI, &oCoI, ISI_T_SPR) && oCoI.nX > 0 && oCoI.nY > 0)
+		nCao = nRong * oCoI.nY / oCoI.nX;
+	VeAnhRong(s_szIconAnh, x - nRong / 2, y, nRong, nCao);
+	s_nIconVeX0 = x - nRong / 2 - 8; s_nIconVeX1 = x + nRong / 2 + 8;
+	s_nIconVeY0 = y - 8;             s_nIconVeY1 = y + nCao + 8;
+	s_nIconNpcX = x; s_nIconNpcY = y + s_nIconCao;
+	s_uIconVeLuc = (unsigned int)GetTickCount();
+}
+
+//	[ANDROID 11/09 ICON b] Cham trung icon "Giao tiep" vua ve (trong 300 ms)? -> tra toa do THAN NPC (chan - 28) de KSdlApp bam vao
+//	nhu cham thang NPC: di toi + mo thoai. Chu: "khi bam vao icon do thi se tu di chuyen toi npc mo hoi thoai".
+int JxIconNpc_Cham(int x, int y, int* pnX, int* pnY)
+{
+	if (!s_nIconBat || s_uIconVeLuc == 0 || (unsigned int)GetTickCount() - s_uIconVeLuc > 300)
+		return 0;
+	if (x < s_nIconVeX0 || x > s_nIconVeX1 || y < s_nIconVeY0 || y > s_nIconVeY1)
+		return 0;
+	*pnX = s_nIconNpcX;
+	*pnY = s_nIconNpcY - 28;
+	return 1;
 }
 
 void JxCan_Ve()

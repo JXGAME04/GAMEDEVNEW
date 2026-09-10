@@ -765,6 +765,24 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 		}
 		break;
 	case WND_N_ITEM_PICKDROP:
+#ifdef JX_ANDROID
+		// [ANDROID 11/09 OSO] Cham (chuot trai) o vat pham so 1-4 khi tay khong = DUNG ngay (PC: nhac len tay); giu lau (chuot phai)
+		// = nhac len tay de bo vao ruong (WND_N_RIGHT_CLICK_ITEM). Chu: "bo item vao phim so thi cham vao la su dung luon
+		// khong can de vai giay - de vao vai giay vao o phim so la lay ra tren tay de bo vao ruong". Bo xuong o (tay dang cam) nhu cu.
+		if (uParam && !nParam)
+		{
+			int nOSo = -1;
+			for (int i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
+				if (((ITEM_PICKDROP_PLACE*)uParam)->pWnd == (KWndWindow*)&m_ImmediaItem[i])
+					nOSo = i;
+			if (nOSo >= 0)
+			{
+				if (g_UiBase.IsOperationEnable(UIS_O_USE_ITEM))
+					OnUseItem(nOSo);
+				break;
+			}
+		}
+#endif
 		if (g_UiBase.IsOperationEnable(UIS_O_MOVE_ITEM))
 			OnObjPickedDropped((ITEM_PICKDROP_PLACE*)uParam, (ITEM_PICKDROP_PLACE*)nParam);
 		break;
@@ -896,6 +914,22 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			KUiSkillTree::OpenWindow(false);
 		break;
 	case WND_N_RIGHT_CLICK_ITEM:
+#ifdef JX_ANDROID
+		// [ANDROID 11/09 OSO] giu lau (chuot phai) o vat pham so = NHAC LEN TAY (PC: dung); tay dang cam gi thi bo qua
+		if (g_UiBase.IsOperationEnable(UIS_O_MOVE_ITEM) && !Wnd_GetDragObj(NULL))
+		{
+			for (int i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
+				if (nParam == (KNPARAM)(KWndWindow*)&m_ImmediaItem[i])
+				{
+					ITEM_PICKDROP_PLACE Pick;
+					Pick.pWnd = &m_ImmediaItem[i];
+					Pick.h = 0;
+					Pick.v = 0;
+					OnObjPickedDropped(&Pick, NULL);
+				}
+		}
+		break;
+#else
 		if (g_UiBase.IsOperationEnable(UIS_O_USE_ITEM))
 		{
 			for (int i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
@@ -903,6 +937,7 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 					OnUseItem(i);
 		}
 		break;
+#endif
 	case WND_N_EDIT_SPECIAL_KEY_DOWN:
 		if (nParam == VK_RETURN)
 		{
