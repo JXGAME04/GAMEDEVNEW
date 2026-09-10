@@ -1738,6 +1738,17 @@ void JxKyNang_Ve()
 {
 	int i, nX, nY, nR, nIcon;
 	KUiGameObject o;
+	{	// [VEVATPHAM 12/09] [Ui] NhatKyVatPham=<so dong> -> ghi vet phep ve vat pham trong o (mot lan sau khi vao game)
+		static int s_nDaBatVatPham = 0;
+		if (!s_nDaBatVatPham && KyNang_TrongGame())
+		{
+			extern int g_nJxNhatKyVatPham, g_nJxNhatKyVatPham2, g_nJxNhatKyVatPham3;
+			extern int g_nJxKeoAnhVatPham;	// [VEVATPHAM 12/09 d]
+			g_nJxKeoAnhVatPham = GetPrivateProfileInt("Ui", "KeoAnhVatPham", 0, ".\\config.ini");	// [VEVATPHAM 12/09 b]
+			s_nDaBatVatPham = 1;
+			g_nJxNhatKyVatPham = g_nJxNhatKyVatPham2 = g_nJxNhatKyVatPham3 = GetPrivateProfileInt("Ui", "NhatKyVatPham", 0, ".\\config.ini");
+		}
+	}
 	{	// [UITOADO 12/09 NEO d] 900 khung (~15 s) sau khi vao the gioi: ghi vi tri thuc moi cua so neu [Ui] NhatKyBoCuc>=2
 		static int s_nKhungBoCuc = 0;
 		if (KyNang_TrongGame() && ++s_nKhungBoCuc == 900

@@ -17,6 +17,10 @@
 
 void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, KNPARAM nParam)
 {
+#ifdef JX_ANDROID
+	extern int g_nJxKeoAnhVatPham;	// [VEVATPHAM 12/09 d] 1 = keo anh cho vua o
+#endif
+
 	switch(uObjGenre)
 	{
 	case CGOG_NPC:
@@ -108,12 +112,18 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 		// Chi dich khi KHONG thu nho. Mon mot o khong doi mot pixel vi (26-26)/2 = 0.
 #ifdef JX_ANDROID
 		// [HANHTRANG 12/09] o to hon anh goc (hanh trang mobile 44 px) -> keo anh theo o, khong can giua
+		// [VEVATPHAM 12/09 d] mac dinh KHONG keo anh nua: khung anh (nWidth/nHeight cua .spr) NHO HON hinh ve that nen
+		// phep keo lam anh tran ra ngoai o (do duoc: o 36x36 -> binh thuoc ve 41x50, lech len 16 px).
+		// Ve nguyen co + can giua o = giong het ban PC. Bat lai bang config.ini [Ui] KeoAnhVatPham=1.
 		else if (uObjGenre != CGOG_IME_ITEM && (nParam & 0x40000000) == 0
 			&& Width > Item[uId].GetWidth() * ITEM_CELL_WIDTH && Height > Item[uId].GetHeight() * ITEM_CELL_HEIGHT)
 		{
 			extern int g_nJxVeVatPhamW, g_nJxVeVatPhamH;
+			extern int g_nJxVeVatPhamX, g_nJxVeVatPhamY;	// [VEVATPHAM 12/09] goc o
 			g_nJxVeVatPhamW = Width;
 			g_nJxVeVatPhamH = Height;
+			g_nJxVeVatPhamX = x;
+			g_nJxVeVatPhamY = y;
 		}
 #endif
 		else if ((nParam & 0x40000000) == 0 || uObjGenre == CGOG_IME_ITEM
@@ -135,7 +145,16 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 #ifdef JX_ANDROID
 			{
 				extern int g_nJxVeVatPhamW, g_nJxVeVatPhamH;	// [HANHTRANG 12/09] xoa co sau khi ve
+				extern int g_nJxVeVatPhamX, g_nJxVeVatPhamY, g_nJxNhatKyVatPham;	// [VEVATPHAM 12/09]
+				if (g_nJxNhatKyVatPham > 0 && g_nJxVeVatPhamW == 0)
+				{
+					g_nJxNhatKyVatPham--;
+					g_DebugLog("[VATPHAM] KHONG keo: the loai %d mon %d tai %d,%d khung %dx%d (co goc %dx%d) tham so %08x",
+						(int)uObjGenre, (int)uId, x, y, Width, Height,
+						Item[uId].GetWidth() * ITEM_CELL_WIDTH, Item[uId].GetHeight() * ITEM_CELL_HEIGHT, (unsigned int)nParam);
+				}
 				g_nJxVeVatPhamW = g_nJxVeVatPhamH = 0;
+				g_nJxVeVatPhamX = g_nJxVeVatPhamY = 0;
 			}
 #endif
 		}	

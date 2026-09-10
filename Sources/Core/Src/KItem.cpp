@@ -5,6 +5,12 @@
 // [HANHTRANG 12/09] o hanh trang mobile (44 px) to hon anh vat pham goc (26 px): CoreDrawGameObj dat co o can ve,
 // PaintItem keo anh theo co do (RU_T_IMAGE_STRETCH). 0 = ve nhu cu.
 int g_nJxVeVatPhamW = 0, g_nJxVeVatPhamH = 0;
+// [VEVATPHAM 12/09] them goc o (tuyet doi) de ve gon TRONG o, khong an theo m_Image.oPosition da bi dich truoc do
+int g_nJxVeVatPhamX = 0, g_nJxVeVatPhamY = 0;
+int g_nJxKeoAnhVatPham = 0;	// [VEVATPHAM 12/09 d] 1 = keo anh vat pham cho vua o (config [Ui] KeoAnhVatPham); 0 = ve nguyen co, can giua o nhu ban PC
+int g_nJxNhatKyVatPham = 0;	// so lan con ghi nhat ky ve vat pham (dat > 0 de chan doan)
+int g_nJxNhatKyVatPham2 = 0;	// [VEVATPHAM 12/09 b] bo dem rieng cho nhanh ve THUONG (khong keo)
+int g_nJxNhatKyVatPham3 = 0;	// bo dem rieng cho nhanh thu nho
 #endif
 #include "KNpc.h"
 #include "KItem.h"
@@ -1936,7 +1942,7 @@ int KItem::Abrade(IN const int nAbradeP, IN const int nRange)//#mµi mßn
 #ifndef _SERVER
 void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack/* = false*/, unsigned int sidx /* = 0*/)
 {
-	bool ispos_immediacy = false;
+	bool ispos_immediacy = false;	// [VEVATPHAM 12/09 b]
 	// [A31 04/09] bResize tu nay nghia la THU NHO VE MOT O chu khong doi anh nua.
 	// Truoc day no thay hinh mon bang RESIZEITEM_SPR (cai tui chuyen van) - chu bao dung:
 	// "chu ban dang thu nho ve va doi luon hinh anh sao duoc?". Nay ve bang RU_T_IMAGE_STRETCH
@@ -1996,16 +2002,107 @@ void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack
 		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE_STRETCH, TRUE);
 	}
 #ifdef JX_ANDROID
-	else if (g_nJxVeVatPhamW > 0 && g_nJxVeVatPhamH > 0)	// [HANHTRANG 12/09]
+	else if (g_nJxVeVatPhamW > 0 && g_nJxVeVatPhamH > 0)	// [HANHTRANG 12/09] + [VEVATPHAM 12/09]
 	{
-		m_Image.oEndPos.nX = m_Image.oPosition.nX + g_nJxVeVatPhamW;
-		m_Image.oEndPos.nY = m_Image.oPosition.nY + g_nJxVeVatPhamH;
+		// [VEVATPHAM 12/09 c] ve GON TRONG o, giu ti le, can giua.
+		// Khung dich cua RU_T_IMAGE_STRETCH la mien nguon [0, nWidth] x [0, nHeight] cua KHUNG ANH, nhung
+		// anh that con lech theo offset rieng cua khung (nOffX/nOffY) nen de tran ra ngoai o (do duoc: o
+		// 36x36 ma binh thuoc ve ra 41x50, lech len 16 px). Hoi Represent co + offset khung anh roi tinh
+		// khung dich sao cho HOP ANH (hop cua [0,co] va [offset, offset+co]) nam gon trong o.
+		int nGocW = m_CommonAttrib.nWidth;
+		int nGocH = m_CommonAttrib.nHeight;
+		int nVeW, nVeH, nX0, nY0;
+		KRPosition2 oLech, oCo;
+		int nX1 = 0, nY1 = 0, nX2 = 0, nY2 = 0, nTiLe = 0;	// hop anh trong he toa do nguon (phan nghin)
+		extern int g_nJxKeoAnhVatPham;	// [VEVATPHAM 12/09 e]
+		if (nGocW < 1) nGocW = 1;
+		if (nGocH < 1) nGocH = 1;
+		oLech.nX = oLech.nY = 0;
+		oCo.nX = oCo.nY = 0;
+		if (g_pRepresent && g_pRepresent->GetImageFrameParam(m_Image.szImage, m_Image.nFrame, &oLech, &oCo, m_Image.nType)
+			&& oCo.nX > 0 && oCo.nY > 0)
+		{
+			int nRong, nCao, nA, nB;
+			nX1 = (oLech.nX < 0) ? oLech.nX : 0;	// bao ca hai cach ve (co / khong ap offset)
+			nY1 = (oLech.nY < 0) ? oLech.nY : 0;
+			nX2 = (oLech.nX + oCo.nX > oCo.nX) ? (oLech.nX + oCo.nX) : oCo.nX;
+			nY2 = (oLech.nY + oCo.nY > oCo.nY) ? (oLech.nY + oCo.nY) : oCo.nY;
+			nRong = nX2 - nX1;
+			nCao  = nY2 - nY1;
+			if (nRong > 0 && nCao > 0)
+			{
+				nA = g_nJxVeVatPhamW * 1000 / nRong;
+				nB = g_nJxVeVatPhamH * 1000 / nCao;
+				nTiLe = (nA < nB) ? nA : nB;
+			}
+		}
+		if (!g_nJxKeoAnhVatPham && oCo.nX > 0 && oCo.nY > 0)
+		{
+			// [VEVATPHAM 12/09 e] MAC DINH: ve NGUYEN CO, dat sao cho KHUNG ANH nam chinh giua o.
+			// Represent se cong offset khung anh khi ve (nOffX/nOffY) nen tru truoc o day.
+			m_Image.oPosition.nX = g_nJxVeVatPhamX + (g_nJxVeVatPhamW - oCo.nX) / 2 - oLech.nX;
+			m_Image.oPosition.nY = g_nJxVeVatPhamY + (g_nJxVeVatPhamH - oCo.nY) / 2 - oLech.nY;
+			if (g_nJxNhatKyVatPham > 0)
+			{
+				g_nJxNhatKyVatPham--;
+				g_DebugLog("[VATPHAM-GIUA] o %d,%d %dx%d | khung anh %dx%d lech %d,%d | ve tai %d,%d | %s",
+					g_nJxVeVatPhamX, g_nJxVeVatPhamY, g_nJxVeVatPhamW, g_nJxVeVatPhamH, oCo.nX, oCo.nY,
+					oLech.nX, oLech.nY, m_Image.oPosition.nX, m_Image.oPosition.nY, m_Image.szImage);
+			}
+			g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE, TRUE);
+			return;	// da ve xong (so luong mon chong o phim tat khong ve, giong ban goc)
+		}
+		if (nTiLe > 0 && g_nJxKeoAnhVatPham)
+		{
+			// khung dich = mien [0, co] sau khi phong; dat sao cho hop anh can giua trong o
+			nVeW = oCo.nX * nTiLe / 1000;
+			nVeH = oCo.nY * nTiLe / 1000;
+			if (nVeW < 1) nVeW = 1;
+			if (nVeH < 1) nVeH = 1;
+			nX0 = g_nJxVeVatPhamX + (g_nJxVeVatPhamW - (nX2 - nX1) * nTiLe / 1000) / 2 - nX1 * nTiLe / 1000;
+			nY0 = g_nJxVeVatPhamY + (g_nJxVeVatPhamH - (nY2 - nY1) * nTiLe / 1000) / 2 - nY1 * nTiLe / 1000;
+		}
+		else
+		{
+			// khong hoi duoc khung anh: giu cach cu (theo so O cua mon)
+			nVeW = g_nJxVeVatPhamW;
+			nVeH = g_nJxVeVatPhamH;
+			if (nGocW * nVeH > nGocH * nVeW)
+				nVeH = nVeW * nGocH / nGocW;
+			else
+				nVeW = nVeH * nGocW / nGocH;
+			if (nVeW < 1) nVeW = 1;
+			if (nVeH < 1) nVeH = 1;
+			nX0 = g_nJxVeVatPhamX + (g_nJxVeVatPhamW - nVeW) / 2;
+			nY0 = g_nJxVeVatPhamY + (g_nJxVeVatPhamH - nVeH) / 2;
+		}
+		m_Image.oPosition.nX = nX0;
+		m_Image.oPosition.nY = nY0;
+		m_Image.oEndPos.nX = nX0 + nVeW;
+		m_Image.oEndPos.nY = nY0 + nVeH;
 		m_Image.oEndPos.nZ = m_Image.oPosition.nZ;
+		if (g_nJxNhatKyVatPham > 0)
+		{
+			g_nJxNhatKyVatPham--;
+			g_DebugLog("[VATPHAM-KEO] o %d,%d %dx%d | khung anh %dx%d lech %d,%d | hop %d..%d,%d..%d ti le %d | ve %d,%d %dx%d | %s",
+				g_nJxVeVatPhamX, g_nJxVeVatPhamY, g_nJxVeVatPhamW, g_nJxVeVatPhamH, oCo.nX, oCo.nY, oLech.nX, oLech.nY,
+				nX1, nX2, nY1, nY2, nTiLe, nX0, nY0, nVeW, nVeH, m_Image.szImage);
+		}
 		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE_STRETCH, TRUE);
 	}
 #endif
 	else
+	{
+#ifdef JX_ANDROID
+		if (g_nJxNhatKyVatPham2 > 0)	// [VEVATPHAM 12/09 b] ve NGUYEN CO (khong keo) - de xem co phai duong nay lam anh tran o
+		{
+			g_nJxNhatKyVatPham2--;
+			g_DebugLog("[VATPHAM-THUONG] tai %d,%d mon %dx%d o, anh %s", m_Image.oPosition.nX, m_Image.oPosition.nY,
+				(int)m_CommonAttrib.nWidth, (int)m_CommonAttrib.nHeight, m_Image.szImage);
+		}
+#endif
 		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE, TRUE);
+	}
 	
 	if (IsStack() && bPaintStack && !ispos_immediacy) //Kh«ng vÏ sè l­îng item trong « phÝm t¾t
 	{
