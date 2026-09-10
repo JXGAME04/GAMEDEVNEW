@@ -65,15 +65,49 @@ HOP_THOAI = ("KUiESCDlg|Main", "KUiOptions|Main", "KUiInformation|Main", "KUiMai
              "KUiTongJX2|Main")
 
 
+NEO_CU = {}            # khoa -> (neoX, neoY) doc duoc tu tep nguon (6 truong); tep rong dung dung neo nay
+
+
 def doc_bang(p):
     bang = []; nl = "\n"
     s = io.open(p, encoding="latin-1", newline="").read()
     nl = "\r\n" if "\r\n" in s else "\n"
     for d in s.split(nl):
-        m = re.match(r"^([^;=\[][^=]*)=(-?\d+),(-?\d+)(?:,(\d+))?(?:,(\d+))?(?:,-?\d+)?(?:,-?\d+)?\s*$", d)   # 4 hoac 6 truong (neo bo qua, gan lai)
+        m = re.match(r"^([^;=\[][^=]*)=(-?\d+),(-?\d+)(?:,(\d+))?(?:,(\d+))?(?:,(-?\d+))?(?:,(-?\d+))?\s*$", d)   # 4 hoac 6 truong
         if m and m.group(1).strip().lower() != "manhinh":
-            bang.append([m.group(1).strip(), int(m.group(2)), int(m.group(3)), int(m.group(4) or 1000), int(m.group(5) or 0)])
+            k = m.group(1).strip()
+            bang.append([k, int(m.group(2)), int(m.group(3)), int(m.group(4) or 1000), int(m.group(5) or 0)])
+            if m.group(6) is not None and m.group(7) is not None:
+                NEO_CU[k] = (int(m.group(6)), int(m.group(7)))
     return bang, nl
+
+
+def neo_tam(cx, cy, w, h):
+    """neo tu suy theo TAM cua so trong khung thiet ke w x h: < 35 % trai/tren, >= 65 % phai/duoi, giua"""
+    nx = 0 if cx * 100 < w * 35 else (2 if cx * 100 >= w * 65 else 1)
+    ny = 0 if cy * 100 < h * 35 else (2 if cy * 100 >= h * 65 else 1)
+    return nx, ny
+
+
+def them_toan_bo(bang, co):
+    r"""[UITOADO 12/09 TOANBO] moi cua so trong game (android\du_lieu_ghi_de\ui\cua_so_ui.json, ini thiet ke 800x600) chua co
+    trong bo cuc cua chu -> them muc: neo theo tam, vi tri doi sang khung 1040x604 (x + 240*neo/2, y + 4*neo/2)"""
+    import json
+    p = os.path.join("android", "du_lieu_ghi_de", "ui", "cua_so_ui.json")
+    if not os.path.isfile(p):
+        return 0
+    d = json.load(io.open(p, encoding="utf-8"))
+    so = 0
+    for k in sorted(d):
+        L, T, W, H = d[k]
+        if k in co or W <= 0 or H <= 0 or (W >= 790 and H >= 590):
+            continue
+        nx, ny = neo_tam(L + W // 2, T + H // 2, 800, 600)
+        bang.append([k, L + (W0 - 800) * nx // 2, T + (H0 - 600) * ny // 2, 1000, 0])
+        co[k] = bang[-1]
+        NEO_CU[k] = (nx, ny)
+        so += 1
+    return so
 
 
 def lop_cua(khoa):
@@ -111,6 +145,8 @@ def main():
     for k, (rong, y) in GIUA_TRUOC_GAME.items():
         if k not in co:
             bang.append([k, 0, y, 1000, 0]); co[k] = bang[-1]
+    if CHUAN:
+        print("them %d cua so tu cua_so_ui.json (neo theo tam)" % them_toan_bo(bang, co))
     hang_tren = dict((k, i) for i, (k, _) in enumerate(HANG_TREN))
     cot_phai = dict(COT_PHAI)
     for khoa, x, y, tile, cocb in bang:
@@ -122,6 +158,14 @@ def main():
         if lop in CHA_MOI and la_main:                       # cha toan man hinh: vi tri moi (tuyet doi)
             nx, ny = CHA_MOI[lop]
             ra.append((khoa, nx, ny, tile, cocb, 1 if lop == "KUiPlayerBar" else 0, 0)); continue
+        if not CHUAN and NGUYEN and khoa in NEO_CU:
+            # tep rong: dung DUNG neo da luu trong tep chuan (cung cong thuc voi game: dich DX*neo/2, con tru neo cha qua tuong_doi_moi)
+            neo_x, neo_y = NEO_CU[khoa]
+            ax, ay = tuyet_doi(khoa, x, y)
+            ax += DX * neo_x // 2
+            ay += DY * neo_y // 2
+            nx, ny = tuong_doi_moi(khoa, ax, ay)
+            ra.append((khoa, nx, ny, tile, cocb, neo_x, neo_y)); continue
         ax, ay = tuyet_doi(khoa, x, y)
         if khoa in hang_tren:
             if not NGUYEN:
@@ -156,6 +200,8 @@ def main():
                 ax += DX // 2; neo_x = 1                        # thanh duoi / hop thoai: giua
             if ay >= 423: ay += DY; neo_y = 2
         else:
+            if khoa in NEO_CU:                                    # muc them tu cua_so_ui.json (chuan): giu neo da suy theo tam
+                neo_x, neo_y = NEO_CU[khoa]
             if ay >= 423: ay += DY; neo_y = 2                   # trai / tren: giu
         if neo_y == 0 and ay >= H1 * 0.65: neo_y = 2
         nx, ny = tuong_doi_moi(khoa, ax, ay)

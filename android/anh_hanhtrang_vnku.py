@@ -76,18 +76,42 @@ def khung():
     return im
 
 
-def nut(ten_png, rong=NUT_W, cao=NUT_H):
-    a = png(ten_png)
-    thuong = a.resize((rong, cao), Image.LANCZOS)
+def nen_nut_trong(rong=NUT_W, cao=NUT_H):
+    """nen nut VNKU (btn_dong) bo chu: keo dai mot dai sach o mep trai ra giua"""
+    a = png("btn_dong_f00.png")                      # 215 x 105, chu "Dong" o giua
+    w, h = a.size
+    dai = a.crop((14, 0, 30, h)).resize((w - 28, h), Image.BILINEAR)
+    a.paste(dai, (14, 0))
+    return a.resize((rong, cao), Image.LANCZOS)
+
+
+def nut_chu(chu, rong=NUT_W, cao=NUT_H):
+    """[HANHTRANG 12/09 b] chu 07:55: 'hanh trang phai dong bo cac nut' -> nut nen VNKU + chu DUNG TEN CU cua game (Loi rao, Dinh gia...)
+    ve bang font Windows co dau, vien toi; khung 2 = ban bam (toi hon)"""
+    from PIL import ImageFont
+    thuong = nen_nut_trong(rong, cao)
+    d = ImageDraw.Draw(thuong)
+    font = None
+    for f in (r"C:\Windows\Fonts\arialbd.ttf", r"C:\Windows\Fonts\tahomabd.ttf", r"C:\Windows\Fonts\arial.ttf"):
+        if os.path.isfile(f):
+            font = ImageFont.truetype(f, 15); break
+    if font is None:
+        font = ImageFont.load_default()
+    x0, y0, x1, y1 = d.textbbox((0, 0), chu, font=font)
+    tx, ty = (rong - (x1 - x0)) // 2 - x0, (cao - (y1 - y0)) // 2 - y0 - 1
+    for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)):
+        d.text((tx + dx, ty + dy), chu, font=font, fill=(20, 12, 4, 255))
+    d.text((tx, ty), chu, font=font, fill=(255, 238, 170, 255))
     bam = ImageEnhance.Brightness(thuong).enhance(0.7)
     return [thuong, bam]
 
 
 def main():
     ghi(os.path.join("spr", "ui3", "uiitem", "uiitemmain_m.spr"), [khung()])
-    for ten, tep in (("loi_rao", "quang_ba_f00.png"), ("dinh_gia", "btn_tham_dinh_f00.png"), ("rao_ban", "btn_trung_bay_f00.png"),
-                     ("gui_tien", "gui_tien_f00.png"), ("trang_bi", "trang_bi_f00.png"), ("dong", "btn_dong_f00.png")):
-        ghi(os.path.join("spr", "ui3", "uiitem", "nut_hanhtrang_%s.spr" % ten), nut(tep))
+    # nut: nen VNKU + chu dung ten cu cua game (chu: "phai dong bo cac nut"), khong dung chu VNKU (Quang ba / Tham dinh / Trung bay)
+    for ten, chu in (("loi_rao", "Lời rao"), ("dinh_gia", "Định giá"), ("rao_ban", "Rao bán"),
+                     ("gui_tien", "Gửi tiền"), ("trang_bi", "Trang bị"), ("dong", "Đóng")):
+        ghi(os.path.join("spr", "ui3", "uiitem", "nut_hanhtrang_%s.spr" % ten), nut_chu(chu))
     # ini
     goc = io.open(r"D:\jx1_android_data\ui\ui3\uiitem.ini", encoding="latin-1", newline="").read()
     nl = "\r\n" if "\r\n" in goc else "\n"
@@ -101,9 +125,10 @@ def main():
         "Image=\\spr\\ui3\\uiitem\\nut_hanhtrang_dong.spr",
         "[GetMoneyBtn]", "Left=%d" % NUT_X[0], "Top=%d" % NUT_Y2, "Width=%d" % NUT_W, "Height=%d" % NUT_H, "Up=0", "Down=1", "Over=0", "OverFrame=0",
         "Image=\\spr\\ui3\\uiitem\\nut_hanhtrang_gui_tien.spr",
-        "[Money]", "Left=%d" % (LUOI_X + 30), "Top=%d" % (TIEN_Y + 4), "Width=200", "Height=14", "Text=", "Font=14", "HAlign=1", "Color=255,217,78",
-        "[FkCoinLable]", "Left=-30", "Top=%d" % (TIEN_Y + 30), "Width=138", "Height=14", "Text=Xu", "Font=14", "HAlign=1", "Color=255,0,0",
-        "[FkCoinValue]", "Left=%d" % (LUOI_X + 30), "Top=%d" % (TIEN_Y + 30), "Width=200", "Height=14", "Text=0 Xu", "Font=14", "HAlign=1", "Color=255,0,0",
+        # hang tien: Luong ben trai, Xu ben phai CUNG mot hang (truoc: dong Xu o y+30 de len hang nut -> "lon xon")
+        "[Money]", "Left=%d" % (LUOI_X + 30), "Top=%d" % (TIEN_Y + 4), "Width=120", "Height=14", "Text=", "Font=14", "HAlign=1", "Color=255,217,78",
+        "[FkCoinLable]", "Left=-300", "Top=0", "Width=1", "Height=1", "Text=", "Font=14", "HAlign=1", "Color=255,0,0",
+        "[FkCoinValue]", "Left=%d" % (LUOI_X + 160), "Top=%d" % (TIEN_Y + 4), "Width=100", "Height=14", "Text=0 Xu", "Font=14", "HAlign=1", "Color=255,120,120",
         "[OpenStatus]", "Left=%d" % NUT_X[1], "Top=%d" % NUT_Y2, "Width=%d" % NUT_W, "Height=%d" % NUT_H, "Up=0", "Down=1", "Over=0", "OverFrame=0",
         "Image=\\spr\\ui3\\uiitem\\nut_hanhtrang_trang_bi.spr",
         "[ItemBox]", "Width=%d" % LUOI_W, "Height=%d" % LUOI_H, "Left=%d" % LUOI_X, "Top=%d" % LUOI_Y, "HUnits=%d" % COT, "VUnits=%d" % HANG, "UnitBorder=%d" % VIEN,

@@ -41,6 +41,11 @@ TEN_UID = {}           # uid -> ten xin (tu dong 'P' trong nhat ky) de phan loai
 NEN_MUC = 0            # --nen-roi [muc]: nen NRV2B (UCL) cac tep roi khi dua vao pak (0 = khong nen)
 NEN_ROI = {}           # duong dan tep roi -> (tep blob da nen, co nen)
 SO_TIEN_TRINH = 4      # so tien trinh ucl_nen.exe chay song song
+# [NEN 12/09 b] CHI nen tep <= 512 KB. Pak goc cua game chua bao gio nen muc to (updatejx14: 0 muc UCL, tho toi 5,4 MB; spr.pak: UCL
+# to nhat 0,5 MB): anh chay/danh nhieu khung (rongxanh_wlk.spr 15,8 MB) ma nen thi dien thoai giai nen ca tep moi lan nap -> vuot
+# ngan sach khung -> nhan vat / NPC MAT HINH KHI DI CHUYEN (chu bao 07:55 voi bo _dt_nen). Bo qua tep rac (.rar .zip .7z).
+NEN_TOI_DA = 512 * 1024
+DUOI_RAC = (".rar", ".zip", ".7z", ".exe", ".dll", ".pdb")
 
 
 def doc_tham_so():
@@ -83,7 +88,8 @@ def nen_tep_roi(ds):
         raise SystemExit("thieu %s (dich: xem dau android/ucl_nen.c)" % exe)
     tam = os.path.join(tempfile.gettempdir(), "ucl_nen")
     os.makedirs(tam, exist_ok=True)
-    roi = [m for m in ds if not isinstance(m[1], tuple)]
+    roi = [m for m in ds if not isinstance(m[1], tuple) and m[2] <= NEN_TOI_DA]    # [NEN 12/09 b] chi tep nho
+    print("nen: %d/%d tep roi <= %d KB (tep to giu tho nhu pak goc)" % (len(roi), sum(1 for m in ds if not isinstance(m[1], tuple)), NEN_TOI_DA // 1024))
     if not roi:
         return ds
     t0 = time.time()
@@ -213,6 +219,8 @@ def gom_muc(nguon, loc_uid):
             continue
         for root, ds, fs in os.walk(goc):
             for f in fs:
+                if f.lower().endswith(DUOI_RAC):
+                    continue                                        # [NEN 12/09 b] spr.rar 54 MB trong npcres\boss...
                 p = os.path.join(root, f)
                 rel = "\\" + os.path.relpath(p, nguon).replace("/", "\\")
                 u = uid_cua(rel)

@@ -270,6 +270,24 @@ Hành trang gốc (`ui\ui3\uiitem.ini`): cửa sổ 214×454, `[ItemBox]` 168×2
   **hẹn tắt sau 0,2 s**, SET_FOCUS đến trước thì huỷ hẹn (bàn phím giữ nguyên, chỉ đổi kiểu ô nếu khác); không còn tắt+mở lại.
   APK `jx1mobile-1209-tai-l.apk` (tự cập nhật từ tai-k).
 
+## 12b. Chủ 07:55: hành trang lộn xộn, icon/thông báo lệch, "neo toàn bộ UI", **nhân vật/NPC mất hình khi di chuyển**
+
+- **Mất hình khi di chuyển** (điện thoại, bộ `_dt_nen`): pak gốc của game **không bao giờ nén mục to** (updatejx14.pak: 0 mục UCL, thô
+  tới 5,4 MB; spr.pak: UCL to nhất 0,5 MB) — tôi đã nén cả 43.914 tệp rời kể cả ảnh chạy/đánh nhiều khung (189 tệp > 1 MB, to nhất
+  `rongxanh_wlk.spr` 15,8 MB, có cả `npcres\boss\spr.rar` 54 MB rác). Điện thoại giải nén cả tệp mỗi lần nạp → vượt ngân sách khung
+  → ảnh chạy không kịp nạp → mất hình khi di chuyển (đứng yên thì ảnh nhỏ nạp kịp). Sửa `NEN 12/09 b`: chỉ nén tệp ≤ 512 KB
+  (`NEN_TOI_DA`), bỏ `.rar/.zip/.7z`; gói mới `D:\jx1_android_data_dt_v3` (máy chủ chuyển sang, điện thoại tự tải phần đổi).
+- **Hành trang "phải đồng bộ các nút"**: bỏ chữ VNKU (Quảng bá/Thẩm định/Trưng bày), nút = nền VNKU trống + chữ đúng tên cũ của game
+  (Lời rao, Định giá, Rao bán, Gửi tiền, Trang bị, Đóng; font Arial đậm có viền, 2 khung thường/bấm); dòng Xu trước đè lên hàng nút
+  (y 524 vs 520) → Lượng và Xu cùng một hàng.
+- **"Neo toàn bộ UI trong game"**: `android/liet_ke_cua_so_ui.py` quét `Ui/UiCase/*.cpp` → lớp `KUi*`, ini, mục chính, Left/Top/Width/Height
+  (ini thiết kế 800×600) → `android/du_lieu_ghi_de/ui/cua_so_ui.json` (81 cửa sổ; bỏ cửa sổ toàn màn, không ini). `sinh_bocuc_rong.py
+  --chuan` thêm 72 cửa sổ chưa có trong bố cục của chủ, **neo theo tâm** (< 35 % trái/trên, ≥ 65 % phải/dưới, giữa), vị trí đổi sang
+  1040×604 (x + 240·neo/2). Tệp màn rộng nay dùng **đúng neo đã lưu** trong tệp chuẩn (cùng công thức với game) thay vì đoán lại.
+  Kết quả: 147 mục mỗi tệp; ví dụ hộp nhập (`KUiGetString`) 436 → 601, thông báo chớp (`KUiFlashMessage`) 120 → 285, tin nhắn cuộn
+  (`KUiNewsMessage`) 320 → 485, báo cáo trận (`KUiBattleReport`) neo phải 902 → 1233, cửa hàng neo trái. Máy ảo cũng đổi (hộp thoại
+  vào giữa 1040 thay vì lệch trái 800).
+
 ## 13. Tự tải và cài APK mới trong game (`CAPNHAT 12/09`) — chủ 03:40: "tải APK mới mà không cần up lên Drive"
 
 - Cách nhanh không cần gì thêm: điện thoại cùng Wi‑Fi mở `http://10.0.0.140:8765/jx1mobile.apk` (máy chủ tải phục vụ APK ở gốc).
