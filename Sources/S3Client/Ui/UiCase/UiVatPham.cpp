@@ -40,8 +40,8 @@ enum
 	VP_DONG,
 };
 
-#define VP_NUT_RONG		92		// dung co anh nut kho VNKU (android/anh_vatpham_vnku.py)
-#define VP_NUT_CAO		30
+#define VP_NUT_RONG		100		// dung co anh nut kho VNKU (android/anh_vatpham_vnku.py: nut ngoc UiAutoNew)
+#define VP_NUT_CAO		34
 #define VP_NUT_KHE		4
 #define VP_NUT_MOI_HANG	3
 

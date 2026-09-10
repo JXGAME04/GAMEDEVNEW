@@ -19,8 +19,11 @@ sys.path.insert(0, GOC)
 from bo_cuc_vnku_mobile import ghi_spr_nhieu_khung, ghi_moi_noi  # noqa: E402
 
 VNKU_PNG = r"C:\Users\nguye\Downloads\NHACTAI\VNKU_ui\png\Spr\UiNew\UiItem"
-W, H = 320, 300           # khung bang
-NUT_W, NUT_H = 92, 30
+#   [VATPHAM 12/09 c] chu: "khong co cai nut nao dep hon a?" -> doi sang kieu NUT NGOC (UiAutoNew) thay dai go.
+NUT_NEN = r"C:\Users\nguye\Downloads\NHACTAI\VNKU_ui\png\Spr\UiNew\UiAutoNew\btn_len_f00.png"
+NUT_NAP = 46              # be rong hai dau nut (hoa van goc) giu nguyen khi xoa chu
+W, H = 320, 300           # khung bang (khong dung nua)
+NUT_W, NUT_H = 100, 34
 
 NUT = [
     ("dung",      "Dùng"),
@@ -51,11 +54,11 @@ def ghi(rel, cac_khung):
 
 
 def nen_nut_trong(rong=NUT_W, cao=NUT_H):
-    """nen nut VNKU (btn_dong) bo chu: keo dai mot dai sach o mep trai ra giua"""
-    a = png("btn_dong_f00.png")
+    """nen NUT NGOC cua kho VNKU (UiAutoNew, btn_len) da XOA CHU: giu hai dau hoa van, keo mot cot sach ra giua"""
+    a = Image.open(NUT_NEN).convert("RGBA")
     w, h = a.size
-    dai = a.crop((14, 0, 30, h)).resize((w - 28, h), Image.BILINEAR)
-    a.paste(dai, (14, 0))
+    cot = a.crop((NUT_NAP, 0, NUT_NAP + 6, h)).resize((w - 2 * NUT_NAP, h), Image.BILINEAR)
+    a.paste(cot, (NUT_NAP, 0))
     return a.resize((rong, cao), Image.LANCZOS)
 
 
@@ -69,9 +72,9 @@ def font_chu(co):
 def nut_chu(chu, rong=NUT_W, cao=NUT_H):
     thuong = nen_nut_trong(rong, cao)
     d = ImageDraw.Draw(thuong)
-    co = 15
+    co = 17
     font = font_chu(co)
-    while co > 10:
+    while co > 11:
         x0, y0, x1, y1 = d.textbbox((0, 0), chu, font=font)
         if x1 - x0 <= rong - 10:
             break
@@ -80,8 +83,8 @@ def nut_chu(chu, rong=NUT_W, cao=NUT_H):
     x0, y0, x1, y1 = d.textbbox((0, 0), chu, font=font)
     tx, ty = (rong - (x1 - x0)) // 2 - x0, (cao - (y1 - y0)) // 2 - y0 - 1
     for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)):
-        d.text((tx + dx, ty + dy), chu, font=font, fill=(20, 12, 4, 255))
-    d.text((tx, ty), chu, font=font, fill=(255, 238, 170, 255))
+        d.text((tx + dx, ty + dy), chu, font=font, fill=(16, 30, 26, 255))
+    d.text((tx, ty), chu, font=font, fill=(255, 248, 214, 255))
     bam = ImageEnhance.Brightness(thuong).enhance(0.7)
     return [thuong, bam]
 
@@ -105,7 +108,7 @@ def khung():
 
 
 def main():
-    ghi(os.path.join("spr", "ui3", "uivatpham", "khung_vatpham.spr"), [khung()])
+    #   khung bang khong dung nua: dai nut nam ngay duoi bang chu giai co san cua game
     for ten, chu in NUT:
         ghi(os.path.join("spr", "ui3", "uivatpham", "nut_vp_%s.spr" % ten), nut_chu(chu))
     print("xong: %d nut + 1 khung" % len(NUT))
