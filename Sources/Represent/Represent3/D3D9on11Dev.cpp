@@ -14,7 +14,7 @@
 #include <string.h>
 
 #define R11_SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = NULL; } }
-#define R11_RING_SIZE (4 * 1024 * 1024)
+#define R11_RING_SIZE (16 * 1024 * 1024)	// [MANG 09/09 c] 4 -> 16 MB: danh tran 5 MB dinh/khung, lo gop 2 MB -> 4 MB phai DISCARD 2-3 lan/khung
 
 CDev11* g_pRep3Dev11 = NULL;
 double   g_dRep3PresentMs = 0.0;
@@ -22,6 +22,7 @@ unsigned g_uRep3Presents = 0;
 unsigned g_uRep3PresentSkip = 0;
 unsigned g_uRep3BatchQuads = 0;
 unsigned g_uRep3BatchDraws = 0;
+unsigned g_uRep3RingVong = 0; double g_dRep3RingMapMax = 0.0; unsigned g_uRep3TexRiengTao = 0;	// [MANG 09/09 c]
 unsigned g_uRep3GopVo[12] = { 0 };	// [GOP 09/09 do] ly do vo lo quad: 0 doi trang atlas, 1 texture rieng, 2 srv1, 3 blend, 4 sampler, 5 ps st0, 6 ps st1, 7 alphatest, 8 vs, 9 layout, 10 vp/scissor/raster, 11 day
 unsigned g_uRep3VeNgay[4] = { 0 };	// [GOP 09/09 do] lenh ve ngay (khong gop): 0 fan, 1 list, 2 strip (khong phai quad), 3 khac
 static int s_nRep3BuffersUsed = 0;
@@ -1014,9 +1015,11 @@ void CDev11::UploadRing(const BYTE* pData, UINT bytes, UINT stride, UINT* pPos)
 	if (stride && (pos % stride)) pos += stride - (pos % stride);
 	D3D11_MAP mapType = D3D11_MAP_WRITE_NO_OVERWRITE;
 	// [D3D11 08/09 c] dau moi khung (sau Present) hoac het ring: DISCARD de driver cap vung moi.
-	if (m_bRingDiscard || pos + bytes > m_ringSize) { pos = 0; mapType = D3D11_MAP_WRITE_DISCARD; m_bRingDiscard = false; }
+	if (m_bRingDiscard || pos + bytes > m_ringSize) { if (!m_bRingDiscard) g_uRep3RingVong++; pos = 0; mapType = D3D11_MAP_WRITE_DISCARD; m_bRingDiscard = false; }	// [MANG 09/09 c] dem vong GIUA khung
 	D3D11_MAPPED_SUBRESOURCE ms;
+	LARGE_INTEGER tM0, tM1; QueryPerformanceCounter(&tM0);
 	HRESULT hr = m_pCtx->Map(m_pRing, 0, mapType, 0, &ms);
+	QueryPerformanceCounter(&tM1); { const double dM = R11Ms(tM0, tM1); if (dM > g_dRep3RingMapMax) g_dRep3RingMapMax = dM; }	// [MANG 09/09 c]
 	if (FAILED(hr)) { R11Log("Map ring that bai 0x%08X", (unsigned)hr); *pPos = 0xFFFFFFFF; return; }
 	memcpy((BYTE*)ms.pData + pos, pData, bytes);
 	m_pCtx->Unmap(m_pRing, 0);

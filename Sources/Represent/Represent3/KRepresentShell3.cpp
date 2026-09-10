@@ -106,6 +106,7 @@ double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
 unsigned g_uRep3VeLoai[6] = {0, 0, 0, 0, 0, 0}; unsigned g_uRep3VeKhung = 0;	// [VE 08/09 a]
 // [VE 08/09 b] thoi gian CPU luong ve: DrawPrimitives (tong trong khung) va ca khung Begin->End
 double g_dRep3VeDpKhung = 0.0, g_dRep3VeDpTong = 0.0, g_dRep3VeDpMax = 0.0, g_dRep3VeKhungTong = 0.0, g_dRep3VeKhungMax = 0.0;
+extern unsigned g_uRep3RingVong; extern double g_dRep3RingMapMax; extern unsigned g_uRep3TexRiengTao;	// [MANG 09/09 c]
 LARGE_INTEGER g_liRep3VeBegin = {0};
 int g_nRep3VeMau = 0;	// [VE 09/09 d] 1 = khung nay la khung MAU (1/8): moi do [VE] theo don vi/lenh chi chay tren khung mau (QPC 2 lan/lenh x 5 000 lenh/khung = 4 % thoi gian ve)
 struct Rep3VeDpTimer { LARGE_INTEGER a; Rep3VeDpTimer() { if (g_nRep3VeMau) QueryPerformanceCounter(&a); } ~Rep3VeDpTimer() { if (g_nRep3VeMau) { LARGE_INTEGER b; QueryPerformanceCounter(&b); g_dRep3VeDpKhung += Rep3NapMs(a, b); } } };
@@ -2842,14 +2843,14 @@ void KRepresentShell3::RepresentEnd()
 			}
 			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0; g_uRep3BatchQuads = 0; g_uRep3BatchDraws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
-			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung mau %u) | cpu ve: DrawPrimitives %.2f ms/khung (max %.1f), khung %.2f ms (max %.1f)",	// [NAP 08/09 a/b] [VE 08/09 a/b]
+			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung mau %u) | cpu ve: DrawPrimitives %.2f ms/khung (max %.1f), khung %.2f ms (max %.1f) | ring: %u vong, Map max %.1f ms | texture rieng tao %u",	// [NAP 08/09 a/b] [VE 08/09 a/b]
 				g_nRep3StatSec, g_napSpr.n, g_napSpr.ms, g_napSpr.max, g_napJpeg.n, g_napJpeg.ms, g_napJpeg.max, g_napKhung.n, g_napKhung.ms, g_napKhung.max,
 				g_napGiaiMa.n, g_napGiaiMa.ms, g_napGiaiMa.max, g_napGpu.n, g_napGpu.ms, g_napGpu.max, g_uRep3NapKhung5, g_uRep3NapKhung16, g_dRep3NapKhungMax,
 				m_TextureResMgr.m_nNapNenGui, m_TextureResMgr.m_nNapNenXong, m_TextureResMgr.m_nNapNenHong, m_TextureResMgr.m_nNapNenBoVe,
 				g_uRep3VeKhung ? (double)g_uRep3VeLoai[0] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[1] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[2] / g_uRep3VeKhung : 0.0,
 				g_uRep3VeKhung ? (double)g_uRep3VeLoai[3] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[4] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[5] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung,
-				g_uRep3VeKhung ? g_dRep3VeDpTong / g_uRep3VeKhung : 0.0, g_dRep3VeDpMax, g_uRep3VeKhung ? g_dRep3VeKhungTong / g_uRep3VeKhung : 0.0, g_dRep3VeKhungMax);
-			g_dRep3VeDpTong = 0.0; g_dRep3VeDpMax = 0.0; g_dRep3VeKhungTong = 0.0; g_dRep3VeKhungMax = 0.0;
+				g_uRep3VeKhung ? g_dRep3VeDpTong / g_uRep3VeKhung : 0.0, g_dRep3VeDpMax, g_uRep3VeKhung ? g_dRep3VeKhungTong / g_uRep3VeKhung : 0.0, g_dRep3VeKhungMax, g_uRep3RingVong, g_dRep3RingMapMax, g_uRep3TexRiengTao);
+			g_dRep3VeDpTong = 0.0; g_dRep3VeDpMax = 0.0; g_dRep3VeKhungTong = 0.0; g_dRep3VeKhungMax = 0.0; g_uRep3RingVong = 0; g_dRep3RingMapMax = 0.0; g_uRep3TexRiengTao = 0; /* [MANG 09/09 c] */
 			memset(g_uRep3VeLoai, 0, sizeof(g_uRep3VeLoai)); g_uRep3VeKhung = 0;
 			m_TextureResMgr.m_nNapNenGui = 0; m_TextureResMgr.m_nNapNenXong = 0; m_TextureResMgr.m_nNapNenHong = 0; m_TextureResMgr.m_nNapNenBoVe = 0;
 			memset(&g_napSpr, 0, sizeof(g_napSpr)); memset(&g_napJpeg, 0, sizeof(g_napJpeg)); memset(&g_napKhung, 0, sizeof(g_napKhung)); memset(&g_napGiaiMa, 0, sizeof(g_napGiaiMa)); memset(&g_napGpu, 0, sizeof(g_napGpu));

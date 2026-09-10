@@ -212,6 +212,10 @@ HRESULT CTex11::EnsureGpu(const BYTE* pInit)
 			sr.pSysMem = pInit; sr.SysMemPitch = m_pitch;
 		}
 	}
+	{	// [MANG 09/09 c] ai la texture RIENG (ngoai atlas, cat lo quad 80-350 lan/khung)? ghi 64 lan dau
+		extern unsigned g_uRep3TexRiengTao; static unsigned s_uDaGhi = 0; g_uRep3TexRiengTao++;
+		if (s_uDaGhi < 64) { s_uDaGhi++; R11Log("[D3D11] texture rieng #%u: %ux%u fmt %d usage 0x%X pool %d%s", s_uDaGhi, m_w, m_h, (int)m_fmt, (unsigned)m_usage, (int)m_pool, bRt ? " RT" : ""); }
+	}
 	HRESULT hr = m_pDev->m_pDev->CreateTexture2D(&td, pInit ? &sr : NULL, &m_pGpu);
 	if (pConv) free(pConv);
 	if (FAILED(hr) || !m_pGpu)
