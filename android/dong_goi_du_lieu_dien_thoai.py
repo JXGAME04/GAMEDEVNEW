@@ -46,6 +46,11 @@ SO_TIEN_TRINH = 4      # so tien trinh ucl_nen.exe chay song song
 # ngan sach khung -> nhan vat / NPC MAT HINH KHI DI CHUYEN (chu bao 07:55 voi bo _dt_nen). Bo qua tep rac (.rar .zip .7z).
 NEN_TOI_DA = 512 * 1024
 DUOI_RAC = (".rar", ".zip", ".7z", ".exe", ".dll", ".pdb")
+# [NEN 12/09 c] Tep roi > ROI_TREN giu ROI trong goi (khong vao pak), nhu ban PC: pak goc luu anh lon kieu NEN THEO KHUNG (co 0x11,
+# nap tung khung), con XPackFile doc muc tho nguyen khoi qua bo dem 10 muc (doc lai ca tep moi lan) va truong co chi 24 bit
+# (tho >= 16 MB khong the vao pak: maps\37.fp 37,8 MB...). Anh chay/danh to de roi -> KFile doc thang tung phan, khong mat hinh.
+ROI_TREN = 512 * 1024
+ROI_GIU = []           # (duong dan nguon, duong dan tuong doi) tep roi giu nguyen
 
 
 def doc_tham_so():
@@ -229,10 +234,14 @@ def gom_muc(nguon, loc_uid):
                 if loc_uid is not None and u not in loc_uid:
                     bo_loc += 1; continue
                 co = os.path.getsize(p)
+                if co > ROI_TREN:
+                    muc[u] = (u, None, co, 0)    # danh dau id de pak cu cung id bi che; tep giu roi (chep sang dich)
+                    ROI_GIU.append((p, os.path.relpath(p, nguon))); continue
                 muc[u] = (u, p, co, co)          # cf: kieu 0 | co nen = size
                 thu_tu.append(u); tong += co
     n_roi = len(thu_tu)
-    print("tep roi: giu %d (%.0f MB), bo che %d, bo ngoai nhat ky %d" % (n_roi, tong / MB, bo_che, bo_loc))
+    print("tep roi: vao pak %d (%.0f MB), giu roi %d (%.0f MB, > %d KB), bo che %d, bo ngoai nhat ky %d"
+          % (n_roi, tong / MB, len(ROI_GIU), sum(os.path.getsize(p) for p, _ in ROI_GIU) / MB, ROI_TREN // 1024, bo_che, bo_loc))
     # 2. pak cu theo package.ini
     ini = io.open(os.path.join(nguon, "package.ini"), encoding="latin-1", newline="").read()
     thu_pak = re.search(r"Path=(.*)", ini).group(1).strip().strip("\\")
@@ -365,6 +374,20 @@ def main():
             if os.path.isdir(dst):
                 shutil.rmtree(dst)
             shutil.copytree(src, dst)
+    # [NEN 12/09 c] tep roi to giu roi (lien ket cung neu cung o dia)
+    so_lk = 0
+    for src, rel in ROI_GIU:
+        dst = os.path.join(dich, rel)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        if os.path.isfile(dst) and os.path.getsize(dst) == os.path.getsize(src):
+            continue
+        if os.path.isfile(dst):
+            os.remove(dst)
+        try:
+            os.link(src, dst); so_lk += 1
+        except OSError:
+            shutil.copy2(src, dst)
+    print("tep roi giu nguyen: %d (lien ket cung %d)" % (len(ROI_GIU), so_lk))
     for f in ("manifest.txt",):                     # manifest cu -> may chu tai sinh lai
         if os.path.isfile(os.path.join(dich, f)):
             os.remove(os.path.join(dich, f))

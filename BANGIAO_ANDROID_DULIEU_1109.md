@@ -275,8 +275,12 @@ Hành trang gốc (`ui\ui3\uiitem.ini`): cửa sổ 214×454, `[ItemBox]` 168×2
 - **Mất hình khi di chuyển** (điện thoại, bộ `_dt_nen`): pak gốc của game **không bao giờ nén mục to** (updatejx14.pak: 0 mục UCL, thô
   tới 5,4 MB; spr.pak: UCL to nhất 0,5 MB) — tôi đã nén cả 43.914 tệp rời kể cả ảnh chạy/đánh nhiều khung (189 tệp > 1 MB, to nhất
   `rongxanh_wlk.spr` 15,8 MB, có cả `npcres\boss\spr.rar` 54 MB rác). Điện thoại giải nén cả tệp mỗi lần nạp → vượt ngân sách khung
-  → ảnh chạy không kịp nạp → mất hình khi di chuyển (đứng yên thì ảnh nhỏ nạp kịp). Sửa `NEN 12/09 b`: chỉ nén tệp ≤ 512 KB
-  (`NEN_TOI_DA`), bỏ `.rar/.zip/.7z`; gói mới `D:\jx1_android_data_dt_v3` (máy chủ chuyển sang, điện thoại tự tải phần đổi).
+  → ảnh chạy không kịp nạp → mất hình khi di chuyển (đứng yên thì ảnh nhỏ nạp kịp). Đọc kỹ `XPackFile.cpp` còn thấy: cờ mục
+  = byte cao kiểu nén (0x01 UCL, 0x10 **nén theo khung** chỉ cho spr, 0x11 = cả hai, 0x20 "pak VNG") + **24 bit cỡ lưu**; pak gốc
+  lưu ảnh lớn kiểu 0x11 (nạp từng khung), `ElemFileRead` đọc mục thô nguyên khối vào bộ đệm **10 mục** (ảnh 15 MB bị đọc lại cả tệp
+  mỗi khi rớt đệm), và tệp thô ≥ 16 MB (6 tệp `maps\*.fp`, `spr.rar`) tràn cờ thành "UCL" → hỏng. Vì vậy đóng gói nguyên khối ảnh
+  lớn vào pak (cả `_dt` lẫn `_dt_nen`) đều sai. Sửa `NEN 12/09 b/c`: **tệp rời > 512 KB giữ rời trong gói** (455 tệp ≈ 1,4 GB, `KFile`
+  đọc thẳng từng phần như PC), tệp ≤ 512 KB vào pak và nén UCL; bỏ `.rar/.zip/.7z`. Gói `D:\jx1_android_data_dt_v4`.
 - **Hành trang "phải đồng bộ các nút"**: bỏ chữ VNKU (Quảng bá/Thẩm định/Trưng bày), nút = nền VNKU trống + chữ đúng tên cũ của game
   (Lời rao, Định giá, Rao bán, Gửi tiền, Trang bị, Đóng; font Arial đậm có viền, 2 khung thường/bấm); dòng Xu trước đè lên hàng nút
   (y 524 vs 520) → Lượng và Xu cùng một hàng.
