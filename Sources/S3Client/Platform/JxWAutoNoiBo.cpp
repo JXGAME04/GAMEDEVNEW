@@ -191,8 +191,11 @@ int JxWAuto_NapCauHinh()
 {
 	unsigned int uId = 0;
 	int nLifeMax = 0, nManaMax = 0;
-	autoData mac;
-	s_CauHinh = mac;						// ve mac dinh cua struct truoc
+	// [ANDROID 11/09 WAUTO B0 c] Ban mac dinh lay tu doi tuong TINH: bo nho tinh duoc xoa trang truoc khi constructor chay, nen cac
+	// mang chuoi (szIJPtName, szNOPName, szLDPtName...) la 0. Bien tam tren ngan xep thi constructor KHONG xoa mang -> rac
+	// ('r8v') lot vao tep .dat (thay o lan thu B0 thu hai).
+	static const autoData s_MacDinh;
+	s_CauHinh = s_MacDinh;					// ve mac dinh cua struct truoc
 	s_nTickDaBao = -1;
 	if (!JxCore_WAutoNhanVat(&uId, &nLifeMax, &nManaMax) || !uId)
 	{
