@@ -24,11 +24,15 @@ sau khi thử, app khởi động lại để nạp lại.
 
 Hai chuỗi Windows dựng lại sau mỗi đợt (x64 4/4, SDL 6/6) **0 lỗi**; `CoreShell.cpp` chỉ đổi trong khối `#ifdef JX_ANDROID`.
 
-**Bốn góp ý của chủ trong lúc làm, đã đưa vào:** (1) "chữ phải hiển thị đầy đủ, thẳng hàng theo từng mục, kẻ ô để phân biệt từng nhóm"
+**Năm góp ý của chủ trong lúc làm, đã đưa vào:** (1) "chữ phải hiển thị đầy đủ, thẳng hàng theo từng mục, kẻ ô để phân biệt từng nhóm"
 → bỏ cách nhân toạ độ hộp thoại PC, viết bộ xếp theo NHÓM / HÀNG / CỘT (mục 3); (2) "nút nền đỏ" rồi "đỏ đen, màu hiện tại quá đậm",
-"tab chính phụ phải có nút" → nút vẽ có khối (chuyển sắc đỏ đen, cạnh trên sáng, viền đen, chọn = viền vàng); (3) "mục nào đi kèm mục nào"
+"tab chính phụ phải có nút" → nút vẽ có khối (chuyển sắc, cạnh trên sáng, viền đen, chọn = viền vàng); (3) "mục nào đi kèm mục nào"
 → ưu tiên **không tách nhóm sang cột khác** (chỉ tách khi nhóm cao hơn cả cột), hàng con lùi thẳng ô thứ hai của hàng trên; (4) "có màu
-phân biệt các nhóm chức năng" → 6 bộ màu viền + nền tiêu đề, luân phiên theo nhóm (`Mau=` trong ini).
+phân biệt các nhóm chức năng" → 6 bộ màu viền + nền tiêu đề, luân phiên theo nhóm (`Mau=` trong ini); (5) "các nút tab chính - phụ phải
+màu xanh, căn chỉnh chữ đúng ngay giữa" → `nut_nhom.spr` / `nut_tab.spr` tông xanh ngọc (cùng viền khung; `TONG["xanh"]` trong
+`anh_wauto_vnku.py`), hộp chọn / nút hành động giữ đỏ đen; chữ nút căn giữa dọc bằng `LabelYOffset` (nhóm 7, tab 4, hộp chọn 5, nút 4 —
+`KWndLabeledButton` vẽ chữ từ mép trên + offset, ngang đã tự căn theo `(Width − n·font/2)/2`). Hai việc (5) làm lúc 21:00 khi chủ đang
+Tống Kim nên **chưa có ảnh nghiệm thu** — soi lại ở đầu B3.
 
 ---
 
