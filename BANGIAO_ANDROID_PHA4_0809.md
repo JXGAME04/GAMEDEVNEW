@@ -1314,4 +1314,12 @@ Loại trừ (đã đọc mã): chữ (`KFont3` một texture), âm thanh (`KWav
 
 **Cấu hình sống `D:\jx1_android_data\config.ini` hiện tại** (đã đồng bộ với lớp ghi đè, trừ hai khoá đo): `PaintLog=1`, `AutoLog=1` (đang bật để đo — **tắt lại khi chơi thật**), `Rep3CacheMB=0`, `Rep3AtlasGpu=1`, `Rep3GpuBoBanCpu=1`, `Rep3GpuMailbox=0`, `PerfHud=1`, `[Cham] CanBuocXa=2 CanGacTick=1 LuanChuyenMs=300`.
 
-**Chưa trả lời được:** phiên tối ưu PC ("Lỗi di chuyển NPC/BOT/người chơi") đã nhận câu hỏi hợp tác lúc 15:5x nhưng chưa trả lời trong phiên này.
+### 14.6. Trả lời của phiên tối ưu PC (17:0x) — đã đối chiếu với máy ảo
+
+- **Tick logic PC trước VUNG**: 35 tick ≥ 20 ms / 30 s, gốc `KRegion::FindNpc` duyệt tuyến tính cả `m_NpcList` cho mỗi ô hỏi (~1,2 triệu lần đọc `Npc[]`/tick khi 1.000 đạn). **Sau VUNG**: tick ≥ 20 ms = 0, đạn 0,03–2,6 ms/tick. Máy ảo sau merge đo được cùng kết luận (0,5–1,1 ms/tick).
+- Phần còn lại của tick trên PC: `KIpotBranch::AddPointLeafToList` ≈ 45 % (O(n) mỗi lần NPC/đạn đổi vị trí), `PluckRto` 4–6 %, `KNpc::Activate` gọi 6 hàm `Set*` + `strcat` mỗi tick/NPC 2–3 %, heap 4–8 %. Trên máy ảo chưa lộ (tick < 1,1 ms) — ghi lại để khi tick tăng thì biết cắt ở đâu.
+- **NAPCHIEU/NAPNPC chạy được trên Android** (phiên PC tưởng `GetModuleHandleA` trả NULL): lớp `JX_POSIX` đổi thành `dlopen("libRepresent3.so")`; `jx_rep3.log` máy ảo: `[NAPNPC] nap truoc (bat=1): goi 182 | da co 141, giao nen 41 | kip 6, tre 1`.
+- **DOLUOT**: đã rào `#ifndef JX_POSIX` trên `mobile-0809`; đã nhắn phiên PC rào **đúng cùng cách** trên `main` để lần merge sau không xung đột. CHUGIU dịch bình thường (QPC có trong lớp tương thích).
+- **Dữ liệu NpcRes** phiên PC sửa trên cây live (`bin/client/settings/NpcRes`: 40.361 ô trỏ SPR không tồn tại → đội mũ trọc đầu, nạp hỏng hàng vạn lần/30 s): đã chép **14 bảng khác** sang `D:/jx1_android_data/settings/npcres/` (17:05; `chuan_bi_du_lieu.ps1` chạy lại cũng ra như vậy). Kỳ vọng `anh_null` (430 nghìn/30 s) và `nen: hong` giảm mạnh ở lần vào map sau.
+- Phiên PC xác nhận 144 fps đo với `Game.exe` live cũ + `CoreClient`/`Represent3` đã có VUNG/NAPCHIEU/NAPNPC, `PaintFps=144`, `PaintVsync=1` — tức bản PC cũng chỉ mượt khi có các commit này; mobile trước merge không có.
+- Gợi ý của phiên PC cho việc còn lại (30 s đầu vào map): nạp trước toàn bộ NPC có mặt ngay trong màn nạp (móc `SetSprFile` đã có) và để ý `GetImageParam` trong `KNpcRes::Draw` (nạp đồng bộ trên luồng vẽ khi `m_bChange`).
