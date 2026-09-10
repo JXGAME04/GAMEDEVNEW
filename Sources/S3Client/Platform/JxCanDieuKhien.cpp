@@ -29,6 +29,14 @@
 #include "../Ui/Elem/MouseHover.h"	// [ANDROID 10/09 LUAN] dat 4 nut canh khung thong tin ky nang
 #include <math.h>
 #include <stdint.h>	// [UITOADO 10/09 F] intptr_t
+#include "../Ui/UiCase/UiToolsControlBar.h"	// [ANDROID 12/09 KYNANG AN] thanh cong cu = dau hieu da vao the gioi
+
+// [ANDROID 12/09 KYNANG AN] chu: "cac nut ky nang bi ra ngoai phan vao game" - o menu / dang nhap / chon nhan vat chua co thanh cong cu
+// (KUiToolsControlBar mo trong UiStartGame, huy khi roi the gioi) -> khong ve, khong nhan cham.
+static bool KyNang_TrongGame()
+{
+	return KUiToolsControlBar::GetSelf() != NULL;
+}
 
 extern iCoreShell*			g_pCoreShell;
 extern iRepresentShell*		g_pRepresentShell;
@@ -308,7 +316,7 @@ static void DocCaiDat()
 bool JxCan_TrongVung(int x, int y)
 {
 	DocCaiDat();
-	if (!s_nBat)
+	if (!s_nBat || !KyNang_TrongGame())	// [ANDROID 12/09 KYNANG AN]
 		return false;
 	return x >= 0 && x < SCREEN_WIDTH * s_nVungRong / 100
 		&& y >= SCREEN_HEIGHT * s_nVungTren / 100
@@ -551,7 +559,7 @@ static void OVuong(int nX, int nY, int nNua, unsigned int uMau)
 void JxVongChon_Ve()
 {
 	DocCaiDat();
-	if (!s_nVongBat || g_pCoreShell == NULL || g_pRepresentShell == NULL)
+	if (!s_nVongBat || g_pCoreShell == NULL || g_pRepresentShell == NULL || !KyNang_TrongGame())	// [ANDROID 12/09 KYNANG AN]
 		return;
 	KUiTargetDetailInfo tt;
 	memset(&tt, 0, sizeof(tt));
@@ -1005,7 +1013,7 @@ int JxKyNang_TrungNut(int x, int y)
 	int i, nX, nY, nR;
 
 	DocCaiDat();
-	if (!s_nKNBat)
+	if (!s_nKNBat || !KyNang_TrongGame())	// [ANDROID 12/09 KYNANG AN]
 		return 0;
 	KyNang_DocBang();
 	// [ANDROID 09/09 GAN] nut doi che do gan
@@ -1503,7 +1511,7 @@ void JxHuongDi_Ve()
 	int nSo, nKhung;
 
 	DocCaiDat();
-	if (!s_nHuongDiBat || !s_bCam || g_pRepresentShell == NULL)
+	if (!s_nHuongDiBat || !s_bCam || g_pRepresentShell == NULL || !KyNang_TrongGame())	// [ANDROID 12/09 KYNANG AN]
 		return;		// chi hien khi dang cam can dieu khien (tuc dang di)
 	if (s_nHuongDiCoAnh < 0)
 	{
@@ -1634,7 +1642,7 @@ int JxKyNang_ChamBangChon(int x, int y)
 	int nNut;
 	KUiGameObject o;
 
-	if (!s_nBCBat)
+	if (!s_nBCBat || !KyNang_TrongGame())	// [ANDROID 12/09 KYNANG AN]
 		return 0;
 	if (x < s_nBCX || x >= s_nBCX + BC_RONG || y < s_nBCY || y >= s_nBCY + nCao)
 	{
@@ -1732,7 +1740,7 @@ void JxKyNang_Ve()
 	KUiGameObject o;
 
 	DocCaiDat();
-	if (!s_nKNBat || g_pCoreShell == NULL || g_pRepresentShell == NULL)
+	if (!s_nKNBat || g_pCoreShell == NULL || g_pRepresentShell == NULL || !KyNang_TrongGame())	// [ANDROID 12/09 KYNANG AN]
 		return;
 	KyNang_DangKySuaToaDo();	// [UITOADO 09/09 E] cho doi cho duoc trong che do sua
 	if (s_nKNCoAnh < 0)
@@ -1918,6 +1926,8 @@ static void IconNpc_ORiengDat(void* pNgu, int x, int y)
 
 void JxIconNpc_Ve()
 {
+	if (!KyNang_TrongGame())	// [ANDROID 12/09 KYNANG AN]
+		return;
 	static bool s_bDaDangKy = false;
 	bool bGan = false;
 	KUiTargetDetailInfo gan;
@@ -2043,7 +2053,7 @@ void JxMucTieu_Khoa(int x, int y)
 
 void JxCan_Ve()
 {
-	if (!s_bCam || g_pRepresentShell == NULL)
+	if (!s_bCam || g_pRepresentShell == NULL || !KyNang_TrongGame())	// [ANDROID 12/09 KYNANG AN]
 		return;
 	// num keo theo ngon tay nhung khong ra khoi ban kinh
 	int dx = s_nNgonX - s_nTamX, dy = s_nNgonY - s_nTamY;
