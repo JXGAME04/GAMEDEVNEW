@@ -2,8 +2,8 @@
 r"""[ANDROID 11/09 WAUTO B1] Anh cho KHUNG WAuto trong game, lay tu kho VNKU (CHI DOC) va thu nho cho khung ve dien thoai.
 
 Sinh ra (ghi vao lop ghi de android\du_lieu_ghi_de\ va D:\jx1_android_data neu co, qua ghi_moi_noi cua bo_cuc_vnku_mobile.py):
-  spr\uinew\uiautonew\khung_wauto.spr           khung "TU DONG" 1313x788 -> 980x588 (vua khung ve 1040x604; 1188x616 cang vua)
-  spr\uinew\uiautonew\bat_tat_auto.spr          4 khung, cao 48: [0] "Bat Auto" vang  [1] "Bat Auto" xam  [2] "Tat Auto" vang  [3] "Tat Auto" xam
+  spr\uinew\uiautonew\khung_wauto.spr           khung "TU DONG" 1313x788 -> 720x432 (~70% be ngang khung ve 1040x604, de lo nhan vat xung quanh)
+  spr\uinew\uiautonew\bat_tat_auto.spr          4 khung, cao 40: [0] "Bat Auto" vang  [1] "Bat Auto" xam  [2] "Tat Auto" vang  [3] "Tat Auto" xam
                                                  (KWndButton CheckBox: Up=0 khi auto dang tat, Down=2 khi dang bat)
   spr\uinew\uitoolscontrolbar\auto_m.spr        icon Auto tren thanh cong cu 47x47, 2 khung: [0] kiem cheo XAM (tat) [1] VANG (bat)
                                                  - cat tu hinh tron ben trai cua bat_auto.spr (nut "nut_de_auto" cua VNKU la chu "Giu", khong hop)
@@ -21,9 +21,9 @@ sys.path.insert(0, GOC)
 sys.path.insert(0, os.path.join(GOC, "..", "ReverseTools", "tongkim_chat"))
 from bo_cuc_vnku_mobile import doc_spr, ghi_spr_nhieu_khung, ghi_moi_noi, VNKU  # noqa: E402
 
-KHUNG_W, KHUNG_H = 980, 588
+KHUNG_W, KHUNG_H = 720, 432		# (chu 11/09: "qua to, phai nho gon lai" - truoc 980x588 che gan het man 1040x604)
 ICON = 47
-BATTAT_CAO = 48
+BATTAT_CAO = 40
 
 
 def ghi(rel, cac_khung):

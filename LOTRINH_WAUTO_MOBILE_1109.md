@@ -162,6 +162,9 @@ Hai chuỗi Windows dựng lại 0 lỗi.
 
 ### B1 — KHUNG AUTO + ICON AUTO (chủ yêu cầu làm trước)
 
+> **Tiến độ: XONG 11/09** (`BANGIAO_WAUTO_MOBILE_B1_1109.md`) — khung 720×432 từ `khung.spr` VNKU, icon kiếm chéo cắt từ `bat_auto.spr`,
+> nút BẬT/TẮT 4 khung, 4 nhóm + tab con, dòng trạng thái từ `WA_HoatDong`. Đã đo trên LDPlayer: mở / bật / đổi nhóm / tắt / đóng / mở lại.
+
 Đây là bước quyết định trông có ra bản mobile không. Chưa có tab nào, chỉ có vỏ chạy được.
 
 **Ảnh lấy từ kho VNKU** — đo thật 11/09, tất cả **chỉ đọc**, chép ra rồi mới xử lý:

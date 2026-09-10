@@ -6,7 +6,7 @@
 #          8 nut TAB CON (KWndPureTextBtn, ten lay dung s_aNhomTab cua WAuto.exe bo Ac chinh / D.nhap), nut BAT/TAT (KWndButton
 #          CheckBox, anh bat_tat_auto.spr) noi vao JxWAuto_Bat cua B0, dong trang thai (KWndText80 <- WA_HoatDong cua CoreShell).
 #          Chi Android, KHONG nam trong vcxproj (them thang vao target main cua android/CMakeLists.txt).
-#  2. TAO  android/du_lieu_ghi_de/ui/ui3/uiwauto.ini - bo cuc 980x588 (khung ve 1040x604), 2 hang nut, nut BAT/TAT + trang thai o day.
+#  2. TAO  android/du_lieu_ghi_de/ui/ui3/uiwauto.ini - bo cuc 720x432 (chu: "qua to" -> thu tu 980x588), 2 hang nut, BAT/TAT + trang thai o day.
 #  3. VA   Sources/S3Client/Ui/UiShell.h / .cpp: lop nut Player_WAuto (ClassType cho thanh cong cu), dang ky class; rao JX_ANDROID.
 #          Dong `// Player_AutoPlay::RegisterSelfClass();` GIU NGUYEN dang ghi chu (fkauto khong dung, khong xoa).
 #  4. VA   Sources/Core/Src/CoreShell.cpp: JxCore_WAutoHoatDong() boc WA_HoatDong() (trong khoi #ifdef JX_ANDROID co san).
@@ -402,39 +402,45 @@ CPP = [
     "#endif // JX_ANDROID",
 ]
 
-# ---------------------------------------------------------------- 2. uiwauto.ini (980x588 = khung.spr 1313x788 x 0,746)
+# ---------------------------------------------------------------- 2. uiwauto.ini
+# Khung 720x432 = khung.spr 1313x788 x 0,548 (chu 11/09: "qua to, phai nho gon lai" - ban dau 980x588). Doi co: sua KW/KH o day
+# + KHUNG_W/KHUNG_H trong anh_wauto_vnku.py, xoa ui/ui3/uiwauto.ini roi chay lai hai kich ban. Cua so tu can giua luc mo.
+KW, KH = 720, 432
+RAIL = 19                    # thanh xanh hai ben (35 px goc x 0,548)
 INI = [
-    "; %s Bo cuc KHUNG AUTO trong game (KUiWAuto, UiWAuto.cpp). Khung 980x588 vua khung ve 1040x604; cua so tu can giua." % DAU,
-    "; Chu cua nut nhom / tab / Dong dat trong ma (KWndPureTextBtn, TCVN3). Anh: android/anh_wauto_vnku.py.",
+    "; %s Bo cuc KHUNG AUTO trong game (KUiWAuto, UiWAuto.cpp). Khung %dx%d (~70%% be ngang khung ve 1040x604), tu can giua." % (DAU, KW, KH),
+    "; Chu cua nut nhom / tab / Dong dat trong ma (KWndPureTextBtn, TCVN3). Anh: android/anh_wauto_vnku.py. Chu thich chi o dong rieng.",
     "[Main]",
-    "Left=30",
-    "Top=8",
-    "Width=980",
-    "Height=588",
+    "Left=160",
+    "Top=86",
+    "Width=%d" % KW,
+    "Height=%d" % KH,
     "Moveable=1",
     "Trans=0",
-    "Image=\\spr\\uinew\\uiautonew\\khung_wauto.spr",
+    r"Image=\spr\uinew\uiautonew\khung_wauto.spr",
     "",
 ]
+NHOM_W = (KW - 2 * RAIL - 3 * 6) // 4        # 4 nut nhom, cach nhau 6
 for i in range(4):
-    INI += ["[Nhom%d]" % i, "Left=%d" % (62 + i * 225), "Top=50", "Width=210", "Height=32", "Font=16",
+    INI += ["[Nhom%d]" % i, "Left=%d" % (RAIL + i * (NHOM_W + 6)), "Top=36", "Width=%d" % NHOM_W, "Height=26", "Font=14",
             "Color=255,255,255", "OverColor=255,255,160", "SelColor=255,255,0", "BorderColor=0,0,0", "SelBorderColor=60,40,0",
             "CentreAlign=1", ""]
+TAB_W = (KW - 2 * RAIL - 7 * 2) // 8         # 8 tab con, cach nhau 2
 for i in range(8):
-    INI += ["[Tab%d]" % i, "Left=%d" % (48 + i * 112), "Top=97", "Width=108", "Height=26", "Font=14",
+    INI += ["[Tab%d]" % i, "Left=%d" % (RAIL + i * (TAB_W + 2)), "Top=70", "Width=%d" % TAB_W, "Height=22", "Font=12",
             "Color=230,230,230", "OverColor=255,255,160", "SelColor=255,255,0", "BorderColor=0,0,0", "SelBorderColor=60,40,0",
             "CentreAlign=1", ""]
 INI += [
     "[TenTab]",
-    "Left=60", "Top=230", "Width=860", "Height=30", "Font=16", "Color=200,200,200", "BorderColor=0,0,0", "HAlign=1", "",
+    "Left=%d" % (RAIL + 10), "Top=200", "Width=%d" % (KW - 2 * RAIL - 20), "Height=24", "Font=14", "Color=200,200,200", "BorderColor=0,0,0", "HAlign=1", "",
     "[BatTat]",
-    "Left=48", "Top=520", "Width=122", "Height=48", "Trans=0",
-    "Image=\\spr\\uinew\\uiautonew\\bat_tat_auto.spr",
+    "Left=%d" % (RAIL + 5), "Top=%d" % (KH - 48), "Width=102", "Height=40", "Trans=0",
+    r"Image=\spr\uinew\uiautonew\bat_tat_auto.spr",
     "Up=0", "Down=2", "CheckBox=1", "",
     "[TrangThai]",
-    "Left=190", "Top=532", "Width=740", "Height=24", "Font=14", "Color=255,252,178", "BorderColor=0,0,0", "HAlign=0", "",
+    "Left=%d" % (RAIL + 115), "Top=%d" % (KH - 38), "Width=%d" % (KW - 2 * RAIL - 125), "Height=20", "Font=12", "Color=255,252,178", "BorderColor=0,0,0", "HAlign=0", "",
     "[Dong]",
-    "Left=880", "Top=10", "Width=80", "Height=30", "Font=14", "Color=255,255,255", "OverColor=255,255,160", "SelColor=255,255,0",
+    "Left=%d" % (KW - RAIL - 66), "Top=5", "Width=64", "Height=24", "Font=12", "Color=255,255,255", "OverColor=255,255,160", "SelColor=255,255,0",
     "BorderColor=0,0,0", "CentreAlign=1", "",
 ]
 
@@ -537,8 +543,8 @@ def va_toolbar(s):
     if not s.endswith(nl):
         s += nl
     s += nl.join(["", "; %s icon Auto: 47x47 cat tu hinh kiem cheo cua nut \"Bat Auto\" kho VNKU (android/anh_wauto_vnku.py);" % DAU,
-                  ";   khung 0 = xam (auto tat), khung 1 = vang (dang bat). Cham = mo / dong khung WAuto. Cung cot voi Trao doi / Len ngua / Chay.",
-                  "[WAuto]", "Left=868", "Top=298", "Width=47", "Height=47", "Trans=0",
+                  ";   khung 0 = xam (auto tat), khung 1 = vang (dang bat). Cham = mo / dong khung WAuto. Ben TRAI giua man hinh (cot phai duoi nut Chay bi bang Theo doi nhiem vu de len).",
+                  "[WAuto]", "Left=52", "Top=330", "Width=47", "Height=47", "Trans=0",
                   "Image=\\Spr\\UiNew\\UiToolsControlBar\\auto_m.spr", "Up=0", "Down=1", "CheckBox=1", "ClassType=Player_WAuto", ""])
     return s
 
