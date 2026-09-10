@@ -8993,13 +8993,6 @@ int KNpc::PaintTargetInfo(KUiPlayerItem* m_pPlayersList, KUiPlayerPaintTeamMNG* 
 	{
 		int verDistance = 33;
 		int nWid = 120;// nPainTMG->nWid;//58;
-#ifdef JX_ANDROID
-		// [ANDROID 11/09 TTMT] ve theo vi tri + ti le that cua cua so KUiTargetInfo (goc ini 370,0); chua dien -> nhu cu
-		const int nTtTL = (nPainTMG->nTiLe > 0) ? nPainTMG->nTiLe : 1000;
-		const int nTtX0 = (nPainTMG->nTiLe > 0) ? nPainTMG->nGocX : 370;
-		const int nTtY0 = (nPainTMG->nTiLe > 0) ? nPainTMG->nGocY : 0;
-		nWid = nWid * nTtTL / 1000;
-#endif
 		int nHei_life = nPainTMG->nHei_life;//7;
 		int nHei_mana = nPainTMG->nHei_mana;//4;
 
@@ -9019,24 +9012,13 @@ int KNpc::PaintTargetInfo(KUiPlayerItem* m_pPlayersList, KUiPlayerPaintTeamMNG* 
 		Blood.Color.Color_b.g = 38;
 		Blood.Color.Color_b.b = 38;
 		Blood.Color.Color_b.a = 0;
-#ifdef JX_ANDROID
-		Blood.oPosition.nX = nTtX0 + (420 - 370) * nTtTL / 1000;	// [ANDROID 11/09 TTMT]
-		Blood.oPosition.nY = nTtY0 + (65 + i * verDistance - 10) * nTtTL / 1000;
-#else
 		Blood.oPosition.nX = 420;
 		Blood.oPosition.nY = 65 + i * verDistance - 10;
-#endif
 		if (i <= 2)
 			nHei_life = 6;
 		Blood.oPosition.nZ = nHeightOffset_life + nHei_life - nOffSet_member;
 		Blood.oEndPos.nX = Blood.oPosition.nX + nWid * nX / 100;
-#ifdef JX_ANDROID
-		Blood.oEndPos.nY = nTtY0 + (75 + i * verDistance - 10) * nTtTL / 1000;	// [ANDROID 11/09 TTMT]
-		if (Blood.oEndPos.nY - Blood.oPosition.nY < 6)
-			Blood.oEndPos.nY = Blood.oPosition.nY + 6;	// [ANDROID 11/09 TTMT b] thu nho nhieu thi ong mau van day >= 6 px
-#else
 		Blood.oEndPos.nY = 75 + i * verDistance - 10; 
-#endif
 		Blood.oEndPos.nZ = nHeightOffset_life - nOffSet_member;
 		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, TRUE);
 

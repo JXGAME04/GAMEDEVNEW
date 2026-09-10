@@ -3018,6 +3018,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 			KUiTargetDetailInfo* pCham = (KUiTargetDetailInfo*)uParam;
 			extern int g_nJxMucTieuKhoa;
 			int nCu = Player[CLIENT_PLAYER_INDEX].GetTargetNpc();
+			int nMe = Player[CLIENT_PLAYER_INDEX].m_nIndex;	// [ANDROID 11/09 TTMT f]
 			int nTrung = 0;
 
 			if (pCham == NULL)
@@ -3031,7 +3032,11 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 				g_nJxMucTieuKhoa = nTrung;
 				g_uJxMucTieuKhoaId = Npc[nTrung].m_dwID;	// [ANDROID 11/09 KHOAMT d] khoa theo MA, o mang co the bi dung lai cho NPC khac
 				g_uJxMucTieuMatLuc = 0;
-				g_DebugLog("[TTMT] cham (%d,%d) -> khoa muc tieu %d ma %u (%s)", pCham->nViTriVeX, pCham->nViTriVeY, nTrung, g_uJxMucTieuKhoaId, Npc[nTrung].Name);
+				// [ANDROID 11/09 TTMT f] dat thang o chon muc tieu CUA GAME - dong dau cua nhanh nParam==0 lay chinh o nay,
+				// giong het ban PC khi bam chuot vao ai. Tren Android o nay luon 0 vi OnButtonDown khong chay.
+				if (nMe > 0 && nMe < MAX_NPC)
+					Npc[nMe].m_nPeopleIdx = nTrung;
+				g_DebugLog("[TTMT] cham (%d,%d) -> chon muc tieu %d ma %u (%s)", pCham->nViTriVeX, pCham->nViTriVeY, nTrung, g_uJxMucTieuKhoaId, Npc[nTrung].Name);
 				nRet = 1;
 			}
 			break;
@@ -3104,8 +3109,16 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 #endif
 		int idx = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx;
 		int idx_hover = Player[CLIENT_PLAYER_INDEX].GetTargetNpc();
+#ifdef JX_ANDROID
+		// [ANDROID 11/09 TTMT e] Chu: "bo cai di chuot vao nguoi khac la hien thong tin - chi de kich vao moi hien".
+		// Tren dien thoai KHONG co re chuot that: SinhHover() bom WM_MOUSEMOVE moi khung tai cho ngon tay dat
+		// truoc, the gioi troi nen NPC duoi diem do doi lien tuc -> thanh thong tin nhay lung tung.
+		// [ANDROID 11/09 TTMT f] Chi BO HOVER; van giu idx = Npc[nguoi choi].m_nPeopleIdx (o chon cua game, nay duoc dat luc cham
+		// o nhanh nParam == 3) - dung duong cua ban goc, khong dung duong tim rieng nua.
+#else
 		if (idx_hover)
 			idx = idx_hover;
+#endif
 #ifdef JX_ANDROID
 		{	// [ANDROID 11/09 TTMT] [KHOAMT b] muc tieu DA CHAM (KPlayer::OnButtonDown) thang hover: keo ngon / re / cham dat khong doi;
 			// chi cham trung nguoi/NPC khac moi doi, NPC bien mat thi bo. Chu: "kich vao se tu bam theo nguoi choi".
@@ -3142,6 +3155,10 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 				{	// tam thoi khong thay (ra khoi tam nhin): giu them 3 s roi moi bo
 					unsigned int uNay = (unsigned int)GetTickCount();
 
+					if (g_uJxMucTieuMatLuc == 0 && g_nJxMucTieuKhoa > 0 && g_nJxMucTieuKhoa < MAX_NPC)
+						g_DebugLog("[TTMT] truot duong nhanh: o %d ma %u (can %u) vung %d", g_nJxMucTieuKhoa,	// [ANDROID 11/09 TTMT f]
+							Npc[g_nJxMucTieuKhoa].m_dwID, g_uJxMucTieuKhoaId, Npc[g_nJxMucTieuKhoa].m_RegionIndex);
+
 					if (g_uJxMucTieuMatLuc == 0)
 						g_uJxMucTieuMatLuc = uNay;
 					else if (uNay - g_uJxMucTieuMatLuc > 3000)
@@ -3159,8 +3176,10 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 				if (idx != s_nTtIdxTruoc)
 				{
 					s_nTtIdxTruoc = idx;
-					g_DebugLog("[TTMT] thong tin doi: nguoi=%d hover=%d khoa=%d -> chon %d",
-						Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx, idx_hover, g_nJxMucTieuKhoa, idx);
+					g_DebugLog("[TTMT] thong tin doi: nguoi=%d hover=%d khoa=%d -> chon %d | mau %d/%d",
+						Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx, idx_hover, g_nJxMucTieuKhoa, idx,
+						(idx > 0 && idx < MAX_NPC) ? Npc[idx].m_CurrentLife : -1,
+						(idx > 0 && idx < MAX_NPC) ? Npc[idx].m_CurrentLifeMax : -1);	// [ANDROID 11/09 TTMT e] xem mau do mat vi ve sai cho hay vi phan tram = 0
 				}
 			}
 		}

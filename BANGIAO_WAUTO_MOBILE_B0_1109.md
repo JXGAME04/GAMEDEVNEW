@@ -28,7 +28,7 @@ Hai lần thử (APK `android/apk/jx1mobile-1109-wauto-b0.apk` rồi `...-b0b.ap
 Những dòng `[AUTO-PASS]`, `[HD-GATE]`, `[FIGHT-*]` do **chính `ExtAutoLoop` và CoreShell** ghi, không phải mã mới — tức là gói
 `IPCGameLoop` đã đi qua `ProcIpcCommand` (bên nhận **không sửa một dòng**) y như khi WAuto.exe gửi trên PC.
 
-**Lần thử ba** (APK `...-b0c.apk`, sau vá 89): tệp `.dat` sinh mới **sạch** — mọi mảng chuỗi (`szIJPtName`, `szNOPName`, `szLDPtName`...) rỗng;
+**Lần thử ba** (APK `...-b0c.apk`, sau vá 89b): tệp `.dat` sinh mới **sạch** — mọi mảng chuỗi (`szIJPtName`, `szNOPName`, `szLDPtName`...) rỗng;
 62 dòng `[AUTO-PASS]`; `jx_crash.log` rỗng. **APK cuối của B0: `android/apk/jx1mobile-1109-wauto-b0c.apk`.**
 
 **Chưa đo:** nhân vật tự đánh quái ngoài thành (tài khoản thử đứng trong Thành Long, cấu hình mặc định không có "về map luyện").
@@ -50,10 +50,10 @@ Muốn thấy, chủ đưa nhân vật ra bãi quái rồi mở app với `Bat=1
 | `android/CMakeLists.txt` | thêm `JxWAutoNoiBo.cpp` vào target `main` | |
 | `android/du_lieu_ghi_de/config.ini` | mục `[WAuto] Bat=0` (công tắc tạm cho B0) | lớp ghi đè |
 | `android/wauto_dat.py` (**mới**) | đọc / xem / sửa / so tệp `.dat` theo bố cục struct **đọc thẳng từ `ipc_shared.h`** (không chép tay). `sizeof`, `truong`, `xem`, `dat ten=giá_trị`, `so` | |
-| `android/va_nguon_android_83.py`, `84.py`, `89.py` | ba bản vá (tạo tệp + vá; sửa sau lần thử 1; sửa sau lần thử 2). Chạy lại vô hại | |
+| `android/va_nguon_android_83.py`, `84.py`, `89b.py` | ba bản vá (tạo tệp + vá; sửa sau lần thử 1; sửa sau lần thử 2). Chạy lại vô hại | |
 | `LOTRINH_WAUTO_MOBILE_1109.md` | §0.1 thêm cách "chỉ Android, không vcxproj" (ưu tiên); dòng tiến độ B0 | |
 
-Số kịch bản vá: ban đầu là 81/82/85, **đổi thành 83/84/89** vì phiên kia cũng tạo 81/82 (ICON d/e) và 85 (TTMT b) cùng lúc — commit gộp `017a522a`, `58dd6480`.
+Số kịch bản vá: ban đầu là 81/82/85, **đổi thành 83/84/89b** vì phiên kia cũng tạo 81/82 (ICON d/e), 85 (TTMT b) rồi 89 (TTMT i) cùng lúc — commit gộp `017a522a`, `58dd6480` và lần ba.
 **Bài học:** trước khi đặt tên `va_nguon_android_NN.py`, xem số cao nhất trên `mobile-0809` VÀ trong cây làm việc của phiên kia.
 
 ---
@@ -89,7 +89,7 @@ python android/wauto_dat.py truong TK          # liệt kê trường có chữ 
 |---|---|---|
 | 1 | **`g_CreatePath("\APdata")` trên Android không tạo thư mục**: nó ghép gốc + `\APdata` rồi đưa thẳng cho `SDL_CreateDirectory`, dấu `\` không được đổi. Tệp `.dat` ghi thất bại lần thử 1 | Dùng `CreateDirectory(...)` của lớp giả lập (`KPosixWin32.cpp`): `JxPathPosix` đổi `\`→`/`, ghép thư mục dữ liệu, hạ chữ thường — đúng đường `KFile::Create` dùng (vá 84) |
 | 2 | **`g_AutoLogOn()` = 0 trên mọi nền không `WIN32`** → không có nhật ký nào của bên nhận để chứng minh | Mở cho `JX_ANDROID` (vá 84). Từ nay `jx_auto.log` là chỗ soi mọi máy auto trên điện thoại |
-| 3 | **Bản mặc định lấy từ biến tạm trên ngăn xếp**: constructor `autoData` chỉ gán số, không xoá trắng mảng chuỗi → rác (`'r8v'`) trong `szIJPtName` ghi ra tệp | Lấy từ đối tượng **tĩnh** (bộ nhớ tĩnh được xoá trắng trước khi constructor chạy) (vá 89) |
+| 3 | **Bản mặc định lấy từ biến tạm trên ngăn xếp**: constructor `autoData` chỉ gán số, không xoá trắng mảng chuỗi → rác (`'r8v'`) trong `szIJPtName` ghi ra tệp | Lấy từ đối tượng **tĩnh** (bộ nhớ tĩnh được xoá trắng trước khi constructor chạy) (vá 89b) |
 
 ---
 
