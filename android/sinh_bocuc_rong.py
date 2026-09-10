@@ -41,6 +41,12 @@ if CHUAN:
     # nguon cua tep chuan = bo cuc chu dang chay tren may ao (userdata) - KHONG doc lai tep mac dinh da sinh (tranh troi: mot lan
     # chay cu tru 40 px cum ky nang, 893 -> 853)
     NGUON = r"D:\jx1_android_data\userdata\UiToaDo.ini"
+    #   [UITOADO 12/09 CHONGTROI] Chan luon truong hop tep nguon CHINH LA tep mac dinh da sinh (chep de len userdata roi
+    #   chay lai): moi vong nhu vay lam mot so muc doi NHANH NEO va bo cuc troi khoi ban PC ma khong ai thay - do duoc
+    #   KUiPlayerBar|SpringGame 751,-1 neo phai-tren -> 2,335 neo giua-duoi, KUiItem|Main 575,40 -> 640,12.
+    if os.path.isfile(NGUON) and "sinh boi android/sinh_bocuc_rong.py" in io.open(NGUON, encoding="latin-1", newline="").read():
+        raise SystemExit("DUNG: %s dang la TEP MAC DINH DA SINH, khong phai bo cuc chu dat -> chay tiep se lam troi bo cuc.\n"
+                         "     Hay lay lai bo cuc chu (sap xep tren may ao, hoac ban sao userdata/UiToaDo.ini.*) roi chay lai." % NGUON)
     DICH = [r"android\du_lieu_ghi_de\ui\uitoado_macdinh.ini", r"D:\jx1_android_data\ui\uitoado_macdinh.ini"]
 
 # cha toan man hinh va vi tri (tuyet doi) cua no trong bo cuc goc / bo cuc rong
@@ -272,6 +278,12 @@ def main():
                 ax += DX
             neo_x = 2
         elif khoa in O_PHIM:
+            # [VATPHAM 12/09 e] chu 15:30: "4 o den phim 1 2 3 4 bo item van lech". Bon o den KHONG phai cua so o
+            # phim: chung la hinh VE SAN trong anh nen thanh duoi (khung_chat_mobile.spr), ma anh do bi keo vao
+            # khung 800x600 cua KUiPlayerBar|Main -> o den mot noi, cua so o phim mot noi.
+            # Nay bon o da bi XOA khoi anh nen va moi o TU VE NEN cua no (anh_ophim_nen.py +
+            # KImmediaItem::PaintWindow, chi Android) nen o den luon trung cua so -> giu neo MEP PHAI nhu ban PC
+            # (cach mep phai 32 px, khong de len cot icon phai).
             if not NGUYEN:
                 ax, ay = O_PHIM[khoa]; tile = 1250
             else:

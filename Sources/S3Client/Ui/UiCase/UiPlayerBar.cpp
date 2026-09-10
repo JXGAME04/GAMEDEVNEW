@@ -286,6 +286,30 @@ int	KImmediaItem::Init(KIniFile* pIniFile, const char* pSection)
 
 void KImmediaItem::PaintWindow()
 {
+#ifdef JX_ANDROID
+	{
+		//	[VATPHAM 12/09 e] O phim tu ve NEN cua no (anh cat tu chinh anh nen thanh duoi, da bo khoi anh do).
+		//	Truoc day bon o den nam trong anh nen 1040x604 ve theo cua so 800x600 nen tren khung ve rong
+		//	no lech han so voi cua so o phim -> bo item vao thi anh mot noi, o den mot noi (chu 15:30).
+		KRUImage a;
+		memset(&a, 0, sizeof(a));
+		a.nType = ISI_T_SPR;
+		a.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+		a.Color.Color_dw = 0xffffffff;
+		a.nISPosition = IMAGE_IS_POSITION_INIT;
+		a.nFrame = 0;
+		strncpy(a.szImage, "\\spr\\ui3\\uivatpham\\o_phim_nen.spr", sizeof(a.szImage) - 1);
+		a.szImage[sizeof(a.szImage) - 1] = 0;
+		a.oPosition.nX = m_nAbsoluteLeft;
+		a.oPosition.nY = m_nAbsoluteTop;
+		a.oPosition.nZ = 0;
+		a.oEndPos.nX = m_nAbsoluteLeft + m_Width;
+		a.oEndPos.nY = m_nAbsoluteTop + m_Height;
+		a.oEndPos.nZ = 0;
+		if (g_pRepresentShell)
+			g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE_STRETCH, true);
+	}
+#endif
 	KWndObjectBox::PaintWindow();
 	if (g_pCoreShell)
 	{
