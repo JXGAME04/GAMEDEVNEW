@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 // [ANDROID 11/09 WAUTO B0] Ben gui WAuto trong tien trinh - xem JxWAutoNoiBo.h.
-// Chu Viet trong chuoi: TCVN3 (sinh bang vn_edit.py trong android/va_nguon_android_83.py), khong dung Edit/Write thuong.
+// Chu Viet trong chuoi: TCVN3 (sinh bang vn_edit.py trong android/va_nguon_android_wauto1.py), khong dung Edit/Write thuong.
 //---------------------------------------------------------------------------
 #include "KWin32.h"
 #ifdef JX_ANDROID

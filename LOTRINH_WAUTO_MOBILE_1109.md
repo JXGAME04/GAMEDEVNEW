@@ -20,7 +20,7 @@
 
 | Cách | Làm thế nào |
 |---|---|
-| **Tệp nguồn mới, CHỈ Android** (không có gì cho `GameSDL.exe` dùng) | Đặt trong `Sources/S3Client/Platform/`, **không khai trong vcxproj nào**, thêm thẳng vào `add_library(main SHARED ...)` trong `android/CMakeLists.txt`. Không cấu hình Windows nào biết tới tệp. Mẫu có sẵn: `JxPerfHudAndroid.cpp` (vá 77) và `JxWAutoNoiBo.cpp` (vá 83, B0). **Ưu tiên cách này** |
+| **Tệp nguồn mới, CHỈ Android** (không có gì cho `GameSDL.exe` dùng) | Đặt trong `Sources/S3Client/Platform/`, **không khai trong vcxproj nào**, thêm thẳng vào `add_library(main SHARED ...)` trong `android/CMakeLists.txt`. Không cấu hình Windows nào biết tới tệp. Mẫu có sẵn: `JxPerfHudAndroid.cpp` (vá 77) và `JxWAutoNoiBo.cpp` (vá wauto1, B0). **Ưu tiên cách này** |
 | **Tệp nguồn mới có dùng cho cả `GameSDL.exe`** | Đặt trong `Sources/S3Client/Ui/UiCase/` hoặc `Platform/`, khai trong `S3Client.vcxproj` kèm đúng dòng `ExcludedFromBuild` với điều kiện khác `ReleaseSDL|x64` là `true`, rồi `python android/gen_lists.py`. Client PC phát hành là cấu hình `Release|x64` nên **không bao giờ biên dịch tệp đó**. Mẫu có sẵn: `Platform\JxCanDieuKhien.cpp` |
 | **Sửa tệp nguồn ĐANG CÓ** (dùng chung với PC) | Bắt buộc rào `#ifdef JX_ANDROID`. Không rào là phạm luật, kể cả khi thấy chắc chắn vô hại |
 | **Danh sách dựng Android** | Chạy `python android/gen_lists.py` sinh lại `android/lists/*.cmake`. **Không sửa tay tệp lists.** Bộ sinh đọc cấu hình `ReleaseSDL|x64` của từng vcxproj |
@@ -141,7 +141,7 @@ tự nhặt, tự uống thuốc, trước khi bỏ một đồng nào cho phầ
 
 ### B0 — Đường ống trong game (~400 dòng, không giao diện)
 
-> **Tiến độ: XONG 11/09** — vá `android/va_nguon_android_83.py` / `84.py` / `89b.py` (tạo `Platform/JxWAutoNoiBo.h/.cpp`, vá
+> **Tiến độ: XONG 11/09** — vá `android/va_nguon_android_wauto1.py` / `wauto2.py` / `wauto3.py` (tạo `Platform/JxWAutoNoiBo.h/.cpp`, vá
 > `S3Client.cpp`, `CoreShell.cpp`, `KCore.cpp`, `android/CMakeLists.txt`, `du_lieu_ghi_de/config.ini`) + công cụ
 > `android/wauto_dat.py`. Đo 3 lần trên LDPlayer: bên nhận `ExtAutoLoop` ghi `[AUTO-PASS]`/`[HD-GATE]`/`[FIGHT-*]` đúng tham số,
 > tệp `APdata\<id>.dat` 7.644 byte sạch, hai chuỗi Windows 0 lỗi. Chi tiết: `BANGIAO_WAUTO_MOBILE_B0_1109.md`.

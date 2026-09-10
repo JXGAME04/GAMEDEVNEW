@@ -6,7 +6,7 @@
 # szNOPName[60][80], szLDPtName...), nen rac ngan xep lot vao s_CauHinh roi ghi ra tep. WAuto.exe khong dinh vi gameNode cua no
 # nam trong std::vector (bo nho duoc xoa trang). Sua: lay tu doi tuong TINH (bo nho tinh duoc xoa trang truoc khi constructor
 # chay) - chi tep Android-only JxWAutoNoiBo.cpp, ban PC khong lien quan.
-# So kich ban: 89b (ban dau 85 roi 89, deu trung voi va TTMT cua phien khac; hau to b theo tien le 59b/61b). Chay lai vo hai. Doc/ghi latin-1, giu CRLF, chi them dong ASCII.
+# Ten kich ban: wauto3 (ban dau 85 roi 89, deu trung voi va TTMT cua phien khac -> WAuto dat ten rieng, khong dua so). Chay lai vo hai. Doc/ghi latin-1, giu CRLF, chi them dong ASCII.
 
 import io
 import os
