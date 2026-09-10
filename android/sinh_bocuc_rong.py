@@ -21,13 +21,19 @@ import sys
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 W0, H0 = 1040, 604
 W1, H1 = 1371, 617
+CHUAN = False          # --chuan: chi GAN NEO cho bo cuc may ao 1040x604 (khong doi vi tri, khong phong) -> uitoado_macdinh.ini
 a = sys.argv[1:]
-for i in range(0, len(a) - 1, 2):
-    if a[i] == "--rong": W1 = int(a[i + 1])
-    if a[i] == "--cao": H1 = int(a[i + 1])
+i = 0
+while i < len(a):
+    if a[i] == "--rong": W1 = int(a[i + 1]); i += 2
+    elif a[i] == "--cao": H1 = int(a[i + 1]); i += 2
+    elif a[i] == "--chuan": CHUAN = True; W1, H1 = W0, H0; i += 1
+    else: i += 1
 DX, DY = W1 - W0, H1 - H0
 NGUON = r"android\du_lieu_ghi_de\ui\uitoado_macdinh.ini"
 DICH = [r"android\du_lieu_ghi_de\ui\uitoado_macdinh_rong.ini", r"D:\jx1_android_data\ui\uitoado_macdinh_rong.ini"]
+if CHUAN:
+    DICH = [r"android\du_lieu_ghi_de\ui\uitoado_macdinh.ini", r"D:\jx1_android_data\ui\uitoado_macdinh.ini"]
 
 # cha toan man hinh va vi tri (tuyet doi) cua no trong bo cuc goc / bo cuc rong
 CHA = {"KUiPlayerBar": (1, 1), "KUiToolsControlBar": (9, 14)}
@@ -55,7 +61,7 @@ def doc_bang(p):
     s = io.open(p, encoding="latin-1", newline="").read()
     nl = "\r\n" if "\r\n" in s else "\n"
     for d in s.split(nl):
-        m = re.match(r"^([^;=\[][^=]*)=(-?\d+),(-?\d+)(?:,(\d+))?(?:,(\d+))?\s*$", d)
+        m = re.match(r"^([^;=\[][^=]*)=(-?\d+),(-?\d+)(?:,(\d+))?(?:,(\d+))?(?:,-?\d+)?(?:,-?\d+)?\s*$", d)   # 4 hoac 6 truong (neo bo qua, gan lai)
         if m and m.group(1).strip().lower() != "manhinh":
             bang.append([m.group(1).strip(), int(m.group(2)), int(m.group(3)), int(m.group(4) or 1000), int(m.group(5) or 0)])
     return bang, nl
@@ -81,40 +87,60 @@ def main():
     for k, (x, y) in INI_MAC_DINH.items():
         if k not in co:
             bang.append([k, x, y, 1000, 0]); co[k] = bang[-1]
+    # o phim tat 1-4 (KUiPlayerBar|Item_0..3, ini 932/972 x 205/245, 36 px): khoi 2x2 ben TRAI cot icon phai, phong 1,25 (45 px)
+    for k, (x, y) in {"KUiPlayerBar|Item_0": (932, 205), "KUiPlayerBar|Item_1": (972, 205),
+                      "KUiPlayerBar|Item_2": (932, 245), "KUiPlayerBar|Item_3": (972, 245)}.items():
+        if k not in co:
+            bang.append([k, x, y, 1000, 0]); co[k] = bang[-1]
+    O_PHIM = {"KUiPlayerBar|Item_0": (1198, 206), "KUiPlayerBar|Item_1": (1246, 206),
+              "KUiPlayerBar|Item_2": (1198, 254), "KUiPlayerBar|Item_3": (1246, 254)}
     ra = []
     hang_tren = dict((k, i) for i, (k, _) in enumerate(HANG_TREN))
     cot_phai = dict(COT_PHAI)
     for khoa, x, y, tile, cocb in bang:
         lop = lop_cua(khoa)
         la_main = ("|" in khoa and khoa.split("|")[1] == "Main") or "|" not in khoa
+        neo_x, neo_y = 0, 0                                     # [UITOADO 12/09 NEO] 0 trai/tren, 1 giua, 2 phai/duoi
         if lop in CHA_MOI and la_main:                       # cha toan man hinh: vi tri moi (tuyet doi)
             nx, ny = CHA_MOI[lop]
-            ra.append((khoa, nx, ny, tile, cocb)); continue
+            ra.append((khoa, nx, ny, tile, cocb, 1 if lop == "KUiPlayerBar" else 0, 0)); continue
         ax, ay = tuyet_doi(khoa, x, y)
         if khoa in hang_tren:
-            i = hang_tren[khoa]
-            ax, ay, tile = HANG_TREN_X0 + i * HANG_TREN_GIAN, HANG_TREN_Y + 1, HANG_TREN_TILE   # tuyet doi (hang cu: rel 47 + cha 1)
+            if not CHUAN:
+                i = hang_tren[khoa]
+                ax, ay, tile = HANG_TREN_X0 + i * HANG_TREN_GIAN, HANG_TREN_Y + 1, HANG_TREN_TILE   # tuyet doi (hang cu: rel 47 + cha 1)
+            neo_x = 1
         elif khoa in cot_phai:
-            ax, ay, tile = COT_PHAI_X, cot_phai[khoa] + 14, COT_PHAI_TILE
+            if not CHUAN:
+                ax, ay, tile = COT_PHAI_X, cot_phai[khoa] + 14, COT_PHAI_TILE
+            neo_x = 2
+        elif khoa in O_PHIM:
+            if not CHUAN:
+                ax, ay = O_PHIM[khoa]; tile = 1250
+            neo_x = 2
         elif khoa == "KUiToolsControlBar|PK":
-            ax, ay, tile = ax + DX, ay, 1100
+            ax += DX; neo_x = 2
+            if not CHUAN: tile = 1100
         elif khoa.startswith("KyNang") or ax >= 728 or khoa in NHOM_PHAI_KHOA:
             ax += DX - (CUM_KYNANG_LUI if khoa.startswith("KyNang") else 0)   # nhom phai (cum ky nang lui mot chut)
-            if ay >= 423 or khoa.startswith("KyNang"): ay += DY                 # cum ky nang: ca nhom cung dich
+            neo_x = 2
+            if ay >= 423 or khoa.startswith("KyNang"): ay += DY; neo_y = 2      # cum ky nang: ca nhom cung dich
         elif lop in ("KUiPlayerBar", "KUiAuctionIcon", "KUiMailIcon") or khoa in HOP_THOAI:
             if khoa == "KUiPlayerBar|HideChat":
-                pass                                            # tab mep trai: giu
+                neo_x = 0                                       # tab mep trai: giu
             else:
-                ax += DX // 2                                   # thanh duoi / hop thoai: giua
-            if ay >= 423: ay += DY
+                ax += DX // 2; neo_x = 1                        # thanh duoi / hop thoai: giua
+            if ay >= 423: ay += DY; neo_y = 2
         else:
-            if ay >= 423: ay += DY                              # trai / tren: giu
+            if ay >= 423: ay += DY; neo_y = 2                   # trai / tren: giu
+        if neo_y == 0 and ay >= H1 * 0.65: neo_y = 2
         nx, ny = tuong_doi_moi(khoa, ax, ay)
-        ra.append((khoa, nx, ny, tile, cocb))
+        ra.append((khoa, nx, ny, tile, cocb, neo_x, neo_y))
     dau = ["; [UITOADO 12/09 RONG] Bo cuc mac dinh cho dien thoai man rong (sinh boi android/sinh_bocuc_rong.py tu uitoado_macdinh.ini).",
-           "; Game chon tep nay khi khung ve co ti le >= 1,9 (UiToaDo.cpp). Moi dong: <lop>|<muc> = Left,Top,TiLe,Co (tuong doi cha).",
+           "; Game chon tep nay khi khung ve co ti le >= 1,9 (UiToaDo.cpp). Moi dong: <lop>|<muc> = Left,Top,TiLe,Co,NeoX,NeoY",
+           "; (tuong doi cha; neo: 0 trai/tren, 1 giua, 2 phai/duoi - khung ve khac ManHinh thi dich theo neo, [UITOADO 12/09 NEO]).",
            "[Pos]", "ManHinh=%d,%d" % (W1, H1)]
-    dong = dau + ["%s=%d,%d,%d,%d" % r for r in ra]
+    dong = dau + ["%s=%d,%d,%d,%d,%d,%d" % r for r in ra]
     for p in DICH:
         io.open(p, "w", encoding="latin-1", newline="").write(nl.join(dong) + nl)
     print("da ghi %d muc -> %s (khung %dx%d, dX=%d dY=%d)" % (len(ra), DICH[0], W1, H1, DX, DY))

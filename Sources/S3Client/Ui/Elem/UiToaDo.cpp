@@ -43,6 +43,10 @@ struct KOToaDo
 	int		nTop;
 	int		nTiLe;			// phan nghin, 1000 = 100%
 	int		nCo;			// bit UITOADO_CO_AN
+#ifdef JX_ANDROID
+	int		nNeoX;			// [UITOADO 12/09 NEO] 0 trai, 1 giua, 2 phai; -1 = chua biet (tu suy)
+	int		nNeoY;			// 0 tren, 1 giua, 2 duoi; -1
+#endif
 };
 
 static KOToaDo		s_Bang[UITOADO_MAX];
@@ -135,19 +139,64 @@ extern int SCREEN_HEIGHT;
 // con lai giu nguyen. Chu: "choi dien thoai no khong ra full man". Tat: config.ini [Ui] NeoTheoMep=0.
 static int	s_nManHinhW = 0, s_nManHinhH = 0;	// doc tu tep dang nap
 static int	s_nNeoTheoMep = -1;
-static void DoiTheoManHinh(int* pnX, int* pnY)
+// [UITOADO 12/09 NEO] moi o co neo ngang (0 trai, 1 giua, 2 phai) va neo doc (0 tren, 1 giua, 2 duoi) - nhu anchor cua engine mobile.
+// Toa do trong tep la cua khung ve ManHinh=W,H; sang khung ve that: Left += (SW - W) * (neo - neo cha) / 2 (con cua cua so
+// cha toan man hinh dich theo neo cua no TRU neo cua cha vi toa do con tuong doi cha). Thieu neo -> tu suy theo vi tri.
+static int	s_nTepNap = 0;				// so thu tu tep dang nap
+static int	s_aTepNap[UITOADO_MAX];		// muc i duoc ghi boi tep nao
+static int NeoTuDong(int nV, int nToan)
+{
+	if (nToan <= 0)
+		return 0;
+	if (nV * 100 < nToan * 35)
+		return 0;
+	return (nV * 100 >= nToan * 65) ? 2 : 1;
+}
+static int TimKhoa(const char* pszKhoa);
+static void DoiCaTepTheoNeo()
 {
 	int nW0 = (s_nManHinhW > 0) ? s_nManHinhW : 1040;
 	int nH0 = (s_nManHinhH > 0) ? s_nManHinhH : 604;
 	int nDX = SCREEN_WIDTH - nW0, nDY = SCREEN_HEIGHT - nH0;
+	int i;
 	if (s_nNeoTheoMep < 0)
 		s_nNeoTheoMep = GetPrivateProfileInt("Ui", "NeoTheoMep", 1, ".\\config.ini") ? 1 : 0;
+	// buoc 1: suy neo cho o chua co (theo toa do thiet ke)
+	for (i = 0; i < s_nSo; i++)
+	{
+		if (s_aTepNap[i] != s_nTepNap)
+			continue;
+		if (s_Bang[i].nNeoX < 0 || s_Bang[i].nNeoX > 2)
+			s_Bang[i].nNeoX = NeoTuDong(s_Bang[i].nLeft, nW0);
+		if (s_Bang[i].nNeoY < 0 || s_Bang[i].nNeoY > 2)
+			s_Bang[i].nNeoY = NeoTuDong(s_Bang[i].nTop, nH0);
+	}
 	if (!s_nNeoTheoMep || SCREEN_WIDTH <= 0 || SCREEN_HEIGHT <= 0 || (nDX == 0 && nDY == 0))
 		return;
-	if (*pnX * 10 >= nW0 * 7)
-		*pnX += nDX;
-	if (*pnY * 10 >= nH0 * 7)
-		*pnY += nDY;
+	// buoc 2: dich theo neo (tru neo cua cha neu cha co trong bang: '<lop>|Main')
+	for (i = 0; i < s_nSo; i++)
+	{
+		int nNeoXCha = 0, nNeoYCha = 0;
+		const char* pGach;
+		if (s_aTepNap[i] != s_nTepNap)
+			continue;
+		pGach = strchr(s_Bang[i].szKhoa, '|');
+		if (pGach && strcmp(pGach + 1, "Main") != 0)
+		{
+			char szCha[UITOADO_CO_KHOA];
+			int nCha;
+			_snprintf(szCha, sizeof(szCha), "%.*s|Main", (int)(pGach - s_Bang[i].szKhoa), s_Bang[i].szKhoa);
+			szCha[sizeof(szCha) - 1] = 0;
+			nCha = TimKhoa(szCha);
+			if (nCha >= 0 && nCha != i)
+			{
+				nNeoXCha = (s_Bang[nCha].nNeoX >= 0) ? s_Bang[nCha].nNeoX : NeoTuDong(s_Bang[nCha].nLeft, nW0);
+				nNeoYCha = (s_Bang[nCha].nNeoY >= 0) ? s_Bang[nCha].nNeoY : NeoTuDong(s_Bang[nCha].nTop, nH0);
+			}
+		}
+		s_Bang[i].nLeft += nDX * (s_Bang[i].nNeoX - nNeoXCha) / 2;
+		s_Bang[i].nTop  += nDY * (s_Bang[i].nNeoY - nNeoYCha) / 2;
+	}
 }
 #endif
 
@@ -200,6 +249,10 @@ static int DatKhoa(const char* pszKhoa, int nLeft, int nTop, int nTiLe, int nCo)
 			return -1;
 		}
 		i = s_nSo++;
+#ifdef JX_ANDROID
+		s_Bang[i].nNeoX = s_Bang[i].nNeoY = -1;	// [UITOADO 12/09 NEO]
+		s_aTepNap[i] = 0;
+#endif
 		strncpy(s_Bang[i].szKhoa, pszKhoa, UITOADO_CO_KHOA - 1);
 		s_Bang[i].szKhoa[UITOADO_CO_KHOA - 1] = 0;
 	}
@@ -400,14 +453,23 @@ static void NapTep(const char* pszTep)
 	pTep = fopen(szDuongDan, "rt");
 	if (pTep == NULL)
 		return;
+#ifdef JX_ANDROID
+	s_nTepNap++;	// [UITOADO 12/09 NEO]
+#endif
 
 	while (fgets(szDong, sizeof(szDong), pTep))
 	{
 		char*	pBang;
 		char*	p;
+#ifdef JX_ANDROID
+		char*	pSo[6];				// [UITOADO 12/09 NEO] them NeoX, NeoY
+		int		nSoTruong = 0;
+		int		nGiaTri[6];
+#else
 		char*	pSo[4];
 		int		nSoTruong = 0;
 		int		nGiaTri[4];
+#endif
 		int		i;
 
 		//	bo khoang trang dau dong
@@ -424,7 +486,11 @@ static void NapTep(const char* pszTep)
 
 		//	tach toi da 4 truong ngan cach bang dau phay
 		pSo[nSoTruong++] = pBang + 1;
+#ifdef JX_ANDROID
+		for (char* q = pBang + 1; *q && nSoTruong < 6; q++)	// [UITOADO 12/09 NEO]
+#else
 		for (char* q = pBang + 1; *q && nSoTruong < 4; q++)
+#endif
 		{
 			if (*q == ',')
 			{
@@ -432,7 +498,11 @@ static void NapTep(const char* pszTep)
 				pSo[nSoTruong++] = q + 1;
 			}
 		}
+#ifdef JX_ANDROID
+		for (i = 0; i < 6; i++)	// [UITOADO 12/09 NEO]
+#else
 		for (i = 0; i < 4; i++)
+#endif
 			nGiaTri[i] = (i < nSoTruong) ? atoi(pSo[i]) : 0;
 		if (nSoTruong < 3 || nGiaTri[2] <= 0)
 			nGiaTri[2] = 1000;					// khong co / rong -> giu nguyen co
@@ -456,13 +526,23 @@ static void NapTep(const char* pszTep)
 			s_nManHinhH = nGiaTri[1];
 			continue;
 		}
-		DoiTheoManHinh(&nGiaTri[0], &nGiaTri[1]);
-#endif
+		{
+			int nMuc = DatKhoa(p, nGiaTri[0], nGiaTri[1], nGiaTri[2], nGiaTri[3]);	// [UITOADO 12/09 NEO]
+			if (nMuc >= 0)
+			{
+				s_Bang[nMuc].nNeoX = (nSoTruong >= 5) ? nGiaTri[4] : -1;
+				s_Bang[nMuc].nNeoY = (nSoTruong >= 6) ? nGiaTri[5] : -1;
+				s_aTepNap[nMuc] = s_nTepNap;
+			}
+		}
+#else
 		DatKhoa(p, nGiaTri[0], nGiaTri[1], nGiaTri[2], nGiaTri[3]);
+#endif
 	}
 	fclose(pTep);
 #ifdef JX_ANDROID
-	g_DebugLog("[UITOADO] %s: tep thiet ke %dx%d, khung ve %dx%d", "[UITOADO 12/09 MANHINH]", s_nManHinhW, s_nManHinhH, SCREEN_WIDTH, SCREEN_HEIGHT);
+	DoiCaTepTheoNeo();	// [UITOADO 12/09 NEO]
+	g_DebugLog("[UITOADO] %s: tep thiet ke %dx%d, khung ve %dx%d", "[UITOADO 12/09 NEO]", s_nManHinhW, s_nManHinhH, SCREEN_WIDTH, SCREEN_HEIGHT);
 	s_nManHinhW = s_nManHinhH = 0;
 #endif
 	g_DebugLog("[UITOADO] nap xong %s -> bang co %d muc", szDuongDan, s_nSo);
@@ -510,7 +590,11 @@ static int GhiTepVao(const char* pszTep)
 	}
 
 	fprintf(pTep, "; [UITOADO] Vi tri / co / an o giao dien do nguoi choi tu dat.\n");
+#ifdef JX_ANDROID
+	fprintf(pTep, "; Moi dong:  <ten lop cua so>|<ten muc ini> = Left,Top,TiLe,Co,NeoX,NeoY  (neo: 0 trai/tren, 1 giua, 2 phai/duoi)\n");
+#else
 	fprintf(pTep, "; Moi dong:  <ten lop cua so>|<ten muc ini> = Left,Top,TiLe,Co\n");
+#endif
 	fprintf(pTep, ";   TiLe : phan nghin, 1000 = 100%%  (%d..%d)\n",
 		UITOADO_TILE_MIN, UITOADO_TILE_MAX);
 	fprintf(pTep, ";   Co   : bit 1 = an han o nay\n");
@@ -521,8 +605,15 @@ static int GhiTepVao(const char* pszTep)
 #endif
 	for (i = 0; i < s_nSo; i++)
 	{
+#ifdef JX_ANDROID
+		fprintf(pTep, "%s=%d,%d,%d,%d,%d,%d\n", s_Bang[i].szKhoa,	// [UITOADO 12/09 NEO] neo
+			s_Bang[i].nLeft, s_Bang[i].nTop, s_Bang[i].nTiLe, s_Bang[i].nCo,
+			(s_Bang[i].nNeoX >= 0) ? s_Bang[i].nNeoX : NeoTuDong(s_Bang[i].nLeft, SCREEN_WIDTH),
+			(s_Bang[i].nNeoY >= 0) ? s_Bang[i].nNeoY : NeoTuDong(s_Bang[i].nTop, SCREEN_HEIGHT));
+#else
 		fprintf(pTep, "%s=%d,%d,%d,%d\n", s_Bang[i].szKhoa,
 			s_Bang[i].nLeft, s_Bang[i].nTop, s_Bang[i].nTiLe, s_Bang[i].nCo);
+#endif
 	}
 	fclose(pTep);
 	g_DebugLog("[UITOADO] ghi %d muc vao %s", s_nSo, szDuongDan);

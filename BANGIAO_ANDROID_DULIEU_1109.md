@@ -211,6 +211,22 @@ nhưng bố cục phải (bản đồ nhỏ 180 + cột 5 icon 250 + cụm kỹ 
 màn → chỉ làm được khi bố trí lại cột icon (hàng ngang dưới bản đồ nhỏ) và thu hộp thoại; **ô hành trang** to hơn cần ảnh + ini
 mới (kho VNKU có `UiItem`), là một đợt riêng như B2 của WAuto. Phóng từng icon bằng TiLe (đã làm) là cách an toàn trong khung hiện tại.
 
+## 10. Bố cục theo NEO cho mọi cỡ điện thoại (`12/09 NEO`) — chủ 02:20: "điện thoại nhiều kích cỡ, chỉnh từng cỡ không hợp lý"
+
+Công nghệ các engine mobile (Cocos, Unity) dùng: **độ phân giải thiết kế + neo (anchor) từng ô** trái/giữa/phải, trên/giữa/dưới;
+màn nào cũng chỉ dịch ô theo neo, không chỉnh từng cỡ. Đưa vào `UiToaDo.cpp` (`android/va_nguon_android_uitoado_neo3.py`, thay khối
+MANHINH, chỉ `JX_ANDROID`):
+- Dòng bố cục có 6 trường `Left,Top,TiLe,Co,NeoX,NeoY` (neo 0/1/2; thiếu → tự suy: < 35 % = trái/trên, ≥ 65 % = phải/dưới, giữa).
+  Bản PC đọc 4 trường đầu như cũ (trường 5-6 bị bỏ qua).
+- Nạp tệp: `Left += (SW − W) × (neo − neo cha) / 2` với `W,H` = `ManHinh` của tệp; **con của cửa sổ cha toàn màn** (`<lớp>|Main` có trong
+  bảng) dịch theo neo của nó TRỪ neo của cha (toạ độ con tương đối cha). Bảng giữ toạ độ khung vẽ thật; ghi tệp = 6 trường +
+  `ManHinh=SW,SH` → tệp người chơi trên điện thoại tự nhất quán, kéo thả trong chế độ sửa vẫn giữ neo.
+- Hai tệp mặc định (cả hai đã có neo, `android/sinh_bocuc_rong.py`): `uitoado_macdinh.ini` (thiết kế 1040×604, `--chuan` chỉ gán neo,
+  dùng khi tỉ lệ < 1,9: máy ảo, 16:9) và `uitoado_macdinh_rong.ini` (1371×617, tỉ lệ ≥ 1,9: 19,5:9 … 21:9; icon 1,3 lần, giãn, ô phím
+  tắt 1-4 `KUiPlayerBar|Item_0..3` = khối 2×2 bên trái cột icon phải, phóng 1,25). Điện thoại 1337×617 hay 1440×617 tự dịch theo neo.
+- Ô phím 1-4 ("UI đặt item dùng nhanh"): con của `KUiPlayerBar` (ini `Item_0..3` 932/972×205/245, 36 px) — trước không có mục nên đứng
+  yên; nay có mục + neo phải. APK `jx1mobile-1209-tai-h.apk`.
+
 **Lưu ý máy ảo:** thư mục app (`/storage/emulated/0/Android/data/vn.jx1.mobile/files/`) được `JxAndroidMain.cpp` ưu tiên TRƯỚC
 `/mnt/shared/Misc` — thử tải trên máy ảo xong phải xoá `data/`, `config.ini`, `package.ini`, `settings/`, `da_tai.txt`, `tai_du_lieu.txt`
 trong đó, nếu không máy ảo chạy bằng gói cũ và lớp ghi đè `android\du_lieu_ghi_de` hết tác dụng (đã dọn sau khi đo).
