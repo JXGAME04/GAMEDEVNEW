@@ -121,8 +121,14 @@ chơi đang cầm, auto nhường. Trên Android đi bằng cần (`JxCanDieuKhi
 đè lên lệnh đi. Sửa: macro `WA_TAY_CAM()` = `Wnd_IsLButtonDown() || JxCan_DangCam()` khi `JX_ANDROID`, còn Windows mở ra đúng
 `Wnd_IsLButtonDown()` (mã máy PC không đổi); thay 8 chỗ trong `ExtAutoLoop` (kể cả `ATYPE_PICKUPSET` và dòng nhật ký `[AUTO-PASS] lbtn=`).
 Thêm: `JxKyNang_Nhip()` (giữ nút kỹ năng đánh lặp) cũng nhường khi đang cầm cần. Cần bắt đầu kéo đã gỡ khoá mục tiêu từ 09/09
-(`LockSomeoneAction(0)` / `LockObjectAction(0)`), nên thả cần ra là auto tự bắt lại mục tiêu. Nghiệm thu: `[AUTO-PASS] ... lbtn=1` trong
-`jx_auto.log` suốt lúc kéo cần, nhân vật đi theo cần dù auto đang bật (`thu_b2e.sh`).
+(`LockSomeoneAction(0)` / `LockObjectAction(0)`), nên thả cần ra là auto tự bắt lại mục tiêu.
+
+**Đã đo 22:41** (APK `b2e`, MD5 `44bd31ec…` đối chiếu trên máy, `thu_can.sh`): bật Auto qua khung (`[WAUTO] BAT`), kéo cần 3 s →
+`jx_auto.log` ghi `[AUTO-PASS] lbtn=0 ×3 → lbtn=1 ×3 (đúng 3 giây kéo) → lbtn=0 ×3`; nhân vật đi theo cần, auto vẫn bật sau đó.
+
+**Bẫy cài APK (mất một vòng):** lệnh `adb install -r` lúc 21:36 báo `Success` nhưng `base.apk` trên máy vẫn là bản cũ (`codePath` không đổi,
+MD5 = b2d) → thử ra `lbtn=0` tưởng vá hỏng. Cài lại 22:40 mới thật (codePath mới, MD5 khớp). Từ nay sau mỗi lần cài phải **pull `base.apk`
+và so MD5** với tệp vừa cài (đã đưa vào `thu_can.sh`).
 
 ## 7. Cách chủ thử
 
