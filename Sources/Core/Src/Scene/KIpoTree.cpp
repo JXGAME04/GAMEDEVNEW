@@ -50,6 +50,7 @@ void KSelfBreathLight::Breath()
 KIpoTree::KIpoTree()
 {
 	m_pMainBranch = NULL;
+	m_nDenDong = 0;	// [SANGTAT 09/09 b]
 	m_bProcessBioLights = true;
 	m_bDynamicLighting = true;
 	m_nCurrentTime = 0;
@@ -160,6 +161,9 @@ void KIpoTree::Clear()
 		m_pMainBranch = NULL;
 	}
 	m_DefaultBranch.Clear();
+#ifndef _SERVER
+	{ extern void CayDuongXoaHet(); CayDuongXoaHet(); }	// [CAY 09/09 c]
+#endif
 	RemoveRtoGroupWithPermanentLeaf();
 	
 	//clear all dyna light
@@ -168,7 +172,7 @@ void KIpoTree::Clear()
 	{
 		delete (*i);
 	}
-	m_LightList.clear();
+	m_LightList.clear(); m_nDenDong = 0;	// [SANGTAT 09/09 b]
 }
 
 void KIpoTree::RemoveRtoGroupWithPermanentLeaf()
@@ -214,6 +218,9 @@ void KIpoTree::Fell()
 	}
 	m_DefaultBranch.RemoveAllRtoLeafs(&m_PermanentLeaf);
 	m_DefaultBranch.Clear();
+#ifndef _SERVER
+	{ extern void CayDuongXoaHet(); CayDuongXoaHet(); }	// [CAY 09/09 c]
+#endif
 
 	//清除所有内建对象的光源
 	list<KLightBase*>::iterator i;
@@ -260,7 +267,7 @@ void KIpoTree::AddLeafPoint(KIpotLeaf* pLeaf)
 	if (pLeaf->eLeafType == KIpotLeaf::IPOTL_T_RUNTIME_OBJ)
 	{
 		KIpotRuntimeObj* pRtoLeaf = (KIpotRuntimeObj*)pLeaf;
-		if (pRtoLeaf->eLayerParam & IPOT_RL_LIGHT_PROP)
+		if ((pRtoLeaf->eLayerParam & IPOT_RL_LIGHT_PROP) && BanDoSang())	// [SANGTAT 09/09 b] ban do sang tat -> khong tao den dong (chi RenderLightMap/Breathe dung)
 		{
 			// 增加一个光源
 			KLightBase *pLight = new KLightBase;
@@ -316,7 +323,7 @@ void KIpoTree::AddLeafPoint(KIpotLeaf* pLeaf)
 
 				if(pLight->m_nRadius)
                 {
-					m_LightList.push_back(pLight);
+					m_LightList.push_back(pLight); m_nDenDong++;	// [SANGTAT 09/09 b]
                 }
                 else
                 {
@@ -328,9 +335,29 @@ void KIpoTree::AddLeafPoint(KIpotLeaf* pLeaf)
 	}
 }
 
+#ifndef _SERVER
+// [CAY 09/09 c] doi toa do vat dong TAI CHO khi danh sach la dich (toa do moi) trung danh sach hien tai (toa do cu);
+// khong Pluck + chen lai (2 vong duyet ca danh sach ~1000 lan/tick luc dong). false = chua sua gi -> duong cu.
+extern bool CayDoiChoTaiCho(KIpotLeaf*& pFirst, KIpotRuntimeObj* pLeaf, const POINT& oMoi);
+extern unsigned g_uCayKhacDs, g_uCayNgoai, g_uCayKhacCha;
+bool KIpoTree::DoiViTri(KIpotRuntimeObj* pLeaf, const POINT& oMoi)
+{
+	if (m_nDenDong > 0) return false;	// dang co den dong (BanDoSang=1): duong cu xoa den + tao lai den o cho moi
+	if (pLeaf->pParentBranch == NULL && pLeaf->pParentLeaf == NULL) { g_uCayNgoai++; return false; }	// dang ngoai cay (m_PermanentLeaf)
+	KIpotBranch* pGoc = m_pMainBranch ? m_pMainBranch : &m_DefaultBranch;
+	KIpotBranch *pNhanhCu = NULL, *pNhanhMoi = NULL; KIpotLeaf *pChaCu = NULL, *pChaMoi = NULL;
+	KIpotLeaf** ppCu = pGoc->TimDanhSach(pLeaf->oPosition, pNhanhCu, pChaCu);
+	if (pNhanhCu != pLeaf->pParentBranch || pChaCu != pLeaf->pParentLeaf) { g_uCayKhacCha++; return false; }
+	KIpotLeaf** ppMoi = pGoc->TimDanhSach(oMoi, pNhanhMoi, pChaMoi);
+	if (ppMoi != ppCu) { g_uCayKhacDs++; return false; }
+	return CayDoiChoTaiCho(*ppMoi, pLeaf, oMoi);
+}
+#endif
 void KIpoTree::PluckRto(KIpotRuntimeObj* pLeaf)
 {
 	pLeaf->Pluck();
+	if (m_nDenDong <= 0)	// [SANGTAT 09/09 b] khong co den dong nao -> khoi duyet m_LightList moi lan di chuyen (~1000 lan/tick luc dong)
+		return;
 	list<KLightBase*>::iterator i;
 	for (i = m_LightList.begin(); i != m_LightList.end(); ++i)
 	{
@@ -338,6 +365,7 @@ void KIpoTree::PluckRto(KIpotRuntimeObj* pLeaf)
 		{
 			delete (*i);
 			m_LightList.erase(i);
+			m_nDenDong--;	// [SANGTAT 09/09 b]
 			break;
 		}
 	}

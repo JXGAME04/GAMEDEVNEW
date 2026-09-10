@@ -79,6 +79,7 @@ int  g_nRep3Buffers   = 3;	// [D3D11 08/09 o] 2 nhu ban f
 int  g_nRep3NoWait    = 0;	// [D3D11 08/09 l] 0 = Present cho nhu D3D9 (khong bo khung)
 int  g_nRep3Latency   = 3;	// [D3D11 08/09 o] 0 = khong dong SetMaximumFrameLatency (nhu ban f: Present tu chan khi hang day)
 int  g_nRep3Batch     = 1;	// [D3D11 08/09 j] gop quad cung trang thai thanh mot Draw
+int  g_nRep3AtlasMang = 1;	// [MANG 09/09] atlas = Texture2DArray (doi trang khong vo lo quad); 0 = trang rieng + PS cu
 int  g_nRep3Tearing   = 0;	// [D3D11 08/09 f] 1 = ALLOW_TEARING khi flip + vsync 0 (xe hinh, do tre thap nhat)
 int  g_nRep3Ex        = 0;	// [RAM 08/09] 1 = tao D3D9Ex (ky vong driver khong giu ban sao texture trong RAM)
 int  g_nRep3Log       = 1;
@@ -116,8 +117,10 @@ double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
 unsigned g_uRep3VeLoai[6] = {0, 0, 0, 0, 0, 0}; unsigned g_uRep3VeKhung = 0;	// [VE 08/09 a]
 // [VE 08/09 b] thoi gian CPU luong ve: DrawPrimitives (tong trong khung) va ca khung Begin->End
 double g_dRep3VeDpKhung = 0.0, g_dRep3VeDpTong = 0.0, g_dRep3VeDpMax = 0.0, g_dRep3VeKhungTong = 0.0, g_dRep3VeKhungMax = 0.0;
+extern unsigned g_uRep3RingVong; extern double g_dRep3RingMapMax; extern unsigned g_uRep3TexRiengTao;	// [MANG 09/09 c]
 LARGE_INTEGER g_liRep3VeBegin = {0};
-struct Rep3VeDpTimer { LARGE_INTEGER a; Rep3VeDpTimer() { QueryPerformanceCounter(&a); } ~Rep3VeDpTimer() { LARGE_INTEGER b; QueryPerformanceCounter(&b); g_dRep3VeDpKhung += Rep3NapMs(a, b); } };
+int g_nRep3VeMau = 0;	// [VE 09/09 d] 1 = khung nay la khung MAU (1/8): moi do [VE] theo don vi/lenh chi chay tren khung mau (QPC 2 lan/lenh x 5 000 lenh/khung = 4 % thoi gian ve)
+struct Rep3VeDpTimer { LARGE_INTEGER a; Rep3VeDpTimer() { if (g_nRep3VeMau) QueryPerformanceCounter(&a); } ~Rep3VeDpTimer() { if (g_nRep3VeMau) { LARGE_INTEGER b; QueryPerformanceCounter(&b); g_dRep3VeDpKhung += Rep3NapMs(a, b); } } };
 void Rep3VeDem(const char* p)
 {
 	if (!p) { g_uRep3VeLoai[5]++; return; }
@@ -596,6 +599,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Flip      = Rep3Ini("Rep3Flip", 1);	// [D3D11 08/09 f] bitblt DISCARD bi DWM ghep giua chung -> "gon song" khi di chuyen
 	g_nRep3Tearing   = Rep3Ini("Rep3Tearing", 0);	// [D3D11 08/09 f]
 	g_nRep3Batch     = Rep3Ini("Rep3Batch", 1);	// [D3D11 08/09 j]
+	g_nRep3AtlasMang = Rep3Ini("Rep3AtlasMang", 1);	// [MANG 09/09]
 	{ int nLat = Rep3Ini("Rep3Latency", -1); g_nRep3Latency = (nLat >= 0) ? nLat : (g_nRep3Vsync ? 1 : 3); }	// [NHIP 08/09] vsync: hang 1 khung (do tre thap); khong vsync: 3 nhu cu	// [D3D11 08/09 o]
 	g_nRep3NoWait    = Rep3Ini("Rep3NoWait", 0);	// [D3D11 08/09 l]
 	g_nRep3Buffers   = Rep3Ini("Rep3Buffers", 3);	// [D3D11 08/09 o]
@@ -982,9 +986,12 @@ unsigned int KRepresentShell3::CreateImage(const char* pszName, int nWidth, int 
 	return m_TextureResMgr.CreateImage(pszName, nWidth, nHeight, nType);
 }
 
+// [VE 09/09 d] giu khoa TextureResMgr mot lan cho ca lo lenh (GetImage tren cung luong bo khoa; ~3 000 cap Enter/Leave/khung)
+struct Rep3KhoaNgoai { TextureResMgr& m; Rep3KhoaNgoai(TextureResMgr& t) : m(t) { m.KhoaNgoaiVao(); } ~Rep3KhoaNgoai() { m.KhoaNgoaiRa(); } };
 void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrimitives, unsigned int uGenre, int bSinglePlaneCoord)
 {
 	Rep3VeDpTimer veDp;	// [VE 08/09 b]
+	Rep3KhoaNgoai khoaNgoai(m_TextureResMgr);	// [VE 09/09 d]
 	if(!pPrimitives)
 	{
 		assert(pPrimitives);
@@ -2381,7 +2388,7 @@ void KRepresentShell3::LookAt(int nX, int nY, int nZ)
 // 60 Hz khong giu, 143 Hz giu 1 khung, 240 Hz giu 2 khung. Nhan dien dong chu = bam chuoi+font, va vi tri
 // man hinh moi cach vi tri dang giu <= 24 px.
 struct KRep3ChuGiu { unsigned uBam; int nX, nY; double dLuc; };
-static KRep3ChuGiu s_ChuGiu[512];
+static KRep3ChuGiu s_ChuGiu[2048];	// [CHUGIU 09/09 b] bang bam mo, do tuyen tinh toi da 16 o (truoc: vong 512 o duyet tuyen tinh moi dong chu)
 static int         s_nChuGiuKe = 0;
 static double      s_dChuGiuF = 0.0;
 static inline unsigned Rep3BamChu(const char* p, int n, int nFont)
@@ -2396,20 +2403,24 @@ static bool Rep3ChuGiu(const char* psText, int nCount, int nFont, int& nX, int& 
 {
 	if (g_nRep3ChuGiuMs <= 0) return false;
 	if (s_dChuGiuF == 0.0) { LARGE_INTEGER f; QueryPerformanceFrequency(&f); s_dChuGiuF = (double)f.QuadPart / 1000.0; }
-	LARGE_INTEGER q; QueryPerformanceCounter(&q);
-	const double dNow = (double)q.QuadPart / s_dChuGiuF;
+	// [CHUGIU 09/09 b] gio dau khung (RepresentBegin) - cung mot gia tri cho moi dong chu trong khung, khong QPC moi dong
+	const double dNow = (double)g_liRep3VeBegin.QuadPart / s_dChuGiuF;
 	const unsigned uBam = Rep3BamChu(psText, nCount, nFont);
-	for (int i = 0; i < 512; i++)
+	int nTrong = -1; int nCu = -1; double dCuNhat = 0.0;
+	for (int k = 0; k < 16; k++)
 	{
+		const int i = (int)((uBam + (unsigned)k) & 2047);
 		KRep3ChuGiu& e = s_ChuGiu[i];
-		if (e.uBam != uBam || e.dLuc == 0.0) continue;
+		if (e.dLuc == 0.0) { if (nTrong < 0) nTrong = i; break; }	// o trong: chuoi do ket thuc
+		if (nCu < 0 || e.dLuc < dCuNhat) { nCu = i; dCuNhat = e.dLuc; }
+		if (e.uBam != uBam) continue;
 		int dx = nX - e.nX; if (dx < 0) dx = -dx;
 		int dy = nY - e.nY; if (dy < 0) dy = -dy;
 		if (dx > 24 || dy > 24) continue;
 		if (dNow - e.dLuc < (double)g_nRep3ChuGiuMs) { nX = e.nX; nY = e.nY; g_uRep3ChuGiu++; return true; }
 		e.nX = nX; e.nY = nY; e.dLuc = dNow; g_uRep3ChuVe++; return false;
 	}
-	KRep3ChuGiu& e = s_ChuGiu[s_nChuGiuKe]; s_nChuGiuKe = (s_nChuGiuKe + 1) & 511;
+	KRep3ChuGiu& e = s_ChuGiu[nTrong >= 0 ? nTrong : (nCu >= 0 ? nCu : (int)(uBam & 2047))];	// o trong, khong thi o cu nhat trong chuoi do
 	e.uBam = uBam; e.nX = nX; e.nY = nY; e.dLuc = dNow; g_uRep3ChuVe++;
 	return false;
 }
@@ -2661,6 +2672,7 @@ bool KRepresentShell3::CopyDeviceImageToImage(const char* pszName, int nDeviceX,
 bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 {
 	QueryPerformanceCounter(&g_liRep3VeBegin);	// [VE 08/09 b]
+	{ static unsigned s_uKhung = 0; g_nRep3VeMau = ((++s_uKhung) & 7) == 0; }	// [VE 09/09 d]
 	HRESULT hr;
 	g_ntest = 0;
     // Test the cooperative level to see if it's okay to render
@@ -2751,9 +2763,10 @@ bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 void KRepresentShell3::RepresentEnd()
 {
 	m_TextureResMgr.m_bVeDangDien = false;	// [NAP 08/09 b] ngoai luc ve: hoi anh nap ngay
-	g_uRep3VeKhung++;	// [VE 08/09 a]
-	{	// [VE 08/09 b] CPU pass ve khung nay
-		LARGE_INTEGER liNow; QueryPerformanceCounter(&liNow);
+	if (g_nRep3VeMau)	// [VE 09/09 d] chi khung mau: dem don vi + thoi gian DrawPrimitives + thoi gian khung (TB/khung khong doi, so khung in = khung mau)
+	{
+		g_uRep3VeKhung++;	// [VE 08/09 a]
+		LARGE_INTEGER liNow; QueryPerformanceCounter(&liNow);	// [VE 08/09 b] CPU pass ve khung nay
 		const double dKhung = g_liRep3VeBegin.QuadPart ? Rep3NapMs(g_liRep3VeBegin, liNow) : 0.0;
 		g_dRep3VeKhungTong += dKhung; if (dKhung > g_dRep3VeKhungMax) g_dRep3VeKhungMax = dKhung;
 		g_dRep3VeDpTong += g_dRep3VeDpKhung; if (g_dRep3VeDpKhung > g_dRep3VeDpMax) g_dRep3VeDpMax = g_dRep3VeDpKhung;
@@ -2829,14 +2842,32 @@ void KRepresentShell3::RepresentEnd()
 			s_dwLastStat = dwNow;
 			PROCESS_MEMORY_COUNTERS_EX pmc; memset(&pmc, 0, sizeof(pmc)); pmc.cb = sizeof(pmc);
 			GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+			// [CPU 09/09 do] CPU % tien trinh va luong chinh trong cua so thong ke (cpu ms / ms that x 100; tien trinh co the > 100 % vi nhieu luong)
+			static ULONGLONG s_uCpuTt = 0, s_uCpuLc = 0; static DWORD s_dwCpuMoc = 0; static int s_nNhan = 0;
+			double dCpuTt = 0.0, dCpuLc = 0.0;
+			{
+				FILETIME ftT, ftX, ftK, ftU; ULONGLONG uTt = 0, uLc = 0;
+				if (GetProcessTimes(GetCurrentProcess(), &ftT, &ftX, &ftK, &ftU)) uTt = (((ULONGLONG)ftK.dwHighDateTime << 32) | ftK.dwLowDateTime) + (((ULONGLONG)ftU.dwHighDateTime << 32) | ftU.dwLowDateTime);
+				if (GetThreadTimes(GetCurrentThread(), &ftT, &ftX, &ftK, &ftU)) uLc = (((ULONGLONG)ftK.dwHighDateTime << 32) | ftK.dwLowDateTime) + (((ULONGLONG)ftU.dwHighDateTime << 32) | ftU.dwLowDateTime);
+				if (s_nNhan == 0) { SYSTEM_INFO si; GetSystemInfo(&si); s_nNhan = (int)si.dwNumberOfProcessors; }
+				if (s_dwCpuMoc != 0 && dwNow > s_dwCpuMoc) { const double dMs = (double)(dwNow - s_dwCpuMoc); dCpuTt = (double)(uTt - s_uCpuTt) / 10000.0 * 100.0 / dMs; dCpuLc = (double)(uLc - s_uCpuLc) / 10000.0 * 100.0 / dMs; }
+				s_uCpuTt = uTt; s_uCpuLc = uLc; s_dwCpuMoc = dwNow;
+			}
 			uint32 uNodes = 0, uTexMB = 0, uRawMB = 0, uDrawMB = 0, uBudgetMB = 0;
 			unsigned uVramUsed = 0, uVramBudget = 0; Rep3_D3D11VramInfo(&uVramUsed, &uVramBudget);	// [D3D11 08/09 f]
 			m_TextureResMgr.GetStat(uNodes, uTexMB, uRawMB, uDrawMB, uBudgetMB);
-			Rep3Log("[REP3] RAM rieng %u MB, WS %u MB | VRAM con %u MB | cache %u muc: texture %u MB (ve khung nay %u MB, ngan sach %u MB), raw spr %u MB | nap %u, bo %u | fps TB %.0f | fx: tex_null %u anh_null %u tao_hong %u khung_khong_tex %u giai_ma %u khung %.1f ms | gpu tex %u (%u MB, %u trang %u MB) | vram %u/%u MB | d3d11: present TB %.2f ms bo %u, ve %u lenh %.1f us/lenh, gop %u quad -> %u Draw | pal %u hang",
-				(unsigned)(pmc.PrivateUsage >> 20), (unsigned)(pmc.WorkingSetSize >> 20), (unsigned)(PD3DDEVICE->GetAvailableTextureMem() >> 20),
+			Rep3Log("[REP3] RAM rieng %u MB, WS %u MB | cpu tien trinh %.0f %% (luong chinh %.0f %%, may %d nhan) | VRAM con %u MB | cache %u muc: texture %u MB (ve khung nay %u MB, ngan sach %u MB), raw spr %u MB | nap %u, bo %u | fps TB %.0f | fx: tex_null %u anh_null %u tao_hong %u khung_khong_tex %u giai_ma %u khung %.1f ms | gpu tex %u (%u MB, %u trang %u MB) | vram %u/%u MB | d3d11: present TB %.2f ms bo %u, ve %u lenh %.1f us/lenh, gop %u quad -> %u Draw | pal %u hang",
+				(unsigned)(pmc.PrivateUsage >> 20), (unsigned)(pmc.WorkingSetSize >> 20), dCpuTt, dCpuLc, s_nNhan, (unsigned)(PD3DDEVICE->GetAvailableTextureMem() >> 20),
 				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg,
 				g_uRep3FxTexNull, g_uRep3FxAnhNull, g_uRep3FxTaoHong, g_uRep3FxKhungKhongTex, g_uRep3FxGiaiMa, g_dRep3FxGiaiMaMs, g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), uVramUsed, uVramBudget,
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);
+			{	// [GOP 09/09 do]
+				extern unsigned g_uRep3GopVo[12]; extern unsigned g_uRep3VeNgay[4]; extern unsigned g_uRep3CullGiu, g_uRep3CullBo; /* [MANG 09/09 e] */
+				Rep3Log("[GOP] vo lo quad: doi trang atlas %u, texture rieng %u, srv1 %u, blend %u, sampler %u, ps st0 %u, ps st1 %u, alphatest %u, vs %u, layout %u, vp/scissor %u, day %u | ve ngay: fan %u, list %u, strip %u, khac %u | cull cpu: giu %u bo %u",
+					g_uRep3GopVo[0], g_uRep3GopVo[1], g_uRep3GopVo[2], g_uRep3GopVo[3], g_uRep3GopVo[4], g_uRep3GopVo[5], g_uRep3GopVo[6], g_uRep3GopVo[7], g_uRep3GopVo[8], g_uRep3GopVo[9], g_uRep3GopVo[10], g_uRep3GopVo[11],
+					g_uRep3VeNgay[0], g_uRep3VeNgay[1], g_uRep3VeNgay[2], g_uRep3VeNgay[3], g_uRep3CullGiu, g_uRep3CullBo);
+				memset(g_uRep3GopVo, 0, sizeof(g_uRep3GopVo)); memset(g_uRep3VeNgay, 0, sizeof(g_uRep3VeNgay)); g_uRep3CullGiu = g_uRep3CullBo = 0;
+			}
 			Rep3Log("[LOCTG] tau=%d ms kieu=%d toi=%d | %u khung da tron", g_nRep3LocMs, g_nRep3LocKieu, (int)(255.0f / g_fRep3LocK + 0.5f), g_uRep3LocKhung);
 			g_uRep3LocKhung = 0;
 			Rep3Log("[CHUGIU] giu %d ms | dong chu giu %u, ve moi %u", g_nRep3ChuGiuMs, g_uRep3ChuGiu, g_uRep3ChuVe);
@@ -2850,14 +2881,14 @@ void KRepresentShell3::RepresentEnd()
 			}
 			g_dRep3PresentMs = 0.0; g_uRep3Presents = 0; g_uRep3PresentSkip = 0; g_dRep3DrawMs = 0.0; g_uRep3Draws = 0; g_uRep3BatchQuads = 0; g_uRep3BatchDraws = 0;
 			g_uRep3FxTexNull = 0; g_uRep3FxAnhNull = 0; g_uRep3FxTaoHong = 0; g_uRep3FxKhungKhongTex = 0; g_uRep3FxGiaiMa = 0; g_dRep3FxGiaiMaMs = 0.0;
-			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung %u) | cpu ve: DrawPrimitives %.2f ms/khung (max %.1f), khung %.2f ms (max %.1f)",	// [NAP 08/09 a/b] [VE 08/09 a/b]
+			Rep3Log("[REP3-NAP] %ds tren luong ve: tep spr %u lan %.1f ms (max %.1f) | jpeg %u lan %.1f ms (max %.1f) | rut khung %u lan %.1f ms (max %.2f) | giai ma %u %.1f ms (max %.2f) | tao GPU %u %.1f ms (max %.2f) | khung co nap >5 ms: %u, >16 ms: %u, max %.1f ms/khung | nen: giao %u xong %u hong %u bo_ve %u | ve/khung: npc %.0f skill %.0f ui %.0f map %.0f tao %.0f khac %.0f (khung mau %u) | cpu ve: DrawPrimitives %.2f ms/khung (max %.1f), khung %.2f ms (max %.1f) | ring: %u vong, Map max %.1f ms | texture rieng tao %u",	// [NAP 08/09 a/b] [VE 08/09 a/b]
 				g_nRep3StatSec, g_napSpr.n, g_napSpr.ms, g_napSpr.max, g_napJpeg.n, g_napJpeg.ms, g_napJpeg.max, g_napKhung.n, g_napKhung.ms, g_napKhung.max,
 				g_napGiaiMa.n, g_napGiaiMa.ms, g_napGiaiMa.max, g_napGpu.n, g_napGpu.ms, g_napGpu.max, g_uRep3NapKhung5, g_uRep3NapKhung16, g_dRep3NapKhungMax,
 				m_TextureResMgr.m_nNapNenGui, m_TextureResMgr.m_nNapNenXong, m_TextureResMgr.m_nNapNenHong, m_TextureResMgr.m_nNapNenBoVe,
 				g_uRep3VeKhung ? (double)g_uRep3VeLoai[0] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[1] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[2] / g_uRep3VeKhung : 0.0,
 				g_uRep3VeKhung ? (double)g_uRep3VeLoai[3] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[4] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung ? (double)g_uRep3VeLoai[5] / g_uRep3VeKhung : 0.0, g_uRep3VeKhung,
-				g_uRep3VeKhung ? g_dRep3VeDpTong / g_uRep3VeKhung : 0.0, g_dRep3VeDpMax, g_uRep3VeKhung ? g_dRep3VeKhungTong / g_uRep3VeKhung : 0.0, g_dRep3VeKhungMax);
-			g_dRep3VeDpTong = 0.0; g_dRep3VeDpMax = 0.0; g_dRep3VeKhungTong = 0.0; g_dRep3VeKhungMax = 0.0;
+				g_uRep3VeKhung ? g_dRep3VeDpTong / g_uRep3VeKhung : 0.0, g_dRep3VeDpMax, g_uRep3VeKhung ? g_dRep3VeKhungTong / g_uRep3VeKhung : 0.0, g_dRep3VeKhungMax, g_uRep3RingVong, g_dRep3RingMapMax, g_uRep3TexRiengTao);
+			g_dRep3VeDpTong = 0.0; g_dRep3VeDpMax = 0.0; g_dRep3VeKhungTong = 0.0; g_dRep3VeKhungMax = 0.0; g_uRep3RingVong = 0; g_dRep3RingMapMax = 0.0; g_uRep3TexRiengTao = 0; /* [MANG 09/09 c] */
 			memset(g_uRep3VeLoai, 0, sizeof(g_uRep3VeLoai)); g_uRep3VeKhung = 0;
 			m_TextureResMgr.m_nNapNenGui = 0; m_TextureResMgr.m_nNapNenXong = 0; m_TextureResMgr.m_nNapNenHong = 0; m_TextureResMgr.m_nNapNenBoVe = 0;
 			memset(&g_napSpr, 0, sizeof(g_napSpr)); memset(&g_napJpeg, 0, sizeof(g_napJpeg)); memset(&g_napKhung, 0, sizeof(g_napKhung)); memset(&g_napGiaiMa, 0, sizeof(g_napGiaiMa)); memset(&g_napGpu, 0, sizeof(g_napGpu));

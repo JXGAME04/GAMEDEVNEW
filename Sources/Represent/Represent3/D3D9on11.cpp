@@ -178,7 +178,7 @@ HRESULT CTex11::EnsureGpu(const BYTE* pInit)
 			// khong co du lieu: xoa o (tranh rac cua texture cu)
 			BYTE* pZero = (BYTE*)calloc(1, (size_t)m_w * m_h * m_pPage->m_bpp);
 			if (pZero) { D3D11_BOX bz; bz.left = m_ax; bz.top = m_ay; bz.right = m_ax + m_w; bz.bottom = m_ay + m_h; bz.front = 0; bz.back = 1;
-				m_pDev->m_pCtx->UpdateSubresource(m_pPage->m_pTex, 0, &bz, pZero, m_w * m_pPage->m_bpp, 0); free(pZero); }
+				m_pDev->m_pCtx->UpdateSubresource(m_pPage->m_pTex, m_pPage->m_lop, &bz, pZero, m_w * m_pPage->m_bpp, 0); free(pZero); }	// [MANG 09/09] lop cua trang
 			return D3D_OK;
 		}
 	}
@@ -212,6 +212,10 @@ HRESULT CTex11::EnsureGpu(const BYTE* pInit)
 			sr.pSysMem = pInit; sr.SysMemPitch = m_pitch;
 		}
 	}
+	{	// [MANG 09/09 c] ai la texture RIENG (ngoai atlas, cat lo quad 80-350 lan/khung)? ghi 64 lan dau
+		extern unsigned g_uRep3TexRiengTao; static unsigned s_uDaGhi = 0; g_uRep3TexRiengTao++;
+		if (s_uDaGhi < 64) { s_uDaGhi++; R11Log("[D3D11] texture rieng #%u: %ux%u fmt %d usage 0x%X pool %d%s", s_uDaGhi, m_w, m_h, (int)m_fmt, (unsigned)m_usage, (int)m_pool, bRt ? " RT" : ""); }
+	}
 	HRESULT hr = m_pDev->m_pDev->CreateTexture2D(&td, pInit ? &sr : NULL, &m_pGpu);
 	if (pConv) free(pConv);
 	if (FAILED(hr) || !m_pGpu)
@@ -220,7 +224,14 @@ HRESULT CTex11::EnsureGpu(const BYTE* pInit)
 		m_pGpu = NULL;
 		return D3DERR_OUTOFVIDEOMEMORY;
 	}
-	hr = m_pDev->m_pDev->CreateShaderResourceView(m_pGpu, NULL, &m_pSrv);
+	if (g_nRep3AtlasMang)
+	{	// [MANG 09/09] shader khai bao Texture2DArray -> SRV texture rieng cung la view MANG 1 lop
+		D3D11_SHADER_RESOURCE_VIEW_DESC vd; memset(&vd, 0, sizeof(vd));
+		vd.Format = m_dxgi; vd.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY; vd.Texture2DArray.MostDetailedMip = 0; vd.Texture2DArray.MipLevels = 1; vd.Texture2DArray.FirstArraySlice = 0; vd.Texture2DArray.ArraySize = 1;
+		hr = m_pDev->m_pDev->CreateShaderResourceView(m_pGpu, &vd, &m_pSrv);
+	}
+	else
+		hr = m_pDev->m_pDev->CreateShaderResourceView(m_pGpu, NULL, &m_pSrv);
 	if (FAILED(hr)) { R11Log("CreateShaderResourceView that bai 0x%08X", (unsigned)hr); ReleaseGpu(); return D3DERR_OUTOFVIDEOMEMORY; }
 	if (bRt)
 	{
@@ -256,6 +267,7 @@ HRESULT CTex11::UploadRect(const RECT* prc)
 	}
 	UINT ox = m_bVirtual ? m_ax : 0, oy = m_bVirtual ? m_ay : 0;
 	ID3D11Texture2D* pDst = m_bVirtual ? m_pPage->m_pTex : m_pGpu;
+	const UINT uSub = m_bVirtual ? m_pPage->m_lop : 0;	// [MANG 09/09] lop cua trang trong mang (che do cu = 0)
 	D3D11_BOX box; box.left = ox + rc.left; box.top = oy + rc.top; box.right = ox + rc.right; box.bottom = oy + rc.bottom; box.front = 0; box.back = 1;
 	UINT w = rc.right - rc.left, h = rc.bottom - rc.top;
 	if (m_bConvert)
@@ -264,11 +276,11 @@ HRESULT CTex11::UploadRect(const RECT* prc)
 		if (!pConv) return E_OUTOFMEMORY;
 		for (UINT y = 0; y < h; y++)
 			R11ConvertRowToBgra(m_fmt, m_pCpu + (rc.top + y) * m_pitch + rc.left * fi.bpp, (DWORD*)(pConv + y * w * 4), w);
-		m_pDev->m_pCtx->UpdateSubresource(pDst, 0, &box, pConv, w * 4, 0);
+		m_pDev->m_pCtx->UpdateSubresource(pDst, uSub, &box, pConv, w * 4, 0);
 		free(pConv);
 	}
 	else
-		m_pDev->m_pCtx->UpdateSubresource(pDst, 0, &box, m_pCpu + rc.top * m_pitch + rc.left * fi.bpp, m_pitch, 0);
+		m_pDev->m_pCtx->UpdateSubresource(pDst, uSub, &box, m_pCpu + rc.top * m_pitch + rc.left * fi.bpp, m_pitch, 0);
 	return D3D_OK;
 }
 
@@ -277,6 +289,7 @@ HRESULT CTex11::PrepareForBind()
 	if (m_bVirtual)
 	{
 		if (!m_pPage) { HRESULT hr = EnsureGpu(m_pCpu); m_bDirty = false; return hr; }
+		m_pSrv = m_pPage->m_pSrv;	// [MANG 09/09] SRV cua mang co the da doi khi mang lon len
 		if (m_bDirty && m_pCpu) { HRESULT hr = UploadRect(&m_rcDirty); m_bDirty = false; return hr; }
 		return D3D_OK;
 	}

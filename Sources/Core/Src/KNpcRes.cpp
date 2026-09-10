@@ -8,6 +8,7 @@
 //---------------------------------------------------------------------------
 
 #include "KCore.h"
+extern KCacheNode* AmThanhLay(KCache& cache, char* szTen, KCacheNode* pNode);	// [AM 09/09 do] (KSubWorld.cpp) boc g_SoundCache.GetNode de do nap dong bo
 
 #ifndef _SERVER
 
@@ -1599,7 +1600,7 @@ void	KNpcRes::PlaySound(int nX, int nY)
 
 	g_ScenePlace.GetFocusPosition(nCenterX, nCenterY, nCenterZ);
 
-	m_pSoundNode = (KCacheNode*) g_SoundCache.GetNode(m_szSoundName, (KCacheNode*)m_pSoundNode);
+	m_pSoundNode = (KCacheNode*) AmThanhLay(g_SoundCache, m_szSoundName, (KCacheNode*)m_pSoundNode);
 	m_pWave = (KWavSound*)m_pSoundNode->m_lpData;
 	if (m_pWave)
 	{
@@ -1617,7 +1618,7 @@ int	KNpcRes::GetSndVolume(int nVol)
 
 void	KNpcRes::StopSound()
 {
-	m_pSoundNode = (KCacheNode*)g_SoundCache.GetNode(m_szSoundName, (KCacheNode*)m_pSoundNode);
+	m_pSoundNode = (KCacheNode*)AmThanhLay(g_SoundCache, m_szSoundName, (KCacheNode*)m_pSoundNode);
 	m_pWave = (KWavSound*)m_pSoundNode->m_lpData;
 	if (m_pWave)
 	{

@@ -10,8 +10,8 @@ cbuffer VSCB : register(b0)
     float4          g_flags;  // x = 1 -> dinh XYZRHW, 0 -> XYZ
 };
 
-struct VSIn  { float4 pos : POSITION; float4 col : COLOR0; float2 uv : TEXCOORD0; uint palrow : PALROW; };
-struct VSOut { float4 pos : SV_Position; float4 col : COLOR0; float2 uv : TEXCOORD0; nointerpolation uint palrow : PALROW; };
+struct VSIn  { float4 pos : POSITION; float4 col : COLOR0; float2 uv : TEXCOORD0; uint2 palrow : PALROW; };
+struct VSOut { float4 pos : SV_Position; float4 col : COLOR0; float2 uv : TEXCOORD0; nointerpolation uint2 palrow : PALROW; };   // [MANG 09/09 b] x = hang | lop | nguon | alpha test, y = alpha ref
 
 VSOut VS(VSIn i)
 {
@@ -42,11 +42,62 @@ cbuffer PSCB : register(b0)
     float4 g_at;    // x = alpha test bat, y = D3DCMP_*, z = alpha ref (0..255), w = 0
 };
 
+#ifdef MANG
+Texture2DArray g_t0 : register(t0);   // [MANG 09/09] atlas = mang trang; lop = 16 bit cao cua PALROW
+#else
 Texture2D    g_t0 : register(t0);
+#endif
 SamplerState g_s0 : register(s0);
+#ifdef MANG
+Texture2DArray g_t1 : register(t1);   // [MANG 09/09] lop cua stage 1 = g_st1b.w
+#else
 Texture2D    g_t1 : register(t1);
+#endif
 SamplerState g_s1 : register(s1);
 Texture2D    g_pal : register(t2);   // [r] atlas bang mau 256 x N (BGRA8), hang = palrow
+#ifdef MANG
+Texture2DArray g_a8  : register(t3);  // [MANG 09/09 b] atlas R8G8 (bang mau), gan co dinh
+Texture2DArray g_a32 : register(t4);  // [MANG 09/09 b] atlas BGRA8, gan co dinh
+// nguon texture stage 0 theo dinh: 0 = t0 (texture rieng, view mang 1 lop), 1 = t3, 2 = t4
+float4 T0Sample(uint src, float lop, float2 uv)
+{
+    if (src == 1u) return g_a8.Sample(g_s0, float3(uv, lop));
+    if (src == 2u) return g_a32.Sample(g_s0, float3(uv, lop));
+    return g_t0.Sample(g_s0, float3(uv, 0.0));
+}
+float4 T0Load(uint src, float lop, int2 p)
+{
+    if (src == 1u) return g_a8.Load(int4(p, (int)lop, 0));
+    if (src == 2u) return g_a32.Load(int4(p, (int)lop, 0));
+    return g_t0.Load(int4(p, 0, 0));
+}
+float2 T0Dim(uint src)
+{
+    float3 d;
+    if (src == 1u) g_a8.GetDimensions(d.x, d.y, d.z);
+    else if (src == 2u) g_a32.GetDimensions(d.x, d.y, d.z);
+    else g_t0.GetDimensions(d.x, d.y, d.z);
+    return d.xy;
+}
+float4 T1Sample(float2 uv)
+{   // stage 1: nguon = g_at.x, lop = g_at.y (cb, hiem doi)
+    uint src = (uint)g_at.x; float lop = g_at.y;
+    if (src == 1u) return g_a8.Sample(g_s1, float3(uv, lop));
+    if (src == 2u) return g_a32.Sample(g_s1, float3(uv, lop));
+    return g_t1.Sample(g_s1, float3(uv, 0.0));
+}
+#endif
+#ifdef MANG
+#define T0_SAMPLE(uv)  T0Sample(src, lop, uv)
+#define T0_LOAD(p)     T0Load(src, lop, p)
+#define T0_DIM(d)      d = T0Dim(src)
+#define T1_SAMPLE(uv)  T1Sample(uv)
+#else
+#define T0_SAMPLE(uv)  g_t0.Sample(g_s0, uv)
+#define T0_LOAD(p)     g_t0.Load(int3(p, 0))
+#define T0_DIM(d)      g_t0.GetDimensions(d.x, d.y)
+#define T1_SAMPLE(uv)  g_t1.Sample(g_s1, uv)
+#endif
 
 // [r] texture chi so R8G8 -> mau: R = chi so bang mau, G = alpha
 float4 PalTex(float4 ia, uint row)
@@ -107,41 +158,63 @@ float4 Stage(int4 st, int4 stb, float4 dif, float4 cur, float4 tex)
     return saturate(float4(rgb, a));
 }
 
+#ifdef MANG
+// [MANG 09/09 d] arg stage 0 goi 4 bit theo dinh: sel (2) | complement (1) | alphareplicate (1) -> ma D3DTA nhu cu
+int ArgMo(uint a) { return (int)((a & 3u) | (((a & 4u) != 0u) ? 0x10u : 0u) | (((a & 8u) != 0u) ? 0x20u : 0u)); }
+#endif
 float4 PS(VSOut i) : SV_Target
 {
+    uint row = i.palrow.x & 0xFFFFu;   // [MANG 09/09] hang bang mau
+#ifdef MANG
+    float lop = (float)((i.palrow.x >> 16) & 0x1FFu); uint src = (i.palrow.x >> 25) & 3u;   // [MANG 09/09 b] lop + nguon theo dinh
+    // [MANG 09/09 d] tham so stage 0 theo dinh (y) + tex0 bound (x bit 31); loc tuyen tinh van tu cb (g_st0b.w)
+    uint y = i.palrow.y;
+    int4 st0 = int4((int)((y >> 8) & 15u), ArgMo((y >> 12) & 15u), ArgMo((y >> 16) & 15u), (int)((y >> 20) & 15u));
+    int4 st0b = int4(ArgMo((y >> 24) & 15u), ArgMo((y >> 28) & 15u), (int)((i.palrow.x >> 31) & 1u), g_st0b.w);
+#else
+    int4 st0 = g_st0; int4 st0b = g_st0b;
+#endif
     float4 dif = i.col;
     float4 cur = dif;
-    if (g_st0.x != 1)   // stage 0 khong DISABLE
+    if (st0.x != 1)   // stage 0 khong DISABLE
     {
-        float4 tex0 = (g_st0b.z != 0) ? g_t0.Sample(g_s0, i.uv) : float4(1, 1, 1, 1);
-        if (i.palrow != 0xFFFFu && g_st0b.z != 0)
+        float4 tex0 = (st0b.z != 0) ? T0_SAMPLE(i.uv) : float4(1, 1, 1, 1);
+        if (row != 0xFFFFu && st0b.z != 0)
         {   // [r] texture chi so (R8G8): R = chi so bang mau, G = alpha
-            if (g_st0b.w != 0)
+            if (st0b.w != 0)
             {   // [r2] loc tuyen tinh: lay 4 diem, tra bang tung diem roi noi suy (nhu phan cung voi BGRA8); khong noi suy CHI SO
-                float2 dim; g_t0.GetDimensions(dim.x, dim.y);
+                float2 dim; T0_DIM(dim);
                 float2 p = i.uv * dim - 0.5; float2 f = frac(p); int2 p0 = (int2)floor(p); int2 mx = (int2)dim - 1;
-                float4 c00 = PalTex(g_t0.Load(int3(clamp(p0, int2(0, 0), mx), 0)), i.palrow);
-                float4 c10 = PalTex(g_t0.Load(int3(clamp(p0 + int2(1, 0), int2(0, 0), mx), 0)), i.palrow);
-                float4 c01 = PalTex(g_t0.Load(int3(clamp(p0 + int2(0, 1), int2(0, 0), mx), 0)), i.palrow);
-                float4 c11 = PalTex(g_t0.Load(int3(clamp(p0 + int2(1, 1), int2(0, 0), mx), 0)), i.palrow);
+                float4 c00 = PalTex(T0_LOAD(clamp(p0, int2(0, 0), mx)), row);
+                float4 c10 = PalTex(T0_LOAD(clamp(p0 + int2(1, 0), int2(0, 0), mx)), row);
+                float4 c01 = PalTex(T0_LOAD(clamp(p0 + int2(0, 1), int2(0, 0), mx)), row);
+                float4 c11 = PalTex(T0_LOAD(clamp(p0 + int2(1, 1), int2(0, 0), mx)), row);
                 tex0 = lerp(lerp(c00, c10, f.x), lerp(c01, c11, f.x), f.y);
             }
             else
-                tex0 = PalTex(tex0, i.palrow);
+                tex0 = PalTex(tex0, row);
         }
-        cur = Stage(g_st0, g_st0b, dif, dif, tex0);
+        cur = Stage(st0, st0b, dif, dif, tex0);
         if (g_st1.x != 1)
         {
-            float4 tex1 = (g_st1b.z != 0) ? g_t1.Sample(g_s1, i.uv) : float4(1, 1, 1, 1);
+            float4 tex1 = (g_st1b.z != 0) ? T1_SAMPLE(i.uv) : float4(1, 1, 1, 1);
             cur = Stage(g_st1, g_st1b, dif, cur, tex1);
         }
     }
+#ifdef MANG
+    if (((i.palrow.x >> 27) & 1u) != 0u)   // [MANG 09/09 b] alpha test theo dinh: bat | ham | ref
+    {
+        int a8 = (int)floor(cur.a * 255.0 + 0.5);
+        int r8 = (int)(i.palrow.y & 0xFFu);
+        int f = (int)((i.palrow.x >> 28) & 7u) + 1;
+#else
     if (g_at.x > 0.5)
     {
         // so sanh tren alpha 8 bit nhu phan cung D3D9
         int a8 = (int)floor(cur.a * 255.0 + 0.5);
         int r8 = (int)g_at.z;
         int f = (int)g_at.y;
+#endif
         bool ok = true;
         if (f == 1) ok = false;
         else if (f == 2) ok = a8 <  r8;

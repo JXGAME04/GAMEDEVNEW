@@ -29,10 +29,16 @@ UINT   R11Rows(D3DFORMAT f, UINT h);			// so hang du lieu (DXT: (h+3)/4)
 void   R11ConvertRowToBgra(D3DFORMAT f, const BYTE* pSrc, DWORD* pDst, UINT w);
 
 // ---------------------------------------------------------------- atlas [D3D11 08/09 d]
+struct CAtlasMang	// [MANG 09/09] mot Texture2DArray cho mot dinh dang; moi trang atlas = mot lop (slice)
+{
+	ID3D11Texture2D* m_pTex; ID3D11ShaderResourceView* m_pSrv; DXGI_FORMAT m_fmt; UINT m_bpp;
+	UINT m_nLop, m_nDung; std::vector<UINT> m_lopTrong;	// so lop da cap, so lop da phat (ke tiep), lop da tra lai
+};
 class CAtlasPage
 {
 public:
-	ID3D11Texture2D* m_pTex; ID3D11ShaderResourceView* m_pSrv;
+	ID3D11Texture2D* m_pTex; ID3D11ShaderResourceView* m_pSrv;	// che do mang: = cua mang (doi khi mang lon len); che do cu: cua trang
+	CAtlasMang* m_pMang; UINT m_lop;	// [MANG 09/09] mang + chi so lop; che do cu: NULL, 0
 	DXGI_FORMAT m_fmt; UINT m_bpp;	// [r] trang BGRA8 (4) hoac R8G8 (2)
 	UINT m_binH, m_rows, m_used;
 	std::vector<std::vector<std::pair<UINT, UINT> > > m_free;	// moi hang: cac doan trong (x0, x1)
@@ -48,6 +54,10 @@ public:
 	void ReleaseAll();
 	CAtlasPage* NewPage(UINT binH, DXGI_FORMAT fmt);
 	CDev11* m_pDev; std::vector<CAtlasPage*> m_pages; UINT m_pageSize;
+	CAtlasMang* MangLay(DXGI_FORMAT fmt, UINT* pLop);	// [MANG 09/09] lay mot lop trong (tao/lon mang khi can)
+	void MangXoa();
+	void GanMang();	// [MANG 09/09 b] gan mang R8G8 -> t3, BGRA8 -> t4
+	std::vector<CAtlasMang*> m_mang;
 };
 
 // ---------------------------------------------------------------- texture
@@ -371,6 +381,7 @@ public:
 	ID3D11BlendState*     GetBlendState();
 	ID3D11SamplerState*   GetSamplerState(UINT stage);
 	ID3D11RasterizerState* GetRasterState();
+	ID3D11RasterizerState* GetRasterStateCull(DWORD cull);	// [MANG 09/09 e] raster voi cull chi dinh (lo 2D dung CULL_NONE, cull tren CPU)
 	void    FillCaps(D3DCAPS9* pCaps);
 	void    SetStateInternal(DWORD key, DWORD value);
 	DWORD   GetStateInternal(DWORD key);

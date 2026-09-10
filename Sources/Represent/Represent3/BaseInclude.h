@@ -83,7 +83,7 @@ extern int  g_nRep3Waitable;	// [D3D11 08/09 n]
 extern int  g_nRep3Buffers;	// [D3D11 08/09 m]
 extern int  g_nRep3NoWait;	// [D3D11 08/09 l]
 extern int  g_nRep3Latency;	// [D3D11 08/09 k]
-extern int  g_nRep3Batch; extern unsigned g_uRep3BatchQuads; extern unsigned g_uRep3BatchDraws;	// [D3D11 08/09 j]
+extern int  g_nRep3Batch; extern unsigned g_uRep3BatchQuads; extern unsigned g_uRep3BatchDraws; extern int g_nRep3AtlasMang; /* [MANG 09/09] */	// [D3D11 08/09 j]
 extern int  g_nRep3Tearing;     // [D3D11 08/09 f]
 void Rep3_D3D11VramInfo(unsigned* puUsedMB, unsigned* puBudgetMB);
 extern int  g_nRep3Flip;        // [D3D11 08/09 b] 1 = swapchain flip, 0 = bitblt cu

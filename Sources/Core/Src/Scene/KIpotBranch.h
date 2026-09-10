@@ -109,6 +109,9 @@ class KIpotBranch
 		KIpotBuildinObj* pBranchObj);
 
 	void AddLineLeafToList(KIpotLeaf*& pFirst, KIpotBuildinObj* pLeaf);
+  public:
+	KIpotLeaf** TimDanhSach(const POINT& p, KIpotBranch*& pNhanh, KIpotLeaf*& pLaCha);	// [CAY 09/09 c] danh sach la ma toa do p se duoc chen vao (di xuong cay + khop vat duong), tra ve chu (nhanh hoac la cha)
+  private:
 	void AddPointLeafToList(KIpotLeaf*& pFirst, KIpotLeaf* pLeaf, KIpotLeaf* pParentLeaf);
 	
 	void PaintABranchObject(KIpotBuildinObj* pObject, RECT* pRepresentArea) const;
