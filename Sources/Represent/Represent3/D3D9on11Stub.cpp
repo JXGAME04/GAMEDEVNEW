@@ -20,6 +20,14 @@ unsigned __int64 g_uRep3AtlasBytes = 0;
 unsigned         g_uRep3GpuTexCount = 0;
 unsigned __int64 g_uRep3GpuTexBytes = 0;
 unsigned         g_uRep3PalRows = 0;
+/* [ANDROID 11/09 MANG] bo dem moi cua [GOP do] / [MANG a-e] - dinh nghia trong D3D9on11Dev.cpp (chi Windows) */
+unsigned         g_uRep3GopVo[12] = { 0 };
+unsigned         g_uRep3VeNgay[4] = { 0 };
+unsigned         g_uRep3CullGiu = 0;
+unsigned         g_uRep3CullBo = 0;
+unsigned         g_uRep3RingVong = 0;
+unsigned         g_uRep3TexRiengTao = 0;
+double           g_dRep3RingMapMax = 0.0;
 
 IDirect3D9* Rep3_CreateD3D9on11() { return NULL; }
 int  Rep3_D3D11PaletteOK() { return Rep3_GpuPaletteOK() ? 1 : 0; }

@@ -339,6 +339,62 @@ BOOL TzSpecificLocalTimeToSystemTime(const TIME_ZONE_INFORMATION* tz, const SYST
 }
 DWORD GetTimeZoneInformation(LPTIME_ZONE_INFORMATION tz) { if (tz) { memset(tz, 0, sizeof(*tz)); tz->Bias = (LONG)(-jx_gmtoff() / 60); } return 0; }
 BOOL QueryPerformanceCounter(LARGE_INTEGER* p) { if (p) p->QuadPart = (LONGLONG)SDL_GetPerformanceCounter(); return TRUE; }
+/* [ANDROID 11/09 MANG] thoi gian CPU: Windows tra don vi 100 ns trong FILETIME (kernel = he thong, user = nguoi dung). */
+static void jx_dat_ft(LPFILETIME p, unsigned long long u100ns)
+{
+	if (!p) return;
+	p->dwLowDateTime  = (DWORD)(u100ns & 0xFFFFFFFFull);
+	p->dwHighDateTime = (DWORD)(u100ns >> 32);
+}
+BOOL GetProcessTimes(HANDLE hProcess, LPFILETIME lpCreation, LPFILETIME lpExit, LPFILETIME lpKernel, LPFILETIME lpUser)
+{
+	/* /proc/self/stat: truong 14 utime, 15 stime (don vi tick = 1/CLK_TCK giay) */
+	unsigned long long ut = 0, st = 0;
+	long clk = sysconf(_SC_CLK_TCK);
+	FILE* f;
+
+	(void)hProcess;
+	jx_dat_ft(lpCreation, 0); jx_dat_ft(lpExit, 0);
+	if (clk <= 0) clk = 100;
+	f = fopen("/proc/self/stat", "r");
+	if (f)
+	{
+		char sz[1024] = { 0 };
+		if (fgets(sz, sizeof(sz) - 1, f))
+		{
+			char* p = strrchr(sz, ')');	/* bo qua ten tien trinh trong ngoac */
+			if (p)
+			{
+				char* tok = strtok(p + 1, " ");
+				int i;
+				for (i = 3; tok && i <= 15; i++)
+				{
+					if (i == 14) ut = strtoull(tok, NULL, 10);
+					if (i == 15) st = strtoull(tok, NULL, 10);
+					tok = strtok(NULL, " ");
+				}
+			}
+		}
+		fclose(f);
+	}
+	jx_dat_ft(lpKernel, st * 10000000ull / (unsigned long long)clk);
+	jx_dat_ft(lpUser,   ut * 10000000ull / (unsigned long long)clk);
+	return TRUE;
+}
+BOOL GetThreadTimes(HANDLE hThread, LPFILETIME lpCreation, LPFILETIME lpExit, LPFILETIME lpKernel, LPFILETIME lpUser)
+{
+	struct timespec ts;
+
+	(void)hThread;
+	jx_dat_ft(lpCreation, 0); jx_dat_ft(lpExit, 0); jx_dat_ft(lpKernel, 0);
+	if (clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts) != 0)
+	{
+		jx_dat_ft(lpUser, 0);
+		return FALSE;
+	}
+	jx_dat_ft(lpUser, (unsigned long long)ts.tv_sec * 10000000ull + (unsigned long long)ts.tv_nsec / 100ull);
+	return TRUE;
+}
 BOOL QueryPerformanceFrequency(LARGE_INTEGER* p) { if (p) p->QuadPart = (LONGLONG)SDL_GetPerformanceFrequency(); return TRUE; }
 LONG CompareFileTime(const FILETIME* a, const FILETIME* b)
 {

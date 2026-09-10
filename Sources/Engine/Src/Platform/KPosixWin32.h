@@ -204,6 +204,8 @@ void    GetLocalTime(LPSYSTEMTIME lpSystemTime);
 void    GetSystemTime(LPSYSTEMTIME lpSystemTime);
 void    GetSystemTimeAsFileTime(LPFILETIME lpFileTime);
 BOOL    SystemTimeToFileTime(const SYSTEMTIME* lpSystemTime, LPFILETIME lpFileTime);
+BOOL    GetProcessTimes(HANDLE hProcess, LPFILETIME lpCreation, LPFILETIME lpExit, LPFILETIME lpKernel, LPFILETIME lpUser);	// [ANDROID 11/09 MANG]
+BOOL    GetThreadTimes(HANDLE hThread, LPFILETIME lpCreation, LPFILETIME lpExit, LPFILETIME lpKernel, LPFILETIME lpUser);
 BOOL    FileTimeToSystemTime(const FILETIME* lpFileTime, LPSYSTEMTIME lpSystemTime);
 BOOL    FileTimeToLocalFileTime(const FILETIME* lpFileTime, LPFILETIME lpLocalFileTime);
 BOOL    LocalFileTimeToFileTime(const FILETIME* lpLocalFileTime, LPFILETIME lpFileTime);
