@@ -33,11 +33,15 @@ if (Test-Path $GhiDe) {
 
 "ha chu thuong ten tep/thu muc ..."
 # doi ten tu sau ra truoc (tep truoc, thu muc sau) - qua ten tam vi NTFS khong phan biet hoa/thuong
-Get-ChildItem -LiteralPath $Dich -Recurse -File | Where-Object { $_.Name -cne $_.Name.ToLowerInvariant() } | ForEach-Object {
-  $tmp = $_.FullName + ".__tmp__"; Rename-Item -LiteralPath $_.FullName -NewName ($_.Name + ".__tmp__"); Rename-Item -LiteralPath $tmp -NewName $_.Name.ToLowerInvariant()
+# [ANDROID 11/09 TENGBK] CHI ha A-Z (ASCII). Ten GBK doc bang cp1252 la chu Latin-1 hoa ('Ö' 'Ï' 'É'...): ToLowerInvariant ha luon
+# -> byte tren dia doi (0xD6 -> 0xF6) -> game (JxPathPosix doi cp1252 -> UTF-8 tu byte GBK goc) khong tim thay tep. Da mat 1.639/3.518
+# ten GBK trong spr/settings/maps (anh vat pham, hieu ung chieu, ban do). Sua lai du lieu da sinh: android\sua_ten_gbk_android.py
+function HaAscii([string]$s) { return [regex]::Replace($s, '[A-Z]', { param($m) $m.Value.ToLowerInvariant() }) }
+Get-ChildItem -LiteralPath $Dich -Recurse -File | Where-Object { $_.Name -cne (HaAscii $_.Name) } | ForEach-Object {
+  $tmp = $_.FullName + ".__tmp__"; Rename-Item -LiteralPath $_.FullName -NewName ($_.Name + ".__tmp__"); Rename-Item -LiteralPath $tmp -NewName (HaAscii $_.Name)
 }
-Get-ChildItem -LiteralPath $Dich -Recurse -Directory | Sort-Object { $_.FullName.Length } -Descending | Where-Object { $_.Name -cne $_.Name.ToLowerInvariant() } | ForEach-Object {
-  $tmp = $_.FullName + "__tmp__"; Rename-Item -LiteralPath $_.FullName -NewName ($_.Name + "__tmp__"); Rename-Item -LiteralPath $tmp -NewName $_.Name.ToLowerInvariant()
+Get-ChildItem -LiteralPath $Dich -Recurse -Directory | Sort-Object { $_.FullName.Length } -Descending | Where-Object { $_.Name -cne (HaAscii $_.Name) } | ForEach-Object {
+  $tmp = $_.FullName + "__tmp__"; Rename-Item -LiteralPath $_.FullName -NewName ($_.Name + "__tmp__"); Rename-Item -LiteralPath $tmp -NewName (HaAscii $_.Name)
 }
 $size = (Get-ChildItem -LiteralPath $Dich -Recurse -File | Measure-Object -Property Length -Sum).Sum
 "xong: $Dich  ({0:N1} GB)" -f ($size / 1GB)
