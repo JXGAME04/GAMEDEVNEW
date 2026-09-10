@@ -24664,6 +24664,23 @@ extern "C" int JxCore_GotoHuong(int nDir, int mode, int nBuoc, int nGac)
 	Player[CLIENT_PLAYER_INDEX].m_nSendMoveFrames = 0;
 	return 1;
 }
+
+// [ANDROID 11/09 WAUTO B0] Nhan vat dang choi cho bang WAuto trong game (S3Client/Platform/JxWAutoNoiBo.cpp): ma so 32-bit
+// (Player.m_dwID - dung truong ma IPCMainSync.dwPID gui cho WAuto.exe, nen ten tep APdata\<id>.dat trung voi ban PC)
+// va mau / noi luc toi da (WAuto.exe lay lifemax/manamax dat nguong uong thuoc lan dau). Tra 1 khi da vao game. Chi Android.
+extern "C" int JxCore_WAutoNhanVat(unsigned int* puId, int* pnLifeMax, int* pnManaMax)
+{
+	int nIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nIdx <= 0)
+		return 0;
+	if (puId)
+		*puId = (unsigned int)Player[CLIENT_PLAYER_INDEX].m_dwID;
+	if (pnLifeMax)
+		*pnLifeMax = Npc[nIdx].m_CurrentLifeMax;
+	if (pnManaMax)
+		*pnManaMax = Npc[nIdx].m_CurrentManaMax;
+	return 1;
+}
 #endif	// JX_ANDROID
 
 void KCoreShell::Turn(int nDir)

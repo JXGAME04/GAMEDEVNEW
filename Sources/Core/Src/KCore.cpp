@@ -939,7 +939,14 @@ int g_AutoLogOn()
 		s_nAutoLog = (int)GetPrivateProfileIntA("Client", "AutoLog", 0, ".\\Config.ini");
 #endif
 #else
+#ifdef JX_ANDROID
+		// [ANDROID 11/09 WAUTO B0 b] Android doc cung khoa [Client] AutoLog cua config.ini nhu ban PC (GetPrivateProfileIntA da co lop
+		// gia lap), ghi jx_auto.log o thu muc du lieu: la nhat ky duy nhat chung minh ExtAutoLoop (ben nhan cua bang WAuto
+		// trong game) da chay. Cac nen POSIX khac (may chu Linux) van 0 nhu cu.
+		s_nAutoLog = (int)GetPrivateProfileIntA("Client", "AutoLog", 0, ".\\Config.ini");
+#else
 		s_nAutoLog = 0;
+#endif
 #endif
 	}
 	return s_nAutoLog;

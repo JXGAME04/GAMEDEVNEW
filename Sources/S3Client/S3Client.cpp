@@ -43,6 +43,9 @@
 #include "Ui/UiCase/UiMsgCentrePad.h"
 #include "Ui/UiCase/UiFaceSelector.h"
 #include "Ui/UiCase/UiInformation.h"
+#ifdef JX_ANDROID
+#include "Platform/JxWAutoNoiBo.h"	// [ANDROID 11/09 WAUTO B0] ben gui WAuto trong tien trinh (thay WAuto.exe)
+#endif
 #include "Ui/UiCase/UiSelServer.h"
 #include "Ui/UiCase/UiLogin.h"
 #include "Ui/UiCase/UiSelPlayer.h"
@@ -1467,6 +1470,9 @@ BOOL KMyApp::GameLoop()
 
 	if(g_DrawVisionTime < timeGetTime())
 		g_DrawVision = 0;
+#ifdef JX_ANDROID
+	JxWAuto_NhipVongLap();	// [ANDROID 11/09 WAUTO B0] bang WAuto trong game: nap goi PRT_GAMELOOP vao g_pState nhu WAuto.exe; ProcIpcCommand ngay duoi tieu thu cung khung
+#endif
 	ProcIpcCommand();
 	if (m_GameCounter * 1000 <= m_Timer.GetElapse() * GAME_FPS)
 	{

@@ -129,7 +129,8 @@ target_link_libraries(CoreClient PRIVATE Engine Lua54)
 add_library(main SHARED ${JX_S3CLIENT_SOURCES}
     ${JX_SRC}/S3Client/Platform/JxAndroidMain.cpp
     ${JX_SRC}/S3Client/Platform/JxAndroidStubs.cpp    # JxReplay / TrayMode (chi Windows)
-    ${JX_SRC}/S3Client/Platform/JxPerfHudAndroid.cpp)  # [ANDROID 11/09 HUD] bang do FPS / CPU / RAM / pin / GPU
+    ${JX_SRC}/S3Client/Platform/JxPerfHudAndroid.cpp   # [ANDROID 11/09 HUD] bang do FPS / CPU / RAM / pin / GPU
+    ${JX_SRC}/S3Client/Platform/JxWAutoNoiBo.cpp)      # [ANDROID 11/09 WAUTO B0] ben gui WAuto trong tien trinh (LOTRINH_WAUTO_MOBILE_1109.md)
 jx_setup(main)
 target_compile_definitions(main PRIVATE ${JX_S3CLIENT_DEFS})
 target_include_directories(main PRIVATE ${JX_S3CLIENT_INCS})
