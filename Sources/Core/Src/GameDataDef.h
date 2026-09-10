@@ -1283,11 +1283,6 @@ struct KUiPlayerPaintTeamMNG
 	int		nWid;
 	int		nHei_life;
 	int		nHei_mana;
-#ifdef JX_ANDROID
-	int		nGocX;		// [ANDROID 11/09 TTMT] vi tri tuyet doi cua cua so KUiTargetInfo (UiToaDo co the doi cho)
-	int		nGocY;
-	int		nTiLe;		// [ANDROID 11/09 TTMT] ti le cua so (phan nghin, 1000 = 100%); 0 = chua dien -> Core dung 370,0,1000
-#endif
 };
 
 struct FKUiObjectName //fkauto

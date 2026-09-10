@@ -115,9 +115,6 @@ void KUiTargetInfo::UpdateData(KUiTargetDetailInfo* pInfo)
 	a_btnBackGround.Hide();
 	m_pLifePercent.Hide();
 	m_pTargetName.Hide();
-#ifdef JX_ANDROID
-	m_Life.Hide();	// [ANDROID 11/09 ONGMAU]
-#endif
 
 	Clear();
 
@@ -148,11 +145,6 @@ void KUiTargetInfo::UpdateData(KUiTargetDetailInfo* pInfo)
 			
 			m_pLifePercent.SetIntText(m_Info.nLifePercent, '%'); m_pLifePercent.Show();
 			m_pTargetName.SetText(m_pPlayersList[0].Name); m_pTargetName.Show();
-#ifdef JX_ANDROID
-			// [ANDROID 11/09 ONGMAU] ong mau: o con tu ve anh theo phan tram mau (nhu UiNpcBar cua USVOLAM)
-			m_Life.Set2IntValue(m_Info.nLifePercent, 100);
-			m_Life.Show();
-#endif
 		}
 
 		nPainTMG = (KUiPlayerPaintTeamMNG*)malloc(sizeof(KUiPlayerPaintTeamMNG));
@@ -166,35 +158,15 @@ void KUiTargetInfo::UpdateData(KUiTargetDetailInfo* pInfo)
 			nPainTMG->nWid = nWid;
 			nPainTMG->nHei_life = nHei_life;
 			nPainTMG->nHei_mana = nHei_mana;
-#ifdef JX_ANDROID
-			nPainTMG->nGocX = 0; nPainTMG->nGocY = 0; nPainTMG->nTiLe = 1000;	// [ANDROID 11/09 TTMT] PaintWindow dien lai moi khung
-#endif
 		}
 	}
 }
-
-#ifdef JX_ANDROID
-int Tt_LayTiLe();	// [ANDROID 11/09 TTMT b] dinh nghia o duoi (truoc LoadScheme); PaintWindow dung truoc nen phai khai bao o day
-#endif
 
 void KUiTargetInfo::PaintWindow()
 {
 	if (g_pRepresentShell == NULL)
 		return;
-#ifdef JX_ANDROID
-	return;	// [ANDROID 11/09 ONGMAU] ong mau da la o con m_Life; khong nho Core ve o toa do cung nua (ban PC giu nguyen)
-#endif
 
-#ifdef JX_ANDROID
-	if (nPainTMG)
-	{	// [ANDROID 11/09 TTMT] Core ve thanh mau theo vi tri + ti le THAT cua cua so (chu doi cho / thu nho bang UiToaDo)
-		int nL = 0, nT = 0;
-		GetAbsolutePos(&nL, &nT);
-		nPainTMG->nGocX = nL;
-		nPainTMG->nGocY = nT;
-		nPainTMG->nTiLe = Tt_LayTiLe() * 10;	// [ANDROID 11/09 TTMT b] ti le CUA O CON (UiDatTiLe khong thu o con) - phai khop ong mau
-	}
-#endif
 	g_pCoreShell->OperationRequest(GOI_DRAW_TARGET_INFO, (KUPARAM)m_pPlayersList, (KUPARAM)nPainTMG);
 
 }
@@ -226,59 +198,12 @@ void KUiTargetInfo::Initialize()
 	AddChild(&a_IconHead);
 	AddChild(&m_pLifePercent);
 	AddChild(&m_pTargetName);
-#ifdef JX_ANDROID
-	AddChild(&m_Life);	// [ANDROID 11/09 ONGMAU]
-#endif
 
     char Scheme[128];
     g_UiBase.GetCurSchemePath(Scheme, 128);
     m_pSelf->LoadScheme(Scheme);
     Wnd_AddWindow(this, WL_LOWEST);
 }
-
-#ifdef JX_ANDROID
-// [ANDROID 11/09 TTMT b] Thu nho ca THANH thong tin muc tieu tren dien thoai.
-// KWndWindow::UiDatTiLe chi doi khung cua chinh cua so, KHONG thu nho o con - nen phai tu thu o day,
-// va gui DUNG ti le nay xuong Core (PaintWindow) de ong mau khop khung.
-// [Cham] ThongTinTiLe = phan tram (20..100), mac dinh 50.
-static int s_nTtTiLe = 0;
-
-int Tt_LayTiLe()
-{
-	if (s_nTtTiLe == 0)
-	{
-		char szCfg[MAX_PATH] = { 0 };
-
-		GetCurrentDirectory(MAX_PATH, szCfg);
-		strcat(szCfg, "\\Config.ini");
-		s_nTtTiLe = GetPrivateProfileInt("Cham", "ThongTinTiLe", 50, szCfg);
-		if (s_nTtTiLe < 20) s_nTtTiLe = 20;
-		if (s_nTtTiLe > 100) s_nTtTiLe = 100;
-	}
-	return s_nTtTiLe;
-}
-
-//	nCaoToiThieu > 0: o chu - giu chieu cao do cho khoi cat chu.
-static void Tt_ThuNhoO(KWndWindow* pWnd, int nCaoToiThieu)
-{
-	int nL = 0, nT = 0, nW = 0, nH = 0;
-	const int nTL = Tt_LayTiLe();
-
-	if (pWnd == NULL || nTL >= 100)
-		return;
-	pWnd->GetPosition(&nL, &nT);
-	pWnd->GetSize(&nW, &nH);
-	pWnd->SetPosition(nL * nTL / 100, nT * nTL / 100);
-	nW = nW * nTL / 100;
-	nH = nH * nTL / 100;
-	if (nCaoToiThieu > 0 && nH < nCaoToiThieu)
-		nH = nCaoToiThieu;
-	pWnd->SetSize(nW, nH);
-	// [ANDROID 11/09 ONGMAU] thu ca CAY CON (o con cua m_Life la anh thanh mau) - khong thu thi anh tran ra ngoai
-	for (KWndWindow* pCon = pWnd->GetFirstChild(); pCon; pCon = pCon->GetNextWnd())
-		Tt_ThuNhoO(pCon, 0);
-}
-#endif
 
 void KUiTargetInfo::LoadScheme(const char *pScheme)
 {
@@ -315,18 +240,6 @@ void KUiTargetInfo::LoadScheme(const char *pScheme)
 		m_pSelf->a_btnBackGround.Init(&Ini, steam);
 		m_pSelf->m_pLifePercent.Init(&Ini, "LifePercent");
 		m_pSelf->m_pTargetName.Init(&Ini, "Name");
-#ifdef JX_ANDROID
-		m_pSelf->m_Life.Init(&Ini, "Life");	// [ANDROID 11/09 ONGMAU] muc [Life] moi trong kuitargetinfo.ini
-		m_pSelf->m_Life.Hide();
-		// [ANDROID 11/09 TTMT b] thu nho ca thanh (Init o tren da dat lai tu ini nen chay lai LoadScheme khong bi thu hai lan)
-		Tt_ThuNhoO(&m_btnSwitch, 0);
-		Tt_ThuNhoO(&m_btnCaptainFlag, 0);
-		Tt_ThuNhoO(&m_pSelf->a_IconHead, 0);
-		Tt_ThuNhoO(&m_pSelf->a_btnBackGround, 0);
-		Tt_ThuNhoO(&m_pSelf->m_pLifePercent, 12);
-		Tt_ThuNhoO(&m_pSelf->m_pTargetName, 12);
-		Tt_ThuNhoO(&m_pSelf->m_Life, 0);	// [ANDROID 11/09 ONGMAU]
-#endif
     }
 }
 
