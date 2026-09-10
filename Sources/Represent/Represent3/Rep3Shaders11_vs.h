@@ -30,7 +30,7 @@
 // POSITION                 0   xyzw        0     NONE   float   xyz 
 // COLOR                    0   xyzw        1     NONE   float   xyzw
 // TEXCOORD                 0   xy          2     NONE   float   xy  
-// PALROW                   0   x           3     NONE    uint   x   
+// PALROW                   0   xy          3     NONE    uint   xy  
 //
 //
 // Output signature:
@@ -40,18 +40,18 @@
 // SV_Position              0   xyzw        0      POS   float   xyzw
 // COLOR                    0   xyzw        1     NONE   float   xyzw
 // TEXCOORD                 0   xy          2     NONE   float   xy  
-// PALROW                   0   x           3     NONE    uint   x   
+// PALROW                   0   xy          3     NONE    uint   xy  
 //
 vs_4_0
 dcl_constantbuffer CB0[6], immediateIndexed
 dcl_input v0.xyz
 dcl_input v1.xyzw
 dcl_input v2.xy
-dcl_input v3.x
+dcl_input v3.xy
 dcl_output_siv o0.xyzw, position
 dcl_output o1.xyzw
 dcl_output o2.xy
-dcl_output o3.x
+dcl_output o3.xy
 dcl_temps 3
 add r0.xy, v0.xyxx, l(0.500000, 0.500000, 0.000000, 0.000000)
 add r0.xy, r0.xyxx, -cb0[0].zwzz
@@ -67,17 +67,17 @@ mov r0.zw, l(0,0,0.500000,1.000000)
 movc o0.xyzw, r2.xxxx, r0.xyzw, r1.xyzw
 mov o1.xyzw, v1.xyzw
 mov o2.xy, v2.xyxx
-mov o3.x, v3.x
+mov o3.xy, v3.xyxx
 ret 
 // Approximately 16 instruction slots used
 #endif
 
 const BYTE g_Rep3VS11[] =
 {
-     68,  88,  66,  67, 149, 121, 
-     63,   8, 129,  67, 252, 232, 
-    183,  13, 196, 139, 221, 168, 
-     66,  80,   1,   0,   0,   0, 
+     68,  88,  66,  67, 126, 114, 
+     54, 244, 170,  43, 119,  53, 
+     41, 203, 113, 163, 164, 225, 
+     25, 140,   1,   0,   0,   0, 
     100,   5,   0,   0,   5,   0, 
       0,   0,  52,   0,   0,   0, 
      64,   1,   0,   0, 208,   1, 
@@ -87,7 +87,7 @@ const BYTE g_Rep3VS11[] =
       1,   0,   0,   0,  68,   0, 
       0,   0,   1,   0,   0,   0, 
      28,   0,   0,   0,   0,   4, 
-    254, 255,   0, 129,   0,   0, 
+    254, 255,   0,   1,   0,   0, 
     220,   0,   0,   0,  60,   0, 
       0,   0,   0,   0,   0,   0, 
       0,   0,   0,   0,   0,   0, 
@@ -145,7 +145,7 @@ const BYTE g_Rep3VS11[] =
     128,   0,   0,   0,   0,   0, 
       0,   0,   0,   0,   0,   0, 
       1,   0,   0,   0,   3,   0, 
-      0,   0,   1,   1,   0,   0, 
+      0,   0,   3,   3,   0,   0, 
      80,  79,  83,  73,  84,  73, 
      79,  78,   0,  67,  79,  76, 
      79,  82,   0,  84,  69,  88, 
@@ -169,7 +169,7 @@ const BYTE g_Rep3VS11[] =
     131,   0,   0,   0,   0,   0, 
       0,   0,   0,   0,   0,   0, 
       1,   0,   0,   0,   3,   0, 
-      0,   0,   1,  14,   0,   0, 
+      0,   0,   3,  12,   0,   0, 
      83,  86,  95,  80, 111, 115, 
     105, 116, 105, 111, 110,   0, 
      67,  79,  76,  79,  82,   0, 
@@ -188,7 +188,7 @@ const BYTE g_Rep3VS11[] =
       0,   0,  95,   0,   0,   3, 
      50,  16,  16,   0,   2,   0, 
       0,   0,  95,   0,   0,   3, 
-     18,  16,  16,   0,   3,   0, 
+     50,  16,  16,   0,   3,   0, 
       0,   0, 103,   0,   0,   4, 
     242,  32,  16,   0,   0,   0, 
       0,   0,   1,   0,   0,   0, 
@@ -196,7 +196,7 @@ const BYTE g_Rep3VS11[] =
      16,   0,   1,   0,   0,   0, 
     101,   0,   0,   3,  50,  32, 
      16,   0,   2,   0,   0,   0, 
-    101,   0,   0,   3,  18,  32, 
+    101,   0,   0,   3,  50,  32, 
      16,   0,   3,   0,   0,   0, 
     104,   0,   0,   2,   3,   0, 
       0,   0,   0,   0,   0,  10, 
@@ -280,8 +280,8 @@ const BYTE g_Rep3VS11[] =
      16,   0,   2,   0,   0,   0, 
      70,  16,  16,   0,   2,   0, 
       0,   0,  54,   0,   0,   5, 
-     18,  32,  16,   0,   3,   0, 
-      0,   0,  10,  16,  16,   0, 
+     50,  32,  16,   0,   3,   0, 
+      0,   0,  70,  16,  16,   0, 
       3,   0,   0,   0,  62,   0, 
       0,   1,  83,  84,  65,  84, 
     116,   0,   0,   0,  16,   0, 

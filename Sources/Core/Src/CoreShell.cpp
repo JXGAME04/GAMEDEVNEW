@@ -5,6 +5,7 @@
 ------------------------------------------------------------------------------------------
 *****************************************************************************************/
 #include "KCore.h"
+extern KCacheNode* AmThanhLay(KCache& cache, char* szTen, KCacheNode* pNode);	// [AM 09/09 do] (KSubWorld.cpp) boc g_SoundCache.GetNode de do nap dong bo
 #include "GameDataDef.h"
 #include "CoreShell.h"
 #include "CoreDrawGameObj.h"
@@ -17287,7 +17288,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, KUPARAM uParam, KNPARAM nPa
 		{
 			static KCacheNode* pSndNode = NULL;
 			KWavSound* pSound = NULL;
-			pSndNode	= (KCacheNode*)g_SoundCache.GetNode((char *)uParam, (KCacheNode * )pSndNode);
+			pSndNode	= (KCacheNode*)AmThanhLay(g_SoundCache, (char *)uParam, (KCacheNode * )pSndNode);
 			pSound		= (KWavSound*)pSndNode->m_lpData;
 			if (pSound)
 			{

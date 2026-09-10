@@ -6,6 +6,7 @@
 // Revision Count	:	
 *******************************************************************************/
 #include "KCore.h"
+extern KCacheNode* AmThanhLay(KCache& cache, char* szTen, KCacheNode* pNode);	// [AM 09/09 do] (KSubWorld.cpp) boc g_SoundCache.GetNode de do nap dong bo
 #include "KEngine.h"
 #include "KMissle.h"
 #include "KMissleRes.h"
@@ -259,7 +260,7 @@ void KMissleRes::PlaySound(int eStatus, int nX, int nY, int nLoop)
 
 	KWavSound * pSound = NULL;
 //	g_SetFilePath("\\");
-	m_pSndNode	= (KCacheNode*) g_SoundCache.GetNode(m_MissleRes[eStatus].SndFileName, (KCacheNode * ) m_pSndNode);
+	m_pSndNode	= (KCacheNode*) AmThanhLay(g_SoundCache, m_MissleRes[eStatus].SndFileName, (KCacheNode * ) m_pSndNode);
 	pSound		= (KWavSound*) m_pSndNode->m_lpData;
 	if (pSound)
 	{
@@ -286,7 +287,7 @@ void KMissleRes::StopSound()
 	if (m_MissleRes[m_nLastSndIndex].SndFileName[0] == 0)		return;
 	
 	KWavSound * pSound = NULL;
-	m_pSndNode	= (KCacheNode*) g_SoundCache.GetNode(m_MissleRes[m_nLastSndIndex].SndFileName, (KCacheNode * ) m_pSndNode);
+	m_pSndNode	= (KCacheNode*) AmThanhLay(g_SoundCache, m_MissleRes[m_nLastSndIndex].SndFileName, (KCacheNode * ) m_pSndNode);
 	pSound		= (KWavSound*) m_pSndNode->m_lpData;
 	if (pSound)
 	{

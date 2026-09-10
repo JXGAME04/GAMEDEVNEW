@@ -30,7 +30,8 @@ TextureResMgr::TextureResMgr()
     m_nMaxReleaseCount = 0;
 	m_uBudgetFloorMB = 60;	// [REP3 08/09 q]
 	m_bVeDangDien = false; m_nNapNenGui = 0; m_nNapNenXong = 0; m_nNapNenHong = 0; m_nNapNenBoVe = 0;	// [NAP 08/09 b]
-	m_nNapTruocKip[0] = m_nNapTruocKip[1] = m_nNapTruocKip[2] = 0; m_nNapTruocTre[0] = m_nNapTruocTre[1] = m_nNapTruocTre[2] = 0;	// [NAPCHIEU 09/09 b] [NAPNPC 09/09]
+	m_nNapTruocKip[0] = m_nNapTruocKip[1] = m_nNapTruocKip[2] = 0; m_nNapTruocTre[0] = m_nNapTruocTre[1] = m_nNapTruocTre[2] = 0;
+	m_dwKhoaNgoai = 0;	// [VE 09/09 d]	// [NAPCHIEU 09/09 b] [NAPNPC 09/09]
 	m_hNapLuong = NULL; m_hNapCo = NULL; m_lNapDung = 0; m_bNapNenLoi = false;
 	
 	// 根据物理内存大小决定资源缓冲区的大小
@@ -475,8 +476,8 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 		uImage = g_FileName2Id((LPSTR)pszImage);	// const char to LPSTR, maybe problem.
 	}
 
-    KAutoCriticalSection AutoLock(m_ImageProcessLock);
-	if (m_bVeDangDien) Rep3VeDem(pszImage);	// [VE 08/09 a] dem don vi ve theo loai
+    KhoaTuyChon AutoLock(m_ImageProcessLock, m_dwKhoaNgoai != GetCurrentThreadId());	// [VE 09/09 d] DrawPrimitives dang giu khoa ngoai tren luong nay -> bo
+	{ extern int g_nRep3VeMau; if (m_bVeDangDien && g_nRep3VeMau) Rep3VeDem(pszImage); }	// [VE 08/09 a] dem don vi ve theo loai; [VE 09/09 d] chi khung mau (1/8)
 
 	TextureRes* pObject = NULL;
 	if ((nImagePosition = FindImage(uImage, nImagePosition)) >= 0)
