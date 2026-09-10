@@ -38,7 +38,7 @@ GUTTER = 10
 PAD_L, PAD_R, PAD_T, PAD_B, TIEU_DE_H, CACH_NHOM = 6, 6, 6, 3, 18, 4
 TICK = 24                     # = tick_chon.spr (anh_wauto_vnku.py TICK); phai <= buoc hang nho nhat (24)
 NHAN_H = 16
-EDIT_W, EDIT_H = 44, 20       # 6 chu so (MaxLen=6) = 36 px + le
+EDIT_W, EDIT_H = 44, 16       # 6 chu so (MaxLen=6) = 36 px + le; cao 16 = o chu (KWndEdit ve chu tu MEP TREN cua so -> Top = Top cua nhan de thang hang)
 CHON_RONG, CHON_H = (120, 160, 200), 24
 NUT_RONG, NUT_H = (60, 84, 120, 160), 22
 DSACH_HANG = 3
@@ -306,7 +306,9 @@ def xep_nhom(nh, IW, P):
         elif k == "chu":
             o.append(O("nhan", x, y + (P - NHAN_H) // 2 + 1, w or rong_muc(r, IW), NHAN_H, r, text=r["label"] or "-"))
         elif k == "onhap":
-            o.append(O("nhap", x, y + (P - EDIT_H) // 2, w or rong_muc(r, IW), EDIT_H, r))
+            # chu trong o nhap ve tu mep tren cua so (KWndEdit::PaintWindow) -> dat Top = Top nhan (do 21:00: "1000" cao hon nhan 3 px);
+            # KWndNhapWA ve nen tu Top-2 toi Top+16+1 = 19 px, gan giua hang
+            o.append(O("nhap", x, y + (P - NHAN_H) // 2 + 1, w or rong_muc(r, IW), EDIT_H, r))
         elif k == "chon":
             o.append(O("chon", x, y + (P - CHON_H) // 2, w or rong_chon(r), CHON_H, r))
         elif k == "nut":

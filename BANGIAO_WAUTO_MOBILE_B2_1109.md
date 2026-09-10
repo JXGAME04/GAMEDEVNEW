@@ -32,9 +32,12 @@ phân biệt các nhóm chức năng" → 6 bộ màu viền + nền tiêu đề
 màu xanh, căn chỉnh chữ đúng ngay giữa", rồi "các nút có sẵn ở kho VNKU bạn quên rồi à" → **bỏ nút vẽ tay, lấy nguyên ảnh kho**:
 `nut_nhom.spr` / `nut_tab.spr` = `UiTong_Sheet0\btn_noname.spr` (nút trơn xanh ngọc, khung tối = thường, khung sáng = đang chọn),
 `nut_do_W.spr` + `hop_chon_W.spr` = `UiTong_Sheet0\btn_1.spr` (đỏ đen viền đen) + ô mũi tên vàng cắt từ `UiAutoNew\nut_pop.spr`
-(cột 414..476), ô tick = `UiAutoNew\tick_chon.spr`; chữ nút căn giữa dọc bằng `LabelYOffset` (nhóm 7, tab 4, hộp chọn 5, nút 4 —
-`KWndLabeledButton` vẽ chữ từ mép trên + offset, ngang đã tự căn theo `(Width − n·font/2)/2`). Việc (5) làm lúc 21:00 khi chủ đang
-Tống Kim nên **chưa có ảnh nghiệm thu** — kịch bản `thu_b2d.sh` chụp lại sau 21:36; soi ở đầu B3.
+(cột 414..476), ô tick = `UiAutoNew\tick_chon.spr`; chữ nút căn giữa dọc bằng `LabelYOffset` đo trên ảnh 20:47 (offset 0: chữ nhóm
+font 14 chiếm hàng 121..133 trong nút 120..150 → **nhóm 8**; chữ tab 157..165 trong 156..178 → **tab 5**; hộp chọn 5, nút 4 —
+`KWndLabeledButton` vẽ chữ từ mép trên + offset, ngang đã tự căn theo `(Width − n·font/2)/2`, đo đúng giữa ±1 px); chủ nhắc "căn chỉnh
+các chữ trong nút cho thẳng hàng" → trong một hàng, mọi ô chữ cùng mép trên: nhãn / chữ tick / chữ hộp chọn / chữ nút / **ô nhập**
+(`KWndEdit` vẽ chữ từ mép trên cửa sổ nên ô nhập đặt `Top` = Top nhãn, cao 16 — trước đó "1000" cao hơn nhãn 3 px). Việc (5) làm lúc
+21:00 khi chủ đang Tống Kim nên **chưa có ảnh nghiệm thu** — kịch bản `thu_b2d.sh` chụp lại sau 21:36; soi ở đầu B3.
 
 ---
 

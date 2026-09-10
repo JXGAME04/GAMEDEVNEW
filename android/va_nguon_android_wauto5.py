@@ -101,13 +101,13 @@ NHOM_BUOC = (KW - 2 * RAIL - 4 * NHOM_W) // 3 + NHOM_W       # 4 nut cach deu tr
 for i in range(4):
     INI += ["[Nhom%d]" % i, "Left=%d" % (RAIL + i * NHOM_BUOC), "Top=34", "Width=%d" % NHOM_W, "Height=30", "Trans=0",
             r"Image=\spr\uinew\uiautonew\nut_nhom.spr", "Up=0", "Down=1", "CheckBox=1",
-            "Font=14", "LabelYOffset=7", "Color=230,230,230", "OverColor=255,255,160", "SelectColor=255,255,0", "DisableColor=120,120,120", ""]
+            "Font=14", "LabelYOffset=8", "Color=230,230,230", "OverColor=255,255,160", "SelectColor=255,255,0", "DisableColor=120,120,120", ""]
 TAB_W = 84
 TAB_BUOC = (KW - 2 * RAIL - 8 * TAB_W) // 7 + TAB_W          # 8 nut cach deu
 for i in range(8):
     INI += ["[Tab%d]" % i, "Left=%d" % (RAIL + i * TAB_BUOC), "Top=70", "Width=%d" % TAB_W, "Height=22", "Trans=0",
             r"Image=\spr\uinew\uiautonew\nut_tab.spr", "Up=0", "Down=1", "CheckBox=1",
-            "Font=12", "LabelYOffset=4", "Color=230,230,230", "OverColor=255,255,160", "SelectColor=255,255,0", "DisableColor=120,120,120", ""]
+            "Font=12", "LabelYOffset=5", "Color=230,230,230", "OverColor=255,255,160", "SelectColor=255,255,0", "DisableColor=120,120,120", ""]
 INI += [
     "[TenTab]",
     "Left=%d" % (RAIL + 10), "Top=200", "Width=%d" % (KW - 2 * RAIL - 20), "Height=24", "Font=14", "Color=200,200,200", "BorderColor=0,0,0", "HAlign=1", "",
