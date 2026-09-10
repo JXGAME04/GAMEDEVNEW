@@ -158,6 +158,9 @@ void KUiTargetInfo::UpdateData(KUiTargetDetailInfo* pInfo)
 			nPainTMG->nWid = nWid;
 			nPainTMG->nHei_life = nHei_life;
 			nPainTMG->nHei_mana = nHei_mana;
+#ifdef JX_ANDROID
+			nPainTMG->nGocX = 0; nPainTMG->nGocY = 0; nPainTMG->nTiLe = 1000;	// [ANDROID 11/09 TTMT] PaintWindow dien lai moi khung
+#endif
 		}
 	}
 }
@@ -167,6 +170,16 @@ void KUiTargetInfo::PaintWindow()
 	if (g_pRepresentShell == NULL)
 		return;
 
+#ifdef JX_ANDROID
+	if (nPainTMG)
+	{	// [ANDROID 11/09 TTMT] Core ve thanh mau theo vi tri + ti le THAT cua cua so (chu doi cho / thu nho bang UiToaDo)
+		int nL = 0, nT = 0;
+		GetAbsolutePos(&nL, &nT);
+		nPainTMG->nGocX = nL;
+		nPainTMG->nGocY = nT;
+		nPainTMG->nTiLe = (UiLayTiLe() > 0) ? UiLayTiLe() : 1000;
+	}
+#endif
 	g_pCoreShell->OperationRequest(GOI_DRAW_TARGET_INFO, (KUPARAM)m_pPlayersList, (KUPARAM)nPainTMG);
 
 }

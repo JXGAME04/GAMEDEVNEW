@@ -3079,6 +3079,16 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 		int idx_hover = Player[CLIENT_PLAYER_INDEX].GetTargetNpc();
 		if (idx_hover)
 			idx = idx_hover;
+#ifdef JX_ANDROID
+		{	// [ANDROID 11/09 TTMT] [KHOAMT b] muc tieu DA CHAM (KPlayer::OnButtonDown) thang hover: keo ngon / re / cham dat khong doi;
+			// chi cham trung nguoi/NPC khac moi doi, NPC bien mat thi bo. Chu: "kich vao se tu bam theo nguoi choi".
+			extern int g_nJxMucTieuKhoa;
+			if (g_nJxMucTieuKhoa > 0 && g_nJxMucTieuKhoa < MAX_NPC && Npc[g_nJxMucTieuKhoa].m_dwID && Npc[g_nJxMucTieuKhoa].m_RegionIndex >= 0)
+				idx = g_nJxMucTieuKhoa;
+			else
+				g_nJxMucTieuKhoa = 0;
+		}
+#endif
 		if (idx) {
 			//having target
 			KUiTargetDetailInfo* pTargetInfo = (KUiTargetDetailInfo*)uParam;
