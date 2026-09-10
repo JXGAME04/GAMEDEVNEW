@@ -102,6 +102,7 @@ static int			s_nKNCoPhu   = 0;
 static int			s_nKNLenTren = 80;	// nang ca cum len bao nhieu diem anh
 static int			s_nKNSangPhai = 24;	// doi ca cum sang phai bao nhieu diem anh
 static int			s_nKNCoIcon = 32;	// co THAT cua bieu tuong ky nang (DrawSkillIcon bo qua Width/Height)
+static int			s_nKNIconPT = 78;	// [KYNANG 12/09 O] bieu tuong = bao nhieu % duong kinh nut (chu: "icon to len bang o tron")
 //	[ANDROID 09/09 KYNANG F] keo het ban kinh nay = ngam xa bang dung TAM DANH cua ky nang
 //	(ban tham khao: _Beilv = _BackAttackRadius / radius, KuiMyMenu.cpp:310, radius = 60).
 static int			s_nKNBanKinhKeo = 60;
@@ -269,6 +270,9 @@ static void DocCaiDat()
 	s_nKNLenTren = GetPrivateProfileInt("Cham", "KyNangLenTren", 80, szCfg);
 	s_nKNSangPhai = GetPrivateProfileInt("Cham", "KyNangSangPhai", 24, szCfg);
 	s_nKNCoIcon  = GetPrivateProfileInt("Cham", "KyNangCoIcon", 32, szCfg);
+	s_nKNIconPT  = GetPrivateProfileInt("Cham", "KyNangIconPhanTram", 78, szCfg);	// [KYNANG 12/09 O]
+	if (s_nKNIconPT < 30) s_nKNIconPT = 30;
+	if (s_nKNIconPT > 100) s_nKNIconPT = 100;
 	s_nKNBanKinhKeo = GetPrivateProfileInt("Cham", "KyNangBanKinhKeo", 60, szCfg);
 	s_nKNNhip = GetPrivateProfileInt("Cham", "KyNangNhip", 200, szCfg);
 	s_nKNLuanMs = GetPrivateProfileInt("Cham", "LuanChuyenMs", 300, szCfg);	// [ANDROID 11/09 b] chu muon nhanh hon 0,5 s	// [ANDROID 10/09 LUAN] 0,5 s nhu ban tham khao
@@ -624,11 +628,36 @@ void JxVongChon_Ve()
 
 //	[ANDROID 09/09 GAN] Doc / ghi bang gan ky nang: UserData\KyNangMobile.ini
 //	Moi dong: O<so>=<loai>,<ma ky nang>
+extern "C" int JxCore_WAutoNhanVat(unsigned int* puId, int* pnLifeMax, int* pnManaMax);	// [KYNANG 12/09 O] CoreShell.cpp
+static unsigned int s_uKNNhanVat = 0;	// ma nhan vat cua tep dang nho (0 = chua vao game)
+
+//	[KYNANG 12/09 O] Ma nhan vat dang choi (0 = chua vao the gioi).
+static unsigned int KyNang_MaNhanVat()
+{
+	unsigned int uId = 0;
+	if (!JxCore_WAutoNhanVat(&uId, NULL, NULL))
+		return 0;
+	return uId;
+}
+
+//	Tep nho o ky nang cua RIENG mot nhan vat. Truoc day moi nhan vat dung chung mot tep nen nhan vat
+//	moi (moi vao phai) doc phai ma ky nang cua nhan vat khac: o hien ky nang la ma "Go khoi o" tim
+//	khong ra -> go khong duoc (chu 13:50).
 static void KyNang_DuongTepGan(char* pszRa, int nCo)
 {
+	unsigned int uId = KyNang_MaNhanVat();
+
 	pszRa[0] = 0;
 	GetCurrentDirectory(nCo, pszRa);
-	strncat(pszRa, "\\UserData\\KyNangMobile.ini", nCo - strlen(pszRa) - 1);
+	if (uId)
+	{
+		char szTen[64];
+		_snprintf(szTen, sizeof(szTen), "\\UserData\\KyNangMobile_%u.ini", uId);
+		szTen[sizeof(szTen) - 1] = 0;
+		strncat(pszRa, szTen, nCo - strlen(pszRa) - 1);
+	}
+	else
+		strncat(pszRa, "\\UserData\\KyNangMobile.ini", nCo - strlen(pszRa) - 1);
 }
 
 static void KyNang_DocGan()
@@ -636,15 +665,32 @@ static void KyNang_DocGan()
 	char szTep[MAX_PATH];
 	char szDong[128];
 	FILE* pTep;
+	unsigned int uId = KyNang_MaNhanVat();	// [KYNANG 12/09 O] doi nhan vat thi doc lai tep cua nhan vat do
 
-	if (s_nKNDaDocGan)
+	if (s_nKNDaDocGan && uId == s_uKNNhanVat)
 		return;
+	s_uKNNhanVat = uId;
 	s_nKNDaDocGan = 1;
 	memset(s_KNGan, 0, sizeof(s_KNGan));
 	memset(s_nKNTrong, 0, sizeof(s_nKNTrong));	// [ANDROID 11/09 OTRONG]
 	memset(&s_KNChinhGan, 0, sizeof(s_KNChinhGan));	// [ANDROID 10/09 BANGCHON]
 	KyNang_DuongTepGan(szTep, sizeof(szTep));
 	pTep = fopen(szTep, "rt");
+	if (pTep == NULL && uId)
+	{
+		//	[KYNANG 12/09 O] Chuyen tep CU (dung chung moi nhan vat) sang tep rieng cua nhan vat DAU TIEN vao game
+		//	sau khi cap nhat, roi xoa tep chung - nhu vay nhan vat dang choi giu nguyen thiet lap, cac nhan vat
+		//	khac bat dau sach (truoc day chung tep nen nhan vat moi doc phai ky nang cua nhan vat khac).
+		char szCu[MAX_PATH];
+		szCu[0] = 0;
+		GetCurrentDirectory(sizeof(szCu), szCu);
+		strncat(szCu, "\\UserData\\KyNangMobile.ini", sizeof(szCu) - strlen(szCu) - 1);
+		if (rename(szCu, szTep) == 0)
+		{
+			g_DebugLog("[KYNANG] chuyen %s -> %s (tep rieng tung nhan vat)", szCu, szTep);
+			pTep = fopen(szTep, "rt");
+		}
+	}
 	if (pTep == NULL)
 		return;
 	while (fgets(szDong, sizeof(szDong), pTep))
@@ -1793,7 +1839,11 @@ void JxKyNang_Ve()
 		// tu canh giua theo co that (KyNangCoIcon), khong the nho ham do co lai.
 		if (bCo)
 		{
-			nIcon = s_nKNCoIcon;
+			//	[KYNANG 12/09 O] bieu tuong ve theo PHAN TRAM duong kinh nut (truoc day co dinh 32 px nen nut chinh 92 px
+			//	chi lap 35 %% vong tron - chu: "lam cac icon ky nang bo vao o to len bang o tron").
+			nIcon = nR * 2 * s_nKNIconPT / 100;
+			if (nIcon < 8)
+				nIcon = 8;
 			g_pCoreShell->DrawGameObj(o.uGenre, o.uId,
 				nX - nIcon / 2, nY - nIcon / 2, nIcon, nIcon, 0);
 		}

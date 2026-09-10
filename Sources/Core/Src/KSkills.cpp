@@ -2873,6 +2873,33 @@ void	KSkill::DrawSkillIcon(int x, int y, int Width, int Height)
 	m_RUIconImage.oPosition.nY = y;
 	m_RUIconImage.oPosition.nZ = 0;
 	m_RUIconImage.nFrame = 0;
+#ifdef JX_ANDROID
+	{
+		//	[KYNANG 12/09 ICON] Ben goi cho mot KHUNG (Width/Height) to hon anh - o ky nang tron cua ban mobile -
+		//	thi KEO anh cho vua khung do, dung y het cach ve vong tron cua nut (VeAnhCo trong JxCanDieuKhien.cpp:
+		//	khung dich = o vuong, de Represent tu lo) nen bieu tuong va vong tron LUON trung tam nhau.
+		if (Width > 8 && Height > 8 && g_pRepresent)
+		{
+			KRUImageStretch a;
+			memset(&a, 0, sizeof(a));
+			a.nType = m_RUIconImage.nType;
+			a.bRenderStyle = m_RUIconImage.bRenderStyle;
+			a.Color.Color_dw = 0xffffffff;
+			a.nISPosition = IMAGE_IS_POSITION_INIT;
+			a.nFrame = 0;
+			strncpy(a.szImage, m_RUIconImage.szImage, sizeof(a.szImage) - 1);
+			a.szImage[sizeof(a.szImage) - 1] = 0;
+			a.oPosition.nX = x;
+			a.oPosition.nY = y;
+			a.oPosition.nZ = 0;
+			a.oEndPos.nX = x + Width;
+			a.oEndPos.nY = y + Height;
+			a.oEndPos.nZ = 0;
+			g_pRepresent->DrawPrimitives(1, &a, RU_T_IMAGE_STRETCH, 1);
+			return;
+		}
+	}
+#endif
 	g_pRepresent->DrawPrimitives(1, &m_RUIconImage, RU_T_IMAGE, 1);
 
 	/*KRUShadow	Shadow;			
