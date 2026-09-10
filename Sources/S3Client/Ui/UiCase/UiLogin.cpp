@@ -424,6 +424,14 @@ int KUiLogin::GetInputInfo(char* pszAccount, char* pszPassword)
 	if (m_Account.GetText(pszAccount, 32, false) &&
 		m_PassWord.GetText(pszPassword, 32, false))
 	{
+#ifdef JX_ANDROID
+		// [DANGNHAP 12/09] quy che game: chu dau tai khoan phai viet thuong; ban phim dien thoai hay tu viet hoa -> ha xuong
+		if (pszAccount[0] >= 'A' && pszAccount[0] <= 'Z')
+		{
+			pszAccount[0] = (char)(pszAccount[0] - 'A' + 'a');
+			m_Account.SetText(pszAccount);
+		}
+#endif
 		return true;
 	}
 	CloseWindow(false);

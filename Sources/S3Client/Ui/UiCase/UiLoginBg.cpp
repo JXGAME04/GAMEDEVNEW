@@ -163,3 +163,43 @@ void KUiLoginBackGround::Breathe()
 		}
 	}
 }
+
+#ifdef JX_ANDROID
+extern int SCREEN_WIDTH;
+extern int SCREEN_HEIGHT;
+#include "../../../Represent/iRepresent/iRepresentShell.h"
+#include "../../../Represent/iRepresent/KRepresentUnit.h"
+extern iRepresentShell* g_pRepresentShell;	// [DANGNHAP 12/09] nhu WndImage.cpp
+// [DANGNHAP 12/09] Chu: 'phan dang nhap phai lam cho vua kich thuoc man hinh tuy loai may'. Anh nen 800x600 (4:3) tren man 16:9..21:9:
+// ve ban keo toan man lam nen toi (khong con dai den hai ben), roi ve ban that vua chieu cao, can giua (khong meo, khong cat).
+void KUiLoginBackGround::PaintWindow()
+{
+	KRPosition2 oOff = {0, 0}, oCo = {0, 0};
+	if (!g_pRepresentShell || !m_Image.szImage[0] || SCREEN_WIDTH <= 0 || SCREEN_HEIGHT <= 0
+		|| !g_pRepresentShell->GetImageFrameParam(m_Image.szImage, m_Image.nFrame, &oOff, &oCo, m_Image.nType)
+		|| oCo.nX <= 0 || oCo.nY <= 0)
+	{
+		KWndImage::PaintWindow();
+		return;
+	}
+	KWndWindow::PaintWindow();
+	KUiImageRef a = m_Image;
+	unsigned int uMauGoc = a.Color.Color_dw;
+	a.oPosition.nX = 0; a.oPosition.nY = 0; a.oPosition.nZ = 0;
+	a.oEndPos.nX = SCREEN_WIDTH; a.oEndPos.nY = SCREEN_HEIGHT; a.oEndPos.nZ = 0;
+	a.Color.Color_dw = 0xff484848;	// lop nen keo toan man, toi di
+	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE_STRETCH, true);
+	int nCao = SCREEN_HEIGHT;
+	int nRong = oCo.nX * nCao / oCo.nY;
+	if (nRong > SCREEN_WIDTH)
+	{
+		nRong = SCREEN_WIDTH;
+		nCao = oCo.nY * nRong / oCo.nX;
+	}
+	int nX = (SCREEN_WIDTH - nRong) / 2, nY = (SCREEN_HEIGHT - nCao) / 2;
+	a.Color.Color_dw = uMauGoc ? uMauGoc : 0xffffffff;
+	a.oPosition.nX = nX; a.oPosition.nY = nY;
+	a.oEndPos.nX = nX + nRong; a.oEndPos.nY = nY + nCao;
+	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE_STRETCH, true);
+}
+#endif

@@ -16,6 +16,7 @@
 extern int SCREEN_WIDTH, SCREEN_HEIGHT;	// S3Client.cpp (WND_INIT_* cua Engine khong export)
 ENGINE_API void SetEngineResolution(int width, int height);	// KDDraw.h (Engine)
 extern int g_nDoPhanGiaiTheoManHinh;	// S3Client.cpp
+extern "C" void JxSdl_BanPhimNhip(void);	// [DANGNHAP 12/09] dinh nghia phia duoi, vong lap chinh goi
 #include <SDL3/SDL.h>
 #ifndef JX_POSIX
 #include <SDL3/SDL_main.h>	// SDL_RegisterApp/SDL_UnregisterApp (SDL.h khong include SDL_main.h; SDL_MAIN_HANDLED da define nen khong dinh nghia lai main)
@@ -460,6 +461,7 @@ void KSdlApp::Run()
 			break;
 #ifdef JX_ANDROID
 		NhipCham();		// [ANDROID 09/09 CHAM] giu ngon du lau ma khong xe dich -> chuot phai
+		JxSdl_BanPhimNhip();	// [DANGNHAP 12/09] mo lai ban phim sau khi IME tu dong
 		JxCan_Nhip();	// [ANDROID 09/09 CAN] dang cam can thi day nhan vat di theo huong
 		JxKyNang_Nhip();	// [ANDROID 09/09 KYNANG I] dang de nut ky nang thi cu danh tiep
 #endif
@@ -536,15 +538,48 @@ static void SdlToLogical(SDL_Window* pWin, float& x, float& y)
 // Tren dien thoai SDL_StartTextInput = day ban phim ao len ngay. Nen chi goi khi mot o nhap co tieu diem.
 // KWndEdit::WndProc goi ham nay o WND_M_SET_FOCUS (bat) va WND_M_KILL_FOCUS (tat).
 //---------------------------------------------------------------------------
-extern "C" void JxSdl_BanPhimAo(int bBat)
+// [DANGNHAP 12/09] ban phim theo KIEU o nhap: khong tu viet hoa chu dau (tai khoan phai chu thuong), khong tu sua chu,
+// o mat khau = kieu mat khau an. IME Android hay tu dong sau phim Enter du o nhap ke tiep da nhan tieu diem ->
+// hen mo lai sau 0,3 s (JxSdl_BanPhimNhip trong vong lap chinh).
+static Uint64 s_uBanPhimLai = 0;
+static int s_nBanPhimMatKhau = 0;
+static void BanPhimMo(SDL_Window* pWin, int nMatKhau)
+{
+	SDL_PropertiesID p = SDL_CreateProperties();
+	SDL_SetNumberProperty(p, SDL_PROP_TEXTINPUT_TYPE_NUMBER, nMatKhau ? SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN : SDL_TEXTINPUT_TYPE_TEXT);
+	SDL_SetNumberProperty(p, SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_NONE);
+	SDL_SetBooleanProperty(p, SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, false);
+	SDL_StartTextInputWithProperties(pWin, p);
+	SDL_DestroyProperties(p);
+}
+extern "C" void JxSdl_BanPhimAo(int bBat, int nMatKhau)
 {
 	SDL_Window* pWin = (SDL_Window*)JxPosix_MainWindow();
 	if (!pWin)
 		return;
 	if (bBat)
-		SDL_StartTextInput(pWin);
+	{
+		BanPhimMo(pWin, nMatKhau);
+		s_nBanPhimMatKhau = nMatKhau;
+		s_uBanPhimLai = SDL_GetTicks() + 300;
+	}
 	else
+	{
 		SDL_StopTextInput(pWin);
+		s_uBanPhimLai = 0;
+	}
+}
+// goi moi vong lap: den hen ma o nhap van giu tieu diem -> dong roi mo lai ban phim (IME da tu dong thi hien lai)
+extern "C" void JxSdl_BanPhimNhip(void)
+{
+	if (!s_uBanPhimLai || SDL_GetTicks() < s_uBanPhimLai)
+		return;
+	s_uBanPhimLai = 0;
+	SDL_Window* pWin = (SDL_Window*)JxPosix_MainWindow();
+	if (!pWin)
+		return;
+	SDL_StopTextInput(pWin);
+	BanPhimMo(pWin, s_nBanPhimMatKhau);
 }
 
 //---------------------------------------------------------------------------

@@ -22,7 +22,10 @@ private:
 	~KUiLoginBackGround() {}
 	void	Initialize();					//初始化
 	void	LoadScheme(KIniFile* pIni);		//载入界面方案
-	void	Breathe();						//活动函数
+	void	Breathe();
+#ifdef JX_ANDROID
+	virtual void PaintWindow();	// [DANGNHAP 12/09] nen 800x600 ve vua moi ti le man: lop keo toan man (toi) + lop that vua chieu cao can giua
+#endif						//活动函数
 private:
 	static 	KUiLoginBackGround* m_pSelf;
 #define	MAX_NUM_BUTTERFLY	3

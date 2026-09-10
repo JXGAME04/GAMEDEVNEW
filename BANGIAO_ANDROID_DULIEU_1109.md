@@ -243,6 +243,21 @@ Hành trang gốc (`ui\ui3\uiitem.ini`): cửa sổ 214×454, `[ItemBox]` 168×2
   game là thấy; icon chỉ phóng khi cài APK `jx1mobile-1209-tai-i`. Vị trí cửa sổ: ini `Left=400,Top=10` (neo giữa trên màn rộng).
 - Chưa làm: ô phím 1-4 kiểu VNKU (`o_phim1..4`), rương/cửa hàng/trang bị cùng cỡ ô (làm tiếp cùng cách nếu chủ ưng hành trang).
 
+## 12. Phần đăng nhập trên điện thoại (`DANGNHAP 12/09`) — chủ 03:10
+
+`android/va_nguon_android_dangnhap1.py` (rào `JX_ANDROID`, bản PC không đổi):
+- **Vừa màn hình mọi máy**: nền menu/đăng nhập là `KUiLoginBackGround` (ảnh 800×600 `Init_Login.jpg`, trước chỉ chiếm 800 px bên trái).
+  `PaintWindow` mới vẽ hai lớp: bản kéo toàn màn làm nền tối + bản thật vừa chiều cao, căn giữa (không méo, không cắt). Các bảng
+  `KUiInit|Main`, `KUiLogin|Main`, `KUiConnectInfo|Main`, `KUiSelNativePlace|Main` (800×600) và `KUiSelServer|Main` (281×421) neo
+  GIỮA trong cả hai tệp bố cục (`sinh_bocuc_rong.py`, `GIUA_TRUOC_GAME`) → máy ảo 1040 cũng vào giữa (x=120), màn rộng x=285.
+- **Bàn phím hiện ngay khi sang ô mật khẩu**: IME Android tự đóng sau phím Enter dù ô kế đã nhận tiêu điểm →
+  `JxSdl_BanPhimAo(bBat, nMatKhau)` hẹn 0,3 s, `JxSdl_BanPhimNhip()` trong vòng lặp đóng rồi mở lại bàn phím nếu vẫn có ô nhập.
+- **Không tự viết hoa chữ đầu**: `SDL_StartTextInputWithProperties` với `SDL_CAPITALIZE_NONE`, không tự sửa chữ, ô mật khẩu kiểu
+  `TEXT_PASSWORD_HIDDEN` (KWndEdit truyền cờ `WNDEDIT_ES_MASK_CHARACTER`). Phòng hờ: `KUiLogin::GetInputInfo` hạ chữ đầu tài khoản
+  xuống chữ thường trước khi gửi (quy chế game). APK `jx1mobile-1209-tai-j.apk`. Chưa thử được trên máy ảo (chủ đang trong game);
+  chủ kiểm trên điện thoại: menu và bảng đăng nhập ở giữa, nền kín màn, gõ tài khoản → Enter → bàn phím còn/hiện ngay ở ô mật khẩu,
+  chữ đầu không tự hoa.
+
 **Lưu ý máy ảo:** thư mục app (`/storage/emulated/0/Android/data/vn.jx1.mobile/files/`) được `JxAndroidMain.cpp` ưu tiên TRƯỚC
 `/mnt/shared/Misc` — thử tải trên máy ảo xong phải xoá `data/`, `config.ini`, `package.ini`, `settings/`, `da_tai.txt`, `tai_du_lieu.txt`
 trong đó, nếu không máy ảo chạy bằng gói cũ và lớp ghi đè `android\du_lieu_ghi_de` hết tác dụng (đã dọn sau khi đo).

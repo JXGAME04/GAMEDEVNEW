@@ -94,13 +94,21 @@ def main():
             bang.append([k, x, y, 1000, 0]); co[k] = bang[-1]
     O_PHIM = {"KUiPlayerBar|Item_0": (1198, 206), "KUiPlayerBar|Item_1": (1246, 206),
               "KUiPlayerBar|Item_2": (1198, 254), "KUiPlayerBar|Item_3": (1246, 254)}
+    # [DANGNHAP 12/09] cac bang TRUOC khi vao game (menu, dang nhap, chon may chu, ket noi, chon que) 800x600 o goc trai -> neo GIUA
+    GIUA_TRUOC_GAME = {"KUiInit|Main": (800, 0), "KUiLogin|Main": (800, 0), "KUiConnectInfo|Main": (800, 0),
+                       "KUiSelNativePlace|Main": (800, 0), "KUiSelServer|Main": (281, 61)}
     ra = []
+    for k, (rong, y) in GIUA_TRUOC_GAME.items():
+        if k not in co:
+            bang.append([k, 0, y, 1000, 0]); co[k] = bang[-1]
     hang_tren = dict((k, i) for i, (k, _) in enumerate(HANG_TREN))
     cot_phai = dict(COT_PHAI)
     for khoa, x, y, tile, cocb in bang:
         lop = lop_cua(khoa)
         la_main = ("|" in khoa and khoa.split("|")[1] == "Main") or "|" not in khoa
         neo_x, neo_y = 0, 0                                     # [UITOADO 12/09 NEO] 0 trai/tren, 1 giua, 2 phai/duoi
+        if khoa in GIUA_TRUOC_GAME:                           # bang truoc khi vao game: can giua theo khung
+            ra.append((khoa, (W1 - GIUA_TRUOC_GAME[khoa][0]) // 2, GIUA_TRUOC_GAME[khoa][1], tile, cocb, 1, 0)); continue
         if lop in CHA_MOI and la_main:                       # cha toan man hinh: vi tri moi (tuyet doi)
             nx, ny = CHA_MOI[lop]
             ra.append((khoa, nx, ny, tile, cocb, 1 if lop == "KUiPlayerBar" else 0, 0)); continue
