@@ -337,6 +337,19 @@ def main():
             shutil.copy2(src, os.path.join(dich, f))
         else:
             print("  (khong co tep roi de giu: %s)" % f)
+    # [HANHTRANG 12/09] ca lop ghi de Android (android\du_lieu_ghi_de: ini giao dien, anh VNKU) giu ROI trong goi: tep roi thang pak,
+    # doi giao dien chi can chep tep + sinh manifest, dien thoai tai vai tram KB, khong phai dong goi lai 7 GB
+    ghi_de = os.path.join(GOC, "du_lieu_ghi_de")
+    so_gd = 0
+    for root, ds, fs in os.walk(ghi_de):
+        for f in fs:
+            rel = os.path.relpath(os.path.join(root, f), ghi_de)
+            if rel.lower() == "config.ini":
+                continue
+            dst = os.path.join(dich, rel)
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copy2(os.path.join(root, f), dst); so_gd += 1
+    print("lop ghi de giu roi: %d tep" % so_gd)
     for t in THU_MUC_ROI:
         src = os.path.join(nguon, t)
         if os.path.isdir(src):

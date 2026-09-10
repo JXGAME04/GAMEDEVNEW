@@ -227,6 +227,22 @@ MANHINH, chỉ `JX_ANDROID`):
 - Ô phím 1-4 ("UI đặt item dùng nhanh"): con của `KUiPlayerBar` (ini `Item_0..3` 932/972×205/245, 36 px) — trước không có mục nên đứng
   yên; nay có mục + neo phải. APK `jx1mobile-1209-tai-h.apk`.
 
+## 11. Làm lại hành trang cho mobile (`HANHTRANG 12/09`) — chủ 02:20: "làm lại hành trang, ô to hơn"
+
+Hành trang gốc (`ui\ui3\uiitem.ini`): cửa sổ 214×454, `[ItemBox]` 168×280 lưới 6×10 → ô **28 px** (điện thoại 1,75× ≈ 49 px vật lý
+≈ 2,9 mm, không chạm nổi). Lưới là `KWndObjContainer` (ô = Width/HUnits), ảnh vật phẩm vẽ qua `CoreShell::DrawGameObj(x,y,w,h)` →
+`KItem::PaintItem` ở cỡ gốc 26 px (chỉ căn giữa, không phóng).
+- `android/anh_hanhtrang_vnku.py`: khung mới **316×592, ô 44 px** (`ItemBox` 264×440, 6×10, viền 2 → 77 px vật lý ≈ 4,8 mm, to
+  gấp 1,6), tiêu đề + hoa văn + hàng tiền từ kho VNKU `UiItem\main.png`, lưới vẽ lại; nút 96×35 hai khung (thường/bấm) từ VNKU:
+  Lời rao = `quang_ba`, Định giá = `btn_tham_dinh`, Rao bán = `btn_trung_bay`, Gửi tiền, Trang bị, Đóng. Ghi vào lớp ghi đè
+  `android/du_lieu_ghi_de/spr/ui3/uiitem/*.spr` + `ui/ui3/uiitem.ini` (cùng tên mục/lớp `KUiItem`, không đổi C++ giao diện).
+- Icon phóng theo ô (`android/va_nguon_android_hanhtrang1.py`, Core, chỉ `JX_ANDROID`): `CoreDrawGameObj` ô lớn hơn ảnh gốc (và không ở
+  chế độ thu nhỏ) → đặt cờ `g_nJxVeVatPhamW/H`, `KItem::PaintItem` vẽ kéo `RU_T_IMAGE_STRETCH` theo ô rồi xoá cờ. Túi đồ/cửa hàng/rương
+  ô 26–28 px không đổi (Width − viền < 26).
+- Đã đưa lên máy chủ tải dạng tệp rời (tệp rời thắng pak): điện thoại tải ~250 KB. Máy ảo (`D:\jx1_android_data`) cũng có → mở lại
+  game là thấy; icon chỉ phóng khi cài APK `jx1mobile-1209-tai-i`. Vị trí cửa sổ: ini `Left=400,Top=10` (neo giữa trên màn rộng).
+- Chưa làm: ô phím 1-4 kiểu VNKU (`o_phim1..4`), rương/cửa hàng/trang bị cùng cỡ ô (làm tiếp cùng cách nếu chủ ưng hành trang).
+
 **Lưu ý máy ảo:** thư mục app (`/storage/emulated/0/Android/data/vn.jx1.mobile/files/`) được `JxAndroidMain.cpp` ưu tiên TRƯỚC
 `/mnt/shared/Misc` — thử tải trên máy ảo xong phải xoá `data/`, `config.ini`, `package.ini`, `settings/`, `da_tai.txt`, `tai_du_lieu.txt`
 trong đó, nếu không máy ảo chạy bằng gói cũ và lớp ghi đè `android\du_lieu_ghi_de` hết tác dụng (đã dọn sau khi đo).
