@@ -32,7 +32,8 @@ void   R11ConvertRowToBgra(D3DFORMAT f, const BYTE* pSrc, DWORD* pDst, UINT w);
 struct CAtlasMang	// [MANG 09/09] mot Texture2DArray cho mot dinh dang; moi trang atlas = mot lop (slice)
 {
 	ID3D11Texture2D* m_pTex; ID3D11ShaderResourceView* m_pSrv; DXGI_FORMAT m_fmt; UINT m_bpp;
-	UINT m_nLop, m_nDung; std::vector<UINT> m_lopTrong;	// so lop da cap, so lop da phat (ke tiep), lop da tra lai
+	UINT m_nLop, m_nDung; std::vector<UINT> m_lopTrong;	// so lop cua khoi, so lop da phat (ke tiep), lop da tra lai
+	UINT m_nKhoi, m_nSuDung;	// [MANG 09/09 f] chi so khoi trong dinh dang (0..15, = khe t3+k / t19+k), so lop dang dung
 };
 class CAtlasPage
 {
@@ -56,7 +57,8 @@ public:
 	CDev11* m_pDev; std::vector<CAtlasPage*> m_pages; UINT m_pageSize;
 	CAtlasMang* MangLay(DXGI_FORMAT fmt, UINT* pLop);	// [MANG 09/09] lay mot lop trong (tao/lon mang khi can)
 	void MangXoa();
-	void GanMang();	// [MANG 09/09 b] gan mang R8G8 -> t3, BGRA8 -> t4
+	void GanMang();	// [MANG 09/09 b] gan khoi R8G8 -> t3..t18, BGRA8 -> t19..t34 ([MANG 09/09 f])
+	void KhoiXoaNeuTrong(CAtlasMang* pM);	// [MANG 09/09 f] khoi khong con lop dung -> tra VRAM (giu 1 khoi rong / dinh dang)
 	std::vector<CAtlasMang*> m_mang;
 };
 

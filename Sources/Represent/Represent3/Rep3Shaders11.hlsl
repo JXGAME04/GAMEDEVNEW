@@ -56,41 +56,261 @@ Texture2D    g_t1 : register(t1);
 SamplerState g_s1 : register(s1);
 Texture2D    g_pal : register(t2);   // [r] atlas bang mau 256 x N (BGRA8), hang = palrow
 #ifdef MANG
-Texture2DArray g_a8  : register(t3);  // [MANG 09/09 b] atlas R8G8 (bang mau), gan co dinh
-Texture2DArray g_a32 : register(t4);  // [MANG 09/09 b] atlas BGRA8, gan co dinh
-// nguon texture stage 0 theo dinh: 0 = t0 (texture rieng, view mang 1 lop), 1 = t3, 2 = t4
-float4 T0Sample(uint src, float lop, float2 uv)
+// [MANG 09/09 f] atlas theo KHOI: 16 mang/dinh dang, chon khoi theo dinh (4 bit cao cua truong lop), lop trong khoi = 5 bit thap
+Texture2DArray g_a8_0 : register(t3);
+Texture2DArray g_a8_1 : register(t4);
+Texture2DArray g_a8_2 : register(t5);
+Texture2DArray g_a8_3 : register(t6);
+Texture2DArray g_a8_4 : register(t7);
+Texture2DArray g_a8_5 : register(t8);
+Texture2DArray g_a8_6 : register(t9);
+Texture2DArray g_a8_7 : register(t10);
+Texture2DArray g_a8_8 : register(t11);
+Texture2DArray g_a8_9 : register(t12);
+Texture2DArray g_a8_10 : register(t13);
+Texture2DArray g_a8_11 : register(t14);
+Texture2DArray g_a8_12 : register(t15);
+Texture2DArray g_a8_13 : register(t16);
+Texture2DArray g_a8_14 : register(t17);
+Texture2DArray g_a8_15 : register(t18);
+Texture2DArray g_a32_0 : register(t19);
+Texture2DArray g_a32_1 : register(t20);
+Texture2DArray g_a32_2 : register(t21);
+Texture2DArray g_a32_3 : register(t22);
+Texture2DArray g_a32_4 : register(t23);
+Texture2DArray g_a32_5 : register(t24);
+Texture2DArray g_a32_6 : register(t25);
+Texture2DArray g_a32_7 : register(t26);
+Texture2DArray g_a32_8 : register(t27);
+Texture2DArray g_a32_9 : register(t28);
+Texture2DArray g_a32_10 : register(t29);
+Texture2DArray g_a32_11 : register(t30);
+Texture2DArray g_a32_12 : register(t31);
+Texture2DArray g_a32_13 : register(t32);
+Texture2DArray g_a32_14 : register(t33);
+Texture2DArray g_a32_15 : register(t34);
+float4 A8Sample(uint k, float3 p)
 {
-    if (src == 1u) return g_a8.Sample(g_s0, float3(uv, lop));
-    if (src == 2u) return g_a32.Sample(g_s0, float3(uv, lop));
-    return g_t0.Sample(g_s0, float3(uv, 0.0));
+    switch (k)
+    {
+    case 0: return g_a8_0.SampleLevel(g_s0, p, 0);
+    case 1: return g_a8_1.SampleLevel(g_s0, p, 0);
+    case 2: return g_a8_2.SampleLevel(g_s0, p, 0);
+    case 3: return g_a8_3.SampleLevel(g_s0, p, 0);
+    case 4: return g_a8_4.SampleLevel(g_s0, p, 0);
+    case 5: return g_a8_5.SampleLevel(g_s0, p, 0);
+    case 6: return g_a8_6.SampleLevel(g_s0, p, 0);
+    case 7: return g_a8_7.SampleLevel(g_s0, p, 0);
+    case 8: return g_a8_8.SampleLevel(g_s0, p, 0);
+    case 9: return g_a8_9.SampleLevel(g_s0, p, 0);
+    case 10: return g_a8_10.SampleLevel(g_s0, p, 0);
+    case 11: return g_a8_11.SampleLevel(g_s0, p, 0);
+    case 12: return g_a8_12.SampleLevel(g_s0, p, 0);
+    case 13: return g_a8_13.SampleLevel(g_s0, p, 0);
+    case 14: return g_a8_14.SampleLevel(g_s0, p, 0);
+    case 15: return g_a8_15.SampleLevel(g_s0, p, 0);
+    default: return float4(0, 0, 0, 0);
+    }
 }
-float4 T0Load(uint src, float lop, int2 p)
+float4 A8Sample1(uint k, float3 p)
 {
-    if (src == 1u) return g_a8.Load(int4(p, (int)lop, 0));
-    if (src == 2u) return g_a32.Load(int4(p, (int)lop, 0));
-    return g_t0.Load(int4(p, 0, 0));
+    switch (k)
+    {
+    case 0: return g_a8_0.SampleLevel(g_s1, p, 0);
+    case 1: return g_a8_1.SampleLevel(g_s1, p, 0);
+    case 2: return g_a8_2.SampleLevel(g_s1, p, 0);
+    case 3: return g_a8_3.SampleLevel(g_s1, p, 0);
+    case 4: return g_a8_4.SampleLevel(g_s1, p, 0);
+    case 5: return g_a8_5.SampleLevel(g_s1, p, 0);
+    case 6: return g_a8_6.SampleLevel(g_s1, p, 0);
+    case 7: return g_a8_7.SampleLevel(g_s1, p, 0);
+    case 8: return g_a8_8.SampleLevel(g_s1, p, 0);
+    case 9: return g_a8_9.SampleLevel(g_s1, p, 0);
+    case 10: return g_a8_10.SampleLevel(g_s1, p, 0);
+    case 11: return g_a8_11.SampleLevel(g_s1, p, 0);
+    case 12: return g_a8_12.SampleLevel(g_s1, p, 0);
+    case 13: return g_a8_13.SampleLevel(g_s1, p, 0);
+    case 14: return g_a8_14.SampleLevel(g_s1, p, 0);
+    case 15: return g_a8_15.SampleLevel(g_s1, p, 0);
+    default: return float4(0, 0, 0, 0);
+    }
 }
-float2 T0Dim(uint src)
+float4 A8Load(uint k, int4 p)
 {
-    float3 d;
-    if (src == 1u) g_a8.GetDimensions(d.x, d.y, d.z);
-    else if (src == 2u) g_a32.GetDimensions(d.x, d.y, d.z);
-    else g_t0.GetDimensions(d.x, d.y, d.z);
+    switch (k)
+    {
+    case 0: return g_a8_0.Load(p);
+    case 1: return g_a8_1.Load(p);
+    case 2: return g_a8_2.Load(p);
+    case 3: return g_a8_3.Load(p);
+    case 4: return g_a8_4.Load(p);
+    case 5: return g_a8_5.Load(p);
+    case 6: return g_a8_6.Load(p);
+    case 7: return g_a8_7.Load(p);
+    case 8: return g_a8_8.Load(p);
+    case 9: return g_a8_9.Load(p);
+    case 10: return g_a8_10.Load(p);
+    case 11: return g_a8_11.Load(p);
+    case 12: return g_a8_12.Load(p);
+    case 13: return g_a8_13.Load(p);
+    case 14: return g_a8_14.Load(p);
+    case 15: return g_a8_15.Load(p);
+    default: return float4(0, 0, 0, 0);
+    }
+}
+float2 A8Dim(uint k)
+{
+    float3 d = float3(1, 1, 1);
+    switch (k)
+    {
+    case 0: g_a8_0.GetDimensions(d.x, d.y, d.z); break;
+    case 1: g_a8_1.GetDimensions(d.x, d.y, d.z); break;
+    case 2: g_a8_2.GetDimensions(d.x, d.y, d.z); break;
+    case 3: g_a8_3.GetDimensions(d.x, d.y, d.z); break;
+    case 4: g_a8_4.GetDimensions(d.x, d.y, d.z); break;
+    case 5: g_a8_5.GetDimensions(d.x, d.y, d.z); break;
+    case 6: g_a8_6.GetDimensions(d.x, d.y, d.z); break;
+    case 7: g_a8_7.GetDimensions(d.x, d.y, d.z); break;
+    case 8: g_a8_8.GetDimensions(d.x, d.y, d.z); break;
+    case 9: g_a8_9.GetDimensions(d.x, d.y, d.z); break;
+    case 10: g_a8_10.GetDimensions(d.x, d.y, d.z); break;
+    case 11: g_a8_11.GetDimensions(d.x, d.y, d.z); break;
+    case 12: g_a8_12.GetDimensions(d.x, d.y, d.z); break;
+    case 13: g_a8_13.GetDimensions(d.x, d.y, d.z); break;
+    case 14: g_a8_14.GetDimensions(d.x, d.y, d.z); break;
+    case 15: g_a8_15.GetDimensions(d.x, d.y, d.z); break;
+    default: break;
+    }
     return d.xy;
 }
+float4 A32Sample(uint k, float3 p)
+{
+    switch (k)
+    {
+    case 0: return g_a32_0.SampleLevel(g_s0, p, 0);
+    case 1: return g_a32_1.SampleLevel(g_s0, p, 0);
+    case 2: return g_a32_2.SampleLevel(g_s0, p, 0);
+    case 3: return g_a32_3.SampleLevel(g_s0, p, 0);
+    case 4: return g_a32_4.SampleLevel(g_s0, p, 0);
+    case 5: return g_a32_5.SampleLevel(g_s0, p, 0);
+    case 6: return g_a32_6.SampleLevel(g_s0, p, 0);
+    case 7: return g_a32_7.SampleLevel(g_s0, p, 0);
+    case 8: return g_a32_8.SampleLevel(g_s0, p, 0);
+    case 9: return g_a32_9.SampleLevel(g_s0, p, 0);
+    case 10: return g_a32_10.SampleLevel(g_s0, p, 0);
+    case 11: return g_a32_11.SampleLevel(g_s0, p, 0);
+    case 12: return g_a32_12.SampleLevel(g_s0, p, 0);
+    case 13: return g_a32_13.SampleLevel(g_s0, p, 0);
+    case 14: return g_a32_14.SampleLevel(g_s0, p, 0);
+    case 15: return g_a32_15.SampleLevel(g_s0, p, 0);
+    default: return float4(0, 0, 0, 0);
+    }
+}
+float4 A32Sample1(uint k, float3 p)
+{
+    switch (k)
+    {
+    case 0: return g_a32_0.SampleLevel(g_s1, p, 0);
+    case 1: return g_a32_1.SampleLevel(g_s1, p, 0);
+    case 2: return g_a32_2.SampleLevel(g_s1, p, 0);
+    case 3: return g_a32_3.SampleLevel(g_s1, p, 0);
+    case 4: return g_a32_4.SampleLevel(g_s1, p, 0);
+    case 5: return g_a32_5.SampleLevel(g_s1, p, 0);
+    case 6: return g_a32_6.SampleLevel(g_s1, p, 0);
+    case 7: return g_a32_7.SampleLevel(g_s1, p, 0);
+    case 8: return g_a32_8.SampleLevel(g_s1, p, 0);
+    case 9: return g_a32_9.SampleLevel(g_s1, p, 0);
+    case 10: return g_a32_10.SampleLevel(g_s1, p, 0);
+    case 11: return g_a32_11.SampleLevel(g_s1, p, 0);
+    case 12: return g_a32_12.SampleLevel(g_s1, p, 0);
+    case 13: return g_a32_13.SampleLevel(g_s1, p, 0);
+    case 14: return g_a32_14.SampleLevel(g_s1, p, 0);
+    case 15: return g_a32_15.SampleLevel(g_s1, p, 0);
+    default: return float4(0, 0, 0, 0);
+    }
+}
+float4 A32Load(uint k, int4 p)
+{
+    switch (k)
+    {
+    case 0: return g_a32_0.Load(p);
+    case 1: return g_a32_1.Load(p);
+    case 2: return g_a32_2.Load(p);
+    case 3: return g_a32_3.Load(p);
+    case 4: return g_a32_4.Load(p);
+    case 5: return g_a32_5.Load(p);
+    case 6: return g_a32_6.Load(p);
+    case 7: return g_a32_7.Load(p);
+    case 8: return g_a32_8.Load(p);
+    case 9: return g_a32_9.Load(p);
+    case 10: return g_a32_10.Load(p);
+    case 11: return g_a32_11.Load(p);
+    case 12: return g_a32_12.Load(p);
+    case 13: return g_a32_13.Load(p);
+    case 14: return g_a32_14.Load(p);
+    case 15: return g_a32_15.Load(p);
+    default: return float4(0, 0, 0, 0);
+    }
+}
+float2 A32Dim(uint k)
+{
+    float3 d = float3(1, 1, 1);
+    switch (k)
+    {
+    case 0: g_a32_0.GetDimensions(d.x, d.y, d.z); break;
+    case 1: g_a32_1.GetDimensions(d.x, d.y, d.z); break;
+    case 2: g_a32_2.GetDimensions(d.x, d.y, d.z); break;
+    case 3: g_a32_3.GetDimensions(d.x, d.y, d.z); break;
+    case 4: g_a32_4.GetDimensions(d.x, d.y, d.z); break;
+    case 5: g_a32_5.GetDimensions(d.x, d.y, d.z); break;
+    case 6: g_a32_6.GetDimensions(d.x, d.y, d.z); break;
+    case 7: g_a32_7.GetDimensions(d.x, d.y, d.z); break;
+    case 8: g_a32_8.GetDimensions(d.x, d.y, d.z); break;
+    case 9: g_a32_9.GetDimensions(d.x, d.y, d.z); break;
+    case 10: g_a32_10.GetDimensions(d.x, d.y, d.z); break;
+    case 11: g_a32_11.GetDimensions(d.x, d.y, d.z); break;
+    case 12: g_a32_12.GetDimensions(d.x, d.y, d.z); break;
+    case 13: g_a32_13.GetDimensions(d.x, d.y, d.z); break;
+    case 14: g_a32_14.GetDimensions(d.x, d.y, d.z); break;
+    case 15: g_a32_15.GetDimensions(d.x, d.y, d.z); break;
+    default: break;
+    }
+    return d.xy;
+}
+// nguon texture stage 0 theo dinh: 0 = t0 (texture rieng, view mang 1 lop), 1 = khoi R8G8, 2 = khoi BGRA8; lop = khoi<<5 | lop
+float4 T0Sample(uint src, uint lop, float2 uv)
+{
+    float3 p = float3(uv, (float)(lop & 31u));
+    if (src == 1u) return A8Sample((lop >> 5) & 15u, p);
+    if (src == 2u) return A32Sample((lop >> 5) & 15u, p);
+    return g_t0.SampleLevel(g_s0, float3(uv, 0.0), 0);
+}
+float4 T0Load(uint src, uint lop, int2 p)
+{
+    int4 q = int4(p, (int)(lop & 31u), 0);
+    if (src == 1u) return A8Load((lop >> 5) & 15u, q);
+    if (src == 2u) return A32Load((lop >> 5) & 15u, q);
+    return g_t0.Load(int4(p, 0, 0));
+}
+float2 T0Dim(uint src, uint lop)
+{
+    if (src == 1u) return A8Dim((lop >> 5) & 15u);
+    if (src == 2u) return A32Dim((lop >> 5) & 15u);
+    float3 d; g_t0.GetDimensions(d.x, d.y, d.z); return d.xy;
+}
 float4 T1Sample(float2 uv)
-{   // stage 1: nguon = g_at.x, lop = g_at.y (cb, hiem doi)
-    uint src = (uint)g_at.x; float lop = g_at.y;
-    if (src == 1u) return g_a8.Sample(g_s1, float3(uv, lop));
-    if (src == 2u) return g_a32.Sample(g_s1, float3(uv, lop));
-    return g_t1.Sample(g_s1, float3(uv, 0.0));
+{   // stage 1: nguon = g_at.x, lop (khoi<<5|lop) = g_at.y (cb, hiem doi)
+    uint src = (uint)g_at.x; uint lop = (uint)g_at.y;
+    float3 p = float3(uv, (float)(lop & 31u));
+    if (src == 1u) return A8Sample1((lop >> 5) & 15u, p);
+    if (src == 2u) return A32Sample1((lop >> 5) & 15u, p);
+    return g_t1.SampleLevel(g_s1, float3(uv, 0.0), 0);
 }
 #endif
 #ifdef MANG
 #define T0_SAMPLE(uv)  T0Sample(src, lop, uv)
 #define T0_LOAD(p)     T0Load(src, lop, p)
-#define T0_DIM(d)      d = T0Dim(src)
+#define T0_DIM(d)      d = T0Dim(src, lop)
 #define T1_SAMPLE(uv)  T1Sample(uv)
 #else
 #define T0_SAMPLE(uv)  g_t0.Sample(g_s0, uv)
@@ -166,7 +386,7 @@ float4 PS(VSOut i) : SV_Target
 {
     uint row = i.palrow.x & 0xFFFFu;   // [MANG 09/09] hang bang mau
 #ifdef MANG
-    float lop = (float)((i.palrow.x >> 16) & 0x1FFu); uint src = (i.palrow.x >> 25) & 3u;   // [MANG 09/09 b] lop + nguon theo dinh
+    uint lop = (i.palrow.x >> 16) & 0x1FFu; uint src = (i.palrow.x >> 25) & 3u;   // [MANG 09/09 b] lop (khoi<<5|lop, [MANG 09/09 f]) + nguon theo dinh
     // [MANG 09/09 d] tham so stage 0 theo dinh (y) + tex0 bound (x bit 31); loc tuyen tinh van tu cb (g_st0b.w)
     uint y = i.palrow.y;
     int4 st0 = int4((int)((y >> 8) & 15u), ArgMo((y >> 12) & 15u), ArgMo((y >> 16) & 15u), (int)((y >> 20) & 15u));

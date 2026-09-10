@@ -14,7 +14,7 @@
 #include <string.h>
 
 #define R11_SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = NULL; } }
-#define R11_RING_SIZE (16 * 1024 * 1024)	// [MANG 09/09 c] 4 -> 16 MB: danh tran 5 MB dinh/khung, lo gop 2 MB -> 4 MB phai DISCARD 2-3 lan/khung
+#define R11_RING_SIZE (12 * 1024 * 1024)	/* [MANG 09/09 f] 16 -> 12 MB: khung nang nhat do duoc 8,9 MB */	// [MANG 09/09 c] 4 -> 16 MB: danh tran 5 MB dinh/khung, lo gop 2 MB -> 4 MB phai DISCARD 2-3 lan/khung
 
 CDev11* g_pRep3Dev11 = NULL;
 double   g_dRep3PresentMs = 0.0;
@@ -23,7 +23,9 @@ unsigned g_uRep3PresentSkip = 0;
 unsigned g_uRep3BatchQuads = 0;
 unsigned g_uRep3BatchDraws = 0;
 unsigned g_uRep3RingVong = 0; double g_dRep3RingMapMax = 0.0; unsigned g_uRep3TexRiengTao = 0;
-unsigned g_uRep3CullGiu = 0, g_uRep3CullBo = 0;	// [MANG 09/09 e] tam giac 2D giu / bo khi cull tren CPU	// [MANG 09/09 c]
+unsigned g_uRep3CullGiu = 0, g_uRep3CullBo = 0;
+// [MANG 09/09 f] truong 'lop' 9 bit theo dinh = khoi (4 bit) << 5 | lop trong khoi (5 bit)
+static inline UINT R11LopGoi(const CAtlasPage* p) { return (((p->m_pMang ? p->m_pMang->m_nKhoi : 0u) & 15u) << 5) | (p->m_lop & 31u); }	// [MANG 09/09 e] tam giac 2D giu / bo khi cull tren CPU	// [MANG 09/09 c]
 unsigned g_uRep3GopVo[12] = { 0 };	// [GOP 09/09 do] ly do vo lo quad: 0 doi trang atlas, 1 texture rieng, 2 srv1, 3 blend, 4 sampler, 5 ps st0, 6 ps st1, 7 alphatest, 8 vs, 9 layout, 10 vp/scissor/raster, 11 day
 unsigned g_uRep3VeNgay[4] = { 0 };	// [GOP 09/09 do] lenh ve ngay (khong gop): 0 fan, 1 list, 2 strip (khong phai quad), 3 khac
 static int s_nRep3BuffersUsed = 0;
@@ -936,7 +938,7 @@ void CDev11::ComputeApplied(R11Applied& a, ID3D11InputLayout* pIL, UINT stride)
 		if (g_nRep3AtlasMang && m_tex[s] && m_tex[s]->m_bVirtual && m_tex[s]->m_pPage)
 		{	// [MANG 09/09 b] atlas gan co dinh o t3/t4 -> khong qua t0/t1 (srv = NULL -> doi trang/dinh dang khong vo lo)
 			a.srv[s] = NULL;
-			if (s == 1) { nNguon1 = (m_tex[1]->m_pPage->m_bpp == 2) ? 1 : 2; nLop1 = (int)m_tex[1]->m_pPage->m_lop; }
+			if (s == 1) { nNguon1 = (m_tex[1]->m_pPage->m_bpp == 2) ? 1 : 2; nLop1 = (int)R11LopGoi(m_tex[1]->m_pPage); }
 		}
 	}
 	bool bRhw = ((m_fvf & D3DFVF_POSITION_MASK) == D3DFVF_XYZRHW);
@@ -1095,7 +1097,7 @@ static inline UINT R11OpGoi(DWORD v) { return (v > 15u) ? 15u : (UINT)v; }
 static inline void R11DinhThem(CTex11* pTex, DWORD dwAtBat, DWORD dwAtHam, DWORD dwAtRef, const DWORD* pTss0, int nBound, UINT* pX, UINT* pY)
 {
 	UINT x = (pTex && pTex->m_nPalRow >= 0) ? (UINT)pTex->m_nPalRow : 0xFFFFu;
-	if (pTex && pTex->m_bVirtual && pTex->m_pPage) x |= ((pTex->m_pPage->m_lop & 0x1FFu) << 16) | ((pTex->m_pPage->m_bpp == 2 ? 1u : 2u) << 25);
+	if (pTex && pTex->m_bVirtual && pTex->m_pPage) x |= (R11LopGoi(pTex->m_pPage) << 16) | ((pTex->m_pPage->m_bpp == 2 ? 1u : 2u) << 25);	// [MANG 09/09 f]
 	if (dwAtBat) x |= (1u << 27) | ((((dwAtHam & 15u) + 7u) & 7u) << 28);
 	if (nBound) x |= (1u << 31);	// [MANG 09/09 d] tex0 bound
 	UINT y = (UINT)(dwAtRef & 255u);
