@@ -106,7 +106,7 @@ void KUiWAuto::Initialize()
 	m_Style &= ~WND_S_VISIBLE;
 	Wnd_AddWindow(this, WL_NORMAL);
 	for (i = 0; i < WA_UI_SO_NHOM; i++)
-		m_Nhom[i].SetText(s_aTenNhom[i]);
+		m_Nhom[i].SetLabel(s_aTenNhom[i]);	// [ANDROID 11/09 WAUTO B1 c] KWndLabeledButton
 	m_Dong.SetText("§ãng");
 	ChonNhom(0);
 }
@@ -152,12 +152,12 @@ void KUiWAuto::ChonNhom(int nNhom)
 	{
 		if (i < s_aNhom[nNhom].nSo && s_aNhom[nNhom].aTen[i])
 		{
-			m_Tab[i].SetText(s_aNhom[nNhom].aTen[i]);
+			m_Tab[i].SetLabel(s_aNhom[nNhom].aTen[i]);
 			m_Tab[i].Show();
 		}
 		else
 		{
-			m_Tab[i].SetText("");
+			m_Tab[i].SetLabel("");
 			m_Tab[i].Hide();
 		}
 	}

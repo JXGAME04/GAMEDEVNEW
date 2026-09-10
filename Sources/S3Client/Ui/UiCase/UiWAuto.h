@@ -11,6 +11,7 @@
 #include "../Elem/WndShowAnimate.h"
 #include "../Elem/WndButton.h"
 #include "../Elem/WndPureTextBtn.h"
+#include "../Elem/WndLabeledButton.h"	// [ANDROID 11/09 WAUTO B1 c] nut nhom / tab co anh nen kho VNKU
 #include "../Elem/WndText.h"
 
 #define WA_UI_SO_NHOM		4
@@ -36,8 +37,8 @@ private:
 	void	CapNhatBatTat();
 	void	CapNhatTrangThai(int bEp);
 
-	KWndPureTextBtn	m_Nhom[WA_UI_SO_NHOM];
-	KWndPureTextBtn	m_Tab[WA_UI_TAB_MOI_NHOM];
+	KWndLabeledButton	m_Nhom[WA_UI_SO_NHOM];		// [ANDROID 11/09 WAUTO B1 c] anh nut_nhom.spr, chu SetLabel
+	KWndLabeledButton	m_Tab[WA_UI_TAB_MOI_NHOM];	// anh nut_tab.spr
 	KWndPureTextBtn	m_Dong;
 	KWndButton		m_BatTat;
 	KWndText80		m_TrangThai;

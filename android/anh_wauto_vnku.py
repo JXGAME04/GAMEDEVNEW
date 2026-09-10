@@ -68,8 +68,19 @@ def icon(bat):
     ghi(os.path.join("spr", "uinew", "uitoolscontrolbar", "auto_m.spr"), out)
 
 
+def nut_nhom_tab():
+    """Nut NHOM (166x30) va nut TAB CON (84x22) tu nut tron UiTong_Sheet0\\btn_noname.spr (255x61, 2 khung: sang / toi).
+    Khung 0 = TOI (chua chon), khung 1 = SANG (dang chon) -> KWndLabeledButton CheckBox: Up=0, Down=1, chu ve bang Label."""
+    _, _, ks, _ = doc_spr(os.path.join(VNKU, "UiTong_Sheet0", "btn_noname.spr"))
+    toi, sang = ks[1], ks[0]
+    for rel, co in ((os.path.join("spr", "uinew", "uiautonew", "nut_nhom.spr"), (166, 30)),
+                    (os.path.join("spr", "uinew", "uiautonew", "nut_tab.spr"), (84, 22))):
+        ghi(rel, [toi.resize(co, Image.LANCZOS), sang.resize(co, Image.LANCZOS)])
+
+
 if __name__ == "__main__":
     khung()
     b = bat_tat()
     icon(b)
+    nut_nhom_tab()
     print("xong")

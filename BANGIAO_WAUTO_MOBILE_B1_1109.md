@@ -39,8 +39,10 @@ Hai chuỗi Windows dựng lại trên nguồn đã gộp `mobile-0809` tới `b
 **Nguồn ảnh VNKU đã dùng:** `Spr\UiNew\UiAutoNew\khung.spr` (1313×788 → 720×432), `Spr\UiNew\MinMapSmall\bat_auto.spr` +
 `tat_auto.spr` (285×112 → 102×40, 4 khung) — và **icon Auto cắt từ hình kiếm chéo bên trái nút "Bật Auto"** (xám / vàng).
 `nut_de_auto.spr` của VNKU (151×151, 30 khung) là chữ "Giữ" nhấp nháy (nút đè auto), không hợp làm icon nên không dùng.
-Nút tab của VNKU (`btn_chiendau.spr`, `btn_caidat.spr`...) đều **nung sẵn chữ**, không dùng lại cho 4 nhóm + 15 tab được → dải
-tab dùng nút chữ thuần trắng / vàng, cùng kiểu chữ tiêu đề khung.
+Nút tab của VNKU (`btn_chiendau.spr`, `btn_caidat.spr`...) đều **nung sẵn chữ**, không dùng lại cho 4 nhóm + 15 tab được. Chủ yêu cầu
+"nút cho đẹp, ở kho có sẵn hình" → rà 230 nút trong kho, lấy nút **trơn** `UiTong_Sheet0tn_noname.spr` (dải xanh ngọc, 2 khung sáng/tối,
+cùng tông thanh viền khung) làm nền: `nut_nhom.spr` 166×30 và `nut_tab.spr` 84×22 (khung 0 tối = chưa chọn, khung 1 sáng = đang chọn),
+chữ vẽ bằng `KWndLabeledButton::SetLabel` (trắng, vàng khi chọn). Vá `va_nguon_android_wauto5.py`. Nút Đóng vẫn là chữ thuần.
 
 ---
 
