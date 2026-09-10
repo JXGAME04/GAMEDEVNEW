@@ -13,6 +13,7 @@
 #include "../Elem/WndPureTextBtn.h"
 #include "../Elem/WndLabeledButton.h"	// [ANDROID 11/09 WAUTO B1 c] nut nhom / tab co anh nen kho VNKU
 #include "../Elem/WndText.h"
+#include "UiWAutoTrang.h"	// [ANDROID 11/09 WAUTO B2] trang noi dung chay theo bang
 
 #define WA_UI_SO_NHOM		4
 #define WA_UI_TAB_MOI_NHOM	8
@@ -36,13 +37,17 @@ private:
 	void	ChonTab(int nTab);
 	void	CapNhatBatTat();
 	void	CapNhatTrangThai(int bEp);
+	void	AnDuoiMenu();				// [ANDROID 11/09 WAUTO B2 c] menu chon cua trang mo (danh sach chieu dai) de len dai nut -> tam an nut
+	KWndWindow*	m_apAnTam[WA_UI_SO_NHOM + WA_UI_TAB_MOI_NHOM + 3];
+	int		m_nAnTam;
 
 	KWndLabeledButton	m_Nhom[WA_UI_SO_NHOM];		// [ANDROID 11/09 WAUTO B1 c] anh nut_nhom.spr, chu SetLabel
 	KWndLabeledButton	m_Tab[WA_UI_TAB_MOI_NHOM];	// anh nut_tab.spr
 	KWndPureTextBtn	m_Dong;
 	KWndButton		m_BatTat;
 	KWndText80		m_TrangThai;
-	KWndText80		m_TenTab;		// (B1) ten tab dang chon, giua vung noi dung con trong
+	KWndText80		m_TenTab;		// (B1) ten tab dang chon - tu B2 chi hien khi tab chua co noi dung
+	KUiWAutoTrang	m_Trang;		// [ANDROID 11/09 WAUTO B2] trang noi dung (kho widget dung chung 15 tab)
 	int				m_nNhom;
 	int				m_nTab;
 	int				m_nBatCu;

@@ -211,6 +211,14 @@ Chạm TẮT thì đứng im. Đổi độ phân giải vẫn đúng chỗ. Hai 
 
 ### B2 — Bộ sinh bố cục và lớp trang chung (~1.300 dòng C++ và ~800 dòng Python)
 
+> **Tiến độ: XONG 11/09** (`BANGIAO_WAUTO_MOBILE_B2_1109.md`) — `sinh_bang_wauto.py` (395 điều khiển, 240 nối `autoData`) →
+> `sinh_bocuc_wauto.py --xem` (15 `uiwauto_tabN.ini` + `UiWAutoBang.h`, xem trước bằng PIL) → `UiWAutoTrang.cpp` (kho widget dùng chung,
+> đọc ghi thẳng `autoData` theo offset, menu chọn kể cả danh sách chiêu thật, ô nhóm có màu, nút nền đỏ đen). **Khác kế hoạch dưới:** khung
+> đã thu về 720×432 từ B1 nên bố cục là 2 cột × 336, bước hàng 24..28 (không phải 48), tick 24 px; nhãn không dịch riêng
+> (`nhan_wauto_tcvn3.py` không cần — `vn_edit.vn()` gọi thẳng trong bộ sinh); bố cục xếp theo **nhóm / hàng / cột chung** thay vì nhân toạ
+> độ hộp thoại PC (chủ: "chữ phải hiển thị đầy đủ, thẳng hàng theo từng mục, kẻ ô để phân biệt từng nhóm, có màu phân biệt các nhóm").
+> Còn lại cho B3+: 11 điều khiển chưa nối, 6 danh sách (B18), số liệu nhân vật tab Cơ bản, menu chiêu > 20 dòng không cuộn.
+
 Đây là bước làm cho 15 tab sau **rẻ đi rất nhiều**. Lý do: trong 243 điều khiển thực sự nối vào `autoData`,
 có **231 cái, tức 95 %, đọc ghi theo đúng ba khuôn mẫu lặp lại** trong hàm `SaveRoleData()` của WAuto:
 104 ô tick, 75 ô nhập, 52 hộp chọn. Máy đọc được.

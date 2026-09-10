@@ -24800,6 +24800,18 @@ extern "C" int JxCore_WAutoHoatDong(char* szOut, int nMax)
 	WA_HoatDong(CLIENT_PLAYER_INDEX, szOut, nMax);
 	return szOut[0] ? 1 : 0;
 }
+
+// [ANDROID 11/09 WAUTO B2] Danh sach chieu cua nhan vat cho hop chon chieu trong khung WAuto (UiWAutoTrang.cpp) - cung ham
+// GetAllSkillByType ma KProtocolProcess dung de dien IPCMainSync.skill[] cho WAuto.exe. Tra so chieu (<= defSKILLNUMGET). Chi Android.
+extern "C" int JxCore_WAutoDanhSachChieu(IPCSkillInfo* pOut, int nMax)
+{
+	if (!pOut || nMax < defSKILLNUMGET)
+		return 0;
+	int nIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nIdx <= 0)
+		return 0;
+	return Npc[nIdx].m_SkillList.GetAllSkillByType(pOut);
+}
 #endif	// JX_ANDROID
 
 void KCoreShell::Turn(int nDir)

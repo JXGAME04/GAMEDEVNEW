@@ -7,6 +7,10 @@ Sinh ra (ghi vao lop ghi de android\du_lieu_ghi_de\ va D:\jx1_android_data neu c
                                                  (KWndButton CheckBox: Up=0 khi auto dang tat, Down=2 khi dang bat)
   spr\uinew\uitoolscontrolbar\auto_m.spr        icon Auto tren thanh cong cu 47x47, 2 khung: [0] kiem cheo XAM (tat) [1] VANG (bat)
                                                  - cat tu hinh tron ben trai cua bat_auto.spr (nut "nut_de_auto" cua VNKU la chu "Giu", khong hop)
+  [B2 b] NEN DO (chu 11/09: "thay may nut nen thanh ve nen do dep hon") tu UiTong_Sheet0\btn_1.spr:
+  spr\uinew\uiautonew\nut_nhom.spr 166x30, nut_tab.spr 84x22 (khung 0 thuong, 1 dang chon: do tuoi + vien vang)
+  spr\uinew\uiautonew\nut_do_60/84/120/160.spr (W x 22) nut hanh dong; hop_chon_120/160/200.spr (W x 24, mui ten vang) hop chon
+  spr\uinew\uiautonew\tick_chon.spr 24x24 tu UiAutoNew\tick_chon.spr (khung 0 trong, 1 da chon)
 Nguon: Spr\UiNew\UiAutoNew\khung.spr, Spr\UiNew\MinMapSmall\bat_auto.spr + tat_auto.spr.
 Dung: python android\anh_wauto_vnku.py
 """
@@ -14,7 +18,7 @@ import io
 import os
 import sys
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 GOC = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, GOC)
@@ -68,19 +72,80 @@ def icon(bat):
     ghi(os.path.join("spr", "uinew", "uitoolscontrolbar", "auto_m.spr"), out)
 
 
-def nut_nhom_tab():
-    """Nut NHOM (166x30) va nut TAB CON (84x22) tu nut tron UiTong_Sheet0\\btn_noname.spr (255x61, 2 khung: sang / toi).
-    Khung 0 = TOI (chua chon), khung 1 = SANG (dang chon) -> KWndLabeledButton CheckBox: Up=0, Down=1, chu ve bang Label."""
-    _, _, ks, _ = doc_spr(os.path.join(VNKU, "UiTong_Sheet0", "btn_noname.spr"))
-    toi, sang = ks[1], ks[0]
-    for rel, co in ((os.path.join("spr", "uinew", "uiautonew", "nut_nhom.spr"), (166, 30)),
-                    (os.path.join("spr", "uinew", "uiautonew", "nut_tab.spr"), (84, 22))):
-        ghi(rel, [toi.resize(co, Image.LANCZOS), sang.resize(co, Image.LANCZOS)])
+TICK = 24                       # [B2 b] o tick 24x24 (hang cao 24..28) - truoc 36 (hang 38: "chu phai hien thi day du")
+CHON_RONG = (120, 160, 200)     # hop chon: 3 co, chon theo dong dai nhat
+NUT_RONG = (60, 84, 120, 160)   # nut hanh dong: 4 co, chon theo chu
+VANG = (214, 176, 96, 255)      # vien / mui ten vang (hop tick_chon.spr cua VNKU)
+VANG_TOI = (120, 90, 45, 255)
+
+
+TONG = {    # (thuong tren, thuong duoi, chon tren, chon duoi, canh tren thuong, canh tren chon, canh trai thuong, canh trai chon)
+    "do":   (((92, 22, 26), (34, 6, 9)), ((150, 38, 40), (78, 12, 16)), (150, 70, 66), (200, 110, 100), (100, 44, 42), (140, 60, 58)),
+    "xanh": (((26, 78, 96), (10, 36, 46)), ((48, 140, 160), (22, 88, 104)), (80, 150, 165), (130, 210, 220), (50, 110, 125), (90, 170, 185)),
+}
+
+
+def _nen_do(w, h, sang, tong="do"):
+    """Nut w x h, ve co KHOI (chu 11/09: "thay may nut nen thanh ve nen do dep hon", "mau hien tai qua dam -> do den",
+    "may nut tab chinh phu thi phai co nut", "cac nut tab chinh - phu phai mau xanh"): nen chuyen sac (sang tren, toi duoi) tren van
+    cua UiTong_Sheet0\\btn_1.spr, vien ngoai den, canh tren sang (noi khoi), canh duoi toi. sang=1 (dang chon / dang bam): tuoi hon +
+    vien vang. tong="do" (o noi dung: hop chon, nut hanh dong) / "xanh" (nut nhom + tab con, cung tong xanh ngoc cua vien khung)."""
+    _, _, ks, _ = doc_spr(os.path.join(VNKU, "UiTong_Sheet0", "btn_1.spr"))
+    van = ks[0].crop((2, 2, ks[0].size[0] - 2, ks[0].size[1] - 2)).resize((w, h), Image.LANCZOS).convert("L")
+    T = TONG[tong]
+    tren, duoi = T[1] if sang else T[0]
+    a = Image.new("RGBA", (w, h), (0, 0, 0, 255))
+    px = a.load()
+    vp = van.load()
+    for y in range(h):
+        t = y / max(1, h - 1)
+        for x in range(w):
+            k = 0.85 + 0.3 * (vp[x, y] / 255.0)          # van nhe cua btn_1 (+-15 %)
+            px[x, y] = (min(255, int((tren[0] + (duoi[0] - tren[0]) * t) * k)),
+                        min(255, int((tren[1] + (duoi[1] - tren[1]) * t) * k)),
+                        min(255, int((tren[2] + (duoi[2] - tren[2]) * t) * k)), 255)
+    d = ImageDraw.Draw(a)
+    d.rectangle((0, 0, w - 1, h - 1), outline=(6, 6, 6, 255))                             # vien ngoai den
+    d.line((1, 1, w - 2, 1), fill=(T[3] if sang else T[2]) + (255,))                       # canh tren sang: noi khoi
+    d.line((1, h - 2, w - 2, h - 2), fill=(duoi[0] // 2, duoi[1] // 2, duoi[2] // 2, 255))  # canh duoi toi
+    d.line((1, 1, 1, h - 2), fill=(T[5] if sang else T[4]) + (255,))
+    if sang:
+        d.rectangle((1, 1, w - 2, h - 2), outline=VANG)                                   # dang chon: vien vang
+    return a
+
+
+def _mui_ten(a, w, h, sang):
+    """mui ten xuong vang o dau phai cua hop chon + vach ngan"""
+    d = ImageDraw.Draw(a)
+    ox = w - 18
+    d.line((ox, 2, ox, h - 3), fill=VANG if sang else VANG_TOI)
+    cx, cy = ox + 9, h // 2
+    d.polygon([(cx - 5, cy - 3), (cx + 5, cy - 3), (cx, cy + 3)], fill=VANG)
+    return a
+
+
+def nut_do():
+    """[B2 b] Toan bo nut cua khung WAuto theo NEN DO (btn_1.spr): nut nhom 166x30, nut tab 84x22, nut hanh dong nut_do_W.spr
+    (W x 22, W trong NUT_RONG), hop chon hop_chon_W.spr (W x 24, mui ten vang, W trong CHON_RONG). Khung 0 = thuong, 1 = dang chon/bam."""
+    goc = os.path.join("spr", "uinew", "uiautonew")
+    ghi(os.path.join(goc, "nut_nhom.spr"), [_nen_do(166, 30, 0, "xanh"), _nen_do(166, 30, 1, "xanh")])   # chu 11/09: tab chinh / phu mau xanh
+    ghi(os.path.join(goc, "nut_tab.spr"), [_nen_do(84, 22, 0, "xanh"), _nen_do(84, 22, 1, "xanh")])
+    for w in NUT_RONG:
+        ghi(os.path.join(goc, "nut_do_%d.spr" % w), [_nen_do(w, 22, 0), _nen_do(w, 22, 1)])
+    for w in CHON_RONG:
+        ghi(os.path.join(goc, "hop_chon_%d.spr" % w), [_mui_ten(_nen_do(w, 24, 0), w, 24, 0), _mui_ten(_nen_do(w, 24, 1), w, 24, 1)])
+
+
+def o_tick():
+    """[B2] O tick tu tick_chon.spr VNKU (36x36: khung 0 trong, khung 1 da chon) thu ve TICK x TICK."""
+    _, _, ks, _ = doc_spr(os.path.join(VNKU, "UiAutoNew", "tick_chon.spr"))
+    ghi(os.path.join("spr", "uinew", "uiautonew", "tick_chon.spr"), [k.resize((TICK, TICK), Image.LANCZOS) for k in ks[:2]])
 
 
 if __name__ == "__main__":
     khung()
     b = bat_tat()
     icon(b)
-    nut_nhom_tab()
+    nut_do()
+    o_tick()
     print("xong")

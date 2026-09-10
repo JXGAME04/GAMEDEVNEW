@@ -11,6 +11,7 @@
 #include "../UiBase.h"
 #include "UiWAuto.h"
 #include "../../Platform/JxWAutoNoiBo.h"
+#include "../Elem/PopupMenu.h"	// [ANDROID 11/09 WAUTO B2 c]
 #include <stdio.h>
 #include <string.h>
 
@@ -19,6 +20,14 @@ extern int SCREEN_HEIGHT;
 extern "C" int JxCore_WAutoHoatDong(char* szOut, int nMax);	// CoreShell.cpp (chi Android): dong "auto dang lam gi" (TCVN3)
 
 #define SCHEME_INI	"UiWAuto.ini"
+
+// [ANDROID 11/09 WAUTO B2] (nhom, tab con) -> so hieu tab toan cuc (thu tu TEN_TAB cua sinh_bang_wauto.py = thu tu the WAuto.exe): dung de NapTab
+static const int s_aNhomTabId[WA_UI_SO_NHOM][WA_UI_TAB_MOI_NHOM] = {
+	{ 2, 13, 7, 3, 4, -1, -1, -1 },	// Dieu khien: Chien dau, Chieu KH, PK, Di chuyen, Nhat do
+	{ 5, 1, 6, -1, -1, -1, -1, -1 },	// Hau can: Hau can, Phuc hoi, To doi
+	{ 0, -1, -1, -1, -1, -1, -1, -1 },	// Cai dat: Co ban
+	{ 8, 9, 14, 10, 12, 11, -1, -1 },	// Hoat dong: Da Tau, Tong Kim, CTC, Lien dau, Sat thu, H.dong
+};
 
 KUiWAuto* KUiWAuto::m_pSelf = NULL;
 
@@ -38,6 +47,7 @@ KUiWAuto::KUiWAuto()
 	m_nTab = 0;
 	m_nBatCu = -1;
 	m_uTrangThaiKe = 0;
+	m_nAnTam = 0;
 }
 
 KUiWAuto* KUiWAuto::OpenWindow()
@@ -56,6 +66,7 @@ KUiWAuto* KUiWAuto::OpenWindow()
 		m_pSelf->m_nBatCu = -1;
 		m_pSelf->CapNhatBatTat();
 		m_pSelf->CapNhatTrangThai(1);
+		m_pSelf->m_Trang.DienGiaTri();	// [ANDROID 11/09 WAUTO B2] cau hinh co the da doi (nhan vat khac / tep .dat moi)
 		m_pSelf->Show();
 	}
 	return m_pSelf;
@@ -99,6 +110,8 @@ void KUiWAuto::Initialize()
 	AddChild(&m_BatTat);
 	AddChild(&m_TrangThai);
 	AddChild(&m_TenTab);
+	m_Trang.KhoiTao();				// [ANDROID 11/09 WAUTO B2] kho widget cua trang, roi moi ghep trang vao khung
+	AddChild(&m_Trang);
 	AddChild(&m_Dong);
 	char Scheme[128];
 	g_UiBase.GetCurSchemePath(Scheme, 128);
@@ -175,6 +188,21 @@ void KUiWAuto::ChonTab(int nTab)
 	// (B1) chua co noi dung: ghi ten tab + loi nhac; B2 thay bang trang chay theo bang
 	snprintf(sz, sizeof(sz), "%s  -  %s", s_aNhom[m_nNhom].aTen[nTab], "néi dung tab nµy cã ë b­íc B2");
 	m_TenTab.SetText(sz);
+	// [ANDROID 11/09 WAUTO B2] nap trang noi dung cua tab nay (bang sinh tu WAuto.rc); co noi dung thi giau dong ten tab
+	{
+		int nId = s_aNhomTabId[m_nNhom][nTab];
+		if (nId >= 0)
+		{
+			m_Trang.NapTab(nId);
+			m_Trang.Show();
+			m_TenTab.Hide();
+		}
+		else
+		{
+			m_Trang.Hide();
+			m_TenTab.Show();
+		}
+	}
 }
 
 void KUiWAuto::CapNhatBatTat()
@@ -214,6 +242,46 @@ void KUiWAuto::Breathe()
 {
 	CapNhatBatTat();
 	CapNhatTrangThai(0);
+	m_Trang.Breathe();		// [ANDROID 11/09 WAUTO B2 b] LetMeBreathe chi toi cua so goc
+	AnDuoiMenu();
+}
+
+// [ANDROID 11/09 WAUTO B2 c] Trinh chieu Android ve anh / chu cua cua so SAU bong menu -> nut nhom / tab / BAT-TAT nam duoi menu chon (dang mo) tam an,
+// menu dong thi hien lai. Chay moi nhip (Breathe) nen tre nhieu nhat mot khung hinh.
+void KUiWAuto::AnDuoiMenu()
+{
+	KPopupMenuData* pM = KPopupMenu::GetMenuData();
+	int i;
+	if (!pM)
+	{
+		for (i = 0; i < m_nAnTam; i++)
+			m_apAnTam[i]->Show();
+		m_nAnTam = 0;
+		return;
+	}
+	if (m_nAnTam > 0)
+		return;
+	int x0 = pM->nX - 2, y0 = pM->nY - 2, x1 = pM->nX + pM->nItemWidth + 2, y1 = pM->nY + pM->nItemHeight * pM->nNumItem + 4;
+	KWndWindow* ap[WA_UI_SO_NHOM + WA_UI_TAB_MOI_NHOM + 3];
+	int n = 0;
+	for (i = 0; i < WA_UI_SO_NHOM; i++)		ap[n++] = &m_Nhom[i];
+	for (i = 0; i < WA_UI_TAB_MOI_NHOM; i++)	ap[n++] = &m_Tab[i];
+	ap[n++] = &m_BatTat;
+	ap[n++] = &m_TrangThai;
+	ap[n++] = &m_Dong;
+	for (i = 0; i < n; i++)
+	{
+		int l = 0, t = 0, w = 0, h = 0;
+		if (!ap[i]->IsVisible())
+			continue;
+		ap[i]->GetAbsolutePos(&l, &t);
+		ap[i]->GetSize(&w, &h);
+		if (l < x1 && l + w > x0 && t < y1 && t + h > y0)
+		{
+			ap[i]->Hide();
+			m_apAnTam[m_nAnTam++] = ap[i];
+		}
+	}
 }
 
 int KUiWAuto::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
