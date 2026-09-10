@@ -22,17 +22,25 @@ os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 W0, H0 = 1040, 604
 W1, H1 = 1371, 617
 CHUAN = False          # --chuan: chi GAN NEO cho bo cuc may ao 1040x604 (khong doi vi tri, khong phong) -> uitoado_macdinh.ini
+NGUYEN = True          # man rong: GIU NGUYEN bo cuc may ao (chu 07:40: "lay ban toa do dang chay o PC roi lam lai"), chi dich theo neo;
+                       # --phong: kieu cu (hang icon tren / cot phai phong 1,3 va gian ra, o phim tat doi cho) - chu che "lon xon"
 a = sys.argv[1:]
 i = 0
 while i < len(a):
     if a[i] == "--rong": W1 = int(a[i + 1]); i += 2
     elif a[i] == "--cao": H1 = int(a[i + 1]); i += 2
     elif a[i] == "--chuan": CHUAN = True; W1, H1 = W0, H0; i += 1
+    elif a[i] == "--phong": NGUYEN = False; i += 1
     else: i += 1
+if CHUAN:
+    NGUYEN = True
 DX, DY = W1 - W0, H1 - H0
 NGUON = r"android\du_lieu_ghi_de\ui\uitoado_macdinh.ini"
 DICH = [r"android\du_lieu_ghi_de\ui\uitoado_macdinh_rong.ini", r"D:\jx1_android_data\ui\uitoado_macdinh_rong.ini"]
 if CHUAN:
+    # nguon cua tep chuan = bo cuc chu dang chay tren may ao (userdata) - KHONG doc lai tep mac dinh da sinh (tranh troi: mot lan
+    # chay cu tru 40 px cum ky nang, 893 -> 853)
+    NGUON = r"D:\jx1_android_data\userdata\UiToaDo.ini"
     DICH = [r"android\du_lieu_ghi_de\ui\uitoado_macdinh.ini", r"D:\jx1_android_data\ui\uitoado_macdinh.ini"]
 
 # cha toan man hinh va vi tri (tuyet doi) cua no trong bo cuc goc / bo cuc rong
@@ -50,7 +58,8 @@ COT_PHAI_X, COT_PHAI_TILE = W1 - 9 - 70, 1300          # tuyet doi ~1292 (icon 4
 # mac dinh ini cho cac con chua co trong bo cuc (Left, Top tuong doi cha)
 INI_MAC_DINH = {"KUiPlayerBar|Status": (330, 47), "KUiPlayerBar|Items": (380, 47), "KUiPlayerBar|Skills": (448, 47),
                 "KUiPlayerBar|Faction": (501, 47), "KUiPlayerBar|Team": (561, 47), "KUiPlayerBar|Friend": (668, 47),
-                "KUiPlayerBar|Options": (729, 47)}
+                "KUiPlayerBar|Options": (729, 47),
+                "KUiToolsControlBar|NhatDo": (868, 362)}      # nut nhat (B2 i) chua co trong userdata cua chu -> lay vi tri ini
 NHOM_PHAI_KHOA = ("KUiTaskTrace|Main",)                 # bang nhiem vu: dat theo nhom phai du x < 728
 HOP_THOAI = ("KUiESCDlg|Main", "KUiOptions|Main", "KUiInformation|Main", "KUiMailManager|Main", "KUiAuctionManager|Main",
              "KUiTongJX2|Main")
@@ -96,7 +105,8 @@ def main():
               "KUiPlayerBar|Item_2": (1198, 254), "KUiPlayerBar|Item_3": (1246, 254)}
     # [DANGNHAP 12/09] cac bang TRUOC khi vao game (menu, dang nhap, chon may chu, ket noi, chon que) 800x600 o goc trai -> neo GIUA
     GIUA_TRUOC_GAME = {"KUiInit|Main": (800, 0), "KUiLogin|Main": (800, 0), "KUiConnectInfo|Main": (800, 0),
-                       "KUiSelNativePlace|Main": (800, 0), "KUiSelServer|Main": (281, 61)}
+                       "KUiSelNativePlace|Main": (800, 0), "KUiSelServer|Main": (281, 61),
+                       "KUiSelPlayer|SelRole": (800, 0), "KUiNewPlayer|NewPlayer": (800, 0)}   # chu 07:40: chon nhan vat van mot ben
     ra = []
     for k, (rong, y) in GIUA_TRUOC_GAME.items():
         if k not in co:
@@ -114,23 +124,29 @@ def main():
             ra.append((khoa, nx, ny, tile, cocb, 1 if lop == "KUiPlayerBar" else 0, 0)); continue
         ax, ay = tuyet_doi(khoa, x, y)
         if khoa in hang_tren:
-            if not CHUAN:
+            if not NGUYEN:
                 i = hang_tren[khoa]
                 ax, ay, tile = HANG_TREN_X0 + i * HANG_TREN_GIAN, HANG_TREN_Y + 1, HANG_TREN_TILE   # tuyet doi (hang cu: rel 47 + cha 1)
+            else:
+                ax += DX // 2                                   # hang icon tren di cung thanh duoi (giua)
             neo_x = 1
         elif khoa in cot_phai:
-            if not CHUAN:
+            if not NGUYEN:
                 ax, ay, tile = COT_PHAI_X, cot_phai[khoa] + 14, COT_PHAI_TILE
+            else:
+                ax += DX
             neo_x = 2
         elif khoa in O_PHIM:
-            if not CHUAN:
+            if not NGUYEN:
                 ax, ay = O_PHIM[khoa]; tile = 1250
+            else:
+                ax += DX
             neo_x = 2
         elif khoa == "KUiToolsControlBar|PK":
             ax += DX; neo_x = 2
-            if not CHUAN: tile = 1100
+            if not NGUYEN: tile = 1100
         elif khoa.startswith("KyNang") or ax >= 728 or khoa in NHOM_PHAI_KHOA:
-            ax += DX - (CUM_KYNANG_LUI if khoa.startswith("KyNang") else 0)   # nhom phai (cum ky nang lui mot chut)
+            ax += DX - (CUM_KYNANG_LUI if (khoa.startswith("KyNang") and not NGUYEN) else 0)   # nhom phai
             neo_x = 2
             if ay >= 423 or khoa.startswith("KyNang"): ay += DY; neo_y = 2      # cum ky nang: ca nhom cung dich
         elif lop in ("KUiPlayerBar", "KUiAuctionIcon", "KUiMailIcon") or khoa in HOP_THOAI:

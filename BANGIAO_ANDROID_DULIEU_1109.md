@@ -226,6 +226,13 @@ MANHINH, chỉ `JX_ANDROID`):
   tắt 1-4 `KUiPlayerBar|Item_0..3` = khối 2×2 bên trái cột icon phải, phóng 1,25). Điện thoại 1337×617 hay 1440×617 tự dịch theo neo.
 - Ô phím 1-4 ("UI đặt item dùng nhanh"): con của `KUiPlayerBar` (ini `Item_0..3` 932/972×205/245, 36 px) — trước không có mục nên đứng
   yên; nay có mục + neo phải. APK `jx1mobile-1209-tai-h.apk`.
+- **Chủ 07:40: "icon trong game nằm lộn xộn, lấy bản toạ độ đang chạy ở PC rồi làm lại"** → bỏ kiểu phóng 1,3 / giãn hàng / dời ô phím
+  của tệp màn rộng. Nay `sinh_bocuc_rong.py` mặc định **`NGUYEN`**: tệp màn rộng = đúng bố cục máy ảo (`userdata\UiToaDo.ini` 09/09
+  23:58, không đổi cỡ, không đổi thứ tự) chỉ dịch theo neo (cột phải, bản đồ nhỏ, cụm kỹ năng, ô phím 1-4 +331; thanh dưới + hàng icon
+  trên + hộp thoại +165; trái giữ). Kiểu cũ còn qua `--phong`. Chọn nhân vật / tạo nhân vật (`KUiSelPlayer|SelRole`,
+  `KUiNewPlayer|NewPlayer`, 800×600) thêm vào nhóm neo giữa (chủ: "chọn nhân vật vẫn nằm một bên"). Không cần APK mới: hai tệp bố cục
+  là tệp rời trong gói, điện thoại tải 6 KB. Đã kiểm `mobile-0809`/`main` trước khi làm: không có commit mới của phiên khác (chủ nhắc
+  "cập nhật main mobile rồi build tránh mất tính năng").
 
 ## 11. Làm lại hành trang cho mobile (`HANHTRANG 12/09`) — chủ 02:20: "làm lại hành trang, ô to hơn"
 
