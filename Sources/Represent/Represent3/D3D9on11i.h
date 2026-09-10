@@ -56,6 +56,7 @@ public:
 	CDev11* m_pDev; std::vector<CAtlasPage*> m_pages; UINT m_pageSize;
 	CAtlasMang* MangLay(DXGI_FORMAT fmt, UINT* pLop);	// [MANG 09/09] lay mot lop trong (tao/lon mang khi can)
 	void MangXoa();
+	void GanMang();	// [MANG 09/09 b] gan mang R8G8 -> t3, BGRA8 -> t4
 	std::vector<CAtlasMang*> m_mang;
 };
 

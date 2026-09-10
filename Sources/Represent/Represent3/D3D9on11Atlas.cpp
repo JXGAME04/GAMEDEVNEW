@@ -66,19 +66,15 @@ CAtlasMang* CAtlasMgr::MangLay(DXGI_FORMAT fmt, UINT* pLop)
 	if (!pM->m_lopTrong.empty()) { *pLop = pM->m_lopTrong.back(); pM->m_lopTrong.pop_back(); return pM; }
 	if (pM->m_nDung >= pM->m_nLop)
 	{
-		const UINT nMoi = pM->m_nLop + 8;
-		if (nMoi > 512) { R11Log("atlas mang %s: qua 512 lop", pM->m_bpp == 2 ? "R8G8" : "BGRA8"); return NULL; }
+		UINT nMoi = pM->m_nLop + (pM->m_nLop < 16 ? 8 : pM->m_nLop / 2); if (nMoi > 512) nMoi = 512;	// [MANG 09/09 b] lon dan x1,5 (it lan lon hon)
+		if (nMoi <= pM->m_nLop) { R11Log("atlas mang %s: qua 512 lop", pM->m_bpp == 2 ? "R8G8" : "BGRA8"); return NULL; }
 		m_pDev->FlushIfPending();	// lo dang cho con tham chieu SRV cu
 		D3D11_TEXTURE2D_DESC td; memset(&td, 0, sizeof(td));
 		td.Width = m_pageSize; td.Height = m_pageSize; td.MipLevels = 1; td.ArraySize = nMoi; td.Format = fmt; td.SampleDesc.Count = 1;
 		td.Usage = D3D11_USAGE_DEFAULT; td.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		const size_t uLop = (size_t)m_pageSize * m_pageSize * pM->m_bpp;
-		BYTE* pZero = (BYTE*)calloc(1, uLop);	// moi lop khoi tao 0 (khong de rac)
-		std::vector<D3D11_SUBRESOURCE_DATA> sr(nMoi);
-		for (UINT k = 0; k < nMoi; k++) { memset(&sr[k], 0, sizeof(sr[k])); sr[k].pSysMem = pZero; sr[k].SysMemPitch = m_pageSize * pM->m_bpp; }
 		ID3D11Texture2D* pTex = NULL;
-		HRESULT hr = m_pDev->m_pDev->CreateTexture2D(&td, pZero ? &sr[0] : NULL, &pTex);
-		if (pZero) free(pZero);
+		HRESULT hr = m_pDev->m_pDev->CreateTexture2D(&td, NULL, &pTex);	// [MANG 09/09 b] KHONG kem du lieu khoi tao (tung lop duoc xoa 0 luc NewPage) -> khong con khung 20-57 ms
 		if (FAILED(hr) || !pTex) { R11Log("atlas mang: CreateTexture2D %u lop that bai 0x%08X", nMoi, (unsigned)hr); return NULL; }
 		D3D11_SHADER_RESOURCE_VIEW_DESC vd; memset(&vd, 0, sizeof(vd));
 		vd.Format = fmt; vd.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY; vd.Texture2DArray.MostDetailedMip = 0; vd.Texture2DArray.MipLevels = 1; vd.Texture2DArray.FirstArraySlice = 0; vd.Texture2DArray.ArraySize = nMoi;
@@ -92,12 +88,20 @@ CAtlasMang* CAtlasMgr::MangLay(DXGI_FORMAT fmt, UINT* pLop)
 		}
 		pM->m_pTex = pTex; pM->m_pSrv = pSrv; pM->m_nLop = nMoi;
 		for (size_t i = 0; i < m_pages.size(); i++) if (m_pages[i]->m_pMang == pM) { m_pages[i]->m_pTex = pTex; m_pages[i]->m_pSrv = pSrv; }
-		m_pDev->m_bAppliedValid = false;	// SRV cu da huy, dia chi co the trung SRV moi -> ep gan lai
+		m_pDev->m_bAppliedValid = false; m_pDev->m_bPipeBound = false;	// SRV cu da huy -> ep gan lai trang thai va mang t3/t4 ([MANG 09/09 b])
 		g_uRep3AtlasBytes = 0; for (size_t i = 0; i < m_mang.size(); i++) g_uRep3AtlasBytes += (unsigned __int64)m_mang[i]->m_nLop * m_pageSize * m_pageSize * m_mang[i]->m_bpp;
 		R11Log("atlas mang %s: %u lop (%u MB)", pM->m_bpp == 2 ? "R8G8" : "BGRA8", nMoi, (unsigned)(((unsigned __int64)nMoi * uLop) >> 20));
 	}
 	*pLop = pM->m_nDung++;
 	return pM;
+}
+
+// [MANG 09/09 b] gan hai mang atlas co dinh: t3 = R8G8 (bang mau), t4 = BGRA8; nguon chon theo dinh trong shader
+void CAtlasMgr::GanMang()
+{
+	ID3D11ShaderResourceView* v[2] = { NULL, NULL };
+	for (size_t i = 0; i < m_mang.size(); i++) { if (m_mang[i]->m_bpp == 2) v[0] = m_mang[i]->m_pSrv; else v[1] = m_mang[i]->m_pSrv; }
+	m_pDev->m_pCtx->PSSetShaderResources(3, 2, v);
 }
 
 void CAtlasMgr::MangXoa()

@@ -840,7 +840,7 @@ ID3D11InputLayout* CDev11::GetInputLayout(DWORD fvf, UINT stride)
 	if (((fvf & D3DFVF_TEXCOUNT_MASK) >> D3DFVF_TEXCOUNT_SHIFT) >= 1) { ie[n].InputSlot = 0; ie[n].AlignedByteOffset = off; ie[n].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA; ie[n].InstanceDataStepRate = 0; }
 	else { ie[n].InputSlot = 1; ie[n].AlignedByteOffset = 4; ie[n].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA; ie[n].InstanceDataStepRate = 0; }
 	n++;
-	ie[n].SemanticName = "PALROW"; ie[n].SemanticIndex = 0; ie[n].Format = DXGI_FORMAT_R32_UINT; ie[n].InputSlot = 0; ie[n].AlignedByteOffset = stride; ie[n].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA; ie[n].InstanceDataStepRate = 0; n++;	// [r] hang bang mau, 4 byte sau dinh D3D9
+	ie[n].SemanticName = "PALROW"; ie[n].SemanticIndex = 0; ie[n].Format = DXGI_FORMAT_R32G32_UINT; /* [MANG 09/09 b] 8 byte */ ie[n].InputSlot = 0; ie[n].AlignedByteOffset = stride; ie[n].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA; ie[n].InstanceDataStepRate = 0; n++;	// [r] hang bang mau, 4 byte sau dinh D3D9
 	ID3D11InputLayout* pIL = NULL;
 	HRESULT hr = m_pDev->CreateInputLayout(ie, n, g_Rep3VS11, sizeof(g_Rep3VS11), &pIL);
 	if (FAILED(hr)) { R11Log("CreateInputLayout fvf 0x%X that bai 0x%08X", (unsigned)fvf, (unsigned)hr); pIL = NULL; }
@@ -925,10 +925,16 @@ void CDev11::ComputeApplied(R11Applied& a, ID3D11InputLayout* pIL, UINT stride)
 	a.pRaster = GetRasterState();
 	a.pBlend = GetBlendState();
 	a.pSamp[0] = GetSamplerState(0); a.pSamp[1] = GetSamplerState(1);
+	int nBound[2] = { 0, 0 }; int nNguon1 = 0, nLop1 = 0;	// [MANG 09/09 b]
 	for (int s = 0; s < 2; s++)
 	{
-		if (m_tex[s]) { m_tex[s]->PrepareForBind(); a.srv[s] = m_tex[s]->m_pSrv; }
-		if (m_pRt && m_pRt->m_pTex && m_tex[s] == m_pRt->m_pTex) a.srv[s] = NULL;
+		if (m_tex[s]) { m_tex[s]->PrepareForBind(); a.srv[s] = m_tex[s]->m_pSrv; nBound[s] = 1; }
+		if (m_pRt && m_pRt->m_pTex && m_tex[s] == m_pRt->m_pTex) { a.srv[s] = NULL; nBound[s] = 0; }
+		if (g_nRep3AtlasMang && m_tex[s] && m_tex[s]->m_bVirtual && m_tex[s]->m_pPage)
+		{	// [MANG 09/09 b] atlas gan co dinh o t3/t4 -> khong qua t0/t1 (srv = NULL -> doi trang/dinh dang khong vo lo)
+			a.srv[s] = NULL;
+			if (s == 1) { nNguon1 = (m_tex[1]->m_pPage->m_bpp == 2) ? 1 : 2; nLop1 = (int)m_tex[1]->m_pPage->m_lop; }
+		}
 	}
 	bool bRhw = ((m_fvf & D3DFVF_POSITION_MASK) == D3DFVF_XYZRHW);
 	if (m_bVsDirty || (m_vsCb.flags[0] > 0.5f) != bRhw)
@@ -944,11 +950,12 @@ void CDev11::ComputeApplied(R11Applied& a, ID3D11InputLayout* pIL, UINT stride)
 	a.vs = m_vsCb;
 	R11PsCb& cb = a.ps;
 	cb.st0[0] = (int)m_tss[0][D3DTSS_COLOROP]; cb.st0[1] = (int)m_tss[0][D3DTSS_COLORARG1]; cb.st0[2] = (int)m_tss[0][D3DTSS_COLORARG2]; cb.st0[3] = (int)m_tss[0][D3DTSS_ALPHAOP];
-	cb.st0b[0] = (int)m_tss[0][D3DTSS_ALPHAARG1]; cb.st0b[1] = (int)m_tss[0][D3DTSS_ALPHAARG2]; cb.st0b[2] = a.srv[0] ? 1 : 0;
+	cb.st0b[0] = (int)m_tss[0][D3DTSS_ALPHAARG1]; cb.st0b[1] = (int)m_tss[0][D3DTSS_ALPHAARG2]; cb.st0b[2] = nBound[0];
 	cb.st0b[3] = (m_bPalLinForce || (m_ss[0][D3DSAMP_MAGFILTER] & 7) >= D3DTEXF_LINEAR || (m_ss[0][D3DSAMP_MINFILTER] & 7) >= D3DTEXF_LINEAR) ? 1 : 0;	// [r2] loc tuyen tinh stage 0 -> shader tu noi suy texture bang mau
 	cb.st1[0] = (int)m_tss[1][D3DTSS_COLOROP]; cb.st1[1] = (int)m_tss[1][D3DTSS_COLORARG1]; cb.st1[2] = (int)m_tss[1][D3DTSS_COLORARG2]; cb.st1[3] = (int)m_tss[1][D3DTSS_ALPHAOP];
-	cb.st1b[0] = (int)m_tss[1][D3DTSS_ALPHAARG1]; cb.st1b[1] = (int)m_tss[1][D3DTSS_ALPHAARG2]; cb.st1b[2] = a.srv[1] ? 1 : 0; cb.st1b[3] = (m_tex[1] && m_tex[1]->m_bVirtual && m_tex[1]->m_pPage) ? (int)m_tex[1]->m_pPage->m_lop : 0;	// [MANG 09/09] lop cua texture stage 1
-	cb.at[0] = m_rs[D3DRS_ALPHATESTENABLE] ? 1.0f : 0.0f; cb.at[1] = (float)(m_rs[D3DRS_ALPHAFUNC] & 15); cb.at[2] = (float)(m_rs[D3DRS_ALPHAREF] & 255); cb.at[3] = 0.0f;
+	cb.st1b[0] = (int)m_tss[1][D3DTSS_ALPHAARG1]; cb.st1b[1] = (int)m_tss[1][D3DTSS_ALPHAARG2]; cb.st1b[2] = nBound[1]; cb.st1b[3] = (m_tex[1] && m_tex[1]->m_bVirtual && m_tex[1]->m_pPage) ? (int)m_tex[1]->m_pPage->m_lop : 0;	// [MANG 09/09] lop cua texture stage 1
+	if (g_nRep3AtlasMang) { cb.at[0] = (float)nNguon1; cb.at[1] = (float)nLop1; cb.at[2] = 0.0f; cb.at[3] = 0.0f; }	// [MANG 09/09 b] alpha test theo dinh; g_at = nguon/lop stage 1
+	else { cb.at[0] = m_rs[D3DRS_ALPHATESTENABLE] ? 1.0f : 0.0f; cb.at[1] = (float)(m_rs[D3DRS_ALPHAFUNC] & 15); cb.at[2] = (float)(m_rs[D3DRS_ALPHAREF] & 255); cb.at[3] = 0.0f; }
 }
 
 // [j] gan len context nhung gi khac voi lan gan truoc
@@ -961,6 +968,7 @@ void CDev11::ApplyComputed(const R11Applied& a)
 		m_pCtx->VSSetConstantBuffers(0, 1, &m_pVsCb); m_pCtx->PSSetConstantBuffers(0, 1, &m_pPsCb);
 		m_pCtx->OMSetDepthStencilState(m_pDss, 0);
 		if (m_pPalSrv) m_pCtx->PSSetShaderResources(2, 1, &m_pPalSrv);	// [r]
+		if (m_pAtlas && g_nRep3AtlasMang) m_pAtlas->GanMang();	// [MANG 09/09 b] t3 = atlas R8G8, t4 = atlas BGRA8
 		m_bPipeBound = true;
 	}
 	const bool v = m_bAppliedValid;
@@ -1021,7 +1029,7 @@ void CDev11::FlushBatch()
 {
 	if (!m_batchVerts) return;
 	Lock();
-	UINT nVerts = m_batchVerts, stride = m_batchState.stride + 4, bytes = nVerts * stride;	// [r] +4 byte PALROW moi dinh
+	UINT nVerts = m_batchVerts, stride = m_batchState.stride + 8, bytes = nVerts * stride;	/* [MANG 09/09 b] +8 */	// [r] +4 byte PALROW moi dinh
 	m_batchVerts = 0;
 	if (bytes > m_ringSize) { m_batch.clear(); Unlock(); return; }
 	UINT pos = 0;
@@ -1071,11 +1079,14 @@ static void R11AtlasUv(BYTE* pV, UINT nVerts, UINT stride, DWORD fvf, CTex11* pT
 }
 
 // [MANG 09/09] 4 byte PALROW moi dinh: 16 bit thap = hang bang mau (0xFFFF = khong), 16 bit cao = lop cua trang trong mang atlas
-static inline UINT R11PalLop(CTex11* pTex)
+// [MANG 09/09 b] 8 byte them moi dinh (uint2 PALROW): x = hang bang mau (16 bit, 0xFFFF = khong) | lop (9) << 16 | nguon (2) << 25
+// [0 = t0 texture rieng, 1 = t3 atlas R8G8, 2 = t4 atlas BGRA8] | alpha test bat (1) << 27 | (ham - 1) (3) << 28; y = alpha ref (8 bit)
+static inline void R11DinhThem(CTex11* pTex, DWORD dwAtBat, DWORD dwAtHam, DWORD dwAtRef, UINT* pX, UINT* pY)
 {
-	UINT u = (pTex && pTex->m_nPalRow >= 0) ? (UINT)pTex->m_nPalRow : 0xFFFFu;
-	if (pTex && pTex->m_bVirtual && pTex->m_pPage) u |= (pTex->m_pPage->m_lop << 16);
-	return u;
+	UINT x = (pTex && pTex->m_nPalRow >= 0) ? (UINT)pTex->m_nPalRow : 0xFFFFu;
+	if (pTex && pTex->m_bVirtual && pTex->m_pPage) x |= ((pTex->m_pPage->m_lop & 0x1FFu) << 16) | ((pTex->m_pPage->m_bpp == 2 ? 1u : 2u) << 25);
+	if (dwAtBat) x |= (1u << 27) | ((((dwAtHam & 15u) + 7u) & 7u) << 28);
+	*pX = x; *pY = (UINT)(dwAtRef & 255u);
 }
 
 HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVerts, UINT stride)
@@ -1092,7 +1103,7 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 	{
 		R11Applied a;
 		ComputeApplied(a, pIL, stride);
-		const UINT s11 = stride + 4;	// [r] +4 byte PALROW
+		const UINT s11 = stride + 8;	// [r] +4 byte PALROW, [MANG 09/09 b] +4 nua
 		const UINT nThem = bQuad ? 6 : nVerts;
 		if (m_batchVerts && (memcmp(&a, &m_batchState, sizeof(a)) != 0 || m_batch.size() + (size_t)nThem * s11 > 2 * 1024 * 1024))
 		{
@@ -1111,17 +1122,17 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 			FlushBatch();
 		}
 		if (!m_batchVerts) m_batchState = a;
-		const UINT uPal = R11PalLop(m_tex[0]);
+		UINT uX = 0, uY = 0; R11DinhThem(m_tex[0], m_rs[D3DRS_ALPHATESTENABLE], m_rs[D3DRS_ALPHAFUNC], m_rs[D3DRS_ALPHAREF], &uX, &uY);
 		size_t base = m_batch.size();
 		m_batch.resize(base + (size_t)nThem * s11);
 		BYTE* d = &m_batch[base];
 		if (bQuad)
 		{
 			static const int s_idx[6] = { 0, 1, 2, 2, 1, 3 };
-			for (int i = 0; i < 6; i++) { memcpy(d + i * s11, pVerts + s_idx[i] * stride, stride); *(UINT*)(d + i * s11 + stride) = uPal; }
+			for (int i = 0; i < 6; i++) { memcpy(d + i * s11, pVerts + s_idx[i] * stride, stride); { UINT* q = (UINT*)(d + i * s11 + stride); q[0] = uX; q[1] = uY; } }
 		}
 		else
-			for (UINT i = 0; i < nVerts; i++) { memcpy(d + i * s11, pVerts + i * stride, stride); *(UINT*)(d + i * s11 + stride) = uPal; }
+			for (UINT i = 0; i < nVerts; i++) { memcpy(d + i * s11, pVerts + i * stride, stride); { UINT* q = (UINT*)(d + i * s11 + stride); q[0] = uX; q[1] = uY; } }
 		R11AtlasUv(d, nThem, s11, m_fvf, m_tex[0], fPage);
 		m_batchVerts += nThem;
 		g_uRep3BatchQuads += bQuad ? 1 : (nVerts / 6);	// thong ke theo 'quad' (2 tam giac)
@@ -1131,8 +1142,8 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 	// ---- lenh khac: ve ngay
 	g_uRep3VeNgay[type == D3DPT_TRIANGLEFAN ? 0 : (type == D3DPT_TRIANGLELIST ? 1 : (type == D3DPT_TRIANGLESTRIP ? 2 : 3))]++;	// [GOP 09/09 do]
 	std::vector<BYTE> tmp;
-	const UINT s11 = stride + 4;	// [r] +4 byte PALROW
-	const UINT uPal = R11PalLop(m_tex[0]);	// [MANG 09/09]
+	const UINT s11 = stride + 8;	// [r] +4 byte PALROW, [MANG 09/09 b] +4 nua
+	UINT uX = 0, uY = 0; R11DinhThem(m_tex[0], m_rs[D3DRS_ALPHATESTENABLE], m_rs[D3DRS_ALPHAFUNC], m_rs[D3DRS_ALPHAREF], &uX, &uY);	// [MANG 09/09]
 	if (type == D3DPT_TRIANGLEFAN)
 	{
 		UINT nTri = nVerts - 2;
@@ -1140,14 +1151,14 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 		for (UINT i = 0; i < nTri; i++)
 		{
 			const UINT src[3] = { 0, i + 1, i + 2 };
-			for (int k = 0; k < 3; k++) { memcpy(&tmp[(i * 3 + k) * s11], pVerts + src[k] * stride, stride); *(UINT*)(&tmp[(i * 3 + k) * s11 + stride]) = uPal; }
+			for (int k = 0; k < 3; k++) { memcpy(&tmp[(i * 3 + k) * s11], pVerts + src[k] * stride, stride); { UINT* q = (UINT*)(&tmp[(i * 3 + k) * s11 + stride]); q[0] = uX; q[1] = uY; } }
 		}
 		nVerts = nTri * 3; type = D3DPT_TRIANGLELIST;
 	}
 	else
 	{
 		tmp.resize((size_t)nVerts * s11);
-		for (UINT i = 0; i < nVerts; i++) { memcpy(&tmp[i * s11], pVerts + i * stride, stride); *(UINT*)(&tmp[i * s11 + stride]) = uPal; }
+		for (UINT i = 0; i < nVerts; i++) { memcpy(&tmp[i * s11], pVerts + i * stride, stride); { UINT* q = (UINT*)(&tmp[i * s11 + stride]); q[0] = uX; q[1] = uY; } }
 	}
 	R11AtlasUv(&tmp[0], nVerts, s11, m_fvf, m_tex[0], fPage);
 	UINT bytes = nVerts * s11;
