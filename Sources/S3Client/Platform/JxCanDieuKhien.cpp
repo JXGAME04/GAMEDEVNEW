@@ -57,11 +57,16 @@ static char	s_szVongAnhDich[128] = "\\spr\\npcres\\focused_enemy_circle.spr";
 static int	s_nIconBat = 1;
 static int	s_nIconCoAnh = -1;
 static int	s_nIconCao = 62;	// icon cao hon chan NPC bao nhieu diem anh
-static char	s_szIconAnh[128] = "\\spr\\UiNew\\InterRact\\giao_tiep.spr";	// [ANDROID 11/09 ICON b] nut "Giao tiep" cua kho VNKU (224x50)
-static int	s_nIconRong = 112;		// [ANDROID 11/09 ICON b] be rong ve icon (px); cao theo ti le anh. [Cham] IconNpcRong
+static char	s_szIconAnh[128] = "\\spr\\UiNew\\UiToolsControlBar\\doi_thoai.spr";	// [ANDROID 11/09 ICON d] icon "doi thoai" 86x86, 2 khung (kho VNKU) - chu chon thay nut "Giao tiep"
+static int	s_nIconRong = 44;		// [ANDROID 11/09 ICON b] be rong ve icon (px); cao theo ti le anh. [Cham] IconNpcRong. [ANDROID 11/09 ICON d] 44 cho doi_thoai
 static int	s_nIconVeX0 = 0, s_nIconVeY0 = 0, s_nIconVeX1 = 0, s_nIconVeY1 = 0;	// [ANDROID 11/09 ICON b] khung icon vua ve (man hinh)
 static int	s_nIconNpcX = 0, s_nIconNpcY = 0;	// [ANDROID 11/09 ICON b] chan NPC (man hinh) cua icon vua ve
 static unsigned int	s_uIconVeLuc = 0;	// [ANDROID 11/09 ICON b] luc ve icon gan nhat (0 = chua ve)
+static int	s_nIconHudX = -1, s_nIconHudY = -1;	// [ANDROID 11/09 ICON e] tam icon co dinh tren man hinh (-1 = mac dinh goc phai); UiToaDo khoa IconNpc
+static int	s_nIconGan = 130;	// [ANDROID 11/09 ICON e] NPC cach nhan vat <= bao nhieu px (man hinh) thi hien icon. [Cham] IconNpcGan. [ANDROID 11/09 ICON f] 130: chu muon NGAN vi nhieu NPC dung gan nhau
+static int	s_nIconNpcCo = 0;	// [ANDROID 11/09 ICON e] 1 = dang co NPC gan (icon dang hien that, khong phai chi de keo)
+static char	s_szIconTen[32] = "";	// [ANDROID 11/09 ICON c] ten NPC cua icon vua ve (de do diem bam dung NPC)
+extern "C" int JxUi_CoGiaoDienTaiDiem(int x, int y);	// [ANDROID 11/09 ICON c] Wnds.cpp
 
 // --- trang thai --------------------------------------------------------------
 // [ANDROID 09/09 KYNANG C] Nut danh chinh + 8 o ky nang phu xep thanh CUNG
@@ -242,8 +247,10 @@ static void DocCaiDat()
 	GetPrivateProfileString("Cham", "VongChonAnh", s_szVongAnh, s_szVongAnh, sizeof(s_szVongAnh), szCfg);
 	GetPrivateProfileString("Cham", "VongChonAnhDich", s_szVongAnhDich, s_szVongAnhDich, sizeof(s_szVongAnhDich), szCfg);
 	s_nIconBat   = GetPrivateProfileInt("Cham", "IconNpc", 1, szCfg);
-	s_nIconCao   = GetPrivateProfileInt("Cham", "IconNpcCao", 72, szCfg);	// [ANDROID 11/09 ICON b] mep TREN cua icon cao hon chan NPC bao nhieu
-	s_nIconRong  = GetPrivateProfileInt("Cham", "IconNpcRong", 112, szCfg);	// [ANDROID 11/09 ICON b]
+	s_nIconCao   = GetPrivateProfileInt("Cham", "IconNpcCao", 100, szCfg);	// [ANDROID 11/09 ICON b] mep TREN cua icon cao hon chan NPC bao nhieu. [ANDROID 11/09 ICON d] 100 = icon 44 px nam tren dau
+	s_nIconRong  = GetPrivateProfileInt("Cham", "IconNpcRong", 44, szCfg);	// [ANDROID 11/09 ICON b] [ANDROID 11/09 ICON d]
+	s_nIconGan   = GetPrivateProfileInt("Cham", "IconNpcGan", 130, szCfg);	// [ANDROID 11/09 ICON e] [ANDROID 11/09 ICON f]
+	if (s_nIconGan < 40) s_nIconGan = 40;
 	if (s_nIconRong < 24) s_nIconRong = 24;
 	if (s_nIconRong > 400) s_nIconRong = 400;
 	GetPrivateProfileString("Cham", "IconNpcAnh", s_szIconAnh, s_szIconAnh, sizeof(s_szIconAnh), szCfg);
@@ -741,7 +748,7 @@ static void VeAnhCo(const char* pszAnh, int nX, int nY, int nCo, int nKhung)
 }
 
 //	[ANDROID 11/09 ICON b] Ve anh keo can theo rong x cao (khong vuong) - cho nut "Giao tiep" tren dau NPC.
-static void VeAnhRong(const char* pszAnh, int nX, int nY, int nRong, int nCao)
+static void VeAnhRong(const char* pszAnh, int nX, int nY, int nRong, int nCao, int nKhung = 0)	// [ANDROID 11/09 ICON d] nKhung
 {
 	KRUImage a;
 
@@ -752,7 +759,7 @@ static void VeAnhRong(const char* pszAnh, int nX, int nY, int nRong, int nCao)
 	a.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
 	a.Color.Color_dw = 0xffffffff;
 	a.nISPosition = IMAGE_IS_POSITION_INIT;
-	a.nFrame = 0;
+	a.nFrame = nKhung;
 	strncpy(a.szImage, pszAnh, sizeof(a.szImage) - 1);
 	a.oPosition.nX = nX;
 	a.oPosition.nY = nY;
@@ -1876,17 +1883,51 @@ void JxKyNang_Ve()
 	}
 }
 
+//	[ANDROID 11/09 ICON e] Icon "doi thoai" nam CO DINH tren man hinh (mac dinh goc phai), chi hien khi dung GAN NPC doi thoai
+//	(cach nhan vat <= IconNpcGan px tren man hinh); keo duoc trong che do "Sua giao dien" (khoa IconNpc, UiToaDo).
+//	Chu: "icon giao tiep ... chi hien khi ban dung gan va hien phia goc phai man hinh ... dua icon do vao phan chinh toa do".
+static void IconNpc_Tam(int* px, int* py)
+{
+	*px = (s_nIconHudX >= 0) ? s_nIconHudX : (SCREEN_WIDTH - 200);
+	*py = (s_nIconHudY >= 0) ? s_nIconHudY : (SCREEN_HEIGHT / 2 + 40);
+}
+
+static bool IconNpc_ORiengTrung(void* pNgu, int x, int y)
+{
+	int nX, nY, nR = s_nIconRong / 2 + 6;
+
+	(void)pNgu;
+	IconNpc_Tam(&nX, &nY);
+	return (x - nX) * (x - nX) + (y - nY) * (y - nY) <= nR * nR;
+}
+
+static void IconNpc_ORiengLay(void* pNgu, int* px, int* py)
+{
+	(void)pNgu;
+	IconNpc_Tam(px, py);
+}
+
+static void IconNpc_ORiengDat(void* pNgu, int x, int y)
+{
+	(void)pNgu;
+	s_nIconHudX = x;
+	s_nIconHudY = y;
+}
+
 void JxIconNpc_Ve()
 {
+	static bool s_bDaDangKy = false;
+	bool bGan = false;
+	KUiTargetDetailInfo gan;
+
 	DocCaiDat();
 	if (!s_nIconBat || g_pCoreShell == NULL || g_pRepresentShell == NULL)
 		return;
-	KUiTargetDetailInfo gan;
-	memset(&gan, 0, sizeof(gan));
-	if (!g_pCoreShell->GetGameData(NPC_OI_TARGET_INFO, (KUPARAM)&gan, 1))
-		return;
-	if (gan.sTargetName[0] == 0)
-		return;
+	if (!s_bDaDangKy)
+	{
+		s_bDaDangKy = true;
+		UiToaDo_DangKyORieng("IconNpc", IconNpc_ORiengTrung, IconNpc_ORiengLay, IconNpc_ORiengDat, NULL);
+	}
 	if (s_nIconCoAnh < 0)
 	{
 		s_nIconCoAnh = CoAnh(s_szIconAnh) ? 1 : 0;
@@ -1894,34 +1935,94 @@ void JxIconNpc_Ve()
 	}
 	if (!s_nIconCoAnh)
 		return;
-	int x = gan.nViTriVeX, y = gan.nViTriVeY;
-	g_pRepresentShell->CoordinateTransform(x, y, 0);	// the gioi -> man hinh
-	y -= s_nIconCao;
-	if (x < 0 || y < 0 || x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT)
-		return;		// NPC ra ngoai khung ve
-	// [ANDROID 11/09 ICON b] ve nut "Giao tiep" keo can rong s_nIconRong, mep tren tai y (= chan - IconNpcCao); nho khung de cham
-	KRPosition2 oOffI = { 0, 0 }, oCoI = { 0, 0 };
-	int nRong = s_nIconRong, nCao = s_nIconRong / 4;
-	if (g_pRepresentShell->GetImageFrameParam(s_szIconAnh, 0, &oOffI, &oCoI, ISI_T_SPR) && oCoI.nX > 0 && oCoI.nY > 0)
-		nCao = nRong * oCoI.nY / oCoI.nX;
-	VeAnhRong(s_szIconAnh, x - nRong / 2, y, nRong, nCao);
-	s_nIconVeX0 = x - nRong / 2 - 8; s_nIconVeX1 = x + nRong / 2 + 8;
-	s_nIconVeY0 = y - 8;             s_nIconVeY1 = y + nCao + 8;
-	s_nIconNpcX = x; s_nIconNpcY = y + s_nIconCao;
-	s_uIconVeLuc = (unsigned int)GetTickCount();
+	// NPC doi thoai gan nhat co GAN khong: <= IconNpcGan px tren man hinh, tinh tu giua khung ve (= nhan vat)
+	memset(&gan, 0, sizeof(gan));
+	if (g_pCoreShell->GetGameData(NPC_OI_TARGET_INFO, (KUPARAM)&gan, 1) && gan.sTargetName[0])
+	{
+		int x = gan.nViTriVeX, y = gan.nViTriVeY;
+		int dx, dy;
+
+		g_pRepresentShell->CoordinateTransform(x, y, 0);	// the gioi -> man hinh (chan NPC)
+		dx = x - SCREEN_WIDTH / 2;
+		dy = y - SCREEN_HEIGHT / 2;
+		if (x >= 0 && y >= 0 && x < SCREEN_WIDTH && y < SCREEN_HEIGHT && dx * dx + dy * dy <= s_nIconGan * s_nIconGan)
+		{
+			bGan = true;
+			s_nIconNpcX = x;
+			s_nIconNpcY = y;
+			strncpy(s_szIconTen, gan.sTargetName, sizeof(s_szIconTen) - 1);
+			s_szIconTen[sizeof(s_szIconTen) - 1] = 0;
+		}
+	}
+	s_nIconNpcCo = bGan ? 1 : 0;
+	if (!bGan && !UiToaDo_DangSua())
+	{
+		s_uIconVeLuc = 0;
+		return;
+	}
+	{
+		int nTX, nTY;
+		KRPosition2 oOffI = { 0, 0 }, oCoI = { 0, 0 };
+		int nRong = s_nIconRong, nCao = s_nIconRong;
+		int nKhung = bGan ? (int)(((unsigned int)GetTickCount() / 500) % (unsigned int)KyNang_SoKhung(s_szIconAnh)) : 0;
+
+		IconNpc_Tam(&nTX, &nTY);
+		if (g_pRepresentShell->GetImageFrameParam(s_szIconAnh, 0, &oOffI, &oCoI, ISI_T_SPR) && oCoI.nX > 0 && oCoI.nY > 0)
+			nCao = nRong * oCoI.nY / oCoI.nX;
+		VeAnhRong(s_szIconAnh, nTX - nRong / 2, nTY - nCao / 2, nRong, nCao, nKhung);	// 2 khung nhap nhay 0,5 s khi co NPC gan
+		s_nIconVeX0 = nTX - nRong / 2 - 8;
+		s_nIconVeX1 = nTX + nRong / 2 + 8;
+		s_nIconVeY0 = nTY - nCao / 2 - 8;
+		s_nIconVeY1 = nTY + nCao / 2 + 8;
+		s_uIconVeLuc = (unsigned int)GetTickCount();
+		if (bGan)
+		{	// [ANDROID 11/09 ICON f] ten NPC rut gon (toi da 12 ky tu + "..") ngay duoi icon, can giua
+			char szTen[32];
+			int nDai;
+
+			strncpy(szTen, s_szIconTen, sizeof(szTen) - 1);
+			szTen[sizeof(szTen) - 1] = 0;
+			nDai = (int)strlen(szTen);
+			if (nDai > 14)
+			{
+				szTen[12] = '.'; szTen[13] = '.'; szTen[14] = 0;
+				nDai = 14;
+			}
+			if (nDai > 0)
+				g_pRepresentShell->OutputText(12, szTen, nDai, nTX - nDai * 31 / 10, nTY + nCao / 2 + 3, 0xFFFFE28A,
+					0, TEXT_IN_SINGLE_PLANE_COORD, 0xFF000000);
+		}
+	}
 }
 
-//	[ANDROID 11/09 ICON b] Cham trung icon "Giao tiep" vua ve (trong 300 ms)? -> tra toa do THAN NPC (chan - 28) de KSdlApp bam vao
-//	nhu cham thang NPC: di toi + mo thoai. Chu: "khi bam vao icon do thi se tu di chuyen toi npc mo hoi thoai".
+//	Cham trung icon vua ve (trong 300 ms) khi dang co NPC gan -> do diem bam trung THAN NPC (Core FindSelectNPC tai
+//	chan-40/55/25/70/12/85, diem khong bi giao dien che) de KSdlApp bam vao nhu cham thang NPC: di toi + mo thoai.
 int JxIconNpc_Cham(int x, int y, int* pnX, int* pnY)
 {
-	if (!s_nIconBat || s_uIconVeLuc == 0 || (unsigned int)GetTickCount() - s_uIconVeLuc > 300)
+	static const int aLui[] = { 40, 55, 25, 70, 12, 85 };
+	int i;
+
+	if (!s_nIconBat || !s_nIconNpcCo || s_uIconVeLuc == 0 || (unsigned int)GetTickCount() - s_uIconVeLuc > 300)
 		return 0;
 	if (x < s_nIconVeX0 || x > s_nIconVeX1 || y < s_nIconVeY0 || y > s_nIconVeY1)
 		return 0;
-	*pnX = s_nIconNpcX;
-	*pnY = s_nIconNpcY - 28;
-	return 1;
+	for (i = 0; i < (int)(sizeof(aLui) / sizeof(aLui[0])); i++)
+	{
+		KUiPlayerItem oAi;
+		int nKind = 0;
+		int nX = s_nIconNpcX, nY = s_nIconNpcY - aLui[i];
+
+		memset(&oAi, 0, sizeof(oAi));
+		if (g_pCoreShell && g_pCoreShell->FindSelectNPC(nX, nY, relation_all, false, &oAi, nKind)
+			&& strncmp(oAi.Name, s_szIconTen, sizeof(s_szIconTen) - 1) == 0 && !JxUi_CoGiaoDienTaiDiem(nX, nY))
+		{
+			*pnX = nX;
+			*pnY = nY;
+			return 1;
+		}
+	}
+	g_DebugLog("[ICON] cham icon nhung khong do duoc diem bam trung NPC %s", s_szIconTen);
+	return 0;
 }
 
 void JxCan_Ve()
