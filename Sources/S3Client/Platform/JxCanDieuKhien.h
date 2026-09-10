@@ -37,6 +37,7 @@ void JxVongChon_Ve();
 // Goi cuoi moi khung ve: ve icon "noi chuyen" tren dau NPC doi thoai gan nhat.
 void JxIconNpc_Ve();
 int  JxIconNpc_Cham(int x, int y, int* pnX, int* pnY);	// [ANDROID 11/09 ICON b] cham trung icon Giao tiep -> toa do than NPC de bam
+void JxMucTieu_Khoa(int x, int y);	// [ANDROID 11/09 KHOAMT c] cham trung ai thi thanh thong tin bam theo nguoi do
 
 //---------------------------------------------------------------------------
 // [ANDROID 09/09 KYNANG] Nut chon ky nang danh.

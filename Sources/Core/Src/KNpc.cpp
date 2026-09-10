@@ -9032,6 +9032,8 @@ int KNpc::PaintTargetInfo(KUiPlayerItem* m_pPlayersList, KUiPlayerPaintTeamMNG* 
 		Blood.oEndPos.nX = Blood.oPosition.nX + nWid * nX / 100;
 #ifdef JX_ANDROID
 		Blood.oEndPos.nY = nTtY0 + (75 + i * verDistance - 10) * nTtTL / 1000;	// [ANDROID 11/09 TTMT]
+		if (Blood.oEndPos.nY - Blood.oPosition.nY < 6)
+			Blood.oEndPos.nY = Blood.oPosition.nY + 6;	// [ANDROID 11/09 TTMT b] thu nho nhieu thi ong mau van day >= 6 px
 #else
 		Blood.oEndPos.nY = 75 + i * verDistance - 10; 
 #endif
