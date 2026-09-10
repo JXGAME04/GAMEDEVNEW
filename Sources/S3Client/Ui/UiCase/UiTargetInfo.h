@@ -44,6 +44,9 @@ private:
 	KWndButton		a_btnBackGround;
 	KWndText32		m_pLifePercent;
 	KWndText32		m_pTargetName;
+#ifdef JX_ANDROID
+	KWndImageTextButton	m_Life;		// [ANDROID 11/09 ONGMAU] ong mau la O CON that (nhu UiNpcBar cua USVOLAM) -> tu di theo cua so, khong lech
+#endif
 
 	KUiTargetDetailInfo	m_Info;
 	KUiPlayerItem*	m_pPlayersList;

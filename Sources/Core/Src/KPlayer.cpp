@@ -622,6 +622,8 @@ void KPlayer::ProcessInputMsg(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #ifdef JX_ANDROID
 int g_nJxMucTieuKhoa = 0;	// [ANDROID 11/09 KHOAMT] NPC/nguoi choi da CHAM (OnButtonDown); 0 = khong khoa. Chi client Android.
+unsigned int g_uJxMucTieuKhoaId = 0;	// [ANDROID 11/09 KHOAMT d] MA (m_dwID) cua nguoi da cham - khoa theo ma, khong theo o mang
+unsigned int g_uJxMucTieuMatLuc = 0;	// [ANDROID 11/09 KHOAMT d] luc bat dau khong tim thay (0 = dang thay); qua 3 s moi bo han
 #endif
 
 void KPlayer::OnButtonDown(int x,int y, int Key, MOUSE_BUTTON nButton)
@@ -633,6 +635,7 @@ void KPlayer::OnButtonDown(int x,int y, int Key, MOUSE_BUTTON nButton)
 #ifdef JX_ANDROID
 	if (m_nPeapleIdx)
 		g_nJxMucTieuKhoa = m_nPeapleIdx;	// [ANDROID 11/09 KHOAMT] [ANDROID 11/09 TTMT] cham trung ai thi KHOA; cham dat KHONG bo khoa
+	// [ANDROID 11/09 KHOAMT c] OnButtonDown KHONG chay tren Android (do bang nhat ky va 85) - khoa dat o CoreShell nParam 3, goi tu KSdlApp.
 #endif
 	//	Npc[m_nIndex].m_nPeopleIdx = m_nPeapleIdx;
 	ProcessMouse(x, y, Key, nButton);

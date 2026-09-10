@@ -748,6 +748,10 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 				(abs(m_nChamX0 - m_nChamNhaX) <= CHAM_HAI_XA) &&
 				(abs(m_nChamY0 - m_nChamNhaY) <= CHAM_HAI_XA);
 			LPARAM l = MAKELPARAM(m_nChamX0, m_nChamY0);
+			// [ANDROID 11/09 KHOAMT c] cham ngoai giao dien: khoa muc tieu tai dung cho cham -> thanh thong tin bam theo nguoi vua cham,
+			// khong chay theo hover (SinhHover bom WM_MOUSEMOVE moi khung, the gioi troi nen NPC duoi con tro doi lien tuc).
+			if (!JxUi_CoGiaoDienTaiDiem(m_nChamX0, m_nChamY0))
+				JxMucTieu_Khoa(m_nChamX0, m_nChamY0);
 			GhiChuot(MK_LBUTTON, l);
 			MsgProc(hWnd, bDup ? WM_LBUTTONDBLCLK : WM_LBUTTONDOWN, MK_LBUTTON, l);
 			GhiChuot(0, l);

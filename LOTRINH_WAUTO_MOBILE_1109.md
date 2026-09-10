@@ -141,7 +141,7 @@ tự nhặt, tự uống thuốc, trước khi bỏ một đồng nào cho phầ
 
 ### B0 — Đường ống trong game (~400 dòng, không giao diện)
 
-> **Tiến độ: XONG 11/09** — vá `android/va_nguon_android_83.py` / `84.py` / `85.py` (tạo `Platform/JxWAutoNoiBo.h/.cpp`, vá
+> **Tiến độ: XONG 11/09** — vá `android/va_nguon_android_83.py` / `84.py` / `89.py` (tạo `Platform/JxWAutoNoiBo.h/.cpp`, vá
 > `S3Client.cpp`, `CoreShell.cpp`, `KCore.cpp`, `android/CMakeLists.txt`, `du_lieu_ghi_de/config.ini`) + công cụ
 > `android/wauto_dat.py`. Đo 3 lần trên LDPlayer: bên nhận `ExtAutoLoop` ghi `[AUTO-PASS]`/`[HD-GATE]`/`[FIGHT-*]` đúng tham số,
 > tệp `APdata\<id>.dat` 7.644 byte sạch, hai chuỗi Windows 0 lỗi. Chi tiết: `BANGIAO_WAUTO_MOBILE_B0_1109.md`.

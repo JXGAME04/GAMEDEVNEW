@@ -2025,6 +2025,20 @@ int JxIconNpc_Cham(int x, int y, int* pnX, int* pnY)
 	return 0;
 }
 
+//	[ANDROID 11/09 KHOAMT c] Khoa muc tieu tai cho ngon tay vua cham (KSdlApp goi luc nha ngon, ngoai giao dien).
+//	Cham trung nguoi/NPC -> thanh thong tin bam theo nguoi do; cham dat -> giu nguyen nguoi dang xem.
+void JxMucTieu_Khoa(int x, int y)
+{
+	KUiTargetDetailInfo oCham;
+
+	if (g_pCoreShell == NULL)
+		return;
+	memset(&oCham, 0, sizeof(oCham));
+	oCham.nViTriVeX = x;
+	oCham.nViTriVeY = y;
+	g_pCoreShell->GetGameData(NPC_OI_TARGET_INFO, (KUPARAM)&oCham, 3);
+}
+
 void JxCan_Ve()
 {
 	if (!s_bCam || g_pRepresentShell == NULL)
