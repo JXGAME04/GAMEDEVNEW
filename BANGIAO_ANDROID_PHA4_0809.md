@@ -1231,3 +1231,87 @@ mỗi 1800 khung; dòng `[REP3] ... gpu tex X (Y MB, P trang Q MB)` mỗi `Rep3S
 - Bộ đệm pak: 32 MB RAM thêm; nếu `[PAK] trung khoi` thấp (< 50 %) thì đổi `XP_KHOI_CO`/`XP_KHOI_SO` trong `XPackFile.cpp`.
 - Chưa có số đo runtime nào cho ba bản vá này — mọi kết luận "hết lag" phải chờ log của chủ.
 
+
+## 14. (11/09 chiều) LAG TỐNG KIM MOBILE — GỐC ĐÃ TÌM ĐƯỢC, ĐÃ SỬA (gộp `main` + bản vá 74)
+
+> Nhánh `mobile-0809` = `a0766ee6` (mục 13) + **merge `main` `e952d0e9`** (`9f0d4eae`, 16 commit tối ưu 09/09) + `va_nguon_android_74.py` (`032b4835`).
+> Merge chứ không rebase (một xung đột `KRepresentShell3.cpp`, hai khối: biến toàn cục + đọc ini — giữ cả hai bên; `g_uRep3LocKhung` vẫn định nghĩa ở `KRepresentShell3.cpp` như mục 10 vì `D3D9on11Dev.cpp` không dịch trên Android).
+> Hai APK trong `android/apk/` (đều arm64-v8a + x86_64, đã soi chuỗi đánh dấu trong `.so` của cả hai ABI):
+> - `jx1mobile-1109-vongsang-va73.apk` (15:47) = chỉ va 71–73 — **để chủ test vòng sáng trước** (mục 13.1).
+> - `jx1mobile-1109-tongkim-va74.apk` (16:09) = merge main + va 74.
+> **Chưa cài lên máy ảo**: lúc dựng, game của chủ đang chạy trong Tống Kim trên máy ảo (pid 14429, ~1.100 NPC/khung) — không cài đè, không dựng chuỗi Windows trong lúc đó (luật 5.4; máy chủ chạy trên chính máy này).
+
+### 14.1. Bốn khác biệt mobile ↔ PC, xác nhận bằng mã + log
+
+| # | Chỗ | Bằng chứng | Sửa |
+|---|---|---|---|
+| 1 | **Cần điều khiển ảo gửi lệnh đi bộ MỖI VÒNG LẶP** — chỉ có ở mobile | `KSdlApp::Run` gọi `JxCan_Nhip()` mỗi vòng (8 ms; 1 ms khi PaintFps > 60) → `Goto` → `KPlayer::Walk` (`KPlayer.cpp:896`) → `SendClientCmdWalk` **không có cổng gác** → 125–1000 gói `c2s_npcwalk`/giây khi giữ cần. Máy chủ với mỗi gói: `KNpc::Goto/NewPath` + `DoWalk` phát `NPC_WALK_SYNC` cho **cả vùng + 8 vùng kề** (`KNpc.cpp:3733`). PC giữ chuột: 1 gói / 5 tick (`GotoWhere`, `defMAX_PLAYER_SEND_MOVE_FRAME`), `Goto(nDir)` trên PC chỉ có Lua `MoveTo` gọi. `jx_net_sdl.log` cũ: 43 giây 21–40 gói gửi/s, 11 giây > 40/s. Trong Tống Kim nhân theo số người → lag cho mình và cho trận. | va 74: `JxCore_GotoHuong(huong, mode, nBuoc, bEp)` trong `CoreShell.cpp` (chỉ `JX_ANDROID`, `extern "C"`, libmain gọi thẳng): cổng gác 5 tick như chuột PC, đích xa 8 bước (`[Cham] CanBuocXa`, 2 = như cũ); đổi hướng → gửi ngay (≤ 1 lần/110 ms); nhả cần / ngón về giữa → **một** lệnh đích gần 2 bước để dừng (đúng như trước). Cảm giác di chuyển giữ nguyên, số gói giảm ~30–300 lần. |
+| 2 | Nhánh mobile **thiếu 16 commit tối ưu của `main`** | VUNG (`FindNpc` chỉ mục ô→NPC — PC đo vòng ĐẠN 20–35 ms/tick khi 500–1.100 đạn), NAPCHIEU/NAPNPC (nạp trước ảnh chiêu / thân NPC ở luồng nền → bớt nạp trên luồng vẽ), DON/SANGTAT (bỏ `RenderLightMap` 0,5 ms/khung), CHUGIU. Tick 20–35 ms trên PC = gấp nhiều lần trên máy ảo. | Đã merge. DOLUOT (`SuspendThread`/`GetThreadContext`/`dbghelp`/`_beginthreadex`, lớp `JX_POSIX` không có) rào `#ifndef JX_POSIX` trong `KSubWorld.cpp`, Android hai hàm rỗng. `GetModuleHandleA("Represent3.dll")` của NAPCHIEU chạy được trên Android (lớp tương thích đổi thành `dlopen("libRepresent3.so")`, `Rep3_NapTruoc2` có trong `libRepresent3.so`). |
+| 3 | **Present mode**: LDPlayer/điện thoại không có IMMEDIATE | `[GPU] Reset: ... vsync=1` dù config `vsync=0` → `SDL_WaitAndAcquireGPUSwapchainTexture` đợi vblank + lớp dịch máy ảo: `[PDET] end=16–28 ms` mỗi khung. | va 74: MAILBOX khi máy có (`[Client] Rep3GpuMailbox=1`, chỉ `JX_ANDROID`; dòng `[GPU] thiet bi: ... trinh chieu mailbox`). Chưa biết LDPlayer có MAILBOX không. |
+| 4 | I/O pak qua thư mục chia sẻ, texture không atlas (35.000 texture GPU / 184 MB), RAM 2× | **Đo sống 16:00–16:12 trong Tống Kim, APK cũ 14:41 (va 70)**, bảng 14.2 | va 72 + 73 (mục 13), có trong cả hai APK |
+
+### 14.2. Số đo sống trong Tống Kim trên máy ảo (APK cũ va 70, `jx_rep3.log`, mỗi dòng = 30 s)
+
+| fps | NPC vẽ/khung | khung > 16 ms | khung max | rút khung (I/O pak) | CPU vẽ ms/khung |
+|---|---|---|---|---|---|
+| 58,1 | 1.100 | 0 | 8 ms | 750 lần / 443 ms | 2,6 |
+| 55,9 | 893 | 5 | 88 ms | 783 / 467 ms | 2,4 |
+| **39,0** | 531 | **81** | **230 ms** | **5.311 / 3.253 ms** | 8,3 |
+| 55,3 | 1.300 | 3 | 60 ms | 1.094 / 667 ms | 3,4 |
+| **31,1** | 887 | **29** | **279 ms** | **3.362 / 2.326 ms** | 9,2 |
+| 53,8 | 1.356 | 1 | 19 ms | 230 / 153 ms | 2,6 |
+| 58,1 | 1.221 | 0 | 2,5 ms | 98 / 60 ms | 2,3 |
+
+Đọc: khi **không** phải nạp sprite mới, 1.100–1.350 NPC vẽ/khung vẫn 54–58 fps, CPU vẽ 2–3 ms → **không nghẽn CPU vẽ, không nghẽn logic** (`top`: tiến trình game 28 % một nhân, 364 % nhàn). Lag = những cửa sổ có người/chiêu mới xuất hiện: mỗi khung sprite rút từ pak mất **0,6–0,7 ms** (đọc qua thư mục chia sẻ), 3–5 nghìn lần trong 30 s = **2,3–3,3 giây đứng luồng vẽ**, kèm tạo texture GPU rời (2.000–2.900 lệnh vẽ/khung, 35.000 texture GPU). Đúng chỗ va 72 (đọc theo khối) + va 73 (atlas) + NAPCHIEU/NAPNPC (nạp trước ở luồng nền) nhắm vào. `anh_null` 430–480 nghìn/30 s (~250/khung) = ảnh NPC thiếu trong bảng NpcRes (đã có bộ đệm âm, chỉ tra bảng băm — không đáng kể; `kiem_npcres_thieu` của main sửa dữ liệu).
+
+Loại trừ (đã đọc mã): chữ (`KFont3` một texture), âm thanh (`KWavSound::Load` nạp một lần rồi giữ), mạng phía nhận. `jx_paint.log` cũ còn có khung **3–4 giây** và tick 3,1 s ở map vắng (npc 6/tick) → nghẽn ngoài game (máy thật đang dựng DLL, `Game.exe` PC chạy cùng lúc chiếm GPU host). **Đo trên LDPlayer khi máy thật đang dựng là vô nghĩa.**
+
+### 14.3. Chủ đo — thứ tự
+
+1. Cài `jx1mobile-1109-vongsang-va73.apk` → kiểm vòng sáng (13.1: tắt app, mở lại, `[KYNANG] luan chuyen vong sang`).
+2. Cài `jx1mobile-1109-tongkim-va74.apk`. `jx_rep3.log` phải có `atlas: BAT` và `trinh chieu mailbox` (hoặc `vsync` nếu máy ảo không có MAILBOX). Đi bằng cần 30 giây: phải đi liền mạch, đổi hướng tức thì, nhả cần dừng trong ~0,1 s. Dừng giật giữa chừng → tăng `[Cham] CanBuocXa` (10–12); muốn y như cũ: `CanBuocXa=2`.
+3. Tạo `jx_net_trace.on`, giữ cần 10 giây → `jx_net_sdl.log` `[send]` phải ~4 dòng/giây (trước: 40–125).
+4. Vào Tống Kim 1 phút với `PaintLog=1` → gửi `jx_paint.log` (`[SEC]` tickmax/ticksum, `[WORLD-TICK]`, `[SPIKE]`), `jx_rep3.log` (`rút khung`, `khung >16 ms`, `[GPU] khung`), logcat `[PAK] trung khoi`. Không dựng gì trên máy thật trong lúc đo; tắt `Game.exe` PC.
+5. Hình ảnh lệch (uv sai, ô đen) → `Rep3AtlasGpu=0`; xé/giật lạ → `Rep3GpuMailbox=0`; RAM → `Rep3GpuBoBanCpu=0`. Báo công tắc nào gây lỗi.
+
+### 14.4. Còn lại / rủi ro
+
+- Chưa chạy va 74 trên máy ảo (game chủ đang chạy). Chưa có số đo sau sửa.
+- Đích xa 8 bước: máy chủ tìm đường tới điểm 8 bước như chuột PC; sát vật cản có thể lượn quanh như PC.
+- `chuan_bi_du_lieu.ps1` chưa chạy lại: `D:\jx1_android_data\config.ini` đã được sửa tay đúng như lớp ghi đè (`Rep3CacheMB=0`, `Rep3AtlasGpu=1`, `Rep3GpuBoBanCpu=1`, `Rep3GpuMailbox=1`, `[Cham] CanBuocXa=8`, `PaintFps=-1`).
+- Hai chuỗi Windows (`build_chuoi_x64.ps1`, `build_chuoi_sdl.ps1`): 0 lỗi sau va 74 (xem 14.5).
+
+### 14.5. (11/09 chiều–tối) Đã cài, đã đo trên máy ảo — kết quả thật (va 74 → 77)
+
+> Chủ: "build xong cài luôn", "bạn phải mở log để có thông số để biết mà fix chứ không dự đoán". Từ đây mọi kết luận đều có số đo kèm.
+> Commit: `9f0d4eae` (merge main) → `032b4835` (va 74) → `d2e3d667` (va 75) → `945c04e0` (va 76) → `b3acd3cf` (va 77) → va 78 (HUD chi phí thật, nền mờ, chữ có dấu).
+> APK cuối: **`android/apk/jx1mobile-1109-tongkim-va78.apk`** (= va 71–78 + main; các APK va73/74/75/76/77 chỉ giữ để đối chiếu). Đang cài trên máy ảo.
+> Hai chuỗi Windows (`build_chuoi_x64.ps1`, `build_chuoi_sdl.ps1`) dựng lại sau va 74, 76 và 77: **0 lỗi** cả ba lần.
+
+**Va 74 trong Tống Kim (cùng trận, cùng máy ảo, APK cũ va 70 → va 74), `jx_rep3.log`, mỗi dòng 30 s:**
+
+| | APK cũ (va 70) | va 74 (bộ đệm khối pak + atlas + main) |
+|---|---|---|
+| rút khung (I/O pak) | 3.362–5.311 lần / **2,3–3,3 s** (0,65 ms/lần) | 5.836–9.523 lần / **0,2–1,0 s** (0,04–0,1 ms/lần) |
+| khung > 16 ms mỗi 30 s | 29–81 | 0–21 (chỉ 30 s đầu khi vào map) |
+| khung lâu nhất | 230–279 ms | 108–150 ms lúc vào map, sau đó 2–8 ms |
+| fps TB | 31–58 | 55–61 (1.000–1.400 NPC vẽ/khung) |
+| `[PAK]` | — | trúng khối 9.472 / 10.496 lần đọc (90 %) ở 30 s đầu, 97–99 % sau đó |
+| tick logic (`[WORLD b]`, PaintLog=1) | (không đo) | 0,5–1,1 ms/tick, 3,6–13 µs/NPC, vòng đạn 0,05 ms → **không nghẽn logic** |
+
+**"Rung cửa sổ game" (chủ báo sau va 74):** đo A/B với `PaintLog=1`:
+- Lần A (va 74: MAILBOX bật, cần đích xa 8 bước): `[SUM]` cách khung 11/16/30 ms, 0 spike/10 s; `[PDET] end` đa số < 8 ms.
+- Lần B (va 76: vsync, cần đích gần 2 bước + 1 tick): cách khung 3–7/16–17/29–70 ms, 2–11 "spike" (≥ 25 ms, phần lớn là **đợi vblank** chứ không phải giật); `[PDET] end` 14–29 ms.
+- Số đo CPU của A "đẹp" hơn B, nhưng **chủ xác nhận hết rung ở B**: `[SUM]`/`[SPIKE]` đo thời gian CPU, không đo nhịp *trình chiếu*; MAILBOX đưa khung lên màn không khớp 60 Hz → khung hiện hai lần / bỏ một khung = rung khi cuộn. Kết luận: **`Rep3GpuMailbox=0` mặc định** (va 75), giữ công tắc để A/B. Cần điều khiển về đích gần 2 bước như cũ nhưng tối đa **1 gói/tick** (`CanBuocXa=2`, `CanGacTick=1`; ~18 gói/giây thay vì 125–1.000; muốn như chuột PC: `8` + `5`).
+
+**Còn lại "vào map đông vẫn lag" (chủ báo sau va 76) — là cửa sổ 30 s đầu khi vào map** (`[REP3-NAP]`): tệp spr 370–660 lần / 0,3–0,5 s, rút khung 6–9 nghìn lần / 0,2–0,6 s, giải mã 13 nghìn khung / 35 ms, tạo GPU 28 ms, `nen: giao 620 xong 346 hong 99 bo_ve 252` → 4–12 khung > 16 ms, lâu nhất 108–150 ms, rồi hết. Đây là **nạp đồng bộ trên luồng chính** (SPR mới của người/chiêu vừa xuất hiện) — việc tiếp theo: nạp trước theo map (khi nhận gói vào Tống Kim, xếp hàng nền toàn bộ ảnh giáp/vũ khí/chiêu hay gặp) hoặc cắt nạp đồng bộ theo lát ≤ 4 ms/khung. Chưa làm.
+
+**Khởi động lại ngay sau khi đóng app → "GameInit thất bại" 1–2 lần** (logcat 06:27:42, 06:27:45, 06:28:30, 06:28:33; Android tự mở lại): lần hỏng chỉ có `[REP3] Rep3Api=11 nhưng không tạo được D3D11 -> lùi về D3D9` = `Rep3Ini("Rep3Api", 11)` trả mặc định dù `config.ini` có `Rep3Api=100` → tệp không đọc được đúng lúc đó (chưa rõ vì sao — `config.ini` có mtime 16:28:45 nhưng không mã nào của client ghi nó). Va 76: Android **ép `Rep3Api=100`** (chỉ có một bộ vẽ) + lớp JX_POSIX ghi `[INI] khong mo duoc <tep>: errno ...` để lần sau có số. Sau va 76 chưa thấy lặp lại.
+
+**Vòng sáng:** va 71 đã xác nhận chạy (`[KYNANG] luan chuyen vong sang -> 89/332/92/712 (1..4/4)` mỗi 0,5 s; giờ 300 ms `LuanChuyenMs`). Vòng xoay trên ô: chủ chê dày → dùng `VNKU_extract\circle.png` (vòng mỏng 40 px, chép vào lớp ghi đè `spr/ui3/uiskillcontrol/circle_vnku.png`), `lam_vong_xoay.py` mặc định lấy ảnh đó (vòng dày cũ: `python android\lam_vong_xoay.py effect_skill.spr`).
+
+**Bảng đo trong game (va 77 → 78, chủ yêu cầu "FPS – pin – GPU như USVOLAM", "có thẩm mỹ để phát hành"):** `Sources/S3Client/Platform/JxPerfHudAndroid.cpp` (chỉ Android; `Ui/PerfHud.cpp` của Windows dùng psapi/pdh nên bị loại). Nền mờ (`spr/ui3/uiskillcontrol/hud_nen.spr` kéo căng) + ba dòng chữ có dấu, mặc định **giữa màn hình, ngay dưới hàng nút menu** (`[Client] PerfHud=1`, `PerfHudX/PerfHudY`, -1 = tự tính; góc trái-dưới đè lên nhật ký chat, giữa-trên đè lên thanh máu — đã thử cả hai): `FPS | vẽ x,x ms | logic x,x ms | nhịp 16,5 ms (tệ nhất N) | ping`, `CPU % (nhân) | RAM game, máy còn | pin % đang sạc`, `GPU driver | texture MB (số) | atlas trang | vsync/mailbox | lệnh vẽ, quad`. **`vẽ`/`logic` là chi phí thật** đo trong `S3Client.cpp` quanh `UiPaint` và `Breathe+UiHeartBeat` (chủ nhìn `khung 16,5 ms` của va 77 tưởng chi phí vẽ cao — đó là nhịp 60 Hz). Số GPU từ Represent3 qua `Rep3_ThongKeGpu`. Ảnh đã xem: `FPS 56  vẽ 3,1 ms  logic 0,0 ms  nhịp 16,5 ms (tệ nhất 30)  ping 25 ms` ở map vắng; lúc vừa vào map đông: `FPS 37  vẽ 7,6 ms  logic 0,5 ms  nhịp 17,4 ms (tệ nhất 243)`, `lệnh vẽ 2439, quad 1871`.
+
+**Cấu hình sống `D:\jx1_android_data\config.ini` hiện tại** (đã đồng bộ với lớp ghi đè, trừ hai khoá đo): `PaintLog=1`, `AutoLog=1` (đang bật để đo — **tắt lại khi chơi thật**), `Rep3CacheMB=0`, `Rep3AtlasGpu=1`, `Rep3GpuBoBanCpu=1`, `Rep3GpuMailbox=0`, `PerfHud=1`, `[Cham] CanBuocXa=2 CanGacTick=1 LuanChuyenMs=300`.
+
+**Chưa trả lời được:** phiên tối ưu PC ("Lỗi di chuyển NPC/BOT/người chơi") đã nhận câu hỏi hợp tác lúc 15:5x nhưng chưa trả lời trong phiên này.
