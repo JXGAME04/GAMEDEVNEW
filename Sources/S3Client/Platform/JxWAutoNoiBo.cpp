@@ -366,6 +366,7 @@ void JxWAuto_NhipVongLap()
 		pGL->setting.bFollowPick = 1;
 		if (pGL->setting.nPickVision < 800)
 			pGL->setting.nPickVision = 800;
+		pGL->setting.bCityPick = 1;	// [ANDROID 11/09 WAUTO B2 i d] ATYPE_PICKUP bo qua khi khong o the chien dau tru khi bCityPick
 		pGL->setting.bTongKim = 0;	// cac may hoat dong cung nghi trong dot
 		pGL->setting.bDaTau = 0;
 	}

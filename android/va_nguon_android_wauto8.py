@@ -300,9 +300,24 @@ def va_noibo_cpp_b(s):
                     "extern iCoreShell*\t\tg_pCoreShell;"], "JxWAutoNoiBo.cpp: include coreshell.h")
 
 
+DAU4 = "[ANDROID 11/09 WAUTO B2 i d]"
+
+
+def va_noibo_cpp_d(s):
+    # Chu (00:10): "kich vao chua tu chay toi nhat". ATYPE_PICKUP tra 0 khi nhan vat KHONG o the chien dau va bCityPick = 0
+    # (CoreShell.cpp: if(!Npc.m_FightMode && !pApData->bCityPick) return 0) -> dung trong thanh / chua danh thi khong nhat.
+    # Dot nhat ngay: ep bCityPick = 1 (nhat ca khi khong o the chien dau).
+    return thay(s, ["\t\tif (pGL->setting.nPickVision < 800)",
+                    "\t\t\tpGL->setting.nPickVision = 800;"],
+                   ["\t\tif (pGL->setting.nPickVision < 800)",
+                    "\t\t\tpGL->setting.nPickVision = 800;",
+                    "\t\tpGL->setting.bCityPick = 1;\t// %s ATYPE_PICKUP bo qua khi khong o the chien dau tru khi bCityPick" % DAU4], "JxWAutoNoiBo.cpp: bCityPick trong dot nhat")
+
+
 va("Sources/S3Client/Platform/JxWAutoNoiBo.h", DAU, va_noibo_h)
 va("Sources/S3Client/Platform/JxWAutoNoiBo.cpp", DAU, va_noibo_cpp)
 va("Sources/S3Client/Platform/JxWAutoNoiBo.cpp", DAU2, va_noibo_cpp_b)
+va("Sources/S3Client/Platform/JxWAutoNoiBo.cpp", DAU4, va_noibo_cpp_d)
 va("Sources/S3Client/Ui/UiShell.h", DAU, va_uishell_h)
 va("Sources/S3Client/Ui/UiShell.cpp", DAU, va_uishell_cpp)
 va("Sources/S3Client/Ui/UiShell.cpp", DAU3, va_uishell_cpp_c)

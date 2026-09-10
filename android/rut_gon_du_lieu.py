@@ -43,7 +43,11 @@ def doi(p):
             shutil.rmtree(d)
         else:
             os.remove(d)
-    shutil.move(p, d)
+    try:
+        shutil.move(p, d)
+    except Exception as e:           # tep dang bi game mo (pak) -> bo qua, chay lai khi game tat
+        print("  KHONG doi duoc (dang mo?):", rel.encode("latin-1", "replace"), e)
+        tong[0] -= s; tong[1] -= 1
 
 
 def ha_ascii(s):

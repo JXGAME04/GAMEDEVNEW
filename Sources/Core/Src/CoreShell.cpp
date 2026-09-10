@@ -20503,8 +20503,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, KUPARAM uParam, KNPARAM nPa
 						i = ObjSet.GetNext(i);
 					}
 					AUTOLOG_EVERY(5000, "PICK-FOLLOW-GATE followpick=%d onpk=%d fight=%d lbdown=%d nRet=%d", pApData->bFollowPick, pApData->bOnPK, Npc[nNpcIdx].m_FightMode, Player[nPlayerIdx].m_sExtAuto.bLBObjDown, nRet);
+#ifdef JX_ANDROID
+					// [ANDROID 11/09 WAUTO B2 i e] nut ban tay (JxWAuto_NhatNgay ep bCityPick = 1): chay toi nhat ca khi khong o the chien dau
+					if(pApData->bFollowPick && !pApData->bOnPK && (Npc[nNpcIdx].m_FightMode || pApData->bCityPick)
+					&& !Player[nPlayerIdx].m_sExtAuto.bLBObjDown)
+#else
 					if(pApData->bFollowPick && !pApData->bOnPK && Npc[nNpcIdx].m_FightMode
 					&& !Player[nPlayerIdx].m_sExtAuto.bLBObjDown)
+#endif
 					{
 						if(pApData->bMoveFollow)
 						{
