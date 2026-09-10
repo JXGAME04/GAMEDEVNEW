@@ -60,6 +60,11 @@ INI_MAC_DINH = {"KUiPlayerBar|Status": (330, 47), "KUiPlayerBar|Items": (380, 47
                 "KUiPlayerBar|Faction": (501, 47), "KUiPlayerBar|Team": (561, 47), "KUiPlayerBar|Friend": (668, 47),
                 "KUiPlayerBar|Options": (729, 47),
                 "KUiToolsControlBar|NhatDo": (868, 362)}      # nut nhat (B2 i) chua co trong userdata cua chu -> lay vi tri ini
+# [ICON3X 12/09] chu: "icon dau gia va mail lam to gap 3 lan" - TiLe phan nghin (KWndWindow::UiDatTiLe, toi da 3000).
+# Cua so goc VA nut ben trong deu phai phong, khong thi chi khung to ma anh van nho.
+TILE_MOBILE = {"KUiMailIcon|Main": 3000, "KUiMailIcon|MailBtn": 3000,
+               "KUiAuctionIcon|Main": 3000, "KUiAuctionIcon|AuctionBtn": 3000}
+GIU_TAM_KHI_PHONG = ("KUiMailIcon|Main", "KUiAuctionIcon|Main")   # phong ra tu TAM chu khong tu goc trai-tren
 NHOM_PHAI_KHOA = ("KUiTaskTrace|Main",)
 # [UITOADO 12/09 CAO] cua so goc khong co trong userdata/cua_so_ui.json (Init bang muc khac 'Main'): bang thong bao he thong
 # (chu do) nam ngay tren o nhap chat -> neo DUOI; khung log chat neo DUOI de giu khoang cach toi o nhap chat nhu PC (man 4:3)
@@ -308,6 +313,12 @@ def main():
             ax, ay = tuyet_doi(khoa, x, y)                      # khong dich (dich theo cha o game / o tep rong)
         NEO_CU.setdefault(khoa, (neo_x, neo_y))
         nx, ny = tuong_doi_moi(khoa, ax, ay)
+        if khoa in TILE_MOBILE:                                # [ICON3X 12/09] phong icon rieng cho mobile
+            tile = TILE_MOBILE[khoa]
+            if khoa in GIU_TAM_KHI_PHONG and khoa in O_THUC:
+                co_goc = O_THUC[khoa][2]                      # icon vuong: nua phan no ra = mot lan co goc
+                nx -= co_goc * (tile - 1000) // 2000
+                ny -= O_THUC[khoa][3] * (tile - 1000) // 2000
         ra.append((khoa, nx, ny, tile, cocb, neo_x, neo_y))
     dau = ["; [UITOADO 12/09 RONG] Bo cuc mac dinh cho dien thoai man rong (sinh boi android/sinh_bocuc_rong.py tu uitoado_macdinh.ini).",
            "; Game chon tep nay khi khung ve co ti le >= 1,9 (UiToaDo.cpp). Moi dong: <lop>|<muc> = Left,Top,TiLe,Co,NeoX,NeoY",
