@@ -66,6 +66,10 @@ CChatFilter g_ChatFilter;
 #define CONFIG_FILE_PATH	"Config.ini"			//duong dan file config.ini
 //static int m_PaintStep = GAME_FPS / 18;
 static int	g_nPaintFps = 30;		// paint frames per second, config.ini [Client] PaintFps; 0 = paint locked to logic tick (legacy)
+#ifdef JX_ANDROID
+unsigned g_uJxHudLogicUs = 0, g_uJxHudVeUs = 0;	// [ANDROID 11/09 HUD b] chi phi Breathe+UiHeartBeat / UiPaint vong gan nhat (us) cho bang do (JxPerfHudAndroid.cpp)
+static inline unsigned JxHudUs(const LARGE_INTEGER& a) { LARGE_INTEGER b, f; QueryPerformanceCounter(&b); QueryPerformanceFrequency(&f); return f.QuadPart ? (unsigned)((b.QuadPart - a.QuadPart) * 1000000 / f.QuadPart) : 0; }
+#endif
 static int	g_nPaintSmooth = 1;		// [NHIP 08/09 c] 1 = so chia noi suy dung trung binh truot cua khoang tick (het nhay/dong bang moi tick); 0 = nhu cu
 static int	g_nPaintVsync = 0;		// [NHIP 08/09] config.ini [Client] PaintVsync; 1 = ve moi vong bom, Represent3 Present(1) (vblank dan nhip)
 static int	g_nPaintInterp = 1;		// config.ini [Client] PaintInterp; 1 = interpolate drawn NPC positions between logic ticks
@@ -1473,10 +1477,16 @@ BOOL KMyApp::GameLoop()
 		// thoi gian chay logic (0-25 ms) va lam khoang tick do duoc nhay len xuong.
 		const DWORD	nTickAt = (DWORD)m_Timer.GetElapse();
 		DWORD	dwLgT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
+#ifdef JX_ANDROID
+		LARGE_INTEGER liHudLg; QueryPerformanceCounter(&liHudLg);	// [ANDROID 11/09 HUD b]
+#endif
 		BOOL	bLgBre = g_pCoreShell->Breathe();
 		DWORD	dwLgT1 = g_nPaintLog > 0 ? timeGetTime() : 0;
 		BOOL	bLgUi  = bLgBre ? UiHeartBeat() : FALSE;
 		DWORD	dwLgT2 = g_nPaintLog > 0 ? timeGetTime() : 0;
+#ifdef JX_ANDROID
+		g_uJxHudLogicUs = JxHudUs(liHudLg);	// [ANDROID 11/09 HUD b]
+#endif
 		if (bLgBre && bLgUi)
 		{
 			//UiPaint(nGameFps); //Fix by kinnox cpu nhe hon nhiÒu l¾m
@@ -1561,7 +1571,11 @@ BOOL KMyApp::GameLoop()
 			if (g_nPaintFps > 0)
 				g_pCoreShell->OperationRequest(GOI_PROCFRAME_BREATHE, (unsigned int)(g_nPaintInterp > 0 ? 1 : 0), g_nPaintLog);	// snapshot tick positions for paint interpolation
 			else
+#ifdef JX_ANDROID
+				{ LARGE_INTEGER liHudVe; QueryPerformanceCounter(&liHudVe); UiPaint(nGameFps); g_uJxHudVeUs = JxHudUs(liHudVe); }	// [ANDROID 11/09 HUD b]
+#else
 				UiPaint(nGameFps);//nhe hon
+#endif
 		}
 		else
 		{
@@ -1651,7 +1665,11 @@ BOOL KMyApp::GameLoop()
 				if (g_nPaintLog > 0)
 					nLogShift = timeGetTime() - nLogShiftT0;
 			}
+#ifdef JX_ANDROID
+			{ LARGE_INTEGER liHudVe; QueryPerformanceCounter(&liHudVe); UiPaint(nGameFps); g_uJxHudVeUs = JxHudUs(liHudVe); }	// [ANDROID 11/09 HUD b]
+#else
 			UiPaint(nGameFps);
+#endif
 			bPainted = TRUE;
 			if (g_nPaintLog > 0)
 			{	// [NHIP 08/09] khoang cach giua hai lan ve

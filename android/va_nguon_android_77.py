@@ -125,10 +125,10 @@ def va_cmake(s):
 
 def va_config(s):
     return thay(s, ["PerfHud=0"], [
-        "; %s 1 = hien bang do FPS / khung ve / CPU / RAM / pin / GPU o giua-tren man hinh (3 dong). 0 = tat. PerfHudX/PerfHudY = vi tri (px), -1 = tu tinh." % DAU,
+        "; %s 1 = hien bang do FPS / khung ve / CPU / RAM / pin / GPU o giua, duoi hang nut menu tren cung (3 dong). 0 = tat. PerfHudX/PerfHudY = vi tri (px), -1 = tu tinh." % DAU,
         "PerfHud=1",
         "PerfHudX=-1",
-        "PerfHudY=4"], "config.ini PerfHud")
+        "PerfHudY=-1"], "config.ini PerfHud")
 
 
 va("Sources/Represent/Represent3/D3D9onGPUDev.cpp", va_gpudev)

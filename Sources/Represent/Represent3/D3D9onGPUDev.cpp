@@ -1169,7 +1169,7 @@ void CDevGpu::PalFree(int row)
 extern "C" int Rep3_ThongKeGpu(char* sz, int n)
 {
 	if (!sz || n < 8) return 0;
-	snprintf(sz, (size_t)n, "GPU %s | texture %u MB (%u) | atlas %u trang | %s | lenh ve %u, quad %u",
+	snprintf(sz, (size_t)n, "GPU %s   texture %u MB (%u)   atlas %u trang   %s   lÖnh vÏ %u, quad %u",
 		s_szRep3GpuDriver[0] ? s_szRep3GpuDriver : "?", (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3GpuTexCount, g_uRep3AtlasPages,
 		s_szRep3GpuTrinhChieu, s_uRep3GpuLenhVe, s_uRep3GpuQuad);
 	sz[n - 1] = 0;
