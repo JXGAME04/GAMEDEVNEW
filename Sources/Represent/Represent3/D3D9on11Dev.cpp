@@ -21,6 +21,8 @@ unsigned g_uRep3Presents = 0;
 unsigned g_uRep3PresentSkip = 0;
 unsigned g_uRep3BatchQuads = 0;
 unsigned g_uRep3BatchDraws = 0;
+unsigned g_uRep3GopVo[12] = { 0 };	// [GOP 09/09 do] ly do vo lo quad: 0 doi trang atlas, 1 texture rieng, 2 srv1, 3 blend, 4 sampler, 5 ps st0, 6 ps st1, 7 alphatest, 8 vs, 9 layout, 10 vp/scissor/raster, 11 day
+unsigned g_uRep3VeNgay[4] = { 0 };	// [GOP 09/09 do] lenh ve ngay (khong gop): 0 fan, 1 list, 2 strip (khong phai quad), 3 khac
 static int s_nRep3BuffersUsed = 0;
 static int sd_BufferCount_log() { return s_nRep3BuffersUsed; }
 
@@ -1080,7 +1082,21 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 		R11Applied a;
 		ComputeApplied(a, pIL, stride);
 		if (m_batchVerts && (memcmp(&a, &m_batchState, sizeof(a)) != 0 || m_batch.size() + 6 * stride > 2 * 1024 * 1024))
+		{
+			const R11Applied& b = m_batchState; int nLy = 11;	// [GOP 09/09 do] ly do dau tien theo thu tu uu tien
+			if (a.srv[0] != b.srv[0]) nLy = (m_tex[0] && m_tex[0]->m_bVirtual) ? 0 : 1;
+			else if (a.srv[1] != b.srv[1]) nLy = 2;
+			else if (a.pBlend != b.pBlend) nLy = 3;
+			else if (a.pSamp[0] != b.pSamp[0] || a.pSamp[1] != b.pSamp[1]) nLy = 4;
+			else if (memcmp(a.ps.st0, b.ps.st0, sizeof(a.ps.st0)) != 0 || memcmp(a.ps.st0b, b.ps.st0b, sizeof(a.ps.st0b)) != 0) nLy = 5;
+			else if (memcmp(a.ps.st1, b.ps.st1, sizeof(a.ps.st1)) != 0 || memcmp(a.ps.st1b, b.ps.st1b, sizeof(a.ps.st1b)) != 0) nLy = 6;
+			else if (memcmp(a.ps.at, b.ps.at, sizeof(a.ps.at)) != 0) nLy = 7;
+			else if (memcmp(&a.vs, &b.vs, sizeof(a.vs)) != 0) nLy = 8;
+			else if (a.pIL != b.pIL || a.stride != b.stride) nLy = 9;
+			else if (a.pRaster != b.pRaster || a.bScissor != b.bScissor || memcmp(&a.rcScissor, &b.rcScissor, sizeof(RECT)) != 0 || memcmp(&a.vp, &b.vp, sizeof(a.vp)) != 0) nLy = 10;
+			g_uRep3GopVo[nLy]++;
 			FlushBatch();
+		}
 		if (!m_batchVerts) m_batchState = a;
 		const UINT s11 = stride + 4;	// [r] +4 byte PALROW
 		const UINT uPal = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? (UINT)m_tex[0]->m_nPalRow : 0xFFFFu;
@@ -1096,6 +1112,7 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 	}
 	FlushIfPending();
 	// ---- lenh khac: ve ngay
+	g_uRep3VeNgay[type == D3DPT_TRIANGLEFAN ? 0 : (type == D3DPT_TRIANGLELIST ? 1 : (type == D3DPT_TRIANGLESTRIP ? 2 : 3))]++;	// [GOP 09/09 do]
 	std::vector<BYTE> tmp;
 	const UINT s11 = stride + 4;	// [r] +4 byte PALROW
 	const UINT uPal = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? (UINT)m_tex[0]->m_nPalRow : 0xFFFFu;

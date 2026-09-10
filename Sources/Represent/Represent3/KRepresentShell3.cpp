@@ -2820,6 +2820,13 @@ void KRepresentShell3::RepresentEnd()
 				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg,
 				g_uRep3FxTexNull, g_uRep3FxAnhNull, g_uRep3FxTaoHong, g_uRep3FxKhungKhongTex, g_uRep3FxGiaiMa, g_dRep3FxGiaiMaMs, g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), uVramUsed, uVramBudget,
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);
+			{	// [GOP 09/09 do]
+				extern unsigned g_uRep3GopVo[12]; extern unsigned g_uRep3VeNgay[4];
+				Rep3Log("[GOP] vo lo quad: doi trang atlas %u, texture rieng %u, srv1 %u, blend %u, sampler %u, ps st0 %u, ps st1 %u, alphatest %u, vs %u, layout %u, vp/scissor %u, day %u | ve ngay: fan %u, list %u, strip %u, khac %u",
+					g_uRep3GopVo[0], g_uRep3GopVo[1], g_uRep3GopVo[2], g_uRep3GopVo[3], g_uRep3GopVo[4], g_uRep3GopVo[5], g_uRep3GopVo[6], g_uRep3GopVo[7], g_uRep3GopVo[8], g_uRep3GopVo[9], g_uRep3GopVo[10], g_uRep3GopVo[11],
+					g_uRep3VeNgay[0], g_uRep3VeNgay[1], g_uRep3VeNgay[2], g_uRep3VeNgay[3]);
+				memset(g_uRep3GopVo, 0, sizeof(g_uRep3GopVo)); memset(g_uRep3VeNgay, 0, sizeof(g_uRep3VeNgay));
+			}
 			Rep3Log("[LOCTG] tau=%d ms kieu=%d toi=%d | %u khung da tron", g_nRep3LocMs, g_nRep3LocKieu, (int)(255.0f / g_fRep3LocK + 0.5f), g_uRep3LocKhung);
 			g_uRep3LocKhung = 0;
 			Rep3Log("[CHUGIU] giu %d ms | dong chu giu %u, ve moi %u", g_nRep3ChuGiuMs, g_uRep3ChuGiu, g_uRep3ChuVe);
