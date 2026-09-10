@@ -68,6 +68,7 @@ int  g_nRep3Buffers   = 3;	// [D3D11 08/09 o] 2 nhu ban f
 int  g_nRep3NoWait    = 0;	// [D3D11 08/09 l] 0 = Present cho nhu D3D9 (khong bo khung)
 int  g_nRep3Latency   = 3;	// [D3D11 08/09 o] 0 = khong dong SetMaximumFrameLatency (nhu ban f: Present tu chan khi hang day)
 int  g_nRep3Batch     = 1;	// [D3D11 08/09 j] gop quad cung trang thai thanh mot Draw
+int  g_nRep3AtlasMang = 1;	// [MANG 09/09] atlas = Texture2DArray (doi trang khong vo lo quad); 0 = trang rieng + PS cu
 int  g_nRep3Tearing   = 0;	// [D3D11 08/09 f] 1 = ALLOW_TEARING khi flip + vsync 0 (xe hinh, do tre thap nhat)
 int  g_nRep3Ex        = 0;	// [RAM 08/09] 1 = tao D3D9Ex (ky vong driver khong giu ban sao texture trong RAM)
 int  g_nRep3Log       = 1;
@@ -579,6 +580,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Flip      = Rep3Ini("Rep3Flip", 1);	// [D3D11 08/09 f] bitblt DISCARD bi DWM ghep giua chung -> "gon song" khi di chuyen
 	g_nRep3Tearing   = Rep3Ini("Rep3Tearing", 0);	// [D3D11 08/09 f]
 	g_nRep3Batch     = Rep3Ini("Rep3Batch", 1);	// [D3D11 08/09 j]
+	g_nRep3AtlasMang = Rep3Ini("Rep3AtlasMang", 1);	// [MANG 09/09]
 	{ int nLat = Rep3Ini("Rep3Latency", -1); g_nRep3Latency = (nLat >= 0) ? nLat : (g_nRep3Vsync ? 1 : 3); }	// [NHIP 08/09] vsync: hang 1 khung (do tre thap); khong vsync: 3 nhu cu	// [D3D11 08/09 o]
 	g_nRep3NoWait    = Rep3Ini("Rep3NoWait", 0);	// [D3D11 08/09 l]
 	g_nRep3Buffers   = Rep3Ini("Rep3Buffers", 3);	// [D3D11 08/09 o]

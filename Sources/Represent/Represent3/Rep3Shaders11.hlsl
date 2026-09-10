@@ -42,11 +42,30 @@ cbuffer PSCB : register(b0)
     float4 g_at;    // x = alpha test bat, y = D3DCMP_*, z = alpha ref (0..255), w = 0
 };
 
+#ifdef MANG
+Texture2DArray g_t0 : register(t0);   // [MANG 09/09] atlas = mang trang; lop = 16 bit cao cua PALROW
+#else
 Texture2D    g_t0 : register(t0);
+#endif
 SamplerState g_s0 : register(s0);
+#ifdef MANG
+Texture2DArray g_t1 : register(t1);   // [MANG 09/09] lop cua stage 1 = g_st1b.w
+#else
 Texture2D    g_t1 : register(t1);
+#endif
 SamplerState g_s1 : register(s1);
 Texture2D    g_pal : register(t2);   // [r] atlas bang mau 256 x N (BGRA8), hang = palrow
+#ifdef MANG
+#define T0_SAMPLE(uv)  g_t0.Sample(g_s0, float3(uv, lop))
+#define T0_LOAD(p)     g_t0.Load(int4(p, (int)lop, 0))
+#define T0_DIM(d)      { float3 d3; g_t0.GetDimensions(d3.x, d3.y, d3.z); d = d3.xy; }
+#define T1_SAMPLE(uv)  g_t1.Sample(g_s1, float3(uv, (float)g_st1b.w))
+#else
+#define T0_SAMPLE(uv)  g_t0.Sample(g_s0, uv)
+#define T0_LOAD(p)     g_t0.Load(int3(p, 0))
+#define T0_DIM(d)      g_t0.GetDimensions(d.x, d.y)
+#define T1_SAMPLE(uv)  g_t1.Sample(g_s1, uv)
+#endif
 
 // [r] texture chi so R8G8 -> mau: R = chi so bang mau, G = alpha
 float4 PalTex(float4 ia, uint row)
@@ -109,30 +128,31 @@ float4 Stage(int4 st, int4 stb, float4 dif, float4 cur, float4 tex)
 
 float4 PS(VSOut i) : SV_Target
 {
+    uint row = i.palrow & 0xFFFFu; float lop = (float)(i.palrow >> 16);   // [MANG 09/09]
     float4 dif = i.col;
     float4 cur = dif;
     if (g_st0.x != 1)   // stage 0 khong DISABLE
     {
-        float4 tex0 = (g_st0b.z != 0) ? g_t0.Sample(g_s0, i.uv) : float4(1, 1, 1, 1);
-        if (i.palrow != 0xFFFFu && g_st0b.z != 0)
+        float4 tex0 = (g_st0b.z != 0) ? T0_SAMPLE(i.uv) : float4(1, 1, 1, 1);
+        if (row != 0xFFFFu && g_st0b.z != 0)
         {   // [r] texture chi so (R8G8): R = chi so bang mau, G = alpha
             if (g_st0b.w != 0)
             {   // [r2] loc tuyen tinh: lay 4 diem, tra bang tung diem roi noi suy (nhu phan cung voi BGRA8); khong noi suy CHI SO
-                float2 dim; g_t0.GetDimensions(dim.x, dim.y);
+                float2 dim; T0_DIM(dim);
                 float2 p = i.uv * dim - 0.5; float2 f = frac(p); int2 p0 = (int2)floor(p); int2 mx = (int2)dim - 1;
-                float4 c00 = PalTex(g_t0.Load(int3(clamp(p0, int2(0, 0), mx), 0)), i.palrow);
-                float4 c10 = PalTex(g_t0.Load(int3(clamp(p0 + int2(1, 0), int2(0, 0), mx), 0)), i.palrow);
-                float4 c01 = PalTex(g_t0.Load(int3(clamp(p0 + int2(0, 1), int2(0, 0), mx), 0)), i.palrow);
-                float4 c11 = PalTex(g_t0.Load(int3(clamp(p0 + int2(1, 1), int2(0, 0), mx), 0)), i.palrow);
+                float4 c00 = PalTex(T0_LOAD(clamp(p0, int2(0, 0), mx)), row);
+                float4 c10 = PalTex(T0_LOAD(clamp(p0 + int2(1, 0), int2(0, 0), mx)), row);
+                float4 c01 = PalTex(T0_LOAD(clamp(p0 + int2(0, 1), int2(0, 0), mx)), row);
+                float4 c11 = PalTex(T0_LOAD(clamp(p0 + int2(1, 1), int2(0, 0), mx)), row);
                 tex0 = lerp(lerp(c00, c10, f.x), lerp(c01, c11, f.x), f.y);
             }
             else
-                tex0 = PalTex(tex0, i.palrow);
+                tex0 = PalTex(tex0, row);
         }
         cur = Stage(g_st0, g_st0b, dif, dif, tex0);
         if (g_st1.x != 1)
         {
-            float4 tex1 = (g_st1b.z != 0) ? g_t1.Sample(g_s1, i.uv) : float4(1, 1, 1, 1);
+            float4 tex1 = (g_st1b.z != 0) ? T1_SAMPLE(i.uv) : float4(1, 1, 1, 1);
             cur = Stage(g_st1, g_st1b, dif, cur, tex1);
         }
     }

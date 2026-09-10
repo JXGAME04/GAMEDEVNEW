@@ -5,6 +5,7 @@
 #include "D3D9on11i.h"
 #include "Rep3Shaders11_vs.h"
 #include "Rep3Shaders11_ps.h"
+#include "Rep3Shaders11_psmang.h"	// [MANG 09/09] PS voi atlas Texture2DArray
 #include "Rep3LocTG11_vs.h"	// [LOCTG 09/09]
 #include "Rep3LocTG11_ps.h"
 #include <math.h>
@@ -140,7 +141,7 @@ bool CDev11::Init()
 	if (!CreatePipelineObjects()) return false;
 	if (g_nRep3Atlas) m_pAtlas = new CAtlasMgr(this);
 	R11Log("thiet bi: feature level 0x%X, %ux%u, windowed=%d, vsync=%d, tearing=%d", (unsigned)m_fl, m_bbW, m_bbH, (int)(m_pp.Windowed != FALSE), (int)(m_pp.PresentationInterval != D3DPRESENT_INTERVAL_IMMEDIATE), (int)m_bTearing);
-	R11Log("atlas: %s | %d buffer, do tre trinh chieu %d khung, khong cho %d | gop lenh %d", m_pAtlas ? "BAT (trang 1024x1024 BGRA8, texture <= 512 khong RT)" : "tat", (int)sd_BufferCount_log(), g_nRep3Latency, g_nRep3NoWait, g_nRep3Batch);
+	R11Log("atlas: %s | %d buffer, do tre trinh chieu %d khung, khong cho %d | gop lenh %d", m_pAtlas ? (g_nRep3AtlasMang ? "BAT, MANG Texture2DArray (trang 1024x1024, texture <= 512 khong RT)" : "BAT (trang 1024x1024 BGRA8, texture <= 512 khong RT)") : "tat", (int)sd_BufferCount_log(), g_nRep3Latency, g_nRep3NoWait, g_nRep3Batch);
 	return true;
 }
 
@@ -229,7 +230,7 @@ bool CDev11::CreatePipelineObjects()
 {
 	HRESULT hr = m_pDev->CreateVertexShader(g_Rep3VS11, sizeof(g_Rep3VS11), NULL, &m_pVS);
 	if (FAILED(hr)) { R11Log("CreateVertexShader that bai 0x%08X", (unsigned)hr); return false; }
-	hr = m_pDev->CreatePixelShader(g_Rep3PS11, sizeof(g_Rep3PS11), NULL, &m_pPS);
+	hr = g_nRep3AtlasMang ? m_pDev->CreatePixelShader(g_Rep3PS11Mang, sizeof(g_Rep3PS11Mang), NULL, &m_pPS) : m_pDev->CreatePixelShader(g_Rep3PS11, sizeof(g_Rep3PS11), NULL, &m_pPS);	// [MANG 09/09]
 	if (FAILED(hr)) { R11Log("CreatePixelShader that bai 0x%08X", (unsigned)hr); return false; }
 	D3D11_BUFFER_DESC bd; memset(&bd, 0, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DYNAMIC; bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER; bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -946,7 +947,7 @@ void CDev11::ComputeApplied(R11Applied& a, ID3D11InputLayout* pIL, UINT stride)
 	cb.st0b[0] = (int)m_tss[0][D3DTSS_ALPHAARG1]; cb.st0b[1] = (int)m_tss[0][D3DTSS_ALPHAARG2]; cb.st0b[2] = a.srv[0] ? 1 : 0;
 	cb.st0b[3] = (m_bPalLinForce || (m_ss[0][D3DSAMP_MAGFILTER] & 7) >= D3DTEXF_LINEAR || (m_ss[0][D3DSAMP_MINFILTER] & 7) >= D3DTEXF_LINEAR) ? 1 : 0;	// [r2] loc tuyen tinh stage 0 -> shader tu noi suy texture bang mau
 	cb.st1[0] = (int)m_tss[1][D3DTSS_COLOROP]; cb.st1[1] = (int)m_tss[1][D3DTSS_COLORARG1]; cb.st1[2] = (int)m_tss[1][D3DTSS_COLORARG2]; cb.st1[3] = (int)m_tss[1][D3DTSS_ALPHAOP];
-	cb.st1b[0] = (int)m_tss[1][D3DTSS_ALPHAARG1]; cb.st1b[1] = (int)m_tss[1][D3DTSS_ALPHAARG2]; cb.st1b[2] = a.srv[1] ? 1 : 0; cb.st1b[3] = 0;
+	cb.st1b[0] = (int)m_tss[1][D3DTSS_ALPHAARG1]; cb.st1b[1] = (int)m_tss[1][D3DTSS_ALPHAARG2]; cb.st1b[2] = a.srv[1] ? 1 : 0; cb.st1b[3] = (m_tex[1] && m_tex[1]->m_bVirtual && m_tex[1]->m_pPage) ? (int)m_tex[1]->m_pPage->m_lop : 0;	// [MANG 09/09] lop cua texture stage 1
 	cb.at[0] = m_rs[D3DRS_ALPHATESTENABLE] ? 1.0f : 0.0f; cb.at[1] = (float)(m_rs[D3DRS_ALPHAFUNC] & 15); cb.at[2] = (float)(m_rs[D3DRS_ALPHAREF] & 255); cb.at[3] = 0.0f;
 }
 
@@ -1069,6 +1070,14 @@ static void R11AtlasUv(BYTE* pV, UINT nVerts, UINT stride, DWORD fvf, CTex11* pT
 	for (UINT i = 0; i < nVerts; i++) { float* uv = (float*)(pV + i * stride + uvOff); uv[0] = uv[0] * sx + ox; uv[1] = uv[1] * sy + oy; }
 }
 
+// [MANG 09/09] 4 byte PALROW moi dinh: 16 bit thap = hang bang mau (0xFFFF = khong), 16 bit cao = lop cua trang trong mang atlas
+static inline UINT R11PalLop(CTex11* pTex)
+{
+	UINT u = (pTex && pTex->m_nPalRow >= 0) ? (UINT)pTex->m_nPalRow : 0xFFFFu;
+	if (pTex && pTex->m_bVirtual && pTex->m_pPage) u |= (pTex->m_pPage->m_lop << 16);
+	return u;
+}
+
 HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVerts, UINT stride)
 {
 	R11DrawTimer timer;
@@ -1076,12 +1085,16 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 	ID3D11InputLayout* pIL = GetInputLayout(m_fvf, stride);
 	if (!pIL) return D3DERR_INVALIDCALL;
 	const float fPage = m_pAtlas ? (float)m_pAtlas->m_pageSize : 1024.0f;
-	// ---- [j] quad (strip 4 dinh): gop
-	if (g_nRep3Batch && type == D3DPT_TRIANGLESTRIP && nVerts == 4)
+	// ---- [j] quad (strip 4 dinh): gop; [MANG 09/09] them TRIANGLELIST (chu KFont3: 2 tam giac moi ky tu) vao cung lo
+	const bool bQuad = (type == D3DPT_TRIANGLESTRIP && nVerts == 4);
+	const bool bList = (type == D3DPT_TRIANGLELIST && (nVerts % 3) == 0 && nVerts <= 3072);
+	if (g_nRep3Batch && (bQuad || bList))
 	{
 		R11Applied a;
 		ComputeApplied(a, pIL, stride);
-		if (m_batchVerts && (memcmp(&a, &m_batchState, sizeof(a)) != 0 || m_batch.size() + 6 * stride > 2 * 1024 * 1024))
+		const UINT s11 = stride + 4;	// [r] +4 byte PALROW
+		const UINT nThem = bQuad ? 6 : nVerts;
+		if (m_batchVerts && (memcmp(&a, &m_batchState, sizeof(a)) != 0 || m_batch.size() + (size_t)nThem * s11 > 2 * 1024 * 1024))
 		{
 			const R11Applied& b = m_batchState; int nLy = 11;	// [GOP 09/09 do] ly do dau tien theo thu tu uu tien
 			if (a.srv[0] != b.srv[0]) nLy = (m_tex[0] && m_tex[0]->m_bVirtual) ? 0 : 1;
@@ -1098,16 +1111,20 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 			FlushBatch();
 		}
 		if (!m_batchVerts) m_batchState = a;
-		const UINT s11 = stride + 4;	// [r] +4 byte PALROW
-		const UINT uPal = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? (UINT)m_tex[0]->m_nPalRow : 0xFFFFu;
+		const UINT uPal = R11PalLop(m_tex[0]);
 		size_t base = m_batch.size();
-		m_batch.resize(base + 6 * s11);
+		m_batch.resize(base + (size_t)nThem * s11);
 		BYTE* d = &m_batch[base];
-		static const int s_idx[6] = { 0, 1, 2, 2, 1, 3 };
-		for (int i = 0; i < 6; i++) { memcpy(d + i * s11, pVerts + s_idx[i] * stride, stride); *(UINT*)(d + i * s11 + stride) = uPal; }
-		R11AtlasUv(d, 6, s11, m_fvf, m_tex[0], fPage);
-		m_batchVerts += 6;
-		g_uRep3BatchQuads++;
+		if (bQuad)
+		{
+			static const int s_idx[6] = { 0, 1, 2, 2, 1, 3 };
+			for (int i = 0; i < 6; i++) { memcpy(d + i * s11, pVerts + s_idx[i] * stride, stride); *(UINT*)(d + i * s11 + stride) = uPal; }
+		}
+		else
+			for (UINT i = 0; i < nVerts; i++) { memcpy(d + i * s11, pVerts + i * stride, stride); *(UINT*)(d + i * s11 + stride) = uPal; }
+		R11AtlasUv(d, nThem, s11, m_fvf, m_tex[0], fPage);
+		m_batchVerts += nThem;
+		g_uRep3BatchQuads += bQuad ? 1 : (nVerts / 6);	// thong ke theo 'quad' (2 tam giac)
 		return D3D_OK;
 	}
 	FlushIfPending();
@@ -1115,7 +1132,7 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 	g_uRep3VeNgay[type == D3DPT_TRIANGLEFAN ? 0 : (type == D3DPT_TRIANGLELIST ? 1 : (type == D3DPT_TRIANGLESTRIP ? 2 : 3))]++;	// [GOP 09/09 do]
 	std::vector<BYTE> tmp;
 	const UINT s11 = stride + 4;	// [r] +4 byte PALROW
-	const UINT uPal = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? (UINT)m_tex[0]->m_nPalRow : 0xFFFFu;
+	const UINT uPal = R11PalLop(m_tex[0]);	// [MANG 09/09]
 	if (type == D3DPT_TRIANGLEFAN)
 	{
 		UINT nTri = nVerts - 2;
