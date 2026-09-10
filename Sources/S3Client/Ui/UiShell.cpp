@@ -215,6 +215,8 @@ int	UiInit()
 //	Player_AutoPlay::RegisterSelfClass();
 #ifdef JX_ANDROID
 	Player_WAuto::RegisterSelfClass();	// [ANDROID 11/09 WAUTO B1] icon Auto (khung WAuto trong game)
+	Player_WAutoBat::RegisterSelfClass();	// [ANDROID 11/09 WAUTO B2 i] nut Bat/Tat Auto + nut nhat
+	Player_NhatDo::RegisterSelfClass();
 #endif
 	Player_ItemEx::RegisterSelfClass();
 	Player_Recorder::RegisterSelfClass();
@@ -1060,7 +1062,42 @@ void Player_WAuto::OnButtonClick()
 
 void Player_WAuto::UpdateData()
 {
+	CheckButton(JxWAuto_DangBat() ? 1 : 0);		// [ANDROID 11/09 WAUTO B2 i c] icon Auto: vang khi may auto dang bat
+}
+
+// [ANDROID 11/09 WAUTO B2 i]
+IMPLEMENT_COMCLASS(Player_WAutoBat)
+void Player_WAutoBat::OnButtonClick()
+{
+	JxWAuto_Bat(!JxWAuto_DangBat());
 	CheckButton(JxWAuto_DangBat() ? 1 : 0);
+}
+
+void Player_WAutoBat::UpdateData()
+{
+	CheckButton(JxWAuto_DangBat() ? 1 : 0);		// Up = "Bat Auto" (dang tat), Down = "Tat Auto" (dang bat)
+}
+
+const char* Player_WAutoBat::GetShortKey()
+{
+	return NULL;
+}
+
+IMPLEMENT_COMCLASS(Player_NhatDo)
+void Player_NhatDo::OnButtonClick()
+{
+	JxWAuto_NhatNgay(6000);
+	CheckButton(1);
+}
+
+void Player_NhatDo::UpdateData()
+{
+	CheckButton(JxWAuto_DangNhat() ? 1 : 0);
+}
+
+const char* Player_NhatDo::GetShortKey()
+{
+	return NULL;
 }
 
 const char* Player_WAuto::GetShortKey()

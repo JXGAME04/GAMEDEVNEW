@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 
-class iCoreShell;
+#include "../../Core/src/coreshell.h"	// [ANDROID 11/09 WAUTO B2 i b] iCoreShell day du: LockSomeoneAction / LockObjectAction
 extern iCoreShell*		g_pCoreShell;
 extern SharedState*		g_pState;		// S3Client.cpp: hop thu lenh cua WAuto (Android: calloc trong tien trinh)
 extern HANDLE			g_hEventRecv;	// S3Client.cpp: tin hieu "co lenh moi" (Android: pthread cond, auto-reset)
@@ -28,6 +28,8 @@ static UINT			s_uNhipKe = 0;
 static UINT			s_uBaoKe = 0;
 static unsigned int	s_uId = 0;			// ma nhan vat cua cau hinh dang nap (0 = chua vao game)
 static int			s_nTickDaBao = -1;	// trang thai da bao cho bo nao (PRT_TICKSTART): -1 chua, 0 tat, 1 bat
+static UINT			s_uNhatDen = 0;		// [ANDROID 11/09 WAUTO B2 i] dot nhat ngay: gui nhip toi luc nay (0 = khong)
+static int			s_nNhatMuonAuto = 0;	// auto dang tat luc bat dau dot -> het dot phai bao bo nao dung (ATYPE_CLEAR)
 
 static void WA_DocConfig()
 {
@@ -247,6 +249,29 @@ int JxWAuto_LuuCauHinh()
 autoData* JxWAuto_CauHinh()			{ return &s_CauHinh; }
 unsigned int JxWAuto_IdNhanVat()	{ return s_uId; }
 int JxWAuto_DangBat()				{ return s_nBat; }
+int JxWAuto_DangNhat()				{ return s_uNhatDen != 0; }	// [ANDROID 11/09 WAUTO B2 i]
+void JxWAuto_NhatNgay(int nMs)
+{
+	if (nMs <= 0)
+	{
+		s_uNhatDen = 0;
+		return;
+	}
+	if (!s_uNhatDen)
+	{
+		s_nNhatMuonAuto = !s_nBat;
+		if (g_pCoreShell)			// dang khoa muc tieu (danh ai) thi go de nhan vat chiu roi cho di nhat
+		{
+			g_pCoreShell->LockSomeoneAction(0);
+			g_pCoreShell->LockObjectAction(0);
+		}
+	}
+	s_uNhatDen = timeGetTime() + (UINT)nMs;
+	if (!s_uNhatDen)
+		s_uNhatDen = 1;
+	s_uNhipKe = 0;					// gui nhip dau ngay khung nay
+	g_DebugLog("[WAUTO] NHAT NGAY %d ms (auto dang %s)", nMs, s_nBat ? "bat" : "tat");
+}
 int JxWAuto_Bat(int bBat)			{ s_nBat = bBat ? 1 : 0; return s_nBat; }
 
 // Nap goi vao hop thu cua ProcIpcCommand y nhu AppLoop cua WAuto.exe: [so goi][goi 1][goi 2]... roi SetEvent.
@@ -260,13 +285,18 @@ static void WA_GuiGoi(const void* p, unsigned int n, unsigned int uSo)
 }
 
 // Bao bo nao bat/tat (PRT_TICKSTART -> ATYPE_CLEAR: xoa trang thai auto; tat thi dung nhan vat lai) + mot dong o khung chat.
-static void WA_BaoTick(int bBat)
+static void WA_BaoTick(int bBat, int bIm = 0)	// [ANDROID 11/09 WAUTO B2 i] bIm = 1: chi bao bo nao (het dot nhat), khong ghi chat
 {
 	IPCHideGame s;
 	s.CmdID = PRT_TICKSTART;
 	s.Size = sizeof(IPCHideGame);
 	s.bHide = bBat;
 	WA_GuiGoi(&s, sizeof(s), 1);
+	if (bIm)
+	{
+		g_DebugLog("[WAUTO] het dot NHAT NGAY (PRT_TICKSTART -> ATYPE_CLEAR, im lang)");
+		return;
+	}
 	const char* sz = bBat ? "BËt auto trong game (WAuto)" : "T¾t auto trong game (WAuto)";
 	KUiMsgCentrePad::SystemMessageArrival(sz, (unsigned short)strlen(sz));
 	g_DebugLog("[WAUTO] %s (PRT_TICKSTART -> ATYPE_CLEAR)", bBat ? "BAT" : "TAT");
@@ -300,9 +330,18 @@ void JxWAuto_NhipVongLap()
 		WA_BaoTick(s_nBat);
 		return;					// khung nay hop thu da co goi; goi vong lap gui tu khung sau
 	}
-	if (!s_nBat)
-		return;
 	UINT uNow = timeGetTime();
+	int bNhat = (s_uNhatDen != 0);		// [ANDROID 11/09 WAUTO B2 i] dot nhat ngay (nut ban tay)
+	if (bNhat && (int)(uNow - s_uNhatDen) >= 0)
+	{
+		s_uNhatDen = 0;
+		bNhat = 0;
+		if (s_nNhatMuonAuto)			// auto von tat: bao bo nao xoa trang thai, dung nhan vat
+			WA_BaoTick(0, 1);
+		s_nNhatMuonAuto = 0;
+	}
+	if (!s_nBat && !bNhat)
+		return;
 	if (uNow < s_uNhipKe)
 		return;
 	s_uNhipKe = uNow + WA_NHIP_MS;
@@ -318,6 +357,18 @@ void JxWAuto_NhipVongLap()
 	pGL->setting.bCungMucTieu = 0;
 	pGL->setting.bAcChinhVaoMap = 0;
 	pGL->setting.uACTuoi = 0;
+	if (bNhat)
+	{
+		// [ANDROID 11/09 WAUTO B2 i] dot nhat ngay: KHONG danh (bFight / bOnPK = 0), NHAT + chay toi (bFollowPick), tam nhat >= 800
+		pGL->setting.bFight = 0;
+		pGL->setting.bOnPK = 0;
+		pGL->setting.bPickUp = 1;
+		pGL->setting.bFollowPick = 1;
+		if (pGL->setting.nPickVision < 800)
+			pGL->setting.nPickVision = 800;
+		pGL->setting.bTongKim = 0;	// cac may hoat dong cung nghi trong dot
+		pGL->setting.bDaTau = 0;
+	}
 	IPCHienThi* pHT = (IPCHienThi*)(s_Goi + sizeof(IPCGameLoop));
 	pHT->CmdID = PRT_HIENTHI;
 	pHT->Size = sizeof(IPCHienThi);

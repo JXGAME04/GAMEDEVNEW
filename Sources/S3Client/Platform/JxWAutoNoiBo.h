@@ -28,6 +28,9 @@ autoData*		JxWAuto_CauHinh();
 int				JxWAuto_LuuCauHinh();		// ghi APdata\<id>.dat; 1 = xong
 int				JxWAuto_NapCauHinh();		// nap lai tu tep (tu goi khi doi nhan vat); 1 = co tep, 0 = mac dinh lan dau
 unsigned int	JxWAuto_IdNhanVat();		// ma nhan vat cua cau hinh dang nap (0 = chua vao game)
+// [ANDROID 11/09 WAUTO B2 i] nut ban tay: nhat ngay trong nMs mili giay (khong danh, chay toi nhat), ke ca khi auto dang tat
+void			JxWAuto_NhatNgay(int nMs);
+int				JxWAuto_DangNhat();
 
 #endif // JX_ANDROID
 #endif

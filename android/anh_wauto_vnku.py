@@ -55,6 +55,23 @@ def bat_tat():
 
 
 ICON_W, ICON_H = 48, 56         # [B2 h] icon Auto: hai kiem cheo (tren) + chu "Auto" (duoi) - chu: "icon auto co chu Auto 2 kiem cheo nhau"
+NUT_TCB_W, NUT_TCB_H = 102, 40  # [B2 i] nut tren thanh cong cu lay NGUYEN nut kho VNKU (chu: "goc no co icon luon ko can ghep")
+
+
+def nut_thanh_cong_cu(bat):
+    """[B2 i] Ba nut Auto tren thanh cong cu, lay NGUYEN anh kho VNKU (khong ghep), cung co 102x40 nhu nut trong khung:
+      spr\\uinew\\uitoolscontrolbar\\bat_auto_m.spr   4 khung tu MinMapSmall\\bat_auto.spr + tat_auto.spr (Bat vang, Bat xam, Tat vang, Tat xam)
+                                                    -> KWndButton CheckBox Up=0 Down=2: bam = BAT/TAT auto ngay (Player_WAutoBat)
+      spr\\uinew\\uitoolscontrolbar\\thiet_lap_m.spr 2 khung tu MinMapSmall\\thietlapauto.spr (vang / xam) -> mo khung thiet lap (Player_WAuto)
+      spr\\uinew\\uitoolscontrolbar\\nhat_m.spr      2 khung 48x48 tu UiToolsControlBar\\nut_nhat.spr (ban tay trang / vang)
+                                                    -> nhat ngay, uu tien hon danh (Player_NhatDo)"""
+    _, _, tat, _ = doc_spr(os.path.join(VNKU, "MinMapSmall", "tat_auto.spr"))
+    co = (NUT_TCB_W, NUT_TCB_H)
+    ghi(os.path.join("spr", "uinew", "uitoolscontrolbar", "bat_auto_m.spr"), [x.resize(co, Image.LANCZOS) for x in (bat[0], bat[1], tat[0], tat[1])])
+    _, _, tl, _ = doc_spr(os.path.join(VNKU, "MinMapSmall", "thietlapauto.spr"))
+    ghi(os.path.join("spr", "uinew", "uitoolscontrolbar", "thiet_lap_m.spr"), [x.resize(co, Image.LANCZOS) for x in tl[:2]])
+    _, _, nh, _ = doc_spr(os.path.join(VNKU, "UiToolsControlBar", "nut_nhat.spr"))
+    ghi(os.path.join("spr", "uinew", "uitoolscontrolbar", "nhat_m.spr"), [x.resize((48, 48), Image.LANCZOS) for x in nh[:2]])
 
 
 def icon(bat):
@@ -179,6 +196,7 @@ if __name__ == "__main__":
     khung()
     b = bat_tat()
     icon(b)
+    nut_thanh_cong_cu(b)
     nut_do()
     o_tick()
     print("xong")

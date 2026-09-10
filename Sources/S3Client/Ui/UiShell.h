@@ -150,10 +150,28 @@ public:
 #ifdef JX_ANDROID
 // [ANDROID 11/09 WAUTO B1] icon Auto tren thanh cong cu (uitoolscontrolbar.ini [WAuto] ClassType=Player_WAuto): mo / dong khung WAuto trong game;
 // CheckBox: sang khi may auto dang bat (JxWAuto_DangBat). fkauto (Player_AutoPlay) van de nguyen, khong dung.
-class Player_WAuto : public KWndButton
+class Player_WAuto : public KWndButton		// [ANDROID 11/09 WAUTO B2 i] nay la nut "Thiet lap" (thietlapauto.spr VNKU): mo / dong khung
 {
 public:
 	DECLARE_COMCLASS(Player_WAuto)
+	void OnButtonClick();
+	void UpdateData();
+	const char*	GetShortKey();
+};
+// [ANDROID 11/09 WAUTO B2 i] nut "Bat Auto / Tat Auto" (bat_auto.spr + tat_auto.spr VNKU, [WAutoBat]): bam = bat / tat may auto ngay
+class Player_WAutoBat : public KWndButton
+{
+public:
+	DECLARE_COMCLASS(Player_WAutoBat)
+	void OnButtonClick();
+	void UpdateData();
+	const char*	GetShortKey();
+};
+// [ANDROID 11/09 WAUTO B2 i] nut ban tay (nut_nhat.spr VNKU, [NhatDo]): nhat ngay 6 giay, uu tien hon danh (JxWAuto_NhatNgay)
+class Player_NhatDo : public KWndButton
+{
+public:
+	DECLARE_COMCLASS(Player_NhatDo)
 	void OnButtonClick();
 	void UpdateData();
 	const char*	GetShortKey();

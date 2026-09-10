@@ -6,11 +6,21 @@
 
 ---
 
-## 1. Icon Auto — xong
+## 1. Icon Auto + nút nhặt — xong (`B2 h`, `B2 i`, `android/va_nguon_android_wauto8.py`)
 
-`Spr\UiNew\UiToolsControlBar\pk.spr` của kho VNKU (74×74, 3 khung hai kiếm chéo nền xanh lá / đỏ / vàng) → `auto_m.spr` 47×47:
-khung 0 (xanh lá) = auto tắt, khung 1 (đỏ) = auto bật. Sinh bằng `android/anh_wauto_vnku.py` (`icon()`), ảnh đã chép vào
-`D:\jx1_android_data`. Trong 596 ảnh vuông nhỏ của kho chỉ có `pk.spr` là hai kiếm chéo đúng nghĩa (ảnh rà: scratchpad `vnku_vuong_nho_*.png`).
+Chủ gửi ảnh mẫu: vòng tròn hai kiếm chéo vàng, dưới có nhãn "Auto", nằm trong cột icon bên phải dưới "Trao đổi". Rà **596 ảnh vuông nhỏ
+của kho VNKU, 23 ảnh `UiToolsControlBar`, APK gốc `VNKU-27-07.apk` (557 mục, 0 mục "auto") và dự án USVOLAM (57 ảnh, 0 "auto")**: không
+có sẵn tệp đúng như mẫu (kho chỉ có `pk.spr` kiếm chéo không chữ, `bat_auto.spr` là nút dài "Bật Auto"). Nên ghép từ chính nút
+`MinMapSmall\bat_auto.spr` của kho: hình tròn kiếm chéo (trái nút) + chữ "Auto" cắt từ "Bật Auto" → `auto_m.spr` 48×56, khung 0 xám =
+auto tắt, khung 1 vàng = auto bật (`anh_wauto_vnku.py` `icon()`). Đặt ở `[WAuto]` (868,300) trong cột phải dưới "Chạy"; chạm = mở/đóng khung.
+Đã bỏ hai nút lớn "Bật Auto" / "Thiết lập" thử giữa chừng (lớp `Player_WAutoBat` vẫn dịch, không đặt trong ini).
+
+**Nút nhặt (bàn tay)** — chủ: "bấm vào tự chạy tới nhặt, ưu tiên hơn tự đánh": `UiToolsControlBar\nut_nhat.spr` (89×89, trắng / vàng) →
+`nhat_m.spr` 48×48 tại `[NhatDo]` (868,362), lớp `Player_NhatDo` → `JxWAuto_NhatNgay(6000)`: 6 giây "đợt nhặt" — bên gửi WAuto phát nhịp
+kể cả khi auto đang tắt, với cấu hình tạm `bFight=0, bOnPK=0` (không đánh), `bPickUp=1, bFollowPick=1` (chạy tới nhặt), tầm nhặt ≥ 800,
+Tống Kim / Dã Tẩu nghỉ; gỡ khoá mục tiêu lúc bắt đầu; hết đợt mà auto vốn tắt thì gửi `PRT_TICKSTART(0)` im lặng để bộ não `ATYPE_CLEAR`.
+Đo 00:03 (APK `wauto-b2i`, MD5 khớp): chạm bàn tay → `[WAUTO] NHAT NGAY 6000 ms`, `jx_auto.log` 6 dòng `[AUTO-PASS] fight=0 pick=1
+fpick=1 pvis=800` đúng 6 giây rồi về cấu hình thật; icon Auto / khung mở đóng / Bật-Tắt trong khung vẫn đúng (ảnh `ld/nut_*.png`).
 
 ## 2. Ngựa không hiện hình — gốc và sửa (`android/va_nguon_android_ngua1.py`)
 
@@ -19,7 +29,9 @@ ngựa các hướng). Nhân vật nữ xin ảnh ngựa qua đường dẫn tư
 (`Engine/KFilePath.cpp`) rút gọn `\..\` rồi mới băm id tìm trong pak (`spr.pak` có id `30c8b46d` = `\spr\npcres\man\ma_hh_002_rd01.spr`).
 Bản Android dịch không có `WIN32` (chỉ `JX_POSIX`) nên hàm này chỉ tìm `/../` (nhánh Linux) → không rút gọn → id `33ef6bd0` không có
 trong pak → ảnh null → ngựa tàng hình (ảnh chéo của nhân vật nữ cũng vậy). **Sửa**: thêm nhánh tìm `\..\` và `\.\` khi `JX_ANDROID`
-(WIN32 và Linux server giữ nguyên). APK `android/apk/jx1mobile-1109-ngua1.apk`.
+(WIN32 và Linux server giữ nguyên). APK `android/apk/jx1mobile-1109-ngua1.apk`. **Đo 23:55** (MD5 khớp, khởi động lại): sau 70 s
+`jx_rep3.log` không còn dòng `woman\..\man` nào (trước ×8.878), còn lại chỉ `enemy141_stb.spr` khung 2/4 (quái thiếu khung, việc khác).
+Chưa chụp được ngựa vì nhân vật "quá mệt mỏi, không thể tiếp tục lên ngựa" — chủ lên ngựa thử là thấy.
 
 ## 3. Tên tệp GBK bị hỏng khi sinh dữ liệu — 1.136 tệp không tìm thấy (`android/sua_ten_gbk_android.py`)
 
@@ -46,6 +58,23 @@ sprvuhontieudao 372 MB, updatejx13 260 MB, resource 227 MB.
 Phân tích pak theo đúng thứ tự tìm của `KPakList` (`package.ini` 0..39, id trùng thì pak đứng trước thắng; `ReverseTools/pak_vltk/pakdump.py`):
 206.604 mục, **189.507 id duy nhất**; tổng tệp pak 7.582 MB, phần **còn được dùng 6.840 MB** → bỏ phần bị che chỉ tiết kiệm ~740 MB
 (updatejx13 bị che 100 %, updatejx01/02 gần hết, slistcache…). `package.ini` còn kê 4 pak không tồn tại (sprvlngaothe2, settings, ui, script).
+
+**Bảng bỏ được ngay** (`android/phan_tich_du_lieu.py`, đo 00:00 sau khi sửa tên GBK; kịch bản dời sang `D:\jx1_android_data_bo\` để lấy lại
+được: `android/rut_gon_du_lieu.py`, `--thu` để xem trước):
+
+| Mục | Gì | Bỏ được |
+|---|---|---|
+| A | 12 tệp `jx_*.log` ở gốc (212 MB) + 230 tệp sao lưu `.truoc_*`, `.moi`, `.bak`, `__tmp__` (59 MB: `goldequip.txt.truoc_*` ×5, `platinaequip.txt.truoc_*`…) | **271 MB** |
+| B | 46 bản đồ trong `maps2\` không có trong `settings\maplist.ini` (1.006 bản đồ khai báo, 326 có thư mục ảnh): 58.432 tệp — ví dụ `Thanh Long Sơn` 31 MB, `qichengdazhan` 31 MB, `Trường Bạch Sơn` 21 MB… | **493 MB** |
+| C | pak bị che 100 % theo thứ tự tìm: `updatejx01.pak` 89 MB, `updatejx02.pak` 86 MB, `updatejx13.pak` 260 MB (còn < 64 KB dùng) | **435 MB** |
+| D | pak nằm trong `data\` nhưng **không có trong `package.ini`** (game không bao giờ mở): `sprgame.pak` 145 MB, `vlngaothe1.pak` 145 MB, `vltkcache.pak` 2,6 MB, `serverlistfree.pak`, `update05.pak`, `maps_vuhon_tieudao.pak.truoc_*` 3,3 MB | **296 MB** |
+| | **Tổng bỏ ngay: ≈ 1.235 MB → còn ≈ 9.490 MB** | |
+| E | Đóng lại 12 pak bị che một phần (updatejx16 58 MB, updatejx08 28 MB, spr.pak 21 MB…) chỉ giữ mục còn thắng (`pakwrite.py`) | thêm **457 MB → ≈ 9.035 MB** |
+| — | 4 dòng `package.ini` trỏ tới pak không tồn tại (`sprvlngaothe2`, `settings`, `ui`, `script`): xoá dòng cho sạch (không đổi dung lượng) | |
+
+**Phải giữ** (không bỏ được bằng cách tĩnh): `spr\npcres` 1.141 MB (ảnh nhân vật / NPC, ghi đè pak), `spr\Ui3` 81 MB, `maps\*.fp` 350 MB
+(1.006 bản đồ khai báo đều có), `maps2` 326 bản đồ còn lại 279 MB, `settings` 78 MB, các pak còn lại ≈ 6.400 MB (updatejx14/15/16, spr,
+resource, update01/03, sprvuhontieudao…). Trong số này cái nào thực sự **được chơi** chỉ biết bằng nhật ký mở tệp (bước dưới).
 
 Muốn giảm mạnh phải theo hướng chủ nói — **"unpack ra chỉ lấy data cần"**:
 1. Thêm nhật ký mở tệp trên Android (chỉ `JX_ANDROID`, trong `KFile::Open` + `KPakList::FindElemFile`): ghi mọi đường dẫn (tệp rời hoặc
