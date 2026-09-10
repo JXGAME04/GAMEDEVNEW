@@ -138,7 +138,11 @@ enum RUIMAGE_RENDER_FLAG
 {
 	RUIMAGE_RENDER_FLAG_REF_SPOT = 1,	//绘制坐标点是否要与图形的参考点(中心点)吻合。
 			//使用此标记时,nEndX,nEndY,nEndZ的值被忽略。在与屏幕平行的面上绘制图形，并使得图形的参考点(重心点)与nX,nY,nZ描述的点相吻合。
-	RUIMAGE_RENDER_FLAG_FRAME_DRAW = 2,	//帧绘制方式，不考虑绘制帧相对于整个图形的位置偏移
+	RUIMAGE_RENDER_FLAG_FRAME_DRAW = 2,
+#ifdef JX_ANDROID
+	RUIMAGE_RENDER_FLAG_CAT_KHUNG = 64,	// [KYNANG 12/09 TRON] anh KEO (RU_T_IMAGE_STRETCH): cat theo oImgLTPos/oImgRBPos
+											// cua muc (cau truc KRUImagePart) - dung de cat anh vuong thanh hinh tron
+#endif	//帧绘制方式，不考虑绘制帧相对于整个图形的位置偏移
 };
 
 #define	IMAGE_IS_POSITION_INIT	-1

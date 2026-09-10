@@ -2875,6 +2875,7 @@ void	KSkill::DrawSkillIcon(int x, int y, int Width, int Height)
 	m_RUIconImage.nFrame = 0;
 #ifdef JX_ANDROID
 	{
+		extern int g_nJxKyNangTron;	// [KYNANG 12/09 TRON] 1 = cat bieu tuong thanh hinh tron ([Cham] KyNangTron)
 		//	[KYNANG 12/09 ICON] Ben goi cho mot KHUNG (Width/Height) to hon anh - o ky nang tron cua ban mobile -
 		//	thi KEO anh cho vua khung do, dung y het cach ve vong tron cua nut (VeAnhCo trong JxCanDieuKhien.cpp:
 		//	khung dich = o vuong, de Represent tu lo) nen bieu tuong va vong tron LUON trung tam nhau.
@@ -2895,6 +2896,42 @@ void	KSkill::DrawSkillIcon(int x, int y, int Width, int Height)
 			a.oEndPos.nX = x + Width;
 			a.oEndPos.nY = y + Height;
 			a.oEndPos.nZ = 0;
+			if (g_nJxKyNangTron)
+			{
+				//	[KYNANG 12/09 TRON] Chu: "cho ky nang nam trong o ky nang TRON chu hien tai vuong xau".
+				//	Represent chi cat duoc theo hinh chu nhat -> ve anh thanh tung DAI NGANG, moi dai cat
+				//	theo day cung cua duong tron o do. Dai cao 2 px: bac thang o vien gan nhu khong thay,
+				//	ma so lan ve chi bang nua chieu cao anh.
+				KRUImagePart b;
+				int nBK = (Width < Height ? Width : Height) / 2;	// ban kinh
+				int nTX = x + Width / 2, nTY = y + Height / 2;	// tam
+				int nDai = 2, nY0;
+
+				memset(&b, 0, sizeof(b));
+				*(KRUImage*)&b = a;
+				b.bRenderFlag |= RUIMAGE_RENDER_FLAG_CAT_KHUNG;
+				for (nY0 = y; nY0 < y + Height; nY0 += nDai)
+				{
+					int nY1 = nY0 + nDai;
+					int nGiua = (nY0 + nY1) / 2 - nTY;	// khoang cach tu tam theo truc doc
+					int nNua, nBP;
+					if (nGiua < 0)
+						nGiua = -nGiua;
+					nBP = nBK * nBK - nGiua * nGiua;	// nua day cung = can bac hai
+					if (nBP <= 0)
+						continue;
+					for (nNua = nBK; nNua > 0 && nNua * nNua > nBP; nNua--)
+						;
+					if (nNua <= 0)
+						continue;
+					b.oImgLTPos.nX = nTX - nNua;
+					b.oImgLTPos.nY = nY0;
+					b.oImgRBPos.nX = nTX + nNua;
+					b.oImgRBPos.nY = nY1;
+					g_pRepresent->DrawPrimitives(1, &b, RU_T_IMAGE_STRETCH, 1);
+				}
+				return;
+			}
 			g_pRepresent->DrawPrimitives(1, &a, RU_T_IMAGE_STRETCH, 1);
 			return;
 		}

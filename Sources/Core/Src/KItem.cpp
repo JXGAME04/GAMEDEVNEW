@@ -8,6 +8,7 @@ int g_nJxVeVatPhamW = 0, g_nJxVeVatPhamH = 0;
 // [VEVATPHAM 12/09] them goc o (tuyet doi) de ve gon TRONG o, khong an theo m_Image.oPosition da bi dich truoc do
 int g_nJxVeVatPhamX = 0, g_nJxVeVatPhamY = 0;
 int g_nJxKeoAnhVatPham = 0;	// [VEVATPHAM 12/09 d] 1 = keo anh vat pham cho vua o (config [Ui] KeoAnhVatPham); 0 = ve nguyen co, can giua o nhu ban PC
+int g_nJxKyNangTron = 1;	// [KYNANG 12/09 TRON] 1 = cat bieu tuong ky nang thanh hinh TRON khi ve vao o tron ([Cham] KyNangTron)
 int g_nJxNhatKyVatPham = 0;	// so lan con ghi nhat ky ve vat pham (dat > 0 de chan doan)
 int g_nJxNhatKyVatPham2 = 0;	// [VEVATPHAM 12/09 b] bo dem rieng cho nhanh ve THUONG (khong keo)
 int g_nJxNhatKyVatPham3 = 0;	// bo dem rieng cho nhanh thu nho

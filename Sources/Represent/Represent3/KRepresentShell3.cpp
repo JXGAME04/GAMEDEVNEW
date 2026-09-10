@@ -1433,6 +1433,16 @@ void KRepresentShell3::DrawImage2DStretch(int nPrimitiveCount, KRepresentUnit* p
 			rcFull.top = 0;
 			rcFull.right = g_nScreenWidth;
 			rcFull.bottom = g_nScreenHeight;
+#ifdef JX_ANDROID
+			if (pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_CAT_KHUNG)
+			{	// [KYNANG 12/09 TRON] ben goi cho khung cat rieng (KRUImagePart): dung de ve anh vuong thanh hinh tron
+				KRUImagePart* pCat = (KRUImagePart*)pTemp;
+				rcFull.left   = pCat->oImgLTPos.nX;
+				rcFull.top    = pCat->oImgLTPos.nY;
+				rcFull.right  = pCat->oImgRBPos.nX;
+				rcFull.bottom = pCat->oImgRBPos.nY;
+			}
+#endif
 			DrawSpritePartAlpha(pTemp->oPosition.nX, pTemp->oPosition.nY, nW, nH,
 				pTemp->nFrame, pSprite, rcFull, pTemp->Color.Color_dw, pTemp->bRenderStyle);
 			continue;
