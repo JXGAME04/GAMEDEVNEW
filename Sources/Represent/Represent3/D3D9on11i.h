@@ -381,6 +381,7 @@ public:
 	ID3D11BlendState*     GetBlendState();
 	ID3D11SamplerState*   GetSamplerState(UINT stage);
 	ID3D11RasterizerState* GetRasterState();
+	ID3D11RasterizerState* GetRasterStateCull(DWORD cull);	// [MANG 09/09 e] raster voi cull chi dinh (lo 2D dung CULL_NONE, cull tren CPU)
 	void    FillCaps(D3DCAPS9* pCaps);
 	void    SetStateInternal(DWORD key, DWORD value);
 	DWORD   GetStateInternal(DWORD key);

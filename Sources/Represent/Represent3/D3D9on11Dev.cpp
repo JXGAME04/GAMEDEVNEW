@@ -22,7 +22,8 @@ unsigned g_uRep3Presents = 0;
 unsigned g_uRep3PresentSkip = 0;
 unsigned g_uRep3BatchQuads = 0;
 unsigned g_uRep3BatchDraws = 0;
-unsigned g_uRep3RingVong = 0; double g_dRep3RingMapMax = 0.0; unsigned g_uRep3TexRiengTao = 0;	// [MANG 09/09 c]
+unsigned g_uRep3RingVong = 0; double g_dRep3RingMapMax = 0.0; unsigned g_uRep3TexRiengTao = 0;
+unsigned g_uRep3CullGiu = 0, g_uRep3CullBo = 0;	// [MANG 09/09 e] tam giac 2D giu / bo khi cull tren CPU	// [MANG 09/09 c]
 unsigned g_uRep3GopVo[12] = { 0 };	// [GOP 09/09 do] ly do vo lo quad: 0 doi trang atlas, 1 texture rieng, 2 srv1, 3 blend, 4 sampler, 5 ps st0, 6 ps st1, 7 alphatest, 8 vs, 9 layout, 10 vp/scissor/raster, 11 day
 unsigned g_uRep3VeNgay[4] = { 0 };	// [GOP 09/09 do] lenh ve ngay (khong gop): 0 fan, 1 list, 2 strip (khong phai quad), 3 khac
 static int s_nRep3BuffersUsed = 0;
@@ -892,9 +893,10 @@ ID3D11SamplerState* CDev11::GetSamplerState(UINT stage)
 	return p;
 }
 
-ID3D11RasterizerState* CDev11::GetRasterState()
+ID3D11RasterizerState* CDev11::GetRasterState() { return GetRasterStateCull(m_rs[D3DRS_CULLMODE] & 3); }
+ID3D11RasterizerState* CDev11::GetRasterStateCull(DWORD cull)	// [MANG 09/09 e]
 {
-	DWORD cull = m_rs[D3DRS_CULLMODE] & 3, fill = m_rs[D3DRS_FILLMODE] & 3, sc = m_rs[D3DRS_SCISSORTESTENABLE] ? 1 : 0;
+	DWORD fill = m_rs[D3DRS_FILLMODE] & 3, sc = m_rs[D3DRS_SCISSORTESTENABLE] ? 1 : 0;
 	DWORD key = cull | (fill << 2) | (sc << 4);
 	std::map<DWORD, ID3D11RasterizerState*>::iterator it = m_rasters.find(key);
 	if (it != m_rasters.end()) return it->second;
@@ -1114,8 +1116,12 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 	const bool bList = (type == D3DPT_TRIANGLELIST && (nVerts % 3) == 0 && nVerts <= 3072);
 	if (g_nRep3Batch && (bQuad || bList))
 	{
+		const bool bRhw = ((m_fvf & D3DFVF_POSITION_MASK) == D3DFVF_XYZRHW);
+		const DWORD dwCull = m_rs[D3DRS_CULLMODE] & 3;
+		const bool bCullCpu = bRhw && (dwCull == D3DCULL_CW || dwCull == D3DCULL_CCW);	// [MANG 09/09 e] 2D: cull tren CPU, lo dung CULL_NONE (chu CCW gop chung sprite NONE)
 		R11Applied a;
 		ComputeApplied(a, pIL, stride);
+		if (bCullCpu) a.pRaster = GetRasterStateCull(D3DCULL_NONE);
 		const UINT s11 = stride + 8;	// [r] +4 byte PALROW, [MANG 09/09 b] +4 nua
 		const UINT nThem = bQuad ? 6 : nVerts;
 		if (m_batchVerts && (memcmp(&a, &m_batchState, sizeof(a)) != 0 || m_batch.size() + (size_t)nThem * s11 > 2 * 1024 * 1024))
@@ -1139,15 +1145,28 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 		size_t base = m_batch.size();
 		m_batch.resize(base + (size_t)nThem * s11);
 		BYTE* d = &m_batch[base];
-		if (bQuad)
+		static const int s_idx[6] = { 0, 1, 2, 2, 1, 3 };
+		const UINT nTri = nThem / 3; UINT nGhi = 0;
+		for (UINT t = 0; t < nTri; t++)
 		{
-			static const int s_idx[6] = { 0, 1, 2, 2, 1, 3 };
-			for (int i = 0; i < 6; i++) { memcpy(d + i * s11, pVerts + s_idx[i] * stride, stride); { UINT* q = (UINT*)(d + i * s11 + stride); q[0] = uX; q[1] = uY; } }
+			const UINT i0 = bQuad ? (UINT)s_idx[t * 3] : t * 3, i1 = bQuad ? (UINT)s_idx[t * 3 + 1] : t * 3 + 1, i2 = bQuad ? (UINT)s_idx[t * 3 + 2] : t * 3 + 2;
+			if (bCullCpu)
+			{	// tich cheo tren man hinh (y huong xuong): cr > 0 = thuan chieu kim dong ho (mat truoc D3D9)
+				const float* p0 = (const float*)(pVerts + i0 * stride); const float* p1 = (const float*)(pVerts + i1 * stride); const float* p2 = (const float*)(pVerts + i2 * stride);
+				const float cr = (p1[0] - p0[0]) * (p2[1] - p0[1]) - (p1[1] - p0[1]) * (p2[0] - p0[0]);
+				if (cr == 0.0f || (dwCull == D3DCULL_CCW ? (cr < 0.0f) : (cr > 0.0f))) { g_uRep3CullBo++; continue; }
+				g_uRep3CullGiu++;
+			}
+			BYTE* q = d + (size_t)nGhi * s11;
+			memcpy(q, pVerts + i0 * stride, stride); *(UINT*)(q + stride) = uX; *(UINT*)(q + stride + 4) = uY;
+			memcpy(q + s11, pVerts + i1 * stride, stride); *(UINT*)(q + s11 + stride) = uX; *(UINT*)(q + s11 + stride + 4) = uY;
+			memcpy(q + 2 * s11, pVerts + i2 * stride, stride); *(UINT*)(q + 2 * s11 + stride) = uX; *(UINT*)(q + 2 * s11 + stride + 4) = uY;
+			nGhi += 3;
 		}
-		else
-			for (UINT i = 0; i < nVerts; i++) { memcpy(d + i * s11, pVerts + i * stride, stride); { UINT* q = (UINT*)(d + i * s11 + stride); q[0] = uX; q[1] = uY; } }
-		R11AtlasUv(d, nThem, s11, m_fvf, m_tex[0], fPage);
-		m_batchVerts += nThem;
+		if (nGhi != nThem) m_batch.resize(base + (size_t)nGhi * s11);
+		if (nGhi == 0) return D3D_OK;
+		R11AtlasUv(&m_batch[base], nGhi, s11, m_fvf, m_tex[0], fPage);
+		m_batchVerts += nGhi;
 		g_uRep3BatchQuads += bQuad ? 1 : (nVerts / 6);	// thong ke theo 'quad' (2 tam giac)
 		return D3D_OK;
 	}
