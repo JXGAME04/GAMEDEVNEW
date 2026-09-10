@@ -21,6 +21,11 @@ kể cả khi auto đang tắt, với cấu hình tạm `bFight=0, bOnPK=0` (kh�
 Tống Kim / Dã Tẩu nghỉ; gỡ khoá mục tiêu lúc bắt đầu; hết đợt mà auto vốn tắt thì gửi `PRT_TICKSTART(0)` im lặng để bộ não `ATYPE_CLEAR`.
 Đo 00:03 (APK `wauto-b2i`, MD5 khớp): chạm bàn tay → `[WAUTO] NHAT NGAY 6000 ms`, `jx_auto.log` 6 dòng `[AUTO-PASS] fight=0 pick=1
 fpick=1 pvis=800` đúng 6 giây rồi về cấu hình thật; icon Auto / khung mở đóng / Bật-Tắt trong khung vẫn đúng (ảnh `ld/nut_*.png`).
+Chủ thử (00:10): "kích vào chưa tự chạy tới nhặt" → hai cổng trong `ATYPE_PICKUP` (CoreShell.cpp) chặn khi nhân vật **không ở thế
+chiến đấu**: `if(!m_FightMode && !bCityPick) return 0` và cổng chạy-tới `PICK-FOLLOW-GATE` đòi `m_FightMode`. Sửa (`B2 i d/e`,
+`va_nguon_android_wauto9.py`): đợt nhặt ép `bCityPick=1`; cổng chạy-tới nhận thêm `bCityPick` (rào `JX_ANDROID`, PC giữ dòng cũ).
+Đo 00:22 (`wauto-b2ie`): ngoài thế chiến đấu vẫn có `PICK2-SCAN pickvision=800 vision=800` (quét 800 rồi chạy tới) — trong thành
+không có đồ rơi nên `followobj=0`; chủ thử ở bãi quái có đồ rơi.
 
 ## 2. Ngựa không hiện hình — gốc và sửa (`android/va_nguon_android_ngua1.py`)
 

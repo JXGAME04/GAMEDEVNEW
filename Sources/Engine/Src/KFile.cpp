@@ -40,6 +40,37 @@ KFile::~KFile()
 // 参数:	FileName	文件名
 // 返回:	成功返回TRUE，失败返回FALSE。
 //---------------------------------------------------------------------------
+#ifdef JX_ANDROID
+// [ANDROID 12/09 TEPDUNG] nhat ky tep dung (rut gon du lieu): 'R <tep roi>' / 'P <uid> <ten xin>' vao jx_tep_dung.log, moi ten mot lan
+#include <set>
+#include <string>
+#include <stdio.h>
+extern const char* JxPosix_DataDir(void);
+static int s_nTepDungBat = -1;
+static std::set<std::string> s_TepDungDaGhi;
+void JxTepDung_Ghi(char cLoai, unsigned int uId, const char* pszTen)
+{
+	if (s_nTepDungBat < 0)
+		s_nTepDungBat = GetPrivateProfileIntA("Client", "TepDung", 1, ".\\Config.ini") ? 1 : 0;
+	if (!s_nTepDungBat || !pszTen)
+		return;
+	char szKhoa[600];
+	if (cLoai == 'P')
+		snprintf(szKhoa, sizeof(szKhoa), "P %08x %s", uId, pszTen);
+	else
+		snprintf(szKhoa, sizeof(szKhoa), "R %s", pszTen);
+	if (!s_TepDungDaGhi.insert(std::string(szKhoa)).second)
+		return;
+	char szTep[1200];
+	snprintf(szTep, sizeof(szTep), "%s/jx_tep_dung.log", JxPosix_DataDir());
+	FILE* f = fopen(szTep, "ab");
+	if (!f)
+		return;
+	fprintf(f, "%s\n", szKhoa);
+	fclose(f);
+}
+#endif
+
 BOOL KFile::Open(LPSTR FileName)
 {
 	char PathName[MAXPATH];
@@ -85,7 +116,13 @@ BOOL KFile::Open(LPSTR FileName)
 			strlwr(lcasePathName + strlen(szRootPath));
 		else
 			strlwr(lcasePathName);
-		if (NULL == (m_hFile = fopen(lcasePathName, "rb")))
+		if (NULL != (m_hFile = fopen(lcasePathName, "rb")))
+		{
+#ifdef JX_ANDROID
+			JxTepDung_Ghi('R', 0, lcasePathName);	// [ANDROID 12/09 TEPDUNG]
+#endif
+		}
+		else
 #endif
 	m_hFile = fopen(PathName, "rb");
 

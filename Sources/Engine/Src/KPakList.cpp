@@ -113,6 +113,13 @@ bool KPakList::FindElemFile(const char* pszFileName, XPackElemFileRef& ElemRef)
 		#endif
 		unsigned long uId = FileNameToId(szPackName);
 		bFounded = FindElemFile(uId, ElemRef);
+#ifdef JX_ANDROID
+		if (bFounded)
+		{
+			extern void JxTepDung_Ghi(char cLoai, unsigned int uId, const char* pszTen);	// [ANDROID 12/09 TEPDUNG] (KFile.cpp)
+			JxTepDung_Ghi('P', (unsigned int)uId, szPackName);
+		}
+#endif
 	}
 	return bFounded;
 }
