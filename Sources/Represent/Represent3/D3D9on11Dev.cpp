@@ -950,8 +950,12 @@ void CDev11::ComputeApplied(R11Applied& a, ID3D11InputLayout* pIL, UINT stride)
 	}
 	a.vs = m_vsCb;
 	R11PsCb& cb = a.ps;
-	cb.st0[0] = (int)m_tss[0][D3DTSS_COLOROP]; cb.st0[1] = (int)m_tss[0][D3DTSS_COLORARG1]; cb.st0[2] = (int)m_tss[0][D3DTSS_COLORARG2]; cb.st0[3] = (int)m_tss[0][D3DTSS_ALPHAOP];
-	cb.st0b[0] = (int)m_tss[0][D3DTSS_ALPHAARG1]; cb.st0b[1] = (int)m_tss[0][D3DTSS_ALPHAARG2]; cb.st0b[2] = nBound[0];
+	if (g_nRep3AtlasMang) { cb.st0[0] = cb.st0[1] = cb.st0[2] = cb.st0[3] = 0; cb.st0b[0] = cb.st0b[1] = cb.st0b[2] = 0; }	// [MANG 09/09 d] stage 0 theo dinh -> cb co dinh, khong vo lo
+	else
+	{
+		cb.st0[0] = (int)m_tss[0][D3DTSS_COLOROP]; cb.st0[1] = (int)m_tss[0][D3DTSS_COLORARG1]; cb.st0[2] = (int)m_tss[0][D3DTSS_COLORARG2]; cb.st0[3] = (int)m_tss[0][D3DTSS_ALPHAOP];
+		cb.st0b[0] = (int)m_tss[0][D3DTSS_ALPHAARG1]; cb.st0b[1] = (int)m_tss[0][D3DTSS_ALPHAARG2]; cb.st0b[2] = nBound[0];
+	}
 	cb.st0b[3] = (m_bPalLinForce || (m_ss[0][D3DSAMP_MAGFILTER] & 7) >= D3DTEXF_LINEAR || (m_ss[0][D3DSAMP_MINFILTER] & 7) >= D3DTEXF_LINEAR) ? 1 : 0;	// [r2] loc tuyen tinh stage 0 -> shader tu noi suy texture bang mau
 	cb.st1[0] = (int)m_tss[1][D3DTSS_COLOROP]; cb.st1[1] = (int)m_tss[1][D3DTSS_COLORARG1]; cb.st1[2] = (int)m_tss[1][D3DTSS_COLORARG2]; cb.st1[3] = (int)m_tss[1][D3DTSS_ALPHAOP];
 	cb.st1b[0] = (int)m_tss[1][D3DTSS_ALPHAARG1]; cb.st1b[1] = (int)m_tss[1][D3DTSS_ALPHAARG2]; cb.st1b[2] = nBound[1]; cb.st1b[3] = (m_tex[1] && m_tex[1]->m_bVirtual && m_tex[1]->m_pPage) ? (int)m_tex[1]->m_pPage->m_lop : 0;	// [MANG 09/09] lop cua texture stage 1
@@ -1084,12 +1088,18 @@ static void R11AtlasUv(BYTE* pV, UINT nVerts, UINT stride, DWORD fvf, CTex11* pT
 // [MANG 09/09] 4 byte PALROW moi dinh: 16 bit thap = hang bang mau (0xFFFF = khong), 16 bit cao = lop cua trang trong mang atlas
 // [MANG 09/09 b] 8 byte them moi dinh (uint2 PALROW): x = hang bang mau (16 bit, 0xFFFF = khong) | lop (9) << 16 | nguon (2) << 25
 // [0 = t0 texture rieng, 1 = t3 atlas R8G8, 2 = t4 atlas BGRA8] | alpha test bat (1) << 27 | (ham - 1) (3) << 28; y = alpha ref (8 bit)
-static inline void R11DinhThem(CTex11* pTex, DWORD dwAtBat, DWORD dwAtHam, DWORD dwAtRef, UINT* pX, UINT* pY)
+static inline UINT R11ArgGoi(DWORD a) { UINT sel = a & 15u; if (sel > 3u) sel = 3u; return sel | ((a & 0x10u) ? 4u : 0u) | ((a & 0x20u) ? 8u : 0u); }	// [MANG 09/09 d]
+static inline UINT R11OpGoi(DWORD v) { return (v > 15u) ? 15u : (UINT)v; }
+static inline void R11DinhThem(CTex11* pTex, DWORD dwAtBat, DWORD dwAtHam, DWORD dwAtRef, const DWORD* pTss0, int nBound, UINT* pX, UINT* pY)
 {
 	UINT x = (pTex && pTex->m_nPalRow >= 0) ? (UINT)pTex->m_nPalRow : 0xFFFFu;
 	if (pTex && pTex->m_bVirtual && pTex->m_pPage) x |= ((pTex->m_pPage->m_lop & 0x1FFu) << 16) | ((pTex->m_pPage->m_bpp == 2 ? 1u : 2u) << 25);
 	if (dwAtBat) x |= (1u << 27) | ((((dwAtHam & 15u) + 7u) & 7u) << 28);
-	*pX = x; *pY = (UINT)(dwAtRef & 255u);
+	if (nBound) x |= (1u << 31);	// [MANG 09/09 d] tex0 bound
+	UINT y = (UINT)(dwAtRef & 255u);
+	y |= (R11OpGoi(pTss0[D3DTSS_COLOROP]) << 8) | (R11ArgGoi(pTss0[D3DTSS_COLORARG1]) << 12) | (R11ArgGoi(pTss0[D3DTSS_COLORARG2]) << 16)
+	   | (R11OpGoi(pTss0[D3DTSS_ALPHAOP]) << 20) | (R11ArgGoi(pTss0[D3DTSS_ALPHAARG1]) << 24) | (R11ArgGoi(pTss0[D3DTSS_ALPHAARG2]) << 28);
+	*pX = x; *pY = y;
 }
 
 HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVerts, UINT stride)
@@ -1125,7 +1135,7 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 			FlushBatch();
 		}
 		if (!m_batchVerts) m_batchState = a;
-		UINT uX = 0, uY = 0; R11DinhThem(m_tex[0], m_rs[D3DRS_ALPHATESTENABLE], m_rs[D3DRS_ALPHAFUNC], m_rs[D3DRS_ALPHAREF], &uX, &uY);
+		UINT uX = 0, uY = 0; R11DinhThem(m_tex[0], m_rs[D3DRS_ALPHATESTENABLE], m_rs[D3DRS_ALPHAFUNC], m_rs[D3DRS_ALPHAREF], m_tss[0], (m_tex[0] && !(m_pRt && m_pRt->m_pTex && m_tex[0] == m_pRt->m_pTex)) ? 1 : 0, &uX, &uY);
 		size_t base = m_batch.size();
 		m_batch.resize(base + (size_t)nThem * s11);
 		BYTE* d = &m_batch[base];
@@ -1146,7 +1156,7 @@ HRESULT CDev11::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVe
 	g_uRep3VeNgay[type == D3DPT_TRIANGLEFAN ? 0 : (type == D3DPT_TRIANGLELIST ? 1 : (type == D3DPT_TRIANGLESTRIP ? 2 : 3))]++;	// [GOP 09/09 do]
 	std::vector<BYTE> tmp;
 	const UINT s11 = stride + 8;	// [r] +4 byte PALROW, [MANG 09/09 b] +4 nua
-	UINT uX = 0, uY = 0; R11DinhThem(m_tex[0], m_rs[D3DRS_ALPHATESTENABLE], m_rs[D3DRS_ALPHAFUNC], m_rs[D3DRS_ALPHAREF], &uX, &uY);	// [MANG 09/09]
+	UINT uX = 0, uY = 0; R11DinhThem(m_tex[0], m_rs[D3DRS_ALPHATESTENABLE], m_rs[D3DRS_ALPHAFUNC], m_rs[D3DRS_ALPHAREF], m_tss[0], (m_tex[0] && !(m_pRt && m_pRt->m_pTex && m_tex[0] == m_pRt->m_pTex)) ? 1 : 0, &uX, &uY);	// [MANG 09/09]
 	if (type == D3DPT_TRIANGLEFAN)
 	{
 		UINT nTri = nVerts - 2;

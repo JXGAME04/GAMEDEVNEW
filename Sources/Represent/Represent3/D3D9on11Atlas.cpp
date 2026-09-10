@@ -43,7 +43,7 @@ void CAtlasMgr::ReleaseAll()
 
 bool CAtlasMgr::Eligible(UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL pool)
 {
-	if (pool != D3DPOOL_DEFAULT) return false;
+	if (pool != D3DPOOL_DEFAULT && pool != D3DPOOL_MANAGED) return false;	// [MANG 09/09 d] MANAGED (chu KFont3 512x512 A4R4G4B4) cung vao atlas: ban CPU + UploadRect vung ban da ho tro texture ao
 	if (usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DYNAMIC | D3DUSAGE_DEPTHSTENCIL)) return false;
 	if (w == 0 || h == 0 || w > 512 || h > 512) return false;
 	switch (fmt)

@@ -158,20 +158,30 @@ float4 Stage(int4 st, int4 stb, float4 dif, float4 cur, float4 tex)
     return saturate(float4(rgb, a));
 }
 
+#ifdef MANG
+// [MANG 09/09 d] arg stage 0 goi 4 bit theo dinh: sel (2) | complement (1) | alphareplicate (1) -> ma D3DTA nhu cu
+int ArgMo(uint a) { return (int)((a & 3u) | (((a & 4u) != 0u) ? 0x10u : 0u) | (((a & 8u) != 0u) ? 0x20u : 0u)); }
+#endif
 float4 PS(VSOut i) : SV_Target
 {
     uint row = i.palrow.x & 0xFFFFu;   // [MANG 09/09] hang bang mau
 #ifdef MANG
     float lop = (float)((i.palrow.x >> 16) & 0x1FFu); uint src = (i.palrow.x >> 25) & 3u;   // [MANG 09/09 b] lop + nguon theo dinh
+    // [MANG 09/09 d] tham so stage 0 theo dinh (y) + tex0 bound (x bit 31); loc tuyen tinh van tu cb (g_st0b.w)
+    uint y = i.palrow.y;
+    int4 st0 = int4((int)((y >> 8) & 15u), ArgMo((y >> 12) & 15u), ArgMo((y >> 16) & 15u), (int)((y >> 20) & 15u));
+    int4 st0b = int4(ArgMo((y >> 24) & 15u), ArgMo((y >> 28) & 15u), (int)((i.palrow.x >> 31) & 1u), g_st0b.w);
+#else
+    int4 st0 = g_st0; int4 st0b = g_st0b;
 #endif
     float4 dif = i.col;
     float4 cur = dif;
-    if (g_st0.x != 1)   // stage 0 khong DISABLE
+    if (st0.x != 1)   // stage 0 khong DISABLE
     {
-        float4 tex0 = (g_st0b.z != 0) ? T0_SAMPLE(i.uv) : float4(1, 1, 1, 1);
-        if (row != 0xFFFFu && g_st0b.z != 0)
+        float4 tex0 = (st0b.z != 0) ? T0_SAMPLE(i.uv) : float4(1, 1, 1, 1);
+        if (row != 0xFFFFu && st0b.z != 0)
         {   // [r] texture chi so (R8G8): R = chi so bang mau, G = alpha
-            if (g_st0b.w != 0)
+            if (st0b.w != 0)
             {   // [r2] loc tuyen tinh: lay 4 diem, tra bang tung diem roi noi suy (nhu phan cung voi BGRA8); khong noi suy CHI SO
                 float2 dim; T0_DIM(dim);
                 float2 p = i.uv * dim - 0.5; float2 f = frac(p); int2 p0 = (int2)floor(p); int2 mx = (int2)dim - 1;
@@ -184,7 +194,7 @@ float4 PS(VSOut i) : SV_Target
             else
                 tex0 = PalTex(tex0, row);
         }
-        cur = Stage(g_st0, g_st0b, dif, dif, tex0);
+        cur = Stage(st0, st0b, dif, dif, tex0);
         if (g_st1.x != 1)
         {
             float4 tex1 = (g_st1b.z != 0) ? T1_SAMPLE(i.uv) : float4(1, 1, 1, 1);
