@@ -302,7 +302,11 @@ extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void)
 	if (nHeSo < 100) nHeSo = 100;	// khong bao gio ve LON hon man hinh: ton bo nho ma khong net them
 	if (nHeSo > 400) nHeSo = 400;
 	// Giao dien JX1 can it nhat 800x480 moi bay du (thanh ky nang, tui do, cua so chat) -> ha he so cho du cho.
-	while (nHeSo > 100 && (nW * 100 / nHeSo < 800 || nH * 100 / nHeSo < 480))
+	// [DPG 12/09 RONG] bo cuc PC cua chu thiet ke tren 1040x604 (ManHinh cua Ui\UiToaDo_MacDinh.ini): man 4:3 (may tinh bang)
+	// ma khung ve hep hon 1040 thi icon chong nhau -> ha he so toi khi rong >= RongToiThieu (1440x1080: 1,75 -> 1,25 = 1152x864).
+	int nRongToiThieu = GetPrivateProfileInt("Resolution", "RongToiThieu", 1040, szCfg);
+	if (nRongToiThieu < 800) nRongToiThieu = 800;
+	while (nHeSo > 100 && (nW * 100 / nHeSo < nRongToiThieu || nH * 100 / nHeSo < 480))
 		nHeSo -= 25;
 	int nVeW = (nW * 100 / nHeSo) & ~1;
 	int nVeH = (nH * 100 / nHeSo) & ~1;

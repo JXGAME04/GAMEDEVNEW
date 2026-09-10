@@ -1738,6 +1738,12 @@ void JxKyNang_Ve()
 {
 	int i, nX, nY, nR, nIcon;
 	KUiGameObject o;
+	{	// [UITOADO 12/09 NEO d] 900 khung (~15 s) sau khi vao the gioi: ghi vi tri thuc moi cua so neu [Ui] NhatKyBoCuc>=2
+		static int s_nKhungBoCuc = 0;
+		if (KyNang_TrongGame() && ++s_nKhungBoCuc == 900
+			&& GetPrivateProfileInt("Ui", "NhatKyBoCuc", 0, ".\\config.ini") >= 2)
+			UiToaDo_DumpThuc();
+	}
 
 	DocCaiDat();
 	if (!s_nKNBat || g_pCoreShell == NULL || g_pRepresentShell == NULL || !KyNang_TrongGame())	// [ANDROID 12/09 KYNANG AN]

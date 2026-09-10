@@ -44,6 +44,7 @@ static int s_bIconTronAn = 0;	// [ANDROID 10/09 ANICON] hang icon tron dang an (
 #include "../../../Headers/KProtocol.h"
 #include "../../../Engine/src/KDebug.h"
 #include "UiTaskTrace.h"	// [TaskGuide]
+#include "../Elem/UiToaDo.h"	// [NHOMTREN 12/09] UiToaDo_LayDich
 #include "UiTaskGuide.h"	// [TaskGuide]
 #include "../TrayMode.h"
 #include "malloc.h"
@@ -484,6 +485,9 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 	_ASSERT(pIni);
 	int i = 0;
 	Init(pIni, $Main);
+#ifdef JX_ANDROID
+	pIni->GetInteger($Main, "Top", 0, &ms_nTopIni);	// [NHOMTREN 12/09 b] do cao goc cua khung (truoc khi bo cuc neo lai)
+#endif
 
 	m_ChatBar  .Init(pIni, "InputBack");
 	m_ShorcutKeyBar  .Init(pIni, "ShorcutKeyBar");
@@ -742,7 +746,40 @@ void KUiPlayerBar::Initialize()
 	m_pSelf->LoadScheme(Scheme);
 
 	Wnd_AddWindow(this);
+#ifdef JX_ANDROID
+	m_pSelf->NeoNhomTren();	// [NHOMTREN 12/09] bang trang thai goc tren-trai: giu do cao nhu ban PC tren man cao
+	KUiTaskTrace::NeoLaiKhiCoThanh();	// [TASKTRACE 12/09] khung theo doi nhiem vu mo truoc thanh nay -> neo lai canh nut
+#endif
 }
+#ifdef JX_ANDROID
+//	[NHOMTREN 12/09] Khung 800x600 nay chua ca bang trang thai (goc tren-trai: gio, song mang, hang buff, nut an hang icon)
+//	lan khung chat (o day). Bo cuc neo khung theo GIUA-DUOI cho khung chat sat day man, nen tren man CAO
+//	(may tinh bang 4:3) bang trang thai bi keo xuong giua man. Tra rieng nhom tren ve dung do cao ban PC:
+//	tru dung khoang doc ma bo neo da cong cho khung (UiToaDo_LayDich) - khong doan theo kich co man hinh.
+int KUiPlayerBar::ms_nTopIni = 0;	// [NHOMTREN 12/09 b]
+void KUiPlayerBar::NeoNhomTren()
+{
+	int nDichY = 0, nX = 0, nY = 0, i;
+	// [NHOMTREN 12/09 b] khoang khung da roi khoi cho goc trong ini (bo cuc neo + chenh khung thiet ke cua tep bo cuc)
+	GetPosition(&nX, &nY);
+	nDichY = nY - ms_nTopIni;
+	if (nDichY == 0)
+		return;
+	KWndWindow* apO[] = { &m_DateTime, &m_WifiStatus, &m_AnIcon };
+	for (i = 0; i < (int)(sizeof(apO) / sizeof(apO[0])); i++)
+	{
+		apO[i]->GetPosition(&nX, &nY);
+		apO[i]->SetPosition(nX, nY - nDichY);
+	}
+	for (i = 0; i < MAX_BUTTON_STATE; i++)
+	{
+		m_StateImg[i].GetPosition(&nX, &nY);
+		m_StateImg[i].SetPosition(nX, nY - nDichY);
+		m_StateLife[i].GetPosition(&nX, &nY);
+		m_StateLife[i].SetPosition(nX, nY - nDichY);
+	}
+}
+#endif
 
 int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {

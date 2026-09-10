@@ -33,6 +33,8 @@ void	UiToaDo_Nap();
 void	UiToaDo_ApChoCuaSo(KWndWindow* pCuaSoGoc);
 #ifdef JX_ANDROID
 void	UiToaDo_ApChoO(KWndWindow* pWnd);	// [UITOADO 12/09 NEO b] ap cho mot o ngay khi doc xong ini
+void	UiToaDo_DumpThuc();	// [UITOADO 12/09 NEO d] nhat ky vi tri thuc moi cua so (mot lan)
+void	UiToaDo_LayDich(const char* pszKhoa, int* pnDX, int* pnDY);	// [NHOMTREN 12/09] khoang bo neo da dich mot muc
 #endif
 
 //	Ap cho moi cua so dang co (dung sau khi nap lai giao dien).

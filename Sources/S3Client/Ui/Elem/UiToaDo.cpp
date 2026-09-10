@@ -46,6 +46,8 @@ struct KOToaDo
 #ifdef JX_ANDROID
 	int		nNeoX;			// [UITOADO 12/09 NEO] 0 trai, 1 giua, 2 phai; -1 = chua biet (tu suy)
 	int		nNeoY;			// 0 tren, 1 giua, 2 duoi; -1
+	int		nDichX;			// [NHOMTREN 12/09] khoang bo neo da cong cho muc nay (khung ve khac tep thiet ke)
+	int		nDichY;
 #endif
 };
 
@@ -60,6 +62,7 @@ static int			s_nStyleCu		= 0;		// WND_SHOW_DEBUG_FRAME_TEXT truoc khi bat
 
 static KWndWindow*	s_pKeo			= NULL;
 static char			s_szKhoaKeo[UITOADO_CO_KHOA] = "";
+static int			s_nNhatKyBoCuc = 0;	// [UITOADO 12/09 NEO e] [Ui] NhatKyBoCuc, doc mot lan khi nap bang
 static int			s_nKeoX			= 0;
 static int			s_nKeoY			= 0;
 
@@ -142,6 +145,31 @@ static int	s_nNeoTheoMep = -1;
 // [UITOADO 12/09 NEO] moi o co neo ngang (0 trai, 1 giua, 2 phai) va neo doc (0 tren, 1 giua, 2 duoi) - nhu anchor cua engine mobile.
 // Toa do trong tep la cua khung ve ManHinh=W,H; sang khung ve that: Left += (SW - W) * (neo - neo cha) / 2 (con cua cua so
 // cha toan man hinh dich theo neo cua no TRU neo cua cha vi toa do con tuong doi cha). Thieu neo -> tu suy theo vi tri.
+// [GOC 12/09] Ten muc cua CUA SO GOC theo lop, doc tu dong "Goc.<lop>=<muc>" trong tep bo cuc (mac dinh "Main").
+#define	UITOADO_MAX_GOC	32
+static char	s_szGocLop[UITOADO_MAX_GOC][64];
+static char	s_szGocMuc[UITOADO_MAX_GOC][64];
+static int	s_nSoGoc = 0;
+//	Khoa cua cua so goc (cha) cua mot o con "<lop>|<muc>"; tra false neu chinh no la goc.
+static bool KhoaCuaCha(const char* pszKhoa, char* pszRa, int nCo)
+{
+	const char*	pGach = strchr(pszKhoa, '|');
+	const char*	pszGoc = "Main";
+	int			i;
+	if (pGach == NULL)
+		return false;
+	for (i = 0; i < s_nSoGoc; i++)
+		if ((int)strlen(s_szGocLop[i]) == (int)(pGach - pszKhoa) && strncmp(s_szGocLop[i], pszKhoa, pGach - pszKhoa) == 0)
+		{
+			pszGoc = s_szGocMuc[i];
+			break;
+		}
+	if (strcmp(pGach + 1, pszGoc) == 0)
+		return false;
+	_snprintf(pszRa, nCo, "%.*s|%s", (int)(pGach - pszKhoa), pszKhoa, pszGoc);
+	pszRa[nCo - 1] = 0;
+	return true;
+}
 static int	s_nTepNap = 0;				// so thu tu tep dang nap
 static int	s_aTepNap[UITOADO_MAX];		// muc i duoc ghi boi tep nao
 static int NeoTuDong(int nV, int nToan)
@@ -166,18 +194,14 @@ static void DoiCaTepTheoNeo()
 	for (i = 0; i < s_nSo; i++)
 	{
 		int nCha = -1;
-		const char* pGach;
 		if (s_aTepNap[i] != s_nTepNap)
 			continue;
 		if (s_Bang[i].nNeoX >= 0 && s_Bang[i].nNeoX <= 2 && s_Bang[i].nNeoY >= 0 && s_Bang[i].nNeoY <= 2)
 			continue;
-		pGach = strchr(s_Bang[i].szKhoa, '|');
-		if (pGach && strcmp(pGach + 1, "Main") != 0)
 		{
-			char szCha[UITOADO_CO_KHOA];
-			_snprintf(szCha, sizeof(szCha), "%.*s|Main", (int)(pGach - s_Bang[i].szKhoa), s_Bang[i].szKhoa);
-			szCha[sizeof(szCha) - 1] = 0;
-			nCha = TimKhoa(szCha);
+			char szCha[UITOADO_CO_KHOA];	// [GOC 12/09] ten muc goc theo lop (ban do nho: MiniMap)
+			if (KhoaCuaCha(s_Bang[i].szKhoa, szCha, sizeof(szCha)))
+				nCha = TimKhoa(szCha);
 			if (nCha == i)
 				nCha = -1;
 		}
@@ -194,25 +218,32 @@ static void DoiCaTepTheoNeo()
 	for (i = 0; i < s_nSo; i++)
 	{
 		int nNeoXCha = 0, nNeoYCha = 0;
-		const char* pGach;
 		if (s_aTepNap[i] != s_nTepNap)
 			continue;
-		pGach = strchr(s_Bang[i].szKhoa, '|');
-		if (pGach && strcmp(pGach + 1, "Main") != 0)
 		{
-			char szCha[UITOADO_CO_KHOA];
-			int nCha;
-			_snprintf(szCha, sizeof(szCha), "%.*s|Main", (int)(pGach - s_Bang[i].szKhoa), s_Bang[i].szKhoa);
-			szCha[sizeof(szCha) - 1] = 0;
-			nCha = TimKhoa(szCha);
+			char szCha[UITOADO_CO_KHOA];	// [GOC 12/09]
+			int nCha = -1;
+			if (KhoaCuaCha(s_Bang[i].szKhoa, szCha, sizeof(szCha)))
+				nCha = TimKhoa(szCha);
 			if (nCha >= 0 && nCha != i)
 			{
 				nNeoXCha = (s_Bang[nCha].nNeoX >= 0) ? s_Bang[nCha].nNeoX : NeoTuDong(s_Bang[nCha].nLeft, nW0);
 				nNeoYCha = (s_Bang[nCha].nNeoY >= 0) ? s_Bang[nCha].nNeoY : NeoTuDong(s_Bang[nCha].nTop, nH0);
 			}
 		}
-		s_Bang[i].nLeft += nDX * (s_Bang[i].nNeoX - nNeoXCha) / 2;
-		s_Bang[i].nTop  += nDY * (s_Bang[i].nNeoY - nNeoYCha) / 2;
+		s_Bang[i].nDichX = nDX * (s_Bang[i].nNeoX - nNeoXCha) / 2;	// [NHOMTREN 12/09]
+		s_Bang[i].nDichY = nDY * (s_Bang[i].nNeoY - nNeoYCha) / 2;
+		s_Bang[i].nLeft += s_Bang[i].nDichX;
+		s_Bang[i].nTop  += s_Bang[i].nDichY;
+	}
+	// [UITOADO 12/09 NEO c] [Ui] NhatKyBoCuc=1 -> ghi ca bang sau khi dich de doi chieu tren may ao
+	s_nNhatKyBoCuc = GetPrivateProfileInt("Ui", "NhatKyBoCuc", 0, ".\\config.ini");	// [UITOADO 12/09 NEO e]
+	if (s_nNhatKyBoCuc)
+	{
+		for (i = 0; i < s_nSo; i++)
+			if (s_aTepNap[i] == s_nTepNap)
+				g_DebugLog("[BOCUC] %s = %d,%d neo %d,%d tile %d", s_Bang[i].szKhoa, s_Bang[i].nLeft, s_Bang[i].nTop,
+					s_Bang[i].nNeoX, s_Bang[i].nNeoY, s_Bang[i].nTiLe);
 	}
 }
 #endif
@@ -537,6 +568,22 @@ static void NapTep(const char* pszTep)
 				continue;
 		}
 #ifdef JX_ANDROID
+		if (strncmp(p, "Goc.", 4) == 0)	// [GOC 12/09] Goc.<lop>=<ten muc cua so goc>
+		{
+			if (s_nSoGoc < UITOADO_MAX_GOC && pSo[0] && pSo[0][0])
+			{
+				int n;
+				strncpy(s_szGocLop[s_nSoGoc], p + 4, 63);
+				s_szGocLop[s_nSoGoc][63] = 0;
+				strncpy(s_szGocMuc[s_nSoGoc], pSo[0], 63);
+				s_szGocMuc[s_nSoGoc][63] = 0;
+				for (n = (int)strlen(s_szGocMuc[s_nSoGoc]) - 1; n >= 0 && (s_szGocMuc[s_nSoGoc][n] == '\r'
+					|| s_szGocMuc[s_nSoGoc][n] == '\n' || s_szGocMuc[s_nSoGoc][n] == ' '); n--)
+					s_szGocMuc[s_nSoGoc][n] = 0;
+				s_nSoGoc++;
+			}
+			continue;
+		}
 		if (strcmpi(p, "ManHinh") == 0)	// [UITOADO 12/09 MANHINH] khung ve luc luu tep nay
 		{
 			s_nManHinhW = nGiaTri[0];
@@ -674,13 +721,75 @@ static void ApChoCay(const char* pszLop, KWndWindow* pWnd)
 
 #ifdef JX_ANDROID
 // [UITOADO 12/09 NEO b] ap cho MOT o ngay khi no doc xong ini (goi tu KWndWindow::Init): o con duoc Init sau khi goc da dang ky
+static FILE* s_fDumpThuc = NULL;	// [UITOADO 12/09 NEO f]
+static void DumpCayThuc(KWndWindow* pWnd)	// [UITOADO 12/09 NEO d]
+{
+	char szKhoa[UITOADO_CO_KHOA];
+	while (pWnd)
+	{
+		int x = 0, y = 0, w = 0, h = 0, rx = 0, ry = 0;
+		pWnd->GetAbsolutePos(&x, &y);
+		pWnd->GetSize(&w, &h);
+		pWnd->GetPosition(&rx, &ry);
+		if (TaoKhoaTuOCon(pWnd, szKhoa, sizeof(szKhoa)) && strchr(szKhoa, '#') == NULL)
+		{
+			if (s_fDumpThuc)	// [UITOADO 12/09 NEO f]
+				fprintf(s_fDumpThuc, "%s = abs %d,%d rel %d,%d %dx%d%s\n", szKhoa, x, y, rx, ry, w, h, pWnd->IsVisible() ? "" : " an");
+			else
+				g_DebugLog("[BOCUC-THUC] %s = abs %d,%d rel %d,%d %dx%d", szKhoa, x, y, rx, ry, w, h);
+		}
+		DumpCayThuc(pWnd->GetFirstChild());
+		pWnd = pWnd->GetNextWnd();
+	}
+}
+//	[NHOMTREN 12/09] Khoang ma bo neo da dich muc nay so voi tep thiet ke (0 neu khong co muc / khong dich).
+void UiToaDo_LayDich(const char* pszKhoa, int* pnDX, int* pnDY)
+{
+	int nMuc = TimKhoa(pszKhoa);
+	if (pnDX)
+		*pnDX = (nMuc >= 0) ? s_Bang[nMuc].nDichX : 0;
+	if (pnDY)
+		*pnDY = (nMuc >= 0) ? s_Bang[nMuc].nDichY : 0;
+}
+void UiToaDo_DumpThuc()
+{
+	static int s_nLan = 0;
+	if (s_nLan++ != 0)
+		return;
+	g_DebugLog("[BOCUC-THUC] khung ve %dx%d", SCREEN_WIDTH, SCREEN_HEIGHT);
+	{	// [UITOADO 12/09 NEO f] ghi ra tep de khoi bi logcat cat bot
+		char szTep[MAX_PATH];
+		g_GetFullPath(szTep, "\\bocuc_thuc.txt");
+		s_fDumpThuc = fopen(szTep, "w");
+		if (s_fDumpThuc)
+			fprintf(s_fDumpThuc, "khung ve %dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+	}
+	DumpCayThuc(Wnd_GetLayerRoot(WL_LOWEST)->GetNextWnd());	// [UITOADO 12/09 NEO e] cap 1 = anh em cua goc
+	DumpCayThuc(Wnd_GetLayerRoot(WL_NORMAL)->GetNextWnd());
+	DumpCayThuc(Wnd_GetLayerRoot(WL_TOPMOST)->GetNextWnd());
+	if (s_fDumpThuc)	// [UITOADO 12/09 NEO f]
+	{
+		fclose(s_fDumpThuc);
+		s_fDumpThuc = NULL;
+		g_DebugLog("[BOCUC-THUC] da ghi bocuc_thuc.txt");
+	}
+}
 void UiToaDo_ApChoO(KWndWindow* pWnd)
 {
 	char szKhoa[UITOADO_CO_KHOA];
 	if (pWnd == NULL || s_nSo == 0)
 		return;
 	if (TaoKhoaTuOCon(pWnd, szKhoa, sizeof(szKhoa)))
-		ApMotO(pWnd, TimKhoa(szKhoa));
+	{
+		int nMuc = TimKhoa(szKhoa);
+		ApMotO(pWnd, nMuc);
+		if (s_nNhatKyBoCuc >= 2)	// [UITOADO 12/09 NEO e]
+		{
+			int rx = 0, ry = 0;
+			pWnd->GetPosition(&rx, &ry);
+			g_DebugLog("[BOCUC-AP] %s muc %d -> rel %d,%d", szKhoa, nMuc, rx, ry);
+		}
+	}
 }
 #endif
 void UiToaDo_ApChoCuaSo(KWndWindow* pCuaSoGoc)

@@ -106,6 +106,16 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 		// [A33 04/09] Phep dich can-giua nay tinh theo kich thuoc GOC cua mon. Khi dang THU NHO
 		// ve mot o thi no keo mon lech han ra ngoai (mon 2x4 bi keo len 39 px, sang trai 13 px).
 		// Chi dich khi KHONG thu nho. Mon mot o khong doi mot pixel vi (26-26)/2 = 0.
+#ifdef JX_ANDROID
+		// [HANHTRANG 12/09] o to hon anh goc (hanh trang mobile 44 px) -> keo anh theo o, khong can giua
+		else if (uObjGenre != CGOG_IME_ITEM && (nParam & 0x40000000) == 0
+			&& Width > Item[uId].GetWidth() * ITEM_CELL_WIDTH && Height > Item[uId].GetHeight() * ITEM_CELL_HEIGHT)
+		{
+			extern int g_nJxVeVatPhamW, g_nJxVeVatPhamH;
+			g_nJxVeVatPhamW = Width;
+			g_nJxVeVatPhamH = Height;
+		}
+#endif
 		else if ((nParam & 0x40000000) == 0 || uObjGenre == CGOG_IME_ITEM
 			|| Item[uId].GetWidth() * Item[uId].GetHeight() <= 1)
 		{
@@ -122,6 +132,12 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 			// thay the mot o. Chi bat cho o dinh kem hop thu / o vat pham bang dau gia (co tu ini),
 			// tui do va cua hang khong bat nen khong doi gi.
 			Item[uId].PaintItem(x, y, (nParam & 0x40000000) != 0, true, uId);
+#ifdef JX_ANDROID
+			{
+				extern int g_nJxVeVatPhamW, g_nJxVeVatPhamH;	// [HANHTRANG 12/09] xoa co sau khi ve
+				g_nJxVeVatPhamW = g_nJxVeVatPhamH = 0;
+			}
+#endif
 		}	
 		break;
 	case CGOG_MENU_NPC:

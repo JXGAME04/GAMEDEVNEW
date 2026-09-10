@@ -420,6 +420,15 @@ public class TaiDuLieuActivity extends Activity
         }
         mChinh.post(() -> mThanh.setProgress(1000));
         donPakCu();
+        // [UITOADO 12/09 NEO c] bo cuc mac dinh doi -> bo tep bo cuc nguoi choi luu tren may (userdata/UiToaDo.ini) keo no de len
+        // mac dinh moi (tep nay chua ca bang, ke ca o chua tung keo). Chu chinh tren may ao, khong tren dien thoai.
+        for (Muc m : ds)
+            if (m.duong.toLowerCase(Locale.US).startsWith("ui/uitoado_macdinh"))
+            {
+                File cu = new File(mThuMuc, "userdata/UiToaDo.ini");
+                if (cu.isFile() && cu.delete()) android.util.Log.i("JxTai", "bo cuc mac dinh doi -> xoa userdata/UiToaDo.ini");
+                break;
+            }
         hien("Tải xong " + mb(tong) + " MB trong " + giay((System.currentTimeMillis() - t0) / 1000) + ". Vào game…", "");
         vaoGame(800);
     }

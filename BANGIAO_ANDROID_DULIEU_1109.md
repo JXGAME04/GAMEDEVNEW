@@ -345,3 +345,44 @@ Không nên: kéo méo cả khung (không giữ tỉ lệ) hay thu nhỏ khung v
 **Lưu ý máy ảo:** thư mục app (`/storage/emulated/0/Android/data/vn.jx1.mobile/files/`) được `JxAndroidMain.cpp` ưu tiên TRƯỚC
 `/mnt/shared/Misc` — thử tải trên máy ảo xong phải xoá `data/`, `config.ini`, `package.ini`, `settings/`, `da_tai.txt`, `tai_du_lieu.txt`
 trong đó, nếu không máy ảo chạy bằng gói cũ và lớp ghi đè `android\du_lieu_ghi_de` hết tác dụng (đã dọn sau khi đo).
+
+## 15. Chủ 09:00 12/09: "phải chuẩn chứ không đoán, điện thoại nhiều kích cỡ" — đo bằng số, khớp bản PC trên mọi tỉ lệ
+
+Cách làm: **không nhìn ảnh đoán nữa**. Bản Android ghi ra tệp `bocuc_thuc.txt` (thư mục dữ liệu) VỊ TRÍ THẬT của
+từng cửa sổ 15 s sau khi vào thế giới khi `config.ini [Ui] NhatKyBoCuc=2` (`UITOADO 12/09 NEO d/e/f`; ghi ra tệp vì
+logcat cắt bớt khi nhiều dòng). Chạy game ở đúng khung 1040×604 = **bản PC** → lưu thành `android\o_thuc_1040x604.txt`
+(254 cửa sổ, có cả cỡ W×H). Sau đó chạy các tỉ lệ khác và so từng cửa sổ: mỗi cửa sổ phải giữ **đúng khoảng cách tới
+mép** (trái/phải/trên/dưới) hoặc **đúng tỉ lệ tâm** như bản PC. Kết quả cuối: **0/228 cửa sổ lệch > 2 px** ở cả
+1188×616 (19,5:9), 1280×576 (20:9), 1152×864 và 1170×690 (4:3 máy tính bảng / iPad) — không cần tệp `UserData\UiToaDo.ini`.
+
+Bốn lỗi thật tìm ra bằng cách đo (trước đây nhìn ảnh không thấy):
+
+1. **`Goc.<lớp>` — cửa sổ gốc không phải lúc nào cũng tên mục "Main"** (`GOC 12/09`). Bản đồ nhỏ là `KUiMiniMap|MiniMap`.
+   Bộ neo tìm cha theo `"<lớp>|Main"` → không thấy → 4 nút của bản đồ (đổi bản đồ, bản đồ thế giới, hang động, cắm cờ)
+   **dịch hai lần**: +148 px trên điện thoại, +112 px trên máy tính bảng (nút rơi ra ngoài khung bản đồ). Tệp bố cục nay
+   có dòng `Goc.KUiMiniMap=MiniMap` (bộ sinh tự nhận ra cửa sổ gốc từ `o_thuc_...txt`: dòng có `abs == rel`), game đọc
+   bảng này để tìm cha.
+2. **Vị trí lưu từ phiên trước đè lên bố cục** (`MOVEWINDOW 12/09`). `UserData\<tk>\uiconfig.ini [ScriptAuto]` có dòng
+   `MoveWindow("map", 856, 12)` — chạy SAU khi bố cục đã áp nên bản đồ nhỏ không sát mép phải dù bảng toạ độ đúng
+   (đo được: bảng nói 1004, thực tế 856). Nay sau `SetPosition` của `MoveWindow` áp lại mục trong bảng (chỉ Android).
+3. **Khung `KUiPlayerBar` chứa CẢ hai phần** (`NHOMTREN 12/09` + `b`): bảng trạng thái góc trên-trái (giờ, sóng mạng,
+   hàng buff, nút ẩn hàng icon) và khung chat ở đáy, trong cùng một ảnh 800×600. Bố cục neo khung theo giữa-dưới (khung
+   chat phải sát đáy) nên trên màn CAO (4:3) cả nhóm trên bị kéo xuống giữa màn. Nay kéo riêng nhóm trên về đúng độ cao
+   bản PC = `Top hiện tại − Top trong UiPlayerBar.ini`. Các icon buff KHÔNG thể có mục riêng trong bảng (nhiều ô trùng
+   tên mục `BuffImage`) nên phải sửa bằng mã.
+4. **Bảng nhiệm vụ neo cạnh nút theo dõi** (`TASKTRACE 12/09`): `SnapToButton()` chạy khi `KUiPlayerBar` chưa có (tự đăng
+   nhập vào thẳng game) → rơi vào nhánh "mép phải, 40 % chiều cao" và `m_oFixPos` giữ luôn chỗ đó (đè lên cột icon phải).
+   Nay `KUiPlayerBar` đăng ký xong thì gọi `KUiTaskTrace::NeoLaiKhiCoThanh()`.
+
+Ngoài ra:
+
+- **Máy tính bảng / iPad (4:3)** (`DPG 12/09 RONG`): hệ số chỉ theo chiều cao 640 cho ra khung vẽ HẸP hơn 1040 (1440×1080
+  → 1,75 → 823×617) mà bố cục PC thiết kế trên 1040×604 → icon chồng nhau. Nay hạ hệ số tới khi khung vẽ rộng ≥
+  `[Resolution] RongToiThieu` (mặc định **1040**): 1440×1080 → 1,25 → **1152×864**; 2048×1536 → 1,75 → 1170×690.
+  Điện thoại 2400×1080 → 1371×617 không đổi.
+- **Neo theo TÂM THẬT** (`UITOADO 12/09 CAO b`): cửa sổ không thuộc nhóm nào lấy neo từ tâm đo được trong
+  `o_thuc_1040x604.txt` (trước suy theo góc trên-trái nên bảng Tống Kim, hộp thoại... neo sai trục dọc). Hộp thoại
+  (ESC, tuỳ chọn, thư, đấu giá, thông tin) neo GIỮA cả chiều dọc; khung log chat + bảng thông báo hệ thống neo TRÁI-DƯỚI
+  (giữ đúng khoảng cách tới ô nhập chat như bản PC); tab ẩn/hiện log chat đi cùng.
+- **Cách chạy lại phép đo:** đặt `[Ui] NhatKyBoCuc=2`, `adb shell wm size <W>x<H>`, vào game 40 s, lấy `bocuc_thuc.txt`,
+  so bằng `android/so_bocuc.py`. Xong nhớ `wm size reset` và trả `NhatKyBoCuc=0`.

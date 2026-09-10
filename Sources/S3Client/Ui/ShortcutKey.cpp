@@ -498,6 +498,11 @@ int LuaMoveWindow(Lua_State * L)
 	if (pWin)
 	{
 		pWin->SetPosition(nX, nY);
+#ifdef JX_ANDROID
+		// [MOVEWINDOW 12/09] vi tri luu tu phien truoc (uiconfig.ini [ScriptAuto]) khong duoc de len bang toa do
+		// theo neo cua man hinh nay (ban do nho ke mep phai...): co muc trong bang thi ap lai muc do.
+		UiToaDo_ApChoO(pWin);
+#endif
 	}
 	return 0;
 }

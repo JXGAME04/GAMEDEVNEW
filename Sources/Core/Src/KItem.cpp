@@ -1,6 +1,11 @@
 #include "KCore.h"
 #include "MyAssert.H"
 #include "KTabFile.h"
+#ifdef JX_ANDROID
+// [HANHTRANG 12/09] o hanh trang mobile (44 px) to hon anh vat pham goc (26 px): CoreDrawGameObj dat co o can ve,
+// PaintItem keo anh theo co do (RU_T_IMAGE_STRETCH). 0 = ve nhu cu.
+int g_nJxVeVatPhamW = 0, g_nJxVeVatPhamH = 0;
+#endif
 #include "KNpc.h"
 #include "KItem.h"
 #include "KItemSet.h"
@@ -1990,6 +1995,15 @@ void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack
 		m_Image.oEndPos.nZ = m_Image.oPosition.nZ;
 		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE_STRETCH, TRUE);
 	}
+#ifdef JX_ANDROID
+	else if (g_nJxVeVatPhamW > 0 && g_nJxVeVatPhamH > 0)	// [HANHTRANG 12/09]
+	{
+		m_Image.oEndPos.nX = m_Image.oPosition.nX + g_nJxVeVatPhamW;
+		m_Image.oEndPos.nY = m_Image.oPosition.nY + g_nJxVeVatPhamH;
+		m_Image.oEndPos.nZ = m_Image.oPosition.nZ;
+		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE_STRETCH, TRUE);
+	}
+#endif
 	else
 		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE, TRUE);
 	
