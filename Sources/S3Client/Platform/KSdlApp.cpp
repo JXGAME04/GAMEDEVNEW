@@ -605,6 +605,7 @@ extern "C" void JxSdl_BanPhimNhip(void)
 // Doi den luc nha (thuong duoi 150 ms) la cach moi giao dien cam ung deu lam.
 //---------------------------------------------------------------------------
 extern "C" int JxUi_CoGiaoDienTaiDiem(int x, int y);	// Wnds.cpp
+extern "C" int JxVatPham_ChamNgoai(int x, int y);	// [VATPHAM 12/09 d] UiVatPham.cpp
 extern "C" void JxSdl_DatPhimDinh(unsigned int uMatNa);	// dinh nghia o khoi PHIM ben tren
 
 
@@ -719,6 +720,8 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 				m_nCham = CHAM_KHONG;
 				return true;
 			}
+			//	[VATPHAM 12/09 d] dai nut vat pham dang mo: cham ra ngoai no thi dong (nhu bang chu giai tu tat)
+			JxVatPham_ChamNgoai(m_nChamX0, m_nChamY0);
 			{	// [ANDROID 11/09 ICON b] cham icon "Giao tiep" tren dau NPC = bam vao than NPC (di toi + mo thoai),
 				// ke ca khi icon nam ngoai hinh NPC. Chu: "khi bam vao icon do thi se tu di chuyen toi npc mo hoi thoai".
 				int nNpcX = 0, nNpcY = 0;

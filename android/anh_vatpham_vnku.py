@@ -23,7 +23,7 @@ VNKU_PNG = r"C:\Users\nguye\Downloads\NHACTAI\VNKU_ui\png\Spr\UiNew\UiItem"
 NUT_NEN = r"C:\Users\nguye\Downloads\NHACTAI\VNKU_ui\png\Spr\UiNew\UiAutoNew\btn_len_f00.png"
 NUT_NAP = 46              # be rong hai dau nut (hoa van goc) giu nguyen khi xoa chu
 W, H = 320, 300           # khung bang (khong dung nua)
-NUT_W, NUT_H = 100, 34
+NUT_W, NUT_H = 76, 26    # [VATPHAM 12/09 d] chu: "cac nut chuc nang qua to lam nho lai"
 
 NUT = [
     ("dung",      "Dùng"),

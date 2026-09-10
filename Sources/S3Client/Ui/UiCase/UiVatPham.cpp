@@ -40,8 +40,8 @@ enum
 	VP_DONG,
 };
 
-#define VP_NUT_RONG		100		// dung co anh nut kho VNKU (android/anh_vatpham_vnku.py: nut ngoc UiAutoNew)
-#define VP_NUT_CAO		34
+#define VP_NUT_RONG		76		// [VATPHAM 12/09 d] chu: "cac nut chuc nang qua to lam nho lai"
+#define VP_NUT_CAO		26
 #define VP_NUT_KHE		4
 #define VP_NUT_MOI_HANG	3
 
@@ -344,8 +344,14 @@ void KUiVatPham::LamNut(int nMa)
 		g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM, (KUPARAM)&uPr, pos_repositoryroom);
 		break;
 
-	case VP_NEM:		// nem bo (loi tu chan do khoa / vang bac)
-		g_pCoreShell->OperationRequest(GDI_THROW_ALL_ITEM, (KUPARAM)(&Obj), 0);
+	case VP_NEM:
+		//	[VATPHAM 12/09 d] chu: "nem 1 vien thi ra 1 vien thoi chu khong nem toan bo".
+		//	GDI_THROW_ALL_ITEM nem CA LOAI -> thay bang: nhac DUNG mon nay len tay
+		//	(GOI_SWITCH_OBJECT chi co Pick) roi ThrowAwayItem() nem mon dang cam.
+		//	Loi tu chan do khoa / hoang kim / nhiem vu: nem hong thi tra mon ve dung o cu.
+		g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, (KUPARAM)(&Obj), 0);
+		if (g_pCoreShell->ThrowAwayItem() == 0)
+			g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, 0, (KNPARAM)(&Obj));
 		break;
 
 	case VP_DINH:
@@ -392,6 +398,22 @@ void KUiVatPham::LamNut(int nMa)
 		break;
 	}
 	Dong();
+}
+
+//	[VATPHAM 12/09 d] Cham ra NGOAI dai nut thi dong no (KSdlApp goi moi lan dat ngon xuong).
+//	Tra 0 de cu cham van di tiep nhu cu; cham TRUNG dai nut thi de he cua so lo (nut tu nhan).
+extern "C" int JxVatPham_ChamNgoai(int x, int y)
+{
+	KUiVatPham* p = KUiVatPham::GetIfVisible();
+	int nL = 0, nT = 0, nW = 0, nH = 0;
+
+	if (p == NULL)
+		return 0;
+	p->GetAbsolutePos(&nL, &nT);
+	p->GetSize(&nW, &nH);
+	if (x < nL || x >= nL + nW || y < nT || y >= nT + nH)
+		KUiVatPham::Dong();
+	return 0;
 }
 
 int KUiVatPham::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)

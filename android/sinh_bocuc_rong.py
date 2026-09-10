@@ -62,8 +62,16 @@ INI_MAC_DINH = {"KUiPlayerBar|Status": (330, 47), "KUiPlayerBar|Items": (380, 47
                 "KUiToolsControlBar|NhatDo": (868, 362)}      # nut nhat (B2 i) chua co trong userdata cua chu -> lay vi tri ini
 # [ICON3X 12/09] chu: "icon dau gia va mail lam to gap 3 lan" - TiLe phan nghin (KWndWindow::UiDatTiLe, toi da 3000).
 # Cua so goc VA nut ben trong deu phai phong, khong thi chi khung to ma anh van nho.
-TILE_MOBILE = {"KUiMailIcon|Main": 3000, "KUiMailIcon|MailBtn": 3000,
-               "KUiAuctionIcon|Main": 3000, "KUiAuctionIcon|AuctionBtn": 3000}
+TILE_MOBILE = {"KUiMailIcon|Main": 2000, "KUiMailIcon|MailBtn": 2000,
+               "KUiAuctionIcon|Main": 2000, "KUiAuctionIcon|AuctionBtn": 2000}
+# [ICON3X 12/09 b] chu 12:40: hai icon thu / dau gia bang co icon hang tren va nam ngay DAU hang do
+# (ben trai "Nhan vat" o 331); [WAUTO 12/09] tab Auto can giua khung. (x, y, neo_x, neo_y) tren khung 1040x604.
+DAT_TAY = {"KUiAuctionIcon|Main": (219, 50, 1, 0),
+           "KUiMailIcon|Main":    (273, 48, 1, 0),
+           "KUiWAuto|Main":       (160, 86, 1, 1),
+           #   nut ben trong hai icon: giu goc (0,0) va THUA neo cua cha, khong thi con lech so voi khung
+           "KUiAuctionIcon|AuctionBtn": (1, 0, 1, 0),
+           "KUiMailIcon|MailBtn":       (0, 0, 1, 0)}
 GIU_TAM_KHI_PHONG = ("KUiMailIcon|Main", "KUiAuctionIcon|Main")   # phong ra tu TAM chu khong tu goc trai-tren
 NHOM_PHAI_KHOA = ("KUiTaskTrace|Main",)
 # [UITOADO 12/09 CAO] cua so goc khong co trong userdata/cua_so_ui.json (Init bang muc khac 'Main'): bang thong bao he thong
@@ -315,10 +323,11 @@ def main():
         nx, ny = tuong_doi_moi(khoa, ax, ay)
         if khoa in TILE_MOBILE:                                # [ICON3X 12/09] phong icon rieng cho mobile
             tile = TILE_MOBILE[khoa]
-            if khoa in GIU_TAM_KHI_PHONG and khoa in O_THUC:
-                co_goc = O_THUC[khoa][2]                      # icon vuong: nua phan no ra = mot lan co goc
-                nx -= co_goc * (tile - 1000) // 2000
-                ny -= O_THUC[khoa][3] * (tile - 1000) // 2000
+        if khoa in DAT_TAY:                                    # [ICON3X 12/09 b] dat tay: vi tri + neo chi dinh
+            nx, ny, neo_x, neo_y = DAT_TAY[khoa]
+            if la_main:                                        # o CON dung toa do tuong doi cha -> khong dich
+                nx += DX * neo_x // 2
+                ny += DY * neo_y // 2
         ra.append((khoa, nx, ny, tile, cocb, neo_x, neo_y))
     dau = ["; [UITOADO 12/09 RONG] Bo cuc mac dinh cho dien thoai man rong (sinh boi android/sinh_bocuc_rong.py tu uitoado_macdinh.ini).",
            "; Game chon tep nay khi khung ve co ti le >= 1,9 (UiToaDo.cpp). Moi dong: <lop>|<muc> = Left,Top,TiLe,Co,NeoX,NeoY",
