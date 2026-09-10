@@ -54,12 +54,29 @@ def bat_tat():
     return bat
 
 
+ICON_W, ICON_H = 48, 56         # [B2 h] icon Auto: hai kiem cheo (tren) + chu "Auto" (duoi) - chu: "icon auto co chu Auto 2 kiem cheo nhau"
+
+
 def icon(bat):
-    """Icon Auto tren thanh cong cu 47x47, 2 khung: [0] tat, [1] bat.
-    [B2 h] Chu (11/09): "tim icon Auto co 2 kiem cheo o VNKU thay icon hien tai" -> UiToolsControlBar\\pk.spr (74x74, 3 khung:
-    kiem cheo nen xanh la / do / vang): khung 0 (xanh) = auto TAT, khung 1 (do) = auto BAT. Truoc do cat tu bat_auto.spr."""
-    _, _, pk, _ = doc_spr(os.path.join(VNKU, "UiToolsControlBar", "pk.spr"))
-    out = [pk[0].resize((ICON, ICON), Image.LANCZOS), pk[1].resize((ICON, ICON), Image.LANCZOS)]
+    """Icon Auto tren thanh cong cu ICON_W x ICON_H, 2 khung: [0] tat (xam), [1] bat (vang).
+    [B2 h] Chu (11/09): "icon auto co chu Auto 2 kiem cheo nhau" -> ghep tu chinh nut "Bat Auto" cua kho (MinMapSmall\\bat_auto.spr
+    285x112, khung 0 vang / khung 1 xam): hinh tron hai kiem cheo (ben trai nut) dat tren, chu "Auto" (cat tu chu "Bat Auto", cot
+    185..258, hang 44..81) dat duoi. pk.spr (kiem cheo khong chu) da thu truoc do, chu muon co chu."""
+    out = []
+    for f in (bat[1], bat[0]):          # [0] xam = tat, [1] vang = bat
+        trai = f.crop((0, 0, 115, f.size[1]))
+        bb = trai.getchannel("A").point(lambda a: 255 if a > 40 else 0).getbbox()
+        canh = bb[3] - bb[1]
+        vung = trai.crop((bb[0], bb[1], bb[0] + canh, bb[3]))
+        c = max(vung.size)
+        vuong = Image.new("RGBA", (c, c), (0, 0, 0, 0))
+        vuong.alpha_composite(vung, ((c - vung.size[0]) // 2, (c - vung.size[1]) // 2))
+        kiem = vuong.resize((34, 34), Image.LANCZOS)
+        chu = f.crop((182, 44, 262, 82)).resize((46, 22), Image.LANCZOS)
+        a = Image.new("RGBA", (ICON_W, ICON_H), (0, 0, 0, 0))
+        a.alpha_composite(kiem, ((ICON_W - 34) // 2, 0))
+        a.alpha_composite(chu, ((ICON_W - 46) // 2, 33))
+        out.append(a)
     ghi(os.path.join("spr", "uinew", "uitoolscontrolbar", "auto_m.spr"), out)
 
 

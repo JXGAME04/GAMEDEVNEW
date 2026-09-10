@@ -544,7 +544,7 @@ def va_toolbar(s):
         s += nl
     s += nl.join(["", "; %s icon Auto: 47x47 cat tu hinh kiem cheo cua nut \"Bat Auto\" kho VNKU (android/anh_wauto_vnku.py);" % DAU,
                   ";   khung 0 = xam (auto tat), khung 1 = vang (dang bat). Cham = mo / dong khung WAuto. Ben TRAI giua man hinh (cot phai duoi nut Chay bi bang Theo doi nhiem vu de len).",
-                  "[WAuto]", "Left=52", "Top=330", "Width=47", "Height=47", "Trans=0",
+                  "[WAuto]", "Left=52", "Top=330", "Width=48", "Height=56", "Trans=0",   # [B2 h] icon kiem cheo + chu "Auto" 48x56
                   "Image=\\Spr\\UiNew\\UiToolsControlBar\\auto_m.spr", "Up=0", "Down=1", "CheckBox=1", "ClassType=Player_WAuto", ""])
     return s
 
