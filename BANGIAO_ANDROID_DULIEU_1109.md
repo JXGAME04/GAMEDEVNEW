@@ -135,7 +135,7 @@ mở lại kiểm tra manifest và tải lại đúng 1 gói `mobile_16.pak` (ch
 | Cách | Còn bao nhiêu | Trạng thái |
 |---|---|---|
 | Nén truyền (gzip) cả gói | 85 % (6,4 GB từ pak cũ đã nén UCL sẵn, chỉ 2 GB tệp rời nén được ~47–63 %) | không đáng làm riêng |
-| **Nén tệp rời ngay trong pak** bằng UCL (`--nen-roi`, `android/ucl_nen.c` dịch từ `Engine/Src/ucl`, engine giải nén như pak cũ) | 8,4 → **≈ 7,3 GB**, đỡ cả chỗ trên máy | xem kết quả đo bên dưới |
+| **Nén tệp rời ngay trong pak** bằng UCL (`--nen-roi 7`, `android/ucl_nen.c` dịch từ `Engine/Src/ucl` + tự giải nén kiểm từng mục, engine đọc như pak cũ) | đo 01:50: tệp rời 2.024 → **985 MB** (43.493/43.959 tệp nén được), cả gói 8.417 → **7.379 MB, 15 gói**, 348 s; kiểm giải nén Python 240 mục ngẫu nhiên (40/gói có UCL) đúng | `D:\jx1_android_data_dt_nen`; máy chủ chuyển sang phục vụ bộ này sau khi chủ cài `tai-f` (APK xoá gói cũ TRƯỚC khi tải để đủ chỗ) |
 | Rút gọn theo nhật ký tệp dùng (`--chi-dung`) | **≈ 1,8–2,5 GB** | chờ chủ chơi đủ kịch bản |
 | "Tải bổ sung khi thiếu" (gói đầu 300–500 MB, thiếu gì tải lúc chơi) | ~20 s vào game, tổng data = phần thực dùng | đợt sau, cần duyệt |
 | Chặn tải qua 4G: mạng tính phí thì báo và chờ Wi‑Fi (nút "Tải bằng 4G" nếu vẫn muốn) | không tốn data di động | APK `jx1mobile-1209-tai-d.apk` |

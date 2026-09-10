@@ -275,6 +275,7 @@ public class TaiDuLieuActivity extends Activity
 
     private void taiTatCa(List<Muc> ds, long tong)
     {
+        donPakCu();     // xoa TRUOC pak khong con trong manifest (bo goi doi ten / rut gon) de dien thoai du cho cho goi moi
         final AtomicLong xong = new AtomicLong(0);
         final AtomicLong loi = new AtomicLong(0);
         final long t0 = System.currentTimeMillis();
