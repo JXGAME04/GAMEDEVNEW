@@ -55,20 +55,11 @@ def bat_tat():
 
 
 def icon(bat):
-    # hinh tron kiem cheo nam ben trai nut "Bat Auto": lay hop bao cua phan co alpha trong 115 px dau
-    out = []
-    for f in (bat[1], bat[0]):          # [0] xam = tat, [1] vang = bat
-        trai = f.crop((0, 0, 115, f.size[1]))
-        bb = trai.getchannel("A").point(lambda a: 255 if a > 40 else 0).getbbox()
-        # hinh tron: lay canh = chieu CAO cua hop bao (be ngang hop bao con dinh mot dai nen cua than nut ben phai)
-        canh = bb[3] - bb[1]
-        vung = trai.crop((bb[0], bb[1], bb[0] + canh, bb[3]))
-        # ep vuong (lay canh lon), can giua tren nen trong suot
-        c = max(vung.size)
-        vuong = Image.new("RGBA", (c, c), (0, 0, 0, 0))
-        vuong.alpha_composite(vung, ((c - vung.size[0]) // 2, (c - vung.size[1]) // 2))
-        out.append(vuong.resize((ICON, ICON), Image.LANCZOS))
-        print("  icon: hop bao", bb, "->", c, "x", c)
+    """Icon Auto tren thanh cong cu 47x47, 2 khung: [0] tat, [1] bat.
+    [B2 h] Chu (11/09): "tim icon Auto co 2 kiem cheo o VNKU thay icon hien tai" -> UiToolsControlBar\\pk.spr (74x74, 3 khung:
+    kiem cheo nen xanh la / do / vang): khung 0 (xanh) = auto TAT, khung 1 (do) = auto BAT. Truoc do cat tu bat_auto.spr."""
+    _, _, pk, _ = doc_spr(os.path.join(VNKU, "UiToolsControlBar", "pk.spr"))
+    out = [pk[0].resize((ICON, ICON), Image.LANCZOS), pk[1].resize((ICON, ICON), Image.LANCZOS)]
     ghi(os.path.join("spr", "uinew", "uitoolscontrolbar", "auto_m.spr"), out)
 
 

@@ -41,6 +41,15 @@ int RemoveTwoPointPath(LPTSTR szPath, int nLength)
 	LPCTSTR lpszOld = "/../";
 #endif
 	LPTSTR lpszTarget = strstr(szPath, lpszOld);
+#ifdef JX_ANDROID
+	// [ANDROID 11/09 NGUA] ten tai nguyen tren Android van dung dau nguoc ("\\spr\\npcres\\woman\\..\\man\\..."): khong rut gon thi id bam
+	// khac id trong pak -> anh ngua null. Ban PC (WIN32) da rut gon san; ban Linux server chi co dau xuoi - khong dong den.
+	if (!lpszTarget)
+	{
+		lpszOld = "\\..\\";
+		lpszTarget = strstr(szPath, lpszOld);
+	}
+#endif
 	if (lpszTarget)
 	{
 		LPTSTR lpszAfter = lpszTarget + 3;
@@ -68,6 +77,13 @@ int RemoveOnePointPath(LPTSTR szPath, int nLength)
 	LPCTSTR lpszOld = "/./";
 #endif
 	LPTSTR lpszTarget = strstr(szPath, lpszOld);
+#ifdef JX_ANDROID
+	if (!lpszTarget)	// [ANDROID 11/09 NGUA] nhu RemoveTwoPointPath: them dang dau nguoc "\\.\\"
+	{
+		lpszOld = "\\.\\";
+		lpszTarget = strstr(szPath, lpszOld);
+	}
+#endif
 	if (lpszTarget)
 	{
 		LPTSTR lpszAfter = lpszTarget + 2;
