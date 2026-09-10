@@ -8,6 +8,9 @@
 #include "../Elem/WndMessage.h"
 #include "../elem/wnds.h"
 #include "WndObjContainer.h"
+#ifdef JX_ANDROID
+#include "../UiCase/UiVatPham.h"	// [VATPHAM 12/09] bang thong tin vat pham + nut thao tac (chi mobile)
+#endif
 #include "../Elem/MouseHover.h"
 #include "../../../core/src/CoreObjGenreDef.h"
 #include "../../../core/src/CoreShell.h"
@@ -261,6 +264,17 @@ int KWndObjectBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	switch(uMsg)
 	{
 	case WM_LBUTTONDOWN:
+#ifdef JX_ANDROID
+		if (m_Object.uGenre != CGOG_NOTHING)	// [VATPHAM 12/09]
+		{
+			KUiDraggedObject oVP = m_Object;
+			int nAbsX = 0, nAbsY = 0;
+			GetAbsolutePos(&nAbsX, &nAbsY);
+			if (KUiVatPham::Mo(&oVP, (UIOBJECT_CONTAINER)m_nContainerId,
+					nAbsX + m_Width / 2, nAbsY + m_Height / 2, m_pParentWnd))
+				break;
+		}
+#endif
 		if (m_pParentWnd)
 		{
 			if ((m_Style & OBJCONT_S_DISABLE_PICKPUT) == 0)
@@ -685,6 +699,19 @@ int KWndObjectMatrix::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	switch(uMsg)
 	{
 	case WM_LBUTTONDOWN:
+#ifdef JX_ANDROID
+		{	// [VATPHAM 12/09] cham vao o co vat pham -> mo bang thong tin + nut, khong nhac len tay
+			int nO = GetObjectAt(LOWORD(nParam), HIWORD(nParam));
+			if (nO >= 0)
+			{
+				int nAbsX = 0, nAbsY = 0;
+				GetAbsolutePos(&nAbsX, &nAbsY);
+				if (KUiVatPham::Mo(&m_pObjects[nO], (UIOBJECT_CONTAINER)m_nContainerId,
+						nAbsX + LOWORD(nParam), nAbsY + HIWORD(nParam), m_pParentWnd))
+					break;
+			}
+		}
+#endif
 		if ((m_Style & OBJCONT_S_DISABLE_PICKPUT)== 0)
 		{
 		//dinh' item vao khung soan thao chat kplayerbar

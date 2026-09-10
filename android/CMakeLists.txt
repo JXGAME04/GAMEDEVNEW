@@ -132,7 +132,8 @@ add_library(main SHARED ${JX_S3CLIENT_SOURCES}
     ${JX_SRC}/S3Client/Platform/JxPerfHudAndroid.cpp   # [ANDROID 11/09 HUD] bang do FPS / CPU / RAM / pin / GPU
     ${JX_SRC}/S3Client/Platform/JxWAutoNoiBo.cpp       # [ANDROID 11/09 WAUTO B0] ben gui WAuto trong tien trinh (LOTRINH_WAUTO_MOBILE_1109.md)
     ${JX_SRC}/S3Client/Ui/UiCase/UiWAuto.cpp           # [ANDROID 11/09 WAUTO B1] khung Auto trong game (icon + BAT/TAT + dai tab)
-    ${JX_SRC}/S3Client/Ui/UiCase/UiWAutoTrang.cpp)     # [ANDROID 11/09 WAUTO B2] trang noi dung chay theo bang (UiWAutoBang.h sinh bang may)
+    ${JX_SRC}/S3Client/Ui/UiCase/UiWAutoTrang.cpp      # [ANDROID 11/09 WAUTO B2] trang noi dung chay theo bang (UiWAutoBang.h sinh bang may)
+    ${JX_SRC}/S3Client/Ui/UiCase/UiVatPham.cpp)        # [VATPHAM 12/09] bang thong tin vat pham + nut (cham vao o vat pham)
 jx_setup(main)
 target_compile_definitions(main PRIVATE ${JX_S3CLIENT_DEFS})
 target_include_directories(main PRIVATE ${JX_S3CLIENT_INCS})
