@@ -196,6 +196,21 @@ kể cả `KyNang0..8`, `KyNangGan` của cụm kỹ năng) là **toạ độ tu
 - Chưa thử được bố cục màn rộng trên máy ảo (LDPlayer 1040×604 nên phép neo không tác dụng; đổi độ phân giải máy ảo là của chủ);
   chủ thử trên điện thoại với APK `jx1mobile-1209-tai-e.apk`: cột icon phải, bản đồ nhỏ, cụm kỹ năng phải sát mép phải.
 
+**Chủ 02:00 (sau `tai-f`): "UI chưa đi theo kích thước màn hình, phím 1234 / icon phía trên vẫn chỗ cũ, ô hành trang và icon quá nhỏ,
+UI bị bóp nhỏ."** Phép neo 70 % chỉ đẩy cột phải; hàng icon trên (`KUiPlayerBar|Status/Items/Skills/Faction/Team/Friend/Options`,
+`KUiToolsControlBar|Sit`, ini `Top=47`) và thanh chat (`KUiPlayerBar|Main` vẽ `khung_chat_mobile.spr`) không có mục trong bố cục nên
+đứng yên. Làm **bố cục mặc định riêng cho màn rộng** (`12/09 RONG`): `android/sinh_bocuc_rong.py` sinh
+`ui\uitoado_macdinh_rong.ini` (ManHinh=1371,617) từ bố cục máy ảo: nhóm phải +331 sát mép (bản đồ nhỏ, Bảo Vật, cột icon, cụm kỹ
+năng lùi 40 px, Rec, bảng nhiệm vụ), `KUiPlayerBar|Main` +165 → thanh chat + ô phím tắt vào giữa, hàng icon trên **phóng 1,3 lần, giãn
+80 px** từ x=495 (8 icon tới 1116, cạnh Bảo Vật 1142), cột icon phải **phóng 1,3 lần, giãn 65 px** (NhatDo 422, đáy 496 < 617), PK 1,1;
+hộp thoại giữa +165; HP/MP, chat trái giữ. `UiToaDo.cpp` chọn tệp này khi `SCREEN_WIDTH*10 >= SCREEN_HEIGHT*19` (có tệp), sau đó
+`userdata\UiToaDo.ini` đè lên như cũ. Máy ảo (1,72) không đổi. APK `jx1mobile-1209-tai-g.apk`.
+**Vì sao "bị bóp nhỏ"**: máy ảo 1040×604 hiện 1:1 trên màn PC (icon 47 px ≈ 12 mm), điện thoại 2400×1080 vẽ khung 1371×617 phóng
+1,75 (47 px ≈ 5,6 mm). Muốn to hơn phải giảm số dòng lô-gic (`[Resolution] ChieuCaoMucTieu`, 640 → 480 = phóng 2,25, to thêm 29 %)
+nhưng bố cục phải (bản đồ nhỏ 180 + cột 5 icon 250 + cụm kỹ năng 160 = 590 px) không còn chỗ dọc và hộp thoại PC cao 450–550 px tràn
+màn → chỉ làm được khi bố trí lại cột icon (hàng ngang dưới bản đồ nhỏ) và thu hộp thoại; **ô hành trang** to hơn cần ảnh + ini
+mới (kho VNKU có `UiItem`), là một đợt riêng như B2 của WAuto. Phóng từng icon bằng TiLe (đã làm) là cách an toàn trong khung hiện tại.
+
 **Lưu ý máy ảo:** thư mục app (`/storage/emulated/0/Android/data/vn.jx1.mobile/files/`) được `JxAndroidMain.cpp` ưu tiên TRƯỚC
 `/mnt/shared/Misc` — thử tải trên máy ảo xong phải xoá `data/`, `config.ini`, `package.ini`, `settings/`, `da_tai.txt`, `tai_du_lieu.txt`
 trong đó, nếu không máy ảo chạy bằng gói cũ và lớp ghi đè `android\du_lieu_ghi_de` hết tác dụng (đã dọn sau khi đo).

@@ -19,6 +19,7 @@ extern iRepresentShell*	g_pRepresentShell;
 #define	UITOADO_TEP			"\\UserData\\UiToaDo.ini"
 //	[UITOADO 10/09 G] bo cuc MAC DINH cua game (chu chot lai) - nap truoc tep nguoi choi
 #define	UITOADO_TEP_MACDINH	"\\Ui\\UiToaDo_MacDinh.ini"
+#define	UITOADO_TEP_MACDINH_RONG	"\\Ui\\UiToaDo_MacDinh_Rong.ini"	// [UITOADO 12/09 RONG] man rong (ti le >= 1,9)
 #define	UITOADO_CAUHINH		"\\config.ini"
 #define	UITOADO_MUC			"[Pos]"
 #define	UITOADO_MAX			2048
@@ -472,6 +473,23 @@ void UiToaDo_Nap()
 {
 	s_nSo   = 0;
 	s_bTran = 0;
+#ifdef JX_ANDROID
+	// [UITOADO 12/09 RONG] khung ve rong (dien thoai 19:9 .. 21:9) -> bo cuc mac dinh rieng neu co tep
+	if (SCREEN_WIDTH * 10 >= SCREEN_HEIGHT * 19)
+	{
+		char szRong[MAX_PATH];
+		g_GetFullPath(szRong, (char*)UITOADO_TEP_MACDINH_RONG);
+		FILE* pThu = fopen(szRong, "rt");
+		if (pThu)
+		{
+			fclose(pThu);
+			g_DebugLog("[UITOADO] khung ve %dx%d rong -> dung %s", SCREEN_WIDTH, SCREEN_HEIGHT, UITOADO_TEP_MACDINH_RONG);
+			NapTep(UITOADO_TEP_MACDINH_RONG);
+			NapTep(UITOADO_TEP);
+			return;
+		}
+	}
+#endif
 	NapTep(UITOADO_TEP_MACDINH);
 	NapTep(UITOADO_TEP);
 }
