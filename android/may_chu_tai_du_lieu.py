@@ -61,7 +61,7 @@ def lam_manifest(thu):
         if rel_thu == ".":
             ds[:] = [d for d in ds if d.lower() not in BO_THU_MUC]
         for f in sorted(fs):
-            if f.lower() in BO_TEP or f.lower().endswith((".log", ".part")):
+            if f.lower() in BO_TEP or f.lower().endswith((".log", ".part", ".apk")):   # .apk: de dien thoai tai bang trinh duyet, khong phai du lieu game
                 continue
             p = os.path.join(root, f)
             rel = os.path.relpath(p, thu).replace(os.sep, "/")

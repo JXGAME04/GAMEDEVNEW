@@ -38,10 +38,13 @@ HEADER = 32
 
 CHI_DEM = False        # --chi-dem: chi dem / phan loai, khong ghi gi
 TEN_UID = {}           # uid -> ten xin (tu dong 'P' trong nhat ky) de phan loai muc pak
+NEN_MUC = 0            # --nen-roi [muc]: nen NRV2B (UCL) cac tep roi khi dua vao pak (0 = khong nen)
+NEN_ROI = {}           # duong dan tep roi -> (tep blob da nen, co nen)
+SO_TIEN_TRINH = 4      # so tien trinh ucl_nen.exe chay song song
 
 
 def doc_tham_so():
-    global CHI_DEM
+    global CHI_DEM, NEN_MUC
     a = sys.argv[1:]
     nguon = r"D:\jx1_android_data"; dich = r"D:\jx1_android_data_dt"; logs = []; co_goi = 512
     i = 0
@@ -51,9 +54,82 @@ def doc_tham_so():
         elif a[i] == "--co-goi": co_goi = int(a[i + 1]); i += 2
         elif a[i] == "--chi-dung": i += 1; logs = []
         elif a[i] == "--chi-dem": CHI_DEM = True; i += 1
+        elif a[i] == "--nen-roi":
+            NEN_MUC = 7; i += 1
+            if i < len(a) and a[i].isdigit():
+                NEN_MUC = int(a[i]); i += 1
         else:
             logs.append(a[i]); i += 1
     return nguon, dich, logs, co_goi * MB
+
+
+def co_luu(m):
+    """so byte se ghi vao pak cua mot muc"""
+    u, ng, size, cf = m
+    if isinstance(ng, tuple):
+        return ng[2]
+    return NEN_ROI[ng][1] if ng in NEN_ROI else size
+
+
+def nen_tep_roi(ds):
+    r"""[ANDROID 12/09 NEN] nen NRV2B cac tep roi bang android\ucl_nen.exe (cung UCL cua XPackFile) -> muc TYPE_UCL,
+    kiem lai bang ucl.nrv2b_decompress_8 (pakdump) tren 20 muc ngau nhien. Tra danh sach muc moi (cf da doi)."""
+    import random
+    import subprocess
+    import tempfile
+    from ucl import nrv2b_decompress_8
+    exe = os.path.abspath(os.path.join(GOC, "ucl_nen.exe"))
+    if not os.path.isfile(exe):
+        raise SystemExit("thieu %s (dich: xem dau android/ucl_nen.c)" % exe)
+    tam = os.path.join(tempfile.gettempdir(), "ucl_nen")
+    os.makedirs(tam, exist_ok=True)
+    roi = [m for m in ds if not isinstance(m[1], tuple)]
+    if not roi:
+        return ds
+    t0 = time.time()
+    phan = [[] for _ in range(SO_TIEN_TRINH)]
+    for i, m in enumerate(roi):
+        phan[i % SO_TIEN_TRINH].append((i, m))
+    tien_trinh = []
+    for k, p in enumerate(phan):
+        p_ds = os.path.join(tam, "danh_sach_%d.txt" % k)
+        with io.open(p_ds, "w", encoding="utf-8", newline="\n") as f:
+            for i, m in p:
+                f.write("%s\t%s\n" % (m[1], os.path.join(tam, "%06d.bin" % i)))
+        tien_trinh.append((p, subprocess.Popen([exe, p_ds, str(NEN_MUC)], stdout=subprocess.PIPE)))
+    goc = nen = so_nen = 0
+    for p, pr in tien_trinh:
+        out = pr.stdout.read().decode("ascii", "replace").splitlines()
+        if pr.wait() != 0 or len(out) != len(p):
+            raise SystemExit("ucl_nen loi (ma %d, %d/%d dong)" % (pr.returncode, len(out), len(p)))
+        for (i, m), dong in zip(p, out):
+            a, b = dong.split("\t")
+            a = int(a); b = int(b)
+            if a < 0:
+                raise SystemExit("ucl_nen khong doc duoc " + m[1])
+            goc += a
+            if b > 0:
+                NEN_ROI[m[1]] = (os.path.join(tam, "%06d.bin" % i), b)
+                nen += b; so_nen += 1
+            else:
+                nen += a
+    print("nen tep roi (UCL muc %d, %d tien trinh): %d/%d tep nen duoc, %.0f MB -> %.0f MB (%.0f s)"
+          % (NEN_MUC, SO_TIEN_TRINH, so_nen, len(roi), goc / MB, nen / MB, time.time() - t0))
+    # kiem lai 20 muc: giai nen bang Python phai ra dung byte goc
+    mau = [m for m in roi if m[1] in NEN_ROI]
+    for m in random.sample(mau, min(20, len(mau))):
+        blob = open(NEN_ROI[m[1]][0], "rb").read()
+        goc_b = open(m[1], "rb").read()
+        if nrv2b_decompress_8(blob, len(goc_b)) != goc_b:
+            raise SystemExit("giai nen sai: " + m[1])
+    print("  kiem giai nen 20 muc: dung")
+    ra = []
+    for u, ng, size, cf in ds:
+        if not isinstance(ng, tuple) and ng in NEN_ROI:
+            ra.append((u, ng, size, 0x01000000 | NEN_ROI[ng][1]))
+        else:
+            ra.append((u, ng, size, cf))
+    return ra
 
 
 def nhom_cua(ten):
@@ -199,7 +275,7 @@ def ghi_goi(duong_dan, ds, tay_pak):
                         raise SystemExit("doc thieu %s @%d" % (pp, o))
                 n_luu = n
             else:
-                with open(ng, "rb") as g:
+                with open(NEN_ROI[ng][0] if ng in NEN_ROI else ng, "rb") as g:   # tep roi (da nen UCL neu --nen-roi)
                     b = g.read()
                 f.write(b); n_luu = len(b)
             index.append((u, off, size, cf))
@@ -223,10 +299,12 @@ def main():
         return
     os.makedirs(os.path.join(dich, "data"), exist_ok=True)
     ds, tong = gom_muc(nguon, loc_uid)
+    if NEN_MUC:
+        ds = nen_tep_roi(ds)
     # chia goi <= co_goi (theo thu tu gom; sau khi bo trung thi thu tu goi khong con quan trong)
     goi = []; hien = []; co = 0
     for m in ds:
-        luu = m[1][2] if isinstance(m[1], tuple) else m[2]
+        luu = co_luu(m)
         if hien and co + luu > co_goi:
             goi.append(hien); hien = []; co = 0
         hien.append(m); co += luu

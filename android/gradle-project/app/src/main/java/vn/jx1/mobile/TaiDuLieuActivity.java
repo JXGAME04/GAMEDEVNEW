@@ -196,7 +196,27 @@ public class TaiDuLieuActivity extends Activity
             return;
         }
         hien("Cần tải " + can.size() + " tệp, " + mb(tong) + " MB", "Đã có " + mb(coSan) + " MB");
+        if (mangTinhPhi())
+        {
+            // 4G / mang tinh phi: khong tu tai (chu: "ton it data") - bao ro va de nguoi choi tu quyet
+            final long tongTai = tong;
+            final List<Muc> danhSach = can;
+            hien("Đang dùng mạng di động (4G). Cần tải " + mb(tong) + " MB.", "Nên nối Wi‑Fi rồi mở lại game. Bấm nút nếu vẫn muốn tải bằng 4G.");
+            nut("Tải bằng 4G", v -> { mNut.setVisibility(View.INVISIBLE); new Thread(() -> taiTatCa(danhSach, tongTai), "jx-tai2").start(); });
+            return;
+        }
         taiTatCa(can, tong);        // tu cap nhat ngay, khong cho bam (chu: "co ban cap nhat moi se tu cap nhat")
+    }
+
+    /** mang dang dung co tinh phi (4G/5G, diem phat Wi-Fi tinh phi) */
+    private boolean mangTinhPhi()
+    {
+        try
+        {
+            android.net.ConnectivityManager cm = (android.net.ConnectivityManager) getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+            return cm != null && cm.isActiveNetworkMetered();
+        }
+        catch (Exception e) { return false; }
     }
 
     private List<Muc> docManifest() throws IOException

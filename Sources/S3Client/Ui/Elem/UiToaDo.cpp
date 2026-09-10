@@ -128,6 +128,28 @@ static int			s_nMoY			= -1;
 extern int SCREEN_WIDTH;		// S3Client.cpp / KSdlApp.cpp: co khung ve that
 extern int SCREEN_HEIGHT;
 
+#ifdef JX_ANDROID
+// [UITOADO 12/09 MANHINH] Bo cuc luu theo khung ve luc thiet ke (dong 'ManHinh=W,H' trong [Pos]; thieu = 1040x604 cua may ao).
+// Khung ve khac (dien thoai 21:9 ~1371x617): o co X >= 70 %% rong thiet ke neo theo mep PHAI, Y >= 70 %% cao neo mep DUOI,
+// con lai giu nguyen. Chu: "choi dien thoai no khong ra full man". Tat: config.ini [Ui] NeoTheoMep=0.
+static int	s_nManHinhW = 0, s_nManHinhH = 0;	// doc tu tep dang nap
+static int	s_nNeoTheoMep = -1;
+static void DoiTheoManHinh(int* pnX, int* pnY)
+{
+	int nW0 = (s_nManHinhW > 0) ? s_nManHinhW : 1040;
+	int nH0 = (s_nManHinhH > 0) ? s_nManHinhH : 604;
+	int nDX = SCREEN_WIDTH - nW0, nDY = SCREEN_HEIGHT - nH0;
+	if (s_nNeoTheoMep < 0)
+		s_nNeoTheoMep = GetPrivateProfileInt("Ui", "NeoTheoMep", 1, ".\\config.ini") ? 1 : 0;
+	if (!s_nNeoTheoMep || SCREEN_WIDTH <= 0 || SCREEN_HEIGHT <= 0 || (nDX == 0 && nDY == 0))
+		return;
+	if (*pnX * 10 >= nW0 * 7)
+		*pnX += nDX;
+	if (*pnY * 10 >= nH0 * 7)
+		*pnY += nDY;
+}
+#endif
+
 //--------------------------------------------------------------------------
 //	[UITOADO 09/09 E] Bang O VE TAY (khong phai cua so KWnd) - xem UiToaDo.h
 //--------------------------------------------------------------------------
@@ -426,9 +448,22 @@ static void NapTep(const char* pszTep)
 			if (n == 0)
 				continue;
 		}
+#ifdef JX_ANDROID
+		if (strcmpi(p, "ManHinh") == 0)	// [UITOADO 12/09 MANHINH] khung ve luc luu tep nay
+		{
+			s_nManHinhW = nGiaTri[0];
+			s_nManHinhH = nGiaTri[1];
+			continue;
+		}
+		DoiTheoManHinh(&nGiaTri[0], &nGiaTri[1]);
+#endif
 		DatKhoa(p, nGiaTri[0], nGiaTri[1], nGiaTri[2], nGiaTri[3]);
 	}
 	fclose(pTep);
+#ifdef JX_ANDROID
+	g_DebugLog("[UITOADO] %s: tep thiet ke %dx%d, khung ve %dx%d", "[UITOADO 12/09 MANHINH]", s_nManHinhW, s_nManHinhH, SCREEN_WIDTH, SCREEN_HEIGHT);
+	s_nManHinhW = s_nManHinhH = 0;
+#endif
 	g_DebugLog("[UITOADO] nap xong %s -> bang co %d muc", szDuongDan, s_nSo);
 }
 
@@ -463,6 +498,9 @@ static int GhiTepVao(const char* pszTep)
 	fprintf(pTep, ";   Co   : bit 1 = an han o nay\n");
 	fprintf(pTep, "; Xoa het tep nay = tra giao dien ve dung \\Ui\\ui3\\*.ini goc.\n");
 	fprintf(pTep, "%s\n", UITOADO_MUC);
+#ifdef JX_ANDROID
+	fprintf(pTep, "ManHinh=%d,%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);	// [UITOADO 12/09 MANHINH]
+#endif
 	for (i = 0; i < s_nSo; i++)
 	{
 		fprintf(pTep, "%s=%d,%d,%d,%d\n", s_Bang[i].szKhoa,

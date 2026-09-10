@@ -128,6 +128,18 @@ Cần ~10 GB trống. Sau khi rút gọn theo nhật ký (mục 7) gói còn 2�
 4. Lần đầu chưa có dữ liệu mà không nối được máy chủ → báo lỗi + nút Thử lại. APK bản này: `android/apk/jx1mobile-1209-tai-c.apk`
    (chưa cài lên máy ảo lúc 01:10 vì chủ đang chơi; `tai-b` đang cài chỉ khác ở chỗ hiện chữ 0,3 s và chờ nút 2 s).
 
+**Điện thoại của chủ (01:15, 10.0.0.127, Wi‑Fi):** 8.417 MB tải xong **2 phút 42 giây (~52 MB/s)**, 24 yêu cầu, 0 lỗi máy chủ; 01:18:40
+mở lại kiểm tra manifest và tải lại đúng 1 gói `mobile_16.pak` (chắc tệp đó lỗi ở lượt đầu → "Thử lại" chỉ tải phần thiếu). Chủ hỏi
+"tải 5 phút có cách nào nhanh hơn, tốn ít data hơn": đường mạng đã ~52 MB/s, chỉ còn cách **bớt byte**:
+
+| Cách | Còn bao nhiêu | Trạng thái |
+|---|---|---|
+| Nén truyền (gzip) cả gói | 85 % (6,4 GB từ pak cũ đã nén UCL sẵn, chỉ 2 GB tệp rời nén được ~47–63 %) | không đáng làm riêng |
+| **Nén tệp rời ngay trong pak** bằng UCL (`--nen-roi`, `android/ucl_nen.c` dịch từ `Engine/Src/ucl`, engine giải nén như pak cũ) | 8,4 → **≈ 7,3 GB**, đỡ cả chỗ trên máy | xem kết quả đo bên dưới |
+| Rút gọn theo nhật ký tệp dùng (`--chi-dung`) | **≈ 1,8–2,5 GB** | chờ chủ chơi đủ kịch bản |
+| "Tải bổ sung khi thiếu" (gói đầu 300–500 MB, thiếu gì tải lúc chơi) | ~20 s vào game, tổng data = phần thực dùng | đợt sau, cần duyệt |
+| Chặn tải qua 4G: mạng tính phí thì báo và chờ Wi‑Fi (nút "Tải bằng 4G" nếu vẫn muốn) | không tốn data di động | APK `jx1mobile-1209-tai-d.apk` |
+
 **Số đo để ước lượng rút gọn** (`--chi-dem --chi-dung`, 01:05): chủ chơi ~1 giờ trong thành Tương Dương với APK 1209 → nhật ký 1.155 id
 → **70 MB** (bản đồ + ảnh bản đồ 30, nhân vật/NPC quanh đó 12, bảng vật phẩm/npcres 12, nhạc 5, kỹ năng 1…). Cả gói 8.417 MB gồm: ảnh
 nhân vật/NPC/quái ≈ 6.000 MB (`spr\npcres` rời 1.141 + updatejx14/15/16 ≈ 4.150 + spr.pak 880), bản đồ ≈ 1.000 MB cho 1.006 bản đồ
@@ -167,6 +179,22 @@ không xét trạng thái → ở menu chính (ảnh 4:3 chỉ phủ 800 px) cá
 `KyNang_TrongGame()` = `KUiToolsControlBar::GetSelf() != NULL` (thanh công cụ mở trong `UiStartGame`, huỷ khi rời thế giới) — chưa vào
 thế giới thì không vẽ và không nhận chạm (`JxCan_TrongVung`, `JxKyNang_TrungNut`, `JxKyNang_ChamBangChon` trả "không"). APK
 `android/apk/jx1mobile-1209-tai-b.apk`. Chủ kiểm: menu / đăng nhập / chọn nhân vật không còn nút; vào thế giới nút và cần hiện lại như cũ.
+
+## 9. Điện thoại màn rộng "không ra full màn" + tọa độ UI chủ chỉnh chưa vào gói (`12/09 MANHINH`)
+
+Ảnh chủ gửi 01:30 (điện thoại ~21:9): thế giới vẽ kín màn nhưng cột icon phải, bản đồ nhỏ, cụm nút kỹ năng, thanh chat nằm ở vị trí
+của máy ảo 1040×604; dải bên phải trống. Gốc: `KSdlApp.cpp` chọn khung vẽ theo màn hình (`ChieuCaoMucTieu=640` → điện thoại
+2400×1080 ⇒ hệ số 1,75 ⇒ khung vẽ ~1371×617, máy ảo 1040×604), còn bố cục `UiToaDo` (`ui\uitoado_macdinh.ini` + `userdata\UiToaDo.ini`,
+kể cả `KyNang0..8`, `KyNangGan` của cụm kỹ năng) là **toạ độ tuyệt đối** theo 1040×604.
+- Sửa `Sources/S3Client/Ui/Elem/UiToaDo.cpp` (chỉ `JX_ANDROID`, `android/va_nguon_android_uitoado_manhinh1.py`): tệp bố cục có dòng
+  `ManHinh=W,H` trong `[Pos]` (khung vẽ lúc lưu; game ghi khi lưu; thiếu = 1040×604). Lúc nạp, ô có X ≥ 70 % rộng thiết kế được cộng
+  thêm `SCREEN_WIDTH − W` (neo mép phải), Y ≥ 70 % cao cộng `SCREEN_HEIGHT − H` (neo mép dưới); còn lại giữ nguyên (thanh chat, hộp
+  thoại giữa, cột trái). Tắt bằng `config.ini [Ui] NeoTheoMep=0`. Máy ảo 1040×604 không đổi gì.
+- Chủ: "chưa up toạ độ UI mới ở bản PC lên": bố cục chủ chỉnh trên máy ảo nằm ở `userdata\UiToaDo.ini` (09/09 23:58), không nằm trong
+  gói (userdata là dữ liệu người chơi). Đã lấy nguyên tệp đó làm **mặc định của game**: `android/du_lieu_ghi_de/ui/uitoado_macdinh.ini`
+  (+ `D:\jx1_android_data\ui\`), thêm `ManHinh=1040,604` và `KUiToolsControlBar|NhatDo=868,362`. Đóng gói lại là điện thoại tải 2 KB.
+- Chưa thử được bố cục màn rộng trên máy ảo (LDPlayer 1040×604 nên phép neo không tác dụng; đổi độ phân giải máy ảo là của chủ);
+  chủ thử trên điện thoại với APK `jx1mobile-1209-tai-e.apk`: cột icon phải, bản đồ nhỏ, cụm kỹ năng phải sát mép phải.
 
 **Lưu ý máy ảo:** thư mục app (`/storage/emulated/0/Android/data/vn.jx1.mobile/files/`) được `JxAndroidMain.cpp` ưu tiên TRƯỚC
 `/mnt/shared/Misc` — thử tải trên máy ảo xong phải xoá `data/`, `config.ini`, `package.ini`, `settings/`, `da_tai.txt`, `tai_du_lieu.txt`
