@@ -113,7 +113,18 @@ tệp rồi khởi động lại app.
 
 ---
 
-## 6. Cách chủ thử
+## 6. Sửa thêm ngay sau B2 — cần điều khiển phải thắng máy auto (`B2 g`, `android/va_nguon_android_wauto7.py`)
+
+Chủ báo: "nút di chuyển phải ưu tiên - đang đánh di chuyển cũng phải ưu tiên". Nguyên nhân: trên PC, `ExtAutoLoop` (S3Client.cpp) chỉ
+cho máy PK / đánh / đi / về thành / nhặt chạy khi người chơi **không giữ chuột trái** (`Wnd_IsLButtonDown()`, 8 chỗ) — giữ chuột = người
+chơi đang cầm, auto nhường. Trên Android đi bằng cần (`JxCanDieuKhien.cpp`), cờ chuột trái không bật, nên mỗi tick auto lại phát lệnh đánh
+đè lên lệnh đi. Sửa: macro `WA_TAY_CAM()` = `Wnd_IsLButtonDown() || JxCan_DangCam()` khi `JX_ANDROID`, còn Windows mở ra đúng
+`Wnd_IsLButtonDown()` (mã máy PC không đổi); thay 8 chỗ trong `ExtAutoLoop` (kể cả `ATYPE_PICKUPSET` và dòng nhật ký `[AUTO-PASS] lbtn=`).
+Thêm: `JxKyNang_Nhip()` (giữ nút kỹ năng đánh lặp) cũng nhường khi đang cầm cần. Cần bắt đầu kéo đã gỡ khoá mục tiêu từ 09/09
+(`LockSomeoneAction(0)` / `LockObjectAction(0)`), nên thả cần ra là auto tự bắt lại mục tiêu. Nghiệm thu: `[AUTO-PASS] ... lbtn=1` trong
+`jx_auto.log` suốt lúc kéo cần, nhân vật đi theo cần dù auto đang bật (`thu_b2e.sh`).
+
+## 7. Cách chủ thử
 
 1. Cài `android/apk/jx1mobile-1109-wauto-b2c.apk` (đã cài trên LDPlayer). Dữ liệu (`ui\ui3\uiwauto_tab*.ini`, `spr\uinew\uiautonew\*.spr`) đã
    chép vào `D:\jx1_android_data`.

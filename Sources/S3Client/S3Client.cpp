@@ -45,6 +45,13 @@
 #include "Ui/UiCase/UiInformation.h"
 #ifdef JX_ANDROID
 #include "Platform/JxWAutoNoiBo.h"	// [ANDROID 11/09 WAUTO B0] ben gui WAuto trong tien trinh (thay WAuto.exe)
+#include "Platform/JxCanDieuKhien.h"	// [ANDROID 11/09 WAUTO B2 g] JxCan_DangCam(): dang cam can = nguoi choi dang cam, may auto nhuong
+// [ANDROID 11/09 WAUTO B2 g] Chu: "nut di chuyen phai uu tien - dang danh di chuyen cung phai uu tien". Tren PC WAuto nhuong quyen khi
+// nguoi choi GIU CHUOT TRAI (Wnd_IsLButtonDown) - may PK / danh / di / ve thanh dung, khong nhat. Tren Android can dieu
+// khien khong phai chuot trai nen dang cam can cung tinh la "tay dang cam". Ban Windows: macro mo ra dung Wnd_IsLButtonDown().
+#define WA_TAY_CAM()	(Wnd_IsLButtonDown() || JxCan_DangCam())
+#else
+#define WA_TAY_CAM()	Wnd_IsLButtonDown()
 #endif
 #include "Ui/UiCase/UiSelServer.h"
 #include "Ui/UiCase/UiLogin.h"
@@ -848,7 +855,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	if(!g_pCoreShell)
 		return;
 	Wnd_SetPKKey(pApData->uFKey);
-	AUTOLOG_EVERY(1000, "[AUTO-PASS] pass=%u t=%u pidx=%d onpk=%d fight=%d pick=%d fpick=%d datau=%d vis=%d near=%d pvis=%d skL=%d skR=%d lbtn=%d", m_GameCounter, timeGetTime(), g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0), pApData->bOnPK, pApData->bFight, pApData->bPickUp, pApData->bFollowPick, pApData->bDaTau, pApData->nVision, pApData->nNearDist, pApData->nPickVision, pApData->nSkillIdL, pApData->nSkillIdR, Wnd_IsLButtonDown());
+	AUTOLOG_EVERY(1000, "[AUTO-PASS] pass=%u t=%u pidx=%d onpk=%d fight=%d pick=%d fpick=%d datau=%d vis=%d near=%d pvis=%d skL=%d skR=%d lbtn=%d", m_GameCounter, timeGetTime(), g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0), pApData->bOnPK, pApData->bFight, pApData->bPickUp, pApData->bFollowPick, pApData->bDaTau, pApData->nVision, pApData->nNearDist, pApData->nPickVision, pApData->nSkillIdL, pApData->nSkillIdR, WA_TAY_CAM());
 	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_CHECKTIME, 0);
 	if(pApData->bRevive)
 	{
@@ -1049,7 +1056,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 			}
 		}
 	}
-	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUPSET, Wnd_IsLButtonDown());
+	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUPSET, WA_TAY_CAM());
 	// Y NGHIA GIA TRI TRA VE cua cac may hoat dong (nBS):
 	//   0 = tha may cho auto tu do
 	//   1 = cam lai HET: khong nhat do, khong danh (lenh duoi-nhat do_run se de len
@@ -1071,7 +1078,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	BOOL bLaunch = 0;
 	if(nBS != 1)
 		bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUP, (KNPARAM)pApData);
-	AUTOLOG_EVERY(1000, "[PICK-RET] pass=%u t=%u pickret=%d lbtn=%d pick=%d fpick=%d pvis=%d ptype=%d city=%d nopick=%d nopcnt=%d", m_GameCounter, timeGetTime(), bLaunch, Wnd_IsLButtonDown(), pApData->bPickUp, pApData->bFollowPick, pApData->nPickVision, pApData->nPickType, pApData->bCityPick, pApData->bNoPick, pApData->nNOPCount);
+	AUTOLOG_EVERY(1000, "[PICK-RET] pass=%u t=%u pickret=%d lbtn=%d pick=%d fpick=%d pvis=%d ptype=%d city=%d nopick=%d nopcnt=%d", m_GameCounter, timeGetTime(), bLaunch, WA_TAY_CAM(), pApData->bPickUp, pApData->bFollowPick, pApData->nPickVision, pApData->nPickType, pApData->bCityPick, pApData->bNoPick, pApData->nNOPCount);
 	if(bLaunch != 2)
 		bLaunch = 0;
 	if(pApData->bUseBuff && !bLaunch)
@@ -1124,7 +1131,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		nParam[1] = pApData->nSkillIdA2;
 		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_CHANGEAURA, (KNPARAM)&nParam);
 	}
-	if(!Wnd_IsLButtonDown())
+	if(!WA_TAY_CAM())
 	{
 		if((pApData->bOnPK && nBS != 5) || nBS == 2 || nBS == 6)
 		{
@@ -1225,12 +1232,12 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ARRANGEBOX, 0))
 			return;
 	}
-	if(!Wnd_IsLButtonDown())
+	if(!WA_TAY_CAM())
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_FILTER, (KNPARAM)pApData))
 			return;
 	}
-	AUTOLOG_EVERY(1000, "[AUTO-STAGE-FILTER] pass=%u t=%u stage=after-filter launch=%d nDT=%d lbtn=%d filter=%d ftcnt=%d prize=%d level=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, Wnd_IsLButtonDown(), pApData->bFilter, pApData->nFtMaCount, pApData->bPrize, pApData->bLevel);
+	AUTOLOG_EVERY(1000, "[AUTO-STAGE-FILTER] pass=%u t=%u stage=after-filter launch=%d nDT=%d lbtn=%d filter=%d ftcnt=%d prize=%d level=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, WA_TAY_CAM(), pApData->bFilter, pApData->nFtMaCount, pApData->bPrize, pApData->bLevel);
 	if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PTPROC, (KNPARAM)pApData))
 		return;
 	if(pApData->nSelInvitePt && nBS == 0)
@@ -1248,9 +1255,9 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_REPAIRF, 0))
 			return;
 	}
-	AUTOLOG_EVERY(1000, "[AUTO-END] pass=%u t=%u stage=end launch=%d nDT=%d lbtn=%d ret=%d fmode=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, Wnd_IsLButtonDown(), pApData->bReturn, g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0));
+	AUTOLOG_EVERY(1000, "[AUTO-END] pass=%u t=%u stage=end launch=%d nDT=%d lbtn=%d ret=%d fmode=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, WA_TAY_CAM(), pApData->bReturn, g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0));
 	if(pApData->bReturn && nDT == 0 && nBS == 0 && !g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0)
-	&& !Wnd_IsLButtonDown())
+	&& !WA_TAY_CAM())
 	{
 		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RETURN, (KNPARAM)pApData);
 	}

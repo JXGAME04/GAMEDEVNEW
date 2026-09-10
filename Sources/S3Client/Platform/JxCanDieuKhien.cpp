@@ -1416,6 +1416,8 @@ void JxKyNang_Nhip()
 	KyNang_LuanChuyen();	// [ANDROID 10/09 LUAN] chay moi khung, khong phu thuoc dang giu nut hay khong
 	if (s_nKNDangCam < 0)
 		return;
+	if (JxCan_DangCam())	// [ANDROID 11/09 WAUTO B2 g] dang cam can: di chuyen uu tien, khong danh lap lai (nha can thi danh tiep)
+		return;
 	if (s_nKNGiuCanDiem && s_nKNNgonGiu)
 		return;		// [ANDROID 10/09 KHINHCONG c] con de ngon: chua nhay, doi nha ngon (JxKyNang_Nha ban)
 	uNay = (unsigned int)GetTickCount();
