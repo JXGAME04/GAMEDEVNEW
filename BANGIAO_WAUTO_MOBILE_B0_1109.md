@@ -4,7 +4,8 @@
 > đã nằm sẵn trong bản Android **chạy được khi có ai bảo nó chạy**, để nút BẬT ở B1 có cái để bật.
 >
 > Nhánh: `claude/full-wauto-mobile-analysis-f781df` (worktree `D:\GAMEDEVNEW\.claude\worktrees\full-wauto-mobile-analysis-f781df`),
-> đã gộp `mobile-0809` tới `cc1a41f8` (11/09, "Mục 14.8"). Chủ quyết cách đưa vào `mobile-0809` (merge hoặc cherry-pick).
+> đã gộp `mobile-0809` tới `d629e4f8` (11/09, "TTMT b-d / ONGMAU"). Gắn vào `mobile-0809` bằng **fast-forward** (không commit gộp mới).
+> Mọi lần gộp đều dựng lại đủ ba chuỗi (Android, x64, SDL) trước khi gắn; APK của bản gộp cuối: `android/apk/jx1mobile-1109-wauto-b0-gop2.apk`.
 
 ---
 
@@ -52,7 +53,8 @@ Muốn thấy, chủ đưa nhân vật ra bãi quái rồi mở app với `Bat=1
 | `android/va_nguon_android_83.py`, `84.py`, `89.py` | ba bản vá (tạo tệp + vá; sửa sau lần thử 1; sửa sau lần thử 2). Chạy lại vô hại | |
 | `LOTRINH_WAUTO_MOBILE_1109.md` | §0.1 thêm cách "chỉ Android, không vcxproj" (ưu tiên); dòng tiến độ B0 | |
 
-Số kịch bản vá: ban đầu là 81/82, **đổi thành 83/84** vì phiên kia cũng vừa tạo 81/82 (vá ICON d/e) — commit gộp `017a522a`.
+Số kịch bản vá: ban đầu là 81/82/85, **đổi thành 83/84/89** vì phiên kia cũng tạo 81/82 (ICON d/e) và 85 (TTMT b) cùng lúc — commit gộp `017a522a`, `58dd6480`.
+**Bài học:** trước khi đặt tên `va_nguon_android_NN.py`, xem số cao nhất trên `mobile-0809` VÀ trong cây làm việc của phiên kia.
 
 ---
 
