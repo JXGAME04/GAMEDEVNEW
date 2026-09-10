@@ -20,17 +20,17 @@ sys.path.insert(0, GOC)
 from bo_cuc_vnku_mobile import ghi_spr_nhieu_khung, ghi_moi_noi  # noqa: E402
 
 VNKU_PNG = r"C:\Users\nguye\Downloads\NHACTAI\VNKU_ui\png\Spr\UiNew\UiItem"
-O = 44                  # co o
+O = 36                  # co o (chu 08:40: 44 px "qua to lam be hinh" -> 36 px, van to hon goc 28 px 1,3 lan)
 COT, HANG = 6, 10
 VIEN = 2                # UnitBorder
-LUOI_X, LUOI_Y = 26, 48
-LUOI_W, LUOI_H = O * COT, O * HANG          # 264 x 440
-W, H = LUOI_W + 2 * LUOI_X, 592             # 316 x 592
-NUT_W, NUT_H = 96, 35
-TIEN_Y = LUOI_Y + LUOI_H + 6                # 494
-NUT_Y1 = TIEN_Y + 26                        # 520
-NUT_Y2 = NUT_Y1 + NUT_H + 4                 # 559
-NUT_X = [8, 110, 212]
+LUOI_X, LUOI_Y = 20, 44
+LUOI_W, LUOI_H = O * COT, O * HANG          # 216 x 360
+W, H = LUOI_W + 2 * LUOI_X, 500             # 256 x 500 (81 % cao man dien thoai 617)
+NUT_W, NUT_H = 78, 30
+TIEN_Y = LUOI_Y + LUOI_H + 4                # 408
+NUT_Y1 = TIEN_Y + 24                        # 432
+NUT_Y2 = NUT_Y1 + NUT_H + 4                 # 466
+NUT_X = [8, 89, 170]
 
 
 def ghi(rel, cac_khung):

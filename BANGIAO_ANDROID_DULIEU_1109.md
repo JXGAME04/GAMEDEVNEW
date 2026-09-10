@@ -292,6 +292,27 @@ Hành trang gốc (`ui\ui3\uiitem.ini`): cửa sổ 214×454, `[ItemBox]` 168×2
   (`KUiNewsMessage`) 320 → 485, báo cáo trận (`KUiBattleReport`) neo phải 902 → 1233, cửa hàng neo trái. Máy ảo cũng đổi (hộp thoại
   vào giữa 1040 thay vì lệch trái 800).
 
+## 12c. Chủ 08:30–08:40 (ảnh điện thoại): thông báo, thư/đấu giá, phím 1-4, chiến lệnh, HP/MP, tab chat, tab tính năng lệch; hành trang quá to; F7/F8/Ctrl+Space; bấm chưa chính xác
+
+- **Ô con dịch sai** (gốc của "icon chiến lệnh mất", "thư/đấu giá lệch"): ô con (toạ độ tương đối cha) không có neo → tự suy theo toạ độ
+  nhỏ = "trái" → game dịch `DX·(0 − neo cha)/2 = −331` so với cha (cha neo phải) → nút bay khỏi khung. Sửa cả hai nơi: `UiToaDo.cpp`
+  `NEO b` (ô con thiếu neo **thừa neo của cha**) và `sinh_bocuc_rong.py` (cửa sổ gốc xử lý trước, con thừa neo cha, tệp rộng dịch
+  `DX·(neo con − neo cha)/2` đúng công thức game).
+- **Mục ô con không được áp** (phím 1-4 vẫn chỗ cũ): `KUiPlayerBar::Initialize` gọi `LoadScheme` rồi `Wnd_AddWindow`? — không:
+  `Wnd_AddWindow` chạy trong `Initialize` nhưng các ô con được `Init` (đặt tên mục) ở `LoadScheme` do `KUiBase` gọi SAU → lúc đăng ký
+  chưa có tên → khoá không tạo được → mục không áp. Thêm `UiToaDo_ApChoO(this)` cuối `KWndWindow::Init` (JX_ANDROID): ô nào đọc xong
+  ini là áp ngay mục của nó.
+- **Nhóm neo**: thanh HP/MP/EXP (`KUiHeaderControlBar`), khung chat + tab kênh (`KUiMsgCentrePad`), bảng chiến lệnh, Tống Kim → GIỮA
+  cùng hàng icon / thanh chat (trước neo trái nên tách nhau). Cửa sổ liệt kê tự động: chỉ neo trái khi tâm < 12 % (tab sát mép), còn
+  lại giữa; phải ≥ 65 %.
+- **Hành trang "quá to làm bể hình"**: ô 44 → **36 px** (vẫn hơn gốc 1,3 lần), cửa sổ 316×592 → **256×500** (81 % chiều cao điện thoại).
+- **F7/F8/Ctrl+Space** (hiện tên, thanh máu, tên đồ dưới đất): `KUiPlayerBar::LoadPrivateSetting` chỉ áp `[Player] ShowLife/ShowName/
+  ShowObjName` khi tệp tuỳ chọn nhân vật có khoá → điện thoại chưa từng bấm phím thì tắt. `HIENTEN 12/09`: thiếu khoá → 1 (hiện) và áp luôn.
+- **"Bấm nút / icon / ô nhập chưa chính xác"**: đã soát phép đổi toạ độ chạm (`KSdlApp`: ngón × cỡ cửa sổ điểm → `SdlToLogical` chia
+  cùng đơn vị → không lệch tỉ lệ); nút (`KWndButton : KWndImage`) vẽ kéo đúng cỡ TiLe nên vùng chạm khớp hình. Chưa tìm thấy lỗi chung
+  — cần chủ chỉ cụ thể ô nào (ví dụ ô nhập số lượng, nút nào) để soi tiếp.
+- **"Căng chỉnh màn hình tốt hơn"**: xem mục 14.
+
 ## 13. Tự tải và cài APK mới trong game (`CAPNHAT 12/09`) — chủ 03:40: "tải APK mới mà không cần up lên Drive"
 
 - Cách nhanh không cần gì thêm: điện thoại cùng Wi‑Fi mở `http://10.0.0.140:8765/jx1mobile.apk` (máy chủ tải phục vụ APK ở gốc).
@@ -304,6 +325,22 @@ Hành trang gốc (`ui\ui3\uiitem.ini`): cửa sổ 214×454, `[ItemBox]` 168×2
 - Quy trình phát bản mới cho chủ: dựng APK → chép thành `D:\jx1_android_data_dt_nen\jx1mobile.apk` → khởi động lại
   `may_chu_tai_du_lieu.py` (sinh `apk.txt` + manifest) → điện thoại mở game là tự tải + hỏi cài. APK đầu tiên có cơ chế này:
   `jx1mobile-1209-tai-k.apk` (từ bản này trở đi không cần gửi tệp nữa).
+
+## 14. "Có cách nào căng chỉnh màn hình tốt hơn không?" — các hướng, ưu nhược
+
+Hiện tại: khung vẽ theo màn (cao ≈ 617 dòng, rộng theo tỉ lệ máy) + **bố cục theo neo** từng ô (trái/giữa/phải, trên/giữa/dưới) + hai tệp
+mặc định (1040×604 cho máy ảo/16:9, 1371×617 cho 19,5:9–21:9). Đây đúng là cách Cocos/Unity làm ("design resolution + anchor").
+Muốn tốt hơn nữa có ba hướng, tôi khuyến nghị theo thứ tự:
+1. **Nhóm neo (layout group)**: khai báo nhóm ô đi cùng nhau (hàng icon trên, thanh chat + tab + thư + đấu giá, cột phải, cụm kỹ năng)
+   với một neo chung và cách giãn — thay vì từng ô một. Hết cảnh một ô trong nhóm dịch khác ô bên cạnh. Việc nhỏ (bảng nhóm trong tệp
+   bố cục + ~100 dòng UiToaDo), làm ngay được.
+2. **Chế độ sửa bố cục ngay trên điện thoại** (đã có `[Ui] SuaToaDo=1`, kéo thả + phóng, nút "Ghi mặc định"): chủ kéo trực tiếp trên
+   máy thật rồi gửi tệp `userdata\UiToaDo.ini`, tôi đưa vào gói làm mặc định — chính xác hơn mọi công thức. Cần thêm nút mở chế độ này
+   trong Cài đặt của mobile.
+3. **Cỡ chữ/icon theo mật độ điểm ảnh (DPI)**: điện thoại 6,5" cần icon ≥ 7 mm; khung vẽ 617 dòng cho icon 47 px ≈ 5,6 mm. Làm bằng
+   "hệ số giao diện" theo DPI (`SDL_GetWindowDisplayScale`) + phóng từng ô HUD (TiLe) trong tệp màn rộng; hộp thoại PC 450–550 px cao
+   thì không phóng được nếu không bố trí lại (xem mục 9). Đây là việc lớn dần theo từng cửa sổ (như hành trang).
+Không nên: kéo méo cả khung (không giữ tỉ lệ) hay thu nhỏ khung vẽ xuống 480 dòng (hộp thoại tràn màn).
 
 **Lưu ý máy ảo:** thư mục app (`/storage/emulated/0/Android/data/vn.jx1.mobile/files/`) được `JxAndroidMain.cpp` ưu tiên TRƯỚC
 `/mnt/shared/Misc` — thử tải trên máy ảo xong phải xoá `data/`, `config.ini`, `package.ini`, `settings/`, `da_tai.txt`, `tai_du_lieu.txt`

@@ -2158,12 +2158,25 @@ BOOL KUiPlayerBar::LoadPrivateSetting(KIniFile* pFile)
 		int nNameObj = 0;
 		int nPK = 0;
 
+#ifdef JX_ANDROID
+		// [HIENTEN 12/09] dien thoai khong co F7 / F8 / Ctrl+Space: chua luu tuy chon thi mac dinh HIEN ten, thanh mau, ten do duoi dat
+		if (!pFile->GetInteger("Player", "ShowLife", 0, (int*)(&nLife)))
+			nLife = 1;
+		g_pCoreShell->OperationRequest(GOI_SHOW_PLAYERS_LIFE, 0, nLife);
+		if (!pFile->GetInteger("Player", "ShowName", 0, (int*)(&nName)))
+			nName = 1;
+		g_pCoreShell->OperationRequest(GOI_SHOW_PLAYERS_NAME, 0, nName);
+		if (!pFile->GetInteger("Player", "ShowObjName", 0, (int*)(&nNameObj)))
+			nNameObj = 1;
+		g_pCoreShell->OperationRequest(GOI_SHOW_OBJ_NAME, 0, nNameObj);
+#else
 		if (pFile->GetInteger("Player", "ShowLife", 0, (int*)(&nLife)))
 			g_pCoreShell->OperationRequest(GOI_SHOW_PLAYERS_LIFE, 0, nLife);
 		if (pFile->GetInteger("Player", "ShowName", 0, (int*)(&nName)))
 			g_pCoreShell->OperationRequest(GOI_SHOW_PLAYERS_NAME, 0, nName);
 		if (pFile->GetInteger("Player", "ShowObjName", 0, (int*)(&nNameObj)))
 			g_pCoreShell->OperationRequest(GOI_SHOW_OBJ_NAME, 0, nNameObj);
+#endif
 		//if (pFile->GetInteger("Player", "PK", enumPKNormal, (int*)(&nPK)))
 		//	g_pCoreShell->OperationRequest(GOI_PK_SETTING, 0, nPK);
 	}

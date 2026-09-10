@@ -161,15 +161,32 @@ static void DoiCaTepTheoNeo()
 	int i;
 	if (s_nNeoTheoMep < 0)
 		s_nNeoTheoMep = GetPrivateProfileInt("Ui", "NeoTheoMep", 1, ".\\config.ini") ? 1 : 0;
-	// buoc 1: suy neo cho o chua co (theo toa do thiet ke)
+	// buoc 1: suy neo cho o chua co: o CON (toa do tuong doi cha, cha '<lop>|Main' co trong bang) THUA neo cua cha
+	// ([UITOADO 12/09 NEO b] - tu suy theo toa do nho thanh 'trai' -> dich -DX so voi cha, nut bay ra ngoai khung); o goc suy theo toa do.
 	for (i = 0; i < s_nSo; i++)
 	{
+		int nCha = -1;
+		const char* pGach;
 		if (s_aTepNap[i] != s_nTepNap)
 			continue;
+		if (s_Bang[i].nNeoX >= 0 && s_Bang[i].nNeoX <= 2 && s_Bang[i].nNeoY >= 0 && s_Bang[i].nNeoY <= 2)
+			continue;
+		pGach = strchr(s_Bang[i].szKhoa, '|');
+		if (pGach && strcmp(pGach + 1, "Main") != 0)
+		{
+			char szCha[UITOADO_CO_KHOA];
+			_snprintf(szCha, sizeof(szCha), "%.*s|Main", (int)(pGach - s_Bang[i].szKhoa), s_Bang[i].szKhoa);
+			szCha[sizeof(szCha) - 1] = 0;
+			nCha = TimKhoa(szCha);
+			if (nCha == i)
+				nCha = -1;
+		}
 		if (s_Bang[i].nNeoX < 0 || s_Bang[i].nNeoX > 2)
-			s_Bang[i].nNeoX = NeoTuDong(s_Bang[i].nLeft, nW0);
+			s_Bang[i].nNeoX = (nCha >= 0) ? ((s_Bang[nCha].nNeoX >= 0) ? s_Bang[nCha].nNeoX : NeoTuDong(s_Bang[nCha].nLeft, nW0))
+				: NeoTuDong(s_Bang[i].nLeft, nW0);
 		if (s_Bang[i].nNeoY < 0 || s_Bang[i].nNeoY > 2)
-			s_Bang[i].nNeoY = NeoTuDong(s_Bang[i].nTop, nH0);
+			s_Bang[i].nNeoY = (nCha >= 0) ? ((s_Bang[nCha].nNeoY >= 0) ? s_Bang[nCha].nNeoY : NeoTuDong(s_Bang[nCha].nTop, nH0))
+				: NeoTuDong(s_Bang[i].nTop, nH0);
 	}
 	if (!s_nNeoTheoMep || SCREEN_WIDTH <= 0 || SCREEN_HEIGHT <= 0 || (nDX == 0 && nDY == 0))
 		return;
@@ -655,6 +672,17 @@ static void ApChoCay(const char* pszLop, KWndWindow* pWnd)
 	}
 }
 
+#ifdef JX_ANDROID
+// [UITOADO 12/09 NEO b] ap cho MOT o ngay khi no doc xong ini (goi tu KWndWindow::Init): o con duoc Init sau khi goc da dang ky
+void UiToaDo_ApChoO(KWndWindow* pWnd)
+{
+	char szKhoa[UITOADO_CO_KHOA];
+	if (pWnd == NULL || s_nSo == 0)
+		return;
+	if (TaoKhoaTuOCon(pWnd, szKhoa, sizeof(szKhoa)))
+		ApMotO(pWnd, TimKhoa(szKhoa));
+}
+#endif
 void UiToaDo_ApChoCuaSo(KWndWindow* pCuaSoGoc)
 {
 	char szLop[64];

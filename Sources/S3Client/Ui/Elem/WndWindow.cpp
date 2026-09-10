@@ -10,6 +10,9 @@
 #include "WndWindow.h"
 #include "shlwapi.h"
 #include "Wnds.h"
+#ifdef JX_ANDROID
+void UiToaDo_ApChoO(KWndWindow* pWnd);	// UiToaDo.cpp, [UITOADO 12/09 NEO b]
+#endif
 #include "MouseHover.h"
 #include "UiToaDo.h"	// [UITOADO]
 
@@ -427,6 +430,9 @@ int KWndWindow::Init(KIniFile* pIniFile, const char* pSection)
 		pIniFile->GetInteger(pSection, "Left",  0, &nValue1);
 		pIniFile->GetInteger(pSection, "Top",   0, &nValue2);
 		SetPosition(nValue1, nValue2);		
+#ifdef JX_ANDROID
+		UiToaDo_ApChoO(this);	// [UITOADO 12/09 NEO b] o con Init sau khi goc dang ky -> ap toa do nguoi choi / bo cuc mac dinh ngay
+#endif
 		pIniFile->GetInteger(pSection, "Disable",  0, &nValue1);
 		pIniFile->GetInteger(pSection, "Moveable", 0, &nValue2);
 		if (nValue1)

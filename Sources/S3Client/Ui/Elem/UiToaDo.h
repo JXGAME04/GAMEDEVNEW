@@ -31,6 +31,9 @@ void	UiToaDo_Nap();
 
 //	Ap lai cho mot cua so goc va toan bo o con cua no.
 void	UiToaDo_ApChoCuaSo(KWndWindow* pCuaSoGoc);
+#ifdef JX_ANDROID
+void	UiToaDo_ApChoO(KWndWindow* pWnd);	// [UITOADO 12/09 NEO b] ap cho mot o ngay khi doc xong ini
+#endif
 
 //	Ap cho moi cua so dang co (dung sau khi nap lai giao dien).
 void	UiToaDo_ApChoTatCa();

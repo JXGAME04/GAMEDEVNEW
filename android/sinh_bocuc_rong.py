@@ -61,6 +61,9 @@ INI_MAC_DINH = {"KUiPlayerBar|Status": (330, 47), "KUiPlayerBar|Items": (380, 47
                 "KUiPlayerBar|Options": (729, 47),
                 "KUiToolsControlBar|NhatDo": (868, 362)}      # nut nhat (B2 i) chua co trong userdata cua chu -> lay vi tri ini
 NHOM_PHAI_KHOA = ("KUiTaskTrace|Main",)                 # bang nhiem vu: dat theo nhom phai du x < 728
+# [UITOADO 12/09 TOANBO b] chu 08:30: thanh HP/MP/EXP, khung chat + tab kenh, chien lenh phai di CUNG hang icon / thanh chat (giua),
+# khong dung o mep trai trong khi hang icon vao giua -> neo GIUA
+NEO_GIUA_KHOA = ("KUiHeaderControlBar|Main", "KUiMsgCentrePad|Main", "KUiChienLenh|Main", "KUiTongJX2|Main")
 HOP_THOAI = ("KUiESCDlg|Main", "KUiOptions|Main", "KUiInformation|Main", "KUiMailManager|Main", "KUiAuctionManager|Main",
              "KUiTongJX2|Main")
 
@@ -83,8 +86,9 @@ def doc_bang(p):
 
 
 def neo_tam(cx, cy, w, h):
-    """neo tu suy theo TAM cua so trong khung thiet ke w x h: < 35 % trai/tren, >= 65 % phai/duoi, giua"""
-    nx = 0 if cx * 100 < w * 35 else (2 if cx * 100 >= w * 65 else 1)
+    """neo tu suy theo TAM cua so trong khung thiet ke w x h. Chu 08:30: HUD trai (thanh HP/MP, chat) tach khoi hang icon / thanh chat
+    (giua) -> chi neo TRAI khi tam < 12 % (tab sat mep), con lai GIUA; phai >= 65 %. Doc: tren < 35 %, duoi >= 65 %."""
+    nx = 0 if cx * 100 < w * 12 else (2 if cx * 100 >= w * 65 else 1)
     ny = 0 if cy * 100 < h * 35 else (2 if cy * 100 >= h * 65 else 1)
     return nx, ny
 
@@ -149,6 +153,8 @@ def main():
         print("them %d cua so tu cua_so_ui.json (neo theo tam)" % them_toan_bo(bang, co))
     hang_tren = dict((k, i) for i, (k, _) in enumerate(HANG_TREN))
     cot_phai = dict(COT_PHAI)
+    # cua so goc ('<lop>|Main', KyNang*) xu ly TRUOC de o con thua duoc neo cua cha (tep cua chu liet ke con truoc cha)
+    bang = sorted(bang, key=lambda b: 0 if ("|" not in b[0] or b[0].split("|")[1] == "Main") else 1)
     for khoa, x, y, tile, cocb in bang:
         lop = lop_cua(khoa)
         la_main = ("|" in khoa and khoa.split("|")[1] == "Main") or "|" not in khoa
@@ -159,13 +165,15 @@ def main():
             nx, ny = CHA_MOI[lop]
             ra.append((khoa, nx, ny, tile, cocb, 1 if lop == "KUiPlayerBar" else 0, 0)); continue
         if not CHUAN and NGUYEN and khoa in NEO_CU:
-            # tep rong: dung DUNG neo da luu trong tep chuan (cung cong thuc voi game: dich DX*neo/2, con tru neo cha qua tuong_doi_moi)
+            # tep rong: dung DUNG neo da luu trong tep chuan, CUNG cong thuc voi game (DoiCaTepTheoNeo): toa do con la tuong doi cha
+            # -> dich = DX * (neo con - neo cha) / 2 khi '<lop>|Main' co trong bang (moi lop, khong chi KUiPlayerBar/KUiToolsControlBar)
             neo_x, neo_y = NEO_CU[khoa]
-            ax, ay = tuyet_doi(khoa, x, y)
-            ax += DX * neo_x // 2
-            ay += DY * neo_y // 2
-            nx, ny = tuong_doi_moi(khoa, ax, ay)
-            ra.append((khoa, nx, ny, tile, cocb, neo_x, neo_y)); continue
+            cha_x = cha_y = 0
+            if "|" in khoa and khoa.split("|")[1] != "Main":
+                k_cha = lop + "|Main"
+                if k_cha in co:
+                    cha_x, cha_y = NEO_CU.get(k_cha, (0, 0))
+            ra.append((khoa, x + DX * (neo_x - cha_x) // 2, y + DY * (neo_y - cha_y) // 2, tile, cocb, neo_x, neo_y)); continue
         ax, ay = tuyet_doi(khoa, x, y)
         if khoa in hang_tren:
             if not NGUYEN:
@@ -193,17 +201,26 @@ def main():
             ax += DX - (CUM_KYNANG_LUI if (khoa.startswith("KyNang") and not NGUYEN) else 0)   # nhom phai
             neo_x = 2
             if ay >= 423 or khoa.startswith("KyNang"): ay += DY; neo_y = 2      # cum ky nang: ca nhom cung dich
-        elif lop in ("KUiPlayerBar", "KUiAuctionIcon", "KUiMailIcon") or khoa in HOP_THOAI:
+        elif lop in ("KUiPlayerBar", "KUiAuctionIcon", "KUiMailIcon") or khoa in HOP_THOAI or khoa in NEO_GIUA_KHOA:
             if khoa == "KUiPlayerBar|HideChat":
                 neo_x = 0                                       # tab mep trai: giu
             else:
-                ax += DX // 2; neo_x = 1                        # thanh duoi / hop thoai: giua
+                ax += DX // 2; neo_x = 1                        # thanh duoi / hop thoai / HUD trai-giua: giua
             if ay >= 423: ay += DY; neo_y = 2
         else:
             if khoa in NEO_CU:                                    # muc them tu cua_so_ui.json (chuan): giu neo da suy theo tam
                 neo_x, neo_y = NEO_CU[khoa]
             if ay >= 423: ay += DY; neo_y = 2                   # trai / tren: giu
         if neo_y == 0 and ay >= H1 * 0.65: neo_y = 2
+        # [UITOADO 12/09 TOANBO b] o CON (toa do tuong doi cha, cha '<lop>|Main' co trong bang) khong thuoc nhom nao -> THUA neo cua cha
+        # (truoc: tu suy theo toa do nho -> "trai" -> game dich con lech -331 so voi cha: icon chien lenh, nut thu, nut dau gia mat hinh)
+        if "|" in khoa and khoa.split("|")[1] != "Main" and lop not in CHA and (lop + "|Main") in co \
+                and khoa not in hang_tren and khoa not in cot_phai and khoa not in O_PHIM:
+            k_cha = lop + "|Main"
+            if k_cha in NEO_CU:
+                neo_x, neo_y = NEO_CU[k_cha]
+            ax, ay = tuyet_doi(khoa, x, y)                      # khong dich (dich theo cha o game / o tep rong)
+        NEO_CU.setdefault(khoa, (neo_x, neo_y))
         nx, ny = tuong_doi_moi(khoa, ax, ay)
         ra.append((khoa, nx, ny, tile, cocb, neo_x, neo_y))
     dau = ["; [UITOADO 12/09 RONG] Bo cuc mac dinh cho dien thoai man rong (sinh boi android/sinh_bocuc_rong.py tu uitoado_macdinh.ini).",
