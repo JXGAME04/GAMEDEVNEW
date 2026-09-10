@@ -258,6 +258,19 @@ Hành trang gốc (`ui\ui3\uiitem.ini`): cửa sổ 214×454, `[ItemBox]` 168×2
   chủ kiểm trên điện thoại: menu và bảng đăng nhập ở giữa, nền kín màn, gõ tài khoản → Enter → bàn phím còn/hiện ngay ở ô mật khẩu,
   chữ đầu không tự hoa.
 
+## 13. Tự tải và cài APK mới trong game (`CAPNHAT 12/09`) — chủ 03:40: "tải APK mới mà không cần up lên Drive"
+
+- Cách nhanh không cần gì thêm: điện thoại cùng Wi‑Fi mở `http://10.0.0.140:8765/jx1mobile.apk` (máy chủ tải phục vụ APK ở gốc).
+- Tự cập nhật (như VNKU): `build.gradle` sinh `versionCode = (yy−25)×10⁸ + MMddHHmm` mỗi lần dựng (tăng dần), `versionName 1.MMddHHmm`;
+  máy chủ tải lúc khởi động đọc `versionCode` của `jx1mobile.apk` bằng `aapt` (SDK build-tools) → `apk.txt` = `<versionCode> <md5> <cỡ> jx1mobile.apk`.
+  `TaiDuLieuActivity.kiemApk()` (chỉ khi dữ liệu nằm trong thư mục app, tức điện thoại): mã trên máy chủ lớn hơn bản đang cài → tự tải
+  APK về `files/capnhat/jx1mobile.apk` (ống tiến độ) → mở trình cài đặt qua `content://vn.jx1.mobile.tep/jx1mobile.apk`
+  (`JxTepProvider`, ContentProvider tối giản, không cần androidx; quyền `REQUEST_INSTALL_PACKAGES`, Android 8+ hỏi cho phép "cài ứng
+  dụng không rõ nguồn" một lần). Huỷ cài → nút "Vào game (bản cũ)". Máy ảo (dữ liệu ngoài) không kiểm APK (cài bằng adb).
+- Quy trình phát bản mới cho chủ: dựng APK → chép thành `D:\jx1_android_data_dt_nen\jx1mobile.apk` → khởi động lại
+  `may_chu_tai_du_lieu.py` (sinh `apk.txt` + manifest) → điện thoại mở game là tự tải + hỏi cài. APK đầu tiên có cơ chế này:
+  `jx1mobile-1209-tai-k.apk` (từ bản này trở đi không cần gửi tệp nữa).
+
 **Lưu ý máy ảo:** thư mục app (`/storage/emulated/0/Android/data/vn.jx1.mobile/files/`) được `JxAndroidMain.cpp` ưu tiên TRƯỚC
 `/mnt/shared/Misc` — thử tải trên máy ảo xong phải xoá `data/`, `config.ini`, `package.ini`, `settings/`, `da_tai.txt`, `tai_du_lieu.txt`
 trong đó, nếu không máy ảo chạy bằng gói cũ và lớp ghi đè `android\du_lieu_ghi_de` hết tác dụng (đã dọn sau khi đo).

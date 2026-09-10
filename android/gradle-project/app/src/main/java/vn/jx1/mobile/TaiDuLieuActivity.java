@@ -152,8 +152,109 @@ public class TaiDuLieuActivity extends Activity
     }
 
     // ------------------------------------------------------------ kiem + tai (luong nen)
+    // ------------------------------------------------------------ [CAPNHAT 12/09] tu tai + cai APK moi
+    // May chu tai co apk.txt: "<versionCode> <md5> <co> <ten tep>". Ma lon hon ban dang cai -> tai APK ve app/capnhat/ roi mo
+    // trinh cai dat (content:// qua JxTepProvider). Chu: "co cach nao tai APK moi ve ma khong can up len Drive?".
+    private boolean kiemApk()
+    {
+        long maDangCai;
+        try
+        {
+            android.content.pm.PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
+            maDangCai = (android.os.Build.VERSION.SDK_INT >= 28) ? pi.getLongVersionCode() : pi.versionCode;
+        }
+        catch (Exception e) { return false; }
+        long maMoi; String md5; long co; String ten;
+        try
+        {
+            HttpURLConnection c = (HttpURLConnection) new URL(mUrl + "apk.txt").openConnection();
+            c.setConnectTimeout(3000); c.setReadTimeout(3000);
+            if (c.getResponseCode() != 200) return false;
+            String dong;
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8))) { dong = r.readLine(); }
+            if (dong == null) return false;
+            String[] p = dong.trim().split("\\s+");
+            if (p.length < 4) return false;
+            maMoi = Long.parseLong(p[0]); md5 = p[1]; co = Long.parseLong(p[2]); ten = p[3];
+        }
+        catch (Exception e) { return false; }
+        if (maMoi <= maDangCai) return false;
+        final long tongTai = co; final String tenTep = ten; final String md5Moi = md5;
+        hien("Có bản cài mới " + maMoi + " (đang cài " + maDangCai + "), " + mb(co) + " MB.", "Đang tải bản mới…");
+        new Thread(() -> taiApk(tenTep, tongTai, md5Moi), "jx-apk").start();
+        return true;
+    }
+
+    private void taiApk(String ten, long co, String md5)
+    {
+        File thu = new File(mThuMuc, "capnhat");
+        if (!thu.isDirectory() && !thu.mkdirs()) { hien("Không tạo được thư mục cập nhật", ""); return; }
+        File dich = new File(thu, "jx1mobile.apk");
+        try
+        {
+            Muc m = new Muc(); m.co = co; m.md5 = md5; m.duong = "capnhat/jx1mobile.apk";
+            final AtomicLong xong = new AtomicLong(0);
+            final long t0 = System.currentTimeMillis();
+            Thread tienDo = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted())
+                {
+                    long da = xong.get();
+                    final int pm = (int) (co > 0 ? da * 1000 / co : 0);
+                    mChinh.post(() -> { mThanh.setProgress(pm); mChiTiet.setText(String.format(Locale.US, "Tải bản cài  %s / %s MB", mb(da), mb(co))); });
+                    try { Thread.sleep(250); } catch (InterruptedException e) { break; }
+                }
+            });
+            tienDo.start();
+            // tai tu <url>/<ten> (may chu dat APK o goc); dung lai taiMot: dich = mThuMuc/capnhat/jx1mobile.apk
+            HttpURLConnection c = (HttpURLConnection) new URL(mUrl + duongUrl(ten)).openConnection();
+            c.setConnectTimeout(THOI_HAN_MS); c.setReadTimeout(30000);
+            if (c.getResponseCode() != 200) throw new IOException("HTTP " + c.getResponseCode());
+            try (InputStream in = c.getInputStream(); FileOutputStream out = new FileOutputStream(dich))
+            {
+                byte[] dem = new byte[256 * 1024]; int n;
+                while ((n = in.read(dem)) > 0) { out.write(dem, 0, n); xong.addAndGet(n); }
+            }
+            tienDo.interrupt();
+            if (dich.length() != co) throw new IOException("cỡ sai " + dich.length() + " != " + co);
+            mChinh.post(() -> mThanh.setProgress(1000));
+            hien("Đã tải bản mới (" + giay((System.currentTimeMillis() - t0) / 1000) + "). Bấm Cài đặt trong hộp thoại của Android.", "");
+            caiApk();
+        }
+        catch (Exception e)
+        {
+            hien("Lỗi tải bản cài: " + e.getMessage(), "Bỏ qua, vào game với bản đang cài");
+            nut("Vào game", v -> { mNut.setVisibility(View.INVISIBLE); new Thread(this::kiemDuLieuKhongApk, "jx-tai").start(); });
+        }
+    }
+
+    private void caiApk()
+    {
+        mChinh.post(() -> {
+            try
+            {
+                Intent it = new Intent(Intent.ACTION_VIEW);
+                it.setDataAndType(android.net.Uri.parse("content://vn.jx1.mobile.tep/jx1mobile.apk"), "application/vnd.android.package-archive");
+                it.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(it);
+                // nguoi choi huy cai -> nut de vao game voi ban cu
+                nut("Vào game (bản cũ)", v -> { mNut.setVisibility(View.INVISIBLE); new Thread(this::kiemDuLieuKhongApk, "jx-tai").start(); });
+            }
+            catch (Exception e)
+            {
+                hien("Không mở được trình cài đặt: " + e.getMessage(), "");
+                nut("Vào game", v -> { mNut.setVisibility(View.INVISIBLE); new Thread(this::kiemDuLieuKhongApk, "jx-tai").start(); });
+            }
+        });
+    }
+
+    private boolean mBoQuaApk = false;
+
+    private void kiemDuLieuKhongApk() { mBoQuaApk = true; kiemVaTai(); }
+
     private void kiemVaTai()
     {
+        if (!mBoQuaApk && kiemApk())
+            return;
         List<Muc> manifest;
         try
         {

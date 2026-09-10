@@ -22,7 +22,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)   # nhat ky hien ngay khi chuyen huong ra tep
 BO_THU_MUC = ("userdata", "apdata")
-BO_TEP = ("da_tai.txt", "jx_data_dir.txt", "tai_du_lieu.txt", "manifest.txt", "manifest_cache.txt")
+BO_TEP = ("da_tai.txt", "jx_data_dir.txt", "tai_du_lieu.txt", "manifest.txt", "manifest_cache.txt", "apk.txt")
 MB = 1048576.0
 
 
@@ -149,10 +149,35 @@ class BoXuLy(SimpleHTTPRequestHandler):
         sys.stdout.write("%s %s %s\n" % (time.strftime("%H:%M:%S"), self.client_address[0], fmt % args))
 
 
+def lam_apk_txt(thu):
+    """[CAPNHAT 12/09] jx1mobile.apk o goc thu muc -> apk.txt: '<versionCode> <md5> <co> jx1mobile.apk' (versionCode doc bang aapt cua SDK;
+    app so voi ban dang cai, lon hon thi tu tai + cai). Khong co aapt / khong co apk -> bo qua."""
+    import glob
+    import re as _re
+    import subprocess
+    p = os.path.join(thu, "jx1mobile.apk")
+    if not os.path.isfile(p):
+        return
+    aapt = sorted(glob.glob(os.path.join(os.path.expandvars(r"%LOCALAPPDATA%"), "Android", "Sdk", "build-tools", "*", "aapt.exe")))
+    if not aapt:
+        print("apk.txt: khong thay aapt.exe trong SDK -> bo qua")
+        return
+    try:
+        ra = subprocess.run([aapt[-1], "dump", "badging", p], capture_output=True, text=True, errors="replace", timeout=60).stdout
+        m = _re.search(r"versionCode='(\d+)'", ra)
+        ma = int(m.group(1)) if m else 0
+    except Exception as e:
+        print("apk.txt: aapt loi", e); return
+    md5 = md5_tep(p)
+    io.open(os.path.join(thu, "apk.txt"), "w", encoding="utf-8", newline="\n").write("%d %s %d jx1mobile.apk\n" % (ma, md5, os.path.getsize(p)))
+    print("apk.txt: versionCode %d, %.1f MB" % (ma, os.path.getsize(p) / MB))
+
+
 def main():
     thu, cong, chi_manifest = doc_tham_so()
     if not os.path.isfile(os.path.join(thu, "config.ini")):
         raise SystemExit("khong thay config.ini trong " + thu)
+    lam_apk_txt(thu)
     lam_manifest(thu)
     if chi_manifest:
         return

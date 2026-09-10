@@ -11,8 +11,12 @@ android {
         applicationId "vn.jx1.mobile"
         minSdkVersion 24
         targetSdkVersion 34
-        versionCode 1
-        versionName "0.1"
+        // [CAPNHAT 12/09] ma phien ban = luc dung (yy-25)*10^8 + MMddHHmm -> moi lan dung la mot ma lon hon; app so voi apk.txt tren may chu
+        // tai de tu tai + cai ban moi (TaiDuLieuActivity.kiemApk). versionName = "1.<MMddHHmm>".
+        def luc = new Date()
+        def maPhienBan = (Integer.parseInt(luc.format('yy')) - 25) * 100000000 + Integer.parseInt(luc.format('MMddHHmm'))
+        versionCode maPhienBan
+        versionName "1." + luc.format('MMddHHmm')
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_PLATFORM=android-24", "-DANDROID_STL=c++_shared", "-DCMAKE_BUILD_TYPE=Release"
