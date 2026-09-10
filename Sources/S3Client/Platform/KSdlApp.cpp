@@ -541,7 +541,7 @@ static void SdlToLogical(SDL_Window* pWin, float& x, float& y)
 // [DANGNHAP 12/09] ban phim theo KIEU o nhap: khong tu viet hoa chu dau (tai khoan phai chu thuong), khong tu sua chu,
 // o mat khau = kieu mat khau an. IME Android hay tu dong sau phim Enter du o nhap ke tiep da nhan tieu diem ->
 // hen mo lai sau 0,3 s (JxSdl_BanPhimNhip trong vong lap chinh).
-static Uint64 s_uBanPhimLai = 0;
+static Uint64 s_uBanPhimTat = 0;	// [DANGNHAP 12/09 b] hen TAT ban phim (KILL_FOCUS); SET_FOCUS den truoc thi huy
 static int s_nBanPhimMatKhau = 0;
 static void BanPhimMo(SDL_Window* pWin, int nMatKhau)
 {
@@ -559,27 +559,24 @@ extern "C" void JxSdl_BanPhimAo(int bBat, int nMatKhau)
 		return;
 	if (bBat)
 	{
-		BanPhimMo(pWin, nMatKhau);
+		s_uBanPhimTat = 0;		// [DANGNHAP 12/09 b] o moi nhan tieu diem: huy hen tat, ban phim giu nguyen (doi kieu o neu can)
+		if (!SDL_TextInputActive(pWin) || nMatKhau != s_nBanPhimMatKhau)
+			BanPhimMo(pWin, nMatKhau);
 		s_nBanPhimMatKhau = nMatKhau;
-		s_uBanPhimLai = SDL_GetTicks() + 300;
 	}
 	else
-	{
-		SDL_StopTextInput(pWin);
-		s_uBanPhimLai = 0;
-	}
+		s_uBanPhimTat = SDL_GetTicks() + 200;	// chi hen tat: Enter sang o ke tiep thi khong tat-mo lien nhau
 }
 // goi moi vong lap: den hen ma o nhap van giu tieu diem -> dong roi mo lai ban phim (IME da tu dong thi hien lai)
 extern "C" void JxSdl_BanPhimNhip(void)
 {
-	if (!s_uBanPhimLai || SDL_GetTicks() < s_uBanPhimLai)
+	if (!s_uBanPhimTat || SDL_GetTicks() < s_uBanPhimTat)
 		return;
-	s_uBanPhimLai = 0;
+	s_uBanPhimTat = 0;
 	SDL_Window* pWin = (SDL_Window*)JxPosix_MainWindow();
 	if (!pWin)
 		return;
-	SDL_StopTextInput(pWin);
-	BanPhimMo(pWin, s_nBanPhimMatKhau);
+	SDL_StopTextInput(pWin);	// [DANGNHAP 12/09 b] den hen ma khong o nao nhan tieu diem -> tat that
 }
 
 //---------------------------------------------------------------------------

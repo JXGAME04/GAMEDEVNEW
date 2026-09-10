@@ -257,6 +257,11 @@ Hành trang gốc (`ui\ui3\uiitem.ini`): cửa sổ 214×454, `[ItemBox]` 168×2
   xuống chữ thường trước khi gửi (quy chế game). APK `jx1mobile-1209-tai-j.apk`. Chưa thử được trên máy ảo (chủ đang trong game);
   chủ kiểm trên điện thoại: menu và bảng đăng nhập ở giữa, nền kín màn, gõ tài khoản → Enter → bàn phím còn/hiện ngay ở ô mật khẩu,
   chữ đầu không tự hoa.
+- **Chủ (tai-k): "bấm vào ô tài khoản bàn phím hiện rồi tắt đi, không nhập được"** → lỗi do chính phép tắt+mở lại 0,3 s ở trên: trên
+  Android `SDL_StopTextInput` rồi `SDL_StartTextInput` liền nhau làm bàn phím mất luôn (cũng là gốc của lỗi cũ "sang ô mật khẩu không
+  hiện bàn phím": KILL_FOCUS tắt, SET_FOCUS mở ngay sau). Sửa `DANGNHAP 12/09 b` (`va_nguon_android_dangnhap2.py`): KILL_FOCUS chỉ
+  **hẹn tắt sau 0,2 s**, SET_FOCUS đến trước thì huỷ hẹn (bàn phím giữ nguyên, chỉ đổi kiểu ô nếu khác); không còn tắt+mở lại.
+  APK `jx1mobile-1209-tai-l.apk` (tự cập nhật từ tai-k).
 
 ## 13. Tự tải và cài APK mới trong game (`CAPNHAT 12/09`) — chủ 03:40: "tải APK mới mà không cần up lên Drive"
 
