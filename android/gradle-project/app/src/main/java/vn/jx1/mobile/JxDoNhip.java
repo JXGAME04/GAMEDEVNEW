@@ -45,7 +45,7 @@ import java.util.Map;
 public final class JxDoNhip implements DisplayManager.DisplayListener
 {
     private static final String TAG = "JxDoNhip";
-    private static final String[] TEP = { "jx_nhip.log", "jx_thietbi.log", "jx_paint.log", "jx_rep3.log", "jx_android.log", "jx_mail.log" };   // [DAN 11/09] + jx_mail.log (SP_ClientLog / dau gia, phien giao dien nho)
+    private static final String[] TEP = { "jx_nhip.log", "jx_thietbi.log", "jx_paint.log", "jx_rep3.log", "jx_android.log", "jx_mail.log", "ScriptError.log" };   // [DAN 11/09 f] + ScriptError.log (loi Lua / than chunk, phien giao dien nho)   // [DAN 11/09] + jx_mail.log (SP_ClientLog / dau gia, phien giao dien nho)
     private static final long MAU_MS = 5000;                 // lay mau thiet bi
     private static final long GUI_MS = 10000;                // gui log
     private static final int KHOI_TOI_DA = 2 * 1024 * 1024;  // moi lan POST toi da 2 MB / tep
