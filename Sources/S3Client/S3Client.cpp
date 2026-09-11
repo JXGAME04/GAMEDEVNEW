@@ -124,6 +124,12 @@ void LoadResolutionFromConfig() {
 	// Read width and height from the config file
 	SCREEN_WIDTH = GetPrivateProfileInt("Resolution", "Width", SCREEN_WIDTH, configPath);
 	SCREEN_HEIGHT = GetPrivateProfileInt("Resolution", "Height", SCREEN_HEIGHT, configPath);
+#ifdef JX_ANDROID
+	//	[DPG 12/09 1024] Xem chu thich o KSdlApp.cpp: rong DUNG 1024 thi game doi sang bo giao dien 1024x768 trong khi
+	//	bang toa do cua ban mobile la cua bo 800x600 -> o go chat ra ngoai man hinh, bang thong bao lech.
+	if (SCREEN_WIDTH == 1024)
+		SCREEN_WIDTH = 1026;
+#endif
 	std::cout << "Loaded Resolution: " << SCREEN_WIDTH << "x" << SCREEN_HEIGHT << std::endl;
 }
 

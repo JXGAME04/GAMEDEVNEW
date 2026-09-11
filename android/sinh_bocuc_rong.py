@@ -183,6 +183,7 @@ def goc_khac_main():
 
 
 GOC_LOP = {}
+NGUON_CO = {}       # [UITOADO 12/09 CHUDAT] khoa co san trong tep nguon (bo cuc chu dat) - khong ghi de
 
 
 def khoa_cha(khoa, co):
@@ -215,6 +216,7 @@ def main():
     GOC_LOP.update(goc_khac_main())                               # [GOC 12/09] lop co cua so goc khong ten "Main"
     bang, nl = doc_bang(NGUON)
     co = {b[0]: b for b in bang}
+    NGUON_CO.update(co)                                           # [UITOADO 12/09 CHUDAT] muc CO SAN trong tep nguon
     for k, (x, y) in INI_MAC_DINH.items():
         if k not in co:
             bang.append([k, x, y, 1000, 0]); co[k] = bang[-1]
@@ -333,10 +335,14 @@ def main():
             ax, ay = tuyet_doi(khoa, x, y)                      # khong dich (dich theo cha o game / o tep rong)
         NEO_CU.setdefault(khoa, (neo_x, neo_y))
         nx, ny = tuong_doi_moi(khoa, ax, ay)
-        if khoa in TILE_MOBILE:                                # [ICON3X 12/09] phong icon rieng cho mobile
-            tile = TILE_MOBILE[khoa]
+        if khoa in TILE_MOBILE and khoa not in NGUON_CO:       # [ICON3X 12/09] phong icon rieng cho mobile
+            tile = TILE_MOBILE[khoa]                           # [UITOADO 12/09 CHUDAT] chu da dat ti le thi giu cua chu
         if khoa in DAT_TAY:                                    # [ICON3X 12/09 b] dat tay: vi tri + neo chi dinh
-            nx, ny, neo_x, neo_y = DAT_TAY[khoa]
+            #   [UITOADO 12/09 CHUDAT] NEO thi theo bang (trong game khong keo neo duoc), con VI TRI thi chu dat
+            #   toi dau giu toi do - bang chi la gia tri du phong khi tep cua chu chua co muc nay.
+            neo_x, neo_y = DAT_TAY[khoa][2], DAT_TAY[khoa][3]
+            if khoa not in NGUON_CO:
+                nx, ny = DAT_TAY[khoa][0], DAT_TAY[khoa][1]
             if la_main:                                        # o CON dung toa do tuong doi cha -> khong dich
                 nx += DX * neo_x // 2
                 ny += DY * neo_y // 2

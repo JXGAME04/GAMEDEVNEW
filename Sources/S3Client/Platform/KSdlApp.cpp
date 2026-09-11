@@ -311,6 +311,29 @@ extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void)
 		nHeSo -= 25;
 	int nVeW = (nW * 100 / nHeSo) & ~1;
 	int nVeH = (nH * 100 / nHeSo) & ~1;
+	//	[DPG 12/09 RONG b] Man VAT LY hep hon ban thiet ke (1040) thi he so da xuong 100 van chua du rong:
+	//	thanh duoi (anh khung 1040 px) bi day sang trai nen icon goc trai HO RA NGOAI man (chu bao 17:30,
+	//	do duoc o khung 1026: KUiPlayerBar|Main -6, DateTime -6, WifiStatus -3).
+	//	Cho phep ve LON hon man hinh mot chut (he so < 100 = trinh bay thu nho lai) cho du RongToiThieu:
+	//	mo di ~1,6 % khong ai thay, con hon mat icon. San 85 de khong mo qua.
+	if (nRongToiThieu > 0 && nVeW < nRongToiThieu)
+	{
+		int nHS2 = nW * 100 / nRongToiThieu;
+		if (nHS2 < 85)
+			nHS2 = 85;
+		if (nHS2 < nHeSo)
+		{
+			nHeSo = nHS2;
+			nVeW = (nW * 100 / nHeSo) & ~1;
+			nVeH = (nH * 100 / nHeSo) & ~1;
+		}
+	}
+	//	[DPG 12/09 1024] Bo giao dien JX1 co HAI ban (800x600 va 1024x768), game chon bang "SCREEN_WIDTH == 1024"
+	//	o 51 cho. Bo cuc mobile dung ban 800x600, nen khung ve rong DUNG 1024 lam game nhay sang ban kia:
+	//	o go chat tut xuong duoi man (mat icon mat cuoi / nut gui), icon goc trai ho ra ngoai, bang
+	//	"dang dang nhap" khong nam giua (chu bao 17:30). Lech 2 diem anh khong ai thay.
+	if (nVeW == 1024)
+		nVeW = 1026;
 	{
 		SDL_Rect rcCa = { 0, 0, 0, 0 };
 		SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &rcCa);
