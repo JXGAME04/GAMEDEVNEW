@@ -13,6 +13,10 @@
 #include "../../../Engine/src/Text.h"
 #include "../../../core/src/coreshell.h"
 #include "../../../Represent/iRepresent/iRepresentShell.h"
+#ifdef JX_ANDROID
+#include "KDebug.h"
+extern int SCREEN_HEIGHT;
+#endif
 extern iCoreShell*		g_pCoreShell;
 extern iRepresentShell*	g_pRepresentShell;
 
@@ -49,6 +53,29 @@ KUiChatItem* KUiChatItem::OpenWindow(int nIdx)
 		m_pSelf->SetInfomation(nIdx);
 		m_pSelf->BringToTop();
 		m_pSelf->Show();
+#ifdef JX_ANDROID
+		{	// [CHATITEM 14/09] chu: 'post item len kenh chat no bi lech' (dien thoai rong, may ao khong): dat bang ngay tren
+			// dong vua cham nhu chu thich, kep trong khung -> khong phu thuoc be rong man hinh / neo cua khung chat
+			extern int SCREEN_WIDTH;
+			int w = 0, h = 0, x, y, mx = 0, my = 0;
+			m_pSelf->GetSize(&w, &h);
+			Wnd_GetCursorPos(&mx, &my);	// diem cham (WM_MOUSEMOVE tai ngon tay truoc khi bam)
+			x = mx - w / 2;
+			y = my - h - 12;
+			if (y < 0)
+				y = my + 24;
+			if (x + w > SCREEN_WIDTH)
+				x = SCREEN_WIDTH - w;
+			if (y + h > SCREEN_HEIGHT)
+				y = SCREEN_HEIGHT - h;
+			if (x < 0)
+				x = 0;
+			if (y < 0)
+				y = 0;
+			m_pSelf->SetPosition(x, y);
+			g_DebugLog("[CHATITEM] cham %d,%d -> bang %dx%d tai %d,%d", mx, my, w, h, x, y);
+		}
+#endif
 	}
 	return m_pSelf;
 }

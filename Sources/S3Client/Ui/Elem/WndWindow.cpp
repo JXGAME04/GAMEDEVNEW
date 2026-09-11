@@ -347,6 +347,31 @@ void KWndWindow::UiPhongCay(int nTiLe)
 }
 //	[c] o (va ca cay con) vua duoc Init lai theo toa do thiet ke trong luc bang dang phong (trang Auto doi tab):
 //	xoa goc da chup, chup lai tu so do thiet ke, dat lai vi tri tuong doi cha roi phong ca cay nhu lan dau.
+//	[KHOPO 14/09] tim o dau tien trong cay doi duoc k (luoi vat pham) - cac luoi trong mot bang cung co o nen mot k cho ca bang
+static int UiKhopTiLeDe(KWndWindow* p, int nTiLe, int* pbCo)
+{
+	for (KWndWindow* c = p->GetFirstChild(); c && !*pbCo; c = c->GetNextWnd())
+	{
+		int k = c->UiKhopTiLe(nTiLe);
+		if (k != nTiLe)
+		{
+			*pbCo = 1;
+			return k;
+		}
+		k = UiKhopTiLeDe(c, nTiLe, pbCo);
+		if (*pbCo)
+			return k;
+	}
+	return nTiLe;
+}
+int KWndWindow::UiKhopTiLeCay(int nTiLe)
+{
+	int bCo = 0;
+	int k = UiKhopTiLe(nTiLe);
+	if (k != nTiLe)
+		return k;
+	return UiKhopTiLeDe(this, nTiLe, &bCo);
+}
 void KWndWindow::UiPhongChuCay(int nTiLe)
 {
 	UiPhongChu(nTiLe);

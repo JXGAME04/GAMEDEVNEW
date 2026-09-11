@@ -26,6 +26,10 @@ KWndMessageListBox::KWndMessageListBox()
 	m_nNumMessage = 0;			
 	m_nCapability = 0;			
 	m_nFontSize = 12;			
+#ifdef JX_ANDROID
+	m_nUiDongThem = 0;	// [NPC 14/09]
+	m_nUiGocDongThem = 0;
+#endif
 	m_nNumMaxShowLine = 0;
 	m_nNumBytesPerLine = 20;		
 	m_nStartShowMsg = 0;
@@ -281,6 +285,12 @@ int KWndMessageListBox::Init(KIniFile* pIniFile, const char* pSection)
 		pIniFile->GetInteger(pSection, "Font", 16, &m_nFontSize);
 		if (m_nFontSize < 4)
 			m_nFontSize = 4;
+#ifdef JX_ANDROID
+		pIniFile->GetInteger(pSection, "DongThem", 0, &m_nUiDongThem);	// [NPC 14/09] chi ini Android (uimsgsel*.ini lop ghi de)
+		if (m_nUiDongThem < 0)
+			m_nUiDongThem = 0;
+		m_nUiGocDongThem = m_nUiDongThem;
+#endif
 
 		m_nNumBytesPerLine = (m_Width * 2) / m_nFontSize;
 		if (m_nNumBytesPerLine < 2)
@@ -362,6 +372,14 @@ int KWndMessageListBox::Init(KIniFile* pIniFile, const char* pSection)
 	return false;
 }
 
+#ifdef JX_ANDROID
+// [NPC 14/09] sau UiDatTiLe (SetSize da tinh so dong voi DongThem cu): DongThem theo k roi tinh lai so dong hien
+void KWndMessageListBox::UiPhongRieng(int nTiLe)
+{
+	m_nUiDongThem = m_nUiGocDongThem * nTiLe / 1000;
+	m_nNumMaxShowLine = m_Height / (CaoDong());
+}
+#endif
 void KWndMessageListBox::SetSize(int nWidth, int nHeight)
 {
 	ClearHideLine();

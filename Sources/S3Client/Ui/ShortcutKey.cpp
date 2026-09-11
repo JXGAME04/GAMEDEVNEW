@@ -1716,6 +1716,18 @@ int Mouse_Action(Lua_State * L)
 	if (g_pCoreShell->FindSelectNPC(KShortcutKeyCentre::ms_MouseX, KShortcutKeyCentre::ms_MouseY, relation_all, false, &SelectPlayer, nNPCKind))
 	{
 		int nRelation = g_pCoreShell->GetNPCRelation(SelectPlayer.nIndex);
+#ifdef JX_ANDROID
+		// [SAP 14/09] Chu: 'toi gan nguoi choi dang bay ban kich vao player do se mo sap hang nguoi do de xem'. PC chi xem sap
+		// bang Ctrl+chuot trai (Mouse_Say -> ProcessPeople ACTION_CHAT); dien thoai khong co Ctrl -> cham thang nguoi dang
+		// bay ban = di toi + xin xem sap (nhu ProcessPeople, khong mo khung chat rieng).
+		if (nNPCKind == kind_player && SelectPlayer.uId != 0 && g_pCoreShell->GetNPCBAITAN(SelectPlayer.uId))
+		{
+			g_pCoreShell->OperationRequest(GOI_FOLLOW_SOMEONE, (KUPARAM)&SelectPlayer, 0);
+			g_pCoreShell->OperationRequest(GOI_VIEW_PLAYERSELLITEM, (unsigned int)SelectPlayer.uId, 0);
+			g_DebugLog("[SAP] cham nguoi dang bay ban %s -> di toi + xem sap", SelectPlayer.Name);
+			return 0;
+		}
+#endif
 		if (nRelation == relation_enemy)
 		{
 			KUiPlayerImmedItemSkill immedItemSkillInfo;

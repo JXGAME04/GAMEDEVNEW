@@ -37,6 +37,7 @@ NUT = [
     ("lay_ra",    "Lấy ra"),
     ("cat_ruong", "Cất rương"),
     ("chon",      "Chọn"),
+    ("ban",       "Bán"),        # [BAN 14/09] cua hang NPC dang mo
     ("dong",      "Đóng"),
     ("gan_phim",  "Gắn phím"),      # [OPHIM 12/09] gan mon vao o phim so 1-4
 ]

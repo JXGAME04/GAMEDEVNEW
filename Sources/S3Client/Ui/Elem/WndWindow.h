@@ -163,6 +163,10 @@ public:
 	static int	UiChonMaFont(int f) { return (f >= 15) ? 16 : (f >= 13) ? 14 : (f >= 11) ? 12 : 10; }
 	void			UiPhongChu(int nTiLe) { int f = UiLayFont(); if (f > 0) { if (!m_nUiGocFont || f != m_nUiFontDat) m_nUiGocFont = f; f = UiChonMaFont(m_nUiGocFont * nTiLe / 1000); UiDatFont(f); m_nUiFontDat = f; } }
 	void			UiPhongChuCay(int nTiLe);	// [e] chi chu, ca cay (widget vua Init lai: Init doc Font= SAU KWndWindow::Init)
+	// [KHOPO 14/09] chu: 'phong to hanh trang cac item do hoi bi lech khung - shop cung bi lech 1 ti': o luoi vat pham la so nguyen
+	// (goc x k / so o) con anh nen gian lien tuc -> lech dan toi hang cuoi. Lop luoi ghi de UiKhopTiLe doi k sao cho o = so nguyen.
+	virtual int	UiKhopTiLe(int nTiLe) { return nTiLe; }
+	int				UiKhopTiLeCay(int nTiLe);
 	void			UiDatPhongLech(int nX, int nY) { m_nUiPhongLechX = nX; m_nUiPhongLechY = nY; }
 	int				UiLayPhongLechX() const { return m_nUiPhongLechX; }
 	int				UiLayPhongLechY() const { return m_nUiPhongLechY; }

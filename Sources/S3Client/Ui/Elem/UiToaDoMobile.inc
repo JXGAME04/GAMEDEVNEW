@@ -839,6 +839,7 @@ static int UiToaDoM_PhongBang(KWndWindow* p, const char* pszKhoa)
 		if (k > s_nPhongBang)
 			k = s_nPhongBang;
 	}
+	k = p->UiKhopTiLeCay(k);	// [KHOPO 14/09] bang co luoi vat pham: chon k de o luoi = so nguyen, khop anh nen gian
 	if (k < 1020)
 		k = 1000;
 	if (k == 1000 && p->UiLayPhongCay() == 1000)

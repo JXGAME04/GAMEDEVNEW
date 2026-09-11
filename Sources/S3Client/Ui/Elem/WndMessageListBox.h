@@ -48,11 +48,12 @@ public:
 #ifdef JX_ANDROID
 	virtual int	UiLayFont() const { return m_nFontSize; }	// [PHONGBANG 14/09] KWndWindow::UiPhongCay doi co chu
 	virtual void	UiDatFont(int nFont) { m_nFontSize = nFont; }
+	virtual void	UiPhongRieng(int nTiLe);	// [NPC 14/09] DongThem theo k, tinh lai so dong
 #endif
 	// [ANDROID 09/09 CHAM] BUOC DONG cua danh sach: ve, do trung va cuon deu dung ham nay nen
 	// khong bao gio lech nhau. Tren dien thoai cong them cho dong cao hon, ngon tay de cham.
 #ifdef JX_ANDROID
-	int CaoDong() const	{ return m_nFontSize + 1 + 5; }
+	int CaoDong() const	{ return m_nFontSize + 1 + 5 + m_nUiDongThem; }	// [NPC 14/09] + DongThem
 #else
 	int CaoDong() const	{ return m_nFontSize + 1; }
 #endif
@@ -104,6 +105,10 @@ private:
 	int				m_nHideNumLine;		
 
 	int				m_nFontSize;			
+#ifdef JX_ANDROID
+	int				m_nUiDongThem;	// [NPC 14/09] cong them vao buoc dong (ini DongThem=, phong theo k) - dong chon NPC cao hon
+	int				m_nUiGocDongThem;
+#endif
 	int				m_nStartShowMsg;		
 	int				m_nStartMsgSkipLine;	
 

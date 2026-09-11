@@ -495,6 +495,19 @@ void KWndObjectMatrix::UiPhongRieng(int nTiLe)
 	if (m_nUnitBorder < 0)
 		m_nUnitBorder = 0;
 }
+// [KHOPO 14/09] o = goc / so o x k phai la so nguyen: k' = ceil(n x 1000 / u) voi n = floor(u x k / 1000) -> u x k' / 1000 = n dung,
+// anh nen (gian lien tuc u x k') lech voi o nhieu nhat 0,01 px moi o thay vi toi 1 px moi o.
+int KWndObjectMatrix::UiKhopTiLe(int nTiLe)
+{
+	int u = (m_nNumUnitHori > 0) ? UiLayGocW() / m_nNumUnitHori : 0;
+	int n;
+	if (u <= 0 || nTiLe == 1000)
+		return nTiLe;
+	n = u * nTiLe / 1000;
+	if (n < 1)
+		n = 1;
+	return (n * 1000 + u - 1) / u;
+}
 #endif
 int KWndObjectMatrix::Init(KIniFile* pIniFile, const char* pSection)
 {

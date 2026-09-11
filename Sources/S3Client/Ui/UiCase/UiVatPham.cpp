@@ -10,6 +10,7 @@
 #include "../Elem/MouseHover.h"
 #include "../UiBase.h"
 #include "UiStoreBox.h"
+#include "UiShop.h"	// [BAN 14/09]
 #include "UiBreakItem.h"
 #include "UiPlayerBar.h"
 #include "../../../Core/src/coreshell.h"
@@ -38,6 +39,7 @@ enum
 	VP_CATRUONG,		// cat vao ruong
 	VP_CHUYEN,			// chuyen tiep cai bam cu cho cua so chu (mua / ban / them vao / bo ra)
 	VP_GANPHIM,			// [OPHIM 12/09] gan mon vao o phim so 1-4
+	VP_BAN,				// [BAN 14/09] ban cho cua hang NPC dang mo (chu: 'dang mo shop thi khong hien chu ban o item')
 	VP_DONG,
 };
 
@@ -220,6 +222,8 @@ void KUiVatPham::DungDaiNut(const KUiDraggedObject* pItem, UIOBJECT_CONTAINER eC
 	}
 	else	// hanh trang
 	{
+		if (KUiShop::GetIfVisible())	// [BAN 14/09] cua hang NPC dang mo: nut Ban (PC: bat che do Ban o cua hang roi bam mon)
+			ThemNut(VP_BAN, "ban");
 		//	[OPHIM 12/09 b] Chu: "cac item nao khong co duong dan script de su dung thi bo chu dung di".
 		//	Ban CLIENT khong nhan duong dan script (KItem::m_CommonAttrib.szScript chi co ben may chu,
 		//	ben nay luon rong) nen loc theo LOAI mon: thuoc / nhiem vu / phi phong / sach chieu thi dung
@@ -455,6 +459,20 @@ void KUiVatPham::LamNut(int nMa)
 		}
 		break;
 
+	case VP_BAN:		// [BAN 14/09] ban mon nay cho cua hang NPC dang mo (y nhu KUiItem khi UIS_S_TRADE_SALE)
+		{
+			KUiObjAtContRegion Pick;
+			memset(&Pick, 0, sizeof(Pick));
+			Pick.Obj.uGenre = m_Obj.uGenre;
+			Pick.Obj.uId = m_Obj.uId;
+			Pick.Region.Width = m_nDataW;
+			Pick.Region.Height = m_nDataH;
+			Pick.Region.h = m_nDataX;
+			Pick.Region.v = m_nDataY;
+			Pick.eContainer = UOC_ITEM_TAKE_WITH;
+			g_pCoreShell->OperationRequest(GOI_TRADE_NPC_SELL, (KUPARAM)(&Pick), 0);
+		}
+		break;
 	case VP_CHUYEN:		// cua hang / giao dich: tra ve dung cai bam cu cua cua so chu
 		if (m_pChu)
 		{
