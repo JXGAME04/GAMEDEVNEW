@@ -2350,15 +2350,13 @@ BOOL KUiPlayerBar::LoadPrivateSetting(KIniFile* pFile)
 		int nPK = 0;
 
 #ifdef JX_ANDROID
-		// [HIENTEN 12/09] dien thoai khong co F7 / F8 / Ctrl+Space: chua luu tuy chon thi mac dinh HIEN ten, thanh mau, ten do duoi dat
-		if (!pFile->GetInteger("Player", "ShowLife", 0, (int*)(&nLife)))
-			nLife = 1;
+		// [HIENTEN 14/09] Chu: "vao game tu mo hien thi ten - thanh mau cua NPC - ten item roi xuong dat". Ban 12/09 chi bat khi
+		// tep chua co khoa; nhung SavePrivateSetting ghi lai trang thai luc thoat nen UiConfig cua nguoi choi da co
+		// ShowObjName=0 (nhieu ho so tren may chu tai), lan sau vao game lai tat. Dien thoai khong co F7 / F8 / Ctrl+Space de
+		// bat lai -> LUON bat ca ba moi lan vao game, bo qua gia tri da luu. Ban PC giu nguyen (nhanh #else).
+		nLife = nName = nNameObj = 1;
 		g_pCoreShell->OperationRequest(GOI_SHOW_PLAYERS_LIFE, 0, nLife);
-		if (!pFile->GetInteger("Player", "ShowName", 0, (int*)(&nName)))
-			nName = 1;
 		g_pCoreShell->OperationRequest(GOI_SHOW_PLAYERS_NAME, 0, nName);
-		if (!pFile->GetInteger("Player", "ShowObjName", 0, (int*)(&nNameObj)))
-			nNameObj = 1;
 		g_pCoreShell->OperationRequest(GOI_SHOW_OBJ_NAME, 0, nNameObj);
 #else
 		if (pFile->GetInteger("Player", "ShowLife", 0, (int*)(&nLife)))
