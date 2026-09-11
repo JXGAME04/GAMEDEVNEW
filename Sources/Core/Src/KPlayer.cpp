@@ -11010,6 +11010,9 @@ void KPlayer::SendMSRank(TMissionLadderSelfInfo* SelfData, TMissionLadderInfo* R
 		g_pServer->PackDataToClient(m_nNetConnectIdx, &sData, sizeof(PLAYER_MISSION_RANKDATA));
 	}
 
+	// [TKMS 11/09] khong con ket noi (bot, dang thoat) thi khong gui 10 goi top-10 (phan ban than o tren da kiem)
+	if (!g_pServer || m_nNetConnectIdx == -1)
+		return;
 	PLAYER_MISSION_RANKDATA2 sData2;//sync top 10
 	sData2.ProtocolType = s2c_syncrankdata2;
 	for(int i =0;i<MISSION_STATNUM;i++)

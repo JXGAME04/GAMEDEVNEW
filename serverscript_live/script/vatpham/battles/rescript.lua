@@ -4,6 +4,12 @@
 Include("\\script\\tinhnang\\tong_kim_tcap\\lib_tktc.lua")
 
 function main(nItemIdx)
+	-- [TKFIX 11/09] nhu ban Linux (item\battles\rescript.lua tbBATTLEMAP): khong dung trong khu chien truong 375-386
+	local nW = GetWorldPos()
+	if (nW >= 375 and nW <= 386) then
+		Msg2Player("Kh«ng thÓ dïng Chiªu th­ trong khu vùc chiÕn tr­êng.")
+		return
+	end
 	Say("Xin lùa chän n¬i ®Õn chiÕn tr­êng Tèng Kim:",3,
 	format("Vµo ®iÓm b¸o danh bªn Tèng/gotong(%d)", nItemIdx),
 	format("Vµo ®iÓm b¸o danh bªn Kim/gokim(%d)", nItemIdx),

@@ -27,6 +27,7 @@ function main()
 	Event_OnLogin()
 	-- Event_ShowRank()
 	updatengaymoi()
+	TK_DonCoLucDangNhap()	-- [TKFIX 11/09] co Tong Kim con sot sau khi thoat/bi day giua tran
 	-- [DOT-E1 bo he CTC cu - thue 7 thanh se do KCityWarJX2 dong bo] UpdateCityOwnTongFromLua()
 	CheckXu()-- fix xu ao
 	AddSkillHoTro()
@@ -249,3 +250,29 @@ function CuuNguoiKetLDHC()
 	NewWorld(53, 1619, 3185)
 	Msg2Player("L«i §µi Hçn ChiÕn ®· ngõng tæ chøc. Ng­¬i ®­îc ®­a vÒ Ba L¨ng HuyÖn.")
 end
+
+-- [TKFIX 11/09] Nguoi thoat game / bi day giua tran Tong Kim con mang T_CHECKPHETK + SetLogoutRV(1) (mobinhtk.lua
+-- common_*: dang nhap lai vao diem bao danh 324 de vao lai tran). Chi PlayerEndTongKim (task03.lua) tat co nay, ma
+-- nguoi da roi som khong qua do -> MOI lan dang nhap sau deu vao 324. Nay: tran da het (khong con mission) hoac khoa
+-- tran khac (T_CHECKDATETK ~= khoa hien tai) -> xoa co, dang nhap binh thuong. Dang cung tran -> giu de vao lai.
+function TK_DonCoLucDangNhap()
+	if (GetTask(T_CHECKPHETK) <= 0) then
+		return
+	end
+	local nSubCu = SubWorld
+	local nSubTK = SubWorldID2Idx(379)	-- MAP_TK_TC (lib_tktc.lua)
+	local bConTran = 0
+	if (nSubTK ~= nil and nSubTK >= 0) then
+		SubWorld = nSubTK
+		if (IsMission(MS_TONGKIM) == 1 and GetGlbMissionVC(1) == GetTask(T_CHECKDATETK)) then	-- 1 = TK_VARV_KEY
+			bConTran = 1
+		end
+		SubWorld = nSubCu
+	end
+	if (bConTran == 1) then
+		return
+	end
+	SetTask(T_CHECKPHETK, 0)
+	SetTask(T_CHECKDATETK, 0)
+	SetLogoutRV(0)
+end

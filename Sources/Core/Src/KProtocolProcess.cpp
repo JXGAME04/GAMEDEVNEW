@@ -4700,6 +4700,17 @@ void KProtocolProcess::s2cSetMissionData(BYTE* pMsg)
 {
 	PLAYER_MISSION_DATA	*pData = (PLAYER_MISSION_DATA*)pMsg;
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nMissionGroup = pData->m_nMissionGroup;
+#ifndef _SERVER
+	// [TKMS 11/09] nhom -1 = vua roi mission (bi day dung im / thoat tran / het tran - may chu gui trong
+	// KMission::RemovePlayer, StopMission, SetParam(0)). Xoa du lieu bang xep hang: KUiRankData ve tu
+	// m_MissionData/m_MissionRank moi khung ma truoc day chi KPlayer::Release() xoa -> ra ngoai van thay ten tran,
+	// diem hai phe, top-10 cua tran vua roi ("thoat ra dung ngoai van bao diem so 2 phe").
+	if (pData->m_nMissionGroup < 0)
+	{
+		Player[CLIENT_PLAYER_INDEX].m_MissionData.Clear();
+		memset(Player[CLIENT_PLAYER_INDEX].m_MissionRank, 0, sizeof(Player[CLIENT_PLAYER_INDEX].m_MissionRank));
+	}
+#endif
 	CoreDataChanged(GDCNI_PLAYER_BASE_INFO, 0, 0);
 }
 
