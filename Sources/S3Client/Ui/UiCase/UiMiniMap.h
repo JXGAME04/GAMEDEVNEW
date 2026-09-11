@@ -36,6 +36,9 @@ public:
 
 	static void			SetMode(MINIMAP_MODE eMode);	
 	static void			LoadScheme(const char* pScheme);
+#ifdef JX_ANDROID
+	virtual const char*	UiTenLopPhu() const;	// [UITOADO 14/09 LOPPHU] "To" / "ToEx" / "KhongAnh" theo che do
+#endif
 	static void			UpdateSceneTimeInfo(KUiSceneTimeInfo* pInfo);
 	static void			UpdateCityInfo();	// [CITYINFO 21/08] [CityInfo1]/[CityInfo2] ban do lon
 
