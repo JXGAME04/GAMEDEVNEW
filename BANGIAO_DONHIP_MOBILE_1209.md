@@ -3,7 +3,14 @@
 > Worktree `D:\GAMEDEVNEW\.claude\worktrees\mobile-144hz-optimization-429e2b`, nhánh `claude/mobile-144hz-optimization-429e2b`.
 > Đọc kèm `BANGIAO_NHIP_VE_144HZ_0809.md` (tối ưu nhịp vẽ của bản PC) — bản đo này kiểm các khác biệt mobile ↔ PC trên máy thật.
 
-## 0. Trạng thái (cập nhật 21:30)
+## 0. Trạng thái (cập nhật 22:05)
+
+> **Mới nhất:** phiên giao diện đã gộp bản này và FF `mobile-0809 = d9a72b72` ([SUAGD 13/09] a/b/c: khung "hai họ", HUD theo vùng an toàn,
+> trình chỉnh giao diện cho người chơi, nút "Chỉnh giao diện" trong Cài đặt cạnh thanh FPS). Worktree này đã FF lên `d9a72b72`;
+> **APK điện thoại = `android/apk/jx1mobile-1209-donhip-b.apk`** dựng từ đúng `d9a72b72` + vá SDL (md5 `be0f3dae…`), đã thay vào bộ tải
+> và khởi động lại máy chủ 8765. Bộ tải cũng có `ui/uitoado_danhsach.ini`, `spr/ui3/uisuagd/nut_chinh_gd.spr`, `uioptions.ini` mới và các khoá
+> config [KHUNG/SUAGD/ANTOAN 13/09] (giữ `[DoNhip] Bat=1`, `PaintLog=1`). APK `-a` (6edcb896) chỉ còn để đối chiếu.
+> Khung vẽ Fold 7 nay là **1437x616** (hai họ) — đọc từ `[NHIP-BAT]`.
 
 - Đã vá, đã dựng APK `android/apk/jx1mobile-1209-donhip-a.apk` (arm64 + x86_64, đã soi chuỗi mã mới trong `libmain.so`,
   `libRepresent3.so`, `libSDL3.so`), commit `e56a6760` (DONHIP) + commit FPS/THONGTIN (xem git log).
