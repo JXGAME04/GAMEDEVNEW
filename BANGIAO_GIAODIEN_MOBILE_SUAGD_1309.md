@@ -337,6 +337,11 @@ Sửa: chạy `python androida_sdl3_donhip.py` trong cây (idempotent, kiểm `
   sinh lúc khởi động; tệp lệch md5 làm điện thoại lặp tải và không cập nhật APK. Restart = taskkill PID đang nghe rồi Start-Process
   đúng dòng lệnh, kiểm PID mới + giờ manifest.
 
+- 00:34: **bản r** = 882059d7 (gộp Java SDL 3.2.30 của phiên DONHIP) + không đổi mã; dex có JxSurface + getPreferredLocales, libSDL3
+  3.2.30. Máy ảo: vào thế giới bình thường; bấm nút đổi bản đồ → nhật ký `ap KUiMiniMapTo|MiniMap -> 620,12`, bản đồ to nằm sát mép
+  phải với 4 nút ở đáy bản đồ to (ảnh `ld/shot16_1.png`); bước đổi lại bản nhỏ chưa kiểm được vì lúc đó trình chỉnh đang mở (nuốt
+  chạm). Bản r để sẵn ở `android/apk/jx1mobile-1309-suagd.apk`, chỉ thay lên dt_v4 sau khi phiên DONHIP báo đo xong.
+
 ### 7.7 Trạng thái cuối
 
 - Máy ảo + dt_v4: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt k, `jx1mobile-1309-suagd-o`, dựng 00:03 14/09: vùng an toàn tắt, nhóm trên-trái bám mép, `JxSurface`, SDL3 đã vá DONHIP).
