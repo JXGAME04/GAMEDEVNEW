@@ -83,6 +83,10 @@ protected:
 	int			m_nUiPhongCay;		// ti le cay dang ap (1000 = chua)
 	int			m_nUiPhongLechX;
 	int			m_nUiPhongLechY;
+	int			m_nUiPhongDatX;	// [c] vi tri PhongBang da dat lan truoc (de biet co ai doi chua)
+	int			m_nUiPhongDatY;
+	int			m_nUiFontDat;	// [d] co chu chinh UiPhongChu da dat (khac -> co chu vua doc lai tu ini, chup goc lai)
+	int			m_bUiViTriTuBang;	// [g] vi tri vua dat tu bang bo cuc (= vi tri o co goc) -> PhongBang dich giu tam
 #endif
 
 	int			m_bMoving;
@@ -154,10 +158,22 @@ public:
 	void			UiChupGocViTri() { if (!m_bUiGocViTri) { m_nUiGocLeft = m_Left; m_nUiGocTop = m_Top; m_bUiGocViTri = 1; } }
 	void			UiDatGocViTri(int nLeft, int nTop) { m_nUiGocLeft = nLeft; m_nUiGocTop = nTop; m_bUiGocViTri = 1; }
 	void			UiDatViTriTuGoc(int nTiLe) { if (m_bUiGocViTri) SetPosition(m_nUiGocLeft * nTiLe / 1000, m_nUiGocTop * nTiLe / 1000); }
-	void			UiPhongChu(int nTiLe) { int f = UiLayFont(); if (f > 0) { if (!m_nUiGocFont) m_nUiGocFont = f; f = m_nUiGocFont * nTiLe / 1000; UiDatFont(f < 8 ? 8 : f); } }
+	// [e] co chu la MA font trong [FontList] uibasepublicsetting.ini (10, 12, 13=12, 14, 16; font.pak chi co fs12/14/16):
+	// ma la thi OutputText bo ve -> chon ma gan nhat. Muon chu to hon 16 phai them tep .fnt + ma vao [FontList].
+	static int	UiChonMaFont(int f) { return (f >= 15) ? 16 : (f >= 13) ? 14 : (f >= 11) ? 12 : 10; }
+	void			UiPhongChu(int nTiLe) { int f = UiLayFont(); if (f > 0) { if (!m_nUiGocFont || f != m_nUiFontDat) m_nUiGocFont = f; f = UiChonMaFont(m_nUiGocFont * nTiLe / 1000); UiDatFont(f); m_nUiFontDat = f; } }
+	void			UiPhongChuCay(int nTiLe);	// [e] chi chu, ca cay (widget vua Init lai: Init doc Font= SAU KWndWindow::Init)
 	void			UiDatPhongLech(int nX, int nY) { m_nUiPhongLechX = nX; m_nUiPhongLechY = nY; }
 	int				UiLayPhongLechX() const { return m_nUiPhongLechX; }
 	int				UiLayPhongLechY() const { return m_nUiPhongLechY; }
+	void			UiGhiPhongDat(int nX, int nY) { m_nUiPhongDatX = nX; m_nUiPhongDatY = nY; }
+	int				UiPhongDaDat(int nX, int nY) const { return m_nUiPhongDatX == nX && m_nUiPhongDatY == nY; }
+	void			UiDanhDauViTriBang() { m_bUiViTriTuBang = 1; }
+	int				UiLayViTriTuBang() const { return m_bUiViTriTuBang; }
+	void			UiXoaViTriTuBang() { m_bUiViTriTuBang = 0; }
+	// [c] o vua Init lai theo toa do thiet ke (trang Auto doi tab): xoa goc de chup lai, roi UiPhongLai phong ca cay tu dau
+	void			UiXoaGoc() { m_nUiGocW = 0; m_nUiGocH = 0; m_bUiGocViTri = 0; m_nUiGocFont = 0; m_nUiTiLe = 1000; m_nUiPhongCay = 1000; }
+	void			UiPhongLai(int nTiLe);
 	virtual int	UiLayFont() const { return 0; }
 	virtual void	UiDatFont(int nFont) {}
 	virtual void	UiPhongRieng(int nTiLe) {}

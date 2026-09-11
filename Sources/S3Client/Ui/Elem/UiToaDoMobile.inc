@@ -837,15 +837,16 @@ static int UiToaDoM_PhongBang(KWndWindow* p, const char* pszKhoa)
 		k = 1000;
 	if (k == 1000 && p->UiLayPhongCay() == 1000)
 		return 0;
-	p->GetPosition(&l, &t);	// vi tri bo cuc = vi tri o co goc
-	l += p->UiLayPhongLechX();	// [b] mo lai ma khong qua bang bo cuc: bo lech lan truoc -> tinh tu vi tri o co goc, khong troi
-	t += p->UiLayPhongLechY();
+	p->GetPosition(&l, &t);
 	p->UiPhongCay(k);
 	p->GetSize(&wS, &hS);
 	nLechX = (wS - w0) / 2;	// giu tam nhu truoc khi phong
 	nLechY = (hS - h0) / 2;
-	l -= nLechX;
-	t -= nLechY;
+	if (p->UiLayViTriTuBang())	// [g] vi tri vua dat tu bang bo cuc = vi tri o co GOC -> dich giu tam; con lai (chinh PhongBang da dat,
+	{					// hay ma bang tu dat voi co da phong, vd Auto can giua) giu nguyen, chi kep trong khung
+		l -= nLechX;
+		t -= nLechY;
+	}
 	if (l + wS > SCREEN_WIDTH)
 		l = SCREEN_WIDTH - wS;
 	if (t + hS > SCREEN_HEIGHT)
@@ -856,6 +857,8 @@ static int UiToaDoM_PhongBang(KWndWindow* p, const char* pszKhoa)
 		t = 0;
 	p->SetPosition(l, t);
 	p->UiDatPhongLech(nLechX, nLechY);
+	p->UiGhiPhongDat(l, t);	// [c]
+	p->UiXoaViTriTuBang();
 	p->UiNhoViTri();
 	g_DebugLog("[PHONGBANG] %s goc %dx%d khung %dx%d -> k=%d -> %dx%d tai %d,%d (lech %d,%d)", pszKhoa, w0, h0, SCREEN_WIDTH, SCREEN_HEIGHT, k, wS, hS, l, t, nLechX, nLechY);
 	return 1;
@@ -876,13 +879,17 @@ static void SuaGd_ApKWnd(KWndWindow* p, int nLeft, int nTop, int nTiLe, int nAn)
 	{
 		p->UiDatGocViTri(nLeft, nTop);
 		p->SetPosition(nLeft * nKCay / 1000, nTop * nKCay / 1000);
+		p->UiNhoViTri();
+		p->UiPhongCay(nKCay * ((!CamCoGian(p) && nTiLe > 0) ? nTiLe : 1000) / 1000);	// [d] phong ca cay con cua o
+		p->UiDatAn(nAn ? 1 : 0);
+		return;
 	}
-	else
-		p->SetPosition(nLeft, nTop);
+	p->SetPosition(nLeft, nTop);
 	p->UiDatPhongLech(0, 0);	// [PHONGBANG 14/09 b] vi tri tu bang bo cuc = vi tri o co goc
+	p->UiDanhDauViTriBang();	// [g]
 	p->UiNhoViTri();
 	if (!CamCoGian(p) && nTiLe > 0 && (nTiLe != 1000 || p->UiLayTiLe() != 1000))
-		p->UiDatTiLe(nTiLe * nKCay / 1000);
+		p->UiDatTiLe(nTiLe);
 	p->UiDatAn(nAn ? 1 : 0);
 	{	// [PHONGBANG 14/09] bang: phong ca cay theo man hinh (ke ca khi trinh chinh tra mac dinh / doi ho so)
 		char szKhoaPB[UITOADO_CO_KHOA];

@@ -12,6 +12,8 @@
 #include "Wnds.h"
 #ifdef JX_ANDROID
 void UiToaDo_ApChoO(KWndWindow* pWnd);	// UiToaDo.cpp, [UITOADO 12/09 NEO b]
+void UiToaDo_ApChoOInit(KWndWindow* pWnd);	// [PHONGBANG 14/09 d] nhu tren nhung KHONG phong bang (con chua Init)
+void UiToaDo_PhongBangKhiHien(KWndWindow* pWnd);	// [PHONGBANG 14/09 f] cua so goc vua Show(): bang tinh nang phong ca cay theo man hinh
 #endif
 #include "MouseHover.h"
 #include "UiToaDo.h"	// [UITOADO]
@@ -53,6 +55,10 @@ KWndWindow::KWndWindow()
 	m_nUiPhongCay	= 1000;
 	m_nUiPhongLechX	= 0;
 	m_nUiPhongLechY	= 0;
+	m_nUiPhongDatX	= -100000;	// [c]
+	m_nUiPhongDatY	= -100000;
+	m_nUiFontDat	= 0;
+	m_bUiViTriTuBang	= 0;
 #endif
 
 	m_bMoving = false;
@@ -323,6 +329,12 @@ static void UiPhongMotO(KWndWindow* p, int nTiLe)
 		UiPhongMotO(c, nTiLe);
 	}
 }
+static void UiPhongXoaGoc(KWndWindow* p)
+{
+	p->UiXoaGoc();
+	for (KWndWindow* c = p->GetFirstChild(); c; c = c->GetNextWnd())
+		UiPhongXoaGoc(c);
+}
 void KWndWindow::UiPhongCay(int nTiLe)
 {
 	if (nTiLe < 500)
@@ -332,6 +344,21 @@ void KWndWindow::UiPhongCay(int nTiLe)
 	UiChupGocCo();
 	UiPhongChupGoc(this);
 	UiPhongMotO(this, nTiLe);
+}
+//	[c] o (va ca cay con) vua duoc Init lai theo toa do thiet ke trong luc bang dang phong (trang Auto doi tab):
+//	xoa goc da chup, chup lai tu so do thiet ke, dat lai vi tri tuong doi cha roi phong ca cay nhu lan dau.
+void KWndWindow::UiPhongChuCay(int nTiLe)
+{
+	UiPhongChu(nTiLe);
+	for (KWndWindow* c = GetFirstChild(); c; c = c->GetNextWnd())
+		c->UiPhongChuCay(nTiLe);
+}
+void KWndWindow::UiPhongLai(int nTiLe)
+{
+	UiPhongXoaGoc(this);
+	UiChupGocViTri();
+	UiDatViTriTuGoc(nTiLe);
+	UiPhongCay(nTiLe);
 }
 #endif
 
@@ -414,6 +441,10 @@ void KWndWindow::AbsoluteMove(int dx, int dy)
 void KWndWindow::Show()
 {
 	m_Style |= WND_S_VISIBLE;
+#ifdef JX_ANDROID
+	if (m_pParentWnd == NULL)	// [PHONGBANG 14/09 f] cua so goc (anh em cua goc lop) hien len = da nap xong ca cay -> phong theo man hinh
+		UiToaDo_PhongBangKhiHien(this);
+#endif
 }
 
 //--------------------------------------------------------------------------
@@ -494,7 +525,8 @@ int KWndWindow::Init(KIniFile* pIniFile, const char* pSection)
 		pIniFile->GetInteger(pSection, "Top",   0, &nValue2);
 		SetPosition(nValue1, nValue2);		
 #ifdef JX_ANDROID
-		UiToaDo_ApChoO(this);	// [UITOADO 12/09 NEO b] o con Init sau khi goc dang ky -> ap toa do nguoi choi / bo cuc mac dinh ngay
+		UiXoaGoc();	// [PHONGBANG 14/09 d] vua doc lai so do thiet ke -> bo goc da chup (Init lai luc bang dang phong: trang Auto)
+		UiToaDo_ApChoOInit(this);	// [UITOADO 12/09 NEO b] o con Init sau khi goc dang ky -> ap toa do nguoi choi / bo cuc mac dinh ngay
 #endif
 		pIniFile->GetInteger(pSection, "Disable",  0, &nValue1);
 		pIniFile->GetInteger(pSection, "Moveable", 0, &nValue2);

@@ -86,6 +86,7 @@ static bool UiToaDoM_LaGoc(const char* pszKhoa);
 static int  UiToaDoM_NhatKy(void);	// [SUAGD 13/09 g] muc [Ui] NhatKyBoCuc (2 = ghi tung o duoc ap, tim o bi nhay ve cho cu)
 static int  UiToaDoM_PhongBang(KWndWindow* p, const char* pszKhoa);	// [PHONGBANG 14/09] bang: phong ca cay theo man hinh luc mo
 static int  UiToaDoM_KCayCha(KWndWindow* p);	// [PHONGBANG 14/09] o con trong bang da phong -> ti le cay
+static bool s_bApLucInit = false;	// [PHONGBANG 14/09 d] dang ap tu KWndWindow::Init (con chua Init) -> khong phong bang
 static int  UiToaDoM_HoKhung();
 static bool UiToaDoM_CoTep(const char* pszTep);
 static void UiToaDoM_SauMacDinh();
@@ -788,27 +789,41 @@ static int GhiTep()
 //--------------------------------------------------------------------------
 static void ApMotO(KWndWindow* pWnd, int nMuc)
 {
+#ifdef JX_ANDROID
+	int nKCay = UiToaDoM_KCayCha(pWnd);	// [PHONGBANG 14/09] o nam trong bang da phong ca cay -> ti le cay cua to tien (1000 = khong)
 	if (nMuc < 0)
 	{
-#ifdef JX_ANDROID
-		char szKhoaPB[UITOADO_CO_KHOA];	// [PHONGBANG 14/09 b] bang chua co trong bang bo cuc (KUiStatus|Female...) van phong theo man hinh
-		if (TaoKhoaTuOCon(pWnd, szKhoaPB, sizeof(szKhoaPB)))
+		char szKhoaPB[UITOADO_CO_KHOA];
+		if (nKCay != 1000)
+		{	// [d] o con khong co trong bang bo cuc (vua Init hoac mo lai): chup goc neu chua, dat vi tri goc x k, phong ca cay con
+			pWnd->UiChupGocViTri();
+			pWnd->UiDatViTriTuGoc(nKCay);
+			pWnd->UiPhongCay(nKCay);
+		}
+		else if (!s_bApLucInit && TaoKhoaTuOCon(pWnd, szKhoaPB, sizeof(szKhoaPB)))	// [b] bang chua co trong bang bo cuc van phong theo man hinh
 			UiToaDoM_PhongBang(pWnd, szKhoaPB);
-#endif
 		return;
 	}
-#ifdef JX_ANDROID
-	int nKCay = UiToaDoM_KCayCha(pWnd);	// [PHONGBANG 14/09] o con nam trong bang da phong ca cay -> toa do / ti le hoa so theo cay
 	if (nKCay != 1000)
-	{
+	{	// o con cua bang da phong: bang bo cuc giu toa do / TiLe thiet ke -> hoa so theo cay, phong ca cay con cua no
+		int nTiLe = (s_Bang[nMuc].nTiLe > 0 && s_Bang[nMuc].nTiLe != 1000 && !CamCoGian(pWnd)) ? s_Bang[nMuc].nTiLe : 1000;
 		pWnd->UiDatGocViTri(s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
 		pWnd->SetPosition(s_Bang[nMuc].nLeft * nKCay / 1000, s_Bang[nMuc].nTop * nKCay / 1000);
+		pWnd->UiNhoViTri();
+		if (UiToaDoM_NhatKy() >= 2)
+			g_DebugLog("[UITOADO] ap %s -> %d,%d (cay %d)", s_Bang[nMuc].szKhoa, s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop, nKCay);
+		pWnd->UiPhongCay(nKCay * nTiLe / 1000);
+		pWnd->UiDatAn(s_Bang[nMuc].nCo & UITOADO_CO_AN);
+		return;
 	}
-	else
+#else
+	if (nMuc < 0)
+		return;
 #endif
 	pWnd->SetPosition(s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
 #ifdef JX_ANDROID
 	pWnd->UiDatPhongLech(0, 0);	// [PHONGBANG 14/09 b] vi tri vua dat tu bang bo cuc = vi tri o co goc, chua lech
+	pWnd->UiDanhDauViTriBang();	// [g] PhongBang ke tiep dich giu tam tu vi tri nay
 #endif
 	//	KWndMovingImage chup vi tri goc cua hoat hinh mo cua so luc Init, tuc
 	//	TRUOC luc nay => phai bao no chup lai, khong thi mo/dong lai la nhay ve cho cu
@@ -817,16 +832,12 @@ static void ApMotO(KWndWindow* pWnd, int nMuc)
 	if (UiToaDoM_NhatKy() >= 2)	// [SUAGD 13/09 g] NhatKyBoCuc=2: ghi tung o duoc ap (tim o bi nhay ve cho cu)
 		g_DebugLog("[UITOADO] ap %s -> %d,%d", s_Bang[nMuc].szKhoa, s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
 #endif
-#ifdef JX_ANDROID
-	if (s_Bang[nMuc].nTiLe > 0 && s_Bang[nMuc].nTiLe != 1000 && !CamCoGian(pWnd))
-		pWnd->UiDatTiLe(s_Bang[nMuc].nTiLe * nKCay / 1000);
-#else
 	if (s_Bang[nMuc].nTiLe > 0 && s_Bang[nMuc].nTiLe != 1000 && !CamCoGian(pWnd))
 		pWnd->UiDatTiLe(s_Bang[nMuc].nTiLe);
-#endif
 	pWnd->UiDatAn(s_Bang[nMuc].nCo & UITOADO_CO_AN);
 #ifdef JX_ANDROID
-	UiToaDoM_PhongBang(pWnd, s_Bang[nMuc].szKhoa);	// [PHONGBANG 14/09] bang (co 16 danh sach trang): phong ca cay theo man hinh
+	if (!s_bApLucInit)	// [d] luc Init cua so goc (con chua Init) khong phong; phong luc dua vao he thong cua so (Wnd_AddWindow)
+		UiToaDoM_PhongBang(pWnd, s_Bang[nMuc].szKhoa);	// [PHONGBANG 14/09] bang (co 16 danh sach trang): phong ca cay theo man hinh
 #endif
 }
 
@@ -916,6 +927,23 @@ void UiToaDo_ApChoO(KWndWindow* pWnd)
 			g_DebugLog("[BOCUC-AP] %s muc %d -> rel %d,%d", szKhoa, nMuc, rx, ry);
 		}
 	}
+}
+//	[PHONGBANG 14/09 d] goi tu KWndWindow::Init: ap toa do nhu tren nhung KHONG phong bang (o con chua Init, goc chua co)
+void UiToaDo_ApChoOInit(KWndWindow* pWnd)
+{
+	s_bApLucInit = true;
+	UiToaDo_ApChoO(pWnd);
+	s_bApLucInit = false;
+}
+//	[PHONGBANG 14/09 f] goi tu KWndWindow::Show() cua cua so goc: luc nay ca cay da nap (ke ca bang Wnd_AddWindow TRUOC LoadScheme
+//	nhu KUiESCDlg) -> bang co co PHONGBANG phong ca cay theo man hinh; khong co co / da phong thi khong lam gi.
+void UiToaDo_PhongBangKhiHien(KWndWindow* pWnd)
+{
+	char szKhoa[UITOADO_CO_KHOA];
+	if (pWnd == NULL || s_bApLucInit)
+		return;
+	if (TaoKhoaTuOCon(pWnd, szKhoa, sizeof(szKhoa)))
+		UiToaDoM_PhongBang(pWnd, szKhoa);
 }
 #endif
 void UiToaDo_ApChoCuaSo(KWndWindow* pCuaSoGoc)
@@ -1215,7 +1243,7 @@ static void GhiLaiO(KWndWindow* pWnd, const char* pszKhoa)
 		int nTiLe = pWnd->UiLayTiLe();
 		nLeft += pWnd->UiLayPhongLechX();
 		nTop += pWnd->UiLayPhongLechY();
-		if (pWnd->UiLayPhongCay() != 1000)
+		if (pWnd->UiLayPhongCay() != 1000 && nKCay == 1000)	// [d] bang goc (co phong, khong co to tien phong): TiLe tu tinh
 			nTiLe = 1000;
 		else if (nKCay != 1000)
 			nTiLe = (nTiLe * 1000 + nKCay / 2) / nKCay;

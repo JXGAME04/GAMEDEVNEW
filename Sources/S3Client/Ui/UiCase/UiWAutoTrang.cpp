@@ -282,6 +282,8 @@ void KUiWAutoTrang::NapTab(int nTab)
 	}
 	DienGiaTri();
 	g_DebugLog("[WAUTO-UI] tab %d: %d muc, %d hang, %d cot (%s)", nTab, m_pTab->nMuc, m_pTab->nHang, m_pTab->nCot, m_pTab->szIni);
+	if (UiLayPhongCay() != 1000)	// [PHONGBANG 14/09 e] bang Auto dang phong: vi tri / co cua trang + widget da phong ngay trong Init
+		UiPhongChuCay(UiLayPhongCay());	// (KWndWindow::Init -> UiToaDo_ApChoOInit); rieng co chu doc SAU do -> phong lai chu
 }
 
 void KUiWAutoTrang::DienGiaTri()

@@ -524,6 +524,9 @@ int KWndObjectMatrix::Init(KIniFile* pIniFile, const char* pSection)
 		else
 			m_Style &= ~OBJCONT_S_ACCEPT_FREE;
 		pIniFile->GetInteger(pSection, "UnitBorder", 0, &m_nUnitBorder);
+#ifdef JX_ANDROID
+		m_nUiGocBorder = -1;	// [PHONGBANG 14/09 d] vien goc doc lai tu ini
+#endif
 		if (m_nUnitBorder >= m_nUnitWidth)
 			m_nUnitBorder = m_nUnitWidth - 1;
 		if (m_nUnitBorder >= m_nUnitHeight)
