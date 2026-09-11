@@ -838,6 +838,8 @@ static int UiToaDoM_PhongBang(KWndWindow* p, const char* pszKhoa)
 	if (k == 1000 && p->UiLayPhongCay() == 1000)
 		return 0;
 	p->GetPosition(&l, &t);	// vi tri bo cuc = vi tri o co goc
+	l += p->UiLayPhongLechX();	// [b] mo lai ma khong qua bang bo cuc: bo lech lan truoc -> tinh tu vi tri o co goc, khong troi
+	t += p->UiLayPhongLechY();
 	p->UiPhongCay(k);
 	p->GetSize(&wS, &hS);
 	nLechX = (wS - w0) / 2;	// giu tam nhu truoc khi phong
@@ -877,6 +879,7 @@ static void SuaGd_ApKWnd(KWndWindow* p, int nLeft, int nTop, int nTiLe, int nAn)
 	}
 	else
 		p->SetPosition(nLeft, nTop);
+	p->UiDatPhongLech(0, 0);	// [PHONGBANG 14/09 b] vi tri tu bang bo cuc = vi tri o co goc
 	p->UiNhoViTri();
 	if (!CamCoGian(p) && nTiLe > 0 && (nTiLe != 1000 || p->UiLayTiLe() != 1000))
 		p->UiDatTiLe(nTiLe * nKCay / 1000);

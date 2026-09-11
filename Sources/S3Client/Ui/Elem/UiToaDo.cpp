@@ -789,7 +789,14 @@ static int GhiTep()
 static void ApMotO(KWndWindow* pWnd, int nMuc)
 {
 	if (nMuc < 0)
+	{
+#ifdef JX_ANDROID
+		char szKhoaPB[UITOADO_CO_KHOA];	// [PHONGBANG 14/09 b] bang chua co trong bang bo cuc (KUiStatus|Female...) van phong theo man hinh
+		if (TaoKhoaTuOCon(pWnd, szKhoaPB, sizeof(szKhoaPB)))
+			UiToaDoM_PhongBang(pWnd, szKhoaPB);
+#endif
 		return;
+	}
 #ifdef JX_ANDROID
 	int nKCay = UiToaDoM_KCayCha(pWnd);	// [PHONGBANG 14/09] o con nam trong bang da phong ca cay -> toa do / ti le hoa so theo cay
 	if (nKCay != 1000)
@@ -800,6 +807,9 @@ static void ApMotO(KWndWindow* pWnd, int nMuc)
 	else
 #endif
 	pWnd->SetPosition(s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
+#ifdef JX_ANDROID
+	pWnd->UiDatPhongLech(0, 0);	// [PHONGBANG 14/09 b] vi tri vua dat tu bang bo cuc = vi tri o co goc, chua lech
+#endif
 	//	KWndMovingImage chup vi tri goc cua hoat hinh mo cua so luc Init, tuc
 	//	TRUOC luc nay => phai bao no chup lai, khong thi mo/dong lai la nhay ve cho cu
 	pWnd->UiNhoViTri();
