@@ -443,3 +443,4 @@ Sửa: chạy `python androida_sdl3_donhip.py` trong cây (idempotent, kiểm `
 - Bài học ghi vào bộ nhớ: **mọi đường mở tệp bằng `fopen`/`lua_dofile`/`io.open` đều KHÔNG thấy pak** → trên điện thoại
   chỉ dữ liệu qua `KPakFile`/`g_pPakList` mới có; muốn tái hiện lỗi "chỉ điện thoại" phải thử với dữ liệu đóng gói, máy ảo
   đọc tệp rời không bao giờ lộ.
+- **Đã xác nhận trên Fold 7 02:08 14/09 (bản y2)**: `protocol_def_c.lua`/`uichienlenh.lua`/`uimail.lua`/`uiauction_house.lua` đều `nap ... ok`, 101 dispatch `loi=0`, 0 `loi=1`, không có ScriptError.log; chạm đấu giá 02:08:21 → `Lua->UI cmd=18` → `[AUC] [UI] OpenWindow visible=1`. Chủ: *"đã oke rồi hiển thị đầy đủ"*.
