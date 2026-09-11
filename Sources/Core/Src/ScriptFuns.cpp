@@ -2129,15 +2129,21 @@ int LuaIncludeFile(Lua_State* L)
 		// FIX 14/08 (A3): Include file KHONG TON TAI truoc day im lang tuyet
 		// doi (lua_dofile tra LUA_ERRFILE, khong nem loi, khong ghi log) ->
 		// khong the dung log de ket luan cay script sach.
-		if (lua_dofile(L, lszCurrentDirectory) != 0)
-		{
 #ifdef JX_ANDROID
-			// [INCLUDE 14/09 PAK] tep roi khong co (dien thoai chi co pak) -> doc lai tu pak, xem sIncludeTuPak
-			if (sIncludeTuPak(L, pFileName))
+		// [INCLUDE 14/09 PAK b] CHI khi khong mo duoc tep (LUA_ERRFILE = 2, l4_loi_nap): dien thoai chi co pak -> doc lai tu
+		// pak (sIncludeTuPak). Tep roi CO nhung than tep loi (ERRRUN 1 / ERRSYNTAX 3) thi giu nguyen nhu cu - khong chay lai
+		// lan hai (may ao 15:58 14/09: task_addplayerexp.lua loi 1 bi chay hai lan khi chua gate).
+		{
+			int nRcInc = lua_dofile(L, lszCurrentDirectory);
+			if (nRcInc == LUA_ERRFILE && sIncludeTuPak(L, pFileName))
 				return 0;
-#endif
-			g_DebugLog((LPSTR)"[script] Include HONG: %.200s", lszCurrentDirectory);
+			if (nRcInc != 0)
+				g_DebugLog((LPSTR)"[script] Include HONG: %.200s", lszCurrentDirectory);
 		}
+#else
+		if (lua_dofile(L, lszCurrentDirectory) != 0)
+			g_DebugLog((LPSTR)"[script] Include HONG: %.200s", lszCurrentDirectory);
+#endif
 		return 0;
 	}
 	else
