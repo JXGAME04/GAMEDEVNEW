@@ -284,7 +284,10 @@ Sửa (`[ANTOAN 13/09 b]`):
 
 ### 7.7 Trạng thái cuối
 
-- Máy ảo: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt g, `jx1mobile-1309-suagd-k`). Tệp mặc định trên máy ảo và trong repo giống nhau.
+- Máy ảo: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt h, `jx1mobile-1309-suagd-m`, dựng 23:29 từ `247beeea`).
+- Điện thoại (23:33): đã tự đưa APK m thành `D:\jx1_android_data_dt_v4\jx1mobile.apk` (apk.txt versionCode 109102329), đổi
+  `VungAnToanDoiXung=0` trong config của dt_v4 (các khoá khác của phiên 144 Hz giữ nguyên), khởi động lại
+  `may_chu_tai_du_lieu.py` đúng dòng lệnh cũ; phiên nối tiếp `bangiao-donhip-mobile-context-deaeff-ab` đã được báo. Tệp mặc định trên máy ảo và trong repo giống nhau.
 - Việc chủ/phiên 144 Hz cần làm cho điện thoại: chép `ui/uitoado_macdinh_rong.ini`, `ui/uitoado_macdinh.ini`,
   `ui/uitoado_danhsach.ini`, `config.ini` và APK mới vào `D:\jx1_android_data_dt_v4`, xoá `manifest.txt`, khởi động
   lại máy chủ 8765 (phiên 144 Hz quản lý cây này — đã nhắn).
