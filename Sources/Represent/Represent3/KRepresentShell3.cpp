@@ -110,7 +110,9 @@ double   g_dRep3FxGiaiMaMs = 0.0;	// tong ms giai ma + tao texture
 // [NAP 08/09 a] do NAP tren luong ve, in [REP3-NAP] moi Rep3StatSec giay
 Rep3NapDo g_napSpr = {0, 0, 0}, g_napJpeg = {0, 0, 0}, g_napKhung = {0, 0, 0}, g_napGiaiMa = {0, 0, 0}, g_napGpu = {0, 0, 0};
 double g_dRep3NapKhung = 0.0, g_dRep3NapKhungMax = 0.0; unsigned g_uRep3NapKhung5 = 0, g_uRep3NapKhung16 = 0;
+#ifndef JX_ANDROID	// [VE 11/09] Android: ban co thong ke theo khung ben duoi
 void Rep3NapCong(Rep3NapDo& d, double ms) { d.n++; d.ms += ms; if (ms > d.max) d.max = ms; g_dRep3NapKhung += ms; }
+#endif
 // [NAP 08/09 d] trong pham vi ham GHEP/GHI anh mot lan: bat buoc nap dong bo (ket qua chi dung mot lan, nap nen tra NULL = mat vinh vien)
 struct Rep3NapDongBo { TextureResMgr& m; bool b; Rep3NapDongBo(TextureResMgr& mm) : m(mm), b(mm.m_bVeDangDien) { m.m_bVeDangDien = false; } ~Rep3NapDongBo() { m.m_bVeDangDien = b; } };
 double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
@@ -121,6 +123,68 @@ extern unsigned g_uRep3RingVong; extern double g_dRep3RingMapMax; extern unsigne
 LARGE_INTEGER g_liRep3VeBegin = {0};
 int g_nRep3VeMau = 0;	// [VE 09/09 d] 1 = khung nay la khung MAU (1/8): moi do [VE] theo don vi/lenh chi chay tren khung mau (QPC 2 lan/lenh x 5 000 lenh/khung = 4 % thoi gian ve)
 struct Rep3VeDpTimer { LARGE_INTEGER a; Rep3VeDpTimer() { if (g_nRep3VeMau) QueryPerformanceCounter(&a); } ~Rep3VeDpTimer() { if (g_nRep3VeMau) { LARGE_INTEGER b; QueryPerformanceCounter(&b); g_dRep3VeDpKhung += Rep3NapMs(a, b); } } };
+#ifdef JX_ANDROID
+// [VE 11/09] Android: cong tac + thong ke nap KHUNG o luong nen (TextureRes.cpp / TextureResMgr.cpp) va do trinh chieu (D3D9onGPUDev.cpp)
+int g_nJxNapKhungNen = 1, g_nJxNapKhungMs = 3, g_nJxNapKhungTruoc = 2, g_nJxNapKhungApMs = 3, g_nJxVeGiatMs = 20;
+int g_nJxAnhBoVeNen = 0;
+unsigned g_uJxNapKhungBoVe = 0, g_uJxNapKhungBoVeKhung = 0, g_uJxNapKhungDongBo = 0, g_uJxNapKhungGiao = 0, g_uJxNapKhungTruocSo = 0, g_uJxNapKhungXong = 0, g_uJxNapKhungHong = 0, g_uJxNapKhungBo = 0, g_uJxNapKhungChoMax = 0;
+double g_dJxNapKhungTre = 0.0, g_dJxNapKhungTreMax = 0.0, g_dJxNapNenBan = 0.0, g_dJxNapKhungAp = 0.0, g_dJxNapKhungApMax = 0.0; unsigned g_uJxNapKhungApKhung = 0;
+Rep3NapDo g_jxNapNgoaiVe = {0, 0, 0};
+static Rep3NapDo s_jxNapKhung[5];		// nap trong KHUNG hien tai theo loai: 0 tep spr, 1 jpeg, 2 rut khung, 3 giai ma, 4 tao GPU -> [VE-GIAT]
+static Rep3NapDo s_jxNapKhungCuoi[5]; static double s_dJxNapNgoaiKhung = 0.0, s_dJxNapNgoaiKhungCuoi = 0.0, s_dJxVeCpuCuoi = 0.0;
+static double s_dJxVeCpuTong = 0.0, s_dJxVeCpuMax = 0.0; static unsigned s_uJxVeCpuKhung = 0, s_uJxBoVeKhungCuoi = 0;
+void Rep3NapCong(Rep3NapDo& d, double ms)
+{
+	d.n++; d.ms += ms; if (ms > d.max) d.max = ms; g_dRep3NapKhung += ms;
+	const int k = (&d == &g_napSpr) ? 0 : (&d == &g_napJpeg) ? 1 : (&d == &g_napKhung) ? 2 : (&d == &g_napGiaiMa) ? 3 : 4;
+	s_jxNapKhung[k].n++; s_jxNapKhung[k].ms += ms; if (ms > s_jxNapKhung[k].max) s_jxNapKhung[k].max = ms;
+	if (g_pJxTexMgr && !g_pJxTexMgr->m_bVeDangDien) { g_jxNapNgoaiVe.n++; g_jxNapNgoaiVe.ms += ms; if (ms > g_jxNapNgoaiVe.max) g_jxNapNgoaiVe.max = ms; s_dJxNapNgoaiKhung += ms; }
+}
+// RepresentEnd (truoc khi dat lai g_dRep3NapKhung): chot so nap + thoi gian ve CPU cua khung nay
+static void JxVeKhungChot()
+{
+	LARGE_INTEGER li; QueryPerformanceCounter(&li);
+	s_dJxVeCpuCuoi = g_liRep3VeBegin.QuadPart ? Rep3NapMs(g_liRep3VeBegin, li) : 0.0;
+	memcpy(s_jxNapKhungCuoi, s_jxNapKhung, sizeof(s_jxNapKhung)); memset(s_jxNapKhung, 0, sizeof(s_jxNapKhung));
+	s_dJxNapNgoaiKhungCuoi = s_dJxNapNgoaiKhung; s_dJxNapNgoaiKhung = 0.0;
+	s_uJxBoVeKhungCuoi = g_uJxNapKhungBoVeKhung; g_uJxNapKhungBoVeKhung = 0;
+}
+// Ngay sau Present: ve CPU + trinh chieu (hoac nap ngoai luc ve) vuot VeGiatMs -> ghi [VE-GIAT] (toi da 12 dong / 10 s)
+static void JxVeGiatGhi(double dTrinhChieu)
+{
+	s_dJxVeCpuTong += s_dJxVeCpuCuoi; if (s_dJxVeCpuCuoi > s_dJxVeCpuMax) s_dJxVeCpuMax = s_dJxVeCpuCuoi; s_uJxVeCpuKhung++;
+	if (g_nJxVeGiatMs <= 0) return;
+	if (s_dJxVeCpuCuoi + dTrinhChieu < (double)g_nJxVeGiatMs && s_dJxNapNgoaiKhungCuoi < (double)g_nJxVeGiatMs) return;
+	static DWORD s_dwMoc = 0; static int s_nDem = 0;
+	const DWORD dwNow = timeGetTime();
+	if (s_dwMoc == 0 || dwNow - s_dwMoc >= 10000) { s_dwMoc = dwNow; s_nDem = 0; }
+	if (++s_nDem > 12) return;
+	const JxVeDo& k = g_jxVeKhung;
+	double dNap = 0.0; for (int i = 0; i < 5; i++) dNap += s_jxNapKhungCuoi[i].ms;
+	Rep3Log("[VE-GIAT] khung %u: %.1f ms = ve CPU %.1f (nap %.1f ms: tep spr %u/%.1f, rut khung %u/%.1f, giai ma %u/%.1f, tao GPU %u/%.1f; ngoai luc ve %.1f) + trinh chieu %.1f (cho %.1f, chep %.1f [tai %u tex %u KB, ring %u KB], ghi %.1f [%u lenh, %u quad, %u pass, doi tex %u], nop %.1f) | nen: bo ve %u, cho ap %u, ap %u khung %.1f ms",
+		g_uJxVeKhungSo, s_dJxVeCpuCuoi + dTrinhChieu, s_dJxVeCpuCuoi, dNap, s_jxNapKhungCuoi[0].n, s_jxNapKhungCuoi[0].ms, s_jxNapKhungCuoi[2].n, s_jxNapKhungCuoi[2].ms, s_jxNapKhungCuoi[3].n, s_jxNapKhungCuoi[3].ms, s_jxNapKhungCuoi[4].n, s_jxNapKhungCuoi[4].ms, s_dJxNapNgoaiKhungCuoi,
+		dTrinhChieu, k.dCho, k.dChep, k.uTai, k.uTaiKB, k.uRingKB, k.dGhi, k.uLenh, k.uQuad, k.uPass, k.uDoiTex, k.dNop,
+		s_uJxBoVeKhungCuoi, g_pJxTexMgr ? g_pJxTexMgr->JxNapKhungDangCho() : 0u, g_pJxTexMgr ? g_pJxTexMgr->m_uJxApKhungCuoi : 0u, g_pJxTexMgr ? g_pJxTexMgr->m_dJxApCuoi : 0.0);
+}
+// Moi ky Rep3StatSec (khoi thong ke cua RepresentEnd): [VE] trinh chieu, [VE-GOP] doi trang thai / ly do khong gop, [VE-NAP] nap khung nen
+static void JxVeKyIn()
+{
+	const unsigned n = g_uJxVeKhungSo ? g_uJxVeKhungSo : 1;
+	const JxVeDo& t = g_jxVeTong; const JxVeDo& m = g_jxVeMax;
+	Rep3Log("[VE] %ds trinh chieu %u khung: cho lenh+swapchain TB %.2f ms (max %.1f) | chep len GPU TB %.2f (max %.1f): tai %u texture %u KB (max %u KB/khung), ring TB %u KB (max %u) | ghi lenh TB %.2f (max %.1f): TB %u lenh, %u quad, %u dinh, %u pass/khung | nop TB %.2f (max %.1f) | tong TB %.2f (max %.1f), khung >8 ms %u, >16 ms %u | ve CPU (Begin->End) TB %.2f (max %.1f)",
+		g_nRep3StatSec, g_uJxVeKhungSo, t.dCho / n, m.dCho, t.dChep / n, m.dChep, t.uTai, t.uTaiKB, m.uTaiKB, t.uRingKB / n, m.uRingKB, t.dGhi / n, m.dGhi, t.uLenh / n, t.uQuad / n, t.uDinh / n, t.uPass / n,
+		t.dNop / n, m.dNop, t.dTong / n, m.dTong, g_uJxVe8, g_uJxVe16, s_uJxVeCpuKhung ? s_dJxVeCpuTong / s_uJxVeCpuKhung : 0.0, s_dJxVeCpuMax);
+	Rep3Log("[VE-GOP] doi trang thai/khung TB: pipeline %u, texture/sampler %u (max %u), uniform vs %u, ps %u, cat/viewport %u | quad khong gop (ca ky): stride %u, khong lien tiep %u, pipeline %u, texture0 %u, texture1/sampler %u, vs %u, ps %u, cat/vp %u",
+		t.uDoiPipe / n, t.uDoiTex / n, m.uDoiTex, t.uDoiVs / n, t.uDoiPs / n, t.uDoiCat / n, g_uJxGopVo[0], g_uJxGopVo[1], g_uJxGopVo[2], g_uJxGopVo[3], g_uJxGopVo[4], g_uJxGopVo[5], g_uJxGopVo[6], g_uJxGopVo[7]);
+	memset(&g_jxVeTong, 0, sizeof(g_jxVeTong)); memset(&g_jxVeMax, 0, sizeof(g_jxVeMax)); g_uJxVeKhungSo = 0; g_uJxVe8 = 0; g_uJxVe16 = 0; memset(g_uJxGopVo, 0, sizeof(g_uJxGopVo));
+	s_dJxVeCpuTong = 0.0; s_dJxVeCpuMax = 0.0; s_uJxVeCpuKhung = 0;
+	Rep3Log("[VE-NAP] nap khung nen (bat=%d, ngan sach %d ms/khung, nap truoc %d, ap %d ms): giao %u (nap truoc %u) xong %u hong %u bo %u | bo ve %u luot, dong bo trong ngan sach %u | hang cho max %u | tre giao->ap TB %.1f ms (max %.1f) | luong nen ban %.0f ms | ap tren luong ve %u khung %.1f ms (max %.2f/khung) | nap dong bo NGOAI luc ve: %u lan %.1f ms (max %.2f)",
+		g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungApMs, g_uJxNapKhungGiao, g_uJxNapKhungTruocSo, g_uJxNapKhungXong, g_uJxNapKhungHong, g_uJxNapKhungBo, g_uJxNapKhungBoVe, g_uJxNapKhungDongBo, g_uJxNapKhungChoMax,
+		g_uJxNapKhungXong ? g_dJxNapKhungTre / g_uJxNapKhungXong : 0.0, g_dJxNapKhungTreMax, g_dJxNapNenBan, g_uJxNapKhungApKhung, g_dJxNapKhungAp, g_dJxNapKhungApMax, g_jxNapNgoaiVe.n, g_jxNapNgoaiVe.ms, g_jxNapNgoaiVe.max);
+	g_uJxNapKhungGiao = g_uJxNapKhungTruocSo = g_uJxNapKhungXong = g_uJxNapKhungHong = g_uJxNapKhungBo = g_uJxNapKhungBoVe = g_uJxNapKhungDongBo = g_uJxNapKhungChoMax = 0;
+	g_dJxNapKhungTre = g_dJxNapKhungTreMax = g_dJxNapNenBan = g_dJxNapKhungAp = g_dJxNapKhungApMax = 0.0; g_uJxNapKhungApKhung = 0; memset(&g_jxNapNgoaiVe, 0, sizeof(g_jxNapNgoaiVe));
+}
+#endif
 void Rep3VeDem(const char* p)
 {
 	if (!p) { g_uRep3VeLoai[5]++; return; }
@@ -145,6 +209,9 @@ static Rep3AnhNullMuc s_Rep3AnhNull[8];
 static int s_nRep3AnhNull = 0;
 static void Rep3AnhNullGhi(const char* szTen, int nKhung)
 {
+#ifdef JX_ANDROID
+	if (g_nJxAnhBoVeNen) { g_nJxAnhBoVeNen = 0; return; }	// [VE 11/09] khung dang nap o luong nen: khong phai anh thieu
+#endif
 	if (!szTen) szTen = "?";
 	int i;
 	for (i = 0; i < s_nRep3AnhNull; i++)
@@ -624,6 +691,14 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	if (g_nRep3Ex)
 		g_nRep3Pool = 1;	// D3D9Ex khong co POOL_MANAGED: bat buoc dem SYSTEMMEM + DEFAULT
 	g_nRep3NapNen    = Rep3Ini("Rep3NapNen", 1);	// [NAP 08/09 b]
+#ifdef JX_ANDROID
+	g_nJxNapKhungNen   = Rep3Ini("NapKhungNen", 1);		// [VE 11/09] 1 = nap khung sprite o luong nen khi het ngan sach dong bo (0 = nhu cu)
+	g_nJxNapKhungMs    = Rep3Ini("NapKhungMs", 3);		// ngan sach nap dong bo tren luong ve moi khung (ms); qua thi giao luong nen, bo ve khung nay
+	g_nJxNapKhungTruoc = Rep3Ini("NapKhungTruoc", 2);	// so khung KE TIEP cung huong nap truoc o luong nen (0 = tat)
+	g_nJxNapKhungApMs  = Rep3Ini("NapKhungApMs", 3);	// ngan sach tao texture tu ket qua luong nen moi khung (ms)
+	g_nJxVeGiatMs      = Rep3Ini("VeGiatMs", 20);		// ghi [VE-GIAT] khi ve CPU + trinh chieu (hoac nap ngoai luc ve) cua mot khung vuot nguong (ms); 0 = tat
+	Rep3Log("[VE] nap khung nen=%d, ngan sach %d ms/khung, nap truoc %d khung, ap %d ms/khung; nguong [VE-GIAT] %d ms", g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungApMs, g_nJxVeGiatMs);
+#endif
 	g_nRep3StatSec   = Rep3Ini("Rep3StatSec", 30);
 	m_TextureResMgr.SetBudget();	// [REP3 03/09 RAM] doc Rep3CacheMB SAU khi doc ini (ctor chay truoc Create)
 	g_bUse4444Texture = (g_nRep3Tex32 == 0);
@@ -2802,6 +2877,9 @@ bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 
 	// ¿ªÊ¼ÐÔÄÜÍ³¼Æ
 	m_TextureResMgr.NapNenNhan();	// [NAP 08/09 b] nhan ket qua luong nen truoc khi ve
+#ifdef JX_ANDROID
+	m_TextureResMgr.JxNapKhungNhan();	// [VE 11/09] tao texture tu khung da giai ma o luong nen (theo ngan sach NapKhungApMs)
+#endif
 	m_TextureResMgr.m_bVeDangDien = true;
 	m_TextureResMgr.StartProfile();
 
@@ -2873,6 +2951,9 @@ void KRepresentShell3::RepresentEnd()
 	{	// [NAP 08/09 a] tong ms nap trong khung nay -> max / dem khung nang
 		if (g_dRep3NapKhung > g_dRep3NapKhungMax) g_dRep3NapKhungMax = g_dRep3NapKhung;
 		if (g_dRep3NapKhung > 16.0) g_uRep3NapKhung16++; else if (g_dRep3NapKhung > 5.0) g_uRep3NapKhung5++;
+#ifdef JX_ANDROID
+		JxVeKhungChot();	// [VE 11/09] chot so nap + ve CPU cua khung (in [VE-GIAT] sau Present)
+#endif
 		g_dRep3NapKhung = 0.0;
 	}
 	if(m_bDeviceLost)
@@ -2907,7 +2988,11 @@ void KRepresentShell3::RepresentEnd()
 	// Íê³É3DäÖÈ¾
 	g_Device.End3D();
 	// ½»»»Ò³Ãæ
+#ifdef JX_ANDROID
+	{ LARGE_INTEGER liJx0, liJx1; QueryPerformanceCounter(&liJx0); PD3DDEVICE->Present(NULL,NULL,NULL,NULL); QueryPerformanceCounter(&liJx1); JxVeGiatGhi(Rep3NapMs(liJx0, liJx1)); }	// [VE 11/09]
+#else
 	PD3DDEVICE->Present(NULL,NULL,NULL,NULL);
+#endif
 
 	// [REP3 03/09] fps trung binh (EMA ~100 khung); chi don cache khi may khong dang chay cham (theo 2.0: >= 25 fps)
 	DWORD dwNow = timeGetTime();
@@ -2991,6 +3076,9 @@ void KRepresentShell3::RepresentEnd()
 			m_TextureResMgr.m_nNapNenGui = 0; m_TextureResMgr.m_nNapNenXong = 0; m_TextureResMgr.m_nNapNenHong = 0; m_TextureResMgr.m_nNapNenBoVe = 0;
 			memset(&g_napSpr, 0, sizeof(g_napSpr)); memset(&g_napJpeg, 0, sizeof(g_napJpeg)); memset(&g_napKhung, 0, sizeof(g_napKhung)); memset(&g_napGiaiMa, 0, sizeof(g_napGiaiMa)); memset(&g_napGpu, 0, sizeof(g_napGpu));
 			g_dRep3NapKhungMax = 0.0; g_uRep3NapKhung5 = 0; g_uRep3NapKhung16 = 0;
+#ifdef JX_ANDROID
+			JxVeKyIn();	// [VE 11/09] [VE] + [VE-GOP] + [VE-NAP]
+#endif
 			Rep3AnhNullIn();	// [REP3 08/09 h]
 		}
 	}

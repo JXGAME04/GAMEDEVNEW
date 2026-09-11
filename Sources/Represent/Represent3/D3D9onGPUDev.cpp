@@ -45,6 +45,42 @@ static void JxNhipGhiCho(Uint64 uT0, bool bCoSwap, Uint32 swW, Uint32 swH)
 }
 #endif
 
+#ifdef JX_ANDROID
+// [VE 11/09] do tung buoc SubmitFrame tren luong ve (cho lenh + swapchain, chep len GPU, ghi lenh render pass, nop) va dem doi trang thai;
+// KRepresentShell3.cpp in [VE]/[VE-GOP] moi ky va [VE-GIAT] cho khung cham. Chi cong khung co Present (bPresent).
+JxVeDo g_jxVeKhung, g_jxVeTong, g_jxVeMax;
+unsigned g_uJxVeKhungSo = 0, g_uJxVe8 = 0, g_uJxVe16 = 0, g_uJxGopVo[8];
+static double JxVeMs(Uint64 a, Uint64 b) { return (double)(b - a) * 1000.0 / (double)SDL_GetPerformanceFrequency(); }
+static void JxVeCong(const JxVeDo& k)
+{
+	g_jxVeKhung = k; g_uJxVeKhungSo++;
+	g_jxVeTong.dCho += k.dCho; g_jxVeTong.dChep += k.dChep; g_jxVeTong.dGhi += k.dGhi; g_jxVeTong.dNop += k.dNop; g_jxVeTong.dTong += k.dTong;
+	g_jxVeTong.uTai += k.uTai; g_jxVeTong.uTaiKB += k.uTaiKB; g_jxVeTong.uRingKB += k.uRingKB; g_jxVeTong.uLenh += k.uLenh; g_jxVeTong.uQuad += k.uQuad; g_jxVeTong.uDinh += k.uDinh; g_jxVeTong.uPass += k.uPass;
+	g_jxVeTong.uDoiPipe += k.uDoiPipe; g_jxVeTong.uDoiTex += k.uDoiTex; g_jxVeTong.uDoiVs += k.uDoiVs; g_jxVeTong.uDoiPs += k.uDoiPs; g_jxVeTong.uDoiCat += k.uDoiCat;
+	if (k.dCho > g_jxVeMax.dCho) g_jxVeMax.dCho = k.dCho; if (k.dChep > g_jxVeMax.dChep) g_jxVeMax.dChep = k.dChep; if (k.dGhi > g_jxVeMax.dGhi) g_jxVeMax.dGhi = k.dGhi;
+	if (k.dNop > g_jxVeMax.dNop) g_jxVeMax.dNop = k.dNop; if (k.dTong > g_jxVeMax.dTong) g_jxVeMax.dTong = k.dTong;
+	if (k.uTaiKB > g_jxVeMax.uTaiKB) g_jxVeMax.uTaiKB = k.uTaiKB; if (k.uRingKB > g_jxVeMax.uRingKB) g_jxVeMax.uRingKB = k.uRingKB;
+	if (k.uLenh > g_jxVeMax.uLenh) g_jxVeMax.uLenh = k.uLenh; if (k.uQuad > g_jxVeMax.uQuad) g_jxVeMax.uQuad = k.uQuad; if (k.uDoiTex > g_jxVeMax.uDoiTex) g_jxVeMax.uDoiTex = k.uDoiTex;
+	if (k.dTong > 16.0) g_uJxVe16++; else if (k.dTong > 8.0) g_uJxVe8++;
+}
+// ly do quad KHONG gop duoc vao lenh truoc, kiem theo thu tu: 0 stride khac, 1 khong lien tiep trong ring (hoac lenh truoc la clear/target),
+// 2 pipeline, 3 texture 0, 4 texture 1 / sampler, 5 uniform vs, 6 uniform ps, 7 cat / viewport
+static void JxGopVo(const RgCmd& L, const RgDrawState& st, UINT stride, UINT ringOff, UINT s2)
+{
+	int k;
+	if (L.type != RGCMD_DRAW) k = 1;
+	else if (L.stride != stride) k = 0;
+	else if (L.ringOff + L.nVerts * s2 != ringOff) k = 1;
+	else if (L.st.pPipe != st.pPipe) k = 2;
+	else if (L.st.pTex[0] != st.pTex[0]) k = 3;
+	else if (L.st.pTex[1] != st.pTex[1] || L.st.pSamp[0] != st.pSamp[0] || L.st.pSamp[1] != st.pSamp[1]) k = 4;
+	else if (memcmp(&L.st.vs, &st.vs, sizeof(st.vs)) != 0) k = 5;
+	else if (memcmp(&L.st.ps, &st.ps, sizeof(st.ps)) != 0) k = 6;
+	else k = 7;
+	g_uJxGopVo[k]++;
+}
+#endif
+
 #define RG_PAL_ROWS 8192
 
 static SDL_GPUBlendFactor RgBlendFactor(DWORD d3d)
@@ -879,6 +915,9 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 			RgCmd& L = m_cmds.back();
 			if (L.type == RGCMD_DRAW && L.stride == stride && L.ringOff + L.nVerts * s2 == ringOff && memcmp(&L.st, &st, sizeof(st)) == 0)
 			{ L.nVerts += 6; return D3D_OK; }
+#ifdef JX_ANDROID
+			JxGopVo(L, st, stride, ringOff, s2);	// [VE 11/09] vi sao khong gop
+#endif
 		}
 	}
 	else if (type == D3DPT_TRIANGLEFAN)
@@ -939,6 +978,9 @@ static void RgEnsureXfer(SDL_GPUDevice* dev, SDL_GPUTransferBuffer** pp, UINT* p
 
 bool CDevGpu::SubmitFrame(bool bPresent)
 {
+#ifdef JX_ANDROID
+	JxVeDo jxK; memset(&jxK, 0, sizeof(jxK)); const Uint64 uJxK0 = SDL_GetPerformanceCounter(); Uint64 uJxK1 = uJxK0;	// [VE 11/09]
+#endif
 	SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(m_pGpu);
 	if (!cb) { RgLog("AcquireGPUCommandBuffer that bai: %s", SDL_GetError()); FrameReset(); return false; }
 	SDL_GPUTexture* pSwap = NULL; Uint32 swW = 0, swH = 0;
@@ -952,6 +994,10 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		JxNhipGhiCho(uJxT0, pSwap != NULL, swW, swH);	// [DONHIP 12/09]
 #endif
 	}
+#ifdef JX_ANDROID
+	uJxK1 = SDL_GetPerformanceCounter(); jxK.dCho = JxVeMs(uJxK0, uJxK1);	// [VE 11/09] cho lenh + swapchain
+	jxK.uTai = (unsigned)m_texUploads.size(); jxK.uTaiKB = (unsigned)(m_texStage.size() >> 10); jxK.uRingKB = (unsigned)(m_ring.size() >> 10);
+#endif
 	// ---- copy pass: bang mau, texture, ring dinh
 	{
 		SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
@@ -1017,6 +1063,9 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 		SDL_EndGPUCopyPass(cp);
 	}
+#ifdef JX_ANDROID
+	{ const Uint64 u = SDL_GetPerformanceCounter(); jxK.dChep = JxVeMs(uJxK1, u); uJxK1 = u; }	// [VE 11/09] chep len GPU
+#endif
 	// ---- render pass
 	SDL_GPURenderPass* pass = NULL;
 	SDL_GPUTexture* pCur = pSwap; UINT curW = swW, curH = swH; bool bCurSwap = true;
@@ -1048,13 +1097,25 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			ci.clear_color.a = ((clearColor >> 24) & 0xFF) / 255.0f; ci.clear_color.r = ((clearColor >> 16) & 0xFF) / 255.0f; ci.clear_color.g = ((clearColor >> 8) & 0xFF) / 255.0f; ci.clear_color.b = (clearColor & 0xFF) / 255.0f;
 			pass = SDL_BeginGPURenderPass(cb, &ci, 1, NULL);
 			bPendingClear = false; bLast = false;
+#ifdef JX_ANDROID
+			jxK.uPass++;	// [VE 11/09]
+#endif
 			if (!pass) { RgLog("BeginGPURenderPass that bai: %s", SDL_GetError()); break; }
 			SDL_GPUBufferBinding bd = { m_pDummy, 0 }; SDL_BindGPUVertexBuffers(pass, 1, &bd, 1);
 		}
 		const RgDrawState& st = c.st;
-		if (!bLast || st.pPipe != last.pPipe) SDL_BindGPUGraphicsPipeline(pass, st.pPipe);
+		if (!bLast || st.pPipe != last.pPipe)
+		{
+			SDL_BindGPUGraphicsPipeline(pass, st.pPipe);
+#ifdef JX_ANDROID
+			jxK.uDoiPipe++;	// [VE 11/09]
+#endif
+		}
 		if (!bLast || memcmp(&st.vp, &last.vp, sizeof(st.vp)) != 0)
 		{
+#ifdef JX_ANDROID
+			jxK.uDoiCat++;	// [VE 11/09] (viewport)
+#endif
 			SDL_GPUViewport vp; vp.x = (float)st.vp.X; vp.y = (float)st.vp.Y; vp.w = (float)st.vp.Width; vp.h = (float)st.vp.Height; vp.min_depth = 0.0f; vp.max_depth = 1.0f;
 			if (vp.w <= 0.0f) vp.w = (float)m_bbW; if (vp.h <= 0.0f) vp.h = (float)m_bbH;
 			if (bCurSwap) { vp.x = lbOffX + vp.x * lbScale; vp.y = lbOffY + vp.y * lbScale; vp.w *= lbScale; vp.h *= lbScale; }	// [GPU 08/09 khung ao]
@@ -1062,6 +1123,9 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 		if (!bLast || st.bScissor != last.bScissor || memcmp(&st.rcScissor, &last.rcScissor, sizeof(RECT)) != 0)
 		{
+#ifdef JX_ANDROID
+			jxK.uDoiCat++;	// [VE 11/09] (scissor)
+#endif
 			SDL_Rect r;
 			if (st.bScissor) { r.x = st.rcScissor.left; r.y = st.rcScissor.top; r.w = st.rcScissor.right - st.rcScissor.left; r.h = st.rcScissor.bottom - st.rcScissor.top; if (r.w < 0) r.w = 0; if (r.h < 0) r.h = 0;
 				if (bCurSwap) { r.x = (int)(lbOffX + r.x * lbScale); r.y = (int)(lbOffY + r.y * lbScale); r.w = (int)(r.w * lbScale + 0.5f); r.h = (int)(r.h * lbScale + 0.5f); } }	// [GPU 08/09 khung ao]
@@ -1070,16 +1134,34 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 		if (!bLast || st.pTex[0] != last.pTex[0] || st.pTex[1] != last.pTex[1] || st.pSamp[0] != last.pSamp[0] || st.pSamp[1] != last.pSamp[1])
 		{
+#ifdef JX_ANDROID
+			jxK.uDoiTex++;	// [VE 11/09]
+#endif
 			SDL_GPUTextureSamplerBinding tb[3];
 			tb[0].texture = st.pTex[0]; tb[0].sampler = st.pSamp[0]; tb[1].texture = st.pTex[1]; tb[1].sampler = st.pSamp[1];
 			tb[2].texture = m_pPalTex ? m_pPalTex : m_pWhite; tb[2].sampler = st.pSamp[0];
 			SDL_BindGPUFragmentSamplers(pass, 0, tb, 3);
 		}
-		if (!bLast || memcmp(&st.vs, &last.vs, sizeof(st.vs)) != 0) SDL_PushGPUVertexUniformData(cb, 0, &st.vs, sizeof(st.vs));
-		if (!bLast || memcmp(&st.ps, &last.ps, sizeof(st.ps)) != 0) SDL_PushGPUFragmentUniformData(cb, 0, &st.ps, sizeof(st.ps));
+		if (!bLast || memcmp(&st.vs, &last.vs, sizeof(st.vs)) != 0)
+		{
+			SDL_PushGPUVertexUniformData(cb, 0, &st.vs, sizeof(st.vs));
+#ifdef JX_ANDROID
+			jxK.uDoiVs++;	// [VE 11/09]
+#endif
+		}
+		if (!bLast || memcmp(&st.ps, &last.ps, sizeof(st.ps)) != 0)
+		{
+			SDL_PushGPUFragmentUniformData(cb, 0, &st.ps, sizeof(st.ps));
+#ifdef JX_ANDROID
+			jxK.uDoiPs++;	// [VE 11/09]
+#endif
+		}
 		SDL_GPUBufferBinding vb = { m_pRingGpu, c.ringOff };
 		SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
 		SDL_DrawGPUPrimitives(pass, c.nVerts, 1, 0, 0);
+#ifdef JX_ANDROID
+		jxK.uLenh++; jxK.uDinh += c.nVerts;	// [VE 11/09]
+#endif
 		last = st; bLast = true;
 	}
 	if (bPendingClear && pCur)
@@ -1091,6 +1173,9 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		pass = SDL_BeginGPURenderPass(cb, &ci, 1, NULL);
 	}
 	if (pass) { SDL_EndGPURenderPass(pass); pass = NULL; }
+#ifdef JX_ANDROID
+	{ const Uint64 u = SDL_GetPerformanceCounter(); jxK.dGhi = JxVeMs(uJxK1, u); uJxK1 = u; }	// [VE 11/09] ghi lenh render pass
+#endif
 	// ---- ban sao khung de chup man hinh
 #ifdef JX_ANDROID
 	if (pSwap && swW && swH && s_nJxChepKhung)	// [DONHIP 12/09] Rep3_DoNhipDat(0, ..) tat de do (swapchain SDL tren Android khong co TRANSFER_SRC)
@@ -1114,6 +1199,9 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 	}
 	if (!SDL_SubmitGPUCommandBuffer(cb)) RgLog("SubmitGPUCommandBuffer that bai: %s", SDL_GetError());
+#ifdef JX_ANDROID
+	{ const Uint64 u = SDL_GetPerformanceCounter(); jxK.dNop = JxVeMs(uJxK1, u); jxK.dTong = JxVeMs(uJxK0, u); jxK.uQuad = m_uQuads; if (bPresent) JxVeCong(jxK); }	// [VE 11/09] nop
+#endif
 	FrameReset();
 	return true;
 }

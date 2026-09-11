@@ -60,6 +60,22 @@ extern unsigned g_uRep3VeLoai[6];	// [VE 08/09 a] don vi ve theo loai: 0 npc, 1 
 extern unsigned g_uRep3VeKhung;		// so khung ve trong ky
 void   Rep3VeDem(const char* pszImage);
 double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
+#ifdef JX_ANDROID
+// [VE 11/09] Android: (A) do tung buoc trinh chieu CDevGpu::SubmitFrame; (B) nap KHUNG sprite o luong nen theo ngan sach.
+//   In jx_rep3.log: [VE] + [VE-GOP] + [VE-NAP] moi ky Rep3StatSec (KRepresentShell3.cpp JxVeKyIn), [VE-GIAT] khung cham (JxVeGiatGhi).
+struct JxVeDo { double dCho, dChep, dGhi, dNop, dTong; unsigned uTai, uTaiKB, uRingKB, uLenh, uQuad, uDinh, uPass, uDoiPipe, uDoiTex, uDoiVs, uDoiPs, uDoiCat; };
+extern JxVeDo g_jxVeKhung, g_jxVeTong, g_jxVeMax;		// khung vua submit / cong don ky / max trong ky (D3D9onGPUDev.cpp ghi; KRepresentShell3.cpp doc + dat lai)
+extern unsigned g_uJxVeKhungSo, g_uJxVe8, g_uJxVe16, g_uJxGopVo[8];	// so khung trong ky, khung SubmitFrame > 8 / > 16 ms, ly do quad khong gop (xem JxGopVo)
+class TextureResSpr; class TextureResMgr;
+extern TextureResMgr* g_pJxTexMgr;	// bo quan ly texture duy nhat (TextureResMgr ctor gan)
+struct JxKhungViec { TextureResSpr* pSpr; int nFrame; int nBpp; int eFmt; int bPal; int nNguon; unsigned uLuc; };	// viec cho luong nen (nNguon 0 = dang ve can, 1 = nap truoc)
+struct JxKhungXong { TextureResSpr* pSpr; int nFrame; int nW, nH, nOffX, nOffY; BYTE* pDiem; int nBpp; int eFmt; int bPal; int bHong; unsigned uLuc; };	// ket qua: khung da giai ma
+extern int g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungApMs, g_nJxVeGiatMs;	// [Client] NapKhungNen / NapKhungMs / NapKhungTruoc / NapKhungApMs / VeGiatMs
+extern int g_nJxAnhBoVeNen;	// 1 = GetImage vua tra NULL vi khung dang nap o luong nen (Rep3AnhNullGhi bo qua, khong tinh la anh thieu)
+extern unsigned g_uJxNapKhungBoVe, g_uJxNapKhungBoVeKhung, g_uJxNapKhungDongBo, g_uJxNapKhungGiao, g_uJxNapKhungTruocSo, g_uJxNapKhungXong, g_uJxNapKhungHong, g_uJxNapKhungBo, g_uJxNapKhungChoMax;
+extern double g_dJxNapKhungTre, g_dJxNapKhungTreMax, g_dJxNapNenBan, g_dJxNapKhungAp, g_dJxNapKhungApMax; extern unsigned g_uJxNapKhungApKhung;
+extern Rep3NapDo g_jxNapNgoaiVe;	// nap dong bo NGOAI luc ve (hoi kich thuoc / alpha tu logic) trong ky
+#endif
 extern int  g_nRep3NapNen;	// [NAP 08/09 b] [Client] Rep3NapNen: 1 = nap sprite/jpeg o luong nen (mac dinh), 0 = nap ngay tren luong ve nhu cu
 extern int  g_nRep3StatSec;    // [REP3 03/09 RAM] chu ky ghi thong ke RAM/VRAM/cache vao jx_rep3.log (giay), 0 = tat
 extern bool g_bNpotOK;          // card + thiet bi da qua thu NPOT
