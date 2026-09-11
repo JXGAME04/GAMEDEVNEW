@@ -5,6 +5,14 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **00:55 11/09 — ĐO XONG SDL 3.2.30 (§9), ĐÃ ÁP KẾT QUẢ.** Phiên Fold 7 00:31–00:43 (bản `-d`) đủ 12 bước: pha 0 mặc định 97–116 khung/s
+> không cần hint; nhịp PC không thua ở đâu → `[Client] PaintVsync=1 PaintSmooth=2` mặc định mobile; Android không chép swapchain mỗi khung;
+> nấc 60 Hz = 59 khung/s đều ở 2,4 W; 2 khung bay bắt buộc (commit `80b3369d` [DONHIP 12/09 d], dịch thử Android 0 lỗi = `android/apk/
+> jx1mobile-1209-donhip-e.apk`, không đẩy bộ tải). Bộ tải hiện là bản `r` của phiên giao diện (882059d7 + giao diện, `[DoNhip] Bat=0`);
+> bản kế tiếp của họ dựng từ `origin/mobile-0809 = f4107553`. "Đông là tụt fps" = tick logic "đạn" 4–5 ms/tick trên luồng chính, không phải
+> vẽ — xem §9, việc tiếp là đo sâu `[DAN]` (chờ chủ chốt). Chuỗi Windows không dựng lại: thay đổi C++ chỉ trong `#ifdef JX_ANDROID` /
+> tệp chỉ-Android.
+
 > **00:30 11/09 — BẢN `-c` HỎNG TRÊN FOLD 7, ĐÃ THAY BẰNG `android/apk/jx1mobile-1209-donhip-d.apk`** (versionCode 109110027, md5
 > `9510ae82…`, máy chủ 8765 PID 277384). Lỗi `-c`: `SDLActivity.onCreate` so `nativeGetVersion()` (3.2.30) với hằng `SDL_*_VERSION` trong
 > `SDLActivity.java` của gói (bản gốc 3.2.14) → `mBrokenLibraries`, hộp thoại lỗi, app đóng sau 1–4 s không chạy native (5 phiên 00:23 chỉ có
