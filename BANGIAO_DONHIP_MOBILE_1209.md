@@ -5,6 +5,21 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **15:15 11/09 — D1 ĐÃ LÊN BỘ TẢI: `[D1 11/09]` swapchain theo KHUNG LOGIC** — commit `9851000b` = `origin/mobile-0809` (FF cả `wt_mobile`), **dt_v4 = 109111459**
+> (md5 `cf951865…`, 20 256 751 B, máy chủ 8765 PID 366076, tệp rời giữ nguyên), APK lưu `android/apk/jx1mobile-1109-d1.apk`. Chủ 14:55: "làm d1 ngay"
+> (log 14:16: Tống Kim màn trong GPU bận 82–99 % ở 650–950 MHz trong khi game chỉ vẽ 1040×936).
+> - **SDL** (`android/va_sdl3_d1.py`, CMake tự chạy SAU `va_sdl3_donhip.py`, chỉ cây Android): `VULKAN_INTERNAL_CreateSwapchain` lấy hint `JX_SWAPCHAIN_W/H`
+>   (> 0) thay cho kích thước cửa sổ, kẹp trong `[minImageExtent, maxImageExtent]`, ghi lại `JX_SWAPCHAIN_THAT` / `JX_SWAPCHAIN_EXTENT`; `vkCreateSwapchainKHR`
+>   từ chối → tắt hint, tạo lại bằng cửa sổ (một lần); acquire: hint đổi so với lần tạo gần nhất → dựng lại; dựng lại > 8 lần/2 s khi đang dùng hint → tắt hint
+>   (chống lặp kiểu M1). Không hint = hành vi 3.2.30 nguyên bản.
+> - **Represent3** (`android/va_nguon_android_d1.py`): `[Client] Rep3SwapchainLogic` (100 = khung logic — mặc định; 150 = 1,5× nếu muốn nét hơn; 0 = cửa sổ như cũ);
+>   `JxDatHintSwapchain` đặt hint trước `SDL_ClaimWindowForGPUDevice` và trong `Reset` (gập/mở → `SetGPUSwapchainParameters` dựng lại với hint mới; bằng cửa sổ
+>   thì hint 0); `[D1]` trong `jx_rep3.log` mỗi khi kích thước swapchain nhận từ acquire đổi. `Letterbox()` đọc kích thước thật → tỷ lệ tự về 1, không sửa thêm.
+> - **Thử máy ảo** (màn giả `wm size 2080x1208`, đã reset về 1040×604 và mở game bấm nút kiểm): loader Vulkan Android báo `extent min 1x1 max 4096x4096`,
+>   tạo swapchain **1060×616 trong cửa sổ 2080×1208**, ảnh phủ đúng toàn màn, không sập; cỡ thường hint 0 → 1040×604 như cũ.
+> - **Kỳ vọng Fold 7:** màn trong swapchain 1040×936 (÷4,4 điểm GPU), màn ngoài 1436×616 (÷3,1) → Tống Kim GPU bận và xung GPU giảm, điện giảm, fps lúc đông
+>   bớt tụt; hình có thể mịn hơn một chút nếu trước đây lọc điểm (so bằng `Rep3SwapchainLogic=0`). Bài test + cách đọc: §10 mục 7.
+
 > **14:50 11/09 — KẾT QUẢ FOLD 7 BẢN 109111313 (phiên `SM-F966U1_20260911_141642`, màn trong, 28 phút: 8 phút cảnh yên trong thành rồi 20 phút Tống Kim;
 > bộ đọc `scratchpad/phan_tich_bkg.py` + `phan_tich_tong.py` nhóm G; mốc so = phiên 11:48 cùng màn trong, bản f).** Chủ 14:40: "lấy log về phân tích".
 > 1. **Cảnh yên (npc ≤ 12, 14 cửa sổ 30 s so với 35 cửa sổ của 11:48):** fps 120 (118); **CPU tiến trình/luồng chính 36 / 31 % (53 / 44 %)**; **điện trung vị
@@ -615,3 +630,8 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
    `[VE] … bang mau kieu storage buffer`, số dòng `[VE-GIAT]` có "chép" ≥ 10 ms (kỳ vọng ≈ 0, trước 12/phút), `[VE]` cho/chép/ghi/nộp; `jx_thietbi.log`
    `[MAU]` W, nhiệt, `gpu=`, `cpu_mhz=`, `[GPU-SYS]`; `jx_paint.log` `[SUM]`. Mốc so sánh: bảng 1.1/1.2 của phương án (yên màn trong 120 Hz: 2,1–2,8 W,
    CPU 48–68 %, pin 13,6 %/giờ; 12 khung chép chậm/phút).
+7. **Bản 109111459 (D1):** mở lại app để nhận. Kiểm: (a) vào thế giới hình phủ đúng toàn màn, không méo, chữ đọc được; nếu thấy "mịn/mờ hơn" nói rõ; gập/mở
+   máy một lần xem hình có cập nhật đúng cỡ không; (b) chơi Tống Kim 10–15 phút như bài 2. Tôi đọc `jx_rep3.log` dòng `[D1] swapchain WxH | backbuffer …
+   | cua so … | SDL: tao …; extent min … max …` (Fold 7 kỳ vọng `1040x936` / `1436x616`), rồi so `[MAU]` `gpu=` / `gpu_mhz` / W và fps Tống Kim với phiên 14:16
+   (GPU 82 % @ 652 MHz, 4,7 W, fps 109). Tắt nhanh nếu có vấn đề: `Rep3SwapchainLogic=0` trong `[Client]` của config dt_v4 + khởi động lại 8765; muốn nét hơn
+   thử `Rep3SwapchainLogic=150`.
