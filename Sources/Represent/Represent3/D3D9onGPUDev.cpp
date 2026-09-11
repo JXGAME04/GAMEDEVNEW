@@ -13,6 +13,32 @@
 static char        s_szRep3GpuDriver[32] = "";
 static const char* s_szRep3GpuTrinhChieu = "?";
 static unsigned    s_uRep3GpuLenhVe = 0, s_uRep3GpuQuad = 0;
+// [DONHIP 12/09] ban do nhip tren may that (JxPerfHudAndroid.cpp goi Rep3_DoNhipDat / Rep3_DoNhipLay qua GetProcAddress)
+static int      s_nJxChepKhung = 1;		// 0 = bo chep swapchain moi khung (ban sao chi de chup man hinh)
+static int      s_nJxKhungBay = 2;		// so khung bay dang dat (SDL mac dinh 2)
+static unsigned s_aJxTraHist[400];		// cach giua hai lan tra swapchain, o 0,25 ms (0..100 ms, o cuoi = tran)
+static double   s_aJxSo[8];				// xem Rep3_DoNhipLay
+static Uint64   s_uJxTraTruoc = 0;
+static void JxNhipGhiCho(Uint64 uT0, bool bCoSwap, Uint32 swW, Uint32 swH)
+{
+	const Uint64 uT1 = SDL_GetPerformanceCounter();
+	const double dF = (double)SDL_GetPerformanceFrequency();
+	const double dCho = (double)(uT1 - uT0) * 1000.0 / dF;
+	s_aJxSo[0] += 1.0;
+	if (!bCoSwap) s_aJxSo[1] += 1.0;
+	s_aJxSo[2] += dCho;
+	if (dCho > s_aJxSo[3]) s_aJxSo[3] = dCho;
+	if (dCho > 4.0) s_aJxSo[4] += 1.0;
+	if (swW && swH) { s_aJxSo[5] = (double)swW; s_aJxSo[6] = (double)swH; }
+	if (!bCoSwap)
+		return;
+	if (s_uJxTraTruoc)
+	{
+		const int b = (int)((double)(uT1 - s_uJxTraTruoc) * 4000.0 / dF);
+		s_aJxTraHist[b < 0 ? 0 : (b > 399 ? 399 : b)]++;
+	}
+	s_uJxTraTruoc = uT1;
+}
 #endif
 
 #define RG_PAL_ROWS 8192
@@ -908,7 +934,13 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 	SDL_GPUTexture* pSwap = NULL; Uint32 swW = 0, swH = 0;
 	if (bPresent)
 	{
+#ifdef JX_ANDROID
+		const Uint64 uJxT0 = SDL_GetPerformanceCounter();	// [DONHIP 12/09] do thoi gian cho swapchain (vblank / khung bay / dung lai swapchain)
+#endif
 		if (!SDL_WaitAndAcquireGPUSwapchainTexture(cb, m_pWin, &pSwap, &swW, &swH)) { if (m_uFrames < 3) RgLog("AcquireSwapchainTexture that bai: %s", SDL_GetError()); pSwap = NULL; }
+#ifdef JX_ANDROID
+		JxNhipGhiCho(uJxT0, pSwap != NULL, swW, swH);	// [DONHIP 12/09]
+#endif
 	}
 	// ---- copy pass: bang mau, texture, ring dinh
 	{
@@ -1050,7 +1082,11 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 	}
 	if (pass) { SDL_EndGPURenderPass(pass); pass = NULL; }
 	// ---- ban sao khung de chup man hinh
+#ifdef JX_ANDROID
+	if (pSwap && swW && swH && s_nJxChepKhung)	// [DONHIP 12/09] Rep3_DoNhipDat(0, ..) tat de do (swapchain SDL tren Android khong co TRANSFER_SRC)
+#else
 	if (pSwap && swW && swH)
+#endif
 	{
 		if (!m_pLastFrame || m_lastW != swW || m_lastH != swH)
 		{
@@ -1174,5 +1210,39 @@ extern "C" int Rep3_ThongKeGpu(char* sz, int n)
 		s_szRep3GpuTrinhChieu, s_uRep3GpuLenhVe, s_uRep3GpuQuad);
 	sz[n - 1] = 0;
 	return (int)strlen(sz);
+}
+
+// [DONHIP 12/09] ban do nhip: bat/tat chep swapchain moi khung + so khung bay (SDL_SetGPUAllowedFramesInFlight 1..3). -1 = giu nguyen.
+// Goi tu luong chinh giua hai khung. Doi so khung bay lam SDL cho het hang lenh va dung lai swapchain -> chi goi khi so thay doi.
+extern "C" void Rep3_DoNhipDat(int nChepKhung, int nKhungBay)
+{
+	if (nChepKhung >= 0)
+		s_nJxChepKhung = nChepKhung ? 1 : 0;
+	CDevGpu* d = g_pRep3DevGpu;
+	if (nKhungBay >= 1 && nKhungBay <= 3 && nKhungBay != s_nJxKhungBay && d && d->m_pGpu)
+	{
+		d->Lock();
+		if (d->m_bFrameOpen || !d->m_cmds.empty() || !d->m_texUploads.empty()) d->SubmitFrame(false);
+		if (SDL_SetGPUAllowedFramesInFlight(d->m_pGpu, (Uint32)nKhungBay)) s_nJxKhungBay = nKhungBay;
+		else RgLog("[DONHIP] SetGPUAllowedFramesInFlight(%d) that bai: %s", nKhungBay, SDL_GetError());
+		s_uJxTraTruoc = 0;
+		d->Unlock();
+	}
+}
+// [DONHIP 12/09] so lieu tu lan lay truoc roi dat lai. pHist[0..nBins) = cach giua hai lan tra swapchain (o 0,25 ms).
+// pSo: 0 so lan lay swapchain, 1 lan khong co swapchain, 2 tong ms cho, 3 cho lau nhat (ms), 4 so lan cho > 4 ms,
+//      5 rong swapchain, 6 cao swapchain, 7 so khung bay dang dat. Tra so o bieu do da chep.
+extern "C" int Rep3_DoNhipLay(unsigned* pHist, int nBins, double* pSo, int nSo)
+{
+	const int n = (nBins < 400) ? nBins : 400;
+	if (pHist) for (int i = 0; i < n; i++) pHist[i] = s_aJxTraHist[i];
+	s_aJxSo[7] = (double)s_nJxKhungBay;
+	if (pSo) for (int i = 0; i < nSo && i < 8; i++) pSo[i] = s_aJxSo[i];
+	memset(s_aJxTraHist, 0, sizeof(s_aJxTraHist));
+	const double w = s_aJxSo[5], h = s_aJxSo[6];
+	memset(s_aJxSo, 0, sizeof(s_aJxSo));
+	s_aJxSo[5] = w; s_aJxSo[6] = h;
+	s_uJxTraTruoc = 0;
+	return n;
 }
 #endif

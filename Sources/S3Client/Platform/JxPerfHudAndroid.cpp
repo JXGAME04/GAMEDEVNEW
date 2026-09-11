@@ -22,6 +22,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "../Ui/Elem/UiToaDo.h"	// [THONGTIN 12/09] thong tin goc phai keo duoc trong Sua giao dien
+#include <stdarg.h>		// [DONHIP 12/09] ban do nhip
+#include <time.h>
+#include <sys/time.h>
+#include <dlfcn.h>
+#include <stdint.h>
+#include "../Ui/UiCase/UiToolsControlBar.h"	// [DONHIP 12/09] thanh cong cu = dau hieu da vao the gioi (nhu JxCanDieuKhien.cpp)
 
 extern iRepresentShell*	g_pRepresentShell;
 extern int				SCREEN_WIDTH;
@@ -225,6 +232,461 @@ static void PerfHud_VeNen(int nX, int nY, int nRong, int nCao)
 	g_pRepresentShell->DrawPrimitives(1, &a, RU_T_IMAGE_STRETCH, true);
 }
 
+//---------------------------------------------------------------------------
+// [DONHIP 12/09] BAN DO NHIP VE tren dien thoai that. Chu: "lay log tu Fold 7 ... ban cu up apk toi tai ve test roi ban ghi log
+// ve may tinh toi". Bat bang config.ini [DoNhip] Bat=1 (mac dinh 0 = khong doi gi). Vao the gioi 10 s thi chay lan luot cac pha
+// (GiayMoiPha giay moi pha, LanLap vong); moi pha THEM mot thay doi so voi pha truoc (bang s_aDnPha); het thi tra ve cau hinh cu.
+// Moi 10 s + cuoi moi pha ghi jx_nhip.log: cach khung ve, cho swapchain (Represent3 Rep3_DoNhipLay), dem SUBOPTIMAL / dung lai
+// swapchain (hint cua SDL da va bang android/va_sdl3_donhip.py), cau hinh dang chay. JxDoNhip.java gui log ve may chu tai.
+//---------------------------------------------------------------------------
+void JxDoNhip_DatNhip(int nPaintFps, int nVsync, int nSmooth);	// S3Client.cpp
+void JxDoNhip_LayNhip(int* pFps, int* pVsync, int* pSmooth);
+typedef void    (*PFN_Rep3DoNhipDat)(int nChepKhung, int nKhungBay);
+typedef int     (*PFN_Rep3DoNhipLay)(unsigned* pHist, int nBins, double* pSo, int nSo);
+typedef int32_t (*PFN_AnwSetFrameRate)(void* pWin, float fHz, int8_t nTuongThich);
+
+struct DnPha { const char* szTen; int nSuaSdl, nFps, nVsync, nSmooth, nChep, nBay, nXinHz; };	// -2 = giu cau hinh luc mo app
+static const DnPha s_aDnPha[] = {
+	{ "hien tai",              0,  -2, -2, -2, 1, 2,   0 },
+	{ "+sua SDL",              1,  -2, -2, -2, 1, 2,   0 },
+	{ "+nhip PC",              1,  -2,  1,  2, 1, 2,   0 },
+	{ "+bo chep, 1 khung bay", 1,  -2,  1,  2, 0, 1,   0 },
+	{ "+xin 120 Hz",           1, 120,  1,  2, 0, 1, 120 },
+	{ "+xin 60 Hz",            1,  60,  1,  2, 0, 1,  60 },
+};
+#define DN_SO_PHA	((int)(sizeof(s_aDnPha) / sizeof(s_aDnPha[0])))
+#define DN_BIN		400		// o 0,25 ms: 0..100 ms, o cuoi = tran
+
+struct DnDem
+{
+	unsigned aVe[DN_BIN], aTra[DN_BIN];		// cach giua hai lan ve / hai lan tra swapchain
+	unsigned uCat;							// so khung ve nhip tick cat ngang (POSSHIFT tra 2)
+	double   aSo[8];						// cong don tu Rep3_DoNhipLay (o 3 lay max)
+	int      nSub, nDung;					// SDL: so SUBOPTIMAL / dung lai swapchain trong khoang
+	unsigned uLuc;							// luc bat dau khoang (ms)
+};
+static int		s_nDnBat = -1;				// -1 = chua doc ini
+static int		s_nDnGiay = 60, s_nDnLap = 2, s_nDnSo = 0, s_aDnThuTu[16];
+static int		s_nDnBuoc = -1, s_nDnXong = 0;	// buoc hien tai trong s_nDnSo * s_nDnLap; -1 = chua bat dau
+static unsigned	s_uDnVaoGame = 0, s_uDnPhaLuc = 0, s_uDnCuaLuc = 0;
+static int		s_nDnFps0 = 0, s_nDnVsync0 = 0, s_nDnSmooth0 = 1, s_nDnXin = 0;
+static int		s_nDnSub0 = 0, s_nDnDung0 = 0;	// gia tri hint SDL o lan doc truoc
+static Uint64	s_uDnVeTruoc = 0;
+static DnDem	s_DnC, s_DnP;				// khoang 10 s / ca pha
+static PFN_Rep3DoNhipDat s_pfnDnDat = NULL;
+static PFN_Rep3DoNhipLay s_pfnDnLay = NULL;
+
+static void DnGhi(const char* szThe, const char* szDinhDang, ...)
+{
+	FILE* f = fopen("jx_nhip.log", "a");
+	if (!f)
+		return;
+	struct timeval tv; gettimeofday(&tv, NULL);
+	struct tm t; localtime_r(&tv.tv_sec, &t);
+	fprintf(f, "%s %02d:%02d:%02d.%03d t=%u ", szThe, t.tm_hour, t.tm_min, t.tm_sec, (int)(tv.tv_usec / 1000), (unsigned)SDL_GetTicks());
+	va_list ap; va_start(ap, szDinhDang); vfprintf(f, szDinhDang, ap); va_end(ap);
+	fputc('\n', f);
+	fclose(f);
+}
+
+static int DnHint(const char* szTen)
+{
+	const char* s = SDL_GetHint(szTen);
+	return s ? atoi(s) : 0;
+}
+
+static SDL_Window* DnCuaSo()
+{
+	int n = 0;
+	SDL_Window** ds = SDL_GetWindows(&n);
+	SDL_Window* w = (ds && n > 0) ? ds[0] : NULL;
+	if (ds) SDL_free(ds);
+	return w;
+}
+
+static unsigned DnTong(const unsigned* a) { unsigned t = 0; for (int i = 0; i < DN_BIN; i++) t += a[i]; return t; }
+static unsigned DnTren(const unsigned* a, double dMs) { unsigned t = 0; int k = (int)(dMs * 4.0); for (int i = (k < 0 ? 0 : k); i < DN_BIN; i++) t += a[i]; return t; }
+static double DnMax(const unsigned* a) { for (int i = DN_BIN - 1; i >= 0; i--) if (a[i]) return (i + 1) * 0.25; return 0.0; }
+static double DnPhanVi(const unsigned* a, double dPhan)	// phan vi (ms) tu bieu do o 0,25 ms
+{
+	const unsigned tong = DnTong(a);
+	if (!tong)
+		return 0.0;
+	unsigned can = (unsigned)(dPhan * (double)tong + 0.5), cd = 0;
+	if (can < 1) can = 1;
+	for (int i = 0; i < DN_BIN; i++) { cd += a[i]; if (cd >= can) return (i + 0.5) * 0.25; }
+	return (DN_BIN - 0.5) * 0.25;
+}
+
+static void DnXoa(DnDem& d, unsigned uLuc) { memset(&d, 0, sizeof(d)); d.uLuc = uLuc; }
+
+static void DnGop(DnDem& p, const DnDem& c)
+{
+	for (int i = 0; i < DN_BIN; i++) { p.aVe[i] += c.aVe[i]; p.aTra[i] += c.aTra[i]; }
+	p.uCat += c.uCat;
+	p.aSo[0] += c.aSo[0]; p.aSo[1] += c.aSo[1]; p.aSo[2] += c.aSo[2]; p.aSo[4] += c.aSo[4];
+	if (c.aSo[3] > p.aSo[3]) p.aSo[3] = c.aSo[3];
+	if (c.aSo[5] > 0) { p.aSo[5] = c.aSo[5]; p.aSo[6] = c.aSo[6]; }
+	p.aSo[7] = c.aSo[7];
+	p.nSub += c.nSub; p.nDung += c.nDung;
+}
+
+// doc Represent3 + bo dem SDL vao khoang hien tai (s_DnC); Represent3 tu dat lai sau khi doc
+static void DnLayRep3()
+{
+	static unsigned aTra[DN_BIN];
+	double aSo[8] = { 0 };
+	if (s_pfnDnLay) s_pfnDnLay(aTra, DN_BIN, aSo, 8); else memset(aTra, 0, sizeof(aTra));
+	DnDem c; memset(&c, 0, sizeof(c));
+	memcpy(c.aTra, aTra, sizeof(aTra));
+	memcpy(c.aSo, aSo, sizeof(aSo));
+	const int nSub = DnHint("JX_DEM_SUBOPTIMAL"), nDung = DnHint("JX_DEM_DUNG_LAI_SWAPCHAIN");
+	c.nSub = nSub - s_nDnSub0; c.nDung = nDung - s_nDnDung0;
+	s_nDnSub0 = nSub; s_nDnDung0 = nDung;
+	DnGop(s_DnC, c);
+}
+
+static void DnGhiDem(const char* szThe, const DnDem& d, unsigned uNay, int nPha)
+{
+	int nFps = 0, nVsync = 0, nSmooth = 0;
+	JxDoNhip_LayNhip(&nFps, &nVsync, &nSmooth);
+	const double dT = 1000.0 / (double)(nFps > 0 ? nFps : 60);
+	const unsigned uVe = DnTong(d.aVe);
+	const double dGiay = (uNay > d.uLuc) ? (uNay - d.uLuc) / 1000.0 : 0.0;
+	DnGhi(szThe, "pha %d (%s) buoc %d/%d %.0f s | ve %u khung %.1f/s: cach p50 %.2f p95 %.2f p99 %.2f max %.1f ms, tre>1.5T %u, cat ngang %u"
+		" | swapchain %u lan (khong co %u): cho TB %.2f max %.1f ms, >4ms %u; cach tra p50 %.2f p95 %.2f p99 %.2f max %.1f ms, tre>1.5T %u"
+		" | SDL suboptimal +%d dung lai +%d | cfg PaintFps %d vsync %d smooth %d chep %d bay %d xin %d Hz | swapchain %dx%d",
+		nPha, s_aDnPha[nPha].szTen, s_nDnBuoc + 1, s_nDnSo * s_nDnLap, dGiay,
+		uVe, dGiay > 0.0 ? uVe / dGiay : 0.0, DnPhanVi(d.aVe, 0.5), DnPhanVi(d.aVe, 0.95), DnPhanVi(d.aVe, 0.99), DnMax(d.aVe), DnTren(d.aVe, dT * 1.5), d.uCat,
+		(unsigned)d.aSo[0], (unsigned)d.aSo[1], d.aSo[0] > 0.0 ? d.aSo[2] / d.aSo[0] : 0.0, d.aSo[3], (unsigned)d.aSo[4],
+		DnPhanVi(d.aTra, 0.5), DnPhanVi(d.aTra, 0.95), DnPhanVi(d.aTra, 0.99), DnMax(d.aTra), DnTren(d.aTra, dT * 1.5),
+		d.nSub, d.nDung, nFps, nVsync, nSmooth, s_aDnPha[nPha].nChep, (int)d.aSo[7], s_nDnXin, (int)d.aSo[5], (int)d.aSo[6]);
+}
+
+// ANativeWindow_setFrameRate (Android 11+, dlsym vi minSdk 24): xin man chay nHz; 0 = bo yeu cau (he thong tu chon)
+static void DnXinHz(int nHz)
+{
+	static PFN_AnwSetFrameRate s_pfn = NULL;
+	static int s_nDaTim = 0;
+	if (!s_nDaTim)
+	{
+		s_nDaTim = 1;
+		void* h = dlopen("libandroid.so", RTLD_NOW);
+		if (h) s_pfn = (PFN_AnwSetFrameRate)dlsym(h, "ANativeWindow_setFrameRate");
+	}
+	SDL_Window* w = DnCuaSo();
+	void* nw = w ? SDL_GetPointerProperty(SDL_GetWindowProperties(w), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL) : NULL;
+	const int r = (s_pfn && nw) ? (int)s_pfn(nw, (float)nHz, 0) : -9999;
+	s_nDnXin = nHz;
+	DnGhi("[NHIP-XIN]", "ANativeWindow_setFrameRate(%d Hz) -> %d%s", nHz, r, s_pfn ? "" : " (khong co ham: Android < 11)");
+}
+
+static void DnApPha(int nPha, unsigned uNay)
+{
+	const DnPha& p = s_aDnPha[nPha];
+	SDL_SetHint("JX_BO_QUA_SUBOPTIMAL", p.nSuaSdl ? "1" : "0");
+	JxDoNhip_DatNhip(p.nFps == -2 ? s_nDnFps0 : p.nFps, p.nVsync == -2 ? s_nDnVsync0 : p.nVsync, p.nSmooth == -2 ? s_nDnSmooth0 : p.nSmooth);
+	if (s_pfnDnDat) s_pfnDnDat(p.nChep, p.nBay);
+	if (p.nXinHz != s_nDnXin) DnXinHz(p.nXinHz);
+	DnLayRep3();	// bo so lieu luc chuyen pha
+	DnXoa(s_DnC, uNay);
+	DnXoa(s_DnP, uNay);
+	s_uDnVeTruoc = 0; s_uDnPhaLuc = uNay; s_uDnCuaLuc = uNay;
+	DnGhi("[NHIP-PHA-BAT]", "pha %d (%s) buoc %d/%d", nPha, p.szTen, s_nDnBuoc + 1, s_nDnSo * s_nDnLap);
+}
+
+static void DnDocIni()
+{
+	s_nDnBat = GetPrivateProfileInt("DoNhip", "Bat", 0, ".\\config.ini") ? 1 : 0;
+	if (!s_nDnBat)
+		return;
+	s_nDnGiay = GetPrivateProfileInt("DoNhip", "GiayMoiPha", 60, ".\\config.ini");
+	if (s_nDnGiay < 10) s_nDnGiay = 10;
+	if (s_nDnGiay > 600) s_nDnGiay = 600;
+	s_nDnLap = GetPrivateProfileInt("DoNhip", "LanLap", 2, ".\\config.ini");
+	if (s_nDnLap < 1) s_nDnLap = 1;
+	if (s_nDnLap > 10) s_nDnLap = 10;
+	char sz[128] = "";
+	GetPrivateProfileString("DoNhip", "Pha", "0,1,2,3,4,5", sz, sizeof(sz), ".\\config.ini");
+	s_nDnSo = 0;
+	for (char* p = sz; *p && s_nDnSo < 16; )
+	{
+		if (*p < '0' || *p > '9') { p++; continue; }
+		const int n = (int)strtol(p, &p, 10);
+		if (n >= 0 && n < DN_SO_PHA) s_aDnThuTu[s_nDnSo++] = n;
+	}
+	if (!s_nDnSo) { s_aDnThuTu[0] = 0; s_nDnSo = 1; }
+}
+
+static void DnBatDau(unsigned uNay)
+{
+	JxDoNhip_LayNhip(&s_nDnFps0, &s_nDnVsync0, &s_nDnSmooth0);
+	HMODULE h = GetModuleHandleA("Represent3.dll");	// lop tuong thich: dlopen("libRepresent3.so")
+	if (h)
+	{
+		s_pfnDnDat = (PFN_Rep3DoNhipDat)GetProcAddress(h, "Rep3_DoNhipDat");
+		s_pfnDnLay = (PFN_Rep3DoNhipLay)GetProcAddress(h, "Rep3_DoNhipLay");
+	}
+	s_nDnSub0 = DnHint("JX_DEM_SUBOPTIMAL");
+	s_nDnDung0 = DnHint("JX_DEM_DUNG_LAI_SWAPCHAIN");
+	SDL_Window* w = DnCuaSo();
+	int nW = 0, nH = 0;
+	if (w) SDL_GetWindowSizeInPixels(w, &nW, &nH);
+	const SDL_DisplayID id = w ? SDL_GetDisplayForWindow(w) : 0;
+	const SDL_DisplayMode* m = id ? SDL_GetCurrentDisplayMode(id) : NULL;
+	char szThuTu[64] = "";
+	for (int i = 0; i < s_nDnSo; i++) { size_t k = strlen(szThuTu); snprintf(szThuTu + k, sizeof(szThuTu) - k, i ? ",%d" : "%d", s_aDnThuTu[i]); }
+	DnGhi("[NHIP-BAT]", "cua so %dx%d px, khung ve %dx%d, SDL bao man %.2f Hz, huong goc %d hien tai %d | luc mo app: PaintFps %d vsync %d smooth %d"
+		" | Represent3: Dat %s Lay %s | SDL dem: suboptimal %d dung lai %d%s | pha %s x %d s x %d vong",
+		nW, nH, SCREEN_WIDTH, SCREEN_HEIGHT, m ? m->refresh_rate : 0.0f,
+		id ? (int)SDL_GetNaturalDisplayOrientation(id) : -1, id ? (int)SDL_GetCurrentDisplayOrientation(id) : -1,
+		s_nDnFps0, s_nDnVsync0, s_nDnSmooth0, s_pfnDnDat ? "co" : "KHONG", s_pfnDnLay ? "co" : "KHONG",
+		s_nDnSub0, s_nDnDung0, (SDL_GetHint("JX_DEM_SUBOPTIMAL") || SDL_GetHint("JX_DEM_DUNG_LAI_SWAPCHAIN")) ? "" : " (chua co hint: SDL chua va hoac chua co su kien)",
+		szThuTu, s_nDnGiay, s_nDnLap);
+	s_nDnBuoc = 0;
+	DnApPha(s_aDnThuTu[0], uNay);
+}
+
+static void DnKetThuc()
+{
+	SDL_SetHint("JX_BO_QUA_SUBOPTIMAL", "0");
+	JxDoNhip_DatNhip(s_nDnFps0, s_nDnVsync0, s_nDnSmooth0);
+	if (s_pfnDnDat) s_pfnDnDat(1, 2);
+	if (s_nDnXin) DnXinHz(0);
+	s_nDnXong = 1;
+	DnGhi("[NHIP-XONG]", "het %d buoc - tra ve cau hinh luc mo app (PaintFps %d vsync %d smooth %d, chep khung, 2 khung bay, khong xin tan so)",
+		s_nDnSo * s_nDnLap, s_nDnFps0, s_nDnVsync0, s_nDnSmooth0);
+}
+
+// S3Client.cpp GameLoop: moi vong bom
+void JxDoNhip_Vong(void)
+{
+	if (s_nDnBat < 0)
+		DnDocIni();
+	if (s_nDnBat <= 0 || s_nDnXong)
+		return;
+	const unsigned uNay = (unsigned)SDL_GetTicks();
+	if (s_nDnBuoc < 0)
+	{
+		if (KUiToolsControlBar::GetSelf() == NULL) { s_uDnVaoGame = 0; return; }
+		if (!s_uDnVaoGame) { s_uDnVaoGame = uNay ? uNay : 1; return; }
+		if (uNay - s_uDnVaoGame >= 10000)
+			DnBatDau(uNay);
+		return;
+	}
+	const int nPha = s_aDnThuTu[s_nDnBuoc % s_nDnSo];
+	const bool bHetPha = (uNay - s_uDnPhaLuc) >= (unsigned)s_nDnGiay * 1000u;
+	if (bHetPha || uNay - s_uDnCuaLuc >= 10000)
+	{
+		DnLayRep3();
+		DnGhiDem("[NHIP]", s_DnC, uNay, nPha);
+		DnGop(s_DnP, s_DnC);
+		DnXoa(s_DnC, uNay);
+		s_uDnCuaLuc = uNay;
+	}
+	if (!bHetPha)
+		return;
+	DnGhiDem("[NHIP-PHA]", s_DnP, uNay, nPha);
+	s_nDnBuoc++;
+	if (s_nDnBuoc >= s_nDnSo * s_nDnLap) { DnKetThuc(); return; }
+	DnApPha(s_aDnThuTu[s_nDnBuoc % s_nDnSo], uNay);
+}
+
+// S3Client.cpp GameLoop: ngay truoc UiPaint cua nhanh PaintFps
+void JxDoNhip_KhungVe(int nCatNgang)
+{
+	if (s_nDnBat <= 0 || s_nDnBuoc < 0 || s_nDnXong)
+		return;
+	const Uint64 u = SDL_GetPerformanceCounter();
+	if (s_uDnVeTruoc)
+	{
+		const int b = (int)((double)(u - s_uDnVeTruoc) * 4000.0 / (double)SDL_GetPerformanceFrequency());
+		s_DnC.aVe[b < 0 ? 0 : (b >= DN_BIN ? DN_BIN - 1 : b)]++;
+	}
+	s_uDnVeTruoc = u;
+	if (nCatNgang)
+		s_DnC.uCat++;
+}
+
+// dong chu vang giua man hinh: pha dang do (ve ca khi tat bang do PerfHud)
+static void DoNhip_VeNhan()
+{
+	if (s_nDnBat <= 0 || !g_pRepresentShell)
+		return;
+	char sz[200];
+	if (s_nDnXong)
+		snprintf(sz, sizeof(sz), "DO NHIP: xong %d buoc - da tra ve cau hinh cu, log gui ve may tinh", s_nDnSo * s_nDnLap);
+	else if (s_nDnBuoc < 0)
+		snprintf(sz, sizeof(sz), "DO NHIP: vao the gioi 10 s thi bat dau (%d pha x %d s x %d vong)", s_nDnSo, s_nDnGiay, s_nDnLap);
+	else
+	{
+		const int nPha = s_aDnThuTu[s_nDnBuoc % s_nDnSo];
+		const int nCon = s_nDnGiay - (int)(((unsigned)SDL_GetTicks() - s_uDnPhaLuc) / 1000);
+		snprintf(sz, sizeof(sz), "DO NHIP  pha %d: %s   buoc %d/%d   con %d s", nPha, s_aDnPha[nPha].szTen, s_nDnBuoc + 1, s_nDnSo * s_nDnLap, nCon < 0 ? 0 : nCon);
+	}
+	const int nRong = PerfHud_RongChu(sz);
+	const int nX = (SCREEN_WIDTH - nRong) / 2;
+	const int nY = ((s_nY >= 0) ? s_nY : 100) + (s_nEnable ? PH_LINE * 3 + PH_LE_Y * 2 + 6 : 0);
+	PerfHud_VeNen(nX - PH_LE_X, nY - PH_LE_Y, nRong + PH_LE_X * 2, PH_LINE + PH_LE_Y * 2);
+	PerfHud_Chu(sz, nX, nY, PH_COL_WARN);
+}
+
+//---------------------------------------------------------------------------
+// [FPS 12/09] Muc khung hinh/giay nguoi choi chon trong Cai dat (UiOptions.cpp): 0 = tu dong theo man hinh (chu: "khong co
+// mac dinh, tuy cau hinh may"), 1..5 = 30/45/60/90/120. Ap = PaintFps (JxDoNhip_DatNhip) + xin tan so man hinh
+// (ANativeWindow_setFrameRate: chon 60 tren man 120 Hz thi man ha 60 -> do pin). Luu UserData\UiCommon.ini [Options] FpsMuc.
+//---------------------------------------------------------------------------
+static const int s_aFpsMuc[] = { 0, 30, 45, 60, 90, 120 };
+#define FPS_SO_MUC	((int)(sizeof(s_aFpsMuc) / sizeof(s_aFpsMuc[0])))
+static int s_nFpsMuc = 0;
+
+static int Nhip_ManHz()	// tan so man hinh SDL bao hien tai (59 -> 60; khong biet -> 60)
+{
+	SDL_Window* w = DnCuaSo();
+	const SDL_DisplayID id = w ? SDL_GetDisplayForWindow(w) : 0;
+	const SDL_DisplayMode* m = id ? SDL_GetCurrentDisplayMode(id) : NULL;
+	int nHz = (m && m->refresh_rate > 0.0f) ? (int)(m->refresh_rate + 0.5f) : 60;
+	if (nHz == 59) nHz = 60;
+	if (nHz < 30) nHz = 60;
+	return nHz;
+}
+
+void JxNhip_DatMuc(int nMuc)
+{
+	if (nMuc < 0) nMuc = 0;
+	if (nMuc >= FPS_SO_MUC) nMuc = FPS_SO_MUC - 1;
+	s_nFpsMuc = nMuc;
+	const int nFps = s_aFpsMuc[nMuc] ? s_aFpsMuc[nMuc] : Nhip_ManHz();
+	JxDoNhip_DatNhip(nFps, -1, -1);
+	DnXinHz(s_aFpsMuc[nMuc]);	// 0 = bo yeu cau (he thong tu chon)
+	SDL_Log("[FPS] muc %d -> PaintFps %d, xin man %d Hz", nMuc, nFps, s_aFpsMuc[nMuc]);
+}
+
+void JxNhip_ChuMuc(int nMuc, char* sz, int n)
+{
+	if (!sz || n < 8) return;
+	if (nMuc <= 0 || nMuc >= FPS_SO_MUC)
+		snprintf(sz, (size_t)n, "T\371 \256\351ng (%d)", Nhip_ManHz());	// "Tu dong (120)" - TCVN3 viet bang octal
+	else
+		snprintf(sz, (size_t)n, "%d", s_aFpsMuc[nMuc]);
+	sz[n - 1] = 0;
+}
+
+void JxNhip_VeNen(int nX, int nY, int nRong, int nCao) { PerfHud_VeNen(nX, nY, nRong, nCao); }
+
+//---------------------------------------------------------------------------
+// [THONGTIN 12/09] Thong tin goc PHAI tren man hinh nhu game mobile khac (chu: "hien FPS - CPU - GPU - pin o goc phai ... chu
+// khong phai che do PerfHud"): mot dong "60 FPS | CPU 23% | GPU 41% | Pin 87% 34C | 25 ms". Hien khi da vao the gioi;
+// [Client] ThongTinGoc=0 de tat; keo duoc trong "Sua giao dien" (khoa ThongTinGoc, neo = mep phai-tren, UserData\UiToaDo.ini).
+// GPU % doc sysfs (Adreno kgsl / Mali / Samsung /sys/kernel/gpu); may khong cho doc thi hien "-".
+//---------------------------------------------------------------------------
+static int		s_nTtBat = -1;
+static int		s_nTtX = -1, s_nTtY = -1;			// neo: mep PHAI, mep TREN (toa do khung ve); -1 = mac dinh theo vung an toan
+static int		s_nTtRong = 0, s_nTtCao = 0;		// khung vua ve (de do cham khi keo)
+static unsigned	s_uTtMauLuc = 0;
+static int		s_nTtGpu = -1, s_nTtGpuTim = 0;		// % GPU; tim duong: 0 chua, 1 co, -1 khong co
+static char		s_szTtGpuDuong[96] = "";
+static int		s_nTtPin = -1, s_nTtPinNhiet = -1000;	// %, phan muoi do C
+static bool		s_bTtDangKy = false;
+
+static int ThongTin_DocDong(const char* szDuong, char* sz, int n)
+{
+	FILE* f = fopen(szDuong, "r");
+	if (!f) return 0;
+	sz[0] = 0;
+	const int ok = fgets(sz, n, f) != NULL;
+	fclose(f);
+	return ok;
+}
+
+static int ThongTin_DocGpu()
+{
+	static const char* aDuong[] = {
+		"/sys/class/kgsl/kgsl-3d0/gpu_busy_percentage",	// Adreno (Qualcomm)
+		"/sys/class/kgsl/kgsl-3d0/gpubusy",				// Adreno cu: "ban tong" ke tu lan doc truoc
+		"/sys/kernel/gpu/gpu_busy",						// Samsung
+		"/sys/class/misc/mali0/device/utilization",		// Mali
+		"/sys/devices/platform/mali.0/utilization",
+		"/sys/module/mali/parameters/mali_utilization",
+	};
+	char sz[96];
+	unsigned long long a = 0, b = 0;
+	if (s_nTtGpuTim < 0) return -1;
+	if (s_nTtGpuTim == 0)
+	{
+		s_nTtGpuTim = -1;
+		for (int i = 0; i < (int)(sizeof(aDuong) / sizeof(aDuong[0])); i++)
+			if (ThongTin_DocDong(aDuong[i], sz, sizeof(sz))) { strncpy(s_szTtGpuDuong, aDuong[i], sizeof(s_szTtGpuDuong) - 1); s_nTtGpuTim = 1; break; }
+		SDL_Log("[THONGTIN] GPU %%: %s", s_nTtGpuTim > 0 ? s_szTtGpuDuong : "khong doc duoc sysfs nao");
+		if (s_nTtGpuTim < 0) return -1;
+	}
+	if (!ThongTin_DocDong(s_szTtGpuDuong, sz, sizeof(sz))) return -1;
+	const int n = sscanf(sz, "%llu %llu", &a, &b);
+	if (n < 1) return -1;
+	if (n >= 2 && b > 0) return (int)(a * 100ull / b);
+	return (a > 100) ? 100 : (int)a;
+}
+
+static void ThongTin_LayMau()
+{
+	const unsigned uNay = (unsigned)SDL_GetTicks();
+	char sz[32];
+	if (s_uTtMauLuc && uNay - s_uTtMauLuc < PH_SAMPLE_MS) return;
+	s_uTtMauLuc = uNay;
+	if (!s_nEnable) PerfHud_LayMauCpuRam();	// bang do PerfHud dang bat thi no da lay CPU roi
+	s_nTtGpu = ThongTin_DocGpu();
+	{ int nGiay = 0, nPt = -1; SDL_GetPowerInfo(&nGiay, &nPt); s_nTtPin = nPt; }
+	s_nTtPinNhiet = ThongTin_DocDong("/sys/class/power_supply/battery/temp", sz, sizeof(sz)) ? atoi(sz) : -1000;
+}
+
+static void ThongTin_MacDinh(int* pnX, int* pnY)	// neo mac dinh: goc phai-tren TRONG vung an toan (tai tho / thanh trang thai)
+{
+	int nPhai = SCREEN_WIDTH - 6, nTren = 4;
+	SDL_Window* w = DnCuaSo();
+	SDL_Rect r; int nW = 0, nH = 0;
+	if (w && SDL_GetWindowSafeArea(w, &r) && SDL_GetWindowSize(w, &nW, &nH) && nW > 0 && nH > 0 && r.w > 0 && r.h > 0)
+	{
+		nPhai = (r.x + r.w) * SCREEN_WIDTH / nW - 6;
+		nTren = r.y * SCREEN_HEIGHT / nH + 4;
+	}
+	*pnX = nPhai; *pnY = nTren;
+}
+static void ThongTin_Neo(int* px, int* py) { if (s_nTtX >= 0 && s_nTtY >= 0) { *px = s_nTtX; *py = s_nTtY; } else ThongTin_MacDinh(px, py); }
+static bool ThongTin_ORiengTrung(void* p, int x, int y) { int nX, nY; (void)p; ThongTin_Neo(&nX, &nY); return x >= nX - s_nTtRong && x <= nX && y >= nY && y <= nY + s_nTtCao; }
+static void ThongTin_ORiengLay(void* p, int* px, int* py) { (void)p; ThongTin_Neo(px, py); }
+static void ThongTin_ORiengDat(void* p, int x, int y) { (void)p; s_nTtX = x; s_nTtY = y; }
+
+static void ThongTin_Ve(int nFps, unsigned int dwPing)
+{
+	char sz1[32], sz2[160], szGpu[16], szPin[32];
+	int nX, nY;
+	if (s_nTtBat < 0)
+		s_nTtBat = GetPrivateProfileInt("Client", "ThongTinGoc", 1, ".\\config.ini") ? 1 : 0;
+	if (!s_nTtBat || !g_pRepresentShell || KUiToolsControlBar::GetSelf() == NULL)
+		return;
+	if (!s_bTtDangKy)
+	{
+		s_bTtDangKy = true;
+		UiToaDo_DangKyORieng("ThongTinGoc", ThongTin_ORiengTrung, ThongTin_ORiengLay, ThongTin_ORiengDat, NULL);
+	}
+	ThongTin_LayMau();
+	snprintf(sz1, sizeof(sz1), "%d FPS", nFps);
+	if (s_nTtGpu >= 0) snprintf(szGpu, sizeof(szGpu), "%d%%", s_nTtGpu); else strcpy(szGpu, "-");
+	if (s_nTtPin >= 0 && s_nTtPinNhiet > -1000) snprintf(szPin, sizeof(szPin), "%d%% %dC", s_nTtPin, (s_nTtPinNhiet + 5) / 10);
+	else if (s_nTtPin >= 0) snprintf(szPin, sizeof(szPin), "%d%%", s_nTtPin);
+	else strcpy(szPin, "-");
+	if (s_nCpuPerMille >= 0) snprintf(sz2, sizeof(sz2), "  |  CPU %d%%  |  GPU %s  |  Pin %s  |  %u ms", (s_nCpuPerMille + 5) / 10, szGpu, szPin, dwPing);
+	else snprintf(sz2, sizeof(sz2), "  |  CPU -  |  GPU %s  |  Pin %s  |  %u ms", szGpu, szPin, dwPing);
+	const int nR1 = PerfHud_RongChu(sz1), nR2 = PerfHud_RongChu(sz2);
+	ThongTin_Neo(&nX, &nY);
+	s_nTtRong = nR1 + nR2 + PH_LE_X * 2;
+	s_nTtCao = PH_LINE + PH_LE_Y * 2 - 4;
+	const int nTrai = nX - s_nTtRong;
+	PerfHud_VeNen(nTrai, nY, s_nTtRong, s_nTtCao);
+	PerfHud_Chu(sz1, nTrai + PH_LE_X, nY + PH_LE_Y - 2, PerfHud_MauFps(nFps));
+	PerfHud_Chu(sz2, nTrai + PH_LE_X + nR1, nY + PH_LE_Y - 2, PH_COL_TEXT);
+}
+
 void PerfHud_SetEnable(int nOn)
 {
 	s_nEnable = nOn ? 1 : 0;
@@ -239,6 +701,8 @@ int PerfHud_IsEnable()
 
 void PerfHud_Draw(int nPaintFps, int nLogicFps, unsigned int dwPing)
 {
+	DoNhip_VeNhan();	// [DONHIP 12/09] ten pha dang do (ca khi tat bang do)
+	ThongTin_Ve(nPaintFps, dwPing);	// [THONGTIN 12/09] FPS | CPU | GPU | Pin | ping o goc phai (khong phu thuoc PerfHud)
 	if (!s_nEnable || !g_pRepresentShell)
 		return;
 	PerfHud_DocIni();

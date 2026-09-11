@@ -125,7 +125,8 @@ public:
 #endif
 	void		Close();
 	void		Activate();
-	BYTE		GetBarrier(int MapX, int MapY, int nDx, int nDy);	//	地图高度
+	// [QUAICHAN 11/09] them nIdxDiChuyen (mac dinh 0 = KHONG kiem quai, moi cho goi cu giu nguyen).
+	BYTE		GetBarrier(int MapX, int MapY, int nDx, int nDy, int nIdxDiChuyen = 0);	//	地图高度
 
 	// 按 像素点坐标 * 1024 的精度判断某个位置是否障碍
 	// 参数：nGridX nGirdY ：本region格子坐标
@@ -149,6 +150,11 @@ public:
 	};
 	inline bool		IsInBounds(int nMapX, int nMapY) const;
 	int			GetRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
+#ifdef _SERVER
+	// [QUAICHAN 11/09] o (nMapX,nMapY) co QUAI KHAC (kind_normal, con song) dang dung khong?
+	// Dung m_pNpcRef lam bo loc nhanh: o trong (truong hop thuong gap) thoat ngay.
+	int			CoQuaiKhacTrenO(int nMapX, int nMapY, int nBoQuaIdx);
+#endif
 	BOOL		AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
 	BOOL		DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
 	int			FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation, int nPreferIdx = 0);

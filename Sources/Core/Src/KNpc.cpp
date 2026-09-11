@@ -2644,7 +2644,7 @@ BOOL KNpc::DoBlurMove()
 		{
 			nTestX = nX + ((MIN_BLURMOVE_SPEED * nCos * i) >> 10);
 			nTestY = nY + ((MIN_BLURMOVE_SPEED * nSin * i) >> 10);
-			int nBarrier = SubWorld[m_SubWorldIndex].GetBarrier(nTestX, nTestY);
+			int nBarrier = SubWorld[m_SubWorldIndex].GetBarrier(nTestX, nTestY, m_Index);	// [QUAICHAN 11/09] quai khong dam len nhau
 			DWORD dwTrap = SubWorld[m_SubWorldIndex].GetTrap(nTestX, nTestY);
 			if (Obstacle_NULL == nBarrier && dwTrap == 0)
 			{
@@ -6416,7 +6416,7 @@ BOOL KNpc::NewJump(int nMpsX, int nMpsY)
 	{
 		nTestX = nX + ((m_CurrentJumpSpeed * nCos * i) >> 10);
 		nTestY = nY + ((m_CurrentJumpSpeed * nSin * i) >> 10);
-		int nBarrier = SubWorld[m_SubWorldIndex].GetBarrier(nTestX, nTestY);
+		int nBarrier = SubWorld[m_SubWorldIndex].GetBarrier(nTestX, nTestY, m_Index);	// [QUAICHAN 11/09] quai khong dam len nhau
 		if (Obstacle_NULL == nBarrier)
 		{
 			nSuccessStep = i;
@@ -9202,7 +9202,8 @@ void KNpc::Paint()
 		nHeight += 20;
 
 	//End add by Fong Kieu
-	DrawMenuState(nHeight);
+	if (m_sClientNpcID.m_dwRegionID == 0)	// [TRANGTRI 11/09 f] NPC trang tri khong co bieu tuong trang thai
+		DrawMenuState(nHeight);
 }
 #endif
 

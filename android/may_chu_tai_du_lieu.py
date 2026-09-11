@@ -10,11 +10,15 @@ Dung:  python android\may_chu_tai_du_lieu.py [--thu-muc D:\jx1_android_data_dt] 
 Dien thoai (cung mang LAN) : APK mac dinh tai tu http://<IP may nay>:8765/ (R.string.may_chu_tai); doi bang tep
   /storage/emulated/0/Android/data/vn.jx1.mobile/files/tai_du_lieu.txt (dong dau = URL).
 Tuong lua Windows: cho phep python.exe hoac mo cong 8765 (netsh advfirewall firewall add rule name=jx1tai dir=in action=allow protocol=TCP localport=8765).
+
+[DONHIP 12/09] Nhan NHAT KY tu dien thoai (ban do nhip, JxDoNhip.java): POST /nhatky?may=..&phien=..&tep=.. -> noi than vao
+  <--nhat-ky, mac dinh D:\jx1_android_log>\<may>_<phien>\<tep>. Chi duong /nhatky; ten tep lam sach, khong cho '..'.
 """
 import hashlib
 import io
 import os
 import posixpath
+import re
 import sys
 import time
 import urllib.parse
@@ -24,9 +28,11 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace", line_buffering=True) 
 BO_THU_MUC = ("userdata", "apdata")
 BO_TEP = ("da_tai.txt", "jx_data_dir.txt", "tai_du_lieu.txt", "manifest.txt", "manifest_cache.txt", "apk.txt")
 MB = 1048576.0
+THU_NHAT_KY = r"D:\jx1_android_log"   # [DONHIP 12/09] --nhat-ky
 
 
 def doc_tham_so():
+    global THU_NHAT_KY
     a = sys.argv[1:]
     thu = r"D:\jx1_android_data_dt"; cong = 8765; chi_manifest = False
     i = 0
@@ -34,6 +40,7 @@ def doc_tham_so():
         if a[i] == "--thu-muc": thu = a[i + 1]; i += 2
         elif a[i] == "--cong": cong = int(a[i + 1]); i += 2
         elif a[i] == "--chi-manifest": chi_manifest = True; i += 1
+        elif a[i] == "--nhat-ky": THU_NHAT_KY = a[i + 1]; i += 2
         else: raise SystemExit("tham so la: " + a[i])
     return thu, cong, chi_manifest
 
@@ -145,8 +152,39 @@ class BoXuLy(SimpleHTTPRequestHandler):
         self.end_headers()
         return f
 
+    def do_POST(self):
+        """[DONHIP 12/09] dien thoai gui nhat ky do nhip: POST /nhatky?may=..&phien=..&tep=.. (than = phan moi cua tep) -> NOI vao
+        THU_NHAT_KY\\<may>_<phien>\\<tep>. Ten chi giu chu, so, _ . - va bo dau cham o hai dau (khong the thanh '..')."""
+        u = urllib.parse.urlsplit(self.path)
+        if u.path != "/nhatky":
+            self.send_error(404); return
+        q = urllib.parse.parse_qs(u.query)
+
+        def sach(k, mac):
+            v = re.sub(r"[^A-Za-z0-9_.\-]", "_", (q.get(k) or [mac])[0])[:80].strip(".")
+            return v or mac
+        thu_con, tep = sach("may", "may") + "_" + sach("phien", "phien"), sach("tep", "tep.log")
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = -1
+        if n < 0 or n > 16 * 1024 * 1024:
+            self.send_error(413); return
+        than = self.rfile.read(n) if n else b""
+        d = os.path.join(THU_NHAT_KY, thu_con)
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, tep), "ab") as f:
+            f.write(than)
+        self.send_response(200)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+        sys.stdout.write("%s %s nhat ky %s\\%s +%d B\n" % (time.strftime("%H:%M:%S"), self.client_address[0], thu_con, tep, len(than)))
+
     def log_message(self, fmt, *args):
-        sys.stdout.write("%s %s %s\n" % (time.strftime("%H:%M:%S"), self.client_address[0], fmt % args))
+        dong = fmt % args
+        if "/nhatky" in dong:   # [DONHIP 12/09] do_POST tu ghi dong gon
+            return
+        sys.stdout.write("%s %s %s\n" % (time.strftime("%H:%M:%S"), self.client_address[0], dong))
 
 
 def lam_apk_txt(thu):
@@ -185,6 +223,7 @@ def main():
     sv = ThreadingHTTPServer(("0.0.0.0", cong), BoXuLy)
     sv.daemon_threads = True
     print("dang phuc vu %s tai cong %d (Ctrl+C de dung). Dien thoai: http://<IP may nay>:%d/" % (thu, cong, cong))
+    print("nhat ky dien thoai (POST /nhatky) ghi vao %s" % THU_NHAT_KY)
     try:
         sv.serve_forever()
     except KeyboardInterrupt:

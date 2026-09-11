@@ -934,7 +934,7 @@ function BH_XinVaoGo(nIdx)
 		Msg2Player("Kh«ng t×m thÊy bang.")
 	else
 		local r = TONG_ApplyJoin(id)
-		Msg2Player(format("TONG_ApplyJoin(%s) tr¶ vÒ %d (2 vµo th¼ng, 1 chê duyÖt, -1 d­íi cÊp, 0 thÊt b¹i).", TONG_GetName(id), r))
+		Msg2Player(format("TONG_ApplyJoin(%s) tr¶ vÒ %d: %s.", TONG_GetName(id), r, BH_KqXin(r)))
 	end
 	BH_BangKhac()
 end
@@ -1339,6 +1339,7 @@ function BH_TienIch()
 	if nT ~= 0 then
 		sz = format("B¹n ë bang %s (id thµnh viªn %d, %s, bang chñ = %d).", TONG_GetName(nT), GetTongMemberID(), BH_Fig(GetTongFigure()), CheckTongMasterPower())
 	end
+	sz = sz .. format(" Tr¹i %d (hiÖn %d), cê xuÊt s­ 4134 = %d.", GetCamp(), GetCurCamp(), GetTask(4134))
 	SayEx({sz,
 	"Vµo bang test TESTGAME hoÆc bang ®Çu tiªn (TONG_ApplyJoin)/BH_VaoBangTest",
 	"Rêi bang (TONG_ApplyDeleteMember) - hái tr­íc/BH_RoiBangHoi",
@@ -1353,6 +1354,7 @@ function BH_TienIch2()
 	"N¹p l¹i file test (dofile)/BH_NapLai",
 	"Bé test cò: c«ng thµnh, l·nh ®Þa, t¸c ph­êng, danh hiÖu, thuÕ (TX_Root)/TX_Root",
 	"Reset 7 thµnh vÒ v« chñ - hái tr­íc/BH_CTResetHoi",
+	"XuÊt s­ ngay cho t«i (tr¹i s¸t thñ 4, rêi nhãm, cê 4134)/BH_XuatSu",
 	"VÒ trang 1/BH_TienIch",
 	"Tho¸t/no"})
 end
@@ -1372,7 +1374,7 @@ function BH_VaoBangTest()
 		Msg2Player("M¸y chñ ch­a cã bang nµo.")
 	else
 		local r = TONG_ApplyJoin(id)
-		Msg2Player(format("TONG_ApplyJoin(%s) tr¶ vÒ %d (2 vµo th¼ng, 1 chê duyÖt, -1 d­íi cÊp, 0 thÊt b¹i).", TONG_GetName(id), r))
+		Msg2Player(format("TONG_ApplyJoin(%s) tr¶ vÒ %d: %s.", TONG_GetName(id), r, BH_KqXin(r)))
 	end
 	BH_TienIch()
 end
@@ -1452,6 +1454,39 @@ function BH_CTResetGo()
 	end
 	Msg2Player("§· reset 7 thµnh vÒ v« chñ.")
 	BH_CongThanh()
+end
+
+-- [BHXS 10/09] ket qua TONG_ApplyJoin (dung chung luat voi cua so bang: KTongJX2.cpp sJX2_JoinCondition)
+function BH_KqXin(r)
+	if r == 2 then
+		return "vµo th¼ng (®ñ ng­ìng tù nhËn cña bang)"
+	elseif r == 1 then
+		return "®· vµo danh s¸ch chê duyÖt"
+	elseif r == -1 then
+		return "d­íi ng­ìng cÊp bang tõ chèi"
+	elseif r == -2 then
+		return "ch­a xuÊt s­: tr¹i kh«ng ph¶i s¸t thñ"
+	elseif r == -3 then
+		return "d­íi cÊp 60"
+	elseif r == -4 then
+		return "®ang giao dÞch hoÆc trong tæ ®éi"
+	end
+	return "®· cã bang hoÆc lçi"
+end
+
+-- [BHXS 10/09] xuat su nhu factionhead.lua xuatsu(): trai 4 + trai hien tai 4 + roi nhom + co 4134
+function BH_XuatSu()
+	if BH_T() ~= 0 then
+		Msg2Player("B¹n ®ang ë trong bang, tr¹i do bang quyÕt ®Þnh. Rêi bang tr­íc råi h·y thö.")
+		BH_TienIch2()
+		return
+	end
+	SetCamp(4)
+	SetCurCamp(4)
+	LeaveTeam()
+	SetTask(4134, 1)
+	Msg2Player(format("§· xuÊt s­: tr¹i %d, tr¹i hiÖn t¹i %d, cê 4134 = %d.", GetCamp(), GetCurCamp(), GetTask(4134)))
+	BH_TienIch2()
 end
 
 function BH_NapLai()
