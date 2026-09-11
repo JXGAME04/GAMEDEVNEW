@@ -37,6 +37,7 @@ enum
 	VP_LAYRA,			// lay ra khoi ruong
 	VP_CATRUONG,		// cat vao ruong
 	VP_CHUYEN,			// chuyen tiep cai bam cu cho cua so chu (mua / ban / them vao / bo ra)
+	VP_GANPHIM,			// [OPHIM 12/09] gan mon vao o phim so 1-4
 	VP_DONG,
 };
 
@@ -219,7 +220,18 @@ void KUiVatPham::DungDaiNut(const KUiDraggedObject* pItem, UIOBJECT_CONTAINER eC
 	}
 	else	// hanh trang
 	{
-		ThemNut(VP_DUNG, (m_nGenre == item_equip) ? "trang_bi" : "dung");
+		//	[OPHIM 12/09 b] Chu: "cac item nao khong co duong dan script de su dung thi bo chu dung di".
+		//	Ban CLIENT khong nhan duong dan script (KItem::m_CommonAttrib.szScript chi co ben may chu,
+		//	ben nay luon rong) nen loc theo LOAI mon: thuoc / nhiem vu / phi phong / sach chieu thi dung
+		//	duoc; khoang thach, nguyen lieu, do vo, vien van cuong, tinh than thach thi khong.
+		if (m_nGenre == item_equip)
+			ThemNut(VP_DUNG, "trang_bi");
+		else if (m_nGenre == item_medicine || m_nGenre == item_task
+			  || m_nGenre == item_townportal || m_nGenre == item_magicscript)
+			ThemNut(VP_DUNG, "dung");
+		//	O phim so chi nhan thuoc / phi phong / sach chieu (KPlayer::MoveItem chan cac loai khac)
+		if (m_nGenre == item_medicine || m_nGenre == item_townportal || m_nGenre == item_magicscript)
+			ThemNut(VP_GANPHIM, "gan_phim");
 		ThemNut(VP_RAO, "rao");
 		if (!m_bKhoa)					// do da dinh thi loi khong cho nem
 			ThemNut(VP_NEM, "nem");
@@ -420,6 +432,26 @@ void KUiVatPham::LamNut(int nMa)
 			memset(&CItem, 0, sizeof(CItem));
 			if (g_pCoreShell->GetGameData(GDI_GET_ITEM_PARAM, (KUPARAM)&CItem, m_Obj.uId))
 				KUiPlayerBar::SetChatItem(CItem, m_Obj.uId);
+		}
+		break;
+
+	case VP_GANPHIM:
+		//	[OPHIM 12/09] Chu: "them nut gan item vao phim so 1 2 3 4". Dat vao o TRONG dau tien; day ca bon thi dat
+		//	vao o 1 - GOI_SWITCH_OBJECT la lenh DOI CHO nen mon cu tu ve tui, khong mat mon nao.
+		{
+			KUiObjAtContRegion Dich;
+			int nO = KUiPlayerBar::OPhimTrong();
+
+			if (nO < 0)
+				nO = 0;
+			memset(&Dich, 0, sizeof(Dich));
+			Dich.Obj           = m_Obj;
+			Dich.Region.h      = nO;
+			Dich.Region.v      = 0;
+			Dich.Region.Width  = m_nDataW;
+			Dich.Region.Height = m_nDataH;
+			Dich.eContainer    = UOC_IMMEDIA_ITEM;
+			g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, (KUPARAM)(&Obj), (KNPARAM)(&Dich));
 		}
 		break;
 

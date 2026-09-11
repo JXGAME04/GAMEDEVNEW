@@ -267,6 +267,11 @@ int KWndObjectBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	{
 #ifdef JX_ANDROID
 	case WND_M_JX_CO_VATPHAM:	// [VATPHAM 12/09 g] o don: co mon la duoc
+		//	[OPHIM 12/09] O VAT PHAM SO 1-4 va o ky nang da co duong rieng tu [ANDROID 11/09 OSO]: cham = DUNG mon,
+		//	giu lau (chuot phai) = NHAC LEN TAY. Khong nhan cau hoi nay thi giu lau o do van la chuot
+		//	phai - neu nhan, giu lau thanh bam trai = dung mon, mat han duong lay mon ra (chu 18:05).
+		if (m_nContainerId == UOC_IMMEDIA_ITEM || m_nContainerId == UOC_IMMEDIA_SKILL)
+			return 0;
 		return (m_Object.uGenre != CGOG_NOTHING) ? 1 : 0;
 #endif
 	case WM_LBUTTONDOWN:
@@ -349,6 +354,12 @@ int KWndObjectBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	case WM_MOUSEHOVER:
 	case WM_MOUSEMOVE:
 		m_Style |= OBJCONT_F_MOUSE_HOVER;
+#ifdef JX_ANDROID
+		//	[OPHIM 12/09] Chu: "cac nut phim 1 2 3 4 khi bam su dung khong can hien thong tin item do" - cham la
+		//	dung ngay, bang chu giai chi che mat man hinh.
+		if (m_nContainerId == UOC_IMMEDIA_ITEM)
+			break;
+#endif
 		if (m_Object.uGenre != CGOG_NOTHING && g_MouseOver.IsMoseHoverWndObj(this, 0) == 0)
 			SetMouseHoverObjectDesc(this, 0, m_Object.uGenre,
 				m_Object.uId, m_nContainerId, LOWORD(nParam), HIWORD(nParam));

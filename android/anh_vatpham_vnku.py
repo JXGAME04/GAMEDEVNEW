@@ -38,6 +38,7 @@ NUT = [
     ("cat_ruong", "Cất rương"),
     ("chon",      "Chọn"),
     ("dong",      "Đóng"),
+    ("gan_phim",  "Gắn phím"),      # [OPHIM 12/09] gan mon vao o phim so 1-4
 ]
 
 

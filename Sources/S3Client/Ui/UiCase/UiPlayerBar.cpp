@@ -1646,6 +1646,26 @@ void KUiPlayerBar::OnObjPickedDropped(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDR
 		pDropPos ? (KNPARAM)&Drop : 0);
 }
 
+#ifdef JX_ANDROID
+//	[OPHIM 12/09] O phim so dang TRONG dau tien trong bon o hien tren man (0..3), -1 neu day ca bon.
+int KUiPlayerBar::OPhimTrong()
+{
+	int i;
+
+	if (m_pSelf == NULL)
+		return -1;
+	for (i = 0; i < 4 && i < UPB_IMMEDIA_ITEM_COUNT; i++)
+	{
+		KUiDraggedObject o;
+
+		m_pSelf->m_ImmediaItem[i].GetObject(o);
+		if (o.uGenre == CGOG_NOTHING)
+			return i;
+	}
+	return -1;
+}
+#endif
+
 void KUiPlayerBar::OnUseItem(int nIndex)
 {
 	if (m_pSelf && nIndex >= 0 && nIndex < UPB_IMMEDIA_ITEM_COUNT)

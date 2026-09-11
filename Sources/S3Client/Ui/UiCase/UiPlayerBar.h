@@ -95,6 +95,11 @@ public:
 		return FALSE;
 	}
 	static void	OnUseItem(int nIndex);				
+#ifdef JX_ANDROID
+	//	[OPHIM 12/09] O phim so (1-4) dang TRONG dau tien, -1 neu day ca bon. Dai nut vat pham dung de biet
+	//	gan mon vao o nao (chu: "them nut gan item vao phim so 1 2 3 4").
+	static int	OPhimTrong();
+#endif
 	static BOOL	IsCanSendMessage(const char* Buffer, int nLen, char* szDestName, int nChannelID);				
 	static void	OnSendChannelMessage(DWORD nChannelID, const char* Buffer, int nLen);				
 	static void	OnSendSomeoneMessage(const char* Name, const char* Buffer, int nLen);				
