@@ -408,6 +408,7 @@ public:
 	bool    SubmitFrame(bool bPresent);						// phat lai lenh cua khung (Present hoac can doc lai)
 #ifdef JX_ANDROID
 	bool    JxBoKhungGiong();								// [BKG 11/09] khung giong het khung vua trinh chieu -> khong SubmitFrame; tra true = da bo
+	UINT    JxPsIdx(const RgPsCb& ps);						// [GOP 11/09] chi so to hop trang thai tang texture trong bang cua khung (them neu chua co)
 #endif
 	void    FrameReset();										// don ring/lenh/phien ban cu sau submit
 	SDL_GPUTexture* CurrentTargetTex() const { return m_pRtTex ? m_pRtTex->m_pGpu : NULL; }
@@ -457,6 +458,7 @@ public:
 	SDL_GPUTransferBuffer* m_pJxZeroXfer; UINT m_jxZeroSize, m_jxZeroDaXoa; std::vector<RgTexUpload> m_jxZeroUploads;	// [VE 11/09 d] bo dem 0 co dinh cho trang atlas moi / o chua co ban CPU (stageOff = 0)
 	std::vector<RgCmd> m_jxCmdsTruoc; std::vector<BYTE> m_jxRingTruoc; bool m_bJxCoKhungTruoc, m_bJxKhungCoFlush; Uint64 m_uJxTrinhChieuLuc; unsigned m_uJxGiongLienTiep;	// [BKG 11/09] lenh + dinh cua khung vua trinh chieu de so voi khung sau
 	SDL_GPUBuffer* m_pJxPalBuf; std::vector<std::pair<UINT, UINT> > m_jxPalUploads;	// [PALBUF 11/09] bang mau trong storage buffer; (hang, offset staging) cho tai trong khung
+	SDL_GPUBuffer* m_pJxPsBuf; std::vector<RgPsCb> m_jxPsBang; std::map<unsigned long long, UINT> m_jxPsMap; RgPsCb m_jxPsCuoi; UINT m_uJxPsCuoi; UINT m_uJxPsStageOff;	// [GOP 11/09] bang to hop trang thai tang texture cua khung (chi so di theo dinh)
 #endif
 	std::vector<RgCmd>  m_cmds;
 	std::vector<SDL_GPUTexture*> m_release;		// phien ban cu, tra sau submit

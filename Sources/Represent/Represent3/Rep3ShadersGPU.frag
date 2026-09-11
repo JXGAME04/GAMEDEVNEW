@@ -17,6 +17,12 @@ layout(std430, set = 2, binding = 2) readonly buffer PalBuf { uint g_palBuf[]; }
 layout(set = 2, binding = 2) uniform sampler2D g_pal;   // atlas bang mau 256 x N (BGRA8), hang = vPal
 #endif
 
+#ifdef JX_PS_BUFFER
+// [GOP 11/09] (chi Android, -DJX_PS_BUFFER) trang thai tang texture cua CA KHUNG nam trong storage buffer; moi dinh mang chi so
+// trong o PALROW (bit 13..24) -> hai quad chi khac trang thai van gop chung mot lenh ve. set 2 binding 3 = sau bang mau.
+struct JxPsRec { ivec4 st0; ivec4 st0b; ivec4 st1; ivec4 st1b; vec4 at; };
+layout(std430, set = 2, binding = 3) readonly buffer PsBuf { JxPsRec g_psBuf[]; };
+#else
 layout(set = 3, binding = 0) uniform PSCB
 {
     ivec4 g_st0;   // stage 0: colorOp, colorArg1, colorArg2, alphaOp   (D3DTOP_* / D3DTA_*)
@@ -25,6 +31,15 @@ layout(set = 3, binding = 0) uniform PSCB
     ivec4 g_st1b;  // stage 1: alphaArg1, alphaArg2, tex1 bound, 0
     vec4  g_at;    // x = alpha test bat, y = D3DCMP_*, z = alpha ref (0..255), w = 0
 };
+#endif
+
+#ifdef JX_PS_BUFFER
+#define JX_PALROW   (vPal & 0x1FFFu)   // [GOP 11/09] o PALROW: bit 0..12 = hang bang mau, 13..24 = chi so to hop trang thai tang texture
+#define JX_PALKHONG 0x1FFFu
+#else
+#define JX_PALROW   vPal
+#define JX_PALKHONG 0xFFFFu
+#endif
 
 layout(location = 0) out vec4 outColor;
 
@@ -93,25 +108,30 @@ vec4 Stage(ivec4 st, ivec4 stb, vec4 dif, vec4 cur, vec4 tex)
 
 void main()
 {
+#ifdef JX_PS_BUFFER
+    // [GOP 11/09] trang thai tang texture lay tu bang cua khung theo chi so mang tren dinh (khong con uniform moi lenh ve)
+    JxPsRec jxR = g_psBuf[(vPal >> 13) & 0xFFFu];
+    ivec4 g_st0 = jxR.st0; ivec4 g_st0b = jxR.st0b; ivec4 g_st1 = jxR.st1; ivec4 g_st1b = jxR.st1b; vec4 g_at = jxR.at;
+#endif
     vec4 dif = vCol;
     vec4 cur = dif;
     if (g_st0.x != 1)   // stage 0 khong DISABLE
     {
         vec4 tex0 = (g_st0b.z != 0) ? texture(g_t0, vUv) : vec4(1.0);
-        if (vPal != 0xFFFFu && g_st0b.z != 0)
+        if (JX_PALROW != JX_PALKHONG && g_st0b.z != 0)
         {   // texture chi so (R8G8): R = chi so bang mau, G = alpha
             if (g_st0b.w != 0)
             {   // loc tuyen tinh: lay 4 diem, tra bang tung diem roi noi suy; khong noi suy CHI SO
                 ivec2 dim = textureSize(g_t0, 0);
                 vec2 p = vUv * vec2(dim) - 0.5; vec2 f = fract(p); ivec2 p0 = ivec2(floor(p)); ivec2 mx = dim - 1;
-                vec4 c00 = PalTex(texelFetch(g_t0, clamp(p0, ivec2(0), mx), 0), vPal);
-                vec4 c10 = PalTex(texelFetch(g_t0, clamp(p0 + ivec2(1, 0), ivec2(0), mx), 0), vPal);
-                vec4 c01 = PalTex(texelFetch(g_t0, clamp(p0 + ivec2(0, 1), ivec2(0), mx), 0), vPal);
-                vec4 c11 = PalTex(texelFetch(g_t0, clamp(p0 + ivec2(1, 1), ivec2(0), mx), 0), vPal);
+                vec4 c00 = PalTex(texelFetch(g_t0, clamp(p0, ivec2(0), mx), 0), JX_PALROW);
+                vec4 c10 = PalTex(texelFetch(g_t0, clamp(p0 + ivec2(1, 0), ivec2(0), mx), 0), JX_PALROW);
+                vec4 c01 = PalTex(texelFetch(g_t0, clamp(p0 + ivec2(0, 1), ivec2(0), mx), 0), JX_PALROW);
+                vec4 c11 = PalTex(texelFetch(g_t0, clamp(p0 + ivec2(1, 1), ivec2(0), mx), 0), JX_PALROW);
                 tex0 = mix(mix(c00, c10, f.x), mix(c01, c11, f.x), f.y);
             }
             else
-                tex0 = PalTex(tex0, vPal);
+                tex0 = PalTex(tex0, JX_PALROW);
         }
         cur = Stage(g_st0, g_st0b, dif, dif, tex0);
         if (g_st1.x != 1)

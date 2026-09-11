@@ -5,6 +5,7 @@
 #include "D3D9onGPU.h"
 #include "D3D9onGPUi.h"
 #include "Rep3ShadersGPU_spv.h"
+#include <stddef.h>	// [GOP 11/09] offsetof(RgDrawState, ps)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -107,6 +108,7 @@ static void JxDatHintSwapchain(SDL_Window* pWin, UINT bbW, UINT bbH)
 #endif
 
 #define RG_PAL_ROWS 8192
+#define JX_PS_MAX 4096	// [GOP 11/09] so to hop trang thai tang texture toi da trong mot khung (chi so 12 bit trong o PALROW)
 
 static SDL_GPUBlendFactor RgBlendFactor(DWORD d3d)
 {
@@ -197,6 +199,7 @@ CDevGpu::CDevGpu(CGpuShim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 #ifdef JX_ANDROID
 	m_pJxZeroXfer = NULL; m_jxZeroSize = 0; m_jxZeroDaXoa = 0;	// [VE 11/09 d]
 	m_bJxCoKhungTruoc = false; m_bJxKhungCoFlush = false; m_uJxTrinhChieuLuc = 0; m_uJxGiongLienTiep = 0; m_pJxPalBuf = NULL;	// [BKG 11/09] [PALBUF 11/09]
+	m_pJxPsBuf = NULL; memset(&m_jxPsCuoi, 0, sizeof(m_jxPsCuoi)); m_uJxPsCuoi = 0xFFFFFFFFu; m_uJxPsStageOff = 0xFFFFFFFFu;	// [GOP 11/09]
 #endif
 	m_bFrameOpen = false;
 	m_pAtlas = NULL; m_uCpuBoSo = 0; m_uCpuBoThuLai = 0; m_uCpuBoBytes = 0;	// [GPU 11/09 ATLAS] [GPU 11/09 BOCPU]
@@ -318,6 +321,13 @@ bool CDevGpu::Init()
 	if (!CreateShaders()) return false;
 #ifdef JX_ANDROID
 	if (g_nJxPalBuffer && !PalInit()) return false;	// [PALBUF 11/09] tao storage buffer bang mau ngay: shader kieu buffer can bind no truoc lenh ve dau tien
+	if (g_nJxPsBuffer)
+	{	// [GOP 11/09] bang to hop trang thai tang texture (80 byte moi muc)
+		SDL_GPUBufferCreateInfo bi; memset(&bi, 0, sizeof(bi)); bi.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ; bi.size = (Uint32)(JX_PS_MAX * sizeof(RgPsCb));
+		m_pJxPsBuf = SDL_CreateGPUBuffer(m_pGpu, &bi);
+		if (!m_pJxPsBuf) { RgLog("bang ps: CreateGPUBuffer %u KB that bai: %s", (unsigned)(JX_PS_MAX * sizeof(RgPsCb) >> 10), SDL_GetError()); return false; }
+		RgLog("bang trang thai tang texture: storage buffer %d muc x %u byte (%u KB) " "[GOP 11/09]", JX_PS_MAX, (unsigned)sizeof(RgPsCb), (unsigned)(JX_PS_MAX * sizeof(RgPsCb) >> 10));
+	}
 #endif
 	{	// dinh gia (mau trang, uv 0)
 		struct { DWORD c; float u, v; float pad; } dummy = { 0xFFFFFFFF, 0.0f, 0.0f, 0.0f };
@@ -399,6 +409,10 @@ bool CDevGpu::CreateShaders()
 	if (g_nJxPalBuffer)
 	{	// [PALBUF 11/09] bang mau = storage buffer: shader chi co 2 sampler (t0, t1), buffer o set 2 binding 2 (SDL: sau cac sampler)
 		si.code = g_Rep3GpuFSPalBuf; si.code_size = sizeof(g_Rep3GpuFSPalBuf); si.num_samplers = 2; si.num_storage_buffers = 1;
+		if (g_nJxPsBuffer)
+		{	// [GOP 11/09] them bang trang thai tang texture (set 2, binding 3); khong con uniform cua fragment
+			si.code = g_Rep3GpuFSPalPs; si.code_size = sizeof(g_Rep3GpuFSPalPs); si.num_storage_buffers = 2; si.num_uniform_buffers = 0;
+		}
 	}
 #endif
 	m_pFS = SDL_CreateGPUShader(m_pGpu, &si);
@@ -945,17 +959,31 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 {
 	if (!pVerts || nVerts == 0 || stride == 0) return D3DERR_INVALIDCALL;
 	const UINT s2 = stride + 4;	// + PALROW
-	const UINT uPal = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? (UINT)m_tex[0]->m_nPalRow : 0xFFFFu;
+	UINT uPal = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? (UINT)m_tex[0]->m_nPalRow : 0xFFFFu;
 	SDL_GPUPrimitiveType topo = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 	if (type == D3DPT_POINTLIST) topo = SDL_GPU_PRIMITIVETYPE_POINTLIST;
 	else if (type == D3DPT_LINELIST) topo = SDL_GPU_PRIMITIVETYPE_LINELIST;
 	else if (type == D3DPT_LINESTRIP) topo = SDL_GPU_PRIMITIVETYPE_LINESTRIP;
 	else if (type == D3DPT_TRIANGLESTRIP && nVerts != 4) topo = SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP;
 	RgDrawState st; ComputeState(st, topo);	// (PrepareForBind o day: texture ao da co cho trong trang truoc khi doi uv)
+#ifdef JX_ANDROID
+	if (g_nJxPsBuffer)
+	{	// [GOP 11/09] o PALROW: bit 0..12 hang bang mau (0x1FFF = khong co), 13..24 chi so to hop ps, 25..30 danh cho lop atlas (buoc sau)
+		const UINT uRow = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? ((UINT)m_tex[0]->m_nPalRow & 0x1FFFu) : 0x1FFFu;
+		uPal = uRow | ((JxPsIdx(st.ps) & 0xFFFu) << 13);
+	}
+#endif
 	const float fPage = m_pAtlas ? (float)m_pAtlas->m_pageSize : 1024.0f;	// [GPU 11/09 ATLAS]
 	if (!st.pPipe) return D3DERR_INVALIDCALL;
 	// dinh -> ring
-	const UINT ringOff = (UINT)m_ring.size();
+	UINT ringOff = (UINT)m_ring.size();
+#ifdef JX_ANDROID
+	if (g_nJxBindRing)
+	{	// [GOP 11/09] can len boi (stride+4) de first_vertex = ringOff / (stride+4) chia het (vai byte dem moi khi doi stride)
+		const UINT du = ringOff % s2;
+		if (du) { ringOff += s2 - du; m_ring.resize(ringOff); }
+	}
+#endif
 	UINT nOut = nVerts;
 	if (type == D3DPT_TRIANGLESTRIP && nVerts == 4)
 	{	// quad -> 6 dinh triangle list de gop lo
@@ -970,7 +998,13 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 		if (!m_cmds.empty())
 		{
 			RgCmd& L = m_cmds.back();
-			if (L.type == RGCMD_DRAW && L.stride == stride && L.ringOff + L.nVerts * s2 == ringOff && memcmp(&L.st, &st, sizeof(st)) == 0)
+#ifdef JX_ANDROID
+			// [GOP 11/09] ps theo dinh -> khong so phan ps khi gop (hai quad chi khac trang thai tang texture van gop duoc)
+			const size_t nSo = g_nJxPsBuffer ? offsetof(RgDrawState, ps) : sizeof(st);
+#else
+			const size_t nSo = sizeof(st);
+#endif
+			if (L.type == RGCMD_DRAW && L.stride == stride && L.ringOff + L.nVerts * s2 == ringOff && memcmp(&L.st, &st, nSo) == 0)
 			{ L.nVerts += 6; return D3D_OK; }
 #ifdef JX_ANDROID
 			JxGopVo(L, st, stride, ringOff, s2);	// [VE 11/09] vi sao khong gop
@@ -1032,6 +1066,36 @@ static void RgEnsureXfer(SDL_GPUDevice* dev, SDL_GPUTransferBuffer** pp, UINT* p
 	SDL_GPUTransferBufferCreateInfo ti; memset(&ti, 0, sizeof(ti)); ti.usage = usage; ti.size = sz;
 	*pp = SDL_CreateGPUTransferBuffer(dev, &ti); *pSize = *pp ? sz : 0;
 }
+
+#ifdef JX_ANDROID
+// [GOP 11/09] Chi so to hop trang thai tang texture (RgPsCb) trong bang cua khung: hai lenh ve chi khac ps thi VAN gop duoc vi ps
+// di theo dinh (12 bit trong o PALROW) chu khong phai uniform cua lenh. Bang gui len storage buffer mot lan moi khung.
+// Nho o cuoi (ps doi 837 lan tren 1 818 lenh -> phan lon lenh dung lai ps ngay truoc) roi moi tra bang bam; bam va cham
+// van kiem lai bang memcmp nen khong the tra nham to hop.
+UINT CDevGpu::JxPsIdx(const RgPsCb& ps)
+{
+	if (m_uJxPsCuoi != 0xFFFFFFFFu && memcmp(&m_jxPsCuoi, &ps, sizeof(ps)) == 0) return m_uJxPsCuoi;
+	unsigned long long h = 1469598103934665603ULL;	// FNV-1a
+	const BYTE* pb = (const BYTE*)&ps;
+	for (size_t i = 0; i < sizeof(ps); i++) { h ^= pb[i]; h *= 1099511628211ULL; }
+	UINT idx = 0xFFFFFFFFu;
+	std::map<unsigned long long, UINT>::iterator it = m_jxPsMap.find(h);
+	if (it != m_jxPsMap.end() && it->second < m_jxPsBang.size() && memcmp(&m_jxPsBang[it->second], &ps, sizeof(ps)) == 0)
+		idx = it->second;
+	if (idx == 0xFFFFFFFFu)
+	{
+		if (m_jxPsBang.size() < JX_PS_MAX)
+		{
+			idx = (UINT)m_jxPsBang.size(); m_jxPsBang.push_back(ps);
+			if (it == m_jxPsMap.end()) m_jxPsMap[h] = idx;	// va cham bam: giu muc dau, muc sau van dung nhung tra bang memcmp
+			if (m_jxPsBang.size() > g_uJxPsBangMax) g_uJxPsBangMax = (unsigned)m_jxPsBang.size();
+		}
+		else { idx = JX_PS_MAX - 1; m_jxPsBang[idx] = ps; g_uJxPsTran++; }	// tran (chua gap: canh dong nhat vai chuc to hop)
+	}
+	m_jxPsCuoi = ps; m_uJxPsCuoi = idx;
+	return idx;
+}
+#endif
 
 bool CDevGpu::SubmitFrame(bool bPresent)
 {
@@ -1102,6 +1166,15 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 #endif
 #ifdef JX_ANDROID
+		m_uJxPsStageOff = 0xFFFFFFFFu;
+		if (m_pJxPsBuf && !m_jxPsBang.empty())
+		{	// [GOP 11/09] bang ps di chung staging cua khung (nhu bang mau)
+			const UINT off = ((UINT)m_texStage.size() + 15) & ~15u;
+			const UINT bytes = (UINT)(m_jxPsBang.size() * sizeof(RgPsCb));
+			m_texStage.resize((size_t)off + bytes);
+			memcpy(&m_texStage[off], &m_jxPsBang[0], bytes);
+			m_uJxPsStageOff = off;
+		}
 		size_t uJxTexTruocPal = m_texUploads.size(); Uint64 uJxPalT0 = 0;	// [PALBUF 11/09] muc tu day tro di trong m_texUploads la hang bang mau (kieu texture cu) -> do rieng
 		if (!m_palPending.empty() && (m_pPalTex || m_pJxPalBuf))
 		{	// [VE 11/09 d] bang mau di chung staging + transfer buffer co dinh (truoc: tao/huy mot transfer buffer rieng moi khung co bang mau moi
@@ -1141,7 +1214,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			m_palPending.clear();
 		}
 #ifdef JX_ANDROID
-		if ((!m_texUploads.empty() || !m_jxPalUploads.empty()) && !m_texStage.empty())	// [PALBUF 11/09] hang bang mau (storage buffer) cung tai tu staging nay
+		if ((!m_texUploads.empty() || !m_jxPalUploads.empty() || m_uJxPsStageOff != 0xFFFFFFFFu) && !m_texStage.empty())	// [PALBUF 11/09] hang bang mau (storage buffer) cung tai tu staging nay; [GOP 11/09] ca bang ps
 #else
 		if (!m_texUploads.empty() && !m_texStage.empty())
 #endif
@@ -1185,6 +1258,12 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 					}
 					m_uUploads += (unsigned)m_jxPalUploads.size();
 					jxK.dChepPalLenh = JxVeMs(uPl0, SDL_GetPerformanceCounter());
+				}
+				if (m_pJxPsBuf && !m_jxPsBang.empty() && m_uJxPsStageOff != 0xFFFFFFFFu)
+				{	// [GOP 11/09] ca bang to hop trang thai tang texture cua khung (vai chuc muc x 80 byte)
+					SDL_GPUTransferBufferLocation src = { m_pTexXfer, m_uJxPsStageOff }; SDL_GPUBufferRegion dst = { m_pJxPsBuf, 0, (Uint32)(m_jxPsBang.size() * sizeof(RgPsCb)) };
+					SDL_UploadToGPUBuffer(cp, &src, &dst, false);
+					m_uUploads++;
 				}
 #endif
 			}
@@ -1262,7 +1341,15 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			if (!pass) { RgLog("BeginGPURenderPass that bai: %s", SDL_GetError()); break; }
 			SDL_GPUBufferBinding bd = { m_pDummy, 0 }; SDL_BindGPUVertexBuffers(pass, 1, &bd, 1);
 #ifdef JX_ANDROID
-			if (g_nJxPalBuffer && m_pJxPalBuf) SDL_BindGPUFragmentStorageBuffers(pass, 0, &m_pJxPalBuf, 1);	// [PALBUF 11/09] bang mau = storage buffer (set 2, binding 2, sau 2 sampler) - mot lan moi pass
+			if (g_nJxBindRing && m_pRingGpu)
+			{	// [GOP 11/09] ring dinh bind MOT lan moi pass; lenh ve dung first_vertex (ringOff da can theo stride+4)
+				SDL_GPUBufferBinding bdR = { m_pRingGpu, 0 }; SDL_BindGPUVertexBuffers(pass, 0, &bdR, 1);
+			}
+			if (g_nJxPalBuffer && m_pJxPalBuf)
+			{	// [PALBUF 11/09] bang mau (set 2, binding 2, sau 2 sampler); [GOP 11/09] bang ps (binding 3) - mot lan moi pass
+				SDL_GPUBuffer* aBuf[2] = { m_pJxPalBuf, m_pJxPsBuf };
+				SDL_BindGPUFragmentStorageBuffers(pass, 0, aBuf, (m_pJxPsBuf && g_nJxPsBuffer) ? 2 : 1);
+			}
 #endif
 		}
 		const RgDrawState& st = c.st;
@@ -1315,16 +1402,26 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			jxK.uDoiVs++;	// [VE 11/09]
 #endif
 		}
+#ifdef JX_ANDROID
+		if (!g_nJxPsBuffer && (!bLast || memcmp(&st.ps, &last.ps, sizeof(st.ps)) != 0))	// [GOP 11/09] ps theo dinh: shader doc tu bang, khong day uniform
+#else
 		if (!bLast || memcmp(&st.ps, &last.ps, sizeof(st.ps)) != 0)
+#endif
 		{
 			SDL_PushGPUFragmentUniformData(cb, 0, &st.ps, sizeof(st.ps));
 #ifdef JX_ANDROID
 			jxK.uDoiPs++;	// [VE 11/09]
 #endif
 		}
-		SDL_GPUBufferBinding vb = { m_pRingGpu, c.ringOff };
-		SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
-		SDL_DrawGPUPrimitives(pass, c.nVerts, 1, 0, 0);
+#ifdef JX_ANDROID
+		if (g_nJxBindRing) SDL_DrawGPUPrimitives(pass, c.nVerts, 1, c.ringOff / (c.stride + 4), 0);	// [GOP 11/09] ring da bind dau pass
+		else
+#endif
+		{
+			SDL_GPUBufferBinding vb = { m_pRingGpu, c.ringOff };
+			SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
+			SDL_DrawGPUPrimitives(pass, c.nVerts, 1, 0, 0);
+		}
 #ifdef JX_ANDROID
 		jxK.uLenh++; jxK.uDinh += c.nVerts;	// [VE 11/09]
 #endif
@@ -1378,6 +1475,7 @@ void CDevGpu::FrameReset()
 #ifdef JX_ANDROID
 	m_jxZeroUploads.clear();	// [VE 11/09 d]
 	m_jxPalUploads.clear();	// [PALBUF 11/09]
+	m_jxPsBang.clear(); m_jxPsMap.clear(); m_uJxPsCuoi = 0xFFFFFFFFu; m_uJxPsStageOff = 0xFFFFFFFFu;	// [GOP 11/09] bang ps theo tung khung
 #endif
 	for (size_t i = 0; i < m_touched.size(); i++)
 	{
@@ -1492,6 +1590,8 @@ void CDevGpu::PalRelease()
 #ifdef JX_ANDROID
 	if (m_pJxPalBuf && m_pGpu) SDL_ReleaseGPUBuffer(m_pGpu, m_pJxPalBuf);
 	m_pJxPalBuf = NULL; m_jxPalUploads.clear();	// [PALBUF 11/09]
+	if (m_pJxPsBuf && m_pGpu) SDL_ReleaseGPUBuffer(m_pGpu, m_pJxPsBuf);
+	m_pJxPsBuf = NULL; m_jxPsBang.clear(); m_jxPsMap.clear(); m_uJxPsCuoi = 0xFFFFFFFFu;	// [GOP 11/09]
 #endif
 }
 void CDevGpu::PalFrameEnd()
