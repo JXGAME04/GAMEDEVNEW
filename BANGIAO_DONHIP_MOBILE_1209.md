@@ -5,6 +5,15 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **03:05 11/09 — `[VE 11/09]` ĐỢT 2 (a) ĐÃ VIẾT + DỰNG, CHƯA THỬ MÁY ẢO / FOLD 7.** Chủ: "làm 1 2 3 luôn cho tôi gắn log để đọc phân tích".
+> Commit `6ac47732` (gộp `f30439b5` của phiên giao diện → `96fcd8b2` = `origin/mobile-0809` đã FF), chỉ `JX_ANDROID`, chỉ Represent3 +
+> `android/du_lieu_ghi_de/config.ini`, bộ vá `android/va_nguon_android_ve1.py` (tái tạo y hệt diff). **(1)** nạp KHUNG sprite ở luồng nền theo
+> ngân sách (`[Client] NapKhungNen=1 NapKhungMs=3 NapKhungTruoc=2 NapKhungApMs=3`) — chữa giật 56–157 ms khi đám đông tới (phiên y2);
+> **(A)** đo từng bước trình chiếu `SubmitFrame` → `jx_rep3.log` `[VE]` / `[VE-GOP]` / `[VE-NAP]` mỗi 30 s + `[VE-GIAT]` cho khung > `VeGiatMs=20`.
+> Mục **2** (cache giao diện) và **3** (gộp lệnh) chưa đổi mã: `[VE-GOP]` sẽ cho biết vì sao 1 993 quad thành 1 672 lệnh (y2) — quyết sau khi đọc số.
+> APK dựng từ `96fcd8b2`: `app-debug.apk` versionCode 109110258, md5 `7412d350…`, 20 095 279 B; máy ảo đang bận bản 109110259 của phiên giao diện
+> → thử máy ảo xong mới đẩy dt_v4 (đã nhắn phiên giao diện). Chi tiết: §9 cuối ("Đợt 2 (a)").
+
 > **01:30 11/09 — SỬA "ĐÔNG LÀ TỤT FPS" ĐỢT 1 ĐÃ LÊN BỘ TẢI: bản `v` = `android/apk/jx1mobile-1209-donhip-v.apk`** (versionCode 109110129,
 > md5 `f789946a…`, dựng từ `origin/mobile-0809 = 3267b755` = đăng nhập mới của phiên giao diện + `[DAN 11/09 + b + c+d]`). Gốc lỗi tìm được
 > qua bộ đo `[DAN]`: với `AutoLog=1` (bộ tải đang bật) mỗi site `AUTOLOG_EVERY` là một `SDL_GetTicks()`, mỗi viên đạn mỗi tick ~60 lần
@@ -382,6 +391,31 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
   (luồng vẽ hết giật 60–150 ms khi đám đông tới); (b) `KScenePlaceC::MoveObject` cho đạn (≈ 50 % chi phí đạn còn lại). Đấu giá/Chiến Lệnh:
   jx_mail.log phiên này ghi `protocol_def_c.lua ... ok`, `dispatch (75, 1) loi=0`, không có `ScriptError.log` → vá Include-từ-pak của phiên
   giao diện chạy đúng.
+- **Đợt 2 (a) — `[VE 11/09]` (03:05, commit `6ac47732`, bộ vá `android/va_nguon_android_ve1.py`, chỉ `JX_ANDROID`, Windows giữ nguyên từng dòng):**
+  - **Nạp khung nền.** `TextureResSpr::PrepareFrameData` khi đang vẽ (`m_bVeDangDien`) mà tổng nạp đồng bộ của khung (`g_dRep3NapKhung`) đã
+    ≥ `NapKhungMs` → giao khung cho luồng nền sẵn có của `[NAP 08/09 b]` (ưu tiên sau hàng "ảnh đang vẽ cần", trước hàng "nạp trước"): luồng
+    nền `SprGetFrame` (pak có khoá riêng) + giải mã RLE vào bộ đệm (`JxGiaiMaNen`, chỉ đọc header / offset / bảng màu bất biến; spr không nén
+    theo khung thì đọc `pRawData` cố định từ lúc nạp); luồng vẽ ở `RepresentBegin` tạo texture từ kết quả (`JxNapKhungNhan`, tối đa `NapKhungApMs`
+    ms/khung, phần dư để khung sau; ghi thẳng vào texture `POOL_DEFAULT` vì lớp SDL_GPU khoá được → bớt 1 cấp phát + 1 chép so với SYSTEMMEM +
+    `UpdateTexture`). Khung đang chờ thì bỏ vẽ khung đó một khung (như bỏ vẽ cả sprite của NAP 08/09 b), `Rep3AnhNullGhi` không tính là ảnh
+    thiếu. Cả hai nhánh (đồng bộ còn ngân sách / giao nền) đều nạp trước `NapKhungTruoc` khung kế tiếp cùng hướng (khung = hướng × số khung mỗi
+    hướng + chỉ số, xoay vòng trong hướng) để NPC đã hiện không nháy khi đổi khung. Vòng đời: `TextureResSpr::Release` → `JxNapKhungHuy` (bỏ
+    việc chưa chạy, CHỜ việc đang chạy vài ms, bỏ kết quả); `NapNenDung` dọn hàng; luồng nền không bao giờ giữ `m_ImageProcessLock` nên không
+    kẹt. `NapKhungNen=0` = như cũ. Hỏi kích thước / alpha từ logic (`m_bVeDangDien=false`) vẫn nạp đồng bộ như cũ — `[VE-NAP]` đếm riêng
+    "nạp đồng bộ NGOÀI lúc vẽ" để biết phần này có đáng làm tiếp không.
+  - **Đo trình chiếu** (`CDevGpu::SubmitFrame`, `D3D9onGPUDev.cpp`): chờ lệnh + swapchain / chép lên GPU (số texture tải, KB, ring KB) / ghi lệnh
+    render pass (lệnh, quad, đỉnh, pass, đổi pipeline / texture-sampler / uniform vs / ps / cắt-viewport) / nộp; `JxGopVo` đếm lý do quad không
+    gộp vào lệnh trước theo thứ tự kiểm: stride, không liên tiếp trong ring, pipeline, texture0, texture1/sampler, vs, ps, cắt.
+  - **Đọc log** (`jx_rep3.log`, bộ gửi đã có tệp này): mỗi 30 s `[VE]` (TB/max từng bước, khung SubmitFrame > 8 / > 16 ms, vẽ CPU Begin→End),
+    `[VE-GOP]` (đổi trạng thái mỗi khung + lý do không gộp cả kỳ), `[VE-NAP]` (giao / xong / hỏng / bỏ, bỏ vẽ, đồng bộ trong ngân sách, hàng chờ
+    max, trễ giao→áp, luồng nền bận ms, áp trên luồng vẽ, nạp đồng bộ NGOÀI lúc vẽ); mỗi khung chậm `[VE-GIAT]` (tối đa 12 dòng / 10 s):
+    tổng = vẽ CPU (nạp tách tệp spr / rút khung / giải mã / tạo GPU / ngoài vẽ) + trình chiếu (chờ / chép / ghi / nộp). **Kiểm trên Fold 7:** vào
+    chỗ đông; kỳ vọng `[REP3-NAP]` "khung có nạp > 16 ms" ≈ 0 và `[SPIKE] paint` không còn 56–157 ms; `[VE-NAP]` bỏ vẽ vài trăm lượt / 30 s
+    là bình thường (mỗi lượt = một khung ảnh trễ 8–16 ms); nếu thấy NPC nháy → tăng `NapKhungMs` (4–5) hoặc `NapKhungTruoc` (3).
+  - **Mục 2 (cache giao diện) và 3 (gộp lệnh): chưa đổi mã.** Số y2: 1 993 quad → 1 672 lệnh / khung (gộp 1,2 quad / lệnh); `[VE-GOP]` sẽ nói vì
+    sao (dự đoán: đổi trang atlas ở texture0 — 203 trang 1024², mỗi sprite một chỗ). Nếu đúng thì việc tiếp là trang atlas lớn hơn / gom các
+    khung cùng sprite vào một trang, lợi hơn cache giao diện (UI chỉ 341 / ~2 500 đơn vị vẽ mỗi khung; cache ở GPU không bớt được phần CPU sinh
+    lệnh, mà phần GPU của 341 quad trên Adreno là không đáng kể). Quyết sau khi có `[VE]` / `[VE-GOP]` của Fold 7.
 - Nạp trước sprite NPC khi vào map (`NAPNPC` "trễ 437") — việc đã ghi trong [[mobile-tongkim-lag-goc]].
 - Sau khi bật nhịp PC mặc định: khi tick 10–15 ms xảy ra, `PaintSmooth=2` nội suy giúp mượt hơn (`cat ngang` thấp), nhưng không bù được khung mất.
 
