@@ -771,6 +771,9 @@ void KUiPlayerBar::Initialize()
 
 	Wnd_AddWindow(this);
 #ifdef JX_ANDROID
+	//	[SUAGD 13/09 f] day buff = mot o "ThanhBuff" trong trinh chinh (chu goi la "mini skill"); vi tri da luu ap ngay khi dang ky
+	UiToaDo_DangKyORieng("ThanhBuff", KUiPlayerBar::BuffTrung, KUiPlayerBar::BuffLay, KUiPlayerBar::BuffDat, m_pSelf);
+	UiToaDo_DangKyORiengHinh("ThanhBuff", KUiPlayerBar::BuffHinh);
 	m_pSelf->NeoNhomTren();	// [NHOMTREN 12/09] bang trang thai goc tren-trai: giu do cao nhu ban PC tren man cao
 	KUiTaskTrace::NeoLaiKhiCoThanh();	// [TASKTRACE 12/09] khung theo doi nhiem vu mo truoc thanh nay -> neo lai canh nut
 #endif
@@ -815,12 +818,88 @@ void KUiPlayerBar::NeoNhomTren()
 			apO[i]->SetPosition(nX, nY - nThem);
 		}
 	}
+	if (UiToaDo_CoKhoa("ThanhBuff"))	// [SUAGD 13/09 f] nguoi choi da tu dat day buff -> khong dong nua
+		return;
 	for (i = 0; i < MAX_BUTTON_STATE; i++)
 	{
 		m_StateImg[i].GetPosition(&nX, &nY);
 		m_StateImg[i].SetPosition(nX, nY - nThem);
 		m_StateLife[i].GetPosition(&nX, &nY);
 		m_StateLife[i].SetPosition(nX, nY - nThem);
+	}
+}
+
+//	[SUAGD 13/09 f] "Mini skill" = day icon buff (chu 13/09: "mini skill toi khong chinh toa do duoc"): 20 o buff + 20 o
+//	thoi gian la con cung ten "BuffImage" / "txtBuffTime" nen khong co khoa rieng trong UiToaDo; gop thanh MOT o ve tay
+//	"ThanhBuff": vi tri = goc trai-tren (tuyet doi) cua o buff 0, doi cho = dich ca day; hinh = gop cac o dang hien,
+//	khong co buff nao thi lay 5 o dau (de van cham chon duoc trong trinh chinh).
+static void Buff_GopO(KWndWindow* pO, int* pL, int* pT, int* pR, int* pB, bool* pbCo)
+{
+	int l = 0, t = 0, w = 0, h = 0;
+
+	pO->GetAbsolutePos(&l, &t);
+	pO->GetSize(&w, &h);
+	if (w <= 0 || h <= 0)
+		return;
+	if (!*pbCo || l < *pL)		*pL = l;
+	if (!*pbCo || t < *pT)		*pT = t;
+	if (!*pbCo || l + w > *pR)	*pR = l + w;
+	if (!*pbCo || t + h > *pB)	*pB = t + h;
+	*pbCo = true;
+}
+
+void KUiPlayerBar::BuffHinh(void* p, int* pl, int* pt, int* pw, int* ph)
+{
+	KUiPlayerBar* pBar = (KUiPlayerBar*)p;
+	int  i, L = 0, T = 0, R = 0, B = 0;
+	bool bCo = false;
+
+	for (i = 0; i < MAX_BUTTON_STATE; i++)
+	{
+		if (!pBar->m_StateImg[i].IsVisible())
+			continue;
+		Buff_GopO(&pBar->m_StateImg[i], &L, &T, &R, &B, &bCo);
+		Buff_GopO(&pBar->m_StateLife[i], &L, &T, &R, &B, &bCo);
+	}
+	if (!bCo)
+	{
+		for (i = 0; i < 5 && i < MAX_BUTTON_STATE; i++)
+		{
+			Buff_GopO(&pBar->m_StateImg[i], &L, &T, &R, &B, &bCo);
+			Buff_GopO(&pBar->m_StateLife[i], &L, &T, &R, &B, &bCo);
+		}
+	}
+	*pl = L; *pt = T; *pw = R - L; *ph = B - T;
+}
+
+bool KUiPlayerBar::BuffTrung(void* p, int x, int y)
+{
+	int l = 0, t = 0, w = 0, h = 0;
+
+	BuffHinh(p, &l, &t, &w, &h);
+	return x >= l && x < l + w && y >= t && y < t + h;
+}
+
+void KUiPlayerBar::BuffLay(void* p, int* px, int* py)
+{
+	((KUiPlayerBar*)p)->m_StateImg[0].GetAbsolutePos(px, py);
+}
+
+void KUiPlayerBar::BuffDat(void* p, int x, int y)
+{
+	KUiPlayerBar* pBar = (KUiPlayerBar*)p;
+	int  i, ax = 0, ay = 0, nX = 0, nY = 0;
+
+	pBar->m_StateImg[0].GetAbsolutePos(&ax, &ay);
+	if (x == ax && y == ay)
+		return;
+	g_DebugLog("[SUAGD] ThanhBuff: dat %d,%d (dang %d,%d)", x, y, ax, ay);	// [SUAGD 13/09 g] tim ai doi day buff
+	for (i = 0; i < MAX_BUTTON_STATE; i++)
+	{
+		pBar->m_StateImg[i].GetPosition(&nX, &nY);
+		pBar->m_StateImg[i].SetPosition(nX + (x - ax), nY + (y - ay));
+		pBar->m_StateLife[i].GetPosition(&nX, &nY);
+		pBar->m_StateLife[i].SetPosition(nX + (x - ax), nY + (y - ay));
 	}
 }
 #endif

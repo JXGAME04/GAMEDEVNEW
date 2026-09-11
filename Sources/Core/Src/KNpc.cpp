@@ -8988,6 +8988,9 @@ int	KNpc::PaintMana(int nHeightOffset)
 	return nHeightOffset + nHei;
 }
 
+#ifdef JX_ANDROID
+int g_nJxMucTieuDichX = 0, g_nJxMucTieuDichY = 0;	// [SUAGD 13/09 g] UiTargetInfo.cpp dat: khung muc tieu da bi doi (trinh chinh / bo neo) so voi ini (dinh nghia o Core vi CoreClient la thu vien rieng)
+#endif
 int KNpc::PaintTargetInfo(KUiPlayerItem* m_pPlayersList, KUiPlayerPaintTeamMNG* nPainTMG)
 {
 	for (int i = 0; i < nPainTMG->nCountS; i++)
@@ -9015,11 +9018,18 @@ int KNpc::PaintTargetInfo(KUiPlayerItem* m_pPlayersList, KUiPlayerPaintTeamMNG* 
 		Blood.Color.Color_b.a = 0;
 		Blood.oPosition.nX = 420;
 		Blood.oPosition.nY = 65 + i * verDistance - 10;
+#ifdef JX_ANDROID
+		Blood.oPosition.nX += g_nJxMucTieuDichX;	// [SUAGD 13/09 g] thanh mau di theo khung muc tieu
+		Blood.oPosition.nY += g_nJxMucTieuDichY;
+#endif
 		if (i <= 2)
 			nHei_life = 6;
 		Blood.oPosition.nZ = nHeightOffset_life + nHei_life - nOffSet_member;
 		Blood.oEndPos.nX = Blood.oPosition.nX + nWid * nX / 100;
 		Blood.oEndPos.nY = 75 + i * verDistance - 10; 
+#ifdef JX_ANDROID
+		Blood.oEndPos.nY += g_nJxMucTieuDichY;	// [SUAGD 13/09 g]
+#endif
 		Blood.oEndPos.nZ = nHeightOffset_life - nOffSet_member;
 		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, TRUE);
 

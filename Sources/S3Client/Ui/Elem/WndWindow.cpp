@@ -502,8 +502,13 @@ int KWndWindow::PtInWindow(int x, int y)
 	int nRet = 0;
 	// [UITOADO] o da bi "xoa" thi khong bat chuot nua - tru khi dang o
 	// che do sua giao dien, luc do van phai bam duoc de bat hien lai
+#ifdef JX_ANDROID
+	if ((m_Style & WND_S_UITOADO_AN) && !UiToaDo_HienOAn())	// [SUAGD 13/09 e] chi khi trinh chinh dang "hien o da giau"
+		return 0;
+#else
 	if ((m_Style & WND_S_UITOADO_AN) && !UiToaDo_DangSua())
 		return 0;
+#endif
 	if (m_Style & WND_S_VISIBLE)
 	{
 		if ((m_Style & WND_S_SIZE_WITH_ALL_CHILD) == 0)
@@ -535,8 +540,13 @@ void KWndWindow::Paint()
 {
 	// [UITOADO] o da bi "xoa" thi khong ve nua (ca o con cua no) - tru khi
 	// dang o che do sua giao dien, luc do van ve de con thay ma hien lai
+#ifdef JX_ANDROID
+	if ((m_Style & WND_S_VISIBLE) &&
+		((m_Style & WND_S_UITOADO_AN) == 0 || UiToaDo_HienOAn()))	// [SUAGD 13/09 e] o da giau: chi ve khi dang "hien o da giau"
+#else
 	if ((m_Style & WND_S_VISIBLE) &&
 		((m_Style & WND_S_UITOADO_AN) == 0 || UiToaDo_DangSua()))
+#endif
 	{
 		PaintWindow();
 		if (m_pFirstChild)

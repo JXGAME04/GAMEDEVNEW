@@ -158,3 +158,147 @@ trực tiếp trên máy ảo song song với kịch bản:
   mở Chỉnh giao diện) và báo lại: đó là số đo đầu tiên của vùng an toàn trên máy thật.
 - Muốn tắt nhanh từng phần: `KhungHaiHo=0` (khung vẽ), `VungAnToan=0` (neo theo mép màn), `SuaToaDo=0` (giấu nút
   Chỉnh giao diện), `NeoTheoMep=0` (bỏ cả neo).
+
+## 7. Bổ sung tối 13/09 — lượt d và e (ba yêu cầu mới của chủ + câu hỏi "mini skill góc phải")
+
+Chủ (sau lượt 7): *"tạm thời lưu tọa độ hiện tại làm mặc định và tôi muốn bạn xóa đi các icon tôi đã ẩn; các giao
+diện khi bấm vào icon chưa chỉnh sửa tọa độ được; các phần lúc đăng nhập vào game chưa tự căn chỉnh được"*, rồi:
+*"bạn có xóa nhầm mini skill góc phải màn hình không, tôi đang nói xóa các icon đã ẩn thôi"*.
+
+### 7.1 Bố cục mặc định = bố cục chủ đang dùng (`[SUAGD 13/09 d]`)
+
+- `android/sinh_bocuc_macdinh_tu_chu.py` (mới, trong repo): đọc tệp người chơi mới nhất trên máy ảo
+  (`D:\jx1_android_data\userdata\uitoado_<id>.ini`), giữ các dòng `Goc.<lớp>=<mục>` cũ, ghi ra cả hai họ
+  `ui/uitoado_macdinh_rong.ini` (điện thoại) và `ui/uitoado_macdinh.ini` (máy tính bảng) + bản sao vào cây máy ảo.
+  Chạy lại bất cứ lúc nào chủ muốn "lấy bố cục hiện tại làm mặc định".
+- 7 khung màn đăng nhập (`KUiInit|Main`, `KUiLogin|Main`, `KUiConnectInfo|Main`, `KUiSelNativePlace|Main`,
+  `KUiSelServer|Main`, `KUiSelPlayer|SelRole`, `KUiNewPlayer|NewPlayer`) đặt `NeoY=1` (neo giữa dọc) trong mặc định và
+  trong tệp người chơi trên máy ảo → khung 800x600 nằm giữa màn mọi tỉ lệ, không còn dính mép trên.
+- Cửa sổ mở từ icon (hành trang, nhân vật, võ công, bang hội, tổ đội, tuỳ chọn, hộp hệ thống, rương, cửa hàng, giao
+  dịch, thư, đấu giá, Auto, bản đồ) và khung đăng nhập vào danh sách trắng với cờ 7 (chỉ dời chỗ, không phóng, không
+  giấu, không kẹp). Cửa sổ gốc **bất kỳ** đang mở mà không có trong danh sách cũng tự được thêm lúc làm mới (tên = tên
+  lớp) → chạm thân cửa sổ là chọn được. Trình chỉnh bật được ở mọi màn (cả màn đăng nhập) qua nút nổi.
+- Đã kiểm trên máy ảo: chạm thân cửa sổ Liên lạc (`KUiChatCentre|Main`, tự thêm) → chọn, kéo → dời (710,73 → 636,97).
+
+### 7.2 "Xoá icon đã ẩn" và câu hỏi "mini skill góc phải" (`[SUAGD 13/09 e]`)
+
+Điều tra: 6 ô có cờ giấu trong tệp của chủ (`KUiPlayerBar|AutoPlay`, `HideWindow`, `PartnerIcon`,
+`ImediaLeftSkill`, `ImediaRightSkill`, `KUiToolsControlBar|Rec`) **đã bị giấu từ bố cục mặc định 12/09** (mọi bản từ
+883d6ae1), chủ không tự giấu ô nào thêm. Trước lượt d, trình chỉnh **vẽ cả ô đã giấu** (khung đỏ, vì
+`KWndWindow::Paint` bỏ qua cờ giấu khi đang sửa) nên chủ thấy nút **Auto** (ảnh hai kiếm chéo `autobt3.spr`, trông như
+một ô kỹ năng nhỏ) và đã kéo nó lên góc phải trên (924,238 → 1006,168); trong game bình thường nó không hiện. Lượt d
+gỡ 6 khoá khỏi danh sách trắng → ô vẫn được vẽ khi sửa nhưng không chọn được nữa → chủ hỏi "xoá nhầm mini skill".
+
+Sửa (lượt e):
+- **Nút Auto hiện lại** ở đúng chỗ chủ đã kéo (`KUiPlayerBar|AutoPlay=1006,168,1000,0,2,0`) trong mặc định hai họ và
+  trong hai tệp người chơi trên máy ảo (`HIEN_LAI` trong `sinh_bocuc_macdinh_tu_chu.py`). Nếu chủ không cần: chạm ô →
+  Giấu.
+- Ô đã giấu nay **bị cắt hẳn khỏi trình chỉnh** (không vẽ, không chọn, không bắt dính) — đúng nghĩa "xoá" — nhưng
+  **không mất**: bấm nút **Giấu khi không chọn ô** (nhãn đổi thành "Ô đã giấu") → hiện các ô đã giấu với khung đỏ,
+  chạm ô rồi bấm "Hiện lại"; bấm lại ("Cất ô giấu") hoặc đóng trình chỉnh → cất. `KWndWindow::Paint` / `PtInWindow`
+  (Android) hỏi `UiToaDo_HienOAn()` thay vì `UiToaDo_DangSua()`; bản PC giữ nguyên dòng cũ trong `#else`.
+- 6 khoá trở lại danh sách trắng (Nút Auto ở hàng icon; 5 khoá còn lại ở mục "giấu sẵn" cuối tệp). Nhãn nút Giấu
+  theo ngữ cảnh: "Giấu" / "Hiện lại" (ô đang chọn đã giấu) / "Ô đã giấu" / "Cất ô giấu".
+- Kiểm: `ninja` x86_64 cho `UiToaDo.cpp` + `WndWindow.cpp` 0 lỗi; APK `jx1mobile-1309-suagd-i`; Windows
+  ReleaseSDL|x64 + Release|x64 (`WndWindow.cpp` là mã dùng chung) đều 0 lỗi. Máy ảo: ô đã giấu không còn vẽ khi mở
+  trình chỉnh; bấm "Ô đã giấu" → khung đỏ + dòng nhắc; nút Auto hiện ở góc phải trên (ảnh `ld/shot9_1.png`, `shot9_2.png`).
+
+### 7.4 Lượt f — chủ trả lời ngay sau lượt e (ảnh nút hai kiếm chéo): *"icon này tôi không giấu được? nó dư thừa; mini skill tôi không chỉnh tọa độ được; hiển thị thông tin nhân vật cũng vậy"*
+
+Kết luận: "mini skill" **không phải** nút Auto (đoán sai ở lượt e). Nút Auto là ô dư thừa → **giấu lại** trong mặc định hai
+họ và trong tệp người chơi trên máy ảo (`HIEN_LAI = []`). Lúc chủ thử giấu, máy ảo còn chạy danh sách trắng lượt d (chưa
+có `KUiPlayerBar|AutoPlay`) nên không chọn được; nay có trong danh sách, muốn giấu/hiện tự làm được.
+
+Hai ô chủ không chỉnh được, tìm theo `bocuc_thuc.txt`:
+
+- **"Mini skill" = dãy icon buff** (`KUiPlayerBar|BuffImage` × 20 + `txtBuffTime` × 20, `[BuffPos] XY=120,28
+  End=26,27 MaxIHeight=10,20` trong `uiplayerbar.ini`; cùng tên gọi với `UiMiniSkill` = bảng buff của nhánh PC
+  USVOLAM). 40 ô con **cùng tên mục ini** nên hệ UiToaDo không có khoá riêng cho từng ô → gộp thành **một ô vẽ tay
+  `ThanhBuff`** (`UiPlayerBar.cpp`, `KUiPlayerBar::BuffTrung/BuffLay/BuffDat/BuffHinh`, đăng ký bằng
+  `UiToaDo_DangKyORieng` + `UiToaDo_DangKyORiengHinh` trước `NeoNhomTren()`): vị trí = góc trái-trên tuyệt đối của ô
+  buff 0, dời = dịch cả dãy; hình = gộp các ô đang hiện, không có buff nào thì lấy 5 ô đầu để vẫn chạm chọn được.
+  `NeoNhomTren` không dồn dãy buff nữa khi người chơi đã tự đặt (`UiToaDo_CoKhoa("ThanhBuff")`). Danh sách trắng:
+  `ThanhBuff=Mini skill - buff,1`.
+- **"Hiển thị thông tin nhân vật" = khung mục tiêu `KUiTargetInfo`** (tên + máu của NPC/người đang chọn, hiện giữa
+  trên: "Tiêu Dao Mật Sứ 100%"). Cửa sổ gốc chỉ 27x23 tại (370,0) còn hộp hiện nằm ở ô con (0,33)…(170,66) → thêm
+  **cờ 8 = gộp cả ô con đang hiện** khi tính hình (`SUAGD_CO_GOPCON`, `SuaGd_HinhKWnd(…, nCo)`); áp cho
+  `KUiTargetInfo|Main=Khung mục tiêu,9` và `KUiHeaderControlBar|Main=Thanh trên,9` (thanh 17 px + dòng số bên dưới).
+  Không áp đại trà cho mọi cửa sổ gốc vì `KUiMiniMap` có ô con `NameShadow` ở y = −2 → lượt kẹp sẽ đẩy bản đồ xuống.
+- Thanh trên (`KUiHeaderControlBar|Main`) vốn đã chọn/kéo được (thử: 172,0 → 172,58 rồi hoàn tác) — chủ có thể đã
+  chạm vào dòng số nằm ngoài khung 17 px; cờ 9 gộp luôn dòng số.
+
+Kiểm: `ninja` x86_64 `UiToaDo.cpp` + `UiPlayerBar.cpp` 0 lỗi; APK `jx1mobile-1309-suagd-j` (= `android/apk/jx1mobile-1309-suagd.apk`);
+Windows ReleaseSDL|x64 + Release|x64 (`UiPlayerBar.cpp/.h` là mã dùng chung, phần thêm nằm trong `JX_ANDROID`) 0 lỗi.
+Máy ảo: chạm (150,45) → "Mini skill - buff 268x86", kéo +50 → cả dãy icon lẫn dòng giây đi theo; "Thanh trên" 552x27.
+
+### 7.6 Lượt g — chủ thử ngay lượt f: *"di chuyển được nhưng thanh máu màu đỏ không di chuyển theo"* (ảnh khung mục tiêu "Sự Kiện Tết Đoàn 100%") và *"tống kim cũng bị lệch mà không chỉnh tọa độ được"*
+
+- **Thanh máu đỏ của khung mục tiêu**: `KUiTargetInfo::PaintWindow` không tự vẽ mà gọi Core
+  (`GOI_DRAW_TARGET_INFO` → `KNpc::PaintTargetInfo`, `KNpc.cpp`), và Core vẽ thanh máu ở toạ độ **cố định**
+  `x = 420, y = 55..65` (khung 800x600, `[Main]` ở 370,0; `nWeightOffset` trong ini không dùng). Các ô con KWnd (tên,
+  nền, đầu) đi theo cửa sổ, riêng thanh máu thì không. Sửa (chỉ `JX_ANDROID`): `UiTargetInfo.cpp` đọc `[Main] Left/Top`
+  của ini, mỗi lần vẽ tính `g_nJxMucTieuDichX/Y = vị trí tuyệt đối − ini`; `KNpc.cpp` cộng hai số này vào toạ độ thanh
+  máu. Bản PC: dòng cũ nguyên vẹn (rào `#ifdef`).
+- **Tống Kim lệch**: bảng điểm `KUiTongKimScore|Main` (469x122) nằm ở 119,45 với `NeoX=1` trong bố cục nhập từ bản
+  PC 12/09 → trên 1040 vẫn 119 (tệp `ManHinh=1040` nên neo không cộng gì) = lệch trái. Đưa vào danh sách trắng
+  (`KUiTongKimScore|Main=Bảng điểm Tống Kim,1`, `KUiTongKimInfo|Main=Bảng Tống Kim,1`) và đặt mặc định **285,45** (căn
+  giữa 1040, `NeoX=1` nên màn rộng hơn vẫn giữa) trong hai tệp mặc định + tệp người chơi trên máy ảo. Chủ muốn chỗ
+  khác thì kéo.
+- **Chạm suông làm ô nhích**: khi thử dãy buff thấy chạm (không kéo) vẫn qua `SuaGd_Keo` → bắt dính tới 6 điểm. Thêm
+  vùng chết `SUAGD_KEO_CHET = 5`: ngón chưa đi quá 5 điểm kể từ lúc chạm thì không đổi, không bắt dính.
+- Chưa giải thích được: dãy buff ở 121,28 lúc vào game nhưng lúc mở trình chỉnh đã là 96,29 (−25,+1) trước khi
+  chạm. Đã thêm nhật ký `[SUAGD] ThanhBuff: dat …` trong `KUiPlayerBar::BuffDat` để bắt kẻ dời; xem logcat lượt sau.
+- Khung mục tiêu có mục mặc định `KUiTargetInfo|Main=370,0,1000,0,1,0` (neo giữa ngang) để màn rộng hơn vẫn ở giữa.
+
+- Chủ (ảnh bảng Tống Kim): *"nó bị lồi chữ tống kim ra ngoài, đúng là nó nằm giữa"* → mục `KUiTongKimInfo|Title=120,4,…,NeoX=1`
+  trong bố cục là vết cộng +120 của lần đổi 800→1040 (12/09) áp nhầm cho ô CON (ini `[Title] Left=0`, bảng rộng 221) →
+  tiêu đề thò ra ngoài bảng. Xoá mục này khỏi hai tệp mặc định + tệp người chơi; cùng lúc rà các mục con khác có neo ≠ 0:
+  còn lại đều là mục chủ tự đặt (icon, ô phím…), không phải vết.
+- Bẫy khi "dọn" tệp bố cục lúc game đang chạy: bảng trong bộ nhớ vẫn giữ mục cũ (`ThanhBuff=96,29`, `Title`) và **ghi lại
+  cả vào tệp mặc định** mỗi lần chủ bấm Xong / Lưu MĐ → phải dừng game, dọn tệp, rồi mới cài APK (script `thu_h.sh`).
+- `[Ui] NhatKyBoCuc=2` (mới): `ApMotO` ghi `[UITOADO] ap <khoá> -> x,y` cho từng ô lúc áp bố cục — dùng để soi ô "nhảy về
+  chỗ cũ" (khung mục tiêu từng đọc ra 369,−1 dù tệp người chơi ghi 664,83). Khung mục tiêu là `KWndShowAnimate`: mỗi lần
+  ẩn/hiện nó `SetPosition(m_oFixPos)`; `m_oFixPos` chỉ được cập nhật qua `UiNhoViTri()` (ApMotO và kéo trong trình chỉnh
+  đều gọi) — không thấy lối nào khác, nên theo dõi bằng nhật ký mức 2 ở lượt sau.
+
+- Kiểm lượt g (APK `jx1mobile-1309-suagd-l`, tệp dọn sạch trước khi cài): nhật ký mức 2 ghi `ap KUiTargetInfo|Main -> 664,83`
+  và `ap KUiTongKimScore|Main -> 285,38` ở cả ba lần áp (vùng an toàn, nhân vật), `bocuc_thuc.txt` xác nhận khung mục tiêu
+  nằm đúng 664,83, không còn dòng `ThanhBuff: dat` (dãy buff giữ chỗ ini). Windows S3Client hai cấu hình + Core
+  `Client ReleaseSDL|x64` + `Client Release|x64` đều 0 lỗi.
+
+### 7.8 Lượt h — ảnh điện thoại (2000x868): *"khi chơi trên điện thoại nó chưa tự căng chỉnh"*
+
+Đọc ảnh: cụm trái bắt đầu ở ~78 điểm lô-gic thay vì mép, cụm phải dừng ở ~71 điểm trước mép, thanh máu bị đẩy xuống ~46
+điểm, đáy ~6. Đó không phải bố cục sai mà là **vùng an toàn quá rộng**: `SDLSurface.onApplyWindowInsets` của SDL3 gộp
+`systemBars + systemGestures + mandatorySystemGestures + tappableElement + displayCutout` → vùng cử chỉ lùi (~30 dp mỗi
+bên) và thanh trạng thái (dù đã ẩn) đều thành lề, còn `VungAnToanDoiXung=1` áp lề lớn hơn cho cả hai bên.
+
+Sửa (`[ANTOAN 13/09 b]`):
+- `JxActivity.datVungAnToanTheoCamera()` (gọi ngay sau `super.onCreate`): thay listener inset của `SDLSurface` (mỗi View chỉ
+  một listener) bằng listener chỉ lấy **`displayCutout`** (API 30: `getInsets(Type.displayCutout())`; API 28–29:
+  `getDisplayCutout()`), rồi gọi `SDLActivity.onNativeInsetsChanged` như SDL. Máy không có chỗ khoét → 0,0,0,0 = neo sát
+  mép như máy ảo.
+- `VungAnToanDoiXung` mặc định 0 (config + `KSdlApp.cpp`): chỉ mép có camera bị lùi, mép kia sát màn.
+- Cách kiểm trên điện thoại: mở "Chỉnh giao diện", dòng dưới bảng ghi `<khung> ĐT | an toàn <x,y> <w>x<h>`; mong đợi
+  `an toàn 0,0` (hoặc chỉ một mép lùi bằng đúng lỗ camera).
+
+### 7.9 Lượt i — phiên DONHIP báo APK m thiếu bản vá SDL (23:45)
+
+`ThirdParty/SDL3-src/` nằm trong `.gitignore`, nên bản vá `[DONHIP 12/09]` trong `src/gpu/vulkan/SDL_gpu_vulkan.c` (đếm
+`VK_SUBOPTIMAL_KHR`, hint `JX_BO_QUA_SUBOPTIMAL` = bản sửa bca30aa của SDL) không đi theo git. Cây này chép SDL3-src từ
+`wt_mobile` (chưa vá) → mọi APK dựng ở đây (a…m) đều thiếu vá; trên Fold 7 pha 1 của DONHIP vô hiệu, chỉ 28–45 khung/s
+(nhật ký "SDL dem: … (chua co hint)"). Máy ảo không lộ vì LDPlayer hướng gốc ngang.
+
+Sửa: chạy `python androida_sdl3_donhip.py` trong cây (idempotent, kiểm `grep -c "DONHIP 12/09"` = 3), dựng lại APK
+(`jx1mobile-1309-suagd-n`), thay vào dt_v4 + khởi động lại 8765. **Quy tắc cho cây mới:** vá SDL3-src trước khi dựng APK.
+
+### 7.7 Trạng thái cuối
+
+- Máy ảo + dt_v4: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt i, `jx1mobile-1309-suagd-n`, dựng 23:49 từ `7702bab0` + SDL3 đã vá DONHIP; libSDL3.so có hint `JX_BO_QUA_SUBOPTIMAL`).
+- Điện thoại (23:33): đã tự đưa APK m thành `D:\jx1_android_data_dt_v4\jx1mobile.apk` (apk.txt versionCode 109102329), đổi
+  `VungAnToanDoiXung=0` trong config của dt_v4 (các khoá khác của phiên 144 Hz giữ nguyên), khởi động lại
+  `may_chu_tai_du_lieu.py` đúng dòng lệnh cũ; phiên nối tiếp `bangiao-donhip-mobile-context-deaeff-ab` đã được báo. Tệp mặc định trên máy ảo và trong repo giống nhau.
+- Việc chủ/phiên 144 Hz cần làm cho điện thoại: chép `ui/uitoado_macdinh_rong.ini`, `ui/uitoado_macdinh.ini`,
+  `ui/uitoado_danhsach.ini`, `config.ini` và APK mới vào `D:\jx1_android_data_dt_v4`, xoá `manifest.txt`, khởi động
+  lại máy chủ 8765 (phiên 144 Hz quản lý cây này — đã nhắn).
+- Vẫn chưa đo Fold 7 (`bocuc_thuc.txt` hoặc dòng "Khung … an toàn" trong trình chỉnh).
