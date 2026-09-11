@@ -20,6 +20,13 @@
 #include "../../../Represent/iRepresent/iRepresentShell.h"
 extern iRepresentShell*	g_pRepresentShell;
 extern iCoreShell*	g_pCoreShell;
+#ifdef JX_ANDROID
+#include "../../../Represent/iRepresent/KRepresentUnit.h"	// [FPS 12/09] TEXT_IN_SINGLE_PLANE_COORD
+// [FPS 12/09] Platform/JxPerfHudAndroid.cpp: thanh chinh khung hinh/giay trong Cai dat (chu: "co thanh chinh FPS o cai dat")
+void JxNhip_DatMuc(int nMuc);							// ap muc: PaintFps + xin tan so man hinh
+void JxNhip_ChuMuc(int nMuc, char* sz, int n);			// chu canh thanh: "Tu dong (120)" / "60"
+void JxNhip_VeNen(int nX, int nY, int nRong, int nCao);	// nen mo (che nhan "Phim tat" ve san trong anh nen)
+#endif
 
 #define SCHEME_INI_OPTION		"UiOptions.ini"
 #define OPTIONS_SAVE_SECTION	"Options"
@@ -46,6 +53,9 @@ KUiOptions::KUiOptions()
 	m_nBrightness = 50;
 	m_nSoundValue = 100;
 	m_nMusicValue = 100;
+#ifdef JX_ANDROID
+	m_nFpsMuc = 0;	// [FPS 12/09]
+#endif
 	m_nShortcutSet = 0;
 	m_nFirstControlableIndex = 0;
 	m_nToggleBtnValidCount = 0;
@@ -116,6 +126,19 @@ void KUiOptions::CloseWindow()
 void KUiOptions::PaintWindow()
 {
 	KWndImage::PaintWindow();
+#ifdef JX_ANDROID
+	if (m_FpsScroll.IsVisible() && g_pRepresentShell)
+	{	// [FPS 12/09] nhan "FPS" (che nhan "Phim tat" ve san trong anh nen) + gia tri muc ben phai thanh
+		int nX = 0, nY = 0, nRong = 0, nCao = 0;
+		char sz[48];
+		m_FpsScroll.GetPosition(&nX, &nY);
+		m_FpsScroll.GetSize(&nRong, &nCao);
+		JxNhip_VeNen(m_nAbsoluteLeft + 4, m_nAbsoluteTop + nY - 3, nX - 8, nCao + 6);
+		g_pRepresentShell->OutputText(12, (char*)"FPS", 3, m_nAbsoluteLeft + 8, m_nAbsoluteTop + nY, 0xFFFEFFC3, 0, TEXT_IN_SINGLE_PLANE_COORD, 0xFF000000);
+		JxNhip_ChuMuc(m_nFpsMuc, sz, sizeof(sz));
+		g_pRepresentShell->OutputText(12, sz, (int)strlen(sz), m_nAbsoluteLeft + nX + nRong + 4, m_nAbsoluteTop + nY, 0xFFFFE28A, 0, TEXT_IN_SINGLE_PLANE_COORD, 0xFF000000);
+	}
+#endif
 	/*static int nFrame = 0;
 	//static int nLoop = 0;
 	static unsigned int nCurrentTime = 0;
@@ -163,6 +186,9 @@ void KUiOptions::Initialize()
 	AddChild(&m_BrightnessScroll);
 	AddChild(&m_BGMValue);
 	AddChild(&m_SoundValue);
+#ifdef JX_ANDROID
+	AddChild(&m_FpsScroll);	// [FPS 12/09]
+#endif
 	AddChild(&m_ShortcutSetView);
 	AddChild(&m_Scroll);
 	for (int i = 0; i < MAX_TOGGLE_BTN_COUNT; i++)
@@ -213,6 +239,11 @@ void KUiOptions::LoadScheme(KIniFile* pIni)
 	m_SoundValue.Init(pIni, "Sound");
 	m_ShortcutSetView.Init(pIni, "ShortcutSet");
 	m_Scroll.Init(pIni, "Scroll");
+#ifdef JX_ANDROID
+	if (!m_FpsScroll.Init(pIni, "Fps"))	// [FPS 12/09] ini chua co muc [Fps] (thieu lop ghi de) -> an thanh
+		m_FpsScroll.Hide();
+	m_ShortcutSetView.Hide();	// [FPS 12/09] bo phim tat khong dung tren dien thoai; hang nay danh cho thanh FPS
+#endif
 
 	m_StatusImage[0].Init(pIni, "ToggleStatus");
 	pIni->GetInteger("ToggleStatus", "NotCheckFrame", 0, &m_nStatusDisableFrame);
@@ -423,6 +454,10 @@ void KUiOptions::OnScrollBarPosChanged(KWndWindow* pWnd, int nPos)
 		SetSoundValue(nPos);
 	else if(pWnd == (KWndWindow*)&m_BrightnessScroll)
 		SetBrightness(nPos);
+#ifdef JX_ANDROID
+	else if (pWnd == (KWndWindow*)&m_FpsScroll)
+		SetFpsMuc(nPos);	// [FPS 12/09]
+#endif
 	else if (pWnd == (KWndWindow*)&m_Scroll)
 	{
 		if (m_nToggleItemCount < m_nToggleItemCount &&
@@ -493,6 +528,9 @@ void KUiOptions::LoadSetting(bool bReload, bool bUpdateOption)
 	int	nSoundValue  = 100;
 	int	nMusicValue  = 100;
 	int nSettingSet  = 0;
+#ifdef JX_ANDROID
+	int nFpsMuc = 0;	// [FPS 12/09]
+#endif
 	int i;
 
 	int bOptionsEnable[OPTION_INDEX_COUNT] =
@@ -506,6 +544,9 @@ void KUiOptions::LoadSetting(bool bReload, bool bUpdateOption)
 		nSoundValue  = m_pSelf->m_nSoundValue;
 		nMusicValue  = m_pSelf->m_nMusicValue;
 		nSettingSet  = m_pSelf->m_nShortcutSet;
+#ifdef JX_ANDROID
+		nFpsMuc = m_pSelf->m_nFpsMuc;	// [FPS 12/09]
+#endif
 
 		for (i = 0; i < OPTION_INDEX_COUNT; i++)
 			bOptionsEnable[i] = m_pSelf->m_ToggleItemList[i].bEnable;
@@ -519,6 +560,9 @@ void KUiOptions::LoadSetting(bool bReload, bool bUpdateOption)
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION, "MusicValue", 100, &nMusicValue);
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION, "SoundValue", 100, &nSoundValue);
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION, "ShortcutSet", 0, &nSettingSet);
+#ifdef JX_ANDROID
+			pSetting->GetInteger(OPTIONS_SAVE_SECTION, "FpsMuc", 0, &nFpsMuc);	// [FPS 12/09]
+#endif
 			for (i = 0; i < OPTION_INDEX_COUNT - 1; i++)
 				pSetting->GetInteger(OPTIONS_SAVE_SECTION, ls_ToggleOptionName[i], true, &bOptionsEnable[i]);
 			g_UiBase.CloseCommSettingFile(false);
@@ -543,6 +587,10 @@ void KUiOptions::LoadSetting(bool bReload, bool bUpdateOption)
 		g_pCoreShell->OperationRequest(GOI_OPTION_SETTING, OPTION_SOUND_VALUE, nSoundValue);
 		g_pCoreShell->OperationRequest(GOI_OPTION_SETTING, OPTION_WEATHER, bOptionsEnable[OPTION_I_WEATHER]);
 	}
+#ifdef JX_ANDROID
+	if (bUpdateOption)
+		JxNhip_DatMuc(nFpsMuc);	// [FPS 12/09] ap muc khung hinh nguoi choi da chon (luc mo game va moi lan nap lai)
+#endif
 
 	if (m_pSelf)
 	{
@@ -557,6 +605,10 @@ void KUiOptions::LoadSetting(bool bReload, bool bUpdateOption)
 			m_pSelf->m_BrightnessScroll.SetScrollPos(nBrightness);
 			m_pSelf->m_BGMValue.SetScrollPos(nMusicValue);
 			m_pSelf->m_SoundValue.SetScrollPos(nSoundValue);
+#ifdef JX_ANDROID
+			m_pSelf->m_nFpsMuc = nFpsMuc;
+			m_pSelf->m_FpsScroll.SetScrollPos(nFpsMuc);	// [FPS 12/09]
+#endif
 			m_pSelf->UpdateSettingSet(nSettingSet, true);
 			m_pSelf->UpdateAllToggleBtn();
 			m_pSelf->UpdateAllStatusImg();
@@ -582,6 +634,9 @@ void KUiOptions::StoreSetting()
 		pSetting->WriteInteger(OPTIONS_SAVE_SECTION, "MusicValue", m_nMusicValue);
 		pSetting->WriteInteger(OPTIONS_SAVE_SECTION, "SoundValue", m_nSoundValue);
 		pSetting->WriteInteger(OPTIONS_SAVE_SECTION, "ShortcutSet", m_nShortcutSet);
+#ifdef JX_ANDROID
+		pSetting->WriteInteger(OPTIONS_SAVE_SECTION, "FpsMuc", m_nFpsMuc);	// [FPS 12/09]
+#endif
 	}
 	g_UiBase.CloseCommSettingFile(true);
 }
@@ -646,3 +701,15 @@ void KUiOptions::SetBrightness(int n)
 		}
 	}
 }
+
+#ifdef JX_ANDROID
+// [FPS 12/09] thanh khung hinh/giay: doi muc -> ap ngay (PaintFps + xin tan so man hinh); luu khi dong cua so (StoreSetting)
+void KUiOptions::SetFpsMuc(int n)
+{
+	if (m_nFpsMuc != n)
+	{
+		m_nFpsMuc = n;
+		JxNhip_DatMuc(n);
+	}
+}
+#endif
