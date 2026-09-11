@@ -176,6 +176,27 @@ public:
 	void UpdateData();
 	const char*	GetShortKey();
 };
+// [TKXH 14/09] icon "Xep hang Tong Kim" tren thanh cong cu (uitoolscontrolbar.ini [TongKimXH] ClassType=Player_TongKimXH):
+// mo / dong KUiRankData - dung cua so ban PC mo bang phim dau huyen (autoexec.lua: AddCommand("`", "", "Open([[battlereport]])"),
+// ShortcutKey.cpp case 22). Anh: bxh_tk.spr kho VNKU thu nho, khung 0 thuong / khung 1 sang = dang mo.
+class Player_TongKimXH : public KWndButton
+{
+public:
+	DECLARE_COMCLASS(Player_TongKimXH)
+	void OnButtonClick();
+	void UpdateData();
+	const char*	GetShortKey();
+};
+// [KINHMACH 14/09] icon "Kinh mach" ([KinhMach] ClassType=Player_KinhMach): mo / dong KUiMeridian - ban PC bam F2
+// (autoexec.lua: AddCommand("F2", "", "Open([[meridian]])"), ShortcutKey.cpp case 12).
+class Player_KinhMach : public KWndButton
+{
+public:
+	DECLARE_COMCLASS(Player_KinhMach)
+	void OnButtonClick();
+	void UpdateData();
+	const char*	GetShortKey();
+};
 #endif
 
 class Player_ItemEx : public KWndButton

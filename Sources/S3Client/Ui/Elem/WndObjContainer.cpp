@@ -263,6 +263,14 @@ void KWndObjectBox::EnablePickPut(bool bEnable)
 
 int KWndObjectBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
+#ifdef JX_ANDROID
+	// [OPHIM 14/09 DUP] Chu: \"kich su dung vao o phim so 1-4 lien tuc ma khong dung lien tuc, rat cham\". KSdlApp doi hai lan cham
+	// cach nhau < 400 ms va < 24 diem thanh WM_LBUTTONDBLCLK (de dung mon trong tui bang nhay dup); o vat pham so 1-4 chi bat
+	// WM_LBUTTONDOWN (-> WND_N_ITEM_PICKDROP -> KUiPlayerBar::OnUseItem) nen tu lan cham nhanh thu hai tro di rot mat, phai
+	// nghi > 400 ms moi dung duoc mon tiep. O so: mot cham = dung ngay, nhay dup khong co nghia rieng -> coi nhu cham don.
+	if (uMsg == WM_LBUTTONDBLCLK && m_nContainerId == UOC_IMMEDIA_ITEM)
+		uMsg = WM_LBUTTONDOWN;
+#endif
 	switch(uMsg)
 	{
 #ifdef JX_ANDROID
