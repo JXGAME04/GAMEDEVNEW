@@ -5,6 +5,17 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **11:00 11/09 — LỖI HIỂN THỊ CỦA BẢN d+e (109111021) ĐÃ SỬA: `[VE 11/09 f]` = `5a72a37a`, bộ tải = 109111058 (md5 `74e8ea6e…`), máy chủ 8765
+> PID 345452.** Chủ báo 10:55 trên điện thoại: "lúc hiện lúc không spr lúc đăng nhập, vào game lỗi hiển thị map, cưỡi ngựa lúc ẩn lúc hiện đầu
+> đuôi ngựa". Nguyên nhân (lỗi của tôi trong `[VE 11/09 d]`): khối tô 0 trang atlas mới đặt SAU khối tải nội dung texture trong cùng copy pass;
+> trang mới và những ảnh đầu tiên trên nó nằm trong cùng một khung, lệnh copy chạy theo thứ tự → tô 0 đè lên ảnh vừa tải; bản CPU đã bỏ (BOCPU)
+> nên texture trống cho tới khi cache bỏ và nạp lại → UI đăng nhập ẩn hiện, ô map trống, khung ngựa trống theo chu kỳ hoạt ảnh. Trước d, vùng 0
+> nằm chung hàng `m_texUploads` nên luôn đi trước. Sửa = chuyển khối vùng 0 lên đầu copy pass (`android/va_nguon_android_ve4.py`, chỉ đổi chỗ).
+> Máy ảo 10:34 không lộ vì cảnh tĩnh, không cưỡi ngựa, không nhìn kỹ màn đăng nhập → bài học: mọi thay đổi đường tải texture phải thử cảnh có
+> trang atlas mới sinh + hoạt ảnh nhiều khung (ngựa) + màn đăng nhập. Số phiên 10:47 (d+e, 8 phút, có lỗi): `[VE-GOP]` texture0 77 % (b: 86–89 %),
+> đổi texture TB 273/khung (b: 416–498), ghi lệnh lúc đông 2,25 ms (b: 2,1–3,35) → e chỉ giảm một phần; fps đám đông vẫn 64–95; chủ: "fps tụt,
+> máy nóng, cpu cao chưa thay đổi gì nhiều" → BƯỚC KẾ = đo kỹ phần "vẽ khác" (mã vẽ client ngoài Represent3) + tick logic lúc đông trước khi sửa tiếp.
+
 > **10:30 11/09 — ĐÃ ĐỌC LOG FOLD 7 PHIÊN 09:31 (bản 109110317 có `[VE b+c]`, 33 phút) → `[VE 11/09 d]` đã viết + dịch (109111016), CHỜ THỬ MÁY ẢO.**
 > Mục 1 chạy đúng trên máy thật: `[VE-NAP]` giao 70 297 → xong 69 534, hỏng 625; giật vẽ ≥ 40 ms 13,1 → 4,6 lần/phút so với y2; khung nạp > 16 ms
 > 2,9 → 1,5 lần/phút; cửa sổ đông nhất 83–95 → 99–108 fps; `nhiet=0` suốt phiên ở 120 Hz (1,9–3,4 W). Hai điểm nghẽn mới (chi tiết §9 cuối,
