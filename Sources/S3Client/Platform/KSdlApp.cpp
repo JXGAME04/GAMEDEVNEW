@@ -1220,6 +1220,18 @@ void KSdlApp::NhipCham()
 }
 #endif
 
+#ifdef JX_ANDROID
+// [BKG 11/09] Represent3 khong trinh chieu khung giong het khung truoc; be mat / cua so doi (xoay, gap-mo, quay lai app, vung an toan, tieu diem)
+// thi khung ke tiep PHAI trinh chieu. Goi Rep3_JxEpTrinhChieu cua libRepresent3.so qua GetModuleHandle/GetProcAddress (lop tuong thich) nhu JxPerfHudAndroid.
+typedef void (*PFN_Rep3JxEpTrinhChieu)();
+static void JxSdl_EpTrinhChieu()
+{
+	static PFN_Rep3JxEpTrinhChieu s_pfn = NULL; static int s_nThu = 0;
+	if (!s_pfn && s_nThu < 8) { s_nThu++; HMODULE h = GetModuleHandleA("Represent3.dll"); if (h) s_pfn = (PFN_Rep3JxEpTrinhChieu)GetProcAddress(h, "Rep3_JxEpTrinhChieu"); }
+	if (s_pfn) s_pfn();
+}
+#endif
+
 bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 {
 	HWND hWnd = g_GetMainHWnd();
@@ -1235,6 +1247,10 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 #ifdef JX_ANDROID
 	if (ChamSuKien(ev))		// [ANDROID 09/09 CHAM] su kien chuot do NGON TAY sinh ra di duong rieng
 		return true;
+	if (ev.type == SDL_EVENT_WINDOW_SHOWN || ev.type == SDL_EVENT_WINDOW_EXPOSED || ev.type == SDL_EVENT_WINDOW_RESIZED || ev.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
+		|| ev.type == SDL_EVENT_WINDOW_RESTORED || ev.type == SDL_EVENT_WINDOW_DISPLAY_CHANGED || ev.type == SDL_EVENT_WINDOW_SAFE_AREA_CHANGED
+		|| ev.type == SDL_EVENT_WINDOW_FOCUS_GAINED || ev.type == SDL_EVENT_DID_ENTER_FOREGROUND)
+		JxSdl_EpTrinhChieu();	// [BKG 11/09] be mat / cua so doi -> khung ke tiep phai trinh chieu (khong doi luong su kien ben duoi)
 #endif
 	switch (ev.type)
 	{

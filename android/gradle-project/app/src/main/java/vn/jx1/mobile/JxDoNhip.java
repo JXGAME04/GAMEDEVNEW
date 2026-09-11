@@ -62,6 +62,7 @@ public final class JxDoNhip implements DisplayManager.DisplayListener
     private final SimpleDateFormat mGio = new SimpleDateFormat("HH:mm:ss.SSS", Locale.US);
     private DisplayManager mDm;
     private boolean mDung = false;
+    private boolean mSysDaTim = false; private String mGpuBanDuong = null, mGpuXungDuong = null;   // [MAU 11/09] duong sysfs GPU doc duoc
 
     /** goi trong JxActivity.onCreate: chi bat khi config.ini [DoNhip] Bat=1 hoac GuiLog=1 */
     public static synchronized void batDau(Activity a)
@@ -189,9 +190,53 @@ public final class JxDoNhip implements DisplayManager.DisplayListener
                 sb.append(String.format(Locale.US, " | pin=%d%% %.1fC %s dong=%d uA ap=%d mV p=%.2f W",
                         thang > 0 ? muc * 100 / thang : muc, nhietDo / 10.0, sac ? "SAC" : "khong_sac", uA, mV, w));
             }
+            sb.append(mauSys());   // [MAU 11/09] gpu=% gpu_mhz cpu_mhz
             ghi(sb.toString());
         }
         catch (Throwable t) { ghi("[LOI] ghiMau " + t); }
+    }
+
+    // [MAU 11/09] GPU ban (%), xung GPU (MHz), xung CPU tung nhan (MHz) tu sysfs - de biet phan GPU trong dien/nhiet (phuong an D0).
+    // May khong cho doc thi ghi '-' ; tim duong mot lan, ghi [GPU-SYS]. Loi gi cung nuot.
+    private static final String[] GPU_BAN = { "/sys/class/kgsl/kgsl-3d0/gpu_busy_percentage", "/sys/kernel/gpu/gpu_busy", "/sys/class/misc/mali0/device/utilization", "/sys/devices/platform/mali.0/utilization" };
+    private static final String[] GPU_XUNG = { "/sys/class/kgsl/kgsl-3d0/gpuclk", "/sys/class/kgsl/kgsl-3d0/devfreq/cur_freq", "/sys/kernel/gpu/gpu_clock", "/sys/class/misc/mali0/device/clock" };
+    private static String docSys(String p)
+    {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(p), StandardCharsets.US_ASCII)))
+        { String l = r.readLine(); return l == null ? null : l.trim(); }
+        catch (Throwable t) { return null; }
+    }
+    private static long soDau(String s) { try { String d = s.replaceAll("[^0-9].*$", ""); return d.isEmpty() ? -1 : Long.parseLong(d); } catch (Throwable t) { return -1; } }
+    private static long raMhz(long v) { return v >= 100000000L ? v / 1000000L : (v >= 100000L ? v / 1000L : v); }   // Hz / kHz / MHz -> MHz
+    private String mauSys()
+    {
+        StringBuilder sb = new StringBuilder();
+        try
+        {
+            if (!mSysDaTim)
+            {
+                mSysDaTim = true;
+                for (String p : GPU_BAN) if (docSys(p) != null) { mGpuBanDuong = p; break; }
+                for (String p : GPU_XUNG) if (docSys(p) != null) { mGpuXungDuong = p; break; }
+                ghi("[GPU-SYS] " + gio() + " ban=" + (mGpuBanDuong == null ? "khong doc duoc" : mGpuBanDuong) + " xung=" + (mGpuXungDuong == null ? "khong doc duoc" : mGpuXungDuong));
+            }
+            String ban = mGpuBanDuong == null ? null : docSys(mGpuBanDuong);
+            String xung = mGpuXungDuong == null ? null : docSys(mGpuXungDuong);
+            long nBan = ban == null ? -1 : soDau(ban), nXung = xung == null ? -1 : soDau(xung);
+            sb.append(" | gpu=").append(nBan < 0 ? "-" : (nBan + "%"));
+            if (nXung >= 0) sb.append(" gpu_mhz=").append(raMhz(nXung));
+            StringBuilder c = new StringBuilder();
+            for (int i = 0; i < 12; i++)
+            {
+                String f = docSys("/sys/devices/system/cpu/cpu" + i + "/cpufreq/scaling_cur_freq");
+                if (f == null) { if (i == 0) continue; break; }
+                if (c.length() > 0) c.append('/');
+                c.append(raMhz(soDau(f)));
+            }
+            if (c.length() > 0) sb.append(" cpu_mhz=").append(c);
+        }
+        catch (Throwable ignored) {}
+        return sb.toString();
     }
 
     private Display manHinh()

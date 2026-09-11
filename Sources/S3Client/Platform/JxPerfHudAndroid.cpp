@@ -551,6 +551,8 @@ static void DoNhip_VeNhan()
 static const int s_aFpsMuc[] = { 0, 30, 45, 60, 90, 120 };
 #define FPS_SO_MUC	((int)(sizeof(s_aFpsMuc) / sizeof(s_aFpsMuc[0])))
 static int s_nFpsMuc = 0;
+static int s_nFpsNgoai = -2;	// [FPSNGOAI 11/09] [Client] FpsNgoaiTheGioi (mac dinh 30, 0 = tat): nhip ve khi CHUA vao the gioi (dang nhap, chon nhan vat); -2 = chua doc ini
+static int s_nNgoaiDangAp = 0;	// 1 = dang ve theo nhip ngoai the gioi
 
 static int Nhip_ManHz()	// tan so man hinh SDL bao hien tai (59 -> 60; khong biet -> 60)
 {
@@ -714,8 +716,40 @@ int PerfHud_IsEnable()
 	return s_nEnable;
 }
 
+// [FPSNGOAI 11/09] Ngoai the gioi (dang nhap, chon nhan vat) khong co gi de xem o 90-120 khung/giay (log Fold 7 11:48: ~90 fps, 2,3-4,7 W luc do):
+// ve FpsNgoaiTheGioi + xin man 60 Hz; vao the gioi (co thanh cong cu) thi ap lai nac nguoi choi chon. Khong lam gi khi ban do nhip [DoNhip] Bat=1 (no tu dat nhip).
+static void FpsNgoai_Nhip()
+{
+	if (s_nFpsNgoai == -2)
+	{
+		s_nFpsNgoai = GetPrivateProfileInt("Client", "FpsNgoaiTheGioi", 30, ".\\config.ini");
+		if (s_nFpsNgoai < 0) s_nFpsNgoai = 0;
+		if (s_nFpsNgoai > 0 && s_nFpsNgoai < 15) s_nFpsNgoai = 15;
+	}
+	if (s_nFpsNgoai <= 0 || s_nDnBat > 0) return;
+	const bool bTrong = KUiToolsControlBar::GetSelf() != NULL;
+	if (!bTrong)
+	{	// LoadSetting (UiInit + UiShell) ap lai nac nguoi choi SAU moc nay (thu may ao: 2 lan setFrameRate(0) ngay sau) -> he thay nhip khac la dat lai
+		int nFps = 0; JxDoNhip_LayNhip(&nFps, NULL, NULL);
+		if (nFps != s_nFpsNgoai)
+		{
+			s_nNgoaiDangAp = 1;
+			JxDoNhip_DatNhip(s_nFpsNgoai, -1, -1);
+			DnXinHz(60);
+			SDL_Log("[FPSNGOAI] chua vao the gioi (nhip dang %d) -> %d khung/giay, xin man 60 Hz", nFps, s_nFpsNgoai);
+		}
+	}
+	else if (s_nNgoaiDangAp)
+	{
+		s_nNgoaiDangAp = 0;
+		JxNhip_DatMuc(s_nFpsMuc);	// ap lai nac nguoi choi (PaintFps + xin man hinh)
+		SDL_Log("[FPSNGOAI] da vao the gioi -> ap lai nac %d", s_nFpsMuc);
+	}
+}
+
 void PerfHud_Draw(int nPaintFps, int nLogicFps, unsigned int dwPing)
 {
+	FpsNgoai_Nhip();	// [FPSNGOAI 11/09] nhip ve ngoai / trong the gioi
 	DoNhip_VeNhan();	// [DONHIP 12/09] ten pha dang do (ca khi tat bang do)
 	ThongTin_Ve(nPaintFps, dwPing);	// [THONGTIN 12/09] FPS | CPU | GPU | Pin | ping o goc phai (khong phu thuoc PerfHud)
 	if (!s_nEnable || !g_pRepresentShell)

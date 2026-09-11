@@ -63,7 +63,7 @@ double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
 #ifdef JX_ANDROID
 // [VE 11/09] Android: (A) do tung buoc trinh chieu CDevGpu::SubmitFrame; (B) nap KHUNG sprite o luong nen theo ngan sach.
 //   In jx_rep3.log: [VE] + [VE-GOP] + [VE-NAP] moi ky Rep3StatSec (KRepresentShell3.cpp JxVeKyIn), [VE-GIAT] khung cham (JxVeGiatGhi).
-struct JxVeDo { double dCho, dChep, dGhi, dNop, dTong, dChepPal, dChepTexMap, dChepTexLenh, dChepZero, dChepRing; unsigned uTai, uTaiKB, uRingKB, uLenh, uQuad, uDinh, uPass, uDoiPipe, uDoiTex, uDoiVs, uDoiPs, uDoiCat, uPal, uZero, uXferTang, uXferKB; };	// [VE 11/09 d] + tung buoc chep
+struct JxVeDo { double dCho, dChep, dGhi, dNop, dTong, dChepPal, dChepTexMap, dChepTexLenh, dChepZero, dChepRing; unsigned uTai, uTaiKB, uRingKB, uLenh, uQuad, uDinh, uPass, uDoiPipe, uDoiTex, uDoiVs, uDoiPs, uDoiCat, uPal, uZero, uXferTang, uXferKB; double dChepPalLenh; };	// [VE 11/09 d] + tung buoc chep
 extern JxVeDo g_jxVeKhung, g_jxVeTong, g_jxVeMax;		// khung vua submit / cong don ky / max trong ky (D3D9onGPUDev.cpp ghi; KRepresentShell3.cpp doc + dat lai)
 extern unsigned g_uJxVeKhungSo, g_uJxVe8, g_uJxVe16, g_uJxGopVo[8];	// so khung trong ky, khung SubmitFrame > 8 / > 16 ms, ly do quad khong gop (xem JxGopVo)
 class TextureResSpr; class TextureResMgr;
@@ -75,6 +75,9 @@ extern int g_nJxAnhBoVeNen;	// 1 = GetImage vua tra NULL vi khung dang nap o luo
 extern int g_nJxHoiKhongDe;	// [VE 11/09 d] [Client] NapHoiKhongDe: 1 = hoi kich thuoc sprite NPC dang nap o luong nen -> tra 'chua co' (khong nap dong bo de len)
 extern unsigned g_uJxNapKhungRong, g_uJxHoiTre;	// [VE 11/09 d] khung rong/hong o luong nen (khong giao lai); so lan hoi NPC dang nap tra 'chua co'
 extern int g_nJxAtlasKe, g_nJxAtlasTrang;	// [VE 11/09 e] [Client] Rep3AtlasKe: 1 = atlas xep ke theo dinh dang (mot trang nhieu hang bin); Rep3AtlasTrang: co trang 1024/2048/4096
+extern int g_nJxPalBuffer;	// [PALBUF 11/09] [Client] Rep3PalBuffer: 1 = bang mau trong storage buffer (tai hang bang lenh copy buffer, khong copy tung hang vao texture 256x8192)
+extern int g_nJxBoKhungGiong, g_nJxBoKhungGiongMs;	// [BKG 11/09] [Client] Rep3BoKhungGiong: 1 = khung giong het khung vua trinh chieu -> khong trinh chieu; 0 = chi dem; -1 = tat. Rep3BoKhungGiongMs = toi da ms giua hai lan trinh chieu
+extern unsigned g_uJxKhungGiongBo, g_uJxKhungGiongCoTai, g_uJxKhungGiongEp, g_uJxKhungGiongDem, g_uJxKhungGiongChuoiMax, g_uJxKhungTrinhChieu;	// [BKG 11/09] dem trong ky ([VE-BKG])
 extern unsigned g_uJxNapKhungBoVe, g_uJxNapKhungBoVeKhung, g_uJxNapKhungDongBo, g_uJxNapKhungGiao, g_uJxNapKhungTruocSo, g_uJxNapKhungXong, g_uJxNapKhungHong, g_uJxNapKhungBo, g_uJxNapKhungChoMax;
 extern double g_dJxNapKhungTre, g_dJxNapKhungTreMax, g_dJxNapNenBan, g_dJxNapKhungAp, g_dJxNapKhungApMax; extern unsigned g_uJxNapKhungApKhung;
 extern Rep3NapDo g_jxNapNgoaiVe;	// nap dong bo NGOAI luc ve (hoi kich thuoc / alpha tu logic) trong ky

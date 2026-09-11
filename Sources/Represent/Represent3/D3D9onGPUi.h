@@ -406,6 +406,9 @@ public:
 	DWORD   GetStateInternal(DWORD key);
 	void    FillCaps(D3DCAPS9* pCaps);
 	bool    SubmitFrame(bool bPresent);						// phat lai lenh cua khung (Present hoac can doc lai)
+#ifdef JX_ANDROID
+	bool    JxBoKhungGiong();								// [BKG 11/09] khung giong het khung vua trinh chieu -> khong SubmitFrame; tra true = da bo
+#endif
 	void    FrameReset();										// don ring/lenh/phien ban cu sau submit
 	SDL_GPUTexture* CurrentTargetTex() const { return m_pRtTex ? m_pRtTex->m_pGpu : NULL; }
 	SDL_GPUTextureFormat CurrentTargetFmt() const { return m_pRtTex ? SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM : m_swapFmt; }
@@ -452,6 +455,8 @@ public:
 	std::vector<RgTexUpload> m_texUploads;
 #ifdef JX_ANDROID
 	SDL_GPUTransferBuffer* m_pJxZeroXfer; UINT m_jxZeroSize, m_jxZeroDaXoa; std::vector<RgTexUpload> m_jxZeroUploads;	// [VE 11/09 d] bo dem 0 co dinh cho trang atlas moi / o chua co ban CPU (stageOff = 0)
+	std::vector<RgCmd> m_jxCmdsTruoc; std::vector<BYTE> m_jxRingTruoc; bool m_bJxCoKhungTruoc, m_bJxKhungCoFlush; Uint64 m_uJxTrinhChieuLuc; unsigned m_uJxGiongLienTiep;	// [BKG 11/09] lenh + dinh cua khung vua trinh chieu de so voi khung sau
+	SDL_GPUBuffer* m_pJxPalBuf; std::vector<std::pair<UINT, UINT> > m_jxPalUploads;	// [PALBUF 11/09] bang mau trong storage buffer; (hang, offset staging) cho tai trong khung
 #endif
 	std::vector<RgCmd>  m_cmds;
 	std::vector<SDL_GPUTexture*> m_release;		// phien ban cu, tra sau submit

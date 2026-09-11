@@ -129,6 +129,9 @@ int g_nJxNapKhungNen = 1, g_nJxNapKhungMs = 3, g_nJxNapKhungTruoc = 2, g_nJxNapK
 int g_nJxAnhBoVeNen = 0;
 int g_nJxHoiKhongDe = 1; unsigned g_uJxNapKhungRong = 0, g_uJxHoiTre = 0;	// [VE 11/09 d]
 int g_nJxAtlasKe = 1, g_nJxAtlasTrang = 2048;	// [VE 11/09 e]
+int g_nJxPalBuffer = 1;	// [PALBUF 11/09]
+int g_nJxBoKhungGiong = 1, g_nJxBoKhungGiongMs = 250;	// [BKG 11/09]
+unsigned g_uJxKhungGiongBo = 0, g_uJxKhungGiongCoTai = 0, g_uJxKhungGiongEp = 0, g_uJxKhungGiongDem = 0, g_uJxKhungGiongChuoiMax = 0, g_uJxKhungTrinhChieu = 0;	// [BKG 11/09]
 unsigned g_uJxNapKhungBoVe = 0, g_uJxNapKhungBoVeKhung = 0, g_uJxNapKhungDongBo = 0, g_uJxNapKhungGiao = 0, g_uJxNapKhungTruocSo = 0, g_uJxNapKhungXong = 0, g_uJxNapKhungHong = 0, g_uJxNapKhungBo = 0, g_uJxNapKhungChoMax = 0;
 double g_dJxNapKhungTre = 0.0, g_dJxNapKhungTreMax = 0.0, g_dJxNapNenBan = 0.0, g_dJxNapKhungAp = 0.0, g_dJxNapKhungApMax = 0.0; unsigned g_uJxNapKhungApKhung = 0;
 Rep3NapDo g_jxNapNgoaiVe = {0, 0, 0};
@@ -164,11 +167,11 @@ static void JxVeGiatGhi(double dTrinhChieu)
 	if (++s_nDem > 12) return;
 	const JxVeDo& k = g_jxVeKhung;
 	double dNap = 0.0; for (int i = 0; i < 5; i++) dNap += s_jxNapKhungCuoi[i].ms;
-	Rep3Log("[VE-GIAT] khung %u: %.1f ms (viec %.1f, khong ke cho) = ve CPU %.1f (nap %.1f ms: tep spr %u/%.1f, rut khung %u/%.1f, giai ma %u/%.1f, tao GPU %u/%.1f; ngoai luc ve %.1f) + trinh chieu %.1f (cho %.1f, chep %.1f [tai %u tex %u KB, ring %u KB], ghi %.1f [%u lenh, %u quad, %u pass, doi tex %u], nop %.1f) | nen: bo ve %u, cho ap %u, ap %u khung %.1f ms | chep: bang mau %u/%.1f, tex map+chep %.1f, lenh tai %.1f, zero %u/%.1f, ring %.1f, xfer %u KB (phinh %u)",
+	Rep3Log("[VE-GIAT] khung %u: %.1f ms (viec %.1f, khong ke cho) = ve CPU %.1f (nap %.1f ms: tep spr %u/%.1f, rut khung %u/%.1f, giai ma %u/%.1f, tao GPU %u/%.1f; ngoai luc ve %.1f) + trinh chieu %.1f (cho %.1f, chep %.1f [tai %u tex %u KB, ring %u KB], ghi %.1f [%u lenh, %u quad, %u pass, doi tex %u], nop %.1f) | nen: bo ve %u, cho ap %u, ap %u khung %.1f ms | chep: bang mau %u/%.1f, tex map+chep %.1f, lenh tai %.1f, zero %u/%.1f, ring %.1f, xfer %u KB (phinh %u), pal lenh %.1f",
 		g_uJxVeKhungSo, s_dJxVeCpuCuoi + dTrinhChieu, dViec, s_dJxVeCpuCuoi, dNap, s_jxNapKhungCuoi[0].n, s_jxNapKhungCuoi[0].ms, s_jxNapKhungCuoi[2].n, s_jxNapKhungCuoi[2].ms, s_jxNapKhungCuoi[3].n, s_jxNapKhungCuoi[3].ms, s_jxNapKhungCuoi[4].n, s_jxNapKhungCuoi[4].ms, s_dJxNapNgoaiKhungCuoi,
 		dTrinhChieu, k.dCho, k.dChep, k.uTai, k.uTaiKB, k.uRingKB, k.dGhi, k.uLenh, k.uQuad, k.uPass, k.uDoiTex, k.dNop,
 		s_uJxBoVeKhungCuoi, g_pJxTexMgr ? g_pJxTexMgr->JxNapKhungDangCho() : 0u, g_pJxTexMgr ? g_pJxTexMgr->m_uJxApKhungCuoi : 0u, g_pJxTexMgr ? g_pJxTexMgr->m_dJxApCuoi : 0.0,
-		k.uPal, k.dChepPal, k.dChepTexMap, k.dChepTexLenh, k.uZero, k.dChepZero, k.dChepRing, k.uXferKB, k.uXferTang);	// [VE 11/09 d]
+		k.uPal, k.dChepPal, k.dChepTexMap, k.dChepTexLenh, k.uZero, k.dChepZero, k.dChepRing, k.uXferKB, k.uXferTang, k.dChepPalLenh);	// [VE 11/09 d] [PALBUF 11/09]
 }
 // Moi ky Rep3StatSec (khoi thong ke cua RepresentEnd): [VE] trinh chieu, [VE-GOP] doi trang thai / ly do khong gop, [VE-NAP] nap khung nen
 static void JxVeKyIn()
@@ -179,6 +182,9 @@ static void JxVeKyIn()
 		g_nRep3StatSec, g_uJxVeKhungSo, t.dCho / n, m.dCho, t.dChep / n, m.dChep, t.uTai, t.uTaiKB, m.uTaiKB, t.uRingKB / n, m.uRingKB, t.dGhi / n, m.dGhi, t.uLenh / n, t.uQuad / n, t.uDinh / n, t.uPass / n,
 		t.dNop / n, m.dNop, t.dTong / n, m.dTong, g_uJxVe8, g_uJxVe16, s_uJxVeCpuKhung ? s_dJxVeCpuTong / s_uJxVeCpuKhung : 0.0, s_dJxVeCpuMax,
 		t.uPal, t.dChepPal, m.dChepPal, t.dChepTexMap, m.dChepTexMap, t.dChepTexLenh, m.dChepTexLenh, t.uZero, t.dChepZero, m.dChepZero, t.dChepRing, m.dChepRing, t.uXferTang, m.uXferKB);	// [VE 11/09 d]
+	Rep3Log("[VE-BKG] trinh chieu %u khung, bo vi giong khung truoc %u, giong nhung co tai %u, giong nhung ep %u (cua so doi / qua %d ms), chi dem %u, chuoi bo dai nhat %u | bat=%d | bang mau kieu %s: lenh tai TB %.3f ms/khung (max %.2f)",
+		g_uJxKhungTrinhChieu, g_uJxKhungGiongBo, g_uJxKhungGiongCoTai, g_uJxKhungGiongEp, g_nJxBoKhungGiongMs, g_uJxKhungGiongDem, g_uJxKhungGiongChuoiMax, g_nJxBoKhungGiong, g_nJxPalBuffer ? "buffer" : "texture", t.dChepPalLenh / n, m.dChepPalLenh);	// [BKG 11/09] [PALBUF 11/09]
+	g_uJxKhungTrinhChieu = g_uJxKhungGiongBo = g_uJxKhungGiongCoTai = g_uJxKhungGiongEp = g_uJxKhungGiongDem = g_uJxKhungGiongChuoiMax = 0;
 	Rep3Log("[VE-GOP] doi trang thai/khung TB: pipeline %u, texture/sampler %u (max %u), uniform vs %u, ps %u, cat/viewport %u | quad khong gop (ca ky): stride %u, khong lien tiep %u, pipeline %u, texture0 %u, texture1/sampler %u, vs %u, ps %u, cat/vp %u | atlas ke=%d trang %d: %u trang",
 		t.uDoiPipe / n, t.uDoiTex / n, m.uDoiTex, t.uDoiVs / n, t.uDoiPs / n, t.uDoiCat / n, g_uJxGopVo[0], g_uJxGopVo[1], g_uJxGopVo[2], g_uJxGopVo[3], g_uJxGopVo[4], g_uJxGopVo[5], g_uJxGopVo[6], g_uJxGopVo[7], g_nJxAtlasKe, g_nJxAtlasTrang, g_uRep3AtlasPages);	// [VE 11/09 e]
 	memset(&g_jxVeTong, 0, sizeof(g_jxVeTong)); memset(&g_jxVeMax, 0, sizeof(g_jxVeMax)); g_uJxVeKhungSo = 0; g_uJxVe8 = 0; g_uJxVe16 = 0; memset(g_uJxGopVo, 0, sizeof(g_uJxGopVo));
@@ -706,7 +712,12 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nJxAtlasKe       = Rep3Ini("Rep3AtlasKe", 1) ? 1 : 0;	// [VE 11/09 e] 1 = atlas xep ke theo dinh dang (khung cung NPC cung trang -> gop lenh), 0 = trang theo bin cao nhu cu
 	g_nJxAtlasTrang    = Rep3Ini("Rep3AtlasTrang", 2048);	// co trang atlas 1024 / 2048 / 4096
 	if (g_nJxAtlasTrang != 1024 && g_nJxAtlasTrang != 2048 && g_nJxAtlasTrang != 4096) g_nJxAtlasTrang = 2048;
+	g_nJxPalBuffer      = Rep3Ini("Rep3PalBuffer", 1) ? 1 : 0;	// [PALBUF 11/09] 1 = bang mau trong storage buffer (het khung chep 17-100 ms khi tai hang bang mau vao texture 256x8192); 0 = texture nhu cu
+	g_nJxBoKhungGiong   = Rep3Ini("Rep3BoKhungGiong", 1);	// [BKG 11/09] 1 = khung giong het khung vua trinh chieu -> khong trinh chieu; 0 = chi dem [VE-BKG]; -1 = tat han (khong so sanh)
+	g_nJxBoKhungGiongMs = Rep3Ini("Rep3BoKhungGiongMs", 250);	// toi da ms giua hai lan trinh chieu khi khung giong (0 = khong gioi han)
+	if (g_nJxBoKhungGiong > 1) g_nJxBoKhungGiong = 1; if (g_nJxBoKhungGiong < -1) g_nJxBoKhungGiong = -1;
 	Rep3Log("[VE] nap khung nen=%d, ngan sach %d ms/khung, nap truoc %d khung, ap %d ms/khung; nguong [VE-GIAT] %d ms", g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungApMs, g_nJxVeGiatMs);
+	Rep3Log("[VE] bang mau kieu %s (Rep3PalBuffer=%d); bo khung giong khung truoc: %d (Rep3BoKhungGiong; toi da %d ms giua hai lan trinh chieu)", g_nJxPalBuffer ? "storage buffer" : "texture 256x8192", g_nJxPalBuffer, g_nJxBoKhungGiong, g_nJxBoKhungGiongMs);	// [PALBUF 11/09] [BKG 11/09]
 #endif
 	g_nRep3StatSec   = Rep3Ini("Rep3StatSec", 30);
 	m_TextureResMgr.SetBudget();	// [REP3 03/09 RAM] doc Rep3CacheMB SAU khi doc ini (ctor chay truoc Create)
