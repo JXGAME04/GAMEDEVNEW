@@ -441,6 +441,9 @@ public:
 	std::vector<BYTE>   m_texStage;
 	SDL_GPUTransferBuffer* m_pTexXfer; UINT m_texXferSize;
 	std::vector<RgTexUpload> m_texUploads;
+#ifdef JX_ANDROID
+	SDL_GPUTransferBuffer* m_pJxZeroXfer; UINT m_jxZeroSize, m_jxZeroDaXoa; std::vector<RgTexUpload> m_jxZeroUploads;	// [VE 11/09 d] bo dem 0 co dinh cho trang atlas moi / o chua co ban CPU (stageOff = 0)
+#endif
 	std::vector<RgCmd>  m_cmds;
 	std::vector<SDL_GPUTexture*> m_release;		// phien ban cu, tra sau submit
 	std::vector<CTexGpu*> m_touched;				// texture co lenh ve tham chieu trong khung

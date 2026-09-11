@@ -57,6 +57,10 @@ static void JxVeCong(const JxVeDo& k)
 	g_jxVeTong.dCho += k.dCho; g_jxVeTong.dChep += k.dChep; g_jxVeTong.dGhi += k.dGhi; g_jxVeTong.dNop += k.dNop; g_jxVeTong.dTong += k.dTong;
 	g_jxVeTong.uTai += k.uTai; g_jxVeTong.uTaiKB += k.uTaiKB; g_jxVeTong.uRingKB += k.uRingKB; g_jxVeTong.uLenh += k.uLenh; g_jxVeTong.uQuad += k.uQuad; g_jxVeTong.uDinh += k.uDinh; g_jxVeTong.uPass += k.uPass;
 	g_jxVeTong.uDoiPipe += k.uDoiPipe; g_jxVeTong.uDoiTex += k.uDoiTex; g_jxVeTong.uDoiVs += k.uDoiVs; g_jxVeTong.uDoiPs += k.uDoiPs; g_jxVeTong.uDoiCat += k.uDoiCat;
+	g_jxVeTong.dChepPal += k.dChepPal; g_jxVeTong.dChepTexMap += k.dChepTexMap; g_jxVeTong.dChepTexLenh += k.dChepTexLenh; g_jxVeTong.dChepZero += k.dChepZero; g_jxVeTong.dChepRing += k.dChepRing;	// [VE 11/09 d]
+	g_jxVeTong.uPal += k.uPal; g_jxVeTong.uZero += k.uZero; g_jxVeTong.uXferTang += k.uXferTang; if (k.uXferKB > g_jxVeMax.uXferKB) g_jxVeMax.uXferKB = k.uXferKB;
+	if (k.dChepPal > g_jxVeMax.dChepPal) g_jxVeMax.dChepPal = k.dChepPal; if (k.dChepTexMap > g_jxVeMax.dChepTexMap) g_jxVeMax.dChepTexMap = k.dChepTexMap; if (k.dChepTexLenh > g_jxVeMax.dChepTexLenh) g_jxVeMax.dChepTexLenh = k.dChepTexLenh;
+	if (k.dChepZero > g_jxVeMax.dChepZero) g_jxVeMax.dChepZero = k.dChepZero; if (k.dChepRing > g_jxVeMax.dChepRing) g_jxVeMax.dChepRing = k.dChepRing;
 	if (k.dCho > g_jxVeMax.dCho) g_jxVeMax.dCho = k.dCho; if (k.dChep > g_jxVeMax.dChep) g_jxVeMax.dChep = k.dChep; if (k.dGhi > g_jxVeMax.dGhi) g_jxVeMax.dGhi = k.dGhi;
 	if (k.dNop > g_jxVeMax.dNop) g_jxVeMax.dNop = k.dNop; if (k.dTong > g_jxVeMax.dTong) g_jxVeMax.dTong = k.dTong;
 	if (k.uTaiKB > g_jxVeMax.uTaiKB) g_jxVeMax.uTaiKB = k.uTaiKB; if (k.uRingKB > g_jxVeMax.uRingKB) g_jxVeMax.uRingKB = k.uRingKB;
@@ -169,6 +173,9 @@ CDevGpu::CDevGpu(CGpuShim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_pBackSurf = NULL; m_pRtTex = NULL; m_pRtSurf = NULL; m_pLastFrame = NULL; m_lastW = m_lastH = 0;
 	m_pVS = NULL; m_pFS = NULL; m_pDummy = NULL; m_pWhite = NULL;
 	m_pRingGpu = NULL; m_ringGpuSize = 0; m_pRingXfer = NULL; m_ringXferSize = 0; m_pTexXfer = NULL; m_texXferSize = 0;
+#ifdef JX_ANDROID
+	m_pJxZeroXfer = NULL; m_jxZeroSize = 0; m_jxZeroDaXoa = 0;	// [VE 11/09 d]
+#endif
 	m_bFrameOpen = false;
 	m_pAtlas = NULL; m_uCpuBoSo = 0; m_uCpuBoThuLai = 0; m_uCpuBoBytes = 0;	// [GPU 11/09 ATLAS] [GPU 11/09 BOCPU]
 	m_pPalTex = NULL; { const char* e = getenv("REP3_PALLIN"); m_bPalLinForce = (e && atoi(e) != 0); }
@@ -218,6 +225,9 @@ CDevGpu::~CDevGpu()
 		if (m_pRingGpu) SDL_ReleaseGPUBuffer(m_pGpu, m_pRingGpu);
 		if (m_pRingXfer) SDL_ReleaseGPUTransferBuffer(m_pGpu, m_pRingXfer);
 		if (m_pTexXfer) SDL_ReleaseGPUTransferBuffer(m_pGpu, m_pTexXfer);
+#ifdef JX_ANDROID
+		if (m_pJxZeroXfer) SDL_ReleaseGPUTransferBuffer(m_pGpu, m_pJxZeroXfer);	// [VE 11/09 d]
+#endif
 		if (m_pVS) SDL_ReleaseGPUShader(m_pGpu, m_pVS);
 		if (m_pFS) SDL_ReleaseGPUShader(m_pGpu, m_pFS);
 		for (size_t i = 0; i < m_release.size(); i++) SDL_ReleaseGPUTexture(m_pGpu, m_release[i]);
@@ -806,6 +816,13 @@ void CDevGpu::UntouchTex(CTexGpu* p)
 void CDevGpu::QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp)
 {
 	if (!pTex || !w || !h || !bpp) return;
+#ifdef JX_ANDROID
+	{	// [VE 11/09 d] tai tu bo dem 0 co dinh (SubmitFrame): khong memset/memcpy vao staging, staging khong phinh 2-4 MB moi trang atlas moi
+		RgTexUpload u = { pTex, x, y, w, h, 0, w * h * bpp };
+		m_jxZeroUploads.push_back(u);
+		return;
+	}
+#endif
 	const UINT bytes = w * h * bpp;
 	const UINT off = ((UINT)m_texStage.size() + 15) & ~15u;
 	m_texStage.resize((size_t)off + bytes, 0);
@@ -1001,6 +1018,24 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 	// ---- copy pass: bang mau, texture, ring dinh
 	{
 		SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+#ifdef JX_ANDROID
+		if (!m_palPending.empty() && m_pPalTex)
+		{	// [VE 11/09 d] bang mau di chung staging + transfer buffer co dinh (truoc: tao/huy mot transfer buffer rieng moi khung co bang mau moi
+			// -> SDL cap/giai phong khoi bo nho 16 MB (vkAllocateMemory) -> chep 40-60 ms tren Fold 7)
+			const Uint64 uP0 = SDL_GetPerformanceCounter();
+			for (size_t i = 0; i < m_palPending.size(); i++)
+			{
+				const UINT off = ((UINT)m_texStage.size() + 15) & ~15u;
+				m_texStage.resize((size_t)off + 1024);
+				memcpy(&m_texStage[off], &m_palPending[i].second[0], 1024);
+				RgTexUpload u = { m_pPalTex, 0, (UINT)m_palPending[i].first, 256, 1, off, 1024 };
+				m_texUploads.push_back(u);
+			}
+			jxK.uPal = (unsigned)m_palPending.size(); m_palPending.clear();
+			jxK.dChepPal = JxVeMs(uP0, SDL_GetPerformanceCounter());
+		}
+		if (0)
+#endif
 		if (!m_palPending.empty() && m_pPalTex)
 		{
 			const UINT bytes = (UINT)m_palPending.size() * 256 * 4;
@@ -1023,12 +1058,21 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 		if (!m_texUploads.empty() && !m_texStage.empty())
 		{
+#ifdef JX_ANDROID
+			const Uint64 uT0 = SDL_GetPerformanceCounter(); const UINT uXferTruoc = m_texXferSize;	// [VE 11/09 d]
+#endif
 			RgEnsureXfer(m_pGpu, &m_pTexXfer, &m_texXferSize, (UINT)m_texStage.size(), SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD);
+#ifdef JX_ANDROID
+			if (m_texXferSize != uXferTruoc) jxK.uXferTang++;
+#endif
 			BYTE* p = m_pTexXfer ? (BYTE*)SDL_MapGPUTransferBuffer(m_pGpu, m_pTexXfer, true) : NULL;
 			if (p)
 			{
 				memcpy(p, &m_texStage[0], m_texStage.size());
 				SDL_UnmapGPUTransferBuffer(m_pGpu, m_pTexXfer);
+#ifdef JX_ANDROID
+				{ const Uint64 u = SDL_GetPerformanceCounter(); jxK.dChepTexMap = JxVeMs(uT0, u); }	// [VE 11/09 d]
+#endif
 				for (size_t i = 0; i < m_texUploads.size(); i++)
 				{
 					const RgTexUpload& u = m_texUploads[i];
@@ -1037,11 +1081,47 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 					SDL_UploadToGPUTexture(cp, &src, &dst, false);
 				}
 				m_uUploads += (unsigned)m_texUploads.size();
+#ifdef JX_ANDROID
+				jxK.dChepTexLenh = JxVeMs(uT0, SDL_GetPerformanceCounter()) - jxK.dChepTexMap;	// [VE 11/09 d] lenh tai (SDL_UploadToGPUTexture)
+#endif
 			}
 			else RgLog("map transfer texture (%u B) that bai: %s", (unsigned)m_texStage.size(), SDL_GetError());
 		}
+#ifdef JX_ANDROID
+		jxK.uXferKB = m_texXferSize >> 10;
+		if (!m_jxZeroUploads.empty())
+		{	// [VE 11/09 d] vung 0 (trang atlas moi, o chua co ban CPU): tai tu bo dem 0 co dinh, chi memset mot lan khi tao/phinh
+			const Uint64 uZ0 = SDL_GetPerformanceCounter();
+			UINT needZ = 0;
+			for (size_t i = 0; i < m_jxZeroUploads.size(); i++) if (m_jxZeroUploads[i].bytes > needZ) needZ = m_jxZeroUploads[i].bytes;
+			const UINT uZeroTruoc = m_jxZeroSize;
+			RgEnsureXfer(m_pGpu, &m_pJxZeroXfer, &m_jxZeroSize, needZ, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD);
+			if (m_jxZeroSize != uZeroTruoc) m_jxZeroDaXoa = 0;
+			if (m_pJxZeroXfer && m_jxZeroDaXoa < m_jxZeroSize)
+			{
+				BYTE* pz = (BYTE*)SDL_MapGPUTransferBuffer(m_pGpu, m_pJxZeroXfer, false);
+				if (pz) { memset(pz, 0, m_jxZeroSize); SDL_UnmapGPUTransferBuffer(m_pGpu, m_pJxZeroXfer); m_jxZeroDaXoa = m_jxZeroSize; }
+			}
+			if (m_pJxZeroXfer && m_jxZeroDaXoa >= needZ)
+			{
+				for (size_t i = 0; i < m_jxZeroUploads.size(); i++)
+				{
+					const RgTexUpload& u = m_jxZeroUploads[i];
+					SDL_GPUTextureTransferInfo src; memset(&src, 0, sizeof(src)); src.transfer_buffer = m_pJxZeroXfer; src.offset = 0; src.pixels_per_row = u.w; src.rows_per_layer = u.h;
+					SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.x = u.x; dst.y = u.y; dst.w = u.w; dst.h = u.h; dst.d = 1;
+					SDL_UploadToGPUTexture(cp, &src, &dst, false);
+				}
+				m_uUploads += (unsigned)m_jxZeroUploads.size(); jxK.uZero = (unsigned)m_jxZeroUploads.size();
+			}
+			else RgLog("bo dem 0 (%u B) that bai: %s", needZ, SDL_GetError());
+			jxK.dChepZero = JxVeMs(uZ0, SDL_GetPerformanceCounter());
+		}
+#endif
 		if (!m_ring.empty())
 		{
+#ifdef JX_ANDROID
+			const Uint64 uR0 = SDL_GetPerformanceCounter();	// [VE 11/09 d]
+#endif
 			const UINT need = (UINT)m_ring.size();
 			RgEnsureXfer(m_pGpu, &m_pRingXfer, &m_ringXferSize, need, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD);
 			if (!m_pRingGpu || m_ringGpuSize < need)
@@ -1060,6 +1140,9 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 				SDL_UploadToGPUBuffer(cp, &src, &dst, true);
 			}
 			else RgLog("map transfer ring (%u B) that bai: %s", need, SDL_GetError());
+#ifdef JX_ANDROID
+			jxK.dChepRing = JxVeMs(uR0, SDL_GetPerformanceCounter());	// [VE 11/09 d]
+#endif
 		}
 		SDL_EndGPUCopyPass(cp);
 	}
@@ -1209,6 +1292,9 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 void CDevGpu::FrameReset()
 {
 	m_ring.clear(); m_texStage.clear(); m_texUploads.clear(); m_cmds.clear();
+#ifdef JX_ANDROID
+	m_jxZeroUploads.clear();	// [VE 11/09 d]
+#endif
 	for (size_t i = 0; i < m_touched.size(); i++)
 	{
 		CTexGpu* p = m_touched[i];

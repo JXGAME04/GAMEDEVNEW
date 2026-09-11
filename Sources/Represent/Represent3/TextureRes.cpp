@@ -640,7 +640,7 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 	// Ca hai truong hop nap truoc NapKhungTruoc khung ke tiep cung huong o luong nen.
 	if (bPrepareTex && g_nJxNapKhungNen > 0 && g_pJxTexMgr && g_pJxTexMgr->m_bVeDangDien)
 	{
-		if (g_dRep3NapKhung >= (double)g_nJxNapKhungMs && (m_pFrameInfo[nFrame].nJxNen || JxNapKhungGiao(nFrame, 0)))
+		if (g_dRep3NapKhung >= (double)g_nJxNapKhungMs && (m_pFrameInfo[nFrame].nJxNen == 1 || JxNapKhungGiao(nFrame, 0)))	// [VE 11/09 d] nJxNen 2 = rong/hong: nap dong bo (re) nhu cu
 		{
 			JxNapKhungTruoc(nFrame);
 			g_uJxNapKhungBoVe++; g_uJxNapKhungBoVeKhung++; g_nJxAnhBoVeNen = 1; return false;
@@ -1590,7 +1590,13 @@ void TextureResSpr::JxNhanKhungNen(JxKhungXong& kq)
 	if (nFrame < 0 || nFrame >= m_nFrameNum || !m_pFrameInfo) { if (pDiem) free(pDiem); g_uJxNapKhungBo++; return; }
 	FrameToTexture& f = m_pFrameInfo[nFrame];
 	f.nJxNen = 0;
-	if (kq.bHong || !pDiem) { if (pDiem) free(pDiem); g_uJxNapKhungHong++; return; }
+	if (kq.bHong || !pDiem)
+	{	// [VE 11/09 d] khung rong (w/h = 0) hoac rut khung hong: ghi kich thuoc, danh dau 2 = khong giao lai (nhanh dong bo giu raw, lan sau re)
+		if (pDiem) free(pDiem);
+		if (kq.nW <= 0 || kq.nH <= 0) { f.nWidth = kq.nW; f.nHeight = kq.nH; f.nOffX = kq.nOffX; f.nOffY = kq.nOffY; f.nJxNen = 2; g_uJxNapKhungRong++; }
+		else g_uJxNapKhungHong++;
+		return;
+	}
 	if (f.texInfo[0].pTexture) { free(pDiem); g_uJxNapKhungBo++; return; }	// da nap dong bo trong luc cho (hoi kich thuoc/alpha)
 	f.nWidth = kq.nW; f.nHeight = kq.nH; f.nOffX = kq.nOffX; f.nOffY = kq.nOffY; f.nTexNum = 0;
 	if (f.nWidth <= 0 || f.nHeight <= 0) { free(pDiem); g_uJxNapKhungHong++; return; }

@@ -507,6 +507,15 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 			if (m_TextureResList[nImagePosition].m_bDangNap)	// [NAP 08/09 b] dang nap o luong nen
 			{
 				if (m_bVeDangDien) { m_nNapNenBoVe++; return NULL; }	// dang ve: bo anh nay khung nay, khung sau co
+#ifdef JX_ANDROID
+				// [VE 11/09 d] hoi kich thuoc (GetImageParam tu KNpcRes) gap sprite NPC dang nap o luong nen: tra 'chua co' thay vi nap dong bo de len
+				// (Fold 7: 'tep spr' dong bo toi 33 ms/lan, 282 ms/30 s luc dong); KNpcRes giu m_bChange nen khung sau hoi lai, ket qua nen ve o RepresentBegin.
+				if (g_nJxHoiKhongDe && nType == ISI_T_SPR)
+				{
+					const char* q = pszImage; if (*q == '\\' || *q == '/') q++;
+					if (_strnicmp(q, "spr\\npcres", 10) == 0 || _strnicmp(q, "spr/npcres", 10) == 0) { g_uJxHoiTre++; return NULL; }
+				}
+#endif
 				// hoi dong bo (kich thuoc / alpha): nap ngay; ket qua luong nen ve sau se bi bo (NapNenNhan thay muc het 'dang nap')
 				m_TextureResList[nImagePosition].m_bDangNap = false;
 				m_TextureResList[nImagePosition].m_pTextureRes = LoadImage(pszImage, nType);
