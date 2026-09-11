@@ -158,3 +158,55 @@ trực tiếp trên máy ảo song song với kịch bản:
   mở Chỉnh giao diện) và báo lại: đó là số đo đầu tiên của vùng an toàn trên máy thật.
 - Muốn tắt nhanh từng phần: `KhungHaiHo=0` (khung vẽ), `VungAnToan=0` (neo theo mép màn), `SuaToaDo=0` (giấu nút
   Chỉnh giao diện), `NeoTheoMep=0` (bỏ cả neo).
+
+## 7. Bổ sung tối 13/09 — lượt d và e (ba yêu cầu mới của chủ + câu hỏi "mini skill góc phải")
+
+Chủ (sau lượt 7): *"tạm thời lưu tọa độ hiện tại làm mặc định và tôi muốn bạn xóa đi các icon tôi đã ẩn; các giao
+diện khi bấm vào icon chưa chỉnh sửa tọa độ được; các phần lúc đăng nhập vào game chưa tự căn chỉnh được"*, rồi:
+*"bạn có xóa nhầm mini skill góc phải màn hình không, tôi đang nói xóa các icon đã ẩn thôi"*.
+
+### 7.1 Bố cục mặc định = bố cục chủ đang dùng (`[SUAGD 13/09 d]`)
+
+- `android/sinh_bocuc_macdinh_tu_chu.py` (mới, trong repo): đọc tệp người chơi mới nhất trên máy ảo
+  (`D:\jx1_android_data\userdata\uitoado_<id>.ini`), giữ các dòng `Goc.<lớp>=<mục>` cũ, ghi ra cả hai họ
+  `ui/uitoado_macdinh_rong.ini` (điện thoại) và `ui/uitoado_macdinh.ini` (máy tính bảng) + bản sao vào cây máy ảo.
+  Chạy lại bất cứ lúc nào chủ muốn "lấy bố cục hiện tại làm mặc định".
+- 7 khung màn đăng nhập (`KUiInit|Main`, `KUiLogin|Main`, `KUiConnectInfo|Main`, `KUiSelNativePlace|Main`,
+  `KUiSelServer|Main`, `KUiSelPlayer|SelRole`, `KUiNewPlayer|NewPlayer`) đặt `NeoY=1` (neo giữa dọc) trong mặc định và
+  trong tệp người chơi trên máy ảo → khung 800x600 nằm giữa màn mọi tỉ lệ, không còn dính mép trên.
+- Cửa sổ mở từ icon (hành trang, nhân vật, võ công, bang hội, tổ đội, tuỳ chọn, hộp hệ thống, rương, cửa hàng, giao
+  dịch, thư, đấu giá, Auto, bản đồ) và khung đăng nhập vào danh sách trắng với cờ 7 (chỉ dời chỗ, không phóng, không
+  giấu, không kẹp). Cửa sổ gốc **bất kỳ** đang mở mà không có trong danh sách cũng tự được thêm lúc làm mới (tên = tên
+  lớp) → chạm thân cửa sổ là chọn được. Trình chỉnh bật được ở mọi màn (cả màn đăng nhập) qua nút nổi.
+- Đã kiểm trên máy ảo: chạm thân cửa sổ Liên lạc (`KUiChatCentre|Main`, tự thêm) → chọn, kéo → dời (710,73 → 636,97).
+
+### 7.2 "Xoá icon đã ẩn" và câu hỏi "mini skill góc phải" (`[SUAGD 13/09 e]`)
+
+Điều tra: 6 ô có cờ giấu trong tệp của chủ (`KUiPlayerBar|AutoPlay`, `HideWindow`, `PartnerIcon`,
+`ImediaLeftSkill`, `ImediaRightSkill`, `KUiToolsControlBar|Rec`) **đã bị giấu từ bố cục mặc định 12/09** (mọi bản từ
+883d6ae1), chủ không tự giấu ô nào thêm. Trước lượt d, trình chỉnh **vẽ cả ô đã giấu** (khung đỏ, vì
+`KWndWindow::Paint` bỏ qua cờ giấu khi đang sửa) nên chủ thấy nút **Auto** (ảnh hai kiếm chéo `autobt3.spr`, trông như
+một ô kỹ năng nhỏ) và đã kéo nó lên góc phải trên (924,238 → 1006,168); trong game bình thường nó không hiện. Lượt d
+gỡ 6 khoá khỏi danh sách trắng → ô vẫn được vẽ khi sửa nhưng không chọn được nữa → chủ hỏi "xoá nhầm mini skill".
+
+Sửa (lượt e):
+- **Nút Auto hiện lại** ở đúng chỗ chủ đã kéo (`KUiPlayerBar|AutoPlay=1006,168,1000,0,2,0`) trong mặc định hai họ và
+  trong hai tệp người chơi trên máy ảo (`HIEN_LAI` trong `sinh_bocuc_macdinh_tu_chu.py`). Nếu chủ không cần: chạm ô →
+  Giấu.
+- Ô đã giấu nay **bị cắt hẳn khỏi trình chỉnh** (không vẽ, không chọn, không bắt dính) — đúng nghĩa "xoá" — nhưng
+  **không mất**: bấm nút **Giấu khi không chọn ô** (nhãn đổi thành "Ô đã giấu") → hiện các ô đã giấu với khung đỏ,
+  chạm ô rồi bấm "Hiện lại"; bấm lại ("Cất ô giấu") hoặc đóng trình chỉnh → cất. `KWndWindow::Paint` / `PtInWindow`
+  (Android) hỏi `UiToaDo_HienOAn()` thay vì `UiToaDo_DangSua()`; bản PC giữ nguyên dòng cũ trong `#else`.
+- 6 khoá trở lại danh sách trắng (Nút Auto ở hàng icon; 5 khoá còn lại ở mục "giấu sẵn" cuối tệp). Nhãn nút Giấu
+  theo ngữ cảnh: "Giấu" / "Hiện lại" (ô đang chọn đã giấu) / "Ô đã giấu" / "Cất ô giấu".
+- Kiểm: `ninja` x86_64 cho `UiToaDo.cpp` + `WndWindow.cpp` 0 lỗi; APK `jx1mobile-1309-suagd-i`; Windows
+  ReleaseSDL|x64 + Release|x64 (`WndWindow.cpp` là mã dùng chung) đều 0 lỗi. Máy ảo: ô đã giấu không còn vẽ khi mở
+  trình chỉnh; bấm "Ô đã giấu" → khung đỏ + dòng nhắc; nút Auto hiện ở góc phải trên (ảnh `ld/shot9_1.png`, `shot9_2.png`).
+
+### 7.3 Trạng thái cuối
+
+- Máy ảo: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt e). Tệp mặc định trên máy ảo và trong repo giống nhau.
+- Việc chủ/phiên 144 Hz cần làm cho điện thoại: chép `ui/uitoado_macdinh_rong.ini`, `ui/uitoado_macdinh.ini`,
+  `ui/uitoado_danhsach.ini`, `config.ini` và APK mới vào `D:\jx1_android_data_dt_v4`, xoá `manifest.txt`, khởi động
+  lại máy chủ 8765 (phiên 144 Hz quản lý cây này — đã nhắn).
+- Vẫn chưa đo Fold 7 (`bocuc_thuc.txt` hoặc dòng "Khung … an toàn" trong trình chỉnh).

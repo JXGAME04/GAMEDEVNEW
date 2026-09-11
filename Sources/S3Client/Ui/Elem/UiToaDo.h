@@ -101,4 +101,7 @@ typedef void (*PFN_UITOADO_LAYHINH)(void* pNgu, int* pnL, int* pnT, int* pnW, in
 void	UiToaDo_DangKyORiengHinh(const char* pszKhoa, PFN_UITOADO_LAYHINH pfnLayHinh);
 //	Bang bo cuc dang co muc nay khong (nguoi choi / mac dinh da dat) - UiPlayerBar::NeoNhomTren bo qua o da dat.
 int		UiToaDo_CoKhoa(const char* pszKhoa);
+//	[SUAGD 13/09 e] dang sua VA dang "hien cac o da giau" (bam nut Giau khi khong chon o): KWndWindow::Paint / PtInWindow
+//	(Android) chi ve / bat o da giau khi nay - binh thuong o da giau bi cat han, ke ca trong trinh chinh.
+bool	UiToaDo_HienOAn();
 #endif
