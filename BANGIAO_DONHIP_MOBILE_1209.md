@@ -18,7 +18,16 @@
     (Adreno `kgsl`, Samsung `/sys/kernel/gpu`, Mali) — máy không cho đọc thì hiện `-`. **Mặc định đè lên bản đồ nhỏ** (góc phải-trên
     của JX1) — chủ kéo chỗ khác hoặc phiên sau đổi mặc định sang trái bản đồ nhỏ (`KUiMiniMap::GetSelf()->GetAbsolutePos`).
 - Đã cài máy ảo (kiểm md5 bản đã cài), đã đưa lên bộ tải `D:\jx1_android_data_dt_v4` + bật máy chủ 8765 `--nhat-ky D:\jx1_android_log`.
-- Chuỗi Windows: lần đầu dừng ở Engine vì thiếu `Lib\release64\*.lib` (git bỏ qua) → đã chép từ worktree trước; xem kết quả ở cuối phiên.
+- Chuỗi Windows: **0 lỗi cả hai** (x64: Engine/Core/Represent3/S3Client; SDL: đủ 6 bước, ra `GameSDL.exe`) sau khi chép thêm các thư mục
+  git bỏ qua từ worktree trước: `Lib\release64`, `Sources\packages\Microsoft.DXSDK.D3DX.9.29.952.8\build\native\{debug,release}` (d3dx9.lib),
+  `Sources\Core|Engine\vcpkg_installed` (nlohmann/json.hpp), `ThirdParty\SDL3-src`, `android\gradle-project\local.properties`.
+- **Đã FF + push 21:38: `origin/mobile-0809 = 6edcb896`** (gan_ff, cây `D:\GAMEDEVNEW_wt_mobile` sạch). Phiên giao diện
+  (`claude/mobile-ui-customization-analysis-202ae4`, đợt [SUAGD 13/09]/[KHUNG 13/09 HAIHO]/[ANTOAN 13/09], chưa commit lúc đó) sẽ merge
+  `mobile-0809` rồi thêm nút "Chỉnh giao diện" vào cửa sổ Cài đặt trên bản `UiOptions.cpp` này — **đừng đổi UiOptions/uioptions.ini song song**.
+  Lưu ý từ phiên đó: khung vẽ sắp theo "hai họ" (Fold 7 = 1437x616, máy ảo 1060x616; tắt `[Resolution] KhungHaiHo=0`) → đọc log đo nhịp
+  theo `SCREEN_WIDTH/HEIGHT` trong `[NHIP-BAT]`, không giả định 1440x616.
+- Máy ảo: phiên giao diện đang dùng (chạy kịch bản adb, bật Sửa giao diện) — **không chạm máy ảo khi họ đang chạy**; ảnh chụp 21:33 cho thấy dòng
+  góc phải chạy: `57 FPS | CPU 16% | GPU - | Pin 100% | 26 ms` (GPU `-` vì LDPlayer không có sysfs), chưa chụp được cửa sổ Cài đặt.
 - Thay đổi trong worktree (đã commit):
 
 | Tệp | Việc |
@@ -73,23 +82,19 @@ Mỗi pha **thêm** một thay đổi so với pha trước; hết vòng tự tr
 - Quyết định: M1 xác nhận → sửa bằng **nâng SDL trong nhánh 3.2.x** (gồm cả `7875654` dựng lại swapchain khi quay lại app và `e0050c3`
   sập khi trở về từ nền) — đúng ý chủ "tiện phát triển về sau"; pha 2 đều hơn pha 1 → bật nhịp PC cho mobile; pha 4/5 → chính sách FPS theo máy.
 
-## 4. Việc còn lại — chạy trong worktree này, theo thứ tự
+## 4. Việc đã làm (21:00–21:40) và còn lại
 
-1. `python android\va_sdl3_donhip.py` → `da va: ...SDL_gpu_vulkan.c`.
-2. `python android\va_nguon_android_donhip1.py` → `da va` cả 3 tệp; rồi `check_encoding.py` từng tệp — byte cao phải giữ nguyên:
-   `S3Client.cpp` 21, `JxPerfHudAndroid.cpp` 15, `D3D9onGPUDev.cpp` 2.
-3. Dựng APK (chỉ arm64 cho nhanh):
-   `JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot`, trong `android\gradle-project`:
-   `.\gradlew.bat assembleDebug -Pandroid.injected.build.abi=arm64-v8a` → chép `app\build\outputs\apk\debug\app-debug.apk`
-   thành `android\apk\jx1mobile-1209-donhip-a.apk`.
-4. Hai chuỗi Windows 0 lỗi (luật chủ): chép `build_chuoi_x64_wt.ps1`, `build_chuoi_sdl_wt.ps1` từ scratchpad của phiên `full-wauto-mobile-analysis-f781df`,
-   đổi `$R` sang worktree này. Thay đổi C++ đều trong `JX_ANDROID` nên chỉ cần kiểm không vỡ.
-5. Bộ tải `D:\jx1_android_data_dt_v4`: kiểm `jx1mobile.apk` vẫn là bản 19:08 (md5 `d8ab878b…`, không bị phiên khác thay) → chép APK mới đè;
-   `config.ini` của bộ tải: `PerfHud=1` (đang 0) và thêm `[DoNhip]` `Bat=1`, `GiayMoiPha=60`, `Pha=0,1,2,3,4,5`, `LanLap=2`; xoá `manifest.txt`.
-6. Chạy máy chủ: `python android\may_chu_tai_du_lieu.py --thu-muc D:\jx1_android_data_dt_v4 --cong 8765 --nhat-ky D:\jx1_android_log`
-   → `apk.txt` phải có versionCode > 109101908. (Lần chạy thử cổng 18765 cũng bị chặn — `POST /nhatky` chưa thử thật.)
-7. Báo chủ test (§5). Các phiên `wauto-78`, `wauto-3b`, `mobile-ui-customization-analysis` đang mở: nhắn đừng thay APK / khởi động lại 8765 trong lúc test.
-8. Sau test: trả `config.ini` bộ tải (`Bat=0`, `PerfHud=0`), đọc log, chọn cách sửa, commit, `gan_ff.sh` vào `mobile-0809`.
+Đã: vá SDL + 2 bản vá C++ (kiểm mã hoá: byte cao giữ nguyên), dựng APK 2 ABI, cài máy ảo (md5 khớp, versionCode 109102125), bộ tải
+`D:\jx1_android_data_dt_v4` có APK + `config.ini` (`ThongTinGoc=1`, `[DoNhip] Bat=1 GiayMoiPha=60 Pha=0,1,2,3,4,5 LanLap=2`) +
+`ui/ui3/uioptions.ini`; máy chủ 8765 chạy (pid xem `Get-NetTCPConnection -LocalPort 8765`) với `--nhat-ky D:\jx1_android_log`
+(`POST /nhatky` đã thử: 200, ghi đúng chỗ — thư mục thử `THU_thu` để lại); hai chuỗi Windows 0 lỗi; FF + push `mobile-0809`.
+
+Còn lại:
+1. Chủ mở app trên Fold 7 → tự cập nhật (apk.txt 109102125) → chơi ~12 phút chỗ đông (§5). Theo dõi `D:\jx1_android_log\<model>_<phiên>\`.
+2. Đọc `jx_nhip.log` `[NHIP-PHA]` theo §3, chọn cách sửa (M1 → nâng SDL nhánh 3.2.x; nhịp PC; chính sách FPS theo máy). Ghi kết luận vào tệp này.
+3. Sau test: `D:\jx1_android_data_dt_v4\config.ini` đặt `[DoNhip] Bat=0` (máy chủ tự sinh lại manifest khi khởi động lại).
+4. Mặc định dòng góc phải đang đè bản đồ nhỏ → cân nhắc đổi `ThongTin_MacDinh` sang bên trái bản đồ nhỏ (`KUiMiniMap::GetSelf()->GetAbsolutePos`).
+5. Phiên giao diện sẽ merge `mobile-0809` và thêm nút "Chỉnh giao diện" vào `UiOptions.cpp` — chờ họ FF, không sửa UiOptions song song.
 
 ## 5. Chủ test trên Fold 7
 
