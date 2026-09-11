@@ -5,6 +5,32 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **16:15 11/09 — C1 ĐÃ LÊN BỘ TẢI: dt_v4 = 109111608** (md5 `bdcf2baa…`, 20 355 055 B, máy chủ 8765 PID 374324, giữ nguyên
+> `data/sprvuhontieudao3.pak` + `package.ini`), commit `[MANG 11/09]`, `origin/mobile-0809 = ee3c3cdd`. Chủ 16:13: "nếu bạn lấy đủ log rồi thì đẩy lên".
+>
+> **Số chốt của bước 1** (hai phiên giờ CÙNG mức đông nên so được trực tiếp; trung vị cửa sổ 30 s có npc ≥ 100):
+>
+> | | D1 109111459 (33 cửa sổ, npc 116 · đạn 114) | C bước 1 109111545 (24 cửa sổ, npc 123 · đạn 103) |
+> |---|---|---|
+> | fps / thấp nhất | 114 / 110 | 115 / 110 |
+> | ghi lệnh | 2,93 ms | **2,44 ms** |
+> | **µs mỗi lệnh vẽ** | 1,37 | **1,09 (−20 %)** |
+> | đổi trạng thái pixel / khung | 1 105 | **0** |
+> | đổi texture / khung | 1 146 | 1 154 (phần của C1) |
+> | nộp | 0,72 ms | 1,30 ms |
+> | CPU tiến trình / luồng chính | 80 / 75 % | 79 / 74 % |
+> | điện · GPU bận | 3,57 W · 75 % | 3,99 W · 80 % |
+>
+> **Điểm cần theo dõi:** nộp +0,58 ms, điện +0,42 W và GPU 75 → 80 % ở cảnh tương đương. Nghi do shader đọc bảng trạng thái từ storage buffer cho
+> **từng điểm ảnh** (4,3 triệu điểm mỗi khung) thay vì từ uniform như trước; CPU thì giảm đúng như thiết kế. C1 không đụng phần này, nên nếu log C1
+> vẫn thấy nộp và GPU cao thì bước sau nên thử đưa bảng trạng thái về uniform theo lô, hoặc rút gọn tổ hợp (chỉ 5 tổ hợp mỗi khung) thành vài hằng số
+> trong shader. Nếu muốn đối chứng ngay: `Rep3PsBuffer=0` trong config dt_v4 rồi khởi động lại 8765.
+>
+> **Chủ test bản 109111608:** mở lại app. Kiểm **hình** trước hết vì C1 đổi cách sprite nằm trong bộ nhớ GPU: nhân vật, quái, hiệu ứng kỹ năng, chữ,
+> giao diện, vật phẩm trong hành trang, ảnh nền đăng nhập; sai sẽ lộ thành ảnh lẫn sang sprite khác hoặc ô trống. Rồi Tống Kim 10–15 phút.
+> Tôi đọc `[VE-GOP]` (đổi texture mỗi khung, kỳ vọng tụt mạnh từ 1 154), `[VE]` (ghi lệnh, lệnh mỗi khung), `[MANG]` (số cụm atlas), `[MAU]` (W, GPU).
+> Hỏng hình → `Rep3AtlasMang=0` trong `[Client]` của config dt_v4 rồi khởi động lại 8765, không cần APK mới.
+
 > **16:10 11/09 — KẾT QUẢ BƯỚC 1 TRÊN FOLD 7 + C1 ĐÃ DỰNG XONG (CHƯA ĐẨY BỘ TẢI).** Chủ 15:52: "tôi mới up bản mới rồi tí nữa bạn lấy log —
 > phải dựa vào log và lịch trình định sẵn". Phiên `SM-F966U1_20260911_155303` (bản 109111545, màn trong, Tống Kim liên tục, 99 cửa sổ 10 s).
 >
