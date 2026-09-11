@@ -32,7 +32,26 @@ unsigned g_uDanAct = 0, g_uDanCol = 0, g_uDanFind = 0, g_uDanHit = 0, g_uDanBar 
 double   g_dDanTong = 0.0, g_dDanOnFly = 0.0, g_dDanBar = 0.0, g_dDanBeyond = 0.0, g_dDanCol = 0.0, g_dDanMove = 0.0;
 // [DAN 11/09 b] (C) bo qua o trong trong vung truoc GetOffsetAxis/FindNpc ([Client] DanToiUu, mac dinh 1) + do ProcessCollision/DoCollision
 unsigned g_uDanBoQua = 0; double g_dDanVaCham = 0.0; static int g_nDanVcDepth = 0; static int g_nJxDanToiUu = -1;
-#define JX_DAN_BO_QUA_O(vung, x, y) ((g_nJxDanToiUu > 0) && (vung).JxOTrongVung((x), (y)) && (vung).JxSoNpcO((x), (y)) == 0)
+unsigned g_uDanO[3][3] = { {0,0,0}, {0,0,0}, {0,0,0} };	// [DAN 11/09 c] [vong C1/C2/C3][bo qua / ngoai vung / co NPC] - chan doan
+// [DAN 11/09 d] bo loc nhanh cho MOI o cua vong quet: cuon sang vung ke dung nhu GetOffsetAxis (x truoc, y sau, m_nConnectRegion 2/6/4/0),
+// khong co vung dich -> bo qua (GetOffsetAxis tra FALSE -> vong goc continue); co vung dich ma o khong co NPC -> bo qua (FindNpc tra 0).
+// Chi khi o co NPC moi di duong goc. May ao 11/09: 80% o cua vong quet quanh dan nam ngoai vung hien tai (vung 16 o, cua so 7x7).
+// g_uDanO[vong]: [0] bo qua vi o trong, [1] bo qua vi khong co vung dich, [2] co NPC -> duong goc.
+static inline bool JxDanBoQuaO(int nVong, int nSub, int nRegion, int x, int y)
+{
+	if (g_nJxDanToiUu <= 0 || nRegion < 0) return false;
+	KSubWorld& sw = SubWorld[nSub];
+	int r = nRegion;
+	if (x < 0) { r = sw.m_Region[r].m_nConnectRegion[2]; x += sw.m_nRegionWidth; }
+	else if (x >= sw.m_nRegionWidth) { r = sw.m_Region[r].m_nConnectRegion[6]; x -= sw.m_nRegionWidth; }
+	if (r < 0) { g_uDanO[nVong][1]++; return true; }
+	if (y < 0) { r = sw.m_Region[r].m_nConnectRegion[4]; y += sw.m_nRegionHeight; }
+	else if (y >= sw.m_nRegionHeight) { r = sw.m_Region[r].m_nConnectRegion[0]; y -= sw.m_nRegionHeight; }
+	if (r < 0) { g_uDanO[nVong][1]++; return true; }
+	if (sw.m_Region[r].JxSoNpcO(x, y) != 0) { g_uDanO[nVong][2]++; return false; }
+	g_uDanO[nVong][0]++;
+	return true;
+}
 static inline double DanMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 {
 	static double s_dTanSo = 0.0;
@@ -803,7 +822,7 @@ int KMissle::CheckCollision()
 			for (int j = -m_nCollideRange; j <= m_nCollideRange; j ++)
 			{
 #ifdef JX_ANDROID
-				if (JX_DAN_BO_QUA_O(CurRegion, m_nCurrentMapX + i, m_nCurrentMapY + j)) { g_uDanBoQua++; continue; }	// [DAN 11/09 b]
+				if (JxDanBoQuaO(0, m_nSubWorldId, m_nRegionId, m_nCurrentMapX + i, m_nCurrentMapY + j)) { g_uDanBoQua++; continue; }	// [DAN 11/09 b] + c
 #endif
 				if (!GetOffsetAxis(m_nSubWorldId, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, i , j , nSearchRegion, nRMx, nRMy))
 					continue;
@@ -1755,7 +1774,7 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 			//if ((i * i + j * j ) > nRangeX * nRangeX)
 				//continue;
 #ifdef JX_ANDROID
-			if (JX_DAN_BO_QUA_O(SubWorld[nSubWorld].m_Region[nRegionId], nMapX + i, nMapY + j)) { g_uDanBoQua++; continue; }	// [DAN 11/09 b]
+			if (JxDanBoQuaO(2, nSubWorld, nRegionId, nMapX + i, nMapY + j)) { g_uDanBoQua++; continue; }	// [DAN 11/09 b] + c
 #endif
 			if (!GetOffsetAxis(nSubWorld, nRegionId, nMapX, nMapY, i , j , nSearchRegion, nRMx, nRMy))
 				continue;
@@ -2098,7 +2117,7 @@ int KMissle::CheckNearestCollision()
 		for (int j = -1; j <= 1; j ++)
 		{
 #ifdef JX_ANDROID
-			if (JX_DAN_BO_QUA_O(CurRegion, m_nCurrentMapX + i, m_nCurrentMapY + j)) { g_uDanBoQua++; continue; }	// [DAN 11/09 b]
+			if (JxDanBoQuaO(1, m_nSubWorldId, m_nRegionId, m_nCurrentMapX + i, m_nCurrentMapY + j)) { g_uDanBoQua++; continue; }	// [DAN 11/09 b] + c
 #endif
 			if (!KMissle::GetOffsetAxis(
 				m_nSubWorldId,

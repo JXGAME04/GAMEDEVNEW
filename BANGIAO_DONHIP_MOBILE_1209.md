@@ -5,6 +5,16 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **01:30 11/09 — SỬA "ĐÔNG LÀ TỤT FPS" ĐỢT 1 ĐÃ LÊN BỘ TẢI: bản `v` = `android/apk/jx1mobile-1209-donhip-v.apk`** (versionCode 109110129,
+> md5 `f789946a…`, dựng từ `origin/mobile-0809 = 3267b755` = đăng nhập mới của phiên giao diện + `[DAN 11/09 + b + c+d]`). Gốc lỗi tìm được
+> qua bộ đo `[DAN]`: với `AutoLog=1` (bộ tải đang bật) mỗi site `AUTOLOG_EVERY` là một `SDL_GetTicks()`, mỗi viên đạn mỗi tick ~60 lần
+> (49 ô của `GetOffsetAxis` + ~12 site) ≈ 3 ms/tick ở 700 viên; sửa: macro so với mốc mỗi tick, và bộ lọc ô cuốn sang vùng kề bỏ qua ô trống
+> trước `GetOffsetAxis`/`FindNpc` (máy ảo: 20,9 → 4,5 µs/viên, `FindNpc` 23 760 → 803/10 s, va chạm giữ nguyên). Tất cả chỉ `JX_ANDROID`,
+> hành vi game y hệt, khoá `[Client] DanToiUu=0` để đối chứng. **01:38: bản `w` (109110137, md5 `dd55c22f…`) thay `v`** vì bộ gửi log Java
+> chỉ chạy khi `[DoNhip] Bat=1` — `Bat=0` từ 00:46 nên các phiên r/u/v **không có log nào về** (điện thoại tải `v` lúc 01:33 mà không có thư
+> mục phiên). `[DAN 11/09 e]`: khoá `[DoNhip] GuiLog=1` = chỉ gửi log, không chạy bài đo; dt_v4 đã đặt `GuiLog=1`, `Bat=0`. Chủ mở lại app →
+> nhận `w`, chơi đông 3–5 phút → đọc `[DAN]` + fps (§9 bước 3). Chi tiết: §9.
+
 > **00:55 11/09 — ĐO XONG SDL 3.2.30 (§9), ĐÃ ÁP KẾT QUẢ.** Phiên Fold 7 00:31–00:43 (bản `-d`) đủ 12 bước: pha 0 mặc định 97–116 khung/s
 > không cần hint; nhịp PC không thua ở đâu → `[Client] PaintVsync=1 PaintSmooth=2` mặc định mobile; Android không chép swapchain mỗi khung;
 > nấc 60 Hz = 59 khung/s đều ở 2,4 W; 2 khung bay bắt buộc (commit `80b3369d` [DONHIP 12/09 d], dịch thử Android 0 lỗi = `android/apk/
@@ -346,8 +356,23 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
   `[Client] DanToiUu=0` tắt (C) để đối chứng. `[DAN]` thêm `boqua` (số ô bỏ qua) và `vacham` (ms/tick trong ProcessCollision + DoCollision).
   Ngoài ra máy ảo cho thấy `hit` = `col` (432/432): đạn không phải kiểu bay thẳng thì `DoCollision` (hiệu ứng) lặp mỗi tick khi mục tiêu
   trong tầm — hành vi gốc của kỹ năng liên tục, **không sửa** (giữ hiệu ứng).
-- Bước 3: chủ chơi đông với bản có [DAN 11/09 b] → đọc `[DAN]` (`tong`, `col`, `findnpc`, `boqua`, `vacham`) + fps; nếu `vacham` còn lớn
-  thì xét tiếp `CreateSpecialEffect`/`Collidsion`; nếu `khac` lớn thì xét `Map2Mps`/`IsMatch`/log. Không cắt hiệu ứng/NPC/đạn.
+- **Bước 2b (01:30, [DAN 11/09 c + d])**: bộ đếm tách theo vòng (`o C1 a/b/c C2 … C3 …` = bỏ qua ô trống / bỏ qua không có vùng đích /
+  có NPC) cho thấy ở vòng C1 (7×7 quanh đạn) **80% ô nằm ngoài vùng hiện tại** (vùng chỉ 16 ô, cửa sổ chờm sang vùng kề) nên bộ lọc
+  "chỉ trong vùng" bỏ sót; C3 thì lọc tốt. Bộ lọc mới `JxDanBoQuaO(vòng, subworld, region, x, y)` **tự cuốn sang vùng kề y như
+  `GetOffsetAxis`** (x trước, y sau, `m_nConnectRegion` 2/6/4/0; không có vùng đích → bỏ qua = `GetOffsetAxis` trả FALSE) rồi đọc bộ đếm NPC
+  của vùng đích; chỉ ô có NPC mới đi đường gốc. Máy ảo: 20,9 → 4,0–4,7 µs/viên đã đo với bộ lọc cũ; bộ lọc mới đo lại ở bản `-i`.
+- **Bước 3 — KẾT QUẢ TRÊN FOLD 7 (01:44–01:55 11/09, bản `x`, phiên `SM-F966U1_20260911_014409`, 11 phút, 65 cửa sổ 10 s)**: sau 40 s nạp
+  map, **fps 101–120 ở mọi cửa sổ** (trung bình 116); các cửa sổ đông nhất: **677 viên đạn/tick + 154 NPC/tick → 101 fps, đạn 1,60 ms/tick
+  (2,4 µs/viên)**; 570/tick → 105 fps; 539/tick → 102; 428/tick + 135 NPC → 119. Trước sửa (00:31): 690–790 viên/tick + 134 NPC → 53–76 fps,
+  đạn 4,3–5,3 ms/tick (6,5 µs/viên), `world` 110–151 ms mỗi giây. Nay **không còn giây nào `world ≥ 50 ms`** (tổng lớn nhất 52 ms lúc nạp map).
+  `[DAN]` ở 677 viên/tick (2,3 µs/viên, tổng 1,54 ms/tick): `move` (cây Ipot) 0,76 ≈ 50 %, `col` 0,40 (trong đó `vacham` 0,17 = kỹ năng
+  liên tục đánh mỗi tick), `khac` 0,21; ở 539–570 viên/tick cũng 1,0–1,3 ms/tick, `move` 0,49–0,64; vòng C1 bỏ qua 85–90 % ô. Phần còn lại là hành vi gốc → **đợt 1 đủ**, đợt 2 (nếu muốn thêm dư địa) = cách cây
+  cảnh cập nhật vị trí đạn (`KScenePlaceC::MoveObject`: khoá tới hạn + `DoiViTri` mỗi viên mỗi tick).
+  **Nhiệt/pin (đáng lưu ý):** cả 130 mẫu `nhiet=2` (Android THERMAL_STATUS_MODERATE, đã nóng sẵn từ phiên trước), headroom 0,86–0,99 (1,0 = giảm xung), 3,57 W trung bình
+  (đỉnh 11,5 W), pin 39 → 35 % trong 11 phút, màn giữ 120 Hz 129/130 mẫu. Chơi lâu ở 120 khung/s sẽ tới ngưỡng giảm xung → nấc **60** của
+  thanh FPS (59 khung/s đều, 2,4 W, §9 mục 4) là chế độ chơi dài; có thể làm "tự hạ 60 khi headroom > 0,9" nếu chủ muốn.
+  Chú ý: bộ gửi log chỉ chạy khi `Bat=1` hoặc (từ bản `w`) `GuiLog=1`; bản `x` thêm `ScriptError.log`. Chuỗi Windows không dựng lại: mọi
+  dòng C++ mới nằm trong `#ifdef JX_ANDROID`, nhánh `#else` giữ nguyên văn.
 - Nạp trước sprite NPC khi vào map (`NAPNPC` "trễ 437") — việc đã ghi trong [[mobile-tongkim-lag-goc]].
 - Sau khi bật nhịp PC mặc định: khi tick 10–15 ms xảy ra, `PaintSmooth=2` nội suy giúp mượt hơn (`cat ngang` thấp), nhưng không bù được khung mất.
 
