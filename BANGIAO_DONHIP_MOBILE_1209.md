@@ -5,6 +5,27 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **14:50 11/09 — KẾT QUẢ FOLD 7 BẢN 109111313 (phiên `SM-F966U1_20260911_141642`, màn trong, 28 phút: 8 phút cảnh yên trong thành rồi 20 phút Tống Kim;
+> bộ đọc `scratchpad/phan_tich_bkg.py` + `phan_tich_tong.py` nhóm G; mốc so = phiên 11:48 cùng màn trong, bản f).** Chủ 14:40: "lấy log về phân tích".
+> 1. **Cảnh yên (npc ≤ 12, 14 cửa sổ 30 s so với 35 cửa sổ của 11:48):** fps 120 (118); **CPU tiến trình/luồng chính 36 / 31 % (53 / 44 %)**; **điện trung vị
+>    1,99 W (2,39 W), có cửa sổ 1,5–1,8 W**; 6 nhân hiệu năng đứng ở **556 MHz**, 2 nhân lớn 1 017 MHz (xung nghỉ); GPU 37–39 % bận ở 160 MHz (xung thấp nhất).
+>    `[VE-BKG]`: chỉ **29 % khung được trình chiếu** (bỏ 71 %; cả phiên bỏ 34 480/185 889 = 19 % vì 20 phút đông không bỏ được); chuỗi bỏ dài nhất 6 khung
+>    = đúng một tick 55 ms (mỗi tick logic đổi hoạt ảnh NPC → khung khác → trình chiếu ~18–36 lần/giây khi đứng yên); "giống nhưng có tải" 3, "ép" 34
+>    (trần 250 ms hầu như không cần). Không dòng "that bai", chủ chơi liên tục 28 phút không thoát.
+> 2. **Khựng do bảng màu HẾT:** `[VE-GIAT]` chép ≥ 10 ms **1 lần/28 phút** (11:48: 229 lần/21 phút = 10,8/phút), lần đó là tải thật 21 texture 20 MB lúc
+>    vào map; `lenh tai bang mau` 0,000–0,001 ms/khung; phần lớn nhất của `[VE-GIAT]` chuyển từ "chép" (229) sang "vẽ khác" (445, gần hết ở cảnh đông, vẽ CPU
+>    24–37 ms khi sinh NPC hàng loạt lúc vào đám đông t=494 s) và "nộp" (62, chờ GPU lúc đông).
+> 3. **[FPSNGOAI] chạy đúng:** 20 s đầu 299–300 khung/10 s (PaintFps 30), màn xuống 60 Hz lúc đăng nhập (`[DOI]`), vào thế giới về 120 Hz / 120 fps.
+> 4. **Tống Kim (npc 60–200, 40 cửa sổ) — như trước, đúng dự kiến (BKG/PALBUF không nhắm chỗ này):** fps trung vị 109, tụt 70–79 ở 700–900 đạn/tick; paint
+>    7,8 ms; CPU 72 / 68 %; **điện trung vị 4,7 W (p90 6,2, đỉnh 12 W)**; **GPU 82 % bận ở 652 MHz, đỉnh 99 % ở 866–956 MHz → lúc đông màn trong nghẽn GPU thật**
+>    (lần đầu có số GPU: `[GPU-SYS]` Fold 7 đọc được `kgsl/gpu_busy_percentage` + `devfreq/cur_freq`); CPU 6 nhân 1,4–2,7 GHz. Nhiệt 0 → 1 (4 phút vào đông)
+>    → 2 → **3 SEVERE sau ~8 phút**, pin 33 → 37 °C, 49 → 37 % trong 28 phút. `[VE-GOP]` cả phiên đổi/khung TB pipeline 175, texture 656, ps 708; lệnh 1 700–2 800/khung,
+>    ghi 2,3–4,7 ms, nộp 1,3–4,4 ms.
+> 5. **Kết luận:** đợt 1 đạt mục tiêu ở cảnh chơi bình thường (−17 điểm CPU, −0,4 W, SoC về xung nghỉ, hết khựng bảng màu, hình đúng theo log — chờ chủ xác nhận
+>    mắt). Nóng/pin giờ chỉ còn ở cảnh đông, và ở đó **GPU là nút thắt trước CPU** → việc kế: **D1** (swapchain = khung logic 1040×936, GPU tô ÷4,4, hint SDL nhỏ)
+>    rồi **C** (atlas mảng + ps theo đỉnh + first_vertex: lệnh 1 700–2 800 → 300–500), và **A2** (hạ nấc khi nhiệt ≥ 2 — lưới an toàn vì 8 phút Tống Kim đã SEVERE).
+>    Có thể thêm **BKG b**: khi > 70 % khung bị bỏ trong 2 s thì xin màn 60 Hz (đứng yên panel vẫn 120 Hz suốt 8 phút, ~0,3 W).
+
 > **13:20 11/09 — SỬA TẬN GỐC ĐỢT 1 ĐÃ LÊN BỘ TẢI: `[BKG 11/09]` + `[PALBUF 11/09]` + `[FPSNGOAI 11/09]` + `[MAU 11/09]`** — commit `ccb66888`,
 > `origin/mobile-0809 = 9177d84a` (đã FF, cây `D:\GAMEDEVNEW_wt_mobile` = 9177d84a), **dt_v4 = 109111313** (md5 `250bd14a…`, 20 256 747 B, máy chủ 8765
 > PID 304848 chạy từ worktree này, tệp rời của phiên giao diện giữ nguyên), APK lưu `android/apk/jx1mobile-1109-bkg1.apk`. Chủ 12:40: "thực hiện các bước
