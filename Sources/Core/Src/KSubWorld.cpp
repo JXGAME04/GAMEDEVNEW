@@ -2061,7 +2061,7 @@ DWORD KSubWorld::GetTrap(int nMpsX, int nMpsY)
 	return m_Region[nRegion].GetTrap(nMapX, nMapY);
 }
 
-BYTE KSubWorld::GetBarrier(int nMpsX, int nMpsY)
+BYTE KSubWorld::GetBarrier(int nMpsX, int nMpsY, int nIdxDiChuyen)	// [QUAICHAN 11/09]
 {
 #ifdef _SERVER
 	int nRegion, nMapX, nMapY, nOffX, nOffY;
@@ -2069,7 +2069,7 @@ BYTE KSubWorld::GetBarrier(int nMpsX, int nMpsY)
 	
 	if (nRegion == -1)
 		return 0xff;
-	return m_Region[nRegion].GetBarrier(nMapX, nMapY, (nOffX >> 10), (nOffY) >> 10);
+	return m_Region[nRegion].GetBarrier(nMapX, nMapY, (nOffX >> 10), (nOffY) >> 10, nIdxDiChuyen);
 #else
 	return (BYTE)g_ScenePlace.GetObstacleInfo(nMpsX, nMpsY);
 #endif

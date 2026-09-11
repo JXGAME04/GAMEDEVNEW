@@ -78,6 +78,10 @@ static unsigned char g_abyBCVungGui[BC_MAX_VUNG];	// vung nao da gui cho client 
 // dan mot phat khi goi dong bo toi. Vi vay doi so nay la phai swap CoreServer.dll VA CoreClient.dll
 // CUNG LUC; lenh GM Lua PB_SetNpcChan chi doi phia may chu nen chi dung de tat khan cap.
 int g_nPbNpcChan = 0;
+// [QUAICHAN 11/09] Quai (kind_normal) khong dung chong len nhau. Chi QUAI chan QUAI;
+// nguoi choi / bot / ban dong hanh / NPC thoai khong chan va khong bi chan.
+// [Server] QuaiChanQuai trong config.ini, mac dinh 1 (khong co khoa = bat).
+int g_nQuaiChanQuai = -1;	// -1 = chua doc config
 KRegion::KRegion()
 {
 	m_nIndex		= -1;
@@ -1175,7 +1179,32 @@ DWORD KRegion::GetTrap(int nMapX, int nMapY)
 #endif
 }
 
-BYTE KRegion::GetBarrier(int nMapX, int nMapY, int nDx, int nDy)
+#ifdef _SERVER
+// [QUAICHAN 11/09] Tra 1 neu o dang xet co QUAI KHAC (kind_normal) con song dung tren do.
+// Bo qua XAC / dang hoi sinh (do_death, do_revive) - xac khong duoc chan duong.
+// Duyet danh sach NPC cua vung y nhu FindNpcDuyet, nhung chi khi m_pNpcRef > 0.
+int KRegion::CoQuaiKhacTrenO(int nMapX, int nMapY, int nBoQuaIdx)
+{
+	if (!m_pNpcRef || nMapX < 0 || nMapY < 0 || nMapX >= m_nWidth || nMapY >= m_nHeight)
+		return 0;
+	if (m_pNpcRef[nMapY * m_nWidth + nMapX] == 0)
+		return 0;		// o trong: thoat ngay, khong duyet danh sach
+	KIndexNode* pNode = (KIndexNode *)m_NpcList.GetHead();
+	while (pNode)
+	{
+		const int nIdx = pNode->m_nIndex;
+		if (nIdx > 0 && nIdx != nBoQuaIdx
+			&& Npc[nIdx].m_MapX == nMapX && Npc[nIdx].m_MapY == nMapY
+			&& Npc[nIdx].m_Kind == kind_normal
+			&& Npc[nIdx].m_Doing != do_death && Npc[nIdx].m_Doing != do_revive)
+			return 1;
+		pNode = (KIndexNode *)pNode->GetNext();
+	}
+	return 0;
+}
+#endif
+
+BYTE KRegion::GetBarrier(int nMapX, int nMapY, int nDx, int nDy, int nIdxDiChuyen)
 {
 #ifdef _SERVER	
 	long lType, lInfo;
@@ -1212,6 +1241,16 @@ BYTE KRegion::GetBarrier(int nMapX, int nMapY, int nDx, int nDy)
 	{
 		if (m_pNpcRef[nMapY * m_nWidth + nMapX] > 0)
 			return Obstacle_JumpFly;
+	}
+	// [QUAICHAN 11/09] QUAI khong dam len o da co QUAI KHAC (chong chong o).
+	// Chi xet khi biet NGUOI DI CHUYEN va do la quai - nguoi choi/bot khong dinh gi.
+	if (nIdxDiChuyen > 0 && nIdxDiChuyen < MAX_NPC)
+	{
+		if (g_nQuaiChanQuai < 0)
+			g_nQuaiChanQuai = (int)GetPrivateProfileIntA("Server", "QuaiChanQuai", 1, ".\\config.ini");
+		if (g_nQuaiChanQuai && Npc[nIdxDiChuyen].m_Kind == kind_normal
+			&& CoQuaiKhacTrenO(nMapX, nMapY, nIdxDiChuyen))
+			return Obstacle_Normal;	// nhu vach: KNpc::Move se khong buoc vao o do
 	}
 	return Obstacle_NULL;
 #else

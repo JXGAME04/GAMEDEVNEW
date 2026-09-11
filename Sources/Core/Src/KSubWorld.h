@@ -153,7 +153,8 @@ public:
 	BYTE		TestBarrier(int nMpsX, int nMpsY);
 	BYTE		TestBarrier(int nRegion, int nMapX, int nMapY, int nDx, int nDy, int nChangeX, int nChangeY);	// 
 	BYTE		TestBarrierMin(int nRegion, int nMapX, int nMapY, int nDx, int nDy, int nChangeX, int nChangeY);	// 
-	BYTE		GetBarrier(int nMpsX, int nMpsY);											// 
+	// [QUAICHAN 11/09] chuyen tiep chi so NPC dang di chuyen (0 = khong kiem quai).
+	BYTE		GetBarrier(int nMpsX, int nMpsY, int nIdxDiChuyen = 0);											// 
 	DWORD		GetTrap(int nMpsX, int nMpsY);
 	void		MessageLoop();
 	int			FindRegion(int RegionID);													// 
