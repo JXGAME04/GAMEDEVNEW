@@ -2410,6 +2410,10 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 	AUTOLOG("[S6-LOADMAP] sw=%d tam=(%d,%d) daco=%d loadnew=%d t=%u", nId, nX, nY, (int)(nIdx >= 0), (int)(bLoadNew ? 1 : 0), timeGetTime());
 #endif
 
+	// [TRANGTRI 11/09 e] hoan viec nap NPC/vat the trang tri den khi du cua so 3x3:
+	// ban ghi sat mep vung co the tinh ra vung ben canh, ma luc nap vung tam thi
+	// 8 vung lan can CHUA co -> Mps2Map tra -1 -> AddClientNpc bo (dong do: hong 3).
+	int nTTO[9], nTTX[9], nTTY[9], nTTSo = 0;
 	if (nIdx < 0)
 	{
 		nIdx = m_ClientRegionIdx[0];
@@ -2418,7 +2422,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		{
 			m_Region[nIdx].m_nIndex = nIdx;
 			m_Region[nIdx].Init(m_nRegionWidth, m_nRegionHeight);
-			m_Region[nIdx].LoadObject(0, nX, nY, m_szMapPath);	// [TRANGTRI 11/09] nap NPC+OBJ trang tri cua vung
+			nTTO[nTTSo] = nIdx; nTTX[nTTSo] = nX; nTTY[nTTSo] = nY; nTTSo++;	// [TRANGTRI 11/09 e]
 		}
 	}
 	
@@ -2444,7 +2448,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			{
 				m_Region[nConIdx].m_nIndex = nConIdx;
 				m_Region[nConIdx].Init(m_nRegionWidth, m_nRegionHeight);
-				m_Region[nConIdx].LoadObject(0, nX + nXOff[i], nY + nYOff[i], m_szMapPath);	// [TRANGTRI 11/09]
+				nTTO[nTTSo] = nConIdx; nTTX[nTTSo] = nX + nXOff[i]; nTTY[nTTSo] = nY + nYOff[i]; nTTSo++;	// [TRANGTRI 11/09 e]
 			}
 			else
 			{
@@ -2456,6 +2460,10 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		m_ClientRegionIdx[i + 1] = nConIdx;
 		m_Region[nIdx].m_nConnectRegion[i] = nConIdx;
 	}
+
+	// [TRANGTRI 11/09 e] gio moi nap vat trang tri: ca 9 vung deu co mat nen Mps2Map khong con tra -1.
+	for (int nT11 = 0; nT11 < nTTSo; nT11++)
+		m_Region[nTTO[nT11]].LoadObject(0, nTTX[nT11], nTTY[nT11], m_szMapPath);
 
 	if (m_Region[nIdx].m_nConnectRegion[0] >= 0)
 	{
