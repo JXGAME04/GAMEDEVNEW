@@ -622,12 +622,58 @@ void KTongJX2_SendCreateC(int nPlayerIdx, int nCamp, const char* pszTongName)
 static void sJX2_NotifyApply(KTongJX2Tong* pTong, const char* pszMsg);
 static void sSendStringCmd(DWORD dwTongID, BYTE btKind, const char* pszText, DWORD dwParam);
 
+// [BHXS 10/09] DIEU KIEN XIN VAO BANG CUA DU AN - chu bao "lay nick nguoi choi khac chua xuat su van vao bang duoc".
+// Duong cua so JX2 (COP_APPLY_JOIN), TONG_ApplyJoin va bot nop don truoc day chi kiem 'chua co bang' + nguong cap
+// cua bang (field 65/66). Luat goc cua du an: KPlayerTong::ApplyAddTong (client) + CheckAddCondition / TransferAddApply
+// (server) = chua co bang; trai m_Camp VA m_CurrentCamp = camp_free (4 'sat thu' = DA XUAT SU: factionhead.lua
+// xuatsu() SetCamp(4)+SetCurCamp(4)+LeaveTeam(), menu mon phai chi mo tu cap 60); cap >= 60; khong giao dich; khong
+// to doi. Vao bang xong AddTong dat trai = trai bang, roi bang lai ve camp_free -> lo nay con cho 'xuat su khong
+// can nhiem vu'. KHONG kiem co 4134 (TASK_DUNGCHUNG2): nhan vat xuat su truoc 24/08 mang co o task 12 cu.
+// Tra 0 = du; 5 nguoi choi hong; 13 da co bang; 14 chua xuat su; 15 duoi cap 60; 16 dang giao dich; 17 trong to doi.
+static int sJX2_JoinCondition(int nPlayerIdx)
+{
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER || Player[nPlayerIdx].m_nIndex <= 0)
+		return 5;
+	if (Player[nPlayerIdx].m_cTong.m_nFlag)
+		return 13;
+	int nNpc = Player[nPlayerIdx].m_nIndex;
+	if (Npc[nNpc].m_CurrentCamp != camp_free || Npc[nNpc].m_Camp != camp_free)
+		return 14;
+	if (Npc[nNpc].m_Level < 60)
+		return 15;
+	if (Player[nPlayerIdx].CheckTrading())
+		return 16;
+	if (Player[nPlayerIdx].m_cTeam.m_nFlag)
+		return 17;
+	return 0;
+}
+
+// cau bao theo ma cua sJX2_JoinCondition: 13/14/17 nguyen van stringtable_core ban Linux (MSG_TONG_APPLY_ADD_ERROR1/2/3),
+// 15 nguyen van KPlayerTong::ApplyAddTong cua du an; 16 cau moi (goc im lang).
+static const char* sJX2_JoinErrText(int nCode)
+{
+	switch (nCode)
+	{
+	case 13: return "Thµnh viªn bang héi kh«ng thÓ gia nhËp thªm mét bang héi kh¸c!";
+	case 14: return "S¸t thñ míi cã thÓ gia nhËp bang héi!";
+	case 15: return "§¼ng cÊp d­íi 60 kh«ng thÓ gia nhËp bang héi";
+	case 16: return "§ang giao dÞch, kh«ng thÓ gia nhËp bang héi!";
+	case 17: return "Trong tæ ®éi, kh«ng thÓ gia nhËp bang héi!";
+	}
+	return NULL;
+}
+
 static int sJX2_DoApplyJoin(int nPlayerIdx, DWORD dwTongID)
 {
 	KTongJX2Tong* pTong = g_TongJX2.FindTong(dwTongID);
 	if (!pTong || nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER ||
-		Player[nPlayerIdx].m_nIndex <= 0 || Player[nPlayerIdx].m_cTong.m_nFlag)
+		Player[nPlayerIdx].m_nIndex <= 0)
 		return 5;
+	{
+		int nErr = sJX2_JoinCondition(nPlayerIdx);	// [BHXS 10/09] luat goc du an: xuat su (trai 4), cap 60, giao dich, to doi
+		if (nErr)
+			return nErr;
+	}
 	int nLevel = Npc[Player[nPlayerIdx].m_nIndex].m_Level;
 	DWORD dwRefuse = g_TongJX2.GetField(dwTongID, 66);
 	if (dwRefuse && nLevel < (int)dwRefuse)
@@ -3046,7 +3092,10 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 				pszMsg = "§èi ph­¬ng kh«ng ph¶i lµ thµnh viªn bang héi!";
 			break;
 		case 5:
-			if (pCmd->m_btOp == defTONG_JX2_COP_SET_FIGURE)
+			if (pCmd->m_btOp == defTONG_JX2_COP_ACCEPT_APPLY)
+				// [BHXS 10/09] CoreUseNameDef.h MSG_TONG_APPLY_ADD_ERROR (bo %s); ly do cu the da bao cho nguoi xin
+				pszMsg = "Ng­êi ch¬i nµy kh«ng ®ñ ®iÒu kiÖn gia nhËp bang héi!";
+			else if (pCmd->m_btOp == defTONG_JX2_COP_SET_FIGURE)
 				// stringtable_core.txt:937 MSG_TONG_INSTATE_FAIL_ID2 (bo %s vi
 				// cho nay khong co san ten nguoi bi bo nhiem)
 				pszMsg = "§èi ph­¬ng kh«ng trùc tuyÕn, kh«ng thÓ nhiÖm mÖnh";
@@ -3082,6 +3131,13 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 		case 11:
 			// nguyen van ban Linux (MSG_TONG_AUTO_REFUSE_LEVEL)
 			pszMsg = "§¼ng cÊp cña ng­¬i qu¸ thÊp, bang héi nµy tõ chèi ®Ò nghÞ gia nhËp cña ng­¬i";
+			break;
+		case 13:
+		case 14:
+		case 15:
+		case 16:
+		case 17:
+			pszMsg = sJX2_JoinErrText(nRet);	// [BHXS 10/09] da co bang / chua xuat su / duoi cap 60 / giao dich / to doi
 			break;
 		case 12:
 			pszMsg = "B¹n ®· göi ®¬n xin gia nhËp bang héi nµy råi, xin chê duyÖt.";
@@ -3461,9 +3517,21 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			DWORD dwJoinID = pTong->dwApplyID[a];
 			BYTE btJoinSex = pTong->btApplySex[a];
 			int nJoinIdx = sFindPlayerIdxByNameID(dwJoinID);
-			if (nJoinIdx > 0 && Player[nJoinIdx].m_nIndex > 0 &&
-				Player[nJoinIdx].m_cTong.m_nFlag)
-				return 5;	// dang online va DA co bang khac
+			if (nJoinIdx > 0 && Player[nJoinIdx].m_nIndex > 0)
+			{
+				// [BHXS 10/09] nguoi xin dang online: kiem lai luat goc (CheckAddCondition luc duyet) - don nop truoc ban
+				// va chua kiem trai, hoac trai doi sau khi nop. Bao ly do cho nguoi xin; tra 5 = giu don (nguoi duyet bam
+				// Tu choi de xoa; bot bang chu gap 5 tu tu choi). Nguoi xin da offline: da kiem luc nop don.
+				int nErr = sJX2_JoinCondition(nJoinIdx);
+				if (nErr)
+				{
+					const char* pszWhy = sJX2_JoinErrText(nErr);
+					if (pszWhy)
+						KPlayerChat::SendSystemInfo(1, nJoinIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+							(char*)pszWhy, (int)strlen(pszWhy));
+					return 5;
+				}
+			}
 			sJX2_SendAddMemberByName(pTong, szJoin, dwJoinID, btJoinSex,
 				(DWORD)(nJoinIdx > 0 ? nJoinIdx : 0));
 			// ghi luon "Ngay gia nhap" (khoa 2) cho nguoi vua duoc duyet
@@ -4351,6 +4419,12 @@ int LuaTONG_ApplyJoin(Lua_State* L)
 		Lua_PushNumber(L, 2);
 	else if (nRet == 11)
 		Lua_PushNumber(L, -1);		// duoi nguong cap (truoc la ma 6)
+	else if (nRet == 14)
+		Lua_PushNumber(L, -2);		// [BHXS 10/09] chua xuat su (trai khong phai sat thu 4)
+	else if (nRet == 15)
+		Lua_PushNumber(L, -3);		// [BHXS] duoi cap 60
+	else if (nRet == 16 || nRet == 17)
+		Lua_PushNumber(L, -4);		// [BHXS] dang giao dich / trong to doi
 	else if (nRet == 0 || nRet == 12)
 		Lua_PushNumber(L, 1);		// 12 = da nop don truoc do
 	else
