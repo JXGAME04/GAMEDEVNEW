@@ -2275,6 +2275,22 @@ void KScenePlaceC::VeLopNen(KLopCanh* p)
 	Img.oPosition.nX = x;
 	Img.oPosition.nY = y;
 	Img.oPosition.nZ = 0;
+	{	// [ANHNEN 10/09 c] ghi 10 dong dau de biet ve o dau, co anh chua
+		extern int g_nCorePaintLog;
+		static int s_nGhi = 0;
+		if (g_nCorePaintLog > 0 && s_nGhi < 10)
+		{
+			s_nGhi++;
+			FILE* pLog = fopen("jx_paint.log", "a");
+			if (pLog)
+			{
+				fprintf(pLog, "[ANHNEN] ve nen: tieu diem %d,%d | vung %d,%d..%d,%d | tile %d | dat tai %d,%d | co anh %dx%d | %s\n",
+					m_FocusPosition.x, m_FocusPosition.y, p->rcVung.left, p->rcVung.top, p->rcVung.right, p->rcVung.bottom,
+					p->nTiLe, x, y, (int)Param.nWidth, (int)Param.nHeight, Img.szImage);
+				fclose(pLog);
+			}
+		}
+	}
 	g_pRepresent->DrawPrimitives(1, &Img, RU_T_IMAGE, true);	// true = toa do man hinh
 }
 
