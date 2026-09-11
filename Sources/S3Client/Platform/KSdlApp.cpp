@@ -17,6 +17,7 @@ extern int SCREEN_WIDTH, SCREEN_HEIGHT;	// S3Client.cpp (WND_INIT_* cua Engine k
 ENGINE_API void SetEngineResolution(int width, int height);	// KDDraw.h (Engine)
 extern int g_nDoPhanGiaiTheoManHinh;	// S3Client.cpp
 extern "C" void JxSdl_BanPhimNhip(void);	// [DANGNHAP 12/09] dinh nghia phia duoi, vong lap chinh goi
+extern "C" void JxVatPham_Nhip(void);	// [VATPHAM 12/09 f] UiVatPham.cpp - pha 2 cua nem 2 pha
 #include <SDL3/SDL.h>
 #ifndef JX_POSIX
 #include <SDL3/SDL_main.h>	// SDL_RegisterApp/SDL_UnregisterApp (SDL.h khong include SDL_main.h; SDL_MAIN_HANDLED da define nen khong dinh nghia lai main)
@@ -468,6 +469,7 @@ void KSdlApp::Run()
 		JxSdl_BanPhimNhip();	// [DANGNHAP 12/09] mo lai ban phim sau khi IME tu dong
 		JxCan_Nhip();	// [ANDROID 09/09 CAN] dang cam can thi day nhan vat di theo huong
 		JxKyNang_Nhip();	// [ANDROID 09/09 KYNANG I] dang de nut ky nang thi cu danh tiep
+		JxVatPham_Nhip();	// [VATPHAM 12/09 f] nut Nem: doi may chu nhac mon len tay roi moi nem
 #endif
 		if (m_bActive || m_bMultiGame)
 		{
@@ -605,6 +607,8 @@ extern "C" void JxSdl_BanPhimNhip(void)
 // Doi den luc nha (thuong duoi 150 ms) la cach moi giao dien cam ung deu lam.
 //---------------------------------------------------------------------------
 extern "C" int JxUi_CoGiaoDienTaiDiem(int x, int y);	// Wnds.cpp
+extern "C" int JxUi_CoVatPhamTaiDiem(int x, int y);	// [VATPHAM 12/09 g] Wnds.cpp
+extern "C" void JxVatPham_DatGiu(int nBat);	// [VATPHAM 12/09 g] UiVatPham.cpp
 extern "C" int JxVatPham_ChamNgoai(int x, int y);	// [VATPHAM 12/09 d] UiVatPham.cpp
 extern "C" void JxSdl_DatPhimDinh(unsigned int uMatNa);	// dinh nghia o khoi PHIM ben tren
 
@@ -777,6 +781,20 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			GhiChuot(0, MAKELPARAM(m_nChamX0, m_nChamY0));
 			MsgProc(hWnd, WM_RBUTTONUP, 0, MAKELPARAM(m_nChamX0, m_nChamY0));
 		}
+		else if (nTruoc == CHAM_CAM)
+		{
+			//	[VATPHAM 12/09 g] dang cam mon tren tay: nha ngon TREN GIAO DIEN = tha mon vao dung o do (bam trai nhu ban
+			//	PC). Nha ngon NGOAI giao dien thi KHONG bam gi: bam ra ban do la nem mon xuong dat, mat do.
+			LPARAM l = MAKELPARAM((int)fx, (int)fy);
+
+			if (JxUi_CoGiaoDienTaiDiem((int)fx, (int)fy))
+			{
+				GhiChuot(MK_LBUTTON, l);
+				MsgProc(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, l);
+				GhiChuot(0, l);
+				MsgProc(hWnd, WM_LBUTTONUP, 0, l);
+			}
+		}
 		else if (nTruoc == CHAM_CHO || nTruoc == CHAM_RE)
 		{
 			// CHAM_RE = da giu lau tren GIAO DIEN. Van bam chuot trai khi nha: tren dien thoai nguoi ta
@@ -887,6 +905,23 @@ void KSdlApp::NhipCham()
 		return;
 	if ((unsigned int)SDL_GetTicks() - m_uChamDat < CHAM_GIU_MS)
 		return;
+	//	[VATPHAM 12/09 g] Chu 16:15: "de vao item vai giay la tu cam len tay". Giu ngon lau ngay tren mot O CO VAT PHAM:
+	//	bam TRAI kem co "giu" -> lop chua vat pham bo qua dai nut va chay duong goc = nhac mon len tay.
+	//	Ngon van dang de (CHAM_CAM): di chuyen thi o dich sang len, nha ngon tren giao dien la tha vao o do.
+	if (JxUi_CoVatPhamTaiDiem(m_nChamX0, m_nChamY0))
+	{
+		LPARAM l = MAKELPARAM(m_nChamX0, m_nChamY0);
+
+		g_DebugLog("[CHAM] giu tai %d,%d -> nhac vat pham len tay", m_nChamX0, m_nChamY0);
+		m_nCham = CHAM_CAM;
+		JxVatPham_DatGiu(1);
+		GhiChuot(MK_LBUTTON, l);
+		MsgProc(g_GetMainHWnd(), WM_LBUTTONDOWN, MK_LBUTTON, l);
+		GhiChuot(0, l);
+		MsgProc(g_GetMainHWnd(), WM_LBUTTONUP, 0, l);
+		JxVatPham_DatGiu(0);
+		return;
+	}
 	// CHAM_RE khong con dung: cham giu o DAU cung la chuot phai.
 	// Tren GIAO DIEN, chuot phai chinh la duong MAC / THAO / DUNG vat pham cua ban PC - bo no di thi
 	// nguoi choi khong mac duoc do. Tren BAN DO, chuot phai la danh ep / chon muc tieu.

@@ -10,8 +10,10 @@
 #include "WndObjContainer.h"
 #ifdef JX_ANDROID
 #include "../UiCase/UiVatPham.h"	// [VATPHAM 12/09] bang thong tin vat pham + nut thao tac (chi mobile)
+extern "C" int JxVatPham_LayGiu(void);	// [VATPHAM 12/09 g] UiVatPham.cpp: 1 = cu bam nay do GIU NGON LAU sinh ra
 #endif
 #include "../Elem/MouseHover.h"
+#include "KDebug.h"	// [VATPHAM 12/09 g] g_DebugLog cho nhat ky chan doan
 #include "../../../core/src/CoreObjGenreDef.h"
 #include "../../../core/src/CoreShell.h"
 #include "../../../core/src/GameDataDef.h"
@@ -263,9 +265,15 @@ int KWndObjectBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
+#ifdef JX_ANDROID
+	case WND_M_JX_CO_VATPHAM:	// [VATPHAM 12/09 g] o don: co mon la duoc
+		return (m_Object.uGenre != CGOG_NOTHING) ? 1 : 0;
+#endif
 	case WM_LBUTTONDOWN:
 #ifdef JX_ANDROID
-		if (m_Object.uGenre != CGOG_NOTHING)	// [VATPHAM 12/09]
+		//	[VATPHAM 12/09 g] Giu ngon lau, hoac dang cam mon tren tay -> KHONG mo dai nut: chay duong goc cua ban PC
+		//	(nhac mon len tay / tha mon xuong o nay).
+		if (m_Object.uGenre != CGOG_NOTHING && !JxVatPham_LayGiu() && !Wnd_GetDragObj(NULL))	// [VATPHAM 12/09]
 		{
 			KUiDraggedObject oVP = m_Object;
 			int nAbsX = 0, nAbsY = 0;
@@ -607,6 +615,11 @@ void KWndObjectMatrix::PaintWindow() // edit by phong kieu vong sang item
 		Shadow.oEndPos.nX = Shadow.oPosition.nX + m_nUnitWidth * m_nPutWidth - m_nUnitBorder * 2;
 		Shadow.oEndPos.nY = Shadow.oPosition.nY + m_nUnitHeight * m_nPutHeight - m_nUnitBorder * 2;
 		Shadow.Color.Color_dw = l_BgColors[4];
+#ifdef JX_ANDROID
+		//	[VATPHAM 12/09 g] Chu: "di chuyen toi o nao thi SANG o do len de biet cho dat". Mau trong ui.ini co alpha 10/255,
+		//	nhin tren dien thoai gan nhu khong thay -> ban Android to dam han (xanh sang).
+		Shadow.Color.Color_dw = 0x7028a0ff;
+#endif
 		g_pRepresentShell->DrawPrimitives(1, &Shadow, RU_T_SHADOW, true);
 	}
 }
@@ -698,16 +711,34 @@ int KWndObjectMatrix::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
+#ifdef JX_ANDROID
+	case WND_M_JX_CO_VATPHAM:	// [VATPHAM 12/09 g] luoi: phai cham dung mot o dang co mon
+		{
+			extern int g_nJxNhatKyGiu;
+			int nO = GetObjectAt(LOWORD(nParam), HIWORD(nParam));
+			if (g_nJxNhatKyGiu)
+				g_DebugLog("[GIU] luoi hoi tai %d,%d (goc %d,%d, %d o) -> %d",
+					(int)LOWORD(nParam), (int)HIWORD(nParam), m_nAbsoluteLeft, m_nAbsoluteTop, m_nNumObjects, nO);
+			return (nO >= 0) ? 1 : 0;
+		}
+#endif
 	case WM_LBUTTONDOWN:
 #ifdef JX_ANDROID
 		{	// [VATPHAM 12/09] cham vao o co vat pham -> mo bang thong tin + nut, khong nhac len tay
-			int nO = GetObjectAt(LOWORD(nParam), HIWORD(nParam));
+			//	[VATPHAM 12/09 g] giu ngon lau / dang cam mon tren tay thi bo qua dai nut (nhac len tay - tha xuong o).
+			int nO = (JxVatPham_LayGiu() || Wnd_GetDragObj(NULL)) ? -1 : GetObjectAt(LOWORD(nParam), HIWORD(nParam));
+			{
+				extern int g_nJxNhatKyGiu;
+				if (g_nJxNhatKyGiu)
+					g_DebugLog("[GIU] bam o tai %d,%d: giu=%d keo=%d nO=%d",
+						(int)LOWORD(nParam), (int)HIWORD(nParam), JxVatPham_LayGiu(), Wnd_GetDragObj(NULL), nO);
+			}
 			if (nO >= 0)
 			{
-				int nAbsX = 0, nAbsY = 0;
-				GetAbsolutePos(&nAbsX, &nAbsY);
+				//	[VATPHAM 12/09 g] lParam DA la toa do tuyet doi (GetObjectAt tu tru goc cua so),
+				//	truoc day cong them goc cua so nua nen diem dua cho dai nut bi lech.
 				if (KUiVatPham::Mo(&m_pObjects[nO], (UIOBJECT_CONTAINER)m_nContainerId,
-						nAbsX + LOWORD(nParam), nAbsY + HIWORD(nParam), m_pParentWnd))
+						(int)LOWORD(nParam), (int)HIWORD(nParam), m_pParentWnd))
 					break;
 			}
 		}

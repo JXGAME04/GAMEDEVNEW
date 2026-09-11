@@ -8,6 +8,7 @@
 #include "KEngine.h"
 #include "KWin32Wnd.h"
 #include "../Elem/WndMessage.h"
+#include "KDebug.h"	// [VATPHAM 12/09 g] g_DebugLog cho nhat ky chan doan
 #include "Wnds.h"
 #include "WndWindow.h"
 #include "UiCursor.h"
@@ -520,6 +521,49 @@ extern "C" int JxUi_CoGiaoDienTaiDiem(int x, int y)
 {
 	KWndWindow* pWnd = Wnd_GetActive(x, y, false);
 	return (pWnd != NULL && pWnd != s_WndStation.pGameSpaceWnd) ? 1 : 0;
+}
+
+//	[VATPHAM 12/09 g] Hoi CA CAY cua so con: o vat pham (KWndObjectBox / KWndObjectMatrix) luon la cua so CON cua
+//	hop thoai (hanh trang, ruong...), ma Wnd_GetActive chi tra cua so TOP nen phai tu di xuong.
+static int JxUi_HoiCoVatPham(KWndWindow* pWnd, int x, int y)
+{
+	KWndWindow* pCon = pWnd->GetFirstChild();
+
+	while (pCon)
+	{
+		if (pCon->PtInWindow(x, y) && JxUi_HoiCoVatPham(pCon, x, y))
+			return 1;
+		pCon = pCon->GetNextWnd();
+	}
+	//	Gui TOA DO TUYET DOI: WM_LBUTTONDOWN / WM_MOUSEMOVE cua bo giao dien nay deu mang toa do tuyet doi
+	//	(KWndObjectMatrix::GetObjectAt tu tru m_nAbsoluteLeft/Top ben trong).
+	return pWnd->WndProc(WND_M_JX_CO_VATPHAM, 0, MAKELPARAM(x, y)) ? 1 : 0;
+}
+
+//	[VATPHAM 12/09 g] Diem (x, y) co nam tren mot O DANG CO VAT PHAM khong (hanh trang, ruong, o trang bi...)?
+//	Dung cho "giu ngon lau tren o vat pham = nhac mon len tay": chi khi co mon that moi doi giu lau
+//	tu chuot phai sang bam trai, con lai (nut, danh sach, ban do) giu nguyen nhu cu.
+int g_nJxNhatKyGiu = 0;	// [VATPHAM 12/09 g] [Cham] NhatKyGiu=1 -> ghi nhat ky khi hoi o vat pham
+
+extern "C" int JxUi_CoVatPhamTaiDiem(int x, int y)
+{
+	KWndWindow* pWnd = Wnd_GetActive(x, y, false);
+	int nRa;
+
+	if (pWnd == NULL || pWnd == s_WndStation.pGameSpaceWnd)
+	{
+		if (g_nJxNhatKyGiu)
+			g_DebugLog("[GIU] %d,%d: khong co cua so giao dien", x, y);
+		return 0;
+	}
+	nRa = JxUi_HoiCoVatPham(pWnd, x, y);
+	if (g_nJxNhatKyGiu)
+	{
+		int nL = 0, nT = 0;
+		pWnd->GetAbsolutePos(&nL, &nT);
+		g_DebugLog("[GIU] %d,%d: cua so top goc %d,%d -> co vat pham = %d", x, y, nL, nT, nRa);
+	}
+	return nRa;
 }
 #endif
 

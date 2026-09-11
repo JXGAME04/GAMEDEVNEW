@@ -24794,6 +24794,19 @@ extern "C" int JxCore_WAutoNhanVat(unsigned int* puId, int* pnLifeMax, int* pnMa
 	return 1;
 }
 
+// [VATPHAM 12/09 f] Mon dang cam TREN TAY: tra 1 va ghi ma dw (Item::GetID) neu co, 0 neu tay trong.
+// Dai nut vat pham (S3Client/Ui/UiCase/UiVatPham.cpp) dung de biet may chu da nhac mon len tay chua
+// truoc khi goi ThrowAwayItem - xem chu thich nem 2 pha o do. Chi Android.
+extern "C" int JxCore_MonTrenTay(unsigned int* puDwId)
+{
+	int nIdx = Player[CLIENT_PLAYER_INDEX].m_ItemList.Hand();
+	if (nIdx <= 0)
+		return 0;
+	if (puDwId)
+		*puDwId = (unsigned int)Item[nIdx].GetID();
+	return 1;
+}
+
 // [ANDROID 11/09 WAUTO B1] Dong "auto dang lam gi" (TCVN3, WA_HoatDong o tren - cung dong WAuto.exe hien o chan cua so) cho khung
 // WAuto trong game (S3Client/Ui/UiCase/UiWAuto.cpp). Tra 1 khi co chu. Chi Android.
 extern "C" int JxCore_WAutoHoatDong(char* szOut, int nMax)

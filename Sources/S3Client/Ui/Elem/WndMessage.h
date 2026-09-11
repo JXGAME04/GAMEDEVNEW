@@ -74,6 +74,12 @@
 
 //------------------------------------------------
 //	按键消息
+#ifdef JX_ANDROID
+//	[VATPHAM 12/09 g] Hoi mot cua so: tai diem nay (toa do CUA SO trong nParam) co dang la mot O CO VAT PHAM khong?
+//	Chi hai lop chua vat pham (KWndObjectBox / KWndObjectMatrix) tra 1, con lai tra 0 (WndProc mac dinh).
+//	Dung cho "giu ngon lau tren o vat pham = nhac mon len tay" (KSdlApp::NhipCham).
+#define	WND_M_JX_CO_VATPHAM		WND_M_BASE + 990
+#endif
 #define WND_M_BUTTON_BASE			WND_M_BASE + 100
 #define WND_N_BUTTON_CLICK			WND_M_BUTTON_BASE + 1	//点击按钮操作
 //(KWndWindow*)uParam = 被点击的按钮窗口的指针

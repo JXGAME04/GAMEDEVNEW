@@ -307,6 +307,43 @@ void KUiVatPham::PaintWindow()
 //---------------------------------------------------------------------------
 //	Lam theo nut vua bam. Moi lenh deu la lenh SAN CO cua ban PC (OperationRequest).
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//	[VATPHAM 12/09 f] NEM 2 PHA. GOI_SWITCH_OBJECT chi GUI lenh cho may chu (KPlayer::MoveItem ->
+//	SendClientCmdMoveItem) nen ngay dong sau tay VAN TRONG: ThrowAwayItem() tra 0 va mon chi ve tay khi
+//	may chu tra loi -> chu bao "kich nem thi no cam tren tay, khong nem ra ngoai" (16:15).
+//	Nay: pha 1 nho ma dw roi gui lenh nhac len tay; pha 2 (JxVatPham_Nhip, moi nhip ve) doi tay co DUNG
+//	mon do roi moi nem. Tay giu mon khac -> huy (chong nem nham mon vua nhat duoc). Qua han -> huy cho.
+//---------------------------------------------------------------------------
+extern "C" int JxCore_MonTrenTay(unsigned int* puDwId);	// CoreShell.cpp
+
+//	[VATPHAM 12/09 g] 1 = cu bam trai dang gui la do GIU NGON LAU tren o vat pham sinh ra (KSdlApp::NhipCham).
+//	Hai lop chua vat pham xem co nay de BO QUA dai nut va chay duong goc = nhac mon len tay.
+static int			s_nGiuLau  = 0;
+
+extern "C" void JxVatPham_DatGiu(int nBat) { s_nGiuLau = nBat ? 1 : 0; }
+extern "C" int  JxVatPham_LayGiu(void)     { return s_nGiuLau; }
+
+static unsigned int	s_uNemCho  = 0;	// ma dw mon dang cho nem (0 = khong cho)
+static int			s_nNemNhip = 0;	// so nhip da doi
+
+extern "C" void JxVatPham_Nhip(void)
+{
+	unsigned int uTay = 0;
+
+	if (s_uNemCho == 0)
+		return;
+	if (++s_nNemNhip > 180)		// ~3 giay: may chu khong tra loi (mon khoa / khong nhac duoc) -> thoi
+	{
+		s_uNemCho = 0;
+		return;
+	}
+	if (!JxCore_MonTrenTay(&uTay))
+		return;					// may chu chua tra loi, doi nhip sau
+	if (uTay == s_uNemCho && g_pCoreShell)
+		g_pCoreShell->ThrowAwayItem();	// tay da co DUNG mon -> nem
+	s_uNemCho = 0;					// tay giu mon khac thi huy luon (chong nem nham)
+}
+
 void KUiVatPham::LamNut(int nMa)
 {
 	KUiObjAtContRegion	Obj;
@@ -346,12 +383,19 @@ void KUiVatPham::LamNut(int nMa)
 
 	case VP_NEM:
 		//	[VATPHAM 12/09 d] chu: "nem 1 vien thi ra 1 vien thoi chu khong nem toan bo".
-		//	GDI_THROW_ALL_ITEM nem CA LOAI -> thay bang: nhac DUNG mon nay len tay
-		//	(GOI_SWITCH_OBJECT chi co Pick) roi ThrowAwayItem() nem mon dang cam.
-		//	Loi tu chan do khoa / hoang kim / nhiem vu: nem hong thi tra mon ve dung o cu.
-		g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, (KUPARAM)(&Obj), 0);
-		if (g_pCoreShell->ThrowAwayItem() == 0)
-			g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, 0, (KNPARAM)(&Obj));
+		//	GDI_THROW_ALL_ITEM nem CA LOAI -> thay bang: nhac DUNG mon nay len tay roi nem mon dang cam.
+		//	[VATPHAM 12/09 f] PHA 1: nho ma dw roi gui lenh nhac len tay; JxVatPham_Nhip nem o pha 2 khi tay da co mon.
+		{
+			ChatItem CItem;
+
+			memset(&CItem, 0, sizeof(CItem));
+			s_uNemCho  = 0;
+			s_nNemNhip = 0;
+			if (g_pCoreShell->GetGameData(GDI_GET_ITEM_PARAM, (KUPARAM)&CItem, m_Obj.uId))
+				s_uNemCho = (unsigned int)CItem.m_nID;
+			if (s_uNemCho)
+				g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, (KUPARAM)(&Obj), 0);
+		}
 		break;
 
 	case VP_DINH:

@@ -271,6 +271,10 @@ static void DocCaiDat()
 	s_nKNSangPhai = GetPrivateProfileInt("Cham", "KyNangSangPhai", 24, szCfg);
 	s_nKNCoIcon  = GetPrivateProfileInt("Cham", "KyNangCoIcon", 32, szCfg);
 	s_nKNIconPT  = GetPrivateProfileInt("Cham", "KyNangIconPhanTram", 78, szCfg);	// [KYNANG 12/09 O]
+	{	// [VATPHAM 12/09 g] nhat ky chan doan "giu ngon lau tren o vat pham"
+		extern int g_nJxNhatKyGiu;
+		g_nJxNhatKyGiu = GetPrivateProfileInt("Cham", "NhatKyGiu", 0, szCfg) ? 1 : 0;
+	}
 	{	// [KYNANG 12/09 TRON] cat bieu tuong ky nang thanh hinh tron cho vua o tron (0 = de vuong nhu cu)
 		extern int g_nJxKyNangTron;
 		g_nJxKyNangTron = GetPrivateProfileInt("Cham", "KyNangTron", 1, szCfg) ? 1 : 0;
