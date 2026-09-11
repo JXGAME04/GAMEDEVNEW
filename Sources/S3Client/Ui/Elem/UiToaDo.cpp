@@ -697,26 +697,6 @@ static void ApMotO(KWndWindow* pWnd, int nMuc)
 	if (nMuc < 0)
 		return;
 	pWnd->SetPosition(s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
-#ifdef JX_ANDROID
-	{
-		//	[UITOADO 12/09 LE] Chua LE AN TOAN o mep TRAI. Man dien thoai bo goc tron / vien cong nen cai gi nam
-		//	dung x = 0 la bi nuot mat mot dai - chu bao o man ngoai Fold 7 (khung ve 1440x616), do duoc: mui ten
-		//	cuon bang tin he thong (KSysMsgCentrePad|SysRoom) va tab "<<" gap khung chat (KUiPlayerBar|HideChat)
-		//	deu nam dung x = 0. Day theo TOA DO THAT nen an ca khi nguoi choi da tu keo o do (tep
-		//	UserData\\UiToaDo.ini de len bo cuc mac dinh). Cha duoc ap TRUOC con nen day cha xong la con di theo,
-		//	khong day hai lan. Tat bang [Ui] LeAnToan=0.
-		static int s_nLe = -1;
-		int nAbsX = 0, nAbsY = 0;
-
-		if (s_nLe < 0)
-			s_nLe = GetPrivateProfileInt("Ui", "LeAnToan", 20, ".\\config.ini");
-		pWnd->GetAbsolutePos(&nAbsX, &nAbsY);
-		//	[UITOADO 12/09 LE b] keo ca o dang nam AM vao trong (truoc chi xu ly 0..le nen o nao lot han ra
-		//	ngoai van nam nguyen); -300 tro ra la co y giau han (Item_4..8, ChatRoom) thi de yen.
-		if (s_nLe > 0 && nAbsX > -100 && nAbsX < s_nLe)
-			pWnd->SetPosition(s_Bang[nMuc].nLeft + (s_nLe - nAbsX), s_Bang[nMuc].nTop);
-	}
-#endif
 	//	KWndMovingImage chup vi tri goc cua hoat hinh mo cua so luc Init, tuc
 	//	TRUOC luc nay => phai bao no chup lai, khong thi mo/dong lai la nhay ve cho cu
 	pWnd->UiNhoViTri();
@@ -975,8 +955,7 @@ void UiToaDo_BatTat()
 			//	la biet ngay may do dang chay khung bao nhieu (may ao khong dat duoc moi co man).
 			char szTB[160];
 
-			_snprintf(szTB, sizeof(szTB), "%s  [%dx%d le=%d]", "§· vµo chÕ ®é söa giao diÖn", SCREEN_WIDTH, SCREEN_HEIGHT,
-				GetPrivateProfileInt("Ui", "LeAnToan", 20, ".\\config.ini"));
+			_snprintf(szTB, sizeof(szTB), "%s  [%dx%d]", "§· vµo chÕ ®é söa giao diÖn", SCREEN_WIDTH, SCREEN_HEIGHT);
 			szTB[sizeof(szTB) - 1] = 0;
 			DatThongBao(szTB);
 		}
