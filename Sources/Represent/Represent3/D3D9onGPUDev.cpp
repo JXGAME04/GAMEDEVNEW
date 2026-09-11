@@ -14,7 +14,11 @@ static char        s_szRep3GpuDriver[32] = "";
 static const char* s_szRep3GpuTrinhChieu = "?";
 static unsigned    s_uRep3GpuLenhVe = 0, s_uRep3GpuQuad = 0;
 // [DONHIP 12/09] ban do nhip tren may that (JxPerfHudAndroid.cpp goi Rep3_DoNhipDat / Rep3_DoNhipLay qua GetProcAddress)
+#ifdef JX_ANDROID
+static int      s_nJxChepKhung = 0;		// [DONHIP 12/09 d] Android: KHONG chep swapchain moi khung (Fold 7: fps bang, dien -0,1..-0,8 W); GetFrontBufferData tu bat
+#else
 static int      s_nJxChepKhung = 1;		// 0 = bo chep swapchain moi khung (ban sao chi de chup man hinh)
+#endif
 static int      s_nJxKhungBay = 2;		// so khung bay dang dat (SDL mac dinh 2)
 static unsigned s_aJxTraHist[400];		// cach giua hai lan tra swapchain, o 0,25 ms (0..100 ms, o cuoi = tran)
 static double   s_aJxSo[8];				// xem Rep3_DoNhipLay
@@ -595,7 +599,13 @@ HRESULT CDevGpu::GetFrontBufferData(UINT iSwapChain, IDirect3DSurface9* pDestSur
 {
 	CSurfGpu* pD = (CSurfGpu*)pDestSurface;
 	if (!pD) return D3DERR_INVALIDCALL;
-	if (!m_pLastFrame) { RgLog("GetFrontBufferData: chua co khung nao (chup lai o khung sau)"); return D3DERR_INVALIDCALL; }
+	if (!m_pLastFrame)
+	{
+#ifdef JX_ANDROID
+		if (!s_nJxChepKhung) { s_nJxChepKhung = 1; RgLog("GetFrontBufferData: bat chep khung tu khung sau (Android mac dinh khong chep)"); }	// [DONHIP 12/09 d]
+#endif
+		RgLog("GetFrontBufferData: chua co khung nao (chup lai o khung sau)"); return D3DERR_INVALIDCALL;
+	}
 	std::vector<BYTE> tmp((size_t)m_lastW * m_lastH * 4);
 	if (!ReadbackTexture(m_pLastFrame, m_lastW, m_lastH, &tmp[0], m_lastW * 4)) return D3DERR_INVALIDCALL;
 	D3DLOCKED_RECT lr; if (FAILED(pD->LockRect(&lr, NULL, 0))) return D3DERR_INVALIDCALL;

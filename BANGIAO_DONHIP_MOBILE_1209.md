@@ -276,6 +276,54 @@ Quyết định (theo chủ quyết #2 "tiện phát triển về sau"):
    Máy ảo **tự đăng nhập tài khoản của chủ** → thử xong phải `am force-stop` ngay kẻo đá phiên trên điện thoại. `screencap`/`pull` với đường
    `/sdcard/...` cần `MSYS_NO_PATHCONV=1`, đích ghi bằng đường Windows `C:/...`.
 
+## 9. KẾT QUẢ SDL 3.2.30 TRÊN FOLD 7 (00:31–00:43 11/09, APK `-d`) + VÌ SAO "ĐÔNG LÀ TỤT FPS"
+
+Nguồn: `D:\jx1_android_log\SM-F966U1_20260911_003034` (12 bước × 60 s, không ra nền, `[NHIP-XONG]` 00:43:12; pin 62 → 58 %, headroom ≤ 0,92,
+`nhiet=0`). `[NHIP-BAT]`: `suboptimal 3434, dung lai 2` trong 37 s đầu — bản 3.2.30 tự hết dựng lại swapchain, **không cần hint**.
+
+| Bước | Pha | khung/s | p50 / p95 / p99 (ms) | trễ >1,5T | chờ sc (ms) | dựng lại | W | màn |
+|---|---|---|---|---|---|---|---|---|
+| 1 / 7 | 0 SDL mới, nhịp cũ (vsync 0, smooth 1) | 111,0 / 96,9 | 8,4 / 10,9 / 26,4 — 8,6 / 20,9 / 27,6 | 238 / 992 | 0,02 / 0,04 | 0 / 1 | 3,18 / 3,49 | 120 |
+| 2 / 8 | 1 +nhịp PC (vsync 1, smooth 2) | 115,5 / 115,7 | 8,4 / 11,4 / 16,1 — 8,4 / 10,4 / 19,1 | 218 / 185 | 0,03 | 0 | 3,56 / 4,41 | 120 |
+| 3 / 9 | 2 +bỏ chép khung, 2 bay | 114,7 / 110,9 | 8,4 / 11,4 / 17,1 — 8,4 / 13,4 / 20,9 | 243 / 463 | 0,03 | 0 | 2,73 / 4,33 | 120 |
+| 4 / 10 | 3 +xin 60 Hz, PaintFps 60 | **59,0 / 59,3** | 16,6 / 20,1 / 26,9 — 16,6 / 20,9 / 27,6 | 57 / 61 | 0,05 | 0 | **2,35 / 2,46** | **60** |
+| 5 / 11 | 4 "1 khung bay" (đối chứng) | 47,7 / 80,4 | 18,1 / 41,1 / 53,6 — 11,9 / 18,1 / 24,4 | 2332 / 1886 | 8,5 / 6,0 | 0 | 2,34 / 2,39 | 120 |
+| 6 / 12 | 5 "SDL cũ" (hint, đối chứng) | 34,0 / 32,6 | 29,1 / 49,4 / 62,6 — 30,6 / 44,1 / 57,6 | 2034 / 1954 | 16,0 / 16,8 | 2041 / 1955 | 2,43 / 2,25 | 120 |
+
+Kết luận (thay cho §8 "Đọc log lần tới"):
+1. **Nâng SDL 3.2.30 giải quyết M1 ngay ở cấu hình mặc định**: 97–116 khung/s, chờ swapchain 0,02–0,04 ms; pha 5 (đối chứng bật hành vi cũ
+   bằng hint) rơi về 33–34 khung/s, dựng lại mỗi khung — chứng minh khác biệt đúng là chỗ đó.
+2. **Nhịp PC (PaintVsync=1, PaintSmooth=2)**: không thua ở bất cứ bước nào, p99 16–19 so với 26–28 ms, trễ 185–218 so với 238–992 →
+   **đặt mặc định cho mobile** (lớp ghi đè). Điện đo cao hơn 0,4–0,9 W nhưng cảnh vòng 2 nặng hơn hẳn (tất cả các pha vòng 2 đều cao) nên chưa
+   tách được; đo lại khi cần bằng cảnh tĩnh.
+3. **Bỏ chép khung mỗi khung (M2)**: khung/s như nhau, điện thấp hơn 0,1–0,8 W → chỉ chép khi có yêu cầu chụp màn hình (chỉ Android).
+4. **Nấc 60 Hz của thanh FPS** = chế độ tiết kiệm pin thật: 59 khung/s đều (p95 20 ms, 57–61 khung trễ/phút), 2,35–2,46 W so với 3,2–4,4 W ở 120,
+   màn ở 60 Hz suốt. Không cần sửa mã.
+5. **2 khung bay là bắt buộc**: 1 khung bay = CPU đứng chờ GPU 6–8,5 ms mỗi khung → 48–80 khung/s.
+6. Đồng hồ pha mới đúng: không có `[NHIP-NGHI]`, 12 bước đúng 60 s.
+
+**Vì sao "FPS giảm nhiều khi đông → lag"** (chủ hỏi 00:47; dòng thời gian 10 s một, ghép `jx_nhip.log` + `[SEC]/[SPIKE]/[WORLD b]` + `[REP3-NAP]`):
+- **4 trong 12 phút là pha đối chứng cố ý xấu** (bước 5–6 lúc 00:35–00:37, bước 11–12 lúc 00:41–00:43: 28–80 khung/s, 140–312 cú giật/10 s).
+  Ai chơi đúng lúc đó sẽ thấy lag dù đông hay không. Từ 00:46 `Bat=0`, không còn.
+- Trong các pha thật, các cửa sổ tụt (t=67 s 95 khung/s; t=447–457 s 76 → 53; t=577 s 91; t=417/547 s 104–107) **trùng với tick logic
+  thế giới nặng trên luồng chính**: `[SEC] world=110–151 ms mỗi giây, tickmax 10–15 ms` đúng lúc NPC/tick nhảy 70 → 134 (đám đông tới).
+  Mỗi tick 10–15 ms chặn vòng vẽ 1–2 khung (chu kỳ 8,3 ms) × 18 tick/s → còn 55–75 khung/s. Chờ swapchain vẫn 0,03 ms → **không phải vẽ, không phải GPU**.
+- Trong tick, NPC chỉ tốn 0,7–0,8 ms/tick (134 NPC, 5–6 µs/NPC). Phần nặng là **"đạn"** (`g_uKhacSo[1]/g_dKhacMs[1]` = kỹ năng/đạn bay):
+  **687–787 viên/tick tốn 4,3–5,3 ms/tick** (≈ 80–95 ms mỗi giây), kéo theo truy vấn không gian: `cay: duyet2 2,4–3,7 triệu / 10 s`
+  (≈ 13–20 nghìn lần duyệt cây mỗi tick), `vung: hoi 425–441 nghìn / 10 s`, `quet_vung max 9–15 ms`. Cảnh yên (t=589 s): đạn 22/tick 0,5 ms,
+  duyệt 155 nghìn/10 s → 119 khung/s. Tức **lag lúc đông = số đạn/kỹ năng đang bay × cách mỗi viên tìm mục tiêu trên luồng chính**.
+- Phút đầu vào map còn thêm **nạp sprite trên luồng vẽ**: `[REP3-NAP]` 30 s đầu 415 tệp spr 254 ms, 24.500 lần giải mã, 7 khung nạp > 16 ms,
+  nặng nhất 106 ms/khung; `NAPNPC` "trễ 437" (ảnh NPC chưa kịp) — các cú giật `paint=55–71 ms` ở t=60–62 s là chỗ này (việc "30 s đầu" đã biết).
+- So với ghi chú 11/09 (LDPlayer, Tống Kim, mục tiêu 60 khung/s, "tick < 1,1 ms"): trên Fold 7 mục tiêu 120 khung/s (8,3 ms) nên tick 10–15 ms
+  giờ lộ thành tụt khung; trước đây ở 16,7 ms/khung nó "vừa lọt".
+
+Đề xuất bước tiếp (chưa làm, chờ chủ chốt; mọi thứ chỉ `JX_ANDROID`):
+- **Đo sâu "đạn"**: thêm `[DAN]` mỗi 10 s trong `KSubWorld`/`KMissile*`: số viên, số lần tìm mục tiêu, số node duyệt, thời gian từng phần
+  (di chuyển / va chạm / hiệu ứng) để biết phần nào của 5 ms/tick; rồi mới chọn: giới hạn số đạn xử lý mỗi tick, cache vùng, hay bỏ tìm mục tiêu
+  cho đạn của người khác (client chỉ cần vẽ). Không cắt hiệu ứng (luật chủ: không giảm cảm giác).
+- Nạp trước sprite NPC khi vào map (`NAPNPC` "trễ 437") — việc đã ghi trong [[mobile-tongkim-lag-goc]].
+- Sau khi bật nhịp PC mặc định: khi tick 10–15 ms xảy ra, `PaintSmooth=2` nội suy giúp mượt hơn (`cat ngang` thấp), nhưng không bù được khung mất.
+
 ## 6. Rủi ro
 
 - Bản vá SDL chỉ nằm trong bản SDL của worktree này (git bỏ qua) — dựng APK ở worktree khác sẽ thiếu bộ đếm, pha 1 mất tác dụng.
