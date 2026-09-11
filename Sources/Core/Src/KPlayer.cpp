@@ -6705,6 +6705,25 @@ void	KPlayer::SendEquipItemInfo(int nTargetPlayer)
 	}
 	
 	g_pServer->PackDataToClient(Player[nTargetPlayer].m_nNetConnectIdx, (BYTE*)&sView, sizeof(sView));
+	// [PFVIEW 10/09] kem 4 o m_nPfPack (sao / chuc phuc / 13 lo kham) cua tung mon dang mac.
+	// VIEW_EQUIP_SYNC khong mang truong nay nen ben nguoi xem GetStarLevel/GetMaxStoneNum
+	// deu ra 0 -> PF_StarPrefix va PF_AppendDesc cam (khuon y het SyncItem, KItemList.cpp:4985).
+	// KViewItem::GetData da SetID(m_nID) nen s2cSyncItemPfPack tra duoc theo dwID.
+	// Chi gui cho mon CO du lieu phi phong -> nguoi khong mac phi phong khong ton byte nao.
+	for (i = 0; i < itempart_num; i++)
+	{
+		nIdx = m_ItemList.m_EquipItem[i];
+		if (nIdx <= 0 || nIdx >= MAX_ITEM)
+			continue;
+		if (!Item[nIdx].GetPfPack(0) && !Item[nIdx].GetPfPack(1) && !Item[nIdx].GetPfPack(2))
+			continue;
+		ITEM_SYNC_PFPACK sPf;
+		sPf.ProtocolType = s2c_syncpfpack;
+		sPf.m_dwID = Item[nIdx].GetID();
+		for (j = 0; j < 4; j++)
+			sPf.m_nPfPack[j] = Item[nIdx].GetPfPack(j);
+		g_pServer->PackDataToClient(Player[nTargetPlayer].m_nNetConnectIdx, (BYTE*)&sPf, sizeof(ITEM_SYNC_PFPACK));
+	}
 	// [DUNGLUYEN-PB 01/09] kem 6 o Van Cuong cua tung mon dang mac cho NGUOI XEM (client dung item tam co SetID(m_nID)
 	// -> s2cSyncItemFusion tim bang dwID). Chi gui mon co du lieu -> nguoi chua dung luyen khong ton byte nao.
 	for (i = 0; i < itempart_num; i++)
@@ -10874,6 +10893,23 @@ void KPlayer::SendSellItemInfo( int nTargetPlayer, int nPrcess, BOOL bUpdate)
 	}
 
 	g_pServer->PackDataToClient(Player[nTargetPlayer].m_nNetConnectIdx, (BYTE*)&sView, sizeof(sView));
+	// [PFVIEW 10/09] kem 4 o m_nPfPack cho cac mon vua dong goi (y khuon SendEquipItemInfo):
+	// VIEW_ITEM_SYNC cung khong mang truong nay nen phi phong bay ban hien 0 sao, lo trong.
+	// m_nIdx la chi so vat pham phia may chu; KSellItem::GetData da SetID nen tra duoc theo dwID.
+	for (i = 0; i < k; i++)
+	{
+		nIdx = sView.m_sInfo[i].m_nIdx;
+		if (nIdx <= 0 || nIdx >= MAX_ITEM)
+			continue;
+		if (!Item[nIdx].GetPfPack(0) && !Item[nIdx].GetPfPack(1) && !Item[nIdx].GetPfPack(2))
+			continue;
+		ITEM_SYNC_PFPACK sPf;
+		sPf.ProtocolType = s2c_syncpfpack;
+		sPf.m_dwID = Item[nIdx].GetID();
+		for (j = 0; j < 4; j++)
+			sPf.m_nPfPack[j] = Item[nIdx].GetPfPack(j);
+		g_pServer->PackDataToClient(Player[nTargetPlayer].m_nNetConnectIdx, (BYTE*)&sPf, sizeof(ITEM_SYNC_PFPACK));
+	}
 	// [DUNGLUYEN-PB 01/09] kem 6 o Van Cuong cua cac mon vua dong goi (m_nIdx = chi so server) cho nguoi xem sap
 	for (i = 0; i < k; i++)
 	{
