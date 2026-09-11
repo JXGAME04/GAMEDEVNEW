@@ -1434,6 +1434,19 @@ void KRepresentShell3::DrawImage2DStretch(int nPrimitiveCount, KRepresentUnit* p
 		// [A31 04/09] SPRITE cung co gian duoc: DrawSpriteAlpha noi suy tung manh cua khung anh
 		// vao khung dich (xem ChaZhi trong ham do) - dung cai ta can de ve vat pham nhieu o
 		// thu nho ve MOT O. Truoc day ham nay chan ngay o dong duoi nen sprite khong qua duoc.
+		if (pTemp->nType == ISI_T_BITMAP16)	// [ANHNEN 10/09 g] anh nen canh co gian cho phu kin khung ve
+		{
+			TextureResBmp* pBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
+				pTemp->szImage, pTemp->uImage, pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+			if (!pBitmap)
+				continue;
+			int nW = pTemp->oEndPos.nX - pTemp->oPosition.nX;
+			int nH = pTemp->oEndPos.nY - pTemp->oPosition.nY;
+			if (nW <= 0) nW = pBitmap->GetWidth();
+			if (nH <= 0) nH = pBitmap->GetHeight();
+			DrawBitmap16(pTemp->oPosition.nX, pTemp->oPosition.nY, nW, nH, pBitmap, true);
+			continue;
+		}
 		if (pTemp->nType == ISI_T_SPR)
 		{
 			TextureResSpr* pSprite = (TextureResSpr *)m_TextureResMgr.GetImage(

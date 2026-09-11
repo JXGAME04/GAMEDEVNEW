@@ -2256,28 +2256,43 @@ void KScenePlaceC::VeLopNen(KLopCanh* p)
 	// khong de ho vien: neu anh lon hon khung ve thi keo lai cho phu kin, nho hon thi dat giua
 	KImageParam Param;
 	memset(&Param, 0, sizeof(Param));
+	int nRongVe = 0, nCaoVe = 0;	// [ANHNEN 10/09 g] kich thuoc ve (co gian khi anh nho hon khung)
 	if (g_pRepresent->GetImageParam(Img.szImage, &Param, ISI_T_BITMAP16) && Param.nWidth > 0 && Param.nHeight > 0)
 	{
 		int nRong = p->rcMan.right - p->rcMan.left;
 		int nCao  = p->rcMan.bottom - p->rcMan.top;
-		if ((int)Param.nWidth >= nRong)
+		nRongVe = (int)Param.nWidth;
+		nCaoVe  = (int)Param.nHeight;
+		// [ANHNEN 10/09 g] anh cua du an co the hep hon ban 2.0 (mogaoku 774 vs 1161) -> phong cho phu kin, giu ti le
+		if (nRongVe < nRong || nCaoVe < nCao)
+		{
+			double dTiLe = (double)nRong / (double)nRongVe;
+			double dTiLe2 = (double)nCao / (double)nCaoVe;
+			if (dTiLe2 > dTiLe) dTiLe = dTiLe2;
+			nRongVe = (int)(nRongVe * dTiLe + 0.5);
+			nCaoVe  = (int)(nCaoVe * dTiLe + 0.5);
+		}
+		if (nRongVe >= nRong)
 		{
 			if (x > p->rcMan.left) x = p->rcMan.left;
-			if (x + (int)Param.nWidth < p->rcMan.right) x = p->rcMan.right - (int)Param.nWidth;
+			if (x + nRongVe < p->rcMan.right) x = p->rcMan.right - nRongVe;
 		}
 		else
-			x = p->rcMan.left + (nRong - (int)Param.nWidth) / 2;
-		if ((int)Param.nHeight >= nCao)
+			x = p->rcMan.left + (nRong - nRongVe) / 2;
+		if (nCaoVe >= nCao)
 		{
 			if (y > p->rcMan.top) y = p->rcMan.top;
-			if (y + (int)Param.nHeight < p->rcMan.bottom) y = p->rcMan.bottom - (int)Param.nHeight;
+			if (y + nCaoVe < p->rcMan.bottom) y = p->rcMan.bottom - nCaoVe;
 		}
 		else
-			y = p->rcMan.top + (nCao - (int)Param.nHeight) / 2;
+			y = p->rcMan.top + (nCao - nCaoVe) / 2;
 	}
 	Img.oPosition.nX = x;
 	Img.oPosition.nY = y;
 	Img.oPosition.nZ = 0;
+	Img.oEndPos.nX = x + nRongVe;	// [ANHNEN 10/09 g]
+	Img.oEndPos.nY = y + nCaoVe;
+	Img.oEndPos.nZ = 0;
 	{	// [ANHNEN 10/09 c] ghi 10 dong dau de biet ve o dau, co anh chua
 		extern int g_nCorePaintLog;
 		static int s_nGhi = 0;
@@ -2294,7 +2309,11 @@ void KScenePlaceC::VeLopNen(KLopCanh* p)
 			}
 		}
 	}
-	g_pRepresent->DrawPrimitives(1, &Img, RU_T_IMAGE, true);	// true = toa do man hinh
+	// [ANHNEN 10/09 g] anh du to thi ve nguyen co (nhanh hon); anh phai phong thi di duong co gian
+	if (nRongVe > (int)Param.nWidth || nCaoVe > (int)Param.nHeight)
+		g_pRepresent->DrawPrimitives(1, &Img, RU_T_IMAGE_STRETCH, true);
+	else
+		g_pRepresent->DrawPrimitives(1, &Img, RU_T_IMAGE, true);	// true = toa do man hinh
 }
 
 void KScenePlaceC::VeLopMay(KLopCanh* p)
