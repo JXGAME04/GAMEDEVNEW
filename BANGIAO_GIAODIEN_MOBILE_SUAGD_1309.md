@@ -146,6 +146,10 @@ trực tiếp trên máy ảo song song với kịch bản:
 
 ## 6. Giao cho chủ
 
+- Nhánh: `claude/mobile-ui-customization-analysis-202ae4` = `origin/mobile-0809` (6edcb896, phiên 144 Hz) + 3 commit
+  SUAGD; đã fast-forward `mobile-0809` lên đầu nhánh này và push (xem `git log`). Máy ảo đang chạy APK cuối
+  (`android/apk/jx1mobile-1309-suagd.apk`).
+
 - APK: `android/apk/jx1mobile-1309-suagd.apk` (debug, hai ABI). Đưa lên điện thoại theo quy trình cũ: chép thành
   `D:\jx1_android_data_dt_v4\jx1mobile.apk`, chép `android/du_lieu_ghi_de/config.ini` và `ui/uitoado_danhsach.ini`
   vào cây `dt_v4`, xoá `manifest.txt`, khởi động lại máy chủ 8765. **Tôi chưa làm bước này** vì nó đổi thứ điện thoại
