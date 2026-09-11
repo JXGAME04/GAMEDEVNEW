@@ -416,6 +416,7 @@ static const struct { const char* pszKhoa; int nCo; } s_DSMa[] =
 	{ "KUiToolsControlBar|Exchange", 0 }, { "KUiToolsControlBar|PK", 0 }, { "KUiToolsControlBar|WAuto", 0 }, { "KUiToolsControlBar|NhatDo", 0 },
 	{ "KUiMiniMap|MiniMap", SUAGD_CO_KHONGPHONG }, { "KUiMiniMap|WorldMapBtn", 0 }, { "KUiMiniMap|BtnFlag", 0 },
 	{ "KUiMiniMap|SwitchBtn", 0 }, { "KUiMiniMap|CaveMapBtn", 0 }, { "KUiMiniMap|LockBtn", 0 },
+	{ "KUiMiniMapTo|MiniMap", SUAGD_CO_KHONGPHONG }, { "KUiMiniMapToEx|MiniMap", SUAGD_CO_KHONGPHONG }, { "KUiMiniMapKhongAnh|MiniMap", SUAGD_CO_KHONGPHONG },	// [UITOADO 14/09 LOPPHU]
 	{ "KUiCLIcon|Main", 0 }, { "KUiAuctionIcon|Main", 0 }, { "KUiMailIcon|Main", 0 },
 	{ "KUiChienLenh|Main", SUAGD_CO_KHONGPHONG }, { "KUiTaskTrace|Main", SUAGD_CO_KHONGPHONG },
 	{ "KUiMsgCentrePad|Main", SUAGD_CO_KHONGPHONG | SUAGD_CO_KHONGKEP }, { "KSysMsgCentrePad|SysRoom", SUAGD_CO_KHONGPHONG | SUAGD_CO_KHONGKEP },

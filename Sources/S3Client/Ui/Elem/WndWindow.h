@@ -159,6 +159,11 @@ public:
 	// [UITOADO] goi ngay sau khi toa do bi doi tu ben ngoai, de lop con
 	// (KWndMovingImage) chup lai vi tri goc cua hoat hinh mo cua so
 	virtual void	UiNhoViTri() {}
+#ifdef JX_ANDROID
+	//	[UITOADO 14/09 LOPPHU] hau to ghep vao ten lop khi tao khoa bo cuc (ban do nho: che do to / to mo rong / khong anh
+	//	dung bo khoa rieng vi ini moi che do khac han). NULL / rong = khong doi.
+	virtual const char* UiTenLopPhu() const { return NULL; }
+#endif
 	int				IsDisable() { return (m_Style & WND_S_DISABLE); }
 	int				GetStyle() { return m_Style; }
 	int				SetStyle(unsigned int nStyle)

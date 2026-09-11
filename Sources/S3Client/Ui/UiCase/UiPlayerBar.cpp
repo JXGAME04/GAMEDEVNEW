@@ -824,7 +824,9 @@ void KUiPlayerBar::NeoNhomTren()
 			if (UiToaDo_CoKhoa(apKhoa[i]))
 				continue;
 			apO[i]->GetPosition(&nX, &nY);
-			apO[i]->SetPosition(nX - nThemX, nY - nThem);
+			// [NHOMTREN 13/09 X b] nut an hang icon nam CUOI hang icon (hang neo giua, theo khung cha) -> chi bu Y; bu ca X thi no
+			// roi vao giua hang (anh Fold 7 00:06: de len icon To doi).
+			apO[i]->SetPosition(nX - ((apO[i] == &m_AnIcon) ? 0 : nThemX), nY - nThem);
 		}
 	}
 	if (UiToaDo_CoKhoa("ThanhBuff"))	// [SUAGD 13/09 f] nguoi choi da tu dat day buff -> khong dong nua

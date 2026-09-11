@@ -373,6 +373,14 @@ static void LayTenLop(KWndWindow* pWnd, char* pszRa, int nCo)
 		pszTen++;
 	strncpy(pszRa, pszTen, nCo - 1);
 	pszRa[nCo - 1] = 0;
+#ifdef JX_ANDROID
+	{	//	[UITOADO 14/09 LOPPHU] ban do nho to / to mo rong / khong anh: KUiMiniMapTo|..., KUiMiniMapToEx|..., KUiMiniMapKhongAnh|...
+		const char* pszPhu = pWnd->UiTenLopPhu();
+
+		if (pszPhu && pszPhu[0] && (int)(strlen(pszRa) + strlen(pszPhu)) < nCo - 1)
+			strcat(pszRa, pszPhu);
+	}
+#endif
 }
 
 //	Tra ve false neu o nay khong dat ten duoc (chua bao gio Init tu ini).
@@ -684,6 +692,33 @@ void UiToaDo_Nap()
 }
 
 //	[UITOADO 10/09 G] ghi bang hien tai vao mot tep (tep nguoi choi hoac tep mac dinh)
+#ifdef JX_ANDROID
+//	[NEO 13/09 CON] Neo de GHI cho muc chua co neo (o vua duoc trinh chinh dat lan dau): o CON lay neo cua CHA nhu luc nap,
+//	khong suy tu toa do tuong doi (o khoa ruong 19,101 trong ban do nho -> 'trai' -> tren man rong bi day sang trai 396 diem).
+static int NeoDeGhi(int i, int bY)
+{
+	int  nNeo = bY ? s_Bang[i].nNeoY : s_Bang[i].nNeoX;
+	char szCha[UITOADO_CO_KHOA];
+
+	if (nNeo >= 0 && nNeo <= 2)
+		return nNeo;
+	if (KhoaCuaCha(s_Bang[i].szKhoa, szCha, sizeof(szCha)))
+	{
+		int nCha = TimKhoa(szCha);
+
+		if (nCha >= 0 && nCha != i)
+		{
+			int nNeoCha = bY ? s_Bang[nCha].nNeoY : s_Bang[nCha].nNeoX;
+
+			if (nNeoCha >= 0 && nNeoCha <= 2)
+				return nNeoCha;
+			return bY ? NeoTuDong(s_Bang[nCha].nTop, SCREEN_HEIGHT) : NeoTuDong(s_Bang[nCha].nLeft, SCREEN_WIDTH);
+		}
+	}
+	return bY ? NeoTuDong(s_Bang[i].nTop, SCREEN_HEIGHT) : NeoTuDong(s_Bang[i].nLeft, SCREEN_WIDTH);
+}
+#endif
+
 static int GhiTepVao(const char* pszTep)
 {
 	char	szDuongDan[MAX_PATH];
@@ -726,8 +761,7 @@ static int GhiTepVao(const char* pszTep)
 		int nGocT = UiToaDoM_LaGoc(s_Bang[i].szKhoa) ? s_nGhiKgT : 0;
 		fprintf(pTep, "%s=%d,%d,%d,%d,%d,%d\n", s_Bang[i].szKhoa,	// [UITOADO 12/09 NEO] neo
 			s_Bang[i].nLeft - nGocL, s_Bang[i].nTop - nGocT, s_Bang[i].nTiLe, s_Bang[i].nCo,
-			(s_Bang[i].nNeoX >= 0) ? s_Bang[i].nNeoX : NeoTuDong(s_Bang[i].nLeft, SCREEN_WIDTH),
-			(s_Bang[i].nNeoY >= 0) ? s_Bang[i].nNeoY : NeoTuDong(s_Bang[i].nTop, SCREEN_HEIGHT));
+			NeoDeGhi(i, 0), NeoDeGhi(i, 1));	// [NEO 13/09 CON] o con: neo cua cha
 		}
 #else
 		fprintf(pTep, "%s=%d,%d,%d,%d\n", s_Bang[i].szKhoa,
