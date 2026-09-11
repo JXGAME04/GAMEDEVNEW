@@ -455,10 +455,10 @@ static void DnKetThuc()
 {
 	SDL_SetHint("JX_DUNG_LAI_SUBOPTIMAL", "0");	// [DONHIP 12/09 b] tra ve hanh vi SDL 3.2.30
 	JxDoNhip_DatNhip(s_nDnFps0, s_nDnVsync0, s_nDnSmooth0);
-	if (s_pfnDnDat) s_pfnDnDat(1, 2);
+	if (s_pfnDnDat) s_pfnDnDat(0, 2);	// [DONHIP 12/09 d] mac dinh Android: khong chep khung, 2 khung bay
 	if (s_nDnXin) DnXinHz(0);
 	s_nDnXong = 1;
-	DnGhi("[NHIP-XONG]", "het %d buoc - tra ve cau hinh luc mo app (PaintFps %d vsync %d smooth %d, chep khung, 2 khung bay, khong xin tan so)",
+	DnGhi("[NHIP-XONG]", "het %d buoc - tra ve cau hinh luc mo app (PaintFps %d vsync %d smooth %d, khong chep khung, 2 khung bay, khong xin tan so)",
 		s_nDnSo * s_nDnLap, s_nDnFps0, s_nDnVsync0, s_nDnSmooth0);
 }
 
