@@ -951,7 +951,14 @@ void UiToaDo_BatTat()
 		//	co nhung o con duoc AddChild SAU khi Wnd_AddWindow da chay
 		//	=> ap lai mot lan o day cho chac
 		UiToaDo_ApChoTatCa();
-		DatThongBao("§· vµo chÕ ®é söa giao diÖn");
+		{	//	[UITOADO 12/09 KHUNG] Noi them KHUNG VE vao thong bao: chu doc so nay tren may THAT roi bao lai,
+			//	la biet ngay may do dang chay khung bao nhieu (may ao khong dat duoc moi co man).
+			char szTB[160];
+
+			_snprintf(szTB, sizeof(szTB), "%s  [%dx%d]", "§· vµo chÕ ®é söa giao diÖn", SCREEN_WIDTH, SCREEN_HEIGHT);
+			szTB[sizeof(szTB) - 1] = 0;
+			DatThongBao(szTB);
+		}
 	}
 }
 
