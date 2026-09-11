@@ -5,6 +5,16 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **03:25 11/09 — `[VE 11/09 b+c]` ĐÃ THỬ MÁY ẢO TRONG GAME, ĐÃ LÊN BỘ TẢI trong bản gộp của phiên giao diện: `dt_v4\jx1mobile.apk` =
+> versionCode **109110317**, md5 `139f7284…`, 20 099 023 B, dựng từ `origin/mobile-0809 = 32c469d0` (= icon Tống Kim/Kinh Mạch + ô dùng nhanh
+> của họ + `[VE 11/09 + b + c]`), máy chủ 8765 PID 301072, dt_v4\config.ini giữ nguyên (5 khoá `NapKhung*`/`VeGiatMs` có mặc định trong mã).**
+> Máy ảo 03:18–03:20 (bản `b`, Khoả Lang Động, 26–40 đơn vị NPC/khung): không crash; `[VE-NAP]` giao 514 → xong 475, hỏng 0; nạp trước 2 khung
+> làm "bỏ vẽ" tụt 407 → 4–26 lượt/30 s; luồng nền bận 18–55 ms/30 s; áp texture trên luồng vẽ ≤ 0,42 ms/khung; `[REP3-NAP]` "khung có nạp
+> > 16 ms" còn 1/30 s và đều là **nạp đồng bộ NGOÀI lúc vẽ** (logic hỏi `GetImageParam` → nạp cả sprite, 253 lần/200 ms ở cửa sổ đầu) →
+> việc kế (đợt 2b). `[VE-GOP]` (máy ảo): quad không gộp do **texture0 ≈ 80 %**, pipeline ≈ 20 %, ps ≈ 6 % → mục 3 = gom trang atlas (trang
+> đang chia theo chiều cao bin), không phải cache giao diện. `[VE 11/09 c]`: ngưỡng `[VE-GIAT]` và đếm khung > 8/16 ms trừ thời gian chờ
+> swapchain (máy ảo chờ vblank 20–30 ms/khung kích oan). Chi tiết số: §9 cuối. Chủ mở lại app là nhận bản 109110317; log về `D:\jx1_android_log`.
+
 > **03:05 11/09 — `[VE 11/09]` ĐỢT 2 (a) ĐÃ VIẾT + DỰNG, CHƯA THỬ MÁY ẢO / FOLD 7.** Chủ: "làm 1 2 3 luôn cho tôi gắn log để đọc phân tích".
 > Commit `6ac47732` (gộp `f30439b5` của phiên giao diện → `96fcd8b2` = `origin/mobile-0809` đã FF), chỉ `JX_ANDROID`, chỉ Represent3 +
 > `android/du_lieu_ghi_de/config.ini`, bộ vá `android/va_nguon_android_ve1.py` (tái tạo y hệt diff). **(1)** nạp KHUNG sprite ở luồng nền theo
@@ -417,6 +427,22 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
     sao (dự đoán: đổi trang atlas ở texture0 — 203 trang 1024², mỗi sprite một chỗ). Nếu đúng thì việc tiếp là trang atlas lớn hơn / gom các
     khung cùng sprite vào một trang, lợi hơn cache giao diện (UI chỉ 341 / ~2 500 đơn vị vẽ mỗi khung; cache ở GPU không bớt được phần CPU sinh
     lệnh, mà phần GPU của 341 quad trên Adreno là không đáng kể). Quyết sau khi có `[VE]` / `[VE-GOP]` của Fold 7.
+  - **Kết quả máy ảo 03:18–03:20 (bản `b` 109110305, LDPlayer 60 Hz, `PaintFps=60 smooth=1 vsync=0` của config máy ảo, Khoả Lang Động):**
+    `[VE-NAP]` 4 cửa sổ 30 s: giao 514 / 1 207 / 1 457 / 522 (trong đó nạp trước 347 / 1 181 / 1 452 / 518), xong 475 / 1 243 / 1 457 / 522,
+    hỏng 0, bỏ 3 / 0 / 0 / 0; bỏ vẽ 407 → 26 → 5 → 4 lượt; đồng bộ trong ngân sách 107 / 618 / 814 / 286; hàng chờ max 92 → 12; trễ giao→áp
+    TB 48,8 ms (max 128) lúc dồn, sau 15–17 ms (= 1 khung 60 Hz); luồng nền bận 37 / 39 / 55 / 18 ms mỗi 30 s; áp trên luồng vẽ 478–1 457
+    khung mất 1,8–3,3 ms mỗi 30 s (max 0,42 ms/khung). `[REP3-NAP]`: giải mã đồng bộ chỉ 2,6–2,8 ms/30 s, "khung có nạp > 16 ms" còn 1 ở hai
+    cửa sổ đầu (max 19,2 / 29,0 ms) — do **nạp đồng bộ NGOÀI lúc vẽ** (`[VE-NAP]` "253 lần 199,7 ms", tệp spr 26 lần 46 ms): logic gọi
+    `GetImageParam` khi NPC xuất hiện → `LoadSprFile` ngay trên luồng chính. → **Đợt 2b:** trả tham số từ header đã nạp sẵn / nạp trước khi
+    `SetSprFile` (đã có `NAPNPC`), không nạp cả sprite đồng bộ.
+    `[VE]` (máy ảo, CPU x86 nhanh): chờ lệnh + swapchain TB 7,7–9,3 ms (vblank vì `vsync=0` phía client), chép lên GPU TB 0,02–0,04 ms (max 8,1
+    lúc tải 26 MB texture một khung), ghi lệnh TB 0,03–0,11 ms cho 230–270 lệnh / 313–365 quad, nộp TB 0,3–0,5 ms (max 11,5). `[VE-GOP]`
+    mỗi khung: đổi pipeline 58–70, đổi texture/sampler 161–184, đổi ps 121–142; quad không gộp cả kỳ: **texture0 188 690–219 642, pipeline
+    49 989–60 005, ps 12 903–16 495**, không liên tiếp 1 746–1 770 (= 1/khung, lệnh đầu sau clear), stride/vs/cắt 0. **Kết luận mục 3:**
+    (1) trang atlas chia theo (chiều cao bin, định dạng) nên khung cùng sprite/cùng NPC rơi vào trang khác nhau → đổi texture0 liên tục; sửa =
+    một trang nhiều hàng bin (shelf) hoặc trang 2048–4096² để hầu hết sprite NPC nằm cùng trang; (2) 58–70 lần đổi pipeline/khung = quad xen
+    kẽ chế độ blend khác nhau (không gộp được trừ khi sắp xếp); (3) ps 121–142 = đổi trạng thái tầng texture (COLOROP/ALPHAOP/alphatest) giữa
+    các quad. Trên Fold 7 (đám đông 1 300 đơn vị NPC/khung) tỷ lệ texture0 sẽ còn cao hơn — đọc `[VE-GOP]` phiên kế rồi làm (1).
 - Nạp trước sprite NPC khi vào map (`NAPNPC` "trễ 437") — việc đã ghi trong [[mobile-tongkim-lag-goc]].
 - Sau khi bật nhịp PC mặc định: khi tick 10–15 ms xảy ra, `PaintSmooth=2` nội suy giúp mượt hơn (`cat ngang` thấp), nhưng không bù được khung mất.
 
