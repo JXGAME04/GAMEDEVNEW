@@ -18,6 +18,9 @@ static void Rep3LogLoadFail(const char* pszImage, int nType)
 // [REP3 03/09 LAG] anh nap that bai: nhip thu nap lai, tinh bang mili giay.
 #define REP3_RELOAD_COOLDOWN	10000
 #define REP3_RELOAD_COOLDOWN_LAU	600000	// [NAP 08/09 e] sau 3 lan hong: 10 phut
+#ifdef JX_ANDROID
+TextureResMgr* g_pJxTexMgr = NULL;	// [VE 11/09] bo quan ly duy nhat (KRepresentShell3::m_TextureResMgr) cho TextureRes.cpp / KRepresentShell3.cpp
+#endif
 
 TextureResMgr::TextureResMgr()
 {
@@ -33,6 +36,9 @@ TextureResMgr::TextureResMgr()
 	m_nNapTruocKip[0] = m_nNapTruocKip[1] = m_nNapTruocKip[2] = 0; m_nNapTruocTre[0] = m_nNapTruocTre[1] = m_nNapTruocTre[2] = 0;
 	m_dwKhoaNgoai = 0;	// [VE 09/09 d]	// [NAPCHIEU 09/09 b] [NAPNPC 09/09]
 	m_hNapLuong = NULL; m_hNapCo = NULL; m_lNapDung = 0; m_bNapNenLoi = false;
+#ifdef JX_ANDROID
+	m_pJxKhungDangChay = NULL; m_uJxApKhungCuoi = 0; m_dJxApCuoi = 0.0; g_pJxTexMgr = this;	// [VE 11/09]
+#endif
 	
 	// 根据物理内存大小决定资源缓冲区的大小
 	// [REP3 03/09] ngan sach cache texture theo RAM (2.0: 30/50/80/120 MB); may 4 GB+ cho rong hon vi texture 8888
@@ -45,6 +51,9 @@ TextureResMgr::TextureResMgr()
 TextureResMgr::~TextureResMgr()
 {
 	Free();
+#ifdef JX_ANDROID
+	if (g_pJxTexMgr == this) g_pJxTexMgr = NULL;	// [VE 11/09]
+#endif
 }
 
 void TextureResMgr::SetBalanceParam(int32 nNumImage, uint32 uCheckPoint)
@@ -468,6 +477,9 @@ bool TextureResMgr::GetImageFrameParam(const char* pszImage,	int nFrame,
 TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage, short& nImagePosition, 
 								int nFrame, int nType, bool bPrepareTex)
 {
+#ifdef JX_ANDROID
+	g_nJxAnhBoVeNen = 0;	// [VE 11/09]
+#endif
 	if (!pszImage || !pszImage[0])
 		return NULL;
 	
@@ -808,14 +820,44 @@ void TextureResMgr::NapNenChay()
 		for (;;)
 		{
 			NapViec v;
+#ifdef JX_ANDROID
+			JxKhungViec kv; bool bKhung = false;	// [VE 11/09]
+#endif
 			{
 				KAutoCriticalSection k(m_napKhoa);
+#ifdef JX_ANDROID
+				if (m_napViec.empty() && !m_jxKhungViec.empty())	// [VE 11/09] hang TRUOC (anh dang ve can) > KHUNG (dang ve can / nap truoc) > hang SAU
+				{
+					kv = m_jxKhungViec.front(); m_jxKhungViec.erase(m_jxKhungViec.begin()); m_pJxKhungDangChay = kv.pSpr; bKhung = true;
+				}
+				else
+				{
+#endif
 				vector<NapViec>& q = m_napViec.empty() ? m_napViecSau : m_napViec;	// [NAPNPC 09/09] hang TRUOC (anh dang ve can) het roi moi den hang SAU (nap truoc)
 				if (q.empty())
 					break;
 				v = q.front();
 				q.erase(q.begin());
+#ifdef JX_ANDROID
+				}
+#endif
 			}
+#ifdef JX_ANDROID
+			if (bKhung)
+			{
+				JxKhungXong kq; memset(&kq, 0, sizeof(kq)); kq.pSpr = kv.pSpr; kq.nFrame = kv.nFrame; kq.nBpp = kv.nBpp; kq.eFmt = kv.eFmt; kq.bPal = kv.bPal; kq.uLuc = kv.uLuc;
+				LARGE_INTEGER liA, liB; QueryPerformanceCounter(&liA);
+				kq.bHong = kv.pSpr->JxGiaiMaNen(kv.nFrame, kv.nBpp, (D3DFORMAT)kv.eFmt, kv.bPal != 0, kq) ? 0 : 1;
+				QueryPerformanceCounter(&liB);
+				{
+					KAutoCriticalSection k(m_napKhoa);
+					m_jxKhungXong.push_back(kq); m_pJxKhungDangChay = NULL; g_dJxNapNenBan += Rep3NapMs(liA, liB);
+				}
+				if (m_lNapDung)
+					break;
+				continue;
+			}
+#endif
 			NapKetQua kq;
 			memcpy(kq.szTen, v.szTen, sizeof(kq.szTen)); kq.uId = v.uId; kq.nType = v.nType;
 			kq.pRes = NapNenTai(v.szTen, v.nType);
@@ -946,5 +988,98 @@ void TextureResMgr::NapNenDung()
 	for (size_t i = 0; i < m_napXong.size(); i++)
 		if (m_napXong[i].pRes) delete m_napXong[i].pRes;
 	m_napXong.clear(); m_napViec.clear(); m_napViecSau.clear();	// [NAPNPC 09/09]
+#ifdef JX_ANDROID
+	for (size_t i = 0; i < m_jxKhungXong.size(); i++) if (m_jxKhungXong[i].pDiem) free(m_jxKhungXong[i].pDiem);	// [VE 11/09]
+	for (size_t i = 0; i < m_jxKhungCho.size(); i++) if (m_jxKhungCho[i].pDiem) free(m_jxKhungCho[i].pDiem);
+	m_jxKhungXong.clear(); m_jxKhungViec.clear(); m_jxKhungCho.clear(); m_pJxKhungDangChay = NULL;
+#endif
 	m_lNapDung = 0;
 }
+
+#ifdef JX_ANDROID
+// ============================ [VE 11/09] nap KHUNG sprite o luong nen ============================
+bool TextureResMgr::JxNapLuongBat()	// giong doan dau NapNenGiao (giu nguyen ham do cho Windows)
+{
+	if (m_bNapNenLoi)
+		return false;
+	if (m_hNapLuong)
+		return true;
+	m_hNapCo = CreateEventA(NULL, FALSE, FALSE, NULL);
+	m_lNapDung = 0;
+	unsigned uTid = 0;
+	m_hNapLuong = m_hNapCo ? (HANDLE)_beginthreadex(NULL, 0, NapNenLuong, this, 0, &uTid) : NULL;
+	if (!m_hNapLuong)
+	{
+		m_bNapNenLoi = true;
+		if (m_hNapCo) { CloseHandle(m_hNapCo); m_hNapCo = NULL; }
+		Rep3Log("[REP3] nap nen: khong tao duoc luong -> nap ngay tren luong ve");
+		return false;
+	}
+	SetThreadPriority(m_hNapLuong, THREAD_PRIORITY_BELOW_NORMAL);
+	Rep3Log("[REP3] nap nen: luong nen da chay (Rep3NapNen=1)");
+	return true;
+}
+
+bool TextureResMgr::JxKhungXep(const JxKhungViec& v)
+{
+	if (!JxNapLuongBat())
+		return false;
+	{
+		KAutoCriticalSection k(m_napKhoa);
+		m_jxKhungViec.push_back(v);
+		if ((unsigned)m_jxKhungViec.size() > g_uJxNapKhungChoMax) g_uJxNapKhungChoMax = (unsigned)m_jxKhungViec.size();
+	}
+	SetEvent(m_hNapCo);
+	return true;
+}
+
+// Luong ve, dau khung (RepresentBegin, sau NapNenNhan): tao texture tu khung da giai ma, toi da NapKhungApMs ms; phan con lai de khung sau.
+void TextureResMgr::JxNapKhungNhan()
+{
+	{
+		KAutoCriticalSection k(m_napKhoa);
+		if (!m_jxKhungXong.empty()) { m_jxKhungCho.insert(m_jxKhungCho.end(), m_jxKhungXong.begin(), m_jxKhungXong.end()); m_jxKhungXong.clear(); }
+	}
+	m_uJxApKhungCuoi = 0; m_dJxApCuoi = 0.0;
+	if (m_jxKhungCho.empty())
+		return;
+	KAutoCriticalSection AutoLock(m_ImageProcessLock);
+	LARGE_INTEGER li0, li1; QueryPerformanceCounter(&li0);
+	const unsigned uNow = (unsigned)timeGetTime();
+	size_t i = 0;
+	for (; i < m_jxKhungCho.size(); i++)
+	{
+		JxKhungXong& kq = m_jxKhungCho[i];
+		kq.pSpr->JxNhanKhungNen(kq);	// giai phong kq.pDiem
+		m_uJxApKhungCuoi++;
+		{ const double dTre = (double)(uNow - kq.uLuc); g_dJxNapKhungTre += dTre; if (dTre > g_dJxNapKhungTreMax) g_dJxNapKhungTreMax = dTre; }
+		QueryPerformanceCounter(&li1);
+		if (Rep3NapMs(li0, li1) >= (double)g_nJxNapKhungApMs) { i++; break; }
+	}
+	m_jxKhungCho.erase(m_jxKhungCho.begin(), m_jxKhungCho.begin() + i);
+	QueryPerformanceCounter(&li1);
+	m_dJxApCuoi = Rep3NapMs(li0, li1); g_dJxNapKhungAp += m_dJxApCuoi; if (m_dJxApCuoi > g_dJxNapKhungApMax) g_dJxNapKhungApMax = m_dJxApCuoi; g_uJxNapKhungApKhung += m_uJxApKhungCuoi;
+}
+
+// Luong ve (TextureResSpr::Release): sprite sap bi xoa -> bo viec chua chay, cho viec dang chay xong (vai ms), bo ket qua cua no.
+// Luong nen KHONG bao gio giu m_ImageProcessLock nen cho o day khong ket.
+void TextureResMgr::JxNapKhungHuy(TextureResSpr* p)
+{
+	if (!p)
+		return;
+	{
+		KAutoCriticalSection k(m_napKhoa);
+		for (size_t i = m_jxKhungViec.size(); i > 0; i--)
+			if (m_jxKhungViec[i - 1].pSpr == p) m_jxKhungViec.erase(m_jxKhungViec.begin() + (i - 1));
+	}
+	while (m_pJxKhungDangChay == p)
+		Sleep(1);
+	{
+		KAutoCriticalSection k(m_napKhoa);
+		for (size_t i = m_jxKhungXong.size(); i > 0; i--)
+			if (m_jxKhungXong[i - 1].pSpr == p) { if (m_jxKhungXong[i - 1].pDiem) free(m_jxKhungXong[i - 1].pDiem); m_jxKhungXong.erase(m_jxKhungXong.begin() + (i - 1)); }
+	}
+	for (size_t i = m_jxKhungCho.size(); i > 0; i--)
+		if (m_jxKhungCho[i - 1].pSpr == p) { if (m_jxKhungCho[i - 1].pDiem) free(m_jxKhungCho[i - 1].pDiem); m_jxKhungCho.erase(m_jxKhungCho.begin() + (i - 1)); }
+}
+#endif

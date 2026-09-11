@@ -19,6 +19,9 @@ enum IS_BALANCE_PARAM {
     ISBP_TRY_RANGE_DEF = 8 };
 
 class TextureRes;
+#ifdef JX_ANDROID
+class TextureResSpr;	// [VE 11/09]
+#endif
 
 // 资源链表的节点
 struct ResNode
@@ -59,6 +62,20 @@ public:
 	// luong nen doc pak + giai ma (SPR: LoadSprFile; JPEG: LoadJpegDecode), khong dung device; luong ve nhan ket qua o RepresentBegin.
 	struct NapViec   { char szTen[MAX_PATH]; uint32 uId; uint32 nType; };
 	struct NapKetQua { char szTen[MAX_PATH]; uint32 uId; uint32 nType; TextureRes* pRes; };
+#ifdef JX_ANDROID
+	// [VE 11/09] nap KHUNG sprite o luong nen: luong ve giao (TextureResSpr::PrepareFrameData khi dang ve ma het ngan sach NapKhungMs),
+	// luong nen rut khung + giai ma vao bo dem (JxGiaiMaNen), luong ve tao texture o dau khung sau (JxNapKhungNhan, ngan sach NapKhungApMs).
+	// Vong doi: TextureResSpr::Release goi JxNapKhungHuy -> bo viec chua chay, CHO viec dang chay xong, bo ket qua cua sprite do.
+	bool JxKhungXep(const JxKhungViec& v);		// luong ve: xep viec (tu bat luong nen); false = khong co luong nen -> nap dong bo
+	void JxNapKhungNhan();						// luong ve, dau khung: tao texture tu ket qua theo ngan sach
+	void JxNapKhungHuy(TextureResSpr* p);		// luong ve: sprite sap bi xoa
+	unsigned JxNapKhungDangCho() const { return (unsigned)m_jxKhungCho.size(); }
+	unsigned m_uJxApKhungCuoi; double m_dJxApCuoi;	// so khung / ms da ap trong RepresentBegin vua roi (cho [VE-GIAT])
+private:
+	bool JxNapLuongBat();						// tao luong nen neu chua co (cung luong voi NapNenGiao)
+	vector<JxKhungViec> m_jxKhungViec; vector<JxKhungXong> m_jxKhungXong; vector<JxKhungXong> m_jxKhungCho; TextureResSpr* volatile m_pJxKhungDangChay;
+public:
+#endif
 	void NapNenNhan();			// luong ve, dau moi khung: nhan ket qua luong nen
 	void NapNenDung();			// dung luong nen, bo viec/ket qua con lai (Free)
 	bool m_bVeDangDien;			// true giua RepresentBegin/End: cho phep giao viec cho luong nen

@@ -2,6 +2,9 @@
 #include "d3d_device.h"
 #include "d3d_utils.h"
 #include "TextureRes.h"
+#ifdef JX_ANDROID
+#include "TextureResMgr.h"	// [VE 11/09] g_pJxTexMgr
+#endif
 #include "JpgLib.h"
 #include <cstdint>
 #include <new>
@@ -485,6 +488,9 @@ void TextureResSpr::ResetVar()
 	m_nSprMemUsed = 0;	// [REP3 03/09 RAM]
 	m_bLastFrameUsed = false;
 	m_bNew = false;
+#ifdef JX_ANDROID
+	m_bJxCoNen = false;	// [VE 11/09]
+#endif
 }
 
 // 创建内存资源
@@ -628,6 +634,21 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 
 	if(m_pFrameInfo[nFrame].texInfo[0].pTexture)
 		return true;
+#ifdef JX_ANDROID
+	// [VE 11/09] dang ve ma tong nap dong bo cua khung da qua NapKhungMs: khung dang cho luong nen (hoac giao duoc ngay) -> bo ve khung nay
+	// mot khung; con ngan sach -> nap dong bo nhu cu (ke ca khi luong nen dang lam khung nay: ket qua ve sau bi bo, dem vao 'bo').
+	// Ca hai truong hop nap truoc NapKhungTruoc khung ke tiep cung huong o luong nen.
+	if (bPrepareTex && g_nJxNapKhungNen > 0 && g_pJxTexMgr && g_pJxTexMgr->m_bVeDangDien)
+	{
+		if (g_dRep3NapKhung >= (double)g_nJxNapKhungMs && (m_pFrameInfo[nFrame].nJxNen || JxNapKhungGiao(nFrame, 0)))
+		{
+			JxNapKhungTruoc(nFrame);
+			g_uJxNapKhungBoVe++; g_uJxNapKhungBoVeKhung++; g_nJxAnhBoVeNen = 1; return false;
+		}
+		JxNapKhungTruoc(nFrame);
+		g_uJxNapKhungDongBo++;
+	}
+#endif
 
 	if(!m_pFrameInfo[nFrame].pRawData)
 	{
@@ -1258,6 +1279,9 @@ int32 TextureResSpr::GetPixelAlpha(int32 nFrame, int32 x, int32 y)
 // 释放内存
 void TextureResSpr::Release()
 {
+#ifdef JX_ANDROID
+	if (m_bJxCoNen && g_pJxTexMgr) g_pJxTexMgr->JxNapKhungHuy(this);	// [VE 11/09] bo viec luong nen cua sprite nay truoc khi tra khung / texture
+#endif
 	if (m_nPalRow >= 0) { Rep3_D3D11FreePalette(m_nPalRow); m_nPalRow = -1; }	// [D3D11 08/09 r] tra hang bang mau
 	SAFE_DELETE_ARRAY(m_pPal24);
 	SAFE_DELETE_ARRAY(m_pPal16);
@@ -1469,3 +1493,136 @@ int TextureResSpr::SplitTexture(uint32 nFrame)
 
 	return nMem;
 }
+
+#ifdef JX_ANDROID
+// ============================ [VE 11/09] nap KHUNG o luong nen ============================
+// Luong ve: giao khung nFrame cho luong nen (nNguon 0 = dang ve can, 1 = nap truoc). Dinh dang texture chon NHU CreateTexture16Bit
+// (bang mau A8L8 2 B neu co, khong thi 8888 / 4444); hang bang mau cap ngay o day (can device) de luong nen chi giai ma.
+bool TextureResSpr::JxNapKhungGiao(int32 nFrame, int nNguon)
+{
+	if (nFrame < 0 || nFrame >= m_nFrameNum || !m_pFrameInfo || !g_pJxTexMgr)
+		return false;
+	FrameToTexture& f = m_pFrameInfo[nFrame];
+	if (f.nJxNen || f.texInfo[0].pTexture)
+		return false;
+	if (!m_pHeader && !f.pRawData)
+		return false;	// khong co nguon du lieu
+	JxKhungViec v; memset(&v, 0, sizeof(v));
+	v.pSpr = this; v.nFrame = nFrame; v.nNguon = nNguon; v.uLuc = (unsigned)timeGetTime();
+	v.nBpp = g_nRep3Tex32 ? 4 : 2; v.eFmt = (int)(g_nRep3Tex32 ? D3DFMT_A8R8G8B8 : D3DFMT_A4R4G4B4); v.bPal = 0;
+#ifdef JX_PLATFORM_SDL
+	if (g_nRep3Pal && (g_nRep3ApiOn == 11 || g_nRep3ApiOn == 100) && g_nRep3Pool && m_pPal24 && Rep3_D3D11PaletteOK())
+#else
+	if (g_nRep3Pal && g_nRep3ApiOn == 11 && g_nRep3Pool && m_pPal24 && Rep3_D3D11PaletteOK())
+#endif
+	{
+		if (m_nPalRow < 0)
+			m_nPalRow = Rep3_D3D11AllocPalette((const unsigned char*)m_pPal24, (int)m_nColors);
+		if (m_nPalRow >= 0) { v.bPal = 1; v.nBpp = 2; v.eFmt = (int)D3DFMT_A8L8; }
+	}
+	if (!g_pJxTexMgr->JxKhungXep(v))
+		return false;
+	f.nJxNen = 1; m_bJxCoNen = true;
+	g_uJxNapKhungGiao++; if (nNguon) g_uJxNapKhungTruocSo++;
+	return true;
+}
+
+// Luong ve: nap truoc NapKhungTruoc khung ke tiep CUNG HUONG (khung = huong * so khung moi huong + chi so; xoay vong trong huong)
+void TextureResSpr::JxNapKhungTruoc(int32 nFrame)
+{
+	if (g_nJxNapKhungTruoc <= 0 || m_nFrameNum <= 1 || nFrame < 0)
+		return;
+	const int nHuong = (m_nDirections > 0) ? (int)m_nDirections : 1;
+	const int nMoiHuong = m_nFrameNum / nHuong;
+	if (nMoiHuong <= 1)
+		return;
+	const int nH = nFrame / nMoiHuong, nI = nFrame % nMoiHuong;
+	for (int k = 1; k <= g_nJxNapKhungTruoc && k < nMoiHuong; k++)
+		JxNapKhungGiao(nH * nMoiHuong + (nI + k) % nMoiHuong, 1);
+}
+
+// LUONG NEN: rut khung tu pak (SprGetFrame co khoa rieng) + giai ma RLE vao kq.pDiem (malloc, nW*nH*nBpp). Chi doc du lieu bat bien
+// cua sprite (m_pHeader, m_pOffset, bang mau; pRawData chi khi spr khong nen theo khung - bat bien tu luc nap). false = hong.
+bool TextureResSpr::JxGiaiMaNen(int32 nFrame, int nBpp, D3DFORMAT eFmt, bool bPal, JxKhungXong& kq)
+{
+	if (nFrame < 0 || nFrame >= m_nFrameNum || !m_pFrameInfo)
+		return false;
+	const FrameToTexture& f = m_pFrameInfo[nFrame];
+	BYTE* pRaw = NULL; int nRawLen = 0; SPRFRAME* pFrame = NULL;
+	if (m_pHeader)
+	{
+		pFrame = (SPRFRAME*)SprGetFrame((SPRHEAD*)m_pHeader, nFrame);
+		if (!pFrame)
+			return false;
+		int nL = (int)m_pOffset[nFrame].Length; if (nL < 0) nL = -nL;	// nhu PrepareFrameData ([REP3 03/09 SAP]: dau am = khung luu tho)
+		pRaw = pFrame->Sprite; nRawLen = nL - 8;
+		kq.nW = pFrame->Width; kq.nH = pFrame->Height; kq.nOffX = pFrame->OffsetX; kq.nOffY = pFrame->OffsetY;
+	}
+	else
+	{
+		pRaw = f.pRawData; nRawLen = f.nRawDataLen;
+		kq.nW = f.nWidth; kq.nH = f.nHeight; kq.nOffX = f.nOffX; kq.nOffY = f.nOffY;
+	}
+	bool bOk = false;
+	if (pRaw && nRawLen > 0 && kq.nW > 0 && kq.nH > 0 && (nBpp == 2 || nBpp == 4))
+	{
+		kq.pDiem = (BYTE*)malloc((size_t)kq.nW * kq.nH * nBpp);
+		if (kq.pDiem)
+		{
+			if (bPal) RenderToIndexAlpha((WORD*)kq.pDiem, pRaw, nRawLen, kq.nW * kq.nH, (int)m_nColors);
+			else if (nBpp == 4) RenderToA8R8G8B8((DWORD*)kq.pDiem, pRaw, nRawLen, kq.nW * kq.nH, m_pPal24, (int)m_nColors);
+			else RenderToA4R4G4B4Safe((WORD*)kq.pDiem, pRaw, nRawLen, kq.nW * kq.nH, m_pPal16, (int)m_nColors);
+			bOk = true;
+		}
+	}
+	if (pFrame)
+		SprReleaseFrame(pFrame);
+	(void)eFmt;
+	return bOk;
+}
+
+// Luong ve: tao texture tu khung da giai ma (phan sau cua CreateTexture16Bit). Lop SDL_GPU khoa duoc texture POOL_DEFAULT nen ghi thang,
+// khong qua texture tam SYSTEMMEM + UpdateTexture (bot mot cap phat + mot lan chep). Luon giai phong kq.pDiem.
+void TextureResSpr::JxNhanKhungNen(JxKhungXong& kq)
+{
+	BYTE* pDiem = kq.pDiem; kq.pDiem = NULL;
+	const int nFrame = kq.nFrame;
+	if (nFrame < 0 || nFrame >= m_nFrameNum || !m_pFrameInfo) { if (pDiem) free(pDiem); g_uJxNapKhungBo++; return; }
+	FrameToTexture& f = m_pFrameInfo[nFrame];
+	f.nJxNen = 0;
+	if (kq.bHong || !pDiem) { if (pDiem) free(pDiem); g_uJxNapKhungHong++; return; }
+	if (f.texInfo[0].pTexture) { free(pDiem); g_uJxNapKhungBo++; return; }	// da nap dong bo trong luc cho (hoi kich thuoc/alpha)
+	f.nWidth = kq.nW; f.nHeight = kq.nH; f.nOffX = kq.nOffX; f.nOffY = kq.nOffY; f.nTexNum = 0;
+	if (f.nWidth <= 0 || f.nHeight <= 0) { free(pDiem); g_uJxNapKhungHong++; return; }
+	SplitTexture(nFrame);
+	const int nW = f.nWidth, nBpp = kq.nBpp; const D3DFORMAT eFmt = (D3DFORMAT)kq.eFmt; const bool bPal = kq.bPal != 0;
+	if (bPal && m_nPalRow < 0)
+		m_nPalRow = Rep3_D3D11AllocPalette((const unsigned char*)m_pPal24, (int)m_nColors);	// da cap luc giao; phong khi bi tra giua chung
+	int i;
+	for (i = 0; i < f.nTexNum; i++)
+	{
+		TextureInfo& ti = f.texInfo[i];
+		SAFE_RELEASE(ti.pTexture);
+		LPDIRECT3DTEXTURE9 pTex = NULL;
+		if (FAILED(PD3DDEVICE->CreateTexture(ti.nWidth, ti.nHeight, 1, 0, eFmt, g_nRep3Pool ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED, &pTex, NULL)))
+			break;
+		D3DLOCKED_RECT lr;
+		if (FAILED(pTex->LockRect(0, &lr, NULL, 0))) { pTex->Release(); break; }
+		BYTE* pDst = (BYTE*)lr.pBits; const BYTE* pSrc = pDiem + ((size_t)ti.nFrameY * nW + ti.nFrameX) * nBpp;
+		for (int j = 0; j < ti.nFrameHeight; j++) { memcpy(pDst, pSrc, (size_t)ti.nFrameWidth * nBpp); pDst += lr.Pitch; pSrc += (size_t)nW * nBpp; }
+		pTex->UnlockRect(0);
+		ti.pTexture = pTex;
+		if (bPal) Rep3_D3D11TagPalette(pTex, m_nPalRow);
+		m_nTexMemUsed += ti.nWidth * ti.nHeight * nBpp;
+	}
+	free(pDiem);
+	if (i < f.nTexNum)
+	{	// hong giua chung: tra cac texture da tao, khung se duoc nap lai dong bo lan ve sau
+		for (int k = 0; k < i; k++) { m_nTexMemUsed -= f.texInfo[k].nWidth * f.texInfo[k].nHeight * nBpp; SAFE_RELEASE(f.texInfo[k].pTexture); }
+		g_uRep3FxTaoHong++; g_uJxNapKhungHong++;
+		return;
+	}
+	if (m_pHeader && f.pFrame) { SprReleaseFrame((SPRFRAME*)f.pFrame); f.pFrame = NULL; f.pRawData = NULL; }	// raw cua lan hoi kich thuoc truoc: khong can nua (nhu CreateTexture16Bit)
+	g_uJxNapKhungXong++;
+}
+#endif
