@@ -19,7 +19,9 @@
 > khung nặng nhất 11,8 ms là khung vào map tải 93 texture 22 MB thật (UI); "zero 2 vùng 0,0 ms", "bảng màu 116 hàng 0,1 ms"; `[VE-GIAT]` chỉ 4 dòng/180 s
 > (bản b cùng chỗ: hàng chục); `[VE-GOP]` với kệ 2048²: **4 trang** thay vì 30+ trang 1024², đổi texture 71–73/khung (bản b: 161–184), texture0
 > 52–54 k/30 s (bản b: 189–220 k), lệnh/khung 122–127 (bản b: 230–270); "hỏi NPC đang nạp → chưa có 94" lúc vào map. Máy ảo đã cài lại 109110954.
-> `origin/mobile-0809` = `5d0ff3f9` (gộp thêm tài liệu của phiên giao diện), đã nhắn phiên giao diện gộp trước khi dựng bản kế cho bộ tải.** Bộ tải lúc này vẫn 109110954 (`[VE b+c]`).
+> `origin/mobile-0809` = `7a15c0bc`. **10:47: đã đẩy thẳng `dt_v4\jx1mobile.apk` = 109111021 (md5 `bdc338a8…`, 20 116 463 B, = fab69766 + d + e, có cả
+> [BANPHIM]/[KINHMACH] của phiên giao diện), máy chủ 8765 PID 317268, config/tệp rời dt_v4 giữ nguyên → chủ mở lại app là nhận d+e ngay lúc đang chơi
+> đám đông; phiên giao diện sẽ thay đè bằng bản gộp [PHONGBANG] sau.** Việc kế: đọc `[VE]`/`[VE-GIAT] chep:`/`[VE-GOP] atlas` của phiên Fold 7 kế tiếp.
 
 > **03:25 11/09 — `[VE 11/09 b+c]` ĐÃ THỬ MÁY ẢO TRONG GAME, ĐÃ LÊN BỘ TẢI trong bản gộp của phiên giao diện: `dt_v4\jx1mobile.apk` =
 > versionCode **109110317**, md5 `139f7284…`, 20 099 023 B, dựng từ `origin/mobile-0809 = 32c469d0` (= icon Tống Kim/Kinh Mạch + ô dùng nhanh
