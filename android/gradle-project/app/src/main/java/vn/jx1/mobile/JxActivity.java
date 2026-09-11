@@ -14,6 +14,7 @@
 // ("BAY DA TRA GIA") - Android tao lai Activity, game khoi dong vong lap.
 package vn.jx1.mobile;
 
+import android.content.Context;
 import android.graphics.Insets;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 
 import org.libsdl.app.SDLActivity;
+import org.libsdl.app.SDLSurface;
 
 public class JxActivity extends SDLActivity
 {
@@ -31,7 +33,6 @@ public class JxActivity extends SDLActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        datVungAnToanTheoCamera();
         anThanhHeThong();
         JxDoNhip.batDau(this);      // [DONHIP 12/09] ban do nhip ve: chi chay khi config.ini [DoNhip] Bat=1
     }
@@ -59,38 +60,46 @@ public class JxActivity extends SDLActivity
     }
 
     /** Toan man hinh "immersive sticky": an ca thanh trang thai lan thanh dieu huong, vuot vao thi hien tam roi tu an lai. */
-    // [ANTOAN 13/09 b] VUNG AN TOAN CHI THEO CHO KHOET CAMERA (displayCutout). SDLSurface.onApplyWindowInsets cua SDL3 gop
-    // ca systemBars + systemGestures (~30 dp moi ben cho cu chi lui) + tappableElement + cutout, nen tren Fold 7 giao dien
-    // bi thut vao ca bon phia (~75 diem trai/phai, ~46 diem tren) - chu 13/09: "khi choi tren dien thoai no chua tu cang
-    // chinh". Thay listener cua SDLSurface (moi View chi co mot listener) bang listener nay: chi lay cutout, bao SDL nhu cu
-    // (SDL_SetWindowSafeAreaInsets -> JxSdl_LayVungAnToan). May khong co cutout -> 0,0,0,0 = neo theo mep man.
-    private void datVungAnToanTheoCamera()
+    // [ANTOAN 13/09 b/c] VUNG AN TOAN CHI THEO CHO KHOET CAMERA (displayCutout). SDLSurface.onApplyWindowInsets cua SDL3
+    // gop ca systemBars + systemGestures (~30 dp moi ben) + tappableElement + cutout -> Fold 7 thut vao bon phia. Lan dau
+    // thay listener bang setOnApplyWindowInsetsListener nhung SDLSurface.handleResume() dang ky lai listener cua no moi lan
+    // resume -> mat tac dung (do tren Fold 7: an toan 58,46 1306x570). Nay dung LOP CON cua SDLSurface (createSDLSurface),
+    // ghi de thang phuong thuc: SDL co dang ky lai bao nhieu lan cung goi ban nay. May khong khoet -> 0,0,0,0.
+    // Tu 13/09 c chu bo vung an toan (config VungAnToan=0) nen so nay chi con dung khi bat lai.
+    @Override
+    protected SDLSurface createSDLSurface(Context context)
     {
-        if (Build.VERSION.SDK_INT < 28 /* Android 9: DisplayCutout */ || mSurface == null)
-            return;
-        mSurface.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-            @Override
-            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets)
+        return new JxSurface(context);
+    }
+
+    static class JxSurface extends SDLSurface
+    {
+        JxSurface(Context context)
+        {
+            super(context);
+        }
+
+        @Override
+        public WindowInsets onApplyWindowInsets(View v, WindowInsets insets)
+        {
+            int l = 0, r = 0, t = 0, b = 0;
+            if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */)
             {
-                int l = 0, r = 0, t = 0, b = 0;
-                if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */)
-                {
-                    Insets c = insets.getInsets(WindowInsets.Type.displayCutout());
-                    l = c.left; r = c.right; t = c.top; b = c.bottom;
-                }
-                else
-                {
-                    DisplayCutout c = insets.getDisplayCutout();
-                    if (c != null)
-                    {
-                        l = c.getSafeInsetLeft(); r = c.getSafeInsetRight();
-                        t = c.getSafeInsetTop(); b = c.getSafeInsetBottom();
-                    }
-                }
-                SDLActivity.onNativeInsetsChanged(l, r, t, b);
-                return insets;
+                Insets c = insets.getInsets(WindowInsets.Type.displayCutout());
+                l = c.left; r = c.right; t = c.top; b = c.bottom;
             }
-        });
+            else if (Build.VERSION.SDK_INT >= 28 /* Android 9: DisplayCutout */)
+            {
+                DisplayCutout c = insets.getDisplayCutout();
+                if (c != null)
+                {
+                    l = c.getSafeInsetLeft(); r = c.getSafeInsetRight();
+                    t = c.getSafeInsetTop(); b = c.getSafeInsetBottom();
+                }
+            }
+            SDLActivity.onNativeInsetsChanged(l, r, t, b);
+            return insets;
+        }
     }
 
     private void anThanhHeThong()

@@ -122,6 +122,8 @@ public:
 	static void			  NeoNhomTrenLai();	// [SUAGD 13/09] goi lai khi bo cuc duoc ap lai (vung an toan / nhan vat doi)
 	static int			  ms_nTopIni;	// [NHOMTREN 12/09 b] Top cua [Main] trong UiPlayerBar.ini (khung 800x600)
 	static int			  ms_nDaDichY;	// [SUAGD 13/09] nhom tren DA dich bao nhieu (de goi lai bao nhieu lan cung dung)
+	static int			  ms_nLeftIni;	// [NHOMTREN 13/09 X] Left cua [Main] trong ini
+	static int			  ms_nDaDichX;	// [NHOMTREN 13/09 X] nhom tren-trai DA dich ngang bao nhieu (khung cha neo giua tren man rong)
 	//	[SUAGD 13/09 f] "Mini skill" = day icon buff (m_StateImg / m_StateLife) thanh MOT o ve tay "ThanhBuff" cho trinh chinh
 	static bool			  BuffTrung(void* p, int x, int y);
 	static void			  BuffLay(void* p, int* px, int* py);

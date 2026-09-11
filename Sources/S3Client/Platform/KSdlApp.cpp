@@ -456,7 +456,7 @@ extern "C" int JxSdl_LayVungAnToan(int* pnL, int* pnT, int* pnW, int* pnH)
 		s_nDaDoc = 1;
 		GetCurrentDirectory(MAX_PATH, szCfg);
 		strcat(szCfg, "\\Config.ini");
-		s_nBat = GetPrivateProfileInt("Ui", "VungAnToan", 1, szCfg);
+		s_nBat = GetPrivateProfileInt("Ui", "VungAnToan", 0, szCfg);	// [ANTOAN 13/09 c] chu: khong can vung an toan -> mac dinh 0
 		s_nDoiXung = GetPrivateProfileInt("Ui", "VungAnToanDoiXung", 0, szCfg);	// [ANTOAN 13/09 b] mac dinh KHONG doi xung: inset chi la cho khoet camera
 		s_nLe = GetPrivateProfileInt("Ui", "LeAnToan", 0, szCfg);
 		if (s_nLe < 0) s_nLe = 0;
@@ -511,6 +511,14 @@ extern "C" int JxSdl_AnToanTren(void)
 	int t = 0;
 	JxSdl_LayVungAnToan(NULL, &t, NULL, NULL);
 	return t;
+}
+
+// [NHOMTREN 13/09 X] mep trai vung an toan (= 0 khi VungAnToan=0) - UiPlayerBar::NeoNhomTren keo nhom tren-trai ve mep trai
+extern "C" int JxSdl_AnToanTrai(void)
+{
+	int l = 0;
+	JxSdl_LayVungAnToan(&l, NULL, NULL, NULL);
+	return l;
 }
 #endif
 BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
