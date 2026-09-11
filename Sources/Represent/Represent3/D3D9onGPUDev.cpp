@@ -61,7 +61,7 @@ static void JxVeCong(const JxVeDo& k)
 	if (k.dNop > g_jxVeMax.dNop) g_jxVeMax.dNop = k.dNop; if (k.dTong > g_jxVeMax.dTong) g_jxVeMax.dTong = k.dTong;
 	if (k.uTaiKB > g_jxVeMax.uTaiKB) g_jxVeMax.uTaiKB = k.uTaiKB; if (k.uRingKB > g_jxVeMax.uRingKB) g_jxVeMax.uRingKB = k.uRingKB;
 	if (k.uLenh > g_jxVeMax.uLenh) g_jxVeMax.uLenh = k.uLenh; if (k.uQuad > g_jxVeMax.uQuad) g_jxVeMax.uQuad = k.uQuad; if (k.uDoiTex > g_jxVeMax.uDoiTex) g_jxVeMax.uDoiTex = k.uDoiTex;
-	if (k.dTong > 16.0) g_uJxVe16++; else if (k.dTong > 8.0) g_uJxVe8++;
+	{ const double dViec = k.dTong - k.dCho; if (dViec > 16.0) g_uJxVe16++; else if (dViec > 8.0) g_uJxVe8++; }	// [VE 11/09 c] khong ke cho swapchain (vblank)
 }
 // ly do quad KHONG gop duoc vao lenh truoc, kiem theo thu tu: 0 stride khac, 1 khong lien tiep trong ring (hoac lenh truoc la clear/target),
 // 2 pipeline, 3 texture 0, 4 texture 1 / sampler, 5 uniform vs, 6 uniform ps, 7 cat / viewport

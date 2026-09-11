@@ -154,15 +154,16 @@ static void JxVeGiatGhi(double dTrinhChieu)
 {
 	s_dJxVeCpuTong += s_dJxVeCpuCuoi; if (s_dJxVeCpuCuoi > s_dJxVeCpuMax) s_dJxVeCpuMax = s_dJxVeCpuCuoi; s_uJxVeCpuKhung++;
 	if (g_nJxVeGiatMs <= 0) return;
-	if (s_dJxVeCpuCuoi + dTrinhChieu < (double)g_nJxVeGiatMs && s_dJxNapNgoaiKhungCuoi < (double)g_nJxVeGiatMs) return;
+	const double dViec = s_dJxVeCpuCuoi + dTrinhChieu - g_jxVeKhung.dCho;	// [VE 11/09 c] khong ke cho swapchain (vblank): may ao 60 Hz cho 20-30 ms moi khung
+	if (dViec < (double)g_nJxVeGiatMs && s_dJxNapNgoaiKhungCuoi < (double)g_nJxVeGiatMs) return;
 	static DWORD s_dwMoc = 0; static int s_nDem = 0;
 	const DWORD dwNow = timeGetTime();
 	if (s_dwMoc == 0 || dwNow - s_dwMoc >= 10000) { s_dwMoc = dwNow; s_nDem = 0; }
 	if (++s_nDem > 12) return;
 	const JxVeDo& k = g_jxVeKhung;
 	double dNap = 0.0; for (int i = 0; i < 5; i++) dNap += s_jxNapKhungCuoi[i].ms;
-	Rep3Log("[VE-GIAT] khung %u: %.1f ms = ve CPU %.1f (nap %.1f ms: tep spr %u/%.1f, rut khung %u/%.1f, giai ma %u/%.1f, tao GPU %u/%.1f; ngoai luc ve %.1f) + trinh chieu %.1f (cho %.1f, chep %.1f [tai %u tex %u KB, ring %u KB], ghi %.1f [%u lenh, %u quad, %u pass, doi tex %u], nop %.1f) | nen: bo ve %u, cho ap %u, ap %u khung %.1f ms",
-		g_uJxVeKhungSo, s_dJxVeCpuCuoi + dTrinhChieu, s_dJxVeCpuCuoi, dNap, s_jxNapKhungCuoi[0].n, s_jxNapKhungCuoi[0].ms, s_jxNapKhungCuoi[2].n, s_jxNapKhungCuoi[2].ms, s_jxNapKhungCuoi[3].n, s_jxNapKhungCuoi[3].ms, s_jxNapKhungCuoi[4].n, s_jxNapKhungCuoi[4].ms, s_dJxNapNgoaiKhungCuoi,
+	Rep3Log("[VE-GIAT] khung %u: %.1f ms (viec %.1f, khong ke cho) = ve CPU %.1f (nap %.1f ms: tep spr %u/%.1f, rut khung %u/%.1f, giai ma %u/%.1f, tao GPU %u/%.1f; ngoai luc ve %.1f) + trinh chieu %.1f (cho %.1f, chep %.1f [tai %u tex %u KB, ring %u KB], ghi %.1f [%u lenh, %u quad, %u pass, doi tex %u], nop %.1f) | nen: bo ve %u, cho ap %u, ap %u khung %.1f ms",
+		g_uJxVeKhungSo, s_dJxVeCpuCuoi + dTrinhChieu, dViec, s_dJxVeCpuCuoi, dNap, s_jxNapKhungCuoi[0].n, s_jxNapKhungCuoi[0].ms, s_jxNapKhungCuoi[2].n, s_jxNapKhungCuoi[2].ms, s_jxNapKhungCuoi[3].n, s_jxNapKhungCuoi[3].ms, s_jxNapKhungCuoi[4].n, s_jxNapKhungCuoi[4].ms, s_dJxNapNgoaiKhungCuoi,
 		dTrinhChieu, k.dCho, k.dChep, k.uTai, k.uTaiKB, k.uRingKB, k.dGhi, k.uLenh, k.uQuad, k.uPass, k.uDoiTex, k.dNop,
 		s_uJxBoVeKhungCuoi, g_pJxTexMgr ? g_pJxTexMgr->JxNapKhungDangCho() : 0u, g_pJxTexMgr ? g_pJxTexMgr->m_uJxApKhungCuoi : 0u, g_pJxTexMgr ? g_pJxTexMgr->m_dJxApCuoi : 0.0);
 }
@@ -171,7 +172,7 @@ static void JxVeKyIn()
 {
 	const unsigned n = g_uJxVeKhungSo ? g_uJxVeKhungSo : 1;
 	const JxVeDo& t = g_jxVeTong; const JxVeDo& m = g_jxVeMax;
-	Rep3Log("[VE] %ds trinh chieu %u khung: cho lenh+swapchain TB %.2f ms (max %.1f) | chep len GPU TB %.2f (max %.1f): tai %u texture %u KB (max %u KB/khung), ring TB %u KB (max %u) | ghi lenh TB %.2f (max %.1f): TB %u lenh, %u quad, %u dinh, %u pass/khung | nop TB %.2f (max %.1f) | tong TB %.2f (max %.1f), khung >8 ms %u, >16 ms %u | ve CPU (Begin->End) TB %.2f (max %.1f)",
+	Rep3Log("[VE] %ds trinh chieu %u khung: cho lenh+swapchain TB %.2f ms (max %.1f) | chep len GPU TB %.2f (max %.1f): tai %u texture %u KB (max %u KB/khung), ring TB %u KB (max %u) | ghi lenh TB %.2f (max %.1f): TB %u lenh, %u quad, %u dinh, %u pass/khung | nop TB %.2f (max %.1f) | tong TB %.2f (max %.1f), khung viec (khong ke cho) >8 ms %u, >16 ms %u | ve CPU (Begin->End) TB %.2f (max %.1f)",
 		g_nRep3StatSec, g_uJxVeKhungSo, t.dCho / n, m.dCho, t.dChep / n, m.dChep, t.uTai, t.uTaiKB, m.uTaiKB, t.uRingKB / n, m.uRingKB, t.dGhi / n, m.dGhi, t.uLenh / n, t.uQuad / n, t.uDinh / n, t.uPass / n,
 		t.dNop / n, m.dNop, t.dTong / n, m.dTong, g_uJxVe8, g_uJxVe16, s_uJxVeCpuKhung ? s_dJxVeCpuTong / s_uJxVeCpuKhung : 0.0, s_dJxVeCpuMax);
 	Rep3Log("[VE-GOP] doi trang thai/khung TB: pipeline %u, texture/sampler %u (max %u), uniform vs %u, ps %u, cat/viewport %u | quad khong gop (ca ky): stride %u, khong lien tiep %u, pipeline %u, texture0 %u, texture1/sampler %u, vs %u, ps %u, cat/vp %u",
