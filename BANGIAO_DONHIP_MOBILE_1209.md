@@ -5,6 +5,13 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **00:15 11/09 — APK `android/apk/jx1mobile-1209-donhip-c.apk` = SDL 3.2.30 + bảng pha mới ĐÃ LÊN dt_v4** (versionCode 109110010,
+> md5 `206638db…`, 20,0 MB; máy chủ 8765 khởi động lại PID 284056 với đúng dòng lệnh cũ của phiên giao diện; config dt_v4 giữ nguyên:
+> `[DoNhip] Bat=1 GiayMoiPha=60 Pha=0,1,2,3,4,5 LanLap=2` → 12 phút, pha 5 = "SDL cũ" đối chứng). Nhánh: `6838634e` [DONHIP 12/09 b]
+> + gộp `origin/mobile-0809 = 838fdf36` → `b9d85851`. Chưa chạy thử trên máy ảo (đang có người chạy bản `-o`). Lần mở app kế tiếp trên
+> Fold 7 tự cập nhật rồi đo; kiểm nhanh: `jx_android.log` ghi `(SDL 3.2.30)`, `[NHIP-BAT]` không còn "chua co hint", pha 0 phải ≈ 118–120
+> khung/s **mà không cần hint**, pha 5 ≈ 45. Cách dựng + bẫy: §8 cuối.
+
 > **Mới nhất 10/09 23:45 — LOG FOLD 7 ĐÃ VỀ ĐỦ 12 BƯỚC, M1 XÁC NHẬN, ĐÃ CHỌN CÁCH SỬA (xem §8).** Phiên 23:23 (APK `-b`): pha 0 = 35–61 khung/s
 > vì SDL dựng lại swapchain **mỗi khung**; chỉ bỏ qua SUBOPTIMAL (pha 1) → **118–120 khung/s khoá cứng, cùng mức điện ~2,4 W**; nhịp PC (pha 2)
 > đều thêm chút; 1 khung bay (pha 3–5) không ổn định → giữ 2; 60 Hz phải đo lại. Hai phiên 22:05/22:53 và đoạn 23:24–23:30 là chủ **ra nền**,
@@ -205,6 +212,11 @@ Phiên 23:23 cũng ra nền 23:24:34–23:30:35 (`xoay=0` rồi `xoay=1`) nên b
    `bc18c53d` [SUAGD 13/09 i] và `BANGIAO_GIAODIEN_MOBILE_SUAGD_1309.md` §7.9 ghi quy tắc "cây mới phải vá trước khi dựng".
    `[DoNhip] Bat=1` vẫn giữ → lần mở app kế tiếp trên Fold 7 sẽ đo lại đủ 12 bước với bản `-n` (chủ đừng ra nền giữa chừng).
 
+Đối chứng thêm (chủ chạy bản `-n`/`-o` = SDL 3.2.14 đã vá, 23:50–00:08, ba phiên `SM-F966U1_20260910_235058`, `_235554`,
+`SM-F966U1_20260911_000602`): pha 0 = 38–61 khung/s (dựng lại mỗi khung), **pha 1 = 109–115 khung/s (p50 8,38)**, pha 2 = 115–118
+(trễ 107–262 so với 208–485 của pha 1), pha 3 "1 khung bay" = 43–72 khung/s, pha 5 = 43 khung/s. Phiên 23:41 (bản `-m` chưa vá) mọi pha
+đều 34–53 khung/s, `suboptimal +0` — đúng như cảnh báo mục 7. Kết luận §8 giữ nguyên.
+
 Quyết định (theo chủ quyết #2 "tiện phát triển về sau"):
 - **Sửa M1 bằng nâng SDL Android lên 3.2.30** — bản 3.2.x cuối (01/01/2026; nhánh `release-3.2.x` đang 3.2.31-dev), có `bca30aa` (vào từ
   3.2.26, 30/10/2025), "Fixed Android applications losing vsync when being resumed" (3.2.24) và "Fixed a crash on Android upon returning
@@ -216,6 +228,29 @@ Quyết định (theo chủ quyết #2 "tiện phát triển về sau"):
   2 = +bỏ chép (bay 2), 3 = xin 60 Hz + `PaintFps=60` (bay 2), 4 = 1 khung bay (đối chứng); đồng hồ pha dừng khi ra nền.
 - Trước mắt: APK `-m` trên dt_v4 phải dựng lại với SDL đã vá (`python android\va_sdl3_donhip.py <wt_mobile>\ThirdParty\SDL3-src\SDL3-3.2.14`
   rồi gradle) hoặc đặt `[DoNhip] Bat=0` để chủ khỏi đo vô ích; mọi lần dựng phải gộp `origin/mobile-0809` trước (luật chủ 10/09).
+
+**Đã làm 00:15 11/09 (chủ chốt "nâng SDL Android lên 3.2.30 theo §8, dựng lại và đo với bảng pha mới")** — commit `6838634e`
+[DONHIP 12/09 b] (chỉ Android, không tệp nào của chuỗi Windows đổi: `JxPerfHudAndroid.cpp` không nằm trong vcxproj nào):
+- `android/CMakeLists.txt`: `JX_SDL3_VER 3.2.30` (biến thường, không CACHE để cây cũ không giữ đường 3.2.14), báo lỗi rõ khi chưa tải nguồn,
+  **tự chạy `va_sdl3_donhip.py` lúc configure** (`find_package(Python3)` + `execute_process`, FATAL_ERROR nếu lỗi) → mọi cây dựng ra
+  cùng một `libSDL3.so`. `android/tai_sdl3_src.ps1`: `-Ver` mặc định 3.2.30, không còn lấy phiên bản từ gói VC Windows.
+- `android/va_sdl3_donhip.py` viết lại cho 3.2.30: đếm SUBOPTIMAL / dựng lại như cũ, hint **đảo chiều** `JX_DUNG_LAI_SUBOPTIMAL=1` = hành vi
+  3.2.14 (chỉ để pha đối chứng), từ chối SDL < 3.2.26, ghi tệp nguyên tử (CMake hai ABI có thể gọi cùng lúc). Đường acquire của 3.2.30
+  đã coi SUBOPTIMAL là thành công, không cần vá.
+- `JxPerfHudAndroid.cpp` (qua `android/va_nguon_android_donhip3.py`, latin-1 + CRLF, byte cao không đổi): bảng pha 0 "SDL mới, nhịp cũ"
+  (vsync 0, smooth 1) | 1 +nhịp PC | 2 +bỏ chép khung, 2 bay | 3 xin 60 Hz + PaintFps 60 (2 bay) | 4 "1 khung bay" đối chứng | 5 "SDL cũ"
+  đối chứng (hint = 1; mặc định `Pha=0,1,2,3,4`, dt_v4 ghi rõ `0,1,2,3,4,5`); **đồng hồ pha dừng khi app ra nền** (hai vòng bơm cách
+  > 2 s → dời mốc, ghi `[NHIP-NGHI]`). Lớp ghi đè `config.ini`: chú thích bảng mới, `Pha=0,1,2,3,4`, `Bat=0` giữ nguyên.
+- Dựng: worktree này thiếu mọi thứ git bỏ qua → chép `Sources\Core|Engine\vcpkg_installed` từ wt_mobile (robocopy, mã 1 = OK), viết
+  `local.properties`, junction `D:\GAMEDEVNEW_wt_sdl30`, tải `SDL3-3.2.30.tar.gz` (15,9 MB, GitHub release) vào `ThirdParty\SDL3-src`.
+  **Bẫy:** gọi `gradlew.bat` tương đối từ công cụ shell của phiên báo "not recognized" dù cwd đúng — phải gọi đường tuyệt đối
+  `D:\GAMEDEVNEW_wt_sdl30\android\gradle-project\gradlew.bat assembleDebug -p <thư mục đó>`; dựng hết 2 phút 37 giây (38 task).
+  Kiểm APK bằng zipfile + regex: `libSDL3.so` hai ABI có `release-3.2.30-0-gf5e5f6588`, ba hint mới, không còn `JX_BO_QUA_SUBOPTIMAL`;
+  `libmain.so` có "SDL moi, nhip cu", "SDL cu (doi chung)", `[NHIP-NGHI]`.
+- Đọc log lần đo tới: pha 0 (3.2.30, không hint) phải ≈ pha 1 cũ (118–120 khung/s, chờ swapchain ~0,04 ms, `dung lai +0`); pha 5 phải ≈ 45
+  (chứng minh hint đối chứng hoạt động); pha 3 (60 Hz, 2 bay) kỳ vọng ~60 khung/s đều ở ~1,7 W → nếu đúng, đó là nấc "tiết kiệm pin";
+  pha 4 (1 bay) kỳ vọng tụt khi CPU nặng → chốt 2 bay; pha 1 so pha 0 → có bật `PaintVsync=1 PaintSmooth=2` mặc định cho mobile không;
+  pha 2 so pha 1 → có bỏ chép khung (M2) không. Sau đó đặt `[DoNhip] Bat=0` trên dt_v4.
 
 ## 6. Rủi ro
 
