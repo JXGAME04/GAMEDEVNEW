@@ -5,7 +5,17 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
-> **Mới nhất:** phiên giao diện đã gộp bản này và FF `mobile-0809 = d9a72b72` ([SUAGD 13/09] a/b/c: khung "hai họ", HUD theo vùng an toàn,
+> **Mới nhất 10/09 23:45 — LOG FOLD 7 ĐÃ VỀ ĐỦ 12 BƯỚC, M1 XÁC NHẬN, ĐÃ CHỌN CÁCH SỬA (xem §8).** Phiên 23:23 (APK `-b`): pha 0 = 35–61 khung/s
+> vì SDL dựng lại swapchain **mỗi khung**; chỉ bỏ qua SUBOPTIMAL (pha 1) → **118–120 khung/s khoá cứng, cùng mức điện ~2,4 W**; nhịp PC (pha 2)
+> đều thêm chút; 1 khung bay (pha 3–5) không ổn định → giữ 2; 60 Hz phải đo lại. Hai phiên 22:05/22:53 và đoạn 23:24–23:30 là chủ **ra nền**,
+> không sập. **Cảnh báo:** APK `-m` (247beeea, phiên giao diện dựng ở `D:\GAMEDEVNEW_wt_mobile` 23:29, đã lên dt_v4 23:33) **không có bản vá SDL**
+> — phiên Fold 7 23:41 ghi `chua co hint`, `suboptimal +0` → pha 1 vô hiệu, máy lại 28–45 khung/s. Quyết định: nâng SDL Android lên **3.2.30**
+> (chỉ Android; gói VC Windows giữ 3.2.14), bước vá đếm chạy tự động lúc CMake để mọi cây giống nhau. **23:50: phiên giao diện đã thay
+> APK bộ tải bằng `jx1mobile-1309-suagd-n`** (= 7702bab0 + SDL 3.2.14 đã vá DONHIP, md5 `f49c9386…`, versionCode 109102349, đã kiểm khớp
+> apk.txt; `origin/mobile-0809 = bc18c53d`) — lần thử Fold 7 kế tiếp có cả vá SDL lẫn vùng an toàn theo camera. Worktree này = `b42f8110`
+> + tệp này, đang sau `mobile-0809` 6 commit — **trước khi dựng phải gộp mobile-0809** (luật chủ 10/09).
+
+> **Mới nhất (22:05):** phiên giao diện đã gộp bản này và FF `mobile-0809 = d9a72b72` ([SUAGD 13/09] a/b/c: khung "hai họ", HUD theo vùng an toàn,
 > trình chỉnh giao diện cho người chơi, nút "Chỉnh giao diện" trong Cài đặt cạnh thanh FPS). Worktree này đã FF lên `d9a72b72`;
 > **APK điện thoại = `android/apk/jx1mobile-1209-donhip-b.apk`** dựng từ đúng `d9a72b72` + vá SDL (md5 `be0f3dae…`), đã thay vào bộ tải
 > và khởi động lại máy chủ 8765. Bộ tải cũng có `ui/uitoado_danhsach.ini`, `spr/ui3/uisuagd/nut_chinh_gd.spr`, `uioptions.ini` mới và các khoá
@@ -141,9 +151,76 @@ Android 9 → `ANativeWindow_setFrameRate` không có (mọi `[NHIP-XIN]` trả 
 7. Việc nhỏ nên làm sau: kéo thanh FPS sinh **hàng chục lần áp mức** trong 2 s (mỗi bước = một lần `JxNhip_DatMuc`, `g_SetLoopInterval`, ghi log);
    nên áp khi **nhả ngón** (WND_N_SCORLLBAR_POS_CHANGED cuối) — vô hại nhưng thừa. `LoadSetting` áp mức 2 lần lúc mở game (UiInit + UiShell:447) — vô hại.
 
+## 8. KẾT QUẢ FOLD 7 (10/09 23:23–23:41, APK `-b` = d9a72b72 + vá SDL) — M1 XÁC NHẬN, ĐÃ CHỌN CÁCH SỬA
+
+Nguồn: `D:\jx1_android_log\SM-F966U1_20260910_232309\jx_nhip.log` (12 bước × 60 s, 2 vòng; `[NHIP-XONG]` không về vì chủ mở lại app
+lúc 23:41:30, 6 s trước khi xong) và `jx_thietbi.log` (điện, tần số màn theo bước). Máy: SM-F966U1 (SM8750, Android 16), màn ngoài
+2520×1080 120 Hz, hướng gốc **dọc** (`huong goc 3 hien tai 1`), khung vẽ 1436×616, `luc mo app: PaintFps 120 vsync 0 smooth 1`.
+
+Tám phiên 22:05–23:21 trước đó đều ngắn, **không phiên nào sập**: hai phiên 22:05/22:53 chủ ra nền sau ~60 s (Java vẫn ghi `[MAU]` 5 s một,
+C++ ngừng vẽ vì SDL chặn vòng lặp khi app ẩn, POST trong nền bị chặn nhưng bộ gửi giữ vị trí và gửi bù khi quay lại — không mất dòng nào);
+các phiên còn lại là mở/đóng ở màn đăng nhập (`JxPosixMain tra ve 0` ghi vào phiên kế vì tiến trình cũ thoát sau khi phiên mới đã mở).
+Phiên 23:23 cũng ra nền 23:24:34–23:30:35 (`xoay=0` rồi `xoay=1`) nên bước 1 kéo dài 412 s; 11 bước sau đủ 60 s.
+
+| Bước | Pha (cộng dồn) | khung/s | cách khung p50 / p95 / p99 (ms) | trễ >1,5T | cắt ngang | chờ swapchain TB (ms) | SDL dựng lại | màn | W |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 0 hiện tại (50 s đầu, trước khi ra nền) | 46–61 | 18–22 / 22–25 / 23–27 | ≈ mọi khung | 0–2 | 13–17 | **mỗi khung** (2683/2683) | 120 | — |
+| 2 | 1 +sửa SDL (bỏ qua SUBOPTIMAL) | **118,5** | 8,12 / 9,62 / 10,1 | 33 | 30 | 0,04 | +1 | 120 | 2,38 |
+| 3 | 2 +nhịp PC (`PaintVsync=1 PaintSmooth=2`) | **119,4** | 8,12 / 9,38 / 9,88 | **9** | **0** | 0,04 | 0 | 120 | 2,35 |
+| 4 | 3 +bỏ chép khung, 1 khung bay | 82,3 | 11,6 / 15,4 / 20,1 | 1413 | 2 | 6,0 | 0 | 120 | 1,93 |
+| 5 | 4 +xin 120 Hz | 86,1 | 11,1 / 15,4 / 16,9 | 936 | 0 | 5,7 | 0 | 120 | 1,75 |
+| 6 | 5 +xin 60 Hz, `PaintFps=60` | 36,1 | 23,9 / 50,1 / 73,9 | 987 | 16 | 9,2 | 0 | **60** | 1,69 |
+| 7 | 0 (vòng 2) | 35,3 | 27,1 / 47,6 / 55,6 | 2090 | 8 | 13,1 | mỗi khung (2117/2118) | 120 | 2,37 |
+| 8 | 1 | 107,1 | 8,38 / 16,9 / 22,1 | 684 | 21 | 0,50 | +1 | 120 | 4,94 (?) |
+| 9 | 2 | 110,7 | 8,38 / 14,1 / 20,1 | 406 | 11 | 0,47 | 0 | 120 | 2,83 |
+| 10 | 3 | **119,9** | 8,38 / 9,62 / 9,88 | **3** | 0 | 0,12 | 0 | 120 | 2,02 |
+| 11 | 4 | 55,3 | 15,6 / 37,1 / 53,4 | 1917 | 12 | 6,7 | 0 | 120 | 1,76 |
+| 12 | 5 (50 s) | 33–46 | 21–28 / 34–50 / 43–55 | ~190 /10 s | 1 | 8,7–9,7 | 0 | 60 | 1,90 |
+
+(T = 8,33 ms ở `PaintFps=120`, 16,7 ms ở 60; "trễ >1,5T" = số khung cách nhau quá 1,5 chu kỳ trong 60 s; W = trung bình `[MAU]` p= của bước, không sạc.)
+
+Đọc số:
+1. **M1 là nút thắt duy nhất đáng kể.** Pha 0: SDL 3.2.14 dựng lại swapchain **mỗi khung** (2117 lần / 2118 khung) → luồng chính chờ 13–17 ms
+   mỗi khung dù CPU vẽ 2–3 ms (`[PDET] render`) → 35–61 khung/s. Chỉ bỏ qua `VK_SUBOPTIMAL_KHR` sau `vkQueuePresentKHR` (đúng nội dung
+   commit SDL `bca30aa`: bọc chỗ đặt `needsSwapchainRecreate` trong `#ifndef SDL_PLATFORM_ANDROID`) → **118–120 khung/s, chờ swapchain 0,04 ms,
+   cùng mức điện (2,35–2,38 W so với 2,37 W)**. SUBOPTIMAL vẫn trả về mỗi khung (+7112) vì preTransform vẫn lệch hướng màn, nhưng không dựng
+   lại nên vô hại (compositor Android tự xoay).
+2. **Nhịp PC có ích thêm một chút**: vòng 1 trễ 9 so với 33, cắt ngang 0 so với 30; vòng 2: 406 so với 684. → bật `PaintVsync=1`,
+   `PaintSmooth=2` trong lớp ghi đè Android sau khi sửa SDL (pha 2 = đúng đường `[NHIP a–e]` của PC).
+3. **1 khung bay không ổn định**: cảnh nhẹ (bước 10) cho kết quả tốt nhất cả bài (119,9; trễ 3; 2,0 W) nhưng khi CPU nặng (bước 4, 11:
+   `[SEC] world` 100–130 ms/s) tụt còn 82 → 55 khung/s, chờ swapchain 6–7 ms **mỗi khung** = CPU đứng chờ GPU. Giữ **2 khung bay** như PC.
+   "Bỏ chép khung" (M2) chưa tách được khỏi "1 khung bay"; điện thấp hơn ~0,4 W ở các bước 4/5/10/11 gợi ý M2 đáng làm — cần pha riêng
+   (chép 0, bay 2).
+4. Xin 120 Hz: không thêm gì (màn đã 120 khi game vẽ 120; Samsung tự hạ 60 Hz khi game chậm — thấy `[DOI]` ở pha 0). Xin 60 Hz: màn
+   **xuống 60 Hz thật** (`che_do id=10`, `setFrameRate` trả 0), điện 1,7–1,9 W, nhưng chỉ 33–46 khung/s vì dính "1 khung bay" + vsync
+   (lỡ 16,7 ms là rơi 33 ms). Phải đo lại 60 Hz với 2 khung bay trước khi làm nấc "tiết kiệm pin" của thanh FPS.
+5. Nhiệt: `nhiet=0` suốt 18 phút, headroom ≤ 0,85, pin 75 → 72 %. Bước 8 đo 4,94 W là ngoại lệ chưa giải thích (các bước cùng cấu hình ~2,4 W).
+6. Bài đo tự chạy ổn: chuyển pha, đổi khung bay, xin tần số đều không sập. Thiếu sót: đồng hồ pha tính cả lúc ra nền (bước 1 = 412 s)
+   → phiên sau dừng đồng hồ khi không có khung vẽ (hoặc bỏ qua khoảng > 2 s giữa hai khung).
+7. **APK `-m` (247beeea, phiên giao diện dựng 23:29 ở `D:\GAMEDEVNEW_wt_mobile`, lên dt_v4 23:33) không có bản vá SDL** (`grep "DONHIP 12/09"`
+   trong `SDL_gpu_vulkan.c` của cây đó = 0): phiên Fold 7 23:41 ghi `SDL dem: suboptimal 0 dung lai 0 (chua co hint)`, `SDL suboptimal +0`
+   → pha 1 vô hiệu, máy lại 28–45 khung/s (rủi ro §6 đã thành thật). Đã nhắn phiên giao diện; họ trả lời 23:50: đã chạy
+   `va_sdl3_donhip.py` trong cây của họ (grep = 3), dựng `jx1mobile-1309-suagd-n` (23:49) và **đã thay vào dt_v4 23:50** (md5 `f49c9386…`,
+   versionCode 109102349, `libSDL3.so` arm64 có chuỗi `JX_BO_QUA_SUBOPTIMAL`; máy chủ 8765 PID 279172; cũng cài lên máy ảo); commit
+   `bc18c53d` [SUAGD 13/09 i] và `BANGIAO_GIAODIEN_MOBILE_SUAGD_1309.md` §7.9 ghi quy tắc "cây mới phải vá trước khi dựng".
+   `[DoNhip] Bat=1` vẫn giữ → lần mở app kế tiếp trên Fold 7 sẽ đo lại đủ 12 bước với bản `-n` (chủ đừng ra nền giữa chừng).
+
+Quyết định (theo chủ quyết #2 "tiện phát triển về sau"):
+- **Sửa M1 bằng nâng SDL Android lên 3.2.30** — bản 3.2.x cuối (01/01/2026; nhánh `release-3.2.x` đang 3.2.31-dev), có `bca30aa` (vào từ
+  3.2.26, 30/10/2025), "Fixed Android applications losing vsync when being resumed" (3.2.24) và "Fixed a crash on Android upon returning
+  from the background when using the GPU API" (3.2.30). **Chỉ Android**: `android/CMakeLists.txt` `JX_SDL3_SRC` → `SDL3-3.2.30`,
+  `android/tai_sdl3_src.ps1` nhận phiên bản riêng cho Android; gói VC `ThirdParty\SDL3` 3.2.14 của Windows (GameSDL.exe) giữ nguyên → PC không đổi.
+  Giữ bộ đếm suboptimal / dựng lại để bài đo còn dùng được: `va_sdl3_donhip.py` sửa neo cho 3.2.30 và **chạy tự động lúc CMake configure**
+  (idempotent) để mọi worktree dựng ra cùng một SDL; hint đảo chiều `JX_DUNG_LAI_SUBOPTIMAL=1` = hành vi 3.2.14 (chỉ để pha 0 đối chứng).
+- Sau khi nâng: lớp ghi đè Android `PaintVsync=1`, `PaintSmooth=2`, 2 khung bay; bảng pha mới cho `[DoNhip]`: 0 = SDL mới, 1 = +nhịp PC,
+  2 = +bỏ chép (bay 2), 3 = xin 60 Hz + `PaintFps=60` (bay 2), 4 = 1 khung bay (đối chứng); đồng hồ pha dừng khi ra nền.
+- Trước mắt: APK `-m` trên dt_v4 phải dựng lại với SDL đã vá (`python android\va_sdl3_donhip.py <wt_mobile>\ThirdParty\SDL3-src\SDL3-3.2.14`
+  rồi gradle) hoặc đặt `[DoNhip] Bat=0` để chủ khỏi đo vô ích; mọi lần dựng phải gộp `origin/mobile-0809` trước (luật chủ 10/09).
+
 ## 6. Rủi ro
 
 - Bản vá SDL chỉ nằm trong bản SDL của worktree này (git bỏ qua) — dựng APK ở worktree khác sẽ thiếu bộ đếm, pha 1 mất tác dụng.
+  **Đã xảy ra 10/09 23:29 với APK `-m` của phiên giao diện (§8 mục 7).**
 - Pha 1–5 đổi hành vi thật khi đang chơi (đó là mục đích); hết vòng tự trả về như cũ.
 - Đổi số khung bay (pha 3, lúc kết thúc) làm SDL chờ hết hàng lệnh + dựng lại swapchain một lần.
 - `POST /nhatky` không xác thực (chỉ trong LAN); chỉ ghi vào thư mục nhật ký, tên tệp đã làm sạch (không thể thành `..`).
