@@ -85,6 +85,25 @@ static void JxGopVo(const RgCmd& L, const RgDrawState& st, UINT stride, UINT rin
 	g_uJxGopVo[k]++;
 }
 static int s_nJxEpTrinhChieu = 0;	// [BKG 11/09] 1 = khung ke tiep PHAI trinh chieu (be mat / cua so doi) du giong khung truoc; Present dat lai 0
+// [D1 11/09] swapchain theo KHUNG LOGIC: hint JX_SWAPCHAIN_W/H cho SDL (android/va_sdl3_d1.py) = backbuffer x Rep3SwapchainLogic/100, khong vuot cua so.
+// HWC/DPU phong len man (khong them pass GPU, GPU to it diem hon 3-4,4 lan); Letterbox() doc kich thuoc that tu acquire nen ti le tu ve 1.
+// Bang cua so (may ao 1040x604) hoac Rep3SwapchainLogic=0 -> hint 0 = SDL nhu cu. Goi TRUOC SDL_ClaimWindowForGPUDevice va trong Reset.
+static UINT s_uJxD1W = 0, s_uJxD1H = 0;	// kich thuoc swapchain nhan duoc lan gan nhat (ghi [D1] khi doi)
+static void JxDatHintSwapchain(SDL_Window* pWin, UINT bbW, UINT bbH)
+{
+	char szW[16], szH[16];
+	int pw = 0, ph = 0; if (pWin) SDL_GetWindowSizeInPixels(pWin, &pw, &ph);
+	UINT w = 0, h = 0;
+	if (g_nJxSwapchainLogic > 0 && bbW && bbH)
+	{
+		w = (UINT)((unsigned long long)bbW * (unsigned)g_nJxSwapchainLogic / 100u); h = (UINT)((unsigned long long)bbH * (unsigned)g_nJxSwapchainLogic / 100u);
+		if (pw > 0 && w > (UINT)pw) w = (UINT)pw; if (ph > 0 && h > (UINT)ph) h = (UINT)ph;
+		if (pw > 0 && ph > 0 && w == (UINT)pw && h == (UINT)ph) w = h = 0;	// bang cua so: khong can hint
+	}
+	snprintf(szW, sizeof(szW), "%u", w); snprintf(szH, sizeof(szH), "%u", h);
+	SDL_SetHint("JX_SWAPCHAIN_W", szW); SDL_SetHint("JX_SWAPCHAIN_H", szH);
+	RgLog("[D1] hint swapchain %ux%u (backbuffer %ux%u, cua so %dx%d px, Rep3SwapchainLogic=%d)", w, h, bbW, bbH, pw, ph, g_nJxSwapchainLogic);
+}
 #endif
 
 #define RG_PAL_ROWS 8192
@@ -283,6 +302,9 @@ bool CDevGpu::Init()
 	const char* e = getenv("REP3_GPU_DEBUG");
 	m_pGpu = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, (e && atoi(e) != 0), NULL);
 	if (!m_pGpu) { RgLog("SDL_CreateGPUDevice(SPIRV) that bai: %s", SDL_GetError()); return false; }
+#ifdef JX_ANDROID
+	JxDatHintSwapchain(m_pWin, m_bbW, m_bbH);	// [D1 11/09] truoc khi SDL tao swapchain lan dau
+#endif
 	if (!SDL_ClaimWindowForGPUDevice(m_pGpu, m_pWin)) { RgLog("ClaimWindowForGPUDevice that bai: %s", SDL_GetError()); return false; }
 	ApplyWindowMode();
 	SDL_GPUPresentMode pm = SDL_GPU_PRESENTMODE_VSYNC;
@@ -500,6 +522,9 @@ HRESULT CDevGpu::Reset(D3DPRESENT_PARAMETERS* pp)
 	m_bbW = m_pp.BackBufferWidth; m_bbH = m_pp.BackBufferHeight;
 	if (m_pBackSurf) { m_pBackSurf->m_w = m_bbW; m_pBackSurf->m_h = m_bbH; }
 	ApplyWindowMode();
+#ifdef JX_ANDROID
+	JxDatHintSwapchain(m_pWin, m_bbW, m_bbH);	// [D1 11/09] backbuffer doi (gap/mo) -> SDL_SetGPUSwapchainParameters ben duoi dung lai swapchain voi hint moi
+#endif
 	SDL_GPUPresentMode pm = SDL_GPU_PRESENTMODE_VSYNC;
 	if (m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_IMMEDIATE)) pm = SDL_GPU_PRESENTMODE_IMMEDIATE;
 #ifdef JX_ANDROID
@@ -1025,6 +1050,13 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		if (!SDL_WaitAndAcquireGPUSwapchainTexture(cb, m_pWin, &pSwap, &swW, &swH)) { if (m_uFrames < 3) RgLog("AcquireSwapchainTexture that bai: %s", SDL_GetError()); pSwap = NULL; }
 #ifdef JX_ANDROID
 		JxNhipGhiCho(uJxT0, pSwap != NULL, swW, swH);	// [DONHIP 12/09]
+		if (pSwap && (swW != s_uJxD1W || swH != s_uJxD1H))
+		{	// [D1 11/09] swapchain doi kich thuoc (lan dau / gap-mo / doi hint): ghi de doi chieu backbuffer, cua so, extent SDL bao
+			int pw = 0, ph = 0; SDL_GetWindowSizeInPixels(m_pWin, &pw, &ph);
+			const char* t = SDL_GetHint("JX_SWAPCHAIN_THAT"); const char* e = SDL_GetHint("JX_SWAPCHAIN_EXTENT");
+			RgLog("[D1] swapchain %ux%u | backbuffer %ux%u | cua so %dx%d px | Rep3SwapchainLogic=%d | SDL: tao %s; extent %s", swW, swH, m_bbW, m_bbH, pw, ph, g_nJxSwapchainLogic, t ? t : "-", e ? e : "-");
+			s_uJxD1W = swW; s_uJxD1H = swH;
+		}
 #endif
 	}
 #ifdef JX_ANDROID

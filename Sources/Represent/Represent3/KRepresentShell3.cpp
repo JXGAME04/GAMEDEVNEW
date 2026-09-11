@@ -131,6 +131,7 @@ int g_nJxHoiKhongDe = 1; unsigned g_uJxNapKhungRong = 0, g_uJxHoiTre = 0;	// [VE
 int g_nJxAtlasKe = 1, g_nJxAtlasTrang = 2048;	// [VE 11/09 e]
 int g_nJxPalBuffer = 1;	// [PALBUF 11/09]
 int g_nJxBoKhungGiong = 1, g_nJxBoKhungGiongMs = 250;	// [BKG 11/09]
+int g_nJxSwapchainLogic = 100;	// [D1 11/09]
 unsigned g_uJxKhungGiongBo = 0, g_uJxKhungGiongCoTai = 0, g_uJxKhungGiongEp = 0, g_uJxKhungGiongDem = 0, g_uJxKhungGiongChuoiMax = 0, g_uJxKhungTrinhChieu = 0;	// [BKG 11/09]
 unsigned g_uJxNapKhungBoVe = 0, g_uJxNapKhungBoVeKhung = 0, g_uJxNapKhungDongBo = 0, g_uJxNapKhungGiao = 0, g_uJxNapKhungTruocSo = 0, g_uJxNapKhungXong = 0, g_uJxNapKhungHong = 0, g_uJxNapKhungBo = 0, g_uJxNapKhungChoMax = 0;
 double g_dJxNapKhungTre = 0.0, g_dJxNapKhungTreMax = 0.0, g_dJxNapNenBan = 0.0, g_dJxNapKhungAp = 0.0, g_dJxNapKhungApMax = 0.0; unsigned g_uJxNapKhungApKhung = 0;
@@ -716,6 +717,8 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nJxBoKhungGiong   = Rep3Ini("Rep3BoKhungGiong", 1);	// [BKG 11/09] 1 = khung giong het khung vua trinh chieu -> khong trinh chieu; 0 = chi dem [VE-BKG]; -1 = tat han (khong so sanh)
 	g_nJxBoKhungGiongMs = Rep3Ini("Rep3BoKhungGiongMs", 250);	// toi da ms giua hai lan trinh chieu khi khung giong (0 = khong gioi han)
 	if (g_nJxBoKhungGiong > 1) g_nJxBoKhungGiong = 1; if (g_nJxBoKhungGiong < -1) g_nJxBoKhungGiong = -1;
+	g_nJxSwapchainLogic = Rep3Ini("Rep3SwapchainLogic", 100);	// [D1 11/09] swapchain = backbuffer x %/100 (100 = khung logic 1040x936/1436x616, GPU to it diem hon 3-4,4 lan; 150 = 1,5x; 0 = cua so nhu cu)
+	if (g_nJxSwapchainLogic < 0) g_nJxSwapchainLogic = 0; if (g_nJxSwapchainLogic > 0 && g_nJxSwapchainLogic < 50) g_nJxSwapchainLogic = 50; if (g_nJxSwapchainLogic > 400) g_nJxSwapchainLogic = 400;
 	Rep3Log("[VE] nap khung nen=%d, ngan sach %d ms/khung, nap truoc %d khung, ap %d ms/khung; nguong [VE-GIAT] %d ms", g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungApMs, g_nJxVeGiatMs);
 	Rep3Log("[VE] bang mau kieu %s (Rep3PalBuffer=%d); bo khung giong khung truoc: %d (Rep3BoKhungGiong; toi da %d ms giua hai lan trinh chieu)", g_nJxPalBuffer ? "storage buffer" : "texture 256x8192", g_nJxPalBuffer, g_nJxBoKhungGiong, g_nJxBoKhungGiongMs);	// [PALBUF 11/09] [BKG 11/09]
 #endif

@@ -77,6 +77,7 @@ extern unsigned g_uJxNapKhungRong, g_uJxHoiTre;	// [VE 11/09 d] khung rong/hong 
 extern int g_nJxAtlasKe, g_nJxAtlasTrang;	// [VE 11/09 e] [Client] Rep3AtlasKe: 1 = atlas xep ke theo dinh dang (mot trang nhieu hang bin); Rep3AtlasTrang: co trang 1024/2048/4096
 extern int g_nJxPalBuffer;	// [PALBUF 11/09] [Client] Rep3PalBuffer: 1 = bang mau trong storage buffer (tai hang bang lenh copy buffer, khong copy tung hang vao texture 256x8192)
 extern int g_nJxBoKhungGiong, g_nJxBoKhungGiongMs;	// [BKG 11/09] [Client] Rep3BoKhungGiong: 1 = khung giong het khung vua trinh chieu -> khong trinh chieu; 0 = chi dem; -1 = tat. Rep3BoKhungGiongMs = toi da ms giua hai lan trinh chieu
+extern int g_nJxSwapchainLogic;	// [D1 11/09] [Client] Rep3SwapchainLogic: swapchain = backbuffer x %/100 (100 = khung logic, HWC phong len man; 0 = cua so nhu cu)
 extern unsigned g_uJxKhungGiongBo, g_uJxKhungGiongCoTai, g_uJxKhungGiongEp, g_uJxKhungGiongDem, g_uJxKhungGiongChuoiMax, g_uJxKhungTrinhChieu;	// [BKG 11/09] dem trong ky ([VE-BKG])
 extern unsigned g_uJxNapKhungBoVe, g_uJxNapKhungBoVeKhung, g_uJxNapKhungDongBo, g_uJxNapKhungGiao, g_uJxNapKhungTruocSo, g_uJxNapKhungXong, g_uJxNapKhungHong, g_uJxNapKhungBo, g_uJxNapKhungChoMax;
 extern double g_dJxNapKhungTre, g_dJxNapKhungTreMax, g_dJxNapNenBan, g_dJxNapKhungAp, g_dJxNapKhungApMax; extern unsigned g_uJxNapKhungApKhung;
