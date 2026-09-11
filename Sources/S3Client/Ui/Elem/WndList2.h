@@ -74,6 +74,10 @@ private:
 	unsigned int	m_uIconLineColor;
 	unsigned int	m_uNodeLineColor;
 	int				m_nFontSize;			//显示字体大小
+#ifdef JX_ANDROID
+	virtual int	UiLayFont() const { return m_nFontSize; }	// [PHONGBANG 14/09] KWndWindow::UiPhongCay doi co chu
+	virtual void	UiDatFont(int nFont) { m_nFontSize = nFont; }
+#endif
 
 	KWndScrollBar  *m_pScrollbar;
 private:

@@ -36,6 +36,8 @@ extern "C" void JxPlayerBar_NeoNhomTrenLai(void);	// UiPlayerBar.cpp
 #define	SUAGD_CO_KHONGAN	2		// khong cho giau
 #define	SUAGD_CO_KHONGKEP	4		// khong kep vao vung an toan
 #define	SUAGD_CO_GOPCON		8		// [SUAGD 13/09 f] hinh = gop ca o con dang hien (khung goc nho hon phan hien: muc tieu, thanh tren)
+#define	SUAGD_CO_PHONGBANG	16		// [PHONGBANG 14/09] bang tinh nang: phong CA CAY theo man hinh luc mo (khong chum tay)
+static int	s_nPhongBang = 1400;		// [Ui] PhongBang: tran phan nghin cua phep phong bang (0 = tat)
 #define	SUAGD_PAD_O			64		// o nut cua bang chinh (mui ten, +, -); chu font 16 -> "Hoan tac" 8 chu x 8 px vua khit
 #define	SUAGD_PAD_CACH		5
 #define	SUAGD_PAD_TIEUDE	24		// hang tieu de (keo bang), chu 16
@@ -807,14 +809,83 @@ static int SuaGd_TimORieng(const char* pszKhoa)
 	return -1;
 }
 
+//---------------------------------------------------------------- [PHONGBANG 14/09] phong bang theo man hinh
+//	Chu 14/09: 'cac o item trong hanh trang - ruong - Auto - cac bang tinh nang ... giu nguyen hien tai, chi phong to theo kich
+//	thuoc moi dien thoai ... chum 2 ngon rat bat tien'. Bang co SUAGD_CO_PHONGBANG (danh sach trang ,23) luc duoc ap bo cuc:
+//	k = min(khung rong / rong goc, khung cao / cao goc) x 0,96, chan tran [Ui] PhongBang -> KWndWindow::UiPhongCay(k), roi dich
+//	bang de giu tam nhu truoc khi phong va kep trong khung. Vi tri trong BANG BO CUC = vi tri o co GOC (lech giu tam ghi vao
+//	m_nUiPhongLech, GhiLaiO cong lai) nen ap lai / keo / kep vung an toan khong bi troi. Tinh tu GOC nen ap lai van mot ket qua.
+static void SuaGd_DocCauHinh();
+static int UiToaDoM_PhongBang(KWndWindow* p, const char* pszKhoa)
+{
+	int i, nCo, w0, h0, k, kW, kH, l, t, wS, hS, nLechX, nLechY;
+	SuaGd_DocCauHinh();
+	i = SuaGd_TimMuc(pszKhoa);
+	nCo = (i >= 0) ? s_DS[i].nCo : 0;
+	if (!(nCo & SUAGD_CO_PHONGBANG) || s_nPhongBang < 1000)
+		return 0;
+	w0 = p->UiLayGocW();
+	h0 = p->UiLayGocH();
+	if (w0 <= 0 || h0 <= 0 || SCREEN_WIDTH <= 0 || SCREEN_HEIGHT <= 0)
+		return 0;
+	kW = SCREEN_WIDTH * 1000 / w0;
+	kH = SCREEN_HEIGHT * 1000 / h0;
+	k = (kW < kH ? kW : kH) * 96 / 100;
+	if (k > s_nPhongBang)
+		k = s_nPhongBang;
+	if (k < 1020)
+		k = 1000;
+	if (k == 1000 && p->UiLayPhongCay() == 1000)
+		return 0;
+	p->GetPosition(&l, &t);	// vi tri bo cuc = vi tri o co goc
+	p->UiPhongCay(k);
+	p->GetSize(&wS, &hS);
+	nLechX = (wS - w0) / 2;	// giu tam nhu truoc khi phong
+	nLechY = (hS - h0) / 2;
+	l -= nLechX;
+	t -= nLechY;
+	if (l + wS > SCREEN_WIDTH)
+		l = SCREEN_WIDTH - wS;
+	if (t + hS > SCREEN_HEIGHT)
+		t = SCREEN_HEIGHT - hS;
+	if (l < 0)
+		l = 0;
+	if (t < 0)
+		t = 0;
+	p->SetPosition(l, t);
+	p->UiDatPhongLech(nLechX, nLechY);
+	p->UiNhoViTri();
+	g_DebugLog("[PHONGBANG] %s goc %dx%d khung %dx%d -> k=%d -> %dx%d tai %d,%d (lech %d,%d)", pszKhoa, w0, h0, SCREEN_WIDTH, SCREEN_HEIGHT, k, wS, hS, l, t, nLechX, nLechY);
+	return 1;
+}
+//	o CON nam trong mot bang da phong ca cay -> ti le cay cua to tien gan nhat (1000 = khong)
+static int UiToaDoM_KCayCha(KWndWindow* p)
+{
+	for (KWndWindow* q = p ? p->GetParent() : NULL; q; q = q->GetParent())
+		if (q->UiLayPhongCay() != 1000)
+			return q->UiLayPhongCay();
+	return 1000;
+}
 //---------------------------------------------------------------- ap / ghi bang
 static void SuaGd_ApKWnd(KWndWindow* p, int nLeft, int nTop, int nTiLe, int nAn)
 {
-	p->SetPosition(nLeft, nTop);
+	int nKCay = UiToaDoM_KCayCha(p);	// [PHONGBANG 14/09] o con cua bang da phong: toa do / ti le trong ho so hoa so theo cay
+	if (nKCay != 1000)
+	{
+		p->UiDatGocViTri(nLeft, nTop);
+		p->SetPosition(nLeft * nKCay / 1000, nTop * nKCay / 1000);
+	}
+	else
+		p->SetPosition(nLeft, nTop);
 	p->UiNhoViTri();
 	if (!CamCoGian(p) && nTiLe > 0 && (nTiLe != 1000 || p->UiLayTiLe() != 1000))
-		p->UiDatTiLe(nTiLe);
+		p->UiDatTiLe(nTiLe * nKCay / 1000);
 	p->UiDatAn(nAn ? 1 : 0);
+	{	// [PHONGBANG 14/09] bang: phong ca cay theo man hinh (ke ca khi trinh chinh tra mac dinh / doi ho so)
+		char szKhoaPB[UITOADO_CO_KHOA];
+		if (TaoKhoaTuOCon(p, szKhoaPB, sizeof(szKhoaPB)))
+			UiToaDoM_PhongBang(p, szKhoaPB);
+	}
 }
 
 static void SuaGd_GhiBangORieng(int i)
@@ -1020,6 +1091,7 @@ static void SuaGd_DocCauHinh()
 	s_bDaDoc = true;
 	g_GetFullPath(szDuongDan, (char*)UITOADO_CAUHINH);
 	s_nBatDinh = GetPrivateProfileInt("Ui", "BatDinh", 1, szDuongDan);
+	s_nPhongBang = GetPrivateProfileInt("Ui", "PhongBang", 1400, szDuongDan);	// [PHONGBANG 14/09]
 	s_bChu = GetPrivateProfileInt("Ui", "SuaToaDoChu", 0, szDuongDan);
 	s_nNhatKyBoCucM = GetPrivateProfileInt("Ui", "NhatKyBoCuc", 0, szDuongDan);
 }

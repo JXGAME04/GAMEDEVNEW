@@ -94,6 +94,10 @@ protected:
 	int				m_nUnitWidth;		
 	int				m_nUnitHeight;		
 	int				m_nUnitBorder;		
+#ifdef JX_ANDROID
+	int				m_nUiGocBorder;	// [PHONGBANG 14/09] vien o goc de tinh lai khi phong (-1 = chua chup)
+	virtual void	UiPhongRieng(int nTiLe);
+#endif
 	int				m_nNumObjects;		
 	KUiDraggedObject* m_pObjects;		
 	int				m_nMouseOverObj;

@@ -58,6 +58,10 @@ protected:
 
 private:
 	int				m_nFontSize;		//字体大小
+#ifdef JX_ANDROID
+	virtual int	UiLayFont() const { return m_nFontSize; }	// [PHONGBANG 14/09] KWndWindow::UiPhongCay doi co chu
+	virtual void	UiDatFont(int nFont) { m_nFontSize = nFont; }
+#endif
 	unsigned int	m_TextColor;		//文字颜色
 	unsigned int	m_BorderColor;		//文字边缘颜色
 

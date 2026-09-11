@@ -52,6 +52,10 @@ private:
 private:
 	unsigned int	m_Flag;
 	int			m_nFontSize;				//字体大小
+#ifdef JX_ANDROID
+	virtual int	UiLayFont() const { return m_nFontSize; }	// [PHONGBANG 14/09] KWndWindow::UiPhongCay doi co chu
+	virtual void	UiDatFont(int nFont) { m_nFontSize = nFont; }
+#endif
 	char*		m_pText;					//文本缓冲区指针
 	int			m_nBufferSize;				//文本缓冲区指针的长度
 	int			m_nLimitText;				//字符串长度（BYTE）限制，不包括字符串结束符号。

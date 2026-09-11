@@ -45,6 +45,15 @@ KWndWindow::KWndWindow()
 	m_nUiTiLe		= 1000;			// [UITOADO] 1000 = 100%, chua doi
 	m_nUiGocW		= 0;
 	m_nUiGocH		= 0;
+#ifdef JX_ANDROID
+	m_nUiGocLeft	= 0;		// [PHONGBANG 14/09]
+	m_nUiGocTop		= 0;
+	m_bUiGocViTri	= 0;
+	m_nUiGocFont	= 0;
+	m_nUiPhongCay	= 1000;
+	m_nUiPhongLechX	= 0;
+	m_nUiPhongLechY	= 0;
+#endif
 
 	m_bMoving = false;
 	m_nLastMouseHoldPosX = m_nLastMouseHoldPosY = 0;
@@ -284,6 +293,45 @@ void KWndWindow::UiDatTiLeQuanhTam(int nTiLe)
 	UiDatTiLe(nTiLe);
 	if (m_Width != nW0 || m_Height != nH0)
 		SetPosition(m_Left - (m_Width - nW0) / 2, m_Top - (m_Height - nH0) / 2);
+}
+//--------------------------------------------------------------------------
+//	[PHONGBANG 14/09] Chu: 'cac o item trong hanh trang - ruong - Auto - cac bang tinh nang ... giu nguyen hien tai, chi
+//	phong to theo kich thuoc moi dien thoai'. UiDatTiLe chi phong MOT cua so (con van o cho cu, chu van nho) nen bang bi
+//	danh SUAGD_CO_KHONGPHONG. Ham nay phong ca CAY: chup goc mot lan (W/H qua m_nUiGocW/H, vi tri tuong doi cha, co chu)
+//	TRUOC khi cha doi co (SetSize cua cha keo o con co WND_S_*_WITH_R/B_EDGE), roi tinh tu goc -> ap lai bao nhieu lan
+//	cung ra mot ket qua. Moi o: chu truoc (UiDatFont) -> co (UiDatTiLe, anh gian that qua m_nUiTiLe) -> UiPhongRieng
+//	(luoi vat pham tinh lai o); cha truoc con, con dat lai vi tri tuong doi tu goc. Vi tri cua CHINH bang do bo cuc dat.
+//--------------------------------------------------------------------------
+static void UiPhongChupGoc(KWndWindow* p)
+{
+	for (KWndWindow* c = p->GetFirstChild(); c; c = c->GetNextWnd())
+	{
+		c->UiChupGocViTri();
+		c->UiChupGocCo();
+		UiPhongChupGoc(c);
+	}
+}
+static void UiPhongMotO(KWndWindow* p, int nTiLe)
+{
+	p->UiPhongChu(nTiLe);
+	p->UiDatTiLe(nTiLe);
+	p->UiPhongRieng(nTiLe);
+	p->UiGhiPhongCay(nTiLe);
+	for (KWndWindow* c = p->GetFirstChild(); c; c = c->GetNextWnd())
+	{
+		c->UiDatViTriTuGoc(nTiLe);
+		UiPhongMotO(c, nTiLe);
+	}
+}
+void KWndWindow::UiPhongCay(int nTiLe)
+{
+	if (nTiLe < 500)
+		nTiLe = 500;
+	if (nTiLe > 3000)
+		nTiLe = 3000;
+	UiChupGocCo();
+	UiPhongChupGoc(this);
+	UiPhongMotO(this, nTiLe);
 }
 #endif
 

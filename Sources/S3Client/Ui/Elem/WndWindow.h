@@ -73,6 +73,17 @@ protected:
 	int			m_nUiTiLe;
 	int			m_nUiGocW;
 	int			m_nUiGocH;
+#ifdef JX_ANDROID
+	// [PHONGBANG 14/09] phong ca CAY CON cua mot bang theo man hinh: vi tri goc (tuong doi cha) va co chu goc chup mot lan;
+	// m_nUiPhongLech = bang da dich de giu tam (bo cuc ghi vi tri o co GOC = vi tri that + lech)
+	int			m_nUiGocLeft;
+	int			m_nUiGocTop;
+	int			m_bUiGocViTri;
+	int			m_nUiGocFont;
+	int			m_nUiPhongCay;		// ti le cay dang ap (1000 = chua)
+	int			m_nUiPhongLechX;
+	int			m_nUiPhongLechY;
+#endif
 
 	int			m_bMoving;
 	int			m_nLastMouseHoldPosX;
@@ -132,6 +143,24 @@ public:
 	void			ComputeFit(int nRefL, int nRefT, int* pOutL, int* pOutT);
 	// [SUAGD 13/09] dat ti le nhung giu TAM o (phong to / thu nho quanh tam -> o bam mep khong troi ra ngoai)
 	void			UiDatTiLeQuanhTam(int nTiLe);
+	// [PHONGBANG 14/09] phong ca cay con (vi tri, co, chu, luoi vat pham) theo ti le phan nghin; ap lai bao nhieu lan cung
+	// ra mot ket qua (tinh tu goc). Lop chu ghi de UiLayFont / UiDatFont; lop can tinh lai so do sau khi doi co ghi de UiPhongRieng.
+	void			UiPhongCay(int nTiLe);
+	int				UiLayPhongCay() const { return m_nUiPhongCay; }
+	void			UiGhiPhongCay(int nTiLe) { m_nUiPhongCay = nTiLe; }
+	int				UiLayGocW() const { return (m_nUiGocW || m_nUiGocH) ? m_nUiGocW : m_Width; }
+	int				UiLayGocH() const { return (m_nUiGocW || m_nUiGocH) ? m_nUiGocH : m_Height; }
+	void			UiChupGocCo() { if (m_nUiGocW == 0 && m_nUiGocH == 0) { m_nUiGocW = m_Width; m_nUiGocH = m_Height; } }
+	void			UiChupGocViTri() { if (!m_bUiGocViTri) { m_nUiGocLeft = m_Left; m_nUiGocTop = m_Top; m_bUiGocViTri = 1; } }
+	void			UiDatGocViTri(int nLeft, int nTop) { m_nUiGocLeft = nLeft; m_nUiGocTop = nTop; m_bUiGocViTri = 1; }
+	void			UiDatViTriTuGoc(int nTiLe) { if (m_bUiGocViTri) SetPosition(m_nUiGocLeft * nTiLe / 1000, m_nUiGocTop * nTiLe / 1000); }
+	void			UiPhongChu(int nTiLe) { int f = UiLayFont(); if (f > 0) { if (!m_nUiGocFont) m_nUiGocFont = f; f = m_nUiGocFont * nTiLe / 1000; UiDatFont(f < 8 ? 8 : f); } }
+	void			UiDatPhongLech(int nX, int nY) { m_nUiPhongLechX = nX; m_nUiPhongLechY = nY; }
+	int				UiLayPhongLechX() const { return m_nUiPhongLechX; }
+	int				UiLayPhongLechY() const { return m_nUiPhongLechY; }
+	virtual int	UiLayFont() const { return 0; }
+	virtual void	UiDatFont(int nFont) {}
+	virtual void	UiPhongRieng(int nTiLe) {}
 #endif
 	KWndWindow*		GetNextWnd() const { return m_pNextWnd; }		//得到后一个兄弟窗口
 	KWndWindow*		GetParent() const { return m_pParentWnd; }		//得到父窗口

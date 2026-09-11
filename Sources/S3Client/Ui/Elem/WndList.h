@@ -81,6 +81,10 @@ private:
 	unsigned int	m_HighLightBorderColor;	//高亮度显示的数据项文本的边缘颜色
 	unsigned int	m_uSelItemBgColor;		//选中项的背景色，如果值为0xffffffff表示无背景色
 	int				m_nFontSize;			//显示字体大小
+#ifdef JX_ANDROID
+	virtual int	UiLayFont() const { return m_nFontSize; }	// [PHONGBANG 14/09] KWndWindow::UiPhongCay doi co chu
+	virtual void	UiDatFont(int nFont) { m_nFontSize = nFont; }
+#endif
 	
 	int				m_nNumColumn;			//可以同时显示几列数据
 	unsigned int	m_uIsItemSelStatus;		//纪录每个项是否被选择

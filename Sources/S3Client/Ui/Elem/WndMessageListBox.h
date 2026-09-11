@@ -45,6 +45,10 @@ public:
 	void UpdateDataP();
 	void SetFontSize(int nFontSize);
 	int GetFontSize()	{return m_nFontSize;}
+#ifdef JX_ANDROID
+	virtual int	UiLayFont() const { return m_nFontSize; }	// [PHONGBANG 14/09] KWndWindow::UiPhongCay doi co chu
+	virtual void	UiDatFont(int nFont) { m_nFontSize = nFont; }
+#endif
 	// [ANDROID 09/09 CHAM] BUOC DONG cua danh sach: ve, do trung va cuon deu dung ham nay nen
 	// khong bao gio lech nhau. Tren dien thoai cong them cho dong cao hon, ngon tay de cham.
 #ifdef JX_ANDROID

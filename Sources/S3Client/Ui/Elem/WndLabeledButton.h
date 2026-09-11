@@ -21,6 +21,10 @@ private:
 	char	m_Label[32];		//标题文字
 	int		m_nLabelLen;		//标题文字串的长度，不包括结束符号
 	int		m_nFontSize;		//标题文字的大小
+#ifdef JX_ANDROID
+	virtual int	UiLayFont() const { return m_nFontSize; }	// [PHONGBANG 14/09] KWndWindow::UiPhongCay doi co chu
+	virtual void	UiDatFont(int nFont) { m_nFontSize = nFont; }
+#endif
 	int		m_nLabelXOffset;	//add by Fong Kieu
 	int		m_nLabelYOffset;	//标题文字向下偏移的量
 	unsigned int m_FontColor;	//标题文字的颜色

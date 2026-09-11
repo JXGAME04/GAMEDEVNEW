@@ -84,6 +84,8 @@ static void UiToaDoM_KhongGian(int* pnL, int* pnT, int* pnW, int* pnH);	// khong
 static int  s_nGhiKgL = 0, s_nGhiKgT = 0;	// goc vung an toan luc GhiTepVao (dung truoc cho .inc)
 static bool UiToaDoM_LaGoc(const char* pszKhoa);
 static int  UiToaDoM_NhatKy(void);	// [SUAGD 13/09 g] muc [Ui] NhatKyBoCuc (2 = ghi tung o duoc ap, tim o bi nhay ve cho cu)
+static int  UiToaDoM_PhongBang(KWndWindow* p, const char* pszKhoa);	// [PHONGBANG 14/09] bang: phong ca cay theo man hinh luc mo
+static int  UiToaDoM_KCayCha(KWndWindow* p);	// [PHONGBANG 14/09] o con trong bang da phong -> ti le cay
 static int  UiToaDoM_HoKhung();
 static bool UiToaDoM_CoTep(const char* pszTep);
 static void UiToaDoM_SauMacDinh();
@@ -788,6 +790,15 @@ static void ApMotO(KWndWindow* pWnd, int nMuc)
 {
 	if (nMuc < 0)
 		return;
+#ifdef JX_ANDROID
+	int nKCay = UiToaDoM_KCayCha(pWnd);	// [PHONGBANG 14/09] o con nam trong bang da phong ca cay -> toa do / ti le hoa so theo cay
+	if (nKCay != 1000)
+	{
+		pWnd->UiDatGocViTri(s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
+		pWnd->SetPosition(s_Bang[nMuc].nLeft * nKCay / 1000, s_Bang[nMuc].nTop * nKCay / 1000);
+	}
+	else
+#endif
 	pWnd->SetPosition(s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
 	//	KWndMovingImage chup vi tri goc cua hoat hinh mo cua so luc Init, tuc
 	//	TRUOC luc nay => phai bao no chup lai, khong thi mo/dong lai la nhay ve cho cu
@@ -796,9 +807,17 @@ static void ApMotO(KWndWindow* pWnd, int nMuc)
 	if (UiToaDoM_NhatKy() >= 2)	// [SUAGD 13/09 g] NhatKyBoCuc=2: ghi tung o duoc ap (tim o bi nhay ve cho cu)
 		g_DebugLog("[UITOADO] ap %s -> %d,%d", s_Bang[nMuc].szKhoa, s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
 #endif
+#ifdef JX_ANDROID
+	if (s_Bang[nMuc].nTiLe > 0 && s_Bang[nMuc].nTiLe != 1000 && !CamCoGian(pWnd))
+		pWnd->UiDatTiLe(s_Bang[nMuc].nTiLe * nKCay / 1000);
+#else
 	if (s_Bang[nMuc].nTiLe > 0 && s_Bang[nMuc].nTiLe != 1000 && !CamCoGian(pWnd))
 		pWnd->UiDatTiLe(s_Bang[nMuc].nTiLe);
+#endif
 	pWnd->UiDatAn(s_Bang[nMuc].nCo & UITOADO_CO_AN);
+#ifdef JX_ANDROID
+	UiToaDoM_PhongBang(pWnd, s_Bang[nMuc].szKhoa);	// [PHONGBANG 14/09] bang (co 16 danh sach trang): phong ca cay theo man hinh
+#endif
 }
 
 static void ApChoCay(const char* pszLop, KWndWindow* pWnd)
@@ -1179,8 +1198,28 @@ static void GhiLaiO(KWndWindow* pWnd, const char* pszKhoa)
 	if (pWnd == NULL || pszKhoa == NULL || pszKhoa[0] == 0)
 		return;
 	pWnd->GetPosition(&nLeft, &nTop);
+#ifdef JX_ANDROID
+	{	// [PHONGBANG 14/09] bang da phong: bang bo cuc giu vi tri o co GOC (+ lech giu tam) va TiLe 1000 (tu tinh lai);
+		// o con trong bang da phong: chia ti le cay (lam tron) de ap lai nhan dung
+		int nKCay = UiToaDoM_KCayCha(pWnd);
+		int nTiLe = pWnd->UiLayTiLe();
+		nLeft += pWnd->UiLayPhongLechX();
+		nTop += pWnd->UiLayPhongLechY();
+		if (pWnd->UiLayPhongCay() != 1000)
+			nTiLe = 1000;
+		else if (nKCay != 1000)
+			nTiLe = (nTiLe * 1000 + nKCay / 2) / nKCay;
+		if (nKCay != 1000)
+		{
+			nLeft = (nLeft * 1000 + (nLeft >= 0 ? nKCay / 2 : -nKCay / 2)) / nKCay;
+			nTop = (nTop * 1000 + (nTop >= 0 ? nKCay / 2 : -nKCay / 2)) / nKCay;
+		}
+		DatKhoa(pszKhoa, nLeft, nTop, nTiLe, pWnd->UiDangAn() ? UITOADO_CO_AN : 0);
+	}
+#else
 	DatKhoa(pszKhoa, nLeft, nTop, pWnd->UiLayTiLe(),
 		pWnd->UiDangAn() ? UITOADO_CO_AN : 0);
+#endif
 }
 
 //--------------------------------------------------------------------------

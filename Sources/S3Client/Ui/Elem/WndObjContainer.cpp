@@ -437,6 +437,9 @@ KWndObjectMatrix::KWndObjectMatrix()
 	m_nNUmUnitVert = 1;
 	m_nUnitWidth = 1;
 	m_nUnitHeight = 1;
+#ifdef JX_ANDROID
+	m_nUiGocBorder = -1;	// [PHONGBANG 14/09]
+#endif
 	m_nNumObjects = 0;
 	m_pObjects = NULL;
 	m_nMouseOverObj = -1;
@@ -469,6 +472,30 @@ void KWndObjectMatrix::Clone(KWndObjectMatrix* pCopy)
 	}
 }
 
+#ifdef JX_ANDROID
+// [PHONGBANG 14/09] sau khi UiPhongCay doi co: o = co MOI / so o (y nhu Init), vien o theo goc -> vat pham ve gian theo o
+// (PaintWindow: m_nUnitWidth * DataW - m_nUnitBorder * 2). Tinh tu goc nen ap lai van ra mot ket qua.
+void KWndObjectMatrix::UiPhongRieng(int nTiLe)
+{
+	if (m_nUiGocBorder < 0)
+		m_nUiGocBorder = m_nUnitBorder;
+	if (m_nNumUnitHori <= 0 || m_nNUmUnitVert <= 0)
+		return;
+	m_nUnitWidth = UiLayGocW() * nTiLe / 1000 / m_nNumUnitHori;
+	if (m_nUnitWidth < 1)
+		m_nUnitWidth = 1;
+	m_nUnitHeight = UiLayGocH() * nTiLe / 1000 / m_nNUmUnitVert;
+	if (m_nUnitHeight < 1)
+		m_nUnitHeight = 1;
+	m_nUnitBorder = m_nUiGocBorder * nTiLe / 1000;
+	if (m_nUnitBorder >= m_nUnitWidth)
+		m_nUnitBorder = m_nUnitWidth - 1;
+	if (m_nUnitBorder >= m_nUnitHeight)
+		m_nUnitBorder = m_nUnitHeight - 1;
+	if (m_nUnitBorder < 0)
+		m_nUnitBorder = 0;
+}
+#endif
 int KWndObjectMatrix::Init(KIniFile* pIniFile, const char* pSection)
 {
 	if (KWndWindow::Init(pIniFile, pSection))
