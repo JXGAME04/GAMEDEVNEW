@@ -294,7 +294,13 @@ static UINT RgAtlasBin(UINT v)
 	return 512;
 }
 
-CAtlasMgrGpu::CAtlasMgrGpu(CDevGpu* pDev) { m_pDev = pDev; m_pageSize = 1024; }
+CAtlasMgrGpu::CAtlasMgrGpu(CDevGpu* pDev)
+{
+	m_pDev = pDev; m_pageSize = 1024;
+#ifdef JX_ANDROID
+	if (g_nJxAtlasTrang == 2048 || g_nJxAtlasTrang == 4096) m_pageSize = (UINT)g_nJxAtlasTrang;	// [VE 11/09 e] [Client] Rep3AtlasTrang
+#endif
+}
 CAtlasMgrGpu::~CAtlasMgrGpu() { ReleaseAll(); }
 
 void CAtlasMgrGpu::ReleaseAll()
@@ -332,9 +338,18 @@ CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
 	if (!pTex) { RgLog("atlas: CreateGPUTexture trang %ux%u fmt %d that bai: %s", m_pageSize, m_pageSize, (int)fmt, SDL_GetError()); return NULL; }
 	m_pDev->QueueZeroUpload(pTex, 0, 0, m_pageSize, m_pageSize, bpp);	// trang moi = 0 (khong de rac; vien o khi loc tuyen tinh)
 	CAtlasPageGpu* p = new CAtlasPageGpu();
+#ifdef JX_ANDROID
+	p->m_yTiep = 0;
+	if (g_nJxAtlasKe) { p->m_pTex = pTex; p->m_fmt = fmt; p->m_bpp = bpp; p->m_binH = 0; p->m_rows = 0; p->m_used = 0; }	// [VE 11/09 e] trang xep ke: chua co hang
+	else
+	{
+#endif
 	p->m_pTex = pTex; p->m_fmt = fmt; p->m_bpp = bpp; p->m_binH = binH; p->m_rows = m_pageSize / binH; p->m_used = 0;
 	p->m_free.resize(p->m_rows);
 	for (UINT r = 0; r < p->m_rows; r++) p->m_free[r].push_back(std::make_pair(0u, m_pageSize));	// ca hang trong
+#ifdef JX_ANDROID
+	}
+#endif
 	m_pages.push_back(p);
 	g_uRep3AtlasPages++; g_uRep3AtlasBytes += (unsigned __int64)m_pageSize * m_pageSize * bpp;
 	return p;
@@ -342,6 +357,9 @@ CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
 
 bool CAtlasMgrGpu::Alloc(UINT w, UINT h, SDL_GPUTextureFormat fmt, CAtlasPageGpu** ppPage, UINT* pX, UINT* pY)
 {
+#ifdef JX_ANDROID
+	if (g_nJxAtlasKe) return JxAllocKe(w, h, fmt, ppPage, pX, pY);	// [VE 11/09 e]
+#endif
 	UINT binH = RgAtlasBin(h);
 	if (h > binH || w > m_pageSize) return false;
 	for (int lan = 0; lan < 2; lan++)
@@ -372,6 +390,9 @@ bool CAtlasMgrGpu::Alloc(UINT w, UINT h, SDL_GPUTextureFormat fmt, CAtlasPageGpu
 
 void CAtlasMgrGpu::Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 {
+#ifdef JX_ANDROID
+	if (g_nJxAtlasKe) { JxFreeKe(pPage, x, y, w); return; }	// [VE 11/09 e]
+#endif
 	if (!pPage || pPage->m_binH == 0) return;
 	UINT r = y / pPage->m_binH;
 	if (r >= pPage->m_rows) return;
@@ -402,6 +423,91 @@ void CAtlasMgrGpu::Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 }
 
 // ---------------------------------------------------------------- CSurfGpu
+#ifdef JX_ANDROID
+// [VE 11/09 e] atlas xep KE theo dinh dang: trang chi phan biet dinh dang; ke (hang) cao = bin cua khung, mo dan tu y = 0 den het trang.
+// Khung giai ma gan nhau (cung NPC / cung dam dong) roi vao cung trang -> lenh ve lien tiep cung texture0 -> gop duoc (Fold 7 09:31:
+// 86 % quad khong gop la do doi trang). Ke cuoi trang rong -> thu lai (m_yTiep lui); trang rong -> xep lai tu dau; giu mot trang rong/dinh dang.
+bool CAtlasMgrGpu::JxAllocKe(UINT w, UINT h, SDL_GPUTextureFormat fmt, CAtlasPageGpu** ppPage, UINT* pX, UINT* pY)
+{
+	const UINT binH = RgAtlasBin(h);
+	if (h > binH || w > m_pageSize) return false;
+	for (int lan = 0; lan < 2; lan++)
+	{
+		for (size_t i = 0; i < m_pages.size(); i++)
+		{
+			CAtlasPageGpu* p = m_pages[i];
+			if (p->m_fmt != fmt) continue;
+			for (size_t k = 0; k < p->m_ke.size(); k++)
+			{	// ke da co cung chieu cao: first-fit
+				CAtlasPageGpu::JxKe& ke = p->m_ke[k];
+				if (ke.h != binH) continue;
+				for (size_t d = 0; d < ke.free.size(); d++)
+				{
+					if (ke.free[d].second - ke.free[d].first < w) continue;
+					const UINT x = ke.free[d].first;
+					ke.free[d].first += w;
+					if (ke.free[d].first >= ke.free[d].second) ke.free.erase(ke.free.begin() + d);
+					ke.used++; p->m_used++;
+					*ppPage = p; *pX = x; *pY = ke.y;
+					return true;
+				}
+			}
+			if (p->m_yTiep + binH <= m_pageSize)
+			{	// mo ke moi
+				CAtlasPageGpu::JxKe ke; ke.y = p->m_yTiep; ke.h = binH; ke.used = 1;
+				if (w < m_pageSize) ke.free.push_back(std::make_pair(w, m_pageSize));
+				p->m_yTiep += binH; p->m_ke.push_back(ke); p->m_used++;
+				*ppPage = p; *pX = 0; *pY = ke.y;
+				return true;
+			}
+		}
+		if (!NewPage(0, fmt)) return false;	// lan 2: thu lai voi trang moi
+	}
+	return false;
+}
+
+void CAtlasMgrGpu::JxFreeKe(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
+{
+	if (!pPage) return;
+	for (size_t k = 0; k < pPage->m_ke.size(); k++)
+	{
+		CAtlasPageGpu::JxKe& ke = pPage->m_ke[k];
+		if (ke.y != y) continue;
+		std::vector<std::pair<UINT, UINT> >& fr = ke.free;
+		const UINT x0 = x, x1 = x + w;
+		size_t d = 0;
+		while (d < fr.size() && fr[d].first < x0) d++;
+		fr.insert(fr.begin() + d, std::make_pair(x0, x1));
+		if (d + 1 < fr.size() && fr[d].second == fr[d + 1].first) { fr[d].second = fr[d + 1].second; fr.erase(fr.begin() + d + 1); }
+		if (d > 0 && fr[d - 1].second == fr[d].first) { fr[d - 1].second = fr[d].second; fr.erase(fr.begin() + d); }
+		if (ke.used) ke.used--;
+		break;
+	}
+	while (!pPage->m_ke.empty() && pPage->m_ke.back().used == 0)
+	{	// ke cuoi trang rong: thu lai de mo ke cao khac
+		pPage->m_yTiep = pPage->m_ke.back().y;
+		pPage->m_ke.pop_back();
+	}
+	if (pPage->m_used) pPage->m_used--;
+	if (pPage->m_used == 0)
+	{
+		pPage->m_ke.clear(); pPage->m_yTiep = 0;
+		int nEmptySameFmt = 0;
+		for (size_t i = 0; i < m_pages.size(); i++)
+			if (m_pages[i] != pPage && m_pages[i]->m_fmt == pPage->m_fmt && m_pages[i]->m_used == 0) nEmptySameFmt++;
+		if (nEmptySameFmt >= 1)
+		{	// giu toi da MOT trang rong moi dinh dang; trang rong thu hai tra lai GPU (sau khung: DeferRelease)
+			for (size_t i = 0; i < m_pages.size(); i++)
+				if (m_pages[i] == pPage) { m_pages.erase(m_pages.begin() + i); break; }
+			if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
+			if (g_uRep3AtlasPages) g_uRep3AtlasPages--;
+			g_uRep3AtlasBytes -= (unsigned __int64)m_pageSize * m_pageSize * pPage->m_bpp;
+			delete pPage;
+		}
+	}
+}
+#endif
+
 CSurfGpu::CSurfGpu(CDevGpu* pDev, RgSurfKind kind, CTexGpu* pTex, UINT w, UINT h, D3DFORMAT fmt)
 {
 	m_ref = 1; m_pDev = pDev; m_kind = kind; m_pTex = pTex; m_w = w; m_h = h; m_fmt = fmt; m_pCpu = NULL; m_pitch = RgPitch(fmt, w);

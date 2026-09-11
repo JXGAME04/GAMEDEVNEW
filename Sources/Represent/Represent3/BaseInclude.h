@@ -74,6 +74,7 @@ extern int g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungA
 extern int g_nJxAnhBoVeNen;	// 1 = GetImage vua tra NULL vi khung dang nap o luong nen (Rep3AnhNullGhi bo qua, khong tinh la anh thieu)
 extern int g_nJxHoiKhongDe;	// [VE 11/09 d] [Client] NapHoiKhongDe: 1 = hoi kich thuoc sprite NPC dang nap o luong nen -> tra 'chua co' (khong nap dong bo de len)
 extern unsigned g_uJxNapKhungRong, g_uJxHoiTre;	// [VE 11/09 d] khung rong/hong o luong nen (khong giao lai); so lan hoi NPC dang nap tra 'chua co'
+extern int g_nJxAtlasKe, g_nJxAtlasTrang;	// [VE 11/09 e] [Client] Rep3AtlasKe: 1 = atlas xep ke theo dinh dang (mot trang nhieu hang bin); Rep3AtlasTrang: co trang 1024/2048/4096
 extern unsigned g_uJxNapKhungBoVe, g_uJxNapKhungBoVeKhung, g_uJxNapKhungDongBo, g_uJxNapKhungGiao, g_uJxNapKhungTruocSo, g_uJxNapKhungXong, g_uJxNapKhungHong, g_uJxNapKhungBo, g_uJxNapKhungChoMax;
 extern double g_dJxNapKhungTre, g_dJxNapKhungTreMax, g_dJxNapNenBan, g_dJxNapKhungAp, g_dJxNapKhungApMax; extern unsigned g_uJxNapKhungApKhung;
 extern Rep3NapDo g_jxNapNgoaiVe;	// nap dong bo NGOAI luc ve (hoi kich thuoc / alpha tu logic) trong ky

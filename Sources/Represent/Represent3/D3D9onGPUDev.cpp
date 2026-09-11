@@ -1092,8 +1092,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		if (!m_jxZeroUploads.empty())
 		{	// [VE 11/09 d] vung 0 (trang atlas moi, o chua co ban CPU): tai tu bo dem 0 co dinh, chi memset mot lan khi tao/phinh
 			const Uint64 uZ0 = SDL_GetPerformanceCounter();
-			UINT needZ = 0;
-			for (size_t i = 0; i < m_jxZeroUploads.size(); i++) if (m_jxZeroUploads[i].bytes > needZ) needZ = m_jxZeroUploads[i].bytes;
+			const UINT needZ = 2u << 20;	// [VE 11/09 e] bo dem 0 co dinh 2 MiB (khong qua SMALL_ALLOCATION_THRESHOLD cua SDL); vung lon hon tai theo dai
 			const UINT uZeroTruoc = m_jxZeroSize;
 			RgEnsureXfer(m_pGpu, &m_pJxZeroXfer, &m_jxZeroSize, needZ, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD);
 			if (m_jxZeroSize != uZeroTruoc) m_jxZeroDaXoa = 0;
@@ -1107,9 +1106,14 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 				for (size_t i = 0; i < m_jxZeroUploads.size(); i++)
 				{
 					const RgTexUpload& u = m_jxZeroUploads[i];
-					SDL_GPUTextureTransferInfo src; memset(&src, 0, sizeof(src)); src.transfer_buffer = m_pJxZeroXfer; src.offset = 0; src.pixels_per_row = u.w; src.rows_per_layer = u.h;
-					SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.x = u.x; dst.y = u.y; dst.w = u.w; dst.h = u.h; dst.d = 1;
-					SDL_UploadToGPUTexture(cp, &src, &dst, false);
+					const UINT bppZ = u.bytes / (u.w * u.h); UINT hDai = needZ / (u.w * (bppZ ? bppZ : 4)); if (hDai == 0) hDai = 1;	// [VE 11/09 e] so hang moi dai
+					for (UINT y0 = 0; y0 < u.h; y0 += hDai)
+					{
+						const UINT hh = (u.h - y0 < hDai) ? (u.h - y0) : hDai;
+						SDL_GPUTextureTransferInfo src; memset(&src, 0, sizeof(src)); src.transfer_buffer = m_pJxZeroXfer; src.offset = 0; src.pixels_per_row = u.w; src.rows_per_layer = hh;
+						SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.x = u.x; dst.y = u.y + y0; dst.w = u.w; dst.h = hh; dst.d = 1;
+						SDL_UploadToGPUTexture(cp, &src, &dst, false);
+					}
 				}
 				m_uUploads += (unsigned)m_jxZeroUploads.size(); jxK.uZero = (unsigned)m_jxZeroUploads.size();
 			}
