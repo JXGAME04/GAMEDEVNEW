@@ -8566,6 +8566,254 @@ static int TK_RaoKet(int nMuc, int nX, int nY, UINT uCurTime)
 	return (int)(uCurTime - s_uTKRaoKetT) > TK_RAO_KET_MS;
 }
 
+// ===== (11/09) [TK-CUA] RA KHOI DOANH TRAI QUA GIUA CONG =====
+// Chu game: "WAuto khi tong kim khi tu doanh trai chay ra ngoai thi bi chay xac ben cong - khong ra
+// ngay giua cong dan toi ket trong doanh trai hoi lau moi chay ra duoc".
+// Goc: pha TKP_TRAP cu nham o thu nB = (uCurTime / 3000) % 11 doc vet trap - 3 giay doi mot o, quet tu
+// dau mut nay sang dau mut kia, KHONG xet o co di duoc khong. Vet trap do AddTrapEx2 (script/lib/
+// lib_map.lua:375-385) rai MOT VET CHEO 2 hang (nBX+i, nBY+i) va (nBX+i, nBY-1+i), i = 0..10
+// (lib_tktc.lua:651-655: tongratrai goc 1251,3529; kimratrai goc 1661,3098). Bot da do tren luoi
+// Maps/379_srv.fp (KPlayerBot.cpp:10513-10528 [TKKET4]): hanh lang trap la KHE TUONG, o trap i >= 6
+// cua kimratrai la VAT CAN. Nham vao o vat can thi A* dan toi block gan nhat = MEP CONG => nhan vat
+// le sat mep toi khi vong 3 giay may ra chon trung o di duoc.
+// Sua theo nguyen ly bot (pb_TkRaTrai) + cac bay vong soat 11/09 da bat:
+//  (1) chi nham o trap di duoc tren LUOI A* TOAN BAN DO (SubWorld[0].LuoiOCoDiDuoc) va co duong TRON
+//      VEN (FindPath == 1). KHONG dung TestBarrier: phia client no chi thay 3x3 region quanh nhan vat
+//      (KSubWorld.cpp:1856-1858 tra 0xff ngoai tap region) - phe Kim dung o Quan Y cach cong 2-3 region
+//      se doc sai ca 22 o. Luoi chua nap (-1) thi KHONG ghi nho, nhip sau dung lai.
+//  (2) trong day o di duoc bat dau tu o GIUA = giua cong.
+//  (3) trap chi chay lai khi m_TrapScriptID DOI (KNpc.cpp:12266) - ca 22 o cung mot script, nen dung
+//      yen hay di giua cac o CUNG VET khong kich lai sau khi script tu choi (10 giay dau sau khi chet:
+//      "Sau N giay nua..."). Dung sat o trap 3 giay ma van trong trai => LUI RA DIEM CHO ngoai vet
+//      (phia hau doanh, 2-4 o theo huong vuong goc voi vet) roi vao lai o trap.
+//  (4) he di duong client KHONG ra lenh di khi dich con < 64 mps (KSubWorld.cpp:1547) - nen trong
+//      khoang do ra lenh di THANG (SendCommand + SendClientCmdWalk/Run, nhu may danh van lam).
+//  (5) ket 3 giay TREN DUONG toi o trap (xa > 64 mps) thi xoay sang o khac quanh giua.
+// FindPath goi StopPath() ngay dong dau (KSubWorld.cpp:1016) nen CHI do luc chon / xoay o; do that bai
+// thi StopPath de khong de lai duong do dang; do xong xoa ea.uDTPath de DT_WalkTo di tiep ngay.
+// TK_RaoKet dung muc 5 (muc 4 da la cua TK_DichXa). Trang thai xoa moi lan TK_Pha(TKP_TRAP).
+// Khong co o nao di duoc / noi duoc -> tra 0, pha TKP_TRAP quay ve cach cu (quet doc vet).
+#define TK_CUA_SO_O		((TK_TRAP_LEN + 1) * 2)	// so o trap cua mot cong: 2 hang x 11
+static int  s_nTKCuaThe    = 0;		// cong cua the nao dang dung (1 / 2), 0 = chua dung day o
+static int  s_nTKCuaSo     = 0;		// so o trap di duoc
+static int  s_aTKCuaX[TK_CUA_SO_O];	// tam o, mps - xep doc vet cheo
+static int  s_aTKCuaY[TK_CUA_SO_O];
+static int  s_nTKCuaGiua   = -1;	// chi so o GIUA trong day o di duoc
+static int  s_nTKCuaChon   = -1;	// chi so o dang nham, -1 = chua chon
+static int  s_nTKCuaXoay   = 0;		// thu tu xoay quanh o giua cua o dang nham
+static int  s_nTKCuaBuoc   = 0;		// 0 = di vao o trap, 1 = lui ra diem cho ngoai vet
+static int  s_nTKChoX = 0, s_nTKChoY = 0;	// diem cho ngoai vet (mps), 0 = chua tim
+static UINT s_uTKCuaThuLai = 0;		// khong noi duoc o nao: moc thu do lai
+
+static void TK_CuaBo()
+{
+	s_nTKCuaThe = 0;
+	s_nTKCuaSo = 0;
+	s_nTKCuaGiua = -1;
+	s_nTKCuaChon = -1;
+	s_nTKCuaXoay = 0;
+	s_nTKCuaBuoc = 0;
+	s_nTKChoX = s_nTKChoY = 0;
+	s_uTKCuaThuLai = 0;
+}
+
+// o luoi (nOx, nOy) co nam tren vet trap cua cong sT khong (vet: y = sT.y + i - r, i 0..10, r 0..1)
+static int TK_CuaLaVet(const TKPoint& sT, int nOx, int nOy)
+{
+	const int i = nOx - (int)sT.x;
+	if (i < 0 || i > TK_TRAP_LEN)
+		return 0;
+	const int r = ((int)sT.y + i) - nOy;
+	return (r == 0 || r == 1);
+}
+
+// Thu cac o theo thu tu xoay k = nBatDau, nBatDau+1, ... quanh o giua (k=0 giua, 1 giua+1, 2 giua-1,
+// 3 giua+2 ...), bo qua o nBo. Tra chi so o dau tien co FindPath == 1 (*pnK = k), hoac -1.
+static int TK_CuaDo(int nBatDau, int nBo, int* pnK)
+{
+	for (int k = nBatDau; k <= s_nTKCuaSo * 2; ++k)
+	{
+		const int nBuoc = (k + 1) / 2;
+		const int j = s_nTKCuaGiua + ((k & 1) ? nBuoc : -nBuoc);
+		if (j < 0 || j >= s_nTKCuaSo || j == nBo)
+			continue;
+		if (SubWorld[0].FindPath(s_aTKCuaX[j], s_aTKCuaY[j]) == 1)
+		{
+			if (pnK)
+				*pnK = k;
+			return j;
+		}
+	}
+	return -1;
+}
+
+// Tim diem cho NGOAI vet, ve phia hau doanh cua minh: vuong goc voi vet (+1,+1) la (+1,-1) / (-1,+1).
+static int TK_CuaTimCho(const TKPoint& sT, int nThe, int nOx, int nOy)
+{
+	const TKPoint& sC = (nThe == 1) ? g_TKHauDoanhA : g_TKHauDoanhB;
+	const int sx = ((((int)sC.x - nOx) - ((int)sC.y - nOy)) >= 0) ? 1 : -1;	// dau tich vo huong voi (1,-1)
+	for (int d = 2; d <= 4; ++d)
+	{
+		const int cx = nOx + sx * d, cy = nOy - sx * d;
+		if (TK_CuaLaVet(sT, cx, cy))
+			continue;
+		if (SubWorld[0].LuoiOCoDiDuoc(TK_O(cx) + 16, TK_O(cy) + 16) != 1)
+			continue;
+		s_nTKChoX = TK_O(cx) + 16;
+		s_nTKChoY = TK_O(cy) + 16;
+		return 1;
+	}
+	return 0;
+}
+
+// ra lenh di THANG toi (x,y) - dung khi dich < 64 mps (he di duong client khong ra lenh o khoang do)
+static void TK_CuaDiThang(int nPlayerIdx, int x, int y)
+{
+	const int nNpc = Player[nPlayerIdx].m_nIndex;
+	if (!Player[nPlayerIdx].m_RunStatus)
+	{
+		Npc[nNpc].SendCommand(do_walk, x, y);
+		SendClientCmdWalk(x, y);
+	}
+	else
+	{
+		Npc[nNpc].SendCommand(do_run, x, y);
+		SendClientCmdRun(x, y);
+	}
+}
+
+// di toi (x,y): xa hon 64 mps dung DT_WalkTo, trong 64 mps ra lenh di thang. Tra 1 khi da toi (<= nNear).
+static int TK_CuaDiToi(int nPlayerIdx, int nX, int nY, int x, int y, int nNear, UINT uCurTime)
+{
+	const int d = g_GetDistance(nX, nY, x, y);
+	if (d <= nNear)
+		return 1;
+	if (d <= 64)
+		TK_CuaDiThang(nPlayerIdx, x, y);
+	else
+		DT_WalkTo(nPlayerIdx, x, y, nNear, uCurTime);
+	return 0;
+}
+
+// 1 = da lo viec di cua nhip nay; 0 = khong dung duoc cach moi (de pha TKP_TRAP di cach cu).
+static int TK_DiQuaCua(int nPlayerIdx, int nX, int nY, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const int nThe = (ea.nTKThe == 1) ? 1 : 2;
+	const TKPoint& sT = (nThe == 1) ? g_TKTrapA : g_TKTrapB;
+	if (s_nTKCuaThe != nThe)
+	{
+		TK_CuaBo();
+		int nChuaNap = 0;
+		for (int i = 0; i <= TK_TRAP_LEN && !nChuaNap; ++i)
+			for (int r = 0; r < 2; ++r)
+			{
+				const int x = TK_O((int)sT.x + i) + 16;
+				const int y = TK_O((int)sT.y + i - r) + 16;
+				const int q = SubWorld[0].LuoiOCoDiDuoc(x, y);
+				if (q < 0)
+				{
+					nChuaNap = 1;
+					break;
+				}
+				if (q != 1)
+					continue;
+				s_aTKCuaX[s_nTKCuaSo] = x;
+				s_aTKCuaY[s_nTKCuaSo] = y;
+				++s_nTKCuaSo;
+			}
+		if (nChuaNap)
+		{
+			TK_CuaBo();
+			AUTOLOG_EVERY(5000, "[TK-CUA] the=%d luoi A* chua nap - tam di doc vet nhu cu", nThe);
+			return 0;
+		}
+		s_nTKCuaThe = nThe;
+		s_nTKCuaGiua = s_nTKCuaSo / 2;
+		AUTOLOG("[TK-CUA] the=%d cong goc=(%d,%d): %d/%d o trap di duoc tren luoi, o giua=%d", nThe, (int)sT.x, (int)sT.y, s_nTKCuaSo, TK_CUA_SO_O, s_nTKCuaGiua);
+	}
+	if (s_nTKCuaSo <= 0)
+	{
+		AUTOLOG_EVERY(5000, "[TK-CUA] the=%d khong co o trap nao di duoc tren luoi - di doc vet nhu cu", nThe);
+		return 0;
+	}
+	if (s_nTKCuaChon < 0)
+	{
+		if (s_uTKCuaThuLai && (int)(s_uTKCuaThuLai - uCurTime) > 0)
+			return 0;
+		int k = 0;
+		const int j = TK_CuaDo(0, -1, &k);
+		ea.uDTPath = 0;
+		if (j < 0)
+		{
+			SubWorld[0].StopPath();
+			s_uTKCuaThuLai = uCurTime + 3000u;
+			AUTOLOG_EVERY(5000, "[TK-CUA] the=%d: %d o di duoc nhung khong o nao co duong tron ven me=(%d,%d) - tam di doc vet nhu cu", nThe, s_nTKCuaSo, nX, nY);
+			return 0;
+		}
+		s_nTKCuaChon = j;
+		s_nTKCuaXoay = k;
+		s_nTKCuaBuoc = 0;
+		s_nTKChoX = s_nTKChoY = 0;
+		s_nTKRaoKetMuc = 0;
+		AUTOLOG("[TK-CUA] the=%d nham o %d/%d (giua=%d, xoay=%d) toi=(%d,%d) me=(%d,%d)", nThe, j, s_nTKCuaSo, s_nTKCuaGiua, k, s_aTKCuaX[j], s_aTKCuaY[j], nX, nY);
+	}
+	const int tx = s_aTKCuaX[s_nTKCuaChon], ty = s_aTKCuaY[s_nTKCuaChon];
+	if (s_nTKCuaBuoc == 1)
+	{
+		// dang lui ra diem cho ngoai vet: toi noi (hoac dung yen 3 giay) thi quay vao o trap
+		const int nToi = TK_CuaDiToi(nPlayerIdx, nX, nY, s_nTKChoX, s_nTKChoY, 16, uCurTime);
+		if (nToi || TK_RaoKet(5, nX, nY, uCurTime))
+		{
+			s_nTKCuaBuoc = 0;
+			s_nTKRaoKetMuc = 0;
+			ea.uDTPath = 0;
+			AUTOLOG("[TK-CUA] the=%d da ra diem cho (%d,%d) me=(%d,%d) - vao lai o trap %d", nThe, s_nTKChoX, s_nTKChoY, nX, nY, s_nTKCuaChon);
+		}
+		return 1;
+	}
+	const int nXa = g_GetDistance(nX, nY, tx, ty);
+	if (TK_RaoKet(5, nX, nY, uCurTime))
+	{
+		s_nTKRaoKetMuc = 0;
+		ea.uDTPath = 0;
+		if (nXa <= 64)
+		{
+			// dung sat o trap 3 giay ma van trong trai: script tu choi hoac chua kich - lui ra ngoai vet
+			if (!s_nTKChoX && !TK_CuaTimCho(sT, nThe, (tx - 16) / 32, (ty - 16) / 32))
+			{
+				AUTOLOG_EVERY(5000, "[TK-CUA] the=%d dung o trap %d 3 giay nhung khong tim duoc diem cho ngoai vet - di doc vet nhu cu", nThe, s_nTKCuaChon);
+				return 0;
+			}
+			s_nTKCuaBuoc = 1;
+			AUTOLOG("[TK-CUA] the=%d dung o trap %d 3 giay chua ra (xa=%d) - lui ra diem cho (%d,%d) roi vao lai", nThe, s_nTKCuaChon, nXa, s_nTKChoX, s_nTKChoY);
+			TK_CuaDiToi(nPlayerIdx, nX, nY, s_nTKChoX, s_nTKChoY, 16, uCurTime);
+			return 1;
+		}
+		// ket tren duong toi o trap: xoay sang o khac quanh giua
+		int k = s_nTKCuaXoay;
+		int j = TK_CuaDo(s_nTKCuaXoay + 1, s_nTKCuaChon, &k);
+		if (j < 0)
+			j = TK_CuaDo(0, s_nTKCuaChon, &k);
+		if (j < 0)
+		{
+			SubWorld[0].StopPath();
+			s_nTKCuaChon = -1;
+			s_uTKCuaThuLai = uCurTime + 3000u;
+			AUTOLOG("[TK-CUA] the=%d ket 3 giay tren duong va khong con o nao noi duoc me=(%d,%d) - tam di doc vet nhu cu", nThe, nX, nY);
+			return 0;
+		}
+		AUTOLOG("[TK-CUA] the=%d ket 3 giay tren duong toi o %d (xa=%d) -> xoay sang o %d toi=(%d,%d)", nThe, s_nTKCuaChon, nXa, j, s_aTKCuaX[j], s_aTKCuaY[j]);
+		s_nTKCuaChon = j;
+		s_nTKCuaXoay = k;
+		s_nTKChoX = s_nTKChoY = 0;
+		DT_WalkTo(nPlayerIdx, s_aTKCuaX[j], s_aTKCuaY[j], 12, uCurTime);
+		return 1;
+	}
+	TK_CuaDiToi(nPlayerIdx, nX, nY, tx, ty, 12, uCurTime);
+	return 1;
+}
+
 // ===== (04/09, dot 5) VI TRI DICH TU MAY CHU =====
 // Chu game: "khong co cach nao xac dinh vi tri dich o trong map a? kieu nhu bot xac dinh dich bang
 // mau ten". Client chi thay dich trong MAX_SYNC_RANGE 40 o nen HOI MAY CHU theo tien le danh ba sap
@@ -8998,6 +9246,8 @@ static void TK_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 	s_nTKXQChon = -1;
 	s_nTKDichChon = -1;	// (04/09, dot 5) chon lai muc do may chu bao
 	s_uTKDichChonID = 0;
+	if (nPha == TKP_TRAP)
+		TK_CuaBo();	// (11/09) [TK-CUA] moi lan ra trai: dung lai day o trap, chon lai tu giua cong
 	ea.uTKPhaseT = uCurTime;
 	ea.uTKNext = uCurTime + 400;
 	ea.uTKDlgSeen = g_sDTCap.uDlgSeq;
@@ -9867,7 +10117,12 @@ static int TK_ToiNpc(int nPlayerIdx, const char* szTen, int nOx, int nOy, UINT u
 // DT_EnsureUnlock / DT_ChestRoomFor / DT_BagToBox cua may Da Tau.
 
 // tim OBJ ruong (Obj_Kind_Box dang DONG) gan diem (nMpsX,nMpsY) nhat trong ban kinh nR mps.
-static int TK_TimRuongObj(int nMpsX, int nMpsY, int nR)
+// (11/09) [TK-RUONG] DataID trong settings/obj/ObjData.txt cua hai hinh ruong:
+// 1 = box001.spr (Kind Prop), 2 = box002.spr (Kind Box). Client == server (md5 e9748f5a).
+// Ruong trong ca 7 thanh tao bang AddObj(1, ...) (script/startgame/thanh/*.lua) = DataID 1.
+#define TK_RUONG_HINH1	1
+#define TK_RUONG_HINH2	2
+static int TK_TimRuongObj(int nMpsX, int nMpsY, int nR, int bChiHinh)
 {
 	int nBest = 0, nBd = nR + 1;
 	int nObj = ObjSet.GetNext(0);
@@ -9879,13 +10134,24 @@ static int TK_TimRuongObj(int nMpsX, int nMpsY, int nR)
 	// "Dung dung cho nhung khong thay ruong" (CoreShell.cpp, buoc 1 cua TKP_RUONG).
 	// Toa do dich thi DUNG: g_TKRuong[4][0] = {1565,3219} khop nguyen van RUONG_ARRAY cua
 	// script\vatpham\ib\shenxingfu.lua (hang "tuong duong", cot dau).
-	// Con BA kha nang va KHONG duoc doan:
-	//   (a) client chua nap OBJ do vao ObjSet luc quet;
-	//   (b) ruong that nam xa hon 320 mps so voi moc;
-	//   (c) ruong dang o trang thai OPEN nen bi bo loc loai.
-	// Ba bien dem duoi day tach bach dung ba kha nang do, chi ton mot dong log khi THAT BAI.
-	int nTong = 0, nBox = 0, nBoxMo = 0;
-	int nGanNhat = -1, nKindGan = 0, nStateGan = 0;
+	// (11/09) [TK-RUONG] DA CHOT GOC - khong phai (a)/(b)/(c) o tren ma la BO LOC LOAI OBJ.
+	// Chu game bao lai "WAuto ve thanh toi ruong bi loi khong mo ruong". Bang chung da kiem:
+	//  - ruong trong thanh la obj DataID 1 = box001.spr, Kind=Prop: ca 7 tep script/startgame/thanh/
+	//    *.lua tao ruong bang AddObj(1, ...); log client jx_auto.log.1 co dong CLIENTADD-SLOT ...
+	//    dataid=1, va OBJ-GONE (KObj.cpp:1539) chi ghi obj kind=10 (Prop), khong obj kind=2 nao.
+	//  - chinh game nhan CA HAI loai: KPlayer::ObjMouseClick (KPlayer.cpp:3755), khau chon obj bang
+	//    chuot KObjSet.cpp:1051-1055; may chu KProtocolProcess.cpp:6772-6775 chay script Prop khi
+	//    cach <= 200 mps va trang thai OBJ_PROP_STATE_DISPLAY. Bo loc cu chi nhan Box => 12 lan quet
+	//    deu rong => "khong thay ruong".
+	//  - script ruong: OpenBox() + SetRevPos(..) = dung y do "toi ruong - dat lai diem hoi sinh".
+	// Trang thai 0 cua ca hai loai deu la "bam duoc" (KObj.h:34-39): Box 0 = OBJ_BOX_STATE_CLOSE,
+	// Prop 0 = OBJ_PROP_STATE_DISPLAY. Khac 0 (Box dang mo / Prop dang an) -> bo qua.
+	// bChiHinh = 1: CHI nhan obj hinh ruong (TK_RUONG_HINH1/2); chua thay thi tra 0 de buoc 1 thu
+	// lai (obj co the chua dong bo) - khong bam nham bien chi duong (Box) hay cay (Prop 335).
+	// bChiHinh = 0 (lan thu cuoi): van uu tien hinh ruong, khong co moi lay Box/Prop gan nhat.
+	int nBestHinh = 0, nBdHinh = nR + 1;
+	int nTong = 0, nBox = 0, nProp = 0, nBoQua = 0;
+	int nGanNhat = -1, nKindGan = 0, nStateGan = 0, nDataGan = 0;
 	while (nObj)
 	{
 		++nTong;
@@ -9897,22 +10163,45 @@ static int TK_TimRuongObj(int nMpsX, int nMpsY, int nR)
 			nGanNhat = dd;
 			nKindGan = Object[nObj].m_nKind;
 			nStateGan = Object[nObj].m_nState;
+			nDataGan = Object[nObj].m_nDataID;
 		}
-		if (Object[nObj].m_nKind == Obj_Kind_Box)
+		const int nKind = Object[nObj].m_nKind;
+		if (nKind == Obj_Kind_Box || nKind == Obj_Kind_Prop)
 		{
-			++nBox;
-			if (Object[nObj].m_nState != OBJ_BOX_STATE_CLOSE)
-				++nBoxMo;
-			else if (dd < nBd)
+			if (nKind == Obj_Kind_Box)
+				++nBox;
+			else
+				++nProp;
+			if (Object[nObj].m_nState != 0)
+				++nBoQua;
+			else
 			{
-				nBd = dd;
-				nBest = nObj;
+				if (dd < nBd)
+				{
+					nBd = dd;
+					nBest = nObj;
+				}
+				const int nDat = Object[nObj].m_nDataID;
+				if ((nDat == TK_RUONG_HINH1 || nDat == TK_RUONG_HINH2) && dd < nBdHinh)
+				{
+					nBdHinh = dd;
+					nBestHinh = nObj;
+				}
 			}
 		}
 		nObj = ObjSet.GetNext(nObj);
 	}
-	if (!nBest)
-		AUTOLOG_EVERY(2000, "[TK-RUONGDO] khong thay ruong quanh (%d,%d) tam=%d | ObjSet: tong=%d box=%d box-dang-mo=%d | obj gan nhat: xa=%d kind=%d state=%d", nMpsX, nMpsY, nR, nTong, nBox, nBoxMo, nGanNhat, nKindGan, nStateGan);
+	if (nBestHinh)
+	{
+		nBest = nBestHinh;
+		nBd = nBdHinh;
+	}
+	else if (bChiHinh)
+		nBest = 0;
+	if (nBest)
+		AUTOLOG("[TK-RUONG] thay ruong obj=%d kind=%d dataid=%d xa=%d moc=(%d,%d) chihinh=%d | ObjSet: box=%d prop=%d", Object[nBest].m_nID, Object[nBest].m_nKind, Object[nBest].m_nDataID, nBd, nMpsX, nMpsY, bChiHinh, nBox, nProp);
+	else
+		AUTOLOG_EVERY(2000, "[TK-RUONGDO] khong thay ruong quanh (%d,%d) tam=%d chihinh=%d | ObjSet: tong=%d box=%d prop=%d bo-qua(mo/an)=%d | obj gan nhat: xa=%d kind=%d state=%d dataid=%d", nMpsX, nMpsY, nR, bChiHinh, nTong, nBox, nProp, nBoQua, nGanNhat, nKindGan, nStateGan, nDataGan);
 	return nBest;
 }
 
@@ -11010,6 +11299,9 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		if (TK_AnThuoc(nPlayerIdx, pAp, uCurTime))
 			return 1;
+		// (11/09) [TK-CUA] di qua GIUA cong (xem TK_DiQuaCua). Chi khi khong dung duoc cach moi
+		// (luoi chua nap / khong o trap nao di duoc, noi duoc) moi quay ve cach cu ben duoi.
+		if (!TK_DiQuaCua(nPlayerIdx, nX, nY, uCurTime))
 		{
 			// vet trap ra trai nam canh hau doanh cua nua ban do minh dang dung: giam
 			// len la may chu nem ra tran (10 giay dau no tu choi - cho la duoc), khong
@@ -11470,9 +11762,21 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (ea.nTKStep == 1)
 			{
 				// buoc 1: cham vao ruong -> server chay OpenBox(); SetRevPos(nn)
-				int nObj = TK_TimRuongObj(nRx, nRy, 320);
+				// (11/09) [TK-RUONG] 11 lan dau CHI nhan obj hinh ruong (DataID 1/2); lan thu cuoi moi
+				// nhan Box/Prop gan nhat - khong de bien chi duong / cay pha vong cho dong bo.
+				int nObj = TK_TimRuongObj(nRx, nRy, 320, (ea.nTKTry < 11) ? 1 : 0);
 				if (nObj)
 				{
+					// (11/09) [TK-RUONG] may chu chi chay script obj khi cach <= 200 mps va BO QUA IM LANG
+					// neu xa hon (KProtocolProcess.cpp:6765/6773, defMAX_EXEC_OBJ_SCRIPT_DISTANCE). Buoc 0 chi
+					// di toi <= 150 mps quanh MOC, con ruong dat lech moc - nen di sat CHINH ruong roi moi bam.
+					int nOx = 0, nOy = 0;
+					Object[nObj].GetMpsPos(&nOx, &nOy);
+					if (!DT_WalkTo(nPlayerIdx, nOx, nOy, 100, uCurTime) && ++ea.nTKTry < 40)
+					{
+						ea.uTKNext = uCurTime + 400;
+						return 1;
+					}
 					Player[nPlayerIdx].CheckObject(nObj);
 					TK_Msg(nPlayerIdx, "<color=Cyan>§· tíi r­¬ng - ®Æt l¹i ®iÓm håi sinh ë cöa nµy.");
 				}

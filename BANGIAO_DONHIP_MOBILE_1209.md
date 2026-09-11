@@ -5,6 +5,65 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **15:25 11/09 — KẾT QUẢ FOLD 7 BẢN D1 109111459 (phiên `SM-F966U1_20260911_151020`, màn trong, 12 phút, gần như toàn bộ là Tống Kim; máy BẮT ĐẦU
+> ĐÃ NÓNG: nhiệt 3, headroom 0,98, 37,1 °C — ngay sau 55 phút Tống Kim của phiên 14:16).** Chủ 15:20: "lấy log đi bạn". `[D1] swapchain 1040x936 | backbuffer
+> 1040x936 | cua so 2184x1968 | SDL: tao 1040x936; extent min 1x1 max 4096x4096` → đúng thiết kế, không lỗi, không "tắt hint".
+>
+> | Tống Kim (npc 60–200, trung vị cửa sổ 30 s) | 14:16 trước D1 (84 cửa sổ) | 15:10 D1 (20 cửa sổ) |
+> |---|---|---|
+> | fps / fps nhỏ nhất trong cửa sổ | 109 / 96 | **115 / 110** |
+> | paint ms | 8,0 | 7,2 |
+> | nộp TB (max) ms — chờ GPU | 1,6 (10,7) | **0,8 (5,9)** |
+> | GPU bận @ xung | **83 % @ 648 MHz** | **73 % @ 336 MHz** |
+> | điện W | **4,61** | **3,35 (−27 %)** |
+> | CPU tiến trình / luồng chính | 73 / 68 % | 76 / 70 % |
+> | nhiệt / headroom | 3 / 0,98 | 2 / 0,90 (giảm dù đang đánh) |
+>
+> Cửa sổ đông nhất (npc ≥ 100): đạn 85 → **118/tick (nặng hơn)** mà fps 107 (min 92) → **115 (min 112)**, GPU 85 % @ 655 → 74 % @ 332 MHz, W 4,75 → 3,36;
+> cửa sổ 801 đạn/tick + 145 NPC + 2 797 lệnh: **111 fps** (trước D1 các cửa sổ 700–900 đạn/tick chỉ 70–89 fps) — nhưng CPU 96 / 85 % → **CPU giờ là
+> nút thắt lúc đông nhất** (ghi 3,2 ms, vẽ CPU 3,3 ms). Nhiệt độ pin 37,1 → 36,1–36,4 °C **giảm trong lúc đánh** (phiên trước tăng 33 → 37,3); pin 26 → 22 %
+> trong 11 phút (22 %/giờ, trước 26 %/giờ). `[VE-GIAT]` 171 dòng: "vẽ khác" 155 (CPU vẽ lúc đông), **nộp 3 (trước 62)**, chép 1. Đăng nhập 30 fps, 20 lần `[DOI]`
+> đầu phiên (Samsung đổi 60/120 lúc mở app), không "that bai". Cảnh yên chỉ 1 cửa sổ (chủ vào Tống Kim ngay): 1,16 W lúc máy còn nóng.
+> **Kết luận:** D1 làm đúng việc — GPU không còn là nút thắt (nộp/chờ GPU giảm 2–3 lần, xung GPU giảm một nửa), điện Tống Kim −27 %, fps lúc đông nhất
+> 70–89 → 111–115 và máy nguội dần thay vì nóng lên. Hình ảnh: chờ chủ xác nhận bằng mắt (log không thấy được). **Việc kế: C** (gộp lệnh: CPU 96 / 85 % ở
+> 800 đạn/tick), rồi **A2** (lưới an toàn nhiệt) và **BKG b** (xin 60 Hz khi đứng yên).
+
+> **15:15 11/09 — D1 ĐÃ LÊN BỘ TẢI: `[D1 11/09]` swapchain theo KHUNG LOGIC** — commit `9851000b` = `origin/mobile-0809` (FF cả `wt_mobile`), **dt_v4 = 109111459**
+> (md5 `cf951865…`, 20 256 751 B, máy chủ 8765 PID 366076, tệp rời giữ nguyên), APK lưu `android/apk/jx1mobile-1109-d1.apk`. Chủ 14:55: "làm d1 ngay"
+> (log 14:16: Tống Kim màn trong GPU bận 82–99 % ở 650–950 MHz trong khi game chỉ vẽ 1040×936).
+> - **SDL** (`android/va_sdl3_d1.py`, CMake tự chạy SAU `va_sdl3_donhip.py`, chỉ cây Android): `VULKAN_INTERNAL_CreateSwapchain` lấy hint `JX_SWAPCHAIN_W/H`
+>   (> 0) thay cho kích thước cửa sổ, kẹp trong `[minImageExtent, maxImageExtent]`, ghi lại `JX_SWAPCHAIN_THAT` / `JX_SWAPCHAIN_EXTENT`; `vkCreateSwapchainKHR`
+>   từ chối → tắt hint, tạo lại bằng cửa sổ (một lần); acquire: hint đổi so với lần tạo gần nhất → dựng lại; dựng lại > 8 lần/2 s khi đang dùng hint → tắt hint
+>   (chống lặp kiểu M1). Không hint = hành vi 3.2.30 nguyên bản.
+> - **Represent3** (`android/va_nguon_android_d1.py`): `[Client] Rep3SwapchainLogic` (100 = khung logic — mặc định; 150 = 1,5× nếu muốn nét hơn; 0 = cửa sổ như cũ);
+>   `JxDatHintSwapchain` đặt hint trước `SDL_ClaimWindowForGPUDevice` và trong `Reset` (gập/mở → `SetGPUSwapchainParameters` dựng lại với hint mới; bằng cửa sổ
+>   thì hint 0); `[D1]` trong `jx_rep3.log` mỗi khi kích thước swapchain nhận từ acquire đổi. `Letterbox()` đọc kích thước thật → tỷ lệ tự về 1, không sửa thêm.
+> - **Thử máy ảo** (màn giả `wm size 2080x1208`, đã reset về 1040×604 và mở game bấm nút kiểm): loader Vulkan Android báo `extent min 1x1 max 4096x4096`,
+>   tạo swapchain **1060×616 trong cửa sổ 2080×1208**, ảnh phủ đúng toàn màn, không sập; cỡ thường hint 0 → 1040×604 như cũ.
+> - **Kỳ vọng Fold 7:** màn trong swapchain 1040×936 (÷4,4 điểm GPU), màn ngoài 1436×616 (÷3,1) → Tống Kim GPU bận và xung GPU giảm, điện giảm, fps lúc đông
+>   bớt tụt; hình có thể mịn hơn một chút nếu trước đây lọc điểm (so bằng `Rep3SwapchainLogic=0`). Bài test + cách đọc: §10 mục 7.
+
+> **14:50 11/09 — KẾT QUẢ FOLD 7 BẢN 109111313 (phiên `SM-F966U1_20260911_141642`, màn trong, 28 phút: 8 phút cảnh yên trong thành rồi 20 phút Tống Kim;
+> bộ đọc `scratchpad/phan_tich_bkg.py` + `phan_tich_tong.py` nhóm G; mốc so = phiên 11:48 cùng màn trong, bản f).** Chủ 14:40: "lấy log về phân tích".
+> 1. **Cảnh yên (npc ≤ 12, 14 cửa sổ 30 s so với 35 cửa sổ của 11:48):** fps 120 (118); **CPU tiến trình/luồng chính 36 / 31 % (53 / 44 %)**; **điện trung vị
+>    1,99 W (2,39 W), có cửa sổ 1,5–1,8 W**; 6 nhân hiệu năng đứng ở **556 MHz**, 2 nhân lớn 1 017 MHz (xung nghỉ); GPU 37–39 % bận ở 160 MHz (xung thấp nhất).
+>    `[VE-BKG]`: chỉ **29 % khung được trình chiếu** (bỏ 71 %; cả phiên bỏ 34 480/185 889 = 19 % vì 20 phút đông không bỏ được); chuỗi bỏ dài nhất 6 khung
+>    = đúng một tick 55 ms (mỗi tick logic đổi hoạt ảnh NPC → khung khác → trình chiếu ~18–36 lần/giây khi đứng yên); "giống nhưng có tải" 3, "ép" 34
+>    (trần 250 ms hầu như không cần). Không dòng "that bai", chủ chơi liên tục 28 phút không thoát.
+> 2. **Khựng do bảng màu HẾT:** `[VE-GIAT]` chép ≥ 10 ms **1 lần/28 phút** (11:48: 229 lần/21 phút = 10,8/phút), lần đó là tải thật 21 texture 20 MB lúc
+>    vào map; `lenh tai bang mau` 0,000–0,001 ms/khung; phần lớn nhất của `[VE-GIAT]` chuyển từ "chép" (229) sang "vẽ khác" (445, gần hết ở cảnh đông, vẽ CPU
+>    24–37 ms khi sinh NPC hàng loạt lúc vào đám đông t=494 s) và "nộp" (62, chờ GPU lúc đông).
+> 3. **[FPSNGOAI] chạy đúng:** 20 s đầu 299–300 khung/10 s (PaintFps 30), màn xuống 60 Hz lúc đăng nhập (`[DOI]`), vào thế giới về 120 Hz / 120 fps.
+> 4. **Tống Kim (npc 60–200, 40 cửa sổ) — như trước, đúng dự kiến (BKG/PALBUF không nhắm chỗ này):** fps trung vị 109, tụt 70–79 ở 700–900 đạn/tick; paint
+>    7,8 ms; CPU 72 / 68 %; **điện trung vị 4,7 W (p90 6,2, đỉnh 12 W)**; **GPU 82 % bận ở 652 MHz, đỉnh 99 % ở 866–956 MHz → lúc đông màn trong nghẽn GPU thật**
+>    (lần đầu có số GPU: `[GPU-SYS]` Fold 7 đọc được `kgsl/gpu_busy_percentage` + `devfreq/cur_freq`); CPU 6 nhân 1,4–2,7 GHz. Nhiệt 0 → 1 (4 phút vào đông)
+>    → 2 → **3 SEVERE sau ~8 phút**, pin 33 → 37 °C, 49 → 37 % trong 28 phút. `[VE-GOP]` cả phiên đổi/khung TB pipeline 175, texture 656, ps 708; lệnh 1 700–2 800/khung,
+>    ghi 2,3–4,7 ms, nộp 1,3–4,4 ms.
+> 5. **Kết luận:** đợt 1 đạt mục tiêu ở cảnh chơi bình thường (−17 điểm CPU, −0,4 W, SoC về xung nghỉ, hết khựng bảng màu, hình đúng theo log — chờ chủ xác nhận
+>    mắt). Nóng/pin giờ chỉ còn ở cảnh đông, và ở đó **GPU là nút thắt trước CPU** → việc kế: **D1** (swapchain = khung logic 1040×936, GPU tô ÷4,4, hint SDL nhỏ)
+>    rồi **C** (atlas mảng + ps theo đỉnh + first_vertex: lệnh 1 700–2 800 → 300–500), và **A2** (hạ nấc khi nhiệt ≥ 2 — lưới an toàn vì 8 phút Tống Kim đã SEVERE).
+>    Có thể thêm **BKG b**: khi > 70 % khung bị bỏ trong 2 s thì xin màn 60 Hz (đứng yên panel vẫn 120 Hz suốt 8 phút, ~0,3 W).
+
 > **13:20 11/09 — SỬA TẬN GỐC ĐỢT 1 ĐÃ LÊN BỘ TẢI: `[BKG 11/09]` + `[PALBUF 11/09]` + `[FPSNGOAI 11/09]` + `[MAU 11/09]`** — commit `ccb66888`,
 > `origin/mobile-0809 = 9177d84a` (đã FF, cây `D:\GAMEDEVNEW_wt_mobile` = 9177d84a), **dt_v4 = 109111313** (md5 `250bd14a…`, 20 256 747 B, máy chủ 8765
 > PID 304848 chạy từ worktree này, tệp rời của phiên giao diện giữ nguyên), APK lưu `android/apk/jx1mobile-1109-bkg1.apk`. Chủ 12:40: "thực hiện các bước
@@ -594,3 +653,8 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
    `[VE] … bang mau kieu storage buffer`, số dòng `[VE-GIAT]` có "chép" ≥ 10 ms (kỳ vọng ≈ 0, trước 12/phút), `[VE]` cho/chép/ghi/nộp; `jx_thietbi.log`
    `[MAU]` W, nhiệt, `gpu=`, `cpu_mhz=`, `[GPU-SYS]`; `jx_paint.log` `[SUM]`. Mốc so sánh: bảng 1.1/1.2 của phương án (yên màn trong 120 Hz: 2,1–2,8 W,
    CPU 48–68 %, pin 13,6 %/giờ; 12 khung chép chậm/phút).
+7. **Bản 109111459 (D1):** mở lại app để nhận. Kiểm: (a) vào thế giới hình phủ đúng toàn màn, không méo, chữ đọc được; nếu thấy "mịn/mờ hơn" nói rõ; gập/mở
+   máy một lần xem hình có cập nhật đúng cỡ không; (b) chơi Tống Kim 10–15 phút như bài 2. Tôi đọc `jx_rep3.log` dòng `[D1] swapchain WxH | backbuffer …
+   | cua so … | SDL: tao …; extent min … max …` (Fold 7 kỳ vọng `1040x936` / `1436x616`), rồi so `[MAU]` `gpu=` / `gpu_mhz` / W và fps Tống Kim với phiên 14:16
+   (GPU 82 % @ 652 MHz, 4,7 W, fps 109). Tắt nhanh nếu có vấn đề: `Rep3SwapchainLogic=0` trong `[Client]` của config dt_v4 + khởi động lại 8765; muốn nét hơn
+   thử `Rep3SwapchainLogic=150`.

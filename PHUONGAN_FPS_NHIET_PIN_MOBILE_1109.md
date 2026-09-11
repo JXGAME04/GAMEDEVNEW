@@ -218,6 +218,8 @@ trong lúc màn tải hiển thị; đổi map 150–300 ms tick nằm sau màn 
 > **Đã làm 13:20 11/09 (commit `ccb66888`, dt_v4 = 109111313):** mục 1 (bỏ khung giống = `[BKG 11/09]`, kèm bộ đếm `[VE-BKG]`), mục 4 (bảng màu =
 > storage buffer `[PALBUF 11/09]`, kèm đồng hồ "lệnh tải bảng màu" ở cả hai kiểu), A4 (`[FPSNGOAI 11/09]`), đo (c) GPU % + xung CPU/GPU vào `[MAU]`
 > (`[MAU 11/09]`). Chi tiết + bài test: `BANGIAO_DONHIP_MOBILE_1209.md` §0 khối 13:20 và §10. Còn lại theo thứ tự: C → D1 → E → A2.
+> **Kết quả 14:50:** cảnh yên CPU 53 → 36 %, 2,39 → 1,99 W, SoC về xung nghỉ, khung chép chậm 229 → 1; Tống Kim GPU 82–99 % bận → **D1 làm 15:15**
+> (commit `9851000b`, dt_v4 = 109111459, `[D1 11/09]`, thử máy ảo màn giả 2080×1208 OK). Còn: C → E → A2 (+ BKG b xin 60 Hz khi đứng yên).
 
 **Gốc thật sự là gì.** Engine JX1 là engine 2D kiểu D3D9 tức thời: mỗi sprite = một lệnh vẽ mang texture + trạng thái riêng, vẽ lại toàn bộ
 màn hình mỗi khung, ở PC 60 Hz driver D3D9 gánh được. Trên điện thoại ở 120 Hz, cùng mô hình đó đi qua lớp mô phỏng SDL-GPU (mỗi lệnh 1–3 µs

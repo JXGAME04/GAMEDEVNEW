@@ -58,6 +58,13 @@ if(NOT TARGET SDL3::SDL3)
     message(FATAL_ERROR "va_sdl3_donhip.py loi (${JX_VA_SDL_KQ}): ${JX_VA_SDL_RA} ${JX_VA_SDL_LOI}")
   endif()
   message(STATUS "va_sdl3_donhip.py: ${JX_VA_SDL_RA}")
+  # [D1 11/09] swapchain theo khung logic (hint JX_SWAPCHAIN_W/H) - SAU va_sdl3_donhip.py (dung ham JX_DemSdl)
+  execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/va_sdl3_d1.py ${JX_SDL3_SRC}
+                  RESULT_VARIABLE JX_VA_D1_KQ OUTPUT_VARIABLE JX_VA_D1_RA ERROR_VARIABLE JX_VA_D1_LOI OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT JX_VA_D1_KQ EQUAL 0)
+    message(FATAL_ERROR "va_sdl3_d1.py loi (${JX_VA_D1_KQ}): ${JX_VA_D1_RA} ${JX_VA_D1_LOI}")
+  endif()
+  message(STATUS "va_sdl3_d1.py: ${JX_VA_D1_RA}")
   add_subdirectory(${JX_SDL3_SRC} SDL3 EXCLUDE_FROM_ALL)
 endif()
 
