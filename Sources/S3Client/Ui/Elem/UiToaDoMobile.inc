@@ -25,7 +25,7 @@ extern "C" void JxPlayerBar_NeoNhomTrenLai(void);	// UiPlayerBar.cpp
 
 #define	SUAGD_TEP_DANHSACH	"\\Ui\\UiToaDo_DanhSach.ini"
 #define	SUAGD_TEP_SOLIEU	"\\bocuc_thuc.txt"
-#define	SUAGD_MAX_MUC		96
+#define	SUAGD_MAX_MUC		256		// [SUAGD 14/09 h] 96 -> 256: danh sach trang da 99 muc, hai icon Tong Kim / Kinh Mach (dong 98-99) bi rot khoi trinh chinh
 #define	SUAGD_DUNGSAI		8		// cham cach mep o toi da bao nhieu diem van trung
 #define	SUAGD_BATDINH		6		// bat dinh mep / tam trong khoang nay
 #define	SUAGD_KEO_CHET		5		// [SUAGD 13/09 g] ngon phai di qua nguong nay moi bat dau doi (cham suong khong lam o nhich theo bat dinh)
@@ -37,6 +37,7 @@ extern "C" void JxPlayerBar_NeoNhomTrenLai(void);	// UiPlayerBar.cpp
 #define	SUAGD_CO_KHONGKEP	4		// khong kep vao vung an toan
 #define	SUAGD_CO_GOPCON		8		// [SUAGD 13/09 f] hinh = gop ca o con dang hien (khung goc nho hon phan hien: muc tieu, thanh tren)
 #define	SUAGD_CO_PHONGBANG	16		// [PHONGBANG 14/09] bang tinh nang: phong CA CAY theo man hinh luc mo (khong chum tay)
+#define	SUAGD_CO_PHONGTRAN	32		// [PHONGBANG 14/09 h] kem 16: phong theo TRAN PhongBang, khong xet khung, can giua (khung dang nhap 800x600)
 static int	s_nPhongBang = 1400;		// [Ui] PhongBang: tran phan nghin cua phep phong bang (0 = tat)
 #define	SUAGD_PAD_O			64		// o nut cua bang chinh (mui ten, +, -); chu font 16 -> "Hoan tac" 8 chu x 8 px vua khit
 #define	SUAGD_PAD_CACH		5
@@ -828,11 +829,16 @@ static int UiToaDoM_PhongBang(KWndWindow* p, const char* pszKhoa)
 	h0 = p->UiLayGocH();
 	if (w0 <= 0 || h0 <= 0 || SCREEN_WIDTH <= 0 || SCREEN_HEIGHT <= 0)
 		return 0;
-	kW = SCREEN_WIDTH * 1000 / w0;
-	kH = SCREEN_HEIGHT * 1000 / h0;
-	k = (kW < kH ? kW : kH) * 96 / 100;
-	if (k > s_nPhongBang)
+	if (nCo & SUAGD_CO_PHONGTRAN)	// [h] cua so to hon khung nhung noi dung nam giua (khung dang nhap): phong dung tran
 		k = s_nPhongBang;
+	else
+	{
+		kW = SCREEN_WIDTH * 1000 / w0;
+		kH = SCREEN_HEIGHT * 1000 / h0;
+		k = (kW < kH ? kW : kH) * 96 / 100;
+		if (k > s_nPhongBang)
+			k = s_nPhongBang;
+	}
 	if (k < 1020)
 		k = 1000;
 	if (k == 1000 && p->UiLayPhongCay() == 1000)
@@ -842,19 +848,27 @@ static int UiToaDoM_PhongBang(KWndWindow* p, const char* pszKhoa)
 	p->GetSize(&wS, &hS);
 	nLechX = (wS - w0) / 2;	// giu tam nhu truoc khi phong
 	nLechY = (hS - h0) / 2;
-	if (p->UiLayViTriTuBang())	// [g] vi tri vua dat tu bang bo cuc = vi tri o co GOC -> dich giu tam; con lai (chinh PhongBang da dat,
-	{					// hay ma bang tu dat voi co da phong, vd Auto can giua) giu nguyen, chi kep trong khung
-		l -= nLechX;
-		t -= nLechY;
+	if (nCo & SUAGD_CO_PHONGTRAN)
+	{	// [h] can giua khung, cho phep toa do am (phan ngoai khung la nen trong suot), khong kep
+		l = (SCREEN_WIDTH - wS) / 2;
+		t = (SCREEN_HEIGHT - hS) / 2;
 	}
-	if (l + wS > SCREEN_WIDTH)
-		l = SCREEN_WIDTH - wS;
-	if (t + hS > SCREEN_HEIGHT)
-		t = SCREEN_HEIGHT - hS;
-	if (l < 0)
-		l = 0;
-	if (t < 0)
-		t = 0;
+	else
+	{
+		if (p->UiLayViTriTuBang())	// [g] vi tri vua dat tu bang bo cuc = vi tri o co GOC -> dich giu tam; con lai (chinh PhongBang da dat,
+		{					// hay ma bang tu dat voi co da phong, vd Auto can giua) giu nguyen, chi kep trong khung
+			l -= nLechX;
+			t -= nLechY;
+		}
+		if (l + wS > SCREEN_WIDTH)
+			l = SCREEN_WIDTH - wS;
+		if (t + hS > SCREEN_HEIGHT)
+			t = SCREEN_HEIGHT - hS;
+		if (l < 0)
+			l = 0;
+		if (t < 0)
+			t = 0;
+	}
 	p->SetPosition(l, t);
 	p->UiDatPhongLech(nLechX, nLechY);
 	p->UiGhiPhongDat(l, t);	// [c]
