@@ -482,6 +482,14 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
     - *"hỏng" 625:* xảy ra theo cụm lúc đông (119/86/30/64/102/99 mỗi 30 s), `tao_hong` = 0 → là khung rỗng (w/h = 0) hoặc rút khung hỏng; trước
       đây giao lại mỗi lần vẽ → `[VE 11/09 d]` đánh dấu `nJxNen = 2`, không giao lại, nhánh đồng bộ giữ raw nên lần sau rẻ; đếm `khung rong`.
     - *"vẽ khác" 104 dòng* (vẽ CPU 40–90 ms không do nạp, `[PDET] render 51–86`): mã vẽ của client (KScenePlaceC/UI) — ngoài phạm vi đợt này.
+  - **Phiên 10:22 (bản 109110954 = `[VE b+c]`, đọc lúc 10:30 khi chủ đang chơi, 7,5 phút, cảnh đông hơn: 300–500 đơn vị NPC/khung, đạn tới
+    1 091 viên/tick):** fps 117–120 khi thường, **53–96 fps trong 50 s đầu vào đám đông** (t=61–111 s), 43–69 fps ở t=211–221 s; `nhiet` 0 → 1
+    sau 6 phút, 2,3–3,2 W. Mục 1: giao 39 381 → xong 39 355, hỏng 14; đông nhất 10 430 khung/30 s, luồng nền bận 368–662 ms/30 s, bỏ vẽ
+    831–859 lượt/30 s (≈ 0,3/khung). Chép: hai khung 130 / 141 ms lúc tạo trang atlas (96 tex 27 MB, 31 tex 17 MB); 61 khung chép ≥ 15 ms,
+    38 khung tải < 500 KB. `tep spr` đồng bộ 196–233 lần/208–360 ms mỗi 30 s, max **37,8 ms**; "ngoài lúc vẽ" 344–399 lần/215–370 ms.
+    `[VE-GOP]` texture0 **88,9 %**, lúc đông 1 145–1 358 lệnh/khung, đổi texture TB 498/khung (max 4 477) → ghi lệnh TB 2,1–3,35 ms (max
+    20), nộp TB 1,3–1,6 (max 33), vẽ CPU TB 2,5–4,0 → vượt 8,3 ms của 120 Hz; nộp/chờ swapchain 25–33 ms cho thấy lúc đông **nghẽn cả GPU**.
+    "vẽ khác" 100 khung, chép 68, nộp 11, nạp 7. → Cả ba việc của d+e đều đúng chỗ; đo lại sau khi lên bản d+e.
 - Nạp trước sprite NPC khi vào map (`NAPNPC` "trễ 437") — việc đã ghi trong [[mobile-tongkim-lag-goc]].
 - Sau khi bật nhịp PC mặc định: khi tick 10–15 ms xảy ra, `PaintSmooth=2` nội suy giúp mượt hơn (`cat ngang` thấp), nhưng không bù được khung mất.
 
