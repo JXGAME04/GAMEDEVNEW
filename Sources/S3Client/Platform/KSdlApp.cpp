@@ -320,7 +320,15 @@ extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void)
 			nVeH = (int)((long long)nH * nRongMTB / nW);
 			nHe = nHeW;
 		}
-		if (nHe < 850)
+		if (nHe >= 850 && nHe <= 1150)
+		{	// [KHUNG 13/09 HAIHO b] he so gan 1 (may ao 1040x604, may 720p nho...) -> ve DUNG 1:1 cho sac net: chu do 13/09
+			// "chu hien thi rat mo khong doc duoc" khi 1040x604 bi ve 1060x616 roi thu 0,98. Ho khung van theo ti le,
+			// bo cuc neo tu chia phan chenh vai chuc diem.
+			nVeW = nW;
+			nVeH = nH;
+			nHe = 1000;
+		}
+		else if (nHe < 850)
 		{	// man qua nho: khong ve lon hon man qua 15 % (mo)
 			nVeW = (int)((long long)nW * 1000 / 850);
 			nVeH = (int)((long long)nH * 1000 / 850);

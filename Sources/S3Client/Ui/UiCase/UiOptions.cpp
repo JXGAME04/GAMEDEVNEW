@@ -26,6 +26,7 @@ extern iCoreShell*	g_pCoreShell;
 void JxNhip_DatMuc(int nMuc);							// ap muc: PaintFps + xin tan so man hinh
 void JxNhip_ChuMuc(int nMuc, char* sz, int n);			// chu canh thanh: "Tu dong (120)" / "60"
 void JxNhip_VeNen(int nX, int nY, int nRong, int nCao);	// nen mo (che nhan "Phim tat" ve san trong anh nen)
+#include "../Elem/UiToaDo.h"	// [SUAGD 13/09] UiToaDo_BatTat - nut "Chinh giao dien" (chu: "cho cai chinh giao dien vao phan cai dat")
 #endif
 
 #define SCHEME_INI_OPTION		"UiOptions.ini"
@@ -188,6 +189,7 @@ void KUiOptions::Initialize()
 	AddChild(&m_SoundValue);
 #ifdef JX_ANDROID
 	AddChild(&m_FpsScroll);	// [FPS 12/09]
+	AddChild(&m_ChinhGiaoDien);	// [SUAGD 13/09]
 #endif
 	AddChild(&m_ShortcutSetView);
 	AddChild(&m_Scroll);
@@ -243,6 +245,8 @@ void KUiOptions::LoadScheme(KIniFile* pIni)
 	if (!m_FpsScroll.Init(pIni, "Fps"))	// [FPS 12/09] ini chua co muc [Fps] (thieu lop ghi de) -> an thanh
 		m_FpsScroll.Hide();
 	m_ShortcutSetView.Hide();	// [FPS 12/09] bo phim tat khong dung tren dien thoai; hang nay danh cho thanh FPS
+	if (!m_ChinhGiaoDien.Init(pIni, "ChinhGiaoDien"))	// [SUAGD 13/09] ini chua co muc (lop ghi de cu) -> an nut
+		m_ChinhGiaoDien.Hide();
 #endif
 
 	m_StatusImage[0].Init(pIni, "ToggleStatus");
@@ -312,6 +316,13 @@ int	 KUiOptions::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			nY += nHeight + m_nAbsoluteTop;
 			PopupSeleteSetMenu(nX, nY);
 		}
+#ifdef JX_ANDROID
+		else if (uParam == (KUPARAM)(KWndWindow*)&m_ChinhGiaoDien)
+		{	// [SUAGD 13/09] dong Cai dat roi mo trinh chinh giao dien (UiToaDoMobile.inc)
+			CloseWindow();
+			UiToaDo_BatTat();
+		}
+#endif
 		else
 		{
 			for (int i = 0; i < m_nToggleBtnValidCount; i++)

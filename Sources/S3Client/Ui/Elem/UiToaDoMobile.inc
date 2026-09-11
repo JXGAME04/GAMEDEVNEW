@@ -34,12 +34,12 @@ extern "C" void JxPlayerBar_NeoNhomTrenLai(void);	// UiPlayerBar.cpp
 #define	SUAGD_CO_KHONGPHONG	1		// co trong danh sach trang: khong cho to nho
 #define	SUAGD_CO_KHONGAN	2		// khong cho giau
 #define	SUAGD_CO_KHONGKEP	4		// khong kep vao vung an toan
-#define	SUAGD_PAD_O			50		// o nut cua bang chinh (mui ten, +, -)
+#define	SUAGD_PAD_O			64		// o nut cua bang chinh (mui ten, +, -); chu font 16 -> "Hoan tac" 8 chu x 8 px vua khit
 #define	SUAGD_PAD_CACH		5
-#define	SUAGD_PAD_TIEUDE	22		// hang tieu de (keo bang)
-#define	SUAGD_PAD_INFO		16		// dong thong tin / dong so
-#define	SUAGD_PAD_NUT		30		// hang nut chu (A / B)
-#define	SUAGD_PAD_GON_RONG	40		// nut "gon" / "du" o goc phai tieu de
+#define	SUAGD_PAD_TIEUDE	24		// hang tieu de (keo bang), chu 16
+#define	SUAGD_PAD_INFO		18		// dong thong tin / dong so (chu 12)
+#define	SUAGD_PAD_NUT		34		// hang nut chu (A / B), chu 16
+#define	SUAGD_PAD_GON_RONG	44		// nut "gon" / "du" o goc phai tieu de
 #define	SUAGD_LAP_CHO		400		// giu nut mui ten bao lau thi bat dau chay deu (ms)
 #define	SUAGD_LAP_MOI		60		// ... roi moi bao lau mot buoc
 
@@ -63,7 +63,7 @@ static void SuaGd_VeChuCo(int nCo, const char* pszChu, int x, int y, unsigned in
 
 	if (nDai <= 0 || g_pRepresentShell == NULL)
 		return;
-	g_pRepresentShell->OutputText(nCo, (char*)pszChu, nDai, x, y, uMau, 0, TEXT_IN_SINGLE_PLANE_COORD, 0xffffffff);
+	g_pRepresentShell->OutputText(nCo, (char*)pszChu, nDai, x, y, uMau, 0, TEXT_IN_SINGLE_PLANE_COORD, 0xFF000000);	// vien DEN: vien trang cua VeChu lam chu nhoe
 }
 
 static void SuaGd_VeChuGiua(int nCo, const char* pszChu, int x, int y, int w, int h, unsigned int uMau)
@@ -104,7 +104,7 @@ static void SuaGd_VeNut(int x, int y, int w, int h, const char* pszChu, bool bCh
 {
 	OKhoi(x, y, x + w, y + h, bChon ? SUAGD_MAU_NUT_CHON : SUAGD_MAU_NUT);
 	SuaGd_VeKhung(x, y, x + w - 1, y + h - 1, bChon ? 0xFFAAFFAA : 0x80FFFFFF);
-	SuaGd_VeChuGiua(12, pszChu, x, y, w, h, bMo ? SUAGD_MAU_CHU_MO : (bChon ? 0xFFAAFFAA : SUAGD_MAU_CHU));
+	SuaGd_VeChuGiua(16, pszChu, x, y, w, h, bMo ? SUAGD_MAU_CHU_MO : (bChon ? 0xFFAAFFAA : SUAGD_MAU_CHU));
 }
 
 //---------------------------------------------------------------- 1. khong gian bo cuc = vung an toan
@@ -253,6 +253,20 @@ void UiToaDo_DangKyORiengCo(const char* pszKhoa, PFN_UITOADO_LAYCO pfnLayCo, PFN
 	}
 }
 
+void UiToaDo_DangKyORiengHinh(const char* pszKhoa, PFN_UITOADO_LAYHINH pfnLayHinh)
+{
+	int i;
+
+	if (pszKhoa == NULL || pfnLayHinh == NULL)
+		return;
+	for (i = 0; i < s_nSoORieng; i++)
+		if (strcmp(s_ORieng[i].szKhoa, pszKhoa) == 0)
+		{
+			s_ORieng[i].pfnLayHinh = pfnLayHinh;
+			return;
+		}
+}
+
 int UiToaDo_CoKhoa(const char* pszKhoa)
 {
 	return (pszKhoa && pszKhoa[0] && TimKhoa(pszKhoa) >= 0) ? 1 : 0;
@@ -393,7 +407,7 @@ static const struct { const char* pszKhoa; int nCo; } s_DSMa[] =
 	{ "KUiSysMsgCentre|Main", SUAGD_CO_KHONGPHONG | SUAGD_CO_KHONGKEP }, { "KUiHeaderControlBar|Main", SUAGD_CO_KHONGPHONG },
 	{ "KyNang0", 0 }, { "KyNang1", 0 }, { "KyNang2", 0 }, { "KyNang3", 0 }, { "KyNang4", 0 },
 	{ "KyNang5", 0 }, { "KyNang6", 0 }, { "KyNang7", 0 }, { "KyNang8", 0 }, { "KyNangGan", 0 },
-	{ "IconNpc", SUAGD_CO_KHONGPHONG },
+	{ "IconNpc", SUAGD_CO_KHONGPHONG }, { "ThongTinGoc", SUAGD_CO_KHONGPHONG },
 	{ NULL, 0 }
 };
 
@@ -595,10 +609,20 @@ static void SuaGd_LamMoi()
 		s_O[m].bCo = true;
 		s_O[m].nORieng = i;
 		s_O[m].bHien = s_bTrongGame;
-		s_O[m].nL = x - nCo / 2;
-		s_O[m].nT = y - nCo / 2;
-		s_O[m].nW = nCo;
-		s_O[m].nH = nCo;
+		if (s_ORieng[i].pfnLayHinh)
+		{	//	o khong theo quy uoc "tam + co" (dong FPS neo mep phai-tren): lay hinh chu nhat that
+			int l = 0, t = 0, w = 0, h = 0;
+
+			s_ORieng[i].pfnLayHinh(s_ORieng[i].pNgu, &l, &t, &w, &h);
+			s_O[m].nL = l; s_O[m].nT = t; s_O[m].nW = w; s_O[m].nH = h;
+		}
+		else
+		{
+			s_O[m].nL = x - nCo / 2;
+			s_O[m].nT = y - nCo / 2;
+			s_O[m].nW = nCo;
+			s_O[m].nH = nCo;
+		}
 	}
 	s_uLamMoiLuc = GetTickCount();
 }
@@ -631,7 +655,11 @@ static int SuaGd_TimODuoi(int x, int y)
 		w = s_O[i].nW + 2 * SUAGD_DUNGSAI;
 		h = s_O[i].nH + 2 * SUAGD_DUNGSAI;
 		if (x < l || y < t || x >= l + w || y >= t + h)
-			continue;
+		{	//	o ve tay: ham do trung cua chinh no la chuan (dong FPS, icon NPC...) - khong chi dua vao hinh chu nhat
+			if (s_O[i].nORieng < 0 || s_nCongCu == CONGCU_KHOI
+				|| !s_ORieng[s_O[i].nORieng].pfnTrung(s_ORieng[s_O[i].nORieng].pNgu, x, y))
+				continue;
+		}
 		dt = w * h;
 		if (nTot < 0 || dt < nDT)
 		{
@@ -952,8 +980,9 @@ static void SuaGd_BatDauKeo(int m, int x, int y)
 		s_nKeoMORieng = o->nORieng;
 		s_pKeoM = NULL;
 		s_ORieng[o->nORieng].pfnLay(s_ORieng[o->nORieng].pNgu, &s_nKeoGocX, &s_nKeoGocY);
-		s_nKeoAbsDX = -o->nW / 2;
-		s_nKeoAbsDY = -o->nH / 2;
+		//	hinh tuyet doi = vi tri + (dx, dy): o "tam + co" -> -co/2; o co pfnLayHinh (dong FPS neo mep phai-tren) -> hinh - vi tri
+		s_nKeoAbsDX = o->nL - s_nKeoGocX;
+		s_nKeoAbsDY = o->nT - s_nKeoGocY;
 		SuaGd_GhiUndoORieng(o->nORieng);
 	}
 	else
@@ -1781,10 +1810,10 @@ static void UiToaDoM_Ve()
 
 			NutMoHinh(&nX, &nY, &nW, &nH);
 			OKhoi(nX, nY, nX + nW, nY + nH, 0xA0202020);
-			VeChu("Chÿnh giao di÷n", nX + 6, nY + 8, SUAGD_MAU_VANG);
+			SuaGd_VeChuCo(12, "Chÿnh giao di÷n", nX + 6, nY + 8, SUAGD_MAU_VANG);
 		}
 		if (s_szThongBao[0] && GetTickCount() < s_uHetThongBao)
-			VeChu(s_szThongBao, 8, 60, 0xFFFF8080);
+			SuaGd_VeChuCo(12, s_szThongBao, 8, 60, 0xFFFF8080);
 		else
 			s_szThongBao[0] = 0;
 		return;
@@ -1833,17 +1862,17 @@ static void UiToaDoM_Ve()
 		SuaGd_VeKhung(gx, gy, gx + gw - 1, gy + gh - 1, 0x80FFFFFF);
 		//	tieu de (keo bang) + nut gon/du
 		OKhoi(gx, gy, gx + gw, gy + SUAGD_PAD_TIEUDE, 0xD0303848);
-		SuaGd_VeChuCo(12, "Chÿnh giao di÷n - k–o b∂ng", gx + 6, gy + 5, SUAGD_MAU_VANG);
+		SuaGd_VeChuCo(16, "Chÿnh giao di÷n - k–o b∂ng", gx + 6, gy + 4, SUAGD_MAU_VANG);
 		SuaGd_NutHinh(SG_NUT_GON, &nx, &ny, &nw, &nh);
 		SuaGd_VeNut(nx, ny, nw, nh, SuaGd_TenNut(SG_NUT_GON), false, false);
 		//	dong thong tin: o dang chon
 		if (bChon)
 		{
-			_snprintf(szChu, sizeof(szChu), "%.16s  %d,%d  %dx%d  %d%%%s", s_DS[s_nChon].szTen,
+			_snprintf(szChu, sizeof(szChu), "%.18s  %d,%d  %dx%d  %d%%%s", s_DS[s_nChon].szTen,
 				s_O[s_nChon].nL, s_O[s_nChon].nT, s_O[s_nChon].nW, s_O[s_nChon].nH, SuaGd_TiLeCua(s_nChon) / 10,
 				(s_O[s_nChon].pWnd && s_O[s_nChon].pWnd->UiDangAn()) ? " - gi u" : "");
 			szChu[sizeof(szChu) - 1] = 0;
-			SuaGd_VeChuCo(12, szChu, gx + 6, gy + SUAGD_PAD_TIEUDE + 2, 0xFF80FF80);
+			SuaGd_VeChuCo(12, szChu, gx + 6, gy + SUAGD_PAD_TIEUDE + 3, 0xFF80FF80);
 		}
 		else
 			SuaGd_VeChuCo(12, "Chπm mÈt icon Æ” ch‰n, k–o Æ” dÍi", gx + 6, gy + SUAGD_PAD_TIEUDE + 2, SUAGD_MAU_CHU_MO);
@@ -1870,7 +1899,7 @@ static void UiToaDoM_Ve()
 				_snprintf(szChu, sizeof(szChu), "%d%%", SuaGd_TiLeCua(s_nChon) / 10);
 			else
 				strcpy(szChu, "--");
-			SuaGd_VeChuGiua(12, szChu, nx, ny, SUAGD_PAD_O, SUAGD_PAD_O, SUAGD_MAU_CHU);
+			SuaGd_VeChuGiua(16, szChu, nx, ny, SUAGD_PAD_O, SUAGD_PAD_O, SUAGD_MAU_CHU);
 			_snprintf(szChu, sizeof(szChu), "%dx%d %s | %s %d,%d %dx%d", SCREEN_WIDTH, SCREEN_HEIGHT,
 				(UiToaDoM_HoKhung() == 1) ? "ßT" : "b∂ng", "an toµn", s_nKgL, s_nKgT, s_nKgW, s_nKgH);
 			szChu[sizeof(szChu) - 1] = 0;
@@ -1885,7 +1914,7 @@ static void UiToaDoM_Ve()
 		}
 		//	thong bao: ngay duoi bang (khong du cho thi tren bang)
 		if (s_szThongBao[0] && GetTickCount() < s_uHetThongBao)
-			VeChu(s_szThongBao, gx, (gy + gh + 18 < SCREEN_HEIGHT) ? gy + gh + 4 : gy - 16, 0xFFFF8080);
+			SuaGd_VeChuCo(12, s_szThongBao, gx, (gy + gh + 18 < SCREEN_HEIGHT) ? gy + gh + 4 : gy - 16, 0xFFFF8080);
 		else
 			s_szThongBao[0] = 0;
 	}

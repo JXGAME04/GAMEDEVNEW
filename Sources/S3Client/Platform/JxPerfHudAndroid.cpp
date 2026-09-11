@@ -655,6 +655,8 @@ static void ThongTin_Neo(int* px, int* py) { if (s_nTtX >= 0 && s_nTtY >= 0) { *
 static bool ThongTin_ORiengTrung(void* p, int x, int y) { int nX, nY; (void)p; ThongTin_Neo(&nX, &nY); return x >= nX - s_nTtRong && x <= nX && y >= nY && y <= nY + s_nTtCao; }
 static void ThongTin_ORiengLay(void* p, int* px, int* py) { (void)p; ThongTin_Neo(px, py); }
 static void ThongTin_ORiengDat(void* p, int x, int y) { (void)p; s_nTtX = x; s_nTtY = y; }
+// [SUAGD 13/09] hinh chu nhat that cua dong (neo mep phai-tren) cho trinh chinh giao dien moi: khung, dung sai cham, kep vao vung an toan
+static void ThongTin_ORiengHinh(void* p, int* pl, int* pt, int* pw, int* ph) { int nX, nY; (void)p; ThongTin_Neo(&nX, &nY); *pl = nX - s_nTtRong; *pt = nY; *pw = s_nTtRong; *ph = s_nTtCao; }
 
 static void ThongTin_Ve(int nFps, unsigned int dwPing)
 {
@@ -668,6 +670,7 @@ static void ThongTin_Ve(int nFps, unsigned int dwPing)
 	{
 		s_bTtDangKy = true;
 		UiToaDo_DangKyORieng("ThongTinGoc", ThongTin_ORiengTrung, ThongTin_ORiengLay, ThongTin_ORiengDat, NULL);
+		UiToaDo_DangKyORiengHinh("ThongTinGoc", ThongTin_ORiengHinh);	// [SUAGD 13/09] co trong danh sach trang ui/uitoado_danhsach.ini -> keo duoc
 	}
 	ThongTin_LayMau();
 	snprintf(sz1, sizeof(sz1), "%d FPS", nFps);

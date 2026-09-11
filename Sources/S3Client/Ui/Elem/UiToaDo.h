@@ -95,6 +95,10 @@ void	UiToaDo_ChumNha();
 typedef void (*PFN_UITOADO_LAYCO)(void* pNgu, int* pnCo, int* pnCoGoc);
 typedef void (*PFN_UITOADO_DATCO)(void* pNgu, int nCo);		// 0 = ve co goc
 void	UiToaDo_DangKyORiengCo(const char* pszKhoa, PFN_UITOADO_LAYCO pfnLayCo, PFN_UITOADO_DATCO pfnDatCo);
+//	O ve tay KHONG theo quy uoc "tam + co" (vi du dong FPS neo mep phai-tren): cho hinh chu nhat tuyet doi de trinh chinh
+//	ve khung, dung sai cham va kep vao vung an toan dung cho.
+typedef void (*PFN_UITOADO_LAYHINH)(void* pNgu, int* pnL, int* pnT, int* pnW, int* pnH);
+void	UiToaDo_DangKyORiengHinh(const char* pszKhoa, PFN_UITOADO_LAYHINH pfnLayHinh);
 //	Bang bo cuc dang co muc nay khong (nguoi choi / mac dinh da dat) - UiPlayerBar::NeoNhomTren bo qua o da dat.
 int		UiToaDo_CoKhoa(const char* pszKhoa);
 #endif

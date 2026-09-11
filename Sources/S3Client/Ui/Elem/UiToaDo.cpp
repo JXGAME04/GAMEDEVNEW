@@ -293,6 +293,7 @@ struct KORieng
 #ifdef JX_ANDROID
 	PFN_UITOADO_LAYCO		pfnLayCo;	// [SUAGD 13/09] co rieng (nut ky nang) - NULL = khong co gian duoc
 	PFN_UITOADO_DATCO		pfnDatCo;
+	PFN_UITOADO_LAYHINH		pfnLayHinh;	// [SUAGD 13/09] hinh chu nhat that (o khong theo quy uoc tam + co: dong FPS) - NULL = tam + co
 	int						nGocX;		// [SUAGD 13/09] vi tri goc luc dang ky (truoc khi ap tep) - nut "Mac dinh"
 	int						nGocY;
 #endif
@@ -502,6 +503,7 @@ void UiToaDo_DangKyORieng(const char* pszKhoa, PFN_UITOADO_TRUNG pfnTrung,
 #ifdef JX_ANDROID
 	s_ORieng[i].pfnLayCo = NULL;	// [SUAGD 13/09] gan sau bang UiToaDo_DangKyORiengCo
 	s_ORieng[i].pfnDatCo = NULL;
+	s_ORieng[i].pfnLayHinh = NULL;
 	UiToaDoM_NhoGocORieng(i);		// [SUAGD 13/09] vi tri goc (truoc khi ap tep) cho nut "Mac dinh"
 #endif
 

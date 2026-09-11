@@ -77,6 +77,7 @@ private:
 #ifdef JX_ANDROID
 	KWndScrollBar	m_FpsScroll;		// [FPS 12/09] thanh khung hinh/giay (ini muc [Fps], lop ghi de Android)
 	int				m_nFpsMuc;
+	KWndLabeledButton m_ChinhGiaoDien;	// [SUAGD 13/09] nut chu mo trinh chinh giao dien cho nguoi choi (ini muc [ChinhGiaoDien], lop ghi de Android)
 #endif
 	KPopupMenuData*	m_pSkinMenu;
 
