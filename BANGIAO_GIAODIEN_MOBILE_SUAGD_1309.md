@@ -306,6 +306,29 @@ Sửa: chạy `python androida_sdl3_donhip.py` trong cây (idempotent, kiểm `
   `JxSdl_AnToanTrai`): nhóm bám mép trái khung (hoặc mép trái vùng an toàn nếu bật lại), như trên máy ảo.
 - Phần còn lại trong ảnh đã đúng neo: cụm phải sát mép phải vùng an toàn, hàng icon và thanh đáy giữa, bảng Tống Kim trái.
 
+### 7.11 Lượt p/q (00:06–00:30 14/09) — chủ sau bản o: *"nút ẩn các icon phía trên bị lỗi chưa căn chỉnh; ổ khoá khoá rương chưa căn theo; lấy config tôi vừa lưu làm mặc định"*, rồi *"phóng to bản đồ mini rồi thu nhỏ lại thì sai vị trí, 4 icon ngay bản đồ không đi theo"*, và *"icon đấu giá bấm được trên giả lập, điện thoại không"*
+
+- **Nút ẩn hàng icon** (`HideIcons`, ini 782,54) nằm CUỐI hàng icon (hàng neo giữa theo khung cha) nhưng lượt trước tôi xếp nó
+  vào nhóm góc trên-trái và bù X → trên Fold 7 nó rơi vào giữa hàng, đè icon Tổ đội. Nay chỉ bù Y (`[NHOMTREN 13/09 X b]`).
+- **Ổ khoá khoá rương** = `KUiMiniMap|LockBtn`: chủ kéo trong trình chỉnh → mục mới ghi với neo suy từ toạ độ tương đối
+  (19,101 → "trái") trong khi cha (bản đồ) neo phải → trên màn rộng lệch 396 điểm. Sửa gốc (`[NEO 13/09 CON]`, `NeoDeGhi`):
+  ô con chưa có neo thì ghi neo của cha như lúc nạp. Dữ liệu: LockBtn → neo 2,0 trong mặc định + tệp máy ảo + dt_v4.
+- **Mặc định = bố cục chủ lưu 00:09** (máy ảo, Lưu MĐ + Xong): sinh lại hai tệp mặc định, chép lên `dt_v4/ui`.
+- **Bản đồ nhỏ to/nhỏ** (`[UITOADO 14/09 LOPPHU]`): bản đồ có 4 ini theo chế độ (nhỏ 188x147 ở 619,14; to 420x317 ở
+  385,14; to mở rộng 512x415; không ảnh 130x50) nhưng cùng khoá `KUiMiniMap|…` → phóng to áp toạ độ bản nhỏ (852) → lòi
+  phải → lượt kẹp đẩy vào rồi ghi đè → thu nhỏ sai chỗ; 4 nút nhận toạ độ tương đối của bản nhỏ. Nay `KWndWindow::UiTenLopPhu()`
+  (ảo, Android) ghép hậu tố vào tên lớp khi tạo khoá: `KUiMiniMapTo|…`, `KUiMiniMapToEx|…`, `KUiMiniMapKhongAnh|…` — mỗi chế độ
+  một bộ khoá; khoá chưa có mục thì dùng ini (nút đi theo bản đồ). Mặc định: bản to 620,12 neo phải (mép phải = 1040 như bản
+  nhỏ), to mở rộng 528,54, không ảnh 910,0; dòng `Goc.KUiMiniMapTo=MiniMap`… trong tệp mặc định; danh sách trắng thêm
+  "Bản đồ to / to mở rộng / không ảnh".
+- **Đấu giá trên điện thoại**: 16/16 tệp (`ui/Ui3/auction/*.ini`, `script/ui/uiauction_house.lua`, `auction_def.lua`,
+  `settings/auction.ini`) đều có trong `mobile_01.pak` (kiểm bằng name2id, `kiem_pak_daugia.py`) → không phải thiếu dữ liệu.
+  Icon 23x23 phóng 1,85 (`UiDatTiLe` phóng cả Width/Height nên vùng chạm = hình vẽ). Chưa rõ; cần chủ cho biết icon thư bên
+  cạnh có bấm được không và icon có lún xuống khi chạm không.
+- Phiên DONHIP (theo lệnh chủ) đã thay dt_v4 bằng bản SDL 3.2.30 (`jx1mobile-1209-donhip-c`, 109110010); `origin/mobile-0809`
+  = 097e984a có CMake tự vá SDL và trỏ SDL3-3.2.30. Bản p (SDL 3.2.14) **không** đưa lên dt_v4; bản q dựng sau khi gộp 097e984a
+  (nguồn SDL3-3.2.30 chép từ worktree DONHIP, không tải lại).
+
 ### 7.7 Trạng thái cuối
 
 - Máy ảo + dt_v4: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt k, `jx1mobile-1309-suagd-o`, dựng 00:03 14/09: vùng an toàn tắt, nhóm trên-trái bám mép, `JxSurface`, SDL3 đã vá DONHIP).
