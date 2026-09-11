@@ -437,10 +437,16 @@ void KSubWorld::ProcLoadPathGrid()
 					// cua Lam Du Quan (319:1630,3592) + Chan nui TB (320:1146,3130) nam GON trong
 #ifdef _SERVER
 					// (19/08) chi SERVER ap luat "thieu du lieu = vat can": cache client %d.fp
-					// khoa bang FINDPATH_VERSION=0 khong doi, ap chung se lech ngu nghia.
+					// khoa bang FINDPATH_VERSION_CLIENT rieng, ap chung se lech ngu nghia.
+					// [OGOC 10/09] O GOC = VAT CAN chi giu cho SERVER (bot khong leo vach, 18/08 acefe7cf).
 					if(lInfo == 0 && bCoTep)   // bCoObs => bCoTep, xem chu thich tren
 #else
-					if(lInfo == 0)
+					// [OGOC 10/09] HOI QUY "A* dung o goc hep": 18/08 bo nhanh o goc lam luoi CLIENT coi
+					// o goc la vat can, chat hon ENGINE THAT (GetBarrier cho di NUA O cheo,
+					// KRegion.cpp:927-941) => nguoi choi bi chan o loi hep ma than the qua duoc.
+					// Luat do sinh ra de chan BOT leo vach nen chi can o SERVER. Tra client ve nhu cu.
+					int lType = (lInfo >> 4) & 0x0000000f;
+					if((lType >= Obstacle_LT && lType <= Obstacle_RB) || lInfo == 0)
 #endif
 					m_GridNode[id].obs = 0;
 					else
@@ -2359,6 +2365,26 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		IniFile.Load("MapList.ini");
 		sprintf(szKeyName, "%d", nId);
 		IniFile.GetString("List", szKeyName, "", m_szPathName, sizeof(m_szPathName));
+		{	// [TRANGTRI 11/09 b] m_szMapPath cu chi duoc gan trong khoi DA BI CHU THICH ben tren
+		// nen LUON RONG -> KRegion::LoadObject tra FALSE ngay dong dau va phan NPC/OBJ cua
+		// Region_C.dat khong bao gio duoc doc. Lay thang tu m_szPathName vua doc xong.
+			extern char g_szTTMap[80];
+			const char* pTT = m_szPathName;
+			while (*pTT == '\\') pTT++;
+			int nTT = (int)strlen(pTT);
+			m_szMapPath[0] = 0;
+			if (nTT > 0 && nTT + 7 < (int)sizeof(m_szMapPath))
+			{
+				// MapList.ini cua du an ghi KHONG co tien to \maps\ ("1=..."), ban 2.0 thi co.
+				if ((pTT[0] == 'm' || pTT[0] == 'M') && (pTT[1] == 'a' || pTT[1] == 'A')
+				 && (pTT[2] == 'p' || pTT[2] == 'P') && (pTT[3] == 's' || pTT[3] == 'S') && pTT[4] == '\\')
+					sprintf(m_szMapPath, "\\%s", pTT);
+				else
+					sprintf(m_szMapPath, "\\maps\\%s", pTT);
+			}
+			strncpy(g_szTTMap, m_szMapPath, sizeof(g_szTTMap) - 1);
+			g_szTTMap[sizeof(g_szTTMap) - 1] = 0;
+		}
 				
 		g_SetFilePath("\\maps");
 		sprintf(szFileName, "%s.wor", m_szPathName);
@@ -2392,7 +2418,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		{
 			m_Region[nIdx].m_nIndex = nIdx;
 			m_Region[nIdx].Init(m_nRegionWidth, m_nRegionHeight);
-			//m_Region[nIdx].LoadObject(0, nX, nY, m_szMapPath);
+			m_Region[nIdx].LoadObject(0, nX, nY, m_szMapPath);	// [TRANGTRI 11/09] nap NPC+OBJ trang tri cua vung
 		}
 	}
 	
@@ -2418,7 +2444,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			{
 				m_Region[nConIdx].m_nIndex = nConIdx;
 				m_Region[nConIdx].Init(m_nRegionWidth, m_nRegionHeight);
-				//m_Region[nConIdx].LoadObject(0, nX + nXOff[i], nY + nYOff[i], m_szMapPath);
+				m_Region[nConIdx].LoadObject(0, nX + nXOff[i], nY + nYOff[i], m_szMapPath);	// [TRANGTRI 11/09]
 			}
 			else
 			{
@@ -2537,7 +2563,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			//g_DebugLog("Filesan 1");
 			UINT uVersion;
 			File.Read(&uVersion, sizeof(UINT));
-			if(uVersion == FINDPATH_VERSION)
+			if(uVersion == FINDPATH_VERSION_CLIENT)	// [OGOC 10/09] khoa rieng client
 			{
 				File.Read(&uVersion, sizeof(UINT));
 				const int nAllCellCache = m_nGridW*m_nRegionWidth * m_nGridH*m_nRegionHeight;	// [RAMTINH 08/09] cap dung co + doi chieu kich thuoc (cache lech -> dung lai)
@@ -2571,7 +2597,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			int nAllCell  = m_nGridW*m_nRegionWidth * m_nGridH*m_nRegionHeight;
 			KFile WFile;
 			WFile.Create(szFile);
-			UINT uVersion = FINDPATH_VERSION;
+			UINT uVersion = FINDPATH_VERSION_CLIENT;	// [OGOC 10/09] khoa rieng client
 			WFile.Write(&uVersion, sizeof(UINT));
 			uVersion = sizeof(VGridNode)*nAllCell;
 			WFile.Write(&uVersion, sizeof(UINT));

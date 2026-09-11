@@ -1060,7 +1060,8 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 	// mps, per-truc) lech nhau <1 o tai bien -> NPC nam dung vanh 40 bi go-gan moi tick.
 	int nS6VDisX = GetMapDisX(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex);
 	int nS6VDisY = GetMapDisY(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex);
-	if (!IsPlayer() && nS6VDisX != 0x7FFFFFFF && nS6VDisY != 0x7FFFFFFF
+	// [TRANGTRI 11/09] NPC trang tri khong do may chu dong bo -> mien hai duong go vung ben duoi
+	if (!IsPlayer() && m_sClientNpcID.m_dwRegionID == 0 && nS6VDisX != 0x7FFFFFFF && nS6VDisY != 0x7FFFFFFF
 		&& (nS6VDisX >= MAX_SYNC_RANGE + 2 || nS6VDisY >= MAX_SYNC_RANGE + 2))
 	{
 		// [S6 26/08] Duong MO COI thu 2: NPC cach nguoi choi >= 40 o bi go khoi region
@@ -1077,7 +1078,7 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 		return;
 	}
 
-	if (!IsPlayer() && SubWorld[0].m_dwCurrentTime - m_SyncSignal > 120)
+	if (!IsPlayer() && m_sClientNpcID.m_dwRegionID == 0 && SubWorld[0].m_dwCurrentTime - m_SyncSignal > 120)	// [TRANGTRI 11/09]
 	{
 		// [S6 26/08] Duong MO COI thu 3: NPC cam goi sync > 120 tick (~6,7 s) bi go khoi
 		// region. XAC (doing=10) chac chan roi vao day vi SyncNpcMin bo qua goi cua NPC chet.
