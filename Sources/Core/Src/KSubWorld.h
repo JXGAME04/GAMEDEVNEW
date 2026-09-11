@@ -33,6 +33,13 @@ void KSubWorld_FireMapScript(int nSubWorldIndex, const char* szFun, int nPlayerI
 // Cau truc phai o NGOAI moi cong bien dich vi hai phia deu dung. Rieng MAX_CELL thi
 // CHI client dung (mang tinh); server cap phat heap dung co luoi that.
 #define FINDPATH_VERSION	0	//t¡§ng lan ?¨® c?p nh?t d¡Â li?u map m¨ªi
+// [OGOC 10/09] Khoa cache .fp RIENG cho client. Cache client truoc gio khoa bang
+// FINDPATH_VERSION = 0 va CHUA BAO GIO doi, ke ca khi predicate luoi doi (18/08
+// acefe7cf: o goc tu DI DUOC -> VAT CAN) - luc do chi nang kMagic cua cache MAY CHU.
+// Hau qua: may client giu luoi CU, may dung lai giu luoi MOI -> khong nhat quan,
+// va map nao dung lai thi CHAN GOC HEP. Nang khoa nay = moi cache client tu tinh
+// lai mot lan theo predicate da sua ben duoi. KHONG dung cache may chu (kMagic).
+#define FINDPATH_VERSION_CLIENT	1	// 10/09: tra o goc ve DI DUOC cho client
 #define MAX_CELL		2400000
 struct VGridNode
 {

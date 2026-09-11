@@ -437,10 +437,16 @@ void KSubWorld::ProcLoadPathGrid()
 					// cua Lam Du Quan (319:1630,3592) + Chan nui TB (320:1146,3130) nam GON trong
 #ifdef _SERVER
 					// (19/08) chi SERVER ap luat "thieu du lieu = vat can": cache client %d.fp
-					// khoa bang FINDPATH_VERSION=0 khong doi, ap chung se lech ngu nghia.
+					// khoa bang FINDPATH_VERSION_CLIENT rieng, ap chung se lech ngu nghia.
+					// [OGOC 10/09] O GOC = VAT CAN chi giu cho SERVER (bot khong leo vach, 18/08 acefe7cf).
 					if(lInfo == 0 && bCoTep)   // bCoObs => bCoTep, xem chu thich tren
 #else
-					if(lInfo == 0)
+					// [OGOC 10/09] HOI QUY "A* dung o goc hep": 18/08 bo nhanh o goc lam luoi CLIENT coi
+					// o goc la vat can, chat hon ENGINE THAT (GetBarrier cho di NUA O cheo,
+					// KRegion.cpp:927-941) => nguoi choi bi chan o loi hep ma than the qua duoc.
+					// Luat do sinh ra de chan BOT leo vach nen chi can o SERVER. Tra client ve nhu cu.
+					int lType = (lInfo >> 4) & 0x0000000f;
+					if((lType >= Obstacle_LT && lType <= Obstacle_RB) || lInfo == 0)
 #endif
 					m_GridNode[id].obs = 0;
 					else
@@ -2532,7 +2538,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			//g_DebugLog("Filesan 1");
 			UINT uVersion;
 			File.Read(&uVersion, sizeof(UINT));
-			if(uVersion == FINDPATH_VERSION)
+			if(uVersion == FINDPATH_VERSION_CLIENT)	// [OGOC 10/09] khoa rieng client
 			{
 				File.Read(&uVersion, sizeof(UINT));
 				const int nAllCellCache = m_nGridW*m_nRegionWidth * m_nGridH*m_nRegionHeight;	// [RAMTINH 08/09] cap dung co + doi chieu kich thuoc (cache lech -> dung lai)
@@ -2566,7 +2572,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			int nAllCell  = m_nGridW*m_nRegionWidth * m_nGridH*m_nRegionHeight;
 			KFile WFile;
 			WFile.Create(szFile);
-			UINT uVersion = FINDPATH_VERSION;
+			UINT uVersion = FINDPATH_VERSION_CLIENT;	// [OGOC 10/09] khoa rieng client
 			WFile.Write(&uVersion, sizeof(UINT));
 			uVersion = sizeof(VGridNode)*nAllCell;
 			WFile.Write(&uVersion, sizeof(UINT));
