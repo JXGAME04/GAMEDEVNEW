@@ -37,6 +37,9 @@
 #include "KNewProtocolProcess.h"
 #endif
 #include "KSortScript.h"
+#ifdef JX_ANDROID
+#include "KPakFile.h"	// [INCLUDE 14/09 PAK] Include() doc lai tu pak khi khong co tep roi
+#endif
 #ifndef __linux
 #include "Shlwapi.h"
 #include "windows.h"
@@ -2019,6 +2022,62 @@ static void sJX2RemapScriptPath(char* szFull)
 	}
 }
 
+#ifdef JX_ANDROID
+// [INCLUDE 14/09 PAK] Dien thoai chi co mobile_NN.pak, KHONG co tep roi script\: lua_dofile (= fopen that qua jx_lua_fopen ->
+// JxPathPosix, khong biet pak) khong mo duoc -> Include im lang -> ScriptProtocol / ObjBuffer / AUCTION_DEF = nil
+// (ScriptError.log Fold 7 01:44 14/09: protocol_def_c.lua:146, uiauction_house.lua:10, uimail.lua:387/540) -> dau gia
+// khong mo, mat icon Chien Lenh, hop thu trong. May ao / PC co tep roi nen lua_dofile luon thanh cong, khong toi day.
+// Doc lai qua KPakFile (dia truoc, pak sau - cung duong KLuaScript::Load nap uimail.lua tu pak) roi chay than tep trong
+// DUNG state L bang lua_dobuffer (= luaL_loadbufferx + l4_gan_env + lua4_call, y nhu lua4_dofile). Tra 1 = da chay xong.
+static int sIncludeTuPak(Lua_State* L, const char* pFileName)
+{
+	char szTen[MAX_PATH];
+	char szChunk[MAX_PATH + 2];
+	KPakFile File;
+	DWORD dwSize;
+	char* pBuf;
+	int nRc;
+	if (!pFileName || !pFileName[0])
+		return 0;
+	// dang "\script\..." chu thuong, dau '\\' (nhu sClientLoad ha chu roi KLuaScript::Load): id pak bam tu ten nay
+	szTen[0] = '\\';
+	g_StrCpyLen(szTen + 1, (char*)(pFileName + ((pFileName[0] == '\\' || pFileName[0] == '/') ? 1 : 0)), MAX_PATH - 2);
+	for (int i = 1; szTen[i]; i++)
+		if (szTen[i] == '/') szTen[i] = '\\';
+	strlwr(szTen);
+	if (!File.Open(szTen))
+	{
+		g_DebugLog((LPSTR)"[script] Include pak: khong thay %.200s", szTen);
+		return 0;
+	}
+	dwSize = File.Size();
+	pBuf = new char[dwSize + 1];
+	if (!pBuf)
+	{
+		File.Close();
+		return 0;
+	}
+	if (File.Read(pBuf, dwSize) != dwSize)
+	{
+		File.Close();
+		delete[] pBuf;
+		g_DebugLog((LPSTR)"[script] Include pak: doc hong %.200s", szTen);
+		return 0;
+	}
+	File.Close();
+	pBuf[dwSize] = 0;
+	szChunk[0] = '@';	// ten chunk = "@" + ten tep -> loi ghi "\script\x.lua:12:" nhu KLuaScript::LoadBuffer
+	g_StrCpyLen(szChunk + 1, szTen, MAX_PATH);
+	nRc = lua_dobuffer(L, pBuf, dwSize, szChunk);
+	delete[] pBuf;
+	if (nRc != 0)
+	{
+		g_DebugLog((LPSTR)"[script] Include pak: than tep loi %d %.200s", nRc, szTen);
+		return 0;	// ben goi ghi "Include HONG" nhu lua_dofile loi; cau loi da nam trong ScriptError.log
+	}
+	return 1;
+}
+#endif
 int LuaIncludeFile(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) <= 0) return 0;
@@ -2071,7 +2130,14 @@ int LuaIncludeFile(Lua_State* L)
 		// doi (lua_dofile tra LUA_ERRFILE, khong nem loi, khong ghi log) ->
 		// khong the dung log de ket luan cay script sach.
 		if (lua_dofile(L, lszCurrentDirectory) != 0)
+		{
+#ifdef JX_ANDROID
+			// [INCLUDE 14/09 PAK] tep roi khong co (dien thoai chi co pak) -> doc lai tu pak, xem sIncludeTuPak
+			if (sIncludeTuPak(L, pFileName))
+				return 0;
+#endif
 			g_DebugLog((LPSTR)"[script] Include HONG: %.200s", lszCurrentDirectory);
+		}
 		return 0;
 	}
 	else
