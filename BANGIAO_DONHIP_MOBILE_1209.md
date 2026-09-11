@@ -5,6 +5,29 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **15:25 11/09 — KẾT QUẢ FOLD 7 BẢN D1 109111459 (phiên `SM-F966U1_20260911_151020`, màn trong, 12 phút, gần như toàn bộ là Tống Kim; máy BẮT ĐẦU
+> ĐÃ NÓNG: nhiệt 3, headroom 0,98, 37,1 °C — ngay sau 55 phút Tống Kim của phiên 14:16).** Chủ 15:20: "lấy log đi bạn". `[D1] swapchain 1040x936 | backbuffer
+> 1040x936 | cua so 2184x1968 | SDL: tao 1040x936; extent min 1x1 max 4096x4096` → đúng thiết kế, không lỗi, không "tắt hint".
+>
+> | Tống Kim (npc 60–200, trung vị cửa sổ 30 s) | 14:16 trước D1 (84 cửa sổ) | 15:10 D1 (20 cửa sổ) |
+> |---|---|---|
+> | fps / fps nhỏ nhất trong cửa sổ | 109 / 96 | **115 / 110** |
+> | paint ms | 8,0 | 7,2 |
+> | nộp TB (max) ms — chờ GPU | 1,6 (10,7) | **0,8 (5,9)** |
+> | GPU bận @ xung | **83 % @ 648 MHz** | **73 % @ 336 MHz** |
+> | điện W | **4,61** | **3,35 (−27 %)** |
+> | CPU tiến trình / luồng chính | 73 / 68 % | 76 / 70 % |
+> | nhiệt / headroom | 3 / 0,98 | 2 / 0,90 (giảm dù đang đánh) |
+>
+> Cửa sổ đông nhất (npc ≥ 100): đạn 85 → **118/tick (nặng hơn)** mà fps 107 (min 92) → **115 (min 112)**, GPU 85 % @ 655 → 74 % @ 332 MHz, W 4,75 → 3,36;
+> cửa sổ 801 đạn/tick + 145 NPC + 2 797 lệnh: **111 fps** (trước D1 các cửa sổ 700–900 đạn/tick chỉ 70–89 fps) — nhưng CPU 96 / 85 % → **CPU giờ là
+> nút thắt lúc đông nhất** (ghi 3,2 ms, vẽ CPU 3,3 ms). Nhiệt độ pin 37,1 → 36,1–36,4 °C **giảm trong lúc đánh** (phiên trước tăng 33 → 37,3); pin 26 → 22 %
+> trong 11 phút (22 %/giờ, trước 26 %/giờ). `[VE-GIAT]` 171 dòng: "vẽ khác" 155 (CPU vẽ lúc đông), **nộp 3 (trước 62)**, chép 1. Đăng nhập 30 fps, 20 lần `[DOI]`
+> đầu phiên (Samsung đổi 60/120 lúc mở app), không "that bai". Cảnh yên chỉ 1 cửa sổ (chủ vào Tống Kim ngay): 1,16 W lúc máy còn nóng.
+> **Kết luận:** D1 làm đúng việc — GPU không còn là nút thắt (nộp/chờ GPU giảm 2–3 lần, xung GPU giảm một nửa), điện Tống Kim −27 %, fps lúc đông nhất
+> 70–89 → 111–115 và máy nguội dần thay vì nóng lên. Hình ảnh: chờ chủ xác nhận bằng mắt (log không thấy được). **Việc kế: C** (gộp lệnh: CPU 96 / 85 % ở
+> 800 đạn/tick), rồi **A2** (lưới an toàn nhiệt) và **BKG b** (xin 60 Hz khi đứng yên).
+
 > **15:15 11/09 — D1 ĐÃ LÊN BỘ TẢI: `[D1 11/09]` swapchain theo KHUNG LOGIC** — commit `9851000b` = `origin/mobile-0809` (FF cả `wt_mobile`), **dt_v4 = 109111459**
 > (md5 `cf951865…`, 20 256 751 B, máy chủ 8765 PID 366076, tệp rời giữ nguyên), APK lưu `android/apk/jx1mobile-1109-d1.apk`. Chủ 14:55: "làm d1 ngay"
 > (log 14:16: Tống Kim màn trong GPU bận 82–99 % ở 650–950 MHz trong khi game chỉ vẽ 1040×936).
