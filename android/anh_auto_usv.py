@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
-r"""[AUTO 12/09 USV b] Chu 17:50: "ban lay icon nay thay vao Auto duoc" + "ban da thay icon Auto thanh hinh
-BONG HOA cho toi dau".
+r"""[AUTO 12/09 HOA] Chu 17:55 gui anh va bao: "ban lay icon nay thay vao Auto duoc", "ban da thay icon Auto
+thanh hinh BONG HOA cho toi dau", "anh nay ne".
 
-Anh chu gui la nut tron DO cua bo auto ban USVOLAM / GHM (kho tham khao C:\Users\nguye\Downloads\NHACTAI\GHM_auto):
-dia do vien vang, giua la banh rang vang + chu "CONFIG AUTO" - thu nho bang o icon thi nhin dung nhu mot bong hoa
-do nhuy vang. Truoc do toi tu GHEP (vong tron kiem cheo + chu "Auto") nen chu bao "khong phai ban che".
+Anh chu gui la BONG HOA DO la xanh, 18x20, co san trong kho VNKU:
+    VNKU_ui\png\_khong_ro_ten\uid2DA73294_0284.png   (trung y het uidE776E440_1757.png - cung mot anh, hai ma)
+Lay NGUYEN anh do lam icon Auto tren thanh cong cu, chi PHONG DOI (2x, kieu diem anh - khong lam nhoe net ve
+tay), roi can giua o 48x48:
+    spr\uinew\uitoolscontrolbar\auto_m.spr   48x48, 2 khung
+      [0] auto TAT : bong hoa lam MO di (nhu moi nut khac cua thanh cong cu: xam = dang tat)
+      [1] auto BAT : bong hoa nguyen ban
+Muon hai khung y het nhau (khong phan biet bat / tat) thi dat MO_KHI_TAT = 0.
 
-Bo sinh nay lay NGUYEN hai anh co san, chi thu nho cho vua o icon (khong ghep, khong ve them):
-  spr\uinew\uitoolscontrolbar\auto_m.spr   48x48, 2 khung:
-      [0] auto TAT  = config_auto.png     (do tham)
-      [1] auto BAT  = config_auto_2.png   (cung anh, ban sang hon - dang bam / dang bat)
-  Kem theo: ui\Ui3\uitoolscontrolbar.ini muc [WAuto] Height 56 -> 48 (anh tron, khong con cho chu ghep ben duoi).
-
+Truoc do toi tu GHEP vong tron kiem cheo VNKU voi chu "Auto" - do la CHE, chu khong nhan; roi doan nham sang nut
+tron do "CONFIG AUTO" cua kho GHM. Lan nay lay dung anh chu gui.
 Nguon CHI DOC. Dung: python android\anh_auto_usv.py
 """
 import io
@@ -25,61 +26,54 @@ sys.path.insert(0, GOC)
 from bo_cuc_vnku_mobile import ghi_spr_nhieu_khung, ghi_moi_noi  # noqa: E402
 
 #   kho tham khao CHI DOC (xem MEMORY: jx1-mobile-nguon-tham-khao)
-KHO = r"C:\Users\nguye\Downloads\NHACTAI\GHM_auto"
-E_TAT = "config_auto.png"       # dia do, banh rang vang, chu CONFIG AUTO
-E_BAT = "config_auto_2.png"     # cung anh, ban sang hon
+KHO = os.path.join(os.path.expanduser("~"), "Downloads", "NHACTAI", "VNKU_ui", "png", "_khong_ro_ten")
+E_HOA = "uid2DA73294_0284.png"
 ICON = 48
+PHONG = 2               # phong theo LAN nguyen (diem anh sac net), 18x20 -> 36x40
+MO_KHI_TAT = 55         # khung "auto tat" sang bao nhieu % (0 = tat han buoc lam mo, hai khung y het nhau)
 
 
-def cat_vien(im):
-    """Bo vien trong suot roi tra ve hinh VUONG (thu nho khong meo)."""
+def doc_hoa():
+    p = os.path.join(KHO, E_HOA)
+    if not os.path.isfile(p):
+        raise SystemExit("khong thay %s" % p)
+    im = Image.open(p).convert("RGBA")
     bb = im.getchannel("A").point(lambda a: 255 if a > 20 else 0).getbbox()
     if bb:
         im = im.crop(bb)
-    c = max(im.size)
-    o = Image.new("RGBA", (c, c), (0, 0, 0, 0))
-    o.alpha_composite(im, ((c - im.size[0]) // 2, (c - im.size[1]) // 2))
+    return im.resize((im.size[0] * PHONG, im.size[1] * PHONG), Image.NEAREST)
+
+
+def vao_khung(im):
+    o = Image.new("RGBA", (ICON, ICON), (0, 0, 0, 0))
+    if im.size[0] > ICON or im.size[1] > ICON:
+        im = im.copy()
+        im.thumbnail((ICON, ICON), Image.NEAREST)
+    o.alpha_composite(im, ((ICON - im.size[0]) // 2, (ICON - im.size[1]) // 2))
     return o
 
 
-def doc(ten):
-    p = os.path.join(KHO, ten)
-    if not os.path.isfile(p):
-        raise SystemExit("khong thay %s" % p)
-    return cat_vien(Image.open(p).convert("RGBA")).resize((ICON, ICON), Image.LANCZOS)
-
-
-def sua_ini():
-    """[WAuto] cao 56 (cho vong tron + chu "Auto" ghep) -> 48: anh moi la mot hinh tron da co chu ben trong."""
-    p = os.path.join(GOC, "du_lieu_ghi_de", "ui", "Ui3", "uitoolscontrolbar.ini")
-    s = io.open(p, encoding="latin-1", newline="").read()
-    nl = "\r\n" if s.count("\r\n") > s.count("\n") // 2 else "\n"
-    dau = s.find("[WAuto]")
-    if dau < 0:
-        print("  (khong thay muc [WAuto] trong ini)")
-        return
-    cuoi = s.find(nl + "[", dau + 1)
-    khoi = s[dau:cuoi if cuoi > 0 else len(s)]
-    moi = khoi.replace("Height=56", "Height=%d" % ICON)
-    if moi == khoi:
-        print("  (ini da dung co roi)")
-        return
-    s = s[:dau] + moi + s[dau + len(khoi):]
-    io.open(p, "w", encoding="latin-1", newline="").write(s)
-    print("  sua ini: [WAuto] Height -> %d" % ICON)
-    ghi_moi_noi(os.path.join("ui", "Ui3", "uitoolscontrolbar.ini"), io.open(p, "rb").read())
+def lam_mo(im, pt):
+    """Khung 'dang tat': giu nguyen hinh, chi ha do sang - giong cach cac nut khac tren thanh cong cu."""
+    o = im.copy()
+    px = o.load()
+    for y in range(o.size[1]):
+        for x in range(o.size[0]):
+            r, g, b, a = px[x, y]
+            px[x, y] = (r * pt // 100, g * pt // 100, b * pt // 100, a)
+    return o
 
 
 def main():
-    khung = [doc(E_TAT), doc(E_BAT)]
+    hoa = vao_khung(doc_hoa())
+    khung = [lam_mo(hoa, MO_KHI_TAT) if MO_KHI_TAT else hoa, hoa]
     rel = os.path.join("spr", "uinew", "uitoolscontrolbar", "auto_m.spr")
-    tmp = os.path.join(os.environ.get("TEMP", GOC), "auto_usv_tmp.spr")
+    tmp = os.path.join(os.environ.get("TEMP", GOC), "auto_hoa_tmp.spr")
     msg = ghi_spr_nhieu_khung(khung, tmp)
     print("%-48s %dx%d x%d  %s" % (rel, ICON, ICON, len(khung), msg))
     ghi_moi_noi(rel, io.open(tmp, "rb").read())
     for i, k in enumerate(khung):
-        k.save(os.path.join(os.environ.get("TEMP", GOC), "auto_usv_%d.png" % i))
-    sua_ini()
+        k.save(os.path.join(os.environ.get("TEMP", GOC), "auto_hoa_%d.png" % i))
     print("xong")
 
 
