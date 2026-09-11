@@ -83,6 +83,7 @@ static unsigned int	s_uHetThongBao	= 0;
 static void UiToaDoM_KhongGian(int* pnL, int* pnT, int* pnW, int* pnH);	// khong gian bo cuc = vung an toan
 static int  s_nGhiKgL = 0, s_nGhiKgT = 0;	// goc vung an toan luc GhiTepVao (dung truoc cho .inc)
 static bool UiToaDoM_LaGoc(const char* pszKhoa);
+static int  UiToaDoM_NhatKy(void);	// [SUAGD 13/09 g] muc [Ui] NhatKyBoCuc (2 = ghi tung o duoc ap, tim o bi nhay ve cho cu)
 static int  UiToaDoM_HoKhung();
 static bool UiToaDoM_CoTep(const char* pszTep);
 static void UiToaDoM_SauMacDinh();
@@ -757,6 +758,10 @@ static void ApMotO(KWndWindow* pWnd, int nMuc)
 	//	KWndMovingImage chup vi tri goc cua hoat hinh mo cua so luc Init, tuc
 	//	TRUOC luc nay => phai bao no chup lai, khong thi mo/dong lai la nhay ve cho cu
 	pWnd->UiNhoViTri();
+#ifdef JX_ANDROID
+	if (UiToaDoM_NhatKy() >= 2)	// [SUAGD 13/09 g] NhatKyBoCuc=2: ghi tung o duoc ap (tim o bi nhay ve cho cu)
+		g_DebugLog("[UITOADO] ap %s -> %d,%d", s_Bang[nMuc].szKhoa, s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
+#endif
 	if (s_Bang[nMuc].nTiLe > 0 && s_Bang[nMuc].nTiLe != 1000 && !CamCoGian(pWnd))
 		pWnd->UiDatTiLe(s_Bang[nMuc].nTiLe);
 	pWnd->UiDatAn(s_Bang[nMuc].nCo & UITOADO_CO_AN);

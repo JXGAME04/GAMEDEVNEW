@@ -17,6 +17,13 @@
 #include "UiGame.h"		// [ANDROID 09/09 MENU] PopUpContextPeopleMenu
 #endif
 #include "UiSysMsgCentre.h"
+#ifdef JX_ANDROID
+//	[SUAGD 13/09 g] Thanh mau do cua muc tieu do Core ve o toa do CO DINH (KNpc::PaintTargetInfo: x 420, y 55..65 theo
+//	khung 800x600 voi [Main] o 370,0). Nguoi choi doi khung nay trong "Chinh giao dien" (hoac bo neo doi tren man rong)
+//	thi bao cho Core khung da doi bao nhieu so voi ini de thanh mau di theo. KNpc.cpp doc hai bien nay.
+extern int g_nJxMucTieuDichX, g_nJxMucTieuDichY;	// dinh nghia trong KNpc.cpp (Core)
+static int s_nJxMucTieuIniX = 370, s_nJxMucTieuIniY = 0;	// [Main] Left/Top trong kuitargetinfo.ini
+#endif
 #include "../../../core/src/CoreShell.h"
 #include <crtdbg.h>
 extern iCoreShell*		g_pCoreShell;
@@ -167,6 +174,15 @@ void KUiTargetInfo::PaintWindow()
 	if (g_pRepresentShell == NULL)
 		return;
 
+#ifdef JX_ANDROID
+	{	//	[SUAGD 13/09 g] khung da bi doi bao nhieu so voi ini -> thanh mau do (Core ve) di theo
+		int x = 0, y = 0;
+
+		GetAbsolutePos(&x, &y);
+		g_nJxMucTieuDichX = x - s_nJxMucTieuIniX;
+		g_nJxMucTieuDichY = y - s_nJxMucTieuIniY;
+	}
+#endif
 	g_pCoreShell->OperationRequest(GOI_DRAW_TARGET_INFO, (KUPARAM)m_pPlayersList, (KUPARAM)nPainTMG);
 
 }
@@ -219,6 +235,10 @@ void KUiTargetInfo::LoadScheme(const char *pScheme)
 		Ini.GetInteger("Main", "nWid",  58, &nWid);
 		Ini.GetInteger("Main", "nHei_life",  7, &nHei_life);
 		Ini.GetInteger("Main", "nHei_mana",  4, &nHei_mana);
+#ifdef JX_ANDROID
+		Ini.GetInteger("Main", "Left", 370, &s_nJxMucTieuIniX);	// [SUAGD 13/09 g]
+		Ini.GetInteger("Main", "Top", 0, &s_nJxMucTieuIniY);
+#endif
 
         KWndShowAnimate::Init(&Ini, "Main");
 #ifdef JX_ANDROID

@@ -22,7 +22,7 @@ import sys
 GOC = os.path.dirname(os.path.abspath(__file__))
 LOP = os.path.join(GOC, "du_lieu_ghi_de", "ui")
 MAYAO = r"D:\jx1_android_data"
-HIEN_LAI = ["KUiPlayerBar|AutoPlay"]		# [SUAGD 13/09 e] giau trong tep nguon nhung mac dinh phai HIEN
+HIEN_LAI = []		# [SUAGD 13/09 e] khoa giau trong tep nguon nhung mac dinh phai HIEN (chu 13/09: nut Auto "du thua" -> de trong)
 
 
 def nguon_mac_dinh():

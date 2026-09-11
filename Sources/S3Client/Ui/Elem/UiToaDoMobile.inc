@@ -28,12 +28,14 @@ extern "C" void JxPlayerBar_NeoNhomTrenLai(void);	// UiPlayerBar.cpp
 #define	SUAGD_MAX_MUC		96
 #define	SUAGD_DUNGSAI		8		// cham cach mep o toi da bao nhieu diem van trung
 #define	SUAGD_BATDINH		6		// bat dinh mep / tam trong khoang nay
+#define	SUAGD_KEO_CHET		5		// [SUAGD 13/09 g] ngon phai di qua nguong nay moi bat dau doi (cham suong khong lam o nhich theo bat dinh)
 #define	SUAGD_UNDO_MAX		64
 #define	SUAGD_TILE_MIN		500		// nguoi choi: 50 %..200 %
 #define	SUAGD_TILE_MAX		2000
 #define	SUAGD_CO_KHONGPHONG	1		// co trong danh sach trang: khong cho to nho
 #define	SUAGD_CO_KHONGAN	2		// khong cho giau
 #define	SUAGD_CO_KHONGKEP	4		// khong kep vao vung an toan
+#define	SUAGD_CO_GOPCON		8		// [SUAGD 13/09 f] hinh = gop ca o con dang hien (khung goc nho hon phan hien: muc tieu, thanh tren)
 #define	SUAGD_PAD_O			64		// o nut cua bang chinh (mui ten, +, -); chu font 16 -> "Hoan tac" 8 chu x 8 px vua khit
 #define	SUAGD_PAD_CACH		5
 #define	SUAGD_PAD_TIEUDE	24		// hang tieu de (keo bang), chu 16
@@ -417,7 +419,9 @@ static const struct { const char* pszKhoa; int nCo; } s_DSMa[] =
 	{ "KUiCLIcon|Main", 0 }, { "KUiAuctionIcon|Main", 0 }, { "KUiMailIcon|Main", 0 },
 	{ "KUiChienLenh|Main", SUAGD_CO_KHONGPHONG }, { "KUiTaskTrace|Main", SUAGD_CO_KHONGPHONG },
 	{ "KUiMsgCentrePad|Main", SUAGD_CO_KHONGPHONG | SUAGD_CO_KHONGKEP }, { "KSysMsgCentrePad|SysRoom", SUAGD_CO_KHONGPHONG | SUAGD_CO_KHONGKEP },
-	{ "KUiSysMsgCentre|Main", SUAGD_CO_KHONGPHONG | SUAGD_CO_KHONGKEP }, { "KUiHeaderControlBar|Main", SUAGD_CO_KHONGPHONG },
+	{ "KUiSysMsgCentre|Main", SUAGD_CO_KHONGPHONG | SUAGD_CO_KHONGKEP }, { "KUiHeaderControlBar|Main", SUAGD_CO_KHONGPHONG | SUAGD_CO_GOPCON },
+	{ "KUiTargetInfo|Main", SUAGD_CO_KHONGPHONG | SUAGD_CO_GOPCON }, { "ThanhBuff", SUAGD_CO_KHONGPHONG },	// [SUAGD 13/09 f]
+	{ "KUiTongKimScore|Main", SUAGD_CO_KHONGPHONG }, { "KUiTongKimInfo|Main", SUAGD_CO_KHONGPHONG },	// [SUAGD 13/09 g]
 	{ "KyNang0", 0 }, { "KyNang1", 0 }, { "KyNang2", 0 }, { "KyNang3", 0 }, { "KyNang4", 0 },
 	{ "KyNang5", 0 }, { "KyNang6", 0 }, { "KyNang7", 0 }, { "KyNang8", 0 }, { "KyNangGan", 0 },
 	{ "IconNpc", SUAGD_CO_KHONGPHONG }, { "ThongTinGoc", SUAGD_CO_KHONGPHONG },
@@ -540,7 +544,7 @@ static void SuaGd_GopConHien(KWndWindow* pWnd, int* pl, int* pt, int* pr, int* p
 	}
 }
 
-static void SuaGd_HinhKWnd(KWndWindow* pWnd, int* pl, int* pt, int* pw, int* ph)
+static void SuaGd_HinhKWnd(KWndWindow* pWnd, int* pl, int* pt, int* pw, int* ph, int nCo = 0)
 {
 	int l = 0, t = 0, w = 0, h = 0;
 
@@ -558,6 +562,14 @@ static void SuaGd_HinhKWnd(KWndWindow* pWnd, int* pl, int* pt, int* pw, int* ph)
 		}
 		else
 			w = h = 0;		// khong con nao hien -> khong chon, khong kep
+	}
+	else if (nCo & SUAGD_CO_GOPCON)
+	{	//	[SUAGD 13/09 f] khung goc co kich thuoc nhung phan hien nam o cac o con (khung muc tieu 27x23 + hop ben duoi, thanh tren 17 px + dong so)
+		int  L = l, T = t, R = l + w, B = t + h;
+		bool bCo = true;
+
+		SuaGd_GopConHien(pWnd, &L, &T, &R, &B, &bCo);
+		l = L; t = T; w = R - L; h = B - T;
 	}
 	*pl = l; *pt = t; *pw = w; *ph = h;
 }
@@ -580,7 +592,7 @@ static void SuaGd_DuyetCay(KWndWindow* pWnd, bool bChaHien)
 				s_O[m].pWnd = pWnd;
 				s_O[m].nORieng = -1;
 				s_O[m].bHien = bHien;
-				SuaGd_HinhKWnd(pWnd, &s_O[m].nL, &s_O[m].nT, &s_O[m].nW, &s_O[m].nH);
+				SuaGd_HinhKWnd(pWnd, &s_O[m].nL, &s_O[m].nT, &s_O[m].nW, &s_O[m].nH, s_DS[m].nCo);
 			}
 		}
 		if (pWnd->GetFirstChild())
@@ -980,6 +992,7 @@ static bool	s_bKeoChon = false;		// dang keo o
 static KWndWindow* s_pKeoM = NULL;	// o KWnd dang keo (co the la CHA khi "ca cum")
 static char	s_szKeoMKhoa[UITOADO_CO_KHOA];
 static int	s_nKeoMORieng = -1;
+static bool	s_bKeoDaDi = false;	// [SUAGD 13/09 g] ngon da di qua SUAGD_KEO_CHET ke tu luc cham
 static int	s_nKeoNgonX = 0, s_nKeoNgonY = 0;	// cho dat ngon
 static int	s_nKeoGocX = 0, s_nKeoGocY = 0;		// vi tri o luc bat dau (KWnd: tuong doi; ORieng: tam)
 static int	s_nKeoAbsDX = 0, s_nKeoAbsDY = 0;	// hinh tuyet doi = vi tri + (dx, dy)
@@ -1052,6 +1065,7 @@ static void SuaGd_BatDauKeo(int m, int x, int y)
 	s_nKeoW = o->nW;
 	s_nKeoH = o->nH;
 	s_bKeoChon = true;
+	s_bKeoDaDi = false;	// [SUAGD 13/09 g]
 	SuaGd_UndoNhomMoi();
 	if (o->nORieng >= 0)
 	{
@@ -1076,7 +1090,7 @@ static void SuaGd_BatDauKeo(int m, int x, int y)
 		s_pKeoM = p;
 		s_nKeoMORieng = -1;
 		p->GetPosition(&s_nKeoGocX, &s_nKeoGocY);
-		SuaGd_HinhKWnd(p, &al, &at, &aw, &ah);
+		SuaGd_HinhKWnd(p, &al, &at, &aw, &ah, (p == o->pWnd) ? s_DS[m].nCo : 0);
 		s_nKeoAbsDX = al - s_nKeoGocX;
 		s_nKeoAbsDY = at - s_nKeoGocY;
 		s_nKeoW = aw;
@@ -1781,6 +1795,7 @@ static bool UiToaDoM_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam
 					if (s_ORieng[k].pfnTrung(s_ORieng[k].pNgu, x, y))
 					{
 						s_bKeoChon = true;
+						s_bKeoDaDi = false;	// [SUAGD 13/09 g]
 						s_nKeoMORieng = k;
 						s_pKeoM = NULL;
 						s_nKeoNgonX = x;
@@ -1816,7 +1831,14 @@ static bool UiToaDoM_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam
 			break;
 		}
 		if (s_bKeoChon)
+		{	//	[SUAGD 13/09 g] cham suong: chua di qua nguong thi khong doi, khong bat dinh (truoc day cham la o nhich toi 6 diem)
+			int ddx = x - s_nKeoNgonX, ddy = y - s_nKeoNgonY;
+
+			if (!s_bKeoDaDi && ddx * ddx + ddy * ddy < SUAGD_KEO_CHET * SUAGD_KEO_CHET)
+				break;
+			s_bKeoDaDi = true;
 			SuaGd_Keo(x, y);
+		}
 		break;
 
 	case WM_LBUTTONUP:
@@ -2107,4 +2129,10 @@ void UiToaDo_NhipMobile()
 		s_bDaGhiSoLieu = true;
 		SuaGd_GhiSoLieu();
 	}
+}
+//	[SUAGD 13/09 g] muc nhat ky bo cuc cho UiToaDo.cpp (ApMotO) - khai bao truoc o dau UiToaDo.cpp
+static int UiToaDoM_NhatKy(void)
+{
+	SuaGd_DocCauHinh();
+	return s_nNhatKyBoCucM;
 }
