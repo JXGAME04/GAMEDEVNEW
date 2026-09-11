@@ -158,6 +158,12 @@ public:
 	BOOL		AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
 	BOOL		DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
 	int			FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation, int nPreferIdx = 0);
+#ifdef JX_ANDROID
+	// [DAN 11/09 b] so NPC dang dung tren mot o (bo dem m_pNpcRef, cung du lieu FindNpc dung de thoat som). KMissle bo qua o trong
+	// TRONG VUNG truoc khi goi GetOffsetAxis/FindNpc - FindNpc von tra 0 khi o trong nen ket qua y het. Ngoai bien -> 0 (khong dung de bo qua).
+	inline int	JxSoNpcO(int nMapX, int nMapY) const { return (m_pNpcRef && nMapX >= 0 && nMapY >= 0 && nMapX < m_nWidth && nMapY < m_nHeight) ? (int)m_pNpcRef[nMapY * m_nWidth + nMapX] : 0; }
+	inline bool	JxOTrongVung(int nMapX, int nMapY) const { return nMapX >= 0 && nMapY >= 0 && nMapX < m_nWidth && nMapY < m_nHeight; }
+#endif
 	int			FindNpcDuyet(int nMapX, int nMapY, int nNpcIdx, int nRelation, int nPreferIdx);	// [VUNG 09/09] duong duyet danh sach cu (may chu dung; client dung de do lech)
 	int			FindEquip(int nMapX, int nMapY);
 	int			FindObject(int nMapX, int nMapY, bool bAutoFind = false);

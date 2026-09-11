@@ -325,10 +325,29 @@ Kết luận (thay cho §8 "Đọc log lần tới"):
 - So với ghi chú 11/09 (LDPlayer, Tống Kim, mục tiêu 60 khung/s, "tick < 1,1 ms"): trên Fold 7 mục tiêu 120 khung/s (8,3 ms) nên tick 10–15 ms
   giờ lộ thành tụt khung; trước đây ở 16,7 ms/khung nó "vừa lọt".
 
-Đề xuất bước tiếp (chưa làm, chờ chủ chốt; mọi thứ chỉ `JX_ANDROID`):
-- **Đo sâu "đạn"**: thêm `[DAN]` mỗi 10 s trong `KSubWorld`/`KMissile*`: số viên, số lần tìm mục tiêu, số node duyệt, thời gian từng phần
-  (di chuyển / va chạm / hiệu ứng) để biết phần nào của 5 ms/tick; rồi mới chọn: giới hạn số đạn xử lý mỗi tick, cache vùng, hay bỏ tìm mục tiêu
-  cho đạn của người khác (client chỉ cần vẽ). Không cắt hiệu ứng (luật chủ: không giảm cảm giác).
+Chủ chốt 01:00 11/09: *"cứ đối chiếu log để fix làm sao không tụt FPS khi đông người chơi mà không giảm trải nghiệm"* → làm theo thứ tự đo → sửa có
+công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
+- **Bước 1 (đã làm 01:15, commit [DAN 11/09])**: bộ đo `[DAN]` — `android/va_nguon_android_dan1.py` vá `KMissle.cpp` + `KSubWorldSet.cpp`
+  (neo lấy nguyên văn từ tệp, khớp trên bản LF vì tệp CRLF). Bucket "đạn" thật ra là vòng `KRegion::Activate` gọi `Missle[i].Activate()`
+  cho `m_MissleList` của 9 vùng (`KRegion.cpp:965`). `[DAN]` in mỗi 10 s cạnh `[WORLD b]` khi `PaintLog>0`: số viên/tick, µs/viên, thời gian
+  `OnFly` (trong đó `TestBarrier` × n, `CheckBeyondRegion`, `CheckCollision` × n với số `FindNpc` và số va chạm), `MoveObject` (cây Ipot),
+  phần còn lại (log/IsMatch/Map2Mps). Chi phí đo ~0,1 ms/tick ở 700 viên. Đã loại trừ trước khi đo: `AUTOLOG_EVERY` (chỉ `timeGetTime()`),
+  `g_AutoLog` (tệp mở sẵn, ≤ 1200 dòng/s, ~500 dòng/10 s), `S5LogScan` (chỉ server), `GetRelation` (tra bảng), đạn không làm rơi chỉ mục
+  NPC (`m_pMslRef`), `MAX_MISSLE` 3000 ô quét/tick. Lưu ý: bộ tải điện thoại đang `AutoLog=1 PaintLog=1` (lớp ghi đè mặc định 0).
+- **Bước 2 (đã làm 01:25, commit [DAN 11/09 b], `android/va_nguon_android_dan2.py`)** — `[DAN]` trên máy ảo (cảnh yên, 3,5 viên/tick) đã lộ
+  cấu trúc chi phí: mỗi `CheckCollision` gọi **~55 lần `FindNpc`** (quét ô 7×7 quanh đạn, `CollideRange` 3), mỗi ô đi qua `GetOffsetAxis`
+  mà hàm này mở đầu bằng `AUTOLOG_EVERY`; với `[Client] AutoLog=1` (bộ tải điện thoại **đang bật**, lớp ghi đè mặc định 0) mỗi site
+  `AUTOLOG_EVERY` = một `timeGetTime()` = `SDL_GetTicks()` (PLT + `clock_gettime`, ~50–80 ns). Mỗi viên mỗi tick ≈ 49 ô + ~12 site khác
+  ≈ 60 lần lấy giờ → 700 viên × 60 × ~70 ns ≈ **3 ms/tick** — đúng cỡ 4–5 ms đo được. Hai sửa, chỉ `JX_ANDROID`, **kết quả game y hệt**:
+  (B) `KCore.h`: `AUTOLOG_EVERY`/`AUTOLOG_IDX_EVERY` so với `g_uAutoLogNow` (cập nhật mỗi tick ở `KSubWorldSet::MainLoop` và mỗi lần
+  `g_AutoLog` ghi) thay vì gọi giờ ở mọi site — nhịp ghi log lệch tối đa 1 tick so với chu kỳ ≥ 500 ms. (C) `KMissle.cpp`: ba vòng quét ô
+  (`CheckCollision`, `CheckNearestCollision`, `ProcessCollision`) bỏ qua ô **trong vùng** không có NPC (`KRegion::JxSoNpcO` đọc bộ đếm
+  `m_pNpcRef`, cùng dữ liệu `FindNpc` dùng để thoát sớm) trước khi gọi `GetOffsetAxis`/`FindNpc`; ô ở biên vùng đi đường cũ. Khoá
+  `[Client] DanToiUu=0` tắt (C) để đối chứng. `[DAN]` thêm `boqua` (số ô bỏ qua) và `vacham` (ms/tick trong ProcessCollision + DoCollision).
+  Ngoài ra máy ảo cho thấy `hit` = `col` (432/432): đạn không phải kiểu bay thẳng thì `DoCollision` (hiệu ứng) lặp mỗi tick khi mục tiêu
+  trong tầm — hành vi gốc của kỹ năng liên tục, **không sửa** (giữ hiệu ứng).
+- Bước 3: chủ chơi đông với bản có [DAN 11/09 b] → đọc `[DAN]` (`tong`, `col`, `findnpc`, `boqua`, `vacham`) + fps; nếu `vacham` còn lớn
+  thì xét tiếp `CreateSpecialEffect`/`Collidsion`; nếu `khac` lớn thì xét `Map2Mps`/`IsMatch`/log. Không cắt hiệu ứng/NPC/đạn.
 - Nạp trước sprite NPC khi vào map (`NAPNPC` "trễ 437") — việc đã ghi trong [[mobile-tongkim-lag-goc]].
 - Sau khi bật nhịp PC mặc định: khi tick 10–15 ms xảy ra, `PaintSmooth=2` nội suy giúp mượt hơn (`cat ngang` thấp), nhưng không bù được khung mất.
 

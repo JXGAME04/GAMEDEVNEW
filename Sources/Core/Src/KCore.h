@@ -249,13 +249,24 @@ int  g_AutoLogWhoIdx(int nNpcIdx);	// (server) loc theo TEN cua Npc[chi so]; TU 
 // Tien ich: AUTOLOG(...) = ghi neu dang bat; AUTOLOG_EVERY(ms, ...) = tiet che theo
 // thoi gian (moi diem goi co bien static rieng nho khoi do{}while(0)).
 #define AUTOLOG(...)              do { if (g_AutoLogOn()) g_AutoLog(__VA_ARGS__); } while (0)
+#ifdef JX_ANDROID
+// [DAN 11/09 b] Android: timeGetTime() = SDL_GetTicks() (PLT + clock_gettime ~50-80 ns) goi o MOI site moi lan qua (GetOffsetAxis: 49 o/vien/tick)
+// -> so voi g_uAutoLogNow (cap nhat moi tick KSubWorldSet::MainLoop + moi lan g_AutoLog). Nhip ghi lech toi da 1 tick. Xem android/va_nguon_android_dan2.py
+extern DWORD g_uAutoLogNow;
+#define AUTOLOG_EVERY(ms, ...)    do { static DWORD s_uAutoLogT = 0; if (g_AutoLogOn()) { if ((DWORD)(g_uAutoLogNow - s_uAutoLogT) >= (DWORD)(ms)) { s_uAutoLogT = g_uAutoLogNow; g_AutoLog(__VA_ARGS__); } } } while (0)
+#else
 #define AUTOLOG_EVERY(ms, ...)    do { static DWORD s_uAutoLogT = 0; if (g_AutoLogOn()) { DWORD uAutoLogNow = timeGetTime(); if ((DWORD)(uAutoLogNow - s_uAutoLogT) >= (DWORD)(ms)) { s_uAutoLogT = uAutoLogNow; g_AutoLog(__VA_ARGS__); } } } while (0)
+#endif
 // AUTOLOG_IDX(idx, ...) / AUTOLOG_IDX_EVERY(idx, ms, ...): chi ghi khi Npc[idx].Name TRUNG voi
 // [AutoLog] Name= trong config.ini (de trong = ghi tat ca). Bat buoc o SERVER vi may chu dang chay
 // ~1000 bot, bot nao cung IsPlayer() => khong loc thi log cua nhan vat that bi che lap.
 // Loi the phu: doi so CHI duoc tinh khi dieu kien dung => Npc[idx] khong bi deref voi chi so xau.
 #define AUTOLOG_IDX(idx, ...)             do { if (g_AutoLogWhoIdx(idx)) g_AutoLog(__VA_ARGS__); } while (0)
+#ifdef JX_ANDROID
+#define AUTOLOG_IDX_EVERY(idx, ms, ...)   do { static DWORD s_uAutoLogTI = 0; if (g_AutoLogWhoIdx(idx)) { if ((DWORD)(g_uAutoLogNow - s_uAutoLogTI) >= (DWORD)(ms)) { s_uAutoLogTI = g_uAutoLogNow; g_AutoLog(__VA_ARGS__); } } } while (0)	// [DAN 11/09 b]
+#else
 #define AUTOLOG_IDX_EVERY(idx, ms, ...)   do { static DWORD s_uAutoLogTI = 0; if (g_AutoLogWhoIdx(idx)) { DWORD uAutoLogNowI = timeGetTime(); if ((DWORD)(uAutoLogNowI - s_uAutoLogTI) >= (DWORD)(ms)) { s_uAutoLogTI = uAutoLogNowI; g_AutoLog(__VA_ARGS__); } } } while (0)
+#endif
 
 BOOL InitGameSetting();
 BOOL InitSkillSetting();
