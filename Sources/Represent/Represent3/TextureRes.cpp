@@ -356,6 +356,13 @@ bool TextureResBmp::LoadJpegDecode(char* szImage)
 	m_FrameInfo.nTexNum = 1;
 	m_FrameInfo.texInfo[0].nWidth = FitTextureSize(m_nWidth);
 	m_FrameInfo.texInfo[0].nHeight = FitTextureSize(m_nHeight);
+	// [ANHNEN 10/09 b] anh nen canh cua ban 2.0 lon hon MAX_TEXTURE_SIZE (1024): anh nen Hoa Son 1640x2176,
+	// mogaoku.jpg 774x1500... FitTextureSize tra 0 nen truoc day bo anh (LoadImage FAIL type=0).
+	// Anh <= 1024 giu Y NGUYEN duong cu; anh lon hon dung DUNG CO (D3D11 cho NPOT), tran 4096.
+	if (m_FrameInfo.texInfo[0].nWidth == 0 && m_nWidth > 0 && m_nWidth <= 4096)
+		m_FrameInfo.texInfo[0].nWidth = m_nWidth;
+	if (m_FrameInfo.texInfo[0].nHeight == 0 && m_nHeight > 0 && m_nHeight <= 4096)
+		m_FrameInfo.texInfo[0].nHeight = m_nHeight;
 	if(m_FrameInfo.texInfo[0].nWidth == 0 || m_FrameInfo.texInfo[0].nHeight == 0)
 	{
 		release_image(m_pJpgCho); m_pJpgCho = NULL;

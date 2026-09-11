@@ -2280,10 +2280,14 @@ void KScenePlaceC::VeLopNen(KLopCanh* p)
 
 void KScenePlaceC::VeLopMay(KLopCanh* p)
 {
+	// [ANHNEN 10/09 b] may nam trong CANH (toa do the gioi) chu khong dan vao man hinh, neu khong thi
+	// may bam theo nguoi choi. Quan vong quanh khung nhin hien tai de luc nao cung co may tren man.
 	if (p->nSo <= 0 || p->nSoAnh <= 0)
 		return;
-	int nRong = p->rcMan.right - p->rcMan.left;
-	int nCao  = p->rcMan.bottom - p->rcMan.top;
+	RECT rcQuan = m_RepresentArea;
+	rcQuan.left -= 512; rcQuan.top -= 512; rcQuan.right += 512; rcQuan.bottom += 512;
+	int nRong = rcQuan.right - rcQuan.left;
+	int nCao  = rcQuan.bottom - rcQuan.top;
 	if (nRong <= 0 || nCao <= 0)
 		return;
 
@@ -2294,8 +2298,8 @@ void KScenePlaceC::VeLopMay(KLopCanh* p)
 		p->dwMoc = dwNay;
 		for (int k = 0; k < p->nSo; k++)
 		{
-			p->nMayX[k] = (p->rcMan.left + (rand() % nRong)) << 4;
-			p->nMayY[k] = (p->rcMan.top  + (rand() % nCao))  << 4;
+			p->nMayX[k] = (rcQuan.left + (rand() % nRong)) << 4;
+			p->nMayY[k] = (rcQuan.top  + (rand() % nCao))  << 4;
 			p->nMayAnh[k] = rand() % p->nSoAnh;
 		}
 	}
@@ -2307,7 +2311,6 @@ void KScenePlaceC::VeLopMay(KLopCanh* p)
 	double dGoc = (double)p->nGoc * 3.14159265358979 / 32.0;
 	int nDiX = (int)(sin(dGoc) * (double)p->nToc * 128.0 * (double)dwCach / 1000.0);
 	int nDiY = (int)(-cos(dGoc) * (double)p->nToc * 128.0 * (double)dwCach / 1000.0);
-	int nLe = 512 << 4;	// vien ra ngoai khung de may khong bi nhay
 
 	KRUImage aImg[LC_MAX_MAY];
 	int nSo = 0;
@@ -2315,10 +2318,11 @@ void KScenePlaceC::VeLopMay(KLopCanh* p)
 	{
 		p->nMayX[k] += nDiX;
 		p->nMayY[k] += nDiY;
-		if (p->nMayX[k] < (p->rcMan.left << 4) - nLe)  p->nMayX[k] += (nRong << 4) + nLe;
-		if (p->nMayX[k] > (p->rcMan.right << 4) + nLe) p->nMayX[k] -= (nRong << 4) + nLe;
-		if (p->nMayY[k] < (p->rcMan.top << 4) - nLe)    p->nMayY[k] += (nCao << 4) + nLe;
-		if (p->nMayY[k] > (p->rcMan.bottom << 4) + nLe) p->nMayY[k] -= (nCao << 4) + nLe;
+		// quan vong theo khung nhin: may ra ngoai mot ben thi dua sang ben kia (van la toa do canh)
+		while (p->nMayX[k] < (rcQuan.left << 4))  p->nMayX[k] += nRong << 4;
+		while (p->nMayX[k] > (rcQuan.right << 4)) p->nMayX[k] -= nRong << 4;
+		while (p->nMayY[k] < (rcQuan.top << 4))    p->nMayY[k] += nCao << 4;
+		while (p->nMayY[k] > (rcQuan.bottom << 4)) p->nMayY[k] -= nCao << 4;
 
 		KRUImage* q = &aImg[nSo];
 		memset(q, 0, sizeof(*q));
@@ -2336,7 +2340,7 @@ void KScenePlaceC::VeLopMay(KLopCanh* p)
 		nSo++;
 	}
 	if (nSo > 0)
-		g_pRepresent->DrawPrimitives(nSo, &aImg[0], RU_T_IMAGE, true);
+		g_pRepresent->DrawPrimitives(nSo, &aImg[0], RU_T_IMAGE, false);	// false = toa do CANH
 }
 
 BOOL KScenePlaceC::PaintBackGround() //add by phong kiÒu h×nh nÒn hoa s¬n
