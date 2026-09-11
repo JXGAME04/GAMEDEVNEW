@@ -448,3 +448,36 @@ lãnh địa (chưa động).
 
 **Triển khai:** CoreServer.dll + S3Relay.exe build lại (⊇ DELTA k b1308b4c); client không đổi. Script sống ngay (tong_mix.lua qua ExecuteScript2
 đọc tệp; bí danh chỉ đăng ký lúc GS boot → cần chạy lại GS = lúc swap).
+
+### 7.11 Lượt 6 của chủ (10/09 19:3x) — "nick người chơi khác chưa xuất sư vẫn vào bang được" — vá 10 [BHXS]
+
+**Luật xin vào bang CỦA DỰ ÁN (mã JX1 gốc, đường NPC/mời trực tiếp):** `KPlayerTong::ApplyAddTong` (client) + `CheckAddCondition`
+/ `TransferAddApply` (server):
+
+| # | Điều kiện | Câu báo (nguyên văn) |
+|---|---|---|
+| 1 | chưa có bang | `MSG_TONG_APPLY_ADD_ERROR1` "Thành viên bang hội không thể gia nhập thêm một bang hội khác!" |
+| 2 | trại `m_Camp` **và** `m_CurrentCamp` = `camp_free` (4, "sát thủ") = **đã xuất sư** | `MSG_TONG_APPLY_ADD_ERROR2` "Sát thủ mới có thể gia nhập bang hội!" |
+| 3 | cấp ≥ 60 (chỉ kiểm ở client JX1) | "Đẳng cấp dưới 60 không thể gia nhập bang hội" |
+| 4 | không đang giao dịch | (gốc im lặng) |
+| 5 | không trong tổ đội | `MSG_TONG_APPLY_ADD_ERROR3` "Trong tổ đội, không thể gia nhập bang hội!" |
+
+Xuất sư của dự án = `factionhead.lua xuatsu()`: `SetCamp(4) + SetCurCamp(4) + LeaveTeam() + SetTask(TASK_DUNGCHUNG2 = 4134, 1)`, menu
+"Xuất sư xuống núi" ở NPC môn phái chỉ hiện khi cấp ≥ 60 và cờ 4134 = 0; NPC lập bang (`lapbang.lua CreatTong`) cũng đòi `GetCamp() == 4`.
+Bảng chuỗi bản Linux (`stringtable_core.txt`) có đủ ba câu `MSG_TONG_APPLY_ADD_ERROR1/2/3`.
+
+**Lỗ:** đường cửa sổ bang JX2 (`COP_APPLY_JOIN` → `sJX2_DoApplyJoin`), `TONG_ApplyJoin` (Lua) và bot nộp đơn chỉ kiểm "chưa có bang" + ngưỡng cấp
+tự nhận/từ chối của bang (field 65/66). Nick chưa xuất sư (trại môn phái 1/2/3 hoặc tân thủ 0) nộp đơn được, được duyệt (hoặc vào thẳng khi đủ
+ngưỡng tự nhận) → `KPlayerTong::AddTong` đặt trại = trại bang. **Hệ quả phụ:** rời/bị đuổi khỏi bang (`BeKicked`/rời) đặt trại `camp_free` → nhân
+vật thành "sát thủ" mà **không làm nhiệm vụ xuất sư** (cờ 4134 vẫn 0).
+
+**Sửa [BHXS]:** `KTongJX2.cpp sJX2_JoinCondition` = 5 điều kiện trên (mã 13 đã có bang / 14 chưa xuất sư / 15 dưới cấp 60 / 16 giao dịch /
+17 tổ đội), gọi ở `sJX2_DoApplyJoin` (dùng chung cho cửa sổ, Lua, bot) **trước** nhánh vào thẳng; `COP_ACCEPT_APPLY` kiểm lại khi người xin đang
+online (đơn nộp trước bản vá, hoặc trại đổi sau khi nộp) → báo lý do cho người xin, người duyệt nhận "Người chơi này không đủ điều kiện gia nhập
+bang hội!", đơn giữ nguyên (bấm Từ chối để xoá; bang chủ bot gặp mã 5 tự từ chối). Người xin đã offline lúc duyệt: dựa vào kiểm lúc nộp.
+`TONG_ApplyJoin` trả thêm −2 chưa xuất sư / −3 dưới cấp 60 / −4 giao dịch hoặc tổ đội. **Không** kiểm cờ 4134: nhân vật xuất sư trước 24/08
+mang cờ ở task 12 cũ (`[FIX TRUNG TASK 24/08]`). Bot: khâu nộp đơn (`KPlayerBot.cpp` BUOC 5) rời nhóm bot trước như `xuatsu()`.
+Bộ test lệnh bài: Tiện ích hiện trại/cờ 4134, thêm "Xuất sư ngay cho tôi"; kết quả `TONG_ApplyJoin` giải nghĩa đủ mã.
+
+**Còn lại (không tự sửa):** nhân vật đã lọt vào bang bằng lỗ này rồi rời bang đang mang trại 4 mà cờ 4134 = 0; đơn chờ cũ của người chưa xuất sư
+nếu được duyệt lúc họ offline vẫn vào được. Chỉ CoreServer đổi, client không đổi.

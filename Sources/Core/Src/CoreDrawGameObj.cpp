@@ -26,6 +26,19 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 	case CGOG_NPC:
 		if (uId > 0)
 		{
+			// [TRANGTRI 11/09 f] NPC trang tri (ga, buom, chuon chuon...) cao chi vai chuc diem
+			// anh, bi chong THANH MAU + THE TEN + bieu tuong che kin. Lop the khong co y
+			// nghia gi voi chung (da khong the chon lam muc tieu) nen bo han, chi ve than.
+			if (Npc[uId].m_sClientNpcID.m_dwRegionID > 0)
+			{
+				if ((nParam & IPOT_RL_OBJECT) == IPOT_RL_OBJECT)
+				{
+					extern unsigned g_uTTVe;
+					g_uTTVe++;
+					Npc[uId].Paint();
+				}
+				break;
+			}
 			int nHeight = Npc[uId].GetNpcPate();
 			int nnHeight = nHeight;
 

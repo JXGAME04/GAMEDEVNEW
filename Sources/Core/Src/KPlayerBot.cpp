@@ -8848,6 +8848,11 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 		b.nBangNghiToi = now + (unsigned int)GAME_FPS;   // [BOTBANG5b] 1 giay/lan kiem, khoi PB_WalkTo + do_stand moi khung
 		return 1;                          // dang cho relay
 	}
+	// [BHXS 10/09] luat goc cua du an: dang trong to doi thi KHONG xin vao bang duoc (KTongJX2.cpp sJX2_JoinCondition
+	// ma 17 = MSG_TONG_APPLY_ADD_ERROR3). Bot xuat su tu truoc (khong qua xuatsu() -> LeaveTeam) co the dang o nhom
+	// bot (pb_GhepNhom) -> roi nhom nhu xuatsu() lam roi moi nop don.
+	if (pb_TrongNhom(nIdx))
+		pb_RoiNhomNguoi(nIdx, b, "xin vao bang: trong to doi khong nop don duoc");
 	// ---- BUOC 5: nop don xin vao DUNG bang cua nguoi ru ----
 	TONG_JX2OP_COMMAND sCmd;
 	memset(&sCmd, 0, sizeof(sCmd));
