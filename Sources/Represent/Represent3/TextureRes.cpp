@@ -635,12 +635,12 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 	if(m_pFrameInfo[nFrame].texInfo[0].pTexture)
 		return true;
 #ifdef JX_ANDROID
-	// [VE 11/09] dang ve: khung dang nap o luong nen -> bo ve khung nay; tong nap dong bo cua khung da qua NapKhungMs -> giao luong nen;
-	// con ngan sach -> nap dong bo nhu cu. Ca hai truong hop nap truoc NapKhungTruoc khung ke tiep cung huong o luong nen.
+	// [VE 11/09] dang ve ma tong nap dong bo cua khung da qua NapKhungMs: khung dang cho luong nen (hoac giao duoc ngay) -> bo ve khung nay
+	// mot khung; con ngan sach -> nap dong bo nhu cu (ke ca khi luong nen dang lam khung nay: ket qua ve sau bi bo, dem vao 'bo').
+	// Ca hai truong hop nap truoc NapKhungTruoc khung ke tiep cung huong o luong nen.
 	if (bPrepareTex && g_nJxNapKhungNen > 0 && g_pJxTexMgr && g_pJxTexMgr->m_bVeDangDien)
 	{
-		if (m_pFrameInfo[nFrame].nJxNen) { g_uJxNapKhungBoVe++; g_uJxNapKhungBoVeKhung++; g_nJxAnhBoVeNen = 1; return false; }
-		if (g_dRep3NapKhung >= (double)g_nJxNapKhungMs && JxNapKhungGiao(nFrame, 0))
+		if (g_dRep3NapKhung >= (double)g_nJxNapKhungMs && (m_pFrameInfo[nFrame].nJxNen || JxNapKhungGiao(nFrame, 0)))
 		{
 			JxNapKhungTruoc(nFrame);
 			g_uJxNapKhungBoVe++; g_uJxNapKhungBoVeKhung++; g_nJxAnhBoVeNen = 1; return false;

@@ -397,8 +397,9 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
     nền `SprGetFrame` (pak có khoá riêng) + giải mã RLE vào bộ đệm (`JxGiaiMaNen`, chỉ đọc header / offset / bảng màu bất biến; spr không nén
     theo khung thì đọc `pRawData` cố định từ lúc nạp); luồng vẽ ở `RepresentBegin` tạo texture từ kết quả (`JxNapKhungNhan`, tối đa `NapKhungApMs`
     ms/khung, phần dư để khung sau; ghi thẳng vào texture `POOL_DEFAULT` vì lớp SDL_GPU khoá được → bớt 1 cấp phát + 1 chép so với SYSTEMMEM +
-    `UpdateTexture`). Khung đang chờ thì bỏ vẽ khung đó một khung (như bỏ vẽ cả sprite của NAP 08/09 b), `Rep3AnhNullGhi` không tính là ảnh
-    thiếu. Cả hai nhánh (đồng bộ còn ngân sách / giao nền) đều nạp trước `NapKhungTruoc` khung kế tiếp cùng hướng (khung = hướng × số khung mỗi
+    `UpdateTexture`). Hết ngân sách mà khung đang chờ luồng nền (hoặc vừa giao được) thì bỏ vẽ khung đó một khung (như bỏ vẽ cả sprite của
+    NAP 08/09 b), `Rep3AnhNullGhi` không tính là ảnh thiếu; còn ngân sách thì nạp đồng bộ luôn kể cả khi luồng nền đang làm khung đó (kết quả
+    về sau bị bỏ, đếm vào "bỏ" của `[VE-NAP]`). Cả hai nhánh (đồng bộ còn ngân sách / giao nền) đều nạp trước `NapKhungTruoc` khung kế tiếp cùng hướng (khung = hướng × số khung mỗi
     hướng + chỉ số, xoay vòng trong hướng) để NPC đã hiện không nháy khi đổi khung. Vòng đời: `TextureResSpr::Release` → `JxNapKhungHuy` (bỏ
     việc chưa chạy, CHỜ việc đang chạy vài ms, bỏ kết quả); `NapNenDung` dọn hàng; luồng nền không bao giờ giữ `m_ImageProcessLock` nên không
     kẹt. `NapKhungNen=0` = như cũ. Hỏi kích thước / alpha từ logic (`m_bVeDangDien=false`) vẫn nạp đồng bộ như cũ — `[VE-NAP]` đếm riêng
