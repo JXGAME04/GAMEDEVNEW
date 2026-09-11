@@ -183,6 +183,13 @@ def goc_khac_main():
 
 
 GOC_LOP = {}
+#   [UITOADO 12/09 LE] le an toan (diem anh) cho mep trai - man dien thoai goc tron nuot mat dai sat mep;
+#   10 la vua du thay ma khong lam xe dich bo cuc.
+LE_AN_TOAN = 10
+#   cua so GOC nam dung x = 0 (day sang phai cho du le)
+SAT_MEP_TRAI = ("KSysMsgCentrePad|SysRoom", "KUiMsgCentrePad|Main")
+#   o CON nam dung x = 0 khi tinh ra tuyet doi (day theo toa do tuong doi)
+SAT_MEP_TRAI_CON = ("KUiPlayerBar|HideChat",)
 NGUON_CO = {}       # [UITOADO 12/09 CHUDAT] khoa co san trong tep nguon (bo cuc chu dat) - khong ghi de
 
 
@@ -346,6 +353,14 @@ def main():
             if la_main:                                        # o CON dung toa do tuong doi cha -> khong dich
                 nx += DX * neo_x // 2
                 ny += DY * neo_y // 2
+        #   [UITOADO 12/09 LE] chua LE AN TOAN o mep trai: man dien thoai bo goc tron / vien cong nen cai gi nam
+        #   dung x = 0 la bi nuot mat mot dai (chu bao o man ngoai Fold 7, khung 1440x616 - do duoc muon mui ten
+        #   cuon bang tin he thong va tab "<<" gap khung chat deu o x = 0). CHI day dung may muc do, khong dong
+        #   den cai khac: o CON dung toa do tuong doi cha nen day bua la lech han so voi khung cha.
+        if khoa in SAT_MEP_TRAI and neo_x == 0 and 0 <= nx < LE_AN_TOAN:
+            nx = LE_AN_TOAN
+        if khoa in SAT_MEP_TRAI_CON:                       # o con: day theo toa do tuong doi cho du le
+            nx += LE_AN_TOAN
         ra.append((khoa, nx, ny, tile, cocb, neo_x, neo_y))
     dau = ["; [UITOADO 12/09 RONG] Bo cuc mac dinh cho dien thoai man rong (sinh boi android/sinh_bocuc_rong.py tu uitoado_macdinh.ini).",
            "; Game chon tep nay khi khung ve co ti le >= 1,9 (UiToaDo.cpp). Moi dong: <lop>|<muc> = Left,Top,TiLe,Co,NeoX,NeoY",
