@@ -10,6 +10,14 @@
 
 #ifdef _SERVER
 
+// [TKMS 11/09] xem KMission.h IsSamePlayer
+unsigned long KMission_PlayerIdAt(unsigned long ulPlayerIndex)
+{
+	if (ulPlayerIndex == 0 || ulPlayerIndex >= MAX_PLAYER)
+		return 0;
+	return Player[ulPlayerIndex].m_dwID;
+}
+
 TMissionLadderInfo* KMission::GetMin(TMissionLadderInfo* const aMSLDList,const int n)//add by phong kiÒu using tèng kim
 {
 	TMissionLadderInfo* tmpData;
@@ -117,9 +125,14 @@ BOOL	KMission::StopMission()
 	int nIdx = 0;
 	nIdx = GetNextPlayer(nIdx, nTargetIndex);
 	while (nIdx)
-	{	
-		Npc[Player[nTargetIndex].m_nIndex].m_nMissionGroup = -1;
-		Player[nTargetIndex].SendMSGroup();
+	{
+		// [TKMS 11/09] chi cham vao nguoi con dung o (ID khop): muc sot tro vao o cua NGUOI KHAC thi khong dat
+		// nhom -1 cua ho; SendMSGroup(-1) -> client xoa bang xep hang (KProtocolProcess s2cSetMissionData)
+		if (m_MissionPlayer.IsSamePlayer(nIdx) && Player[nTargetIndex].m_nIndex > 0)
+		{
+			Npc[Player[nTargetIndex].m_nIndex].m_nMissionGroup = -1;
+			Player[nTargetIndex].SendMSGroup();
+		}
 		nIdx = GetNextPlayer(nIdx, nTargetIndex);
 	}
 	Init();
@@ -185,6 +198,10 @@ BOOL	KMission::RemovePlayer(unsigned long ulPlayerIndex, unsigned long ulPlayerI
 			}
 		}
 		m_MissionPlayer.Remove(nTdataIdx); //Fix by Fong KiÒu g¸n info tr­íc khi xo¸ khái mission ®Ó lÊy c¸c info save vµo task
+		// [TKMS 11/09] tran co bang xep hang: dung lai top-10 ngay khi mot nguoi roi (thoat game / bi day / roi map),
+		// khong de ten nguoi da roi chiem hang toi lan giet ke tiep (GetMSLadder luc tong ket doc ngay bang nay)
+		if (m_bMissionLadder)
+			UpRankAllParam(m_nLadderParam);
 	}
 	return TRUE;
 };
@@ -243,101 +260,69 @@ BOOL	KMission::RemoveNpc(unsigned long ulNpcIndex, unsigned long ulNpcID)
 	return TRUE;
 };
 
-void KMission::SetPlayerParam(unsigned long ulIndex, int nParam, int nValue) //add by phong kiÒu using tèng kim
+void KMission::SetPlayerParam(unsigned long ulIndex, int nParam, int nValue) //add by phong kieu using tong kim
 {
 	m_MissionPlayer.SetParam(ulIndex, nParam, nValue);
 
-	if (m_bMissionLadder)
-	{
-		if(m_nLadderParam == nParam)
-		{
-			TMissionLadderSelfInfo tmpDataSelf;
-			memset(&tmpDataSelf, 0, sizeof(tmpDataSelf));
-			memset(m_MissionLadder, 0, sizeof(m_MissionLadder));
-			int nIdx = 0,i=0;
-			unsigned long nPlayerIndex = 0;
-			nIdx = GetNextPlayer(nIdx, nPlayerIndex);
-			while (nIdx)
-			{	
-				TMissionLadderInfo* tmpData = GetMin(m_MissionLadder, MISSION_STATNUM);
-				if (tmpData->nParam[m_nLadderParam] < m_MissionPlayer.m_Data[nIdx].m_nParam[m_nLadderParam])
-				{
-					DataCopy(tmpData, &m_MissionPlayer.m_Data[nIdx]);
-				}
-				nIdx = GetNextPlayer(nIdx, nPlayerIndex);
-			}
-
-			ListSort(m_MissionLadder, MISSION_STATNUM);
-
-			memcpy(tmpDataSelf.szMissionName, m_szMissionName, strlen(m_szMissionName));
-			tmpDataSelf.nGlbParam[0] = this->GetGroupPlayerCount(m_nGlbLadderParam[0]);
-			tmpDataSelf.nGlbParam[1] = this->GetGroupPlayerCount(m_nGlbLadderParam[1]);
-			tmpDataSelf.nGlbParam[2] = this->GetTimerRestTimer(m_nGlbLadderParam[2]);
-
-			nIdx = 0;
-			nPlayerIndex = 0;
-			nIdx = GetNextPlayer(nIdx, nPlayerIndex);
-			while (nIdx)
-			{	
-				tmpDataSelf.ucGroup = m_MissionPlayer.m_Data[nIdx].m_ucPlayerGroup;
-				for (i =0; i < MAX_MISSION_PARAM; i++)
-				{
-					tmpDataSelf.nParam[i] = m_MissionPlayer.m_Data[nIdx].m_nParam[i];
-				}
-				Player[nPlayerIndex].SendMSRank(&tmpDataSelf, m_MissionLadder);//chØ send vµo nh÷ng player trong MS
-				nIdx = GetNextPlayer(nIdx, nPlayerIndex);
-			}
-		}
-	}
+	// [TKMS 11/09] truoc day than ham nay chep doi UpRankAllParam (UpRankAllParam khong ai goi) -> gop mot than
+	if (m_bMissionLadder && m_nLadderParam == nParam)
+		UpRankAllParam(nParam);
 };
 
-
-
-
+// [TKMS 11/09] Dung lai top-10 va gui cho ca tran. Chu 11/09: "thoat ra dung ngoai van bao diem so 2 phe",
+// "bang xep hang hay trung ten 2 nhan vat khi tran 1 xong sang tran 2". Truoc day:
+//   - top-10 lay tu MOI muc (ca muc da tat co / muc sot cua nguoi da roi), ten lay theo O Player[] luc dung
+//     -> muc sot mang ten NGUOI KHAC dang nhap vao o do, hoac mot ten hien 2 lan;
+//   - goi xep hang gui toi O cua MOI muc, khong xet co / ID / ket noi -> nguoi bi day dung im (chi tat co, muc con
+//     toi het tran), nguoi thoat o map khac, va ai dang nhap vao o cu deu nhan bang top-10 nhay so lien tuc.
+// Nay chi dung tu / gui cho muc CON SONG (IsLive: co hieu luc + dung nguoi) va con ket noi.
 void KMission::UpRankAllParam(int nParam)
 {
-	if (m_bMissionLadder)
+	if (!m_bMissionLadder)
+		return;
+
+	TMissionLadderSelfInfo tmpDataSelf;
+	memset(&tmpDataSelf, 0, sizeof(tmpDataSelf));
+	memset(m_MissionLadder, 0, sizeof(m_MissionLadder));
+	int nIdx = 0, i = 0;
+	unsigned long nPlayerIndex = 0;
+	nIdx = GetNextPlayer(nIdx, nPlayerIndex);
+	while (nIdx)
 	{
-	//	if(m_nLadderParam == nParam)
-	//	{
-			TMissionLadderSelfInfo tmpDataSelf;
-			memset(&tmpDataSelf, 0, sizeof(tmpDataSelf));
-			memset(&m_MissionLadder, 0, sizeof(m_MissionLadder));
-			int nIdx = 0,i=0;
-			unsigned long nPlayerIndex = 0;
-			nIdx = GetNextPlayer(nIdx, nPlayerIndex);
-			while (nIdx)
-			{	
-				TMissionLadderInfo* tmpData = GetMin(m_MissionLadder, MISSION_STATNUM);
-				if (tmpData->nParam[m_nLadderParam] < m_MissionPlayer.m_Data[nIdx].m_nParam[m_nLadderParam])
-				{
-					DataCopy(tmpData, &m_MissionPlayer.m_Data[nIdx]);
-				}
-				nIdx = GetNextPlayer(nIdx, nPlayerIndex);
-			}
-
-			ListSort(m_MissionLadder, MISSION_STATNUM);
-
-			memcpy(tmpDataSelf.szMissionName, m_szMissionName, strlen(m_szMissionName));
-			tmpDataSelf.nGlbParam[0] = this->GetGroupPlayerCount(m_nGlbLadderParam[0]);
-			tmpDataSelf.nGlbParam[1] = this->GetGroupPlayerCount(m_nGlbLadderParam[1]);
-			tmpDataSelf.nGlbParam[2] = this->GetTimerRestTimer(m_nGlbLadderParam[2]);
-
-			nIdx = 0;
-			nPlayerIndex = 0;
-			nIdx = GetNextPlayer(nIdx, nPlayerIndex);
-			while (nIdx)
-			{	
-				tmpDataSelf.ucGroup = m_MissionPlayer.m_Data[nIdx].m_ucPlayerGroup;
-				for (i =0; i < MAX_MISSION_PARAM; i++)
-				{
-					tmpDataSelf.nParam[i] = m_MissionPlayer.m_Data[nIdx].m_nParam[i];
-				}
-				Player[nPlayerIndex].SendMSRank(&tmpDataSelf, m_MissionLadder);//chØ send vµo nh÷ng player trong MS
-				nIdx = GetNextPlayer(nIdx, nPlayerIndex);
+		if (m_MissionPlayer.IsLive(nIdx))
+		{
+			TMissionLadderInfo* tmpData = GetMin(m_MissionLadder, MISSION_STATNUM);
+			if (tmpData->nParam[m_nLadderParam] < m_MissionPlayer.m_Data[nIdx].m_nParam[m_nLadderParam])
+			{
+				DataCopy(tmpData, &m_MissionPlayer.m_Data[nIdx]);
 			}
 		}
-//	}
+		nIdx = GetNextPlayer(nIdx, nPlayerIndex);
+	}
+
+	ListSort(m_MissionLadder, MISSION_STATNUM);
+
+	memcpy(tmpDataSelf.szMissionName, m_szMissionName, strlen(m_szMissionName));
+	tmpDataSelf.nGlbParam[0] = this->GetGroupPlayerCount(m_nGlbLadderParam[0]);
+	tmpDataSelf.nGlbParam[1] = this->GetGroupPlayerCount(m_nGlbLadderParam[1]);
+	tmpDataSelf.nGlbParam[2] = this->GetTimerRestTimer(m_nGlbLadderParam[2]);
+
+	nIdx = 0;
+	nPlayerIndex = 0;
+	nIdx = GetNextPlayer(nIdx, nPlayerIndex);
+	while (nIdx)
+	{
+		if (m_MissionPlayer.IsLive(nIdx) && Player[nPlayerIndex].m_nNetConnectIdx != -1)
+		{
+			tmpDataSelf.ucGroup = m_MissionPlayer.m_Data[nIdx].m_ucPlayerGroup;
+			for (i = 0; i < MAX_MISSION_PARAM; i++)
+			{
+				tmpDataSelf.nParam[i] = m_MissionPlayer.m_Data[nIdx].m_nParam[i];
+			}
+			Player[nPlayerIndex].SendMSRank(&tmpDataSelf, m_MissionLadder);	// chi gui cho nguoi CON trong tran
+		}
+		nIdx = GetNextPlayer(nIdx, nPlayerIndex);
+	}
 };
 
 int g_MissionTimerCallBackFun(void * pOwner, char * szScriptFile)

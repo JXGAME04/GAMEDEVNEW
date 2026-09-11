@@ -418,8 +418,14 @@ void KUiRankData::Breathe()
 	TMissionLadderSelfInfo		tmp;
 	memset(tmp.szMissionName,0,sizeof(tmp.szMissionName));
 	g_pCoreShell->GetGameData(GDI_MISSION_SELFDATA, (unsigned int)(&tmp), NULL);
+	// [TKMS 11/09] chu: "thoat ra dung ngoai van bao diem so 2 phe" + "bang xep hang trung ten tran 1 sang tran 2".
+	// Truoc: chi ve khi CO ten tran va hang top-10 chi ghi khi hang moi CO ten -> ra ngoai van hien du lieu cu,
+	// hang cua tran truoc nam lai duoi hang tran sau (mot ten hien 2 lan). Nay: khong con tran -> xoa trang (mot lan);
+	// hang rong -> xoa hang. Du lieu goc ve 0 khi may chu gui nhom -1 (KProtocolProcess::s2cSetMissionData).
+	static int s_bDaXoaTrang = 0;
 	if(tmp.szMissionName[0])
 	{
+		s_bDaXoaTrang = 0;
 		m_BattleWarTxt.SetText(tmp.szMissionName);
 		m_WinConditionVal.SetIntText(tmp.nGlbParam[0]);
 		m_ProportionVal.SetIntText(tmp.nGlbParam[1]);
@@ -461,6 +467,48 @@ void KUiRankData::Breathe()
 				tmp.nParam[MISSION_PARAM_AVAILABLE]?m_TopTenGetItemVal[i].SetIntText(tmp.nParam[12]):m_TopTenGetItemVal[i].Clear();//nhÆt b¸u vËt
 				tmp.nParam[MISSION_PARAM_AVAILABLE]?m_TopTenGetFlagVal[i].SetIntText(tmp.nParam[9]):m_TopTenGetFlagVal[i].Clear();//nhÆt cê
 			}
+			else
+			{
+				// [TKMS 11/09] hang rong -> xoa, khong de ten tran truoc nam lai
+				m_TopTenPlayFaction[i].Clear();
+				m_TopTenPlayNameTxt[i].Clear();
+				m_TopTenGradeVal[i].Clear();
+				m_TopTenDeathVal[i].Clear();
+				m_TopTenMaxKillVal[i].Clear();
+				m_TopTenPkPlayerVal[i].Clear();
+				m_TopTenKillNpcVal[i].Clear();
+				m_TopTenGetItemVal[i].Clear();
+				m_TopTenGetFlagVal[i].Clear();
+			}
+		}
+	}
+	else if (!s_bDaXoaTrang)
+	{
+		// [TKMS 11/09] khong con tran: xoa trang mot lan
+		s_bDaXoaTrang = 1;
+		m_BattleWarTxt.Clear();
+		m_WinConditionVal.Clear();
+		m_ProportionVal.Clear();
+		m_LeftTimeVal.Clear();
+		m_SelfCurGradeVal.Clear();
+		m_SelfCurDeathVal.Clear();
+		m_SelfCurMaxKillVal.Clear();
+		for (int k = 0; k < MAX_SELFINFO_ITEMNAME; k ++)
+		{
+			m_SelfInfoObj[k].Clear();
+			m_SelfInfoGrade[k].Clear();
+		}
+		for (int i = 0; i < MISSION_STATNUM; i ++)
+		{
+			m_TopTenPlayFaction[i].Clear();
+			m_TopTenPlayNameTxt[i].Clear();
+			m_TopTenGradeVal[i].Clear();
+			m_TopTenDeathVal[i].Clear();
+			m_TopTenMaxKillVal[i].Clear();
+			m_TopTenPkPlayerVal[i].Clear();
+			m_TopTenKillNpcVal[i].Clear();
+			m_TopTenGetItemVal[i].Clear();
+			m_TopTenGetFlagVal[i].Clear();
 		}
 	}
 }

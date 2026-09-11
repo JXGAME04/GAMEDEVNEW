@@ -159,5 +159,14 @@ function OnPlayerTimerIdle(nPlayerIndex)
 	SetTask(T_SAVE_TK_POINTLT, GetPMParam(MS_TONGKIM,nPlayerDataIdx, 15))
 	SetTask(T_SAVE_TK_POINTBV, GetPMParam(MS_TONGKIM,nPlayerDataIdx, 16))
 	SetTask(T_SAVE_TK_POINTFLAG, GetPMParam(MS_TONGKIM,nPlayerDataIdx, 17))
+	-- [TKFIX 11/09] Go han khoi mission. Truoc day chi tat co (param 0 = 0) va muc con nam trong tran toi het tran
+	-- -> van nhan bang xep hang top-10 o ngoai; thoat game o ngoai thi muc sot bam sang nguoi dang nhap vao o do.
+	-- Diem da luu vao T_SAVE_TK_* o tren; param 0 = 0 nen OnLeave (mission01.lua) khong bao "da roi" lan nua va
+	-- khong ghi de T_SAVE_TK_* (nhu bot: global\bot_tongkim.lua bot_tk_thoat).
+	if (nPlayerDataIdx > 0) then
+		DelMSPlayer(MS_TONGKIM, 0)
+	end
+	-- [TKFIX 11/09] nhu Linux battlehead.lua bt_pop2signmap: bi day ra thi dang nhap lai o cho cu, khong vao 324
+	SetLogoutRV(0)
 
 end

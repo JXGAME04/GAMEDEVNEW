@@ -25,7 +25,28 @@ function OnMissionTimer()
 	end
 end
 
+-- [TKFIX 11/09] Vo bao ve: mot loi script trong luc tong ket (vd muc sot -> TAB_PHE_TONGKIM[0] nil) truoc day lam
+-- dut ca ham -> SetMission/CloseMission/DelAllNpc khong chay -> mission SONG sang tran sau (OpenMission gap mission
+-- cu: LuaInitMission _ASSERT(0) return 0, BeginMission khong chay) -> nguoi tran truoc khong vao van nhan diem tran sau.
 function ontime_tongkim()
+	local bOk, szLoi = pcall(ontime_tongkim_than)
+	if (not bOk) then
+		print("[TKFIX] loi tong ket Tong Kim: " .. tostring(szLoi))
+		local nSubTK = SubWorldID2Idx(MAP_TK_TC)
+		if (nSubTK >= 0) then
+			SubWorld = nSubTK
+			for i = 1, 20 do
+				SetMission(i, 0)
+			end
+			if (IsMission(MS_TONGKIM) == 1) then
+				CloseMission(MS_TONGKIM)
+			end
+			DelAllNpc(SubWorld)
+		end
+	end
+end
+
+function ontime_tongkim_than()
 	StopMissionTimer(MS_TONGKIM,3)
 	local nTongAcc = GetMissionV(M_TICHLUYA)
 	local nKimAcc  = GetMissionV(M_TICHLUYB)
@@ -81,9 +102,14 @@ function ontime_tongkim()
 	end
 	local nPlayerIdx = PlayerIndex;
 	Msg2SubWorld("<color=cyan>Th­ëng trËn Tèng Kim nµy :")
-	for i = 1, getn(players) do
-		PlayerIndex = players[i];
+	-- [TKFIX 11/09] tung nguoi mot trong pcall: mot nguoi loi khong lam mat thuong cua nguoi khac; bo qua muc sot
+	-- (PIdx2MSDIdx = 0) va nguoi da xu ly (2 muc cung nhan vat -> truoc day keo ve + thuong 2 lan)
+	local function TK_ThuongMotNguoi(nPIdxThuong)
+		PlayerIndex = nPIdxThuong
 		local dataindex = PIdx2MSDIdx(MS_TONGKIM, PlayerIndex)
+		if (dataindex == nil or dataindex <= 0) then
+			return
+		end
 		local szPlayerName;
 		local nTotalRank = 9
 
@@ -152,7 +178,21 @@ function ontime_tongkim()
 --	end
 		PlayerEndTongKim(dataindex, nPlayerCamp)
 	end
+	local tbDaTongKet = {}
+	for i = 1, getn(players) do
+		if (tbDaTongKet[players[i]] == nil) then
+			tbDaTongKet[players[i]] = 1
+			local bOk, szLoi = pcall(TK_ThuongMotNguoi, players[i])
+			if (not bOk) then
+				print("[TKFIX] loi tong ket nguoi choi " .. tostring(players[i]) .. ": " .. tostring(szLoi))
+			end
+		end
+	end
 	PlayerIndex = nPlayerIdx;
+	local nSubTK = SubWorldID2Idx(MAP_TK_TC)	-- [TKFIX 11/09] chac chan SubWorld = map TK truoc khi dong tran
+	if (nSubTK >= 0) then
+		SubWorld = nSubTK
+	end
 
 
 	
@@ -176,9 +216,25 @@ end
 
 function PlayerEndTongKim(dataindex, nPlayerCamp)
 	
+	-- [TKFIX 11/09] muc sot (o Player[] trong / thuoc nguoi khac): MSDIdx2PIdx tra 0 -> bo qua, khong keo/thuong nham
+	if (dataindex == nil or dataindex <= 0) then
+		return
+	end
 	PlayerIndex = MSDIdx2PIdx(MS_TONGKIM, dataindex)
+	if (PlayerIndex == nil or PlayerIndex <= 0) then
+		return
+	end
 	TK_GuiDiemChoToi(TKDIEM_KIND_AN)	-- [TKDIEM 04/09] an bang diem truoc khi dua nguoi choi roi tran
 	local nPhe = GetMSIdxGroup(MS_TONGKIM, dataindex)
+	if (TAB_PHE_TONGKIM[nPhe] == nil) then	-- [TKFIX 11/09] phe la: lay phe da ghi danh, khong de loi nil dut vong
+		nPhe = GetTask(T_CHECKPHETK)
+		if (TAB_PHE_TONGKIM[nPhe] == nil) then
+			nPhe = 1
+		end
+	end
+	-- [TKFIX 11/09] danh dau da tong ket TRUOC khi NewWorld: moc roi map 379 (maps\tongkim\newworld_tk.lua) thay
+	-- param 0 = 0 thi khong go them; may chu gui nhom -1 -> client xoa bang xep hang
+	SetPMParam(MS_TONGKIM, dataindex, 0, 0)
 	SetPKMode(0, 0)--phuc hoi pk tu do
 	SetFightState(0)--phi chien dau
 	SetPunish(0)

@@ -161,6 +161,7 @@ function go_tong()
 			return 
 		end
 		--Pay(NEEDMONEY)
+		TK_GoMucCu()	-- [TKFIX 11/09] con muc cu cua chinh minh trong tran -> luu diem roi go, tranh 2 muc
 		nPlayerDataIdx = AddMSPlayer(MS_TONGKIM,nPhe)
 		-- SetPMParam(MS_TONGKIM,nPlayerDataIdx,0,1)--set online ms tong kim param 0 value 1
 		nNamePlayer	= nNamePlayer;
@@ -178,6 +179,7 @@ function go_tong()
 	
 	-- reset_savetask_tongkim()
 	
+	TK_GoMucCu()	-- [TKFIX 11/09] con muc cu cua chinh minh trong tran -> luu diem roi go, tranh 2 muc
 	nPlayerDataIdx = AddMSPlayer(MS_TONGKIM,nPhe)
 	if (nPlayerDataIdx > 0) then
 		-- SetPMParam(MS_TONGKIM,nPlayerDataIdx,0,1)--set online ms tong kim param 0 value 1
@@ -188,6 +190,16 @@ function go_tong()
 		SAVEDULIEU(i,nKey,nNamePlayer);-- limited 1 account login TONGKIM
 		common_tong(nPlayerDataIdx)
 	end	
+end
+
+-- [TKFIX 11/09] Nguoi bao danh ma van con MUC CU cua chinh minh trong tran (roi tran khong sach / mission song sot):
+-- AddMSPlayer khong chong trung -> 2 muc cung nhan vat = thuong 2 lan luc tong ket, ten hien 2 lan tren bang xep hang.
+-- Go muc cu (OnLeave mission01.lua bao "da roi" + luu diem muc cu vao T_SAVE_TK_* de common_* nap lai neu cung tran).
+function TK_GoMucCu()
+	local nCu = PIdx2MSDIdx(MS_TONGKIM, PlayerIndex)
+	if (nCu ~= nil and nCu > 0) then
+		DelMSPlayer(MS_TONGKIM, 0)
+	end
 end
 
 function reset_savetask_tongkim()
@@ -274,6 +286,7 @@ function go_kim()
 			return 
 		end
 		--Pay(NEEDMONEY)
+		TK_GoMucCu()	-- [TKFIX 11/09] con muc cu cua chinh minh trong tran -> luu diem roi go, tranh 2 muc
 		nPlayerDataIdx = AddMSPlayer(MS_TONGKIM,nPhe)
 		-- SetPMParam(MS_TONGKIM,nPlayerDataIdx,0,1)--set online ms tong kim param 0 value 1
 		nNamePlayer	= nNamePlayer;
@@ -291,6 +304,7 @@ function go_kim()
 	
 	-- reset_savetask_tongkim()
 	
+	TK_GoMucCu()	-- [TKFIX 11/09] con muc cu cua chinh minh trong tran -> luu diem roi go, tranh 2 muc
 	nPlayerDataIdx = AddMSPlayer(MS_TONGKIM,nPhe)
 	if (nPlayerDataIdx > 0) then
 		-- SetPMParam(MS_TONGKIM,nPlayerDataIdx,0,1)--set online ms tong kim param 0 value 1

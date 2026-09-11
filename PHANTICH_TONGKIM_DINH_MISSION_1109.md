@@ -5,8 +5,12 @@ Chủ báo (11/09):
 - *"có khi nào do index mỗi người chơi lúc đăng nhập không?"*
 - *"không phải do item · tôi đã test đôi lúc tống kim tôi thoát ra đứng ngoài nó vẫn báo điểm số 2 phe tống - kim · bảng xếp hạng tống kim hay bị có tên 2 nhân vật trùng nhau do đánh trận 1 xong rồi đến trận 2 đi tiếp - kiểu như chưa xóa dữ liệu cũ khi xong trận"*
 
-Tài liệu CHỈ phân tích — **chưa sửa mã**. Mọi dòng dẫn đã đọc trên cây chạy thật `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server`
-và mã `D:\GAMEDEVNEW` (origin/main e06c1490), đối chiếu Linux `D:\ServerLinux\server1\script`.
+Phần 0–8 là phân tích (đã đọc trên cây chạy thật `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server` và mã `D:\GAMEDEVNEW`
+origin/main e06c1490, đối chiếu Linux `D:\ServerLinux\server1\script`). **Phần 9 = đã sửa (chủ: "fix hết và up lên git - lưu ý fix cẩn thận").**
+
+> **Đính chính (khi thi công):** `GetLocalDateEx` thực ra đăng ký vào `LuaGetTimeByMiao` (`ScriptFuns.cpp:16213`) = **giây epoch**, không phải
+> ngày. Khoá trận `TK_VARV_KEY` vì thế đã là **từng trận** (mốc `BeginMission`) — các câu "khoá trận = ngày", "trận sau cùng ngày nạp lại điểm"
+> ở §0, §1(c), §4 S4, §5 G6, §6 mục 4, §7 mục 4 **sai, bỏ**. Phần còn lại của S4 (`SetLogoutRV(1)` không ai tắt ⇒ đăng nhập luôn ở 324) vẫn đúng.
 
 ## 0. Kết luận ngắn
 
@@ -166,3 +170,51 @@ Gợi ý gói nhỏ nhất chữa đúng hai hiện tượng chủ báo: **1 + 2
 - "Thưởng trận Tống Kim này: Hạng…" (`Msg2SubWorld` = thông báo toàn máy chủ, `ScriptFuns.cpp:3837-3845`) và "Đại chiến Tống Kim đã kết thúc. Tích lũy
   Tống A:B Kim" (`AddGlobalNews`) là thông báo **toàn máy chủ theo thiết kế**.
 - Số liệu: `CreateTeam_OFF` ở 193 bản đồ (không phải 268); Linux có 17 cờ `aryFuncStore` (không phải 21).
+
+## 9. ĐÃ SỬA (11/09 — chủ: "fix hết và up lên git - lưu ý fix cẩn thận"; thẻ `[TKMS 11/09]` C++, `[TKFIX 11/09]` script)
+
+### 9.1 CoreServer (`Sources\Core\Src`)
+- `KMission.h`: mảng người chơi mission có `IsSamePlayer(i)` (ô `Player[]` mà mục trỏ tới vẫn đúng ID) và `IsLive(i)` (còn hiệu lực + đúng
+  người). Dùng ở `Msg2Group`, `Msg2All` (dòng chat mission), `GetNextPlayerC` (Lua `GetNextPlayer` = vòng tổng kết), `GetGroupPlayerCount`,
+  `GetOnlinePlayerCount` (Lua `GetMSPlayerCount`), `GetMissionPlayer_PlayerIndex` (Lua `MSDIdx2PIdx` trả 0 khi ô đã đổi chủ). `Init()` và
+  hàm dựng xoá `m_MissionLadder` (top-10 trận trước không sống sang trận sau). Vì `KMission.h` không include `KPlayer.h` và các hàm inline
+  của `KMission` instantiation ngay trong header, ID đọc qua hàm ngoài `KMission_PlayerIdAt()` (thân ở `KMission.cpp`).
+- `KMission.cpp`: `UpRankAllParam` (trước đây không ai gọi) thành thân chung: top-10 chỉ dựng từ mục còn sống, chỉ gửi cho mục còn sống
+  **và còn kết nối**; `SetPlayerParam` gọi nó; `RemovePlayer` dựng lại top-10 ngay khi một người rời (thoát game / bị đẩy / rời map);
+  `StopMission` chỉ đặt nhóm −1 + `SendMSGroup` cho đúng người.
+- `KPlayer.cpp SendMSRank`: không gửi 10 gói top-10 khi không còn kết nối (bot, đang thoát).
+- Không đổi gói tin, không đổi cấu trúc dữ liệu.
+
+### 9.2 Client (`Game.exe` + `CoreClient.dll`)
+- `KProtocolProcess.cpp s2cSetMissionData`: nhóm −1 (máy chủ gửi khi bị đẩy / rời trận / hết trận) ⇒ xoá `m_MissionData` + `m_MissionRank`.
+- `UiRankData.cpp Breathe`: không còn tên trận ⇒ xoá trắng (một lần); hàng top-10 rỗng ⇒ xoá hàng (hết "tên trận trước nằm lại").
+- Còn lại (không sửa): rớt mạng giữa trận rồi vào lại mà không vào trận ⇒ bảng còn số liệu cũ tới khi có gói mission kế tiếp (client
+  không có móc đăng nhập tiện để xoá; nhỏ, tự hết khi vào trận sau).
+
+### 9.3 Script máy chủ (đã đặt trên cây chạy thật + chép vào `serverscript_live\script` của repo; **cần restart GameServer**)
+| Tệp | Sửa |
+|---|---|
+| `tinhnang\tong_kim_tcap\tongtu.lua`, `kimtu.lua` `OnPlayerTimerIdle` | sau khi lưu `T_SAVE_TK_*` ⇒ `DelMSPlayer(MS_TONGKIM, 0)` + `SetLogoutRV(0)` (như bot và Linux `bt_pop2signmap`) |
+| `tinhnang\phuban\mission01.lua` `OnLeave` | param 0 = 0 trước khi vào (bị đẩy / bot) ⇒ không báo "đã rời" lần nữa, **không ghi đè** `T_SAVE_TK_*` |
+| `timertask\task03.lua` | `ontime_tongkim` = `pcall` + luôn `SetMission/CloseMission/DelAllNpc`; từng người trong `pcall`, bỏ mục sót (`PIdx2MSDIdx` = 0) và trùng; `PlayerEndTongKim` kiểm `dataindex`/`PlayerIndex`/`nPhe`, đặt param 0 = 0 **trước** `NewWorld` |
+| `tinhnang\tong_kim_tcap\mobinhtk.lua` | `TK_GoMucCu()` trước 4 chỗ `AddMSPlayer`: còn mục cũ của chính mình ⇒ gỡ (OnLeave lưu điểm) rồi mới thêm |
+| `nhanvat\nguoichoi\playerlogin.lua` | `TK_DonCoLucDangNhap()`: còn `T_CHECKPHETK` mà không còn mission / khoá khác ⇒ xoá cờ + `SetLogoutRV(0)` (hết "đăng nhập luôn ở 324"); đang cùng trận ⇒ giữ để vào lại |
+| `vatpham\battles\rescript.lua` | Tống Kim Chiêu thư chặn bản đồ 375–386 như Linux |
+| **mới** `maps\tongkim\newworld_tk.lua` + `settings\MapList.ini` `379_NewWorldScript=\script\maps\tongkim\newworld_tk.lua` | `OnLeaveWorld`: rời 379 bằng cách khác thoát game (lệnh bài admin, GM, …) ⇒ `DelMSPlayer` + `SetLogoutRV(0)`; thoát game (còn đứng trên 379) hoặc param 0 = 0 ⇒ để nguyên. `OnNewWorld` rỗng (không kích hoạt `PARTNER_OFF|TISHENZHIREN`) |
+
+### 9.4 Nhị phân `.moi` chờ chủ swap
+- `bin\client\Game.exe.moi` **0e327ee3** · `bin\client\CoreClient.dll.moi` **fcb33a1d** (ChoiGame.bat).
+- `bin\server\CoreServer.dll.moi` **d5fef156** (ChayGameServer.bat — restart cũng nạp MapList + script mới).
+- Client mới chạy được với máy chủ cũ và ngược lại (gói tin không đổi) — nhưng nên đổi cả ba.
+
+### 9.5 Cố ý KHÔNG đổi
+- Không bỏ chú thích `KNpc::ChangeWorld` (chạm mọi mission); không tạo `\script\maps\newworldscript.lua` chung 495 bản đồ; `KMission::AddPlayer`
+  giữ nguyên (chống trùng làm ở script Tống Kim); `OnLeave` vẫn không tắt `SetLogoutRV` khi thoát game (đúng Linux — vào lại trận được),
+  phần dọn để `playerlogin.lua` lo khi trận đã hết.
+
+### 9.6 Kiểm sau swap
+1. Vào trận, đứng im 5 phút bị đẩy về 324: hết nhận dòng giết địch; mở Bảng xếp hạng (phím tắt 22) thấy trắng; `GetMSPlayerCount` giảm.
+2. Hết trận, về thành mở Bảng xếp hạng: trắng. Trận sau ít người: không còn tên trận trước ở hàng dưới.
+3. Thoát game giữa trận, đăng nhập lại **sau khi hết trận**: không còn ở 324 ở lần đăng nhập kế tiếp; vào Mộ binh trận sau bắt đầu từ 0.
+4. Lệnh bài admin *Tống kim → Báo danh* từ trong 379: chat "đã rời khỏi chiến trường", không nhận điểm nữa, hết trận không bị kéo về.
+5. `ScriptError.log` không có dòng `task03.lua` / `newworld_tk.lua`; console không in `[TKFIX] loi ...`.

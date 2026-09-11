@@ -18,6 +18,8 @@
 #include "TaskDef.h"
 
 extern int g_PlayerTimerCallBackFun(void * pOwner, char * szScriptFileName);
+// [TKMS 11/09] ID nhan vat dang giu o Player[ulPlayerIndex] (0 = o trong / ngoai bien). Than o KMission.cpp.
+extern unsigned long KMission_PlayerIdAt(unsigned long ulPlayerIndex);
 extern int g_MissionTimerCallBackFun(void * pOwner, char * szScriptFileName);
 
 #define MAX_TIMER_PERMISSION		10
@@ -67,6 +69,31 @@ public:
 		if (ulIndex >= ulSize) 
 			return 0;
 		return m_Data[ulIndex].m_nParam[nParam];
+	};
+
+	// [TKMS 11/09] O Player[] ma muc tro toi VAN LA dung nguoi (ID khop). Goc loi chu bao 11/09 ("thoat ra dung ngoai
+	// van bao diem 2 phe", "xep hang trung ten"): KNpc::ChangeWorld khong go mission khi doi map, thoat game chi go
+	// mission cua map dang dung -> muc cua nguoi da roi/thoat tro vao o trong hoac o cua NGUOI KHAC dang nhap sau
+	// (o cap lai LIFO, ID = bam ten nen nguoi cu dang nhap lai cung nhan dung o cu). Truoc day moi noi chi kiem
+	// param 0 -> muc sot van nhan xep hang / dong chat / vao vong tong ket / mang ten nguoi khac.
+	BOOL IsSamePlayer(unsigned long ulIndex) const
+	{
+		if (ulIndex == 0 || ulIndex >= ulSize)
+			return FALSE;
+		// KMission.h khong include KPlayer.h va cac ham inline cua KMission instantiation ngay trong header -> doc ID qua
+		// ham ngoai KMission_PlayerIdAt (than o KMission.cpp); ID = 0 la o trong / ngoai bien
+		unsigned long ulID = KMission_PlayerIdAt(m_Data[ulIndex].m_ulPlayerIndex);
+		return ulID != 0 && ulID == m_Data[ulIndex].m_ulPlayerID;
+	};
+
+	// [TKMS 11/09] muc "con song" = con hieu luc (param 0 == 1) VA dung nguoi
+	BOOL IsLive(unsigned long ulIndex) const
+	{
+		if (ulIndex == 0 || ulIndex >= ulSize)
+			return FALSE;
+		if (m_Data[ulIndex].m_nParam[MISSION_PARAM_AVAILABLE] != MISSION_AVAILABLE_VALUE)
+			return FALSE;
+		return IsSamePlayer(ulIndex);
 	};
 
 	BOOL SetParam(unsigned long ulIndex, int nParam, int nValue)
@@ -148,6 +175,7 @@ public:
 		m_szMissionName[0] = 0;
 		m_nLadderParam = 0;
 		memset(m_nGlbLadderParam, 0, sizeof(m_nGlbLadderParam));
+		memset(m_MissionLadder, 0, sizeof(m_MissionLadder));	// [TKMS 11/09] truoc day khong khoi tao
 
 	};
 	BOOL	Activate();
@@ -171,6 +199,7 @@ public:
 		memset(m_szMissionName, 0, sizeof(m_szMissionName));
 		m_nLadderParam = 0;
 		memset(m_nGlbLadderParam, 0, sizeof(m_nGlbLadderParam));
+		memset(m_MissionLadder, 0, sizeof(m_MissionLadder));	// [TKMS 11/09] Init chay trong StopMission: xoa top-10 tran truoc, tran sau khong dung lai
 	};
 
 	BOOL SetMissionId(unsigned long ulMissionId)
@@ -224,7 +253,7 @@ public:
 				break;
 			
 			if ((m_MissionPlayer.m_Data[nIdx].m_ucPlayerGroup == ucGroup) && 
-			   (m_MissionPlayer.m_Data[nIdx].m_nParam[MISSION_PARAM_AVAILABLE] == MISSION_AVAILABLE_VALUE))		// co online
+			   m_MissionPlayer.IsLive(nIdx))		// co online + dung nguoi [TKMS 11/09]
 			{
 				KPlayerChat::SendSystemInfo(1, m_MissionPlayer.m_Data[nIdx].m_ulPlayerIndex, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char *) strMsg, strlen(strMsg));
 				nCount ++;
@@ -245,7 +274,7 @@ public:
 			if (!nIdx)
 				break;
 			
-			if (m_MissionPlayer.m_Data[nIdx].m_nParam[MISSION_PARAM_AVAILABLE] == MISSION_AVAILABLE_VALUE)
+			if (m_MissionPlayer.IsLive(nIdx))	// [TKMS 11/09] con hieu luc + dung nguoi
 			{
 				KPlayerChat::SendSystemInfo(1, m_MissionPlayer.m_Data[nIdx].m_ulPlayerIndex, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char *) strMsg, strlen(strMsg));
 				nCount ++;
@@ -272,7 +301,7 @@ public:
 			if (ucGroup)
 			{
 				if ((m_MissionPlayer.m_Data[ulIdx].m_ucPlayerGroup == ucGroup) && 
-				   (m_MissionPlayer.m_Data[ulIdx].m_nParam[MISSION_PARAM_AVAILABLE] == MISSION_AVAILABLE_VALUE)) 
+				   m_MissionPlayer.IsLive(ulIdx)) 
 				{
 					ulPlayerIndex = m_MissionPlayer.m_Data[ulIdx].m_ulPlayerIndex;
 					return ulIdx;
@@ -280,7 +309,7 @@ public:
 			}
 			else
 			{
-				if (m_MissionPlayer.m_Data[ulIdx].m_nParam[MISSION_PARAM_AVAILABLE] == MISSION_AVAILABLE_VALUE)
+				if (m_MissionPlayer.IsLive(ulIdx))
 				{
 					ulPlayerIndex = m_MissionPlayer.m_Data[ulIdx].m_ulPlayerIndex;
 					return ulIdx;
@@ -354,7 +383,7 @@ public:
 			if (ucGroup >= 0)
 			{
 				if ((m_MissionPlayer.m_Data[nIdx].m_ucPlayerGroup == ucGroup) && 
-					(m_MissionPlayer.m_Data[nIdx].m_nParam[MISSION_PARAM_AVAILABLE] == MISSION_AVAILABLE_VALUE))
+					m_MissionPlayer.IsLive(nIdx))	// [TKMS 11/09]
 					ulPlayerCount ++;
 			}
 		}
@@ -371,7 +400,7 @@ public:
 			if (!nIdx)
 				break;
 			
-			if (m_MissionPlayer.m_Data[nIdx].m_nParam[MISSION_PARAM_AVAILABLE] == MISSION_AVAILABLE_VALUE)	// them dk co online
+			if (m_MissionPlayer.IsLive(nIdx))	// them dk co online + dung nguoi [TKMS 11/09]
 				ulPlayerCount ++;
 		}
 		return ulPlayerCount;
@@ -452,6 +481,10 @@ public:
 	unsigned long GetMissionPlayer_PlayerIndex(unsigned long ulDataIndex)
 	{
 		if (ulDataIndex > m_MissionPlayer.GetTotalCount())
+			return 0;
+		// [TKMS 11/09] o Player[] ma muc tro toi khong con la nguoi nay (da thoat, hoac nguoi khac dang nhap vao o do)
+		// -> tra 0 de script (MSDIdx2PIdx) bo qua, khong thuong/keo nham nguoi khac
+		if (!m_MissionPlayer.IsSamePlayer(ulDataIndex))
 			return 0;
 		return m_MissionPlayer.m_Data[ulDataIndex].m_ulPlayerIndex;		
 	}

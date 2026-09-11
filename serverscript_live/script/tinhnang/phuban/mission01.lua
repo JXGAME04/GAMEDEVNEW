@@ -52,9 +52,18 @@ function OnLeave(nPlayerIndex)
 		local nW, nX, nY = GetWorldPos()
 		
 		nPlayerDataIdx = PIdx2MSDIdx(MS_TONGKIM, PlayerIndex)
+		-- [TKFIX 11/09] param 0 = 0 TRUOC khi vao day = script da xu ly xong (bi day dung im: tongtu/kimtu da luu
+		-- T_SAVE_TK_* + bao "bi day"; bot: bot_tongkim.lua) -> khong bao "da roi" lan nua, KHONG ghi de T_SAVE_TK_*
+		-- (diem trong muc da bi xoa ve 0). Thoat game / roi map (maps\tongkim\newworld_tk.lua): param 0 con 1 -> bao + luu.
+		local bChuaXuLy = 1
+		if (nPlayerDataIdx > 0 and GetPMParam(MS_TONGKIM, nPlayerDataIdx, 0) ~= 1) then
+			bChuaXuLy = 0
+		end
 		SetPMParam(MS_TONGKIM, nPlayerDataIdx, 0, 0)	--param 0 value 0 set offline tong kim
 		
-		Msg2MSAll(MS_TONGKIM, format("%s ®· rêi khái chiÕn tr­êng Tèng Kim.", GetName())) --thong bao roi khoi~
+		if (bChuaXuLy == 1) then
+			Msg2MSAll(MS_TONGKIM, format("%s ®· rêi khái chiÕn tr­êng Tèng Kim.", GetName())) --thong bao roi khoi~
+		end
 		local nFlag = GetPMParam(MS_TONGKIM,nPlayerDataIdx, 8) -- dang giu co
 		if (nFlag > 0) then
 			SetPMParam(MS_TONGKIM, nPlayerDataIdx, 8, 0)			   -- mat giu co
@@ -72,7 +81,7 @@ function OnLeave(nPlayerIndex)
 		SetNpcTimeIdle(0)
 		IgnoreState()	--xoa het trang thai skill tren nguoi
 		SetTempRevPos(324, 49312, 101696)--thiet lap lai diem hoi sinh o diem bao danh Tong
-		if(nPlayerDataIdx > 0) then
+		if(nPlayerDataIdx > 0 and bChuaXuLy == 1) then
 			SetTask(T_SAVE_TK_KILLPLAYER, GetPMParam(MS_TONGKIM,nPlayerDataIdx, 2))
 			SetTask(T_SAVE_TK_KILLNPC, GetPMParam(MS_TONGKIM,nPlayerDataIdx, 3))
 			SetTask(T_SAVE_TK_DEATH, GetPMParam(MS_TONGKIM,nPlayerDataIdx, 4))
