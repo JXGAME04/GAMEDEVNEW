@@ -942,6 +942,9 @@ public:
 	void				SetSpecialSpr(char *lpszSprName);
 	void				SetInstantSpr(int nNo);
 	int					GetNormalNpcStandDir(int nFrame);
+	// [KHOI 11/09 c] FALSE = mau NPC khong co bo anh nao (thieu hang trong
+	//	npc_res_kind_file_name.txt) -> chi ve duoc the ten lo lung.
+	BOOL				CoAnhVe(){return m_DataRes.CoAnh();};
 	KNpcRes*			GetNpcRes(){return &m_DataRes;};
 	int						GetNpcPate();
 	int						GetNpcPatePeopleInfo();

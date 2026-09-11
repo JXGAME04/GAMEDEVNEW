@@ -358,6 +358,7 @@ NPC_CLOSE:
 //----------------------------------------------------------------------
 // [TRANGTRI 11/09] dem NPC/OBJ trang tri nap tu du lieu vung (xem jx_paint.log dong [TRANGTRI])
 unsigned g_uTTNpcThem = 0, g_uTTNpcHong = 0, g_uTTNpcXoa = 0, g_uTTObjThem = 0;
+unsigned g_uTTNpcThieuAnh = 0;	// [KHOI 11/09 c] mau khong co bo anh -> bo han, khong de the ten lo lung
 char     g_szTTTen[3][40] = { "", "", "" };
 char     g_szTTMap[80] = "";	// [TRANGTRI 11/09 b] duong dan map dang mo, de doi chieu trong log
 int      g_nTTSo = 0;
@@ -618,6 +619,19 @@ BOOL	KRegion::LoadClientNpc(KPakFile *pFile, DWORD dwDataSize)
 		if (nNpcNo == 0)
 		{
 			int nIdx = NpcSet.AddClientNpc(sNpcCell.nTemplateID, LOWORD(m_RegionID), HIWORD(m_RegionID), sNpcCell.nPositionX, sNpcCell.nPositionY, i);
+			if (nIdx > 0 && !Npc[nIdx].CoAnhVe())
+			{
+				// [KHOI 11/09 c] do duoc: critter003 (ga trong), critter004 (ga mai), critter015
+				// (cho vang) KHONG co hang trong \settings\npcres\npc_res_kind_file_name.txt
+				// (bang chi co critter008 va 016-045) nen KNpcResNode::Init tra FALSE va NPC
+				// khong co bo anh nao. De lai thi chi thay THE TEN lo lung giua khong khi.
+				g_uTTNpcThieuAnh++;
+				if (Npc[nIdx].m_RegionIndex >= 0)
+					SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].RemoveNpc(nIdx);
+				Npc[nIdx].m_RegionIndex = -1;
+				NpcSet.Remove(nIdx);
+				nIdx = 0;
+			}
 			if (nIdx > 0)
 			{
 				Npc[nIdx].m_Kind = sNpcCell.shKind;

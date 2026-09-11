@@ -38,11 +38,17 @@ private:
 	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 	void	UpdateView();
 	void	SnapToButton();		// neo sat trai + ngang hang nut theo doi
+	void	Breathe();			// [NEOTRACE 10/09] neo chua duoc thi thu lai o khung sau
 private:
 	// KHONG giu co "dang theo doi" rieng: trang thai = cua so co dang hien hay khong.
 	// (Truoc day co co m_bTraced rieng, ESC/UiCloseWndsInGame an cua so nhung khong
 	//  xoa co => bam nut lan sau chi "tat" mot cua so von da an, phai bam 2 lan.)
 	static KUiTaskTrace*	m_pSelf;
+
+	// [NEOTRACE 10/09] Da neo dung nut theo doi chua. Luc dang nhap, goi task value ve TRUOC khi
+	// UiStartGame() tao KUiPlayerBar, nen lan SnapToButton dau khong co nut de neo
+	// -> phai thu lai o Breathe cho den khi duoc (khong phu thuoc thu tu goi tin).
+	bool					m_bDaNeo;
 
 	KWndText256				m_Title;
 	KScrollMessageListBox	m_List;		// [TaskInfo] + _List + _Scroll

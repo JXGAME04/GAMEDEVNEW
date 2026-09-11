@@ -30,6 +30,7 @@ KUiTaskTrace::KUiTaskTrace()
 	m_oFixPos.y = 0;
 	m_nLineCount = 0;	// [C33]
 	memset(m_anLineTask, 0, sizeof(m_anLineTask));
+	m_bDaNeo = false;	// [NEOTRACE 10/09] chua neo duoc vao nut theo doi
 }
 
 KUiTaskTrace::~KUiTaskTrace()
@@ -63,10 +64,14 @@ void KUiTaskTrace::SnapToButton()
 {
 	int nX = 0, nY = 0;
 	int nAX = 0, nAY = 0;
-	if (KUiPlayerBar::GetTraceBtnPos(nAX, nAY))
+	// [NEOTRACE 10/09] GetTraceBtnPos chi bao PlayerBar CO TON TAI; vi tri tuyet doi cua nut
+	// chi dung SAU khi thanh duoc dat cho (AbsoluteMove), nen phai loai truong hop
+	// con (0,0) - nut that nam o goc duoi-phai, khong bao gio o (0,0).
+	if (KUiPlayerBar::GetTraceBtnPos(nAX, nAY) && (nAX > 0 || nAY > 0))
 	{
 		nX = nAX - m_Width - 2;
 		nY = nAY;
+		m_bDaNeo = true;
 	}
 	else
 	{
@@ -76,6 +81,7 @@ void KUiTaskTrace::SnapToButton()
 			return;
 		nX = nSW - m_Width - 2;
 		nY = nSH * 2 / 5;
+		m_bDaNeo = false;	// [NEOTRACE 10/09] du phong -> Breathe se thu neo lai
 	}
 	if (nX < 0)
 		nX = 0;
@@ -86,6 +92,21 @@ void KUiTaskTrace::SnapToButton()
 	SetPosition(nX, nY);
 }
 
+//	[NEOTRACE 10/09] + [TASKTRACE 12/09] GIU CA HAI: Breathe la duong chung, thu neo lai moi khung cho den
+//	khi co nut. NeoLaiKhiCoThanh van giu vi ban Android goi thang tu KUiPlayerBar ngay sau Wnd_AddWindow -
+//	neo duoc ngay trong khung do, khong phai doi them mot nhip ve.
+// [NEOTRACE 10/09] Chay moi khung. Luc dang nhap, khung nay duoc bat len tu goi TASK VALUE
+// (GDCNI_TASK_VALUE_UPDATE -> KUiTaskGuide::AutoTraceOnTask -> SetTraced(true)),
+// goi do ve TRUOC khi UiStartGame() (UiShell.cpp) tao KUiPlayerBar => lan neo dau
+// khong co nut, khung roi vao nhanh du phong (mep phai, 2/5 chieu cao) va NAM LUON
+// o do ca phien = "moi lan dang nhap bi lech". Nay thu neo lai den khi duoc.
+void KUiTaskTrace::Breathe()
+{
+	// Khong goi ban lop cha: KWndWindow::Breathe la virtual RONG va de o muc private
+	// (C2248 neu goi thang); ca KWndMovingImage/KWndImage/KWndShowAnimate deu khong cai dat.
+	if (!m_bDaNeo && IsVisible())
+		SnapToButton();
+}
 #ifdef JX_ANDROID
 // [TASKTRACE 12/09] tu dang nhap vao thang game: khung mo TRUOC khi KUiPlayerBar co -> SnapToButton roi vao nhanh
 // 'mep phai, 40 % chieu cao' va m_oFixPos giu luon cho do (de len cot icon phai). PlayerBar goi ham nay sau Wnd_AddWindow.

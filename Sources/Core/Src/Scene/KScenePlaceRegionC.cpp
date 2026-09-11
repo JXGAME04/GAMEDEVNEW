@@ -866,6 +866,8 @@ void KScenePlaceRegionC::PaintObstacle()
 }
 #endif
 
+// [KHOI 11/09 c] dem so lan VE THAT vat tren dau co hoat anh (khoi ong khoi, hoi nuoc...)
+unsigned g_uKhoiVe = 0, g_uKhoiBoQua = 0;
 //##ModelId=3DE29F360221
 void KScenePlaceRegionC::PaintAboveHeadObj(KBuildinObj* pObj, RECT* pRepresentArea)
 {
@@ -919,10 +921,21 @@ void KScenePlaceRegionC::PaintAboveHeadObj(KBuildinObj* pObj, RECT* pRepresentAr
 	}
 	else
 	{
-		Img.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
-		Img.oPosition.nX = pObj->oPos1.x;
-		Img.oPosition.nY = pObj->oPos1.y;
-		Img.oPosition.nZ = pObj->oPos1.z;
+		// [KHOI 11/09 c] nhanh nay dat du anh roi goi BuildinObjNextFrame nhung THIEU HAN
+		// lenh ve, nen vat tren dau co hoat anh (khoi ong khoi map 53 o (203,202)) chay
+		// khung hinh ma khong bao gio hien. Lam dung nhu duong vat thuong dang chay:
+		// KIpotBuildinObj::PaintABuildinObject:199-210.
+		if (pObj->oPos1.y >= pRepresentArea->top)
+		{
+			Img.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+			Img.oPosition.nX = pObj->oPos1.x;
+			Img.oPosition.nY = pObj->oPos1.y;
+			Img.oPosition.nZ = pObj->oPos1.z;
+			g_pRepresent->DrawPrimitives(1, &Img, RU_T_IMAGE, false);
+			g_uKhoiVe++;
+		}
+		else
+			g_uKhoiBoQua++;
 
 		BuildinObjNextFrame(pObj);
 	}

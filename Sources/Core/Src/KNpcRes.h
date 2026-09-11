@@ -171,6 +171,9 @@ public:
 	int				GetAction(){return m_nAction;};
 	// [S9-VE 26/08] chi de doc trang thai lop ve khi chan doan (khong doi bo cuc lop).
 	int				GetResDoing(){return m_nDoing;};
+	// [KHOI 11/09 c] FALSE = mau NPC khong co hang trong npc_res_kind_file_name.txt
+	//	nen khong co bo anh nao de ve (chi con the ten lo lung).
+	BOOL			CoAnh(){return m_pcResNode != NULL;};
 	void			GetPos(int *pX, int *pY){*pX = m_nXpos; *pY = m_nYpos;};
 	// Chi doi vi tri VE (sprite doc m_nXpos/m_nYpos), KHONG dung cay canh.
 	// Dung cho noi suy moi khung: nut cay chi de sap xep truoc-sau va cat canh,
