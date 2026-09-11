@@ -63,7 +63,7 @@ public final class JxDoNhip implements DisplayManager.DisplayListener
     private DisplayManager mDm;
     private boolean mDung = false;
 
-    /** goi trong JxActivity.onCreate: chi bat khi config.ini [DoNhip] Bat=1 */
+    /** goi trong JxActivity.onCreate: chi bat khi config.ini [DoNhip] Bat=1 hoac GuiLog=1 */
     public static synchronized void batDau(Activity a)
     {
         if (sMot != null)
@@ -336,10 +336,12 @@ public final class JxDoNhip implements DisplayManager.DisplayListener
         catch (Exception e) { return null; }
     }
 
-    /** config.ini: muc [DoNhip] co Bat=1 */
+    /** config.ini: muc [DoNhip] co Bat=1 (bai do + gui log) HOAC GuiLog=1 ([DAN 11/09 e]: chi gui log, khong chay bai do -
+     *  can khi Bat=0 ma van muon [DAN]/jx_mail.log ve may chu; 01:33 11/09 chu cap nhat ban v ma khong co phien nao ve vi Bat=0) */
     private static boolean batTrongIni(File ini)
     {
         if (!ini.isFile()) return false;
+        boolean bat = false;
         try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(ini), StandardCharsets.ISO_8859_1)))
         {
             String ln, muc = "";
@@ -349,11 +351,13 @@ public final class JxDoNhip implements DisplayManager.DisplayListener
                 if (ln.startsWith("[") && ln.endsWith("]")) { muc = ln.substring(1, ln.length() - 1).trim(); continue; }
                 if (!muc.equalsIgnoreCase("DoNhip") || ln.startsWith(";")) continue;
                 int i = ln.indexOf('=');
-                if (i > 0 && ln.substring(0, i).trim().equalsIgnoreCase("Bat"))
-                    return ln.substring(i + 1).trim().startsWith("1");
+                if (i <= 0) continue;
+                String khoa = ln.substring(0, i).trim();
+                if ((khoa.equalsIgnoreCase("Bat") || khoa.equalsIgnoreCase("GuiLog")) && ln.substring(i + 1).trim().startsWith("1"))
+                    bat = true;
             }
         }
         catch (Exception ignored) {}
-        return false;
+        return bat;
     }
 }
