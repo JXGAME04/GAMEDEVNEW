@@ -2236,6 +2236,20 @@ BOOL KScenePlaceC::VeLopCanh(int nKieu)
 
 void KScenePlaceC::VeLopNen(KLopCanh* p)
 {
+	// [ANHNEN 10/09 i] tep _Scroll.ini cua du an con la ban 800x600 (2.0 da sua thanh 1024x768).
+	// Voi lop NEN: neu khung ve trong ini nho hon do phan giai that thi noi ra cho bang man hinh,
+	// khong thi ben phai va phia duoi con vien den.
+	static int s_nManRong = 0, s_nManCao = 0;
+	if (s_nManRong <= 0)
+	{
+		s_nManRong = GetPrivateProfileIntA("Resolution", "Width",  1024, ".\\config.ini");
+		s_nManCao  = GetPrivateProfileIntA("Resolution", "Height", 768,  ".\\config.ini");
+		if (s_nManRong <= 0) s_nManRong = 1024;
+		if (s_nManCao <= 0) s_nManCao = 768;
+	}
+	RECT rcVe = rcVe;
+	if (rcVe.right - rcVe.left < s_nManRong) rcVe.right = rcVe.left + s_nManRong;
+	if (rcVe.bottom - rcVe.top < s_nManCao)  rcVe.bottom = rcVe.top + s_nManCao;
 	KRUImage Img;
 	memset(&Img, 0, sizeof(Img));
 	Img.nType = ISI_T_BITMAP16;
@@ -2259,8 +2273,8 @@ void KScenePlaceC::VeLopNen(KLopCanh* p)
 	int nRongVe = 0, nCaoVe = 0;	// [ANHNEN 10/09 g] kich thuoc ve (co gian khi anh nho hon khung)
 	if (g_pRepresent->GetImageParam(Img.szImage, &Param, ISI_T_BITMAP16) && Param.nWidth > 0 && Param.nHeight > 0)
 	{
-		int nRong = p->rcMan.right - p->rcMan.left;
-		int nCao  = p->rcMan.bottom - p->rcMan.top;
+		int nRong = rcVe.right - rcVe.left;
+		int nCao  = rcVe.bottom - rcVe.top;
 		nRongVe = (int)Param.nWidth;
 		nCaoVe  = (int)Param.nHeight;
 		// [ANHNEN 10/09 g] anh cua du an co the hep hon ban 2.0 (mogaoku 774 vs 1161) -> phong cho phu kin, giu ti le
@@ -2274,18 +2288,18 @@ void KScenePlaceC::VeLopNen(KLopCanh* p)
 		}
 		if (nRongVe >= nRong)
 		{
-			if (x > p->rcMan.left) x = p->rcMan.left;
-			if (x + nRongVe < p->rcMan.right) x = p->rcMan.right - nRongVe;
+			if (x > rcVe.left) x = rcVe.left;
+			if (x + nRongVe < rcVe.right) x = rcVe.right - nRongVe;
 		}
 		else
-			x = p->rcMan.left + (nRong - nRongVe) / 2;
+			x = rcVe.left + (nRong - nRongVe) / 2;
 		if (nCaoVe >= nCao)
 		{
-			if (y > p->rcMan.top) y = p->rcMan.top;
-			if (y + nCaoVe < p->rcMan.bottom) y = p->rcMan.bottom - nCaoVe;
+			if (y > rcVe.top) y = rcVe.top;
+			if (y + nCaoVe < rcVe.bottom) y = rcVe.bottom - nCaoVe;
 		}
 		else
-			y = p->rcMan.top + (nCao - nCaoVe) / 2;
+			y = rcVe.top + (nCao - nCaoVe) / 2;
 	}
 	Img.oPosition.nX = x;
 	Img.oPosition.nY = y;
@@ -2307,7 +2321,7 @@ void KScenePlaceC::VeLopNen(KLopCanh* p)
 					m_FocusPosition.x, m_FocusPosition.y, p->rcVung.left, p->rcVung.top, p->rcVung.right, p->rcVung.bottom,
 					p->nTiLe, x, y, (int)Param.nWidth, (int)Param.nHeight, nRongVe, nCaoVe,
 					(nRongVe > (int)Param.nWidth || nCaoVe > (int)Param.nHeight) ? "co gian" : "nguyen co",
-					p->rcMan.left, p->rcMan.top, p->rcMan.right, p->rcMan.bottom,
+					rcVe.left, rcVe.top, rcVe.right, rcVe.bottom,
 					m_RepresentArea.left, m_RepresentArea.top, m_RepresentArea.right, m_RepresentArea.bottom, Img.szImage);
 				fclose(pLog);
 			}
