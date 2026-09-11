@@ -2247,7 +2247,7 @@ void KScenePlaceC::VeLopNen(KLopCanh* p)
 		if (s_nManRong <= 0) s_nManRong = 1024;
 		if (s_nManCao <= 0) s_nManCao = 768;
 	}
-	RECT rcVe = rcVe;
+	RECT rcVe = p->rcMan;	// [ANHNEN 10/09 j] LOI: dong nay truoc do bi thay thanh 'rcVe = rcVe' (rac)
 	if (rcVe.right - rcVe.left < s_nManRong) rcVe.right = rcVe.left + s_nManRong;
 	if (rcVe.bottom - rcVe.top < s_nManCao)  rcVe.bottom = rcVe.top + s_nManCao;
 	KRUImage Img;
