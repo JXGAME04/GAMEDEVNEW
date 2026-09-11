@@ -373,6 +373,15 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
   thanh FPS (59 khung/s đều, 2,4 W, §9 mục 4) là chế độ chơi dài; có thể làm "tự hạ 60 khi headroom > 0,9" nếu chủ muốn.
   Chú ý: bộ gửi log chỉ chạy khi `Bat=1` hoặc (từ bản `w`) `GuiLog=1`; bản `x` thêm `ScriptError.log`. Chuỗi Windows không dựng lại: mọi
   dòng C++ mới nằm trong `#ifdef JX_ANDROID`, nhánh `#else` giữ nguyên văn.
+- **Phiên `y2` 02:07 (bản của phiên giao diện = 3a602219, cùng mã đạn)**: sau nạp map 116–119 fps với 155 NPC + 204–350 viên/tick. Hai cửa
+  sổ tụt (94 và 83 fps, t=61 s và 81 s) trùng lúc đám đông xuất hiện (NPC 34 → 154 trong 30 s): `[SPIKE]` là **phía vẽ** (logic 0–10 ms,
+  paint 56–157 ms; `[PDET] render` 18–47 ms + `end` 40–71 ms) do **nạp ảnh NPC trên luồng vẽ**: `[REP3-NAP]` rút khung 30 136 lần/196 ms,
+  giải mã 18 420 lần/128 ms mỗi 30 s, 5–7 khung nạp > 16 ms, nặng nhất 75 ms/khung; `NAPNPC` "trễ 239–279" (ảnh cần mà chưa kịp). Chỉ 1–2 giây
+  có `world` 92 ms (sinh NPC hàng loạt). → Đây là việc "30 s đầu vào map / đám đông mới tới" đã ghi ở [[mobile-tongkim-lag-goc]], **không phải
+  đạn**. Đợt 2 (nếu chủ muốn), theo thứ tự lợi ích: (a) nạp/giải mã ảnh NPC theo ngân sách mỗi khung hoặc nạp trước khi NPC vào tầm nhìn
+  (luồng vẽ hết giật 60–150 ms khi đám đông tới); (b) `KScenePlaceC::MoveObject` cho đạn (≈ 50 % chi phí đạn còn lại). Đấu giá/Chiến Lệnh:
+  jx_mail.log phiên này ghi `protocol_def_c.lua ... ok`, `dispatch (75, 1) loi=0`, không có `ScriptError.log` → vá Include-từ-pak của phiên
+  giao diện chạy đúng.
 - Nạp trước sprite NPC khi vào map (`NAPNPC` "trễ 437") — việc đã ghi trong [[mobile-tongkim-lag-goc]].
 - Sau khi bật nhịp PC mặc định: khi tick 10–15 ms xảy ra, `PaintSmooth=2` nội suy giúp mượt hơn (`cat ngang` thấp), nhưng không bù được khung mất.
 
