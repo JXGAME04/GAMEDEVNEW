@@ -245,14 +245,17 @@ typedef void    (*PFN_Rep3DoNhipDat)(int nChepKhung, int nKhungBay);
 typedef int     (*PFN_Rep3DoNhipLay)(unsigned* pHist, int nBins, double* pSo, int nSo);
 typedef int32_t (*PFN_AnwSetFrameRate)(void* pWin, float fHz, int8_t nTuongThich);
 
-struct DnPha { const char* szTen; int nSuaSdl, nFps, nVsync, nSmooth, nChep, nBay, nXinHz; };	// -2 = giu cau hinh luc mo app
+// [DONHIP 12/09 b] SDL Android = 3.2.30 (co bca30aa: KHONG dung lai swapchain vi VK_SUBOPTIMAL_KHR). nSdlCu = 1 -> hint
+// JX_DUNG_LAI_SUBOPTIMAL=1 = hanh vi 3.2.14 (chi de doi chung). Ket qua Fold 7 10/09 (BANGIAO muc 8): bo qua SUBOPTIMAL 45 -> 120 fps
+// cung muc dien; nhip PC deu hon chut; 1 khung bay KHONG on dinh (82 -> 55 fps khi CPU nang) -> mac dinh 2 khung bay.
+struct DnPha { const char* szTen; int nSdlCu, nFps, nVsync, nSmooth, nChep, nBay, nXinHz; };	// -2 = giu cau hinh luc mo app
 static const DnPha s_aDnPha[] = {
-	{ "hien tai",              0,  -2, -2, -2, 1, 2,   0 },
-	{ "+sua SDL",              1,  -2, -2, -2, 1, 2,   0 },
-	{ "+nhip PC",              1,  -2,  1,  2, 1, 2,   0 },
-	{ "+bo chep, 1 khung bay", 1,  -2,  1,  2, 0, 1,   0 },
-	{ "+xin 120 Hz",           1, 120,  1,  2, 0, 1, 120 },
-	{ "+xin 60 Hz",            1,  60,  1,  2, 0, 1,  60 },
+	{ "SDL moi, nhip cu",         0,  -2,  0,  1, 1, 2,   0 },	// 0: nhu ban phat hanh sau khi nang SDL
+	{ "+nhip PC",                 0,  -2,  1,  2, 1, 2,   0 },	// 1: + PaintVsync=1, PaintSmooth=2 ([NHIP a-e] cua PC)
+	{ "+bo chep khung, 2 bay",    0,  -2,  1,  2, 0, 2,   0 },	// 2: + khong chep swapchain moi khung (M2), van 2 khung bay
+	{ "+xin 60 Hz, PaintFps 60",  0,  60,  1,  2, 0, 2,  60 },	// 3: nac tiet kiem pin (man 120 Hz ha 60)
+	{ "1 khung bay (doi chung)",  0,  -2,  1,  2, 0, 1,   0 },	// 4: nhu 2 nhung 1 khung bay
+	{ "SDL cu (doi chung)",       1,  -2,  0,  1, 1, 2,   0 },	// 5: dung lai swapchain moi khung nhu 3.2.14 (khong trong danh sach mac dinh)
 };
 #define DN_SO_PHA	((int)(sizeof(s_aDnPha) / sizeof(s_aDnPha[0])))
 #define DN_BIN		400		// o 0,25 ms: 0..100 ms, o cuoi = tran
@@ -272,6 +275,7 @@ static unsigned	s_uDnVaoGame = 0, s_uDnPhaLuc = 0, s_uDnCuaLuc = 0;
 static int		s_nDnFps0 = 0, s_nDnVsync0 = 0, s_nDnSmooth0 = 1, s_nDnXin = 0;
 static int		s_nDnSub0 = 0, s_nDnDung0 = 0;	// gia tri hint SDL o lan doc truoc
 static Uint64	s_uDnVeTruoc = 0;
+static unsigned	s_uDnVongTruoc = 0;		// [DONHIP 12/09 b] lan goi JxDoNhip_Vong truoc: cach > 2 s = app ra nen -> khong tinh vao pha
 static DnDem	s_DnC, s_DnP;				// khoang 10 s / ca pha
 static PFN_Rep3DoNhipDat s_pfnDnDat = NULL;
 static PFN_Rep3DoNhipLay s_pfnDnLay = NULL;
@@ -384,7 +388,7 @@ static void DnXinHz(int nHz)
 static void DnApPha(int nPha, unsigned uNay)
 {
 	const DnPha& p = s_aDnPha[nPha];
-	SDL_SetHint("JX_BO_QUA_SUBOPTIMAL", p.nSuaSdl ? "1" : "0");
+	SDL_SetHint("JX_DUNG_LAI_SUBOPTIMAL", p.nSdlCu ? "1" : "0");	// [DONHIP 12/09 b] 1 = dung lai swapchain nhu 3.2.14 (doi chung)
 	JxDoNhip_DatNhip(p.nFps == -2 ? s_nDnFps0 : p.nFps, p.nVsync == -2 ? s_nDnVsync0 : p.nVsync, p.nSmooth == -2 ? s_nDnSmooth0 : p.nSmooth);
 	if (s_pfnDnDat) s_pfnDnDat(p.nChep, p.nBay);
 	if (p.nXinHz != s_nDnXin) DnXinHz(p.nXinHz);
@@ -407,7 +411,7 @@ static void DnDocIni()
 	if (s_nDnLap < 1) s_nDnLap = 1;
 	if (s_nDnLap > 10) s_nDnLap = 10;
 	char sz[128] = "";
-	GetPrivateProfileString("DoNhip", "Pha", "0,1,2,3,4,5", sz, sizeof(sz), ".\\config.ini");
+	GetPrivateProfileString("DoNhip", "Pha", "0,1,2,3,4", sz, sizeof(sz), ".\\config.ini");	// [DONHIP 12/09 b] pha 5 (SDL cu) chi khi ghi ro
 	s_nDnSo = 0;
 	for (char* p = sz; *p && s_nDnSo < 16; )
 	{
@@ -449,7 +453,7 @@ static void DnBatDau(unsigned uNay)
 
 static void DnKetThuc()
 {
-	SDL_SetHint("JX_BO_QUA_SUBOPTIMAL", "0");
+	SDL_SetHint("JX_DUNG_LAI_SUBOPTIMAL", "0");	// [DONHIP 12/09 b] tra ve hanh vi SDL 3.2.30
 	JxDoNhip_DatNhip(s_nDnFps0, s_nDnVsync0, s_nDnSmooth0);
 	if (s_pfnDnDat) s_pfnDnDat(1, 2);
 	if (s_nDnXin) DnXinHz(0);
@@ -466,6 +470,14 @@ void JxDoNhip_Vong(void)
 	if (s_nDnBat <= 0 || s_nDnXong)
 		return;
 	const unsigned uNay = (unsigned)SDL_GetTicks();
+	if (s_nDnBuoc >= 0 && s_uDnVongTruoc && uNay - s_uDnVongTruoc > 2000)
+	{	// [DONHIP 12/09 b] app ra nen (SDL chan vong lap) -> doi moc thoi gian, khong tinh vao pha (Fold 7 10/09: buoc 1 keo dai 412 s)
+		const unsigned uNghi = uNay - s_uDnVongTruoc;
+		s_uDnPhaLuc += uNghi; s_uDnCuaLuc += uNghi; s_DnC.uLuc += uNghi; s_DnP.uLuc += uNghi;
+		s_uDnVeTruoc = 0;
+		DnGhi("[NHIP-NGHI]", "app ra nen %u ms - khong tinh vao pha", uNghi);
+	}
+	s_uDnVongTruoc = uNay;
 	if (s_nDnBuoc < 0)
 	{
 		if (KUiToolsControlBar::GetSelf() == NULL) { s_uDnVaoGame = 0; return; }

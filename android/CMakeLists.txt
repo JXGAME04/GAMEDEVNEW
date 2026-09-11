@@ -9,7 +9,14 @@ project(JX1Mobile C CXX)
 
 set(JX_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(JX_SRC ${JX_ROOT}/Sources)
-set(JX_SDL3_SRC ${JX_ROOT}/ThirdParty/SDL3-src/SDL3-3.2.14 CACHE PATH "nguon SDL3 (tai bang android/tai_sdl3_src.ps1)")
+# [DONHIP 12/09 b] SDL Android = 3.2.30 (ban release-3.2.x cuoi, 01/01/2026): co bca30aa (khong dung lai swapchain vi VK_SUBOPTIMAL_KHR
+# khi man xoay - Fold 7 45 -> 120 fps, BANGIAO_DONHIP_MOBILE_1209.md muc 8) + hai sua Android khi quay lai tu nen. CHI Android: goi VC
+# ThirdParty/SDL3 3.2.14 cua Windows giu nguyen. Khong CACHE de cay cu khong giu duong 3.2.14. Tai bang android/tai_sdl3_src.ps1.
+set(JX_SDL3_VER 3.2.30)
+set(JX_SDL3_SRC ${JX_ROOT}/ThirdParty/SDL3-src/SDL3-${JX_SDL3_VER})
+if(NOT EXISTS ${JX_SDL3_SRC}/CMakeLists.txt)
+  message(FATAL_ERROR "Chua co nguon SDL3 ${JX_SDL3_VER} o ${JX_SDL3_SRC} - chay: powershell -File android/tai_sdl3_src.ps1")
+endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
@@ -25,6 +32,18 @@ if(NOT TARGET SDL3::SDL3)
   set(SDL_SHARED ON CACHE BOOL "" FORCE)
   set(SDL_STATIC OFF CACHE BOOL "" FORCE)
   set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
+  # [DONHIP 12/09 b] va bo dem swapchain (hint JX_DEM_SUBOPTIMAL / JX_DEM_DUNG_LAI_SWAPCHAIN / JX_DUNG_LAI_SUBOPTIMAL) vao nguon SDL
+  # truoc khi dich: idempotent, chay o MOI cay -> moi APK cung mot libSDL3.so (10/09: APK -m dung o cay chua va, pha 1 vo hieu).
+  find_package(Python3 COMPONENTS Interpreter)
+  if(NOT Python3_Interpreter_FOUND)
+    message(FATAL_ERROR "Can python de chay android/va_sdl3_donhip.py (va nguon SDL3)")
+  endif()
+  execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/va_sdl3_donhip.py ${JX_SDL3_SRC}
+                  RESULT_VARIABLE JX_VA_SDL_KQ OUTPUT_VARIABLE JX_VA_SDL_RA ERROR_VARIABLE JX_VA_SDL_LOI OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT JX_VA_SDL_KQ EQUAL 0)
+    message(FATAL_ERROR "va_sdl3_donhip.py loi (${JX_VA_SDL_KQ}): ${JX_VA_SDL_RA} ${JX_VA_SDL_LOI}")
+  endif()
+  message(STATUS "va_sdl3_donhip.py: ${JX_VA_SDL_RA}")
   add_subdirectory(${JX_SDL3_SRC} SDL3 EXCLUDE_FROM_ALL)
 endif()
 
