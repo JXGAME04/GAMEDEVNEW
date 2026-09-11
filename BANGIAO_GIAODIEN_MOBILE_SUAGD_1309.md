@@ -266,6 +266,22 @@ Máy ảo: chạm (150,45) → "Mini skill - buff 268x86", kéo +50 → cả dã
   nằm đúng 664,83, không còn dòng `ThanhBuff: dat` (dãy buff giữ chỗ ini). Windows S3Client hai cấu hình + Core
   `Client ReleaseSDL|x64` + `Client Release|x64` đều 0 lỗi.
 
+### 7.8 Lượt h — ảnh điện thoại (2000x868): *"khi chơi trên điện thoại nó chưa tự căng chỉnh"*
+
+Đọc ảnh: cụm trái bắt đầu ở ~78 điểm lô-gic thay vì mép, cụm phải dừng ở ~71 điểm trước mép, thanh máu bị đẩy xuống ~46
+điểm, đáy ~6. Đó không phải bố cục sai mà là **vùng an toàn quá rộng**: `SDLSurface.onApplyWindowInsets` của SDL3 gộp
+`systemBars + systemGestures + mandatorySystemGestures + tappableElement + displayCutout` → vùng cử chỉ lùi (~30 dp mỗi
+bên) và thanh trạng thái (dù đã ẩn) đều thành lề, còn `VungAnToanDoiXung=1` áp lề lớn hơn cho cả hai bên.
+
+Sửa (`[ANTOAN 13/09 b]`):
+- `JxActivity.datVungAnToanTheoCamera()` (gọi ngay sau `super.onCreate`): thay listener inset của `SDLSurface` (mỗi View chỉ
+  một listener) bằng listener chỉ lấy **`displayCutout`** (API 30: `getInsets(Type.displayCutout())`; API 28–29:
+  `getDisplayCutout()`), rồi gọi `SDLActivity.onNativeInsetsChanged` như SDL. Máy không có chỗ khoét → 0,0,0,0 = neo sát
+  mép như máy ảo.
+- `VungAnToanDoiXung` mặc định 0 (config + `KSdlApp.cpp`): chỉ mép có camera bị lùi, mép kia sát màn.
+- Cách kiểm trên điện thoại: mở "Chỉnh giao diện", dòng dưới bảng ghi `<khung> ĐT | an toàn <x,y> <w>x<h>`; mong đợi
+  `an toàn 0,0` (hoặc chỉ một mép lùi bằng đúng lỗ camera).
+
 ### 7.7 Trạng thái cuối
 
 - Máy ảo: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt g, `jx1mobile-1309-suagd-k`). Tệp mặc định trên máy ảo và trong repo giống nhau.

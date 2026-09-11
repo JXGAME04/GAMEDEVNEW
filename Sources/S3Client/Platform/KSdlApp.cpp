@@ -430,8 +430,10 @@ extern "C" int JxSdl_HoKhung(void)
 // SDL_SetWindowSafeAreaInsets; iOS = safeAreaInsets cua UIKit (SDL_uikitview.m). Doi sang khung ve bang dung cong thuc
 // letterbox cua SdlToLogical. Bo cuc HUD (UiToaDo) lay vung nay lam KHONG GIAN NEO, nen icon bam mep khong bao gio nam
 // duoi lo camera hay trong dai vuot Back / thanh trang thai.
-// config.ini [Ui]: VungAnToan=1 (0 = bo qua inset), VungAnToanDoiXung=1 (le lon hon cua trai/phai ap cho ca hai mep ->
+// config.ini [Ui]: VungAnToan=1 (0 = bo qua inset), VungAnToanDoiXung=0 (1 = le lon hon cua trai/phai ap cho ca hai mep ->
 // xoay 180 do bo cuc khong doi), LeAnToan=0 (le co dinh them vao bon phia, cho goc bo tron).
+// [ANTOAN 13/09 b] Inset SDL bao ve day CHI con la cho khoet camera: JxActivity.datVungAnToanTheoCamera thay listener
+// cua SDLSurface (SDL3 gop ca thanh he thong + vung cu chi lui ~30 dp moi ben -> Fold 7 thut vao bon phia).
 // Bay: SDLActivity.setWindowStyle dat inset = 0 tren Android 11..14 sau khi vao toan man hinh -> JxActivity xin phat
 // lai inset (requestApplyInsets); may ao API 28 khong bao inset -> vung an toan = ca khung.
 //---------------------------------------------------------------------------
@@ -455,7 +457,7 @@ extern "C" int JxSdl_LayVungAnToan(int* pnL, int* pnT, int* pnW, int* pnH)
 		GetCurrentDirectory(MAX_PATH, szCfg);
 		strcat(szCfg, "\\Config.ini");
 		s_nBat = GetPrivateProfileInt("Ui", "VungAnToan", 1, szCfg);
-		s_nDoiXung = GetPrivateProfileInt("Ui", "VungAnToanDoiXung", 1, szCfg);
+		s_nDoiXung = GetPrivateProfileInt("Ui", "VungAnToanDoiXung", 0, szCfg);	// [ANTOAN 13/09 b] mac dinh KHONG doi xung: inset chi la cho khoet camera
 		s_nLe = GetPrivateProfileInt("Ui", "LeAnToan", 0, szCfg);
 		if (s_nLe < 0) s_nLe = 0;
 		if (s_nLe > 60) s_nLe = 60;
