@@ -709,9 +709,11 @@ static void ApMotO(KWndWindow* pWnd, int nMuc)
 		int nAbsX = 0, nAbsY = 0;
 
 		if (s_nLe < 0)
-			s_nLe = GetPrivateProfileInt("Ui", "LeAnToan", 10, ".\\config.ini");
+			s_nLe = GetPrivateProfileInt("Ui", "LeAnToan", 20, ".\\config.ini");
 		pWnd->GetAbsolutePos(&nAbsX, &nAbsY);
-		if (s_nLe > 0 && nAbsX >= 0 && nAbsX < s_nLe)
+		//	[UITOADO 12/09 LE b] keo ca o dang nam AM vao trong (truoc chi xu ly 0..le nen o nao lot han ra
+		//	ngoai van nam nguyen); -300 tro ra la co y giau han (Item_4..8, ChatRoom) thi de yen.
+		if (s_nLe > 0 && nAbsX > -100 && nAbsX < s_nLe)
 			pWnd->SetPosition(s_Bang[nMuc].nLeft + (s_nLe - nAbsX), s_Bang[nMuc].nTop);
 	}
 #endif
@@ -973,7 +975,8 @@ void UiToaDo_BatTat()
 			//	la biet ngay may do dang chay khung bao nhieu (may ao khong dat duoc moi co man).
 			char szTB[160];
 
-			_snprintf(szTB, sizeof(szTB), "%s  [%dx%d]", "§· vµo chÕ ®é söa giao diÖn", SCREEN_WIDTH, SCREEN_HEIGHT);
+			_snprintf(szTB, sizeof(szTB), "%s  [%dx%d le=%d]", "§· vµo chÕ ®é söa giao diÖn", SCREEN_WIDTH, SCREEN_HEIGHT,
+				GetPrivateProfileInt("Ui", "LeAnToan", 20, ".\\config.ini"));
 			szTB[sizeof(szTB) - 1] = 0;
 			DatThongBao(szTB);
 		}
