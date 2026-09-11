@@ -1117,7 +1117,9 @@ void KScenePlaceC::Paint()
 	EnterCriticalSection(&m_ProcessCritical);
 
 	BOOL bPrerenderGroundImg = PaintBackGround();//add by phong kiÒu h×nh nÒn hoa s¬n
-	VeLopCanh(1);	// [ANHNEN 10/09] anh nen ve TRUOC nen dat
+	if (VeLopCanh(1))	// [ANHNEN 10/09 f] co anh nen -> ve nen dat TRUC TIEP (co cho trong) de lo anh nen ra
+		bPrerenderGroundImg = FALSE;
+	VeLopCanh(3);	// [ANHNEN 10/09 f] lop phu nen (may xa) ve tren anh nen, DUOI nen dat
 
 	unsigned int i;
 	// N2 of ce8c4d49 (was described in that commit but never actually applied -
@@ -1149,7 +1151,6 @@ void KScenePlaceC::Paint()
 		}
 	}
 
-	VeLopCanh(3);	// [ANHNEN 10/09] lop phu nen (may xa) ve sau nen dat, truoc vat the
 	m_ObjectsTree.Paint(&m_RepresentArea, IPOT_RL_COVER_GROUND);
 	m_ObjectsTree.Paint(&m_RepresentArea, IPOT_RL_OBJECT);
 
@@ -2208,10 +2209,11 @@ void KScenePlaceC::NapLopCanh(int nPlaceIndex)
 	}
 }
 
-void KScenePlaceC::VeLopCanh(int nKieu)
+BOOL KScenePlaceC::VeLopCanh(int nKieu)
 {
+	BOOL bCoVe = FALSE;	// [ANHNEN 10/09 f]
 	if (m_nLopCanh <= 0 || g_pRepresent == NULL)
-		return;
+		return bCoVe;
 	for (int i = 0; i < m_nLopCanh; i++)
 	{
 		KLopCanh* p = &m_LopCanh[i];
@@ -2225,10 +2227,11 @@ void KScenePlaceC::VeLopCanh(int nKieu)
 			continue;
 		}
 		if (nKieu == 1)
-			VeLopNen(p);
+			{ VeLopNen(p); bCoVe = TRUE; }
 		else
 			VeLopMay(p);
 	}
+	return bCoVe;
 }
 
 void KScenePlaceC::VeLopNen(KLopCanh* p)

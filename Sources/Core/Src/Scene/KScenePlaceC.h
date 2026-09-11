@@ -477,7 +477,7 @@ public:
 		int		nMayX[LC_MAX_MAY], nMayY[LC_MAX_MAY], nMayAnh[LC_MAX_MAY];	// x, y tinh theo 1/16 diem anh
 	};
 	void	NapLopCanh(int nPlaceIndex);
-	void	VeLopCanh(int nKieu);
+	BOOL	VeLopCanh(int nKieu);	// [ANHNEN 10/09 f] tra TRUE neu co ve anh nen kieu 1
 	void	VeLopNen(KLopCanh* p);
 	void	VeLopMay(KLopCanh* p);
 	KLopCanh	m_LopCanh[LC_MAX_LOP];
