@@ -129,17 +129,21 @@ static void WorldInDong()
 		}
 		{	// [TRANGTRI 11/09] NPC + vat the nen nap tu du lieu vung
 			extern unsigned g_uTTNpcThem, g_uTTNpcHong, g_uTTNpcXoa, g_uTTObjThem;
+			extern unsigned g_uTTNpcThieuAnh;	// [KHOI 11/09 c]
+			extern unsigned g_uKhoiVe, g_uKhoiBoQua;	// [KHOI 11/09 c]
 			extern char g_szTTTen[3][40]; extern int g_nTTSo; extern char g_szTTMap[80];
 			{	// [TRANGTRI 11/09 b] in ke ca khi bang 0: phan biet "map khong co du lieu" voi "duong dan sai"
 				FILE* pT = fopen("jx_paint.log", "a");
 				if (pT)
 				{
-					fprintf(pT, "[TRANGTRI] 10s: npc them %u hong %u xoa %u | obj them %u | map %s | ten: %s %s %s\n",
-						g_uTTNpcThem, g_uTTNpcHong, g_uTTNpcXoa, g_uTTObjThem, g_szTTMap, g_szTTTen[0], g_szTTTen[1], g_szTTTen[2]);
+					fprintf(pT, "[TRANGTRI] 10s: npc them %u hong %u thieu_anh %u xoa %u | obj them %u | khoi ve %u bo qua %u | map %s | ten: %s %s %s\n",
+						g_uTTNpcThem, g_uTTNpcHong, g_uTTNpcThieuAnh, g_uTTNpcXoa, g_uTTObjThem, g_uKhoiVe, g_uKhoiBoQua,
+						g_szTTMap, g_szTTTen[0], g_szTTTen[1], g_szTTTen[2]);
 					fclose(pT);
 				}
 			}
 			g_uTTNpcThem = g_uTTNpcHong = g_uTTNpcXoa = g_uTTObjThem = 0;
+			g_uTTNpcThieuAnh = 0; g_uKhoiVe = 0; g_uKhoiBoQua = 0;	// [KHOI 11/09 c]
 			g_nTTSo = 0; g_szTTTen[0][0] = g_szTTTen[1][0] = g_szTTTen[2][0] = 0;
 		}
 		extern unsigned g_uCayChen, g_uCayDuyet1, g_uCayDuyet2, g_uCayKhop, g_uCayCon; extern unsigned g_uAmNap; extern double g_dAmNapMs; extern unsigned g_uCayTaiCho, g_uCayDoiCho, g_uCayBuoc, g_uCayKhacDs, g_uCayLuiTinh, g_uCayKhacCha, g_uCayNgoai, g_uCayDo, g_uCayLech, g_uCayXayChiMuc; /* [CAY 09/09 c] */	// [CAY 09/09 do] [AM 09/09 do]
