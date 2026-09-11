@@ -84,6 +84,25 @@ static int	g_nPaintSmooth = 1;		// [NHIP 08/09 c] 1 = so chia noi suy dung trung
 static int	g_nPaintVsync = 0;		// [NHIP 08/09] config.ini [Client] PaintVsync; 1 = ve moi vong bom, Represent3 Present(1) (vblank dan nhip)
 static int	g_nPaintInterp = 1;		// config.ini [Client] PaintInterp; 1 = interpolate drawn NPC positions between logic ticks
 int	g_nPaintLog = 0;		// config.ini [Client] PaintLog; 1 = write jx_paint.log frame-time probe
+#ifdef JX_ANDROID
+// [DONHIP 12/09] Ban do nhip ve tren may that (bo dieu khien: Platform/JxPerfHudAndroid.cpp, bat bang config.ini [DoNhip] Bat=1):
+// doi cau hinh nhip ve giua chung (tung pha do) va doc lai cau hinh luc mo app. Chi goi tu luong chinh (GameLoop).
+void JxDoNhip_DatNhip(int nPaintFps, int nVsync, int nSmooth)
+{
+	if (nPaintFps >= 0) g_nPaintFps = (nPaintFps > 240) ? 240 : nPaintFps;
+	if (nVsync >= 0) g_nPaintVsync = nVsync;
+	if (nSmooth >= 0) g_nPaintSmooth = nSmooth;
+	g_SetLoopInterval((g_nPaintFps > 60 || g_nPaintVsync > 0) ? 1 : 8);	// nhu GameInit: luoi vong bom 1 ms khi ve > 60 fps hoac vsync
+}
+void JxDoNhip_LayNhip(int* pFps, int* pVsync, int* pSmooth)
+{
+	if (pFps) *pFps = g_nPaintFps;
+	if (pVsync) *pVsync = g_nPaintVsync;
+	if (pSmooth) *pSmooth = g_nPaintSmooth;
+}
+void JxDoNhip_Vong(void);				// JxPerfHudAndroid.cpp: moi vong GameLoop (doi pha, ghi jx_nhip.log)
+void JxDoNhip_KhungVe(int nCatNgang);	// JxPerfHudAndroid.cpp: ngay truoc UiPaint cua nhanh PaintFps (do cach khung ve)
+#endif
 //int gameNumber = 0; // Game number, initialized to 0
 //Represent
 struct iRepresentShell* g_pRepresentShell = NULL;
@@ -1485,6 +1504,7 @@ BOOL KMyApp::GameLoop()
 		g_DrawVision = 0;
 #ifdef JX_ANDROID
 	JxWAuto_NhipVongLap();	// [ANDROID 11/09 WAUTO B0] bang WAuto trong game: nap goi PRT_GAMELOOP vao g_pState nhu WAuto.exe; ProcIpcCommand ngay duoi tieu thu cung khung
+	JxDoNhip_Vong();	// [DONHIP 12/09] ban do nhip: doi pha / ghi jx_nhip.log (khong lam gi khi [DoNhip] Bat=0)
 #endif
 	ProcIpcCommand();
 	if (m_GameCounter * 1000 <= m_Timer.GetElapse() * GAME_FPS)
@@ -1685,6 +1705,7 @@ BOOL KMyApp::GameLoop()
 					nLogShift = timeGetTime() - nLogShiftT0;
 			}
 #ifdef JX_ANDROID
+			JxDoNhip_KhungVe(nLogCross);	// [DONHIP 12/09] moc khung ve cho ban do nhip (khong lam gi khi [DoNhip] Bat=0)
 			{ LARGE_INTEGER liHudVe; QueryPerformanceCounter(&liHudVe); UiPaint(nGameFps); g_uJxHudVeUs = JxHudUs(liHudVe); }	// [ANDROID 11/09 HUD b]
 #else
 			UiPaint(nGameFps);

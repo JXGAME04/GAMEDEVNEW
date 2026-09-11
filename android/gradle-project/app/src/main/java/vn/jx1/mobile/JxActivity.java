@@ -29,6 +29,21 @@ public class JxActivity extends SDLActivity
     {
         super.onCreate(savedInstanceState);
         anThanhHeThong();
+        JxDoNhip.batDau(this);      // [DONHIP 12/09] ban do nhip ve: chi chay khi config.ini [DoNhip] Bat=1
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        JxDoNhip.guiNgay();         // [DONHIP 12/09] ra nen -> gui not log ve may chu tai
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        JxDoNhip.dung();            // [DONHIP 12/09]
+        super.onDestroy();
     }
 
     @Override
