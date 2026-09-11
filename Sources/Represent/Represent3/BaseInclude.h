@@ -63,7 +63,7 @@ double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
 #ifdef JX_ANDROID
 // [VE 11/09] Android: (A) do tung buoc trinh chieu CDevGpu::SubmitFrame; (B) nap KHUNG sprite o luong nen theo ngan sach.
 //   In jx_rep3.log: [VE] + [VE-GOP] + [VE-NAP] moi ky Rep3StatSec (KRepresentShell3.cpp JxVeKyIn), [VE-GIAT] khung cham (JxVeGiatGhi).
-struct JxVeDo { double dCho, dChep, dGhi, dNop, dTong; unsigned uTai, uTaiKB, uRingKB, uLenh, uQuad, uDinh, uPass, uDoiPipe, uDoiTex, uDoiVs, uDoiPs, uDoiCat; };
+struct JxVeDo { double dCho, dChep, dGhi, dNop, dTong, dChepPal, dChepTexMap, dChepTexLenh, dChepZero, dChepRing; unsigned uTai, uTaiKB, uRingKB, uLenh, uQuad, uDinh, uPass, uDoiPipe, uDoiTex, uDoiVs, uDoiPs, uDoiCat, uPal, uZero, uXferTang, uXferKB; };	// [VE 11/09 d] + tung buoc chep
 extern JxVeDo g_jxVeKhung, g_jxVeTong, g_jxVeMax;		// khung vua submit / cong don ky / max trong ky (D3D9onGPUDev.cpp ghi; KRepresentShell3.cpp doc + dat lai)
 extern unsigned g_uJxVeKhungSo, g_uJxVe8, g_uJxVe16, g_uJxGopVo[8];	// so khung trong ky, khung SubmitFrame > 8 / > 16 ms, ly do quad khong gop (xem JxGopVo)
 class TextureResSpr; class TextureResMgr;
@@ -72,6 +72,9 @@ struct JxKhungViec { TextureResSpr* pSpr; int nFrame; int nBpp; int eFmt; int bP
 struct JxKhungXong { TextureResSpr* pSpr; int nFrame; int nW, nH, nOffX, nOffY; BYTE* pDiem; int nBpp; int eFmt; int bPal; int bHong; unsigned uLuc; };	// ket qua: khung da giai ma
 extern int g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungApMs, g_nJxVeGiatMs;	// [Client] NapKhungNen / NapKhungMs / NapKhungTruoc / NapKhungApMs / VeGiatMs
 extern int g_nJxAnhBoVeNen;	// 1 = GetImage vua tra NULL vi khung dang nap o luong nen (Rep3AnhNullGhi bo qua, khong tinh la anh thieu)
+extern int g_nJxHoiKhongDe;	// [VE 11/09 d] [Client] NapHoiKhongDe: 1 = hoi kich thuoc sprite NPC dang nap o luong nen -> tra 'chua co' (khong nap dong bo de len)
+extern unsigned g_uJxNapKhungRong, g_uJxHoiTre;	// [VE 11/09 d] khung rong/hong o luong nen (khong giao lai); so lan hoi NPC dang nap tra 'chua co'
+extern int g_nJxAtlasKe, g_nJxAtlasTrang;	// [VE 11/09 e] [Client] Rep3AtlasKe: 1 = atlas xep ke theo dinh dang (mot trang nhieu hang bin); Rep3AtlasTrang: co trang 1024/2048/4096
 extern unsigned g_uJxNapKhungBoVe, g_uJxNapKhungBoVeKhung, g_uJxNapKhungDongBo, g_uJxNapKhungGiao, g_uJxNapKhungTruocSo, g_uJxNapKhungXong, g_uJxNapKhungHong, g_uJxNapKhungBo, g_uJxNapKhungChoMax;
 extern double g_dJxNapKhungTre, g_dJxNapKhungTreMax, g_dJxNapNenBan, g_dJxNapKhungAp, g_dJxNapKhungApMax; extern unsigned g_uJxNapKhungApKhung;
 extern Rep3NapDo g_jxNapNgoaiVe;	// nap dong bo NGOAI luc ve (hoi kich thuoc / alpha tu logic) trong ky

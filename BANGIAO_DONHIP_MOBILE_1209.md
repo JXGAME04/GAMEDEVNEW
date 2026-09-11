@@ -5,6 +5,24 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **10:30 11/09 — ĐÃ ĐỌC LOG FOLD 7 PHIÊN 09:31 (bản 109110317 có `[VE b+c]`, 33 phút) → `[VE 11/09 d]` đã viết + dịch (109111016), CHỜ THỬ MÁY ẢO.**
+> Mục 1 chạy đúng trên máy thật: `[VE-NAP]` giao 70 297 → xong 69 534, hỏng 625; giật vẽ ≥ 40 ms 13,1 → 4,6 lần/phút so với y2; khung nạp > 16 ms
+> 2,9 → 1,5 lần/phút; cửa sổ đông nhất 83–95 → 99–108 fps; `nhiet=0` suốt phiên ở 120 Hz (1,9–3,4 W). Hai điểm nghẽn mới (chi tiết §9 cuối,
+> "Kết quả Fold 7 09:31"): (a) **chép lên GPU 40–200 ms/khung** ở 203/326 khung chậm, 134/179 khung ấy tải < 500 KB → không phải lượng dữ liệu;
+> nghi SDL cấp/giải phóng khối bộ nhớ (bảng màu tạo/huỷ transfer buffer mỗi khung; trang atlas mới memset 2–4 MB vào staging → transfer
+> buffer phình 32 MB rồi cycle); (b) `[VE-GOP]`: quad không gộp do **texture0 86 %**, pipeline 11 %, ps 2 % → mục 3 = gom trang atlas.
+> `[VE 11/09 d]` (commit `d272bd99`, bộ vá `android/va_nguon_android_ve2.py` áp sau ve1): bảng màu + vùng 0 atlas qua bộ đệm cố định, đồng hồ con từng
+> bước chép trong `[VE-GIAT]`/`[VE]`, hỏi kích thước NPC đang nạp nền → "chưa có" (`[Client] NapHoiKhongDe=1`), khung rỗng không giao lại.
+> `[VE 11/09 e]` (commit `a501b532`, bộ vá `android/va_nguon_android_ve3.py`): mục 3 — atlas xếp KỆ theo định dạng (một trang nhiều hàng bin,
+> `CAtlasMgrGpu::JxAllocKe/JxFreeKe`), trang 2048², công tắc `[Client] Rep3AtlasKe=1 Rep3AtlasTrang=2048`; vùng 0 tải theo dải từ bộ đệm 0 cố định
+> 2 MiB. **10:40: d+e (109111021) ĐÃ THỬ MÁY ẢO TRONG GAME 150 s (chủ cho dừng app máy ảo): không crash; chép lên GPU TB 0,02–0,03 ms/khung,
+> khung nặng nhất 11,8 ms là khung vào map tải 93 texture 22 MB thật (UI); "zero 2 vùng 0,0 ms", "bảng màu 116 hàng 0,1 ms"; `[VE-GIAT]` chỉ 4 dòng/180 s
+> (bản b cùng chỗ: hàng chục); `[VE-GOP]` với kệ 2048²: **4 trang** thay vì 30+ trang 1024², đổi texture 71–73/khung (bản b: 161–184), texture0
+> 52–54 k/30 s (bản b: 189–220 k), lệnh/khung 122–127 (bản b: 230–270); "hỏi NPC đang nạp → chưa có 94" lúc vào map. Máy ảo đã cài lại 109110954.
+> `origin/mobile-0809` = `7a15c0bc`. **10:47: đã đẩy thẳng `dt_v4\jx1mobile.apk` = 109111021 (md5 `bdc338a8…`, 20 116 463 B, = fab69766 + d + e, có cả
+> [BANPHIM]/[KINHMACH] của phiên giao diện), máy chủ 8765 PID 317268, config/tệp rời dt_v4 giữ nguyên → chủ mở lại app là nhận d+e ngay lúc đang chơi
+> đám đông; phiên giao diện sẽ thay đè bằng bản gộp [PHONGBANG] sau.** Việc kế: đọc `[VE]`/`[VE-GIAT] chep:`/`[VE-GOP] atlas` của phiên Fold 7 kế tiếp.
+
 > **03:25 11/09 — `[VE 11/09 b+c]` ĐÃ THỬ MÁY ẢO TRONG GAME, ĐÃ LÊN BỘ TẢI trong bản gộp của phiên giao diện: `dt_v4\jx1mobile.apk` =
 > versionCode **109110317**, md5 `139f7284…`, 20 099 023 B, dựng từ `origin/mobile-0809 = 32c469d0` (= icon Tống Kim/Kinh Mạch + ô dùng nhanh
 > của họ + `[VE 11/09 + b + c]`), máy chủ 8765 PID 301072, dt_v4\config.ini giữ nguyên (5 khoá `NapKhung*`/`VeGiatMs` có mặc định trong mã).**
@@ -443,6 +461,40 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
     một trang nhiều hàng bin (shelf) hoặc trang 2048–4096² để hầu hết sprite NPC nằm cùng trang; (2) 58–70 lần đổi pipeline/khung = quad xen
     kẽ chế độ blend khác nhau (không gộp được trừ khi sắp xếp); (3) ps 121–142 = đổi trạng thái tầng texture (COLOROP/ALPHAOP/alphatest) giữa
     các quad. Trên Fold 7 (đám đông 1 300 đơn vị NPC/khung) tỷ lệ texture0 sẽ còn cao hơn — đọc `[VE-GOP]` phiên kế rồi làm (1).
+  - **Kết quả Fold 7 09:31–10:05 (bản 109110317 = `[VE b+c]`, SM-F966U1, 120 Hz, 33 phút, 172 cửa sổ 10 s; đọc bằng
+    `scratchpad/bang_ve.py`):**
+    - *Mục 1:* `[VE-NAP]` cả phiên giao 70 297 (nạp trước ≈ 95 %) → xong 69 534, hỏng 625 (0,9 %, xem "rỗng" dưới), bỏ vẽ 6 679 lượt; cửa sổ
+      đông nhất t=1197 s giao 9 383/30 s, t=1317 s 10 296/30 s: luồng nền bận 360–452 ms/30 s, áp texture 19–20 ms/30 s (max 2 ms/khung), trễ
+      giao→áp TB 12–17 ms. `[REP3-NAP]` "khung có nạp > 16 ms" 49 lần/33 phút (y2: 23 lần/8 phút); `[SPIKE] paint ≥ 40 ms` 131 lần = 4,6/phút
+      (y2 85 lần = 13,1/phút); khung/10 s TB 1 157 (y2 1 100); các cửa sổ đông nhất 989–1 085 khung/10 s (y2 831–946). Nhiệt `nhiet=0`
+      suốt, headroom 0,61–0,78, 1,9–3,4 W, pin 100 → 94 %.
+    - *Nghẽn (a) — chép lên GPU:* trong 326 `[VE-GIAT]` phần lớn nhất là "chép" ở 203 dòng (vẽ khác 104, nạp 27, nộp 4); chép ≥ 15 ms ở 179
+      khung, 134 khung ấy tải < 500 KB, có khung "tải 0 tex 0 KB" mà chép 45–60 ms. Hai khung 149 và 199 ms trùng lúc tạo ~15 trang atlas
+      (`QueueZeroUpload` memset 2 MB/trang vào staging → 30 881 KB một khung, `m_texXferSize` phình tới 32 MB). Đọc SDL 3.2.30
+      (`SDL_gpu_vulkan.c`): transfer buffer map cố định (không flush), nhưng `VULKAN_INTERNAL_RemoveMemoryUsedRegion` **vkFreeMemory khi khối
+      hết vùng dùng** và cấp lại khối 16 MB (`SMALL_ALLOCATION_SIZE`) khi tạo mới → bảng màu tạo/huỷ transfer buffer mỗi khung có sprite mới =
+      cấp/giải phóng 16 MB mỗi khung; buffer > 2 MiB dùng khối 64 MiB (`LARGE_ALLOCATION_INCREMENT`) → transfer 32 MB cycle = nhiều khối 64 MB.
+      → `[VE 11/09 d]`: bảng màu đi chung staging + transfer buffer cố định; vùng 0 (trang mới, ô chưa có bản CPU) tải từ **một bộ đệm 0 cố
+      định** (memset một lần), staging không phình; đồng hồ con `chep: bang mau / tex map+chep / lenh tai / zero / ring / xfer KB (phinh)`.
+    - *Nghẽn (b) — `[VE-GOP]`:* cả phiên quad không gộp: texture0 86,1 %, pipeline 11,4 %, ps 2,3 %, không liên tiếp 0,2 %; lúc đông TB 1 765
+      lệnh / 1 607 quad mỗi khung, đổi texture/sampler TB 1 153/khung (max 3 835), đổi pipeline 190–197, ps 726–854 → ghi lệnh 2,3–2,8 ms +
+      nộp ~1 ms mỗi khung. Trang atlas hiện chia theo (bin cao, định dạng) → khung cùng NPC nằm rải rác. Việc kế `[VE 11/09 e]`: trang xếp kệ
+      theo định dạng (một trang nhiều hàng bin, `CAtlasMgrGpu::Alloc/Free/NewPage`), tuỳ chọn trang 2048², công tắc `[Client] Rep3AtlasKe`.
+    - *Còn lại "nạp ngoài lúc vẽ":* `GetImageParam` từ `KNpcRes` khi NPC đổi ảnh: 448 lần/282 ms (t=181 s), 294 lần/251 ms (t=1197 s), một lần
+      tới 33 ms; `[NAPNPC]` "lần dùng đầu: kịp 1 118, trễ 1 213" = nửa số lần hỏi rơi vào lúc luồng nền đang nạp mà vẫn nạp đồng bộ đè lên
+      (`GetImage` nhánh `m_bDangNap` + `m_bVeDangDien=false`). → `[VE 11/09 d]`: sprite `spr\npcres` đang nạp nền → trả "chưa có", KNpcRes giữ
+      `m_bChange` hỏi lại khung sau (`[Client] NapHoiKhongDe=1`); đếm `hoi NPC dang nap -> chua co` trong `[VE-NAP]`.
+    - *"hỏng" 625:* xảy ra theo cụm lúc đông (119/86/30/64/102/99 mỗi 30 s), `tao_hong` = 0 → là khung rỗng (w/h = 0) hoặc rút khung hỏng; trước
+      đây giao lại mỗi lần vẽ → `[VE 11/09 d]` đánh dấu `nJxNen = 2`, không giao lại, nhánh đồng bộ giữ raw nên lần sau rẻ; đếm `khung rong`.
+    - *"vẽ khác" 104 dòng* (vẽ CPU 40–90 ms không do nạp, `[PDET] render 51–86`): mã vẽ của client (KScenePlaceC/UI) — ngoài phạm vi đợt này.
+  - **Phiên 10:22 (bản 109110954 = `[VE b+c]`, đọc lúc 10:30 khi chủ đang chơi, 7,5 phút, cảnh đông hơn: 300–500 đơn vị NPC/khung, đạn tới
+    1 091 viên/tick):** fps 117–120 khi thường, **53–96 fps trong 50 s đầu vào đám đông** (t=61–111 s), 43–69 fps ở t=211–221 s; `nhiet` 0 → 1
+    sau 6 phút, 2,3–3,2 W. Mục 1: giao 39 381 → xong 39 355, hỏng 14; đông nhất 10 430 khung/30 s, luồng nền bận 368–662 ms/30 s, bỏ vẽ
+    831–859 lượt/30 s (≈ 0,3/khung). Chép: hai khung 130 / 141 ms lúc tạo trang atlas (96 tex 27 MB, 31 tex 17 MB); 61 khung chép ≥ 15 ms,
+    38 khung tải < 500 KB. `tep spr` đồng bộ 196–233 lần/208–360 ms mỗi 30 s, max **37,8 ms**; "ngoài lúc vẽ" 344–399 lần/215–370 ms.
+    `[VE-GOP]` texture0 **88,9 %**, lúc đông 1 145–1 358 lệnh/khung, đổi texture TB 498/khung (max 4 477) → ghi lệnh TB 2,1–3,35 ms (max
+    20), nộp TB 1,3–1,6 (max 33), vẽ CPU TB 2,5–4,0 → vượt 8,3 ms của 120 Hz; nộp/chờ swapchain 25–33 ms cho thấy lúc đông **nghẽn cả GPU**.
+    "vẽ khác" 100 khung, chép 68, nộp 11, nạp 7. → Cả ba việc của d+e đều đúng chỗ; đo lại sau khi lên bản d+e.
 - Nạp trước sprite NPC khi vào map (`NAPNPC` "trễ 437") — việc đã ghi trong [[mobile-tongkim-lag-goc]].
 - Sau khi bật nhịp PC mặc định: khi tick 10–15 ms xảy ra, `PaintSmooth=2` nội suy giúp mượt hơn (`cat ngang` thấp), nhưng không bù được khung mất.
 

@@ -49,6 +49,11 @@ public:
 	CAtlasPageGpu() : m_pTex(NULL), m_fmt(SDL_GPU_TEXTUREFORMAT_INVALID), m_bpp(0), m_binH(0), m_rows(0), m_used(0) {}
 	SDL_GPUTexture* m_pTex; SDL_GPUTextureFormat m_fmt; UINT m_bpp; UINT m_binH, m_rows, m_used;
 	std::vector<std::vector<std::pair<UINT, UINT> > > m_free;	// moi hang: cac doan trong [x0, x1)
+#ifdef JX_ANDROID
+	// [VE 11/09 e] xep KE (Rep3AtlasKe=1): trang chi theo dinh dang, cac ke cao khac nhau mo dan tu y = 0; m_binH = 0, m_rows = 0
+	struct JxKe { UINT y, h, used; std::vector<std::pair<UINT, UINT> > free; };
+	std::vector<JxKe> m_ke; UINT m_yTiep;
+#endif
 };
 class CAtlasMgrGpu
 {
@@ -60,6 +65,10 @@ public:
 	void Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w);
 	void ReleaseAll();			// huy thiet bi: tra trang ngay
 	CAtlasPageGpu* NewPage(UINT binH, SDL_GPUTextureFormat fmt);
+#ifdef JX_ANDROID
+	bool JxAllocKe(UINT w, UINT h, SDL_GPUTextureFormat fmt, CAtlasPageGpu** ppPage, UINT* pX, UINT* pY);	// [VE 11/09 e]
+	void JxFreeKe(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w);
+#endif
 	CDevGpu* m_pDev; std::vector<CAtlasPageGpu*> m_pages; UINT m_pageSize;
 };
 struct RgAtlasFree { CAtlasPageGpu* pPage; UINT x, y, w; };
@@ -441,6 +450,9 @@ public:
 	std::vector<BYTE>   m_texStage;
 	SDL_GPUTransferBuffer* m_pTexXfer; UINT m_texXferSize;
 	std::vector<RgTexUpload> m_texUploads;
+#ifdef JX_ANDROID
+	SDL_GPUTransferBuffer* m_pJxZeroXfer; UINT m_jxZeroSize, m_jxZeroDaXoa; std::vector<RgTexUpload> m_jxZeroUploads;	// [VE 11/09 d] bo dem 0 co dinh cho trang atlas moi / o chua co ban CPU (stageOff = 0)
+#endif
 	std::vector<RgCmd>  m_cmds;
 	std::vector<SDL_GPUTexture*> m_release;		// phien ban cu, tra sau submit
 	std::vector<CTexGpu*> m_touched;				// texture co lenh ve tham chieu trong khung
