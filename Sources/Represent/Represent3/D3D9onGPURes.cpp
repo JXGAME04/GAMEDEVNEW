@@ -55,7 +55,11 @@ bool CTexGpu::NewVersion(bool bTarget)
 	SDL_GPUTextureFormat gf = bTarget ? SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM : m_fi.gpu;	// render target luon BGRA8 (pipeline mot dinh dang)
 	if (gf == SDL_GPU_TEXTUREFORMAT_INVALID) return false;
 	SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci));
+#ifdef JX_ANDROID
+	ci.type = g_nJxAtlasMang ? SDL_GPU_TEXTURETYPE_2D_ARRAY : SDL_GPU_TEXTURETYPE_2D; ci.format = gf;	// [MANG 11/09] shader dung sampler2DArray -> MOI texture phai la mang (rieng = 1 lop)
+#else
 	ci.type = SDL_GPU_TEXTURETYPE_2D; ci.format = gf;
+#endif
 	ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | (bTarget ? SDL_GPU_TEXTUREUSAGE_COLOR_TARGET : 0);
 	ci.width = m_w; ci.height = m_h; ci.layer_count_or_depth = 1; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
 	SDL_GPUTexture* p = SDL_CreateGPUTexture(m_pDev->m_pGpu, &ci);
@@ -91,7 +95,7 @@ void CTexGpu::QueueUpload(const RECT* prc)
 		if (bConv) RgConvertRowToBgra(m_fmt, pSrc, (DWORD*)pDst, rw);
 		else memcpy(pDst, pSrc, rw * gbpp);
 	}
-	RgTexUpload u = { pDst, (UINT)rc.left + (m_bVirtual ? m_ax : 0), (UINT)rc.top + (m_bVirtual ? m_ay : 0), rw, rh, off, bytes };	// [GPU 11/09 ATLAS]
+	RgTexUpload u = { pDst, (UINT)rc.left + (m_bVirtual ? m_ax : 0), (UINT)rc.top + (m_bVirtual ? m_ay : 0), rw, rh, off, bytes, JxLop() };	// [GPU 11/09 ATLAS] [MANG 11/09] lop
 	m_pDev->QueueTexUpload(u);
 	m_bGpuHasData = true;
 }
@@ -108,7 +112,7 @@ SDL_GPUTexture* CTexGpu::PrepareForBind()
 			else
 			{
 				m_uGpuBytes = m_w * m_h * m_pPage->m_bpp; m_pDev->m_uTexBytes += m_uGpuBytes; g_uRep3GpuTexCount++; g_uRep3GpuTexBytes += m_uGpuBytes;
-				if (m_pCpu) QueueUpload(NULL); else m_pDev->QueueZeroUpload(m_pPage->m_pTex, m_ax, m_ay, m_w, m_h, m_pPage->m_bpp);
+				if (m_pCpu) QueueUpload(NULL); else m_pDev->QueueZeroUpload(m_pPage->m_pTex, m_ax, m_ay, m_w, m_h, m_pPage->m_bpp, m_pPage->m_nLop);	// [MANG 11/09] lop
 				m_bDirty = false; m_bGpuHasData = true;
 			}
 		}
@@ -273,7 +277,7 @@ bool CTexGpu::ThuLaiCpu()
 	const UINT gbpp = RgGpuBpp(gf), ox = m_bVirtual ? m_ax : 0, oy = m_bVirtual ? m_ay : 0;
 	if (gbpp == 0) { m_bCpuBo = false; return false; }
 	std::vector<BYTE> tmp((size_t)m_w * m_h * gbpp);
-	if (!m_pDev->ReadbackRegion(pSrc, ox, oy, m_w, m_h, gbpp, &tmp[0], m_w * gbpp)) { m_bCpuBo = false; return false; }
+	if (!m_pDev->ReadbackRegion(pSrc, ox, oy, m_w, m_h, gbpp, &tmp[0], m_w * gbpp, JxLop())) { m_bCpuBo = false; return false; }	// [MANG 11/09] dung lop cua trang
 	const bool bConv = (gf != m_fi.gpu) || m_fi.bConvert;
 	for (UINT y = 0; y < m_h; y++)
 	{
@@ -308,10 +312,19 @@ void CAtlasMgrGpu::ReleaseAll()
 	for (size_t i = 0; i < m_pages.size(); i++)
 	{
 		CAtlasPageGpu* p = m_pages[i];
+#ifdef JX_ANDROID
+		if (p->m_pTex && m_pDev->m_pGpu && !g_nJxAtlasMang) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, p->m_pTex);	// [MANG 11/09] texture cum huy o duoi, khong huy theo tung trang
+#else
 		if (p->m_pTex && m_pDev->m_pGpu) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, p->m_pTex);
+#endif
 		delete p;
 	}
 	m_pages.clear();
+#ifdef JX_ANDROID
+	for (size_t i = 0; i < m_jxCum.size(); i++)	// [MANG 11/09] huy texture cua tung cum
+		if (m_jxCum[i].pTex && m_pDev->m_pGpu) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, m_jxCum[i].pTex);
+	m_jxCum.clear(); g_uJxAtlasCum = 0;
+#endif
 	g_uRep3AtlasPages = 0; g_uRep3AtlasBytes = 0;
 }
 
@@ -331,13 +344,24 @@ CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
 {
 	const UINT bpp = RgGpuBpp(fmt);
 	if (bpp == 0 || !m_pDev->m_pGpu) return NULL;
-	SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci));
-	ci.type = SDL_GPU_TEXTURETYPE_2D; ci.format = fmt; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
-	ci.width = m_pageSize; ci.height = m_pageSize; ci.layer_count_or_depth = 1; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
-	SDL_GPUTexture* pTex = SDL_CreateGPUTexture(m_pDev->m_pGpu, &ci);
-	if (!pTex) { RgLog("atlas: CreateGPUTexture trang %ux%u fmt %d that bai: %s", m_pageSize, m_pageSize, (int)fmt, SDL_GetError()); return NULL; }
-	m_pDev->QueueZeroUpload(pTex, 0, 0, m_pageSize, m_pageSize, bpp);	// trang moi = 0 (khong de rac; vien o khi loc tuyen tinh)
+	SDL_GPUTexture* pTex = NULL; UINT uLop = 0;
+#ifdef JX_ANDROID
+	if (g_nJxAtlasMang)
+	{	// [MANG 11/09] trang = mot LOP trong texture mang cua cum (hai trang cung cum -> cung texture0 -> gop duoc lenh ve)
+		if (!JxCapLop(fmt, bpp, &pTex, &uLop)) return NULL;
+	}
+	else
+#endif
+	{
+		SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci));
+		ci.type = SDL_GPU_TEXTURETYPE_2D; ci.format = fmt; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+		ci.width = m_pageSize; ci.height = m_pageSize; ci.layer_count_or_depth = 1; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+		pTex = SDL_CreateGPUTexture(m_pDev->m_pGpu, &ci);
+		if (!pTex) { RgLog("atlas: CreateGPUTexture trang %ux%u fmt %d that bai: %s", m_pageSize, m_pageSize, (int)fmt, SDL_GetError()); return NULL; }
+	}
+	m_pDev->QueueZeroUpload(pTex, 0, 0, m_pageSize, m_pageSize, bpp, uLop);	// trang moi = 0 (khong de rac; vien o khi loc tuyen tinh)
 	CAtlasPageGpu* p = new CAtlasPageGpu();
+	p->m_nLop = uLop;	// [MANG 11/09]
 #ifdef JX_ANDROID
 	p->m_yTiep = 0;
 	if (g_nJxAtlasKe) { p->m_pTex = pTex; p->m_fmt = fmt; p->m_bpp = bpp; p->m_binH = 0; p->m_rows = 0; p->m_used = 0; }	// [VE 11/09 e] trang xep ke: chua co hang
@@ -414,7 +438,12 @@ void CAtlasMgrGpu::Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 		{
 			for (size_t i = 0; i < m_pages.size(); i++)
 				if (m_pages[i] == pPage) { m_pages.erase(m_pages.begin() + i); break; }
+#ifdef JX_ANDROID
+			if (g_nJxAtlasMang) JxTraLop(pPage);	// [MANG 11/09] texture la cua CUM (dung chung): chi tra lop, khong huy
+			else if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
+#else
 			if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
+#endif
 			if (g_uRep3AtlasPages) g_uRep3AtlasPages--;
 			g_uRep3AtlasBytes -= (unsigned __int64)m_pageSize * m_pageSize * pPage->m_bpp;
 			delete pPage;
@@ -499,12 +528,64 @@ void CAtlasMgrGpu::JxFreeKe(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 		{	// giu toi da MOT trang rong moi dinh dang; trang rong thu hai tra lai GPU (sau khung: DeferRelease)
 			for (size_t i = 0; i < m_pages.size(); i++)
 				if (m_pages[i] == pPage) { m_pages.erase(m_pages.begin() + i); break; }
+#ifdef JX_ANDROID
+			if (g_nJxAtlasMang) JxTraLop(pPage);	// [MANG 11/09] texture la cua CUM (dung chung): chi tra lop, khong huy
+			else if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
+#else
 			if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
+#endif
 			if (g_uRep3AtlasPages) g_uRep3AtlasPages--;
 			g_uRep3AtlasBytes -= (unsigned __int64)m_pageSize * m_pageSize * pPage->m_bpp;
 			delete pPage;
 		}
 	}
+}
+#endif
+
+#ifdef JX_ANDROID
+// [MANG 11/09] Cap mot LOP cho trang atlas: tim cum cung dinh dang con lop (lop da tra truoc, roi lop chua dung), het thi tao cum moi.
+// So lop moi cum tang dan (2, 4, 8...) va khong vuot ngan sach byte Rep3AtlasCumMB -> khong cap 64 MB ngay khi vao map.
+bool CAtlasMgrGpu::JxCapLop(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture** ppTex, UINT* pLop)
+{
+	for (size_t i = 0; i < m_jxCum.size(); i++)
+	{
+		JxCum& c = m_jxCum[i];
+		if (c.fmt != fmt) continue;
+		if (!c.lopTrong.empty()) { *ppTex = c.pTex; *pLop = c.lopTrong.back(); c.lopTrong.pop_back(); return true; }
+		if (c.nLopTiep < c.nLop) { *ppTex = c.pTex; *pLop = c.nLopTiep++; return true; }
+	}
+	UINT nLop = 2;
+	for (size_t i = 0; i < m_jxCum.size(); i++) if (m_jxCum[i].fmt == fmt) nLop *= 2;	// cum sau nhieu lop hon cum truoc
+	if ((int)nLop > g_nJxAtlasLop) nLop = (UINT)g_nJxAtlasLop;
+	{
+		const unsigned __int64 uMotLop = (unsigned __int64)m_pageSize * m_pageSize * bpp;
+		const unsigned __int64 uNganSach = (unsigned __int64)g_nJxAtlasCumMB << 20;
+		UINT nToiDa = (UINT)(uMotLop ? (uNganSach / uMotLop) : 1); if (nToiDa < 1) nToiDa = 1;
+		if (nLop > nToiDa) nLop = nToiDa;
+	}
+	SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci));
+	ci.type = SDL_GPU_TEXTURETYPE_2D_ARRAY; ci.format = fmt; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+	ci.width = m_pageSize; ci.height = m_pageSize; ci.layer_count_or_depth = nLop; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+	SDL_GPUTexture* pTex = SDL_CreateGPUTexture(m_pDev->m_pGpu, &ci);
+	if (!pTex)
+	{
+		RgLog("atlas mang: CreateGPUTexture %ux%u x %u lop fmt %d that bai: %s", m_pageSize, m_pageSize, nLop, (int)fmt, SDL_GetError());
+		return false;
+	}
+	JxCum c; c.pTex = pTex; c.fmt = fmt; c.bpp = bpp; c.nLop = nLop; c.nLopTiep = 1;
+	m_jxCum.push_back(c);
+	g_uJxAtlasCum = (unsigned)m_jxCum.size();
+	RgLog("[MANG] cum atlas moi: %ux%u x %u lop fmt %d (%u MB), tong %u cum", m_pageSize, m_pageSize, nLop, (int)fmt,
+		(unsigned)(((unsigned __int64)m_pageSize * m_pageSize * bpp * nLop) >> 20), (unsigned)m_jxCum.size());
+	*ppTex = pTex; *pLop = 0;
+	return true;
+}
+
+void CAtlasMgrGpu::JxTraLop(CAtlasPageGpu* pPage)
+{
+	if (!pPage || !pPage->m_pTex) return;
+	for (size_t i = 0; i < m_jxCum.size(); i++)
+		if (m_jxCum[i].pTex == pPage->m_pTex) { m_jxCum[i].lopTrong.push_back(pPage->m_nLop); return; }
 }
 #endif
 

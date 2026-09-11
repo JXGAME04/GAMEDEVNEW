@@ -134,6 +134,8 @@ int g_nJxBoKhungGiong = 1, g_nJxBoKhungGiongMs = 250;	// [BKG 11/09]
 int g_nJxSwapchainLogic = 100;	// [D1 11/09]
 int g_nJxPsBuffer = 1, g_nJxBindRing = 1;	// [GOP 11/09]
 unsigned g_uJxPsBangMax = 0, g_uJxPsTran = 0;	// [GOP 11/09]
+int g_nJxAtlasMang = 1, g_nJxAtlasLop = 8, g_nJxAtlasCumMB = 64;	// [MANG 11/09]
+unsigned g_uJxAtlasCum = 0;	// [MANG 11/09]
 unsigned g_uJxKhungGiongBo = 0, g_uJxKhungGiongCoTai = 0, g_uJxKhungGiongEp = 0, g_uJxKhungGiongDem = 0, g_uJxKhungGiongChuoiMax = 0, g_uJxKhungTrinhChieu = 0;	// [BKG 11/09]
 unsigned g_uJxNapKhungBoVe = 0, g_uJxNapKhungBoVeKhung = 0, g_uJxNapKhungDongBo = 0, g_uJxNapKhungGiao = 0, g_uJxNapKhungTruocSo = 0, g_uJxNapKhungXong = 0, g_uJxNapKhungHong = 0, g_uJxNapKhungBo = 0, g_uJxNapKhungChoMax = 0;
 double g_dJxNapKhungTre = 0.0, g_dJxNapKhungTreMax = 0.0, g_dJxNapNenBan = 0.0, g_dJxNapKhungAp = 0.0, g_dJxNapKhungApMax = 0.0; unsigned g_uJxNapKhungApKhung = 0;
@@ -188,8 +190,8 @@ static void JxVeKyIn()
 	Rep3Log("[VE-BKG] trinh chieu %u khung, bo vi giong khung truoc %u, giong nhung co tai %u, giong nhung ep %u (cua so doi / qua %d ms), chi dem %u, chuoi bo dai nhat %u | bat=%d | bang mau kieu %s: lenh tai TB %.3f ms/khung (max %.2f)",
 		g_uJxKhungTrinhChieu, g_uJxKhungGiongBo, g_uJxKhungGiongCoTai, g_uJxKhungGiongEp, g_nJxBoKhungGiongMs, g_uJxKhungGiongDem, g_uJxKhungGiongChuoiMax, g_nJxBoKhungGiong, g_nJxPalBuffer ? "buffer" : "texture", t.dChepPalLenh / n, m.dChepPalLenh);	// [BKG 11/09] [PALBUF 11/09]
 	g_uJxKhungTrinhChieu = g_uJxKhungGiongBo = g_uJxKhungGiongCoTai = g_uJxKhungGiongEp = g_uJxKhungGiongDem = g_uJxKhungGiongChuoiMax = 0;
-	Rep3Log("[VE-GOP] doi trang thai/khung TB: pipeline %u, texture/sampler %u (max %u), uniform vs %u, ps %u, cat/viewport %u | quad khong gop (ca ky): stride %u, khong lien tiep %u, pipeline %u, texture0 %u, texture1/sampler %u, vs %u, ps %u, cat/vp %u | atlas ke=%d trang %d: %u trang | ps bang %u muc (tran %u)",
-		t.uDoiPipe / n, t.uDoiTex / n, m.uDoiTex, t.uDoiVs / n, t.uDoiPs / n, t.uDoiCat / n, g_uJxGopVo[0], g_uJxGopVo[1], g_uJxGopVo[2], g_uJxGopVo[3], g_uJxGopVo[4], g_uJxGopVo[5], g_uJxGopVo[6], g_uJxGopVo[7], g_nJxAtlasKe, g_nJxAtlasTrang, g_uRep3AtlasPages, g_uJxPsBangMax, g_uJxPsTran);	// [VE 11/09 e] [GOP 11/09]
+	Rep3Log("[VE-GOP] doi trang thai/khung TB: pipeline %u, texture/sampler %u (max %u), uniform vs %u, ps %u, cat/viewport %u | quad khong gop (ca ky): stride %u, khong lien tiep %u, pipeline %u, texture0 %u, texture1/sampler %u, vs %u, ps %u, cat/vp %u | atlas ke=%d trang %d: %u trang | ps bang %u muc (tran %u) | atlas mang=%d: %u cum",
+		t.uDoiPipe / n, t.uDoiTex / n, m.uDoiTex, t.uDoiVs / n, t.uDoiPs / n, t.uDoiCat / n, g_uJxGopVo[0], g_uJxGopVo[1], g_uJxGopVo[2], g_uJxGopVo[3], g_uJxGopVo[4], g_uJxGopVo[5], g_uJxGopVo[6], g_uJxGopVo[7], g_nJxAtlasKe, g_nJxAtlasTrang, g_uRep3AtlasPages, g_uJxPsBangMax, g_uJxPsTran, g_nJxAtlasMang, g_uJxAtlasCum);	// [VE 11/09 e] [GOP 11/09] [MANG 11/09]
 	memset(&g_jxVeTong, 0, sizeof(g_jxVeTong)); memset(&g_jxVeMax, 0, sizeof(g_jxVeMax)); g_uJxVeKhungSo = 0; g_uJxVe8 = 0; g_uJxVe16 = 0; memset(g_uJxGopVo, 0, sizeof(g_uJxGopVo));
 	s_dJxVeCpuTong = 0.0; s_dJxVeCpuMax = 0.0; s_uJxVeCpuKhung = 0; g_uJxPsBangMax = 0; g_uJxPsTran = 0;	// [GOP 11/09]
 	Rep3Log("[VE-NAP] nap khung nen (bat=%d, ngan sach %d ms/khung, nap truoc %d, ap %d ms): giao %u (nap truoc %u) xong %u hong %u bo %u | bo ve %u luot, dong bo trong ngan sach %u | hang cho max %u | tre giao->ap TB %.1f ms (max %.1f) | luong nen ban %.0f ms | ap tren luong ve %u khung %.1f ms (max %.2f/khung) | nap dong bo NGOAI luc ve: %u lan %.1f ms (max %.2f) | khung rong/hong khong giao lai %u | hoi NPC dang nap -> chua co %u (bat=%d)",
@@ -721,11 +723,16 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	if (g_nJxBoKhungGiong > 1) g_nJxBoKhungGiong = 1; if (g_nJxBoKhungGiong < -1) g_nJxBoKhungGiong = -1;
 	g_nJxPsBuffer       = Rep3Ini("Rep3PsBuffer", 1) ? 1 : 0;	// [GOP 11/09] 1 = trang thai tang texture qua storage buffer, chi so theo dinh (hai quad khac ps van gop duoc; bot 800 lan day uniform/khung)
 	if (!g_nJxPalBuffer) g_nJxPsBuffer = 0;	// shader PC khong co buffer nao
+	g_nJxAtlasMang      = Rep3Ini("Rep3AtlasMang", 1) ? 1 : 0;	// [MANG 11/09] 1 = nhieu trang atlas trong mot texture mang 2D (hai quad khac trang van gop duoc); 0 = tung trang mot texture nhu ban 109111545
+	if (!g_nJxPsBuffer) g_nJxAtlasMang = 0;	// lop di chung o PALROW voi chi so ps: can shader bien the pal+ps
+	{ int n = Rep3Ini("Rep3AtlasLop", 8); if (n < 2) n = 2; if (n > 32) n = 32; g_nJxAtlasLop = n; }	// so lop toi da moi cum
+	{ int n = Rep3Ini("Rep3AtlasCumMB", 64); if (n < 8) n = 8; if (n > 256) n = 256; g_nJxAtlasCumMB = n; }	// ngan sach byte moi cum
 	g_nJxBindRing       = Rep3Ini("Rep3BindRing", 1) ? 1 : 0;	// [GOP 11/09] 1 = bind ring dinh mot lan moi render pass, lenh ve dung first_vertex (bot 1 lenh Vulkan moi draw)
 	g_nJxSwapchainLogic = Rep3Ini("Rep3SwapchainLogic", 100);	// [D1 11/09] swapchain = backbuffer x %/100 (100 = khung logic 1040x936/1436x616, GPU to it diem hon 3-4,4 lan; 150 = 1,5x; 0 = cua so nhu cu)
 	if (g_nJxSwapchainLogic < 0) g_nJxSwapchainLogic = 0; if (g_nJxSwapchainLogic > 0 && g_nJxSwapchainLogic < 50) g_nJxSwapchainLogic = 50; if (g_nJxSwapchainLogic > 400) g_nJxSwapchainLogic = 400;
 	Rep3Log("[VE] nap khung nen=%d, ngan sach %d ms/khung, nap truoc %d khung, ap %d ms/khung; nguong [VE-GIAT] %d ms", g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungApMs, g_nJxVeGiatMs);
 	Rep3Log("[VE] bang mau kieu %s (Rep3PalBuffer=%d); bo khung giong khung truoc: %d (Rep3BoKhungGiong; toi da %d ms giua hai lan trinh chieu); ps theo dinh=%d, bind ring mot lan=%d", g_nJxPalBuffer ? "storage buffer" : "texture 256x8192", g_nJxPalBuffer, g_nJxBoKhungGiong, g_nJxBoKhungGiongMs, g_nJxPsBuffer, g_nJxBindRing);	// [PALBUF 11/09] [BKG 11/09] [GOP 11/09]
+	Rep3Log("[VE] atlas mang 2D=%d (Rep3AtlasMang; toi da %d lop/cum, ngan sach %d MB/cum)", g_nJxAtlasMang, g_nJxAtlasLop, g_nJxAtlasCumMB);	// [MANG 11/09]
 #endif
 	g_nRep3StatSec   = Rep3Ini("Rep3StatSec", 30);
 	m_TextureResMgr.SetBudget();	// [REP3 03/09 RAM] doc Rep3CacheMB SAU khi doc ini (ctor chay truoc Create)

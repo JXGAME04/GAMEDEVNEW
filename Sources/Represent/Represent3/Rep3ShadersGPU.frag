@@ -8,8 +8,23 @@ layout(location = 0) in vec4 vCol;
 layout(location = 1) in vec2 vUv;
 layout(location = 2) flat in uint vPal;
 
+#ifdef JX_TEX_ARRAY
+// [MANG 11/09] (chi Android) nhieu trang atlas trong MOT texture mang 2D; lop lay tu o PALROW bit 25..30 -> hai quad o hai trang cung cum GOP duoc
+layout(set = 2, binding = 0) uniform sampler2DArray g_t0;
+layout(set = 2, binding = 1) uniform sampler2DArray g_t1;
+#define JX_LOP0      float((vPal >> 25) & 0x3Fu)
+#define JX_TEX0(uv)  texture(g_t0, vec3(uv, JX_LOP0))
+#define JX_TEX1(uv)  texture(g_t1, vec3(uv, 0.0))
+#define JX_FETCH0(p) texelFetch(g_t0, ivec3(p, int((vPal >> 25) & 0x3Fu)), 0)
+#define JX_DIM0      textureSize(g_t0, 0).xy
+#else
 layout(set = 2, binding = 0) uniform sampler2D g_t0;
 layout(set = 2, binding = 1) uniform sampler2D g_t1;
+#define JX_TEX0(uv)  texture(g_t0, uv)
+#define JX_TEX1(uv)  texture(g_t1, uv)
+#define JX_FETCH0(p) texelFetch(g_t0, p, 0)
+#define JX_DIM0      textureSize(g_t0, 0)
+#endif
 #ifdef JX_PAL_BUFFER
 // [PALBUF 11/09] (chi Android, -DJX_PAL_BUFFER) bang mau = storage buffer 8192 hang x 256 mau BGRA8 (uint), hang = vPal; set 2 binding 2 = ngay sau 2 sampler
 layout(std430, set = 2, binding = 2) readonly buffer PalBuf { uint g_palBuf[]; };
@@ -117,17 +132,17 @@ void main()
     vec4 cur = dif;
     if (g_st0.x != 1)   // stage 0 khong DISABLE
     {
-        vec4 tex0 = (g_st0b.z != 0) ? texture(g_t0, vUv) : vec4(1.0);
+        vec4 tex0 = (g_st0b.z != 0) ? JX_TEX0(vUv) : vec4(1.0);
         if (JX_PALROW != JX_PALKHONG && g_st0b.z != 0)
         {   // texture chi so (R8G8): R = chi so bang mau, G = alpha
             if (g_st0b.w != 0)
             {   // loc tuyen tinh: lay 4 diem, tra bang tung diem roi noi suy; khong noi suy CHI SO
-                ivec2 dim = textureSize(g_t0, 0);
+                ivec2 dim = JX_DIM0;
                 vec2 p = vUv * vec2(dim) - 0.5; vec2 f = fract(p); ivec2 p0 = ivec2(floor(p)); ivec2 mx = dim - 1;
-                vec4 c00 = PalTex(texelFetch(g_t0, clamp(p0, ivec2(0), mx), 0), JX_PALROW);
-                vec4 c10 = PalTex(texelFetch(g_t0, clamp(p0 + ivec2(1, 0), ivec2(0), mx), 0), JX_PALROW);
-                vec4 c01 = PalTex(texelFetch(g_t0, clamp(p0 + ivec2(0, 1), ivec2(0), mx), 0), JX_PALROW);
-                vec4 c11 = PalTex(texelFetch(g_t0, clamp(p0 + ivec2(1, 1), ivec2(0), mx), 0), JX_PALROW);
+                vec4 c00 = PalTex(JX_FETCH0(clamp(p0, ivec2(0), mx)), JX_PALROW);
+                vec4 c10 = PalTex(JX_FETCH0(clamp(p0 + ivec2(1, 0), ivec2(0), mx)), JX_PALROW);
+                vec4 c01 = PalTex(JX_FETCH0(clamp(p0 + ivec2(0, 1), ivec2(0), mx)), JX_PALROW);
+                vec4 c11 = PalTex(JX_FETCH0(clamp(p0 + ivec2(1, 1), ivec2(0), mx)), JX_PALROW);
                 tex0 = mix(mix(c00, c10, f.x), mix(c01, c11, f.x), f.y);
             }
             else
@@ -136,7 +151,7 @@ void main()
         cur = Stage(g_st0, g_st0b, dif, dif, tex0);
         if (g_st1.x != 1)
         {
-            vec4 tex1 = (g_st1b.z != 0) ? texture(g_t1, vUv) : vec4(1.0);
+            vec4 tex1 = (g_st1b.z != 0) ? JX_TEX1(vUv) : vec4(1.0);
             cur = Stage(g_st1, g_st1b, dif, cur, tex1);
         }
     }

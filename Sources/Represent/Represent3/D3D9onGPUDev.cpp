@@ -338,6 +338,9 @@ bool CDevGpu::Init()
 	{	// texture trang 1x1 (stage khong texture / bang mau chua co)
 		DWORD white = 0xFFFFFFFF;
 		SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci)); ci.type = SDL_GPU_TEXTURETYPE_2D; ci.format = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+#ifdef JX_ANDROID
+		if (g_nJxAtlasMang) ci.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;	// [MANG 11/09] shader dung sampler2DArray
+#endif
 		ci.width = 1; ci.height = 1; ci.layer_count_or_depth = 1; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
 		m_pWhite = SDL_CreateGPUTexture(m_pGpu, &ci);
 		if (!m_pWhite || !RgUploadOnce(m_pGpu, NULL, m_pWhite, 1, 1, &white, 4)) { RgLog("texture trang that bai: %s", SDL_GetError()); return false; }
@@ -412,6 +415,7 @@ bool CDevGpu::CreateShaders()
 		if (g_nJxPsBuffer)
 		{	// [GOP 11/09] them bang trang thai tang texture (set 2, binding 3); khong con uniform cua fragment
 			si.code = g_Rep3GpuFSPalPs; si.code_size = sizeof(g_Rep3GpuFSPalPs); si.num_storage_buffers = 2; si.num_uniform_buffers = 0;
+			if (g_nJxAtlasMang) { si.code = g_Rep3GpuFSPalPsMang; si.code_size = sizeof(g_Rep3GpuFSPalPsMang); }	// [MANG 11/09] sampler2DArray, lop lay tu dinh
 		}
 	}
 #endif
@@ -867,12 +871,12 @@ void CDevGpu::UntouchTex(CTexGpu* p)
 }
 
 // [GPU 11/09 ATLAS] ghi lenh tai mot vung toan 0 (trang moi, o chua co du lieu CPU)
-void CDevGpu::QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp)
+void CDevGpu::QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, UINT layer)
 {
 	if (!pTex || !w || !h || !bpp) return;
 #ifdef JX_ANDROID
 	{	// [VE 11/09 d] tai tu bo dem 0 co dinh (SubmitFrame): khong memset/memcpy vao staging, staging khong phinh 2-4 MB moi trang atlas moi
-		RgTexUpload u = { pTex, x, y, w, h, 0, w * h * bpp };
+		RgTexUpload u = { pTex, x, y, w, h, 0, w * h * bpp, layer };	// [MANG 11/09]
 		m_jxZeroUploads.push_back(u);
 		return;
 	}
@@ -880,12 +884,12 @@ void CDevGpu::QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT
 	const UINT bytes = w * h * bpp;
 	const UINT off = ((UINT)m_texStage.size() + 15) & ~15u;
 	m_texStage.resize((size_t)off + bytes, 0);
-	RgTexUpload u = { pTex, x, y, w, h, off, bytes };
+	RgTexUpload u = { pTex, x, y, w, h, off, bytes, layer };
 	m_texUploads.push_back(u);
 }
 
 // [GPU 11/09 BOCPU] doc lai mot vung texture GPU ve CPU (dong bo): nhu ReadbackTexture nhung co goc (x, y) va byte/diem
-bool CDevGpu::ReadbackRegion(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, BYTE* pDst, UINT dstPitch)
+bool CDevGpu::ReadbackRegion(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, BYTE* pDst, UINT dstPitch, UINT layer)
 {
 	if (!pTex || !pDst || !w || !h || !bpp) return false;
 	if (!m_cmds.empty() || !m_texUploads.empty()) SubmitFrame(false);
@@ -896,7 +900,7 @@ bool CDevGpu::ReadbackRegion(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT 
 	SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(m_pGpu);
 	if (!cb) { SDL_ReleaseGPUTransferBuffer(m_pGpu, pX); return false; }
 	SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
-	SDL_GPUTextureRegion src; memset(&src, 0, sizeof(src)); src.texture = pTex; src.x = x; src.y = y; src.w = w; src.h = h; src.d = 1;
+	SDL_GPUTextureRegion src; memset(&src, 0, sizeof(src)); src.texture = pTex; src.layer = layer; src.x = x; src.y = y; src.w = w; src.h = h; src.d = 1;	// [MANG 11/09] lop
 	SDL_GPUTextureTransferInfo dst; memset(&dst, 0, sizeof(dst)); dst.transfer_buffer = pX; dst.pixels_per_row = w; dst.rows_per_layer = h;
 	SDL_DownloadFromGPUTexture(cp, &src, &dst);
 	SDL_EndGPUCopyPass(cp);
@@ -919,6 +923,10 @@ void CDevGpu::ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo)
 	for (int s = 0; s < 2; s++)
 	{
 		SDL_GPUTexture* t = NULL;
+#ifdef JX_ANDROID
+		// [MANG 11/09] o PALROW chi cho MOT chi so lop (dung cho tang 0): texture cua tang 1 phai ra khoi atlas de lop cua no luon = 0
+		if (g_nJxAtlasMang && s == 1 && m_tex[1] && m_tex[1] != m_pRtTex && m_tex[1]->m_bVirtual) m_tex[1]->BoAtlas();
+#endif
 		if (m_tex[s] && m_tex[s] != m_pRtTex) t = m_tex[s]->PrepareForBind();
 		if (t) bound[s] = true;
 		st.pTex[s] = t ? t : m_pWhite;
@@ -971,6 +979,7 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 	{	// [GOP 11/09] o PALROW: bit 0..12 hang bang mau (0x1FFF = khong co), 13..24 chi so to hop ps, 25..30 danh cho lop atlas (buoc sau)
 		const UINT uRow = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? ((UINT)m_tex[0]->m_nPalRow & 0x1FFFu) : 0x1FFFu;
 		uPal = uRow | ((JxPsIdx(st.ps) & 0xFFFu) << 13);
+		if (g_nJxAtlasMang && m_tex[0]) uPal |= ((m_tex[0]->JxLop() & 0x3Fu) << 25);	// [MANG 11/09] bit 25..30 = lop trong texture mang
 	}
 #endif
 	const float fPage = m_pAtlas ? (float)m_pAtlas->m_pageSize : 1024.0f;	// [GPU 11/09 ATLAS]
@@ -1155,7 +1164,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 					{
 						const UINT hh = (u.h - y0 < hDai) ? (u.h - y0) : hDai;
 						SDL_GPUTextureTransferInfo src; memset(&src, 0, sizeof(src)); src.transfer_buffer = m_pJxZeroXfer; src.offset = 0; src.pixels_per_row = u.w; src.rows_per_layer = hh;
-						SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.x = u.x; dst.y = u.y + y0; dst.w = u.w; dst.h = hh; dst.d = 1;
+						SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.layer = u.layer; dst.x = u.x; dst.y = u.y + y0; dst.w = u.w; dst.h = hh; dst.d = 1;	// [MANG 11/09] lop
 						SDL_UploadToGPUTexture(cp, &src, &dst, false);
 					}
 				}
@@ -1241,7 +1250,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 #endif
 					const RgTexUpload& u = m_texUploads[i];
 					SDL_GPUTextureTransferInfo src; memset(&src, 0, sizeof(src)); src.transfer_buffer = m_pTexXfer; src.offset = u.stageOff; src.pixels_per_row = u.w; src.rows_per_layer = u.h;
-					SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.x = u.x; dst.y = u.y; dst.w = u.w; dst.h = u.h; dst.d = 1;
+					SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.layer = u.layer; dst.x = u.x; dst.y = u.y; dst.w = u.w; dst.h = u.h; dst.d = 1;	// [MANG 11/09] lop
 					SDL_UploadToGPUTexture(cp, &src, &dst, false);
 				}
 				m_uUploads += (unsigned)m_texUploads.size();
