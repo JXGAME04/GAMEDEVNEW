@@ -110,6 +110,37 @@ Còn lại:
 - Dòng chữ vàng giữa màn hình ghi pha đang chạy; muốn nhận xét cảm giác thì ghi lại "pha nào mượt / rung".
 - Đừng thoát app giữa chừng. Xong khi dòng vàng báo `DO NHIP: xong`.
 
+## 7. Phân tích log MÁY ẢO 12/09 tối (chủ test thanh FPS trên LDPlayer) — đọc từ `D:\jx1_android_data\*.log`
+
+Nguồn: `jx_paint.log` (`[SUM]` mỗi 10 s: khung vẽ, cách khung min/TB/max, `spikes` = lượt vòng bơm ≥ 25 ms, `ve` = thời gian UiPaint
+**gồm cả chờ vsync trong Present**, `passes` = số vòng bơm), `jx_rep3.log`, `jx_nhip.log` (`[NHIP-XIN]`), `UserData\UiCommon.ini`.
+Không lấy được logcat (phiên bị chặn lệnh shell) → không có dòng `[FPS]`/`[THONGTIN]`. Máy ảo: LDPlayer 1040x604, **màn 60 Hz, present mode vsync**,
+Android 9 → `ANativeWindow_setFrameRate` không có (mọi `[NHIP-XIN]` trả −9999) — mức FPS chỉ đổi `PaintFps`. Chủ kéo thanh FPS lúc 21:36, 21:42,
+22:27 và **lưu mức 5 = 120** (`FpsMuc=5`). App khởi động lại ~10 lần trong buổi (phần lớn do kịch bản adb của phiên giao diện cài lại APK).
+
+| Đoạn (10 s/mẫu) | Khung/10 s | Cách khung min/TB/max (ms) | spikes ≥25 ms/10 s | `ve` TB (ms) | Vòng bơm/10 s | Kẹp alpha |
+|---|---|---|---|---|---|---|
+| **Mức 60**, chủ chơi, trước khi chuyển (21:32→21:36, giây 11–212) | 573–600 | 2–7 / 16–17 / 30–56 (cú nạp 117) | 6–15 | **7–13** | **770–1170** (có ngủ) | 0–4 |
+| **Mức 120**, cảnh đông (giây 92–402 một lần chạy 21:4x) | 578–597 | 2–6 / 16–17 / 24–52 | 0–33 | **16** | 597–656 (≈ số khung) | 0–5 |
+| **Mức 120**, chủ chơi cảnh yên (22:10, giây 202–642) | 595–597 | 7–12 / 16 / 22–35 | 0–6 | 16 | 597–613 | 0–3 |
+| Mức 120, lần chạy tự động 22:34 (giây 92–682) | 588–601 | 5–11 / 16 / 24–37; hai cú 528 và 268 ms (nạp map, tick 479 ms) | 0–18 | 16 | 590–630 | 0–5 |
+
+Đọc số:
+1. **Trên màn 60 Hz, mức 120 không cho thêm khung nào** (59,5–60 khung/s ở mọi mức; `jx_rep3.log` `fps TB 60–61`). Vsync trong `SDL_WaitAndAcquireGPUSwapchainTexture` chặn.
+2. **Cái giá của mức 120 trên màn 60 Hz**: luồng chính bị khoá trong Present ≈ 16 ms mỗi khung (`ve` 16 vs 7–13; CPU vẽ thật chỉ 2–4 ms theo `[PDET] render`),
+   vòng bơm không còn khoảng ngủ (passes ≈ số khung, lưới 1 ms). Trên điện thoại đây là **M4** (alpha nội suy tính trước khi chờ 16 ms) + tốn pin.
+   → Máy 60 Hz nên để **Tự động** (= 60); mức 120 chỉ có nghĩa trên màn 120 Hz thật (Fold 7) — cần log điện thoại để kết luận.
+3. **Cách khung không đều ở cả hai mức** (min 2–7 ms, max 25–50 ms quanh trung bình 16,7): cùng hiện tượng "rung" 11/09. Mức 60 do lưới 8 ms + lead 4 ms
+   thỉnh thoảng vẽ hai khung sát nhau; mức 120 do vẽ ngay khi swapchain thả rồi chờ. Đó chính là thứ **pha 2** (PaintVsync=1 + PaintSmooth=2) đo trên
+   điện thoại; máy ảo không thử được vì LDPlayer chỉ có vsync.
+4. Tick logic TB 0–3 ms, `cross` 0–10 → không nghẽn logic. Cú giật lớn chỉ khi nạp map (528–697 ms) và thi thoảng 100–270 ms (nạp sprite mới) — việc
+   "30 s đầu vào map" đã biết, không liên quan mức FPS.
+5. `spikes` tăng ở mức 120 (0–33 so với 6–15) một phần là **giả tạo**: mỗi vòng bơm đã gồm 16 ms chờ vsync nên chỉ cần thêm 9 ms là vượt ngưỡng 25.
+6. `jx_rep3.log`: RAM riêng 560 MB, cache texture 282–288/393 MB, GPU tex 303–310 MB, giải mã sprite 5–12 ms/30 s trên luồng vẽ, `anh_null` 72–120 nghìn/30 s
+   (bảng NpcRes thiếu ảnh — đã biết). GPU % trên máy ảo = `-` (không có sysfs) — đúng như thiết kế.
+7. Việc nhỏ nên làm sau: kéo thanh FPS sinh **hàng chục lần áp mức** trong 2 s (mỗi bước = một lần `JxNhip_DatMuc`, `g_SetLoopInterval`, ghi log);
+   nên áp khi **nhả ngón** (WND_N_SCORLLBAR_POS_CHANGED cuối) — vô hại nhưng thừa. `LoadSetting` áp mức 2 lần lúc mở game (UiInit + UiShell:447) — vô hại.
+
 ## 6. Rủi ro
 
 - Bản vá SDL chỉ nằm trong bản SDL của worktree này (git bỏ qua) — dựng APK ở worktree khác sẽ thiếu bộ đếm, pha 1 mất tác dụng.
