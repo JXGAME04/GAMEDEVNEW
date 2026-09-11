@@ -5,6 +5,34 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **13:20 11/09 — SỬA TẬN GỐC ĐỢT 1 ĐÃ LÊN BỘ TẢI: `[BKG 11/09]` + `[PALBUF 11/09]` + `[FPSNGOAI 11/09]` + `[MAU 11/09]`** — commit `ccb66888`,
+> `origin/mobile-0809 = 9177d84a` (đã FF, cây `D:\GAMEDEVNEW_wt_mobile` = 9177d84a), **dt_v4 = 109111313** (md5 `250bd14a…`, 20 256 747 B, máy chủ 8765
+> PID 304848 chạy từ worktree này, tệp rời của phiên giao diện giữ nguyên), APK lưu `android/apk/jx1mobile-1109-bkg1.apk`. Chủ 12:40: "thực hiện các bước
+> và hướng dẫn test lấy log; fix ở bản mobile không ảnh hưởng bản PC; up git lên bản mobile; phiên khác đang làm thì yêu cầu đồng bộ trước khi build".
+> Đã hỏi 5 phiên trước khi dựng: giao diện đồng bộ 21e969b0 → 1270a115 → 164e5889 (đã gộp hết); DONHIP cũ, wauto-bb/-d2/-80 không liên quan; gộp cả
+> `origin/main d8105a1a` (TKMS/TKFIX — xung đột `UiRankData.cpp` giữ ép kiểu `KUPARAM` của mobile). Phương án + tư vấn: `PHUONGAN_FPS_NHIET_PIN_MOBILE_1109.md`
+> §6; bộ vá tái tạo `android/va_nguon_android_bkg1.py` (latin-1, CRLF, byte cao không đổi) + `ReverseTools/mobile_x64/dich_shader_gpu.py`. Mọi dòng C++
+> mới trong `#ifdef JX_ANDROID` hoặc tệp chỉ-Android; mảng shader PC trong `Rep3ShadersGPU_spv.h` giữ nguyên byte (0 dòng xoá).
+> 1. **[BKG] Khung giống hệt khung vừa trình chiếu thì không trình chiếu** (`CDevGpu::JxBoKhungGiong`, gọi từ `Present`): so `m_cmds` + `m_ring` với bản
+>    khung vừa trình chiếu bằng `memcmp` (RgCmd được memset 0). Chỉ bỏ khi: không texture / bảng màu / vùng 0 chờ tải, không flush giữa khung
+>    (`SubmitFrame(false)` đặt `m_bJxKhungCoFlush`), chưa quá `Rep3BoKhungGiongMs` (250) kể từ lần trình chiếu trước, không bị ép. Ép = `Rep3_JxEpTrinhChieu`
+>    do `KSdlApp::TranslateEvent` gọi trước `switch` khi SHOWN / EXPOSED / RESIZED / PIXEL_SIZE / RESTORED / DISPLAY / SAFE_AREA / FOCUS_GAINED /
+>    DID_ENTER_FOREGROUND; `Reset` cũng ép. Bỏ = `FrameReset()` không submit (texture chạm, ô atlas, bảng màu dọn như thường). Đếm `[VE-BKG]` mỗi kỳ:
+>    trình chiếu / bỏ / giống-có-tải / ép / chỉ đếm / chuỗi bỏ dài nhất. `[Client] Rep3BoKhungGiong` 1 (mặc định) / 0 chỉ đếm / -1 tắt hẳn.
+>    Máy ảo màn menu 30 s: 1 830 khung → trình chiếu 117, bỏ 1 713, ép 115 (đúng trần 250 ms), chuỗi 15; ảnh chụp lúc đang bỏ hiện đúng, không đen.
+> 2. **[PALBUF] Bảng màu = storage buffer** 8192 hàng × 1 KB (`m_pJxPalBuf`, tạo ngay trong `Init`), hàng mới đi cùng staging `m_texStage` → `SDL_UploadToGPUBuffer`
+>    (`m_jxPalUploads`); shader biến thể `-DJX_PAL_BUFFER` = `g_Rep3GpuFSPalBuf` (2 sampler + `readonly buffer PalBuf` set 2 binding 2, `unpackUnorm4x8(...).zyx`);
+>    `[Client] Rep3PalBuffer=0` = texture 256×8192 cũ. Đo riêng lệnh tải bảng màu ở cả hai kiểu: `[VE] … bang mau kieu …: lenh tai TB`, `[VE-GIAT] … pal lenh`.
+>    Gốc: phiên 11:48 260/260 khung "chép" ≥ 10 ms là khung tải hàng bảng màu vào texture (≈ 20 ms cố định, không theo Hz/KB). Máy ảo: 4 hàng/30 s, 0,0 ms.
+> 3. **[FPSNGOAI] Ngoài thế giới vẽ 30 fps + xin màn 60 Hz** (`FpsNgoai_Nhip` trong `PerfHud_Draw`; `LoadSetting` áp đè 2 lần lúc mở app nên hễ thấy nhịp ≠ 30 là
+>    đặt lại; vào thế giới (`KUiToolsControlBar::GetSelf()`) áp lại `JxNhip_DatMuc(s_nFpsMuc)`; không chạy khi `[DoNhip] Bat=1`). `[Client] FpsNgoaiTheGioi=30` (0 tắt).
+>    Máy ảo: 300 khung/10 s ở menu (trước 604).
+> 4. **[MAU] Java** `[MAU]` thêm ` | gpu=NN% gpu_mhz=… cpu_mhz=a/b/…` (kgsl `gpu_busy_percentage` / `gpuclk`, `scaling_cur_freq` từng nhân) + dòng `[GPU-SYS]`
+>    báo đường sysfs đọc được (Fold 7 có cho đọc không → xem log phiên tới).
+> **Chưa thử được TRONG thế giới trên máy ảo** (chủ đang chơi trên Fold 7 — phiên 13:06 còn cập nhật — máy ảo đăng nhập cùng tài khoản sẽ đá phiên);
+> chỉ thử tới màn menu 2 lượt: không sập, màu đúng, bỏ khung + 30 fps chạy. Bài test trên Fold 7 + cách đọc log: **§10**. Việc kế theo §6 phương án:
+> C (atlas mảng 2D + ps theo đỉnh + first_vertex) → D1 (swapchain = khung logic, hint SDL) → E (nạp spr nền khi NPC sinh) → A2 (hạ nấc theo nhiệt, lưới an toàn).
+
 > **11:30 11/09 — PHÂN TÍCH TOÀN BỘ LOG FOLD 7 MỘT LƯỢT** (chủ: "đọc hết log lại rồi phân tích một lần rồi báo tôi"). 39 phiên, 22:05 10/09 → 11:23 11/09;
 > bộ đọc `scratchpad/phan_tich_tong.py` (bảng theo phiên, cửa sổ 30 s, fps theo độ đông, nguồn giật, nhiệt) + tra chỉ mục pak bằng `name2id` của
 > `ReverseTools/pakcheck.py`. Chưa sửa gì thêm — chờ chủ chọn hướng.
@@ -548,3 +576,21 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
 - Pha 1–5 đổi hành vi thật khi đang chơi (đó là mục đích); hết vòng tự trả về như cũ.
 - Đổi số khung bay (pha 3, lúc kết thúc) làm SDL chờ hết hàng lệnh + dựng lại swapchain một lần.
 - `POST /nhatky` không xác thực (chỉ trong LAN); chỉ ghi vào thư mục nhật ký, tên tệp đã làm sạch (không thể thành `..`).
+
+## 10. Hướng dẫn test bản 109111313 (BKG / PALBUF / FPSNGOAI / MAU) trên Fold 7 và lấy log
+
+1. **Nhận bản:** mở app → bộ tải thấy `apk.txt` 109111313 → cài → mở lại → vào game. Điện thoại cùng Wi-Fi với `10.0.0.140`; log tự về
+   `D:\jx1_android_log\SM-F966U1_<phiên>\` mỗi 10 s (dt_v4 đang `[DoNhip] GuiLog=1 Bat=0`, `PaintLog=1 AutoLog=1`). Không cần đổi `config.ini`.
+2. **Màn đăng nhập / chọn nhân vật:** dòng góc phải sẽ hiện ~30 FPS — đúng ý (ngoài thế giới vẽ 30, màn 60 Hz). Vào thế giới phải trở lại nấc đã chọn
+   (Tự động = 120); nếu vào thế giới mà vẫn 30 → báo tôi.
+3. **Bài 1 (15 phút, cảnh yên, màn trong):** đứng yên 2 phút, đi lại, mở/đóng hành trang, chat vài dòng, **gập/mở máy 1 lần, thoát ra màn hình chính rồi
+   quay lại app 1 lần**. Để ý ba thứ: (a) màu sắc nhân vật / NPC / giao diện có y như trước không (bảng màu); (b) có lúc nào **hình đứng** — thao tác mà
+   hình không đổi, hoặc sau gập/mở / quay lại app hình cũ không cập nhật quá nửa giây; (c) khựng lặt vặt còn không.
+4. **Bài 2 (15 phút, Tống Kim / chỗ đông, màn ngoài):** đánh bình thường; để ý khựng khi đám đông tới, màu sắc, máy nóng hơn hay mát hơn bản trước.
+5. **Thấy lỗi:** nói rõ *lỗi gì, lúc mấy giờ, màn trong hay ngoài*. Tắt nhanh từng mục không cần APK: sửa `D:\jx1_android_data_dt_v4\config.ini` mục
+   `[Client]` thêm `Rep3BoKhungGiong=0` (hình đứng) / `Rep3PalBuffer=0` (sai màu) / `FpsNgoaiTheGioi=0` (nhịp ngoài thế giới), khởi động lại máy chủ 8765
+   (manifest sinh lúc khởi động), mở lại app.
+6. **Tôi đọc log** (`scratchpad/phan_tich_tong.py`, `bang_ve.py` + grep): `jx_rep3.log` `[VE-BKG]` (trình chiếu / bỏ mỗi 30 s — cảnh yên kỳ vọng bỏ ≥ 50 %),
+   `[VE] … bang mau kieu storage buffer`, số dòng `[VE-GIAT]` có "chép" ≥ 10 ms (kỳ vọng ≈ 0, trước 12/phút), `[VE]` cho/chép/ghi/nộp; `jx_thietbi.log`
+   `[MAU]` W, nhiệt, `gpu=`, `cpu_mhz=`, `[GPU-SYS]`; `jx_paint.log` `[SUM]`. Mốc so sánh: bảng 1.1/1.2 của phương án (yên màn trong 120 Hz: 2,1–2,8 W,
+   CPU 48–68 %, pin 13,6 %/giờ; 12 khung chép chậm/phút).

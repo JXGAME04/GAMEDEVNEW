@@ -215,6 +215,10 @@ trong lúc màn tải hiển thị; đổi map 150–300 ms tick nằm sau màn 
 
 ## 6. Tư vấn "sửa tận gốc, không đụng trải nghiệm" (chủ hỏi 11/09 12:30)
 
+> **Đã làm 13:20 11/09 (commit `ccb66888`, dt_v4 = 109111313):** mục 1 (bỏ khung giống = `[BKG 11/09]`, kèm bộ đếm `[VE-BKG]`), mục 4 (bảng màu =
+> storage buffer `[PALBUF 11/09]`, kèm đồng hồ "lệnh tải bảng màu" ở cả hai kiểu), A4 (`[FPSNGOAI 11/09]`), đo (c) GPU % + xung CPU/GPU vào `[MAU]`
+> (`[MAU 11/09]`). Chi tiết + bài test: `BANGIAO_DONHIP_MOBILE_1209.md` §0 khối 13:20 và §10. Còn lại theo thứ tự: C → D1 → E → A2.
+
 **Gốc thật sự là gì.** Engine JX1 là engine 2D kiểu D3D9 tức thời: mỗi sprite = một lệnh vẽ mang texture + trạng thái riêng, vẽ lại toàn bộ
 màn hình mỗi khung, ở PC 60 Hz driver D3D9 gánh được. Trên điện thoại ở 120 Hz, cùng mô hình đó đi qua lớp mô phỏng SDL-GPU (mỗi lệnh 1–3 µs
 CPU, mỗi đổi texture một descriptor set) và GPU tô ở độ phân giải gốc gấp 4,4 lần khung logic → chi phí mỗi khung cao, rồi nhân 120. Việc
