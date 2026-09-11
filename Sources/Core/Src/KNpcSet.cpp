@@ -795,6 +795,7 @@ void KNpcSet::CheckBalance()
 		// Gac: bo chet/hoi sinh (ke toan ref co gac death), partner (he rieng), chi gan
 		// khi con trong 38 o (ngoai hon la de VANH 42 go lai = flap).
 		if (Npc[nIdx].m_RegionIndex < 0
+		 && Npc[nIdx].m_sClientNpcID.m_dwRegionID == 0	// [TRANGTRI 11/09] NPC trang tri khong AddRef vat can
 		 && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex
 		 && Npc[nIdx].m_Kind != kind_partner
 		 && Npc[nIdx].m_Doing != do_death && Npc[nIdx].m_Doing != do_revive
@@ -827,7 +828,8 @@ void KNpcSet::CheckBalance()
 				}
 			}
 		}
-		if (SubWorld[0].m_dwCurrentTime - Npc[nIdx].m_SyncSignal > 1000)
+		// [TRANGTRI 11/09] NPC trang tri khong bao gio co goi dong bo -> mien duong don theo han 1000 tick
+		if (Npc[nIdx].m_sClientNpcID.m_dwRegionID == 0 && SubWorld[0].m_dwCurrentTime - Npc[nIdx].m_SyncSignal > 1000)
 		{
 			if (nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)
 			{

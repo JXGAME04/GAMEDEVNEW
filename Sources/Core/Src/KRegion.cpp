@@ -356,12 +356,24 @@ NPC_CLOSE:
 //	功能：载入客户端地图上本region 的 object数据（包括npc、box等）
 //	如果 bLoadNpcFlag == TRUE 需要载入 clientonly npc else 不载入
 //----------------------------------------------------------------------
+// [TRANGTRI 11/09] dem NPC/OBJ trang tri nap tu du lieu vung (xem jx_paint.log dong [TRANGTRI])
+unsigned g_uTTNpcThem = 0, g_uTTNpcHong = 0, g_uTTNpcXoa = 0, g_uTTObjThem = 0;
+char     g_szTTTen[3][40] = { "", "", "" };
+int      g_nTTSo = 0;
+
 BOOL KRegion::LoadObject(int nSubWorld, int nX, int nY, char *lpszPath)
 {
 #ifdef TOOLVERSION
 	return TRUE;
 #endif
-/*	char	szPath[FILE_NAME_LENGTH], szFile[FILE_NAME_LENGTH];
+	{	// [TRANGTRI 11/09] khoa tat: [Client] VeTrangTri=0 trong config.ini
+		static int s_nTT = -1;
+		if (s_nTT < 0)
+			s_nTT = GetPrivateProfileIntA("Client", "VeTrangTri", 1, ".\\config.ini") ? 1 : 0;
+		if (!s_nTT)
+			return TRUE;
+	}
+	char	szPath[FILE_NAME_LENGTH], szFile[FILE_NAME_LENGTH];
 
 	if (!lpszPath || !lpszPath[0] || strlen(lpszPath) >= FILE_NAME_LENGTH)
 		return FALSE;
@@ -455,7 +467,7 @@ NPC_CLOSE:
 
 		// 
 		ObjSet.ClientLoadRegionObj(szPath, nX, nY, nSubWorld, this->m_nIndex);
-	}*/
+	}	// [TRANGTRI 11/09]
 
 	return TRUE;
 }
@@ -610,7 +622,16 @@ BOOL	KRegion::LoadClientNpc(KPakFile *pFile, DWORD dwDataSize)
 				Npc[nIdx].m_Kind = sNpcCell.shKind;
 				Npc[nIdx].SendCommand(do_stand);
 				Npc[nIdx].m_Dir = Npc[nIdx].GetNormalNpcStandDir(sNpcCell.nCurFrame);
+				g_uTTNpcThem++;	// [TRANGTRI 11/09]
+				if (g_nTTSo < 3)
+				{
+					strncpy(g_szTTTen[g_nTTSo], Npc[nIdx].Name, sizeof(g_szTTTen[0]) - 1);
+					g_szTTTen[g_nTTSo][sizeof(g_szTTTen[0]) - 1] = 0;
+					g_nTTSo++;
+				}
 			}
+			else
+				g_uTTNpcHong++;	// [TRANGTRI 11/09] het khe NPC hoac toa do ngoai vung
 		}
 	}
 
@@ -2046,8 +2067,20 @@ void KRegion::Close()		// 清除Region中的几个链表（所指向的内容没有被清除）
 		// dong map -> MOI NPC cua region nay bi go (RegionIndex=-1, khong xoa khoi NpcSet).
 		AUTOLOG("[S6-ORPHAN] npc=%u idx=%d kind=%u doing=%d cell=(%d,%d) regid=(%d,%d) t=%u", Npc[pTempNode->m_nIndex].m_dwID, pTempNode->m_nIndex, Npc[pTempNode->m_nIndex].m_Kind, (int)Npc[pTempNode->m_nIndex].m_Doing, Npc[pTempNode->m_nIndex].m_MapX, Npc[pTempNode->m_nIndex].m_MapY, (int)LOWORD(m_RegionID), (int)HIWORD(m_RegionID), timeGetTime());
 #endif
-		Npc[pTempNode->m_nIndex].m_RegionIndex = -1;
-		RemoveNpc(pTempNode->m_nIndex);
+		int nTT11 = pTempNode->m_nIndex;	// [TRANGTRI 11/09]
+		Npc[nTT11].m_RegionIndex = -1;
+		RemoveNpc(nTT11);
+#ifndef _SERVER
+		// [TRANGTRI 11/09] NPC trang tri (nap tu phan 2 cua Region_C.dat) phai TRA KHE ngay khi
+		// vung dong. Neu de mo coi thi SearchClientID van thay -> lan nap sau bo qua (thu
+		// bien mat vinh vien) va khe NPC ro dan (2.159 ban ghi tren 55 map, tran client 800).
+		if (Npc[nTT11].m_sClientNpcID.m_dwRegionID > 0)
+		{
+			extern unsigned g_uTTNpcXoa;
+			g_uTTNpcXoa++;
+			NpcSet.Remove(nTT11);
+		}
+#endif
 	}
 
 	pNode = (KIndexNode *)m_MissleList.GetHead();

@@ -127,6 +127,22 @@ static void WorldInDong()
 			}
 			g_uVatDongVe = 0; g_nVatDongSo = 0; g_szVatDong[0][0] = g_szVatDong[1][0] = g_szVatDong[2][0] = 0;
 		}
+		{	// [TRANGTRI 11/09] NPC + vat the nen nap tu du lieu vung
+			extern unsigned g_uTTNpcThem, g_uTTNpcHong, g_uTTNpcXoa, g_uTTObjThem;
+			extern char g_szTTTen[3][40]; extern int g_nTTSo;
+			if (g_uTTNpcThem || g_uTTNpcXoa || g_uTTObjThem || g_uTTNpcHong)
+			{
+				FILE* pT = fopen("jx_paint.log", "a");
+				if (pT)
+				{
+					fprintf(pT, "[TRANGTRI] 10s: npc them %u hong %u xoa %u | obj them %u | ten: %s %s %s\n",
+						g_uTTNpcThem, g_uTTNpcHong, g_uTTNpcXoa, g_uTTObjThem, g_szTTTen[0], g_szTTTen[1], g_szTTTen[2]);
+					fclose(pT);
+				}
+			}
+			g_uTTNpcThem = g_uTTNpcHong = g_uTTNpcXoa = g_uTTObjThem = 0;
+			g_nTTSo = 0; g_szTTTen[0][0] = g_szTTTen[1][0] = g_szTTTen[2][0] = 0;
+		}
 		extern unsigned g_uCayChen, g_uCayDuyet1, g_uCayDuyet2, g_uCayKhop, g_uCayCon; extern unsigned g_uAmNap; extern double g_dAmNapMs; extern unsigned g_uCayTaiCho, g_uCayDoiCho, g_uCayBuoc, g_uCayKhacDs, g_uCayLuiTinh, g_uCayKhacCha, g_uCayNgoai, g_uCayDo, g_uCayLech, g_uCayXayChiMuc; /* [CAY 09/09 c] */	// [CAY 09/09 do] [AM 09/09 do]
 		FILE* p2 = fopen("jx_paint.log", "a");
 		if (p2)

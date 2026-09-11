@@ -2393,7 +2393,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		{
 			m_Region[nIdx].m_nIndex = nIdx;
 			m_Region[nIdx].Init(m_nRegionWidth, m_nRegionHeight);
-			//m_Region[nIdx].LoadObject(0, nX, nY, m_szMapPath);
+			m_Region[nIdx].LoadObject(0, nX, nY, m_szMapPath);	// [TRANGTRI 11/09] nap NPC+OBJ trang tri cua vung
 		}
 	}
 	
@@ -2419,7 +2419,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			{
 				m_Region[nConIdx].m_nIndex = nConIdx;
 				m_Region[nConIdx].Init(m_nRegionWidth, m_nRegionHeight);
-				//m_Region[nConIdx].LoadObject(0, nX + nXOff[i], nY + nYOff[i], m_szMapPath);
+				m_Region[nConIdx].LoadObject(0, nX + nXOff[i], nY + nYOff[i], m_szMapPath);	// [TRANGTRI 11/09]
 			}
 			else
 			{

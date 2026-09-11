@@ -569,7 +569,11 @@ BOOL	KObjSet::ClientLoadRegionObj(char *lpszMapPath, int nRegionX, int nRegionY,
 		sInfo.m_nSoundFlag = 0;
 		sInfo.m_dwNpcId1 = 0;
 
-		ClientAdd(0, sData.nTemplateID, sData.nState, sData.nDir, 0, sData.Pos.x, sData.Pos.y, sInfo);
+		{	// [TRANGTRI 11/09] dem vat the nen (nguon am thanh) nap tu du lieu vung
+			extern unsigned g_uTTObjThem;
+			if (ClientAdd(0, sData.nTemplateID, sData.nState, sData.nDir, 0, sData.Pos.x, sData.Pos.y, sInfo) > 0)
+				g_uTTObjThem++;
+		}
 	}
 	cDataFile.Close();
 
@@ -622,7 +626,11 @@ BOOL	KObjSet::ClientLoadRegionObj(KPakFile *pFile, DWORD dwDataSize)
 		sInfo.m_nSoundFlag = 0;
 		sInfo.m_dwNpcId1 = 0;
 
-		ClientAdd(0, sData.nTemplateID, sData.nState, sData.nDir, 0, sData.Pos.x, sData.Pos.y, sInfo);
+		{	// [TRANGTRI 11/09] dem vat the nen (nguon am thanh) nap tu du lieu vung
+			extern unsigned g_uTTObjThem;
+			if (ClientAdd(0, sData.nTemplateID, sData.nState, sData.nDir, 0, sData.Pos.x, sData.Pos.y, sInfo) > 0)
+				g_uTTObjThem++;
+		}
 	}
 
 	return TRUE;
