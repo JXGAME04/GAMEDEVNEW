@@ -5,6 +5,38 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **11:30 11/09 — PHÂN TÍCH TOÀN BỘ LOG FOLD 7 MỘT LƯỢT** (chủ: "đọc hết log lại rồi phân tích một lần rồi báo tôi"). 39 phiên, 22:05 10/09 → 11:23 11/09;
+> bộ đọc `scratchpad/phan_tich_tong.py` (bảng theo phiên, cửa sổ 30 s, fps theo độ đông, nguồn giật, nhiệt) + tra chỉ mục pak bằng `name2id` của
+> `ReverseTools/pakcheck.py`. Chưa sửa gì thêm — chờ chủ chọn hướng.
+> 1. **FPS:** từ bản [DAN] (01:40) trung vị 115–119 fps ở 120 Hz, p10 105–113, giây < 55 khung 0,2–1,1/phút (đêm trước DAN 12–41/phút, có pha đo
+>    cố ý xấu). Tụt theo đợt: vào bản đồ (30–60 s đầu 86–100 fps), đám đông mới tới (màn trong 10:22: 69–71 fps suốt 60 s; 10:47: 100, min 64),
+>    cảnh rất đông (09:31 t=2667: 2 909 lệnh/khung → 114 fps màn ngoài; 10:22 t=1411: 2 524 lệnh → 97 fps màn trong).
+> 2. **Màn trong nặng hơn màn ngoài:** mở gập 2184x1968 (khung vẽ 1040x936) vẽ 6,5–8 ms/khung, màn ngoài (1436x616 → 2520x1080) 4–7 ms: thấy thêm
+>    ~50 % chiều cao bản đồ (nhiều sprite hơn) và GPU tô ở độ phân giải gốc 4,3 triệu điểm (ngoài 2,7 triệu). Ngân sách 120 Hz = 8,3 ms → màn trong
+>    gần hết dư. Đám đông 80–150 NPC/tick: màn ngoài 117 fps (p10 106), màn trong 109 (p10 78).
+> 3. **Chi phí mỗi khung trên luồng chính** (hồi quy cửa sổ 30 s, r 0,77–0,96): ghi lệnh Vulkan ≈ 1,0 ms + 1,0 ms/1 000 lệnh; vẽ CPU Begin→End
+>    ≈ 1,6 ms + 0,7–1,0 ms/1 000 quad; nộp 0,3–2,5 ms; chép lên GPU 0,1–0,5 ms; tick game 0,2–1,8 ms. Quá 8,3 ms thì vsync 120 Hz bắt khung chờ
+>    vblank kế → khung đó thành 60 fps → cả cửa sổ 60–100 fps.
+> 4. **Nóng / CPU:** CPU tiến trình 60–80 % của MỘT nhân (luồng chính 55–78 %); thanh thông tin chia 8 nhân nên chỉ hiện ~8–10 %. Điện năng tăng theo
+>    khối lượng vẽ (r 0,85–0,91): dưới 500 lệnh/khung 2,1–2,6 W, từ 1 200 lệnh 3,6–4,8 W, cảnh đông nhất 5–6 W; 60 fps (phiên 11:11) 1,6–2,0 W, CPU
+>    37–47 %. Nhiệt: sáng nay tối đa MODERATE (2) ở màn trong sau ~20 phút đông (pin 35,8 °C); đêm qua SEVERE (3), pin 38,6 °C sau 20 phút liên tục.
+> 5. **Tick game ≥ 100 ms** đều là lúc đổi bản đồ (phiên 10:47: 14/14 lần trùng đổi map, 150–300 ms/lần) — có từ trước, không do bản VE.
+> 6. **Lỗi hiển thị — ba loại khác nhau:** (a) bản d+e (10:47–11:11): 54 lần tạo trang atlas = 54 lần tô 0 đè ảnh vừa tải → ảnh ẩn hiện (đăng nhập,
+>    map, ngựa); bản f (11:11, 109111058) đã đổi thứ tự; log không ghi được "texture trống" nên cần chủ nhìn lại. (b) CŨ, không do VE: mỗi phiên
+>    40–141 sprite nạp hỏng và không bao giờ nạp lại được (0 lần "OK sau khi thất bại"), gồm đầu ngựa `MA_HR_015_HD.spr`, `FM_HR_015_HD.spr`,
+>    `FM_HR_002_HD.spr`, quái `enemy141/157/162/165/167/169`, `boss130/202`, `passerby*`, `critter*`, `sizenpc\cuongthi1/phapsu`, `\Spr\Ui3\小地图\MiniMap.spr`,
+>    nút kênh chat 攻方/守方/闲聊; tra chỉ mục: KHÔNG có trong pak nào của client nguồn mobile (TESTLOFFF), client `D:\SourceVs22\SOURCEDANGONLINE`
+>    (kể cả `sprvlngaothe2.pak`), máy ảo hay điện thoại → thiếu tài nguyên client, máy ảo hỏng y hệt. (c) MỚI, chỉ điện thoại: 3 cây
+>    `\游戏资源\美术图素\城市\西南\室外\树木\雪松\1.spr`, `雪松\2.spr`, `\游戏资源\美术图素\城市\两湖\室外\树木\菩提树3.spr` không bao giờ vẽ (菩提树3 bị bỏ
+>    0,1–0,77 triệu lượt mỗi phiên): `XPackFile::GetSprHeader` cất số thứ tự mục pak vào 16 bit (`*((WORD*)&pSpr->Reserved[2]) = (WORD)nElemIndex`),
+>    `GetSprFrame` đọc lại 16 bit; `mobile_13.pak` có 70 602 mục, 3 SPR nén-theo-khung ở mục 66 328 / 67 606 / 69 604 → bị cắt thành 792 / 2 070 /
+>    4 068 (tệp `.dat` bản đồ, không có cờ TYPE_FRAME) → mọi khung NULL. Byte trong pak giống hệt PC; máy ảo dùng pak PC (`resource.pak` 2 810 mục)
+>    nên không lỗi. Sửa phía dữ liệu (đóng pak để SPR-khung không vượt mục 65 535, hoặc < 65 536 mục/pak) giữ nguyên PC.
+> 7. **"Ảnh null" 100–200 nghìn lượt/30 s** phần lớn là tên rỗng (4,77 triệu/phiên 10:47) → loại ngay dòng đầu `GetImage`, không tốn thời gian.
+> **Đề xuất (chưa làm):** (i) chơi lâu / màn trong: nấc 60 hoặc 90, tự hạ 60 khi nhiệt ≥ MODERATE; (ii) màn trong: vẽ cảnh vào khung 1040x936 rồi
+> phóng một lần (bớt ~4 lần điểm GPU phải tô) — đo GPU trước; (iii) gộp lệnh / giảm đổi pipeline (58–197 lần/khung) để bớt 1–2 ms ghi lệnh lúc đông;
+> (iv) đóng lại pak điện thoại cho 3 cây; (v) xin tài nguyên client đủ (đầu ngựa 015/002, quái thiếu, MiniMap, nút chat).
+
 > **11:00 11/09 — LỖI HIỂN THỊ CỦA BẢN d+e (109111021) ĐÃ SỬA: `[VE 11/09 f]` = `5a72a37a`, bộ tải = 109111058 (md5 `74e8ea6e…`), máy chủ 8765
 > PID 345452.** Chủ báo 10:55 trên điện thoại: "lúc hiện lúc không spr lúc đăng nhập, vào game lỗi hiển thị map, cưỡi ngựa lúc ẩn lúc hiện đầu
 > đuôi ngựa". Nguyên nhân (lỗi của tôi trong `[VE 11/09 d]`): khối tô 0 trang atlas mới đặt SAU khối tải nội dung texture trong cùng copy pass;
