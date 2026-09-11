@@ -5,6 +5,29 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **16:30 11/09 — C1 HỎNG TRÊN MÁY THẬT, ĐÃ TẮT NGAY BẰNG CONFIG.** Chủ 16:25: "đợt này di chuyển màn hình hay bị giật và FPS tụt xuống 25".
+> Đã đặt `Rep3AtlasMangGpu=0` (tên khoá đổi lúc 16:30 vì `Rep3AtlasMang` đã là khoá của đường vẽ D3D11; khoá cũ trong dt_v4 nay vô hại vì mặc định là 0) trong `D:\jx1_android_data_dt_v4\config.ini` và khởi động lại 8765 (PID 369628) lúc 16:27; APK giữ nguyên 109111608 nên
+> chủ chỉ cần **mở lại app** là về đúng hành vi bản 109111545. Mặc định trong mã cũng đã đổi sang 0 (commit sau), mã giữ lại sau công tắc.
+>
+> **Số đo phiên `SM-F966U1_20260911_162152`** (trung vị cửa sổ 30 s, bỏ màn đăng nhập):
+>
+> | | D1 109111459 | C bước 1 109111545 | C1 109111608 |
+> |---|---|---|---|
+> | đổi texture / khung | 844 | 1 043 | **508** |
+> | lệnh vẽ / khung | 1 677 | 2 001 | **1 222** |
+> | ghi lệnh | 2,59 ms | 2,26 ms | 2,28 ms |
+> | **nộp** | 0,64 ms | 1,42 ms | **3,28 ms** |
+> | **vẽ CPU** | 2,60 ms | 2,96 ms | **4,51 ms** |
+>
+> **Đọc số:** C1 làm đúng phần cơ học của nó (gộp được lệnh: đổi texture giảm một nửa, lệnh vẽ giảm 39 %), **nhưng GPU trả giá đắt hơn nhiều
+> phần tiết kiệm được**: nộp tăng 2,3 lần và vẽ CPU tăng 1,5 lần → fps tụt, giật khi cuộn màn hình. 143 dòng `[VE-GIAT]`, 135 trong số đó phần nặng
+> nhất là "vẽ khác" (mã vẽ của client), nạp và chép đều 0,0 ms → không phải nạp sprite, không phải tải texture.
+> **Giải thích khả dĩ:** lấy mẫu qua texture mảng 2048×2048×8 lớp với chỉ số lớp đổi theo từng quad làm mất tính cục bộ của bộ đệm texture trên
+> Adreno, và 5 cụm đã cấp 240 MB trong khi chỉ dùng 208 MB nên phần bộ nhớ thừa càng ép bộ đệm. Bài học: **gộp lệnh không tự động thắng** khi cách
+> gộp làm GPU lấy mẫu xấu đi; phải đo cả hai phía chứ không chỉ đếm lệnh.
+> **Việc kế:** bỏ hướng C1 (giữ mã sau công tắc để thử lại với trang nhỏ hơn hoặc ít lớp hơn nếu muốn); quay lại **A2** (lưới an toàn nhiệt) và **E**
+> (nạp sprite ở luồng nền khi NPC xuất hiện), và xem lại nghi vấn nộp tăng của bước 1 (`Rep3PsBuffer=0` để đối chứng).
+
 > **16:15 11/09 — C1 ĐÃ LÊN BỘ TẢI: dt_v4 = 109111608** (md5 `bdcf2baa…`, 20 355 055 B, máy chủ 8765 PID 374324, giữ nguyên
 > `data/sprvuhontieudao3.pak` + `package.ini`), commit `[MANG 11/09]`, `origin/mobile-0809 = ee3c3cdd`. Chủ 16:13: "nếu bạn lấy đủ log rồi thì đẩy lên".
 >
@@ -29,7 +52,7 @@
 > **Chủ test bản 109111608:** mở lại app. Kiểm **hình** trước hết vì C1 đổi cách sprite nằm trong bộ nhớ GPU: nhân vật, quái, hiệu ứng kỹ năng, chữ,
 > giao diện, vật phẩm trong hành trang, ảnh nền đăng nhập; sai sẽ lộ thành ảnh lẫn sang sprite khác hoặc ô trống. Rồi Tống Kim 10–15 phút.
 > Tôi đọc `[VE-GOP]` (đổi texture mỗi khung, kỳ vọng tụt mạnh từ 1 154), `[VE]` (ghi lệnh, lệnh mỗi khung), `[MANG]` (số cụm atlas), `[MAU]` (W, GPU).
-> Hỏng hình → `Rep3AtlasMang=0` trong `[Client]` của config dt_v4 rồi khởi động lại 8765, không cần APK mới.
+> Hỏng hình → `Rep3AtlasMangGpu=0` (tên khoá đổi lúc 16:30 vì `Rep3AtlasMang` đã là khoá của đường vẽ D3D11; khoá cũ trong dt_v4 nay vô hại vì mặc định là 0) trong `[Client]` của config dt_v4 rồi khởi động lại 8765, không cần APK mới.
 
 > **16:10 11/09 — KẾT QUẢ BƯỚC 1 TRÊN FOLD 7 + C1 ĐÃ DỰNG XONG (CHƯA ĐẨY BỘ TẢI).** Chủ 15:52: "tôi mới up bản mới rồi tí nữa bạn lấy log —
 > phải dựa vào log và lịch trình định sẵn". Phiên `SM-F966U1_20260911_155303` (bản 109111545, màn trong, Tống Kim liên tục, 99 cửa sổ 10 s).
@@ -53,7 +76,7 @@
 > lớp, chỉ số lớp đi theo đỉnh ở bit 25..30 của ô PALROW), cụm cấp tăng dần 2 → 4 → 8 lớp trong ngân sách 64 MB, trang rỗng **trả lớp** về cụm ở cả hai
 > đường trả trang (texture là của cụm, huỷ nhầm là mất hết sprite), texture riêng và texture trắng cũng tạo dạng mảng một lớp, texture tầng 1 bị ép ra
 > khỏi atlas. Bốn mảng shader cũ giữ nguyên từng byte. Máy ảo: màn menu và bảng chọn máy chủ y hệt, log `[VE] atlas mang 2D=1` và
-> `[MANG] cum atlas moi: 2048x2048 x 2 lop fmt 3 (16 MB), tong 1 cum`, không lỗi. Công tắc tắt: `Rep3AtlasMang=0`.
+> `[MANG] cum atlas moi: 2048x2048 x 2 lop fmt 3 (16 MB), tong 1 cum`, không lỗi. Công tắc tắt: `Rep3AtlasMangGpu=0` (tên khoá đổi lúc 16:30 vì `Rep3AtlasMang` đã là khoá của đường vẽ D3D11; khoá cũ trong dt_v4 nay vô hại vì mặc định là 0).
 
 > **15:50 11/09 — ĐỢT C BƯỚC 1 ĐÃ LÊN BỘ TẢI: `[GOP 11/09]` trạng thái tầng texture theo ĐỈNH + bind ring một lần** — commit `00a09114`
 > = `origin/mobile-0809` (FF cả `wt_mobile`), **dt_v4 = 109111545** (md5 `fb90eceb…`, 20 322 287 B, máy chủ 8765 PID 362344, giữ nguyên

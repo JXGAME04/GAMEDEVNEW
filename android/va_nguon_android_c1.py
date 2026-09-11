@@ -13,7 +13,7 @@ texture0 -> GOP duoc. Chi so lop di theo DINH trong o PALROW (bit 25..30, 6 bit)
   - Shader bien the thu tu g_Rep3GpuFSPalPsMang (-DJX_PAL_BUFFER -DJX_PS_BUFFER -DJX_TEX_ARRAY): sampler2DArray + macro
     JX_TEX0/JX_TEX1/JX_FETCH0/JX_DIM0 -> nhanh khong-JX_TEX_ARRAY sinh DUNG chuoi token cu, ba mang shader cu (PC, PalBuf, PalPs)
     GIU NGUYEN TUNG BYTE (bai hoc 15:45).
-[Client] Rep3AtlasMang=1 bat (0 = tung trang mot texture nhu ban 109111545), Rep3AtlasLop = so lop toi da moi cum (8),
+[Client] Rep3AtlasMangGpu=1 bat (0 = tung trang mot texture nhu ban 109111545), Rep3AtlasLop = so lop toi da moi cum (8),
 Rep3AtlasCumMB = ngan sach byte moi cum (64 MB) -> so lop = min(Rep3AtlasLop, CumMB / (trang^2 x bpp)). Can Rep3PsBuffer=1.
 Log: [VE-GOP] them "cum N (L lop)"; [GPU] ghi moi lan tao cum.
 
@@ -67,7 +67,7 @@ if DAU in s:
     print("da va roi:", os.path.relpath(p, GOC))
 else:
     s = sau_dong(s, r"^extern unsigned g_uJxPsBangMax, g_uJxPsTran;[^\n]*\n",
-        "extern int g_nJxAtlasMang, g_nJxAtlasLop, g_nJxAtlasCumMB;\t// " + DAU + " [Client] Rep3AtlasMang: nhieu trang atlas trong MOT texture mang 2D (lop di theo dinh) -> gop duoc quad khac trang\n"
+        "extern int g_nJxAtlasMang, g_nJxAtlasLop, g_nJxAtlasCumMB;\t// " + DAU + " [Client] Rep3AtlasMangGpu: nhieu trang atlas trong MOT texture mang 2D (lop di theo dinh) -> gop duoc quad khac trang\n"
         "extern unsigned g_uJxAtlasCum;\t// " + DAU + " so cum dang song\n",
         "extern ps bang")
     ghi(p, s, nl, cao)
@@ -79,11 +79,11 @@ if DAU in s:
     print("da va roi:", os.path.relpath(p, GOC))
 else:
     s = sau_dong(s, r"^unsigned g_uJxPsBangMax = 0, g_uJxPsTran = 0;[^\n]*\n",
-        "int g_nJxAtlasMang = 1, g_nJxAtlasLop = 8, g_nJxAtlasCumMB = 64;\t// " + DAU + "\n"
+        "int g_nJxAtlasMang = 0, g_nJxAtlasLop = 8, g_nJxAtlasCumMB = 64;\t// " + DAU + "\n"
         "unsigned g_uJxAtlasCum = 0;\t// " + DAU + "\n",
         "dinh nghia ps bang")
     s = thay1(s, "\tg_nJxBindRing       = Rep3Ini(\"Rep3BindRing\", 1) ? 1 : 0;",
-        "\tg_nJxAtlasMang      = Rep3Ini(\"Rep3AtlasMang\", 1) ? 1 : 0;\t// " + DAU + " 1 = nhieu trang atlas trong mot texture mang 2D (hai quad khac trang van gop duoc); 0 = tung trang mot texture nhu ban 109111545\n"
+        "\tg_nJxAtlasMang      = Rep3Ini(\"Rep3AtlasMangGpu\", 0) ? 1 : 0;\t// " + DAU + " 1 = nhieu trang atlas trong mot texture mang 2D (hai quad khac trang van gop duoc); 0 = tung trang mot texture nhu ban 109111545\n"
         "\tif (!g_nJxPsBuffer) g_nJxAtlasMang = 0;\t// lop di chung o PALROW voi chi so ps: can shader bien the pal+ps\n"
         "\t{ int n = Rep3Ini(\"Rep3AtlasLop\", 8); if (n < 2) n = 2; if (n > 32) n = 32; g_nJxAtlasLop = n; }\t// so lop toi da moi cum\n"
         "\t{ int n = Rep3Ini(\"Rep3AtlasCumMB\", 64); if (n < 8) n = 8; if (n > 256) n = 256; g_nJxAtlasCumMB = n; }\t// ngan sach byte moi cum\n"
@@ -91,7 +91,7 @@ else:
         "doc ini bind ring")
     s = thay1(s, ", g_nJxPsBuffer, g_nJxBindRing);\t// [PALBUF 11/09] [BKG 11/09] [GOP 11/09]\n",
         ", g_nJxPsBuffer, g_nJxBindRing);\t// [PALBUF 11/09] [BKG 11/09] [GOP 11/09]\n"
-        "\tRep3Log(\"[VE] atlas mang 2D=%d (Rep3AtlasMang; toi da %d lop/cum, ngan sach %d MB/cum)\", g_nJxAtlasMang, g_nJxAtlasLop, g_nJxAtlasCumMB);\t// " + DAU + "\n",
+        "\tRep3Log(\"[VE] atlas mang 2D=%d (Rep3AtlasMangGpu; toi da %d lop/cum, ngan sach %d MB/cum)\", g_nJxAtlasMang, g_nJxAtlasLop, g_nJxAtlasCumMB);\t// " + DAU + "\n",
         "log [VE] ps")
     s = thay1(s, "| ps bang %u muc (tran %u)\",\n", "| ps bang %u muc (tran %u) | atlas mang=%d: %u cum\",\n", "[VE-GOP] format")
     s = thay1(s, "g_uJxPsBangMax, g_uJxPsTran);\t// [VE 11/09 e] [GOP 11/09]\n",
@@ -394,15 +394,15 @@ else:
 # ============================================================ config.ini
 p = CFG
 s, nl, cao = doc(p)
-if "Rep3AtlasMang" in s:
+if "Rep3AtlasMangGpu" in s:
     print("da va roi:", os.path.relpath(p, GOC))
 else:
     s = thay1(s, "Rep3BindRing=1\n",
         "Rep3BindRing=1\n"
-        "; " + DAU + " Rep3AtlasMang=1: nhieu trang atlas nam trong MOT texture mang 2D (moi trang mot lop, chi so lop di theo dinh)\n"
+        "; " + DAU + " Rep3AtlasMangGpu=1: nhieu trang atlas nam trong MOT texture mang 2D (moi trang mot lop, chi so lop di theo dinh)\n"
         ";   -> hai sprite o hai trang van gop chung mot lenh ve (truoc: doi texture 950-1200 lan moi khung luc dong). 0 = tung trang mot texture.\n"
         ";   Rep3AtlasLop = so lop toi da moi cum (cum dau 2 lop, cum sau gap doi); Rep3AtlasCumMB = ngan sach byte moi cum.\n"
-        "Rep3AtlasMang=1\n"
+        "Rep3AtlasMangGpu=1\n"
         "Rep3AtlasLop=8\n"
         "Rep3AtlasCumMB=64\n",
         "config Rep3BindRing")

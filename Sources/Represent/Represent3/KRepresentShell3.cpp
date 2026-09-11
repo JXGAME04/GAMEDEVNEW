@@ -134,7 +134,7 @@ int g_nJxBoKhungGiong = 1, g_nJxBoKhungGiongMs = 250;	// [BKG 11/09]
 int g_nJxSwapchainLogic = 100;	// [D1 11/09]
 int g_nJxPsBuffer = 1, g_nJxBindRing = 1;	// [GOP 11/09]
 unsigned g_uJxPsBangMax = 0, g_uJxPsTran = 0;	// [GOP 11/09]
-int g_nJxAtlasMang = 1, g_nJxAtlasLop = 8, g_nJxAtlasCumMB = 64;	// [MANG 11/09]
+int g_nJxAtlasMang = 0, g_nJxAtlasLop = 8, g_nJxAtlasCumMB = 64;	// [MANG 11/09]
 unsigned g_uJxAtlasCum = 0;	// [MANG 11/09]
 unsigned g_uJxKhungGiongBo = 0, g_uJxKhungGiongCoTai = 0, g_uJxKhungGiongEp = 0, g_uJxKhungGiongDem = 0, g_uJxKhungGiongChuoiMax = 0, g_uJxKhungTrinhChieu = 0;	// [BKG 11/09]
 unsigned g_uJxNapKhungBoVe = 0, g_uJxNapKhungBoVeKhung = 0, g_uJxNapKhungDongBo = 0, g_uJxNapKhungGiao = 0, g_uJxNapKhungTruocSo = 0, g_uJxNapKhungXong = 0, g_uJxNapKhungHong = 0, g_uJxNapKhungBo = 0, g_uJxNapKhungChoMax = 0;
@@ -723,7 +723,8 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	if (g_nJxBoKhungGiong > 1) g_nJxBoKhungGiong = 1; if (g_nJxBoKhungGiong < -1) g_nJxBoKhungGiong = -1;
 	g_nJxPsBuffer       = Rep3Ini("Rep3PsBuffer", 1) ? 1 : 0;	// [GOP 11/09] 1 = trang thai tang texture qua storage buffer, chi so theo dinh (hai quad khac ps van gop duoc; bot 800 lan day uniform/khung)
 	if (!g_nJxPalBuffer) g_nJxPsBuffer = 0;	// shader PC khong co buffer nao
-	g_nJxAtlasMang      = Rep3Ini("Rep3AtlasMang", 1) ? 1 : 0;	// [MANG 11/09] 1 = nhieu trang atlas trong mot texture mang 2D (hai quad khac trang van gop duoc); 0 = tung trang mot texture nhu ban 109111545
+	g_nJxAtlasMang      = Rep3Ini("Rep3AtlasMangGpu", 0) ? 1 : 0;	// [MANG 11/09] MAC DINH 0 sau khi do tren Fold 7 16:22: gop lenh CO giam (doi texture 1043 -> 508, lenh 2001 -> 1222)
+			// nhung nop 1,42 -> 3,28 ms va ve CPU 2,96 -> 4,51 -> fps tut, giat khi di chuyen man hinh. Giu ma sau cong tac; 1 = bat lai de thu tiep
 	if (!g_nJxPsBuffer) g_nJxAtlasMang = 0;	// lop di chung o PALROW voi chi so ps: can shader bien the pal+ps
 	{ int n = Rep3Ini("Rep3AtlasLop", 8); if (n < 2) n = 2; if (n > 32) n = 32; g_nJxAtlasLop = n; }	// so lop toi da moi cum
 	{ int n = Rep3Ini("Rep3AtlasCumMB", 64); if (n < 8) n = 8; if (n > 256) n = 256; g_nJxAtlasCumMB = n; }	// ngan sach byte moi cum
