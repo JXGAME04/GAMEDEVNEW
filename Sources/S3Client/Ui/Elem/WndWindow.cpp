@@ -272,6 +272,21 @@ void KWndWindow::UiDatTiLe(int nTiLe)
 	SetSize(m_nUiGocW * nTiLe / 1000, m_nUiGocH * nTiLe / 1000);
 }
 
+#ifdef JX_ANDROID
+//--------------------------------------------------------------------------
+//	[SUAGD 13/09] dat ti le nhung giu TAM o: UiDatTiLe neo goc tren-trai nen icon bam mep phai / duoi
+//	phong to la troi ra ngoai; trinh chinh cho nguoi choi dung ham nay.
+//--------------------------------------------------------------------------
+void KWndWindow::UiDatTiLeQuanhTam(int nTiLe)
+{
+	int nW0 = m_Width, nH0 = m_Height;
+
+	UiDatTiLe(nTiLe);
+	if (m_Width != nW0 || m_Height != nH0)
+		SetPosition(m_Left - (m_Width - nW0) / 2, m_Top - (m_Height - nH0) / 2);
+}
+#endif
+
 //--------------------------------------------------------------------------
 //	[UITOADO] an han / hien lai o nay
 //--------------------------------------------------------------------------

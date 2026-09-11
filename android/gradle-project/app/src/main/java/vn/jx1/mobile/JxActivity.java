@@ -58,5 +58,9 @@ public class JxActivity extends SDLActivity
         if (Build.VERSION.SDK_INT >= 28 /* Android 9 (Pie) */)
             window.getAttributes().layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        // [ANTOAN 13/09] Xin Android phat lai inset (tai tho / vung vuot he thong) -> SDLSurface.onApplyWindowInsets ->
+        // SDL_SetWindowSafeAreaInsets. Can vi SDLActivity.setWindowStyle dat inset = 0 tren Android 11..14 sau khi
+        // vao toan man hinh; bo cuc HUD (UiToaDo) neo theo vung an toan nay.
+        window.getDecorView().requestApplyInsets();
     }
 }

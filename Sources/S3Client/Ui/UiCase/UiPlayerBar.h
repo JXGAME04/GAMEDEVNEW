@@ -119,7 +119,9 @@ public:
 	void				  ChangeWifiStatus(int nStatus);
 #ifdef JX_ANDROID
 	void				  NeoNhomTren();	// [NHOMTREN 12/09] keo bang trang thai goc tren-trai len dinh man (man cao)
+	static void			  NeoNhomTrenLai();	// [SUAGD 13/09] goi lai khi bo cuc duoc ap lai (vung an toan / nhan vat doi)
 	static int			  ms_nTopIni;	// [NHOMTREN 12/09 b] Top cua [Main] trong UiPlayerBar.ini (khung 800x600)
+	static int			  ms_nDaDichY;	// [SUAGD 13/09] nhom tren DA dich bao nhieu (de goi lai bao nhieu lan cung dung)
 #endif
 private:
 	KUiPlayerBar();

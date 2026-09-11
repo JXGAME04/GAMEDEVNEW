@@ -130,6 +130,8 @@ public:
 	// [ANDROID 09/09 NEO] dat lai mot cua so GOC tu khung ve chuan 1024x768 sang man hinh that
 	virtual void	FitToScreen();
 	void			ComputeFit(int nRefL, int nRefT, int* pOutL, int* pOutT);
+	// [SUAGD 13/09] dat ti le nhung giu TAM o (phong to / thu nho quanh tam -> o bam mep khong troi ra ngoai)
+	void			UiDatTiLeQuanhTam(int nTiLe);
 #endif
 	KWndWindow*		GetNextWnd() const { return m_pNextWnd; }		//得到后一个兄弟窗口
 	KWndWindow*		GetParent() const { return m_pParentWnd; }		//得到父窗口

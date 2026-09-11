@@ -121,6 +121,9 @@ static int			s_nKNY   = 0;
 // 9 = nut doi che do gan), cong them vao vi tri theo cung. Keo bang cong cu "Doi o".
 static int			s_nKNDoiX[KYNANG_SO_PHU + 2];
 static int			s_nKNDoiY[KYNANG_SO_PHU + 2];
+// [SUAGD 13/09] Co RIENG tung nut (0 = nut chinh, 1..8 = o phu, 9 = nut doi che do gan) do nguoi choi dat trong trinh
+// chinh giao dien; 0 = theo config. Luu vao truong TiLe cua khoa KyNang* trong UserData\UiToaDo.ini (phan nghin so voi co goc).
+static int			s_nKNCoRieng[KYNANG_SO_PHU + 2];
 
 //	Bo anh THAT cua VNKU - chu da chi san (\spr\Ui3\UiSkillControl)
 //	[ANDROID 09/09 KYNANG H] CO THAT lay tu ban tham khao (KgameWorld.cpp:13821):
@@ -775,13 +778,27 @@ static const char* KyNang_AnhCuaNut(int nNut)
 	return s_szKNAnhPhuNho;						// o phu 5..7
 }
 
-static int KyNang_CoNut(int nNut)
+static int KyNang_CoNutGoc(int nNut)
 {
 	if (nNut <= 0)
 		return s_nKNCoChinh > 0 ? s_nKNCoChinh : KYNANG_CO_CHINH;
 	if (nNut <= 5)
 		return s_nKNCoPhu > 0 ? s_nKNCoPhu : KYNANG_CO_TRONG;	// o phu 0..4
 	return KYNANG_CO_NGOAI;									// o phu 5..7
+}
+
+//	[SUAGD 13/09] co that cua nut = co rieng nguoi choi dat (neu co), khong thi theo config / anh.
+static int KyNang_CoNut(int nNut)
+{
+	if (nNut >= 0 && nNut <= KYNANG_SO_PHU && s_nKNCoRieng[nNut] > 0)
+		return s_nKNCoRieng[nNut];
+	return KyNang_CoNutGoc(nNut);
+}
+
+//	[SUAGD 13/09] co nut doi che do gan (nguoi choi chinh duoc nhu cac nut khac)
+static int KyNang_CoGan()
+{
+	return (s_nKNCoRieng[KYNANG_SO_PHU + 1] > 0) ? s_nKNCoRieng[KYNANG_SO_PHU + 1] : KYNANG_GAN_CO;
 }
 
 //	[ANDROID 09/09 KYNANG H] Ve mot anh .spr vao DUNG o vuong (tam nX,nY canh nCo).
@@ -847,7 +864,7 @@ static int KyNang_SoKhung(const char* pszAnh)
 //	[ANDROID 09/09 GAN] Tam nut doi che do gan.
 static void KyNang_TamNutGan(int* px, int* py)
 {
-	int nR = KYNANG_GAN_CO / 2;
+	int nR = KyNang_CoGan() / 2;
 
 	*px = SCREEN_WIDTH  - (nR + KYNANG_GAN_DX * s_nKNGian / 100)
 		+ s_nKNSangPhai + s_nKNX + s_nKNDoiX[KYNANG_SO_PHU + 1];
@@ -971,7 +988,7 @@ static void KyNang_TamORieng(int i, int* px, int* py, int* pR)
 	if (i == KYNANG_ORIENG_GAN)
 	{
 		KyNang_TamNutGan(px, py);
-		*pR = KYNANG_GAN_CO / 2;
+		*pR = KyNang_CoGan() / 2;
 	}
 	else
 	{
@@ -1041,6 +1058,25 @@ static void KyNang_ORiengDatCum(void* pNgu, int x, int y)
 	s_nKNY += (y - nY);
 }
 
+//	[SUAGD 13/09] Co rieng tung nut cho trinh chinh giao dien (UiToaDo_DangKyORiengCo): pNgu = chi so nut nhu ba ham tren.
+static void KyNang_ORiengLayCo(void* pNgu, int* pnCo, int* pnCoGoc)
+{
+	int i = (int)(intptr_t)pNgu;
+	int nGoc = (i == KYNANG_ORIENG_GAN) ? KYNANG_GAN_CO : KyNang_CoNutGoc(i);
+
+	*pnCoGoc = nGoc;
+	*pnCo = (i >= 0 && i <= KYNANG_ORIENG_GAN && s_nKNCoRieng[i] > 0) ? s_nKNCoRieng[i] : nGoc;
+}
+
+static void KyNang_ORiengDatCo(void* pNgu, int nCo)
+{
+	int i = (int)(intptr_t)pNgu;
+
+	if (i < 0 || i > KYNANG_ORIENG_GAN)
+		return;
+	s_nKNCoRieng[i] = (nCo > 0) ? nCo : 0;
+}
+
 static void KyNang_DangKySuaToaDo()
 {
 	static bool s_bDaDangKy = false;
@@ -1061,6 +1097,9 @@ static void KyNang_DangKySuaToaDo()
 	for (i = 0; i < KYNANG_SO_PHU + 2; i++)
 		UiToaDo_DangKyORieng(s_szKhoa[i], KyNang_ORiengTrungMot,
 			KyNang_ORiengLayMot, KyNang_ORiengDatMot, (void*)(intptr_t)i);
+	// [SUAGD 13/09] co rieng tung nut: trinh chinh giao dien phong to / thu nho, luu vao truong TiLe cua khoa
+	for (i = 0; i < KYNANG_SO_PHU + 2; i++)
+		UiToaDo_DangKyORiengCo(s_szKhoa[i], KyNang_ORiengLayCo, KyNang_ORiengDatCo);
 }
 int JxKyNang_TrungNut(int x, int y)
 {
@@ -1072,7 +1111,7 @@ int JxKyNang_TrungNut(int x, int y)
 	KyNang_DocBang();
 	// [ANDROID 09/09 GAN] nut doi che do gan
 	{
-		int nGX, nGY, nGR = KYNANG_GAN_CO / 2;
+		int nGX, nGY, nGR = KyNang_CoGan() / 2;
 
 		KyNang_TamNutGan(&nGX, &nGY);
 		if ((x - nGX) * (x - nGX) + (y - nGY) * (y - nGY) <= nGR * nGR)
@@ -1869,14 +1908,14 @@ void JxKyNang_Ve()
 		KyNang_TamNutGan(&nGX, &nGY);
 		if (s_nKNCheDoGan)
 		{
-			OVuong(nGX, nGY, KYNANG_GAN_CO / 2, 0x90FFD24A);
+			OVuong(nGX, nGY, KyNang_CoGan() / 2, 0x90FFD24A);
 			// [ANDROID 10/09 GANTOADO] huong dan ngay tren man hinh, tung buoc mot
 			KyNang_VeChu(s_nKNOChon < 0
 				? "ChÕ ®é g¸n: ch¹m vµo « kü n¨ng muèn ®æi"
 				: "Giê më b¶ng kü n¨ng, ch¹m mét kü n¨ng ®Ó g¸n vµo « ®ang s¸ng",
 				nGX - 300, nGY - 38, 0xFFFFD24A);
 		}
-		VeAnhCo(s_szKNAnhGan, nGX, nGY, KYNANG_GAN_CO, 0);
+		VeAnhCo(s_szKNAnhGan, nGX, nGY, KyNang_CoGan(), 0);
 	}
 
 	// Dang giu mot nut: vong sang ngam + vach chi huong + vong duoi chan con dich.

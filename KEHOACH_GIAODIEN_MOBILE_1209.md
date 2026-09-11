@@ -1,5 +1,10 @@
 # KẾ HOẠCH: GIAO DIỆN MOBILE TỰ CĂN ĐỀU TRÊN MỌI MÁY + TRÌNH CHỈNH CHO NGƯỜI CHƠI (12/09)
 
+> **Trạng thái 13/09:** đã phân tích lại (`PHANTICH_GIAODIEN_MOBILE_KEHOACH1209.md`) và làm xong đợt đầu theo
+> phương án A' (khung vẽ hai họ + vùng an toàn + trình chỉnh danh sách trắng), xem
+> `BANGIAO_GIAODIEN_MOBILE_SUAGD_1309.md`. Ba chẩn đoán trong tệp này đã được đính chính ở đó (§4.1 gốc "cả cụm",
+> §3.2 neo, §3.3 "cha trước con").
+
 > Nhánh `mobile-0809`. Đọc kèm `KEHOACH_GIAODIEN_MOBILE_0909.md` (nguồn tham khảo VNKU/USVOLAM),
 > `BANGIAO_ANDROID_DULIEU_1109.md` (lớp ghi đè dữ liệu).
 >

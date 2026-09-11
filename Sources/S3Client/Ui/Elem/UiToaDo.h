@@ -79,3 +79,22 @@ bool	UiToaDo_CongCuKhoi();
 
 //	Cua so sap bi xoa - bo moi con tro dang giu toi no (goi tu Wnd_OnWindowDelete).
 void	UiToaDo_QuenCuaSo(KWndWindow* pWnd);
+
+#ifdef JX_ANDROID
+//---------------------------------------------------------------------------
+//	[SUAGD 13/09] TRINH CHINH GIAO DIEN CHO NGUOI CHOI tren dien thoai + VUNG AN TOAN (UiToaDoMobile.inc, include o
+//	cuoi UiToaDo.cpp). Xem PHANTICH_GIAODIEN_MOBILE_KEHOACH1209.md.
+//---------------------------------------------------------------------------
+//	Goi moi vong lap (KSdlApp::Run): ho so theo nhan vat, vung an toan doi -> ap lai, luot kep, lap phim mui ten.
+void	UiToaDo_NhipMobile();
+//	Chum hai ngon khi dang sua (KSdlApp::ChamSuKien): 1 = da nhan (co o dang chon), 0 = khong.
+int		UiToaDo_ChumBatDau(int x1, int y1, int x2, int y2);
+void	UiToaDo_ChumKeo(int x1, int y1, int x2, int y2);
+void	UiToaDo_ChumNha();
+//	O ve tay co CO RIENG (nut ky nang): gan them sau UiToaDo_DangKyORieng, cung khoa. pnCoGoc = co theo config / anh.
+typedef void (*PFN_UITOADO_LAYCO)(void* pNgu, int* pnCo, int* pnCoGoc);
+typedef void (*PFN_UITOADO_DATCO)(void* pNgu, int nCo);		// 0 = ve co goc
+void	UiToaDo_DangKyORiengCo(const char* pszKhoa, PFN_UITOADO_LAYCO pfnLayCo, PFN_UITOADO_DATCO pfnDatCo);
+//	Bang bo cuc dang co muc nay khong (nguoi choi / mac dinh da dat) - UiPlayerBar::NeoNhomTren bo qua o da dat.
+int		UiToaDo_CoKhoa(const char* pszKhoa);
+#endif

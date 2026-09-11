@@ -48,6 +48,7 @@ static KSdlApp* s_pSdlApp = NULL;
 // sau nay) giu ho phim bo tro ma khong can ban phim.
 //---------------------------------------------------------------------------
 static unsigned int s_uPhimDinh = 0;	// bit 0 = Shift, 1 = Ctrl, 2 = Alt
+static int s_nHoKhung = 0;	// [KHUNG 13/09 HAIHO] 1 = dien thoai (cao co dinh), 2 = may tinh bang (rong co dinh), 0 = chua chot
 
 extern "C" void JxSdl_DatPhimDinh(unsigned int uMatNa) { s_uPhimDinh = uMatNa; }
 extern "C" unsigned int JxSdl_LayPhimDinh(void) { return s_uPhimDinh; }
@@ -223,6 +224,9 @@ KSdlApp::KSdlApp()
 	m_nNgonKyNang = -1;	// [ANDROID 09/09 HAINGON]
 	m_nNgonCan = -1;
 	m_nCuonDon = 0;
+	m_nNgon1 = m_nNgon2 = -1;	// [SUAGD 13/09 CHUM]
+	m_nNgon1X = m_nNgon1Y = m_nNgon2X = m_nNgon2Y = 0;
+	m_nChum = 0;
 #endif
 	s_pSdlApp = this;
 }
@@ -280,6 +284,61 @@ extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void)
 	if (nW < 640 || nH < 360)
 	{
 		g_DebugLog("[DPG] cua so %dx%d qua nho, giu %dx%d cua config.ini", nW, nH, SCREEN_WIDTH, SCREEN_HEIGHT);
+		return;
+	}
+	// [KHUNG 13/09 HAIHO] KHUNG VE HAI HO (mac dinh bat; tat: [Resolution] KhungHaiHo=0 -> nac cu ben duoi).
+	// He so phong lay SO LE thay vi nac tron, chon sao cho: dien thoai (man dai, ti le >= CaoDienThoai/RongMayTinhBang,
+	// tuc >= 1040/616 = 1,69) -> khung CAO DUNG CaoDienThoai (616), rong theo ti le may; may tinh bang / man gan vuong
+	// (ca man trong Fold) -> khung RONG DUNG RongMayTinhBang (1040), cao theo ti le may. Moi may chi khac nhau MOT chieu,
+	// bo cuc neo (UiToaDo) chi phai chia phan du cua mot chieu; hai tep bo cuc mac dinh (mot cho moi ho) la du.
+	// Truoc: nac 1,00/1,25/1,50/... theo ChieuCaoMucTieu cho ra cao 576 / 604 / 616 / 617 / 877 / 984 tuy may
+	// (720p va 1440p roi vao 576) -> moi may mot bai toan bo cuc rieng ("27 khung ve tu 30 dong may").
+	// He so le (1,753 thay vi 1,75) khong mo them: cac nac 1,25 / 1,75 von cung khong phai so nguyen.
+	if (GetPrivateProfileInt("Resolution", "KhungHaiHo", 1, szCfg))
+	{
+		int nCaoDT   = GetPrivateProfileInt("Resolution", "CaoDienThoai", 616, szCfg);
+		int nRongMTB = GetPrivateProfileInt("Resolution", "RongMayTinhBang", 1040, szCfg);
+		long long nHeH, nHeW, nHe;
+		int nVeW, nVeH;
+		if (nCaoDT < 480)		nCaoDT = 480;
+		if (nCaoDT > 1200)		nCaoDT = 1200;
+		if (nRongMTB < 800)		nRongMTB = 800;
+		if (nRongMTB > 2000)	nRongMTB = 2000;
+		nHeH = (long long)nH * 1000 / nCaoDT;		// he so x1000 neu ep chieu cao
+		nHeW = (long long)nW * 1000 / nRongMTB;	// he so x1000 neu ep be ngang
+		if (nHeH <= nHeW)
+		{	// ho DIEN THOAI: cao dung nCaoDT, rong = nCaoDT * ti le may
+			s_nHoKhung = 1;
+			nVeH = nCaoDT;
+			nVeW = (int)((long long)nW * nCaoDT / nH);
+			nHe = nHeH;
+		}
+		else
+		{	// ho MAY TINH BANG: rong dung nRongMTB, cao = nRongMTB / ti le may
+			s_nHoKhung = 2;
+			nVeW = nRongMTB;
+			nVeH = (int)((long long)nH * nRongMTB / nW);
+			nHe = nHeW;
+		}
+		if (nHe < 850)
+		{	// man qua nho: khong ve lon hon man qua 15 % (mo)
+			nVeW = (int)((long long)nW * 1000 / 850);
+			nVeH = (int)((long long)nH * 1000 / 850);
+		}
+		nVeW &= ~1;
+		nVeH &= ~1;
+		if (nVeW == 1024)	// [DPG 12/09 1024] khong bao gio de rong = 1024 (game nhay sang bo giao dien 1024x768)
+			nVeW = 1026;
+		{
+			SDL_Rect rcCa = { 0, 0, 0, 0 };
+			SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &rcCa);
+			g_DebugLog("[DPG] man hinh %dx%d | cua so %dx%d px | khung hai ho: %s, he so %d,%03d -> khung ve %dx%d",
+				rcCa.w, rcCa.h, nW, nH, (s_nHoKhung == 1) ? "ho DIEN THOAI (cao co dinh)" : "ho MAY TINH BANG (rong co dinh)",
+				(int)(nHe / 1000), (int)(nHe % 1000), nVeW, nVeH);
+		}
+		SCREEN_WIDTH = nVeW; SCREEN_HEIGHT = nVeH;
+		SetEngineResolution(nVeW, nVeH);
+		g_nDoPhanGiaiTheoManHinh = 1;	// S3Client.cpp: chan LoadResolutionFromConfig doc lai config.ini
 		return;
 	}
 	int nMucTieu = GetPrivateProfileInt("Resolution", "ChieuCaoMucTieu", 640, szCfg);
@@ -343,6 +402,105 @@ extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void)
 	SCREEN_WIDTH = nVeW; SCREEN_HEIGHT = nVeH;
 	SetEngineResolution(nVeW, nVeH);
 	g_nDoPhanGiaiTheoManHinh = 1;	// S3Client.cpp: chan LoadResolutionFromConfig doc lai config.ini
+}
+
+//---------------------------------------------------------------------------
+// [KHUNG 13/09 HAIHO] Ho khung ve: 1 = dien thoai, 2 = may tinh bang. Chua chot (TheoManHinh=0 / KhungHaiHo=0) thi suy
+// theo ti le khung ve dang co (cung nguong 1040/616). UiToaDo chon tep bo cuc mac dinh theo ho.
+//---------------------------------------------------------------------------
+extern "C" int JxSdl_HoKhung(void)
+{
+	if (s_nHoKhung == 0 && SCREEN_WIDTH > 0 && SCREEN_HEIGHT > 0)
+		s_nHoKhung = (SCREEN_WIDTH * 616 >= SCREEN_HEIGHT * 1040) ? 1 : 2;
+	return s_nHoKhung;
+}
+
+//---------------------------------------------------------------------------
+// [ANTOAN 13/09] VUNG AN TOAN cua man hinh (tai tho / lo camera / vung vuot he thong) trong toa do KHUNG VE.
+// SDL_GetWindowSafeArea tra ve theo toa do CUA SO: Android = SDLSurface.onApplyWindowInsets (API >= 30: systemBars |
+// systemGestures | mandatorySystemGestures | tappableElement | displayCutout) -> onNativeInsetsChanged ->
+// SDL_SetWindowSafeAreaInsets; iOS = safeAreaInsets cua UIKit (SDL_uikitview.m). Doi sang khung ve bang dung cong thuc
+// letterbox cua SdlToLogical. Bo cuc HUD (UiToaDo) lay vung nay lam KHONG GIAN NEO, nen icon bam mep khong bao gio nam
+// duoi lo camera hay trong dai vuot Back / thanh trang thai.
+// config.ini [Ui]: VungAnToan=1 (0 = bo qua inset), VungAnToanDoiXung=1 (le lon hon cua trai/phai ap cho ca hai mep ->
+// xoay 180 do bo cuc khong doi), LeAnToan=0 (le co dinh them vao bon phia, cho goc bo tron).
+// Bay: SDLActivity.setWindowStyle dat inset = 0 tren Android 11..14 sau khi vao toan man hinh -> JxActivity xin phat
+// lai inset (requestApplyInsets); may ao API 28 khong bao inset -> vung an toan = ca khung.
+//---------------------------------------------------------------------------
+static int s_nVungAnToanDoi = 1;	// tang moi khi SDL bao doi (SDL_EVENT_WINDOW_SAFE_AREA_CHANGED) -> UiToaDo ap lai bo cuc
+
+extern "C" int JxSdl_VungAnToanDoi(void)
+{
+	return s_nVungAnToanDoi;
+}
+
+// Tra ve 1 neu may co inset that (vung an toan nho hon khung), 0 neu vung an toan = ca khung.
+extern "C" int JxSdl_LayVungAnToan(int* pnL, int* pnT, int* pnW, int* pnH)
+{
+	static int s_nDaDoc = 0, s_nBat = 1, s_nDoiXung = 1, s_nLe = 0;
+	SDL_Window* pWin = (SDL_Window*)JxPosix_MainWindow();
+	int nL = 0, nT = 0, nR = SCREEN_WIDTH, nB = SCREEN_HEIGHT, nCo = 0;
+	if (!s_nDaDoc)
+	{
+		char szCfg[MAX_PATH] = { 0 };
+		s_nDaDoc = 1;
+		GetCurrentDirectory(MAX_PATH, szCfg);
+		strcat(szCfg, "\\Config.ini");
+		s_nBat = GetPrivateProfileInt("Ui", "VungAnToan", 1, szCfg);
+		s_nDoiXung = GetPrivateProfileInt("Ui", "VungAnToanDoiXung", 1, szCfg);
+		s_nLe = GetPrivateProfileInt("Ui", "LeAnToan", 0, szCfg);
+		if (s_nLe < 0) s_nLe = 0;
+		if (s_nLe > 60) s_nLe = 60;
+	}
+	if (s_nBat && pWin && SCREEN_WIDTH > 0 && SCREEN_HEIGHT > 0)
+	{
+		SDL_Rect rc = { 0, 0, 0, 0 };
+		int w = 0, h = 0;
+		SDL_GetWindowSize(pWin, &w, &h);
+		if (SDL_GetWindowSafeArea(pWin, &rc) && w > 0 && h > 0 && rc.w > 0 && rc.h > 0
+			&& (rc.x > 0 || rc.y > 0 || rc.x + rc.w < w || rc.y + rc.h < h))
+		{
+			float sx = (float)w / (float)SCREEN_WIDTH, sy = (float)h / (float)SCREEN_HEIGHT;
+			float sc = (sx < sy) ? sx : sy;
+			float ox = ((float)w - (float)SCREEN_WIDTH * sc) * 0.5f, oy = ((float)h - (float)SCREEN_HEIGHT * sc) * 0.5f;
+			int l = (int)(((float)rc.x - ox) / sc + 0.999f);
+			int t = (int)(((float)rc.y - oy) / sc + 0.999f);
+			int r = (int)(((float)(rc.x + rc.w) - ox) / sc);
+			int b = (int)(((float)(rc.y + rc.h) - oy) / sc);
+			if (l < 0) l = 0;
+			if (t < 0) t = 0;
+			if (r > SCREEN_WIDTH) r = SCREEN_WIDTH;
+			if (b > SCREEN_HEIGHT) b = SCREEN_HEIGHT;
+			// inset vo ly (an qua 40 % khung) thi bo qua
+			if (r - l >= SCREEN_WIDTH * 6 / 10 && b - t >= SCREEN_HEIGHT * 6 / 10)
+			{
+				nL = l; nT = t; nR = r; nB = b; nCo = 1;
+			}
+		}
+	}
+	if (s_nDoiXung)
+	{	// chi doi xung NGANG: xoay 180 do lo camera doi mep trai/phai, con dai vuot duoi van o duoi
+		int nNgang = (nL > SCREEN_WIDTH - nR) ? nL : SCREEN_WIDTH - nR;
+		nL = nNgang;
+		nR = SCREEN_WIDTH - nNgang;
+	}
+	nL += s_nLe; nT += s_nLe; nR -= s_nLe; nB -= s_nLe;
+	if (nR - nL < 200 || nB - nT < 200)
+	{
+		nL = 0; nT = 0; nR = SCREEN_WIDTH; nB = SCREEN_HEIGHT;
+	}
+	if (pnL) *pnL = nL;
+	if (pnT) *pnT = nT;
+	if (pnW) *pnW = nR - nL;
+	if (pnH) *pnH = nB - nT;
+	return nCo;
+}
+
+extern "C" int JxSdl_AnToanTren(void)
+{
+	int t = 0;
+	JxSdl_LayVungAnToan(NULL, &t, NULL, NULL);
+	return t;
 }
 #endif
 BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
@@ -493,6 +651,7 @@ void KSdlApp::Run()
 		JxCan_Nhip();	// [ANDROID 09/09 CAN] dang cam can thi day nhan vat di theo huong
 		JxKyNang_Nhip();	// [ANDROID 09/09 KYNANG I] dang de nut ky nang thi cu danh tiep
 		JxVatPham_Nhip();	// [VATPHAM 12/09 f] nut Nem: doi may chu nhac mon len tay roi moi nem
+		UiToaDo_NhipMobile();	// [SUAGD 13/09] ho so bo cuc theo nhan vat, vung an toan doi -> ap lai, luot kep, lap phim mui ten
 #endif
 		if (m_bActive || m_bMultiGame)
 		{
@@ -669,6 +828,26 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			m_nNgonDangDat++;
 			if (m_nNgonDangDat > m_nNgonToiDa)
 				m_nNgonToiDa = m_nNgonDangDat;
+			// [SUAGD 13/09 CHUM] dang sua giao dien: ngon 1 di duong chuot gia lap (chon / keo o), ngon 2 = CHUM de
+			// to / nho o dang chon; khong bat nut ky nang / can dieu khien.
+			if (UiToaDo_DangSua())
+			{
+				if (bNgonDau)
+				{
+					m_nNgon1 = nNgon; m_nNgon1X = (int)fx; m_nNgon1Y = (int)fy;
+					return false;
+				}
+				if (!m_nChum && m_nNgon1 >= 0 && m_nNgonDangDat == 2)
+				{
+					m_nNgon2 = nNgon; m_nNgon2X = (int)fx; m_nNgon2Y = (int)fy;
+					if (UiToaDo_ChumBatDau(m_nNgon1X, m_nNgon1Y, m_nNgon2X, m_nNgon2Y))
+					{
+						m_nChum = 1;
+						m_nCham = CHAM_KHONG;	// bo cu keo dang do cua ngon 1 (chuot gia lap nha sau se khong lam gi)
+					}
+				}
+				return true;
+			}
 			if (bNgonDau)
 				return false;	// ngon thu nhat: de chuot gia lap lo nhu cu
 
@@ -697,6 +876,17 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 
 		if (ev.type == SDL_EVENT_FINGER_MOTION)
 		{
+			if (UiToaDo_DangSua() || m_nChum)	// [SUAGD 13/09 CHUM]
+			{
+				if (nNgon == m_nNgon1)		{ m_nNgon1X = (int)fx; m_nNgon1Y = (int)fy; }
+				else if (nNgon == m_nNgon2)	{ m_nNgon2X = (int)fx; m_nNgon2Y = (int)fy; }
+				if (m_nChum)
+				{
+					UiToaDo_ChumKeo(m_nNgon1X, m_nNgon1Y, m_nNgon2X, m_nNgon2Y);
+					return true;
+				}
+				return (nNgon != m_nNgon1);	// ngon 1 van di duong chuot gia lap (keo o)
+			}
 			if (nNgon == m_nNgonKyNang)
 			{
 				JxKyNang_Keo((int)fx, (int)fy);
@@ -713,6 +903,21 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		// FINGER_UP / FINGER_CANCELED
 		if (m_nNgonDangDat > 0)
 			m_nNgonDangDat--;
+		if (UiToaDo_DangSua() || m_nChum)	// [SUAGD 13/09 CHUM]
+		{
+			bool bNgon1 = (nNgon == m_nNgon1);
+			if (m_nChum && (nNgon == m_nNgon1 || nNgon == m_nNgon2))
+			{
+				UiToaDo_ChumNha();
+				m_nChum = 0;
+				m_nNgon1 = m_nNgon2 = -1;
+				m_nCham = CHAM_KHONG;
+				return true;
+			}
+			if (nNgon == m_nNgon1) m_nNgon1 = -1;
+			if (nNgon == m_nNgon2) m_nNgon2 = -1;
+			return !bNgon1;	// ngon 1: chuot gia lap nha nhu cu (ket keo)
+		}
 		if (nNgon == m_nNgonKyNang)
 		{
 			JxKyNang_Nha();
@@ -985,6 +1190,16 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 	case SDL_EVENT_WINDOW_FOCUS_LOST:
 		MsgProc(hWnd, WM_ACTIVATEAPP, FALSE, 0);
 		break;
+#ifdef JX_ANDROID
+	case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED:	// [ANTOAN 13/09] Android bao inset (tai tho / vung vuot) -> UiToaDo ap lai bo cuc
+		s_nVungAnToanDoi++;
+		{
+			int l = 0, t = 0, w = 0, h = 0;
+			JxSdl_LayVungAnToan(&l, &t, &w, &h);
+			g_DebugLog("[ANTOAN] vung an toan doi (lan %d): khung ve %d,%d %dx%d", s_nVungAnToanDoi, l, t, w, h);
+		}
+		break;
+#endif
 
 	case SDL_EVENT_MOUSE_MOTION:
 	{

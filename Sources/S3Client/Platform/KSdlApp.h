@@ -50,6 +50,10 @@ protected:
 	long long	m_nNgonKyNang;	// ngon dang giu mot nut ky nang
 	long long	m_nNgonCan;		// ngon dang cam can dieu khien
 	int				m_nCuonDon;			// [ANDROID 09/09 CUON] so diem anh da vuot, con du chua thanh mot nac lan
+	// [SUAGD 13/09 CHUM] chum hai ngon trong che do sua giao dien = to / nho o dang chon (UiToaDo_ChumBatDau/Keo/Nha)
+	long long		m_nNgon1, m_nNgon2;	// id ngon thu nhat / thu hai dang de (-1 = khong)
+	int				m_nNgon1X, m_nNgon1Y, m_nNgon2X, m_nNgon2Y;
+	int				m_nChum;			// 1 = dang chum
 #endif
 	SDL_Window*		m_pWindow;
 	unsigned int	m_uMsgQuit;			// dem WM_CLOSE da xu ly (chan doan)

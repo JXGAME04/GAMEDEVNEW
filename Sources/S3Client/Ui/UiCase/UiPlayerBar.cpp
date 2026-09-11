@@ -781,26 +781,46 @@ void KUiPlayerBar::Initialize()
 //	(may tinh bang 4:3) bang trang thai bi keo xuong giua man. Tra rieng nhom tren ve dung do cao ban PC:
 //	tru dung khoang doc ma bo neo da cong cho khung (UiToaDo_LayDich) - khong doan theo kich co man hinh.
 int KUiPlayerBar::ms_nTopIni = 0;	// [NHOMTREN 12/09 b]
+int KUiPlayerBar::ms_nDaDichY = 0;	// [SUAGD 13/09] nhom tren DA dich bao nhieu (goi lai duoc khi bo cuc ap lai)
+extern "C" int JxSdl_AnToanTren(void);	// KSdlApp.cpp: mep tren VUNG AN TOAN (toa do khung ve)
+extern "C" void JxPlayerBar_NeoNhomTrenLai(void)	// UiToaDo (UiToaDoMobile.inc) goi sau khi ap lai bo cuc
+{
+	KUiPlayerBar::NeoNhomTrenLai();
+}
+void KUiPlayerBar::NeoNhomTrenLai()
+{
+	if (m_pSelf)
+		m_pSelf->NeoNhomTren();
+}
 void KUiPlayerBar::NeoNhomTren()
 {
-	int nDichY = 0, nX = 0, nY = 0, i;
+	int nDichY = 0, nX = 0, nY = 0, i, nThem;
 	// [NHOMTREN 12/09 b] khoang khung da roi khoi cho goc trong ini (bo cuc neo + chenh khung thiet ke cua tep bo cuc)
+	// [SUAGD 13/09] nhom tren bam mep tren cua VUNG AN TOAN (tru them JxSdl_AnToanTren); chi dich phan CHUA dich
+	// (ms_nDaDichY) nen goi lai bao nhieu lan cung dung; o nao nguoi choi da tu dat (co khoa trong UiToaDo) thi khong dong.
 	GetPosition(&nX, &nY);
-	nDichY = nY - ms_nTopIni;
-	if (nDichY == 0)
+	nDichY = nY - ms_nTopIni - JxSdl_AnToanTren();
+	nThem = nDichY - ms_nDaDichY;
+	if (nThem == 0)
 		return;
-	KWndWindow* apO[] = { &m_DateTime, &m_WifiStatus, &m_AnIcon };
-	for (i = 0; i < (int)(sizeof(apO) / sizeof(apO[0])); i++)
+	ms_nDaDichY = nDichY;
 	{
-		apO[i]->GetPosition(&nX, &nY);
-		apO[i]->SetPosition(nX, nY - nDichY);
+		KWndWindow* apO[] = { &m_DateTime, &m_WifiStatus, &m_AnIcon };
+		const char* apKhoa[] = { "KUiPlayerBar|DateTime", "KUiPlayerBar|WifiStatus", "KUiPlayerBar|HideIcons" };
+		for (i = 0; i < (int)(sizeof(apO) / sizeof(apO[0])); i++)
+		{
+			if (UiToaDo_CoKhoa(apKhoa[i]))
+				continue;
+			apO[i]->GetPosition(&nX, &nY);
+			apO[i]->SetPosition(nX, nY - nThem);
+		}
 	}
 	for (i = 0; i < MAX_BUTTON_STATE; i++)
 	{
 		m_StateImg[i].GetPosition(&nX, &nY);
-		m_StateImg[i].SetPosition(nX, nY - nDichY);
+		m_StateImg[i].SetPosition(nX, nY - nThem);
 		m_StateLife[i].GetPosition(&nX, &nY);
-		m_StateLife[i].SetPosition(nX, nY - nDichY);
+		m_StateLife[i].SetPosition(nX, nY - nThem);
 	}
 }
 #endif
