@@ -282,3 +282,23 @@ watchdog nạp lại cờ. Chép khuôn khoá sang là việc độc lập.
 **Luật rút ra:** phản biện nội bộ **không thay được một câu hỏi cho chủ game**. Tác tử chỉ
 đọc được mã; chủ game biết **luật chơi thật**. Rủi ro nào thuộc luật chơi (tổ đội, thể
 thức, phe, thứ tự ưu tiên) thì **HỎI CHỦ, đừng tự né**.
+
+---
+
+## [TK-RUONG]+[TK-CUA] 11/09 — hai lỗi Tống Kim (commit `0bc49e49`, `.moi` `5db05f1b` chờ swap)
+
+Chủ game: *"WAuto về thành tới rương bị lỗi không mở rương"* và *"khi tống kim từ doanh trại chạy ra ngoài thì bị chạy xác
+bên cổng — không ra ngay giữa cổng dẫn tới kẹt trong doanh trại hồi lâu mới chạy ra được"*.
+
+| Lỗi | Gốc | Vá |
+|---|---|---|
+| Không mở rương | `TK_TimRuongObj` chỉ nhận `Obj_Kind_Box`; rương 7 thành tạo bằng `AddObj(1,…)` = DataID 1 `box001.spr` **Kind Prop** | nhận Box/Prop state 0, 11 lần đầu chỉ DataID 1/2, **đi sát rương ≤ 100 mps** rồi mới bấm (máy chủ bỏ qua > 200 mps) |
+| Kẹt mép cổng | `TKP_TRAP` đổi ô đích 3 giây/lần dọc vết trap chéo, **kể cả ô tường** | `TK_DiQuaCua`: ô trap đi được trên lưới toàn map + `FindPath == 1`, bắt đầu **ô giữa**; đứng sát trap 3 giây vẫn trong trại thì **lùi ra ngoài vết rồi vào lại** |
+
+**4 bẫy đã đo:** `TestBarrier` client chỉ thấy 3×3 region (dùng `LuoiOCoDiDuoc`) · trap chỉ kích lại khi `m_TrapScriptID`
+**đổi** (`KNpc.cpp:12266`) · đường đi client không ra lệnh khi đích < 64 mps (`KSubWorld.cpp:1547`) · máy chủ bỏ qua bấm
+obj > 200 mps.
+
+**Nghiệm thu (log client `jx_auto.log`):** `[TK-RUONG] thay ruong … dataid=1` · `[TK-CUA] … nham o …` ·
+`[TK-CUA] dung o trap … lui ra diem cho`. **Còn nợ (báo chủ, chưa sửa):** `ruongchua.lua` lưu id hồi sinh bằng
+`SetNpcValue` trên chỉ số OBJ → `SetRevPos` có thể đặt sai điểm.
