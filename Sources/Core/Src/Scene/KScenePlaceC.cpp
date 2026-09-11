@@ -2295,16 +2295,20 @@ void KScenePlaceC::VeLopNen(KLopCanh* p)
 	Img.oEndPos.nZ = 0;
 	{	// [ANHNEN 10/09 c] ghi 10 dong dau de biet ve o dau, co anh chua
 		extern int g_nCorePaintLog;
-		static int s_nGhi = 0;
-		if (g_nCorePaintLog > 0 && s_nGhi < 10)
+		static int s_nGhi = 0; static DWORD s_dwMocGhi = 0;	// [ANHNEN 10/09 h] moi 2 giay mot dong, toi da 20
+		DWORD dwNayGhi = timeGetTime();
+		if (g_nCorePaintLog > 0 && s_nGhi < 20 && (s_dwMocGhi == 0 || dwNayGhi - s_dwMocGhi >= 2000))
 		{
-			s_nGhi++;
+			s_nGhi++; s_dwMocGhi = dwNayGhi;
 			FILE* pLog = fopen("jx_paint.log", "a");
 			if (pLog)
 			{
-				fprintf(pLog, "[ANHNEN] ve nen: tieu diem %d,%d | vung %d,%d..%d,%d | tile %d | dat tai %d,%d | co anh %dx%d | %s\n",
+				fprintf(pLog, "[ANHNEN] ve nen: tieu diem %d,%d | vung %d,%d..%d,%d | tile %d | dat tai %d,%d | anh %dx%d -> ve %dx%d (%s) | khung ini %d,%d..%d,%d | khung nhin %d,%d..%d,%d | %s\n",
 					m_FocusPosition.x, m_FocusPosition.y, p->rcVung.left, p->rcVung.top, p->rcVung.right, p->rcVung.bottom,
-					p->nTiLe, x, y, (int)Param.nWidth, (int)Param.nHeight, Img.szImage);
+					p->nTiLe, x, y, (int)Param.nWidth, (int)Param.nHeight, nRongVe, nCaoVe,
+					(nRongVe > (int)Param.nWidth || nCaoVe > (int)Param.nHeight) ? "co gian" : "nguyen co",
+					p->rcMan.left, p->rcMan.top, p->rcMan.right, p->rcMan.bottom,
+					m_RepresentArea.left, m_RepresentArea.top, m_RepresentArea.right, m_RepresentArea.bottom, Img.szImage);
 				fclose(pLog);
 			}
 		}
