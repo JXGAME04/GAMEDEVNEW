@@ -167,17 +167,19 @@ static void WorldInDong()
 			extern unsigned g_uDanAct, g_uDanCol, g_uDanFind, g_uDanHit, g_uDanBar;
 			extern double g_dDanTong, g_dDanOnFly, g_dDanBar, g_dDanBeyond, g_dDanCol, g_dDanMove;
 			extern unsigned g_uDanBoQua; extern double g_dDanVaCham;	// [DAN 11/09 b]
+			extern unsigned g_uDanO[3][3];	// [DAN 11/09 c]
 			FILE* pD = fopen("jx_paint.log", "a");
 			if (pD && g_uWorldTick)
 			{
 				const double dT = (double)g_uWorldTick;
-				fprintf(pD, "[DAN] 10s: act %u (%.1f/tick) tong %.2f ms/tick = %.1f us/vien | onfly %.2f ms/tick (barrier %.3f x%u, beyond %.3f, col %.3f x%u: findnpc %u hit %u boqua %u vacham %.3f) | move %.3f | khac %.3f\n",
+				fprintf(pD, "[DAN] 10s: act %u (%.1f/tick) tong %.2f ms/tick = %.1f us/vien | onfly %.2f ms/tick (barrier %.3f x%u, beyond %.3f, col %.3f x%u: findnpc %u hit %u boqua %u vacham %.3f) | move %.3f | khac %.3f | o C1 %u/%u/%u C2 %u/%u/%u C3 %u/%u/%u (bo qua o trong/bo qua khong vung/co NPC)\n",
 					g_uDanAct, g_uDanAct / dT, g_dDanTong / dT, g_uDanAct ? g_dDanTong * 1000.0 / g_uDanAct : 0.0,
 					g_dDanOnFly / dT, g_dDanBar / dT, g_uDanBar, g_dDanBeyond / dT, g_dDanCol / dT, g_uDanCol, g_uDanFind, g_uDanHit, g_uDanBoQua, g_dDanVaCham / dT,
-					g_dDanMove / dT, (g_dDanTong - g_dDanOnFly - g_dDanMove) / dT);
+					g_dDanMove / dT, (g_dDanTong - g_dDanOnFly - g_dDanMove) / dT,
+					g_uDanO[0][0], g_uDanO[0][1], g_uDanO[0][2], g_uDanO[1][0], g_uDanO[1][1], g_uDanO[1][2], g_uDanO[2][0], g_uDanO[2][1], g_uDanO[2][2]);
 			}
 			if (pD) fclose(pD);
-			g_uDanAct = g_uDanCol = g_uDanFind = g_uDanHit = g_uDanBar = 0; g_uDanBoQua = 0; g_dDanVaCham = 0.0;
+			g_uDanAct = g_uDanCol = g_uDanFind = g_uDanHit = g_uDanBar = 0; g_uDanBoQua = 0; g_dDanVaCham = 0.0; memset(g_uDanO, 0, sizeof(g_uDanO));
 			g_dDanTong = g_dDanOnFly = g_dDanBar = g_dDanBeyond = g_dDanCol = g_dDanMove = 0.0;
 		}
 #endif

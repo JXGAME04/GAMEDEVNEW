@@ -346,8 +346,14 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
   `[Client] DanToiUu=0` tắt (C) để đối chứng. `[DAN]` thêm `boqua` (số ô bỏ qua) và `vacham` (ms/tick trong ProcessCollision + DoCollision).
   Ngoài ra máy ảo cho thấy `hit` = `col` (432/432): đạn không phải kiểu bay thẳng thì `DoCollision` (hiệu ứng) lặp mỗi tick khi mục tiêu
   trong tầm — hành vi gốc của kỹ năng liên tục, **không sửa** (giữ hiệu ứng).
-- Bước 3: chủ chơi đông với bản có [DAN 11/09 b] → đọc `[DAN]` (`tong`, `col`, `findnpc`, `boqua`, `vacham`) + fps; nếu `vacham` còn lớn
-  thì xét tiếp `CreateSpecialEffect`/`Collidsion`; nếu `khac` lớn thì xét `Map2Mps`/`IsMatch`/log. Không cắt hiệu ứng/NPC/đạn.
+- **Bước 2b (01:30, [DAN 11/09 c + d])**: bộ đếm tách theo vòng (`o C1 a/b/c C2 … C3 …` = bỏ qua ô trống / bỏ qua không có vùng đích /
+  có NPC) cho thấy ở vòng C1 (7×7 quanh đạn) **80% ô nằm ngoài vùng hiện tại** (vùng chỉ 16 ô, cửa sổ chờm sang vùng kề) nên bộ lọc
+  "chỉ trong vùng" bỏ sót; C3 thì lọc tốt. Bộ lọc mới `JxDanBoQuaO(vòng, subworld, region, x, y)` **tự cuốn sang vùng kề y như
+  `GetOffsetAxis`** (x trước, y sau, `m_nConnectRegion` 2/6/4/0; không có vùng đích → bỏ qua = `GetOffsetAxis` trả FALSE) rồi đọc bộ đếm NPC
+  của vùng đích; chỉ ô có NPC mới đi đường gốc. Máy ảo: 20,9 → 4,0–4,7 µs/viên đã đo với bộ lọc cũ; bộ lọc mới đo lại ở bản `-i`.
+- Bước 3: chủ chơi đông với bản có [DAN 11/09 d] (bộ tải: `-i` nếu kịp, không thì `-g`) → đọc `[DAN]` (`tong`, `col`, `findnpc`, `boqua`,
+  `vacham`, `o C1/C2/C3`) + fps; nếu `vacham` còn lớn thì xét `CreateSpecialEffect`/`Collidsion`; nếu `khac` lớn thì xét `Map2Mps`/`IsMatch`/log.
+  Không cắt hiệu ứng/NPC/đạn. Chuỗi Windows không dựng lại: mọi dòng C++ mới nằm trong `#ifdef JX_ANDROID`, nhánh `#else` giữ nguyên văn.
 - Nạp trước sprite NPC khi vào map (`NAPNPC` "trễ 437") — việc đã ghi trong [[mobile-tongkim-lag-goc]].
 - Sau khi bật nhịp PC mặc định: khi tick 10–15 ms xảy ra, `PaintSmooth=2` nội suy giúp mượt hơn (`cat ngang` thấp), nhưng không bù được khung mất.
 
