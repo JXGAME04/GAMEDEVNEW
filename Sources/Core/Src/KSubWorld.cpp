@@ -2360,6 +2360,26 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		IniFile.Load("MapList.ini");
 		sprintf(szKeyName, "%d", nId);
 		IniFile.GetString("List", szKeyName, "", m_szPathName, sizeof(m_szPathName));
+		{	// [TRANGTRI 11/09 b] m_szMapPath cu chi duoc gan trong khoi DA BI CHU THICH ben tren
+		// nen LUON RONG -> KRegion::LoadObject tra FALSE ngay dong dau va phan NPC/OBJ cua
+		// Region_C.dat khong bao gio duoc doc. Lay thang tu m_szPathName vua doc xong.
+			extern char g_szTTMap[80];
+			const char* pTT = m_szPathName;
+			while (*pTT == '\\') pTT++;
+			int nTT = (int)strlen(pTT);
+			m_szMapPath[0] = 0;
+			if (nTT > 0 && nTT + 7 < (int)sizeof(m_szMapPath))
+			{
+				// MapList.ini cua du an ghi KHONG co tien to \maps\ ("1=..."), ban 2.0 thi co.
+				if ((pTT[0] == 'm' || pTT[0] == 'M') && (pTT[1] == 'a' || pTT[1] == 'A')
+				 && (pTT[2] == 'p' || pTT[2] == 'P') && (pTT[3] == 's' || pTT[3] == 'S') && pTT[4] == '\\')
+					sprintf(m_szMapPath, "\\%s", pTT);
+				else
+					sprintf(m_szMapPath, "\\maps\\%s", pTT);
+			}
+			strncpy(g_szTTMap, m_szMapPath, sizeof(g_szTTMap) - 1);
+			g_szTTMap[sizeof(g_szTTMap) - 1] = 0;
+		}
 				
 		g_SetFilePath("\\maps");
 		sprintf(szFileName, "%s.wor", m_szPathName);

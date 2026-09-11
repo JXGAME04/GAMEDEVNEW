@@ -129,14 +129,13 @@ static void WorldInDong()
 		}
 		{	// [TRANGTRI 11/09] NPC + vat the nen nap tu du lieu vung
 			extern unsigned g_uTTNpcThem, g_uTTNpcHong, g_uTTNpcXoa, g_uTTObjThem;
-			extern char g_szTTTen[3][40]; extern int g_nTTSo;
-			if (g_uTTNpcThem || g_uTTNpcXoa || g_uTTObjThem || g_uTTNpcHong)
-			{
+			extern char g_szTTTen[3][40]; extern int g_nTTSo; extern char g_szTTMap[80];
+			{	// [TRANGTRI 11/09 b] in ke ca khi bang 0: phan biet "map khong co du lieu" voi "duong dan sai"
 				FILE* pT = fopen("jx_paint.log", "a");
 				if (pT)
 				{
-					fprintf(pT, "[TRANGTRI] 10s: npc them %u hong %u xoa %u | obj them %u | ten: %s %s %s\n",
-						g_uTTNpcThem, g_uTTNpcHong, g_uTTNpcXoa, g_uTTObjThem, g_szTTTen[0], g_szTTTen[1], g_szTTTen[2]);
+					fprintf(pT, "[TRANGTRI] 10s: npc them %u hong %u xoa %u | obj them %u | map %s | ten: %s %s %s\n",
+						g_uTTNpcThem, g_uTTNpcHong, g_uTTNpcXoa, g_uTTObjThem, g_szTTMap, g_szTTTen[0], g_szTTTen[1], g_szTTTen[2]);
 					fclose(pT);
 				}
 			}
