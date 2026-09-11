@@ -523,6 +523,29 @@ extern "C" int JxUi_CoGiaoDienTaiDiem(int x, int y)
 	return (pWnd != NULL && pWnd != s_WndStation.pGameSpaceWnd) ? 1 : 0;
 }
 
+// [BANPHIM 14/09] Cham (x, y) khi dang co cua so giu tieu diem (thuong la o nhap -> ban phim ao dang mo):
+//   0 = khong cua so nao giu tieu diem; 1 = cham DUNG cua so do (giu nguyen); 2 = cham NGOAI -> da bo tieu diem
+//   (KILL_FOCUS -> KWndEdit goi JxSdl_BanPhimAo(0) -> tat ban phim ao sau 200 ms). KSdlApp goi ngay luc dat ngon, TRUOC cac
+//   nhanh can dieu khien / nut ky nang / icon NPC von nuot cham (khong toi Wnd_HandleMsg nen dieu kien pTopWnd != pFocusWnd
+//   o tren khong bao gio chay) - chu 14/09: "chat de bi ket ban phim, khong an lai duoc".
+extern "C" int JxUi_ChamKhiCoTieuDiem(int x, int y)
+{
+	KWndWindow* pTD = s_WndStation.pFocusWnd;
+	if (!pTD)
+		return 0;
+	if (pTD->PtInWindow(x, y))
+		return 1;
+	Wnd_SetFocusWnd(NULL);
+	return 2;
+}
+
+// [BANPHIM 14/09] IME bi dong ngoai y game (Back / nut an cua IME): SDL da StopTextInput nhung game van giu tieu diem o nhap ->
+// cham lai dung o khong phat SET_FOCUS nen ban phim khong mo lai. KSdlApp (JxSdl_BanPhimNhip) goi de bo tieu diem cho dong bo.
+extern "C" void JxUi_BoTieuDiem(void)
+{
+	Wnd_SetFocusWnd(NULL);
+}
+
 //	[VATPHAM 12/09 g] Hoi CA CAY cua so con: o vat pham (KWndObjectBox / KWndObjectMatrix) luon la cua so CON cua
 //	hop thoai (hanh trang, ruong...), ma Wnd_GetActive chi tra cua so TOP nen phai tu di xuong.
 static int JxUi_HoiCoVatPham(KWndWindow* pWnd, int x, int y)

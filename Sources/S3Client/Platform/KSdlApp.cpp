@@ -747,8 +747,13 @@ static void SdlToLogical(SDL_Window* pWin, float& x, float& y)
 // [DANGNHAP 12/09] ban phim theo KIEU o nhap: khong tu viet hoa chu dau (tai khoan phai chu thuong), khong tu sua chu,
 // o mat khau = kieu mat khau an. IME Android hay tu dong sau phim Enter du o nhap ke tiep da nhan tieu diem ->
 // hen mo lai sau 0,3 s (JxSdl_BanPhimNhip trong vong lap chinh).
+#ifdef JX_ANDROID
+extern "C" int JxUi_ChamKhiCoTieuDiem(int x, int y);	// [BANPHIM 14/09] Wnds.cpp: 0 khong tieu diem / 1 cham dung o / 2 cham ngoai -> da bo
+extern "C" void JxUi_BoTieuDiem(void);	// [BANPHIM 14/09] Wnds.cpp
+#endif
 static Uint64 s_uBanPhimTat = 0;	// [DANGNHAP 12/09 b] hen TAT ban phim (KILL_FOCUS); SET_FOCUS den truoc thi huy
 static int s_nBanPhimMatKhau = 0;
+static int s_bBanPhimDangMo = 0;	// [BANPHIM 14/09] ta da mo ban phim (BanPhimMo) va chua tu tat
 static void BanPhimMo(SDL_Window* pWin, int nMatKhau)
 {
 	SDL_PropertiesID p = SDL_CreateProperties();
@@ -756,7 +761,14 @@ static void BanPhimMo(SDL_Window* pWin, int nMatKhau)
 	SDL_SetNumberProperty(p, SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_NONE);
 	SDL_SetBooleanProperty(p, SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, false);
 	SDL_StartTextInputWithProperties(pWin, p);
+	s_bBanPhimDangMo = 1;
 	SDL_DestroyProperties(p);
+}
+// [BANPHIM 14/09] o nhap van giu tieu diem ma ban phim dang an (nguoi choi an bang nut cua IME) -> tat roi mo lai
+static void BanPhimMoLai(SDL_Window* pWin)
+{
+	SDL_StopTextInput(pWin);
+	BanPhimMo(pWin, s_nBanPhimMatKhau);
 }
 extern "C" void JxSdl_BanPhimAo(int bBat, int nMatKhau)
 {
@@ -776,6 +788,17 @@ extern "C" void JxSdl_BanPhimAo(int bBat, int nMatKhau)
 // goi moi vong lap: den hen ma o nhap van giu tieu diem -> dong roi mo lai ban phim (IME da tu dong thi hien lai)
 extern "C" void JxSdl_BanPhimNhip(void)
 {
+#ifdef JX_ANDROID
+	{	// [BANPHIM 14/09] IME bi dong ngoai y game (Back / nut an cua IME -> SDL da StopTextInput) ma o nhap van giu tieu diem
+		SDL_Window* pWinKT = (SDL_Window*)JxPosix_MainWindow();
+		if (s_bBanPhimDangMo && pWinKT && !SDL_TextInputActive(pWinKT))
+		{
+			s_bBanPhimDangMo = 0;
+			JxUi_BoTieuDiem();
+			g_DebugLog("[BANPHIM] IME da dong ngoai y game -> bo tieu diem o nhap");
+		}
+	}
+#endif
 	if (!s_uBanPhimTat || SDL_GetTicks() < s_uBanPhimTat)
 		return;
 	s_uBanPhimTat = 0;
@@ -783,6 +806,7 @@ extern "C" void JxSdl_BanPhimNhip(void)
 	if (!pWin)
 		return;
 	SDL_StopTextInput(pWin);	// [DANGNHAP 12/09 b] den hen ma khong o nao nhan tieu diem -> tat that
+	s_bBanPhimDangMo = 0;
 }
 
 //---------------------------------------------------------------------------
@@ -960,6 +984,23 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			m_nCham = CHAM_CHO;
 			m_nChamX0 = m_nChamX = (int)fx; m_nChamY0 = m_nChamY = (int)fy;
 			m_uChamDat = (unsigned int)SDL_GetTicks();
+#ifdef JX_ANDROID
+			// [BANPHIM 14/09] Chu: "vao game nhap so hay chat de bi ket ban phim, khong an lai duoc". Ban phim ao chi tat khi o nhap mat
+			// tieu diem (KILL_FOCUS -> JxSdl_BanPhimAo(0)); Wnds.cpp:390 chi bo tieu diem khi cham toi duoc he cua so, con cham vao can
+			// dieu khien / nut ky nang / icon NPC bi cac nhanh duoi day nuot truoc -> o chat van giu tieu diem, ban phim nam mai.
+			// Nay: co o giu tieu diem ma cham NGOAI o -> bo tieu diem ngay (ban phim tat sau 200 ms); cham DUNG o ma ban phim dang an
+			// (nguoi choi da an bang nut cua IME) -> mo lai.
+			{
+				int nTD = JxUi_ChamKhiCoTieuDiem(m_nChamX0, m_nChamY0);
+				if (nTD == 1 && !SDL_ScreenKeyboardShown(m_pWindow))
+				{
+					g_DebugLog("[BANPHIM] cham o dang giu tieu diem ma ban phim an -> mo lai");
+					BanPhimMoLai(m_pWindow);
+				}
+				else if (nTD == 2)
+					g_DebugLog("[BANPHIM] cham ngoai o nhap (%d,%d) -> bo tieu diem, tat ban phim", m_nChamX0, m_nChamY0);
+			}
+#endif
 			// [ANDROID 09/09 KYNANG] Dat ngon trung mot nut ky nang thi bat NGAY, khong doi
 			// xe dich: nut la mot o cu the nen dat trung no la chac chan muon dung no.
 			// Nho vay cham vao nut cung khong lot mot cu bam chuot xuong duoi game.
