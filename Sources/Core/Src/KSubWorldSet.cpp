@@ -162,6 +162,25 @@ static void WorldInDong()
 				g_uCayChen, g_uCayDuyet1, g_uCayDuyet2, g_uCayKhop, g_uCayCon, g_uCayTaiCho, g_uCayDoiCho, g_uCayBuoc, g_uCayKhacDs, g_uCayLuiTinh, g_uCayKhacCha, g_uCayNgoai, g_uCayDo, g_uCayLech, g_uCayXayChiMuc, g_uAmNap, g_dAmNapMs);
 			fclose(p2);
 		}
+#ifdef JX_ANDROID
+		{	// [DAN 11/09] chi phi tung phan cua dan (KMissle.cpp), cung ky 10 s voi [WORLD b]
+			extern unsigned g_uDanAct, g_uDanCol, g_uDanFind, g_uDanHit, g_uDanBar;
+			extern double g_dDanTong, g_dDanOnFly, g_dDanBar, g_dDanBeyond, g_dDanCol, g_dDanMove;
+			extern unsigned g_uDanBoQua; extern double g_dDanVaCham;	// [DAN 11/09 b]
+			FILE* pD = fopen("jx_paint.log", "a");
+			if (pD && g_uWorldTick)
+			{
+				const double dT = (double)g_uWorldTick;
+				fprintf(pD, "[DAN] 10s: act %u (%.1f/tick) tong %.2f ms/tick = %.1f us/vien | onfly %.2f ms/tick (barrier %.3f x%u, beyond %.3f, col %.3f x%u: findnpc %u hit %u boqua %u vacham %.3f) | move %.3f | khac %.3f\n",
+					g_uDanAct, g_uDanAct / dT, g_dDanTong / dT, g_uDanAct ? g_dDanTong * 1000.0 / g_uDanAct : 0.0,
+					g_dDanOnFly / dT, g_dDanBar / dT, g_uDanBar, g_dDanBeyond / dT, g_dDanCol / dT, g_uDanCol, g_uDanFind, g_uDanHit, g_uDanBoQua, g_dDanVaCham / dT,
+					g_dDanMove / dT, (g_dDanTong - g_dDanOnFly - g_dDanMove) / dT);
+			}
+			if (pD) fclose(pD);
+			g_uDanAct = g_uDanCol = g_uDanFind = g_uDanHit = g_uDanBar = 0; g_uDanBoQua = 0; g_dDanVaCham = 0.0;
+			g_dDanTong = g_dDanOnFly = g_dDanBar = g_dDanBeyond = g_dDanCol = g_dDanMove = 0.0;
+		}
+#endif
 		g_dWorldNhac = 0.0; g_dNpcPha[0] = g_dNpcPha[1] = g_dNpcPha[2] = g_dNpcPha[3] = 0.0;
 		g_dNpcTong = 0.0; g_dNpcMax = 0.0; g_uNpcLan = 0; g_nNpcMaxIdx = 0;
 		g_dKhacMs[0] = g_dKhacMs[1] = g_dKhacMs[2] = 0.0; g_uKhacSo[0] = g_uKhacSo[1] = g_uKhacSo[2] = 0;	// [WORLD 09/09 c]
@@ -174,6 +193,9 @@ static void WorldInDong()
 #endif
 void KSubWorldSet::MainLoop()
 {
+#ifdef JX_ANDROID
+	{ extern DWORD g_uAutoLogNow; g_uAutoLogNow = timeGetTime(); }	// [DAN 11/09 b] moc cho AUTOLOG_EVERY, 1 lan/tick
+#endif
 	m_nLoopRate++;
 	if (m_nLoopRate < 0)
 		m_nLoopRate = 0;

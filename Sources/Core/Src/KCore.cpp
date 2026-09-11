@@ -965,11 +965,17 @@ int g_AutoLogWho(const char* szName)
 	return (strcmp(szName, s_szAutoLogName) == 0) ? 1 : 0;
 }
 
+#ifdef JX_ANDROID
+DWORD g_uAutoLogNow = 0;	// [DAN 11/09 b] moc thoi gian cho AUTOLOG_EVERY (KCore.h), cap nhat moi tick + moi lan ghi
+#endif
 void g_AutoLog(const char* szFmt, ...)
 {
 	if (!g_AutoLogOn())
 		return;
 	DWORD uNow = timeGetTime();
+#ifdef JX_ANDROID
+	g_uAutoLogNow = uNow;	// [DAN 11/09 b]
+#endif
 	DWORD uSec = uNow / 1000;
 	if (uSec != s_uAutoLogSec)
 	{
