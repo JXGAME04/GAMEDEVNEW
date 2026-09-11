@@ -9195,7 +9195,8 @@ void KNpc::Paint()
 		nHeight += 20;
 
 	//End add by Fong Kieu
-	DrawMenuState(nHeight);
+	if (m_sClientNpcID.m_dwRegionID == 0)	// [TRANGTRI 11/09 f] NPC trang tri khong co bieu tuong trang thai
+		DrawMenuState(nHeight);
 }
 #endif
 

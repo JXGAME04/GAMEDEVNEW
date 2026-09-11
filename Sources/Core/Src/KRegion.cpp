@@ -358,6 +358,7 @@ NPC_CLOSE:
 //----------------------------------------------------------------------
 // [TRANGTRI 11/09] dem NPC/OBJ trang tri nap tu du lieu vung (xem jx_paint.log dong [TRANGTRI])
 unsigned g_uTTNpcThem = 0, g_uTTNpcHong = 0, g_uTTNpcXoa = 0, g_uTTObjThem = 0;
+unsigned g_uTTVe = 0;	// [TRANGTRI 11/09 f] so lan VE THAN cua NPC trang tri trong 10 s
 unsigned g_uTTNpcThieuAnh = 0;	// [KHOI 11/09 c] mau khong co bo anh -> bo han, khong de the ten lo lung
 char     g_szTTTen[3][40] = { "", "", "" };
 char     g_szTTMap[80] = "";	// [TRANGTRI 11/09 b] duong dan map dang mo, de doi chieu trong log
