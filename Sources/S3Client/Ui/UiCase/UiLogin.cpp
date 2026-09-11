@@ -142,6 +142,12 @@ void KUiLogin::Show()
 
 	char	szAccount[32];
 	m_RememberAccount.CheckButton(g_LoginLogic.GetLoginAccount(szAccount));
+#ifdef JX_ANDROID
+	// [DANGNHAP 14/09 b] Lan dang nhap DAU TIEN (may moi cai, hoac vua xoa du lieu app) chua nho gi nen o "Ghi nho" tat:
+	// go tai khoan roi bam Dang nhap la KHONG luu gi ca, lan sau phai go lai. Tren dien thoai mac dinh TICK SAN;
+	// ai khong muon nho thi bo tick truoc khi bam Dang nhap. Ban PC giu nguyen nhu cu.
+	m_RememberAccount.CheckButton(true);
+#endif
 	m_Account.SetText(szAccount);
 #ifdef JX_ANDROID
 	// [DANGNHAP 14/09] nho ca mat ma nhung KHONG tu dang nhap (config [Login] TuDongDangNhap=0): o mat ma hien 8 dau * (kieu

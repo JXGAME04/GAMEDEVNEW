@@ -516,6 +516,12 @@ void KLogin::ProcessRoleListResponse(TProcessData* pResponse)
 		g_NetConnectAgent.UpdateClientRequestTime(true);
 		m_Status = LL_S_ROLE_LIST_READY;
 		m_Result = LL_R_NOTHING;
+#ifdef JX_ANDROID
+		// [DANGNHAP 14/09 b] Chu: "dang nhap 1 lan la luu lai luon khong mat nua". Toi day may chu DA nhan tai khoan +
+		// mat ma (danh sach nhan vat ve) -> ghi xuong dia NGAY. Truoc day chi luu o SelectRole (luc chon nhan vat) va luc
+		// thoat game sach; dien thoai hay bi vuot tat / he thong giet o man chon nhan vat nen ca hai deu khong chay.
+		SaveLoginChoice();
+#endif
 
 		if (m_bInAutoProgress)
 		{

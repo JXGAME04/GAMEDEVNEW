@@ -506,6 +506,15 @@ int CoreDataChangedCallback(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 		KUiMail_OnGameStart();	// [MAIL 03/09 D4] bieu tuong thu + hop thu cho toi khi vao game
 		KUiAuction_OnGameStart();	// [DAUGIA 04/09 A3]
 		KUiChienLenh_OnGameStart();	// [CL 04/09 DOT2]
+#ifdef JX_ANDROID
+		// [HIENTEN 14/09] Chot lai o CUOI khoi vao game: NotifyToStartGame() o dau khoi nay goi dong bo xuong
+		// UiOnGameServerStartSyncEnd -> LoadPrivateConfig -> KUiPlayerBar::LoadPrivateSetting, nen dat o day la quyet dinh
+		// cuoi. Con lo them: LoadPrivateSetting bi bo qua khi ho so chua co khoa "Scheme", ma m_nShowPateFlag khoi tao
+		// chi co PATE_CHAT -> ten + thanh mau tat. Ca hai duong deu dat 1 nen khong danh nhau.
+		g_pCoreShell->OperationRequest(GOI_SHOW_PLAYERS_LIFE, 0, 1);
+		g_pCoreShell->OperationRequest(GOI_SHOW_PLAYERS_NAME, 0, 1);
+		g_pCoreShell->OperationRequest(GOI_SHOW_OBJ_NAME, 0, 1);
+#endif
 		KUiOptions2::LoadSetting(true, true);//add by phong ki“u 24/08/2021
 	}
 	break;
