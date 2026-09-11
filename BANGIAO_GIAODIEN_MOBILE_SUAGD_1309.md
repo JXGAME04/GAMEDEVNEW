@@ -374,3 +374,72 @@ Sửa: chạy `python androida_sdl3_donhip.py` trong cây (idempotent, kiểm `
   `ui/uitoado_danhsach.ini`, `config.ini` và APK mới vào `D:\jx1_android_data_dt_v4`, xoá `manifest.txt`, khởi động
   lại máy chủ 8765 (phiên 144 Hz quản lý cây này — đã nhắn).
 - Vẫn chưa đo Fold 7 (`bocuc_thuc.txt` hoặc dòng "Khung … an toàn" trong trình chỉnh).
+
+### 7.13 Lượt u (01:20–01:45 14/09) — đấu giá / Chiến Lệnh trên điện thoại: đã loại trừ gói pak, ký hiệu trùng, dữ liệu; chờ jx_mail.log của điện thoại
+
+- **Phát hiện "788 tệp trong pak là bản cũ" là BÁO ĐỘNG GIẢ** (rút lại 01:20): `ReverseTools/pak_vltk/pakdump.py::read_entry` chỉ thử
+  zlib, còn bộ đóng gói điện thoại nén mục bằng **UCL NRV2B** (`android/ucl_nen.exe`, cờ byte cao = 1) → hàm trả blob nén thô
+  → md5 lệch, "kích thước pak" nhỏ hơn thật ra là kích thước nén. Giải nén đúng bằng `ucl.nrv2b_decompress_8(blob, size)`
+  (`scratchpad/quet_pak_lech2.py`): 815/820 tệp `script/ ui/ settings/` trùng md5 với `D:\jx1_android_data`, **0 thiếu**
+  (tên Hán như `ui\Ui3\Meridian\任脉.ini` phải `name2id` trên byte GBK; tệp `.cu_*`/`.goc_datau` là rác). 5 tệp khác
+  (`uiitem.ini` pak = bản Android 12/09 còn tệp rời là bản PC!, `uioptions.ini` pak thiếu [Fps]+[ChinhGiaoDien],
+  `uitoolscontrolbar.ini` [WAuto] Height 56/48, `uilogin.ini` mới, `settings\faction\门派设定.ini`) đều có bản rời trong
+  dt_v4 (rời nạp trước) nên điện thoại vẫn đọc bản đúng. dt_v4 tệp rời (642) so với `D:\jx1_android_data`: chỉ khác
+  `config.ini`, `package.ini`, `userdata\*` (userdata KHÔNG nằm trong manifest → không tải xuống).
+- **Ký hiệu trùng (bẫy 09/09) còn nguyên vá**: `llvm-nm -D --defined-only` trên 9 `.so` của bản u: `GameScriptFuns` và
+  `g_GetGameScriptFunNum` chỉ có trong `libCoreClient.so` ở cả arm64-v8a lẫn x86_64; 40 ký hiệu trùng khác giống hệt nhau
+  giữa hai ABI (`scratchpad/nm_dup_*.txt`: IR_UpdateTime, KNode typeinfo, g_pMusic, l_Time…, không liên quan script).
+  Máy ảo ghi `[SP] dang ky 133 ham C (Say...)` = bảng Core đúng.
+- **Cơ chế** (đọc mã): icon Chiến Lệnh do MÁY CHỦ đẩy: `serverscript_jx2/chienlenh/script/chienlenh/cl_ui.lua CLUI_OnLogin()`
+  gửi `emSCRIPT_PROTOCOL_CL_SHOWICON`(id 75) khi `CL_Ready()==1` → client nạp `\script\script_protocol\protocol_def_c.lua`
+  rồi `\script\ui\uichienlenh.lua` → `CLUI_OnShowIcon` → `CLUi_SetIconVisible` → `KUiCLIcon` (UiChienLenh.cpp; chỉ tạo khi
+  nhận lệnh này, thoát game thì Release). Icon đấu giá do client tự tạo lúc GAME_START (`KUiAuction_OnGameStart`, giống thư);
+  chạm → `AUCUI_OP_ICON_CLICK` → `AuctionUi_OnRequest` → Lua `UIAuctionHouse:OnAuctionIconClick(1)` → `OpenAuctionWindow()`
+  (mở ngay phía client, không chờ máy chủ) → `Lua->UI cmd=18, cmd=1` → `[AUC] [UI] OpenWindow visible=1`. Thư cũng đi
+  đường Lua (`UIMail:OnMailIconClick()`) — thư chạy trên điện thoại nên hệ Lua client KHÔNG chết toàn bộ như 09/09.
+- Đường chạm (KSdlApp.cpp ChamSuKien): chạm nhanh = WM_MOUSEMOVE + WM_LBUTTONDOWN + WM_LBUTTONUP tại CHỖ ĐẶT NGÓN
+  (không phải chỗ nhả) → không phải lỗi run tay; hai lần chạm < 400 ms & < 24 px = WM_LBUTTONDBLCLK (chạm lại nhanh sau
+  lần "không ăn" sẽ thành nháy đúp).
+- **Chưa kết luận được** vì điện thoại chưa gửi log nào từ 00:47: bộ gửi log Java chỉ chạy khi `[DoNhip] Bat=1` (phiên DONHIP
+  phát hiện 01:40) → bản w (109110137, `[DoNhip] GuiLog=1`) đã lên dt_v4, chủ mở app một lần là có `jx_mail.log`. Đọc
+  theo thứ tự: sau `GAME_START` phải có `nhan s2c_scriptdata id=75 len=9` → `nap \script\ui\uichienlenh.lua vao bang
+  rieng: ok` (thiếu = máy chủ không gửi / lỗi chunk → cần ScriptError.log, đã nhờ DONHIP gửi thêm); khi chạm đấu giá phải
+  có `[AUCUI] UI->Lua op=1 param=1` (không có = chạm không tới icon: hình học/che khuất) → `Lua->UI cmd=18` (không có =
+  Lua lỗi) → `OpenWindow visible=1` (có mà không thấy = cửa sổ nằm ngoài khung/bị che).
+- Bản u = 510d3be7 (gộp origin/mobile-0809 705e8a5b [DAN] + JxDoNhip gửi jx_mail.log) versionCode 109110123 đã lên dt_v4
+  01:27 rồi bị DONHIP thay bằng v (109110129, 3267b755 = 510d3be7 + [DAN c+d]) 01:30 và w (109110137) 01:40; mobile-0809
+  FF = 510d3be7 rồi DONHIP FF tiếp. Thử máy ảo: bản u vào thế giới bình thường; **không đổi `wm size` máy ảo khi chủ đang
+  dùng** (01:33 đổi 2080x1080 để thử khung rộng → chuột LDPlayer lệch, chủ "không kích mở game được"; đã reset).
+
+### 7.14 Lượt y (01:44–02:10 14/09) — GỐC đấu giá / Chiến Lệnh trên điện thoại: `Include()` của Lua client không đọc pak. Chủ: *"bản đưa lên điện thoại nó chưa kết nối được lua5.4 nên không mở lên được đấu giá và mất icon chiến lệnh; lỗi này từng bị ở bản giả lập rồi đã fix 1 lần"*
+
+- **Bằng chứng** (phiên DONHIP thêm `ScriptError.log` + `jx_mail.log` vào bộ gửi, bản w/x, phiên Fold 7 01:44):
+  ```
+  \script\script_protocol\protocol_def_c.lua:146: attempt to index a nil value (global 'ScriptProtocol')
+  \script\ui\uiauction_house.lua:10:  attempt to index a nil value (global 'AUCTION_DEF')
+  \script\ui\uimail.lua:387: ObjBuffer nil   uimail.lua:540: tblen nil   sj_guanxian.lua:22: Param2String nil
+  [SP] nap \script\script_protocol\protocol_def_c.lua vao bang rieng: LOI than chunk
+  [AUCUI] UI->Lua op=1 param=1  ->  [SP] RunClientLua loi ...: UIAuctionHouse:OnAuctionIconClick(1)   (mỗi lần chạm)
+  ```
+  Mọi biến nil đều là thứ một tệp `Include("\script\...")` phải định nghĩa → `Include` im lặng không làm gì.
+- **Gốc**: `Core/Src/ScriptFuns.cpp LuaIncludeFile` ghép đường tuyệt đối rồi gọi `lua_dofile` = `lua4_dofile` → `luaL_loadfilex`
+  → `fopen` thật (`Library/Lua54/jx_lua_fopen.c` → `JxPathPosix`), **không biết pak**. Máy ảo đọc `/mnt/shared/Misc`
+  = `D:\jx1_android_data` có `script\` rời nên luôn mở được; điện thoại chỉ có `mobile_NN.pak` (dt_v4 chưa bao giờ phát
+  `script/` rời) → `LUA_ERRFILE` → `Include` = không. Hệ quả: bộ điều phối `protocol_def_c.lua` đứt dòng 146 → mọi
+  `s2c_scriptdata` (id 75 `CL_SHOWICON` → icon Chiến Lệnh, id 37 danh sách thư) `loi=1`; thân `uiauction_house.lua` đứt
+  dòng 10 (`AUCTION_DEF` nil) nên `OnAuctionIconClick` không tồn tại → chạm có tới nhưng không mở (dời icon đi đâu cũng
+  vậy); `uimail.lua` không đụng biến thiếu ở đầu tệp nên hộp thư mở được nhưng trống. Khác bẫy 09/09 (bảng `GameScriptFuns`
+  trùng tên → `Include` = nil mọi nơi): `nm -D` bản u hai ABI đều chỉ có bảng ở `libCoreClient` (vá còn nguyên).
+- **Sửa** `c7de4f04` + `[PAK b]` (chỉ `#ifdef JX_ANDROID`, nhánh `#else` giữ nguyên hai dòng PC): `lua_dofile` trả
+  `LUA_ERRFILE` (2, `l4_loi_nap`) → `sIncludeTuPak` mở lại qua `KPakFile` (đĩa trước, pak sau — đúng đường
+  `KLuaScript::Load` nạp `uimail.lua` từ pak), tên hạ chữ thường dạng `\script\...`, chạy thân tệp trong **đúng state L**
+  bằng `lua_dobuffer` (= `luaL_loadbufferx` + `l4_gan_env` + `lua4_call`, cùng đuôi với `lua4_dofile`), tên chunk
+  `@\script\x.lua` để lỗi ghi số dòng. Bản y (chưa gate) trên máy ảo cho thấy tệp rời CÓ nhưng thân lỗi
+  (`task_addplayerexp.lua`, mã 1) bị chạy hai lần → `[PAK b]` chỉ đọc lại khi mã = 2; mã 1/3 giữ nguyên "Include HONG".
+- Không thử được đường pak trên máy ảo: 33 pak trong `D:\jx1_android_data\data` không có `script\` (máy ảo luôn đọc tệp
+  rời). Kiểm chứng = điện thoại: sau bản y2 lên dt_v4, chủ mở app, `jx_mail.log` phải có
+  `nap \script\script_protocol\protocol_def_c.lua vao bang rieng: ok`, `dispatch ... (75, 1) ... (loi=0)`, khi chạm đấu giá
+  `Lua->UI cmd=18` → `[AUC] [UI] OpenWindow visible=1`; `ScriptError.log` không còn dòng nil.
+- Bài học ghi vào bộ nhớ: **mọi đường mở tệp bằng `fopen`/`lua_dofile`/`io.open` đều KHÔNG thấy pak** → trên điện thoại
+  chỉ dữ liệu qua `KPakFile`/`g_pPakList` mới có; muốn tái hiện lỗi "chỉ điện thoại" phải thử với dữ liệu đóng gói, máy ảo
+  đọc tệp rời không bao giờ lộ.
