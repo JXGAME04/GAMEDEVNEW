@@ -292,9 +292,23 @@ Sửa (`[ANTOAN 13/09 b]`):
 Sửa: chạy `python androida_sdl3_donhip.py` trong cây (idempotent, kiểm `grep -c "DONHIP 12/09"` = 3), dựng lại APK
 (`jx1mobile-1309-suagd-n`), thay vào dt_v4 + khởi động lại 8765. **Quy tắc cho cây mới:** vá SDL3-src trước khi dựng APK.
 
+### 7.10 Lượt k — ảnh Fold 7 với trình chỉnh mở: "an toàn 58,46 1306x570"; chủ: *"một số icon không căn chỉnh chính xác, còn hở rất nhiều"* rồi *"không cần vùng an toàn đâu, tôi chơi nhiều game đâu có phần này"*
+
+- Số đo thật đầu tiên trên Fold 7 (SM-F966U1, 1080x2520 xoay 1): khung vẽ **1436x616**, vùng an toàn 58,46 1306x570 → lề
+  trái 58, trên 46, phải 72, dưới 0. Bản n (có `datVungAnToanTheoCamera`) vẫn ra số này vì `SDLSurface.handleResume()`
+  đăng ký lại listener của SDL mỗi lần resume → listener thay ngoài mất tác dụng. Sửa cho đúng: lớp con `JxSurface extends
+  SDLSurface` qua `createSDLSurface()`, ghi đè thẳng `onApplyWindowInsets` (chỉ lấy `displayCutout`).
+- Chủ chốt bỏ hẳn vùng an toàn → **`VungAnToan=0` mặc định** (config lớp ghi đè, dt_v4, máy ảo, và mặc định trong
+  `KSdlApp.cpp`). Neo theo mép màn, bỏ qua mọi inset; lỗ camera có thể đè lên icon, người chơi tự kéo icon nếu thấy vướng.
+- "Icon không căn chỉnh": nhóm góc trên-trái (đồng hồ, sóng, nút ẩn icon, dãy buff) không có mục riêng nên theo khung cha
+  `KUiPlayerBar|Main` — khung này neo GIỮA ngang (`1,1,…,1,2`) để thanh chat/ô nhập ở đáy nằm giữa, nên trên màn rộng hơn
+  1040 cả nhóm trôi vào giữa (ảnh: đồng hồ ở x ≈ 200). `NeoNhomTren` nay bù cả X (`ms_nLeftIni`, `ms_nDaDichX`,
+  `JxSdl_AnToanTrai`): nhóm bám mép trái khung (hoặc mép trái vùng an toàn nếu bật lại), như trên máy ảo.
+- Phần còn lại trong ảnh đã đúng neo: cụm phải sát mép phải vùng an toàn, hàng icon và thanh đáy giữa, bảng Tống Kim trái.
+
 ### 7.7 Trạng thái cuối
 
-- Máy ảo + dt_v4: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt i, `jx1mobile-1309-suagd-n`, dựng 23:49 từ `7702bab0` + SDL3 đã vá DONHIP; libSDL3.so có hint `JX_BO_QUA_SUBOPTIMAL`).
+- Máy ảo + dt_v4: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt k, `jx1mobile-1309-suagd-o`, dựng 00:03 14/09: vùng an toàn tắt, nhóm trên-trái bám mép, `JxSurface`, SDL3 đã vá DONHIP).
 - Điện thoại (23:33): đã tự đưa APK m thành `D:\jx1_android_data_dt_v4\jx1mobile.apk` (apk.txt versionCode 109102329), đổi
   `VungAnToanDoiXung=0` trong config của dt_v4 (các khoá khác của phiên 144 Hz giữ nguyên), khởi động lại
   `may_chu_tai_du_lieu.py` đúng dòng lệnh cũ; phiên nối tiếp `bangiao-donhip-mobile-context-deaeff-ab` đã được báo. Tệp mặc định trên máy ảo và trong repo giống nhau.
