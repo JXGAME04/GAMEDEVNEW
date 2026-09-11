@@ -282,9 +282,19 @@ Sửa (`[ANTOAN 13/09 b]`):
 - Cách kiểm trên điện thoại: mở "Chỉnh giao diện", dòng dưới bảng ghi `<khung> ĐT | an toàn <x,y> <w>x<h>`; mong đợi
   `an toàn 0,0` (hoặc chỉ một mép lùi bằng đúng lỗ camera).
 
+### 7.9 Lượt i — phiên DONHIP báo APK m thiếu bản vá SDL (23:45)
+
+`ThirdParty/SDL3-src/` nằm trong `.gitignore`, nên bản vá `[DONHIP 12/09]` trong `src/gpu/vulkan/SDL_gpu_vulkan.c` (đếm
+`VK_SUBOPTIMAL_KHR`, hint `JX_BO_QUA_SUBOPTIMAL` = bản sửa bca30aa của SDL) không đi theo git. Cây này chép SDL3-src từ
+`wt_mobile` (chưa vá) → mọi APK dựng ở đây (a…m) đều thiếu vá; trên Fold 7 pha 1 của DONHIP vô hiệu, chỉ 28–45 khung/s
+(nhật ký "SDL dem: … (chua co hint)"). Máy ảo không lộ vì LDPlayer hướng gốc ngang.
+
+Sửa: chạy `python androida_sdl3_donhip.py` trong cây (idempotent, kiểm `grep -c "DONHIP 12/09"` = 3), dựng lại APK
+(`jx1mobile-1309-suagd-n`), thay vào dt_v4 + khởi động lại 8765. **Quy tắc cho cây mới:** vá SDL3-src trước khi dựng APK.
+
 ### 7.7 Trạng thái cuối
 
-- Máy ảo: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt h, `jx1mobile-1309-suagd-m`, dựng 23:29 từ `247beeea`).
+- Máy ảo + dt_v4: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt i, `jx1mobile-1309-suagd-n`, dựng 23:49 từ `7702bab0` + SDL3 đã vá DONHIP; libSDL3.so có hint `JX_BO_QUA_SUBOPTIMAL`).
 - Điện thoại (23:33): đã tự đưa APK m thành `D:\jx1_android_data_dt_v4\jx1mobile.apk` (apk.txt versionCode 109102329), đổi
   `VungAnToanDoiXung=0` trong config của dt_v4 (các khoá khác của phiên 144 Hz giữ nguyên), khởi động lại
   `may_chu_tai_du_lieu.py` đúng dòng lệnh cũ; phiên nối tiếp `bangiao-donhip-mobile-context-deaeff-ab` đã được báo. Tệp mặc định trên máy ảo và trong repo giống nhau.
