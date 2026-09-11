@@ -329,6 +329,14 @@ Sửa: chạy `python androida_sdl3_donhip.py` trong cây (idempotent, kiểm `
   = 097e984a có CMake tự vá SDL và trỏ SDL3-3.2.30. Bản p (SDL 3.2.14) **không** đưa lên dt_v4; bản q dựng sau khi gộp 097e984a
   (nguồn SDL3-3.2.30 chép từ worktree DONHIP, không tải lại).
 
+- 00:23–00:27: bản -c (SDL 3.2.30) của phiên DONHIP tự đóng trên Fold 7 sau 1–4 s (Java org/libsdl/app vẫn 3.2.14, JNI lệch) và
+  bản q (cùng cây 097e984a) cũng không vào được thế giới trên máy ảo. Chủ kẹt (điện thoại đã cài 109110010, launcher không hạ cấp) →
+  tôi đẩy tạm **bản p** (838fdf36 + nút ẩn icon + neo ô con, SDL 3.2.14 đã vá, 109110015) lên dt_v4 + restart 8765 (taskkill,
+  PID 279232). Bản q (bản đồ to/nhỏ) đợi phiên DONHIP commit Java SDL 3.2.30 rồi gộp, dựng lại. Windows q: 2 cấu hình 0 lỗi.
+- Quy tắc dt_v4 (phiên DONHIP nhắc, tôi đã dính): chép tệp vào dt_v4 xong PHẢI restart may_chu_tai_du_lieu.py ngay, manifest chỉ
+  sinh lúc khởi động; tệp lệch md5 làm điện thoại lặp tải và không cập nhật APK. Restart = taskkill PID đang nghe rồi Start-Process
+  đúng dòng lệnh, kiểm PID mới + giờ manifest.
+
 ### 7.7 Trạng thái cuối
 
 - Máy ảo + dt_v4: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt k, `jx1mobile-1309-suagd-o`, dựng 00:03 14/09: vùng an toàn tắt, nhóm trên-trái bám mép, `JxSurface`, SDL3 đã vá DONHIP).
