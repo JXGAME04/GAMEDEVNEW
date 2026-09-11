@@ -1210,6 +1210,18 @@ void KRepresentShell3::DrawImage2D(int nPrimitiveCount, KRepresentUnit* pPrimiti
 				TextureResBmp* pBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+				{	// [ANHNEN 10/09 d]
+					static int s_nGhiBm = 0;
+					if (s_nGhiBm < 10)
+					{
+						s_nGhiBm++;
+						Rep3Log("[ANHNEN] bitmap16 %s: %s | tai %d,%d | co %dx%d | tex %dx%d | ptex %p",
+							pTemp->szImage, pBitmap ? "CO" : "NULL", pTemp->oPosition.nX, pTemp->oPosition.nY,
+							pBitmap ? pBitmap->m_nWidth : 0, pBitmap ? pBitmap->m_nHeight : 0,
+							pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nWidth : 0, pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nHeight : 0,
+							pBitmap ? (void*)pBitmap->m_FrameInfo.texInfo[0].pTexture : NULL);
+					}
+				}
 				if (!pBitmap)
 					break;
 			
@@ -1301,6 +1313,18 @@ void KRepresentShell3::DrawImage2DFlat(int nPrimitiveCount, KRepresentUnit* pPri
 				TextureResBmp* pBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+				{	// [ANHNEN 10/09 d]
+					static int s_nGhiBm = 0;
+					if (s_nGhiBm < 10)
+					{
+						s_nGhiBm++;
+						Rep3Log("[ANHNEN] bitmap16 %s: %s | tai %d,%d | co %dx%d | tex %dx%d | ptex %p",
+							pTemp->szImage, pBitmap ? "CO" : "NULL", pTemp->oPosition.nX, pTemp->oPosition.nY,
+							pBitmap ? pBitmap->m_nWidth : 0, pBitmap ? pBitmap->m_nHeight : 0,
+							pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nWidth : 0, pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nHeight : 0,
+							pBitmap ? (void*)pBitmap->m_FrameInfo.texInfo[0].pTexture : NULL);
+					}
+				}
 				if (!pBitmap)
 					break;
 
@@ -1927,6 +1951,18 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 				TextureResBmp* pBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+				{	// [ANHNEN 10/09 d]
+					static int s_nGhiBm = 0;
+					if (s_nGhiBm < 10)
+					{
+						s_nGhiBm++;
+						Rep3Log("[ANHNEN] bitmap16 %s: %s | tai %d,%d | co %dx%d | tex %dx%d | ptex %p",
+							pTemp->szImage, pBitmap ? "CO" : "NULL", pTemp->oPosition.nX, pTemp->oPosition.nY,
+							pBitmap ? pBitmap->m_nWidth : 0, pBitmap ? pBitmap->m_nHeight : 0,
+							pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nWidth : 0, pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nHeight : 0,
+							pBitmap ? (void*)pBitmap->m_FrameInfo.texInfo[0].pTexture : NULL);
+					}
+				}
 				if (!pBitmap)
 					break;
 				if(fZ1 == fZ3)

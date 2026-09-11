@@ -39,12 +39,12 @@ log = NL.join([
     ""])
 
 n = s.count(neo)
-if n != 2:
-    print("FAIL neo: %d (mong 2)" % n); sys.exit(1)
+if n != 3:
+    print("FAIL neo: %d (mong 3)" % n); sys.exit(1)
 dau = neo[:-len(T*4 + "if (!pBitmap)" + NL + T*5 + "break;" + NL)]
 moi = dau + log + T*4 + "if (!pBitmap)" + NL + T*5 + "break;" + NL
 s = s.replace(neo, moi)
 if sum(1 for c in s if ord(c) >= 0x80) != h0 or "\ufffd" in s or s.count("\n") - s.count("\r\n") != lf0:
     print("FAIL ma hoa"); sys.exit(1)
 io.open(P, "w", encoding="latin-1", newline="").write(s)
-print("OK KRepresentShell3.cpp " + TAG + " (2 nhanh)")
+print("OK KRepresentShell3.cpp " + TAG + " (3 nhanh)")
