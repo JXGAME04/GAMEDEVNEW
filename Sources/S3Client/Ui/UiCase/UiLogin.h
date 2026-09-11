@@ -53,4 +53,7 @@ private:
 	KWndButton	m_RememberAccount;
 	KWndButton	m_OpenRep;			// nut [OpenRep] xem lai ban dien .jxr (giong ban tham chieu)
 	char		m_szLoginBg[32];
+#ifdef JX_ANDROID
+	bool		m_bDungMatMaDaLuu;	// [DANGNHAP 14/09] o mat ma dang hien 8 dau * = bam Dang nhap thi dung ban bam da nho
+#endif
 };

@@ -342,6 +342,28 @@ Sửa: chạy `python androida_sdl3_donhip.py` trong cây (idempotent, kiểm `
   phải với 4 nút ở đáy bản đồ to (ảnh `ld/shot16_1.png`); bước đổi lại bản nhỏ chưa kiểm được vì lúc đó trình chỉnh đang mở (nuốt
   chạm). Bản r để sẵn ở `android/apk/jx1mobile-1309-suagd.apk`, chỉ thay lên dt_v4 sau khi phiên DONHIP báo đo xong.
 
+### 7.12 Lượt s/t (00:45–01:05 14/09) — chủ: *"fix phần giao diện đăng nhập; các thông báo đăng nhập - vào game chưa căn chính giữa; viết lại phần lưu tên tài khoản - mật khẩu, không tự động đăng nhập; khung đăng nhập trên điện thoại bị bó, nhập tên tài khoản bị mờ chữ"*
+
+- **Không tự đăng nhập**: `[Login] TuDongDangNhap=0` mặc định (lớp ghi đè, dt_v4, máy ảo). Cơ chế tự đăng nhập Android
+  (`JxUi_TuDangNhapAndroid`, 09/09) vẫn còn, chỉ tắt bằng config.
+- **Nhớ tài khoản + mật khẩu** (`[DANGNHAP 14/09]`): "Ghi nhớ" trên Android vốn đã lưu cả bản băm MD5 của mật khẩu
+  (`Setting.ini [Login] LastPassword`, mã hoá OneTimePad). Nay `KUiLogin::Show()` điền tài khoản như cũ và điền 8 dấu `*` vào ô mật
+  khẩu khi có bản băm đã nhớ (`KLogin::GetLoginPasswordSaved`, Android); `OnLogin()` thấy ô vẫn là 8 dấu `*` thì dùng bản băm đã
+  nhớ, không băm lại chuỗi `********`; người chơi gõ đè thì đi đường cũ. Bản PC giữ nguyên (nhánh `#else`).
+- Sập tìm ra khi thử lần đầu (bản s): khối `KSG_PASSWORD` 64 byte đọc bằng `GetStruct` từ `Setting.ini` không chắc kết thúc chuỗi
+  (sau 32 ký tự MD5 là rác của lần ghi); đường auto-login cũ gửi cả khối nên không sao, còn `OnLogin` gọi
+  `OperationRequest(ATYPE_SETPASS)` → `strcpy` → `FORTIFY: prevented 73-byte write into 64-byte buffer` (SIGABRT). Sửa:
+  `GetLoginPasswordSaved` chép sạch tối đa 32 ký tự, kết thúc chuỗi (bản s2).
+- **Ô tài khoản/mật khẩu**: lớp ghi đè `ui/ui3/uilogin.ini` (mới): cao 22, chữ 16 (gốc 18/14); phần còn lại bằng bản gốc.
+  Chữ mờ trên Fold 7 phần lớn do cả khung lô-gic 1436x616 bị phóng 1,75 lần lên 2520x1080 (font bitmap) — chữ 16 đỡ hơn chữ
+  14, muốn nét hẳn phải vẽ chữ theo độ phân giải thật (chưa làm).
+- **Thông báo đăng nhập căn giữa — tìm ra**: hộp "THÔNG BÁO" lúc đăng nhập ("Đang đăng nhập vào trò chơi", "Tài khoản hoặc Mật khẩu không đúng") là `KUiConnectInfo`, gốc khởi tạo từ mục ini `RuningImgBg` (không phải `Main`) nên khoá `KUiConnectInfo|Main` trong mặc định không khớp → khung 800 đứng ở mép trái (tâm 400 trên 1040, 400 trên 1436). Đổi khoá thành `KUiConnectInfo|RuningImgBg` + dòng `Goc.KUiConnectInfo=RuningImgBg` (mặc định, máy ảo, dt_v4, danh sách trắng) → nhật ký `ap KUiConnectInfo|RuningImgBg -> 120,0`, hộp về giữa. Các khung màn đăng nhập khác (`KUiInit`, `KUiLogin`, `KUiConnectInfo`, `KUiSelServer`,
+  `KUiSelPlayer`, `KUiNewPlayer`) và hộp `KUiInformation*`/`KUiMsgSel*` đều có mục neo giữa (1,1) trong mặc định; thông báo
+  của `KUiConnectInfo` vẽ giữa khung 800 (`[Message] Pos=261,259 Size=280`). Thử khung rộng 1186x616 trên máy ảo: màn hình chính
+  và hộp chọn máy chủ nằm giữa (`ld/shot17_0.png`, `shot17_2.png`). Chưa tái hiện được thông báo lệch — cần ảnh cụ thể của chủ.
+- Đấu giá trên điện thoại: chưa tìm ra; gói đủ ini/script/ảnh, cơ chế nạp Lua giống thư (thư chạy). Nhật ký mô-đun đấu giá ghi
+  `jx_mail.log` trong thư mục app của điện thoại (chưa được gửi về máy chủ) — nhờ phiên DONHIP thêm vào bộ gửi nhật ký.
+
 ### 7.7 Trạng thái cuối
 
 - Máy ảo + dt_v4: APK `android/apk/jx1mobile-1309-suagd.apk` (= lượt k, `jx1mobile-1309-suagd-o`, dựng 00:03 14/09: vùng an toàn tắt, nhóm trên-trái bám mép, `JxSurface`, SDL3 đã vá DONHIP).

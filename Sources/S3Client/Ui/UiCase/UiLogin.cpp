@@ -143,6 +143,16 @@ void KUiLogin::Show()
 	char	szAccount[32];
 	m_RememberAccount.CheckButton(g_LoginLogic.GetLoginAccount(szAccount));
 	m_Account.SetText(szAccount);
+#ifdef JX_ANDROID
+	// [DANGNHAP 14/09] nho ca mat ma nhung KHONG tu dang nhap (config [Login] TuDongDangNhap=0): o mat ma hien 8 dau * (kieu
+	// Password chi thay cham); bam Dang nhap = dung ban bam da nho (OnLogin), go de len = mat ma moi.
+	m_bDungMatMaDaLuu = false;
+	if (szAccount[0] && g_LoginLogic.GetLoginPasswordSaved(NULL))
+	{
+		m_PassWord.SetText("********");
+		m_bDungMatMaDaLuu = true;
+	}
+#endif
 	if (szAccount[0])
 		Wnd_SetFocusWnd(&m_PassWord);
 	else
@@ -384,6 +394,21 @@ void KUiLogin::OnLogin()
 	KSG_PASSWORD Password;
 	if (GetInputInfo(szAccount, szPassword))
 	{
+#ifdef JX_ANDROID
+		// [DANGNHAP 14/09] o mat ma van la 8 dau * do Show() dien -> dung ban bam MD5 da nho, khong bam lai chuoi "********";
+		// nguoi choi go de len thi di duong cu (bam MD5 chuoi vua go).
+		if (m_bDungMatMaDaLuu && strcmp(szPassword, "********") == 0 && g_LoginLogic.GetLoginPasswordSaved(&Password))
+			;
+		else
+		{
+        #ifdef SWORDONLINE_USE_MD5_PASSWORD
+        KSG_StringToMD5String(Password.szPassword, szPassword);
+        #else
+        strncpy(Password.szPassword, szPassword, sizeof(Password.szPassword));
+        Password.szPassword[sizeof(Password.szPassword) - 1] = '\0';
+        #endif
+		}
+#else
         #ifdef SWORDONLINE_USE_MD5_PASSWORD
 
         KSG_StringToMD5String(Password.szPassword, szPassword);
@@ -395,6 +420,7 @@ void KUiLogin::OnLogin()
         Password.szPassword[sizeof(Password.szPassword) - 1] = '\0';
 
         #endif
+#endif
 		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETACC, (KNPARAM)&szAccount);
 		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETPASS, (KNPARAM)&Password.szPassword);
 		g_LoginLogic.AccountLogin(szAccount, Password);
