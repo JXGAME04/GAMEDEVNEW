@@ -5,6 +5,14 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **00:30 11/09 — BẢN `-c` HỎNG TRÊN FOLD 7, ĐÃ THAY BẰNG `android/apk/jx1mobile-1209-donhip-d.apk`** (versionCode 109110027, md5
+> `9510ae82…`, máy chủ 8765 PID 277384). Lỗi `-c`: `SDLActivity.onCreate` so `nativeGetVersion()` (3.2.30) với hằng `SDL_*_VERSION` trong
+> `SDLActivity.java` của gói (bản gốc 3.2.14) → `mBrokenLibraries`, hộp thoại lỗi, app đóng sau 1–4 s không chạy native (5 phiên 00:23 chỉ có
+> `jx_thietbi.log`). Sửa (commit `f278ad79` [DONHIP 12/09 c]): chép `SDLActivity.java` + `SDLSurface.java` của 3.2.30 vào gói, CMake chốt
+> `FATAL_ERROR` khi Java ≠ `JX_SDL3_VER`. Đã thử máy ảo: native chạy `(SDL 3.2.30)`, Vulkan + Represent3 lên, vào game. Trong lúc chủ kẹt,
+> phiên giao diện đẩy tạm `-p` (3.2.14 vá, 109110015) lúc 00:27; `-d` cao hơn nên điện thoại tự lên. Bẫy thứ hai cùng đêm: chép tệp vào
+> dt_v4 mà không khởi động lại máy chủ → manifest cũ → "2 tệp lỗi" (00:21, xem §8 cuối).
+
 > **00:15 11/09 — APK `android/apk/jx1mobile-1209-donhip-c.apk` = SDL 3.2.30 + bảng pha mới ĐÃ LÊN dt_v4** (versionCode 109110010,
 > md5 `206638db…`, 20,0 MB; máy chủ 8765 khởi động lại PID 284056 với đúng dòng lệnh cũ của phiên giao diện; config dt_v4 giữ nguyên:
 > `[DoNhip] Bat=1 GiayMoiPha=60 Pha=0,1,2,3,4,5 LanLap=2` → 12 phút, pha 5 = "SDL cũ" đối chứng). Nhánh: `6838634e` [DONHIP 12/09 b]
@@ -251,6 +259,22 @@ Quyết định (theo chủ quyết #2 "tiện phát triển về sau"):
   (chứng minh hint đối chứng hoạt động); pha 3 (60 Hz, 2 bay) kỳ vọng ~60 khung/s đều ở ~1,7 W → nếu đúng, đó là nấc "tiết kiệm pin";
   pha 4 (1 bay) kỳ vọng tụt khi CPU nặng → chốt 2 bay; pha 1 so pha 0 → có bật `PaintVsync=1 PaintSmooth=2` mặc định cho mobile không;
   pha 2 so pha 1 → có bỏ chép khung (M2) không. Sau đó đặt `[DoNhip] Bat=0` trên dt_v4.
+
+**Sự cố 00:21–00:30 và cách xử lý (ghi để khỏi lặp):**
+1. *"Báo lỗi 2 tệp không cho update"* (00:21): phiên giao diện chép `ui/uitoado_macdinh*.ini` mới vào dt_v4 sau khi manifest sinh (00:15) →
+   md5 lệch → launcher lặp tải hai tệp mỗi giây, không vào bước cài APK. Xử lý: khởi động lại `may_chu_tai_du_lieu.py` (manifest chỉ sinh lúc
+   khởi động). **Quy tắc:** chép bất cứ gì vào dt_v4 xong phải khởi động lại máy chủ ngay. Gợi ý sau này: máy chủ tự băm lại khi mtime đổi.
+2. *Bản `-c` (SDL 3.2.30) mở rồi tự đóng sau 1–4 s* (00:23): thứ tự launcher là kiểm APK **trước** đồng bộ dữ liệu, nên điện thoại đã cài
+   109110010 rồi mới gặp lỗi 2 tệp; sau khi manifest sửa, JxActivity chạy nhưng `SDLActivity.onCreate` thấy `nativeGetVersion()` = 3.2.30 ≠
+   hằng Java 3.2.14 → `mBrokenLibraries` → hộp thoại "An error occurred… reinstall", bấm OK là `onDestroy`; native main không chạy nên không có
+   `jx_android.log`. Bảng JNI `RegisterNatives` 3.2.14 ↔ 3.2.30 giống nhau, chỉ khác Java (`getPreferredLocales`, clipboard, `onResolvePointerIcon`).
+   Sửa: gói dùng nguyên `org/libsdl/app/*.java` của SDL3-3.2.30 (`diff -rq` = 0), CMake đọc hằng trong `SDLActivity.java` và chặn khi khác
+   `JX_SDL3_VER`. **Quy tắc nâng SDL:** nguồn C + Java `android-project` phải cùng phiên bản; `JxActivity` chỉ dùng `createSDLSurface(Context)`
+   (còn trong 3.2.30). Launcher **không tự hạ cấp** (`maMoi <= maDangCai` thì bỏ qua) → bản hỏng đã cài chỉ gỡ được bằng bản có versionCode cao hơn.
+3. Thử máy ảo bằng adb (00:28): `am force-stop` → `adb install -r D:/…apk` (MSYS_NO_PATHCONV=1) → `am start -n vn.jx1.mobile/.TaiDuLieuActivity`
+   → logcat có `Running main function SDL_main`, `[ANDROID] … (SDL 3.2.30)`, `goldfish_vulkan`, `[LOGIN] da nho du dang nhap -> vao thang game`.
+   Máy ảo **tự đăng nhập tài khoản của chủ** → thử xong phải `am force-stop` ngay kẻo đá phiên trên điện thoại. `screencap`/`pull` với đường
+   `/sdcard/...` cần `MSYS_NO_PATHCONV=1`, đích ghi bằng đường Windows `C:/...`.
 
 ## 6. Rủi ro
 
