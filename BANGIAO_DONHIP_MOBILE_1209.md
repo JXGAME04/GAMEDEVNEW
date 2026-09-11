@@ -361,9 +361,13 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
   "chỉ trong vùng" bỏ sót; C3 thì lọc tốt. Bộ lọc mới `JxDanBoQuaO(vòng, subworld, region, x, y)` **tự cuốn sang vùng kề y như
   `GetOffsetAxis`** (x trước, y sau, `m_nConnectRegion` 2/6/4/0; không có vùng đích → bỏ qua = `GetOffsetAxis` trả FALSE) rồi đọc bộ đếm NPC
   của vùng đích; chỉ ô có NPC mới đi đường gốc. Máy ảo: 20,9 → 4,0–4,7 µs/viên đã đo với bộ lọc cũ; bộ lọc mới đo lại ở bản `-i`.
-- Bước 3: chủ chơi đông với bản có [DAN 11/09 d] (bộ tải: `-i` nếu kịp, không thì `-g`) → đọc `[DAN]` (`tong`, `col`, `findnpc`, `boqua`,
-  `vacham`, `o C1/C2/C3`) + fps; nếu `vacham` còn lớn thì xét `CreateSpecialEffect`/`Collidsion`; nếu `khac` lớn thì xét `Map2Mps`/`IsMatch`/log.
-  Không cắt hiệu ứng/NPC/đạn. Chuỗi Windows không dựng lại: mọi dòng C++ mới nằm trong `#ifdef JX_ANDROID`, nhánh `#else` giữ nguyên văn.
+- **Bước 3 — KẾT QUẢ TRÊN FOLD 7 (01:40–01:48 11/09, bản `w`/`x`, phiên `SM-F966U1_20260911_014041` và `_014409`)**: fps **102–120 ở mọi cửa
+  sổ 10 s sau khi vào map**, kể cả lúc **428 viên đạn/tick + 135 NPC/tick** (t=169 s: đạn 1,17 ms/tick = 2,7 µs/viên; trước sửa 6,5 µs/viên,
+  4,3–5,3 ms/tick ở 690–790 viên). Không còn giây nào `world ≥ 50 ms` (trước: 110–151 ms mỗi giây lúc đông → 53–76 fps). `[DAN]` ở cửa sổ đông:
+  `col` ≈ 0,2 ms/tick trong đó `vacham` (ProcessCollision + DoCollision, 30 va chạm/tick) 0,15; `move` (cây Ipot) 0,23; `khac` 0,17; vòng C1
+  bỏ qua 85–90% ô. Phần còn lại là hành vi gốc (kỹ năng liên tục đánh mỗi tick, cập nhật cây cảnh) — chưa cần đợt 2. Chú ý: bộ gửi log chỉ chạy
+  khi `Bat=1` hoặc (từ bản `w`) `GuiLog=1`; bản `x` thêm `ScriptError.log`. Chuỗi Windows không dựng lại: mọi dòng C++ mới nằm trong
+  `#ifdef JX_ANDROID`, nhánh `#else` giữ nguyên văn.
 - Nạp trước sprite NPC khi vào map (`NAPNPC` "trễ 437") — việc đã ghi trong [[mobile-tongkim-lag-goc]].
 - Sau khi bật nhịp PC mặc định: khi tick 10–15 ms xảy ra, `PaintSmooth=2` nội suy giúp mượt hơn (`cat ngang` thấp), nhưng không bù được khung mất.
 
