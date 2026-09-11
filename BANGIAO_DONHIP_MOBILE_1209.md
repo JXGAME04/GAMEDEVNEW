@@ -5,6 +5,14 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **01:30 11/09 — SỬA "ĐÔNG LÀ TỤT FPS" ĐỢT 1 ĐÃ LÊN BỘ TẢI: bản `v` = `android/apk/jx1mobile-1209-donhip-v.apk`** (versionCode 109110129,
+> md5 `f789946a…`, dựng từ `origin/mobile-0809 = 3267b755` = đăng nhập mới của phiên giao diện + `[DAN 11/09 + b + c+d]`). Gốc lỗi tìm được
+> qua bộ đo `[DAN]`: với `AutoLog=1` (bộ tải đang bật) mỗi site `AUTOLOG_EVERY` là một `SDL_GetTicks()`, mỗi viên đạn mỗi tick ~60 lần
+> (49 ô của `GetOffsetAxis` + ~12 site) ≈ 3 ms/tick ở 700 viên; sửa: macro so với mốc mỗi tick, và bộ lọc ô cuốn sang vùng kề bỏ qua ô trống
+> trước `GetOffsetAxis`/`FindNpc` (máy ảo: 20,9 → 4,5 µs/viên, `FindNpc` 23 760 → 803/10 s, va chạm giữ nguyên). Tất cả chỉ `JX_ANDROID`,
+> hành vi game y hệt, khoá `[Client] DanToiUu=0` để đối chứng. Chủ chưa mở phiên mới từ 00:47; lần mở tới nhận bản `v`, chơi đông 3–5 phút
+> → đọc `[DAN]` + fps (§9 bước 3). Chi tiết: §9.
+
 > **00:55 11/09 — ĐO XONG SDL 3.2.30 (§9), ĐÃ ÁP KẾT QUẢ.** Phiên Fold 7 00:31–00:43 (bản `-d`) đủ 12 bước: pha 0 mặc định 97–116 khung/s
 > không cần hint; nhịp PC không thua ở đâu → `[Client] PaintVsync=1 PaintSmooth=2` mặc định mobile; Android không chép swapchain mỗi khung;
 > nấc 60 Hz = 59 khung/s đều ở 2,4 W; 2 khung bay bắt buộc (commit `80b3369d` [DONHIP 12/09 d], dịch thử Android 0 lỗi = `android/apk/
