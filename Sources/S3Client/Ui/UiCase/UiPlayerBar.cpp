@@ -2664,6 +2664,16 @@ void KUiPlayerBar::SetItemBtnPos(int nBtnNo,int X, int Y)
 				return;
 			if(m_pSelf->m_ItemBtn[nBtnNo].m_X == INVISIBLE_POS_X == X && m_pSelf->m_ItemBtn[nBtnNo].m_Y == INVISIBLE_POS_Y == Y) 
 				return;
+#ifdef JX_ANDROID
+			if (X != INVISIBLE_POS_X || Y != INVISIBLE_POS_Y)
+			{	// [CHATBTN 14/09] X,Y la toa do TUYET DOI (KWndMessageListBox: Param.nX + cot x font/2) nhung SetPosition
+				// tuong doi thanh nay; thiet ke thanh o (1,1) nen PC khong thay, Fold 7 thanh neo giua -> nut lech +198 px
+				int nL = 0, nT = 0;
+				m_pSelf->GetAbsolutePos(&nL, &nT);
+				m_pSelf->m_ItemBtn[nBtnNo].SetPosition(X - nL, Y - nT);
+			}
+			else
+#endif
 			m_pSelf->m_ItemBtn[nBtnNo].SetPosition(X,Y);
 			m_pSelf->m_ItemBtn[nBtnNo].m_X = X;
 			m_pSelf->m_ItemBtn[nBtnNo].m_Y = Y;

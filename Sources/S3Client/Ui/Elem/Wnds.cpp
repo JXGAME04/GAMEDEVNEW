@@ -11,6 +11,14 @@
 #include "KDebug.h"	// [VATPHAM 12/09 g] g_DebugLog cho nhat ky chan doan
 #include "Wnds.h"
 #include "WndWindow.h"
+#ifdef JX_ANDROID
+#include "WndScrollBar.h"	// [CUON 14/09]
+#include "WndList.h"
+#include "WndList2.h"
+#include "WndMessageListBox.h"
+#include "WndEdit.h"
+static int JxUi_CuonThanhCuon(KWndWindow* pDuoiConTro, int nDelta);	// [CUON 14/09] dinh nghia phia duoi
+#endif
 #include "UiCursor.h"
 #include "WndGameSpace.h"
 #include "MouseHover.h"
@@ -396,7 +404,13 @@ void Wnd_ProcessInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 
 		bool bPrecessedByGameSpace = false;
 		if (s_WndStation.pMouseOverWnd)
+		{
 			s_WndStation.pMouseOverWnd->WndProc(uMsg, uParam, nParam);
+#ifdef JX_ANDROID
+			if (uMsg == WM_MOUSEWHEEL)	// [CUON 14/09] bang tu cuon bang KWndScrollBar (Chien Lenh...) cung vuot duoc
+				JxUi_CuonThanhCuon(s_WndStation.pMouseOverWnd, (int)(short)HIWORD(uParam));
+#endif
+		}
 		else if (s_WndStation.pCaptureMouseWnd)
 			s_WndStation.pCaptureMouseWnd->WndProc(uMsg, uParam, nParam);
 		else if (s_WndStation.pExclusiveWnd[0] == NULL &&
@@ -541,6 +555,43 @@ extern "C" int JxUi_ChamKhiCoTieuDiem(int x, int y)
 
 // [BANPHIM 14/09] IME bi dong ngoai y game (Back / nut an cua IME): SDL da StopTextInput nhung game van giu tieu diem o nhap ->
 // cham lai dung o khong phat SET_FOCUS nen ban phim khong mo lai. KSdlApp (JxSdl_BanPhimNhip) goi de bo tieu diem cho dong bo.
+//	[CUON 14/09] Chu: 'cac tinh nang co nut cuon o Chien Lenh vuot khong cuon duoc'. Vuot doc = WM_MOUSEWHEEL (KSdlApp CUON) nhung
+//	chi KWndList / KWndList2 / KWndMessageListBox / KWndEdit tu xu ly; bang tu cuon bang KWndScrollBar (Chien Lenh [DlyScr], thu...)
+//	khong nhan. Cua so duoi con tro khong phai lop danh sach -> tim thanh cuon DOC dang hien trong con cua no / cua to tien
+//	(gan nhat thang) -> ScrollLine: SetScrollPos bao cha WND_N_SCORLLBAR_POS_CHANGED y nhu bam mui ten.
+static KWndScrollBar* JxUi_TimThanhCuonDoc(KWndWindow* p)
+{
+	for (KWndWindow* c = p ? p->GetFirstChild() : NULL; c; c = c->GetNextWnd())
+	{
+		KWndScrollBar* pCuon = dynamic_cast<KWndScrollBar*>(c);
+		int w = 0, h = 0;
+		if (pCuon)
+			pCuon->GetSize(&w, &h);
+		if (pCuon && pCuon->IsVisible() && h > w && pCuon->GetMaxValue() > pCuon->GetMinValue())	// doc: cao hon rong (m_Flag khong co ham lay)
+			return pCuon;
+	}
+	return NULL;
+}
+static int JxUi_CuonThanhCuon(KWndWindow* pDuoiConTro, int nDelta)
+{
+	KWndWindow* p;
+	if (pDuoiConTro == NULL || nDelta == 0)
+		return 0;
+	if (dynamic_cast<KWndList*>(pDuoiConTro) || dynamic_cast<KWndList2*>(pDuoiConTro) ||
+		dynamic_cast<KWndMessageListBox*>(pDuoiConTro) || dynamic_cast<KWndEdit*>(pDuoiConTro) ||
+		dynamic_cast<KWndScrollBar*>(pDuoiConTro))
+		return 0;	// lop nay tu cuon (hoac chinh la thanh cuon)
+	for (p = pDuoiConTro; p; p = p->GetParent())
+	{
+		KWndScrollBar* pCuon = JxUi_TimThanhCuonDoc(p);
+		if (pCuon)
+		{
+			pCuon->ScrollLine(nDelta > 0);	// lan ve truoc (ngon di xuong) = len
+			return 1;
+		}
+	}
+	return 0;
+}
 extern "C" void JxUi_BoTieuDiem(void)
 {
 	Wnd_SetFocusWnd(NULL);

@@ -652,7 +652,11 @@ void KWndMessageListBox::PaintWindow()
 				if ((m_pMessages[nCurMsg]->nLinePos) > Param.nSkipLine && bPaintItem)
 				{
 					int x99 = Param.nX + (m_pMessages[nCurMsg]->nPos)*m_nFontSize/2 - (int)((m_pMessages[nCurMsg]->nLinePos==1)?3:0) + (m_pMessages[nCurMsg]->nFace)*2;
+#ifdef JX_ANDROID
+					int y99 = Param.nY + ((m_pMessages[nCurMsg]->nLinePos)-1 - Param.nSkipLine)*(CaoDong());	// [CHATBTN 14/09] buoc dong Android = font + 6 (+ DongThem)
+#else
 					int y99 = Param.nY + ((m_pMessages[nCurMsg]->nLinePos)-1 - Param.nSkipLine)*m_nFontSize;
+#endif
 					//x99 = x99 - 110;	//offset edit by phong kieu fix lπi vﬁ tr› itemchat
 					//y99 = y99 - 168;	//offset edit by phong kieu fix lπi vﬁ tr› itemchat
 					KUiPlayerBar::SetItemBtnPos(nCurMsg, x99 , y99);
