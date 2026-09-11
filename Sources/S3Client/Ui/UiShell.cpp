@@ -217,6 +217,8 @@ int	UiInit()
 	Player_WAuto::RegisterSelfClass();	// [ANDROID 11/09 WAUTO B1] icon Auto (khung WAuto trong game)
 	Player_WAutoBat::RegisterSelfClass();	// [ANDROID 11/09 WAUTO B2 i] nut Bat/Tat Auto + nut nhat
 	Player_NhatDo::RegisterSelfClass();
+	Player_TongKimXH::RegisterSelfClass();	// [TKXH 14/09] icon xep hang Tong Kim
+	Player_KinhMach::RegisterSelfClass();	// [KINHMACH 14/09] icon kinh mach
 #endif
 	Player_ItemEx::RegisterSelfClass();
 	Player_Recorder::RegisterSelfClass();
@@ -1101,6 +1103,40 @@ const char* Player_NhatDo::GetShortKey()
 }
 
 const char* Player_WAuto::GetShortKey()
+{
+	return NULL;
+}
+// [TKXH 14/09] xem UiShell.h; bat / tat y nhu ShortcutKey.cpp case 22 ("battlereport" = phim dau huyen ban PC)
+IMPLEMENT_COMCLASS(Player_TongKimXH)
+void Player_TongKimXH::OnButtonClick()
+{
+	if (KUiRankData::GetIfVisible())
+		KUiRankData::CloseWindow(false);
+	else
+		KUiRankData::OpenWindow();
+}
+void Player_TongKimXH::UpdateData()
+{
+	CheckButton(KUiRankData::GetIfVisible() ? 1 : 0);	// khung sang khi bang dang mo
+}
+const char* Player_TongKimXH::GetShortKey()
+{
+	return NULL;
+}
+// [KINHMACH 14/09] bat / tat y nhu ShortcutKey.cpp case 12 ("meridian" = F2 ban PC)
+IMPLEMENT_COMCLASS(Player_KinhMach)
+void Player_KinhMach::OnButtonClick()
+{
+	if (KUiMeridian::GetIfVisible())
+		KUiMeridian::CloseWindow();
+	else
+		KUiMeridian::OpenWindow();
+}
+void Player_KinhMach::UpdateData()
+{
+	CheckButton(KUiMeridian::GetIfVisible() ? 1 : 0);
+}
+const char* Player_KinhMach::GetShortKey()
 {
 	return NULL;
 }
