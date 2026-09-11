@@ -686,6 +686,32 @@ bool KLogin::GetLoginAccount(char* pszAccount)
 	return m_Choices.bRememberAccount;
 }
 
+#ifdef JX_ANDROID
+// [DANGNHAP 14/09] Mat ma da nho (ban bam MD5, giai ma tu Setting.ini luc LoadLoginChoice). Man dang nhap dung de "bam Dang
+// nhap la vao" ma KHONG tu dang nhap (chu 14/09: "luu ten tai khoan - mat khau khi dang nhap - khong tu dong dang nhap").
+bool KLogin::GetLoginPasswordSaved(KSG_PASSWORD* pRa)
+{
+	if (!m_Choices.bRememberAll || m_Choices.Password.szPassword[0] == 0 || m_Choices.Password.szPassword[0] == (char)-1)
+		return false;	// (~0 = 0xFF: chua co; ~0xFF = 0: da xoa - giong IsAutoLoginEnable)
+	if (pRa)
+	{	//	m_Choices.Password nam trong bo nho o dang DAO BIT (~ tung byte, xem SetAccountPassword) -> phai qua
+		//	GetAccountPassword de giai; chep thang ra ngoai = mat ma sai + khong ket thuc chuoi (0 ~ = 0xFF) -> ATYPE_SETPASS strcpy
+		//	FORTIFY 73 byte / may chu bao sai mat ma (thu 14/09). Sau khi giai: 32 ky tu bam MD5 + NUL; van chep sach cho chac.
+		KSG_PASSWORD Giai;
+		size_t		 n;
+
+		GetAccountPassword(NULL, &Giai);
+		n = strnlen(Giai.szPassword, sizeof(Giai.szPassword));
+		if (n > 32)
+			n = 32;
+		memset(pRa, 0, sizeof(*pRa));
+		memcpy(pRa->szPassword, Giai.szPassword, n);
+		memset(&Giai, 0, sizeof(Giai));
+	}
+	return true;
+}
+#endif
+
 #define	$LOGIN			"Login"
 #define	$LAST_ACCOUNT	"LastAccount"
 #define	$LAST_PASSWORD	"LastPassword"

@@ -96,6 +96,9 @@ public:
 	KLoginServer*	GetServerRegionList(int& nCount, int& nAdviceChoice);
 	KLoginServer*	GetServerList(int nRegion, int& nCount, int& nAdviceChoice);
 	bool	GetLoginAccount(char* pszAccount);
+#ifdef JX_ANDROID
+	bool	GetLoginPasswordSaved(KSG_PASSWORD* pRa);	// [DANGNHAP 14/09] ban bam mat ma da nho (Ghi nho tren dien thoai); NULL = chi hoi co hay khong
+#endif
 	DWORD	GetAccountLifeTime() { return m_LeftTime; }
 	int		IsRoleNewCreated() { return m_Choices.bIsRoleNewCreated; }
     int     SetAccountServer(const KLoginServer &rcSelectServer);
