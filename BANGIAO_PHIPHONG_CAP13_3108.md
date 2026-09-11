@@ -272,6 +272,46 @@ Bản mới = HEAD + vá này (superset, không rơi đợt nào trước).
 
 **Test**: Thợ Rèn → Tẩy luyện thuộc tính ẩn → đặt Long Ngâm 10 sao → Tẩy → **Giữ nguyên**: không còn báo lỗi script, 2 dòng ẩn trở về đúng dòng cũ (cột trước), bảng mở lại; rồi Tẩy → Áp dụng: giữ dòng mới.
 
+## 6j. ĐỢT 10/09 — "Xem tin tức không hiện thuộc tính khảm và số sao" (nhãn `[PFVIEW 10/09]`)
+
+**Cùng họ lỗi với mục 6h (chat)**, khác chỗ vá: đây là gói xem trang bị người khác.
+
+**Đường đi**: chuột phải người chơi → "Xem tin tức" → `c2s_viewequip` → `KPlayer::SendEquipItemInfo` (KPlayer.cpp:6663) gói `VIEW_EQUIP_SYNC` (17 ô `SViewItemInfo`) → client `KViewItem::GetData` (KViewItem.cpp) dựng item TẠM bằng `ItemSet.Add/AddGoldItem/AddItemSet2` + `SetID(m_nID)` → `KUiParadeItem` mở cửa sổ; rê chuột → `MouseHover` → `GDI_GAME_OBJ_DESC` → `KItem::GetDesc`.
+
+**Gốc**: `SViewItemInfo` **không có** `m_nPfPack[4]` (sao / chúc phúc / 13 lỗ khảm) — y hệt `ITEM_SYNC` ngày 31/08 — nên item tạm bên người xem có pfpack = 0 → `PF_StarPrefix` trả chuỗi rỗng (mất "10 sao " trước tên) và `PF_AppendDesc` thoát sớm ở `nHole <= 0` (mất cả danh sách lỗ khảm lẫn khối thuộc tính đá). Dòng ẩn 2 cũng bị cổng `GetStarLevel() < 10` giấu. Thuộc tính vẫn ăn thật trên người mặc (máy chủ tự áp), chỉ hiển thị bên người xem là câm.
+
+**Vá — KHÔNG đổi bố cục gói nào (Gate 2 an toàn)**: gửi kèm gói `s2c_syncpfpack` (`ITEM_SYNC_PFPACK`, 21 byte, đã có từ PFSYNC 31/08) NGAY SAU gói chính, tra theo `dwID` — đúng khuôn mà Văn Cương đã dùng (`DUNGLUYEN-PB 01/09`) và `KItemList::SyncItem` (KItemList.cpp:4985) đang dùng. Client đã có sẵn handler `s2cSyncItemPfPack` nên **chỉ cần swap CoreServer.dll**. Chỉ gửi cho món CÓ dữ liệu phi phong → người không mặc phi phong không tốn thêm byte nào.
+
+Hai chỗ vá trong `KPlayer.cpp`:
+1. `SendEquipItemInfo` (xem tin tức) — quét 17 ô `m_ItemList.m_EquipItem[]`.
+2. `SendSellItemInfo` (xem **sạp** người khác) — quét `k` món vừa đóng gói; `VIEW_ITEM_SYNC` thiếu y hệt nên phi phong bày bán cũng hiện 0 sao, lỗ trống. Sửa kèm vì cùng một lỗi, cùng một vòng lặp, cùng hàm họ hàng (đợt Văn Cương cũng vá cả hai).
+
+**Rà trọn các đường "người khác nhìn thấy phi phong"** — hai chỗ trên là hai chỗ cuối còn thiếu:
+| Đường | Trạng thái |
+|---|---|
+| Đồ của chính mình (`SyncItem`) | ✅ có từ PFSYNC 31/08 |
+| Giao dịch (dùng chung `SyncItem` 6 tham số, gửi cho `m_nTradeDest`) | ✅ đã có |
+| Đấu giá (`KAuctionServer` cột `nPf[4]` ↔ `KAuctionClient`) | ✅ đã có |
+| Link đồ trên kênh chat + xúc xắc (`ChatItem`) | ✅ vá mục 6h |
+| **Xem tin tức** (`VIEW_EQUIP_SYNC`) | 🔴 → vá đợt này |
+| **Xem sạp** (`VIEW_ITEM_SYNC`) | 🔴 → vá đợt này |
+
+**Không có bẫy đệm** như mục 6h: tooltip rê chuột dùng `KGameObjDesc` (`GOD_MAX_OBJ_TITLE_LEN` = 4096), không phải đệm 2048 như `KUiChatItem`.
+
+**Nhị phân `.moi` CHỜ SWAP** (build 10/09 17:20 trong worktree riêng `D:\GAMEDEVNEW_wt_xemtt` từ `origin/main` `fdf012f1`; obj đồng nhất một mốc; CoreClient dựng kèm chỉ để kiểm biên dịch, **không đặt** vì thay đổi nằm trọn trong `#ifdef _SERVER`):
+
+| Tệp | md5 (12 đầu) | Ghi chú |
+|---|---|---|
+| `bin\server\CoreServer.dll.moi` | `2f17607587011` | superset: chứa cả vá sập `bc1e6006` (bản đang chạy `937b8ba0`) + 17 commit mới hơn |
+| `bin\client\CoreClient.dll` | giữ nguyên | bản 17:10 hôm nay đã có handler `s2cSyncItemPfPack` |
+| `bin\client\Game.exe` | giữ nguyên | không đụng |
+
+**Checklist swap + test**
+1. Tắt GameServer → chạy `bin\server\ChayGameServer.bat` (bat tự đổi `CoreServer.dll.moi` → `CoreServer.dll`). **Không** cần đụng client.
+2. Người chơi A mặc Phi Phong Long Ngâm 10 sao đủ đá. Người chơi B chuột phải A → "Xem tin tức" → rê chuột lên ô phi phong: phải thấy **"10 sao …"** trước tên, "Đột phá điểm chúc phúc x/44", 13 dòng "10 sao &lt;tên đá&gt;", khối thuộc tính đá màu tím, và **2 dòng ẩn** — giống hệt lúc A tự xem.
+3. A bày phi phong ra sạp, B bấm xem sạp → cùng kết quả.
+4. Trang bị khác (vũ khí, áo hoàng kim, đồ dung luyện Văn Cương) xem tin tức vẫn như cũ, không mất dòng nào.
+
 ## 7. VIỆC KẾ TIẾP
 1. Chủ duyệt 3 lệch VNG (mục 3) + số nguyên liệu nội suy (mục 2) + Phệ Quang/Khấp Thần dùng chung hình 7 (muốn hình riêng từng bậc như JX1 cũ thì trả goldequipres 5939/5940 về 8/9).
 2. Cho 4 nguyên liệu mới vào tiệm 186 (onMaterialShop) nếu muốn bán cho người chơi.

@@ -296,8 +296,28 @@ KIpotBuildinObj* KIpotBuildinObj::Clone(POINT* pDivisionPos)
 	return pClone;
 }
 
+// [VATDONG 10/09] dem vat canh co hoat anh da ve (khoi bep, nuoc chay, co bay) de biet client co chay hay khong
+unsigned g_uVatDongVe = 0;
+char g_szVatDong[3][96] = { "", "", "" };
+int  g_nVatDongX[3] = { 0, 0, 0 }, g_nVatDongY[3] = { 0, 0, 0 };
+int  g_nVatDongSo = 0;
+
 void  BuildinObjNextFrame(KBuildinObj* pBio)
 {
+	g_uVatDongVe++;	// [VATDONG 10/09]
+	if (g_nVatDongSo < 3 && pBio->szImage[0])
+	{
+		int k = g_nVatDongSo;
+		int nTrung = 0;
+		for (int i = 0; i < g_nVatDongSo; i++) if (strcmp(g_szVatDong[i], pBio->szImage) == 0) nTrung = 1;
+		if (!nTrung)
+		{
+			strncpy(g_szVatDong[k], pBio->szImage, sizeof(g_szVatDong[k]) - 1);
+			g_nVatDongX[k] = pBio->oPos1.x / 256;	// doi ra toa do o nhu trong game
+			g_nVatDongY[k] = pBio->oPos1.y / 512;
+			g_nVatDongSo++;
+		}
+	}
 	_ASSERT(pBio);
 	if (pBio->nAniSpeed && g_pRepresent)
 	{

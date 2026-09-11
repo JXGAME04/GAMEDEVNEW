@@ -1237,6 +1237,31 @@ void KRepresentShell3::DrawImage2D(int nPrimitiveCount, KRepresentUnit* pPrimiti
 				TextureResBmp* pBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+				{	// [ANHNEN 10/09 d]
+					static int s_nGhiBm = 0;	// [ANHNEN 10/09 e]
+					if (s_nGhiBm < 10 && !strstr(pTemp->szImage, "Login") && !strstr(pTemp->szImage, "login"))
+					{
+						s_nGhiBm++;
+						DWORD dwCull = 0, dwBlend = 0, dwSrc = 0, dwDst = 0, dwAT = 0, dwARef = 0, dwAFunc = 0, dwCOp = 0, dwCA1 = 0, dwCA2 = 0;
+						PD3DDEVICE->GetRenderState(D3DRS_CULLMODE, &dwCull);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHABLENDENABLE, &dwBlend);
+						PD3DDEVICE->GetRenderState(D3DRS_SRCBLEND, &dwSrc);
+						PD3DDEVICE->GetRenderState(D3DRS_DESTBLEND, &dwDst);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHATESTENABLE, &dwAT);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHAREF, &dwARef);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHAFUNC, &dwAFunc);
+						PD3DDEVICE->GetTextureStageState(0, D3DTSS_COLOROP, &dwCOp);
+						PD3DDEVICE->GetTextureStageState(0, D3DTSS_COLORARG1, &dwCA1);
+						PD3DDEVICE->GetTextureStageState(0, D3DTSS_COLORARG2, &dwCA2);
+						Rep3Log("[ANHNEN] bitmap16 %s: %s | tai %d,%d | co %dx%d | tex %dx%d | ptex %p | cull %u tron %u (%u/%u) at %u ham %u ref %u | op %u a1 %u a2 %u",
+							pTemp->szImage, pBitmap ? "CO" : "NULL", pTemp->oPosition.nX, pTemp->oPosition.nY,
+							pBitmap ? pBitmap->m_nWidth : 0, pBitmap ? pBitmap->m_nHeight : 0,
+							pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nWidth : 0, pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nHeight : 0,
+							pBitmap ? (void*)pBitmap->m_FrameInfo.texInfo[0].pTexture : NULL,
+							(unsigned)dwCull, (unsigned)dwBlend, (unsigned)dwSrc, (unsigned)dwDst, (unsigned)dwAT, (unsigned)dwAFunc, (unsigned)dwARef,
+							(unsigned)dwCOp, (unsigned)dwCA1, (unsigned)dwCA2);
+					}
+				}
 				if (!pBitmap)
 					break;
 			
@@ -1328,6 +1353,31 @@ void KRepresentShell3::DrawImage2DFlat(int nPrimitiveCount, KRepresentUnit* pPri
 				TextureResBmp* pBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+				{	// [ANHNEN 10/09 d]
+					static int s_nGhiBm = 0;	// [ANHNEN 10/09 e]
+					if (s_nGhiBm < 10 && !strstr(pTemp->szImage, "Login") && !strstr(pTemp->szImage, "login"))
+					{
+						s_nGhiBm++;
+						DWORD dwCull = 0, dwBlend = 0, dwSrc = 0, dwDst = 0, dwAT = 0, dwARef = 0, dwAFunc = 0, dwCOp = 0, dwCA1 = 0, dwCA2 = 0;
+						PD3DDEVICE->GetRenderState(D3DRS_CULLMODE, &dwCull);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHABLENDENABLE, &dwBlend);
+						PD3DDEVICE->GetRenderState(D3DRS_SRCBLEND, &dwSrc);
+						PD3DDEVICE->GetRenderState(D3DRS_DESTBLEND, &dwDst);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHATESTENABLE, &dwAT);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHAREF, &dwARef);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHAFUNC, &dwAFunc);
+						PD3DDEVICE->GetTextureStageState(0, D3DTSS_COLOROP, &dwCOp);
+						PD3DDEVICE->GetTextureStageState(0, D3DTSS_COLORARG1, &dwCA1);
+						PD3DDEVICE->GetTextureStageState(0, D3DTSS_COLORARG2, &dwCA2);
+						Rep3Log("[ANHNEN] bitmap16 %s: %s | tai %d,%d | co %dx%d | tex %dx%d | ptex %p | cull %u tron %u (%u/%u) at %u ham %u ref %u | op %u a1 %u a2 %u",
+							pTemp->szImage, pBitmap ? "CO" : "NULL", pTemp->oPosition.nX, pTemp->oPosition.nY,
+							pBitmap ? pBitmap->m_nWidth : 0, pBitmap ? pBitmap->m_nHeight : 0,
+							pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nWidth : 0, pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nHeight : 0,
+							pBitmap ? (void*)pBitmap->m_FrameInfo.texInfo[0].pTexture : NULL,
+							(unsigned)dwCull, (unsigned)dwBlend, (unsigned)dwSrc, (unsigned)dwDst, (unsigned)dwAT, (unsigned)dwAFunc, (unsigned)dwARef,
+							(unsigned)dwCOp, (unsigned)dwCA1, (unsigned)dwCA2);
+					}
+				}
 				if (!pBitmap)
 					break;
 
@@ -1411,6 +1461,19 @@ void KRepresentShell3::DrawImage2DStretch(int nPrimitiveCount, KRepresentUnit* p
 		// [A31 04/09] SPRITE cung co gian duoc: DrawSpriteAlpha noi suy tung manh cua khung anh
 		// vao khung dich (xem ChaZhi trong ham do) - dung cai ta can de ve vat pham nhieu o
 		// thu nho ve MOT O. Truoc day ham nay chan ngay o dong duoi nen sprite khong qua duoc.
+		if (pTemp->nType == ISI_T_BITMAP16)	// [ANHNEN 10/09 g] anh nen canh co gian cho phu kin khung ve
+		{
+			TextureResBmp* pBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
+				pTemp->szImage, pTemp->uImage, pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+			if (!pBitmap)
+				continue;
+			int nW = pTemp->oEndPos.nX - pTemp->oPosition.nX;
+			int nH = pTemp->oEndPos.nY - pTemp->oPosition.nY;
+			if (nW <= 0) nW = pBitmap->GetWidth();
+			if (nH <= 0) nH = pBitmap->GetHeight();
+			DrawBitmap16(pTemp->oPosition.nX, pTemp->oPosition.nY, nW, nH, pBitmap, true);
+			continue;
+		}
 		if (pTemp->nType == ISI_T_SPR)
 		{
 			TextureResSpr* pSprite = (TextureResSpr *)m_TextureResMgr.GetImage(
@@ -1964,6 +2027,31 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 				TextureResBmp* pBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+				{	// [ANHNEN 10/09 d]
+					static int s_nGhiBm = 0;	// [ANHNEN 10/09 e]
+					if (s_nGhiBm < 10 && !strstr(pTemp->szImage, "Login") && !strstr(pTemp->szImage, "login"))
+					{
+						s_nGhiBm++;
+						DWORD dwCull = 0, dwBlend = 0, dwSrc = 0, dwDst = 0, dwAT = 0, dwARef = 0, dwAFunc = 0, dwCOp = 0, dwCA1 = 0, dwCA2 = 0;
+						PD3DDEVICE->GetRenderState(D3DRS_CULLMODE, &dwCull);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHABLENDENABLE, &dwBlend);
+						PD3DDEVICE->GetRenderState(D3DRS_SRCBLEND, &dwSrc);
+						PD3DDEVICE->GetRenderState(D3DRS_DESTBLEND, &dwDst);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHATESTENABLE, &dwAT);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHAREF, &dwARef);
+						PD3DDEVICE->GetRenderState(D3DRS_ALPHAFUNC, &dwAFunc);
+						PD3DDEVICE->GetTextureStageState(0, D3DTSS_COLOROP, &dwCOp);
+						PD3DDEVICE->GetTextureStageState(0, D3DTSS_COLORARG1, &dwCA1);
+						PD3DDEVICE->GetTextureStageState(0, D3DTSS_COLORARG2, &dwCA2);
+						Rep3Log("[ANHNEN] bitmap16 %s: %s | tai %d,%d | co %dx%d | tex %dx%d | ptex %p | cull %u tron %u (%u/%u) at %u ham %u ref %u | op %u a1 %u a2 %u",
+							pTemp->szImage, pBitmap ? "CO" : "NULL", pTemp->oPosition.nX, pTemp->oPosition.nY,
+							pBitmap ? pBitmap->m_nWidth : 0, pBitmap ? pBitmap->m_nHeight : 0,
+							pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nWidth : 0, pBitmap ? pBitmap->m_FrameInfo.texInfo[0].nHeight : 0,
+							pBitmap ? (void*)pBitmap->m_FrameInfo.texInfo[0].pTexture : NULL,
+							(unsigned)dwCull, (unsigned)dwBlend, (unsigned)dwSrc, (unsigned)dwDst, (unsigned)dwAT, (unsigned)dwAFunc, (unsigned)dwARef,
+							(unsigned)dwCOp, (unsigned)dwCA1, (unsigned)dwCA2);
+					}
+				}
 				if (!pBitmap)
 					break;
 				if(fZ1 == fZ3)

@@ -115,6 +115,18 @@ static void WorldInDong()
 		extern double g_dWorldNhac, g_dNpcPha[4], g_dNpcTong, g_dNpcMax; extern unsigned g_uNpcLan; extern int g_nNpcMaxIdx;
 		extern double g_dKhacMs[3]; extern unsigned g_uKhacSo[3];	// [WORLD 09/09 c]
 		extern unsigned g_uVungSo, g_uVungLech, g_uVungXay;	// [VUNG 09/09]
+		{	// [VATDONG 10/09] vat canh co hoat anh: dem lan ve trong 10 s + 3 ten dau
+			extern unsigned g_uVatDongVe; extern char g_szVatDong[3][96]; extern int g_nVatDongX[3], g_nVatDongY[3], g_nVatDongSo;
+			FILE* pV = fopen("jx_paint.log", "a");
+			if (pV)
+			{
+				fprintf(pV, "[VATDONG] 10s: %u lan ve vat canh co hoat anh | %d ten: %s(%d,%d) %s(%d,%d) %s(%d,%d)\n",
+					g_uVatDongVe, g_nVatDongSo, g_szVatDong[0], g_nVatDongX[0], g_nVatDongY[0],
+					g_szVatDong[1], g_nVatDongX[1], g_nVatDongY[1], g_szVatDong[2], g_nVatDongX[2], g_nVatDongY[2]);
+				fclose(pV);
+			}
+			g_uVatDongVe = 0; g_nVatDongSo = 0; g_szVatDong[0][0] = g_szVatDong[1][0] = g_szVatDong[2][0] = 0;
+		}
 		extern unsigned g_uCayChen, g_uCayDuyet1, g_uCayDuyet2, g_uCayKhop, g_uCayCon; extern unsigned g_uAmNap; extern double g_dAmNapMs; extern unsigned g_uCayTaiCho, g_uCayDoiCho, g_uCayBuoc, g_uCayKhacDs, g_uCayLuiTinh, g_uCayKhacCha, g_uCayNgoai, g_uCayDo, g_uCayLech, g_uCayXayChiMuc; /* [CAY 09/09 c] */	// [CAY 09/09 do] [AM 09/09 do]
 		FILE* p2 = fopen("jx_paint.log", "a");
 		if (p2)

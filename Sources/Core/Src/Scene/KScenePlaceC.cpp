@@ -232,6 +232,7 @@ KScenePlaceC::KScenePlaceC()
 
 	bPaintMode = 0;
 	bFlagMode = false;
+	m_nLopCanh = 0;	// [ANHNEN 10/09]
 }
 
 //##ModelId=3DD17A770383
@@ -373,6 +374,7 @@ bool KScenePlaceC::OpenPlace(int nPlaceIndex)
 	}
 	m_szPlaceRootPath[nValue - 4] = 0;
 	m_nSceneId = nPlaceIndex;
+	NapLopCanh(nPlaceIndex);	// [ANHNEN 10/09]
 	CoreDataChanged(GDCNI_SWITCHING_MAPMODE, m_Map.Load(&Ini, m_szPlaceRootPath), 0);//m_Map.Load(&Ini, m_szPlaceRootPath);
 
 	int nIsInDoor;
@@ -674,6 +676,7 @@ void KScenePlaceC::Terminate()
 		m_RegionGroundImages[i].uImage = 0;
 	}
 	m_nNumGroundImagesAvailable = 0;
+	m_nLopCanh = 0;	// [ANHNEN 10/09]
 	m_bInited = false;
 }
 
@@ -1114,6 +1117,9 @@ void KScenePlaceC::Paint()
 	EnterCriticalSection(&m_ProcessCritical);
 
 	BOOL bPrerenderGroundImg = PaintBackGround();//add by phong ki“u h◊nh n“n hoa s¨n
+	if (VeLopCanh(1))	// [ANHNEN 10/09 f] co anh nen -> ve nen dat TRUC TIEP (co cho trong) de lo anh nen ra
+		bPrerenderGroundImg = FALSE;
+	VeLopCanh(3);	// [ANHNEN 10/09 f] lop phu nen (may xa) ve tren anh nen, DUOI nen dat
 
 	unsigned int i;
 	// N2 of ce8c4d49 (was described in that commit but never actually applied -
@@ -1154,6 +1160,7 @@ void KScenePlaceC::Paint()
 	}
 
 	m_ObjectsTree.Paint(&m_RepresentArea, IPOT_RL_INFRONTOF_ALL);
+	VeLopCanh(2);	// [ANHNEN 10/09] tien canh ve sau cung
 
 	// ªÊ÷∆ÃÏ∆¯∂‘œÛ
 	if(m_pWeather)
@@ -2105,6 +2112,291 @@ void KScenePlaceC::LoadGround(KIniFile *pIni)//add by phong ki“u h◊nh n“n hoa s¨
 void KScenePlaceC::DirectFindPos(int nX, int nY, BOOL bSync, BOOL bPaintLine)
 { 
 	m_Map.DirectFindPos(nX, nY, bSync, bPaintLine);
+}
+
+// [ANHNEN 10/09] ---------------------------------------------------------------------
+// Ve lop anh canh y nhu ban VLTK 2.0 (xem BANGIAO_CANH_VLTK2_1009.md):
+//   tep  \Maps\ScrollSetting\<map_id>_Scroll.ini, moi muc mot lop.
+//   Type 1 = anh nen JPG chay thi sai (canh dich Rating diem thi nen dich 1 diem),
+//   Type 3 = lop phu nen (may xa) ve sau nen dat truoc vat the,
+//   Type 2 = tien canh (may gan) ve sau cung.
+//   Area* la CHI SO O VUNG -> doi ra diem anh (x * 512, y * 1024) nhu 2.0 lam luc nap.
+// Tat: [Client] AnhNenCanh=0 (khi do khong doc tep, khong ve gi - y het truoc day).
+static int l_nAnhNenCanh = -1;
+
+void KScenePlaceC::NapLopCanh(int nPlaceIndex)
+{
+	m_nLopCanh = 0;
+	if (l_nAnhNenCanh < 0)
+		l_nAnhNenCanh = GetPrivateProfileIntA("Client", "AnhNenCanh", 1, ".\\config.ini");
+	if (l_nAnhNenCanh <= 0 || nPlaceIndex < 0)
+		return;
+
+	char szTep[128];
+	sprintf(szTep, "\\Maps\\ScrollSetting\\%d_Scroll.ini", nPlaceIndex);
+	KIniFile Ini;
+	if (Ini.Load(szTep) == FALSE)
+		return;
+
+	int nDem[4] = { 0, 0, 0, 0 };
+	for (int i = 0; i < LC_MAX_LOP; i++)
+	{
+		char szMuc[16];
+		itoa(i, szMuc, 10);
+		int nKieu = 0;
+		Ini.GetInteger(szMuc, "Type", 0, &nKieu);
+		if (nKieu < 1 || nKieu > 3)
+			break;	// het muc - ban 2.0 cung ngung o day
+
+		KLopCanh* p = &m_LopCanh[m_nLopCanh];
+		memset(p, 0, sizeof(*p));
+		p->nKieu = nKieu;
+		int v = 0;
+		Ini.GetInteger(szMuc, "AreaLeft",   0, &v); p->rcVung.left   = v * KScenePlaceRegionC::RWPP_AREGION_WIDTH;
+		Ini.GetInteger(szMuc, "AreaTop",    0, &v); p->rcVung.top    = v * KScenePlaceRegionC::RWPP_AREGION_HEIGHT;
+		Ini.GetInteger(szMuc, "AreaRight",  0, &v); p->rcVung.right  = v * KScenePlaceRegionC::RWPP_AREGION_WIDTH;
+		Ini.GetInteger(szMuc, "AreaBottom", 0, &v); p->rcVung.bottom = v * KScenePlaceRegionC::RWPP_AREGION_HEIGHT;
+		Ini.GetInteger(szMuc, "PaintRectLeft",   0,    &v); p->rcMan.left   = v;
+		Ini.GetInteger(szMuc, "PaintRectTop",    0,    &v); p->rcMan.top    = v;
+		Ini.GetInteger(szMuc, "PaintRectRight",  1024, &v); p->rcMan.right  = v;
+		Ini.GetInteger(szMuc, "PaintRectBottom", 768,  &v); p->rcMan.bottom = v;
+		if (nKieu == 1)
+		{
+			Ini.GetInteger(szMuc, "SceneCenterPointX", 0, &p->nTamCanhX);
+			Ini.GetInteger(szMuc, "SceneCenterPointY", 0, &p->nTamCanhY);
+			Ini.GetInteger(szMuc, "PicCenterPointX",   0, &p->nTamAnhX);
+			Ini.GetInteger(szMuc, "PicCenterPointY",   0, &p->nTamAnhY);
+			Ini.GetInteger(szMuc, "Rating", 2, &p->nTiLe);
+			if (p->nTiLe <= 0) p->nTiLe = 1;
+			Ini.GetString(szMuc, "Image", "", p->szAnh[0], sizeof(p->szAnh[0]));
+			p->nSoAnh = p->szAnh[0][0] ? 1 : 0;
+		}
+		else
+		{
+			Ini.GetInteger(szMuc, "ViewAreaLeft",   0, &v); p->rcTam.left   = v * KScenePlaceRegionC::RWPP_AREGION_WIDTH;
+			Ini.GetInteger(szMuc, "ViewAreaTop",    0, &v); p->rcTam.top    = v * KScenePlaceRegionC::RWPP_AREGION_HEIGHT;
+			Ini.GetInteger(szMuc, "ViewAreaRight",  0, &v); p->rcTam.right  = v * KScenePlaceRegionC::RWPP_AREGION_WIDTH;
+			Ini.GetInteger(szMuc, "ViewAreaBottom", 0, &v); p->rcTam.bottom = v * KScenePlaceRegionC::RWPP_AREGION_HEIGHT;
+			Ini.GetInteger(szMuc, "Speed", 2, &p->nToc);
+			Ini.GetInteger(szMuc, "Angle", 0, &p->nGoc);
+			Ini.GetInteger(szMuc, "Count", 0, &p->nSo);
+			if (p->nSo > LC_MAX_MAY) p->nSo = LC_MAX_MAY;
+			for (int k = 0; k < LC_MAX_ANH; k++)
+			{
+				char szKhoa[16];
+				sprintf(szKhoa, "Image%d", k);
+				Ini.GetString(szMuc, szKhoa, "", p->szAnh[k], sizeof(p->szAnh[k]));
+				if (p->szAnh[k][0] == 0) break;
+				p->nSoAnh = k + 1;
+			}
+		}
+		if (p->nSoAnh <= 0)
+			continue;	// khong co anh thi bo lop nay
+		nDem[nKieu]++;
+		m_nLopCanh++;
+	}
+
+	extern int g_nCorePaintLog;
+	if (g_nCorePaintLog > 0 && m_nLopCanh > 0)
+	{
+		FILE* pLog = fopen("jx_paint.log", "a");
+		if (pLog)
+		{
+			fprintf(pLog, "[ANHNEN] map %d: %d lop (nen %d, phu nen %d, tien canh %d) | %s\n",
+				nPlaceIndex, m_nLopCanh, nDem[1], nDem[3], nDem[2], szTep);
+			fclose(pLog);
+		}
+	}
+}
+
+BOOL KScenePlaceC::VeLopCanh(int nKieu)
+{
+	BOOL bCoVe = FALSE;	// [ANHNEN 10/09 f]
+	if (m_nLopCanh <= 0 || g_pRepresent == NULL)
+		return bCoVe;
+	for (int i = 0; i < m_nLopCanh; i++)
+	{
+		KLopCanh* p = &m_LopCanh[i];
+		if (p->nKieu != nKieu)
+			continue;
+		// ban 2.0 so sanh chat hai dau: chi ve khi tieu diem nam HAN trong vung kich hoat
+		if (p->rcVung.left >= m_FocusPosition.x || p->rcVung.right  <= m_FocusPosition.x ||
+			p->rcVung.top  >= m_FocusPosition.y || p->rcVung.bottom <= m_FocusPosition.y)
+		{
+			p->bDaDat = 0;
+			continue;
+		}
+		if (nKieu == 1)
+			{ VeLopNen(p); bCoVe = TRUE; }
+		else
+			VeLopMay(p);
+	}
+	return bCoVe;
+}
+
+void KScenePlaceC::VeLopNen(KLopCanh* p)
+{
+	// [ANHNEN 10/09 i] tep _Scroll.ini cua du an con la ban 800x600 (2.0 da sua thanh 1024x768).
+	// Voi lop NEN: neu khung ve trong ini nho hon do phan giai that thi noi ra cho bang man hinh,
+	// khong thi ben phai va phia duoi con vien den.
+	static int s_nManRong = 0, s_nManCao = 0;
+	if (s_nManRong <= 0)
+	{
+		s_nManRong = GetPrivateProfileIntA("Resolution", "Width",  1024, ".\\config.ini");
+		s_nManCao  = GetPrivateProfileIntA("Resolution", "Height", 768,  ".\\config.ini");
+		if (s_nManRong <= 0) s_nManRong = 1024;
+		if (s_nManCao <= 0) s_nManCao = 768;
+	}
+	RECT rcVe = p->rcMan;	// [ANHNEN 10/09 j] LOI: dong nay truoc do bi thay thanh 'rcVe = rcVe' (rac)
+	if (rcVe.right - rcVe.left < s_nManRong) rcVe.right = rcVe.left + s_nManRong;
+	if (rcVe.bottom - rcVe.top < s_nManCao)  rcVe.bottom = rcVe.top + s_nManCao;
+	KRUImage Img;
+	memset(&Img, 0, sizeof(Img));
+	Img.nType = ISI_T_BITMAP16;
+	Img.bRenderStyle = IMAGE_RENDER_STYLE_OPACITY;
+	Img.bRenderFlag = 0;
+	Img.Color.Color_dw = 0xffffffff;
+	Img.nISPosition = IMAGE_IS_POSITION_INIT;
+	Img.nFrame = 0;
+	Img.uImage = 0;
+	strncpy(Img.szImage, p->szAnh[0], sizeof(Img.szImage) - 1);
+
+	// thi sai: canh dich nTiLe diem thi nen dich 1 diem (chu thich goc trong _Scroll.ini)
+	int nDoiX = (m_FocusPosition.x - p->rcVung.left - p->nTamCanhX) / p->nTiLe;
+	int nDoiY = (m_FocusPosition.y - p->rcVung.top  - p->nTamCanhY) / p->nTiLe;
+	int x = p->nTamAnhX - nDoiX;
+	int y = p->nTamAnhY - nDoiY;
+
+	// khong de ho vien: neu anh lon hon khung ve thi keo lai cho phu kin, nho hon thi dat giua
+	KImageParam Param;
+	memset(&Param, 0, sizeof(Param));
+	int nRongVe = 0, nCaoVe = 0;	// [ANHNEN 10/09 g] kich thuoc ve (co gian khi anh nho hon khung)
+	if (g_pRepresent->GetImageParam(Img.szImage, &Param, ISI_T_BITMAP16) && Param.nWidth > 0 && Param.nHeight > 0)
+	{
+		int nRong = rcVe.right - rcVe.left;
+		int nCao  = rcVe.bottom - rcVe.top;
+		nRongVe = (int)Param.nWidth;
+		nCaoVe  = (int)Param.nHeight;
+		// [ANHNEN 10/09 g] anh cua du an co the hep hon ban 2.0 (mogaoku 774 vs 1161) -> phong cho phu kin, giu ti le
+		if (nRongVe < nRong || nCaoVe < nCao)
+		{
+			double dTiLe = (double)nRong / (double)nRongVe;
+			double dTiLe2 = (double)nCao / (double)nCaoVe;
+			if (dTiLe2 > dTiLe) dTiLe = dTiLe2;
+			nRongVe = (int)(nRongVe * dTiLe + 0.5);
+			nCaoVe  = (int)(nCaoVe * dTiLe + 0.5);
+		}
+		if (nRongVe >= nRong)
+		{
+			if (x > rcVe.left) x = rcVe.left;
+			if (x + nRongVe < rcVe.right) x = rcVe.right - nRongVe;
+		}
+		else
+			x = rcVe.left + (nRong - nRongVe) / 2;
+		if (nCaoVe >= nCao)
+		{
+			if (y > rcVe.top) y = rcVe.top;
+			if (y + nCaoVe < rcVe.bottom) y = rcVe.bottom - nCaoVe;
+		}
+		else
+			y = rcVe.top + (nCao - nCaoVe) / 2;
+	}
+	Img.oPosition.nX = x;
+	Img.oPosition.nY = y;
+	Img.oPosition.nZ = 0;
+	Img.oEndPos.nX = x + nRongVe;	// [ANHNEN 10/09 g]
+	Img.oEndPos.nY = y + nCaoVe;
+	Img.oEndPos.nZ = 0;
+	{	// [ANHNEN 10/09 c] ghi 10 dong dau de biet ve o dau, co anh chua
+		extern int g_nCorePaintLog;
+		static int s_nGhi = 0; static DWORD s_dwMocGhi = 0;	// [ANHNEN 10/09 h] moi 2 giay mot dong, toi da 20
+		DWORD dwNayGhi = timeGetTime();
+		if (g_nCorePaintLog > 0 && s_nGhi < 20 && (s_dwMocGhi == 0 || dwNayGhi - s_dwMocGhi >= 2000))
+		{
+			s_nGhi++; s_dwMocGhi = dwNayGhi;
+			FILE* pLog = fopen("jx_paint.log", "a");
+			if (pLog)
+			{
+				fprintf(pLog, "[ANHNEN] ve nen: tieu diem %d,%d | vung %d,%d..%d,%d | tile %d | dat tai %d,%d | anh %dx%d -> ve %dx%d (%s) | khung ini %d,%d..%d,%d | khung nhin %d,%d..%d,%d | %s\n",
+					m_FocusPosition.x, m_FocusPosition.y, p->rcVung.left, p->rcVung.top, p->rcVung.right, p->rcVung.bottom,
+					p->nTiLe, x, y, (int)Param.nWidth, (int)Param.nHeight, nRongVe, nCaoVe,
+					(nRongVe > (int)Param.nWidth || nCaoVe > (int)Param.nHeight) ? "co gian" : "nguyen co",
+					rcVe.left, rcVe.top, rcVe.right, rcVe.bottom,
+					m_RepresentArea.left, m_RepresentArea.top, m_RepresentArea.right, m_RepresentArea.bottom, Img.szImage);
+				fclose(pLog);
+			}
+		}
+	}
+	// [ANHNEN 10/09 g] anh du to thi ve nguyen co (nhanh hon); anh phai phong thi di duong co gian
+	if (nRongVe > (int)Param.nWidth || nCaoVe > (int)Param.nHeight)
+		g_pRepresent->DrawPrimitives(1, &Img, RU_T_IMAGE_STRETCH, true);
+	else
+		g_pRepresent->DrawPrimitives(1, &Img, RU_T_IMAGE, true);	// true = toa do man hinh
+}
+
+void KScenePlaceC::VeLopMay(KLopCanh* p)
+{
+	// [ANHNEN 10/09 b] may nam trong CANH (toa do the gioi) chu khong dan vao man hinh, neu khong thi
+	// may bam theo nguoi choi. Quan vong quanh khung nhin hien tai de luc nao cung co may tren man.
+	if (p->nSo <= 0 || p->nSoAnh <= 0)
+		return;
+	RECT rcQuan = m_RepresentArea;
+	rcQuan.left -= 512; rcQuan.top -= 512; rcQuan.right += 512; rcQuan.bottom += 512;
+	int nRong = rcQuan.right - rcQuan.left;
+	int nCao  = rcQuan.bottom - rcQuan.top;
+	if (nRong <= 0 || nCao <= 0)
+		return;
+
+	DWORD dwNay = timeGetTime();
+	if (p->bDaDat == 0)
+	{
+		p->bDaDat = 1;
+		p->dwMoc = dwNay;
+		for (int k = 0; k < p->nSo; k++)
+		{
+			p->nMayX[k] = (rcQuan.left + (rand() % nRong)) << 4;
+			p->nMayY[k] = (rcQuan.top  + (rand() % nCao))  << 4;
+			p->nMayAnh[k] = rand() % p->nSoAnh;
+		}
+	}
+
+	// Angle thang 64: 0 = thang len, thuan kim dong ho. Toc do: nToc * 8 diem anh moi giay.
+	DWORD dwCach = dwNay - p->dwMoc;
+	if (dwCach > 200) dwCach = 200;	// bo qua khung dai (doi map, nap anh)
+	p->dwMoc = dwNay;
+	double dGoc = (double)p->nGoc * 3.14159265358979 / 32.0;
+	int nDiX = (int)(sin(dGoc) * (double)p->nToc * 128.0 * (double)dwCach / 1000.0);
+	int nDiY = (int)(-cos(dGoc) * (double)p->nToc * 128.0 * (double)dwCach / 1000.0);
+
+	KRUImage aImg[LC_MAX_MAY];
+	int nSo = 0;
+	for (int k = 0; k < p->nSo; k++)
+	{
+		p->nMayX[k] += nDiX;
+		p->nMayY[k] += nDiY;
+		// quan vong theo khung nhin: may ra ngoai mot ben thi dua sang ben kia (van la toa do canh)
+		while (p->nMayX[k] < (rcQuan.left << 4))  p->nMayX[k] += nRong << 4;
+		while (p->nMayX[k] > (rcQuan.right << 4)) p->nMayX[k] -= nRong << 4;
+		while (p->nMayY[k] < (rcQuan.top << 4))    p->nMayY[k] += nCao << 4;
+		while (p->nMayY[k] > (rcQuan.bottom << 4)) p->nMayY[k] -= nCao << 4;
+
+		KRUImage* q = &aImg[nSo];
+		memset(q, 0, sizeof(*q));
+		q->nType = ISI_T_SPR;
+		q->bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+		q->bRenderFlag = 0;
+		q->Color.Color_dw = 0xffffffff;
+		q->nISPosition = IMAGE_IS_POSITION_INIT;
+		q->nFrame = 0;
+		q->uImage = 0;
+		strncpy(q->szImage, p->szAnh[p->nMayAnh[k]], sizeof(q->szImage) - 1);
+		q->oPosition.nX = p->nMayX[k] >> 4;
+		q->oPosition.nY = p->nMayY[k] >> 4;
+		q->oPosition.nZ = 0;
+		nSo++;
+	}
+	if (nSo > 0)
+		g_pRepresent->DrawPrimitives(nSo, &aImg[0], RU_T_IMAGE, false);	// false = toa do CANH
 }
 
 BOOL KScenePlaceC::PaintBackGround() //add by phong ki“u h◊nh n“n hoa s¨n

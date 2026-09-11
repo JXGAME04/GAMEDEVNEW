@@ -457,6 +457,33 @@ private:
 	int		m_nBackGroundImages;
 	RECT	BGArea[MAX_BACKGROUND_IMAGE];
 
+public:
+	// [ANHNEN 10/09] lop anh canh nhu ban 2.0: \Maps\ScrollSetting\<id>_Scroll.ini
+	enum { LC_MAX_LOP = 24, LC_MAX_ANH = 9, LC_MAX_MAY = 32 };
+	struct KLopCanh
+	{
+		int		nKieu;			// 1 = anh nen, 2 = tien canh, 3 = lop phu nen
+		RECT	rcVung;		// Area* doi ra diem anh (x * 512, y * 1024)
+		RECT	rcMan;			// PaintRect* (toa do man hinh)
+		int		nTamCanhX, nTamCanhY;	// SceneCenterPoint (kieu 1)
+		int		nTamAnhX, nTamAnhY;	// PicCenterPoint (kieu 1)
+		int		nTiLe;			// Rating: canh dich nTiLe diem thi nen dich 1
+		RECT	rcTam;			// ViewArea* (kieu 2/3), diem anh
+		int		nToc, nGoc, nSo;	// Speed, Angle (thang 64), Count
+		int		nSoAnh;
+		char	szAnh[LC_MAX_ANH][64];
+		int		bDaDat;		// da rai may chua
+		DWORD	dwMoc;			// moc thoi gian lan ve truoc
+		int		nMayX[LC_MAX_MAY], nMayY[LC_MAX_MAY], nMayAnh[LC_MAX_MAY];	// x, y tinh theo 1/16 diem anh
+	};
+	void	NapLopCanh(int nPlaceIndex);
+	BOOL	VeLopCanh(int nKieu);	// [ANHNEN 10/09 f] tra TRUE neu co ve anh nen kieu 1
+	void	VeLopNen(KLopCanh* p);
+	void	VeLopMay(KLopCanh* p);
+	KLopCanh	m_LopCanh[LC_MAX_LOP];
+	int		m_nLopCanh;
+private:
+
 	//##ModelId=3DDBC73803A4
 	//##Documentation
 	//## 进入处理范围的以加载区域的指针。

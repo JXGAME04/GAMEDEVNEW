@@ -289,7 +289,7 @@ void KIpotBranch::PaintABranchObject(KIpotBuildinObj* pObject,
 		g_pRepresent->DrawPrimitives(1, &Image, RU_T_IMAGE_4, false);
 
 	}
-	//BuildinObjNextFrame(pBio);
+	BuildinObjNextFrame(pBio);	// [VATDONG 10/09] truoc day bi chu thich: vat canh kieu LINE/TREE co hoat anh bi dung hinh
 }
 
 void KIpotBranch::PaintNoneObjectLayer(RECT* pRepresentArea, int eLayer)
