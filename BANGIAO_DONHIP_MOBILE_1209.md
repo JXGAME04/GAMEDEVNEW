@@ -5,6 +5,29 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **15:50 11/09 — ĐỢT C BƯỚC 1 ĐÃ LÊN BỘ TẢI: `[GOP 11/09]` trạng thái tầng texture theo ĐỈNH + bind ring một lần** — commit `00a09114`
+> = `origin/mobile-0809` (FF cả `wt_mobile`), **dt_v4 = 109111545** (md5 `fb90eceb…`, 20 322 287 B, máy chủ 8765 PID 362344, giữ nguyên
+> `data/sprvuhontieudao3.pak` + `package.ini` của phiên giao diện), APK lưu `android/apk/jx1mobile-1109-gop1.apk`. Chủ 15:35: "làm C và
+> hãy nhớ kiểm tra bên phiên client PC có gì mới cập nhật vào cho đồng bộ".
+> - **Đồng bộ phía PC:** gộp `origin/main = 714cbed0` (`0bc49e49` [TK-RUONG+TK-CUA] WAuto Tống Kim, chỉ `Core/Src/CoreShell.cpp`, không đụng
+>   Represent3 / S3Client / android). Đã hỏi cả ba phiên PC (wauto-bb, wauto-d2, wauto-80): không phiên nào còn thay đổi chưa đẩy; wauto-80
+>   xác nhận `0bc49e49` chỉ dùng hàm sẵn có của Core nên bố cục lớp không đổi (an toàn cho bản mobile dùng chung Core).
+> - **C2 (ps theo đỉnh):** `RgPsCb` 80 byte (colorop / alphaop / alpha test / lọc) không còn đẩy uniform mỗi lệnh vẽ. Mỗi khung gom các tổ hợp
+>   **duy nhất** vào storage buffer 4 096 mục, chỉ số 12 bit đi theo đỉnh trong ô PALROW (bit 0..12 hàng bảng màu, 13..24 chỉ số ps, 25..30 để
+>   dành cho lớp atlas của bước sau). Nhờ vậy hai quad **chỉ khác trạng thái tầng texture vẫn gộp chung một lệnh vẽ** (so trạng thái bỏ phần ps).
+>   Tra bảng: nhớ ô cuối rồi mới tra bảng băm FNV-1a; va chạm băm vẫn kiểm lại bằng memcmp nên không thể trả nhầm tổ hợp.
+> - **C3 (bind ring một lần):** bộ đệm đỉnh bind một lần mỗi render pass, mỗi lệnh vẽ dùng `first_vertex = ringOff / (stride+4)` (ringOff được
+>   căn lên bội `stride+4` khi mở lệnh mới) → bớt một lệnh Vulkan cho **mỗi** draw (Tống Kim 1 818 draw/khung).
+> - **Giữ PC nguyên byte:** biến thể shader thứ ba `g_Rep3GpuFSPalPs` nằm trong `#ifdef JX_ANDROID`; nhánh không-`JX_PS_BUFFER` dùng **macro**
+>   `JX_PALROW`/`JX_PALKHONG` nên sinh đúng chuỗi token cũ — đã kiểm: `g_Rep3GpuVS`, `g_Rep3GpuFS` (PC) và `g_Rep3GpuFSPalBuf` (bản 109111459)
+>   **giữ nguyên từng byte**. (Lần đầu viết bằng biến cục bộ làm hai mảng cũ đổi byte → đã hoàn nguyên và làm lại bằng macro.)
+> - **Thử máy ảo:** không sập, màn menu + bảng chọn máy chủ màu y hệt bản D1 (nút vàng, chữ đỏ "(New)", khung đúng); log
+>   `ps theo dinh=1, bind ring mot lan=1`, `bang trang thai tang texture: storage buffer 4096 muc x 80 byte (320 KB)`, `[VE-GOP] … ps bang 4 muc`,
+>   0 dòng "that bai". **Chưa thử được trong thế giới** (chủ đang chơi trên Fold 7, máy ảo dùng chung tài khoản sẽ đá phiên).
+> - **Công tắc tắt nhanh** trong `[Client]` của config dt_v4: `Rep3PsBuffer=0` (về đúng bản 109111459), `Rep3BindRing=0`, `Rep3PalBuffer=0`
+>   (về hẳn shader PC, tắt cả hai). Kỳ vọng: ghi lệnh 2,6 → ~1,3–1,8 ms lúc đông, CPU luồng chính 85 → ~70 % ở cửa sổ 800 đạn/tick.
+>   Bài test: §10 mục 8. Việc kế: **C1** (atlas thành texture mảng 2D — texture0 chiếm 73 % lý do không gộp), rồi **A2**, **E**.
+
 > **15:25 11/09 — KẾT QUẢ FOLD 7 BẢN D1 109111459 (phiên `SM-F966U1_20260911_151020`, màn trong, 12 phút, gần như toàn bộ là Tống Kim; máy BẮT ĐẦU
 > ĐÃ NÓNG: nhiệt 3, headroom 0,98, 37,1 °C — ngay sau 55 phút Tống Kim của phiên 14:16).** Chủ 15:20: "lấy log đi bạn". `[D1] swapchain 1040x936 | backbuffer
 > 1040x936 | cua so 2184x1968 | SDL: tao 1040x936; extent min 1x1 max 4096x4096` → đúng thiết kế, không lỗi, không "tắt hint".
@@ -658,3 +681,8 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
    | cua so … | SDL: tao …; extent min … max …` (Fold 7 kỳ vọng `1040x936` / `1436x616`), rồi so `[MAU]` `gpu=` / `gpu_mhz` / W và fps Tống Kim với phiên 14:16
    (GPU 82 % @ 652 MHz, 4,7 W, fps 109). Tắt nhanh nếu có vấn đề: `Rep3SwapchainLogic=0` trong `[Client]` của config dt_v4 + khởi động lại 8765; muốn nét hơn
    thử `Rep3SwapchainLogic=150`.
+8. **Bản 109111545 (đợt C bước 1):** mở lại app để nhận. Kiểm **màu sắc** trước hết — trạng thái tầng texture giờ đi theo đỉnh nên nếu sai sẽ lộ ngay:
+   màu nhân vật, hiệu ứng kỹ năng, chữ, thanh máu, vật phẩm trong hành trang, ảnh nền đăng nhập. Rồi chơi Tống Kim 10–15 phút như bài 2.
+   Tôi đọc `[VE]` (ghi lệnh TB), `[VE-GOP]` ("ps bang N muc", đổi trạng thái/khung, quad không gộp), `[MAU]` (W, gpu=, cpu_mhz), fps so với phiên 15:10
+   (ghi lệnh 2,6 ms, đổi ps 837/khung, lệnh 1 818/khung, CPU 76/70 %). Sai màu → `Rep3PsBuffer=0`; nghi lệnh vẽ sai chỗ (hình méo/nhoè khối) →
+   `Rep3BindRing=0`; cả hai → `Rep3PalBuffer=0`; sửa trong `[Client]` của config dt_v4 rồi khởi động lại 8765.

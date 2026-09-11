@@ -219,7 +219,10 @@ trong lúc màn tải hiển thị; đổi map 150–300 ms tick nằm sau màn 
 > storage buffer `[PALBUF 11/09]`, kèm đồng hồ "lệnh tải bảng màu" ở cả hai kiểu), A4 (`[FPSNGOAI 11/09]`), đo (c) GPU % + xung CPU/GPU vào `[MAU]`
 > (`[MAU 11/09]`). Chi tiết + bài test: `BANGIAO_DONHIP_MOBILE_1209.md` §0 khối 13:20 và §10. Còn lại theo thứ tự: C → D1 → E → A2.
 > **Kết quả 14:50:** cảnh yên CPU 53 → 36 %, 2,39 → 1,99 W, SoC về xung nghỉ, khung chép chậm 229 → 1; Tống Kim GPU 82–99 % bận → **D1 làm 15:15**
-> (commit `9851000b`, dt_v4 = 109111459, `[D1 11/09]`, thử máy ảo màn giả 2080×1208 OK). Còn: C → E → A2 (+ BKG b xin 60 Hz khi đứng yên).
+> (commit `9851000b`, dt_v4 = 109111459, `[D1 11/09]`, thử máy ảo màn giả 2080×1208 OK). **Kết quả D1 15:25** (Tống Kim): fps 109 → 115,
+> nộp 1,6 → 0,8 ms, GPU 83 % @ 648 → 73 % @ 336 MHz, 4,61 → 3,35 W, nhiệt 3 → 2 và máy nguội dần → GPU hết nghẽn, **CPU thành nút thắt**
+> (96 / 85 % ở cửa sổ 800 đạn/tick). **Đợt C bước 1 làm 15:50** (commit `00a09114`, dt_v4 = 109111545, `[GOP 11/09]`: C2 trạng thái tầng texture
+> theo đỉnh + C3 bind ring một lần; mảng shader PC giữ nguyên byte nhờ macro). Còn: **C1** (atlas texture mảng 2D) → A2 → E (+ BKG b xin 60 Hz khi đứng yên).
 
 **Gốc thật sự là gì.** Engine JX1 là engine 2D kiểu D3D9 tức thời: mỗi sprite = một lệnh vẽ mang texture + trạng thái riêng, vẽ lại toàn bộ
 màn hình mỗi khung, ở PC 60 Hz driver D3D9 gánh được. Trên điện thoại ở 120 Hz, cùng mô hình đó đi qua lớp mô phỏng SDL-GPU (mỗi lệnh 1–3 µs
