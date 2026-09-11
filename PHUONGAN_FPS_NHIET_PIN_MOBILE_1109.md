@@ -222,7 +222,10 @@ trong lúc màn tải hiển thị; đổi map 150–300 ms tick nằm sau màn 
 > (commit `9851000b`, dt_v4 = 109111459, `[D1 11/09]`, thử máy ảo màn giả 2080×1208 OK). **Kết quả D1 15:25** (Tống Kim): fps 109 → 115,
 > nộp 1,6 → 0,8 ms, GPU 83 % @ 648 → 73 % @ 336 MHz, 4,61 → 3,35 W, nhiệt 3 → 2 và máy nguội dần → GPU hết nghẽn, **CPU thành nút thắt**
 > (96 / 85 % ở cửa sổ 800 đạn/tick). **Đợt C bước 1 làm 15:50** (commit `00a09114`, dt_v4 = 109111545, `[GOP 11/09]`: C2 trạng thái tầng texture
-> theo đỉnh + C3 bind ring một lần; mảng shader PC giữ nguyên byte nhờ macro). Còn: **C1** (atlas texture mảng 2D) → A2 → E (+ BKG b xin 60 Hz khi đứng yên).
+> theo đỉnh + C3 bind ring một lần; mảng shader PC giữ nguyên byte nhờ macro). **Kết quả bước 1 16:10:** đổi trạng thái pixel 1 105 → 0 mỗi khung,
+> giá mỗi lệnh vẽ 1,37 → 1,07 µs (−22 %), CPU 80/75 → 77/73 % dù cảnh nặng gần gấp đôi; đổi texture vẫn 1 139/khung → đúng phần C1.
+> **C1 đã dựng + thử máy ảo 16:10** (commit `[MANG 11/09]`, APK 109111608, atlas thành texture mảng 2D), **chưa đẩy bộ tải** vì chủ còn đang đo
+> bản 109111545. Còn: A2 (lưới an toàn nhiệt) → E (nạp sprite nền) → BKG b (xin 60 Hz khi đứng yên).
 
 **Gốc thật sự là gì.** Engine JX1 là engine 2D kiểu D3D9 tức thời: mỗi sprite = một lệnh vẽ mang texture + trạng thái riêng, vẽ lại toàn bộ
 màn hình mỗi khung, ở PC 60 Hz driver D3D9 gánh được. Trên điện thoại ở 120 Hz, cùng mô hình đó đi qua lớp mô phỏng SDL-GPU (mỗi lệnh 1–3 µs

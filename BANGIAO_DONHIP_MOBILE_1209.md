@@ -5,6 +5,30 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **16:10 11/09 — KẾT QUẢ BƯỚC 1 TRÊN FOLD 7 + C1 ĐÃ DỰNG XONG (CHƯA ĐẨY BỘ TẢI).** Chủ 15:52: "tôi mới up bản mới rồi tí nữa bạn lấy log —
+> phải dựa vào log và lịch trình định sẵn". Phiên `SM-F966U1_20260911_155303` (bản 109111545, màn trong, Tống Kim liên tục, 99 cửa sổ 10 s).
+>
+> | Cửa sổ **rất đông** (npc ≥ 100), trung vị | D1 109111459 (33 cửa sổ) | C bước 1 109111545 (16 cửa sổ) |
+> |---|---|---|
+> | npc/tick · đạn/tick của phiên | 82 · 61 | **112 · 112** (cảnh nặng gần gấp đôi) |
+> | fps / thấp nhất | 114 / 110 | 115 / 110 |
+> | ghi lệnh ms | 2,93 | 2,38 |
+> | **µs mỗi lệnh vẽ** | 1,37 | **1,07 (−22 %)** |
+> | đổi trạng thái pixel / khung | 1 105 | **0** |
+> | đổi texture / khung | 1 146 | 1 139 (chưa đụng, đó là C1) |
+> | nộp ms | 0,72 | 1,34 |
+> | CPU tiến trình / luồng chính | 80 / 75 % | 77 / 73 % |
+>
+> Đọc số: **C2 đạt đúng mục tiêu** (không còn lần đẩy uniform nào, bảng chỉ 5 tổ hợp, tràn 0) và **C3 rút giá mỗi lệnh 22 %**; CPU vẫn giảm nhẹ dù
+> tải nặng gần gấp đôi. Điện 3,57 → 4,01 W và GPU 75 → 80 % là do cảnh nặng hơn, không so trực tiếp được. **Nộp tăng 0,72 → 1,34 ms** là điểm duy nhất
+> cần theo dõi (nghi do GPU bận hơn ở cảnh nặng; bảng trạng thái chỉ 400 byte/khung nên không phải do tải bảng).
+> **C1 đã viết + dựng + thử máy ảo, CHƯA thay vào dt_v4** vì chủ còn đang đo bản 109111545 (pin 6 %) — đẩy lúc này sẽ phá phép đo. Commit
+> `[MANG 11/09]`, APK 109111608 (md5 `bdcf2baa…`, `android/apk/jx1mobile-1109-c1.apk`): nhiều trang atlas nằm trong một texture mảng 2D (mỗi trang một
+> lớp, chỉ số lớp đi theo đỉnh ở bit 25..30 của ô PALROW), cụm cấp tăng dần 2 → 4 → 8 lớp trong ngân sách 64 MB, trang rỗng **trả lớp** về cụm ở cả hai
+> đường trả trang (texture là của cụm, huỷ nhầm là mất hết sprite), texture riêng và texture trắng cũng tạo dạng mảng một lớp, texture tầng 1 bị ép ra
+> khỏi atlas. Bốn mảng shader cũ giữ nguyên từng byte. Máy ảo: màn menu và bảng chọn máy chủ y hệt, log `[VE] atlas mang 2D=1` và
+> `[MANG] cum atlas moi: 2048x2048 x 2 lop fmt 3 (16 MB), tong 1 cum`, không lỗi. Công tắc tắt: `Rep3AtlasMang=0`.
+
 > **15:50 11/09 — ĐỢT C BƯỚC 1 ĐÃ LÊN BỘ TẢI: `[GOP 11/09]` trạng thái tầng texture theo ĐỈNH + bind ring một lần** — commit `00a09114`
 > = `origin/mobile-0809` (FF cả `wt_mobile`), **dt_v4 = 109111545** (md5 `fb90eceb…`, 20 322 287 B, máy chủ 8765 PID 362344, giữ nguyên
 > `data/sprvuhontieudao3.pak` + `package.ini` của phiên giao diện), APK lưu `android/apk/jx1mobile-1109-gop1.apk`. Chủ 15:35: "làm C và
