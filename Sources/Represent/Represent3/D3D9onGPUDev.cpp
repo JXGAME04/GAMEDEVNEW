@@ -1019,6 +1019,41 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 	{
 		SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
 #ifdef JX_ANDROID
+		// [VE 11/09 f] vung 0 (trang atlas moi / o chua co ban CPU) PHAI ghi lenh TRUOC noi dung texture: trang moi va anh dau tien tren no
+		// nam trong cung khung; [VE 11/09 d] tung dat khoi nay SAU tex -> lenh to 0 ghi de anh vua tai (chu thay spr an hien, map loi, ngua mat dau duoi).
+		if (!m_jxZeroUploads.empty())
+		{	// [VE 11/09 d] vung 0 (trang atlas moi, o chua co ban CPU): tai tu bo dem 0 co dinh, chi memset mot lan khi tao/phinh
+			const Uint64 uZ0 = SDL_GetPerformanceCounter();
+			const UINT needZ = 2u << 20;	// [VE 11/09 e] bo dem 0 co dinh 2 MiB (khong qua SMALL_ALLOCATION_THRESHOLD cua SDL); vung lon hon tai theo dai
+			const UINT uZeroTruoc = m_jxZeroSize;
+			RgEnsureXfer(m_pGpu, &m_pJxZeroXfer, &m_jxZeroSize, needZ, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD);
+			if (m_jxZeroSize != uZeroTruoc) m_jxZeroDaXoa = 0;
+			if (m_pJxZeroXfer && m_jxZeroDaXoa < m_jxZeroSize)
+			{
+				BYTE* pz = (BYTE*)SDL_MapGPUTransferBuffer(m_pGpu, m_pJxZeroXfer, false);
+				if (pz) { memset(pz, 0, m_jxZeroSize); SDL_UnmapGPUTransferBuffer(m_pGpu, m_pJxZeroXfer); m_jxZeroDaXoa = m_jxZeroSize; }
+			}
+			if (m_pJxZeroXfer && m_jxZeroDaXoa >= needZ)
+			{
+				for (size_t i = 0; i < m_jxZeroUploads.size(); i++)
+				{
+					const RgTexUpload& u = m_jxZeroUploads[i];
+					const UINT bppZ = u.bytes / (u.w * u.h); UINT hDai = needZ / (u.w * (bppZ ? bppZ : 4)); if (hDai == 0) hDai = 1;	// [VE 11/09 e] so hang moi dai
+					for (UINT y0 = 0; y0 < u.h; y0 += hDai)
+					{
+						const UINT hh = (u.h - y0 < hDai) ? (u.h - y0) : hDai;
+						SDL_GPUTextureTransferInfo src; memset(&src, 0, sizeof(src)); src.transfer_buffer = m_pJxZeroXfer; src.offset = 0; src.pixels_per_row = u.w; src.rows_per_layer = hh;
+						SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.x = u.x; dst.y = u.y + y0; dst.w = u.w; dst.h = hh; dst.d = 1;
+						SDL_UploadToGPUTexture(cp, &src, &dst, false);
+					}
+				}
+				m_uUploads += (unsigned)m_jxZeroUploads.size(); jxK.uZero = (unsigned)m_jxZeroUploads.size();
+			}
+			else RgLog("bo dem 0 (%u B) that bai: %s", needZ, SDL_GetError());
+			jxK.dChepZero = JxVeMs(uZ0, SDL_GetPerformanceCounter());
+		}
+#endif
+#ifdef JX_ANDROID
 		if (!m_palPending.empty() && m_pPalTex)
 		{	// [VE 11/09 d] bang mau di chung staging + transfer buffer co dinh (truoc: tao/huy mot transfer buffer rieng moi khung co bang mau moi
 			// -> SDL cap/giai phong khoi bo nho 16 MB (vkAllocateMemory) -> chep 40-60 ms tren Fold 7)
@@ -1089,37 +1124,6 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 #ifdef JX_ANDROID
 		jxK.uXferKB = m_texXferSize >> 10;
-		if (!m_jxZeroUploads.empty())
-		{	// [VE 11/09 d] vung 0 (trang atlas moi, o chua co ban CPU): tai tu bo dem 0 co dinh, chi memset mot lan khi tao/phinh
-			const Uint64 uZ0 = SDL_GetPerformanceCounter();
-			const UINT needZ = 2u << 20;	// [VE 11/09 e] bo dem 0 co dinh 2 MiB (khong qua SMALL_ALLOCATION_THRESHOLD cua SDL); vung lon hon tai theo dai
-			const UINT uZeroTruoc = m_jxZeroSize;
-			RgEnsureXfer(m_pGpu, &m_pJxZeroXfer, &m_jxZeroSize, needZ, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD);
-			if (m_jxZeroSize != uZeroTruoc) m_jxZeroDaXoa = 0;
-			if (m_pJxZeroXfer && m_jxZeroDaXoa < m_jxZeroSize)
-			{
-				BYTE* pz = (BYTE*)SDL_MapGPUTransferBuffer(m_pGpu, m_pJxZeroXfer, false);
-				if (pz) { memset(pz, 0, m_jxZeroSize); SDL_UnmapGPUTransferBuffer(m_pGpu, m_pJxZeroXfer); m_jxZeroDaXoa = m_jxZeroSize; }
-			}
-			if (m_pJxZeroXfer && m_jxZeroDaXoa >= needZ)
-			{
-				for (size_t i = 0; i < m_jxZeroUploads.size(); i++)
-				{
-					const RgTexUpload& u = m_jxZeroUploads[i];
-					const UINT bppZ = u.bytes / (u.w * u.h); UINT hDai = needZ / (u.w * (bppZ ? bppZ : 4)); if (hDai == 0) hDai = 1;	// [VE 11/09 e] so hang moi dai
-					for (UINT y0 = 0; y0 < u.h; y0 += hDai)
-					{
-						const UINT hh = (u.h - y0 < hDai) ? (u.h - y0) : hDai;
-						SDL_GPUTextureTransferInfo src; memset(&src, 0, sizeof(src)); src.transfer_buffer = m_pJxZeroXfer; src.offset = 0; src.pixels_per_row = u.w; src.rows_per_layer = hh;
-						SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.x = u.x; dst.y = u.y + y0; dst.w = u.w; dst.h = hh; dst.d = 1;
-						SDL_UploadToGPUTexture(cp, &src, &dst, false);
-					}
-				}
-				m_uUploads += (unsigned)m_jxZeroUploads.size(); jxK.uZero = (unsigned)m_jxZeroUploads.size();
-			}
-			else RgLog("bo dem 0 (%u B) that bai: %s", needZ, SDL_GetError());
-			jxK.dChepZero = JxVeMs(uZ0, SDL_GetPerformanceCounter());
-		}
 #endif
 		if (!m_ring.empty())
 		{
