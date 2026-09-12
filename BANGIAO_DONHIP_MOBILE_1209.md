@@ -1029,3 +1029,45 @@ config dt_v4 đặt `Rep3AtlasKhoi=1`.
 
 Điểm cần canh nhất lần này là **bộ nhớ**: khối cấp trọn 8 lớp ngay cả khi mới dùng một trang, nên đỉnh bộ nhớ có thể
 cao hơn bản cũ. Log in `atlas khoi=... MB` để theo dõi.
+
+
+### 19:05 — Đo thật trên điện thoại: phiên `SM-F966U1_20260911_185508`
+
+**Đính chính trước.** Khối 18:50 ở trên tôi so "1 653 → 20" là **so sai**: 1 653 là của điện thoại, 20 là của máy ảo,
+hai máy khác nhau và hai cảnh khác nhau. Chủ nhắc đúng. Dưới đây là số so được: **cùng một điện thoại, cùng người
+chơi, ghép theo số quad mỗi khung**.
+
+| cửa sổ khớp mật độ | trước `[CULLCPU]` | sau `[KHOI]` |
+|---|---|---|
+| quad / khung | 2 344 | 2 207 |
+| **đổi texture / khung** | **1 183** | **23** |
+| đổi texture / quad | 0,505 | 0,010 |
+| lệnh / quad | 0,892 | 0,380 |
+| ghi lệnh | 1,91 ms | 0,48 ms |
+| tổng (khoảng vẽ) | 4,37 ms | 3,26 ms |
+| fps | 117,2 | 117,2 (chạm trần vsync) |
+
+Cặp thứ hai, cảnh nhẹ hơn: 1 252 quad → đổi texture 601, ghi lệnh 1,56 ms; sau: 1 310 quad → đổi texture 23,
+ghi lệnh 0,47 ms.
+
+**Điều đáng nói nhất:** ở bản mới, số lần đổi texture **đứng yên ở 19–24 mỗi khung bất kể cảnh đông hay vắng**
+(812 quad cũng 19, 2 207 quad cũng 23). Bản cũ thì nó bám theo số quad, cứ khoảng 0,5 lần đổi cho mỗi quad. Đó đúng
+là điều mà "gắn chết khe sampler" hứa hẹn, và là bằng chứng cơ chế chạy đúng chứ không phải may.
+
+Thiết bị (mẫu lúc GPU ≥ 60 %):
+
+| | trước (512 mẫu) | sau (89 mẫu) |
+|---|---|---|
+| điện | 3,36 W | **2,55 W** |
+| GPU | 77,4 % @ 420 MHz | 72,5 % @ **237 MHz** |
+| nhiệt trung bình | 2,67 | 2,42 |
+
+GPU chạy ở 237 MHz thay vì 420 MHz cho cùng mức tải: bộ điều tốc hạ xung vì không còn nhiều việc. Đây mới là con số
+trả lời đúng câu hỏi gốc của chủ (nóng máy, hao pin), chứ không phải fps.
+
+**Cảnh báo cần theo dõi:** hiện 7 khối, 448 MB, `het khoi 0`, 49 trang atlas đang dùng. Trần của 8 khối là khoảng
+60 trang, mà phiên trước đã từng lên 56 trang. Nếu `het khoi` bắt đầu tăng thì trang mới sẽ lùi về texture riêng và
+mất dần phần thắng. Lúc đó phải chia lại ô PALROW: trường chỉ số tổ hợp trạng thái đang cấp 12 bit mà thực tế chỉ
+dùng 5 mức, cắt bớt là dư bit cho 16 khối.
+
+Số mẫu của bản mới còn ít (8 cửa sổ, ~4 phút) nên cần chủ chơi thêm, nhất là Tống Kim lúc đông nhất.
