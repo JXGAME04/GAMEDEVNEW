@@ -1099,6 +1099,12 @@ void KScenePlaceC::Breathe()
 // EnterCriticalSection (luong nap sprite nen giu khoa thi luong ve dung o day), (9) tong ca ham Paint,
 // (10) DrawSelectInfo. Phan duoi khoa = (9) - (7) - (8) - tong bay pha.
 double g_dJxPhaCanh[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+// [NENDAT 11/09] ba nhanh cua PrerenderGround: 0 vung CHUA nguoi choi (khong chiu ngan sach),
+// 1 tam vung ke ben (chiu ngan sach 8 ms), 2 vung XA ngoai man hinh (1 vung/khung, KHONG chiu ngan sach).
+// Do phien 234254: 'dau ham' = PrerenderGround chiem 61,7 %% thoi gian ve the gioi, dan dau 204/311 khung,
+// dinh 142,6 ms; 115 dong [PGND] >= 15 ms trong mot phien. Chia ba nhanh de biet cat cho nao cho dung.
+double g_dJxNenNhanh[3] = { 0, 0, 0 };
+int    g_nJxNenSo[3] = { 0, 0, 0 };
 extern int g_nCorePaintLog;
 static double JxCanhMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 {
@@ -1130,7 +1136,13 @@ void KScenePlaceC::Paint()
 			FILE* pPgLog = fopen("jx_paint.log", "a");
 			if (pPgLog)
 			{
+#if defined(JX_MOBILE) && !defined(_SERVER)
+				// [NENDAT 11/09] tach ba nhanh de biet cat cho nao
+				fprintf(pPgLog, "[PGND] ms=%u | tieu diem %.1f/%d, ke ben %.1f/%d, XA %.1f/%d\n", dwPgMs,
+					g_dJxNenNhanh[0], g_nJxNenSo[0], g_dJxNenNhanh[1], g_nJxNenSo[1], g_dJxNenNhanh[2], g_nJxNenSo[2]);
+#else
 				fprintf(pPgLog, "[PGND] ms=%u\n", dwPgMs);
+#endif
 				fclose(pPgLog);
 			}
 		}
@@ -1343,6 +1355,13 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 	// m_bRenderGround. Toi da ~8ms de con cho khau ve trong chu ky 16,67ms.
 	DWORD	dwPgT0 = timeGetTime();
 	const DWORD	dwPgBudgetMs = 8;
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	LARGE_INTEGER jxN0, jxN1, jxNF; QueryPerformanceFrequency(&jxNF);	// [NENDAT 11/09]
+	for (int q = 0; q < 3; q++) { g_dJxNenNhanh[q] = 0.0; g_nJxNenSo[q] = 0; }
+#define JX_NEN_DO(nhanh, lenh) do { QueryPerformanceCounter(&jxN0); lenh; QueryPerformanceCounter(&jxN1); if (jxNF.QuadPart) g_dJxNenNhanh[nhanh] += (double)(jxN1.QuadPart - jxN0.QuadPart) * 1000.0 / (double)jxNF.QuadPart; g_nJxNenSo[nhanh]++; } while (0)
+#else
+#define JX_NEN_DO(nhanh, lenh) do { lenh; } while (0)
+#endif
 	for (int i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
 	{
 		if (m_pInProcessAreaRegions[i] == NULL)
@@ -1363,14 +1382,14 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 		{
 			// region CHUA tieu diem: luon ve ngay, khong chiu ngan sach - neu hoan thi
 			// nen ngay duoi chan nguoi choi se bi cu vai khung, rat de thay.
-			m_pInProcessAreaRegions[i]->PrerenderGround(false);
+			JX_NEN_DO(0, m_pInProcessAreaRegions[i]->PrerenderGround(false));	// [NENDAT 11/09]
 		}
 		else if (nDx <= 1 && nDy <= 1)
 		{
 			// 8 region ke ben (van trong tam nhin o ria): ve ngay NEU con ngan sach,
 			// het ngan sach thi hoan sang khung sau thay vi keo dai khung nay.
 			if (timeGetTime() - dwPgT0 < dwPgBudgetMs)
-				m_pInProcessAreaRegions[i]->PrerenderGround(false);
+				JX_NEN_DO(1, m_pInProcessAreaRegions[i]->PrerenderGround(false));	// [NENDAT 11/09]
 			else
 				nDeferred++;
 		}
@@ -1378,12 +1397,16 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 		{
 			// amortize the far ones: a full region prerender costs 10-40ms and
 			// used to hitch the frame right after a region finished loading
-			if (m_pInProcessAreaRegions[i]->PrerenderGround(false))
-				nFarBudget--;
+			{
+				bool bJxOk = false;	// [NENDAT 11/09]
+				JX_NEN_DO(2, bJxOk = (m_pInProcessAreaRegions[i]->PrerenderGround(false) != 0));
+				if (bJxOk) nFarBudget--;
+			}
 		}
 		else
 			nDeferred++;
 	}
+#undef JX_NEN_DO
 	if (nDeferred && bForce == false)
 		m_bRenderGround = true;	// finish the remaining far regions on the next frames
 	LeaveCriticalSection(&m_RegionListAdjustCritical);

@@ -1442,3 +1442,48 @@ the gioi  51.4 | bay pha 51.4 | THIEU   0.0     <- nhom 2: VAT THE 50.3
 2. **Một chỗ chưa đo** có những cú 53–149 ms — bản 109112335 đang đo nốt.
 
 Ghi lại để nhớ: kết luận lúc 23:35 dựa trên 38 dòng là **quá vội**. Phải đợi đủ mẫu rồi hãy kết luận.
+
+
+---
+
+## 23:55 11/09 — TÌM RA GỐC: dựng sẵn nền đất, không phải chờ khoá (APK 109112358)
+
+Phiên `SM-F966U1_20260911_234254`, **311 dòng** đủ mười con số:
+
+| phần của "vẽ thế giới" | trung bình | đỉnh | chiếm | dẫn đầu ở |
+|---|---|---|---|---|
+| **đầu hàm = `PrerenderGround`** | **10,95 ms** | **142,6** | **61,7 %** | **204 / 311 khung** |
+| **vật thể (NPC / người chơi)** | **3,95 ms** | **82,1** | **22,3 %** | **51 / 311 khung** |
+| trước hết | 2,40 ms | 10,1 | 13,5 % | 33 khung |
+| nền | 0,00 | 0,0 | 0,0 % | 22 khung |
+| nền đất | 0,22 | 29,1 | 1,2 % | |
+| thời tiết | 0,16 | 49,8 | 0,9 % | |
+| **chờ khoá** | **0,00 ms** | **0,0** | **0,0 %** | 0 khung |
+| đuôi khoá | 0,03 | 0,2 | 0,2 % | |
+
+**Giả thuyết "chờ khoá" của tôi lúc 23:35 SAI HẲN: đo được 0,00 ms, đỉnh 0,0.** May là tôi đo trước khi sửa.
+
+Thủ phạm là `PrerenderGround` (dựng sẵn nền đất của các vùng). Phiên này có **115 dòng `[PGND]` ≥ 15 ms**, mỗi dòng
+15–19 ms, tức khoảng 10 cú/phút chỉ từ một chỗ này.
+
+### Vì sao nó vượt ngân sách
+
+Vòng lặp trong `KScenePlaceC::PrerenderGround` chia ba nhánh, và **hai trong ba nhánh không chịu ngân sách**:
+
+| nhánh | ngân sách | ghi chú trong mã |
+|---|---|---|
+| vùng **chứa người chơi** | **không** | "nếu hoãn thì nền ngay dưới chân người chơi sẽ bị cũ vài khung, rất dễ thấy" |
+| 8 vùng kề bên | có, 8 ms | hết ngân sách thì hoãn sang khung sau |
+| 1 vùng **xa, ngoài màn hình** | **không** | `nFarBudget = 1`, chạy trọn vẹn |
+
+Chính mã nguồn ghi "một region prerender tốn 10-40 ms". Vậy một khung xấu nhất có thể ăn: vùng tiêu điểm 15–40 ms
+cộng vùng xa 15–40 ms cộng 8 ms kề bên, khớp với các đỉnh 60–142 ms đo được.
+
+**Nhánh "vùng xa" đáng ngờ nhất để cắt**, vì nó ở **ngoài màn hình**: hoãn nó sang khung sau không đổi một điểm ảnh
+nào người chơi nhìn thấy. Nhánh tiêu điểm thì có cái giá hình ảnh thật, phải cẩn thận.
+
+Bản 109112358 đo riêng ba nhánh (`tieu diem / ke ben / XA` kèm số lần) trong dòng `[PGND]`, **chưa đổi hành vi gì**.
+Có số rồi mới cắt, để không lặp lại chuyện đoán sai như vụ chờ khoá.
+
+**Kiểm:** Android dựng qua; `Core.vcxproj Client Release|Win32` 0 lỗi C. APK `109112358`,
+md5 `2b335763936d3f61eff2d0c215fc7c88`, máy chủ 8765 PID 426852.
