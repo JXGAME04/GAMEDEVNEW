@@ -25294,8 +25294,24 @@ void KCoreShell::DrawGameSpace()
 		s_SecPaint++;
 		if (g_pRepresent)
 		{
+#if defined(JX_MOBILE) && !defined(_SERVER)
+			// [PHACANH2 11/09] tach tong Paint() va DrawSelectInfo de biet phan nao con sot ngoai bay pha
+			extern double g_dJxPhaCanh[11];
+			LARGE_INTEGER jxS[3], jxF; QueryPerformanceFrequency(&jxF);
+			QueryPerformanceCounter(&jxS[0]);
+			g_ScenePlace.Paint();
+			QueryPerformanceCounter(&jxS[1]);
+			Player[CLIENT_PLAYER_INDEX].DrawSelectInfo();
+			QueryPerformanceCounter(&jxS[2]);
+			if (jxF.QuadPart)
+			{
+				g_dJxPhaCanh[9]  = (double)(jxS[1].QuadPart - jxS[0].QuadPart) * 1000.0 / (double)jxF.QuadPart;
+				g_dJxPhaCanh[10] = (double)(jxS[2].QuadPart - jxS[1].QuadPart) * 1000.0 / (double)jxF.QuadPart;
+			}
+#else
 			g_ScenePlace.Paint();
 			Player[CLIENT_PLAYER_INDEX].DrawSelectInfo();
+#endif
 		}
 		DWORD dwDrawMs = timeGetTime() - dwDrawT0;
 		s_SecPaintSum += dwDrawMs;

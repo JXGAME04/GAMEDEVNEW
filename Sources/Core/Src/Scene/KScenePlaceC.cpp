@@ -1094,7 +1094,11 @@ void KScenePlaceC::Breathe()
 #if defined(JX_MOBILE) && !defined(_SERVER)
 // [PHACANH 11/09] bay pha cua viec ve the gioi. Da truy duoc: 78,6 %% thoi gian khung giat nam o day
 // (dan dau 177/202 khung cham, TB 15,12 ms, dinh 146,4). Chia nho de biet pha nao.
-double g_dJxPhaCanh[7] = { 0, 0, 0, 0, 0, 0, 0 };
+// [PHACANH2 11/09] do phien 233219 cho thay khung 149 ms ma BAY PHA cong lai chi 0,4 ms -> thoi gian nam NGOAI bay pha do.
+// Ba cho con sot trong KScenePlaceC::Paint: (7) dau ham = IR_UpdateTime + PrerenderGround, (8) CHO KHOA
+// EnterCriticalSection (luong nap sprite nen giu khoa thi luong ve dung o day), (9) tong ca ham Paint,
+// (10) DrawSelectInfo. Phan duoi khoa = (9) - (7) - (8) - tong bay pha.
+double g_dJxPhaCanh[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 extern int g_nCorePaintLog;
 static double JxCanhMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 {
@@ -1108,7 +1112,8 @@ void KScenePlaceC::Paint()
 {
 #if defined(JX_MOBILE) && !defined(_SERVER)
 	const bool bJxDo = (g_nCorePaintLog > 0);	// [PHACANH 11/09]
-	LARGE_INTEGER jxC[8];
+	LARGE_INTEGER jxC[8], jxD[2];
+	if (bJxDo) QueryPerformanceCounter(&jxD[0]);	// [PHACANH2 11/09] vao ham
 #endif
 	IR_UpdateTime();
 	if (m_bInited == false || m_szPlaceRootPath[0] == 0)
@@ -1131,6 +1136,9 @@ void KScenePlaceC::Paint()
 		}
 	}
 
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	if (bJxDo) QueryPerformanceCounter(&jxD[1]);	// [PHACANH2 11/09] truoc khi xin khoa
+#endif
 	EnterCriticalSection(&m_ProcessCritical);
 
 #if defined(JX_MOBILE) && !defined(_SERVER)
@@ -1209,6 +1217,8 @@ void KScenePlaceC::Paint()
 	{	// [PHACANH 11/09] chot bay pha; UiShell.cpp in kem vao dong [PDET]
 		QueryPerformanceCounter(&jxC[7]);
 		for (int q = 0; q < 7; q++) g_dJxPhaCanh[q] = JxCanhMs(jxC[q], jxC[q + 1]);
+		g_dJxPhaCanh[7] = JxCanhMs(jxD[0], jxD[1]);	// [PHACANH2 11/09] dau ham (IR_UpdateTime + PrerenderGround)
+		g_dJxPhaCanh[8] = JxCanhMs(jxD[1], jxC[0]);	// [PHACANH2 11/09] CHO KHOA
 	}
 #endif
 	LeaveCriticalSection(&m_ProcessCritical);

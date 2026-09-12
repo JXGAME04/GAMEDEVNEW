@@ -1381,3 +1381,33 @@ sạch, 0 lỗi C**; chỉ đứt ở khâu liên kết `LNK1181 thiếu Lib\deb
 worktree chứ không phải lỗi mã. `S3Client Release|x64` 0 lỗi.
 
 APK `109112327`, md5 `3ec9bc2b0844c8c5b5901a8359623a9f`, lên `dt_v4` 23:27, máy chủ 8765 PID 423548.
+
+
+### 23:35 — Bảy pha KHÔNG chứa thời gian: nghi vấn chuyển sang CHỜ KHOÁ (APK 109112335)
+
+Phiên `SM-F966U1_20260911_233219` (38 dòng) cho một kết quả rất có ích theo kiểu phủ định:
+
+```
+render 149 | the gioi 149.7 = nen 0.0, nen dat 0.1, phu nen 0.0, VAT THE 0.2, tren dau 0.0, truoc het 0.1, thoi tiet 0.0
+render 149 | the gioi 104.4 = nen 0.0, nen dat 29.5, phu nen 0.0, VAT THE 5.1, tren dau 0.0, truoc het 1.6, thoi tiet 0.0
+```
+
+Khung đầu: vẽ thế giới **149,7 ms** mà **bảy pha cộng lại chỉ 0,4 ms**. Tức thời gian nằm **ngoài** bảy pha tôi đo.
+Trung bình cả phiên cũng vậy: vẽ thế giới 10,8 ms nhưng bảy pha chỉ cộng được 2,5 ms.
+
+Nhìn lại `KScenePlaceC::Paint` thì còn đúng ba chỗ tôi chưa đo, và **một trong ba là thủ phạm rất có lý**:
+
+| chỗ chưa đo | vì sao đáng ngờ |
+|---|---|
+| đầu hàm: `IR_UpdateTime` + `PrerenderGround` | `PrerenderGround` đã có log riêng `[PGND]`, chỉ 8 lần cả phiên |
+| **`EnterCriticalSection(&m_ProcessCritical)`** | **luồng nạp sprite nền giữ khoá này; luồng vẽ đứng chờ ở đây** |
+| đuôi sau khi nhả khoá + `DrawSelectInfo` | phần vẽ gỡ lỗi, nhỏ |
+
+Chỗ chờ khoá khớp với một điều lạ từ đầu: dòng `[VE-GIAT]` luôn ghi `nap 0.0 ms`. Việc nạp **không** xảy ra trên
+luồng vẽ nên không được tính vào đó, nhưng **cái giá của nó rơi vào luồng vẽ dưới dạng chờ khoá**.
+
+Bản 109112335 đo nốt ba chỗ này: `dau ham`, `CHO KHOA`, `tong Paint`, `chon muc tieu`. Phần đuôi sau khi nhả khoá
+tính được bằng `tong Paint` trừ các phần kia.
+
+**Kiểm:** Android dựng qua; `Core.vcxproj Client Release|Win32` biên dịch 0 lỗi C (vẫn chỉ đứt LNK1181 thiếu thư viện
+dựng sẵn). APK `109112335`, md5 `5598a84b1b6b43d7280915fbd5efe508`, máy chủ 8765 PID 396480.
