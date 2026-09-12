@@ -210,6 +210,20 @@ ENGINE_API void g_GetFullPath(LPSTR lpPathName, LPSTR lpFileName)
 	// 文件带有部分路径
 	if (lpFileName[0] == '\\' || lpFileName[0] == '/')
 	{
+#ifdef JX_POSIX	// [MACOS 11/09 DUONGDANTUYETDOI] tren POSIX dau '/' la duong dan TUYET DOI that.
+		// Ban Windows da bat duong dan day du o nhanh "C:\\" phia tren; POSIX khong co o dia
+		// nen duong dan day du roi vao day va bi ghep them szRootPath lan nua -> dai gap doi
+		// -> tran char PathName[260] cua KFile::Create/Open/Append -> __stack_chk_fail (SIGABRT).
+		// Duong dan trong game luon tuong doi theo goc ("\\Ui\\...") nen khong khop nhanh nay.
+		{
+			size_t nRoot = strlen(szRootPath);
+			if (nRoot > 0 && strncmp(lpFileName, szRootPath, nRoot) == 0)
+			{
+				g_StrCpy(lpPathName, lpFileName);
+				return;
+			}
+		}
+#endif
 		g_StrCpy(lpPathName, szRootPath);
 		g_StrCat(lpPathName, lpFileName);
 		return;

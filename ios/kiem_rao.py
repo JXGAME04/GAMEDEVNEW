@@ -14,8 +14,15 @@ Chay:  python3 ios/kiem_rao.py            (so voi HEAD)
 import io, os, re, subprocess, sys
 
 GOC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MOC = sys.argv[1] if len(sys.argv) > 1 else "HEAD"
-MACRO = re.compile(r"\bJX_IOS\b|\bJX_APPLE\b|\bJX_MACOS\b")
+# [PC 11/09 CHEDO_PC] hai che do:
+#   mac dinh : bo JX_IOS/JX_APPLE/JX_MACOS  -> chung minh ban ANDROID khong doi
+#   --pc     : bo them JX_POSIX/JX_ANDROID/JX_MOBILE -> chung minh ban WINDOWS khong doi
+#              (Windows khong dinh nghia bat ky macro nao trong sau cai do)
+CHEDO_PC = "--pc" in sys.argv[1:]
+_dsoi = [a for a in sys.argv[1:] if a != "--pc"]
+MOC = _dsoi[0] if _dsoi else "HEAD"
+MACRO = re.compile(r"\bJX_IOS\b|\bJX_APPLE\b|\bJX_MACOS\b|\bJX_POSIX\b|\bJX_ANDROID\b|\bJX_MOBILE\b"
+                   if CHEDO_PC else r"\bJX_IOS\b|\bJX_APPLE\b|\bJX_MACOS\b")
 # [JXMOBILE 11/09] Android NAY dinh nghia JX_MOBILE -> KHONG loc no nua.
 # [JXAPPLE 11/09] JX_APPLE / JX_MACOS: Android va Windows deu KHONG dinh nghia -> loc nhu JX_IOS.
 
@@ -92,5 +99,6 @@ for p in tep:
         print("!! %s  so byte >= 0x80 doi %d -> %d" % (p, bc_cu, bc_moi))
 
 print("=" * 60)
-print("KIEM RAO: %s" % ("DAT - ban PC va Android khong doi" if loi == 0 else "HONG - %d cho phai xem lai" % loi))
+_ten = "WINDOWS" if CHEDO_PC else "ANDROID"
+print("KIEM RAO (%s): %s" % (_ten, ("DAT - ban %s khong doi" % _ten) if loi == 0 else "HONG - %d cho phai xem lai" % loi))
 sys.exit(1 if loi else 0)

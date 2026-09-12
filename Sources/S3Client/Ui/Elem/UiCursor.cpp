@@ -125,6 +125,14 @@ int KUiLoadCursor(const char* pszImgFile, HCURSOR &rhRetCursor)
     if (!pszImgFile)
         goto Exit0;
 
+#ifdef JX_POSIX	// [MACOS 11/09 CONTROCHUOT] tren POSIX LoadCursorFromFile() la ham rong
+    // (KPosixWin32.cpp): no bo qua tep va luon tra ve con tro mac dinh cua SDL, nen ca doan
+    // chep .cur ra tep tam o duoi khong bao gio tao duoc con tro that. Truoc day doan do van
+    // chay nhung that bai o KFile::Create; bo han cho khoi ton cong VA khoi dua duong dan
+    // tuyet doi vao KFile (tung lam tran PathName[260] -> SIGABRT tren macOS khi goc dai).
+    // Ket qua tra ve giu NGUYEN nhu truoc: nResult = false, rhRetCursor = NULL.
+    goto Exit0;
+#endif
     nRetCode = GetTempPath(MAX_PATH, szTempPath);
     if (0 == nRetCode)
         goto Exit0;
