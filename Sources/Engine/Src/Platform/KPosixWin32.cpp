@@ -12,7 +12,29 @@
 #include <time.h>
 #include <signal.h>
 #include <sys/statvfs.h>
+#ifdef JX_IOS
+/* [IOS 11/09] Apple khong co <sys/sysinfo.h>. Cung cap dung ten sysinfo() + struct sysinfo o day
+   de GlobalMemoryStatus / GlobalMemoryStatusEx ben duoi khong phai doi mot dong nao.
+   Tong RAM lay qua sysctl(HW_MEMSIZE); phan con trong lay qua thong ke trang cua mach. */
+#include <sys/sysctl.h>
+#include <mach/mach.h>
+struct sysinfo { unsigned long totalram; unsigned long freeram; unsigned int mem_unit; };
+static int sysinfo(struct sysinfo* si)
+{
+	if (!si) return -1;
+	si->mem_unit = 1; si->totalram = 0; si->freeram = 0;
+	uint64_t nTong = 0; size_t nCo = sizeof(nTong); int mib[2] = { CTL_HW, HW_MEMSIZE };
+	if (sysctl(mib, 2, &nTong, &nCo, NULL, 0) == 0) si->totalram = (unsigned long)nTong;
+	vm_size_t nTrang = 0; mach_port_t host = mach_host_self();
+	vm_statistics64_data_t vm; mach_msg_type_number_t nDem = HOST_VM_INFO64_COUNT;
+	if (host_page_size(host, &nTrang) == KERN_SUCCESS &&
+	    host_statistics64(host, HOST_VM_INFO64, (host_info64_t)&vm, &nDem) == KERN_SUCCESS)
+		si->freeram = (unsigned long)((uint64_t)(vm.free_count + vm.inactive_count) * (uint64_t)nTrang);
+	return 0;
+}
+#else
 #include <sys/sysinfo.h>
+#endif
 #ifdef __ANDROID__
 #include <android/log.h>
 #endif

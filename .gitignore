@@ -97,3 +97,10 @@ android/gradle-project/app/.cxx/
 android/gradle-project/local.properties
 ThirdParty/SDL3-src/
 android/apk/
+
+# [IOS 11/09] san pham build iOS
+build/
+ios/build/
+
+# [IOS 11/09] rac cua macOS
+.DS_Store
