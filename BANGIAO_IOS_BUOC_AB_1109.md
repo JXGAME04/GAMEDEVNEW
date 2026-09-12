@@ -203,3 +203,64 @@ bốn chỗ. Đã sửa thành **ba nền ba đường** (`[DONTRUNG-SUA 11/09]`
 
 > **Bài học vào quy tắc:** đừng bao giờ bỏ một định nghĩa toàn cục chỉ vì một nền thấy nó trùng. Phải xét
 > **cách đóng gói của từng nền** trước: thứ trùng trên nhị phân gộp lại là thứ **bắt buộc** trên nhị phân tách rời.
+
+---
+
+## 10. BƯỚC E (11/09 tối): METAL CHẠY ĐƯỢC TRÊN iPHONE THẬT
+
+### 10.1 Shader Metal — `ios/sinh_shader_msl.py`
+
+Không cần cài `glslc`: lấy **thẳng mã SPIR-V đang dùng** trong `Rep3ShadersGPU_spv.h` (đúng byte với
+bản Android), dịch chéo sang MSL bằng `spirv-cross --msl --msl-decoration-binding`.
+
+Đã đọc `SDL_gpu_metal.m` 3.2.30 trước để biết quy ước gắn kết, và chỉ số sinh ra **khớp chính xác**:
+
+| Tài nguyên | Sinh ra | SDL đặt ở |
+|---|---|---|
+| Đệm hằng số đỉnh và điểm ảnh | `buffer(0)` | `atIndex:i` từ 0 |
+| Ba texture và ba bộ lấy mẫu | 0, 1, 2 | `NSMakeRange(0, num_samplers)` |
+| Đệm đỉnh | khe 14 trở lên | `METAL_FIRST_VERTEX_BUFFER_SLOT = 14` |
+
+### 10.2 Bảng tra ký hiệu tĩnh — thay `dlopen`
+
+`S3Client.cpp:389` gọi `LoadLibrary("Represent3.dll")`. Trên iOS mọi thứ link tĩnh vào **một** nhị phân
+nên không có gì để nạp. Thêm bảng tra trong `KPosixWin32.cpp` (rào `JX_IOS`); ứng dụng đăng ký trước
+trong `ios/JxIosMain.cpp`. Đã đăng ký ba hàm: `CreateRepresentShell`, `CreateInterface` của Rainbow,
+`CreateTextFilter`.
+
+### 10.3 Ba chặn liên tiếp, mỗi cái lộ ra cái sau
+
+1. **Khởi tạo hỏng, không biết vì sao.** Thêm `JxIos_GhiLoiKhoiTao()` ghi mã lỗi mà `GameInit()` vốn đã
+   đặt sẵn. Ngay lần chạy đầu: `ma loi = 1, chuoi loi = "\settings\chatsent.flt"` — **thiếu dữ liệu**,
+   không phải lỗi mã. Tệp đó nằm trong gói pak chứ không phải tệp rời.
+2. **Máy ảo iOS không chạy được SDL_GPU Metal.** `SDL_CreateGPUDevice(MSL)` trả
+   `Device does not meet the hardware requirements`. Tra mã: `SDL_gpu_metal.m:4489` đòi
+   `MTLGPUFamilyApple3`, máy ảo không đáp ứng. **Từ nay muốn thấy hình phải chạy máy thật.**
+3. **Trên iPhone thật thì chạy.** Nhật ký máy chủ (iPhone 17 Pro Max, iOS 26.6.2):
+
+```
+[GPU] thiet bi: driver metal, backbuffer 800x600, swapchain fmt 12, trinh chieu vsync
+[REP3] card: HAL | MaxTex 8192x8192 | vsync=1
+[FONT] CreateAFont id=10..16 -> OK  (du 5 bo phong)
+[GPU] man hinh 956x440@120 | 13 che do
+```
+
+### 10.4 Cách chuyển dữ liệu — số đo thật
+
+| Việc | Số đo |
+|---|---|
+| Tải 14 gói pak từ máy chủ LAN của máy PC | 6,50 GB trong 115 s, **58 MB/s** |
+| Tải 599 tệp rời (spr, maps) | 1,30 GB trong 71 s |
+| Chép vào máy ảo | 6,5 GB trong **7,8 s** (sao chép nhanh của APFS) |
+| Đẩy sang iPhone bằng `devicectl` | 512 MB trong 14,8 s, **35 MB/s** |
+
+Tra gói nào chứa tệp nào bằng bộ đọc pak sẵn có `ReverseTools/pak_vltk/pakdump.py`:
+`chatsent.flt`, năm bộ phông và `UiLogin.ini` đều nằm trong `mobile_01.pak`.
+
+### 10.5 Ba bẫy nữa (tiếp mục 9)
+
+| # | Bẫy | Cách qua |
+|---|---|---|
+| 9 | Bản vá biến một hàm viết trên **một dòng** thành nhiều dòng | `ios/kiem_rao.py` so **từng dòng**. Phải bọc bằng rào có nhánh `#else` giữ nguyên văn dòng cũ |
+| 10 | `Rep3_JxEpTrinhChieu` nằm trong `#ifdef JX_ANDROID` nên iOS không có; `CreateTextFilter` khai báo kiểu C++ nhưng xuất ký hiệu liên kết C | Xem `nm` trước khi khai báo |
+| 11 | `extern "C"` đặt trong **thân hàm** | C++ đòi đặc tả liên kết ở phạm vi tệp. Clang báo `expected unqualified-id` |
