@@ -112,6 +112,9 @@ SDL_GPUTexture* CTexGpu::PrepareForBind()
 			else
 			{
 				m_uGpuBytes = m_w * m_h * m_pPage->m_bpp; m_pDev->m_uTexBytes += m_uGpuBytes; g_uRep3GpuTexCount++; g_uRep3GpuTexBytes += m_uGpuBytes;
+#ifdef JX_ANDROID
+				g_uJxAtlasODat[(m_pool == D3DPOOL_MANAGED) ? 1 : 0]++;	// [CHUATLAS 11/09] dem o atlas theo loai bo nho
+#endif
 				if (m_pCpu) QueueUpload(NULL); else m_pDev->QueueZeroUpload(m_pPage->m_pTex, m_ax, m_ay, m_w, m_h, m_pPage->m_bpp, m_pPage->m_nLop);	// [MANG 11/09] lop
 				m_bDirty = false; m_bGpuHasData = true;
 			}
@@ -123,6 +126,9 @@ SDL_GPUTexture* CTexGpu::PrepareForBind()
 				if (m_bUsedThisFrame && m_pCpu)
 				{	// lenh ve dau khung da tham chieu cho cu -> xin cho MOI trong trang (cho cu tra sau khung), tai toan bo
 					CAtlasPageGpu* pNew = NULL; UINT x = 0, y = 0;
+#ifdef JX_ANDROID
+					g_uJxAtlasOMoi++;	// [CHUATLAS 11/09] noi dung doi giua khung -> phai xin o MOI (texture MANAGED bi ghi lai thuong xuyen se lam so nay tang vot)
+#endif
 					if (m_pDev->m_pAtlas && m_pDev->m_pAtlas->Alloc(m_w, m_h, m_fi.gpu, &pNew, &x, &y))
 					{ m_pDev->DeferAtlasFree(m_pPage, m_ax, m_ay, m_w); m_pPage = pNew; m_ax = x; m_ay = y; QueueUpload(NULL); }
 					else QueueUpload(&m_rcDirty);	// khong xin duoc: tai de len cho cu (lenh truoc trong khung thay noi dung moi - hiem)
@@ -330,7 +336,13 @@ void CAtlasMgrGpu::ReleaseAll()
 
 bool CAtlasMgrGpu::Eligible(UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL pool)
 {
+#ifdef JX_ANDROID
+	// [CHUATLAS 11/09] port buoc (d) cua [MANG 09/09] (commit 4ee8e6ad ben duong D3D11): chu / anh dung san la POOL_MANAGED, truoc day bi loai
+	// khoi atlas CHI vi pool -> moi nhan ten / dong chat / so sat thuong cat lo quad. Texture ao da ho tro ban CPU + tai lai vung ban.
+	if (pool != D3DPOOL_DEFAULT && !(g_nJxAtlasManaged && pool == D3DPOOL_MANAGED)) return false;
+#else
 	if (pool != D3DPOOL_DEFAULT) return false;
+#endif
 	if (usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DYNAMIC | D3DUSAGE_DEPTHSTENCIL)) return false;
 	if (w == 0 || h == 0 || w > 512 || h > 512) return false;
 	switch (fmt)

@@ -83,6 +83,8 @@ extern int g_nJxPsBuffer, g_nJxBindRing;	// [GOP 11/09] [Client] Rep3PsBuffer: t
 extern unsigned g_uJxPsBangMax, g_uJxPsTran;	// [GOP 11/09] so muc bang ps lon nhat trong ky / so lan tran bang
 extern int g_nJxAtlasMang, g_nJxAtlasLop, g_nJxAtlasCumMB;	// [MANG 11/09] [Client] Rep3AtlasMang: nhieu trang atlas trong MOT texture mang 2D (lop di theo dinh) -> gop duoc quad khac trang
 extern unsigned g_uJxAtlasCum;	// [MANG 11/09] so cum dang song
+extern int g_nJxAtlasManaged;	// [CHUATLAS 11/09] [Client] Rep3AtlasManaged: cho texture MANAGED (chu / anh dung san) vao atlas - port buoc (d) cua [MANG 09/09] ben duong D3D11
+extern unsigned g_uJxAtlasODat[2], g_uJxAtlasOMoi;	// [CHUATLAS 11/09] o atlas da cap: [0] DEFAULT, [1] MANAGED; so lan phai xin O MOI vi noi dung doi giua khung
 extern unsigned g_uJxKhungGiongBo, g_uJxKhungGiongCoTai, g_uJxKhungGiongEp, g_uJxKhungGiongDem, g_uJxKhungGiongChuoiMax, g_uJxKhungTrinhChieu;	// [BKG 11/09] dem trong ky ([VE-BKG])
 extern unsigned g_uJxNapKhungBoVe, g_uJxNapKhungBoVeKhung, g_uJxNapKhungDongBo, g_uJxNapKhungGiao, g_uJxNapKhungTruocSo, g_uJxNapKhungXong, g_uJxNapKhungHong, g_uJxNapKhungBo, g_uJxNapKhungChoMax;
 extern double g_dJxNapKhungTre, g_dJxNapKhungTreMax, g_dJxNapNenBan, g_dJxNapKhungAp, g_dJxNapKhungApMax; extern unsigned g_uJxNapKhungApKhung;
