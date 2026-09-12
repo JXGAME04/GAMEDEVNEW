@@ -386,8 +386,16 @@ void UiPaint(int nGameLoop)
 			FILE* pLog = fopen("jx_paint.log", "a");
 			if (pLog)
 			{
+#ifdef JX_MOBILE
+				// [PHAVE 11/09] tach 'render' thanh nam pha cua Wnd_RenderWindows
+				extern double g_dJxPhaVe[5];
+				fprintf(pLog, "[PDET] begin=%u render=%u end=%u | the gioi %.1f, neo cua so %.1f, lop duoi %.1f, lop giua %.1f, lop tren %.1f\n",
+					nPdT1 - nPdT0, nPdT2 - nPdT1, nPdT3 - nPdT2,
+					g_dJxPhaVe[0], g_dJxPhaVe[1], g_dJxPhaVe[2], g_dJxPhaVe[3], g_dJxPhaVe[4]);
+#else
 				fprintf(pLog, "[PDET] begin=%u render=%u end=%u\n",
 					nPdT1 - nPdT0, nPdT2 - nPdT1, nPdT3 - nPdT2);
+#endif
 				fclose(pLog);
 			}
 		}

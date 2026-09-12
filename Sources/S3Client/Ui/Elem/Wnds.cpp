@@ -112,12 +112,34 @@ void Wnd_Cleanup()
 //--------------------------------------------------------------------------
 //	功能：绘制窗口
 //--------------------------------------------------------------------------
+#ifdef JX_MOBILE
+// [PHAVE 11/09] do bon pha cua Wnd_RenderWindows. Da truy ra: 70 %% thoi gian cua khung giat nam ngoai lop ve,
+// va [PDET] cho thay ca 20 ms do nam gon trong MOT lenh goi Wnd_RenderWindows. Chia nho de biet pha nao.
+// 0 the gioi | 1 neo lai cua so (chi mobile) | 2 lop duoi | 3 lop giua | 4 lop tren.
+double g_dJxPhaVe[5] = { 0, 0, 0, 0, 0 };
+extern int g_nPaintLog;
+static double JxPhaMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
+{
+	static double s_dF = 0.0;
+	if (s_dF == 0.0) { LARGE_INTEGER f; QueryPerformanceFrequency(&f); s_dF = (double)f.QuadPart; }
+	return s_dF > 0.0 ? (double)(b.QuadPart - a.QuadPart) * 1000.0 / s_dF : 0.0;
+}
+#endif
+
 void Wnd_RenderWindows()
 {
 	int	bShowCursor = true;
+#ifdef JX_MOBILE
+	const bool bJxDo = (g_nPaintLog > 0);	// [PHAVE 11/09]
+	LARGE_INTEGER jxT[6];
+	if (bJxDo) QueryPerformanceCounter(&jxT[0]);
+#endif
 
 	if (s_WndStation.pGameSpaceWnd && s_WndStation.bPaintGameSpace)
 		s_WndStation.pGameSpaceWnd->Paint();
+#ifdef JX_MOBILE
+	if (bJxDo) QueryPerformanceCounter(&jxT[1]);	// [PHAVE 11/09] het pha the gioi
+#endif
 #ifdef JX_MOBILE
 	// [ANDROID 09/09 NEO] Dat lai moi cua so GOC tu khung ve chuan 1024x768 sang man hinh that,
 	// truoc khi ve. Moi cua so chi can mot lan (m_bNeedFit dat trong KWndWindow::Init).
@@ -134,10 +156,28 @@ void Wnd_RenderWindows()
 			}
 		}
 	}
+	if (bJxDo) QueryPerformanceCounter(&jxT[2]);	// [PHAVE 11/09] het pha neo lai cua so
 #endif
 	s_WndStation.LowLayerRoot.Paint();
+#ifdef JX_MOBILE
+	if (bJxDo) QueryPerformanceCounter(&jxT[3]);	// [PHAVE 11/09]
+#endif
 	s_WndStation.NormalLayerRoot.Paint();
+#ifdef JX_MOBILE
+	if (bJxDo) QueryPerformanceCounter(&jxT[4]);	// [PHAVE 11/09]
+#endif
 	s_WndStation.TopLayerRoot.Paint();
+#ifdef JX_MOBILE
+	if (bJxDo)
+	{	// [PHAVE 11/09] chot nam pha; UiShell.cpp in kem vao dong [PDET] khi khung cham
+		QueryPerformanceCounter(&jxT[5]);
+		g_dJxPhaVe[0] = JxPhaMs(jxT[0], jxT[1]);
+		g_dJxPhaVe[1] = JxPhaMs(jxT[1], jxT[2]);
+		g_dJxPhaVe[2] = JxPhaMs(jxT[2], jxT[3]);
+		g_dJxPhaVe[3] = JxPhaMs(jxT[3], jxT[4]);
+		g_dJxPhaVe[4] = JxPhaMs(jxT[4], jxT[5]);
+	}
+#endif
 	
 	if (s_WndStation.DragInfo.bDragging &&
 		s_WndStation.DragInfo.fnDrawObjFnc)
