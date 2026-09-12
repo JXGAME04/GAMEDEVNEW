@@ -5,6 +5,22 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **17:35 11/09 — BƯỚC 1 CỦA ĐỢT PORT ĐÃ LÊN BỘ TẢI: `[CHUATLAS 11/09]` chữ vào atlas.** Chủ 17:2x: "oke hãy làm và đo từng bước",
+> kèm lưu ý có phiên làm iOS trên MacBook khác có thể đẩy git. dt_v4 = **109111729** (md5 `14442104…`, máy chủ 8765 PID 383480),
+> commit `0e74d95a` trên `origin/mobile-0809`, APK lưu `android/apk/jx1mobile-1109-chuatlas.apk`.
+> - **Việc:** `CAtlasMgrGpu::Eligible` cho `D3DPOOL_MANAGED` vào atlas. Đúng một điều kiện, y như bản PC làm ở `[MANG 09/09 d]`, vì texture ảo
+>   trên mobile đã hỗ trợ bản CPU và tải lại vùng bẩn. Xác nhận trong mã: `REP3_POOL_MANAGED` = `D3DPOOL_MANAGED` khi `Rep3Ex=0`
+>   (`D3D_Device.h:83`), nên chữ và ảnh dựng sẵn của nhân vật trước nay bị loại khỏi atlas **chỉ vì loại bộ nhớ**.
+> - **Bộ đếm để đo và để bắt rủi ro:** `[VE-GOP]` thêm `o atlas: DEFAULT n, MANAGED m (managed=1), xin o moi k`. Rủi ro của bước này là
+>   texture MANAGED bị ghi lại thường xuyên sẽ phải **xin ô mới** mỗi khung; nếu `xin o moi` tăng vọt thì tắt.
+> - **Thử máy ảo:** không lỗi, chữ hiển thị đúng hoàn toàn (nút, tiêu đề, chữ đỏ "(New)", chữ nhỏ góc trái); log `o atlas: DEFAULT 0,
+>   MANAGED 1 (managed=1), xin o moi 0`.
+> - **Chủ test:** mở lại app, nhìn chữ trước hết (nhãn tên trên đầu nhân vật, dòng chat, số sát thương, chữ trong bảng), rồi Tống Kim 10 đến
+>   15 phút. Mốc so sánh: lý do quad không gộp hiện là **texture0 82 đến 88 %**, pipeline 12 đến 17 %; kỳ vọng texture0 tụt. Tắt nhanh nếu chữ
+>   sai: `Rep3AtlasManaged=0` trong `[Client]` của config dt_v4 rồi khởi động lại 8765.
+> - **Bước 2 và 3 của đợt port** (loại mặt khuất trên CPU, rồi atlas khối cố định gắn sẵn sampler) làm sau khi đọc log bước 1.
+> - **Lưu ý phối hợp:** có phiên iOS trên máy khác có thể đẩy git, nên mọi lần đẩy đều phải `git fetch` rồi gộp, tuyệt đối không ép đẩy.
+
 > **17:00 11/09 — TÌM RA HƯỚNG ĐÚNG: NHÁNH CHÍNH ĐÃ GIẢI XONG BÀI TOÁN NÀY CHO BẢN PC, MOBILE CHƯA PORT.** Chủ chỉ: bản sửa "nằm ở main
 > chính của dự án, không phải main mobile"; bản PC chạy 144 fps, đông vẫn trên 135.
 > Loạt commit `[MANG 09/09]` a đến f trên `origin/main` sửa cho **đường vẽ D3D11** (`D3D9on11*.cpp`), còn mobile chạy **đường SDL_GPU / Vulkan**
