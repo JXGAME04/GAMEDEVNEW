@@ -86,7 +86,35 @@ def lam_manifest(thu):
     io.open(p_dem, "w", encoding="utf-8", newline="\n").write("\n".join(dem_moi) + "\n")
     io.open(os.path.join(thu, "manifest.txt"), "w", encoding="utf-8", newline="\n").write("\n".join(dong) + "\n")
     print("manifest.txt: %d tep, %.0f MB (bam lai %.0f MB, %.0f s)" % (len(dong), tong / MB, bam / MB, time.time() - t0))
+    # [BAOMAT 12/09 KY] Ban iOS TU CHOI kho khong co chu ky hop le. Sinh lai manifest la chu ky cu
+    # het gia tri ngay, nen phai ky lai. Tu ky luon neu tim thay khoa rieng; khong co thi noi to,
+    # vi neu de im thi lan sau dien thoai bao "khong co chu ky hop le" ma khong ai hieu vi sao.
+    _ky_lai(thu)
     return len(dong), tong
+
+
+def _ky_lai(thu):
+    khoa = os.environ.get("JX_KHOA_KY") or os.path.expanduser("~/.jx1_khoa/jx1_manifest_ec.key")
+    sig = os.path.join(thu, "manifest.sig")
+    if not os.path.exists(khoa):
+        try:
+            os.remove(sig)   # chu ky cu da het gia tri: bo di con hon de nguoi ta tuong con dung
+        except OSError:
+            pass
+        print("")
+        print("  !! CHUA KY manifest: khong thay khoa rieng %s" % khoa)
+        print("  !! Ban iOS SE TU CHOI kho nay. Ky bang:")
+        print("       python3 android/ky_manifest.py --ky %s --khoa <khoa rieng>" % thu)
+        print("     (chua co khoa thi tao mot lan: python3 android/ky_manifest.py --tao-khoa <khoa rieng>)")
+        print("")
+        return
+    import subprocess
+    r = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "ky_manifest.py"),
+                        "--ky", thu, "--khoa", khoa], capture_output=True)
+    if r.returncode == 0:
+        print("manifest.sig: da ky bang %s" % khoa)
+    else:
+        print("  !! KY THAT BAI: %s" % r.stderr.decode("utf-8", "replace")[:200])
 
 
 class BoXuLy(SimpleHTTPRequestHandler):

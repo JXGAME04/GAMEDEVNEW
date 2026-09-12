@@ -409,10 +409,17 @@ Represent3 chưa bật ba biến thể storage buffer / texture mảng trên Met
 
 ### Việc bắt buộc mỗi lần đổi dữ liệu
 
-Bộ tải **từ chối** kho không có chữ ký hợp lệ. Sau mỗi lần đổi dữ liệu:
+Bộ tải **từ chối** kho không có chữ ký hợp lệ. Máy chủ tải **tự ký luôn** sau khi sinh lại bản kê,
+miễn là tìm thấy khoá riêng ở `~/.jx1_khoa/jx1_manifest_ec.key` (đổi chỗ bằng biến `JX_KHOA_KY`):
 
 ```
 python3 android/may_chu_tai_du_lieu.py --thu-muc <thư mục> --chi-manifest
+```
+
+Không thấy khoá thì nó **xoá chữ ký cũ** và in cảnh báo to, chứ không im lặng để lại chữ ký hết
+giá trị. Ký tay khi cần:
+
+```
 python3 android/ky_manifest.py --ky <thư mục> --khoa ~/.jx1_khoa/jx1_manifest_ec.key
 ```
 
@@ -434,3 +441,9 @@ thì phía client chỉ cần định nghĩa `USE_KPROTOCOL_VERSION`.
 
 Cổng phiên bản hiện tại chỉ chặn người chơi ngay tình. Client bị sửa ruột thì bỏ qua được.
 Cổng thật phải nằm ở máy chủ.
+
+### Đã nghiệm thu trên máy thật (chủ xác nhận 12/09)
+
+- Cây trong Lưỡng Hồ **hiện lại bình thường** sau bản `[PAK 12/09 CHISOMUC]`.
+- Đăng nhập **nhớ tài khoản** qua Keychain sau bản `[BAOMAT 12/09 KHOMAT]` + `[BAOMAT 12/09 DONCU]`
+  (lần đầu sau khi đổi phải nhập lại một lần, đúng như dự kiến vì Keychain còn trống).
