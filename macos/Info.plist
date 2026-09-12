@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- [MACOS 11/09] Ban ke cua ung dung macOS. NSHighResolutionCapable: dung mat do man Retina that.
+     LSMinimumSystemVersion 11.0 = macOS Big Sur, ban dau tien chay arm64. -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>              <string>vi</string>
+	<key>CFBundleExecutable</key>                     <string>jx1mac</string>
+	<key>CFBundleIdentifier</key>                     <string>vn.jx1.mac</string>
+	<key>CFBundleInfoDictionaryVersion</key>          <string>6.0</string>
+	<key>CFBundleName</key>                           <string>JX1</string>
+	<key>CFBundleDisplayName</key>                    <string>JX1 Vo Lam</string>
+	<key>CFBundlePackageType</key>                    <string>APPL</string>
+	<key>CFBundleShortVersionString</key>             <string>1.0</string>
+	<key>CFBundleVersion</key>                        <string>1</string>
+	<key>LSMinimumSystemVersion</key>                 <string>11.0</string>
+	<key>NSHighResolutionCapable</key>                <true/>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>   <true/>
+	<key>LSApplicationCategoryType</key>              <string>public.app-category.role-playing-games</string>
+	<key>NSHumanReadableCopyright</key>               <string>JX1</string>
+</dict>
+</plist>

@@ -165,8 +165,11 @@ target_include_directories(S3Client PRIVATE ${JX_S3CLIENT_INCS})
 target_link_libraries(S3Client PRIVATE CoreClient Engine FilterText Lua54 Represent3 Rainbow)
 
 # ---- ung dung macOS ----
-add_executable(jx1mac ${CMAKE_CURRENT_SOURCE_DIR}/JxMacMain.cpp)
+add_executable(jx1mac MACOSX_BUNDLE ${CMAKE_CURRENT_SOURCE_DIR}/JxMacMain.cpp)
 jx_setup(jx1mac)
+set_target_properties(jx1mac PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
+    OUTPUT_NAME jx1mac)
 target_include_directories(jx1mac PRIVATE ${JX_SRC}/Engine/Src ${JX_SRC}/Engine/Src/Platform)
 target_link_libraries(jx1mac PRIVATE S3Client CoreClient Represent3 Rainbow Common Engine FilterText Lua54 JpgLib)
 target_link_options(jx1mac PRIVATE -Wl,-all_load)
