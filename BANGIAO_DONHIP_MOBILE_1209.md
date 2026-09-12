@@ -1147,3 +1147,52 @@ Không vào được thế giới trên máy ảo vì tài khoản đang đượ
 APK `109111935`, md5 `80f543bbcf7bc4244ded6e3cdceff05e`, 20 453 375 B, lên `dt_v4` 19:35, máy chủ 8765 PID 390652.
 Cần chủ **khởi động lại app** để nhận, rồi nhìn kỹ hình trong thế giới (đây là phần máy ảo chưa kiểm được), sau đó
 chơi Tống Kim. Kỳ vọng `het khoi` về 0 và `texture/sampler` giữ ở vài chục suốt phiên thay vì bò lên.
+
+
+---
+
+## 19:58 11/09 — ĐÃ TẮT atlas khối: lời CPU nhưng lỗ GPU, fps tụt thật
+
+Ba phiên liên tiếp trên cùng điện thoại, lấy các cửa sổ ≥ 1 500 quad mỗi khung **lúc máy đều đã nóng mức 3**
+(A lấy 14 cửa sổ cuối, B lấy 14 cửa sổ cuối, C lấy toàn bộ vì cả phiên máy đã ở mức 3):
+
+| | A trước khối | B khối, trần 8 | C khối, trần 12 |
+|---|---|---|---|
+| quad / khung | 1 963 | 1 991 | 2 096 |
+| lệnh / quad | 0,907 | 0,442 | 0,420 |
+| **ghi lệnh (CPU)** | 2,02 ms | **0,77** | **0,61** |
+| **nộp (chờ GPU)** | **1,63 ms** | 4,17 | 3,59 |
+| tổng | 4,50 ms | 5,47 | 4,80 |
+| **fps** | **108,4** | **80,3** | **86,2** |
+
+fps từng cửa sổ của A: `117 108 95 95 73 104 116 113 115 116 117 117 116 116`.
+Của C: `115 114 86 95 63 79 101 102 74 73 48 64 101 89 93 82 87`.
+
+**Kết luận: atlas khối đổi việc của CPU lấy việc của GPU, và trên máy này GPU đắt hơn.** Phần CPU đúng như thiết kế
+(ghi lệnh 2,02 → 0,61 ms, đổi texture 1 258 → 23), nhưng `nộp` hơn gấp đôi và fps tụt 20–25 % ở cảnh đông. Đây là
+hồi quy trải nghiệm, nên đã **tắt bằng config** lúc 19:58: `Rep3AtlasKhoi=0` trong `dt_v4`, khởi động lại máy chủ
+8765 (PID 400192). APK giữ nguyên 109111935, chỉ tắt tính năng.
+
+### Tôi đã sai ở chỗ nào
+
+Lúc 18:5x tôi kết luận rằng C1 (`[MANG 11/09]`) hỏng là do **nhiệt**, và gạt khả năng "lấy mẫu texture mảng chậm".
+Lý do tôi đưa ra khi đó đúng về mặt dữ liệu (C1 chạy 3,5 phút trên máy đang bị bóp xung) nhưng **kết luận thì sai**:
+ba phiên hôm nay cho thấy chi phí GPU của texture mảng là **thật** và nó tỉ lệ với số điểm ảnh vẽ ra, nên chỉ lộ ra
+ở cảnh đông. Bài học: khi một phép đo bị nhiễu (nhiệt), việc đúng là **đo lại cho sạch nhiễu**, chứ không phải suy ra
+rằng nguyên nhân kia không tồn tại.
+
+Một quan sát nữa bác bỏ giả thuyết "switch nhiều nhánh là thủ phạm": trần 12 khối (12 nhánh) lại **tốt hơn** trần 8
+(`nộp` 3,59 so với 4,17). Nếu nhánh là thủ phạm thì phải ngược lại. Nên thủ phạm nằm ở chính việc **lấy mẫu từ
+texture mảng**, không phải ở số nhánh.
+
+### Còn giữ lại được gì
+
+Hai bước trước vẫn nguyên giá trị và vẫn đang bật:
+
+- `[CULLCPU]` (bước 2): đổi pipeline 345 → 3 mỗi khung, ghi lệnh −20 %/quad, không đụng GPU. **Giữ.**
+- `[CHUATLAS]` (bước 1): chữ vào atlas, vô hại. **Giữ.**
+
+Phần `texture0` (99,9 % lý do không gộp) vẫn còn nguyên đó và vẫn là phần lớn nhất, nhưng **không được giải bằng
+texture mảng trên máy này**. Hướng phải khác: gom trang atlas thành ít texture 2D **thường** cỡ lớn (ví dụ 8192²,
+Adreno cho tới 16384) thay vì nhiều lớp trong một mảng — lấy mẫu vẫn là `sampler2D` nên không dính chi phí mảng,
+đổi lại chỉ giảm được số texture chứ không về 1. Cần đo trước khi viết.
