@@ -570,7 +570,8 @@ void CAtlasMgrGpu::JxFreeKe(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 // Khoi = texture mang 2D co so lop CO DINH (khong bao gio lon len, khong bao gio phai CHEP lai - day la cho C1 sai:
 // C1 cho cum lon dan nen moi lan lon la mot cum MOI, cac trang cu nam rai o nhieu texture -> van doi binding).
 // Het JX_KHOI_MAX khoi -> tra false, NewPage lui ve texture rieng (khong loi).
-#define JX_KHOI_MAX 8	// so khe sampler danh cho khoi (khe 2..9); SDL_GPU chot 16 khe moi tang
+#define JX_KHOI_MAX 12	// [KHOI2 11/09] so khe sampler danh cho khoi (khe 2..13); SDL_GPU chot 16 khe moi tang, con du 2 khe.
+						// Tran trang atlas = 4 (khoi 4 byte) + 11*8 = 92 trang. Do phien 185508: 8 khoi het cho sau ~35 phut Tong Kim (het khoi 11).
 bool CAtlasMgrGpu::JxCapKhoi(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture** ppTex, UINT* pKhoi, UINT* pLop)
 {
 	for (size_t i = 0; i < m_jxKhoiV.size(); i++)

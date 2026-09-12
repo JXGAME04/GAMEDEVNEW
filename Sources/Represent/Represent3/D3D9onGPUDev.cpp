@@ -127,7 +127,8 @@ static void JxDatHintSwapchain(SDL_Window* pWin, UINT bbW, UINT bbH)
 #endif
 
 #define RG_PAL_ROWS 8192
-#define JX_PS_MAX 4096	// [GOP 11/09] so to hop trang thai tang texture toi da trong mot khung (chi so 12 bit trong o PALROW)
+#define JX_PS_MAX 2048	// [GOP 11/09] so to hop trang thai tang texture toi da trong mot khung (chi so 11 bit trong o PALROW sau [KHOI2 11/09];
+						// do that te suot ca phien Tong Kim: 5 muc, tran 0 - nen 2048 van la thua 400 lan)
 
 static SDL_GPUBlendFactor RgBlendFactor(DWORD d3d)
 {
@@ -453,8 +454,8 @@ bool CDevGpu::CreateShaders()
 			si.code = g_Rep3GpuFSPalPs; si.code_size = sizeof(g_Rep3GpuFSPalPs); si.num_storage_buffers = 2; si.num_uniform_buffers = 0;
 			if (g_nJxAtlasMang) { si.code = g_Rep3GpuFSPalPsMang; si.code_size = sizeof(g_Rep3GpuFSPalPsMang); }	// [MANG 11/09] sampler2DArray, lop lay tu dinh
 			else if (g_nJxAtlasKhoi)
-			{	// [KHOI 11/09] 8 khoi atlas o khe 2..9 (sampler2DArray, gan chet ca khung); hai storage buffer doi ve 10, 11
-				si.code = g_Rep3GpuFSPalPsKhoi; si.code_size = sizeof(g_Rep3GpuFSPalPsKhoi); si.num_samplers = 2 + 8;
+			{	// [KHOI 11/09] 12 khoi atlas o khe 2..13 (sampler2DArray, gan chet ca khung); hai storage buffer doi ve 14, 15 ([KHOI2 11/09])
+				si.code = g_Rep3GpuFSPalPsKhoi; si.code_size = sizeof(g_Rep3GpuFSPalPsKhoi); si.num_samplers = 2 + 12;	// [KHOI2 11/09] 12 khoi
 			}
 		}
 	}
@@ -1070,10 +1071,10 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 	if (g_nJxPsBuffer)
 	{	// [GOP 11/09] o PALROW: bit 0..12 hang bang mau (0x1FFF = khong co), 13..24 chi so to hop ps, 25..30 danh cho lop atlas (buoc sau)
 		const UINT uRow = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? ((UINT)m_tex[0]->m_nPalRow & 0x1FFFu) : 0x1FFFu;
-		uPal = uRow | ((JxPsIdx(st.ps) & 0xFFFu) << 13);
-		if (g_nJxAtlasMang && m_tex[0]) uPal |= ((m_tex[0]->JxLop() & 0x3Fu) << 25);	// [MANG 11/09] bit 25..30 = lop trong texture mang
+		uPal = uRow | ((JxPsIdx(st.ps) & 0x7FFu) << 13);	// [KHOI2 11/09] 11 bit
+		if (g_nJxAtlasMang && m_tex[0]) uPal |= ((m_tex[0]->JxLop() & 0x3Fu) << 24);	// [MANG 11/09] lop trong texture mang ([KHOI2 11/09] doi sang bit 24..29)
 		if (g_nJxAtlasKhoi && m_tex[0] && m_tex[0]->JxKhoi() != 0xFFu)
-			uPal |= 0x80000000u | ((m_tex[0]->JxKhoi() & 7u) << 28) | ((m_tex[0]->JxLop() & 7u) << 25);	// [KHOI 11/09] bit 31 = o khoi, 28..30 khoi, 25..27 lop
+			uPal |= 0x80000000u | ((m_tex[0]->JxKhoi() & 0xFu) << 27) | ((m_tex[0]->JxLop() & 7u) << 24);	// [KHOI 11/09] bit 31 = o khoi, 27..30 khoi ([KHOI2 11/09] 4 bit), 24..26 lop
 	}
 #endif
 	const float fPage = m_pAtlas ? (float)m_pAtlas->m_pageSize : 1024.0f;	// [GPU 11/09 ATLAS]
@@ -1528,14 +1529,14 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 #ifdef JX_ANDROID
 			SDL_BindGPUFragmentSamplers(pass, 0, tb, g_nJxPalBuffer ? 2 : 3);	// [PALBUF 11/09] kieu buffer: shader chi khai 2 sampler
 			if (g_nJxAtlasKhoi && m_pAtlas)
-			{	// [KHOI 11/09] 8 khoi atlas o khe 2..9. Gan bang BO LOC cua tang 0 (lenh gop duoc da phai cung sampler[0] nen khong sai)
-				SDL_GPUTextureSamplerBinding tk[8];
-				for (int q = 0; q < 8; q++)
+			{	// [KHOI 11/09] 12 khoi atlas o khe 2..13. Gan bang BO LOC cua tang 0 (lenh gop duoc da phai cung sampler[0] nen khong sai)
+				SDL_GPUTextureSamplerBinding tk[12];	// [KHOI2 11/09]
+				for (int q = 0; q < 12; q++)
 				{
 					SDL_GPUTexture* pk = m_pAtlas->JxKhoiTex((UINT)q);
 					tk[q].texture = pk ? pk : m_pWhiteMang; tk[q].sampler = st.pSamp[0];
 				}
-				SDL_BindGPUFragmentSamplers(pass, 2, tk, 8);
+				SDL_BindGPUFragmentSamplers(pass, 2, tk, 12);	// [KHOI2 11/09]
 			}
 #else
 			SDL_BindGPUFragmentSamplers(pass, 0, tb, 3);
