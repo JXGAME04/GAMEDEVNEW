@@ -1091,8 +1091,25 @@ void KScenePlaceC::Breathe()
 }
 
 //##ModelId=3DCD7F0A0071
+#if defined(JX_MOBILE) && !defined(_SERVER)
+// [PHACANH 11/09] bay pha cua viec ve the gioi. Da truy duoc: 78,6 %% thoi gian khung giat nam o day
+// (dan dau 177/202 khung cham, TB 15,12 ms, dinh 146,4). Chia nho de biet pha nao.
+double g_dJxPhaCanh[7] = { 0, 0, 0, 0, 0, 0, 0 };
+extern int g_nCorePaintLog;
+static double JxCanhMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
+{
+	static double s_dF = 0.0;
+	if (s_dF == 0.0) { LARGE_INTEGER f; QueryPerformanceFrequency(&f); s_dF = (double)f.QuadPart; }
+	return s_dF > 0.0 ? (double)(b.QuadPart - a.QuadPart) * 1000.0 / s_dF : 0.0;
+}
+#endif
+
 void KScenePlaceC::Paint()
 {
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	const bool bJxDo = (g_nCorePaintLog > 0);	// [PHACANH 11/09]
+	LARGE_INTEGER jxC[8];
+#endif
 	IR_UpdateTime();
 	if (m_bInited == false || m_szPlaceRootPath[0] == 0)
 		return;
@@ -1116,10 +1133,16 @@ void KScenePlaceC::Paint()
 
 	EnterCriticalSection(&m_ProcessCritical);
 
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	if (bJxDo) QueryPerformanceCounter(&jxC[0]);	// [PHACANH 11/09]
+#endif
 	BOOL bPrerenderGroundImg = PaintBackGround();//add by phong ki襲 h譶h n襫 hoa s琻
 	if (VeLopCanh(1))	// [ANHNEN 10/09 f] co anh nen -> ve nen dat TRUC TIEP (co cho trong) de lo anh nen ra
 		bPrerenderGroundImg = FALSE;
 	VeLopCanh(3);	// [ANHNEN 10/09 f] lop phu nen (may xa) ve tren anh nen, DUOI nen dat
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	if (bJxDo) QueryPerformanceCounter(&jxC[1]);	// [PHACANH 11/09] het pha NEN
+#endif
 
 	unsigned int i;
 	// N2 of ce8c4d49 (was described in that commit but never actually applied -
@@ -1151,21 +1174,43 @@ void KScenePlaceC::Paint()
 		}
 	}
 
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	if (bJxDo) QueryPerformanceCounter(&jxC[2]);	// [PHACANH 11/09] het pha NEN DAT
+#endif
 	m_ObjectsTree.Paint(&m_RepresentArea, IPOT_RL_COVER_GROUND);
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	if (bJxDo) QueryPerformanceCounter(&jxC[3]);	// [PHACANH 11/09] het pha PHU NEN
+#endif
 	m_ObjectsTree.Paint(&m_RepresentArea, IPOT_RL_OBJECT);
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	if (bJxDo) QueryPerformanceCounter(&jxC[4]);	// [PHACANH 11/09] het pha VAT THE (NPC / nguoi choi)
+#endif
 
 	for (i = 0; i < m_nNumObjsAbove; i++)
 	{
 		KScenePlaceRegionC::PaintAboveHeadObj(m_pObjsAbove[i], &m_RepresentArea);
 	}
 
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	if (bJxDo) QueryPerformanceCounter(&jxC[5]);	// [PHACANH 11/09] het pha TREN DAU
+#endif
 	m_ObjectsTree.Paint(&m_RepresentArea, IPOT_RL_INFRONTOF_ALL);
 	VeLopCanh(2);	// [ANHNEN 10/09] tien canh ve sau cung
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	if (bJxDo) QueryPerformanceCounter(&jxC[6]);	// [PHACANH 11/09] het pha TRUOC HET
+#endif
 
 	// 绘制天气对象
 	if(m_pWeather)
 		m_pWeather->Render(g_pRepresent);
 
+#if defined(JX_MOBILE) && !defined(_SERVER)
+	if (bJxDo)
+	{	// [PHACANH 11/09] chot bay pha; UiShell.cpp in kem vao dong [PDET]
+		QueryPerformanceCounter(&jxC[7]);
+		for (int q = 0; q < 7; q++) g_dJxPhaCanh[q] = JxCanhMs(jxC[q], jxC[q + 1]);
+	}
+#endif
 	LeaveCriticalSection(&m_ProcessCritical);
 
 	//========

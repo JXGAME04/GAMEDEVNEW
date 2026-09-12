@@ -1338,3 +1338,46 @@ xuống 1,3 ms trung bình và 0,6–4,7 ms lúc giật; 20 ms còn lại là ph
 
 **Lỗi nhỏ của bộ đo cần sửa lần sau:** trường `N lenh` in ra số cộng dồn từ đầu phiên (68 596 330) vì
 `g_uJxTrongVeLan` chưa được đặt lại mỗi khung. Không ảnh hưởng hai con số thời gian.
+
+
+---
+
+## 23:25 11/09 — `[PHAVE]` chỉ đúng thủ phạm, và `[PHACANH]` để chẻ tiếp (APK 109112327)
+
+Phiên `SM-F966U1_20260911_231238`, 202 dòng `[PDET]` có đủ năm pha:
+
+| pha của `Wnd_RenderWindows` | trung bình | đỉnh | chiếm | dẫn đầu ở |
+|---|---|---|---|---|
+| **vẽ thế giới** | **15,12 ms** | 146,4 | **78,6 %** | **177 / 202 khung** |
+| giao diện lớp trên | 1,91 ms | 216,4 | 9,9 % | 18 khung |
+| giao diện lớp giữa | 1,20 ms | 105,4 | 6,2 % | 4 khung |
+| giao diện lớp dưới | 0,81 ms | 76,6 | 4,2 % | 3 khung |
+| neo lại cửa sổ (chỉ mobile) | **0,00 ms** | 0,0 | 0,0 % | 0 khung |
+
+Hai điều đọc được ngay:
+
+1. **Vẽ thế giới là thủ phạm**, không phải giao diện.
+2. **Vòng "neo lại cửa sổ" bằng 0.** Đây là đoạn chỉ có trên bản mobile, tôi vẫn nghi nó từ đầu; đo xong thì loại
+   được hẳn khỏi danh sách nghi ngờ. Ba lớp giao diện cũng rẻ, chỉ thỉnh thoảng có cú lẻ 76–216 ms (nghi là mở bảng
+   hoặc nạp ảnh, sẽ soi sau).
+
+### Bước chẻ tiếp: bảy pha bên trong `KScenePlaceC::Paint`
+
+| pha | là gì |
+|---|---|
+| nền | `PaintBackGround` + `VeLopCanh(1)` + `VeLopCanh(3)` |
+| nền đất | vòng `PaintGround` của các vùng |
+| phủ nền | `m_ObjectsTree.Paint(COVER_GROUND)` |
+| **vật thể** | `m_ObjectsTree.Paint(OBJECT)` — nơi vẽ NPC và người chơi, **nghi là pha nặng nhất** |
+| trên đầu | vòng `PaintAboveHeadObj` — thẻ tên, thanh máu, biểu tượng |
+| trước hết | `m_ObjectsTree.Paint(INFRONTOF_ALL)` + `VeLopCanh(2)` |
+| thời tiết | `m_pWeather->Render` |
+
+Bảy con số này in kèm vào dòng `[PDET]` sẵn có. Chỉ chạy khi `CorePaintLog > 0`, bảy lần đọc đồng hồ mỗi khung.
+Rào `JX_MOBILE && !_SERVER` nên bản PC và máy chủ không đổi.
+
+**Kiểm:** Android dựng qua. Bản PC `Core.vcxproj` cấu hình `Client Release|Win32` và `Server Release|x64` **biên dịch
+sạch, 0 lỗi C**; chỉ đứt ở khâu liên kết `LNK1181 thiếu Lib\debug64\common.lib`, là thư viện dựng sẵn không có trong
+worktree chứ không phải lỗi mã. `S3Client Release|x64` 0 lỗi.
+
+APK `109112327`, md5 `3ec9bc2b0844c8c5b5901a8359623a9f`, lên `dt_v4` 23:27, máy chủ 8765 PID 423548.
