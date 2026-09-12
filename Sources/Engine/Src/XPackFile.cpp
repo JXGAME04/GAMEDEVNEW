@@ -7,6 +7,9 @@
 #include "KWin32.h"
 #include "XPackFile.h"
 #include "ucl/ucl.h"
+#ifdef JX_APPLE	// [IOS-RUTKHUNG 12/09] ghi chan doan
+#include <SDL3/SDL.h>
+#endif
 #include <crtdbg.h>
 #ifdef JX_PLATFORM_SDL
 // [SDL 08/09 2b-1b] CRITICAL_SECTION cua tep nay chua SDL_Mutex* o 8 byte dau; HANDLE m_hFile chua SDL_IOStream*
@@ -731,13 +734,25 @@ SPRHEAD* XPackFile::GetSprHeader(XPackElemFileRef& ElemRef, SPROFFS*& pOffsetTab
 SPRFRAME* XPackFile::GetSprFrame(SPRHEAD* pSprHeader, int nFrame)
 {
 	SPRFRAME*	pFrame = NULL;
+#ifdef JX_APPLE	// [IOS-RUTKHUNG 12/09] rut khung tu pak that bai thi PrepareFrameData tra false -> GetImage tra NULL, KHONG bao gi. Ghi ro nhanh nao hong (toi da 12 dong).
+	int nJxLyDo = 0;	// 1 = tham so xau, 2 = chi so nut ngoai khoang, 3 = khong co co TYPE_FRAME, 4 = doc/giai nen hong
+	long lJxCo = 0; unsigned int uJxCo = 0, uJxNen = 0;
+	if (!(pSprHeader && nFrame >= 0 && nFrame < pSprHeader->Frames)) nJxLyDo = 1;
+#endif
 	if (pSprHeader && nFrame >= 0 && nFrame < pSprHeader->Frames)
 	{
 		EnterCriticalSection(&ms_ReadCritical);
 		int nNodeIndex = *((WORD*)&pSprHeader->Reserved[NODE_INDEX_STORE_IN_RESERVED]);
+#ifdef JX_APPLE
+		if (!(nNodeIndex >= 0 && nNodeIndex < m_nElemFileCount)) nJxLyDo = 2;
+#endif
 		if (nNodeIndex >= 0 && nNodeIndex < m_nElemFileCount)
 		{
 			long lCompressType = m_pIndexList[nNodeIndex].lCompressSizeFlag;
+#ifdef JX_APPLE
+			lJxCo = lCompressType;
+			if ((lCompressType & TYPE_FRAME) == 0) nJxLyDo = 3;
+#endif
 			if ((lCompressType & TYPE_FRAME) != 0)
 			{
 				bool bOk = false;
@@ -765,6 +780,10 @@ SPRFRAME* XPackFile::GetSprFrame(SPRHEAD* pSprHeader, int nFrame)
 						bOk = ExtractRead(pFrame, lTempValue, lCompressType, uSrcOffset, pFrameList->lCompressSize);
 					}
 				}
+#ifdef JX_APPLE
+				uJxCo = (unsigned int)lTempValue; uJxNen = (unsigned int)pFrameList->lCompressSize;
+				if (bOk == false) nJxLyDo = 4;
+#endif
 				if (bOk == false && pFrame != NULL)
 				{
 					free(pFrame);
@@ -774,5 +793,17 @@ SPRFRAME* XPackFile::GetSprFrame(SPRHEAD* pSprHeader, int nFrame)
 		}
 		LeaveCriticalSection(&ms_ReadCritical);
 	}
+#ifdef JX_APPLE
+	if (nJxLyDo)
+	{
+		static int s_nJxDem = 0;
+		if (s_nJxDem < 12)
+		{
+			s_nJxDem++;
+			static const char* s_szLyDo[5] = { "", "tham so xau", "chi so nut ngoai khoang", "khong co co TYPE_FRAME", "doc / giai nen hong" };
+			SDL_Log("[RUTKHUNG] hong (%d/12): ly do %d = %s | co nen 0x%08lX | co that %u, co nen %u", s_nJxDem, nJxLyDo, s_szLyDo[nJxLyDo], lJxCo, uJxCo, uJxNen);
+		}
+	}
+#endif
 	return pFrame;	
 }

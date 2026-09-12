@@ -210,10 +210,6 @@ static void JxVeKyIn()
 		t.uDoiPipe / n, t.uDoiTex / n, m.uDoiTex, t.uDoiVs / n, t.uDoiPs / n, t.uDoiCat / n, g_uJxGopVo[0], g_uJxGopVo[1], g_uJxGopVo[2], g_uJxGopVo[3], g_uJxGopVo[4], g_uJxGopVo[5], g_uJxGopVo[6], g_uJxGopVo[7], g_nJxAtlasKe, g_nJxAtlasTrang, g_uRep3AtlasPages, g_uJxPsBangMax, g_uJxPsTran, g_nJxAtlasMang, g_uJxAtlasCum, g_uJxAtlasODat[0], g_uJxAtlasODat[1], g_nJxAtlasManaged, g_uJxAtlasOMoi,
 		g_nJxCullCpu, g_uJxCullGiu, g_uJxCullBo, g_uJxPipeVo[0], g_uJxPipeVo[1], g_uJxPipeVo[2], g_uJxPipeVo[3], g_uJxPipeVo[4], g_uJxPipeVo[5], g_uJxPipeVo[6], g_uJxPipeVo[7],
 		g_nJxAtlasKhoi, g_uJxKhoiSo, (unsigned)g_nJxAtlasKhoiLop, g_uJxKhoiMB, g_uJxKhoiHet);	// [VE 11/09 e] [GOP 11/09] [MANG 11/09]
-#ifdef JX_APPLE	// [IOS-ANHRONG 12/09] hai bo dem chan doan: anh chua co, hay khung vuot so khung
-	Rep3Log("[ANHRONG] anh chua co %u | khung vuot so khung %u (so khung lon nhat: %u)", g_uJxRongAnh, g_uJxRongKhung, g_uJxRongKhungMax);
-	g_uJxRongAnh = 0; g_uJxRongKhung = 0; g_uJxRongKhungMax = 0;
-#endif
 	memset(&g_jxVeTong, 0, sizeof(g_jxVeTong)); memset(&g_jxVeMax, 0, sizeof(g_jxVeMax)); g_uJxVeKhungSo = 0; g_uJxVe8 = 0; g_uJxVe16 = 0; memset(g_uJxGopVo, 0, sizeof(g_uJxGopVo));
 	s_dJxTrongVeTong = 0.0; s_dJxTrongVeMax = 0.0;	// [VECHITIET 11/09]
 	s_dJxVeCpuTong = 0.0; s_dJxVeCpuMax = 0.0; s_uJxVeCpuKhung = 0; g_uJxPsBangMax = 0; g_uJxPsTran = 0; g_uJxAtlasODat[0] = g_uJxAtlasODat[1] = 0; g_uJxAtlasOMoi = 0;	// [CHUATLAS 11/09]
@@ -3149,6 +3145,10 @@ void KRepresentShell3::RepresentEnd()
 				uNodes, uTexMB, uDrawMB, uBudgetMB, uRawMB, (unsigned)m_TextureResMgr.m_nLoadCount, (unsigned)m_TextureResMgr.m_nReleaseCount, m_fFpsAvg,
 				g_uRep3FxTexNull, g_uRep3FxAnhNull, g_uRep3FxTaoHong, g_uRep3FxKhungKhongTex, g_uRep3FxGiaiMa, g_dRep3FxGiaiMaMs, g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20), g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), uVramUsed, uVramBudget,
 				g_uRep3Presents ? g_dRep3PresentMs / g_uRep3Presents : 0.0, g_uRep3PresentSkip, g_uRep3Draws, g_uRep3Draws ? g_dRep3DrawMs * 1000.0 / g_uRep3Draws : 0.0, g_uRep3BatchQuads, g_uRep3BatchDraws, g_uRep3PalRows);
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09] dat o day vi JxVeKyIn (cho cu) KHONG chay tren iOS - log may thuc te khong co dong [VE-GOP]
+			Rep3Log("[ANHRONG] anh chua co %u | khung vuot so khung %u (so khung lon nhat: %u)", g_uJxRongAnh, g_uJxRongKhung, g_uJxRongKhungMax);
+			g_uJxRongAnh = 0; g_uJxRongKhung = 0; g_uJxRongKhungMax = 0;
+#endif
 			{	// [GOP 09/09 do]
 				extern unsigned g_uRep3GopVo[12]; extern unsigned g_uRep3VeNgay[4]; extern unsigned g_uRep3CullGiu, g_uRep3CullBo; /* [MANG 09/09 e] */
 				Rep3Log("[GOP] vo lo quad: doi trang atlas %u, texture rieng %u, srv1 %u, blend %u, sampler %u, ps st0 %u, ps st1 %u, alphatest %u, vs %u, layout %u, vp/scissor %u, day %u | ve ngay: fan %u, list %u, strip %u, khac %u | cull cpu: giu %u bo %u",
