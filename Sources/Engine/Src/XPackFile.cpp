@@ -665,6 +665,9 @@ int XPackFile::ElemFileRead(XPackElemFileRef& ElemRef, void* pBuffer, unsigned u
 }
 
 #define	NODE_INDEX_STORE_IN_RESERVED	2
+// [PAK 12/09 CHISOMUC] nua CAO cua chi so muc. Reserved[3] da bi khoa giai ma bang mau chiem
+// (TextureRes.cpp:559) nen phai dung o [4]; [4] va [5] hien khong ai dung.
+#define	NODE_INDEX_HI_IN_RESERVED	4
 
 SPRHEAD* XPackFile::GetSprHeader(XPackElemFileRef& ElemRef, SPROFFS*& pOffsetTable)
 {
@@ -718,7 +721,11 @@ SPRHEAD* XPackFile::GetSprHeader(XPackElemFileRef& ElemRef, SPROFFS*& pOffsetTab
 		{
 			if (bOk)
 			{
-				*((WORD*)&pSpr->Reserved[NODE_INDEX_STORE_IN_RESERVED]) = (WORD)ElemRef.nElemIndex;
+				// [PAK 12/09 CHISOMUC] chi so muc CO THE vuot 65535 (mobile_13.pak co 70 602 muc) nen mot WORD
+				// khong du: nua thap giu o Reserved[2] nhu cu, nua cao de o Reserved[4] (o trong).
+				// KHONG dung int 32 bit o Reserved[2] vi se de len Reserved[3] = khoa giai ma bang mau.
+				*((WORD*)&pSpr->Reserved[NODE_INDEX_STORE_IN_RESERVED]) = (WORD)(ElemRef.nElemIndex & 0xFFFF);
+				pSpr->Reserved[NODE_INDEX_HI_IN_RESERVED] = (WORD)(((unsigned int)ElemRef.nElemIndex >> 16) & 0xFFFF);
 			}
 			else
 			{
@@ -742,7 +749,9 @@ SPRFRAME* XPackFile::GetSprFrame(SPRHEAD* pSprHeader, int nFrame)
 	if (pSprHeader && nFrame >= 0 && nFrame < pSprHeader->Frames)
 	{
 		EnterCriticalSection(&ms_ReadCritical);
-		int nNodeIndex = *((WORD*)&pSprHeader->Reserved[NODE_INDEX_STORE_IN_RESERVED]);
+		// [PAK 12/09 CHISOMUC] ghep lai hai nua; pak duoi 65 536 muc thi nua cao = 0 -> y het truoc
+		int nNodeIndex = (int)(*((WORD*)&pSprHeader->Reserved[NODE_INDEX_STORE_IN_RESERVED])
+		                       | ((unsigned int)pSprHeader->Reserved[NODE_INDEX_HI_IN_RESERVED] << 16));
 #ifdef JX_APPLE
 		if (!(nNodeIndex >= 0 && nNodeIndex < m_nElemFileCount)) nJxLyDo = 2;
 #endif
