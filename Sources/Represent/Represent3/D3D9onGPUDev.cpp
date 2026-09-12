@@ -497,7 +497,12 @@ SDL_GPUGraphicsPipeline* CDevGpu::GetPipelineCull(DWORD fvf, SDL_GPUPrimitiveTyp
 
 	SDL_GPUGraphicsPipelineCreateInfo pi; memset(&pi, 0, sizeof(pi));
 	pi.vertex_shader = m_pVS; pi.fragment_shader = m_pFS;
+#ifdef JX_IOS	// [IOS-DEMDINH 11/09] Metal bat loi chet neu khai dem dinh ma khong thuoc tinh nao dung
+	pi.vertex_input_state.vertex_buffer_descriptions = vb;
+	pi.vertex_input_state.num_vertex_buffers = (va[1].buffer_slot == 1 || va[2].buffer_slot == 1) ? 2 : 1;
+#else
 	pi.vertex_input_state.vertex_buffer_descriptions = vb; pi.vertex_input_state.num_vertex_buffers = 2;
+#endif
 	pi.vertex_input_state.vertex_attributes = va; pi.vertex_input_state.num_vertex_attributes = 4;
 	pi.primitive_type = topo;
 	pi.rasterizer_state.fill_mode = (m_rs[D3DRS_FILLMODE] == D3DFILL_WIREFRAME) ? SDL_GPU_FILLMODE_LINE : SDL_GPU_FILLMODE_FILL;
