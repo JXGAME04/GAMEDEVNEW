@@ -216,7 +216,7 @@ CDevGpu::CDevGpu(CGpuShim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_pBackSurf = NULL; m_pRtTex = NULL; m_pRtSurf = NULL; m_pLastFrame = NULL; m_lastW = m_lastH = 0;
 	m_pVS = NULL; m_pFS = NULL; m_pDummy = NULL; m_pWhite = NULL; m_pWhiteMang = NULL;	// [KHOI 11/09]
 	m_pRingGpu = NULL; m_ringGpuSize = 0; m_pRingXfer = NULL; m_ringXferSize = 0; m_pTexXfer = NULL; m_texXferSize = 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 e] PHAI mo cho iOS: khong thi m_pJxPalBuf / m_pJxPsBuf la RAC, code kiem "if (m_pJxPalBuf)" se tin nham
 	m_pJxZeroXfer = NULL; m_jxZeroSize = 0; m_jxZeroDaXoa = 0;	// [VE 11/09 d]
 	m_bJxCoKhungTruoc = false; m_bJxKhungCoFlush = false; m_uJxTrinhChieuLuc = 0; m_uJxGiongLienTiep = 0; m_pJxPalBuf = NULL;	// [BKG 11/09] [PALBUF 11/09]
 	m_pJxPsBuf = NULL; memset(&m_jxPsCuoi, 0, sizeof(m_jxPsCuoi)); m_uJxPsCuoi = 0xFFFFFFFFu; m_uJxPsStageOff = 0xFFFFFFFFu;	// [GOP 11/09]
@@ -1646,7 +1646,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 void CDevGpu::FrameReset()
 {
 	m_ring.clear(); m_texStage.clear(); m_texUploads.clear(); m_cmds.clear();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 e] PHAI mo cho iOS: khong don thi m_jxPalUploads giu offset cu vao m_texStage DA BI XOA (tai rac vao bang mau), va m_jxPsBang phinh mai toi khi tran 2048 (chi so ps sai) - dung la nguyen nhan "luc den luc nhoe mau khi di chuyen" cua ca hai lan hong truoc
 	m_jxZeroUploads.clear();	// [VE 11/09 d]
 	m_jxPalUploads.clear();	// [PALBUF 11/09]
 	m_jxPsBang.clear(); m_jxPsMap.clear(); m_uJxPsCuoi = 0xFFFFFFFFu; m_uJxPsStageOff = 0xFFFFFFFFu;	// [GOP 11/09] bang ps theo tung khung
@@ -1761,7 +1761,7 @@ void CDevGpu::PalRelease()
 {
 	if (m_pPalTex && m_pGpu) SDL_ReleaseGPUTexture(m_pGpu, m_pPalTex);
 	m_pPalTex = NULL; m_palFree.clear(); m_palDeferred.clear(); m_palPending.clear();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 e] PHAI mo cho iOS: khong thi m_pJxPalBuf / m_pJxPsBuf la RAC, code kiem "if (m_pJxPalBuf)" se tin nham
 	if (m_pJxPalBuf && m_pGpu) SDL_ReleaseGPUBuffer(m_pGpu, m_pJxPalBuf);
 	m_pJxPalBuf = NULL; m_jxPalUploads.clear();	// [PALBUF 11/09]
 	if (m_pJxPsBuf && m_pGpu) SDL_ReleaseGPUBuffer(m_pGpu, m_pJxPsBuf);
