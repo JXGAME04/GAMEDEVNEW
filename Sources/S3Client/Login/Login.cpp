@@ -750,6 +750,11 @@ void KLogin::LoadLoginChoice()
 		szAccount[0] = 0;
 #ifdef JX_APPLE	// [BAOMAT 12/09 KHOMAT]
 		JxKhoMat_Doc($LAST_ACCOUNT, szAccount, sizeof(szAccount));
+		// [BAOMAT 12/09 DONCU] Xoa han ban cu trong tep ini. KIniFile nap ca tep roi ghi lai nguyen ven,
+		// nen neu chi thoi khong ghi nua thi hai khoa cu VAN NAM DO mai - tuc la tai khoan va mat khau
+		// cu van con doc duoc trong thu muc du lieu, dung thu ma viec chuyen sang Keychain muon bo di.
+		pSetting->EraseKey($LOGIN, $LAST_ACCOUNT);
+		pSetting->EraseKey($LOGIN, $LAST_PASSWORD);
 #else
 		pSetting->GetStruct($LOGIN, $LAST_ACCOUNT, szAccount, sizeof(szAccount));
 #endif
