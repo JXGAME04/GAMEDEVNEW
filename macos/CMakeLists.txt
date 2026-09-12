@@ -158,6 +158,7 @@ add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${JX_SRC}/S3Client/Ui/UiCase/UiVatPham.cpp       # bang thong tin vat pham
     ${JX_IOS_DIR}/JxIosStubs.cpp                    # dem khung + ghi jx_nhip.log
     ${JX_IOS_DIR}/JxTaiDuLieu.mm                 # [IOS-TAI 11/09] buoc F: bo tai du lieu trong app (manifest chung voi Android)
+    ${JX_IOS_DIR}/JxIosMiniAudio.mm               # [IOS-AM 11/09] cai dat miniaudio (tach vi AVFoundation da BOOL)
     ${JX_IOS_DIR}/JxIosDoNhip.mm                    # do CPU/RAM/nhiet/pin bang API Apple
     ${JX_IOS_DIR}/JxIosHud.cpp)                     # bang do hien trong game
 jx_setup(S3Client)

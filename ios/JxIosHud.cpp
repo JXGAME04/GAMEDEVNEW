@@ -17,12 +17,16 @@
 #include "KWin32.h"
 #include "../Sources/S3Client/Ui/PerfHud.h"
 #include "../Sources/Represent/iRepresent/iRepresentShell.h"
+#include "../Sources/S3Client/Ui/Elem/UiToaDo.h"			// [THONGTIN 11/09] dong goc phai keo duoc trong Sua giao dien
+#include "../Sources/S3Client/Ui/UiCase/UiToolsControlBar.h"	// thanh cong cu = dau hieu da vao the gioi
+#include <SDL3/SDL.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 
 extern iRepresentShell*	g_pRepresentShell;
 extern int				SCREEN_WIDTH;
+extern int				SCREEN_HEIGHT;
 
 extern "C" void JxIosDo_Lay(float* pCpuPhanTram, double* pRamMB, double* pRamConMB,
                             int* pNhiet, float* pPin);
@@ -74,8 +78,109 @@ static void JxHud_Chu(const char* sz, int nX, int nY, DWORD uMau)
 		TEXT_IN_SINGLE_PLANE_COORD, JXH_COL_VIEN);
 }
 
+//---------------------------------------------------------------------------
+// [THONGTIN 11/09] Dong "60 FPS | CPU | GPU | Pin | ms" o goc PHAI-TREN, KHONG phu thuoc PerfHud.
+// Doi xung voi ThongTin_Ve() cua ban Android (Platform/JxPerfHudAndroid.cpp:675) de hai ban giong nhau:
+// cung khoa config [Client] ThongTinGoc, cung khoa keo "ThongTinGoc" trong Sua giao dien,
+// cung neo mep phai-tren trong vung an toan (tai tho).
+// Khac ban Android o hai cho, vi iOS khong cho doc:
+//   - GPU %: iOS khong mo ra neu khong dung API rieng tu -> hien "-".
+//   - Nhiet: khong doc duoc do C cua pin, thay bang muc nhiet he thong (NSProcessInfo.thermalState).
+// Khong ve nen anh (PH_ANH_NEN cua ban Android): chu da co vien den nen van doc duoc tren moi nen.
+//---------------------------------------------------------------------------
+static int	s_nTtBat = -1;
+static int	s_nTtX = -1, s_nTtY = -1;		// neo: mep PHAI, mep TREN; -1 = mac dinh theo vung an toan
+static int	s_nTtRong = 0, s_nTtCao = 0;	// khung vua ve (de do cham khi keo)
+static bool	s_bTtDangKy = false;
+
+static int JxHud_RongChu(const char* sz)	// font 12 px: ~6,2 px moi ky tu (nhu ban Android)
+{
+	return (int)(strlen(sz) * 62 / 10);
+}
+
+static SDL_Window* JxHud_CuaSo(void)
+{
+	int n = 0;
+	SDL_Window** ds = SDL_GetWindows(&n);
+	SDL_Window* w = (ds && n > 0) ? ds[0] : NULL;
+	if (ds) SDL_free(ds);
+	return w;
+}
+
+static void ThongTin_MacDinh(int* pnX, int* pnY)	// goc phai-tren TRONG vung an toan
+{
+	int nPhai = SCREEN_WIDTH - 6, nTren = 4;
+	SDL_Window* w = JxHud_CuaSo();
+	SDL_Rect r; int nW = 0, nH = 0;
+	if (w && SDL_GetWindowSafeArea(w, &r) && SDL_GetWindowSize(w, &nW, &nH) && nW > 0 && nH > 0 && r.w > 0 && r.h > 0)
+	{
+		nPhai = (r.x + r.w) * SCREEN_WIDTH / nW - 6;
+		nTren = r.y * SCREEN_HEIGHT / nH + 4;
+	}
+	*pnX = nPhai; *pnY = nTren;
+}
+static void ThongTin_Neo(int* px, int* py) { if (s_nTtX >= 0 && s_nTtY >= 0) { *px = s_nTtX; *py = s_nTtY; } else ThongTin_MacDinh(px, py); }
+#ifdef JX_MOBILE	// bon ham duoi chi dung khi dang ky keo tha (giao dien dien thoai)
+static bool ThongTin_ORiengTrung(void* p, int x, int y) { int nX, nY; (void)p; ThongTin_Neo(&nX, &nY); return x >= nX - s_nTtRong && x <= nX && y >= nY && y <= nY + s_nTtCao; }
+static void ThongTin_ORiengLay(void* p, int* px, int* py) { (void)p; ThongTin_Neo(px, py); }
+static void ThongTin_ORiengDat(void* p, int x, int y) { (void)p; s_nTtX = x; s_nTtY = y; }
+static void ThongTin_ORiengHinh(void* p, int* pl, int* pt, int* pw, int* ph) { int nX, nY; (void)p; ThongTin_Neo(&nX, &nY); *pl = nX - s_nTtRong; *pt = nY; *pw = s_nTtRong; *ph = s_nTtCao; }
+#endif
+
+static void ThongTin_Ve(int nFps, unsigned int dwPing)
+{
+	char sz1[32], sz2[192], szPin[48];
+	int nX, nY;
+	if (s_nTtBat < 0)
+	{
+		s_nTtBat = GetPrivateProfileInt("Client", "ThongTinGoc", 1, ".\\config.ini") ? 1 : 0;
+		SDL_Log("[THONGTIN] [Client] ThongTinGoc=%d (1 = hien dong FPS/CPU/GPU/Pin goc phai-tren khi da vao the gioi)", s_nTtBat);
+	}
+	if (!s_nTtBat || !g_pRepresentShell || KUiToolsControlBar::GetSelf() == NULL)
+		return;
+#ifdef JX_MOBILE	// keo tha trong "Sua giao dien" la tinh nang cua giao dien dien thoai (UiToaDo.h rao JX_MOBILE).
+	// macOS dung giao dien ban PC nen khong co trinh chinh do: chi VE dong, khong dang ky keo.
+	if (!s_bTtDangKy)
+	{
+		s_bTtDangKy = true;
+		UiToaDo_DangKyORieng("ThongTinGoc", ThongTin_ORiengTrung, ThongTin_ORiengLay, ThongTin_ORiengDat, NULL);
+		UiToaDo_DangKyORiengHinh("ThongTinGoc", ThongTin_ORiengHinh);
+	}
+#endif
+
+	double d = JxHud_Giay();
+	if (d - s_dLanDo >= 0.5)
+	{
+		JxIosDo_Lay(&s_fCpu, &s_dRam, &s_dRamCon, &s_nNhiet, &s_fPin);
+		s_dLanDo = d;
+	}
+
+	static const char* s_szNhietNgan[4] = { "", " am", " nong", " rat nong" };
+	_snprintf(sz1, sizeof(sz1) - 1, "%d FPS", nFps); sz1[sizeof(sz1) - 1] = 0;
+	if (s_fPin >= 0.0f)
+		_snprintf(szPin, sizeof(szPin) - 1, "%.0f%%%s", s_fPin * 100.0f,
+			(s_nNhiet > 0 && s_nNhiet <= 3) ? s_szNhietNgan[s_nNhiet] : "");
+	else
+		strcpy(szPin, "-");
+	szPin[sizeof(szPin) - 1] = 0;
+	if (s_fCpu >= 0.0f)
+		_snprintf(sz2, sizeof(sz2) - 1, "  |  CPU %.0f%%  |  GPU -  |  Pin %s  |  %u ms", s_fCpu, szPin, dwPing);
+	else
+		_snprintf(sz2, sizeof(sz2) - 1, "  |  CPU -  |  GPU -  |  Pin %s  |  %u ms", szPin, dwPing);
+	sz2[sizeof(sz2) - 1] = 0;
+
+	const int nR1 = JxHud_RongChu(sz1), nR2 = JxHud_RongChu(sz2);
+	ThongTin_Neo(&nX, &nY);
+	s_nTtRong = nR1 + nR2;
+	s_nTtCao  = JXH_LINE;
+	const int nTrai = nX - s_nTtRong;
+	JxHud_Chu(sz1, nTrai, nY, JxHud_MauFps(nFps));
+	JxHud_Chu(sz2, nTrai + nR1, nY, JXH_COL_TEXT);
+}
+
 void PerfHud_Draw(int nPaintFps, int nLogicFps, unsigned int dwPing)
 {
+	ThongTin_Ve(nPaintFps, dwPing);	// [THONGTIN 11/09] dong goc phai: khong phu thuoc PerfHud
 	if (!s_nBat || !g_pRepresentShell)
 		return;
 
