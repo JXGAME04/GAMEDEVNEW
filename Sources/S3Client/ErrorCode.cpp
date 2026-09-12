@@ -29,6 +29,19 @@ void Error_SetErrorCode(unsigned int uCode)
 #endif
 }
 
+#ifdef JX_IOS
+// [IOS-BAOLOI 11/09] Tren iOS khong co hop thoai loi nao hien ra; ghi thang ma loi + chuoi loi
+// vao jx_ios.log de biet GameInit() hong o buoc nao.
+extern "C" void JxIos_GhiLoiKhoiTao(void)
+{
+	FILE* f = jx_fopen("jx_ios.log", "ab");
+	if (!f) return;
+	fprintf(f, "[IOS] KHOI TAO HONG: ma loi = %u, chuoi loi = \"%s\"\n",
+		s_uErrorCode, s_szErrorString[0] ? s_szErrorString : "(rong)");
+	fclose(f);
+}
+
+#endif
 void Error_SetErrorString(const char* pcszString)
 {
 #ifdef JX_POSIX

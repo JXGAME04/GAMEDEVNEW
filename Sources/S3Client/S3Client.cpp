@@ -260,6 +260,9 @@ LONG WINAPI ExeptionFillert(LPEXCEPTION_POINTERS lpExceptionInfo)
 #ifdef JX_POSIX
 // [ANDROID 08/09] Diem vao POSIX (Platform/JxAndroidMain.cpp goi tu SDL_main): phan WinMain khong dinh Windows
 // (khong CrashLog/SEH/AntiHack/splash - cac tep do khong bien dich tren Android).
+#ifdef JX_IOS
+extern "C" void JxIos_GhiLoiKhoiTao(void);	// [IOS-BAOLOI 11/09] ErrorCode.cpp (khai bao phai o pham vi tep)
+#endif
 int JxPosixMain(int argc, char* argv[])
 {
 	(void)argc; (void)argv;
@@ -268,6 +271,12 @@ int JxPosixMain(int argc, char* argv[])
 	SetEngineResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
 	if (MyApp.Init(NULL))
 		MyApp.Run();
+#ifdef JX_IOS
+	else
+	{
+		JxIos_GhiLoiKhoiTao();	// [IOS-BAOLOI 11/09] ErrorCode.cpp
+	}
+#endif
 	return 0;
 }
 #else
