@@ -5,6 +5,9 @@
 #include "D3D9onGPU.h"
 #include "D3D9onGPUi.h"
 #include "Rep3ShadersGPU_spv.h"
+#ifdef JX_IOS
+#include "Rep3ShadersGPU_msl.h"	// [IOS-METAL 11/09] ban MSL cho Metal (sinh boi ios/sinh_shader_msl.py)
+#endif
 #include <stddef.h>	// [GOP 11/09] offsetof(RgDrawState, ps)
 #include <stdio.h>
 #include <stdlib.h>
@@ -319,8 +322,13 @@ bool CDevGpu::Init()
 	}
 	if (!m_pWin) { RgLog("khong tim thay SDL_Window cho HWND %p (%d cua so)", (void*)m_hWnd, nWin); return false; }
 	const char* e = getenv("REP3_GPU_DEBUG");
+#ifdef JX_IOS	// [IOS-METAL 11/09] Metal chi nhan MSL, khong nhan SPIR-V
+	m_pGpu = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_MSL, (e && atoi(e) != 0), NULL);
+	if (!m_pGpu) { RgLog("SDL_CreateGPUDevice(MSL) that bai: %s", SDL_GetError()); return false; }
+#else
 	m_pGpu = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, (e && atoi(e) != 0), NULL);
 	if (!m_pGpu) { RgLog("SDL_CreateGPUDevice(SPIRV) that bai: %s", SDL_GetError()); return false; }
+#endif
 #ifdef JX_ANDROID
 	JxDatHintSwapchain(m_pWin, m_bbW, m_bbH);	// [D1 11/09] truoc khi SDL tao swapchain lan dau
 #endif
@@ -420,6 +428,9 @@ bool CDevGpu::CreateShaders()
 {
 	SDL_GPUShaderCreateInfo si; memset(&si, 0, sizeof(si));
 	si.code = g_Rep3GpuVS; si.code_size = sizeof(g_Rep3GpuVS); si.entrypoint = "main"; si.format = SDL_GPU_SHADERFORMAT_SPIRV; si.stage = SDL_GPU_SHADERSTAGE_VERTEX; si.num_uniform_buffers = 1;
+#ifdef JX_IOS	// [IOS-METAL 11/09] code_size = do dai chuoi KHONG ke ky tu ket thuc
+	si.code = (const Uint8*)g_Rep3GpuVSMsl; si.code_size = sizeof(g_Rep3GpuVSMsl) - 1; si.entrypoint = "main0"; si.format = SDL_GPU_SHADERFORMAT_MSL;
+#endif
 	m_pVS = SDL_CreateGPUShader(m_pGpu, &si);
 	if (!m_pVS) { RgLog("CreateGPUShader VS that bai: %s", SDL_GetError()); return false; }
 	memset(&si, 0, sizeof(si));
@@ -434,6 +445,9 @@ bool CDevGpu::CreateShaders()
 			if (g_nJxAtlasMang) { si.code = g_Rep3GpuFSPalPsMang; si.code_size = sizeof(g_Rep3GpuFSPalPsMang); }	// [MANG 11/09] sampler2DArray, lop lay tu dinh
 		}
 	}
+#endif
+#ifdef JX_IOS	// [IOS-METAL 11/09]
+	si.code = (const Uint8*)g_Rep3GpuFSMsl; si.code_size = sizeof(g_Rep3GpuFSMsl) - 1; si.entrypoint = "main0"; si.format = SDL_GPU_SHADERFORMAT_MSL;
 #endif
 	m_pFS = SDL_CreateGPUShader(m_pGpu, &si);
 	if (!m_pFS) { RgLog("CreateGPUShader FS that bai: %s", SDL_GetError()); return false; }
