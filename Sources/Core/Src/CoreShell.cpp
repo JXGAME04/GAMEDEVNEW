@@ -9790,6 +9790,30 @@ static void TK_ChonDiem(int nPlayerIdx, UINT uCurTime)
 
 // mo thoai mot NPC theo ten (chu thuong) quanh toa do cho truoc; chua toi noi thi
 // di bo den. Tra: 0 dang di, 1 vua go thoai, -1 khong thay NPC (da toi noi).
+// (12/09) [TK-NPC] NPC THOAI gan nhat quanh mot diem - dung lam LOI THOAT khi tim theo TEN
+// truot. Tra chi so NPC hoac 0.
+static int TK_NpcThoaiGan(int nMx, int nMy, int nR, int* pnXa)
+{
+	int nBest = 0, nBd = nR + 1;
+	int nIdx = 0;
+	while (nIdx = NpcSet.GetNextIdx(nIdx))
+	{
+		if (Npc[nIdx].m_Kind != kind_dialoger || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		int dX = 0, dY = 0;
+		Npc[nIdx].GetMpsPos(&dX, &dY);
+		const int d = g_GetDistance(nMx, nMy, dX, dY);
+		if (d < nBd)
+		{
+			nBd = d;
+			nBest = nIdx;
+		}
+	}
+	if (pnXa)
+		*pnXa = nBest ? nBd : -1;
+	return nBest;
+}
+
 static int TK_ToiNpc(int nPlayerIdx, const char* szTen, int nOx, int nOy, UINT uCurTime)
 {
 	int nX, nY, dX, dY;
@@ -9797,9 +9821,30 @@ static int TK_ToiNpc(int nPlayerIdx, const char* szTen, int nOx, int nOy, UINT u
 	int nIdx = DT_FindNpcName(nPlayerIdx, szTen, TK_O(nOx), TK_O(nOy), 640);
 	if (!nIdx)
 	{
-		if (DT_WalkTo(nPlayerIdx, TK_O(nOx), TK_O(nOy), 320, uCurTime))
-			return -1;
-		return 0;
+		// (12/09) [TK-NPC] Chu game 12/09: "tong kim xong o phe kim khi het gio thi auto tu di
+		// chuyen vao trong goc ma khong di chuyen toi npc xa phu o map bao danh - chi bi o phe kim".
+		// Tim theo TEN truot thi ca pha bo cuoc sau 20 nhip (CoreShell.cpp gan 11335): TKP_DONE +
+		// nTKHold = 0 => tra may cho auto thuong, va auto thuong lai chay theo cau hinh tab Di
+		// chuyen => nhan vat di vao goc ban do. Nen truoc khi chiu thua, lay NPC THOAI GAN NHAT
+		// quanh DUNG TOA DO da biet (96 mps = 3 o). Khong so nham: o moi diem trong bang, hai NPC
+		// thoai gan nhau nhat cung cach >= 12 o (vi du khu Kim: Xa Phu 1568,3075 va Quan nhu quan
+		// 1580,3074). Ghi log ten NPC de lan sau doi chieu duoc vi sao ten truot.
+		int nXaGan = -1;
+		const int nGan = TK_NpcThoaiGan(TK_O(nOx), TK_O(nOy), 96, &nXaGan);
+		if (nGan)
+		{
+			AUTOLOG_EVERY(3000, "[TK-NPC] khong thay ten '%s' quanh (%d,%d) - dung NPC thoai gan nhat '%.31s' cach %d mps", szTen, nOx, nOy, Npc[nGan].Name, nXaGan);
+			nIdx = nGan;
+		}
+		else
+		{
+			int nXa640 = -1;
+			const int nAi = TK_NpcThoaiGan(TK_O(nOx), TK_O(nOy), 640, &nXa640);
+			AUTOLOG_EVERY(3000, "[TK-NPC] khong thay ten '%s' quanh (%d,%d); NPC thoai gan nhat trong 640 mps: %s cach %d", szTen, nOx, nOy, nAi ? Npc[nAi].Name : "(khong co)", nXa640);
+			if (DT_WalkTo(nPlayerIdx, TK_O(nOx), TK_O(nOy), 320, uCurTime))
+				return -1;
+			return 0;
+		}
 	}
 	Npc[nIdx].GetMpsPos(&dX, &dY);
 	if (g_GetDistance(nX, nY, dX, dY) > 128)
