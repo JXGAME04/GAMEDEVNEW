@@ -155,7 +155,8 @@ add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${JX_SRC}/S3Client/Ui/UiCase/UiWAuto.cpp          # khung Auto trong game
     ${JX_SRC}/S3Client/Ui/UiCase/UiWAutoTrang.cpp     # trang noi dung cua khung Auto
     ${JX_SRC}/S3Client/Ui/UiCase/UiVatPham.cpp       # bang thong tin vat pham khi cham o do
-    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosStubs.cpp)      # ban rong cho bang do nhip (Android doc /proc)
+    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosStubs.cpp      # [IOS-DO] dem khung + ghi jx_nhip.log moi 10 s
+    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosDoNhip.mm)     # do CPU/RAM/nhiet/pin bang API Apple
 jx_setup(S3Client)
 target_compile_definitions(S3Client PRIVATE ${JX_S3CLIENT_DEFS})
 target_include_directories(S3Client PRIVATE ${JX_S3CLIENT_INCS})
