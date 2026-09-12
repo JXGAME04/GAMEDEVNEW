@@ -890,3 +890,22 @@ Port `[MANG 09/09 f]` (`5311778b`): atlas theo **khối cố định** + nhiều
 Đây mới là phần lớn. Không lặp lại sai lầm của `[MANG 11/09]` (C1, đã tắt): C1 dựng cụm tăng dần 2/4/8 lớp với **một**
 sampler mảng nên vẫn đổi binding; bản PC dùng khối lớn cố định + nhiều mảng gắn chết nên **không bao giờ đổi binding**.
 Trước khi viết sẽ đo giới hạn thiết bị (số khe sampler, số lớp tối đa của texture mảng) để không đánh cược.
+
+### Ràng buộc đã đo cho bước 3 (đo trước, chưa viết mã)
+
+| điều cần biết | số đo | nguồn |
+|---|---|---|
+| khe texture+sampler cho tầng điểm ảnh | **16** | `MAX_TEXTURE_SAMPLERS_PER_STAGE`, `SDL3-3.2.30/src/gpu/SDL_sysgpu.h:29` |
+| đang dùng | 2 (`g_t0`, `g_t1`) khi `Rep3PalBuffer=1` | `D3D9onGPUDev.cpp` `num_samplers = 2` |
+| còn trống cho mảng atlas | **14** | |
+| bit trống trong ô PALROW cho lớp atlas | 6 (bit 25..30), bit 31 còn trống | `DrawInternal` |
+| trang atlas cuối phiên đông | **56 trang, 464 MB**, tất cả 2 byte/điểm ảnh | `[GPU] atlas 56 trang (464 MB)` |
+
+Nghĩa là bản mobile **không** chép được nguyên hình bản PC: PC xài 32 khe sampler (16 cho `R8G8` + 16 cho `BGRA8`)
+vì D3D11 cho tới 128 khe, còn SDL_GPU chốt cứng 16 khe mỗi tầng. Bù lại mobile chỉ có **một** họ định dạng
+(mọi trang đều 2 byte/điểm ảnh) nên 14 khe là thừa. Hình dạng dự kiến: khối cố định **8 lớp × 2048² × 2 B = 64 MB**,
+7 khối phủ được 56 trang hiện tại, PALROW đủ 6 bit cho 8 khối × 8 lớp = 64 trang (cần hơn thì mở bit 31 thành 7 bit).
+
+Điểm chết người của C1 (`[MANG 11/09]`, đã tắt) là **cụm lớn dần thì phải chép mảng cũ sang mảng mới** — đó là lý do
+`nộp` vọt 0,64 → 3,28 ms và `vẽ CPU` 2,60 → 4,51 ms, chứ không phải do lấy mẫu theo lớp. Bản PC `(f)` ghi rõ
+"khong chep mang khi lon, khong cap du". Khối cố định bỏ hẳn cú chép đó, nên đây là chỗ khác biệt phải giữ đúng.
