@@ -158,6 +158,7 @@ add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosStubs.cpp      # [IOS-DO] dem khung + ghi jx_nhip.log moi 10 s
     ${CMAKE_CURRENT_SOURCE_DIR}/JxTaiDuLieu.mm                 # [IOS-TAI 11/09] buoc F: bo tai du lieu trong app (manifest chung voi Android)
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosMiniAudio.mm               # [IOS-AM 11/09] cai dat miniaudio (tach vi AVFoundation da BOOL)
+    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosAnGame.mm                  # [IOS-AN 11/09] nut an game: day ung dung xuong nen
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosDoNhip.mm      # do CPU/RAM/nhiet/pin bang API Apple
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosHud.cpp)       # [IOS-HUD] bang do hien trong game
 jx_setup(S3Client)
