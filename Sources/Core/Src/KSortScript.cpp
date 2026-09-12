@@ -35,7 +35,11 @@ static unsigned long LoadAllScript(char * szFilePath)
 {
 	printf("====== [Start Loading Script : %d] ======\n", nCurrentScriptNum);
 	g_SetFilePath("\\");
+#ifdef JX_POSIX	// [IOS-SCRIPT 11/09] thu muc goc tren iOS dai 94 ky tu, cong "\script" va ky tu ket la 102 > 100 -> tran ngan xep (SIGABRT ngay khi vao game)
+	char szRootPath[MAX_PATH];
+#else
 	char szRootPath[100];
+#endif
 	char szOldRootPath[MAX_PATH];
 //	GetCurrentDirectory(MAX_PATH, szOldRootPath);
 	getcwd(szOldRootPath, MAXPATH);
