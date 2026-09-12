@@ -1255,3 +1255,30 @@ Bản PC đúng, hướng đi đúng, chỉ có tôi viết sai một hàm lấy
 
 Lưu ý để không lại vội vàng: phiên 20:16 mới 3 phút, mật độ quad thấp hơn phiên đối chứng, và máy vừa được nghỉ nên
 đang mát (nhiệt 0). Cần chủ chơi tiếp vào chỗ đông để so ở cùng mật độ và cùng lúc máy đã nóng.
+
+
+### 20:27 — Ghép theo cùng mật độ: khối thắng cả hai phía CPU và GPU
+
+Ghép cửa sổ theo dải quad mỗi khung, tắt và bật đều là APK 109112011:
+
+| dải quad | | đổi texture | ghi lệnh | nộp | tổng | fps |
+|---|---|---|---|---|---|---|
+| 1 000 – 1 600 | tắt | 510 | 1,37 ms | 1,28 | 3,98 | 116,3 |
+| | **bật** | **23** | **0,51** | **0,44** | **1,33** | **117,1** |
+| 1 600 – 2 200 | tắt | 967 | 1,68 ms | 1,74 | 4,20 | 114,9 |
+| | **bật** | **23** | **0,47** | **0,42** | **1,21** | **117,9** |
+
+Thiết bị, mỗi bên 11 phút:
+
+| | tắt khối (20:01–20:13) | bật khối (20:16–20:27) |
+|---|---|---|
+| nhiệt TB | 2,13 (đỉnh 3) | **0,00 (đỉnh 0)** |
+| máy | 36,8 °C | **33,7 °C** |
+| điện | 3,07 W | **2,59 W** |
+| GPU | 71 % @ 302 MHz | 72 % @ 289 MHz |
+
+Chơi 11 phút liền mà **máy chưa hề rời mức nhiệt 0**, trong khi bản tắt khối đã lên đỉnh mức 3. Đây mới đúng là con số
+trả lời câu hỏi gốc của chủ.
+
+Còn thiếu: dải trên 2 200 quad mỗi khung (Tống Kim lúc đông nhất) thì bản bật khối chưa có cửa sổ nào. Cần chủ vào
+chỗ đông nhất để chốt.
