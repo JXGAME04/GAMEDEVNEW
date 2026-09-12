@@ -40,7 +40,13 @@ def lay_mang(ten):
 ra = ['// [IOS-METAL 11/09] SINH TU DONG boi ios/sinh_shader_msl.py tu Rep3ShadersGPU_spv.h. DUNG SUA TAY.',
       '// Shader Metal (MSL) cho ban iOS. Diem vao la "main0" (spirv-cross doi ten tu "main").',
       '#pragma once', '']
-for ten, giai in (("g_Rep3GpuVS", "vertex"), ("g_Rep3GpuFS", "fragment")):
+# [IOS-GOP 12/09] them hai bien the gop lenh ve cua ban Android:
+#   PalBuf = bang mau nam trong dem luu tru -> quad khac bang mau van gop chung mot lenh
+#   PalPs  = them ca to hop trang thai tang texture -> gop duoc nhieu hon nua
+# Hai bien the dung texture mang / atlas khoi thi CHUA sinh: chung doi nhieu khe sampler hon
+# va gan chet khe ca khung, phai do tren may that truoc.
+for ten, giai in (("g_Rep3GpuVS", "vertex"), ("g_Rep3GpuFS", "fragment"),
+                  ("g_Rep3GpuFSPalBuf", "fragment"), ("g_Rep3GpuFSPalPs", "fragment")):
     b = lay_mang(ten)
     with tempfile.NamedTemporaryFile(suffix=".spv", delete=False) as f:
         f.write(b); spv = f.name
