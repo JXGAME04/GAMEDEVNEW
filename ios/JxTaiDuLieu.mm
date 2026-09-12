@@ -432,6 +432,37 @@ static void JxLamViec(NSString* goc, NSString* thuMuc, JxTaiTrangThai* tt)
 
 static NSString* JxMb(long long n) { return [NSString stringWithFormat:@"%.1f", (double)n / (1024.0*1024.0)]; }
 
+// ---------------------------------------------------------------- cong phien ban
+// [BAOMAT 12/09 PHIENBAN] Kho du lieu mang mot tep "phienban.txt", dong dau la SO PHIEN BAN
+// CLIENT TOI THIEU (so nguyen, dang ngay 20260912). App cu hon so do thi khong cho choi tiep.
+//
+// Vi sao dat o day ma khong dat trong goi dang nhap: bat truong ProtocolVersion trong goi
+// c2s_login la doi GIAO THUC BAT TAY, phai sua ca may chu cung luc, khong lam mot ben duoc.
+// Con tep nay thi da nam trong manifest.txt (co md5) ma manifest thi DA KY, nen ke dung giua
+// khong ha nguong xuong duoc - muon ep cap nhat chi can sua tep roi ky lai.
+//
+// LUU Y THAT: day la cong cho nguoi choi NGAY TINH. Client bi sua ruot thi bo qua duoc buoc nay.
+// Cong THAT phai nam o may chu (tu choi client qua cu luc dang nhap) - viec do con lai.
+extern "C" int JxTaiDuLieu_KiemPhienBan(const char* pszThuMuc, int nPhienBanApp, char* pszLoi, int nLoi)
+{
+	@autoreleasepool {
+		if (!pszThuMuc || !*pszThuMuc) return 0;
+		NSString* p = [[NSString stringWithUTF8String:pszThuMuc] stringByAppendingPathComponent:@"phienban.txt"];
+		NSString* s = [NSString stringWithContentsOfFile:p encoding:NSUTF8StringEncoding error:nil];
+		if (!s.length)
+			return 0;	// kho chua khai bao gi -> khong chan (de kho cu van chay duoc)
+		int nCan = [[[s componentsSeparatedByString:@"\n"] firstObject] intValue];
+		if (nCan <= 0 || nPhienBanApp >= nCan)
+			return 0;
+		if (pszLoi && nLoi)
+			snprintf(pszLoi, nLoi,
+				"Ban game nay da cu.\n\nBan dang dung %d, may chu yeu cau tu %d tro len.\n"
+				"Hay cai ban moi roi vao lai.", nPhienBanApp, nCan);
+		NSLog(@"[PHIENBAN] app %d < yeu cau %d -> chan", nPhienBanApp, nCan);
+		return 1;
+	}
+}
+
 // ---------------------------------------------------------------- API cho C++
 // Tra ve 0 neu du lieu da san sang, khac 0 neu that bai (tt.loi mo ta).
 extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char* pszLoi, int nLoi)

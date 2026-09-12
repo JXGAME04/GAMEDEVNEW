@@ -30,6 +30,9 @@ extern "C" const char* JxIos_ThuMucHoTro(char* pszRa, size_t nRa);
 extern "C" const char* JxIos_ThuMucGoi(char* pszRa, size_t nRa);
 // [IOS-TAI 11/09] buoc F: bo tai du lieu trong app (ios/JxTaiDuLieu.mm)
 extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char* pszLoi, int nLoi);
+// [BAOMAT 12/09 PHIENBAN] kho du lieu khai so phien ban client toi thieu trong phienban.txt
+extern "C" int JxTaiDuLieu_KiemPhienBan(const char* pszThuMuc, int nPhienBanApp, char* pszLoi, int nLoi);
+#define JX_PHIEN_BAN_APP  20260912   // tang moi lan phat hanh (dang ngay)
 extern "C" int JxIosAnGame_Co(void);   // [IOS-AN 11/09] nut an game co day duoc xuong nen khong
 
 // [IOS-KYHIEU 11/09] cac ham ma tren Windows/Android nam trong DLL/.so rieng; tren iOS chung link tinh
@@ -161,6 +164,15 @@ int main(int argc, char* argv[])
 		strncpy(s_szDir, pszDir, sizeof(s_szDir) - 1);
 	s_szDir[sizeof(s_szDir) - 1] = 0;
 	JxPosix_SetDataDir(s_szDir);
+	{	// [BAOMAT 12/09 PHIENBAN] kho du lieu doi ban moi hon -> dung han, khong vao game voi du lieu khong khop
+		char szLoiPb[512] = "";
+		if (JxTaiDuLieu_KiemPhienBan(s_szDir, JX_PHIEN_BAN_APP, szLoiPb, sizeof(szLoiPb)))
+		{
+			JxIosLog("[PHIENBAN] %s", szLoiPb);
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "JX1 Mobile", szLoiPb, NULL);
+			return 1;
+		}
+	}
 	if (chdir(s_szDir) != 0)
 		JxIosLog("[IOS] chdir(%s) that bai: %s", s_szDir, strerror(errno));
 	JxIosLog("[IOS] thu muc du lieu: %s (SDL %d.%d.%d)", s_szDir, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
