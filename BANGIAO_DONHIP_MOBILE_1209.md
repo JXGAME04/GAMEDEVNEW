@@ -1411,3 +1411,34 @@ tính được bằng `tong Paint` trừ các phần kia.
 
 **Kiểm:** Android dựng qua; `Core.vcxproj Client Release|Win32` biên dịch 0 lỗi C (vẫn chỉ đứt LNK1181 thiếu thư viện
 dựng sẵn). APK `109112335`, md5 `5598a84b1b6b43d7280915fbd5efe508`, máy chủ 8765 PID 396480.
+
+
+### 23:40 — Đọc lại phiên `233219` với 178 dòng: có HAI nguyên nhân, không phải một
+
+Lúc 23:35 tôi mới có 38 dòng và đã vội nghiêng hẳn về giả thuyết "chờ khoá". Với 178 dòng thì bức tranh cân hơn:
+
+| | trung bình |
+|---|---|
+| vẽ thế giới | 17,1 ms |
+| bảy pha cộng được | 7,1 ms (42 %) |
+| **phần chưa đo** | **10,0 ms (58 %)** |
+
+Tám khung thế giới chậm nhất chia thành **hai nhóm rõ rệt**:
+
+```
+the gioi 149.7 | bay pha  0.4 | THIEU 149.3     <- nhom 1: cho chua do
+the gioi 104.4 | bay pha 36.2 | THIEU  68.2     <- nhom 1
+the gioi  58.4 | bay pha  5.3 | THIEU  53.1     <- nhom 1
+the gioi 106.2 | bay pha 94.9 | THIEU  11.3     <- nhom 2: VAT THE 93.2
+the gioi  80.9 | bay pha 80.9 | THIEU   0.0     <- nhom 2: VAT THE 78.7
+the gioi  56.1 | bay pha 56.1 | THIEU   0.0     <- nhom 2: VAT THE 55.3
+the gioi  55.6 | bay pha 55.6 | THIEU   0.0     <- nhom 2: VAT THE 53.9
+the gioi  51.4 | bay pha 51.4 | THIEU   0.0     <- nhom 2: VAT THE 50.3
+```
+
+34 / 178 khung có phần chưa đo chiếm hơn 80 %. Nghĩa là **cả hai đều thật**:
+
+1. **Vẽ vật thể** (NPC / người chơi) có những cú 50–93 ms.
+2. **Một chỗ chưa đo** có những cú 53–149 ms — bản 109112335 đang đo nốt.
+
+Ghi lại để nhớ: kết luận lúc 23:35 dựa trên 38 dòng là **quá vội**. Phải đợi đủ mẫu rồi hãy kết luận.
