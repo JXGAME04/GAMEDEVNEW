@@ -86,7 +86,10 @@ def _tep_cua_windows():
         except OSError:
             continue
         for m in re.finditer(r'Include="([^"]+\.(?:cpp|c|cc|cxx))"', s):
-            ra.add(os.path.basename(m.group(1)).lower())
+            # duong dan trong .vcxproj dung dau GACH NGUOC ("Ui\\Elem\\Wnds.cpp");
+            # os.path.basename tren macOS khong coi "\\" la dau phan cach nen phai doi truoc,
+            # neu khong thi moi tep deu bi coi la "khong co trong ban Windows" - bo qua nham het.
+            ra.add(os.path.basename(m.group(1).replace('\\', '/')).lower())
     return ra
 
 TEP_WINDOWS = _tep_cua_windows() if CHEDO_PC else set()

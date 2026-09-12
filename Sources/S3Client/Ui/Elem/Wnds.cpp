@@ -636,6 +636,13 @@ extern "C" void JxUi_BoTieuDiem(void)
 {
 	Wnd_SetFocusWnd(NULL);
 }
+// [BANPHIM 12/09 KET] co cua so nao dang giu tieu diem nhap khong (1/0).
+// KSdlApp dung de bat trang thai hong: ban phim ao con mo ma khong o nhap nao giu tieu diem
+// (xay ra khi cua so chua o nhap bi GO - dong 285 xoa con tro tieu diem ma khong gui KILL_FOCUS).
+extern "C" int JxUi_CoTieuDiem(void)
+{
+	return Wnd_GetFocusWnd() ? 1 : 0;
+}
 
 //	[VATPHAM 12/09 g] Hoi CA CAY cua so con: o vat pham (KWndObjectBox / KWndObjectMatrix) luon la cua so CON cua
 //	hop thoai (hanh trang, ruong...), ma Wnd_GetActive chi tra cua so TOP nen phai tu di xuong.

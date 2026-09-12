@@ -754,6 +754,7 @@ static void SdlToLogical(SDL_Window* pWin, float& x, float& y)
 #ifdef JX_MOBILE
 extern "C" int JxUi_ChamKhiCoTieuDiem(int x, int y);	// [BANPHIM 14/09] Wnds.cpp: 0 khong tieu diem / 1 cham dung o / 2 cham ngoai -> da bo
 extern "C" void JxUi_BoTieuDiem(void);	// [BANPHIM 14/09] Wnds.cpp
+extern "C" int JxUi_CoTieuDiem(void);	// [BANPHIM 12/09 KET] Wnds.cpp: 1 = co cua so dang giu tieu diem nhap
 #endif
 static Uint64 s_uBanPhimTat = 0;	// [DANGNHAP 12/09 b] hen TAT ban phim (KILL_FOCUS); SET_FOCUS den truoc thi huy
 static int s_nBanPhimMatKhau = 0;
@@ -800,6 +801,15 @@ extern "C" void JxSdl_BanPhimNhip(void)
 			s_bBanPhimDangMo = 0;
 			JxUi_BoTieuDiem();
 			g_DebugLog("[BANPHIM] IME da dong ngoai y game -> bo tieu diem o nhap");
+		}
+		// [BANPHIM 12/09 KET] Chieu nguoc lai: ban phim con MO ma khong o nhap nao giu tieu diem.
+		// Xay ra khi cua so chua o nhap bi GO (Wnds.cpp:285 xoa con tro tieu diem ma KHONG gui
+		// WND_M_KILL_FOCUS, ma chi KILL_FOCUS moi hen tat ban phim). Android con nut Back de thoat,
+		// iOS thi khong co gi -> ban phim nam mai. Hen tat bang dung co che 200 ms san co.
+		if (s_bBanPhimDangMo && !s_uBanPhimTat && pWinKT && SDL_TextInputActive(pWinKT) && !JxUi_CoTieuDiem())
+		{
+			s_uBanPhimTat = SDL_GetTicks() + 200;
+			g_DebugLog("[BANPHIM] ban phim con mo ma khong o nhap nao giu tieu diem -> hen tat");
 		}
 	}
 #endif
