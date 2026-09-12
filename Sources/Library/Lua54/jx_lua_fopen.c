@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #undef fopen   /* trong tep nay goi fopen that */
-#ifdef JX_IOS
+#ifdef JX_APPLE
 /* [IOS 11/09] khai bao lai fopen that sau khi #undef: clang cua Apple khong cho khai bao ngam.
    Ban Android di duong cu (khai bao ngam + canh bao bi -w nuot), khong doi mot dong. */
 extern FILE* fopen(const char* pszPath, const char* pszMode);

@@ -25,10 +25,13 @@ bool       JxReplay_OpenFileAndPlay() { return false; }
 bool       JxReplay_OnQuitRequest() { return false; }
 
 // ---- PerfHud ---- [ANDROID 11/09 HUD] Android co bang do rieng (Platform/JxPerfHudAndroid.cpp); stub chi cho POSIX khac
+#ifdef JX_APPLE	// [IOS-HUD 11/09] iOS co ban do rieng o ios/JxIosHud.cpp -> khong lam stub o day
+#else
 #ifndef JX_ANDROID
 void PerfHud_SetEnable(int nOn) { (void)nOn; }
 int  PerfHud_IsEnable() { return 0; }
 void PerfHud_Draw(int nPaintFps, int nLogicFps, unsigned int dwPing) { (void)nPaintFps; (void)nLogicFps; (void)dwPing; }
+#endif
 #endif
 
 // ---- TrayMode ----

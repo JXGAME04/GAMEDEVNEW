@@ -12,7 +12,7 @@
 #include <time.h>
 #include <signal.h>
 #include <sys/statvfs.h>
-#ifdef JX_IOS
+#ifdef JX_APPLE
 /* [IOS 11/09] Apple khong co <sys/sysinfo.h>. Cung cap dung ten sysinfo() + struct sysinfo o day
    de GlobalMemoryStatus / GlobalMemoryStatusEx ben duoi khong phai doi mot dong nao.
    Tong RAM lay qua sysctl(HW_MEMSIZE); phan con trong lay qua thong ke trang cua mach. */
@@ -112,7 +112,7 @@ char* JxPathPosix(const char* pszIn, char* pszOut, size_t nOut)
 			                               "/data/user/", "/data/data/", "/data/local/", "/data/app/", "/data/misc/", NULL };
 			int bSys = 0;
 			for (int i2 = 0; s_goc[i2]; i2++) if (strncmp(pszOut, s_goc[i2], strlen(s_goc[i2])) == 0) { bSys = 1; break; }
-#ifdef JX_IOS
+#ifdef JX_APPLE
 			/* [IOS 11/09] goc he thong cua iOS: /var/mobile/Containers (may that),
 			   /Users/<ten>/Library/Developer/CoreSimulator (may ao). Khong co cho nay thi duong dan
 			   tuyet doi cua iOS bi coi la tuong doi -> ha chu thuong + ghep thu muc du lieu -> mo tep hong. */
@@ -434,7 +434,7 @@ LONG CompareFileTime(const FILETIME* a, const FILETIME* b)
 	return x < y ? -1 : (x > y ? 1 : 0);
 }
 
-#ifdef JX_IOS
+#ifdef JX_APPLE
 /*---------------------------------------------------------------- [IOS-KYHIEU 11/09] bang tra ky hieu TINH
   iOS khong nap duoc thu vien dong tu ngoai goi ung dung: moi TU deu link TINH vao mot nhi phan.
   Ung dung dang ky truoc (ios/JxIosMain.cpp) roi LoadLibrary/GetProcAddress doc tu bang nay.        */
@@ -485,12 +485,12 @@ static int JxKyHieu_LaTheTinh(HMODULE h)
 	return h && (char*)h >= (char*)s_szModTinh && (char*)h < (char*)s_szModTinh + sizeof(s_szModTinh);
 }
 
-#endif /* JX_IOS */
+#endif /* JX_APPLE */
 /*---------------------------------------------------------------- module: "Rainbow.dll" -> libRainbow.so */
 HMODULE LoadLibraryA(LPCSTR name)
 {
 	if (!name) return NULL;
-#ifdef JX_IOS
+#ifdef JX_APPLE
 	{ HMODULE hT = JxKyHieu_TheModule(name); if (hT) return hT; }	// [IOS-KYHIEU 11/09]
 #endif
 	char base[256]; const char* p = strrchr(name, '\\'); const char* q = strrchr(name, '/');
@@ -515,7 +515,7 @@ HMODULE LoadLibraryA(LPCSTR name)
 	return NULL;
 }
 HMODULE LoadLibraryExA(LPCSTR name, HANDLE h, DWORD f) { (void)h; (void)f; return LoadLibraryA(name); }
-#ifdef JX_IOS	// [IOS-KYHIEU 11/09] doc bang tra tinh truoc, khong khop thi van dlsym
+#ifdef JX_APPLE	// [IOS-KYHIEU 11/09] doc bang tra tinh truoc, khong khop thi van dlsym
 FARPROC GetProcAddress(HMODULE h, LPCSTR name)
 {
 	if (!h || !name) return NULL;
@@ -532,7 +532,7 @@ FARPROC GetProcAddress(HMODULE h, LPCSTR name)
 #else
 FARPROC GetProcAddress(HMODULE h, LPCSTR name) { if (!h || !name) return NULL; return (FARPROC)dlsym((void*)h, name); }
 #endif
-#ifdef JX_IOS	// [IOS-KYHIEU 11/09] the gia: khong co gi de tha
+#ifdef JX_APPLE	// [IOS-KYHIEU 11/09] the gia: khong co gi de tha
 BOOL FreeLibrary(HMODULE h)
 {
 	if (!h) return FALSE;
@@ -545,7 +545,7 @@ BOOL FreeLibrary(HMODULE h) { if (!h) return FALSE; return dlclose((void*)h) == 
 HMODULE GetModuleHandleA(LPCSTR name)
 {
 	if (!name) return (HMODULE)dlopen(NULL, RTLD_NOW);
-#ifdef JX_IOS
+#ifdef JX_APPLE
 	{ HMODULE hT = JxKyHieu_TheModule(name); if (hT) return hT; }	// [IOS-KYHIEU 11/09]
 #endif
 	HMODULE h = LoadLibraryA(name); if (h) dlclose((void*)h);   /* dlopen dem tham chieu: tra handle da nap */

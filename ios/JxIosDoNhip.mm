@@ -7,16 +7,19 @@
 //                                                iOS dung de QUYET DINH GIET app - jetsam)
 //   RAM con lai      /proc/meminfo            -> os_proc_available_memory()
 //   Nhiet            /sys/class/thermal       -> NSProcessInfo.thermalState (0..3)
-//   Pin              /sys/class/power_supply  -> UIDevice.batteryLevel
+//   Pin              /sys/class/power_supply  -> SDL_GetPowerInfo (chay ca iOS lan macOS)
 //   GPU %            /sys/class/kgsl ...      -> KHONG CO tren iOS neu khong dung API rieng tu; tra -1
 //
 // BAY: tep .mm nay KHONG duoc include "KWin32.h" (lop gia lap Win32 dat BOOL = int, con
 // <objc/objc.h> dat BOOL = bool -> xung dot kieu). Vi vay chi bay ra mot ham C thuan.
 //---------------------------------------------------------------------------
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#include <TargetConditionals.h>
 #include <mach/mach.h>
-#include <os/proc.h>
+#include <SDL3/SDL.h>
+#if TARGET_OS_IPHONE
+#include <os/proc.h>		// os_proc_available_memory: CHI co tren iOS
+#endif
 
 extern "C" void JxIosDo_Lay(float* pCpuPhanTram, double* pRamMB, double* pRamConMB,
                             int* pNhiet, float* pPin)
@@ -53,17 +56,29 @@ extern "C" void JxIosDo_Lay(float* pCpuPhanTram, double* pRamMB, double* pRamCon
 			*pRamMB = (double)vi.phys_footprint / (1024.0 * 1024.0);
 	}
 	if (pRamConMB)
+	{
+#if TARGET_OS_IPHONE
 		*pRamConMB = (double)os_proc_available_memory() / (1024.0 * 1024.0);
+#else
+		// macOS: khong co os_proc_available_memory -> lay RAM tu do cua may
+		*pRamConMB = -1.0;
+		vm_size_t nTrang = 0; mach_port_t host = mach_host_self();
+		vm_statistics64_data_t vm; mach_msg_type_number_t nDem = HOST_VM_INFO64_COUNT;
+		if (host_page_size(host, &nTrang) == KERN_SUCCESS &&
+		    host_statistics64(host, HOST_VM_INFO64, (host_info64_t)&vm, &nDem) == KERN_SUCCESS)
+			*pRamConMB = (double)((uint64_t)(vm.free_count + vm.inactive_count) * (uint64_t)nTrang) / (1024.0 * 1024.0);
+#endif
+	}
 
 	// ---- nhiet: 0 = binh thuong, 1 = am, 2 = nong, 3 = nghiem trong ----
 	if (pNhiet)
 		*pNhiet = (int)[[NSProcessInfo processInfo] thermalState];
 
-	// ---- pin ----
+	// ---- pin: dung SDL cho ca iOS lan macOS, khoi phai keo UIKit vao ----
 	if (pPin)
 	{
-		UIDevice* d = [UIDevice currentDevice];
-		if (!d.batteryMonitoringEnabled) d.batteryMonitoringEnabled = YES;
-		*pPin = d.batteryLevel;		// -1 neu chua doc duoc
+		int nPhanTram = -1;
+		SDL_GetPowerInfo(NULL, &nPhanTram);
+		*pPin = (nPhanTram >= 0) ? (float)nPhanTram / 100.0f : -1.0f;
 	}
 }
