@@ -909,3 +909,50 @@ vì D3D11 cho tới 128 khe, còn SDL_GPU chốt cứng 16 khe mỗi tầng. Bù
 Điểm chết người của C1 (`[MANG 11/09]`, đã tắt) là **cụm lớn dần thì phải chép mảng cũ sang mảng mới** — đó là lý do
 `nộp` vọt 0,64 → 3,28 ms và `vẽ CPU` 2,60 → 4,51 ms, chứ không phải do lấy mẫu theo lớp. Bản PC `(f)` ghi rõ
 "khong chep mang khi lon, khong cap du". Khối cố định bỏ hẳn cú chép đó, nên đây là chỗ khác biệt phải giữ đúng.
+
+
+---
+
+## 18:30 11/09 — Đo bước 2 `[CULLCPU]`: phiên `SM-F966U1_20260911_180949`
+
+APK 109111759, 12 phút chơi, 32 cửa sổ. So với phiên 17:34 (bản `[CHUATLAS]`), lấy các cửa sổ **cùng độ đông**
+(2 400–3 500 quad/khung) cho công bằng:
+
+| | 17:34 `[CHUATLAS]` | 18:09 `[CULLCPU]` | đổi |
+|---|---|---|---|
+| đổi pipeline / khung | 345 | **3** | −99,1 % |
+| vỡ lô vì pipeline | 10,5 % | **0,05 %** | hết hẳn |
+| vỡ lô vì `cull` (số tách mới) | — | **0** | mục tiêu đạt |
+| lệnh / quad | 0,987 | **0,871** | −11,8 % |
+| ghi lệnh | 2,49 ms | **2,19 ms** | −12 % |
+| ghi lệnh / quad | 0,981 µs | **0,784 µs** | −20 % |
+| khung việc > 16 ms (cả kỳ) | 6 | **1** | |
+| fps | 109,9 | 110,5 | ngang |
+| GPU (mẫu ≥ 60 %) | 77,8 % @ 486 MHz | 76,6 % @ 468 MHz | ngang |
+| điện | 3,67 W | 3,63 W | ngang |
+| nhiệt (đỉnh) | 3 | 3 | ngang |
+
+Ghi lệnh giảm đều ở **mọi** mức tải, không riêng cảnh đông: cửa sổ "vừa" (≈1 450 quad) 2,01 → 1,57 ms (−22 %).
+
+### Ba điều log nói thẳng
+
+**1. Cái định sửa đã sửa xong.** `pipeline vo: … cull 0` ở cả 25 cửa sổ. Phần "pipeline" còn sót chỉ là
+`topo` (≈3 500 lần/kỳ, khác kiểu hình học nên không gộp được, đúng bản chất) và `blend` (0–54 lần). Không còn gì để
+vắt ở nhánh này.
+
+**2. `nộp` tăng 0,39 → 1,41 ms, nhưng đó là CHỜ chứ không phải việc.** Hai gáo "chờ" đều phình
+(`chờ lệnh+swapchain` 0,07 → 0,58 ms), trong khi gáo "việc" (`ghi lệnh`) teo lại; fps, tải GPU, điện, nhiệt y nguyên.
+CPU nay tới chỗ trình chiếu sớm hơn nên nằm chờ vsync lâu hơn. Đối chứng: bản C1 hỏng (16:21) có `nộp` 3,9 ms **kèm**
+`ghi lệnh` 3,0 ms và fps tụt — dạng khác hẳn.
+
+**3. Bộ cull trên CPU chưa từng bỏ một tam giác nào.** `bo 0` trên **~1,5 tỷ** tam giác đã thử suốt 12 phút
+(menu, đăng nhập, Tống Kim). Nghĩa là trạng thái `CULLMODE=CCW` mà `KFont3` đặt cho chữ **chưa bao giờ thật sự cắt gì**
+trên bản mobile — chỉ ép `CULL_NONE` là đủ, phép thử tích chéo là phần thừa. Vẫn giữ vì nó rẻ hơn phần thắng
+(`ghi lệnh` đã giảm ròng dù có nó) và nó là cái bảo hiểm nếu về sau có sprite lật. Ghi lại đây để sau muốn vắt thêm
+0,1–0,2 ms thì biết chỗ.
+
+### Còn lại đúng một mục tiêu
+
+`vỡ lô vì texture0` giờ chiếm **99,9 %** (trước 89 %), đổi texture 1 653–1 941 lần/khung (đỉnh 3 492),
+atlas cuối phiên **56 trang 464 MB**. Toàn bộ phần thắng còn lại nằm ở bước 3 (atlas khối cố định + nhiều mảng gắn chết
+khe sampler). Ràng buộc đã đo ở mục trên: 14 khe sampler còn trống, một họ định dạng, khối 8 lớp × 64 MB, 7 khối phủ đủ.
