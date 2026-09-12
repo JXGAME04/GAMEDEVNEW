@@ -126,7 +126,7 @@ GameWorld_DateTime::GameWorld_DateTime()
 {
 	m_bTrueWorld = true;
 	m_bLogo    = false;
-	m_uLastSwitchTime = IR_GetCurrentTime();
+	m_uLastSwitchTime = UiIR_GetCurrentTime();
 	m_nNetStatus = 1; //mac dinh la mau vang
 }
 
@@ -214,7 +214,7 @@ void GameWorld_DateTime::UpdateData()
 	{
 		m_bLogo = false;
 		m_bNetStatus = false;
-		m_uLastSwitchTime = IR_GetCurrentTime();
+		m_uLastSwitchTime = UiIR_GetCurrentTime();
 	}
 
 	NextFrame();

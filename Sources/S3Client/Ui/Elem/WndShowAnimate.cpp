@@ -69,7 +69,7 @@ void KWndShowAnimate::Show()
     {
         ShowCompleted();
     }
-	m_uMoveLastTime = IR_GetCurrentTime();
+	m_uMoveLastTime = UiIR_GetCurrentTime();
 }
 
 void KWndShowAnimate::Hide()
@@ -89,7 +89,7 @@ void KWndShowAnimate::Hide()
 			SetPosition(m_oFixPos.x, m_oFixPos.y);
 		}
 	}
-	m_uMoveLastTime = IR_GetCurrentTime();
+	m_uMoveLastTime = UiIR_GetCurrentTime();
 }
 
 void KWndShowAnimate::SetMoveSpeed(int nMoveSpeed, int nFullRange)

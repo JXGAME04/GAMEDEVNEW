@@ -35,10 +35,10 @@ struct KUiImagePartRef : public KRUImagePart
 
 void	IR_InitUiImageRef(KUiImageRef& Img);
 void	IR_InitUiImagePartRef(KUiImagePartRef& Img);
-void	IR_UpdateTime();										//更新图形换帧计算用时钟
+void	UiIR_UpdateTime();										//更新图形换帧计算用时钟
 int		IR_NextFrame(KUiImageRef& Img);							//换帧计算
 void	IR_GetReferenceSpot(KUiImageRef& Img, int& h, int& v);	//获得图像参考点（一般所说为重心）
 void	IR_UpdateImagePart(KUiImagePartRef& Img, int nPartValue, int nFullValue);	//设置绘制图的局部
 int		IR_IsTimePassed(unsigned int uInterval, unsigned int& uLastTimer);			//判断时间是否已经到了
 unsigned int IR_GetRemainTime(unsigned int uInterval, unsigned int uLastTimer);		//获取剩余时间，如果时间已经到了/过了，返回值都为0
-unsigned int IR_GetCurrentTime();													//获取当前的时间
+unsigned int UiIR_GetCurrentTime();													//获取当前的时间

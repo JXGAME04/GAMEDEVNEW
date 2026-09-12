@@ -146,7 +146,7 @@ void KUiLoginBackGround::Breathe()
 			{
 				if (m_Butterflys[i].NextFrame())
 				{
-					m_uLastSleepTime[i] = IR_GetCurrentTime();
+					m_uLastSleepTime[i] = UiIR_GetCurrentTime();
 					m_uInterval[i] = m_uAdviceIntervalMin[i] +
 						(rand() % (m_uAdviceIntervalMax[i] - m_uAdviceIntervalMin[i]));
 				}

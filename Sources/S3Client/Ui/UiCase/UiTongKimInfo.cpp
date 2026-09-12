@@ -184,7 +184,7 @@ void KUiTongKimInfo::SetHeader(int nPhase, int nRestSec, int nTong, int nKim)
 		nPhase = 0;
 	m_Stage.SetText(m_szPhase[nPhase]);
 	m_nRestSec = nRestSec < 0 ? 0 : nRestSec;
-	m_uRestTick = IR_GetCurrentTime();
+	m_uRestTick = UiIR_GetCurrentTime();
 	m_nLastShown = -1;
 	m_bHaveData = 1;
 	RefreshCountdown();
@@ -246,7 +246,7 @@ void KUiTongKimInfo::SetRows(const char* pszRows)
 
 void KUiTongKimInfo::RefreshCountdown()
 {
-	int nElapsed = (int)((IR_GetCurrentTime() - m_uRestTick) / 1000);
+	int nElapsed = (int)((UiIR_GetCurrentTime() - m_uRestTick) / 1000);
 	int nRest = m_nRestSec - nElapsed;
 	if (nRest < 0)
 		nRest = 0;

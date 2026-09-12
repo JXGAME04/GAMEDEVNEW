@@ -289,7 +289,7 @@ void KUiConnectInfo::SetInfoMsg(LOGIN_BG_INFO_MSG_INDEX eIndex)
 		m_nMsgLen = strlen(m_szMessage);
 		if (m_nMsgLen)
 		{
-			m_uLastMsgColorChanageTime = IR_GetCurrentTime();
+			m_uLastMsgColorChanageTime = UiIR_GetCurrentTime();
 			m_nColor2CharacterEndIndex =
 				TSplitString(m_szMessage, m_nColor2CharacterStartIndex + 1, false);
 		}

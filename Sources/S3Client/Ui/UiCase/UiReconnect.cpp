@@ -71,7 +71,7 @@ void KReconnectWnd::FirstReconnect()
 {
 	m_nReconnectTimes = 0;
 	m_bWaitToReconnect = true;
-	m_uWaitStartTime = IR_GetCurrentTime();
+	m_uWaitStartTime = UiIR_GetCurrentTime();
 	m_uToWaitTime = rand () % INVISIBLE_RECONNECT_INTERVAL + 1000;
 
 	KIniFile* pConfig = g_UiBase.GetCommConfigFile();
@@ -117,7 +117,7 @@ bool KReconnectWnd::StartReconnect()
 	{
 		m_nReconnectTimes = 0;
 		m_pSelf->m_bWaitToReconnect = true;
-		m_pSelf->m_uWaitStartTime = IR_GetCurrentTime();
+		m_pSelf->m_uWaitStartTime = UiIR_GetCurrentTime();
 		m_pSelf->m_uToWaitTime = RECONNECT_GROUP_INTERVAL;
 	}
 	return true;
@@ -195,7 +195,7 @@ void KReconnectWnd::Breathe()
 			else
 			{
 				m_bWaitToReconnect = true;
-				m_uWaitStartTime = IR_GetCurrentTime();
+				m_uWaitStartTime = UiIR_GetCurrentTime();
 				if (m_nHideTimes > 0)
 				{
 					m_nHideTimes--;

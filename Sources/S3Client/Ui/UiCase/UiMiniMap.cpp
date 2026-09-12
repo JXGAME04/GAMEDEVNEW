@@ -25,7 +25,7 @@
 
 extern iRepresentShell*	g_pRepresentShell;
 extern iCoreShell*			g_pCoreShell;
-extern IInlinePicEngineSink *g_pIInlinePicSink;
+extern IInlinePicEngineSink *g_pIInlinePicSinkUI;
 extern int SCREEN_WIDTH;
 #define	SCHEME_INI_SMALL	"UiMiniMapSmall.ini"
 #define	SCHEME_INI_BIG		"UiMiniMapBig.ini"
@@ -398,7 +398,7 @@ void KUiMiniMap::StopScrollMap()
 {
 	if (IS_DRAGING_MAP)
 	{
-		m_uLastScrollTime = IR_GetCurrentTime();
+		m_uLastScrollTime = UiIR_GetCurrentTime();
 		Wnd_ReleaseCapture();
 		m_OldPos.x = WAIT_TO_BE_SET_BACK;
 	}

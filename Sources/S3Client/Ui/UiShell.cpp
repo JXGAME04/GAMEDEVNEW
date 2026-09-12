@@ -230,7 +230,7 @@ int	UiInit()
 	Wnd_ShowCursor(false);
 	if (g_UiBase.Init() == false)
 		return false;
-	IR_UpdateTime();
+	UiIR_UpdateTime();
 	g_UiInformation.Initialize();
 	g_UiInformation2.Initialize();
 	KUiLoginBackGround::OpenWindow("Init");
@@ -402,7 +402,7 @@ int UiHeartBeat()
 	{
 		if (g_bDisconnect == false)
 		{
-			IR_UpdateTime();
+			UiIR_UpdateTime();
 			Wnd_Heartbeat();
 #ifdef JX_ANDROID
 			JxUi_TuDangNhapAndroid();	// [ANDROID 09/09 LOGIN] da nho dang nhap thi vao thang, khong dung o man hinh chinh

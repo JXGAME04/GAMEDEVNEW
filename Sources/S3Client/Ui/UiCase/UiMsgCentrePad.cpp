@@ -183,7 +183,7 @@ void KUiMsgCentrePad::SetAutoDelMsgInterval(unsigned int uInterval /*= 0*/)
 {
 	m_uAutoDelMsgInterval = uInterval;
 	if (m_uAutoDelMsgInterval)
-		m_uLastDelMsgTime = IR_GetCurrentTime();
+		m_uLastDelMsgTime = UiIR_GetCurrentTime();
 }
 
 void KUiMsgCentrePad::SystemMessageArrival(const char* pMsgBuff, unsigned short nMsgLength)
@@ -752,7 +752,7 @@ else//--------------------Co dinh Item------------------------------------------
 	}
 	if(nIdx) 
 		g_pCoreShell->GetGameData(GDI_ITEM_CHAT, false, nIdx);
-	m_uLastDelMsgTime = IR_GetCurrentTime();
+	m_uLastDelMsgTime = UiIR_GetCurrentTime();
 }
 
 void KUiMsgCentrePad::MSNMessageArrival(char* szSourceName, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength)//Chat mËt
@@ -1266,7 +1266,7 @@ else//--------------------Co dinh Item------------------------------------------
 
 	if(nIdx) 
 		g_pCoreShell->GetGameData(GDI_ITEM_CHAT, false, nIdx);
-	m_uLastDelMsgTime = IR_GetCurrentTime();
+	m_uLastDelMsgTime = UiIR_GetCurrentTime();
 }
 
 int KUiMsgCentrePad::NewChannelMessageArrival(DWORD nChannelID, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength)//chat kªnh
@@ -1794,7 +1794,7 @@ int	KUiMsgCentrePad::PushChannelData(DWORD dwID, const char* Buffer, int nLen)
 		if (nRes >= 0 &&
 			m_pSelf->m_pActivateChannel[nIndex].uLeftSendMsgNum < m_pSelf->m_ChannelsResource[nRes].uSendMsgNum)
 		{
-			int nCur = IR_GetCurrentTime();
+			int nCur = UiIR_GetCurrentTime();
 			int nLeft = (nCur - m_pSelf->m_pActivateChannel[nIndex].uLastSendMsgTime) > m_pSelf->m_ChannelsResource[nRes].uSendMsgInterval ? 0 : (nCur - m_pSelf->m_pActivateChannel[nIndex].uLastSendMsgTime);
 			nLeft += m_pSelf->m_pActivateChannel[nIndex].uLeftSendMsgNum * m_pSelf->m_ChannelsResource[nRes].uSendMsgInterval;
 
@@ -1820,7 +1820,7 @@ int	KUiMsgCentrePad::GetChannelData(DWORD& dwID, BYTE& cost, char*& Buffer, int&
 {
 	if (m_pSelf)
 	{
-		unsigned int nSendTime = IR_GetCurrentTime();
+		unsigned int nSendTime = UiIR_GetCurrentTime();
 		for (int i = 0; i < m_pSelf->m_nActivateChannels; i++)
 		{
 			if (m_pSelf->m_pActivateChannel[i].uLeftSendMsgNum > 0)
@@ -1845,7 +1845,7 @@ int	KUiMsgCentrePad::PopChannelData(DWORD dwID)
 {
 	if (m_pSelf)
 	{
-		unsigned int nSendTime = IR_GetCurrentTime();
+		unsigned int nSendTime = UiIR_GetCurrentTime();
 		for (int i = 0; i < m_pSelf->m_nActivateChannels; i++)
 		{
 			if (m_pSelf->m_pActivateChannel[i].nChannelID == dwID &&
@@ -1975,7 +1975,7 @@ int	KUiMsgCentrePad::AddActivateChannel(const KChannelActivateInfo& Item)
 	m_pActivateChannel = pChannels;
 	pChannels = m_pActivateChannel + m_nActivateChannels;
 	*pChannels = Item;
-	pChannels->uLastSendMsgTime = IR_GetCurrentTime() - m_ChannelsResource[Item.ResourceIndex].uSendMsgInterval;	
+	pChannels->uLastSendMsgTime = UiIR_GetCurrentTime() - m_ChannelsResource[Item.ResourceIndex].uSendMsgInterval;	
 	pChannels->uLeftSendMsgNum = 0;
 	pChannels->uBufferOffset = 0;
 	memset(pChannels->Buffer, 0, sizeof(pChannels->Buffer));
@@ -2092,7 +2092,7 @@ void KUiMsgCentrePad::Breathe()
 		else if (m_TabButton[5].IsButtonChecked())
 			m_Khac.GetMessageListBox ()->HideNextLine();
 		m_Sys.m_SysRoom.HideNextLine();
-		m_uLastDelMsgTime = IR_GetCurrentTime();
+		m_uLastDelMsgTime = UiIR_GetCurrentTime();
 	}
 }
 void KUiMsgCentrePad::LoadScheme(const char* pScheme)
@@ -2168,7 +2168,7 @@ void KUiMsgCentrePad::ShowAllMessage()
 	}
 }
 
-extern IInlinePicEngineSink *g_pIInlinePicSink;
+extern IInlinePicEngineSink *g_pIInlinePicSinkUI;
 
 int KUiMsgCentrePad::ms_DefaultWidth = 0;
 int KUiMsgCentrePad::ms_DefaultHeight = 0;
@@ -2203,17 +2203,17 @@ void KUiMsgCentrePad::LoadScheme(KIniFile* pIni)
 	m_nCheckOnPicIndex = -1;
 	if (pIni->GetString("Main", "CheckOnImage", "", szImage, MAX_PATH))
 	{
-		if (g_pIInlinePicSink)
+		if (g_pIInlinePicSinkUI)
 		{
-			g_pIInlinePicSink->AddCustomInlinePic((WORD&)m_nCheckOnPicIndex, szImage);
+			g_pIInlinePicSinkUI->AddCustomInlinePic((WORD&)m_nCheckOnPicIndex, szImage);
 		}
 	}
 	m_nCheckOffPicIndex = -1;
 	if (pIni->GetString("Main", "CheckOffImage", "", szImage, MAX_PATH))
 	{
-		if (g_pIInlinePicSink)
+		if (g_pIInlinePicSinkUI)
 		{
-			g_pIInlinePicSink->AddCustomInlinePic((WORD&)m_nCheckOffPicIndex, szImage);
+			g_pIInlinePicSinkUI->AddCustomInlinePic((WORD&)m_nCheckOffPicIndex, szImage);
 		}
 	}
 
@@ -2264,7 +2264,7 @@ void KUiMsgCentrePad::LoadScheme(KIniFile* pIni)
 	m_MSNInfo.nFriendMenuPicIndex = -1;
 	if (pIni->GetString("MSNRoom", "Friend_MenuImage", "", szImage, MAX_PATH))
 	{
-		if (g_pIInlinePicSink)
+		if (g_pIInlinePicSinkUI)
 		{
 			m_MSNInfo.nFriendMenuPicHeight = 0;
 			KImageParam	Param;
@@ -2274,15 +2274,15 @@ void KUiMsgCentrePad::LoadScheme(KIniFile* pIni)
 			{
 				m_MSNInfo.nFriendMenuPicHeight = Param.nHeight;
 			}
-			g_pIInlinePicSink->AddCustomInlinePic(m_MSNInfo.nFriendMenuPicIndex, szImage);
+			g_pIInlinePicSinkUI->AddCustomInlinePic(m_MSNInfo.nFriendMenuPicIndex, szImage);
 		}
 	}
 	m_MSNInfo.nFriendTextPicIndex = -1;
 	if (pIni->GetString("MSNRoom", "Friend_TextImage", "", szImage, MAX_PATH))
 	{
-		if (g_pIInlinePicSink)
+		if (g_pIInlinePicSinkUI)
 		{
-			g_pIInlinePicSink->AddCustomInlinePic(m_MSNInfo.nFriendTextPicIndex, szImage);
+			g_pIInlinePicSinkUI->AddCustomInlinePic(m_MSNInfo.nFriendTextPicIndex, szImage);
 		}
 	}
 	pIni->GetString("MSNRoom", "Friend_MenuBkColor", "0,0,0", ChName, sizeof(ChName));
@@ -2294,7 +2294,7 @@ void KUiMsgCentrePad::LoadScheme(KIniFile* pIni)
 	m_MSNInfo.nStrangerMenuPicIndex = -1;
 	if (pIni->GetString("MSNRoom", "Stranger_MenuImage", "", szImage, MAX_PATH))
 	{
-		if (g_pIInlinePicSink)
+		if (g_pIInlinePicSinkUI)
 		{
 			m_MSNInfo.nStrangerMenuPicHeight = 0;
 			KImageParam	Param;
@@ -2304,23 +2304,23 @@ void KUiMsgCentrePad::LoadScheme(KIniFile* pIni)
 			{
 				m_MSNInfo.nStrangerMenuPicHeight = Param.nHeight;
 			}
-			g_pIInlinePicSink->AddCustomInlinePic(m_MSNInfo.nStrangerMenuPicIndex, szImage);
+			g_pIInlinePicSinkUI->AddCustomInlinePic(m_MSNInfo.nStrangerMenuPicIndex, szImage);
 		}
 	}
 	m_MSNInfo.nStrangerTextPicIndex = -1;
 	if (pIni->GetString("MSNRoom", "Stranger_TextImage", "", szImage, MAX_PATH))
 	{
-		if (g_pIInlinePicSink)
+		if (g_pIInlinePicSinkUI)
 		{
-			g_pIInlinePicSink->AddCustomInlinePic(m_MSNInfo.nStrangerTextPicIndex, szImage);
+			g_pIInlinePicSinkUI->AddCustomInlinePic(m_MSNInfo.nStrangerTextPicIndex, szImage);
 		}
 	}
 	m_MSNInfo.nSelfTextPicIndex = -1;
 	if (pIni->GetString("MSNRoom", "Self_TextImage", "", szImage, MAX_PATH))
 	{
-		if (g_pIInlinePicSink)
+		if (g_pIInlinePicSinkUI)
 		{
-			g_pIInlinePicSink->AddCustomInlinePic(m_MSNInfo.nSelfTextPicIndex, szImage);
+			g_pIInlinePicSinkUI->AddCustomInlinePic(m_MSNInfo.nSelfTextPicIndex, szImage);
 		}
 	}
 	
@@ -2357,7 +2357,7 @@ void KUiMsgCentrePad::LoadScheme(KIniFile* pIni)
 			m_ChannelsResource[nCh].nMenuPicIndex = -1;
 			if (pIni->GetString(m_ChannelsResource[nCh].cTitle, "MenuImage", "", szImage, MAX_PATH))
 			{
-				if (g_pIInlinePicSink)
+				if (g_pIInlinePicSinkUI)
 				{
 					m_ChannelsResource[nCh].nMenuPicHeight = 0;
 					KImageParam	Param;
@@ -2367,14 +2367,14 @@ void KUiMsgCentrePad::LoadScheme(KIniFile* pIni)
 					{
 						m_ChannelsResource[nCh].nMenuPicHeight = Param.nHeight;
 					}
-					g_pIInlinePicSink->AddCustomInlinePic(m_ChannelsResource[nCh].nMenuPicIndex, szImage);
+					g_pIInlinePicSinkUI->AddCustomInlinePic(m_ChannelsResource[nCh].nMenuPicIndex, szImage);
 				}
 			}
 			m_ChannelsResource[nCh].nMenuDeactivatePicIndex = m_ChannelsResource[nCh].nMenuPicIndex;
 			m_ChannelsResource[nCh].nMenuDeactivatePicHeight = m_ChannelsResource[nCh].nMenuPicHeight;
 			if (pIni->GetString(m_ChannelsResource[nCh].cTitle, "DeactivateMenuImage", "", szImage, MAX_PATH))
 			{
-				if (g_pIInlinePicSink)
+				if (g_pIInlinePicSinkUI)
 				{
 					m_ChannelsResource[nCh].nMenuDeactivatePicHeight = 0;
 					KImageParam	Param;
@@ -2384,15 +2384,15 @@ void KUiMsgCentrePad::LoadScheme(KIniFile* pIni)
 					{
 						m_ChannelsResource[nCh].nMenuDeactivatePicHeight = Param.nHeight;
 					}
-					g_pIInlinePicSink->AddCustomInlinePic(m_ChannelsResource[nCh].nMenuDeactivatePicIndex, szImage);
+					g_pIInlinePicSinkUI->AddCustomInlinePic(m_ChannelsResource[nCh].nMenuDeactivatePicIndex, szImage);
 				}
 			}
 			m_ChannelsResource[nCh].nTextPicIndex = -1;
 			if (pIni->GetString(m_ChannelsResource[nCh].cTitle, "TextImage", "", szImage, MAX_PATH))
 			{
-				if (g_pIInlinePicSink)
+				if (g_pIInlinePicSinkUI)
 				{
-					g_pIInlinePicSink->AddCustomInlinePic(m_ChannelsResource[nCh].nTextPicIndex, szImage);
+					g_pIInlinePicSinkUI->AddCustomInlinePic(m_ChannelsResource[nCh].nTextPicIndex, szImage);
 				}
 			}
 			pIni->GetString(m_ChannelsResource[nCh].cTitle, "MenuBkColor", "0,0,0", ChName, sizeof(ChName));

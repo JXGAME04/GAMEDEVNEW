@@ -18,7 +18,7 @@
 #include "../ShortcutKey.h"
 extern iRepresentShell*	g_pRepresentShell;
 extern iCoreShell* g_pCoreShell;
-//extern IInlinePicEngineSink* g_pIInlinePicSink;
+//extern IInlinePicEngineSink* g_pIInlinePicSinkUI;
 //extern KMouseOver	g_MouseOver;
 KUiHelper2* KUiHelper2::m_pSelf = NULL;
 

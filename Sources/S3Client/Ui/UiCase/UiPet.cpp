@@ -332,7 +332,7 @@ void KWndPetAtkBox::SetSmallIcon(const char* pszSpr)
     m_SmallImg.szImage[sizeof(m_SmallImg.szImage) - 1] = 0;
     m_SmallImg.nNumFrames = 0;
     m_SmallImg.uImage = 0;
-    m_SmallImg.nFlipTime = IR_GetCurrentTime();
+    m_SmallImg.nFlipTime = UiIR_GetCurrentTime();
 }
 
 void KWndPetAtkBox::PaintWindow()
@@ -484,7 +484,7 @@ void KUiPet::UpdateData()
 // -> quay frame hinh pet ~180ms de dung tho nhu ngoai map
 void KUiPet::Breathe()
 {
-    unsigned int uNow = IR_GetCurrentTime();
+    unsigned int uNow = UiIR_GetCurrentTime();
     if (uNow - m_uLastFrameTime < 180)
         return;
     m_uLastFrameTime = uNow;
