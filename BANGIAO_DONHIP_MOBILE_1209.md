@@ -1229,3 +1229,29 @@ y hệt. Android dựng qua; Windows `Release|Win32` 0 lỗi. Máy ảo: khối 
 
 APK `109112011`, md5 `c13bcc7b45362b5fadf9a5d09d8dc9f3`, lên `dt_v4` 20:20, máy chủ 8765 PID 388852,
 `Rep3AtlasKhoi=1` (bật lại để đo bản đã sửa).
+
+
+### 20:20 — Đo bản đã sửa: lỗi là của tôi, không phải của hướng đi
+
+Hai phiên **liền nhau, cách 3 phút, cùng một APK 109112011**, chỉ khác công tắc (phiên 20:13 khởi động trước khi tôi
+kịp đổi config nên chạy tắt, phiên 20:16 chạy bật). Đây là cặp A/B sạch nhất từ đầu đợt.
+
+| | 20:00 khối TẮT | 20:16 khối BẬT (đã sửa LOD) |
+|---|---|---|
+| quad / khung | 2 067 – 2 342 | 1 174 – 1 649 |
+| **đổi texture / khung** | 954 – 1 127 | **22 – 23** |
+| lệnh / quad | 0,79 – 0,90 | **0,41 – 0,50** |
+| ghi lệnh | 1,68 – 1,84 ms | **0,50 ms** |
+| **nộp (chờ GPU)** | 1,57 – 1,86 ms | **0,36 – 0,75 ms** |
+| **tổng khoảng vẽ** | 3,83 – 4,32 ms | **1,19 – 1,65 ms** |
+| fps | 108,8 – 117,6 | 114,0 – 118,5 |
+| nhiệt | 2,13 | **0,00** |
+| máy | 36,8 °C | **34,2 °C** |
+| điện | 3,07 W | **2,60 W** |
+
+**`nộp` giờ THẤP HƠN khi bật khối**, trong khi trước lúc sửa nó là 3–4 ms. Nghĩa là toàn bộ "chi phí GPU của atlas
+khối" mà tôi kết luận lúc 19:58 **là do chính lỗi LOD ngầm của tôi**, không phải do hướng đi hay do phần cứng Adreno.
+Bản PC đúng, hướng đi đúng, chỉ có tôi viết sai một hàm lấy mẫu.
+
+Lưu ý để không lại vội vàng: phiên 20:16 mới 3 phút, mật độ quad thấp hơn phiên đối chứng, và máy vừa được nghỉ nên
+đang mát (nhiệt 0). Cần chủ chơi tiếp vào chỗ đông để so ở cùng mật độ và cùng lúc máy đã nóng.
