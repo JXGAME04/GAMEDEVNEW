@@ -59,6 +59,9 @@ extern iRepresentShell*	g_pRepresentShell;
 
 #define	SCHEME_INI			"UiPlayerBar.ini"		//edit by phong kieu file ini quy dinh Ui player bar
 #define	SCHEME_INI_MINI		"UiPlayerBarMini.ini"		//file ini quy dinh Ui toi uu hoa game mini
+#ifdef JX_APPLE	// [IOS-AN 11/09] day ung dung xuong nen (ios/JxIosAnGame.mm)
+extern "C" int JxIosAnGame(const char* pszDiaChiDuPhong);
+#endif
 #define GAME_LOGO				"Vâ L©m TruyÒn Kú"
 #define	SWITCH_LOGO_INTERVAL	5000
 #define	SCHEME_INI_STATE_POS	"\\Ui\\StatePos.ini"
@@ -1009,7 +1012,11 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			OnSwitchSize();
         else if (uParam == (KUPARAM)(KWndWindow*)&m_HideWindow)
 		{
+#ifdef JX_APPLE	// [IOS-AN 11/09] TrayMode la ham rong tren POSIX; Apple day han ung dung xuong nen (ios/JxIosAnGame.mm)
+			JxIosAnGame(NULL);
+#else
 			gTrayMode.HideNotify(hInst);			
+#endif
 		}
 		else if ((KWndWindow*)uParam == (KWndWindow*)&m_Zalo) 
 		{
