@@ -60,7 +60,7 @@ extern unsigned g_uRep3VeLoai[6];	// [VE 08/09 a] don vi ve theo loai: 0 npc, 1 
 extern unsigned g_uRep3VeKhung;		// so khung ve trong ky
 void   Rep3VeDem(const char* pszImage);
 double Rep3NapMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS; Android van dinh nghia JX_MOBILE nen khong doi gi
 // [VE 11/09] Android: (A) do tung buoc trinh chieu CDevGpu::SubmitFrame; (B) nap KHUNG sprite o luong nen theo ngan sach.
 //   In jx_rep3.log: [VE] + [VE-GOP] + [VE-NAP] moi ky Rep3StatSec (KRepresentShell3.cpp JxVeKyIn), [VE-GIAT] khung cham (JxVeGiatGhi).
 struct JxVeDo { double dCho, dChep, dGhi, dNop, dTong, dChepPal, dChepTexMap, dChepTexLenh, dChepZero, dChepRing; unsigned uTai, uTaiKB, uRingKB, uLenh, uQuad, uDinh, uPass, uDoiPipe, uDoiTex, uDoiVs, uDoiPs, uDoiCat, uPal, uZero, uXferTang, uXferKB; double dChepPalLenh; };	// [VE 11/09 d] + tung buoc chep

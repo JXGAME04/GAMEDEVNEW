@@ -474,7 +474,7 @@ public:
 	std::vector<BYTE>   m_texStage;
 	SDL_GPUTransferBuffer* m_pTexXfer; UINT m_texXferSize;
 	std::vector<RgTexUpload> m_texUploads;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS; Android van dinh nghia JX_MOBILE nen khong doi gi
 	SDL_GPUTransferBuffer* m_pJxZeroXfer; UINT m_jxZeroSize, m_jxZeroDaXoa; std::vector<RgTexUpload> m_jxZeroUploads;	// [VE 11/09 d] bo dem 0 co dinh cho trang atlas moi / o chua co ban CPU (stageOff = 0)
 	std::vector<RgCmd> m_jxCmdsTruoc; std::vector<BYTE> m_jxRingTruoc; bool m_bJxCoKhungTruoc, m_bJxKhungCoFlush; Uint64 m_uJxTrinhChieuLuc; unsigned m_uJxGiongLienTiep;	// [BKG 11/09] lenh + dinh cua khung vua trinh chieu de so voi khung sau
 	SDL_GPUBuffer* m_pJxPalBuf; std::vector<std::pair<UINT, UINT> > m_jxPalUploads;	// [PALBUF 11/09] bang mau trong storage buffer; (hang, offset staging) cho tai trong khung

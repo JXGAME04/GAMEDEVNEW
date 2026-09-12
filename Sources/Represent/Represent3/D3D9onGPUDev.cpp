@@ -49,7 +49,7 @@ static void JxNhipGhiCho(Uint64 uT0, bool bCoSwap, Uint32 swW, Uint32 swH)
 }
 #endif
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: bo do ve dung chung; Android van dinh nghia JX_MOBILE nen khong doi gi
 // [VE 11/09] do tung buoc SubmitFrame tren luong ve (cho lenh + swapchain, chep len GPU, ghi lenh render pass, nop) va dem doi trang thai;
 // KRepresentShell3.cpp in [VE]/[VE-GOP] moi ky va [VE-GIAT] cho khung cham. Chi cong khung co Present (bPresent).
 JxVeDo g_jxVeKhung, g_jxVeTong, g_jxVeMax;
@@ -345,7 +345,7 @@ bool CDevGpu::Init()
 	SDL_SetGPUSwapchainParameters(m_pGpu, m_pWin, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, pm);
 	m_swapFmt = SDL_GetGPUSwapchainTextureFormat(m_pGpu, m_pWin);
 	if (!CreateShaders()) return false;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 	if (g_nJxPalBuffer && !PalInit()) return false;	// [PALBUF 11/09] tao storage buffer bang mau ngay: shader kieu buffer can bind no truoc lenh ve dau tien
 	if (g_nJxPsBuffer)
 	{	// [GOP 11/09] bang to hop trang thai tang texture (80 byte moi muc)
@@ -462,6 +462,11 @@ bool CDevGpu::CreateShaders()
 #endif
 #ifdef JX_APPLE	// [IOS-METAL 11/09]
 	si.code = (const Uint8*)g_Rep3GpuFSMsl; si.code_size = sizeof(g_Rep3GpuFSMsl) - 1; si.entrypoint = "main0"; si.format = SDL_GPU_SHADERFORMAT_MSL;
+	if (g_nJxPalBuffer)
+	{	// [IOS-GOP 12/09 b] bang mau = storage buffer -> quad khac bang mau van gop chung mot lenh ve
+		si.code = (const Uint8*)g_Rep3GpuFSPalBufMsl; si.code_size = sizeof(g_Rep3GpuFSPalBufMsl) - 1;
+		si.num_samplers = 2; si.num_storage_buffers = 1;
+	}
 #endif
 #ifdef JX_ANDROID
 	if (g_nJxAtlasKhoi && !(g_nJxPalBuffer && g_nJxPsBuffer && !g_nJxAtlasMang))
@@ -1250,7 +1255,7 @@ UINT CDevGpu::JxPsIdx(const RgPsCb& ps)
 
 bool CDevGpu::SubmitFrame(bool bPresent)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: bo do ve dung chung; Android van dinh nghia JX_MOBILE nen khong doi gi
 	if (!bPresent) m_bJxKhungCoFlush = true;	// [BKG 11/09] flush giua khung (doc lai / doi khung bay): khung nay khong dung lam "khung truoc" de so
 	JxVeDo jxK; memset(&jxK, 0, sizeof(jxK)); const Uint64 uJxK0 = SDL_GetPerformanceCounter(); Uint64 uJxK1 = uJxK0;	// [VE 11/09]
 #endif
@@ -1316,7 +1321,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			jxK.dChepZero = JxVeMs(uZ0, SDL_GetPerformanceCounter());
 		}
 #endif
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 		m_uJxPsStageOff = 0xFFFFFFFFu;
 		if (m_pJxPsBuf && !m_jxPsBang.empty())
 		{	// [GOP 11/09] bang ps di chung staging cua khung (nhu bang mau)
@@ -1364,13 +1369,13 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			if (pX) SDL_ReleaseGPUTransferBuffer(m_pGpu, pX);
 			m_palPending.clear();
 		}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 		if ((!m_texUploads.empty() || !m_jxPalUploads.empty() || m_uJxPsStageOff != 0xFFFFFFFFu) && !m_texStage.empty())	// [PALBUF 11/09] hang bang mau (storage buffer) cung tai tu staging nay; [GOP 11/09] ca bang ps
 #else
 		if (!m_texUploads.empty() && !m_texStage.empty())
 #endif
 		{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] bien do thoi gian, dung chung
 			const Uint64 uT0 = SDL_GetPerformanceCounter(); const UINT uXferTruoc = m_texXferSize;	// [VE 11/09 d]
 #endif
 			RgEnsureXfer(m_pGpu, &m_pTexXfer, &m_texXferSize, (UINT)m_texStage.size(), SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD);
@@ -1396,7 +1401,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 					SDL_UploadToGPUTexture(cp, &src, &dst, false);
 				}
 				m_uUploads += (unsigned)m_texUploads.size();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 				jxK.dChepTexLenh = JxVeMs(uT0, SDL_GetPerformanceCounter()) - jxK.dChepTexMap;	// [VE 11/09 d] lenh tai (SDL_UploadToGPUTexture)
 				if (uJxPalT0) jxK.dChepPalLenh = JxVeMs(uJxPalT0, SDL_GetPerformanceCounter());	// [PALBUF 11/09] phan hang bang mau (kieu texture cu)
 				if (!m_jxPalUploads.empty() && m_pJxPalBuf)
@@ -1491,7 +1496,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 #endif
 			if (!pass) { RgLog("BeginGPURenderPass that bai: %s", SDL_GetError()); break; }
 			SDL_GPUBufferBinding bd = { m_pDummy, 0 }; SDL_BindGPUVertexBuffers(pass, 1, &bd, 1);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 			if (g_nJxBindRing && m_pRingGpu)
 			{	// [GOP 11/09] ring dinh bind MOT lan moi pass; lenh ve dung first_vertex (ringOff da can theo stride+4)
 				SDL_GPUBufferBinding bdR = { m_pRingGpu, 0 }; SDL_BindGPUVertexBuffers(pass, 0, &bdR, 1);
@@ -1540,8 +1545,9 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			SDL_GPUTextureSamplerBinding tb[3];
 			tb[0].texture = st.pTex[0]; tb[0].sampler = st.pSamp[0]; tb[1].texture = st.pTex[1]; tb[1].sampler = st.pSamp[1];
 			tb[2].texture = m_pPalTex ? m_pPalTex : m_pWhite; tb[2].sampler = st.pSamp[0];
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 			SDL_BindGPUFragmentSamplers(pass, 0, tb, g_nJxPalBuffer ? 2 : 3);	// [PALBUF 11/09] kieu buffer: shader chi khai 2 sampler
+#ifdef JX_ANDROID	// [IOS-GOP 12/09 b] atlas khoi CHUA port sang Metal (CAtlasMgrGpu::JxKhoiTex chi khai o ban Android)
 			if (g_nJxAtlasKhoi && m_pAtlas)
 			{	// [KHOI 11/09] 12 khoi atlas o khe 2..13. Gan bang BO LOC cua tang 0 (lenh gop duoc da phai cung sampler[0] nen khong sai)
 				SDL_GPUTextureSamplerBinding tk[12];	// [KHOI2 11/09]
@@ -1552,6 +1558,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 				}
 				SDL_BindGPUFragmentSamplers(pass, 2, tk, 12);	// [KHOI2 11/09]
 			}
+#endif
 #else
 			SDL_BindGPUFragmentSamplers(pass, 0, tb, 3);
 #endif
@@ -1721,7 +1728,7 @@ HRESULT CDevGpu::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hD
 // ---------------------------------------------------------------- bang mau (nhu D3D9on11Pal)
 bool CDevGpu::PalInit()
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 	if (m_pJxPalBuf) return true;
 	if (g_nJxPalBuffer && !m_pPalTex)
 	{	// [PALBUF 11/09] bang mau = storage buffer RG_PAL_ROWS hang x 1 KB: hang tai bang SDL_UploadToGPUBuffer (copy buffer thuong), shader doc g_palBuf[row*256+idx]
