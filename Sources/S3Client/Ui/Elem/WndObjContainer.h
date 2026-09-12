@@ -94,7 +94,7 @@ protected:
 	int				m_nUnitWidth;		
 	int				m_nUnitHeight;		
 	int				m_nUnitBorder;		
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	int				m_nUiGocBorder;	// [PHONGBANG 14/09] vien o goc de tinh lai khi phong (-1 = chua chup)
 	virtual void	UiPhongRieng(int nTiLe);
 	virtual int	UiKhopTiLe(int nTiLe);	// [KHOPO 14/09] k sao cho o = so nguyen (khop anh nen gian)

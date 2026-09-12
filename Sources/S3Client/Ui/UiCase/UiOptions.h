@@ -42,7 +42,7 @@ public:
 	void				SetMusicValue(int);
 	void				SetSoundValue(int);
 	void				SetBrightness(int);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	void				SetFpsMuc(int);		// [FPS 12/09] muc khung hinh/giay: 0 tu dong (theo man hinh), 1..5 = 30/45/60/90/120
 #endif
 //	void                SwitchWeather();
@@ -74,7 +74,7 @@ private:
 	KWndScrollBar	m_BrightnessScroll;
 	KWndScrollBar	m_BGMValue;		
 	KWndScrollBar	m_SoundValue;		
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	KWndScrollBar	m_FpsScroll;		// [FPS 12/09] thanh khung hinh/giay (ini muc [Fps], lop ghi de Android)
 	int				m_nFpsMuc;
 	KWndLabeledButton m_ChinhGiaoDien;	// [SUAGD 13/09] nut chu mo trinh chinh giao dien cho nguoi choi (ini muc [ChinhGiaoDien], lop ghi de Android)

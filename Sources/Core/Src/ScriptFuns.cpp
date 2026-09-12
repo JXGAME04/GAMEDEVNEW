@@ -37,7 +37,7 @@
 #include "KNewProtocolProcess.h"
 #endif
 #include "KSortScript.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "KPakFile.h"	// [INCLUDE 14/09 PAK] Include() doc lai tu pak khi khong co tep roi
 #endif
 #ifndef __linux
@@ -2022,7 +2022,7 @@ static void sJX2RemapScriptPath(char* szFull)
 	}
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [INCLUDE 14/09 PAK] Dien thoai chi co mobile_NN.pak, KHONG co tep roi script\: lua_dofile (= fopen that qua jx_lua_fopen ->
 // JxPathPosix, khong biet pak) khong mo duoc -> Include im lang -> ScriptProtocol / ObjBuffer / AUCTION_DEF = nil
 // (ScriptError.log Fold 7 01:44 14/09: protocol_def_c.lua:146, uiauction_house.lua:10, uimail.lua:387/540) -> dau gia
@@ -2129,7 +2129,7 @@ int LuaIncludeFile(Lua_State* L)
 		// FIX 14/08 (A3): Include file KHONG TON TAI truoc day im lang tuyet
 		// doi (lua_dofile tra LUA_ERRFILE, khong nem loi, khong ghi log) ->
 		// khong the dung log de ket luan cay script sach.
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [INCLUDE 14/09 PAK b] CHI khi khong mo duoc tep (LUA_ERRFILE = 2, l4_loi_nap): dien thoai chi co pak -> doc lai tu
 		// pak (sIncludeTuPak). Tep roi CO nhung than tep loi (ERRRUN 1 / ERRSYNTAX 3) thi giu nguyen nhu cu - khong chay lai
 		// lan hai (may ao 15:58 14/09: task_addplayerexp.lua loi 1 bi chay hai lan khi chua gate).

@@ -2972,7 +2972,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 
 	case NPC_OI_TARGET_INFO:
 	{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [ANDROID 09/09 ICON] nParam == 1: tra ve NPC DOI THOAI gan nhat (khong phai muc tieu dang
 		// chon) de client ve icon "noi chuyen" tren dau no. Dung lai ma so nay chu khong them ma moi -
 		// them vao giua enum se day moi ma so phia sau lech di.
@@ -3110,7 +3110,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 #endif
 		int idx = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx;
 		int idx_hover = Player[CLIENT_PLAYER_INDEX].GetTargetNpc();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [ANDROID 11/09 TTMT e] Chu: "bo cai di chuot vao nguoi khac la hien thong tin - chi de kich vao moi hien".
 		// Tren dien thoai KHONG co re chuot that: SinhHover() bom WM_MOUSEMOVE moi khung tai cho ngon tay dat
 		// truoc, the gioi troi nen NPC duoi diem do doi lien tuc -> thanh thong tin nhay lung tung.
@@ -3120,7 +3120,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 		if (idx_hover)
 			idx = idx_hover;
 #endif
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		{	// [ANDROID 11/09 TTMT] [KHOAMT b] muc tieu DA CHAM (KPlayer::OnButtonDown) thang hover: keo ngon / re / cham dat khong doi;
 			// chi cham trung nguoi/NPC khac moi doi, NPC bien mat thi bo. Chu: "kich vao se tu bam theo nguoi choi".
 			extern int g_nJxMucTieuKhoa;
@@ -3191,7 +3191,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 			strcpy_s(pTargetInfo->sTargetName, sizeof(pTargetInfo->sTargetName), Npc[idx].Name);
 			pTargetInfo->Series = Npc[idx].m_Series;
 			pTargetInfo->nLifePercent = (Npc[idx].m_CurrentLife * 100 / max(Npc[idx].m_CurrentLifeMax, 1));
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			// [ANDROID 09/09 VONG] tra them vi tri VE de client ve vong chon duoi chan muc tieu
 			Npc[idx].GetDrawPos(&pTargetInfo->nViTriVeX, &pTargetInfo->nViTriVeY);
 			pTargetInfo->nDangKhoa = (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx == idx) ? 1 : 0;
@@ -20807,7 +20807,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, KUPARAM uParam, KNPARAM nPa
 						i = ObjSet.GetNext(i);
 					}
 					AUTOLOG_EVERY(5000, "PICK-FOLLOW-GATE followpick=%d onpk=%d fight=%d lbdown=%d nRet=%d", pApData->bFollowPick, pApData->bOnPK, Npc[nNpcIdx].m_FightMode, Player[nPlayerIdx].m_sExtAuto.bLBObjDown, nRet);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 					// [ANDROID 11/09 WAUTO B2 i e] nut ban tay (JxWAuto_NhatNgay ep bCityPick = 1): chay toi nhat ca khi khong o the chien dau
 					if(pApData->bFollowPick && !pApData->bOnPK && (Npc[nNpcIdx].m_FightMode || pApData->bCityPick)
 					&& !Player[nPlayerIdx].m_sExtAuto.bLBObjDown)
@@ -25043,7 +25043,7 @@ void KCoreShell::Goto(int nDir, int mode)
 	Player[CLIENT_PLAYER_INDEX].m_nSendMoveFrames = 0;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [ANDROID 11/09 CAN] Di theo huong cho CAN DIEU KHIEN AO (JxCanDieuKhien.cpp): nhu Goto() nhung dich xa nBuoc buoc (Goto = 2 buoc)
 // va co CONG GAC gui giong duong chuot cua ban PC (GotoWhere: m_nSendMoveFrames >= defMAX_PLAYER_SEND_MOVE_FRAME = 5 tick).
 // Truoc day JxCan_Nhip goi Goto() MOI VONG LAP (1-8 ms): moi lan mot goi c2s_npcwalk, may chu tim duong + KNpc::DoWalk phat
@@ -25135,7 +25135,7 @@ extern "C" int JxCore_WAutoDanhSachChieu(IPCSkillInfo* pOut, int nMax)
 		return 0;
 	return Npc[nIdx].m_SkillList.GetAllSkillByType(pOut);
 }
-#endif	// JX_ANDROID
+#endif	// JX_MOBILE
 
 void KCoreShell::Turn(int nDir)
 {

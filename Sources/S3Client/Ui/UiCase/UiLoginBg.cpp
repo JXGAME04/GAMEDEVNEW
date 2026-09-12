@@ -164,7 +164,7 @@ void KUiLoginBackGround::Breathe()
 	}
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 #include "../../../Represent/iRepresent/iRepresentShell.h"

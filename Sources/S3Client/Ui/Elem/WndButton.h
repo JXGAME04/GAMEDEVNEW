@@ -22,7 +22,7 @@
 
 class KWndButton : public KWndImage
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 public:
 	// [ANDROID 09/09 CHAM] noi rong vung cham cho nut nho - xem WndButton.cpp
 	virtual int	PtInWindow(int x, int y);

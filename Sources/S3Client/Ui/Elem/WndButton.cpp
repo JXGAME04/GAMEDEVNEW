@@ -161,7 +161,7 @@ int	KWndButton::IsButtonActive()
 //	功能：窗口函数（处理消息）
 //--------------------------------------------------------------------------
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //--------------------------------------------------------------------------
 // [ANDROID 09/09 CHAM] Nut nho thi noi rong VUNG BAT CHAM (khong doi cach ve).
 //

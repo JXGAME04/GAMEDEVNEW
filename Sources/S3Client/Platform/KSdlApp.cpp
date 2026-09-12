@@ -28,12 +28,12 @@ static KSdlApp* s_pSdlApp = NULL;
 //---------------------------------------------------------------------------
 // SDL_Keycode -> ma phim ao Windows (VK_*) ma KWnd/ShortcutKey dang dung
 //---------------------------------------------------------------------------
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "JxCanDieuKhien.h"
 #include "../Ui/Elem/UiToaDo.h"	// [ANDROID 09/09 SUAKEO] UiToaDo_DangSua	// [ANDROID 09/09 CAN] can dieu khien ao
 #endif
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //---------------------------------------------------------------------------
 // [ANDROID 09/09 PHIM] BANG PHIM CHO GetKeyState()
 //
@@ -117,7 +117,7 @@ static WORD SdlKeyToVk(SDL_Keycode key)
 	case SDLK_RETURN:		return VK_RETURN;
 	case SDLK_KP_ENTER:		return VK_RETURN;
 	case SDLK_ESCAPE:		return VK_ESCAPE;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [ANDROID 09/09 CHAM] nut Back cua may = ESC (mo bang he thong / dong cua so dang mo).
 	// Manifest da dat SDL_ANDROID_TRAP_BACK_BUTTON=1 nen SDL dua nut nay vao day thay vi thoat app.
 	case SDLK_AC_BACK:		return VK_ESCAPE;
@@ -213,7 +213,7 @@ KSdlApp::KSdlApp()
 	m_uHoverLastStatus = 0;
 	m_nHoverLastPos = 0;
 	m_cHoverCounter = 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	m_nCham = CHAM_KHONG;
 	m_nChamX0 = m_nChamY0 = m_nChamX = m_nChamY = 0;
 	m_uChamDat = 0;
@@ -231,7 +231,7 @@ KSdlApp::KSdlApp()
 	s_pSdlApp = this;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [ANDROID 09/09 DPG] DO PHAN GIAI CHUAN CHO DIEN THOAI.
 //
 // Giao dien JX1 la giao dien "diem anh co dinh": chu 12 px, nut ~100 px, thanh ky nang ~500 px.
@@ -547,13 +547,13 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 		g_DebugLog("[SDL] SDL_CreateWindow loi: %s", SDL_GetError());
 		return FALSE;
 	}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	SDL_SetWindowFullscreen(m_pWindow, true);	// an thanh he thong; co that duoc chot trong JxSdl_ChotDoPhanGiaiTheoManHinh()
 #endif
 #ifdef JX_POSIX
 	HWND hWnd = (HWND)m_pWindow;	// [ANDROID 08/09] tren POSIX "HWND" = SDL_Window* (KPosixWin32: GetClientRect/SetWindowText... hieu no)
 	JxPosix_SetMainWindow(m_pWindow);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	g_pfnJxGetKeyState = JxSdl_TrangThaiPhim;	// [ANDROID 09/09 PHIM] khong noi thi GetKeyState luon tra 0
 #endif
 #else
@@ -569,7 +569,7 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 #ifndef JX_POSIX
 	SDL_SetWindowsMessageHook(KSdlApp_WinMsgHook, this);
 #endif
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [ANDROID 09/09 CHAM] KHONG bat go chu san: tren dien thoai SDL_StartTextInput = BAT BAN PHIM AO ngay
 	// va no che nua man hinh cho toi luc thoat. Chi bat khi mot o nhap co tieu diem - KWndEdit goi
 	// JxSdl_BanPhimAo() o WND_M_SET_FOCUS / WND_M_KILL_FOCUS.
@@ -663,7 +663,7 @@ void KSdlApp::Run()
 		}
 		if (bQuit)
 			break;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		NhipCham();		// [ANDROID 09/09 CHAM] giu ngon du lau ma khong xe dich -> chuot phai
 		JxSdl_BanPhimNhip();	// [DANGNHAP 12/09] mo lai ban phim sau khi IME tu dong
 		JxCan_Nhip();	// [ANDROID 09/09 CAN] dang cam can thi day nhan vat di theo huong
@@ -738,7 +738,7 @@ static void SdlToLogical(SDL_Window* pWin, float& x, float& y)
 	if (x > (float)(SCREEN_WIDTH - 1)) x = (float)(SCREEN_WIDTH - 1); if (y > (float)(SCREEN_HEIGHT - 1)) y = (float)(SCREEN_HEIGHT - 1);
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //---------------------------------------------------------------------------
 // [ANDROID 09/09 CHAM] BAN PHIM AO
 // Tren dien thoai SDL_StartTextInput = day ban phim ao len ngay. Nen chi goi khi mot o nhap co tieu diem.
@@ -747,7 +747,7 @@ static void SdlToLogical(SDL_Window* pWin, float& x, float& y)
 // [DANGNHAP 12/09] ban phim theo KIEU o nhap: khong tu viet hoa chu dau (tai khoan phai chu thuong), khong tu sua chu,
 // o mat khau = kieu mat khau an. IME Android hay tu dong sau phim Enter du o nhap ke tiep da nhan tieu diem ->
 // hen mo lai sau 0,3 s (JxSdl_BanPhimNhip trong vong lap chinh).
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 extern "C" int JxUi_ChamKhiCoTieuDiem(int x, int y);	// [BANPHIM 14/09] Wnds.cpp: 0 khong tieu diem / 1 cham dung o / 2 cham ngoai -> da bo
 extern "C" void JxUi_BoTieuDiem(void);	// [BANPHIM 14/09] Wnds.cpp
 #endif
@@ -788,7 +788,7 @@ extern "C" void JxSdl_BanPhimAo(int bBat, int nMatKhau)
 // goi moi vong lap: den hen ma o nhap van giu tieu diem -> dong roi mo lai ban phim (IME da tu dong thi hien lai)
 extern "C" void JxSdl_BanPhimNhip(void)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{	// [BANPHIM 14/09] IME bi dong ngoai y game (Back / nut an cua IME -> SDL da StopTextInput) ma o nhap van giu tieu diem
 		SDL_Window* pWinKT = (SDL_Window*)JxPosix_MainWindow();
 		if (s_bBanPhimDangMo && pWinKT && !SDL_TextInputActive(pWinKT))
@@ -984,7 +984,7 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			m_nCham = CHAM_CHO;
 			m_nChamX0 = m_nChamX = (int)fx; m_nChamY0 = m_nChamY = (int)fy;
 			m_uChamDat = (unsigned int)SDL_GetTicks();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			// [BANPHIM 14/09] Chu: "vao game nhap so hay chat de bi ket ban phim, khong an lai duoc". Ban phim ao chi tat khi o nhap mat
 			// tieu diem (KILL_FOCUS -> JxSdl_BanPhimAo(0)); Wnds.cpp:390 chi bo tieu diem khi cham toi duoc he cua so, con cham vao can
 			// dieu khien / nut ky nang / icon NPC bi cac nhanh duoi day nuot truoc -> o chat van giu tieu diem, ban phim nam mai.
@@ -1220,7 +1220,7 @@ void KSdlApp::NhipCham()
 }
 #endif
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [BKG 11/09] Represent3 khong trinh chieu khung giong het khung truoc; be mat / cua so doi (xoay, gap-mo, quay lai app, vung an toan, tieu diem)
 // thi khung ke tiep PHAI trinh chieu. Goi Rep3_JxEpTrinhChieu cua libRepresent3.so qua GetModuleHandle/GetProcAddress (lop tuong thich) nhu JxPerfHudAndroid.
 typedef void (*PFN_Rep3JxEpTrinhChieu)();
@@ -1244,7 +1244,7 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 			{ s_nChuot++; g_DebugLog("[GO] chuot xuong tai %d,%d", (int)ev.button.x, (int)ev.button.y); }
 	}
 #endif
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (ChamSuKien(ev))		// [ANDROID 09/09 CHAM] su kien chuot do NGON TAY sinh ra di duong rieng
 		return true;
 	if (ev.type == SDL_EVENT_WINDOW_SHOWN || ev.type == SDL_EVENT_WINDOW_EXPOSED || ev.type == SDL_EVENT_WINDOW_RESIZED || ev.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
@@ -1265,7 +1265,7 @@ bool KSdlApp::TranslateEvent(const SDL_Event& ev)
 	case SDL_EVENT_WINDOW_FOCUS_LOST:
 		MsgProc(hWnd, WM_ACTIVATEAPP, FALSE, 0);
 		break;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED:	// [ANTOAN 13/09] Android bao inset (tai tho / vung vuot) -> UiToaDo ap lai bo cuc
 		s_nVungAnToanDoi++;
 		{

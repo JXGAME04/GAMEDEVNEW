@@ -10,11 +10,11 @@
 // CHAM thi van la bam chuot trai nhu thuong (di mot buoc / danh / nhat do). Nho vay khong an mat
 // thao tac nao cua ban PC ma van co can dieu khien.
 //
-// Chi bien dich khi JX_ANDROID.
+// Chi bien dich khi JX_MOBILE.
 //---------------------------------------------------------------------------
 #ifndef JxCanDieuKhien_H
 #define JxCanDieuKhien_H
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 
 // Diem (x, y) - toa do KHUNG VE - co nam trong vung dat can khong.
 bool JxCan_TrongVung(int x, int y);
@@ -70,5 +70,5 @@ void JxKyNang_Ve();
 // theo huong dang di chuyen.
 void JxHuongDi_Ve();
 
-#endif // JX_ANDROID
+#endif // JX_MOBILE
 #endif

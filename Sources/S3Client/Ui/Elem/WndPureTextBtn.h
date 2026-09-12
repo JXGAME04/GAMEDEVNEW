@@ -43,7 +43,7 @@ private:
 	unsigned int	m_OverBorderColor;
 	unsigned int	m_PressedBorderColor;
 	int		m_nFontSize;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	virtual int	UiLayFont() const { return m_nFontSize; }	// [PHONGBANG 14/09] KWndWindow::UiPhongCay doi co chu
 	virtual void	UiDatFont(int nFont) { m_nFontSize = nFont; }
 #endif

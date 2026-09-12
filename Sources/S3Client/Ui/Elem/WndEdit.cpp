@@ -16,7 +16,7 @@
 extern iRepresentShell*	g_pRepresentShell;
 
 static KIme	s_Ime;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 extern "C" void JxSdl_BanPhimAo(int bBat, int nMatKhau);	// KSdlApp.cpp; [DANGNHAP 12/09] them kieu o (mat khau)
 #endif
 static BOOL	s_LastTimeIsIme;
@@ -220,7 +220,7 @@ int KWndEdit::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			nRet = OnKeyDown(uParam, nParam);
 		break;
 	case WND_M_SET_FOCUS:
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		JxSdl_BanPhimAo(1, (m_Flag & WNDEDIT_ES_MASK_CHARACTER) ? 1 : 0);		// [ANDROID 09/09 CHAM] o nhap co tieu diem -> day ban phim ao len; [DANGNHAP 12/09] kieu o
 #endif
 		if (m_pText)
@@ -246,7 +246,7 @@ int KWndEdit::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 		}
 		break;
 	case WND_M_KILL_FOCUS:
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		JxSdl_BanPhimAo(0, 0);		// [ANDROID 09/09 CHAM] khong con o nhap nao -> cat ban phim ao di
 #endif
 //        DestroyCaret();

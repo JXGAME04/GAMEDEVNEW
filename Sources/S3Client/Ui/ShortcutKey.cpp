@@ -113,7 +113,7 @@ int	KShortcutKeyCentre::HandleKeyInput(unsigned int uKey, int nModifier)
 	int nIndex = FindCommand(MAKELONG(uKey, nModifier));
 	if (nIndex >= 0)
 	{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [ANDROID 09/09 PHIMMA] Tren dien thoai khong co ban phim ma van co phim tat
 		// tu kich (che do sua giao dien tu bat 09/09). Ghi lai ma phim + bo trong de
 		// lan sau nhin la biet ngay phim nao.
@@ -498,7 +498,7 @@ int LuaMoveWindow(Lua_State * L)
 	if (pWin)
 	{
 		pWin->SetPosition(nX, nY);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [MOVEWINDOW 12/09] vi tri luu tu phien truoc (uiconfig.ini [ScriptAuto]) khong duoc de len bang toa do
 		// theo neo cua man hinh nay (ban do nho ke mep phai...): co muc trong bang thi ap lai muc do.
 		UiToaDo_ApChoO(pWin);
@@ -1716,7 +1716,7 @@ int Mouse_Action(Lua_State * L)
 	if (g_pCoreShell->FindSelectNPC(KShortcutKeyCentre::ms_MouseX, KShortcutKeyCentre::ms_MouseY, relation_all, false, &SelectPlayer, nNPCKind))
 	{
 		int nRelation = g_pCoreShell->GetNPCRelation(SelectPlayer.nIndex);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [SAP 14/09] Chu: 'toi gan nguoi choi dang bay ban kich vao player do se mo sap hang nguoi do de xem'. PC chi xem sap
 		// bang Ctrl+chuot trai (Mouse_Say -> ProcessPeople ACTION_CHAT); dien thoai khong co Ctrl -> cham thang nguoi dang
 		// bay ban = di toi + xin xem sap (nhu ProcessPeople, khong mo khung chat rieng).

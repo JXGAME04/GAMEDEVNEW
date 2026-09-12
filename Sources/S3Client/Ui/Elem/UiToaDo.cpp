@@ -43,7 +43,7 @@ struct KOToaDo
 	int		nTop;
 	int		nTiLe;			// phan nghin, 1000 = 100%
 	int		nCo;			// bit UITOADO_CO_AN
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	int		nNeoX;			// [UITOADO 12/09 NEO] 0 trai, 1 giua, 2 phai; -1 = chua biet (tu suy)
 	int		nNeoY;			// 0 tren, 1 giua, 2 duoi; -1
 	int		nDichX;			// [NHOMTREN 12/09] khoang bo neo da cong cho muc nay (khung ve khac tep thiet ke)
@@ -78,7 +78,7 @@ static int			s_nSoDongBang	= 0;
 static char			s_szThongBao[192] = "";
 static unsigned int	s_uHetThongBao	= 0;
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //	[SUAGD 13/09] Phan mobile nam trong UiToaDoMobile.inc (#include o cuoi tep, cung don vi dich) - khai bao truoc.
 static void UiToaDoM_KhongGian(int* pnL, int* pnT, int* pnW, int* pnH);	// khong gian bo cuc = vung an toan
 static int  s_nGhiKgL = 0, s_nGhiKgT = 0;	// goc vung an toan luc GhiTepVao (dung truoc cho .inc)
@@ -161,7 +161,7 @@ static int			s_nMoY			= -1;
 extern int SCREEN_WIDTH;		// S3Client.cpp / KSdlApp.cpp: co khung ve that
 extern int SCREEN_HEIGHT;
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [UITOADO 12/09 MANHINH] Bo cuc luu theo khung ve luc thiet ke (dong 'ManHinh=W,H' trong [Pos]; thieu = 1040x604 cua may ao).
 // Khung ve khac (dien thoai 21:9 ~1371x617): o co X >= 70 %% rong thiet ke neo theo mep PHAI, Y >= 70 %% cao neo mep DUOI,
 // con lai giu nguyen. Chu: "choi dien thoai no khong ra full man". Tat: config.ini [Ui] NeoTheoMep=0.
@@ -294,7 +294,7 @@ struct KORieng
 	PFN_UITOADO_LAYVITRI	pfnLay;
 	PFN_UITOADO_DATVITRI	pfnDat;
 	void*					pNgu;	// [UITOADO 10/09 F] ngu canh dua ve ca ba ham
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	PFN_UITOADO_LAYCO		pfnLayCo;	// [SUAGD 13/09] co rieng (nut ky nang) - NULL = khong co gian duoc
 	PFN_UITOADO_DATCO		pfnDatCo;
 	PFN_UITOADO_LAYHINH		pfnLayHinh;	// [SUAGD 13/09] hinh chu nhat that (o khong theo quy uoc tam + co: dong FPS) - NULL = tam + co
@@ -338,7 +338,7 @@ static int DatKhoa(const char* pszKhoa, int nLeft, int nTop, int nTiLe, int nCo)
 			return -1;
 		}
 		i = s_nSo++;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		s_Bang[i].nNeoX = s_Bang[i].nNeoY = -1;	// [UITOADO 12/09 NEO]
 		s_aTepNap[i] = 0;
 #endif
@@ -376,7 +376,7 @@ static void LayTenLop(KWndWindow* pWnd, char* pszRa, int nCo)
 		pszTen++;
 	strncpy(pszRa, pszTen, nCo - 1);
 	pszRa[nCo - 1] = 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{	//	[UITOADO 14/09 LOPPHU] ban do nho to / to mo rong / khong anh: KUiMiniMapTo|..., KUiMiniMapToEx|..., KUiMiniMapKhongAnh|...
 		const char* pszPhu = pWnd->UiTenLopPhu();
 
@@ -512,7 +512,7 @@ void UiToaDo_DangKyORieng(const char* pszKhoa, PFN_UITOADO_TRUNG pfnTrung,
 	s_ORieng[i].pfnLay   = pfnLay;
 	s_ORieng[i].pfnDat   = pfnDat;
 	s_ORieng[i].pNgu     = pNgu;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	s_ORieng[i].pfnLayCo = NULL;	// [SUAGD 13/09] gan sau bang UiToaDo_DangKyORiengCo
 	s_ORieng[i].pfnDatCo = NULL;
 	s_ORieng[i].pfnLayHinh = NULL;
@@ -535,7 +535,7 @@ bool UiToaDo_ChoPhep()
 
 		s_bDaDocCauHinh = true;
 		g_GetFullPath(szDuongDan, (char*)UITOADO_CAUHINH);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		s_bChoPhep = (GetPrivateProfileInt("Ui", "SuaToaDo", 1, szDuongDan) != 0);	// [SUAGD 13/09] mobile: mac dinh MO cho nguoi choi
 #else
 		s_bChoPhep = (GetPrivateProfileInt("Ui", "SuaToaDo", 0, szDuongDan) != 0);
@@ -560,7 +560,7 @@ static void NapTep(const char* pszTep)
 	pTep = fopen(szDuongDan, "rt");
 	if (pTep == NULL)
 		return;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	s_nTepNap++;	// [UITOADO 12/09 NEO]
 #endif
 
@@ -568,7 +568,7 @@ static void NapTep(const char* pszTep)
 	{
 		char*	pBang;
 		char*	p;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		char*	pSo[6];				// [UITOADO 12/09 NEO] them NeoX, NeoY
 		int		nSoTruong = 0;
 		int		nGiaTri[6];
@@ -593,7 +593,7 @@ static void NapTep(const char* pszTep)
 
 		//	tach toi da 4 truong ngan cach bang dau phay
 		pSo[nSoTruong++] = pBang + 1;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		for (char* q = pBang + 1; *q && nSoTruong < 6; q++)	// [UITOADO 12/09 NEO]
 #else
 		for (char* q = pBang + 1; *q && nSoTruong < 4; q++)
@@ -605,7 +605,7 @@ static void NapTep(const char* pszTep)
 				pSo[nSoTruong++] = q + 1;
 			}
 		}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		for (i = 0; i < 6; i++)	// [UITOADO 12/09 NEO]
 #else
 		for (i = 0; i < 4; i++)
@@ -626,7 +626,7 @@ static void NapTep(const char* pszTep)
 			if (n == 0)
 				continue;
 		}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		if (strncmp(p, "Goc.", 4) == 0)	// [GOC 12/09] Goc.<lop>=<ten muc cua so goc>
 		{
 			if (s_nSoGoc < UITOADO_MAX_GOC && pSo[0] && pSo[0][0])
@@ -663,7 +663,7 @@ static void NapTep(const char* pszTep)
 #endif
 	}
 	fclose(pTep);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	DoiCaTepTheoNeo();	// [UITOADO 12/09 NEO]
 	g_DebugLog("[UITOADO] %s: tep thiet ke %dx%d, khung ve %dx%d", "[UITOADO 12/09 NEO]", s_nManHinhW, s_nManHinhH, SCREEN_WIDTH, SCREEN_HEIGHT);
 	s_nManHinhW = s_nManHinhH = 0;
@@ -676,7 +676,7 @@ void UiToaDo_Nap()
 {
 	s_nSo   = 0;
 	s_bTran = 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{	// [KHUNG 13/09 HAIHO] ho DIEN THOAI (man dai) -> tep mac dinh man rong neu co; ho MAY TINH BANG -> tep chuan.
 		// [SUAGD 13/09] lop nguoi choi: tep theo nhan vat (UserData\UiToaDo_<id>.ini) neu co, khong thi tep chung.
 		// (Truoc: chon tep rong khi ti le >= 1,9 - [UITOADO 12/09 RONG].)
@@ -695,7 +695,7 @@ void UiToaDo_Nap()
 }
 
 //	[UITOADO 10/09 G] ghi bang hien tai vao mot tep (tep nguoi choi hoac tep mac dinh)
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //	[NEO 13/09 CON] Neo de GHI cho muc chua co neo (o vua duoc trinh chinh dat lan dau): o CON lay neo cua CHA nhu luc nap,
 //	khong suy tu toa do tuong doi (o khoa ruong 19,101 trong ban do nho -> 'trai' -> tren man rong bi day sang trai 396 diem).
 static int NeoDeGhi(int i, int bY)
@@ -737,7 +737,7 @@ static int GhiTepVao(const char* pszTep)
 	}
 
 	fprintf(pTep, "; [UITOADO] Vi tri / co / an o giao dien do nguoi choi tu dat.\n");
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	fprintf(pTep, "; Moi dong:  <ten lop cua so>|<ten muc ini> = Left,Top,TiLe,Co,NeoX,NeoY  (neo: 0 trai/tren, 1 giua, 2 phai/duoi)\n");
 #else
 	fprintf(pTep, "; Moi dong:  <ten lop cua so>|<ten muc ini> = Left,Top,TiLe,Co\n");
@@ -747,7 +747,7 @@ static int GhiTepVao(const char* pszTep)
 	fprintf(pTep, ";   Co   : bit 1 = an han o nay\n");
 	fprintf(pTep, "; Xoa het tep nay = tra giao dien ve dung \\Ui\\ui3\\*.ini goc.\n");
 	fprintf(pTep, "%s\n", UITOADO_MUC);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{	// [ANTOAN 13/09] ManHinh = co VUNG AN TOAN (khong gian bo cuc); cua so goc ghi toa do trong vung do
 		int nKgL = 0, nKgT = 0, nKgW = SCREEN_WIDTH, nKgH = SCREEN_HEIGHT;
 		UiToaDoM_KhongGian(&nKgL, &nKgT, &nKgW, &nKgH);
@@ -758,7 +758,7 @@ static int GhiTepVao(const char* pszTep)
 #endif
 	for (i = 0; i < s_nSo; i++)
 	{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		{
 		int nGocL = UiToaDoM_LaGoc(s_Bang[i].szKhoa) ? s_nGhiKgL : 0;	// [ANTOAN 13/09] goc: tru goc vung an toan
 		int nGocT = UiToaDoM_LaGoc(s_Bang[i].szKhoa) ? s_nGhiKgT : 0;
@@ -778,7 +778,7 @@ static int GhiTepVao(const char* pszTep)
 
 static int GhiTep()
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	return UiToaDoM_GhiTep();	// [SUAGD 13/09] tep chung + tep theo nhan vat
 #endif
 	return GhiTepVao(UITOADO_TEP);
@@ -789,7 +789,7 @@ static int GhiTep()
 //--------------------------------------------------------------------------
 static void ApMotO(KWndWindow* pWnd, int nMuc)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	int nKCay = UiToaDoM_KCayCha(pWnd);	// [PHONGBANG 14/09] o nam trong bang da phong ca cay -> ti le cay cua to tien (1000 = khong)
 	if (nMuc < 0)
 	{
@@ -821,21 +821,21 @@ static void ApMotO(KWndWindow* pWnd, int nMuc)
 		return;
 #endif
 	pWnd->SetPosition(s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	pWnd->UiDatPhongLech(0, 0);	// [PHONGBANG 14/09 b] vi tri vua dat tu bang bo cuc = vi tri o co goc, chua lech
 	pWnd->UiDanhDauViTriBang();	// [g] PhongBang ke tiep dich giu tam tu vi tri nay
 #endif
 	//	KWndMovingImage chup vi tri goc cua hoat hinh mo cua so luc Init, tuc
 	//	TRUOC luc nay => phai bao no chup lai, khong thi mo/dong lai la nhay ve cho cu
 	pWnd->UiNhoViTri();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (UiToaDoM_NhatKy() >= 2)	// [SUAGD 13/09 g] NhatKyBoCuc=2: ghi tung o duoc ap (tim o bi nhay ve cho cu)
 		g_DebugLog("[UITOADO] ap %s -> %d,%d", s_Bang[nMuc].szKhoa, s_Bang[nMuc].nLeft, s_Bang[nMuc].nTop);
 #endif
 	if (s_Bang[nMuc].nTiLe > 0 && s_Bang[nMuc].nTiLe != 1000 && !CamCoGian(pWnd))
 		pWnd->UiDatTiLe(s_Bang[nMuc].nTiLe);
 	pWnd->UiDatAn(s_Bang[nMuc].nCo & UITOADO_CO_AN);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (!s_bApLucInit)	// [d] luc Init cua so goc (con chua Init) khong phong; phong luc dua vao he thong cua so (Wnd_AddWindow)
 		UiToaDoM_PhongBang(pWnd, s_Bang[nMuc].szKhoa);	// [PHONGBANG 14/09] bang (co 16 danh sach trang): phong ca cay theo man hinh
 #endif
@@ -855,7 +855,7 @@ static void ApChoCay(const char* pszLop, KWndWindow* pWnd)
 	}
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [UITOADO 12/09 NEO b] ap cho MOT o ngay khi no doc xong ini (goi tu KWndWindow::Init): o con duoc Init sau khi goc da dang ky
 static FILE* s_fDumpThuc = NULL;	// [UITOADO 12/09 NEO f]
 static void DumpCayThuc(KWndWindow* pWnd)	// [UITOADO 12/09 NEO d]
@@ -975,7 +975,7 @@ static void ApChoORieng()
 		int n = TimKhoa(s_ORieng[i].szKhoa);
 		if (n >= 0)
 			s_ORieng[i].pfnDat(s_ORieng[i].pNgu, s_Bang[n].nLeft, s_Bang[n].nTop);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		UiToaDoM_ApCoORieng(i, n);	// [SUAGD 13/09] co rieng (nut ky nang)
 #endif
 	}
@@ -1038,7 +1038,7 @@ void UiToaDo_QuenCuaSo(KWndWindow* pWnd)
 		s_pKeo = NULL;
 	if (s_pEpHien == pWnd)
 		s_pEpHien = NULL;			// da bi xoa roi, khong tra co nua
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	UiToaDoM_QuenCuaSo(pWnd);	// [SUAGD 13/09]
 #endif
 	for (i = 0; i < s_nSoDongBang; i++)
@@ -1088,7 +1088,7 @@ void UiToaDo_BatTat()
 		s_pKeo      = NULL;
 		s_bHienBang = false;
 		WND_SHOW_DEBUG_FRAME_TEXT = s_nStyleCu;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		UiToaDoM_TruocKhiTat();	// [SUAGD 13/09] ket keo, kep vao vung an toan roi moi ghi tep
 #endif
 
@@ -1109,14 +1109,14 @@ void UiToaDo_BatTat()
 		s_bDangSua = true;
 		s_pKeo     = NULL;
 		s_nStyleCu = WND_SHOW_DEBUG_FRAME_TEXT;
-#ifndef JX_ANDROID
+#ifndef JX_MOBILE
 		WND_SHOW_DEBUG_FRAME_TEXT = 1;	// [SUAGD 13/09] mobile tu ve khung cho o trong danh sach trang
 #endif
 		s_szThongBao[0] = 0;
 		//	co nhung o con duoc AddChild SAU khi Wnd_AddWindow da chay
 		//	=> ap lai mot lan o day cho chac
 		UiToaDo_ApChoTatCa();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		UiToaDoM_KhiBat();	// [SUAGD 13/09]
 #endif
 		{	//	[UITOADO 12/09 KHUNG] Noi them KHUNG VE vao thong bao: chu doc so nay tren may THAT roi bao lai,
@@ -1168,7 +1168,7 @@ void UiToaDo_XoaHet()
 	s_bTran = 0;
 	g_GetFullPath(szDuongDan, (char*)UITOADO_TEP);
 	remove(szDuongDan);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	UiToaDoM_XoaHet();	// [SUAGD 13/09] o ve tay ve goc, xoa tep theo nhan vat
 #endif
 	// [UITOADO 10/09 G] xoa xong thi nap lai lop MAC DINH va ap ngay - "co xoa cung quay
@@ -1236,7 +1236,7 @@ static void GhiLaiO(KWndWindow* pWnd, const char* pszKhoa)
 	if (pWnd == NULL || pszKhoa == NULL || pszKhoa[0] == 0)
 		return;
 	pWnd->GetPosition(&nLeft, &nTop);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{	// [PHONGBANG 14/09] bang da phong: bang bo cuc giu vi tri o co GOC (+ lech giu tam) va TiLe 1000 (tu tinh lai);
 		// o con trong bang da phong: chia ti le cay (lam tron) de ap lai nhan dung
 		int nKCay = UiToaDoM_KCayCha(pWnd);
@@ -1468,7 +1468,7 @@ bool UiToaDo_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	char	szKhoa[UITOADO_CO_KHOA];
 	char	szChu[192];
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	return UiToaDoM_NhanChuot(uMsg, uParam, nParam);	// [SUAGD 13/09] mobile: trinh chinh cho nguoi choi (UiToaDoMobile.inc)
 #endif
 	//	[UITOADO 09/09 B] Chua sua: chi bat cu bam vao nut "mo che do sua".
@@ -1684,7 +1684,7 @@ void UiToaDo_Ve()
 
 	if (g_pRepresentShell == NULL)
 		return;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	UiToaDoM_Ve();	// [SUAGD 13/09]
 	return;
 #endif
@@ -1784,6 +1784,6 @@ void UiToaDo_Ve()
 		s_szThongBao[0] = 0;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "UiToaDoMobile.inc"	// [SUAGD 13/09] phan mobile cua he sua giao dien (cung don vi dich)
 #endif

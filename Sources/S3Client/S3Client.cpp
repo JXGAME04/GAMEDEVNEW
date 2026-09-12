@@ -43,7 +43,7 @@
 #include "Ui/UiCase/UiMsgCentrePad.h"
 #include "Ui/UiCase/UiFaceSelector.h"
 #include "Ui/UiCase/UiInformation.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "Platform/JxWAutoNoiBo.h"	// [ANDROID 11/09 WAUTO B0] ben gui WAuto trong tien trinh (thay WAuto.exe)
 #include "Platform/JxCanDieuKhien.h"	// [ANDROID 11/09 WAUTO B2 g] JxCan_DangCam(): dang cam can = nguoi choi dang cam, may auto nhuong
 // [ANDROID 11/09 WAUTO B2 g] Chu: "nut di chuyen phai uu tien - dang danh di chuyen cung phai uu tien". Tren PC WAuto nhuong quyen khi
@@ -76,7 +76,7 @@ CChatFilter g_ChatFilter;
 #define CONFIG_FILE_PATH	"Config.ini"			//duong dan file config.ini
 //static int m_PaintStep = GAME_FPS / 18;
 static int	g_nPaintFps = 30;		// paint frames per second, config.ini [Client] PaintFps; 0 = paint locked to logic tick (legacy)
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 unsigned g_uJxHudLogicUs = 0, g_uJxHudVeUs = 0;	// [ANDROID 11/09 HUD b] chi phi Breathe+UiHeartBeat / UiPaint vong gan nhat (us) cho bang do (JxPerfHudAndroid.cpp)
 static inline unsigned JxHudUs(const LARGE_INTEGER& a) { LARGE_INTEGER b, f; QueryPerformanceCounter(&b); QueryPerformanceFrequency(&f); return f.QuadPart ? (unsigned)((b.QuadPart - a.QuadPart) * 1000000 / f.QuadPart) : 0; }
 #endif
@@ -84,7 +84,7 @@ static int	g_nPaintSmooth = 1;		// [NHIP 08/09 c] 1 = so chia noi suy dung trung
 static int	g_nPaintVsync = 0;		// [NHIP 08/09] config.ini [Client] PaintVsync; 1 = ve moi vong bom, Represent3 Present(1) (vblank dan nhip)
 static int	g_nPaintInterp = 1;		// config.ini [Client] PaintInterp; 1 = interpolate drawn NPC positions between logic ticks
 int	g_nPaintLog = 0;		// config.ini [Client] PaintLog; 1 = write jx_paint.log frame-time probe
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [DONHIP 12/09] Ban do nhip ve tren may that (bo dieu khien: Platform/JxPerfHudAndroid.cpp, bat bang config.ini [DoNhip] Bat=1):
 // doi cau hinh nhip ve giua chung (tung pha do) va doc lai cau hinh luc mo app. Chi goi tu luong chinh (GameLoop).
 void JxDoNhip_DatNhip(int nPaintFps, int nVsync, int nSmooth)
@@ -129,7 +129,7 @@ int SCREEN_HEIGHT = 600; // Default height
 // [ANDROID 08/09] 1 = do phan giai da duoc dat theo man hinh thiet bi (KSdlApp::Init), KHONG doc lai config.ini
 // (GameInit goi LoadResolutionFromConfig lan hai, se de len 1024x768 lam khung ve bi co lai -> chu mo).
 int g_nDoPhanGiaiTheoManHinh = 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 extern "C" void JxSdl_ChotDoPhanGiaiTheoManHinh(void);	// KSdlApp.cpp
 #endif
 void LoadResolutionFromConfig() {
@@ -143,7 +143,7 @@ void LoadResolutionFromConfig() {
 	// Read width and height from the config file
 	SCREEN_WIDTH = GetPrivateProfileInt("Resolution", "Width", SCREEN_WIDTH, configPath);
 	SCREEN_HEIGHT = GetPrivateProfileInt("Resolution", "Height", SCREEN_HEIGHT, configPath);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	//	[DPG 12/09 1024] Xem chu thich o KSdlApp.cpp: rong DUNG 1024 thi game doi sang bo giao dien 1024x768 trong khi
 	//	bang toa do cua ban mobile la cua bo 800x600 -> o go chat ra ngoai man hinh, bang thong bao lech.
 	if (SCREEN_WIDTH == 1024)
@@ -626,7 +626,7 @@ BOOL KMyApp::GameInit()
 		|| !g_ChatFilter.Initialize())
 		return FALSE;
 	LoadResolutionFromConfig();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	JxSdl_ChotDoPhanGiaiTheoManHinh();	// [ANDROID 08/09] do phan giai = co cua so that (ve 1:1, chu net)
 #endif
 	if (!InitRepresentShell(g_bScreen, SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -1511,7 +1511,7 @@ BOOL KMyApp::GameLoop()
 
 	if(g_DrawVisionTime < timeGetTime())
 		g_DrawVision = 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	JxWAuto_NhipVongLap();	// [ANDROID 11/09 WAUTO B0] bang WAuto trong game: nap goi PRT_GAMELOOP vao g_pState nhu WAuto.exe; ProcIpcCommand ngay duoi tieu thu cung khung
 	JxDoNhip_Vong();	// [DONHIP 12/09] ban do nhip: doi pha / ghi jx_nhip.log (khong lam gi khi [DoNhip] Bat=0)
 #endif
@@ -1525,14 +1525,14 @@ BOOL KMyApp::GameLoop()
 		// thoi gian chay logic (0-25 ms) va lam khoang tick do duoc nhay len xuong.
 		const DWORD	nTickAt = (DWORD)m_Timer.GetElapse();
 		DWORD	dwLgT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		LARGE_INTEGER liHudLg; QueryPerformanceCounter(&liHudLg);	// [ANDROID 11/09 HUD b]
 #endif
 		BOOL	bLgBre = g_pCoreShell->Breathe();
 		DWORD	dwLgT1 = g_nPaintLog > 0 ? timeGetTime() : 0;
 		BOOL	bLgUi  = bLgBre ? UiHeartBeat() : FALSE;
 		DWORD	dwLgT2 = g_nPaintLog > 0 ? timeGetTime() : 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		g_uJxHudLogicUs = JxHudUs(liHudLg);	// [ANDROID 11/09 HUD b]
 #endif
 		if (bLgBre && bLgUi)
@@ -1619,7 +1619,7 @@ BOOL KMyApp::GameLoop()
 			if (g_nPaintFps > 0)
 				g_pCoreShell->OperationRequest(GOI_PROCFRAME_BREATHE, (unsigned int)(g_nPaintInterp > 0 ? 1 : 0), g_nPaintLog);	// snapshot tick positions for paint interpolation
 			else
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 				{ LARGE_INTEGER liHudVe; QueryPerformanceCounter(&liHudVe); UiPaint(nGameFps); g_uJxHudVeUs = JxHudUs(liHudVe); }	// [ANDROID 11/09 HUD b]
 #else
 				UiPaint(nGameFps);//nhe hon
@@ -1713,7 +1713,7 @@ BOOL KMyApp::GameLoop()
 				if (g_nPaintLog > 0)
 					nLogShift = timeGetTime() - nLogShiftT0;
 			}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			JxDoNhip_KhungVe(nLogCross);	// [DONHIP 12/09] moc khung ve cho ban do nhip (khong lam gi khi [DoNhip] Bat=0)
 			{ LARGE_INTEGER liHudVe; QueryPerformanceCounter(&liHudVe); UiPaint(nGameFps); g_uJxHudVeUs = JxHudUs(liHudVe); }	// [ANDROID 11/09 HUD b]
 #else

@@ -162,7 +162,7 @@ static void WorldInDong()
 				g_uCayChen, g_uCayDuyet1, g_uCayDuyet2, g_uCayKhop, g_uCayCon, g_uCayTaiCho, g_uCayDoiCho, g_uCayBuoc, g_uCayKhacDs, g_uCayLuiTinh, g_uCayKhacCha, g_uCayNgoai, g_uCayDo, g_uCayLech, g_uCayXayChiMuc, g_uAmNap, g_dAmNapMs);
 			fclose(p2);
 		}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		{	// [DAN 11/09] chi phi tung phan cua dan (KMissle.cpp), cung ky 10 s voi [WORLD b]
 			extern unsigned g_uDanAct, g_uDanCol, g_uDanFind, g_uDanHit, g_uDanBar;
 			extern double g_dDanTong, g_dDanOnFly, g_dDanBar, g_dDanBeyond, g_dDanCol, g_dDanMove;
@@ -195,7 +195,7 @@ static void WorldInDong()
 #endif
 void KSubWorldSet::MainLoop()
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{ extern DWORD g_uAutoLogNow; g_uAutoLogNow = timeGetTime(); }	// [DAN 11/09 b] moc cho AUTOLOG_EVERY, 1 lan/tick
 #endif
 	m_nLoopRate++;

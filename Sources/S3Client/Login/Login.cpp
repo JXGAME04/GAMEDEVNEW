@@ -174,7 +174,7 @@ int	KLogin::SelectRole(int nIndex)
 		m_Status = LL_S_WAIT_TO_LOGIN_GAMESERVER;
 		m_Result = LL_R_NOTHING;
 		nRet = true;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [ANDROID 09/09 LOGIN] Luu NGAY chu khong doi luc thoat (UiShell.cpp UiExit): tren dien thoai nguoi choi
 		// vuot tat app hoac he thong giet tien trinh nen SaveLoginChoice luc thoat rat hay khong duoc chay, the la
 		// lan sau van phai go lai tu dau. Day cung la luc dau tien du CA BA thu de tu dang nhap:
@@ -516,7 +516,7 @@ void KLogin::ProcessRoleListResponse(TProcessData* pResponse)
 		g_NetConnectAgent.UpdateClientRequestTime(true);
 		m_Status = LL_S_ROLE_LIST_READY;
 		m_Result = LL_R_NOTHING;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [DANGNHAP 14/09 b] Chu: "dang nhap 1 lan la luu lai luon khong mat nua". Toi day may chu DA nhan tai khoan +
 		// mat ma (danh sach nhan vat ve) -> ghi xuong dia NGAY. Truoc day chi luu o SelectRole (luc chon nhan vat) va luc
 		// thoat game sach; dien thoai hay bi vuot tat / he thong giet o man chon nhan vat nen ca hai deu khong chay.
@@ -692,7 +692,7 @@ bool KLogin::GetLoginAccount(char* pszAccount)
 	return m_Choices.bRememberAccount;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [DANGNHAP 14/09] Mat ma da nho (ban bam MD5, giai ma tu Setting.ini luc LoadLoginChoice). Man dang nhap dung de "bam Dang
 // nhap la vao" ma KHONG tu dang nhap (chu 14/09: "luu ten tai khoan - mat khau khi dang nhap - khong tu dong dang nhap").
 bool KLogin::GetLoginPasswordSaved(KSG_PASSWORD* pRa)
@@ -773,7 +773,7 @@ void KLogin::LoadLoginChoice()
 				}
 			}
 			g_UiBase.ClosePrivateSettingFile(false);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			// [ANDROID 09/09 LOGIN] Tep rieng (UserData\<ma>\UiConfig.ini) chi mo duoc khi DA biet ten nhan vat
 			// (vi <ma> = bam(tai khoan) + bam(ten nhan vat)) nen luc moi mo app no luon rong. Lay ban sao ten
 			// nhan vat da chep o tep chung -> du ca 4 thu cho IsAutoLoginEnable() ngay tu man hinh chinh.
@@ -828,7 +828,7 @@ void KLogin::SaveLoginChoice()
 				pSetting->WriteStruct($LOGIN, $LAST_PASSWORD, Password.szPassword, sizeof(Password.szPassword));
 			}
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			// [ANDROID 09/09 LOGIN] chep them ten nhan vat vao tep chung (xem giai thich o LoadLoginChoice).
 			// Luu y: luc SelectRole goi SaveLoginChoice thi KUiBase::m_UserAccountId con RONG (no chi duoc dat
 			// sau khi may chu tra loi vao game), nen doan ghi "tep rieng" ben duoi khong chay - ban sao nay

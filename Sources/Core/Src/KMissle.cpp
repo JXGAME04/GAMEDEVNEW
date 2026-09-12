@@ -24,7 +24,7 @@ static inline int VhMissleType(int nSkillId, int nLevel) { KSkill* pVhS = (KSkil
 static inline BOOL VhIsNewFactionSkill(int nSkillId) { return (nSkillId >= 1363 && nSkillId <= 1384) || (nSkillId >= 1965 && nSkillId <= 1991) || (nSkillId >= 2114 && nSkillId <= 2143); }
 // log toan bo dan ky nang 3 phai: server = nhan vat [AutoLog] Name (AUTOLOG_IDX), client = moi launcher (g_AutoLogWho tra 1)
 #define VHLOG(...) do { if (VhIsNewFactionSkill(m_nSkillId)) { AUTOLOG_IDX(m_nLauncher, __VA_ARGS__); } } while (0)
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [DAN 11/09] do chi phi tung phan cua KMissle::Activate (in [DAN] moi 10 s o KSubWorldSet.cpp, chi khi [Client] PaintLog > 0).
 // Xem android/va_nguon_android_dan1.py + BANGIAO_DONHIP_MOBILE_1209.md muc 9 (Fold 7: 690-790 vien/tick ton 4-5 ms/tick luc dong).
 extern int g_nCorePaintLog;
@@ -510,7 +510,7 @@ int KMissle::Activate()
 	{
 		return  0 ;
 	}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	const bool bDanDo = g_nCorePaintLog > 0; LARGE_INTEGER liDan0, liDanA, liDanB;	// [DAN 11/09]
 	if (bDanDo) { QueryPerformanceCounter(&liDan0); g_uDanAct++; }
 	if (g_nJxDanToiUu < 0) g_nJxDanToiUu = (int)GetPrivateProfileIntA("Client", "DanToiUu", 1, ".\\config.ini");	// [DAN 11/09 b]
@@ -631,11 +631,11 @@ int KMissle::Activate()
 		break;
 	case MS_DoFly:
 		{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (bDanDo) QueryPerformanceCounter(&liDanA);	// [DAN 11/09]
 #endif
 			OnFly();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (bDanDo) { QueryPerformanceCounter(&liDanB); g_dDanOnFly += DanMs(liDanA, liDanB); }
 #endif
 			if (m_bFlyEvent)
@@ -693,20 +693,20 @@ int KMissle::Activate()
 		m_nDrawX = nSrcX;
 		m_nDrawY = nSrcY;
 		m_nDrawZ = m_nCurrentMapZ;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		if (bDanDo) QueryPerformanceCounter(&liDanA);	// [DAN 11/09]
 #endif
 		if (m_usLightRadius && m_eMissleStatus != MS_DoWait)
 			g_ScenePlace.MoveObject(CGOG_MISSLE, m_nMissleId, nSrcX, nSrcY, m_nCurrentMapZ, m_SceneID, IPOT_RL_OBJECT | IPOT_RL_LIGHT_PROP );
 		else
 			g_ScenePlace.MoveObject(CGOG_MISSLE, m_nMissleId, nSrcX, nSrcY, m_nCurrentMapZ, m_SceneID, IPOT_RL_OBJECT);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		if (bDanDo) { QueryPerformanceCounter(&liDanB); g_dDanMove += DanMs(liDanA, liDanB); }
 #endif
 	}
 	
 #endif
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (bDanDo) { QueryPerformanceCounter(&liDanB); g_dDanTong += DanMs(liDan0, liDanB); }	// [DAN 11/09]
 #endif
 	m_nCurrentLife ++;
@@ -821,7 +821,7 @@ int KMissle::CheckCollision()
 		for (int i = -m_nCollideRange; i <= m_nCollideRange; i ++)
 			for (int j = -m_nCollideRange; j <= m_nCollideRange; j ++)
 			{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 				if (JxDanBoQuaO(0, m_nSubWorldId, m_nRegionId, m_nCurrentMapX + i, m_nCurrentMapY + j)) { g_uDanBoQua++; continue; }	// [DAN 11/09 b] + c
 #endif
 				if (!GetOffsetAxis(m_nSubWorldId, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, i , j , nSearchRegion, nRMx, nRMy))
@@ -833,7 +833,7 @@ int KMissle::CheckCollision()
 				// 30000 mau dung tren xac, ca 4 lan VH-COL-NONE). Truyen muc tieu dang bam (hoac MAX_NPC lam moc khong bao gio trung)
 				// de FindNpc dung nhanh fallback co san: uu tien muc tieu, va CON SONG hon XAC. Dan co dien truyen 0 = y nguyen.
 				int nVhPrefer = VhIsVltkMissle(VhMissleType(m_nSkillId, m_nLevel)) ? ((m_nFollowNpcIdx > 0 && m_nFollowNpcIdx < MAX_NPC) ? m_nFollowNpcIdx : MAX_NPC) : 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 				g_uDanFind++;	// [DAN 11/09]
 #endif
 				nNpcIdx = SubWorld[m_nSubWorldId].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, m_nLauncher, m_eRelation, nVhPrefer);
@@ -878,7 +878,7 @@ inline DWORD	KMissle::GetCurrentSubWorldTime()
 
 void KMissle::OnFly()
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	const bool bDanDoB = g_nCorePaintLog > 0; LARGE_INTEGER liDb0, liDb1;	// [DAN 11/09]
 #endif
 	if (m_nInteruptTypeWhenMove)
@@ -909,7 +909,7 @@ void KMissle::OnFly()
 		if (m_nFollowNpcIdx > 0 && m_nFollowNpcIdx < MAX_NPC) Npc[m_nFollowNpcIdx].GetMpsPos(&nVhTx, &nVhTy);
 		VHLOG("[VH-MSL-TICK] msl=%d sk=%d life=%d/%d st=%d pos(r=%d,%d,%d off %d,%d z=%d) mps(%d,%d) follow=%d tgt(%d,%d) dcell=%d barrier=%d lasthit=%d", m_nMissleId, m_nSkillId, m_nCurrentLife, m_nLifeTime, (int)m_eMissleStatus, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, nVhMx, nVhMy, m_nFollowNpcIdx, nVhTx, nVhTy, (nVhTx >= 0) ? (int)(sqrt((double)((nVhTx - nVhMx) * (nVhTx - nVhMx) + (nVhTy - nVhMy) * (nVhTy - nVhMy))) / 32) : -1, (int)TestBarrier(), m_nLastDoCollisionIdx);
 	}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (bDanDoB) QueryPerformanceCounter(&liDb0);	// [DAN 11/09]
 	const BOOL bDanBarrier = TestBarrier();
 	if (bDanDoB) { QueryPerformanceCounter(&liDb1); g_dDanBar += DanMs(liDb0, liDb1); g_uDanBar++; }
@@ -1157,7 +1157,7 @@ void KMissle::OnFly()
 	
 	//
 	AUTOLOG_EVERY(1000, "[MSL-FOLLOW-BLIND] msl=%d sk=%d launcher=%d movekind=%d follow=%d d(%d,%d) fx=%d fy=%d speed=%d pos(r=%d,%d,%d) life=%d/%d", m_nMissleId, m_nSkillId, m_nLauncher, (int)m_eMoveKind, m_nFollowNpcIdx, nDOffsetX, nDOffsetY, m_nXFactor, m_nYFactor, m_nSpeed, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentLife, m_nLifeTime);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (bDanDoB) QueryPerformanceCounter(&liDb0);	// [DAN 11/09]
 	const BOOL bDanBeyond = CheckBeyondRegion(nDOffsetX, nDOffsetY);
 	if (bDanDoB) { QueryPerformanceCounter(&liDb1); g_dDanBeyond += DanMs(liDb0, liDb1); }
@@ -1604,7 +1604,7 @@ void KMissle::DoVanish()
 
 void KMissle::DoCollision()
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	g_uDanHit++;	// [DAN 11/09]
 	JxDanDo jxDanDo(&g_dDanVaCham, &g_nDanVcDepth);	// [DAN 11/09 b]
 #endif
@@ -1723,7 +1723,7 @@ BOOL KMissle::GetOffsetAxis(int nSubWorld, int nSrcRegionId, int nSrcMapX, int n
 *****************************************************************************/
 int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nMapY, int nRange , int eRelation, int nPreferIdx)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	JxDanDo jxDanDo(&g_dDanVaCham, &g_nDanVcDepth);	// [DAN 11/09 b]
 #endif
 #ifdef TOOLVERSION 
@@ -1773,7 +1773,7 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 			// 去掉边角几个格子，保证视野是椭圆形
 			//if ((i * i + j * j ) > nRangeX * nRangeX)
 				//continue;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (JxDanBoQuaO(2, nSubWorld, nRegionId, nMapX + i, nMapY + j)) { g_uDanBoQua++; continue; }	// [DAN 11/09 b] + c
 #endif
 			if (!GetOffsetAxis(nSubWorld, nRegionId, nMapX, nMapY, i , j , nSearchRegion, nRMx, nRMy))
@@ -2116,7 +2116,7 @@ int KMissle::CheckNearestCollision()
 	for (int i = -1; i <= 1; i ++)
 		for (int j = -1; j <= 1; j ++)
 		{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (JxDanBoQuaO(1, m_nSubWorldId, m_nRegionId, m_nCurrentMapX + i, m_nCurrentMapY + j)) { g_uDanBoQua++; continue; }	// [DAN 11/09 b] + c
 #endif
 			if (!KMissle::GetOffsetAxis(
@@ -2134,7 +2134,7 @@ int KMissle::CheckNearestCollision()
 			
 			_ASSERT(nSearchRegion >= 0);
 			// FIX 25/08: truyen MUC TIEU DANG BAM de FindNpc khong tra con khac dung chung o (xem KRegion.h).
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			g_uDanFind++;	// [DAN 11/09]
 #endif
 			nNpcIdx = SubWorld[m_nSubWorldId].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, m_nLauncher, m_eRelation, m_nFollowNpcIdx);

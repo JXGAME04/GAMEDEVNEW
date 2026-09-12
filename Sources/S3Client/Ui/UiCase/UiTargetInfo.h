@@ -29,7 +29,7 @@ private:
 	void Clear();
 	void SetFactionIcon(BYTE series, KWndButton &btn);
 	void	PaintWindow();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	void	MoMenuMucTieu();	// [ANDROID 09/09 MENU] cham vao thanh thong tin -> danh sach tuy chon
 #endif
 public:

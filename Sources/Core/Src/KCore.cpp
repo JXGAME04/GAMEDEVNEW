@@ -939,7 +939,7 @@ int g_AutoLogOn()
 		s_nAutoLog = (int)GetPrivateProfileIntA("Client", "AutoLog", 0, ".\\Config.ini");
 #endif
 #else
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [ANDROID 11/09 WAUTO B0 b] Android doc cung khoa [Client] AutoLog cua config.ini nhu ban PC (GetPrivateProfileIntA da co lop
 		// gia lap), ghi jx_auto.log o thu muc du lieu: la nhat ky duy nhat chung minh ExtAutoLoop (ben nhan cua bang WAuto
 		// trong game) da chay. Cac nen POSIX khac (may chu Linux) van 0 nhu cu.
@@ -965,7 +965,7 @@ int g_AutoLogWho(const char* szName)
 	return (strcmp(szName, s_szAutoLogName) == 0) ? 1 : 0;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 DWORD g_uAutoLogNow = 0;	// [DAN 11/09 b] moc thoi gian cho AUTOLOG_EVERY (KCore.h), cap nhat moi tick + moi lan ghi
 #endif
 void g_AutoLog(const char* szFmt, ...)
@@ -973,7 +973,7 @@ void g_AutoLog(const char* szFmt, ...)
 	if (!g_AutoLogOn())
 		return;
 	DWORD uNow = timeGetTime();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	g_uAutoLogNow = uNow;	// [DAN 11/09 b]
 #endif
 	DWORD uSec = uNow / 1000;

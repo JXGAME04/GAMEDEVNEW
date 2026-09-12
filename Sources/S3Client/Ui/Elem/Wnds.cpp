@@ -11,7 +11,7 @@
 #include "KDebug.h"	// [VATPHAM 12/09 g] g_DebugLog cho nhat ky chan doan
 #include "Wnds.h"
 #include "WndWindow.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "WndScrollBar.h"	// [CUON 14/09]
 #include "WndList.h"
 #include "WndList2.h"
@@ -118,7 +118,7 @@ void Wnd_RenderWindows()
 
 	if (s_WndStation.pGameSpaceWnd && s_WndStation.bPaintGameSpace)
 		s_WndStation.pGameSpaceWnd->Paint();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [ANDROID 09/09 NEO] Dat lai moi cua so GOC tu khung ve chuan 1024x768 sang man hinh that,
 	// truoc khi ve. Moi cua so chi can mot lan (m_bNeedFit dat trong KWndWindow::Init).
 	// Cua so ban do (pGameSpaceWnd) dat rieng, khong nam trong ba chuoi nay.
@@ -406,7 +406,7 @@ void Wnd_ProcessInput(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 		if (s_WndStation.pMouseOverWnd)
 		{
 			s_WndStation.pMouseOverWnd->WndProc(uMsg, uParam, nParam);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (uMsg == WM_MOUSEWHEEL)	// [CUON 14/09] bang tu cuon bang KWndScrollBar (Chien Lenh...) cung vuot duoc
 				JxUi_CuonThanhCuon(s_WndStation.pMouseOverWnd, (int)(short)HIWORD(uParam));
 #endif
@@ -527,7 +527,7 @@ void Wnd_TransmitInputToGameSpace(unsigned int uMsg, KUPARAM uParam, KNPARAM nPa
 //	功能：把处于某个位置的窗口带到最上层
 //	返回：最上层窗口的指针
 //--------------------------------------------------------------------------
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [ANDROID 09/09 CHAM] Diem (x, y) co nam tren mot cua so GIAO DIEN khong (khac vung ban do)?
 // KSdlApp dung de quyet dinh y nghia cua "cham giu tai cho": tren ban do thi la CHUOT PHAI,
 // con tren giao dien thi chi he ra xem thong tin - vi chuot phai trong tui do la DUNG vat pham.

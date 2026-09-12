@@ -3,7 +3,7 @@
 // Chu Viet trong chuoi: TCVN3 (sinh bang vn_edit.py trong android/va_nguon_android_wauto1.py), khong dung Edit/Write thuong.
 //---------------------------------------------------------------------------
 #include "KWin32.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "JxWAutoNoiBo.h"
 #include "KFile.h"
 // [ANDROID 11/09 WAUTO B0 b] khong dung g_CreatePath (KFilePath.h): tren Android no khong doi dau '\\' truoc khi goi SDL_CreateDirectory
@@ -383,4 +383,4 @@ void JxWAuto_NhipVongLap()
 			s_CauHinh.bPickUp, s_CauHinh.bCheckiLife, s_CauHinh.nIlifeCell1, s_CauHinh.bTongKim, s_CauHinh.bDaTau);
 	}
 }
-#endif // JX_ANDROID
+#endif // JX_MOBILE

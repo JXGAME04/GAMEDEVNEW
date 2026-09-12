@@ -117,7 +117,7 @@ void KUiMiniMap::CloseWindow()
 	}
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //	[UITOADO 14/09 LOPPHU] Ban do to / to mo rong / khong anh dung BO KHOA RIENG trong bo cuc (KUiMiniMapTo|MiniMap...): ini moi
 //	che do khac han (nho 188x147 o 619,14; to 420x317 o 385,14; ex 512x415 o 143,54; khong anh 130x50 o 670,0). Dung chung khoa
 //	"KUiMiniMap|MiniMap" thi phong to ap toa do cua ban nho -> loi phai -> luot kep day vao roi ghi de, thu nho lai sai cho; 4 nut

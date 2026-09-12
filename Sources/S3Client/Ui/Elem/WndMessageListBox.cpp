@@ -26,7 +26,7 @@ KWndMessageListBox::KWndMessageListBox()
 	m_nNumMessage = 0;			
 	m_nCapability = 0;			
 	m_nFontSize = 12;			
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	m_nUiDongThem = 0;	// [NPC 14/09]
 	m_nUiGocDongThem = 0;
 #endif
@@ -285,7 +285,7 @@ int KWndMessageListBox::Init(KIniFile* pIniFile, const char* pSection)
 		pIniFile->GetInteger(pSection, "Font", 16, &m_nFontSize);
 		if (m_nFontSize < 4)
 			m_nFontSize = 4;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		pIniFile->GetInteger(pSection, "DongThem", 0, &m_nUiDongThem);	// [NPC 14/09] chi ini Android (uimsgsel*.ini lop ghi de)
 		if (m_nUiDongThem < 0)
 			m_nUiDongThem = 0;
@@ -372,7 +372,7 @@ int KWndMessageListBox::Init(KIniFile* pIniFile, const char* pSection)
 	return false;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [NPC 14/09] sau UiDatTiLe (SetSize da tinh so dong voi DongThem cu): DongThem theo k roi tinh lai so dong hien
 void KWndMessageListBox::UiPhongRieng(int nTiLe)
 {
@@ -652,7 +652,7 @@ void KWndMessageListBox::PaintWindow()
 				if ((m_pMessages[nCurMsg]->nLinePos) > Param.nSkipLine && bPaintItem)
 				{
 					int x99 = Param.nX + (m_pMessages[nCurMsg]->nPos)*m_nFontSize/2 - (int)((m_pMessages[nCurMsg]->nLinePos==1)?3:0) + (m_pMessages[nCurMsg]->nFace)*2;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 					int y99 = Param.nY + ((m_pMessages[nCurMsg]->nLinePos)-1 - Param.nSkipLine)*(CaoDong());	// [CHATBTN 14/09] buoc dong Android = font + 6 (+ DongThem)
 #else
 					int y99 = Param.nY + ((m_pMessages[nCurMsg]->nLinePos)-1 - Param.nSkipLine)*m_nFontSize;

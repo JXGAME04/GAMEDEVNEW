@@ -27,7 +27,7 @@
 
 extern	int WND_SHOW_DEBUG_FRAME_TEXT;
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [ANDROID 09/09 NEO] Chinh sach neo cua so khi man hinh khac khung ve chuan 1024x768.
 // Mang tu ban JX1 Mobile cua chu (USVOLAM, "dot UI-1/UI-2").
 enum FitFlags
@@ -50,7 +50,7 @@ class KWndWindow
 protected:
 	//----窗口参数----
 	unsigned int m_Style;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	unsigned char	m_FitFlags;		// [ANDROID 09/09 NEO] chinh sach neo (0 = mac dinh: dich vao giua)
 	unsigned char	m_bNeedFit;		// [ANDROID 09/09 NEO] Init vua dat lai khung -> con mot luot can
 #endif			//窗口风格,见Wnd.h中窗口风格的定义
@@ -73,7 +73,7 @@ protected:
 	int			m_nUiTiLe;
 	int			m_nUiGocW;
 	int			m_nUiGocH;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [PHONGBANG 14/09] phong ca CAY CON cua mot bang theo man hinh: vi tri goc (tuong doi cha) va co chu goc chup mot lan;
 	// m_nUiPhongLech = bang da dich de giu tam (bo cuc ghi vi tri o co GOC = vi tri that + lech)
 	int			m_nUiGocLeft;
@@ -139,7 +139,7 @@ public:
 	virtual KWndWindow*	TopChildFromPoint(int x, int y);	//得到处于指定坐标位置的最上层窗口，传入的坐标为绝对坐标
 
 	KWndWindow*		GetPreWnd() const { return m_pPreviousWnd; }	//得到前一个兄弟窗口
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [ANDROID 09/09 NEO] dat chinh sach neo cho cua so nay (xem enum FitFlags)
 	void			SetFitFlags(unsigned char nFlags) { m_FitFlags = nFlags; }
 	// [ANDROID 09/09 NEO] dat lai mot cua so GOC tu khung ve chuan 1024x768 sang man hinh that
@@ -208,7 +208,7 @@ public:
 	// [UITOADO] goi ngay sau khi toa do bi doi tu ben ngoai, de lop con
 	// (KWndMovingImage) chup lai vi tri goc cua hoat hinh mo cua so
 	virtual void	UiNhoViTri() {}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	//	[UITOADO 14/09 LOPPHU] hau to ghep vao ten lop khi tao khoa bo cuc (ban do nho: che do to / to mo rong / khong anh
 	//	dung bo khoa rieng vi ini moi che do khac han). NULL / rong = khong doi.
 	virtual const char* UiTenLopPhu() const { return NULL; }

@@ -14,7 +14,7 @@
 // KHONG can them tep anh nao - hop voi mot ban port giu nguyen giao dien PC.
 //---------------------------------------------------------------------------
 #include "KWin32.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "JxCanDieuKhien.h"
 #include "../Ui/Elem/UiToaDo.h"	// [UITOADO 09/09 E] dang ky o ve tay
 #include "../../Represent/iRepresent/iRepresentShell.h"
@@ -2190,4 +2190,4 @@ void JxCan_Ve()
 	OVuong(s_nTamX + dx, s_nTamY + dy, s_nBanKinh / 6, 0x60d0c090);
 }
 
-#endif // JX_ANDROID
+#endif // JX_MOBILE

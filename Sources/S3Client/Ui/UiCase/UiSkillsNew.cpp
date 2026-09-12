@@ -9,7 +9,7 @@
 #include "../elem/wnds.h"
 #include "UiSkillsNew.h"
 #include "UiSysMsgCentre.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "../../Platform/JxCanDieuKhien.h"	// [ANDROID 10/09 GANTOADO] gan ky nang vao o
 #endif
 #include "../../../core/src/coreshell.h"
@@ -433,7 +433,7 @@ void KUiFightSkillSubPageNew::OnSkillPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITE
 	KUiObjAtContRegion	Pick, Drop;
 	KUiDraggedObject	Obj;
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [ANDROID 10/09 GANTOADO] Tren dien thoai, bam vao o ky nang o day la NHAC LEN de
 	// keo. Dang o che do GAN (nut mui ten vong tron canh cum nut ky nang) thi thay vi
 	// nhac len, gan luon ky nang do vao o dang cho - va khong bat dau keo.

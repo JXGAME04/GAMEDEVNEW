@@ -17,7 +17,7 @@
 
 void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int Width, int Height, KNPARAM nParam)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	extern int g_nJxKeoAnhVatPham;	// [VEVATPHAM 12/09 d] 1 = keo anh cho vua o
 #endif
 
@@ -123,7 +123,7 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 		// [A33 04/09] Phep dich can-giua nay tinh theo kich thuoc GOC cua mon. Khi dang THU NHO
 		// ve mot o thi no keo mon lech han ra ngoai (mon 2x4 bi keo len 39 px, sang trai 13 px).
 		// Chi dich khi KHONG thu nho. Mon mot o khong doi mot pixel vi (26-26)/2 = 0.
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [HANHTRANG 12/09] o to hon anh goc (hanh trang mobile 44 px) -> keo anh theo o, khong can giua
 		// [VEVATPHAM 12/09 d] mac dinh KHONG keo anh nua: khung anh (nWidth/nHeight cua .spr) NHO HON hinh ve that nen
 		// phep keo lam anh tran ra ngoai o (do duoc: o 36x36 -> binh thuoc ve 41x50, lech len 16 px).
@@ -155,7 +155,7 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 			// thay the mot o. Chi bat cho o dinh kem hop thu / o vat pham bang dau gia (co tu ini),
 			// tui do va cua hang khong bat nen khong doi gi.
 			Item[uId].PaintItem(x, y, (nParam & 0x40000000) != 0, true, uId);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			{
 				extern int g_nJxVeVatPhamW, g_nJxVeVatPhamH;	// [HANHTRANG 12/09] xoa co sau khi ve
 				extern int g_nJxVeVatPhamX, g_nJxVeVatPhamY, g_nJxNhatKyVatPham;	// [VEVATPHAM 12/09]

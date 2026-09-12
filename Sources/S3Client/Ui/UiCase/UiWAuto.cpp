@@ -3,7 +3,7 @@
 // trong android/va_nguon_android_wauto4.py), khong dung Edit/Write thuong.
 //---------------------------------------------------------------------------
 #include "KWin32.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "KIniFile.h"
 #include "KDebug.h"
 #include "../elem/wnds.h"
@@ -318,4 +318,4 @@ int KUiWAuto::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	}
 	return KWndShowAnimate::WndProc(uMsg, uParam, nParam);
 }
-#endif // JX_ANDROID
+#endif // JX_MOBILE

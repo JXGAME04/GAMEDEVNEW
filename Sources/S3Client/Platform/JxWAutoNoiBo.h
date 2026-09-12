@@ -11,11 +11,11 @@
 // APdata cua ban PC chep sang dien thoai la dung duoc. Chua co tep -> mac dinh LAN DAU giong WAuto.exe
 // (LoadRoleData: danh, tam 1000, nhat do, uong thuoc theo 2/3 va 1/3 mau...) roi ghi ra tep ngay.
 // Cong tac: config.ini [WAuto] Bat=1 (tam cho B0; tu B1 co nut BAT/TAT trong game).
-// Lo trinh: LOTRINH_WAUTO_MOBILE_1109.md. Chi bien dich khi JX_ANDROID; khong nam trong vcxproj nao.
+// Lo trinh: LOTRINH_WAUTO_MOBILE_1109.md. Chi bien dich khi JX_MOBILE; khong nam trong vcxproj nao.
 //---------------------------------------------------------------------------
 #ifndef JxWAutoNoiBo_H
 #define JxWAutoNoiBo_H
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "../../Core/Src/ipc_shared.h"
 
 // Goi moi vong lap game (KMyApp::GameLoop), NGAY TRUOC ProcIpcCommand() de goi vua nap duoc tieu thu cung khung.
@@ -32,5 +32,5 @@ unsigned int	JxWAuto_IdNhanVat();		// ma nhan vat cua cau hinh dang nap (0 = chu
 void			JxWAuto_NhatNgay(int nMs);
 int				JxWAuto_DangNhat();
 
-#endif // JX_ANDROID
+#endif // JX_MOBILE
 #endif

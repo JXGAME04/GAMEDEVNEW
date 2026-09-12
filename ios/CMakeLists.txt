@@ -148,7 +148,14 @@ target_link_libraries(CoreClient PRIVATE Engine Lua54)
 # Chua them diem vao iOS (JxIosMain) va chua them cac tep chi-Android
 # (JxAndroidMain.cpp, JxPerfHudAndroid.cpp, JxWAutoNoiBo.cpp, UiWAuto*.cpp, UiVatPham.cpp) - viec cua buoc C.
 add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
-    ${JX_SRC}/S3Client/Platform/JxAndroidStubs.cpp)   # stub JxReplay / PerfHud / TrayMode, rao JX_POSIX
+    ${JX_SRC}/S3Client/Platform/JxAndroidStubs.cpp    # stub JxReplay / PerfHud / TrayMode, rao JX_POSIX
+    # [JXMOBILE 11/09] cac tep ma ban Android khai rieng; nay rao JX_MOBILE nen iOS dung chung.
+    # KHONG lay JxPerfHudAndroid.cpp: no doc /proc, chi Android moi co.
+    ${JX_SRC}/S3Client/Platform/JxWAutoNoiBo.cpp      # ben gui WAuto trong tien trinh
+    ${JX_SRC}/S3Client/Ui/UiCase/UiWAuto.cpp          # khung Auto trong game
+    ${JX_SRC}/S3Client/Ui/UiCase/UiWAutoTrang.cpp     # trang noi dung cua khung Auto
+    ${JX_SRC}/S3Client/Ui/UiCase/UiVatPham.cpp       # bang thong tin vat pham khi cham o do
+    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosStubs.cpp)      # ban rong cho bang do nhip (Android doc /proc)
 jx_setup(S3Client)
 target_compile_definitions(S3Client PRIVATE ${JX_S3CLIENT_DEFS})
 target_include_directories(S3Client PRIVATE ${JX_S3CLIENT_INCS})

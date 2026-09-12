@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 // [VATPHAM 12/09] DAI NUT THAO TAC VAT PHAM cho ban Android. Xem chu thich o UiVatPham.h.
-// Chi bien dich khi JX_ANDROID (chi nam trong android/CMakeLists.txt) - ban PC khong dinh gi.
+// Chi bien dich khi JX_MOBILE (chi nam trong android/CMakeLists.txt) - ban PC khong dinh gi.
 //---------------------------------------------------------------------------
 #include "KWin32.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "UiVatPham.h"
 #include "../Elem/Wnds.h"
 #include "../Elem/WndMessage.h"
@@ -531,4 +531,4 @@ int KUiVatPham::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	}
 	return KWndWindow::WndProc(uMsg, uParam, nParam);
 }
-#endif	// JX_ANDROID
+#endif	// JX_MOBILE

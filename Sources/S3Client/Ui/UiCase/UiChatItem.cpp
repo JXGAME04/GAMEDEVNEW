@@ -13,7 +13,7 @@
 #include "../../../Engine/src/Text.h"
 #include "../../../core/src/coreshell.h"
 #include "../../../Represent/iRepresent/iRepresentShell.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "KDebug.h"
 extern int SCREEN_HEIGHT;
 #endif
@@ -53,7 +53,7 @@ KUiChatItem* KUiChatItem::OpenWindow(int nIdx)
 		m_pSelf->SetInfomation(nIdx);
 		m_pSelf->BringToTop();
 		m_pSelf->Show();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		{	// [CHATITEM 14/09] chu: 'post item len kenh chat no bi lech' (dien thoai rong, may ao khong): dat bang ngay tren
 			// dong vua cham nhu chu thich, kep trong khung -> khong phu thuoc be rong man hinh / neo cua khung chat
 			extern int SCREEN_WIDTH;

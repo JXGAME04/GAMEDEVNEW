@@ -15,11 +15,11 @@
 // Moi nut goi lenh SAN CO cua ban PC (g_pCoreShell->OperationRequest), khong tu che giao thuc moi.
 // Anh nut lay tu kho VNKU (android/anh_vatpham_vnku.py -> \spr\ui3\uivatpham\nut_vp_<ten>.spr).
 //
-// Chi bien dich khi JX_ANDROID va chi nam trong android/CMakeLists.txt - hai chuoi Windows khong dinh gi.
+// Chi bien dich khi JX_MOBILE va chi nam trong android/CMakeLists.txt - hai chuoi Windows khong dinh gi.
 //---------------------------------------------------------------------------
 #ifndef UiVatPham_H
 #define UiVatPham_H
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 
 #include "../Elem/WndWindow.h"
 #include "../Elem/WndPureTextBtn.h"
@@ -66,5 +66,5 @@ private:
 	int					m_nSoNut;
 };
 
-#endif	// JX_ANDROID
+#endif	// JX_MOBILE
 #endif

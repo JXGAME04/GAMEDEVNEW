@@ -31,7 +31,7 @@ void	UiToaDo_Nap();
 
 //	Ap lai cho mot cua so goc va toan bo o con cua no.
 void	UiToaDo_ApChoCuaSo(KWndWindow* pCuaSoGoc);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 void	UiToaDo_ApChoO(KWndWindow* pWnd);	// [UITOADO 12/09 NEO b] ap cho mot o ngay khi doc xong ini
 void	UiToaDo_DumpThuc();	// [UITOADO 12/09 NEO d] nhat ky vi tri thuc moi cua so (mot lan)
 void	UiToaDo_LayDich(const char* pszKhoa, int* pnDX, int* pnDY);	// [NHOMTREN 12/09] khoang bo neo da dich mot muc
@@ -80,7 +80,7 @@ bool	UiToaDo_CongCuKhoi();
 //	Cua so sap bi xoa - bo moi con tro dang giu toi no (goi tu Wnd_OnWindowDelete).
 void	UiToaDo_QuenCuaSo(KWndWindow* pWnd);
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //---------------------------------------------------------------------------
 //	[SUAGD 13/09] TRINH CHINH GIAO DIEN CHO NGUOI CHOI tren dien thoai + VUNG AN TOAN (UiToaDoMobile.inc, include o
 //	cuoi UiToaDo.cpp). Xem PHANTICH_GIAODIEN_MOBILE_KEHOACH1209.md.

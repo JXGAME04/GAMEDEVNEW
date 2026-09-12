@@ -8,7 +8,7 @@
 #include "../Elem/WndMessage.h"
 #include "../elem/wnds.h"
 #include "WndObjContainer.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "../UiCase/UiVatPham.h"	// [VATPHAM 12/09] bang thong tin vat pham + nut thao tac (chi mobile)
 extern "C" int JxVatPham_LayGiu(void);	// [VATPHAM 12/09 g] UiVatPham.cpp: 1 = cu bam nay do GIU NGON LAU sinh ra
 #endif
@@ -263,7 +263,7 @@ void KWndObjectBox::EnablePickPut(bool bEnable)
 
 int KWndObjectBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [OPHIM 14/09 DUP] Chu: \"kich su dung vao o phim so 1-4 lien tuc ma khong dung lien tuc, rat cham\". KSdlApp doi hai lan cham
 	// cach nhau < 400 ms va < 24 diem thanh WM_LBUTTONDBLCLK (de dung mon trong tui bang nhay dup); o vat pham so 1-4 chi bat
 	// WM_LBUTTONDOWN (-> WND_N_ITEM_PICKDROP -> KUiPlayerBar::OnUseItem) nen tu lan cham nhanh thu hai tro di rot mat, phai
@@ -273,7 +273,7 @@ int KWndObjectBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 #endif
 	switch(uMsg)
 	{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	case WND_M_JX_CO_VATPHAM:	// [VATPHAM 12/09 g] o don: co mon la duoc
 		//	[OPHIM 12/09] O VAT PHAM SO 1-4 va o ky nang da co duong rieng tu [ANDROID 11/09 OSO]: cham = DUNG mon,
 		//	giu lau (chuot phai) = NHAC LEN TAY. Khong nhan cau hoi nay thi giu lau o do van la chuot
@@ -283,7 +283,7 @@ int KWndObjectBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 		return (m_Object.uGenre != CGOG_NOTHING) ? 1 : 0;
 #endif
 	case WM_LBUTTONDOWN:
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		//	[VATPHAM 12/09 g] Giu ngon lau, hoac dang cam mon tren tay -> KHONG mo dai nut: chay duong goc cua ban PC
 		//	(nhac mon len tay / tha mon xuong o nay).
 		if (m_Object.uGenre != CGOG_NOTHING && !JxVatPham_LayGiu() && !Wnd_GetDragObj(NULL))	// [VATPHAM 12/09]
@@ -362,7 +362,7 @@ int KWndObjectBox::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	case WM_MOUSEHOVER:
 	case WM_MOUSEMOVE:
 		m_Style |= OBJCONT_F_MOUSE_HOVER;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		//	[OPHIM 12/09] Chu: "cac nut phim 1 2 3 4 khi bam su dung khong can hien thong tin item do" - cham la
 		//	dung ngay, bang chu giai chi che mat man hinh.
 		if (m_nContainerId == UOC_IMMEDIA_ITEM)
@@ -437,7 +437,7 @@ KWndObjectMatrix::KWndObjectMatrix()
 	m_nNUmUnitVert = 1;
 	m_nUnitWidth = 1;
 	m_nUnitHeight = 1;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	m_nUiGocBorder = -1;	// [PHONGBANG 14/09]
 #endif
 	m_nNumObjects = 0;
@@ -472,7 +472,7 @@ void KWndObjectMatrix::Clone(KWndObjectMatrix* pCopy)
 	}
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [PHONGBANG 14/09] sau khi UiPhongCay doi co: o = co MOI / so o (y nhu Init), vien o theo goc -> vat pham ve gian theo o
 // (PaintWindow: m_nUnitWidth * DataW - m_nUnitBorder * 2). Tinh tu goc nen ap lai van ra mot ket qua.
 void KWndObjectMatrix::UiPhongRieng(int nTiLe)
@@ -537,7 +537,7 @@ int KWndObjectMatrix::Init(KIniFile* pIniFile, const char* pSection)
 		else
 			m_Style &= ~OBJCONT_S_ACCEPT_FREE;
 		pIniFile->GetInteger(pSection, "UnitBorder", 0, &m_nUnitBorder);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		m_nUiGocBorder = -1;	// [PHONGBANG 14/09 d] vien goc doc lai tu ini
 #endif
 		if (m_nUnitBorder >= m_nUnitWidth)
@@ -677,7 +677,7 @@ void KWndObjectMatrix::PaintWindow() // edit by phong kieu vong sang item
 		Shadow.oEndPos.nX = Shadow.oPosition.nX + m_nUnitWidth * m_nPutWidth - m_nUnitBorder * 2;
 		Shadow.oEndPos.nY = Shadow.oPosition.nY + m_nUnitHeight * m_nPutHeight - m_nUnitBorder * 2;
 		Shadow.Color.Color_dw = l_BgColors[4];
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		//	[VATPHAM 12/09 g] Chu: "di chuyen toi o nao thi SANG o do len de biet cho dat". Mau trong ui.ini co alpha 10/255,
 		//	nhin tren dien thoai gan nhu khong thay -> ban Android to dam han (xanh sang).
 		Shadow.Color.Color_dw = 0x7028a0ff;
@@ -773,7 +773,7 @@ int KWndObjectMatrix::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 {
 	switch(uMsg)
 	{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	case WND_M_JX_CO_VATPHAM:	// [VATPHAM 12/09 g] luoi: phai cham dung mot o dang co mon
 		{
 			extern int g_nJxNhatKyGiu;
@@ -785,7 +785,7 @@ int KWndObjectMatrix::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 		}
 #endif
 	case WM_LBUTTONDOWN:
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		{	// [VATPHAM 12/09] cham vao o co vat pham -> mo bang thong tin + nut, khong nhac len tay
 			//	[VATPHAM 12/09 g] giu ngon lau / dang cam mon tren tay thi bo qua dai nut (nhac len tay - tha xuong o).
 			int nO = (JxVatPham_LayGiu() || Wnd_GetDragObj(NULL)) ? -1 : GetObjectAt(LOWORD(nParam), HIWORD(nParam));

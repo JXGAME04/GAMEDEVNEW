@@ -20,7 +20,7 @@
 #include "../../../Represent/iRepresent/iRepresentShell.h"
 extern iRepresentShell*	g_pRepresentShell;
 extern iCoreShell*	g_pCoreShell;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "../../../Represent/iRepresent/KRepresentUnit.h"	// [FPS 12/09] TEXT_IN_SINGLE_PLANE_COORD
 // [FPS 12/09] Platform/JxPerfHudAndroid.cpp: thanh chinh khung hinh/giay trong Cai dat (chu: "co thanh chinh FPS o cai dat")
 void JxNhip_DatMuc(int nMuc);							// ap muc: PaintFps + xin tan so man hinh
@@ -54,7 +54,7 @@ KUiOptions::KUiOptions()
 	m_nBrightness = 50;
 	m_nSoundValue = 100;
 	m_nMusicValue = 100;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	m_nFpsMuc = 0;	// [FPS 12/09]
 #endif
 	m_nShortcutSet = 0;
@@ -127,7 +127,7 @@ void KUiOptions::CloseWindow()
 void KUiOptions::PaintWindow()
 {
 	KWndImage::PaintWindow();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (m_FpsScroll.IsVisible() && g_pRepresentShell)
 	{	// [FPS 12/09] nhan "FPS" (che nhan "Phim tat" ve san trong anh nen) + gia tri muc ben phai thanh
 		int nX = 0, nY = 0, nRong = 0, nCao = 0;
@@ -187,7 +187,7 @@ void KUiOptions::Initialize()
 	AddChild(&m_BrightnessScroll);
 	AddChild(&m_BGMValue);
 	AddChild(&m_SoundValue);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	AddChild(&m_FpsScroll);	// [FPS 12/09]
 	AddChild(&m_ChinhGiaoDien);	// [SUAGD 13/09]
 #endif
@@ -241,7 +241,7 @@ void KUiOptions::LoadScheme(KIniFile* pIni)
 	m_SoundValue.Init(pIni, "Sound");
 	m_ShortcutSetView.Init(pIni, "ShortcutSet");
 	m_Scroll.Init(pIni, "Scroll");
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (!m_FpsScroll.Init(pIni, "Fps"))	// [FPS 12/09] ini chua co muc [Fps] (thieu lop ghi de) -> an thanh
 		m_FpsScroll.Hide();
 	m_ShortcutSetView.Hide();	// [FPS 12/09] bo phim tat khong dung tren dien thoai; hang nay danh cho thanh FPS
@@ -316,7 +316,7 @@ int	 KUiOptions::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			nY += nHeight + m_nAbsoluteTop;
 			PopupSeleteSetMenu(nX, nY);
 		}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		else if (uParam == (KUPARAM)(KWndWindow*)&m_ChinhGiaoDien)
 		{	// [SUAGD 13/09] dong Cai dat roi mo trinh chinh giao dien (UiToaDoMobile.inc)
 			CloseWindow();
@@ -465,7 +465,7 @@ void KUiOptions::OnScrollBarPosChanged(KWndWindow* pWnd, int nPos)
 		SetSoundValue(nPos);
 	else if(pWnd == (KWndWindow*)&m_BrightnessScroll)
 		SetBrightness(nPos);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	else if (pWnd == (KWndWindow*)&m_FpsScroll)
 		SetFpsMuc(nPos);	// [FPS 12/09]
 #endif
@@ -539,7 +539,7 @@ void KUiOptions::LoadSetting(bool bReload, bool bUpdateOption)
 	int	nSoundValue  = 100;
 	int	nMusicValue  = 100;
 	int nSettingSet  = 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	int nFpsMuc = 0;	// [FPS 12/09]
 #endif
 	int i;
@@ -555,7 +555,7 @@ void KUiOptions::LoadSetting(bool bReload, bool bUpdateOption)
 		nSoundValue  = m_pSelf->m_nSoundValue;
 		nMusicValue  = m_pSelf->m_nMusicValue;
 		nSettingSet  = m_pSelf->m_nShortcutSet;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		nFpsMuc = m_pSelf->m_nFpsMuc;	// [FPS 12/09]
 #endif
 
@@ -571,7 +571,7 @@ void KUiOptions::LoadSetting(bool bReload, bool bUpdateOption)
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION, "MusicValue", 100, &nMusicValue);
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION, "SoundValue", 100, &nSoundValue);
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION, "ShortcutSet", 0, &nSettingSet);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION, "FpsMuc", 0, &nFpsMuc);	// [FPS 12/09]
 #endif
 			for (i = 0; i < OPTION_INDEX_COUNT - 1; i++)
@@ -598,7 +598,7 @@ void KUiOptions::LoadSetting(bool bReload, bool bUpdateOption)
 		g_pCoreShell->OperationRequest(GOI_OPTION_SETTING, OPTION_SOUND_VALUE, nSoundValue);
 		g_pCoreShell->OperationRequest(GOI_OPTION_SETTING, OPTION_WEATHER, bOptionsEnable[OPTION_I_WEATHER]);
 	}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (bUpdateOption)
 		JxNhip_DatMuc(nFpsMuc);	// [FPS 12/09] ap muc khung hinh nguoi choi da chon (luc mo game va moi lan nap lai)
 #endif
@@ -616,7 +616,7 @@ void KUiOptions::LoadSetting(bool bReload, bool bUpdateOption)
 			m_pSelf->m_BrightnessScroll.SetScrollPos(nBrightness);
 			m_pSelf->m_BGMValue.SetScrollPos(nMusicValue);
 			m_pSelf->m_SoundValue.SetScrollPos(nSoundValue);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			m_pSelf->m_nFpsMuc = nFpsMuc;
 			m_pSelf->m_FpsScroll.SetScrollPos(nFpsMuc);	// [FPS 12/09]
 #endif
@@ -645,7 +645,7 @@ void KUiOptions::StoreSetting()
 		pSetting->WriteInteger(OPTIONS_SAVE_SECTION, "MusicValue", m_nMusicValue);
 		pSetting->WriteInteger(OPTIONS_SAVE_SECTION, "SoundValue", m_nSoundValue);
 		pSetting->WriteInteger(OPTIONS_SAVE_SECTION, "ShortcutSet", m_nShortcutSet);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		pSetting->WriteInteger(OPTIONS_SAVE_SECTION, "FpsMuc", m_nFpsMuc);	// [FPS 12/09]
 #endif
 	}
@@ -713,7 +713,7 @@ void KUiOptions::SetBrightness(int n)
 	}
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [FPS 12/09] thanh khung hinh/giay: doi muc -> ap ngay (PaintFps + xin tan so man hinh); luu khi dong cua so (StoreSetting)
 void KUiOptions::SetFpsMuc(int n)
 {

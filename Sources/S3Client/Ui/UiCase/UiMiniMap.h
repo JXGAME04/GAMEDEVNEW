@@ -36,7 +36,7 @@ public:
 
 	static void			SetMode(MINIMAP_MODE eMode);	
 	static void			LoadScheme(const char* pScheme);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	virtual const char*	UiTenLopPhu() const;	// [UITOADO 14/09 LOPPHU] "To" / "ToEx" / "KhongAnh" theo che do
 #endif
 	static void			UpdateSceneTimeInfo(KUiSceneTimeInfo* pInfo);

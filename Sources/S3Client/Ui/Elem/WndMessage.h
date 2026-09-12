@@ -74,7 +74,7 @@
 
 //------------------------------------------------
 //	°´¼üÏûÏ¢
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //	[VATPHAM 12/09 g] Hoi mot cua so: tai diem nay (toa do CUA SO trong nParam) co dang la mot O CO VAT PHAM khong?
 //	Chi hai lop chua vat pham (KWndObjectBox / KWndObjectMatrix) tra 1, con lai tra 0 (WndProc mac dinh).
 //	Dung cho "giu ngon lau tren o vat pham = nhac mon len tay" (KSdlApp::NhipCham).

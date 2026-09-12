@@ -2873,7 +2873,7 @@ void	KSkill::DrawSkillIcon(int x, int y, int Width, int Height)
 	m_RUIconImage.oPosition.nY = y;
 	m_RUIconImage.oPosition.nZ = 0;
 	m_RUIconImage.nFrame = 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{
 		extern int g_nJxKyNangTron;	// [KYNANG 12/09 TRON] 1 = cat bieu tuong thanh hinh tron ([Cham] KyNangTron)
 		//	[KYNANG 12/09 ICON] Ben goi cho mot KHUNG (Width/Height) to hon anh - o ky nang tron cua ban mobile -

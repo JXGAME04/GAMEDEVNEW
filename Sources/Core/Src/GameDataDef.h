@@ -1342,7 +1342,7 @@ struct KUiTargetDetailInfo
 	char			sTargetName[32];
 	int				nLifePercent;
 	BYTE			Series;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [ANDROID 09/09 VONG] vi tri VE cua muc tieu (toa do THE GIOI) de client ve vong chon duoi chan
 	int				nViTriVeX;
 	int				nViTriVeY;

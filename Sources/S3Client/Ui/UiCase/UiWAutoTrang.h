@@ -2,11 +2,11 @@
 // [ANDROID 11/09 WAUTO B2] TRANG NOI DUNG cua khung WAuto trong game - chay theo BANG (UiWAutoBang.h, sinh bang may tu WAuto.rc).
 // Mot kho widget dung chung cho ca 15 tab; NapTab(n) doc uiwauto_tabN.ini de dat lai vi tri / nhan, roi dien gia tri doc thang
 // tu autoData (JxWAuto_CauHinh) theo offset trong bang. Doi gi -> ghi vao autoData + luu APdata\<id>.dat ngay.
-// Chi bien dich khi JX_ANDROID; khong nam trong vcxproj nao. Xem LOTRINH_WAUTO_MOBILE_1109.md §B2.
+// Chi bien dich khi JX_MOBILE; khong nam trong vcxproj nao. Xem LOTRINH_WAUTO_MOBILE_1109.md §B2.
 //---------------------------------------------------------------------------
 #ifndef UiWAutoTrang_H
 #define UiWAutoTrang_H
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "../Elem/WndWindow.h"
 #include "../Elem/WndButton.h"
 #include "../Elem/WndLabeledButton.h"
@@ -83,5 +83,5 @@ private:
 	void	ThuAn(KWndWindow* p, int x0, int y0, int x1, int y1);
 	void	DaDoi();
 };
-#endif // JX_ANDROID
+#endif // JX_MOBILE
 #endif

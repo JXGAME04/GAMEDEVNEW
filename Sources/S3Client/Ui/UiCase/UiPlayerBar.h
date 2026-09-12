@@ -95,7 +95,7 @@ public:
 		return FALSE;
 	}
 	static void	OnUseItem(int nIndex);				
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	//	[OPHIM 12/09] O phim so (1-4) dang TRONG dau tien, -1 neu day ca bon. Dai nut vat pham dung de biet
 	//	gan mon vao o nao (chu: "them nut gan item vao phim so 1 2 3 4").
 	static int	OPhimTrong();
@@ -117,7 +117,7 @@ public:
 	static void			LoadStatePos();	
 	static void			Clear();
 	void				  ChangeWifiStatus(int nStatus);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	void				  NeoNhomTren();	// [NHOMTREN 12/09] keo bang trang thai goc tren-trai len dinh man (man cao)
 	static void			  NeoNhomTrenLai();	// [SUAGD 13/09] goi lai khi bo cuc duoc ap lai (vung an toan / nhan vat doi)
 	static int			  ms_nTopIni;	// [NHOMTREN 12/09 b] Top cua [Main] trong UiPlayerBar.ini (khung 800x600)

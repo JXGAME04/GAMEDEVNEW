@@ -2,7 +2,7 @@
 // [ANDROID 11/09 WAUTO B2] Trang noi dung chay theo bang - xem UiWAutoTrang.h. Chuoi TCVN3 sinh bang vn_edit.py (android/va_nguon_android_wauto6.py).
 //---------------------------------------------------------------------------
 #include "KWin32.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "KIniFile.h"
 #include "KDebug.h"
 #include "../elem/wnds.h"
@@ -549,4 +549,4 @@ int KUiWAutoTrang::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	}
 	return KWndWindow::WndProc(uMsg, uParam, nParam);
 }
-#endif // JX_ANDROID
+#endif // JX_MOBILE

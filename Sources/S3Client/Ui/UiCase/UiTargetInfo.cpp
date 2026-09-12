@@ -12,12 +12,12 @@
 #include "../Elem/Wnds.h"
 #include "../Elem/WndMessage.h"
 #include "UiLoginBg.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "KDebug.h"
 #include "UiGame.h"		// [ANDROID 09/09 MENU] PopUpContextPeopleMenu
 #endif
 #include "UiSysMsgCentre.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //	[SUAGD 13/09 g] Thanh mau do cua muc tieu do Core ve o toa do CO DINH (KNpc::PaintTargetInfo: x 420, y 55..65 theo
 //	khung 800x600 voi [Main] o 370,0). Nguoi choi doi khung nay trong "Chinh giao dien" (hoac bo neo doi tren man rong)
 //	thi bao cho Core khung da doi bao nhieu so voi ini de thanh mau di theo. KNpc.cpp doc hai bien nay.
@@ -174,7 +174,7 @@ void KUiTargetInfo::PaintWindow()
 	if (g_pRepresentShell == NULL)
 		return;
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{	//	[SUAGD 13/09 g] khung da bi doi bao nhieu so voi ini -> thanh mau do (Core ve) di theo
 		int x = 0, y = 0;
 
@@ -235,13 +235,13 @@ void KUiTargetInfo::LoadScheme(const char *pScheme)
 		Ini.GetInteger("Main", "nWid",  58, &nWid);
 		Ini.GetInteger("Main", "nHei_life",  7, &nHei_life);
 		Ini.GetInteger("Main", "nHei_mana",  4, &nHei_mana);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		Ini.GetInteger("Main", "Left", 370, &s_nJxMucTieuIniX);	// [SUAGD 13/09 g]
 		Ini.GetInteger("Main", "Top", 0, &s_nJxMucTieuIniY);
 #endif
 
         KWndShowAnimate::Init(&Ini, "Main");
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
         // [ANDROID 09/09 MENU] O [Main] cua kuitargetinfo.ini chi la mot o 27x23, con than thanh
         // (BackGround0, Head0...) la cac o CON nam ngoai o do. Nen cham vao than thanh se ROI RA
         // NGOAI cua so, xuong ban do -> bo chon muc tieu thay vi mo menu (da do tan mat).
@@ -270,7 +270,7 @@ KUiTargetInfo* KUiTargetInfo::GetIfVisible()
 	return NULL;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //--------------------------------------------------------------------------
 // [ANDROID 09/09 MENU] Cham vao thanh thong tin muc tieu -> ra danh sach tuy chon.
 //
@@ -319,7 +319,7 @@ int KUiTargetInfo::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
     {
 		case WND_N_BUTTON_CLICK:
 		{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			// [ANDROID 09/09 MENU] bam vao nen hoac anh dau cua thanh = mo danh sach tuy chon
 			if (uParam == (KUPARAM)(KWndWindow*)&a_btnBackGround ||
 				uParam == (KUPARAM)(KWndWindow*)&a_IconHead)

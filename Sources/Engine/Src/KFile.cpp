@@ -40,7 +40,7 @@ KFile::~KFile()
 // 参数:	FileName	文件名
 // 返回:	成功返回TRUE，失败返回FALSE。
 //---------------------------------------------------------------------------
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [ANDROID 12/09 TEPDUNG] nhat ky tep dung (rut gon du lieu): 'R <tep roi>' / 'P <uid> <ten xin>' vao jx_tep_dung.log, moi ten mot lan
 #include <set>
 #include <string>
@@ -118,7 +118,7 @@ BOOL KFile::Open(LPSTR FileName)
 			strlwr(lcasePathName);
 		if (NULL != (m_hFile = fopen(lcasePathName, "rb")))
 		{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			JxTepDung_Ghi('R', 0, lcasePathName);	// [ANDROID 12/09 TEPDUNG]
 #endif
 		}

@@ -3,11 +3,11 @@
 // Khung anh nen kho VNKU + dai nut NHOM / TAB CON (dung s_aNhomTab cua WAuto.exe, bo Ac chinh va D.nhap) + nut BAT/TAT
 // (JxWAuto_Bat cua B0) + dong trang thai (WA_HoatDong cua CoreShell qua JxCore_WAutoHoatDong). Noi dung tab: B2+.
 // Anh: android/anh_wauto_vnku.py (thu nho tu kho VNKU); bo cuc: ui\ui3\uiwauto.ini. Mo/dong bang icon Auto tren thanh
-// cong cu (Player_WAuto trong UiShell.cpp). Chi bien dich khi JX_ANDROID; khong nam trong vcxproj nao.
+// cong cu (Player_WAuto trong UiShell.cpp). Chi bien dich khi JX_MOBILE; khong nam trong vcxproj nao.
 //---------------------------------------------------------------------------
 #ifndef UiWAuto_H
 #define UiWAuto_H
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "../Elem/WndShowAnimate.h"
 #include "../Elem/WndButton.h"
 #include "../Elem/WndPureTextBtn.h"
@@ -53,5 +53,5 @@ private:
 	int				m_nBatCu;
 	unsigned int	m_uTrangThaiKe;
 };
-#endif // JX_ANDROID
+#endif // JX_MOBILE
 #endif

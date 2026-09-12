@@ -10,7 +10,7 @@
 #include "WndWindow.h"
 #include "shlwapi.h"
 #include "Wnds.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 void UiToaDo_ApChoO(KWndWindow* pWnd);	// UiToaDo.cpp, [UITOADO 12/09 NEO b]
 void UiToaDo_ApChoOInit(KWndWindow* pWnd);	// [PHONGBANG 14/09 d] nhu tren nhung KHONG phong bang (con chua Init)
 void UiToaDo_PhongBangKhiHien(KWndWindow* pWnd);	// [PHONGBANG 14/09 f] cua so goc vua Show(): bang tinh nang phong ca cay theo man hinh
@@ -47,7 +47,7 @@ KWndWindow::KWndWindow()
 	m_nUiTiLe		= 1000;			// [UITOADO] 1000 = 100%, chua doi
 	m_nUiGocW		= 0;
 	m_nUiGocH		= 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	m_nUiGocLeft	= 0;		// [PHONGBANG 14/09]
 	m_nUiGocTop		= 0;
 	m_bUiGocViTri	= 0;
@@ -69,7 +69,7 @@ KWndWindow::KWndWindow()
 	m_pFirstChild	= NULL;
 	m_pParentWnd	= NULL;
 	m_Style			= WND_S_VISIBLE;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	m_FitFlags = 0;		// [ANDROID 09/09 NEO]
 	m_bNeedFit = 0;
 #endif
@@ -90,7 +90,7 @@ KWndWindow::~KWndWindow()
 //	功能：把窗口移动到最前面
 //--------------------------------------------------------------------------
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //--------------------------------------------------------------------------
 // [ANDROID 09/09 NEO] TU CAN CHINH GIAO DIEN THEO MAN HINH
 //
@@ -199,7 +199,7 @@ void KWndWindow::FitToScreen()
 	if (nNewL != m_Left || nNewT != m_Top)
 		SetPosition(nNewL, nNewT);
 }
-#endif	// JX_ANDROID
+#endif	// JX_MOBILE
 
 void KWndWindow::BringToTop()
 {
@@ -287,7 +287,7 @@ void KWndWindow::UiDatTiLe(int nTiLe)
 	SetSize(m_nUiGocW * nTiLe / 1000, m_nUiGocH * nTiLe / 1000);
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //--------------------------------------------------------------------------
 //	[SUAGD 13/09] dat ti le nhung giu TAM o: UiDatTiLe neo goc tren-trai nen icon bam mep phai / duoi
 //	phong to la troi ra ngoai; trinh chinh cho nguoi choi dung ham nay.
@@ -466,7 +466,7 @@ void KWndWindow::AbsoluteMove(int dx, int dy)
 void KWndWindow::Show()
 {
 	m_Style |= WND_S_VISIBLE;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (m_pParentWnd == NULL)	// [PHONGBANG 14/09 f] cua so goc (anh em cua goc lop) hien len = da nap xong ca cay -> phong theo man hinh
 		UiToaDo_PhongBangKhiHien(this);
 #endif
@@ -549,7 +549,7 @@ int KWndWindow::Init(KIniFile* pIniFile, const char* pSection)
 		pIniFile->GetInteger(pSection, "Left",  0, &nValue1);
 		pIniFile->GetInteger(pSection, "Top",   0, &nValue2);
 		SetPosition(nValue1, nValue2);		
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		UiXoaGoc();	// [PHONGBANG 14/09 d] vua doc lai so do thiet ke -> bo goc da chup (Init lai luc bang dang phong: trang Auto)
 		UiToaDo_ApChoOInit(this);	// [UITOADO 12/09 NEO b] o con Init sau khi goc dang ky -> ap toa do nguoi choi / bo cuc mac dinh ngay
 #endif
@@ -591,7 +591,7 @@ int KWndWindow::Init(KIniFile* pIniFile, const char* pSection)
 		else
 			m_Style |= WND_S_SIZE_WITH_ALL_CHILD;
 		
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		m_bNeedFit = 1;	// [ANDROID 09/09 NEO] khung vua dat tu ini -> con mot luot can lai
 #endif
 		return true;
@@ -607,7 +607,7 @@ int KWndWindow::PtInWindow(int x, int y)
 	int nRet = 0;
 	// [UITOADO] o da bi "xoa" thi khong bat chuot nua - tru khi dang o
 	// che do sua giao dien, luc do van phai bam duoc de bat hien lai
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if ((m_Style & WND_S_UITOADO_AN) && !UiToaDo_HienOAn())	// [SUAGD 13/09 e] chi khi trinh chinh dang "hien o da giau"
 		return 0;
 #else
@@ -645,7 +645,7 @@ void KWndWindow::Paint()
 {
 	// [UITOADO] o da bi "xoa" thi khong ve nua (ca o con cua no) - tru khi
 	// dang o che do sua giao dien, luc do van ve de con thay ma hien lai
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if ((m_Style & WND_S_VISIBLE) &&
 		((m_Style & WND_S_UITOADO_AN) == 0 || UiToaDo_HienOAn()))	// [SUAGD 13/09 e] o da giau: chi ve khi dang "hien o da giau"
 #else

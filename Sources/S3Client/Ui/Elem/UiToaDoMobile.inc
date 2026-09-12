@@ -13,7 +13,7 @@
 //	   giau/hien, mac dinh tung o, hoan tac, xong (= luu). Khung gioi han cha (KUiPlayerBar|Main...) KHONG nam
 //	   trong danh sach -> cham nen khong con keo ca cum (goc loi 12/09: DummyWnd + Trans + anh nen).
 //	4. HO SO THEO NHAN VAT: UserData\UiToaDo_<id>.ini; thieu thi UserData\UiToaDo.ini (luu ghi ca hai).
-//	Chi bien dich khi JX_ANDROID; ban PC giu nguyen duong cu (Ctrl+U, thanh nut 09/09).
+//	Chi bien dich khi JX_MOBILE; ban PC giu nguyen duong cu (Ctrl+U, thanh nut 09/09).
 //=========================================================================================
 #include <math.h>
 

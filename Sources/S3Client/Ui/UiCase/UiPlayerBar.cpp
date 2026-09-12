@@ -286,7 +286,7 @@ int	KImmediaItem::Init(KIniFile* pIniFile, const char* pSection)
 
 void KImmediaItem::PaintWindow()
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{
 		//	[VATPHAM 12/09 e] O phim tu ve NEN cua no (anh cat tu chinh anh nen thanh duoi, da bo khoi anh do).
 		//	Truoc day bon o den nam trong anh nen 1040x604 ve theo cua so 800x600 nen tren khung ve rong
@@ -509,7 +509,7 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 	_ASSERT(pIni);
 	int i = 0;
 	Init(pIni, $Main);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	pIni->GetInteger($Main, "Top", 0, &ms_nTopIni);	// [NHOMTREN 12/09 b] do cao goc cua khung (truoc khi bo cuc neo lai)
 	pIni->GetInteger($Main, "Left", 0, &ms_nLeftIni);	// [NHOMTREN 13/09 X]
 #endif
@@ -771,7 +771,7 @@ void KUiPlayerBar::Initialize()
 	m_pSelf->LoadScheme(Scheme);
 
 	Wnd_AddWindow(this);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	//	[SUAGD 13/09 f] day buff = mot o "ThanhBuff" trong trinh chinh (chu goi la "mini skill"); vi tri da luu ap ngay khi dang ky
 	UiToaDo_DangKyORieng("ThanhBuff", KUiPlayerBar::BuffTrung, KUiPlayerBar::BuffLay, KUiPlayerBar::BuffDat, m_pSelf);
 	UiToaDo_DangKyORiengHinh("ThanhBuff", KUiPlayerBar::BuffHinh);
@@ -779,7 +779,7 @@ void KUiPlayerBar::Initialize()
 	KUiTaskTrace::NeoLaiKhiCoThanh();	// [TASKTRACE 12/09] khung theo doi nhiem vu mo truoc thanh nay -> neo lai canh nut
 #endif
 }
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //	[NHOMTREN 12/09] Khung 800x600 nay chua ca bang trang thai (goc tren-trai: gio, song mang, hang buff, nut an hang icon)
 //	lan khung chat (o day). Bo cuc neo khung theo GIUA-DUOI cho khung chat sat day man, nen tren man CAO
 //	(may tinh bang 4:3) bang trang thai bi keo xuong giua man. Tra rieng nhom tren ve dung do cao ban PC:
@@ -936,7 +936,7 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 		}
 		break;
 	case WND_N_ITEM_PICKDROP:
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [ANDROID 11/09 OSO] Cham (chuot trai) o vat pham so 1-4 khi tay khong = DUNG ngay (PC: nhac len tay); giu lau (chuot phai)
 		// = nhac len tay de bo vao ruong (WND_N_RIGHT_CLICK_ITEM). Chu: "bo item vao phim so thi cham vao la su dung luon
 		// khong can de vai giay - de vao vai giay vao o phim so la lay ra tren tay de bo vao ruong". Bo xuong o (tay dang cam) nhu cu.
@@ -1085,7 +1085,7 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			KUiSkillTree::OpenWindow(false);
 		break;
 	case WND_N_RIGHT_CLICK_ITEM:
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [ANDROID 11/09 OSO] giu lau (chuot phai) o vat pham so = NHAC LEN TAY (PC: dung); tay dang cam gi thi bo qua
 		if (g_UiBase.IsOperationEnable(UIS_O_MOVE_ITEM) && !Wnd_GetDragObj(NULL))
 		{
@@ -1756,7 +1756,7 @@ void KUiPlayerBar::OnObjPickedDropped(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDR
 		pDropPos ? (KNPARAM)&Drop : 0);
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 //	[OPHIM 12/09] O phim so dang TRONG dau tien trong bon o hien tren man (0..3), -1 neu day ca bon.
 int KUiPlayerBar::OPhimTrong()
 {
@@ -2349,7 +2349,7 @@ BOOL KUiPlayerBar::LoadPrivateSetting(KIniFile* pFile)
 		int nNameObj = 0;
 		int nPK = 0;
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [HIENTEN 14/09] Chu: "vao game tu mo hien thi ten - thanh mau cua NPC - ten item roi xuong dat". Ban 12/09 chi bat khi
 		// tep chua co khoa; nhung SavePrivateSetting ghi lai trang thai luc thoat nen UiConfig cua nguoi choi da co
 		// ShowObjName=0 (nhieu ho so tren may chu tai), lan sau vao game lai tat. Dien thoai khong co F7 / F8 / Ctrl+Space de
@@ -2664,7 +2664,7 @@ void KUiPlayerBar::SetItemBtnPos(int nBtnNo,int X, int Y)
 				return;
 			if(m_pSelf->m_ItemBtn[nBtnNo].m_X == INVISIBLE_POS_X == X && m_pSelf->m_ItemBtn[nBtnNo].m_Y == INVISIBLE_POS_Y == Y) 
 				return;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (X != INVISIBLE_POS_X || Y != INVISIBLE_POS_Y)
 			{	// [CHATBTN 14/09] X,Y la toa do TUYET DOI (KWndMessageListBox: Param.nX + cot x font/2) nhung SetPosition
 				// tuong doi thanh nay; thiet ke thanh o (1,1) nen PC khong thay, Fold 7 thanh neo giua -> nut lech +198 px

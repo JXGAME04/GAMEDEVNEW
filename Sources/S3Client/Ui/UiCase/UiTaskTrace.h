@@ -27,7 +27,7 @@ public:
 	static void				SetTraced(bool bTraced);	// nut Theo doi / Huy theo doi
 	static bool				IsTraced();
 	static void				OnTaskValueChanged(int nTaskId);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	static void				NeoLaiKhiCoThanh();	// [TASKTRACE 12/09] PlayerBar dang ky xong -> neo lai canh nut theo doi
 #endif
 private:

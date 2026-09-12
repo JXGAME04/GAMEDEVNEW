@@ -73,7 +73,7 @@ endif()
 # -U__linux     : tat cac nhanh port may chu Linux cu (#ifndef __linux) -> client di nhanh "Windows" tren lop tuong thich
 # -D_WIN64      : di dung nhanh x64 da kiem chung (hop ngu -> C, con tro 8 byte); KHONG phai la Windows
 # -fms-extensions: __int64, __forceinline, __super... ; -w: tat canh bao (nguon TCVN3 sinh 'illegal character encoding')
-set(JX_COMMON_DEFS JX_PLATFORM_SDL JX_POSIX JX_ANDROID JX_NO_DIRECTX JX_D3D9MINI _WIN64 NDEBUG _MBCS USE_STANDALONE_SPR
+set(JX_COMMON_DEFS JX_PLATFORM_SDL JX_POSIX JX_ANDROID JX_MOBILE JX_NO_DIRECTX JX_D3D9MINI _WIN64 NDEBUG _MBCS USE_STANDALONE_SPR
     _LIBCPP_ENABLE_CXX17_REMOVED_FEATURES _LIBCPP_ENABLE_CXX20_REMOVED_FEATURES)
 set(JX_COMMON_OPTS -fsigned-char -fms-extensions -U__linux -w -Wno-register -Wno-address-of-temporary -fno-strict-aliasing -Wno-error)
 set(JX_COMMON_INCS

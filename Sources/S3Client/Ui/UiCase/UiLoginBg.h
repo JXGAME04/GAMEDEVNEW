@@ -23,7 +23,7 @@ private:
 	void	Initialize();					//初始化
 	void	LoadScheme(KIniFile* pIni);		//载入界面方案
 	void	Breathe();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	virtual void PaintWindow();	// [DANGNHAP 12/09] nen 800x600 ve vua moi ti le man: lop keo toan man (toi) + lop that vua chieu cao can giua
 #endif						//活动函数
 private:

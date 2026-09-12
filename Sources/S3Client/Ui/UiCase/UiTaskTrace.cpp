@@ -107,7 +107,7 @@ void KUiTaskTrace::Breathe()
 	if (!m_bDaNeo && IsVisible())
 		SnapToButton();
 }
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [TASKTRACE 12/09] tu dang nhap vao thang game: khung mo TRUOC khi KUiPlayerBar co -> SnapToButton roi vao nhanh
 // 'mep phai, 40 % chieu cao' va m_oFixPos giu luon cho do (de len cot icon phai). PlayerBar goi ham nay sau Wnd_AddWindow.
 void KUiTaskTrace::NeoLaiKhiCoThanh()

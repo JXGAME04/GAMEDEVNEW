@@ -22,7 +22,7 @@
 #endif
 #include "../UiSoundSetting.h"
 #include "UiNotice.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "KDebug.h"		// [ANDROID 09/09 LOGIN] g_DebugLog cho JxUi_TuDangNhapAndroid()
 #endif
 
@@ -317,7 +317,7 @@ void KUiInit::OnClickButton(KWndButton* pWnd)
 	}
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [ANDROID 09/09 LOGIN] TU DANG NHAP TREN DIEN THOAI.
 // Ban PC: chi chay khi bam Alt+A VA Ui\Setting.ini [Main] AutoLogin=6323 (loi tat cua nguoi lam game).
 // Dien thoai: khong co phim Alt, va nguoi choi da chu dong bam "Ghi nho" o man dang nhap roi -> cu nho du

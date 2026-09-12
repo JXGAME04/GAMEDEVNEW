@@ -3,7 +3,7 @@
 // Doc boi UiWAutoTrang.cpp (chi Android).
 #ifndef UiWAutoBang_H
 #define UiWAutoBang_H
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 
 #define WA_MUC_TICK	1
 #define WA_MUC_NHAP	2
@@ -415,5 +415,5 @@ static const WAUiTab s_WAUiTab[15] = {
 	{ s_Muc_14, 15, "UiWAuto_Tab14.ini", 11, 2 },
 };
 
-#endif // JX_ANDROID
+#endif // JX_MOBILE
 #endif

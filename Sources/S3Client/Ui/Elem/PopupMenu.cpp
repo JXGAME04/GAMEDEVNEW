@@ -75,7 +75,7 @@ void KPopupMenu::Popup(KPopupMenuData* pMenu, KWndWindow* pCaller, unsigned int 
 	if (m_pMenu->nItemTitleIndent == MENU_ITEM_DEFAULT_INDENT)
 		m_pMenu->nItemTitleIndent = m_nIndent;
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [ANDROID 09/09 CHAM] man hinh dien thoai nho, ngon tay to: noi rong dem tren/duoi va trai/phai
 	// cua moi dong cho de cham. KHONG nhan thang nItemHeight/nItemWidth vi chu se dinh len canh tren
 	// va lech sang trai - hai cai dem nay chinh la thu de dua chu vao giua.
@@ -149,7 +149,7 @@ void KPopupMenu::Popup(KPopupMenuData* pMenu, KWndWindow* pCaller, unsigned int 
 			m_pMenu->nItemHeight += 1;
 	}
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [ANDROID 10/09 MENU] Dong cao do ben goi dat san (menu kenh chat = cao anh kenh ~22) nhung dem tren da noi
 	// len 7 ([ANDROID 09/09 CHAM]) -> chu 12 + dau tieng Viet tran xuong, dong sau ve de len ("mat 1/3
 	// chu"). Noi dong len cho vua chu.

@@ -15,7 +15,7 @@
 //#include "../../core/src/coreshell.h"
 #include "../S3Client.h"
 #include "UiCase/UiInit.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "../Platform/JxCanDieuKhien.h"	// [ANDROID 09/09 CAN] can dieu khien ao
 #endif
 #include "UiCase/UiConnectInfo.h"
@@ -213,7 +213,7 @@ int	UiInit()
 	Player_PK::RegisterSelfClass();
 	Player_Faction::RegisterSelfClass();
 //	Player_AutoPlay::RegisterSelfClass();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	Player_WAuto::RegisterSelfClass();	// [ANDROID 11/09 WAUTO B1] icon Auto (khung WAuto trong game)
 	Player_WAutoBat::RegisterSelfClass();	// [ANDROID 11/09 WAUTO B2 i] nut Bat/Tat Auto + nut nhat
 	Player_NhatDo::RegisterSelfClass();
@@ -368,7 +368,7 @@ void UiPaint(int nGameLoop)
 	// bang do hieu nang (config.ini [Client] PerfHud=1)
 	PerfHud_Draw(s_nFrameRate, nGameLoop, dwPing);
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	JxVongChon_Ve();	// [ANDROID 09/09 VONG] vong chon duoi chan muc tieu (toa do the gioi)
 	JxIconNpc_Ve();	// [ANDROID 09/09 ICON] icon "noi chuyen" tren dau NPC doi thoai gan nhat
 	JxHuongDi_Ve();	// [ANDROID 09/09 HUONGDI] mui ten nho duoi chan theo huong di chuyen
@@ -404,7 +404,7 @@ int UiHeartBeat()
 		{
 			UiIR_UpdateTime();
 			Wnd_Heartbeat();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			JxUi_TuDangNhapAndroid();	// [ANDROID 09/09 LOGIN] da nho dang nhap thi vao thang, khong dung o man hinh chinh
 #endif
 		}
@@ -1052,7 +1052,7 @@ const char*	Player_AutoPlay::GetShortKey()
 	return NULL;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [ANDROID 11/09 WAUTO B1] icon Auto tren thanh cong cu -> khung WAuto trong game (UiCase/UiWAuto.cpp)
 #include "UiCase/UiWAuto.h"
 #include "../Platform/JxWAutoNoiBo.h"

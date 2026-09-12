@@ -28,7 +28,7 @@ protected:
 	bool			TranslateEvent(const SDL_Event& ev);	// false = thoat vong lap
 	void			GhiChuot(WPARAM wParam, LPARAM lParam);	// bookkeeping cho hover (ban sao cua MsgProc, vi cua KWin32App la private)
 	void			SinhHover();							// ban sao KWin32App::GenerateMsgHoverMsg (private ben Engine)
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [ANDROID 09/09 CHAM] bo nhan cu chi ngon tay -> chuot (xem KSdlApp.cpp)
 	// [ANDROID 09/09 KYNANG] CHAM_KYNANG = dang giu mot nut ky nang (keo = ngam huong danh)
 	// [VATPHAM 12/09 g] CHAM_CAM = vua giu lau tren o vat pham -> da nhac mon len tay, ngon van dang de:
