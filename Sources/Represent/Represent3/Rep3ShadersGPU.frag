@@ -10,12 +10,12 @@ layout(location = 2) flat in uint vPal;
 
 #ifdef JX_ATLAS_KHOI
 // [KHOI 11/09] (chi Android) port buoc (f) cua loat [MANG 09/09] ben duong D3D11 (commit 5311778b): atlas theo KHOI CO DINH.
-// Moi khoi = mot texture mang 2D 8 lop, GAN CHET vao khe sampler 2..9 va KHONG BAO GIO doi trong ca khung ->
-// hai quad o hai trang atlas khac nhau van gop chung mot lenh ve (truoc day 'texture0' chiem 99,9 %% ly do khong gop).
+// Moi khoi = mot texture mang 2D nhieu lop, GAN CHET vao mot khe sampler va KHONG BAO GIO doi trong ca khung ->
+// hai quad o hai trang atlas khac nhau van gop chung mot lenh ve.
 // Khe 0 (g_t0) van la sampler2D cho texture RIENG (khong vao atlas) - khong ep texture thuong thanh mang.
-// O PALROW: bit 31 = lay tu khoi atlas, bit 28..30 = chi so khoi, bit 25..27 = lop trong khoi.
-// Khac ban PC: PC co 128 khe nen dung 16 khoi moi dinh dang; SDL_GPU chot 16 khe MOI TANG
-// (MAX_TEXTURE_SAMPLERS_PER_STAGE) nen mobile dung 8 khoi chung cho moi dinh dang.
+// [KHOI2 11/09] NOI TRAN: 8 -> 12 khoi (khe 2..13), lay mot bit tu truong chi so ps (12 -> 11 bit; do thuc te chi dung 5 muc).
+// O PALROW: bit 0..12 hang bang mau | 13..23 chi so ps | 24..26 lop | 27..30 khoi | 31 = lay tu khoi atlas.
+// SDL_GPU chot 16 khe sampler MOI TANG nen dung 12 khoi la con du 2 khe; hai storage buffer ve binding 14, 15.
 layout(set = 2, binding = 0) uniform sampler2D g_t0;
 layout(set = 2, binding = 1) uniform sampler2D g_t1;
 layout(set = 2, binding = 2) uniform sampler2DArray g_k0;
@@ -26,11 +26,15 @@ layout(set = 2, binding = 6) uniform sampler2DArray g_k4;
 layout(set = 2, binding = 7) uniform sampler2DArray g_k5;
 layout(set = 2, binding = 8) uniform sampler2DArray g_k6;
 layout(set = 2, binding = 9) uniform sampler2DArray g_k7;
+layout(set = 2, binding = 10) uniform sampler2DArray g_k8;
+layout(set = 2, binding = 11) uniform sampler2DArray g_k9;
+layout(set = 2, binding = 12) uniform sampler2DArray g_k10;
+layout(set = 2, binding = 13) uniform sampler2DArray g_k11;
 
 #define JX_KHOI_CO   ((vPal & 0x80000000u) != 0u)
-#define JX_KHOI_I    ((vPal >> 28) & 7u)
-#define JX_KHOI_L    float((vPal >> 25) & 7u)
-#define JX_KHOI_LI   int((vPal >> 25) & 7u)
+#define JX_KHOI_I    ((vPal >> 27) & 0xFu)
+#define JX_KHOI_L    float((vPal >> 24) & 7u)
+#define JX_KHOI_LI   int((vPal >> 24) & 7u)
 
 vec4 JxKhoiTex(vec2 uv)
 {
@@ -43,6 +47,10 @@ vec4 JxKhoiTex(vec2 uv)
     else if (k == 5u) return texture(g_k5, vec3(uv, l));
     else if (k == 6u) return texture(g_k6, vec3(uv, l));
     else if (k == 7u) return texture(g_k7, vec3(uv, l));
+    else if (k == 8u) return texture(g_k8, vec3(uv, l));
+    else if (k == 9u) return texture(g_k9, vec3(uv, l));
+    else if (k == 10u) return texture(g_k10, vec3(uv, l));
+    else if (k == 11u) return texture(g_k11, vec3(uv, l));
     return vec4(1.0);
 }
 vec4 JxKhoiFetch(ivec2 p)
@@ -56,6 +64,10 @@ vec4 JxKhoiFetch(ivec2 p)
     else if (k == 5u) return texelFetch(g_k5, ivec3(p, l), 0);
     else if (k == 6u) return texelFetch(g_k6, ivec3(p, l), 0);
     else if (k == 7u) return texelFetch(g_k7, ivec3(p, l), 0);
+    else if (k == 8u) return texelFetch(g_k8, ivec3(p, l), 0);
+    else if (k == 9u) return texelFetch(g_k9, ivec3(p, l), 0);
+    else if (k == 10u) return texelFetch(g_k10, ivec3(p, l), 0);
+    else if (k == 11u) return texelFetch(g_k11, ivec3(p, l), 0);
     return vec4(1.0);
 }
 ivec2 JxKhoiDim()
@@ -69,22 +81,26 @@ ivec2 JxKhoiDim()
     else if (k == 5u) return textureSize(g_k5, 0).xy;
     else if (k == 6u) return textureSize(g_k6, 0).xy;
     else if (k == 7u) return textureSize(g_k7, 0).xy;
+    else if (k == 8u) return textureSize(g_k8, 0).xy;
+    else if (k == 9u) return textureSize(g_k9, 0).xy;
+    else if (k == 10u) return textureSize(g_k10, 0).xy;
+    else if (k == 11u) return textureSize(g_k11, 0).xy;
     return ivec2(1, 1);
 }
 #define JX_TEX0(uv)  (JX_KHOI_CO ? JxKhoiTex(uv)  : texture(g_t0, uv))
 #define JX_TEX1(uv)  texture(g_t1, uv)
 #define JX_FETCH0(p) (JX_KHOI_CO ? JxKhoiFetch(p) : texelFetch(g_t0, p, 0))
 #define JX_DIM0      (JX_KHOI_CO ? JxKhoiDim()    : textureSize(g_t0, 0))
-#define JX_BUF0      10
-#define JX_BUF1      11
+#define JX_BUF0      14
+#define JX_BUF1      15
 #elif defined(JX_TEX_ARRAY)
 // [MANG 11/09] (chi Android) nhieu trang atlas trong MOT texture mang 2D; lop lay tu o PALROW bit 25..30 -> hai quad o hai trang cung cum GOP duoc
 layout(set = 2, binding = 0) uniform sampler2DArray g_t0;
 layout(set = 2, binding = 1) uniform sampler2DArray g_t1;
-#define JX_LOP0      float((vPal >> 25) & 0x3Fu)
+#define JX_LOP0      float((vPal >> 24) & 0x3Fu)	// [KHOI2 11/09] bo cuc moi: chi so ps chi con 11 bit (13..23)
 #define JX_TEX0(uv)  texture(g_t0, vec3(uv, JX_LOP0))
 #define JX_TEX1(uv)  texture(g_t1, vec3(uv, 0.0))
-#define JX_FETCH0(p) texelFetch(g_t0, ivec3(p, int((vPal >> 25) & 0x3Fu)), 0)
+#define JX_FETCH0(p) texelFetch(g_t0, ivec3(p, int((vPal >> 24) & 0x3Fu)), 0)	// [KHOI2 11/09]
 #define JX_DIM0      textureSize(g_t0, 0).xy
 #define JX_BUF0      2
 #define JX_BUF1      3
@@ -122,7 +138,7 @@ layout(set = 3, binding = 0) uniform PSCB
 #endif
 
 #ifdef JX_PS_BUFFER
-#define JX_PALROW   (vPal & 0x1FFFu)   // [GOP 11/09] o PALROW: bit 0..12 = hang bang mau, 13..24 = chi so to hop trang thai tang texture
+#define JX_PALROW   (vPal & 0x1FFFu)   // [GOP 11/09] o PALROW: bit 0..12 = hang bang mau, 13..23 = chi so to hop trang thai tang texture ([KHOI2 11/09])
 #define JX_PALKHONG 0x1FFFu
 #else
 #define JX_PALROW   vPal
@@ -198,7 +214,7 @@ void main()
 {
 #ifdef JX_PS_BUFFER
     // [GOP 11/09] trang thai tang texture lay tu bang cua khung theo chi so mang tren dinh (khong con uniform moi lenh ve)
-    JxPsRec jxR = g_psBuf[(vPal >> 13) & 0xFFFu];
+    JxPsRec jxR = g_psBuf[(vPal >> 13) & 0x7FFu];   // [KHOI2 11/09] 11 bit (2048 muc; do thuc te 5 muc) - nhuong 1 bit cho truong khoi
     ivec4 g_st0 = jxR.st0; ivec4 g_st0b = jxR.st0b; ivec4 g_st1 = jxR.st1; ivec4 g_st1b = jxR.st1b; vec4 g_at = jxR.at;
 #endif
     vec4 dif = vCol;

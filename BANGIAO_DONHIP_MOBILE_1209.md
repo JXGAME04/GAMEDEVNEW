@@ -1105,3 +1105,45 @@ Cách chữa đã rõ và không phải đoán: ô PALROW hiện cấp **12 bit*
 (bit 13..24) trong khi log nói suốt cả phiên chỉ dùng **5 mức** (`ps bang 5 muc, tran 0`). Cắt trường đó xuống 6 bit
 là dư 6 bit, đủ cho 16 khối × 16 lớp = 256 trang, gấp bốn trần hiện tại. Chưa làm vì chủ đang đo bản này; làm xong
 sẽ phải sinh lại SPIR-V và dựng lại cả hai bản.
+
+
+---
+
+## 19:35 11/09 — `[KHOI2]`: nới trần khối 8 lên 12 (APK 109111935)
+
+Log 19:33 của phiên `185508` cho thấy đúng cái tôi đã cảnh báo:
+
+```
+atlas khoi=1: 8 khoi (8 lop/khoi, 512 MB), het khoi 11
+texture/sampler 41-65 lan/khung (dinh 128-172)      <- luc moi vao chi 19-24
+```
+
+Tám khối đầy, 11 trang atlas phải lùi về texture riêng, và mỗi trang lùi về là một nguồn đổi texture mới.
+
+**Chỗ lấy bit đã có sẵn, không phải đoán.** Suốt cả phiên log nói `ps bang 5 muc (tran 0)`: trường chỉ số tổ hợp
+trạng thái tầng texture đang được cấp **12 bit (4 096 mức)** mà thực tế chỉ dùng **5**. Cắt xuống 11 bit là dư một
+bit cho trường khối.
+
+| ô PALROW (32 bit mỗi đỉnh) | trước | sau |
+|---|---|---|
+| hàng bảng màu | 0..12 | 0..12 |
+| chỉ số trạng thái | 13..24 (12 bit) | 13..23 (11 bit) |
+| lớp trong khối | 25..27 | 24..26 |
+| **chỉ số khối** | 28..30 (**3 bit = 8**) | 27..30 (**4 bit = 16**) |
+| cờ lấy từ khối | 31 | 31 |
+
+Số khối thực tế đặt **12** chứ không phải 16: SDL_GPU chốt 16 khe sampler mỗi tầng, đang dùng 2 cho hai tầng texture,
+để 12 khối ở khe 2..13 thì hai storage buffer về binding 14 và 15, còn dư 2 khe chứ không đâm sát trần.
+Trần trang atlas: **4 + 11×8 = 92 trang**, trước là 60. Phiên nặng nhất từ trước đến nay dùng 56 trang.
+
+Sửa kèm: biến thể C1 (`JX_TEX_ARRAY`, đang tắt) cũng đổi lớp sang bit 24..29 cho khớp bố cục mới, để sau này bật lại
+không bị lệch ngầm.
+
+**Kiểm:** SPIR-V dịch và hợp lệ cả 5 biến thể; hai mảng của bản PC (`g_Rep3GpuVS`, `g_Rep3GpuFS`) và
+`g_Rep3GpuFSPalBuf` **byte y hệt**, chỉ ba biến thể Android có dùng bảng trạng thái là đổi. Android dựng qua;
+Windows `Release|Win32` và `Release|x64` đều 0 lỗi. Máy ảo: khối cấp đúng, màn menu và đăng nhập vẽ đúng.
+Không vào được thế giới trên máy ảo vì tài khoản đang được chủ dùng ở điện thoại.
+
+APK `109111935`, md5 `80f543bbcf7bc4244ded6e3cdceff05e`, 20 453 375 B, lên `dt_v4` 19:35, máy chủ 8765 PID 390652.
+Cần chủ **khởi động lại app** để nhận, rồi nhìn kỹ hình trong thế giới (đây là phần máy ảo chưa kiểm được), sau đó
+chơi Tống Kim. Kỳ vọng `het khoi` về 0 và `texture/sampler` giữ ở vài chục suốt phiên thay vì bò lên.
