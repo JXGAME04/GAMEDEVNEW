@@ -1548,3 +1548,45 @@ bên trong hàm. **Không đoán nữa** — hôm qua tôi đoán sai hai lần 
 
 Nếu là nghi phạm 1 thì cách chữa rất rẻ: gom cả 512 ô vào **một lượt** thay vì 7, tức nâng `LOCAL_MAX_IMG_NUM` (và
 chuyển mảng khỏi ngăn xếp vì 512 × ~150 byte là quá lớn để đặt trên đó). Rào `JX_MOBILE` nên bản PC không đổi.
+
+
+---
+
+## 08:15 12/09 — `[GOMNEN]`: gom cả một vùng nền vào MỘT lượt vẽ (APK 109120813)
+
+**Đây là bản đầu tiên trong đợt truy khung giật thật sự SỬA chứ không chỉ đo.**
+
+### Vì sao một vùng tốn 17 ms
+
+`LOCAL_MAX_IMG_NUM = 80` (`KScenePlaceRegionC.cpp:28`), trong khi một vùng có tới ~512 nút nền (lưới 16×16, trung
+bình hai lớp mỗi ô) cộng các vật phủ nền. Hai vòng trong `PrerenderGround` đều gom tới 80 rồi gọi
+`DrawPrimitivesOnImage` → khoảng **7 lượt**, mỗi lượt một lần `GetRenderTarget` + `SetRenderTarget` sang texture rồi
+trả lại. Trên GPU xếp ô của điện thoại, **mỗi lần đổi đích vẽ là một lần xả ô**, rất đắt.
+
+Bằng chứng từ log, không phải suy đoán: khung bình thường **1 pass**, khung giật **trung vị 2, đỉnh 8 pass**
+(126 / 199 khung giật có hơn 1 pass). Con số 8 khớp với ~7 lượt gom.
+
+Phiên giao diện đọc mã độc lập và xác nhận cùng kết luận, kèm cảnh báo mảng nằm trên ngăn xếp.
+
+### Sửa
+
+Chỉ trong thân hàm `PrerenderGround` (hàm khác ở dòng 605 cũng dùng tên `ImgList`, không đụng tới): cấp đệm đủ cho
+**cả vùng** trên **đống** thay vì mảng 80 phần tử trên ngăn xếp, nên chỉ gọi `DrawPrimitivesOnImage` **một lần**.
+
+**Kết quả vẽ ra y hệt, theo cấu trúc chứ không phải theo hy vọng:** `DrawPrimitivesOnImage` chỉ duyệt và vẽ từng phần
+tử, không có giới hạn bên trong. Gọi một lần với 560 phần tử hay bảy lần với 80 phần tử đều ra đúng những phần tử đó,
+đúng thứ tự đó, lên đúng ảnh đó. Chỉ khác số lần đổi đích vẽ.
+
+Kèm bộ đo: thời gian nằm trong các lần gọi, số lần gọi, số ảnh — in vào dòng `[PGND]`.
+
+- Nếu `[PGND]` trung vị tụt khỏi 17 ms → nghi phạm "đổi đích vẽ" đúng.
+- Nếu không tụt → thủ phạm là "nạp đồng bộ" (`DrawPrimitivesOnImage` mở đầu bằng `Rep3NapDongBo`) và tôi đi tiếp
+  hướng đó. Không mất gì vì số lần gọi vẫn giảm.
+
+**Kiểm:** Android dựng qua; `Core.vcxproj` cả `Client Release|Win32` lẫn `Server Release|x64` biên dịch **0 lỗi C**
+(vẫn chỉ đứt LNK1181 thiếu thư viện dựng sẵn trong worktree). Rào `JX_MOBILE` nên bản PC và máy chủ không đổi.
+
+APK `109120813`, md5 `2052d55dc64841e53c49c40650474487`, máy chủ 8765 PID 469992.
+
+**Chủ cần nhìn kỹ NỀN BẢN ĐỒ lần này** (đây là bản đầu tiên đổi cách vẽ nền): có mảng đen, mảng thiếu, hay ô nền sai
+chỗ không, nhất là lúc chạy sang vùng mới. Mốc so sánh: `[PGND]` trung vị 17 ms, 90 % dưới 23 ms, 115 lần mỗi phiên.

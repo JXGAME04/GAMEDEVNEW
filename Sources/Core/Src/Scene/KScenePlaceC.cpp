@@ -1138,8 +1138,9 @@ void KScenePlaceC::Paint()
 			{
 #if defined(JX_MOBILE) && !defined(_SERVER)
 				// [NENDAT 11/09] tach ba nhanh de biet cat cho nao
-				fprintf(pPgLog, "[PGND] ms=%u | tieu diem %.1f/%d, ke ben %.1f/%d, XA %.1f/%d\n", dwPgMs,
-					g_dJxNenNhanh[0], g_nJxNenSo[0], g_dJxNenNhanh[1], g_nJxNenSo[1], g_dJxNenNhanh[2], g_nJxNenSo[2]);
+				extern double g_dJxNenVeMs; extern unsigned g_uJxNenVeLan, g_uJxNenSoAnh;	// [GOMNEN 12/09]
+				fprintf(pPgLog, "[PGND] ms=%u | tieu diem %.1f/%d, ke ben %.1f/%d, XA %.1f/%d | ve len anh %.1f ms / %u lan / %u anh\n", dwPgMs,
+					g_dJxNenNhanh[0], g_nJxNenSo[0], g_dJxNenNhanh[1], g_nJxNenSo[1], g_dJxNenNhanh[2], g_nJxNenSo[2], g_dJxNenVeMs, g_uJxNenVeLan, g_uJxNenSoAnh);
 #else
 				fprintf(pPgLog, "[PGND] ms=%u\n", dwPgMs);
 #endif

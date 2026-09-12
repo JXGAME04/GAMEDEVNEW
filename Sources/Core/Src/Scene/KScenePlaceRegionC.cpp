@@ -26,6 +26,11 @@
 #define	OBJ_IMAGE_ISPOSITION			oPos2.y
 
 #define	LOCAL_MAX_IMG_NUM	80
+#ifdef JX_MOBILE
+#include <vector>
+// [GOMNEN 12/09] do: thoi gian nam trong cac lan goi DrawPrimitivesOnImage cua mot vung, so lan goi, so anh
+double g_dJxNenVeMs = 0.0;	unsigned g_uJxNenVeLan = 0, g_uJxNenSoAnh = 0;
+#endif
 
 //#define	OUTPUT_PROCESS_TIME
 
@@ -207,6 +212,13 @@ void KScenePlaceRegionC::Clear()
 }
 
 //##ModelId=3DBF9582039A
+#ifdef JX_MOBILE
+// [GOMNEN 12/09] goi ve len anh, kem do thoi gian va dem so lan
+#define JX_NEN_VE(n) do { LARGE_INTEGER jxA, jxB, jxF; QueryPerformanceFrequency(&jxF); QueryPerformanceCounter(&jxA); g_pRepresent->DrawPrimitivesOnImage((n), &ImgList[0], RU_T_IMAGE, m_pPrerenderGroundImg->szImage, m_pPrerenderGroundImg->uImage, m_pPrerenderGroundImg->nISPosition); QueryPerformanceCounter(&jxB); if (jxF.QuadPart) g_dJxNenVeMs += (double)(jxB.QuadPart - jxA.QuadPart) * 1000.0 / (double)jxF.QuadPart; g_uJxNenVeLan++; } while (0)
+#else
+#define JX_NEN_VE(n) g_pRepresent->DrawPrimitivesOnImage((n), &ImgList[0], RU_T_IMAGE, m_pPrerenderGroundImg->szImage, m_pPrerenderGroundImg->uImage, m_pPrerenderGroundImg->nISPosition)
+#endif
+
 bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 {
 	if (g_pRepresent == NULL || m_pPrerenderGroundImg == NULL ||
@@ -218,13 +230,27 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 	g_pRepresent->ClearImageData(m_pPrerenderGroundImg->szImage,
 		m_pPrerenderGroundImg->uImage, m_pPrerenderGroundImg->nISPosition);
 
+#ifdef JX_MOBILE
+	// [GOMNEN 12/09] dem du CA vung -> chi MOT lan doi dich ve thay vi ~7 lan (moi lan la mot lan xa o tren GPU dien thoai)
+	const unsigned uJxTong = m_GroundLayerData.uNumGrunode + m_GroundLayerData.uNumObject;
+	std::vector<KRUImage> jxBuf(uJxTong ? (size_t)uJxTong : (size_t)1);
+	KRUImage* const ImgList = &jxBuf[0];
+	const int nJxMaxImg = (int)(uJxTong ? uJxTong : 1);
+	g_dJxNenVeMs = 0.0; g_uJxNenVeLan = 0; g_uJxNenSoAnh = uJxTong;
+#else
 	KRUImage	ImgList[LOCAL_MAX_IMG_NUM];
+	const int nJxMaxImg = LOCAL_MAX_IMG_NUM;
+#endif
 	KRUImage	*pGi;
 	unsigned int nIndex;
 	int			CellWidth  = RWPP_AREGION_WIDTH / RWP_NUM_GROUND_CELL_H;
 	int			CellHeight = RWPP_AREGION_HEIGHT / 2 / RWP_NUM_GROUND_CELL_V;
 
+#ifdef JX_MOBILE
+	memset(ImgList, 0, sizeof(KRUImage) * (size_t)nJxMaxImg);	// [GOMNEN 12/09]
+#else
 	memset(&ImgList, 0, sizeof(ImgList));
+#endif
 	int			nNum = 0;
 	pGi = &ImgList[0];
 
@@ -243,15 +269,13 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 		pGrunode = (KSPRCrunode*)(((char*)pGrunode) +
 			sizeof(KSPRCrunode::KSPRCrunodeParam) + pGrunode->Param.nFileNameLen);
 		nNum++;
-		if (nNum < LOCAL_MAX_IMG_NUM)
+		if (nNum < nJxMaxImg)	// [GOMNEN 12/09]
 		{
 			pGi++;
 		}
 		else
 		{
-			g_pRepresent->DrawPrimitivesOnImage(LOCAL_MAX_IMG_NUM, &ImgList[0], RU_T_IMAGE,
-				m_pPrerenderGroundImg->szImage, m_pPrerenderGroundImg->uImage,
-				m_pPrerenderGroundImg->nISPosition);
+			JX_NEN_VE(nJxMaxImg);	// [GOMNEN 12/09]
 			nNum = 0;
 			pGi = &ImgList[0];
 		}
@@ -272,15 +296,13 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 		pGi->uImage = 0;
 		pGi->nISPosition = IMAGE_IS_POSITION_INIT;
 		nNum++;
-		if (nNum < LOCAL_MAX_IMG_NUM)
+		if (nNum < nJxMaxImg)	// [GOMNEN 12/09]
 		{
 			pGi++;
 		}
 		else
 		{
-			g_pRepresent->DrawPrimitivesOnImage(LOCAL_MAX_IMG_NUM, &ImgList[0], RU_T_IMAGE,
-				m_pPrerenderGroundImg->szImage, m_pPrerenderGroundImg->uImage,
-				m_pPrerenderGroundImg->nISPosition);
+			JX_NEN_VE(nJxMaxImg);	// [GOMNEN 12/09]
 			nNum = 0;
 			pGi = &ImgList[0];
 		}
@@ -288,9 +310,7 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 
 	if (nNum)
 	{
-		g_pRepresent->DrawPrimitivesOnImage(nNum, &ImgList[0], RU_T_IMAGE,
-			m_pPrerenderGroundImg->szImage, m_pPrerenderGroundImg->uImage,
-			m_pPrerenderGroundImg->nISPosition);
+		JX_NEN_VE(nNum);	// [GOMNEN 12/09]
 	}
 	return true;
 }
