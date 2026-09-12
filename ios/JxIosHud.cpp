@@ -66,9 +66,10 @@ static DWORD JxHud_MauFps(int nFps)
 
 static DWORD JxHud_MauTai(float fCpu)
 {
-	if (fCpu < 0.0f)   return JXH_COL_TEXT;
-	if (fCpu < 60.0f)  return JXH_COL_GOOD;
-	if (fCpu < 120.0f) return JXH_COL_WARN;
+	// [DONHIP 11/09 CPU] nguong theo thang 0..100 % cua ca may, y het ban Android (PerfHud_MauTai)
+	if (fCpu < 0.0f)  return JXH_COL_TEXT;
+	if (fCpu < 70.0f) return JXH_COL_GOOD;
+	if (fCpu < 90.0f) return JXH_COL_WARN;
 	return JXH_COL_BAD;
 }
 

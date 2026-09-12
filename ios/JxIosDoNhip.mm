@@ -17,14 +17,30 @@
 #include <TargetConditionals.h>
 #include <mach/mach.h>
 #include <SDL3/SDL.h>
+#include <unistd.h>		// sysconf: so nhan
 #if TARGET_OS_IPHONE
 #include <os/proc.h>		// os_proc_available_memory: CHI co tren iOS
 #endif
 
+// [DONHIP 11/09 CPU] So nhan logic, lay MOT LAN. Dung de quy CPU ve thang 0..100 % cua CA MAY,
+// giong het ban Android (JxPerfHudAndroid.cpp:113 nhan thoi gian thuc voi s_nCores).
+// Thieu buoc chia nay thi con so la "% cua MOT nhan": iPhone 6 nhan co the len toi 600 %,
+// nen chu thay "CPU 130 %" va tuong bo do hong.
+static int JxIosDo_SoNhan(void)
+{
+	static int s_nNhan = 0;
+	if (s_nNhan == 0)
+	{
+		long n = sysconf(_SC_NPROCESSORS_ONLN);
+		s_nNhan = (n > 0) ? (int)n : 1;
+	}
+	return s_nNhan;
+}
+
 extern "C" void JxIosDo_Lay(float* pCpuPhanTram, double* pRamMB, double* pRamConMB,
                             int* pNhiet, float* pPin)
 {
-	// ---- CPU: cong thoi gian CPU cua moi luong dang song ----
+	// ---- CPU: cong thoi gian CPU cua moi luong dang song, roi chia so nhan ----
 	if (pCpuPhanTram)
 	{
 		*pCpuPhanTram = -1.0f;
@@ -42,7 +58,9 @@ extern "C" void JxIosDo_Lay(float* pCpuPhanTram, double* pRamMB, double* pRamCon
 					tong += ti.cpu_usage / (double)TH_USAGE_SCALE;
 			}
 			vm_deallocate(mach_task_self(), (vm_offset_t)ds, nDs * sizeof(thread_t));
-			*pCpuPhanTram = (float)(tong * 100.0);	// 100 % = MOT nhan chay het
+			double dPt = tong * 100.0 / (double)JxIosDo_SoNhan();	// 100 % = CA MAY chay het (nhu ban Android)
+			if (dPt > 100.0) dPt = 100.0;	// ban Android cung kep o 100 % (nPm > 1000 -> 1000)
+			*pCpuPhanTram = (float)dPt;
 		}
 	}
 
