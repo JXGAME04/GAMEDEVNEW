@@ -31,5 +31,14 @@
 		<string>arm64</string>
 		<string>metal</string>
 	</array>
+	<!-- [IOS-TAI 11/09] bo tai du lieu: cho phep HTTP thuong TRONG MANG NOI BO (may chu thu o LAN).
+	     Kho du lieu phat hanh cho nguoi choi phai dung HTTPS - ATS mac dinh van chan HTTP ra Internet. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Tai du lieu game tu may chu trong mang noi bo.</string>
 </dict>
 </plist>

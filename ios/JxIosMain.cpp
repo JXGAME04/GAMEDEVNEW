@@ -6,7 +6,8 @@
 // Thu muc du lieu, thu theo thu tu, lay thu muc dau tien co config.ini:
 //   1. bien moi truong JX_DATA_DIR (dat duoc trong so do chay cua Xcode khi go loi)
 //   2. dong dau tien cua <Documents>/jx_data_dir.txt
-//   3. <Documents> cua ung dung  - cho bo tai se ghi vao (buoc F)
+//   3. <Documents> cua ung dung  - bo tai (ios/JxTaiDuLieu.mm) ghi vao day; dia chi kho du lieu
+//      doc tu dong dau <Documents>/may_chu_tai.txt
 //   4. <Library/Application Support>/jx1
 //   5. thu muc tai nguyen trong goi ung dung (chi doc, dung khi nhet san du lieu vao goi de thu)
 //
@@ -27,6 +28,8 @@ extern int JxPosixMain(int argc, char* argv[]);   // KHONG extern "C" (S3Client.
 extern "C" const char* JxIos_ThuMucTaiLieu(char* pszRa, size_t nRa);
 extern "C" const char* JxIos_ThuMucHoTro(char* pszRa, size_t nRa);
 extern "C" const char* JxIos_ThuMucGoi(char* pszRa, size_t nRa);
+// [IOS-TAI 11/09] buoc F: bo tai du lieu trong app (ios/JxTaiDuLieu.mm)
+extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char* pszLoi, int nLoi);
 
 // [IOS-KYHIEU 11/09] cac ham ma tren Windows/Android nam trong DLL/.so rieng; tren iOS chung link tinh
 // vao cung mot nhi phan nen chi can khai bao roi lay dia chi. Voi ham lien ket kieu C thi trinh lien ket
@@ -90,6 +93,46 @@ int main(int argc, char* argv[])
 		{
 			size_t k = strlen(szKiem);
 			snprintf(szKiem + k, sizeof(szKiem) - k, "\n  %s", cand[i]);
+		}
+	}
+
+	// [IOS-TAI 11/09] buoc F: neu <Documents>/may_chu_tai.txt co dia chi kho du lieu thi tai ve.
+	// Chay CA KHI da co du lieu: manifest cho biet tep nao doi, chi tai phan chenh lech.
+	// Khong noi duoc may chu ma da co du lieu san thi ghi log roi choi tiep (choi duoc khi khong mang).
+	if (szTaiLieu[0])
+	{
+		char szMc[1200]; snprintf(szMc, sizeof(szMc), "%s/may_chu_tai.txt", szTaiLieu);
+		char szGoc[512] = "";
+		FILE* fm = fopen(szMc, "rb");
+		if (fm)
+		{
+			if (fgets(szGoc, sizeof(szGoc), fm))
+			{
+				size_t n = strlen(szGoc);
+				while (n && (szGoc[n-1] == '\n' || szGoc[n-1] == '\r' || szGoc[n-1] == ' ' || szGoc[n-1] == '\t')) szGoc[--n] = 0;
+			}
+			fclose(fm);
+		}
+		if (szGoc[0])
+		{
+			char szLoi[512] = "";
+			JxIosLog("[IOS-TAI] kho du lieu: %s -> %s", szGoc, szTaiLieu);
+			int nT = JxTaiDuLieu_Chay(szTaiLieu, szGoc, szLoi, sizeof(szLoi));
+			JxIosLog("[IOS-TAI] ket qua %d%s%s", nT, szLoi[0] ? ": " : "", szLoi);
+			if (nT == 0 && !pszDir)
+			{	// vua tai xong: kiem lai Documents
+				char szC[1200]; snprintf(szC, sizeof(szC), "%s/config.ini", szTaiLieu);
+				if (access(szC, R_OK) == 0)
+					pszDir = szTaiLieu;
+			}
+			if (nT != 0 && !pszDir)
+			{
+				JxPosix_SetDataDir(szTaiLieu); chdir(szTaiLieu);
+				char sz[1024];
+				snprintf(sz, sizeof(sz), "Tai du lieu that bai:\n\n%s", szLoi);
+				SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "JX1 Mobile", sz, NULL);
+				return 1;
+			}
 		}
 	}
 

@@ -30,6 +30,8 @@ extern "C" iRepresentShell* CreateRepresentShell();
 extern "C" int              Rep3_NapTruoc2(const char*, int);
 extern "C" HRESULT          CreateInterface(const GUID&, void**);
 extern "C" HRESULT          CreateTextFilter(ITextFilter**);
+// [IOS-TAI 11/09] buoc F: bo tai du lieu trong app - dung chung tep voi ban iOS (ios/JxTaiDuLieu.mm)
+extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char* pszLoi, int nLoi);
 
 static void JxMacLog(const char* fmt, ...)
 {
@@ -61,6 +63,51 @@ int main(int argc, char* argv[])
 		if (access(szC, R_OK) == 0) pszDir = cand[i];
 		else { size_t k = strlen(szKiem); snprintf(szKiem + k, sizeof(szKiem) - k, "\n  %s", cand[i]); }
 	}
+	// [IOS-TAI 11/09] buoc F: bo tai du lieu trong app. Dia chi kho du lieu nam o dong dau
+	// tep may_chu_tai.txt; thu muc chua tep do chinh la noi tai ve.
+	// Khong noi duoc may chu ma may da co du lieu thi ghi log roi choi tiep (choi duoc khi mat mang).
+	{
+		// Tim may_chu_tai.txt trong CHINH cac thu muc ung vien (thu muc chua no = noi tai ve),
+		// vi nguoi choi co the dat goi du lieu o bat ky dau roi chay jx1mac tu do.
+		const char* pszDich = NULL;
+		char szGoc[512] = "";
+		for (int i = 0; i < nc && !pszDich; i++)
+		{
+			char szMc[1200]; snprintf(szMc, sizeof(szMc), "%s/may_chu_tai.txt", cand[i]);
+			FILE* fm = fopen(szMc, "rb");
+			if (!fm) continue;
+			if (fgets(szGoc, sizeof(szGoc), fm))
+			{
+				size_t n = strlen(szGoc);
+				while (n && (szGoc[n-1] == '\n' || szGoc[n-1] == '\r' || szGoc[n-1] == ' ' || szGoc[n-1] == '\t')) szGoc[--n] = 0;
+			}
+			fclose(fm);
+			if (szGoc[0]) pszDich = cand[i];
+		}
+		if (pszDich)
+		{
+			{
+				char szLoi[512] = "";
+				JxMacLog("[MAC-TAI] kho du lieu: %s -> %s", szGoc, pszDich);
+				int nT = JxTaiDuLieu_Chay(pszDich, szGoc, szLoi, sizeof(szLoi));
+				JxMacLog("[MAC-TAI] ket qua %d%s%s", nT, szLoi[0] ? ": " : "", szLoi);
+				if (nT == 0 && !pszDir)
+				{
+					char szC[1200]; snprintf(szC, sizeof(szC), "%s/config.ini", pszDich);
+					if (access(szC, R_OK) == 0) pszDir = pszDich;
+				}
+				if (nT != 0 && !pszDir)
+				{
+					char sz[1024];
+					snprintf(sz, sizeof(sz), "Tai du lieu that bai:\n\n%s", szLoi);
+					fprintf(stderr, "%s\n", sz);
+					SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "JX1 macOS", sz, NULL);
+					return 1;
+				}
+			}
+		}
+	}
+
 	if (!pszDir)
 	{
 		char sz[3600];
