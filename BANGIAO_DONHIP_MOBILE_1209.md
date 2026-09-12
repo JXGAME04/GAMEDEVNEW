@@ -5,6 +5,29 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **17:00 11/09 — TÌM RA HƯỚNG ĐÚNG: NHÁNH CHÍNH ĐÃ GIẢI XONG BÀI TOÁN NÀY CHO BẢN PC, MOBILE CHƯA PORT.** Chủ chỉ: bản sửa "nằm ở main
+> chính của dự án, không phải main mobile"; bản PC chạy 144 fps, đông vẫn trên 135.
+> Loạt commit `[MANG 09/09]` a đến f trên `origin/main` sửa cho **đường vẽ D3D11** (`D3D9on11*.cpp`), còn mobile chạy **đường SDL_GPU / Vulkan**
+> (`D3D9onGPU*.cpp`) nên không được hưởng:
+>
+> | Bước | Commit | Việc | Số đo của bản PC |
+> |---|---|---|---|
+> | a | `0b855da7` | atlas thành Texture2DArray | bỏ 95,9 % lý do vỡ lô quad |
+> | b | `9190fab1` | alpha test theo đỉnh, hai mảng atlas gắn cố định khe t3/t4, mảng lớn lên không kèm dữ liệu | bỏ khung 20 đến 57 ms |
+> | c | `c6e98e0f` | bộ đệm đỉnh 4 lên 16 MB | |
+> | d | `4ee8e6ad` | **chữ (texture MANAGED) vào atlas** + tham số tầng 0 theo đỉnh | hai lý do vỡ lô cuối |
+> | e | `ac7d255b` | **cull trên CPU cho lệnh 2D** | 92 % lý do vỡ lô |
+> | f | `5311778b` | atlas theo **khối cố định** (R8G8 32 lớp/64 MB, tối đa 16 khối), trường lớp 9 bit = khối<<5 hoặc lớp, shader chọn khối bằng switch trên **16 sampler gắn cố định** | hết đổi binding texture |
+>
+> **Vì sao C1 của tôi hỏng còn bản PC thành công.** Tôi làm cụm tăng dần 2/4/8 lớp với một sampler mảng duy nhất, nên vẫn phải đổi binding
+> giữa các cụm. Bản PC làm khối lớn cố định 32 lớp và **gắn cố định 16 mảng vào các khe sampler**, chọn bằng chỉ số theo đỉnh, nên không bao giờ
+> đổi binding. Đó là khác biệt quyết định.
+> **Hai nguyên nhân của bản PC đều đúng với mobile, đã kiểm trong mã và log:** đường SDL_GPU có gộp `D3DRS_CULLMODE` vào khoá pipeline
+> (`D3D9onGPUDev.cpp:437`), và chữ trên mobile là MANAGED nên `CAtlasMgrGpu::Eligible` loại khỏi atlas. Log mobile: lý do quad không gộp là
+> texture0 82 đến 88 %, pipeline 12 đến 17 %.
+> **Việc kế, thay cho mọi hướng tôi tự nghĩ trước đó:** port sang đường SDL_GPU theo thứ tự **(d) chữ vào atlas → (e) cull trên CPU → (f) khối
+> cố định gắn sampler**, mỗi bước một công tắc và đo bằng đúng bộ log này.
+
 > **16:30 11/09 — C1 HỎNG TRÊN MÁY THẬT, ĐÃ TẮT NGAY BẰNG CONFIG.** Chủ 16:25: "đợt này di chuyển màn hình hay bị giật và FPS tụt xuống 25".
 > Đã đặt `Rep3AtlasMangGpu=0` (tên khoá đổi lúc 16:30 vì `Rep3AtlasMang` đã là khoá của đường vẽ D3D11; khoá cũ trong dt_v4 nay vô hại vì mặc định là 0) trong `D:\jx1_android_data_dt_v4\config.ini` và khởi động lại 8765 (PID 369628) lúc 16:27; APK giữ nguyên 109111608 nên
 > chủ chỉ cần **mở lại app** là về đúng hành vi bản 109111545. Mặc định trong mã cũng đã đổi sang 0 (commit sau), mã giữ lại sau công tắc.
