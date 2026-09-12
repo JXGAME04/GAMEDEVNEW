@@ -425,7 +425,7 @@ public:
 	DWORD   GetStateInternal(DWORD key);
 	void    FillCaps(D3DCAPS9* pCaps);
 	bool    SubmitFrame(bool bPresent);						// phat lai lenh cua khung (Present hoac can doc lai)
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 d] mo cho iOS; Android van dinh nghia JX_MOBILE
 	bool    JxBoKhungGiong();								// [BKG 11/09] khung giong het khung vua trinh chieu -> khong SubmitFrame; tra true = da bo
 	UINT    JxPsIdx(const RgPsCb& ps);						// [GOP 11/09] chi so to hop trang thai tang texture trong bang cua khung (them neu chua co)
 #endif

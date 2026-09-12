@@ -228,6 +228,7 @@ int g_nJxPsBuffer = 0, g_nJxBindRing = 0;	// [GOP] chua port sang Metal
 int g_nJxAtlasMang = 0, g_nJxAtlasLop = 8, g_nJxAtlasCumMB = 64;	// [MANG] chua port
 int g_nJxAtlasKhoi = 0, g_nJxAtlasKhoiLop = 8;	// [KHOI] chua port
 JxVeDo g_jxVeKhung, g_jxVeTong, g_jxVeMax;	// bo do ve (D3D9onGPUDev.cpp ghi)
+unsigned g_uJxPsBangMax = 0, g_uJxPsTran = 0;	// [GOP] do bang trang thai tang texture
 #endif
 void Rep3VeDem(const char* p)
 {
@@ -747,7 +748,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	if (g_nJxAtlasTrang != 1024 && g_nJxAtlasTrang != 2048 && g_nJxAtlasTrang != 4096) g_nJxAtlasTrang = 2048;
 	g_nJxPalBuffer      = Rep3Ini("Rep3PalBuffer", 1) ? 1 : 0;	// [PALBUF 11/09] 1 = bang mau trong storage buffer (het khung chep 17-100 ms khi tai hang bang mau vao texture 256x8192); 0 = texture nhu cu
 #ifdef JX_APPLE	// [IOS-GOP 12/09 b] Metal moi port bang mau; cac toi uu con lai EP TAT cho toi khi do xong tung cai
-	g_nJxPsBuffer = 0; g_nJxBindRing = 0; g_nJxAtlasMang = 0; g_nJxAtlasKhoi = 0;
+	g_nJxBindRing = 0; g_nJxAtlasMang = 0; g_nJxAtlasKhoi = 0;	// [IOS-GOP 12/09 d] ps buffer DA port; bind ring / texture mang / atlas khoi thi chua
 #endif	// [PALBUF 11/09] 1 = bang mau trong storage buffer (het khung chep 17-100 ms khi tai hang bang mau vao texture 256x8192); 0 = texture nhu cu
 	g_nJxBoKhungGiong   = Rep3Ini("Rep3BoKhungGiong", 1);	// [BKG 11/09] 1 = khung giong het khung vua trinh chieu -> khong trinh chieu; 0 = chi dem [VE-BKG]; -1 = tat han (khong so sanh)
 	g_nJxBoKhungGiongMs = Rep3Ini("Rep3BoKhungGiongMs", 250);	// toi da ms giua hai lan trinh chieu khi khung giong (0 = khong gioi han)

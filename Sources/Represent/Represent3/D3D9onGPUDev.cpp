@@ -466,6 +466,12 @@ bool CDevGpu::CreateShaders()
 	{	// [IOS-GOP 12/09 b] bang mau = storage buffer -> quad khac bang mau van gop chung mot lenh ve
 		si.code = (const Uint8*)g_Rep3GpuFSPalBufMsl; si.code_size = sizeof(g_Rep3GpuFSPalBufMsl) - 1;
 		si.num_samplers = 2; si.num_storage_buffers = 1;
+		if (g_nJxPsBuffer)
+		{	// [IOS-GOP 12/09 d] them bang trang thai tang texture: hai lenh chi khac ps VAN gop duoc.
+			// Day moi la to hop ma ban Android chay hang ngay - bat mot minh bang mau la to hop chua ai chay.
+			si.code = (const Uint8*)g_Rep3GpuFSPalPsMsl; si.code_size = sizeof(g_Rep3GpuFSPalPsMsl) - 1;
+			si.num_storage_buffers = 2; si.num_uniform_buffers = 0;
+		}
 	}
 #endif
 #ifdef JX_ANDROID
@@ -1086,7 +1092,7 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 	else if (type == D3DPT_LINESTRIP) topo = SDL_GPU_PRIMITIVETYPE_LINESTRIP;
 	else if (type == D3DPT_TRIANGLESTRIP && nVerts != 4) topo = SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP;
 	RgDrawState st; ComputeState(st, topo);	// (PrepareForBind o day: texture ao da co cho trong trang truoc khi doi uv)
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 d] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 	if (g_nJxPsBuffer)
 	{	// [GOP 11/09] o PALROW: bit 0..12 hang bang mau (0x1FFF = khong co), 13..24 chi so to hop ps, 25..30 danh cho lop atlas (buoc sau)
 		const UINT uRow = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? ((UINT)m_tex[0]->m_nPalRow & 0x1FFFu) : 0x1FFFu;
@@ -1130,7 +1136,7 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 		if (!m_cmds.empty())
 		{
 			RgCmd& L = m_cmds.back();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 d] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 			// [GOP 11/09] ps theo dinh -> khong so phan ps khi gop (hai quad chi khac trang thai tang texture van gop duoc)
 			const size_t nSo = g_nJxPsBuffer ? offsetof(RgDrawState, ps) : sizeof(st);
 #else
@@ -1223,7 +1229,7 @@ static void RgEnsureXfer(SDL_GPUDevice* dev, SDL_GPUTransferBuffer** pp, UINT* p
 	*pp = SDL_CreateGPUTransferBuffer(dev, &ti); *pSize = *pp ? sz : 0;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 d] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 // [GOP 11/09] Chi so to hop trang thai tang texture (RgPsCb) trong bang cua khung: hai lenh ve chi khac ps thi VAN gop duoc vi ps
 // di theo dinh (12 bit trong o PALROW) chu khong phai uniform cua lenh. Bang gui len storage buffer mot lan moi khung.
 // Nho o cuoi (ps doi 837 lan tren 1 818 lenh -> phan lon lenh dung lai ps ngay truoc) roi moi tra bang bam; bam va cham
@@ -1570,7 +1576,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			jxK.uDoiVs++;	// [VE 11/09]
 #endif
 		}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 d] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 		if (!g_nJxPsBuffer && (!bLast || memcmp(&st.ps, &last.ps, sizeof(st.ps)) != 0))	// [GOP 11/09] ps theo dinh: shader doc tu bang, khong day uniform
 #else
 		if (!bLast || memcmp(&st.ps, &last.ps, sizeof(st.ps)) != 0)
