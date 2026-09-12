@@ -1196,3 +1196,36 @@ Phần `texture0` (99,9 % lý do không gộp) vẫn còn nguyên đó và vẫn
 texture mảng trên máy này**. Hướng phải khác: gom trang atlas thành ít texture 2D **thường** cỡ lớn (ví dụ 8192²,
 Adreno cho tới 16384) thay vì nhiều lớp trong một mảng — lấy mẫu vẫn là `sampler2D` nên không dính chi phí mảng,
 đổi lại chỉ giảm được số texture chứ không về 1. Cần đo trước khi viết.
+
+
+---
+
+## 20:20 11/09 — `[KHOI3]`: tôi làm sai một chỗ so với bản PC, đã sửa (APK 109112011)
+
+Chủ hỏi "bạn đang đi theo hướng của client pc hay sao" rồi bảo đọc lại và phản biện. Đọc lại thì ra **tôi làm
+thiếu đúng một thứ, và nó nằm ngay trong câu mô tả commit của bản PC mà tôi đã đọc**:
+
+> `5311778b`: "... shader chon khoi bang switch, **SampleLevel(...,0)** (1 mip -> y het Sample)."
+
+Bản PC lấy mẫu bằng `SampleLevel(..., 0)` tức **LOD hiện**. Tôi viết `texture()` tức **LOD ngầm**, và đặt nó
+**bên trong nhánh chọn khối**.
+
+**Vì sao chỗ đó đắt.** `texture()` cần đạo hàm của toạ độ uv, mà đạo hàm chỉ hợp lệ trong luồng điều khiển đồng nhất.
+Đặt nó trong nhánh buộc trình biên dịch phải tính đạo hàm trước rồi giữ sống qua cả 12 nhánh. Áp lực thanh ghi tăng,
+occupancy giảm, GPU chậm hẳn. Mọi texture ở đây đều có đúng 1 mip nên `textureLod(..., 0.0)` cho kết quả **y hệt**,
+đúng như ghi chú của bản PC.
+
+Bằng chứng gián tiếp ngay khi dịch lại: SPIR-V của biến thể khối **nhỏ đi 3 168 byte** (34 764 → 31 596), đúng dấu
+hiệu của phần tính đạo hàm bị bỏ đi.
+
+Sửa kèm cho giống bản PC: đổi chuỗi `if / else if` thành `switch / case`, và đường lùi về texture riêng cũng dùng
+`textureLod`.
+
+**Cũng phải nói rõ:** kết luận "atlas khối lỗ GPU" lúc 19:58 **chưa chắc đúng**, vì bản đo lúc đó chạy shader sai
+cách này. Phải đo lại bản đã sửa rồi mới kết luận được.
+
+**Kiểm:** SPIR-V hợp lệ cả 5 biến thể; **chỉ biến thể khối đổi byte**, bốn biến thể còn lại (gồm cả hai của bản PC)
+y hệt. Android dựng qua; Windows `Release|Win32` 0 lỗi. Máy ảo: khối cấp đúng, 0 dòng lỗi, màn menu vẽ đúng.
+
+APK `109112011`, md5 `c13bcc7b45362b5fadf9a5d09d8dc9f3`, lên `dt_v4` 20:20, máy chủ 8765 PID 388852,
+`Rep3AtlasKhoi=1` (bật lại để đo bản đã sửa).

@@ -36,59 +36,77 @@ layout(set = 2, binding = 13) uniform sampler2DArray g_k11;
 #define JX_KHOI_L    float((vPal >> 24) & 7u)
 #define JX_KHOI_LI   int((vPal >> 24) & 7u)
 
+// [KHOI3 11/09] SUA THEO DUNG BAN PC: textureLod(..., 0.0) chu KHONG phai texture().
+// Ban PC ghi ro trong commit 5311778b: "shader chon khoi bang switch, SampleLevel(...,0) (1 mip -> y het Sample)".
+// Ly do: texture() lay LOD NGAM, can dao ham cua uv, ma dao ham chi hop le trong luong dieu khien DONG NHAT.
+// Dat no BEN TRONG nhanh chon khoi la buoc trinh bien dich phai tinh dao ham truoc roi giu song qua ca 12 nhanh
+// -> ap luc thanh ghi tang, occupancy giam, GPU cham han. Moi texture o day deu num_levels = 1 nen LOD 0 cho
+// ket qua Y HET. Dung switch/case giong ban PC thay vi chuoi if/else long nhau.
 vec4 JxKhoiTex(vec2 uv)
 {
     uint k = JX_KHOI_I; float l = JX_KHOI_L;
-    if (k == 0u) return texture(g_k0, vec3(uv, l));
-    else if (k == 1u) return texture(g_k1, vec3(uv, l));
-    else if (k == 2u) return texture(g_k2, vec3(uv, l));
-    else if (k == 3u) return texture(g_k3, vec3(uv, l));
-    else if (k == 4u) return texture(g_k4, vec3(uv, l));
-    else if (k == 5u) return texture(g_k5, vec3(uv, l));
-    else if (k == 6u) return texture(g_k6, vec3(uv, l));
-    else if (k == 7u) return texture(g_k7, vec3(uv, l));
-    else if (k == 8u) return texture(g_k8, vec3(uv, l));
-    else if (k == 9u) return texture(g_k9, vec3(uv, l));
-    else if (k == 10u) return texture(g_k10, vec3(uv, l));
-    else if (k == 11u) return texture(g_k11, vec3(uv, l));
+    switch (k)
+    {
+    case 0u: return textureLod(g_k0, vec3(uv, l), 0.0);
+    case 1u: return textureLod(g_k1, vec3(uv, l), 0.0);
+    case 2u: return textureLod(g_k2, vec3(uv, l), 0.0);
+    case 3u: return textureLod(g_k3, vec3(uv, l), 0.0);
+    case 4u: return textureLod(g_k4, vec3(uv, l), 0.0);
+    case 5u: return textureLod(g_k5, vec3(uv, l), 0.0);
+    case 6u: return textureLod(g_k6, vec3(uv, l), 0.0);
+    case 7u: return textureLod(g_k7, vec3(uv, l), 0.0);
+    case 8u: return textureLod(g_k8, vec3(uv, l), 0.0);
+    case 9u: return textureLod(g_k9, vec3(uv, l), 0.0);
+    case 10u: return textureLod(g_k10, vec3(uv, l), 0.0);
+    case 11u: return textureLod(g_k11, vec3(uv, l), 0.0);
+    default: break;
+    }
     return vec4(1.0);
 }
 vec4 JxKhoiFetch(ivec2 p)
 {
     uint k = JX_KHOI_I; int l = JX_KHOI_LI;
-    if (k == 0u) return texelFetch(g_k0, ivec3(p, l), 0);
-    else if (k == 1u) return texelFetch(g_k1, ivec3(p, l), 0);
-    else if (k == 2u) return texelFetch(g_k2, ivec3(p, l), 0);
-    else if (k == 3u) return texelFetch(g_k3, ivec3(p, l), 0);
-    else if (k == 4u) return texelFetch(g_k4, ivec3(p, l), 0);
-    else if (k == 5u) return texelFetch(g_k5, ivec3(p, l), 0);
-    else if (k == 6u) return texelFetch(g_k6, ivec3(p, l), 0);
-    else if (k == 7u) return texelFetch(g_k7, ivec3(p, l), 0);
-    else if (k == 8u) return texelFetch(g_k8, ivec3(p, l), 0);
-    else if (k == 9u) return texelFetch(g_k9, ivec3(p, l), 0);
-    else if (k == 10u) return texelFetch(g_k10, ivec3(p, l), 0);
-    else if (k == 11u) return texelFetch(g_k11, ivec3(p, l), 0);
+    switch (k)
+    {
+    case 0u: return texelFetch(g_k0, ivec3(p, l), 0);
+    case 1u: return texelFetch(g_k1, ivec3(p, l), 0);
+    case 2u: return texelFetch(g_k2, ivec3(p, l), 0);
+    case 3u: return texelFetch(g_k3, ivec3(p, l), 0);
+    case 4u: return texelFetch(g_k4, ivec3(p, l), 0);
+    case 5u: return texelFetch(g_k5, ivec3(p, l), 0);
+    case 6u: return texelFetch(g_k6, ivec3(p, l), 0);
+    case 7u: return texelFetch(g_k7, ivec3(p, l), 0);
+    case 8u: return texelFetch(g_k8, ivec3(p, l), 0);
+    case 9u: return texelFetch(g_k9, ivec3(p, l), 0);
+    case 10u: return texelFetch(g_k10, ivec3(p, l), 0);
+    case 11u: return texelFetch(g_k11, ivec3(p, l), 0);
+    default: break;
+    }
     return vec4(1.0);
 }
 ivec2 JxKhoiDim()
 {
     uint k = JX_KHOI_I;
-    if (k == 0u) return textureSize(g_k0, 0).xy;
-    else if (k == 1u) return textureSize(g_k1, 0).xy;
-    else if (k == 2u) return textureSize(g_k2, 0).xy;
-    else if (k == 3u) return textureSize(g_k3, 0).xy;
-    else if (k == 4u) return textureSize(g_k4, 0).xy;
-    else if (k == 5u) return textureSize(g_k5, 0).xy;
-    else if (k == 6u) return textureSize(g_k6, 0).xy;
-    else if (k == 7u) return textureSize(g_k7, 0).xy;
-    else if (k == 8u) return textureSize(g_k8, 0).xy;
-    else if (k == 9u) return textureSize(g_k9, 0).xy;
-    else if (k == 10u) return textureSize(g_k10, 0).xy;
-    else if (k == 11u) return textureSize(g_k11, 0).xy;
+    switch (k)
+    {
+    case 0u: return textureSize(g_k0, 0).xy;
+    case 1u: return textureSize(g_k1, 0).xy;
+    case 2u: return textureSize(g_k2, 0).xy;
+    case 3u: return textureSize(g_k3, 0).xy;
+    case 4u: return textureSize(g_k4, 0).xy;
+    case 5u: return textureSize(g_k5, 0).xy;
+    case 6u: return textureSize(g_k6, 0).xy;
+    case 7u: return textureSize(g_k7, 0).xy;
+    case 8u: return textureSize(g_k8, 0).xy;
+    case 9u: return textureSize(g_k9, 0).xy;
+    case 10u: return textureSize(g_k10, 0).xy;
+    case 11u: return textureSize(g_k11, 0).xy;
+    default: break;
+    }
     return ivec2(1, 1);
 }
-#define JX_TEX0(uv)  (JX_KHOI_CO ? JxKhoiTex(uv)  : texture(g_t0, uv))
-#define JX_TEX1(uv)  texture(g_t1, uv)
+#define JX_TEX0(uv)  (JX_KHOI_CO ? JxKhoiTex(uv)  : textureLod(g_t0, uv, 0.0))	// [KHOI3 11/09] LOD hien ca hai nhanh
+#define JX_TEX1(uv)  textureLod(g_t1, uv, 0.0)	// [KHOI3 11/09]
 #define JX_FETCH0(p) (JX_KHOI_CO ? JxKhoiFetch(p) : texelFetch(g_t0, p, 0))
 #define JX_DIM0      (JX_KHOI_CO ? JxKhoiDim()    : textureSize(g_t0, 0))
 #define JX_BUF0      14
