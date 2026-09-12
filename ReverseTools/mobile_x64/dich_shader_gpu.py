@@ -12,7 +12,7 @@ VAL = os.path.join(ndks[-1], "shader-tools", "windows-x86_64", "spirv-val.exe")
 out = ["// [GPU 08/09] SINH TU DONG boi ReverseTools/mobile_x64/dich_shader_gpu.py tu Rep3ShadersGPU.vert/.frag (glslc %s). DUNG SUA TAY." % os.path.basename(ndks[-1]),
        "#pragma once", ""]
 # [PALBUF 11/09] bien the thu ba: frag voi -DJX_PAL_BUFFER=1 (bang mau = storage buffer), chi Android (#ifdef JX_ANDROID) - g_Rep3GpuFS cua PC giu nguyen byte
-for stage, name, opts in (("vert", "g_Rep3GpuVS", []), ("frag", "g_Rep3GpuFS", []), ("frag", "g_Rep3GpuFSPalBuf", ["-DJX_PAL_BUFFER=1"]), ("frag", "g_Rep3GpuFSPalPs", ["-DJX_PAL_BUFFER=1", "-DJX_PS_BUFFER=1"]), ("frag", "g_Rep3GpuFSPalPsMang", ["-DJX_PAL_BUFFER=1", "-DJX_PS_BUFFER=1", "-DJX_TEX_ARRAY=1"])):
+for stage, name, opts in (("vert", "g_Rep3GpuVS", []), ("frag", "g_Rep3GpuFS", []), ("frag", "g_Rep3GpuFSPalBuf", ["-DJX_PAL_BUFFER=1"]), ("frag", "g_Rep3GpuFSPalPs", ["-DJX_PAL_BUFFER=1", "-DJX_PS_BUFFER=1"]), ("frag", "g_Rep3GpuFSPalPsMang", ["-DJX_PAL_BUFFER=1", "-DJX_PS_BUFFER=1", "-DJX_TEX_ARRAY=1"]), ("frag", "g_Rep3GpuFSPalPsKhoi", ["-DJX_PAL_BUFFER=1", "-DJX_PS_BUFFER=1", "-DJX_ATLAS_KHOI=1"])):
     src = os.path.join(D, "Rep3ShadersGPU." + stage); spv = src + "." + name + ".spv"
     r = subprocess.run([GLSLC, "-fshader-stage=" + stage, "-O", "--target-env=vulkan1.0"] + opts + [src, "-o", spv], capture_output=True, text=True)
     if r.returncode != 0:

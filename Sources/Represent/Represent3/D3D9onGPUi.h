@@ -46,9 +46,10 @@ void  RgConvertRowToBgra(D3DFORMAT f, const BYTE* pSrc, DWORD* pDst, UINT w);
 class CAtlasPageGpu
 {
 public:
-	CAtlasPageGpu() : m_pTex(NULL), m_fmt(SDL_GPU_TEXTUREFORMAT_INVALID), m_bpp(0), m_binH(0), m_rows(0), m_used(0), m_nLop(0) {}
+	CAtlasPageGpu() : m_pTex(NULL), m_fmt(SDL_GPU_TEXTUREFORMAT_INVALID), m_bpp(0), m_binH(0), m_rows(0), m_used(0), m_nLop(0), m_nKhoi(0xFFu) {}
 	SDL_GPUTexture* m_pTex; SDL_GPUTextureFormat m_fmt; UINT m_bpp; UINT m_binH, m_rows, m_used;
 	UINT m_nLop;	// [MANG 11/09] lop cua trang trong texture mang cua cum (m_pTex la texture DUNG CHUNG cua cum - khong duoc huy rieng)
+	UINT m_nKhoi;	// [KHOI 11/09] chi so KHOI atlas (0..7 = khe sampler 2+k); 0xFF = khong o khoi nao (texture rieng nhu cu)
 	std::vector<std::vector<std::pair<UINT, UINT> > > m_free;	// moi hang: cac doan trong [x0, x1)
 #ifdef JX_ANDROID
 	// [VE 11/09 e] xep KE (Rep3AtlasKe=1): trang chi theo dinh dang, cac ke cao khac nhau mo dan tu y = 0; m_binH = 0, m_rows = 0
@@ -72,6 +73,12 @@ public:
 #endif
 #ifdef JX_ANDROID
 	// [MANG 11/09] cum = mot texture mang 2D chua nhieu trang (moi trang mot lop)
+	// [KHOI 11/09] KHOI atlas: texture mang 2D nLop lop, GAN CHET vao khe sampler 2+nKhoi va khong bao gio doi trong ca khung
+	struct JxKhoi { SDL_GPUTexture* pTex; SDL_GPUTextureFormat fmt; UINT bpp; UINT nLop, nDung; std::vector<UINT> lopTrong; };
+	std::vector<JxKhoi> m_jxKhoiV;
+	bool JxCapKhoi(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture** ppTex, UINT* pKhoi, UINT* pLop);
+	SDL_GPUTexture* JxKhoiTex(UINT i) const { return (i < m_jxKhoiV.size()) ? m_jxKhoiV[i].pTex : NULL; }
+	UINT JxKhoiSo() const { return (UINT)m_jxKhoiV.size(); }
 	struct JxCum { SDL_GPUTexture* pTex; SDL_GPUTextureFormat fmt; UINT bpp; UINT nLop, nLopTiep; std::vector<UINT> lopTrong; };
 	std::vector<JxCum> m_jxCum;
 	bool JxCapLop(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture** ppTex, UINT* pLop);	// cap mot lop (tao cum moi neu het)
@@ -125,6 +132,7 @@ public:
 	bool  ThuLaiCpu();						// [GPU 11/09 BOCPU] ban CPU da bo: doc lai tu GPU (dong bo, hiem)
 	SDL_GPUTexture* GpuTex() const { return m_bVirtual ? (m_pPage ? m_pPage->m_pTex : NULL) : m_pGpu; }
 	UINT  JxLop() const { return (m_bVirtual && m_pPage) ? m_pPage->m_nLop : 0; }	// [MANG 11/09] lop trong texture mang (texture rieng = 0)
+	UINT  JxKhoi() const { return (m_bVirtual && m_pPage) ? m_pPage->m_nKhoi : 0xFFu; }	// [KHOI 11/09] khoi atlas (0xFF = texture rieng)
 	bool  NewVersion(bool bTarget);			// tao SDL_GPUTexture moi (ban cu vao danh sach tra sau Present)
 	void  QueueUpload(const RECT* prc);		// chep CPU (vung prc) vao staging cua khung + ghi lenh tai
 
@@ -458,6 +466,7 @@ public:
 	std::map<DWORD, SDL_GPUSampler*> m_samplers;
 	SDL_GPUBuffer*  m_pDummy;			// 1 dinh gia (mau trang, uv 0) theo instance
 	SDL_GPUTexture* m_pWhite;			// texture 1x1 trang cho stage khong texture
+	SDL_GPUTexture* m_pWhiteMang;		// [KHOI 11/09] texture MANG 1x1 x 1 lop: gan vao cac khe khoi chua co khoi (SDL doi moi sampler khai bao phai duoc gan)
 	// ring dinh + lenh cua khung
 	std::vector<BYTE>   m_ring;
 	SDL_GPUBuffer*      m_pRingGpu; UINT m_ringGpuSize;

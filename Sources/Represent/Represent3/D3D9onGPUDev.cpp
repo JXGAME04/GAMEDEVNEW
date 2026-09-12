@@ -213,7 +213,7 @@ CDevGpu::CDevGpu(CGpuShim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_pMutex = SDL_CreateMutex();
 	m_pGpu = NULL; m_swapFmt = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM; m_bbW = pp.BackBufferWidth; m_bbH = pp.BackBufferHeight;
 	m_pBackSurf = NULL; m_pRtTex = NULL; m_pRtSurf = NULL; m_pLastFrame = NULL; m_lastW = m_lastH = 0;
-	m_pVS = NULL; m_pFS = NULL; m_pDummy = NULL; m_pWhite = NULL;
+	m_pVS = NULL; m_pFS = NULL; m_pDummy = NULL; m_pWhite = NULL; m_pWhiteMang = NULL;	// [KHOI 11/09]
 	m_pRingGpu = NULL; m_ringGpuSize = 0; m_pRingXfer = NULL; m_ringXferSize = 0; m_pTexXfer = NULL; m_texXferSize = 0;
 #ifdef JX_ANDROID
 	m_pJxZeroXfer = NULL; m_jxZeroSize = 0; m_jxZeroDaXoa = 0;	// [VE 11/09 d]
@@ -265,6 +265,7 @@ CDevGpu::~CDevGpu()
 		for (std::map<DWORD, SDL_GPUSampler*>::iterator it = m_samplers.begin(); it != m_samplers.end(); ++it) SDL_ReleaseGPUSampler(m_pGpu, it->second);
 		if (m_pLastFrame) SDL_ReleaseGPUTexture(m_pGpu, m_pLastFrame);
 		if (m_pWhite) SDL_ReleaseGPUTexture(m_pGpu, m_pWhite);
+		if (m_pWhiteMang) SDL_ReleaseGPUTexture(m_pGpu, m_pWhiteMang);	// [KHOI 11/09]
 		if (m_pDummy) SDL_ReleaseGPUBuffer(m_pGpu, m_pDummy);
 		if (m_pRingGpu) SDL_ReleaseGPUBuffer(m_pGpu, m_pRingGpu);
 		if (m_pRingXfer) SDL_ReleaseGPUTransferBuffer(m_pGpu, m_pRingXfer);
@@ -368,6 +369,14 @@ bool CDevGpu::Init()
 		ci.width = 1; ci.height = 1; ci.layer_count_or_depth = 1; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
 		m_pWhite = SDL_CreateGPUTexture(m_pGpu, &ci);
 		if (!m_pWhite || !RgUploadOnce(m_pGpu, NULL, m_pWhite, 1, 1, &white, 4)) { RgLog("texture trang that bai: %s", SDL_GetError()); return false; }
+#ifdef JX_ANDROID
+		if (g_nJxAtlasKhoi)
+		{	// [KHOI 11/09] SDL doi MOI sampler da khai bao phai duoc gan: khe khoi chua co khoi thi gan texture mang 1x1 nay
+			ci.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;
+			m_pWhiteMang = SDL_CreateGPUTexture(m_pGpu, &ci);
+			if (!m_pWhiteMang || !RgUploadOnce(m_pGpu, NULL, m_pWhiteMang, 1, 1, &white, 4)) { RgLog("[KHOI] texture mang trang that bai: %s", SDL_GetError()); return false; }
+		}
+#endif
 	}
 	m_pBackSurf = new CSurfGpu(this, RGSURF_BACKBUFFER, NULL, m_bbW, m_bbH, D3DFMT_X8R8G8B8);
 	if (g_nRep3AtlasGpu) m_pAtlas = new CAtlasMgrGpu(this);	// [GPU 11/09 ATLAS]
@@ -443,11 +452,22 @@ bool CDevGpu::CreateShaders()
 		{	// [GOP 11/09] them bang trang thai tang texture (set 2, binding 3); khong con uniform cua fragment
 			si.code = g_Rep3GpuFSPalPs; si.code_size = sizeof(g_Rep3GpuFSPalPs); si.num_storage_buffers = 2; si.num_uniform_buffers = 0;
 			if (g_nJxAtlasMang) { si.code = g_Rep3GpuFSPalPsMang; si.code_size = sizeof(g_Rep3GpuFSPalPsMang); }	// [MANG 11/09] sampler2DArray, lop lay tu dinh
+			else if (g_nJxAtlasKhoi)
+			{	// [KHOI 11/09] 8 khoi atlas o khe 2..9 (sampler2DArray, gan chet ca khung); hai storage buffer doi ve 10, 11
+				si.code = g_Rep3GpuFSPalPsKhoi; si.code_size = sizeof(g_Rep3GpuFSPalPsKhoi); si.num_samplers = 2 + 8;
+			}
 		}
 	}
 #endif
 #ifdef JX_IOS	// [IOS-METAL 11/09]
 	si.code = (const Uint8*)g_Rep3GpuFSMsl; si.code_size = sizeof(g_Rep3GpuFSMsl) - 1; si.entrypoint = "main0"; si.format = SDL_GPU_SHADERFORMAT_MSL;
+#endif
+#ifdef JX_ANDROID
+	if (g_nJxAtlasKhoi && !(g_nJxPalBuffer && g_nJxPsBuffer && !g_nJxAtlasMang))
+	{	// [KHOI 11/09] khoi can bang mau + bang ps o storage buffer (o PALROW moi du bit) va khong duoc bat cung C1
+		RgLog("[KHOI] Rep3AtlasKhoi=1 nhung Rep3PalBuffer=%d Rep3PsBuffer=%d Rep3AtlasMang=%d -> TU TAT", g_nJxPalBuffer, g_nJxPsBuffer, g_nJxAtlasMang);
+		g_nJxAtlasKhoi = 0;
+	}
 #endif
 	m_pFS = SDL_CreateGPUShader(m_pGpu, &si);
 	if (!m_pFS) { RgLog("CreateGPUShader FS that bai: %s", SDL_GetError()); return false; }
@@ -972,10 +992,16 @@ void CDevGpu::ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo)
 		SDL_GPUTexture* t = NULL;
 #ifdef JX_ANDROID
 		// [MANG 11/09] o PALROW chi cho MOT chi so lop (dung cho tang 0): texture cua tang 1 phai ra khoi atlas de lop cua no luon = 0
-		if (g_nJxAtlasMang && s == 1 && m_tex[1] && m_tex[1] != m_pRtTex && m_tex[1]->m_bVirtual) m_tex[1]->BoAtlas();
+		if ((g_nJxAtlasMang || g_nJxAtlasKhoi) && s == 1 && m_tex[1] && m_tex[1] != m_pRtTex && m_tex[1]->m_bVirtual) m_tex[1]->BoAtlas();	// [KHOI 11/09] tang 1 la sampler2D thuong
 #endif
 		if (m_tex[s] && m_tex[s] != m_pRtTex) t = m_tex[s]->PrepareForBind();
 		if (t) bound[s] = true;
+#ifdef JX_ANDROID
+		// [KHOI 11/09] DAY LA CHO AN TIEN: trang atlas nam trong khoi thi khe 0 khong can gan texture cua no nua
+		// (shader lay diem anh tu mang cua khoi theo chi so o PALROW). Khe 0 giu y nguyen giua cac lenh ve ->
+		// 'texture0' thoi la ly do cat lo. bound[0] van = 1 nen tang 0 van duoc coi la CO texture.
+		if (s == 0 && g_nJxAtlasKhoi && t && m_tex[0] && m_tex[0]->JxKhoi() != 0xFFu) t = NULL;
+#endif
 		st.pTex[s] = t ? t : m_pWhite;
 	}
 	st.bScissor = m_rs[D3DRS_SCISSORTESTENABLE] ? 1 : 0; st.rcScissor = m_scissor;
@@ -1041,6 +1067,8 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 		const UINT uRow = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? ((UINT)m_tex[0]->m_nPalRow & 0x1FFFu) : 0x1FFFu;
 		uPal = uRow | ((JxPsIdx(st.ps) & 0xFFFu) << 13);
 		if (g_nJxAtlasMang && m_tex[0]) uPal |= ((m_tex[0]->JxLop() & 0x3Fu) << 25);	// [MANG 11/09] bit 25..30 = lop trong texture mang
+		if (g_nJxAtlasKhoi && m_tex[0] && m_tex[0]->JxKhoi() != 0xFFu)
+			uPal |= 0x80000000u | ((m_tex[0]->JxKhoi() & 7u) << 28) | ((m_tex[0]->JxLop() & 7u) << 25);	// [KHOI 11/09] bit 31 = o khoi, 28..30 khoi, 25..27 lop
 	}
 #endif
 	const float fPage = m_pAtlas ? (float)m_pAtlas->m_pageSize : 1024.0f;	// [GPU 11/09 ATLAS]
@@ -1494,6 +1522,16 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			tb[2].texture = m_pPalTex ? m_pPalTex : m_pWhite; tb[2].sampler = st.pSamp[0];
 #ifdef JX_ANDROID
 			SDL_BindGPUFragmentSamplers(pass, 0, tb, g_nJxPalBuffer ? 2 : 3);	// [PALBUF 11/09] kieu buffer: shader chi khai 2 sampler
+			if (g_nJxAtlasKhoi && m_pAtlas)
+			{	// [KHOI 11/09] 8 khoi atlas o khe 2..9. Gan bang BO LOC cua tang 0 (lenh gop duoc da phai cung sampler[0] nen khong sai)
+				SDL_GPUTextureSamplerBinding tk[8];
+				for (int q = 0; q < 8; q++)
+				{
+					SDL_GPUTexture* pk = m_pAtlas->JxKhoiTex((UINT)q);
+					tk[q].texture = pk ? pk : m_pWhiteMang; tk[q].sampler = st.pSamp[0];
+				}
+				SDL_BindGPUFragmentSamplers(pass, 2, tk, 8);
+			}
 #else
 			SDL_BindGPUFragmentSamplers(pass, 0, tb, 3);
 #endif

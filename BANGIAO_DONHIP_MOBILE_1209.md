@@ -956,3 +956,76 @@ trên bản mobile — chỉ ép `CULL_NONE` là đủ, phép thử tích chéo 
 `vỡ lô vì texture0` giờ chiếm **99,9 %** (trước 89 %), đổi texture 1 653–1 941 lần/khung (đỉnh 3 492),
 atlas cuối phiên **56 trang 464 MB**. Toàn bộ phần thắng còn lại nằm ở bước 3 (atlas khối cố định + nhiều mảng gắn chết
 khe sampler). Ràng buộc đã đo ở mục trên: 14 khe sampler còn trống, một họ định dạng, khối 8 lớp × 64 MB, 7 khối phủ đủ.
+
+
+---
+
+## 18:50 11/09 — Bước 3 `[KHOI]`: atlas theo khối cố định (APK 109111847)
+
+Chủ dặn "hãy dựa vào bản client pc để tham khảo", nên bước này chép thẳng cách làm của commit `5311778b`
+(`[MANG 09/09 f]`) bên đường D3D11, chỉ đổi những chỗ **bắt buộc phải khác** vì SDL_GPU khác D3D11.
+
+### Cách làm
+
+Mỗi **khối** là một texture mảng 2D 8 lớp (mỗi lớp là một trang atlas 2048×2048). Khối được **gắn chết** vào một khe
+sampler và **không bao giờ đổi trong cả khung**. Đỉnh mang chỉ số khối và lớp trong ô PALROW, nên hai quad nằm ở hai
+trang atlas khác nhau vẫn gộp chung một lệnh vẽ.
+
+Ô PALROW (32 bit mỗi đỉnh): `0..12` hàng bảng màu, `13..24` chỉ số tổ hợp trạng thái, `25..27` lớp, `28..30` khối,
+`31` = ảnh lấy từ khối atlas.
+
+Khác bản PC, và vì sao:
+
+| | bản PC (D3D11) | bản mobile (SDL_GPU) | lý do |
+|---|---|---|---|
+| khe sampler cho khối | 32 (t3..t34) | 8 (khe 2..9) | SDL_GPU chốt cứng 16 khe mỗi tầng |
+| khối mỗi định dạng | 16 | 8 dùng chung mọi định dạng | hệ quả của dòng trên |
+| trang atlas | 1024² | 2048² | mobile vốn đã dùng 2048 |
+| khối | 32 lớp R8G8 / 4 lớp BGRA8 | 8 lớp 2 byte / 4 lớp 4 byte | giữ đúng ngân sách ~64 MB một khối như PC |
+| khe 0 | mảng | vẫn `sampler2D` | không ép texture thường thành mảng (C1 ép, đây là một khác biệt nữa) |
+| khối rỗng trả VRAM | có | **chưa làm** | trang atlas mobile không bị huỷ lúc chạy; để sau nếu đo thấy tốn |
+
+Hết 8 khối thì trang mới lùi về texture riêng như cũ, không lỗi, và đếm ở `het khoi`.
+
+### Đã gỡ oan cho hướng này trước khi viết
+
+C1 (`[MANG 11/09]`, đã tắt) cũng dùng texture mảng và làm fps tụt còn 75, nên trước khi viết tôi đo lại xem lỗi ở
+**mảng** hay ở **cách dùng mảng**:
+
+| | lệnh/quad | fps | GPU | nhiệt | thời lượng |
+|---|---|---|---|---|---|
+| C bước 1 (15:53) | 0,906 | 112,4 | 79,5 % @ 510 MHz | 2,74 | 28 phút |
+| C1 atlas mảng (16:22) | 0,842 | **75,1** | 87,5 % @ **241 MHz** | **3,00** | **3,5 phút** |
+
+C1 chạy **ngay sau** một phiên 28 phút, máy đã 37,6 °C, và suốt 3,5 phút đó nhiệt ở **mức 3 liên tục** với GPU bị hạ
+xuống 241 MHz. Nói cách khác số của C1 là số của một máy đang bị bóp xung, không đủ để kết tội texture mảng. Và điểm
+khác biệt thật sự: C1 cho **cụm lớn dần** (2, 4, 8 lớp) nên mỗi lần lớn là một cụm MỚI, các trang cũ nằm rải ở nhiều
+texture → **vẫn phải đổi binding**. Khối cố định thì không bao giờ có chuyện đó. Bản PC ghi đúng câu này trong commit:
+"khong chep mang khi lon, khong cap du".
+
+### Thử máy ảo trước khi phát
+
+| | trước (`[CULLCPU]`, điện thoại) | sau (`[KHOI]`, máy ảo) |
+|---|---|---|
+| đổi texture / khung | 1 653 – 1 941 (đỉnh 3 492) | **20 (đỉnh 27–33)** |
+| đổi pipeline / khung | 3 | 3 |
+
+Vào tới Tống Kim đông: nhân vật, hiệu ứng, tên, chữ, bảng xếp hạng, giao diện đều đúng; cảnh vắng cũng đúng.
+Khối cấp ra như dự kiến: `#0` BGRA8 4 lớp 64 MB, `#1..` 2 byte 8 lớp 64 MB.
+
+### Bản 109111847 — cần thử gì
+
+APK `109111847`, md5 `2b70f9064bf3e79eb984d0c04fa7fd2c`, 20 436 991 B, lên `dt_v4` 18:50, máy chủ 8765 PID 393652,
+config dt_v4 đặt `Rep3AtlasKhoi=1`.
+
+1. Mở lại app để nhận bản. **Nhìn kỹ hình trước hết**: nhân vật và trang bị có đúng màu không, hiệu ứng kỹ năng, ảnh
+   nền bản đồ, chữ, thanh máu, vật phẩm trong hành trang, ảnh màn đăng nhập. Sai hình → sửa `Rep3AtlasKhoi=0` trong
+   `[Client]` của config dt_v4 rồi khởi động lại 8765, **không cần APK**.
+2. Chơi Tống Kim 10–15 phút chỗ đông. Để ý **giật khi di chuyển màn hình** (đúng triệu chứng mà C1 gây ra) và máy có
+   nóng hơn không.
+3. Tôi đọc `[VE-GOP]`: `texture/sampler N` (kỳ vọng tụt từ ~1 700 về vài chục), `quad không gộp` phần `texture0`,
+   `atlas khoi=1: N khoi (... MB), het khoi K` (K > 0 nghĩa là đã hết 8 khối, phải chia lại bit), rồi `[VE]` ghi lệnh /
+   nộp và `[MAU]` W / `gpu=` / `cpu_mhz` / nhiệt, và fps.
+
+Điểm cần canh nhất lần này là **bộ nhớ**: khối cấp trọn 8 lớp ngay cả khi mới dùng một trang, nên đỉnh bộ nhớ có thể
+cao hơn bản cũ. Log in `atlas khoi=... MB` để theo dõi.

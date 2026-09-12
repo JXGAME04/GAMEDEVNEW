@@ -330,6 +330,9 @@ void CAtlasMgrGpu::ReleaseAll()
 	for (size_t i = 0; i < m_jxCum.size(); i++)	// [MANG 11/09] huy texture cua tung cum
 		if (m_jxCum[i].pTex && m_pDev->m_pGpu) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, m_jxCum[i].pTex);
 	m_jxCum.clear(); g_uJxAtlasCum = 0;
+	for (size_t i = 0; i < m_jxKhoiV.size(); i++)	// [KHOI 11/09] huy texture cua tung khoi
+		if (m_jxKhoiV[i].pTex && m_pDev->m_pGpu) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, m_jxKhoiV[i].pTex);
+	m_jxKhoiV.clear(); g_uJxKhoiSo = 0; g_uJxKhoiMB = 0;
 #endif
 	g_uRep3AtlasPages = 0; g_uRep3AtlasBytes = 0;
 }
@@ -356,9 +359,12 @@ CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
 {
 	const UINT bpp = RgGpuBpp(fmt);
 	if (bpp == 0 || !m_pDev->m_pGpu) return NULL;
-	SDL_GPUTexture* pTex = NULL; UINT uLop = 0;
+	SDL_GPUTexture* pTex = NULL; UINT uLop = 0, uKhoi = 0xFFu;
 #ifdef JX_ANDROID
-	if (g_nJxAtlasMang)
+	// [KHOI 11/09] trang = mot LOP trong KHOI atlas (khoi gan chet khe sampler) -> moi trang atlas dung chung mot bo binding.
+	// Het khoi thi lui ve texture rieng nhu cu (khong loi), y nhu ban PC [MANG 09/09 f].
+	if (g_nJxAtlasKhoi && JxCapKhoi(fmt, bpp, &pTex, &uKhoi, &uLop)) { }
+	else if (g_nJxAtlasMang)
 	{	// [MANG 11/09] trang = mot LOP trong texture mang cua cum (hai trang cung cum -> cung texture0 -> gop duoc lenh ve)
 		if (!JxCapLop(fmt, bpp, &pTex, &uLop)) return NULL;
 	}
@@ -374,6 +380,9 @@ CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
 	m_pDev->QueueZeroUpload(pTex, 0, 0, m_pageSize, m_pageSize, bpp, uLop);	// trang moi = 0 (khong de rac; vien o khi loc tuyen tinh)
 	CAtlasPageGpu* p = new CAtlasPageGpu();
 	p->m_nLop = uLop;	// [MANG 11/09]
+#ifdef JX_ANDROID
+	p->m_nKhoi = uKhoi;	// [KHOI 11/09]
+#endif
 #ifdef JX_ANDROID
 	p->m_yTiep = 0;
 	if (g_nJxAtlasKe) { p->m_pTex = pTex; p->m_fmt = fmt; p->m_bpp = bpp; p->m_binH = 0; p->m_rows = 0; p->m_used = 0; }	// [VE 11/09 e] trang xep ke: chua co hang
@@ -557,6 +566,45 @@ void CAtlasMgrGpu::JxFreeKe(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 #ifdef JX_ANDROID
 // [MANG 11/09] Cap mot LOP cho trang atlas: tim cum cung dinh dang con lop (lop da tra truoc, roi lop chua dung), het thi tao cum moi.
 // So lop moi cum tang dan (2, 4, 8...) va khong vuot ngan sach byte Rep3AtlasCumMB -> khong cap 64 MB ngay khi vao map.
+// [KHOI 11/09] port buoc (f) cua [MANG 09/09] (commit 5311778b ben duong D3D11): xin mot LOP trong mot KHOI atlas.
+// Khoi = texture mang 2D co so lop CO DINH (khong bao gio lon len, khong bao gio phai CHEP lai - day la cho C1 sai:
+// C1 cho cum lon dan nen moi lan lon la mot cum MOI, cac trang cu nam rai o nhieu texture -> van doi binding).
+// Het JX_KHOI_MAX khoi -> tra false, NewPage lui ve texture rieng (khong loi).
+#define JX_KHOI_MAX 8	// so khe sampler danh cho khoi (khe 2..9); SDL_GPU chot 16 khe moi tang
+bool CAtlasMgrGpu::JxCapKhoi(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture** ppTex, UINT* pKhoi, UINT* pLop)
+{
+	for (size_t i = 0; i < m_jxKhoiV.size(); i++)
+	{
+		JxKhoi& k = m_jxKhoiV[i];
+		if (k.fmt != fmt) continue;
+		if (!k.lopTrong.empty()) { *ppTex = k.pTex; *pKhoi = (UINT)i; *pLop = k.lopTrong.back(); k.lopTrong.pop_back(); return true; }
+		if (k.nDung < k.nLop) { *ppTex = k.pTex; *pKhoi = (UINT)i; *pLop = k.nDung++; return true; }
+	}
+	if (m_jxKhoiV.size() >= JX_KHOI_MAX) { g_uJxKhoiHet++; return false; }
+	UINT nLop = (UINT)g_nJxAtlasKhoiLop; if (nLop < 1) nLop = 1; if (nLop > 8) nLop = 8;	// 8 lop = 3 bit trong o PALROW
+	if (bpp >= 4 && nLop > 4) nLop = 4;	// [KHOI 11/09] giu NGAN SACH MOT KHOI ~64 MB nhu ban PC: trang 2048 4 byte thi 4 lop la du 64 MB
+									// (thu may ao: khoi BGRA8 8 lop = 128 MB trong khi chi vai trang dung den)
+	SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci));
+	ci.type = SDL_GPU_TEXTURETYPE_2D_ARRAY; ci.format = fmt; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+	ci.width = m_pageSize; ci.height = m_pageSize; ci.layer_count_or_depth = nLop; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+	SDL_GPUTexture* pTex = SDL_CreateGPUTexture(m_pDev->m_pGpu, &ci);
+	if (!pTex)
+	{
+		RgLog("[KHOI] khoi atlas #%u: CreateGPUTexture %ux%u x %u lop fmt %d that bai: %s", (unsigned)m_jxKhoiV.size(), m_pageSize, m_pageSize, nLop, (int)fmt, SDL_GetError());
+		g_uJxKhoiHet++;
+		return false;
+	}
+	JxKhoi k; k.pTex = pTex; k.fmt = fmt; k.bpp = bpp; k.nLop = nLop; k.nDung = 1;
+	m_jxKhoiV.push_back(k);
+	g_uJxKhoiSo = (unsigned)m_jxKhoiV.size();
+	g_uJxKhoiMB += (unsigned)(((unsigned __int64)m_pageSize * m_pageSize * bpp * nLop) >> 20);
+	RgLog("[KHOI] khoi atlas moi #%u: %ux%u x %u lop fmt %d (%u MB) -> khe sampler %u; tong %u khoi, %u MB",
+		(unsigned)(m_jxKhoiV.size() - 1), m_pageSize, m_pageSize, nLop, (int)fmt,
+		(unsigned)(((unsigned __int64)m_pageSize * m_pageSize * bpp * nLop) >> 20), (unsigned)(2 + m_jxKhoiV.size() - 1), g_uJxKhoiSo, g_uJxKhoiMB);
+	*ppTex = pTex; *pKhoi = (UINT)(m_jxKhoiV.size() - 1); *pLop = 0;
+	return true;
+}
+
 bool CAtlasMgrGpu::JxCapLop(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture** ppTex, UINT* pLop)
 {
 	for (size_t i = 0; i < m_jxCum.size(); i++)

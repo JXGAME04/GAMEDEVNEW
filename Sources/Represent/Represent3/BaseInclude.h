@@ -85,6 +85,8 @@ extern int g_nJxAtlasMang, g_nJxAtlasLop, g_nJxAtlasCumMB;	// [MANG 11/09] [Clie
 extern unsigned g_uJxAtlasCum;	// [MANG 11/09] so cum dang song
 extern int g_nJxAtlasManaged;	// [CHUATLAS 11/09] [Client] Rep3AtlasManaged: cho texture MANAGED (chu / anh dung san) vao atlas - port buoc (d) cua [MANG 09/09] ben duong D3D11
 extern int g_nJxCullCpu;	// [CULLCPU 11/09] [Client] Rep3CullCpu: cull tam giac 2D tren CPU de chu (CULL_CCW) gop chung lo voi sprite (CULL_NONE) - port buoc (e) cua [MANG 09/09]
+extern int g_nJxAtlasKhoi, g_nJxAtlasKhoiLop;	// [KHOI 11/09] [Client] Rep3AtlasKhoi / Rep3AtlasKhoiLop: atlas theo khoi co dinh, moi khoi gan chet mot khe sampler - port buoc (f) cua [MANG 09/09]
+extern unsigned g_uJxKhoiSo, g_uJxKhoiMB, g_uJxKhoiHet;	// [KHOI 11/09] so khoi da cap, tong MB, so lan xin trang khi da het khoi (trang do lui ve texture rieng)
 extern unsigned g_uJxCullGiu, g_uJxCullBo;	// [CULLCPU 11/09] tam giac 2D giu / bo khi cull tren CPU
 extern unsigned g_uJxPipeVo[8];	// [CULLCPU 11/09] quad vo lo vi 'pipeline': 0 fvf, 1 topo, 2 blend, 3 cull, 4 fill, 5 dinh dang target, 6 stride, 7 cung khoa (tao pipeline hong)
 extern unsigned g_uJxAtlasODat[2], g_uJxAtlasOMoi;	// [CHUATLAS 11/09] o atlas da cap: [0] DEFAULT, [1] MANAGED; so lan phai xin O MOI vi noi dung doi giua khung
