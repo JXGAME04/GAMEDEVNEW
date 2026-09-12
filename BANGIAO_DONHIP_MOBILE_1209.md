@@ -1282,3 +1282,29 @@ trả lời câu hỏi gốc của chủ.
 
 Còn thiếu: dải trên 2 200 quad mỗi khung (Tống Kim lúc đông nhất) thì bản bật khối chưa có cửa sổ nào. Cần chủ vào
 chỗ đông nhất để chốt.
+
+
+### 20:30 — Phần hiệu năng: fps và khung giật
+
+Tắt khối 30 799 khung, bật khối 116 804 khung (chỉ lấy cửa sổ ≥ 700 quad):
+
+| | tắt khối | bật khối |
+|---|---|---|
+| fps thấp nhất | 108,8 | **113,2** |
+| fps trung vị | 115,7 | **118,1** |
+| fps cao nhất | 117,7 | **119,7** |
+| **khung việc > 8 ms** | 0,159 % | **0,021 %** |
+| khung việc > 16 ms | 0,045 % | 0,036 % |
+| tổng khoảng vẽ TB | 4,16 ms | **1,21 ms** |
+
+**fps nhích ít vì trần là 120 Hz, cả hai bên đều đã sát trần.** Phần thắng thật nằm ở ba chỗ khác:
+
+1. **Sàn fps nâng lên**: 108,8 → 113,2. Lúc nặng nhất máy không còn tụt sâu.
+2. **Khung giật giảm 7,5 lần**: tỉ lệ khung việc quá 8 ms từ 0,159 % xuống 0,021 %.
+3. **Dư địa**: khoảng vẽ từ 4,16 ms còn 1,21 ms, tức trả lại gần 3 ms mỗi khung trong ngân sách 8,3 ms.
+
+Khung chậm còn sót lại **không phải do atlas khối**: đọc `[VE-GIAT]` thì các khung 20–22 ms đều là `ve CPU 17–20 ms`,
+tức phần dựng cảnh của game, không phải phần ghi lệnh (`ghi lệnh` đỉnh chỉ 2,3 ms). Cấp khối mới cũng không gây giật:
+khối cấp ở mốc 1 131–282 936 ms còn các khung chậm nằm ở 1 160 978 ms trở đi.
+
+Muốn fps hiện ra thành số lớn hơn thì phải nâng trần (144 Hz) hoặc thử trên máy yếu, nơi khoảng vẽ mới là nút thắt.
