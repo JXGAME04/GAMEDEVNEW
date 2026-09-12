@@ -103,6 +103,9 @@ static int Rep3Ini(const char* szKey, int nDef)
 // [FX 07/09] bo dem lop ve (in them vao dong thong ke 30 s, roi dat lai 0). Chi luong ve cham.
 unsigned g_uRep3FxTexNull = 0;		// DrawSprite*: texture NULL -> bo qua quad
 unsigned g_uRep3FxAnhNull = 0;		// DrawImage2D*: GetImage NULL / khung ngoai tam -> break
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09] tach hai ly do de biet cay mat hinh la do dau
+unsigned g_uJxRongAnh = 0, g_uJxRongKhung = 0, g_uJxRongKhungMax = 0;
+#endif
 unsigned g_uRep3FxTaoHong = 0;		// CreateTexture16Bit vao nhanh error
 unsigned g_uRep3FxKhungKhongTex = 0;	// PrepareFrameData xong ma khung khong co texture
 unsigned g_uRep3FxGiaiMa = 0;		// so khung giai ma dong bo tren luong ve
@@ -207,6 +210,10 @@ static void JxVeKyIn()
 		t.uDoiPipe / n, t.uDoiTex / n, m.uDoiTex, t.uDoiVs / n, t.uDoiPs / n, t.uDoiCat / n, g_uJxGopVo[0], g_uJxGopVo[1], g_uJxGopVo[2], g_uJxGopVo[3], g_uJxGopVo[4], g_uJxGopVo[5], g_uJxGopVo[6], g_uJxGopVo[7], g_nJxAtlasKe, g_nJxAtlasTrang, g_uRep3AtlasPages, g_uJxPsBangMax, g_uJxPsTran, g_nJxAtlasMang, g_uJxAtlasCum, g_uJxAtlasODat[0], g_uJxAtlasODat[1], g_nJxAtlasManaged, g_uJxAtlasOMoi,
 		g_nJxCullCpu, g_uJxCullGiu, g_uJxCullBo, g_uJxPipeVo[0], g_uJxPipeVo[1], g_uJxPipeVo[2], g_uJxPipeVo[3], g_uJxPipeVo[4], g_uJxPipeVo[5], g_uJxPipeVo[6], g_uJxPipeVo[7],
 		g_nJxAtlasKhoi, g_uJxKhoiSo, (unsigned)g_nJxAtlasKhoiLop, g_uJxKhoiMB, g_uJxKhoiHet);	// [VE 11/09 e] [GOP 11/09] [MANG 11/09]
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09] hai bo dem chan doan: anh chua co, hay khung vuot so khung
+	Rep3Log("[ANHRONG] anh chua co %u | khung vuot so khung %u (so khung lon nhat: %u)", g_uJxRongAnh, g_uJxRongKhung, g_uJxRongKhungMax);
+	g_uJxRongAnh = 0; g_uJxRongKhung = 0; g_uJxRongKhungMax = 0;
+#endif
 	memset(&g_jxVeTong, 0, sizeof(g_jxVeTong)); memset(&g_jxVeMax, 0, sizeof(g_jxVeMax)); g_uJxVeKhungSo = 0; g_uJxVe8 = 0; g_uJxVe16 = 0; memset(g_uJxGopVo, 0, sizeof(g_uJxGopVo));
 	s_dJxTrongVeTong = 0.0; s_dJxTrongVeMax = 0.0;	// [VECHITIET 11/09]
 	s_dJxVeCpuTong = 0.0; s_dJxVeCpuMax = 0.0; s_uJxVeCpuKhung = 0; g_uJxPsBangMax = 0; g_uJxPsTran = 0; g_uJxAtlasODat[0] = g_uJxAtlasODat[1] = 0; g_uJxAtlasOMoi = 0;	// [CHUATLAS 11/09]
@@ -1169,7 +1176,12 @@ void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 							pTemp->szImage,	pTemp->uImage,
 							pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 						if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09]
+							{ if (!pSprite) g_uJxRongAnh++; else { g_uJxRongKhung++; if ((unsigned)pSprite->m_nFrameNum > g_uJxRongKhungMax) g_uJxRongKhungMax = (unsigned)pSprite->m_nFrameNum; }
+							  g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); break; }
+#else
 							{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); break; }
+#endif
 
 						int nX = pTemp->oPosition.nX;
 						int nY = pTemp->oPosition.nY;
@@ -1330,7 +1342,12 @@ void KRepresentShell3::DrawImage2D(int nPrimitiveCount, KRepresentUnit* pPrimiti
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 				if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09]
+					{ if (!pSprite) g_uJxRongAnh++; else { g_uJxRongKhung++; if ((unsigned)pSprite->m_nFrameNum > g_uJxRongKhungMax) g_uJxRongKhungMax = (unsigned)pSprite->m_nFrameNum; }
+					  g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
+#else
 					{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
+#endif
 
 				int nX = pTemp->oPosition.nX;
 				int nY = pTemp->oPosition.nY;
@@ -1432,7 +1449,12 @@ void KRepresentShell3::DrawImage2DFlat(int nPrimitiveCount, KRepresentUnit* pPri
 					pTemp->szImage,	pTemp->uImage,
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 				if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09]
+					{ if (!pSprite) g_uJxRongAnh++; else { g_uJxRongKhung++; if ((unsigned)pSprite->m_nFrameNum > g_uJxRongKhungMax) g_uJxRongKhungMax = (unsigned)pSprite->m_nFrameNum; }
+					  g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); break; }
+#else
 					{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); break; }
+#endif
 
 				int nX = pTemp->oPosition.nX;
 				int nY = pTemp->oPosition.nY;
@@ -1613,7 +1635,12 @@ void KRepresentShell3::DrawImage2DStretch(int nPrimitiveCount, KRepresentUnit* p
 				pTemp->szImage,	pTemp->uImage,
 				pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 			if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09]
+				{ if (!pSprite) g_uJxRongAnh++; else { g_uJxRongKhung++; if ((unsigned)pSprite->m_nFrameNum > g_uJxRongKhungMax) g_uJxRongKhungMax = (unsigned)pSprite->m_nFrameNum; }
+				  g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
+#else
 				{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
+#endif
 			int nW = pTemp->oEndPos.nX - pTemp->oPosition.nX;
 			int nH = pTemp->oEndPos.nY - pTemp->oPosition.nY;
 			if (nW <= 0 || nH <= 0)
@@ -1702,7 +1729,12 @@ void KRepresentShell3::GetBoundBox2D(int nPrimitiveCount, KRepresentUnit* pPrimi
 			pTemp->szImage,	pTemp->uImage,
 			pTemp->nISPosition, pTemp->nFrame, pTemp->nType, false);
 		if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09]
+			{ if (!pSprite) g_uJxRongAnh++; else { g_uJxRongKhung++; if ((unsigned)pSprite->m_nFrameNum > g_uJxRongKhungMax) g_uJxRongKhungMax = (unsigned)pSprite->m_nFrameNum; }
+			  g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
+#else
 			{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
+#endif
 
 		int nX = pTemp->oPosition.nX;
 		int nY = pTemp->oPosition.nY;
@@ -1807,7 +1839,12 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 			pTemp->szImage, pTemp->uImage,
 			pTemp->nISPosition, pTemp->nFrame, pTemp->nType, false);
 		if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09]
+			{ if (!pSprite) g_uJxRongAnh++; else { g_uJxRongKhung++; if ((unsigned)pSprite->m_nFrameNum > g_uJxRongKhungMax) g_uJxRongKhungMax = (unsigned)pSprite->m_nFrameNum; }
+			  g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
+#else
 			{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
+#endif
 		if (pSprite->m_bNew) {
 			sprNew = true;
 			PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
@@ -2026,7 +2063,12 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 
 				if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09]
+					{ if (!pSprite) g_uJxRongAnh++; else { g_uJxRongKhung++; if ((unsigned)pSprite->m_nFrameNum > g_uJxRongKhungMax) g_uJxRongKhungMax = (unsigned)pSprite->m_nFrameNum; }
+					  g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); break; }
+#else
 					{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); break; }
+#endif
 
 				if(!(pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT) && (pTemp->oEndPos.nX == 0 || pTemp->oEndPos.nY == 0))
 					break;
@@ -2277,7 +2319,12 @@ void KRepresentShell3::GetBoundBox3D(int nPrimitiveCount, KRepresentUnit* pPrimi
 			pTemp->szImage,	pTemp->uImage,
 			pTemp->nISPosition, pTemp->nFrame, pTemp->nType, false);
 		if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
+#ifdef JX_APPLE	// [IOS-ANHRONG 12/09]
+			{ if (!pSprite) g_uJxRongAnh++; else { g_uJxRongKhung++; if ((unsigned)pSprite->m_nFrameNum > g_uJxRongKhungMax) g_uJxRongKhungMax = (unsigned)pSprite->m_nFrameNum; }
+			  g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
+#else
 			{ g_uRep3FxAnhNull++; Rep3AnhNullGhi(pTemp->szImage, pTemp->nFrame); continue; }
+#endif
 
 		if(!(pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT) && (pTemp->oEndPos.nX == 0 || pTemp->oEndPos.nY == 0))
 			continue;
