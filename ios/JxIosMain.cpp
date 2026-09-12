@@ -27,6 +27,17 @@ extern "C" const char* JxIos_ThuMucTaiLieu(char* pszRa, size_t nRa);
 extern "C" const char* JxIos_ThuMucHoTro(char* pszRa, size_t nRa);
 extern "C" const char* JxIos_ThuMucGoi(char* pszRa, size_t nRa);
 
+// [IOS-KYHIEU 11/09] cac ham ma tren Windows/Android nam trong DLL/.so rieng; tren iOS chung link tinh
+// vao cung mot nhi phan nen chi can khai bao roi lay dia chi. Voi ham lien ket kieu C thi trinh lien ket
+// chi doi dung TEN, nen khai bao rut gon la du.
+struct iRepresentShell;
+struct ITextFilter;
+extern "C" iRepresentShell* CreateRepresentShell();                 // Represent3/KRepresentShell3.cpp:552
+extern "C" HRESULT          CreateInterface(const GUID&, void**);   // Rainbow/ClientStage.cpp:23 (STDAPI)
+extern "C" HRESULT          CreateTextFilter(ITextFilter**);        // FilterText/FilterText.cpp:218
+// Ghi chu: Rep3_JxEpTrinhChieu nam trong "#ifdef JX_ANDROID" (D3D9onGPUDev.cpp:1731) nen ban iOS
+// KHONG co ham do; noi goi no trong KSdlApp cung rao JX_ANDROID nen khong can dang ky.
+
 static void JxIosLog(const char* fmt, ...)
 {
 	char sz[1024]; va_list va; va_start(va, fmt); vsnprintf(sz, sizeof(sz), fmt, va); va_end(va);
@@ -100,6 +111,14 @@ int main(int argc, char* argv[])
 		JxIosLog("[IOS] chdir(%s) that bai: %s", s_szDir, strerror(errno));
 	JxIosLog("[IOS] thu muc du lieu: %s (SDL %d.%d.%d)", s_szDir, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
+
+	// [IOS-KYHIEU 11/09] iOS khong nap duoc thu vien dong: dang ky truoc cac ham ma ma chung van
+	// tim bang LoadLibrary + GetProcAddress. Thieu buoc nay thi S3Client.cpp:389 khong tao duoc
+	// tang ve -> MyApp.Init() that bai -> thoat ngay, man hinh den.
+	JxPosix_DangKyKyHieu("Represent3.dll", "CreateRepresentShell", (void*)&CreateRepresentShell);
+	JxPosix_DangKyKyHieu("Rainbow.dll",    "CreateInterface",      (void*)&CreateInterface);
+	JxPosix_DangKyKyHieu("FilterText.dll", "CreateTextFilter",     (void*)&CreateTextFilter);
+
 
 	int nRet = JxPosixMain(argc, argv);
 	JxIosLog("[IOS] JxPosixMain tra ve %d", nRet);

@@ -129,6 +129,9 @@ typedef SHORT (*JxGetKeyStateFn)(int vk);
 typedef LRESULT (*JxWinMsgFn)(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern JxGetKeyStateFn g_pfnJxGetKeyState;   /* GetKeyState/GetAsyncKeyState -> bang phim cua KSdlApp */
 extern JxWinMsgFn      g_pfnJxWinMsg;        /* PostMessage/SendMessage toi cua so chinh -> MsgProc cua KSdlApp */
+#ifdef JX_IOS
+void        JxPosix_DangKyKyHieu(const char* pszMod, const char* pszTen, void* pfn);  /* [IOS-KYHIEU 11/09] bang tra tinh thay dlopen */
+#endif
 void        JxPosix_SetDataDir(const char* pszDir);   /* thu muc du lieu game (= thu muc "canh Game.exe") */
 const char* JxPosix_DataDir(void);
 void        JxPosix_SetMainWindow(void* pSdlWindow);  /* SDL_Window* cua KSdlApp (HWND tren POSIX = SDL_Window*) */

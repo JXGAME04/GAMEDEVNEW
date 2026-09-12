@@ -434,10 +434,65 @@ LONG CompareFileTime(const FILETIME* a, const FILETIME* b)
 	return x < y ? -1 : (x > y ? 1 : 0);
 }
 
+#ifdef JX_IOS
+/*---------------------------------------------------------------- [IOS-KYHIEU 11/09] bang tra ky hieu TINH
+  iOS khong nap duoc thu vien dong tu ngoai goi ung dung: moi TU deu link TINH vao mot nhi phan.
+  Ung dung dang ky truoc (ios/JxIosMain.cpp) roi LoadLibrary/GetProcAddress doc tu bang nay.        */
+typedef struct { char szMod[32]; char szTen[64]; void* pfn; } JxKyHieuTinh;
+static JxKyHieuTinh s_KyHieu[64];
+static int          s_nKyHieu = 0;
+static char         s_szModTinh[8][32];       /* the gia tra cho LoadLibrary: con tro vao mang nay */
+static int          s_nModTinh = 0;
+
+/* "..\\Represent3.dll" -> "represent3" */
+static void JxKyHieu_TenGoc(const char* pszIn, char* pszRa, size_t nRa)
+{
+	const char* p = strrchr(pszIn, '\\'); const char* q = strrchr(pszIn, '/');
+	const char* f = p > q ? p + 1 : (q ? q + 1 : pszIn);
+	size_t i = 0;
+	for (; f[i] && i + 1 < nRa; i++) pszRa[i] = (char)tolower((unsigned char)f[i]);
+	pszRa[i] = 0;
+	if (i > 4 && strcmp(pszRa + i - 4, ".dll") == 0) pszRa[i - 4] = 0;
+	else if (i > 3 && strcmp(pszRa + i - 3, ".so") == 0) pszRa[i - 3] = 0;
+}
+
+void JxPosix_DangKyKyHieu(const char* pszMod, const char* pszTen, void* pfn)
+{
+	if (!pszMod || !pszTen || s_nKyHieu >= (int)(sizeof(s_KyHieu) / sizeof(s_KyHieu[0]))) return;
+	JxKyHieu_TenGoc(pszMod, s_KyHieu[s_nKyHieu].szMod, sizeof(s_KyHieu[0].szMod));
+	strncpy(s_KyHieu[s_nKyHieu].szTen, pszTen, sizeof(s_KyHieu[0].szTen) - 1);
+	s_KyHieu[s_nKyHieu].szTen[sizeof(s_KyHieu[0].szTen) - 1] = 0;
+	s_KyHieu[s_nKyHieu].pfn = pfn;
+	s_nKyHieu++;
+}
+
+/* tra the gia cho module da co ky hieu dang ky, NULL neu chua co */
+static HMODULE JxKyHieu_TheModule(const char* pszMod)
+{
+	char szG[32]; JxKyHieu_TenGoc(pszMod, szG, sizeof(szG));
+	int i, bCo = 0;
+	for (i = 0; i < s_nKyHieu; i++) if (strcmp(s_KyHieu[i].szMod, szG) == 0) { bCo = 1; break; }
+	if (!bCo) return NULL;
+	for (i = 0; i < s_nModTinh; i++) if (strcmp(s_szModTinh[i], szG) == 0) return (HMODULE)s_szModTinh[i];
+	if (s_nModTinh >= 8) return NULL;
+	strncpy(s_szModTinh[s_nModTinh], szG, sizeof(s_szModTinh[0]) - 1);
+	s_szModTinh[s_nModTinh][sizeof(s_szModTinh[0]) - 1] = 0;
+	return (HMODULE)s_szModTinh[s_nModTinh++];
+}
+
+static int JxKyHieu_LaTheTinh(HMODULE h)
+{
+	return h && (char*)h >= (char*)s_szModTinh && (char*)h < (char*)s_szModTinh + sizeof(s_szModTinh);
+}
+
+#endif /* JX_IOS */
 /*---------------------------------------------------------------- module: "Rainbow.dll" -> libRainbow.so */
 HMODULE LoadLibraryA(LPCSTR name)
 {
 	if (!name) return NULL;
+#ifdef JX_IOS
+	{ HMODULE hT = JxKyHieu_TheModule(name); if (hT) return hT; }	// [IOS-KYHIEU 11/09]
+#endif
 	char base[256]; const char* p = strrchr(name, '\\'); const char* q = strrchr(name, '/');
 	const char* f = p > q ? p + 1 : (q ? q + 1 : name);
 	strncpy(base, f, sizeof(base) - 1); base[sizeof(base) - 1] = 0;
@@ -460,11 +515,39 @@ HMODULE LoadLibraryA(LPCSTR name)
 	return NULL;
 }
 HMODULE LoadLibraryExA(LPCSTR name, HANDLE h, DWORD f) { (void)h; (void)f; return LoadLibraryA(name); }
+#ifdef JX_IOS	// [IOS-KYHIEU 11/09] doc bang tra tinh truoc, khong khop thi van dlsym
+FARPROC GetProcAddress(HMODULE h, LPCSTR name)
+{
+	if (!h || !name) return NULL;
+	if (JxKyHieu_LaTheTinh(h))
+	{
+		for (int i = 0; i < s_nKyHieu; i++)
+			if (strcmp(s_KyHieu[i].szMod, (const char*)h) == 0 && strcmp(s_KyHieu[i].szTen, name) == 0)
+				return (FARPROC)s_KyHieu[i].pfn;
+		jx_log("GetProcAddress(%s, %s): khong co trong bang tra tinh", (const char*)h, name);
+		return NULL;
+	}
+	return (FARPROC)dlsym((void*)h, name);
+}
+#else
 FARPROC GetProcAddress(HMODULE h, LPCSTR name) { if (!h || !name) return NULL; return (FARPROC)dlsym((void*)h, name); }
+#endif
+#ifdef JX_IOS	// [IOS-KYHIEU 11/09] the gia: khong co gi de tha
+BOOL FreeLibrary(HMODULE h)
+{
+	if (!h) return FALSE;
+	if (JxKyHieu_LaTheTinh(h)) return TRUE;
+	return dlclose((void*)h) == 0;
+}
+#else
 BOOL FreeLibrary(HMODULE h) { if (!h) return FALSE; return dlclose((void*)h) == 0; }
+#endif
 HMODULE GetModuleHandleA(LPCSTR name)
 {
 	if (!name) return (HMODULE)dlopen(NULL, RTLD_NOW);
+#ifdef JX_IOS
+	{ HMODULE hT = JxKyHieu_TheModule(name); if (hT) return hT; }	// [IOS-KYHIEU 11/09]
+#endif
 	HMODULE h = LoadLibraryA(name); if (h) dlclose((void*)h);   /* dlopen dem tham chieu: tra handle da nap */
 	return h;
 }
