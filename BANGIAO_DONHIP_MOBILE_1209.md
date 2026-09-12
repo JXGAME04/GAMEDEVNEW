@@ -1308,3 +1308,33 @@ tức phần dựng cảnh của game, không phải phần ghi lệnh (`ghi l�
 khối cấp ở mốc 1 131–282 936 ms còn các khung chậm nằm ở 1 160 978 ms trở đi.
 
 Muốn fps hiện ra thành số lớn hơn thì phải nâng trần (144 Hz) hoặc thử trên máy yếu, nơi khoảng vẽ mới là nút thắt.
+
+
+---
+
+## 21:00 11/09 — Đo xong khung giật: 70 % nằm NGOÀI lớp vẽ
+
+Phiên `SM-F966U1_20260911_204623` (APK 109112042, `Rep3DoVeChiTiet=1`, khối vẫn bật):
+
+| | vẽ CPU | trong lớp vẽ | ngoài (game dựng cảnh) |
+|---|---|---|---|
+| khung giật (84 dòng, ≥ 8 ms) | 28,6 ms | 8,7 ms (**30 %**) | 19,9 ms (**70 %**) |
+| khung thường (40 dòng) | 3,83 ms | 1,78 ms (46 %) | 2,07 ms (54 %) |
+
+**71 trong 84 khung giật có phần "ngoài" chiếm hơn 80 %.** Vài dòng cụ thể:
+
+```
+ve CPU 29.1 [trong lop ve  4.5, ngoai 24.6]
+ve CPU 23.0 [trong lop ve  1.0, ngoai 22.0]
+ve CPU 20.9 [trong lop ve  0.6, ngoai 20.3]
+ve CPU 18.9 [trong lop ve  0.6, ngoai 18.3]
+```
+
+Trung bình cả kỳ: vẽ CPU 3,33–3,86 ms, trong đó lớp vẽ 1,24–1,48 ms.
+
+**Kết luận: tối ưu tiếp ở lớp vẽ sẽ không chữa được giật.** Loạt `[CHUATLAS] [CULLCPU] [KHOI]` đã ép phần của lớp vẽ
+xuống 1,3 ms trung bình và 0,6–4,7 ms lúc giật; 20 ms còn lại là phần game dựng cảnh giữa `RepresentBegin` và
+`RepresentEnd`, nằm ngoài Represent3. Việc tiếp theo phải chuyển sang đó.
+
+**Lỗi nhỏ của bộ đo cần sửa lần sau:** trường `N lenh` in ra số cộng dồn từ đầu phiên (68 596 330) vì
+`g_uJxTrongVeLan` chưa được đặt lại mỗi khung. Không ảnh hưởng hai con số thời gian.
