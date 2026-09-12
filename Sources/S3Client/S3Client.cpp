@@ -106,9 +106,9 @@ void JxDoNhip_KhungVe(int nCatNgang);	// JxPerfHudAndroid.cpp: ngay truoc UiPain
 //int gameNumber = 0; // Game number, initialized to 0
 //Represent
 struct iRepresentShell* g_pRepresentShell = NULL;
-struct IInlinePicEngineSink* g_pIInlinePicSink = NULL;
+struct IInlinePicEngineSink* g_pIInlinePicSinkUI = NULL;
 iCoreShell* g_pCoreShell = NULL;
-KMusic* g_pMusic = NULL;
+KMusic* g_pMusicUI = NULL;
 
 #define	DYNAMIC_LINK_REPRESENT_LIBRARY
 
@@ -637,8 +637,8 @@ BOOL KMyApp::GameInit()
 	if (m_pInlinePicSink)
 	{
 		m_pInlinePicSink->Init(g_pRepresentShell);
-		_ASSERT(NULL == g_pIInlinePicSink);
-		g_pIInlinePicSink = m_pInlinePicSink;
+		_ASSERT(NULL == g_pIInlinePicSinkUI);
+		g_pIInlinePicSinkUI = m_pInlinePicSink;
 	}
 
 	UiSetScreenSize(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -661,7 +661,7 @@ BOOL KMyApp::GameInit()
 	g_pCoreShell->SetCallDataChangedNofify(&g_ClientCallback);
 	g_pCoreShell->SetRepresentAreaSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-	g_pMusic = &m_Music;
+	g_pMusicUI = &m_Music;
 
 	if (g_NetConnectAgent.Initialize() == 0)
 	{
@@ -702,12 +702,12 @@ BOOL KMyApp::GameExit()
 		m_pInlinePicSink->UnInit();
 		delete m_pInlinePicSink;
 		m_pInlinePicSink = NULL;
-		g_pIInlinePicSink = NULL;
+		g_pIInlinePicSinkUI = NULL;
 	}
 
 	UiExit();
 
-	g_pMusic = NULL;
+	g_pMusicUI = NULL;
 	if (g_pCoreShell)
 	{
 		g_pCoreShell->SetRepresentShell(NULL);

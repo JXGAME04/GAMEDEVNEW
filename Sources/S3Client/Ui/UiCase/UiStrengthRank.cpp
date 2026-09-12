@@ -31,7 +31,7 @@ KIniFile                    KUiStrengthRank::m_IndexIDIni;
 BOOL                        KUiStrengthRank::m_bIsIndexDataChange = FALSE;
 BOOL                        KUiStrengthRank::m_bIsRankDataChange = FALSE;
 
-extern IInlinePicEngineSink* g_pIInlinePicSink;
+extern IInlinePicEngineSink* g_pIInlinePicSinkUI;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -156,11 +156,11 @@ void KUiStrengthRank::Initialize()
 	g_UiBase.GetCurSchemePath(Scheme, 256);
 	LoadScheme(Scheme);
 
-	if (g_pIInlinePicSink)
+	if (g_pIInlinePicSinkUI)
 	{
-		g_pIInlinePicSink->AddCustomInlinePic(m_usSteadyPic, m_szSteadyPicPath);
-		g_pIInlinePicSink->AddCustomInlinePic(m_usDownPic, m_szDownPicPath);
-		g_pIInlinePicSink->AddCustomInlinePic(m_usUpPic, m_szUpPicPath);
+		g_pIInlinePicSinkUI->AddCustomInlinePic(m_usSteadyPic, m_szSteadyPicPath);
+		g_pIInlinePicSinkUI->AddCustomInlinePic(m_usDownPic, m_szDownPicPath);
+		g_pIInlinePicSinkUI->AddCustomInlinePic(m_usUpPic, m_szUpPicPath);
 	}
 
 	int nWidth, nHeight;
@@ -306,11 +306,11 @@ void KUiStrengthRank::LoadScheme(const char* pScheme)
 *****************************************************************************/
 void KUiStrengthRank::ReleasePic()
 {
-	if (g_pIInlinePicSink)
+	if (g_pIInlinePicSinkUI)
 	{
-		g_pIInlinePicSink->RemoveCustomInlinePic(m_usUpPic);
-		g_pIInlinePicSink->RemoveCustomInlinePic(m_usDownPic);
-		g_pIInlinePicSink->RemoveCustomInlinePic(m_usSteadyPic);
+		g_pIInlinePicSinkUI->RemoveCustomInlinePic(m_usUpPic);
+		g_pIInlinePicSinkUI->RemoveCustomInlinePic(m_usDownPic);
+		g_pIInlinePicSinkUI->RemoveCustomInlinePic(m_usSteadyPic);
 	}
 }
 
@@ -459,9 +459,9 @@ BOOL KUiStrengthRank::LoadRankIni(KIniFile *Ini, int nID)
 *****************************************************************************/
 //void KUiStrengthRank::SendGetIndexToCore()
 //{
-//	if(g_pCoreShell && IR_GetCurrentTime() - m_uLastGetIndexTime > GET_RANK_TIME_OUT)
+//	if(g_pCoreShell && UiIR_GetCurrentTime() - m_uLastGetIndexTime > GET_RANK_TIME_OUT)
 //	{
-//		m_uLastGetIndexTime = IR_GetCurrentTime();
+//		m_uLastGetIndexTime = UiIR_GetCurrentTime();
 //		g_pCoreShell->OperationRequest(GOI_QUERY_RANK_INFORMATION, 0, TRUE);
 //	}
 //}
@@ -472,9 +472,9 @@ BOOL KUiStrengthRank::LoadRankIni(KIniFile *Ini, int nID)
 *****************************************************************************/
 void KUiStrengthRank::SendGetRankToCore(int nID)
 {
-	if(g_pCoreShell && m_pLastGettimes && IR_GetCurrentTime() - m_pLastGettimes[m_nLastIndex] > GET_RANK_TIME_OUT)
+	if(g_pCoreShell && m_pLastGettimes && UiIR_GetCurrentTime() - m_pLastGettimes[m_nLastIndex] > GET_RANK_TIME_OUT)
 	{
-		m_pLastGettimes[m_nLastIndex] = IR_GetCurrentTime();
+		m_pLastGettimes[m_nLastIndex] = UiIR_GetCurrentTime();
 		g_pCoreShell->OperationRequest(GOI_QUERY_RANK_INFORMATION, (unsigned int)nID, 0);
 	}
 }

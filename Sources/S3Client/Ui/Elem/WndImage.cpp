@@ -140,7 +140,7 @@ void KWndImage::SetImage(short nType, const char* pszImgName, bool bAdjustWndSiz
 	m_Image.szImage[sizeof(m_Image.szImage) - 1] = 0;
 	m_Image.nNumFrames = 0;
 	m_Image.uImage = 0;
-	m_Image.nFlipTime = IR_GetCurrentTime();
+	m_Image.nFlipTime = UiIR_GetCurrentTime();
 	if (bAdjustWndSize && g_pRepresentShell)
 	{
 		KImageParam	Param;
@@ -151,7 +151,7 @@ void KWndImage::SetImage(short nType, const char* pszImgName, bool bAdjustWndSiz
 
 void KWndImage::UpdateTimer()
 {
-	m_Image.nFlipTime = IR_GetCurrentTime();
+	m_Image.nFlipTime = UiIR_GetCurrentTime();
 }
 
 //--------------------------------------------------------------------------

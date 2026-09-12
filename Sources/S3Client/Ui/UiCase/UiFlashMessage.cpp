@@ -41,7 +41,7 @@ KUiFlashMessage::KUiFlashMessage()
 	m_nVisionWidth = 0;
 	m_nFontSize = 8;
 	m_nFontHalfWidth[0] = m_nFontHalfWidth[1] = 4;
-	srand(IR_GetCurrentTime());
+	srand(UiIR_GetCurrentTime());
 	m_nRiseFrom = -1;		// [TKCHAT 04/09c]
 	m_nRiseSpeed = 35;
 	m_nFadeMs = 1500;
@@ -61,7 +61,7 @@ void KUiFlashMessage::EnableIdleMsg(BOOL bEnable)
 		{
 			if (ms_bEnableIdleMsg)
 			{
-				m_pSelf->m_uLastShowTime = IR_GetCurrentTime();
+				m_pSelf->m_uLastShowTime = UiIR_GetCurrentTime();
 				m_pSelf->m_IniFile.Load(DEFAULT_MESSAGE);
 			}
 			else
@@ -97,7 +97,7 @@ bool KUiFlashMessage::AddMessage(KNewsMessage* pMsg, unsigned int uTime, unsigne
 		// khong de tin giet dich hien muon hang chuc giay khi Tong Kim dong nguoi)
 		if (m_uMaxQueueDelay > 0)
 		{
-			unsigned int uNow = IR_GetCurrentTime();
+			unsigned int uNow = UiIR_GetCurrentTime();
 			if ((int)(m_uNextStartTime - uNow) > (int)m_uMaxQueueDelay)
 				return false;
 		}
@@ -188,7 +188,7 @@ KUiFlashMessage* KUiFlashMessage::OpenWindow()
 	}
 	if (m_pSelf)
 	{
-		m_pSelf->m_uLastShowTime = IR_GetCurrentTime();
+		m_pSelf->m_uLastShowTime = UiIR_GetCurrentTime();
 		if (m_pSelf->m_bEnable)	// [TKCHAT 05/09b] Enable=0: cua so an, khong Paint/Breathe gi
 		{
 			m_pSelf->Show();
@@ -347,7 +347,7 @@ void KUiFlashMessage::MessageArrival(KNewsMessage* pMsg, SYSTEMTIME* pTime)
 				uTime = pTime->wSecond * 1000;
 			else
 				uTime = 3000;
-			m_pSelf->AddMessage(pMsg, uTime, IR_GetCurrentTime());
+			m_pSelf->AddMessage(pMsg, uTime, UiIR_GetCurrentTime());
 			break;
 		case NEWSMESSAGE_TIMEEND: //定时消息
 			if (pTime)
@@ -453,7 +453,7 @@ void KUiFlashMessage::PaintWindow()
 
 	// [TKCHAT 04/09c] kieu 2.0: moi dong sinh o RiseFromY() (giua man hinh), troi len RiseSpeed px/giay, toi dan FadeMs cuoi,
 	// het DisplayDuration hoac cham mep tren thi bien mat. Thu tu tren-duoi tu nhien theo thoi diem sinh (cu tren, moi duoi).
-	unsigned int uNow = IR_GetCurrentTime();
+	unsigned int uNow = UiIR_GetCurrentTime();
 	int nFrom = RiseFromY();
 	for (int i = 0; i < m_nNumSlots; ++i)
 	{
@@ -514,7 +514,7 @@ void KUiFlashMessage::PaintWindow()
 bool KUiFlashMessage::PickAMessage()
 {
 	m_pHandling = NULL;
-	unsigned int	uCurrentTime = IR_GetCurrentTime();
+	unsigned int	uCurrentTime = UiIR_GetCurrentTime();
 
 	if (m_pHead == NULL)
 	{
@@ -628,13 +628,13 @@ void KUiFlashMessage::ConvertMsgToSlot(KNewsMessageNode* pNode, int idx)
 	slot.bActive = true;
 	slot.bJustIncoming = false; // no entering animation
 	slot.bStationary = true;    // mark as stationary so PaintWindow renders full text
-	slot.uDisplayStartTime = IR_GetCurrentTime(); // start display timer now
+	slot.uDisplayStartTime = UiIR_GetCurrentTime(); // start display timer now
 	slot.nCharIndex = 0;
 	slot.nHalfIndex = 0;
 	slot.nSkipTimes = 0;
 	slot.nTextPosX = m_nAbsoluteLeft + m_nIndentH; // align to left indent
 	slot.nLineLen = slot.CurrentMsg.nMsgLen;
-	slot.uLastScrollTime = IR_GetCurrentTime(); // keep a sensible value
+	slot.uLastScrollTime = UiIR_GetCurrentTime(); // keep a sensible value
 }
 
 
@@ -646,7 +646,7 @@ bool KUiFlashMessage::MakeCountingMsgForSlot(int idx)
 	if (!slot.bActive || !slot.pSourceNode) return false;
 
 	KNewsMessageNode* pNode = slot.pSourceNode;
-	unsigned int uCurrent = IR_GetCurrentTime();
+	unsigned int uCurrent = UiIR_GetCurrentTime();
 	if (uCurrent - pNode->uStartTime >= pNode->uTime)
 		return false;
 
@@ -689,7 +689,7 @@ void KUiFlashMessage::ResetSlot(int idx)
 	DisplaySlot& slot = m_DisplaySlots[idx];
 	if (!slot.bActive || !slot.pSourceNode) { slot.bActive = false; return; }
 
-	slot.uLastScrollTime = IR_GetCurrentTime();
+	slot.uLastScrollTime = UiIR_GetCurrentTime();
 	slot.nSkipTimes = 0;
 
 	// No entering scroll: display immediately as stationary
@@ -697,7 +697,7 @@ void KUiFlashMessage::ResetSlot(int idx)
 	slot.bStationary = true;
 	// [TKCHAT 04/09c] lich sinh dong: cach dong truoc dung 1 hang (m_nLineHeight / RiseSpeed) -> khong bao gio de len nhau
 	{
-		unsigned int uNow = IR_GetCurrentTime();
+		unsigned int uNow = UiIR_GetCurrentTime();
 		unsigned int uStart = uNow;
 		if ((int)(m_uNextStartTime - uNow) > 0)
 			uStart = m_uNextStartTime;
@@ -766,7 +766,7 @@ bool KUiFlashMessage::ScrollSlot(int idx)
 // Return true if assigned any message.
 bool KUiFlashMessage::PickMessagesForSlots()
 {
-	unsigned int uCurrentTime = IR_GetCurrentTime();
+	unsigned int uCurrentTime = UiIR_GetCurrentTime();
 	bool anyAssigned = false;
 
 	// if queue empty and idle behaviour
@@ -881,7 +881,7 @@ bool KUiFlashMessage::PickMessagesForSlots()
 **********************************************************************************/
 void KUiFlashMessage::Breathe()
 {
-	unsigned int now = IR_GetCurrentTime();
+	unsigned int now = UiIR_GetCurrentTime();
 
 	for (int i = 0; i < m_nNumSlots; ++i)
 	{
@@ -899,7 +899,7 @@ void KUiFlashMessage::Breathe()
 				KNewsMessageNode* pNode = slot.pSourceNode;
 				if (pNode)
 				{
-					unsigned int uCurrent = IR_GetCurrentTime();
+					unsigned int uCurrent = UiIR_GetCurrentTime();
 					if (uCurrent - pNode->uStartTime >= pNode->uTime)
 					{
 						// finished
@@ -989,7 +989,7 @@ bool KUiFlashMessage::MakeCountingMsg()
 	//_ASSERT(m_pHandling &&
 	//	m_pHandling->nType == NEWSMESSAGE_COUNTING &&
 	//	m_nInsertPlace != NOT_NEED_INSERT);
-	unsigned int uCurrent = IR_GetCurrentTime();
+	unsigned int uCurrent = UiIR_GetCurrentTime();
 	if (uCurrent - m_pHandling->uStartTime >= m_pHandling->uTime)
 		return false;
 
@@ -1037,7 +1037,7 @@ void KUiFlashMessage::Reset()
 	if (m_pHandling == NULL)
 		return;
 
-	m_uLastShowTime = m_uLastScrollTime = IR_GetCurrentTime();
+	m_uLastShowTime = m_uLastScrollTime = UiIR_GetCurrentTime();
 
 	ConvertMsg();
 	m_bJustIncoming = true;

@@ -10,21 +10,21 @@
 #include "UiImage.h"
 #include "../../../Represent/iRepresent/iRepresentShell.h"
 
-unsigned int	l_Time = 0;
+unsigned int	l_UiTime = 0;
 //绘图设备
 extern iRepresentShell*	g_pRepresentShell;
 
-unsigned int IR_GetCurrentTime()
+unsigned int UiIR_GetCurrentTime()
 {
-	return l_Time;
+	return l_UiTime;
 }
 
 //--------------------------------------------------------------------------
 //	功能：更新图形换帧计算用时钟
 //--------------------------------------------------------------------------
-void IR_UpdateTime()
+void UiIR_UpdateTime()
 {
-	l_Time = GetTickCount();
+	l_UiTime = GetTickCount();
 }
 
 //--------------------------------------------------------------------------
@@ -47,7 +47,7 @@ void IR_InitUiImagePartRef(KUiImagePartRef& Img)
 
 int	IR_IsTimePassed(unsigned int uInterval, unsigned int& uLastTimer)
 {
-	if ((l_Time - uLastTimer) >= uInterval)
+	if ((l_UiTime - uLastTimer) >= uInterval)
 	{
 		uLastTimer += uInterval;
 		return 1;
@@ -59,7 +59,7 @@ int	IR_IsTimePassed(unsigned int uInterval, unsigned int& uLastTimer)
 unsigned int IR_GetRemainTime(unsigned int uInterval, unsigned int uLastTimer)
 {
 	register unsigned int uRemain;
-	if ((uRemain = l_Time - uLastTimer) < uInterval)
+	if ((uRemain = l_UiTime - uLastTimer) < uInterval)
 		return (uInterval - uRemain);
 	return 0;
 }
@@ -71,12 +71,12 @@ int IR_NextFrame(KUiImageRef& Img)
 {
 	if (Img.nNumFrames > 1)
 	{
-		if ((l_Time - Img.nFlipTime) >= (DWORD)Img.nInterval)
+		if ((l_UiTime - Img.nFlipTime) >= (DWORD)Img.nInterval)
 		{
 			Img.nFlipTime += Img.nInterval;
 			if ((++Img.nFrame) >= Img.nNumFrames)
 			{
-				Img.nFlipTime = l_Time;
+				Img.nFlipTime = l_UiTime;
 				Img.nFrame = 0;
 				return true;
 			}
@@ -90,7 +90,7 @@ int IR_NextFrame(KUiImageRef& Img)
 			g_pRepresentShell->GetImageParam(Img.szImage, &Param, Img.nType);
 		if (Param.nNumFrames > 0)
 		{
-			Img.nFlipTime  = l_Time;
+			Img.nFlipTime  = l_UiTime;
 			Img.nNumFrames = Param.nNumFrames;
 			Img.nInterval = Param.nInterval;
 		}

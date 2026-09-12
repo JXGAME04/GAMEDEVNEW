@@ -407,7 +407,7 @@ bool KUiSysMsgCentre::AMessageArrival(KSystemMessage* pMsg, void* pParam)
 			memcpy(&pCloneMsg[1], pParam, pMsg->byParamSize);
 		if (m_pSelf->AddAMsgToHeap(pCloneMsg, POPUPING_MSG_HEAP_INDEX, false))
 		{
-			pCloneMsg->POP_UP_TIME = IR_GetCurrentTime();
+			pCloneMsg->POP_UP_TIME = UiIR_GetCurrentTime();
 			if (m_pSelf->m_MsgHeap[POPUPING_MSG_HEAP_INDEX].nNumValid == 1)
 				m_pSelf->SetPopupMsgDest();
 			return true;

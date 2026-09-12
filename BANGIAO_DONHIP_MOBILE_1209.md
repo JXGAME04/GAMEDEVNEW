@@ -5,6 +5,141 @@
 
 ## 0. Trạng thái (cập nhật 22:05)
 
+> **17:35 11/09 — BƯỚC 1 CỦA ĐỢT PORT ĐÃ LÊN BỘ TẢI: `[CHUATLAS 11/09]` chữ vào atlas.** Chủ 17:2x: "oke hãy làm và đo từng bước",
+> kèm lưu ý có phiên làm iOS trên MacBook khác có thể đẩy git. dt_v4 = **109111729** (md5 `14442104…`, máy chủ 8765 PID 383480),
+> commit `0e74d95a` trên `origin/mobile-0809`, APK lưu `android/apk/jx1mobile-1109-chuatlas.apk`.
+> - **Việc:** `CAtlasMgrGpu::Eligible` cho `D3DPOOL_MANAGED` vào atlas. Đúng một điều kiện, y như bản PC làm ở `[MANG 09/09 d]`, vì texture ảo
+>   trên mobile đã hỗ trợ bản CPU và tải lại vùng bẩn. Xác nhận trong mã: `REP3_POOL_MANAGED` = `D3DPOOL_MANAGED` khi `Rep3Ex=0`
+>   (`D3D_Device.h:83`), nên chữ và ảnh dựng sẵn của nhân vật trước nay bị loại khỏi atlas **chỉ vì loại bộ nhớ**.
+> - **Bộ đếm để đo và để bắt rủi ro:** `[VE-GOP]` thêm `o atlas: DEFAULT n, MANAGED m (managed=1), xin o moi k`. Rủi ro của bước này là
+>   texture MANAGED bị ghi lại thường xuyên sẽ phải **xin ô mới** mỗi khung; nếu `xin o moi` tăng vọt thì tắt.
+> - **Thử máy ảo:** không lỗi, chữ hiển thị đúng hoàn toàn (nút, tiêu đề, chữ đỏ "(New)", chữ nhỏ góc trái); log `o atlas: DEFAULT 0,
+>   MANAGED 1 (managed=1), xin o moi 0`.
+> - **Chủ test:** mở lại app, nhìn chữ trước hết (nhãn tên trên đầu nhân vật, dòng chat, số sát thương, chữ trong bảng), rồi Tống Kim 10 đến
+>   15 phút. Mốc so sánh: lý do quad không gộp hiện là **texture0 82 đến 88 %**, pipeline 12 đến 17 %; kỳ vọng texture0 tụt. Tắt nhanh nếu chữ
+>   sai: `Rep3AtlasManaged=0` trong `[Client]` của config dt_v4 rồi khởi động lại 8765.
+> - **Bước 2 và 3 của đợt port** (loại mặt khuất trên CPU, rồi atlas khối cố định gắn sẵn sampler) làm sau khi đọc log bước 1.
+> - **Lưu ý phối hợp:** có phiên iOS trên máy khác có thể đẩy git, nên mọi lần đẩy đều phải `git fetch` rồi gộp, tuyệt đối không ép đẩy.
+
+> **17:00 11/09 — TÌM RA HƯỚNG ĐÚNG: NHÁNH CHÍNH ĐÃ GIẢI XONG BÀI TOÁN NÀY CHO BẢN PC, MOBILE CHƯA PORT.** Chủ chỉ: bản sửa "nằm ở main
+> chính của dự án, không phải main mobile"; bản PC chạy 144 fps, đông vẫn trên 135.
+> Loạt commit `[MANG 09/09]` a đến f trên `origin/main` sửa cho **đường vẽ D3D11** (`D3D9on11*.cpp`), còn mobile chạy **đường SDL_GPU / Vulkan**
+> (`D3D9onGPU*.cpp`) nên không được hưởng:
+>
+> | Bước | Commit | Việc | Số đo của bản PC |
+> |---|---|---|---|
+> | a | `0b855da7` | atlas thành Texture2DArray | bỏ 95,9 % lý do vỡ lô quad |
+> | b | `9190fab1` | alpha test theo đỉnh, hai mảng atlas gắn cố định khe t3/t4, mảng lớn lên không kèm dữ liệu | bỏ khung 20 đến 57 ms |
+> | c | `c6e98e0f` | bộ đệm đỉnh 4 lên 16 MB | |
+> | d | `4ee8e6ad` | **chữ (texture MANAGED) vào atlas** + tham số tầng 0 theo đỉnh | hai lý do vỡ lô cuối |
+> | e | `ac7d255b` | **cull trên CPU cho lệnh 2D** | 92 % lý do vỡ lô |
+> | f | `5311778b` | atlas theo **khối cố định** (R8G8 32 lớp/64 MB, tối đa 16 khối), trường lớp 9 bit = khối<<5 hoặc lớp, shader chọn khối bằng switch trên **16 sampler gắn cố định** | hết đổi binding texture |
+>
+> **Vì sao C1 của tôi hỏng còn bản PC thành công.** Tôi làm cụm tăng dần 2/4/8 lớp với một sampler mảng duy nhất, nên vẫn phải đổi binding
+> giữa các cụm. Bản PC làm khối lớn cố định 32 lớp và **gắn cố định 16 mảng vào các khe sampler**, chọn bằng chỉ số theo đỉnh, nên không bao giờ
+> đổi binding. Đó là khác biệt quyết định.
+> **Hai nguyên nhân của bản PC đều đúng với mobile, đã kiểm trong mã và log:** đường SDL_GPU có gộp `D3DRS_CULLMODE` vào khoá pipeline
+> (`D3D9onGPUDev.cpp:437`), và chữ trên mobile là MANAGED nên `CAtlasMgrGpu::Eligible` loại khỏi atlas. Log mobile: lý do quad không gộp là
+> texture0 82 đến 88 %, pipeline 12 đến 17 %.
+> **Việc kế, thay cho mọi hướng tôi tự nghĩ trước đó:** port sang đường SDL_GPU theo thứ tự **(d) chữ vào atlas → (e) cull trên CPU → (f) khối
+> cố định gắn sampler**, mỗi bước một công tắc và đo bằng đúng bộ log này.
+
+> **16:30 11/09 — C1 HỎNG TRÊN MÁY THẬT, ĐÃ TẮT NGAY BẰNG CONFIG.** Chủ 16:25: "đợt này di chuyển màn hình hay bị giật và FPS tụt xuống 25".
+> Đã đặt `Rep3AtlasMangGpu=0` (tên khoá đổi lúc 16:30 vì `Rep3AtlasMang` đã là khoá của đường vẽ D3D11; khoá cũ trong dt_v4 nay vô hại vì mặc định là 0) trong `D:\jx1_android_data_dt_v4\config.ini` và khởi động lại 8765 (PID 369628) lúc 16:27; APK giữ nguyên 109111608 nên
+> chủ chỉ cần **mở lại app** là về đúng hành vi bản 109111545. Mặc định trong mã cũng đã đổi sang 0 (commit sau), mã giữ lại sau công tắc.
+>
+> **Số đo phiên `SM-F966U1_20260911_162152`** (trung vị cửa sổ 30 s, bỏ màn đăng nhập):
+>
+> | | D1 109111459 | C bước 1 109111545 | C1 109111608 |
+> |---|---|---|---|
+> | đổi texture / khung | 844 | 1 043 | **508** |
+> | lệnh vẽ / khung | 1 677 | 2 001 | **1 222** |
+> | ghi lệnh | 2,59 ms | 2,26 ms | 2,28 ms |
+> | **nộp** | 0,64 ms | 1,42 ms | **3,28 ms** |
+> | **vẽ CPU** | 2,60 ms | 2,96 ms | **4,51 ms** |
+>
+> **Đọc số:** C1 làm đúng phần cơ học của nó (gộp được lệnh: đổi texture giảm một nửa, lệnh vẽ giảm 39 %), **nhưng GPU trả giá đắt hơn nhiều
+> phần tiết kiệm được**: nộp tăng 2,3 lần và vẽ CPU tăng 1,5 lần → fps tụt, giật khi cuộn màn hình. 143 dòng `[VE-GIAT]`, 135 trong số đó phần nặng
+> nhất là "vẽ khác" (mã vẽ của client), nạp và chép đều 0,0 ms → không phải nạp sprite, không phải tải texture.
+> **Giải thích khả dĩ:** lấy mẫu qua texture mảng 2048×2048×8 lớp với chỉ số lớp đổi theo từng quad làm mất tính cục bộ của bộ đệm texture trên
+> Adreno, và 5 cụm đã cấp 240 MB trong khi chỉ dùng 208 MB nên phần bộ nhớ thừa càng ép bộ đệm. Bài học: **gộp lệnh không tự động thắng** khi cách
+> gộp làm GPU lấy mẫu xấu đi; phải đo cả hai phía chứ không chỉ đếm lệnh.
+> **Việc kế:** bỏ hướng C1 (giữ mã sau công tắc để thử lại với trang nhỏ hơn hoặc ít lớp hơn nếu muốn); quay lại **A2** (lưới an toàn nhiệt) và **E**
+> (nạp sprite ở luồng nền khi NPC xuất hiện), và xem lại nghi vấn nộp tăng của bước 1 (`Rep3PsBuffer=0` để đối chứng).
+
+> **16:15 11/09 — C1 ĐÃ LÊN BỘ TẢI: dt_v4 = 109111608** (md5 `bdcf2baa…`, 20 355 055 B, máy chủ 8765 PID 374324, giữ nguyên
+> `data/sprvuhontieudao3.pak` + `package.ini`), commit `[MANG 11/09]`, `origin/mobile-0809 = ee3c3cdd`. Chủ 16:13: "nếu bạn lấy đủ log rồi thì đẩy lên".
+>
+> **Số chốt của bước 1** (hai phiên giờ CÙNG mức đông nên so được trực tiếp; trung vị cửa sổ 30 s có npc ≥ 100):
+>
+> | | D1 109111459 (33 cửa sổ, npc 116 · đạn 114) | C bước 1 109111545 (24 cửa sổ, npc 123 · đạn 103) |
+> |---|---|---|
+> | fps / thấp nhất | 114 / 110 | 115 / 110 |
+> | ghi lệnh | 2,93 ms | **2,44 ms** |
+> | **µs mỗi lệnh vẽ** | 1,37 | **1,09 (−20 %)** |
+> | đổi trạng thái pixel / khung | 1 105 | **0** |
+> | đổi texture / khung | 1 146 | 1 154 (phần của C1) |
+> | nộp | 0,72 ms | 1,30 ms |
+> | CPU tiến trình / luồng chính | 80 / 75 % | 79 / 74 % |
+> | điện · GPU bận | 3,57 W · 75 % | 3,99 W · 80 % |
+>
+> **Điểm cần theo dõi:** nộp +0,58 ms, điện +0,42 W và GPU 75 → 80 % ở cảnh tương đương. Nghi do shader đọc bảng trạng thái từ storage buffer cho
+> **từng điểm ảnh** (4,3 triệu điểm mỗi khung) thay vì từ uniform như trước; CPU thì giảm đúng như thiết kế. C1 không đụng phần này, nên nếu log C1
+> vẫn thấy nộp và GPU cao thì bước sau nên thử đưa bảng trạng thái về uniform theo lô, hoặc rút gọn tổ hợp (chỉ 5 tổ hợp mỗi khung) thành vài hằng số
+> trong shader. Nếu muốn đối chứng ngay: `Rep3PsBuffer=0` trong config dt_v4 rồi khởi động lại 8765.
+>
+> **Chủ test bản 109111608:** mở lại app. Kiểm **hình** trước hết vì C1 đổi cách sprite nằm trong bộ nhớ GPU: nhân vật, quái, hiệu ứng kỹ năng, chữ,
+> giao diện, vật phẩm trong hành trang, ảnh nền đăng nhập; sai sẽ lộ thành ảnh lẫn sang sprite khác hoặc ô trống. Rồi Tống Kim 10–15 phút.
+> Tôi đọc `[VE-GOP]` (đổi texture mỗi khung, kỳ vọng tụt mạnh từ 1 154), `[VE]` (ghi lệnh, lệnh mỗi khung), `[MANG]` (số cụm atlas), `[MAU]` (W, GPU).
+> Hỏng hình → `Rep3AtlasMangGpu=0` (tên khoá đổi lúc 16:30 vì `Rep3AtlasMang` đã là khoá của đường vẽ D3D11; khoá cũ trong dt_v4 nay vô hại vì mặc định là 0) trong `[Client]` của config dt_v4 rồi khởi động lại 8765, không cần APK mới.
+
+> **16:10 11/09 — KẾT QUẢ BƯỚC 1 TRÊN FOLD 7 + C1 ĐÃ DỰNG XONG (CHƯA ĐẨY BỘ TẢI).** Chủ 15:52: "tôi mới up bản mới rồi tí nữa bạn lấy log —
+> phải dựa vào log và lịch trình định sẵn". Phiên `SM-F966U1_20260911_155303` (bản 109111545, màn trong, Tống Kim liên tục, 99 cửa sổ 10 s).
+>
+> | Cửa sổ **rất đông** (npc ≥ 100), trung vị | D1 109111459 (33 cửa sổ) | C bước 1 109111545 (16 cửa sổ) |
+> |---|---|---|
+> | npc/tick · đạn/tick của phiên | 82 · 61 | **112 · 112** (cảnh nặng gần gấp đôi) |
+> | fps / thấp nhất | 114 / 110 | 115 / 110 |
+> | ghi lệnh ms | 2,93 | 2,38 |
+> | **µs mỗi lệnh vẽ** | 1,37 | **1,07 (−22 %)** |
+> | đổi trạng thái pixel / khung | 1 105 | **0** |
+> | đổi texture / khung | 1 146 | 1 139 (chưa đụng, đó là C1) |
+> | nộp ms | 0,72 | 1,34 |
+> | CPU tiến trình / luồng chính | 80 / 75 % | 77 / 73 % |
+>
+> Đọc số: **C2 đạt đúng mục tiêu** (không còn lần đẩy uniform nào, bảng chỉ 5 tổ hợp, tràn 0) và **C3 rút giá mỗi lệnh 22 %**; CPU vẫn giảm nhẹ dù
+> tải nặng gần gấp đôi. Điện 3,57 → 4,01 W và GPU 75 → 80 % là do cảnh nặng hơn, không so trực tiếp được. **Nộp tăng 0,72 → 1,34 ms** là điểm duy nhất
+> cần theo dõi (nghi do GPU bận hơn ở cảnh nặng; bảng trạng thái chỉ 400 byte/khung nên không phải do tải bảng).
+> **C1 đã viết + dựng + thử máy ảo, CHƯA thay vào dt_v4** vì chủ còn đang đo bản 109111545 (pin 6 %) — đẩy lúc này sẽ phá phép đo. Commit
+> `[MANG 11/09]`, APK 109111608 (md5 `bdcf2baa…`, `android/apk/jx1mobile-1109-c1.apk`): nhiều trang atlas nằm trong một texture mảng 2D (mỗi trang một
+> lớp, chỉ số lớp đi theo đỉnh ở bit 25..30 của ô PALROW), cụm cấp tăng dần 2 → 4 → 8 lớp trong ngân sách 64 MB, trang rỗng **trả lớp** về cụm ở cả hai
+> đường trả trang (texture là của cụm, huỷ nhầm là mất hết sprite), texture riêng và texture trắng cũng tạo dạng mảng một lớp, texture tầng 1 bị ép ra
+> khỏi atlas. Bốn mảng shader cũ giữ nguyên từng byte. Máy ảo: màn menu và bảng chọn máy chủ y hệt, log `[VE] atlas mang 2D=1` và
+> `[MANG] cum atlas moi: 2048x2048 x 2 lop fmt 3 (16 MB), tong 1 cum`, không lỗi. Công tắc tắt: `Rep3AtlasMangGpu=0` (tên khoá đổi lúc 16:30 vì `Rep3AtlasMang` đã là khoá của đường vẽ D3D11; khoá cũ trong dt_v4 nay vô hại vì mặc định là 0).
+
+> **15:50 11/09 — ĐỢT C BƯỚC 1 ĐÃ LÊN BỘ TẢI: `[GOP 11/09]` trạng thái tầng texture theo ĐỈNH + bind ring một lần** — commit `00a09114`
+> = `origin/mobile-0809` (FF cả `wt_mobile`), **dt_v4 = 109111545** (md5 `fb90eceb…`, 20 322 287 B, máy chủ 8765 PID 362344, giữ nguyên
+> `data/sprvuhontieudao3.pak` + `package.ini` của phiên giao diện), APK lưu `android/apk/jx1mobile-1109-gop1.apk`. Chủ 15:35: "làm C và
+> hãy nhớ kiểm tra bên phiên client PC có gì mới cập nhật vào cho đồng bộ".
+> - **Đồng bộ phía PC:** gộp `origin/main = 714cbed0` (`0bc49e49` [TK-RUONG+TK-CUA] WAuto Tống Kim, chỉ `Core/Src/CoreShell.cpp`, không đụng
+>   Represent3 / S3Client / android). Đã hỏi cả ba phiên PC (wauto-bb, wauto-d2, wauto-80): không phiên nào còn thay đổi chưa đẩy; wauto-80
+>   xác nhận `0bc49e49` chỉ dùng hàm sẵn có của Core nên bố cục lớp không đổi (an toàn cho bản mobile dùng chung Core).
+> - **C2 (ps theo đỉnh):** `RgPsCb` 80 byte (colorop / alphaop / alpha test / lọc) không còn đẩy uniform mỗi lệnh vẽ. Mỗi khung gom các tổ hợp
+>   **duy nhất** vào storage buffer 4 096 mục, chỉ số 12 bit đi theo đỉnh trong ô PALROW (bit 0..12 hàng bảng màu, 13..24 chỉ số ps, 25..30 để
+>   dành cho lớp atlas của bước sau). Nhờ vậy hai quad **chỉ khác trạng thái tầng texture vẫn gộp chung một lệnh vẽ** (so trạng thái bỏ phần ps).
+>   Tra bảng: nhớ ô cuối rồi mới tra bảng băm FNV-1a; va chạm băm vẫn kiểm lại bằng memcmp nên không thể trả nhầm tổ hợp.
+> - **C3 (bind ring một lần):** bộ đệm đỉnh bind một lần mỗi render pass, mỗi lệnh vẽ dùng `first_vertex = ringOff / (stride+4)` (ringOff được
+>   căn lên bội `stride+4` khi mở lệnh mới) → bớt một lệnh Vulkan cho **mỗi** draw (Tống Kim 1 818 draw/khung).
+> - **Giữ PC nguyên byte:** biến thể shader thứ ba `g_Rep3GpuFSPalPs` nằm trong `#ifdef JX_ANDROID`; nhánh không-`JX_PS_BUFFER` dùng **macro**
+>   `JX_PALROW`/`JX_PALKHONG` nên sinh đúng chuỗi token cũ — đã kiểm: `g_Rep3GpuVS`, `g_Rep3GpuFS` (PC) và `g_Rep3GpuFSPalBuf` (bản 109111459)
+>   **giữ nguyên từng byte**. (Lần đầu viết bằng biến cục bộ làm hai mảng cũ đổi byte → đã hoàn nguyên và làm lại bằng macro.)
+> - **Thử máy ảo:** không sập, màn menu + bảng chọn máy chủ màu y hệt bản D1 (nút vàng, chữ đỏ "(New)", khung đúng); log
+>   `ps theo dinh=1, bind ring mot lan=1`, `bang trang thai tang texture: storage buffer 4096 muc x 80 byte (320 KB)`, `[VE-GOP] … ps bang 4 muc`,
+>   0 dòng "that bai". **Chưa thử được trong thế giới** (chủ đang chơi trên Fold 7, máy ảo dùng chung tài khoản sẽ đá phiên).
+> - **Công tắc tắt nhanh** trong `[Client]` của config dt_v4: `Rep3PsBuffer=0` (về đúng bản 109111459), `Rep3BindRing=0`, `Rep3PalBuffer=0`
+>   (về hẳn shader PC, tắt cả hai). Kỳ vọng: ghi lệnh 2,6 → ~1,3–1,8 ms lúc đông, CPU luồng chính 85 → ~70 % ở cửa sổ 800 đạn/tick.
+>   Bài test: §10 mục 8. Việc kế: **C1** (atlas thành texture mảng 2D — texture0 chiếm 73 % lý do không gộp), rồi **A2**, **E**.
+
 > **15:25 11/09 — KẾT QUẢ FOLD 7 BẢN D1 109111459 (phiên `SM-F966U1_20260911_151020`, màn trong, 12 phút, gần như toàn bộ là Tống Kim; máy BẮT ĐẦU
 > ĐÃ NÓNG: nhiệt 3, headroom 0,98, 37,1 °C — ngay sau 55 phút Tống Kim của phiên 14:16).** Chủ 15:20: "lấy log đi bạn". `[D1] swapchain 1040x936 | backbuffer
 > 1040x936 | cua so 2184x1968 | SDL: tao 1040x936; extent min 1x1 max 4096x4096` → đúng thiết kế, không lỗi, không "tắt hint".
@@ -658,3 +793,100 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
    | cua so … | SDL: tao …; extent min … max …` (Fold 7 kỳ vọng `1040x936` / `1436x616`), rồi so `[MAU]` `gpu=` / `gpu_mhz` / W và fps Tống Kim với phiên 14:16
    (GPU 82 % @ 652 MHz, 4,7 W, fps 109). Tắt nhanh nếu có vấn đề: `Rep3SwapchainLogic=0` trong `[Client]` của config dt_v4 + khởi động lại 8765; muốn nét hơn
    thử `Rep3SwapchainLogic=150`.
+8. **Bản 109111545 (đợt C bước 1):** mở lại app để nhận. Kiểm **màu sắc** trước hết — trạng thái tầng texture giờ đi theo đỉnh nên nếu sai sẽ lộ ngay:
+   màu nhân vật, hiệu ứng kỹ năng, chữ, thanh máu, vật phẩm trong hành trang, ảnh nền đăng nhập. Rồi chơi Tống Kim 10–15 phút như bài 2.
+   Tôi đọc `[VE]` (ghi lệnh TB), `[VE-GOP]` ("ps bang N muc", đổi trạng thái/khung, quad không gộp), `[MAU]` (W, gpu=, cpu_mhz), fps so với phiên 15:10
+   (ghi lệnh 2,6 ms, đổi ps 837/khung, lệnh 1 818/khung, CPU 76/70 %). Sai màu → `Rep3PsBuffer=0`; nghi lệnh vẽ sai chỗ (hình méo/nhoè khối) →
+   `Rep3BindRing=0`; cả hai → `Rep3PalBuffer=0`; sửa trong `[Client]` của config dt_v4 rồi khởi động lại 8765.
+
+
+---
+
+## 18:00 11/09 — Đọc log bước 1 `[CHUATLAS]`, và bước 2 `[CULLCPU]` (APK 109111759)
+
+### Bước 1 (chữ vào atlas) **có chạy**, nhưng gần như vô ích trong thế giới
+
+Phiên `SM-F966U1_20260911_173416` (APK 109111729), 24 cửa sổ `[VE-GOP]`:
+
+| cửa sổ | ô atlas DEFAULT | ô atlas MANAGED | xin ô mới |
+|---|---|---|---|
+| 1 (menu) | 0 | **1** | 0 |
+| 2 (đăng nhập) | 1 148 | **3** | 0 |
+| 3 → 24 (trong thế giới) | 777 … 12 418 | **0** | 0 … 1 |
+
+Đọc đúng là: **bốn texture MANAGED đã vào atlas thật** — đó là bốn bảng chữ (`KFontRes.cpp:84`, 512×512,
+`D3DFMT_A4R4G4B4`, `D3DPOOL_MANAGED` khi `Rep3Ex=0`). Bộ đếm đặt lại mỗi kỳ 30 s, mà bảng chữ chỉ tạo **một lần** lúc
+khởi động, nên các cửa sổ sau đọc 0 là đúng — không phải bị loại. `xin ô mới` gần như bằng 0 → không có chuyện nội dung
+đổi liên tục phải cấp ô mới (rủi ro lớn nhất của bước này **không xảy ra**).
+
+Nhưng lợi thì rất ít: 4 ô trên tổng **47 551 texture GPU**. Tỷ lệ vỡ lô không nhúc nhích —
+`pipeline 11,6 % → 11,5 %`, `texture0 88,3 % → 88,4 %`. Bên PC bước (d) ăn đậm vì ở đó chữ bị vỡ lô 100–450 lần/khung;
+bên mobile chữ **đã** được gộp bằng đường khác nên phần thắng còn lại nằm chỗ khác.
+
+### Chỗ thật sự mất: 42 trang atlas + chế độ cull
+
+Cửa sổ cuối (rất đông, Tống Kim):
+
+```
+texture/sampler 1 134 lần đổi/khung (đỉnh 2 221)  |  pipeline 273 lần/khung
+quad không gộp: texture0 3 687 840 (88,4 %), pipeline 470 686 (11,3 %), không liên tiếp 3 631, còn lại 0
+atlas kệ=1 trang 2048: 42 trang  |  gpu tex 47 551 (290 MB)
+```
+
+- **texture0 88,4 %** = mỗi trang atlas là **một texture riêng**; 42 trang → cứ nhảy trang là cắt lô. Đây là bài toán
+  mà loạt `[MANG 09/09 f]` (commit `5311778b`) đã giải bên PC bằng atlas khối cố định + nhiều mảng gắn chết khe sampler.
+- **pipeline 11,3 %** = khoá pipeline của đường SDL_GPU có `CULLMODE` ở bit 34 (`D3D9onGPUDev.cpp` `GetPipeline`).
+  `KFont3` đặt `CULLMODE=CCW` cho chữ, sprite dùng `NONE` → hai pipeline khác nhau → cắt lô. **Đúng y nguyên nhân (e)
+  bên PC** (commit `ac7d255b`).
+
+### Bước 2 đã làm: `[CULLCPU 11/09]` — port (e) sang mobile
+
+`android/va_nguon_android_cullcpu.py`, chỉ trong `#ifdef JX_ANDROID`, công tắc `[Client] Rep3CullCpu` (mặc định 1):
+
+1. `GetPipeline` tách thành vỏ bọc quanh `GetPipelineCull(..., dwCull)` để ép được `CULL_NONE`.
+2. `ComputeState`: lệnh 2D (đỉnh `XYZRHW`) + cull `CW/CCW` → nhớ chế độ cull rồi lấy pipeline `CULL_NONE`.
+3. `DrawInternal`: cả ba đường ghi đỉnh (quad 4 đỉnh, fan, danh sách tam giác) tự bỏ tam giác sai chiều **trên CPU**
+   bằng tích chéo màn hình, y hệt bản PC. Kết quả trên màn hình không đổi, chỉ khác là chữ nay nằm chung lô với sprite.
+4. Thêm số đo: `cull cpu=N: giu A bo B` và **tách lý do "pipeline"** thành `fvf / topo / blend / cull / fill / rt / stride`
+   trong `[VE-GOP]` — kỳ sau sẽ biết chính xác phần 11,3 % còn lại là gì.
+
+**Thử máy ảo trước khi phát:** cài lên LDPlayer, vào tới Tống Kim đông (ảnh chụp) — tên nhân vật, bảng xếp hạng, chữ
+tiếng Việt, số sát thương, chat đều hiện đủ; nếu chiều cull ngược thì **toàn bộ chữ sẽ biến mất**, nên đây là phép thử
+dứt điểm. 59 FPS / CPU 24 % trên máy ảo.
+
+### Sửa kèm: phiên iOS làm đứt liên kết bản Android
+
+`git fetch` trước khi dựng thấy `origin/mobile-0809 = 513d62f8 [IOS 11/09]`. Gộp vào thì **APK không dựng được**:
+
+```
+FAILED: libRainbow.so
+ld: error: undefined symbol: IID_IClientFactory
+ld: error: undefined symbol: IID_IESClient
+```
+
+`[DONTRUNG 11/09]` gỡ hai định nghĩa GUID khỏi `Sources/MultiServer/Rainbow/IClient.cpp` vì trên iOS cả game là **một**
+nhị phân nên chúng trùng với bản do `NetConnectAgent.cpp` sinh ra. Trên Android thì Rainbow là **`.so` riêng**
+(`libRainbow.so`, nạp bằng `dlopen`) và **không** chứa `NetConnectAgent.cpp`, nên mất luôn định nghĩa. Tôi định nghĩa lại
+đúng hai GUID đó, **rào `#ifdef __ANDROID__`**, giá trị y hệt bản gốc → iOS vẫn không trùng ký hiệu, Windows không đổi.
+
+> **Nhắn phiên iOS:** trước khi gỡ một ký hiệu dùng chung, kiểm cả cấu trúc nhiều `.so` của Android
+> (`android/CMakeLists.txt`: `Rainbow` và `Represent3` là `SHARED`, nạp lúc chạy).
+
+### Bản 109111759 — cần thử gì
+
+APK `109111759`, md5 `1b6419045abac2d66a4de33d0b7b0182`, 20 371 455 B, đã lên `dt_v4` 17:59, máy chủ 8765 PID 385824,
+`config.ini` của dt_v4 thêm `Rep3CullCpu=1`.
+
+1. Mở lại app để nhận bản. **Kiểm chữ trước hết**: tên nhân vật trên đầu, chat, số sát thương, chữ trong hành trang,
+   bảng xếp hạng Tống Kim. Mất chữ hoặc chữ nhấp nháy → `Rep3CullCpu=0` trong `[Client]` của config dt_v4 + khởi động lại
+   8765 là về như cũ ngay, không cần APK.
+2. Chơi Tống Kim 10–15 phút như bài 2 (chỗ đông, màn ngoài).
+3. Tôi đọc `[VE-GOP]`: `cull cpu=1: giu A bo B` (B nhỏ là bình thường), `pipeline vo: … cull K` (**K phải tụt về gần 0**),
+   `quad không gộp` phần `pipeline` (kỳ vọng 470 686 → còn vài %), `lệnh vẽ/khung`, rồi `[MAU]` W / `gpu=` / `cpu_mhz` và fps.
+
+### Bước 3 kế tiếp (chưa làm)
+
+Port `[MANG 09/09 f]` (`5311778b`): atlas theo **khối cố định** + nhiều mảng gắn chết khe sampler → **texture0 88,4 %**.
+Đây mới là phần lớn. Không lặp lại sai lầm của `[MANG 11/09]` (C1, đã tắt): C1 dựng cụm tăng dần 2/4/8 lớp với **một**
+sampler mảng nên vẫn đổi binding; bản PC dùng khối lớn cố định + nhiều mảng gắn chết nên **không bao giờ đổi binding**.
+Trước khi viết sẽ đo giới hạn thiết bị (số khe sampler, số lớp tối đa của texture mảng) để không đánh cược.

@@ -246,7 +246,7 @@ void KUiMsgSel::Show(KUiQuestionAndAnswer* pContent)
 	KWndShowAnimate::Show();
 	Wnd_SetExclusive((KWndWindow*)this);
 
-	m_uLastScrollTime = IR_GetCurrentTime();
+	m_uLastScrollTime = UiIR_GetCurrentTime();
 	m_bAutoUp = false;
 	m_bAutoDown = false;
 }
@@ -258,7 +258,7 @@ void KUiMsgSel::Breathe()
 		if (IR_IsTimePassed(200, m_uLastScrollTime))
 		{
 			ChangeCurSel(false);
-			m_uLastScrollTime = IR_GetCurrentTime();
+			m_uLastScrollTime = UiIR_GetCurrentTime();
 		}
 	}
 
@@ -267,7 +267,7 @@ void KUiMsgSel::Breathe()
 		if (IR_IsTimePassed(200, m_uLastScrollTime))
 		{
 			ChangeCurSel(true);
-			m_uLastScrollTime = IR_GetCurrentTime();
+			m_uLastScrollTime = UiIR_GetCurrentTime();
 		}
 	}
 }

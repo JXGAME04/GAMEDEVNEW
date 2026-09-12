@@ -41,7 +41,7 @@ KUiNewsMessage1::KUiNewsMessage1()
 	m_nVisionWidth = 0;
 	m_nFontSize = 8;
 	m_nFontHalfWidth[0] = m_nFontHalfWidth[1] = 4;
-	srand(IR_GetCurrentTime());
+	srand(UiIR_GetCurrentTime());
 }
 
 void KUiNewsMessage1::EnableIdleMsg(BOOL bEnable)
@@ -53,7 +53,7 @@ void KUiNewsMessage1::EnableIdleMsg(BOOL bEnable)
 		{
 			if (ms_bEnableIdleMsg)
 			{
-				m_pSelf->m_uLastShowTime = IR_GetCurrentTime();
+				m_pSelf->m_uLastShowTime = UiIR_GetCurrentTime();
 				m_pSelf->m_IniFile.Load(DEFAULT_MESSAGE);
 			}
 			else
@@ -159,7 +159,7 @@ KUiNewsMessage1* KUiNewsMessage1::OpenWindow()
 	}
 	if (m_pSelf)
 	{
-		m_pSelf->m_uLastShowTime = IR_GetCurrentTime();
+		m_pSelf->m_uLastShowTime = UiIR_GetCurrentTime();
 		m_pSelf->Show();
 		m_pSelf->BringToTop();
 	}
@@ -279,7 +279,7 @@ void KUiNewsMessage1::MessageArrival1(KNewsMessage1* pMsg, SYSTEMTIME* pTime)
 				uTime = pTime->wSecond * 1000;
 			else
 				uTime = 3000;
-			m_pSelf->AddMessage(pMsg, uTime, IR_GetCurrentTime());
+			m_pSelf->AddMessage(pMsg, uTime, UiIR_GetCurrentTime());
 			break;
 		case NEWSMESSAGE_TIMEEND_1: //定时消息
 			if (pTime)
@@ -381,7 +381,7 @@ void KUiNewsMessage1::PaintWindow()
 bool KUiNewsMessage1::PickAMessage()
 {
 	m_pHandling = NULL;
-	unsigned int	uCurrentTime = IR_GetCurrentTime();
+	unsigned int	uCurrentTime = UiIR_GetCurrentTime();
 
 	if (m_pHead == NULL)
 	{
@@ -514,7 +514,7 @@ bool KUiNewsMessage1::MakeCountingMsg()
 	//_ASSERT(m_pHandling &&
 	//	m_pHandling->nType == NEWSMESSAGE_COUNTING_1 &&
 	//	m_nInsertPlace != NOT_NEED_INSERT);
-	unsigned int uCurrent = IR_GetCurrentTime();
+	unsigned int uCurrent = UiIR_GetCurrentTime();
 	if (uCurrent - m_pHandling->uStartTime >= m_pHandling->uTime)
 		return false;
 
@@ -562,7 +562,7 @@ void KUiNewsMessage1::Reset()
 	if(m_pHandling == NULL)
 		return;
 
-	m_uLastShowTime = m_uLastScrollTime = IR_GetCurrentTime();
+	m_uLastShowTime = m_uLastScrollTime = UiIR_GetCurrentTime();
 	
 	ConvertMsg();
 	m_bJustIncoming = true;

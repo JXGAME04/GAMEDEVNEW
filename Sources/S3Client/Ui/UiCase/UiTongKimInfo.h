@@ -101,7 +101,7 @@ private:
 	int		m_bFold;				// dang thu gon?
 	int		m_bUserFold;			// nguoi choi CHU DONG thu gon -> khong tu bung ra khi co du lieu moi
 	int		m_nRestSec;				// giay con lai luc nhan goi
-	unsigned int m_uRestTick;		// IR_GetCurrentTime() luc nhan goi
+	unsigned int m_uRestTick;		// UiIR_GetCurrentTime() luc nhan goi
 	int		m_nLastShown;			// so giay dang hien (tranh SetText moi khung)
 	int		m_bHaveData;
 };

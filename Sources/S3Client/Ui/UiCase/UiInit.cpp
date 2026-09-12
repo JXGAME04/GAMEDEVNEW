@@ -26,7 +26,7 @@
 #include "KDebug.h"		// [ANDROID 09/09 LOGIN] g_DebugLog cho JxUi_TuDangNhapAndroid()
 #endif
 
-extern KMusic*		g_pMusic;
+extern KMusic*		g_pMusicUI;
 
 #define	SCHEME_INI_INIT 	"UiInit.ini"
 #define	LAUNCH_GAME_INI		"\\Ui\\GameIni.ini"
@@ -157,9 +157,9 @@ void KUiInit::PlayTitleMusic()
 			Ini.GetString("JustLaunched", szKey, "", szMusic, sizeof(szMusic));
 			if (szMusic[0])
 			{
-				g_pMusic->Stop();
-				g_pMusic->Open((char*)szMusic);
-				g_pMusic->Play(true);
+				g_pMusicUI->Stop();
+				g_pMusicUI->Open((char*)szMusic);
+				g_pMusicUI->Play(true);
 			}
 		}
 	}
@@ -167,10 +167,10 @@ void KUiInit::PlayTitleMusic()
 
 void KUiInit::StopTitleMusic()
 {
-	if (g_pMusic)
+	if (g_pMusicUI)
 	{
-		g_pMusic->Stop();
-		g_pMusic->Close();
+		g_pMusicUI->Stop();
+		g_pMusicUI->Close();
 	}
 }
 

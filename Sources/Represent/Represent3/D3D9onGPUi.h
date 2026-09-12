@@ -46,8 +46,9 @@ void  RgConvertRowToBgra(D3DFORMAT f, const BYTE* pSrc, DWORD* pDst, UINT w);
 class CAtlasPageGpu
 {
 public:
-	CAtlasPageGpu() : m_pTex(NULL), m_fmt(SDL_GPU_TEXTUREFORMAT_INVALID), m_bpp(0), m_binH(0), m_rows(0), m_used(0) {}
+	CAtlasPageGpu() : m_pTex(NULL), m_fmt(SDL_GPU_TEXTUREFORMAT_INVALID), m_bpp(0), m_binH(0), m_rows(0), m_used(0), m_nLop(0) {}
 	SDL_GPUTexture* m_pTex; SDL_GPUTextureFormat m_fmt; UINT m_bpp; UINT m_binH, m_rows, m_used;
+	UINT m_nLop;	// [MANG 11/09] lop cua trang trong texture mang cua cum (m_pTex la texture DUNG CHUNG cua cum - khong duoc huy rieng)
 	std::vector<std::vector<std::pair<UINT, UINT> > > m_free;	// moi hang: cac doan trong [x0, x1)
 #ifdef JX_ANDROID
 	// [VE 11/09 e] xep KE (Rep3AtlasKe=1): trang chi theo dinh dang, cac ke cao khac nhau mo dan tu y = 0; m_binH = 0, m_rows = 0
@@ -68,6 +69,13 @@ public:
 #ifdef JX_ANDROID
 	bool JxAllocKe(UINT w, UINT h, SDL_GPUTextureFormat fmt, CAtlasPageGpu** ppPage, UINT* pX, UINT* pY);	// [VE 11/09 e]
 	void JxFreeKe(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w);
+#endif
+#ifdef JX_ANDROID
+	// [MANG 11/09] cum = mot texture mang 2D chua nhieu trang (moi trang mot lop)
+	struct JxCum { SDL_GPUTexture* pTex; SDL_GPUTextureFormat fmt; UINT bpp; UINT nLop, nLopTiep; std::vector<UINT> lopTrong; };
+	std::vector<JxCum> m_jxCum;
+	bool JxCapLop(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture** ppTex, UINT* pLop);	// cap mot lop (tao cum moi neu het)
+	void JxTraLop(CAtlasPageGpu* pPage);	// tra lop ve cum (KHONG huy texture cum)
 #endif
 	CDevGpu* m_pDev; std::vector<CAtlasPageGpu*> m_pages; UINT m_pageSize;
 };
@@ -116,6 +124,7 @@ public:
 	void  BoAtlas();						// [GPU 11/09 ATLAS] texture ao -> texture rieng (truoc khi lam render target)
 	bool  ThuLaiCpu();						// [GPU 11/09 BOCPU] ban CPU da bo: doc lai tu GPU (dong bo, hiem)
 	SDL_GPUTexture* GpuTex() const { return m_bVirtual ? (m_pPage ? m_pPage->m_pTex : NULL) : m_pGpu; }
+	UINT  JxLop() const { return (m_bVirtual && m_pPage) ? m_pPage->m_nLop : 0; }	// [MANG 11/09] lop trong texture mang (texture rieng = 0)
 	bool  NewVersion(bool bTarget);			// tao SDL_GPUTexture moi (ban cu vao danh sach tra sau Present)
 	void  QueueUpload(const RECT* prc);		// chep CPU (vung prc) vao staging cua khung + ghi lenh tai
 
@@ -258,9 +267,10 @@ struct RgCmd
 	UINT            stride;
 	D3DCOLOR        clearColor;		// RGCMD_CLEAR
 	SDL_GPUTexture* pTarget;		// RGCMD_TARGET: NULL = backbuffer
+	unsigned long long ullPipeKey;	// [CULLCPU 11/09] khoa pipeline luc ghi lenh (chi de DO: tach ly do 'pipeline' khi quad vo lo)
 };
 
-struct RgTexUpload { SDL_GPUTexture* pTex; UINT x, y, w, h; UINT stageOff; UINT bytes; };	// tai tu staging texture cua khung
+struct RgTexUpload { SDL_GPUTexture* pTex; UINT x, y, w, h; UINT stageOff; UINT bytes; UINT layer; };	// tai tu staging texture cua khung ([MANG 11/09] layer = lop trong texture mang; 0 = texture thuong)
 
 // ---------------------------------------------------------------- device
 class CDevGpu : public IDirect3DDevice9
@@ -399,6 +409,7 @@ public:
 	void    ApplyWindowMode();						// [GPU 08/09 khung ao] toan man hinh / kich thuoc cua so theo backbuffer
 	void    Letterbox(UINT swW, UINT swH, float* pScale, float* pOffX, float* pOffY);
 	SDL_GPUGraphicsPipeline* GetPipeline(DWORD fvf, SDL_GPUPrimitiveType topo, SDL_GPUTextureFormat rtFmt);
+	SDL_GPUGraphicsPipeline* GetPipelineCull(DWORD fvf, SDL_GPUPrimitiveType topo, SDL_GPUTextureFormat rtFmt, DWORD dwCull);	// [CULLCPU 11/09]
 	SDL_GPUSampler* GetSampler(UINT stage);
 	void    ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo);
 	HRESULT DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVerts, UINT stride);
@@ -419,8 +430,8 @@ public:
 	void    TouchTex(CTexGpu* p);
 	void    UntouchTex(CTexGpu* p);					// [GPU 11/09 ATLAS] texture bi huy giua khung: rut khoi m_touched
 	void    DeferAtlasFree(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w) { RgAtlasFree f = { pPage, x, y, w }; m_atlasFrees.push_back(f); }
-	void    QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp);	// tai vung 0 (trang moi / o chua co du lieu)
-	bool    ReadbackRegion(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, BYTE* pDst, UINT dstPitch);	// [GPU 11/09 BOCPU]
+	void    QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, UINT layer = 0);	// tai vung 0 (trang moi / o chua co du lieu); [MANG 11/09] layer
+	bool    ReadbackRegion(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, BYTE* pDst, UINT dstPitch, UINT layer = 0);	// [GPU 11/09 BOCPU] [MANG 11/09] layer
 	bool    ReadbackTexture(SDL_GPUTexture* pTex, UINT w, UINT h, BYTE* pDst, UINT dstPitch);	// dong bo (chup man hinh)
 	// bang mau
 	bool    PalInit(); void PalRelease(); void PalFrameEnd(); int PalAlloc(const unsigned char* pPal24, int nColors); void PalFree(int row);
