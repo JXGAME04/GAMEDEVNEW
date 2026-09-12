@@ -264,3 +264,92 @@ Tra gói nào chứa tệp nào bằng bộ đọc pak sẵn có `ReverseTools/p
 | 9 | Bản vá biến một hàm viết trên **một dòng** thành nhiều dòng | `ios/kiem_rao.py` so **từng dòng**. Phải bọc bằng rào có nhánh `#else` giữ nguyên văn dòng cũ |
 | 10 | `Rep3_JxEpTrinhChieu` nằm trong `#ifdef JX_ANDROID` nên iOS không có; `CreateTextFilter` khai báo kiểu C++ nhưng xuất ký hiệu liên kết C | Xem `nm` trước khi khai báo |
 | 11 | `extern "C"` đặt trong **thân hàm** | C++ đòi đặc tả liên kết ở phạm vi tệp. Clang báo `expected unqualified-id` |
+
+---
+
+## 11. (11/09 tối) CHẠY ĐẦY ĐỦ TRÊN iPHONE — chủ xác nhận "đã chạy oke nhận đủ tính năng trong game"
+
+### 11.1 Ba việc của đợt cuối
+
+| # | Việc | Chỗ sửa | Ảnh hưởng PC / Android |
+|---|---|---|---|
+| 1 | Dùng chung **toàn bộ** phần giao diện mobile của Android | 230 chỗ / 78 tệp, `JX_ANDROID` → `JX_MOBILE` | **Không**, đã chứng minh bằng máy |
+| 2 | Bật mật độ điểm ảnh cao | `KSdlApp.cpp`, rào `JX_IOS` | Không |
+| 3 | Lưu đường dẫn đã phân giải | `ios/JxIosMain.cpp` (chỉ iOS dịch) | Không |
+
+### 11.2 Vì sao đợt đổi rào là an toàn — có máy kiểm (`ios/kiem_doi_ten.py`)
+
+Sau đợt này `android/CMakeLists.txt` định nghĩa **cả hai** macro, nên mọi rào đổi tên vẫn thoả y hệt.
+Windows và máy chủ không định nghĩa macro nào trong hai nên cũng đi đúng nhánh cũ. Rủi ro dồn hết về
+phía iOS, và trình biên dịch chỉ ra từng chỗ.
+
+Kiểm bằng máy: đổi **ngược** `JX_MOBILE` → `JX_ANDROID` ở từng tệp rồi so với bản trong git.
+Kết quả **78/78 tệp giống hệt từng byte** ⇒ thay đổi chỉ là đổi tên macro, không thêm bớt một dòng logic.
+
+**Không** đổi: `Represent/Represent3/**` (thử nghiệm atlas và texture mảng riêng của Android, chưa đo
+trên Metal bao giờ), `JxAndroidStubs.cpp`, `JxPerfHudAndroid.cpp` (đọc `/proc`).
+
+### 11.3 Mật độ điểm ảnh — gốc của "chưa căn đúng kích thước màn hình"
+
+`SDL_CreateWindow(..., 0)` thiếu cờ `SDL_WINDOW_HIGH_PIXEL_DENSITY`. Android không dính vì cửa sổ
+Android vốn tính bằng điểm ảnh; iOS thì làm việc ở 1x.
+
+```
+trước:  [GPU] man hinh 956x440 | cua so 956x440 px    -> khung ve 1124x516 (sai họ)
+sau :   [DPG] man hinh 956x440 | cua so 2868x1320 px | ho DIEN THOAI, he so 2,142 -> khung ve 1338x616
+```
+
+1338x616 đúng **họ chiều cao 616** mà Fold 7 dùng, nên tệp bố cục mặc định của bản Android áp đúng tỉ lệ.
+
+### 11.4 `/var` và `/private/var` — bẫy nặng nhất, do chính bản vá iOS gây ra
+
+Bản vá `[IOS 11/09]` thêm `/var/` và `/private/` vào danh sách "đường hệ thống giữ nguyên" của
+`JxPathPosix`. Hệ quả không lường: **mọi** đường tuyệt đối của iOS bỏ qua bước hạ chữ thường.
+
+Chuỗi nhân quả đầy đủ:
+1. `g_GetFullPath` ghép `szRootPath` lấy từ thư mục hiện hành; iOS phân giải `/var` → `/private/var`.
+2. `JxIosMain` lưu thư mục dữ liệu ở dạng `/var/...` (từ `NSSearchPathForDirectoriesInDomains`).
+3. Hai chuỗi khác nhau ⇒ `strncmp` với `s_szDataDir` thất bại ⇒ không nhận ra là đường **dưới** thư mục dữ liệu.
+4. Rơi xuống danh sách đường hệ thống ⇒ trả về nguyên si, **bỏ qua hạ chữ thường**.
+5. Hệ tệp iOS phân biệt hoa thường ⇒ tìm `Ui/UiToaDo_DanhSach.ini` trong khi tệp thật là `ui/uitoado_danhsach.ini`.
+
+Một gốc giải thích bốn triệu chứng: không nạp bố cục, không nạp danh sách chỉnh, thiếu
+`\settings\npcres\Man*Weapon*_effect.txt`, không ghi được `\APdata\<id>.dat`.
+Tệp nằm **trong pak** không dính vì tra theo id băm, không qua đường dẫn.
+
+**Chữa:** `realpath()` trước khi `JxPosix_SetDataDir`. Một dòng, trong tệp chỉ iOS dịch.
+
+Đo lại trên máy thật:
+```
+[UITOADO] [UITOADO 12/09 NEO]: tep thiet ke 1040x604, khung ve 1338x616
+[UITOADO] nap xong ...\Ui\UiToaDo_MacDinh_Rong.ini -> bang co 162 muc
+[SUAGD] danh sach trang: 102 muc tu ...\Ui\UiToaDo_DanhSach.ini
+```
+
+### 11.5 Hai bẫy nữa (tiếp mục 9 và 10.5)
+
+| # | Bẫy | Cách qua |
+|---|---|---|
+| 12 | Phép kiểm "đã vá từ trước" trong kịch bản vá dùng một chuỗi là **tiền tố** của dòng cũ | Báo trùng nhầm, bản vá **không được áp mà không báo lỗi**. Phải dùng dấu nhận dạng riêng |
+| 13 | Trên iOS `/var` và `/private/var` là **cùng một chỗ nhưng khác chuỗi** | Mọi phép so sánh tiền tố đường dẫn phải làm trên bản **đã phân giải** |
+
+> Và một bẫy đã gặp hai lần trong phiên: `grep` coi tệp có byte cao (TCVN3/GBK) là **nhị phân** và bỏ qua.
+> Đếm thiếu 51 tệp có `JX_ANDROID` vì quên cờ `-a`. Mọi lần đếm trên cây nguồn này phải dùng `grep -a`.
+
+### 11.6 Trạng thái cuối ngày 11/09
+
+Chủ xác nhận trên iPhone 17 Pro Max: **"đã chạy oke nhận đủ tính năng trong game"**.
+
+| Việc | Trạng thái |
+|---|---|
+| Dựng, link, ký, cài **qua LAN** không cần cáp | xong |
+| Thiết bị Metal, shader MSL | xong |
+| Phông chữ, ảnh, nhạc nền, âm thanh | xong |
+| Nối máy chủ, đồng bộ nhân vật, vào thế giới | xong |
+| Cần điều khiển ảo, nút kỹ năng, HUD, khung Auto | xong |
+| Khung vẽ theo màn hình, tự căn icon theo neo | xong |
+| Trình chỉnh vị trí icon, vùng an toàn | dùng chung với Android |
+
+**Còn lại:** bảng đo hiệu năng iOS đang để rỗng (`ios/JxIosStubs.cpp`) vì bản Android đọc `/proc`;
+chưa đo khung hình / nhiệt / pin trên iOS; chưa làm bộ tải dữ liệu trong app (bước F);
+Represent3 chưa bật ba biến thể storage buffer / texture mảng trên Metal.
