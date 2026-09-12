@@ -162,9 +162,39 @@ char* JxPathPosix(const char* pszIn, char* pszOut, size_t nOut)
 	}
 	return pszOut;
 }
+/* [LUU 12/09 TAOTHUMUC] Tao ca chuoi thu muc cha cua mot duong dan tep. */
+static void JxTaoThuMucCha(const char* pszPath)
+{
+	char sz[1024];
+	size_t n = strlen(pszPath);
+	if (n == 0 || n >= sizeof(sz)) return;
+	memcpy(sz, pszPath, n + 1);
+	char* p = strrchr(sz, '/');
+	if (!p || p == sz) return;	/* khong co thu muc cha, hoac cha la goc '/' */
+	*p = 0;
+	for (char* q = sz + 1; *q; q++)
+	{
+		if (*q != '/') continue;
+		*q = 0; mkdir(sz, 0775); *q = '/';
+	}
+	mkdir(sz, 0775);
+}
 FILE* jx_fopen(const char* pszPath, const char* pszMode)
 {
-	char sz[1024]; return fopen(JxPathPosix(pszPath, sz, sizeof(sz)), pszMode);
+	char sz[1024];
+	JxPathPosix(pszPath, sz, sizeof(sz));
+	FILE* f = fopen(sz, pszMode);
+	/* [LUU 12/09 TAOTHUMUC] Mo de GHI ma thieu thu muc cha thi tao roi mo lai. Truoc day
+	   KIniFile::Save("\\UserData\\UiCommon.ini") that bai im lang tren iPhone: JxPathPosix ha
+	   chu thuong thanh <goc>/userdata/..., ma tren may chi co thu muc "UserData" chep tu PC sang,
+	   he tep iOS lai phan biet hoa thuong -> mat het tuy chon va tai khoan da luu.
+	   Chi chay khi fopen DA that bai nen khong doi hanh vi cua duong di dang chay tot. */
+	if (!f && pszMode && (pszMode[0] == 'w' || pszMode[0] == 'a'))
+	{
+		JxTaoThuMucCha(sz);
+		f = fopen(sz, pszMode);
+	}
+	return f;
 }
 int jx_access(const char* pszPath, int nMode) { char sz[1024]; return access(JxPathPosix(pszPath, sz, sizeof(sz)), nMode == 0 ? F_OK : nMode); }
 int jx_remove(const char* pszPath) { char sz[1024]; return remove(JxPathPosix(pszPath, sz, sizeof(sz))); }

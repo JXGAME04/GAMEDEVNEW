@@ -74,10 +74,30 @@ def git(*a):
     r = subprocess.run(["git", "-C", GOC] + list(a), capture_output=True)
     return r.stdout.decode("latin-1")
 
+# [PC 12/09 TEP_WINDOWS] Trong che do --pc, tep ma KHONG du an .vcxproj nao bien dich thi
+# khong the anh huong ban Windows du no nam trong Sources/ (vi du lop dem POSIX
+# Sources/Engine/Src/Platform/KPosixWin32.cpp). Bao rieng, khong tinh la hong.
+def _tep_cua_windows():
+    import glob
+    ra = set()
+    for vp in glob.glob(os.path.join(GOC, "**", "*.vcxproj"), recursive=True):
+        try:
+            s = io.open(vp, encoding="latin-1").read()
+        except OSError:
+            continue
+        for m in re.finditer(r'Include="([^"]+\.(?:cpp|c|cc|cxx))"', s):
+            ra.add(os.path.basename(m.group(1)).lower())
+    return ra
+
+TEP_WINDOWS = _tep_cua_windows() if CHEDO_PC else set()
+
 tep = [t for t in git("diff", "--name-only", MOC, "--", "Sources").splitlines() if t.strip()]
 if not tep:
     print("OK  khong co tep nao trong Sources/ bi sua so voi %s" % MOC)
 for p in tep:
+    if CHEDO_PC and TEP_WINDOWS and os.path.basename(p).lower() not in TEP_WINDOWS:
+        print("--  %s  (khong du an .vcxproj nao bien dich -> ban Windows khong the bi anh huong)" % p)
+        continue
     # Loc ca HAI phia: sau khi da commit phan iOS thi ban trong git CUNG co nhanh JX_IOS.
     # Bat bien can kiem la "phan KHONG phai iOS khong doi", nen phai bo rao o ca hai ban roi moi so.
     cu = loc_bo_rao_ios(git("show", "%s:%s" % (MOC, p)).splitlines())
