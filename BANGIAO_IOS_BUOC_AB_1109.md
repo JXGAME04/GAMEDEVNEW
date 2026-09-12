@@ -3,7 +3,47 @@
 > Nhánh `mobile-0809`, làm trên máy Mac (10.0.0.34). Đọc kèm `PHANTICH_IOS_LOTRINH_1109.md` (lộ trình 6 bước).
 > **Chưa commit gì.** Cây làm việc còn sửa; máy Windows đang test bản Android không nhận gì cả.
 
-## 0. Kết quả ngắn
+## 0. TOÀN CẢNH PHIÊN 11/09 — 12 commit
+
+> Chủ xác nhận cuối ngày: **"đã chạy oke nhận đủ tính năng trong game"** trên iPhone 17 Pro Max.
+
+| Commit | Việc | Chạm mã dùng chung? |
+|---|---|---|
+| `46a3b52e` | Dọn 7 ký hiệu toàn cục trùng tên (3 nền) | **có** |
+| `513d62f8` | Bước A + B: biên dịch và link được cho iOS | có, rào `JX_IOS` |
+| `a5e3da10` | **Sửa 2 lỗi làm hỏng bản Windows** do 2 commit hôm nay gây ra | **có** |
+| `4faaab2e` | Bước C: chạy trên iPhone thật, cài qua LAN | có, rào `JX_IOS` |
+| `e52d46ec` | Shader Metal + bảng tra ký hiệu tĩnh thay `dlopen` | có, rào `JX_IOS` |
+| `f6587a7c` | Ghi mã lỗi khởi tạo → tìm ra gốc màn hình đen | có, rào `JX_IOS` |
+| `56a691f4` | Bàn giao bước E | không, tài liệu |
+| `77e29e0b` | Sửa cú cuối: game chạy, có nhạc, nhận chạm, nối máy chủ | có, rào `JX_IOS` |
+| `c3a70658` | **Đổi rào `JX_ANDROID` → `JX_MOBILE`, 230 chỗ / 78 tệp** | **có** |
+| `73b24f77` | Bật mật độ điểm ảnh cao → khung vẽ 1338x616 | có, rào `JX_IOS` |
+| `50dd9d06` | Lưu đường dẫn đã phân giải → icon tự căn đúng | không, chỉ `ios/` |
+| `ce425896` | Bàn giao mục 11 | không, tài liệu |
+
+### VIỆC CHẶN, DÀNH CHO PHIÊN PC VÀ PHIÊN ANDROID
+
+Ba commit chạm mã dùng chung (`46a3b52e`, `a5e3da10`, `c3a70658`) **chưa được dựng trên Windows hay
+Android** vì phiên này làm trên máy Mac. Hai phiên đó phải dựng lại và chạy thử trước khi phát hành.
+Trong đó `a5e3da10` **sửa lỗi đang làm bản Windows không dựng được** do commit `c848184f` gây ra.
+
+### CÔNG CỤ KIỂM ĐÃ CÓ — chạy trước mỗi lần giao
+
+| Công cụ | Kiểm gì |
+|---|---|
+| `python3 ios/kiem_rao.py` | Lọc bỏ nhánh `JX_IOS` ở cả hai bản rồi so **từng dòng** với git. Kiểm `android/CMakeLists.txt` phải có `JX_MOBILE`, không được có `JX_IOS` |
+| `python3 ios/kiem_doi_ten.py` | Đổi ngược `JX_MOBILE` → `JX_ANDROID` rồi so từng byte. Chứng minh đợt đổi rào là thuần đổi tên |
+
+### KỊCH BẢN VÁ — chạy lại vô hại, đọc/ghi latin-1, giữ số byte cao
+
+`ios/va_nguon_ios_1.py` · `va_nguon_ios_metal.py` · `va_nguon_ios_kyhieu.py` · `va_nguon_ios_baoloi.py` ·
+`va_nguon_ios_dem_dinh.py` · `va_nguon_ios_mat_do.py` · `va_chuyen_jx_mobile.py` · `va_dontrung_kyhieu.py` ·
+`va_sua_cullcpu_1109.py` · `sinh_shader_msl.py`
+
+---
+
+## 0b. Kết quả ngắn
 
 Vượt mốc của bước B. Không chỉ có bảng lỗi, mà **toàn bộ client đã biên dịch và link thành một tệp thực thi
 Mach-O arm64 cho máy ảo iOS**: 7,2 MB, 0 lỗi biên dịch, 0 ký hiệu trùng tên, 0 ký hiệu thiếu.
