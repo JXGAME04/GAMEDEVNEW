@@ -1517,3 +1517,34 @@ Cách chữa đúng phải là một trong hai, và số ba nhánh sắp tới s
    người chơi mà không kéo dài khung. Khó hơn, phải hiểu trong `PrerenderGround` của region.
 2. **Đưa việc dựng nền sang luồng nền.** Nhưng phải kiểm xem nó có gọi vào thiết bị vẽ không; nếu có thì không đưa
    sang luồng khác được.
+
+
+### 07:50 12/09 — Đọc mã `PrerenderGround`: loại được một hướng, tìm ra hai nghi phạm mới
+
+Chưa có log mới (chủ đang thử bản zoom 109120739 của phiên giao diện trên máy ảo; bản đó **có mang đủ bộ đo của tôi**,
+tôi đã soi từng thư viện trong gói để xác nhận chứ không tin lời).
+
+Trong lúc chờ, đọc `KScenePlaceRegionC::PrerenderGround`:
+
+**Loại được hướng "đưa sang luồng nền".** Hàm này gọi thẳng `g_pRepresent->DrawPrimitivesOnImage`, tức chạm vào thiết
+bị vẽ. Không đưa sang luồng khác được. Còn lại đúng hướng "chia nhỏ theo khung", nhưng chia nhỏ cũng vướng: hàm đặt
+`GROUND_IMG_OK_FLAG = true` ngay đầu rồi mới vẽ, nên dừng giữa chừng là lộ nền vẽ dở.
+
+**Hai nghi phạm mới, đều nằm trong `DrawPrimitivesOnImage`:**
+
+1. **Đổi đích vẽ nhiều lần.** Một vùng có tới 16 × 32 = **512 ô nền**, mà mã gom mỗi lượt tối đa
+   `LOCAL_MAX_IMG_NUM = 80` (`KScenePlaceRegionC.cpp:28`) → khoảng **7 lượt** vẽ lên ảnh, mỗi lượt một lần
+   `SetRenderTarget` đổi đích rồi đổi về. Trên GPU xếp ô của điện thoại, mỗi lần đổi đích là một lần xả ô, rất đắt.
+   **Bằng chứng từ log:** khung bình thường có **1 pass**, còn khung giật có **trung vị 2, đỉnh 8 pass**
+   (126 / 199 khung giật có hơn 1 pass). Con số 8 khớp với ~7 lượt gom.
+
+2. **Nạp ảnh đồng bộ.** `DrawPrimitivesOnImage` mở đầu bằng `Rep3NapDongBo napDongBo(m_TextureResMgr)` rồi
+   `GetImage(...)`, tức **ép nạp đồng bộ** thay vì qua hàng đợi nền. Nếu ảnh ô nền chưa có sẵn thì nó đọc và giải mã
+   ngay trên luồng vẽ.
+
+Chưa phân biệt được hai cái này bằng dữ liệu đang có: `[VE-GIAT]` cho thấy phần ghi lệnh chỉ 0,1–0,8 ms ở các khung
+đó, nên 17 ms nằm **bên trong** `PrerenderGround` chứ không phải ở khâu nộp. Cần một phép đo nữa tách "nạp" và "vẽ"
+bên trong hàm. **Không đoán nữa** — hôm qua tôi đoán sai hai lần (C1 do nhiệt, và chờ khoá), lần này đo rồi mới sửa.
+
+Nếu là nghi phạm 1 thì cách chữa rất rẻ: gom cả 512 ô vào **một lượt** thay vì 7, tức nâng `LOCAL_MAX_IMG_NUM` (và
+chuyển mảng khỏi ngăn xếp vì 512 × ~150 byte là quá lớn để đặt trên đó). Rào `JX_MOBILE` nên bản PC không đổi.
