@@ -112,6 +112,16 @@ char* JxPathPosix(const char* pszIn, char* pszOut, size_t nOut)
 			                               "/data/user/", "/data/data/", "/data/local/", "/data/app/", "/data/misc/", NULL };
 			int bSys = 0;
 			for (int i2 = 0; s_goc[i2]; i2++) if (strncmp(pszOut, s_goc[i2], strlen(s_goc[i2])) == 0) { bSys = 1; break; }
+#ifdef JX_IOS
+			/* [IOS 11/09] goc he thong cua iOS: /var/mobile/Containers (may that),
+			   /Users/<ten>/Library/Developer/CoreSimulator (may ao). Khong co cho nay thi duong dan
+			   tuyet doi cua iOS bi coi la tuong doi -> ha chu thuong + ghep thu muc du lieu -> mo tep hong. */
+			if (!bSys)
+			{
+				static const char* s_gocIos[] = { "/var/", "/private/", "/Users/", "/Library/", "/Applications/", NULL };
+				for (int i3 = 0; s_gocIos[i3]; i3++) if (strncmp(pszOut, s_gocIos[i3], strlen(s_gocIos[i3])) == 0) { bSys = 1; break; }
+			}
+#endif
 			if (bSys) return pszOut;
 			/* "\data\x.pak", "\settings\..." kieu Windows (goc o dia = thu muc game) -> tuong doi voi thu muc du lieu */
 			if (nd && o + nd + 1 < nOut)

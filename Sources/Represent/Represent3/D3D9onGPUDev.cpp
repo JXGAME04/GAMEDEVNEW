@@ -455,7 +455,9 @@ SDL_GPUGraphicsPipeline* CDevGpu::GetPipelineCull(DWORD fvf, SDL_GPUPrimitiveTyp
 		| ((unsigned long long)blendOn << 29) | ((unsigned long long)(m_rs[D3DRS_COLORWRITEENABLE] & 15) << 30)
 		| ((unsigned long long)(dwCull & 3) << 34) | ((unsigned long long)(m_rs[D3DRS_FILLMODE] & 3) << 36)
 		| ((unsigned long long)(rtFmt & 0xFF) << 40) | ((unsigned long long)(stride & 0xFF) << 48);
+#ifdef JX_ANDROID
 	s_ullJxPipeKeyCur = key;	// [CULLCPU 11/09] chi de DO
+#endif
 	std::map<unsigned long long, SDL_GPUGraphicsPipeline*>::iterator it = m_pipes.find(key);
 	if (it != m_pipes.end()) return it->second;
 
@@ -1116,7 +1118,9 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 		RgAtlasUv(d, nOut, s2, m_fvf, m_tex[0], fPage);	// [GPU 11/09 ATLAS]
 	}
 	RgCmd c; memset(&c, 0, sizeof(c)); c.type = RGCMD_DRAW; c.st = st; c.ringOff = ringOff; c.nVerts = nOut; c.stride = stride;
+#ifdef JX_ANDROID
 	c.ullPipeKey = s_ullJxPipeKeyCur;	// [CULLCPU 11/09] chi de DO
+#endif
 	m_cmds.push_back(c);
 	m_uDrawCmds++;
 	return D3D_OK;

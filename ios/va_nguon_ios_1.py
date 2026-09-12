@@ -4,7 +4,7 @@ Doc/ghi latin-1, giu nguyen ky tu xuong dong cua tung tep, khong doi mot byte na
 MOI thay doi deu nam trong #ifdef JX_IOS -> ban Windows va ban Android khong doi hanh vi.
 Chay:  python3 ios/va_nguon_ios_1.py
 """
-import io, os, sys
+import io, os, re, sys
 
 GOC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -87,5 +87,43 @@ if truoc != sau:
 if doi2:
     ghi(P2, s)
     print("   da va: jx_lua_fopen.c (byte cao %d, khong doi)" % sau)
+
+# ---------------------------------------------------------------- 3. JxPathPosix: goc he thong cua iOS
+# Danh sach duong "he thong that, giu nguyen" chi co cac goc cua Android (/storage/, /sdcard/, /data/...).
+# Tren iOS thu muc ung dung la /var/mobile/Containers/... (may that) hoac /Users/<ten>/Library/Developer/
+# CoreSimulator/... (may ao) -> khong khop goc nao, bi coi la duong TUONG DOI: bi ha chu thuong va ghep vao
+# thu muc du lieu -> access() luon that bai, app bao "khong thay config.ini" du tep co that.
+# Chen NGUYEN MOT KHOI moi, KHONG sua dong nao cua ban cu (de kiem_rao.py so tung dong van bang nhau).
+P3 = os.path.join(GOC, "Sources", "Engine", "Src", "Platform", "KPosixWin32.cpp")
+s = doc(P3)
+truoc = dem_byte_cao(s)
+if "s_gocIos" in s:
+    print("   bo qua (da co): KPosixWin32.cpp goc he thong iOS")
+else:
+    dong = s.splitlines(True)
+    vt = [k for k, d in enumerate(dong) if d.strip() == "if (bSys) return pszOut;"]
+    if len(vt) != 1:
+        sys.exit("LOI: tim thay %d dong 'if (bSys) return pszOut;', phai dung 1" % len(vt))
+    k = vt[0]
+    le = re.match(r"[ \t]*", dong[k]).group(0)          # giu dung le thut dau cua dong cu
+    nl = "\r\n" if dong[k].endswith("\r\n") else "\n"
+    khoi = [
+        "#ifdef JX_IOS",
+        le + "/* [IOS 11/09] goc he thong cua iOS: /var/mobile/Containers (may that),",
+        le + "   /Users/<ten>/Library/Developer/CoreSimulator (may ao). Khong co cho nay thi duong dan",
+        le + "   tuyet doi cua iOS bi coi la tuong doi -> ha chu thuong + ghep thu muc du lieu -> mo tep hong. */",
+        le + "if (!bSys)",
+        le + "{",
+        le + "\tstatic const char* s_gocIos[] = { \"/var/\", \"/private/\", \"/Users/\", \"/Library/\", \"/Applications/\", NULL };",
+        le + "\tfor (int i3 = 0; s_gocIos[i3]; i3++) if (strncmp(pszOut, s_gocIos[i3], strlen(s_gocIos[i3])) == 0) { bSys = 1; break; }",
+        le + "}",
+        "#endif",
+    ]
+    dong = dong[:k] + [x + nl for x in khoi] + dong[k:]
+    s = "".join(dong)
+    if dem_byte_cao(s) != truoc:
+        sys.exit("LOI: byte >= 0x80 doi")
+    ghi(P3, s)
+    print("   da va: KPosixWin32.cpp goc he thong iOS (chen nguyen khoi, byte cao %d)" % truoc)
 
 print("xong va_nguon_ios_1.py")
