@@ -1,4 +1,4 @@
-# [IOS 11/09] Client JX1 tren iOS (SDL3 + SDL_GPU/Metal + miniaudio + BSD socket).
+# [MACOS 11/09] Client JX1 tren macOS (SDL3 + SDL_GPU/Metal + miniaudio + BSD socket).
 # Cung nguon voi ban Android va voi GameSDL.exe: danh sach tep/dinh nghia dung LAI android/lists/*.cmake
 # (sinh boi android/gen_lists.py tu cac vcxproj cau hinh ReleaseSDL) - KHONG chep tay danh sach tep.
 #
@@ -16,9 +16,10 @@
 #         -DCMAKE_OSX_SYSROOT=iphonesimulator -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0
 #   cmake --build build/ios-sim --config Release
 cmake_minimum_required(VERSION 3.22)
-project(JX1Ios C CXX OBJC OBJCXX)
+project(JX1Mac C CXX OBJC OBJCXX)
 
 set(JX_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
+set(JX_IOS_DIR ${JX_ROOT}/ios)   # dung chung tep cua ban iOS (bang do, do so)
 set(JX_SRC ${JX_ROOT}/Sources)
 set(JX_ANDROID_DIR ${JX_ROOT}/android)
 
@@ -44,7 +45,7 @@ if(NOT TARGET SDL3::SDL3)
   set(SDL_STATIC ON  CACHE BOOL "" FORCE)
   set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
   set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
-  set(SDL_VULKAN OFF CACHE BOOL "" FORCE)   # iOS di Metal; tat Vulkan de khoi keo MoltenVK
+  set(SDL_VULKAN OFF CACHE BOOL "" FORCE)   # macOS di Metal; tat Vulkan de khoi keo MoltenVK
   add_subdirectory(${JX_SDL3_SRC} SDL3 EXCLUDE_FROM_ALL)
 endif()
 
@@ -52,12 +53,13 @@ endif()
 # -fsigned-char : char CO DAU nhu MSVC (byte TCVN3 > 0x7F, moi phep 'if (c < 0)')
 # -U__linux     : tat cac nhanh port may chu Linux cu
 # -D_WIN64      : di dung nhanh x64 da kiem chung (hop ngu -> C, con tro 8 byte); KHONG phai la Windows
-set(JX_COMMON_DEFS JX_PLATFORM_SDL JX_POSIX JX_MOBILE JX_APPLE JX_IOS JX_NO_DIRECTX JX_D3D9MINI _WIN64 NDEBUG _MBCS USE_STANDALONE_SPR
+# KHONG co JX_MOBILE: macOS chay giao dien ban PC (chuot + ban phim)
+set(JX_COMMON_DEFS JX_PLATFORM_SDL JX_POSIX JX_APPLE JX_MACOS JX_NO_DIRECTX JX_D3D9MINI _WIN64 NDEBUG _MBCS USE_STANDALONE_SPR
     _LIBCPP_ENABLE_CXX17_REMOVED_FEATURES _LIBCPP_ENABLE_CXX20_REMOVED_FEATURES
     _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR)   # libc++ cua Xcode 26 doi macro rieng cho std::auto_ptr (MultiServer/Common/Utils.cpp)
 set(JX_COMMON_OPTS -fsigned-char -fms-extensions -U__linux -w -Wno-register -Wno-address-of-temporary -fno-strict-aliasing -Wno-error)
 set(JX_COMMON_INCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/shim          # header CHI cho iOS (malloc.h ...) - Android khong thay
+    ${JX_ROOT}/ios/shim          # header CHI cho iOS (malloc.h ...) - Android khong thay
     ${JX_SRC}/Engine/Src/Platform/winshim     # windows.h, winsock2.h, mmsystem.h ... -> KPosixCompat.h
     ${JX_SRC}/Engine/Src/Platform
     ${JX_SRC}/Engine/Src/Platform/posixssl    # openssl/*.h -> KPosixCrypto.cpp
@@ -93,7 +95,7 @@ jx_setup(JxPosix)
 add_library(Lua54 STATIC ${JX_LUA54_SOURCES}
     ${JX_SRC}/Library/Lua54/jx_lua_fopen.c)   # moi fopen trong Lua -> JxPathPosix
 target_include_directories(Lua54 PUBLIC ${JX_LUA54_INCS})
-target_compile_definitions(Lua54 PRIVATE ${JX_LUA54_DEFS} LUA_USE_IOS JX_APPLE JX_IOS fopen=jx_lua_fopen)   # LUA_USE_IOS: loslib.c tu tat system(); JX_IOS: rao trong jx_lua_fopen.c
+target_compile_definitions(Lua54 PRIVATE ${JX_LUA54_DEFS} LUA_USE_MACOSX JX_APPLE JX_MACOS fopen=jx_lua_fopen)   # LUA_USE_IOS: loslib.c tu tat system(); JX_IOS: rao trong jx_lua_fopen.c
 target_compile_options(Lua54 PRIVATE -fsigned-char -fms-extensions -w)
 target_link_libraries(Lua54 PRIVATE JxPosix)
 
@@ -145,8 +147,7 @@ target_include_directories(CoreClient PRIVATE ${JX_CORE_INCS}
 target_link_libraries(CoreClient PRIVATE Engine Lua54)
 
 # ---- S3Client: buoc B dung dang THU VIEN TINH de khao sat loi bien dich ----
-# Chua them diem vao iOS (JxIosMain) va chua them cac tep chi-Android
-# (JxAndroidMain.cpp, JxPerfHudAndroid.cpp, JxWAutoNoiBo.cpp, UiWAuto*.cpp, UiVatPham.cpp) - viec cua buoc C.
+# Diem vao macOS o JxMacMain.cpp. Khong lay JxAndroidMain.cpp (JNI) va JxPerfHudAndroid.cpp (doc /proc).
 add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${JX_SRC}/S3Client/Platform/JxAndroidStubs.cpp    # stub JxReplay / PerfHud / TrayMode, rao JX_POSIX
     # [JXMOBILE 11/09] cac tep ma ban Android khai rieng; nay rao JX_MOBILE nen iOS dung chung.
@@ -154,33 +155,18 @@ add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${JX_SRC}/S3Client/Platform/JxWAutoNoiBo.cpp      # ben gui WAuto trong tien trinh
     ${JX_SRC}/S3Client/Ui/UiCase/UiWAuto.cpp          # khung Auto trong game
     ${JX_SRC}/S3Client/Ui/UiCase/UiWAutoTrang.cpp     # trang noi dung cua khung Auto
-    ${JX_SRC}/S3Client/Ui/UiCase/UiVatPham.cpp       # bang thong tin vat pham khi cham o do
-    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosStubs.cpp      # [IOS-DO] dem khung + ghi jx_nhip.log moi 10 s
-    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosDoNhip.mm      # do CPU/RAM/nhiet/pin bang API Apple
-    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosHud.cpp)       # [IOS-HUD] bang do hien trong game
+    ${JX_SRC}/S3Client/Ui/UiCase/UiVatPham.cpp       # bang thong tin vat pham
+    ${JX_IOS_DIR}/JxIosStubs.cpp                    # dem khung + ghi jx_nhip.log
+    ${JX_IOS_DIR}/JxIosDoNhip.mm                    # do CPU/RAM/nhiet/pin bang API Apple
+    ${JX_IOS_DIR}/JxIosHud.cpp)                     # bang do hien trong game
 jx_setup(S3Client)
 target_compile_definitions(S3Client PRIVATE ${JX_S3CLIENT_DEFS})
 target_include_directories(S3Client PRIVATE ${JX_S3CLIENT_INCS})
 target_link_libraries(S3Client PRIVATE CoreClient Engine FilterText Lua54 Represent3 Rainbow)
 
-# ---- phep thu link (buoc B): ep nap moi tep .o de lo ky hieu trung ten va ky hieu thieu ----
-# Khong phai ung dung that; chi de moi lan dung deu tu kiem duoc phan link tinh.
-add_executable(JxIosProbeLink ${CMAKE_CURRENT_SOURCE_DIR}/JxIosProbeLink.cpp)
-jx_setup(JxIosProbeLink)
-target_link_libraries(JxIosProbeLink PRIVATE S3Client CoreClient Represent3 Rainbow Common Engine FilterText Lua54 JpgLib)
-target_link_options(JxIosProbeLink PRIVATE -Wl,-all_load)
-set_target_properties(JxIosProbeLink PROPERTIES MACOSX_BUNDLE OFF)
-
-# ---- ung dung that (buoc C): goi .app chay duoc tren may ao / may that ----
-# -all_load: Represent3 va Rainbow tren Windows/Android duoc nap luc chay qua LoadLibrary/dlopen nen
-# khong co tham chieu tinh nao toi chung; neu khong ep nap thi trinh lien ket se bo het.
-add_executable(jx1ios MACOSX_BUNDLE ${CMAKE_CURRENT_SOURCE_DIR}/JxIosMain.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosDuongDan.mm)   # .mm KHONG duoc include KWin32.h - xem ghi chu trong tep
-jx_setup(jx1ios)
-target_include_directories(jx1ios PRIVATE ${JX_SRC}/Engine/Src ${JX_SRC}/Engine/Src/Platform)
-target_link_libraries(jx1ios PRIVATE S3Client CoreClient Represent3 Rainbow Common Engine FilterText Lua54 JpgLib)
-target_link_options(jx1ios PRIVATE -Wl,-all_load)
-set_target_properties(jx1ios PROPERTIES
-    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
-    XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER vn.jx1.mobile
-    OUTPUT_NAME jx1ios)
+# ---- ung dung macOS ----
+add_executable(jx1mac ${CMAKE_CURRENT_SOURCE_DIR}/JxMacMain.cpp)
+jx_setup(jx1mac)
+target_include_directories(jx1mac PRIVATE ${JX_SRC}/Engine/Src ${JX_SRC}/Engine/Src/Platform)
+target_link_libraries(jx1mac PRIVATE S3Client CoreClient Represent3 Rainbow Common Engine FilterText Lua54 JpgLib)
+target_link_options(jx1mac PRIVATE -Wl,-all_load)

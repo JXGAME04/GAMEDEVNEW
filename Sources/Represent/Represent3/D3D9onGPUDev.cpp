@@ -5,7 +5,7 @@
 #include "D3D9onGPU.h"
 #include "D3D9onGPUi.h"
 #include "Rep3ShadersGPU_spv.h"
-#ifdef JX_IOS
+#ifdef JX_APPLE
 #include "Rep3ShadersGPU_msl.h"	// [IOS-METAL 11/09] ban MSL cho Metal (sinh boi ios/sinh_shader_msl.py)
 #endif
 #include <stddef.h>	// [GOP 11/09] offsetof(RgDrawState, ps)
@@ -323,7 +323,7 @@ bool CDevGpu::Init()
 	}
 	if (!m_pWin) { RgLog("khong tim thay SDL_Window cho HWND %p (%d cua so)", (void*)m_hWnd, nWin); return false; }
 	const char* e = getenv("REP3_GPU_DEBUG");
-#ifdef JX_IOS	// [IOS-METAL 11/09] Metal chi nhan MSL, khong nhan SPIR-V
+#ifdef JX_APPLE	// [IOS-METAL 11/09] Metal chi nhan MSL, khong nhan SPIR-V
 	m_pGpu = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_MSL, (e && atoi(e) != 0), NULL);
 	if (!m_pGpu) { RgLog("SDL_CreateGPUDevice(MSL) that bai: %s", SDL_GetError()); return false; }
 #else
@@ -437,7 +437,7 @@ bool CDevGpu::CreateShaders()
 {
 	SDL_GPUShaderCreateInfo si; memset(&si, 0, sizeof(si));
 	si.code = g_Rep3GpuVS; si.code_size = sizeof(g_Rep3GpuVS); si.entrypoint = "main"; si.format = SDL_GPU_SHADERFORMAT_SPIRV; si.stage = SDL_GPU_SHADERSTAGE_VERTEX; si.num_uniform_buffers = 1;
-#ifdef JX_IOS	// [IOS-METAL 11/09] code_size = do dai chuoi KHONG ke ky tu ket thuc
+#ifdef JX_APPLE	// [IOS-METAL 11/09] code_size = do dai chuoi KHONG ke ky tu ket thuc
 	si.code = (const Uint8*)g_Rep3GpuVSMsl; si.code_size = sizeof(g_Rep3GpuVSMsl) - 1; si.entrypoint = "main0"; si.format = SDL_GPU_SHADERFORMAT_MSL;
 #endif
 	m_pVS = SDL_CreateGPUShader(m_pGpu, &si);
@@ -459,7 +459,7 @@ bool CDevGpu::CreateShaders()
 		}
 	}
 #endif
-#ifdef JX_IOS	// [IOS-METAL 11/09]
+#ifdef JX_APPLE	// [IOS-METAL 11/09]
 	si.code = (const Uint8*)g_Rep3GpuFSMsl; si.code_size = sizeof(g_Rep3GpuFSMsl) - 1; si.entrypoint = "main0"; si.format = SDL_GPU_SHADERFORMAT_MSL;
 #endif
 #ifdef JX_ANDROID
@@ -517,7 +517,7 @@ SDL_GPUGraphicsPipeline* CDevGpu::GetPipelineCull(DWORD fvf, SDL_GPUPrimitiveTyp
 
 	SDL_GPUGraphicsPipelineCreateInfo pi; memset(&pi, 0, sizeof(pi));
 	pi.vertex_shader = m_pVS; pi.fragment_shader = m_pFS;
-#ifdef JX_IOS	// [IOS-DEMDINH 11/09] Metal bat loi chet neu khai dem dinh ma khong thuoc tinh nao dung
+#ifdef JX_APPLE	// [IOS-DEMDINH 11/09] Metal bat loi chet neu khai dem dinh ma khong thuoc tinh nao dung
 	pi.vertex_input_state.vertex_buffer_descriptions = vb;
 	pi.vertex_input_state.num_vertex_buffers = (va[1].buffer_slot == 1 || va[2].buffer_slot == 1) ? 2 : 1;
 #else

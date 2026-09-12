@@ -5,7 +5,7 @@
 // API cua Apple qua ios/JxIosDoNhip.mm. Ve theo dung loi cua ban Android: chu 12 px vien den,
 // goi tu PerfHud_Draw moi khung ngay truoc RepresentEnd.
 //
-// Bat/tat: [Client] PerfHud=1 trong config.ini. Tren iOS mac dinh BAT (chu xin xem so trong game).
+// Bat/tat: [Client] PerfHud=1 trong config.ini. Tren Apple mac dinh BAT (chu xin xem so trong game).
 // Vi tri: goc trai-tren, duoi hang nut menu ~100 px, giong ban Android.
 //
 // GPU %: iOS KHONG cho doc neu khong dung API rieng tu -> hien "GPU --". Thay vao do hien nhiet
@@ -13,7 +13,7 @@
 //
 // Chuoi trong tep nay CHI dung ASCII de khoi vuong bang ma TCVN3.
 //---------------------------------------------------------------------------
-#ifdef JX_IOS
+#ifdef JX_APPLE	// dung chung cho iOS va macOS
 #include "KWin32.h"
 #include "../Sources/S3Client/Ui/PerfHud.h"
 #include "../Sources/Represent/iRepresent/iRepresentShell.h"
@@ -105,4 +105,4 @@ void PerfHud_Draw(int nPaintFps, int nLogicFps, unsigned int dwPing)
 	JxHud_Chu(sz1, JXH_X, JXH_Y, JxHud_MauFps(nPaintFps));
 	JxHud_Chu(sz2, JXH_X, JXH_Y + JXH_LINE, JxHud_MauTai(s_fCpu));
 }
-#endif // JX_IOS
+#endif // JX_APPLE

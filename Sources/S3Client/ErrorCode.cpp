@@ -29,7 +29,7 @@ void Error_SetErrorCode(unsigned int uCode)
 #endif
 }
 
-#ifdef JX_IOS
+#ifdef JX_APPLE
 // [IOS-BAOLOI 11/09] Tren iOS khong co hop thoai loi nao hien ra; ghi thang ma loi + chuoi loi
 // vao jx_ios.log de biet GameInit() hong o buoc nao.
 extern "C" void JxIos_GhiLoiKhoiTao(void)

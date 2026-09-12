@@ -15,7 +15,9 @@ import io, os, re, subprocess, sys
 
 GOC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOC = sys.argv[1] if len(sys.argv) > 1 else "HEAD"
-MACRO = re.compile(r"\bJX_IOS\b")   # [JXMOBILE 11/09] Android NAY dinh nghia JX_MOBILE -> KHONG loc no nua
+MACRO = re.compile(r"\bJX_IOS\b|\bJX_APPLE\b|\bJX_MACOS\b")
+# [JXMOBILE 11/09] Android NAY dinh nghia JX_MOBILE -> KHONG loc no nua.
+# [JXAPPLE 11/09] JX_APPLE / JX_MACOS: Android va Windows deu KHONG dinh nghia -> loc nhu JX_IOS.
 
 def loc_bo_rao_ios(dong):
     """Tra ve danh sach dong nhu trinh tien xu ly thay khi JX_IOS / JX_MOBILE KHONG duoc dinh nghia."""
@@ -49,8 +51,11 @@ def loc_bo_rao_ios(dong):
 # ---- muc 2: macro cua iOS khong duoc co trong cau hinh Android ----
 loi = 0
 cm_android = io.open(os.path.join(GOC, "android", "CMakeLists.txt"), encoding="latin-1").read()
-if re.search(r"\bJX_IOS\b", cm_android):
-    print("!! android/CMakeLists.txt CO dinh nghia JX_IOS - khong duoc"); loi += 1
+for m in ("JX_IOS", "JX_APPLE", "JX_MACOS"):
+    if re.search(r"\b%s\b" % m, cm_android):
+        print("!! android/CMakeLists.txt CO dinh nghia %s - khong duoc" % m); loi += 1
+if loi:
+    pass
 elif not re.search(r"\bJX_MOBILE\b", cm_android):
     print("!! android/CMakeLists.txt CHUA dinh nghia JX_MOBILE - mo hinh kiem khong con dung"); loi += 1
 else:

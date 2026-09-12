@@ -104,3 +104,4 @@ ios/build/
 
 # [IOS 11/09] rac cua macOS
 .DS_Store
+macos/build/

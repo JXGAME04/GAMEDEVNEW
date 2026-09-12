@@ -18,7 +18,7 @@
 //  - Android: libRainbow.so RIENG, khong chua NetConnectAgent.cpp -> phai co dinh nghia NGOAI (EXTERN_C), neu khong: undefined symbol.
 //  - Windows: Rainbow.dll RIENG, cung khong chua NetConnectAgent.cpp -> GIU NGUYEN Y HET ban goc truoc [DONTRUNG 11/09]
 //    (hai dong 'static const GUID'), de ban PC dang phat hanh khong doi mot byte nao.
-#ifndef JX_IOS
+#ifndef JX_APPLE
 #ifdef __ANDROID__
 #define JX_ANDROID_GUID 1
 EXTERN_C const GUID IID_IESClient =
