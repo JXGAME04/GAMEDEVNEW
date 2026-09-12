@@ -41,8 +41,15 @@ HWND g_FindDebugWindow(char* lpClassName, char* lpWindowName)
 //			...		Êä³öµÄ×Ö·û´®
 // ·µ»Ø:	void
 //---------------------------------------------------------------------------
+// [BAOMAT 12/09 NHATKY] Mot cong tac tat SACH nhat ky chan doan: [Client] NhatKyChanDoan=0 trong config.ini.
+// Vi sao can: nhat ky dang in ten tai khoan, dia chi may chu, khung goi mang, duong dan tep - deu la thu
+// khong nen de lai tren may nguoi choi. Ban phat hanh PHAI dat 0. Mac dinh 1 = giu nguyen hanh vi cu,
+// nen khong bat gi thi ca ba nen chay y het truoc.
+int g_nJxNhatKyChanDoan = 1;
 void g_DebugLog(LPSTR Fmt, ...)
 {
+	if (!g_nJxNhatKyChanDoan)
+		return;
 #ifdef JX_PLATFORM_SDL	// [SDL 08/09 2b-1] ra SDL_Log (Windows: OutputDebugString + stderr; Android: logcat), van gui DebugWin neu co
 	{
 		char szSdl[2048];

@@ -160,6 +160,7 @@ add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${JX_IOS_DIR}/JxTaiDuLieu.mm                 # [IOS-TAI 11/09] buoc F: bo tai du lieu trong app (manifest chung voi Android)
     ${JX_IOS_DIR}/JxIosMiniAudio.mm               # [IOS-AM 11/09] cai dat miniaudio (tach vi AVFoundation da BOOL)
     ${JX_IOS_DIR}/JxIosAnGame.mm                  # [IOS-AN 11/09] nut an game: day ung dung xuong nen
+    ${JX_IOS_DIR}/JxIosKhoaMat.mm                 # [BAOMAT 12/09 KHOMAT] Keychain: tai khoan / mat khau
     ${JX_IOS_DIR}/JxIosDoNhip.mm                    # do CPU/RAM/nhiet/pin bang API Apple
     ${JX_IOS_DIR}/JxIosHud.cpp)                     # bang do hien trong game
 jx_setup(S3Client)
@@ -176,3 +177,5 @@ set_target_properties(jx1mac PROPERTIES
 target_include_directories(jx1mac PRIVATE ${JX_SRC}/Engine/Src ${JX_SRC}/Engine/Src/Platform)
 target_link_libraries(jx1mac PRIVATE S3Client CoreClient Represent3 Rainbow Common Engine FilterText Lua54 JpgLib)
 target_link_options(jx1mac PRIVATE -Wl,-all_load)
+# [BAOMAT 12/09 KY] Security.framework: SecKeyVerifySignature de kiem chu ky ban ke tep tai ve
+target_link_libraries(jx1mac PRIVATE "-framework Security")

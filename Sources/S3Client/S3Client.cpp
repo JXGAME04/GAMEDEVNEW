@@ -605,6 +605,12 @@ BOOL KMyApp::GameInit()
 	int nPerfHud = 0;
 	IniFile.GetInteger("Client", "PerfHud", 0, &nPerfHud);
 	PerfHud_SetEnable(nPerfHud);
+	{	// [BAOMAT 12/09 NHATKY] mot cong tac tat sach nhat ky chan doan (KDebug.cpp). Ban phat hanh dat 0.
+		extern int g_nJxNhatKyChanDoan;
+		int nNk = 1; IniFile.GetInteger("Client", "NhatKyChanDoan", 1, &nNk);
+		g_nJxNhatKyChanDoan = nNk ? 1 : 0;
+		if (!nNk) SDL_Log("[BAOMAT] nhat ky chan doan: TAT ([Client] NhatKyChanDoan=0)");
+	}
 	if (g_nPaintFps > 30 || g_nPaintVsync > 0)
 		timeBeginPeriod(1);	// high paint rates need 1ms Sleep/wait resolution; paired with timeEndPeriod in GameExit
 

@@ -159,6 +159,7 @@ add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${CMAKE_CURRENT_SOURCE_DIR}/JxTaiDuLieu.mm                 # [IOS-TAI 11/09] buoc F: bo tai du lieu trong app (manifest chung voi Android)
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosMiniAudio.mm               # [IOS-AM 11/09] cai dat miniaudio (tach vi AVFoundation da BOOL)
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosAnGame.mm                  # [IOS-AN 11/09] nut an game: day ung dung xuong nen
+    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosKhoaMat.mm                 # [BAOMAT 12/09 KHOMAT] Keychain: tai khoan / mat khau
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosDoNhip.mm      # do CPU/RAM/nhiet/pin bang API Apple
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosHud.cpp)       # [IOS-HUD] bang do hien trong game
 jx_setup(S3Client)
@@ -172,6 +173,7 @@ add_executable(JxIosProbeLink ${CMAKE_CURRENT_SOURCE_DIR}/JxIosProbeLink.cpp)
 jx_setup(JxIosProbeLink)
 target_link_libraries(JxIosProbeLink PRIVATE S3Client CoreClient Represent3 Rainbow Common Engine FilterText Lua54 JpgLib)
 target_link_options(JxIosProbeLink PRIVATE -Wl,-all_load)
+target_link_libraries(JxIosProbeLink PRIVATE "-framework Security")	# [BAOMAT 12/09] Keychain + kiem chu ky
 set_target_properties(JxIosProbeLink PROPERTIES MACOSX_BUNDLE OFF)
 
 # ---- ung dung that (buoc C): goi .app chay duoc tren may ao / may that ----
@@ -183,6 +185,8 @@ jx_setup(jx1ios)
 target_include_directories(jx1ios PRIVATE ${JX_SRC}/Engine/Src ${JX_SRC}/Engine/Src/Platform)
 target_link_libraries(jx1ios PRIVATE S3Client CoreClient Represent3 Rainbow Common Engine FilterText Lua54 JpgLib)
 target_link_options(jx1ios PRIVATE -Wl,-all_load)
+# [BAOMAT 12/09 KY] Security.framework: SecKeyVerifySignature de kiem chu ky ban ke tep tai ve
+target_link_libraries(jx1ios PRIVATE "-framework Security")
 set_target_properties(jx1ios PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
     XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER vn.jx1.mobile

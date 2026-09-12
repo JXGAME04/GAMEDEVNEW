@@ -721,6 +721,11 @@ bool KLogin::GetLoginPasswordSaved(KSG_PASSWORD* pRa)
 #define	$LOGIN			"Login"
 #define	$LAST_ACCOUNT	"LastAccount"
 #define	$LAST_PASSWORD	"LastPassword"
+#ifdef JX_APPLE	// [BAOMAT 12/09 KHOMAT] tren Apple hai muc nay nam trong Keychain, khong nam trong tep ini
+extern "C" int  JxKhoMat_Luu(const char* pszKhoa, const void* pDuLieu, int nDai);
+extern "C" int  JxKhoMat_Doc(const char* pszKhoa, void* pRa, int nRa);
+extern "C" void JxKhoMat_Xoa(const char* pszKhoa);
+#endif
 
 //--------------------------------------------------------------------------
 //	功能：读取以前的的登陆选择
@@ -743,7 +748,11 @@ void KLogin::LoadLoginChoice()
 		pSetting->GetString($LOGIN, "LastGameServer", "", m_Choices.AccountServer.Title, sizeof(m_Choices.AccountServer.Title));
 
 		szAccount[0] = 0;
+#ifdef JX_APPLE	// [BAOMAT 12/09 KHOMAT]
+		JxKhoMat_Doc($LAST_ACCOUNT, szAccount, sizeof(szAccount));
+#else
 		pSetting->GetStruct($LOGIN, $LAST_ACCOUNT, szAccount, sizeof(szAccount));
+#endif
 		if (szAccount[0])
 		{
 			EDOneTimePad_Decipher(szAccount, strlen(szAccount));
@@ -751,7 +760,11 @@ void KLogin::LoadLoginChoice()
 			SetAccountPassword(szAccount, NULL);
 
 			Password.szPassword[0] = '\0';
+#ifdef JX_APPLE	// [BAOMAT 12/09 KHOMAT]
+			JxKhoMat_Doc($LAST_PASSWORD, Password.szPassword, sizeof(Password.szPassword));
+#else
 			pSetting->GetStruct($LOGIN, $LAST_PASSWORD, Password.szPassword, sizeof(Password.szPassword));
+#endif
 			if (Password.szPassword[0])
 			{
 				EDOneTimePad_Decipher(Password.szPassword, strlen(Password.szPassword));
@@ -810,14 +823,22 @@ void KLogin::SaveLoginChoice()
 
 		char	szBuffer[32];
 		//----纪录最后一次登陆账号----
+#ifdef JX_APPLE	// [BAOMAT 12/09 KHOMAT]
+		JxKhoMat_Xoa($LAST_ACCOUNT);
+#else
 		pSetting->EraseKey($LOGIN, $LAST_ACCOUNT);
+#endif
 
 		if (m_Choices.bRememberAccount)
 		{
 			GetAccountPassword(szBuffer, NULL);
 			i = strlen(szBuffer);
 			EDOneTimePad_Encipher(szBuffer, i);
+#ifdef JX_APPLE	// [BAOMAT 12/09 KHOMAT]
+			JxKhoMat_Luu($LAST_ACCOUNT, szBuffer, sizeof(szBuffer));
+#else
 			pSetting->WriteStruct($LOGIN, $LAST_ACCOUNT, szBuffer, sizeof(szBuffer));
+#endif
 
 			if (m_Choices.bRememberAll)
 			{
@@ -825,7 +846,11 @@ void KLogin::SaveLoginChoice()
 				GetAccountPassword(NULL, &Password);
 				i = strlen(Password.szPassword);
 				EDOneTimePad_Encipher(Password.szPassword, i);
+#ifdef JX_APPLE	// [BAOMAT 12/09 KHOMAT]
+				JxKhoMat_Luu($LAST_PASSWORD, Password.szPassword, sizeof(Password.szPassword));
+#else
 				pSetting->WriteStruct($LOGIN, $LAST_PASSWORD, Password.szPassword, sizeof(Password.szPassword));
+#endif
 			}
 
 #ifdef JX_MOBILE

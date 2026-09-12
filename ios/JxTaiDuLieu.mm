@@ -26,6 +26,7 @@
 // <Foundation/Foundation.h> cung dinh nghia BOOL -> dung dinh nghia (xem JxIosDuongDan.mm).
 //---------------------------------------------------------------------------
 #import <Foundation/Foundation.h>
+#import <Security/Security.h>	// [BAOMAT 12/09 KY] kiem chu ky ban ke
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #endif
@@ -48,6 +49,46 @@
 @property (atomic) BOOL huy;
 @end
 @implementation JxTaiTrangThai @end
+
+// ---------------------------------------------------------------- chu ky ban ke
+// [BAOMAT 12/09 KY] Bo tai kiem md5 tung tep THEO manifest.txt. Nhung ke dung giua sua duoc
+// manifest thi sua luon md5 trong do -> kiem md5 thanh vo nghia. Cay du lieu co script Lua,
+// ma Lua la MA CHAY THAT: doi mot tep Lua = dieu khien duoc may nguoi choi.
+// Nen manifest phai co CHU KY, khoa cong khai nam san trong ung dung, khoa rieng giu o may chu.
+// Ky bang: python3 android/ky_manifest.py --ky <thu muc> --khoa <khoa rieng>
+static const unsigned char s_jxKhoaCongKhai[] = {
+	0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02,
+	0x01, 0x06, 0x08, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x03, 0x01, 0x07, 0x03,
+	0x42, 0x00, 0x04, 0xB6, 0xC0, 0xF7, 0x7F, 0xC9, 0x22, 0x5B, 0x8D, 0xBE,
+	0x7C, 0xF9, 0x0A, 0xB7, 0x1E, 0xF1, 0x51, 0xF8, 0x36, 0x6F, 0x92, 0x76,
+	0x06, 0x13, 0x18, 0x56, 0xD1, 0x56, 0xD9, 0xF9, 0xAD, 0xFD, 0x35, 0x89,
+	0x51, 0xA3, 0x51, 0x70, 0x14, 0x1A, 0x45, 0xEB, 0xB6, 0x31, 0xCD, 0xB8,
+	0x80, 0xA0, 0x28, 0xCD, 0xDE, 0x52, 0xE4, 0x04, 0x74, 0xAE, 0x0F, 0x43,
+	0x8A, 0xEA, 0x94, 0xE3, 0x40, 0x61, 0x0B,
+};
+
+// Kiem chu ky DER cua ECDSA-SHA256 tren toan bo byte cua manifest.
+static BOOL JxKiemChuKy(NSData* dManifest, NSData* dChuKy)
+{
+	if (!dManifest || !dChuKy || dChuKy.length == 0)
+		return NO;
+	NSDictionary* thuoc = @{ (id)kSecAttrKeyType      : (id)kSecAttrKeyTypeECSECPrimeRandom,
+	                         (id)kSecAttrKeyClass     : (id)kSecAttrKeyClassPublic,
+	                         (id)kSecAttrKeySizeInBits: @256 };
+	// SecKeyCreateWithData muon diem tho (0x04||X||Y), khong phai SubjectPublicKeyInfo:
+	// 91 byte DER o tren = 26 byte dau goi + 65 byte diem.
+	if (sizeof(s_jxKhoaCongKhai) < 65)
+		return NO;
+	NSData* diem = [NSData dataWithBytes:(s_jxKhoaCongKhai + sizeof(s_jxKhoaCongKhai) - 65) length:65];
+	CFErrorRef e = NULL;
+	SecKeyRef khoa = SecKeyCreateWithData((__bridge CFDataRef)diem, (__bridge CFDictionaryRef)thuoc, &e);
+	if (!khoa) { if (e) CFRelease(e); return NO; }
+	BOOL ok = SecKeyVerifySignature(khoa, kSecKeyAlgorithmECDSASignatureMessageX962SHA256,
+	                                (__bridge CFDataRef)dManifest, (__bridge CFDataRef)dChuKy, &e) ? YES : NO;
+	if (e) CFRelease(e);
+	CFRelease(khoa);
+	return ok;
+}
 
 // ---------------------------------------------------------------- tien ich
 static NSString* JxMd5Tep(NSString* p, JxTaiTrangThai* tt)
@@ -223,6 +264,20 @@ static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSStr
 // ---------------------------------------------------------------- viec chinh
 typedef struct { long long co; char md5[36]; } JxMuc;
 
+// Tai mot dia chi ve bo nho, cho xong moi tra ve (chay o hang doi nen nen chan duoc).
+static NSData* JxTaiDongBo(NSURLSession* ss, NSString* su)
+{
+	__block NSData* ra = nil;
+	dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+	[[ss dataTaskWithURL:[NSURL URLWithString:su]
+	   completionHandler:^(NSData* d, NSURLResponse* r, NSError* e) {
+			NSHTTPURLResponse* hp = [r isKindOfClass:[NSHTTPURLResponse class]] ? (NSHTTPURLResponse*)r : nil;
+			if (!e && d && (!hp || hp.statusCode == 200)) ra = d;
+			dispatch_semaphore_signal(sem); }] resume];
+	dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+	return ra;
+}
+
 static void JxLamViec(NSString* goc, NSString* thuMuc, JxTaiTrangThai* tt)
 {
 	NSURLSessionConfiguration* cf = [NSURLSessionConfiguration ephemeralSessionConfiguration];
@@ -232,18 +287,34 @@ static void JxLamViec(NSString* goc, NSString* thuMuc, JxTaiTrangThai* tt)
 
 	// --- 1. manifest ---
 	tt.mucHienTai = @"Dang lay danh sach tep…";
-	NSString* su = [goc stringByAppendingString:@"manifest.txt"];
-	__block NSData* dm = nil; __block NSError* em = nil;
-	dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-	[[ss dataTaskWithURL:[NSURL URLWithString:su]
-	   completionHandler:^(NSData* d, NSURLResponse* r, NSError* e) {
-			dm = d; em = e; dispatch_semaphore_signal(sem); }] resume];
-	dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-	if (!dm || em)
+	NSData* dm = JxTaiDongBo(ss, [goc stringByAppendingString:@"manifest.txt"]);
+	if (!dm)
 	{
-		tt.loi = [NSString stringWithFormat:@"Khong lay duoc manifest.txt tu %@\n%@", goc,
-		          em ? em.localizedDescription : @"(rong)"];
+		tt.loi = [NSString stringWithFormat:@"Khong lay duoc manifest.txt tu %@", goc];
 		tt.xong = YES; return;
+	}
+	// [BAOMAT 12/09 KY] Bat buoc co chu ky hop le. Khong co chu ky, hoac chu ky sai, la DUNG NGAY:
+	// khong doc lay mot dong nao cua manifest. Manifest sai = tai ve tep bi doi ruot, ma trong do
+	// co script Lua chay that tren may nguoi choi.
+	{
+		tt.mucHienTai = @"Dang kiem chu ky danh sach tep…";
+		NSData* dSigB64 = JxTaiDongBo(ss, [goc stringByAppendingString:@"manifest.sig"]);
+		NSData* dSig = nil;
+		if (dSigB64)
+		{
+			NSString* s = [[NSString alloc] initWithData:dSigB64 encoding:NSASCIIStringEncoding];
+			s = [s stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+			dSig = s.length ? [[NSData alloc] initWithBase64EncodedString:s options:0] : nil;
+		}
+		if (!JxKiemChuKy(dm, dSig))
+		{
+			tt.loi = [NSString stringWithFormat:
+				@"Danh sach tep KHONG co chu ky hop le.\n\nDa dung tai de an toan.\n"
+				 "Kho du lieu phai co manifest.sig ky bang khoa cua may chu:\n"
+				 "  python3 android/ky_manifest.py --ky <thu muc> --khoa <khoa rieng>"];
+			tt.xong = YES; return;
+		}
+		NSLog(@"[IOS-TAI] chu ky danh sach tep: HOP LE");
 	}
 
 	NSString* sm = [[NSString alloc] initWithData:dm encoding:NSUTF8StringEncoding];
