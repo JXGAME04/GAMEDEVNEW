@@ -161,3 +161,45 @@ Tệp mới: `ios/`, `ThirdParty/nlohmann/`, `PHANTICH_IOS_LOTRINH_1109.md`, t�
 Năm tệp nguồn đều đã qua `ios/kiem_rao.py`. **Chưa dựng lại hai chuỗi Windows và chưa dựng lại APK** — máy này
 là Mac, không dựng được. Trước khi đưa lên `origin`, máy Windows phải dựng lại cả hai chuỗi và một APK để
 nghiệm thu theo luật cũ.
+
+---
+
+## 8. BƯỚC C (11/09 chiều): chạy được trên iPhone thật
+
+`ios/JxIosMain.cpp` + `ios/JxIosDuongDan.mm` (điểm vào) và `ios/Info.plist` + đích `jx1ios` (gói ứng dụng).
+
+| Mốc | Kết quả |
+|---|---|
+| Chạy trên máy ảo iOS | hiện đúng hộp thoại thiếu `config.ini` |
+| Dựng bản ký cho máy thật | `BUILD SUCCEEDED`, ký bằng `Apple Development: dainguyen0401@gmail.com` |
+| Cài lên iPhone 17 Pro Max **qua LAN**, không cáp | `App installed: vn.jx1.mobile` |
+| Đẩy 14 MB dữ liệu nhẹ vào Documents qua LAN | 52 tệp |
+| Tìm thấy thư mục dữ liệu trên máy thật | `[IOS] thu muc du lieu: /var/mobile/.../Documents (SDL 3.2.30)` |
+| Mở cửa sổ, vào vòng lặp game | có (chủ thấy màn hình đen + bàn phím) |
+
+**Còn lại của bước C, đã truy ra gốc, chưa sửa:**
+
+1. **Màn hình đen**: `D3D9onGPUDev.cpp:306` xin `SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, ...)`. iOS chạy Metal nên lệnh này thất bại, tầng vẽ không lên. Việc của bước E.
+2. **Bàn phím ảo bật suốt**: bản sửa của Android nằm trong `#ifdef JX_ANDROID` tại `KSdlApp.cpp:572`; bản iOS đi nhánh `#else` gọi `SDL_StartTextInput` rồi giữ luôn. Cả cơ chế bật theo ô nhập (dòng 741-808) cũng sau rào đó. Cách chữa là đổi những rào "vì là điện thoại" sang `JX_MOBILE`.
+
+## 9. BẢY BẪY ĐÃ VẤP TRONG BƯỚC C — đọc để khỏi mất giờ lại
+
+| # | Bẫy | Triệu chứng | Cách qua |
+|---|---|---|---|
+| 1 | `CFBundleExecutable` để `$(EXECUTABLE_NAME)` | `App installation failed ... is missing its bundle executable` | CMake kiểu Makefile **không** thay biến của Xcode. Ghi thẳng tên thật vào `Info.plist` |
+| 2 | Trộn lớp giả lập Win32 với header Objective-C | `typedef redefinition ('bool' vs 'int')` rồi `unexpected '@' in program` | Lớp giả lập đặt `BOOL = int`, `<objc/objc.h>` đặt `BOOL = bool`. **Tách hai tệp**: `.mm` chỉ dùng Foundation, không include `KWin32.h` |
+| 3 | `access()` bị macro đổi thành `jx_access` | app báo thiếu `config.ini` **dù tệp có thật** | `KPosixWin32.h:147` `#define access jx_access` → đi qua `JxPathPosix`. Danh sách đường hệ thống chỉ có gốc Android. Đã thêm `/var/ /private/ /Users/ /Library/ /Applications/` cho `JX_IOS` |
+| 4 | Mã đội ký nhầm | `No Account for Team "362WH8ZLF2"` | Phần trong ngoặc của tên chứng chỉ là **mã chứng chỉ**, không phải mã đội. Mã đội nằm ở trường **OU**: `PK9QTZYMSL` |
+| 5 | `developer disk image could not be mounted` | không cài được, tưởng do Developer Mode tắt | Thực ra chỉ **tạm thời**. Developer Mode vẫn bật (`developerModeStatus: enabled`). Thử lại là được |
+| 6 | Mã hóa URL tên tệp GBK | 404 khi tải, trong đó có `settings/serverlist=<GBK>.ini` | Phải `quote()` trên **byte gốc** (`duong.encode("latin-1")`), không phải trên chuỗi đã giải mã |
+| 7 | Vá làm **tách một dòng cũ thành hai** | `ios/kiem_rao.py` báo hỏng | Bộ kiểm so **từng dòng**. Bản vá phải **chèn nguyên khối mới**, không đụng dòng cũ nào |
+
+**Bẫy thứ tám, nặng nhất, do bản dọn `[DONTRUNG 11/09]` của phiên này gây ra:** bỏ hai GUID trong
+`Rainbow/IClient.cpp` làm **hỏng link bản Android** (libRainbow.so là `.so` riêng, không chứa
+`NetConnectAgent.cpp` nên không còn định nghĩa nào). Phiên `[CULLCPU 11/09]` phát hiện và vá cho Android.
+**Bản Windows cũng dính y hệt** vì Rainbow.dll cũng là DLL riêng và `ClientStage.cpp` dùng hai GUID đó ở
+bốn chỗ. Đã sửa thành **ba nền ba đường** (`[DONTRUNG-SUA 11/09]`): iOS không định nghĩa, Android định nghĩa
+`EXTERN_C`, Windows giữ **y hệt hai dòng `static const GUID` nguyên bản**.
+
+> **Bài học vào quy tắc:** đừng bao giờ bỏ một định nghĩa toàn cục chỉ vì một nền thấy nó trùng. Phải xét
+> **cách đóng gói của từng nền** trước: thứ trùng trên nhị phân gộp lại là thứ **bắt buộc** trên nhị phân tách rời.

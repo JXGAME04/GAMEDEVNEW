@@ -161,3 +161,17 @@ jx_setup(JxIosProbeLink)
 target_link_libraries(JxIosProbeLink PRIVATE S3Client CoreClient Represent3 Rainbow Common Engine FilterText Lua54 JpgLib)
 target_link_options(JxIosProbeLink PRIVATE -Wl,-all_load)
 set_target_properties(JxIosProbeLink PROPERTIES MACOSX_BUNDLE OFF)
+
+# ---- ung dung that (buoc C): goi .app chay duoc tren may ao / may that ----
+# -all_load: Represent3 va Rainbow tren Windows/Android duoc nap luc chay qua LoadLibrary/dlopen nen
+# khong co tham chieu tinh nao toi chung; neu khong ep nap thi trinh lien ket se bo het.
+add_executable(jx1ios MACOSX_BUNDLE ${CMAKE_CURRENT_SOURCE_DIR}/JxIosMain.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosDuongDan.mm)   # .mm KHONG duoc include KWin32.h - xem ghi chu trong tep
+jx_setup(jx1ios)
+target_include_directories(jx1ios PRIVATE ${JX_SRC}/Engine/Src ${JX_SRC}/Engine/Src/Platform)
+target_link_libraries(jx1ios PRIVATE S3Client CoreClient Represent3 Rainbow Common Engine FilterText Lua54 JpgLib)
+target_link_options(jx1ios PRIVATE -Wl,-all_load)
+set_target_properties(jx1ios PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
+    XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER vn.jx1.mobile
+    OUTPUT_NAME jx1ios)

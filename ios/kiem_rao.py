@@ -66,11 +66,13 @@ tep = [t for t in git("diff", "--name-only", MOC, "--", "Sources").splitlines() 
 if not tep:
     print("OK  khong co tep nao trong Sources/ bi sua so voi %s" % MOC)
 for p in tep:
-    cu = git("show", "%s:%s" % (MOC, p)).splitlines()
+    # Loc ca HAI phia: sau khi da commit phan iOS thi ban trong git CUNG co nhanh JX_IOS.
+    # Bat bien can kiem la "phan KHONG phai iOS khong doi", nen phai bo rao o ca hai ban roi moi so.
+    cu = loc_bo_rao_ios(git("show", "%s:%s" % (MOC, p)).splitlines())
     moi = io.open(os.path.join(GOC, p), encoding="latin-1", newline="").read().splitlines()
     sau = loc_bo_rao_ios(moi)
     if sau == cu:
-        print("OK  %s  (bo nhanh iOS di thi giong het %s, %d dong)" % (p, MOC, len(cu)))
+        print("OK  %s  (bo nhanh iOS o ca hai ban thi giong het %s, %d dong)" % (p, MOC, len(cu)))
     else:
         loi += 1
         print("!! %s  KHAC %s sau khi bo nhanh iOS:" % (p, MOC))
