@@ -393,3 +393,44 @@ Chủ xác nhận trên iPhone 17 Pro Max: **"đã chạy oke nhận đủ tính
 **Còn lại:** bảng đo hiệu năng iOS đang để rỗng (`ios/JxIosStubs.cpp`) vì bản Android đọc `/proc`;
 chưa đo khung hình / nhiệt / pin trên iOS; chưa làm bộ tải dữ liệu trong app (bước F);
 Represent3 chưa bật ba biến thể storage buffer / texture mảng trên Metal.
+
+---
+
+## 12. Bảo mật iOS — trạng thái sáu việc (12/09)
+
+| # | Việc | Trạng thái | Ở đâu |
+|---|---|---|---|
+| 1 | Ký bản kê tệp tải về | **Xong** | `android/ky_manifest.py`, `ios/JxTaiDuLieu.mm` |
+| 2 | HTTPS cho mọi thứ tải về | **Xong** | `ios/Info.plist` chỉ mở `NSAllowsLocalNetworking`; ATS vẫn chặn HTTP thường ra Internet |
+| 3 | Kho lưu mật mã | **Xong** | `ios/JxIosKhoaMat.mm` (Keychain) + dọn bản cũ trong `Login.cpp` |
+| 4 | Thư mục dữ liệu + cờ loại trừ sao lưu | **Xong** | `NSURLIsExcludedFromBackupKey` trong `ios/JxTaiDuLieu.mm` |
+| 5 | Dọn nhật ký chẩn đoán | **Xong** | `[Client] NhatKyChanDoan=0` → `g_DebugLog` câm |
+| 6 | Cổng phiên bản | **Nửa client xong**, nửa máy chủ còn lại | `phienban.txt` trong kho dữ liệu |
+
+### Việc bắt buộc mỗi lần đổi dữ liệu
+
+Bộ tải **từ chối** kho không có chữ ký hợp lệ. Sau mỗi lần đổi dữ liệu:
+
+```
+python3 android/may_chu_tai_du_lieu.py --thu-muc <thư mục> --chi-manifest
+python3 android/ky_manifest.py --ky <thư mục> --khoa ~/.jx1_khoa/jx1_manifest_ec.key
+```
+
+Khoá riêng ở `~/.jx1_khoa/jx1_manifest_ec.key`, quyền 600, **cố ý để ngoài kho mã nguồn**.
+Mất khoá = phải đổi khoá công khai trong `ios/JxTaiDuLieu.mm` rồi phát hành lại.
+
+### Trước khi phát hành
+
+- Đặt `[Client] NhatKyChanDoan=0` trong `config.ini` của gói phát hành.
+- Kho dữ liệu dùng HTTPS, không dùng HTTP.
+- Tăng `JX_PHIEN_BAN_APP` trong `ios/JxIosMain.cpp`, và cập nhật `phienban.txt` trong kho.
+
+### Còn lại cho phiên máy chủ
+
+`Login.cpp:1078` có sẵn trường `ProtocolVersion` nhưng nằm trong `#ifdef USE_KPROTOCOL_VERSION`,
+mà macro đó chưa được định nghĩa ở đâu cả nên trường này **hiện không được gửi**. Bật lên là đổi
+giao thức bắt tay, phải sửa máy chủ cùng lúc. Khi máy chủ sẵn sàng đọc và từ chối client quá cũ
+thì phía client chỉ cần định nghĩa `USE_KPROTOCOL_VERSION`.
+
+Cổng phiên bản hiện tại chỉ chặn người chơi ngay tình. Client bị sửa ruột thì bỏ qua được.
+Cổng thật phải nằm ở máy chủ.
