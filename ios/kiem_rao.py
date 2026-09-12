@@ -15,7 +15,7 @@ import io, os, re, subprocess, sys
 
 GOC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOC = sys.argv[1] if len(sys.argv) > 1 else "HEAD"
-MACRO = re.compile(r"\bJX_IOS\b|\bJX_MOBILE\b")
+MACRO = re.compile(r"\bJX_IOS\b")   # [JXMOBILE 11/09] Android NAY dinh nghia JX_MOBILE -> KHONG loc no nua
 
 def loc_bo_rao_ios(dong):
     """Tra ve danh sach dong nhu trinh tien xu ly thay khi JX_IOS / JX_MOBILE KHONG duoc dinh nghia."""
@@ -49,12 +49,12 @@ def loc_bo_rao_ios(dong):
 # ---- muc 2: macro cua iOS khong duoc co trong cau hinh Android ----
 loi = 0
 cm_android = io.open(os.path.join(GOC, "android", "CMakeLists.txt"), encoding="latin-1").read()
-for m in ("JX_IOS", "JX_MOBILE"):
-    if re.search(r"\b%s\b" % m, cm_android):
-        print("!! android/CMakeLists.txt CO dinh nghia %s - mo hinh kiem o muc 1 khong con dung" % m)
-        loi += 1
-if loi == 0:
-    print("OK  android/CMakeLists.txt khong dinh nghia JX_IOS lan JX_MOBILE")
+if re.search(r"\bJX_IOS\b", cm_android):
+    print("!! android/CMakeLists.txt CO dinh nghia JX_IOS - khong duoc"); loi += 1
+elif not re.search(r"\bJX_MOBILE\b", cm_android):
+    print("!! android/CMakeLists.txt CHUA dinh nghia JX_MOBILE - mo hinh kiem khong con dung"); loi += 1
+else:
+    print("OK  android/CMakeLists.txt dinh nghia JX_MOBILE, khong dinh nghia JX_IOS")
 
 # ---- muc 1: tung tep nguon dung chung ma ban iOS co sua ----
 def git(*a):

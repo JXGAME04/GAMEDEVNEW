@@ -541,7 +541,11 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 		return FALSE;
 	}
 	// cua so co dung kich thuoc vung ve nhu KWin32App::InitWindow (WND_INIT_WIDTH x WND_INIT_HEIGHT), khong doi co
+#ifdef JX_IOS	// [IOS-MATDO 11/09] thieu co nay thi SDL chay o 1x (diem thay vi diem anh) -> khung ve sai, hinh mo
+	m_pWindow = SDL_CreateWindow(m_szTitle, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_HIGH_PIXEL_DENSITY);
+#else
 	m_pWindow = SDL_CreateWindow(m_szTitle, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+#endif
 	if (!m_pWindow)
 	{
 		g_DebugLog("[SDL] SDL_CreateWindow loi: %s", SDL_GetError());
