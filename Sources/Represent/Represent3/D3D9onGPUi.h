@@ -267,6 +267,7 @@ struct RgCmd
 	UINT            stride;
 	D3DCOLOR        clearColor;		// RGCMD_CLEAR
 	SDL_GPUTexture* pTarget;		// RGCMD_TARGET: NULL = backbuffer
+	unsigned long long ullPipeKey;	// [CULLCPU 11/09] khoa pipeline luc ghi lenh (chi de DO: tach ly do 'pipeline' khi quad vo lo)
 };
 
 struct RgTexUpload { SDL_GPUTexture* pTex; UINT x, y, w, h; UINT stageOff; UINT bytes; UINT layer; };	// tai tu staging texture cua khung ([MANG 11/09] layer = lop trong texture mang; 0 = texture thuong)
@@ -408,6 +409,7 @@ public:
 	void    ApplyWindowMode();						// [GPU 08/09 khung ao] toan man hinh / kich thuoc cua so theo backbuffer
 	void    Letterbox(UINT swW, UINT swH, float* pScale, float* pOffX, float* pOffY);
 	SDL_GPUGraphicsPipeline* GetPipeline(DWORD fvf, SDL_GPUPrimitiveType topo, SDL_GPUTextureFormat rtFmt);
+	SDL_GPUGraphicsPipeline* GetPipelineCull(DWORD fvf, SDL_GPUPrimitiveType topo, SDL_GPUTextureFormat rtFmt, DWORD dwCull);	// [CULLCPU 11/09]
 	SDL_GPUSampler* GetSampler(UINT stage);
 	void    ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo);
 	HRESULT DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVerts, UINT stride);

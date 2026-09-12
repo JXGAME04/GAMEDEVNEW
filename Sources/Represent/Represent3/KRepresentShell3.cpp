@@ -138,6 +138,8 @@ int g_nJxAtlasMang = 0, g_nJxAtlasLop = 8, g_nJxAtlasCumMB = 64;	// [MANG 11/09]
 unsigned g_uJxAtlasCum = 0;	// [MANG 11/09]
 int g_nJxAtlasManaged = 1;	// [CHUATLAS 11/09]
 unsigned g_uJxAtlasODat[2] = { 0, 0 }, g_uJxAtlasOMoi = 0;	// [CHUATLAS 11/09]
+int g_nJxCullCpu = 1;	// [CULLCPU 11/09]
+unsigned g_uJxCullGiu = 0, g_uJxCullBo = 0, g_uJxPipeVo[8] = { 0 };	// [CULLCPU 11/09]
 unsigned g_uJxKhungGiongBo = 0, g_uJxKhungGiongCoTai = 0, g_uJxKhungGiongEp = 0, g_uJxKhungGiongDem = 0, g_uJxKhungGiongChuoiMax = 0, g_uJxKhungTrinhChieu = 0;	// [BKG 11/09]
 unsigned g_uJxNapKhungBoVe = 0, g_uJxNapKhungBoVeKhung = 0, g_uJxNapKhungDongBo = 0, g_uJxNapKhungGiao = 0, g_uJxNapKhungTruocSo = 0, g_uJxNapKhungXong = 0, g_uJxNapKhungHong = 0, g_uJxNapKhungBo = 0, g_uJxNapKhungChoMax = 0;
 double g_dJxNapKhungTre = 0.0, g_dJxNapKhungTreMax = 0.0, g_dJxNapNenBan = 0.0, g_dJxNapKhungAp = 0.0, g_dJxNapKhungApMax = 0.0; unsigned g_uJxNapKhungApKhung = 0;
@@ -192,10 +194,12 @@ static void JxVeKyIn()
 	Rep3Log("[VE-BKG] trinh chieu %u khung, bo vi giong khung truoc %u, giong nhung co tai %u, giong nhung ep %u (cua so doi / qua %d ms), chi dem %u, chuoi bo dai nhat %u | bat=%d | bang mau kieu %s: lenh tai TB %.3f ms/khung (max %.2f)",
 		g_uJxKhungTrinhChieu, g_uJxKhungGiongBo, g_uJxKhungGiongCoTai, g_uJxKhungGiongEp, g_nJxBoKhungGiongMs, g_uJxKhungGiongDem, g_uJxKhungGiongChuoiMax, g_nJxBoKhungGiong, g_nJxPalBuffer ? "buffer" : "texture", t.dChepPalLenh / n, m.dChepPalLenh);	// [BKG 11/09] [PALBUF 11/09]
 	g_uJxKhungTrinhChieu = g_uJxKhungGiongBo = g_uJxKhungGiongCoTai = g_uJxKhungGiongEp = g_uJxKhungGiongDem = g_uJxKhungGiongChuoiMax = 0;
-	Rep3Log("[VE-GOP] doi trang thai/khung TB: pipeline %u, texture/sampler %u (max %u), uniform vs %u, ps %u, cat/viewport %u | quad khong gop (ca ky): stride %u, khong lien tiep %u, pipeline %u, texture0 %u, texture1/sampler %u, vs %u, ps %u, cat/vp %u | atlas ke=%d trang %d: %u trang | ps bang %u muc (tran %u) | atlas mang=%d: %u cum | o atlas: DEFAULT %u, MANAGED %u (managed=%d), xin o moi %u",
-		t.uDoiPipe / n, t.uDoiTex / n, m.uDoiTex, t.uDoiVs / n, t.uDoiPs / n, t.uDoiCat / n, g_uJxGopVo[0], g_uJxGopVo[1], g_uJxGopVo[2], g_uJxGopVo[3], g_uJxGopVo[4], g_uJxGopVo[5], g_uJxGopVo[6], g_uJxGopVo[7], g_nJxAtlasKe, g_nJxAtlasTrang, g_uRep3AtlasPages, g_uJxPsBangMax, g_uJxPsTran, g_nJxAtlasMang, g_uJxAtlasCum, g_uJxAtlasODat[0], g_uJxAtlasODat[1], g_nJxAtlasManaged, g_uJxAtlasOMoi);	// [VE 11/09 e] [GOP 11/09] [MANG 11/09]
+	Rep3Log("[VE-GOP] doi trang thai/khung TB: pipeline %u, texture/sampler %u (max %u), uniform vs %u, ps %u, cat/viewport %u | quad khong gop (ca ky): stride %u, khong lien tiep %u, pipeline %u, texture0 %u, texture1/sampler %u, vs %u, ps %u, cat/vp %u | atlas ke=%d trang %d: %u trang | ps bang %u muc (tran %u) | atlas mang=%d: %u cum | o atlas: DEFAULT %u, MANAGED %u (managed=%d), xin o moi %u | cull cpu=%d: giu %u bo %u | pipeline vo: fvf %u, topo %u, blend %u, cull %u, fill %u, rt %u, stride %u, khac %u",
+		t.uDoiPipe / n, t.uDoiTex / n, m.uDoiTex, t.uDoiVs / n, t.uDoiPs / n, t.uDoiCat / n, g_uJxGopVo[0], g_uJxGopVo[1], g_uJxGopVo[2], g_uJxGopVo[3], g_uJxGopVo[4], g_uJxGopVo[5], g_uJxGopVo[6], g_uJxGopVo[7], g_nJxAtlasKe, g_nJxAtlasTrang, g_uRep3AtlasPages, g_uJxPsBangMax, g_uJxPsTran, g_nJxAtlasMang, g_uJxAtlasCum, g_uJxAtlasODat[0], g_uJxAtlasODat[1], g_nJxAtlasManaged, g_uJxAtlasOMoi,
+		g_nJxCullCpu, g_uJxCullGiu, g_uJxCullBo, g_uJxPipeVo[0], g_uJxPipeVo[1], g_uJxPipeVo[2], g_uJxPipeVo[3], g_uJxPipeVo[4], g_uJxPipeVo[5], g_uJxPipeVo[6], g_uJxPipeVo[7]);	// [VE 11/09 e] [GOP 11/09] [MANG 11/09]
 	memset(&g_jxVeTong, 0, sizeof(g_jxVeTong)); memset(&g_jxVeMax, 0, sizeof(g_jxVeMax)); g_uJxVeKhungSo = 0; g_uJxVe8 = 0; g_uJxVe16 = 0; memset(g_uJxGopVo, 0, sizeof(g_uJxGopVo));
-	s_dJxVeCpuTong = 0.0; s_dJxVeCpuMax = 0.0; s_uJxVeCpuKhung = 0; g_uJxPsBangMax = 0; g_uJxPsTran = 0; g_uJxAtlasODat[0] = g_uJxAtlasODat[1] = 0; g_uJxAtlasOMoi = 0;	// [CHUATLAS 11/09]	// [GOP 11/09]
+	s_dJxVeCpuTong = 0.0; s_dJxVeCpuMax = 0.0; s_uJxVeCpuKhung = 0; g_uJxPsBangMax = 0; g_uJxPsTran = 0; g_uJxAtlasODat[0] = g_uJxAtlasODat[1] = 0; g_uJxAtlasOMoi = 0;	// [CHUATLAS 11/09]
+	g_uJxCullGiu = g_uJxCullBo = 0; memset(g_uJxPipeVo, 0, sizeof(g_uJxPipeVo));	// [CULLCPU 11/09]	// [GOP 11/09]
 	Rep3Log("[VE-NAP] nap khung nen (bat=%d, ngan sach %d ms/khung, nap truoc %d, ap %d ms): giao %u (nap truoc %u) xong %u hong %u bo %u | bo ve %u luot, dong bo trong ngan sach %u | hang cho max %u | tre giao->ap TB %.1f ms (max %.1f) | luong nen ban %.0f ms | ap tren luong ve %u khung %.1f ms (max %.2f/khung) | nap dong bo NGOAI luc ve: %u lan %.1f ms (max %.2f) | khung rong/hong khong giao lai %u | hoi NPC dang nap -> chua co %u (bat=%d)",
 		g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungApMs, g_uJxNapKhungGiao, g_uJxNapKhungTruocSo, g_uJxNapKhungXong, g_uJxNapKhungHong, g_uJxNapKhungBo, g_uJxNapKhungBoVe, g_uJxNapKhungDongBo, g_uJxNapKhungChoMax,
 		g_uJxNapKhungXong ? g_dJxNapKhungTre / g_uJxNapKhungXong : 0.0, g_dJxNapKhungTreMax, g_dJxNapNenBan, g_uJxNapKhungApKhung, g_dJxNapKhungAp, g_dJxNapKhungApMax, g_jxNapNgoaiVe.n, g_jxNapNgoaiVe.ms, g_jxNapNgoaiVe.max, g_uJxNapKhungRong, g_uJxHoiTre, g_nJxHoiKhongDe);	// [VE 11/09 d]
@@ -730,6 +734,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	if (!g_nJxPsBuffer) g_nJxAtlasMang = 0;	// lop di chung o PALROW voi chi so ps: can shader bien the pal+ps
 	{ int n = Rep3Ini("Rep3AtlasLop", 8); if (n < 2) n = 2; if (n > 32) n = 32; g_nJxAtlasLop = n; }	// so lop toi da moi cum
 	{ int n = Rep3Ini("Rep3AtlasCumMB", 64); if (n < 8) n = 8; if (n > 256) n = 256; g_nJxAtlasCumMB = n; }	// ngan sach byte moi cum
+	g_nJxCullCpu        = Rep3Ini("Rep3CullCpu", 1) ? 1 : 0;	// [CULLCPU 11/09] 1 = cull tam giac 2D tren CPU de chu gop chung lo voi sprite (port buoc (e) cua [MANG 09/09]); 0 = nhu cu
 	g_nJxAtlasManaged   = Rep3Ini("Rep3AtlasManaged", 1) ? 1 : 0;	// [CHUATLAS 11/09] 1 = texture MANAGED (chu, anh dung san) cung vao atlas (port buoc (d) cua [MANG 09/09]); 0 = nhu cu
 	g_nJxBindRing       = Rep3Ini("Rep3BindRing", 1) ? 1 : 0;	// [GOP 11/09] 1 = bind ring dinh mot lan moi render pass, lenh ve dung first_vertex (bot 1 lenh Vulkan moi draw)
 	g_nJxSwapchainLogic = Rep3Ini("Rep3SwapchainLogic", 100);	// [D1 11/09] swapchain = backbuffer x %/100 (100 = khung logic 1040x936/1436x616, GPU to it diem hon 3-4,4 lan; 150 = 1,5x; 0 = cua so nhu cu)

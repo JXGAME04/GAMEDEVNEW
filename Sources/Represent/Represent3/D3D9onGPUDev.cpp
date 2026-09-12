@@ -51,6 +51,8 @@ static void JxNhipGhiCho(Uint64 uT0, bool bCoSwap, Uint32 swW, Uint32 swH)
 // KRepresentShell3.cpp in [VE]/[VE-GOP] moi ky va [VE-GIAT] cho khung cham. Chi cong khung co Present (bPresent).
 JxVeDo g_jxVeKhung, g_jxVeTong, g_jxVeMax;
 unsigned g_uJxVeKhungSo = 0, g_uJxVe8 = 0, g_uJxVe16 = 0, g_uJxGopVo[8];
+static int s_nJxCullCpuCur = 0;				// [CULLCPU 11/09] lenh ve hien tai: 0 = khong cull tren CPU, khac 0 = che do cull cua D3D9 (D3DCULL_CW / D3DCULL_CCW)
+static unsigned long long s_ullJxPipeKeyCur = 0;	// [CULLCPU 11/09] khoa pipeline cua lenh ve hien tai (chi de DO)
 static double JxVeMs(Uint64 a, Uint64 b) { return (double)(b - a) * 1000.0 / (double)SDL_GetPerformanceFrequency(); }
 static void JxVeCong(const JxVeDo& k)
 {
@@ -77,7 +79,21 @@ static void JxGopVo(const RgCmd& L, const RgDrawState& st, UINT stride, UINT rin
 	if (L.type != RGCMD_DRAW) k = 1;
 	else if (L.stride != stride) k = 0;
 	else if (L.ringOff + L.nVerts * s2 != ringOff) k = 1;
-	else if (L.st.pPipe != st.pPipe) k = 2;
+	else if (L.st.pPipe != st.pPipe)
+	{
+		k = 2;
+#ifdef JX_ANDROID
+		const unsigned long long x = L.ullPipeKey ^ s_ullJxPipeKeyCur;	// [CULLCPU 11/09] pipeline khac nhau o truong nao cua khoa
+		if (x & 0xFFFull) g_uJxPipeVo[0]++;				// fvf
+		if (x & (7ull << 12)) g_uJxPipeVo[1]++;			// topo
+		if (x & (0x3FFFFull << 16)) g_uJxPipeVo[2]++;	// blend (src/dst/op/bat/mat na ghi mau)
+		if (x & (3ull << 34)) g_uJxPipeVo[3]++;			// cull
+		if (x & (3ull << 36)) g_uJxPipeVo[4]++;			// fill
+		if (x & (0xFFull << 40)) g_uJxPipeVo[5]++;		// dinh dang target
+		if (x & (0xFFull << 48)) g_uJxPipeVo[6]++;		// stride
+		if (x == 0) g_uJxPipeVo[7]++;					// cung khoa ma khac con tro = tao pipeline hong (luu NULL)
+#endif
+	}
 	else if (L.st.pTex[0] != st.pTex[0]) k = 3;
 	else if (L.st.pTex[1] != st.pTex[1] || L.st.pSamp[0] != st.pSamp[0] || L.st.pSamp[1] != st.pSamp[1]) k = 4;
 	else if (memcmp(&L.st.vs, &st.vs, sizeof(st.vs)) != 0) k = 5;
@@ -426,6 +442,9 @@ bool CDevGpu::CreateShaders()
 
 // pipeline theo (fvf, topo, blend, cull, fill, dinh dang target)
 SDL_GPUGraphicsPipeline* CDevGpu::GetPipeline(DWORD fvf, SDL_GPUPrimitiveType topo, SDL_GPUTextureFormat rtFmt)
+{	return GetPipelineCull(fvf, topo, rtFmt, m_rs[D3DRS_CULLMODE] & 3);	// [CULLCPU 11/09] (nhu cu: cull lay tu trang thai hien tai)
+}
+SDL_GPUGraphicsPipeline* CDevGpu::GetPipelineCull(DWORD fvf, SDL_GPUPrimitiveType topo, SDL_GPUTextureFormat rtFmt, DWORD dwCull)
 {
 	UINT posBytes = 0, colOff = 0, uvOff = 0;
 	const UINT stride = RgFvfStride(fvf, &posBytes, &colOff, &uvOff);
@@ -434,8 +453,9 @@ SDL_GPUGraphicsPipeline* CDevGpu::GetPipeline(DWORD fvf, SDL_GPUPrimitiveType to
 		| ((unsigned long long)(topo & 7) << 12)
 		| ((unsigned long long)(m_rs[D3DRS_SRCBLEND] & 31) << 16) | ((unsigned long long)(m_rs[D3DRS_DESTBLEND] & 31) << 21) | ((unsigned long long)(m_rs[D3DRS_BLENDOP] & 7) << 26)
 		| ((unsigned long long)blendOn << 29) | ((unsigned long long)(m_rs[D3DRS_COLORWRITEENABLE] & 15) << 30)
-		| ((unsigned long long)(m_rs[D3DRS_CULLMODE] & 3) << 34) | ((unsigned long long)(m_rs[D3DRS_FILLMODE] & 3) << 36)
+		| ((unsigned long long)(dwCull & 3) << 34) | ((unsigned long long)(m_rs[D3DRS_FILLMODE] & 3) << 36)
 		| ((unsigned long long)(rtFmt & 0xFF) << 40) | ((unsigned long long)(stride & 0xFF) << 48);
+	s_ullJxPipeKeyCur = key;	// [CULLCPU 11/09] chi de DO
 	std::map<unsigned long long, SDL_GPUGraphicsPipeline*>::iterator it = m_pipes.find(key);
 	if (it != m_pipes.end()) return it->second;
 
@@ -465,7 +485,7 @@ SDL_GPUGraphicsPipeline* CDevGpu::GetPipeline(DWORD fvf, SDL_GPUPrimitiveType to
 	pi.vertex_input_state.vertex_attributes = va; pi.vertex_input_state.num_vertex_attributes = 4;
 	pi.primitive_type = topo;
 	pi.rasterizer_state.fill_mode = (m_rs[D3DRS_FILLMODE] == D3DFILL_WIREFRAME) ? SDL_GPU_FILLMODE_LINE : SDL_GPU_FILLMODE_FILL;
-	switch (m_rs[D3DRS_CULLMODE])
+	switch (dwCull)	// [CULLCPU 11/09]
 	{
 	case D3DCULL_CW:  pi.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_BACK; pi.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE; break;
 	case D3DCULL_CCW: pi.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_BACK; pi.rasterizer_state.front_face = SDL_GPU_FRONTFACE_CLOCKWISE; break;
@@ -474,7 +494,7 @@ SDL_GPUGraphicsPipeline* CDevGpu::GetPipeline(DWORD fvf, SDL_GPUPrimitiveType to
 	pi.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
 	pi.target_info.color_target_descriptions = &ct; pi.target_info.num_color_targets = 1;
 	SDL_GPUGraphicsPipeline* p = SDL_CreateGPUGraphicsPipeline(m_pGpu, &pi);
-	if (!p) RgLog("CreateGraphicsPipeline (fvf 0x%X topo %d blend %u/%u/%u cull %u rt %d) that bai: %s", (unsigned)fvf, (int)topo, (unsigned)m_rs[D3DRS_SRCBLEND], (unsigned)m_rs[D3DRS_DESTBLEND], (unsigned)blendOn, (unsigned)m_rs[D3DRS_CULLMODE], (int)rtFmt, SDL_GetError());
+	if (!p) RgLog("CreateGraphicsPipeline (fvf 0x%X topo %d blend %u/%u/%u cull %u rt %d) that bai: %s", (unsigned)fvf, (int)topo, (unsigned)m_rs[D3DRS_SRCBLEND], (unsigned)m_rs[D3DRS_DESTBLEND], (unsigned)blendOn, (unsigned)dwCull, (int)rtFmt, SDL_GetError());
 	m_pipes[key] = p;	// NULL cung luu de khong thu lai moi khung
 	return p;
 }
@@ -917,7 +937,18 @@ bool CDevGpu::ReadbackRegion(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT 
 void CDevGpu::ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo)
 {
 	memset(&st, 0, sizeof(st));
+#ifdef JX_ANDROID
+	{	// [CULLCPU 11/09] port buoc (e) cua [MANG 09/09] (commit ac7d255b ben duong D3D11): chu dat CULLMODE=CCW, sprite dung NONE ->
+		// khoa pipeline khac nhau o bit 34 -> cat lo quad. Voi lenh 2D (dinh XYZRHW) ta tu bo tam giac sai chieu tren CPU va
+		// lay pipeline CULL_NONE, nen ket qua tren man hinh y het ma chu gop chung lo voi sprite.
+		const DWORD dwCull = m_rs[D3DRS_CULLMODE] & 3;
+		const bool bRhwCull = ((m_fvf & D3DFVF_POSITION_MASK) == D3DFVF_XYZRHW);
+		s_nJxCullCpuCur = (g_nJxCullCpu && bRhwCull && (dwCull == D3DCULL_CW || dwCull == D3DCULL_CCW)) ? (int)dwCull : 0;
+		st.pPipe = GetPipelineCull(m_fvf, topo, CurrentTargetFmt(), s_nJxCullCpuCur ? (DWORD)D3DCULL_NONE : dwCull);
+	}
+#else
 	st.pPipe = GetPipeline(m_fvf, topo, CurrentTargetFmt());
+#endif
 	st.pSamp[0] = GetSampler(0); st.pSamp[1] = GetSampler(1);
 	bool bound[2] = { false, false };
 	for (int s = 0; s < 2; s++)
@@ -953,6 +984,20 @@ void CDevGpu::ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo)
 }
 
 // ---------------------------------------------------------------- ve
+#ifdef JX_ANDROID
+// [CULLCPU 11/09] chieu quay tam giac 2D tren man hinh (y huong xuong): cr > 0 = thuan chieu kim dong ho = mat truoc cua D3D9.
+// D3DCULL_CCW bo cr < 0, D3DCULL_CW bo cr > 0, cr == 0 (tam giac det) bo. Giong het ban PC [MANG 09/09 e].
+static bool JxGiuTamGiac(const BYTE* pV, UINT stride, UINT i0, UINT i1, UINT i2, int nCull)
+{
+	const float* p0 = (const float*)(pV + i0 * stride);
+	const float* p1 = (const float*)(pV + i1 * stride);
+	const float* p2 = (const float*)(pV + i2 * stride);
+	const float cr = (p1[0] - p0[0]) * (p2[1] - p0[1]) - (p1[1] - p0[1]) * (p2[0] - p0[0]);
+	if (cr == 0.0f || (nCull == D3DCULL_CCW ? (cr < 0.0f) : (cr > 0.0f))) { g_uJxCullBo++; return false; }
+	g_uJxCullGiu++;
+	return true;
+}
+#endif
 // [GPU 11/09 ATLAS] uv cua texture ao (stage 0) -> uv trong trang atlas, sua tai cho tren dinh da chep vao ring (nhu R11AtlasUv)
 static void RgAtlasUv(BYTE* pV, UINT nVerts, UINT strideRing, DWORD fvf, CTexGpu* pTex, float fPage)
 {
@@ -999,10 +1044,19 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 		static const int s_idx[6] = { 0, 1, 2, 2, 1, 3 };
 		m_ring.resize(ringOff + 6 * s2);
 		BYTE* d = &m_ring[ringOff];
-		for (int i = 0; i < 6; i++) { memcpy(d + i * s2, pVerts + s_idx[i] * stride, stride); *(UINT*)(d + i * s2 + stride) = uPal; }
-		RgAtlasUv(d, 6, s2, m_fvf, m_tex[0], fPage);	// [GPU 11/09 ATLAS]
-		nOut = 6;
+		nOut = 0;
+		for (int t = 0; t < 2; t++)
+		{
+#ifdef JX_ANDROID
+			if (s_nJxCullCpuCur && !JxGiuTamGiac(pVerts, stride, s_idx[t * 3], s_idx[t * 3 + 1], s_idx[t * 3 + 2], s_nJxCullCpuCur)) continue;	// [CULLCPU 11/09]
+#endif
+			for (int k = 0; k < 3; k++) { BYTE* q = d + (nOut + k) * s2; memcpy(q, pVerts + s_idx[t * 3 + k] * stride, stride); *(UINT*)(q + stride) = uPal; }
+			nOut += 3;
+		}
 		m_uQuads++;
+		if (nOut != 6) m_ring.resize(ringOff + (size_t)nOut * s2);	// [CULLCPU 11/09] thu hep khong bao gio cap phat lai -> con tro d van dung
+		if (nOut == 0) return D3D_OK;	// [CULLCPU 11/09] ca quad bi cull
+		RgAtlasUv(d, nOut, s2, m_fvf, m_tex[0], fPage);	// [GPU 11/09 ATLAS]
 		// gop vao lenh truoc neu cung trang thai va lien tiep
 		if (!m_cmds.empty())
 		{
@@ -1014,7 +1068,7 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 			const size_t nSo = sizeof(st);
 #endif
 			if (L.type == RGCMD_DRAW && L.stride == stride && L.ringOff + L.nVerts * s2 == ringOff && memcmp(&L.st, &st, nSo) == 0)
-			{ L.nVerts += 6; return D3D_OK; }
+			{ L.nVerts += nOut; return D3D_OK; }	// [CULLCPU 11/09] nOut = 3 hoac 6 (co the da cull bot)
 #ifdef JX_ANDROID
 			JxGopVo(L, st, stride, ringOff, s2);	// [VE 11/09] vi sao khong gop
 #endif
@@ -1025,22 +1079,44 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 		const UINT nTri = nVerts - 2;
 		m_ring.resize(ringOff + (size_t)nTri * 3 * s2);
 		BYTE* d = &m_ring[ringOff];
+		nOut = 0;
 		for (UINT i = 0; i < nTri; i++)
 		{
 			const UINT src[3] = { 0, i + 1, i + 2 };
-			for (int k = 0; k < 3; k++) { memcpy(d + (i * 3 + k) * s2, pVerts + src[k] * stride, stride); *(UINT*)(d + (i * 3 + k) * s2 + stride) = uPal; }
+#ifdef JX_ANDROID
+			if (s_nJxCullCpuCur && !JxGiuTamGiac(pVerts, stride, src[0], src[1], src[2], s_nJxCullCpuCur)) continue;	// [CULLCPU 11/09]
+#endif
+			for (int k = 0; k < 3; k++) { BYTE* q = d + (nOut + k) * s2; memcpy(q, pVerts + src[k] * stride, stride); *(UINT*)(q + stride) = uPal; }
+			nOut += 3;
 		}
-		nOut = nTri * 3;
+		if (nOut != nTri * 3) m_ring.resize(ringOff + (size_t)nOut * s2);	// [CULLCPU 11/09]
+		if (nOut == 0) return D3D_OK;	// [CULLCPU 11/09]
 		RgAtlasUv(d, nOut, s2, m_fvf, m_tex[0], fPage);	// [GPU 11/09 ATLAS]
 	}
 	else
 	{
 		m_ring.resize(ringOff + (size_t)nVerts * s2);
 		BYTE* d = &m_ring[ringOff];
+#ifdef JX_ANDROID
+		if (s_nJxCullCpuCur && type == D3DPT_TRIANGLELIST && (nVerts % 3) == 0)
+		{	// [CULLCPU 11/09] danh sach tam giac 2D: bo tam giac sai chieu ngay tren CPU
+			nOut = 0;
+			for (UINT i = 0; i + 2 < nVerts; i += 3)
+			{
+				if (!JxGiuTamGiac(pVerts, stride, i, i + 1, i + 2, s_nJxCullCpuCur)) continue;
+				for (int k = 0; k < 3; k++) { BYTE* q = d + (nOut + k) * s2; memcpy(q, pVerts + (i + k) * stride, stride); *(UINT*)(q + stride) = uPal; }
+				nOut += 3;
+			}
+			if (nOut != nVerts) m_ring.resize(ringOff + (size_t)nOut * s2);
+			if (nOut == 0) return D3D_OK;
+		}
+		else
+#endif
 		for (UINT i = 0; i < nVerts; i++) { memcpy(d + i * s2, pVerts + i * stride, stride); *(UINT*)(d + i * s2 + stride) = uPal; }
-		RgAtlasUv(d, nVerts, s2, m_fvf, m_tex[0], fPage);	// [GPU 11/09 ATLAS]
+		RgAtlasUv(d, nOut, s2, m_fvf, m_tex[0], fPage);	// [GPU 11/09 ATLAS]
 	}
 	RgCmd c; memset(&c, 0, sizeof(c)); c.type = RGCMD_DRAW; c.st = st; c.ringOff = ringOff; c.nVerts = nOut; c.stride = stride;
+	c.ullPipeKey = s_ullJxPipeKeyCur;	// [CULLCPU 11/09] chi de DO
 	m_cmds.push_back(c);
 	m_uDrawCmds++;
 	return D3D_OK;

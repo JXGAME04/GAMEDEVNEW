@@ -798,3 +798,95 @@ công tắc → chủ thử (mọi thứ chỉ `JX_ANDROID`):
    Tôi đọc `[VE]` (ghi lệnh TB), `[VE-GOP]` ("ps bang N muc", đổi trạng thái/khung, quad không gộp), `[MAU]` (W, gpu=, cpu_mhz), fps so với phiên 15:10
    (ghi lệnh 2,6 ms, đổi ps 837/khung, lệnh 1 818/khung, CPU 76/70 %). Sai màu → `Rep3PsBuffer=0`; nghi lệnh vẽ sai chỗ (hình méo/nhoè khối) →
    `Rep3BindRing=0`; cả hai → `Rep3PalBuffer=0`; sửa trong `[Client]` của config dt_v4 rồi khởi động lại 8765.
+
+
+---
+
+## 18:00 11/09 — Đọc log bước 1 `[CHUATLAS]`, và bước 2 `[CULLCPU]` (APK 109111759)
+
+### Bước 1 (chữ vào atlas) **có chạy**, nhưng gần như vô ích trong thế giới
+
+Phiên `SM-F966U1_20260911_173416` (APK 109111729), 24 cửa sổ `[VE-GOP]`:
+
+| cửa sổ | ô atlas DEFAULT | ô atlas MANAGED | xin ô mới |
+|---|---|---|---|
+| 1 (menu) | 0 | **1** | 0 |
+| 2 (đăng nhập) | 1 148 | **3** | 0 |
+| 3 → 24 (trong thế giới) | 777 … 12 418 | **0** | 0 … 1 |
+
+Đọc đúng là: **bốn texture MANAGED đã vào atlas thật** — đó là bốn bảng chữ (`KFontRes.cpp:84`, 512×512,
+`D3DFMT_A4R4G4B4`, `D3DPOOL_MANAGED` khi `Rep3Ex=0`). Bộ đếm đặt lại mỗi kỳ 30 s, mà bảng chữ chỉ tạo **một lần** lúc
+khởi động, nên các cửa sổ sau đọc 0 là đúng — không phải bị loại. `xin ô mới` gần như bằng 0 → không có chuyện nội dung
+đổi liên tục phải cấp ô mới (rủi ro lớn nhất của bước này **không xảy ra**).
+
+Nhưng lợi thì rất ít: 4 ô trên tổng **47 551 texture GPU**. Tỷ lệ vỡ lô không nhúc nhích —
+`pipeline 11,6 % → 11,5 %`, `texture0 88,3 % → 88,4 %`. Bên PC bước (d) ăn đậm vì ở đó chữ bị vỡ lô 100–450 lần/khung;
+bên mobile chữ **đã** được gộp bằng đường khác nên phần thắng còn lại nằm chỗ khác.
+
+### Chỗ thật sự mất: 42 trang atlas + chế độ cull
+
+Cửa sổ cuối (rất đông, Tống Kim):
+
+```
+texture/sampler 1 134 lần đổi/khung (đỉnh 2 221)  |  pipeline 273 lần/khung
+quad không gộp: texture0 3 687 840 (88,4 %), pipeline 470 686 (11,3 %), không liên tiếp 3 631, còn lại 0
+atlas kệ=1 trang 2048: 42 trang  |  gpu tex 47 551 (290 MB)
+```
+
+- **texture0 88,4 %** = mỗi trang atlas là **một texture riêng**; 42 trang → cứ nhảy trang là cắt lô. Đây là bài toán
+  mà loạt `[MANG 09/09 f]` (commit `5311778b`) đã giải bên PC bằng atlas khối cố định + nhiều mảng gắn chết khe sampler.
+- **pipeline 11,3 %** = khoá pipeline của đường SDL_GPU có `CULLMODE` ở bit 34 (`D3D9onGPUDev.cpp` `GetPipeline`).
+  `KFont3` đặt `CULLMODE=CCW` cho chữ, sprite dùng `NONE` → hai pipeline khác nhau → cắt lô. **Đúng y nguyên nhân (e)
+  bên PC** (commit `ac7d255b`).
+
+### Bước 2 đã làm: `[CULLCPU 11/09]` — port (e) sang mobile
+
+`android/va_nguon_android_cullcpu.py`, chỉ trong `#ifdef JX_ANDROID`, công tắc `[Client] Rep3CullCpu` (mặc định 1):
+
+1. `GetPipeline` tách thành vỏ bọc quanh `GetPipelineCull(..., dwCull)` để ép được `CULL_NONE`.
+2. `ComputeState`: lệnh 2D (đỉnh `XYZRHW`) + cull `CW/CCW` → nhớ chế độ cull rồi lấy pipeline `CULL_NONE`.
+3. `DrawInternal`: cả ba đường ghi đỉnh (quad 4 đỉnh, fan, danh sách tam giác) tự bỏ tam giác sai chiều **trên CPU**
+   bằng tích chéo màn hình, y hệt bản PC. Kết quả trên màn hình không đổi, chỉ khác là chữ nay nằm chung lô với sprite.
+4. Thêm số đo: `cull cpu=N: giu A bo B` và **tách lý do "pipeline"** thành `fvf / topo / blend / cull / fill / rt / stride`
+   trong `[VE-GOP]` — kỳ sau sẽ biết chính xác phần 11,3 % còn lại là gì.
+
+**Thử máy ảo trước khi phát:** cài lên LDPlayer, vào tới Tống Kim đông (ảnh chụp) — tên nhân vật, bảng xếp hạng, chữ
+tiếng Việt, số sát thương, chat đều hiện đủ; nếu chiều cull ngược thì **toàn bộ chữ sẽ biến mất**, nên đây là phép thử
+dứt điểm. 59 FPS / CPU 24 % trên máy ảo.
+
+### Sửa kèm: phiên iOS làm đứt liên kết bản Android
+
+`git fetch` trước khi dựng thấy `origin/mobile-0809 = 513d62f8 [IOS 11/09]`. Gộp vào thì **APK không dựng được**:
+
+```
+FAILED: libRainbow.so
+ld: error: undefined symbol: IID_IClientFactory
+ld: error: undefined symbol: IID_IESClient
+```
+
+`[DONTRUNG 11/09]` gỡ hai định nghĩa GUID khỏi `Sources/MultiServer/Rainbow/IClient.cpp` vì trên iOS cả game là **một**
+nhị phân nên chúng trùng với bản do `NetConnectAgent.cpp` sinh ra. Trên Android thì Rainbow là **`.so` riêng**
+(`libRainbow.so`, nạp bằng `dlopen`) và **không** chứa `NetConnectAgent.cpp`, nên mất luôn định nghĩa. Tôi định nghĩa lại
+đúng hai GUID đó, **rào `#ifdef __ANDROID__`**, giá trị y hệt bản gốc → iOS vẫn không trùng ký hiệu, Windows không đổi.
+
+> **Nhắn phiên iOS:** trước khi gỡ một ký hiệu dùng chung, kiểm cả cấu trúc nhiều `.so` của Android
+> (`android/CMakeLists.txt`: `Rainbow` và `Represent3` là `SHARED`, nạp lúc chạy).
+
+### Bản 109111759 — cần thử gì
+
+APK `109111759`, md5 `1b6419045abac2d66a4de33d0b7b0182`, 20 371 455 B, đã lên `dt_v4` 17:59, máy chủ 8765 PID 385824,
+`config.ini` của dt_v4 thêm `Rep3CullCpu=1`.
+
+1. Mở lại app để nhận bản. **Kiểm chữ trước hết**: tên nhân vật trên đầu, chat, số sát thương, chữ trong hành trang,
+   bảng xếp hạng Tống Kim. Mất chữ hoặc chữ nhấp nháy → `Rep3CullCpu=0` trong `[Client]` của config dt_v4 + khởi động lại
+   8765 là về như cũ ngay, không cần APK.
+2. Chơi Tống Kim 10–15 phút như bài 2 (chỗ đông, màn ngoài).
+3. Tôi đọc `[VE-GOP]`: `cull cpu=1: giu A bo B` (B nhỏ là bình thường), `pipeline vo: … cull K` (**K phải tụt về gần 0**),
+   `quad không gộp` phần `pipeline` (kỳ vọng 470 686 → còn vài %), `lệnh vẽ/khung`, rồi `[MAU]` W / `gpu=` / `cpu_mhz` và fps.
+
+### Bước 3 kế tiếp (chưa làm)
+
+Port `[MANG 09/09 f]` (`5311778b`): atlas theo **khối cố định** + nhiều mảng gắn chết khe sampler → **texture0 88,4 %**.
+Đây mới là phần lớn. Không lặp lại sai lầm của `[MANG 11/09]` (C1, đã tắt): C1 dựng cụm tăng dần 2/4/8 lớp với **một**
+sampler mảng nên vẫn đổi binding; bản PC dùng khối lớn cố định + nhiều mảng gắn chết nên **không bao giờ đổi binding**.
+Trước khi viết sẽ đo giới hạn thiết bị (số khe sampler, số lớp tối đa của texture mảng) để không đánh cược.
