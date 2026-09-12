@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>	// realpath
 #include <stdarg.h>
 #include <errno.h>
 
@@ -106,7 +107,15 @@ int main(int argc, char* argv[])
 	}
 
 	static char s_szDir[1024] = "";
-	strncpy(s_szDir, pszDir, sizeof(s_szDir) - 1);
+	// [IOS-DUONGDAN 11/09] PHAI luu duong dan DA PHAN GIAI (realpath). Tren iOS, /var la lien ket
+	// mem toi /private/var, nen g_GetFullPath (ghep tu thu muc hien hanh sau chdir) cho ra
+	// "/private/var/...", con NSSearchPathForDirectoriesInDomains cho ra "/var/...".
+	// Hai chuoi khac nhau -> JxPathPosix khong nhan ra day la duong DUOI thu muc du lieu ->
+	// bo qua buoc ha chu thuong -> he tep iOS (phan biet hoa thuong) khong tim thay tep roi
+	// co chu hoa trong ten (\Ui\UiToaDo_DanhSach.ini, \settings\npcres\ManLeftWeapon_effect.txt ...).
+	if (!realpath(pszDir, s_szDir))
+		strncpy(s_szDir, pszDir, sizeof(s_szDir) - 1);
+	s_szDir[sizeof(s_szDir) - 1] = 0;
 	JxPosix_SetDataDir(s_szDir);
 	if (chdir(s_szDir) != 0)
 		JxIosLog("[IOS] chdir(%s) that bai: %s", s_szDir, strerror(errno));
