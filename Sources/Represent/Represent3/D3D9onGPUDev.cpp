@@ -1056,8 +1056,22 @@ static void RgAtlasUv(BYTE* pV, UINT nVerts, UINT strideRing, DWORD fvf, CTexGpu
 	for (UINT i = 0; i < nVerts; i++) { float* uv = (float*)(pV + i * strideRing + uvOff); uv[0] = uv[0] * sx + ox; uv[1] = uv[1] * sy + oy; }
 }
 
+// [VECHITIET 11/09] cong don thoi gian nam trong lop ve. Chi chay khi Rep3DoVeChiTiet=1 vi moi lenh ve ton hai lan doc dong ho.
 HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVerts, UINT stride)
 {
+#ifdef JX_ANDROID
+	struct JxDoVe
+	{
+		Uint64 u0; bool bBat;
+		JxDoVe() : u0(0), bBat(g_nJxDoVeChiTiet != 0) { if (bBat) u0 = SDL_GetPerformanceCounter(); }
+		~JxDoVe()
+		{
+			if (!bBat) return;
+			g_dJxTrongVeKhung += (double)(SDL_GetPerformanceCounter() - u0) * 1000.0 / (double)SDL_GetPerformanceFrequency();
+			g_uJxTrongVeLan++;
+		}
+	} jxDoVe;
+#endif
 	if (!pVerts || nVerts == 0 || stride == 0) return D3DERR_INVALIDCALL;
 	const UINT s2 = stride + 4;	// + PALROW
 	UINT uPal = (m_tex[0] && m_tex[0]->m_nPalRow >= 0) ? (UINT)m_tex[0]->m_nPalRow : 0xFFFFu;
