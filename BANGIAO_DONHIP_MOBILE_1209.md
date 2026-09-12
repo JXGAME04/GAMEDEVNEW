@@ -1071,3 +1071,37 @@ mất dần phần thắng. Lúc đó phải chia lại ô PALROW: trường ch�
 dùng 5 mức, cắt bớt là dư bit cho 16 khối.
 
 Số mẫu của bản mới còn ít (8 cửa sổ, ~4 phút) nên cần chủ chơi thêm, nhất là Tống Kim lúc đông nhất.
+
+
+### 19:17 — Tống Kim thật: 12 cửa sổ đông, 227 mẫu thiết bị
+
+Chủ vào Tống Kim lúc 19:0x. Số đã đủ chắc (trước: 43 cửa sổ / 512 mẫu; sau: 12 cửa sổ / 227 mẫu), lấy cửa sổ
+≥ 1 800 quad mỗi khung ở cả hai bên nên mật độ khớp nhau (2 396 so với 2 428 quad).
+
+| | trước `[CULLCPU]` | sau `[KHOI]` | đổi |
+|---|---|---|---|
+| **đổi texture / khung** | 1 258 (đỉnh 2 677) | **49 (đỉnh 121)** | −96 % |
+| lệnh / quad | 0,888 | **0,381** | −57 % |
+| **ghi lệnh** | 2,11 ms | **0,59 ms** | −72 % |
+| nộp | 1,47 ms | 2,03 ms | +0,56 (là chờ) |
+| chờ lệnh + swapchain | 0,51 ms | 0,30 ms | |
+| **tổng khoảng vẽ** | 4,35 ms | **3,20 ms** | −26 % |
+| fps | 109,6 | 108,5 | ngang |
+| **điện** | 3,36 W | **3,03 W** | −10 % |
+| **GPU** | 77,4 % @ 420 MHz | 75,9 % @ **313 MHz** | xung −25 % |
+| nhiệt trung bình | 2,67 (đỉnh 3) | **2,25** (đỉnh 3) | |
+| máy | 38,6 °C | 38,0 °C | |
+
+Đọc số này: **việc của CPU ở khâu vẽ giảm 72 %**, GPU chạy ở xung thấp hơn hẳn cho cùng mức tải, điện giảm 10 % và
+nhiệt trung bình từ 2,67 xuống 2,25. fps không đổi vì đã chạm trần vsync và nút thắt còn lại nằm ngoài khâu vẽ.
+Với câu hỏi gốc của chủ (nóng máy, hao pin, máy yếu chơi được không) thì đây mới là con số đáng kể, chứ không phải fps.
+
+### Đã chạm trần 8 khối — việc cần làm tiếp
+
+`atlas khoi=1: 8 khoi (8 lop/khoi, 512 MB), het khoi 8`: tám khối đã đầy, 8 trang atlas phải lùi về texture riêng.
+Đó là lý do đổi texture nhích từ 23 lên 49 (đỉnh 121). Vẫn nhỏ so với 1 258, nhưng con số này sẽ tăng dần nếu chơi lâu.
+
+Cách chữa đã rõ và không phải đoán: ô PALROW hiện cấp **12 bit** cho chỉ số tổ hợp trạng thái tầng texture
+(bit 13..24) trong khi log nói suốt cả phiên chỉ dùng **5 mức** (`ps bang 5 muc, tran 0`). Cắt trường đó xuống 6 bit
+là dư 6 bit, đủ cho 16 khối × 16 lớp = 256 trang, gấp bốn trần hiện tại. Chưa làm vì chủ đang đo bản này; làm xong
+sẽ phải sinh lại SPIR-V và dựng lại cả hai bản.
