@@ -1487,3 +1487,33 @@ Có số rồi mới cắt, để không lặp lại chuyện đoán sai như v�
 
 **Kiểm:** Android dựng qua; `Core.vcxproj Client Release|Win32` 0 lỗi C. APK `109112358`,
 md5 `2b335763936d3f61eff2d0c215fc7c88`, máy chủ 8765 PID 426852.
+
+
+### 07:20 12/09 — Khai thác thêm dữ liệu cũ: một vùng nền tốn 17 ms, tự nó đã không lọt nổi một khung
+
+Chưa có log của bản 109112358 (chủ chưa mở app từ 23:55). Trong lúc chờ, rút thêm từ hai phiên đã có:
+
+| | phiên 233219 | phiên 234254 |
+|---|---|---|
+| số lần `PrerenderGround` ≥ 15 ms | 77 | 115 |
+| trung vị | 17 ms | 17 ms |
+| 90 % dưới | 23 ms | 23 ms |
+| đỉnh | 149 ms | 143 ms |
+| tổng thời gian | 1 577 ms | 2 321 ms |
+| tỉ lệ khung chậm có dính | 36 % | 36 % |
+
+Phân bố: **72–77 % số lần nằm trong 15–20 ms**, 18–24 % trong 20–30 ms, chỉ 3 % vọt lên 50–149 ms.
+
+**Đây là điều quan trọng hơn tôi tưởng.** Trước tôi chỉ nhìn các đỉnh 142 ms. Thật ra trường hợp điển hình là
+**17 ms cho một vùng**, và một khung chỉ có 8,3 ms. Nghĩa là **một vùng nền, tự nó, đã không lọt nổi một khung**.
+
+Hệ quả cho cách chữa: chỉ "cho nhánh vùng xa chịu ngân sách" là **chưa đủ**. Ngân sách 8 ms hiện được kiểm **trước khi
+bắt đầu** một vùng chứ không kiểm trong lúc làm, nên đang ở 7 ms mà khởi động một vùng 17 ms thì kết thúc ở 24 ms.
+Đó đúng là hình dạng của phân bố đo được (trung vị 17, 90 % dưới 23).
+
+Cách chữa đúng phải là một trong hai, và số ba nhánh sắp tới sẽ nói chọn cái nào:
+
+1. **Chia nhỏ một vùng** thành nhiều mảnh, làm mỗi khung một mảnh. Giữ được ưu tiên tuyệt đối cho vùng dưới chân
+   người chơi mà không kéo dài khung. Khó hơn, phải hiểu trong `PrerenderGround` của region.
+2. **Đưa việc dựng nền sang luồng nền.** Nhưng phải kiểm xem nó có gọi vào thiết bị vẽ không; nếu có thì không đưa
+   sang luồng khác được.
