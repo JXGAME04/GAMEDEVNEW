@@ -11,7 +11,9 @@
 #include "KWin32.h"
 #ifdef JX_PLATFORM_SDL
 
+#ifndef JX_APPLE	// [IOS-AM 11/09 c] tren Apple phan cai dat nam o ios/JxIosMiniAudio.mm vi backend Core Audio cua iOS include AVFoundation -> keo theo objc.h -> "typedef bool BOOL" da voi "typedef int BOOL" cua lop dem Win32; o day chi lay KHAI BAO cua miniaudio
 #define MINIAUDIO_IMPLEMENTATION
+#endif
 #define MA_NO_ENCODING
 #define MA_NO_GENERATION
 #define MA_NO_FLAC
@@ -20,6 +22,11 @@
 #define MA_ENABLE_AAUDIO
 #define MA_ENABLE_OPENSL
 #define MA_ENABLE_NULL
+#ifdef JX_APPLE	// [IOS-AM 11/09] iOS va macOS chi co Core Audio. Thieu dong nay thi
+// MA_ENABLE_ONLY_SPECIFIC_BACKENDS o tren chi bat WASAPI/AAudio/OpenSL -> Apple roi ve
+// backend NULL: van bao "san sang", van giai ma duoc nhac, nhung IM TIENG hoan toan.
+#define MA_ENABLE_COREAUDIO
+#endif
 #pragma warning(push, 0)
 #include "../../../ThirdParty/miniaudio/miniaudio.h"
 #pragma warning(pop)
@@ -69,6 +76,21 @@ BOOL KDirectSound::Init()
 		return TRUE;
 	ma_engine* pEngine = new ma_engine;
 	ma_engine_config cfg = ma_engine_config_init();
+#ifdef JX_IOS	// [IOS-AM 11/09 b] mac dinh cua miniaudio la AVAudioSessionCategoryAmbient,
+	// ma Ambient thi BI TAT khi nguoi choi gat nut im lang ben hong may -> tuong nhu hong am thanh.
+	// Playback = van keu khi gat nut im lang, dung nhu game van lam. macOS khong co AVAudioSession.
+	static ma_context s_ctxIos;
+	static int s_nCtxIos = 0;
+	if (s_nCtxIos == 0)
+	{
+		ma_context_config cc = ma_context_config_init();
+		cc.coreaudio.sessionCategory = ma_ios_session_category_playback;
+		s_nCtxIos = (ma_context_init(NULL, 0, &cc, &s_ctxIos) == MA_SUCCESS) ? 1 : -1;
+		SDL_Log("[SDL] miniaudio phien am thanh iOS: %s", s_nCtxIos == 1 ? "Playback" : "khong tao duoc ngu canh rieng, dung mac dinh Ambient");
+	}
+	if (s_nCtxIos == 1)
+		cfg.pContext = &s_ctxIos;
+#endif
 	ma_result r = ma_engine_init(&cfg, pEngine);
 	if (r != MA_SUCCESS)
 	{
@@ -79,6 +101,12 @@ BOOL KDirectSound::Init()
 	s_pMaEngine = pEngine;
 	m_pDirectSound = (LPDIRECTSOUND)pEngine;
 	SDL_Log("[SDL] miniaudio %s san sang: %u Hz, %u kenh", MA_VERSION_STRING, ma_engine_get_sample_rate(pEngine), ma_engine_get_channels(pEngine));
+#ifdef JX_APPLE	// [IOS-AM 11/09] in ten backend that: "NULL" nghia la khong ra loa
+	{
+		ma_device* pDev = ma_engine_get_device(pEngine);
+		SDL_Log("[SDL] miniaudio backend: %s", (pDev && pDev->pContext) ? ma_get_backend_name(pDev->pContext->backend) : "(khong co thiet bi)");
+	}
+#endif
 	return TRUE;
 }
 void KDirectSound::Exit()
