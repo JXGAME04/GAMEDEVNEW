@@ -234,9 +234,11 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 	// [GOMNEN 12/09] dem du CA vung -> chi MOT lan doi dich ve thay vi ~7 lan (moi lan la mot lan xa o tren GPU dien thoai)
 	const unsigned uJxTong = m_GroundLayerData.uNumGrunode + m_GroundLayerData.uNumObject;
 	// [GOMNEN 12/09 b] chan tren, theo phan bien cua phien giao dien: du lieu ban do hong khong duoc phep
-	// bien thanh mot lan cap phat khong lo. Vuot tran thi quay ve loi gom theo lo nhu cu (van dung, chi nhieu
-	// lan doi dich ve hon). Mot vung binh thuong ~512 nut nen nen 4096 la thua xa.
-	const unsigned uJxTran = 4096;
+	// bien thanh mot lan cap phat khong lo. Vuot tran thi VAN gom theo lo, nhung lo bang uJxTran chu khong
+	// phai 80 nhu loi cu - ket qua van dung, chi nhieu lan doi dich ve hon mot chut.
+	// KRUImage co szImage[128] + cac truong khac, cho ~180-200 byte moi phan tu: mot vung thuong ~512 nut la
+	// ~100 KB moi lan cap phat; tran 2048 la ~400 KB o truong hop xau nhat, va van thua gap bon lan vung thuong.
+	const unsigned uJxTran = 2048;
 	const unsigned uJxDem = uJxTong ? (uJxTong <= uJxTran ? uJxTong : uJxTran) : 1;
 	std::vector<KRUImage> jxBuf((size_t)uJxDem);
 	KRUImage* const ImgList = &jxBuf[0];
