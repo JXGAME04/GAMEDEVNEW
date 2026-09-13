@@ -34,6 +34,72 @@ TEN_TAB = ["Cơ bản", "Phục hồi", "Chiến đấu", "Di chuyển", "Nhặt
 TAB_BO = {15, 16}
 ID_DNHAP = {174} | set(range(177, 186))     # khoi dang nhap cua tab 0 da tach sang tab 16 (ShowTab)
 
+# ---------------------------------------------------------------- [WAUTO 12/09] ba bang tay
+# 1. NOI_TAY: dieu khien co nam trong SaveRoleData nhung viet theo kieu bo do tu dong khong nhan ra
+#    (gan thang vao mang chuoi, CB_GETITEMDATA, cong them hang so...). Ghi ro o day cho khoi doan mo.
+NOI_TAY = {
+    "IDC_EDITOR_10_TEN":  ("szLDTen", "chuoi"),         # GetDlgItemTextA(..., gnode.apdata.szLDTen, ...) - khong qua bien tam
+    "IDC_COMBO_9_RH":     ("nTKRuongHuong", "chon"),    # gia tri = MA HUONG lay tu CB_GETITEMDATA (0..4, 5 = gan nhat)
+    "IDC_COMBO_13_BOSS":  ("nSTBoss", "chon"),          # gia tri = 141 + chi so dong (WAuto.cpp:1328)
+    "IDC_COMBO_3_FL":     ("szFollName", "chuoi"),      # ghi o CBN_SELCHANGE (WAuto.cpp:7340), khong o SaveRoleData
+    "IDC_CHECKBOX_7_PYD": ("nPriority", "tick"),        # cap radio voi 7_PYS: PYD = (nPriority == 0) -> VIEC 9 dao lai
+    # ba o chu duoc WAuto dien luc chay tu chinh autoData (UpdateUI) - can offset de mobile in ra
+    "IDC_STRING_3_CM":    ("szMoveMap", "chuoi"),
+    "IDC_STRING_3_PTX":   ("nPointX", "int"),
+    "IDC_STRING_3_PTY":   ("nPointY", "int"),
+}
+
+# 2. BO_O_MOBILE: KHONG dung o do trong giao dien mobile (ma WAuto / autoData giu nguyen - luat 0.2 cua lo trinh).
+#    a) mot may mot nhan vat; b) dien thoai khong co thu do; c) da chuyen vao BANG PHU (UiWAutoDsach).
+BO_O_MOBILE = {
+    # (a) chi co nghia khi WAuto.exe nhin nhieu cua so game
+    "IDC_CHECKBOX_0_HG":  "an cua so game Windows - dien thoai khong co cua so",
+    # (b) hop thoai chon tep cua Windows / ban phim vat ly
+    "IDC_BTN_3_RF": "doc tep", "IDC_BTN_3_WF": "ghi tep",
+    "IDC_BTN_4_FTR": "doc tep", "IDC_BTN_4_FTW": "ghi tep",
+    "IDC_BTN_6_RF": "doc tep", "IDC_BTN_6_WF": "ghi tep",
+    # bUseFKey = "chi PK khi dang GIU phim": dien thoai khong co ban phim -> Wnd_IsPKKeyDown() luon 0, bat len la
+    # PK khong bao gio chay. Bo ca o tick lan o phim; JxWAutoNoiBo ep bUseFKey = 0 moi nhip (tep .dat cua ban PC
+    # chep sang co the dang bat).
+    "IDC_CHECKBOX_7_K": "chi PK khi giu phim - dien thoai khong co ban phim",
+    "IDC_EDITOR_7_K": "bat phim ban phim vat ly",
+    # (c) da chuyen vao bang phu cua danh sach (them / bot / xep thu tu nam trong bang do)
+    "IDC_BTN_3_GE": "", "IDC_BTN_3_UP": "", "IDC_BTN_3_DN": "", "IDC_BTN_3_DL": "", "IDC_BTN_3_DA": "",
+    "IDC_COMBO_4_FT": "", "IDC_EDITOR_4_FT": "", "IDC_STRING_4_FT": "",
+    "IDC_BTN_4_FTD": "", "IDC_BTN_4_FTDA": "",
+    "IDC_COMBO_6_NE": "", "IDC_BTN_6_NE": "", "IDC_BTN_6_UP": "", "IDC_BTN_6_DN": "", "IDC_BTN_6_DL": "", "IDC_BTN_6_DA": "",
+    "IDC_COMBO_10_PT": "", "IDC_BTN_10_PTA": "", "IDC_BTN_10_PTD": "",
+}
+
+# 3. VIEC: ma hanh dong cho UiWAutoTrang.cpp (thay cho so sanh chuoi IDC luc chay). Khop WA_V_* trong UiWAutoBang.h.
+VIEC = {
+    "IDC_BTN_3_MG":     1,      # Di chuyen: lay ban do dang dung
+    "IDC_BTN_3_PT":     2,      # Di chuyen: lay toa do dang dung lam diem co dinh
+    "IDC_COMBO_3_FL":   3,      # Di chuyen: theo sau (ten nguoi choi quanh day -> szFollName)
+    "IDC_LIST_3_CD":    4,      # Di chuyen: danh sach toa do di tuan
+    "IDC_LIST_4_FT":    5,      # Nhat do: danh sach luat loc thuoc tinh
+    "IDC_BTN_4_NOP":    6,      # Nhat do: bang ten khong nhat
+    "IDC_LIST_6_NE":    7,      # To doi: danh sach ten moi / nhan nhom
+    "IDC_BTN_7_PYS":    8,      # PK: thu tu ngu hanh
+    "IDC_CHECKBOX_7_PYD": 9,    # PK: uu tien theo khoang cach (nPriority = 0)
+    "IDC_CHECKBOX_7_PYS": 13,   # PK: uu tien theo ngu hanh (nPriority = 1) - cap radio voi 7_PYD
+    "IDC_LIST_10_PT":   10,     # Lien dau: danh sach ban dien
+    "IDC_COMBO_9_RH":   11,     # Tong Kim: ruong cua (danh sach doi theo thanh se ve)
+    "IDC_COMBO_13_BOSS": 12,    # Sat thu: boss co dinh (gia tri = 141 + dong)
+}
+
+# 4. LOC_CHIEU: WAuto.exe che danh sach chieu thanh 7 danh sach con (WAuto.cpp:3057-3097); game chi tra MOT
+#    danh sach phang -> phai loc lai ben mobile. Khop WA_LC_* trong UiWAutoBang.h.
+LOC_CHIEU = {"SkillKAr": 1, "SkillSAr": 2, "SkillSEAr": 3, "SkillBAr": 4, "SkillPAr": 4, "SkillAAr": 5}
+
+# 5. SO_LIEU: o chu duoc DIEN LUC CHAY tu trang thai nhan vat (WAuto.exe dien trong ProcIpcCommand / UpdateUI).
+#    Gia tri = ma so lieu, khop WA_SL_* trong UiWAutoBang.h.
+SO_LIEU = {
+    "IDC_STRING_0_NL": 1, "IDC_STRING_0_NM": 2, "IDC_STRING_0_NS": 3,
+    "IDC_STRING_0_MN": 4, "IDC_STRING_0_MC": 5, "IDC_STRING_0_NLV": 6, "IDC_STRING_0_NE": 7,
+    "IDC_STRING_3_CM": 8, "IDC_STRING_3_PTX": 9, "IDC_STRING_3_PTY": 10,
+}
+
 CTL_RE = re.compile(r'^\s*(CONTROL|PUSHBUTTON|DEFPUSHBUTTON|EDITTEXT|COMBOBOX|LTEXT|RTEXT|CTEXT|GROUPBOX|LISTBOX)\b(.*)$')
 
 
@@ -57,8 +123,28 @@ def parse_rc():
         if not m:
             continue
         kind, rest = m.group(1), m.group(2)
-        # tach cac tham so theo dau phay (chuoi trong nhay kep co the chua dau phay)
-        parts = re.findall(r'"(?:[^"\\]|\\.)*"|[^,]+', rest)
+        # tach cac tham so theo dau phay, NHUNG dau phay TRONG nhay kep khong tinh.
+        # [WAUTO 12/09 a] Truoc day dung re.findall(r'"..."|[^,]+') - nhanh [^,]+ AN TRUOC ca dau nhay mo khi
+        # phia truoc con khoang trang, nen nhan nao CO DAU PHAY thi ca dong dieu khien bi vut. Mat 5 dieu khien
+        # that: IDC_CHECKBOX_0_MIS / _4_RG / _6_TL / _12_TS va nhan IDC_STRING_12_CAY. Nay quet tung ky tu.
+        parts, buf, i = [], "", 0
+        while i < len(rest):
+            ch = rest[i]
+            if ch == '"':
+                j = rest.find('"', i + 1)
+                if j < 0:
+                    j = len(rest) - 1
+                buf += rest[i:j + 1]
+                i = j + 1
+                continue
+            if ch == ",":
+                parts.append(buf)
+                buf = ""
+                i += 1
+                continue
+            buf += ch
+            i += 1
+        parts.append(buf)
         parts = [p.strip() for p in parts if p.strip()]
         label = ""
         if parts and parts[0].startswith('"'):
@@ -164,6 +250,8 @@ def mo_rong_vong_lap(tabs, off, idc_val):
                     for r2 in rows:
                         if r2["idc"] == idk and "truong" not in r2:
                             r2.update(truong=r["truong"], chi_so=k, cach=r["cach"], off=r["off"], kieu=r["kieu"], co=r["co"])
+                            if "loc_chieu" in r:     # [WAUTO 12/09] 6 khe Chieu ket hop deu loc theo SkillKAr
+                                r2["loc_chieu"] = r["loc_chieu"]
 
 
 def gan_chi_so_mang(tabs, off):
@@ -198,6 +286,11 @@ def parse_options(cpp, arrays):
         if m:
             cur = m.group(1)
             continue
+        if "GetDlgItem(" in l:
+            # [WAUTO 12/09 b] lay hCtrl cua MOT O KHAC (vi du "IDC_COMBO_14_S1 + cki" trong vong lap) -> QUEN hop dang theo.
+            # Truoc day cur giu nguyen nen 20 ten boss cua IDC_COMBO_13_BOSS bi thay bang danh sach chieu cua vong lap ke tren.
+            cur = None
+            continue
         if "CB_RESETCONTENT" in l and cur:
             opts.setdefault(cur, [])
             continue
@@ -219,6 +312,20 @@ def parse_options(cpp, arrays):
     return opts
 
 
+def parse_magic(cpp):
+    """[WAUTO 12/09] g_MagicTable cua WAuto.cpp: 40 dong thuoc tinh cho bang LOC khi nhat do -> [(ma, ten)]"""
+    a = cpp.index("static const MAGIC_INFO g_MagicTable")
+    b = cpp.index("};", a)
+    return [(int(m.group(1)), m.group(2)) for m in re.finditer(r'\{\s*(\d+),\s*L"([^"]*)"', cpp[a:b])]
+
+
+def parse_tk_ruong(cpp):
+    """[WAUTO 12/09] s_aTKRCo[7][5]: thanh nao CO huong ruong nao (hop 'Ruong cua' cua the Tong Kim doi theo thanh se ve)"""
+    a = cpp.index("static const BYTE s_aTKRCo")
+    b = cpp.index("};", a)
+    return [[int(v) for v in re.findall(r"\d", m.group(1))] for m in re.finditer(r"\{\s*([01],\s*[01],\s*[01],\s*[01],\s*[01])\s*\}", cpp[a:b])]
+
+
 def main():
     idc_val = parse_resource_h()
     cpp = doc_u16(CPP)
@@ -229,7 +336,7 @@ def main():
     arrays = parse_arrays(cpp)
     opts = parse_options(cpp, arrays)
     tabs = {}
-    thongke = dict(dieu_khien=0, noi=0, khong_noi=0, chon_tinh=0, chon_dong=0, bo=0)
+    thongke = dict(dieu_khien=0, noi=0, khong_noi=0, chon_tinh=0, chon_dong=0, bo=0, bo_mobile=0)
     for c in ctls:
         tab = tab_cua(c["idc"], idc_val)
         if tab is None:
@@ -237,10 +344,17 @@ def main():
         if tab in TAB_BO:
             thongke["bo"] += 1
             continue
+        if c["idc"] in BO_O_MOBILE:     # [WAUTO 12/09] khong dung o do tren dien thoai (ma WAuto giu nguyen)
+            thongke["bo_mobile"] += 1
+            continue
         thongke["dieu_khien"] += 1
         r = dict(c)
         r["id"] = idc_val.get(c["idc"])
-        b = bind.get(c["idc"])
+        if c["idc"] in VIEC:
+            r["viec"] = VIEC[c["idc"]]
+        if c["idc"] in SO_LIEU:
+            r["so_lieu"] = SO_LIEU[c["idc"]]
+        b = bind.get(c["idc"]) or NOI_TAY.get(c["idc"])
         if b:
             ten, cach = b
             goc = re.match(r"(\w+)", ten).group(1)
@@ -248,6 +362,8 @@ def main():
             f = off.get(goc)
             r.update(truong=goc, chi_so=int(chi_so.group(1)) if chi_so else None, cach=cach,
                      off=f["off"] if f else None, kieu=f["kieu"] if f else None, co=f["co"] if f else None)
+            if str(cach).startswith("chieu:"):
+                r["loc_chieu"] = LOC_CHIEU.get(str(cach).split(":", 1)[1], 1)
             thongke["noi"] += 1
         elif c["kind"] in ("tick", "onhap", "chon"):
             thongke["khong_noi"] += 1
@@ -264,7 +380,8 @@ def main():
     thongke["noi"] = sum(1 for v in tabs.values() for r in v if r.get("truong"))
     thongke["khong_noi"] = sum(1 for v in tabs.values() for r in v if r["kind"] in ("tick", "onhap", "chon") and not r.get("truong"))
     thongke["chieu"] = sum(1 for v in tabs.values() for r in v if str(r.get("cach", "")).startswith("chieu"))
-    out = dict(ten_tab=TEN_TAB, tabs={str(k): v for k, v in sorted(tabs.items())}, sizeof_autoData=tong, thongke=thongke)
+    out = dict(ten_tab=TEN_TAB, tabs={str(k): v for k, v in sorted(tabs.items())}, sizeof_autoData=tong, thongke=thongke,
+               magic=parse_magic(cpp), tk_ruong_co=parse_tk_ruong(cpp))
     p = os.path.join(GOC, "android", "wauto_bang.json")
     io.open(p, "w", encoding="utf-8", newline="\n").write(json.dumps(out, ensure_ascii=False, indent=1))
     print("da ghi", p)

@@ -45,6 +45,42 @@ static void WA_TenTep(char* sz, int nMax, unsigned int uId)
 	snprintf(sz, nMax, WA_THU_MUC "\\%u.dat", uId);
 }
 
+// [WAUTO 12/09] Tep NHO TRANG THAI BAT/TAT cua rieng nhan vat nay (1 byte). Khong dung truong nao cua autoData: them truong
+// vao giua struct la lech offset moi tep .dat cua nguoi choi PC (canh bao ghi 5 cho trong ipc_shared.h).
+static void WA_TenTepBat(char* sz, int nMax, unsigned int uId)
+{
+	snprintf(sz, nMax, WA_THU_MUC "\\%u.bat", uId);
+}
+
+static int WA_DocBat(unsigned int uId)
+{
+	char sz[128];
+	BYTE b = 0;
+	KFile f;
+	WA_TenTepBat(sz, sizeof(sz), uId);
+	if (!f.Open(sz))
+		return -1;				// chua co tep -> giu cong tac config.ini
+	if (f.Read(&b, 1) != 1)
+		b = 0;
+	f.Close();
+	return b ? 1 : 0;
+}
+
+static void WA_GhiBat(unsigned int uId, int bBat)
+{
+	char sz[128];
+	BYTE b = (BYTE)(bBat ? 1 : 0);
+	KFile f;
+	if (!uId)
+		return;
+	CreateDirectory(WA_THU_MUC, NULL);
+	WA_TenTepBat(sz, sizeof(sz), uId);
+	if (!f.Create(sz))
+		return;
+	f.Write(&b, 1);
+	f.Close();
+}
+
 // Mac dinh LAN DAU y het WAuto.exe (LoadRoleData khi chua co tep .dat): danh + nhat + uong thuoc theo 2/3 va 1/3 mau.
 // Cung dung lam nen cho tep CU ngan hon struct: phan duoi tep khong phu toi giu gia tri nay (WAuto.exe lam y vay o
 // cac nhanh nang cap theo kich thuoc tep).
@@ -222,6 +258,14 @@ int JxWAuto_NapCauHinh()
 	f.Close();
 	g_DebugLog("[WAUTO] nap %s: %u/%u byte; fight=%d vis=%d pick=%d life=%d TK=%d DT=%d", sz, (unsigned)dwDoc, (unsigned)sizeof(autoData),
 		s_CauHinh.bFight, s_CauHinh.nVision, s_CauHinh.bPickUp, s_CauHinh.bCheckiLife, s_CauHinh.bTongKim, s_CauHinh.bDaTau);
+	{	// [WAUTO 12/09] nho trang thai bat/tat cua lan choi truoc (chua co tep thi giu cong tac config.ini)
+		int nBatCu = WA_DocBat(uId);
+		if (nBatCu >= 0)
+		{
+			s_nBat = nBatCu;
+			g_DebugLog("[WAUTO] nho trang thai lan truoc: Bat=%d", s_nBat);
+		}
+	}
 	return 1;
 }
 
@@ -272,7 +316,12 @@ void JxWAuto_NhatNgay(int nMs)
 	s_uNhipKe = 0;					// gui nhip dau ngay khung nay
 	g_DebugLog("[WAUTO] NHAT NGAY %d ms (auto dang %s)", nMs, s_nBat ? "bat" : "tat");
 }
-int JxWAuto_Bat(int bBat)			{ s_nBat = bBat ? 1 : 0; return s_nBat; }
+int JxWAuto_Bat(int bBat)
+{
+	s_nBat = bBat ? 1 : 0;
+	WA_GhiBat(s_uId, s_nBat);		// [WAUTO 12/09] nho cho lan mo app sau
+	return s_nBat;
+}
 
 // Nap goi vao hop thu cua ProcIpcCommand y nhu AppLoop cua WAuto.exe: [so goi][goi 1][goi 2]... roi SetEvent.
 static void WA_GuiGoi(const void* p, unsigned int n, unsigned int uSo)
@@ -357,6 +406,9 @@ void JxWAuto_NhipVongLap()
 	pGL->setting.bCungMucTieu = 0;
 	pGL->setting.bAcChinhVaoMap = 0;
 	pGL->setting.uACTuoi = 0;
+	// [WAUTO 12/09] Dien thoai khong co ban phim: Wnd_IsPKKeyDown() luon 0 nen bUseFKey = 1 la may PK KHONG BAO GIO chay
+	// (S3Client.cpp:1182). Tep .dat chep tu ban PC co the dang bat -> ep 0 o day, o tick da bo khoi giao dien mobile.
+	pGL->setting.bUseFKey = 0;
 	if (bNhat)
 	{
 		// [ANDROID 11/09 WAUTO B2 i] dot nhat ngay: KHONG danh (bFight / bOnPK = 0), NHAT + chay toi (bFollowPick), tam nhat >= 800

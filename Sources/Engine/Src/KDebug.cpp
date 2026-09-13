@@ -46,6 +46,10 @@ HWND g_FindDebugWindow(char* lpClassName, char* lpWindowName)
 // khong nen de lai tren may nguoi choi. Ban phat hanh PHAI dat 0. Mac dinh 1 = giu nguyen hanh vi cu,
 // nen khong bat gi thi ca ba nen chay y het truoc.
 int g_nJxNhatKyChanDoan = 1;
+void g_SetNhatKyChanDoan(int bBat)	// [WAUTO 12/09] ham XUAT cho ben ngoai Engine.dll (S3Client)
+{
+	g_nJxNhatKyChanDoan = bBat ? 1 : 0;
+}
 void g_DebugLog(LPSTR Fmt, ...)
 {
 	if (!g_nJxNhatKyChanDoan)

@@ -606,10 +606,13 @@ BOOL KMyApp::GameInit()
 	IniFile.GetInteger("Client", "PerfHud", 0, &nPerfHud);
 	PerfHud_SetEnable(nPerfHud);
 	{	// [BAOMAT 12/09 NHATKY] mot cong tac tat sach nhat ky chan doan (KDebug.cpp). Ban phat hanh dat 0.
-		extern int g_nJxNhatKyChanDoan;
 		int nNk = 1; IniFile.GetInteger("Client", "NhatKyChanDoan", 1, &nNk);
-		g_nJxNhatKyChanDoan = nNk ? 1 : 0;
+		g_SetNhatKyChanDoan(nNk);	// [WAUTO 12/09] qua ham XUAT cua Engine (bien khong xuat khoi DLL)
+		// [WAUTO 12/09] SDL_Log chi co trong ban SDL; cau hinh Release|x64 (client PC phat hanh) khong co SDL
+		// -> error C3861. Xem android/va_nguon_android_wauto28.py.
+#ifdef JX_PLATFORM_SDL
 		if (!nNk) SDL_Log("[BAOMAT] nhat ky chan doan: TAT ([Client] NhatKyChanDoan=0)");
+#endif
 	}
 	if (g_nPaintFps > 30 || g_nPaintVsync > 0)
 		timeBeginPeriod(1);	// high paint rates need 1ms Sleep/wait resolution; paired with timeEndPeriod in GameExit

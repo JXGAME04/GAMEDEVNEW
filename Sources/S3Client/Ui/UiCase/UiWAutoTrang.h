@@ -22,6 +22,10 @@
 #define WA_TR_SO_TAB	15
 #define WA_TR_HOP	8
 #define WA_TR_AN_TOI_DA	(WA_TR_TICK + WA_TR_NHAP + WA_TR_CHON + WA_TR_NHAN + WA_TR_NUT)
+// [WAUTO 12/09] so dong toi da cua mot hop chon (danh sach chieu 72, ten nguoi quanh day 100) va nguong mo BANG PHU
+// thay cho KPopupMenu (menu khong cuon: cao = so dong x 26 px, man 604 px la mat tu dong 24)
+#define WA_MENU_TOI_DA	100
+#define WA_MENU_DAI		10
 
 struct WAUiMuc;
 struct WAUiTab;
@@ -31,6 +35,13 @@ class KWndNhapWA : public KWndEdit512
 {
 public:
 	virtual void	PaintWindow();
+};
+
+// [WAUTO 12/09] Nhan chu di kem o tick: cham vao CHU cung bat/tat (truoc day chi trung dung o 24 px moi an - kho cham).
+class KWndNhanWA : public KWndText80
+{
+public:
+	int		WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam);
 };
 
 // O NHOM (chu 11/09: "phai ke o de phan biet tung nhom", "co mau phan biet cac nhom chuc nang"): nen toi mo + vien + tieu de
@@ -61,7 +72,7 @@ private:
 	KWndButton			m_Tick[WA_TR_TICK];
 	KWndNhapWA			m_Nhap[WA_TR_NHAP];
 	KWndLabeledButton	m_Chon[WA_TR_CHON];
-	KWndText80			m_Nhan[WA_TR_NHAN];
+	KWndNhanWA			m_Nhan[WA_TR_NHAN];	// [WAUTO 12/09] cham vao chu canh o tick cung bat/tat
 	KWndLabeledButton	m_Nut[WA_TR_NUT];
 	int					m_nTab;
 	const WAUiTab*		m_pTab;
@@ -70,6 +81,10 @@ private:
 	int					m_bDangDien;			// dang dien tu autoData -> bo qua WND_N_EDIT_CHANGE (SetIntText cung ban)
 	KWndWindow*			m_apAnTam[WA_TR_AN_TOI_DA];	// widget tam an khi menu chon dang mo (trinh chieu Android ve anh + chu SAU bong menu)
 	int					m_nAnTam;
+	const char*			m_apDong[WA_MENU_TOI_DA];	// [WAUTO 12/09] cac dong cua menu / bang chon dang dung
+	int					m_anGT[WA_MENU_TOI_DA];		// gia tri ung voi tung dong (ma chieu / ma huong ruong / 141+i...)
+	int					m_nDongMenu;
+	unsigned int		m_uSongKe;					// nhip dien lai o so lieu
 	void	AnHet();
 	const WAUiMuc*	Muc(int nLoai, int nKhe);
 	void*	DiaChi(const WAUiMuc* p);
@@ -77,6 +92,12 @@ private:
 	void	DatInt(const WAUiMuc* p, int v);
 	void	DienChon(const WAUiMuc* p);
 	void	NapChieu();
+	// [WAUTO 12/09] cac viec them cua ban 12/09 - xem android/va_nguon_android_wauto22.py
+	void	DienTick();					// doc lai MOI o tick cua tab (cap radio "Uu tien" phai doi theo nhau)
+	void	CapNhatSong();				// dien o so lieu nhan vat + dong tom tat danh sach (moi 500 ms)
+	void	LamViec(const WAUiMuc* p);	// nut co WA_V_*
+	int		DungMenu(const WAUiMuc* p);	// dung danh sach dong cho hop chon -> m_apDong / m_anGT; tra so dong
+	const WAUiMuc*	MucTheoIdc(const char* szIdc);
 	void	MoMenuChon(int nKhe);
 	void	ChonMenu(int nKhe, int nMuc);
 	void	AnDuoiMenu(int bAn);

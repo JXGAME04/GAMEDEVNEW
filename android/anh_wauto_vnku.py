@@ -98,7 +98,8 @@ def icon(bat):
 
 
 TICK = 24                       # [B2 b] o tick 24x24 (hang cao 24..28) - truoc 36 (hang 38: "chu phai hien thi day du")
-CHON_RONG = (120, 160, 200)     # hop chon: 3 co, chon theo dong dai nhat
+CHON_RONG = (120, 140, 160, 180, 200, 220, 240)   # [WAUTO 13/09] hop chon: nac 20 px (truoc chi 120/160/200 -> chu dai
+                                # nhu "Hieu uy / Pho Tuong / Dai Tuong" bi cat, phai cat bot cho vua o 200)
 NUT_RONG = (60, 84, 120, 160)   # nut hanh dong: 4 co, chon theo chu
 VANG = (214, 176, 96, 255)      # vien / mui ten vang (hop tick_chon.spr cua VNKU)
 VANG_TOI = (120, 90, 45, 255)
@@ -186,6 +187,30 @@ def nut_do():
         ghi(os.path.join(goc, "hop_chon_%d.spr" % w), khung)
 
 
+def nut_dong_hoi():
+    """[WAUTO 13/09] Nut "Dong" + "?" tren thanh tieu de khung WAuto (chu: "sua nut dong lai o Auto cho dep" - truoc la
+    CHU TRAN KWndPureTextBtn nam tro troi tren thanh da). Lay NUT DONG CO SAN cua chinh bo UiAutoNew:
+      UiAutoNew\\CloseSeriesBtn.spr 236x86, 3 khung: 0 ngoc sang chu trang (thuong), 1 chu vang (dang bam), 2 xam (tat).
+      nut_dong.spr 64x24 = thu nguyen anh (ti le 2,74 ~ 2,67 -> khong meo, chu "Dong" ve san trong anh).
+      nut_hoi.spr  28x24 = hai dau hoa van + khuc giua SACH CHU (cot 44..71; chu nam o cot 75..161) keo gian;
+                           chu "?" ve bang Label cua KWndLabeledButton."""
+    goc = os.path.join("spr", "uinew", "uiautonew")
+    ks = [k.convert("RGBA") for k in _kho("UiAutoNew/CloseSeriesBtn.spr")[:3]]
+    W, H = ks[0].size
+
+    def chip_sach(k, w, h, cap=44, g0=44, g1=71):
+        c = max(2, int(round(cap * h / float(H))))
+        a = Image.new("RGBA", (w, h))
+        a.alpha_composite(k.crop((0, 0, cap, H)).resize((c, h), Image.LANCZOS), (0, 0))
+        a.alpha_composite(k.crop((W - cap, 0, W, H)).resize((c, h), Image.LANCZOS), (w - c, 0))
+        if w > 2 * c:
+            a.alpha_composite(k.crop((g0, 0, g1, H)).resize((w - 2 * c, h), Image.LANCZOS), (c, 0))
+        return a
+
+    ghi(os.path.join(goc, "nut_dong.spr"), [k.resize((64, 24), Image.LANCZOS) for k in ks])
+    ghi(os.path.join(goc, "nut_hoi.spr"), [chip_sach(k, 28, 24) for k in ks])
+
+
 def o_tick():
     """[B2] O tick tu tick_chon.spr VNKU (36x36: khung 0 trong, khung 1 da chon) thu ve TICK x TICK."""
     _, _, ks, _ = doc_spr(os.path.join(VNKU, "UiAutoNew", "tick_chon.spr"))
@@ -198,5 +223,6 @@ if __name__ == "__main__":
     icon(b)
     nut_thanh_cong_cu(b)
     nut_do()
+    nut_dong_hoi()
     o_tick()
     print("xong")

@@ -9,6 +9,9 @@
 #include "Elem/Wnds.h"
 #include "Elem/UiImage.h"
 #include "UiShell.h"
+#ifdef JX_MOBILE
+#include "UiCase/UiWAuto.h"	// [WAUTO 12/09] khung Auto: dang mo thi khong ve cum ky nang / icon NPC de len
+#endif
 #include "PerfHud.h"
 #include "UiBase.h"
 //#include "../../../core/src/gamedatadef.h"
@@ -370,9 +373,13 @@ void UiPaint(int nGameLoop)
 
 #ifdef JX_MOBILE
 	JxVongChon_Ve();	// [ANDROID 09/09 VONG] vong chon duoi chan muc tieu (toa do the gioi)
-	JxIconNpc_Ve();	// [ANDROID 09/09 ICON] icon "noi chuyen" tren dau NPC doi thoai gan nhat
+	// [WAUTO 12/09] Khung Auto dang mo thi KHONG ve icon NPC va cum nut ky nang: hai thu nay ve SAU UiPaint nen nam
+	// TREN khung (bay 3 cua ban giao B1 - "cum ky nang che goc phai duoi"). Can dieu khien van ve de con di duoc.
+	if (!KUiWAuto::GetIfVisible())
+		JxIconNpc_Ve();	// [ANDROID 09/09 ICON] icon "noi chuyen" tren dau NPC doi thoai gan nhat
 	JxHuongDi_Ve();	// [ANDROID 09/09 HUONGDI] mui ten nho duoi chan theo huong di chuyen
-	JxKyNang_Ve();	// [ANDROID 09/09 KYNANG] bang nut ky nang + vach ngam + vong duoi chan dich
+	if (!KUiWAuto::GetIfVisible())
+		JxKyNang_Ve();	// [ANDROID 09/09 KYNANG] bang nut ky nang + vach ngam + vong duoi chan dich
 	JxCan_Ve();	// [ANDROID 09/09 CAN] ve can len tren cung, ngay truoc khi ket khung
 #endif
 	g_pRepresentShell->RepresentEnd();

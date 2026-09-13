@@ -58,7 +58,8 @@
     "y": 143,
     "w": 66,
     "h": 12,
-    "id": 186
+    "id": 186,
+    "so_lieu": 1
    },
    {
     "kind": "chu",
@@ -68,7 +69,8 @@
     "y": 155,
     "w": 66,
     "h": 11,
-    "id": 187
+    "id": 187,
+    "so_lieu": 2
    },
    {
     "kind": "chu",
@@ -78,7 +80,8 @@
     "y": 166,
     "w": 66,
     "h": 12,
-    "id": 188
+    "id": 188,
+    "so_lieu": 3
    },
    {
     "kind": "chu",
@@ -98,7 +101,8 @@
     "y": 155,
     "w": 70,
     "h": 11,
-    "id": 189
+    "id": 189,
+    "so_lieu": 4
    },
    {
     "kind": "chu",
@@ -108,7 +112,8 @@
     "y": 166,
     "w": 70,
     "h": 12,
-    "id": 190
+    "id": 190,
+    "so_lieu": 5
    },
    {
     "kind": "chu",
@@ -128,7 +133,8 @@
     "y": 180,
     "w": 12,
     "h": 12,
-    "id": 191
+    "id": 191,
+    "so_lieu": 6
    },
    {
     "kind": "chu",
@@ -148,7 +154,8 @@
     "y": 180,
     "w": 35,
     "h": 12,
-    "id": 195
+    "id": 195,
+    "so_lieu": 7
    },
    {
     "kind": "chu",
@@ -159,16 +166,6 @@
     "w": 84,
     "h": 11,
     "id": 167
-   },
-   {
-    "kind": "tick",
-    "idc": "IDC_CHECKBOX_0_HG",
-    "label": "Ẩn cửa sổ game hiện tại đang chọn",
-    "x": 5,
-    "y": 207,
-    "w": 145,
-    "h": 11,
-    "id": 170
    },
    {
     "kind": "tick",
@@ -335,6 +332,22 @@
     "chi_so": null,
     "cach": "tick",
     "off": 7532,
+    "kieu": "int",
+    "co": 4
+   },
+   {
+    "kind": "tick",
+    "idc": "IDC_CHECKBOX_0_MIS",
+    "label": "Mọi chiêu chung 1 hiệu ứng, dòng:",
+    "x": 5,
+    "y": 309,
+    "w": 142,
+    "h": 12,
+    "id": 630,
+    "truong": "bWAMissle",
+    "chi_so": null,
+    "cach": "tick",
+    "off": 7536,
     "kieu": "int",
     "co": 4
    },
@@ -1141,6 +1154,7 @@
     "off": 260,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 2,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -1171,6 +1185,7 @@
     "off": 264,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 2,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -1201,6 +1216,7 @@
     "off": 268,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 2,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -1231,6 +1247,7 @@
     "off": 280,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 4,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -1261,6 +1278,7 @@
     "off": 288,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 5,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -1291,6 +1309,7 @@
     "off": 292,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 5,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -1337,6 +1356,7 @@
     "off": 296,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 4,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -1383,6 +1403,7 @@
     "off": 300,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 4,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -1439,6 +1460,7 @@
     "off": 312,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 4,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -1471,6 +1493,13 @@
     "w": 82,
     "h": 83,
     "id": 280,
+    "viec": 3,
+    "truong": "szFollName",
+    "chi_so": 0,
+    "cach": "chuoi",
+    "off": 6588,
+    "kieu": "char",
+    "co": 32,
     "lua_chon": [
      "dong:pName",
      "dong:pStr"
@@ -1520,7 +1549,14 @@
     "y": 159,
     "w": 94,
     "h": 12,
-    "id": 291
+    "id": 291,
+    "so_lieu": 8,
+    "truong": "szMoveMap",
+    "chi_so": 0,
+    "cach": "chuoi",
+    "off": 6556,
+    "kieu": "char",
+    "co": 32
    },
    {
     "kind": "nut",
@@ -1530,7 +1566,8 @@
     "y": 159,
     "w": 27,
     "h": 12,
-    "id": 281
+    "id": 281,
+    "viec": 1
    },
    {
     "kind": "tick",
@@ -1556,7 +1593,14 @@
     "y": 175,
     "w": 35,
     "h": 12,
-    "id": 292
+    "id": 292,
+    "so_lieu": 9,
+    "truong": "nPointX",
+    "chi_so": null,
+    "cach": "int",
+    "off": 6548,
+    "kieu": "int",
+    "co": 4
    },
    {
     "kind": "chu",
@@ -1566,7 +1610,14 @@
     "y": 175,
     "w": 35,
     "h": 12,
-    "id": 293
+    "id": 293,
+    "so_lieu": 10,
+    "truong": "nPointY",
+    "chi_so": null,
+    "cach": "int",
+    "off": 6552,
+    "kieu": "int",
+    "co": 4
    },
    {
     "kind": "nut",
@@ -1576,7 +1627,8 @@
     "y": 175,
     "w": 27,
     "h": 12,
-    "id": 282
+    "id": 282,
+    "viec": 2
    },
    {
     "kind": "tick",
@@ -1602,77 +1654,8 @@
     "y": 207,
     "w": 135,
     "h": 115,
-    "id": 279
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_3_GE",
-    "label": "Đọc",
-    "x": 145,
-    "y": 205,
-    "w": 37,
-    "h": 14,
-    "id": 283
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_3_UP",
-    "label": "Lên",
-    "x": 145,
-    "y": 220,
-    "w": 37,
-    "h": 14,
-    "id": 284
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_3_DN",
-    "label": "Xuống",
-    "x": 145,
-    "y": 235,
-    "w": 37,
-    "h": 14,
-    "id": 285
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_3_DL",
-    "label": "Xóa",
-    "x": 145,
-    "y": 250,
-    "w": 37,
-    "h": 14,
-    "id": 286
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_3_DA",
-    "label": "Xóa hết",
-    "x": 145,
-    "y": 265,
-    "w": 37,
-    "h": 14,
-    "id": 287
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_3_RF",
-    "label": "Đọc tệp",
-    "x": 145,
-    "y": 280,
-    "w": 37,
-    "h": 14,
-    "id": 288
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_3_WF",
-    "label": "Ghi tệp",
-    "x": 145,
-    "y": 295,
-    "w": 37,
-    "h": 14,
-    "id": 289
+    "id": 279,
+    "viec": 4
    },
    {
     "kind": "tick",
@@ -1846,7 +1829,8 @@
     "y": 171,
     "w": 89,
     "h": 11,
-    "id": 306
+    "id": 306,
+    "viec": 6
    },
    {
     "kind": "tick",
@@ -1865,39 +1849,6 @@
     "co": 4
    },
    {
-    "kind": "chon",
-    "idc": "IDC_COMBO_4_FT",
-    "label": "",
-    "x": 32,
-    "y": 186,
-    "w": 112,
-    "h": 164,
-    "id": 314,
-    "lua_chon": [
-     "dong:g_MagicTable[i].text"
-    ]
-   },
-   {
-    "kind": "chu",
-    "idc": "IDC_STRING_4_FT",
-    "label": ">=",
-    "x": 144,
-    "y": 186,
-    "w": 12,
-    "h": 11,
-    "id": 312
-   },
-   {
-    "kind": "onhap",
-    "idc": "IDC_EDITOR_4_FT",
-    "label": "",
-    "x": 158,
-    "y": 186,
-    "w": 24,
-    "h": 11,
-    "id": 316
-   },
-   {
     "kind": "dsach",
     "idc": "IDC_LIST_4_FT",
     "label": "",
@@ -1905,47 +1856,8 @@
     "y": 201,
     "w": 143,
     "h": 94,
-    "id": 315
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_4_FTD",
-    "label": "Xóa",
-    "x": 150,
-    "y": 202,
-    "w": 32,
-    "h": 18,
-    "id": 307
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_4_FTDA",
-    "label": "Xóa hết",
-    "x": 149,
-    "y": 223,
-    "w": 34,
-    "h": 18,
-    "id": 308
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_4_FTR",
-    "label": "Đọc tệp",
-    "x": 149,
-    "y": 243,
-    "w": 34,
-    "h": 18,
-    "id": 309
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_4_FTW",
-    "label": "Ghi tệp",
-    "x": 150,
-    "y": 264,
-    "w": 32,
-    "h": 18,
-    "id": 310
+    "id": 315,
+    "viec": 5
    },
    {
     "kind": "tick",
@@ -2008,6 +1920,22 @@
     "chi_so": null,
     "cach": "int",
     "off": 5572,
+    "kieu": "int",
+    "co": 4
+   },
+   {
+    "kind": "tick",
+    "idc": "IDC_CHECKBOX_4_RG",
+    "label": "Giữ nhẫn, dây chuyền, ngọc bội cấp >",
+    "x": 5,
+    "y": 314,
+    "w": 151,
+    "h": 12,
+    "id": 303,
+    "truong": "bSaveRing",
+    "chi_so": null,
+    "cach": "tick",
+    "off": 5576,
     "kieu": "int",
     "co": 4
    },
@@ -2652,27 +2580,20 @@
     ]
    },
    {
-    "kind": "chon",
-    "idc": "IDC_COMBO_6_NE",
-    "label": "",
+    "kind": "tick",
+    "idc": "IDC_CHECKBOX_6_TL",
+    "label": "Mời nhóm, vào nhóm theo danh sách",
     "x": 5,
-    "y": 171,
-    "w": 143,
-    "h": 94,
-    "id": 352,
-    "lua_chon": [
-     "dong:pStr"
-    ]
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_6_NE",
-    "label": "Thêm",
-    "x": 150,
-    "y": 171,
-    "w": 32,
-    "h": 14,
-    "id": 370
+    "y": 158,
+    "w": 151,
+    "h": 12,
+    "id": 354,
+    "truong": "bJoinPtByList",
+    "chi_so": null,
+    "cach": "tick",
+    "off": 5600,
+    "kieu": "int",
+    "co": 4
    },
    {
     "kind": "dsach",
@@ -2682,67 +2603,8 @@
     "y": 186,
     "w": 143,
     "h": 104,
-    "id": 363
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_6_UP",
-    "label": "Lên",
-    "x": 150,
-    "y": 188,
-    "w": 32,
-    "h": 14,
-    "id": 364
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_6_DN",
-    "label": "Xuống",
-    "x": 150,
-    "y": 203,
-    "w": 32,
-    "h": 14,
-    "id": 365
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_6_DL",
-    "label": "Xóa",
-    "x": 150,
-    "y": 218,
-    "w": 32,
-    "h": 14,
-    "id": 366
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_6_DA",
-    "label": "Xóa hết",
-    "x": 149,
-    "y": 235,
-    "w": 34,
-    "h": 14,
-    "id": 367
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_6_RF",
-    "label": "Đọc tệp",
-    "x": 149,
-    "y": 248,
-    "w": 34,
-    "h": 14,
-    "id": 368
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_6_WF",
-    "label": "Ghi tệp",
-    "x": 150,
-    "y": 263,
-    "w": 32,
-    "h": 14,
-    "id": 369
+    "id": 363,
+    "viec": 7
    },
    {
     "kind": "tick",
@@ -2871,32 +2733,6 @@
     "off": 320,
     "kieu": "int",
     "co": 4
-   },
-   {
-    "kind": "tick",
-    "idc": "IDC_CHECKBOX_7_K",
-    "label": "Dùng phím",
-    "x": 5,
-    "y": 157,
-    "w": 52,
-    "h": 12,
-    "id": 372,
-    "truong": "bUseFKey",
-    "chi_so": null,
-    "cach": "tick",
-    "off": 324,
-    "kieu": "int",
-    "co": 4
-   },
-   {
-    "kind": "onhap",
-    "idc": "IDC_EDITOR_7_K",
-    "label": "",
-    "x": 61,
-    "y": 157,
-    "w": 30,
-    "h": 12,
-    "id": 381
    },
    {
     "kind": "chu",
@@ -3077,6 +2913,7 @@
     "off": 364,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 3,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -3107,6 +2944,7 @@
     "off": 368,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 3,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -3137,6 +2975,7 @@
     "off": 372,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 3,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -3160,7 +2999,14 @@
     "y": 247,
     "w": 58,
     "h": 12,
-    "id": 379
+    "id": 379,
+    "viec": 9,
+    "truong": "nPriority",
+    "chi_so": null,
+    "cach": "tick",
+    "off": 384,
+    "kieu": "int",
+    "co": 4
    },
    {
     "kind": "tick",
@@ -3171,6 +3017,7 @@
     "w": 50,
     "h": 12,
     "id": 380,
+    "viec": 13,
     "truong": "nPriority",
     "chi_so": null,
     "cach": "tick",
@@ -3186,7 +3033,8 @@
     "y": 247,
     "w": 32,
     "h": 12,
-    "id": 387
+    "id": 387,
+    "viec": 8
    }
   ],
   "8": [
@@ -3921,6 +3769,13 @@
     "w": 121,
     "h": 138,
     "id": 477,
+    "viec": 11,
+    "truong": "nTKRuongHuong",
+    "chi_so": null,
+    "cach": "chon",
+    "off": 7632,
+    "kieu": "int",
+    "co": 4,
     "lua_chon": [
      "Trung tâm",
      "Đông",
@@ -4264,7 +4119,13 @@
     "y": 260,
     "w": 135,
     "h": 11,
-    "id": 501
+    "id": 501,
+    "truong": "szLDTen",
+    "chi_so": 0,
+    "cach": "chuoi",
+    "off": 6992,
+    "kieu": "char",
+    "co": 20
    },
    {
     "kind": "tick",
@@ -4283,39 +4144,6 @@
     "co": 4
    },
    {
-    "kind": "chon",
-    "idc": "IDC_COMBO_10_PT",
-    "label": "",
-    "x": 5,
-    "y": 286,
-    "w": 114,
-    "h": 95,
-    "id": 511,
-    "lua_chon": [
-     "dong:pStr"
-    ]
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_10_PTA",
-    "label": "Thêm",
-    "x": 123,
-    "y": 286,
-    "w": 27,
-    "h": 13,
-    "id": 512
-   },
-   {
-    "kind": "nut",
-    "idc": "IDC_BTN_10_PTD",
-    "label": "Xóa",
-    "x": 154,
-    "y": 286,
-    "w": 28,
-    "h": 13,
-    "id": 513
-   },
-   {
     "kind": "dsach",
     "idc": "IDC_LIST_10_PT",
     "label": "",
@@ -4323,7 +4151,8 @@
     "y": 301,
     "w": 177,
     "h": 28,
-    "id": 514
+    "id": 514,
+    "viec": 10
    },
    {
     "kind": "tick",
@@ -4464,6 +4293,16 @@
     "co": 4
    },
    {
+    "kind": "chu",
+    "idc": "IDC_STRING_12_CAY",
+    "label": "Cày (phút, 0 = hết lượt exp):",
+    "x": 5,
+    "y": 173,
+    "w": 137,
+    "h": 12,
+    "id": 522
+   },
+   {
     "kind": "onhap",
     "idc": "IDC_EDITOR_12_CAY",
     "label": "",
@@ -4540,8 +4379,7 @@
      "Đài 2",
      "Đài 3",
      "Đài 4",
-     "Đài 5",
-     "Không thiết lập"
+     "Đài 5"
     ]
    },
    {
@@ -4651,6 +4489,22 @@
     "chi_so": null,
     "cach": "int",
     "off": 7336,
+    "kieu": "int",
+    "co": 4
+   },
+   {
+    "kind": "tick",
+    "idc": "IDC_CHECKBOX_12_TS",
+    "label": "Bật auto Tín Sứ (đưa thư, cần cấp 90)",
+    "x": 5,
+    "y": 337,
+    "w": 177,
+    "h": 12,
+    "id": 540,
+    "truong": "bHDTinSu",
+    "chi_so": null,
+    "cach": "tick",
+    "off": 7340,
     "kieu": "int",
     "co": 4
    },
@@ -4826,9 +4680,34 @@
     "w": 121,
     "h": 185,
     "id": 553,
+    "viec": 12,
+    "truong": "nSTBoss",
+    "chi_so": null,
+    "cach": "chon",
+    "off": 7368,
+    "kieu": "int",
+    "co": 4,
     "lua_chon": [
-     "Không thiết lập",
-     "dong:pName"
+     "Giả Giới Nhân",
+     "Trịnh Cửu Nhật",
+     "Chu Sở Bá",
+     "Trang Minh Trung",
+     "Cam Chính Cô",
+     "Vũ Nhất Thế",
+     "Dương Phong Dật",
+     "Hà Sinh Vong",
+     "Tăng Chỉ óan",
+     "Vệ Biên Thành",
+     "Cố Thủ Đằng",
+     "Gia Cát Kinh Hồng",
+     "Phan Ngạt Nhạn",
+     "Liên Hình Thái",
+     "Bào Triệt sơn",
+     "Vạn Hồ Tinh",
+     "Trử Thiên Mẫn",
+     "Đoạn Lăng Nguyệt",
+     "Tả Dật Minh",
+     "Nhậm Thương Khung"
     ]
    },
    {
@@ -4968,6 +4847,7 @@
     "off": 7392,
     "kieu": "int",
     "co": 24,
+    "loc_chieu": 1,
     "lua_chon": []
    },
    {
@@ -5011,7 +4891,8 @@
     "cach": "chieu:SkillKAr",
     "off": 7392,
     "kieu": "int",
-    "co": 24
+    "co": 24,
+    "loc_chieu": 1
    },
    {
     "kind": "onhap",
@@ -5054,7 +4935,8 @@
     "cach": "chieu:SkillKAr",
     "off": 7392,
     "kieu": "int",
-    "co": 24
+    "co": 24,
+    "loc_chieu": 1
    },
    {
     "kind": "onhap",
@@ -5097,7 +4979,8 @@
     "cach": "chieu:SkillKAr",
     "off": 7392,
     "kieu": "int",
-    "co": 24
+    "co": 24,
+    "loc_chieu": 1
    },
    {
     "kind": "onhap",
@@ -5140,7 +5023,8 @@
     "cach": "chieu:SkillKAr",
     "off": 7392,
     "kieu": "int",
-    "co": 24
+    "co": 24,
+    "loc_chieu": 1
    },
    {
     "kind": "onhap",
@@ -5183,7 +5067,8 @@
     "cach": "chieu:SkillKAr",
     "off": 7392,
     "kieu": "int",
-    "co": 24
+    "co": 24,
+    "loc_chieu": 1
    },
    {
     "kind": "onhap",
@@ -5242,6 +5127,7 @@
     "off": 7444,
     "kieu": "int",
     "co": 4,
+    "loc_chieu": 1,
     "lua_chon": [
      "Không thiết lập",
      "dong:pName"
@@ -5779,12 +5665,226 @@
  },
  "sizeof_autoData": 7644,
  "thongke": {
-  "dieu_khien": 395,
-  "noi": 240,
-  "khong_noi": 11,
-  "chon_tinh": 37,
-  "chon_dong": 24,
+  "dieu_khien": 372,
+  "noi": 251,
+  "khong_noi": 0,
+  "chon_tinh": 38,
+  "chon_dong": 20,
   "bo": 19,
+  "bo_mobile": 28,
   "chieu": 19
- }
+ },
+ "magic": [
+  [
+   85,
+   "Sinh lực tối đa"
+  ],
+  [
+   89,
+   "Nội lực tối đa"
+  ],
+  [
+   93,
+   "Thể lực tối đa"
+  ],
+  [
+   104,
+   "Phòng thủ vật lý"
+  ],
+  [
+   101,
+   "Kháng độc"
+  ],
+  [
+   105,
+   "Kháng băng"
+  ],
+  [
+   102,
+   "Kháng hỏa"
+  ],
+  [
+   103,
+   "Kháng lôi"
+  ],
+  [
+   135,
+   "May mắn"
+  ],
+  [
+   166,
+   "Độ chính xác điểm"
+  ],
+  [
+   115,
+   "Tốc độ đánh - ngoại công"
+  ],
+  [
+   58,
+   "Bỏ qua né tránh"
+  ],
+  [
+   43,
+   "Không thể phá hủy"
+  ],
+  [
+   111,
+   "Tốc độ di chuyển"
+  ],
+  [
+   117,
+   "Phản đòn cận chiến"
+  ],
+  [
+   114,
+   "Kháng tất cả"
+  ],
+  [
+   136,
+   "Hút sinh lực"
+  ],
+  [
+   137,
+   "Hút nội lực"
+  ],
+  [
+   88,
+   "Phục hồi sinh lực"
+  ],
+  [
+   92,
+   "Phục hồi nội lực"
+  ],
+  [
+   96,
+   "Phục hồi thể lực"
+  ],
+  [
+   97,
+   "Sức mạnh"
+  ],
+  [
+   99,
+   "Sinh khí"
+  ],
+  [
+   98,
+   "Thân pháp"
+  ],
+  [
+   121,
+   "Sát thương vật lý-ngoại điểm"
+  ],
+  [
+   125,
+   "Độc sát ngoại công"
+  ],
+  [
+   123,
+   "Băng sát ngoại công"
+  ],
+  [
+   122,
+   "Hỏa sát ngoại công"
+  ],
+  [
+   124,
+   "Lôi sát ngoại công"
+  ],
+  [
+   126,
+   "Sát thương vật lý-ngoại %"
+  ],
+  [
+   134,
+   "Chuyển hóa thành nội lực"
+  ],
+  [
+   168,
+   "Sát thương vật lý - nội công"
+  ],
+  [
+   169,
+   "Băng sát - nội công"
+  ],
+  [
+   170,
+   "Hỏa sát - nội công"
+  ],
+  [
+   171,
+   "Lôi sát - nội công"
+  ],
+  [
+   172,
+   "Độc sát - nội công"
+  ],
+  [
+   113,
+   "Thời gian phục hồi"
+  ],
+  [
+   110,
+   "Thời gian choáng"
+  ],
+  [
+   106,
+   "Thời gian làm chậm"
+  ],
+  [
+   108,
+   "Thời gian trúng độc"
+  ]
+ ],
+ "tk_ruong_co": [
+  [
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  [
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   0,
+   0,
+   1
+  ],
+  [
+   1,
+   1,
+   1,
+   0,
+   1
+  ],
+  [
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  [
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  [
+   0,
+   1,
+   0,
+   1,
+   1
+  ]
+ ]
 }

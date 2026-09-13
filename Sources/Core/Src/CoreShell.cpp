@@ -25180,6 +25180,117 @@ extern "C" int JxCore_WAutoDanhSachChieu(IPCSkillInfo* pOut, int nMax)
 		return 0;
 	return Npc[nIdx].m_SkillList.GetAllSkillByType(pOut);
 }
+
+// [WAUTO 12/09] So lieu nhan vat cho bang WAuto trong game (tab Co ban: sinh luc / noi luc / the luc / dang cap / kinh nghiem /
+// ban do / toa do). CUNG nguon ma KProtocolProcess:2073 dien vao IPCMainSync gui cho WAuto.exe, nen so hien tren dien
+// thoai trung voi so WAuto.exe hien ben PC. pnSo can >= 10 phan tu:
+//   0 sinh luc, 1 sinh luc toi da, 2 noi luc, 3 noi luc toi da, 4 the luc, 5 the luc toi da, 6 dang cap, 7 ma ban do, 8 x, 9 y
+// Kinh nghiem tra bang CHU (m_nExp la double, cap cao vuot qua int). Tra 1 khi da vao game. Chi mobile.
+extern "C" int JxCore_WAutoSoLieu(int* pnSo, int nSoMax, char* szMap, int nMapMax, char* szKN, int nKNMax)
+{
+	if (!pnSo || nSoMax < 10)
+		return 0;
+	int nIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nIdx <= 0)
+		return 0;
+	char szTen[64] = { 0 };
+	int nId = 0, nX = 0, nY = 0;
+	g_ScenePlace.GetSceneNameAndFocus(szTen, nId, nX, nY);
+	pnSo[0] = Npc[nIdx].m_CurrentLife;
+	pnSo[1] = Npc[nIdx].m_CurrentLifeMax;
+	pnSo[2] = Npc[nIdx].m_CurrentMana;
+	pnSo[3] = Npc[nIdx].m_CurrentManaMax;
+	pnSo[4] = Npc[nIdx].m_CurrentStamina;
+	pnSo[5] = Npc[nIdx].m_CurrentStaminaMax;
+	pnSo[6] = Npc[nIdx].m_Level;
+	pnSo[7] = nId;
+	Npc[nIdx].GetMpsPos(&pnSo[8], &pnSo[9]);
+	if (szMap && nMapMax > 0)
+	{
+		strncpy(szMap, szTen, nMapMax - 1);
+		szMap[nMapMax - 1] = 0;
+	}
+	if (szKN && nKNMax > 0)
+	{
+		double dE = Player[CLIENT_PLAYER_INDEX].m_nExp;
+		double dF = Player[CLIENT_PLAYER_INDEX].m_nNextLevelExp;
+		if (dF > 0.0)
+			snprintf(szKN, nKNMax, "%.0f/%.0f", dE, dF);
+		else
+			snprintf(szKN, nKNMax, "%.0f", dE);
+	}
+	return 1;
+}
+
+// [WAUTO 12/09] Ban do + toa do DANG DUNG cho hai nut "Lay" cua tab Di chuyen (WAuto.exe lay tu gnode.player, cung mot nguon).
+// Tra 1 khi da vao game. Chi mobile.
+extern "C" int JxCore_WAutoViTri(int* pnMapId, char* szMap, int nMapMax, int* pnX, int* pnY)
+{
+	int nIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nIdx <= 0)
+		return 0;
+	char szTen[64] = { 0 };
+	int nId = 0, nX = 0, nY = 0;
+	g_ScenePlace.GetSceneNameAndFocus(szTen, nId, nX, nY);
+	if (pnMapId)
+		*pnMapId = nId;
+	if (szMap && nMapMax > 0)
+	{
+		strncpy(szMap, szTen, nMapMax - 1);
+		szMap[nMapMax - 1] = 0;
+	}
+	int x = 0, y = 0;
+	Npc[nIdx].GetMpsPos(&x, &y);
+	if (pnX)
+		*pnX = x;
+	if (pnY)
+		*pnY = y;
+	return 1;
+}
+
+// [WAUTO 12/09] Ten nhan vat NGUOI CHOI dang dung quanh minh - dung ATYPE_GETAROUNDNAME, chinh viec ma ban PC phai di vong
+// PRT_GETTEAMAROUND -> PRG_TEAMNAMELIST qua vung nho chung. pOut = mang nMax x 32 byte. Tra so ten. Chi mobile.
+extern "C" int JxCore_WAutoTenQuanhDay(char* pOut, int nMax)
+{
+	static char s_szTam[100 * 32];	// ATYPE_GETAROUNDNAME dung lai o 100 ten, moi ten 32 byte
+	if (!pOut || nMax <= 0)
+		return 0;
+	memset(pOut, 0, (size_t)nMax * 32);
+	if (Player[CLIENT_PLAYER_INDEX].m_nIndex <= 0)
+		return 0;
+	memset(s_szTam, 0, sizeof(s_szTam));
+	int n = g_CoreShell.OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_GETAROUNDNAME, (KNPARAM)s_szTam);
+	if (n < 0)
+		n = 0;
+	if (n > 100)
+		n = 100;
+	if (n > nMax)
+		n = nMax;
+	memcpy(pOut, s_szTam, (size_t)n * 32);
+	return n;
+}
+
+// [WAUTO 12/09] Ten cac mon KHAC NHAU dang co trong hanh trang - ATYPE_GETITEMNAME (bang "Khong nhat theo ten").
+// pOut = mang nMax x 80 byte. Tra so ten (toi da 60 = so o hanh trang). Chi mobile.
+extern "C" int JxCore_WAutoTenVatPham(char* pOut, int nMax)
+{
+	static char s_szTam[MAX_EQUIPMENT_ITEM * 80];
+	if (!pOut || nMax <= 0)
+		return 0;
+	memset(pOut, 0, (size_t)nMax * 80);
+	if (Player[CLIENT_PLAYER_INDEX].m_nIndex <= 0)
+		return 0;
+	memset(s_szTam, 0, sizeof(s_szTam));
+	int n = g_CoreShell.OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_GETITEMNAME, (KNPARAM)s_szTam);
+	if (n < 0)
+		n = 0;
+	if (n > MAX_EQUIPMENT_ITEM)
+		n = MAX_EQUIPMENT_ITEM;
+	if (n > nMax)
+		n = nMax;
+	memcpy(pOut, s_szTam, (size_t)n * 80);
+	return n;
+}
 #endif	// JX_MOBILE
 
 void KCoreShell::Turn(int nDir)

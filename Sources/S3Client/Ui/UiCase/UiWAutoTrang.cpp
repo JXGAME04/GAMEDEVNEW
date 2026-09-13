@@ -14,15 +14,37 @@
 extern iRepresentShell*	g_pRepresentShell;	// nhu WndImage.cpp / WndEdit.cpp
 #include "UiWAutoTrang.h"
 #include "UiWAutoBang.h"
+#include "UiWAutoDsach.h"	// [WAUTO 12/09] bang phu: danh sach + bo chon dai
 #include "../../Platform/JxWAutoNoiBo.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 extern "C" int JxCore_WAutoDanhSachChieu(IPCSkillInfo* pOut, int nMax);	// CoreShell.cpp (chi Android)
+extern "C" int JxCore_WAutoSoLieu(int* pnSo, int nSoMax, char* szMap, int nMapMax, char* szKN, int nKNMax);
+extern "C" int JxCore_WAutoViTri(int* pnMapId, char* szMap, int nMapMax, int* pnX, int* pnY);
+extern "C" int JxCore_WAutoTenQuanhDay(char* pOut, int nMax);
 
 #define WA_CHON_CAO		24
-#define WA_MENU_TOI_DA	40
+// WA_MENU_TOI_DA / WA_MENU_DAI: dinh nghia trong UiWAutoTrang.h (dung trong khai bao thanh vien)
+
+static char s_szTenQuanh[100][32];	// [WAUTO 12/09] ten nguoi choi quanh day cho hop "Theo sau"
+
+// [WAUTO 12/09] Mot chieu co thuoc danh sach con nao khong - dung dieu kien cua WAuto.exe (WAuto.cpp:3057-3097).
+// Game chi tra MOT danh sach phang (GetAllSkillByType) nen phai loc lai o day; khong loc thi chon duoc
+// chieu sai khe (vi du nhet chieu danh vao o "Vong sang").
+static int WA_ChieuHop(const IPCSkillInfo& s, int nLoc)
+{
+	switch (nLoc)
+	{
+	case WA_LC_K:	return s.bAura ? 0 : 1;
+	case WA_LC_S:	return (!s.bAura && (s.bState || s.nStyle == 2) && s.bAlly) ? 1 : 0;
+	case WA_LC_SE:	return (s.bState && !s.bAlly) ? 1 : 0;
+	case WA_LC_BP:	return (s.nStyle <= 1 && !s.bAlly) ? 1 : 0;
+	case WA_LC_A:	return s.bAura ? 1 : 0;
+	}
+	return 1;
+}
 
 // Bong (RU_T_SHADOW): KRepresentShell3 ve voi alpha = 255 - (a << 3) -> a trong 0..31, a CANG NHO cang DAC
 static void WA_Bong(int x0, int y0, int x1, int y1, int r, int g, int b, int a)
@@ -67,6 +89,19 @@ void KWndNhapWA::PaintWindow()
 		WA_Vien(m_nAbsoluteLeft - 3, m_nAbsoluteTop - 2, m_nAbsoluteLeft + m_Width + 2, m_nAbsoluteTop + m_Height, 150, 120, 70);
 	}
 	KWndEdit512::PaintWindow();
+}
+
+// ---------------------------------------------------------------- nhan chu cham duoc
+// [WAUTO 12/09] Cham vao CHU canh o tick = cham vao o tick. Bao len cha bang WND_N_BUTTON_CLICK cua chinh nhan;
+// KUiWAutoTrang::WndProc tim o tick nao nhan nhan do lam nhan cua no (nKheNhan) roi bat/tat.
+int KWndNhanWA::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
+{
+	if (uMsg == WM_LBUTTONDOWN && m_pParentWnd && !IsDisable())
+	{
+		m_pParentWnd->WndProc(WND_N_BUTTON_CLICK, (KUPARAM)(KWndWindow*)this, 0);
+		return 1;
+	}
+	return KWndText80::WndProc(uMsg, uParam, nParam);
 }
 
 // ---------------------------------------------------------------- o nhom
@@ -124,6 +159,8 @@ KUiWAutoTrang::KUiWAutoTrang()
 	m_nChieu = -1;
 	m_bDangDien = 0;
 	m_nAnTam = 0;
+	m_nDongMenu = 0;
+	m_uSongKe = 0;
 }
 
 void KUiWAutoTrang::KhoiTao()
@@ -264,16 +301,18 @@ void KUiWAutoTrang::NapTab(int nTab)
 			{
 				m_Chon[m.nKhe].Init(&Ini, szMuc);
 				m_Chon[m.nKhe].Show();
-				m_Chon[m.nKhe].Enable(m.nOff >= 0 && m.nNguon != WA_NGUON_KHAC);
+				// [WAUTO 12/09] hop chon nguon DONG (lay luc chay) van bat neu co viec: Theo sau lay ten nguoi quanh day
+				m_Chon[m.nKhe].Enable(m.nOff >= 0 && (m.nNguon != WA_NGUON_KHAC || m.nViec != WA_V_KHONG));
 			}
 			break;
 		case WA_MUC_NUT:
+		case WA_MUC_DSACH:		// [WAUTO 12/09] o danh sach = nut "Sua" + dong tom tat (noi dung sua trong bang phu)
 			sprintf(szMuc, "Nut%d", m.nKhe);
 			if (m.nKhe < WA_TR_NUT && Ini.IsSectionExist(szMuc))
 			{
 				m_Nut[m.nKhe].Init(&Ini, szMuc);
 				m_Nut[m.nKhe].Show();
-				m_Nut[m.nKhe].Enable(0);		// (B2) nut hanh dong: lam o buoc cua tung tab
+				m_Nut[m.nKhe].Enable(m.nViec != WA_V_KHONG);	// [WAUTO 12/09] nut nao co viec thi bat
 			}
 			break;
 		default:
@@ -299,7 +338,12 @@ void KUiWAutoTrang::DienGiaTri()
 		{
 		case WA_MUC_TICK:
 			if (m.nKhe < WA_TR_TICK)
-				m_Tick[m.nKhe].CheckButton(LayInt(&m) ? 1 : 0);
+			{
+				int v = LayInt(&m) ? 1 : 0;
+				if (m.nViec == WA_V_UUTIEN_GAN)	// [WAUTO 12/09] cap radio: "Khoang cach" = nPriority BANG 0
+					v = !v;
+				m_Tick[m.nKhe].CheckButton(v);
+			}
 			break;
 		case WA_MUC_NHAP:
 			if (m.nKhe < WA_TR_NHAP)
@@ -321,6 +365,123 @@ void KUiWAutoTrang::DienGiaTri()
 		}
 	}
 	m_bDangDien = 0;
+	CapNhatSong();		// [WAUTO 12/09] o so lieu + dong tom tat danh sach
+}
+
+// [WAUTO 12/09] doc lai MOI o tick cua tab: cap radio "Uu tien" cua the PK phai doi theo nhau
+void KUiWAutoTrang::DienTick()
+{
+	if (!m_pTab)
+		return;
+	for (int i = 0; i < m_pTab->nMuc; i++)
+	{
+		const WAUiMuc& m = m_pTab->pMuc[i];
+		if (m.nLoai != WA_MUC_TICK || m.nKhe >= WA_TR_TICK)
+			continue;
+		int v = LayInt(&m) ? 1 : 0;
+		if (m.nViec == WA_V_UUTIEN_GAN)
+			v = !v;
+		m_Tick[m.nKhe].CheckButton(v);
+	}
+}
+
+// [WAUTO 12/09] Dien cac o CHU chay theo trang thai: so lieu nhan vat (the Co ban) va ban do / diem da dat (the Di chuyen),
+// cung dong tom tat cua moi o danh sach. Ban PC dien may o nay trong ProcIpcCommand / UpdateUI.
+void KUiWAutoTrang::CapNhatSong()
+{
+	char sz[128];
+	char szMap[40] = { 0 };
+	char szKN[48] = { 0 };
+	int aSo[12] = { 0 };
+	int bCo, i;
+	if (!m_pTab)
+		return;
+	bCo = JxCore_WAutoSoLieu(aSo, 12, szMap, sizeof(szMap), szKN, sizeof(szKN));
+	for (i = 0; i < m_pTab->nMuc; i++)
+	{
+		const WAUiMuc& m = m_pTab->pMuc[i];
+		if (m.nLoai == WA_MUC_SOLIEU)
+		{
+			if (m.nKhe >= WA_TR_NHAN)
+				continue;
+			sz[0] = 0;
+			switch (m.nChiSo)
+			{
+			case WA_SL_SINHLUC:		if (bCo) snprintf(sz, sizeof(sz), "%d/%d", aSo[0], aSo[1]); break;
+			case WA_SL_NOILUC:		if (bCo) snprintf(sz, sizeof(sz), "%d/%d", aSo[2], aSo[3]); break;
+			case WA_SL_THELUC:		if (bCo) snprintf(sz, sizeof(sz), "%d/%d", aSo[4], aSo[5]); break;
+			case WA_SL_DANGCAP:		if (bCo) snprintf(sz, sizeof(sz), "%d", aSo[6]); break;
+			case WA_SL_BANDO:		if (bCo) snprintf(sz, sizeof(sz), "%s", szMap); break;
+			case WA_SL_TOADO:		if (bCo) snprintf(sz, sizeof(sz), "%d / %d", aSo[8], aSo[9]); break;
+			case WA_SL_KINHNGHIEM:	if (bCo) snprintf(sz, sizeof(sz), "%s", szKN); break;
+			case WA_SL_MAP_AP:
+			{
+				const char* a = (const char*)DiaChi(&m);
+				if (a && a[0])
+					snprintf(sz, sizeof(sz), "%s", a);
+				break;
+			}
+			case WA_SL_DIEM_X:
+			case WA_SL_DIEM_Y:
+				if (m.nOff >= 0)
+					snprintf(sz, sizeof(sz), "%d", LayInt(&m));
+				break;
+			}
+			m_Nhan[m.nKhe].SetText(sz[0] ? sz : "-");
+		}
+		else if (m.nLoai == WA_MUC_DSACH && m.nKheNhan < WA_TR_NHAN)
+		{
+			KUiWAutoDsach::TomTat(m.nViec, sz, sizeof(sz));
+			m_Nhan[m.nKheNhan].SetText(sz);
+		}
+	}
+}
+
+const WAUiMuc* KUiWAutoTrang::MucTheoIdc(const char* szIdc)
+{
+	if (!m_pTab || !szIdc)
+		return NULL;
+	for (int i = 0; i < m_pTab->nMuc; i++)
+		if (m_pTab->pMuc[i].szIdc && !strcmp(m_pTab->pMuc[i].szIdc, szIdc))
+			return &m_pTab->pMuc[i];
+	return NULL;
+}
+
+// [WAUTO 12/09] Nut co viec: hai nut "Lay" cua the Di chuyen va bon nut mo bang danh sach.
+void KUiWAutoTrang::LamViec(const WAUiMuc* p)
+{
+	autoData* pCH = JxWAuto_CauHinh();
+	char szMap[32] = { 0 };
+	int nMapId = 0, x = 0, y = 0;
+	if (!p || !pCH || sizeof(autoData) != WA_SIZEOF_AUTODATA)
+		return;
+	switch (p->nViec)
+	{
+	case WA_V_LAY_BANDO:
+	case WA_V_LAY_DIEM:
+		if (!JxCore_WAutoViTri(&nMapId, szMap, sizeof(szMap), &x, &y))
+			return;
+		if (p->nViec == WA_V_LAY_DIEM)
+		{
+			pCH->nPointX = x;
+			pCH->nPointY = y;
+		}
+		pCH->nMoveMapId = nMapId;		// nhu ban PC: hai nut nay deu dat lai ban do ap dung
+		strncpy(pCH->szMoveMap, szMap, sizeof(pCH->szMoveMap) - 1);
+		pCH->szMoveMap[sizeof(pCH->szMoveMap) - 1] = 0;
+		DaDoi();
+		CapNhatSong();
+		g_DebugLog("[WAUTO-UI] %s: map=%d %s (%d,%d)", p->szIdc, nMapId, szMap, x, y);
+		break;
+	case WA_V_DS_TOADO:
+	case WA_V_DS_LOC:
+	case WA_V_DS_KHONGNHAT:
+	case WA_V_DS_TODOI:
+	case WA_V_DS_NGUHANH:
+	case WA_V_DS_LIENDAU:
+		KUiWAutoDsach::MoSua(p->nViec);
+		break;
+	}
 }
 
 void KUiWAutoTrang::NapChieu()
@@ -335,12 +496,54 @@ void KUiWAutoTrang::NapChieu()
 void KUiWAutoTrang::DienChon(const WAUiMuc* p)
 {
 	char sz[64];
-	int i, v;
+	int i, v = 0;
 	if (!p || p->nKhe >= WA_TR_CHON)
 		return;
-	v = LayInt(p);
 	sz[0] = 0;
-	if (p->nNguon == WA_NGUON_CHIEU)
+	if (p->nKieu == WA_KIEU_CHUOI)
+	{	// [WAUTO 12/09] hop "Theo sau": gia tri la TEN nhan vat (szFollName), khong phai so
+		const char* a = (const char*)DiaChi(p);
+		if (a && a[0])
+			strncpy(sz, a, 31);
+		else
+			strcpy(sz, "(kh南g theo ai)");
+		sz[31] = 0;
+		v = 0;
+	}
+	else if (p->nViec == WA_V_ST_BOSS)
+	{	// [WAUTO 12/09] gia tri = 141 + chi so dong (WAuto.cpp:1328)
+		v = LayInt(p) - 141;
+		if (v < 0 || v >= (int)p->nLuaChon)
+			v = 0;
+		strncpy(sz, p->pLuaChon[v], 31);
+		sz[31] = 0;
+	}
+	else if (p->nViec == WA_V_TK_RUONG)
+	{	// [WAUTO 12/09] gia tri = MA HUONG 0..4, 5 = gan nhat; danh sach tinh xep dung theo ma nen chi so = ma.
+		// Thanh dang chon o "Het tran ve" KHONG co huong do -> lui ve "Gan nhat" va ghi lai, y nhu
+		// WA_NapRuongHuong cua ban PC lam khi doi thanh (WAuto.cpp:160-178).
+		const WAUiMuc* pVe = MucTheoIdc("IDC_COMBO_9_VE");
+		int nThanh = pVe ? LayInt(pVe) : 0;
+		v = LayInt(p);
+		if (nThanh < 0 || nThanh >= WA_TKR_THANH)
+			nThanh = 0;
+		if (v < 0 || v >= (int)p->nLuaChon)
+			v = (int)p->nLuaChon - 1;
+		if (v < WA_TKR_HUONG && !s_WATKRuongCo[nThanh][v])
+		{
+			v = (int)p->nLuaChon - 1;		// dong cuoi = "Gan nhat (tu chon)" = ma 5
+			if (!m_bDangDien)
+			{
+				DatInt(p, v);
+				DaDoi();
+			}
+			else
+				DatInt(p, v);
+		}
+		strncpy(sz, p->pLuaChon[v], 31);
+		sz[31] = 0;
+	}
+	else if (p->nNguon == WA_NGUON_CHIEU)
 	{
 		if (m_nChieu < 0)
 			NapChieu();
@@ -360,6 +563,8 @@ void KUiWAutoTrang::DienChon(const WAUiMuc* p)
 	}
 	else if (p->pLuaChon && p->nLuaChon > 0)
 	{
+		v = LayInt(p);		// [WAUTO 12/09] CAC NHANH TREN moi tu doc gia tri; nhanh chung nay truoc do dung v chua gan
+							// -> hop chon tinh nao cung hien dong 0 (do 12:29: nSelMap = 1 ma o van hien dong dau).
 		if (v < 0 || v >= (int)p->nLuaChon)
 			v = 0;
 		strncpy(sz, p->pLuaChon[v], 31);
@@ -382,23 +587,103 @@ void KUiWAutoTrang::DienChon(const WAUiMuc* p)
 	m_Chon[p->nKhe].SetLabel(sz);
 }
 
+// [WAUTO 12/09] Dung danh sach dong cho mot hop chon: m_apDong[i] = chu, m_anGT[i] = gia tri se ghi vao autoData.
+// Tra so dong. Cac hop co viec rieng: Theo sau (ten quanh day), Ruong cua (loc theo thanh), Boss (141 + dong).
+int KUiWAutoTrang::DungMenu(const WAUiMuc* p)
+{
+	int i, n = 0;
+	m_nDongMenu = 0;
+	if (!p)
+		return 0;
+	if (p->nViec == WA_V_THEO_SAU)
+	{
+		int nT = JxCore_WAutoTenQuanhDay((char*)s_szTenQuanh, 100);
+		m_apDong[0] = "(kh南g theo ai)";
+		m_anGT[0] = 0;
+		n = 1;
+		for (i = 0; i < nT && n < WA_MENU_TOI_DA; i++)
+		{
+			m_apDong[n] = s_szTenQuanh[i];
+			m_anGT[n] = i + 1;
+			n++;
+		}
+	}
+	else if (p->nViec == WA_V_TK_RUONG)
+	{	// chi liet ke huong CO THAT cua thanh dang chon o hop "Het tran ve"; gia tri = MA HUONG
+		const WAUiMuc* pVe = MucTheoIdc("IDC_COMBO_9_VE");
+		int nThanh = pVe ? LayInt(pVe) : 0;
+		if (nThanh < 0 || nThanh >= WA_TKR_THANH)
+			nThanh = 0;
+		for (i = 0; i < WA_TKR_HUONG && i < (int)p->nLuaChon; i++)
+			if (s_WATKRuongCo[nThanh][i])
+			{
+				m_apDong[n] = p->pLuaChon[i];
+				m_anGT[n] = i;
+				n++;
+			}
+		if ((int)p->nLuaChon > WA_TKR_HUONG)
+		{	// dong cuoi: "Gan nhat (tu chon)" = ma 5
+			m_apDong[n] = p->pLuaChon[WA_TKR_HUONG];
+			m_anGT[n] = WA_TKR_HUONG;
+			n++;
+		}
+	}
+	else if (p->nNguon == WA_NGUON_CHIEU)
+	{
+		NapChieu();
+		m_apDong[0] = "Kh南g thi掐 l疕";
+		m_anGT[0] = 0;
+		n = 1;
+		for (i = 0; i < m_nChieu && n < WA_MENU_TOI_DA; i++)
+			if (WA_ChieuHop(m_aChieu[i], p->nLocChieu))
+			{
+				m_apDong[n] = m_aChieu[i].szName;
+				m_anGT[n] = m_aChieu[i].nId;
+				n++;
+			}
+	}
+	else if (p->pLuaChon)
+	{
+		for (i = 0; i < (int)p->nLuaChon && n < WA_MENU_TOI_DA; i++)
+		{
+			m_apDong[n] = p->pLuaChon[i];
+			m_anGT[n] = (p->nViec == WA_V_ST_BOSS) ? (141 + i) : i;
+			n++;
+		}
+	}
+	m_nDongMenu = n;
+	return n;
+}
+
 void KUiWAutoTrang::MoMenuChon(int nKhe)
 {
 	const WAUiMuc* p = Muc(WA_MUC_CHON, nKhe);
 	int i, n = 0, x = 0, y = 0;
 	if (!p || nKhe >= WA_TR_CHON)
 		return;
-	if (p->nNguon == WA_NGUON_CHIEU)
-	{
-		NapChieu();
-		n = m_nChieu + 1;
-	}
-	else if (p->pLuaChon)
-		n = p->nLuaChon;
+	n = DungMenu(p);
 	if (n <= 0)
 		return;
-	if (n > WA_MENU_TOI_DA)
-		n = WA_MENU_TOI_DA;
+	if (n >= WA_MENU_DAI)
+	{	// [WAUTO 12/09] danh sach dai: KPopupMenu khong cuon (cao = so dong x 26 px) nen dong thu 24 tro di cham khong toi
+		char szTieuDe[80];
+		int nCu = -1;
+		int vGio = (p->nKieu == WA_KIEU_CHUOI) ? -1 : LayInt(p);
+		for (i = 0; i < n; i++)
+			if (vGio >= 0 && m_anGT[i] == vGio)
+			{
+				nCu = i;
+				break;
+			}
+		// [WAUTO 12/09] tieu de = NHAN cung hang ("Vong sang #1", "Ruong cua"...), khong phai chu dang hien trong hop
+		szTieuDe[0] = 0;
+		if (p->nKheNhan < WA_TR_NHAN)
+			m_Nhan[p->nKheNhan].GetText(szTieuDe, sizeof(szTieuDe));
+		if (!szTieuDe[0])
+			strcpy(szTieuDe, "Ch鄚 m彋 m瀿");
+		KUiWAutoDsach::MoChonMuc(this, nKhe, szTieuDe, m_apDong, n, nCu);
+		return;
+	}
 	KPopupMenuData* pMenu = (KPopupMenuData*)malloc(MENU_DATA_SIZE(n));
 	if (!pMenu)
 		return;
@@ -407,7 +692,7 @@ void KUiWAutoTrang::MoMenuChon(int nKhe)
 	pMenu->usMenuFlag |= PM_F_AUTO_DEL_WHEN_HIDE;
 	for (i = 0; i < n; i++)
 	{
-		const char* s = (p->nNguon == WA_NGUON_CHIEU) ? ((i == 0) ? "Kh南g thi掐 l疕" : m_aChieu[i - 1].szName) : p->pLuaChon[i];
+		const char* s = m_apDong[i];	// [WAUTO 12/09] danh sach da dung san (loc chieu / loc huong ruong / 141+i)
 		strncpy(pMenu->Items[i].szData, s ? s : "", 63);
 		pMenu->Items[i].szData[63] = 0;
 		pMenu->Items[i].uDataLen = strlen(pMenu->Items[i].szData);
@@ -424,14 +709,34 @@ void KUiWAutoTrang::ChonMenu(int nKhe, int nMuc)
 {
 	const WAUiMuc* p = Muc(WA_MUC_CHON, nKhe);
 	int v;
-	if (!p || nMuc < 0)
+	if (!p || nMuc < 0 || nMuc >= m_nDongMenu)
 		return;
-	if (p->nNguon == WA_NGUON_CHIEU)
-		v = (nMuc == 0 || nMuc - 1 >= m_nChieu) ? 0 : m_aChieu[nMuc - 1].nId;
-	else
-		v = nMuc;
+	if (p->nKieu == WA_KIEU_CHUOI)
+	{	// [WAUTO 12/09] hop "Theo sau": ghi TEN vao szFollName (dong 0 = khong theo ai)
+		char* a = (char*)DiaChi(p);
+		if (!a || p->nCo <= 0)
+			return;
+		if (nMuc == 0)
+			a[0] = 0;
+		else
+		{
+			strncpy(a, m_apDong[nMuc] ? m_apDong[nMuc] : "", p->nCo - 1);
+			a[p->nCo - 1] = 0;
+		}
+		DienChon(p);
+		DaDoi();
+		g_DebugLog("[WAUTO-UI] %s = %s", p->szIdc, a);
+		return;
+	}
+	v = m_anGT[nMuc];
 	DatInt(p, v);
 	DienChon(p);
+	if (p->nViec == WA_V_TK_RUONG || MucTheoIdc("IDC_COMBO_9_RH"))
+	{	// [WAUTO 12/09] doi THANH se ve -> danh sach "Ruong cua" khac di, doc lai cho khoi lech (nhu WA_NapRuongHuong ben PC)
+		const WAUiMuc* pRH = MucTheoIdc("IDC_COMBO_9_RH");
+		if (pRH && pRH != p)
+			DienChon(pRH);
+	}
 	DaDoi();
 	g_DebugLog("[WAUTO-UI] %s = %d", p->szIdc, v);
 }
@@ -477,6 +782,14 @@ void KUiWAutoTrang::Breathe()
 {
 	if (m_nAnTam > 0 && KPopupMenu::GetMenuData() == NULL)	// menu bi huy ma khong bao (Cancel tu noi khac)
 		AnDuoiMenu(0);
+	{	// [WAUTO 12/09] o so lieu nhan vat chay theo game -> dien lai moi 500 ms (nhu WAuto.exe nhan PRG_MAINSYNC)
+		unsigned int uNow = (unsigned int)timeGetTime();
+		if (uNow >= m_uSongKe)
+		{
+			m_uSongKe = uNow + 500;
+			CapNhatSong();
+		}
+	}
 }
 
 void KUiWAutoTrang::DaDoi()
@@ -495,9 +808,15 @@ int KUiWAutoTrang::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 				const WAUiMuc* p = Muc(WA_MUC_TICK, i);
 				if (p)
 				{
-					int v = LayInt(p) ? 0 : 1;
+					int v;
+					if (p->nViec == WA_V_UUTIEN_GAN)		// [WAUTO 12/09] cap radio cua the PK: chon la DAT han, khong dao
+						v = 0;
+					else if (p->nViec == WA_V_UUTIEN_NGU)
+						v = 1;
+					else
+						v = LayInt(p) ? 0 : 1;
 					DatInt(p, v);
-					m_Tick[i].CheckButton(v);
+					DienTick();								// doc lai ca tab: o cung cap tu tat
 					DaDoi();
 					g_DebugLog("[WAUTO-UI] %s = %d", p->szIdc, v);
 				}
@@ -509,9 +828,42 @@ int KUiWAutoTrang::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 				MoMenuChon(i);
 				return 1;
 			}
+		for (i = 0; i < WA_TR_NHAN; i++)
+			if (uParam == (KUPARAM)(KWndWindow*)&m_Nhan[i])
+			{	// [WAUTO 12/09] cham vao CHU canh o tick: tim o tick nhan nhan nay lam nhan cua no
+				if (!m_pTab)
+					return 1;
+				// [WAUTO 13/09] MOT nhan co the ung voi ca o tick lan hop chon cung hang (hang "[v] Di ban do  [hop chon]":
+				// hop chon muon nhan cua tick de lam tieu de bang phu) -> quet HAI LUOT, o tick duoc uu tien.
+				for (int k = 0; k < m_pTab->nMuc; k++)
+				{
+					const WAUiMuc& m = m_pTab->pMuc[k];
+					if (m.nKheNhan == i && m.nLoai == WA_MUC_TICK && m.nKhe < WA_TR_TICK && !m_Tick[m.nKhe].IsDisable())
+					{
+						WndProc(WND_N_BUTTON_CLICK, (KUPARAM)(KWndWindow*)&m_Tick[m.nKhe], 0);
+						return 1;
+					}
+				}
+				for (int k = 0; k < m_pTab->nMuc; k++)
+				{	// [WAUTO 12/09] cham vao nhan cua hop chon ("Vong sang #1", "Ruong cua"...) = mo hop do
+					const WAUiMuc& m = m_pTab->pMuc[k];
+					if (m.nKheNhan == i && m.nLoai == WA_MUC_CHON && m.nKhe < WA_TR_CHON && !m_Chon[m.nKhe].IsDisable())
+					{
+						MoMenuChon(m.nKhe);
+						return 1;
+					}
+				}
+				return 1;
+			}
 		for (i = 0; i < WA_TR_NUT; i++)
 			if (uParam == (KUPARAM)(KWndWindow*)&m_Nut[i])
-				return 1;		// (B2) chua co hanh dong
+			{
+				const WAUiMuc* p = Muc(WA_MUC_NUT, i);	// [WAUTO 12/09] nut thuong
+				if (!p)
+					p = Muc(WA_MUC_DSACH, i);			// hoac nut "Sua" cua o danh sach
+				LamViec(p);
+				return 1;
+			}
 	}
 	else if (uMsg == WND_N_EDIT_CHANGE && !m_bDangDien)
 	{

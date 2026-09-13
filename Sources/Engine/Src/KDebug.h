@@ -11,6 +11,9 @@
 //---------------------------------------------------------------------------
 ENGINE_API HWND g_FindDebugWindow(char* lpClassName, char* lpWindowName);
 ENGINE_API void g_DebugLog(LPSTR Fmt, ...);
+// [WAUTO 12/09] [BAOMAT 12/09] cong tac tat nhat ky chan doan. Phai la HAM XUAT: bien g_nJxNhatKyChanDoan nam
+// trong Engine.dll, S3Client.exe khong thay duoc neu chi khai "extern int" (LNK2001).
+ENGINE_API void g_SetNhatKyChanDoan(int bBat);
 ENGINE_API void g_MessageBox(LPSTR lpMsg, ...);
 ENGINE_API void g_AssertFailed(char* FileName, int LineNum);
 //---------------------------------------------------------------------------

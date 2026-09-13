@@ -39,15 +39,18 @@ PAD_L, PAD_R, PAD_T, PAD_B, TIEU_DE_H, CACH_NHOM = 6, 6, 6, 3, 18, 4
 TICK = 24                     # = tick_chon.spr (anh_wauto_vnku.py TICK); phai <= buoc hang nho nhat (24)
 NHAN_H = 16
 EDIT_W, EDIT_H = 44, 16       # 6 chu so (MaxLen=6) = 36 px + le; cao 16 = o chu (KWndEdit ve chu tu MEP TREN cua so -> Top = Top cua nhan de thang hang)
-CHON_RONG, CHON_H = (120, 160, 200), 24
+CHON_RONG, CHON_H = (120, 140, 160, 180, 200, 220, 240), 24   # [WAUTO 13/09] nac 20 px (anh_wauto_vnku.py sinh du anh)
 NUT_RONG, NUT_H = (60, 84, 120, 160), 22
-DSACH_HANG = 3
+DSACH_HANG = 2                # [WAUTO 12/09] o danh sach = khung tom tat + nut "Sua" (noi dung sua trong BANG PHU UiWAutoDsach)
 FONT = 12
+# [WAUTO 12/09] o chu duoc dien luc chay (so lieu nhan vat / toa do dang dat): rong toi thieu theo ma so lieu,
+# vi nhan goc trong WAuto.rc rong 0 (WAuto ghi chu vao do luc chay) -> neu tinh theo do dai nhan thi chi ra 20 px.
+RONG_SOLIEU = {1: 76, 2: 76, 3: 76, 4: 112, 5: 86, 6: 40, 7: 104, 8: 112, 9: 46, 10: 46}
 CHU_W = 6                     # font 12: moi byte TCVN3 = 6 px (KWndLabeledButton: nMaxLen = Width*2/Font)
 KHOANG = 6                    # khoang giua cac dieu khien trong hang
 KHOANG_DON_VI = 4             # chu don vi ("van", "giay", "phut") ngay sau o nhap: sat hon
 POOL = dict(tick=22, nhap=12, chon=12, nhan=32, nut=12, dsach=2, hop=8)
-KIND = dict(tick=1, nhap=2, chon=3, nhan=4, nut=5, dsach=6)
+KIND = dict(tick=1, nhap=2, chon=3, nhan=4, nut=5, dsach=6, solieu=7)
 KIEU = {"int": 0, "short": 1, "UINT": 2, "unsigned int": 2, "char": 3, None: 4}
 GAP_NHOM = 18                 # don vi hop thoai PC: hang cach nhau tu day tro len -> nhom moi
 
@@ -179,6 +182,11 @@ def chia_nhom(n, hang):
                         and not khac == [] and all(r["kind"] == "tick" and r["x"] >= 100 for r in khac) and len(chu) == 1)
         tay = TIEU_DE_TAY.get((n, h[0]["idc"]))
         moi = cur is None or (y_truoc is not None and y - y_truoc >= GAP_NHOM) or nhan_don or tieu_de_hang or tay is not None
+        # [WAUTO 12/09] nhom vua mo bang MOT DONG CHU tieu de ma chua co hang nao (dieu khien dau tien cua no bi bo
+        # khoi ban mobile nen khoang cach toi hang sau >= GAP_NHOM) -> DUNG mo nhom moi, dua hang nay vao nhom do.
+        # Khong co cho nay thi ra mot o nhom rong cao 21 px (chi co tieu de) va noi dung nam o nhom khong ten ben canh.
+        if moi and cur is not None and cur.tieu_de and not cur.hang and not nhan_don and not tieu_de_hang and tay is None:
+            moi = False
         if moi:
             cur = Nhom(tay)
             nhom.append(cur)
@@ -199,15 +207,19 @@ def chia_nhom(n, hang):
 
 
 # ---------------------------------------------------------------- do rong tung o
-def rong_chon(r):
+def can_chon(r):
+    """be ngang CAN co de dong dai nhat hien du (+34 = o mui ten + le)"""
     lc = [str(v) for v in (r.get("lua_chon") or []) if not str(v).startswith("dong:")]
     cach = str(r.get("cach", ""))
     if cach.startswith("chieu"):
-        can = 160
-    elif lc:
-        can = max(rong_chu(v) for v in lc) + 34
-    else:
-        can = 160
+        return 160
+    if lc:
+        return max(rong_chu(v) for v in lc) + 34
+    return 160
+
+
+def rong_chon(r):
+    can = can_chon(r)
     for w in CHON_RONG:
         if w >= can:
             return w
@@ -229,6 +241,8 @@ def rong_muc(r, con_lai):
     if k == "tick":
         return TICK + 4 + rong_chu(r["label"]) + NHAN_DEM
     if k == "chu":
+        if r.get("so_lieu"):
+            return RONG_SOLIEU.get(r["so_lieu"], 76)
         return rong_chu(r["label"] or "-") + NHAN_DEM
     if k == "onhap":
         if r.get("cach") == "chuoi":
@@ -254,6 +268,23 @@ def co_lai_chon(h, IW, lui=0, khoang=KHOANG):
         if rong_nhat is None:
             break
         w[id(rong_nhat)] = max(x for x in CHON_RONG if x < w[id(rong_nhat)])
+    # [WAUTO 13/09] Con cho trong trong hang -> NOI hop chon dang thieu ra. Truoc day hop chon chi lay dung co
+    # rong_chon() roi thoi, nen "Hieu uy / Pho Tuong / Dai Tuong" (220 px) nam trong o 160 va bi cat ngang.
+    while True:
+        thieu, hut = None, 0
+        for r in h:
+            if r["kind"] != "chon":
+                continue
+            to_hon = [x for x in CHON_RONG if x > w[id(r)]]
+            if not to_hon or w[id(r)] >= can_chon(r):
+                continue
+            if tong() - w[id(r)] + to_hon[0] > IW:
+                continue
+            if can_chon(r) - w[id(r)] > hut:
+                thieu, hut = r, can_chon(r) - w[id(r)]
+        if thieu is None:
+            break
+        w[id(thieu)] = min(x for x in CHON_RONG if x > w[id(thieu)])
     return w
 
 
@@ -291,6 +322,14 @@ def xep_nhom(nh, IW, P):
         if loai_hang(h) == "nhan" and any(r["kind"] in ("onhap", "chon", "nut") for r in h[1:]):
             col1 = max(col1, rong_muc(h[0], IW))
     col1 = min(col1 + KHOANG, int(IW * 0.42))
+    # [WAUTO 12/09] cot chung cho hang co O SO LIEU: nhan cua cac hang do dai ngan khac nhau, khong lay cot chung
+    # thi moi hang mot cho (105 / 99 / 99...) nhin xo lech.
+    col_sl = 0
+    for h in nh.hang:
+        if loai_hang(h) == "bang" and any(r.get("so_lieu") for r in h):
+            col_sl = max(col_sl, rong_muc(h[0], IW))
+    if col_sl:
+        col_sl += KHOANG
     dong = 0
     x_thu_hai = [30]          # x cua o thu hai o hang truoc (de hang con "13h23 / 17h50" lui vao thang hang)
 
@@ -356,11 +395,22 @@ def xep_nhom(nh, IW, P):
                     dat(r, lui + (i % moi_dong) * slot, dong)
                 dong += 1
         elif lh == "bang":
-            dat(h[0], 0, dong, rong_muc(h[0], IW))
-            x = col1
-            for r in h[1:]:
-                dat(r, x, dong, EDIT_W)
-                x += EDIT_W + KHOANG
+            w0 = rong_muc(h[0], IW)
+            dat(h[0], 0, dong, w0)
+            if any(r.get("so_lieu") for r in h):
+                # [WAUTO 12/09] hang co O SO LIEU (the Co ban: "Sinh luc : | 13910/13910 | Ban do | ..."): dat theo
+                # BE RONG THAT cua tung o va bat dau sau nhan. Truoc day dung chung col1 + EDIT_W (44): nhom nay khong
+                # co hang kieu "nhan" nen col1 = 6 -> o so lieu de len chinh nhan cua no, doc ra "S1s910/1 Ban do".
+                x = max(col1, col_sl, w0 + KHOANG)
+                for r in h[1:]:
+                    w = rong_muc(r, IW - x)
+                    dat(r, x, dong, w)
+                    x += w + KHOANG
+            else:
+                x = col1
+                for r in h[1:]:
+                    dat(r, x, dong, EDIT_W)
+                    x += EDIT_W + KHOANG
             dong += 1
         elif lh == "nhan":
             w0 = rong_muc(h[0], IW)
@@ -376,6 +426,12 @@ def xep_nhom(nh, IW, P):
                     dong += 1
                     x = col1
             x_thu_hai.append(x)
+            # [WAUTO 13/09] Hang co hop chon VAN thieu cho du da noi het co: bo cot chung RIENG hang nay (hop chon
+            # bat dau ngay sau nhan cua no) de chu trong hop hien du. Cac hang khac van thang cot; x_thu_hai giu col1.
+            if x > w0 + KHOANG and any(r["kind"] == "chon" and wr[id(r)] < can_chon(r) for r in h[1:]):
+                wr2 = co_lai_chon(h[1:], IW, lui=w0 + KHOANG)
+                if sum(wr2.values()) > sum(wr.values()):
+                    wr, x = wr2, w0 + KHOANG
             for r in h[1:]:
                 w = wr[id(r)] if r["kind"] == "chon" else rong_muc(r, IW - x)
                 if x + w > IW and x > col1:
@@ -513,6 +569,9 @@ def sinh_tab(n, rows, ten):
 
     xem = []          # cho --xem: (kind, x, y, w, h, text)
     mau_nhom = -1
+    nhan_gan = [255, -999]    # [WAUTO 12/09] khe + y cua NHAN vua ve: hop chon / o nhap cung hang lay lam ten (bang phu dung lam tieu de)
+    nhan_tick = [255, -999]   # [WAUTO 13/09] nhan cua O TICK: hang "[v] Di ban do  [hop chon]" khong co nhan rieng cho hop
+                              # -> hop chon muon tam nhan cua tick cung hang lam tieu de bang phu (truoc do ra "Chon mot muc")
     for (nh, cot, y, CW, ch, o, so_dong) in bo_cuc:
         s = slot("hop")
         x0 = RAIL + cot * (CW + GUTTER)
@@ -536,13 +595,22 @@ def sinh_tab(n, rows, ten):
                             "Trans=0", r"Image=\spr\uinew\uiautonew\tick_chon.spr", "Up=0", "Down=1", "CheckBox=1", ""])
                 # nhan cua tick di ngay sau trong danh sach o
                 ns = 255
-                muc.append([KIND["tick"], s, ns, chi_so, off, kieu, co, -1, 0, r["idc"]])
+                muc.append([KIND["tick"], s, ns, chi_so, off, kieu, co, -1, 0, 0, r.get("viec") or 0, r["idc"]])
                 xem.append(("tick", q.x, q.y, TICK, TICK, ""))
             elif q.kind == "nhan":
-                mau = "230,230,230" if q.kw.get("cua_tick") else "255,252,178"
-                ns = muc_nhan(q.x, q.y, q.w, q.kw["text"], mau=mau)
+                so_lieu = (r.get("so_lieu") or 0) if r else 0
+                mau = "230,230,230" if q.kw.get("cua_tick") else ("160,255,200" if so_lieu else "255,252,178")
+                ns = muc_nhan(q.x, q.y, q.w, "-" if so_lieu else q.kw["text"], mau=mau)
                 if q.kw.get("cua_tick") and muc and muc[-1][0] == KIND["tick"] and muc[-1][2] == 255:
                     muc[-1][2] = 255 if ns is None else ns
+                if ns is not None and not q.kw.get("cua_tick"):
+                    nhan_gan[0], nhan_gan[1] = ns, q.y
+                elif ns is not None:
+                    nhan_tick[0], nhan_tick[1] = ns, q.y
+                if so_lieu and ns is not None:
+                    # [WAUTO 12/09] o chu dien luc chay: WA_SL_MAP_AP / DIEM_X / DIEM_Y lay tu autoData (co offset),
+                    # con lai lay tu trang thai nhan vat (JxCore_WAutoSoLieu) nen khong can offset.
+                    muc.append([KIND["solieu"], ns, 255, so_lieu, off, kieu, co, -1, 0, 0, 0, r["idc"]])
                 xem.append(("nhan", q.x, q.y, q.w, q.h, q.kw["text"]))
             elif q.kind == "nhap":
                 s = slot("nhap")
@@ -552,7 +620,7 @@ def sinh_tab(n, rows, ten):
                 ini.extend(["[Nhap%d]" % s, "Left=%d" % q.x, "Top=%d" % q.y, "Width=%d" % q.w, "Height=%d" % EDIT_H,
                             "Font=%d" % FONT, "Color=255,255,255", "BorderColor=60,50,30",
                             "MaxLen=%d" % (max(co - 1, 1) if chuoi else 6), "Type=%d" % (2 if chuoi else 1), ""])
-                muc.append([KIND["nhap"], s, 255, chi_so, off, 3 if chuoi else kieu, co, -1, 0, r["idc"]])
+                muc.append([KIND["nhap"], s, 255, chi_so, off, 3 if chuoi else kieu, co, -1, 0, 0, r.get("viec") or 0, r["idc"]])
                 xem.append(("nhap", q.x, q.y, q.w, EDIT_H, ""))
             elif q.kind == "chon":
                 s = slot("chon")
@@ -573,7 +641,10 @@ def sinh_tab(n, rows, ten):
                 if tinh:
                     li = len(luachon)
                     luachon.append(tinh)
-                muc.append([KIND["chon"], s, 255, chi_so, off, kieu, co, li, nguon, r["idc"]])
+                nn = nhan_gan[0] if abs(q.y - nhan_gan[1]) <= 8 else 255
+                if nn == 255 and abs(q.y - nhan_tick[1]) <= 8:
+                    nn = nhan_tick[0]       # [WAUTO 13/09] khong co nhan rieng -> dung chung nhan cua tick cung hang
+                muc.append([KIND["chon"], s, nn, chi_so, off, kieu, co, li, nguon, r.get("loc_chieu") or 0, r.get("viec") or 0, r["idc"]])
                 xem.append(("chon", q.x, q.y, q.w, CHON_H, (tinh[0] if tinh else ("(chiêu)" if nguon == 1 else "(chưa hỗ trợ)"))))
             elif q.kind == "nut":
                 s = slot("nut")
@@ -583,18 +654,27 @@ def sinh_tab(n, rows, ten):
                             "Trans=0", "Image=\\spr\\uinew\\uiautonew\\nut_do_%d.spr" % q.w, "Up=0", "Down=1", "LabelYOffset=4",
                             "Font=%d" % FONT, "Color=230,230,230", "OverColor=255,255,160", "SelectColor=255,255,0", "DisableColor=140,120,120",
                             "Label=%s" % tcvn(r["label"]), ""])
-                muc.append([KIND["nut"], s, 255, 0, None, 4, 0, -1, 2, r["idc"]])
+                muc.append([KIND["nut"], s, 255, 0, None, 4, 0, -1, 2, 0, r.get("viec") or 0, r["idc"]])
                 xem.append(("nut", q.x, q.y, q.w, NUT_H, r["label"]))
             elif q.kind == "dsach":
-                s = slot("dsach")
-                if s is None:
+                # [WAUTO 12/09] o danh sach trong trang = khung + DONG TOM TAT (dien luc chay) + nut "Sửa".
+                # Them / bot / xep thu tu lam trong BANG PHU (UiWAutoDsach) cho du cho ngon tay va cuon duoc.
+                sn = slot("nut")
+                if sn is None:
                     continue
                 sh = slot("hop")
                 if sh is not None:
                     ini.extend(["[Hop%d]" % sh, "Left=%d" % q.x, "Top=%d" % q.y, "Width=%d" % q.w, "Height=%d" % q.h, "TieuDe=", ""])
-                ns = muc_nhan(q.x, q.y + (q.h - NHAN_H) // 2, q.w, "(danh sách - bước B18)", mau="150,150,150", halign=1)
-                muc.append([KIND["dsach"], s, 255 if ns is None else ns, 0, None, 4, 0, -1, 2, r["idc"]])
-                xem.append(("dsach", q.x, q.y, q.w, q.h, "(danh sách - B18)"))
+                wn = NUT_RONG[1]                                    # 84 px
+                ns = muc_nhan(q.x + 6, q.y + (q.h - NHAN_H) // 2, q.w - wn - 18, "-", mau="200,220,255")
+                xn, yn = q.x + q.w - wn - 6, q.y + (q.h - NUT_H) // 2
+                ini.extend(["[Nut%d]" % sn, "Left=%d" % xn, "Top=%d" % yn, "Width=%d" % wn, "Height=%d" % NUT_H,
+                            "Trans=0", "Image=\\spr\\uinew\\uiautonew\\nut_do_%d.spr" % wn, "Up=0", "Down=1", "LabelYOffset=4",
+                            "Font=%d" % FONT, "Color=230,230,230", "OverColor=255,255,160", "SelectColor=255,255,0", "DisableColor=140,120,120",
+                            "Label=%s" % tcvn("Sửa"), ""])
+                muc.append([KIND["dsach"], sn, 255 if ns is None else ns, 0, None, 4, 0, -1, 0, 0, r.get("viec") or 0, r["idc"]])
+                xem.append(("dsach", q.x, q.y, q.w, q.h, "(danh sách)"))
+                xem.append(("nut", xn, yn, wn, NUT_H, "Sửa"))
     return ini, muc, luachon, canh_bao, dict(hang=len(hang), nhom=len(nhom), cot=ncot, buoc=P, dem=dem), xem
 
 
@@ -658,8 +738,26 @@ def main():
     h = ["// %s BANG dieu khien cho trang noi dung cua khung WAuto trong game - SINH BANG MAY (android/sinh_bocuc_wauto.py)" % DAU,
          "// tu WAutoUI/WAuto.rc + SaveRoleData + ipc_shared.h. KHONG SUA TAY: chay lai bo sinh. Chuoi: TCVN3.",
          "// Doc boi UiWAutoTrang.cpp (chi Android).",
-         "#ifndef UiWAutoBang_H", "#define UiWAutoBang_H", "#ifdef JX_ANDROID", "",
+         "#ifndef UiWAutoBang_H", "#define UiWAutoBang_H", "#ifdef JX_MOBILE", "",
          "#define WA_MUC_TICK\t1", "#define WA_MUC_NHAP\t2", "#define WA_MUC_CHON\t3", "#define WA_MUC_NHAN\t4", "#define WA_MUC_NUT\t5", "#define WA_MUC_DSACH\t6",
+         "#define WA_MUC_SOLIEU\t7\t// o chu dien luc chay (so lieu nhan vat / toa do dang dat) - nChiSo = WA_SL_*", "",
+         "// [WAUTO 12/09] loc danh sach chieu: game tra MOT danh sach phang (GetAllSkillByType), WAuto.exe che thanh 7",
+         "// danh sach con (WAuto.cpp:3057-3097) -> loc lai o day cho dung, khong thi chon duoc chieu sai khe.",
+         "#define WA_LC_KHONG\t0", "#define WA_LC_K\t1\t// moi chieu chu dong TRU vong sang (SkillKAr)",
+         "#define WA_LC_S\t2\t// buff phe ta: (bState || nStyle==2) && bAlly && !bAura (SkillSAr)",
+         "#define WA_LC_SE\t3\t// trang thai len dich: bState && !bAlly (SkillSEAr)",
+         "#define WA_LC_BP\t4\t// chieu danh: nStyle <= 1 && !bAlly (SkillBAr / SkillPAr)",
+         "#define WA_LC_A\t5\t// vong sang: bAura (SkillAAr)", "",
+         "// [WAUTO 12/09] ma so lieu dien luc chay (WA_MUC_SOLIEU)",
+         "#define WA_SL_SINHLUC\t1", "#define WA_SL_NOILUC\t2", "#define WA_SL_THELUC\t3", "#define WA_SL_BANDO\t4",
+         "#define WA_SL_TOADO\t5", "#define WA_SL_DANGCAP\t6", "#define WA_SL_KINHNGHIEM\t7",
+         "#define WA_SL_MAP_AP\t8\t// ban do da dat cho may di chuyen (autoData.szMoveMap)",
+         "#define WA_SL_DIEM_X\t9", "#define WA_SL_DIEM_Y\t10", "",
+         "// [WAUTO 12/09] ma viec (nut / hop chon / danh sach co logic rieng) - khop VIEC trong sinh_bang_wauto.py",
+         "#define WA_V_KHONG\t0", "#define WA_V_LAY_BANDO\t1", "#define WA_V_LAY_DIEM\t2", "#define WA_V_THEO_SAU\t3",
+         "#define WA_V_DS_TOADO\t4", "#define WA_V_DS_LOC\t5", "#define WA_V_DS_KHONGNHAT\t6", "#define WA_V_DS_TODOI\t7",
+         "#define WA_V_DS_NGUHANH\t8", "#define WA_V_UUTIEN_GAN\t9", "#define WA_V_DS_LIENDAU\t10",
+         "#define WA_V_TK_RUONG\t11", "#define WA_V_ST_BOSS\t12", "#define WA_V_UUTIEN_NGU\t13",
          "#define WA_KIEU_INT\t0", "#define WA_KIEU_SHORT\t1", "#define WA_KIEU_UINT\t2", "#define WA_KIEU_CHUOI\t3", "#define WA_KIEU_KHONG\t4",
          "#define WA_NGUON_TINH\t0", "#define WA_NGUON_CHIEU\t1", "#define WA_NGUON_KHAC\t2",
          "#define WA_SIZEOF_AUTODATA\t%d" % d["sizeof_autoData"], "",
@@ -675,7 +773,9 @@ def main():
          "\tconst char* const*\tpLuaChon;\t// hop chon: cac dong (TCVN3), NULL neu nguon dong",
          "\tunsigned char\tnLuaChon;",
          "\tunsigned char\tnNguon;\t\t// WA_NGUON_*",
-         "\tconst char*\t\tszIdc;\t\t// ten IDC goc ben WAuto.exe (de doi chieu / nhat ky)",
+         "\tunsigned char\tnLocChieu;\t// WA_LC_* (hop chon nguon CHIEU)",
+         "\tunsigned char\tnViec;\t\t// WA_V_*",
+         "\tconst char*\t\tszIdc;\t\t// ten IDC goc ben WAuto.exe (de doi chieu / nhat ky / tim ghi chu)",
          "};",
          "struct WAUiTab { const WAUiMuc* pMuc; int nMuc; const char* szIni; int nHang; int nCot; };", ""]
     tabs_c = []
@@ -692,10 +792,11 @@ def main():
         for li, lc in enumerate(luachon):
             h.append("static const char* const s_LuaChon_%d_%d[] = { %s };" % (n, li, ", ".join(c_str(tcvn(x)) for x in lc)))
         h.append("static const WAUiMuc s_Muc_%d[] = {" % n)
-        for (kind, s, ns, cs, off, kieu, co, li, nguon, idc) in muc:
-            h.append("\t{ %d, %d, %d, %d, %d, %d, %d, %s, %d, %d, %s }," % (
+        for (kind, s, ns, cs, off, kieu, co, li, nguon, loc, viec, idc) in muc:
+            h.append("\t{ %d, %d, %d, %d, %d, %d, %d, %s, %d, %d, %d, %d, %s }," % (
                 kind, s, ns, cs, -1 if off is None else off, kieu, co,
-                ("s_LuaChon_%d_%d" % (n, li)) if li >= 0 else "NULL", len(luachon[li]) if li >= 0 else 0, nguon, c_str(idc)))
+                ("s_LuaChon_%d_%d" % (n, li)) if li >= 0 else "NULL", len(luachon[li]) if li >= 0 else 0, nguon,
+                loc, viec, c_str(idc)))
         h.append("};")
         tabs_c.append("\t{ s_Muc_%d, %d, \"UiWAuto_Tab%d.ini\", %d, %d }," % (n, len(muc), n, tk["hang"], tk["cot"]))
         print("tab %2d %-10s hang=%2d nhom=%d cot=%d buoc=%d  %s" % (n, ten_tab[n], tk["hang"], tk["nhom"], tk["cot"], tk["buoc"], tk["dem"]))
@@ -703,7 +804,26 @@ def main():
             ve_xem(n, ten_tab[n], xem, os.path.join(sp, "xem_tab%d.png" % n))
     h.append("static const WAUiTab s_WAUiTab[15] = {")
     h.extend(tabs_c)
-    h.extend(["};", "", "#endif // JX_ANDROID", "#endif", ""])
+    h.append("};")
+    # [WAUTO 12/09] hai bang tra cuu lay tu WAuto.cpp (bang phu UiWAutoDsach + hop chon Ruong cua)
+    magic = d.get("magic") or []
+    h.extend(["", "// [WAUTO 12/09] g_MagicTable cua WAuto.cpp: dong thuoc tinh cho bang LOC khi nhat do (nFtMagic[i][0] = nId)",
+              "struct WAMagic { const char* szTen; short nId; };",
+              "#define WA_SO_MAGIC\t%d" % len(magic),
+              "static const WAMagic s_WAMagic[WA_SO_MAGIC] = {"])
+    for ma, ten in magic:
+        h.append("\t{ %s, %d }," % (c_str(tcvn(ten)), ma))
+    h.append("};")
+    ruong = d.get("tk_ruong_co") or []
+    h.extend(["", "// [WAUTO 12/09] s_aTKRCo cua WAuto.cpp: thanh nao CO huong ruong nao (hang = thu tu o \"Het tran ve\";",
+              "// cot = 0 Trung tam / 1 Dong / 2 Tay / 3 Nam / 4 Bac). Hop \"Ruong cua\" chi liet ke huong CO THAT cua thanh do,",
+              "// gia tri luu la MA HUONG chu khong phai chi so dong; dong cuoi luon la \"Gan nhat (tu chon)\" = 5.",
+              "#define WA_TKR_THANH\t%d" % len(ruong), "#define WA_TKR_HUONG\t5",
+              "static const unsigned char s_WATKRuongCo[WA_TKR_THANH][WA_TKR_HUONG] = {"])
+    for hang in ruong:
+        h.append("\t{ %s }," % ", ".join(str(v) for v in hang))
+    h.append("};")
+    h.extend(["", "#endif // JX_MOBILE", "#endif", ""])
     p = os.path.join(GOC, "Sources", "S3Client", "Ui", "UiCase", "UiWAutoBang.h")
     io.open(p, "w", encoding="latin-1", newline="\r\n").write("\n".join(h))
     print("da ghi", p, "+ 15 tep uiwauto_tabN.ini" + (" + xem truoc o " + sp if xem_truoc else ""))

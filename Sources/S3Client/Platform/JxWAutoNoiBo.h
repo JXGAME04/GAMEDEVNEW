@@ -23,6 +23,8 @@ void			JxWAuto_NhipVongLap();
 // Bat / tat may auto. Tra ve trang thai moi. Doi trang thai -> gui PRT_TICKSTART (ATYPE_CLEAR) nhu WAuto.exe.
 int				JxWAuto_Bat(int bBat);
 int				JxWAuto_DangBat();
+// [WAUTO 12/09] Trang thai bat/tat duoc NHO theo nhan vat (tep <APdata>\<id>.bat). autoData khong co truong nao cho viec nay
+// va KHONG duoc them truong vao giua struct (lech offset tep .dat cua moi nguoi choi PC - luat 0.2 cua lo trinh).
 // Cau hinh dang dung cua nhan vat hien tai (B1+ doc/ghi thang vao day roi goi JxWAuto_LuuCauHinh).
 autoData*		JxWAuto_CauHinh();
 int				JxWAuto_LuuCauHinh();		// ghi APdata\<id>.dat; 1 = xong

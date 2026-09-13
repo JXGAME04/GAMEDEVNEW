@@ -79,6 +79,7 @@ KUiWAuto* KUiWAuto::GetIfVisible()
 
 void KUiWAuto::CloseWindow()
 {
+	KUiWAutoDsach::DongLai();		// [WAUTO 12/09] dong khung khi dang mo bang phu -> tra trang lai truoc
 	if (m_pSelf)
 		m_pSelf->Hide();
 }
@@ -113,14 +114,19 @@ void KUiWAuto::Initialize()
 	m_Trang.KhoiTao();				// [ANDROID 11/09 WAUTO B2] kho widget cua trang, roi moi ghep trang vao khung
 	AddChild(&m_Trang);
 	AddChild(&m_Dong);
+	AddChild(&m_TroGiup);			// [WAUTO 12/09] nut [?]
+	m_BangPhu.KhoiTao(&m_Trang);	// [WAUTO 12/09] ghep SAU CUNG: ve sau cung (Paint di theo thu tu) va bat cham truoc
+	AddChild(&m_BangPhu);
 	char Scheme[128];
 	g_UiBase.GetCurSchemePath(Scheme, 128);
 	LoadScheme(Scheme);
+	m_BangPhu.NapBoCuc();			// [WAUTO 12/09] bo cuc rieng (uiwauto_dsach.ini)
 	m_Style &= ~WND_S_VISIBLE;
 	Wnd_AddWindow(this, WL_NORMAL);
 	for (i = 0; i < WA_UI_SO_NHOM; i++)
 		m_Nhom[i].SetLabel(s_aTenNhom[i]);	// [ANDROID 11/09 WAUTO B1 c] KWndLabeledButton
-	m_Dong.SetText("§ãng");
+	// [WAUTO 13/09] m_Dong: chu "Dong" da ve san trong anh nut_dong.spr -> khong dat Label
+	m_TroGiup.SetLabel("?");
 	ChonNhom(0);
 }
 
@@ -151,6 +157,7 @@ void KUiWAuto::LoadScheme(const char* pScheme)
 	m_TrangThai.Init(&Ini, "TrangThai");
 	m_TenTab.Init(&Ini, "TenTab");
 	m_Dong.Init(&Ini, "Dong");
+	m_TroGiup.Init(&Ini, "TroGiup");
 }
 
 void KUiWAuto::ChonNhom(int nNhom)
@@ -182,6 +189,7 @@ void KUiWAuto::ChonTab(int nTab)
 	char sz[80];
 	if (nTab < 0 || nTab >= s_aNhom[m_nNhom].nSo)
 		return;
+	KUiWAutoDsach::DongLai();		// [WAUTO 12/09] doi tab thi dong bang phu (dang sua danh sach cua tab cu)
 	m_nTab = nTab;
 	for (int i = 0; i < WA_UI_TAB_MOI_NHOM; i++)
 		m_Tab[i].CheckButton(i == nTab);
@@ -262,13 +270,14 @@ void KUiWAuto::AnDuoiMenu()
 	if (m_nAnTam > 0)
 		return;
 	int x0 = pM->nX - 2, y0 = pM->nY - 2, x1 = pM->nX + pM->nItemWidth + 2, y1 = pM->nY + pM->nItemHeight * pM->nNumItem + 4;
-	KWndWindow* ap[WA_UI_SO_NHOM + WA_UI_TAB_MOI_NHOM + 3];
+	KWndWindow* ap[WA_UI_SO_NHOM + WA_UI_TAB_MOI_NHOM + 4];	// [WAUTO 12/09] + 1 cho nut [?]
 	int n = 0;
 	for (i = 0; i < WA_UI_SO_NHOM; i++)		ap[n++] = &m_Nhom[i];
 	for (i = 0; i < WA_UI_TAB_MOI_NHOM; i++)	ap[n++] = &m_Tab[i];
 	ap[n++] = &m_BatTat;
 	ap[n++] = &m_TrangThai;
 	ap[n++] = &m_Dong;
+	ap[n++] = &m_TroGiup;
 	for (i = 0; i < n; i++)
 	{
 		int l = 0, t = 0, w = 0, h = 0;
@@ -296,6 +305,13 @@ int KUiWAuto::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			CapNhatBatTat();
 			CapNhatTrangThai(1);
 			g_DebugLog("[WAUTO-UI] nut BAT/TAT -> %d", JxWAuto_DangBat());
+			return 1;
+		}
+		if (uParam == (KUPARAM)(KWndWindow*)&m_TroGiup)
+		{	// [WAUTO 12/09] huong dan cua the dang xem (trang note + ghi chu tung o cua WAuto.exe)
+			int nId = s_aNhomTabId[m_nNhom][m_nTab];
+			if (nId >= 0)
+				KUiWAutoDsach::MoGhiChu(nId, s_aNhom[m_nNhom].aTen[m_nTab]);
 			return 1;
 		}
 		if (uParam == (KUPARAM)(KWndWindow*)&m_Dong)
