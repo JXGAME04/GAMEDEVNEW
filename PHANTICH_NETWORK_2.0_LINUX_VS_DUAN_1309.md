@@ -412,8 +412,11 @@ Xếp theo lợi ích/rủi ro, tất cả đều chỉ là đề xuất:
 1. **Xả gói theo thời gian thay vì theo nhịp game.** Hiện `SendPackToClient(-1)` nằm trong vòng game
    (`KSOServer.cpp:3341`). Bản Linux tách hẳn ra luồng mạng 10 ms. Lợi: khi nhịp game tụt (đông người, Tống Kim),
    độ trễ mạng không tụt theo. Rủi: phải rà lại toàn bộ khoá `csWriteAction` — đây là chỗ vừa sửa `[GUI 07/09]`.
-   *Phương án nhẹ hơn, ít rủi ro:* giữ nguyên kiến trúc, chỉ thêm nhánh **"đệm sắp đầy thì xả ngay"** trong
-   `PackDataToClient` như `KServer::PackData` làm.
+   > **ĐÍNH CHÍNH 13/09 (kiểm lại sau khi viết):** câu "thêm nhánh đệm sắp đầy thì xả ngay" ở bản nháp đầu là
+   > **SAI** — `PackDataToClient` **ĐÃ CÓ** nhánh đó tại `ServerStage.cpp:700-714`
+   > (`used >= m_nNetworkBufferMaxLen || used + datalength >= m_nNetworkBufferMaxLen` → `_SendDataEx` + `Empty`),
+   > với `m_nNetworkBufferMaxLen = bufferSize - 32` = 10.208 byte trong đệm 16 KB. Đường **GỬI** của ta
+   > tương đương `KServer::PackData` bên Linux. Chỗ thật sự còn thiếu nằm ở đường **NHẬN** — xem §19.
 
 2. **Bộ đệm ghi co giãn thay vì đóng kết nối.** Chỗ `Too much data! … close this socket!`
    (`ServerStage.cpp:1304`) là nguyên nhân rớt kết nối khi dồn ứ. Bản Linux `realloc` gấp đôi tới trần cấu hình.
@@ -835,3 +838,120 @@ bọc `Sleep` 0x10003130 · nơi gọi `Sleep(10)` **0x10002858** · `ioctlsocke
 `realloc(4096)` 0x100010f4.
 
 `gamecl.exe` (bung nén): bảng khoá **0x00413C80** · giải khoá bắt tay 0x0018D5A4.
+
+---
+
+# §19. NÊN HỌC GÌ Ở BẢN LINUX VÀ 2.0 — và một lỗi tìm được khi kiểm lại
+
+Mục này trả lời câu hỏi của chủ: "dự án tôi nên học theo gì ở bản linux và 2.0". Viết sau khi **kiểm lại mã
+của ta** chứ không suy từ bản kia sang, vì lần kiểm đó cho thấy một đề xuất ở §8 là sai và làm lộ ra một lỗi thật.
+
+## 19.1 Một chủ đề duy nhất: QUẢN LÝ BỘ ĐỆM
+
+Ba sự cố mạng nặng nhất của dự án đều cùng một loại:
+
+| Ngày | Sự cố | Gốc |
+|---|---|---|
+| 04/09 | GameServer sập 15:05:38 | `m_pRecvBuffer` đầy → `CIOBuffer::AddData` **âm thầm vứt cả khối 10 KB** → `CPackager::PackUp` ghép gói của nhân vật A với nhân vật B → `TRoleData` rác → đọc ngoài vùng |
+| 04/09 | ghi thiếu byte | `WSASend` gửi thiếu, phần còn lại không được giữ lại |
+| — | `Too much data! … close this socket!` | một thông điệp dài hơn đệm đọc ⇒ đóng kết nối |
+
+Thiết kế bên Linux **miễn nhiễm với cả ba** ở tầng kiến trúc, không phải nhờ vá:
+
+- đệm **co giãn** (`KBuffer::Extend`: 4 KB → gấp đôi → `realloc`, có trần) nên "đầy" là trạng thái hiếm, không phải mặc định;
+- khi vẫn đầy thật thì **`Adjust()` dồn đệm rồi thử lại**, hết cách mới đặt trạng thái lỗi — **không bao giờ vứt dữ liệu im lặng**;
+- gửi thiếu được xử lý bằng `KPackBuffer::PopData(số_byte_đã_gửi)`, phần chưa gửi **ở nguyên trong đệm** cho nhịp sau.
+
+Đó là bài học chính. Không phải epoll, không phải thuật toán mã hoá.
+
+## 19.2 ĐÍNH CHÍNH: đường GỬI của ta đã đúng rồi
+
+Đề xuất số 1 ở §8 ("thêm nhánh đệm sắp đầy thì xả ngay") **sai**. Kiểm `ServerStage.cpp:700-714`:
+
+```cpp
+if ( ( nNetworkBufferLen >= m_nNetworkBufferMaxLen ) ||
+     ( nNetworkBufferLen + datalength >= m_nNetworkBufferMaxLen ) )
+{
+    _SendDataEx( pCN, pWriteBuffer->GetBuffer(), pWriteBuffer->GetUsed() );
+    pWriteBuffer->Empty();
+    gs_nGoiTran++;
+}
+pWriteBuffer->AddData( pData, datalength );
+```
+
+`m_nNetworkBufferMaxLen = bufferSize - 32` = **10.208 byte**, trong khi đệm ghi lấy từ `m_theCacheAllocator`
+= **16.384 byte**. Tức là luôn còn hơn 6 KB dư, `AddData` trên đường gửi **không bao giờ tràn**.
+Đây đúng bằng `KServer::PackData` bên Linux. Có cả bộ đếm `gs_nGoiTran` đếm số lần xả cưỡng bức.
+
+## 19.3 LỖI TÌM ĐƯỢC: đường NHẬN của MÁY CHỦ chưa có bản vá mà client đã có
+
+`CIOBuffer::AddData` (`IOBuffer.cpp:90-97`):
+
+```cpp
+if (dataLength > m_size - m_used)
+{
+    //throw CException( ... );     ← dong nem da bi CHU THICH
+    return;                        ← VUT CA KHOI, khong bao ai biet
+}
+```
+
+Hai nơi gọi nó với dữ liệu vừa đọc từ socket:
+
+| Nơi | Có kiểm chỗ trống không |
+|---|---|
+| `Rainbow/ClientStage.cpp:410-440` — `CGameClient::ReadCompleted` | **CÓ**. Bản vá `[RECV 04/09]`: vòng chờ luồng chính lấy bớt, tạo backpressure TCP; quá 30.000 lượt thì đóng kết nối và báo to. |
+| `Heaven/ServerStage.cpp:1263` — `CIOCPServer::ReadCompleted` | **KHÔNG**. Gọi thẳng `pCN->pRecvBuffer->AddData( pPackData, used )`. |
+
+Nghĩa là **lỗi đã gây sập GameServer hôm 04/09 trên tuyến Goddess→GameServer vẫn còn nguyên trên tuyến
+client→GameServer.**
+
+Điều kiện kích hoạt, tính bằng số của chính dự án:
+
+- `pRecvBuffer` cấp từ `m_theCacheAllocator` = **16.384 byte**;
+- mỗi lần `pSocket->Read` mang về tối đa `bufferSize` = **10.240 byte**;
+- `pRecvBuffer` chỉ được rút bởi `GetPackFromClient`, mà vòng game gọi **mỗi nhịp một lần cho mỗi client** (~55 ms).
+
+⇒ **Hai lần đọc socket đầy liên tiếp trong cùng một nhịp game là tràn** (10.240 × 2 = 20.480 > 16.384),
+và khối thứ hai bị vứt im lặng. Người chơi thường không gửi nhiều thế, nhưng client sửa đổi, công cụ ngoài,
+hoặc một nhịp game bị kẹt (đã đo `max 24,7 ms`, và khi Tống Kim còn cao hơn) đều đủ để chạm.
+
+Hậu quả không phải là mất một gói. Vì khung gói của ta là `[WORD tổng][các gói nối nhau]`, mất một khối giữa
+chừng làm **con trỏ độ dài trỏ vào rác** ⇒ đúng chuỗi đã làm sập máy chủ hôm 04/09.
+
+**Chưa sửa** — ghi ở đây để chủ quyết. Cách sửa rẻ nhất là bê nguyên bản vá `[RECV 04/09]` từ
+`ClientStage.cpp` sang `ServerStage.cpp`. Không đụng giao thức, không đụng client, chỉ dựng lại `heaven.dll`.
+
+## 19.4 Bảng: nên lấy gì, không nên lấy gì
+
+| # | Học từ bản Linux | Giá trị | Rủi ro | Đụng giao thức |
+|---|---|---|---|---|
+| 1 | **Không bao giờ vứt dữ liệu im lặng khi đệm đầy** (§19.3) | **Cao — lỗi sập đã biết** | Thấp, mã đã có sẵn ở client | Không |
+| 2 | **Đệm co giãn có trần** thay vì cố định 16 KB | Cao | Trung bình, cần trần cứng | Không |
+| 3 | **Nhật ký `LeftFreeCount`** mỗi lần cấp/trả/hết khe kết nối | Trung bình, đỡ mò khi đông | Rất thấp | Không |
+| 4 | **Xoá khoá phiên lúc đóng** (`CloseConnection` đặt 2 khoá = 0) | Thấp, vệ sinh | Rất thấp | Không |
+| 5 | **Nguồn hạt ngẫu nhiên** thay `time(NULL)` | Trung bình | Rất thấp | Không |
+| 6 | **Tách nhịp xả khỏi nhịp game** (10 ms thay vì 55 ms) | Cao cho độ trễ | **Cao** — vừa làm lại khoá ở `[GUI 07/09]` | Không |
+| 7 | **Bỏ một lần chép ở đường xả** (§14.1) | Trung bình | Cao — WSASend bất đồng bộ, phải đệm đôi | Không |
+| 8 | `KNullLock` khoá rỗng lúc biên dịch | Thấp | Rất thấp | Không |
+
+**Không nên bắt chước:**
+
+| Thứ | Lý do |
+|---|---|
+| `listen(backlog = 10)` | quá nhỏ, 500 người vào cùng lúc là rớt yêu cầu kết nối |
+| Không đặt `TCP_NODELAY` | **ta đã có** (`SocketServer.cpp:277`), bản Linux thiếu |
+| Khung gói 2 byte **mỗi gói** | khung theo lô của ta tốn ít băng thông hơn |
+| epoll + một luồng mạng | đó là ràng buộc của Linux, không phải thiết kế hơn; IOCP không thua |
+| Bảng khoá mã hoá 5.679 mục | mạnh hơn thật, nhưng **đổi giao thức** ⇒ client + máy chủ + WAuto phải thay cùng lúc, mà không sửa vấn đề nào người chơi đang gặp |
+| `_Rand` LCG gieo `time(0)` | **giống hệt ta**, không có gì để học, cả hai đều nên đổi |
+
+## 19.5 Chỗ dự án đang HƠN
+
+Ghi lại để lần sau đừng "sửa theo Linux" nhầm hướng:
+
+- có `TCP_NODELAY`, bản Linux không;
+- khung gói theo lô gọn hơn khung theo từng gói;
+- đường gửi đã có xả cưỡng bức kèm bộ đếm `gs_nGoiTran` (§19.2);
+- chuỗi tối ưu `[DELTA]` (gói 221 gọn 25→28 B, 222 còn 13 B, 223 còn 39 B thay 98 B) **không có bản tương đương
+  bên Linux** — về số byte mỗi lần đồng bộ, ta đang gọn hơn;
+- client đã có backpressure `[RECV 04/09]` mà bản Linux không có (họ chỉ đánh dấu trạng thái rồi đóng).
