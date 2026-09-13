@@ -69,6 +69,11 @@ struct NB_NODE
 };
 static NB_NODE *gs_pNB = NULL;
 
+// [NET-NHAN 13/09] 1 = dem nhan day thi DONG ket noi; 0 (mac dinh) = chi ghi log va bo khoi nhu cu. Doc tu
+// [Server] NhanDayDongKetNoi cua config.ini luc khoi dong. PHAI de 0 o may chu trung gian (Bishop/Goddess/S3Relay):
+// GameServer thay lien ket Gateway/Database dong la SetRunningStatus(FALSE) = tu tat (KSOServer.cpp:243, :299).
+static int      gs_nNhanDayDongKetNoi = 0;
+
 static void GuiDoGhi( const char *fmt, ... )
 {
 	char sz[1400];
@@ -263,11 +268,12 @@ CIOCPServer::CIOCPServer( size_t nPlayerMaxCount,
 		m_ppNode = new LPCLIENT_NODE[ nCap ];
 		memset( m_ppNode, 0, sizeof( LPCLIENT_NODE ) * nCap );
 		m_nGuiKhoaRieng = (int)::GetPrivateProfileIntA( "Server", "GuiKhoaRieng", 1, ".\\config.ini" );
+		gs_nNhanDayDongKetNoi = (int)::GetPrivateProfileIntA( "Server", "NhanDayDongKetNoi", 0, ".\\config.ini" );	// [NET-NHAN 13/09]
 		LARGE_INTEGER liTanSo;
 		if ( ::QueryPerformanceFrequency( &liTanSo ) )
 			gs_qpcTanSo = liTanSo.QuadPart;
 		gs_nNBBufMax = m_nNetworkBufferMaxLen;
-		GuiDoGhi( "[GUI-DO] khoi dong: client toi da %u, dem ghi %u byte, GuiKhoaRieng=%d", (unsigned)nPlayerMaxCount, (unsigned)m_nNetworkBufferMaxLen, m_nGuiKhoaRieng );
+		GuiDoGhi( "[GUI-DO] khoi dong: client toi da %u, dem ghi %u byte, GuiKhoaRieng=%d, NhanDayDongKetNoi=%d", (unsigned)nPlayerMaxCount, (unsigned)m_nNetworkBufferMaxLen, m_nGuiKhoaRieng, gs_nNhanDayDongKetNoi );
 	}
 
 	for ( index = 0; index < nPlayerMaxCount; index ++ )
@@ -1263,8 +1269,10 @@ void CIOCPServer::ReadCompleted( Socket *pSocket, OnlineGameLib::Win32::CIOBuffe
 					/*
 					 * [NET-NHAN 13/09] CIOBuffer::AddData vut CA KHOI im lang khi thieu cho (IOBuffer.cpp:92-97): sau do
 					 * khung [WORD tong][lo] lech, ket noi ket cam toi ping timeout 60 s ma khong ai biet. Kiem cho trong
-					 * truoc; thieu thi ghi jx_gui_server.log (toi da 50 dong) va dong ket noi nhu nhanh "Too much data"
-					 * cua ProcessDataStream. KHONG duoc cho (Sleep) o day: luong IOCP dung chung, cung la luong phat WSASend.
+					 * truoc; thieu thi ghi jx_gui_server.log (toi da 50 dong). Mac dinh chi BO KHOI nhu cu (khong doi hanh vi);
+					 * [Server] NhanDayDongKetNoi=1 thi dong ket noi nhu nhanh "Too much data" - CHI dung o GameServer (nhan
+					 * nguoi choi), vi o Bishop/Goddess/S3Relay dong lien ket la GameServer tu tat (KSOServer.cpp:243).
+					 * KHONG duoc cho (Sleep) o day: luong IOCP dung chung, cung la luong phat WSASend.
 					 */
 					const size_t nTrong = pCN->pRecvBuffer->GetSize() - pCN->pRecvBuffer->GetUsed();
 
@@ -1274,12 +1282,16 @@ void CIOCPServer::ReadCompleted( Socket *pSocket, OnlineGameLib::Win32::CIOBuffe
 
 						if ( ::InterlockedIncrement( &s_nNhanDay ) <= 50 )
 						{
-							GuiDoGhi( "[NET-NHAN] client %lu: dem nhan day (dang %u + moi %u > %u), dong ket noi",
+							GuiDoGhi( "[NET-NHAN] client %lu: dem nhan day (dang %u + moi %u > %u): %s",
 								(unsigned long)dwIndex, (unsigned)pCN->pRecvBuffer->GetUsed(), (unsigned)used,
-								(unsigned)pCN->pRecvBuffer->GetSize() );
+								(unsigned)pCN->pRecvBuffer->GetSize(),
+								gs_nNhanDayDongKetNoi ? "dong ket noi" : "bo khoi (NhanDayDongKetNoi=0)" );
 						}
 
-						pSocket->Shutdown();
+						if ( gs_nNhanDayDongKetNoi )
+						{
+							pSocket->Shutdown();
+						}
 					}
 					else
 					{
