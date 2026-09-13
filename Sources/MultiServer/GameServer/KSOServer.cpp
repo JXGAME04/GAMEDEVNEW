@@ -121,8 +121,10 @@ const int KSwordOnLineSever::m_snMaxBuffer = 10;
 const int KSwordOnLineSever::m_snBufferSize = 1024 * 16;
 
 // [NET-XA 13/09] 1 = xa ngay phan tra loi cho client vua co goi den (cuoi MessageLoop), khong doi toi cuoi MainLoop
-// ke tiep (0..55 ms). Doc tu [GameServer] XaNgayKhiNhan trong <ten>_cfg.ini; 0 = chi xa cuoi MainLoop nhu cu.
-static int gs_nXaNgayKhiNhan = 1;
+// ke tiep (0..55 ms). Doc tu [GameServer] XaNgayKhiNhan trong <ten>_cfg.ini.
+// MAC DINH 0 (tat): can DO tren mang that truoc khi bat, vi Breathe chay KHONG chan nhip nen bat co the tang
+// so WSASend/giay dang ke khi dong nguoi. Bat bang cach dat XaNgayKhiNhan=1 trong [GameServer] cua <ten>_cfg.ini.
+static int gs_nXaNgayKhiNhan = 0;
 
 KSwordOnLineSever g_SOServer;
 
@@ -489,7 +491,7 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 	g_PakList.Open("\\package.ini");//edit by phong kieu load pack server open file maps.pak
 
 	iniFile.GetInteger("GameServer", "Port", 6666, &m_nServerPort);
-	iniFile.GetInteger("GameServer", "XaNgayKhiNhan", 1, &gs_nXaNgayKhiNhan);	// [NET-XA 13/09]
+	iniFile.GetInteger("GameServer", "XaNgayKhiNhan", 0, &gs_nXaNgayKhiNhan);	// [NET-XA 13/09] mac dinh 0, DO truoc khi bat
 	extern int g_nPort;
 	if (g_nPort)
 		m_nServerPort = g_nPort;
