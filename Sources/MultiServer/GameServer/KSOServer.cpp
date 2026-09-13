@@ -556,7 +556,13 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 
 	if ( pFactroyFun && SUCCEEDED( pFactroyFun( IID_IServerFactory, reinterpret_cast< void ** >( &pServerFactory ) ) ) )
 	{
-		pServerFactory->SetEnvironment( m_nMaxPlayer, m_nPrecision, m_snMaxBuffer, m_snBufferSize  );
+		/*
+		 * [NET-BE 13/09] Be dem cache (free list) m_snMaxBuffer = 10 -> 3 * m_nMaxPlayer: moi ket noi giu 3 dem 16 KB
+		 * (recv/read/write); giu 10 thi moi lan 300 nguoi ra/vao la 900 lan new/delete 16 KB, khoi 16 KB nam ngoai LFH
+		 * nen heap phan manh dan qua nhieu ngay. Dinh RAM = 3 * MaxPlayer * 16 KB (300 nguoi ~ 14 MB).
+		 */
+		pServerFactory->SetEnvironment( m_nMaxPlayer, m_nPrecision, 3 * m_nMaxPlayer, m_snBufferSize );
+		printf("[NET-XA] XaNgayKhiNhan=%d, be dem cache=%d, MaxPlayer=%d\n", gs_nXaNgayKhiNhan, 3 * m_nMaxPlayer, m_nMaxPlayer);
 		
 		pServerFactory->CreateServerInterface( IID_IIOCPServer, reinterpret_cast< void ** >( &m_pServer ) );
 		
