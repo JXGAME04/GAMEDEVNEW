@@ -200,7 +200,12 @@ SOCKET CSocketServer::CreateListeningSocket( unsigned long address, unsigned sho
 	
 	listeningSocket.Bind( localAddress );
 	
-	listeningSocket.Listen( 5 );
+	/*
+	 * [NET-BACKLOG 13/09] 5 -> SOMAXCONN. Winsock dung dung so backlog dua vao: 5 khe la day ngay khi hang tram
+	 * client noi lai trong vai giay (khoi dong lai may chu, dau tran) trong luc luong WSAAccept dang doi khoa m_csCM;
+	 * SYN thua bi vut, client cho gui lai 1-7 s hoac bao khong ket noi duoc ma may chu khong ghi gi.
+	 */
+	listeningSocket.Listen( SOMAXCONN );
 	
 	return listeningSocket.Detatch();
 }
