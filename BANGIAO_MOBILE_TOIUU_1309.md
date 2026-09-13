@@ -44,7 +44,7 @@ Các khoá cũ nay **iOS cũng đọc được**: `Rep3PalBuffer`, `Rep3PsBuffer
 
 | Thứ | Giá trị |
 |---|---|
-| APK **phát hành** | `android/apk/jx1mobile-1309-tg-b.apk` (thư mục bị gitignore, giữ tại chỗ) — versionCode **109131610**, md5 `b5faaef67891f0daa28a448b4698b2d1`, 20 471 151 B; lên `D:\jx1_android_data_dt_v4\jx1mobile.apk` 16:2x 13/09. Hai bản thử trước: `-tg-a` 109131553 (ước chu kỳ sai, chỉ máy ảo), 109131606 (đã sửa, máy ảo pha B — mã Android y hệt bản phát hành, chỉ khác khối `JX_APPLE`) |
+| APK **phát hành** | `android/apk/jx1mobile-1309-tg-c.apk` (thư mục bị gitignore, giữ tại chỗ) — versionCode **109131615**, md5 `a6f91a5f7d5fffcd6f1316a2f20e2197`, 20 471 151 B = commit `cdff796e` + gộp `origin/main` (`1087d2d3`: NET-* của phiên mạng + [TK-NPC 12/09]); lên `D:\jx1_android_data_dt_v4\jx1mobile.apk` **16:17 13/09**, máy chủ 8765 khởi động lại (dt_v4 `config.ini` thêm `TheGioiRT/TheGioiRTEp/TheGioiToiThieuHz`, `[DoNhip] GuiLog=1` đã có sẵn). Trước đó: `-tg-b` 109131610 (cùng mã mobile, chưa gộp main, lên dt_v4 16:14), `-tg-a` 109131553 (ước chu kỳ sai, chỉ máy ảo), 109131606 (máy ảo pha B) |
 | Dựng từ | worktree này qua junction `D:\GAMEDEVNEW_wt_bg`, SDL 3.2.30 đã vá `[DONHIP 12/09]` + `[D1 11/09]` (grep = 3) + `[D1 13/09 Metal]` (2 tệp Metal, Android không dịch) |
 | Windows | `Represent3.vcxproj` ReleaseSDL\|x64 và Release\|Win32: **0 lỗi**; `S3Client.vcxproj` (chỉ `Ui\Elem\Wnds.cpp`) hai cấu hình: **0 lỗi** (MSBuild qua PowerShell — gọi từ Git Bash thì `/t:` bị đổi thành đường dẫn) |
 | iOS | **chưa dựng được ở máy này** (cần Mac). Đã kiểm cú pháp bằng clang NDK với bộ macro iOS (`JX_MOBILE JX_APPLE JX_IOS`, không `JX_ANDROID`): 6 tệp Represent3 + Wnds.cpp = 0 lỗi |
