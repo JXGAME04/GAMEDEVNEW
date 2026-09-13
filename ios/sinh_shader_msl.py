@@ -60,6 +60,7 @@ SO_DEM = {          # ten bien the -> (so dem hang so, so dem luu tru) PHAI khop
     "g_Rep3GpuFS":        (1, 0),
     "g_Rep3GpuFSPalBuf":  (1, 1),
     "g_Rep3GpuFSPalPs":   (0, 2),
+    "g_Rep3GpuFSPalPsKhoi": (0, 2),   # [MOBILE 13/09] 14 sampler (t0, t1 + 12 khoi texture mang) + 2 dem luu tru (bang mau, bang ps)
 }
 
 def doi_so_buffer(msl, ten):
@@ -78,7 +79,8 @@ def doi_so_buffer(msl, ten):
     return msl
 
 for ten, giai in (("g_Rep3GpuVS", "vertex"), ("g_Rep3GpuFS", "fragment"),
-                  ("g_Rep3GpuFSPalBuf", "fragment"), ("g_Rep3GpuFSPalPs", "fragment")):
+                  ("g_Rep3GpuFSPalBuf", "fragment"), ("g_Rep3GpuFSPalPs", "fragment"),
+                  ("g_Rep3GpuFSPalPsKhoi", "fragment")):   # [MOBILE 13/09] atlas khoi (D3D9onGPUDev.cpp CreateShaders nhanh JX_APPLE)
     b = lay_mang(ten)
     with tempfile.NamedTemporaryFile(suffix=".spv", delete=False) as f:
         f.write(b); spv = f.name
@@ -99,5 +101,8 @@ for ten, giai in (("g_Rep3GpuVS", "vertex"), ("g_Rep3GpuFS", "fragment"),
     ra.append("")
     print("  %-14s SPIR-V %6d byte -> MSL %6d ky tu" % (ten, len(b), len(msl)))
 
+# [MOBILE 13/09] co bien the khoi -> g_nJxMslCoKhoi = 1; header CHUA sinh lai thi giu stub g_nJxMslCoKhoi = 0 -> KHOI tu tat tren Metal
+ra.append("static const int g_nJxMslCoKhoi = 1;   // co bien the KHOI (D3D9onGPUDev.cpp CreateShaders nhanh JX_APPLE kiem luc chay)")
+ra.append("")
 io.open(RA, "w", encoding="latin-1", newline="\r\n").write("\n".join(ra) + "\n")
 print("da sinh", os.path.relpath(RA, GOC))

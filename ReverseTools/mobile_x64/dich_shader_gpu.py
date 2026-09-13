@@ -22,7 +22,7 @@ for stage, name, opts in (("vert", "g_Rep3GpuVS", []), ("frag", "g_Rep3GpuFS", [
         print("spirv-val LOI", stage, ":\n", v.stdout, v.stderr); sys.exit(1)
     b = open(spv, "rb").read()
     assert len(b) % 4 == 0
-    if opts: out.append("#ifdef JX_ANDROID\t// [PALBUF 11/09] bien the bang mau = storage buffer (%s), chi Android" % " ".join(opts))
+    if opts: out.append("#ifdef JX_MOBILE\t// [PALBUF 11/09] bien the bang mau = storage buffer (%s), mobile (Android + iOS) [MOBILE 13/09]" % " ".join(opts))
     out.append("// %s: %d byte" % (os.path.basename(src), len(b)))
     out.append("static const unsigned char %s[%d] = {" % (name, len(b)))
     for i in range(0, len(b), 24):

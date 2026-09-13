@@ -18,7 +18,7 @@ static void Rep3LogLoadFail(const char* pszImage, int nType)
 // [REP3 03/09 LAG] anh nap that bai: nhip thu nap lai, tinh bang mili giay.
 #define REP3_RELOAD_COOLDOWN	10000
 #define REP3_RELOAD_COOLDOWN_LAU	600000	// [NAP 08/09 e] sau 3 lan hong: 10 phut
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 TextureResMgr* g_pJxTexMgr = NULL;	// [VE 11/09] bo quan ly duy nhat (KRepresentShell3::m_TextureResMgr) cho TextureRes.cpp / KRepresentShell3.cpp
 #endif
 
@@ -36,7 +36,7 @@ TextureResMgr::TextureResMgr()
 	m_nNapTruocKip[0] = m_nNapTruocKip[1] = m_nNapTruocKip[2] = 0; m_nNapTruocTre[0] = m_nNapTruocTre[1] = m_nNapTruocTre[2] = 0;
 	m_dwKhoaNgoai = 0;	// [VE 09/09 d]	// [NAPCHIEU 09/09 b] [NAPNPC 09/09]
 	m_hNapLuong = NULL; m_hNapCo = NULL; m_lNapDung = 0; m_bNapNenLoi = false;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	m_pJxKhungDangChay = NULL; m_uJxApKhungCuoi = 0; m_dJxApCuoi = 0.0; g_pJxTexMgr = this;	// [VE 11/09]
 #endif
 	
@@ -51,7 +51,7 @@ TextureResMgr::TextureResMgr()
 TextureResMgr::~TextureResMgr()
 {
 	Free();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (g_pJxTexMgr == this) g_pJxTexMgr = NULL;	// [VE 11/09]
 #endif
 }
@@ -477,7 +477,7 @@ bool TextureResMgr::GetImageFrameParam(const char* pszImage,	int nFrame,
 TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage, short& nImagePosition, 
 								int nFrame, int nType, bool bPrepareTex)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	g_nJxAnhBoVeNen = 0;	// [VE 11/09]
 #endif
 	if (!pszImage || !pszImage[0])
@@ -507,7 +507,7 @@ TextureRes* TextureResMgr::GetImage( const char* pszImage, unsigned int& uImage,
 			if (m_TextureResList[nImagePosition].m_bDangNap)	// [NAP 08/09 b] dang nap o luong nen
 			{
 				if (m_bVeDangDien) { m_nNapNenBoVe++; return NULL; }	// dang ve: bo anh nay khung nay, khung sau co
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 				// [VE 11/09 d] hoi kich thuoc (GetImageParam tu KNpcRes) gap sprite NPC dang nap o luong nen: tra 'chua co' thay vi nap dong bo de len
 				// (Fold 7: 'tep spr' dong bo toi 33 ms/lan, 282 ms/30 s luc dong); KNpcRes giu m_bChange nen khung sau hoi lai, ket qua nen ve o RepresentBegin.
 				if (g_nJxHoiKhongDe && nType == ISI_T_SPR)
@@ -829,12 +829,12 @@ void TextureResMgr::NapNenChay()
 		for (;;)
 		{
 			NapViec v;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			JxKhungViec kv; bool bKhung = false;	// [VE 11/09]
 #endif
 			{
 				KAutoCriticalSection k(m_napKhoa);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 				if (m_napViec.empty() && !m_jxKhungViec.empty())	// [VE 11/09] hang TRUOC (anh dang ve can) > KHUNG (dang ve can / nap truoc) > hang SAU
 				{
 					kv = m_jxKhungViec.front(); m_jxKhungViec.erase(m_jxKhungViec.begin()); m_pJxKhungDangChay = kv.pSpr; bKhung = true;
@@ -847,11 +847,11 @@ void TextureResMgr::NapNenChay()
 					break;
 				v = q.front();
 				q.erase(q.begin());
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 				}
 #endif
 			}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (bKhung)
 			{
 				JxKhungXong kq; memset(&kq, 0, sizeof(kq)); kq.pSpr = kv.pSpr; kq.nFrame = kv.nFrame; kq.nBpp = kv.nBpp; kq.eFmt = kv.eFmt; kq.bPal = kv.bPal; kq.uLuc = kv.uLuc;
@@ -997,7 +997,7 @@ void TextureResMgr::NapNenDung()
 	for (size_t i = 0; i < m_napXong.size(); i++)
 		if (m_napXong[i].pRes) delete m_napXong[i].pRes;
 	m_napXong.clear(); m_napViec.clear(); m_napViecSau.clear();	// [NAPNPC 09/09]
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	for (size_t i = 0; i < m_jxKhungXong.size(); i++) if (m_jxKhungXong[i].pDiem) free(m_jxKhungXong[i].pDiem);	// [VE 11/09]
 	for (size_t i = 0; i < m_jxKhungCho.size(); i++) if (m_jxKhungCho[i].pDiem) free(m_jxKhungCho[i].pDiem);
 	m_jxKhungXong.clear(); m_jxKhungViec.clear(); m_jxKhungCho.clear(); m_pJxKhungDangChay = NULL;
@@ -1005,7 +1005,7 @@ void TextureResMgr::NapNenDung()
 	m_lNapDung = 0;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // ============================ [VE 11/09] nap KHUNG sprite o luong nen ============================
 bool TextureResMgr::JxNapLuongBat()	// giong doan dau NapNenGiao (giu nguyen ham do cho Windows)
 {

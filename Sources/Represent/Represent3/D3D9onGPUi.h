@@ -51,7 +51,7 @@ public:
 	UINT m_nLop;	// [MANG 11/09] lop cua trang trong texture mang cua cum (m_pTex la texture DUNG CHUNG cua cum - khong duoc huy rieng)
 	UINT m_nKhoi;	// [KHOI 11/09] chi so KHOI atlas (0..7 = khe sampler 2+k); 0xFF = khong o khoi nao (texture rieng nhu cu)
 	std::vector<std::vector<std::pair<UINT, UINT> > > m_free;	// moi hang: cac doan trong [x0, x1)
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [VE 11/09 e] xep KE (Rep3AtlasKe=1): trang chi theo dinh dang, cac ke cao khac nhau mo dan tu y = 0; m_binH = 0, m_rows = 0
 	struct JxKe { UINT y, h, used; std::vector<std::pair<UINT, UINT> > free; };
 	std::vector<JxKe> m_ke; UINT m_yTiep;
@@ -67,11 +67,11 @@ public:
 	void Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w);
 	void ReleaseAll();			// huy thiet bi: tra trang ngay
 	CAtlasPageGpu* NewPage(UINT binH, SDL_GPUTextureFormat fmt);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	bool JxAllocKe(UINT w, UINT h, SDL_GPUTextureFormat fmt, CAtlasPageGpu** ppPage, UINT* pX, UINT* pY);	// [VE 11/09 e]
 	void JxFreeKe(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w);
 #endif
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [MANG 11/09] cum = mot texture mang 2D chua nhieu trang (moi trang mot lop)
 	// [KHOI 11/09] KHOI atlas: texture mang 2D nLop lop, GAN CHET vao khe sampler 2+nKhoi va khong bao gio doi trong ca khung
 	struct JxKhoi { SDL_GPUTexture* pTex; SDL_GPUTextureFormat fmt; UINT bpp; UINT nLop, nDung; std::vector<UINT> lopTrong; };
@@ -246,6 +246,14 @@ public:
 	LONG    m_ref;
 	CDevGpu* m_pDev;
 	std::vector<std::pair<DWORD, DWORD> > m_entries;
+#ifdef JX_MOBILE
+	// [MOBILE 13/09] P2: khoi TRON (CreateStateBlock) chup/ap bang memcpy ba mang trang thai thay vi 616 muc x 2 lan moi nhan chu
+	// (KFont3::OutputText goi Capture + Apply + Apply cho MOI chuoi; Tong Kim 150-450 chuoi/khung). Cung tap gia tri -> hinh y het.
+	bool  m_bJxDay;
+	DWORD m_jxRs[256];
+	DWORD m_jxTss[8][33];
+	DWORD m_jxSs[8][14];
+#endif
 };
 
 // ---------------------------------------------------------------- lenh ve trong khung

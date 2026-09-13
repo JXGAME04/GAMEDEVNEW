@@ -126,6 +126,18 @@ static double JxPhaMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 }
 #endif
 
+#ifdef JX_MOBILE
+// [TG 13/09] the gioi ve vao render target khi qua tai (Represent3 quyet; xem KRepresentShell3.cpp). Goi Rep3_JxTheGioi qua GetProcAddress
+// nhu JxSdl_EpTrinhChieu (libmain.so khong link Represent3; iOS tra bang ky hieu tinh). Khong co ham (ban cu) -> 0 = ve nhu cu.
+typedef int (*PFN_Rep3JxTheGioi)(int, int);
+void JxDoNhip_LayNhip(int* pFps, int* pVsync, int* pSmooth);	// S3Client.cpp (JX_MOBILE): PaintFps muc tieu hien tai (nac nguoi choi chon)
+static int JxUi_TheGioi(int nLenh, int nThamSo)
+{
+	static PFN_Rep3JxTheGioi s_pfn = NULL; static int s_nThu = 0;
+	if (!s_pfn && s_nThu < 8) { s_nThu++; HMODULE h = GetModuleHandleA("Represent3.dll"); if (h) s_pfn = (PFN_Rep3JxTheGioi)GetProcAddress(h, "Rep3_JxTheGioi"); }
+	return s_pfn ? s_pfn(nLenh, nThamSo) : 0;
+}
+#endif
 void Wnd_RenderWindows()
 {
 	int	bShowCursor = true;
@@ -136,7 +148,23 @@ void Wnd_RenderWindows()
 #endif
 
 	if (s_WndStation.pGameSpaceWnd && s_WndStation.bPaintGameSpace)
+#ifdef JX_MOBILE
+	{	// [TG 13/09] 0 = ve nhu cu; 1 = ve the gioi vao RT roi blit; 2 = khung qua tai xen giua: chi blit anh RT khung truoc
+		int nFpsMucTieu = 0; JxDoNhip_LayNhip(&nFpsMucTieu, NULL, NULL);
+		const int nTg = JxUi_TheGioi(0, nFpsMucTieu);
+		if (nTg == 1 && JxUi_TheGioi(1, 0))
+		{	// ve the gioi vao RT roi blit; bat dau that bai (hiem) -> roi xuong duong cu, khong bao gio mat the gioi mot khung
+			s_WndStation.pGameSpaceWnd->Paint();
+			JxUi_TheGioi(2, 0);
+		}
+		else if (nTg == 2)
+			JxUi_TheGioi(2, 0);
+		else
+			s_WndStation.pGameSpaceWnd->Paint();
+	}
+#else
 		s_WndStation.pGameSpaceWnd->Paint();
+#endif
 #ifdef JX_MOBILE
 	if (bJxDo) QueryPerformanceCounter(&jxT[1]);	// [PHAVE 11/09] het pha the gioi
 #endif

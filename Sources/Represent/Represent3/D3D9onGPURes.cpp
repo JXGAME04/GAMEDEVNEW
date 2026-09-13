@@ -55,7 +55,7 @@ bool CTexGpu::NewVersion(bool bTarget)
 	SDL_GPUTextureFormat gf = bTarget ? SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM : m_fi.gpu;	// render target luon BGRA8 (pipeline mot dinh dang)
 	if (gf == SDL_GPU_TEXTUREFORMAT_INVALID) return false;
 	SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci));
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	ci.type = g_nJxAtlasMang ? SDL_GPU_TEXTURETYPE_2D_ARRAY : SDL_GPU_TEXTURETYPE_2D; ci.format = gf;	// [MANG 11/09] shader dung sampler2DArray -> MOI texture phai la mang (rieng = 1 lop)
 #else
 	ci.type = SDL_GPU_TEXTURETYPE_2D; ci.format = gf;
@@ -112,7 +112,7 @@ SDL_GPUTexture* CTexGpu::PrepareForBind()
 			else
 			{
 				m_uGpuBytes = m_w * m_h * m_pPage->m_bpp; m_pDev->m_uTexBytes += m_uGpuBytes; g_uRep3GpuTexCount++; g_uRep3GpuTexBytes += m_uGpuBytes;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 				g_uJxAtlasODat[(m_pool == D3DPOOL_MANAGED) ? 1 : 0]++;	// [CHUATLAS 11/09] dem o atlas theo loai bo nho
 #endif
 				if (m_pCpu) QueueUpload(NULL); else m_pDev->QueueZeroUpload(m_pPage->m_pTex, m_ax, m_ay, m_w, m_h, m_pPage->m_bpp, m_pPage->m_nLop);	// [MANG 11/09] lop
@@ -126,7 +126,7 @@ SDL_GPUTexture* CTexGpu::PrepareForBind()
 				if (m_bUsedThisFrame && m_pCpu)
 				{	// lenh ve dau khung da tham chieu cho cu -> xin cho MOI trong trang (cho cu tra sau khung), tai toan bo
 					CAtlasPageGpu* pNew = NULL; UINT x = 0, y = 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 					g_uJxAtlasOMoi++;	// [CHUATLAS 11/09] noi dung doi giua khung -> phai xin o MOI (texture MANAGED bi ghi lai thuong xuyen se lam so nay tang vot)
 #endif
 					if (m_pDev->m_pAtlas && m_pDev->m_pAtlas->Alloc(m_w, m_h, m_fi.gpu, &pNew, &x, &y))
@@ -307,7 +307,7 @@ static UINT RgAtlasBin(UINT v)
 CAtlasMgrGpu::CAtlasMgrGpu(CDevGpu* pDev)
 {
 	m_pDev = pDev; m_pageSize = 1024;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (g_nJxAtlasTrang == 2048 || g_nJxAtlasTrang == 4096) m_pageSize = (UINT)g_nJxAtlasTrang;	// [VE 11/09 e] [Client] Rep3AtlasTrang
 #endif
 }
@@ -318,7 +318,7 @@ void CAtlasMgrGpu::ReleaseAll()
 	for (size_t i = 0; i < m_pages.size(); i++)
 	{
 		CAtlasPageGpu* p = m_pages[i];
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		if (p->m_pTex && m_pDev->m_pGpu && !g_nJxAtlasMang) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, p->m_pTex);	// [MANG 11/09] texture cum huy o duoi, khong huy theo tung trang
 #else
 		if (p->m_pTex && m_pDev->m_pGpu) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, p->m_pTex);
@@ -326,7 +326,7 @@ void CAtlasMgrGpu::ReleaseAll()
 		delete p;
 	}
 	m_pages.clear();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	for (size_t i = 0; i < m_jxCum.size(); i++)	// [MANG 11/09] huy texture cua tung cum
 		if (m_jxCum[i].pTex && m_pDev->m_pGpu) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, m_jxCum[i].pTex);
 	m_jxCum.clear(); g_uJxAtlasCum = 0;
@@ -339,7 +339,7 @@ void CAtlasMgrGpu::ReleaseAll()
 
 bool CAtlasMgrGpu::Eligible(UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DPOOL pool)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [CHUATLAS 11/09] port buoc (d) cua [MANG 09/09] (commit 4ee8e6ad ben duong D3D11): chu / anh dung san la POOL_MANAGED, truoc day bi loai
 	// khoi atlas CHI vi pool -> moi nhan ten / dong chat / so sat thuong cat lo quad. Texture ao da ho tro ban CPU + tai lai vung ban.
 	if (pool != D3DPOOL_DEFAULT && !(g_nJxAtlasManaged && pool == D3DPOOL_MANAGED)) return false;
@@ -360,7 +360,7 @@ CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
 	const UINT bpp = RgGpuBpp(fmt);
 	if (bpp == 0 || !m_pDev->m_pGpu) return NULL;
 	SDL_GPUTexture* pTex = NULL; UINT uLop = 0, uKhoi = 0xFFu;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [KHOI 11/09] trang = mot LOP trong KHOI atlas (khoi gan chet khe sampler) -> moi trang atlas dung chung mot bo binding.
 	// Het khoi thi lui ve texture rieng nhu cu (khong loi), y nhu ban PC [MANG 09/09 f].
 	if (g_nJxAtlasKhoi && JxCapKhoi(fmt, bpp, &pTex, &uKhoi, &uLop)) { }
@@ -380,10 +380,10 @@ CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
 	m_pDev->QueueZeroUpload(pTex, 0, 0, m_pageSize, m_pageSize, bpp, uLop);	// trang moi = 0 (khong de rac; vien o khi loc tuyen tinh)
 	CAtlasPageGpu* p = new CAtlasPageGpu();
 	p->m_nLop = uLop;	// [MANG 11/09]
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	p->m_nKhoi = uKhoi;	// [KHOI 11/09]
 #endif
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	p->m_yTiep = 0;
 	if (g_nJxAtlasKe) { p->m_pTex = pTex; p->m_fmt = fmt; p->m_bpp = bpp; p->m_binH = 0; p->m_rows = 0; p->m_used = 0; }	// [VE 11/09 e] trang xep ke: chua co hang
 	else
@@ -392,7 +392,7 @@ CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
 	p->m_pTex = pTex; p->m_fmt = fmt; p->m_bpp = bpp; p->m_binH = binH; p->m_rows = m_pageSize / binH; p->m_used = 0;
 	p->m_free.resize(p->m_rows);
 	for (UINT r = 0; r < p->m_rows; r++) p->m_free[r].push_back(std::make_pair(0u, m_pageSize));	// ca hang trong
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	}
 #endif
 	m_pages.push_back(p);
@@ -402,7 +402,7 @@ CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
 
 bool CAtlasMgrGpu::Alloc(UINT w, UINT h, SDL_GPUTextureFormat fmt, CAtlasPageGpu** ppPage, UINT* pX, UINT* pY)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (g_nJxAtlasKe) return JxAllocKe(w, h, fmt, ppPage, pX, pY);	// [VE 11/09 e]
 #endif
 	UINT binH = RgAtlasBin(h);
@@ -435,7 +435,7 @@ bool CAtlasMgrGpu::Alloc(UINT w, UINT h, SDL_GPUTextureFormat fmt, CAtlasPageGpu
 
 void CAtlasMgrGpu::Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (g_nJxAtlasKe) { JxFreeKe(pPage, x, y, w); return; }	// [VE 11/09 e]
 #endif
 	if (!pPage || pPage->m_binH == 0) return;
@@ -459,7 +459,7 @@ void CAtlasMgrGpu::Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 		{
 			for (size_t i = 0; i < m_pages.size(); i++)
 				if (m_pages[i] == pPage) { m_pages.erase(m_pages.begin() + i); break; }
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (g_nJxAtlasMang) JxTraLop(pPage);	// [MANG 11/09] texture la cua CUM (dung chung): chi tra lop, khong huy
 			else if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
 #else
@@ -473,7 +473,7 @@ void CAtlasMgrGpu::Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 }
 
 // ---------------------------------------------------------------- CSurfGpu
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [VE 11/09 e] atlas xep KE theo dinh dang: trang chi phan biet dinh dang; ke (hang) cao = bin cua khung, mo dan tu y = 0 den het trang.
 // Khung giai ma gan nhau (cung NPC / cung dam dong) roi vao cung trang -> lenh ve lien tiep cung texture0 -> gop duoc (Fold 7 09:31:
 // 86 % quad khong gop la do doi trang). Ke cuoi trang rong -> thu lai (m_yTiep lui); trang rong -> xep lai tu dau; giu mot trang rong/dinh dang.
@@ -549,7 +549,7 @@ void CAtlasMgrGpu::JxFreeKe(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 		{	// giu toi da MOT trang rong moi dinh dang; trang rong thu hai tra lai GPU (sau khung: DeferRelease)
 			for (size_t i = 0; i < m_pages.size(); i++)
 				if (m_pages[i] == pPage) { m_pages.erase(m_pages.begin() + i); break; }
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (g_nJxAtlasMang) JxTraLop(pPage);	// [MANG 11/09] texture la cua CUM (dung chung): chi tra lop, khong huy
 			else if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
 #else
@@ -563,7 +563,7 @@ void CAtlasMgrGpu::JxFreeKe(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 }
 #endif
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [MANG 11/09] Cap mot LOP cho trang atlas: tim cum cung dinh dang con lop (lop da tra truoc, roi lop chua dung), het thi tao cum moi.
 // So lop moi cum tang dan (2, 4, 8...) va khong vuot ngan sach byte Rep3AtlasCumMB -> khong cap 64 MB ngay khi vao map.
 // [KHOI 11/09] port buoc (f) cua [MANG 09/09] (commit 5311778b ben duong D3D11): xin mot LOP trong mot KHOI atlas.
@@ -740,7 +740,11 @@ HRESULT CVBGpu::GetDesc(D3DVERTEXBUFFER_DESC* pDesc)
 }
 
 // ---------------------------------------------------------------- CSBGpu
+#ifdef JX_MOBILE
+CSBGpu::CSBGpu(CDevGpu* pDev) { m_ref = 1; m_pDev = pDev; pDev->AddRef(); m_bJxDay = false; }	// [MOBILE 13/09] P2
+#else
 CSBGpu::CSBGpu(CDevGpu* pDev) { m_ref = 1; m_pDev = pDev; pDev->AddRef(); }
+#endif
 CSBGpu::~CSBGpu() { if (m_pDev) m_pDev->Release(); }
 HRESULT CSBGpu::QueryInterface(REFIID riid, void** ppvObj)
 {
@@ -758,11 +762,25 @@ void CSBGpu::Record(DWORD key, DWORD value)
 }
 HRESULT CSBGpu::Capture()
 {
+#ifdef JX_MOBILE
+	if (m_bJxDay)
+	{	// [MOBILE 13/09] P2: khoi tron = chup ca ba mang (256 RS + 8x33 TSS + 8x14 SS) - cung noi dung nhu 616 muc Record, re hon nhieu
+		memcpy(m_jxRs, m_pDev->m_rs, sizeof(m_jxRs)); memcpy(m_jxTss, m_pDev->m_tss, sizeof(m_jxTss)); memcpy(m_jxSs, m_pDev->m_ss, sizeof(m_jxSs));
+		return D3D_OK;
+	}
+#endif
 	for (size_t i = 0; i < m_entries.size(); i++) m_entries[i].second = m_pDev->GetStateInternal(m_entries[i].first);
 	return D3D_OK;
 }
 HRESULT CSBGpu::Apply()
 {
+#ifdef JX_MOBILE
+	if (m_bJxDay)
+	{	// [MOBILE 13/09] P2 (o [s][0] cua TSS/SS khong ai ghi, hai ben deu 0 -> chep ca cung vo hai)
+		memcpy(m_pDev->m_rs, m_jxRs, sizeof(m_jxRs)); memcpy(m_pDev->m_tss, m_jxTss, sizeof(m_jxTss)); memcpy(m_pDev->m_ss, m_jxSs, sizeof(m_jxSs));
+		return D3D_OK;
+	}
+#endif
 	for (size_t i = 0; i < m_entries.size(); i++) m_pDev->SetStateInternal(m_entries[i].first, m_entries[i].second);
 	return D3D_OK;
 }

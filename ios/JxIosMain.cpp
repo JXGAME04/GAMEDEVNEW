@@ -42,10 +42,11 @@ struct iRepresentShell;
 struct ITextFilter;
 extern "C" iRepresentShell* CreateRepresentShell();
 extern "C" int             Rep3_NapTruoc2(const char*, int);   // Represent3/KRepresentShell3.cpp:579 (Core goi qua GetProcAddress)                 // Represent3/KRepresentShell3.cpp:552
+extern "C" int             Rep3_JxTheGioi(int, int);          // [TG 13/09] Represent3/KRepresentShell3.cpp (Wnds.cpp goi qua GetProcAddress)
+extern "C" void            Rep3_JxEpTrinhChieu();             // [BKG] D3D9onGPUDev.cpp (KSdlApp goi qua GetProcAddress) - tu 13/09 co tren iOS (JX_MOBILE)
 extern "C" HRESULT          CreateInterface(const GUID&, void**);   // Rainbow/ClientStage.cpp:23 (STDAPI)
 extern "C" HRESULT          CreateTextFilter(ITextFilter**);        // FilterText/FilterText.cpp:218
-// Ghi chu: Rep3_JxEpTrinhChieu nam trong "#ifdef JX_ANDROID" (D3D9onGPUDev.cpp:1731) nen ban iOS
-// KHONG co ham do; noi goi no trong KSdlApp cung rao JX_ANDROID nen khong can dang ky.
+// [MOBILE 13/09] Rep3_JxEpTrinhChieu / Rep3_JxTheGioi nay rao JX_MOBILE (co tren iOS) -> dang ky o duoi de KSdlApp / Wnds.cpp tra duoc.
 
 static void JxIosLog(const char* fmt, ...)
 {
@@ -184,6 +185,8 @@ int main(int argc, char* argv[])
 	// tang ve -> MyApp.Init() that bai -> thoat ngay, man hinh den.
 	JxPosix_DangKyKyHieu("Represent3.dll", "CreateRepresentShell", (void*)&CreateRepresentShell);
 	JxPosix_DangKyKyHieu("Represent3.dll", "Rep3_NapTruoc2",       (void*)&Rep3_NapTruoc2);
+	JxPosix_DangKyKyHieu("Represent3.dll", "Rep3_JxTheGioi",       (void*)&Rep3_JxTheGioi);       // [TG 13/09]
+	JxPosix_DangKyKyHieu("Represent3.dll", "Rep3_JxEpTrinhChieu",  (void*)&Rep3_JxEpTrinhChieu);  // [BKG] be mat doi -> khung toi phai trinh chieu / ve the gioi that
 	JxPosix_DangKyKyHieu("Rainbow.dll",    "CreateInterface",      (void*)&CreateInterface);
 	JxPosix_DangKyKyHieu("FilterText.dll", "CreateTextFilter",     (void*)&CreateTextFilter);
 

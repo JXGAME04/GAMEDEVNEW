@@ -380,6 +380,14 @@ public:
     //## 设置表现模块选项
     // [NAPCHIEU 09/09] nap truoc anh (SPR) o luong nen; khong ao -> khong doi vtable iRepresentShell. Tra 0/1/2 (xem TextureResMgr::NapTruoc)
     int NapTruoc(const char* pszImage, int nNguon);	// [NAPNPC 09/09] nNguon: 1 = anh chieu (Rep3NapChieu), 2 = anh than NPC (Rep3NapNpc)
+#ifdef JX_MOBILE
+    // [TG 13/09] the gioi ve vao render target khi qua tai (Wnds.cpp goi Rep3_JxTheGioi qua GetProcAddress): 0 hoi, 1 bat dau, 2 ket thuc + blit, 3 ep ve that
+    int  JxTheGioi(int nLenh, int nThamSo);   // nThamSo: lenh 0 = PaintFps muc tieu cua S3Client
+    void JxTheGioiHuy();
+    void JxTheGioiCapNhat(double dTrinhChieuMs);
+    void JxTheGioiKyIn();
+    void JxTheGioiDocIni();
+#endif
 
     virtual void SetOption(
         //## 选项类型
@@ -453,6 +461,16 @@ private:
 
     int m_nLeft;
     int m_nTop;
+#ifdef JX_MOBILE
+    LPDIRECT3DTEXTURE9    m_pTgTex;      // [TG 13/09] render target the gioi (BGRA8, cung co khung logic)
+    LPDIRECT3DSURFACE9    m_pTgSurf;     // be mat cua m_pTgTex
+    LPDIRECT3DSURFACE9    m_pTgSurfCu;   // backbuffer giu trong luc ve vao RT
+    LPDIRECT3DSTATEBLOCK9 m_pTgSB;       // trang thai luu quanh lenh blit
+    int   m_nTgW, m_nTgH;
+    int   m_nTgTrangThai;                // 1 = dang ve vao RT
+    int   m_nTgLeft, m_nTgTop;           // goc toa do (m_nLeft/m_nTop) luc ve RT lan cuoi - khung chi blit dat lai de lop phu trung anh
+    DWORD m_dwTgMauXoa;                  // mau xoa cua RepresentBegin khung nay
+#endif
 
     LPDIRECT3DTEXTURE9 m_pPreRenderTexture128;	// 预渲染主角的贴图指针
     LPDIRECT3DTEXTURE9 m_pPreRenderTexture256;	// 预渲染主角的贴图指针

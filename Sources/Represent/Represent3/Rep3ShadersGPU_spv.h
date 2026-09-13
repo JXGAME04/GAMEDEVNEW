@@ -809,7 +809,7 @@ static const unsigned char g_Rep3GpuFS[16928] = {
 	0xFD, 0x00, 0x01, 0x00, 0x38, 0x00, 0x01, 0x00,
 };
 
-#ifdef JX_ANDROID	// [PALBUF 11/09] bien the bang mau = storage buffer (-DJX_PAL_BUFFER=1), chi Android
+#ifdef JX_MOBILE	// [PALBUF 11/09] bien the bang mau = storage buffer (-DJX_PAL_BUFFER=1), chi Android
 // Rep3ShadersGPU.frag: 17220 byte
 static const unsigned char g_Rep3GpuFSPalBuf[17220] = {
 	0x03, 0x02, 0x23, 0x07, 0x00, 0x00, 0x01, 0x00, 0x0A, 0x00, 0x0D, 0x00, 0x2A, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x02, 0x00,
@@ -1533,7 +1533,7 @@ static const unsigned char g_Rep3GpuFSPalBuf[17220] = {
 };
 #endif
 
-#ifdef JX_ANDROID	// [PALBUF 11/09] bien the bang mau = storage buffer (-DJX_PAL_BUFFER=1 -DJX_PS_BUFFER=1), chi Android
+#ifdef JX_MOBILE	// [PALBUF 11/09] bien the bang mau = storage buffer (-DJX_PAL_BUFFER=1 -DJX_PS_BUFFER=1), chi Android
 // Rep3ShadersGPU.frag: 17088 byte
 static const unsigned char g_Rep3GpuFSPalPs[17088] = {
 	0x03, 0x02, 0x23, 0x07, 0x00, 0x00, 0x01, 0x00, 0x0A, 0x00, 0x0D, 0x00, 0x5C, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x02, 0x00,
@@ -2251,7 +2251,7 @@ static const unsigned char g_Rep3GpuFSPalPs[17088] = {
 };
 #endif
 
-#ifdef JX_ANDROID	// [PALBUF 11/09] bien the bang mau = storage buffer (-DJX_PAL_BUFFER=1 -DJX_PS_BUFFER=1 -DJX_TEX_ARRAY=1), chi Android
+#ifdef JX_MOBILE	// [PALBUF 11/09] bien the bang mau = storage buffer (-DJX_PAL_BUFFER=1 -DJX_PS_BUFFER=1 -DJX_TEX_ARRAY=1), chi Android
 // Rep3ShadersGPU.frag: 17660 byte
 static const unsigned char g_Rep3GpuFSPalPsMang[17660] = {
 	0x03, 0x02, 0x23, 0x07, 0x00, 0x00, 0x01, 0x00, 0x0A, 0x00, 0x0D, 0x00, 0x86, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x02, 0x00,
@@ -2993,7 +2993,7 @@ static const unsigned char g_Rep3GpuFSPalPsMang[17660] = {
 };
 #endif
 
-#ifdef JX_ANDROID	// [PALBUF 11/09] bien the bang mau = storage buffer (-DJX_PAL_BUFFER=1 -DJX_PS_BUFFER=1 -DJX_ATLAS_KHOI=1), chi Android
+#ifdef JX_MOBILE	// [PALBUF 11/09] bien the bang mau = storage buffer (-DJX_PAL_BUFFER=1 -DJX_PS_BUFFER=1 -DJX_ATLAS_KHOI=1), chi Android
 // Rep3ShadersGPU.frag: 31596 byte
 static const unsigned char g_Rep3GpuFSPalPsKhoi[31596] = {
 	0x03, 0x02, 0x23, 0x07, 0x00, 0x00, 0x01, 0x00, 0x0A, 0x00, 0x0D, 0x00, 0x49, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x02, 0x00,

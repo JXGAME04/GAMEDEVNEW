@@ -45,6 +45,18 @@ if(NOT TARGET SDL3::SDL3)
   set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
   set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
   set(SDL_VULKAN OFF CACHE BOOL "" FORCE)   # iOS di Metal; tat Vulkan de khoi keo MoltenVK
+  # [MOBILE 13/09] D1 cho Metal: drawable = khung logic theo hint JX_SWAPCHAIN_W/H (ios/va_sdl3_d1_metal.py, idempotent) - nhu android/va_sdl3_d1.py ben Vulkan
+  find_package(Python3 COMPONENTS Interpreter)
+  if(Python3_Interpreter_FOUND)
+    execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/va_sdl3_d1_metal.py ${JX_SDL3_SRC}
+                    RESULT_VARIABLE JX_VA_D1M_KQ OUTPUT_VARIABLE JX_VA_D1M_RA ERROR_VARIABLE JX_VA_D1M_LOI OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT JX_VA_D1M_KQ EQUAL 0)
+      message(FATAL_ERROR "va_sdl3_d1_metal.py loi (${JX_VA_D1M_KQ}): ${JX_VA_D1M_RA} ${JX_VA_D1M_LOI}")
+    endif()
+    message(STATUS "va_sdl3_d1_metal.py: ${JX_VA_D1M_RA}")
+  else()
+    message(WARNING "Khong co python3 -> bo qua va_sdl3_d1_metal.py (D1 Metal tat: GPU to full res nhu truoc)")
+  endif()
   add_subdirectory(${JX_SDL3_SRC} SDL3 EXCLUDE_FROM_ALL)
 endif()
 

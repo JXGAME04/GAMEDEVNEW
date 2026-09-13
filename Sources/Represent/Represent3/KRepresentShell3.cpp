@@ -63,7 +63,7 @@ int g_nRep3NapChieu = 1;	// [NAPCHIEU 09/09 b] cong tac [Client] Rep3NapChieu: 1
 int g_nRep3NapNpc = 1;	// [NAPNPC 09/09] cong tac [Client] Rep3NapNpc: 1 = nap truoc anh than NPC khi gan ten (mac dinh), 0 = tat (A/B)
 unsigned g_uRep3LocKhung = 0;	// [LOCTG 09/09] so khung da tron. [ANDROID 10/09 LOCTG] dinh nghia o DAY (nhu g_nRep3LocMs ben tren) chu khong o D3D9on11Dev.cpp - tep do chi co tren Windows, Android link thieu ky hieu.
 #ifdef JX_PLATFORM_SDL
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 int g_nRep3AtlasGpu = 1;	// [GPU 11/09 ATLAS] Android: mac dinh BAT
 int g_nRep3GpuBoBanCpu = 1;	// [GPU 11/09 BOCPU] Android: mac dinh BAT
 int g_nRep3GpuMailbox = 0;	// [ANDROID 11/09 MAILBOX] [ANDROID 11/09 b] mac dinh TAT: nhip trinh chieu khong khop 60 Hz -> rung khi cuon; bat de A/B
@@ -113,7 +113,7 @@ double   g_dRep3FxGiaiMaMs = 0.0;	// tong ms giai ma + tao texture
 // [NAP 08/09 a] do NAP tren luong ve, in [REP3-NAP] moi Rep3StatSec giay
 Rep3NapDo g_napSpr = {0, 0, 0}, g_napJpeg = {0, 0, 0}, g_napKhung = {0, 0, 0}, g_napGiaiMa = {0, 0, 0}, g_napGpu = {0, 0, 0};
 double g_dRep3NapKhung = 0.0, g_dRep3NapKhungMax = 0.0; unsigned g_uRep3NapKhung5 = 0, g_uRep3NapKhung16 = 0;
-#ifndef JX_ANDROID	// [VE 11/09] Android: ban co thong ke theo khung ben duoi
+#ifndef JX_MOBILE	// [VE 11/09] Android: ban co thong ke theo khung ben duoi
 void Rep3NapCong(Rep3NapDo& d, double ms) { d.n++; d.ms += ms; if (ms > d.max) d.max = ms; g_dRep3NapKhung += ms; }
 #endif
 // [NAP 08/09 d] trong pham vi ham GHEP/GHI anh mot lan: bat buoc nap dong bo (ket qua chi dung mot lan, nap nen tra NULL = mat vinh vien)
@@ -126,7 +126,7 @@ extern unsigned g_uRep3RingVong; extern double g_dRep3RingMapMax; extern unsigne
 LARGE_INTEGER g_liRep3VeBegin = {0};
 int g_nRep3VeMau = 0;	// [VE 09/09 d] 1 = khung nay la khung MAU (1/8): moi do [VE] theo don vi/lenh chi chay tren khung mau (QPC 2 lan/lenh x 5 000 lenh/khung = 4 % thoi gian ve)
 struct Rep3VeDpTimer { LARGE_INTEGER a; Rep3VeDpTimer() { if (g_nRep3VeMau) QueryPerformanceCounter(&a); } ~Rep3VeDpTimer() { if (g_nRep3VeMau) { LARGE_INTEGER b; QueryPerformanceCounter(&b); g_dRep3VeDpKhung += Rep3NapMs(a, b); } } };
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [VE 11/09] Android: cong tac + thong ke nap KHUNG o luong nen (TextureRes.cpp / TextureResMgr.cpp) va do trinh chieu (D3D9onGPUDev.cpp)
 int g_nJxNapKhungNen = 1, g_nJxNapKhungMs = 3, g_nJxNapKhungTruoc = 2, g_nJxNapKhungApMs = 3, g_nJxVeGiatMs = 20;
 int g_nJxAnhBoVeNen = 0;
@@ -221,14 +221,181 @@ static void JxVeKyIn()
 	g_dJxNapKhungTre = g_dJxNapKhungTreMax = g_dJxNapNenBan = g_dJxNapKhungAp = g_dJxNapKhungApMax = 0.0; g_uJxNapKhungApKhung = 0; memset(&g_jxNapNgoaiVe, 0, sizeof(g_jxNapNgoaiVe)); g_uJxNapKhungRong = 0; g_uJxHoiTre = 0;
 }
 #endif
-#ifdef JX_APPLE	// [IOS-GOP 12/09 b] Metal chi dung MOT phan cua bo cong tac tren: khai rieng dung may cai can,
-					// vi khoi JX_ANDROID o tren con chua nhieu thu chi Android moi co (bo nap khung o luong nen...).
-int g_nJxPalBuffer = 1;					// [PALBUF] bang mau trong storage buffer - DA PORT
-int g_nJxPsBuffer = 0, g_nJxBindRing = 0;	// [GOP] chua port sang Metal
-int g_nJxAtlasMang = 0, g_nJxAtlasLop = 8, g_nJxAtlasCumMB = 64;	// [MANG] chua port
-int g_nJxAtlasKhoi = 0, g_nJxAtlasKhoiLop = 8;	// [KHOI] chua port
-JxVeDo g_jxVeKhung, g_jxVeTong, g_jxVeMax;	// bo do ve (D3D9onGPUDev.cpp ghi)
-unsigned g_uJxPsBangMax = 0, g_uJxPsTran = 0;	// [GOP] do bang trang thai tang texture
+#ifdef JX_MOBILE
+// ============================ [TG 13/09] THE GIOI VE VAO RENDER TARGET KHI QUA TAI ============================
+// Chu 13/09: "fix mot lan cho iOS va Android, khong anh huong trai nghiem". Chi lam viec khi (a) PaintFps muc tieu >= 2 x ToiThieuHz (117) VA man
+// that (SDL_GetCurrentDisplayMode) >= 2 x ToiThieuHz: chu ky = max(1000/PaintFps, 1000/Hz man) - KHONG uoc tu khoang cach present (lan thu 13/09 16:00:
+// may ao 60 Hz co hai khung cach nhau 5 ms -> tuong man 120 Hz -> K=2 = the gioi 30 Hz, chu thay nhay man hinh luc vao map / di chuyen);
+// (b) viec/khung (ve CPU + chep + ghi + nop, khong ke cho) cua cac khung CO ve the gioi > 70 % chu ky trong cua so 2 s, VA (c) khoang cach
+// present thuc > 1,12 chu ky (khung dang roi). Luc do: the gioi ve cach khung (K = 2) vao render target, khung xen giua chi ve lai anh RT
+// + giao dien / can dieu khien -> the gioi 60 Hz DEU (bang nac 60 cua thanh FPS), giao dien theo man. Het qua tai (viec < 45 % chu ky
+// trong 2 cua so lien) -> K = 1 = duong cu, khong RT, khong them mot lenh nao. The gioi khong bao gio duoi TheGioiToiThieuHz (60).
+// Blit 1:1 bang quad point-sampling, cung phep chieu +0,5 cua DrawBitmap16 -> pixel y het; K = 2 chi lam NPC / dan cap nhat 60 Hz.
+// Khung chi blit: goc toa do m_nLeft/m_nTop dat lai = goc luc ve RT de lop phu (vong chon, nut ky nang) trung voi anh RT.
+// S3Client (Wnds.cpp) goi Rep3_JxTheGioi qua GetProcAddress (libmain.so khong link Represent3); iOS dang ky trong ios/JxIosMain.cpp.
+// [Client] TheGioiRT=1 (0 = tat han), TheGioiRTEp=0 (1 = luon RT K=1 de thu pixel, 2 = luon K=2 de thu), TheGioiToiThieuHz=60. Log [TG] moi ky.
+int g_nJxTheGioiEp = 0;	// Rep3_JxEpTrinhChieu (D3D9onGPUDev.cpp): be mat / cua so doi -> khung toi phai ve the gioi that
+extern "C" double Rep3_JxManHinhMs();	// D3D9onGPUDev.cpp: 1000 / tan so man SDL bao (0 = khong biet)
+static int s_nTgBat = 1, s_nTgEp = 0, s_nTgToiThieuHz = 60;
+static int s_nTgPaintFps = 0;					// PaintFps muc tieu S3Client dua sang o lenh 0 (JxDoNhip_LayNhip)
+static int s_nTgK = 1;							// 1 = ve the gioi moi khung, 2 = cach khung
+static unsigned s_uTgKhung = 0;					// dem RepresentBegin
+static unsigned s_uTgVeThat = 0xFFFFFFFFu;		// khung gan nhat that su ve the gioi (duong cu hoac vao RT) - de tinh viec/khung
+static unsigned s_uTgRTVe = 0xFFFFFFFFu;		// khung gan nhat ve the gioi VAO RT (chi blit duoc o khung ngay sau no)
+static double s_dTgMinCach = 1e9, s_dTgCachTong = 0.0, s_dTgViecTong = 0.0; static unsigned s_uTgCachSo = 0, s_uTgViecSo = 0;
+static LARGE_INTEGER s_liTgCuoi = { 0 }; static DWORD s_dwTgCuaSo = 0; static int s_nTgCuaSoNhe = 0;
+static double s_dTgChuKy = 0.0, s_dTgViecTB = 0.0, s_dTgCachTB = 0.0;	// ket qua cua so gan nhat (in [TG])
+static unsigned s_uTgDemVe = 0, s_uTgDemBlit = 0, s_uTgDemThuong = 0, s_uTgDemDoiK = 0;	// thong ke ky [TG]
+
+void KRepresentShell3::JxTheGioiDocIni()
+{
+	s_nTgBat = Rep3Ini("TheGioiRT", 1) ? 1 : 0;
+	s_nTgEp = Rep3Ini("TheGioiRTEp", 0); if (s_nTgEp < 0 || s_nTgEp > 2) s_nTgEp = 0;
+	s_nTgToiThieuHz = Rep3Ini("TheGioiToiThieuHz", 60); if (s_nTgToiThieuHz < 30) s_nTgToiThieuHz = 30; if (s_nTgToiThieuHz > 120) s_nTgToiThieuHz = 120;
+	Rep3Log("[TG] the gioi RT khi qua tai: bat=%d ep=%d, the gioi toi thieu %d Hz (TheGioiRT / TheGioiRTEp / TheGioiToiThieuHz)", s_nTgBat, s_nTgEp, s_nTgToiThieuHz);
+}
+
+void KRepresentShell3::JxTheGioiHuy()
+{
+	if (m_nTgTrangThai == 1 && PD3DDEVICE && m_pTgSurfCu) PD3DDEVICE->SetRenderTarget(0, m_pTgSurfCu);
+	m_nTgTrangThai = 0;
+	SAFE_RELEASE(m_pTgSurfCu); SAFE_RELEASE(m_pTgSB); SAFE_RELEASE(m_pTgSurf); SAFE_RELEASE(m_pTgTex);
+	m_nTgW = m_nTgH = 0; s_uTgRTVe = 0xFFFFFFFFu;
+}
+
+int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
+{
+	if (nLenh == 3) { g_nJxTheGioiEp = 1; return 0; }
+	if (!PD3DDEVICE || m_bDeviceLost) return 0;
+	if (nLenh == 0)
+	{	// hoi: 0 = duong cu, 1 = ve the gioi vao RT roi blit, 2 = chi blit anh RT cua khung truoc
+		if (nThamSo > 0 && nThamSo <= 240) s_nTgPaintFps = nThamSo;
+		int nK = s_nTgK;
+		if (s_nTgEp == 1) nK = 1; else if (s_nTgEp == 2) nK = 2;
+		if (!s_nTgBat || (nK != 2 && s_nTgEp != 1)) { s_uTgVeThat = s_uTgKhung; s_uTgDemThuong++; return 0; }
+		if (!m_pTgTex || m_nTgW != g_nScreenWidth || m_nTgH != g_nScreenHeight)
+		{	// RT phai dung co khung logic (gap / mo, doi ho khung)
+			JxTheGioiHuy();
+			m_nTgW = g_nScreenWidth; m_nTgH = g_nScreenHeight;
+			if (m_nTgW <= 0 || m_nTgH <= 0 || FAILED(PD3DDEVICE->CreateTexture(m_nTgW, m_nTgH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pTgTex, NULL))
+				|| !m_pTgTex || FAILED(m_pTgTex->GetSurfaceLevel(0, &m_pTgSurf)) || !m_pTgSurf)
+			{
+				Rep3Log("[TG] khong tao duoc render target %dx%d -> tat the gioi RT", m_nTgW, m_nTgH);
+				JxTheGioiHuy(); s_nTgBat = 0; s_uTgDemThuong++; return 0;
+			}
+			if (FAILED(PD3DDEVICE->CreateStateBlock(D3DSBT_ALL, &m_pTgSB))) m_pTgSB = NULL;
+			Rep3Log("[TG] render target the gioi %dx%d", m_nTgW, m_nTgH);
+		}
+		// chi blit khi khung NGAY TRUOC da ve the gioi vao RT (anh moi dung 1 khung), khong bi ep (be mat doi), K = 2 -> hai khung ve mot lan
+		if (nK == 2 && !g_nJxTheGioiEp && m_nTgTrangThai == 0 && s_uTgRTVe == s_uTgKhung - 1)
+			return 2;
+		s_uTgVeThat = s_uTgKhung;
+		return 1;
+	}
+	if (nLenh == 1)
+	{	// bat dau ve the gioi vao RT
+		if (!m_pTgSurf || m_nTgTrangThai == 1) return 0;
+		if (FAILED(PD3DDEVICE->GetRenderTarget(0, &m_pTgSurfCu))) { m_pTgSurfCu = NULL; return 0; }
+		if (FAILED(PD3DDEVICE->SetRenderTarget(0, m_pTgSurf))) { SAFE_RELEASE(m_pTgSurfCu); return 0; }
+		PD3DDEVICE->Clear(0, NULL, D3DCLEAR_TARGET, m_dwTgMauXoa, 1.0f, 0L);
+		m_nTgTrangThai = 1; m_nTgLeft = m_nLeft; m_nTgTop = m_nTop;
+		g_nJxTheGioiEp = 0; s_uTgRTVe = s_uTgKhung; s_uTgDemVe++;
+		return 1;
+	}
+	if (nLenh == 2)
+	{	// ket thuc (neu dang ve) + blit anh RT len backbuffer
+		if (m_nTgTrangThai == 1)
+		{
+			PD3DDEVICE->SetRenderTarget(0, m_pTgSurfCu); SAFE_RELEASE(m_pTgSurfCu); m_nTgTrangThai = 0;
+			PD3DDEVICE->Clear(0, NULL, D3DCLEAR_TARGET, m_dwTgMauXoa, 1.0f, 0L);	// lenh xoa dau khung cua RepresentBegin bi doi dich ve nuot -> xoa lai backbuffer
+		}
+		else
+		{	// khung chi blit: lop phu ve sau (vong chon, nut ky nang, chu the gioi) dung goc toa do luc ve RT de trung anh
+			m_nLeft = m_nTgLeft; m_nTop = m_nTgTop; s_uTgDemBlit++;
+		}
+		if (!m_pTgTex) return 0;
+		if (m_pTgSB) m_pTgSB->Capture();
+		PD3DDEVICE->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+		PD3DDEVICE->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+		PD3DDEVICE->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+		PD3DDEVICE->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
+		PD3DDEVICE->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+		PD3DDEVICE->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1); PD3DDEVICE->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+		PD3DDEVICE->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1); PD3DDEVICE->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+		PD3DDEVICE->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE); PD3DDEVICE->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+		PD3DDEVICE->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT); PD3DDEVICE->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+		PD3DDEVICE->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP); PD3DDEVICE->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+		PD3DDEVICE->SetTexture(0, m_pTgTex); PD3DDEVICE->SetTexture(1, NULL);
+		PD3DDEVICE->SetFVF(D3DFVF_VERTEX2D);
+		VERTEX2D v[4];
+		const float fW = (float)m_nTgW, fH = (float)m_nTgH;
+		v[0].position = D3DXVECTOR4(0.0f, 0.0f, 100, 1); v[0].color = 0xffffffff; v[0].tu = 0.0f; v[0].tv = 0.0f;
+		v[1].position = D3DXVECTOR4(fW, 0.0f, 100, 1);   v[1].color = 0xffffffff; v[1].tu = 1.0f; v[1].tv = 0.0f;
+		v[2].position = D3DXVECTOR4(0.0f, fH, 100, 1);   v[2].color = 0xffffffff; v[2].tu = 0.0f; v[2].tv = 1.0f;
+		v[3].position = D3DXVECTOR4(fW, fH, 100, 1);     v[3].color = 0xffffffff; v[3].tu = 1.0f; v[3].tv = 1.0f;
+		PD3DDEVICE->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VERTEX2D));
+		PD3DDEVICE->SetTexture(0, NULL);
+		if (m_pTgSB) m_pTgSB->Apply();
+		return 1;
+	}
+	return 0;
+}
+
+// sau Present moi khung: chu ky = max(1000/PaintFps muc tieu, 1000/Hz man that); viec/khung cua cac khung co ve the gioi; quyet K moi 2 s
+void KRepresentShell3::JxTheGioiCapNhat(double dTrinhChieuMs)
+{
+	(void)dTrinhChieuMs;
+	LARGE_INTEGER li; QueryPerformanceCounter(&li);
+	if (s_liTgCuoi.QuadPart)
+	{
+		const double dCach = Rep3NapMs(s_liTgCuoi, li);
+		if (dCach > 0.5 && dCach < 200.0) { if (dCach < s_dTgMinCach) s_dTgMinCach = dCach; s_dTgCachTong += dCach; s_uTgCachSo++; }
+	}
+	s_liTgCuoi = li;
+	if (s_uTgVeThat == s_uTgKhung)
+	{	// khung nay CO ve the gioi (duong cu hoac RT): viec = ve CPU + (chep + ghi + nop), khong ke cho swapchain
+		const double dViec = s_dJxVeCpuCuoi + (g_jxVeKhung.dTong - g_jxVeKhung.dCho);
+		if (dViec > 0.0 && dViec < 500.0) { s_dTgViecTong += dViec; s_uTgViecSo++; }
+	}
+	const DWORD dwNow = timeGetTime();
+	if (s_dwTgCuaSo == 0) { s_dwTgCuaSo = dwNow; return; }
+	if (dwNow - s_dwTgCuaSo < 2000) return;
+	s_dwTgCuaSo = dwNow;
+	// chu ky = MAX(1000 / PaintFps muc tieu, 1000 / Hz man that): nac 60 tren man 120 -> 16,7 (khong K=2); PaintFps 120 nhung man da tut 60 Hz -> 16,7 (khong K=2)
+	const double dMucTieu = (s_nTgPaintFps > 0) ? 1000.0 / (double)s_nTgPaintFps : 1000.0 / 60.0;
+	const double dManHinh = Rep3_JxManHinhMs();
+	double dChuKy = (dManHinh > dMucTieu) ? dManHinh : dMucTieu; if (dChuKy < 4.0) dChuKy = 4.0; if (dChuKy > 40.0) dChuKy = 40.0;
+	const double dCachTB = s_uTgCachSo ? s_dTgCachTong / s_uTgCachSo : 0.0;
+	const double dViecTB = s_uTgViecSo ? s_dTgViecTong / s_uTgViecSo : 0.0;
+	s_dTgChuKy = dChuKy; s_dTgViecTB = dViecTB; s_dTgCachTB = dCachTB;
+	// K = 2 chi khi the gioi van >= TheGioiToiThieuHz: 2 chu ky <= 1000 / ToiThieuHz (dung sai 3 %) - tuc PaintFps va man deu >= ~117 Hz
+	const bool bManNhanh = s_nTgPaintFps > 0 && dManHinh > 0.0 && (2.0 * dChuKy) <= (1000.0 / (double)s_nTgToiThieuHz) * 1.03;
+	if (s_nTgK == 1)
+	{
+		if (s_nTgBat && bManNhanh && s_uTgViecSo >= 30 && dViecTB > 0.70 * dChuKy && dCachTB > 1.12 * dChuKy)
+		{
+			s_nTgK = 2; s_nTgCuaSoNhe = 0; s_uTgDemDoiK++;
+			Rep3Log("[TG] qua tai: viec/khung %.2f ms > 70%% chu ky %.2f (PaintFps %d, man %.2f ms), cach present TB %.2f -> the gioi cach khung (K=2, %d Hz)", dViecTB, dChuKy, s_nTgPaintFps, dManHinh, dCachTB, (int)(500.0 / dChuKy + 0.5));
+		}
+	}
+	else
+	{
+		if (!s_nTgBat || !bManNhanh) { s_nTgK = 1; s_nTgCuaSoNhe = 0; s_uTgDemDoiK++; Rep3Log("[TG] ve K=1: chu ky %.2f ms (PaintFps %d, man %.2f) khong du nhanh (hoac tat)", dChuKy, s_nTgPaintFps, dManHinh); }
+		else if (s_uTgViecSo >= 30 && dViecTB < 0.45 * dChuKy)
+		{
+			if (++s_nTgCuaSoNhe >= 2) { s_nTgK = 1; s_nTgCuaSoNhe = 0; s_uTgDemDoiK++; Rep3Log("[TG] het qua tai: viec/khung %.2f ms < 45%% chu ky %.2f trong 4 s -> K=1", dViecTB, dChuKy); }
+		}
+		else s_nTgCuaSoNhe = 0;
+	}
+	s_dTgMinCach = 1e9; s_dTgCachTong = s_dTgViecTong = 0.0; s_uTgCachSo = s_uTgViecSo = 0;
+}
+
+void KRepresentShell3::JxTheGioiKyIn()
+{
+	Rep3Log("[TG] the gioi RT: bat=%d ep=%d K=%d | khung: duong cu %u, ve vao RT %u, chi blit %u | doi K %u lan | cua so gan nhat: chu ky %.2f ms (PaintFps %d, man %.2f ms), viec/khung the gioi TB %.2f, cach present TB %.2f, min %.2f",
+		s_nTgBat, s_nTgEp, s_nTgK, s_uTgDemThuong, s_uTgDemVe, s_uTgDemBlit, s_uTgDemDoiK, s_dTgChuKy, s_nTgPaintFps, Rep3_JxManHinhMs(), s_dTgViecTB, s_dTgCachTB, (s_dTgMinCach < 1e8) ? s_dTgMinCach : 0.0);
+	s_uTgDemThuong = s_uTgDemVe = s_uTgDemBlit = s_uTgDemDoiK = 0;
+}
 #endif
 void Rep3VeDem(const char* p)
 {
@@ -254,7 +421,7 @@ static Rep3AnhNullMuc s_Rep3AnhNull[8];
 static int s_nRep3AnhNull = 0;
 static void Rep3AnhNullGhi(const char* szTen, int nKhung)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (g_nJxAnhBoVeNen) { g_nJxAnhBoVeNen = 0; return; }	// [VE 11/09] khung dang nap o luong nen: khong phai anh thieu
 #endif
 	if (!szTen) szTen = "?";
@@ -602,6 +769,15 @@ int Rep3_NapTruoc2(const char* pszImage, int nNguon)	// [NAPNPC 09/09]
 		return 0;
 	return g_pRep3ShellDuyNhat->NapTruoc(pszImage, nNguon);
 }
+#ifdef JX_MOBILE
+// [TG 13/09] Wnds.cpp goi qua GetProcAddress (nhu Rep3_NapTruoc2, khong doi vtable); iOS dang ky trong ios/JxIosMain.cpp
+extern "C" __declspec(dllexport)
+int Rep3_JxTheGioi(int nLenh, int nThamSo)
+{
+	if (!g_pRep3ShellDuyNhat) return 0;
+	return g_pRep3ShellDuyNhat->JxTheGioi(nLenh, nThamSo);
+}
+#endif
 
 IInlinePicEngineSink* g_pIInlinePicSinkRP = NULL;	//Ç¶ÈëÊ½Í¼Æ¬µÄ´¦Àí½Ó¿Ú[wxb 2003-6-20]
 long KRepresentShell3::AdviseRepresent(IInlinePicEngineSink* pSink)	// [ANDROID 08/09] khop 'long' cua iRepresentShell.h (LP64)
@@ -622,6 +798,9 @@ KRepresentShell3::KRepresentShell3()
 	g_pRep3ShellDuyNhat = this;	// [NAPCHIEU 09/09]
 	m_nLeft = 0;
 	m_nTop = 0;
+#ifdef JX_MOBILE
+	m_pTgTex = NULL; m_pTgSurf = NULL; m_pTgSurfCu = NULL; m_pTgSB = NULL; m_nTgW = m_nTgH = 0; m_nTgTrangThai = 0; m_nTgLeft = m_nTgTop = 0; m_dwTgMauXoa = 0xff000000;	// [TG 13/09]
+#endif
 	m_pPreRenderTexture128 = NULL;
 	m_pPreRenderTexture256 = NULL;
 	m_pPreRenderTexture512 = NULL;
@@ -704,7 +883,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nRep3Log       = Rep3Ini("Rep3Log", 1);
 	g_nRep3Pool      = Rep3Ini("Rep3Pool", 1);		// [REP3 03/09 RAM]
 	g_nRep3Api       = Rep3Ini("Rep3Api", 11);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	g_nRep3Api = 100;	// [ANDROID 11/09 c] Android chi co SDL_GPU; doc ini co luc hong (khoi dong lai ngay sau khi dong app) -> "Rep3Api=11 ... lui ve D3D9" -> GameInit that bai
 #endif	// [D3D11 08/09] [NAP 08/09 #0] mac dinh 11, tu lui D3D9 khi may khong du
 	g_nRep3Atlas     = Rep3Ini("Rep3Atlas", 1);	// [D3D11 08/09 d]
@@ -736,7 +915,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	if (g_nRep3Ex)
 		g_nRep3Pool = 1;	// D3D9Ex khong co POOL_MANAGED: bat buoc dem SYSTEMMEM + DEFAULT
 	g_nRep3NapNen    = Rep3Ini("Rep3NapNen", 1);	// [NAP 08/09 b]
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	g_nJxNapKhungNen   = Rep3Ini("NapKhungNen", 1);		// [VE 11/09] 1 = nap khung sprite o luong nen khi het ngan sach dong bo (0 = nhu cu)
 	g_nJxNapKhungMs    = Rep3Ini("NapKhungMs", 3);		// ngan sach nap dong bo tren luong ve moi khung (ms); qua thi giao luong nen, bo ve khung nay
 	g_nJxNapKhungTruoc = Rep3Ini("NapKhungTruoc", 2);	// so khung KE TIEP cung huong nap truoc o luong nen (0 = tat)
@@ -747,8 +926,8 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nJxAtlasTrang    = Rep3Ini("Rep3AtlasTrang", 2048);	// co trang atlas 1024 / 2048 / 4096
 	if (g_nJxAtlasTrang != 1024 && g_nJxAtlasTrang != 2048 && g_nJxAtlasTrang != 4096) g_nJxAtlasTrang = 2048;
 	g_nJxPalBuffer      = Rep3Ini("Rep3PalBuffer", 1) ? 1 : 0;	// [PALBUF 11/09] 1 = bang mau trong storage buffer (het khung chep 17-100 ms khi tai hang bang mau vao texture 256x8192); 0 = texture nhu cu
-#ifdef JX_APPLE	// [IOS-GOP 12/09 b] Metal moi port bang mau; cac toi uu con lai EP TAT cho toi khi do xong tung cai
-	g_nJxBindRing = 0; g_nJxAtlasMang = 0; g_nJxAtlasKhoi = 0;	// [IOS-GOP 12/09 d] ps buffer DA port; bind ring / texture mang / atlas khoi thi chua
+#ifdef JX_APPLE	// [MOBILE 13/09] Metal: bind ring dung duoc (drawPrimitives:vertexStart:), KHOI tu tat trong CreateShaders khi thieu JX_MSL_CO_KHOI;
+	g_nJxAtlasMang = 0;	// texture mang chua co bien the MSL (Android cung mac dinh tat sau khi do Fold 7 16:22)
 #endif	// [PALBUF 11/09] 1 = bang mau trong storage buffer (het khung chep 17-100 ms khi tai hang bang mau vao texture 256x8192); 0 = texture nhu cu
 	g_nJxBoKhungGiong   = Rep3Ini("Rep3BoKhungGiong", 1);	// [BKG 11/09] 1 = khung giong het khung vua trinh chieu -> khong trinh chieu; 0 = chi dem [VE-BKG]; -1 = tat han (khong so sanh)
 	g_nJxBoKhungGiongMs = Rep3Ini("Rep3BoKhungGiongMs", 250);	// toi da ms giua hai lan trinh chieu khi khung giong (0 = khong gioi han)
@@ -773,6 +952,9 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	Rep3Log("[VE] atlas mang 2D=%d (Rep3AtlasMang; toi da %d lop/cum, ngan sach %d MB/cum)", g_nJxAtlasMang, g_nJxAtlasLop, g_nJxAtlasCumMB);	// [MANG 11/09]
 #endif
 	g_nRep3StatSec   = Rep3Ini("Rep3StatSec", 30);
+#ifdef JX_MOBILE
+	JxTheGioiDocIni();	// [TG 13/09]
+#endif
 	m_TextureResMgr.SetBudget();	// [REP3 03/09 RAM] doc Rep3CacheMB SAU khi doc ini (ctor chay truoc Create)
 	g_bUse4444Texture = (g_nRep3Tex32 == 0);
 	if (g_nRep3Flat)
@@ -908,6 +1090,9 @@ void KRepresentShell3::Release()
 
 void KRepresentShell3::DeleteDeviceObjects()
 {
+#ifdef JX_MOBILE
+	JxTheGioiHuy();	// [TG 13/09]
+#endif
 
 	SAFE_RELEASE( m_pPreRenderTexture128 );
 	SAFE_RELEASE( m_pPreRenderTexture256 );
@@ -919,6 +1104,9 @@ void KRepresentShell3::DeleteDeviceObjects()
 
 bool KRepresentShell3::InvalidateDeviceObjects()
 {
+#ifdef JX_MOBILE
+	JxTheGioiHuy();	// [TG 13/09]
+#endif
 	SAFE_RELEASE( m_pVB2D );
 	SAFE_RELEASE( m_pVB3D );
 
@@ -1664,7 +1852,7 @@ void KRepresentShell3::DrawImage2DStretch(int nPrimitiveCount, KRepresentUnit* p
 			rcFull.top = 0;
 			rcFull.right = g_nScreenWidth;
 			rcFull.bottom = g_nScreenHeight;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_CAT_KHUNG)
 			{	// [KYNANG 12/09 TRON] ben goi cho khung cat rieng (KRUImagePart): dung de ve anh vuong thanh hinh tron
 				KRUImagePart* pCat = (KRUImagePart*)pTemp;
@@ -2987,10 +3175,13 @@ bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 
 	// Çå³ý±³¾°
 	PD3DDEVICE->Clear( 0, NULL, D3DCLEAR_TARGET, bClear ? (0xff000000 | (Color & 0x00ffffff)) : D3DCOLOR_XRGB(0,0,0), 1.0f, 0L );	// [REP3 03/09]
+#ifdef JX_MOBILE
+	m_dwTgMauXoa = bClear ? (0xff000000 | (Color & 0x00ffffff)) : D3DCOLOR_XRGB(0,0,0); s_uTgKhung++;	// [TG 13/09]
+#endif
 
 	// ¿ªÊ¼ÐÔÄÜÍ³¼Æ
 	m_TextureResMgr.NapNenNhan();	// [NAP 08/09 b] nhan ket qua luong nen truoc khi ve
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	m_TextureResMgr.JxNapKhungNhan();	// [VE 11/09] tao texture tu khung da giai ma o luong nen (theo ngan sach NapKhungApMs)
 #endif
 	m_TextureResMgr.m_bVeDangDien = true;
@@ -3064,7 +3255,7 @@ void KRepresentShell3::RepresentEnd()
 	{	// [NAP 08/09 a] tong ms nap trong khung nay -> max / dem khung nang
 		if (g_dRep3NapKhung > g_dRep3NapKhungMax) g_dRep3NapKhungMax = g_dRep3NapKhung;
 		if (g_dRep3NapKhung > 16.0) g_uRep3NapKhung16++; else if (g_dRep3NapKhung > 5.0) g_uRep3NapKhung5++;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		JxVeKhungChot();	// [VE 11/09] chot so nap + ve CPU cua khung (in [VE-GIAT] sau Present)
 #endif
 		g_dRep3NapKhung = 0.0;
@@ -3101,8 +3292,8 @@ void KRepresentShell3::RepresentEnd()
 	// Íê³É3DäÖÈ¾
 	g_Device.End3D();
 	// ½»»»Ò³Ãæ
-#ifdef JX_ANDROID
-	{ LARGE_INTEGER liJx0, liJx1; QueryPerformanceCounter(&liJx0); PD3DDEVICE->Present(NULL,NULL,NULL,NULL); QueryPerformanceCounter(&liJx1); JxVeGiatGhi(Rep3NapMs(liJx0, liJx1)); }	// [VE 11/09]
+#ifdef JX_MOBILE
+	{ LARGE_INTEGER liJx0, liJx1; QueryPerformanceCounter(&liJx0); PD3DDEVICE->Present(NULL,NULL,NULL,NULL); QueryPerformanceCounter(&liJx1); JxVeGiatGhi(Rep3NapMs(liJx0, liJx1)); JxTheGioiCapNhat(Rep3NapMs(liJx0, liJx1)); }	// [VE 11/09] [TG 13/09]
 #else
 	PD3DDEVICE->Present(NULL,NULL,NULL,NULL);
 #endif
@@ -3193,8 +3384,9 @@ void KRepresentShell3::RepresentEnd()
 			m_TextureResMgr.m_nNapNenGui = 0; m_TextureResMgr.m_nNapNenXong = 0; m_TextureResMgr.m_nNapNenHong = 0; m_TextureResMgr.m_nNapNenBoVe = 0;
 			memset(&g_napSpr, 0, sizeof(g_napSpr)); memset(&g_napJpeg, 0, sizeof(g_napJpeg)); memset(&g_napKhung, 0, sizeof(g_napKhung)); memset(&g_napGiaiMa, 0, sizeof(g_napGiaiMa)); memset(&g_napGpu, 0, sizeof(g_napGpu));
 			g_dRep3NapKhungMax = 0.0; g_uRep3NapKhung5 = 0; g_uRep3NapKhung16 = 0;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			JxVeKyIn();	// [VE 11/09] [VE] + [VE-GOP] + [VE-NAP]
+			JxTheGioiKyIn();	// [TG 13/09]
 #endif
 			Rep3AnhNullIn();	// [REP3 08/09 h]
 		}

@@ -19,7 +19,7 @@ enum IS_BALANCE_PARAM {
     ISBP_TRY_RANGE_DEF = 8 };
 
 class TextureRes;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 class TextureResSpr;	// [VE 11/09]
 #endif
 
@@ -62,7 +62,7 @@ public:
 	// luong nen doc pak + giai ma (SPR: LoadSprFile; JPEG: LoadJpegDecode), khong dung device; luong ve nhan ket qua o RepresentBegin.
 	struct NapViec   { char szTen[MAX_PATH]; uint32 uId; uint32 nType; };
 	struct NapKetQua { char szTen[MAX_PATH]; uint32 uId; uint32 nType; TextureRes* pRes; };
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [VE 11/09] nap KHUNG sprite o luong nen: luong ve giao (TextureResSpr::PrepareFrameData khi dang ve ma het ngan sach NapKhungMs),
 	// luong nen rut khung + giai ma vao bo dem (JxGiaiMaNen), luong ve tao texture o dau khung sau (JxNapKhungNhan, ngan sach NapKhungApMs).
 	// Vong doi: TextureResSpr::Release goi JxNapKhungHuy -> bo viec chua chay, CHO viec dang chay xong, bo ket qua cua sprite do.

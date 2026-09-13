@@ -23,7 +23,7 @@ struct FrameToTexture
 	int32	nRawDataLen;				// 原始数据长度
 	BYTE	*pRawData;					// 这一帧的原始数据
 	void	*pFrame;					// 保存SprGetFrame返回的指针，供SprReleaseFrame使用
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	int32	nJxNen;						// [VE 11/09] 1 = khung dang nap o luong nen (da giao, chua tao texture)
 #endif
 };
@@ -160,7 +160,7 @@ public:
 	
 	// 取得第nFrame帧图象x，y坐标上的象素点alpha值
 	int32 GetPixelAlpha(int32 nFrame, int32 x, int32 y);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [VE 11/09] nap khung o luong nen: giao + nap truoc (luong ve), giai ma (luong nen: chi doc m_pHeader/m_pOffset/m_pPal24/pRawData), nhan (luong ve: tao texture)
 	bool JxNapKhungGiao(int32 nFrame, int nNguon);
 	void JxNapKhungTruoc(int32 nFrame);

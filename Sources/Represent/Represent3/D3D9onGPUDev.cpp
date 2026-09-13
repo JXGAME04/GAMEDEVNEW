@@ -12,13 +12,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [ANDROID 11/09 HUD] so lieu cho bang do hieu nang trong game (JxPerfHudAndroid.cpp goi Rep3_ThongKeGpu qua GetProcAddress)
 static char        s_szRep3GpuDriver[32] = "";
 static const char* s_szRep3GpuTrinhChieu = "?";
 static unsigned    s_uRep3GpuLenhVe = 0, s_uRep3GpuQuad = 0;
 // [DONHIP 12/09] ban do nhip tren may that (JxPerfHudAndroid.cpp goi Rep3_DoNhipDat / Rep3_DoNhipLay qua GetProcAddress)
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 static int      s_nJxChepKhung = 0;		// [DONHIP 12/09 d] Android: KHONG chep swapchain moi khung (Fold 7: fps bang, dien -0,1..-0,8 W); GetFrontBufferData tu bat
 #else
 static int      s_nJxChepKhung = 1;		// 0 = bo chep swapchain moi khung (ban sao chi de chup man hinh)
@@ -85,7 +85,7 @@ static void JxGopVo(const RgCmd& L, const RgDrawState& st, UINT stride, UINT rin
 	else if (L.st.pPipe != st.pPipe)
 	{
 		k = 2;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		const unsigned long long x = L.ullPipeKey ^ s_ullJxPipeKeyCur;	// [CULLCPU 11/09] pipeline khac nhau o truong nao cua khoa
 		if (x & 0xFFFull) g_uJxPipeVo[0]++;				// fvf
 		if (x & (7ull << 12)) g_uJxPipeVo[1]++;			// topo
@@ -271,7 +271,7 @@ CDevGpu::~CDevGpu()
 		if (m_pRingGpu) SDL_ReleaseGPUBuffer(m_pGpu, m_pRingGpu);
 		if (m_pRingXfer) SDL_ReleaseGPUTransferBuffer(m_pGpu, m_pRingXfer);
 		if (m_pTexXfer) SDL_ReleaseGPUTransferBuffer(m_pGpu, m_pTexXfer);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		if (m_pJxZeroXfer) SDL_ReleaseGPUTransferBuffer(m_pGpu, m_pJxZeroXfer);	// [VE 11/09 d]
 #endif
 		if (m_pVS) SDL_ReleaseGPUShader(m_pGpu, m_pVS);
@@ -331,14 +331,14 @@ bool CDevGpu::Init()
 	m_pGpu = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, (e && atoi(e) != 0), NULL);
 	if (!m_pGpu) { RgLog("SDL_CreateGPUDevice(SPIRV) that bai: %s", SDL_GetError()); return false; }
 #endif
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	JxDatHintSwapchain(m_pWin, m_bbW, m_bbH);	// [D1 11/09] truoc khi SDL tao swapchain lan dau
 #endif
 	if (!SDL_ClaimWindowForGPUDevice(m_pGpu, m_pWin)) { RgLog("ClaimWindowForGPUDevice that bai: %s", SDL_GetError()); return false; }
 	ApplyWindowMode();
 	SDL_GPUPresentMode pm = SDL_GPU_PRESENTMODE_VSYNC;
 	if (m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_IMMEDIATE)) pm = SDL_GPU_PRESENTMODE_IMMEDIATE;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (pm == SDL_GPU_PRESENTMODE_VSYNC && m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && g_nRep3GpuMailbox && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_MAILBOX))
 		pm = SDL_GPU_PRESENTMODE_MAILBOX;	// [ANDROID 11/09 MAILBOX] IMMEDIATE khong co (LDPlayer / dien thoai): MAILBOX khong cho vblank, khong xe hinh; Rep3GpuMailbox=0 de tat
 #endif
@@ -364,13 +364,13 @@ bool CDevGpu::Init()
 	{	// texture trang 1x1 (stage khong texture / bang mau chua co)
 		DWORD white = 0xFFFFFFFF;
 		SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci)); ci.type = SDL_GPU_TEXTURETYPE_2D; ci.format = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		if (g_nJxAtlasMang) ci.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;	// [MANG 11/09] shader dung sampler2DArray
 #endif
 		ci.width = 1; ci.height = 1; ci.layer_count_or_depth = 1; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
 		m_pWhite = SDL_CreateGPUTexture(m_pGpu, &ci);
 		if (!m_pWhite || !RgUploadOnce(m_pGpu, NULL, m_pWhite, 1, 1, &white, 4)) { RgLog("texture trang that bai: %s", SDL_GetError()); return false; }
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		if (g_nJxAtlasKhoi)
 		{	// [KHOI 11/09] SDL doi MOI sampler da khai bao phai duoc gan: khe khoi chua co khoi thi gan texture mang 1x1 nay
 			ci.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;
@@ -383,7 +383,7 @@ bool CDevGpu::Init()
 	if (g_nRep3AtlasGpu) m_pAtlas = new CAtlasMgrGpu(this);	// [GPU 11/09 ATLAS]
 	RgLog("atlas: %s | bo ban CPU sau khi tai len: %s", m_pAtlas ? "BAT (trang 1024x1024, texture DEFAULT <= 512 khong RT; Rep3AtlasGpu=0 de tat)" : "tat", g_nRep3GpuBoBanCpu ? "BAT (Rep3GpuBoBanCpu=0 de tat)" : "tat");
 	g_pRep3DevGpu = this;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{ const char* d = SDL_GetGPUDeviceDriver(m_pGpu); strncpy(s_szRep3GpuDriver, d ? d : "?", sizeof(s_szRep3GpuDriver) - 1); }	// [ANDROID 11/09 HUD]
 	s_szRep3GpuTrinhChieu = pm == SDL_GPU_PRESENTMODE_IMMEDIATE ? "ngay" : (pm == SDL_GPU_PRESENTMODE_MAILBOX ? "mailbox" : "vsync");
 #endif
@@ -395,7 +395,7 @@ bool CDevGpu::Init()
 // [GPU 08/09 khung ao] toan man hinh (desktop, khong doi che do) theo pp.Windowed; cua so theo backbuffer. Swapchain khac backbuffer -> letterbox.
 void CDevGpu::ApplyWindowMode()
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [ANDROID 09/09 DPG] Dien thoai KHONG co che do cua so: cua so da toan man hinh tu KSdlApp::Init.
 	// Vi config.ini de FullScreen=0 nen ham nay tung goi SDL_SetWindowFullscreen(false), lam Android HIEN LAI
 	// thanh trang thai ngay sau khung dau tien: cua so tut 1040x604 -> 1040x568, khung ve 604 bi ep xuong 568
@@ -445,7 +445,7 @@ bool CDevGpu::CreateShaders()
 	if (!m_pVS) { RgLog("CreateGPUShader VS that bai: %s", SDL_GetError()); return false; }
 	memset(&si, 0, sizeof(si));
 	si.code = g_Rep3GpuFS; si.code_size = sizeof(g_Rep3GpuFS); si.entrypoint = "main"; si.format = SDL_GPU_SHADERFORMAT_SPIRV; si.stage = SDL_GPU_SHADERSTAGE_FRAGMENT; si.num_samplers = 3; si.num_uniform_buffers = 1;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (g_nJxPalBuffer)
 	{	// [PALBUF 11/09] bang mau = storage buffer: shader chi co 2 sampler (t0, t1), buffer o set 2 binding 2 (SDL: sau cac sampler)
 		si.code = g_Rep3GpuFSPalBuf; si.code_size = sizeof(g_Rep3GpuFSPalBuf); si.num_samplers = 2; si.num_storage_buffers = 1;
@@ -471,10 +471,15 @@ bool CDevGpu::CreateShaders()
 			// Day moi la to hop ma ban Android chay hang ngay - bat mot minh bang mau la to hop chua ai chay.
 			si.code = (const Uint8*)g_Rep3GpuFSPalPsMsl; si.code_size = sizeof(g_Rep3GpuFSPalPsMsl) - 1;
 			si.num_storage_buffers = 2; si.num_uniform_buffers = 0;
+			if (g_nJxAtlasKhoi)
+			{	// [MOBILE 13/09] KHOI Metal: 12 texture mang gan chet khe 2..13 + 2 dem luu tru, y het bien the SPIR-V; can bien the MSL do ios/sinh_shader_msl.py sinh (g_nJxMslCoKhoi)
+				if (g_nJxMslCoKhoi) { si.code = (const Uint8*)g_Rep3GpuFSPalPsKhoiMsl; si.code_size = sizeof(g_Rep3GpuFSPalPsKhoiMsl) - 1; si.num_samplers = 2 + 12; }
+				else { RgLog("[KHOI] Rep3AtlasKhoi=1 nhung Rep3ShadersGPU_msl.h chua co bien the khoi (chay ios/sinh_shader_msl.py tren Mac) -> TU TAT"); g_nJxAtlasKhoi = 0; }
+			}
 		}
 	}
 #endif
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (g_nJxAtlasKhoi && !(g_nJxPalBuffer && g_nJxPsBuffer && !g_nJxAtlasMang))
 	{	// [KHOI 11/09] khoi can bang mau + bang ps o storage buffer (o PALROW moi du bit) va khong duoc bat cung C1
 		RgLog("[KHOI] Rep3AtlasKhoi=1 nhung Rep3PalBuffer=%d Rep3PsBuffer=%d Rep3AtlasMang=%d -> TU TAT", g_nJxPalBuffer, g_nJxPsBuffer, g_nJxAtlasMang);
@@ -501,7 +506,7 @@ SDL_GPUGraphicsPipeline* CDevGpu::GetPipelineCull(DWORD fvf, SDL_GPUPrimitiveTyp
 		| ((unsigned long long)blendOn << 29) | ((unsigned long long)(m_rs[D3DRS_COLORWRITEENABLE] & 15) << 30)
 		| ((unsigned long long)(dwCull & 3) << 34) | ((unsigned long long)(m_rs[D3DRS_FILLMODE] & 3) << 36)
 		| ((unsigned long long)(rtFmt & 0xFF) << 40) | ((unsigned long long)(stride & 0xFF) << 48);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	s_ullJxPipeKeyCur = key;	// [CULLCPU 11/09] chi de DO
 #endif
 	std::map<unsigned long long, SDL_GPUGraphicsPipeline*>::iterator it = m_pipes.find(key);
@@ -605,7 +610,7 @@ HRESULT CDevGpu::Reset(D3DPRESENT_PARAMETERS* pp)
 	if (!pp) return D3DERR_INVALIDCALL;
 	Lock();
 	if (m_bFrameOpen || !m_cmds.empty()) SubmitFrame(false);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	m_bJxCoKhungTruoc = false; s_nJxEpTrinhChieu = 1;	// [BKG 11/09] backbuffer / swapchain doi -> khung ke tiep phai trinh chieu
 #endif
 	m_pp = *pp;
@@ -613,12 +618,12 @@ HRESULT CDevGpu::Reset(D3DPRESENT_PARAMETERS* pp)
 	m_bbW = m_pp.BackBufferWidth; m_bbH = m_pp.BackBufferHeight;
 	if (m_pBackSurf) { m_pBackSurf->m_w = m_bbW; m_pBackSurf->m_h = m_bbH; }
 	ApplyWindowMode();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	JxDatHintSwapchain(m_pWin, m_bbW, m_bbH);	// [D1 11/09] backbuffer doi (gap/mo) -> SDL_SetGPUSwapchainParameters ben duoi dung lai swapchain voi hint moi
 #endif
 	SDL_GPUPresentMode pm = SDL_GPU_PRESENTMODE_VSYNC;
 	if (m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_IMMEDIATE)) pm = SDL_GPU_PRESENTMODE_IMMEDIATE;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (pm == SDL_GPU_PRESENTMODE_VSYNC && m_pp.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE && g_nRep3GpuMailbox && SDL_WindowSupportsGPUPresentMode(m_pGpu, m_pWin, SDL_GPU_PRESENTMODE_MAILBOX))
 		pm = SDL_GPU_PRESENTMODE_MAILBOX;	// [ANDROID 11/09 MAILBOX] IMMEDIATE khong co (LDPlayer / dien thoai): MAILBOX khong cho vblank, khong xe hinh; Rep3GpuMailbox=0 de tat
 #endif
@@ -626,7 +631,7 @@ HRESULT CDevGpu::Reset(D3DPRESENT_PARAMETERS* pp)
 	if (m_pLastFrame) { DeferRelease(m_pLastFrame); m_pLastFrame = NULL; m_lastW = m_lastH = 0; }
 	memset(&m_vp, 0, sizeof(m_vp)); m_vp.Width = m_bbW; m_vp.Height = m_bbH; m_vp.MaxZ = 1.0f; m_bVsDirty = true;
 	SetRect(&m_scissor, 0, 0, (int)m_bbW, (int)m_bbH);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	s_szRep3GpuTrinhChieu = pm == SDL_GPU_PRESENTMODE_IMMEDIATE ? "ngay" : (pm == SDL_GPU_PRESENTMODE_MAILBOX ? "mailbox" : "vsync");	// [ANDROID 11/09 HUD]
 #endif
 	RgLog("Reset: %ux%u windowed=%d vsync=%d", m_bbW, m_bbH, (int)(m_pp.Windowed != FALSE), (int)(pm == SDL_GPU_PRESENTMODE_VSYNC));
@@ -778,7 +783,7 @@ HRESULT CDevGpu::GetFrontBufferData(UINT iSwapChain, IDirect3DSurface9* pDestSur
 	if (!pD) return D3DERR_INVALIDCALL;
 	if (!m_pLastFrame)
 	{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		if (!s_nJxChepKhung) { s_nJxChepKhung = 1; RgLog("GetFrontBufferData: bat chep khung tu khung sau (Android mac dinh khong chep)"); }	// [DONHIP 12/09 d]
 #endif
 		RgLog("GetFrontBufferData: chua co khung nao (chup lai o khung sau)"); return D3DERR_INVALIDCALL;
@@ -893,8 +898,13 @@ HRESULT CDevGpu::CreateStateBlock(D3DSTATEBLOCKTYPE Type, IDirect3DStateBlock9**
 {
 	if (!ppSB) return E_POINTER;
 	CSBGpu* p = new CSBGpu(this);
+#ifdef JX_MOBILE
+	// [MOBILE 13/09] P2: khoi tron -> chup ba mang mot lan (Capture/Apply memcpy), khong Record 616 muc; ket qua nhu cu
+	p->m_bJxDay = true; p->Capture();
+#else
 	for (DWORD i = 0; i < 256; i++) p->Record(RGSB_RS | i, m_rs[i]);
 	for (DWORD s = 0; s < 8; s++) { for (DWORD t = 1; t < 33; t++) p->Record(RGSB_TSS | (s << 16) | t, m_tss[s][t]); for (DWORD t = 1; t < 14; t++) p->Record(RGSB_SS | (s << 16) | t, m_ss[s][t]); }
+#endif
 	*ppSB = p;
 	return D3D_OK;
 }
@@ -947,7 +957,7 @@ void CDevGpu::UntouchTex(CTexGpu* p)
 void CDevGpu::QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, UINT layer)
 {
 	if (!pTex || !w || !h || !bpp) return;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{	// [VE 11/09 d] tai tu bo dem 0 co dinh (SubmitFrame): khong memset/memcpy vao staging, staging khong phinh 2-4 MB moi trang atlas moi
 		RgTexUpload u = { pTex, x, y, w, h, 0, w * h * bpp, layer };	// [MANG 11/09]
 		m_jxZeroUploads.push_back(u);
@@ -990,7 +1000,7 @@ bool CDevGpu::ReadbackRegion(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT 
 void CDevGpu::ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo)
 {
 	memset(&st, 0, sizeof(st));
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{	// [CULLCPU 11/09] port buoc (e) cua [MANG 09/09] (commit ac7d255b ben duong D3D11): chu dat CULLMODE=CCW, sprite dung NONE ->
 		// khoa pipeline khac nhau o bit 34 -> cat lo quad. Voi lenh 2D (dinh XYZRHW) ta tu bo tam giac sai chieu tren CPU va
 		// lay pipeline CULL_NONE, nen ket qua tren man hinh y het ma chu gop chung lo voi sprite.
@@ -1007,13 +1017,13 @@ void CDevGpu::ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo)
 	for (int s = 0; s < 2; s++)
 	{
 		SDL_GPUTexture* t = NULL;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [MANG 11/09] o PALROW chi cho MOT chi so lop (dung cho tang 0): texture cua tang 1 phai ra khoi atlas de lop cua no luon = 0
 		if ((g_nJxAtlasMang || g_nJxAtlasKhoi) && s == 1 && m_tex[1] && m_tex[1] != m_pRtTex && m_tex[1]->m_bVirtual) m_tex[1]->BoAtlas();	// [KHOI 11/09] tang 1 la sampler2D thuong
 #endif
 		if (m_tex[s] && m_tex[s] != m_pRtTex) t = m_tex[s]->PrepareForBind();
 		if (t) bound[s] = true;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [KHOI 11/09] DAY LA CHO AN TIEN: trang atlas nam trong khoi thi khe 0 khong can gan texture cua no nua
 		// (shader lay diem anh tu mang cua khoi theo chi so o PALROW). Khe 0 giu y nguyen giua cac lenh ve ->
 		// 'texture0' thoi la ly do cat lo. bound[0] van = 1 nen tang 0 van duoc coi la CO texture.
@@ -1043,7 +1053,7 @@ void CDevGpu::ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo)
 }
 
 // ---------------------------------------------------------------- ve
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [CULLCPU 11/09] chieu quay tam giac 2D tren man hinh (y huong xuong): cr > 0 = thuan chieu kim dong ho = mat truoc cua D3D9.
 // D3DCULL_CCW bo cr < 0, D3DCULL_CW bo cr > 0, cr == 0 (tam giac det) bo. Giong het ban PC [MANG 09/09 e].
 static bool JxGiuTamGiac(const BYTE* pV, UINT stride, UINT i0, UINT i1, UINT i2, int nCull)
@@ -1070,7 +1080,7 @@ static void RgAtlasUv(BYTE* pV, UINT nVerts, UINT strideRing, DWORD fvf, CTexGpu
 // [VECHITIET 11/09] cong don thoi gian nam trong lop ve. Chi chay khi Rep3DoVeChiTiet=1 vi moi lenh ve ton hai lan doc dong ho.
 HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nVerts, UINT stride)
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	struct JxDoVe
 	{
 		Uint64 u0; bool bBat;
@@ -1106,7 +1116,7 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 	if (!st.pPipe) return D3DERR_INVALIDCALL;
 	// dinh -> ring
 	UINT ringOff = (UINT)m_ring.size();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (g_nJxBindRing)
 	{	// [GOP 11/09] can len boi (stride+4) de first_vertex = ringOff / (stride+4) chia het (vai byte dem moi khi doi stride)
 		const UINT du = ringOff % s2;
@@ -1122,7 +1132,7 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 		nOut = 0;
 		for (int t = 0; t < 2; t++)
 		{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (s_nJxCullCpuCur && !JxGiuTamGiac(pVerts, stride, s_idx[t * 3], s_idx[t * 3 + 1], s_idx[t * 3 + 2], s_nJxCullCpuCur)) continue;	// [CULLCPU 11/09]
 #endif
 			for (int k = 0; k < 3; k++) { BYTE* q = d + (nOut + k) * s2; memcpy(q, pVerts + s_idx[t * 3 + k] * stride, stride); *(UINT*)(q + stride) = uPal; }
@@ -1144,7 +1154,7 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 #endif
 			if (L.type == RGCMD_DRAW && L.stride == stride && L.ringOff + L.nVerts * s2 == ringOff && memcmp(&L.st, &st, nSo) == 0)
 			{ L.nVerts += nOut; return D3D_OK; }	// [CULLCPU 11/09] nOut = 3 hoac 6 (co the da cull bot)
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			JxGopVo(L, st, stride, ringOff, s2);	// [VE 11/09] vi sao khong gop
 #endif
 		}
@@ -1158,7 +1168,7 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 		for (UINT i = 0; i < nTri; i++)
 		{
 			const UINT src[3] = { 0, i + 1, i + 2 };
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (s_nJxCullCpuCur && !JxGiuTamGiac(pVerts, stride, src[0], src[1], src[2], s_nJxCullCpuCur)) continue;	// [CULLCPU 11/09]
 #endif
 			for (int k = 0; k < 3; k++) { BYTE* q = d + (nOut + k) * s2; memcpy(q, pVerts + src[k] * stride, stride); *(UINT*)(q + stride) = uPal; }
@@ -1172,7 +1182,7 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 	{
 		m_ring.resize(ringOff + (size_t)nVerts * s2);
 		BYTE* d = &m_ring[ringOff];
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		if (s_nJxCullCpuCur && type == D3DPT_TRIANGLELIST && (nVerts % 3) == 0)
 		{	// [CULLCPU 11/09] danh sach tam giac 2D: bo tam giac sai chieu ngay tren CPU
 			nOut = 0;
@@ -1191,7 +1201,7 @@ HRESULT CDevGpu::DrawInternal(D3DPRIMITIVETYPE type, const BYTE* pVerts, UINT nV
 		RgAtlasUv(d, nOut, s2, m_fvf, m_tex[0], fPage);	// [GPU 11/09 ATLAS]
 	}
 	RgCmd c; memset(&c, 0, sizeof(c)); c.type = RGCMD_DRAW; c.st = st; c.ringOff = ringOff; c.nVerts = nOut; c.stride = stride;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	c.ullPipeKey = s_ullJxPipeKeyCur;	// [CULLCPU 11/09] chi de DO
 #endif
 	m_cmds.push_back(c);
@@ -1270,11 +1280,11 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 	SDL_GPUTexture* pSwap = NULL; Uint32 swW = 0, swH = 0;
 	if (bPresent)
 	{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		const Uint64 uJxT0 = SDL_GetPerformanceCounter();	// [DONHIP 12/09] do thoi gian cho swapchain (vblank / khung bay / dung lai swapchain)
 #endif
 		if (!SDL_WaitAndAcquireGPUSwapchainTexture(cb, m_pWin, &pSwap, &swW, &swH)) { if (m_uFrames < 3) RgLog("AcquireSwapchainTexture that bai: %s", SDL_GetError()); pSwap = NULL; }
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		JxNhipGhiCho(uJxT0, pSwap != NULL, swW, swH);	// [DONHIP 12/09]
 		if (pSwap && (swW != s_uJxD1W || swH != s_uJxD1H))
 		{	// [D1 11/09] swapchain doi kich thuoc (lan dau / gap-mo / doi hint): ghi de doi chieu backbuffer, cua so, extent SDL bao
@@ -1285,14 +1295,14 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 #endif
 	}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	uJxK1 = SDL_GetPerformanceCounter(); jxK.dCho = JxVeMs(uJxK0, uJxK1);	// [VE 11/09] cho lenh + swapchain
 	jxK.uTai = (unsigned)m_texUploads.size(); jxK.uTaiKB = (unsigned)(m_texStage.size() >> 10); jxK.uRingKB = (unsigned)(m_ring.size() >> 10);
 #endif
 	// ---- copy pass: bang mau, texture, ring dinh
 	{
 		SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		// [VE 11/09 f] vung 0 (trang atlas moi / o chua co ban CPU) PHAI ghi lenh TRUOC noi dung texture: trang moi va anh dau tien tren no
 		// nam trong cung khung; [VE 11/09 d] tung dat khoi nay SAU tex -> lenh to 0 ghi de anh vua tai (chu thay spr an hien, map loi, ngua mat dau duoi).
 		if (!m_jxZeroUploads.empty())
@@ -1385,7 +1395,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			const Uint64 uT0 = SDL_GetPerformanceCounter(); const UINT uXferTruoc = m_texXferSize;	// [VE 11/09 d]
 #endif
 			RgEnsureXfer(m_pGpu, &m_pTexXfer, &m_texXferSize, (UINT)m_texStage.size(), SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			if (m_texXferSize != uXferTruoc) jxK.uXferTang++;
 #endif
 			BYTE* p = m_pTexXfer ? (BYTE*)SDL_MapGPUTransferBuffer(m_pGpu, m_pTexXfer, true) : NULL;
@@ -1393,12 +1403,12 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			{
 				memcpy(p, &m_texStage[0], m_texStage.size());
 				SDL_UnmapGPUTransferBuffer(m_pGpu, m_pTexXfer);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 				{ const Uint64 u = SDL_GetPerformanceCounter(); jxK.dChepTexMap = JxVeMs(uT0, u); }	// [VE 11/09 d]
 #endif
 				for (size_t i = 0; i < m_texUploads.size(); i++)
 				{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 					if (i == uJxTexTruocPal) uJxPalT0 = SDL_GetPerformanceCounter();	// [PALBUF 11/09] tu day la hang bang mau kieu texture cu
 #endif
 					const RgTexUpload& u = m_texUploads[i];
@@ -1431,12 +1441,12 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			}
 			else RgLog("map transfer texture (%u B) that bai: %s", (unsigned)m_texStage.size(), SDL_GetError());
 		}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		jxK.uXferKB = m_texXferSize >> 10;
 #endif
 		if (!m_ring.empty())
 		{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			const Uint64 uR0 = SDL_GetPerformanceCounter();	// [VE 11/09 d]
 #endif
 			const UINT need = (UINT)m_ring.size();
@@ -1457,13 +1467,13 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 				SDL_UploadToGPUBuffer(cp, &src, &dst, true);
 			}
 			else RgLog("map transfer ring (%u B) that bai: %s", need, SDL_GetError());
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			jxK.dChepRing = JxVeMs(uR0, SDL_GetPerformanceCounter());	// [VE 11/09 d]
 #endif
 		}
 		SDL_EndGPUCopyPass(cp);
 	}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{ const Uint64 u = SDL_GetPerformanceCounter(); jxK.dChep = JxVeMs(uJxK1, u); uJxK1 = u; }	// [VE 11/09] chep len GPU
 #endif
 	// ---- render pass
@@ -1497,7 +1507,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			ci.clear_color.a = ((clearColor >> 24) & 0xFF) / 255.0f; ci.clear_color.r = ((clearColor >> 16) & 0xFF) / 255.0f; ci.clear_color.g = ((clearColor >> 8) & 0xFF) / 255.0f; ci.clear_color.b = (clearColor & 0xFF) / 255.0f;
 			pass = SDL_BeginGPURenderPass(cb, &ci, 1, NULL);
 			bPendingClear = false; bLast = false;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			jxK.uPass++;	// [VE 11/09]
 #endif
 			if (!pass) { RgLog("BeginGPURenderPass that bai: %s", SDL_GetError()); break; }
@@ -1518,13 +1528,13 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		if (!bLast || st.pPipe != last.pPipe)
 		{
 			SDL_BindGPUGraphicsPipeline(pass, st.pPipe);
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			jxK.uDoiPipe++;	// [VE 11/09]
 #endif
 		}
 		if (!bLast || memcmp(&st.vp, &last.vp, sizeof(st.vp)) != 0)
 		{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			jxK.uDoiCat++;	// [VE 11/09] (viewport)
 #endif
 			SDL_GPUViewport vp; vp.x = (float)st.vp.X; vp.y = (float)st.vp.Y; vp.w = (float)st.vp.Width; vp.h = (float)st.vp.Height; vp.min_depth = 0.0f; vp.max_depth = 1.0f;
@@ -1534,7 +1544,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 		if (!bLast || st.bScissor != last.bScissor || memcmp(&st.rcScissor, &last.rcScissor, sizeof(RECT)) != 0)
 		{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			jxK.uDoiCat++;	// [VE 11/09] (scissor)
 #endif
 			SDL_Rect r;
@@ -1545,7 +1555,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 		if (!bLast || st.pTex[0] != last.pTex[0] || st.pTex[1] != last.pTex[1] || st.pSamp[0] != last.pSamp[0] || st.pSamp[1] != last.pSamp[1])
 		{
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			jxK.uDoiTex++;	// [VE 11/09]
 #endif
 			SDL_GPUTextureSamplerBinding tb[3];
@@ -1553,7 +1563,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			tb[2].texture = m_pPalTex ? m_pPalTex : m_pWhite; tb[2].sampler = st.pSamp[0];
 #ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 			SDL_BindGPUFragmentSamplers(pass, 0, tb, g_nJxPalBuffer ? 2 : 3);	// [PALBUF 11/09] kieu buffer: shader chi khai 2 sampler
-#ifdef JX_ANDROID	// [IOS-GOP 12/09 b] atlas khoi CHUA port sang Metal (CAtlasMgrGpu::JxKhoiTex chi khai o ban Android)
+#ifdef JX_MOBILE	// [IOS-GOP 12/09 b] atlas khoi CHUA port sang Metal (CAtlasMgrGpu::JxKhoiTex chi khai o ban Android)
 			if (g_nJxAtlasKhoi && m_pAtlas)
 			{	// [KHOI 11/09] 12 khoi atlas o khe 2..13. Gan bang BO LOC cua tang 0 (lenh gop duoc da phai cung sampler[0] nen khong sai)
 				SDL_GPUTextureSamplerBinding tk[12];	// [KHOI2 11/09]
@@ -1572,7 +1582,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		if (!bLast || memcmp(&st.vs, &last.vs, sizeof(st.vs)) != 0)
 		{
 			SDL_PushGPUVertexUniformData(cb, 0, &st.vs, sizeof(st.vs));
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			jxK.uDoiVs++;	// [VE 11/09]
 #endif
 		}
@@ -1583,11 +1593,11 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 #endif
 		{
 			SDL_PushGPUFragmentUniformData(cb, 0, &st.ps, sizeof(st.ps));
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 			jxK.uDoiPs++;	// [VE 11/09]
 #endif
 		}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		if (g_nJxBindRing) SDL_DrawGPUPrimitives(pass, c.nVerts, 1, c.ringOff / (c.stride + 4), 0);	// [GOP 11/09] ring da bind dau pass
 		else
 #endif
@@ -1596,7 +1606,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
 			SDL_DrawGPUPrimitives(pass, c.nVerts, 1, 0, 0);
 		}
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 		jxK.uLenh++; jxK.uDinh += c.nVerts;	// [VE 11/09]
 #endif
 		last = st; bLast = true;
@@ -1610,11 +1620,11 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		pass = SDL_BeginGPURenderPass(cb, &ci, 1, NULL);
 	}
 	if (pass) { SDL_EndGPURenderPass(pass); pass = NULL; }
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{ const Uint64 u = SDL_GetPerformanceCounter(); jxK.dGhi = JxVeMs(uJxK1, u); uJxK1 = u; }	// [VE 11/09] ghi lenh render pass
 #endif
 	// ---- ban sao khung de chup man hinh
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (pSwap && swW && swH && s_nJxChepKhung)	// [DONHIP 12/09] Rep3_DoNhipDat(0, ..) tat de do (swapchain SDL tren Android khong co TRANSFER_SRC)
 #else
 	if (pSwap && swW && swH)
@@ -1636,7 +1646,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		}
 	}
 	if (!SDL_SubmitGPUCommandBuffer(cb)) RgLog("SubmitGPUCommandBuffer that bai: %s", SDL_GetError());
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	{ const Uint64 u = SDL_GetPerformanceCounter(); jxK.dNop = JxVeMs(uJxK1, u); jxK.dTong = JxVeMs(uJxK0, u); jxK.uQuad = m_uQuads; if (bPresent) JxVeCong(jxK); }	// [VE 11/09] nop
 #endif
 	FrameReset();
@@ -1675,7 +1685,7 @@ void CDevGpu::FrameReset()
 	m_bFrameOpen = false;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [BKG 11/09] Khung nay (danh sach lenh + ring dinh) giong HET khung vua trinh chieu, khong co texture / bang mau / vung 0 cho tai, khong bi flush
 // giua khung, chua qua Rep3BoKhungGiongMs va khong bi ep (cua so / be mat doi) -> khong SubmitFrame: man hinh dang hien dung khung do (pixel y het),
 // bot ghi lenh + nop + toan bo viec GPU cua khung. Canh yen (logic 18 tick/s, chi noi suy vat dang di chuyen) phan lon khung giong nhau.
@@ -1714,7 +1724,7 @@ bool CDevGpu::JxBoKhungGiong()
 HRESULT CDevGpu::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion)
 {
 	Lock();
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (!JxBoKhungGiong()) SubmitFrame(true);	// [BKG 11/09] khung giong het khung vua trinh chieu -> khong trinh chieu (man hinh giu nguyen)
 #else
 	SubmitFrame(true);
@@ -1723,7 +1733,7 @@ HRESULT CDevGpu::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hD
 	if (m_uFrames == 1 || (m_uFrames % 1800) == 0)
 		RgLog("khung %u: lenh ve %u, quad %u, tai texture %u, pipeline %u, texture GPU %u (%u MB) | atlas %u trang (%u MB) | bo ban CPU %u texture (%u MB), doc lai %u", m_uFrames, m_uDrawCmds, m_uQuads, m_uUploads, (unsigned)m_pipes.size(), g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20),
 			g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), m_uCpuBoSo, (unsigned)(m_uCpuBoBytes >> 20), m_uCpuBoThuLai);	// [GPU 11/09 ATLAS] [GPU 11/09 BOCPU]
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	s_uRep3GpuLenhVe = m_uDrawCmds; s_uRep3GpuQuad = m_uQuads;	// [ANDROID 11/09 HUD]
 #endif
 	m_uDrawCmds = m_uQuads = m_uUploads = 0;
@@ -1799,7 +1809,7 @@ void CDevGpu::PalFree(int row)
 
 #endif // JX_PLATFORM_SDL
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // [ANDROID 11/09 HUD] chuoi cho bang do hieu nang: driver | texture GPU | atlas | trinh chieu | lenh ve khung truoc. Tra do dai chuoi.
 extern "C" int Rep3_ThongKeGpu(char* sz, int n)
 {
@@ -1813,7 +1823,18 @@ extern "C" int Rep3_ThongKeGpu(char* sz, int n)
 
 // [BKG 11/09] cua so / be mat doi (xoay, gap-mo, quay lai app, vung an toan, tieu diem): khung ke tiep PHAI trinh chieu du giong khung truoc.
 // KSdlApp::TranslateEvent goi qua GetModuleHandle/GetProcAddress (lop tuong thich) nhu Rep3_DoNhipDat.
-extern "C" void Rep3_JxEpTrinhChieu() { s_nJxEpTrinhChieu = 1; }
+extern int g_nJxTheGioiEp;	// [TG 13/09] KRepresentShell3.cpp
+extern "C" void Rep3_JxEpTrinhChieu() { s_nJxEpTrinhChieu = 1; g_nJxTheGioiEp = 1; }	// [TG 13/09] be mat doi -> the gioi cung phai ve that o khung toi
+// [TG 13/09] 1000 / tan so man SDL bao cho cua so hien tai (ms); 0 = khong biet. KRepresentShell3.cpp dung de KHONG bao gio cach khung tren man 60 Hz.
+extern "C" double Rep3_JxManHinhMs()
+{
+	CDevGpu* d = g_pRep3DevGpu;
+	if (!d || !d->m_pWin) return 0.0;
+	const SDL_DisplayID id = SDL_GetDisplayForWindow(d->m_pWin);
+	const SDL_DisplayMode* m = id ? SDL_GetCurrentDisplayMode(id) : NULL;
+	if (!m || m->refresh_rate <= 1.0f) return 0.0;
+	return 1000.0 / (double)m->refresh_rate;
+}
 
 // [DONHIP 12/09] ban do nhip: bat/tat chep swapchain moi khung + so khung bay (SDL_SetGPUAllowedFramesInFlight 1..3). -1 = giu nguyen.
 // Goi tu luong chinh giua hai khung. Doi so khung bay lam SDL cho het hang lenh va dung lai swapchain -> chi goi khi so thay doi.

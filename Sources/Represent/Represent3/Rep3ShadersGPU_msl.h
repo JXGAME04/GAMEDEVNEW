@@ -2198,3 +2198,7 @@ static const char g_Rep3GpuFSPalPsMsl[] =
 	"\n"
 	;
 
+// [MOBILE 13/09] CHUA sinh bien the atlas KHOI (can spirv-cross tren Mac: python3 ios/sinh_shader_msl.py). Khi sinh lai, hai dong duoi
+// duoc thay bang mang MSL that + g_nJxMslCoKhoi = 1. Con stub nay thi D3D9onGPUDev.cpp tu tat Rep3AtlasKhoi tren Metal (co ghi log).
+static const char g_Rep3GpuFSPalPsKhoiMsl[] = "";
+static const int g_nJxMslCoKhoi = 0;

@@ -2,7 +2,7 @@
 #include "d3d_device.h"
 #include "d3d_utils.h"
 #include "TextureRes.h"
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 #include "TextureResMgr.h"	// [VE 11/09] g_pJxTexMgr
 #endif
 #include "JpgLib.h"
@@ -488,7 +488,7 @@ void TextureResSpr::ResetVar()
 	m_nSprMemUsed = 0;	// [REP3 03/09 RAM]
 	m_bLastFrameUsed = false;
 	m_bNew = false;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	m_bJxCoNen = false;	// [VE 11/09]
 #endif
 }
@@ -634,7 +634,7 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 
 	if(m_pFrameInfo[nFrame].texInfo[0].pTexture)
 		return true;
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	// [VE 11/09] dang ve ma tong nap dong bo cua khung da qua NapKhungMs: khung dang cho luong nen (hoac giao duoc ngay) -> bo ve khung nay
 	// mot khung; con ngan sach -> nap dong bo nhu cu (ke ca khi luong nen dang lam khung nay: ket qua ve sau bi bo, dem vao 'bo').
 	// Ca hai truong hop nap truoc NapKhungTruoc khung ke tiep cung huong o luong nen.
@@ -1279,7 +1279,7 @@ int32 TextureResSpr::GetPixelAlpha(int32 nFrame, int32 x, int32 y)
 // ÊÍ·ÅÄÚ´æ
 void TextureResSpr::Release()
 {
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 	if (m_bJxCoNen && g_pJxTexMgr) g_pJxTexMgr->JxNapKhungHuy(this);	// [VE 11/09] bo viec luong nen cua sprite nay truoc khi tra khung / texture
 #endif
 	if (m_nPalRow >= 0) { Rep3_D3D11FreePalette(m_nPalRow); m_nPalRow = -1; }	// [D3D11 08/09 r] tra hang bang mau
@@ -1494,7 +1494,7 @@ int TextureResSpr::SplitTexture(uint32 nFrame)
 	return nMem;
 }
 
-#ifdef JX_ANDROID
+#ifdef JX_MOBILE
 // ============================ [VE 11/09] nap KHUNG o luong nen ============================
 // Luong ve: giao khung nFrame cho luong nen (nNguon 0 = dang ve can, 1 = nap truoc). Dinh dang texture chon NHU CreateTexture16Bit
 // (bang mau A8L8 2 B neu co, khong thi 8888 / 4444); hang bang mau cap ngay o day (can device) de luong nen chi giai ma.
