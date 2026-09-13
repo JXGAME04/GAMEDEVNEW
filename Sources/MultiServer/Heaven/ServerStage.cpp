@@ -1260,7 +1260,31 @@ void CIOCPServer::ReadCompleted( Socket *pSocket, OnlineGameLib::Win32::CIOBuffe
 				{
 					CCriticalSection::Owner lock( pCN->csReadAction );
 
-					pCN->pRecvBuffer->AddData( pPackData, used );
+					/*
+					 * [NET-NHAN 13/09] CIOBuffer::AddData vut CA KHOI im lang khi thieu cho (IOBuffer.cpp:92-97): sau do
+					 * khung [WORD tong][lo] lech, ket noi ket cam toi ping timeout 60 s ma khong ai biet. Kiem cho trong
+					 * truoc; thieu thi ghi jx_gui_server.log (toi da 50 dong) va dong ket noi nhu nhanh "Too much data"
+					 * cua ProcessDataStream. KHONG duoc cho (Sleep) o day: luong IOCP dung chung, cung la luong phat WSASend.
+					 */
+					const size_t nTrong = pCN->pRecvBuffer->GetSize() - pCN->pRecvBuffer->GetUsed();
+
+					if ( used > nTrong )
+					{
+						static LONG s_nNhanDay = 0;
+
+						if ( ::InterlockedIncrement( &s_nNhanDay ) <= 50 )
+						{
+							GuiDoGhi( "[NET-NHAN] client %lu: dem nhan day (dang %u + moi %u > %u), dong ket noi",
+								(unsigned long)dwIndex, (unsigned)pCN->pRecvBuffer->GetUsed(), (unsigned)used,
+								(unsigned)pCN->pRecvBuffer->GetSize() );
+						}
+
+						pSocket->Shutdown();
+					}
+					else
+					{
+						pCN->pRecvBuffer->AddData( pPackData, used );
+					}
 				}
 			}
 		}
@@ -1454,7 +1478,19 @@ STDMETHODIMP CServerFactory::CreateServerInterface( REFIID riid, void** ppv )
 		const size_t precision = ( m_nPrecision > 0 ) ? m_nPrecision : 10;
 
 		const size_t maxFreeBuffers_Cache = ( m_maxFreeBuffers_Cache > 0 ) ? m_maxFreeBuffers_Cache : 10;
-		const size_t bufferSize_Cache = ( m_bufferSize_Cache > 0 ) ? m_bufferSize_Cache : 8192;
+		size_t bufferSize_Cache = ( m_bufferSize_Cache > 0 ) ? m_bufferSize_Cache : 8192;
+
+		/*
+		 * [NET-CACHE 13/09] Dem cache moi ket noi (recv/read/write) phai >= co doc moi WSARecv (bufferSize mac dinh
+		 * 1024*10, ServerStage.h) + 32. Nho hon thi CIOBuffer::AddData vut CA KHOI im lang: duong nhan khi mot lan doc
+		 * day (ReadCompleted), duong gui vi nguong xa m_nNetworkBufferMaxLen = bufferSize - 32 khong bao gio toi
+		 * (PackDataToClient). Bishop tung dat 8192; S3Relay mac dinh 8192 neu relay_config.ini thieu buffersize.
+		 */
+		if ( bufferSize_Cache < 1024 * 10 + 32 )
+		{
+			GuiDoGhi( "[NET-CACHE] bufferSize_Cache %u < co doc 10240 + 32: nang len 16384", (unsigned)bufferSize_Cache );
+			bufferSize_Cache = 1024 * 16;
+		}
 
 		const size_t maxFreeBuffers = 10240;
 

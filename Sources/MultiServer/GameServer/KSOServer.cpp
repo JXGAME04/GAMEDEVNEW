@@ -120,6 +120,10 @@ using namespace std;
 const int KSwordOnLineSever::m_snMaxBuffer = 10;
 const int KSwordOnLineSever::m_snBufferSize = 1024 * 16;
 
+// [NET-XA 13/09] 1 = xa ngay phan tra loi cho client vua co goi den (cuoi MessageLoop), khong doi toi cuoi MainLoop
+// ke tiep (0..55 ms). Doc tu [GameServer] XaNgayKhiNhan trong <ten>_cfg.ini; 0 = chi xa cuoi MainLoop nhu cu.
+static int gs_nXaNgayKhiNhan = 1;
+
 KSwordOnLineSever g_SOServer;
 
 // Con tro toi thuc the may chu, cho ham thunk tinh dung. Khai o day (truoc moi cho dung)
@@ -485,6 +489,7 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 	g_PakList.Open("\\package.ini");//edit by phong kieu load pack server open file maps.pak
 
 	iniFile.GetInteger("GameServer", "Port", 6666, &m_nServerPort);
+	iniFile.GetInteger("GameServer", "XaNgayKhiNhan", 1, &gs_nXaNgayKhiNhan);	// [NET-XA 13/09]
 	extern int g_nPort;
 	if (g_nPort)
 		m_nServerPort = g_nPort;
@@ -551,7 +556,13 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 
 	if ( pFactroyFun && SUCCEEDED( pFactroyFun( IID_IServerFactory, reinterpret_cast< void ** >( &pServerFactory ) ) ) )
 	{
-		pServerFactory->SetEnvironment( m_nMaxPlayer, m_nPrecision, m_snMaxBuffer, m_snBufferSize  );
+		/*
+		 * [NET-BE 13/09] Be dem cache (free list) m_snMaxBuffer = 10 -> 3 * m_nMaxPlayer: moi ket noi giu 3 dem 16 KB
+		 * (recv/read/write); giu 10 thi moi lan 300 nguoi ra/vao la 900 lan new/delete 16 KB, khoi 16 KB nam ngoai LFH
+		 * nen heap phan manh dan qua nhieu ngay. Dinh RAM = 3 * MaxPlayer * 16 KB (300 nguoi ~ 14 MB).
+		 */
+		pServerFactory->SetEnvironment( m_nMaxPlayer, m_nPrecision, 3 * m_nMaxPlayer, m_snBufferSize );
+		printf("[NET-XA] XaNgayKhiNhan=%d, be dem cache=%d, MaxPlayer=%d\n", gs_nXaNgayKhiNhan, 3 * m_nMaxPlayer, m_nMaxPlayer);
 		
 		pServerFactory->CreateServerInterface( IID_IIOCPServer, reinterpret_cast< void ** >( &m_pServer ) );
 		
@@ -1230,6 +1241,7 @@ void KSwordOnLineSever::MessageLoop()
 
 	pChar = NULL;
 	uSize = 0;
+	int nGoiDaXuLy = 0;	// [NET-XA 13/09] so goi client da xu ly trong vong nay
 	for (i = 0; i < m_nMaxPlayer; i++)
 	{
 		if (enumNetUnconnect == GetNetStatus(i))
@@ -1244,8 +1256,17 @@ void KSwordOnLineSever::MessageLoop()
 		
 			//printf("player msg..\n"); //edit by phong kieu player msg
 			PlayerMessageProcess(i, pChar, uSize);
+			nGoiDaXuLy++;
 		}
 	}
+
+	/*
+	 * [NET-XA 13/09] Co goi vua xu ly -> xa ngay phan tra loi (mot WSASend cho moi client dang co du lieu cho),
+	 * khong de toi cuoi MainLoop ke tiep. SendPackToClient() bo qua tham so id (ServerStage.cpp:751) nen goi -1;
+	 * chi phi = mot luot duyet danh sach client (~10 us / 500 client, do [GUI-DO]) moi vong Breathe co goi den.
+	 */
+	if (nGoiDaXuLy > 0 && gs_nXaNgayKhiNhan && m_pServer)
+		m_pServer->SendPackToClient(-1);
 #ifdef _STANDALONE
 	g_mutexFlow.unlock();
 #endif

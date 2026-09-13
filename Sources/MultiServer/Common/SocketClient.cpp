@@ -233,6 +233,20 @@ SOCKET CSocketClient::CreateConnectionSocket(
 		return s;
 	}
 	
+	/*
+	 * [NET-NODELAY 13/09] Tat Nagle phia client: goi thu 2 tro di trong mot loat khong con doi ACK cua goi truoc
+	 * (ACK do chi ve cung lo xa ke tiep cua may chu, toi 1 nhip ~55 ms, hoac 200 ms neu may chu dang im).
+	 * May chu da bat tren socket nhan tu [DELTA 07/09]; 5 lien ket may chu-may chu (loopback) cung qua day, vo hai.
+	 */
+	{
+		BOOL bNoDelay = TRUE;
+
+		if ( SOCKET_ERROR == ::setsockopt( s, IPPROTO_TCP, TCP_NODELAY, ( const char * )&bNoDelay, sizeof( bNoDelay ) ) )
+		{
+			::OutputDebugStringA( "[NET-NODELAY] setsockopt TCP_NODELAY that bai\n" );
+		}
+	}
+
 	CSocket connectionSocket( s );
 	
 	CSocket::InternetAddress localAddress( addressToConnectServer, port );
