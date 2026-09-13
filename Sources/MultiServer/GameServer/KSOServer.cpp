@@ -120,11 +120,11 @@ using namespace std;
 const int KSwordOnLineSever::m_snMaxBuffer = 10;
 const int KSwordOnLineSever::m_snBufferSize = 1024 * 16;
 
-// [NET-XA 13/09] 1 = xa ngay phan tra loi cho client vua co goi den (cuoi MessageLoop), khong doi toi cuoi MainLoop
-// ke tiep (0..55 ms). Doc tu [GameServer] XaNgayKhiNhan trong <ten>_cfg.ini.
-// MAC DINH 0 (tat): can DO tren mang that truoc khi bat, vi Breathe chay KHONG chan nhip nen bat co the tang
-// so WSASend/giay dang ke khi dong nguoi. Bat bang cach dat XaNgayKhiNhan=1 trong [GameServer] cua <ten>_cfg.ini.
-static int gs_nXaNgayKhiNhan = 0;
+// [NET-XA 13/09] Xa ngay phan tra loi cho client vua co goi den (cuoi MessageLoop) thay vi doi toi cuoi MainLoop
+// ke tiep (0..55 ms). Gia tri = KHOANG CACH TOI THIEU (ms) giua hai lan xa nhu the, vi Breathe chay khong chan
+// nhip: 10 = toi da 100 lan/giay (bang vong 10 ms cua ban Linux), 0 = tat (chi xa cuoi MainLoop nhu cu).
+// Doc tu [GameServer] XaNgayKhiNhan trong <ten>_cfg.ini. Mac dinh 10 de dot test 13/09 do duoc; muon tat: =0.
+static int gs_nXaNgayKhiNhan = 10;
 
 KSwordOnLineSever g_SOServer;
 
@@ -491,7 +491,7 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 	g_PakList.Open("\\package.ini");//edit by phong kieu load pack server open file maps.pak
 
 	iniFile.GetInteger("GameServer", "Port", 6666, &m_nServerPort);
-	iniFile.GetInteger("GameServer", "XaNgayKhiNhan", 0, &gs_nXaNgayKhiNhan);	// [NET-XA 13/09] mac dinh 0, DO truoc khi bat
+	iniFile.GetInteger("GameServer", "XaNgayKhiNhan", 10, &gs_nXaNgayKhiNhan);	// [NET-XA 13/09] ms giua hai lan xa, 0 = tat
 	extern int g_nPort;
 	if (g_nPort)
 		m_nServerPort = g_nPort;
@@ -564,7 +564,7 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 		 * nen heap phan manh dan qua nhieu ngay. Dinh RAM = 3 * MaxPlayer * 16 KB (300 nguoi ~ 14 MB).
 		 */
 		pServerFactory->SetEnvironment( m_nMaxPlayer, m_nPrecision, 3 * m_nMaxPlayer, m_snBufferSize );
-		printf("[NET-XA] XaNgayKhiNhan=%d, be dem cache=%d, MaxPlayer=%d\n", gs_nXaNgayKhiNhan, 3 * m_nMaxPlayer, m_nMaxPlayer);
+		printf("[NET-XA] XaNgayKhiNhan=%d ms (0=tat), be dem cache=%d, MaxPlayer=%d\n", gs_nXaNgayKhiNhan, 3 * m_nMaxPlayer, m_nMaxPlayer);
 		
 		pServerFactory->CreateServerInterface( IID_IIOCPServer, reinterpret_cast< void ** >( &m_pServer ) );
 		
@@ -1264,11 +1264,21 @@ void KSwordOnLineSever::MessageLoop()
 
 	/*
 	 * [NET-XA 13/09] Co goi vua xu ly -> xa ngay phan tra loi (mot WSASend cho moi client dang co du lieu cho),
-	 * khong de toi cuoi MainLoop ke tiep. SendPackToClient() bo qua tham so id (ServerStage.cpp:751) nen goi -1;
-	 * chi phi = mot luot duyet danh sach client (~10 us / 500 client, do [GUI-DO]) moi vong Breathe co goi den.
+	 * khong de toi cuoi MainLoop ke tiep. SendPackToClient() bo qua tham so id (ServerStage.cpp:751) nen goi -1.
+	 * Gioi han nhip: toi da mot lan moi gs_nXaNgayKhiNhan ms (Breathe quay khong nghi, khong gioi han thi moi vong
+	 * co goi la mot luot duyet 300 client + WSASend). Dong ho m_Timer.GetElapse() (ms) cung la dong ho cua nhip game.
 	 */
-	if (nGoiDaXuLy > 0 && gs_nXaNgayKhiNhan && m_pServer)
-		m_pServer->SendPackToClient(-1);
+	if (nGoiDaXuLy > 0 && gs_nXaNgayKhiNhan > 0 && m_pServer)
+	{
+		static DWORD s_dwXaTruoc = 0;
+		const DWORD dwGio = m_Timer.GetElapse();
+
+		if (dwGio - s_dwXaTruoc >= (DWORD)gs_nXaNgayKhiNhan)
+		{
+			m_pServer->SendPackToClient(-1);
+			s_dwXaTruoc = dwGio;
+		}
+	}
 #ifdef _STANDALONE
 	g_mutexFlow.unlock();
 #endif
