@@ -1260,7 +1260,31 @@ void CIOCPServer::ReadCompleted( Socket *pSocket, OnlineGameLib::Win32::CIOBuffe
 				{
 					CCriticalSection::Owner lock( pCN->csReadAction );
 
-					pCN->pRecvBuffer->AddData( pPackData, used );
+					/*
+					 * [NET-NHAN 13/09] CIOBuffer::AddData vut CA KHOI im lang khi thieu cho (IOBuffer.cpp:92-97): sau do
+					 * khung [WORD tong][lo] lech, ket noi ket cam toi ping timeout 60 s ma khong ai biet. Kiem cho trong
+					 * truoc; thieu thi ghi jx_gui_server.log (toi da 50 dong) va dong ket noi nhu nhanh "Too much data"
+					 * cua ProcessDataStream. KHONG duoc cho (Sleep) o day: luong IOCP dung chung, cung la luong phat WSASend.
+					 */
+					const size_t nTrong = pCN->pRecvBuffer->GetSize() - pCN->pRecvBuffer->GetUsed();
+
+					if ( used > nTrong )
+					{
+						static LONG s_nNhanDay = 0;
+
+						if ( ::InterlockedIncrement( &s_nNhanDay ) <= 50 )
+						{
+							GuiDoGhi( "[NET-NHAN] client %lu: dem nhan day (dang %u + moi %u > %u), dong ket noi",
+								(unsigned long)dwIndex, (unsigned)pCN->pRecvBuffer->GetUsed(), (unsigned)used,
+								(unsigned)pCN->pRecvBuffer->GetSize() );
+						}
+
+						pSocket->Shutdown();
+					}
+					else
+					{
+						pCN->pRecvBuffer->AddData( pPackData, used );
+					}
 				}
 			}
 		}
