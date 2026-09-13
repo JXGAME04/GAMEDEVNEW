@@ -83,6 +83,7 @@ public:
 	std::vector<JxCum> m_jxCum;
 	bool JxCapLop(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture** ppTex, UINT* pLop);	// cap mot lop (tao cum moi neu het)
 	void JxTraLop(CAtlasPageGpu* pPage);	// tra lop ve cum (KHONG huy texture cum)
+	void JxTraLopKhoi(CAtlasPageGpu* pPage);	// [KHOI 13/09 SUA] tra lop ve KHOI (KHONG huy texture khoi: 12 khe sampler + cac trang khac dang dung chung)
 #endif
 	CDevGpu* m_pDev; std::vector<CAtlasPageGpu*> m_pages; UINT m_pageSize;
 };

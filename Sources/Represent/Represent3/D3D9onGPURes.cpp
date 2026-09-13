@@ -319,7 +319,7 @@ void CAtlasMgrGpu::ReleaseAll()
 	{
 		CAtlasPageGpu* p = m_pages[i];
 #ifdef JX_MOBILE
-		if (p->m_pTex && m_pDev->m_pGpu && !g_nJxAtlasMang) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, p->m_pTex);	// [MANG 11/09] texture cum huy o duoi, khong huy theo tung trang
+		if (p->m_pTex && m_pDev->m_pGpu && !g_nJxAtlasMang && p->m_nKhoi == 0xFFu) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, p->m_pTex);	// [MANG 11/09] texture cum huy o duoi, khong huy theo tung trang; [KHOI 13/09 SUA] trang trong KHOI cung vay (vong khoi duoi huy mot lan, khong huy hai lan)
 #else
 		if (p->m_pTex && m_pDev->m_pGpu) SDL_ReleaseGPUTexture(m_pDev->m_pGpu, p->m_pTex);
 #endif
@@ -460,7 +460,8 @@ void CAtlasMgrGpu::Free(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 			for (size_t i = 0; i < m_pages.size(); i++)
 				if (m_pages[i] == pPage) { m_pages.erase(m_pages.begin() + i); break; }
 #ifdef JX_MOBILE
-			if (g_nJxAtlasMang) JxTraLop(pPage);	// [MANG 11/09] texture la cua CUM (dung chung): chi tra lop, khong huy
+			if (pPage->m_nKhoi != 0xFFu) JxTraLopKhoi(pPage);	// [KHOI 13/09 SUA] texture la cua KHOI (dung chung, gan chet khe sampler 2+k): chi tra lop, KHONG huy - huy la 12 khe + moi trang khac trong khoi tro vao texture chet -> SIGSEGV o SDL_BindGPUFragmentSamplers (the Co ban WAuto, chu doi 500 ms)
+			else if (g_nJxAtlasMang) JxTraLop(pPage);	// [MANG 11/09] texture la cua CUM (dung chung): chi tra lop, khong huy
 			else if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
 #else
 			if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
@@ -550,7 +551,8 @@ void CAtlasMgrGpu::JxFreeKe(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w)
 			for (size_t i = 0; i < m_pages.size(); i++)
 				if (m_pages[i] == pPage) { m_pages.erase(m_pages.begin() + i); break; }
 #ifdef JX_MOBILE
-			if (g_nJxAtlasMang) JxTraLop(pPage);	// [MANG 11/09] texture la cua CUM (dung chung): chi tra lop, khong huy
+			if (pPage->m_nKhoi != 0xFFu) JxTraLopKhoi(pPage);	// [KHOI 13/09 SUA] texture la cua KHOI (dung chung, gan chet khe sampler 2+k): chi tra lop, KHONG huy - huy la 12 khe + moi trang khac trong khoi tro vao texture chet -> SIGSEGV o SDL_BindGPUFragmentSamplers (the Co ban WAuto, chu doi 500 ms)
+			else if (g_nJxAtlasMang) JxTraLop(pPage);	// [MANG 11/09] texture la cua CUM (dung chung): chi tra lop, khong huy
 			else if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
 #else
 			if (pPage->m_pTex) m_pDev->DeferRelease(pPage->m_pTex);
@@ -647,6 +649,17 @@ void CAtlasMgrGpu::JxTraLop(CAtlasPageGpu* pPage)
 	if (!pPage || !pPage->m_pTex) return;
 	for (size_t i = 0; i < m_jxCum.size(); i++)
 		if (m_jxCum[i].pTex == pPage->m_pTex) { m_jxCum[i].lopTrong.push_back(pPage->m_nLop); return; }
+}
+
+// [KHOI 13/09 SUA] trang nam trong KHOI: tra LOP ve khoi de JxCapKhoi cap lai (NewPage se QueueZeroUpload lop do), texture khoi GIU NGUYEN
+// vi gan chet khe sampler 2+k va cac trang khac trong khoi van dang ve tu no. Truoc day roi vao DeferRelease(pPage->m_pTex) cua duong
+// "texture rieng" (KHOI bat buoc AtlasMang=0) -> huy ca khoi -> khung sau SDL_BindGPUFragmentSamplers doc texture da chet (SIGSEGV 0x..29).
+void CAtlasMgrGpu::JxTraLopKhoi(CAtlasPageGpu* pPage)
+{
+	if (!pPage || !pPage->m_pTex || pPage->m_nKhoi >= (UINT)m_jxKhoiV.size()) return;
+	JxKhoi& k = m_jxKhoiV[pPage->m_nKhoi];
+	if (k.pTex != pPage->m_pTex) return;
+	k.lopTrong.push_back(pPage->m_nLop);
 }
 #endif
 
