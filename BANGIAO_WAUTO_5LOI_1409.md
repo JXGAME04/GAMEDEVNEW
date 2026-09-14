@@ -1,8 +1,8 @@
 # BÀN GIAO — WAuto: 5 lỗi chủ game báo 14/09/2026
 
-Commit `5411b57d` (đợt 1) + `a4787f35` (đợt 2 — sửa lại sau phản hồi của chủ game)
+Commit `5411b57d` (đợt 1) + `a4787f35` + `962c6994` (đợt 3 — sửa lại sau phản hồi của chủ game)
 Nhánh `claude/wauto-auto-horse-bugs-ad45c9`.
-`CoreClient.dll` md5 **`05586f17`** — đã đặt sẵn `CoreClient.dll.moi` ở
+`CoreClient.dll` md5 **`e88c8f22`** — đã đặt sẵn `CoreClient.dll.moi` ở
 `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client`. Thoát hẳn `Game.exe` rồi chạy
 `ChoiGame.bat`. `WAuto.exe` không đổi.
 
@@ -34,11 +34,21 @@ phanh nào** → bắn `PA_RIDE` mỗi ~300 ms trong khi `TIME_RIDE` = 5 s → s
 `WA_VongChieuDoiNgua()`: chiêu đang bắn + chiêu chuột trái + 6 khe Chiêu KH + đổi chiêu +
 chiêu boss + tiền chiêu + cứu mạng + cứu mana (**bỏ chiêu chưa học** — nó không bao giờ bắn ra):
 
-| Vòng chiêu | WAuto làm |
+| Vòng chiêu tấn công chính | WAuto làm |
 |---|---|
-| có ít nhất 1 chiêu `HorseLimit 1` | **ở dưới đất** cả trận |
-| không có, nhưng có `HorseLimit 2` | **lên ngựa** |
-| không chiêu nào ràng buộc | **lên ngựa** (đánh trên ngựa được thì cưỡi cho nhanh) |
+| có **ít nhất 1** chiêu đánh được trên ngựa (`HorseLimit 0` hoặc `2`) | **lên ngựa** |
+| **mọi** chiêu đều `HorseLimit 1` | **xuống ngựa** (cưỡi thì không đánh được gì) |
+
+"Vòng chiêu tấn công chính" = chiêu đang định bắn + chiêu chuột trái + 6 khe Chiêu KH + ô
+"Đổi chiêu". **Không** tính cứu mạng / cứu mana / chiêu boss / tiền chiêu — chúng thỉnh thoảng
+mới bắn, không được quyền trói ngựa cả trận. Đó chính là chỗ bản cũ ép xuống: các ô đó **đè lên**
+`nMainSkill` trước khối ngựa, nên nhịp nào chúng bắn là nhịp đó bị kéo xuống, nhịp sau quay lại
+chiêu đao thì kéo lên — không cần bảng Chiêu KH cũng đủ dao động.
+
+> Đánh đổi: khe `HorseLimit 1` trong bảng Chiêu KH sẽ **không bắn** khi đang cưỡi. An toàn —
+>  trả "bị cấm TẠM THỜI (lý do 2: ngựa)" và nơi gọi đặt 
+> *"coi như đã bắn để sang khe kế"* ([CoreShell.cpp:19949](Sources/Core/Src/CoreShell.cpp:19949)),
+> **không** cấm chiêu 30 giây, không kẹt máy.
 
 Quyết theo cả vòng chiêu nên **không thể** kéo lên rồi kéo xuống giữa hai khe. Giữ hai phanh:
 `uHorseTime` 2 giây **và** đồng hồ thật `m_TimeHorse / TIME_RIDE`.
