@@ -302,3 +302,42 @@ Từ siêu dữ liệu IL2CPP (`D:\game3gTQ_mo\meta_pc_res.txt`), bảng tài ng
 - Lua `lua_scnobj_create.lua` `InitStill`: gói mạng `{loại, dữ liệu, phẩm chất, id chủ, số lượng, có hoạt ảnh, ngũ hành, giây bảo hộ}` → tên hiện màu theo phẩm chất (`GetItemColorNoEffectStr`), thêm ` x N` nếu chồng, phát `drop_sound` khi rơi mới; tiền đồng/vàng/vàng khoá là loại riêng. Nhặt: lỗi "quá xa", "còn bảo hộ", "túi đầy", "chỉ đội trưởng", "bang hạn chế" (`lua_text_item.lua`).
 - JX1 hiện có: sprite vật rơi + tên (mobile luôn bật, `GOI_SHOW_OBJ_NAME`), màu tên theo phẩm chất, ảnh rơi riêng lúc mới rơi (`KObj.cpp` `m_nDropState`/`m_cImageDrop`), bảo hộ chủ sở hữu. **Chưa có:** cột sáng theo phẩm chất, loé lúc chạm đất, âm rơi, ` x N`.
 - Mức chép được (chưa làm, chờ chủ chọn): (1) cột sáng dưới vật quý theo màu phẩm chất + loé lúc mới rơi (vẽ thêm 1 quad cộng sáng ở `KObj` mobile, ảnh từ kho VNKU hoặc vẽ dải gradient), ~1 ngày; (2) âm thanh rơi + ` x N` số lượng, nửa ngày; (3) bảng "nhặt tất cả" kiểu 3D, cần xem giao thức nhặt hiện có, chưa ước.
+
+
+---
+
+# VẬT PHẨM RƠI: CỘT SÁNG THEO PHẨM CHẤT + LOÉ LÚC CHẠM ĐẤT (mức 1) — 14/09 01:2x
+
+Chủ: *"Làm mức 1 trước: hiệu ứng ánh sáng tuỳ theo loại vật phẩm"* (sau khi đọc §6 mổ game 3D).
+
+## 1. Bản
+
+| | |
+|---|---|
+| Mã | `Core/Src/KObj.cpp` (chỉ `JX_MOBILE`, trong `#ifndef _SERVER`), kịch bản `android/va_nguon_vatroi_1409.py`; PC y hệt (`kiem --pc` ĐẠT, byte cao 1466 = 1466) |
+| Ảnh | `spr/vatroi/cotsang.spr` (1 khung 48×120, trắng, neo chân cột) + `spr/vatroi/loe.spr` (6 khung 64×32 vòng elip 2:1 dãn ra), sinh bằng `android/anh_vatroi_cotsang.py` (PIL → SPR bảng màu 1 màu + alpha 31 mức); lớp ghi đè, máy ảo, dt_v4 (đã `--chi-manifest`) |
+| Config | `config.ini` mục mới `[VatRoi]`: `CotSang=1`, `CotSangTu=1`, `CotSangAlpha=170`, `Loe=1` (lớp ghi đè, máy ảo, dt_v4) |
+| APK | 109140105 thử máy ảo; giao theo bản gộp của phiên đo nhịp hoặc tôi chép + `--chi-manifest` (xem cuối) |
+
+## 2. Cách hiện
+
+- Vật phẩm nằm đất có **cột sáng** dưới chân, màu = màu tên vật phẩm (= phẩm chất JX1: `normal_item` 0 trắng, `green_item` 1 xanh, `broken_item` 2 đồ hỏng, `gold_item` 3 hoàng kim, `purple_item` 4 đỏ tím, `platinum_item` 5 bạch kim). Mặc định từ xanh trở lên (`CotSangTu=1`), đồ hỏng không bao giờ; `CotSangTu=0` để đồ trắng cũng có. Cột thở nhẹ chu kỳ 1,6 s (alpha × 0,67..1,0).
+- Lúc vật **vừa chạm đất** (hết hoạt ảnh rơi `m_nDropState` 1 → 0): **loé** vòng sáng dãn ra 6 khung × 70 ms, cùng màu. Vật có sẵn khi vào map (không rơi trước mắt) không loé.
+- Tiền (`Obj_Kind_Money`) không có hiệu ứng.
+
+## 3. Cơ chế
+
+- `VatRoi_VeDuoi(colorID, màu tên, dropState, x, y)` gọi trong `KObj::Draw` ngay trước `switch(m_nKind)` (cột vẽ TRƯỚC ảnh vật), `VatRoi_VeTren(index, màu, x, y)` sau switch (loé vẽ SAU ảnh). Vẽ bằng `KRUImage` tĩnh dùng lại (`uImage` cache), `IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST` = nhân màu (Represent3 `SetSpriteBlend`: rgb ≠ 0 → nhân) với `Color = (alpha<<24)|rgb tên`, `RUIMAGE_RENDER_FLAG_REF_SPOT` + `IMAGE_IS_POSITION_INIT` nên neo (cx, cy) của SPR đặt chân cột đúng điểm đặt vật (như ảnh vật phẩm).
+- `VatRoi_ChamDat(index)` trong `KObj::Activate` (nhánh client) ngay chỗ `m_nDropState = 0` sau `m_cImageDrop.CheckEnd()`; bảng phụ `s_uVrLoeLuc[MAX_OBJECT]` theo `m_nIndex`, không đổi lớp `KObj`, không đổi giao thức.
+- Đọc `config.ini [VatRoi]` một lần lúc vẽ vật đầu tiên (`GetPrivateProfileInt`, log `[VATROI] cot sang=… loe=…`).
+
+## 4. Thử
+
+- Máy ảo 109140105, `CotSangTu=0`: `[VATROI] cot sang=1 (tu mau 0, alpha 170) loe=1` lúc vật rơi đầu tiên được vẽ (Sa Mạc Mê Cung, auto đánh quái), không sập; ảnh `vr_*.png` / `vs*.png`.
+- Bẫy khi vá: `#endif` của khối mobile + dòng trống → bản Windows dư một dòng trống, `kiem --pc` HỎNG → bỏ dòng trống (kịch bản có mục sửa cho cây đã vá).
+
+## 5. Chủ thử trên Fold 7
+
+1. Đánh quái cho rơi đồ: đồ xanh/hoàng kim/tím/bạch kim có cột sáng màu tương ứng dưới chân, lúc rơi có vòng loé; đồ trắng không có (muốn có: `CotSangTu=0`).
+2. Thấy cột to/nhỏ, đậm/nhạt: đổi `CotSangAlpha` (30..255) hoặc nói tôi đổi cỡ ảnh (`anh_vatroi_cotsang.py`).
+3. Tống Kim đông đồ rơi: xem fps; mỗi vật thêm 1 quad, không tốn đáng kể.

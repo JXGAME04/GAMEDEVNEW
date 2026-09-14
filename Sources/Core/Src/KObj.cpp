@@ -539,6 +539,78 @@ void KObj::DrawInfo()
 
 #endif
 
+#ifdef JX_MOBILE
+// [VATROI 14/09] Hieu ung VAT PHAM ROI tren dat (chu: "lam muc 1 truoc: hieu ung anh sang tuy theo loai vat pham"; chep cach game 3D
+// Kiem Vong Giang Ho: StillObject.mDropLightObj = cot sang theo pham chat, cmn_drop_flash = loe luc cham dat):
+//  - cot sang \spr\vatroi\cotsang.spr (anh TRANG, android/anh_vatroi_cotsang.py, neo o chan cot) ve TRUOC anh vat pham, nhan mau ten
+//    (= pham chat: xanh / hoang kim / do tim / bach kim; trang va do hong khong co - [VatRoi] CotSangTu), tho nhe chu ky 1,6 s; chi khi
+//    vat da nam dat (m_nDropState != 1).
+//  - loe \spr\vatroi\loe.spr 6 khung vong dan ra 0,42 s ngay khi m_nDropState 1 -> 0 (cham dat), ve SAU anh vat pham, nhan mau ten.
+//  Bang phu theo m_nIndex, khong doi lop KObj, khong doi giao thuc. config.ini [VatRoi]: CotSang=1 CotSangTu=1 CotSangAlpha=170 Loe=1.
+static int          s_nVrDoc = 0, s_nVrCotSang = 1, s_nVrCotSangTu = 1, s_nVrAlpha = 170, s_nVrLoe = 1, s_nVrThu = 0;
+static unsigned int s_uVrLoeLuc[MAX_OBJECT];
+static KRUImage     s_VrCot, s_VrLoe;
+
+static void VatRoi_DocCfg()
+{
+	char szCfg[MAX_PATH];
+	if (s_nVrDoc)
+		return;
+	s_nVrDoc = 1;
+	GetCurrentDirectory(MAX_PATH, szCfg); strcat(szCfg, "\\Config.ini");
+	s_nVrCotSang   = GetPrivateProfileInt("VatRoi", "CotSang", 1, szCfg);
+	s_nVrCotSangTu = GetPrivateProfileInt("VatRoi", "CotSangTu", 1, szCfg);
+	s_nVrAlpha     = GetPrivateProfileInt("VatRoi", "CotSangAlpha", 170, szCfg);
+	s_nVrLoe       = GetPrivateProfileInt("VatRoi", "Loe", 1, szCfg);
+	s_nVrThu       = GetPrivateProfileInt("VatRoi", "Thu", 0, szCfg);	// [VATROI 14/09 b] go loi: tien roi cung co hieu ung
+	if (s_nVrAlpha < 30) s_nVrAlpha = 30; if (s_nVrAlpha > 255) s_nVrAlpha = 255;
+	memset(&s_VrCot, 0, sizeof(s_VrCot)); memset(&s_VrLoe, 0, sizeof(s_VrLoe)); memset(s_uVrLoeLuc, 0, sizeof(s_uVrLoeLuc));
+	strcpy(s_VrCot.szImage, "\\spr\\vatroi\\cotsang.spr"); strcpy(s_VrLoe.szImage, "\\spr\\vatroi\\loe.spr");
+	g_DebugLog("[VATROI] cot sang=%d (tu mau %d, alpha %d) loe=%d thu=%d", s_nVrCotSang, s_nVrCotSangTu, s_nVrAlpha, s_nVrLoe, s_nVrThu);
+}
+
+static void VatRoi_ChamDat(int nIndex)
+{
+	if (nIndex > 0 && nIndex < MAX_OBJECT)
+		s_uVrLoeLuc[nIndex] = (unsigned int)GetTickCount();
+}
+
+static void VatRoi_DatAnh(KRUImage& a, int nFrame, int x, int y, unsigned int uAlpha, DWORD dwMau)
+{
+	a.nFrame = nFrame; a.nType = ISI_T_SPR;
+	a.oPosition.nX = x; a.oPosition.nY = y; a.oPosition.nZ = 0;
+	a.nISPosition = IMAGE_IS_POSITION_INIT; a.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+	a.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST;	// nhan mau (rgb != 0) + alpha
+	if ((dwMau & 0x00ffffff) == 0) dwMau = 0x00ffffff;
+	a.Color.Color_dw = (uAlpha << 24) | (dwMau & 0x00ffffff);
+}
+
+// cot sang: ve truoc anh vat pham; vat dang roi thi chua co; pham chat duoi CotSangTu, do hong (2) hay ngoai bang (>= 6) thi khong
+static void VatRoi_VeDuoi(int nColorID, DWORD dwMau, int nDropState, int x, int y)
+{
+	unsigned int uTho;
+	VatRoi_DocCfg();
+	if (!s_nVrCotSang || nDropState == 1 || nColorID < s_nVrCotSangTu || nColorID == 2 || nColorID >= 6)
+		return;
+	uTho = (unsigned int)GetTickCount() % 1600; if (uTho >= 800) uTho = 1600 - uTho;	// tam giac 0..800: tho nhe
+	VatRoi_DatAnh(s_VrCot, 0, x, y, (unsigned int)s_nVrAlpha * (200 + uTho / 8) / 300, dwMau);	// alpha x 0,67..1,0
+	g_pRepresent->DrawPrimitives(1, &s_VrCot, RU_T_IMAGE, 0);
+}
+
+// loe: ve sau anh vat pham, 6 khung x 70 ms ke tu luc cham dat
+static void VatRoi_VeTren(int nIndex, DWORD dwMau, int x, int y)
+{
+	unsigned int uDa; int nKhung;
+	VatRoi_DocCfg();
+	if (!s_nVrLoe || nIndex <= 0 || nIndex >= MAX_OBJECT || !s_uVrLoeLuc[nIndex])
+		return;
+	uDa = (unsigned int)GetTickCount() - s_uVrLoeLuc[nIndex];
+	if (uDa >= 420) { s_uVrLoeLuc[nIndex] = 0; return; }
+	nKhung = (int)(uDa / 70); if (nKhung > 5) nKhung = 5;
+	VatRoi_DatAnh(s_VrLoe, nKhung, x, y, 240 - (unsigned int)nKhung * 36, dwMau);
+	g_pRepresent->DrawPrimitives(1, &s_VrLoe, RU_T_IMAGE, 0);
+}
+#endif
 #ifndef _SERVER
 void KObj::Draw()
 {
@@ -576,6 +648,10 @@ void KObj::Draw()
 		strcpy(m_Image.szImage, m_cImage.m_szName);
 	}
 
+#ifdef JX_MOBILE
+	if (m_nKind == Obj_Kind_Item || (s_nVrThu && m_nKind == Obj_Kind_Money) || s_nVrThu >= 2)
+		VatRoi_VeDuoi(m_nColorID, m_dwNameColor, m_nDropState, x, y);	// [VATROI 14/09] cot sang duoi vat pham (ve truoc anh)
+#endif
 	switch(m_nKind)
 	{
 	case Obj_Kind_MapObj: //lowmap xˆ l˝ tπi Æ©y
@@ -589,6 +665,10 @@ void KObj::Draw()
 		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE, 0);	
 		break;
 	}
+#ifdef JX_MOBILE
+	if (m_nKind == Obj_Kind_Item || (s_nVrThu && m_nKind == Obj_Kind_Money))
+		VatRoi_VeTren(m_nIndex, m_dwNameColor, x, y);	// [VATROI 14/09] loe luc cham dat (ve sau anh)
+#endif
 #ifdef SWORDONLINE_SHOW_DBUG_INFO
 	if (Player[CLIENT_PLAYER_INDEX].m_DebugMode)
 	{
@@ -701,6 +781,9 @@ void	KObj::Activate()
 				{
 					m_nDropState = 0;			// ŒÔ∆∑µÙ≥ˆ∂Øª≠≤•∑≈ÕÍ¡À£¨∏ƒŒ™∑≈÷√—≠ª∑∂Øª≠
 					m_Image.uImage = 0;
+#ifdef JX_MOBILE
+					VatRoi_ChamDat(m_nIndex);	// [VATROI 14/09] loe luc cham dat
+#endif
 				}
 			}
 			nMask = IPOT_RL_OBJECT | IPOT_RL_INFRONTOF_ALL;
