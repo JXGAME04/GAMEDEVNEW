@@ -226,9 +226,10 @@ static void JxVeKyIn()
 	g_dJxNapKhungTre = g_dJxNapKhungTreMax = g_dJxNapNenBan = g_dJxNapKhungAp = g_dJxNapKhungApMax = 0.0; g_uJxNapKhungApKhung = 0; memset(&g_jxNapNgoaiVe, 0, sizeof(g_jxNapNgoaiVe)); g_uJxNapKhungRong = 0; g_uJxHoiTre = 0;
 	{	// [TAI 14/09] tai dan khung nap truoc + to 0 trang atlas bang chep GPU
 		extern unsigned g_uJxTaiTruocSo, g_uJxTaiTruocXong, g_uJxTaiTruocKB, g_uJxTaiTruocLuot, g_uJxTaiTruocMax, g_uJxZeroChep; extern double g_dJxTaiTruocMs, g_dJxZeroChepMs;
-		Rep3Log("[VE-TAI] tai dan khung nap truoc (NapKhungKB=%d): vao hang %u, xong %u, %u KB / %u luot, %.1f ms (hang cho max %u) | trang atlas moi to 0 bang chep GPU: %u trang %.1f ms",
-			g_nJxNapKhungKB, g_uJxTaiTruocSo, g_uJxTaiTruocXong, g_uJxTaiTruocKB, g_uJxTaiTruocLuot, g_dJxTaiTruocMs, g_uJxTaiTruocMax, g_uJxZeroChep, g_dJxZeroChepMs);
-		g_uJxTaiTruocSo = g_uJxTaiTruocXong = g_uJxTaiTruocKB = g_uJxTaiTruocLuot = g_uJxTaiTruocMax = g_uJxZeroChep = 0; g_dJxTaiTruocMs = g_dJxZeroChepMs = 0.0;
+		extern unsigned g_uJxDemSo, g_uJxDemKB;	// [DEM 14/09]
+		Rep3Log("[VE-TAI] tai dan khung nap truoc (NapKhungKB=%d): vao hang %u, xong %u, %u KB / %u luot, %.1f ms (hang cho max %u) | trang atlas / o rong to 0 bang chep GPU: %u lan %.1f ms | o BGRA8 tai qua anh dem: %u o %u KB",
+			g_nJxNapKhungKB, g_uJxTaiTruocSo, g_uJxTaiTruocXong, g_uJxTaiTruocKB, g_uJxTaiTruocLuot, g_dJxTaiTruocMs, g_uJxTaiTruocMax, g_uJxZeroChep, g_dJxZeroChepMs, g_uJxDemSo, g_uJxDemKB);
+		g_uJxTaiTruocSo = g_uJxTaiTruocXong = g_uJxTaiTruocKB = g_uJxTaiTruocLuot = g_uJxTaiTruocMax = g_uJxZeroChep = 0; g_dJxTaiTruocMs = g_dJxZeroChepMs = 0.0; g_uJxDemSo = g_uJxDemKB = 0;
 	}
 }
 #endif
@@ -998,7 +999,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nJxNapKhungTruoc = Rep3Ini("NapKhungTruoc", 2);	// so khung KE TIEP cung huong nap truoc o luong nen (0 = tat)
 	g_nJxNapKhungApMs  = Rep3Ini("NapKhungApMs", 3);	// ngan sach tao texture tu ket qua luong nen moi khung (ms)
 	g_nJxNapKhungKB    = Rep3Ini("NapKhungKB", 128);	// [TAI 14/09] ngan sach tai dan khung nap truoc len GPU (KB/khung); 0 = tat (tai ca khung luc ve nhu cu)
-	{ extern int g_nJxTaiDo; g_nJxTaiDo = Rep3Ini("TaiDo", 1); }	// [TAI-DO 14/09] 1 = do duong tai len GPU luc khoi dong thiet bi (chi log [TAI-DO], ~1-2 s)
+	{ extern int g_nJxTaiDo; g_nJxTaiDo = Rep3Ini("TaiDo", 0); }	// [TAI-DO 14/09] 1 = do duong tai len GPU luc khoi dong thiet bi (chi log [TAI-DO], ~0,4 s); [DEM 14/09] mac dinh 0
 	g_nJxVeGiatMs      = Rep3Ini("VeGiatMs", 20);		// ghi [VE-GIAT] khi ve CPU + trinh chieu (hoac nap ngoai luc ve) cua mot khung vuot nguong (ms); 0 = tat
 	g_nJxHoiKhongDe    = Rep3Ini("NapHoiKhongDe", 1);	// [VE 11/09 d] 1 = hoi kich thuoc sprite NPC dang nap o luong nen -> tra 'chua co' (khong nap dong bo de len)
 	g_nJxAtlasKe       = Rep3Ini("Rep3AtlasKe", 1) ? 1 : 0;	// [VE 11/09 e] 1 = atlas xep ke theo dinh dang (khung cung NPC cung trang -> gop lenh), 0 = trang theo bin cao nhu cu

@@ -59,7 +59,8 @@ static unsigned long long s_ullJxPipeKeyCur = 0;	// [CULLCPU 11/09] khoa pipelin
 static double JxVeMs(Uint64 a, Uint64 b) { return (double)(b - a) * 1000.0 / (double)SDL_GetPerformanceFrequency(); }
 #ifdef JX_MOBILE
 unsigned g_uJxTaiTruocSo = 0, g_uJxTaiTruocXong = 0, g_uJxTaiTruocKB = 0, g_uJxTaiTruocLuot = 0, g_uJxTaiTruocMax = 0, g_uJxZeroChep = 0; double g_dJxTaiTruocMs = 0.0, g_dJxZeroChepMs = 0.0;	// [TAI 14/09] -> [VE-TAI] (KRepresentShell3.cpp)
-int g_nJxTaiDo = 1;	// [TAI-DO 14/09] [Client] TaiDo: 1 = do duong tai len GPU luc khoi dong thiet bi (chi log, ~1-2 s mot lan)
+unsigned g_uJxDemSo = 0, g_uJxDemKB = 0;	// [DEM 14/09] so o / KB tai qua anh dem -> [VE-TAI]
+int g_nJxTaiDo = 0;	// [TAI-DO 14/09] [Client] TaiDo: 1 = do duong tai len GPU luc khoi dong thiet bi (chi log, ~0,4 s); [DEM 14/09] mac dinh 0 (da do 14/09 10:22)
 #endif
 static void JxVeCong(const JxVeDo& k)
 {
@@ -221,6 +222,7 @@ CDevGpu::CDevGpu(CGpuShim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_pVS = NULL; m_pFS = NULL; m_pDummy = NULL; m_pWhite = NULL; m_pWhiteMang = NULL;	// [KHOI 11/09]
 #ifdef JX_MOBILE
 	m_bJxDichSeXoa = false;	// [XOANEN 13/09 b]
+	m_pJxDem[0] = m_pJxDem[1] = NULL;	// [DEM 14/09]
 	memset(m_jxZeroNguon, 0, sizeof(m_jxZeroNguon)); m_nJxZeroNguon = 0;	// [TAI 14/09]
 #endif
 	m_pRingGpu = NULL; m_ringGpuSize = 0; m_pRingXfer = NULL; m_ringXferSize = 0; m_pTexXfer = NULL; m_texXferSize = 0;
@@ -277,6 +279,7 @@ CDevGpu::~CDevGpu()
 		if (m_pWhiteMang) SDL_ReleaseGPUTexture(m_pGpu, m_pWhiteMang);	// [KHOI 11/09]
 #ifdef JX_MOBILE
 		for (int q = 0; q < m_nJxZeroNguon; q++) if (m_jxZeroNguon[q].pTex) SDL_ReleaseGPUTexture(m_pGpu, m_jxZeroNguon[q].pTex);	// [TAI 14/09]
+		for (int q = 0; q < 2; q++) if (m_pJxDem[q]) SDL_ReleaseGPUTexture(m_pGpu, m_pJxDem[q]);	// [DEM 14/09]
 #endif
 		if (m_pDummy) SDL_ReleaseGPUBuffer(m_pGpu, m_pDummy);
 		if (m_pRingGpu) SDL_ReleaseGPUBuffer(m_pGpu, m_pRingGpu);
@@ -318,6 +321,23 @@ static bool RgUploadOnce(SDL_GPUDevice* dev, SDL_GPUBuffer* pBuf, SDL_GPUTexture
 	return true;
 }
 
+#ifdef JX_MOBILE
+// [DEM 14/09] anh dem 512x512 BGRA8: [TAI-DO] 14/09 tren Fold 7 - SDL_UploadToGPUTexture dich BGRA8 ton CPU ~0,2 ms moi MB CO ANH DICH
+// (o 1 MB vao khoi 64 MB = 12-19 ms, vao anh 1 MB = 0,19 ms), chep anh->anh 0 ms CPU. Vung con BGRA8 vao trang atlas: tai vao anh dem roi chep sang.
+SDL_GPUTexture* CDevGpu::JxDemLay(int nLoai)
+{
+	if (nLoai < 0 || nLoai > 1 || !m_pGpu) return NULL;
+	if (!m_pJxDem[nLoai])
+	{
+		SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci)); ci.type = nLoai ? SDL_GPU_TEXTURETYPE_2D_ARRAY : SDL_GPU_TEXTURETYPE_2D; ci.format = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+		ci.width = 512; ci.height = 512; ci.layer_count_or_depth = 1; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+		m_pJxDem[nLoai] = SDL_CreateGPUTexture(m_pGpu, &ci);
+		if (m_pJxDem[nLoai]) RgLog("[DEM] anh dem 512x512 BGRA8 loai %d: vung con BGRA8 vao trang atlas tai qua anh dem + chep GPU", nLoai);
+		else RgLog("[DEM] anh dem loai %d that bai: %s -> tai thang nhu cu", nLoai, SDL_GetError());
+	}
+	return m_pJxDem[nLoai];
+}
+#endif
 #ifdef JX_MOBILE
 // [TAI-DO 14/09] Do duong tai len GPU luc khoi dong thiet bi (chi log; [Client] TaiDo=0 tat). Log Fold 7 14/09: cung lenh SDL_UploadToGPUTexture
 // nhung tai CA anh rieng nho = 0,6 ms/MB, tai VUNG CON 512x512 BGRA8 vao KHOI = 45-50 ms/o -> chi phi o DICH, chua ro co che driver Adreno.
@@ -1167,12 +1187,12 @@ void CDevGpu::QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT
 {
 	if (!pTex || !w || !h || !bpp) return;
 #ifdef JX_MOBILE
-	if (fmt != SDL_GPU_TEXTUREFORMAT_INVALID && x == 0 && y == 0 && w >= 512 && h >= 512 && m_pGpu)
+	if (fmt != SDL_GPU_TEXTUREFORMAT_INVALID && m_pGpu)	// [DEM 14/09] ca trang lan o (vung con) deu chep tu dai nguon 0 (tai tu bo dem vao dich BGRA8 = 12+ ms/o)
 	{	// [TAI 14/09] trang atlas moi (8 MB): chep GPU->GPU tu DAI NGUON 0 (w x 256, tai 0 mot lan moi dinh dang/loai) thay vi tai 8 MB tu bo dem
 		// (Fold 7 13/09: 'zero 1/116.8' = 117 ms CPU trong lenh tai buffer->anh). Dai nguon duoc tai 0 qua m_jxZeroUploads TRUOC cac lenh chep cung khung.
 		int k = -1;
-		for (int q = 0; q < m_nJxZeroNguon; q++) if (m_jxZeroNguon[q].pTex && m_jxZeroNguon[q].fmt == fmt && m_jxZeroNguon[q].w == w && m_jxZeroNguon[q].eLoai == eLoai) { k = q; break; }
-		if (k < 0 && m_nJxZeroNguon < 6)
+		for (int q = 0; q < m_nJxZeroNguon; q++) if (m_jxZeroNguon[q].pTex && m_jxZeroNguon[q].fmt == fmt && m_jxZeroNguon[q].w >= w && m_jxZeroNguon[q].eLoai == eLoai) { k = q; break; }	// [DEM 14/09] dai rong >= vung
+		if (k < 0 && x == 0 && y == 0 && w >= 512 && h >= 512 && m_nJxZeroNguon < 6)	// [DEM 14/09] chi tao dai khi cap ca trang
 		{
 			SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci)); ci.type = eLoai; ci.format = fmt; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 			ci.width = w; ci.height = 256; ci.layer_count_or_depth = 1; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
@@ -1661,7 +1681,23 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 #endif
 					const RgTexUpload& u = m_texUploads[i];
 					SDL_GPUTextureTransferInfo src; memset(&src, 0, sizeof(src)); src.transfer_buffer = m_pTexXfer; src.offset = u.stageOff; src.pixels_per_row = u.w; src.rows_per_layer = u.h;
+#ifdef JX_MOBILE
+					const UINT uLopU = u.layer & 0x3FFFFFFFu;	// [DEM 14/09] 2 bit cao cua layer = tai qua anh dem (CTexGpu::QueueUpload dat)
+					SDL_GPUTexture* pDem = ((u.layer & 0xC0000000u) && u.w <= 512 && u.h <= 512) ? JxDemLay((u.layer & 0x80000000u) ? 1 : 0) : NULL;
+					if (pDem)
+					{	// vung con BGRA8 vao trang atlas: tai vao anh dem (1 MB, ~0,2 ms) roi chep GPU->GPU sang trang (0 ms CPU) thay vi tai thang (12-19 ms/o vao khoi 64 MB)
+						SDL_GPUTextureRegion dd; memset(&dd, 0, sizeof(dd)); dd.texture = pDem; dd.w = u.w; dd.h = u.h; dd.d = 1;
+						SDL_UploadToGPUTexture(cp, &src, &dd, false);
+						SDL_GPUTextureLocation sD; memset(&sD, 0, sizeof(sD)); sD.texture = pDem;
+						SDL_GPUTextureLocation dD; memset(&dD, 0, sizeof(dD)); dD.texture = u.pTex; dD.layer = uLopU; dD.x = u.x; dD.y = u.y;
+						SDL_CopyGPUTextureToTexture(cp, &sD, &dD, u.w, u.h, 1, false);
+						g_uJxDemSo++; g_uJxDemKB += u.bytes >> 10;
+						continue;
+					}
+					SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.layer = uLopU; dst.x = u.x; dst.y = u.y; dst.w = u.w; dst.h = u.h; dst.d = 1;
+#else
 					SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.layer = u.layer; dst.x = u.x; dst.y = u.y; dst.w = u.w; dst.h = u.h; dst.d = 1;	// [MANG 11/09] lop
+#endif
 					SDL_UploadToGPUTexture(cp, &src, &dst, false);
 				}
 				m_uUploads += (unsigned)m_texUploads.size();

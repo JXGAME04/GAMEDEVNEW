@@ -102,7 +102,13 @@ void CTexGpu::QueueUpload(const RECT* prc)
 		if (bConv) RgConvertRowToBgra(m_fmt, pSrc, (DWORD*)pDst, rw);
 		else memcpy(pDst, pSrc, rw * gbpp);
 	}
+#ifdef JX_MOBILE
+	// [DEM 14/09] vung con BGRA8 vao trang atlas (khoi 64 MB / cum / trang 2048^2): danh dau 2 bit cao cua layer -> SubmitFrame tai qua anh dem + chep GPU
+	const UINT uJxDem = (m_bVirtual && m_pPage && gf == SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM && rw <= 512 && rh <= 512) ? ((m_pPage->m_nKhoi != 0xFFu || g_nJxAtlasMang) ? 0x80000000u : 0x40000000u) : 0u;
+	RgTexUpload u = { pDst, (UINT)rc.left + (m_bVirtual ? m_ax : 0), (UINT)rc.top + (m_bVirtual ? m_ay : 0), rw, rh, off, bytes, JxLop() | uJxDem };
+#else
 	RgTexUpload u = { pDst, (UINT)rc.left + (m_bVirtual ? m_ax : 0), (UINT)rc.top + (m_bVirtual ? m_ay : 0), rw, rh, off, bytes, JxLop() };	// [GPU 11/09 ATLAS] [MANG 11/09] lop
+#endif
 	m_pDev->QueueTexUpload(u);
 	m_bGpuHasData = true;
 }
@@ -122,7 +128,11 @@ SDL_GPUTexture* CTexGpu::PrepareForBind()
 #ifdef JX_MOBILE
 				g_uJxAtlasODat[(m_pool == D3DPOOL_MANAGED) ? 1 : 0]++;	// [CHUATLAS 11/09] dem o atlas theo loai bo nho
 #endif
+#ifdef JX_MOBILE
+				if (m_pCpu) QueueUpload(NULL); else m_pDev->QueueZeroUpload(m_pPage->m_pTex, m_ax, m_ay, m_w, m_h, m_pPage->m_bpp, m_pPage->m_nLop, m_pPage->m_fmt, (m_pPage->m_nKhoi != 0xFFu || g_nJxAtlasMang) ? SDL_GPU_TEXTURETYPE_2D_ARRAY : SDL_GPU_TEXTURETYPE_2D);	// [DEM 14/09] o rong: chep tu dai nguon 0
+#else
 				if (m_pCpu) QueueUpload(NULL); else m_pDev->QueueZeroUpload(m_pPage->m_pTex, m_ax, m_ay, m_w, m_h, m_pPage->m_bpp, m_pPage->m_nLop);	// [MANG 11/09] lop
+#endif
 				m_bDirty = false; m_bGpuHasData = true;
 			}
 		}
@@ -230,6 +240,7 @@ UINT CTexGpu::JxTaiTruoc(UINT uMax)
 	const UINT gbpp = RgGpuBpp(m_gpuFmt); if (!gbpp) return 0;
 	const UINT uHang = (UINT)(rc.right - rc.left) * gbpp;
 	UINT nDong = uMax / uHang; if (nDong == 0) nDong = 1;
+	if (m_gpuFmt == SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM) nDong = (UINT)(rc.bottom - rc.top);	// [DEM 14/09] texture rieng BGRA8: moi lenh tai tra chi phi theo CO ANH dich -> tai ca mot lan, khong chia dai
 	if (nDong > (UINT)(rc.bottom - rc.top)) nDong = (UINT)(rc.bottom - rc.top);
 	RECT rcDai = rc; rcDai.bottom = rc.top + (int)nDong;
 	QueueUpload(&rcDai);

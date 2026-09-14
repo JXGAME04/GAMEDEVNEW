@@ -492,6 +492,10 @@ public:
 	SDL_GPUTexture* m_pWhite;			// texture 1x1 trang cho stage khong texture
 	SDL_GPUTexture* m_pWhiteMang;		// [KHOI 11/09] texture MANG 1x1 x 1 lop: gan vao cac khe khoi chua co khoi (SDL doi moi sampler khai bao phai duoc gan)
 #ifdef JX_MOBILE
+	SDL_GPUTexture* m_pJxDem[2];	// [DEM 14/09] anh dem 512x512 BGRA8 (0 = 2D, 1 = mang 1 lop): vung con BGRA8 vao trang atlas tai qua anh dem + chep GPU (driver Adreno ton CPU theo co anh dich)
+	SDL_GPUTexture* JxDemLay(int nLoai);	// tao lan dau
+#endif
+#ifdef JX_MOBILE
 	bool m_bJxDichSeXoa;	// [XOANEN 13/09 b] ClearImageData bat truoc SetRenderTarget: dich sap bi Clear -> texture danh dau khong giu ban CPU
 #endif
 	// ring dinh + lenh cua khung
