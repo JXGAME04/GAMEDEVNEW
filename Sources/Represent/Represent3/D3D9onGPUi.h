@@ -79,6 +79,7 @@ public:
 	bool JxCapKhoi(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture** ppTex, UINT* pKhoi, UINT* pLop);
 	SDL_GPUTexture* JxKhoiTex(UINT i) const { return (i < m_jxKhoiV.size()) ? m_jxKhoiV[i].pTex : NULL; }
 	int JxKhoiCapTruoc(SDL_GPUTextureFormat fmt, UINT bpp, int nSo);	// [KHOITRUOC 14/09] cap san nSo khoi (chua dung lop nao) + to 0 het cac lop bang chep GPU; tra so khoi da tao
+	int JxKhoiLopTrong(SDL_GPUTextureFormat fmt) const;	// [KHOIDUTRU 14/09] so lop con trong (chua cap + da tra) cua cac khoi cung dinh dang
 	UINT JxKhoiSo() const { return (UINT)m_jxKhoiV.size(); }
 	struct JxCum { SDL_GPUTexture* pTex; SDL_GPUTextureFormat fmt; UINT bpp; UINT nLop, nLopTiep; std::vector<UINT> lopTrong; };
 	std::vector<JxCum> m_jxCum;

@@ -24,6 +24,20 @@
 extern int			g_bDisconnect;
 #ifdef JX_MOBILE
 extern int g_nJxMangMs; extern int g_nPaintLog; static unsigned s_uJxMangCat = 0; static DWORD s_dwJxMangLog = 0;	// [MANG 14/09] ngan sach xu ly goi moi vong lap (S3Client.cpp doc [Client] MangMs)
+// [MANG-CHAM 14/09] mot goi xu ly >= 8 ms (handler nap tep / dong bo dong bo...) -> ghi id goi + ms, toi da 4 dong/giay, de biet handler nao nang
+static void JxMangCham(int nMsg, const LARGE_INTEGER& a, const LARGE_INTEGER& f)
+{
+	if (g_nPaintLog <= 0 || !f.QuadPart) return;
+	LARGE_INTEGER b; QueryPerformanceCounter(&b);
+	const double d = (double)(b.QuadPart - a.QuadPart) * 1000.0 / (double)f.QuadPart;
+	if (d < 8.0) return;
+	static DWORD s_dwGiay = 0; static int s_nTrongGiay = 0;
+	const DWORD dwNow = GetTickCount();
+	if (dwNow - s_dwGiay >= 1000) { s_dwGiay = dwNow; s_nTrongGiay = 0; }
+	if (++s_nTrongGiay > 4) return;
+	FILE* p = fopen("jx_paint.log", "a");
+	if (p) { fprintf(p, "[MANG-CHAM] t=%u msg=%d %.1f ms\n", dwNow, nMsg, d); fclose(p); }
+}
 #endif
 
 
@@ -339,8 +353,14 @@ void KNetConnectAgent::Breathe()
 
 			_ASSERT(Msg > s2c_multiserverbegin || Msg < s2c_end);
 				
+#ifdef JX_MOBILE
+			LARGE_INTEGER liJxG0; QueryPerformanceCounter(&liJxG0);	// [MANG-CHAM 14/09]
+#endif
 			if (m_MsgTargetObjs[Msg])
 				(m_MsgTargetObjs[Msg])->AcceptNetMsg(pMsg);
+#ifdef JX_MOBILE
+			JxMangCham((int)Msg, liJxG0, liJxMF);
+#endif
 #ifdef JX_MOBILE
 			nJxGoi++;	// [MANG 14/09] het ngan sach MangMs: de goi con lai sang vong lap sau (thu tu giu nguyen, tre <= 1 vong)
 			if (g_nJxMangMs > 0) { LARGE_INTEGER liJxT; QueryPerformanceCounter(&liJxT); if (liJxMF.QuadPart && (double)(liJxT.QuadPart - liJxM0.QuadPart) * 1000.0 / (double)liJxMF.QuadPart >= (double)g_nJxMangMs) { bJxCat = true; break; } }
@@ -377,7 +397,13 @@ void KNetConnectAgent::Breathe()
 				{
 					_ASSERT(Msg > s2c_clientbegin && Msg < s2c_end);
 					_ASSERT(g_pCoreShell->GetProtocolSize(Msg) != 0);
+#ifdef JX_MOBILE
+					LARGE_INTEGER liJxG0; QueryPerformanceCounter(&liJxG0);	// [MANG-CHAM 14/09]
+#endif
 					g_pCoreShell->NetMsgCallbackFunc(pMsg);
+#ifdef JX_MOBILE
+					JxMangCham((int)Msg, liJxG0, liJxMF);
+#endif
 					if (g_pCoreShell->GetProtocolSize(Msg) > 0)
 						pMsg = (PROTOCOL_MSG_TYPE*)(((char*)pMsg) + g_pCoreShell->GetProtocolSize(Msg));
 					else

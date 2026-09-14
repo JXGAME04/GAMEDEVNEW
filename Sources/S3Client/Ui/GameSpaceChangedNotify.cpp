@@ -893,6 +893,11 @@ int CoreDataChangedCallback(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 	case GDCNI_SWITCHING_MAPMODE:
 #ifdef JX_MOBILE
 		JxLia_DatLai();	// [LIA 13/09] doi map that (KScenePlaceC::OpenPlace) -> bo do lech lia canh, tat co FollowWithMap
+		{	// [KHOIDUTRU 14/09] doi map: cap them khoi atlas neu lop trong < 8 (trong man nap, khong giat giua tran); Represent3 qua GetProcAddress nhu Rep3_JxTheGioi
+			typedef int (*PFN_JxKhoiDuTru)(int); static PFN_JxKhoiDuTru s_pfnKhoiDuTru = NULL; static int s_nKhoiDuTruThu = 0;
+			if (!s_pfnKhoiDuTru && s_nKhoiDuTruThu < 8) { s_nKhoiDuTruThu++; HMODULE h = GetModuleHandleA("Represent3.dll"); if (h) s_pfnKhoiDuTru = (PFN_JxKhoiDuTru)GetProcAddress(h, "Rep3_KhoiDuTru"); }
+			if (s_pfnKhoiDuTru) s_pfnKhoiDuTru(8);
+		}
 #endif
 		// [TKDIEM 05/09] doi map THAT (KScenePlaceC::OpenPlace) -> an bang diem Tong VS Kim. Truoc dung GDCNI_SWITCHING_SCENEPLACE:
 		// co nay cung bat khi nap VUNG luc chay trong map (SetFocusPosition > SPWP_TRIGGER_LOADING_RANGE) -> bang an/hien = 'nhay'.

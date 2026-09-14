@@ -21,6 +21,13 @@
 #define DeleteCriticalSection(p)      SDL_DestroyMutex(*(SDL_Mutex**)(p))
 #define EnterCriticalSection(p)       SDL_LockMutex(*(SDL_Mutex**)(p))
 #define LeaveCriticalSection(p)       SDL_UnlockMutex(*(SDL_Mutex**)(p))
+#ifdef JX_MOBILE
+// [PAKTHU 14/09] luong ve rut khung dong bo o che do THU: khoa CHUNG ms_ReadCritical (mot khoa cho MOI pak) dang bi luong nen giu (nap ca tep / rut khung)
+// thi khong doi (Fold 7: khung 1 KB doi 15-97 ms) ma tra NULL + bao 'ban' de PrepareFrameData giao khung cho luong nen. Co theo luong.
+static thread_local int t_nJxPakThu = 0, t_nJxPakThuBan = 0;
+void XPack_JxThu(int bBat) { t_nJxPakThu = bBat; if (bBat) t_nJxPakThuBan = 0; }
+int XPack_JxThuBan() { return t_nJxPakThuBan; }
+#endif
 static inline HANDLE XP_Open(const char* pszName)
 {
 #ifdef JX_POSIX
@@ -748,7 +755,12 @@ SPRFRAME* XPackFile::GetSprFrame(SPRHEAD* pSprHeader, int nFrame)
 #endif
 	if (pSprHeader && nFrame >= 0 && nFrame < pSprHeader->Frames)
 	{
+#ifdef JX_MOBILE
+		if (t_nJxPakThu) { if (!SDL_TryLockMutex(*(SDL_Mutex**)&ms_ReadCritical)) { t_nJxPakThuBan = 1; return NULL; } }	// [PAKTHU 14/09] khoa ban -> khong doi
+		else EnterCriticalSection(&ms_ReadCritical);
+#else
 		EnterCriticalSection(&ms_ReadCritical);
+#endif
 		// [PAK 12/09 CHISOMUC] ghep lai hai nua; pak duoi 65 536 muc thi nua cao = 0 -> y het truoc
 		int nNodeIndex = (int)(*((WORD*)&pSprHeader->Reserved[NODE_INDEX_STORE_IN_RESERVED])
 		                       | ((unsigned int)pSprHeader->Reserved[NODE_INDEX_HI_IN_RESERVED] << 16));

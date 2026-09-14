@@ -53,6 +53,10 @@ private:
 	ENGINE_API void			SprReleaseHeader(SPRHEAD* pSprHeader);
 	ENGINE_API SPRFRAME*	SprGetFrame(SPRHEAD* pSprHeader, int nFrame);
 	ENGINE_API void			SprReleaseFrame(SPRFRAME* pFrame);
+#ifdef JX_MOBILE
+	ENGINE_API void			XPack_JxThu(int bBat);		// [PAKTHU 14/09] 1 = SprGetFrame o luong nay chi THU khoa pak (ban -> NULL), 0 = doi nhu cu
+	ENGINE_API int			XPack_JxThuBan();			// 1 = lan SprGetFrame vua roi tra NULL vi khoa ban
+#endif
 
 	ENGINE_API KSGImageContent *get_jpg_image(const char cszName[], unsigned uRGBMask16 = ((unsigned)-1));
 	ENGINE_API void release_image(KSGImageContent *pImage);

@@ -685,6 +685,14 @@ bool CAtlasMgrGpu::JxCapKhoi(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture*
 
 // [KHOITRUOC 14/09] Cap san nSo khoi (fmt) chua dung lop nao va to 0 het cac lop bang chep GPU ngay: driver cam ket bo nho trong man dang nhap/nap thay vi
 // 2-3 khung giat 33-113 ms giua tran moi khi can khoi moi (Fold 7 12:41: tao 64 MB ~54 ms + 2-3 lan nop dau 21-43 ms). JxCapKhoi lay dan cac lop.
+// [KHOIDUTRU 14/09] so lop con trong cua cac khoi cung dinh dang (chua cap + da tra ve)
+int CAtlasMgrGpu::JxKhoiLopTrong(SDL_GPUTextureFormat fmt) const
+{
+	int n = 0;
+	for (size_t i = 0; i < m_jxKhoiV.size(); i++) { const JxKhoi& k = m_jxKhoiV[i]; if (k.fmt == fmt) n += (int)(k.nLop - k.nDung) + (int)k.lopTrong.size(); }
+	return n;
+}
+
 int CAtlasMgrGpu::JxKhoiCapTruoc(SDL_GPUTextureFormat fmt, UINT bpp, int nSo)
 {
 	int nTao = 0;

@@ -1006,6 +1006,15 @@ int Rep3_JxTheGioi(int nLenh, int nThamSo)
 	if (!g_pRep3ShellDuyNhat) return 0;
 	return g_pRep3ShellDuyNhat->JxTheGioi(nLenh, nThamSo);
 }
+// [KHOIDUTRU 14/09] S3Client GameSpaceChangedNotify (doi map that) goi qua GetProcAddress; iOS dang ky trong ios/JxIosMain.cpp
+void Rep3Gpu_KhoiDuTru(IDirect3DDevice9*, int);	// D3D9onGPUDev.cpp - khai bao NGOAI ham extern "C" (khai bao trong than ham extern "C" bi lien ket C -> undefined symbol)
+extern "C" __declspec(dllexport)
+int Rep3_KhoiDuTru(int nLopToiThieu)
+{
+	if (!g_pRep3ShellDuyNhat || !PD3DDEVICE) return 0;
+	Rep3Gpu_KhoiDuTru(PD3DDEVICE, nLopToiThieu);
+	return 1;
+}
 #endif
 
 IInlinePicEngineSink* g_pIInlinePicSinkRP = NULL;	//Ç¶ÈëÊ½Í¼Æ¬µÄ´¦Àí½Ó¿Ú[wxb 2003-6-20]

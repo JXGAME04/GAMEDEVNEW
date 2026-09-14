@@ -1003,6 +1003,18 @@ void Rep3Gpu_KhoiCapTruoc(IDirect3DDevice9* pDev, int nPal, int n32)
 	const int b = (n32 > 0) ? d->m_pAtlas->JxKhoiCapTruoc(SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, 4, n32) : 0;
 	RgLog("[KHOITRUOC] da cap san %d khoi R8G8 (bang mau) + %d khoi BGRA8 (Rep3KhoiTruocPal=%d, Rep3KhoiTruoc32=%d)", a, b, nPal, n32);
 }
+// [KHOIDUTRU 14/09] doi map (GameSpaceChangedNotify -> Rep3_KhoiDuTru): lop trong R8G8 < nLopToiThieu hoac BGRA8 < 2 -> cap them MOT khoi + to 0 ngay trong man nap
+void Rep3Gpu_KhoiDuTru(IDirect3DDevice9* pDev, int nLopToiThieu)
+{
+	if (!pDev || g_nRep3ApiOn != 100) return;
+	CDevGpu* d = (CDevGpu*)pDev;
+	if (!d->m_pAtlas || !g_nJxAtlasKhoi) return;
+	const int nPal = d->m_pAtlas->JxKhoiLopTrong(SDL_GPU_TEXTUREFORMAT_R8G8_UNORM), n32 = d->m_pAtlas->JxKhoiLopTrong(SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM);
+	int a = 0, b = 0;
+	if (nPal < nLopToiThieu) a = d->m_pAtlas->JxKhoiCapTruoc(SDL_GPU_TEXTUREFORMAT_R8G8_UNORM, 2, 1);
+	if (n32 < 2) b = d->m_pAtlas->JxKhoiCapTruoc(SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, 4, 1);
+	if (a || b) RgLog("[KHOIDUTRU] doi map: lop trong R8G8 %d (< %d) / BGRA8 %d -> cap them %d khoi R8G8 + %d khoi BGRA8", nPal, nLopToiThieu, n32, a, b);
+}
 #endif
 HRESULT CDevGpu::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget)
 {

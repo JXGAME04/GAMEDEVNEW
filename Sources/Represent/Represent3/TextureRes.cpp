@@ -645,7 +645,7 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 			// (ngan sach NapKhungMs chi kiem TRUOC khi rut nen khong chan duoc). Bo ve khung nay 1-3 khung nhu 'bo ve' khi het ngan sach.
 			// [PAKBAN 14/09] luong nen dang doc pak (giu khoa tep): rut dong bo se doi khoa 15-97 ms cho mot khung 1 KB ([NAP-CHAM] Fold 7) -> cung giao.
 			int nLTo = (int)m_pOffset[nFrame].Length; if (nLTo < 0) nLTo = -nLTo;
-			const bool bPakBan = (g_nJxNenDocPak != 0);
+			const bool bPakBan = false;	// [PAKTHU 14/09] co tho [PAKBAN] khong dung nua (hoan thua): thay bang thu khoa dung mutex o SprGetFrame ben duoi
 			if ((bPakBan || (g_nJxNapKhungToKB > 0 && nLTo >= g_nJxNapKhungToKB * 1024)) && (m_pFrameInfo[nFrame].nJxNen == 1 || JxNapKhungGiao(nFrame, 0)))
 			{
 				JxNapKhungTruoc(nFrame);
@@ -669,7 +669,29 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 			return false;
 
 		LARGE_INTEGER liK0, liK1; QueryPerformanceCounter(&liK0);	// [NAP 08/09 a] rut khung tu pak
+#ifdef JX_MOBILE
+		// [PAKTHU 14/09] dang ve + co luong nen: rut o che do THU - khoa chung cua pak dang bi luong nen giu thi giao khung cho luong nen (bo ve 1-3 khung)
+		// thay vi doi 15-97 ms (Fold 7 [NAP-CHAM]); khoa ranh thi rut ngay nhu cu (khong hoan thua nhu co tho [PAKBAN]).
+		const bool bJxThu = (bPrepareTex && g_nJxNapKhungNen > 0 && g_pJxTexMgr && g_pJxTexMgr->m_bVeDangDien && m_pFrameInfo[nFrame].nJxNen != 2);
+		if (bJxThu) XPack_JxThu(1);
 		SPRFRAME *pFrame = (SPRFRAME *)SprGetFrame((SPRHEAD*)m_pHeader, nFrame);
+		if (bJxThu)
+		{
+			XPack_JxThu(0);
+			if (!pFrame && XPack_JxThuBan())
+			{
+				if (m_pFrameInfo[nFrame].nJxNen == 1 || JxNapKhungGiao(nFrame, 0))
+				{
+					QueryPerformanceCounter(&liK1); Rep3NapCong(g_napKhung, Rep3NapMs(liK0, liK1));
+					JxNapKhungTruoc(nFrame);
+					g_uJxNapKhungBoVe++; g_uJxNapKhungBoVeKhung++; g_uJxNapKhungPakBan++; g_nJxAnhBoVeNen = 1; return false;
+				}
+				pFrame = (SPRFRAME *)SprGetFrame((SPRHEAD*)m_pHeader, nFrame);	// khong giao duoc (hang day / hong): doi khoa nhu cu
+			}
+		}
+#else
+		SPRFRAME *pFrame = (SPRFRAME *)SprGetFrame((SPRHEAD*)m_pHeader, nFrame);
+#endif
 		QueryPerformanceCounter(&liK1); Rep3NapCong(g_napKhung, Rep3NapMs(liK0, liK1));
 
 		if(!pFrame)
