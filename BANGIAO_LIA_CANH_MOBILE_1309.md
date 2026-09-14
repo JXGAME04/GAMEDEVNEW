@@ -485,3 +485,11 @@ Lưu `uiautoconfig.ini [Options2] ZoomNhanh / ZoomCham / LacCamera`; áp ngay v�
 2. Cài đặt > Tối ưu: Zoom nhanh / Zoom chậm / Lắc camera.
 3. Thấy ảnh phóng to bị nhoè thì so `Rep3ZoomNet=0`; thấy hạt thô thì đặt 0 để mềm hơn.
 4. Fold 7 nóng khi phóng to: chi phí = 1 khung RT + 1 RT2 (4× điểm ảnh của RT2 chỉ là blit) — báo tôi nếu fps tụt để đo.
+
+## 7. Ghi chú soi chéo của phiên đo nhịp (đã OK, không chặn)
+
+- Khi zoom < 100 % thì `bPhongTo` ép K=1 nên chế độ [TG] K=2 (thế giới 60 Hz khi màn 120 Hz quá tải) tắt trong lúc phóng to, giống lúc nhìn rộng.
+- RT2 = 2 × RT; khi vừa lắc (lề RT tới 1,5× khung) vừa phóng to thì RT2 tới ~3× mỗi chiều (~20–35 MB BGRA8), chấp nhận được; muốn gọn thì RT2 = 2 × cỡ khung là đủ vì phóng to chỉ lấy phần giữa.
+- Bước hai xét `m_nTgZoom < 1000` còn đường RT to xét `m_nTgZoomRt`: zoom 90 % × lề 1,12 = 1008 thì đi cả RT to lẫn RT2, hình vẫn đúng, chỉ tốn thêm; chưa cần sửa.
+- `CDevGpu::GetRenderTarget` có AddRef nên `SAFE_RELEASE(pDichCu)` cân; viewport tự bằng RT2 khi `SetRenderTarget`; RT2 không cần Clear vì quad phủ kín.
+
