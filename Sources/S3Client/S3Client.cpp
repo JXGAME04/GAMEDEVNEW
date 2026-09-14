@@ -89,6 +89,9 @@ static int	g_nPaintVsync = 0;		// [NHIP 08/09] config.ini [Client] PaintVsync; 1
 static int	g_nPaintInterp = 1;		// config.ini [Client] PaintInterp; 1 = interpolate drawn NPC positions between logic ticks
 int	g_nPaintLog = 0;		// config.ini [Client] PaintLog; 1 = write jx_paint.log frame-time probe
 #ifdef JX_MOBILE
+int g_nJxMangMs = 10;	// [MANG 14/09] config.ini [Client] MangMs: ngan sach xu ly goi mang moi vong lap (ms); 0 = xu ly het nhu cu (NetConnectAgent.cpp)
+#endif
+#ifdef JX_MOBILE
 // [DONHIP 12/09] Ban do nhip ve tren may that (bo dieu khien: Platform/JxPerfHudAndroid.cpp, bat bang config.ini [DoNhip] Bat=1):
 // doi cau hinh nhip ve giua chung (tung pha do) va doc lai cau hinh luc mo app. Chi goi tu luong chinh (GameLoop).
 void JxDoNhip_DatNhip(int nPaintFps, int nVsync, int nSmooth)
@@ -606,6 +609,9 @@ BOOL KMyApp::GameInit()
 		g_SetLoopInterval(1);	// [NHIP 08/09] luoi vong bom 1 ms: luoi 8 ms chi cho toi da ~125 khung/giay
 	IniFile.GetInteger("Client", "PaintInterp", 1, &g_nPaintInterp);
 	IniFile.GetInteger("Client", "PaintLog", 0, &g_nPaintLog);
+#ifdef JX_MOBILE
+	IniFile.GetInteger("Client", "MangMs", 10, &g_nJxMangMs);	// [MANG 14/09]
+#endif
 	int nPerfHud = 0;
 	IniFile.GetInteger("Client", "PerfHud", 0, &nPerfHud);
 	PerfHud_SetEnable(nPerfHud);

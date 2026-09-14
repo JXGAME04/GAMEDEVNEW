@@ -640,14 +640,16 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 	// Ca hai truong hop nap truoc NapKhungTruoc khung ke tiep cung huong o luong nen.
 	if (bPrepareTex && g_nJxNapKhungNen > 0 && g_pJxTexMgr && g_pJxTexMgr->m_bVeDangDien)
 	{
-		if (g_nJxNapKhungToKB > 0 && !m_pFrameInfo[nFrame].pRawData && m_pHeader && m_pOffset && m_pFrameInfo[nFrame].nJxNen != 2)
+		if (!m_pFrameInfo[nFrame].pRawData && m_pHeader && m_pOffset && m_pFrameInfo[nFrame].nJxNen != 2)
 		{	// [NAPTO 14/09] khung TO chua rut (co nen >= NapKhungToKB): giao luong nen NGAY du con ngan sach - rut dong bo mot khung to = 24-72 ms tren Fold 7
 			// (ngan sach NapKhungMs chi kiem TRUOC khi rut nen khong chan duoc). Bo ve khung nay 1-3 khung nhu 'bo ve' khi het ngan sach.
+			// [PAKBAN 14/09] luong nen dang doc pak (giu khoa tep): rut dong bo se doi khoa 15-97 ms cho mot khung 1 KB ([NAP-CHAM] Fold 7) -> cung giao.
 			int nLTo = (int)m_pOffset[nFrame].Length; if (nLTo < 0) nLTo = -nLTo;
-			if (nLTo >= g_nJxNapKhungToKB * 1024 && (m_pFrameInfo[nFrame].nJxNen == 1 || JxNapKhungGiao(nFrame, 0)))
+			const bool bPakBan = (g_nJxNenDocPak != 0);
+			if ((bPakBan || (g_nJxNapKhungToKB > 0 && nLTo >= g_nJxNapKhungToKB * 1024)) && (m_pFrameInfo[nFrame].nJxNen == 1 || JxNapKhungGiao(nFrame, 0)))
 			{
 				JxNapKhungTruoc(nFrame);
-				g_uJxNapKhungBoVe++; g_uJxNapKhungBoVeKhung++; g_uJxNapKhungTo++; g_nJxAnhBoVeNen = 1; return false;
+				g_uJxNapKhungBoVe++; g_uJxNapKhungBoVeKhung++; if (bPakBan) g_uJxNapKhungPakBan++; else g_uJxNapKhungTo++; g_nJxAnhBoVeNen = 1; return false;
 			}
 		}
 		if (g_dRep3NapKhung >= (double)g_nJxNapKhungMs && (m_pFrameInfo[nFrame].nJxNen == 1 || JxNapKhungGiao(nFrame, 0)))	// [VE 11/09 d] nJxNen 2 = rong/hong: nap dong bo (re) nhu cu
@@ -1567,7 +1569,9 @@ bool TextureResSpr::JxGiaiMaNen(int32 nFrame, int nBpp, D3DFORMAT eFmt, bool bPa
 	BYTE* pRaw = NULL; int nRawLen = 0; SPRFRAME* pFrame = NULL;
 	if (m_pHeader)
 	{
+		g_nJxNenDocPak = 1;	// [PAKBAN 14/09] dang giu khoa pak cua tep nay
 		pFrame = (SPRFRAME*)SprGetFrame((SPRHEAD*)m_pHeader, nFrame);
+		g_nJxNenDocPak = 0;
 		if (!pFrame)
 			return false;
 		int nL = (int)m_pOffset[nFrame].Length; if (nL < 0) nL = -nL;	// nhu PrepareFrameData ([REP3 03/09 SAP]: dau am = khung luu tho)

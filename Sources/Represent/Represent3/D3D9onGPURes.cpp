@@ -683,6 +683,37 @@ bool CAtlasMgrGpu::JxCapKhoi(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture*
 	return true;
 }
 
+// [KHOITRUOC 14/09] Cap san nSo khoi (fmt) chua dung lop nao va to 0 het cac lop bang chep GPU ngay: driver cam ket bo nho trong man dang nhap/nap thay vi
+// 2-3 khung giat 33-113 ms giua tran moi khi can khoi moi (Fold 7 12:41: tao 64 MB ~54 ms + 2-3 lan nop dau 21-43 ms). JxCapKhoi lay dan cac lop.
+int CAtlasMgrGpu::JxKhoiCapTruoc(SDL_GPUTextureFormat fmt, UINT bpp, int nSo)
+{
+	int nTao = 0;
+	if (!g_nJxAtlasKhoi || !m_pDev || !m_pDev->m_pGpu || bpp == 0) return 0;
+	for (int q = 0; q < nSo; q++)
+	{
+		if (m_jxKhoiV.size() >= JX_KHOI_MAX) break;
+		UINT nLop = (UINT)g_nJxAtlasKhoiLop; if (nLop < 1) nLop = 1; if (nLop > 8) nLop = 8;
+		if (bpp >= 4 && nLop > 4) nLop = 4;
+		SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci));
+		ci.type = SDL_GPU_TEXTURETYPE_2D_ARRAY; ci.format = fmt; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+		ci.width = m_pageSize; ci.height = m_pageSize; ci.layer_count_or_depth = nLop; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+		const Uint64 u0 = SDL_GetPerformanceCounter();
+		SDL_GPUTexture* pTex = SDL_CreateGPUTexture(m_pDev->m_pGpu, &ci);
+		if (!pTex) { RgLog("[KHOITRUOC] cap san khoi fmt %d that bai: %s", (int)fmt, SDL_GetError()); break; }
+		const double dTao = (double)(SDL_GetPerformanceCounter() - u0) * 1000.0 / (double)SDL_GetPerformanceFrequency();
+		JxKhoi k; k.pTex = pTex; k.fmt = fmt; k.bpp = bpp; k.nLop = nLop; k.nDung = 0;
+		m_jxKhoiV.push_back(k);
+		g_uJxKhoiSo = (unsigned)m_jxKhoiV.size();
+		g_uJxKhoiMB += (unsigned)(((unsigned __int64)m_pageSize * m_pageSize * bpp * nLop) >> 20);
+		for (UINT l = 0; l < nLop; l++) m_pDev->QueueZeroUpload(pTex, 0, 0, m_pageSize, m_pageSize, bpp, l, fmt, SDL_GPU_TEXTURETYPE_2D_ARRAY);	// to 0 = chep GPU tu dai nguon 0, cham het bo nho
+		RgLog("[KHOITRUOC] cap san khoi atlas #%u: %ux%u x %u lop fmt %d (%u MB, tao %.1f ms) -> khe sampler %u; to 0 ca %u lop; tong %u khoi, %u MB",
+			(unsigned)(m_jxKhoiV.size() - 1), m_pageSize, m_pageSize, nLop, (int)fmt, (unsigned)(((unsigned __int64)m_pageSize * m_pageSize * bpp * nLop) >> 20), dTao,
+			(unsigned)(2 + m_jxKhoiV.size() - 1), nLop, g_uJxKhoiSo, g_uJxKhoiMB);
+		nTao++;
+	}
+	return nTao;
+}
+
 bool CAtlasMgrGpu::JxCapLop(SDL_GPUTextureFormat fmt, UINT bpp, SDL_GPUTexture** ppTex, UINT* pLop)
 {
 	for (size_t i = 0; i < m_jxCum.size(); i++)

@@ -73,6 +73,7 @@ struct JxKhungXong { TextureResSpr* pSpr; int nFrame; int nW, nH, nOffX, nOffY; 
 extern int g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungApMs, g_nJxVeGiatMs;	// [Client] NapKhungNen / NapKhungMs / NapKhungTruoc / NapKhungApMs / VeGiatMs
 extern int g_nJxNapKhungKB;	// [TAI 14/09] [Client] NapKhungKB: ngan sach byte/khung tai DAN texture khung nap truoc len GPU (0 = tat)
 extern int g_nJxNapKhungToKB; extern unsigned g_uJxNapKhungTo;	// [NAPTO 14/09] [Client] NapKhungToKB: khung co nen >= nguong (KB) thi giao luong nen ngay ca khi con ngan sach dong bo (0 = tat); so lan
+extern volatile int g_nJxNenDocPak; extern unsigned g_uJxNapKhungPakBan;	// [PAKBAN 14/09] luong nen dang doc pak (giu khoa tep) -> luong ve giao khung thay vi doi khoa; so lan
 extern int g_nJxAnhBoVeNen;	// 1 = GetImage vua tra NULL vi khung dang nap o luong nen (Rep3AnhNullGhi bo qua, khong tinh la anh thieu)
 extern int g_nJxHoiKhongDe;	// [VE 11/09 d] [Client] NapHoiKhongDe: 1 = hoi kich thuoc sprite NPC dang nap o luong nen -> tra 'chua co' (khong nap dong bo de len)
 extern unsigned g_uJxNapKhungRong, g_uJxHoiTre;	// [VE 11/09 d] khung rong/hong o luong nen (khong giao lai); so lan hoi NPC dang nap tra 'chua co'

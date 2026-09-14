@@ -885,7 +885,13 @@ void TextureResMgr::NapNenChay()
 #endif
 			NapKetQua kq;
 			memcpy(kq.szTen, v.szTen, sizeof(kq.szTen)); kq.uId = v.uId; kq.nType = v.nType;
+#ifdef JX_MOBILE
+			g_nJxNenDocPak = 1;	// [PAKBAN 14/09] nap ca tep spr o luong nen: giu khoa pak
+#endif
 			kq.pRes = NapNenTai(v.szTen, v.nType);
+#ifdef JX_MOBILE
+			g_nJxNenDocPak = 0;
+#endif
 			{
 				KAutoCriticalSection k(m_napKhoa);
 				m_napXong.push_back(kq);

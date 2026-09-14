@@ -406,6 +406,11 @@ void UiPaint(int nGameLoop)
 					g_dJxPhaVe[0], g_dJxPhaVe[1], g_dJxPhaVe[2], g_dJxPhaVe[3], g_dJxPhaVe[4],
 					g_dJxPhaCanh[0], g_dJxPhaCanh[1], g_dJxPhaCanh[2], g_dJxPhaCanh[3], g_dJxPhaCanh[4], g_dJxPhaCanh[5], g_dJxPhaCanh[6],
 					g_dJxPhaCanh[7], g_dJxPhaCanh[8], g_dJxPhaCanh[9], g_dJxPhaCanh[10]);
+				if (g_dJxPhaVe[2] + g_dJxPhaVe[3] + g_dJxPhaVe[4] >= 20.0)
+				{	// [PDET-UI 14/09] ba lop UI >= 20 ms: cua so goc ve lau nhat (vi tri/co theo man hinh, lop phu neu co) de biet cua so nao nang
+					extern double g_dJxUiMaxMs; extern int g_nJxUiMaxX, g_nJxUiMaxY, g_nJxUiMaxW, g_nJxUiMaxH; extern const char* g_pszJxUiMaxLop; extern const void* g_pJxUiMax;
+					fprintf(pLog, "[PDET-UI] cua so goc nang nhat %.1f ms: tai (%d,%d) %dx%d lop phu %s con tro %p\n", g_dJxUiMaxMs, g_nJxUiMaxX, g_nJxUiMaxY, g_nJxUiMaxW, g_nJxUiMaxH, g_pszJxUiMaxLop ? g_pszJxUiMaxLop : "-", g_pJxUiMax);
+				}
 #else
 				fprintf(pLog, "[PDET] begin=%u render=%u end=%u\n",
 					nPdT1 - nPdT0, nPdT2 - nPdT1, nPdT3 - nPdT2);

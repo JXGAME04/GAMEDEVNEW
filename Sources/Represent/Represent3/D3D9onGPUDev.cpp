@@ -993,6 +993,16 @@ void Rep3Gpu_TaiTruocChay(IDirect3DDevice9* pDev, unsigned uNganSach)
 {
 	if (pDev && g_nRep3ApiOn == 100) ((CDevGpu*)pDev)->JxTaiTruocChay(uNganSach);
 }
+// [KHOITRUOC 14/09] KRepresentShell3::RepresentBegin (khung dau): cap san khoi atlas + to 0 (chep GPU) de khong giat giua tran khi can khoi moi
+void Rep3Gpu_KhoiCapTruoc(IDirect3DDevice9* pDev, int nPal, int n32)
+{
+	if (!pDev || g_nRep3ApiOn != 100) return;
+	CDevGpu* d = (CDevGpu*)pDev;
+	if (!d->m_pAtlas || !g_nJxAtlasKhoi) return;
+	const int a = (nPal > 0) ? d->m_pAtlas->JxKhoiCapTruoc(SDL_GPU_TEXTUREFORMAT_R8G8_UNORM, 2, nPal) : 0;
+	const int b = (n32 > 0) ? d->m_pAtlas->JxKhoiCapTruoc(SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, 4, n32) : 0;
+	RgLog("[KHOITRUOC] da cap san %d khoi R8G8 (bang mau) + %d khoi BGRA8 (Rep3KhoiTruocPal=%d, Rep3KhoiTruoc32=%d)", a, b, nPal, n32);
+}
 #endif
 HRESULT CDevGpu::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget)
 {

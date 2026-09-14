@@ -653,9 +653,23 @@ void KWndWindow::Paint()
 		((m_Style & WND_S_UITOADO_AN) == 0 || UiToaDo_DangSua()))
 #endif
 	{
+#ifdef JX_MOBILE
+		// [PDET-UI 14/09] cua so GOC (con truc tiep cua goc lop): do rieng (ban than + con, khong ke anh em) -> giu cua so lau nhat cua khung
+		extern int g_nPaintLog; extern double g_dJxUiMaxMs; extern int g_nJxUiMaxX, g_nJxUiMaxY, g_nJxUiMaxW, g_nJxUiMaxH; extern const char* g_pszJxUiMaxLop; extern const void* g_pJxUiMax;
+		const bool bJxDoUi = (g_nPaintLog > 0 && m_pParentWnd && !m_pParentWnd->m_pParentWnd);
+		LARGE_INTEGER jxU0; if (bJxDoUi) QueryPerformanceCounter(&jxU0);
+#endif
 		PaintWindow();
 		if (m_pFirstChild)
 			m_pFirstChild->Paint();
+#ifdef JX_MOBILE
+		if (bJxDoUi)
+		{
+			LARGE_INTEGER jxU1, jxUF; QueryPerformanceCounter(&jxU1); QueryPerformanceFrequency(&jxUF);
+			const double dJx = jxUF.QuadPart ? (double)(jxU1.QuadPart - jxU0.QuadPart) * 1000.0 / (double)jxUF.QuadPart : 0.0;
+			if (dJx > g_dJxUiMaxMs) { g_dJxUiMaxMs = dJx; g_pJxUiMax = this; g_nJxUiMaxX = m_nAbsoluteLeft; g_nJxUiMaxY = m_nAbsoluteTop; g_nJxUiMaxW = m_Width; g_nJxUiMaxH = m_Height; g_pszJxUiMaxLop = UiTenLopPhu(); }
+		}
+#endif
 	}
 	if (m_pNextWnd)
 		m_pNextWnd->Paint();

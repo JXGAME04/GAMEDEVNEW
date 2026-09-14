@@ -22,6 +22,9 @@
 #define	NETCONNECT_MODULE			"Rainbow.dll"
 
 extern int			g_bDisconnect;
+#ifdef JX_MOBILE
+extern int g_nJxMangMs; extern int g_nPaintLog; static unsigned s_uJxMangCat = 0; static DWORD s_dwJxMangLog = 0;	// [MANG 14/09] ngan sach xu ly goi moi vong lap (S3Client.cpp doc [Client] MangMs)
+#endif
 
 
 void __stdcall ClientCallBack(LPVOID lpParam, const unsigned long &ulnEventType);
@@ -316,6 +319,9 @@ void KNetConnectAgent::Breathe()
 
 	size_t nSize;	// [X64 08/09] IClient::GetPackFromServer(size_t&)
 	const char* pBuffer = NULL;
+#ifdef JX_MOBILE
+	LARGE_INTEGER liJxM0, liJxMF; QueryPerformanceCounter(&liJxM0); QueryPerformanceFrequency(&liJxMF); int nJxGoi = 0; bool bJxCat = false;	// [MANG 14/09]
+#endif
 
 	if (m_bIsClientConnecting)
 	{
@@ -335,6 +341,10 @@ void KNetConnectAgent::Breathe()
 				
 			if (m_MsgTargetObjs[Msg])
 				(m_MsgTargetObjs[Msg])->AcceptNetMsg(pMsg);
+#ifdef JX_MOBILE
+			nJxGoi++;	// [MANG 14/09] het ngan sach MangMs: de goi con lai sang vong lap sau (thu tu giu nguyen, tre <= 1 vong)
+			if (g_nJxMangMs > 0) { LARGE_INTEGER liJxT; QueryPerformanceCounter(&liJxT); if (liJxMF.QuadPart && (double)(liJxT.QuadPart - liJxM0.QuadPart) * 1000.0 / (double)liJxMF.QuadPart >= (double)g_nJxMangMs) { bJxCat = true; break; } }
+#endif
 		}
 	}
 
@@ -375,8 +385,26 @@ void KNetConnectAgent::Breathe()
 				}
 
 			}
+#ifdef JX_MOBILE
+			nJxGoi++;	// [MANG 14/09] het ngan sach MangMs: de goi con lai sang vong lap sau (thu tu giu nguyen, tre <= 1 vong)
+			if (g_nJxMangMs > 0) { LARGE_INTEGER liJxT; QueryPerformanceCounter(&liJxT); if (liJxMF.QuadPart && (double)(liJxT.QuadPart - liJxM0.QuadPart) * 1000.0 / (double)liJxMF.QuadPart >= (double)g_nJxMangMs) { bJxCat = true; break; } }
+#endif
 		}
 	}
+#ifdef JX_MOBILE
+	if (bJxCat)
+	{	// [MANG 14/09] ghi toi da 1 dong/giay khi cat
+		s_uJxMangCat++;
+		const DWORD dwJxNow = GetTickCount();
+		if (g_nPaintLog > 0 && dwJxNow - s_dwJxMangLog >= 1000)
+		{
+			s_dwJxMangLog = dwJxNow;
+			LARGE_INTEGER liJxT; QueryPerformanceCounter(&liJxT);
+			FILE* pJxLog = fopen("jx_paint.log", "a");
+			if (pJxLog) { fprintf(pJxLog, "[MANG-CAT] t=%u xu ly %d goi trong %.1f ms (MangMs=%d), con lai de vong sau; tong cat %u\n", dwJxNow, nJxGoi, liJxMF.QuadPart ? (double)(liJxT.QuadPart - liJxM0.QuadPart) * 1000.0 / (double)liJxMF.QuadPart : 0.0, g_nJxMangMs, s_uJxMangCat); fclose(pJxLog); }
+		}
+	}
+#endif
 }
 
 void KNetConnectAgent::RegisterMsgTargetObject(PROTOCOL_MSG_TYPE Msg, iKNetMsgTargetObject* pObject)

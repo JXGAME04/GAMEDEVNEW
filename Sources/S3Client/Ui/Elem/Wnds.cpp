@@ -117,6 +117,7 @@ void Wnd_Cleanup()
 // va [PDET] cho thay ca 20 ms do nam gon trong MOT lenh goi Wnd_RenderWindows. Chia nho de biet pha nao.
 // 0 the gioi | 1 neo lai cua so (chi mobile) | 2 lop duoi | 3 lop giua | 4 lop tren.
 double g_dJxPhaVe[5] = { 0, 0, 0, 0, 0 };
+double g_dJxUiMaxMs = 0.0; int g_nJxUiMaxX = 0, g_nJxUiMaxY = 0, g_nJxUiMaxW = 0, g_nJxUiMaxH = 0; const char* g_pszJxUiMaxLop = NULL; const void* g_pJxUiMax = NULL;	// [PDET-UI 14/09] cua so goc ve lau nhat trong khung (WndWindow.cpp ghi, UiShell.cpp in [PDET-UI])
 extern int g_nPaintLog;
 static double JxPhaMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 {
@@ -145,6 +146,7 @@ void Wnd_RenderWindows()
 	const bool bJxDo = (g_nPaintLog > 0);	// [PHAVE 11/09]
 	LARGE_INTEGER jxT[6];
 	if (bJxDo) QueryPerformanceCounter(&jxT[0]);
+	g_dJxUiMaxMs = 0.0; g_pJxUiMax = NULL; g_pszJxUiMaxLop = NULL;	// [PDET-UI 14/09]
 #endif
 
 	if (s_WndStation.pGameSpaceWnd && s_WndStation.bPaintGameSpace)
