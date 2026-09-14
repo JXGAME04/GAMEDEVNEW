@@ -8,6 +8,7 @@
 #include "KEngine.h"
 #include "Elem/Wnds.h"
 #include "Elem/MouseHover.h"
+#include "../Platform/JxLiaCanh.h"	// [LIA 13/09] doi map that -> bo do lech lia canh
 #include "UiCase/UiPlayerBar.h"
 #include "UiCase/UiFaceSelector.h" //add by phong kiÒu
 #include "UiCase/UiStatus.h"
@@ -888,6 +889,9 @@ int CoreDataChangedCallback(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 	}
 	break;
 	case GDCNI_SWITCHING_MAPMODE:
+#ifdef JX_MOBILE
+		JxLia_DatLai();	// [LIA 13/09] doi map that (KScenePlaceC::OpenPlace) -> bo do lech lia canh, tat co FollowWithMap
+#endif
 		// [TKDIEM 05/09] doi map THAT (KScenePlaceC::OpenPlace) -> an bang diem Tong VS Kim. Truoc dung GDCNI_SWITCHING_SCENEPLACE:
 		// co nay cung bat khi nap VUNG luc chay trong map (SetFocusPosition > SPWP_TRIGGER_LOADING_RANGE) -> bang an/hien = 'nhay'.
 		KUiTongKimScore::OnSwitchMap(1);

@@ -20,6 +20,7 @@
 #include "UiCase/UiInit.h"
 #ifdef JX_MOBILE
 #include "../Platform/JxCanDieuKhien.h"	// [ANDROID 09/09 CAN] can dieu khien ao
+#include "../Platform/JxLiaCanh.h"	// [CAMERA 13/09] chu bao muc zoom
 #endif
 #include "UiCase/UiConnectInfo.h"
 #include "UiCase/UiInformation.h"
@@ -380,6 +381,7 @@ void UiPaint(int nGameLoop)
 	JxHuongDi_Ve();	// [ANDROID 09/09 HUONGDI] mui ten nho duoi chan theo huong di chuyen
 	if (!KUiWAuto::GetIfVisible())
 		JxKyNang_Ve();	// [ANDROID 09/09 KYNANG] bang nut ky nang + vach ngam + vong duoi chan dich
+	JxLia_Ve();	// [CAMERA 13/09] chu "Nhin rong NNN %" 1,5 s khi zoom doi
 	JxCan_Ve();	// [ANDROID 09/09 CAN] ve can len tren cung, ngay truoc khi ket khung
 #endif
 	g_pRepresentShell->RepresentEnd();

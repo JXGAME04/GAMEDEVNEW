@@ -34,7 +34,7 @@ protected:
 	// [VATPHAM 12/09 g] CHAM_CAM = vua giu lau tren o vat pham -> da nhac mon len tay, ngon van dang de:
 	// di chuyen thi o dich sang len, nha ngon tren giao dien thi tha mon vao o do.
 	enum { CHAM_KHONG = 0, CHAM_CHO, CHAM_KEO, CHAM_PHAI, CHAM_RE, CHAM_CAN, CHAM_CUON,
-		CHAM_KYNANG, CHAM_CAM };
+		CHAM_KYNANG, CHAM_CAM, CHAM_LIA };	// [LIA 13/09] CHAM_LIA = ngon keo tren ban do = lia canh (JxLiaCanh)
 	bool			ChamSuKien(const SDL_Event& ev);	// true = da nuot su kien, dung dich tiep
 	void			NhipCham();							// goi moi vong lap: giu du lau thi thanh chuot phai
 	int				m_nCham;			// mot trong CHAM_*
@@ -54,6 +54,7 @@ protected:
 	long long		m_nNgon1, m_nNgon2;	// id ngon thu nhat / thu hai dang de (-1 = khong)
 	int				m_nNgon1X, m_nNgon1Y, m_nNgon2X, m_nNgon2Y;
 	int				m_nChum;			// 1 = dang chum
+	int				m_nLiaChum;			// [ZOOM 13/09] 1 = dang chum hai ngon tren BAN DO (zoom nhin rong + lia theo tam hai ngon, JxLia_Chum*)
 #endif
 	SDL_Window*		m_pWindow;
 	unsigned int	m_uMsgQuit;			// dem WM_CLOSE da xu ly (chan doan)

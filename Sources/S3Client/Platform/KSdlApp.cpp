@@ -30,6 +30,7 @@ static KSdlApp* s_pSdlApp = NULL;
 //---------------------------------------------------------------------------
 #ifdef JX_MOBILE
 #include "JxCanDieuKhien.h"
+#include "JxLiaCanh.h"	// [LIA 13/09] lia canh: mot ngon keo tren ban do
 #include "../Ui/Elem/UiToaDo.h"	// [ANDROID 09/09 SUAKEO] UiToaDo_DangSua	// [ANDROID 09/09 CAN] can dieu khien ao
 #endif
 
@@ -227,6 +228,7 @@ KSdlApp::KSdlApp()
 	m_nNgon1 = m_nNgon2 = -1;	// [SUAGD 13/09 CHUM]
 	m_nNgon1X = m_nNgon1Y = m_nNgon2X = m_nNgon2Y = 0;
 	m_nChum = 0;
+	m_nLiaChum = 0;	// [ZOOM 13/09]
 #endif
 	s_pSdlApp = this;
 }
@@ -671,6 +673,7 @@ void KSdlApp::Run()
 		NhipCham();		// [ANDROID 09/09 CHAM] giu ngon du lau ma khong xe dich -> chuot phai
 		JxSdl_BanPhimNhip();	// [DANGNHAP 12/09] mo lai ban phim sau khi IME tu dong
 		JxCan_Nhip();	// [ANDROID 09/09 CAN] dang cam can thi day nhan vat di theo huong
+		JxLia_Nhip();	// [LIA 13/09] lia canh: ap do lech moi khung / dem cho / troi ve nhan vat
 		JxKyNang_Nhip();	// [ANDROID 09/09 KYNANG I] dang de nut ky nang thi cu danh tiep
 		JxVatPham_Nhip();	// [VATPHAM 12/09 f] nut Nem: doi may chu nhac mon len tay roi moi nem
 		UiToaDo_NhipMobile();	// [SUAGD 13/09] ho so bo cuc theo nhan vat, vung an toan doi -> ap lai, luot kep, lap phim mui ten
@@ -905,7 +908,10 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 				return true;
 			}
 			if (bNgonDau)
+			{
+				m_nNgon1 = nNgon; m_nNgon1X = (int)fx; m_nNgon1Y = (int)fy;	// [ZOOM 13/09] nho ngon 1 de chum hai ngon ngoai che do sua giao dien
 				return false;	// ngon thu nhat: de chuot gia lap lo nhu cu
+			}
 
 			// Ngon thu hai tro di: uu tien nut ky nang, roi den can dieu khien.
 			// [ANDROID 10/09 GANTOADO] dang sua giao dien thi khong bat nut ky nang
@@ -927,6 +933,23 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 				JxCan_BatDau((int)fx, (int)fy, (int)fx, (int)fy);
 				return true;
 			}
+			// [ZOOM 13/09] Ngon 2 dat len BAN DO khi ngon 1 cung dang tren ban do (cho, dang lia, dang keo) = CHUM: zoom nhin rong
+			// (hai ngon gan nhau = thay rong hon, xa nhau = ve 1:1) + lia theo tam hai ngon. Ngon 1 bo duong chuot gia lap (nhu CHUM sua giao dien).
+			if (!m_nLiaChum && m_nNgon1 >= 0 && m_nNgonDangDat == 2
+				&& (m_nCham == CHAM_CHO || m_nCham == CHAM_LIA || m_nCham == CHAM_KEO)
+				&& JxLia_ChumDuoc(m_nNgon1X, m_nNgon1Y, (int)fx, (int)fy))
+			{
+				if (m_nCham == CHAM_KEO)
+				{
+					GhiChuot(0, MAKELPARAM(m_nChamX, m_nChamY));
+					MsgProc(hWnd, WM_LBUTTONUP, 0, MAKELPARAM(m_nChamX, m_nChamY));
+				}
+				m_nCham = CHAM_KHONG;
+				m_nNgon2 = nNgon; m_nNgon2X = (int)fx; m_nNgon2Y = (int)fy;
+				m_nLiaChum = 1;
+				JxLia_ChumBatDau(m_nNgon1X, m_nNgon1Y, m_nNgon2X, m_nNgon2Y);
+				return true;
+			}
 			return false;
 		}
 
@@ -943,6 +966,15 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 				}
 				return (nNgon != m_nNgon1);	// ngon 1 van di duong chuot gia lap (keo o)
 			}
+			if (m_nLiaChum)	// [ZOOM 13/09] dang chum hai ngon tren ban do
+			{
+				if (nNgon == m_nNgon1)		{ m_nNgon1X = (int)fx; m_nNgon1Y = (int)fy; }
+				else if (nNgon == m_nNgon2)	{ m_nNgon2X = (int)fx; m_nNgon2Y = (int)fy; }
+				else return false;
+				JxLia_ChumKeo(m_nNgon1X, m_nNgon1Y, m_nNgon2X, m_nNgon2Y);
+				return true;
+			}
+			if (nNgon == m_nNgon1) { m_nNgon1X = (int)fx; m_nNgon1Y = (int)fy; }	// [ZOOM 13/09] theo doi ngon 1 (chuot gia lap van lo)
 			if (nNgon == m_nNgonKyNang)
 			{
 				JxKyNang_Keo((int)fx, (int)fy);
@@ -974,6 +1006,15 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			if (nNgon == m_nNgon2) m_nNgon2 = -1;
 			return !bNgon1;	// ngon 1: chuot gia lap nha nhu cu (ket keo)
 		}
+		if (m_nLiaChum && (nNgon == m_nNgon1 || nNgon == m_nNgon2))	// [ZOOM 13/09] mot trong hai ngon nha = het chum (ngon con lai khong lam gi toi khi nha)
+		{
+			JxLia_ChumNha();
+			m_nLiaChum = 0;
+			m_nNgon1 = m_nNgon2 = -1;
+			m_nCham = CHAM_KHONG;
+			return true;
+		}
+		if (nNgon == m_nNgon1) m_nNgon1 = -1;	// [ZOOM 13/09]
 		if (nNgon == m_nNgonKyNang)
 		{
 			JxKyNang_Nha();
@@ -1072,6 +1113,10 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		{
 			JxCan_Nha();
 		}
+		else if (nTruoc == CHAM_LIA)
+		{
+			JxLia_Nha();	// [LIA 13/09] nha ngon: cho LiaChoVeMs roi troi ve nhan vat
+		}
 		else if (nTruoc == CHAM_KEO)
 		{
 			GhiChuot(0, MAKELPARAM((int)fx, (int)fy));
@@ -1148,6 +1193,15 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 				JxCan_BatDau(m_nChamX0, m_nChamY0, m_nChamX, m_nChamY);
 				return true;
 			}
+			// [LIA 13/09] Keo tren BAN DO (ngoai giao dien, ngoai vung can, ngoai nut ky nang) = LIA CANH - nhu game 3D mot ngon keo
+			// la quay camera; di bang can dieu khien hoac cham. Truoc: giu chuot trai roi re (di lien tuc) - [Cham] LiaCanh=0 thi ve nhu cu.
+			if (JxLia_DuocBatDau(m_nChamX0, m_nChamY0))
+			{
+				m_nCham = CHAM_LIA;
+				JxLia_BatDau(m_nChamX0, m_nChamY0);
+				JxLia_Keo(m_nChamX, m_nChamY);
+				return true;
+			}
 			// [ANDROID 09/09 CUON] Vuot DOC tren giao dien = cuon danh sach (dich thanh lan chuot).
 			// Moi lop danh sach cua bo giao dien nay deu nhan WM_MOUSEWHEEL (WndList, WndList2,
 			// WndMessageListBox) nen thoai NPC / chat / danh sach may chu deu vuot duoc.
@@ -1176,6 +1230,11 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		if (m_nCham == CHAM_CAN)
 		{
 			JxCan_Keo(m_nChamX, m_nChamY);
+			return true;
+		}
+		if (m_nCham == CHAM_LIA)
+		{
+			JxLia_Keo(m_nChamX, m_nChamY);	// [LIA 13/09]
 			return true;
 		}
 		if (m_nCham == CHAM_CUON)

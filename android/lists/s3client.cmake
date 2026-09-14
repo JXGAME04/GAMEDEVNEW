@@ -6,6 +6,7 @@ set(JX_S3CLIENT_SOURCES
     ${JX_ROOT}/Sources/S3Client/S3Client.cpp
     ${JX_ROOT}/Sources/S3Client/Platform/KSdlApp.cpp
     ${JX_ROOT}/Sources/S3Client/Platform/JxCanDieuKhien.cpp
+    ${JX_ROOT}/Sources/S3Client/Platform/JxLiaCanh.cpp
     ${JX_ROOT}/Sources/S3Client/stdafx.cpp
     ${JX_ROOT}/Sources/S3Client/TextCtrlCmd/TextCtrlCmd.cpp
     ${JX_ROOT}/Sources/S3Client/Ui/ChatFilter.cpp
