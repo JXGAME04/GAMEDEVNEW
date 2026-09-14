@@ -98,9 +98,21 @@ Khối này còn là lưới an toàn cho một đường cũ: khi pha 5 phù v�
 
 ---
 
+## 3c. ĐỢT c — BỊT NỐT ĐƯỜNG BOT **KÉO TỚI** CHỖ BOSS (`ReverseTools/goi_va_bot_satthu_c.py`)
+
+Chủ hỏi lại *"tôi nói không cho bot đánh boss sát thủ bạn đã làm đúng chưa?"* → soát lại thì đợt a/b mới chặn đường **đánh**, chưa chặn đường **đi tới**:
+
+`pb_NapMotNpc` (bảng cụm điểm sinh quái) chỉ lọc `kind_normal` + `m_OriginX > 0` — boss Sát Thủ thoả cả hai nên **vẫn được nạp vào bảng cụm**; boss lại đứng xa các bãi quái nên **tự tạo một cụm riêng**. `pb_FindRoamSpot` gom **mọi tâm cụm** làm ứng viên điểm đi hoang rồi bốc theo chỉ số bot ⇒ bot vẫn chọn trúng chỗ boss, tới nơi không đánh được (đã bị chặn) nên **đứng ì quanh boss**. Nhìn bên ngoài vẫn đúng cảnh *"bot bu quanh boss Sát Thủ"*.
+
+Vá hai chỗ, dùng lại `pb_LaBossSatThu` có sẵn:
+1. `pb_NapMotNpc` — boss Sát Thủ không vào bảng cụm (không tạo cụm, không tính vào số đếm).
+2. `pb_FindRoamSpot`, nhánh dự phòng (quét quái đang sống khi bản đồ chưa có bảng cụm) — cũng bỏ qua boss.
+
+Commit `9ee2e38f`. Sau đợt c, ba đường tới boss đều bị chặn: **không chọn làm mục tiêu**, **nhả ngay nếu đang cầm**, **không lấy làm điểm đi hoang**.
+
 ## 3b. BINARY CHỜ SWAP
 
-- `bin\server\CoreServer.dll.moi` = **`a672eee21456`** (14/09 16:09, 18.505.216 byte). Khe `.moi` trước đó **trống** nên không đè bản của phiên nào.
+- `bin\server\CoreServer.dll.moi` = **`a7cf04ad0d1d`** (14/09 16:16, gồm cả đợt c; bản 16:09 `a672eee2` đã bị thay). Khe `.moi` trước đó **trống** nên không đè bản của phiên nào.
 - **Client không cần deploy**: `KPlayerBot.cpp` bị `ExcludedFromBuild` ở cả 4 cấu hình Client trong `Core.vcxproj` (dòng 810–813), nên `CoreClient.dll` không đổi. Bản `client\CoreClient.dll.moi` (12/09) của phiên khác giữ nguyên, tôi không đụng.
 - Bản đang chạy `CoreServer.dll` là `d5fef156` (11/09 03:51), cũ hơn HEAD nhiều commit — `.moi` này là **superset** (HEAD `7b3d744e` + hai bản vá hôm nay), nên swap sẽ kéo theo mọi thay đổi đã đẩy từ 11/09 tới nay.
 
