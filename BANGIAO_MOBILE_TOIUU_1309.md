@@ -153,3 +153,14 @@ manifest sinh lúc 21:53 → md5 config.ini lệch → app báo lỗi. Phiên đ
 tôi (Windows cho hai tiến trình cùng listen vì `allow_reuse_address`). Xử lý 22:03: sinh lại manifest tại chỗ (`--chi-manifest`, không restart),
 tắt máy chủ trùng của tôi, giữ 46564, nhắn phiên kia. Mã LIA/ZOOM/CAMERA (`066d0939`, `c83048d9`) chưa vào `mobile-0809` → các khoá config
 đó hiện chưa có tác dụng trong bản 109132150. Bản đo `[PGND-R]` 109132150 vẫn là bản trên dt_v4.
+
+### 10.3. 22:13 "quay một lần có màn đen" (bản 109132150) → sửa, bản 109132221 (22:24)
+
+Gốc: P3 (`[NENTRUOC 13/09]`) hoãn ghép cả 8 vùng **kề bên** (đang trên màn hình) cho tới khi luồng nền chuẩn bị xong khung; lúc vào/quay lại
+map luồng nền đang ngập (`[VE-GIAT]` nạp 322 tệp spr) nên nền quanh nhân vật đen tới 1,5 s (`[PGND]` lúc vào map: "ke ben 0.0/0"). Trước P3
+8 vùng đó ghép ngay (17 ms/vùng, vài khung). Sửa (`android/va_nguon_mobile_1309_h.py`): vùng kề bên ghép ngay như cũ, chỉ xin nạp trước;
+chỉ vùng XA mới hoãn (đúng chỗ hưởng lợi của P3). Kèm `[XOANEN 13/09 b]`: `ClearImageData` báo "đích sắp Clear" → `CTexGpu` không giữ bản CPU
+→ `PrepareAsTarget/LockRect` không đọc ngược GPU (cú 156 ms xoá #38 lúc vào map = SubmitFrame chờ GPU đang ngập tải lên).
+Bản 109132221 = merge `mobile-0809` b18d9965 của phiên LIA/ZOOM/CAMERA + sửa này; máy ảo: vào map nền đủ, `ke ben` ghép ngay, không sập.
+Giao 22:24 bằng `--chi-manifest` trên máy chủ 52072 của phiên kia (không khởi động lại). Windows y hệt trừ 1 dòng `#include JxLiaCanh.h`
+chưa rào của phiên kia trong `GameSpaceChangedNotify.cpp` (đã báo họ).
