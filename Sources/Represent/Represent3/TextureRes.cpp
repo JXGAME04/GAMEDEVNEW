@@ -1618,6 +1618,7 @@ void TextureResSpr::JxNhanKhungNen(JxKhungXong& kq)
 		for (int j = 0; j < ti.nFrameHeight; j++) { memcpy(pDst, pSrc, (size_t)ti.nFrameWidth * nBpp); pDst += lr.Pitch; pSrc += (size_t)nW * nBpp; }
 		pTex->UnlockRect(0);
 		ti.pTexture = pTex;
+		if (kq.nNguon != 0) { extern void Rep3Gpu_TaiTruoc(IDirect3DDevice9*, IDirect3DTexture9*); Rep3Gpu_TaiTruoc(PD3DDEVICE, pTex); }	// [TAI 14/09] khung nap truoc: tai dan len GPU tung dai truoc khi ve (RepresentBegin)
 		if (bPal) Rep3_D3D11TagPalette(pTex, m_nPalRow);
 		m_nTexMemUsed += ti.nWidth * ti.nHeight * nBpp;
 	}

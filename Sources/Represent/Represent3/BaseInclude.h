@@ -69,8 +69,9 @@ extern unsigned g_uJxVeKhungSo, g_uJxVe8, g_uJxVe16, g_uJxGopVo[8];	// so khung 
 class TextureResSpr; class TextureResMgr;
 extern TextureResMgr* g_pJxTexMgr;	// bo quan ly texture duy nhat (TextureResMgr ctor gan)
 struct JxKhungViec { TextureResSpr* pSpr; int nFrame; int nBpp; int eFmt; int bPal; int nNguon; unsigned uLuc; };	// viec cho luong nen (nNguon 0 = dang ve can, 1 = nap truoc)
-struct JxKhungXong { TextureResSpr* pSpr; int nFrame; int nW, nH, nOffX, nOffY; BYTE* pDiem; int nBpp; int eFmt; int bPal; int bHong; unsigned uLuc; };	// ket qua: khung da giai ma
+struct JxKhungXong { TextureResSpr* pSpr; int nFrame; int nW, nH, nOffX, nOffY; BYTE* pDiem; int nBpp; int eFmt; int bPal; int bHong; unsigned uLuc; int nNguon; };	// [TAI 14/09] nNguon: 0 = dang ve can, khac 0 = nap truoc (tai dan len GPU truoc khi ve)	// ket qua: khung da giai ma
 extern int g_nJxNapKhungNen, g_nJxNapKhungMs, g_nJxNapKhungTruoc, g_nJxNapKhungApMs, g_nJxVeGiatMs;	// [Client] NapKhungNen / NapKhungMs / NapKhungTruoc / NapKhungApMs / VeGiatMs
+extern int g_nJxNapKhungKB;	// [TAI 14/09] [Client] NapKhungKB: ngan sach byte/khung tai DAN texture khung nap truoc len GPU (0 = tat)
 extern int g_nJxAnhBoVeNen;	// 1 = GetImage vua tra NULL vi khung dang nap o luong nen (Rep3AnhNullGhi bo qua, khong tinh la anh thieu)
 extern int g_nJxHoiKhongDe;	// [VE 11/09 d] [Client] NapHoiKhongDe: 1 = hoi kich thuoc sprite NPC dang nap o luong nen -> tra 'chua co' (khong nap dong bo de len)
 extern unsigned g_uJxNapKhungRong, g_uJxHoiTre;	// [VE 11/09 d] khung rong/hong o luong nen (khong giao lai); so lan hoi NPC dang nap tra 'chua co'

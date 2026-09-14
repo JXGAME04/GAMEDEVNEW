@@ -136,6 +136,9 @@ public:
 	UINT  JxKhoi() const { return (m_bVirtual && m_pPage) ? m_pPage->m_nKhoi : 0xFFu; }	// [KHOI 11/09] khoi atlas (0xFF = texture rieng)
 	bool  NewVersion(bool bTarget);			// tao SDL_GPUTexture moi (ban cu vao danh sach tra sau Present)
 	void  QueueUpload(const RECT* prc);		// chep CPU (vung prc) vao staging cua khung + ghi lenh tai
+#ifdef JX_MOBILE
+	UINT  JxTaiTruoc(UINT uMax);		// [TAI 14/09] khung nap truoc (chua ve): tai dan ban CPU len GPU toi da uMax byte; tra byte da ghi lenh, 0 = xong/khong lam
+#endif
 
 	LONG        m_ref;
 	CDevGpu*    m_pDev;
@@ -165,6 +168,7 @@ public:
 	bool        m_bCpuBo;			// [GPU 11/09 BOCPU] ban CPU da bo sau khi tai len (LockRect phai doc lai tu GPU)
 #ifdef JX_MOBILE
 	bool        m_bJxKhongGiuCpu;	// [XOANEN 13/09 b] anh nen vung (dich sap Clear): khong giu ban CPU -> PrepareAsTarget/LockRect khong doc nguoc GPU
+	bool        m_bJxTaiTruoc;		// [TAI 14/09] dang trong hang tai dan cua CDevGpu (m_jxTaiTruoc)
 #endif
 };
 
@@ -450,7 +454,14 @@ public:
 	void    TouchTex(CTexGpu* p);
 	void    UntouchTex(CTexGpu* p);					// [GPU 11/09 ATLAS] texture bi huy giua khung: rut khoi m_touched
 	void    DeferAtlasFree(CAtlasPageGpu* pPage, UINT x, UINT y, UINT w) { RgAtlasFree f = { pPage, x, y, w }; m_atlasFrees.push_back(f); }
+#ifdef JX_MOBILE
+	void    QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, UINT layer = 0, SDL_GPUTextureFormat fmt = SDL_GPU_TEXTUREFORMAT_INVALID, SDL_GPUTextureType eLoai = SDL_GPU_TEXTURETYPE_2D);	// [TAI 14/09] fmt hop le + ca trang -> chep GPU tu dai nguon 0 (eLoai = loai texture dich, Metal doi cung loai)
+	void    JxTaiTruocThem(CTexGpu* p);		// [TAI 14/09] khung nap truoc: vao hang tai dan
+	void    JxTaiTruocBo(CTexGpu* p);		// texture bi huy: rut khoi hang
+	void    JxTaiTruocChay(UINT uNganSach);	// moi khung (RepresentBegin): tai toi da uNganSach byte
+#else
 	void    QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, UINT layer = 0);	// tai vung 0 (trang moi / o chua co du lieu); [MANG 11/09] layer
+#endif
 	bool    ReadbackRegion(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, BYTE* pDst, UINT dstPitch, UINT layer = 0);	// [GPU 11/09 BOCPU] [MANG 11/09] layer
 	bool    ReadbackTexture(SDL_GPUTexture* pTex, UINT w, UINT h, BYTE* pDst, UINT dstPitch);	// dong bo (chup man hinh)
 	// bang mau
@@ -491,6 +502,9 @@ public:
 	std::vector<RgTexUpload> m_texUploads;
 #ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS; Android van dinh nghia JX_MOBILE nen khong doi gi
 	SDL_GPUTransferBuffer* m_pJxZeroXfer; UINT m_jxZeroSize, m_jxZeroDaXoa; std::vector<RgTexUpload> m_jxZeroUploads;	// [VE 11/09 d] bo dem 0 co dinh cho trang atlas moi / o chua co ban CPU (stageOff = 0)
+	struct JxZeroNguon { SDL_GPUTextureFormat fmt; SDL_GPUTextureType eLoai; SDL_GPUTexture* pTex; UINT w, h, bpp; };	// [TAI 14/09] dai nguon 0 (w x 256) moi (dinh dang, loai), tai 0 mot lan
+	JxZeroNguon m_jxZeroNguon[6]; int m_nJxZeroNguon; std::vector<RgTexUpload> m_jxZeroCopy;	// m_jxZeroCopy: trang moi can chep 0 (stageOff = chi so dai nguon)
+	std::vector<CTexGpu*> m_jxTaiTruoc;	// [TAI 14/09] texture khung nap truoc dang tai dan len GPU (JxTaiTruocChay)
 	std::vector<RgCmd> m_jxCmdsTruoc; std::vector<BYTE> m_jxRingTruoc; bool m_bJxCoKhungTruoc, m_bJxKhungCoFlush; Uint64 m_uJxTrinhChieuLuc; unsigned m_uJxGiongLienTiep;	// [BKG 11/09] lenh + dinh cua khung vua trinh chieu de so voi khung sau
 	SDL_GPUBuffer* m_pJxPalBuf; std::vector<std::pair<UINT, UINT> > m_jxPalUploads;	// [PALBUF 11/09] bang mau trong storage buffer; (hang, offset staging) cho tai trong khung
 	SDL_GPUBuffer* m_pJxPsBuf; std::vector<RgPsCb> m_jxPsBang; std::map<unsigned long long, UINT> m_jxPsMap; RgPsCb m_jxPsCuoi; UINT m_uJxPsCuoi; UINT m_uJxPsStageOff;	// [GOP 11/09] bang to hop trang thai tang texture cua khung (chi so di theo dinh)

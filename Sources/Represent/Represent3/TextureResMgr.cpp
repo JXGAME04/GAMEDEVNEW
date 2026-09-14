@@ -867,7 +867,7 @@ void TextureResMgr::NapNenChay()
 #ifdef JX_MOBILE
 			if (bKhung)
 			{
-				JxKhungXong kq; memset(&kq, 0, sizeof(kq)); kq.pSpr = kv.pSpr; kq.nFrame = kv.nFrame; kq.nBpp = kv.nBpp; kq.eFmt = kv.eFmt; kq.bPal = kv.bPal; kq.uLuc = kv.uLuc;
+				JxKhungXong kq; memset(&kq, 0, sizeof(kq)); kq.pSpr = kv.pSpr; kq.nFrame = kv.nFrame; kq.nBpp = kv.nBpp; kq.eFmt = kv.eFmt; kq.bPal = kv.bPal; kq.uLuc = kv.uLuc; kq.nNguon = kv.nNguon;	// [TAI 14/09]
 				LARGE_INTEGER liA, liB; QueryPerformanceCounter(&liA);
 				kq.bHong = kv.pSpr->JxGiaiMaNen(kv.nFrame, kv.nBpp, (D3DFORMAT)kv.eFmt, kv.bPal != 0, kq) ? 0 : 1;
 				QueryPerformanceCounter(&liB);

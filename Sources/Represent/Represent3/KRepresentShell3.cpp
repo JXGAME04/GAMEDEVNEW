@@ -129,6 +129,7 @@ struct Rep3VeDpTimer { LARGE_INTEGER a; Rep3VeDpTimer() { if (g_nRep3VeMau) Quer
 #ifdef JX_MOBILE
 // [VE 11/09] Android: cong tac + thong ke nap KHUNG o luong nen (TextureRes.cpp / TextureResMgr.cpp) va do trinh chieu (D3D9onGPUDev.cpp)
 int g_nJxNapKhungNen = 1, g_nJxNapKhungMs = 3, g_nJxNapKhungTruoc = 2, g_nJxNapKhungApMs = 3, g_nJxVeGiatMs = 20;
+int g_nJxNapKhungKB = 128;	// [TAI 14/09] [Client] NapKhungKB: ngan sach byte/khung tai dan texture khung NAP TRUOC len GPU (driver Fold 7 ton CPU ~20 ms/MB trong lenh tai)
 int g_nJxAnhBoVeNen = 0;
 int g_nJxHoiKhongDe = 1; unsigned g_uJxNapKhungRong = 0, g_uJxHoiTre = 0;	// [VE 11/09 d]
 int g_nJxAtlasKe = 1, g_nJxAtlasTrang = 2048;	// [VE 11/09 e]
@@ -223,6 +224,12 @@ static void JxVeKyIn()
 		g_uJxNapKhungXong ? g_dJxNapKhungTre / g_uJxNapKhungXong : 0.0, g_dJxNapKhungTreMax, g_dJxNapNenBan, g_uJxNapKhungApKhung, g_dJxNapKhungAp, g_dJxNapKhungApMax, g_jxNapNgoaiVe.n, g_jxNapNgoaiVe.ms, g_jxNapNgoaiVe.max, g_uJxNapKhungRong, g_uJxHoiTre, g_nJxHoiKhongDe);	// [VE 11/09 d]
 	g_uJxNapKhungGiao = g_uJxNapKhungTruocSo = g_uJxNapKhungXong = g_uJxNapKhungHong = g_uJxNapKhungBo = g_uJxNapKhungBoVe = g_uJxNapKhungDongBo = g_uJxNapKhungChoMax = 0;
 	g_dJxNapKhungTre = g_dJxNapKhungTreMax = g_dJxNapNenBan = g_dJxNapKhungAp = g_dJxNapKhungApMax = 0.0; g_uJxNapKhungApKhung = 0; memset(&g_jxNapNgoaiVe, 0, sizeof(g_jxNapNgoaiVe)); g_uJxNapKhungRong = 0; g_uJxHoiTre = 0;
+	{	// [TAI 14/09] tai dan khung nap truoc + to 0 trang atlas bang chep GPU
+		extern unsigned g_uJxTaiTruocSo, g_uJxTaiTruocXong, g_uJxTaiTruocKB, g_uJxTaiTruocLuot, g_uJxTaiTruocMax, g_uJxZeroChep; extern double g_dJxTaiTruocMs, g_dJxZeroChepMs;
+		Rep3Log("[VE-TAI] tai dan khung nap truoc (NapKhungKB=%d): vao hang %u, xong %u, %u KB / %u luot, %.1f ms (hang cho max %u) | trang atlas moi to 0 bang chep GPU: %u trang %.1f ms",
+			g_nJxNapKhungKB, g_uJxTaiTruocSo, g_uJxTaiTruocXong, g_uJxTaiTruocKB, g_uJxTaiTruocLuot, g_dJxTaiTruocMs, g_uJxTaiTruocMax, g_uJxZeroChep, g_dJxZeroChepMs);
+		g_uJxTaiTruocSo = g_uJxTaiTruocXong = g_uJxTaiTruocKB = g_uJxTaiTruocLuot = g_uJxTaiTruocMax = g_uJxZeroChep = 0; g_dJxTaiTruocMs = g_dJxZeroChepMs = 0.0;
+	}
 }
 #endif
 #ifdef JX_MOBILE
@@ -958,6 +965,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nJxNapKhungMs    = Rep3Ini("NapKhungMs", 3);		// ngan sach nap dong bo tren luong ve moi khung (ms); qua thi giao luong nen, bo ve khung nay
 	g_nJxNapKhungTruoc = Rep3Ini("NapKhungTruoc", 2);	// so khung KE TIEP cung huong nap truoc o luong nen (0 = tat)
 	g_nJxNapKhungApMs  = Rep3Ini("NapKhungApMs", 3);	// ngan sach tao texture tu ket qua luong nen moi khung (ms)
+	g_nJxNapKhungKB    = Rep3Ini("NapKhungKB", 128);	// [TAI 14/09] ngan sach tai dan khung nap truoc len GPU (KB/khung); 0 = tat (tai ca khung luc ve nhu cu)
 	g_nJxVeGiatMs      = Rep3Ini("VeGiatMs", 20);		// ghi [VE-GIAT] khi ve CPU + trinh chieu (hoac nap ngoai luc ve) cua mot khung vuot nguong (ms); 0 = tat
 	g_nJxHoiKhongDe    = Rep3Ini("NapHoiKhongDe", 1);	// [VE 11/09 d] 1 = hoi kich thuoc sprite NPC dang nap o luong nen -> tra 'chua co' (khong nap dong bo de len)
 	g_nJxAtlasKe       = Rep3Ini("Rep3AtlasKe", 1) ? 1 : 0;	// [VE 11/09 e] 1 = atlas xep ke theo dinh dang (khung cung NPC cung trang -> gop lenh), 0 = trang theo bin cao nhu cu
@@ -3301,6 +3309,7 @@ bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 #ifdef JX_MOBILE
 	m_TextureResMgr.JxNapKhungNhan();	// [VE 11/09] tao texture tu khung da giai ma o luong nen (theo ngan sach NapKhungApMs)
 	m_TextureResMgr.JxNenTruocXuLy();	// [NENTRUOC 13/09] nen dat: muc cho tep -> giao khung
+	{ extern void Rep3Gpu_TaiTruocChay(IDirect3DDevice9*, unsigned); if (g_nJxNapKhungKB > 0) Rep3Gpu_TaiTruocChay(PD3DDEVICE, (unsigned)g_nJxNapKhungKB << 10); }	// [TAI 14/09] tai dan khung nap truoc len GPU
 #endif
 	m_TextureResMgr.m_bVeDangDien = true;
 	m_TextureResMgr.StartProfile();

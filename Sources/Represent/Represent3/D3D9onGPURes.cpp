@@ -21,6 +21,7 @@ CTexGpu::CTexGpu(CDevGpu* pDev, UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DP
 	m_bVirtual = false; m_pPage = NULL; m_ax = m_ay = 0; m_bCpuBo = false;	// [GPU 11/09 ATLAS] [GPU 11/09 BOCPU]
 #ifdef JX_MOBILE
 	m_bJxKhongGiuCpu = false;	// [XOANEN 13/09 b]
+	m_bJxTaiTruoc = false;	// [TAI 14/09]
 #endif
 	SetRect(&m_rcDirty, 0, 0, 0, 0); SetRect(&m_rcLock, 0, 0, 0, 0);
 	if (!(usage & D3DUSAGE_RENDERTARGET))
@@ -31,6 +32,9 @@ CTexGpu::CTexGpu(CDevGpu* pDev, UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DP
 CTexGpu::~CTexGpu()
 {
 	if (m_pDev && m_bUsedThisFrame) m_pDev->UntouchTex(this);	// [GPU 11/09 ATLAS] dang trong m_touched cua khung -> rut ra (tranh con tro treo o FrameReset)
+#ifdef JX_MOBILE
+	if (m_pDev && m_bJxTaiTruoc) m_pDev->JxTaiTruocBo(this);	// [TAI 14/09] dang trong hang tai dan -> rut ra
+#endif
 	if (m_bVirtual && m_pPage && m_pDev)
 	{	// [GPU 11/09 ATLAS] tra cho trong trang SAU khung (lenh ve trong khung co the con tham chieu)
 		m_pDev->DeferAtlasFree(m_pPage, m_ax, m_ay, m_w);
@@ -180,7 +184,12 @@ SDL_GPUTexture* CTexGpu::PrepareAsTarget()
 	{
 		const bool bKeep = (m_pGpu != NULL && m_bGpuNewer);	// noi dung GPU moi hon CPU: khong tai de lai (hiem; chi khi da la target)
 		if (!NewVersion(true)) return NULL;
+#ifdef JX_MOBILE
+		if (m_bJxKhongGiuCpu && m_pCpu) { free(m_pCpu); m_pCpu = NULL; }	// [TAI 14/09] anh nen vung sap Clear: khong tai ban CPU (1 MB BGRA8 x 40 khe luc vao map, ~20 ms/MB), bo luon (LockRect cap lai neu can)
 		if (m_pCpu && !bKeep) QueueUpload(NULL);
+#else
+		if (m_pCpu && !bKeep) QueueUpload(NULL);
+#endif
 		m_bDirty = false;
 	}
 	else if (m_bDirty)
@@ -194,6 +203,41 @@ SDL_GPUTexture* CTexGpu::PrepareAsTarget()
 	m_bUsedThisFrame = true;
 	return m_pGpu;
 }
+
+#ifdef JX_MOBILE
+// [TAI 14/09] Khung NAP TRUOC (luong nen giao, chua ai ve): tai dan ban CPU len GPU theo tung dai (uMax byte moi lan, RepresentBegin) TRUOC khi khung
+// duoc ve, de luc ve khong con tai 2-3 MB mot luc (Fold 7: driver ton CPU ~20 ms/MB trong lenh chep buffer->anh).
+// Texture ao (atlas, <= 512x512): xin o + tai ca o (nhu PrepareForBind, KHONG danh dau da dung trong khung). Texture rieng: NewVersion + tai tung dai tu dau
+// m_rcDirty; phan con lai giu trong m_rcDirty -> luc ve PrepareForBind tai not (duong cu). Tra byte da ghi lenh; 0 = xong hoac khong lam duoc.
+UINT CTexGpu::JxTaiTruoc(UINT uMax)
+{
+	if (!m_pCpu || m_bLocked || !m_bDirty || m_bGpuTarget || !m_pDev || !m_pDev->m_pGpu) return 0;
+	if (m_bVirtual)
+	{
+		if (m_pPage) return 0;
+		CAtlasMgrGpu* pA = m_pDev->m_pAtlas;
+		if (!pA || !pA->Alloc(m_w, m_h, m_fi.gpu, &m_pPage, &m_ax, &m_ay)) return 0;	// khong xin duoc o: de PrepareForBind lo (texture rieng) nhu cu
+		m_uGpuBytes = m_w * m_h * m_pPage->m_bpp; m_pDev->m_uTexBytes += m_uGpuBytes; g_uRep3GpuTexCount++; g_uRep3GpuTexBytes += m_uGpuBytes;
+		g_uJxAtlasODat[(m_pool == D3DPOOL_MANAGED) ? 1 : 0]++;
+		QueueUpload(NULL);
+		m_bDirty = false; m_bGpuHasData = true;
+		return m_uGpuBytes;
+	}
+	if (!m_pGpu && !NewVersion(false)) return 0;
+	RECT rc = m_rcDirty;
+	if (rc.left < 0) rc.left = 0; if (rc.top < 0) rc.top = 0; if (rc.right > (int)m_w) rc.right = (int)m_w; if (rc.bottom > (int)m_h) rc.bottom = (int)m_h;
+	if (rc.right <= rc.left || rc.bottom <= rc.top) { m_bDirty = false; return 0; }
+	const UINT gbpp = RgGpuBpp(m_gpuFmt); if (!gbpp) return 0;
+	const UINT uHang = (UINT)(rc.right - rc.left) * gbpp;
+	UINT nDong = uMax / uHang; if (nDong == 0) nDong = 1;
+	if (nDong > (UINT)(rc.bottom - rc.top)) nDong = (UINT)(rc.bottom - rc.top);
+	RECT rcDai = rc; rcDai.bottom = rc.top + (int)nDong;
+	QueueUpload(&rcDai);
+	m_rcDirty = rc; m_rcDirty.top = rcDai.bottom;
+	if (m_rcDirty.top >= m_rcDirty.bottom) m_bDirty = false;
+	return nDong * uHang;
+}
+#endif
 
 HRESULT CTexGpu::QueryInterface(REFIID riid, void** ppvObj)
 {
@@ -393,7 +437,11 @@ CAtlasPageGpu* CAtlasMgrGpu::NewPage(UINT binH, SDL_GPUTextureFormat fmt)
 		pTex = SDL_CreateGPUTexture(m_pDev->m_pGpu, &ci);
 		if (!pTex) { RgLog("atlas: CreateGPUTexture trang %ux%u fmt %d that bai: %s", m_pageSize, m_pageSize, (int)fmt, SDL_GetError()); return NULL; }
 	}
+#ifdef JX_MOBILE
+	m_pDev->QueueZeroUpload(pTex, 0, 0, m_pageSize, m_pageSize, bpp, uLop, fmt, (uKhoi != 0xFFu || g_nJxAtlasMang) ? SDL_GPU_TEXTURETYPE_2D_ARRAY : SDL_GPU_TEXTURETYPE_2D);	// [TAI 14/09] trang moi = 0 bang chep GPU tu dai nguon 0 (khong tai 8 MB tu bo dem)
+#else
 	m_pDev->QueueZeroUpload(pTex, 0, 0, m_pageSize, m_pageSize, bpp, uLop);	// trang moi = 0 (khong de rac; vien o khi loc tuyen tinh)
+#endif
 	CAtlasPageGpu* p = new CAtlasPageGpu();
 	p->m_nLop = uLop;	// [MANG 11/09]
 #ifdef JX_MOBILE

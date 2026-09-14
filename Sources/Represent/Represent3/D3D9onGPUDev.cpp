@@ -57,6 +57,9 @@ unsigned g_uJxVeKhungSo = 0, g_uJxVe8 = 0, g_uJxVe16 = 0, g_uJxGopVo[8];
 static int s_nJxCullCpuCur = 0;				// [CULLCPU 11/09] lenh ve hien tai: 0 = khong cull tren CPU, khac 0 = che do cull cua D3D9 (D3DCULL_CW / D3DCULL_CCW)
 static unsigned long long s_ullJxPipeKeyCur = 0;	// [CULLCPU 11/09] khoa pipeline cua lenh ve hien tai (chi de DO)
 static double JxVeMs(Uint64 a, Uint64 b) { return (double)(b - a) * 1000.0 / (double)SDL_GetPerformanceFrequency(); }
+#ifdef JX_MOBILE
+unsigned g_uJxTaiTruocSo = 0, g_uJxTaiTruocXong = 0, g_uJxTaiTruocKB = 0, g_uJxTaiTruocLuot = 0, g_uJxTaiTruocMax = 0, g_uJxZeroChep = 0; double g_dJxTaiTruocMs = 0.0, g_dJxZeroChepMs = 0.0;	// [TAI 14/09] -> [VE-TAI] (KRepresentShell3.cpp)
+#endif
 static void JxVeCong(const JxVeDo& k)
 {
 	g_jxVeKhung = k; g_uJxVeKhungSo++;
@@ -217,6 +220,7 @@ CDevGpu::CDevGpu(CGpuShim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_pVS = NULL; m_pFS = NULL; m_pDummy = NULL; m_pWhite = NULL; m_pWhiteMang = NULL;	// [KHOI 11/09]
 #ifdef JX_MOBILE
 	m_bJxDichSeXoa = false;	// [XOANEN 13/09 b]
+	memset(m_jxZeroNguon, 0, sizeof(m_jxZeroNguon)); m_nJxZeroNguon = 0;	// [TAI 14/09]
 #endif
 	m_pRingGpu = NULL; m_ringGpuSize = 0; m_pRingXfer = NULL; m_ringXferSize = 0; m_pTexXfer = NULL; m_texXferSize = 0;
 #ifdef JX_MOBILE	// [IOS-GOP 12/09 e] PHAI mo cho iOS: khong thi m_pJxPalBuf / m_pJxPsBuf la RAC, code kiem "if (m_pJxPalBuf)" se tin nham
@@ -270,6 +274,9 @@ CDevGpu::~CDevGpu()
 		if (m_pLastFrame) SDL_ReleaseGPUTexture(m_pGpu, m_pLastFrame);
 		if (m_pWhite) SDL_ReleaseGPUTexture(m_pGpu, m_pWhite);
 		if (m_pWhiteMang) SDL_ReleaseGPUTexture(m_pGpu, m_pWhiteMang);	// [KHOI 11/09]
+#ifdef JX_MOBILE
+		for (int q = 0; q < m_nJxZeroNguon; q++) if (m_jxZeroNguon[q].pTex) SDL_ReleaseGPUTexture(m_pGpu, m_jxZeroNguon[q].pTex);	// [TAI 14/09]
+#endif
 		if (m_pDummy) SDL_ReleaseGPUBuffer(m_pGpu, m_pDummy);
 		if (m_pRingGpu) SDL_ReleaseGPUBuffer(m_pGpu, m_pRingGpu);
 		if (m_pRingXfer) SDL_ReleaseGPUTransferBuffer(m_pGpu, m_pRingXfer);
@@ -809,6 +816,16 @@ void Rep3Gpu_DichSeXoa(IDirect3DDevice9* pDev, int bBat)
 {
 	if (pDev && g_nRep3ApiOn == 100) ((CDevGpu*)pDev)->m_bJxDichSeXoa = (bBat != 0);
 }
+// [TAI 14/09] TextureResSpr::JxNhanKhungNen: khung NAP TRUOC vua co texture -> vao hang tai dan; KRepresentShell3 RepresentBegin: chay hang theo ngan sach
+void Rep3Gpu_TaiTruoc(IDirect3DDevice9* pDev, IDirect3DTexture9* pTex)
+{
+	extern int g_nJxNapKhungKB;
+	if (pDev && pTex && g_nRep3ApiOn == 100 && g_nJxNapKhungKB > 0) ((CDevGpu*)pDev)->JxTaiTruocThem((CTexGpu*)pTex);
+}
+void Rep3Gpu_TaiTruocChay(IDirect3DDevice9* pDev, unsigned uNganSach)
+{
+	if (pDev && g_nRep3ApiOn == 100) ((CDevGpu*)pDev)->JxTaiTruocChay(uNganSach);
+}
 #endif
 HRESULT CDevGpu::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget)
 {
@@ -964,11 +981,65 @@ void CDevGpu::UntouchTex(CTexGpu* p)
 		if (m_touched[i - 1] == p) { m_touched.erase(m_touched.begin() + (i - 1)); return; }
 }
 
+#ifdef JX_MOBILE
+// [TAI 14/09] hang tai dan: khung nap truoc (luong nen giao, chua ai ve) tai len GPU tung dai theo ngan sach moi khung, de luc ve khong con tai 2-3 MB mot luc.
+// Texture bi huy thi rut khoi hang (~CTexGpu). Texture da duoc ve truoc khi toi luot (PrepareForBind tai het) -> JxTaiTruoc tra 0 -> rut.
+void CDevGpu::JxTaiTruocThem(CTexGpu* p)
+{
+	if (!p || p->m_bJxTaiTruoc) return;
+	p->m_bJxTaiTruoc = true; m_jxTaiTruoc.push_back(p); g_uJxTaiTruocSo++;
+	if ((unsigned)m_jxTaiTruoc.size() > g_uJxTaiTruocMax) g_uJxTaiTruocMax = (unsigned)m_jxTaiTruoc.size();
+}
+void CDevGpu::JxTaiTruocBo(CTexGpu* p)
+{
+	for (size_t i = m_jxTaiTruoc.size(); i > 0; i--)
+		if (m_jxTaiTruoc[i - 1] == p) { m_jxTaiTruoc.erase(m_jxTaiTruoc.begin() + (i - 1)); break; }
+	p->m_bJxTaiTruoc = false;
+}
+void CDevGpu::JxTaiTruocChay(UINT uNganSach)
+{
+	if (m_jxTaiTruoc.empty() || !m_pGpu) return;
+	const Uint64 u0 = SDL_GetPerformanceCounter();
+	UINT uDa = 0; unsigned uLuot = 0;
+	while (!m_jxTaiTruoc.empty() && uDa < uNganSach)
+	{
+		CTexGpu* p = m_jxTaiTruoc[0];
+		const UINT uB = p->JxTaiTruoc(uNganSach - uDa);
+		uDa += uB; if (uB) uLuot++;
+		if (uB == 0 || !p->m_bDirty) { p->m_bJxTaiTruoc = false; m_jxTaiTruoc.erase(m_jxTaiTruoc.begin()); g_uJxTaiTruocXong++; }
+	}
+	if (uDa) { g_uJxTaiTruocKB += uDa >> 10; g_uJxTaiTruocLuot += uLuot; g_dJxTaiTruocMs += JxVeMs(u0, SDL_GetPerformanceCounter()); }
+}
+#endif
 // [GPU 11/09 ATLAS] ghi lenh tai mot vung toan 0 (trang moi, o chua co du lieu CPU)
+#ifdef JX_MOBILE
+void CDevGpu::QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, UINT layer, SDL_GPUTextureFormat fmt, SDL_GPUTextureType eLoai)
+#else
 void CDevGpu::QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, UINT layer)
+#endif
 {
 	if (!pTex || !w || !h || !bpp) return;
 #ifdef JX_MOBILE
+	if (fmt != SDL_GPU_TEXTUREFORMAT_INVALID && x == 0 && y == 0 && w >= 512 && h >= 512 && m_pGpu)
+	{	// [TAI 14/09] trang atlas moi (8 MB): chep GPU->GPU tu DAI NGUON 0 (w x 256, tai 0 mot lan moi dinh dang/loai) thay vi tai 8 MB tu bo dem
+		// (Fold 7 13/09: 'zero 1/116.8' = 117 ms CPU trong lenh tai buffer->anh). Dai nguon duoc tai 0 qua m_jxZeroUploads TRUOC cac lenh chep cung khung.
+		int k = -1;
+		for (int q = 0; q < m_nJxZeroNguon; q++) if (m_jxZeroNguon[q].pTex && m_jxZeroNguon[q].fmt == fmt && m_jxZeroNguon[q].w == w && m_jxZeroNguon[q].eLoai == eLoai) { k = q; break; }
+		if (k < 0 && m_nJxZeroNguon < 6)
+		{
+			SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci)); ci.type = eLoai; ci.format = fmt; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+			ci.width = w; ci.height = 256; ci.layer_count_or_depth = 1; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+			SDL_GPUTexture* pZ = SDL_CreateGPUTexture(m_pGpu, &ci);
+			if (pZ)
+			{
+				k = m_nJxZeroNguon++; m_jxZeroNguon[k].fmt = fmt; m_jxZeroNguon[k].eLoai = eLoai; m_jxZeroNguon[k].pTex = pZ; m_jxZeroNguon[k].w = w; m_jxZeroNguon[k].h = 256; m_jxZeroNguon[k].bpp = bpp;
+				RgTexUpload z = { pZ, 0, 0, w, 256, 0, w * 256 * bpp, 0 }; m_jxZeroUploads.push_back(z);
+				RgLog("[TAI] dai nguon 0 fmt %d loai %d %ux256 (%u KB) de to 0 trang atlas moi bang chep GPU", (int)fmt, (int)eLoai, w, (w * 256 * bpp) >> 10);
+			}
+			else RgLog("[TAI] dai nguon 0 fmt %d that bai: %s -> tai tu bo dem nhu cu", (int)fmt, SDL_GetError());
+		}
+		if (k >= 0) { RgTexUpload u = { pTex, x, y, w, h, (UINT)k, w * h * bpp, layer }; m_jxZeroCopy.push_back(u); return; }
+	}
 	{	// [VE 11/09 d] tai tu bo dem 0 co dinh (SubmitFrame): khong memset/memcpy vao staging, staging khong phinh 2-4 MB moi trang atlas moi
 		RgTexUpload u = { pTex, x, y, w, h, 0, w * h * bpp, layer };	// [MANG 11/09]
 		m_jxZeroUploads.push_back(u);
@@ -1347,6 +1418,25 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 			else RgLog("bo dem 0 (%u B) that bai: %s", needZ, SDL_GetError());
 			jxK.dChepZero = JxVeMs(uZ0, SDL_GetPerformanceCounter());
 		}
+		if (!m_jxZeroCopy.empty())
+		{	// [TAI 14/09] trang atlas moi = 0 bang chep GPU->GPU tu dai nguon 0 (dai nguon da duoc tai 0 o khoi tren, cung copy pass, truoc noi dung texture)
+			const Uint64 uC0 = SDL_GetPerformanceCounter();
+			for (size_t i = 0; i < m_jxZeroCopy.size(); i++)
+			{
+				const RgTexUpload& u = m_jxZeroCopy[i];
+				if (u.stageOff >= (UINT)m_nJxZeroNguon || !m_jxZeroNguon[u.stageOff].pTex) continue;
+				const JxZeroNguon& ng = m_jxZeroNguon[u.stageOff];
+				for (UINT y0 = 0; y0 < u.h; y0 += ng.h)
+				{
+					const UINT hh = (u.h - y0 < ng.h) ? (u.h - y0) : ng.h;
+					SDL_GPUTextureLocation src; memset(&src, 0, sizeof(src)); src.texture = ng.pTex;
+					SDL_GPUTextureLocation dst; memset(&dst, 0, sizeof(dst)); dst.texture = u.pTex; dst.layer = u.layer; dst.x = u.x; dst.y = u.y + y0;
+					SDL_CopyGPUTextureToTexture(cp, &src, &dst, u.w, hh, 1, false);
+				}
+			}
+			m_uUploads += (unsigned)m_jxZeroCopy.size(); jxK.uZero += (unsigned)m_jxZeroCopy.size(); g_uJxZeroChep += (unsigned)m_jxZeroCopy.size();
+			const double dC = JxVeMs(uC0, SDL_GetPerformanceCounter()); jxK.dChepZero += dC; g_dJxZeroChepMs += dC;
+		}
 #endif
 #ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: Android dinh nghia JX_MOBILE nen bien dich y het truoc
 		m_uJxPsStageOff = 0xFFFFFFFFu;
@@ -1680,6 +1770,7 @@ void CDevGpu::FrameReset()
 	m_ring.clear(); m_texStage.clear(); m_texUploads.clear(); m_cmds.clear();
 #ifdef JX_MOBILE	// [IOS-GOP 12/09 e] PHAI mo cho iOS: khong don thi m_jxPalUploads giu offset cu vao m_texStage DA BI XOA (tai rac vao bang mau), va m_jxPsBang phinh mai toi khi tran 2048 (chi so ps sai) - dung la nguyen nhan "luc den luc nhoe mau khi di chuyen" cua ca hai lan hong truoc
 	m_jxZeroUploads.clear();	// [VE 11/09 d]
+	m_jxZeroCopy.clear();	// [TAI 14/09]
 	m_jxPalUploads.clear();	// [PALBUF 11/09]
 	m_jxPsBang.clear(); m_jxPsMap.clear(); m_uJxPsCuoi = 0xFFFFFFFFu; m_uJxPsStageOff = 0xFFFFFFFFu;	// [GOP 11/09] bang ps theo tung khung
 #endif
@@ -1716,7 +1807,7 @@ bool CDevGpu::JxBoKhungGiong()
 {
 	if (g_nJxBoKhungGiong < 0) return false;
 	const Uint64 uNay = SDL_GetPerformanceCounter();
-	const bool bCoTai = !m_texUploads.empty() || !m_palPending.empty() || !m_jxZeroUploads.empty() || !m_jxPalUploads.empty();
+	const bool bCoTai = !m_texUploads.empty() || !m_palPending.empty() || !m_jxZeroUploads.empty() || !m_jxPalUploads.empty() || !m_jxZeroCopy.empty();	// [TAI 14/09] + chep 0
 	bool bGiong = m_bJxCoKhungTruoc && !m_bJxKhungCoFlush && m_cmds.size() == m_jxCmdsTruoc.size() && m_ring.size() == m_jxRingTruoc.size();
 	if (bGiong && !m_cmds.empty() && memcmp(&m_cmds[0], &m_jxCmdsTruoc[0], m_cmds.size() * sizeof(RgCmd)) != 0) bGiong = false;
 	if (bGiong && !m_ring.empty() && memcmp(&m_ring[0], &m_jxRingTruoc[0], m_ring.size()) != 0) bGiong = false;
