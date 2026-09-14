@@ -8271,7 +8271,11 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			RURank.oPosition.nX = nMpsX - nMX;
 			RURank.oPosition.nY = nY - nMY;
 			RURank.oPosition.nZ = nHeightOffset;
+#ifdef JX_MOBILE
+			g_pRepresent->DrawPrimitives(1, &RURank, RU_T_IMAGE, 2);	// [CHUNET 14/09 d] 2 = toa do the gioi + LOP THONG TIN: Represent3 xep hang, ve sau blit cung nhom chu (co that, bam theo ten khi zoom)
+#else
 			g_pRepresent->DrawPrimitives(1, &RURank, RU_T_IMAGE, 0);		
+#endif
 		}
 
 		if (m_MaskType > 0)	//#mat na
@@ -8293,7 +8297,11 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			RUIconImage.oPosition.nY = nY + 20;
 			RUIconImage.oPosition.nZ = nHeightOff;
 			RUIconImage.nFrame = 0;
+#ifdef JX_MOBILE
+			g_pRepresent->DrawPrimitives(1, &RUIconImage, RU_T_IMAGE, 2);	// [CHUNET 14/09 d] 2 = toa do the gioi + LOP THONG TIN: Represent3 xep hang, ve sau blit cung nhom chu (co that, bam theo ten khi zoom)
+#else
 			g_pRepresent->DrawPrimitives(1, &RUIconImage, RU_T_IMAGE, FALSE);				
+#endif
 		}
 
 		if (nReBorn) //#trung sinh
@@ -8384,7 +8392,11 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			RUIconImage.oPosition.nY = nMpsY - 8;
 			RUIconImage.oPosition.nZ = nHeightOff - 12;
 			RUIconImage.nFrame = (SubWorld[0].m_dwCurrentTime * 10 / 18) % 10;
+#ifdef JX_MOBILE
+			g_pRepresent->DrawPrimitives(1, &RUIconImage, RU_T_IMAGE, 2);	// [CHUNET 14/09 d] 2 = toa do the gioi + LOP THONG TIN: Represent3 xep hang, ve sau blit cung nhom chu (co that, bam theo ten khi zoom)
+#else
 			g_pRepresent->DrawPrimitives(1, &RUIconImage, RU_T_IMAGE, FALSE);	
+#endif
 			//RUIconImage.oPosition.nZ = 0;
 				//RUIconImage.nFrame = m_nFrame;
 			//	g_pRepresent->DrawPrimitives(1, &RUIconImage, RU_T_IMAGE, FALSE);			
@@ -8439,7 +8451,11 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			for (int i = 0; i < nWid;i++)
 			{
 				RUIconImageR.oPosition.nX = nMpsX - nWid / 2 + i;
+#ifdef JX_MOBILE
+				g_pRepresent->DrawPrimitives(1, &RUIconImageR, RU_T_IMAGE, 2);	// [CHUNET 14/09 d] 2 = toa do the gioi + LOP THONG TIN: Represent3 xep hang, ve sau blit cung nhom chu (co that, bam theo ten khi zoom)
+#else
 				g_pRepresent->DrawPrimitives(1, &RUIconImageR, RU_T_IMAGE, FALSE);
+#endif
 			}
 
 			if (m_szGameTitle[0] && (m_btPlayerTitle || m_btRankBattleId) && (m_szTongName[0] || m_szTeamMem[0]))//#PlayerTitle
@@ -8469,7 +8485,11 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			RUIconImageR.oPosition.nY = nMpsY;
 			RUIconImageR.oPosition.nZ = nHeightOffset + 30;
 			RUIconImageR.nFrame = 0;
+#ifdef JX_MOBILE
+			g_pRepresent->DrawPrimitives(1, &RUIconImageR, RU_T_IMAGE, 2);	// [CHUNET 14/09 d] 2 = toa do the gioi + LOP THONG TIN: Represent3 xep hang, ve sau blit cung nhom chu (co that, bam theo ten khi zoom)
+#else
 			g_pRepresent->DrawPrimitives(1, &RUIconImageR, RU_T_IMAGE, FALSE);
+#endif
 			
 			char* sOutL = "\\Spr\\Ui3\\°ÚÌ¯\\°ÚÌ¯Í·¶¥Ìõ£­×ó.spr";	//Head
 			RUIconImageR.nType = ISI_T_SPR;
@@ -8483,7 +8503,11 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			RUIconImageR.oPosition.nY = nMpsY;
 			RUIconImageR.oPosition.nZ = nHeightOffset + 30;
 			RUIconImageR.nFrame = 0;
+#ifdef JX_MOBILE
+			g_pRepresent->DrawPrimitives(1, &RUIconImageR, RU_T_IMAGE, 2);	// [CHUNET 14/09 d] 2 = toa do the gioi + LOP THONG TIN: Represent3 xep hang, ve sau blit cung nhom chu (co that, bam theo ten khi zoom)
+#else
 			g_pRepresent->DrawPrimitives(1, &RUIconImageR, RU_T_IMAGE, FALSE);
+#endif
 			nHeightOffset += nFontSize + 1;
 		}
 	}

@@ -269,11 +269,12 @@ static int s_nTgDaChamRt = 0, s_nTgDaChamRt2 = 0;	// [TGCAP 14/09 b] da cham san
 // OutputVNText / OutputRichText va RU_T_SHADOW toa do the gioi (nen mo sau ten, thanh mau) goi TRONG luc ve RT duoc xep hang; lenh 2 (sau blit)
 // goi lai y het -> CoordinateTransform di qua cua toa do (m_nTgTrangThai == 0) nen dung cho, ve o co that (khong thu nho / phong to cung anh RT).
 // Khung chi blit (K = 2) ve lai hang cua khung truoc (anh RT cung cu). Zoom 100 % khong lac: khong xep (RT 1:1 da net). [Client] TheGioiRTChu=0 tat.
-struct KTgChu { int nLoai, nFontId, nX, nY, nZ, nLineWidth, nCount, nVb; unsigned int Color, BorderColor; KOutputTextParam Param; KRUShadow Bong; };
+struct KTgChu { int nLoai, nFontId, nX, nY, nZ, nLineWidth, nCount, nVb; unsigned int Color, BorderColor; KOutputTextParam Param; KRUShadow Bong; KRUImage Anh; };	// [CHUNET 14/09 d] + icon canh ten
 static std::vector<KTgChu> s_TgChu; static std::vector<char> s_TgChuVb; static int s_nTgChuNet = 1; static bool s_bTgChuTra = false;
-static void TgChuThem(int nLoai, int nFontId, const char* psText, int nCount, int nX, int nY, int nZ, unsigned int Color, int nLineWidth, unsigned int BorderColor, const KOutputTextParam* pParam, const KRUShadow* pBong)
+static void TgChuThem(int nLoai, int nFontId, const char* psText, int nCount, int nX, int nY, int nZ, unsigned int Color, int nLineWidth, unsigned int BorderColor, const KOutputTextParam* pParam, const KRUShadow* pBong, const KRUImage* pAnh)
 {
 	KTgChu e; memset(&e, 0, sizeof(e));
+	if (pAnh) e.Anh = *pAnh;	// [CHUNET 14/09 d]
 	e.nLoai = nLoai; e.nFontId = nFontId; e.nX = nX; e.nY = nY; e.nZ = nZ; e.nLineWidth = nLineWidth; e.Color = Color; e.BorderColor = BorderColor; e.nCount = nCount; e.nVb = -1;
 	if (pParam) e.Param = *pParam;
 	if (pBong) e.Bong = *pBong;
@@ -336,27 +337,110 @@ bool KRepresentShell3::JxTheGioiNet2()
 	return true;
 }
 
+static bool Rep3ChuGiu(const char* psText, int nCount, int nFont, int& nX, int& nY);	// [CHUNET 14/09 b] dinh nghia phia duoi (CHUGIU 09/09)
 // [CHUNET 14/09] dang xep hang chu the gioi? (chi trong luc ve RT va co zoom / lac; khong xep khi dang tra hang)
 bool KRepresentShell3::TgChuXep()
 {
 	return s_nTgChuNet && m_nTgTrangThai == 1 && !s_bTgChuTra && (m_nTgZoomRt != 1000 || m_nTgXoay || m_nTgDoc != 1000);
 }
 
-// [CHUNET 14/09] tra hang chu len khung (goi o lenh 2 sau blit, m_nTgTrangThai == 0 -> cua toa do dang mo): goi lai dung ham, dung tham so goc
+// [CHUNET 14/09 b] tra hang chu len khung (lenh 2 sau blit, m_nTgTrangThai == 0 -> cua toa do dang mo). Chu giu CO THAT nen KHONG bien doi thang
+// toa do goc: Core da can giua moi dong quanh nMpsX theo be rong chu va xep dong theo do cao o toa do 1:1 -> qua zoom thi do lech bi thu phong,
+// moi dong lech mot kieu, cac dong chong len nhau (chu 14/09: "ten bang hoi voi danh hieu bi lech"). Cach: gom cac phan tu LIEN TIEP cung tam x
+// (+-2) va gan nhau theo y (150 don vi the gioi) thanh mot NHOM = mot NPC; neo nhom = (tam x, y chan = y lon nhat cua dong chu, z 0) di qua
+// CoordinateTransform (cua zoom / lac); moi phan tu ve o neo + do lech 1:1 khong thu phong ((x - tam), (y - chan) / 2, - z x 887 / 1024).
+// Thanh mau hai doan (RU_T_SHADOW ke nhau cung y / z) gop tam chung. Chu dat cham (Rep3ChuGiu) van ap nhu chu neo the gioi.
 void KRepresentShell3::TgChuVe()
 {
 	if (s_TgChu.empty()) return;
+	const int n = (int)s_TgChu.size();
+	static std::vector<int> vCx, vY, vZ, vNhom, vCxN, vChan, vZMin; static std::vector<char> vCoChu;	// [CHUNET 14/09 c] + vZ / vZMin
+	vCx.resize(n); vY.resize(n); vZ.resize(n); vNhom.resize(n); vCxN.clear(); vChan.clear(); vZMin.clear(); vCoChu.clear();
+	for (int k = 0; k < n; k++)
+	{	// tam x + y tham chieu (toa do the gioi) cua tung phan tu
+		const KTgChu& e = s_TgChu[k];
+		if (e.nLoai == 3)
+		{
+			vCx[k] = (e.Bong.oPosition.nX + e.Bong.oEndPos.nX) / 2; vY[k] = (e.Bong.oPosition.nY + e.Bong.oEndPos.nY) / 2;
+			vZ[k] = (e.Bong.oPosition.nZ < e.Bong.oEndPos.nZ) ? e.Bong.oPosition.nZ : e.Bong.oEndPos.nZ;	// [CHUNET 14/09 c]
+			if (k > 0 && s_TgChu[k - 1].nLoai == 3)
+			{	// chuoi bong ke nhau (thanh mau: doan do + doan xam) cung y / z, dau doan nay = cuoi doan truoc -> tam chung ca chuoi
+				const KRUShadow& t = s_TgChu[k - 1].Bong;
+				if (t.oPosition.nY == e.Bong.oPosition.nY && t.oEndPos.nY == e.Bong.oEndPos.nY && t.oPosition.nZ == e.Bong.oPosition.nZ && t.oEndPos.nZ == e.Bong.oEndPos.nZ && t.oEndPos.nX == e.Bong.oPosition.nX)
+				{
+					int j = k - 1;
+					while (j > 0 && s_TgChu[j - 1].nLoai == 3 && vCx[j - 1] == vCx[j] && s_TgChu[j - 1].Bong.oEndPos.nX == s_TgChu[j].Bong.oPosition.nX) j--;
+					const int cx = (s_TgChu[j].Bong.oPosition.nX + e.Bong.oEndPos.nX) / 2;
+					for (int m = j; m <= k; m++) vCx[m] = cx;
+				}
+			}
+		}
+		else if (e.nLoai == 4) { vCx[k] = e.Anh.oPosition.nX; vY[k] = e.Anh.oPosition.nY; vZ[k] = e.Anh.oPosition.nZ; }	// [CHUNET 14/09 d] icon: goc anh (lech nMpsX toi ~100)
+		else if (e.nLoai == 2) { vCx[k] = e.Param.nX + e.nLineWidth / 2; vY[k] = e.Param.nY; vZ[k] = e.Param.nZ; }	// [CHUNET 14/09 c] + z
+		else
+		{	// Core can giua: nX = nMpsX - font x byte / 4 -> tam = nX + font x byte / 4
+			int nDai = e.nCount; if (nDai < 0) nDai = (e.nVb >= 0) ? (int)strlen(&s_TgChuVb[e.nVb]) : 0;
+			vCx[k] = e.nX + e.nFontId * nDai / 4; vY[k] = e.nY; vZ[k] = e.nZ;	// [CHUNET 14/09 c] + z
+		}
+	}
+	int nNhom = -1, nCxNhom = 0, nYNhom = 0;
+	for (int k = 0; k < n; k++)
+	{	// gom nhom; y chan = y lon nhat cua dong CHU trong nhom (dong ten o nMpsY), chua co chu thi y dau tien
+		const int nLoai = s_TgChu[k].nLoai;
+		const int nRongX = (nLoai == 4 || (nNhom >= 0 && !vCoChu[nNhom])) ? 200 : 2;	// [CHUNET 14/09 d] icon (hay nhom moi chi co icon) rong hon: icon lech nMpsX toi ~100
+		if (nNhom < 0 || vCx[k] < nCxNhom - nRongX || vCx[k] > nCxNhom + nRongX || vY[k] < nYNhom - 150 || vY[k] > nYNhom + 150)
+		{
+			nNhom = (int)vCxN.size(); nCxNhom = vCx[k]; nYNhom = vY[k];
+			vCxN.push_back(vCx[k]); vChan.push_back(vY[k]); vCoChu.push_back((nLoai != 3 && nLoai != 4) ? 1 : 0); vZMin.push_back(vZ[k]);	// [CHUNET 14/09 c] zMin = chieu cao nhan vat
+		}
+		else
+		{
+			if (nLoai != 3 && nLoai != 4 && !vCoChu[nNhom]) { vCxN[nNhom] = vCx[k]; nCxNhom = vCx[k]; }	// [CHUNET 14/09 d] dong chu dau tien dinh tam nhom (nhom mo bang icon)
+			if (nLoai != 3 && nLoai != 4 && (!vCoChu[nNhom] || vY[k] > vChan[nNhom])) { vChan[nNhom] = vY[k]; vCoChu[nNhom] = 1; }
+			if (vZ[k] < vZMin[nNhom]) vZMin[nNhom] = vZ[k];
+		}
+		vNhom[k] = nNhom;
+	}
 	s_bTgChuTra = true;
-	for (size_t k = 0; k < s_TgChu.size(); k++)
+	for (int k = 0; k < n; k++)
 	{
 		const KTgChu& e = s_TgChu[k];
+		const int g = vNhom[k], cxN = vCxN[g], yChan = vChan[g], zMin = vZMin[g];
+		int ax = cxN, ay = yChan;
+		CoordinateTransform(ax, ay, 0);	// chan nhom -> khung (qua cua zoom / lac)
+		ay -= (int)((float)((zMin * 887) >> 10) * 1000.0f / (float)m_nTgZoom + 0.5f);	// [CHUNET 14/09 c] chieu cao nhan vat (z nho nhat cua nhom) CO THEO ZOOM nhu than sprite -> chu / thanh mau bam sat dau
 		char* vb = (e.nVb >= 0) ? &s_TgChuVb[e.nVb] : NULL;
-		switch (e.nLoai)
+		if (e.nLoai == 3)
 		{
-		case 0: if (vb) OutputText(e.nFontId, vb, e.nCount, e.nX, e.nY, e.Color, e.nLineWidth, e.nZ, e.BorderColor); break;
-		case 1: if (vb) OutputVNText(e.nFontId, vb, e.nCount, e.nX, e.nY, e.Color, e.nLineWidth, e.nZ, e.BorderColor); break;
-		case 2: if (vb) { KOutputTextParam p = e.Param; OutputRichText(e.nFontId, &p, vb, e.nCount, e.nLineWidth); } break;
-		case 3: { KRUShadow b = e.Bong; DrawPrimitives(1, (KRepresentUnit*)&b, RU_T_SHADOW, FALSE); } break;
+			KRUShadow b = e.Bong;
+			b.oPosition.nX = ax + (e.Bong.oPosition.nX - cxN); b.oEndPos.nX = ax + (e.Bong.oEndPos.nX - cxN);
+			b.oPosition.nY = ay + (e.Bong.oPosition.nY - yChan) / 2 - (((e.Bong.oPosition.nZ - zMin) * 887) >> 10);	// [CHUNET 14/09 c] z - zMin
+			b.oEndPos.nY = ay + (e.Bong.oEndPos.nY - yChan) / 2 - (((e.Bong.oEndPos.nZ - zMin) * 887) >> 10);
+			b.oPosition.nZ = b.oEndPos.nZ = 0;
+			DrawPrimitives(1, (KRepresentUnit*)&b, RU_T_SHADOW, TRUE);
+		}
+		else if (e.nLoai == 4)
+		{	// [CHUNET 14/09 d] icon canh ten: co that, lech 1:1 so voi tam nhom
+			KRUImage a = e.Anh;
+			a.oPosition.nX = ax + (e.Anh.oPosition.nX - cxN);
+			a.oPosition.nY = ay + (e.Anh.oPosition.nY - yChan) / 2 - (((e.Anh.oPosition.nZ - zMin) * 887) >> 10);
+			a.oPosition.nZ = 0;
+			DrawPrimitives(1, (KRepresentUnit*)&a, RU_T_IMAGE, TRUE);
+		}
+		else if (e.nLoai == 2)
+		{
+			if (!vb) continue;
+			KOutputTextParam p = e.Param;
+			p.nX = ax + (e.Param.nX - cxN); p.nY = ay + (e.Param.nY - yChan) / 2 - (((e.Param.nZ - zMin) * 887) >> 10); p.nZ = TEXT_IN_SINGLE_PLANE_COORD;
+			OutputRichText(e.nFontId, &p, vb, e.nCount, e.nLineWidth);
+		}
+		else
+		{
+			if (!vb) continue;
+			int x = ax + (e.nX - cxN), y = ay + (e.nY - yChan) / 2 - (((e.nZ - zMin) * 887) >> 10);	// [CHUNET 14/09 c] z - zMin
+			Rep3ChuGiu(vb, e.nCount, e.nFontId, x, y);
+			if (e.nLoai == 0) OutputText(e.nFontId, vb, e.nCount, x, y, e.Color, e.nLineWidth, TEXT_IN_SINGLE_PLANE_COORD, e.BorderColor);
+			else OutputVNText(e.nFontId, vb, e.nCount, x, y, e.Color, e.nLineWidth, TEXT_IN_SINGLE_PLANE_COORD, e.BorderColor);
 		}
 	}
 	s_bTgChuTra = false;
@@ -1579,7 +1663,9 @@ void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 
 	int i = 0;
 #ifdef JX_MOBILE
-	if (uGenre == RU_T_SHADOW && !bSinglePlaneCoord && nPrimitiveCount == 1 && TgChuXep()) { TgChuThem(3, 0, NULL, 0, 0, 0, 0, 0, 0, 0, NULL, (KRUShadow*)pPrimitives); return; }	// [CHUNET 14/09] nen mo sau ten + thanh mau (KNpc VeNenChu / PaintInfo, luon 1 hat): ve sau blit cung chu; KWeather ve ca lo hat mua / tuyet -> khong xep (soi cheo)
+	int bLopChu = 0; if (bSinglePlaneCoord == 2) { bLopChu = 1; bSinglePlaneCoord = 0; }	// [CHUNET 14/09 d] KNpc::PaintInfo (mobile): icon canh ten = toa do the gioi + lop thong tin
+	if (uGenre == RU_T_IMAGE && bLopChu && TgChuXep()) { for (i = 0; i < nPrimitiveCount; i++) TgChuThem(4, 0, NULL, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, ((KRUImage*)pPrimitives) + i); return; }
+	if (uGenre == RU_T_SHADOW && !bSinglePlaneCoord && nPrimitiveCount == 1 && TgChuXep()) { TgChuThem(3, 0, NULL, 0, 0, 0, 0, 0, 0, 0, NULL, (KRUShadow*)pPrimitives, NULL); return; }	// [CHUNET 14/09] nen mo sau ten + thanh mau (KNpc VeNenChu / PaintInfo, luon 1 hat): ve sau blit cung chu; KWeather ve ca lo hat mua / tuyet -> khong xep (soi cheo)
 #endif
 	
 	switch(uGenre)
@@ -3231,7 +3317,7 @@ void KRepresentShell3::OutputText(int nFontId, const char* psText, int nCount, i
 	if(m_bDeviceLost)
 		return;
 #ifdef JX_MOBILE
-	if (TgChuXep()) { TgChuThem(0, nFontId, psText, nCount, nX, nY, nZ, Color, nLineWidth, BorderColor, NULL, NULL); return; }	// [CHUNET 14/09] chu the gioi: ve sau blit
+	if (TgChuXep()) { TgChuThem(0, nFontId, psText, nCount, nX, nY, nZ, Color, nLineWidth, BorderColor, NULL, NULL, NULL); return; }	// [CHUNET 14/09] chu the gioi: ve sau blit
 #endif
 	
 	Color |= 0xff000000;
@@ -3291,7 +3377,7 @@ void KRepresentShell3::OutputVNText(int nFontId, char* psText, int nCount, int n
 	
 	int i = 0;
 #ifdef JX_MOBILE
-	if (TgChuXep()) { TgChuThem(1, nFontId, psText, nCount, nX, nY, nZ, Color, nLineWidth, BorderColor, NULL, NULL); return; }	// [CHUNET 14/09] chu VN the gioi: ve sau blit
+	if (TgChuXep()) { TgChuThem(1, nFontId, psText, nCount, nX, nY, nZ, Color, nLineWidth, BorderColor, NULL, NULL, NULL); return; }	// [CHUNET 14/09] chu VN the gioi: ve sau blit
 #endif
 
 	Color |= 0xff000000;
@@ -3338,7 +3424,7 @@ int KRepresentShell3::OutputRichText(int nFontId, KOutputTextParam* pParam,
 	if(m_bDeviceLost)
 		return 0;
 #ifdef JX_MOBILE
-	if (TgChuXep()) { TgChuThem(2, nFontId, psText, nCount, 0, 0, 0, 0, nLineWidth, 0, pParam, NULL); return 0; }	// [CHUNET 14/09] chat tren dau (PaintChat): ve sau blit
+	if (TgChuXep()) { TgChuThem(2, nFontId, psText, nCount, 0, 0, 0, 0, nLineWidth, 0, pParam, NULL, NULL); return 0; }	// [CHUNET 14/09] chat tren dau (PaintChat): ve sau blit
 #endif
 
 	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)

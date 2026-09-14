@@ -136,6 +136,7 @@ static void DocCaiDat()
 	s_nZoomNhay      = GetPrivateProfileInt("Cham", "ZoomNhay", 10, szCfg);
 	s_nZoomChongRung = GetPrivateProfileInt("Cham", "ZoomChongRung", 5, szCfg);
 	s_nZoomMuot      = GetPrivateProfileInt("Cham", "ZoomMuot", 16, szCfg);
+	s_nNcChum        = GetPrivateProfileInt("Cham", "ZoomChum", 0, szCfg) ? 1 : 0;	// [ZOOMTHANH 14/09 e] chum hai ngon chi bat qua config (bo cong tac; mac dinh tat vi da co thanh keo)
 	s_nZoomToiThieu  = GetPrivateProfileInt("Cham", "ZoomToiThieu", 80, szCfg);
 	if (s_nZoomNhay < 1) s_nZoomNhay = 1; if (s_nZoomNhay > 100) s_nZoomNhay = 100;
 	if (s_nZoomChongRung < 0) s_nZoomChongRung = 0; if (s_nZoomChongRung > 50) s_nZoomChongRung = 50;

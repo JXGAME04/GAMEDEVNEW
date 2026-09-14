@@ -35,6 +35,7 @@ private:
 	int				m_nMin, m_nMax, m_nBuoc;	// % zoom
 	int				m_bDangDat;		// 1 = dang tu dat lai vi tri nut theo zoom (bo qua thong bao cua thanh)
 	int				m_bAn;			// 1 = zoom tat (map / nguoi choi) -> khong ve, cham xuyen qua
+	int				m_bNgang;		// [ZOOMTHANH 14/09 b] 1 = thanh NGANG ([Thanh] Type=0): trai = nhin rong (-), phai = phong to (+); 0 = doc: tren = phong to
 	unsigned int	m_uKeoCuoi;		// luc nguoi choi doi gan nhat (GetTickCount); 700 ms sau moi cho zoom troi keo nut theo
 };
 #endif	// JX_MOBILE

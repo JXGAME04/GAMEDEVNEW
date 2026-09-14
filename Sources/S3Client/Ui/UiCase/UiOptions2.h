@@ -24,10 +24,8 @@ enum	SWORD_ONLINE_OPTION_INDEX2
 	OPTION_I_VENHANH,		// lia ve nhanh
 	OPTION_I_HQQUAI,		// [HAOQUANG 14/09] vong hao quang duoi chan quai tinh anh / boss (Core/Src/KNpc.cpp)
 	OPTION_I_SANGVATROI,	// cot sang + loe vat pham roi (Core/Src/KObj.cpp, VATROI 14/09)
-	OPTION_I_ZOOMNHANH,		// [ZOOM3D 14/09] chum hai ngon nhay gap doi (Platform/JxLiaCanh)
-	OPTION_I_ZOOMCHAM,		// chum hai ngon nhay mot nua (loai tru voi ZOOMNHANH)
-	OPTION_I_LAC,			// camera lac nhe khi lia
-	OPTION_I_CHUMZOOM,		// [ZOOMTHANH 14/09] chum hai ngon zoom (mac dinh TAT: da co thanh keo zoom KUiZoomThanh, tranh nham khi bam man choi)
+	OPTION_I_LAC,			// camera lac nhe khi lia ([ZOOMTHANH 14/09 e] bo Zoom nhanh / Zoom cham / Chum zoom theo chu "don sach phan cai dat": chum hai ngon + do nhay chi con qua config [Cham] ZoomChum / ZoomNhay)
+	OPTION_I_THANHZOOM,	// [ZOOMTHANH 14/09 c] hien thanh keo zoom (mac dinh BAT)
 #endif
 	OPTION_INDEX_COUNT2,
 };
@@ -67,7 +65,7 @@ private:
 	#define MAX_TOGGLE_BTN_COUNT 4
 #ifdef JX_MOBILE
 #undef MAX_TOGGLE_BTN_COUNT
-#define MAX_TOGGLE_BTN_COUNT 13	// [ZOOMTHANH 14/09] 12 -> 13 (+ Chum zoom): 7 hang tu Top=58 cach 23 (android/sinh_uioptions2_chum.py); [ZOOM3D 14/09] 9 -> 12 (+ Zoom nhanh / Zoom cham / Lac camera): 6 hang tu Top=60 cach 27 (android/sinh_uioptions2_zoom.py); [HAOQUANG 14/09 d] 10 -> 9 (bo Vong do mac theo chu); [HAOQUANG 14/09] 7 -> 10 (+ hao quang quai / hao quang trang bi / sang vat roi): 5 hang tu Top=70, cach 31 (android/sinh_uioptions2_haoquang.py); [CAMERA 13/09 TUYCHON] = OPTION_INDEX_COUNT2
+#define MAX_TOGGLE_BTN_COUNT 11	// [ZOOMTHANH 14/09 e] 14 -> 11 (bo Zoom nhanh / cham / Chum zoom): 6 hang Top 60 cach 27 (android/sinh_uioptions2_don.py); [ZOOMTHANH 14/09 c] 13 -> 14 (+ Thanh zoom, du 7 hang x 2); [ZOOMTHANH 14/09] 12 -> 13 (+ Chum zoom): 7 hang tu Top=58 cach 23 (android/sinh_uioptions2_chum.py); [ZOOM3D 14/09] 9 -> 12 (+ Zoom nhanh / Zoom cham / Lac camera): 6 hang tu Top=60 cach 27 (android/sinh_uioptions2_zoom.py); [HAOQUANG 14/09 d] 10 -> 9 (bo Vong do mac theo chu); [HAOQUANG 14/09] 7 -> 10 (+ hao quang quai / hao quang trang bi / sang vat roi): 5 hang tu Top=70, cach 31 (android/sinh_uioptions2_haoquang.py); [CAMERA 13/09 TUYCHON] = OPTION_INDEX_COUNT2
 	typedef char JxKiemSoMucToiUu[(MAX_TOGGLE_BTN_COUNT == OPTION_INDEX_COUNT2) ? 1 : -1];	// khac nhau = vong khoi tao tran mang
 #endif
 

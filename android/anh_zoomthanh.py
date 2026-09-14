@@ -86,6 +86,22 @@ def anh_thanh(w=28, h=160):
     return im
 
 
+def anh_thanh_ngang(w=140, h=28):
+    """[ZOOMTHANH 14/09 b] thanh NGANG: dau - trai (nhin rong), dau + phai (phong to); rai giua, vach nac; sang hon ban doc de de thay."""
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle((18, 8, 121, 19), radius=6, fill=(20, 20, 20, 185), outline=(170, 170, 170, 220), width=1)
+    for i in range(15):
+        x = 22 + i * (118 - 22) // 14
+        d.line((x, 11, x, 16), fill=(170, 170, 170, 170), width=1)
+    d.ellipse((1, 5, 18, 22), fill=(30, 30, 30, 175), outline=(170, 170, 170, 220), width=1)
+    d.line((5, 13, 14, 13), fill=(245, 245, 245, 255), width=2)
+    d.ellipse((121, 5, 138, 22), fill=(30, 30, 30, 175), outline=(170, 170, 170, 220), width=1)
+    d.line((125, 13, 134, 13), fill=(245, 245, 245, 255), width=2)
+    d.line((129, 9, 129, 18), fill=(245, 245, 245, 255), width=2)
+    return im
+
+
 def anh_nut(sang, w=28, h=28):
     im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
@@ -100,6 +116,7 @@ def anh_nut(sang, w=28, h=28):
 
 def main():
     thanh = anh_thanh()
+    ngang = anh_thanh_ngang()
     nut = [anh_nut(0), anh_nut(1)]
     for goc in DICH:
         if not os.path.isdir(goc):
@@ -107,8 +124,9 @@ def main():
             continue
         tm = os.path.join(goc, "spr", "ui3", "uizoomthanh")
         n1 = ghi_spr([thanh], os.path.join(tm, "thanh.spr"))
+        n3 = ghi_spr([ngang], os.path.join(tm, "thanh_ngang.spr"))
         n2 = ghi_spr(nut, os.path.join(tm, "nut.spr"))
-        print("da ghi: %s (thanh %d B, nut %d B)" % (tm, n1, n2))
+        print("da ghi: %s (thanh %d B, ngang %d B, nut %d B)" % (tm, n1, n3, n2))
     if XEM:
         xem = Image.new("RGBA", (28 * 3 + 20, 160), (60, 90, 60, 255))
         xem.alpha_composite(thanh, (5, 0))
