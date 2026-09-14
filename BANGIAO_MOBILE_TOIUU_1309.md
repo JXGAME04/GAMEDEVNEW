@@ -235,3 +235,24 @@ Chủ "tiếp tục" → `android/va_nguon_mobile_1409_l.py` (commit `0d71fd36`,
   `ProcIpcCommand` / `Breathe` / `UiHeartBeat` / khối sau / PROCFRAME / `SendAllCommand`; logic ≥ 30 ms → `[LOGIC-PHA]` vào jx_paint.log.
 Máy ảo 109141108: 6 khung to giao nền trong một kỳ, không sập; máy ảo nhanh nên không có `[NAP-CHAM]`/`[LOGIC-PHA]` — đọc trên Fold 7.
 Kỳ vọng: nhóm nạp đồng bộ giảm còn tệp lạnh ngoài lúc vẽ (có tên để xử lý tiếp); nhóm logic có số đo pha để chọn việc kế.
+
+### 10.7. 13:5x 14/09 — `[KHOITRUOC]` + `[MANG]` + `[PAKBAN]` + `[PDET-UI]` (bản 109141347) sau log 11:12 và 12:41
+
+Log 11:12 (`[LOGIC-PHA]`, `[NAP-CHAM]`): logic giật = **mạng** (165/236/40 ms, `KNetConnectAgent::Breathe` xử lý hết gói trong một vòng); rút khung chậm =
+**chờ khoá pak** (khung 1 KB 17–37 ms, 23 KB 97 ms) chứ không phải cỡ; lớp UI 31–45 ms chưa biết cửa sổ. Log 12:41 (zoom/lắc): **mỗi khối atlas mới =
+2–3 khung 33–113 ms** (tạo 64 MB ~54 ms + 2–3 lần nộp đầu 21–43 ms, 4 khối/5 phút — lớn nhất còn lại), cấp lại RT mỗi bước zoom/lề = 97 ms (phiên camera
+đã sửa `[TGCAP]` 109141317 theo số đo này), mạng dồn giữa trận 159/45 ms. Chủ: "theo bạn nên làm gì trước" → làm cả bốn.
+
+`android/va_nguon_mobile_1409_m.py` (commit `8b7307b5`, `kiem --pc 2dfc77fd` ĐẠT, 12 tệp, chỉ JX_MOBILE):
+- **A `[KHOITRUOC]`**: `CAtlasMgrGpu::JxKhoiCapTruoc` + `Rep3Gpu_KhoiCapTruoc` gọi một lần ở `RepresentBegin` khung đầu: cấp sẵn `Rep3KhoiTruocPal`=4 khối R8G8 +
+  `Rep3KhoiTruoc32`=1 khối BGRA8 (320 MB) và tô 0 hết các lớp bằng chép GPU → driver cam kết bộ nhớ trong màn đăng nhập/nạp; `JxCapKhoi` lấy dần các lớp.
+  (SDL không cam kết `SDL_CreateGPUTexture` an toàn từ luồng khác nên không tạo ở luồng nền.)
+- **B `[MANG]`**: `KNetConnectAgent::Breathe` — `[Client] MangMs` (10 ms; 0 = như cũ): hết ngân sách thì thoát cả hai vòng ở mức gói, phần còn lại sang vòng sau
+  (thứ tự giữ, trễ ≤ 1 vòng); `[MANG-CAT]` vào jx_paint.log ≤ 1 dòng/giây. Máy ảo: cắt đúng lúc vào map (2 gói 303 ms = gói nạp map, không chia nhỏ được, ẩn sau màn nạp).
+- **C `[PAKBAN]`**: `g_nJxNenDocPak` bật ở luồng nền quanh `NapNenTai` (cả tệp) và `SprGetFrame` (`JxGiaiMaNen`); `PrepareFrameData` thấy cờ → `JxNapKhungGiao`
+  (bỏ vẽ 1–3 khung) thay vì rút đồng bộ đợi khoá; đếm "pak ban giao nen" trong `[VE-TAI]`.
+- **D `[PDET-UI]`**: `KWndWindow::Paint` đo cửa sổ GỐC (con trực tiếp của gốc lớp) lâu nhất; `UiShell` in `[PDET-UI]` (vị trí, cỡ, lớp phụ, con trỏ) khi ba lớp UI ≥ 20 ms;
+  config dt_v4 `Rep3DoVeChiTiet=1` để `[VE-GIAT]` tách "trong lớp vẽ".
+Máy ảo 109141347: 5 khối cấp sẵn (0,5–0,6 ms/khối, 37 lần tô 0), đi lại 61 fps, không sập. Giao 13:5x: APK + `--chi-manifest` (gom cả tệp mới của phiên camera),
+config chỉ đổi một khoá tại chỗ (giữ `TheGioiRTChu` của họ). Kỳ vọng Fold 7: hết cú khối mới trong ~10 phút đầu, hết cú mạng > 10 ms giữa trận, hết chờ khoá pak;
+`[PDET-UI]` cho tên cửa sổ nặng để quyết cache chữ.
