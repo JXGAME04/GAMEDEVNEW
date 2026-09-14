@@ -200,3 +200,5 @@ Không đụng: `Core`, `Represent3`, `KSdlApp`, `Wnds.cpp`, `ios/JxIosMain.cpp`
 - Nút bật/tắt lia/zoom trong trình chỉnh giao diện (phương án §7) — chưa làm.
 - Chữ neo thế giới nhỏ theo zoom (bản chất cách C) — chủ quyết sau khi thử.
 - Nếu chủ muốn nhớ zoom **theo từng map** thay vì một số chung: thêm dòng `Zoom_<id>=` vào `CameraMobile.ini` (30 phút).
+
+**Cập nhật 22:24 (phiên đo nhịp xác nhận):** màng đen là lỗi NENTRUOC của họ: lúc vào/quay lại map, 8 vùng nền KỀ BÊN (đang trên màn hình) bị hoãn ghép chờ luồng nền, luồng nền ngập 322 tệp spr → quanh nhân vật đen tới ~1,5 s. Họ sửa trên `mobile-0809` (vùng kề bên ghép ngay, chỉ hoãn vùng xa; bỏ đọc ngược GPU 156 ms) và sẽ nhắn trước khi chép APK. Bản 109132210 vẫn còn lỗi ấy tới lúc đó.
