@@ -430,12 +430,14 @@ bool CIntercessor::StartupNetwork()
 		SUCCEEDED( pServerFactroyFun( IID_IServerFactory, reinterpret_cast< void ** >( &pServerFactory ) ) ) )
 	{
 		/*
-		 * [NET-CACHE 13/09] 1024*8 -> 1024*16: dem cache moi ket noi (recv/read/write) phai >= co doc moi WSARecv
+		 * [NET-CACHE 13/09] 1024*8 -> 1024*64: dem cache moi ket noi (recv/read/write) phai >= co doc moi WSARecv
 		 * (10240) + 32. Voi 8192, mot lan doc day bi CIOBuffer::AddData vut im lang o duong nhan, va nguong xa cuong
-		 * buc 10208 cua duong gui khong bao gio toi truoc khi AddData vut. Cung gia tri voi GameServer (16 KB).
+		 * buc 10208 cua duong gui khong bao gio toi truoc khi AddData vut. Lay 64 KB (khong phai 16 KB nhu GameServer)
+		 * vi may chu nay con nhan LO tu GameServer: vong rut co Sleep(1) (~15 ms), 64 KB chua duoc 6 lo 10 KB.
+		 * Ton nhieu nhat 500 khe x 3 x 64 KB = 96 MB, chi cap khi co ket noi.
 		 */
-		::OutputDebugStringA( "[NET-CACHE] Bishop: bufferSize_Cache 16384 (truoc 8192)\n" );
-		pServerFactory->SetEnvironment( m_lnMaxPlayerCount, 10, 1000, 1024 * 16 );
+		::OutputDebugStringA( "[NET-CACHE] Bishop: bufferSize_Cache 65536 (truoc 8192)\n" );
+		pServerFactory->SetEnvironment( m_lnMaxPlayerCount, 10, 1000, 1024 * 64 );
 
 		/*
 		 * For player
