@@ -151,6 +151,12 @@ static int			s_nKNCheDoGan = 0;	// 1 = dang o che do gan
 static int			s_nKNOChon = -1;	// o dang cho gan (0..7), -1 = chua chon
 static KUiGameObject s_KNGan[KYNANG_SO_PHU];	// ky nang nguoi choi tu gan cho tung o
 static int			s_nKNTrong[KYNANG_SO_PHU];	// [ANDROID 11/09 OTRONG] 1 = nguoi choi da GO ky nang khoi o nay -> o TRONG that, khong tu lay theo danh sach (Trong<i>=1)
+//	[KYNANG 14/09 TRONG] O chua gan = TRONG THAT. Bo cuc mac dinh chi dung MOT LAN cho nhan vat CHUA CO TEP
+//	(ghi Dung=1 vao tep), sau do khong con phep "tu lay phan tu thu i cua danh sach ky nang danh" nua - chuyen
+//	phai / hoc them ky nang khong the tu day ky nang vao o nguoi choi de trong (chu 14/09).
+static int			s_nKNDaDung = 0;	// 1 = da dung bo cuc mac dinh cho nhan vat nay (khoa Dung=1 trong tep)
+static int			s_nKNChuaCoTep = 0;	// 1 = nhan vat nay chua co tep bo cuc o ky nang (nhan vat moi)
+static int			s_nKNVang[KYNANG_SO_PHU];	// so lan doc LIEN TIEP ma ky nang cua o khong con trong tay nguoi choi
 static int			s_nKNDaDocGan = 0;
 //	[ANDROID 10/09 BANGCHON] bang 3 nut khi cham mot ky nang trong bang ky nang; o CHINH cung gan duoc
 #define	KYNANG_CHON_CHINH	100		// s_nKNOChon = dang chon O CHINH
@@ -222,6 +228,15 @@ static int			s_nKNCoAnh = -1;	// -1 = chua kiem
 
 static KUiSkillData	s_KNBang[KYNANG_DS_TOI_DA];
 static int			s_nKNCo1 = 0;		// so ky nang doc duoc
+//	[KYNANG 14/09 TRONG] Hai bang nua, CHI doc khi can kiem tra o co giu ky nang la (sau chuyen phai):
+//	  - ky nang danh PHAI: vong sang la RightOnlySkill nen KHONG nam trong danh sach danh trai;
+//	  - toan bo ky nang danh (bang ky nang): co ca ky nang cap 0 ma nguoi choi van gan duoc tu bang.
+#define	KYNANG_DSDANH_TOI_DA	100		// GDI_FIGHT_SKILLS xoa trang 100 muc (MAX_FIGHTSKILL_SORTLIST)
+#define	KYNANG_VANG_DU			2		// vang mat bao nhieu lan doc LIEN TIEP (moi lan 2 giay) thi moi xoa o
+static KUiSkillData	s_KNBangPhai[KYNANG_DS_TOI_DA];
+static int			s_nKNCoPhai = 0;
+static KUiSkillData	s_KNBangDanh[KYNANG_DSDANH_TOI_DA];
+static int			s_nKNCoDanh = 0;
 static unsigned int	s_uKNDocLuc = 0;
 static KUiGameObject s_KNChinh;		// ky nang danh TRAI dang hien tren thanh trang thai
 static KUiGameObject s_KNPhai;		// [ANDROID 10/09 LUAN c] ky nang danh PHAI = vong sang dang bat (neu la aura)
@@ -685,6 +700,9 @@ static void KyNang_DocGan()
 	memset(s_KNGan, 0, sizeof(s_KNGan));
 	memset(s_nKNTrong, 0, sizeof(s_nKNTrong));	// [ANDROID 11/09 OTRONG]
 	memset(&s_KNChinhGan, 0, sizeof(s_KNChinhGan));	// [ANDROID 10/09 BANGCHON]
+	s_nKNDaDung = 0;		// [KYNANG 14/09 TRONG]
+	s_nKNChuaCoTep = 0;		// [KYNANG 14/09 TRONG]
+	memset(s_nKNVang, 0, sizeof(s_nKNVang));	// [KYNANG 14/09 TRONG]
 	KyNang_DuongTepGan(szTep, sizeof(szTep));
 	pTep = fopen(szTep, "rt");
 	if (pTep == NULL && uId)
@@ -703,7 +721,11 @@ static void KyNang_DocGan()
 		}
 	}
 	if (pTep == NULL)
+	{
+		if (uId)
+			s_nKNChuaCoTep = 1;	// [KYNANG 14/09 TRONG] nhan vat moi: cho dung bo cuc mac dinh mot lan
 		return;
+	}
 	while (fgets(szDong, sizeof(szDong), pTep))
 	{
 		int nO = 0, nLoai = 0, nMa = 0;
@@ -721,6 +743,8 @@ static void KyNang_DocGan()
 			s_KNChinhGan.uGenre = (unsigned int)nLoai;
 			s_KNChinhGan.uId    = (unsigned int)nMa;
 		}
+		else if (sscanf(szDong, "Dung=%d", &nMa) == 1)
+			s_nKNDaDung = nMa ? 1 : 0;	// [KYNANG 14/09 TRONG] da dung bo cuc mac dinh roi
 	}
 	fclose(pTep);
 }
@@ -749,6 +773,8 @@ static void KyNang_GhiGan()
 	}
 	if (s_KNChinhGan.uId)	// [ANDROID 10/09 BANGCHON]
 		fprintf(pTep, "Chinh=%u,%u\n", s_KNChinhGan.uGenre, s_KNChinhGan.uId);
+	if (s_nKNDaDung)	// [KYNANG 14/09 TRONG] da dung bo cuc mac dinh - lan sau khong dung lai
+		fprintf(pTep, "Dung=1\n");
 	fclose(pTep);
 }
 
@@ -904,6 +930,115 @@ static void KyNang_TamNut(int nNut, int* px, int* py)
 	if (*py < nR + 2)					*py = nR + 2;
 }
 
+//---------------------------------------------------------------------------
+//	[KYNANG 14/09 TRONG] Bo cuc mac dinh dung MOT LAN + don o giu ky nang khong con hoc.
+//---------------------------------------------------------------------------
+
+//	Ma ky nang nay co trong bang khong? So theo MA, KHONG so uGenre: bang ky nang dua CGOG_SKILL_FIGHT
+//	con danh sach danh trai/phai dua CGOG_SKILL_SHORTCUT - so ca uGenre la xoa nham moi o nguoi choi tu gan.
+static bool KyNang_CoTrongBang(const KUiSkillData* pBang, int nCo, unsigned int uId)
+{
+	int i;
+
+	for (i = 0; i < nCo; i++)
+	{
+		if (pBang[i].uId == uId)
+			return true;
+	}
+	return false;
+}
+
+//	Nhan vat CHUA CO TEP bo cuc: chup danh sach ky nang danh hien co thanh hang THAT trong tep (O0..O7)
+//	roi khoa lai bang Dung=1 - dung y nhu cai ho nhin thay truoc day, chi khac la tu day no dung yen.
+//	Nhan vat DA CO TEP thi khong dung: o nao ho chua dat la trong that (chu chon 14/09).
+static void KyNang_DungMacDinh()
+{
+	int i, nDat = 0;
+
+	if (s_nKNDaDung || !s_nKNChuaCoTep || !KyNang_TrongGame() || KyNang_MaNhanVat() == 0)
+		return;
+	if (s_nKNCo1 <= 1)
+		return;		// danh sach chua san sang (giua luot chuyen phai co luc chi con ky nang vu khi)
+	for (i = 0; i < KYNANG_SO_PHU && i < s_nKNCo1; i++)
+	{
+		if (s_KNGan[i].uId || s_nKNTrong[i])
+			continue;	// nguoi choi da tu dat hoac tu go o nay
+		if (s_KNBang[i].uGenre == CGOG_NOTHING || s_KNBang[i].uId == 0)
+			continue;
+		s_KNGan[i].uGenre = s_KNBang[i].uGenre;
+		s_KNGan[i].uId    = s_KNBang[i].uId;
+		nDat++;
+	}
+	s_nKNDaDung = 1;
+	s_nKNChuaCoTep = 0;
+	KyNang_GhiGan();
+	g_DebugLog("[KYNANG] dung bo cuc mac dinh mot lan: %d o (tu day o trong la trong that)", nDat);
+}
+
+//	Don o dang giu ky nang nguoi choi KHONG CON HOC (chuyen phai: DelAllMagic xoa sach ky nang phai cu).
+//	Lam dung kieu ban PC (KUiSkillTree::UpdateData: ky nang khong con trong danh sach thi o ve rong), nhung
+//	phai chan ba cai bay:
+//	  1. so theo MA ky nang, khong so uGenre (xem KyNang_CoTrongBang);
+//	  2. doi chieu CA BA bang: danh trai + danh PHAI (vong sang la RightOnlySkill nen khong nam o danh sach
+//	     trai) + toan bo ky nang danh (nguoi choi gan duoc ca ky nang cap 0 tu bang ky nang);
+//	  3. giua luot chuyen phai DelAllMagic lam danh sach RONG trong tich tac - don ngay luc do la xoa sach
+//	     bang gan cua nguoi choi. Nen phai vang mat KYNANG_VANG_DU lan doc LIEN TIEP (>= 4 giay) moi xoa.
+static void KyNang_DonOChet()
+{
+	int i, nCanDoc = 0, nXoa = 0;
+	int bVang[KYNANG_SO_PHU];
+
+	if (g_pCoreShell == NULL || !KyNang_TrongGame() || s_nKNCo1 <= 1)
+		return;
+	for (i = 0; i < KYNANG_SO_PHU; i++)
+	{
+		bVang[i] = (s_KNGan[i].uId != 0
+			&& !KyNang_CoTrongBang(s_KNBang, s_nKNCo1, s_KNGan[i].uId)) ? 1 : 0;
+		if (bVang[i])
+			nCanDoc = 1;
+		else
+			s_nKNVang[i] = 0;
+	}
+	if (!nCanDoc)
+		return;		// moi o deu nam trong danh sach danh trai: khong phai doc them gi
+
+	memset(s_KNBangPhai, 0, sizeof(s_KNBangPhai));
+	s_nKNCoPhai = g_pCoreShell->GetGameData(GDI_RIGHT_ENABLE_SKILLS, (KUPARAM)&s_KNBangPhai, 0);
+	if (s_nKNCoPhai < 0)					s_nKNCoPhai = 0;
+	if (s_nKNCoPhai > KYNANG_DS_TOI_DA)		s_nKNCoPhai = KYNANG_DS_TOI_DA;
+	// GDI_FIGHT_SKILLS khong tra ve so luong (CoreShell bo qua nRet) nhung co xoa trang ca bang roi ghi
+	// lien tiep tu dau -> dem den muc rong dau tien.
+	memset(s_KNBangDanh, 0, sizeof(s_KNBangDanh));
+	g_pCoreShell->GetGameData(GDI_FIGHT_SKILLS, (KUPARAM)&s_KNBangDanh, 0);
+	for (s_nKNCoDanh = 0; s_nKNCoDanh < KYNANG_DSDANH_TOI_DA && s_KNBangDanh[s_nKNCoDanh].uId; s_nKNCoDanh++)
+		;
+
+	for (i = 0; i < KYNANG_SO_PHU; i++)
+	{
+		if (!bVang[i])
+			continue;
+		if (KyNang_CoTrongBang(s_KNBangPhai, s_nKNCoPhai, s_KNGan[i].uId)
+			|| KyNang_CoTrongBang(s_KNBangDanh, s_nKNCoDanh, s_KNGan[i].uId))
+		{
+			s_nKNVang[i] = 0;	// van con hoc (vong sang, hoac ky nang cap 0 trong bang)
+			continue;
+		}
+		if (++s_nKNVang[i] < KYNANG_VANG_DU)
+			continue;
+		g_DebugLog("[KYNANG] o %d giu ky nang %u khong con hoc (doi phai?) -> de trong",
+			i, s_KNGan[i].uId);
+		memset(&s_KNGan[i], 0, sizeof(s_KNGan[i]));
+		s_nKNTrong[i] = 1;
+		s_nKNVang[i] = 0;
+		nXoa++;
+	}
+	if (nXoa)
+	{
+		KyNang_GhiGan();
+		memset(s_uKNAuraId, 0, sizeof(s_uKNAuraId));	// bo dem vong sang tinh lai
+	}
+}
+
 //	Doc lai danh sach ky nang danh + ky nang danh trai dang dung.
 //	Khong doc moi khung: GDI nay quet ca cay vo cong nen goi lien tuc la phi.
 static void KyNang_DocBang()
@@ -940,6 +1075,9 @@ static void KyNang_DocBang()
 			g_DebugLog("[KYNANG] ap ky nang o chinh da gan: %u", s_KNChinhGan.uId);
 		}
 	}
+	// [KYNANG 14/09 TRONG] dung bo cuc mac dinh mot lan cho nhan vat moi, roi don o giu ky nang da mat
+	KyNang_DungMacDinh();
+	KyNang_DonOChet();
 }
 
 //	Ky nang gan cho mot o. Tra ve false neu o trong.
@@ -962,15 +1100,13 @@ static bool KyNang_CuaNut(int nNut, KUiGameObject* pRa)
 		memset(pRa, 0, sizeof(*pRa));
 		return false;
 	}
-	// Chua gan thi lay theo danh sach ky nang danh, de dung duoc ngay khong phai gan tay.
-	if (nNut - 1 >= s_nKNCo1)
-	{
-		memset(pRa, 0, sizeof(*pRa));
-		return false;
-	}
-	pRa->uGenre = s_KNBang[nNut - 1].uGenre;
-	pRa->uId    = s_KNBang[nNut - 1].uId;
-	return (pRa->uGenre != CGOG_NOTHING && pRa->uId != 0);
+	//	[KYNANG 14/09 TRONG] Chua gan va khong phai o vua go -> TRONG THAT.
+	//	Truoc day o nay lay phan tu thu (nNut-1) cua danh sach ky nang danh DANG SONG (doc lai moi 2 giay):
+	//	chuyen phai xoa sach ky nang cu roi cap ky nang phai moi o cap 20 -> danh sach dai ra -> moi o dang
+	//	trong tu "moc" mot ky nang khong ai dat (chu 14/09: "tu add ky nang ao vao cac nut ky nang trong").
+	//	Bo cuc mac dinh cho nhan vat MOI do KyNang_DungMacDinh ghi HANG THAT vao tep, dung MOT LAN.
+	memset(pRa, 0, sizeof(*pRa));
+	return false;
 }
 
 //---------------------------------------------------------------------------
