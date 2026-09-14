@@ -231,3 +231,32 @@ chat, WAuto — `[CHUGIU] ve moi 507 775 dòng/16 phút`); chưa có tên cửa 
    như NAPTO) thay vì đợi khoá 17–97 ms. Không đụng Engine (khoá pak giữ nguyên).
 3. **Đo cửa sổ UI nặng**: trong pass UI ≥ 25 ms ghi tên lớp/cửa sổ tốn nhất (`[PDET-UI]`), rồi mới quyết cache chữ hay sửa cửa sổ đó.
 4. RIO 66 ms lúc vào map và nền vùng 15–20 ms/lần đổi vùng: để sau (ẩn sau màn nạp / thưa).
+
+## 14/09 12:41 — log bản 109141129 (5 phút, chủ thử zoom/lắc/phóng to) + gói 12:38 (3 phút)
+
+fps TB 58,7 (p10 54, min 33; 5 giây < 55 fps), 1,96 W, nhiệt mức 0, không sập; gói 12:38: fps 58,2, p10 48. `[VE-GIAT]` 23 (7 nạp, 9 vẽ CPU, 7 trình chiếu).
+Ghép mốc sự kiện với khung giật cho thấy **hai nguồn mới, đo được rõ**:
+
+| Sự kiện | Khung giật đi kèm | Bản chất |
+|---|---|---|
+| `[KHOI] khoi atlas moi #2` t=31,1 s | 73,4 ms (vẽ CPU 67,5) + 22,0 + 29,4 ms (trình chiếu, `nop` 21–27) | tạo texture 64 MB (`SDL_CreateGPUTexture`, [TAI-DO] đo 54 ms) + 2–3 lần nộp đầu tiên driver cam kết bộ nhớ (`nop` 21–43 ms) |
+| khối #3 t=46,4 s | 72,5 + 45,7 + 44,0 ms (`nop` 42,9 / 34,1) | như trên |
+| khối #4 t=120,7 s · #5 t=208,9 s | 113,1 + 33,4 · 95,2 + 34,7 ms | như trên → **mỗi khối mới = 2–3 khung 33–113 ms**, 4 khối/5 phút |
+| chụm ngón zoom 1200→800 t=24,1–24,2 s (5 bước zoom + RT2 tạo 3 lần 2212×1992 / 2080×1872 / 2096×1888) | 97,4 ms (vẽ CPU 93,7, không nạp) | mỗi bước zoom > 1000 cấp lại RT, mỗi bước < 1000 cấp lại RT2 8–9 MB → ~10 lần cấp RT trong 1 giây |
+| `[LAC] le RT 1000 -> 1120` (t=23,9 / 37,0 / 58,9 / 64,1 / 95,8 s) và trả về | các khung 20–30 ms quanh đó | mỗi lần bắt đầu/kết thúc lia cấp lại RT |
+| `[LOGIC-PHA]` t=32,8 s mạng 159 ms; t=78,9 s mạng 45 ms (ngoài lúc vào map) | logic 166 / 45 ms | **gói mạng dồn GIỮA trận** — không chỉ lúc vào map |
+| `[NAP-CHAM]` rút khung 0–1 KB 14,7 / 59,0 ms; mở tệp UI/skill 10–29 ms ngoài lúc vẽ (4 lần) | 60,5 / 4,8+29,9 / 20,4 ms | chờ khoá pak; tệp lạnh |
+| `[PDET]` lớp dưới 43,9 / lớp trên 34,9 / lớp dưới 21,9 | 3 khung | cửa sổ UI nặng (chưa biết tên) |
+| `[PDET] VAT THE 67,0 / 59,3` (npc tới 100/tick, zoom 120–150 %) | 2 khung | vẽ vật thể đông khi nhìn rộng (diện tích ×1,4–2,3); `Rep3DoVeChiTiet=0` nên chưa tách được |
+
+**Việc còn lại, xếp theo mức đau (log này):** (1) khối atlas mới 2–3 khung/khối; (2) cấp lại RT/RT2 theo từng bước zoom/lề (phần LIA/ZOOM3D của phiên
+camera — đã báo họ: cấp RT một lần ở cỡ tối đa (khung × 1,5) và RT2 = 2× khung, đổi viewport/uv thay vì cấp lại); (3) gói mạng dồn 45–159 ms;
+(4) chờ khoá pak 15–59 ms; (5) cửa sổ UI 22–44 ms; (6) vật thể đông khi nhìn rộng.
+
+**Đề xuất (chờ chủ chọn):**
+A. `[KHOITRUOC]` cấp sẵn khối trong màn nạp lúc vào thế giới: `[Client] Rep3KhoiTruoc` = 3 khối R8G8 + 1 BGRA8 (≈ 256 MB, phiên này dùng 6 khối = 384 MB)
+   và tô 0 cả các lớp ngay lúc đó (chép GPU) để driver cam kết bộ nhớ trong màn nạp; khối thứ 5+ mới tốn giữa trận (hiếm sau 10 phút).
+   (SDL không cam kết `SDL_CreateGPUTexture` an toàn từ luồng khác nên không tạo ở luồng nền.)
+B. `[MANG]` ngân sách xử lý gói mỗi vòng lặp (`[Client] MangMs`, 8 ms), phần dư sang vòng sau.
+C. `[PAKBAN]` cờ luồng nền đang đọc pak → luồng vẽ giao khung thay vì đợi khoá.
+D. `[PDET-UI]` ghi tên cửa sổ UI nặng nhất khi pass UI ≥ 25 ms; bật `Rep3DoVeChiTiet=1` trên dt_v4 để tách vẽ vật thể (chỉ config).
