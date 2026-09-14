@@ -219,3 +219,19 @@ của `RgTexUpload.layer`; `SubmitFrame` tải vào ảnh đệm `m_pJxDem[loạ
 (b) ô chưa có bản CPU (`QueueZeroUpload` vùng con) chép từ dải nguồn 0 có sẵn; (c) `JxTaiTruoc` texture riêng BGRA8 tải cả một lần (chia dải chỉ tốn thêm);
 (d) `TaiDo` mặc định 0; `[VE-TAI]` thêm "o BGRA8 tai qua anh dem: N o KB". Máy ảo 109141044: 104 ô / 106 MB qua ảnh đệm lúc vào map, Tống Kim 57 fps,
 hình đúng, không sập. Kỳ vọng Fold 7: `lenh tai` trong `[VE-GIAT]` từ 45–50 ms/ô xuống < 1 ms; khung giật còn lại chỉ là đọc tệp/rút khung.
+
+### 10.6. 11:1x 14/09 — `[NAPTO 14/09]` + `[LOGIC-PHA 14/09]` (bản 109141108) sau log 10:49
+
+Log Fold 7 10:49 (109141044, mục 14/09 10:49 trong `PHANTICH_LOG_FOLD7_1309.md`): **tải lên GPU xong** — `lenh tai` > 10 ms: 0 (trước 67/80),
+0,47 ms/MB (trước 23,8), vào map 20 MB = 4,1 ms (trước 518–550), fps 59,3, 1,68 W. Còn 24 khung giật/10 phút = 2,4/phút (trước P3: 20–33):
+10 nạp đồng bộ trên luồng vẽ (rút một khung 24/26/72 ms; mở tệp lạnh 37 ms ngoài lúc vẽ), 13 logic game (`[SPIKE] logic` 89–199 ms) mà
+dòng `[LOGIC]` sẵn có (Breathe + UiHeartBeat) **không ghi** → thời gian nằm ngoài hai hàm đó (mạng, WAuto, IPC, PROCFRAME, gửi lệnh).
+
+Chủ "tiếp tục" → `android/va_nguon_mobile_1409_l.py` (commit `0d71fd36`, `kiem --pc 7eda16f4` ĐẠT):
+- **NAPTO**: `TextureResSpr::PrepareFrameData` — khung chưa rút có cỡ nén (`m_pOffset[n].Length`) ≥ `[Client] NapKhungToKB` (128) thì
+  `JxNapKhungGiao` ngay dù còn ngân sách `NapKhungMs` (ngân sách chỉ kiểm *trước* khi rút nên không chặn được 72 ms), bỏ vẽ 1–3 khung như
+  `bo ve` sẵn có; đếm vào `[VE-TAI]` "khung to giao nen". `[NAP-CHAM]` (jx_rep3.log): rút khung / mở tệp spr ≥ 10 ms ghi tên tệp, khung, cỡ nén, lúc vẽ hay ngoài lúc vẽ.
+- **LOGIC-PHA**: `KMyApp::GameLoop` (S3Client.cpp, chỉ JX_MOBILE) mốc QPC quanh `NetConnectAgent.Breathe` / `JxWAuto_NhipVongLap`+`JxDoNhip` /
+  `ProcIpcCommand` / `Breathe` / `UiHeartBeat` / khối sau / PROCFRAME / `SendAllCommand`; logic ≥ 30 ms → `[LOGIC-PHA]` vào jx_paint.log.
+Máy ảo 109141108: 6 khung to giao nền trong một kỳ, không sập; máy ảo nhanh nên không có `[NAP-CHAM]`/`[LOGIC-PHA]` — đọc trên Fold 7.
+Kỳ vọng: nhóm nạp đồng bộ giảm còn tệp lạnh ngoài lúc vẽ (có tên để xử lý tiếp); nhóm logic có số đo pha để chọn việc kế.
