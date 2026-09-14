@@ -176,3 +176,29 @@ Cùng driver, cùng transfer buffer, cùng lệnh `SDL_UploadToGPUTexture` nhưn
    không phải cách sửa.
 
 Ngoài ra vẫn còn: ảnh null `MA_HR_015_HD.spr`/`FM_HR_015_HD.spr` k20/k29/k34 (x282–422, việc pak), vào map 100 tệp spr đồng bộ ~110 ms.
+
+## 14/09 10:49 — log sau bước 2 `[DEM 14/09]` (bản 109141044, 10 phút, có `[DEM] anh dem` trong log)
+
+**Tải lên GPU: xong.** `[VE-GIAT]` có `lenh tai` > 10 ms: **0** (trước 67/80). Trong 24 khung giật còn lại tổng lệnh tải = 26 ms cho 56 MB
+= **0,47 ms/MB** (trước 23,8). Vào map: 75 texture / 20 MB trong một khung = 4,1 ms lệnh tải (trước 518–550 ms). `[VE]` mỗi kỳ: chép lên GPU
+max 17 ms (kỳ vào map, gồm 10,4 ms memcpy 20 MB vào transfer buffer), các kỳ khác ≤ 12 ms, TB 0,1–0,4 ms/khung. `[VE-TAI]`: 49 + 21 ô BGRA8
+qua ảnh đệm lúc vào map, sau đó 0 (ô mới hiếm), tô 0 chép GPU 7 lần 0,3 ms. fps TB 59,3 (p10 60), 1,68 W, nhiệt mức 0 (103/118 mẫu), GPU 45 %,
+không sập, 7 khối (448 MB), RAM riêng ~400 MB.
+
+**Khung giật còn lại (24 khung > 20 ms / 10 phút = 2,4/phút; trước P3 là 20–33/phút):**
+
+| Nhóm | Số | Ví dụ | Bản chất |
+|---|---|---|---|
+| Nạp đồng bộ trên luồng vẽ | 10 | rút khung 1 khung 24 / 25,7 / 72,4 ms (t=19, 103, 229 s); mở tệp spr 1 tệp 37,4 ms *ngoài lúc vẽ* (t=229,6 s); 19 tệp 14,9 ms (t=21 s) | một khung sprite to hoặc tệp lạnh trên bộ nhớ flash; ngân sách đồng bộ 3 ms (`NapKhungMs`) chỉ kiểm TRƯỚC khi rút nên không chặn được một lần rút 72 ms; "ngoài lúc vẽ" = logic hỏi kích thước/ảnh → phải mở tệp ngay |
+| Logic game (ngoài lớp vẽ) | 13 | `[SPIKE] logic=199/89/183 ms` (t=16, 128, 145 s), 8 khung 60–72 ms vẽ CPU không nạp gì | không phải vẽ, không phải NPC (`[WORLD b]` 0,7 ms/tick); chưa có số đo pha logic (mạng / script / UI) |
+| Vào map | 1 | 210 ms = 80 tệp spr 54,5 ms + logic | ẩn sau màn nạp |
+
+Ghi chú: `anh_null` tên rỗng `(k0) x58 588 / 30 s` (≈ 2 000 lần/s) có từ trước (09:48: x65 749) — ai đó xin ảnh với tên rỗng mỗi khung; rẻ nhưng nên tìm.
+
+**Đề xuất tiếp (chờ chủ chọn):**
+1. Rút khung to → luồng nền theo *cỡ*: biết cỡ nén của khung từ chỉ mục spr trước khi rút; > ngưỡng (vd 256 KB) thì giao luồng nền và bỏ vẽ
+   khung này 1–3 khung (như `bo ve` đang làm khi hết ngân sách), thay vì rút đồng bộ 24–72 ms. Kèm ghi tên tệp/khung vào `[VE-GIAT]` khi
+   một lần rút/mở tệp > 10 ms để biết đó là gì (đang thiếu).
+2. Đo pha logic: một bản đo `[TICK-DO]` chia tick logic thành mạng nhận/gửi, script Lua, UI KWnd, âm thanh, còn lại; ghi khi tick > 30 ms.
+   Nhóm này giờ là lớn nhất (13/24) và chưa có số.
+3. Tìm nguồn `anh_null` tên rỗng (một lần grep + log tên cửa sổ gọi).
