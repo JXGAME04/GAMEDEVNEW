@@ -172,3 +172,33 @@ Khoá/GM: nút `md_btn_camera` (`ui_primary_high.lua`) lật `JXM.lockCamera`; G
 | `chuoi.py` | rút chuỗi ASCII từ nhị phân → `chuoi_*.txt` |
 
 Bẫy đã gặp: heredoc Bash nuốt `\` và `'` → viết tệp Python bằng công cụ Write; console cp1252 sập với tên Trung Quốc → `PYTHONIOENCODING=utf-8`; UnityPy đọc MonoBehaviour thiếu typetree → `read(check_read=False)`; `codeGenModules` xếp theo tên nên `__Generated` (không đuôi `.dll`) đứng giữa; thứ tự `MetadataRegistration` bản này: `types(6,7) · metadataUsages(8,9) · fieldOffsets(10,11) · typeDefinitionsSizes(12,13)`; metadata-usage v27+ = `(kind<<29 | idx<<1 | 1)` nằm sẵn trong `.data`.
+
+
+---
+
+## 9. Mổ thêm 14/09 (chủ hỏi): hiệu ứng trang bị theo màu khi mặc, và hình nhân vật ở màn tạo nhân vật
+
+Nguồn: `meta_pc_res.txt` (lớp/trường), `bundle_all.tsv` (68 bundle PC, đủ toàn bộ `StreamingAssets`), bảng dữ liệu rút bằng UnityPy (utf-16, ở `scratchpad/ta_*`), Lua `ui_choose.lua` (màn chọn/tạo nhân vật). Chỉ phân tích, chưa làm gì cho JX1.
+
+### 9.1 Trang bị mặc trên người: hiệu ứng theo phẩm chất nằm ở VŨ KHÍ, không ở thân
+
+| Cơ chế | Bằng chứng |
+|---|---|
+| **Đao quang (vệt sáng khi vung vũ khí) đổi theo phẩm chất** | bảng `anim_effect` 18 hàng: hàng 1–6 = "通用白色/蓝色/紫色/金色/白金/玄金武器" (vũ khí trắng / lam / tím / kim / bạch kim / huyền kim): mỗi hoạt ảnh đánh (`gj01`, `gj02`, `gjdj01`…) trỏ một `sfx特效id` khác nhau (290…295). Bảng `model_hang_list` cột "武器拖尾动作特效 anim_effect (0 = mặc định **theo phẩm chất**)"; `cha_pic.defAnimEffect` = nhóm mặc định. → cùng một vũ khí, phẩm chất cao hơn thì vệt sáng màu khác. |
+| Mô hình vũ khí riêng từng món | `model_hang_list` 96 hàng: tên, điểm treo (tay phải/trái), tài nguyên `Assets/StaticModels/weapons/<loại>/<tên>` (jian_tiebishou, jian_gang…), loại (kiếm/đao/thương/côn/song đao/song chuỳ/quyền/phi tiêu/phi đao/nỏ/ áo choàng), nhóm hoạt ảnh, kỹ năng kèm. Không hàng nào dùng `mh_xweapon_sfxobj` (hiệu ứng gắn cố định) → sáng theo màu là do đao quang, không phải cột sáng gắn trên vũ khí. |
+| Chất liệu vũ khí theo cấp | texture `weapon_diji_01 / zhongji_01 / gaoji_01` (thấp / trung / cao cấp), material `weapon_rimcolor` (viền sáng rim) — màu rim lấy từ `Define.ItemColEffectWhite/Blue/Purple/Gold/WGold/XGold` (6 màu phẩm chất, cũng dùng cho viền ô vật phẩm `itemborder_anim_path` và cột sáng đồ rơi). |
+| Thân người | không có hào quang theo phẩm chất. Áo/mũ/giày chỉ đổi **da** (`cha_pic` "皮肤 身体*头*鞋", `model_list` 63 hàng phần lớn là thú cưỡi có hiệu ứng: "帅气马特效闪电/黄绿/火焰"…). Bộ trang bị (`equip_suit`, 6 bộ) chỉ cộng thuộc tính, không có hiệu ứng hình. |
+| Màu thân khi trúng trạng thái | `state_effect` 77 hàng: trúng độc nhuộm xanh `32A260`, bỏng đỏ `B30D0D`, chậm vàng `CCCC44`, kèm đổi cỡ / trong suốt / tốc độ hoạt ảnh. |
+
+**Mang sang JX1 được gì (đề xuất, chưa làm):**
+1. **Hào quang dưới chân theo phẩm chất trang bị cao nhất đang mặc** — JX1 đã có sẵn cơ chế và ảnh: `spr/haoquang/vongtrondo / vongtrontim / vongtronvang / vongtronxanh.spr` (vòng 200×200, 30 khung, neo 100,125) đang dùng cho vòng hào quang người chơi. Việc: chọn màu theo `m_nColorID` cao nhất của vũ khí/áo đang mặc, vẽ trước sprite nhân vật (mobile-only trong `KPlayer`/`KNpc` draw). Khoảng nửa ngày.
+2. **Đao quang màu khi vung vũ khí** (đúng cái game 3D làm): JX1 vung vũ khí là sprite 8 hướng vẽ liền vũ khí, không có lớp vệt sáng riêng → phải vẽ thêm sprite vệt sáng cho từng loại vũ khí × 8 hướng × vài khung, rồi nhuộm màu bằng `COLOR_ADJUST` như cột sáng đồ rơi. Cần vẽ ảnh mới (không có sẵn), 2–3 ngày, hiệu quả đẹp nhưng tốn công vẽ.
+3. Viền sáng vũ khí kiểu rim: không làm được trên sprite 2D.
+
+### 9.2 Hình nhân vật ở màn tạo nhân vật: là MÔ HÌNH 3D sống, không phải ảnh
+
+- `ui_choose.lua`: mỗi nghề (`mb_profession[cid].show_chapic`) tạo một sinh vật UI `JXM.GO_CreateUICreature(chalist, chapic, true)` đặt vào `ModelView` (camera UI riêng, bóng đổ ở (0,3000,0)), bấm chọn thì `SelectCreateActor`. `cha_list` 1–5 = "初始金/木/水/火/土系职业" (5 hệ ngũ hành). `cha_pic` 3–10 = nhân vật **trình diễn** ("展示-金系男, 木系男, 木系女, 水系女, 火系男, 火系女, 土系男, 土系女") với bộ xương `xr01_01…xr05_02`, chân dung `zj_011/021/031/041/181`; 1–2 = "标准男/女" xương `zj01/zj02` (nhân vật thật trong game).
+- Tài nguyên trong 68 bundle PC: **lưới da** có đủ: bundle `d4b79c319044.bdd` (11 MB, 278 Mesh): 23 thân `skin@zj010…zj023` (23 bộ trang phục), đầu `skin@tou01/02@…`, giày `skin@xie01/02@…`, cùng da NPC/thú (yezhu, yemao, xiong…). Đã thử **xuất được OBJ** bằng UnityPy (`skin_zj010.obj` 330 KB, 25 bind pose = có xương). **Hoạt ảnh** có đủ theo `animation_list` 60 mục (`xx01` nghỉ, `zp01` chạy, `gj01/02` đánh, `sf01` bị đánh, `jump01`…, thêm `qm_*` cưỡi ngựa, `skill_*`), nhóm theo vũ khí (`anim_group` 24: tay không/kiếm/đao/thương/côn/song đao…). **Chưa thấy** prefab bộ xương `zj01/xr0x` và texture da theo tên trong bảng (có `skin@001…abc`); chân dung `zj_011…` nằm trong atlas NGUI (phải đọc rect từ `UIAtlas`), chưa rút.
+- Vậy "lấy nhân vật lúc tạo game" = lấy mô hình 3D có xương + 60 hoạt ảnh + da. JX1 mobile là engine 2D sprite, **không vẽ được mô hình 3D**; muốn dùng phải **vẽ lại thành sprite 8 hướng** (Blender: ghép xương, gắn hoạt ảnh, render 8 hướng × từng động tác JX1 cần: đứng/đi/chạy/đánh theo loại vũ khí/ngồi/chết… × 5 hệ × 2 giới) — quy mô dựng lại toàn bộ nhân vật, tính bằng tuần, và sẽ **lệch phong cách** với NPC/quái JX1 hiện có.
+- Cách dùng rẻ và hợp lý nếu chủ muốn: chỉ dùng cho **màn tạo nhân vật** — render tĩnh (hoặc xoay vòng vài khung) 8 nhân vật trình diễn thành PNG → SPR làm hình đại diện 5 hệ trong màn tạo nhân vật JX1 mobile. Việc: rút mesh + tìm texture/xương (1 ngày, có thể phải soi bundle APK), Blender render (1–2 ngày), ghép vào UI JX1 (1 ngày).
+- **Lưu ý bản quyền:** toàn bộ mô hình, hoạt ảnh, ảnh này thuộc nhà phát hành Kiếm Võng Giang Hồ. Đưa vào sản phẩm phát hành cần quyền của họ; đây là quyết định của chủ, tôi chỉ nêu để cân nhắc.
