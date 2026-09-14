@@ -147,6 +147,10 @@ int g_nJxDoVeChiTiet = 0;	// [VECHITIET 11/09]
 double g_dJxTrongVeKhung = 0.0, g_dJxTrongVeCuoi = 0.0;	unsigned g_uJxTrongVeLan = 0;	// [VECHITIET 11/09]
 static double s_dJxTrongVeTong = 0.0, s_dJxTrongVeMax = 0.0;	// [VECHITIET 11/09] cong ca ky de in o [VE]
 unsigned g_uJxKhoiSo = 0, g_uJxKhoiMB = 0, g_uJxKhoiHet = 0;	// [KHOI 11/09]
+#ifdef JX_MOBILE
+// [NENDO 13/09] do chi tiet DrawPrimitivesOnImage (ghep nen vung): GetImage (tim/nap) vs RIO (ghi lenh ve) vs doi dich ve; nap = so anh nap dong bo. Chi trong .so nay.
+static double s_dJxNenGetMs = 0.0, s_dJxNenRioMs = 0.0, s_dJxNenRtMs = 0.0; static unsigned s_uJxNenGetLan = 0, s_uJxNenNapLan = 0, s_uJxNenBoLan = 0;
+#endif
 unsigned g_uJxCullGiu = 0, g_uJxCullBo = 0, g_uJxPipeVo[8] = { 0 };	// [CULLCPU 11/09]
 unsigned g_uJxKhungGiongBo = 0, g_uJxKhungGiongCoTai = 0, g_uJxKhungGiongEp = 0, g_uJxKhungGiongDem = 0, g_uJxKhungGiongChuoiMax = 0, g_uJxKhungTrinhChieu = 0;	// [BKG 11/09]
 unsigned g_uJxNapKhungBoVe = 0, g_uJxNapKhungBoVeKhung = 0, g_uJxNapKhungDongBo = 0, g_uJxNapKhungGiao = 0, g_uJxNapKhungTruocSo = 0, g_uJxNapKhungXong = 0, g_uJxNapKhungHong = 0, g_uJxNapKhungBo = 0, g_uJxNapKhungChoMax = 0;
@@ -769,6 +773,20 @@ int Rep3_NapTruoc2(const char* pszImage, int nNguon)	// [NAPNPC 09/09]
 		return 0;
 	return g_pRep3ShellDuyNhat->NapTruoc(pszImage, nNguon);
 }
+#ifdef JX_MOBILE
+// [NENTRUOC 13/09] nen dat: Core (KScenePlaceRegionC) goi qua GetProcAddress("Rep3_NenTruocKhung") - chuan bi khung o nen o luong nen truoc khi ghep vung.
+int KRepresentShell3::JxNenTruocKhung(const char* pszImage, int nFrame)
+{
+	return m_TextureResMgr.JxNenTruocKhung(pszImage, nFrame);
+}
+extern "C" __declspec(dllexport)
+int Rep3_NenTruocKhung(const char* pszImage, int nFrame)	// [NENTRUOC 13/09]
+{
+	if (!g_pRep3ShellDuyNhat || !pszImage)
+		return 0;
+	return g_pRep3ShellDuyNhat->JxNenTruocKhung(pszImage, nFrame);
+}
+#endif
 #ifdef JX_MOBILE
 // [TG 13/09] Wnds.cpp goi qua GetProcAddress (nhu Rep3_NapTruoc2, khong doi vtable); iOS dang ky trong ios/JxIosMain.cpp
 extern "C" __declspec(dllexport)
@@ -2600,6 +2618,12 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
         unsigned int uGenre, const char* pszImage, unsigned int uImage, short &nImagePosition)
 {
 	Rep3NapDongBo napDongBo(m_TextureResMgr);	// [NAP 08/09 d] ghep/ghi anh mot lan -> nap dong bo
+#ifdef JX_MOBILE
+	// [NENDO 13/09] do chi tiet: GetImage / RIO / doi dich ve -> [PGND-V] trong jx_rep3.log
+	LARGE_INTEGER jxNd0, jxNd1, jxNdT0, jxNdF; QueryPerformanceFrequency(&jxNdF); QueryPerformanceCounter(&jxNdT0); const double jxNdK = jxNdF.QuadPart ? 1000.0 / (double)jxNdF.QuadPart : 0.0;
+	s_dJxNenGetMs = 0.0; s_dJxNenRioMs = 0.0; s_dJxNenRtMs = 0.0; s_uJxNenGetLan = 0; s_uJxNenBoLan = 0; s_uJxNenNapLan = 0;
+	const unsigned uJxNdNap0 = (unsigned)m_TextureResMgr.m_nLoadCount;
+#endif
 	if(!pPrimitives)
 	{
 		assert(pPrimitives);
@@ -2612,6 +2636,9 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 	if(m_bDeviceLost)
 		return;
 
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxNd0);	// [NENDO 13/09]
+#endif
 	TextureResBmp* pDestBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
 		pszImage, uImage, nImagePosition, 0, ISI_T_BITMAP16);
 	if (pDestBitmap == NULL)
@@ -2643,6 +2670,9 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 	PD3DDEVICE->SetStreamSource( 0, m_pVB2D, 0, sizeof(VERTEX2D) );
 	PD3DDEVICE->SetFVF( D3DFVF_VERTEX2D );
 
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxNd1); s_dJxNenRtMs += (double)(jxNd1.QuadPart - jxNd0.QuadPart) * jxNdK;	// [NENDO 13/09] doi dich ve
+#endif
 	int i;
 	switch(uGenre)
 	{
@@ -2654,11 +2684,19 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 			{
 			case ISI_T_SPR:
 				{
+#ifdef JX_MOBILE
+					QueryPerformanceCounter(&jxNd0);	// [NENDO 13/09]
+#endif
 					TextureResSpr* pSprite = (TextureResSpr *)m_TextureResMgr.GetImage(
 						pTemp->szImage, pTemp->uImage,
 						pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
+#ifdef JX_MOBILE
+					QueryPerformanceCounter(&jxNd1); s_dJxNenGetMs += (double)(jxNd1.QuadPart - jxNd0.QuadPart) * jxNdK; s_uJxNenGetLan++;	// [NENDO 13/09]
+					if (pSprite == NULL || pTemp->nFrame >= pSprite->m_nFrameNum) { s_uJxNenBoLan++; break; }
+#else
 					if (pSprite == NULL || pTemp->nFrame >= pSprite->m_nFrameNum)
 						break;
+#endif
 
 					int nX = pTemp->oPosition.nX;
 					int nY = pTemp->oPosition.nY;
@@ -2680,7 +2718,11 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 					case IMAGE_RENDER_STYLE_3LEVEL:
 					case IMAGE_RENDER_STYLE_OPACITY:
 					case IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT:
+#ifdef JX_MOBILE
+						QueryPerformanceCounter(&jxNd0); RIO_CopySprToBufferAlpha(pSprite, pTemp->nFrame, pDestBitmap, nX, nY); QueryPerformanceCounter(&jxNd1); s_dJxNenRioMs += (double)(jxNd1.QuadPart - jxNd0.QuadPart) * jxNdK;	// [NENDO 13/09]
+#else
 						RIO_CopySprToBufferAlpha(pSprite, pTemp->nFrame, pDestBitmap, nX, nY);
+#endif
 						break;
 					}						
 				}
@@ -2700,9 +2742,21 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 		break;
 	}
 
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxNd0);	// [NENDO 13/09]
+#endif
 	PD3DDEVICE->SetRenderTarget( 0, pOldSurface );
 	pDesSurface->Release();
 	pOldSurface->Release();
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxNd1); s_dJxNenRtMs += (double)(jxNd1.QuadPart - jxNd0.QuadPart) * jxNdK; s_uJxNenNapLan = (unsigned)m_TextureResMgr.m_nLoadCount - uJxNdNap0;	// [NENDO 13/09]
+	{	// [NENDO 13/09] ghi khi >= 4 ms: 've len anh' cua mot vung = GetImage (tim/nap) + RIO (ghi lenh ve) + doi dich ve
+		const double dNdTong = (double)(jxNd1.QuadPart - jxNdT0.QuadPart) * jxNdK;
+		if (dNdTong >= 4.0)
+			Rep3Log("[PGND-V] %s: %d anh, %.1f ms = GetImage %.1f (%u lan, nap dong bo %u, bo %u) + RIO %.1f + doi dich %.1f", pszImage, nPrimitiveCount, dNdTong,
+				s_dJxNenGetMs, s_uJxNenGetLan, s_uJxNenNapLan, s_uJxNenBoLan, s_dJxNenRioMs, s_dJxNenRtMs);
+	}
+#endif
 }
 
 //## Çå³ýÍ¼ÐÎÊý¾Ý
@@ -3183,6 +3237,7 @@ bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 	m_TextureResMgr.NapNenNhan();	// [NAP 08/09 b] nhan ket qua luong nen truoc khi ve
 #ifdef JX_MOBILE
 	m_TextureResMgr.JxNapKhungNhan();	// [VE 11/09] tao texture tu khung da giai ma o luong nen (theo ngan sach NapKhungApMs)
+	m_TextureResMgr.JxNenTruocXuLy();	// [NENTRUOC 13/09] nen dat: muc cho tep -> giao khung
 #endif
 	m_TextureResMgr.m_bVeDangDien = true;
 	m_TextureResMgr.StartProfile();
