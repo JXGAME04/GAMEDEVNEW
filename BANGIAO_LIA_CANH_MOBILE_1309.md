@@ -623,3 +623,39 @@ Bỏ **Zoom nhanh / Zoom chậm / Chụm zoom** (chủ hỏi "chụm zoom là g�
 
 - Đề xuất (d) mục 12 (nhìn rộng ≥ 130 % vẽ RT nấc thấp rồi blit) — chủ đã chọn, làm tiếp ngay sau bản này (log Fold 7 14:47: GPU nghẽn lúc đông khi zoom).
 - Chat trên đầu lúc zoom chưa thử được trên máy ảo (OutputRichText đi cùng nhóm).
+
+
+---
+
+# TGNAC: NHÌN RỘNG VẼ THU NHỎ THẲNG VÀO VÙNG CỠ KHUNG (đề xuất (d) mục 12, chủ chọn) — 14/09 15:4x (bản **109141532**)
+
+Gốc (phiên đo nhịp, log Fold 7 14:47 bản 109141405): chủ để zoom bật suốt, 44/67 khung giật là trình chiếu 26–29 ms với `nop` 6–17 ms (CPU chờ GPU khi nộp) ở các đoạn đông; GPU 65 % (p90 76, max 85) — đường RT khi nhìn rộng vẽ thế giới 1:1 vào RT to (150 % = 2,25× điểm ảnh) rồi thu nhỏ lúc blit.
+
+## 1. Bản
+
+| | |
+|---|---|
+| Mã | `Represent/Represent3/D3D9onGPUi.h` + `D3D9onGPUDev.cpp` (lớp GPU: viewport lô-gic + viewport ép gắn RT + ép lọc palette; hàm xuất `Rep3Gpu_VpLogic` / `Rep3Gpu_VpEp` / `Rep3Gpu_PalLin`), `KRepresentShell3.cpp/.h` (khối [TG]); tất cả JX_MOBILE, `kiem --pc` ĐẠT; phiên đo nhịp soi chéo. Kịch bản `android/va_nguon_tgnac_1409.py` |
+| Config `[Client]` | `TheGioiRTNac=1100` (‰; zoom ≥ mức này thì vẽ thu nhỏ; 0 = cách cũ). Lớp ghi đè + máy ảo; dt_v4 không thêm (mã mặc định 1100) |
+
+## 2. Cơ chế
+
+- Lệnh 0: khi nhìn rộng và `m_nTgZoom ≥ TheGioiRTNac`: vùng điểm ảnh thật `m_nTgPxW/H` = lô-gic × 1000/zoom = **khung × lề** (thay vì khung × zoom × lề); RT cấp/kiểm theo vùng này (TGCAP). `m_nTgW/H` (lô-gic = khung × zoom × lề) giữ nguyên nên cull của Core, cửa toạ độ, CHUNET không đổi.
+- Lệnh 1: `SetViewport(vùng thật)` + `Rep3Gpu_VpLogic(m_nTgW, m_nTgH)`: VS chia toạ độ theo viewport LÔ-GIC (Core vẫn vẽ toạ độ 1:1) trong khi viewport thật nhỏ hơn → GPU tự thu nhỏ (hệ số 1000/zoom). `Rep3Gpu_PalLin(1)`: ép cờ `st0b[3]` cho ps lọc palette tuyến tính (sampler thật vẫn NEAREST vì texture là chỉ số bảng màu) → sprite thu nhỏ mượt như blit LINEAR cũ. `Rep3Gpu_VpEp(m_pTgSurf, vùng)`: viewport ép **gắn với texture RT** — ghép nền đất giữa pha đổi render target rồi `SetRenderTarget` quay lại RT (viewport bị đặt lại = cả texture → góc trên trái đen ở lần thử đầu); nay quay lại RT là giữ vùng ép, và viewport lô-gic chỉ có hiệu lực khi đích = RT đó (ghép vùng nền vào texture vùng vẫn theo cỡ thật).
+- Lệnh 2: trả cả ba về 0 trước blit; uv blit = vùng thật / cấp; đích = khung × lề nên blit **1:1** (LINEAR ở 1:1 = không mờ thêm).
+- Phóng to (< 100 %) và K=2 không đổi. Chất lượng: thu nhỏ bilinear tại chỗ ≈ thu nhỏ bilinear lúc blit (cùng 2×2 tap) — ảnh so `tgnac_sosanh.png`.
+
+## 3. Thử máy ảo
+
+| | |
+|---|---|
+| Lần đầu | góc trên trái đen: ghép nền đất đổi target giữa pha → sửa bằng viewport ép gắn RT (b) |
+| Bản cuối | 110 % → 150 %: `[TGNAC] zoom 1100: ve thu nho vao vung khung x le (vung 1040x604, lo-gic 1144x664)`; ảnh đầy đủ, lia/zoom bình thường, chữ CHUNET đúng chỗ, 59–62 fps |
+| So cũ/mới 150 % | cùng cảnh, khác biệt nhìn không ra (`tgnac_sosanh.png`) |
+
+Chi phí thật (GPU %, W, khung dài) phải đo trên Fold 7 (log 8765): mong GPU khi nhìn rộng lúc đông xuống ~1× thay vì 2,25×.
+
+## 4. Còn lại
+
+- RT cấp vẫn theo `TheGioiRTCap=1700` (11 MB); với TGNAC vùng dùng ≤ khung × 1,12 nên có thể hạ cấp xuống 1200 ‰ để bớt store/khung — chờ số đo Fold 7.
+- Nếu chủ thấy mờ hơn ở 150 %: đặt `TheGioiRTNac=0` so lại.

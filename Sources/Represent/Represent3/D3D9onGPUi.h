@@ -525,6 +525,8 @@ public:
 	// bang mau
 	SDL_GPUTexture* m_pPalTex; std::vector<int> m_palFree, m_palDeferred; std::vector<std::pair<int, std::vector<DWORD> > > m_palPending;
 	bool            m_bPalLinForce;
+	int             m_nJxVpLogicW, m_nJxVpLogicH;
+	CTexGpu*        m_pJxVpEpTex; int m_nJxVpEpW, m_nJxVpEpH;	// [TGNAC 14/09 b] viewport EP gan voi texture nay: SetRenderTarget ve no thi viewport = vung ep (khong phai ca texture); viewport lo-gic cung chi ap khi dich = no	// [TGNAC 14/09] viewport LO-GIC cho VS (0 = theo m_vp): the gioi ve thu nho vao RT co khung khi nhin rong (Rep3Gpu_VpLogic)
 	// trang thai D3D9
 	DWORD           m_rs[256];
 	DWORD           m_tss[8][33];

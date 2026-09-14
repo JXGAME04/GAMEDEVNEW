@@ -473,7 +473,8 @@ private:
     LPDIRECT3DSURFACE9    m_pTgSurfCu;   // backbuffer giu trong luc ve vao RT
     LPDIRECT3DSTATEBLOCK9 m_pTgSB;       // trang thai luu quanh lenh blit
     int   m_nTgW, m_nTgH;
-    int   m_nTgCapW, m_nTgCapH, m_nTgCapKhungW, m_nTgCapKhungH;   // [TGCAP 14/09] co CAP (texture that) cua RT + co khung luc cap; m_nTgW/H = phan DUNG (khung x zoom x le), uv blit = dung / cap
+    int   m_nTgCapW, m_nTgCapH, m_nTgCapKhungW, m_nTgCapKhungH;
+    int   m_nTgPxW, m_nTgPxH, m_bTgNac;   // [TGNAC 14/09] vung DIEM ANH that dang ve trong RT (= m_nTgW/H, hay = khung x le khi nhin rong ve thu nho); m_bTgNac = khung nay ve thu nho   // [TGCAP 14/09] co CAP (texture that) cua RT + co khung luc cap; m_nTgW/H = phan DUNG (khung x zoom x le), uv blit = dung / cap
     int   m_nTgTrangThai;                // 1 = dang ve vao RT
     int   m_nTgLeft, m_nTgTop;           // goc toa do (m_nLeft/m_nTop) luc ve RT lan cuoi - khung chi blit dat lai de lop phu trung anh
     DWORD m_dwTgMauXoa;                  // mau xoa cua RepresentBegin khung nay

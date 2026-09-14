@@ -234,6 +234,7 @@ CDevGpu::CDevGpu(CGpuShim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_bFrameOpen = false;
 	m_pAtlas = NULL; m_uCpuBoSo = 0; m_uCpuBoThuLai = 0; m_uCpuBoBytes = 0;	// [GPU 11/09 ATLAS] [GPU 11/09 BOCPU]
 	m_pPalTex = NULL; { const char* e = getenv("REP3_PALLIN"); m_bPalLinForce = (e && atoi(e) != 0); }
+	m_nJxVpLogicW = m_nJxVpLogicH = 0; m_pJxVpEpTex = NULL; m_nJxVpEpW = m_nJxVpEpH = 0;	// [TGNAC 14/09]
 	memset(m_rs, 0, sizeof(m_rs)); memset(m_tss, 0, sizeof(m_tss)); memset(m_ss, 0, sizeof(m_ss)); memset(m_tex, 0, sizeof(m_tex));
 	m_fvf = 0; m_pStream = NULL; m_streamOffset = 0; m_streamStride = 0;
 	memset(&m_vp, 0, sizeof(m_vp)); m_vp.Width = m_bbW; m_vp.Height = m_bbH; m_vp.MaxZ = 1.0f;
@@ -983,6 +984,27 @@ void Rep3Gpu_DichSeXoa(IDirect3DDevice9* pDev, int bBat)
 {
 	if (pDev && g_nRep3ApiOn == 100) ((CDevGpu*)pDev)->m_bJxDichSeXoa = (bBat != 0);
 }
+// [TGNAC 14/09] KRepresentShell3 JxTheGioi: nhin rong ve thu nho - VS chia theo viewport LO-GIC nW x nH (0 = tat) trong khi viewport that nho hon
+void Rep3Gpu_VpLogic(IDirect3DDevice9* pDev, int nW, int nH)
+{
+	if (!pDev || g_nRep3ApiOn != 100) return;
+	CDevGpu* p = (CDevGpu*)pDev;
+	if (p->m_nJxVpLogicW != nW || p->m_nJxVpLogicH != nH) { p->m_nJxVpLogicW = nW; p->m_nJxVpLogicH = nH; p->m_bVsDirty = true; }
+}
+// [TGNAC 14/09 b] gan viewport EP (nW x nH) voi texture cua be mat pSurf: SetRenderTarget ve no giu vung ep, VS chia theo lo-gic chi khi dich = no; pSurf NULL = bo
+void Rep3Gpu_VpEp(IDirect3DDevice9* pDev, IDirect3DSurface9* pSurf, int nW, int nH)
+{
+	if (!pDev || g_nRep3ApiOn != 100) return;
+	CDevGpu* p = (CDevGpu*)pDev; CSurfGpu* s = (CSurfGpu*)pSurf;
+	p->m_pJxVpEpTex = (s && s->m_kind == RGSURF_TEX) ? s->m_pTex : NULL; p->m_nJxVpEpW = nW; p->m_nJxVpEpH = nH;
+	if (p->m_pJxVpEpTex && p->m_pRtTex == p->m_pJxVpEpTex && nW > 0) { p->m_vp.X = p->m_vp.Y = 0; p->m_vp.Width = (DWORD)nW; p->m_vp.Height = (DWORD)nH; }
+	p->m_bVsDirty = true;
+}
+// [TGNAC 14/09] ep ps loc palette tuyen tinh (st0b[3]) cho moi lenh ve trong luc the gioi ve thu nho; sampler that van NEAREST (chi so bang mau)
+void Rep3Gpu_PalLin(IDirect3DDevice9* pDev, int bBat)
+{
+	if (pDev && g_nRep3ApiOn == 100) ((CDevGpu*)pDev)->m_bPalLinForce = (bBat != 0);
+}
 // [TAI 14/09] TextureResSpr::JxNhanKhungNen: khung NAP TRUOC vua co texture -> vao hang tai dan; KRepresentShell3 RepresentBegin: chay hang theo ngan sach
 void Rep3Gpu_TaiTruoc(IDirect3DDevice9* pDev, IDirect3DTexture9* pTex)
 {
@@ -1039,6 +1061,9 @@ HRESULT CDevGpu::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRe
 	m_cmds.push_back(c);
 	// D3D9: doi render target -> viewport = ca target
 	memset(&m_vp, 0, sizeof(m_vp)); m_vp.Width = pNewTex ? pNewTex->m_w : m_bbW; m_vp.Height = pNewTex ? pNewTex->m_h : m_bbH; m_vp.MaxZ = 1.0f; m_bVsDirty = true;
+#ifdef JX_MOBILE
+	if (pNewTex && pNewTex == m_pJxVpEpTex && m_nJxVpEpW > 0) { m_vp.Width = (DWORD)m_nJxVpEpW; m_vp.Height = (DWORD)m_nJxVpEpH; }	// [TGNAC 14/09 b] quay lai RT the gioi giua pha (sau ghep nen dat) -> giu vung ep
+#endif
 	Unlock();
 	return D3D_OK;
 }
@@ -1307,7 +1332,7 @@ void CDevGpu::ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo)
 	const bool bRhw = ((m_fvf & D3DFVF_POSITION_MASK) == D3DFVF_XYZRHW);
 	if (m_bVsDirty || (m_vsCb.flags[0] > 0.5f) != bRhw)
 	{
-		m_vsCb.vp[0] = (float)(m_vp.Width ? m_vp.Width : 1); m_vsCb.vp[1] = (float)(m_vp.Height ? m_vp.Height : 1); m_vsCb.vp[2] = (float)m_vp.X; m_vsCb.vp[3] = (float)m_vp.Y;
+		{ const bool bLg = (m_nJxVpLogicW > 0 && m_pRtTex && m_pRtTex == m_pJxVpEpTex); m_vsCb.vp[0] = (float)(bLg ? m_nJxVpLogicW : (m_vp.Width ? m_vp.Width : 1)); m_vsCb.vp[1] = (float)(bLg ? m_nJxVpLogicH : (m_vp.Height ? m_vp.Height : 1)); }	/* [TGNAC 14/09 b] lo-gic chi khi dich = RT the gioi (ghep nen dat vao texture vung thi theo co that) */	/* [TGNAC 14/09] VS chia theo viewport lo-gic (to hon viewport that = ve thu nho) */ m_vsCb.vp[2] = (float)m_vp.X; m_vsCb.vp[3] = (float)m_vp.Y;
 		D3DMATRIX wv; float t[16]; RgMatMul(t, m_matWorld, m_matView); memcpy(&wv, t, sizeof(t)); RgMatMul(m_vsCb.wvp, wv, m_matProj);
 		m_vsCb.flags[0] = bRhw ? 1.0f : 0.0f;
 		m_bVsDirty = false;
@@ -1317,7 +1342,7 @@ void CDevGpu::ComputeState(RgDrawState& st, SDL_GPUPrimitiveType topo)
 	RgPsCb& cb = st.ps;
 	cb.st0[0] = (int)m_tss[0][D3DTSS_COLOROP]; cb.st0[1] = (int)m_tss[0][D3DTSS_COLORARG1]; cb.st0[2] = (int)m_tss[0][D3DTSS_COLORARG2]; cb.st0[3] = (int)m_tss[0][D3DTSS_ALPHAOP];
 	cb.st0b[0] = (int)m_tss[0][D3DTSS_ALPHAARG1]; cb.st0b[1] = (int)m_tss[0][D3DTSS_ALPHAARG2]; cb.st0b[2] = bound[0] ? 1 : 0;
-	cb.st0b[3] = (m_bPalLinForce || (m_ss[0][D3DSAMP_MAGFILTER] & 7) >= D3DTEXF_LINEAR || (m_ss[0][D3DSAMP_MINFILTER] & 7) >= D3DTEXF_LINEAR) ? 1 : 0;
+	cb.st0b[3] = ((m_bPalLinForce && m_pRtTex && m_pRtTex == m_pJxVpEpTex) || /* [TGNAC 14/09 c] ep loc chi khi dich = RT the gioi (anh vung nen ghep song mai) */ (m_ss[0][D3DSAMP_MAGFILTER] & 7) >= D3DTEXF_LINEAR || (m_ss[0][D3DSAMP_MINFILTER] & 7) >= D3DTEXF_LINEAR) ? 1 : 0;
 	cb.st1[0] = (int)m_tss[1][D3DTSS_COLOROP]; cb.st1[1] = (int)m_tss[1][D3DTSS_COLORARG1]; cb.st1[2] = (int)m_tss[1][D3DTSS_COLORARG2]; cb.st1[3] = (int)m_tss[1][D3DTSS_ALPHAOP];
 	cb.st1b[0] = (int)m_tss[1][D3DTSS_ALPHAARG1]; cb.st1b[1] = (int)m_tss[1][D3DTSS_ALPHAARG2]; cb.st1b[2] = bound[1] ? 1 : 0; cb.st1b[3] = 0;
 	cb.at[0] = m_rs[D3DRS_ALPHATESTENABLE] ? 1.0f : 0.0f; cb.at[1] = (float)(m_rs[D3DRS_ALPHAFUNC] & 15); cb.at[2] = (float)(m_rs[D3DRS_ALPHAREF] & 255); cb.at[3] = 0.0f;
