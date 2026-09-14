@@ -131,3 +131,17 @@ Chủ: *"oke tiếp tục và tôi sẽ test trên iOS luôn"*. Làm theo thứ 
 | Bẫy | (1) biến toàn cục của Represent3 KHÔNG dùng được từ Core (`libCoreClient.so` không liên kết `libRepresent3.so`: undefined symbol lúc link) → log trong Represent3 hoặc gọi qua GetProcAddress; (2) `kiem_android_tuongduong.py` chỉ hiểu `#ifdef X`, không hiểu `#if defined(X) && !defined(Y)` — rào mới dùng dạng đơn; mọi dấu ngoặc/dòng trống thêm phải nằm trong rào |
 
 Còn lại theo thứ tự: **P2 cache chữ** (556 000 dòng chữ vẽ mới / 16 phút Tống Kim), đo lại khối atlas sau [KHOI]+[CACHE] trên Fold 7, P4.
+
+### 10.1. Log Fold 7 19:33–20:06 (bản 109131908) và sửa tiếp — bản 109132016 (20:24)
+
+Chủ: *"Lấy log test"*. Gói `SM-F966U1_20260913_193302` (34 phút, Tống Kim đông NPC 100–140/tick):
+
+| Điều thấy | Số |
+|---|---|
+| `[PGND]` vẫn nhiều | **1156 lần, TB 17 ms** (34 lần/phút; trước P3 59 lần/phút) — nhưng `ve len anh` chỉ **0,6 ms** và **1002/1156** lần nằm ở nhánh XA: 17 ms KHÔNG còn ở ghép |
+| Gốc thật | `ClearImageData` → `LockData`+memset+`UnLockData` → `UpdateTexture` → `UpdateSurface` **khoá ảnh đích** → `CTexGpu::LockRect` thấy render target đã vẽ (`m_bGpuNewer`) → `ReadbackTexture` = `SubmitFrame` + đọc GPU về CPU **đồng bộ**. Máy ảo đọc ngược rẻ nên không lộ; Fold 7 ~17 ms/lần |
+| CPU tăng | lõi 0 1,9–2,1 GHz, 3,2–3,6 W trong Tống Kim (phiên 16:41: ~1 GHz, 2,1 W): vòng hỏi `JxNenTruoc` gọi 66 ô × mỗi khung × mỗi vùng đang chờ |
+| Cache | 495–512 MB / ngân sách 768, hết kẹp giả; `nạp 5886, bỏ 58230` = nhịp dọn LRU >10 s của bản 2.0 (1 mục/khung), không phải vượt ngân sách |
+| Khác | `[TG]` K=1 suốt (60 Hz); 10 khối atlas = 640 MB; `cho lenh+swapchain` TB 4–11 ms (chờ GPU/vsync) — theo dõi tiếp; fps TB 57,5, p10 55; không sập |
+
+Sửa (`android/va_nguon_mobile_1309_f.py`, commit `b22bf5eb`): (1) `[XOANEN 13/09]` ảnh nền vùng `_*PlaceGround*_` xoá **trên GPU** (SetRenderTarget + Clear + trả lại), không khoá CPU; đo `[PGND-X]` ≥ 4 ms cho cả hai đường; (2) lớp giả lập: Clear rồi đổi đích vẽ mà không có lệnh vẽ trước đây **bị bỏ** (`bPendingClear = false` ở `RGCMD_TARGET`) → nay mở một pass rỗng `load_op CLEAR`; (3) vòng hỏi chỉ hỏi lại ô còn chờ, tối đa mỗi 32 ms; (4) tệp ô nền vào hàng TRƯỚC của luồng nền. Máy ảo đi qua nhiều vùng 6 phút: `[PGND]` ≥ 15 ms = 1 (vào map), `[PGND-X]` 0, không sập. Windows y hệt (bộ kiểm ĐẠT). Bản **109132016** lên dt_v4 20:24; lùi = `android/apk/jx1mobile-1309-nentruoc.apk` (109131908) hoặc `-wauto-khoi.apk` (109131648).

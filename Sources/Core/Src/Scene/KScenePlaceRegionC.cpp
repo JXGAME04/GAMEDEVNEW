@@ -45,7 +45,7 @@ KScenePlaceRegionC::KScenePlaceRegionC()
 	memset(&m_BiosData, 0, sizeof(KBiosData));
 	m_pPrerenderGroundImg = NULL;
 #ifdef JX_MOBILE
-	m_uJxNenXinLuc = 0;	// [NENTRUOC 13/09]
+	JxNenDatLai();	// [NENTRUOC 13/09] [NENTRUOC 13/09 b]
 #endif
 
 	memset(m_TrapInfo, 0, sizeof(m_TrapInfo));
@@ -190,7 +190,7 @@ void KScenePlaceRegionC::Clear()
 		m_pPrerenderGroundImg->GROUND_IMG_OCCUPY_FLAG = false;
 		m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG = false;
 #ifdef JX_MOBILE
-		m_uJxNenXinLuc = 0;	// [NENTRUOC 13/09] bo anh nen -> xin lai
+		JxNenDatLai();	// [NENTRUOC 13/09] bo anh nen -> xin lai
 #endif
 		m_pPrerenderGroundImg = NULL;
 	}
@@ -215,7 +215,7 @@ void KScenePlaceRegionC::Clear()
 		free (m_BiosData.pLeafs);
 	memset(&m_BiosData, 0, sizeof(KBiosData));
 #ifdef JX_MOBILE
-	m_uJxNenXinLuc = 0;	// [NENTRUOC 13/09]
+	JxNenDatLai();	// [NENTRUOC 13/09] [NENTRUOC 13/09 b]
 #endif
 	m_Status = REGION_S_STANDBY;
 }
@@ -351,21 +351,47 @@ static int Rep3NenTruocKhung(const char* psz, int nFrame)
 }
 
 // [NENTRUOC 13/09] Xin / hoi tung o cua vung (cung danh sach ma PrerenderGround ghep). Tra so o con 'dang chuan bi' (2); 0 (khong duoc) coi nhu san.
+// [NENTRUOC 13/09 b] Lan dau hoi DU va ghi chi so o con cho vao m_jxNenCho; lan sau chi hoi lai cac o do, va toi da moi 32 ms - truoc do hoi
+// 66 o x moi khung x moi vung dang cho lam CPU loi 0 tren Fold 7 len 1,9-2,1 GHz (3,3 W) trong Tong Kim.
 int KScenePlaceRegionC::JxNenTruoc()
 {
-	int nCho = 0;
+	const unsigned uNow = (unsigned)timeGetTime();
+	if (m_bJxNenDaHoi && m_nJxNenCho == 0)
+		return 0;
+	if (m_bJxNenDaHoi && uNow - m_uJxNenHoiLuc < 32)
+		return m_nJxNenCho < 0 ? 1 : m_nJxNenCho;
+	m_uJxNenHoiLuc = uNow;
+	const bool bTatCa = !m_bJxNenDaHoi || m_nJxNenCho < 0;
+	m_bJxNenDaHoi = true;
+	int nCho = 0, nGhi = 0, k = 0;
+	unsigned short nIdx = 0;
+	bool bTran = false;
 	char szTen[MAX_PATH];
 	KSPRCrunode* pGrunode = m_GroundLayerData.pGrunodes;
-	for (unsigned int nIndex = 0; pGrunode && nIndex < m_GroundLayerData.uNumGrunode; nIndex++)
+	for (unsigned int n = 0; pGrunode && n < m_GroundLayerData.uNumGrunode; n++, nIdx++)
 	{
-		int nLen = (int)pGrunode->Param.nFileNameLen;
-		if (nLen >= MAX_PATH) nLen = MAX_PATH - 1;
-		if (nLen > 0) { memcpy(szTen, pGrunode->szImgName, nLen); szTen[nLen] = 0; if (Rep3NenTruocKhung(szTen, pGrunode->Param.nFrame) == 2) nCho++; }
+		const bool bHoi = bTatCa || (k < m_nJxNenCho && m_jxNenCho[k] == nIdx);
+		if (!bTatCa && bHoi) k++;
+		if (bHoi)
+		{
+			int nLen = (int)pGrunode->Param.nFileNameLen;
+			if (nLen >= MAX_PATH) nLen = MAX_PATH - 1;
+			if (nLen > 0)
+			{
+				memcpy(szTen, pGrunode->szImgName, nLen); szTen[nLen] = 0;
+				if (Rep3NenTruocKhung(szTen, pGrunode->Param.nFrame) == 2) { nCho++; if (nGhi < 640) m_jxNenCho[nGhi++] = nIdx; else bTran = true; }
+			}
+		}
 		pGrunode = (KSPRCrunode*)(((char*)pGrunode) + sizeof(KSPRCrunode::KSPRCrunodeParam) + pGrunode->Param.nFileNameLen);
 	}
 	KSPRCoverGroundObj* pObj = m_GroundLayerData.pObjects;
-	for (unsigned int nIndex = 0; pObj && nIndex < m_GroundLayerData.uNumObject; nIndex++, pObj++)
-		if (Rep3NenTruocKhung(pObj->szImage, pObj->nFrame) == 2) nCho++;
+	for (unsigned int n = 0; pObj && n < m_GroundLayerData.uNumObject; n++, pObj++, nIdx++)
+	{
+		const bool bHoi = bTatCa || (k < m_nJxNenCho && m_jxNenCho[k] == nIdx);
+		if (!bTatCa && bHoi) k++;
+		if (bHoi && Rep3NenTruocKhung(pObj->szImage, pObj->nFrame) == 2) { nCho++; if (nGhi < 640) m_jxNenCho[nGhi++] = nIdx; else bTran = true; }
+	}
+	m_nJxNenCho = bTran ? -1 : nGhi;
 	return nCho;
 }
 
@@ -506,7 +532,7 @@ void KScenePlaceRegionC::SetNestRegion(KScenePlaceRegionC* pNest)
 	if (m_pPrerenderGroundImg)
 		m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG = false;
 #ifdef JX_MOBILE
-	m_uJxNenXinLuc = 0;	// [NENTRUOC 13/09] ve lai -> xin lai
+	JxNenDatLai();	// [NENTRUOC 13/09] ve lai -> xin lai
 #endif
 }
 

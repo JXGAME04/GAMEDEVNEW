@@ -936,8 +936,13 @@ int TextureResMgr::NapTruoc(const char* pszImage, uint32 nType, int nNguon)	// [
 	const int nIdx = FindImage(uImage, 0);	// >= 0: da co; < 0: -(vi tri chen)-1
 	if (nIdx >= 0)
 		return 1;	// da co (dang nap, da nap, hoac muc nap hong dang cho thu lai)
+#ifdef JX_MOBILE
+	if (!NapNenGiao(pszImage, uImage, nType, nNguon != 3))	// [NENTRUOC 13/09 b] nguon 3 = o nen dat cua vung ke ben: hang TRUOC (can som), khong xep sau moi anh nap truoc
+		return 0;
+#else
 	if (!NapNenGiao(pszImage, uImage, nType, true))
 		return 0;
+#endif
 	ResNode node;
 	node.m_bDangNap = true;
 	node.m_nNapTruoc = (unsigned char)((nNguon >= 1 && nNguon <= 2) ? nNguon : 0);	// [NAPCHIEU 09/09 b] [NAPNPC 09/09]

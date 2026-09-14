@@ -1488,6 +1488,17 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		if (c.type == RGCMD_TARGET)
 		{
 			if (pass) { SDL_EndGPURenderPass(pass); pass = NULL; }
+#ifdef JX_MOBILE
+			if (bPendingClear && pCur)
+			{	// [XOANEN 13/09] Clear roi doi dich ve ma khong co lenh ve theo sau (xoa anh nen vung tren GPU): truoc day bi bo (bPendingClear = false) -> mo mot pass rong load_op CLEAR
+				SDL_GPUColorTargetInfo ciX; memset(&ciX, 0, sizeof(ciX));
+				ciX.texture = pCur; ciX.load_op = SDL_GPU_LOADOP_CLEAR; ciX.store_op = SDL_GPU_STOREOP_STORE;
+				ciX.clear_color.a = ((clearColor >> 24) & 0xFF) / 255.0f; ciX.clear_color.r = ((clearColor >> 16) & 0xFF) / 255.0f; ciX.clear_color.g = ((clearColor >> 8) & 0xFF) / 255.0f; ciX.clear_color.b = (clearColor & 0xFF) / 255.0f;
+				SDL_GPURenderPass* pX = SDL_BeginGPURenderPass(cb, &ciX, 1, NULL);
+				if (pX) SDL_EndGPURenderPass(pX);
+				jxK.uPass++;
+			}
+#endif
 			if (c.pTarget) { pCur = c.pTarget; bCurSwap = false; curW = curH = 0; for (size_t k = 0; k < m_touched.size(); k++) if (m_touched[k]->m_pGpu == c.pTarget) { curW = m_touched[k]->m_w; curH = m_touched[k]->m_h; break; } }
 			else { pCur = pSwap; bCurSwap = true; curW = swW; curH = swH; }
 			bPendingClear = false;

@@ -2793,6 +2793,35 @@ void KRepresentShell3::ClearImageData(const char* pszImage, unsigned int uImage,
 		pszImage, uImage, nImagePosition, 0, ISI_T_BITMAP16);
 	if (pBitmap)
 	{
+#ifdef JX_MOBILE
+		// [XOANEN 13/09] anh nen vung (_*PlaceGround*_): xoa TREN GPU (Clear vao dich ve) thay vi LockData + memset + UpdateTexture.
+		// UpdateSurface khoa DICH -> CTexGpu::LockRect thay render target da ve (m_bGpuNewer) -> ReadbackTexture = SubmitFrame + doc GPU
+		// ve CPU DONG BO ~17 ms (Fold 7 13/09: 1002/1156 lan [PGND] o nhanh XA la cai nay, 've len anh' chi 0,6 ms). Ban CPU cua anh
+		// nen khong ai doc. ScenePlaceMapC / UiPlayVideo giu duong cu (ten khac).
+		if (strncmp(pszImage, "_*PlaceGround*_", 15) == 0 && pBitmap->m_FrameInfo.texInfo[0].pTexture)
+		{
+			LARGE_INTEGER jxX0, jxX1, jxXF; QueryPerformanceFrequency(&jxXF); QueryPerformanceCounter(&jxX0);
+			IDirect3DSurface9 *pXDes = NULL, *pXOld = NULL;
+			bool bXong = false;
+			if (SUCCEEDED(PD3DDEVICE->GetRenderTarget(0, &pXOld)) && SUCCEEDED(pBitmap->m_FrameInfo.texInfo[0].pTexture->GetSurfaceLevel(0, &pXDes)))
+			{
+				if (SUCCEEDED(PD3DDEVICE->SetRenderTarget(0, pXDes)))
+				{
+					PD3DDEVICE->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
+					PD3DDEVICE->SetRenderTarget(0, pXOld);
+					bXong = true;
+				}
+			}
+			if (pXDes) pXDes->Release();
+			if (pXOld) pXOld->Release();
+			QueryPerformanceCounter(&jxX1);
+			const double dXMs = jxXF.QuadPart ? (double)(jxX1.QuadPart - jxX0.QuadPart) * 1000.0 / (double)jxXF.QuadPart : 0.0;
+			if (dXMs >= 4.0) Rep3Log("[PGND-X] xoa nen %s tren GPU: %.1f ms (%s)", pszImage, dXMs, bXong ? "xong" : "HONG -> memset");
+			if (bXong)
+				return;
+		}
+		LARGE_INTEGER jxC0, jxC1, jxCF; QueryPerformanceFrequency(&jxCF); QueryPerformanceCounter(&jxC0);	// [XOANEN 13/09] do duong cu (LockData/UpdateTexture)
+#endif
 		byte* pBuffer;
 		int32 nPitch;
 		if( pBitmap->LockData((void**)(&pBuffer), nPitch) )
@@ -2804,6 +2833,10 @@ void KRepresentShell3::ClearImageData(const char* pszImage, unsigned int uImage,
 			}
 			pBitmap->UnLockData();
 		}
+#ifdef JX_MOBILE
+		QueryPerformanceCounter(&jxC1);
+		{ const double dCMs = jxCF.QuadPart ? (double)(jxC1.QuadPart - jxC0.QuadPart) * 1000.0 / (double)jxCF.QuadPart : 0.0; if (dCMs >= 4.0) Rep3Log("[PGND-X] xoa anh %s bang CPU (LockData/UpdateTexture): %.1f ms", pszImage, dCMs); }	// [XOANEN 13/09]
+#endif
 	}
 }
 
