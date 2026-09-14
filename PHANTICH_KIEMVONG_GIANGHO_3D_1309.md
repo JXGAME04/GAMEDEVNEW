@@ -202,3 +202,45 @@ Nguồn: `meta_pc_res.txt` (lớp/trường), `bundle_all.tsv` (68 bundle PC, đ
 - Vậy "lấy nhân vật lúc tạo game" = lấy mô hình 3D có xương + 60 hoạt ảnh + da. JX1 mobile là engine 2D sprite, **không vẽ được mô hình 3D**; muốn dùng phải **vẽ lại thành sprite 8 hướng** (Blender: ghép xương, gắn hoạt ảnh, render 8 hướng × từng động tác JX1 cần: đứng/đi/chạy/đánh theo loại vũ khí/ngồi/chết… × 5 hệ × 2 giới) — quy mô dựng lại toàn bộ nhân vật, tính bằng tuần, và sẽ **lệch phong cách** với NPC/quái JX1 hiện có.
 - Cách dùng rẻ và hợp lý nếu chủ muốn: chỉ dùng cho **màn tạo nhân vật** — render tĩnh (hoặc xoay vòng vài khung) 8 nhân vật trình diễn thành PNG → SPR làm hình đại diện 5 hệ trong màn tạo nhân vật JX1 mobile. Việc: rút mesh + tìm texture/xương (1 ngày, có thể phải soi bundle APK), Blender render (1–2 ngày), ghép vào UI JX1 (1 ngày).
 - **Lưu ý bản quyền:** toàn bộ mô hình, hoạt ảnh, ảnh này thuộc nhà phát hành Kiếm Võng Giang Hồ. Đưa vào sản phẩm phát hành cần quyền của họ; đây là quyết định của chủ, tôi chỉ nêu để cân nhắc.
+
+
+---
+
+## 10. Mổ sâu (chủ hỏi 14/09): đao quang, hào quang, và hiệu ứng trang bị trên trang thông tin nhân vật
+
+Nguồn: bảng `sfx_object` (127 hàng), `anim_effect` (18), `sfx_ui_object` (7), `cha_pic`, `cha_list`, `fabao_list` (80), `xianjie_list` (15), `title_list` (62), `avatar_list` (75) rút từ bundle `c96f69a275af.bdd`; Lua `lua_itemMgr.lua`, `ui_propequip.lua`, `ui_lookequip.lua`, `ui_choose.lua`; lớp C# `SFXXWeaponAnim/Anchor/Adapter`, `SFXMeshTrailDrag`, `XftWeapon.XWeaponTrail`, `AnimateBagSprite`; bundle hạt `1d472c44c423.bdd` (1 455 prefab, 315 ParticleSystem, 93 texture). Bảng đã rút ở `scratchpad/ta_*.txt`, chép về `D:\game3gTQ_mo\pc_textassets\`.
+
+### 10.1 Đao quang (vệt sáng vũ khí) — chuỗi đầy đủ
+
+1. **Chọn nhóm:** `Player.m_weaponAnimEffect` → hàng `anim_effect`. Vũ khí thường: `model_hang_list` cột "武器拖尾动作特效 = 0 → theo **phẩm chất**", nên phẩm chất `eItemQuality` 1 trắng / 2 lam / 3 tím / 4 kim / 5 bạch kim / 6 huyền kim ↔ `anim_effect` 1…6 ("通用白色…玄金武器"). NPC dùng `cha_pic.defAnimEffect` (nhóm 10–14 "相加" cộng sáng: gợn sóng / sụp / chấm / mềm; NPC đặc biệt 100–101). Nhân vật trình diễn ở màn tạo dùng 102–105 ("炫光" chói: kim, hỏa, hỏa-kim, độc).
+2. **Mỗi hoạt ảnh đánh một sfx:** hàng nhóm liệt kê `gj01/gj02` (đánh thường), `gjdj01/02` (đao kiếm), `gjqg01/02` (thương côn), `gjss01/02` (song thủ), `gjyc01/02` (đánh xa), `qm_gj01/02` (trên ngựa) → cùng một `sfx_object` id: **290 → 295** = `Particles/Daoguang/dg_xw_cmn_{white, blue, purple, gold, wgold, xgold}` (prefab có trong bundle hạt). NPC: 305–308 `dg_xw_add_{bowen, taxian, xiantiaodian, rouguang}`; trình diễn: 309–311 `dg_xw_emis_{huoyan, gold, huojin}`, 507–508 `dg_wx_xr_muxi` gắn xương `npc_wqdrag_l_1 / r_1` (vệt hai tay, 45 khung).
+3. **Cách vẽ:** `SFXXWeaponAnim` trên `Creature.mWeaponAnimFx`: bảng `XWeaponAnimData{name, max_frame, hinge_start_1/end_1, hinge_start_2/end_2, frame_ctrl, sound_id}` = vệt chỉ sống trong khoảng khung [start, end] của hoạt ảnh (hai vệt cho song thủ); vệt là `XftWeapon.XWeaponTrail` (trail1/trail2) căng giữa `SFXXWeaponAnchor.startPoint/endPoint` (chuôi → mũi vũ khí), màu `mColor`; loại mesh dùng `SFXMeshTrailDrag` (màu, độ sáng `mEnhance`, đường cong dài/ngắn/cỡ, cuộn UV, alpha sinh/tắt). `SFXXWeaponAdapter` co dãn hạt theo chiều dài vũ khí (`scaleZ`, `scalePctLife/Speed`, `adapterColor`).
+4. **"Phụ ma" (附魔, hào quang bám dọc lưỡi vũ khí):** `SFXXWeaponAnchor.mModelFuMoID / mFuMoNode / mFuMoFX` + `rimTrans` — hiệu ứng thường trực trên vũ khí, đến từ hệ **pháp bảo** (`fabao_list` cột "附魔百分比 / 每级附魔值 / 附魔道具"; 80 pháp bảo, 3 phẩm mỗi cái, mỗi phẩm một ngoại hình `weapon_list`), không phải từ phẩm chất.
+5. **Texture nguồn (2D, rút được):** `m_daoguang11`, `m_daoguang11_fun`, `m_daoguang_05`, `sprite_dg_add_512`, `sprite_dg_add_512_2`, `sprite_dg_meshtrail_mul_512`, `trail_particle_128_01…05`, `trail_shockwave_01…04` (bundle hạt). Đã xuất thử PNG: `scratchpad/tex_m_daoguang11.png`… (`daoguang_xemtruoc.png`).
+
+**Mang sang JX1:** JX1 vẽ vũ khí liền trong sprite nhân vật, không có xương chuôi/mũi → không căng vệt theo vũ khí được. Cách gần nhất: **sprite vệt sáng riêng** cho từng động tác đánh (mỗi loại vũ khí × 8 hướng × 3–4 khung), vẽ chồng lên nhân vật trong khung [start, end] của hoạt ảnh đánh (JX1 có số khung từng động tác trong bảng sprite), **nhuộm màu theo phẩm chất** bằng `COLOR_ADJUST` như cột sáng đồ rơi (một bộ ảnh trắng, 6 màu). Ảnh có thể vẽ tay từ texture `m_daoguang*` làm mẫu. Ước: 2–3 ngày (1 ngày ảnh cho kiếm/đao, 1 ngày mã `KPlayer`/`KNpc` mobile-only, nửa ngày các loại vũ khí còn lại). Không có texture nào lấy dùng thẳng được vì vệt của họ là dải kéo theo chuyển động 3D.
+
+### 10.2 Hào quang — trong game 3D là 6 thứ khác nhau
+
+| Loại | Dữ liệu | Ghi chú |
+|---|---|---|
+| **Vòng dưới chân NPC theo cấp** | `sfx_object` 1000 `Halo/halo_npc_purple` (quái tím/tinh anh), 1001 `halo_npc_gold` (quái hoàng kim), 1002 `halo_npc_pink`, 1003 `halo_boss_red` (pháp trận đỏ boss), 1005 `State/state_boss_gold_01`; gắn `sys_foot`, sống -1 (thường trực) | prefab có trong bundle hạt; cách gần JX1 nhất |
+| Hào quang kỹ năng phái Nga My | 925–928 `Halo/halo_em_{mengdie, foxinciyou, qingyin, puduzs}` (chân / thân) | buff kỹ năng |
+| Chói ở màn tạo nhân vật | `anim_effect` 102–105 → `dg_xw_emis_*`, `dg_wx_xr_muxi` cho `cha_pic` 3, 4, 6, 7, 8 (kim nam, mộc nam, thuỷ nữ, hoả nam, hoả nữ) trong hoạt ảnh `xrzs` (trình diễn) | đây là cái "hào quang" thấy lúc tạo nhân vật |
+| Thời trang | `avatar_list` loại 1: 8 bộ × mỗi phái/giới (皇帝的新衣, 飞龙在天, 金榜题名…), đổi da `skin@zj010…023` | không có ánh sáng riêng |
+| Tường vân (mây cưỡi bay) | `avatar_list` loại 2 (紫电黑云, 五彩祥云, 火羽霞云) đi với **tiên giai** `xianjie_list` 15 bậc (居士→…) có cột "飞行高度" (độ cao bay) | thú cưỡi bay, JX1 không có |
+| Pháp bảo, danh hiệu | `fabao_list` 80 (3 phẩm, phụ ma); `title_list` 62: màu chữ `[c=…]`, ảnh danh hiệu `tl_spr`, prefab `title_gx/title_gx01` (danh hiệu có ánh sáng) | JX1 có danh hiệu chữ |
+| Nhuộm thân theo trạng thái | `state_effect` 77: độc `32A260`, bỏng `B30D0D`, chậm `CCCC44`, đổi cỡ/alpha | JX1 có đổi màu sprite khi trúng độc |
+
+**Mang sang JX1 (đề xuất):** (1) **vòng sáng dưới chân quái tinh anh / boss** theo màu (tím, vàng, đỏ) bằng `spr/haoquang/vongtron{tim,vang,do}.spr` có sẵn, vẽ trước sprite NPC, chọn theo cấp/loại NPC — nửa ngày; (2) vòng hào quang người chơi theo phẩm chất trang bị cao nhất — nửa ngày (đã nêu §9); (3) hào quang danh hiệu: JX1 có danh hiệu chữ, thêm vòng/ảnh nhỏ theo danh hiệu — 1 ngày, cần ảnh.
+
+### 10.3 Trang thông tin / trang bị của nhân vật — hiệu ứng nằm trên Ô TRANG BỊ, không có mô hình
+
+- `roleinfo` prefab chỉ có `name, lv, bg`; `ui_propequip` (trang thuộc tính + trang bị) và `ui_lookequip` (xem đồ người khác) **không dùng ModelView** (ModelView chỉ ở màn chọn/tạo nhân vật `ui_choose`). Nên "hiệu ứng trang bị mặc trên trang thông tin" = hiệu ứng trên **ô icon**:
+  1. **Viền phẩm chất động** (走边动画): `lua_item.SetBorderType(goAnim, quality)` bật con thứ `QualityToBorderID`: lam 0, tím 1, kim 2, bạch kim 3, huyền kim 4 (trắng không viền) — prefab viền chạy (`itemborder_anim_path` của `Global`), dùng chung ở túi, tips, trang bị.
+  2. **Ánh quét theo cấp cường hoá** (走光): `GetLevelFlash(item)` → `AnimateBagSprite.Play(x, y, ex, ey, prefix, fps, thickness)` với bảng `EquipLevelUpFlash`: +6…+8 `jialiu_` (2–3 fps, mỏng), +9…+11 `jiajiu_` (5–7 fps, dày 4–6), +12…+14 `xuanhong_` / `anjin_` (đỏ sẫm / vàng sẫm, 7–9 fps, dày 25; ngũ hành "kinh diễm" dùng bộ thứ hai), +15 `cai_` (nhiều màu, 8 fps, dày 20) — là các dãy ảnh trong atlas UI chạy vòng quanh icon.
+  3. **Màu chữ +N** theo cấp: +1–5 trắng, +6–8 xanh nhạt `82e4ff`, +9 vàng `ffcb16`, +10 cam `ff7f2a`, +11 hồng `ff5ab3`, +12 đỏ `ff2323`, +30 vàng viền đỏ, +50 vàng viền tím.
+  4. **Hạt trong UI:** `ui_propactive.prefab` khi ô được kích hoạt; `sfx_ui_object`: chuẩn bị/thành công thăng cấp trang bị, truyền thừa, chọn đá quý (trắng/tím), thăng kỹ năng, đặt lại tứ cách — mỗi cái một prefab `Particles/UI/*`, sống 12–55 khung.
+  5. Tips trang bị: màu tên theo phẩm chất `Define.ItemColEffect*`, bộ (`equip_suit`) chỉ là thuộc tính.
+
+**Mang sang JX1 mobile:** bảng trang bị/hành trang của JX1 vẽ icon qua `KWndImage`/`DrawPrimitives`; thêm (1) **viền phẩm chất động** = một SPR viền 4–6 khung màu trắng nhuộm theo `m_nColorID` (xanh/hoàng kim/tím/bạch kim), vẽ chồng lên ô trang bị đang mặc và ô túi — 1 ngày (ảnh viền sinh bằng PIL như cột sáng); (2) **ánh quét** theo cấp cường hoá — JX1 có cường hoá "+N" không thì phải xem bảng vật phẩm; nếu có, thêm nửa ngày. Mô hình nhân vật 3D trên trang thông tin: game 3D cũng không làm, JX1 giữ chân dung như hiện tại.
