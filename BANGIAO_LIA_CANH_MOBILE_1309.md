@@ -418,3 +418,13 @@ Chủ: *"Đồ ném ra đã nằm trôi nổi nhưng chưa dựng thẳng lên t
 - **Vẽ**: `VatRoi_DungIcon` thay `m_Image` (tên icon, khung 0, xoá `uImage` khi đổi tên) đặt đáy icon tại tâm ảnh nằm đất (x+12, y+12) = chân cột, nhấc lên `VatRoi_DoCao − 12` (dựng lên 350 ms + nhấp ±3 px). Vũ khí 1×4 (24×96) đứng thẳng cao trong cột. Nhặt đồ không đổi.
 - Kịch bản `android/va_nguon_vatroi_1409_d.py` (sau bản c). `[VatRoi] Thu=1` ghi log `[VATROI] icon dung vat <id> '<tên>' (genre/detail/particular) -> <ảnh> WxH`.
 - Máy ảo: ném "Liệt Thiên Triền Thủ" (trang bị xanh, 0/0/6) → log `-> \spr\item\equip\closeweapon\obj-glove04.spr 24x48`; đi ra xa thấy icon găng đứng trên chân cột, cột xanh nhạt phía sau (`dung4_zoom.png`). `kiem --pc` ĐẠT.
+
+## 10. Sửa theo chủ 14/09 09:5x (ảnh Fold 7): icon co giãn vừa cột sáng, đặt đúng điểm đặt, tên nằm trên icon (bản **109140935**)
+
+Chủ: *"tên trang bị bị lệch và hình ảnh quá to, làm nhỏ lại cho bằng cột sáng"*.
+
+- **Gốc lệch**: ảnh nằm đất của vật phẩm (`objdata.txt` `\spr\obj\item\obj_wq_*.spr`) neo **đáy dưới** (`ImageCgXpos/Ypos` ≈ 60/105) nên điểm đặt của vật thể là (x, y) — bản c/d giả định icon 24×24 góc trái trên nên đặt cột, loé, icon ở (x+12, y+12) → lệch 12 px so với tên (`DrawInfo` căn giữa x). Nay cột (`cotsang.spr` neo (24,112)), loé (`loe.spr` neo (32,32)) và icon đều tại (x, y).
+- **Co giãn**: `VatRoi_VeIconDung` vẽ icon bằng `RU_T_IMAGE_STRETCH` ở toạ độ màn hình: đổi (x, y) qua `g_pRepresent->CoordinateTransform` (cùng hàm Represent3 dùng cho mọi ảnh thế giới, gồm lia/zoom/lắc) rồi kéo về khung `min(1, IconRong/w, IconCao/h)` — `[VatRoi] IconRong=28 IconCao=44`: 1×1 giữ nguyên, 2×2 (50×50) → 28×28, 2×4 (48×96) → 22×44, 1×4 (24×102) → 10×44. Vẽ ở nhánh `default` của `switch` (SAU cột sáng, TRƯỚC loé); `m_Image` (ảnh nằm đất) không vẽ khi có icon. Hạn chế: `DrawImage2DStretch` cắt theo cỡ màn hình nên khi "Nhìn rộng" > 100 % icon ở dải lề ngoài cỡ màn hình có thể bị cắt (cột vẫn vẽ).
+- **Tên**: `DrawInfo` cộng `VatRoi_CaoTen` = độ lơ lửng + chiều cao icon đã co − 12 vào `nHeightOff` (`OBJ_SHOW_NAME_Y_OFF` 48) → tên nằm ngay trên icon.
+- `VatRoi_DoCao` nay trả độ LƠ LỬNG (0..NoiCao+3), −1 = tắt; không cộng 12 nữa. Kịch bản `android/va_nguon_vatroi_1409_e.py` (sau bản d); ảnh `anh_vatroi_cotsang.py` sinh lại (lớp ghi đè, máy ảo, dt_v4).
+- Máy ảo: ném "Kim Cô Bổng" (1×4, 24×102) và "Phá Thiên Chùy" (2×2, 50×50 → 28×28): búa đứng nhỏ trong cột tím, tên phía trên (`chuy3_zoom2.png`). `kiem --pc` ĐẠT.

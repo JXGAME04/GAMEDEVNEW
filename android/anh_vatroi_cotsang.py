@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 r"""[VATROI 14/09] Sinh anh hieu ung VAT PHAM ROI (chu: "lam muc 1 truoc: hieu ung anh sang tuy theo loai vat pham" - chep cach game 3D
 Kiem Vong Giang Ho: StillObject.mDropLightObj cot sang theo pham chat + cmn_drop_flash loe luc cham dat):
-  * spr\vatroi\cotsang.spr : 1 khung 48x120, cot sang TRANG mo dan len tren + vung sang o chan; neo (cx, cy) = (12, 100): chan cot (24, 112)
-                             roi vao TAM icon vat pham 24x24 (14/09 c: icon dung thang len tren diem do) (icon co cx=cy=0, goc trai tren tai diem dat). Mau: KObj::Draw ve bang
+  * spr\vatroi\cotsang.spr : 1 khung 48x120, cot sang TRANG mo dan len tren + vung sang o chan; neo (cx, cy) = (24, 112): chan cot (24, 112)
+                             roi vao DIEM DAT (x, y) cua vat the (anh nam dat obj_wq_*.spr neo day duoi; 14/09 e) (icon co cx=cy=0, goc trai tren tai diem dat). Mau: KObj::Draw ve bang
                              IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST nhan mau ten vat pham (pham chat) -> mot anh trang dung cho moi mau.
-  * spr\vatroi\loe.spr     : 6 khung 64x48, vong elip 2:1 dan ra + loe giua (khung dau), tam (32, 32), neo (20, 20) = tam vong tai tam icon.
+  * spr\vatroi\loe.spr     : 6 khung 64x48, vong elip 2:1 dan ra + loe giua (khung dau), tam (32, 32), neo (32, 32) = tam vong tai diem dat.
 Dinh dang SPR (theo bo_cuc_vnku_mobile.doc_spr): "SPR\0" + W H cx cy frames colors dirs itv (8 x u16) + 12 byte 0, bang mau colors x 3,
 bang (offset, len) moi khung, moi khung: fw fh ox oy (4 x u16) + RLE tung dong: (run, alpha 8 bit 0..255) [+ run chi so neu alpha > 0].
 Ghi vao lop ghi de android\du_lieu_ghi_de\spr\vatroi\, D:\jx1_android_data\spr\vatroi\ (may ao) va tuy chon goi may chu tai (tham so 1,
@@ -151,8 +151,8 @@ def main():
     for dich in DICH:
         # neo (cx, cy): Represent3 REF_SPOT dat anh tai (pos - cx, pos - cy); anh vat pham roi la icon 24x24 cx=cy=0 (goc trai tren tai
         # diem dat) -> chan cot (24, 112) va tam vong (32, 32) phai roi vao (12, 24) cua icon -> cx = 24-12, cy = 112-24 / 32-12, 32-24
-        n1 = ghi_spr([cot], os.path.join(dich, "cotsang.spr"), 12, 100)   # [VATROI 14/09 c] chan cot tai TAM icon (x+12, y+12)
-        n2 = ghi_spr(loe, os.path.join(dich, "loe.spr"), 20, 20)          # tam vong loe tai tam icon
+        n1 = ghi_spr([cot], os.path.join(dich, "cotsang.spr"), 24, 112)   # [VATROI 14/09 e] chan cot tai DIEM DAT (x, y) = neo anh nam dat (ImageCgXpos/Ypos day duoi)
+        n2 = ghi_spr(loe, os.path.join(dich, "loe.spr"), 32, 32)          # tam vong loe tai diem dat
         print("da ghi:", dich, "cotsang.spr %d B, loe.spr %d B" % (n1, n2))
     # kiem doc lai
     hdr, ks = doc_spr(os.path.join(DICH[0], "cotsang.spr"))

@@ -510,6 +510,9 @@ void KObj::DrawInfo_Backup()
 	dwColor = this->m_dwNameColor;
 	g_pRepresent->OutputText(12, m_szName, KRF_ZERO_END, nMpsX - 12 * g_StrLen(m_szName) / 4, nMpsY, dwColor, 0, nHeightOff);
 }
+#ifdef JX_MOBILE
+static int VatRoi_CaoTen(int nIndex);	// [VATROI 14/09 e] dinh nghia o khoi VATROI truoc KObj::Draw
+#endif
 //Edit by Phong Kieu code van luong money duoi dat
 void KObj::DrawInfo()
 {
@@ -517,6 +520,9 @@ void KObj::DrawInfo()
     DWORD    dwColor;
     GetMpsPos(&nMpsX, &nMpsY);
     nHeightOff = OBJ_SHOW_NAME_Y_OFF;
+#ifdef JX_MOBILE
+    nHeightOff += VatRoi_CaoTen(m_nIndex);	// [VATROI 14/09 e] ten nam tren icon dung + lo lung
+#endif
     dwColor = this->m_dwNameColor;
     if (m_nKind == Obj_Kind_Money)
     {
@@ -556,6 +562,8 @@ static int          s_nVrIcID[MAX_OBJECT];		// m_nID da tra (0 = chua)
 static char         s_szVrIcon[MAX_OBJECT][80];	// ten anh icon ("" = khong co -> nhac anh nam dat len nhu ban c)
 static short        s_nVrIcW[MAX_OBJECT], s_nVrIcH[MAX_OBJECT];
 static char         s_nVrIcOn[MAX_OBJECT];		// 1 = m_Image dang mang ten icon (doi ten thi phai xoa uImage)
+static int          s_nVrIcRong = 28, s_nVrIcCao = 44;	// [VATROI 14/09 e] [VatRoi] IconRong/IconCao: khung toi da cua icon dung (co gian giu ti le)
+static KRUImage     s_VrIcAnh;							// [VATROI 14/09 e] don vi ve icon dung (RU_T_IMAGE_STRETCH, toa do man hinh)
 static int          s_nVrNoi = 1, s_nVrNoiCao = 8;	// [VatRoi] Noi=1: vat pham dung thang len trong cot sang (chu: "do rot ra se dung thang len theo cot sang"), NoiCao px
 static KRUImage     s_VrCot, s_VrLoe;
 static int          s_nVrBat = 1;	// [HAOQUANG 14/09] cong tac Cai dat > Toi uu "Sang vat roi" (UiOptions2 -> JxVatRoi_DatBat)
@@ -580,6 +588,10 @@ static void VatRoi_DocCfg()
 	s_nVrNoiCao    = GetPrivateProfileInt("VatRoi", "NoiCao", 8, szCfg);
 	if (s_nVrNoiCao < 0) s_nVrNoiCao = 0;
 	if (s_nVrNoiCao > 40) s_nVrNoiCao = 40;
+	s_nVrIcRong    = GetPrivateProfileInt("VatRoi", "IconRong", 28, szCfg);	// [VATROI 14/09 e]
+	s_nVrIcCao     = GetPrivateProfileInt("VatRoi", "IconCao", 44, szCfg);
+	if (s_nVrIcRong < 8) s_nVrIcRong = 8;
+	if (s_nVrIcCao < 8) s_nVrIcCao = 8;
 	g_DebugLog("[VATROI] cot sang=%d (tu mau %d, alpha %d) loe=%d thu=%d noi=%d cao %d", s_nVrCotSang, s_nVrCotSangTu, s_nVrAlpha, s_nVrLoe, s_nVrThu, s_nVrNoi, s_nVrNoiCao);
 }
 
@@ -598,7 +610,7 @@ static int VatRoi_DoCao(int nIndex, int nDropState)
 	int nLen, nNhap;
 	VatRoi_DocCfg();
 	if (!s_nVrBat || !s_nVrNoi || nDropState == 1)
-		return 0;
+		return -1;	// [VATROI 14/09 e] -1 = tat
 	uNay = (unsigned int)GetTickCount();
 	nLen = s_nVrNoiCao;
 	if (nIndex > 0 && nIndex < MAX_OBJECT && s_uVrNoiLuc[nIndex])
@@ -608,7 +620,8 @@ static int VatRoi_DoCao(int nIndex, int nDropState)
 			nLen = (int)((unsigned int)s_nVrNoiCao * (700 * uDa - uDa * uDa) / (350 * 350));
 	}
 	nNhap = (int)(uNay % 1400); if (nNhap >= 700) nNhap = 1400 - nNhap;	// 0..700..0
-	return 12 + nLen + nNhap * 6 / 700 - 3;
+	nNhap = nLen + nNhap * 6 / 700 - 3;	// [VATROI 14/09 e] chi do LO LUNG tren diem dat (0..NoiCao+3); diem dat = (x, y) neo day anh nam dat
+	return nNhap > 0 ? nNhap : 0;
 }
 
 // [VATROI 14/09 d] tra ten anh icon dung cua vat pham nam dat (NULL = khong tra duoc). Client chi biet genre/detail/particular + TEN
@@ -657,20 +670,66 @@ static void VatRoi_DungIcon(KObj* p, int x, int y)
 {
 	int i = p->m_nIndex;
 	int nCao = VatRoi_DoCao(i, p->m_nDropState);
-	const char* szIcon = (nCao > 0) ? VatRoi_TimIcon(p) : NULL;
+	const char* szIcon = (nCao >= 0) ? VatRoi_TimIcon(p) : NULL;	// [VATROI 14/09 e]
 	if (i <= 0 || i >= MAX_OBJECT)
 		return;
 	if (!szIcon)
 	{
 		if (s_nVrIcOn[i]) { s_nVrIcOn[i] = 0; p->m_Image.uImage = 0; }
-		p->m_Image.oPosition.nY -= nCao;
+		if (nCao > 0) p->m_Image.oPosition.nY -= nCao;	// [VATROI 14/09 e] khong co icon: anh nam dat lo lung
 		return;
 	}
-	if (!s_nVrIcOn[i]) { s_nVrIcOn[i] = 1; p->m_Image.uImage = 0; }
-	strcpy(p->m_Image.szImage, szIcon);
-	p->m_Image.nFrame = 0;
-	p->m_Image.oPosition.nX = x + 12 - s_nVrIcW[i] / 2;
-	p->m_Image.oPosition.nY = y + 12 - s_nVrIcH[i] - (nCao - 12);
+	s_nVrIcOn[i] = 1;	// [VATROI 14/09 e] icon ve o nhanh default cua switch (VatRoi_VeIconDung) SAU cot sang, co gian vua cot; m_Image (anh nam dat) khong ve
+}
+
+// [VATROI 14/09 e] ti le co gian icon: min(1, IconRong/w, IconCao/h) (phan nghin)
+static int VatRoi_TiLeIcon(int w, int h)
+{
+	int k = 1000, k2;
+	if (w > s_nVrIcRong) k = s_nVrIcRong * 1000 / w;
+	if (h > s_nVrIcCao) { k2 = s_nVrIcCao * 1000 / h; if (k2 < k) k = k2; }
+	return k < 50 ? 50 : k;
+}
+
+// [VATROI 14/09 e] chieu cao cong them cho TEN vat pham (DrawInfo): icon dung + lo lung, 0 khi khong co icon dung
+static int VatRoi_CaoTen(int nIndex)
+{
+	int nCao;
+	if (nIndex <= 0 || nIndex >= MAX_OBJECT || !s_nVrIcOn[nIndex] || s_nVrIcH[nIndex] <= 0)
+		return 0;
+	nCao = VatRoi_DoCao(nIndex, 0);
+	if (nCao < 0) nCao = 0;
+	nCao += s_nVrIcH[nIndex] * VatRoi_TiLeIcon(s_nVrIcW[nIndex], s_nVrIcH[nIndex]) / 1000 - 12;	// [VATROI 14/09 e2] bot 12 px cho ten sat icon
+	return nCao > 0 ? nCao : 0;
+}
+
+// [VATROI 14/09 e] ve icon dung CO GIAN tai diem dat (x, y): doi sang toa do man hinh bang g_pRepresent->CoordinateTransform (cung ham
+// Represent3 dung cho moi anh the gioi, gom ca lia/zoom/lac) roi RU_T_IMAGE_STRETCH (chi nhan toa do man hinh). Tra 1 = da ve (bo ve m_Image).
+static int VatRoi_VeIconDung(KObj* p, int x, int y)
+{
+	int i = p->m_nIndex, nCao, k, w2, h2, sx, sy;
+	KRUImage& a = s_VrIcAnh;
+	if (i <= 0 || i >= MAX_OBJECT || !s_nVrIcOn[i] || !s_szVrIcon[i][0] || s_nVrIcW[i] <= 0)
+		return 0;
+	nCao = VatRoi_DoCao(i, p->m_nDropState);
+	if (nCao < 0)
+		return 0;
+	k = VatRoi_TiLeIcon(s_nVrIcW[i], s_nVrIcH[i]);
+	w2 = s_nVrIcW[i] * k / 1000; if (w2 < 1) w2 = 1;
+	h2 = s_nVrIcH[i] * k / 1000; if (h2 < 1) h2 = 1;
+	sx = x; sy = y;
+	g_pRepresent->CoordinateTransform(sx, sy, 0);
+	if (strcmp(a.szImage, s_szVrIcon[i]) != 0)
+	{
+		memset(&a, 0, sizeof(a));
+		strcpy(a.szImage, s_szVrIcon[i]);
+	}
+	a.uImage = 0; a.nISPosition = IMAGE_IS_POSITION_INIT; a.nType = ISI_T_SPR; a.nFrame = 0;
+	a.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA; a.bRenderFlag = 0; a.Color.Color_dw = 0xffffffff;
+	a.oPosition.nX = sx - w2 / 2; a.oPosition.nY = sy - h2 - nCao; a.oPosition.nZ = 0;
+	a.oEndPos.nX = a.oPosition.nX + w2; a.oEndPos.nY = a.oPosition.nY + h2; a.oEndPos.nZ = 0;
+	g_pRepresent->DrawPrimitives(1, &a, RU_T_IMAGE_STRETCH, 1);
+	return 1;
 }
 
 static void VatRoi_DatAnh(KRUImage& a, int nFrame, int x, int y, unsigned int uAlpha, DWORD dwMau)
@@ -765,6 +824,10 @@ void KObj::Draw()
 			g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE, 0);	
 		break;
 	default:
+#ifdef JX_MOBILE
+		if (m_nKind == Obj_Kind_Item && VatRoi_VeIconDung(this, x, y))	// [VATROI 14/09 e] icon dung co gian, ve sau cot sang
+			break;
+#endif
 		g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE, 0);	
 		break;
 	}
