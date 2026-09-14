@@ -244,3 +244,56 @@ Nguồn: bảng `sfx_object` (127 hàng), `anim_effect` (18), `sfx_ui_object` (7
   5. Tips trang bị: màu tên theo phẩm chất `Define.ItemColEffect*`, bộ (`equip_suit`) chỉ là thuộc tính.
 
 **Mang sang JX1 mobile:** bảng trang bị/hành trang của JX1 vẽ icon qua `KWndImage`/`DrawPrimitives`; thêm (1) **viền phẩm chất động** = một SPR viền 4–6 khung màu trắng nhuộm theo `m_nColorID` (xanh/hoàng kim/tím/bạch kim), vẽ chồng lên ô trang bị đang mặc và ô túi — 1 ngày (ảnh viền sinh bằng PIL như cột sáng); (2) **ánh quét** theo cấp cường hoá — JX1 có cường hoá "+N" không thì phải xem bảng vật phẩm; nếu có, thêm nửa ngày. Mô hình nhân vật 3D trên trang thông tin: game 3D cũng không làm, JX1 giữ chân dung như hiện tại.
+
+
+---
+
+## 11. Mổ sâu (chủ hỏi 14/09 11:0x): bản 3D "zoom ảnh" thế nào — chỉ phân tích, chưa sửa
+
+Nguồn: `GameCamera / EventCamera.TouchControl` (GameAssembly.dll, dịch ngược `cam_disasm2.txt`), `GameConfig` (`meta_pc_res.txt` 936–937, dịch ngược `GetCamWheelSpeed / SetCamWheelSpeed / GetCamSpeed`, ctor `GameCamera` RVA 0x4af3f0), Lua `ui_cfg_game.lua` (cửa sổ cài đặt), `lua_app_load.lua`, bảng `scn_list.cameraInit`, URP asset `UniversalRP-Scene` (bundle `c33674c0bad2.bdd`, đọc byte thô), chuỗi `chuoi_gameassembly_pc.txt`.
+
+### 11.1 Zoom của bản 3D = ĐỔI KHOẢNG CÁCH CAMERA, không phải phóng ảnh
+
+- Camera phối cảnh FOV **40°** cố định (không đổi FOV khi zoom). Chụm hai ngón chỉ thay đổi **`mWheelDistance`** (khoảng cách đích), rồi mỗi khung `mDistance` đuổi theo. Hình được **dựng lại** từ lưới + texture ở khoảng cách mới → không có bước phóng/thu một tấm ảnh đã vẽ, nên không mờ, không vỡ hạt.
+- Ba đường vào cùng một hàm `GameCamera.OnWheelChg(dt)`: `mWheelDistance += dt × fWheelSpeed`:
+
+| Nguồn | Công thức `dt` (đã dịch ngược) |
+|---|---|
+| Hai ngón (`TouchControl.TC_TouchMove`) | `dt = −0,01 × (khoảng cách hai ngón bây giờ − lần trước)` (px). Chỉ xét khi `mTouchIndex2 ≠ −1` (ngón thứ hai đang đặt); di chuyển < **5 px** không tính (chống rung). Ngón thứ hai nhấc lên là hết zoom, không có quán tính. |
+| Con lăn PC / tay cầm (`TCJoystick_WheelChg`) | `dt = ±bước` khi `bMayControlWheel` |
+| Kịch bản | `JXM.TweenCamera(...)` đặt thẳng `mWheelDistance` (vùng cảnh `scn_area`, cốt truyện) |
+
+- **Độ nhạy = thanh trượt trong Cài đặt** (`ui_cfg_game.lua` `u_slider[5]` "tốc độ zoom", NGUI 0..1): `SetCamWheelSpeed(v)` lưu `int(v × 50)` vào json `mCamWheelSpeed`; `GetCamWheelSpeed()` trả `mCamWheelSpeed / 50`; `GameCamera.OnStart` gán `fWheelSpeed = GetCamWheelSpeed()` (mặc định trong ctor = **1,0**). Cùng kiểu cho xoay: `u_slider[3]` → `mCamSpeed / 50` → `angleSpeedRate` (ctor 1,0); một ngón kéo `Δpx × 0,2 × angleSpeedRate` = 0,2°/px.
+- **Mượt**: mỗi khung `t = clamp01(Δt × fDistanceSpeed)`, `fDistanceSpeed = 16` (ctor) → `mDistance += (mWheelDistance − mDistance) × t`, kẹp `[mMinDistance, mWheelDistance]` → đuổi theo hàm mũ, 60 fps mỗi khung đi 27 % quãng còn lại, 95 % sau ~0,18 s. Không có nảy, không có tween thời gian cố định (trừ `TweenCamera` kịch bản).
+- Kẹp theo **cảnh** (`scn_list.cameraInit` 7 số, xem §3.3): 36/65 cảnh `19 · 10..21`; giá trị ctor khi không có bảng: khoảng cách 10, kẹp 0,5..10, yaw 90, pitch 30, kẹp pitch 40..80, `HeightOffset` 1,0, `AngleAutoFollowSpeed` 40°/s, `AngleAutoFollowAngleY` 30.
+
+### 11.2 Biên độ thật: bản 3D ưu tiên PHÓNG TO, gần như không cho nhìn rộng
+
+FOV dọc 40° → chiều cao nhìn thấy `H = 2·d·tan 20° = 0,728·d`; nhân vật cao ~1,8 đơn vị, màn 604 px:
+
+| Khoảng cách | H (đơn vị) | nhân vật trên màn | tỉ lệ so mặc định |
+|---|---|---|---|
+| 10 (kéo gần nhất) | 7,3 | ~150 px | **1,9×** phóng to |
+| 19 (mặc định) | 13,8 | ~79 px | 1,0 |
+| 21 (xa nhất) | 15,3 | ~71 px | 0,905× (nhìn rộng thêm **10 %**) |
+
+So với JX1 mobile: nhân vật ~90 px cố định; "Nhìn rộng" 100..150 % (theo map) → 60 px ở 150 % = nhìn rộng **hơn bản 3D 5 lần** nhưng sprite nhỏ dần; bản 3D không cho phóng ảnh nhỏ xuống vì mật độ chi tiết/hiệu năng do thiết kế cảnh quyết định.
+
+### 11.3 Vì sao hình bản 3D không mờ khi zoom — và cái JX1 không có
+
+| | Bản 3D | JX1 mobile hiện nay |
+|---|---|---|
+| Cách tạo hình khi zoom | dựng lại lưới + texture có mipmap/anisotropic (`QualitySettings.globalTextureMipmapLimit`, `Texture.anisotropicFiltering` có trong chuỗi; thanh "đồ hoạ" `SetGraphicsLevel` → `JXM.SetTextureLevel`) | vẽ thế giới vào RT 1:1 rồi blit co lại (`Rep3_JxTheGioi`) |
+| Số điểm ảnh phải vẽ khi zoom | **không đổi** (màn hình cố định; URP `m_RenderScale` = 1,0, MSAA tắt, FSR mặc định 0,92 chưa bật vì bộ lọc Automatic) | tăng theo diện tích RT: 150 % = 2,25× điểm ảnh (Fold 7 nóng hơn) |
+| Độ phân giải | thanh "Độ phân giải" (`u_slider[4]` → `Screen.SetResolution`) hạ cả màn hình, không liên quan zoom | cố định |
+| Phóng to > 100 % | sắc nét đến 1,9× | ảnh điểm 1:1, phóng là nhoè (đã thử 12/09, gỡ vì chủ không muốn) |
+
+### 11.4 Mang sang JX1 được gì (đề xuất, CHƯA làm — chờ chủ chọn)
+
+1. **Cảm giác chụm ngón giống 3D** (nửa ngày, chỉ `Platform/JxLiaCanh.cpp`): thay zoom theo tỉ lệ khoảng cách hai ngón bằng **tuyến tính** `zoom_đích += Δpx × k` (k cấu hình `[Cham] ZoomNhayPx`, mặc định tương đương −0,01 đơn vị/px của họ), chống rung 5 px, và **đuổi theo hàm mũ** `zoom += (đích − zoom) × clamp01(Δt × 16)` thay tween `ZoomTocDo %/s`. Không tốn thêm GPU.
+2. **Thanh trượt độ nhạy** như `ui_cfg_game.lua` (nửa ngày): Cài đặt > Tối ưu thêm hai mức "Zoom nhanh/chậm", "Xoay nhanh/chậm" (công tắc 3 nấc, lưu `uiautoconfig.ini` như 9 công tắc hiện có).
+3. **Kẹp theo vùng trong map** như `scn_area` (1 ngày, giá trị thấp): JX1 đã có `camera_mobile.ini` theo map; thêm theo vùng cần bảng vùng + tween 0,2 s.
+4. **Phóng to như 3D**: không có cách sạch — sprite JX1 là ảnh điểm 1:1; muốn 1,9× sắc nét phải có bộ sprite độ phân giải cao (không tồn tại). Lọc phóng kiểu xBR/HQx trên RT (shader, ~1 ngày) cho 1,25× tạm được, 1,9× vẫn thấy hạt và "hoạt hình hoá" nét vẽ gốc → không khuyến nghị.
+5. **Chi phí nhìn rộng**: giữ như hiện nay (RT to → blit nhỏ, đúng cách duy nhất cho ảnh điểm); nếu Fold 7 nóng ở 150 % thì hạ `ZoomToiDa` từng map (125 %) — bản 3D không gặp vấn đề này vì số điểm ảnh không đổi.
+
+Kết luận: cơ chế zoom bản 3D là **khoảng cách camera + dựng lại hình**, không chép được cho ảnh 2D; thứ chép được là **cách điều khiển** (mục 1–2), rẻ và không đụng Represent3.
