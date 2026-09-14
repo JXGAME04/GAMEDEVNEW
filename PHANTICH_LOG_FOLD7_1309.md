@@ -260,3 +260,26 @@ A. `[KHOITRUOC]` cấp sẵn khối trong màn nạp lúc vào thế giới: `[C
 B. `[MANG]` ngân sách xử lý gói mỗi vòng lặp (`[Client] MangMs`, 8 ms), phần dư sang vòng sau.
 C. `[PAKBAN]` cờ luồng nền đang đọc pak → luồng vẽ giao khung thay vì đợi khoá.
 D. `[PDET-UI]` ghi tên cửa sổ UI nặng nhất khi pass UI ≥ 25 ms; bật `Rep3DoVeChiTiet=1` trên dt_v4 để tách vẽ vật thể (chỉ config).
+
+## 14/09 14:47 — log bản 109141405 (9 phút, zoom/lắc bật suốt: RT 29 587 khung), sau A–D
+
+Nhịp: present TB 16,0 ms (≈ 60 fps), việc/khung TB 8,0 max 14,9; GPU **65 %** (p90 76, max 85), 2,16 W, nhiệt mức 0; không sập; 7 khối (448 MB).
+`[VE-GIAT]` 67 / 9 phút = 7,4/phút (cao hơn 2,4 của 10:49 vì đường RT zoom nặng hơn — xem mục 5).
+
+| Việc | Kết quả đo | Kết luận |
+|---|---|---|
+| A `[KHOITRUOC]` | 5 khối cấp sẵn t=1,2–1,3 s, tạo 28–36 ms/khối (màn đăng nhập); **vẫn** tạo khối #5 t=128 s (khung 65 ms) và #6 t=251 s (59 ms) | đúng hướng nhưng 4 R8G8 chưa đủ cho 9 phút: cần 6–7, hoặc cấp thêm lúc đổi map |
+| B `[MANG]` | 22 lần cắt, nhưng **mỗi lần đều sau đúng 1 gói mất 10–223 ms** (t=19,6 s 223 ms = vào thế giới; t=96 s 52,9 ms trùng `[NAP-CHAM] mo tep spr skill 30,7 ms ngoài lúc vẽ`) | cú mạng giữa trận = **một gói nặng** mà handler nạp tệp/đồng bộ đồng bộ; ngân sách không chia được bên trong gói → cần ghi id gói > 8 ms để tìm handler |
+| C `[PAKBAN]` | `[NAP-CHAM] rut khung`: **0 dòng** (hết chờ khoá) — nhưng "pak ban giao nen" 558–1 448 / 30 s, `bo ve` 703–1 031 / 30 s (10:49–11:12: 8–134) | cờ quá thô (bật suốt lúc luồng nền nạp cả tệp, kể cả pak khác) → nhiều khung lần đầu bị hoãn 1–3 khung (nháy lúc mới hiện); thay bằng **try-lock** đúng mutex |
+| D `[PDET-UI]` | in 0,0–0,6 ms trong khi `lop duoi 44,3 / 25,5`, `lop giua 49,7` | đo sai cấp: cửa sổ gốc là **anh em của gốc lớp** (parent NULL), tôi đo cửa sổ con; sửa điều kiện |
+| Khung giật còn lại | 44/67 = "trình chiếu khác" 26–29 ms (`nop` 6–17 ms, `cho` 0–7) ở giây 178–250 và 618–641; 11 "ngoài lớp vẽ" 57–62 ms (khối #6, vật thể đông); 6 nạp; 5 trong lớp vẽ | **GPU nghẽn khi zoom + đông** (RT to + blit thêm, 2,25× vật thể ở 150 %): phần này của đường RT/zoom → đề xuất (d) của phiên camera (nhìn rộng ≥ 130 % vẽ RT nấc thấp hơn) đúng chỗ |
+
+Ghi chú: `[VE-GIAT] trong lop ve 3.1 / 21920146 lenh` — số lệnh in sai (biến đếm VECHITIET chưa đặt lại), chỉ là hiển thị.
+
+**Đề xuất (chờ chủ chọn):**
+1. `[PAKTHU]` thay cờ thô bằng **try-lock** trên đúng mutex pak (`SDL_TryLockMutex` có sẵn): luồng vẽ rút khung đồng bộ ở chế độ "thử", khoá bận thì giao luồng nền;
+   khoá rảnh thì rút ngay như cũ → hết cả chờ khoá lẫn hoãn thừa. (Engine `ZSPRPackFile.cpp`, rào JX_MOBILE.)
+2. `[MANG-CHAM]` ghi id gói + ms khi một gói xử lý > 8 ms (≤ 4 dòng/giây) để biết handler nào nạp tệp đồng bộ → sau đó nạp trước ở luồng nền.
+3. `[PDET-UI]` sửa điều kiện cửa sổ gốc (parent NULL) — chỉ đo.
+4. `[KHOITRUOC]` `Rep3KhoiTruocPal=6` (config, không cần dựng) + cấp thêm khi đổi map nếu lớp trống < 8 (`GameSpaceChangedNotify` → `Rep3_KhoiDuTru`, đăng ký iOS).
+5. Chuyển phiên camera: khi nhìn rộng ≥ 130 % vẽ RT ở nấc thấp hơn rồi blit (đề xuất (d) của họ) — nguồn giật lớn nhất khi zoom + đông.
