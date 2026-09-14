@@ -2769,8 +2769,14 @@ void KRepresentShell3::ClearImageData(const char* pszImage, unsigned int uImage,
 	if(m_bDeviceLost)
 		return;
 
+#ifdef JX_MOBILE
+	LARGE_INTEGER jxG0, jxG1; QueryPerformanceCounter(&jxG0);	// [NENDO 13/09 b] do GetImage anh dich
+#endif
 	TextureResBmp* pBitmap = (TextureResBmp *)m_TextureResMgr.GetImage(
 		pszImage, uImage, nImagePosition, 0, ISI_T_BITMAP16);
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxG1);
+#endif
 	if (pBitmap)
 	{
 #ifdef JX_MOBILE
@@ -2796,7 +2802,8 @@ void KRepresentShell3::ClearImageData(const char* pszImage, unsigned int uImage,
 			if (pXOld) pXOld->Release();
 			QueryPerformanceCounter(&jxX1);
 			const double dXMs = jxXF.QuadPart ? (double)(jxX1.QuadPart - jxX0.QuadPart) * 1000.0 / (double)jxXF.QuadPart : 0.0;
-			if (dXMs >= 4.0) Rep3Log("[PGND-X] xoa nen %s tren GPU: %.1f ms (%s)", pszImage, dXMs, bXong ? "xong" : "HONG -> memset");
+			const double dGMs = jxXF.QuadPart ? (double)(jxG1.QuadPart - jxG0.QuadPart) * 1000.0 / (double)jxXF.QuadPart : 0.0;	// [NENDO 13/09 b]
+			if (dXMs + dGMs >= 3.0) Rep3Log("[PGND-X] xoa nen %s tren GPU: %.1f ms (%s) | GetImage dich %.1f ms", pszImage, dXMs, bXong ? "xong" : "HONG -> memset", dGMs);
 			if (bXong)
 				return;
 		}

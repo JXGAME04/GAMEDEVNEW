@@ -236,8 +236,14 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 
 	m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG = true;
 
+#ifdef JX_MOBILE
+	LARGE_INTEGER jxR0, jxR1, jxR2, jxRF; QueryPerformanceFrequency(&jxRF); QueryPerformanceCounter(&jxR0);	// [NENDO 13/09 b]
+#endif
 	g_pRepresent->ClearImageData(m_pPrerenderGroundImg->szImage,
 		m_pPrerenderGroundImg->uImage, m_pPrerenderGroundImg->nISPosition);
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxR1);	// [NENDO 13/09 b] xong xoa
+#endif
 
 #ifdef JX_MOBILE
 	// [GOMNEN 12/09] dem du CA vung -> chi MOT lan doi dich ve thay vi ~7 lan (moi lan la mot lan xa o tren GPU dien thoai)
@@ -328,6 +334,24 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 	{
 		JX_NEN_VE(nNum);	// [GOMNEN 12/09]
 	}
+#ifdef JX_MOBILE
+	{	// [NENDO 13/09 b] tung vung: tong = xoa (ClearImageData) + ghep (DrawPrimitivesOnImage); ghi >= 3 ms de tim 17 ms/vung XA tren Fold 7
+		extern int g_nCorePaintLog;
+		QueryPerformanceCounter(&jxR2);
+		const double dR = jxRF.QuadPart ? 1000.0 / (double)jxRF.QuadPart : 0.0;
+		const double dTong = (double)(jxR2.QuadPart - jxR0.QuadPart) * dR, dXoa = (double)(jxR1.QuadPart - jxR0.QuadPart) * dR;
+		if (g_nCorePaintLog > 0 && dTong >= 3.0)
+		{
+			FILE* pR = fopen("jx_paint.log", "a");
+			if (pR)
+			{
+				POINT ptR = GetRegionIdx();
+				fprintf(pR, "[PGND-R] vung (%d,%d) %s: tong %.1f ms = xoa %.1f + ghep %.1f (%u luot, %u anh)\n", ptR.x, ptR.y, m_pPrerenderGroundImg->szImage, dTong, dXoa, g_dJxNenVeMs, g_uJxNenVeLan, uJxTong);
+				fclose(pR);
+			}
+		}
+	}
+#endif
 	return true;
 }
 #ifdef JX_MOBILE
