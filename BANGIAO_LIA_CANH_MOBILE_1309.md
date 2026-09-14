@@ -202,3 +202,49 @@ Không đụng: `Core`, `Represent3`, `KSdlApp`, `Wnds.cpp`, `ios/JxIosMain.cpp`
 - Nếu chủ muốn nhớ zoom **theo từng map** thay vì một số chung: thêm dòng `Zoom_<id>=` vào `CameraMobile.ini` (30 phút).
 
 **Cập nhật 22:24 (phiên đo nhịp xác nhận):** màng đen là lỗi NENTRUOC của họ: lúc vào/quay lại map, 8 vùng nền KỀ BÊN (đang trên màn hình) bị hoãn ghép chờ luồng nền, luồng nền ngập 322 tệp spr → quanh nhân vật đen tới ~1,5 s. Họ sửa trên `mobile-0809` (vùng kề bên ghép ngay, chỉ hoãn vùng xa; bỏ đọc ngược GPU 156 ms) và sẽ nhắn trước khi chép APK. Bản 109132210 vẫn còn lỗi ấy tới lúc đó.
+
+---
+
+# HƯỚNG 2 — CÔNG TẮC NGƯỜI CHƠI TRONG CÀI ĐẶT (chủ 22:5x: "làm 2 đi") — 13/09 22:55
+
+Chủ hỏi "tôi chưa quay camera được 90 độ": bản 2D không quay được (nền vẽ sẵn một góc, nhà/vách nằm trong ảnh nền); đưa hai hướng, chủ chọn **hướng 2** = giữ mức 1 và làm cho tiện dùng.
+
+## 1. Bản đã lên dt_v4
+
+| | |
+|---|---|
+| APK | **109132248** (`jx1mobile.apk`), gộp `mobile-0809` hiện tại + công tắc; commit trên `claude/game-3d-data-analysis-19600d`, FF-push `mobile-0809` |
+| Dữ liệu | tệp rời mới `ui/ui3/uioptions2.ini` (lớp ghi đè `android/du_lieu_ghi_de/ui/ui3/`, sinh bằng `android/sinh_uioptions2_camera.py`) + `--chi-manifest` |
+
+## 2. Cách dùng
+
+Cài đặt (icon bánh răng) → **TÙY CHỌN** → bấm **Tối ưu** → cửa sổ "Tối ưu" nay có 7 công tắc, 3 mục mới ở hàng 3–4:
+- **Lia cảnh**: tắt = kéo một ngón không lia (chụm hai ngón vẫn nhìn rộng nhưng không lia theo tâm).
+- **Nhìn rộng**: tắt = chụm không tác dụng, thế giới trôi về 100 %; bật lại = trôi về zoom đã nhớ / mặc định của map.
+- **Lia về nhanh**: bật = thả tay chờ 1/3 thời gian (333 ms thay vì 1 s), trôi về nhanh gấp đôi.
+
+Lưu theo tài khoản ở `UserData\<tài khoản>\uiautoconfig.ini` mục `[Options2]` (`LiaCanh`, `NhinRong`, `LiaVeNhanh`), đọc lúc vào thế giới như các mục Giảm Player… Mặc định: lia bật, nhìn rộng bật, về nhanh tắt. Hiệu lực = config.ini / map (`camera_mobile.ini`) **và** công tắc: map tắt hoặc người chơi tắt đều tắt.
+
+## 3. Đã làm gì trong mã (`android/va_nguon_camera_tuychon_1309.py`, idempotent; mọi dòng trong `JX_MOBILE`; PC y hệt: `kiem --pc` ĐẠT)
+
+| Tệp | Việc |
+|---|---|
+| `Ui/UiCase/UiOptions2.h` | enum thêm `OPTION_I_LIA / NHINRONG / VENHANH`; `MAX_TOGGLE_BTN_COUNT` 7 **chỉ trong lớp KUiOptions2** (typedef kiểm bằng OPTION_INDEX_COUNT2), cuối header trả về 4; `PaintWindow()` |
+| `Ui/UiCase/UiOptions2.cpp` | tên lưu `LiaCanh/NhinRong/LiaVeNhanh`; `ToggleOption` → `JxLia_DatTuyChon`; `LoadSetting` mặc định bật hai mục đầu + áp `JxLia_DatTuyChon` lúc vào thế giới; `PaintWindow` vẽ nền mờ (`JxNhip_VeNen`) sau các hàng vì `main2.spr` trong suốt ở vùng trên |
+| `Platform/JxLiaCanh.h/.cpp` | `JxLia_DatTuyChon(lia, zoom, veNhanh)`; `s_nNcLia/s_nNcZoom/s_nNcVeNhanh`; `ChoVeMs()/VeTocDo()/VeEm()`; tắt lia → `KetThuc`; tắt zoom → `s_nZoomDich=100`; bật lại → `s_nCanDocMap=1` |
+| `ui/ui3/uioptions2.ini` (lớp ghi đè) | `[ToggleBtn]/[ToggleStatus] Top 163 → 101` (4 hàng vừa vùng trống), `[ToggleOptionsName] 4=Lia cảnh 5=Nhìn rộng 6=Lia về nhanh` (TCVN3 mã hoá bằng `vn_edit.vn`) |
+
+**Bẫy đã dính (22:46, app sập khi mở Cài đặt):** `MAX_TOGGLE_BTN_COUNT` được `#define` bên trong lớp ở cả `UiOptions.h` lẫn `UiOptions2.h`; `UiOptions.cpp` include cả hai → đổi macro trong `UiOptions2.h` làm các vòng `for` của `KUiOptions` chạy tới 7 trên mảng 4. Sửa: cuối `UiOptions2.h` trả macro về 4, `UiOptions2.cpp` đặt lại 7 sau include cuối.
+
+## 4. Chứng minh (máy ảo, bản 109132248)
+
+- Ảnh `tc1`: cửa sổ Tối ưu 7 công tắc + nền mờ; `tc2`: bấm tắt Lia cảnh, Nhìn rộng → ô trống; log `[CAMERA] tuy chon nguoi choi: lia=0 nhin rong=1` rồi `lia=0 nhin rong=0`.
+- Tắt lia → kéo 220 px: không có dòng `[LIA]`; bật lại → `[LIA] bat dau tai 520,470 … nha tay … ve xong`.
+- Về nhanh: về xong sau 0,15 s (thường 0,3 s); tắt lại → `uiautoconfig.ini [Options2] LiaCanh=1 NhinRong=1 LiaVeNhanh=0`.
+- Không sập (pid giữ nguyên qua 3 lần mở Cài đặt).
+
+## 5. Chủ thử trên Fold 7
+
+1. Mở lại app nhận **109132248**. Cài đặt → TÙY CHỌN → Tối ưu: thấy 3 công tắc mới.
+2. Tắt "Lia cảnh" → kéo một ngón không lia; bật lại → lia như cũ. Tắt "Nhìn rộng" → về 100 %, chụm không ăn; bật lại → về mức cũ.
+3. Bật "Lia về nhanh" → thả tay về gần như ngay.
