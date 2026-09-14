@@ -34,7 +34,7 @@ protected:
 	// [VATPHAM 12/09 g] CHAM_CAM = vua giu lau tren o vat pham -> da nhac mon len tay, ngon van dang de:
 	// di chuyen thi o dich sang len, nha ngon tren giao dien thi tha mon vao o do.
 	enum { CHAM_KHONG = 0, CHAM_CHO, CHAM_KEO, CHAM_PHAI, CHAM_RE, CHAM_CAN, CHAM_CUON,
-		CHAM_KYNANG, CHAM_CAM };
+		CHAM_KYNANG, CHAM_CAM, CHAM_LIA };	// [LIA 13/09] CHAM_LIA = ngon keo tren ban do = lia canh (JxLiaCanh)
 	bool			ChamSuKien(const SDL_Event& ev);	// true = da nuot su kien, dung dich tiep
 	void			NhipCham();							// goi moi vong lap: giu du lau thi thanh chuot phai
 	int				m_nCham;			// mot trong CHAM_*

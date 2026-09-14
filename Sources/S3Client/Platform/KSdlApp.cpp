@@ -30,6 +30,7 @@ static KSdlApp* s_pSdlApp = NULL;
 //---------------------------------------------------------------------------
 #ifdef JX_MOBILE
 #include "JxCanDieuKhien.h"
+#include "JxLiaCanh.h"	// [LIA 13/09] lia canh: mot ngon keo tren ban do
 #include "../Ui/Elem/UiToaDo.h"	// [ANDROID 09/09 SUAKEO] UiToaDo_DangSua	// [ANDROID 09/09 CAN] can dieu khien ao
 #endif
 
@@ -671,6 +672,7 @@ void KSdlApp::Run()
 		NhipCham();		// [ANDROID 09/09 CHAM] giu ngon du lau ma khong xe dich -> chuot phai
 		JxSdl_BanPhimNhip();	// [DANGNHAP 12/09] mo lai ban phim sau khi IME tu dong
 		JxCan_Nhip();	// [ANDROID 09/09 CAN] dang cam can thi day nhan vat di theo huong
+		JxLia_Nhip();	// [LIA 13/09] lia canh: ap do lech moi khung / dem cho / troi ve nhan vat
 		JxKyNang_Nhip();	// [ANDROID 09/09 KYNANG I] dang de nut ky nang thi cu danh tiep
 		JxVatPham_Nhip();	// [VATPHAM 12/09 f] nut Nem: doi may chu nhac mon len tay roi moi nem
 		UiToaDo_NhipMobile();	// [SUAGD 13/09] ho so bo cuc theo nhan vat, vung an toan doi -> ap lai, luot kep, lap phim mui ten
@@ -1072,6 +1074,10 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		{
 			JxCan_Nha();
 		}
+		else if (nTruoc == CHAM_LIA)
+		{
+			JxLia_Nha();	// [LIA 13/09] nha ngon: cho LiaChoVeMs roi troi ve nhan vat
+		}
 		else if (nTruoc == CHAM_KEO)
 		{
 			GhiChuot(0, MAKELPARAM((int)fx, (int)fy));
@@ -1148,6 +1154,15 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 				JxCan_BatDau(m_nChamX0, m_nChamY0, m_nChamX, m_nChamY);
 				return true;
 			}
+			// [LIA 13/09] Keo tren BAN DO (ngoai giao dien, ngoai vung can, ngoai nut ky nang) = LIA CANH - nhu game 3D mot ngon keo
+			// la quay camera; di bang can dieu khien hoac cham. Truoc: giu chuot trai roi re (di lien tuc) - [Cham] LiaCanh=0 thi ve nhu cu.
+			if (JxLia_DuocBatDau(m_nChamX0, m_nChamY0))
+			{
+				m_nCham = CHAM_LIA;
+				JxLia_BatDau(m_nChamX0, m_nChamY0);
+				JxLia_Keo(m_nChamX, m_nChamY);
+				return true;
+			}
 			// [ANDROID 09/09 CUON] Vuot DOC tren giao dien = cuon danh sach (dich thanh lan chuot).
 			// Moi lop danh sach cua bo giao dien nay deu nhan WM_MOUSEWHEEL (WndList, WndList2,
 			// WndMessageListBox) nen thoai NPC / chat / danh sach may chu deu vuot duoc.
@@ -1176,6 +1191,11 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 		if (m_nCham == CHAM_CAN)
 		{
 			JxCan_Keo(m_nChamX, m_nChamY);
+			return true;
+		}
+		if (m_nCham == CHAM_LIA)
+		{
+			JxLia_Keo(m_nChamX, m_nChamY);	// [LIA 13/09]
 			return true;
 		}
 		if (m_nCham == CHAM_CUON)
