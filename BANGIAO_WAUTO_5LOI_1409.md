@@ -30,9 +30,8 @@ dòng nào `= 2` — nên vế "còn lại" = **lên ngựa cho 81 % số chiêu
 Bảng Chiêu KH trộn hai loại thì khe này kéo lên, khe kia kéo xuống. Khối đó lại **không có
 phanh nào** → bắn `PA_RIDE` mỗi ~300 ms trong khi `TIME_RIDE` = 5 s → spam *"Bạn quá mệt mỏi..."*.
 
-**Vá (đợt 2):** ô "Tự động" giờ **quét cả vòng chiêu** của nhân vật rồi mới quyết —
-`WA_VongChieuDoiNgua()`: chiêu đang bắn + chiêu chuột trái + 6 khe Chiêu KH + đổi chiêu +
-chiêu boss + tiền chiêu + cứu mạng + cứu mana (**bỏ chiêu chưa học** — nó không bao giờ bắn ra):
+**Vá (đợt 3):** ô "Tự động" giờ **quét cả vòng chiêu tấn công chính** rồi mới quyết —
+`WA_VongChieuDoiNgua()`, **bỏ chiêu chưa học** (nó không bao giờ bắn ra):
 
 | Vòng chiêu tấn công chính | WAuto làm |
 |---|---|
@@ -46,7 +45,7 @@ mới bắn, không được quyền trói ngựa cả trận. Đó chính là c
 chiêu đao thì kéo lên — không cần bảng Chiêu KH cũng đủ dao động.
 
 > Đánh đổi: khe `HorseLimit 1` trong bảng Chiêu KH sẽ **không bắn** khi đang cưỡi. An toàn —
->  trả "bị cấm TẠM THỜI (lý do 2: ngựa)" và nơi gọi đặt 
+> `WA_ChieuBiCam` trả "bị cấm TẠM THỜI (lý do 2: ngựa)" và nơi gọi đặt `bBanRoi = true`
 > *"coi như đã bắn để sang khe kế"* ([CoreShell.cpp:19949](Sources/Core/Src/CoreShell.cpp:19949)),
 > **không** cấm chiêu 30 giây, không kẹt máy.
 
