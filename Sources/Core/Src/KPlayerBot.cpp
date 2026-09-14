@@ -6241,6 +6241,12 @@ static void pb_NapMotNpc(int nSub, PB_CumMap* p, int i, int nRefNpc)
 	// dan vinh vien. Loc bang chinh THUOC TINH cua NPC: NPCKIND kind_normal = 0
 	// la "quai binh thuong" (GameDataDef.h:1369), khong phu thuoc ai dang hoi.
 	if (Npc[i].m_Kind != kind_normal)            return;
+	// [SATTHU dot c 14/09] boss nhiem vu Sat Thu KHONG duoc vao bang cum. Bang cum vua la "san choi"
+	// cua pb_FindTarget vua la DANH SACH DIEM DI HOANG cua pb_FindRoamSpot; boss dung xa cac bai quai
+	// nen no tu tao MOT CUM RIENG, va bot van boc cum do lam diem den roi dung i quanh boss (khong
+	// danh duoc vi da bi chan o pb_FindTarget). Chu game: "khong cho bot danh boss sat thu" - vay thi
+	// cung dung keo bot toi do.
+	if (pb_LaBossSatThu(i))                     return;
 	const int ox = Npc[i].m_OriginX, oy = Npc[i].m_OriginY;
 	if (ox <= 0 || oy <= 0)                   return;
 	const int k = pb_CumGan(p, ox, oy);
@@ -6437,6 +6443,8 @@ static int pb_FindRoamSpot(int nIdx, int nNpcIdx, int nSub, const PB_Bot& b,
 			if (Npc[i].m_dwID == 0)                          continue;
 			if (Npc[i].m_Doing == do_death || Npc[i].m_Doing == do_revive) continue;
 			if (Npc[i].m_Kind == kind_player)                continue;
+			// [SATTHU dot c 14/09] khong lay boss Sat Thu lam diem di hoang (xem pb_NapMotNpc)
+			if (pb_LaBossSatThu(i))                          continue;
 			if (!(NpcSet.GetRelation(nNpcIdx, i) & relation_enemy)) continue;
 
 			int ex = 0, ey = 0;
