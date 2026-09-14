@@ -1390,7 +1390,14 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 			// 8 region ke ben (van trong tam nhin o ria): ve ngay NEU con ngan sach,
 			// het ngan sach thi hoan sang khung sau thay vi keo dai khung nay.
 			if (timeGetTime() - dwPgT0 < dwPgBudgetMs)
+#ifdef JX_MOBILE
+			{	// [NENTRUOC 13/09] khung cac o dang duoc luong nen chuan bi -> hoan, khung sau ghep (nhanh)
+				if (m_pInProcessAreaRegions[i]->JxNenChuaSan()) { nDeferred++; continue; }
 				JX_NEN_DO(1, m_pInProcessAreaRegions[i]->PrerenderGround(false));	// [NENDAT 11/09]
+			}
+#else
+				JX_NEN_DO(1, m_pInProcessAreaRegions[i]->PrerenderGround(false));	// [NENDAT 11/09]
+#endif
 			else
 				nDeferred++;
 		}
@@ -1399,6 +1406,9 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 			// amortize the far ones: a full region prerender costs 10-40ms and
 			// used to hitch the frame right after a region finished loading
 			{
+#ifdef JX_MOBILE
+				if (m_pInProcessAreaRegions[i]->JxNenChuaSan()) { nDeferred++; continue; }	// [NENTRUOC 13/09]
+#endif
 				bool bJxOk = false;	// [NENDAT 11/09]
 				JX_NEN_DO(2, bJxOk = (m_pInProcessAreaRegions[i]->PrerenderGround(false) != 0));
 				if (bJxOk) nFarBudget--;

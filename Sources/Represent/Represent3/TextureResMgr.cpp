@@ -141,7 +141,7 @@ void TextureResMgr::SetBudget()
 			// ban CPU cua texture da bo (BOCPU) nen so nay ~ RAM that texture chiem). CapBudgetByVram con kep theo 'VRAM' ao cua SDL_GPU.
 			uBudgetMB = uPhysMB / 8;
 			if (uBudgetMB < 128) uBudgetMB = 128;
-			if (uBudgetMB > 512) uBudgetMB = 512;
+			if (uBudgetMB > 768) uBudgetMB = 768;	// [CACHE 13/09] 512 -> 768: Fold 7 Tong Kim dung 508-512 MB (8 khoi atlas); may 4-5 GB van la RAM/8 = 512; tran RAM/3 van kep
 		}
 		unsigned __int64 uTranMB = uPhysMB / 3;
 		if (uTranMB < 128) uTranMB = 128;
@@ -177,6 +177,15 @@ static int Rep3DemClient()
 }
 void TextureResMgr::CapBudgetByVram(unsigned __int64 uVramFreeMB)
 {
+#ifdef JX_MOBILE
+	if (g_nRep3ApiOn == 100)
+	{	// [CACHE 13/09] dien thoai: SDL_GPU khong co VRAM rieng, GetAvailableTextureMem = 1024 MB GIA -> kep 512 -> 393 MB trong khi Tong Kim
+		// dung 508 MB (Fold 7 13/09): CheckBalance moi 24 ms bo mot khung ('bo 101 632' / 50 phut), giai ma lai 20 khung/s, tai len GPU 4,6 MB/s.
+		// Ngan sach RAM/8 kep [128, 768] va tran RAM/3 (SetBudget) la du; khong kep theo con so gia nay.
+		Rep3Log("[REP3] cache texture: SDL_GPU dien thoai -> khong kep theo VRAM (VRAM %llu MB la so gia), giu ngan sach %llu MB", uVramFreeMB, ((unsigned __int64)(uint32)m_nBalanceNum) >> 20);
+		return;
+	}
+#endif
 	if (g_nRep3CacheMB > 0 || uVramFreeMB == 0)
 		return;
 	unsigned __int64 uBudgetMB = ((unsigned __int64)(uint32)m_nBalanceNum) >> 20;
@@ -205,6 +214,10 @@ void TextureResMgr::CapBudgetByVram(unsigned __int64 uVramFreeMB)
 // [REP3 08/09 q] luc chay: VRAM con < 128 MB (may yeu, nhieu tab) -> ha ngan sach 25 % toi san, dep bot khung ngay. Chi che do tu dong.
 void TextureResMgr::PressureByVram(unsigned __int64 uVramFreeMB)
 {
+#ifdef JX_MOBILE
+	if (g_nRep3ApiOn == 100)
+		return;	// [CACHE 13/09] VRAM cua SDL_GPU la so gia (1024 - texture da tao), khong phai ap luc bo nho that
+#endif
 	if (g_nRep3CacheMB > 0 || uVramFreeMB == 0 || uVramFreeMB >= 128)
 		return;
 	unsigned __int64 uBudgetMB = ((unsigned __int64)(uint32)m_nBalanceNum) >> 20;
@@ -938,6 +951,92 @@ int TextureResMgr::NapTruoc(const char* pszImage, uint32 nType, int nNguon)	// [
 	m_TextureResList.insert(m_TextureResList.begin() + (-nIdx - 1), node);
 	return 2;
 }
+#ifdef JX_MOBILE
+// [NENTRUOC 13/09] Nen dat: chuan bi truoc KHUNG o luong nen cho vung ke ben / xa, TRUOC khi KScenePlaceRegionC::PrerenderGround ghep.
+// Do 13/09 (may ao [PGND-V], Fold 7 [PGND] 18 ms/vung): 'ghep nen' nam gan het trong GetImage -> PrepareFrameData DONG BO (rut khung +
+// giai ma + tao texture) cho ~66 o; ghi lenh ve chi 0,5 ms. Tra 1 = khung da san, 2 = dang chuan bi (tep hoac khung o luong nen),
+// 0 = khong duoc (khong co luong nen / muc hong): nguoi goi ghep dong bo nhu cu. KHONG BAO GIO nap dong bo trong ham nay.
+int TextureResMgr::JxNenTruocKhung(const char* pszImage, int nFrame)
+{
+	if (!pszImage || !pszImage[0] || !g_nRep3NapNen || g_nJxNapKhungNen <= 0 || nFrame < 0)
+		return 0;
+	const uint32 uId = g_FileName2Id((LPSTR)pszImage);
+	bool bChoTep = false;
+	{
+		KAutoCriticalSection AutoLock(m_ImageProcessLock);
+		const int nIdx = FindImage(uId, 0);
+		if (nIdx >= 0)
+		{
+			ResNode& node = m_TextureResList[nIdx];
+			if (node.m_nType != ISI_T_SPR)
+				return 0;
+			node.m_nLastUsedTime = GetTickCount();	// giu khoi bi don trong luc cho
+			if (node.m_bDangNap)
+				bChoTep = true;	// tep dang nap o luong nen: nho (id, khung), JxNenTruocXuLy giao khung khi tep xong
+			else
+			{
+				TextureResSpr* p = (TextureResSpr*)node.m_pTextureRes;
+				if (!p || !p->m_pFrameInfo || nFrame >= p->m_nFrameNum)
+					return 0;	// muc nap hong (GetImage tu thu lai theo lich rieng) / khung ngoai tam
+				if (p->m_pFrameInfo[nFrame].texInfo[0].pTexture)
+					return 1;
+				if (p->m_pFrameInfo[nFrame].nJxNen == 1)
+					return 2;
+				return p->JxNapKhungGiao(nFrame, 3) ? 2 : 0;
+			}
+		}
+	}
+	if (!bChoTep && NapTruoc(pszImage, ISI_T_SPR, 3) == 0)	// chua co muc: nap tep o luong nen (hang SAU), khong nap dong bo
+		return 0;
+	{
+		KAutoCriticalSection AutoLock(m_ImageProcessLock);
+		if (m_jxNenCho.size() < 4096)
+		{
+			JxNenCho c; c.uId = uId; c.nFrame = nFrame; c.uLuc = (unsigned)timeGetTime();
+			m_jxNenCho.push_back(c);
+		}
+	}
+	return 2;
+}
+
+// [NENTRUOC 13/09] Luong ve, dau khung (sau JxNapKhungNhan): muc cho tep -> tep da xong thi giao khung; qua 3 s thi bo (Core tu ghep dong bo).
+void TextureResMgr::JxNenTruocXuLy()
+{
+	if (m_jxNenCho.empty())
+		return;
+	KAutoCriticalSection AutoLock(m_ImageProcessLock);
+	const unsigned uNow = (unsigned)timeGetTime();
+	size_t nGiu = 0; int nLam = 0;
+	for (size_t i = 0; i < m_jxNenCho.size(); i++)
+	{
+		JxNenCho c = m_jxNenCho[i];
+		bool bGiu = false;
+		if (uNow - c.uLuc > 3000)
+			bGiu = false;
+		else if (nLam >= 256)
+			bGiu = true;	// du viec khung nay: khung sau
+		else
+		{
+			const int nIdx = FindImage(c.uId, 0);
+			if (nIdx >= 0 && m_TextureResList[nIdx].m_nType == ISI_T_SPR)
+			{
+				if (m_TextureResList[nIdx].m_bDangNap)
+					bGiu = true;
+				else
+				{
+					TextureResSpr* p = (TextureResSpr*)m_TextureResList[nIdx].m_pTextureRes;
+					if (p && p->m_pFrameInfo && c.nFrame >= 0 && c.nFrame < p->m_nFrameNum && !p->m_pFrameInfo[c.nFrame].texInfo[0].pTexture && p->m_pFrameInfo[c.nFrame].nJxNen == 0)
+						p->JxNapKhungGiao(c.nFrame, 3);
+					nLam++;
+				}
+			}
+		}
+		if (bGiu)
+			m_jxNenCho[nGiu++] = c;
+	}
+	m_jxNenCho.resize(nGiu);
+}
+#endif
 
 // Luong ve, dau moi khung (RepresentBegin): gan ket qua vao muc; BMP tao texture tai day (can device).
 void TextureResMgr::NapNenNhan()

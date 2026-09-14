@@ -381,6 +381,9 @@ public:
     // [NAPCHIEU 09/09] nap truoc anh (SPR) o luong nen; khong ao -> khong doi vtable iRepresentShell. Tra 0/1/2 (xem TextureResMgr::NapTruoc)
     int NapTruoc(const char* pszImage, int nNguon);	// [NAPNPC 09/09] nNguon: 1 = anh chieu (Rep3NapChieu), 2 = anh than NPC (Rep3NapNpc)
 #ifdef JX_MOBILE
+    int JxNenTruocKhung(const char* pszImage, int nFrame);	// [NENTRUOC 13/09] nen dat: chuan bi khung o luong nen (Core goi qua Rep3_NenTruocKhung)
+#endif
+#ifdef JX_MOBILE
     // [TG 13/09] the gioi ve vao render target khi qua tai (Wnds.cpp goi Rep3_JxTheGioi qua GetProcAddress): 0 hoi, 1 bat dau, 2 ket thuc + blit, 3 ep ve that
     int  JxTheGioi(int nLenh, int nThamSo);   // nThamSo: lenh 0 = PaintFps muc tieu cua S3Client
     void JxTheGioiHuy();

@@ -83,6 +83,13 @@ public:
 	unsigned m_nNapTruocKip[3], m_nNapTruocTre[3];	// [NAPCHIEU 09/09 b] [NAPNPC 09/09] lan hoi dau cua muc nap truoc theo nguon [1] chieu [2] NPC: da nap xong / con dang nap
 	// [NAPCHIEU 09/09] nap truoc (goi y): 1 = da co muc, 2 = da giao luong nen + chen muc dang nap, 0 = khong giao duoc (khong nap dong bo)
 	int NapTruoc(const char* pszImage, uint32 nType, int nNguon);	// [NAPNPC 09/09] nNguon: 1 = anh chieu, 2 = anh than NPC
+#ifdef JX_MOBILE
+	// [NENTRUOC 13/09] nen dat: chuan bi truoc KHUNG (rut + giai ma + tao texture) o luong nen. 1 = da san, 2 = dang chuan bi, 0 = khong (nguoi goi ghep dong bo)
+	int  JxNenTruocKhung(const char* pszImage, int nFrame);
+	void JxNenTruocXuLy();	// dau khung (RepresentBegin): (id, khung) cho tep nap xong -> giao khung cho luong nen
+	struct JxNenCho { uint32 uId; int nFrame; unsigned uLuc; };
+	vector<JxNenCho> m_jxNenCho;
+#endif
 private:
 	bool NapNenGiao(const char* pszImage, uint32 uId, uint32 nType, bool bSau = false);	// false = khong tao duoc luong -> nap ngay; [NAPNPC 09/09] bSau: hang SAU (nap truoc), mac dinh hang TRUOC (anh dang ve can)
 	static unsigned __stdcall NapNenLuong(void* p);

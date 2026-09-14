@@ -88,6 +88,11 @@ class KScenePlaceRegionC
 	//##Documentation
 	//## Ô¤äÖÈ¾µØ±í²ãÍ¼ÐÎ
 	bool PrerenderGround(bool bForce);
+#ifdef JX_MOBILE
+	bool JxNenChuaSan();	// [NENTRUOC 13/09] vung ke ben/xa: xin luong nen chuan bi khung cac o; true = con dang chuan bi (hoan ghep sang khung sau), qua 1,5 s -> false
+	int  JxNenTruoc();		// xin/hoi tung o (grunode + object); tra so o con 'dang chuan bi'
+	unsigned m_uJxNenXinLuc;	// timeGetTime luc xin lan dau (0 = chua)
+#endif
 
 	//##ModelId=3DDBD8C80309
 	//##Documentation

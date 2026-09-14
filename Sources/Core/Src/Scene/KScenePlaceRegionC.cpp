@@ -44,6 +44,9 @@ KScenePlaceRegionC::KScenePlaceRegionC()
 	memset(&m_GroundLayerData, 0, sizeof(KGroundLayerData));
 	memset(&m_BiosData, 0, sizeof(KBiosData));
 	m_pPrerenderGroundImg = NULL;
+#ifdef JX_MOBILE
+	m_uJxNenXinLuc = 0;	// [NENTRUOC 13/09]
+#endif
 
 	memset(m_TrapInfo, 0, sizeof(m_TrapInfo));
 }
@@ -186,6 +189,9 @@ void KScenePlaceRegionC::Clear()
 		//用KRUImage::GROUND_IMG_OK_FLAG(bFrameDraw)来表示KRUImage对象是否已经预渲染好了
 		m_pPrerenderGroundImg->GROUND_IMG_OCCUPY_FLAG = false;
 		m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG = false;
+#ifdef JX_MOBILE
+		m_uJxNenXinLuc = 0;	// [NENTRUOC 13/09] bo anh nen -> xin lai
+#endif
 		m_pPrerenderGroundImg = NULL;
 	}
 
@@ -208,6 +214,9 @@ void KScenePlaceRegionC::Clear()
 	if (m_BiosData.pLeafs)
 		free (m_BiosData.pLeafs);
 	memset(&m_BiosData, 0, sizeof(KBiosData));
+#ifdef JX_MOBILE
+	m_uJxNenXinLuc = 0;	// [NENTRUOC 13/09]
+#endif
 	m_Status = REGION_S_STANDBY;
 }
 
@@ -321,6 +330,59 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 	}
 	return true;
 }
+#ifdef JX_MOBILE
+// [NENTRUOC 13/09] Core goi Represent3 (libRepresent3.so nap bang dlopen) qua GetProcAddress nhu Rep3NapTruocAnh (KNpcRes.cpp): thieu -> 0, im lang.
+// (tep nay chi co trong ban client; rao #ifdef don de ios/kiem_android_tuongduong.py so duoc tung dong)
+static int Rep3NenTruocKhung(const char* psz, int nFrame)
+{
+	typedef int (*PFN_NenTruocKhung)(const char*, int);
+	static PFN_NenTruocKhung s_pfn = NULL;
+	static int s_nTra = 0;
+	if (!psz || !psz[0]) return 0;
+	if (!s_pfn)
+	{
+		if (s_nTra >= 8) return 0;
+		s_nTra++;
+		HMODULE h = GetModuleHandleA("Represent3.dll");
+		if (h) s_pfn = (PFN_NenTruocKhung)GetProcAddress(h, "Rep3_NenTruocKhung");
+		if (!s_pfn) return 0;
+	}
+	return s_pfn(psz, nFrame);
+}
+
+// [NENTRUOC 13/09] Xin / hoi tung o cua vung (cung danh sach ma PrerenderGround ghep). Tra so o con 'dang chuan bi' (2); 0 (khong duoc) coi nhu san.
+int KScenePlaceRegionC::JxNenTruoc()
+{
+	int nCho = 0;
+	char szTen[MAX_PATH];
+	KSPRCrunode* pGrunode = m_GroundLayerData.pGrunodes;
+	for (unsigned int nIndex = 0; pGrunode && nIndex < m_GroundLayerData.uNumGrunode; nIndex++)
+	{
+		int nLen = (int)pGrunode->Param.nFileNameLen;
+		if (nLen >= MAX_PATH) nLen = MAX_PATH - 1;
+		if (nLen > 0) { memcpy(szTen, pGrunode->szImgName, nLen); szTen[nLen] = 0; if (Rep3NenTruocKhung(szTen, pGrunode->Param.nFrame) == 2) nCho++; }
+		pGrunode = (KSPRCrunode*)(((char*)pGrunode) + sizeof(KSPRCrunode::KSPRCrunodeParam) + pGrunode->Param.nFileNameLen);
+	}
+	KSPRCoverGroundObj* pObj = m_GroundLayerData.pObjects;
+	for (unsigned int nIndex = 0; pObj && nIndex < m_GroundLayerData.uNumObject; nIndex++, pObj++)
+		if (Rep3NenTruocKhung(pObj->szImage, pObj->nFrame) == 2) nCho++;
+	return nCho;
+}
+
+// [NENTRUOC 13/09] Vung ke ben / xa: lan dau xin luong nen chuan bi khung cac o; con o dang chuan bi -> true (hoan ghep, khung sau hoi lai);
+// tat ca san -> false (ghep, < 1 ms); qua 1,5 s ke tu lan xin dau -> false (ghep dong bo nhu cu, khong bao gio de vung trong qua lau).
+bool KScenePlaceRegionC::JxNenChuaSan()
+{
+	if (g_pRepresent == NULL || m_pPrerenderGroundImg == NULL || m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG)
+		return false;
+	const unsigned uNow = (unsigned)timeGetTime();
+	if (m_uJxNenXinLuc == 0)
+		m_uJxNenXinLuc = uNow ? uNow : 1;
+	else if (uNow - m_uJxNenXinLuc > 1500)
+		return false;
+	return JxNenTruoc() > 0;
+}
+#endif
 
 /*
 //##ModelId=3DBF9582039A
@@ -443,6 +505,9 @@ void KScenePlaceRegionC::SetNestRegion(KScenePlaceRegionC* pNest)
 	//标记区域地表图为未经渲染，既要重新渲染
 	if (m_pPrerenderGroundImg)
 		m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG = false;
+#ifdef JX_MOBILE
+	m_uJxNenXinLuc = 0;	// [NENTRUOC 13/09] ve lai -> xin lai
+#endif
 }
 
 
