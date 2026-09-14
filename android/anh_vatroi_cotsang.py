@@ -6,7 +6,7 @@ Kiem Vong Giang Ho: StillObject.mDropLightObj cot sang theo pham chat + cmn_drop
                              IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST nhan mau ten vat pham (pham chat) -> mot anh trang dung cho moi mau.
   * spr\vatroi\loe.spr     : 6 khung 64x48, vong elip 2:1 dan ra + loe giua (khung dau), tam (32, 32), neo (20, 8) = tam vong o giua-duoi icon.
 Dinh dang SPR (theo bo_cuc_vnku_mobile.doc_spr): "SPR\0" + W H cx cy frames colors dirs itv (8 x u16) + 12 byte 0, bang mau colors x 3,
-bang (offset, len) moi khung, moi khung: fw fh ox oy (4 x u16) + RLE tung dong: (run, alpha 0..31) [+ run chi so neu alpha > 0].
+bang (offset, len) moi khung, moi khung: fw fh ox oy (4 x u16) + RLE tung dong: (run, alpha 8 bit 0..255) [+ run chi so neu alpha > 0].
 Ghi vao lop ghi de android\du_lieu_ghi_de\spr\vatroi\, D:\jx1_android_data\spr\vatroi\ (may ao) va tuy chon goi may chu tai (tham so 1,
 nho --chi-manifest). Xem truoc: scratchpad/vatroi_xemtruoc.png (tham so --xem <duong dan png>).
 Dung: python android\anh_vatroi_cotsang.py [D:\jx1_android_data_dt_v4] [--xem out.png]
@@ -72,7 +72,7 @@ def loe_khung(i, w=64, h=48):
 
 
 def rle_khung(im):
-    """RGBA -> (bang mau la trang thuan: chi so 0) + RLE (run, alpha 0..31)[+ chi so]. Anh trang nen bang mau 1 mau."""
+    """RGBA -> (bang mau la trang thuan: chi so 0) + RLE (run, alpha 8 bit 0..255)[+ chi so]. Anh trang nen bang mau 1 mau."""
     w, h = im.size
     px = im.load()
     out = bytearray()
@@ -80,11 +80,11 @@ def rle_khung(im):
         x = 0
         while x < w:
             a = px[x, y][3]
-            q = 0 if a < 8 else max(1, min(31, int(round(a * 31 / 255.0))))
+            q = 0 if a < 8 else a          # [SUA 14/09] alpha SPR la 8 bit 0..255 (TextureRes.cpp RenderToA8R8G8B8: a << 24), khong phai 0..31
             n = 1
             while x + n < w and n < 255:
                 a2 = px[x + n, y][3]
-                q2 = 0 if a2 < 8 else max(1, min(31, int(round(a2 * 31 / 255.0))))
+                q2 = 0 if a2 < 8 else a2
                 if q2 != q:
                     break
                 n += 1
@@ -137,7 +137,7 @@ def doc_spr(path):
                     idx = d[p]; p += 1
                     if x < fw:
                         r, g, b = pal[idx]
-                        px[x, y] = (r, g, b, 255 if alpha >= 31 else int(alpha * 255 / 31))
+                        px[x, y] = (r, g, b, alpha)
                     x += 1
             if x >= fw:
                 x, y = 0, y + 1

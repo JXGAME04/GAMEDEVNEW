@@ -9149,6 +9149,153 @@ int KNpc::PaintTeamMNG(KUiPlayerItem *m_pPlayersList, KUiPlayerPaintTeamMNG *nPa
 	return 1;
 }
 
+#ifdef JX_MOBILE
+// [HAOQUANG 14/09] Vong hao quang duoi chan (chu 14/09: "hay lam va co nut tat mo khi can tat hoac mo" sau muc 10.2 mo game 3D Kiem Vong
+// Giang Ho: halo_npc_purple/gold/pink + halo_boss_red = vong phap tran phang o sys_foot cua quai tinh anh / boss, song thuong truc):
+//  - QUAI: m_Type (BOSS_STATE, may chu day qua NpcSync.NpcEnchant - cung truong to mau ten quai o PaintInfo): boss_blue -> vongquai.spr
+//    xanh duong, boss_muter -> vongquai.spr xanh la; boss_gold -> vongboss.spr hoang kim, boss_event -> tim, boss_war -> do. Anh TRANG
+//    (android/anh_haoquang_vong.py) nhan mau bang IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST, quay theo thoi gian (70 ms/khung).
+//  - TRANG BI (chi nhan vat cua MINH - client khong biet do nguoi khac dang mac, khong doi giao thuc): pham chat cao nhat dang mac
+//    >= [HaoQuang] TrangBiTu (3 hoang kim) -> vong hao quang co san cua JX1: hoang kim vongtronvang.spr, do tim vongtrontim.spr,
+//    bach kim vongtronxanh.spr (30 khung, giu mau goc).
+//  Ve ngay truoc than NPC (KNpc::Paint -> m_DataRes.Draw) tai diem dat chan (REF_SPOT, neo = tam vong). Cong tac Cai dat > Toi uu
+//  (UiOptions2) qua JxHaoQuang_DatBat; config.ini [HaoQuang] Alpha / TrangBiTu / Thu (1 = moi quai thuong cung co vong xanh, 2 = ca minh
+//  - de thu may ao). Khong doi lop KNpc, khong doi giao thuc; PC y het.
+static int         s_nHqDoc = 0, s_nHqQuai = 1, s_nHqTrangBi = 1, s_nHqAlpha = 220, s_nHqTrangBiTu = 3, s_nHqThu = 0, s_nHqBao = 0;
+static int         s_nHqThuAnh = 0;	// [HAOQUANG 14/09 e] [HaoQuang] ThuAnh: 1 vong quai = vongtrondo.spr that, 2 vongquai.spr khong nhuom, 3 nhuom trang
+static KRUImage    s_HqAnh[6];
+static const char* s_HqTen[6] = { "\\spr\\haoquang\\vongquai.spr", "\\spr\\haoquang\\vongboss.spr",
+	"\\spr\\haoquang\\vongtronvang.spr", "\\spr\\haoquang\\vongtrontim.spr", "\\spr\\haoquang\\vongtronxanh.spr",
+	"\\spr\\haoquang\\vongtrondo.spr" };
+static const int   s_HqKhung[6] = { 12, 16, 30, 30, 30, 30 };
+static const int   s_HqMs[6]    = { 70, 70, 50, 50, 80, 50 };
+
+extern "C" void JxHaoQuang_DatBat(int nQuai, int nTrangBi)
+{
+	s_nHqQuai    = nQuai ? 1 : 0;
+	s_nHqTrangBi = nTrangBi ? 1 : 0;
+}
+
+static void HaoQuang_DocCfg()
+{
+	char szCfg[MAX_PATH];
+	if (s_nHqDoc)
+		return;
+	s_nHqDoc = 1;
+	GetCurrentDirectory(MAX_PATH, szCfg); strcat(szCfg, "\\Config.ini");
+	s_nHqAlpha     = GetPrivateProfileInt("HaoQuang", "Alpha", 220, szCfg);
+	s_nHqTrangBiTu = GetPrivateProfileInt("HaoQuang", "TrangBiTu", 3, szCfg);
+	s_nHqThu       = GetPrivateProfileInt("HaoQuang", "Thu", 0, szCfg);
+	s_nHqThuAnh    = GetPrivateProfileInt("HaoQuang", "ThuAnh", 0, szCfg);	// [HAOQUANG 14/09 e]
+	if (s_nHqAlpha < 30) s_nHqAlpha = 30;
+	if (s_nHqAlpha > 255) s_nHqAlpha = 255;
+	g_DebugLog("[HAOQUANG] quai=%d trang bi=%d alpha=%d trang bi tu=%d thu=%d", s_nHqQuai, s_nHqTrangBi, s_nHqAlpha, s_nHqTrangBiTu, s_nHqThu);
+}
+
+// ve mot vong tai diem dat chan (x, y): nAnh 0..4; dwMau 0 = giu mau goc (anh mau san), khac 0 = nhan mau (anh trang) + alpha cau hinh
+static void HaoQuang_VeVong(int nAnh, DWORD dwMau, int x, int y)
+{
+	KRUImage& a = s_HqAnh[nAnh];
+	if (a.szImage[0] == 0)
+	{
+		memset(&a, 0, sizeof(a));
+		a.nType = ISI_T_SPR;
+		strcpy(a.szImage, s_HqTen[nAnh]);
+		a.uImage = 0;
+		a.nISPosition = IMAGE_IS_POSITION_INIT;
+		a.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+	}
+	a.nFrame = (int)(((unsigned int)GetTickCount() / (unsigned int)s_HqMs[nAnh]) % (unsigned int)s_HqKhung[nAnh]);
+	a.oPosition.nX = x; a.oPosition.nY = y; a.oPosition.nZ = 0;
+	a.bRenderStyle = dwMau ? IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST : IMAGE_RENDER_STYLE_ALPHA;
+	a.Color.Color_dw = ((DWORD)(dwMau ? s_nHqAlpha : 255) << 24) | (dwMau & 0x00ffffff);
+	g_pRepresent->DrawPrimitives(1, &a, RU_T_IMAGE, 0);
+	if (s_nHqThu)	// [HAOQUANG 14/09 e] chan doan: anh co nap duoc khong (moi 3 s)
+	{
+		static unsigned int s_uHqAnhLuc = 0;
+		if ((unsigned int)GetTickCount() - s_uHqAnhLuc > 3000)
+		{
+			KImageParam sP;
+			int nOk;
+			memset(&sP, 0, sizeof(sP));
+			s_uHqAnhLuc = (unsigned int)GetTickCount();
+			nOk = g_pRepresent->GetImageParam(a.szImage, &sP, ISI_T_SPR) ? 1 : 0;
+			g_DebugLog("[HAOQUANG] anh %d '%s' uImage %u isPos %d kieu %d mau %08X khung %d: param %d (khung %d itv %d %dx%d)", nAnh, a.szImage,
+				(unsigned int)a.uImage, (int)a.nISPosition, (int)a.bRenderStyle, (unsigned int)a.Color.Color_dw, a.nFrame, nOk,
+				(int)sP.nNumFrames, (int)sP.nInterval, (int)sP.nWidth, (int)sP.nHeight);
+		}
+	}
+	if (!(s_nHqBao & (1 << nAnh)))
+	{
+		s_nHqBao |= (1 << nAnh);
+		g_DebugLog("[HAOQUANG] ve vong dau tien: anh %d mau %06X tai %d,%d", nAnh, (unsigned int)(dwMau & 0xffffff), x, y);
+	}
+}
+
+// goi trong KNpc::Paint ngay truoc m_DataRes.Draw (than); p = NPC dang ve
+static void HaoQuang_Ve(KNpc* p)
+{
+	int x = 0, y = 0, nAnh = -1, i, nMau = 0, nIdx, c;
+	DWORD dwMau = 0;
+	HaoQuang_DocCfg();
+	if (p->m_Doing == do_death || p->m_Doing == do_revive)	// [HAOQUANG 14/09 c] khong xet m_CurrentLife (NPC thoai = 0 tren client)
+		return;
+	if (p->m_Kind == kind_normal || p->m_Kind == kind_dialoger)
+	{
+		if (!s_nHqQuai)
+			return;
+		switch (p->m_Type)
+		{
+		case boss_blue:  nAnh = 0; dwMau = 0x6E78FF; break;	// quai xanh (tinh anh) - cung mau ten 0x6569d7, sang hon chut
+		case boss_muter: nAnh = 0; dwMau = 0x3CDC3C; break;
+		case boss_gold:  nAnh = 1; dwMau = 0xFFD94E; break;	// boss hoang kim
+		case boss_event: nAnh = 1; dwMau = 0xE65AFF; break;	// boss su kien (tim)
+		case boss_war:   nAnh = 1; dwMau = 0xFF3C28; break;	// boss chien truong (do)
+		default:
+			if (s_nHqThu && (p->m_Kind == kind_normal || s_nHqThu >= 3)) { nAnh = 0; dwMau = 0x6E78FF; }	// [HAOQUANG 14/09 b] Thu=3: ca NPC thoai (thu trong thanh)
+			break;
+		}
+	}
+	else if (p->m_Kind == kind_player && p->m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex)
+	{
+		if (!s_nHqTrangBi)
+			return;
+		for (i = 0; i < itempart_num; i++)
+		{
+			nIdx = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipment(i);
+			if (nIdx <= 0)
+				continue;
+			c = Item[nIdx].GetColorItem();
+			if (c != broken_item && c > nMau)
+				nMau = c;
+		}
+		if (s_nHqThu >= 2 && nMau < gold_item)
+			nMau = gold_item;
+		if (nMau < s_nHqTrangBiTu || nMau < gold_item)
+			return;
+		nAnh = (nMau == gold_item) ? 2 : (nMau == purple_item) ? 3 : (nMau == platinum_item) ? 4 : -1;
+	}
+	if (s_nHqThu && p->m_Kind != kind_player)
+	{
+		static unsigned int s_uHqBaoLuc = 0;
+		if ((unsigned int)GetTickCount() - s_uHqBaoLuc > 5000)
+		{
+			s_uHqBaoLuc = (unsigned int)GetTickCount();
+			g_DebugLog("[HAOQUANG] npc %d kind %u type %d doing %d -> anh %d", p->m_Index, (unsigned int)p->m_Kind, p->m_Type, (int)p->m_Doing, nAnh);
+		}
+	}
+	if (nAnh < 0)
+		return;
+	if (s_nHqThuAnh && nAnh <= 1)	// [HAOQUANG 14/09 e] thu duong ve
+	{
+		if (s_nHqThuAnh == 1) { nAnh = 5; dwMau = 0; }
+		else if (s_nHqThuAnh == 2) dwMau = 0;
+		else dwMau = 0xFFFFFF;
+	}
+	p->GetNpcRes()->GetPos(&x, &y);
+	HaoQuang_VeVong(nAnh, dwMau, x, y);
+}
+#endif
 void KNpc::Paint()
 {
 	if (m_Index != Player[CLIENT_PLAYER_INDEX].m_nIndex && (m_CurrentCamp == camp_audience || m_HideState.nTime > 0))
@@ -9203,6 +9350,10 @@ void KNpc::Paint()
 		}
 	}
 
+#ifdef JX_MOBILE
+	if (bPaintBody)
+		HaoQuang_Ve(this);	// [HAOQUANG 14/09] vong hao quang duoi chan, ve truoc bong + than
+#endif
 	m_DataRes.Draw(m_Index, m_ResDir, m_Frames.nTotalFrame, m_Frames.nCurrentFrame, FALSE, bPaintBody);
 	int nHeight = GetNpcPate() + GetNpcPatePeopleInfo();
 	//add by Fong Kieu

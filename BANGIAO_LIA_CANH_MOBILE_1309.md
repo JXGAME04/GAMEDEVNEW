@@ -315,7 +315,7 @@ Chủ: *"Làm mức 1 trước: hiệu ứng ánh sáng tuỳ theo loại vật 
 | | |
 |---|---|
 | Mã | `Core/Src/KObj.cpp` (chỉ `JX_MOBILE`, trong `#ifndef _SERVER`), kịch bản `android/va_nguon_vatroi_1409.py`; PC y hệt (`kiem --pc` ĐẠT, byte cao 1466 = 1466) |
-| Ảnh | `spr/vatroi/cotsang.spr` (1 khung 48×120, trắng, neo chân cột) + `spr/vatroi/loe.spr` (6 khung 64×32 vòng elip 2:1 dãn ra), sinh bằng `android/anh_vatroi_cotsang.py` (PIL → SPR bảng màu 1 màu + alpha 31 mức); lớp ghi đè, máy ảo, dt_v4 (đã `--chi-manifest`) |
+| Ảnh | `spr/vatroi/cotsang.spr` (1 khung 48×120, trắng, neo chân cột) + `spr/vatroi/loe.spr` (6 khung 64×32 vòng elip 2:1 dãn ra), sinh bằng `android/anh_vatroi_cotsang.py` (PIL → SPR bảng màu 1 màu + alpha 31 mức — SAI, alpha SPR là 8 bit, sửa 14/09 08:4x xem mục HÀO QUANG §3); lớp ghi đè, máy ảo, dt_v4 (đã `--chi-manifest`) |
 | Config | `config.ini` mục mới `[VatRoi]`: `CotSang=1`, `CotSangTu=1`, `CotSangAlpha=170`, `Loe=1` (lớp ghi đè, máy ảo, dt_v4) |
 | APK | 109140105 thử máy ảo; giao theo bản gộp của phiên đo nhịp hoặc tôi chép + `--chi-manifest` (xem cuối) |
 
@@ -341,3 +341,57 @@ Chủ: *"Làm mức 1 trước: hiệu ứng ánh sáng tuỳ theo loại vật 
 1. Đánh quái cho rơi đồ: đồ xanh/hoàng kim/tím/bạch kim có cột sáng màu tương ứng dưới chân, lúc rơi có vòng loé; đồ trắng không có (muốn có: `CotSangTu=0`).
 2. Thấy cột to/nhỏ, đậm/nhạt: đổi `CotSangAlpha` (30..255) hoặc nói tôi đổi cỡ ảnh (`anh_vatroi_cotsang.py`).
 3. Tống Kim đông đồ rơi: xem fps; mỗi vật thêm 1 quad, không tốn đáng kể.
+
+
+---
+
+# HÀO QUANG DƯỚI CHÂN + CÔNG TẮC HIỆU ỨNG + SỬA CỘT SÁNG VẬT RƠI — 14/09 08:4x
+
+Chủ (14/09 sáng): *"hãy làm và có nút tắt mở khi cần tắt hoặc mở"* (sau §10.2 mổ game 3D: `halo_npc_purple/gold/pink`, `halo_boss_red`) và *"vật phẩm ném ra có hiệu ứng ánh sáng chưa hoạt động - tôi để đồ trong hành trang bạn ném ra để test"*.
+
+## 1. Bản
+
+| | |
+|---|---|
+| Mã | `Core/Src/KNpc.cpp` (khối static trước `KNpc::Paint` + gọi `HaoQuang_Ve(this)` ngay trước `m_DataRes.Draw`), `Core/Src/KObj.cpp` (cờ `s_nVrBat` + đọc `[VatRoi]` ngay đầu `KObj::Draw`), `S3Client/Ui/UiCase/UiOptions2.h/.cpp` (`MAX_TOGGLE_BTN_COUNT` 7 → 10 chỉ trong lớp `KUiOptions2`, 3 mục enum `OPTION_I_HQQUAI / HQTRANGBI / SANGVATROI`) — tất cả chỉ `JX_MOBILE`; PC y hệt (`kiem --pc` ĐẠT cả 4 tệp). Kịch bản `android/va_nguon_haoquang_1409.py` rồi `android/va_nguon_haoquang_1409_b.py` (chẩn đoán + khoá `ThuAnh`) |
+| Ảnh | `spr/haoquang/vongquai.spr` (12 khung 128×64, neo (64,32) = tâm vòng) + `vongboss.spr` (16 khung 176×88): ảnh TRẮNG sinh bằng `android/anh_haoquang_vong.py` (vẽ khung tròn 2× rồi ép 2:1), nhuộm màu lúc vẽ bằng `IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST`; vòng trang bị dùng ảnh có sẵn `vongtronvang / vongtrontim / vongtronxanh.spr` (30 khung, giữ màu gốc) |
+| Giao diện | Cài đặt > TÙY CHỌN > Tối ưu: **10 công tắc**, 5 hàng × 2 cột từ Top=70 (`android/sinh_uioptions2_haoquang.py` → `ui/ui3/uioptions2.ini`): thêm **Vòng quái**, **Vòng đồ mặc**, **Sáng vật rơi** (tên ≤ 12 ký tự vì nút rộng 72 px, "Vòng trang bị" bị cắt). Lưu `userdata/<acc>/uiautoconfig.ini [Options2] HaoQuangQuai / HaoQuangTrangBi / SangVatRoi`, mặc định BẬT; áp ngay khi bấm và lúc vào thế giới (`JxHaoQuang_DatBat`, `JxVatRoi_DatBat`) |
+| Config | `config.ini [HaoQuang]`: `Alpha=220` (độ đậm vòng quái), `TrangBiTu=3` (phẩm chất tối thiểu có vòng mình: 3 hoàng kim / 4 đỏ tím / 5 bạch kim), `Thu=0` (gỡ lỗi: 1 = mọi quái thường vòng xanh, 2 = + ép mình hoàng kim, 3 = + cả NPC thoại), `ThuAnh=0` (1 = vòng quái dùng vongtrondo.spr thật, 2 = vongquai không nhuộm, 3 = nhuộm trắng). `[VatRoi] CotSangTu` **1 → 0** (xem §3) |
+| APK | máy ảo 109140801 → 109140801 → 109140830 (5 lần vá), dt_v4 = **109140830** |
+
+## 2. Cách hiện
+
+- **Quái** theo `m_Type` (`BOSS_STATE`, máy chủ đẩy qua `NpcSync.NpcEnchant` — cùng trường JX1 dùng tô màu tên quái ở `PaintInfo`): `boss_blue` → vòng nhỏ **xanh dương** (0x6E78FF), `boss_muter` → xanh lá; `boss_gold` → vòng to **hoàng kim** (0xFFD94E), `boss_event` → **tím** (0xE65AFF), `boss_war` → **đỏ** (0xFF3C28). Vòng quay: vạch trong quay xuôi, nút sáng quay ngược, boss thêm 3 cung ngoài; 70 ms/khung, lặp kín.
+- **Nhân vật của mình**: phẩm chất cao nhất trong đồ đang mặc (`m_ItemList.GetEquipment(i)` → `Item.GetColorItem()`, bỏ đồ hỏng) ≥ `TrangBiTu` → hoàng kim `vongtronvang`, đỏ tím `vongtrontim`, bạch kim `vongtronxanh`. **Người khác không có**: client không biết đồ họ mặc, muốn có phải đổi giao thức → không làm.
+- Chết / hồi sinh không vẽ; "Mất Npc" bật thì ẩn luôn vòng (đi theo `bPaintBody`). Vẽ tại điểm đặt chân (`GetNpcRes()->GetPos`, `REF_SPOT`), trước bóng + thân nên nằm dưới quái, trên nền.
+
+## 3. Lỗi gốc tìm được: ảnh SPR sinh bằng PIL ghi alpha SAI → cột sáng vật rơi (VATROI 14/09 01:2x) chưa từng hiện
+
+- `Represent3/TextureRes.cpp` `RenderToA8R8G8B8` / `RenderToIndexAlpha`: byte thứ hai của mỗi run RLE là **alpha 8 bit** (`a << 24`), **không phải 0..31** như tôi ghi ở mục VẬT PHẨM RƠI (§1 "alpha 31 mức" — SAI). `cotsang.spr`, `loe.spr` (và `vongquai/vongboss` lúc đầu) ghi alpha ≤ 31 → tối đa 12 % → gần như trong suốt. Ảnh thật: `vongtronxanh` run `1a ff`, nút `nut_vp_*.spr` run `01 88` = alpha 255 / 136.
+- Đã sửa `anh_vatroi_cotsang.py` + `anh_haoquang_vong.py` (alpha 0..255, `q = 0 if a < 8 else a`), sinh lại 4 ảnh vào lớp ghi đè, máy ảo, dt_v4. Sau sửa vòng hiện ngay (ảnh `vong_a.png`), trước đó `[HAOQUANG] anh ... param 1 (khung 12 128x64)` = ảnh nạp được nhưng không thấy.
+- Lý do thứ hai chủ "ném ra không thấy": máy chủ **chỉ cho ném đồ trắng / xanh** (`KPlayer::ThrowAwayItem`: hoàng kim, đỏ tím, bạch kim, nhiệm vụ, đồ khoá / bảo hiểm → "Vật phẩm này không thể vứt bỏ được"), mà mặc định cũ `CotSangTu=1` loại đồ trắng → ném đồ trắng cũng không có cột. Nay `CotSangTu=0` (game 3D cũng có cột trắng cho đồ trắng `dg_xw_cmn_white`); muốn như cũ đặt lại 1, hoặc tắt hẳn bằng công tắc "Sáng vật rơi".
+- Bẫy phụ: `VatRoi_DocCfg` trước chỉ chạy khi vẽ vật phẩm đầu tiên → `[VatRoi] Thu=2` (cột dưới mọi vật thể) không bao giờ bật được; nay đọc một lần ngay đầu hook trong `KObj::Draw`.
+- Bẫy khi vá (lặp lại lần 3): khối `#endif` + dòng trống → `kiem --pc` HỎNG; kịch bản có mục sửa cho cây đã vá.
+
+## 4. Thử máy ảo (Ba Lăng Huyện, tài khoản hinod1)
+
+- Cửa sổ Tối ưu 10 công tắc nằm gọn trong nền `main2.spr`, nút Đóng không đụng (`tuychon3.png`); tắt "Vòng đồ mặc" → vòng vàng mất ngay, bật lại → hiện (`hq2/hq3.png`).
+- Vòng vàng dưới nhân vật (Thu=2 ép hoàng kim) bám theo khi cưỡi ngựa; Thu=3: vòng xanh quay dưới mọi NPC trong thành (`vong_a.png`, `vong_zoom.png`).
+- Ném "Chung Nhũ Nguyên Thạch" / "Đại Phong Đao" / "Phá Thiên Chùy" (tap ô → dải nút → Ném): log `[VATROI] cot sang=1 ... loe=1` mỗi lần; vật rơi đúng dưới chân ngựa nên chưa chụp được cột rõ trên máy ảo → chủ xem trên Fold 7 (cùng đường vẽ + cùng lỗi alpha đã sửa như vòng).
+- Trang thông tin nhân vật / hành trang: JX1 đã có sẵn **viền phẩm chất động** (`KWndObjectBox::PaintWindow` → `DrawBorder2` xanh / hoàng kim / tím / bạch kim) và hiện đúng trên mobile (`trangbi1.png`) → không làm thêm.
+
+## 5. Chưa làm
+
+- **Đao quang** màu khi vung vũ khí (§10.1): phải vẽ sprite vệt sáng 8 hướng × từng loại vũ khí × vài khung, 2–3 ngày → chờ chủ chốt có làm không.
+- Vòng hào quang trang bị của **người khác**: cần máy chủ gửi phẩm chất (đổi giao thức) → không làm.
+- Máy ảo chưa gặp quái `boss_blue`/`boss_gold` thật (trong thành); màu vòng lấy đúng bảng màu tên quái nên chỉ còn xem cỡ vòng có hợp quái to/nhỏ.
+
+## 6. Chủ thử trên Fold 7
+
+1. Ra map có quái xanh (tinh anh) / boss hoàng kim: vòng dưới chân đúng màu tên quái; Tống Kim boss chiến trường vòng đỏ. Vòng to/nhỏ, đậm/nhạt: `[HaoQuang] Alpha` hoặc nói tôi đổi cỡ ảnh.
+2. Mặc đồ hoàng kim / đỏ tím / bạch kim: vòng dưới chân mình. Cài đặt > TÙY CHỌN > Tối ưu: tắt/bật "Vòng quái", "Vòng đồ mặc", "Sáng vật rơi".
+3. Ném đồ trắng / xanh: cột sáng màu tên + vòng loé lúc chạm đất. Không muốn đồ trắng sáng: `[VatRoi] CotSangTu=1`.
+
+## 7. Giao bản
+
+- dt_v4: `jx1mobile.apk` = bản cuối trong mục này, `config.ini` thêm `[HaoQuang]` + `CotSangTu=0`, `ui/ui3/uioptions2.ini` 10 công tắc, `spr/haoquang/vongquai.spr + vongboss.spr`, `spr/vatroi/cotsang.spr + loe.spr` sinh lại; sau đó `--chi-manifest`. Phiên đo nhịp đã xác nhận không giữ bản chưa đẩy.

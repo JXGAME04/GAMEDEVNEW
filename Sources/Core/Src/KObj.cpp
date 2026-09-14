@@ -550,6 +550,8 @@ void KObj::DrawInfo()
 static int          s_nVrDoc = 0, s_nVrCotSang = 1, s_nVrCotSangTu = 1, s_nVrAlpha = 170, s_nVrLoe = 1, s_nVrThu = 0;
 static unsigned int s_uVrLoeLuc[MAX_OBJECT];
 static KRUImage     s_VrCot, s_VrLoe;
+static int          s_nVrBat = 1;	// [HAOQUANG 14/09] cong tac Cai dat > Toi uu "Sang vat roi" (UiOptions2 -> JxVatRoi_DatBat)
+extern "C" void JxVatRoi_DatBat(int nBat) { s_nVrBat = nBat ? 1 : 0; }
 
 static void VatRoi_DocCfg()
 {
@@ -590,7 +592,7 @@ static void VatRoi_VeDuoi(int nColorID, DWORD dwMau, int nDropState, int x, int 
 {
 	unsigned int uTho;
 	VatRoi_DocCfg();
-	if (!s_nVrCotSang || nDropState == 1 || nColorID < s_nVrCotSangTu || nColorID == 2 || nColorID >= 6)
+	if (!s_nVrBat || !s_nVrCotSang || nDropState == 1 || nColorID < s_nVrCotSangTu || nColorID == 2 || nColorID >= 6)	// [HAOQUANG 14/09] s_nVrBat
 		return;
 	uTho = (unsigned int)GetTickCount() % 1600; if (uTho >= 800) uTho = 1600 - uTho;	// tam giac 0..800: tho nhe
 	VatRoi_DatAnh(s_VrCot, 0, x, y, (unsigned int)s_nVrAlpha * (200 + uTho / 8) / 300, dwMau);	// alpha x 0,67..1,0
@@ -602,7 +604,7 @@ static void VatRoi_VeTren(int nIndex, DWORD dwMau, int x, int y)
 {
 	unsigned int uDa; int nKhung;
 	VatRoi_DocCfg();
-	if (!s_nVrLoe || nIndex <= 0 || nIndex >= MAX_OBJECT || !s_uVrLoeLuc[nIndex])
+	if (!s_nVrBat || !s_nVrLoe || nIndex <= 0 || nIndex >= MAX_OBJECT || !s_uVrLoeLuc[nIndex])	// [HAOQUANG 14/09] s_nVrBat
 		return;
 	uDa = (unsigned int)GetTickCount() - s_uVrLoeLuc[nIndex];
 	if (uDa >= 420) { s_uVrLoeLuc[nIndex] = 0; return; }
@@ -649,6 +651,7 @@ void KObj::Draw()
 	}
 
 #ifdef JX_MOBILE
+	VatRoi_DocCfg();	// [HAOQUANG 14/09 b] doc [VatRoi] truoc khi xet Thu (truoc day chi doc luc ve vat pham dau tien -> Thu=2 khong bat duoc)
 	if (m_nKind == Obj_Kind_Item || (s_nVrThu && m_nKind == Obj_Kind_Money) || s_nVrThu >= 2)
 		VatRoi_VeDuoi(m_nColorID, m_dwNameColor, m_nDropState, x, y);	// [VATROI 14/09] cot sang duoi vat pham (ve truoc anh)
 #endif
