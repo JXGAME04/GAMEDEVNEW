@@ -130,6 +130,7 @@ struct Rep3VeDpTimer { LARGE_INTEGER a; Rep3VeDpTimer() { if (g_nRep3VeMau) Quer
 // [VE 11/09] Android: cong tac + thong ke nap KHUNG o luong nen (TextureRes.cpp / TextureResMgr.cpp) va do trinh chieu (D3D9onGPUDev.cpp)
 int g_nJxNapKhungNen = 1, g_nJxNapKhungMs = 3, g_nJxNapKhungTruoc = 2, g_nJxNapKhungApMs = 3, g_nJxVeGiatMs = 20;
 int g_nJxNapKhungKB = 128;	// [TAI 14/09] [Client] NapKhungKB: ngan sach byte/khung tai dan texture khung NAP TRUOC len GPU (driver Fold 7 ton CPU ~20 ms/MB trong lenh tai)
+int g_nJxNapKhungToKB = 128; unsigned g_uJxNapKhungTo = 0;	// [NAPTO 14/09] [Client] NapKhungToKB: khung nen >= nguong giao luong nen ngay (Fold 7: rut dong bo 1 khung to = 24-72 ms)
 int g_nJxAnhBoVeNen = 0;
 int g_nJxHoiKhongDe = 1; unsigned g_uJxNapKhungRong = 0, g_uJxHoiTre = 0;	// [VE 11/09 d]
 int g_nJxAtlasKe = 1, g_nJxAtlasTrang = 2048;	// [VE 11/09 e]
@@ -227,9 +228,9 @@ static void JxVeKyIn()
 	{	// [TAI 14/09] tai dan khung nap truoc + to 0 trang atlas bang chep GPU
 		extern unsigned g_uJxTaiTruocSo, g_uJxTaiTruocXong, g_uJxTaiTruocKB, g_uJxTaiTruocLuot, g_uJxTaiTruocMax, g_uJxZeroChep; extern double g_dJxTaiTruocMs, g_dJxZeroChepMs;
 		extern unsigned g_uJxDemSo, g_uJxDemKB;	// [DEM 14/09]
-		Rep3Log("[VE-TAI] tai dan khung nap truoc (NapKhungKB=%d): vao hang %u, xong %u, %u KB / %u luot, %.1f ms (hang cho max %u) | trang atlas / o rong to 0 bang chep GPU: %u lan %.1f ms | o BGRA8 tai qua anh dem: %u o %u KB",
-			g_nJxNapKhungKB, g_uJxTaiTruocSo, g_uJxTaiTruocXong, g_uJxTaiTruocKB, g_uJxTaiTruocLuot, g_dJxTaiTruocMs, g_uJxTaiTruocMax, g_uJxZeroChep, g_dJxZeroChepMs, g_uJxDemSo, g_uJxDemKB);
-		g_uJxTaiTruocSo = g_uJxTaiTruocXong = g_uJxTaiTruocKB = g_uJxTaiTruocLuot = g_uJxTaiTruocMax = g_uJxZeroChep = 0; g_dJxTaiTruocMs = g_dJxZeroChepMs = 0.0; g_uJxDemSo = g_uJxDemKB = 0;
+		Rep3Log("[VE-TAI] tai dan khung nap truoc (NapKhungKB=%d): vao hang %u, xong %u, %u KB / %u luot, %.1f ms (hang cho max %u) | trang atlas / o rong to 0 bang chep GPU: %u lan %.1f ms | o BGRA8 tai qua anh dem: %u o %u KB | khung to (>= %d KB) giao nen thay vi rut dong bo: %u",
+			g_nJxNapKhungKB, g_uJxTaiTruocSo, g_uJxTaiTruocXong, g_uJxTaiTruocKB, g_uJxTaiTruocLuot, g_dJxTaiTruocMs, g_uJxTaiTruocMax, g_uJxZeroChep, g_dJxZeroChepMs, g_uJxDemSo, g_uJxDemKB, g_nJxNapKhungToKB, g_uJxNapKhungTo);
+		g_uJxTaiTruocSo = g_uJxTaiTruocXong = g_uJxTaiTruocKB = g_uJxTaiTruocLuot = g_uJxTaiTruocMax = g_uJxZeroChep = 0; g_dJxTaiTruocMs = g_dJxZeroChepMs = 0.0; g_uJxDemSo = g_uJxDemKB = 0; g_uJxNapKhungTo = 0;
 	}
 }
 #endif
@@ -999,6 +1000,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nJxNapKhungTruoc = Rep3Ini("NapKhungTruoc", 2);	// so khung KE TIEP cung huong nap truoc o luong nen (0 = tat)
 	g_nJxNapKhungApMs  = Rep3Ini("NapKhungApMs", 3);	// ngan sach tao texture tu ket qua luong nen moi khung (ms)
 	g_nJxNapKhungKB    = Rep3Ini("NapKhungKB", 128);	// [TAI 14/09] ngan sach tai dan khung nap truoc len GPU (KB/khung); 0 = tat (tai ca khung luc ve nhu cu)
+	g_nJxNapKhungToKB  = Rep3Ini("NapKhungToKB", 128);	// [NAPTO 14/09] khung chua rut co co nen >= KB nay -> giao luong nen ngay, bo ve 1-3 khung; 0 = tat (rut dong bo khi con ngan sach nhu cu)
 	{ extern int g_nJxTaiDo; g_nJxTaiDo = Rep3Ini("TaiDo", 0); }	// [TAI-DO 14/09] 1 = do duong tai len GPU luc khoi dong thiet bi (chi log [TAI-DO], ~0,4 s); [DEM 14/09] mac dinh 0
 	g_nJxVeGiatMs      = Rep3Ini("VeGiatMs", 20);		// ghi [VE-GIAT] khi ve CPU + trinh chieu (hoac nap ngoai luc ve) cua mot khung vuot nguong (ms); 0 = tat
 	g_nJxHoiKhongDe    = Rep3Ini("NapHoiKhongDe", 1);	// [VE 11/09 d] 1 = hoi kich thuoc sprite NPC dang nap o luong nen -> tra 'chua co' (khong nap dong bo de len)

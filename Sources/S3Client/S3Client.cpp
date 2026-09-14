@@ -79,6 +79,10 @@ static int	g_nPaintFps = 30;		// paint frames per second, config.ini [Client] Pa
 #ifdef JX_MOBILE
 unsigned g_uJxHudLogicUs = 0, g_uJxHudVeUs = 0;	// [ANDROID 11/09 HUD b] chi phi Breathe+UiHeartBeat / UiPaint vong gan nhat (us) cho bang do (JxPerfHudAndroid.cpp)
 static inline unsigned JxHudUs(const LARGE_INTEGER& a) { LARGE_INTEGER b, f; QueryPerformanceCounter(&b); QueryPerformanceFrequency(&f); return f.QuadPart ? (unsigned)((b.QuadPart - a.QuadPart) * 1000000 / f.QuadPart) : 0; }
+// [LOGIC-PHA 14/09] [SPIKE] logic=89-199 ms tren Fold 7 ma [LOGIC] (Breathe + UiHeartBeat) khong ghi -> thoi gian nam ngoai hai ham do; do tung pha cua phan logic
+// trong GameLoop (mang, WAuto, IPC, Breathe, UiHeartBeat, khoi sau, PROCFRAME, gui lenh) va ghi [LOGIC-PHA] vao jx_paint.log khi phan logic >= 30 ms (PaintLog > 0).
+static inline double JxLgMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b) { LARGE_INTEGER f; QueryPerformanceFrequency(&f); return f.QuadPart ? (double)(b.QuadPart - a.QuadPart) * 1000.0 / (double)f.QuadPart : 0.0; }
+#define JX_LG_MOC(v) QueryPerformanceCounter(&(v))
 #endif
 static int	g_nPaintSmooth = 1;		// [NHIP 08/09 c] 1 = so chia noi suy dung trung binh truot cua khoang tick (het nhay/dong bang moi tick); 0 = nhu cu
 static int	g_nPaintVsync = 0;		// [NHIP 08/09] config.ini [Client] PaintVsync; 1 = ve moi vong bom, Represent3 Present(1) (vblank dan nhip)
@@ -1501,7 +1505,13 @@ BOOL KMyApp::GameLoop()
 	static DWORD	s_dwLastPaintAt = 0, s_LogGapMin = 0, s_LogGapMax = 0, s_LogGapSum = 0, s_LogGapCnt = 0, s_LogSpanMin = 0, s_LogSpanMax = 0;	// [NHIP 08/09] PaintLog: khoang cach khung ve + span tick
 	int	nLogCross = 0;
 	DWORD	nLogCntBefore = m_GameCounter;
+#ifdef JX_MOBILE
+	LARGE_INTEGER liLg0, liLgNet, liLgWa, liLgIpc, liLgBre, liLgUi, liLgSau, liLgPf, liLgSend; JX_LG_MOC(liLg0);	// [LOGIC-PHA 14/09]
+#endif
 	g_NetConnectAgent.Breathe();
+#ifdef JX_MOBILE
+	JX_LG_MOC(liLgNet); liLgWa = liLgIpc = liLgBre = liLgUi = liLgSau = liLgPf = liLgSend = liLgNet;
+#endif
 
 	// He replay .jxr: hoi lai trang thai tu DLL MOI VONG BOM (ban tham chieu
 	// lam y het tai 0x0056E3BD). Khi dang phat lai thi bo qua toan bo logic
@@ -1523,8 +1533,12 @@ BOOL KMyApp::GameLoop()
 #ifdef JX_MOBILE
 	JxWAuto_NhipVongLap();	// [ANDROID 11/09 WAUTO B0] bang WAuto trong game: nap goi PRT_GAMELOOP vao g_pState nhu WAuto.exe; ProcIpcCommand ngay duoi tieu thu cung khung
 	JxDoNhip_Vong();	// [DONHIP 12/09] ban do nhip: doi pha / ghi jx_nhip.log (khong lam gi khi [DoNhip] Bat=0)
+	JX_LG_MOC(liLgWa);	// [LOGIC-PHA 14/09]
 #endif
 	ProcIpcCommand();
+#ifdef JX_MOBILE
+	JX_LG_MOC(liLgIpc); liLgBre = liLgUi = liLgSau = liLgPf = liLgSend = liLgIpc;
+#endif
 	if (m_GameCounter * 1000 <= m_Timer.GetElapse() * GAME_FPS)
 	{
 		// Probe tach khoi logic: [SPIKE] do duoc nhung cu logic=59-108ms trong mot vong
@@ -1538,8 +1552,14 @@ BOOL KMyApp::GameLoop()
 		LARGE_INTEGER liHudLg; QueryPerformanceCounter(&liHudLg);	// [ANDROID 11/09 HUD b]
 #endif
 		BOOL	bLgBre = g_pCoreShell->Breathe();
+#ifdef JX_MOBILE
+		JX_LG_MOC(liLgBre); liLgUi = liLgSau = liLgPf = liLgSend = liLgBre;	// [LOGIC-PHA 14/09]
+#endif
 		DWORD	dwLgT1 = g_nPaintLog > 0 ? timeGetTime() : 0;
 		BOOL	bLgUi  = bLgBre ? UiHeartBeat() : FALSE;
+#ifdef JX_MOBILE
+		JX_LG_MOC(liLgUi); liLgSau = liLgPf = liLgSend = liLgUi;
+#endif
 		DWORD	dwLgT2 = g_nPaintLog > 0 ? timeGetTime() : 0;
 #ifdef JX_MOBILE
 		g_uJxHudLogicUs = JxHudUs(liHudLg);	// [ANDROID 11/09 HUD b]
@@ -1604,6 +1624,9 @@ BOOL KMyApp::GameLoop()
 					}
 				}
 			}
+#ifdef JX_MOBILE
+			JX_LG_MOC(liLgSau); liLgPf = liLgSend = liLgSau;	// [LOGIC-PHA 14/09] khoi sau UiHeartBeat (replay, TeamManager/TargetInfo UpdateData)
+#endif
 			m_GameCounter++;
 			int	nElapse = m_Timer.GetElapse();
 			// Chup moc tick THAT + khoang giua hai tick that, de lop noi suy neo dung
@@ -1639,7 +1662,13 @@ BOOL KMyApp::GameLoop()
 			return false;
 		}
 	}
+#ifdef JX_MOBILE
+	JX_LG_MOC(liLgPf);	// [LOGIC-PHA 14/09] sau PROCFRAME/UiPaint
+#endif
 	SendAllCommand();
+#ifdef JX_MOBILE
+	JX_LG_MOC(liLgSend);
+#endif
 	if (MyApp.NotifiIconState())
 	{	
 		gTrayMode.ShowNotify();
@@ -1648,6 +1677,20 @@ BOOL KMyApp::GameLoop()
 	
 	if (g_nPaintLog > 0)
 		nLogTick = timeGetTime() - nLogT0;
+#ifdef JX_MOBILE
+	if (g_nPaintLog > 0 && nLogTick >= 30)
+	{	// [LOGIC-PHA 14/09] phan logic cua vong lap >= 30 ms: chia pha (ms)
+		const double dNet = JxLgMs(liLg0, liLgNet), dWa = JxLgMs(liLgNet, liLgWa), dIpc = JxLgMs(liLgWa, liLgIpc), dBre = JxLgMs(liLgIpc, liLgBre), dUi = JxLgMs(liLgBre, liLgUi);
+		const double dSau = JxLgMs(liLgUi, liLgSau), dPf = JxLgMs(liLgSau, liLgPf), dSend = JxLgMs(liLgPf, liLgSend);
+		FILE* pLgP = fopen("jx_paint.log", "a");
+		if (pLgP)
+		{
+			fprintf(pLgP, "[LOGIC-PHA] t=%u logic=%u ms: mang %.1f, wauto %.1f, ipc %.1f, breathe %.1f, uihb %.1f, sau %.1f, procframe %.1f, gui %.1f, khac %.1f | tick=%d\n",
+				nLogT0, nLogTick, dNet, dWa, dIpc, dBre, dUi, dSau, dPf, dSend, (double)nLogTick - (dNet + dWa + dIpc + dBre + dUi + dSau + dPf + dSend), (int)(m_GameCounter != nLogCntBefore));
+			fclose(pLgP);
+		}
+	}
+#endif
 	BOOL	bPainted = FALSE;
 	if (g_nPaintFps > 0)
 	{

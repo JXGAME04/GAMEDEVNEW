@@ -695,6 +695,9 @@ TextureRes* TextureResMgr::LoadImage( const char* pszImageFile, uint32 nType) co
 		{	LARGE_INTEGER liA, liB; QueryPerformanceCounter(&liA);	// [NAP 08/09 a] tep spr: pak + giai nen
 			bool bNap = pRet->LoadImage((LPSTR)pszImageFile, nType);
 			QueryPerformanceCounter(&liB); Rep3NapCong(g_napSpr, Rep3NapMs(liA, liB));
+#ifdef JX_MOBILE
+			if (Rep3NapMs(liA, liB) >= 10.0) Rep3Log("[NAP-CHAM] mo tep spr %s: %.1f ms (%s)", pszImageFile, Rep3NapMs(liA, liB), m_bVeDangDien ? "luc ve" : "ngoai luc ve");	// [NAPTO 14/09] tep lanh tren flash 37 ms (Fold 7)
+#endif
 		if (!bNap)
 		{
 			delete pRet;

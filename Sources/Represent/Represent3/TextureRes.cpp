@@ -640,6 +640,16 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 	// Ca hai truong hop nap truoc NapKhungTruoc khung ke tiep cung huong o luong nen.
 	if (bPrepareTex && g_nJxNapKhungNen > 0 && g_pJxTexMgr && g_pJxTexMgr->m_bVeDangDien)
 	{
+		if (g_nJxNapKhungToKB > 0 && !m_pFrameInfo[nFrame].pRawData && m_pHeader && m_pOffset && m_pFrameInfo[nFrame].nJxNen != 2)
+		{	// [NAPTO 14/09] khung TO chua rut (co nen >= NapKhungToKB): giao luong nen NGAY du con ngan sach - rut dong bo mot khung to = 24-72 ms tren Fold 7
+			// (ngan sach NapKhungMs chi kiem TRUOC khi rut nen khong chan duoc). Bo ve khung nay 1-3 khung nhu 'bo ve' khi het ngan sach.
+			int nLTo = (int)m_pOffset[nFrame].Length; if (nLTo < 0) nLTo = -nLTo;
+			if (nLTo >= g_nJxNapKhungToKB * 1024 && (m_pFrameInfo[nFrame].nJxNen == 1 || JxNapKhungGiao(nFrame, 0)))
+			{
+				JxNapKhungTruoc(nFrame);
+				g_uJxNapKhungBoVe++; g_uJxNapKhungBoVeKhung++; g_uJxNapKhungTo++; g_nJxAnhBoVeNen = 1; return false;
+			}
+		}
 		if (g_dRep3NapKhung >= (double)g_nJxNapKhungMs && (m_pFrameInfo[nFrame].nJxNen == 1 || JxNapKhungGiao(nFrame, 0)))	// [VE 11/09 d] nJxNen 2 = rong/hong: nap dong bo (re) nhu cu
 		{
 			JxNapKhungTruoc(nFrame);
@@ -682,6 +692,12 @@ bool TextureResSpr::PrepareFrameData(const char* szImage, int32 nFrame, bool bPr
 		m_pFrameInfo[nFrame].nRawDataLen = nRawLen - 8;//sizeof(SPRFRAME);
 		m_pFrameInfo[nFrame].pRawData = pFrame->Sprite;
 		m_pFrameInfo[nFrame].pFrame = pFrame;
+#ifdef JX_MOBILE
+		{	// [NAPTO 14/09] mot lan rut khung dong bo >= 10 ms: ghi ten de biet tep/khung nao (Fold 7: 24-72 ms/lan chua ro cua ai)
+			const double dRut = Rep3NapMs(liK0, liK1);
+			if (dRut >= 10.0) Rep3Log("[NAP-CHAM] rut khung %s k%d (%d KB nen, %dx%d): %.1f ms (%s)", szImage, nFrame, nRawLen >> 10, (int)pFrame->Width, (int)pFrame->Height, dRut, (g_pJxTexMgr && g_pJxTexMgr->m_bVeDangDien) ? "luc ve" : "ngoai luc ve");
+		}
+#endif
 	}
 
 	if(bPrepareTex)
