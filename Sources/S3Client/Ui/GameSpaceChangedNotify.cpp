@@ -8,7 +8,9 @@
 #include "KEngine.h"
 #include "Elem/Wnds.h"
 #include "Elem/MouseHover.h"
+#ifdef JX_MOBILE
 #include "../Platform/JxLiaCanh.h"	// [LIA 13/09] doi map that -> bo do lech lia canh
+#endif
 #include "UiCase/UiPlayerBar.h"
 #include "UiCase/UiFaceSelector.h" //add by phong ki“u
 #include "UiCase/UiStatus.h"

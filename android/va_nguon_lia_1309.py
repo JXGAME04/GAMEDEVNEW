@@ -110,10 +110,16 @@ va(KS,
 
 # --- C. GameSpaceChangedNotify.cpp: doi map that -> dat lai ----------------------------------------
 GN = os.path.join(S, 'Ui', 'GameSpaceChangedNotify.cpp')
+# [LIA 13/09 b] include phai nam TRONG rao JX_MOBILE (phien do nhip soi cheo 22:2x: dong include tran ra ban Windows)
 va(GN,
    '#include "Elem/MouseHover.h"' + R,
-   '#include "Elem/MouseHover.h"' + R + '#include "../Platform/JxLiaCanh.h"\t// [LIA 13/09] doi map that -> bo do lech lia canh' + R,
+   '#include "Elem/MouseHover.h"' + R + '#ifdef JX_MOBILE' + R + '#include "../Platform/JxLiaCanh.h"\t// [LIA 13/09] doi map that -> bo do lech lia canh' + R + '#endif' + R,
    'JxLiaCanh.h')
+# cay da va truoc 13/09 22:30 (include chua rao) -> rao lai
+va(GN,
+   '#include "Elem/MouseHover.h"' + R + '#include "../Platform/JxLiaCanh.h"\t// [LIA 13/09] doi map that -> bo do lech lia canh' + R,
+   '#include "Elem/MouseHover.h"' + R + '#ifdef JX_MOBILE' + R + '#include "../Platform/JxLiaCanh.h"\t// [LIA 13/09] doi map that -> bo do lech lia canh' + R + '#endif' + R,
+   '#ifdef JX_MOBILE' + R + '#include "../Platform/JxLiaCanh.h"')
 va(GN,
    '\tcase GDCNI_SWITCHING_MAPMODE:' + R,
    '\tcase GDCNI_SWITCHING_MAPMODE:' + R +
