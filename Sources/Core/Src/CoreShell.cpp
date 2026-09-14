@@ -16176,37 +16176,40 @@ static int WA_MapSuKien(int nPlayerIdx)
 // pnCanTang (co the NULL) tra ve SO TANG ma chieu do an - > 0 nghia la "chieu tang".
 // (14/09) [FIGHT-HORSE] Nhan vat NAY danh TREN ngua hay DUOI ngua?
 // Chu game 14/09: "tu dong co nghia WAuto xac dinh duoc phai nao danh skill gi tren ngua
-// hay duoi ngua de tu dong len xuong ngua". Luat that cua game nam o DUY NHAT cot
-// HorseLimit trong settings\skills.txt - KSkill::CanCastSkill (KSkills.cpp:320) khong doc
-// gi khac; bang cua client va cua may chu giong het nhau (doi chieu 1683/1683 dong, 0 lech).
-// Quyet theo CA VONG CHIEU chu khong theo tung khe: neu quyet tung khe thi bang Chieu KH
-// tron chieu HorseLimit 0 voi HorseLimit 1 se keo len roi keo xuong moi khe = dung loi
-// "tu dong len xuong ngua" chu game bao.
-// Tra: 1 = phai o DUOI dat (co chieu HorseLimit 1 - len ngua la chieu do bi chinh client
-//          tu choi, log [CHIEU-CAM] ly do 2, nhan vat dung im khong danh);
-//      2 = phai o TREN ngua (co chieu HorseLimit 2);
-//      0 = moi chieu deu danh duoc ca hai kieu.
-// Chieu CHUA HOC thi bo qua - no khong bao gio ban ra nen khong duoc quyen troi ngua.
+// hay duoi ngua de tu dong len xuong ngua" va "thieu lam dao tat nhien la skill tren ngua roi".
+// Luat that cua game nam o DUY NHAT cot HorseLimit trong settings\skills.txt -
+// KSkill::CanCastSkill (KSkills.cpp:320) khong doc gi khac; bang cua client va cua may chu
+// giong het nhau (doi chieu 1683/1683 dong, 0 dong lech).
+//
+// LUAT: chi can MOT chieu TAN CONG CHINH danh duoc tren ngua (HorseLimit 0 hoac 2) la LEN NGUA.
+// Chi XUONG khi MOI chieu tan cong chinh deu HorseLimit 1 - luc do cuoi ngua la khong danh
+// duoc gi (vi du Con Lon 372 Ngao Tuyet Tieu Phong: log 14/09 co 13 dong [CHIEU-CAM] ly do 2).
+// Vi du Thieu Lam cam dao: chieu dao (id 6/19/24/32/34/37/321/322/1058/1077/1084) deu
+// HorseLimit 0 => LEN NGUA, ke ca khi trong bang Chieu KH con khe HorseLimit 1 (Kim Cang
+// Phuc Ma 10, Long Trao Ho Trao 17...) - khe do chi bi BO LUOT mot cach em, khong ket may:
+// WA_ChieuBiCam tra 'bi cam TAM THOI' -> nguoi goi dat bBanRoi = true 'coi nhu da ban de
+// sang khe ke' (CoreShell.cpp:19949 / 20460 / 20490), va KHONG cam chieu do 30 giay.
+//
+// Chi xet VONG CHIEU TAN CONG CHINH: chieu dang dinh ban + chieu chuot trai + 6 khe Chieu KH
+// + o 'Doi chieu'. KHONG xet cuu mang / cuu mana / chieu boss / tien chieu - chung la chieu
+// PHU, thinh thoang moi ban, khong duoc quyen troi ngua ca tran.
+// Chieu CHUA HOC cung bo qua - no khong bao gio ban ra.
+// Tra: 1 = phai o DUOI dat; 2 = nen o TREN ngua. *pnChieu = chieu quyet dinh (de ghi log).
 static int WA_VongChieuDoiNgua(int nNpcIdx, const autoData* pAp, int nChieuA, int nChieuB, int* pnChieu)
 {
 	if (pnChieu)
 		*pnChieu = 0;
 	if (!pAp)
-		return 0;
-	int aId[14];
+		return 2;
+	int aId[10];
 	int nSo = 0;
 	aId[nSo++] = nChieuA;		// chieu may dang dinh ban nhip nay
 	aId[nSo++] = nChieuB;		// chieu nen (chuot trai trong game)
 	if (pAp->bCombo)
 		for (int k = 0; k < 6; ++k)
-			aId[nSo++] = pAp->nComboSkill[k];	// 6 khe bang Chieu KH
+			aId[nSo++] = pAp->nComboSkill[k];
 	aId[nSo++] = pAp->nSkillIdC;	// o 'Doi chieu'
-	aId[nSo++] = pAp->nSkillIdB;	// chieu danh boss
-	if (pAp->bTienChieu)
-		aId[nSo++] = pAp->nTCSkill;	// tien chieu
-	aId[nSo++] = pAp->nSkillIdLS;	// cuu mang
-	aId[nSo++] = pAp->nSkillIdMS;	// cuu mana
-	int nLen = 0;
+	int nTren = 0, nDuoi = 0;
 	for (int i = 0; i < nSo; ++i)
 	{
 		if (aId[i] <= 0)
@@ -16218,23 +16221,27 @@ static int WA_VongChieuDoiNgua(int nNpcIdx, const autoData* pAp, int nChieuA, in
 						Npc[nNpcIdx].m_SkillList.m_Skills[nIdx].SkillLevel);
 		if (!pS)
 			continue;
-		const int nHan = pS->GetHorseLimit();
-		if (nHan == 1)
-		{	// mot chieu doi xuong la DU: no thang the, khong thi chieu do khong bao gio ban duoc
-			if (pnChieu)
-				*pnChieu = aId[i];
-			return 1;
+		if (pS->GetHorseLimit() == 1)
+		{
+			if (!nDuoi)
+				nDuoi = aId[i];
 		}
-		if (nHan == 2 && !nLen)
-			nLen = aId[i];
+		else if (!nTren)
+			nTren = aId[i];	// HorseLimit 0 hoac 2 - deu danh duoc khi dang cuoi
 	}
-	if (nLen)
-	{
+	if (nTren)
+	{	// co chieu danh duoc tren ngua -> cuoi cho nhanh, khe doi xuong (neu co) tu bo luot
 		if (pnChieu)
-			*pnChieu = nLen;
+			*pnChieu = nTren;
 		return 2;
 	}
-	return 0;
+	if (nDuoi)
+	{	// MOI chieu tan cong chinh deu doi xuong -> cuoi ngua la dung im khong danh duoc gi
+		if (pnChieu)
+			*pnChieu = nDuoi;
+		return 1;
+	}
+	return 2;	// khong doc duoc chieu nao - giu nhu cu la len ngua
 }
 
 static bool WA_ChieuSanSang(int nNpcIdx, int nSkillId, int* pnCanTang)
@@ -19870,10 +19877,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					// (CoreShell.cpp:23636) tra ve dong 'Ban qua met moi...' moi lan bi tu choi.
 					if(pApData->nSelFHorse == 0)
 					{
-						// (14/09) Quyet theo CA VONG CHIEU cua nhan vat (WA_VongChieuDoiNgua), khong
-						// theo tung khe: 1 = phai o duoi dat, 2 = phai tren ngua, 0 = danh duoc ca hai
-						// kieu nen LEN ngua cho nhanh. Quyet theo ca vong chieu thi khong the keo len
-						// roi keo xuong giua hai khe - dung loi chu game bao 14/09.
+						// (14/09) Quyet theo CA VONG CHIEU TAN CONG CHINH (WA_VongChieuDoiNgua), khong
+						// theo tung khe: co chieu nao danh duoc tren ngua thi LEN, chi xuong khi moi
+						// chieu chinh deu doi xuong. Quyet theo ca vong chieu nen khong the keo len roi
+						// keo xuong giua hai khe - dung loi 'tu dong len xuong ngua' chu game bao 14/09.
 						int nChieuQD = 0;
 						const int nRangBuoc = WA_VongChieuDoiNgua(nNpcIdx, pApData, nMainSkill,
 											Player[nPlayerIdx].GetLeftSkill(), &nChieuQD);
