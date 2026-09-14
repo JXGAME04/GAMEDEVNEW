@@ -90,8 +90,13 @@ class KScenePlaceRegionC
 	bool PrerenderGround(bool bForce);
 #ifdef JX_MOBILE
 	bool JxNenChuaSan();	// [NENTRUOC 13/09] vung ke ben/xa: xin luong nen chuan bi khung cac o; true = con dang chuan bi (hoan ghep sang khung sau), qua 1,5 s -> false
-	int  JxNenTruoc();		// xin/hoi tung o (grunode + object); tra so o con 'dang chuan bi'
+	int  JxNenTruoc();		// [NENTRUOC 13/09 b] lan dau hoi du, ghi chi so o con cho; lan sau chi hoi lai cac o do, toi da moi 32 ms; tra so o con 'dang chuan bi'
+	void JxNenDatLai() { m_uJxNenXinLuc = 0; m_uJxNenHoiLuc = 0; m_nJxNenCho = 0; m_bJxNenDaHoi = false; }
 	unsigned m_uJxNenXinLuc;	// timeGetTime luc xin lan dau (0 = chua)
+	unsigned m_uJxNenHoiLuc;	// [NENTRUOC 13/09 b] lan hoi gan nhat
+	int      m_nJxNenCho;		// so o con cho trong m_jxNenCho (-1 = qua nhieu, hoi lai tat ca)
+	bool     m_bJxNenDaHoi;		// da hoi du mot lan
+	unsigned short m_jxNenCho[640];	// chi so o (grunode roi object) con 'dang chuan bi', tang dan
 #endif
 
 	//##ModelId=3DDBD8C80309
