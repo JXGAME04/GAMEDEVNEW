@@ -2791,7 +2791,10 @@ void KRepresentShell3::ClearImageData(const char* pszImage, unsigned int uImage,
 			bool bXong = false;
 			if (SUCCEEDED(PD3DDEVICE->GetRenderTarget(0, &pXOld)) && SUCCEEDED(pBitmap->m_FrameInfo.texInfo[0].pTexture->GetSurfaceLevel(0, &pXDes)))
 			{
-				if (SUCCEEDED(PD3DDEVICE->SetRenderTarget(0, pXDes)))
+				{ extern void Rep3Gpu_DichSeXoa(IDirect3DDevice9*, int); Rep3Gpu_DichSeXoa(PD3DDEVICE, 1); }	// [XOANEN 13/09 b] khong doc nguoc GPU khi chuan bi dich
+				const HRESULT hrXDes = PD3DDEVICE->SetRenderTarget(0, pXDes);
+				{ extern void Rep3Gpu_DichSeXoa(IDirect3DDevice9*, int); Rep3Gpu_DichSeXoa(PD3DDEVICE, 0); }
+				if (SUCCEEDED(hrXDes))
 				{
 					PD3DDEVICE->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
 					PD3DDEVICE->SetRenderTarget(0, pXOld);

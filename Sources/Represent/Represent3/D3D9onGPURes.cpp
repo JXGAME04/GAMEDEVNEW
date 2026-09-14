@@ -19,6 +19,9 @@ CTexGpu::CTexGpu(CDevGpu* pDev, UINT w, UINT h, DWORD usage, D3DFORMAT fmt, D3DP
 	m_pCpu = NULL; m_pGpu = NULL; m_gpuFmt = m_fi.gpu; m_bGpuTarget = false; m_bGpuHasData = false; m_bGpuNewer = false;
 	m_bDirty = false; m_bLocked = false; m_bLockRO = false; m_bUsedThisFrame = false; m_uGpuBytes = 0; m_pSurf0 = NULL; m_nPalRow = -1;
 	m_bVirtual = false; m_pPage = NULL; m_ax = m_ay = 0; m_bCpuBo = false;	// [GPU 11/09 ATLAS] [GPU 11/09 BOCPU]
+#ifdef JX_MOBILE
+	m_bJxKhongGiuCpu = false;	// [XOANEN 13/09 b]
+#endif
 	SetRect(&m_rcDirty, 0, 0, 0, 0); SetRect(&m_rcLock, 0, 0, 0, 0);
 	if (!(usage & D3DUSAGE_RENDERTARGET))
 		m_pCpu = (BYTE*)calloc((size_t)m_pitch * h, 1);	// render target: khong ban CPU, cap khi Lock
@@ -167,7 +170,12 @@ SDL_GPUTexture* CTexGpu::PrepareForBind()
 SDL_GPUTexture* CTexGpu::PrepareAsTarget()
 {
 	if (m_bVirtual) BoAtlas();	// [GPU 11/09 ATLAS] render target khong o trong trang
+#ifdef JX_MOBILE
+	if (m_pDev->m_bJxDichSeXoa) m_bJxKhongGiuCpu = true;	// [XOANEN 13/09 b] dich sap bi Clear (anh nen vung): ban CPU khong ai doc -> khong doc nguoc GPU (156 ms luc vao map: SubmitFrame + cho GPU dang ngap tai len)
+	if (m_bCpuBo && !m_pCpu && !m_bJxKhongGiuCpu) { m_pCpu = (BYTE*)calloc((size_t)m_pitch * m_h, 1); if (m_pCpu) ThuLaiCpu(); }	// [GPU 11/09 BOCPU]
+#else
 	if (m_bCpuBo && !m_pCpu) { m_pCpu = (BYTE*)calloc((size_t)m_pitch * m_h, 1); if (m_pCpu) ThuLaiCpu(); }	// [GPU 11/09 BOCPU]
+#endif
 	if (!m_pGpu || !m_bGpuTarget)
 	{
 		const bool bKeep = (m_pGpu != NULL && m_bGpuNewer);	// noi dung GPU moi hon CPU: khong tai de lai (hiem; chi khi da la target)
@@ -223,9 +231,17 @@ HRESULT CTexGpu::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, CONST RECT* p
 	{
 		m_pCpu = (BYTE*)calloc((size_t)m_pitch * m_h, 1);
 		if (!m_pCpu) return E_OUTOFMEMORY;
+#ifdef JX_MOBILE
+		if (m_bCpuBo && !m_bJxKhongGiuCpu) ThuLaiCpu();	// [XOANEN 13/09 b] anh nen vung: khong doc nguoc
+#else
 		if (m_bCpuBo) ThuLaiCpu();	// [GPU 11/09 BOCPU] ban CPU da bo sau khi tai len: doc lai tu GPU (hiem; sprite chi ghi mot lan)
+#endif
 	}
+#ifdef JX_MOBILE
+	if (m_bGpuNewer && m_pGpu && !m_bJxKhongGiuCpu)
+#else
 	if (m_bGpuNewer && m_pGpu)
+#endif
 	{	// render target da ve tren GPU: doc lai ve CPU (dong bo, hiem)
 		if (m_gpuFmt == m_fi.gpu && !m_fi.bConvert)
 			m_pDev->ReadbackTexture(m_pGpu, m_w, m_h, m_pCpu, m_pitch);

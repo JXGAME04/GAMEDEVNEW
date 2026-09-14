@@ -215,6 +215,9 @@ CDevGpu::CDevGpu(CGpuShim* pParent, HWND hWnd, const D3DPRESENT_PARAMETERS& pp, 
 	m_pGpu = NULL; m_swapFmt = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM; m_bbW = pp.BackBufferWidth; m_bbH = pp.BackBufferHeight;
 	m_pBackSurf = NULL; m_pRtTex = NULL; m_pRtSurf = NULL; m_pLastFrame = NULL; m_lastW = m_lastH = 0;
 	m_pVS = NULL; m_pFS = NULL; m_pDummy = NULL; m_pWhite = NULL; m_pWhiteMang = NULL;	// [KHOI 11/09]
+#ifdef JX_MOBILE
+	m_bJxDichSeXoa = false;	// [XOANEN 13/09 b]
+#endif
 	m_pRingGpu = NULL; m_ringGpuSize = 0; m_pRingXfer = NULL; m_ringXferSize = 0; m_pTexXfer = NULL; m_texXferSize = 0;
 #ifdef JX_MOBILE	// [IOS-GOP 12/09 e] PHAI mo cho iOS: khong thi m_pJxPalBuf / m_pJxPsBuf la RAC, code kiem "if (m_pJxPalBuf)" se tin nham
 	m_pJxZeroXfer = NULL; m_jxZeroSize = 0; m_jxZeroDaXoa = 0;	// [VE 11/09 d]
@@ -799,6 +802,14 @@ HRESULT CDevGpu::GetFrontBufferData(UINT iSwapChain, IDirect3DSurface9* pDestSur
 }
 
 // ---------------------------------------------------------------- render target / clear
+#ifdef JX_MOBILE
+// [XOANEN 13/09 b] KRepresentShell3::ClearImageData bao 'dich sap bi Clear' quanh SetRenderTarget: PrepareAsTarget khong doc nguoc GPU cho anh nen vung
+extern int g_nRep3ApiOn;
+void Rep3Gpu_DichSeXoa(IDirect3DDevice9* pDev, int bBat)
+{
+	if (pDev && g_nRep3ApiOn == 100) ((CDevGpu*)pDev)->m_bJxDichSeXoa = (bBat != 0);
+}
+#endif
 HRESULT CDevGpu::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget)
 {
 	if (RenderTargetIndex != 0) return D3DERR_INVALIDCALL;

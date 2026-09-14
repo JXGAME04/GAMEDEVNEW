@@ -163,6 +163,9 @@ public:
 	bool        m_bVirtual;			// [GPU 11/09 ATLAS] o trong trang atlas (m_pPage), khong co m_pGpu rieng
 	CAtlasPageGpu* m_pPage; UINT m_ax, m_ay;
 	bool        m_bCpuBo;			// [GPU 11/09 BOCPU] ban CPU da bo sau khi tai len (LockRect phai doc lai tu GPU)
+#ifdef JX_MOBILE
+	bool        m_bJxKhongGiuCpu;	// [XOANEN 13/09 b] anh nen vung (dich sap Clear): khong giu ban CPU -> PrepareAsTarget/LockRect khong doc nguoc GPU
+#endif
 };
 
 // ---------------------------------------------------------------- surface
@@ -476,6 +479,9 @@ public:
 	SDL_GPUBuffer*  m_pDummy;			// 1 dinh gia (mau trang, uv 0) theo instance
 	SDL_GPUTexture* m_pWhite;			// texture 1x1 trang cho stage khong texture
 	SDL_GPUTexture* m_pWhiteMang;		// [KHOI 11/09] texture MANG 1x1 x 1 lop: gan vao cac khe khoi chua co khoi (SDL doi moi sampler khai bao phai duoc gan)
+#ifdef JX_MOBILE
+	bool m_bJxDichSeXoa;	// [XOANEN 13/09 b] ClearImageData bat truoc SetRenderTarget: dich sap bi Clear -> texture danh dau khong giu ban CPU
+#endif
 	// ring dinh + lenh cua khung
 	std::vector<BYTE>   m_ring;
 	SDL_GPUBuffer*      m_pRingGpu; UINT m_ringGpuSize;

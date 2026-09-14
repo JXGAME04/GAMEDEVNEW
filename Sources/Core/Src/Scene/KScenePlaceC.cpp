@@ -1391,8 +1391,9 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 			// het ngan sach thi hoan sang khung sau thay vi keo dai khung nay.
 			if (timeGetTime() - dwPgT0 < dwPgBudgetMs)
 #ifdef JX_MOBILE
-			{	// [NENTRUOC 13/09] khung cac o dang duoc luong nen chuan bi -> hoan, khung sau ghep (nhanh)
-				if (m_pInProcessAreaRegions[i]->JxNenChuaSan()) { nDeferred++; continue; }
+			{	// [NENTRUOC 13/09 c] vung KE BEN dang tren man hinh: ghep NGAY nhu cu, KHONG hoan (hoan = nen quanh nhan vat den toi 1,5 s luc vao/quay lai
+				// map vi luong nen dang ngap - chu thay 22:13 13/09). Chi xin nap truoc: vung bi hoan vi ngan sach 8 ms se co khung san o khung sau.
+				m_pInProcessAreaRegions[i]->JxNenTruoc();
 				JX_NEN_DO(1, m_pInProcessAreaRegions[i]->PrerenderGround(false));	// [NENDAT 11/09]
 			}
 #else
