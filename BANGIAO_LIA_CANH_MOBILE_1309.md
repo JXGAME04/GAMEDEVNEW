@@ -132,3 +132,71 @@ Không đụng: `Core`, `Wnds.cpp`, `D3D9onGPU` (lớp GPU tự đặt viewport 
 3. Qua cổng đổi map: zoom giữ, người ở rìa vẫn được vẽ (nếu thấy người/quái biến mất ở mép khi zoom → báo tôi, đó là vùng truy vấn).
 4. Tống Kim đông ở 150 %: xem fps/nóng; kéo log về, tôi đọc `[TG]`, `[MAU]` (GPU %, W), `[PGND]`.
 5. Không thích chữ nhỏ theo zoom → đó là bản chất cách C; muốn chữ giữ cỡ phải làm cách A (35 chỗ chữ neo thế giới, mã dùng chung PC) — chủ quyết sau khi thử.
+
+
+---
+
+# BƯỚC 3 — THAM SỐ CAMERA THEO MAP (như `cameraInit` của game 3D) — 13/09 22:16
+
+## 1. Bản đã lên dt_v4
+
+| | |
+|---|---|
+| APK | **109132210** (`jx1mobile.apk`, md5 `4ffb3c99d7c40f1e16e9f571fabecb65`), commit `e013bafe` trên `claude/game-3d-data-analysis-19600d`, đã **gộp `mobile-0809` 8580129f** (XOANEN + NENTRUOC b + đo `[PGND-R]` của phiên đo nhịp) và FF-push lên `mobile-0809` |
+| Dữ liệu | `settings/camera_mobile.ini` (mới) + `config.ini` `[Cham]` thêm `ZoomNho/ZoomTocDo/ZoomChu` — máy chủ 8765 khởi động lại 22:16 (apk.txt + manifest mới) |
+| Lưu ý | 21:55 tôi ghi `config.ini`/`camera_mobile.ini` vào dt_v4 **sau** khi manifest được sinh → điện thoại báo "Tải tệp cập nhật bị lỗi"; phiên đo nhịp sinh lại manifest. **Từ nay: đổi tệp trong dt_v4 → `may_chu_tai_du_lieu.py --chi-manifest` (hoặc restart) ngay.** apk.txt chỉ sinh lúc máy chủ khởi động → đổi APK phải restart. |
+
+## 2. Cách dùng (giống game 3D: mỗi cảnh một bộ tham số)
+
+- Vào map / đổi map: **1 s** sau khi Core có map, đọc `settings\camera_mobile.ini` mục `[Map_<id>]` (id = số thứ tự trong `maplist.ini`: 1 Phượng Tường, 11 Thành Đô, 37 Biện Kinh, 44 Tống Kim, 78 Tương Dương, 80 Dương Châu…) rồi **zoom trôi dần** tới đích (`ZoomTocDo` %/s, mặc định 100 → 20 % mất 0,2 s), chữ vàng **"Nhìn rộng NNN%"** ở 1/5 màn trong 1,5 s.
+- Đích = zoom người chơi **đã chụm** (nhớ ở `UserData\CameraMobile.ini`, `ZoomNho=1`) — nếu chưa chụm bao giờ thì `ZoomMacDinh` của map; luôn kẹp theo `ZoomToiDa` của map; map `ZoomCanh=0` → về 100 %.
+- Đang chụm thì không trôi; chụm xong ghi nhớ ngay. Xoá `UserData\CameraMobile.ini` (hay `ZoomNho=0`) để quay về mặc định theo map.
+- `[Map_<id>]` cũng ghi đè `LiaXaNgang/LiaXaDoc/LiaCanh/ZoomCanh`; map `LiaCanh=0` thì chụm vẫn zoom nhưng không lia (trước bước 3 chụm phụ thuộc lia).
+- Bản mặc định trong tệp: thành lớn (1, 11, 37, 78, 80) `ZoomMacDinh=120`; Tống Kim (44) `ZoomToiDa=125` (đông người, giữ GPU); còn lại 100 / 150. Chủ chỉnh số trong tệp rồi `--chi-manifest`, không cần dựng lại.
+
+## 3. Khoá `[Cham]` thêm (config.ini)
+
+| Khoá | Mặc định | Ý nghĩa |
+|---|---|---|
+| `ZoomNho` | 1 | nhớ zoom người chơi qua `UserData\CameraMobile.ini` (thắng `ZoomMacDinh` của map) |
+| `ZoomTocDo` | 100 | %/giây khi trôi tới zoom của map (kẹp 10..1000) |
+| `ZoomChu` | 1 | chữ "Nhìn rộng NNN%" 1,5 s khi zoom đổi |
+
+## 4. Đã làm gì trong mã (kịch bản `android/va_nguon_camera_map_1309.py`, idempotent, mọi dòng trong `JX_MOBILE`)
+
+| Tệp | Việc |
+|---|---|
+| `JxLiaCanh.cpp` | `Camera_DocMap()` (đọc `KUiSceneTimeInfoOften` qua `GSMOI_SCENE_TIME_INFO_OFTEN` → `nSceneId`, `GetPrivateProfileInt` mục map / `[MacDinh]` / config), tách `ZoomAp()` (áp thật) khỏi `JxLia_ZoomDat()` (người chơi đặt → huỷ trôi + nhớ), trôi trong `JxLia_Nhip` (`s_nZoomDich`, `s_fZoomTroi`), `Camera_GhiNho()` khi thả chụm, `JxLia_Ve()` chữ báo (`OutputText` cỡ 12, vàng viền đen như `PerfHud_Chu`, y = 1/5 màn — đặt 1/3 màn trùng nhãn tên trên đầu nhân vật, ảnh máy ảo không thấy), `TrenBanDo()` dùng chung cho lia một ngón và chụm; `JxLia_Nhip` không còn thoát sớm khi `LiaCanh=0` (vẫn đọc map + trôi); `JxLia_DatLai` đặt `s_nCanDocMap=1`. Chuỗi "Nhìn rộng" là TCVN3 thật (kịch bản mã hoá bằng `vn_edit.vn`, không gõ tay byte) |
+| `JxLiaCanh.h` | `JxLia_Ve()` |
+| `Ui/UiShell.cpp` | `#include JxLiaCanh.h` + `JxLia_Ve()` ngay trước `JxCan_Ve()` (trong khối `JX_MOBILE` của `UiPaint`) |
+| `android/du_lieu_ghi_de/settings/camera_mobile.ini` | mới; `config.ini` thêm 3 khoá |
+
+Không đụng: `Core`, `Represent3`, `KSdlApp`, `Wnds.cpp`, `ios/JxIosMain.cpp` (không thêm ký hiệu Rep3 mới).
+
+## 5. Chứng minh
+
+- `ios/kiem_android_tuongduong.py --pc`: **ĐẠT** (3 tệp, Windows biên dịch y hệt HEAD). MSBuild `S3Client.vcxproj /t:ClCompile Ui\UiShell.cpp` Release|Win32: 0 lỗi, `UiShell.obj` 21:59.
+- `check_encoding.py`: `UiShell.cpp` 22 byte cao trước = sau; `JxLiaCanh.cpp` 0 → 2 (đúng hai chữ ì, ộ), FFFD 0, CRLF đều.
+- Máy ảo (LDPlayer, 3 lần đăng nhập, nhân vật chủ auto Dã Tẩu tự chạy lại sau mỗi lần):
+  - Tương Dương (78): `[CAMERA] map 78: zoom mac dinh 120%… dang 100% -> troi toi 120%` → `[ZOOM] 105/110/115/120%` trong 0,17 s; ảnh: thế giới rộng ra, giao diện nguyên.
+  - Auto dịch sang Khoả Lang động (75): `dang 120% -> troi toi 100%` (không có `[Map_75]`), chữ "Nhìn rộng 105%" hiện đúng vị trí, TCVN3 đúng (ảnh u22).
+  - Nhớ zoom: `UserData\CameraMobile.ini` `Zoom=135` → `[CAMERA] theo map: … da nho 135%` → trôi 100→135 % với `ZoomTocDo=5` (kẹp 10 %/s → 3,5 s), đổi map giữ 135 %.
+- Chưa thử được trên máy ảo: chụm thật (ghi nhớ khi thả chụm) — chủ thử trên Fold 7.
+
+## 6. Chủ thử trên Fold 7
+
+1. Mở lại app nhận **109132210**. Vào Phượng Tường / Tương Dương / Thành Đô: 1 s sau thấy thế giới **tự rộng ra 120 %** kèm chữ "Nhìn rộng 120%"; ra khỏi thành (map thường) → tự về 100 %.
+2. Chụm hai ngón đặt 140 % → từ đó mọi map giữ 140 % (đã nhớ), riêng Tống Kim bị kẹp 125 %. Thoát app mở lại vẫn 140 %.
+3. Muốn về mặc định theo map: xoá `UserData\CameraMobile.ini` trên máy (hoặc tôi đặt `ZoomNho=0`).
+4. Muốn đổi số cho map nào: nói tôi id/tên map + %, tôi sửa `camera_mobile.ini` + `--chi-manifest`, không cần bản mới.
+
+## 7. Sự cố chủ báo 22:13 "Giờ quay một lần có màng đen bị đen"
+
+- Lúc đó điện thoại chạy **109132150** (bản của phiên đo nhịp, apk.txt 21:50, phiên log 22:10:16), **không có** mã lia/zoom/camera. Log phiên đó: `[PGND-R] vung (96,94) #38: xoa 156,1 ms + ghep 0,0 (0 luot, 0 anh)` và `#40: xoa 20,7 + ghep 0,0 (0 luot, 0 anh)` — vùng nền bị xoá đen trên GPU (XOANEN) mà không ghép ảnh → nghi là "màng đen". Đã chuyển cho phiên đo nhịp (chủ XOANEN/NENTRUOC) kèm dấu vết.
+- Bản 109132210 gộp đúng mã đó nên nếu còn màng đen thì vẫn là lỗi ấy, không phải lia/zoom (tắt thử: `[Cham] ZoomCanh=0 LiaCanh=0`).
+
+## 8. Còn lại
+
+- Nút bật/tắt lia/zoom trong trình chỉnh giao diện (phương án §7) — chưa làm.
+- Chữ neo thế giới nhỏ theo zoom (bản chất cách C) — chủ quyết sau khi thử.
+- Nếu chủ muốn nhớ zoom **theo từng map** thay vì một số chung: thêm dòng `Zoom_<id>=` vào `CameraMobile.ini` (30 phút).
