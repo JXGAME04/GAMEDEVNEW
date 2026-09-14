@@ -59,6 +59,7 @@ static unsigned long long s_ullJxPipeKeyCur = 0;	// [CULLCPU 11/09] khoa pipelin
 static double JxVeMs(Uint64 a, Uint64 b) { return (double)(b - a) * 1000.0 / (double)SDL_GetPerformanceFrequency(); }
 #ifdef JX_MOBILE
 unsigned g_uJxTaiTruocSo = 0, g_uJxTaiTruocXong = 0, g_uJxTaiTruocKB = 0, g_uJxTaiTruocLuot = 0, g_uJxTaiTruocMax = 0, g_uJxZeroChep = 0; double g_dJxTaiTruocMs = 0.0, g_dJxZeroChepMs = 0.0;	// [TAI 14/09] -> [VE-TAI] (KRepresentShell3.cpp)
+int g_nJxTaiDo = 1;	// [TAI-DO 14/09] [Client] TaiDo: 1 = do duong tai len GPU luc khoi dong thiet bi (chi log, ~1-2 s mot lan)
 #endif
 static void JxVeCong(const JxVeDo& k)
 {
@@ -317,6 +318,149 @@ static bool RgUploadOnce(SDL_GPUDevice* dev, SDL_GPUBuffer* pBuf, SDL_GPUTexture
 	return true;
 }
 
+#ifdef JX_MOBILE
+// [TAI-DO 14/09] Do duong tai len GPU luc khoi dong thiet bi (chi log; [Client] TaiDo=0 tat). Log Fold 7 14/09: cung lenh SDL_UploadToGPUTexture
+// nhung tai CA anh rieng nho = 0,6 ms/MB, tai VUNG CON 512x512 BGRA8 vao KHOI = 45-50 ms/o -> chi phi o DICH, chua ro co che driver Adreno.
+// Moi kieu 3 lan: 'ghi lenh' = CPU trong SDL_UploadToGPUTexture (dung muc do cua [VE-GIAT] lenh tai), 'tong' = tu map toi GPU xong (fence).
+struct JxTaiDoKieu { const char* ten; SDL_GPUTextureFormat fmt; UINT bpp; SDL_GPUTextureType loai; UINT nLop; UINT tw, th; UINT lop, x, y, w, h; int nNguon; };
+void CDevGpu::JxTaiDo()
+{
+	extern int g_nJxTaiDo;
+	if (!m_pGpu || !g_nJxTaiDo) return;
+	static const JxTaiDoKieu k[] = {
+		{ "vung con 512x512 -> KHOI BGRA8 2048^2 x4 lop (lop 2), nguon vua ghi", SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, 4, SDL_GPU_TEXTURETYPE_2D_ARRAY, 4, 2048, 2048, 2, 512, 512, 512, 512, 1 },
+		{ "vung con 512x512 -> KHOI BGRA8 (lop 2), nguon CU (ghi mot lan)",       SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, 4, SDL_GPU_TEXTURETYPE_2D_ARRAY, 4, 2048, 2048, 2, 512, 512, 512, 512, 0 },
+		{ "vung con 512x512 -> anh RIENG BGRA8 2048^2, nguon vua ghi",             SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, 4, SDL_GPU_TEXTURETYPE_2D, 1, 2048, 2048, 0, 512, 512, 512, 512, 1 },
+		{ "CA ANH 512x512 rieng BGRA8, nguon vua ghi",                             SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, 4, SDL_GPU_TEXTURETYPE_2D, 1, 512, 512, 0, 0, 0, 512, 512, 1 },
+		{ "CA ANH 512x512 rieng BGRA8, nguon CU",                                  SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, 4, SDL_GPU_TEXTURETYPE_2D, 1, 512, 512, 0, 0, 0, 512, 512, 0 },
+		{ "CA ANH 2048x128 rieng BGRA8 mang 1 lop (nhu dai nguon 0), nguon vua ghi", SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, 4, SDL_GPU_TEXTURETYPE_2D_ARRAY, 1, 2048, 128, 0, 0, 0, 2048, 128, 1 },
+		{ "dai 2048x128 -> KHOI BGRA8 (lop 2, y 512), nguon vua ghi",              SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM, 4, SDL_GPU_TEXTURETYPE_2D_ARRAY, 4, 2048, 2048, 2, 0, 512, 2048, 128, 1 },
+		{ "vung con 1024x512 -> KHOI R8G8 2048^2 x8 lop (lop 5), nguon vua ghi",  SDL_GPU_TEXTUREFORMAT_R8G8_UNORM, 2, SDL_GPU_TEXTURETYPE_2D_ARRAY, 8, 2048, 2048, 5, 512, 512, 1024, 512, 1 },
+		{ "CA ANH 1024x512 rieng R8G8, nguon vua ghi",                             SDL_GPU_TEXTUREFORMAT_R8G8_UNORM, 2, SDL_GPU_TEXTURETYPE_2D, 1, 1024, 512, 0, 0, 0, 1024, 512, 1 },
+		{ "vung con 512x512 -> KHOI R8G8 (lop 5) 512 KB, nguon vua ghi",          SDL_GPU_TEXTUREFORMAT_R8G8_UNORM, 2, SDL_GPU_TEXTURETYPE_2D_ARRAY, 8, 2048, 2048, 5, 512, 512, 512, 512, 1 },
+	};
+	const UINT uBuf = 1u << 20;
+	SDL_GPUTransferBufferCreateInfo ti; memset(&ti, 0, sizeof(ti)); ti.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD; ti.size = uBuf;
+	SDL_GPUTransferBuffer* pX = SDL_CreateGPUTransferBuffer(m_pGpu, &ti);
+	if (!pX) { RgLog("[TAI-DO] khong tao duoc transfer buffer: %s", SDL_GetError()); return; }
+	std::vector<BYTE> mau(uBuf); for (UINT i = 0; i < uBuf; i++) mau[i] = (BYTE)(i * 7u);
+	{ BYTE* p = (BYTE*)SDL_MapGPUTransferBuffer(m_pGpu, pX, false); if (p) { memcpy(p, &mau[0], uBuf); SDL_UnmapGPUTransferBuffer(m_pGpu, pX); } }
+	const Uint64 uBatDau = SDL_GetPerformanceCounter();
+	RgLog("[TAI-DO] do duong tai len GPU (%s): moi kieu 3 lan; 'ghi lenh' = CPU trong SDL_UploadToGPUTexture, 'tong' = tu map toi GPU xong (fence)", SDL_GetGPUDeviceDriver(m_pGpu));
+	SDL_GPUTexture* pKhoiBgra = NULL; SDL_GPUTexture* pAnh512 = NULL;
+	for (size_t i = 0; i < sizeof(k) / sizeof(k[0]); i++)
+	{
+		const JxTaiDoKieu& t = k[i];
+		SDL_GPUTextureCreateInfo ci; memset(&ci, 0, sizeof(ci)); ci.type = t.loai; ci.format = t.fmt; ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+		ci.width = t.tw; ci.height = t.th; ci.layer_count_or_depth = t.nLop; ci.num_levels = 1; ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+		const Uint64 uT0 = SDL_GetPerformanceCounter();
+		SDL_GPUTexture* pT = SDL_CreateGPUTexture(m_pGpu, &ci);
+		const double dTao = JxVeMs(uT0, SDL_GetPerformanceCounter());
+		if (!pT) { RgLog("[TAI-DO] %s: tao texture that bai: %s", t.ten, SDL_GetError()); continue; }
+		const UINT bytes = t.w * t.h * t.bpp;
+		double dMapMin = 1e9, dLenhMin = 1e9, dLenhMax = 0.0, dTongMin = 1e9, dTongMax = 0.0;
+		for (int r = 0; r < 3; r++)
+		{
+			const Uint64 u0 = SDL_GetPerformanceCounter();
+			if (t.nNguon) { BYTE* p = (BYTE*)SDL_MapGPUTransferBuffer(m_pGpu, pX, false); if (p) { memcpy(p, &mau[0], bytes); SDL_UnmapGPUTransferBuffer(m_pGpu, pX); } }
+			const Uint64 u1 = SDL_GetPerformanceCounter();
+			SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(m_pGpu);
+			if (!cb) break;
+			SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+			const Uint64 u2 = SDL_GetPerformanceCounter();
+			SDL_GPUTextureTransferInfo src; memset(&src, 0, sizeof(src)); src.transfer_buffer = pX; src.pixels_per_row = t.w; src.rows_per_layer = t.h;
+			SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = pT; dst.layer = t.lop; dst.x = t.x; dst.y = t.y; dst.w = t.w; dst.h = t.h; dst.d = 1;
+			SDL_UploadToGPUTexture(cp, &src, &dst, false);
+			const Uint64 u3 = SDL_GetPerformanceCounter();
+			SDL_EndGPUCopyPass(cp);
+			SDL_GPUFence* f = SDL_SubmitGPUCommandBufferAndAcquireFence(cb);
+			if (f) { SDL_WaitForGPUFences(m_pGpu, true, &f, 1); SDL_ReleaseGPUFence(m_pGpu, f); }
+			const Uint64 u4 = SDL_GetPerformanceCounter();
+			const double dMap = JxVeMs(u0, u1), dLenh = JxVeMs(u2, u3), dTong = JxVeMs(u1, u4);
+			if (dMap < dMapMin) dMapMin = dMap; if (dLenh < dLenhMin) dLenhMin = dLenh; if (dLenh > dLenhMax) dLenhMax = dLenh; if (dTong < dTongMin) dTongMin = dTong; if (dTong > dTongMax) dTongMax = dTong;
+		}
+		RgLog("[TAI-DO] %-76s | %4u KB | ghi lenh %6.2f..%6.2f ms (%5.1f ms/MB) | tong %6.2f..%6.2f ms | map+memcpy %.2f | tao texture %.1f ms", t.ten, bytes >> 10, dLenhMin, dLenhMax, dLenhMin * 1024.0 / (double)(bytes >> 10), dTongMin, dTongMax, dMapMin, dTao);
+		if (i == 0) pKhoiBgra = pT; else if (i == 3) pAnh512 = pT; else SDL_ReleaseGPUTexture(m_pGpu, pT);
+	}
+	if (pKhoiBgra && pAnh512)
+	{	// anh -> anh (GPU): 512x512 tu anh rieng vao khoi lop 2
+		double dLenhMin = 1e9, dLenhMax = 0.0, dTongMin = 1e9, dTongMax = 0.0;
+		for (int r = 0; r < 3; r++)
+		{
+			const Uint64 u1 = SDL_GetPerformanceCounter();
+			SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(m_pGpu);
+			if (!cb) break;
+			SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+			const Uint64 u2 = SDL_GetPerformanceCounter();
+			SDL_GPUTextureLocation s; memset(&s, 0, sizeof(s)); s.texture = pAnh512;
+			SDL_GPUTextureLocation d; memset(&d, 0, sizeof(d)); d.texture = pKhoiBgra; d.layer = 2; d.x = 1024; d.y = 1024;
+			SDL_CopyGPUTextureToTexture(cp, &s, &d, 512, 512, 1, false);
+			const Uint64 u3 = SDL_GetPerformanceCounter();
+			SDL_EndGPUCopyPass(cp);
+			SDL_GPUFence* f = SDL_SubmitGPUCommandBufferAndAcquireFence(cb);
+			if (f) { SDL_WaitForGPUFences(m_pGpu, true, &f, 1); SDL_ReleaseGPUFence(m_pGpu, f); }
+			const double dLenh = JxVeMs(u2, u3), dTong = JxVeMs(u1, SDL_GetPerformanceCounter());
+			if (dLenh < dLenhMin) dLenhMin = dLenh; if (dLenh > dLenhMax) dLenhMax = dLenh; if (dTong < dTongMin) dTongMin = dTong; if (dTong > dTongMax) dTongMax = dTong;
+		}
+		RgLog("[TAI-DO] %-76s | %4u KB | ghi lenh %6.2f..%6.2f ms | tong %6.2f..%6.2f ms", "ANH -> ANH: 512x512 tu anh rieng BGRA8 vao KHOI lop 2 (CopyGPUTextureToTexture)", 1024u, dLenhMin, dLenhMax, dTongMin, dTongMax);
+	}
+	{	// buffer -> buffer 1 MB (nhu PALBUF)
+		SDL_GPUBufferCreateInfo bi; memset(&bi, 0, sizeof(bi)); bi.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ; bi.size = uBuf;
+		SDL_GPUBuffer* pB = SDL_CreateGPUBuffer(m_pGpu, &bi);
+		if (pB)
+		{
+			double dLenhMin = 1e9, dLenhMax = 0.0, dTongMin = 1e9, dTongMax = 0.0;
+			for (int r = 0; r < 3; r++)
+			{
+				{ BYTE* p = (BYTE*)SDL_MapGPUTransferBuffer(m_pGpu, pX, false); if (p) { memcpy(p, &mau[0], uBuf); SDL_UnmapGPUTransferBuffer(m_pGpu, pX); } }
+				const Uint64 u1 = SDL_GetPerformanceCounter();
+				SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(m_pGpu);
+				if (!cb) break;
+				SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+				const Uint64 u2 = SDL_GetPerformanceCounter();
+				SDL_GPUTransferBufferLocation src = { pX, 0 }; SDL_GPUBufferRegion dst = { pB, 0, uBuf };
+				SDL_UploadToGPUBuffer(cp, &src, &dst, false);
+				const Uint64 u3 = SDL_GetPerformanceCounter();
+				SDL_EndGPUCopyPass(cp);
+				SDL_GPUFence* f = SDL_SubmitGPUCommandBufferAndAcquireFence(cb);
+				if (f) { SDL_WaitForGPUFences(m_pGpu, true, &f, 1); SDL_ReleaseGPUFence(m_pGpu, f); }
+				const double dLenh = JxVeMs(u2, u3), dTong = JxVeMs(u1, SDL_GetPerformanceCounter());
+				if (dLenh < dLenhMin) dLenhMin = dLenh; if (dLenh > dLenhMax) dLenhMax = dLenh; if (dTong < dTongMin) dTongMin = dTong; if (dTong > dTongMax) dTongMax = dTong;
+			}
+			RgLog("[TAI-DO] %-76s | %4u KB | ghi lenh %6.2f..%6.2f ms | tong %6.2f..%6.2f ms", "BUFFER -> BUFFER 1 MB (UploadToGPUBuffer, nhu PALBUF)", 1024u, dLenhMin, dLenhMax, dTongMin, dTongMax);
+			SDL_ReleaseGPUBuffer(m_pGpu, pB);
+		}
+	}
+	if (pKhoiBgra)
+	{	// 3 lan LIEN TIEP khong cho fence, map cycle=true (nhu duong khung: transfer buffer cua khung truoc con dang chay)
+		SDL_GPUFence* fs[3] = { NULL, NULL, NULL };
+		for (int r = 0; r < 3; r++)
+		{
+			const Uint64 u0 = SDL_GetPerformanceCounter();
+			{ BYTE* p = (BYTE*)SDL_MapGPUTransferBuffer(m_pGpu, pX, true); if (p) { memcpy(p, &mau[0], uBuf); SDL_UnmapGPUTransferBuffer(m_pGpu, pX); } }
+			const Uint64 u1 = SDL_GetPerformanceCounter();
+			SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(m_pGpu);
+			if (!cb) break;
+			SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+			const Uint64 u2 = SDL_GetPerformanceCounter();
+			SDL_GPUTextureTransferInfo src; memset(&src, 0, sizeof(src)); src.transfer_buffer = pX; src.pixels_per_row = 512; src.rows_per_layer = 512;
+			SDL_GPUTextureRegion dst; memset(&dst, 0, sizeof(dst)); dst.texture = pKhoiBgra; dst.layer = 2; dst.x = 0; dst.y = (Uint32)r * 512u; dst.w = 512; dst.h = 512; dst.d = 1;
+			SDL_UploadToGPUTexture(cp, &src, &dst, false);
+			const Uint64 u3 = SDL_GetPerformanceCounter();
+			SDL_EndGPUCopyPass(cp);
+			fs[r] = SDL_SubmitGPUCommandBufferAndAcquireFence(cb);
+			RgLog("[TAI-DO] LIEN TIEP lan %d (khong cho fence, map cycle=true): vung con 512x512 -> KHOI BGRA8 | map+memcpy %.2f ms | ghi lenh %.2f ms | nop %.2f ms", r + 1, JxVeMs(u0, u1), JxVeMs(u2, u3), JxVeMs(u3, SDL_GetPerformanceCounter()));
+		}
+		for (int r = 0; r < 3; r++) if (fs[r]) { SDL_WaitForGPUFences(m_pGpu, true, &fs[r], 1); SDL_ReleaseGPUFence(m_pGpu, fs[r]); }
+	}
+	SDL_WaitForGPUIdle(m_pGpu);
+	if (pKhoiBgra) SDL_ReleaseGPUTexture(m_pGpu, pKhoiBgra);
+	if (pAnh512) SDL_ReleaseGPUTexture(m_pGpu, pAnh512);
+	SDL_ReleaseGPUTransferBuffer(m_pGpu, pX);
+	RgLog("[TAI-DO] xong, tong %.0f ms", JxVeMs(uBatDau, SDL_GetPerformanceCounter()));
+}
+#endif
+
 bool CDevGpu::Init()
 {
 	// cua so SDL ung voi HWND
@@ -399,6 +543,9 @@ bool CDevGpu::Init()
 #endif
 	RgLog("thiet bi: driver %s, backbuffer %ux%u, swapchain fmt %d, trinh chieu %s, windowed=%d", SDL_GetGPUDeviceDriver(m_pGpu), m_bbW, m_bbH, (int)m_swapFmt,
 		pm == SDL_GPU_PRESENTMODE_IMMEDIATE ? "ngay" : (pm == SDL_GPU_PRESENTMODE_MAILBOX ? "mailbox" : "vsync"), (int)(m_pp.Windowed != FALSE));
+#ifdef JX_MOBILE
+	JxTaiDo();	// [TAI-DO 14/09] do duong tai len GPU (chi log)
+#endif
 	return true;
 }
 

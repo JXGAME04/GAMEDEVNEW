@@ -459,6 +459,7 @@ public:
 	void    JxTaiTruocThem(CTexGpu* p);		// [TAI 14/09] khung nap truoc: vao hang tai dan
 	void    JxTaiTruocBo(CTexGpu* p);		// texture bi huy: rut khoi hang
 	void    JxTaiTruocChay(UINT uNganSach);	// moi khung (RepresentBegin): tai toi da uNganSach byte
+	void    JxTaiDo();						// [TAI-DO 14/09] do duong tai len GPU luc khoi dong (chi log)
 #else
 	void    QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, UINT layer = 0);	// tai vung 0 (trang moi / o chua co du lieu); [MANG 11/09] layer
 #endif
