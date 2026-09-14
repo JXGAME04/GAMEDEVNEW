@@ -848,6 +848,7 @@ extern "C" void JxSdl_BanPhimNhip(void)
 // Doi den luc nha (thuong duoi 150 ms) la cach moi giao dien cam ung deu lam.
 //---------------------------------------------------------------------------
 extern "C" int JxUi_CoGiaoDienTaiDiem(int x, int y);	// Wnds.cpp
+extern "C" int JxZoomThanh_TaiDiem(int x, int y);	// [ZOOMTHANH 14/09] UiZoomThanh.cpp: diem nam tren thanh keo zoom dang hien
 extern "C" int JxUi_CoVatPhamTaiDiem(int x, int y);	// [VATPHAM 12/09 g] Wnds.cpp
 extern "C" void JxVatPham_DatGiu(int nBat);	// [VATPHAM 12/09 g] UiVatPham.cpp
 extern "C" int JxVatPham_ChamNgoai(int x, int y);	// [VATPHAM 12/09 d] UiVatPham.cpp
@@ -1149,7 +1150,7 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			unsigned int uNay = (unsigned int)SDL_GetTicks();
 			bool bDup = (uNay - m_uChamNhaTruoc <= CHAM_HAI_MS) &&
 				(abs(m_nChamX0 - m_nChamNhaX) <= CHAM_HAI_XA) &&
-				(abs(m_nChamY0 - m_nChamNhaY) <= CHAM_HAI_XA);
+				(abs(m_nChamY0 - m_nChamNhaY) <= CHAM_HAI_XA) && !JxZoomThanh_TaiDiem(m_nChamX0, m_nChamY0);	// [ZOOMTHANH 14/09] bam lien tiep vao thanh keo zoom = tung nhay rieng (KWndScrollBar khong nhan DBLCLK)
 			LPARAM l = MAKELPARAM(m_nChamX0, m_nChamY0);
 			// [ANDROID 11/09 KHOAMT c] cham ngoai giao dien: khoa muc tieu tai dung cho cham -> thanh thong tin bam theo nguoi vua cham,
 			// khong chay theo hover (SinhHover bom WM_MOUSEMOVE moi khung, the gioi troi nen NPC duoi con tro doi lien tuc).
@@ -1207,7 +1208,7 @@ bool KSdlApp::ChamSuKien(const SDL_Event& ev)
 			// WndMessageListBox) nen thoai NPC / chat / danh sach may chu deu vuot duoc.
 			// Vuot NGANG thi van la giu chuot trai roi re (keo cua so di cho khac).
 			if (JxUi_CoGiaoDienTaiDiem(m_nChamX0, m_nChamY0) &&
-				abs(m_nChamY - m_nChamY0) > abs(m_nChamX - m_nChamX0))
+				abs(m_nChamY - m_nChamY0) > abs(m_nChamX - m_nChamX0) && !JxZoomThanh_TaiDiem(m_nChamX0, m_nChamY0))	// [ZOOMTHANH 14/09] vuot doc tren thanh keo zoom = keo nut (roi xuong CHAM_KEO), khong cuon
 			{
 				m_nCham = CHAM_CUON;
 				m_nCuonDon = 0;

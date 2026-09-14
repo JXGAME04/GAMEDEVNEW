@@ -54,6 +54,7 @@ static int	s_nZoomToiThieu = 80;	// ZoomToiThieu: % nho nhat = PHONG TO (80 = to
 static float	s_fChumDCu = 0.f;		// khoang cach hai ngon lan chap nhan gan nhat (kieu 3D)
 static float	s_fZoomDich3D = 0.f;	// zoom dich lien tuc trong luc chum (kieu 3D)
 static int	s_nNcZoomNhanh = 0, s_nNcZoomCham = 0, s_nNcLac = 1;	// cong tac Cai dat > Toi uu: Zoom nhanh / Zoom cham / Lac camera (JxLia_DatNhay)
+static int	s_nNcChum = 0;	// [ZOOMTHANH 14/09] cong tac "Chum zoom" (hai ngon): mac dinh TAT vi da co thanh keo zoom (KUiZoomThanh), tranh nham khi bam man choi bang hai ngon
 
 // --- trang thai --------------------------------------------------------------
 enum { LIA_KHONG = 0, LIA_KEO, LIA_CHO_VE, LIA_VE };
@@ -645,6 +646,43 @@ void JxLia_DatNhay(int nZoomNhanh, int nZoomCham, int nLac)
 	if (nLac >= 0) s_nNcLac = nLac ? 1 : 0;
 	g_DebugLog("[ZOOM3D] tuy chon: zoom nhanh=%d cham=%d lac camera=%d", s_nNcZoomNhanh, s_nNcZoomCham, s_nNcLac);
 }
+
+// [ZOOMTHANH 14/09] cong tac "Chum zoom" (Cai dat > Toi uu, mac dinh TAT) + API cho thanh keo zoom (Ui/UiCase/UiZoomThanh.cpp)
+void JxLia_DatChum(int nBat)
+{
+	if (nBat >= 0) s_nNcChum = nBat ? 1 : 0;
+	g_DebugLog("[ZOOMTHANH] tuy chon: chum hai ngon zoom=%d", s_nNcChum);
+}
+
+int JxLia_ZoomGioiHan(int* pMin, int* pMax, int* pBuoc)
+{
+	DocCaiDat();
+	if (pMin) *pMin = s_nZoomToiThieu;
+	if (pMax) *pMax = s_nZoomToiDa;
+	if (pBuoc) *pBuoc = s_nZoomBuoc;
+	return (TrongGame() && s_nZoomBat && s_nNcZoom) ? 1 : 0;
+}
+
+int JxLia_ZoomDich()
+{
+	return (s_nZoomDich > 0) ? s_nZoomDich : s_nZoom;
+}
+
+void JxLia_ZoomDatMuot(int nPhanTram)
+{	// thanh keo dat: dat dich, JxLia_Nhip troi toi (duoi ham mu ZoomMuot nhu chum kieu 3D); nho lai nhu nguoi choi chum
+	DocCaiDat();
+	if (nPhanTram < s_nZoomToiThieu) nPhanTram = s_nZoomToiThieu;
+	if (nPhanTram > s_nZoomToiDa) nPhanTram = s_nZoomToiDa;
+	nPhanTram = (nPhanTram + s_nZoomBuoc / 2) / s_nZoomBuoc * s_nZoomBuoc;
+	if (nPhanTram < s_nZoomToiThieu) nPhanTram = s_nZoomToiThieu;
+	if (nPhanTram == s_nZoom && s_nZoomDich == 0)
+		return;
+	if (s_nZoomDich == 0) s_fZoomTroi = (float)s_nZoom;	// bat dau troi tu muc dang ap; dang troi thi noi tiep
+	s_nZoomDich = nPhanTram;
+	s_nZoomNguoiChoi = nPhanTram;
+	Camera_GhiNho();
+	if (s_nNhatKy) g_DebugLog("[ZOOMTHANH] dat zoom %d%% (dang %d%%)", nPhanTram, s_nZoom);
+}
 void JxLia_Ve()
 {
 	unsigned int uNay = (unsigned int)GetTickCount();
@@ -663,6 +701,8 @@ bool JxLia_ChumDuoc(int x1, int y1, int x2, int y2)
 	DocCaiDat();
 	if (!s_nZoomBat || !s_nNcZoom)
 		return false;	// [CAMERA 13/09 TUYCHON]
+	if (!s_nNcChum)
+		return false;	// [ZOOMTHANH 14/09] chum tat: ngon 2 dat len ban do khong lam gi (khong huy cham cua ngon 1)
 	return TrenBanDo(x1, y1) && TrenBanDo(x2, y2);	// [CAMERA 13/09] chum khong can LiaCanh (map tat lia van chum duoc)
 }
 

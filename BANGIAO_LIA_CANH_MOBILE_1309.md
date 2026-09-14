@@ -531,3 +531,57 @@ Chưa đo được trên máy ảo: chi phí thật (LDPlayer không có [TAI-DO
 
 - Cấp sẵn khối atlas trong màn nạp (đề xuất của phiên đo nhịp, việc của họ).
 - Nếu chủ đổi `ZoomToiDa` > 150 hoặc `LiaLacLe` > 112: nâng `TheGioiRTCap` tương ứng, không thì lần đầu vượt sẽ cấp lại một lần (nấc 250 ‰).
+
+
+---
+
+# THANH KÉO ZOOM + CHỮ THẾ GIỚI SẮC NÉT KHI ZOOM — 14/09 14:0x (bản **109141405**)
+
+Chủ 14/09 13:2x: *"Làm nút kéo điều chỉnh zoom cho khỏi ảnh hưởng tới lúc kích vào màn chơi. Và lúc zoom rộng chữ bị mờ đi không nhìn rõ."*
+
+## 1. Bản
+
+| | |
+|---|---|
+| Mã mới | `S3Client/Ui/UiCase/UiZoomThanh.cpp/.h` (`KUiZoomThanh`, chỉ JX_MOBILE, thêm vào `android/CMakeLists.txt` + `ios/CMakeLists.txt`) |
+| Mã sửa | `Platform/JxLiaCanh.cpp/.h` (công tắc chụm + API thanh kéo), `Platform/KSdlApp.cpp` (vuốt dọc trên thanh = kéo nút), `Ui/UiCase/UiOptions2.h/.cpp` (13 công tắc), `Ui/UiShell.cpp` (mở/đóng), `Ui/Elem/UiToaDoMobile.inc` (khoá trình chỉnh), `Represent/Represent3/KRepresentShell3.cpp/.h` (khối [TG], [CHUNET]; phiên đo nhịp soi chéo). `kiem --pc` ĐẠT |
+| Dữ liệu (lớp ghi đè + máy ảo + dt_v4) | `ui\ui3\uizoomthanh.ini` (mới), `ui\ui3\uioptions2.ini` (13 tên, Top 58, cách 23: `android/sinh_uioptions2_chum.py`), `ui\uitoado_danhsach.ini` (+`KUiZoomThanh|Main=Thanh zoom,1`), `spr\ui3\uizoomthanh\thanh.spr` + `nut.spr` (`android/anh_zoomthanh.py`, SPR 8 bit bảng màu xám), `config.ini [Client] TheGioiRTChu=1` |
+| Kịch bản | `android/va_nguon_zoomthanh_1409.py` (A–H, idempotent) |
+
+## 2. Thanh kéo zoom (`KUiZoomThanh`)
+
+- Thanh dọc 28×160 ở mép trái (ini `[Main] Left=4 Top=330`, neo mép như mọi ô HUD); dấu **+** trên = phóng to (`ZoomToiThieu`, 80 %), dấu **−** dưới = nhìn rộng (`ZoomToiDa` của map, 150 %). Nút = `KWndScrollBar` dọc (`Type=1`), giá trị 0..(ToiDa−ToiThieu)/ZoomBuoc, mã đặt lại khoảng theo map mỗi khung.
+- Bấm vào thanh trên/dưới nút = một nấc 5 %; kéo nút = liên tục. Zoom trôi mượt tới đích (`JxLia_ZoomDatMuot`: đặt `s_nZoomDich`, `JxLia_Nhip` đuổi hàm mũ như chụm kiểu 3D) và nhớ vào `UserData\CameraMobile.ini` như chụm.
+- Nút tự chạy theo zoom khi map đổi mức / chụm (trừ 700 ms sau khi người chơi vừa kéo). Map hoặc người chơi tắt zoom ("Nhìn rộng") → thanh không vẽ và **chạm xuyên qua** (`PtInWindow` trả 0).
+- `KSdlApp`: vuốt DỌC trên giao diện vốn là CUỘN danh sách (`CHAM_CUON`) nên kéo nút không được; thêm `JxZoomThanh_TaiDiem(x, y)`: điểm đặt ngón trên thanh → rơi xuống `CHAM_KEO` (giữ chuột trái rồi rê). Bấm liên tiếp < 400 ms trên thanh không thành nháy đúp (KWndScrollBar không nhận DBLCLK).
+- Trình chỉnh giao diện: khoá `KUiZoomThanh|Main` (không cho to nhỏ) → người chơi kéo thanh sang chỗ khác / giấu.
+
+## 3. Công tắc "Chụm zoom" (Cài đặt > TÙY CHỌN > Tối ưu, hàng 7)
+
+Mặc định **TẮT**: hai ngón đặt lên bản đồ không còn thành chụm zoom (gốc "ảnh hưởng tới lúc kích vào màn chơi": ngón 1 đang chờ/lia/kéo trên bản đồ + ngón 2 chạm bản đồ = chụm, huỷ cả cú chạm của ngón 1 — hay xảy ra khi chơi hai ngón cái). Bật lại thì chụm như 109141317 (Zoom nhanh/chậm vẫn áp cho chụm). `JxLia_ChumDuoc` trả false khi tắt; lưu `uiautoconfig.ini [Options2] ChumZoom`.
+
+## 4. Chữ thế giới sắc nét khi zoom ([CHUNET], Represent3 khối [TG])
+
+- Gốc: tên NPC/người chơi, chat trên đầu, tên vật rơi, nền mờ sau tên, thanh máu đều vẽ vào ảnh RT rồi bị thu nhỏ (150 % = chữ 12 px còn 8 px, nhoè) hoặc phóng to.
+- Sửa: khi đang vẽ RT và có zoom/lắc (`TgChuXep()`), `OutputText` / `OutputVNText` / `OutputRichText` và `DrawPrimitives(RU_T_SHADOW, toạ độ thế giới)` không vẽ mà xếp hàng (`s_TgChu`, tham số gốc: toạ độ thế giới + nZ); lệnh 2 sau blit gọi lại y hệt (`TgChuVe()`), `CoordinateTransform` đi qua cửa toạ độ (`m_nTgTrangThai == 0`) nên đúng chỗ, **cỡ thật** như nhãn game 3D. Khung chỉ blit (K=2) vẽ lại hàng của khung trước. Zoom 100 % không lắc: không xếp, y hệt cũ. Chữ giờ nằm trên mọi thân sprite (không bị cây che).
+- `[Client] TheGioiRTChu=0` tắt (chữ lại theo ảnh RT). Log `[CHUNET] lop chu the gioi ve sau blit khi zoom / lac: 1`.
+
+## 5. Thử máy ảo (1040×604, bản cuối)
+
+| Việc | Kết quả |
+|---|---|
+| Vào thế giới | thanh hiện mép trái, nút ở 100 %; `[ZOOMTHANH] tuy chon: chum hai ngon zoom=0` |
+| Bấm dưới nút | 105 % (một nấc), `[ZOOM] zoom 1000 -> 1050` |
+| Kéo nút xuống / lên (swipe 1,2 s) | 150 % / 80 %, log từng nấc; trước khi vá KSdlApp thì vuốt dọc thành cuộn (nút không đi) |
+| Hai chạm nhanh (250 ms) dưới nút | +5 % + 5 % (không mất cú thứ hai) |
+| 150 % | tên NPC/người chơi/mục tiêu cỡ thật, rõ; nền mờ đi cùng chữ (`zt_150.png`) |
+| 80 % | thế giới to 1,25×, chữ vẫn cỡ thật (`zt_h80.png`) |
+| Tối ưu | 7 hàng, 13 công tắc, "Chụm zoom" tắt, nút Đóng không đè (`zt_i_toiuu.png`) |
+| Bấm bản đồ | thanh không chắn (chỉ 28 px mép trái); chụm tắt nên không mất chạm |
+
+Chưa thử được trên máy ảo: cảm giác kéo bằng ngón thật, chat trên đầu (OutputRichText) lúc zoom — chủ xem trên Fold 7.
+
+## 6. Còn lại
+
+- Đao quang (mục 10 báo cáo 3D) và bốn đề xuất tối ưu mục 12 vẫn chờ chủ chọn.
+- Nếu chủ muốn thanh nằm ngang hoặc chỗ khác: đổi `uizoomthanh.ini` (Type=0 + ảnh ngang) hoặc kéo trong "Chỉnh giao diện".

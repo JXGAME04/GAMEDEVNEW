@@ -429,6 +429,9 @@ static const struct { const char* pszKhoa; int nCo; } s_DSMa[] =
 	{ "KyNang0", 0 }, { "KyNang1", 0 }, { "KyNang2", 0 }, { "KyNang3", 0 }, { "KyNang4", 0 },
 	{ "KyNang5", 0 }, { "KyNang6", 0 }, { "KyNang7", 0 }, { "KyNang8", 0 }, { "KyNangGan", 0 },
 	{ "IconNpc", SUAGD_CO_KHONGPHONG }, { "ThongTinGoc", SUAGD_CO_KHONGPHONG },
+#ifdef JX_MOBILE
+	{ "KUiZoomThanh|Main", SUAGD_CO_KHONGPHONG },	// [ZOOMTHANH 14/09] thanh keo zoom
+#endif
 	{ NULL, 0 }
 };
 

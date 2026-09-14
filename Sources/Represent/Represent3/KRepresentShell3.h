@@ -388,6 +388,8 @@ public:
     int  JxTheGioi(int nLenh, int nThamSo);   // nThamSo: lenh 0 = PaintFps muc tieu cua S3Client
     void JxTheGioiHuy();
     bool JxTheGioiNet2();	// [ZOOM3D 14/09] RT2 co 2x cho phong to co loc net (RT -> RT2 POINT -> khung LINEAR)
+    bool TgChuXep();	// [CHUNET 14/09] dang ve RT + co zoom / lac: chu the gioi + nen chu / thanh mau (RU_T_SHADOW toa do the gioi) xep hang, ve SAU blit len khung (co that, sac net)
+    void TgChuVe();	// ve hang do (lenh 2 sau blit; khung chi blit ve lai hang cua khung truoc)
     void JxTheGioiCapNhat(double dTrinhChieuMs);
     void JxTheGioiKyIn();
     void JxTheGioiDocIni();

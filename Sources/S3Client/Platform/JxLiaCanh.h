@@ -63,5 +63,11 @@ void JxLia_Ve();
 void JxLia_DatTuyChon(int nLia, int nZoom, int nVeNhanh);
 void JxLia_DatNhay(int nZoomNhanh, int nZoomCham, int nLac);	// [ZOOM3D 14/09] cong tac Zoom nhanh / Zoom cham / Lac camera
 
+// [ZOOMTHANH 14/09] cong tac "Chum zoom" (hai ngon; mac dinh TAT, thanh keo thay the) + API cho thanh keo zoom KUiZoomThanh (Ui/UiCase/UiZoomThanh.cpp)
+void JxLia_DatChum(int nBat);
+int  JxLia_ZoomGioiHan(int* pMin, int* pMax, int* pBuoc);	// % phong to nhat (ZoomToiThieu) / nhin rong nhat (ZoomToiDa map) / nac; tra ve 1 = zoom dang duoc phep (trong game, map + nguoi choi bat)
+int  JxLia_ZoomDich();			// % dang troi toi (hay dang ap khi khong troi)
+void JxLia_ZoomDatMuot(int nPhanTram);	// thanh keo dat: troi muot toi muc do, nho lai (UserData\CameraMobile.ini)
+
 #endif // JX_MOBILE
 #endif

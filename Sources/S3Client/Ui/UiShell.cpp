@@ -21,6 +21,7 @@
 #ifdef JX_MOBILE
 #include "../Platform/JxCanDieuKhien.h"	// [ANDROID 09/09 CAN] can dieu khien ao
 #include "../Platform/JxLiaCanh.h"	// [CAMERA 13/09] chu bao muc zoom
+#include "UiCase/UiZoomThanh.h"	// [ZOOMTHANH 14/09] thanh keo zoom o mep man choi
 #endif
 #include "UiCase/UiConnectInfo.h"
 #include "UiCase/UiInformation.h"
@@ -512,6 +513,9 @@ void UiStartGame()
 	KUiSysMsgCentre::OpenWindow();
 	KUiHeaderControlBar::OpenWindow();
 	KUiToolsControlBar::OpenWindow();
+#ifdef JX_MOBILE
+	KUiZoomThanh::OpenWindow();	// [ZOOMTHANH 14/09] thanh keo zoom (tu an khi map / nguoi choi tat zoom)
+#endif
 	KUiNewsMessage::OpenWindow();
 	KUiFlashMessage::OpenWindow();
 	KUiTongKimScore::OpenWindow();	// [TKDIEM 04/09] tao san (an), hien khi may chu gui diem
@@ -618,6 +622,9 @@ bool UiCloseWndsInGame(bool bAll)
 		KUiMsgCentrePad::CloseWnd(true);
 		KUiHeaderControlBar::CloseWindow();
 		KUiToolsControlBar::CloseWindow();
+#ifdef JX_MOBILE
+		KUiZoomThanh::CloseWindow();	// [ZOOMTHANH 14/09]
+#endif
 		KUiESCDlg::CloseWindow(true);
 		KUiSysMsgCentre::CloseWindow();
 		KUiChatCentre::CloseWindow(true);

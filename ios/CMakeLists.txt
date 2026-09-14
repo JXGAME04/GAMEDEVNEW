@@ -166,6 +166,7 @@ add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${JX_SRC}/S3Client/Platform/JxWAutoNoiBo.cpp      # ben gui WAuto trong tien trinh
     ${JX_SRC}/S3Client/Ui/UiCase/UiWAuto.cpp          # khung Auto trong game
     ${JX_SRC}/S3Client/Ui/UiCase/UiWAutoTrang.cpp     # trang noi dung cua khung Auto
+    ${JX_SRC}/S3Client/Ui/UiCase/UiZoomThanh.cpp     # [ZOOMTHANH 14/09] thanh keo zoom o mep man choi
     ${JX_SRC}/S3Client/Ui/UiCase/UiVatPham.cpp       # bang thong tin vat pham khi cham o do
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosStubs.cpp      # [IOS-DO] dem khung + ghi jx_nhip.log moi 10 s
     ${CMAKE_CURRENT_SOURCE_DIR}/JxTaiDuLieu.mm                 # [IOS-TAI 11/09] buoc F: bo tai du lieu trong app (manifest chung voi Android)
