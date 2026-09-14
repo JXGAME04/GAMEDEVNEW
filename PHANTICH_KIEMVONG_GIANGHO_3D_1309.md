@@ -297,3 +297,49 @@ So với JX1 mobile: nhân vật ~90 px cố định; "Nhìn rộng" 100..150 % 
 5. **Chi phí nhìn rộng**: giữ như hiện nay (RT to → blit nhỏ, đúng cách duy nhất cho ảnh điểm); nếu Fold 7 nóng ở 150 % thì hạ `ZoomToiDa` từng map (125 %) — bản 3D không gặp vấn đề này vì số điểm ảnh không đổi.
 
 Kết luận: cơ chế zoom bản 3D là **khoảng cách camera + dựng lại hình**, không chép được cho ảnh 2D; thứ chép được là **cách điều khiển** (mục 1–2), rẻ và không đụng Represent3.
+
+
+## 12. Chủ hỏi 14/09 12:xx: "bản 3D có phân tích cách vẽ hình hay tối ưu được gì cho dự án hiện tại không" — chỉ phân tích, chưa sửa
+
+### 12.1 Kết luận ngắn
+
+- **Phần lõi "cách vẽ hình" của bản 3D không chép được**: lưới có xương, lightmap nướng sẵn, mipmap/anisotropic, bóng chiếu, hậu kỳ Bloom/Tonemapping, nén ASTC. JX1 là sprite 8 bit bảng màu + nền vẽ sẵn; những thứ đó hoặc không có đối tượng để áp (mipmap, LOD, lightmap), hoặc đã có cái tương đương rẻ hơn (hào quang/cột sáng = sprite alpha cộng màu, không cần Bloom).
+- **Cái mang được là cách họ "đóng gói" tuỳ chọn cho người chơi và cách ngân sách hiệu ứng**, không phải kỹ thuật vẽ: thanh Độ phân giải, một nút "Đồ hoạ" gộp nhiều thứ, mức hiệu ứng hạt, giữ số điểm ảnh không đổi khi zoom.
+- **Các đòn tối ưu lớn của JX1 mobile đã đến từ mổ VNKU (2D, cùng loại) và các đợt DONHIP/D1/PALBUF/[TG]/NENTRUOC/[TAI]**, phần lớn đã làm (bảng 12.3). Bản 3D không có gì vượt những cái đó cho một engine 2D; nó chỉ gợi thêm 4 việc nhỏ ở 12.4.
+
+### 12.2 Đối chiếu từng kỹ thuật của bản 3D (mục 2 + 11) với JX1 mobile
+
+| Kỹ thuật bản 3D | JX1 mobile hiện nay | Mang sang được? |
+|---|---|---|
+| Thanh **Độ phân giải** (`u_slider[4]` → `Screen.SetResolution`): hạ cả màn hình, GPU tô ít điểm hơn | Đã có cơ chế **[D1] `Rep3SwapchainLogic`** (swapchain = khung logic 1040×936 thay vì 2184×1968, 100/150/0) nhưng chỉ là khoá `config.ini`, người chơi không đổi được | **Có** → 12.4 (a) |
+| Một thanh **"Đồ hoạ"** (`SetGraphicsLevel` → `JXM.SetTextureLevel` + mức hạt + bóng… gộp một nút) | 12 công tắc rời trong Tối ưu + thanh FPS; không có nấc gộp "Tiết kiệm pin / Cân bằng / Đẹp" | **Có** → 12.4 (b) |
+| `globalTextureMipmapLimit` (bỏ mip 0 = bớt 4× bộ nhớ texture) | Sprite bảng màu không có mipmap; ngân sách bộ nhớ đã tự tính (`Rep3CacheMB=0` = RAM/8 kẹp 128..512, [KHOI]/[CACHE] 13/09 = P7) | Không có gì để giảm; đã có tương đương |
+| Mức **hiệu ứng hạt** = cỡ pool prefab + bỏ hạt phụ (particle level) | "Giảm Skill" chỉ bật/tắt | **Có, nhỏ** → 12.4 (c) |
+| **Số điểm ảnh không đổi khi zoom** (URP renderScale 1,0; zoom = đổi khoảng cách camera) | Nhìn rộng 150 % = RT 2,25× điểm ảnh (Fold 7 nóng hơn); phóng to = RT cỡ khung + RT2 blit | **Có** → 12.4 (d) |
+| `CullDistances` theo layer + far plane theo cảnh (100/80/50 ở cảnh nhỏ) | Vùng truy vấn vật thể = khung × zoom (`SetRepresentAreaSize`) đã khớp phần nhìn thấy | Đã có tương đương |
+| Gộp lưới nhân vật (`cacheCombineMesh` → 1 `SkinnedMeshRenderer`), `Scene_Ref` = danh sách prefab + lightmap | Atlas 1024² (`Rep3AtlasGpu`), [GOP] ps theo đỉnh + bind ring 1 lần, [MANG] texture mảng 2D, [PALBUF] bảng màu storage buffer | Đã làm; việc còn lại (gom trang atlas để quad không vỡ lô vì texture0 ~80 %) là của DONHIP, không từ bản 3D |
+| Camera xếp chồng + `GUILowFeature` (UI thấp vẽ riêng) | **[TG]**: thế giới vào RT khi quá tải, giao diện + cần điều khiển theo nhịp màn (P1) — đi xa hơn bản 3D | Đã có |
+| `ModelViewFeature`: render nhân vật vào RT `model_view` cho UI | Cửa sổ nhân vật vẽ sprite thẳng, rẻ | Không cần |
+| Hậu kỳ Bloom + Tonemapping, `sfx_distort` (GrabPass méo hình) | Sáng = sprite cộng màu (Reserved[1]=1) như vòng quái / cột sáng 14/09 | Không cần; méo hình có thể làm trên RT [TG] nhưng chưa có yêu cầu |
+| Nén ASTC 6x6 / 4x4, 512² đa số | Sprite 8 bit/điểm + bảng màu, giải mã trên GPU; đã ngang ASTC 4x4 về bộ nhớ | Không lợi thêm |
+| Lightmap nướng sẵn, bóng `DynamicShadowProjector` | Nền là ảnh vẽ sẵn (đã "nướng" toàn bộ), bóng là sprite | Không áp dụng |
+| Nạp tài nguyên qua pool + rải nhiều khung | `NapKhungNen` (nạp khung sprite luồng nền theo ngân sách ms), NENTRUOC nền đất, [TAI] tải GPU theo ngân sách, NAPTO (P3/P4) | Đã làm |
+| Tên đầu NPC cập nhật khi đổi, không mỗi khung | Chữ vẽ lại mỗi khung (556 000 dòng/16 phút Tống Kim) nhưng `[PDET]` 13/09 đo chỉ vài phần mười ms/khung → P2 cache chuỗi để lại | Đo rồi, chưa đáng |
+| `CameraBuildingFade` (mờ vật che), tham số camera theo cảnh (`cameraInit`) | Represent3 mờ mái nhà; `camera_mobile.ini` theo map 13/09 | Đã có |
+| Đao quang `XWeaponTrail` (dải lưới nối 2 điểm treo qua N khung, mục 10) | Chưa có; sprite không có điểm mũi vũ khí | Là hiệu ứng, không phải tối ưu: 2–3 ngày như đã ghi ở mục 10 |
+| Viền phẩm chất động + ánh quét theo cấp +6…+15 trong túi (mục 9.2) | Túi chỉ đổi màu chữ tên | Hiệu ứng UI rẻ (~1 ngày), nếu chủ muốn |
+
+### 12.3 Những gì JX1 mobile đã có mà bản 3D không có (để khỏi làm lại)
+
+Thế giới vẽ vào RT + nhịp thích nghi theo tải ([TG], P1 kiểu VNKU), swapchain khung logic [D1], bảng màu giải mã trên GPU [PALBUF] + texture mảng [MANG], tải GPU theo ngân sách [TAI]/[DEM], nạp trước nền đất [NENTRUOC] + [NAPTO], nhịp PC cho mobile (PaintVsync/PaintSmooth), thanh FPS + `FpsNgoaiTheGioi=30`, dòng "FPS | CPU | GPU | Pin", 12 công tắc Tối ưu.
+
+### 12.4 Bốn việc nhỏ đáng làm nếu chủ chọn (chưa làm)
+
+| | Việc | Ở đâu | Công | Lợi |
+|---|---|---|---|---|
+| (a) | **Nấc "Độ phân giải" cho người chơi**: 3 nút Tiết kiệm 75 / Chuẩn 100 / Nét 150 → `Rep3SwapchainLogic`; lưu `uiautoconfig.ini` | `UiOptions2` + `KRepresentShell3` (JX_MOBILE) | ½ ngày; **cần kiểm** swapchain có dựng lại được lúc chạy (hint `JX_SWAPCHAIN_W/H` đọc lúc tạo) — nếu không thì "áp dụng lần vào sau" | GPU/nhiệt: 100→75 bớt ~44 % điểm ảnh; 150 cho máy mạnh muốn nét |
+| (b) | **Một nút "Chế độ"**: Tiết kiệm pin / Cân bằng / Đẹp = đặt cùng lúc thanh FPS (60/90/120), nấc (a), Giảm Skill, Vòng quái, Sáng vật rơi, Lắc camera; các công tắc rời vẫn chỉnh được sau | `UiOptions2` (chỉ gọi các setter đã có) | ½–1 ngày | Người chơi không phải hiểu 12 công tắc; giống thanh "Đồ hoạ" của bản 3D |
+| (c) | **Giảm Skill 3 mức** thay vì bật/tắt: Đủ / Bỏ hiệu ứng người chơi khác ngoài nhóm / Chỉ của mình + boss | `KNpc.cpp` chỗ vẽ hiệu ứng kỹ năng (đã có cờ Giảm Skill) | 1 ngày | Tống Kim đông: bớt sprite hiệu ứng nhiều nhất trong khung |
+| (d) | **Nhìn rộng không tăng điểm ảnh**: khi zoom ≥ 130 % vẽ RT ở nấc thấp hơn (RT = khung × zoom / 1,5) rồi blit LINEAR; cùng cơ chế RT2 ngược chiều (phiên đo nhịp đã ghi K=2 ở mục 7 ZOOM3D) | `KRepresentShell3` khối [TG] (soi chéo phiên đo nhịp) | 1 ngày + đo Fold 7 | Fold 7 khi nhìn rộng 150 % hết tốn 2,25× điểm ảnh; đổi lại ảnh mềm hơn một chút |
+
+Không đề xuất: cache chuỗi chữ (P2, đo chưa đáng), N người chơi hiển thị (P5, chủ quyết riêng vì đổi nội dung nhìn thấy), Bloom/ModelView/mipmap (không có đối tượng).
