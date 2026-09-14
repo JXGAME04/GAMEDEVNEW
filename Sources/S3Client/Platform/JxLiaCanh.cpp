@@ -13,7 +13,8 @@
 #include "../Ui/Elem/UiToaDo.h"	// UiToaDo_DangSua
 #include "../Ui/UiCase/UiToolsControlBar.h"	// thanh cong cu = dau hieu da vao the gioi (nhu JxCanDieuKhien)
 #include "../../Core/src/coreshell.h"
-#include "../../Core/src/GameDataDef.h"	// KSceneMapInfo
+#include "../../Core/src/GameDataDef.h"	// KSceneMapInfo, KUiSceneTimeInfoOften
+#include "../../Represent/iRepresent/iRepresentShell.h"	// [CAMERA 13/09] OutputText
 #include "KDebug.h"
 #include <math.h>
 #include <stdio.h>
@@ -21,6 +22,7 @@
 #include <string.h>
 
 extern iCoreShell*	g_pCoreShell;
+extern iRepresentShell*	g_pRepresentShell;	// [CAMERA 13/09]
 extern int			SCREEN_WIDTH;
 extern int			SCREEN_HEIGHT;
 extern "C" int		JxUi_CoGiaoDienTaiDiem(int x, int y);	// Wnds.cpp
@@ -65,6 +67,21 @@ static int			s_nChum = 0;		// 1 = dang chum
 static float		s_fChumD0 = 1.f;	// khoang cach hai ngon luc bat dau chum
 static int			s_nChumZoom0 = 100;	// zoom luc bat dau chum
 static int			s_nZoomThuXong = 0;
+// [CAMERA 13/09] theo map + nho + troi + chu bao
+static int			s_nZoomToiDaCfg = 150, s_nXaNgangCfg = 60, s_nXaDocCfg = 60, s_nBatCfg = 1, s_nZoomBatCfg = 1;	// gia tri config.ini (map ghi de len ban dang dung)
+static int			s_nZoomNho = 1;		// [Cham] ZoomNho: 1 = nho zoom nguoi choi qua UserData\CameraMobile.ini
+static int			s_nZoomTocDo = 100;	// [Cham] ZoomTocDo: %/giay khi troi toi zoom cua map
+static int			s_nZoomChu = 1;		// [Cham] ZoomChu: 1 = chu "Nhin rong NNN %" 1,5 s khi doi
+static int			s_nZoomNguoiChoi = 0;	// zoom nguoi choi tu chum (0 = chua), nho qua tep
+static int			s_nZoomDich = 0;		// zoom dang troi toi (0 = khong troi)
+static float		s_fZoomTroi = 100.f;	// zoom lien tuc trong luc troi
+static int			s_nCanDocMap = 1;		// 1 = vao map / doi map, can doc lai muc cua map
+static int			s_nMapId = -1;			// map dang ap
+static unsigned int	s_uZoomChuLuc = 0;		// luc zoom doi gan nhat (chu bao)
+static int			s_nZoomChuTruoc = 100;	// zoom lan bao truoc (chi bao khi doi)
+static char			s_szZoomChu[48] = "";
+static void			ZoomAp(int nPhanTram);	// dinh nghia o khoi ZOOM cuoi tep
+static void			Camera_DocMap();
 
 static void DocCaiDat()
 {
@@ -95,6 +112,25 @@ static void DocCaiDat()
 	if (s_nZoomBuoc < 1)    s_nZoomBuoc = 1;      if (s_nZoomBuoc > 50)   s_nZoomBuoc = 50;
 	if (s_nZoomMacDinh < 100) s_nZoomMacDinh = 100; if (s_nZoomMacDinh > s_nZoomToiDa) s_nZoomMacDinh = s_nZoomToiDa;
 	s_nZoom = s_nZoomMacDinh;
+	s_nZoomToiDaCfg = s_nZoomToiDa; s_nXaNgangCfg = s_nXaNgang; s_nXaDocCfg = s_nXaDoc; s_nBatCfg = s_nBat; s_nZoomBatCfg = s_nZoomBat;	// [CAMERA 13/09]
+	s_nZoomNho   = GetPrivateProfileInt("Cham", "ZoomNho", 1, szCfg);
+	s_nZoomTocDo = GetPrivateProfileInt("Cham", "ZoomTocDo", 100, szCfg);
+	s_nZoomChu   = GetPrivateProfileInt("Cham", "ZoomChu", 1, szCfg);
+	if (s_nZoomTocDo < 10) s_nZoomTocDo = 10; if (s_nZoomTocDo > 1000) s_nZoomTocDo = 1000;
+	if (s_nZoomNho)
+	{	// [CAMERA 13/09] zoom nguoi choi da nho (nhu CameraSave cua game 3D): UserData\CameraMobile.ini dong "Zoom=NNN"
+		char szNho[MAX_PATH]; char szDong[64]; FILE* pTep;
+		GetCurrentDirectory(MAX_PATH, szNho); strcat(szNho, "\\UserData\\CameraMobile.ini");
+		pTep = fopen(szNho, "rt");
+		if (pTep)
+		{
+			while (fgets(szDong, sizeof(szDong), pTep))
+				if (strncmp(szDong, "Zoom=", 5) == 0) s_nZoomNguoiChoi = atoi(szDong + 5);
+			fclose(pTep);
+			if (s_nZoomNguoiChoi < 100 || s_nZoomNguoiChoi > 300) s_nZoomNguoiChoi = 0;
+		}
+	}
+	s_fZoomTroi = (float)s_nZoom;
 	if (s_nXaNgang < 0) s_nXaNgang = 0;   if (s_nXaNgang > 150) s_nXaNgang = 150;
 	if (s_nXaDoc < 0)   s_nXaDoc = 0;     if (s_nXaDoc > 150)   s_nXaDoc = 150;
 	if (s_nNguong < 1)  s_nNguong = 1;    if (s_nNguong > 40)   s_nNguong = 40;
@@ -104,6 +140,22 @@ static void DocCaiDat()
 	g_DebugLog("[LIA] lia canh: bat=%d xa=%d%%x%d%% nguong=%d cho ve=%d ms toc do=%d px/s em=%d ve khi di=%d thu=%d,%d",
 		s_nBat, s_nXaNgang, s_nXaDoc, s_nNguong, s_nChoVeMs, s_nVeTocDo, s_nVeEm, s_nVeKhiDi, s_nThuDx, s_nThuDy);
 	g_DebugLog("[ZOOM] chum hai ngon: bat=%d toi da=%d%% buoc=%d%% mac dinh=%d%% thu=%d%%", s_nZoomBat, s_nZoomToiDa, s_nZoomBuoc, s_nZoomMacDinh, s_nZoomThu);
+	g_DebugLog("[CAMERA] theo map: nho=%d (zoom nguoi choi da nho %d%%) toc do troi=%d%%/s chu=%d", s_nZoomNho, s_nZoomNguoiChoi, s_nZoomTocDo, s_nZoomChu);
+}
+
+// [CAMERA 13/09] ghi zoom nguoi choi: UserData\CameraMobile.ini (nhu KyNangMobile.ini: GetCurrentDirectory + duong tuong doi)
+static void Camera_GhiNho()
+{
+	char szNho[MAX_PATH]; FILE* pTep;
+
+	if (!s_nZoomNho || s_nZoomNguoiChoi <= 0)
+		return;
+	GetCurrentDirectory(MAX_PATH, szNho); strcat(szNho, "\\UserData\\CameraMobile.ini");
+	pTep = fopen(szNho, "wt");
+	if (!pTep)
+		return;
+	fprintf(pTep, "; [CAMERA 13/09] zoom nguoi choi tu chum (%%); xoa tep = ve ZoomMacDinh cua map\nZoom=%d\n", s_nZoomNguoiChoi);
+	fclose(pTep);
 }
 
 // [ZOOM 13/09] Represent3 (libRepresent3.so / Represent3.dll) qua GetProcAddress nhu Wnds.cpp JxUi_TheGioi: libmain.so khong link Represent3;
@@ -197,10 +249,10 @@ bool JxLia_Bat()
 	return s_nBat != 0;
 }
 
-bool JxLia_DuocBatDau(int x, int y)
+// [CAMERA 13/09] diem (x,y) nam tren ban do (khong dinh giao dien / can / nut ky nang) - dung chung cho lia mot ngon va chum hai ngon
+static bool TrenBanDo(int x, int y)
 {
-	DocCaiDat();
-	if (!s_nBat || !g_pCoreShell || !TrongGame())
+	if (!g_pCoreShell || !TrongGame())
 		return false;
 	if (UiToaDo_DangSua())
 		return false;
@@ -211,6 +263,12 @@ bool JxLia_DuocBatDau(int x, int y)
 	if (JxKyNang_TrungNut(x, y) > 0)
 		return false;
 	return true;
+}
+
+bool JxLia_DuocBatDau(int x, int y)
+{
+	DocCaiDat();
+	return s_nBat && TrenBanDo(x, y);
 }
 
 void JxLia_BatDau(int x, int y)
@@ -267,7 +325,7 @@ void JxLia_DatLai()
 	s_nCoGoc = 0;
 	s_uVaoGameLuc = 0;
 	s_nChum = 0;
-	s_nZoomThuXong = 0; s_nZoomDaAp = -1;	// [ZOOM 13/09] doi map: 3 s sau ap lai zoom (vung truy van vat the) - Represent3 van giu zoom
+	s_nZoomDaAp = -1; s_nCanDocMap = 1; s_nZoomDich = 0;	// [CAMERA 13/09] doi map: 1 s sau doc muc cua map, ap lai vung truy van, troi toi zoom dich
 }
 
 int JxLia_DangLia()
@@ -283,8 +341,6 @@ void JxLia_Nhip()
 	bool bDi = false;
 
 	DocCaiDat();
-	if (!s_nBat)
-		return;
 	uNay = (unsigned int)GetTickCount();
 	dt = s_uNhipTruoc ? (float)(uNay - s_uNhipTruoc) / 1000.f : 0.f;
 	if (dt > 0.1f) dt = 0.1f;	// khung dung lau (nap map) khong nhay mot cuc
@@ -297,15 +353,25 @@ void JxLia_Nhip()
 		s_uVaoGameLuc = 0;
 		return;
 	}
-	// [ZOOM 13/09] zoom mac dinh / ZoomThu (go loi): ap sau khi vao the gioi 3 s (Represent3 va Core da san sang)
+	// [CAMERA 13/09] vao the gioi / doi map: 1 s sau doc muc cua map (settings\camera_mobile.ini) roi TROI zoom toi dich theo ZoomTocDo
 	if (!s_uVaoGameLuc)
 		s_uVaoGameLuc = uNay;
-	else if (uNay - s_uVaoGameLuc >= 3000 && !s_nZoomThuXong)
+	else if (uNay - s_uVaoGameLuc >= 1000 && s_nCanDocMap)
+		Camera_DocMap();
+	if (s_nZoomDich > 0 && !s_nChum)
 	{
-		s_nZoomThuXong = 1;
-		if (s_nZoomThu > 100) { g_DebugLog("[ZOOM] ZoomThu: tu dat %d%%", s_nZoomThu); JxLia_ZoomDat(s_nZoomThu); }
-		else if (s_nZoom != 100 || s_nZoomDaAp != s_nZoom) JxLia_ZoomDat(s_nZoom);
+		float fBuoc = (float)s_nZoomTocDo * dt;
+		if (s_fZoomTroi < (float)s_nZoomDich) { s_fZoomTroi += fBuoc; if (s_fZoomTroi > (float)s_nZoomDich) s_fZoomTroi = (float)s_nZoomDich; }
+		else { s_fZoomTroi -= fBuoc; if (s_fZoomTroi < (float)s_nZoomDich) s_fZoomTroi = (float)s_nZoomDich; }
+		ZoomAp((int)(s_fZoomTroi + 0.5f));
+		if ((int)(s_fZoomTroi + 0.5f) == s_nZoomDich)
+		{
+			ZoomAp(s_nZoomDich);
+			s_nZoomDich = 0;
+		}
 	}
+	if (!s_nBat)
+		return;	// [CAMERA 13/09] LiaCanh=0 (config hay map): van doc map + troi zoom o tren, khong lia
 	// LiaThu (go loi, thu tren may ao khong co ngon tay): 3 s sau khi vao the gioi tu keo mot lan roi tu ve
 	if ((s_nThuDx || s_nThuDy) && !s_nThuXong)
 	{
@@ -377,7 +443,8 @@ int JxLia_ZoomLay()
 	return s_nZoom;
 }
 
-void JxLia_ZoomDat(int nPhanTram)
+// [CAMERA 13/09] ap zoom that (Represent3 + vung truy van); ZoomDat = nguoi choi dat (huy troi, nho lai), troi theo map goi thang ZoomAp
+static void ZoomAp(int nPhanTram)
 {
 	DocCaiDat();
 	if (nPhanTram < 100) nPhanTram = 100;
@@ -388,6 +455,12 @@ void JxLia_ZoomDat(int nPhanTram)
 	if (s_nZoomDaAp == s_nZoom || !g_pCoreShell)
 		return;
 	s_nZoomDaAp = s_nZoom;
+	if (s_nZoom != s_nZoomChuTruoc)
+	{	// chu bao "Nhin rong NNN %" (JxLia_Ve) 1,5 s
+		s_nZoomChuTruoc = s_nZoom;
+		s_uZoomChuLuc = (unsigned int)GetTickCount();
+		sprintf(s_szZoomChu, "Nh×n réng %d%%", s_nZoom);
+	}
 	// Represent3: RT = khung x zoom, thu nho khi blit; Core: vung truy van vat the = khung x zoom (khong thi nguoi o ria khong duoc ve)
 	Rep3TheGioi(4, s_nZoom * 10);
 	g_pCoreShell->SetRepresentAreaSize(SCREEN_WIDTH * s_nZoom / 100, SCREEN_HEIGHT * s_nZoom / 100);
@@ -395,12 +468,74 @@ void JxLia_ZoomDat(int nPhanTram)
 		g_DebugLog("[ZOOM] zoom %d%% (Rep3 %d, vung truy van %dx%d)", s_nZoom, Rep3TheGioi(5, 0), SCREEN_WIDTH * s_nZoom / 100, SCREEN_HEIGHT * s_nZoom / 100);
 }
 
+void JxLia_ZoomDat(int nPhanTram)
+{	// nguoi choi dat (chum): ap ngay, huy troi, nho lai
+	ZoomAp(nPhanTram);
+	s_nZoomDich = 0;
+	s_fZoomTroi = (float)s_nZoom;
+	s_nZoomNguoiChoi = s_nZoom;
+}
+
+// [CAMERA 13/09] doc muc cua map dang dung (settings\camera_mobile.ini) roi dat zoom dich
+static void Camera_DocMap()
+{
+	KUiSceneTimeInfoOften o; char szTep[MAX_PATH]; char szMuc[32]; int nZoomMD, nDich;
+
+	if (!g_pCoreShell)
+		return;
+	memset(&o, 0, sizeof(o));
+	g_pCoreShell->SceneMapOperation(GSMOI_SCENE_TIME_INFO_OFTEN, (KUPARAM)&o, 0);
+	if (o.nSceneId <= 0)
+		return;	// chua co map: thu lai nhip sau
+	s_nCanDocMap = 0;
+	s_nMapId = o.nSceneId;
+	GetCurrentDirectory(MAX_PATH, szTep); strcat(szTep, "\\settings\\camera_mobile.ini");
+	sprintf(szMuc, "Map_%d", o.nSceneId);
+	// [MacDinh] ghi de config.ini; [Map_<id>] ghi de [MacDinh]
+	nZoomMD      = GetPrivateProfileInt(szMuc, "ZoomMacDinh", GetPrivateProfileInt("MacDinh", "ZoomMacDinh", s_nZoomMacDinh, szTep), szTep);
+	s_nZoomToiDa = GetPrivateProfileInt(szMuc, "ZoomToiDa",   GetPrivateProfileInt("MacDinh", "ZoomToiDa",   s_nZoomToiDaCfg, szTep), szTep);
+	s_nXaNgang   = GetPrivateProfileInt(szMuc, "LiaXaNgang",  GetPrivateProfileInt("MacDinh", "LiaXaNgang",  s_nXaNgangCfg, szTep), szTep);
+	s_nXaDoc     = GetPrivateProfileInt(szMuc, "LiaXaDoc",    GetPrivateProfileInt("MacDinh", "LiaXaDoc",    s_nXaDocCfg, szTep), szTep);
+	s_nBat       = GetPrivateProfileInt(szMuc, "LiaCanh",     GetPrivateProfileInt("MacDinh", "LiaCanh",     s_nBatCfg, szTep), szTep);
+	s_nZoomBat   = GetPrivateProfileInt(szMuc, "ZoomCanh",    GetPrivateProfileInt("MacDinh", "ZoomCanh",    s_nZoomBatCfg, szTep), szTep);
+	if (s_nZoomToiDa < 100) s_nZoomToiDa = 100; if (s_nZoomToiDa > 300) s_nZoomToiDa = 300;
+	if (s_nXaNgang < 0) s_nXaNgang = 0; if (s_nXaNgang > 150) s_nXaNgang = 150;
+	if (s_nXaDoc < 0) s_nXaDoc = 0; if (s_nXaDoc > 150) s_nXaDoc = 150;
+	// zoom dich: ZoomThu (go loi) > zoom nguoi choi da nho > ZoomMacDinh cua map; kep theo ZoomToiDa cua map; map tat zoom -> 100
+	if (s_nZoomThu > 100 && !s_nZoomThuXong) { nDich = s_nZoomThu; s_nZoomThuXong = 1; }
+	else if (s_nZoomNho && s_nZoomNguoiChoi > 0) nDich = s_nZoomNguoiChoi;
+	else nDich = nZoomMD;
+	if (!s_nZoomBat) nDich = 100;
+	if (nDich < 100) nDich = 100;
+	if (nDich > s_nZoomToiDa) nDich = s_nZoomToiDa;
+	s_nZoomDich = nDich;
+	s_fZoomTroi = (float)s_nZoom;
+	if (s_nZoomDaAp < 0)
+		ZoomAp(s_nZoom);	// doi map: ap lai vung truy van (Represent3 van giu zoom) truoc khi troi
+	g_DebugLog("[CAMERA] map %d (%s): zoom mac dinh %d%%, toi da %d%%, lia %d%%x%d%%, lia=%d zoom=%d | dang %d%% -> troi toi %d%% (nguoi choi nho %d%%)",
+		o.nSceneId, o.szSceneName, nZoomMD, s_nZoomToiDa, s_nXaNgang, s_nXaDoc, s_nBat, s_nZoomBat, s_nZoom, nDich, s_nZoomNguoiChoi);
+}
+
+// [CAMERA 13/09] chu "Nhin rong NNN %" 1,5 s sau khi zoom doi - giua man, 1/3 tren (nhu KyNang_VeChu: OutputText toa do man hinh, co 16)
+void JxLia_Ve()
+{
+	unsigned int uNay = (unsigned int)GetTickCount();
+	int nDai;
+
+	if (!s_nZoomChu || !s_uZoomChuLuc || uNay - s_uZoomChuLuc > 1500 || g_pRepresentShell == NULL || !TrongGame())
+		return;
+	nDai = (int)strlen(s_szZoomChu);
+	if (nDai <= 0)
+		return;
+	g_pRepresentShell->OutputText(12, s_szZoomChu, nDai, SCREEN_WIDTH / 2 - nDai * 3, SCREEN_HEIGHT / 5, 0xFFFFD040, 0, TEXT_IN_SINGLE_PLANE_COORD, 0xFF000000);	// [CAMERA 13/09 b] nhu PerfHud_Chu: co 12, vang, vien den
+}
+
 bool JxLia_ChumDuoc(int x1, int y1, int x2, int y2)
 {
 	DocCaiDat();
 	if (!s_nZoomBat)
 		return false;
-	return JxLia_DuocBatDau(x1, y1) && JxLia_DuocBatDau(x2, y2);
+	return TrenBanDo(x1, y1) && TrenBanDo(x2, y2);	// [CAMERA 13/09] chum khong can LiaCanh (map tat lia van chum duoc)
 }
 
 void JxLia_ChumBatDau(int x1, int y1, int x2, int y2)
@@ -412,7 +547,8 @@ void JxLia_ChumBatDau(int x1, int y1, int x2, int y2)
 		s_fChumD0 = 10.f;
 	s_nChumZoom0 = s_nZoom;
 	s_nChum = 1;
-	JxLia_BatDau((x1 + x2) / 2, (y1 + y2) / 2);	// lia theo tam hai ngon (dang lech thi giu lech, neo lai tu tam)
+	if (s_nBat)	// [CAMERA 13/09] LiaCanh=0 thi chum chi zoom, khong lia
+		JxLia_BatDau((x1 + x2) / 2, (y1 + y2) / 2);	// lia theo tam hai ngon (dang lech thi giu lech, neo lai tu tam)
 	if (s_nNhatKy)
 		g_DebugLog("[ZOOM] chum bat dau: d0=%.0f zoom=%d%%", s_fChumD0, s_nZoom);
 }
@@ -427,7 +563,8 @@ void JxLia_ChumKeo(int x1, int y1, int x2, int y2)
 	if (d < 10.f)
 		d = 10.f;
 	JxLia_ZoomDat((int)((float)s_nChumZoom0 * s_fChumD0 / d + 0.5f));	// hai ngon gan nhau (d < d0) = zoom lon = thay rong hon
-	JxLia_Keo((x1 + x2) / 2, (y1 + y2) / 2);
+	if (s_nBat)
+		JxLia_Keo((x1 + x2) / 2, (y1 + y2) / 2);
 }
 
 void JxLia_ChumNha()
@@ -435,9 +572,11 @@ void JxLia_ChumNha()
 	if (!s_nChum)
 		return;
 	s_nChum = 0;
+	Camera_GhiNho();	// [CAMERA 13/09] nho zoom nguoi choi
 	if (s_nNhatKy)
 		g_DebugLog("[ZOOM] chum nha: zoom=%d%%", s_nZoom);
-	JxLia_Nha();
+	if (s_nBat)
+		JxLia_Nha();
 }
 
 #endif // JX_MOBILE

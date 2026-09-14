@@ -51,5 +51,11 @@ void JxLia_ChumNha();
 int  JxLia_ZoomLay();				// % (100 = 1:1)
 void JxLia_ZoomDat(int nPhanTram);	// dat zoom % (100..ZoomToiDa, lam tron ZoomBuoc): Represent3 + vung truy van vat the (SetRepresentAreaSize)
 
+// [CAMERA 13/09] Tham so theo MAP: settings\camera_mobile.ini muc [Map_<id>] (id = so thu tu maplist.ini) / [MacDinh]: ZoomMacDinh, ZoomToiDa,
+// LiaXaNgang, LiaXaDoc, LiaCanh, ZoomCanh. Vao map / doi map: 1 s sau doc muc, zoom TROI dan (ZoomTocDo %/s) toi zoom nguoi choi da nho
+// (UserData\CameraMobile.ini, [Cham] ZoomNho=1) kep theo ZoomToiDa cua map, chua nho thi ZoomMacDinh cua map.
+// Goi cuoi moi khung ve (UiShell::UiPaint): chu "Nhin rong NNN %" 1,5 s sau khi zoom doi ([Cham] ZoomChu=1).
+void JxLia_Ve();
+
 #endif // JX_MOBILE
 #endif
