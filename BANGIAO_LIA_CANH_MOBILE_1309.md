@@ -664,4 +664,14 @@ Chi phí thật (GPU %, W, khung dài) phải đo trên Fold 7 (log 8765): mong 
 
 Đường cũ vẽ sprite POINT 1:1 vào ảnh đệm to rồi thu nhỏ **cả ảnh** một lần lúc ghép = siêu lấy mẫu (giữ chi tiết). TGNAC vẽ thẳng ở cỡ nhỏ nên **mỗi sprite** bị thu nhỏ ngay lúc quét, lấy mẫu bảng màu tuyến tính 4 điểm, không mipmap → thân NPC và người chơi mất chi tiết; chữ vẫn nét vì CHUNET vẽ sau ghép, khớp đúng điều chủ kêu. Tỉ lệ tròn khít (1144 × 1000/1100 = 1040) nên **không** phải lỗi lệch nửa điểm ảnh — đây là bản chất cách vẽ: muốn thấy rộng hơn trên cùng số điểm ảnh thì hoặc vẽ thừa rồi lọc (nét, tốn GPU), hoặc vẽ thẳng (rẻ, mờ).
 
-Chốt theo luật chủ (không giảm trải nghiệm): `TheGioiRTNac` **mặc định 0 = tắt**, giữ khoá cho máy yếu; thêm `TheGioiRTNacLoc` (1 = lọc như cũ, 0 = không ép lọc: nét hơn, răng cưa) để so sau. A/B chỉ cần đổi config, không phải dựng lại. Phiên đo nhịp đo trên máy ảo (cùng cảnh, zoom 125 %): **độ nét 35,8 khi bật so với 52,9 đường cũ = mất 32 % chi tiết**, khớp lời chủ. Bản đưa lên: **109141607** (mã 868d88e4 + [KYNANG] của phiên ô kỹ năng). GPU khi đông sẽ tìm cách khác (giảm hiệu ứng / số người vẽ) thay vì đổi độ nét.
+Chốt theo luật chủ (không giảm trải nghiệm): `TheGioiRTNac` **mặc định 0 = tắt**, giữ khoá cho máy yếu; thêm `TheGioiRTNacLoc` (1 = lọc như cũ, 0 = không ép lọc: nét hơn, răng cưa) để so sau. A/B chỉ cần đổi config, không phải dựng lại. Phiên đo nhịp đo trên máy ảo (RMS Laplacian, hộp 0,250–700,560, cùng cảnh, `ZoomThu=125`; hai số đầu đo bằng **một** gói cài 109141557, chỉ đổi config):
+
+| Đường vẽ | Độ nét |
+|---|---|
+| TGNAC bật (`TheGioiRTNac=1100`) | 35,8 |
+| TGNAC tắt (`=0`) | 52,9 |
+| Bản sạch 109141607 (mặc định) | 53,2 |
+
+Mất 32 % chi tiết khi bật, khớp lời chủ. Phiên đo nhịp còn **xoá hẳn khoá khỏi config máy ảo** rồi chạy 109141607: log `[TGNAC] nhin rong tu 0 phan nghin`, tức mặc định 0 trong mã chạy đúng, không phụ thuộc config; vào thế giới + zoom 125 % không sập, 60 fps. Bản đưa lên: **109141607** (mã 868d88e4 + [KYNANG] của phiên ô kỹ năng). GPU khi đông sẽ tìm cách khác (giảm hiệu ứng / số người vẽ) thay vì đổi độ nét.
+
+**Bài học (chốt với phiên đo nhịp):** đừng lấy độ phân giải thế giới làm nút điều chỉnh hiệu năng — chủ nhận ra trong vài phút. Muốn lấy lại GPU khi nhìn rộng thì hoặc chỉ thu một phần (vẽ ở khung × 1,1 rồi ghép xuống, vẫn còn siêu lấy mẫu), hoặc giảm số đối tượng / hiệu ứng vẽ lúc đông. Mọi thay đổi ảnh hưởng hình ảnh nên có khoá kiểu `TheGioiRTNac` để A/B bằng một gói cài.
