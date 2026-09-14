@@ -395,3 +395,17 @@ Chủ (14/09 sáng): *"hãy làm và có nút tắt mở khi cần tắt hoặc 
 ## 7. Giao bản
 
 - dt_v4: `jx1mobile.apk` = bản cuối trong mục này, `config.ini` thêm `[HaoQuang]` + `CotSangTu=0`, `ui/ui3/uioptions2.ini` 10 công tắc, `spr/haoquang/vongquai.spr + vongboss.spr`, `spr/vatroi/cotsang.spr + loe.spr` sinh lại; sau đó `--chi-manifest`. Phiên đo nhịp đã xác nhận không giữ bản chưa đẩy.
+
+## 8. Sửa theo chủ 14/09 09:0x: vòng đồ mặc kiểu 3D + đồ rơi dựng thẳng lên (bản **109140856**)
+
+Chủ: *"Vòng hào quang đồ mặc phải làm giống như 3d, không dùng vòng sáng có sẵn"* và *"Đồ ném ra đã có màu theo loại đồ nhưng nó không giống như 3d: đồ rớt ra sẽ dựng thẳng lên theo cột sáng"*.
+
+| | |
+|---|---|
+| Vòng đồ mặc | bỏ `vongtronvang/tim/xanh.spr`; ảnh mới **`spr/haoquang/vongnguoi.spr`** (16 khung 144×72, neo (72,36), trắng, phẳng: hai vòng đồng tâm + 6 cánh hoa quay xuôi + 12 nút quay ngược + quầng giữa — kiểu khác vòng quái), nhuộm theo phẩm chất: hoàng kim `0xFFD94E`, đỏ tím `0xE65AFF`, bạch kim `0xC8F0FF`, xanh `0x5AE65A` (chỉ khi `[HaoQuang] TrangBiTu<=1`). Kịch bản `android/va_nguon_haoquang_1409_c.py` (chỉ số ảnh 6). |
+| Đồ rơi dựng lên | `Core/Src/KObj.cpp` `VatRoi_DoCao()`: icon vật phẩm (24×24, góc trái trên tại điểm đặt) được nhấc lên **12 px** (tâm icon = chân cột) **+ `NoiCao` (8) px dựng lên trong 350 ms sau khi chạm đất** (ease-out 2t−t²) **+ nhấp ±3 px** chu kỳ 1,4 s (sóng tam giác). Chân cột sáng và tâm vòng loé dời sang TÂM icon (ảnh sinh lại: `cotsang.spr` neo (12,100), `loe.spr` neo (20,20)). Bảng `s_uVrNoiLuc[MAX_OBJECT]` ghi lúc chạm đất. Kịch bản `android/va_nguon_vatroi_1409_c.py`. |
+| Config | `[VatRoi] Noi=1` (0 = nằm phẳng như cũ), `NoiCao=8` (0..40) — lớp ghi đè, máy ảo, dt_v4 |
+| Nhặt đồ | không đổi: `KObjSet::SearchObjAt` xét theo toạ độ bản đồ dọc một đoạn cao 120 px, không theo ô ảnh |
+
+- Máy ảo: vòng vàng kiểu 3D dưới chân nhân vật (`nguoi_zoom.png`), bám theo ngựa; ném "Thôn Nhật Trảm": log `[VATROI] ... noi=1 cao 8`, vật rơi dưới bụng ngựa nên máy ảo chưa chụp rõ icon dựng → chủ xem Fold 7. `kiem --pc` ĐẠT.
+- Ba ảnh vòng + hai ảnh cột/loé sinh lại; dt_v4 đã chép + `--chi-manifest`.

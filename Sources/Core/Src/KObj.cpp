@@ -549,6 +549,8 @@ void KObj::DrawInfo()
 //  Bang phu theo m_nIndex, khong doi lop KObj, khong doi giao thuc. config.ini [VatRoi]: CotSang=1 CotSangTu=1 CotSangAlpha=170 Loe=1.
 static int          s_nVrDoc = 0, s_nVrCotSang = 1, s_nVrCotSangTu = 1, s_nVrAlpha = 170, s_nVrLoe = 1, s_nVrThu = 0;
 static unsigned int s_uVrLoeLuc[MAX_OBJECT];
+static unsigned int s_uVrNoiLuc[MAX_OBJECT];	// [VATROI 14/09 c] luc cham dat, cho hoat anh dung thang len (giu sau khi loe xong)
+static int          s_nVrNoi = 1, s_nVrNoiCao = 8;	// [VatRoi] Noi=1: vat pham dung thang len trong cot sang (chu: "do rot ra se dung thang len theo cot sang"), NoiCao px
 static KRUImage     s_VrCot, s_VrLoe;
 static int          s_nVrBat = 1;	// [HAOQUANG 14/09] cong tac Cai dat > Toi uu "Sang vat roi" (UiOptions2 -> JxVatRoi_DatBat)
 extern "C" void JxVatRoi_DatBat(int nBat) { s_nVrBat = nBat ? 1 : 0; }
@@ -568,13 +570,39 @@ static void VatRoi_DocCfg()
 	if (s_nVrAlpha < 30) s_nVrAlpha = 30; if (s_nVrAlpha > 255) s_nVrAlpha = 255;
 	memset(&s_VrCot, 0, sizeof(s_VrCot)); memset(&s_VrLoe, 0, sizeof(s_VrLoe)); memset(s_uVrLoeLuc, 0, sizeof(s_uVrLoeLuc));
 	strcpy(s_VrCot.szImage, "\\spr\\vatroi\\cotsang.spr"); strcpy(s_VrLoe.szImage, "\\spr\\vatroi\\loe.spr");
-	g_DebugLog("[VATROI] cot sang=%d (tu mau %d, alpha %d) loe=%d thu=%d", s_nVrCotSang, s_nVrCotSangTu, s_nVrAlpha, s_nVrLoe, s_nVrThu);
+	s_nVrNoi       = GetPrivateProfileInt("VatRoi", "Noi", 1, szCfg);	// [VATROI 14/09 c] dung thang len
+	s_nVrNoiCao    = GetPrivateProfileInt("VatRoi", "NoiCao", 8, szCfg);
+	if (s_nVrNoiCao < 0) s_nVrNoiCao = 0;
+	if (s_nVrNoiCao > 40) s_nVrNoiCao = 40;
+	g_DebugLog("[VATROI] cot sang=%d (tu mau %d, alpha %d) loe=%d thu=%d noi=%d cao %d", s_nVrCotSang, s_nVrCotSangTu, s_nVrAlpha, s_nVrLoe, s_nVrThu, s_nVrNoi, s_nVrNoiCao);
 }
 
 static void VatRoi_ChamDat(int nIndex)
 {
 	if (nIndex > 0 && nIndex < MAX_OBJECT)
-		s_uVrLoeLuc[nIndex] = (unsigned int)GetTickCount();
+		s_uVrLoeLuc[nIndex] = s_uVrNoiLuc[nIndex] = (unsigned int)GetTickCount();	// [VATROI 14/09 c]
+}
+
+// [VATROI 14/09 c] do cao icon vat pham so voi diem dat (chu: "do rot ra se dung thang len theo cot sang" nhu game 3D): 12 px (tam icon
+// 24x24 = diem chan cot) + NoiCao px dung len trong 350 ms sau khi cham dat (ease-out 2t - t^2) + nhap nhe +-3 px chu ky 1,4 s (song tam giac,
+// khong can sin). 0 khi tat cong tac hoac tat Noi, hoac vat dang roi (m_nDropState 1: hoat anh roi tu quan).
+static int VatRoi_DoCao(int nIndex, int nDropState)
+{
+	unsigned int uNay, uDa;
+	int nLen, nNhap;
+	VatRoi_DocCfg();
+	if (!s_nVrBat || !s_nVrNoi || nDropState == 1)
+		return 0;
+	uNay = (unsigned int)GetTickCount();
+	nLen = s_nVrNoiCao;
+	if (nIndex > 0 && nIndex < MAX_OBJECT && s_uVrNoiLuc[nIndex])
+	{
+		uDa = uNay - s_uVrNoiLuc[nIndex];
+		if (uDa < 350)
+			nLen = (int)((unsigned int)s_nVrNoiCao * (700 * uDa - uDa * uDa) / (350 * 350));
+	}
+	nNhap = (int)(uNay % 1400); if (nNhap >= 700) nNhap = 1400 - nNhap;	// 0..700..0
+	return 12 + nLen + nNhap * 6 / 700 - 3;
 }
 
 static void VatRoi_DatAnh(KRUImage& a, int nFrame, int x, int y, unsigned int uAlpha, DWORD dwMau)
@@ -649,6 +677,10 @@ void KObj::Draw()
 		m_Image.oPosition.nY = y;// - m_cImage.m_nCgYpos * 2;
 		strcpy(m_Image.szImage, m_cImage.m_szName);
 	}
+#ifdef JX_MOBILE
+	if (m_nKind == Obj_Kind_Item)
+		m_Image.oPosition.nY -= VatRoi_DoCao(m_nIndex, m_nDropState);	// [VATROI 14/09 c] dung thang len trong cot sang (nhat do theo toa do ban do, khong anh huong)
+#endif
 
 #ifdef JX_MOBILE
 	VatRoi_DocCfg();	// [HAOQUANG 14/09 b] doc [VatRoi] truoc khi xet Thu (truoc day chi doc luc ve vat pham dau tien -> Thu=2 khong bat duoc)

@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
-r"""[HAOQUANG 14/09] Sinh anh VONG HAO QUANG duoi chan quai tinh anh / boss (chu 14/09: "hay lam va co nut tat mo" sau §10.2 mo game 3D
-Kiem Vong Giang Ho: halo_npc_purple/gold/pink, halo_boss_red = vong phap tran phang tren dat gan sys_foot, song thuong truc):
-  * spr\haoquang\vongquai.spr : 12 khung 128x64  (elip 2:1), neo (64, 32) = tam vong tai diem dat chan NPC. Quai tinh anh (boss_blue...).
-  * spr\haoquang\vongboss.spr : 16 khung 176x88, neo (88, 44). Boss (boss_gold / boss_event / boss_war).
-Anh TRANG: KNpc::Paint ve bang IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST nhan mau theo loai boss (m_Type = BOSS_STATE, cung mau ten quai
-KNpc.cpp:8527) -> mot anh dung cho moi mau. Ve o do phan giai gap doi tren khung TRON roi ep 2:1 (LANCZOS) nen vach quay dung phoi canh.
-Dinh dang SPR nhu android/anh_vatroi_cotsang.py. Ghi vao lop ghi de android\du_lieu_ghi_de\spr\haoquang\, D:\jx1_android_data\spr\haoquang\
-(may ao) va tuy chon goi may chu tai (tham so 1, nho --chi-manifest). Xem truoc: --xem <png>.
+r"""[HAOQUANG 14/09] Sinh anh VONG HAO QUANG duoi chan (chu 14/09: "hay lam va co nut tat mo" sau muc 10.2 mo game 3D Kiem Vong Giang Ho:
+halo_npc_purple/gold/pink, halo_boss_red = vong phap tran phang tren dat gan sys_foot, song thuong truc; 09:0x: "vong hao quang do mac
+phai lam giong nhu 3d, khong dung vong sang co san"):
+  * spr\haoquang\vongquai.spr  : 12 khung 128x64 (elip 2:1), neo (64, 32) = tam vong tai diem dat chan NPC. Quai tinh anh (boss_blue...).
+  * spr\haoquang\vongboss.spr  : 16 khung 176x88, neo (88, 44). Boss (boss_gold / boss_event / boss_war).
+  * spr\haoquang\vongnguoi.spr : 16 khung 144x72, neo (72, 36). Vong DO MAC cua nhan vat minh (kieu khac quai: hai vong dong tam + 6 canh
+                                 hoa quay + 12 nut nguoc chieu + quang giua), nhuom theo pham chat trang bi.
+Anh TRANG: KNpc::Paint ve bang IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST nhan mau (quai theo m_Type = BOSS_STATE cung mau ten quai KNpc.cpp:8527,
+nguoi theo pham chat) -> mot anh dung cho moi mau. Ve o do phan giai gap doi tren khung TRON roi ep 2:1 (LANCZOS) nen vach quay dung phoi canh.
+Dinh dang SPR nhu android/anh_vatroi_cotsang.py; ALPHA 8 BIT 0..255 (TextureRes.cpp RenderToA8R8G8B8: a << 24 - KHONG phai 0..31).
+Ghi vao lop ghi de android\du_lieu_ghi_de\spr\haoquang\, D:\jx1_android_data\spr\haoquang\ (may ao) va tuy chon goi may chu tai (tham so 1,
+nho --chi-manifest). Xem truoc: --xem <png>.
 Dung: python android\anh_haoquang_vong.py [D:\jx1_android_data_dt_v4] [--xem out.png]
 """
 import math
@@ -29,7 +33,7 @@ SS = 2      # sieu lay mau
 
 
 def vong_khung(i, n, r, boss):
-    """Khung i/n cua vong ban kinh r (px tren man hinh, chieu ngang). Ve tren khung tron 2r x 2r o do phan giai SS, ep ve 2r x r."""
+    """Khung i/n cua vong QUAI/BOSS ban kinh r (px man hinh, chieu ngang). Ve tren khung tron 2r x 2r o do phan giai SS, ep ve 2r x r."""
     D = 2 * r * SS
     c = D / 2.0
     R = r * SS
@@ -84,6 +88,45 @@ def vong_khung(i, n, r, boss):
     return im.resize((2 * r, r), Image.LANCZOS)
 
 
+def vong_nguoi(i, n, r):
+    """Khung i/n cua vong DO MAC (nguoi choi): hai vong dong tam, 6 canh hoa quay xuoi, 12 nut quay nguoc, quang mo giua. Khac vong quai."""
+    D = 2 * r * SS
+    c = D / 2.0
+    R = r * SS
+    im = Image.new("RGBA", (D, D), (255, 255, 255, 0))
+    # quang mo ngoai + quang giua
+    glow = Image.new("RGBA", (D, D), (255, 255, 255, 0))
+    dg = ImageDraw.Draw(glow)
+    dg.ellipse((c - R * 0.96, c - R * 0.96, c + R * 0.96, c + R * 0.96), outline=(255, 255, 255, 130), width=int(5 * SS))
+    dg.ellipse((c - R * 0.42, c - R * 0.42, c + R * 0.42, c + R * 0.42), fill=(255, 255, 255, 48))
+    glow = glow.filter(ImageFilter.GaussianBlur(4 * SS))
+    im.alpha_composite(glow)
+    d = ImageDraw.Draw(im)
+    # hai vong dong tam
+    d.ellipse((c - R * 0.95, c - R * 0.95, c + R * 0.95, c + R * 0.95), outline=(255, 255, 255, 225), width=int(1.4 * SS))
+    d.ellipse((c - R * 0.62, c - R * 0.62, c + R * 0.62, c + R * 0.62), outline=(255, 255, 255, 150), width=int(1.2 * SS))
+    # 6 canh hoa (cung day) giua hai vong, quay xuoi: goc moi khung = 60/n
+    a0 = 60.0 / n * i
+    r2 = R * 0.80
+    for k in range(6):
+        s = a0 + k * 60.0
+        d.arc((c - r2, c - r2, c + r2, c + r2), start=s + 8, end=s + 44, fill=(255, 255, 255, 205), width=int(5.5 * SS))
+        # dau canh nhon: cham nho o hai dau
+        for e in (s + 6, s + 46):
+            t = math.radians(e)
+            x = c + r2 * math.cos(t); y = c + r2 * math.sin(t)
+            rr = 1.6 * SS
+            d.ellipse((x - rr, y - rr, x + rr, y + rr), fill=(255, 255, 255, 120))
+    # 12 nut tren vong ngoai, quay nguoc: goc moi khung = 30/n
+    b0 = -30.0 / n * i
+    for k in range(12):
+        t = math.radians(b0 + k * 30.0)
+        x = c + R * 0.95 * math.cos(t); y = c + R * 0.95 * math.sin(t)
+        rr = (2.6 if k % 3 == 0 else 1.7) * SS
+        d.ellipse((x - rr, y - rr, x + rr, y + rr), fill=(255, 255, 255, 255 if k % 3 == 0 else 200))
+    return im.resize((2 * r, r), Image.LANCZOS)
+
+
 def rle_khung(im):
     w, h = im.size
     px = im.load()
@@ -92,7 +135,7 @@ def rle_khung(im):
         x = 0
         while x < w:
             a = px[x, y][3]
-            q = 0 if a < 8 else a          # [SUA 14/09] alpha SPR la 8 bit 0..255 (TextureRes.cpp RenderToA8R8G8B8: a << 24), khong phai 0..31
+            q = 0 if a < 8 else a          # alpha 8 bit 0..255 (khong phai 0..31)
             n = 1
             while x + n < w and n < 255:
                 a2 = px[x + n, y][3]
@@ -123,30 +166,40 @@ def ghi_spr(cac_khung, path, cx, cy, itv):
     return len(out)
 
 
+def nhuom(k, m):
+    r, g, b, a = k.split()
+    return Image.merge("RGBA", (r.point(lambda v, m=m: m[0]), g.point(lambda v, m=m: m[1]), b.point(lambda v, m=m: m[2]), a))
+
+
 def main():
     quai = [vong_khung(i, 12, 64, False) for i in range(12)]      # 128x64
     boss = [vong_khung(i, 16, 88, True) for i in range(16)]       # 176x88
+    nguoi = [vong_nguoi(i, 16, 72) for i in range(16)]            # 144x72
     for dich in DICH:
         n1 = ghi_spr(quai, os.path.join(dich, "vongquai.spr"), 64, 32, 70)
         n2 = ghi_spr(boss, os.path.join(dich, "vongboss.spr"), 88, 44, 70)
-        print("da ghi:", dich, "vongquai.spr %d B, vongboss.spr %d B" % (n1, n2))
+        n3 = ghi_spr(nguoi, os.path.join(dich, "vongnguoi.spr"), 72, 36, 70)
+        print("da ghi:", dich, "vongquai.spr %d B, vongboss.spr %d B, vongnguoi.spr %d B" % (n1, n2, n3))
     if XEM:
-        # xem truoc: nen dat + 4 mau (xanh duong tinh anh, hoang kim, tim su kien, do chien truong) + vai khung
+        # xem truoc: hang 1 quai/boss 5 mau; hang 2 vong nguoi 4 pham chat (hoang kim, do tim, bach kim, xanh) + 4 khung
         mau = [(110, 120, 255), (255, 217, 78), (230, 90, 255), (255, 60, 40), (60, 220, 60)]
-        W, H = 5 * 190 + 20, 70 + 100 + 20
+        W, H = 5 * 190 + 20, 20 + 88 + 20 + 72 + 20 + 72 + 20
         nen = Image.new("RGBA", (W, H), (58, 66, 40, 255))
+        dd = ImageDraw.Draw(nen)
         for i, m in enumerate(mau):
-            k = quai[(i * 3) % 12].copy() if i != 1 and i != 3 else boss[(i * 3) % 16].copy()
-            r, g, b, a = k.split()
-            k = Image.merge("RGBA", (r.point(lambda v, m=m: m[0]), g.point(lambda v, m=m: m[1]), b.point(lambda v, m=m: m[2]), a))
+            k = quai[(i * 3) % 12] if i != 1 and i != 3 else boss[(i * 3) % 16]
+            k = nhuom(k, m)
             x = 10 + i * 190 + (176 - k.size[0]) // 2
             nen.alpha_composite(k, (x, 20 + (88 - k.size[1]) // 2))
-            # nguoi dung tai tam (cot tuong trung)
-            dd = ImageDraw.Draw(nen)
             cx, cy = 10 + i * 190 + 88, 20 + 44
             dd.rectangle((cx - 8, cy - 46, cx + 8, cy), fill=(120, 90, 60, 255))
-        for i in range(6):
-            nen.alpha_composite(quai[i * 2], (10 + i * 150, 120))
+        for i, m in enumerate([(255, 217, 78), (230, 90, 255), (200, 240, 255), (90, 230, 90)]):
+            k = nhuom(nguoi[(i * 4) % 16], m)
+            nen.alpha_composite(k, (10 + i * 190 + 16, 128))
+            cx, cy = 10 + i * 190 + 88, 128 + 36
+            dd.rectangle((cx - 8, cy - 46, cx + 8, cy), fill=(120, 90, 60, 255))
+        for i in range(5):
+            nen.alpha_composite(nguoi[i * 3], (10 + i * 190 + 16, 220))
         nen.convert("RGB").save(XEM)
         print("xem truoc:", XEM)
 
