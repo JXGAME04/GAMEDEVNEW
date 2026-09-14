@@ -272,7 +272,7 @@ def v_wndwindow(s):
            + "\t\t{" + NL
            + "\t\t\tLARGE_INTEGER jxU1, jxUF; QueryPerformanceCounter(&jxU1); QueryPerformanceFrequency(&jxUF);" + NL
            + "\t\t\tconst double dJx = jxUF.QuadPart ? (double)(jxU1.QuadPart - jxU0.QuadPart) * 1000.0 / (double)jxUF.QuadPart : 0.0;" + NL
-           + "\t\t\tif (dJx > g_dJxUiMaxMs && (m_Width > 0 || m_Height > 0)) {	// [PDET-UI 14/09 c] bo goc lop (0x0, gom ca con) de thay cua so that g_dJxUiMaxMs = dJx; g_pJxUiMax = this; g_nJxUiMaxX = m_nAbsoluteLeft; g_nJxUiMaxY = m_nAbsoluteTop; g_nJxUiMaxW = m_Width; g_nJxUiMaxH = m_Height; g_pszJxUiMaxLop = UiTenLopPhu(); }" + NL
+           + "\t\t\tif (dJx > g_dJxUiMaxMs && (m_Width > 0 || m_Height > 0)) { g_dJxUiMaxMs = dJx; g_pJxUiMax = this; g_nJxUiMaxX = m_nAbsoluteLeft; g_nJxUiMaxY = m_nAbsoluteTop; g_nJxUiMaxW = m_Width; g_nJxUiMaxH = m_Height; g_pszJxUiMaxLop = UiTenLopPhu(); }" + NL
            + "\t\t}" + NL
            + "#endif" + NL
            + "\t}" + NL
