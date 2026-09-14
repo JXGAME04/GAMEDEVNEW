@@ -435,3 +435,53 @@ Chủ: *"tên trang bị bị lệch và hình ảnh quá to, làm nhỏ lại c
 - Cài đặt > Tối ưu còn **9 công tắc**: bỏ "Vòng đồ mặc" (`OPTION_I_HQTRANGBI`, `MAX_TOGGLE_BTN_COUNT` 10 → 9, `uioptions2.ini` "8=Sáng vật rơi"; `sinh_uioptions2_haoquang.py` 2 tên). Khoá đã lưu `HaoQuangTrangBi` trong `uiautoconfig.ini [Options2]` của tài khoản cũ bị bỏ qua, không lỗi.
 - `config.ini [HaoQuang]` viết lại: chỉ còn `Alpha`, `Thu` (1 mọi quái thường, 3 cả NPC thoại), `ThuAnh`; bỏ `TrangBiTu`.
 - Vòng quái/boss và cột sáng + icon đứng của vật rơi giữ nguyên. Kịch bản `android/va_nguon_haoquang_1409_d.py` (chạy sau a/b/c; nhận thêm tham số thư mục dt_v4 để sửa dữ liệu). `kiem --pc` ĐẠT; máy ảo: vào thế giới không sập, cửa sổ Tối ưu 9 nút.
+
+
+---
+
+# ZOOM KIỂU 3D: CHỤM NGÓN + ĐỘ NHẠY + PHÓNG TO CÓ LỌC NÉT — 14/09 11:4x (bản **109141129**)
+
+Chủ: *"làm 1-3"* sau mục 11 `PHANTICH_KIEMVONG_GIANGHO_3D_1309.md` (mổ zoom bản 3D).
+
+## 1. Bản
+
+| | |
+|---|---|
+| Mã | `S3Client/Platform/JxLiaCanh.cpp/.h` (chụm kiểu 3D, phóng to, công tắc), `S3Client/Ui/UiCase/UiOptions2.h/.cpp` (12 công tắc), `Represent/Represent3/KRepresentShell3.cpp/.h` (phóng to + lọc nét, khối [TG]) — tất cả chỉ `JX_MOBILE`; `kiem --pc` ĐẠT. Kịch bản `android/va_nguon_zoom3d_1409.py` (S3Client) + `android/va_nguon_zoom3d_1409_rep3.py` (Represent3, phiên đo nhịp soi chéo), `android/sinh_uioptions2_zoom.py` (ini) |
+| Config | `config.ini [Cham]`: `ZoomKieu=1`, `ZoomNhay=10`, `ZoomChongRung=5`, `ZoomMuot=16`, `ZoomToiThieu=80`; `[Client] Rep3ZoomNet=1` |
+
+## 2. Mục 1 — chụm hai ngón như GameCamera 3D (`ZoomKieu=1`)
+
+- Mỗi lần hai ngón dời: `Δpx = khoảng cách hai ngón − lần chấp nhận trước`; `|Δpx| < ZoomChongRung` (5 px) bỏ qua; `zoom_đích −= Δpx × ZoomNhay/100` (hai ngón dang ra = phóng to, chụm lại = nhìn rộng), kẹp `[ZoomToiThieu, ZoomToiDa]`. 3D: `mWheelDistance += −0,01·Δpx × fWheelSpeed`.
+- Mỗi khung (`JxLia_Nhip`, cả trong lúc chụm và lúc trôi theo map): `zoom += (đích − zoom) × clamp01(Δt × ZoomMuot)`; 16 = `fDistanceSpeed` của 3D (95 % sau ~0,18 s). Áp thật theo nấc `ZoomBuoc` (5 %) như cũ. `ZoomKieu=0` trả về cách cũ (tỉ lệ khoảng cách + trôi `ZoomTocDo` %/s).
+- Nhả hai ngón: nhớ `zoom_đích` vào `UserData\CameraMobile.ini` như trước.
+
+## 3. Mục 2 — công tắc độ nhạy (Cài đặt > TÙY CHỌN > Tối ưu, 12 nút, 6 hàng từ Top=60 cách 27)
+
+| Công tắc | Tác dụng | Mặc định |
+|---|---|---|
+| Zoom nhanh | `ZoomNhay` × 2 | tắt |
+| Zoom chậm | `ZoomNhay` × 0,5 (bật cái này tự tắt cái kia; cả hai tắt = vừa) | tắt |
+| Lắc camera | bật/tắt camera lắc nhẹ khi lia (`[LAC 14/09]`) | bật |
+
+Lưu `uiautoconfig.ini [Options2] ZoomNhanh / ZoomCham / LacCamera`; áp ngay và lúc vào thế giới (`JxLia_DatNhay`). JX1 không có xoay camera nên không có "Xoay nhanh/chậm" như thanh của bản 3D.
+
+## 4. Mục 3 — phóng to (zoom < 100 %) có lọc nét
+
+- `ZoomToiThieu=80` (phóng to tối đa 1,25×; đặt 100 = tắt phóng to, 50 = 2× như biên cứng của Represent3). Chữ giữa màn: "Phóng to 125%" khi < 100, "Nhìn rộng NNN%" khi > 100.
+- Represent3 (`JxTheGioi`): lệnh 4 kẹp dưới 1000 → 500; lệnh 0: zoom < 1000 vẫn đi đường RT (RT = cỡ khung, K=1); ba cửa toạ độ (`CoordinateTransform`, `ViewPortCoordToSpaceCoord`, sampler blit) điều kiện `> 1000` → `!= 1000` (công thức `1000/m_nTgZoom` đã tổng quát). Chạm chọn NPC ở 80 % đúng (máy ảo bấm NPC "Kim Quốc Quân" mở đúng thoại).
+- **Lọc nét** (`Rep3ZoomNet=1`): lệnh 2 blit hai bước: RT → RT2 (cỡ 2×, sampler POINT = nhân đôi điểm sắc) → khung (LINEAR). Kết quả kiểu "sharp bilinear": viền điểm giữ nét, chỉ mép điểm hoà; so với blit thẳng LINEAR (`Rep3ZoomNet=0`, ảnh `pt_sosanh.png` trái/phải) rõ hơn thấy được ở 1,25×. RT2 2080×1208 BGRA8 (~10 MB) tạo lần đầu khi phóng to, huỷ cùng `JxTheGioiHuy`; toạ độ quad theo viewport của render target (không đụng `g_nScreenWidth`). Chi phí: thêm một quad toàn khung/khung khi phóng to.
+- Vùng truy vấn vật thể (`SetRepresentAreaSize`) = khung × zoom (80 % → 832×483) khớp phần nhìn thấy.
+
+## 5. Thử máy ảo
+
+- `[Cham] ZoomThu=80`: vào map trôi 100 → 95 → 90 → 85 → 80 trong ~0,12 s (đuổi hàm mũ, nấc 5 %), log `[ZOOM3D] RT2 2080x1208 cho phong to co loc net`; hình đúng tâm, UI không đổi (`pt_c.png`, phóng `pt_c_zoom.png`); chạm NPC đúng (`pt_npc.png`); cửa sổ Tối ưu 12 nút (`pt_tuychon.png`), bật/tắt lưu đúng.
+- Chụm hai ngón thật chưa thử được trên máy ảo (adb không giả lập hai ngón) → chủ thử Fold 7: dang/chụm ngón, cảm giác mượt, độ nhạy ba mức.
+- Lưu ý: tài khoản đang tắt "Lia cảnh"/"Nhìn rộng" thì zoom không chạy (đúng thiết kế) — máy ảo hôm nay hai công tắc này đang tắt, tôi đã bật lại.
+
+## 6. Chủ thử trên Fold 7
+
+1. Dang hai ngón = phóng to (tới 125 %), chụm = nhìn rộng (tới ZoomToiDa của map); nhả ngón zoom dừng êm. Muốn phóng to hơn: `ZoomToiThieu=70` (1,43×) hoặc 50 (2×) — càng to càng thấy hạt.
+2. Cài đặt > Tối ưu: Zoom nhanh / Zoom chậm / Lắc camera.
+3. Thấy ảnh phóng to bị nhoè thì so `Rep3ZoomNet=0`; thấy hạt thô thì đặt 0 để mềm hơn.
+4. Fold 7 nóng khi phóng to: chi phí = 1 khung RT + 1 RT2 (4× điểm ảnh của RT2 chỉ là blit) — báo tôi nếu fps tụt để đo.

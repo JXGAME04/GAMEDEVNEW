@@ -61,6 +61,7 @@ void JxLia_Ve();
 // nLia = 0 tat lia mot ngon (chum chi zoom), nZoom = 0 tat chum + ve 100 %, nVeNhanh = 1 lia ve nhanh (cho 1/3, toc do x2). -1 = giu nguyen.
 // Hieu luc = config.ini / map (camera_mobile.ini) VA cong tac nay.
 void JxLia_DatTuyChon(int nLia, int nZoom, int nVeNhanh);
+void JxLia_DatNhay(int nZoomNhanh, int nZoomCham, int nLac);	// [ZOOM3D 14/09] cong tac Zoom nhanh / Zoom cham / Lac camera
 
 #endif // JX_MOBILE
 #endif

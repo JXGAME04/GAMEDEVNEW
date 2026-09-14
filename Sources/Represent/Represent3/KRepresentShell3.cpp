@@ -274,7 +274,32 @@ void KRepresentShell3::JxTheGioiHuy()
 	if (m_nTgTrangThai == 1 && PD3DDEVICE && m_pTgSurfCu) PD3DDEVICE->SetRenderTarget(0, m_pTgSurfCu);
 	m_nTgTrangThai = 0;
 	SAFE_RELEASE(m_pTgSurfCu); SAFE_RELEASE(m_pTgSB); SAFE_RELEASE(m_pTgSurf); SAFE_RELEASE(m_pTgTex);
+	SAFE_RELEASE(m_pTgSurf2); SAFE_RELEASE(m_pTgTex2); m_nTg2W = m_nTg2H = 0;	// [ZOOM3D 14/09]
 	m_nTgW = m_nTgH = 0; s_uTgRTVe = 0xFFFFFFFFu;
+}
+
+// [ZOOM3D 14/09] RT2 = 2 x RT (BGRA8, render target) cho PHONG TO co loc net; [Client] Rep3ZoomNet=0 tat (blit thang LINEAR). Tao lan dau /
+// khi RT doi co; huy cung JxTheGioiHuy. Khong tao duoc thi tat luon (khong thu lai moi khung).
+bool KRepresentShell3::JxTheGioiNet2()
+{
+	static int s_nNet = -1;
+	if (s_nNet < 0) s_nNet = Rep3Ini("Rep3ZoomNet", 1) ? 1 : 0;
+	if (!s_nNet || !m_pTgTex || m_nTgW <= 0 || m_nTgH <= 0) return false;
+	const int nW = m_nTgW * 2, nH = m_nTgH * 2;
+	if (m_pTgTex2 && (m_nTg2W != nW || m_nTg2H != nH)) { SAFE_RELEASE(m_pTgSurf2); SAFE_RELEASE(m_pTgTex2); }
+	if (!m_pTgTex2)
+	{
+		m_nTg2W = nW; m_nTg2H = nH;
+		if (FAILED(PD3DDEVICE->CreateTexture(nW, nH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pTgTex2, NULL)) || !m_pTgTex2
+			|| FAILED(m_pTgTex2->GetSurfaceLevel(0, &m_pTgSurf2)) || !m_pTgSurf2)
+		{
+			Rep3Log("[ZOOM3D] khong tao duoc RT2 %dx%d -> phong to blit thang LINEAR", nW, nH);
+			SAFE_RELEASE(m_pTgSurf2); SAFE_RELEASE(m_pTgTex2); m_nTg2W = m_nTg2H = 0; s_nNet = 0;
+			return false;
+		}
+		Rep3Log("[ZOOM3D] RT2 %dx%d cho phong to co loc net (zoom %d)", nW, nH, m_nTgZoom);
+	}
+	return true;
 }
 
 int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
@@ -282,7 +307,7 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 	if (nLenh == 3) { g_nJxTheGioiEp = 1; return 0; }
 	if (nLenh == 4)
 	{	// [ZOOM 13/09] dat zoom phan nghin (1000 = tat, toi da 3000) - S3Client (JxLiaCanh) goi khi chum hai ngon; doi thi khung sau ve that
-		int nZ = nThamSo; if (nZ < 1000) nZ = 1000; if (nZ > 3000) nZ = 3000;
+		int nZ = nThamSo; if (nZ < 500) nZ = 500; if (nZ > 3000) nZ = 3000;	// [ZOOM3D 14/09] < 1000 = phong to (toi da 2x)
 		if (nZ != m_nTgZoom) { Rep3Log("[ZOOM] zoom %d -> %d (phan nghin)", m_nTgZoom, nZ); m_nTgZoom = nZ; if (nZ == 1000) { m_nZoomDx = m_nZoomDy = 0; } g_nJxTheGioiEp = 1; }
 		return m_nTgZoom;
 	}
@@ -315,8 +340,9 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 		if (s_nTgEp == 1) nK = 1; else if (s_nTgEp == 2) nK = 2;
 		m_nTgZoomRt = (m_nTgLe > 1000) ? m_nTgZoom * m_nTgLe / 1000 : m_nTgZoom;	// [LAC 14/09] RT them le khi dang lia (goc khung khong ho luc xoay)
 		const bool bZoom = (m_nTgZoomRt > 1000);	// [ZOOM 13/09] dang nhin rong (hoac RT co le): luon ve the gioi vao RT to hon khung roi thu nho (K = 1)
-		if (bZoom) nK = 1;
-		if (!bZoom && (!s_nTgBat || (nK != 2 && s_nTgEp != 1))) { s_uTgVeThat = s_uTgKhung; s_uTgDemThuong++; return 0; }
+		const bool bPhongTo = (m_nTgZoomRt < 1000);	// [ZOOM3D 14/09] phong to: RT = co khung (K = 1), lenh 2 blit phong to (co loc net neu Rep3ZoomNet)
+		if (bZoom || bPhongTo) nK = 1;
+		if (!bZoom && !bPhongTo && (!s_nTgBat || (nK != 2 && s_nTgEp != 1))) { s_uTgVeThat = s_uTgKhung; s_uTgDemThuong++; return 0; }
 		const int nRtW = bZoom ? ((g_nScreenWidth * m_nTgZoomRt / 1000 + 1) & ~1) : g_nScreenWidth;	// [LAC 14/09] theo ti le RT that
 		const int nRtH = bZoom ? ((g_nScreenHeight * m_nTgZoomRt / 1000 + 1) & ~1) : g_nScreenHeight;
 		if (!m_pTgTex || m_nTgW != nRtW || m_nTgH != nRtH)
@@ -377,9 +403,31 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 		PD3DDEVICE->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1); PD3DDEVICE->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 		PD3DDEVICE->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1); PD3DDEVICE->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 		PD3DDEVICE->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE); PD3DDEVICE->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-		{ const DWORD dwLoc = (m_nTgZoomRt > 1000 || m_nTgXoay || m_nTgDoc != 1000) ? D3DTEXF_LINEAR : D3DTEXF_POINT; PD3DDEVICE->SetSamplerState(0, D3DSAMP_MINFILTER, dwLoc); PD3DDEVICE->SetSamplerState(0, D3DSAMP_MAGFILTER, dwLoc); }	// [ZOOM 13/09] thu nho thi loc tuyen tinh
+		{ const DWORD dwLoc = (m_nTgZoomRt != 1000 /*[ZOOM3D 14/09] ca phong to*/ || m_nTgXoay || m_nTgDoc != 1000) ? D3DTEXF_LINEAR : D3DTEXF_POINT; PD3DDEVICE->SetSamplerState(0, D3DSAMP_MINFILTER, dwLoc); PD3DDEVICE->SetSamplerState(0, D3DSAMP_MAGFILTER, dwLoc); }	// [ZOOM 13/09] thu nho thi loc tuyen tinh
 		PD3DDEVICE->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP); PD3DDEVICE->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
-		PD3DDEVICE->SetTexture(0, m_pTgTex); PD3DDEVICE->SetTexture(1, NULL);
+		LPDIRECT3DTEXTURE9 pTexBlit = m_pTgTex;
+		if (m_nTgZoom < 1000 && JxTheGioiNet2())
+		{	// [ZOOM3D 14/09] phong to co loc net: buoc 1 RT -> RT2 (co 2x, POINT = nhan doi diem sac), buoc 2 RT2 -> khung (LINEAR) = "sharp bilinear"
+			LPDIRECT3DSURFACE9 pDichCu = NULL;
+			if (SUCCEEDED(PD3DDEVICE->GetRenderTarget(0, &pDichCu)) && pDichCu && SUCCEEDED(PD3DDEVICE->SetRenderTarget(0, m_pTgSurf2)))
+			{
+				VERTEX2D q[4];
+				PD3DDEVICE->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT); PD3DDEVICE->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+				PD3DDEVICE->SetTexture(0, m_pTgTex); PD3DDEVICE->SetTexture(1, NULL);
+				PD3DDEVICE->SetFVF(D3DFVF_VERTEX2D);
+				for (int i = 0; i < 4; i++)
+				{	// quad phu kin RT2 (toa do pixel theo viewport cua target = RT2)
+					q[i].position = D3DXVECTOR4((i & 1) ? (float)m_nTg2W : 0.f, (i & 2) ? (float)m_nTg2H : 0.f, 100, 1);
+					q[i].color = 0xffffffff; q[i].tu = (i & 1) ? 1.0f : 0.0f; q[i].tv = (i & 2) ? 1.0f : 0.0f;
+				}
+				PD3DDEVICE->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, q, sizeof(VERTEX2D));
+				PD3DDEVICE->SetRenderTarget(0, pDichCu);
+				PD3DDEVICE->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR); PD3DDEVICE->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+				pTexBlit = m_pTgTex2;
+			}
+			SAFE_RELEASE(pDichCu);
+		}
+		PD3DDEVICE->SetTexture(0, pTexBlit); PD3DDEVICE->SetTexture(1, NULL);
 		PD3DDEVICE->SetFVF(D3DFVF_VERTEX2D);
 		VERTEX2D v[4];
 		{	// [ZOOM 13/09] dich blit = KHUNG (da tra lai o tren); [LAC 14/09] = RT thu theo zoom nguoi choi (khung x le khi dang lia) roi XOAY goc m_nTgXoay
@@ -877,6 +925,7 @@ KRepresentShell3::KRepresentShell3()
 #ifdef JX_MOBILE
 	m_pTgTex = NULL; m_pTgSurf = NULL; m_pTgSurfCu = NULL; m_pTgSB = NULL; m_nTgW = m_nTgH = 0; m_nTgTrangThai = 0; m_nTgLeft = m_nTgTop = 0; m_dwTgMauXoa = 0xff000000;	// [TG 13/09]
 	m_nTgZoom = 1000; m_nZoomDx = m_nZoomDy = 0; m_nTgKhungW = m_nTgKhungH = 0; m_nTgLeftKhung = m_nTgTopKhung = 0;	// [ZOOM 13/09]
+	m_pTgTex2 = NULL; m_pTgSurf2 = NULL; m_nTg2W = m_nTg2H = 0;	// [ZOOM3D 14/09] RT2 phong to
 	m_nTgXoay = 0; m_nTgLe = 1000; m_nTgZoomRt = 1000;	// [LAC 14/09]
 	m_nTgDoc = 1000;	// [LAC 14/09 b]
 #endif
@@ -3584,7 +3633,7 @@ void KRepresentShell3::ViewPortCoordToSpaceCoord(int& nX, int& nY, int nZ)
 	{
 		// Legacy 2D logic (if you're using map rendering or UI mode)
 #ifdef JX_MOBILE
-		if (m_nTgZoomRt > 1000 || m_nTgXoay || m_nTgDoc != 1000)
+		if (m_nTgZoomRt != 1000 || m_nTgXoay || m_nTgDoc != 1000)	// [ZOOM3D 14/09] != 1000 (ca phong to)
 		{	// [ZOOM 13/09] cham tren khung -> diem anh RT (nhan zoom, bo lui goc RT) -> the gioi theo goc KHUNG (m_nLeft dang lui neu dang ve RT)
 			// [LAC 14/09] them M^-1 (x = c.q.x + 2s.q.y, y = -s.q.x/2 + c.q.y) quanh tam khung; goc 0 va le 1000 = cong thuc cu
 			const int nGocX = (m_nTgTrangThai == 1) ? m_nTgLeftKhung : m_nLeft;
@@ -3624,7 +3673,7 @@ void KRepresentShell3::CoordinateTransform( int& nX, int& nY, int nZ)
 		nX = nX - m_nLeft;
 		nY = nY / 2 - m_nTop - ((nZ * 887) >> 10);
 #ifdef JX_MOBILE
-		if ((m_nTgZoomRt > 1000 || m_nTgXoay || m_nTgDoc != 1000) && m_nTgTrangThai == 0)
+		if ((m_nTgZoomRt != 1000 || m_nTgXoay || m_nTgDoc != 1000) && m_nTgTrangThai == 0)
 		{	// [ZOOM 13/09] ve len khung (sau blit): diem anh RT = (diem - goc khung) + lui goc RT, roi thu nho theo zoom; [LAC 14/09] + xoay M quanh tam khung
 			const float fGoc = (float)m_nTgXoay * 3.14159265f / 18000.0f, fC = cosf(fGoc), fS = sinf(fGoc), fK = (float)m_nTgDoc / 1000.0f;	// [LAC 14/09 b] fK = co dan doc
 			const float qx = ((float)(nX + m_nZoomDx) - (float)m_nTgW * 0.5f) * 1000.0f / (float)m_nTgZoom;
@@ -3669,7 +3718,7 @@ void KRepresentShell3::CoordinateTransformX(int& nX, int& nY, int nZ)
 		nX = nX - m_nLeft;
 		nY = nY / 2 - m_nTop - ((nZ * 887) >> 10);
 #ifdef JX_MOBILE
-		if ((m_nTgZoomRt > 1000 || m_nTgXoay || m_nTgDoc != 1000) && m_nTgTrangThai == 0)
+		if ((m_nTgZoomRt != 1000 || m_nTgXoay || m_nTgDoc != 1000) && m_nTgTrangThai == 0)
 		{	// [ZOOM 13/09] ve len khung (sau blit): diem anh RT = (diem - goc khung) + lui goc RT, roi thu nho theo zoom; [LAC 14/09] + xoay M quanh tam khung
 			const float fGoc = (float)m_nTgXoay * 3.14159265f / 18000.0f, fC = cosf(fGoc), fS = sinf(fGoc), fK = (float)m_nTgDoc / 1000.0f;	// [LAC 14/09 b] fK = co dan doc
 			const float qx = ((float)(nX + m_nZoomDx) - (float)m_nTgW * 0.5f) * 1000.0f / (float)m_nTgZoom;

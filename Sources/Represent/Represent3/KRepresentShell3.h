@@ -387,6 +387,7 @@ public:
     // [TG 13/09] the gioi ve vao render target khi qua tai (Wnds.cpp goi Rep3_JxTheGioi qua GetProcAddress): 0 hoi, 1 bat dau, 2 ket thuc + blit, 3 ep ve that
     int  JxTheGioi(int nLenh, int nThamSo);   // nThamSo: lenh 0 = PaintFps muc tieu cua S3Client
     void JxTheGioiHuy();
+    bool JxTheGioiNet2();	// [ZOOM3D 14/09] RT2 co 2x cho phong to co loc net (RT -> RT2 POINT -> khung LINEAR)
     void JxTheGioiCapNhat(double dTrinhChieuMs);
     void JxTheGioiKyIn();
     void JxTheGioiDocIni();
@@ -483,6 +484,9 @@ private:
     // [LAC 14/09] camera lac nhe khi lia: xoay mat dat goc m_nTgXoay (0,01 do; phep 2:1 x' = c.x - 2s.y, y' = s.x/2 + c.y quanh tam khung)
     // luc blit + hai cua toa do; RT them le m_nTgLe (phan nghin, lenh 8) de goc khung khong ho; m_nTgZoomRt = zoom x le = ti le RT that.
     int   m_nTgXoay, m_nTgLe, m_nTgZoomRt;
+    LPDIRECT3DTEXTURE9    m_pTgTex2;     // [ZOOM3D 14/09] RT trung gian co 2x RT khi PHONG TO (m_nTgZoom < 1000): RT -> RT2 (POINT) -> khung (LINEAR)
+    LPDIRECT3DSURFACE9    m_pTgSurf2;
+    int   m_nTg2W, m_nTg2H;
     int   m_nTgDoc;      // [LAC 14/09 b] co dan doc (phan nghin, 1000 = khong): lac len / xuong khi keo doc, M = R(goc) x diag(1, k)
 #endif
 

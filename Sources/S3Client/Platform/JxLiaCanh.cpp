@@ -45,6 +45,15 @@ static int	s_nZoomToiDa = 150;	// ZoomToiDa: % nhin rong toi da (150 = rong gap 
 static int	s_nZoomBuoc = 5;	// ZoomBuoc: nac zoom, %
 static int	s_nZoomMacDinh = 100;	// ZoomMacDinh: zoom luc vao game, %
 static int	s_nZoomThu = 0;		// ZoomThu: GO LOI - % zoom tu dat 3 s sau khi vao the gioi (may ao khong co hai ngon)
+// [ZOOM3D 14/09] chum hai ngon kieu game 3D (chu "lam 1-3" sau muc 11 mo zoom ban 3D): tuyen tinh theo px + chong rung + duoi ham mu
+static int	s_nZoomKieu = 1;		// ZoomKieu: 1 = kieu 3D (zoom dich -= dpx x ZoomNhay/100, muot ZoomMuot), 0 = ti le khoang cach hai ngon (cu)
+static int	s_nZoomNhay = 10;		// ZoomNhay: % zoom tren 100 px chum o muc "vua" (3D: 0,01 don vi/px tren dai 11 don vi ~ 9 %); Zoom nhanh x2, cham x0,5
+static int	s_nZoomChongRung = 5;	// ZoomChongRung: khoang cach hai ngon doi it hon (px) thi bo qua (3D: 5 px)
+static int	s_nZoomMuot = 16;		// ZoomMuot: zoom += (dich - zoom) x clamp01(dt x ZoomMuot) (3D: fDistanceSpeed = 16, 95 % sau ~0,18 s)
+static int	s_nZoomToiThieu = 80;	// ZoomToiThieu: % nho nhat = PHONG TO (80 = to 1,25 lan; 3D cho toi 1,9 lan); 100 = tat phong to
+static float	s_fChumDCu = 0.f;		// khoang cach hai ngon lan chap nhan gan nhat (kieu 3D)
+static float	s_fZoomDich3D = 0.f;	// zoom dich lien tuc trong luc chum (kieu 3D)
+static int	s_nNcZoomNhanh = 0, s_nNcZoomCham = 0, s_nNcLac = 1;	// cong tac Cai dat > Toi uu: Zoom nhanh / Zoom cham / Lac camera (JxLia_DatNhay)
 
 // --- trang thai --------------------------------------------------------------
 enum { LIA_KHONG = 0, LIA_KEO, LIA_CHO_VE, LIA_VE };
@@ -122,9 +131,18 @@ static void DocCaiDat()
 	s_nZoomBuoc    = GetPrivateProfileInt("Cham", "ZoomBuoc", 5, szCfg);
 	s_nZoomMacDinh = GetPrivateProfileInt("Cham", "ZoomMacDinh", 100, szCfg);
 	s_nZoomThu     = GetPrivateProfileInt("Cham", "ZoomThu", 0, szCfg);
+	s_nZoomKieu      = GetPrivateProfileInt("Cham", "ZoomKieu", 1, szCfg);	// [ZOOM3D 14/09]
+	s_nZoomNhay      = GetPrivateProfileInt("Cham", "ZoomNhay", 10, szCfg);
+	s_nZoomChongRung = GetPrivateProfileInt("Cham", "ZoomChongRung", 5, szCfg);
+	s_nZoomMuot      = GetPrivateProfileInt("Cham", "ZoomMuot", 16, szCfg);
+	s_nZoomToiThieu  = GetPrivateProfileInt("Cham", "ZoomToiThieu", 80, szCfg);
+	if (s_nZoomNhay < 1) s_nZoomNhay = 1; if (s_nZoomNhay > 100) s_nZoomNhay = 100;
+	if (s_nZoomChongRung < 0) s_nZoomChongRung = 0; if (s_nZoomChongRung > 50) s_nZoomChongRung = 50;
+	if (s_nZoomMuot < 1) s_nZoomMuot = 1; if (s_nZoomMuot > 100) s_nZoomMuot = 100;
+	if (s_nZoomToiThieu < 50) s_nZoomToiThieu = 50; if (s_nZoomToiThieu > 100) s_nZoomToiThieu = 100;
 	if (s_nZoomToiDa < 100) s_nZoomToiDa = 100;   if (s_nZoomToiDa > 300) s_nZoomToiDa = 300;
 	if (s_nZoomBuoc < 1)    s_nZoomBuoc = 1;      if (s_nZoomBuoc > 50)   s_nZoomBuoc = 50;
-	if (s_nZoomMacDinh < 100) s_nZoomMacDinh = 100; if (s_nZoomMacDinh > s_nZoomToiDa) s_nZoomMacDinh = s_nZoomToiDa;
+	if (s_nZoomMacDinh < s_nZoomToiThieu) s_nZoomMacDinh = s_nZoomToiThieu; if (s_nZoomMacDinh > s_nZoomToiDa) s_nZoomMacDinh = s_nZoomToiDa;	// [ZOOM3D 14/09] cho phep < 100
 	s_nZoom = s_nZoomMacDinh;
 	s_nZoomToiDaCfg = s_nZoomToiDa; s_nXaNgangCfg = s_nXaNgang; s_nXaDocCfg = s_nXaDoc; s_nBatCfg = s_nBat; s_nZoomBatCfg = s_nZoomBat;	// [CAMERA 13/09]
 	s_nZoomNho   = GetPrivateProfileInt("Cham", "ZoomNho", 1, szCfg);
@@ -149,7 +167,7 @@ static void DocCaiDat()
 			while (fgets(szDong, sizeof(szDong), pTep))
 				if (strncmp(szDong, "Zoom=", 5) == 0) s_nZoomNguoiChoi = atoi(szDong + 5);
 			fclose(pTep);
-			if (s_nZoomNguoiChoi < 100 || s_nZoomNguoiChoi > 300) s_nZoomNguoiChoi = 0;
+			if (s_nZoomNguoiChoi < 50 || s_nZoomNguoiChoi > 300) s_nZoomNguoiChoi = 0;	// [ZOOM3D 14/09] 50..300
 		}
 	}
 	s_fZoomTroi = (float)s_nZoom;
@@ -164,6 +182,7 @@ static void DocCaiDat()
 	g_DebugLog("[ZOOM] chum hai ngon: bat=%d toi da=%d%% buoc=%d%% mac dinh=%d%% thu=%d%%", s_nZoomBat, s_nZoomToiDa, s_nZoomBuoc, s_nZoomMacDinh, s_nZoomThu);
 	g_DebugLog("[CAMERA] theo map: nho=%d (zoom nguoi choi da nho %d%%) toc do troi=%d%%/s chu=%d", s_nZoomNho, s_nZoomNguoiChoi, s_nZoomTocDo, s_nZoomChu);
 	g_DebugLog("[LAC] camera lac nhe khi lia: ngang %d do, doc %d%%, le RT %d%%, thu %d do", s_nLacDo, s_nLacDoc, s_nLacLe, s_nLacThu);
+	g_DebugLog("[ZOOM3D] chum kieu=%d nhay=%d%%/100px chong rung=%d px muot=%d toi thieu=%d%%", s_nZoomKieu, s_nZoomNhay, s_nZoomChongRung, s_nZoomMuot, s_nZoomToiThieu);
 }
 
 // [CAMERA 13/09] ghi zoom nguoi choi: UserData\CameraMobile.ini (nhu KyNangMobile.ini: GetCurrentDirectory + duong tuong doi)
@@ -213,7 +232,7 @@ static void ApXoay()
 
 	if (s_nLacThu && s_nLacThuXong)
 		return;	// go loi: giu goc co dinh
-	if ((s_nLacDo != 0 || s_nLacDoc != 0) && s_nTrangThai != LIA_KHONG)
+	if (s_nNcLac && (s_nLacDo != 0 || s_nLacDoc != 0) && s_nTrangThai != LIA_KHONG)	// [ZOOM3D 14/09] cong tac Lac camera
 	{
 		const float fMaxX = (float)(SCREEN_WIDTH * s_nXaNgang / 100) * (float)s_nZoom / 100.f;
 		const float fMaxY = (float)(SCREEN_HEIGHT * s_nXaDoc / 100 * 2) * (float)s_nZoom / 100.f;	// [LAC 14/09 b] Y the gioi = 2 x px
@@ -427,11 +446,20 @@ void JxLia_Nhip()
 		if (g_pCoreShell) g_pCoreShell->SetRepresentAreaSize(SCREEN_WIDTH * s_nZoom / 100 * s_nLeDaGui / 1000, SCREEN_HEIGHT * s_nZoom / 100 * s_nLeDaGui / 1000);
 		g_DebugLog("[LAC] LiaLacThu: giu goc %d do, le RT %d%%", s_nLacThu, s_nLacLe);
 	}
-	if (s_nZoomDich > 0 && !s_nChum)
+	if (s_nZoomDich > 0 && (!s_nChum || s_nZoomKieu))	// [ZOOM3D 14/09] kieu 3D: troi ca trong luc chum (dich do ChumKeo dat)
 	{
+		if (s_nZoomKieu)
+		{	// [ZOOM3D 14/09] duoi ham mu nhu GameCamera 3D: t = clamp01(dt x ZoomMuot)
+			float t = dt * (float)s_nZoomMuot; if (t > 1.f) t = 1.f;
+			s_fZoomTroi += ((float)s_nZoomDich - s_fZoomTroi) * t;
+			if (s_fZoomTroi > (float)s_nZoomDich - 0.5f && s_fZoomTroi < (float)s_nZoomDich + 0.5f) s_fZoomTroi = (float)s_nZoomDich;
+		}
+		else
+		{
 		float fBuoc = (float)s_nZoomTocDo * dt;
 		if (s_fZoomTroi < (float)s_nZoomDich) { s_fZoomTroi += fBuoc; if (s_fZoomTroi > (float)s_nZoomDich) s_fZoomTroi = (float)s_nZoomDich; }
 		else { s_fZoomTroi -= fBuoc; if (s_fZoomTroi < (float)s_nZoomDich) s_fZoomTroi = (float)s_nZoomDich; }
+		}
 		ZoomAp((int)(s_fZoomTroi + 0.5f));
 		if ((int)(s_fZoomTroi + 0.5f) == s_nZoomDich)
 		{
@@ -519,10 +547,10 @@ int JxLia_ZoomLay()
 static void ZoomAp(int nPhanTram)
 {
 	DocCaiDat();
-	if (nPhanTram < 100) nPhanTram = 100;
+	if (nPhanTram < s_nZoomToiThieu) nPhanTram = s_nZoomToiThieu;	// [ZOOM3D 14/09] < 100 = phong to
 	if (nPhanTram > s_nZoomToiDa) nPhanTram = s_nZoomToiDa;
 	nPhanTram = (nPhanTram + s_nZoomBuoc / 2) / s_nZoomBuoc * s_nZoomBuoc;
-	if (nPhanTram < 100) nPhanTram = 100;
+	if (nPhanTram < s_nZoomToiThieu) nPhanTram = s_nZoomToiThieu;
 	s_nZoom = nPhanTram;
 	if (s_nZoomDaAp == s_nZoom || !g_pCoreShell)
 		return;
@@ -531,7 +559,8 @@ static void ZoomAp(int nPhanTram)
 	{	// chu bao "Nhin rong NNN %" (JxLia_Ve) 1,5 s
 		s_nZoomChuTruoc = s_nZoom;
 		s_uZoomChuLuc = (unsigned int)GetTickCount();
-		sprintf(s_szZoomChu, "Nh×n réng %d%%", s_nZoom);
+		if (s_nZoom < 100) sprintf(s_szZoomChu, "Phãng to %d%%", 10000 / s_nZoom);	// [ZOOM3D 14/09] 80 % = to 125 %
+		else sprintf(s_szZoomChu, "Nh×n réng %d%%", s_nZoom);
 	}
 	// Represent3: RT = khung x zoom, thu nho khi blit; Core: vung truy van vat the = khung x zoom (khong thi nguoi o ria khong duoc ve)
 	Rep3TheGioi(4, s_nZoom * 10);
@@ -574,11 +603,11 @@ static void Camera_DocMap()
 	if (s_nXaNgang < 0) s_nXaNgang = 0; if (s_nXaNgang > 150) s_nXaNgang = 150;
 	if (s_nXaDoc < 0) s_nXaDoc = 0; if (s_nXaDoc > 150) s_nXaDoc = 150;
 	// zoom dich: ZoomThu (go loi) > zoom nguoi choi da nho > ZoomMacDinh cua map; kep theo ZoomToiDa cua map; map tat zoom -> 100
-	if (s_nZoomThu > 100 && !s_nZoomThuXong) { nDich = s_nZoomThu; s_nZoomThuXong = 1; }
+	if (s_nZoomThu >= 50 && s_nZoomThu != 100 && !s_nZoomThuXong) { nDich = s_nZoomThu; s_nZoomThuXong = 1; }	// [ZOOM3D 14/09] ZoomThu < 100 = thu phong to
 	else if (s_nZoomNho && s_nZoomNguoiChoi > 0) nDich = s_nZoomNguoiChoi;
 	else nDich = nZoomMD;
 	if (!s_nZoomBat || !s_nNcZoom) nDich = 100;	// [CAMERA 13/09 TUYCHON] map tat / nguoi choi tat -> 100 %
-	if (nDich < 100) nDich = 100;
+	if (nDich < s_nZoomToiThieu) nDich = s_nZoomToiThieu;	// [ZOOM3D 14/09]
 	if (nDich > s_nZoomToiDa) nDich = s_nZoomToiDa;
 	s_nZoomDich = nDich;
 	s_fZoomTroi = (float)s_nZoom;
@@ -607,6 +636,14 @@ void JxLia_DatTuyChon(int nLia, int nZoom, int nVeNhanh)
 	g_DebugLog("[CAMERA] tuy chon nguoi choi: lia=%d nhin rong=%d ve nhanh=%d", s_nNcLia, s_nNcZoom, s_nNcVeNhanh);
 }
 
+// [ZOOM3D 14/09] cong tac Cai dat > Toi uu: Zoom nhanh / Zoom cham (loai tru nhau, ca hai tat = vua) / Lac camera
+void JxLia_DatNhay(int nZoomNhanh, int nZoomCham, int nLac)
+{
+	if (nZoomNhanh >= 0) s_nNcZoomNhanh = nZoomNhanh ? 1 : 0;
+	if (nZoomCham >= 0) s_nNcZoomCham = nZoomCham ? 1 : 0;
+	if (nLac >= 0) s_nNcLac = nLac ? 1 : 0;
+	g_DebugLog("[ZOOM3D] tuy chon: zoom nhanh=%d cham=%d lac camera=%d", s_nNcZoomNhanh, s_nNcZoomCham, s_nNcLac);
+}
 void JxLia_Ve()
 {
 	unsigned int uNay = (unsigned int)GetTickCount();
@@ -637,6 +674,7 @@ void JxLia_ChumBatDau(int x1, int y1, int x2, int y2)
 		s_fChumD0 = 10.f;
 	s_nChumZoom0 = s_nZoom;
 	s_nChum = 1;
+	s_fChumDCu = s_fChumD0; s_fZoomDich3D = (float)((s_nZoomDich > 0) ? s_nZoomDich : s_nZoom);	// [ZOOM3D 14/09]
 	if (s_nBat && s_nNcLia)	// [CAMERA 13/09] LiaCanh=0 / nguoi choi tat lia thi chum chi zoom, khong lia
 		JxLia_BatDau((x1 + x2) / 2, (y1 + y2) / 2);	// lia theo tam hai ngon (dang lech thi giu lech, neo lai tu tam)
 	if (s_nNhatKy)
@@ -652,7 +690,22 @@ void JxLia_ChumKeo(int x1, int y1, int x2, int y2)
 		return;
 	if (d < 10.f)
 		d = 10.f;
-	JxLia_ZoomDat((int)((float)s_nChumZoom0 * s_fChumD0 / d + 0.5f));	// hai ngon gan nhau (d < d0) = zoom lon = thay rong hon
+	if (s_nZoomKieu)
+	{	// [ZOOM3D 14/09] kieu 3D: dich -= dpx x nhay (hai ngon dang ra = phong to); dpx < ZoomChongRung bo qua; ap muot o JxLia_Nhip
+		float fD = d - s_fChumDCu, fNhay;
+		if (fD <= -(float)s_nZoomChongRung || fD >= (float)s_nZoomChongRung)
+		{
+			s_fChumDCu = d;
+			fNhay = (float)s_nZoomNhay / 100.f; if (s_nNcZoomNhanh) fNhay *= 2.f; else if (s_nNcZoomCham) fNhay *= 0.5f;
+			s_fZoomDich3D -= fD * fNhay;
+			if (s_fZoomDich3D < (float)s_nZoomToiThieu) s_fZoomDich3D = (float)s_nZoomToiThieu;
+			if (s_fZoomDich3D > (float)s_nZoomToiDa) s_fZoomDich3D = (float)s_nZoomToiDa;
+			s_nZoomDich = (int)(s_fZoomDich3D + 0.5f);
+			if (s_nNhatKy) g_DebugLog("[ZOOM3D] chum d=%.0f dpx=%.0f -> dich %d%% (dang %d%%)", d, fD, s_nZoomDich, s_nZoom);
+		}
+	}
+	else
+		JxLia_ZoomDat((int)((float)s_nChumZoom0 * s_fChumD0 / d + 0.5f));	// hai ngon gan nhau (d < d0) = zoom lon = thay rong hon
 	if (s_nBat && s_nNcLia)
 		JxLia_Keo((x1 + x2) / 2, (y1 + y2) / 2);
 }
@@ -662,6 +715,7 @@ void JxLia_ChumNha()
 	if (!s_nChum)
 		return;
 	s_nChum = 0;
+	if (s_nZoomKieu && s_nZoomDich > 0) s_nZoomNguoiChoi = s_nZoomDich;	// [ZOOM3D 14/09] nho dich (Nhip van troi tiep toi do)
 	Camera_GhiNho();	// [CAMERA 13/09] nho zoom nguoi choi
 	if (s_nNhatKy)
 		g_DebugLog("[ZOOM] chum nha: zoom=%d%%", s_nZoom);
