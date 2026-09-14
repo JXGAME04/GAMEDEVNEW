@@ -256,3 +256,22 @@ Log 11:12 (`[LOGIC-PHA]`, `[NAP-CHAM]`): logic giật = **mạng** (165/236/40 m
 Máy ảo 109141347: 5 khối cấp sẵn (0,5–0,6 ms/khối, 37 lần tô 0), đi lại 61 fps, không sập. Giao 13:5x: APK + `--chi-manifest` (gom cả tệp mới của phiên camera),
 config chỉ đổi một khoá tại chỗ (giữ `TheGioiRTChu` của họ). Kỳ vọng Fold 7: hết cú khối mới trong ~10 phút đầu, hết cú mạng > 10 ms giữa trận, hết chờ khoá pak;
 `[PDET-UI]` cho tên cửa sổ nặng để quyết cache chữ.
+
+### 10.8. 15:2x 14/09 — `[PAKTHU]` + `[MANG-CHAM]` + `[PDET-UI b/c]` + `[KHOIDUTRU]` (bản 109141524, gộp 146af1f2 của phiên camera)
+
+Log 14:47 (109141405, mục 14/09 14:47 trong `PHANTICH_LOG_FOLD7_1309.md`): A đúng hướng nhưng vẫn tạo khối #5/#6 giữa trận; B cắt sau đúng một gói nặng 10–223 ms
+(handler nạp tệp đồng bộ); C hết chờ khoá nhưng hoãn thừa 558–1 448 khung/30 s; D đo sai cấp. Chủ: "oke tiếp tục".
+
+`android/va_nguon_mobile_1409_n.py` (commit `88596a64`, `kiem --pc 037b192e` ĐẠT) + `d2eeca22`:
+- **`[PAKTHU]`**: `XPackFile::GetSprFrame` khoá CHUNG `ms_ReadCritical` (một khoá cho mọi pak). Luồng vẽ rút khung đồng bộ ở chế độ THỬ (`XPack_JxThu`, `thread_local`):
+  `SDL_TryLockMutex` bận → trả NULL + báo bận → `PrepareFrameData` giao khung cho luồng nền (bỏ vẽ 1–3 khung); rảnh → rút ngay như cũ. Cờ thô `[PAKBAN]` không dùng nữa.
+  Máy ảo: "pak ban giao nen" 34/5/7 mỗi 30 s lúc đi lại thường (trước 558–1 448), 337/152 lúc vào map (luồng nền nạp 322 tệp).
+- **`[MANG-CHAM]`**: gói xử lý ≥ 8 ms → `[MANG-CHAM] t, msg, ms` (≤ 4 dòng/giây). Máy ảo vào map: `msg 73 s2c_syncworld` 100–388 ms, `76 s2c_syncnpc` 56–72 ms,
+  `69 s2c_synccurplayerskill` 31 ms; giữa trận `msg 78` 11–17 ms, `95` 8,6 ms (tên xem bảng dưới).
+- **`[PDET-UI b/c]`**: cửa sổ gốc = anh em của gốc lớp (`Wnd_AddWindow → AddBrother`, parent NULL) → đo cả parent NULL lẫn con trực tiếp, bỏ gốc lớp 0×0 khỏi max.
+  Bẫy: chú thích `//` chèn sau `{` của khối một dòng nuốt mất `}` → "function definition is not allowed here" (đã sửa, `d2eeca22`).
+- **`[KHOIDUTRU]`**: `GameSpaceChangedNotify` (`GDCNI_SWITCHING_MAPMODE`, cạnh `JxLia_DatLai`) → `Rep3_KhoiDuTru(8)` qua GetProcAddress (đăng ký iOS): lớp trống R8G8 < 8
+  hoặc BGRA8 < 2 → cấp thêm một khối + tô 0 trong màn nạp. Config dt_v4 + lớp ghi đè: `Rep3KhoiTruocPal=6`, `Rep3KhoiTruoc32=1` (448 MB cấp sẵn).
+  Bẫy: `extern void f();` khai báo TRONG thân hàm `extern "C"` bị liên kết C → undefined symbol; khai báo ngoài hàm.
+Giao 15:2x: APK 109141524 + config + `--chi-manifest` (gom cả tệp mới của phiên camera). Kỳ vọng Fold 7: không còn `[KHOI] khoi atlas moi` giữa trận trong ≥ 10 phút,
+`pak ban giao nen` vài chục/30 s, `[MANG-CHAM]` cho tên gói nặng giữa trận, `[PDET-UI]` cho cửa sổ thật. Còn lại (đã giao phiên camera): GPU nghẽn khi zoom + đông → RT nấc thấp.
