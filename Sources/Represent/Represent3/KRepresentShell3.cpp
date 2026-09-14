@@ -238,6 +238,7 @@ static void JxVeKyIn()
 // Khung chi blit: goc toa do m_nLeft/m_nTop dat lai = goc luc ve RT de lop phu (vong chon, nut ky nang) trung voi anh RT.
 // S3Client (Wnds.cpp) goi Rep3_JxTheGioi qua GetProcAddress (libmain.so khong link Represent3); iOS dang ky trong ios/JxIosMain.cpp.
 // [Client] TheGioiRT=1 (0 = tat han), TheGioiRTEp=0 (1 = luon RT K=1 de thu pixel, 2 = luon K=2 de thu), TheGioiToiThieuHz=60. Log [TG] moi ky.
+#include <math.h>	// [LAC 14/09] cosf / sinf / floorf (xoay anh dem the gioi)
 int g_nJxTheGioiEp = 0;	// Rep3_JxEpTrinhChieu (D3D9onGPUDev.cpp): be mat / cua so doi -> khung toi phai ve the gioi that
 extern "C" double Rep3_JxManHinhMs();	// D3D9onGPUDev.cpp: 1000 / tan so man SDL bao (0 = khong biet)
 static int s_nTgBat = 1, s_nTgEp = 0, s_nTgToiThieuHz = 60;
@@ -277,17 +278,38 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 		return m_nTgZoom;
 	}
 	if (nLenh == 5) return m_nTgZoom;	// [ZOOM 13/09] hoi zoom hien tai
+	if (nLenh == 6)
+	{	// [LAC 14/09] dat goc xoay (0,01 do, kep +-15 do); 0 = khong xoay. Chi doi blit + cua toa do, khong doi RT
+		int nG = nThamSo; if (nG > 1500) nG = 1500; if (nG < -1500) nG = -1500;
+		if (nG != m_nTgXoay) { m_nTgXoay = nG; g_nJxTheGioiEp = 1; }
+		return m_nTgXoay;
+	}
+	if (nLenh == 7) return m_nTgXoay;
+	if (nLenh == 8)
+	{	// [LAC 14/09] le RT khi dang lia (phan nghin, 1000 = khong; kep 1000..1500): RT = khung x zoom x le -> lenh 0 cap lai RT
+		int nL = nThamSo; if (nL < 1000) nL = 1000; if (nL > 1500) nL = 1500;
+		if (nL != m_nTgLe) { Rep3Log("[LAC] le RT %d -> %d (phan nghin), goc %d", m_nTgLe, nL, m_nTgXoay); m_nTgLe = nL; g_nJxTheGioiEp = 1; }
+		return m_nTgLe;
+	}
+	if (nLenh == 9)
+	{	// [LAC 14/09 b] co dan doc (phan nghin, kep 850..1150): keo doc -> camera "cui / ngang" nhe; 1000 = khong. Chi doi blit + cua toa do
+		int nD = nThamSo; if (nD < 850) nD = 850; if (nD > 1150) nD = 1150;
+		if (nD != m_nTgDoc) { m_nTgDoc = nD; g_nJxTheGioiEp = 1; }
+		return m_nTgDoc;
+	}
+	if (nLenh == 10) return m_nTgDoc;
 	if (!PD3DDEVICE || m_bDeviceLost) return 0;
 	if (nLenh == 0)
 	{	// hoi: 0 = duong cu, 1 = ve the gioi vao RT roi blit, 2 = chi blit anh RT cua khung truoc
 		if (nThamSo > 0 && nThamSo <= 240) s_nTgPaintFps = nThamSo;
 		int nK = s_nTgK;
 		if (s_nTgEp == 1) nK = 1; else if (s_nTgEp == 2) nK = 2;
-		const bool bZoom = (m_nTgZoom > 1000);	// [ZOOM 13/09] dang nhin rong: luon ve the gioi vao RT to hon khung roi thu nho (K = 1)
+		m_nTgZoomRt = (m_nTgLe > 1000) ? m_nTgZoom * m_nTgLe / 1000 : m_nTgZoom;	// [LAC 14/09] RT them le khi dang lia (goc khung khong ho luc xoay)
+		const bool bZoom = (m_nTgZoomRt > 1000);	// [ZOOM 13/09] dang nhin rong (hoac RT co le): luon ve the gioi vao RT to hon khung roi thu nho (K = 1)
 		if (bZoom) nK = 1;
 		if (!bZoom && (!s_nTgBat || (nK != 2 && s_nTgEp != 1))) { s_uTgVeThat = s_uTgKhung; s_uTgDemThuong++; return 0; }
-		const int nRtW = bZoom ? ((g_nScreenWidth * m_nTgZoom / 1000 + 1) & ~1) : g_nScreenWidth;
-		const int nRtH = bZoom ? ((g_nScreenHeight * m_nTgZoom / 1000 + 1) & ~1) : g_nScreenHeight;
+		const int nRtW = bZoom ? ((g_nScreenWidth * m_nTgZoomRt / 1000 + 1) & ~1) : g_nScreenWidth;	// [LAC 14/09] theo ti le RT that
+		const int nRtH = bZoom ? ((g_nScreenHeight * m_nTgZoomRt / 1000 + 1) & ~1) : g_nScreenHeight;
 		if (!m_pTgTex || m_nTgW != nRtW || m_nTgH != nRtH)
 		{	// RT phai dung co khung logic (gap / mo, doi ho khung); [ZOOM 13/09] hoac khung x zoom
 			JxTheGioiHuy();
@@ -314,8 +336,8 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 		if (FAILED(PD3DDEVICE->SetRenderTarget(0, m_pTgSurf))) { SAFE_RELEASE(m_pTgSurfCu); return 0; }
 		PD3DDEVICE->Clear(0, NULL, D3DCLEAR_TARGET, m_dwTgMauXoa, 1.0f, 0L);
 		m_nTgLeftKhung = m_nLeft; m_nTgTopKhung = m_nTop; m_nTgKhungW = g_nScreenWidth; m_nTgKhungH = g_nScreenHeight;	// [ZOOM 13/09] goc + co khung that
-		if (m_nTgZoom > 1000)
-		{	// [ZOOM 13/09] RT to hon khung: goc RT lui de tieu diem van o giua; cull / cat trong shell theo co RT trong luc ve
+		if (m_nTgZoomRt > 1000)
+		{	// [ZOOM 13/09] RT to hon khung: goc RT lui de tieu diem van o giua; cull / cat trong shell theo co RT trong luc ve ([LAC 14/09] ke ca le)
 			m_nZoomDx = (m_nTgW - g_nScreenWidth) / 2; m_nZoomDy = (m_nTgH - g_nScreenHeight) / 2;
 			m_nLeft -= m_nZoomDx; m_nTop -= m_nZoomDy; g_nScreenWidth = m_nTgW; g_nScreenHeight = m_nTgH;
 		}
@@ -329,7 +351,7 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 		if (m_nTgTrangThai == 1)
 		{
 			PD3DDEVICE->SetRenderTarget(0, m_pTgSurfCu); SAFE_RELEASE(m_pTgSurfCu); m_nTgTrangThai = 0;
-			if (m_nTgZoom > 1000) { g_nScreenWidth = m_nTgKhungW; g_nScreenHeight = m_nTgKhungH; m_nLeft = m_nTgLeftKhung; m_nTop = m_nTgTopKhung; }	// [ZOOM 13/09] tra co khung + goc khung
+			if (m_nTgZoomRt > 1000) { g_nScreenWidth = m_nTgKhungW; g_nScreenHeight = m_nTgKhungH; m_nLeft = m_nTgLeftKhung; m_nTop = m_nTgTopKhung; }	// [ZOOM 13/09] tra co khung + goc khung ([LAC 14/09] ke ca le)
 			PD3DDEVICE->Clear(0, NULL, D3DCLEAR_TARGET, m_dwTgMauXoa, 1.0f, 0L);	// lenh xoa dau khung cua RepresentBegin bi doi dich ve nuot -> xoa lai backbuffer
 		}
 		else
@@ -346,16 +368,24 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 		PD3DDEVICE->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1); PD3DDEVICE->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 		PD3DDEVICE->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1); PD3DDEVICE->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 		PD3DDEVICE->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE); PD3DDEVICE->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-		{ const DWORD dwLoc = (m_nTgZoom > 1000) ? D3DTEXF_LINEAR : D3DTEXF_POINT; PD3DDEVICE->SetSamplerState(0, D3DSAMP_MINFILTER, dwLoc); PD3DDEVICE->SetSamplerState(0, D3DSAMP_MAGFILTER, dwLoc); }	// [ZOOM 13/09] thu nho thi loc tuyen tinh
+		{ const DWORD dwLoc = (m_nTgZoomRt > 1000 || m_nTgXoay || m_nTgDoc != 1000) ? D3DTEXF_LINEAR : D3DTEXF_POINT; PD3DDEVICE->SetSamplerState(0, D3DSAMP_MINFILTER, dwLoc); PD3DDEVICE->SetSamplerState(0, D3DSAMP_MAGFILTER, dwLoc); }	// [ZOOM 13/09] thu nho thi loc tuyen tinh
 		PD3DDEVICE->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP); PD3DDEVICE->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 		PD3DDEVICE->SetTexture(0, m_pTgTex); PD3DDEVICE->SetTexture(1, NULL);
 		PD3DDEVICE->SetFVF(D3DFVF_VERTEX2D);
 		VERTEX2D v[4];
-		const float fW = (float)g_nScreenWidth, fH = (float)g_nScreenHeight;	// [ZOOM 13/09] dich blit = KHUNG (da tra lai o tren): RT to hon khung thi thu nho; khong zoom thi bang m_nTgW/H nhu cu
-		v[0].position = D3DXVECTOR4(0.0f, 0.0f, 100, 1); v[0].color = 0xffffffff; v[0].tu = 0.0f; v[0].tv = 0.0f;
-		v[1].position = D3DXVECTOR4(fW, 0.0f, 100, 1);   v[1].color = 0xffffffff; v[1].tu = 1.0f; v[1].tv = 0.0f;
-		v[2].position = D3DXVECTOR4(0.0f, fH, 100, 1);   v[2].color = 0xffffffff; v[2].tu = 0.0f; v[2].tv = 1.0f;
-		v[3].position = D3DXVECTOR4(fW, fH, 100, 1);     v[3].color = 0xffffffff; v[3].tu = 1.0f; v[3].tv = 1.0f;
+		{	// [ZOOM 13/09] dich blit = KHUNG (da tra lai o tren); [LAC 14/09] = RT thu theo zoom nguoi choi (khung x le khi dang lia) roi XOAY goc m_nTgXoay
+			// quanh tam khung theo phep quay mat dat 2:1 (x' = c.x - 2s.y, y' = s.x/2 + c.y). Goc 0, le 1000: dung bang khung nhu cu.
+			const float fKW = (float)g_nScreenWidth, fKH = (float)g_nScreenHeight;
+			const float fTl = 1000.0f / (float)m_nTgZoom;
+			const float fGoc = (float)m_nTgXoay * 3.14159265f / 18000.0f, fC = cosf(fGoc), fS = sinf(fGoc), fK = (float)m_nTgDoc / 1000.0f;	// [LAC 14/09 b] fK = co dan doc
+			const float fHx = (float)m_nTgW * 0.5f, fHy = (float)m_nTgH * 0.5f;
+			for (int i = 0; i < 4; i++)
+			{
+				const float qx = ((i & 1) ? fHx : -fHx) * fTl, qy = ((i & 2) ? fHy : -fHy) * fTl;
+				v[i].position = D3DXVECTOR4(fKW * 0.5f + fC * qx - 2.0f * fS * fK * qy, fKH * 0.5f + 0.5f * fS * qx + fC * fK * qy, 100, 1);
+				v[i].color = 0xffffffff; v[i].tu = (i & 1) ? 1.0f : 0.0f; v[i].tv = (i & 2) ? 1.0f : 0.0f;
+			}
+		}
 		PD3DDEVICE->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VERTEX2D));
 		PD3DDEVICE->SetTexture(0, NULL);
 		if (m_pTgSB) m_pTgSB->Apply();
@@ -838,6 +868,8 @@ KRepresentShell3::KRepresentShell3()
 #ifdef JX_MOBILE
 	m_pTgTex = NULL; m_pTgSurf = NULL; m_pTgSurfCu = NULL; m_pTgSB = NULL; m_nTgW = m_nTgH = 0; m_nTgTrangThai = 0; m_nTgLeft = m_nTgTop = 0; m_dwTgMauXoa = 0xff000000;	// [TG 13/09]
 	m_nTgZoom = 1000; m_nZoomDx = m_nZoomDy = 0; m_nTgKhungW = m_nTgKhungH = 0; m_nTgLeftKhung = m_nTgTopKhung = 0;	// [ZOOM 13/09]
+	m_nTgXoay = 0; m_nTgLe = 1000; m_nTgZoomRt = 1000;	// [LAC 14/09]
+	m_nTgDoc = 1000;	// [LAC 14/09 b]
 #endif
 	m_pPreRenderTexture128 = NULL;
 	m_pPreRenderTexture256 = NULL;
@@ -3539,12 +3571,18 @@ void KRepresentShell3::ViewPortCoordToSpaceCoord(int& nX, int& nY, int nZ)
 	{
 		// Legacy 2D logic (if you're using map rendering or UI mode)
 #ifdef JX_MOBILE
-		if (m_nTgZoom > 1000)
+		if (m_nTgZoomRt > 1000 || m_nTgXoay || m_nTgDoc != 1000)
 		{	// [ZOOM 13/09] cham tren khung -> diem anh RT (nhan zoom, bo lui goc RT) -> the gioi theo goc KHUNG (m_nLeft dang lui neu dang ve RT)
+			// [LAC 14/09] them M^-1 (x = c.q.x + 2s.q.y, y = -s.q.x/2 + c.q.y) quanh tam khung; goc 0 va le 1000 = cong thuc cu
 			const int nGocX = (m_nTgTrangThai == 1) ? m_nTgLeftKhung : m_nLeft;
 			const int nGocY = (m_nTgTrangThai == 1) ? m_nTgTopKhung : m_nTop;
-			nX = nX * m_nTgZoom / 1000 - m_nZoomDx + nGocX;
-			nY = (nY * m_nTgZoom / 1000 - m_nZoomDy + nGocY + ((nZ * 887) >> 10)) * 2;
+			const int nKW = (m_nTgTrangThai == 1) ? m_nTgKhungW : g_nScreenWidth, nKH = (m_nTgTrangThai == 1) ? m_nTgKhungH : g_nScreenHeight;
+			const float fGoc = (float)m_nTgXoay * 3.14159265f / 18000.0f, fC = cosf(fGoc), fS = sinf(fGoc), fK = (float)m_nTgDoc / 1000.0f;	// [LAC 14/09 b] fK = co dan doc
+			const float qx = (float)(nX - nKW / 2), qy = (float)(nY - nKH / 2), fZ = (float)m_nTgZoom / 1000.0f;
+			const float px = (float)m_nTgW * 0.5f + (fC * qx + 2.0f * fS * qy) * fZ;
+			const float py = (float)m_nTgH * 0.5f + (-0.5f * fS * qx + fC * qy) / fK * fZ;	// [LAC 14/09 b] chia co dan doc
+			nX = (int)floorf(px + 0.5f) - m_nZoomDx + nGocX;
+			nY = ((int)floorf(py + 0.5f) - m_nZoomDy + nGocY + ((nZ * 887) >> 10)) * 2;
 			return;
 		}
 #endif
@@ -3573,10 +3611,13 @@ void KRepresentShell3::CoordinateTransform( int& nX, int& nY, int nZ)
 		nX = nX - m_nLeft;
 		nY = nY / 2 - m_nTop - ((nZ * 887) >> 10);
 #ifdef JX_MOBILE
-		if (m_nTgZoom > 1000 && m_nTgTrangThai == 0)
-		{	// [ZOOM 13/09] ve len khung (sau blit): diem anh RT = (diem - goc khung) + lui goc RT, roi thu nho theo zoom
-			nX = (nX + m_nZoomDx) * 1000 / m_nTgZoom;
-			nY = (nY + m_nZoomDy) * 1000 / m_nTgZoom;
+		if ((m_nTgZoomRt > 1000 || m_nTgXoay || m_nTgDoc != 1000) && m_nTgTrangThai == 0)
+		{	// [ZOOM 13/09] ve len khung (sau blit): diem anh RT = (diem - goc khung) + lui goc RT, roi thu nho theo zoom; [LAC 14/09] + xoay M quanh tam khung
+			const float fGoc = (float)m_nTgXoay * 3.14159265f / 18000.0f, fC = cosf(fGoc), fS = sinf(fGoc), fK = (float)m_nTgDoc / 1000.0f;	// [LAC 14/09 b] fK = co dan doc
+			const float qx = ((float)(nX + m_nZoomDx) - (float)m_nTgW * 0.5f) * 1000.0f / (float)m_nTgZoom;
+			const float qy = ((float)(nY + m_nZoomDy) - (float)m_nTgH * 0.5f) * 1000.0f / (float)m_nTgZoom;
+			nX = (int)floorf((float)g_nScreenWidth * 0.5f + fC * qx - 2.0f * fS * fK * qy + 0.5f);
+			nY = (int)floorf((float)g_nScreenHeight * 0.5f + 0.5f * fS * qx + fC * fK * qy + 0.5f);
 		}
 #endif
 		return;
@@ -3615,10 +3656,13 @@ void KRepresentShell3::CoordinateTransformX(int& nX, int& nY, int nZ)
 		nX = nX - m_nLeft;
 		nY = nY / 2 - m_nTop - ((nZ * 887) >> 10);
 #ifdef JX_MOBILE
-		if (m_nTgZoom > 1000 && m_nTgTrangThai == 0)
-		{	// [ZOOM 13/09] ve len khung (sau blit): diem anh RT = (diem - goc khung) + lui goc RT, roi thu nho theo zoom
-			nX = (nX + m_nZoomDx) * 1000 / m_nTgZoom;
-			nY = (nY + m_nZoomDy) * 1000 / m_nTgZoom;
+		if ((m_nTgZoomRt > 1000 || m_nTgXoay || m_nTgDoc != 1000) && m_nTgTrangThai == 0)
+		{	// [ZOOM 13/09] ve len khung (sau blit): diem anh RT = (diem - goc khung) + lui goc RT, roi thu nho theo zoom; [LAC 14/09] + xoay M quanh tam khung
+			const float fGoc = (float)m_nTgXoay * 3.14159265f / 18000.0f, fC = cosf(fGoc), fS = sinf(fGoc), fK = (float)m_nTgDoc / 1000.0f;	// [LAC 14/09 b] fK = co dan doc
+			const float qx = ((float)(nX + m_nZoomDx) - (float)m_nTgW * 0.5f) * 1000.0f / (float)m_nTgZoom;
+			const float qy = ((float)(nY + m_nZoomDy) - (float)m_nTgH * 0.5f) * 1000.0f / (float)m_nTgZoom;
+			nX = (int)floorf((float)g_nScreenWidth * 0.5f + fC * qx - 2.0f * fS * fK * qy + 0.5f);
+			nY = (int)floorf((float)g_nScreenHeight * 0.5f + 0.5f * fS * qx + fC * fK * qy + 0.5f);
 		}
 #endif
 		return;

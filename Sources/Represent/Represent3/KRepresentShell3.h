@@ -480,6 +480,10 @@ private:
     int   m_nZoomDx, m_nZoomDy;
     int   m_nTgKhungW, m_nTgKhungH;
     int   m_nTgLeftKhung, m_nTgTopKhung;
+    // [LAC 14/09] camera lac nhe khi lia: xoay mat dat goc m_nTgXoay (0,01 do; phep 2:1 x' = c.x - 2s.y, y' = s.x/2 + c.y quanh tam khung)
+    // luc blit + hai cua toa do; RT them le m_nTgLe (phan nghin, lenh 8) de goc khung khong ho; m_nTgZoomRt = zoom x le = ti le RT that.
+    int   m_nTgXoay, m_nTgLe, m_nTgZoomRt;
+    int   m_nTgDoc;      // [LAC 14/09 b] co dan doc (phan nghin, 1000 = khong): lac len / xuong khi keo doc, M = R(goc) x diag(1, k)
 #endif
 
     LPDIRECT3DTEXTURE9 m_pPreRenderTexture128;	// Ô¤äÖÈ¾Ö÷½ÇµÄÌùÍ¼Ö¸Õë

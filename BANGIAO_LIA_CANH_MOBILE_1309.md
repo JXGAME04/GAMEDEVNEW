@@ -248,3 +248,56 @@ Lưu theo tài khoản ở `UserData\<tài khoản>\uiautoconfig.ini` mục `[Op
 1. Mở lại app nhận **109132248**. Cài đặt → TÙY CHỌN → Tối ưu: thấy 3 công tắc mới.
 2. Tắt "Lia cảnh" → kéo một ngón không lia; bật lại → lia như cũ. Tắt "Nhìn rộng" → về 100 %, chụm không ăn; bật lại → về mức cũ.
 3. Bật "Lia về nhanh" → thả tay về gần như ngay.
+
+
+---
+
+# LẮC NHẸ CAMERA KHI LIA (trái/phải + lên/xuống) — 14/09 00:4x
+
+Chủ hỏi quay 90°, rồi 45°, 15°, và góc camera cúi/ngẩng. Tôi gửi mô phỏng trên ảnh (`mo_phong_quay90.png`, `mo_phong_45_25d.png`, `mo_phong_15_5_cui.png`): nền vẽ sẵn 2:1 làm nhà đổ nghiêng gấp đôi góc xoay; chủ chốt *"làm 2 đi"* (lắc nhẹ) và *"làm xoay qua trái và phải, trên dưới cần vậy cũng oke"*, 15° là ảnh thử để nhìn rõ, mặc định 5°.
+
+## 1. Bản đã lên dt_v4
+
+| | |
+|---|---|
+| APK | **109140030** (`jx1mobile.apk`), gộp `mobile-0809` hiện tại; kịch bản `android/va_nguon_lac_1409.py` + `va_nguon_lac_1409_b.py` |
+| Dữ liệu | `config.ini` `[Cham]` thêm `LiaLacDo=5`, `LiaLacDoc=6`, `LiaLacLe=112`, `LiaLacThu=0` (cả lớp ghi đè, máy ảo, dt_v4 + `--chi-manifest`) |
+
+## 2. Cách dùng
+
+- Kéo một ngón **ngang**: ngoài lia, cả cảnh xoay dần theo tay, tới hết tầm (LiaXaNgang) là 5° (phép "quay mặt đất" 2:1: dọc nghiêng khoảng 10°). Thả tay: trôi về 0 cùng độ lệch.
+- Kéo **dọc**: cảnh co/giãn dọc tới 6 % như camera cúi/ngẩng (kéo xuống = dẹt hơn, kéo lên = cao hơn).
+- Chụm hai ngón vẫn lia theo tâm nên cũng lắc. Tắt "Lia cảnh" trong Cài đặt > Tối ưu thì hết lắc; đổi số: `LiaLacDo` (độ, âm = đổi chiều, 0 = tắt), `LiaLacDoc` (%, 0 = tắt).
+- Không tốn gì thêm khi không lia; khi lia, ảnh đệm thế giới rộng thêm 12 % (`LiaLacLe`) để góc khung không hở lúc xoay (RT 1164×676 ở khung 1040×604; ở 120 % là 1398×812).
+
+## 3. Cơ chế (chỉ `JX_MOBILE`, PC y hệt: `kiem --pc` ĐẠT, cl Win32 + x64 `KRepresentShell3.cpp` 0 lỗi)
+
+| Chỗ | Việc |
+|---|---|
+| `Represent3/KRepresentShell3.h/.cpp` `JxTheGioi` | lệnh **6** đặt góc (0,01°, kẹp ±15°), **7** hỏi, **8** lề RT (phần nghìn, 1000..1500), **9** co giãn dọc (phần nghìn, 850..1150), **10** hỏi. `m_nTgZoomRt = zoom × lề` = tỉ lệ RT thật (lệnh 0 cấp RT, lệnh 1 lùi gốc, lệnh 2 trả khung đều theo ZoomRt). Blit: 4 đỉnh = góc RT thu `1000/zoom` quanh tâm khung rồi `M = R(θ)·diag(1,k)`: `x' = c·x − 2s·k·y`, `y' = s·x/2 + c·k·y`; góc 0, k 1, lề 1000 → đúng 4 đỉnh cũ. Hai cửa toạ độ: `CoordinateTransform/X` (thế giới → khung) thêm `M`, `ViewPortCoordToSpaceCoord` (khung → thế giới, Core chọn vật thể/đi đường) thêm `M⁻¹` (`x = c·x + 2s·y`, `y = (−s·x/2 + c·y)/k`). Lọc tuyến tính khi có góc/k. `#include <math.h>` trong `JX_MOBILE`. |
+| `Platform/JxLiaCanh.cpp` | `ApXoay()` gọi cuối `ApLech()` (mỗi khung khi đang lia) và trong `KetThuc()`: góc = `LiaLacDo × lệchX/lệch ngang tối đa`, k = `1 + LiaLacDoc% × lệchY/lệch dọc tối đa`; lề RT + vùng truy vấn vật thể × lề khi đang lia, trả về khi hết. `LiaLacThu` = gỡ lỗi giữ góc cố định 3 s sau khi vào thế giới (máy ảo). Sửa quirk `LiaThu` (kéo giả lập): `s_uNhaLuc = uNay` để nhịp chờ về không bị âm. |
+
+Không đụng: `Core`, `Wnds.cpp`, `D3D9onGPU`, `ios/JxIosMain.cpp` (không thêm ký hiệu). Phiên đo nhịp đã được gửi tóm tắt để soi chéo trước khi push (vùng `[TG]` của họ).
+
+## 4. Chứng minh (máy ảo)
+
+- `LiaLacThu=5`: `[LAC] LiaLacThu: giu goc 5 do, le RT 112%`, `[TG] render target the gioi 1164x676` (và 1224/1282/1340 khi đang trôi zoom 105..115 % ở Tương Dương) → RT có lề đúng, không sập, HUD đứng yên (`lac1.png`).
+- `LiaLacThu=15` (chỉ để nhìn rõ): cảnh nghiêng rõ, nhân vật và nhãn nghiêng theo, không hở góc (`lac15.png`) — chủ thấy "bóp méo" ở mức này, nên giữ mặc định 5°.
+- `LiaThu=600,0` (kéo giả lập ngang): `[LAC] le RT 1000 -> 1120` lúc bắt đầu, `1120 -> 1000, goc -4` lúc về xong; ảnh `keo8.png` lúc đang về: cảnh dịch + xoay nhẹ. Kéo dọc `LiaThu=0,400`: xem `doc*.png`.
+- Auto của nhân vật đang chạy nên "về" xảy ra ngay (nhân vật đi), không thử được nhịp chờ 1 s trên máy ảo; Fold 7 thử thật.
+
+## 5. Chủ thử trên Fold 7
+
+1. Mở lại app nhận **109140030**. Kéo ngang chậm: cảnh xoay dần theo tay, thả ra trôi về. Kéo dọc: cảnh cúi/ngẩng nhẹ.
+2. Chạm đất / NPC trong lúc cảnh đang nghiêng (trước khi về hết) phải đi đúng chỗ, mở đúng thoại (cửa toạ độ đã đổi).
+3. Thấy mạnh/yếu quá: nói tôi số độ (`LiaLacDo`) và % dọc (`LiaLacDoc`); muốn đổi chiều xoay thì để số âm.
+4. Tống Kim đông: kéo log về, tôi xem `[TG]` viec/khung khi lia (RT rộng thêm 12 %).
+
+## 6. Chủ hỏi thêm: "mổ nhị phân có lấy được phần vật phẩm rơi trên đất không?" (chưa làm, chỉ phân tích)
+
+Từ siêu dữ liệu IL2CPP (`D:\game3gTQ_mo\meta_pc_res.txt`), bảng tài nguyên (`bundle_all.tsv`) và Lua (`pc_textassets`):
+- Vật rơi là `StillObject : EntityObj` (lớp 759): `SetDropData(ownId, ownProtectLeftTime, playAnim, dropType, dropData, dropQuality, dropItemWX, dropItemType)`; trường `mDropPrefabAnim` (hoạt ảnh lúc rơi: bung ra rồi nảy), `mDropLightObj` (cột sáng), `mOwnerOnlyID/mOwnerProtectTime` (bảo hộ chủ sở hữu), `mDropQuality`, `mDropItemWX` (ngũ hành). `Global.dropStillLightObj[]` = prefab cột sáng theo phẩm chất.
+- Tài nguyên: `cmn_droplight_blue / purple / gold / xgold / wgold` (cột sáng 5 mức), `cmn_drop_flash / _2 / _3 / _tong` (loé sáng lúc chạm đất), `cmn_drop_script_hong/zi/lv/lan/bai/huang` (sách/bí kíp rơi màu đỏ/tím/lục/lam/trắng/vàng), `cmn_drop_exp`, `cmn_drop_gj`.
+- Lua `lua_scnobj_create.lua` `InitStill`: gói mạng `{loại, dữ liệu, phẩm chất, id chủ, số lượng, có hoạt ảnh, ngũ hành, giây bảo hộ}` → tên hiện màu theo phẩm chất (`GetItemColorNoEffectStr`), thêm ` x N` nếu chồng, phát `drop_sound` khi rơi mới; tiền đồng/vàng/vàng khoá là loại riêng. Nhặt: lỗi "quá xa", "còn bảo hộ", "túi đầy", "chỉ đội trưởng", "bang hạn chế" (`lua_text_item.lua`).
+- JX1 hiện có: sprite vật rơi + tên (mobile luôn bật, `GOI_SHOW_OBJ_NAME`), màu tên theo phẩm chất, ảnh rơi riêng lúc mới rơi (`KObj.cpp` `m_nDropState`/`m_cImageDrop`), bảo hộ chủ sở hữu. **Chưa có:** cột sáng theo phẩm chất, loé lúc chạm đất, âm rơi, ` x N`.
+- Mức chép được (chưa làm, chờ chủ chọn): (1) cột sáng dưới vật quý theo màu phẩm chất + loé lúc mới rơi (vẽ thêm 1 quad cộng sáng ở `KObj` mobile, ảnh từ kho VNKU hoặc vẽ dải gradient), ~1 ngày; (2) âm thanh rơi + ` x N` số lượng, nửa ngày; (3) bảng "nhặt tất cả" kiểu 3D, cần xem giao thức nhặt hiện có, chưa ước.
