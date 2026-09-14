@@ -137,3 +137,42 @@ không ảnh hưởng fps.
    nếu vẫn > 6 khối thì hạ `Rep3AtlasKhoiLop` 8 → 4 (khối 32 MB) hoặc thêm dọn trang rỗng theo tuổi.
 4. **Ảnh null** (§6): soi tên thật, đóng lại pak nếu thiếu.
 5. Không cần đụng thang nhiệt/nhịp: 60 Hz + nhiệt mức 1–2 + 2,1 W là điểm cân bằng tốt cho Fold 7 trong Tống Kim.
+
+## 14/09 — log sau P4 `[TAI 14/09]` (4 gói 07:30 / 08:47 / 09:04 / 09:48, bản ≥ 109140039)
+
+**Kết quả tốt (gói 09:48, 16 phút, đông: npc/tick TB 96 max 250, đạn/10 s TB 19 735):** fps TB **59,8**, trung vị 60, p10 60, chỉ 4 s/564 s
+dưới 55 fps; GPU 60 % (p90 78), 2,00 W TB, nhiệt mức 0 suốt; không sập; 9 khối atlas (576 MB), RAM riêng 664 MB, cache 425 MB.
+`[TG]` K=1 suốt (màn 60 Hz). Ba gói sáng ngắn 1–2 phút (vào map) không đại diện.
+
+**P4a tô 0 trang atlas bằng chép GPU: ĐÚNG.** `[VE-TAI] … trang atlas moi to 0 bang chep GPU: 16 trang 0.5 ms` (0,03 ms/trang, trước 117–172 ms),
+mục `zero` trong `[VE-GIAT]` = 0 khung giật ở cả 4 gói. Dải nguồn tạo 2 lần (fmt 12 BGRA8 2 MB, fmt 3 16-bit 1 MB) đúng như thiết kế.
+**P4b tải dần:** chạy (7 708 khung/30 s lúc vào map, 600–3 000/30 s sau đó, 9–11 ms/30 s); không đo được phần nó giảm vì khung cần ngay vẫn tải lúc vẽ.
+**P4c:** `[PGND] xoa 0.0` như máy ảo.
+
+**Còn lại = tải texture thường (`lenh tai`)**: gói 09:48 có 80 `[VE-GIAT]` (> 20 ms) / 16 phút = 5/phút, **67 là `lenh tai` > 10 ms**;
+tổng 643 lệnh, 159 MB, 3 784 ms → **23,8 ms/MB**. Theo cỡ lệnh:
+
+| Cỡ mỗi lệnh | Số lệnh | ms/lệnh | Nhận xét |
+|---|---|---|---|
+| ≥ 1 MB (ô 512×512 BGRA8 = 1 024 KB đúng bằng) | 47 | **31** (đơn lẻ 45–50) | ô atlas vào **khối** (2D array 64 MB) |
+| 256 KB–1 MB | 187 | 7,3 | |
+| 64–256 KB | 223 | 3,7 | |
+| < 64 KB | 186 | 0,7 | |
+| dải nguồn 0 (2 MB, ảnh riêng, tải **cả ảnh**) | 2 | **1,3** (0,6 ms/MB) | nhanh gấp 30–70 lần |
+
+Vào map: 103–124 texture 26–31 MB một khung = 540–550 ms (khung 784 ms, ẩn sau màn nạp); 8 ô × 1 MB = 158 ms.
+Cùng driver, cùng transfer buffer, cùng lệnh `SDL_UploadToGPUTexture` nhưng **tải cả ảnh riêng nhỏ = 0,6 ms/MB, tải vùng con vào khối = 20–45 ms/MB**
+→ chi phí nằm ở *đích* (vùng con của ảnh lớn / định dạng), không phải ở byte nguồn. Chưa biết chắc cơ chế (xếp ô trên CPU khi ghi vùng con
+ảnh UBWC? theo định dạng BGRA8?). Bằng chứng gián tiếp cùng chiều: [PALBUF 11/09] tải hàng bảng màu vào texture 256×8192 (vùng con) từng mất
+17–100 ms, đổi sang buffer thì hết.
+
+**Phương án (chờ chủ chọn, chưa làm):**
+1. **Đo trước 5 phút** (`[TAI-DO]` lúc khởi động, chỉ log): tải 1 MB theo 8 kiểu — vùng con vào khối / vào ảnh riêng 2048² / cả ảnh 512² riêng,
+   ba định dạng BGRA8 · 16-bit · R8, từ bộ đệm khung (cycle) và bộ đệm cố định, buffer→buffer, ảnh→ảnh. Một bản, một lần mở app, đọc log là biết
+   đường nào nhanh. Rẻ nhất, không đổi gì người chơi thấy.
+2. Nếu "cả ảnh nhỏ" nhanh như dải nguồn: **tải qua ảnh đệm**: mỗi khung gom các ô cần tải vào MỘT ảnh đệm 2048×H (tải cả ảnh, nhanh) rồi
+   `SDL_CopyGPUTextureToTexture` từng ô sang khối (GPU→GPU, đã chứng minh 0,03 ms/trang). Sửa trong SubmitFrame + QueueUpload, chỉ JX_MOBILE.
+3. Thử nhanh không cần dựng: `Rep3AtlasKhoi=0` trong config dt_v4 (atlas = ảnh riêng 2048², mất gộp lệnh vẽ qua khối) — chỉ để so `lenh tai`,
+   không phải cách sửa.
+
+Ngoài ra vẫn còn: ảnh null `MA_HR_015_HD.spr`/`FM_HR_015_HD.spr` k20/k29/k34 (x282–422, việc pak), vào map 100 tệp spr đồng bộ ~110 ms.
