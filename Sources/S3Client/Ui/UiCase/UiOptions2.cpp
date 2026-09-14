@@ -20,9 +20,10 @@
 #include "../../Platform/JxLiaCanh.h"	// [CAMERA 13/09 TUYCHON] JxLia_DatTuyChon
 void JxNhip_VeNen(int nX, int nY, int nRong, int nCao);	// Platform/JxPerfHudAndroid.cpp: nen mo (nhu hang FPS cua KUiOptions)
 extern "C" void JxHaoQuang_DatBat(int nQuai);	// [HAOQUANG 14/09] Core/Src/KNpc.cpp: vong hao quang quai / trang bi
-extern "C" void JxVatRoi_DatBat(int nBat);					// Core/Src/KObj.cpp: cot sang + loe vat pham roi
+extern "C" void JxVatRoi_DatBat(int nBat);
+extern "C" void JxZoomThanh_DatBat(int nBat);	// [ZOOMTHANH 14/09 c] Ui/UiCase/UiZoomThanh.cpp: hien / an thanh keo zoom					// Core/Src/KObj.cpp: cot sang + loe vat pham roi
 #undef MAX_TOGGLE_BTN_COUNT
-#define MAX_TOGGLE_BTN_COUNT 13	// [ZOOMTHANH 14/09] 13 nut (+ Chum zoom); [ZOOM3D 14/09] 12 nut; [HAOQUANG 14/09 d] 9 nut (bo Vong do mac); [CAMERA 13/09 TUYCHON] lop KUiOptions2 (header tra lai 4 cho KUiOptions) - dat SAU include cuoi
+#define MAX_TOGGLE_BTN_COUNT 11	// [ZOOMTHANH 14/09 e] 11 nut; [ZOOMTHANH 14/09 c] 14 nut (+ Thanh zoom); [ZOOMTHANH 14/09] 13 nut (+ Chum zoom); [ZOOM3D 14/09] 12 nut; [HAOQUANG 14/09 d] 9 nut (bo Vong do mac); [CAMERA 13/09 TUYCHON] lop KUiOptions2 (header tra lai 4 cho KUiOptions) - dat SAU include cuoi
 #endif
 extern iCoreShell*	g_pCoreShell;
 
@@ -38,8 +39,7 @@ const char* ls_ToggleOptionName2[OPTION_INDEX_COUNT2] =
 #ifdef JX_MOBILE
 	"LiaCanh", "NhinRong", "LiaVeNhanh",	// [CAMERA 13/09 TUYCHON] luu UiCommon.ini [Options2]
 	"HaoQuangQuai", "SangVatRoi",	// [HAOQUANG 14/09] (14/09 d: bo HaoQuangTrangBi)
-	"ZoomNhanh", "ZoomCham", "LacCamera",	// [ZOOM3D 14/09]
-	"ChumZoom",	// [ZOOMTHANH 14/09]
+	"LacCamera", "ThanhZoom",	// [ZOOM3D 14/09] [ZOOMTHANH 14/09 c] (e: bo ZoomNhanh / ZoomCham / ChumZoom)
 #endif
 };
 
@@ -208,14 +208,11 @@ void KUiOptions2::ToggleOption(int nIndex)
 	case OPTION_I_SANGVATROI:
 		JxVatRoi_DatBat(bEnable);
 		break;
-	case OPTION_I_ZOOMNHANH:	// [ZOOM3D 14/09] nhanh / cham loai tru nhau; roi xuong OPTION_I_LAC de ap ca ba
-	case OPTION_I_ZOOMCHAM:
-		if (bEnable) m_ToggleItemList[(nIndex == OPTION_I_ZOOMNHANH) ? OPTION_I_ZOOMCHAM : OPTION_I_ZOOMNHANH].bEnable = false;
-	case OPTION_I_LAC:
-		JxLia_DatNhay(m_ToggleItemList[OPTION_I_ZOOMNHANH].bEnable, m_ToggleItemList[OPTION_I_ZOOMCHAM].bEnable, m_ToggleItemList[OPTION_I_LAC].bEnable);
+	case OPTION_I_LAC:	// [ZOOM3D 14/09] ([ZOOMTHANH 14/09 e] chi con Lac camera; nhanh / cham / chum theo config)
+		JxLia_DatNhay(-1, -1, m_ToggleItemList[OPTION_I_LAC].bEnable);
 		break;
-	case OPTION_I_CHUMZOOM:	// [ZOOMTHANH 14/09] ap ngay
-		JxLia_DatChum(bEnable);
+	case OPTION_I_THANHZOOM:	// [ZOOMTHANH 14/09 c]
+		JxZoomThanh_DatBat(bEnable);
 		break;
 #endif
 	}
@@ -277,7 +274,8 @@ void KUiOptions2::LoadSetting(bool bReload, bool bUpdateOption)
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_NHINRONG], true, &bOptionsEnable[OPTION_I_NHINRONG]);
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_HQQUAI], true, &bOptionsEnable[OPTION_I_HQQUAI]);	// [HAOQUANG 14/09] mac dinh BAT
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_SANGVATROI], true, &bOptionsEnable[OPTION_I_SANGVATROI]);
-			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_LAC], true, &bOptionsEnable[OPTION_I_LAC]);	// [ZOOM3D 14/09] lac mac dinh BAT; zoom nhanh/cham mac dinh TAT
+			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_LAC], true, &bOptionsEnable[OPTION_I_LAC]);
+			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_THANHZOOM], true, &bOptionsEnable[OPTION_I_THANHZOOM]);	// [ZOOMTHANH 14/09 c] thanh zoom mac dinh BAT	// [ZOOM3D 14/09] lac mac dinh BAT; zoom nhanh/cham mac dinh TAT
 #endif
 			g_UiBase.CloseAutoSettingFile(true);
 		}		
@@ -301,8 +299,8 @@ void KUiOptions2::LoadSetting(bool bReload, bool bUpdateOption)
 		JxLia_DatTuyChon(bOptionsEnable[OPTION_I_LIA], bOptionsEnable[OPTION_I_NHINRONG], bOptionsEnable[OPTION_I_VENHANH]);	// [CAMERA 13/09 TUYCHON] luc vao the gioi + moi lan nap lai
 		JxHaoQuang_DatBat(bOptionsEnable[OPTION_I_HQQUAI]);	// [HAOQUANG 14/09]
 		JxVatRoi_DatBat(bOptionsEnable[OPTION_I_SANGVATROI]);
-		JxLia_DatNhay(bOptionsEnable[OPTION_I_ZOOMNHANH], bOptionsEnable[OPTION_I_ZOOMCHAM], bOptionsEnable[OPTION_I_LAC]);	// [ZOOM3D 14/09]
-		JxLia_DatChum(bOptionsEnable[OPTION_I_CHUMZOOM]);	// [ZOOMTHANH 14/09] mac dinh TAT (GetInteger mac dinh false)
+		JxLia_DatNhay(-1, -1, bOptionsEnable[OPTION_I_LAC]);	// [ZOOM3D 14/09] ([ZOOMTHANH 14/09 e] nhanh / cham / chum theo config [Cham])
+		JxZoomThanh_DatBat(bOptionsEnable[OPTION_I_THANHZOOM]);	// [ZOOMTHANH 14/09 c]
 #endif
 	}
 

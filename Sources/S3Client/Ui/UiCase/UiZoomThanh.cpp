@@ -17,11 +17,18 @@
 #define	ZT_CHO_TROI_MS	700		// sau khi nguoi choi keo, cho bao lau roi moi de zoom troi (map / chum) keo nut theo
 
 KUiZoomThanh* KUiZoomThanh::m_pSelf = NULL;
+static int s_nThanhZoomBat = 1;	// [ZOOMTHANH 14/09 c] cong tac "Thanh zoom" (Cai dat > Toi uu), mac dinh BAT
+
+// [ZOOMTHANH 14/09 c] UiOptions2: bat / tat thanh keo zoom (tat = khong ve, cham xuyen qua; van zoom duoc bang chum neu bat "Chum zoom")
+extern "C" void JxZoomThanh_DatBat(int nBat)
+{
+	s_nThanhZoomBat = nBat ? 1 : 0;
+}
 
 KUiZoomThanh::KUiZoomThanh()
 {
 	m_nMin = 80; m_nMax = 150; m_nBuoc = 5;
-	m_bDangDat = 0; m_bAn = 0; m_uKeoCuoi = 0;
+	m_bDangDat = 0; m_bAn = 0; m_uKeoCuoi = 0; m_bNgang = 0;
 	AddChild(&m_Thanh);
 }
 
@@ -67,6 +74,7 @@ void KUiZoomThanh::LoadScheme(const char* pScheme)
 		{
 			m_pSelf->Init(&Ini, "Main");
 			m_pSelf->m_Thanh.Init(&Ini, "Thanh");
+			{ int nKieu = 0; Ini.GetInteger("Thanh", "Type", 0, &nKieu); m_pSelf->m_bNgang = (nKieu == 0) ? 1 : 0; }	// [ZOOMTHANH 14/09 b] Type=0 ngang
 		}
 		else
 			g_DebugLog("[ZOOMTHANH] khong nap duoc %s", Buff);
@@ -77,7 +85,7 @@ void KUiZoomThanh::LoadScheme(const char* pScheme)
 void KUiZoomThanh::CapNhat()
 {
 	int nMin = 0, nMax = 0, nBuoc = 5;
-	int nBat = JxLia_ZoomGioiHan(&nMin, &nMax, &nBuoc);
+	int nBat = JxLia_ZoomGioiHan(&nMin, &nMax, &nBuoc) && s_nThanhZoomBat;	// [ZOOMTHANH 14/09 c] + cong tac Thanh zoom
 
 	if (nBuoc <= 0)
 		nBuoc = 5;
@@ -102,7 +110,7 @@ void KUiZoomThanh::CapNhat()
 		m_Thanh.SetValueRange(0, (nMax - nMin) / nBuoc);
 		m_bDangDat = 0;
 	}
-	int nGia = (JxLia_ZoomDich() - m_nMin + m_nBuoc / 2) / m_nBuoc;
+	int nGia = m_bNgang ? (m_nMax - JxLia_ZoomDich() + m_nBuoc / 2) / m_nBuoc : (JxLia_ZoomDich() - m_nMin + m_nBuoc / 2) / m_nBuoc;	// [ZOOMTHANH 14/09 b] ngang: 0 = nhin rong nhat (trai)
 	if (nGia != m_Thanh.GetScrollPos() && (unsigned int)GetTickCount() - m_uKeoCuoi > ZT_CHO_TROI_MS)
 	{
 		m_bDangDat = 1;
@@ -118,7 +126,7 @@ int KUiZoomThanh::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 		if (!m_bDangDat)
 		{
 			m_uKeoCuoi = (unsigned int)GetTickCount();
-			JxLia_ZoomDatMuot(m_nMin + (int)nParam * m_nBuoc);
+			JxLia_ZoomDatMuot(m_bNgang ? m_nMax - (int)nParam * m_nBuoc : m_nMin + (int)nParam * m_nBuoc);	// [ZOOMTHANH 14/09 b]
 		}
 		return 0;
 	}

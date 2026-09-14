@@ -585,3 +585,41 @@ Chưa thử được trên máy ảo: cảm giác kéo bằng ngón thật, chat
 
 - Đao quang (mục 10 báo cáo 3D) và bốn đề xuất tối ưu mục 12 vẫn chờ chủ chọn.
 - Nếu chủ muốn thanh nằm ngang hoặc chỗ khác: đổi `uizoomthanh.ini` (Type=0 + ảnh ngang) hoặc kéo trong "Chỉnh giao diện".
+
+
+---
+
+# THANH KÉO ZOOM (b–e) + LỚP CHỮ NEO CHÂN (b–d) — 14/09 15:2x (bản **109141520**), sau ba lượt chủ thử Fold 7
+
+Chủ: *"chưa thấy chỗ zoom kéo"* → *"zoom chưa cố định theo kích cỡ màn hình nên màn hình rộng bị che bởi kênh chat"* → *"khi zoom rộng ra thì tên bang hội với danh hiệu bị lệch"* → *"bị lỗi hở quá xa với thanh máu"*, *"không có nút tắt thanh zoom?"* → *"chụm zoom là gì? những tính năng nào không dùng dọn sạch phần cài đặt"*, *"ngôi sao chuyển sinh màu xanh chưa cố định theo tên nên bị lệch"*.
+
+## 1. Thanh kéo zoom: nằm ngang, neo giữa mép trên qua bảng bố cục
+
+- Gốc lỗi "bị kênh chat che": `KUiZoomThanh` không gọi `SetFitFlags` và không có trong bảng bố cục nên đứng ở toạ độ tuyệt đối (4,330) mọi màn; mọi ô HUD khác được đặt qua `ui\uitoado_macdinh.ini` (họ máy tính bảng) / `uitoado_macdinh_rong.ini` (họ điện thoại, tỉ lệ dài) với neo NeoX/NeoY.
+- Sửa: thanh **nằm ngang 140×28** ngay dưới hàng icon menu, khoá `KUiZoomThanh|Main = 442,96,1000,0,1,0` (NeoX=1 = căn giữa) trong **cả hai** tệp bố cục (lớp ghi đè + máy ảo + dt_v4); `uizoomthanh.ini` `[Thanh] Type=0`, ảnh `thanh_ngang.spr` (dấu − trái = nhìn rộng, + phải = phóng to). Mã đọc `Type` để đảo chiều (`m_bNgang`); thanh dọc vẫn dùng được (Type=1). Vuốt ngang trên giao diện vốn là kéo (`CHAM_KEO`) nên không cần ngoại lệ KSdlApp (ngoại lệ dọc vẫn giữ).
+- Công tắc **"Thanh zoom"** (Tối ưu, mặc định BẬT): `JxZoomThanh_DatBat` → thanh không vẽ, chạm xuyên qua.
+
+## 2. Tối ưu còn 11 công tắc (6 hàng, Top 60 cách 27)
+
+Bỏ **Zoom nhanh / Zoom chậm / Chụm zoom** (chủ hỏi "chụm zoom là gì": chụm = hai ngón dang/khép để zoom; nó nuốt cú chạm của ngón 1 khi chơi hai ngón cái nên đã tắt, thanh kéo thay thế). Chụm hai ngón và độ nhạy chỉ còn qua config `[Cham] ZoomChum=0/1`, `ZoomNhay` (không có trên dt_v4, mã mặc định 0). `OPTION_INDEX_COUNT2` = 11, `android/sinh_uioptions2_don.py` viết lại `[ToggleOptionsName]` (9 = Lắc camera, 10 = Thanh zoom).
+
+## 3. Lớp chữ thế giới: neo chân nhóm, chiều cao co theo zoom, icon đi cùng
+
+- **(b) lệch tên/bang/danh hiệu**: Core căn giữa mỗi dòng quanh `nMpsX` theo bề rộng chữ và xếp dòng theo độ cao ở toạ độ 1:1; qua cửa zoom các độ lệch đó bị thu phóng trong khi chữ giữ cỡ thật → mỗi dòng lệch một kiểu. Sửa trong `TgChuVe()`: gom các phần tử **liên tiếp cùng tâm x (±2) và gần nhau theo y (150 đơn vị)** thành một nhóm = một NPC (thanh máu hai đoạn kề nhau gộp tâm); neo nhóm = (tâm x, y chân = y lớn nhất của dòng chữ) đi qua `CoordinateTransform` (zoom/lắc); mỗi phần tử vẽ ở neo + độ lệch 1:1 không thu phóng, chữ với `TEXT_IN_SINGLE_PLANE_COORD`, bóng/icon với `bSinglePlaneCoord = TRUE`.
+- **(c) "hở quá xa với thanh máu"**: chiều cao neo (`nHeightOff` = z nhỏ nhất của nhóm = chiều cao nhân vật) phải **co theo zoom** như thân sprite; chỉ phần xếp dòng (z − zMin, độ lệch y) giữ cỡ thật.
+- **(d) ngôi sao chuyển sinh / icon cạnh tên**: `KNpc::PaintInfo` (mobile) gọi `DrawPrimitives(…, RU_T_IMAGE, 2)` cho 6 chỗ icon (RURank, RUIconImage ×2, RUIconImageR ×3; `#ifdef JX_MOBILE/#else` giữ nguyên dòng PC); Represent3 hiểu 2 = toạ độ thế giới + lớp thông tin → xếp hàng loại 4, vẽ sau blit cùng nhóm chữ ở cỡ thật, lệch 1:1 so với tâm nhóm (icon gia nhập nhóm với biên ±200; nhóm mở bằng icon lấy tâm từ dòng chữ đầu tiên).
+- Chưa đổi: Bloom/ảnh nền; hạt mưa tuyết (KWeather, cả lô) không xếp.
+
+## 4. Thử máy ảo (1040×604, bản cuối)
+
+| | |
+|---|---|
+| Thanh | ngang giữa mép trên (x 440–580, y 96–124), kéo hai chiều, bấm nấc, tắt/bật qua công tắc |
+| 80 % / 150 % | chữ + thanh máu bám sát đầu (không hở), tên/bang/danh hiệu căn giữa thẳng cột |
+| Tống Kim 150 % (auto của chủ đưa vào) | ~200 nhãn cỡ thật, 55 fps, không sập |
+| Tối ưu | 11 công tắc 6 hàng, "Thanh zoom" hàng cuối |
+
+## 5. Còn lại
+
+- Đề xuất (d) mục 12 (nhìn rộng ≥ 130 % vẽ RT nấc thấp rồi blit) — chủ đã chọn, làm tiếp ngay sau bản này (log Fold 7 14:47: GPU nghẽn lúc đông khi zoom).
+- Chat trên đầu lúc zoom chưa thử được trên máy ảo (OutputRichText đi cùng nhóm).
