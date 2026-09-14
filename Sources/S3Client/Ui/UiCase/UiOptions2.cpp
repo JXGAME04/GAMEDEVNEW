@@ -19,10 +19,10 @@
 #ifdef JX_MOBILE
 #include "../../Platform/JxLiaCanh.h"	// [CAMERA 13/09 TUYCHON] JxLia_DatTuyChon
 void JxNhip_VeNen(int nX, int nY, int nRong, int nCao);	// Platform/JxPerfHudAndroid.cpp: nen mo (nhu hang FPS cua KUiOptions)
-extern "C" void JxHaoQuang_DatBat(int nQuai, int nTrangBi);	// [HAOQUANG 14/09] Core/Src/KNpc.cpp: vong hao quang quai / trang bi
+extern "C" void JxHaoQuang_DatBat(int nQuai);	// [HAOQUANG 14/09] Core/Src/KNpc.cpp: vong hao quang quai / trang bi
 extern "C" void JxVatRoi_DatBat(int nBat);					// Core/Src/KObj.cpp: cot sang + loe vat pham roi
 #undef MAX_TOGGLE_BTN_COUNT
-#define MAX_TOGGLE_BTN_COUNT 10	// [HAOQUANG 14/09] 10 nut; [CAMERA 13/09 TUYCHON] lop KUiOptions2 (header tra lai 4 cho KUiOptions) - dat SAU include cuoi
+#define MAX_TOGGLE_BTN_COUNT 9	// [HAOQUANG 14/09 d] 9 nut (bo Vong do mac); [CAMERA 13/09 TUYCHON] lop KUiOptions2 (header tra lai 4 cho KUiOptions) - dat SAU include cuoi
 #endif
 extern iCoreShell*	g_pCoreShell;
 
@@ -37,7 +37,7 @@ const char* ls_ToggleOptionName2[OPTION_INDEX_COUNT2] =
 	"GiamSkill",
 #ifdef JX_MOBILE
 	"LiaCanh", "NhinRong", "LiaVeNhanh",	// [CAMERA 13/09 TUYCHON] luu UiCommon.ini [Options2]
-	"HaoQuangQuai", "HaoQuangTrangBi", "SangVatRoi",	// [HAOQUANG 14/09]
+	"HaoQuangQuai", "SangVatRoi",	// [HAOQUANG 14/09] (14/09 d: bo HaoQuangTrangBi)
 #endif
 };
 
@@ -200,9 +200,8 @@ void KUiOptions2::ToggleOption(int nIndex)
 	case OPTION_I_VENHANH:	// [CAMERA 13/09 TUYCHON] ap ngay; luu khi dong cua so (StoreSetting)
 		JxLia_DatTuyChon(m_ToggleItemList[OPTION_I_LIA].bEnable, m_ToggleItemList[OPTION_I_NHINRONG].bEnable, m_ToggleItemList[OPTION_I_VENHANH].bEnable);
 		break;
-	case OPTION_I_HQQUAI:
-	case OPTION_I_HQTRANGBI:	// [HAOQUANG 14/09] ap ngay
-		JxHaoQuang_DatBat(m_ToggleItemList[OPTION_I_HQQUAI].bEnable, m_ToggleItemList[OPTION_I_HQTRANGBI].bEnable);
+	case OPTION_I_HQQUAI:	// [HAOQUANG 14/09] ap ngay
+		JxHaoQuang_DatBat(m_ToggleItemList[OPTION_I_HQQUAI].bEnable);
 		break;
 	case OPTION_I_SANGVATROI:
 		JxVatRoi_DatBat(bEnable);
@@ -266,7 +265,6 @@ void KUiOptions2::LoadSetting(bool bReload, bool bUpdateOption)
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_LIA], true, &bOptionsEnable[OPTION_I_LIA]);	// [CAMERA 13/09 TUYCHON] mac dinh BAT (chua co khoa)
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_NHINRONG], true, &bOptionsEnable[OPTION_I_NHINRONG]);
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_HQQUAI], true, &bOptionsEnable[OPTION_I_HQQUAI]);	// [HAOQUANG 14/09] mac dinh BAT
-			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_HQTRANGBI], true, &bOptionsEnable[OPTION_I_HQTRANGBI]);
 			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_SANGVATROI], true, &bOptionsEnable[OPTION_I_SANGVATROI]);
 #endif
 			g_UiBase.CloseAutoSettingFile(true);
@@ -289,7 +287,7 @@ void KUiOptions2::LoadSetting(bool bReload, bool bUpdateOption)
 		g_pCoreShell->OperationRequest(GOI_OPTION_SETTING, OPTION_QUALITY_GIAMSKILL, bOptionsEnable[OPTION_I_GIAMSKILL]);
 #ifdef JX_MOBILE
 		JxLia_DatTuyChon(bOptionsEnable[OPTION_I_LIA], bOptionsEnable[OPTION_I_NHINRONG], bOptionsEnable[OPTION_I_VENHANH]);	// [CAMERA 13/09 TUYCHON] luc vao the gioi + moi lan nap lai
-		JxHaoQuang_DatBat(bOptionsEnable[OPTION_I_HQQUAI], bOptionsEnable[OPTION_I_HQTRANGBI]);	// [HAOQUANG 14/09]
+		JxHaoQuang_DatBat(bOptionsEnable[OPTION_I_HQQUAI]);	// [HAOQUANG 14/09]
 		JxVatRoi_DatBat(bOptionsEnable[OPTION_I_SANGVATROI]);
 #endif
 	}

@@ -428,3 +428,10 @@ Chủ: *"tên trang bị bị lệch và hình ảnh quá to, làm nhỏ lại c
 - **Tên**: `DrawInfo` cộng `VatRoi_CaoTen` = độ lơ lửng + chiều cao icon đã co − 12 vào `nHeightOff` (`OBJ_SHOW_NAME_Y_OFF` 48) → tên nằm ngay trên icon.
 - `VatRoi_DoCao` nay trả độ LƠ LỬNG (0..NoiCao+3), −1 = tắt; không cộng 12 nữa. Kịch bản `android/va_nguon_vatroi_1409_e.py` (sau bản d); ảnh `anh_vatroi_cotsang.py` sinh lại (lớp ghi đè, máy ảo, dt_v4).
 - Máy ảo: ném "Kim Cô Bổng" (1×4, 24×102) và "Phá Thiên Chùy" (2×2, 50×50 → 28×28): búa đứng nhỏ trong cột tím, tên phía trên (`chuy3_zoom2.png`). `kiem --pc` ĐẠT.
+
+## 11. Chủ 14/09 10:2x: "bỏ vòng đồ ở player đi" (bản **109140955**)
+
+- Gỡ hẳn vòng hào quang đồ mặc của nhân vật mình: `KNpc.cpp` cắt nhánh `kind_player` trong `HaoQuang_Ve`, bỏ `s_nHqTrangBi / TrangBiTu`, `JxHaoQuang_DatBat(int nQuai)`, bảng ảnh 7 → 6 (bỏ `vongnguoi.spr`, xoá tệp ở lớp ghi đè, máy ảo, dt_v4; `anh_haoquang_vong.py` không sinh nữa, giữ hàm `vong_nguoi` để tham khảo).
+- Cài đặt > Tối ưu còn **9 công tắc**: bỏ "Vòng đồ mặc" (`OPTION_I_HQTRANGBI`, `MAX_TOGGLE_BTN_COUNT` 10 → 9, `uioptions2.ini` "8=Sáng vật rơi"; `sinh_uioptions2_haoquang.py` 2 tên). Khoá đã lưu `HaoQuangTrangBi` trong `uiautoconfig.ini [Options2]` của tài khoản cũ bị bỏ qua, không lỗi.
+- `config.ini [HaoQuang]` viết lại: chỉ còn `Alpha`, `Thu` (1 mọi quái thường, 3 cả NPC thoại), `ThuAnh`; bỏ `TrangBiTu`.
+- Vòng quái/boss và cột sáng + icon đứng của vật rơi giữ nguyên. Kịch bản `android/va_nguon_haoquang_1409_d.py` (chạy sau a/b/c; nhận thêm tham số thư mục dt_v4 để sửa dữ liệu). `kiem --pc` ĐẠT; máy ảo: vào thế giới không sập, cửa sổ Tối ưu 9 nút.

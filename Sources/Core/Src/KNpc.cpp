@@ -9155,25 +9155,22 @@ int KNpc::PaintTeamMNG(KUiPlayerItem *m_pPlayersList, KUiPlayerPaintTeamMNG *nPa
 //  - QUAI: m_Type (BOSS_STATE, may chu day qua NpcSync.NpcEnchant - cung truong to mau ten quai o PaintInfo): boss_blue -> vongquai.spr
 //    xanh duong, boss_muter -> vongquai.spr xanh la; boss_gold -> vongboss.spr hoang kim, boss_event -> tim, boss_war -> do. Anh TRANG
 //    (android/anh_haoquang_vong.py) nhan mau bang IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST, quay theo thoi gian (70 ms/khung).
-//  - TRANG BI (chi nhan vat cua MINH - client khong biet do nguoi khac dang mac, khong doi giao thuc): pham chat cao nhat dang mac
-//    >= [HaoQuang] TrangBiTu (3 hoang kim) -> vong hao quang co san cua JX1: hoang kim vongtronvang.spr, do tim vongtrontim.spr,
-//    bach kim vongtronxanh.spr (30 khung, giu mau goc).
+//  - TRANG BI (vong duoi chan nhan vat minh theo pham chat do mac, ban c dung vongnguoi.spr): DA BO 14/09 10:2x theo chu ("bo vong do o player di").
 //  Ve ngay truoc than NPC (KNpc::Paint -> m_DataRes.Draw) tai diem dat chan (REF_SPOT, neo = tam vong). Cong tac Cai dat > Toi uu
-//  (UiOptions2) qua JxHaoQuang_DatBat; config.ini [HaoQuang] Alpha / TrangBiTu / Thu (1 = moi quai thuong cung co vong xanh, 2 = ca minh
+//  (UiOptions2) qua JxHaoQuang_DatBat; config.ini [HaoQuang] Alpha / Thu (1 = moi quai thuong cung co vong xanh, 3 = ca NPC thoai
 //  - de thu may ao). Khong doi lop KNpc, khong doi giao thuc; PC y het.
-static int         s_nHqDoc = 0, s_nHqQuai = 1, s_nHqTrangBi = 1, s_nHqAlpha = 220, s_nHqTrangBiTu = 3, s_nHqThu = 0, s_nHqBao = 0;
+static int         s_nHqDoc = 0, s_nHqQuai = 1, s_nHqAlpha = 220, s_nHqThu = 0, s_nHqBao = 0;	// [HAOQUANG 14/09 d] bo s_nHqTrangBi/TrangBiTu
 static int         s_nHqThuAnh = 0;	// [HAOQUANG 14/09 e] [HaoQuang] ThuAnh: 1 vong quai = vongtrondo.spr that, 2 vongquai.spr khong nhuom, 3 nhuom trang
-static KRUImage    s_HqAnh[7];
-static const char* s_HqTen[7] = { "\\spr\\haoquang\\vongquai.spr", "\\spr\\haoquang\\vongboss.spr",
+static KRUImage    s_HqAnh[6];	// [HAOQUANG 14/09 d] 0 quai, 1 boss, 2..5 anh that (chi ThuAnh=1 dung 5); bo vongnguoi.spr
+static const char* s_HqTen[6] = { "\\spr\\haoquang\\vongquai.spr", "\\spr\\haoquang\\vongboss.spr",
 	"\\spr\\haoquang\\vongtronvang.spr", "\\spr\\haoquang\\vongtrontim.spr", "\\spr\\haoquang\\vongtronxanh.spr",
-	"\\spr\\haoquang\\vongtrondo.spr", "\\spr\\haoquang\\vongnguoi.spr" };	// [HAOQUANG 14/09 c] 6 = vong do mac kieu 3D (anh trang, nhuom)
-static const int   s_HqKhung[7] = { 12, 16, 30, 30, 30, 30, 16 };
-static const int   s_HqMs[7]    = { 70, 70, 50, 50, 80, 50, 70 };
+	"\\spr\\haoquang\\vongtrondo.spr" };
+static const int   s_HqKhung[6] = { 12, 16, 30, 30, 30, 30 };
+static const int   s_HqMs[6]    = { 70, 70, 50, 50, 80, 50 };
 
-extern "C" void JxHaoQuang_DatBat(int nQuai, int nTrangBi)
+extern "C" void JxHaoQuang_DatBat(int nQuai)	// [HAOQUANG 14/09 d] chi con cong tac vong quai
 {
-	s_nHqQuai    = nQuai ? 1 : 0;
-	s_nHqTrangBi = nTrangBi ? 1 : 0;
+	s_nHqQuai = nQuai ? 1 : 0;
 }
 
 static void HaoQuang_DocCfg()
@@ -9184,12 +9181,11 @@ static void HaoQuang_DocCfg()
 	s_nHqDoc = 1;
 	GetCurrentDirectory(MAX_PATH, szCfg); strcat(szCfg, "\\Config.ini");
 	s_nHqAlpha     = GetPrivateProfileInt("HaoQuang", "Alpha", 220, szCfg);
-	s_nHqTrangBiTu = GetPrivateProfileInt("HaoQuang", "TrangBiTu", 3, szCfg);
 	s_nHqThu       = GetPrivateProfileInt("HaoQuang", "Thu", 0, szCfg);
 	s_nHqThuAnh    = GetPrivateProfileInt("HaoQuang", "ThuAnh", 0, szCfg);	// [HAOQUANG 14/09 e]
 	if (s_nHqAlpha < 30) s_nHqAlpha = 30;
 	if (s_nHqAlpha > 255) s_nHqAlpha = 255;
-	g_DebugLog("[HAOQUANG] quai=%d trang bi=%d alpha=%d trang bi tu=%d thu=%d", s_nHqQuai, s_nHqTrangBi, s_nHqAlpha, s_nHqTrangBiTu, s_nHqThu);
+	g_DebugLog("[HAOQUANG] quai=%d alpha=%d thu=%d thu anh=%d", s_nHqQuai, s_nHqAlpha, s_nHqThu, s_nHqThuAnh);
 }
 
 // ve mot vong tai diem dat chan (x, y): nAnh 0..4; dwMau 0 = giu mau goc (anh mau san), khac 0 = nhan mau (anh trang) + alpha cau hinh
@@ -9235,7 +9231,7 @@ static void HaoQuang_VeVong(int nAnh, DWORD dwMau, int x, int y)
 // goi trong KNpc::Paint ngay truoc m_DataRes.Draw (than); p = NPC dang ve
 static void HaoQuang_Ve(KNpc* p)
 {
-	int x = 0, y = 0, nAnh = -1, i, nMau = 0, nIdx, c;
+	int x = 0, y = 0, nAnh = -1;	// [HAOQUANG 14/09 d] bo vong do mac (chu: "bo vong do o player di")
 	DWORD dwMau = 0;
 	HaoQuang_DocCfg();
 	if (p->m_Doing == do_death || p->m_Doing == do_revive)	// [HAOQUANG 14/09 c] khong xet m_CurrentLife (NPC thoai = 0 tren client)
@@ -9255,28 +9251,6 @@ static void HaoQuang_Ve(KNpc* p)
 			if (s_nHqThu && (p->m_Kind == kind_normal || s_nHqThu >= 3)) { nAnh = 0; dwMau = 0x6E78FF; }	// [HAOQUANG 14/09 b] Thu=3: ca NPC thoai (thu trong thanh)
 			break;
 		}
-	}
-	else if (p->m_Kind == kind_player && p->m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex)
-	{
-		if (!s_nHqTrangBi)
-			return;
-		for (i = 0; i < itempart_num; i++)
-		{
-			nIdx = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipment(i);
-			if (nIdx <= 0)
-				continue;
-			c = Item[nIdx].GetColorItem();
-			if (c != broken_item && c > nMau)
-				nMau = c;
-		}
-		if (s_nHqThu >= 2 && nMau < gold_item)
-			nMau = gold_item;
-		if (nMau < s_nHqTrangBiTu || nMau < green_item)
-			return;
-		// [HAOQUANG 14/09 c] chu: "vong hao quang do mac phai lam giong nhu 3d, khong dung vong sang co san" -> vongnguoi.spr (phang, trang)
-		// nhuom theo pham chat: hoang kim vang, do tim tim, bach kim trang xanh, xanh la cho do xanh (chi khi TrangBiTu <= 1)
-		nAnh = 6;
-		dwMau = (nMau == gold_item) ? 0xFFD94E : (nMau == purple_item) ? 0xE65AFF : (nMau == platinum_item) ? 0xC8F0FF : 0x5AE65A;
 	}
 	if (s_nHqThu && p->m_Kind != kind_player)
 	{

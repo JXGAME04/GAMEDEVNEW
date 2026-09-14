@@ -174,12 +174,11 @@ def nhuom(k, m):
 def main():
     quai = [vong_khung(i, 12, 64, False) for i in range(12)]      # 128x64
     boss = [vong_khung(i, 16, 88, True) for i in range(16)]       # 176x88
-    nguoi = [vong_nguoi(i, 16, 72) for i in range(16)]            # 144x72
+    # [HAOQUANG 14/09 d] vongnguoi.spr (vong do mac cua minh) DA BO theo chu; ham vong_nguoi giu lai de tham khao
     for dich in DICH:
         n1 = ghi_spr(quai, os.path.join(dich, "vongquai.spr"), 64, 32, 70)
         n2 = ghi_spr(boss, os.path.join(dich, "vongboss.spr"), 88, 44, 70)
-        n3 = ghi_spr(nguoi, os.path.join(dich, "vongnguoi.spr"), 72, 36, 70)
-        print("da ghi:", dich, "vongquai.spr %d B, vongboss.spr %d B, vongnguoi.spr %d B" % (n1, n2, n3))
+        print("da ghi:", dich, "vongquai.spr %d B, vongboss.spr %d B" % (n1, n2))
     if XEM:
         # xem truoc: hang 1 quai/boss 5 mau; hang 2 vong nguoi 4 pham chat (hoang kim, do tim, bach kim, xanh) + 4 khung
         mau = [(110, 120, 255), (255, 217, 78), (230, 90, 255), (255, 60, 40), (60, 220, 60)]
@@ -193,13 +192,6 @@ def main():
             nen.alpha_composite(k, (x, 20 + (88 - k.size[1]) // 2))
             cx, cy = 10 + i * 190 + 88, 20 + 44
             dd.rectangle((cx - 8, cy - 46, cx + 8, cy), fill=(120, 90, 60, 255))
-        for i, m in enumerate([(255, 217, 78), (230, 90, 255), (200, 240, 255), (90, 230, 90)]):
-            k = nhuom(nguoi[(i * 4) % 16], m)
-            nen.alpha_composite(k, (10 + i * 190 + 16, 128))
-            cx, cy = 10 + i * 190 + 88, 128 + 36
-            dd.rectangle((cx - 8, cy - 46, cx + 8, cy), fill=(120, 90, 60, 255))
-        for i in range(5):
-            nen.alpha_composite(nguoi[i * 3], (10 + i * 190 + 16, 220))
         nen.convert("RGB").save(XEM)
         print("xem truoc:", XEM)
 
