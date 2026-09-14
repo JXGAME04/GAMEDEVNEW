@@ -1,8 +1,8 @@
 # BÀN GIAO — WAuto: 5 lỗi chủ game báo 14/09/2026
 
-Commit `5411b57d` (đợt 1) + `a4787f35` + `962c6994` (đợt 3 — sửa lại sau phản hồi của chủ game)
+Commit `5411b57d` (đợt 1) + `a4787f35` + `962c6994` + `35aa446c` (đợt 4 — sau các manh mối của chủ game)
 Nhánh `claude/wauto-auto-horse-bugs-ad45c9`.
-`CoreClient.dll` md5 **`e88c8f22`** — đã đặt sẵn `CoreClient.dll.moi` ở
+`CoreClient.dll` md5 **`5801ca5a`** — đã đặt sẵn `CoreClient.dll.moi` ở
 `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client`. Thoát hẳn `Game.exe` rồi chạy
 `ChoiGame.bat`. `WAuto.exe` không đổi.
 
@@ -52,47 +52,55 @@ chiêu đao thì kéo lên — không cần bảng Chiêu KH cũng đủ dao đ�
 Quyết theo cả vòng chiêu nên **không thể** kéo lên rồi kéo xuống giữa hai khe. Giữ hai phanh:
 `uHorseTime` 2 giây **và** đồng hồ thật `m_TimeHorse / TIME_RIDE`.
 
-#### Riêng "Thiếu Lâm đao bị ép xuống" — chưa chứng minh được nguồn, đây là thứ đã loại trừ
+#### ✅ Chỗ ép xuống ngựa — ĐÃ TÌM RA: `TK_XuongNgua`, chỉ chạy trong Tống Kim
 
-**Đo được (không đoán):**
+Manh mối của chủ game *"khi vào Tống Kim mới bị"* + *"vào Tống Kim WAuto dùng phần PK"* là thứ
+khoá được vụ này.
 
-1. **Mọi chiêu đao của Thiếu Lâm / Thiên Vương đều `HorseLimit = 0`** — 11 chiêu:
-   `6` Thiếu Lâm Đao pháp · `19` Ma Ha Vô Lượng · `24` Thiên Vương Đao pháp · `32` Vô Tâm Trảm ·
-   `34` Kinh Lôi Trảm · `37` Bát Phong Trảm · `321` Vô Tướng Trảm · `322` Phá Thiên Trảm ·
-   `1058`/`1077`/`1084` Hào Hùng Trảm. **Game không cấm đánh trên ngựa.**
-   ⇒ khối ngựa cũ **không thể** ép người dùng chiêu đao Thiếu Lâm xuống — với `HorseLimit 0`
-   nó chạy nhánh **LÊN** ngựa.
-2. **Log 14/09 không có nhân vật Thiếu Lâm nào** — cả hai tiến trình (`pid 21964`, `pid 61260`)
-   đều dùng **skill 372**.
-3. **Ca xuống ngựa duy nhất trong log đã truy đến cùng:** skill `372` **Ngạo Tuyết Tiêu Phong**
-   (CharClass 5 = **Côn Lôn**, `EqtLimit 1` = đao, `HorseLimit 1`). `[FIGHT-HORSE] ride=1` 8 lần
-   và `[CHIEU-CAM] lý do 2 (ngựa)` **13 lần** — tức **chính client từ chối chiêu** khi đang cưỡi.
-   Ở đây xuống ngựa là **bắt buộc**, không phải lỗi.
-4. `[SKILL-SET] combo=0` — bảng Chiêu KH **đang tắt**, nên câu chuyện "khe đao kéo lên, khe sau
-   kéo xuống" tôi viết ở đợt 1 là **sai**.
+`TK_XuongNgua()` ([CoreShell.cpp:8300](Sources/Core/Src/CoreShell.cpp:8300)) — **chỉ tồn tại trong
+mạch Tống Kim**, đúng "chỉ bị khi vào Tống Kim" — xuống ngựa **vô điều kiện** mỗi lần "gặp địch",
+**không hề hỏi** chiêu của nhân vật có đánh được trên ngựa không. Bốn chỗ gọi trong `TKP_FIGHT`:
 
-**Danh sách ĐÓNG mọi chỗ trong client có thể làm nhân vật xuống ngựa** (đã quét
-`SendClientCmdRide(TRUE)` + `m_bRideHorse = FALSE` + `CheckRideHorse(TRUE)`):
-
-| Nơi | Điều kiện |
+| Gọi khi | Dòng |
 |---|---|
-| `CoreShell.cpp` `case PA_RIDE` | ô **"Xuống ngựa" tab Chiến đấu** (`nSelFHorse == 2`) |
-| ″ | ô **"Xuống ngựa" tab PK** (`bPKDownHorse`) |
-| ″ | khối "Tự động" — **chỉ khi `HorseLimit == 1`** |
-| ″ | người chơi bấm phím tắt / nút ngựa |
-| `TK_XuongNgua` | chỉ trong Tống Kim |
-| `KPlayerAuto.cpp:1729/1740` | **auto có sẵn trong game** (`F_IsNotRide`, hoặc `F_Auto` + HL 1) |
-| `KPlayer.cpp:12663` | auto có sẵn trong game — log 14/09 có **0 dòng** `AUTO-HORSELIMIT` ⇒ không chạy |
-| `KItemList.cpp:1598 / 1795` | tháo / đổi item ở **ô ngựa** |
-| Máy chủ | **không bao giờ tự ép** — `CheckRideHorse` chỉ chạy khi client xin |
+| đang ôm mục tiêu (`ea.uNpcID`) | 11200 |
+| đánh cùng mục tiêu với ắc chính | 11225 |
+| địch săn vào Tầm nhìn PK + `NGUA_DICH_THEM` | 11260 |
+| vừa chọn được địch, trước khi giao cho máy PK | 11274 |
 
-Chiêu Thiếu Lâm `HorseLimit 1` mà **dùng được khi đang cầm đao** (`EqtLimit -2` = không kén vũ khí):
-`10` Kim Cang Phục Ma · `17`/`271` Long Trảo Hổ Trảo · `38` Bàn Cổ Cửu Thức · `278` Phong Vân Giáng ·
-`320` Hoành Tảo Lục Hợp 111. Nếu chiêu trên chuột trái là một trong số đó thì **game bắt xuống**,
-và người chơi đang cầm đao sẽ thấy đúng như "đang đánh đao thì bị ép xuống".
+Trong trận Tống Kim địch ra vào tầm nhìn liên tục ⇒ **xuống** → `DT_DuocLenNgua` cho **lên lại**
+sau `NGUA_NGHI` 6 giây → gặp địch lại **xuống**… = đúng *"tự động lên xuống ngựa"*. Và người cầm
+đao Thiếu Lâm (cả 11 chiêu đao đều `HorseLimit 0` — **đánh trên ngựa được**) thấy đúng như
+*"đang đánh đao trên ngựa thì bị ép xuống"*.
 
-**Bản mới in thẳng thủ phạm:**
-`[FIGHT-HORSE] ... rangbuoc=1 chieuQD=<id chiêu trói ngựa>` — nhìn một dòng là biết.
+Đây là **luật 03/09 của chính chủ game** — *"xuống ngựa chỉ khi gặp địch"* — đúng ở thời điểm đó,
+nhưng nay chủ chốt lại: *"Thiếu Lâm đao tất nhiên là skill trên ngựa rồi"*.
+
+**Vá:** `TK_XuongNgua` nhận thêm `pAp`, chỉ xuống khi **vòng chiêu tấn công chính thật sự đòi
+xuống**. Vòng chiêu đánh được trên ngựa ⇒ **giữ nguyên trên ngựa**, và **không** ghi
+`s_uNguaXuongT` (không có lần xuống nào để mà phải chờ 6 giây).
+Hai ô "Xuống ngựa" của người chơi (tab Chiến đấu `nSelFHorse == 2`, tab PK `bPKDownHorse`)
+**vẫn thắng thế** — tick là xuống, không tự đổi ý người chơi.
+
+**Máy PK thì không có logic ngựa theo chiêu nào cả** — chỉ có ô `bPKDownHorse`, và ô đó cũng
+xuống vô điều kiện mỗi 2 giây. Khối đó trước nay **câm tịt**, không soi được; nay thêm log
+`[PK-NGUA]` + phanh `TIME_RIDE`. **Hành vi không đổi** (ô của người chơi).
+
+> 🔎 Nghiệm thu nhanh khi đánh Tống Kim — lọc `jx_auto.log`:
+> `[TK-NGUA] GAP DICH nhung GIU TREN NGUA` ⇒ đã đúng.
+> `[PK-NGUA] o 'Xuong ngua' tab PK dang BAT` ⇒ thủ phạm là **ô cấu hình**, bỏ tick đi.
+
+**Những thứ đã loại trừ bằng số đo (giữ lại để khỏi dò lại):**
+
+1. **Mọi chiêu đao Thiếu Lâm / Thiên Vương đều `HorseLimit = 0`** — 11 chiêu: `6` · `19` · `24` ·
+   `32` · `34` · `37` · `321` · `322` · `1058` · `1077` · `1084`. Bảng client và bảng máy chủ
+   **giống hệt** (1683/1683 dòng, 0 dòng lệch). Game **không** cấm đánh trên ngựa.
+2. `[SKILL-SET] combo=0` trong log 14/09 — bảng Chiêu KH **đang tắt**, nên câu chuyện "khe đao
+   kéo lên, khe sau kéo xuống" ở đợt 1 là **sai**.
+3. Log 14/09 **không có nhân vật Thiếu Lâm** — cả hai tiến trình đều dùng skill `372`
+   *Ngạo Tuyết Tiêu Phong* (Côn Lôn, đao, `HorseLimit 1`); ở đó `[CHIEU-CAM] lý do 2` 13 lần
+   chứng minh chính client từ chối chiêu khi đang cưỡi ⇒ xuống ngựa là **bắt buộc**, không phải lỗi.
+4. Máy chủ **không bao giờ tự ép** — `CheckRideHorse` chỉ chạy khi client xin.
 
 ### 1.2 🔴 Về mở rương xong không tự tắt rương
 
