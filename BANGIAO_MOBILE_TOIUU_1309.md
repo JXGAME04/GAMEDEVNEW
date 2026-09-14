@@ -145,3 +145,11 @@ Chủ: *"Lấy log test"*. Gói `SM-F966U1_20260913_193302` (34 phút, Tống Ki
 | Khác | `[TG]` K=1 suốt (60 Hz); 10 khối atlas = 640 MB; `cho lenh+swapchain` TB 4–11 ms (chờ GPU/vsync) — theo dõi tiếp; fps TB 57,5, p10 55; không sập |
 
 Sửa (`android/va_nguon_mobile_1309_f.py`, commit `b22bf5eb`): (1) `[XOANEN 13/09]` ảnh nền vùng `_*PlaceGround*_` xoá **trên GPU** (SetRenderTarget + Clear + trả lại), không khoá CPU; đo `[PGND-X]` ≥ 4 ms cho cả hai đường; (2) lớp giả lập: Clear rồi đổi đích vẽ mà không có lệnh vẽ trước đây **bị bỏ** (`bPendingClear = false` ở `RGCMD_TARGET`) → nay mở một pass rỗng `load_op CLEAR`; (3) vòng hỏi chỉ hỏi lại ô còn chờ, tối đa mỗi 32 ms; (4) tệp ô nền vào hàng TRƯỚC của luồng nền. Máy ảo đi qua nhiều vùng 6 phút: `[PGND]` ≥ 15 ms = 1 (vào map), `[PGND-X]` 0, không sập. Windows y hệt (bộ kiểm ĐẠT). Bản **109132016** lên dt_v4 20:24; lùi = `android/apk/jx1mobile-1309-nentruoc.apk` (109131908) hoặc `-wauto-khoi.apk` (109131648).
+
+### 10.2. 21:55–22:03 — "Tải tệp cập nhật bị lỗi" (không phải do bản dựng)
+
+Phiên khác (`game-3d-data-analysis`, việc LIA/ZOOM/CAMERA) ghi `dt_v4\config.ini` 21:55 và thêm `settings\camera_mobile.ini` 21:56 **sau** khi
+manifest sinh lúc 21:53 → md5 config.ini lệch → app báo lỗi. Phiên đó cũng chạy máy chủ 8765 riêng (PID 46564 từ 21:08) song song máy chủ của
+tôi (Windows cho hai tiến trình cùng listen vì `allow_reuse_address`). Xử lý 22:03: sinh lại manifest tại chỗ (`--chi-manifest`, không restart),
+tắt máy chủ trùng của tôi, giữ 46564, nhắn phiên kia. Mã LIA/ZOOM/CAMERA (`066d0939`, `c83048d9`) chưa vào `mobile-0809` → các khoá config
+đó hiện chưa có tác dụng trong bản 109132150. Bản đo `[PGND-R]` 109132150 vẫn là bản trên dt_v4.
