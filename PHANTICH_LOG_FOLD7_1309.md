@@ -202,3 +202,32 @@ Ghi chú: `anh_null` tên rỗng `(k0) x58 588 / 30 s` (≈ 2 000 lần/s) có t
 2. Đo pha logic: một bản đo `[TICK-DO]` chia tick logic thành mạng nhận/gửi, script Lua, UI KWnd, âm thanh, còn lại; ghi khi tick > 30 ms.
    Nhóm này giờ là lớn nhất (13/24) và chưa có số.
 3. Tìm nguồn `anh_null` tên rỗng (một lần grep + log tên cửa sổ gọi).
+
+## 14/09 11:12 — log sau `[NAPTO]` + `[LOGIC-PHA]` (bản 109141108, 4 phút gồm vào map)
+
+fps TB **60,0** (p10 60, min 58, 0 giây dưới 55), 1,80 W, nhiệt mức 0, không sập; 20 `[VE-GIAT]` (9 nạp đồng bộ, 10 vẽ CPU, 1 tải), `[SPIKE]` 11 (≥ 100 ms: 1, lúc vào map).
+
+**Logic = MẠNG (đã chốt):** `[LOGIC-PHA] t=6.6s logic=206: mang 165.0, uihb 40.3` · `t=11.1s logic=237: mang 236.1` · `t=11.3s logic=41: mang 40.1`;
+WAuto / IPC / Breathe / PROCFRAME / gửi đều ≈ 0. Cả ba lần đều lúc vào thế giới (đợt đồng bộ đầu). `KNetConnectAgent::Breathe` xử lý **hết** gói
+đang chờ trong `while (true)` (2 vòng: client + game server) → một đợt 236 ms trong một vòng lặp. Phiên 10:49 có cú 89/183 ms giữa trận (t=128/145 s)
+chưa có số pha nhưng cùng cơ chế là khả năng cao (đông người → gói đồng bộ dồn).
+
+**Nạp đồng bộ = CHỜ KHOÁ PAK, không phải khung to:** `[NAP-CHAM] rut khung FM_BD_015_ST01.spr k9 (1 KB nén, 19×61): 17.9 ms` · `MA_YY_999_AT01.spr k75 (1 KB): 37.4 ms` ·
+`xx_…(chiêu cy).spr k8 (23 KB, 245×203): 97.4 ms` · `k5 (19 KB): 12.2` · `tr…k22 (60 KB): 17.1` — khung 1 KB mất 17–37 ms thì không phải giải nén hay đọc flash
+(một trang UFS ~0,2 ms). `SprGetFrame` khoá mutex **theo tệp pak** (`ZSPRPackFile`), luồng nền (`NapNenChay`: nạp cả tệp spr trước + rút khung) giữ khoá
+khi đọc tệp to → luồng vẽ rút một khung nhỏ phải đợi. NAPTO (ngưỡng cỡ nén) vì thế chỉ bắt 21 khung to, không bắt được các cú này.
+Mở tệp ngoài lúc vẽ: 1 lần 12,6 ms (ảnh UI `…\通用\…\字.spr`).
+
+**Vẽ CPU 60–72 ms (10 khung) = hai loại theo `[PDET]`:** (1) `render=78: lop duoi 44.9` / `render=39: lop duoi 36.1` / `lop tren 31.5` — **lớp cửa sổ UI**
+vẽ 31–45 ms (thế giới 0,0 trong pass đó), phiên 10:49 y hệt (43,3 / 36,0 / 30,9): một cửa sổ nào đó vẽ rất nặng (nghi bảng nhiều chữ: Tống Kim,
+chat, WAuto — `[CHUGIU] ve moi 507 775 dòng/16 phút`); chưa có tên cửa sổ. (2) vào map: `the gioi 119.9 (dau ham 79.3 = ghép nền, nen dat 36.9), lop giua 39.4`
++ `[PGND-V] #~4~#: RIO 66.4 ms` (ghi lệnh vẽ 69 ô mất 66 ms — chỉ lúc vào map, có thể là nộp khung giữa chừng khi GPU đang ngập tải; XA/kề bên bình thường 5–9 ms).
+(3) `VAT THE 18.8–24.5` khi đông NPC (98/tick) — bình thường.
+
+**Đề xuất tiếp (chờ chủ chọn):**
+1. **`[MANG]`** ngân sách xử lý gói mỗi vòng lặp: `[Client] MangMs` (mặc định 8 ms), quá thì để phần còn lại sang vòng sau (thứ tự giữ nguyên, trễ thêm
+   ≤ 1 vòng ≈ 8–16 ms; bộ đệm nhận giữ gói). Ghi `[MANG-CAT]` khi cắt. Hết cú 165–236 ms lúc vào map, và cú giữa trận nếu cùng cơ chế.
+2. **`[PAKBAN]`** cờ "luồng nền đang đọc pak": luồng nền bật cờ quanh nạp tệp / rút khung; luồng vẽ thấy cờ thì giao khung cho luồng nền (bỏ vẽ 1–3 khung,
+   như NAPTO) thay vì đợi khoá 17–97 ms. Không đụng Engine (khoá pak giữ nguyên).
+3. **Đo cửa sổ UI nặng**: trong pass UI ≥ 25 ms ghi tên lớp/cửa sổ tốn nhất (`[PDET-UI]`), rồi mới quyết cache chữ hay sửa cửa sổ đó.
+4. RIO 66 ms lúc vào map và nền vùng 15–20 ms/lần đổi vùng: để sau (ẩn sau màn nạp / thưa).
