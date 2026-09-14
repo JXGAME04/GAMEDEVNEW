@@ -260,8 +260,9 @@ Chủ hỏi quay 90°, rồi 45°, 15°, và góc camera cúi/ngẩng. Tôi gử
 
 | | |
 |---|---|
-| APK | **109140030** (`jx1mobile.apk`), gộp `mobile-0809` hiện tại; kịch bản `android/va_nguon_lac_1409.py` + `va_nguon_lac_1409_b.py` |
+| APK | **109140035** dựng xong, thử máy ảo; **chưa chép dt_v4**: phiên đo nhịp gộp vào bản [TAI 14/09] của họ và giao MỘT lần (chủ dặn họ "test luôn một lần"), họ sẽ báo "bản X đã lên" ghi rõ có camera lắc. Kịch bản `android/va_nguon_lac_1409.py` + `va_nguon_lac_1409_b.py` (b gồm cả lắc dọc và giữ lề 2 s) |
 | Dữ liệu | `config.ini` `[Cham]` thêm `LiaLacDo=5`, `LiaLacDoc=6`, `LiaLacLe=112`, `LiaLacThu=0` (cả lớp ghi đè, máy ảo, dt_v4 + `--chi-manifest`) |
+| Soi chéo | phiên đo nhịp duyệt, 3 điểm chốt: lề RT chỉ lúc đang lia + 2 s sau (K=2 chỉ nghỉ lúc đó), RT là `D3DUSAGE_RENDERTARGET` (không bản CPU, cấp lại 2 lần/cử chỉ), góc ≠ 0 luôn đi kèm lề > 1000 (gửi lề trước góc) |
 
 ## 2. Cách dùng
 

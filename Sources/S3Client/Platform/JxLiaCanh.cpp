@@ -95,6 +95,7 @@ static int			s_nLacThuXong = 0;
 static int			s_nGocDaGui = 0, s_nLeDaGui = 1000;	// da gui cho Represent3
 static int			s_nLacDoc = 6;		// [LAC 14/09 b] LiaLacDoc: % co/dan doc toi da khi keo doc toi LiaXaDoc (0 = tat)
 static int			s_nDocDaGui = 1000;
+static unsigned int	s_uLeChoTat = 0;	// [LAC 14/09 c] luc bat dau cho tat le RT sau khi het lia (giu 2 s)
 
 static void DocCaiDat()
 {
@@ -224,6 +225,14 @@ static void ApXoay()
 		nDoc = 1000 + (int)(fTiY * (float)s_nLacDoc * 10.f);	// keo xuong (lech am) -> k < 1: canh det nhu camera ngang hon; keo len -> k > 1
 		nLe = s_nLacLe * 10;
 	}
+	if (nLe == 1000 && s_nLeDaGui != 1000)
+	{	// [LAC 14/09 c] het lia: giu le RT them 2 s (keo lien tiep khong phai cap lai RT); JxLia_Nhip goi lai ApXoay trong luc cho
+		const unsigned int uLuc = (unsigned int)GetTickCount();
+		if (!s_uLeChoTat) s_uLeChoTat = uLuc;
+		if (uLuc - s_uLeChoTat < 2000) nLe = s_nLeDaGui;
+		else s_uLeChoTat = 0;
+	}
+	else s_uLeChoTat = 0;
 	if (nLe != s_nLeDaGui)
 	{
 		Rep3TheGioi(8, nLe); s_nLeDaGui = nLe;
@@ -448,6 +457,8 @@ void JxLia_Nhip()
 			s_uNhaLuc = uNay;	// [LAC 14/09] keo gia lap: luc nha = luc nhip (khong thi unsigned am -> ve ngay)
 		}
 	}
+	if (s_nTrangThai == LIA_KHONG && s_nLeDaGui != 1000)
+		ApXoay();	// [LAC 14/09 c] dem 2 s roi tat le RT
 	if (s_nTrangThai == LIA_KHONG)
 		return;
 	// nhan vat co dang di khong: tieu diem goc (nOrigFocus) doi giua hai nhip

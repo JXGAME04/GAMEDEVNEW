@@ -139,6 +139,32 @@ va(LC,
    '\tif (nDoc != s_nDocDaGui) { Rep3TheGioi(9, nDoc); s_nDocDaGui = nDoc; }\t// [LAC 14/09 b]' + R + '}' + R,
    'Rep3TheGioi(9, nDoc); s_nDocDaGui = nDoc;')
 
+# [LAC 14/09 c] (soi cheo phien do nhip): het lia thi GIU le RT them 2 s (keo lien tiep khong cap lai RT 3 MB moi lan), JxLia_Nhip goi
+# ApXoay trong luc cho; goc luon = 0 truoc khi le ve 1000 (cung mot ApXoay: gui le roi goc, ca hai truoc khung ke).
+va(LC,
+   'static int\t\t\ts_nDocDaGui = 1000;' + R,
+   'static int\t\t\ts_nDocDaGui = 1000;' + R +
+   'static unsigned int\ts_uLeChoTat = 0;\t// [LAC 14/09 c] luc bat dau cho tat le RT sau khi het lia (giu 2 s)' + R,
+   's_uLeChoTat = 0;\t// [LAC 14/09 c]')
+va(LC,
+   '\tif (nLe != s_nLeDaGui)' + R + '\t{' + R + '\t\tRep3TheGioi(8, nLe); s_nLeDaGui = nLe;' + R,
+   '\tif (nLe == 1000 && s_nLeDaGui != 1000)' + R +
+   '\t{\t// [LAC 14/09 c] het lia: giu le RT them 2 s (keo lien tiep khong phai cap lai RT); JxLia_Nhip goi lai ApXoay trong luc cho' + R +
+   '\t\tconst unsigned int uLuc = (unsigned int)GetTickCount();' + R +
+   '\t\tif (!s_uLeChoTat) s_uLeChoTat = uLuc;' + R +
+   '\t\tif (uLuc - s_uLeChoTat < 2000) nLe = s_nLeDaGui;' + R +
+   '\t\telse s_uLeChoTat = 0;' + R +
+   '\t}' + R +
+   '\telse s_uLeChoTat = 0;' + R +
+   '\tif (nLe != s_nLeDaGui)' + R + '\t{' + R + '\t\tRep3TheGioi(8, nLe); s_nLeDaGui = nLe;' + R,
+   '[LAC 14/09 c] het lia: giu le RT them 2 s')
+va(LC,
+   '\tif (s_nTrangThai == LIA_KHONG)' + R + '\t\treturn;' + R + '\t// nhan vat co dang di khong: tieu diem goc (nOrigFocus) doi giua hai nhip' + R,
+   '\tif (s_nTrangThai == LIA_KHONG && s_nLeDaGui != 1000)' + R +
+   '\t\tApXoay();\t// [LAC 14/09 c] dem 2 s roi tat le RT' + R +
+   '\tif (s_nTrangThai == LIA_KHONG)' + R + '\t\treturn;' + R + '\t// nhan vat co dang di khong: tieu diem goc (nOrigFocus) doi giua hai nhip' + R,
+   '[LAC 14/09 c] dem 2 s roi tat le RT')
+
 # ===================== config.ini =====================
 KHOI = [
     '; [LAC 14/09 b] keo DOC toi LiaXaDoc thi canh co/dan doc LiaLacDoc % (keo xuong = det nhu camera ngang hon, keo len = cao hon), 0 = tat',
