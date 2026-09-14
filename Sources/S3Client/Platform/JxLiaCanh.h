@@ -57,5 +57,10 @@ void JxLia_ZoomDat(int nPhanTram);	// dat zoom % (100..ZoomToiDa, lam tron ZoomB
 // Goi cuoi moi khung ve (UiShell::UiPaint): chu "Nhin rong NNN %" 1,5 s sau khi zoom doi ([Cham] ZoomChu=1).
 void JxLia_Ve();
 
+// [CAMERA 13/09 TUYCHON] Cong tac nguoi choi trong Cai dat > Toi uu (KUiOptions2, luu UiCommon.ini [Options2] LiaCanh/NhinRong/LiaVeNhanh):
+// nLia = 0 tat lia mot ngon (chum chi zoom), nZoom = 0 tat chum + ve 100 %, nVeNhanh = 1 lia ve nhanh (cho 1/3, toc do x2). -1 = giu nguyen.
+// Hieu luc = config.ini / map (camera_mobile.ini) VA cong tac nay.
+void JxLia_DatTuyChon(int nLia, int nZoom, int nVeNhanh);
+
 #endif // JX_MOBILE
 #endif

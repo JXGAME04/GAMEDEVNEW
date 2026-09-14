@@ -82,6 +82,11 @@ static int			s_nZoomChuTruoc = 100;	// zoom lan bao truoc (chi bao khi doi)
 static char			s_szZoomChu[48] = "";
 static void			ZoomAp(int nPhanTram);	// dinh nghia o khoi ZOOM cuoi tep
 static void			Camera_DocMap();
+// [CAMERA 13/09 TUYCHON] cong tac nguoi choi (Cai dat > Toi uu); hieu luc = config/map VA nguoi choi
+static int			s_nNcLia = 1, s_nNcZoom = 1, s_nNcVeNhanh = 0;
+static int ChoVeMs() { return s_nNcVeNhanh ? s_nChoVeMs / 3 : s_nChoVeMs; }	// ve nhanh: cho 1/3
+static int VeTocDo() { return s_nNcVeNhanh ? s_nVeTocDo * 2 : s_nVeTocDo; }	// toc do x2
+static int VeEm()    { return s_nNcVeNhanh ? s_nVeEm * 2 : s_nVeEm; }
 
 static void DocCaiDat()
 {
@@ -246,7 +251,7 @@ static void KepLech()
 bool JxLia_Bat()
 {
 	DocCaiDat();
-	return s_nBat != 0;
+	return s_nBat && s_nNcLia;	// [CAMERA 13/09 TUYCHON]
 }
 
 // [CAMERA 13/09] diem (x,y) nam tren ban do (khong dinh giao dien / can / nut ky nang) - dung chung cho lia mot ngon va chum hai ngon
@@ -268,7 +273,7 @@ static bool TrenBanDo(int x, int y)
 bool JxLia_DuocBatDau(int x, int y)
 {
 	DocCaiDat();
-	return s_nBat && TrenBanDo(x, y);
+	return s_nBat && s_nNcLia && TrenBanDo(x, y);	// [CAMERA 13/09 TUYCHON] nguoi choi tat lia -> khong lia
 }
 
 void JxLia_BatDau(int x, int y)
@@ -370,8 +375,8 @@ void JxLia_Nhip()
 			s_nZoomDich = 0;
 		}
 	}
-	if (!s_nBat)
-		return;	// [CAMERA 13/09] LiaCanh=0 (config hay map): van doc map + troi zoom o tren, khong lia
+	if (!s_nBat || !s_nNcLia)
+		return;	// [CAMERA 13/09] LiaCanh=0 (config hay map) hay nguoi choi tat: van doc map + troi zoom o tren, khong lia
 	// LiaThu (go loi, thu tren may ao khong co ngon tay): 3 s sau khi vao the gioi tu keo mot lan roi tu ve
 	if ((s_nThuDx || s_nThuDy) && !s_nThuXong)
 	{
@@ -403,11 +408,11 @@ void JxLia_Nhip()
 	}
 	if (s_nTrangThai == LIA_CHO_VE)
 	{
-		if ((s_nVeKhiDi && (bDi || JxCan_DangCam())) || uNay - s_uNhaLuc >= (unsigned int)s_nChoVeMs)
+		if ((s_nVeKhiDi && (bDi || JxCan_DangCam())) || uNay - s_uNhaLuc >= (unsigned int)ChoVeMs())
 		{
 			s_nTrangThai = LIA_VE;
 			if (s_nNhatKy)
-				g_DebugLog("[LIA] bat dau ve (%s)", (uNay - s_uNhaLuc >= (unsigned int)s_nChoVeMs) ? "het cho" : "nhan vat di");
+				g_DebugLog("[LIA] bat dau ve (%s)", (uNay - s_uNhaLuc >= (unsigned int)ChoVeMs()) ? "het cho" : "nhan vat di");
 		}
 		else
 		{
@@ -417,8 +422,8 @@ void JxLia_Nhip()
 	}
 	// LIA_VE: troi do lech ve 0 - buoc = max(toc do toi thieu, phan con lai x LiaVeEm) moi giay
 	fLen = sqrtf(s_fLechX * s_fLechX + (s_fLechY * 0.5f) * (s_fLechY * 0.5f));	// do dai theo px khung ve
-	fBuoc = (float)s_nVeTocDo * dt;
-	fEm = fLen * (float)s_nVeEm * dt;
+	fBuoc = (float)VeTocDo() * dt;	// [CAMERA 13/09 TUYCHON] ve nhanh: x2
+	fEm = fLen * (float)VeEm() * dt;
 	if (fEm > fBuoc)
 		fBuoc = fEm;
 	if (fLen <= fBuoc || fLen < 2.f)
@@ -505,7 +510,7 @@ static void Camera_DocMap()
 	if (s_nZoomThu > 100 && !s_nZoomThuXong) { nDich = s_nZoomThu; s_nZoomThuXong = 1; }
 	else if (s_nZoomNho && s_nZoomNguoiChoi > 0) nDich = s_nZoomNguoiChoi;
 	else nDich = nZoomMD;
-	if (!s_nZoomBat) nDich = 100;
+	if (!s_nZoomBat || !s_nNcZoom) nDich = 100;	// [CAMERA 13/09 TUYCHON] map tat / nguoi choi tat -> 100 %
 	if (nDich < 100) nDich = 100;
 	if (nDich > s_nZoomToiDa) nDich = s_nZoomToiDa;
 	s_nZoomDich = nDich;
@@ -517,6 +522,24 @@ static void Camera_DocMap()
 }
 
 // [CAMERA 13/09] chu "Nhin rong NNN %" 1,5 s sau khi zoom doi - giua man, 1/3 tren (nhu KyNang_VeChu: OutputText toa do man hinh, co 16)
+// [CAMERA 13/09 TUYCHON] cong tac nguoi choi tu Cai dat > Toi uu (KUiOptions2): goi luc vao the gioi (LoadSetting) va moi lan bam
+void JxLia_DatTuyChon(int nLia, int nZoom, int nVeNhanh)
+{
+	int nZoomCu = s_nNcZoom;
+
+	if (nLia >= 0) s_nNcLia = nLia ? 1 : 0;
+	if (nZoom >= 0) s_nNcZoom = nZoom ? 1 : 0;
+	if (nVeNhanh >= 0) s_nNcVeNhanh = nVeNhanh ? 1 : 0;
+	if (!s_nNcLia && (s_nTrangThai != LIA_KHONG || s_nDaBatCo))
+		KetThuc("nguoi choi tat lia");
+	if (s_nNcZoom != nZoomCu)
+	{	// tat -> troi ve 100 %; bat lai -> doc lai muc map (zoom da nho / mac dinh map)
+		if (!s_nNcZoom) { s_nZoomDich = 100; s_fZoomTroi = (float)s_nZoom; }
+		else s_nCanDocMap = 1;
+	}
+	g_DebugLog("[CAMERA] tuy chon nguoi choi: lia=%d nhin rong=%d ve nhanh=%d", s_nNcLia, s_nNcZoom, s_nNcVeNhanh);
+}
+
 void JxLia_Ve()
 {
 	unsigned int uNay = (unsigned int)GetTickCount();
@@ -533,8 +556,8 @@ void JxLia_Ve()
 bool JxLia_ChumDuoc(int x1, int y1, int x2, int y2)
 {
 	DocCaiDat();
-	if (!s_nZoomBat)
-		return false;
+	if (!s_nZoomBat || !s_nNcZoom)
+		return false;	// [CAMERA 13/09 TUYCHON]
 	return TrenBanDo(x1, y1) && TrenBanDo(x2, y2);	// [CAMERA 13/09] chum khong can LiaCanh (map tat lia van chum duoc)
 }
 
@@ -547,7 +570,7 @@ void JxLia_ChumBatDau(int x1, int y1, int x2, int y2)
 		s_fChumD0 = 10.f;
 	s_nChumZoom0 = s_nZoom;
 	s_nChum = 1;
-	if (s_nBat)	// [CAMERA 13/09] LiaCanh=0 thi chum chi zoom, khong lia
+	if (s_nBat && s_nNcLia)	// [CAMERA 13/09] LiaCanh=0 / nguoi choi tat lia thi chum chi zoom, khong lia
 		JxLia_BatDau((x1 + x2) / 2, (y1 + y2) / 2);	// lia theo tam hai ngon (dang lech thi giu lech, neo lai tu tam)
 	if (s_nNhatKy)
 		g_DebugLog("[ZOOM] chum bat dau: d0=%.0f zoom=%d%%", s_fChumD0, s_nZoom);
@@ -563,7 +586,7 @@ void JxLia_ChumKeo(int x1, int y1, int x2, int y2)
 	if (d < 10.f)
 		d = 10.f;
 	JxLia_ZoomDat((int)((float)s_nChumZoom0 * s_fChumD0 / d + 0.5f));	// hai ngon gan nhau (d < d0) = zoom lon = thay rong hon
-	if (s_nBat)
+	if (s_nBat && s_nNcLia)
 		JxLia_Keo((x1 + x2) / 2, (y1 + y2) / 2);
 }
 
@@ -575,7 +598,7 @@ void JxLia_ChumNha()
 	Camera_GhiNho();	// [CAMERA 13/09] nho zoom nguoi choi
 	if (s_nNhatKy)
 		g_DebugLog("[ZOOM] chum nha: zoom=%d%%", s_nZoom);
-	if (s_nBat)
+	if (s_nBat && s_nNcLia)
 		JxLia_Nha();
 }
 

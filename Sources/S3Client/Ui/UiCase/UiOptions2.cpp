@@ -16,6 +16,12 @@
 #include "../Elem/PopupMenu.h"
 #include "../UiSoundSetting.h"
 #include "../UiChatPhrase.h"
+#ifdef JX_MOBILE
+#include "../../Platform/JxLiaCanh.h"	// [CAMERA 13/09 TUYCHON] JxLia_DatTuyChon
+void JxNhip_VeNen(int nX, int nY, int nRong, int nCao);	// Platform/JxPerfHudAndroid.cpp: nen mo (nhu hang FPS cua KUiOptions)
+#undef MAX_TOGGLE_BTN_COUNT
+#define MAX_TOGGLE_BTN_COUNT 7	// [CAMERA 13/09 TUYCHON] lop KUiOptions2 co 7 nut (header tra lai 4 cho KUiOptions) - dat SAU include cuoi
+#endif
 extern iCoreShell*	g_pCoreShell;
 
 #define SCHEME_INI_OPTION		"UiOptions2.ini"
@@ -27,6 +33,9 @@ const char* ls_ToggleOptionName2[OPTION_INDEX_COUNT2] =
 	"GiamNpc",
 	"GiamMap",
 	"GiamSkill",
+#ifdef JX_MOBILE
+	"LiaCanh", "NhinRong", "LiaVeNhanh",	// [CAMERA 13/09 TUYCHON] luu UiCommon.ini [Options2]
+#endif
 };
 
 KUiOptions2* KUiOptions2::m_pSelf = NULL;
@@ -182,6 +191,13 @@ void KUiOptions2::ToggleOption(int nIndex)
 		if (g_pCoreShell)
 			g_pCoreShell->OperationRequest(GOI_OPTION_SETTING, OPTION_QUALITY_GIAMSKILL, bEnable);
 		break;
+#ifdef JX_MOBILE
+	case OPTION_I_LIA:
+	case OPTION_I_NHINRONG:
+	case OPTION_I_VENHANH:	// [CAMERA 13/09 TUYCHON] ap ngay; luu khi dong cua so (StoreSetting)
+		JxLia_DatTuyChon(m_ToggleItemList[OPTION_I_LIA].bEnable, m_ToggleItemList[OPTION_I_NHINRONG].bEnable, m_ToggleItemList[OPTION_I_VENHANH].bEnable);
+		break;
+#endif
 	}
 	UpdateAllStatusImg();
 }
@@ -236,6 +252,10 @@ void KUiOptions2::LoadSetting(bool bReload, bool bUpdateOption)
 		{
 			for (i = 0; i < OPTION_INDEX_COUNT2; i++)
 				pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[i], false, &bOptionsEnable[i]);
+#ifdef JX_MOBILE
+			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_LIA], true, &bOptionsEnable[OPTION_I_LIA]);	// [CAMERA 13/09 TUYCHON] mac dinh BAT (chua co khoa)
+			pSetting->GetInteger(OPTIONS_SAVE_SECTION2, ls_ToggleOptionName2[OPTION_I_NHINRONG], true, &bOptionsEnable[OPTION_I_NHINRONG]);
+#endif
 			g_UiBase.CloseAutoSettingFile(true);
 		}		
 		else
@@ -254,6 +274,9 @@ void KUiOptions2::LoadSetting(bool bReload, bool bUpdateOption)
 		g_pCoreShell->OperationRequest(GOI_OPTION_SETTING, OPTION_QUALITY_MATNPC, bOptionsEnable[OPTION_I_MATNPC]);
 		g_pCoreShell->OperationRequest(GOI_OPTION_SETTING, OPTION_QUALITY_MATPLAYER, bOptionsEnable[OPTION_I_MATPLAYER]);
 		g_pCoreShell->OperationRequest(GOI_OPTION_SETTING, OPTION_QUALITY_GIAMSKILL, bOptionsEnable[OPTION_I_GIAMSKILL]);
+#ifdef JX_MOBILE
+		JxLia_DatTuyChon(bOptionsEnable[OPTION_I_LIA], bOptionsEnable[OPTION_I_NHINRONG], bOptionsEnable[OPTION_I_VENHANH]);	// [CAMERA 13/09 TUYCHON] luc vao the gioi + moi lan nap lai
+#endif
 	}
 
 	if (m_pSelf)
@@ -320,6 +343,22 @@ int	 KUiOptions2::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 	return nRet;
 }
 
+#ifdef JX_MOBILE
+// [CAMERA 13/09 TUYCHON] nen mo sau cac hang cong tac: main2.spr trong suot o vung tren (cho hang Do sang / Nhac / Am thanh cua cua so chinh)
+void KUiOptions2::PaintWindow()
+{
+	KWndImage::PaintWindow();
+	if (m_nToggleBtnValidCount > 0)
+	{
+		int nX0 = 0, nY0 = 0, nX1 = 0, nY1 = 0, nRong = 0, nCao = 0, nW = 0, nH = 0;
+		m_ToggleBtn[0].GetPosition(&nX0, &nY0);
+		m_ToggleBtn[m_nToggleBtnValidCount - 1].GetPosition(&nX1, &nY1);
+		m_ToggleBtn[0].GetSize(&nRong, &nCao);
+		GetSize(&nW, &nH);
+		JxNhip_VeNen(m_nAbsoluteLeft + 4, m_nAbsoluteTop + nY0 - 6, nW - 8, nY1 - nY0 + nCao + 12);
+	}
+}
+#endif
 void KUiOptions2::StoreSetting()
 {
 	KIniFile* pSetting = NULL;
