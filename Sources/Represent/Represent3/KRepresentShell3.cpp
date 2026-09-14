@@ -263,7 +263,7 @@ static LARGE_INTEGER s_liTgCuoi = { 0 }; static DWORD s_dwTgCuaSo = 0; static in
 static double s_dTgChuKy = 0.0, s_dTgViecTB = 0.0, s_dTgCachTB = 0.0;	// ket qua cua so gan nhat (in [TG])
 static unsigned s_uTgDemVe = 0, s_uTgDemBlit = 0, s_uTgDemThuong = 0, s_uTgDemDoiK = 0;	// thong ke ky [TG]
 static int s_nTgRtCap = 1500, s_nTgRt2Cap = 1150, s_nTgRtSan = 1;	// [TGCAP 14/09]
-static int s_nTgNac = 1100;	// [TGNAC 14/09] zoom (phan nghin) tu muc nay ve the gioi THU NHO vao vung khung x le (diem anh ~1x) thay vi RT to; 0 = tat
+static int s_nTgNac = 0, s_nTgNacLoc = 1;	// [TGNAC 14/09 d] MAC DINH TAT (chu 16:0x "npc voi player bi mo": ve thang o co nho = moi sprite thu nho luc quet, mat chi tiet; duong cu ve 1:1 vao RT to roi thu ca anh = sieu lay mau, net hon). 1100 = bat tu 110 %; NacLoc 1 = loc bang mau tuyen tinh (muot), 0 = khong ep loc (net hon, co rang cua)
 void Rep3Gpu_VpLogic(IDirect3DDevice9* pDev, int nW, int nH);	// D3D9onGPUDev.cpp
 void Rep3Gpu_PalLin(IDirect3DDevice9* pDev, int bBat);
 void Rep3Gpu_VpEp(IDirect3DDevice9* pDev, IDirect3DSurface9* pSurf, int nW, int nH);	// [TGNAC 14/09 b]
@@ -303,8 +303,9 @@ void KRepresentShell3::JxTheGioiDocIni()
 	s_nTgRtSan = Rep3Ini("TheGioiRTSan", 1) ? 1 : 0;
 	Rep3Log("[TGCAP] RT cap %d, RT2 cap 2 x %d phan nghin khung, cap san %d (TheGioiRTCap / TheGioiRT2Cap / TheGioiRTSan)", s_nTgRtCap, s_nTgRt2Cap, s_nTgRtSan);
 	s_nTgChuNet = Rep3Ini("TheGioiRTChu", 1) ? 1 : 0; Rep3Log("[CHUNET] lop chu the gioi ve sau blit khi zoom / lac: %d (TheGioiRTChu)", s_nTgChuNet);	// [CHUNET 14/09]
-	s_nTgNac = Rep3Ini("TheGioiRTNac", 1100); if (s_nTgNac < 0) s_nTgNac = 0; if (s_nTgNac > 0 && s_nTgNac < 1001) s_nTgNac = 1001;	// [TGNAC 14/09]
-	Rep3Log("[TGNAC] nhin rong tu %d phan nghin: ve the gioi thu nho vao vung khung x le (TheGioiRTNac; 0 = tat)", s_nTgNac);
+	s_nTgNac = Rep3Ini("TheGioiRTNac", 0); if (s_nTgNac < 0) s_nTgNac = 0; if (s_nTgNac > 0 && s_nTgNac < 1001) s_nTgNac = 1001;	// [TGNAC 14/09 d] mac dinh 0 = TAT (net hon)
+	s_nTgNacLoc = Rep3Ini("TheGioiRTNacLoc", 1) ? 1 : 0;
+	Rep3Log("[TGNAC] nhin rong tu %d phan nghin: ve the gioi thu nho vao vung khung x le, loc bang mau %d (TheGioiRTNac 0 = tat / TheGioiRTNacLoc)", s_nTgNac, s_nTgNacLoc);
 }
 
 void KRepresentShell3::JxTheGioiHuy()
@@ -569,7 +570,7 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 		{	// [TGNAC 14/09] ve THU NHO: viewport that = vung m_nTgPxW x m_nTgPxH (khung x le), VS chia theo lo-gic m_nTgW x m_nTgH (Core van ve toa do 1:1), ps loc palette tuyen tinh
 			D3DVIEWPORT9 vp; memset(&vp, 0, sizeof(vp)); vp.Width = (DWORD)m_nTgPxW; vp.Height = (DWORD)m_nTgPxH; vp.MaxZ = 1.0f;
 			PD3DDEVICE->SetViewport(&vp);
-			Rep3Gpu_VpLogic(PD3DDEVICE, m_nTgW, m_nTgH); Rep3Gpu_VpEp(PD3DDEVICE, m_pTgSurf, m_nTgPxW, m_nTgPxH); Rep3Gpu_PalLin(PD3DDEVICE, 1);	// [TGNAC 14/09 b] vung ep gan voi RT (ghep nen dat doi target giua pha)
+			Rep3Gpu_VpLogic(PD3DDEVICE, m_nTgW, m_nTgH); Rep3Gpu_VpEp(PD3DDEVICE, m_pTgSurf, m_nTgPxW, m_nTgPxH); Rep3Gpu_PalLin(PD3DDEVICE, s_nTgNacLoc);	// [TGNAC 14/09 d] NacLoc = 0 thi khong ep loc (net hon)	// [TGNAC 14/09 b] vung ep gan voi RT (ghep nen dat doi target giua pha)
 		}
 		m_nTgLeftKhung = m_nLeft; m_nTgTopKhung = m_nTop; m_nTgKhungW = g_nScreenWidth; m_nTgKhungH = g_nScreenHeight;	// [ZOOM 13/09] goc + co khung that
 		if (m_nTgZoomRt > 1000)

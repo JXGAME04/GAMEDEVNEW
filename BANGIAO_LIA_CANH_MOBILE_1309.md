@@ -659,3 +659,9 @@ Chi phí thật (GPU %, W, khung dài) phải đo trên Fold 7 (log 8765): mong 
 
 - RT cấp vẫn theo `TheGioiRTCap=1700` (11 MB); với TGNAC vùng dùng ≤ khung × 1,12 nên có thể hạ cấp xuống 1200 ‰ để bớt store/khung — chờ số đo Fold 7.
 - Nếu chủ thấy mờ hơn ở 150 %: đặt `TheGioiRTNac=0` so lại.
+
+## 5. 16:0x chủ thử 109141557: "npc với player bị mờ" → TẮT mặc định
+
+Đường cũ vẽ sprite POINT 1:1 vào ảnh đệm to rồi thu nhỏ **cả ảnh** một lần lúc ghép = siêu lấy mẫu (giữ chi tiết). TGNAC vẽ thẳng ở cỡ nhỏ nên **mỗi sprite** bị thu nhỏ ngay lúc quét, lấy mẫu bảng màu tuyến tính 4 điểm, không mipmap → thân NPC và người chơi mất chi tiết; chữ vẫn nét vì CHUNET vẽ sau ghép, khớp đúng điều chủ kêu. Tỉ lệ tròn khít (1144 × 1000/1100 = 1040) nên **không** phải lỗi lệch nửa điểm ảnh — đây là bản chất cách vẽ: muốn thấy rộng hơn trên cùng số điểm ảnh thì hoặc vẽ thừa rồi lọc (nét, tốn GPU), hoặc vẽ thẳng (rẻ, mờ).
+
+Chốt theo luật chủ (không giảm trải nghiệm): `TheGioiRTNac` **mặc định 0 = tắt**, giữ khoá cho máy yếu; thêm `TheGioiRTNacLoc` (1 = lọc như cũ, 0 = không ép lọc: nét hơn, răng cưa) để so sau. A/B chỉ cần đổi config, không phải dựng lại. GPU khi đông sẽ tìm cách khác (giảm hiệu ứng / số người vẽ) thay vì đổi độ nét.
