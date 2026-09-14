@@ -550,6 +550,12 @@ void KObj::DrawInfo()
 static int          s_nVrDoc = 0, s_nVrCotSang = 1, s_nVrCotSangTu = 1, s_nVrAlpha = 170, s_nVrLoe = 1, s_nVrThu = 0;
 static unsigned int s_uVrLoeLuc[MAX_OBJECT];
 static unsigned int s_uVrNoiLuc[MAX_OBJECT];	// [VATROI 14/09 c] luc cham dat, cho hoat anh dung thang len (giu sau khi loe xong)
+// [VATROI 14/09 d] icon DUNG (anh hanh trang) cho vat pham nam dat: ten anh + kich thuoc tra theo m_nID cua vat the (tim mot lan)
+#include "KItemGenerator.h"
+static int          s_nVrIcID[MAX_OBJECT];		// m_nID da tra (0 = chua)
+static char         s_szVrIcon[MAX_OBJECT][80];	// ten anh icon ("" = khong co -> nhac anh nam dat len nhu ban c)
+static short        s_nVrIcW[MAX_OBJECT], s_nVrIcH[MAX_OBJECT];
+static char         s_nVrIcOn[MAX_OBJECT];		// 1 = m_Image dang mang ten icon (doi ten thi phai xoa uImage)
 static int          s_nVrNoi = 1, s_nVrNoiCao = 8;	// [VatRoi] Noi=1: vat pham dung thang len trong cot sang (chu: "do rot ra se dung thang len theo cot sang"), NoiCao px
 static KRUImage     s_VrCot, s_VrLoe;
 static int          s_nVrBat = 1;	// [HAOQUANG 14/09] cong tac Cai dat > Toi uu "Sang vat roi" (UiOptions2 -> JxVatRoi_DatBat)
@@ -603,6 +609,68 @@ static int VatRoi_DoCao(int nIndex, int nDropState)
 	}
 	nNhap = (int)(uNay % 1400); if (nNhap >= 700) nNhap = 1400 - nNhap;	// 0..700..0
 	return 12 + nLen + nNhap * 6 / 700 - 3;
+}
+
+// [VATROI 14/09 d] tra ten anh icon dung cua vat pham nam dat (NULL = khong tra duoc). Client chi biet genre/detail/particular + TEN
+// (OBJ_ADD_SYNC), khong biet level -> thu tung level trong bang goc (ItemGen) va khop ten. Ket qua nho theo m_nID; anh chua nap (GetImageParam
+// that bai) thi khung sau thu lai.
+static const char* VatRoi_TimIcon(KObj* p)
+{
+	static KItem s_VrTam;
+	KImageParam sP;
+	int i = p->m_nIndex, lv, nOk = 0;
+	if (i <= 0 || i >= MAX_OBJECT || p->m_nID == 0)
+		return NULL;
+	if (s_nVrIcID[i] == p->m_nID)
+		return s_szVrIcon[i][0] ? s_szVrIcon[i] : NULL;
+	s_nVrIcID[i] = p->m_nID; s_szVrIcon[i][0] = 0; s_nVrIcW[i] = s_nVrIcH[i] = 0;
+	if (p->m_nGenre == item_equip)
+	{
+		for (lv = 1; lv <= 10 && !nOk; lv++)
+			if (ItemGen.GetEquipmentCommonAttrib(p->m_nDetailType, p->m_nParticularType, lv, 0, &s_VrTam) && strcmp(s_VrTam.GetName(), p->m_szName) == 0)
+				nOk = 1;
+	}
+	else if (p->m_nGenre == item_medicine)
+	{
+		for (lv = 1; lv <= 5 && !nOk; lv++)
+			if (ItemGen.GetMedicineCommonAttrib(p->m_nDetailType, lv, &s_VrTam) && strcmp(s_VrTam.GetName(), p->m_szName) == 0)
+				nOk = 1;
+	}
+	if (!nOk || !s_VrTam.GetImageName()[0])
+		return NULL;
+	strncpy(s_szVrIcon[i], s_VrTam.GetImageName(), 79); s_szVrIcon[i][79] = 0;
+	memset(&sP, 0, sizeof(sP));
+	if (!g_pRepresent->GetImageParam(s_szVrIcon[i], &sP, ISI_T_SPR) || sP.nWidth <= 0 || sP.nHeight <= 0)
+	{
+		s_szVrIcon[i][0] = 0; s_nVrIcID[i] = 0;	// chua nap: khung sau hoi lai
+		return NULL;
+	}
+	s_nVrIcW[i] = sP.nWidth; s_nVrIcH[i] = sP.nHeight;
+	if (s_nVrThu)
+		g_DebugLog("[VATROI] icon dung vat %d '%s' (%d/%d/%d) -> %s %dx%d", p->m_nID, p->m_szName, p->m_nGenre, p->m_nDetailType, p->m_nParticularType, s_szVrIcon[i], sP.nWidth, sP.nHeight);
+	return s_szVrIcon[i];
+}
+
+// [VATROI 14/09 d] goi trong KObj::Draw sau khi m_Image da tro anh nam dat: co icon -> thay bang icon dung (day icon dat tren chan cot = tam
+// anh nam dat (x+12, y+12), nhac len theo VatRoi_DoCao - 12); khong co -> nhac anh nam dat len nhu ban c. Doi ten anh thi xoa uImage.
+static void VatRoi_DungIcon(KObj* p, int x, int y)
+{
+	int i = p->m_nIndex;
+	int nCao = VatRoi_DoCao(i, p->m_nDropState);
+	const char* szIcon = (nCao > 0) ? VatRoi_TimIcon(p) : NULL;
+	if (i <= 0 || i >= MAX_OBJECT)
+		return;
+	if (!szIcon)
+	{
+		if (s_nVrIcOn[i]) { s_nVrIcOn[i] = 0; p->m_Image.uImage = 0; }
+		p->m_Image.oPosition.nY -= nCao;
+		return;
+	}
+	if (!s_nVrIcOn[i]) { s_nVrIcOn[i] = 1; p->m_Image.uImage = 0; }
+	strcpy(p->m_Image.szImage, szIcon);
+	p->m_Image.nFrame = 0;
+	p->m_Image.oPosition.nX = x + 12 - s_nVrIcW[i] / 2;
+	p->m_Image.oPosition.nY = y + 12 - s_nVrIcH[i] - (nCao - 12);
 }
 
 static void VatRoi_DatAnh(KRUImage& a, int nFrame, int x, int y, unsigned int uAlpha, DWORD dwMau)
@@ -679,7 +747,7 @@ void KObj::Draw()
 	}
 #ifdef JX_MOBILE
 	if (m_nKind == Obj_Kind_Item)
-		m_Image.oPosition.nY -= VatRoi_DoCao(m_nIndex, m_nDropState);	// [VATROI 14/09 c] dung thang len trong cot sang (nhat do theo toa do ban do, khong anh huong)
+		VatRoi_DungIcon(this, x, y);	// [VATROI 14/09 d] icon DUNG (anh hanh trang) lo lung trong cot sang; khong co icon thi nhac anh nam dat len (ban c)
 #endif
 
 #ifdef JX_MOBILE

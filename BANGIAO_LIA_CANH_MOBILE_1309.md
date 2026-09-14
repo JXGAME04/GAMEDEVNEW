@@ -409,3 +409,12 @@ Chủ: *"Vòng hào quang đồ mặc phải làm giống như 3d, không dùng 
 
 - Máy ảo: vòng vàng kiểu 3D dưới chân nhân vật (`nguoi_zoom.png`), bám theo ngựa; ném "Thôn Nhật Trảm": log `[VATROI] ... noi=1 cao 8`, vật rơi dưới bụng ngựa nên máy ảo chưa chụp rõ icon dựng → chủ xem Fold 7. `kiem --pc` ĐẠT.
 - Ba ảnh vòng + hai ảnh cột/loé sinh lại; dt_v4 đã chép + `--chi-manifest`.
+
+## 9. Sửa theo chủ 14/09 09:2x: vật phẩm nằm đất vẽ bằng ICON ĐỨNG trong cột sáng (bản **109140913**)
+
+Chủ: *"Đồ ném ra đã nằm trôi nổi nhưng chưa dựng thẳng lên theo cột sáng - vẫn nằm bẹp nhưng chỉ trôi nổi lên thôi"*. Đúng: ảnh "nằm đất" của vật phẩm (`objdata.txt` ImageName) là ảnh vẽ theo góc nằm, nhấc lên vẫn thấy bẹp. Nay vẽ **icon đứng** (ảnh trong hành trang) lơ lửng trên chân cột — như mô hình đứng trong cột sáng của game 3D.
+
+- **Lấy icon từ vật thể trên đất**: client chỉ biết `m_nGenre / m_nDetailType / m_nParticularType` + **tên** (`OBJ_ADD_SYNC.m_szName`), không biết level → `VatRoi_TimIcon`: trang bị thử `ItemGen.GetEquipmentCommonAttrib(detail, particular, level 1..10, series 0)` khớp tên → `GetImageName()`; thuốc `GetMedicineCommonAttrib(detail, level 1..5)`. Kích thước icon qua `g_pRepresent->GetImageParam` (chưa nạp thì khung sau hỏi lại). Nhớ theo `m_nID` của vật thể (bảng `s_szVrIcon[MAX_OBJECT]`...). Loại khác (nhiệm vụ, nguyên liệu, tiền) không tra được → nhấc ảnh nằm đất lên như mục 8.
+- **Vẽ**: `VatRoi_DungIcon` thay `m_Image` (tên icon, khung 0, xoá `uImage` khi đổi tên) đặt đáy icon tại tâm ảnh nằm đất (x+12, y+12) = chân cột, nhấc lên `VatRoi_DoCao − 12` (dựng lên 350 ms + nhấp ±3 px). Vũ khí 1×4 (24×96) đứng thẳng cao trong cột. Nhặt đồ không đổi.
+- Kịch bản `android/va_nguon_vatroi_1409_d.py` (sau bản c). `[VatRoi] Thu=1` ghi log `[VATROI] icon dung vat <id> '<tên>' (genre/detail/particular) -> <ảnh> WxH`.
+- Máy ảo: ném "Liệt Thiên Triền Thủ" (trang bị xanh, 0/0/6) → log `-> \spr\item\equip\closeweapon\obj-glove04.spr 24x48`; đi ra xa thấy icon găng đứng trên chân cột, cột xanh nhạt phía sau (`dung4_zoom.png`). `kiem --pc` ĐẠT.
