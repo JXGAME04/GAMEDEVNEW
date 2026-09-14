@@ -677,3 +677,33 @@ Mất 32 % chi tiết khi bật, khớp lời chủ. Phiên đo nhịp còn **xo
 **Bài học (chốt với phiên đo nhịp):** đừng lấy độ phân giải thế giới làm nút điều chỉnh hiệu năng — chủ nhận ra trong vài phút. Muốn lấy lại GPU khi nhìn rộng thì hoặc chỉ thu một phần (vẽ ở khung × 1,1 rồi ghép xuống, vẫn còn siêu lấy mẫu), hoặc giảm số đối tượng / hiệu ứng vẽ lúc đông. Mọi thay đổi ảnh hưởng hình ảnh nên có khoá kiểu `TheGioiRTNac` để A/B bằng một gói cài.
 
 **Công cụ đo** (`android/do_net_ab.py`, chốt 14/09): đo RMS Laplacian trên hộp cố định của ảnh chụp máy ảo, tự đổi một khoá config giữa hai lượt rồi trả config về cũ. `python android/do_net_ab.py --khoa TheGioiRTNac --gia-tri 0 1100` = hai lượt, in bảng; `--anh a.png b.png` = tính trên ảnh có sẵn. Đo chéo trên ảnh chụp của tôi (cảnh khác, cùng ZoomThu=125) ra **34,9 khi bật / 55,6 đường cũ**, khớp kết luận của phiên đo nhịp (35,8 / 52,9) tuy hai phép đo viết độc lập. Luật từ nay: thay đổi nào đụng hình ảnh thì chạy phép này trước khi lên dt_v4.
+
+---
+
+# SỐ LƯỢNG VẬT PHẨM KHÔNG HIỆN TRONG HÀNH TRANG / RƯƠNG — 14/09 16:3x
+
+Chủ 16:2x: *"item trong hành trang - rương đồ không hiện số lượng như trước (item có số lượng thường hiện số ngay ở item luôn)"*, và *"cần tìm ra đúng nguyên nhân mới fix"*.
+
+## 1. Nguyên nhân (chứng minh, không đoán)
+
+`KItem::PaintItem` vẽ số lượng ở **cuối hàm**. Bản vá [VEVATPHAM 12/09 e] thêm nhánh mobile "vẽ nguyên cỡ, đặt khung ảnh chính giữa ô" (điều kiện `!g_nJxKeoAnhVatPham && oCo > 0`) — nhánh này vẽ ảnh xong rồi **`return;` ngay**, nên khối vẽ số không bao giờ chạy. Chú thích cũ ghi *"(số lượng món chồng ô phím tắt không vẽ, giống bản gốc)"*: người viết tưởng nhánh chỉ dùng cho ô phím tắt, thật ra nó là đường **mặc định** của mọi ô to hơn ảnh món (hành trang 31×31 và 44×44, ảnh 26 px) → hành trang, rương, cửa hàng đều mất số từ 12/09.
+
+Bằng chứng: nhật ký `[SOLUONG]` cắm tạm ở đầu hàm, máy ảo 16:3x với hành trang mở:
+
+```
+[SOLUONG] mon 6 o ve 581,127 | chong 1 so 500 | ophim 0 | o that 581,127 31x31 | keo 0 | \spr\item\songjinescript.spr
+```
+
+Món có số lượng 500, không phải ô phím tắt, đi đúng nhánh `keo 0` (return sớm) — màn hình không có chữ số nào.
+
+**Hai bẫy khi đo** (ghi để lần sau khỏi mất 3 lượt dựng): (a) ngân sách nhật ký `[Ui] NhatKyVatPham` bị ô phím tắt rồi cửa sổ Trang bị tiêu hết trong ~7 giây vì chúng vẽ lại mỗi khung — phải lọc `IsStack()` mới bắt được món trong hành trang; (b) log đặt ở cuối hàm thì nằm **sau** chính cái `return` cần soi, đo mãi không ra.
+
+## 2. Sửa
+
+Vẽ số ngay trong nhánh đó, trước `return`, đặt theo **ô thật** (`g_nJxVeVatPhamX/Y/W/H`) chứ không theo lưới 27 px của bản PC — ô to nhỏ thế nào số cũng nằm góc dưới phải ô; vẫn bỏ qua ô phím tắt (`!ispos_immediacy`) như bản gốc. Chỉ trong nhánh mobile, `kiem --pc` ĐẠT. Kịch bản `android/va_nguon_soluong_1409_c.py` (chẩn đoán: `_1409.py`, `_1409_b.py`).
+
+## 3. Thử máy ảo
+
+Hành trang hiện 500 / 367 / 6 / 2 ở góc dưới phải từng ô, chữ vàng đọc rõ trên nền ô tối; ô phím tắt vẫn chỉ một số (46) do thanh người chơi vẽ, không bị vẽ đè hai lần. Rương và cửa hàng dùng chung `KWndObjectMatrix` → cùng đường vẽ, chủ kiểm lại khi mở rương.
+
+**Nhánh kéo ảnh** (`[Ui] KeoAnhVatPham=1`, mặc định tắt) không `return` nên rơi xuống khối cuối hàm; phiên đo nhịp soi ra là nó vẫn dùng lưới 27 px. Đã cho khối đó dùng ô thật khi có (`g_nJxVeVatPham* > 0`), phần của bản PC giữ **nguyên văn** trong nhánh `#else` để `kiem --pc` ĐẠT. Thử máy ảo với khoá bật: số cũng nằm đúng góc dưới phải (2 / 8 / 6 / 500 / 367), rồi gỡ khoá khỏi config máy ảo.

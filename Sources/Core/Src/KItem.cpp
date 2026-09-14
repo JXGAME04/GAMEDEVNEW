@@ -1975,6 +1975,18 @@ void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack
 			ispos_immediacy = true;
 		}
 	}
+#ifdef JX_MOBILE
+	extern int g_nJxKeoAnhVatPham;
+	if (g_nJxNhatKyVatPham3 > 0 && bPaintStack && IsStack())
+	{	// [SOLUONG 14/09 c] chi mon CO SO LUONG (>1): mon trang bi trong cua so "Trang bi" ve moi khung, khong loc thi tieu het ngan sach log trong ~7 giay
+		// [SOLUONG 14/09 b] chan doan (chu 16:2x "khong hien so luong o hanh trang / ruong"): ghi TRUOC khi re nhanh ve,
+		// vi nhanh "ve nguyen co can giua o" return som nen log dat o cuoi ham khong bao gio chay.
+		g_nJxNhatKyVatPham3--;
+		g_DebugLog("[SOLUONG] mon %d o ve %d,%d | chong %d so %d | ophim %d | o that %d,%d %dx%d | keo %d | %s",
+			(int)m_CommonAttrib.nItemGenre, nX, nY, (int)(IsStack() ? 1 : 0), GetStackNum(), (int)(ispos_immediacy ? 1 : 0),
+			g_nJxVeVatPhamX, g_nJxVeVatPhamY, g_nJxVeVatPhamW, g_nJxVeVatPhamH, g_nJxKeoAnhVatPham, m_Image.szImage);
+	}
+#endif
 	m_Image.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
 	if (bThuNho)
 	{
@@ -2051,7 +2063,26 @@ void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack
 					oLech.nX, oLech.nY, m_Image.oPosition.nX, m_Image.oPosition.nY, m_Image.szImage);
 			}
 			g_pRepresent->DrawPrimitives(1, &m_Image, RU_T_IMAGE, TRUE);
-			return;	// da ve xong (so luong mon chong o phim tat khong ve, giong ban goc)
+			// [SOLUONG 14/09] chu: "item trong hanh trang - ruong do khong hien so luong nhu truoc". Nhanh nay return som nen
+			// khoi ve so luong o CUOI ham khong bao gio chay -> tu [VEVATPHAM 12/09 e] moi mon chong trong hanh trang /
+			// ruong / cua hang mat so (chu thich cu tuong nhanh nay chi dung cho o phim tat). Ve o day, dat theo O THAT
+			// (g_nJxVeVatPham*) chu khong theo luoi 27 px cua ban PC: o to nho the nao so cung nam goc duoi phai o.
+			if (IsStack() && bPaintStack && !ispos_immediacy)
+			{
+				int nNum = GetStackNum();
+				if (nNum >= 1 && nNum < 10000)
+				{
+					char szNum[8];
+					int nFontSize = 12;
+					int nLen = sprintf(szNum, "%d", nNum);
+					int nSoX = g_nJxVeVatPhamX + g_nJxVeVatPhamW - nLen * nFontSize / 2 - 1;
+					int nSoY = g_nJxVeVatPhamY + g_nJxVeVatPhamH - nFontSize - 1;
+					if (nSoX < g_nJxVeVatPhamX) nSoX = g_nJxVeVatPhamX;
+					if (nSoY < g_nJxVeVatPhamY) nSoY = g_nJxVeVatPhamY;
+					g_pRepresent->OutputText(nFontSize, szNum, KRF_ZERO_END, nSoX, nSoY, 0xFFFFFF00);
+				}
+			}
+			return;	// da ve xong
 		}
 		if (nTiLe > 0 && g_nJxKeoAnhVatPham)
 		{
@@ -2114,9 +2145,24 @@ void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack
 			char szNum[5];
 			int nLen = sprintf(szNum, "%d", nNum);
 			szNum[4] = 0;
+#ifdef JX_MOBILE
+			int nSoX = nX + (m_CommonAttrib.nWidth * 27) - nLen * (nFontSize ) / 2;
+			int nSoY = nY + (m_CommonAttrib.nHeight) + nFontSize + 1;
+			// [SOLUONG 14/09 d] (soi cheo phien do nhip) nhanh KEO anh ([Ui] KeoAnhVatPham=1) roi xuong day, neu van dat theo luoi
+			// 27 px cua ban PC thi so lech khoi o to cua mobile. Co o that thi dat goc duoi phai o, giong nhanh ve nguyen co.
+			if (g_nJxVeVatPhamW > 0 && g_nJxVeVatPhamH > 0)
+			{
+				nSoX = g_nJxVeVatPhamX + g_nJxVeVatPhamW - nLen * nFontSize / 2 - 1;
+				nSoY = g_nJxVeVatPhamY + g_nJxVeVatPhamH - nFontSize - 1;
+				if (nSoX < g_nJxVeVatPhamX) nSoX = g_nJxVeVatPhamX;
+				if (nSoY < g_nJxVeVatPhamY) nSoY = g_nJxVeVatPhamY;
+			}
+			g_pRepresent->OutputText(nFontSize, szNum, KRF_ZERO_END, nSoX, nSoY, 0xFFFFFF00);
+#else
 			g_pRepresent->OutputText(nFontSize, szNum, KRF_ZERO_END,
 				nX + (m_CommonAttrib.nWidth * 27) - nLen * (nFontSize ) / 2,
 				nY + (m_CommonAttrib.nHeight) + nFontSize + 1, 0xFFFFFF00);
+#endif
 		}
 	}
 }
