@@ -164,3 +164,30 @@ chỉ vùng XA mới hoãn (đúng chỗ hưởng lợi của P3). Kèm `[XOANEN
 Bản 109132221 = merge `mobile-0809` b18d9965 của phiên LIA/ZOOM/CAMERA + sửa này; máy ảo: vào map nền đủ, `ke ben` ghép ngay, không sập.
 Giao 22:24 bằng `--chi-manifest` trên máy chủ 52072 của phiên kia (không khởi động lại). Windows y hệt trừ 1 dòng `#include JxLiaCanh.h`
 chưa rào của phiên kia trong `GameSpaceChangedNotify.cpp` (đã báo họ).
+
+### 10.4. 00:33 14/09 — P4 tải lên GPU `[TAI 14/09]` (bản 109140033, sẽ gộp camera lắc của phiên kia)
+
+Chủ 23:40 13/09: *"Bây giờ bạn làm xong 40 % còn lại rồi tôi test luôn một lần - ưu tiên không mất trải nghiệm game thủ - mà mọi hiệu năng đều tốt"*.
+
+**Số đo gốc** (log Fold 7 13/09, `[VE-GIAT]`): `chep: bang mau 0/0.0, tex map+chep 3.0, lenh tai 14.7, zero 1/116.8, ring 0.2, xfer 8192` → một trang
+atlas 8 MB tô 0 mất **116,8 ms ngay trong 4 lệnh `SDL_UploadToGPUTexture`** (memcpy 8 MB vào transfer buffer chỉ 3,0 ms); tải ảnh 2–3 MB = 42–68 ms.
+SDL Vulkan trong lệnh đó chỉ ghi `vkCmdCopyBufferToImage` + 2 barrier (không có việc theo byte) → việc theo byte nằm trong **driver Adreno**
+(~20 ms/MB, nhiều khả năng xếp ô ảnh trên CPU). Đây là phần lớn 6 khung giật/phút còn lại sau P3: 117–172 ms mỗi lần cấp trang/lớp atlas mới,
+40 × 20 ms tải 1 MB ảnh nền vùng lúc vào map, 42–68 ms khi vẽ khung chiêu to lần đầu.
+
+**Sửa** (`android/va_nguon_mobile_1409_i.py`, commit `dbebc13f`, chỉ `JX_MOBILE`, `kiem_android_tuongduong --pc cbc4b5cb`: ĐẠT):
+
+| Việc | Cách | Đo |
+|---|---|---|
+| a. Trang atlas mới = 0 | chép GPU→GPU (`SDL_CopyGPUTextureToTexture`) từ **dải nguồn 0** (w×256 mỗi (định dạng, loại texture), tải 0 một lần qua `m_jxZeroUploads`) thay vì tải 8 MB từ bộ đệm; `QueueZeroUpload` thêm `fmt`+`eLoai` (từ `NewPage`), `m_jxZeroCopy` chép trong cùng copy pass **sau** khối vùng 0 và **trước** nội dung texture; `bCoTai` (BKG) tính cả chép 0 | `[VE]`/`[VE-GIAT]` mục `zero n/ms` (giờ = số lần chép), `[VE-TAI] … trang atlas moi to 0 bang chep GPU: n trang x ms`, dòng `[TAI] dai nguon 0 …` lúc tạo dải |
+| b. Khung nạp trước tải dần | khung luồng nền giao với `nNguon ≠ 0` (chiêu / NPC / nền đất; `JxKhungXong` thêm `nNguon`) → `Rep3Gpu_TaiTruoc` đưa vào hàng `CDevGpu::m_jxTaiTruoc`; `RepresentBegin` gọi `Rep3Gpu_TaiTruocChay` tải lên GPU **từng dải** theo `[Client] NapKhungKB` (mặc định 128 KB/khung, 0 = tắt) **trước** khi khung được vẽ (`CTexGpu::JxTaiTruoc`: texture ảo = xin ô + tải cả ô; texture riêng = `NewVersion` + tải dải từ đầu `m_rcDirty`); lúc vẽ `PrepareForBind` chỉ tải nốt phần dư (đường cũ). Khung đang vẽ cần (`nNguon 0`) y như cũ. `~CTexGpu` rút khỏi hàng | `[VE-TAI] vao hang / xong / KB / luot / ms / hang cho max` |
+| c. Ảnh nền vùng sắp Clear | `PrepareAsTarget` (đích có `m_bJxKhongGiuCpu` từ XOANEN b) **không** tải bản CPU 1 MB, `free` luôn | `[VE-GIAT]` lúc vào map: `tai N tex KB` giảm ~40 MB |
+
+Giới hạn thật thà: (b) chỉ giúp khung ≥ 1 của chiêu (khung 0 cần ngay vẫn tải lúc vẽ); tổng CPU tải không đổi (20 ms/MB), chỉ dàn ra
+128 KB ≈ 2,5 ms/khung. Nếu log Fold 7 cho thấy chép GPU→GPU cũng chậm (không nên — hai ảnh đều ở bộ nhớ thiết bị): dự phòng = tô 0 bằng render
+pass `LOAD_OP_CLEAR` (cần `COLOR_TARGET` trên khối) hoặc tải qua storage buffer + shader như `[PALBUF 11/09]` (tải buffer→buffer đã chứng minh
+nhanh). P2 cache chữ vẫn để lại: `[PDET]` 13/09 cho thấy chữ chỉ vài phần mười ms/khung, không có số đo biện minh.
+
+**Máy ảo 00:40–00:46 (bản gộp 109140039 = `mobile-0809` 474fe775 camera lắc của phiên kia + TAI, merge `ac515d75`, `kiem --pc 474fe775` ĐẠT):** vào Tương Dương → đi bộ → Sa Mạc 1 (auto Dã Tẩu của chủ tự chạy lại), 6 phút không sập, hình đúng (không rác viền ô atlas). `[TAI] dai nguon 0 fmt 12/3 loai 1 2048x256` tạo một lần mỗi định dạng; `[VE-TAI]`: 8 + 6 + 2 trang atlas tô 0 bằng chép GPU (0,0 ms ghi lệnh), tải dần 778 → 1413 → 3684 khung/30 s (18–28 MB, 3–5 ms/30 s, hàng chờ max 142); `[PGND]` ghép nền `xoa 0.0` (P4c: không còn tải 1 MB/khe). Còn thấy trên máy ảo (không do đợt này): khung vào map 109–121 ms = `tep spr 92–101 tệp / 180–215 ms` (đọc tệp spr đồng bộ lúc vào map) + `tai 72–84 tex 21–30 MB` một khung (khung cần ngay lúc vào map; trên Fold 7 ≈ 0,5 s trong màn nạp) — việc tiếp theo nếu chủ thấy vào map lâu. Giao 00:46: `jx1mobile.apk` 109140039 md5 `4c24cf6a…` + `--chi-manifest` (máy chủ 52072 giữ), config.ini md5 khớp manifest; phiên camera đồng ý giao gộp một lần. Lùi: chép `android/apk/jx1mobile-1309-xoanen-b.apk`-tương-đương = bản 109132248 (md5 `6da7855b…`) đè lại + `--chi-manifest`.
+
+**Còn lại sau đợt này:** chờ log Fold 7 của 109140039 để xác nhận `zero n/ms` < 5 ms/trang và `[VE-TAI]` ms/khung; iOS chủ dựng trên Mac (mã chung JX_MOBILE, `SDL_CopyGPUTextureToTexture` Metal cùng loại texture đã lo); P5/P6 cần chủ quyết; P2 cache chữ chỉ khi đo còn > 0,5 ms/khung; vào map: đọc tệp spr đồng bộ 100 tệp/200 ms + tải 25 MB một khung (ẩn sau màn nạp, chưa đo trên Fold 7).
