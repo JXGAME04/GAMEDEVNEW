@@ -42,5 +42,14 @@ void JxLia_DatLai();
 // 1 = dang lech (dang keo, dang cho ve hoac dang ve).
 int  JxLia_DangLia();
 
+// [ZOOM 13/09] Chum hai ngon tren ban do = ZOOM NHIN RONG (the gioi ve vao RT to hon khung roi thu nho - Represent3 Rep3_JxTheGioi
+// lenh 4/5, giao dien giu nguyen co) + lia theo tam hai ngon. Hai ngon gan nhau = thay rong hon, xa nhau = ve 1:1. Zoom giu toi khi doi.
+bool JxLia_ChumDuoc(int x1, int y1, int x2, int y2);	// [Cham] ZoomCanh=1 va ca hai diem deu duoc lia
+void JxLia_ChumBatDau(int x1, int y1, int x2, int y2);
+void JxLia_ChumKeo(int x1, int y1, int x2, int y2);
+void JxLia_ChumNha();
+int  JxLia_ZoomLay();				// % (100 = 1:1)
+void JxLia_ZoomDat(int nPhanTram);	// dat zoom % (100..ZoomToiDa, lam tron ZoomBuoc): Represent3 + vung truy van vat the (SetRepresentAreaSize)
+
 #endif // JX_MOBILE
 #endif

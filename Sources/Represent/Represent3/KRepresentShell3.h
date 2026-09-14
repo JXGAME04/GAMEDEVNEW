@@ -473,6 +473,13 @@ private:
     int   m_nTgTrangThai;                // 1 = dang ve vao RT
     int   m_nTgLeft, m_nTgTop;           // goc toa do (m_nLeft/m_nTop) luc ve RT lan cuoi - khung chi blit dat lai de lop phu trung anh
     DWORD m_dwTgMauXoa;                  // mau xoa cua RepresentBegin khung nay
+    // [ZOOM 13/09] nhin rong ra: zoom phan nghin (1000 = tat). RT = khung x zoom; goc RT lui (m_nZoomDx/Dy) de tieu diem van o giua.
+    // Luc ve RT: g_nScreenWidth/Height + m_nLeft/m_nTop tam doi sang RT (cull/cat theo RT), lenh 2 tra lai (m_nTgKhung*, m_nTg*Khung).
+    // Cua toa do: CoordinateTransform (the gioi -> khung, chia zoom) va ViewPortCoordToSpaceCoord (khung -> the gioi, nhan zoom).
+    int   m_nTgZoom;
+    int   m_nZoomDx, m_nZoomDy;
+    int   m_nTgKhungW, m_nTgKhungH;
+    int   m_nTgLeftKhung, m_nTgTopKhung;
 #endif
 
     LPDIRECT3DTEXTURE9 m_pPreRenderTexture128;	// Ô¤äÖÈ¾Ö÷½ÇµÄÌùÍ¼Ö¸Õë

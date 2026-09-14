@@ -75,3 +75,60 @@ Không đụng: `Represent3`, `Core`, `Wnds.cpp`, `S3Client.vcxproj` (PC/GameSDL
 - Bước 2: **zoom nhìn rộng ra** bằng hai ngón (cách C, thế giới vẽ vào RT to hơn rồi blit thu nhỏ, tái dùng đường `[TG]`) — chỉ sau khi đo mép đen và `[PGND]` trên Fold 7.
 - Bước 3: tham số theo map (như `cameraInit` của họ) + nút bật/tắt lia trong trình chỉnh giao diện.
 - Bẫy gặp trong phiên: heredoc Bash nuốt `\` và `'` → viết tệp bằng công cụ Write rồi đổi CRLF; robocopy rc=1 là thành công; gradle lần hai báo "3 s" nhưng vẫn dịch lại tệp đổi (kiểm `.o` mtime); máy ảo mở về **menu** sau khi cài (không tự đăng nhập) → tôi bấm: Bắt đầu → chọn máy chủ 2 cấp → Xác nhận (mật khẩu đã ghi nhớ) → chọn nhân vật.
+
+
+---
+
+# BƯỚC 2 (13/09 tối, sau khi chủ thử xong bước 1): ZOOM NHÌN RỘNG RA BẰNG HAI NGÓN — bản 109132104
+
+> Chủ: *"oke được rồi tôi test được làm bước tiếp theo"*. Làm theo **cách C** của `PHANTICH_ZOOM_CANH_1209.md` (đã cân nhắc lại 12/09): thế giới vẽ vào ảnh đệm **to hơn khung** rồi **thu nhỏ** khi blit, giao diện giữ nguyên; tái dùng đúng đường `[TG]` `Rep3_JxTheGioi` đã có.
+
+## 1. Bản đã lên dt_v4
+
+| | |
+|---|---|
+| APK | `android/apk/jx1mobile-1309-zoom-b.apk` → `D:\jx1_android_data_dt_v4\jx1mobile.apk`, versionCode **109132104**, md5 `6bcf743211e0c128a3ad678a60cda11c`; 8765 khởi động lại |
+| Lùi | `[Cham] ZoomCanh=0` (tắt chụm) + restart 8765; lia bước 1 vẫn còn. Lùi cả hai: `LiaCanh=0`. Bản trước: 109132032 (lia, chưa zoom) |
+| Config dt_v4 | thêm khối `[Cham] Zoom*` (mục 3) |
+
+## 2. Cách dùng
+
+- **Hai ngón đặt lên bản đồ** (cả hai ngoài giao diện / cần / nút kỹ năng) rồi **chụm lại = nhìn rộng ra**, giãn ra = về 1:1; tối đa **150 %** (rộng gấp 1,5 lần mỗi chiều). Vừa chụm vừa kéo thì cảnh **lia theo tâm hai ngón**; nhả một ngón = hết chụm, 1 s sau lia tự về (zoom **giữ nguyên** tới khi đổi, kể cả qua map).
+- Nhân vật, quái, tên, thanh máu nhỏ theo tỉ lệ (vì nằm trong ảnh đệm); bảng, nút, chữ giao diện **giữ nguyên cỡ**. Chạm chọn NPC / chạm đất đi đúng chỗ ở mọi mức zoom (một "cửa" đổi toạ độ cho cả vẽ lẫn chạm).
+
+## 3. Khoá `[Cham]` thêm
+
+```
+ZoomCanh=1        ; 0 = tat chum hai ngon
+ZoomToiDa=150     ; % nhin rong toi da (150 = 2,25 lan dien tich -> GPU + nen dat theo ti le)
+ZoomBuoc=5        ; nac zoom, %
+ZoomMacDinh=100   ; zoom luc vao game
+ZoomThu=0         ; go loi: % zoom tu dat 3 s sau khi vao the gioi (may ao khong co hai ngon)
+```
+
+## 4. Đã làm gì trong mã (kịch bản `android/va_nguon_zoom_1309.py`, idempotent; mọi dòng trong rào `JX_MOBILE`)
+
+| Tệp | Việc |
+|---|---|
+| `Represent3/KRepresentShell3.h` | thành viên `m_nTgZoom` (phần nghìn), `m_nZoomDx/Dy` (gốc RT lùi so với gốc khung), `m_nTgKhungW/H`, `m_nTgLeftKhung/TopKhung` — trong khối `JX_MOBILE` của `[TG]` |
+| `Represent3/KRepresentShell3.cpp` | `JxTheGioi`: lệnh **4** đặt zoom / **5** hỏi; lệnh 0: zoom > 1000 → luôn vẽ RT (K = 1), RT = khung × zoom (cấp lại khi đổi cỡ); lệnh 1: lưu gốc + cỡ khung, **lùi `m_nLeft/m_nTop` = Dx/Dy** để tiêu điểm nằm giữa RT, tạm đặt `g_nScreenWidth/Height` = cỡ RT (cull/cắt trong shell theo RT); lệnh 2: trả lại cỡ khung + gốc khung, **đích blit = cỡ khung** (trước là cỡ RT → vẽ 1:1 rồi cắt — lỗi tôi bắt được bằng ảnh: nhân vật lệch đúng 130 px = (1300−1040)/2), lọc **tuyến tính** khi thu nhỏ; `CoordinateTransform` + `CoordinateTransformX` (nhánh 2D, chỉ khi không đang vẽ RT): `(x − gốc khung + Dx)·1000/zoom`; `ViewPortCoordToSpaceCoord` (nhánh 2D): `x·zoom/1000 − Dx + gốc khung` |
+| `KSdlApp.h/.cpp` | `m_nLiaChum`; nhớ ngón 1 ngoài chế độ sửa; ngón 2 đặt lên bản đồ khi ngón 1 đang CHO/LIA/KEO và cả hai điểm được lia → huỷ chuột giả lập ngón 1 (KEO thì gửi `WM_LBUTTONUP`), `JxLia_ChumBatDau/Keo/Nha`; ngón nào nhả trước là hết chụm |
+| `JxLiaCanh.h/.cpp` | `JxLia_ChumDuoc/ChumBatDau/ChumKeo/ChumNha`, `JxLia_ZoomDat/ZoomLay`: zoom = zoom0 · d0/d làm tròn `ZoomBuoc`, kẹp 100..`ZoomToiDa`; áp = `Rep3_JxTheGioi(4, zoom·10)` (GetProcAddress như `Wnds.cpp`) + `g_pCoreShell->SetRepresentAreaSize(khung × zoom)` (vùng truy vấn vật thể, không thì người ở rìa không được vẽ); lia theo tâm hai ngón; giới hạn lia nhân theo zoom; đổi map áp lại vùng truy vấn (Rep3 giữ zoom); `ZoomThu` gỡ lỗi |
+
+Không đụng: `Core`, `Wnds.cpp`, `D3D9onGPU` (lớp GPU tự đặt viewport = cỡ RT khi `SetRenderTarget`, đã đọc `CDevGpu::SetRenderTarget`).
+
+## 5. Chứng minh
+
+- `ios/kiem_android_tuongduong.py --pc`: **DAT — Windows biên dịch y hệt** (mọi dòng mới trong `JX_MOBILE`).
+- MSBuild `Represent3.vcxproj` `/t:ClCompile KRepresentShell3.cpp` Release|Win32 **và** Release|x64: 0 lỗi, `.obj` dịch lại sau vá (21:04). `/t:Rebuild` Win32 dừng ở **LNK1181 `d3dx9.lib`** (máy này không có DirectX SDK — lỗi môi trường, không phải mã; máy chủ dựng bản PC ở cây thật của chủ).
+- `check_encoding.py`: `KRepresentShell3.cpp` 3780 / `.h` 5392 byte cao trước = sau.
+- Máy ảo (`ZoomThu=125`, không có hai ngón): log `[ZOOM] zoom 1000 -> 1250` + `[TG] render target the gioi 1300x756`; ảnh: **nhân vật đúng giữa màn**, thế giới nhỏ 80 %, thấy rộng hơn 25 % mỗi chiều, tên/thanh máu đúng chỗ, giao diện nguyên cỡ, không mép đen; lia 200 px ở zoom → lệch 195, về sau 1 s; chạm đất ở vùng mới lộ → nhân vật đi tới; `[TG]` việc/khung thế giới 0,7 ms, 60 fps đều.
+- Chi phí lý thuyết trên Fold 7: 150 % = 2,25 lần điểm ảnh lớp thế giới + 1 blit toàn màn (GPU 61–63 % ở 120 Hz K=1 hôm 13/09 → có thể chạm trần ở Tống Kim đông khi zoom 150 %); `[TG]` K=2 tắt khi zoom nên không có "xen khung". Cần đo `[MAU]` GPU % và `[PGND]` khi chủ zoom 150 % ở chỗ đông.
+
+## 6. Chủ thử trên Fold 7
+
+1. Mở lại app nhận **109132104**. Vào thành: hai ngón chụm lại → thế giới nhỏ dần, thấy rộng ra; giãn → về 1:1. Bảng, nút không đổi.
+2. Ở 150 %: chạm NPC ở rìa → mở đúng thoại; chạm đất → đi đúng chỗ; kéo một ngón lia rồi thả 1 s về.
+3. Qua cổng đổi map: zoom giữ, người ở rìa vẫn được vẽ (nếu thấy người/quái biến mất ở mép khi zoom → báo tôi, đó là vùng truy vấn).
+4. Tống Kim đông ở 150 %: xem fps/nóng; kéo log về, tôi đọc `[TG]`, `[MAU]` (GPU %, W), `[PGND]`.
+5. Không thích chữ nhỏ theo zoom → đó là bản chất cách C; muốn chữ giữ cỡ phải làm cách A (35 chỗ chữ neo thế giới, mã dùng chung PC) — chủ quyết sau khi thử.
