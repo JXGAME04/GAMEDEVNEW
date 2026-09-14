@@ -493,3 +493,41 @@ Lưu `uiautoconfig.ini [Options2] ZoomNhanh / ZoomCham / LacCamera`; áp ngay v�
 - Bước hai xét `m_nTgZoom < 1000` còn đường RT to xét `m_nTgZoomRt`: zoom 90 % × lề 1,12 = 1008 thì đi cả RT to lẫn RT2, hình vẫn đúng, chỉ tốn thêm; chưa cần sửa.
 - `CDevGpu::GetRenderTarget` có AddRef nên `SAFE_RELEASE(pDichCu)` cân; viewport tự bằng RT2 khi `SetRenderTarget`; RT2 không cần Clear vì quad phủ kín.
 
+
+
+---
+
+# TGCAP: RT THẾ GIỚI CẤP MỘT LẦN, ZOOM/LỀ CHỈ ĐỔI PHẦN DÙNG — 14/09 13:2x (bản **109141317**)
+
+Phiên đo nhịp đo log Fold 7 12:41 (bản 109141129, chủ thử zoom/lắc): chụm ngón zoom 1200→800 = 5 bước zoom + RT2 cấp lại 3 lần → **khung 97 ms**; mỗi lần lắc lề RT 1000→1120 (và trả về) cấp lại RT → khung 20–30 ms. Gốc: lệnh 0 cấp lại RT mỗi khi cỡ (khung × zoom × lề) đổi, RT2 = 2 × RT cũng cấp lại theo; `[TAI-DO]` đo tạo texture lớn 5–54 ms + driver cam kết bộ nhớ ở lần nộp đầu. Chi tiết ở `PHANTICH_LOG_FOLD7_1309.md` mục 14/09 12:41.
+
+## 1. Bản
+
+| | |
+|---|---|
+| Mã | `Represent/Represent3/KRepresentShell3.cpp/.h` (khối [TG], JX_MOBILE; phiên đo nhịp soi chéo OK) + `S3Client/Platform/JxLiaCanh.cpp` (một dòng lệnh 11); `kiem --pc` ĐẠT. Kịch bản `android/va_nguon_tgcap_1409.py` (a–d, idempotent) |
+| Config `[Client]` | `TheGioiRTCap=1700` (‰ khung; = ZoomToiDa 150 % × LiaLacLe 112 %; mã mặc định 1500), `TheGioiRT2Cap=1150` (RT2 = 2 × khung × ‰, ≥ LiaLacLe), `TheGioiRTSan=1` (cấp sẵn + chạm ở khung đầu vào thế giới; 0 = cấp khi cần) |
+
+## 2. Cơ chế
+
+- **RT**: texture thật có cỡ **cấp** = khung × `TheGioiRTCap`; `m_nTgW/H` giờ là phần **dùng** (khung × zoom × lề) đổi mỗi bước; chỉ cấp lại khi khung đổi (gập/mở, xoay: `m_nTgCapKhungW/H` ≠ `g_nScreenWidth/Height`) hoặc phần dùng vượt cấp (cấp mới theo nấc 250 ‰, kẹp 3500). Thế giới vẽ vào góc trái trên của texture: `CDevGpu::SetRenderTarget` đặt viewport = cả texture (VS chia theo cấp) còn `g_nScreenWidth/Height` = phần dùng ở lệnh 1 nên Core cắt theo phần dùng.
+- **Blit**: uv = dùng/cấp ở cả ba chỗ (RT→RT2, RT→khung, RT2→khung). Mép phần dùng không lem: thu nhỏ/1:1 mẫu cuối ≤ dùng − 0,5 texel, RT→RT2 là POINT, phóng to/lắc thì mép nằm ngoài khung.
+- **RT2** (phóng to có lọc nét): cấp = 2 × khung × `TheGioiRT2Cap`, phần dùng = 2 × RT dùng; không thể cố định 2 × khung vì zoom 950 × lề 1120 = 1064 ‰ > khung.
+- **Cấp sẵn + chạm** (`TheGioiRTSan=1`, khi `TheGioiRT=1`): khung đầu vào thế giới cấp RT rồi đổi đích + Clear + trả đích (lớp SDL_GPU mở pass rỗng load-op CLEAR, XOANEN 13/09) để driver cam kết bộ nhớ ngay trong màn nạp; RT2 cấp sẵn + chạm khi S3Client báo `ZoomToiThieu < 100` qua **lệnh 11** (`JxLiaCanh Camera_DocMap`, đến sau khung đầu ~1 s vì chờ có map) và `Rep3ZoomNet=1`. Fold 7: RT 1768×1591 ≈ 11 MB + RT2 ≈ 21 MB RAM thường trực. Log: `[TGCAP] cham san RT WxH [+ RT2] (zoom toi thieu N)`, `[TGCAP] zoom toi thieu 1000 -> 800 (lenh 11)`.
+- Chi phí đổi lại: mỗi khung đi đường RT tô/lưu cả texture cấp (Adreno resolve mọi bin trong render area): +~8 MB/khung khi RT bật do quá tải mà không zoom — phiên đo nhịp và tôi cùng cho là nhỏ; Clear cả texture rẻ trên tile GPU.
+
+## 3. Thử máy ảo (1040×604)
+
+| Lượt | Kết quả |
+|---|---|
+| ZoomThu=80 | RT cấp 1 lần `cap 1768x1026 (dung 1040x604, muc 1700)`; RT2 1 lần; zoom 1000→950→…→800 không cấp lại; lắc lề 1120 không cấp lại |
+| ZoomThu=150 | 9 bước zoom 1000→1500 + lắc lề 1120 (dùng 1747 ≤ cấp 1768) không cấp lại |
+| A/B 100 %: `TheGioiRTEp=1` (qua RT cấp 1768) so `TheGioiRTEp=0` (vẽ thẳng) | ảnh thế giới trùng nhau sau khi bù 1 px (nhân vật đứng lệch 1 px giữa hai lần đăng nhập, bảng tên cũng lệch đúng 1 px như thế giới) → uv dùng/cấp đúng |
+| ZoomThu=80 bản cuối | `cham san RT` ở khung đầu, `zoom toi thieu 1000 -> 800 (lenh 11)`, `RT2 cap 2392x1390 (dung 2080x1208)` + `cham san RT + RT2` trước khi zoom, sau đó zoom 1000→800 không cấp lại; không sập |
+
+Chưa đo được trên máy ảo: chi phí thật (LDPlayer không có [TAI-DO]); chủ thử Fold 7: chụm/dang ngón + lia liên tục, xem `[VE-GIAT]`/khung dài trong log 8765.
+
+## 4. Còn lại
+
+- Cấp sẵn khối atlas trong màn nạp (đề xuất của phiên đo nhịp, việc của họ).
+- Nếu chủ đổi `ZoomToiDa` > 150 hoặc `LiaLacLe` > 112: nâng `TheGioiRTCap` tương ứng, không thì lần đầu vượt sẽ cấp lại một lần (nấc 250 ‰).

@@ -611,6 +611,7 @@ static void Camera_DocMap()
 	if (nDich > s_nZoomToiDa) nDich = s_nZoomToiDa;
 	s_nZoomDich = nDich;
 	s_fZoomTroi = (float)s_nZoom;
+	Rep3TheGioi(11, (s_nZoomBat && s_nNcZoom) ? s_nZoomToiThieu * 10 : 1000);	// [TGCAP 14/09 b] bao Represent3 co phong to hay khong (< 1000) -> cap san RT2 o khung dau
 	if (s_nZoomDaAp < 0)
 		ZoomAp(s_nZoom);	// doi map: ap lai vung truy van (Represent3 van giu zoom) truoc khi troi
 	g_DebugLog("[CAMERA] map %d (%s): zoom mac dinh %d%%, toi da %d%%, lia %d%%x%d%%, lia=%d zoom=%d | dang %d%% -> troi toi %d%% (nguoi choi nho %d%%)",

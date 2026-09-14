@@ -260,6 +260,8 @@ static double s_dTgMinCach = 1e9, s_dTgCachTong = 0.0, s_dTgViecTong = 0.0; stat
 static LARGE_INTEGER s_liTgCuoi = { 0 }; static DWORD s_dwTgCuaSo = 0; static int s_nTgCuaSoNhe = 0;
 static double s_dTgChuKy = 0.0, s_dTgViecTB = 0.0, s_dTgCachTB = 0.0;	// ket qua cua so gan nhat (in [TG])
 static unsigned s_uTgDemVe = 0, s_uTgDemBlit = 0, s_uTgDemThuong = 0, s_uTgDemDoiK = 0;	// thong ke ky [TG]
+static int s_nTgRtCap = 1500, s_nTgRt2Cap = 1150, s_nTgRtSan = 1;	// [TGCAP 14/09]
+static int s_nTgDaChamRt = 0, s_nTgDaChamRt2 = 0;	// [TGCAP 14/09 b] da cham san RT / RT2 (pass rong CLEAR) sau khi cap; ve 0 khi huy	// [TGCAP 14/09] cap RT = khung x RtCap, RT2 = 2 x khung x Rt2Cap (phan nghin); San = cap san RT o khung dau vao the gioi
 
 void KRepresentShell3::JxTheGioiDocIni()
 {
@@ -267,6 +269,10 @@ void KRepresentShell3::JxTheGioiDocIni()
 	s_nTgEp = Rep3Ini("TheGioiRTEp", 0); if (s_nTgEp < 0 || s_nTgEp > 2) s_nTgEp = 0;
 	s_nTgToiThieuHz = Rep3Ini("TheGioiToiThieuHz", 60); if (s_nTgToiThieuHz < 30) s_nTgToiThieuHz = 30; if (s_nTgToiThieuHz > 120) s_nTgToiThieuHz = 120;
 	Rep3Log("[TG] the gioi RT khi qua tai: bat=%d ep=%d, the gioi toi thieu %d Hz (TheGioiRT / TheGioiRTEp / TheGioiToiThieuHz)", s_nTgBat, s_nTgEp, s_nTgToiThieuHz);
+	s_nTgRtCap = Rep3Ini("TheGioiRTCap", 1500); if (s_nTgRtCap < 1000) s_nTgRtCap = 1000; if (s_nTgRtCap > 3000) s_nTgRtCap = 3000;	// [TGCAP 14/09]
+	s_nTgRt2Cap = Rep3Ini("TheGioiRT2Cap", 1150); if (s_nTgRt2Cap < 1000) s_nTgRt2Cap = 1000; if (s_nTgRt2Cap > 1500) s_nTgRt2Cap = 1500;
+	s_nTgRtSan = Rep3Ini("TheGioiRTSan", 1) ? 1 : 0;
+	Rep3Log("[TGCAP] RT cap %d, RT2 cap 2 x %d phan nghin khung, cap san %d (TheGioiRTCap / TheGioiRT2Cap / TheGioiRTSan)", s_nTgRtCap, s_nTgRt2Cap, s_nTgRtSan);
 }
 
 void KRepresentShell3::JxTheGioiHuy()
@@ -274,8 +280,8 @@ void KRepresentShell3::JxTheGioiHuy()
 	if (m_nTgTrangThai == 1 && PD3DDEVICE && m_pTgSurfCu) PD3DDEVICE->SetRenderTarget(0, m_pTgSurfCu);
 	m_nTgTrangThai = 0;
 	SAFE_RELEASE(m_pTgSurfCu); SAFE_RELEASE(m_pTgSB); SAFE_RELEASE(m_pTgSurf); SAFE_RELEASE(m_pTgTex);
-	SAFE_RELEASE(m_pTgSurf2); SAFE_RELEASE(m_pTgTex2); m_nTg2W = m_nTg2H = 0;	// [ZOOM3D 14/09]
-	m_nTgW = m_nTgH = 0; s_uTgRTVe = 0xFFFFFFFFu;
+	SAFE_RELEASE(m_pTgSurf2); SAFE_RELEASE(m_pTgTex2); m_nTg2W = m_nTg2H = m_nTg2CapW = m_nTg2CapH = 0;	// [ZOOM3D 14/09] [TGCAP 14/09] ca cap
+	m_nTgW = m_nTgH = m_nTgCapW = m_nTgCapH = m_nTgCapKhungW = m_nTgCapKhungH = 0; s_uTgRTVe = 0xFFFFFFFFu; s_nTgDaChamRt = s_nTgDaChamRt2 = 0;
 }
 
 // [ZOOM3D 14/09] RT2 = 2 x RT (BGRA8, render target) cho PHONG TO co loc net; [Client] Rep3ZoomNet=0 tat (blit thang LINEAR). Tao lan dau /
@@ -285,19 +291,22 @@ bool KRepresentShell3::JxTheGioiNet2()
 	static int s_nNet = -1;
 	if (s_nNet < 0) s_nNet = Rep3Ini("Rep3ZoomNet", 1) ? 1 : 0;
 	if (!s_nNet || !m_pTgTex || m_nTgW <= 0 || m_nTgH <= 0) return false;
-	const int nW = m_nTgW * 2, nH = m_nTgH * 2;
-	if (m_pTgTex2 && (m_nTg2W != nW || m_nTg2H != nH)) { SAFE_RELEASE(m_pTgSurf2); SAFE_RELEASE(m_pTgTex2); }
+	const int nW = m_nTgW * 2, nH = m_nTgH * 2;	// phan DUNG cua RT2
+	if (m_pTgTex2 && (nW > m_nTg2CapW || nH > m_nTg2CapH)) { SAFE_RELEASE(m_pTgSurf2); SAFE_RELEASE(m_pTgTex2); m_nTg2CapW = m_nTg2CapH = 0; }	// [TGCAP 14/09] chi cap lai khi KHONG DU cho, khong cap lai moi buoc zoom
+	m_nTg2W = nW; m_nTg2H = nH;
 	if (!m_pTgTex2)
 	{
-		m_nTg2W = nW; m_nTg2H = nH;
-		if (FAILED(PD3DDEVICE->CreateTexture(nW, nH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pTgTex2, NULL)) || !m_pTgTex2
+		int nCapW = (m_nTgCapKhungW * 2 * s_nTgRt2Cap / 1000 + 1) & ~1, nCapH = (m_nTgCapKhungH * 2 * s_nTgRt2Cap / 1000 + 1) & ~1;	// [TGCAP 14/09] cap = 2 x khung x le toi da (TheGioiRT2Cap)
+		if (nCapW < nW) nCapW = nW; if (nCapH < nH) nCapH = nH;
+		m_nTg2CapW = nCapW; m_nTg2CapH = nCapH;
+		if (FAILED(PD3DDEVICE->CreateTexture(nCapW, nCapH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pTgTex2, NULL)) || !m_pTgTex2
 			|| FAILED(m_pTgTex2->GetSurfaceLevel(0, &m_pTgSurf2)) || !m_pTgSurf2)
 		{
-			Rep3Log("[ZOOM3D] khong tao duoc RT2 %dx%d -> phong to blit thang LINEAR", nW, nH);
-			SAFE_RELEASE(m_pTgSurf2); SAFE_RELEASE(m_pTgTex2); m_nTg2W = m_nTg2H = 0; s_nNet = 0;
+			Rep3Log("[ZOOM3D] khong tao duoc RT2 %dx%d -> phong to blit thang LINEAR", nCapW, nCapH);
+			SAFE_RELEASE(m_pTgSurf2); SAFE_RELEASE(m_pTgTex2); m_nTg2W = m_nTg2H = m_nTg2CapW = m_nTg2CapH = 0; s_nNet = 0;	// [TGCAP 14/09]
 			return false;
 		}
-		Rep3Log("[ZOOM3D] RT2 %dx%d cho phong to co loc net (zoom %d)", nW, nH, m_nTgZoom);
+		Rep3Log("[ZOOM3D] RT2 cap %dx%d (dung %dx%d) cho phong to co loc net (zoom %d)", nCapW, nCapH, nW, nH, m_nTgZoom);	// [TGCAP 14/09]
 	}
 	return true;
 }
@@ -331,6 +340,13 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 		if (nD != m_nTgDoc) { m_nTgDoc = nD; g_nJxTheGioiEp = 1; }
 		return m_nTgDoc;
 	}
+	if (nLenh == 11)
+	{	// [TGCAP 14/09 b] S3Client (JxLiaCanh Camera_DocMap) bao ZoomToiThieu phan nghin luc vao map / doi cong tac: < 1000 = co the phong to -> cap san RT2 (TheGioiRTSan + Rep3ZoomNet)
+		int nT = nThamSo; if (nT < 500) nT = 500; if (nT > 1000) nT = 1000;
+		if (nT != m_nTgZoomMin) Rep3Log("[TGCAP] zoom toi thieu %d -> %d phan nghin (lenh 11)", m_nTgZoomMin, nT);	// [TGCAP 14/09 c]
+		m_nTgZoomMin = nT;
+		return m_nTgZoomMin;
+	}
 	if (nLenh == 10) return m_nTgDoc;
 	if (!PD3DDEVICE || m_bDeviceLost) return 0;
 	if (nLenh == 0)
@@ -342,22 +358,55 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 		const bool bZoom = (m_nTgZoomRt > 1000);	// [ZOOM 13/09] dang nhin rong (hoac RT co le): luon ve the gioi vao RT to hon khung roi thu nho (K = 1)
 		const bool bPhongTo = (m_nTgZoomRt < 1000);	// [ZOOM3D 14/09] phong to: RT = co khung (K = 1), lenh 2 blit phong to (co loc net neu Rep3ZoomNet)
 		if (bZoom || bPhongTo) nK = 1;
-		if (!bZoom && !bPhongTo && (!s_nTgBat || (nK != 2 && s_nTgEp != 1))) { s_uTgVeThat = s_uTgKhung; s_uTgDemThuong++; return 0; }
+		const bool bDuongCu = (!bZoom && !bPhongTo && (!s_nTgBat || (nK != 2 && s_nTgEp != 1)));	// [TGCAP 14/09] khung nay ve thang (khong qua RT)
+		const bool bCapSan = (s_nTgRtSan && s_nTgBat && (!m_pTgTex || (!s_nTgDaChamRt2 && m_nTgZoomMin < 1000)));	// [TGCAP 14/09 d] con viec cap san: RT chua co, hoac RT2 chua cap ma S3Client vua bao co phong to (lenh 11 den sau khung dau ~1 s)
+		if (bDuongCu && !bCapSan) { s_uTgVeThat = s_uTgKhung; s_uTgDemThuong++; return 0; }	// [TGCAP 14/09] chua viec cap san: ve thang ngay
 		const int nRtW = bZoom ? ((g_nScreenWidth * m_nTgZoomRt / 1000 + 1) & ~1) : g_nScreenWidth;	// [LAC 14/09] theo ti le RT that
 		const int nRtH = bZoom ? ((g_nScreenHeight * m_nTgZoomRt / 1000 + 1) & ~1) : g_nScreenHeight;
-		if (!m_pTgTex || m_nTgW != nRtW || m_nTgH != nRtH)
-		{	// RT phai dung co khung logic (gap / mo, doi ho khung); [ZOOM 13/09] hoac khung x zoom
+		if (!m_pTgTex || nRtW > m_nTgCapW || nRtH > m_nTgCapH || g_nScreenWidth != m_nTgCapKhungW || g_nScreenHeight != m_nTgCapKhungH)
+		{	// [TGCAP 14/09] chi cap lai khi khung doi (gap / mo, xoay) hoac phan dung vuot cap; cap = khung x TheGioiRTCap (nac 250 phan nghin khi vuot)
+			// de moi buoc zoom / le chi doi phan dung + uv blit, khong huy / cap lai texture (Fold 7 12:41: ~10 lan cap/giay khi chum ngon = khung 97 ms)
 			JxTheGioiHuy();
+			int nMuc = s_nTgRtCap;
+			if (g_nScreenWidth > 0 && g_nScreenHeight > 0)
+			{
+				const int nCanW = (nRtW * 1000 + g_nScreenWidth - 1) / g_nScreenWidth, nCanH = (nRtH * 1000 + g_nScreenHeight - 1) / g_nScreenHeight;
+				const int nCan = (nCanW > nCanH) ? nCanW : nCanH;
+				while (nMuc < nCan && nMuc < 3500) nMuc += 250;	// [TGCAP 14/09 b] kep 3500 (phien do nhip: 12x diem khung = 30 MB store/khung)
+			}
+			m_nTgCapKhungW = g_nScreenWidth; m_nTgCapKhungH = g_nScreenHeight;
+			m_nTgCapW = (g_nScreenWidth * nMuc / 1000 + 1) & ~1; m_nTgCapH = (g_nScreenHeight * nMuc / 1000 + 1) & ~1;
+			if (m_nTgCapW < nRtW) m_nTgCapW = nRtW; if (m_nTgCapH < nRtH) m_nTgCapH = nRtH;
 			m_nTgW = nRtW; m_nTgH = nRtH;
-			if (m_nTgW <= 0 || m_nTgH <= 0 || FAILED(PD3DDEVICE->CreateTexture(m_nTgW, m_nTgH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pTgTex, NULL))
+			if (m_nTgCapW <= 0 || m_nTgCapH <= 0 || FAILED(PD3DDEVICE->CreateTexture(m_nTgCapW, m_nTgCapH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pTgTex, NULL))
 				|| !m_pTgTex || FAILED(m_pTgTex->GetSurfaceLevel(0, &m_pTgSurf)) || !m_pTgSurf)
 			{
-				Rep3Log("[TG] khong tao duoc render target %dx%d -> tat the gioi RT", m_nTgW, m_nTgH);
+				Rep3Log("[TG] khong tao duoc render target %dx%d -> tat the gioi RT", m_nTgCapW, m_nTgCapH);	// [TGCAP 14/09]
 				JxTheGioiHuy(); s_nTgBat = 0; s_uTgDemThuong++; return 0;
 			}
 			if (FAILED(PD3DDEVICE->CreateStateBlock(D3DSBT_ALL, &m_pTgSB))) m_pTgSB = NULL;
-			Rep3Log("[TG] render target the gioi %dx%d", m_nTgW, m_nTgH);
+			Rep3Log("[TG] render target the gioi cap %dx%d (dung %dx%d, khung %dx%d, muc %d)", m_nTgCapW, m_nTgCapH, m_nTgW, m_nTgH, g_nScreenWidth, g_nScreenHeight, nMuc);	// [TGCAP 14/09]
 		}
+		else { m_nTgW = nRtW; m_nTgH = nRtH; }	// [TGCAP 14/09] chi doi phan dung, giu texture
+		if (s_nTgRtSan && m_pTgSurf && (!s_nTgDaChamRt || (!s_nTgDaChamRt2 && m_nTgZoomMin < 1000)))	// [TGCAP 14/09 c] ca khi khung nay di duong RT (RT cham thua mot pass rong, RT2 van can cap san)
+		{	// [TGCAP 14/09 b] cham san RT (+ RT2 khi co phong to) MOT lan = doi dich + Clear + tra dich (lop SDL_GPU mo pass rong load-op CLEAR, XOANEN 13/09)
+			// de driver cam ket bo nho ngay khung dau vao the gioi (log Fold 7 12:41: texture lon moi ton 2-3 lan nop 21-43 ms o lan dung dau)
+			LPDIRECT3DSURFACE9 pCu = NULL;
+			if (SUCCEEDED(PD3DDEVICE->GetRenderTarget(0, &pCu)) && pCu)
+			{
+				if (!s_nTgDaChamRt && SUCCEEDED(PD3DDEVICE->SetRenderTarget(0, m_pTgSurf))) PD3DDEVICE->Clear(0, NULL, D3DCLEAR_TARGET, m_dwTgMauXoa, 1.0f, 0L);
+				s_nTgDaChamRt = 1;
+				if (!s_nTgDaChamRt2 && m_nTgZoomMin < 1000)
+				{
+					s_nTgDaChamRt2 = 1;
+					if (JxTheGioiNet2() && SUCCEEDED(PD3DDEVICE->SetRenderTarget(0, m_pTgSurf2))) PD3DDEVICE->Clear(0, NULL, D3DCLEAR_TARGET, m_dwTgMauXoa, 1.0f, 0L);
+				}
+				PD3DDEVICE->SetRenderTarget(0, pCu);
+				Rep3Log("[TGCAP] cham san RT %dx%d%s (zoom toi thieu %d phan nghin)", m_nTgCapW, m_nTgCapH, m_pTgTex2 ? " + RT2" : "", m_nTgZoomMin);
+			}
+			SAFE_RELEASE(pCu);
+		}
+		if (bDuongCu) { s_uTgVeThat = s_uTgKhung; s_uTgDemThuong++; return 0; }	// [TGCAP 14/09] da cap san, khung nay van ve thang
 		// chi blit khi khung NGAY TRUOC da ve the gioi vao RT (anh moi dung 1 khung), khong bi ep (be mat doi), K = 2 -> hai khung ve mot lan
 		if (nK == 2 && !g_nJxTheGioiEp && m_nTgTrangThai == 0 && s_uTgRTVe == s_uTgKhung - 1)
 			return 2;
@@ -415,10 +464,11 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 				PD3DDEVICE->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT); PD3DDEVICE->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
 				PD3DDEVICE->SetTexture(0, m_pTgTex); PD3DDEVICE->SetTexture(1, NULL);
 				PD3DDEVICE->SetFVF(D3DFVF_VERTEX2D);
+				const float fU1 = (float)m_nTgW / (float)m_nTgCapW, fV1 = (float)m_nTgH / (float)m_nTgCapH;	// [TGCAP 14/09] uv = phan dung / cap cua RT
 				for (int i = 0; i < 4; i++)
 				{	// quad phu kin RT2 (toa do pixel theo viewport cua target = RT2)
 					q[i].position = D3DXVECTOR4((i & 1) ? (float)m_nTg2W : 0.f, (i & 2) ? (float)m_nTg2H : 0.f, 100, 1);
-					q[i].color = 0xffffffff; q[i].tu = (i & 1) ? 1.0f : 0.0f; q[i].tv = (i & 2) ? 1.0f : 0.0f;
+					q[i].color = 0xffffffff; q[i].tu = (i & 1) ? fU1 : 0.0f; q[i].tv = (i & 2) ? fV1 : 0.0f;	// [TGCAP 14/09]
 				}
 				PD3DDEVICE->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, q, sizeof(VERTEX2D));
 				PD3DDEVICE->SetRenderTarget(0, pDichCu);
@@ -436,11 +486,13 @@ int KRepresentShell3::JxTheGioi(int nLenh, int nThamSo)
 			const float fTl = 1000.0f / (float)m_nTgZoom;
 			const float fGoc = (float)m_nTgXoay * 3.14159265f / 18000.0f, fC = cosf(fGoc), fS = sinf(fGoc), fK = (float)m_nTgDoc / 1000.0f;	// [LAC 14/09 b] fK = co dan doc
 			const float fHx = (float)m_nTgW * 0.5f, fHy = (float)m_nTgH * 0.5f;
+			const float fU = (pTexBlit == m_pTgTex2) ? (float)m_nTg2W / (float)m_nTg2CapW : (float)m_nTgW / (float)m_nTgCapW;	// [TGCAP 14/09] uv = phan dung / cap (RT2 hay RT)
+			const float fV = (pTexBlit == m_pTgTex2) ? (float)m_nTg2H / (float)m_nTg2CapH : (float)m_nTgH / (float)m_nTgCapH;
 			for (int i = 0; i < 4; i++)
 			{
 				const float qx = ((i & 1) ? fHx : -fHx) * fTl, qy = ((i & 2) ? fHy : -fHy) * fTl;
 				v[i].position = D3DXVECTOR4(fKW * 0.5f + fC * qx - 2.0f * fS * fK * qy, fKH * 0.5f + 0.5f * fS * qx + fC * fK * qy, 100, 1);
-				v[i].color = 0xffffffff; v[i].tu = (i & 1) ? 1.0f : 0.0f; v[i].tv = (i & 2) ? 1.0f : 0.0f;
+				v[i].color = 0xffffffff; v[i].tu = (i & 1) ? fU : 0.0f; v[i].tv = (i & 2) ? fV : 0.0f;	// [TGCAP 14/09]
 			}
 		}
 		PD3DDEVICE->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VERTEX2D));
@@ -926,6 +978,8 @@ KRepresentShell3::KRepresentShell3()
 	m_pTgTex = NULL; m_pTgSurf = NULL; m_pTgSurfCu = NULL; m_pTgSB = NULL; m_nTgW = m_nTgH = 0; m_nTgTrangThai = 0; m_nTgLeft = m_nTgTop = 0; m_dwTgMauXoa = 0xff000000;	// [TG 13/09]
 	m_nTgZoom = 1000; m_nZoomDx = m_nZoomDy = 0; m_nTgKhungW = m_nTgKhungH = 0; m_nTgLeftKhung = m_nTgTopKhung = 0;	// [ZOOM 13/09]
 	m_pTgTex2 = NULL; m_pTgSurf2 = NULL; m_nTg2W = m_nTg2H = 0;	// [ZOOM3D 14/09] RT2 phong to
+	m_nTgCapW = m_nTgCapH = m_nTgCapKhungW = m_nTgCapKhungH = 0; m_nTg2CapW = m_nTg2CapH = 0;	// [TGCAP 14/09]
+	m_nTgCapW = m_nTgCapH = m_nTgCapKhungW = m_nTgCapKhungH = 0; m_nTg2CapW = m_nTg2CapH = 0; m_nTgZoomMin = 1000;	// [TGCAP 14/09]
 	m_nTgXoay = 0; m_nTgLe = 1000; m_nTgZoomRt = 1000;	// [LAC 14/09]
 	m_nTgDoc = 1000;	// [LAC 14/09 b]
 #endif

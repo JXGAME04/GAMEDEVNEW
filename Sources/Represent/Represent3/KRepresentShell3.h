@@ -471,6 +471,7 @@ private:
     LPDIRECT3DSURFACE9    m_pTgSurfCu;   // backbuffer giu trong luc ve vao RT
     LPDIRECT3DSTATEBLOCK9 m_pTgSB;       // trang thai luu quanh lenh blit
     int   m_nTgW, m_nTgH;
+    int   m_nTgCapW, m_nTgCapH, m_nTgCapKhungW, m_nTgCapKhungH;   // [TGCAP 14/09] co CAP (texture that) cua RT + co khung luc cap; m_nTgW/H = phan DUNG (khung x zoom x le), uv blit = dung / cap
     int   m_nTgTrangThai;                // 1 = dang ve vao RT
     int   m_nTgLeft, m_nTgTop;           // goc toa do (m_nLeft/m_nTop) luc ve RT lan cuoi - khung chi blit dat lai de lop phu trung anh
     DWORD m_dwTgMauXoa;                  // mau xoa cua RepresentBegin khung nay
@@ -487,6 +488,8 @@ private:
     LPDIRECT3DTEXTURE9    m_pTgTex2;     // [ZOOM3D 14/09] RT trung gian co 2x RT khi PHONG TO (m_nTgZoom < 1000): RT -> RT2 (POINT) -> khung (LINEAR)
     LPDIRECT3DSURFACE9    m_pTgSurf2;
     int   m_nTg2W, m_nTg2H;
+    int   m_nTg2CapW, m_nTg2CapH;   // [TGCAP 14/09] co cap RT2 (2 x khung x TheGioiRT2Cap), m_nTg2W/H = phan dung (2 x m_nTgW/H)
+    int   m_nTgZoomMin;   // [TGCAP 14/09 b] ZoomToiThieu (phan nghin) S3Client bao qua lenh 11: < 1000 = co phong to -> cap san RT2
     int   m_nTgDoc;      // [LAC 14/09 b] co dan doc (phan nghin, 1000 = khong): lac len / xuong khi keo doc, M = R(goc) x diag(1, k)
 #endif
 
