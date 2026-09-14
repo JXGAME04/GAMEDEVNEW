@@ -193,3 +193,29 @@ nhanh). P2 cache chữ vẫn để lại: `[PDET]` 13/09 cho thấy chữ chỉ 
 **01:38:** phiên camera giao **109140121** (`mobile-0809` 56d21988 = TAI + camera lắc + `[VATROI 14/09]` vật rơi mức 1, chỉ `KObj.cpp` JX_MOBILE) đè lên 109140039, `--chi-manifest` xong, đã soát: apk.txt/config.ini khớp manifest, không tệp mới hơn manifest; `libRepresent3.so` arm64 trong APK đó vẫn có `[VE-TAI]` → **log Fold 7 cần đọc là của 109140121**.
 
 **Còn lại sau đợt này:** chờ log Fold 7 của 109140039 để xác nhận `zero n/ms` < 5 ms/trang và `[VE-TAI]` ms/khung; iOS chủ dựng trên Mac (mã chung JX_MOBILE, `SDL_CopyGPUTextureToTexture` Metal cùng loại texture đã lo); P5/P6 cần chủ quyết; P2 cache chữ chỉ khi đo còn > 0,5 ms/khung; vào map: đọc tệp spr đồng bộ 100 tệp/200 ms + tải 25 MB một khung (ẩn sau màn nạp, chưa đo trên Fold 7).
+
+### 10.5. 10:22–10:5x 14/09 — bản đo `[TAI-DO]` (109141017) và bước 2 `[DEM 14/09]` (109141044)
+
+Log Fold 7 sau P4 (mục 14/09 trong `PHANTICH_LOG_FOLD7_1309.md`): tô 0 bằng chép GPU đúng (0,03 ms/trang), fps 59,8 / 2,0 W, nhưng 67/80 khung giật
+còn lại là `lenh tai`: ô 512×512 BGRA8 vào khối 45–50 ms/ô, trong khi dải nguồn 0 (ảnh riêng 2 MB, tải cả ảnh) 1,3 ms. Chủ chọn "làm 1 rồi 2".
+
+**Bản đo** (`android/va_nguon_mobile_1409_j.py`, `CDevGpu::JxTaiDo()` sau khi tạo thiết bị, `[Client] TaiDo`): kết quả Fold 7 10:22 (ghi lệnh = CPU trong `SDL_UploadToGPUTexture`):
+
+| Kiểu tải 1 MB | ghi lệnh |
+|---|---|
+| vùng con 512² → **khối BGRA8** 2048²×4 lớp (64 MB), nguồn vừa ghi / nguồn cũ | **12,9 / 12,4 ms** |
+| vùng con 512² → ảnh riêng BGRA8 2048² (16 MB) | 3,0 ms |
+| cả ảnh 512² riêng BGRA8; cả ảnh 2048×128 (như dải nguồn) | 0,19 / 0,20 ms |
+| dải 2048×128 → khối BGRA8 | 12,2 ms |
+| vùng con → khối **R8G8** (8 lớp); cả ảnh R8G8; vùng con 512 KB R8G8 | **0,00** ms |
+| ảnh → ảnh (`CopyGPUTextureToTexture`) vào khối; buffer → buffer | 0,00 ms (tổng 0,15 ms) |
+| 3 lần liên tiếp không chờ fence, map cycle=true → khối BGRA8 | 12,3 / 17,2 / 17,0 ms |
+
+→ Driver Adreno tốn CPU **~0,2 ms mỗi MB cỡ ảnh ĐÍCH khi đích là BGRA8** (khối 64 MB → 13 ms/lệnh; ×3 khi CPU 887 MHz trong game = 45 ms), bất kể
+nguồn; R8G8 (bảng màu, phần lớn sprite) miễn phí; chép GPU→GPU miễn phí. Giải thích luôn 117–172 ms tô 0 lớp BGRA8 trước P4a.
+
+**Bước 2** (`android/va_nguon_mobile_1409_k.py`, commit đẩy `mobile-0809`): (a) ô BGRA8 ≤ 512² vào trang atlas: `CTexGpu::QueueUpload` đánh dấu 2 bit cao
+của `RgTexUpload.layer`; `SubmitFrame` tải vào ảnh đệm `m_pJxDem[loại]` 512×512 BGRA8 (1 MB → ~0,2 ms) rồi `SDL_CopyGPUTextureToTexture` sang trang;
+(b) ô chưa có bản CPU (`QueueZeroUpload` vùng con) chép từ dải nguồn 0 có sẵn; (c) `JxTaiTruoc` texture riêng BGRA8 tải cả một lần (chia dải chỉ tốn thêm);
+(d) `TaiDo` mặc định 0; `[VE-TAI]` thêm "o BGRA8 tai qua anh dem: N o KB". Máy ảo 109141044: 104 ô / 106 MB qua ảnh đệm lúc vào map, Tống Kim 57 fps,
+hình đúng, không sập. Kỳ vọng Fold 7: `lenh tai` trong `[VE-GIAT]` từ 45–50 ms/ô xuống < 1 ms; khung giật còn lại chỉ là đọc tệp/rút khung.
