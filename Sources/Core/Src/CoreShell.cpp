@@ -9025,6 +9025,7 @@ static void TK_Msg(int nPlayerIdx, const char* szMsg)
 // bang chinh duong nay: CoreDataChanged(GDCNI_FK_AUTO_ITEM, 0, -2) (KPlayerAuto.cpp:3695
 // -> GameSpaceChangedNotify.cpp:730). Dung lai duong do, khong them lenh UI moi.
 static UINT s_uTKXaPhuBao = 0;	// (14/09) moc lan cuoi bao 'khong thay Xa Phu' - chan lap dong chat
+static int  s_nTKVutThu = 0;	// (14/09) so lan da thu vut binh o buoc don tui cua TKP_END
 
 static void TK_DongRuong()
 {
@@ -9045,6 +9046,7 @@ static void TK_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 	// ngay khi roi TKP_FIGHT, khong thi may PK bi khoa oan.
 	s_uTKSanQuyen = 0;
 	TK_SanBo();
+	s_nTKVutThu = 0;	// (14/09) pha moi - dem lai so lan thu vut binh
 	s_uTKPosT = 0;		// (03/09 toi, dot 3) doi pha (hoi sinh / ra trai) la nhay hop le - khong tinh la bi nem ve
 	s_nTKXQDa = 0;		// (03/09 dem, dot 4) luot ra tran moi -> di lai khu xuat quan dich
 	s_nTKXQChon = -1;
@@ -11363,9 +11365,38 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				{
 					if (TK_LaBinhMua(nHand))
 					{
-						AUTOLOG("[TK-DONTUI] vut binh dang cam tren tay - o trong=%d", Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment));
-						Player[nPlayerIdx].ThrowAwayItem();
-						ea.uTKNext = uCurTime + 400;
+						// (14/09 r9) DO THAT tu log chu game: 30 dong 'vut binh dang cam tren tay'
+						// lien tiep trong 17 giay ma binh KHONG HE ROI KHOI TAY. KPlayer::ThrowAwayItem
+						// TU CHOI (tra 0) khi mon co GoldId / Nature >= NATURE_GOLD / IsPurple /
+						// Genre == item_task / m_nCurrentDur == 0. Binh thuoc khong co do ben nen roi
+						// vao ve cuoi => KHONG BAO GIO vut duoc, tuc ca buoc don tui nay CHUA TUNG chay
+						// duoc. Nen: thu toi da 3 lan roi DAT LAI BINH VAO TUI va ket thuc buoc.
+						const int nTrongTay = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
+						if (++s_nTKVutThu <= 3)
+						{
+							const int nVut = Player[nPlayerIdx].ThrowAwayItem();
+							AUTOLOG("[TK-DONTUI] thu vut binh lan %d: ret=%d otrong=%d | goldid=%d nature=%d purple=%d genre=%d dur=%d", s_nTKVutThu, nVut, nTrongTay, Item[nHand].GetGoldId(), Item[nHand].GetNature(), Item[nHand].IsPurple(), (int)Item[nHand].GetGenre(), Item[nHand].GetDurability());
+							ea.uTKNext = uCurTime + 400;
+							return 1;
+						}
+						// vut khong duoc - tra binh ve tui (khuon Hau can buoc 0) roi thoi
+						{
+							int x = 0, y = 0;
+							if (Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+									Item[nHand].GetWidth(), Item[nHand].GetHeight(), &x, &y))
+							{
+								ItemPos P1, P2;
+								P1.nPlace = P2.nPlace = pos_equiproom;
+								P1.nX = P2.nX = x;
+								P1.nY = P2.nY = y;
+								Player[nPlayerIdx].MoveItem(P1, P2);
+								AUTOLOG("[TK-DONTUI] khong vut duoc binh sau 3 lan - DAT LAI vao tui o (%d,%d), bo qua buoc don tui", x, y);
+							}
+							else
+								AUTOLOG("[TK-DONTUI] khong vut duoc binh va tui khong con cho - danh de tren tay, bo qua buoc don tui");
+						}
+						ea.nTKStep = 2;
+						ea.nTKTry = 0;
 						return 1;
 					}
 					// tren tay la mon KHAC (nguoi choi tu cam) - khong dong vao, bo qua buoc nay
@@ -11376,7 +11407,8 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				}
 			}
 			int nTrong = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
-			if (nTrong < 8)
+			// (14/09 r9) da biet khong vut duoc binh thi NHAC THEM chi to ket lai - thoi luon
+			if (nTrong < 8 && s_nTKVutThu <= 3)
 			{
 				for (int i = 0; i < EQUIPMENT_ROOM_HEIGHT; ++i)
 					for (int j = 0; j < EQUIPMENT_ROOM_WIDTH; ++j)
