@@ -31,7 +31,11 @@ GOC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 THU_NHAT_KY = r"D:\jx1_android_log"
 HOP_MAC_DINH = (0, 250, 700, 560)
 # cac tep .spr thieu tren CA cay PC -> khong phai loi dong goi dien thoai (14/09)
-BO_QUA_HONG = ("regiontiledefault.spr", "minimap.spr")
+# [ONENDEN 14/09] regiontiledefault.spr DA BI BO KHOI danh sach nay. No tung nam day voi ly do
+# "thieu san tren cay PC nen vo hai" - chinh vi the moi bao cao deu giau no di, trong khi no la
+# nguyen nhan THAT cua mang den (o nen mac dinh, xem BANGIAO_MOBILE_TOIUU_1309.md muc 10.12).
+# Da va bang tep roi trong du lieu; neu ten nay HIEN LAI o muc 9 nghia la may CHUA nhan duoc ban va.
+BO_QUA_HONG = ("minimap.spr",)
 
 
 def doc(p):
@@ -270,7 +274,7 @@ def main():
     print()
 
     # ---- 9. anh hong
-    muc("9. ANH NAP HONG (da bo cac tep thieu tren ca cay PC)")
+    muc("9. ANH NAP HONG (doc ca dong "ngan sach" ben duoi truoc khi ket luan)")
     h = collections.Counter()
     for m2 in re.findall(r"LoadImage FAIL[^:]*: (.+)", rep3):
         ten2 = m2.strip().split("\\")[-1].lower()
@@ -281,7 +285,18 @@ def main():
         for k2, v2 in h.most_common(8):
             print("   %4d  %s" % (v2, k2))
     else:
-        print("   (khong co, hoac chi con cac tep thieu san tren PC)")
+        print("   (khong co)")
+    # [ONENDEN 14/09] Rep3LogLoadFail IM HAN sau 200 dong (TextureResMgr.cpp:10-17, static theo moi lan
+    # chay app). Het ngan sach thi VANG MOT TEN KHONG CHUNG MINH DUOC GI - phai doc so nay truoc.
+    so = [int(x) for x in re.findall(r"LoadImage FAIL \((\d+)/200\)", rep3)]
+    dinh = max(so) if so else 0
+    print("   ngan sach dong FAIL: %d/200%s" % (dinh, "  <<< DA CAN, vang mot ten la VO NGHIA" if dinh >= 200 else ""))
+    onen = sum(1 for m2 in re.findall(r"LoadImage FAIL[^:]*: (.+)", rep3)
+               if m2.strip().split("\\")[-1].lower() == "regiontiledefault.spr")
+    if onen:
+        print("   O NEN MAC DINH van hong %d lan -> may CHUA nhan ban va system/spr/regiontiledefault.spr" % onen)
+    elif dinh < 200:
+        print("   o nen mac dinh: khong hong lan nao (ngan sach con) -> ban va da toi may")
     print()
 
 
