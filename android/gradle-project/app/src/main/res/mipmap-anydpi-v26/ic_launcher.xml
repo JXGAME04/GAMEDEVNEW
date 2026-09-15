@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [ICON 14/09] icon thich ung: Android 8+ tu cat theo hinh cua tung may -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_nen" />
+    <foreground android:drawable="@mipmap/ic_launcher_truoc" />
+</adaptive-icon>
