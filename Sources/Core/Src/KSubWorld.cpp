@@ -2280,9 +2280,30 @@ BOOL KSubWorld::LoadMap(int nId)
 #endif
 
 #ifndef _SERVER
+#ifdef JX_MOBILE
+// [VAOMAP 14/09] Doi map dong bang ~340 ms trong MOT goi s2c_syncworld (log Fold 7 15:40: 15 lan/gio, tong 2,8 s;
+// ngan sach mang khong cat duoc BEN TRONG mot goi). Cam dong ho vao tung pha de vong sau biet cat cho nao.
+static LARGE_INTEGER s_liJxVaoMap[9];
+static int s_nJxVaoMapSo = 0;
+// [MAPLIST 14/09] ban MapList.ini da phan tich, giu lai giua cac lan doi map (xem chu thich trong LoadMap)
+static KIniFile* s_pJxMapList = NULL;
+static int s_nJxMapList = 0;	// 0 = chua thu, 1 = dang dung ban giu, -1 = nap hong -> di duong cu
+#define JX_VAOMAP_MOC(n) do { if (s_nJxVaoMapSo > 0 && (n) < 9) { QueryPerformanceCounter(&s_liJxVaoMap[(n)]); if ((n) + 1 > s_nJxVaoMapSo) s_nJxVaoMapSo = (n) + 1; } } while (0)
+static double JxVaoMapMs(int a, int b)
+{
+	static double s_dF = 0.0;
+	if (s_dF == 0.0) { LARGE_INTEGER f; QueryPerformanceFrequency(&f); s_dF = (double)f.QuadPart; }
+	if (s_dF <= 0.0 || a >= s_nJxVaoMapSo || b >= s_nJxVaoMapSo) return 0.0;
+	return (double)(s_liJxVaoMap[b].QuadPart - s_liJxVaoMap[a].QuadPart) * 1000.0 / s_dF;
+}
+#endif
 BOOL KSubWorld::LoadMap(int nId, int nRegion)
 {
 	//g_DebugLog("LoadMap begin");
+#ifdef JX_MOBILE
+	{ extern int g_nCorePaintLog; s_nJxVaoMapSo = (g_nCorePaintLog > 0) ? 1 : 0; }	// [VAOMAP 14/09] chi do khi bat nhat ky ve
+	JX_VAOMAP_MOC(0);
+#endif
 	static int	nXOff[8] = {0, -1, -1, -1, 0,  1, 1, 1};
 	static int	nYOff[8] = {1, 1,  0,  -1, -1, -1, 0, 1};
 	//KIniFile	IniFile;
@@ -2347,9 +2368,15 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			g_ScenePlace.LoadGround(&IniFile); //add by phong kiÒu h×nh nÒn hoa s¬n
 		}
 */
+#ifdef JX_MOBILE
+	JX_VAOMAP_MOC(1);	// [VAOMAP 14/09]
+#endif
 		g_ScenePlace.OpenPlace(nId);
 		m_SubWorldID = nId;
 		g_ScenePlace.LoadSymbol(nId);//#maptraffic
+#ifdef JX_MOBILE
+		JX_VAOMAP_MOC(2);	// [VAOMAP 14/09]
+#endif
 		m_nRegionWidth = KScenePlaceRegionC::RWPP_AREGION_WIDTH / 32;
 		m_nRegionHeight = KScenePlaceRegionC::RWPP_AREGION_HEIGHT / 32;
 		m_nCellWidth = 32;
@@ -2361,10 +2388,32 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		char		szFileName[FILE_NAME_LENGTH];
 		char		szKeyName[FILE_NAME_LENGTH];
 		
+#ifdef JX_MOBILE
+		// [MAPLIST 14/09] MapList.ini (191 KB, 6 518 dong o ban dien thoai) truoc day duoc doc + phan tich LAI
+		// moi lan doi map: [VAOMAP] do duoc pha 'ini' 38 ms tren 95 ms cua ca lan doi map (may ao). Noi dung tep
+		// khong doi luc dang chay -> giu mot ban da phan tich, lan sau dung lai. Gia tri doc ra y het ban cu.
+		if (s_nJxMapList == 0)
+		{
+			g_SetFilePath("\\settings");
+			s_pJxMapList = new KIniFile;
+			s_nJxMapList = (s_pJxMapList && s_pJxMapList->Load("MapList.ini")) ? 1 : -1;
+			if (s_nJxMapList != 1 && s_pJxMapList) { delete s_pJxMapList; s_pJxMapList = NULL; }
+		}
+		sprintf(szKeyName, "%d", nId);
+		if (s_nJxMapList == 1)
+			s_pJxMapList->GetString("List", szKeyName, "", m_szPathName, sizeof(m_szPathName));
+		else
+		{
+			g_SetFilePath("\\settings");
+			IniFile.Load("MapList.ini");
+			IniFile.GetString("List", szKeyName, "", m_szPathName, sizeof(m_szPathName));
+		}
+#else
 		g_SetFilePath("\\settings");
 		IniFile.Load("MapList.ini");
 		sprintf(szKeyName, "%d", nId);
 		IniFile.GetString("List", szKeyName, "", m_szPathName, sizeof(m_szPathName));
+#endif
 		{	// [TRANGTRI 11/09 b] m_szMapPath cu chi duoc gan trong khoi DA BI CHU THICH ben tren
 		// nen LUON RONG -> KRegion::LoadObject tra FALSE ngay dong dau va phan NPC/OBJ cua
 		// Region_C.dat khong bao gio duoc doc. Lay thang tu m_szPathName vua doc xong.
@@ -2400,6 +2449,9 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			m_nGridTotal = m_nGridW * m_nGridH;
 		}
 	}
+#ifdef JX_MOBILE
+	JX_VAOMAP_MOC(3);	// [VAOMAP 14/09] xong ini + .wor
+#endif
 	int nX = LOWORD(nRegion);
 	int nY = HIWORD(nRegion);
 
@@ -2430,6 +2482,9 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 	// same map must NOT touch the focus (it points at the region corner and would ping-pong
 	// with the interpolated focus, tearing the draw tree down 3x per border). Opening a
 	// new map still needs it: OpenPlace has just reset the whole scene.
+#ifdef JX_MOBILE
+	JX_VAOMAP_MOC(4);	// [VAOMAP 14/09] xong vung giua
+#endif
 	if (bLoadNew || !g_bPaintInterpFocus)
 		g_ScenePlace.SetFocusPosition(m_Region[nIdx].m_nRegionX, m_Region[nIdx].m_nRegionY, 0);
 	m_ClientRegionIdx[0] = nIdx;
@@ -2461,9 +2516,15 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		m_Region[nIdx].m_nConnectRegion[i] = nConIdx;
 	}
 
+#ifdef JX_MOBILE
+	JX_VAOMAP_MOC(5);	// [VAOMAP 14/09] xong 8 vung ke
+#endif
 	// [TRANGTRI 11/09 e] gio moi nap vat trang tri: ca 9 vung deu co mat nen Mps2Map khong con tra -1.
 	for (int nT11 = 0; nT11 < nTTSo; nT11++)
 		m_Region[nTTO[nT11]].LoadObject(0, nTTX[nT11], nTTY[nT11], m_szMapPath);
+#ifdef JX_MOBILE
+	JX_VAOMAP_MOC(6);	// [VAOMAP 14/09] xong trang tri
+#endif
 
 	if (m_Region[nIdx].m_nConnectRegion[0] >= 0)
 	{
@@ -2560,6 +2621,9 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		m_Region[m_Region[nIdx].m_nConnectRegion[7]].m_nConnectRegion[6] = -1;
 		m_Region[m_Region[nIdx].m_nConnectRegion[7]].m_nConnectRegion[7] = -1;
 	}
+#ifdef JX_MOBILE
+	JX_VAOMAP_MOC(7);	// [VAOMAP 14/09] xong noi vung
+#endif
 	if(bLoadNew && m_nGridTotal)
 	{
 		bool bLoadData = false;
@@ -2619,6 +2683,25 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 			//g_DebugLog("Taomoi 2");
 		}
 	}
+#ifdef JX_MOBILE
+	JX_VAOMAP_MOC(8);
+	if (s_nJxVaoMapSo >= 9)
+	{	// [VAOMAP 14/09] mot dong moi lan doi map / cuon vung, chi khi >= 30 ms
+		const double dTong = JxVaoMapMs(0, 8);
+		if (dTong >= 30.0)
+		{
+			FILE* pVm = fopen("jx_paint.log", "a");
+			if (pVm)
+			{
+				fprintf(pVm, "[VAOMAP] map %d vung (%d,%d) map_moi=%d: tong %.0f ms = dong %.0f + mo map %.0f + ini %.0f + vung giua %.0f + 8 vung ke %.0f + trang tri %.0f + noi vung %.0f + luoi duong %.0f | MapList dung lai %d\n",
+					nId, LOWORD(nRegion), HIWORD(nRegion), (int)(bLoadNew ? 1 : 0), dTong,
+					JxVaoMapMs(0, 1), JxVaoMapMs(1, 2), JxVaoMapMs(2, 3), JxVaoMapMs(3, 4),
+					JxVaoMapMs(4, 5), JxVaoMapMs(5, 6), JxVaoMapMs(6, 7), JxVaoMapMs(7, 8), s_nJxMapList);	// [MAPLIST 14/09]
+				fclose(pVm);
+			}
+		}
+	}
+#endif
 	//g_DebugLog("LoadMap end");
 	return TRUE;
 }

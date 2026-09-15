@@ -655,7 +655,7 @@ void KWndWindow::Paint()
 	{
 #ifdef JX_MOBILE
 		// [PDET-UI 14/09] cua so GOC (con truc tiep cua goc lop): do rieng (ban than + con, khong ke anh em) -> giu cua so lau nhat cua khung
-		extern int g_nPaintLog; extern double g_dJxUiMaxMs; extern int g_nJxUiMaxX, g_nJxUiMaxY, g_nJxUiMaxW, g_nJxUiMaxH; extern const char* g_pszJxUiMaxLop; extern const void* g_pJxUiMax;
+		extern int g_nPaintLog; extern double g_dJxUiMaxMs; extern int g_nJxUiMaxX, g_nJxUiMaxY, g_nJxUiMaxW, g_nJxUiMaxH; extern const char* g_pszJxUiMaxLop; extern const void* g_pJxUiMax; extern char g_szJxUiMaxTen[64];	// [UITEN 14/09]
 		const bool bJxDoUi = (g_nPaintLog > 0 && (!m_pParentWnd || !m_pParentWnd->m_pParentWnd));	// [PDET-UI 14/09 b] cua so goc = ANH EM cua goc lop (Wnd_AddWindow -> AddBrother, parent NULL); cap con truc tiep van do, cha thang vi gom con
 		LARGE_INTEGER jxU0; if (bJxDoUi) QueryPerformanceCounter(&jxU0);
 #endif
@@ -668,7 +668,9 @@ void KWndWindow::Paint()
 			LARGE_INTEGER jxU1, jxUF; QueryPerformanceCounter(&jxU1); QueryPerformanceFrequency(&jxUF);
 			const double dJx = jxUF.QuadPart ? (double)(jxU1.QuadPart - jxU0.QuadPart) * 1000.0 / (double)jxUF.QuadPart : 0.0;
 			// [PDET-UI 14/09 c] bo goc lop (0x0, gom ca con) de thay cua so that
-			if (dJx > g_dJxUiMaxMs && (m_Width > 0 || m_Height > 0)) { g_dJxUiMaxMs = dJx; g_pJxUiMax = this; g_nJxUiMaxX = m_nAbsoluteLeft; g_nJxUiMaxY = m_nAbsoluteTop; g_nJxUiMaxW = m_Width; g_nJxUiMaxH = m_Height; g_pszJxUiMaxLop = UiTenLopPhu(); }
+			if (dJx > g_dJxUiMaxMs && (m_Width > 0 || m_Height > 0)) { g_dJxUiMaxMs = dJx; g_pJxUiMax = this; g_nJxUiMaxX = m_nAbsoluteLeft; g_nJxUiMaxY = m_nAbsoluteTop; g_nJxUiMaxW = m_Width; g_nJxUiMaxH = m_Height; g_pszJxUiMaxLop = UiTenLopPhu();
+				// [UITEN 14/09] chep (khong giu con tro) vi cua so co the bi huy truoc luc UiShell in dong [PDET-UI]
+				strncpy(g_szJxUiMaxTen, GetMucIni(), sizeof(g_szJxUiMaxTen) - 1); g_szJxUiMaxTen[sizeof(g_szJxUiMaxTen) - 1] = 0; }
 		}
 #endif
 	}
