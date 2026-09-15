@@ -707,3 +707,19 @@ Vẽ số ngay trong nhánh đó, trước `return`, đặt theo **ô thật** (
 Hành trang hiện 500 / 367 / 6 / 2 ở góc dưới phải từng ô, chữ vàng đọc rõ trên nền ô tối; ô phím tắt vẫn chỉ một số (46) do thanh người chơi vẽ, không bị vẽ đè hai lần. Rương và cửa hàng dùng chung `KWndObjectMatrix` → cùng đường vẽ, chủ kiểm lại khi mở rương.
 
 **Nhánh kéo ảnh** (`[Ui] KeoAnhVatPham=1`, mặc định tắt) không `return` nên rơi xuống khối cuối hàm; phiên đo nhịp soi ra là nó vẫn dùng lưới 27 px. Đã cho khối đó dùng ô thật khi có (`g_nJxVeVatPham* > 0`), phần của bản PC giữ **nguyên văn** trong nhánh `#else` để `kiem --pc` ĐẠT. Thử máy ảo với khoá bật: số cũng nằm đúng góc dưới phải (2 / 8 / 6 / 500 / 367), rồi gỡ khoá khỏi config máy ảo.
+
+---
+
+# [GONMAN 14/09] DỌN MÀN CHƠI: BỎ NÚT "CHỈNH GIAO DIỆN", BỎ "Ô ĐÃ GIẤU", NÚT HAI MŨI TÊN = ẨN HẾT NÚT KỸ NĂNG
+
+Chủ 20:0x: *"tôi muốn bỏ chỉnh giao diện ở màn hình đi / bỏ luôn ô đã giấu ở chỉnh giao diện / nút như trên hình làm lại thành nút ẩn hết các nút kỹ năng"* (ảnh: nút tròn hai mũi tên).
+
+| Việc | Làm gì | Ghi chú |
+|---|---|---|
+| Bỏ nút nổi "Chỉnh giao diện" | `UiToaDoMobile.inc`: không vẽ và không nhận chạm ở màn chơi (rào `JX_MOBILE`, bản PC giữ nguyên) | Vào trình chỉnh bằng **Cài đặt > TÙY CHỌN > Chỉnh giao diện** (`UiOptions.cpp:248, 320`) — đã thử, mở đúng |
+| Bỏ "Ô đã giấu" | `SuaGd_DanhSachNutA`: hàng nút A còn **Đổi ô - Gốc ô - Hoàn tác** | Ô nào **đang** giấu vẫn giấu; muốn hiện lại thì bấm **Xoá hết** (trả bố cục về mặc định) |
+| Nút hai mũi tên | `JxCanDieuKhien.cpp`: chạm = **ẩn / hiện cả cụm nút kỹ năng** (nút chính + 8 ô phụ); nút này vẫn hiện để bấm lại; chạm cũng thoát chế độ gắn | Đang ẩn thì chạm vào vùng đó **rơi thẳng xuống bản đồ**. Không nhớ qua lần chơi sau: mở lại game là hiện lại |
+
+**Gắn kỹ năng vào ô sau khi đổi nút**: vẫn còn đường cũ — bảng chọn kỹ năng tự bật chế độ gắn (`JxCanDieuKhien.cpp:1888/1910/1920`), gắn xong tự thoát (`1575`). Chạm nút hai mũi tên trong lúc đang gắn thì thoát chế độ gắn, giữ đúng đường huỷ như trước.
+
+`kiem --pc` ĐẠT (mọi thay đổi trong rào `JX_MOBILE`, **chú thích cũng phải nằm trong rào** — lần đầu để chú thích ngoài rào nên bộ kiểm báo HỎNG). Kịch bản `android/va_nguon_gonman_1409.py`. Máy ảo: chữ "Chỉnh giao diện" biến mất khỏi màn chơi; chạm nút hai mũi tên ẩn hết 9 nút, chạm lần nữa hiện lại (nhật ký `[KYNANG] an het nut ky nang = 1 / = 0`); trình chỉnh mở từ Cài đặt, hàng nút chỉ còn ba cái.

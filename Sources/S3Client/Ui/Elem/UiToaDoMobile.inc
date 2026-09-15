@@ -1601,10 +1601,18 @@ static int SuaGd_YHangB(int gy)	{ return s_bPadGon ? SuaGd_YPad(gy) : (SuaGd_YDo
 static int SuaGd_DanhSachNutA(int* aNut)
 {
 	aNut[0] = SG_NUT_CHEDO;
+#ifndef JX_MOBILE
 	aNut[1] = SG_NUT_GIAU;
 	aNut[2] = SG_NUT_MACDINH;
 	aNut[3] = SG_NUT_HOANTAC;
 	return 4;
+#else
+	// [GONMAN 14/09] chu: "bo luon o da giau o chinh giao dien" - bo nut Giau/hien (va che do "hien cac o da giau").
+	//   O nao DANG giau van giau; muon hien lai thi bam "Xoa het" (tra bo cuc ve mac dinh cua game).
+	aNut[1] = SG_NUT_MACDINH;
+	aNut[2] = SG_NUT_HOANTAC;
+	return 3;
+#endif
 }
 
 static int SuaGd_DanhSachNutB(int* aNut)
@@ -1809,11 +1817,15 @@ static bool UiToaDoM_NhanChuot(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam
 	{
 		if (uMsg != WM_LBUTTONDOWN)
 			return false;
+#ifdef JX_MOBILE
+		return false;	// [GONMAN 14/09] bo nut noi -> cham ngoai trinh chinh khong mo gi nua
+#else
 		Wnd_GetCursorPos(&x, &y);
 		if (TrongNutMo(x, y) == false)
 			return false;	// [SUAGD 13/09 d] mo duoc o moi man (ca dang nhap)
 		UiToaDo_BatTat();
 		return true;
+#endif
 	}
 	Wnd_GetCursorPos(&x, &y);
 	if (GetTickCount() - s_uLamMoiLuc > 100)
@@ -2017,6 +2029,7 @@ static void UiToaDoM_Ve()
 		return;
 	if (s_bDangSua == false)
 	{
+#ifndef JX_MOBILE	/* [GONMAN 14/09] chu: "bo chinh giao dien o man hinh di" - dien thoai khong ve nut noi; vao trinh chinh bang Cai dat > TUY CHON > "Chinh giao dien" (UiOptions.cpp) */
 		if (UiToaDo_ChoPhep())
 		{
 			int nX, nY, nW, nH;
@@ -2025,6 +2038,7 @@ static void UiToaDoM_Ve()
 			OKhoi(nX, nY, nX + nW, nY + nH, 0xA0202020);
 			SuaGd_VeChuCo(12, "Chÿnh giao di÷n", nX + 6, nY + 8, SUAGD_MAU_VANG);
 		}
+#endif
 		if (s_szThongBao[0] && GetTickCount() < s_uHetThongBao)
 			SuaGd_VeChuCo(12, s_szThongBao, 8, 60, 0xFFFF8080);
 		else

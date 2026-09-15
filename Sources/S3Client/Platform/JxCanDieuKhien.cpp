@@ -148,6 +148,8 @@ static char		s_szKNAnhGan[128]   = "\\spr\\Ui3\\UiSkillControl\\switch_assign_mo
 #define	KYNANG_GAN_CO		40
 
 static int			s_nKNCheDoGan = 0;	// 1 = dang o che do gan
+static int			s_nKNAnHet = 0;	// [GONMAN 14/09] 1 = an het cum nut ky nang (chu: nut hai mui ten lam lai thanh nut an);
+					// rieng nut hai mui ten van ve de bam lai. Khong nho qua lan choi sau.
 static int			s_nKNOChon = -1;	// o dang cho gan (0..7), -1 = chua chon
 static KUiGameObject s_KNGan[KYNANG_SO_PHU];	// ky nang nguoi choi tu gan cho tung o
 static int			s_nKNTrong[KYNANG_SO_PHU];	// [ANDROID 11/09 OTRONG] 1 = nguoi choi da GO ky nang khoi o nay -> o TRONG that, khong tu lay theo danh sach (Trong<i>=1)
@@ -1253,6 +1255,8 @@ int JxKyNang_TrungNut(int x, int y)
 		if ((x - nGX) * (x - nGX) + (y - nGY) * (y - nGY) <= nGR * nGR)
 			return KYNANG_NUT_GAN;
 	}
+	if (s_nKNAnHet)
+		return 0;	// [GONMAN 14/09] dang an cum: cham roi thang xuong ban do (chi nut hai mui ten o tren con bat)
 	// Xet o phu TRUOC roi moi den nut chinh: cung o phu vong sat nut chinh, uu tien
 	// o nho de cham vao ria cung khong bi nut to nuot mat.
 	for (i = KYNANG_SO_PHU; i >= 0; i--)
@@ -1339,10 +1343,14 @@ void JxKyNang_BatDau(int nNut, int x, int y)
 	// [ANDROID 09/09 GAN] nut doi che do
 	if (nNut == KYNANG_NUT_GAN)
 	{
-		s_nKNCheDoGan = !s_nKNCheDoGan;
+		// [GONMAN 14/09] chu: "nut nhu tren hinh lam lai thanh nut an het cac nut ky nang".
+		//   Cham = an / hien lai ca cum; dang o che do gan thi cham cung thoat che do gan (giu duong huy nhu cu).
+		//   Vao che do gan van co: bang chon ky nang tu dat s_nKNCheDoGan = 1, gan xong tu thoat.
+		s_nKNCheDoGan = 0;
 		s_nKNOChon = -1;
 		s_nKNDangCam = -1;
-		g_DebugLog("[KYNANG] che do gan = %d", s_nKNCheDoGan);
+		s_nKNAnHet = !s_nKNAnHet;
+		g_DebugLog("[KYNANG] an het nut ky nang = %d", s_nKNAnHet);
 		return;
 	}
 	// Dang o che do gan: cham o la CHON o do de gan, khong danh.
@@ -1998,7 +2006,8 @@ void JxKyNang_Ve()
 	KyNang_DocBang();
 
 	// Ve tu o phu ra ngoai roi den nut chinh, de nut chinh nam TREN CUNG.
-	for (i = KYNANG_SO_PHU; i >= 0; i--)
+	// [GONMAN 14/09] dang an het: bo qua ca cum, chi ve nut hai mui ten o duoi ham nay.
+	for (i = s_nKNAnHet ? -1 : KYNANG_SO_PHU; i >= 0; i--)
 	{
 		bool bCo = KyNang_CuaNut(i, &o);
 
