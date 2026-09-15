@@ -166,6 +166,7 @@ add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${JX_SRC}/S3Client/Platform/JxWAutoNoiBo.cpp      # ben gui WAuto trong tien trinh
     ${JX_SRC}/S3Client/Ui/UiCase/UiWAuto.cpp          # khung Auto trong game
     ${JX_SRC}/S3Client/Ui/UiCase/UiWAutoTrang.cpp     # trang noi dung cua khung Auto
+    ${JX_SRC}/S3Client/Ui/UiCase/UiWAutoDsach.cpp     # [WAUTO 13/09] bang phu: sua 6 danh sach + chon muc (Android da khai tu 28a100a0; thieu o day thi link hong)
     ${JX_SRC}/S3Client/Ui/UiCase/UiZoomThanh.cpp     # [ZOOMTHANH 14/09] thanh keo zoom o mep man choi
     ${JX_SRC}/S3Client/Ui/UiCase/UiVatPham.cpp       # bang thong tin vat pham khi cham o do
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosStubs.cpp      # [IOS-DO] dem khung + ghi jx_nhip.log moi 10 s
@@ -173,6 +174,7 @@ add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosMiniAudio.mm               # [IOS-AM 11/09] cai dat miniaudio (tach vi AVFoundation da BOOL)
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosAnGame.mm                  # [IOS-AN 11/09] nut an game: day ung dung xuong nen
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosKhoaMat.mm                 # [BAOMAT 12/09 KHOMAT] Keychain: tai khoan / mat khau
+    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosNhatKy.mm                  # [IOS-LOG 13/09] gui nhat ky ve may chu tren PC, chung thu muc voi Android
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosDoNhip.mm      # do CPU/RAM/nhiet/pin bang API Apple
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosHud.cpp)       # [IOS-HUD] bang do hien trong game
 jx_setup(S3Client)
