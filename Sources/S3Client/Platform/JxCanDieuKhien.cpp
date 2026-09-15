@@ -1565,7 +1565,8 @@ bool JxKyNang_GanKyNang(unsigned int uGenre, unsigned int uId)
 		KyNang_GhiGan();
 		if (g_pCoreShell)
 			g_pCoreShell->OperationRequest(GOI_SET_IMMDIA_SKILL, (KUPARAM)&o, 0);
-		KyNang_Bao("§· g¾n vµo « chÝnh");
+		// [GONMAN 14/09 b] chu: "tat may thong bao khi chon ky nang vao o ky nang" - gan xong khong bao nua
+		//   (o sang len la du thay); cac thong bao noi LY DO khong gan duoc thi van giu.
 		g_DebugLog("[KYNANG] gan ky nang %u vao O CHINH", uId);
 		s_nKNOChon = -1;
 		s_nKNCheDoGan = 0;
@@ -1913,14 +1914,7 @@ int JxKyNang_ChamBangChon(int x, int y)
 			}
 			if (i < KYNANG_SO_PHU)
 			{
-				char szBao[96];
-
-				s_nKNCheDoGan = 1;
-				s_nKNOChon = i;
-				JxKyNang_GanKyNang(o.uGenre, o.uId);
-				_snprintf(szBao, sizeof(szBao), "%s %d", "§· g¾n vµo « phô", i + 1);
-				szBao[sizeof(szBao) - 1] = 0;
-				KyNang_Bao(szBao);
+				// [GONMAN 14/09 b] gan vao o phu: khong bao nua (xem chu thich tren)
 			}
 			else
 			{
@@ -2023,8 +2017,16 @@ void JxKyNang_Ve()
 			OVuong(nX, nY, nR, (i == s_nKNDangCam) ? 0xB03A8A3A : 0x80202020);
 
 		// [ANDROID 09/09 GAN] o dang cho gan: to nen sang cho de nhan
+		// [GONMAN 14/09 b] chu: "viet lai o vuong mau vang nhu tren hinh cho dep" - nut ky nang la hinh TRON ma dau
+		//   nay la o vuong vang de len, nhin chong. Dung vong tron sang effect_skill.spr (cung anh cua nut dang cam),
+		//   vua khit nut; thieu anh thi moi lui ve o vuong nhu cu.
 		if (s_nKNCheDoGan && ((i > 0 && (i - 1) == s_nKNOChon) || (i == 0 && s_nKNOChon == KYNANG_CHON_CHINH)))
-			OVuong(nX, nY, nR, 0x80FFD24A);
+		{
+			if (CoAnh(s_szKNAnhNgam))
+				VeAnhCo(s_szKNAnhNgam, nX, nY, nR * 2 + 12, 0);
+			else
+				OVuong(nX, nY, nR, 0x80FFD24A);
+		}
 
 		// [ANDROID 09/09 KYNANG D] KSkill::DrawSkillIcon (KSkills.cpp:2861) BO QUA
 		// Width/Height - no ve anh o co THAT, lay (x, y) lam goc TRAI TREN. Nen phai
@@ -2051,15 +2053,10 @@ void JxKyNang_Ve()
 		int nGX, nGY;
 
 		KyNang_TamNutGan(&nGX, &nGY);
-		if (s_nKNCheDoGan)
-		{
-			OVuong(nGX, nGY, KyNang_CoGan() / 2, 0x90FFD24A);
-			// [ANDROID 10/09 GANTOADO] huong dan ngay tren man hinh, tung buoc mot
-			KyNang_VeChu(s_nKNOChon < 0
-				? "ChÕ ®é g¸n: ch¹m vµo « kü n¨ng muèn ®æi"
-				: "Giê më b¶ng kü n¨ng, ch¹m mét kü n¨ng ®Ó g¸n vµo « ®ang s¸ng",
-				nGX - 300, nGY - 38, 0xFFFFD24A);
-		}
+		// [GONMAN 14/09 b] chu: "bo ve o vuong mau vang o o an ky nang moi vua lam" + "tat may thong bao khi chon
+		//   ky nang vao o ky nang": nut nay gio la nut AN het nut ky nang, khong to o vuong vang len no nua,
+		//   cung khong ve hai dong huong dan giua man. O DANG CHON van sang (vong tron o vong ve phia tren).
+		//   (Khoi to o vuong + hai dong huong dan cu da xoa han o day.)
 		VeAnhCo(s_szKNAnhGan, nGX, nGY, KyNang_CoGan(), 0);
 	}
 

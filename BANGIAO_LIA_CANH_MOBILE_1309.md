@@ -723,3 +723,19 @@ Chủ 20:0x: *"tôi muốn bỏ chỉnh giao diện ở màn hình đi / bỏ lu
 **Gắn kỹ năng vào ô sau khi đổi nút**: vẫn còn đường cũ — bảng chọn kỹ năng tự bật chế độ gắn (`JxCanDieuKhien.cpp:1888/1910/1920`), gắn xong tự thoát (`1575`). Chạm nút hai mũi tên trong lúc đang gắn thì thoát chế độ gắn, giữ đúng đường huỷ như trước.
 
 `kiem --pc` ĐẠT (mọi thay đổi trong rào `JX_MOBILE`, **chú thích cũng phải nằm trong rào** — lần đầu để chú thích ngoài rào nên bộ kiểm báo HỎNG). Kịch bản `android/va_nguon_gonman_1409.py`. Máy ảo: chữ "Chỉnh giao diện" biến mất khỏi màn chơi; chạm nút hai mũi tên ẩn hết 9 nút, chạm lần nữa hiện lại (nhật ký `[KYNANG] an het nut ky nang = 1 / = 0`); trình chỉnh mở từ Cài đặt, hàng nút chỉ còn ba cái.
+
+## [GONMAN 14/09 b] Ô vuông vàng và thông báo khi gắn kỹ năng
+
+Chủ 20:2x sau khi thử 109142015: *"bỏ vẽ ô vuông màu vàng ở ô ẩn kỹ năng mới vừa làm - và vẽ lại ô vuông màu vàng như trên hình cho đẹp"*, *"tắt mấy thông báo khi chọn kỹ năng vào ô kỹ năng đi"*.
+
+| Chỗ | Trước | Nay |
+|---|---|---|
+| Nút hai mũi tên (nay là nút ẩn) | chế độ gắn tô **ô vuông vàng** đè lên nút + hai dòng hướng dẫn giữa màn | bỏ hẳn cả hai |
+| Ô đang chọn để gắn | ô vuông vàng đè lên nút tròn, nhìn chỏi | **vòng tròn sáng** `effect_skill.spr` (ảnh của nút đang cầm), vừa khít nút; thiếu ảnh mới lùi về ô vuông |
+| Gắn xong | báo "Đã gắn vào ô chính" / "Đã gắn vào ô phụ N" | không báo nữa (ô sáng lên là đủ thấy) |
+
+**Giữ lại** các thông báo nói LÝ DO không làm được: "Ô chính chỉ thay được, không gỡ được", "Kỹ năng này chưa nằm ở ô nào", "Hết ô trống: chạm ô phụ muốn thay", "Ô chính vẽ kỹ năng cơ bản" — bỏ nốt thì người chơi chạm mà không hiểu vì sao không ăn.
+
+`kiem --pc` ĐẠT. Máy ảo: vào chế độ gắn, nút hai mũi tên sạch, ô đang chọn là vòng tròn sáng; chọn kỹ năng trong bảng thì gắn xong không còn chữ nào giữa màn (nhật ký vẫn ghi `[KYNANG] gan ky nang 155 vao o 7`). Kịch bản `android/va_nguon_gonman_1409_b.py`.
+
+**Bẫy khi vá**: bộ bảo vệ "số byte cao không đổi" của kịch bản vá chặn đúng khi mình CỐ Ý xoá chuỗi tiếng Việt — phải đổi phép kiểm thành "giảm đúng bằng phần xoá" (`cao(s) - cao(cu) + cao(moi)`), đừng bỏ phép kiểm.
