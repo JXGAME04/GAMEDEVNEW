@@ -4863,6 +4863,12 @@ static DWORD g_dwDTKhoeId = 0;		// ID mon khoe da tra XONG (server hoan lai) - c
 static int   g_nDTKhoeTry = 0;		// so nhip da thu cat mon khoe
 static int  s_nDTHuyLien = 0;	// (15/09) so lan XAC NHAN HUY lien tiep tren CUNG mot loai nhiem vu
 static int  s_nDTHuyLoai = -1;	// (15/09) loai nhiem vu cua lan xac nhan huy truoc
+// (15/09 dot 4) Chu game: "huy mot lan ma khong duoc thi khong huy nua ma di luyen cong".
+// Ghi nho loai nhiem vu ma HUY DA CHUNG MINH la vo tac dung, theo NGAY (luot huy chi hoi
+// khi qua ngay). Con cho thi KHONG bam huy nua - tha may cho auto thuong di luyen cong.
+static int  s_nDTHuyHongLoai = 0;	// loai nhiem vu huy khong an
+static int  s_nDTHuyHongNgay = 0;	// ngay ghi nhan (DT_Today)
+static const char DTS_HUYHONG[] = "<color=Orange>HÕt l­ît hñy nhiÖm vô.";
 static int   g_nDTSellNeed = 8;		// DTP_SELLJUNK: du bao nhieu o trong thi thoi ban
 static int   g_nDTSellMin = 5;		// DTP_SELLJUNK: het rac ma >= so nay thi van lam tiep duoc
 static UINT  g_uDTYieldT = 0;		// lan cuoi nhuong may cho Hau can (DTP_YIELD)
@@ -6390,18 +6396,22 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				s_nDTHuyLien = 1;
 			}
 			AUTOLOG("[DT-HUY] xac nhan huy - loai=%d buoc=%d lien=%d", ea.nDTQType, ea.nDTStep, s_nDTHuyLien);
-			if (s_nDTHuyLien > 5)
+			// (15/09 dot 4) chu game chot: huy MOT LAN, quay lai van loai do = huy khong an.
+			// lien == 1 la lan huy dau; lien == 2 nghia la da huy roi ma NHIEM VU VAN NGUYEN.
+			if (s_nDTHuyLien > 1)
 			{
 				// Huy 6 lan lien ma van dung loai do = huy KHONG CO TAC DUNG. Thoat sach bang
 				// lua chon CUOI cua thoai - ca Task_CancelConfirm lan Task_NormalCancel deu co
 				// "...de ta suy nghi lai..." o cuoi, tro toi Task_Wait() la ham RONG.
-				AUTOLOG("[DT-HUY] huy %d lan lien ma van loai %d - huy KHONG co tac dung, thoat va treo 15 phut", s_nDTHuyLien, ea.nDTQType);
+				AUTOLOG("[DT-HUY] huy %d lan ma van loai %d - huy KHONG co tac dung. Ghi nho ca ngay, thoi khong huy nua, tha may di luyen cong", s_nDTHuyLien, ea.nDTQType);
+				s_nDTHuyHongLoai = ea.nDTQType;	// (15/09 dot 4) nho ca ngay
+				s_nDTHuyHongNgay = nToday;
 				s_nDTHuyLien = 0;
 				s_nDTHuyLoai = -1;
 				if (nAns > 0)
 					DT_Answer(nPlayerIdx, nAns - 1);
 				ea.nDTStep = DTI_NONE;
-				return DT_Hold(nPlayerIdx, "<color=Orange>HÕt l­ît hñy nhiÖm vô.", uCurTime, 15 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, DTS_HUYHONG, uCurTime, 60 * 60 * 1000);
 			}
 			DT_Answer(nPlayerIdx, idx);
 			ea.nDTStep = DTI_NONE;
@@ -6507,6 +6517,17 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				}
 				else if (pAp->bDTLenhBai == 1 && ea.nDTLBTry >= 2)
 					DT_Msg(nPlayerIdx, "<color=Red>LÖnh bµi hoµn thµnh kh«ng cã t¸c dông (server ch­a cËp nhËt script?) - lµm theo cÊu h×nh.");
+				// (15/09 dot 4) da chung minh huy loai nay hom nay KHONG AN thi DUNG bam huy nua -
+				// dong thoai, tha may (DT_Hold dat nDTEngaged = 0) cho auto thuong di luyen cong.
+				// Luot huy chi hoi khi qua ngay (checkTask_Limit dat lai LIMITCancelCount theo ngay)
+				// nen nho theo NGAY la du; sang ngay moi tu dong thu lai.
+				if (ea.nDTQType == s_nDTHuyHongLoai && nToday == s_nDTHuyHongNgay)
+				{
+					AUTOLOG("[DT-HUY] loai %d hom nay huy KHONG AN (da thu) - khong bam huy nua, tha may di luyen cong", ea.nDTQType);
+					CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+					ea.nDTStep = DTI_NONE;
+					return DT_Hold(nPlayerIdx, DTS_HUYHONG, uCurTime, 60 * 60 * 1000);
+				}
 				int nCanIdx = DT_FindAns(apAns, nAns, DTM_OPT_CANCELCONF);
 				if (pAp->nDTSkipMode == 1 && nCanIdx >= 0)
 				{
