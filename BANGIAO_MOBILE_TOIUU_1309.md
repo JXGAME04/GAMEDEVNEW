@@ -435,7 +435,27 @@ và nằm trong bản Release; phần đo `[TGPHA]` là thứ chỉ ra phần d�
 phải LỌC THEO MỐC đổi cấu hình: các phiên iOS 21:21–21:33 là Debug, từ 21:45 mới là Release, trộn vào
 nhau là lặp lại đúng lỗi mẫu đã gỡ ở §10.10.
 
-## §10.11 — Vào map: bỏ đọc dữ liệu chặn đường của bản đồ nhỏ (84–109 ms → 9 ms)
+## §10.11 — ĐÃ GỠ BỎ: bỏ đọc dữ liệu chặn đường của bản đồ nhỏ (gây đen nền trên máy thật)
+
+> **KẾT CỤC (22:3x): ĐÃ GỠ, không dùng.** Chủ cập nhật 109142217 xong báo *"vào game qua map bị đen màn
+> và di chuyển bị chớp màn"*. Log phiên đó có chuỗi `cua so nang nhat [` — chỉ bản của tôi mới có — nên
+> máy đúng là đang chạy bản này. Dòng `[PGND-V]` có `bo > 0` (ô nền bị bỏ khi ghép): phiên đó **3/6 dòng**,
+> ba phiên trước 0/53, 0/80, 0/83.
+>
+> **Chỗ tôi kiểm thiếu:** tôi chỉ hỏi "ai ĐỌC dữ liệu chặn đường" (trả lời đúng: không ai), mà không hỏi
+> "vòng đó còn làm gì khác". Nó mở `KPakFile` trên tệp gộp `<map>\v_NNN\NNN_<combined>` của TỪNG vùng —
+> **ảnh ô nền nằm trong chính tệp đó**, chỉ khác mục. Vòng ấy vô tình nạp nóng sẵn dữ liệu vùng cho cả map;
+> bỏ nó thì lần đầu ghép nền phải đọc thật từ bộ nhớ máy. Máy ảo đọc gần như miễn phí nên không lộ, máy
+> thật thì ra đen nền và chớp khi qua ranh vùng.
+>
+> **Bài học:** trước khi bỏ một đoạn mã vì "dữ liệu nó tạo ra không ai đọc", phải hỏi thêm **tác dụng phụ
+> của chính thao tác đó** (mở tệp, nạp nóng, khoá, thứ tự). Và: máy ảo KHÔNG thay được máy thật cho các
+> thay đổi đụng tới đọc đĩa.
+>
+> Muốn lại 84–109 ms thì phải làm cách khác: giữ phần nạp nóng, chỉ bỏ phần ghi vào mảng chặn đường —
+> và phải thử trên MÁY THẬT trước khi giao.
+
+### Ghi lại nội dung cũ (để hiểu vì sao từng làm)
 
 `KScenePlaceMapC::Load` quét **toàn bộ lưới vùng của map** gọi `KRegion::LoadLittleMapData` cho từng vùng.
 Chỉ chạy với map **không có `MapLTRegionIndex`** trong `.wor`, nên map 379 (Chiến trường) tốn còn map 324

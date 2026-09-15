@@ -255,20 +255,6 @@ BOOL KScenePlaceMapC::Load(KIniFile* pSetting, const char* pszScenePlaceRootPath
 				m_EntireMapLTPosition.x = rc.left;
 				m_EntireMapLTPosition.y = rc.top;
 #ifndef _SERVER
-#ifdef JX_MOBILE
-				// [BANDONHO 14/09] KHONG doc du lieu chan duong cua ban do nho nua: do tren ban Release,
-				// vong nay ton 84-109 ms moi lan vao map (dong [VAOMAP-MO] pha 'du lieu map'), ma du lieu
-				// do KHONG AI DOC - GetbtBarrier chi duoc KJXPathFinder::LoadMap goi, ma ca g_JXPathFinder
-				// lan moi loi goi den no deu nam trong khoi chu thich (KCore.cpp:95, KJXPathFinder.cpp:20,
-				// KProtocolProcess.cpp:163/3284, CoreShell.cpp:27302); KLittleMap::Draw co doc nhung khong
-				// ai goi Draw. Giu Init de cau truc va Release khong doi. Ban PC giu nguyen duong cu.
-				// CANH BAO CHO NGUOI SAU: KJXPathFinder::Init va LoadMap la ma SONG, chi moi LOI VAO chung
-				// dang bi chu thich. Ai bat lai g_JXPathFinder (lam tu tim duong) thi PHAI bat lai vong nay
-				// cho mobile, khong thi tren dien thoai no nhan mang chan duong RONG va tim duong sai im lang,
-				// trong khi ban PC van dung. Vong nay cung dat co SetHaveLoad; co do chi GetBarrierBuf va
-				// KLittleMap::Draw doc, ca hai deu khong co noi goi song.
-				m_cLittleMap.Init(rc.left, rc.top, rc.right, rc.bottom);
-#else
 				m_cLittleMap.Init(rc.left, rc.top, rc.right, rc.bottom);
 				int		i, j;
 				int		x, y;
@@ -282,7 +268,6 @@ BOOL KScenePlaceMapC::Load(KIniFile* pSetting, const char* pszScenePlaceRootPath
 						m_cLittleMap.SetHaveLoad(i, j);
 					}
 				}
-#endif
 #endif
 			}
 			if (m_EntireMapLTPosition.x != -1)
