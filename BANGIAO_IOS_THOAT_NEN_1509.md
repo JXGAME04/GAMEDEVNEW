@@ -72,7 +72,12 @@ và xoá ba cờ tự thoát của auto sẽ **xoá mất tính năng đang ch�
 iOS không còn thoát: lệnh thoát thành lệnh rỗng nhưng vẫn `return`, làm mỗi nhịp auto bị cắt ngang và auto
 đứng im lặng. Android không có vấn đề đó.
 
-## 4. Kiểm rào: bản Android **báo đổi**, và đó là CỐ Ý
+## 4. Kiểm rào: bạn chạy sẽ thấy ĐẠT, nhưng bản Android **có đổi** — đọc kỹ mục này
+
+**Chạy `python3 ios/kiem_rao.py` sau khi kéo về, bạn sẽ thấy `DAT`. Đừng kết luận là Android không đổi.**
+Kiểm rào so cây làm việc với **HEAD**, mà thay đổi này giờ đã nằm trong HEAD, nên không còn gì để nó báo.
+
+Lúc còn chưa commit, nó báo đúng như sau:
 
 ```
 KIEM RAO (ANDROID): HONG - 3 cho phai xem lai
@@ -83,7 +88,19 @@ KIEM RAO (WINDOWS): DAT - ban WINDOWS khong doi
 ```
 
 Phần chênh lệch in ra **chỉ gồm khối `#ifdef JX_MOBILE` của mục 2** — không có gì khác lọt sang Android.
-Bản Windows vẫn ĐẠT vì chế độ `--pc` lọc bỏ cả `JX_MOBILE`.
+Bản Windows ĐẠT thật, vì chế độ `--pc` lọc bỏ cả `JX_MOBILE`.
+
+**Muốn tự xem lại phần ảnh hưởng bản Android**, dùng đúng tính năng so với một mốc khác của kiểm rào:
+
+```
+python3 ios/kiem_rao.py 98ec561a        # 98ec561a = commit [PALDO 15/09], ngay truoc hai commit nay
+```
+
+Hoặc xem thẳng bản vá:
+
+```
+git show c64c2428 -- Sources/S3Client/Ui/UiShell.h Sources/S3Client/Ui/UiShell.cpp Sources/S3Client/Platform/KSdlApp.cpp
+```
 
 **Lưu ý về giới hạn của kiểm rào**, nên biết để khỏi tin quá:
 - Nó **không nhìn** `ios/CMakeLists.txt`, chỉ so thư mục `Sources/`.
