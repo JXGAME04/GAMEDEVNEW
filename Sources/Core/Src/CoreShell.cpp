@@ -3014,6 +3014,11 @@ static void DT_Msg(int nPlayerIdx, const char* szMsg)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	UINT uNow = timeGetTime();
+	// (15/09) GHI TRUOC phanh 1,2 giay. May Da Tau truoc nay gan nhu CAM trong
+	// jx_auto.log: moi quyet dinh (huy / treo / bo qua / doi loai) chi ban ra kenh chat
+	// trong game roi troi, va phanh uDTStatusTime con VUT BOT nen ca dong chat cung khong
+	// du. Ghi o day thi moi ly do deu co dau vet, va loc mot chu [DT-MSG] la ra ca mach.
+	AUTOLOG("[DT-MSG] pha=%d buoc=%d loai=%d %s", ea.nDTPhase, ea.nDTStep, ea.nDTQType, szMsg);
 	if (ea.uDTStatusTime > uNow)
 		return;
 	ea.uDTStatusTime = uNow + 1200;
@@ -6245,6 +6250,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// het 40 nhiem vu / ngay
 		if (DT_Has(szQ, DTM_MSG_LIMIT))
 		{
+			// (15/09) DU KIEN DA DO tu kich ban may chu (global/seasonnpc.lua):
+			//   Task_Cancel(nType) dong 697 mo dau bang 'if checkTask_Limit()~=1 then return end'
+			//   checkTask_Limit() dong 63: nNum >= 40 -> Say(cau nay) roi return 0.
+			// => DU 40 THI LENH HUY TREN MAY CHU HOAN TOAN VO HIEU: bam bao nhieu lan cung
+			// khong huy duoc, nhiem vu dang cam VAN NGUYEN. Bo dem tang luc nhiem vu BAT DAU
+			// (storm_goon_start dong 39) nen dang lam nhiem vu thu 40 la nNum da = 40.
+			AUTOLOG("[DT-40] NPC bao du 40 luot hom nay - may chu CHAN ca lenh huy (seasonnpc.lua:697). pha=%d buoc=%d loai=%d treo60p", ea.nDTPhase, ea.nDTStep, ea.nDTQType);
 			const int bLanDauNgay = (ea.nDTDoneDay != nToday);
 			ea.nDTDoneDay = nToday;
 			// (20/08) treo co han: server reset la chay tiep ngay.
@@ -6355,6 +6367,9 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if ((idx = DT_FindAns(apAns, nAns, DTM_OPT_CANCEL1A)) >= 0
 		|| (idx = DT_FindAns(apAns, nAns, DTM_OPT_CANCEL1B)) >= 0)
 		{
+			// (15/09) dem so lan XAC NHAN HUY lien tiep de lo vong lap huy (chu game 15/09:
+			// 'nhiem vu thu 40 ma huy thi se huy mai khong len map luyen cong').
+			AUTOLOG("[DT-HUY] xac nhan huy - loai=%d buoc=%d, quay lai NPC xin nhiem vu moi", ea.nDTQType, ea.nDTStep);
 			DT_Answer(nPlayerIdx, idx);
 			ea.nDTStep = DTI_NONE;
 			ea.nDTQType = 0;
@@ -6485,6 +6500,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				int nCanIdx = DT_FindAns(apAns, nAns, DTM_OPT_CANCELCONF);
 				if (nCanIdx >= 0)
 				{
+					AUTOLOG("[DT-HUY] bam nut huy o thoai chinh - loai=%d", ea.nDTQType);
 					DT_Answer(nPlayerIdx, nCanIdx);
 					ea.nDTStep = DTI_CANCELWAIT;
 					ea.uDTNext = uCurTime + 900;
