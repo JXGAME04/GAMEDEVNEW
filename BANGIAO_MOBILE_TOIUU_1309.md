@@ -363,8 +363,21 @@ Hai kết luận, và chúng dẫn đi hai hướng khác nhau nên phải tách
    Tìm thứ "thỉnh thoảng mới đắt", không phải thứ "lúc nào cũng đắt".
 
 Trong các khung nặng đó, pha thế giới 12,45 ms chia ra: bản thân cửa sổ 3,90 (đúng bằng `tong Paint`,
-tức chỉ vẽ cảnh), ô con 0,00, **còn 8,55 ms nằm ở CHUỖI ANH EM** mà `KWndWindow::Paint` đi tiếp qua
-`m_pNextWnd`. Ba lớp giao diện chỉ 1,66 ms nên không phải chúng. Con số 8,55 chỉ đúng TRONG khung nặng.
+tức chỉ vẽ cảnh), ô con 0,00, còn **8,55 ms** nằm ngoài hai phần đó. Ba lớp giao diện chỉ 1,66 ms nên
+không phải chúng. Con số 8,55 chỉ đúng TRONG khung nặng.
+
+> **SỬA 21:5x — 8,55 ms KHÔNG phải chuỗi anh em.** Tôi đoán sai lần đầu. Phiên iOS chỉ ra `m_pNextWnd`
+> của cửa sổ thế giới là NULL (`Wnds.cpp:186` ghi rõ cửa sổ bản đồ đặt riêng, không `AddBrother`), và
+> mốc đo của tôi trong `Wnds.cpp` bao **cả bốn lời gọi**: `JxUi_TheGioi(0)`, `JxUi_TheGioi(1)`,
+> `pGameSpaceWnd->Paint()`, `JxUi_TheGioi(2)`. Vậy phần dư nằm trong `KRepresentShell3::JxTheGioi`
+> (mở render target, kết thúc RT, blit ra màn) — phần của phiên camera, không phải cây cửa sổ.
+>
+> **Và trước khi đo tiếp phải kiểm CẤU HÌNH DỰNG.** Android dựng thư viện C++ với
+> `-DCMAKE_BUILD_TYPE=Release` (`android/gradle-project/app/build.gradle:22`) trong khi bản iOS nhiều
+> khả năng đang là Debug `-O0`. Lệnh 2 là chỗ ghi và đóng gói cả lô lệnh vẽ — đúng loại mã mà `-O0`
+> phạt nặng nhất. Nếu vậy thì mọi so sánh CPU iOS/Android hôm nay đang đo cờ trình biên dịch chứ không
+> đo mã. Chốt với phiên camera: đo lại trên Release trước; phần dư co xuống dưới ~3 ms thì đóng hồ sơ,
+> còn trên ~6 ms thì mới cắm đồng hồ tách "kết thúc RT" khỏi "blit".
 
 **Bẫy tên cửa sổ:** `[PDET-UI]` in tên MỤC ini, mà rất nhiều lớp đặt mục gốc là `Main`
 (`KUiItem|Main`, `KUiMsgSel2|Main` là hai cửa sổ khác hẳn). Từ `277ff837` dòng đo ghi `<Lớp>|<Mục>`
