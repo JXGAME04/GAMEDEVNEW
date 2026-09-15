@@ -102,6 +102,46 @@ void CHostConnect::Proc1_Normal_EnterGame(const void* pData, size_t size)
 	{{
 	DUMMY_AUTOLOCKWRITE(m_lockPlayer);
 
+	/*
+	 * [MAYID 15/09] DON RAC TRUOC KHI GHI - chong KET BO DEM VINH VIEN.
+	 *
+	 * Ba bang phai luon nhat quan: m_mapAcc[acc].param tro toi m_mapParam[param], va muc do phai quay lai
+	 * dung acc ay. Truoc day EnterGame CHI GHI DE m_mapAcc[acc]. Neu CUNG MOT TAI KHOAN vao lai ma chua kip
+	 * co LeaveGame cu (hay gap nhat: rot mang dot ngot roi vao lai TRUOC khi het ping timeout 60 giay) thi:
+	 *     lan 1:  m_mapAcc[X] = {param:100}    m_mapParam[100] = {hwid}
+	 *     lan 2:  m_mapAcc[X] = {param:200}    <-- de MAT so 100
+	 *     LeaveGame sau do chi xoa duoc m_mapParam[200]  =>  m_mapParam[100] MO COI VINH VIEN.
+	 * Moi muc mo coi lam bo dem cua DUNG ma may do tang them mot va KHONG BAO GIO giam. Lap lai vai lan la
+	 * may do khong con dang nhap duoc nua, khong ai hieu vi sao. Day dung la 'player out ra lam ket gioi han'.
+	 *
+	 * Chieu doi xung: khe ket noi (lnID) duoc TAI SU DUNG cho nguoi khac. Neu m_mapParam[lnID] con muc cu cua
+	 * nguoi truoc thi phai don ca m_mapAcc/m_mapRole cua nguoi do; neu khong, den luot ho LeaveGame se xoa
+	 * NHAM muc cua nguoi moi (bo dem tut xuong, ho thoat gioi han ma khong biet).
+	 *
+	 * Don ca hai chieu o day thi so sach TU NHAT QUAN voi MOI thu tu su kien, khong phu thuoc kich ban nao.
+	 */
+	{
+		ACCMAP::iterator itAccCu = m_mapAcc.find(strAcc);
+
+		if (itAccCu != m_mapAcc.end())
+		{
+			rTRACE("[MAYID] don muc cu cung tai khoan: acc=%s param cu=%08X (chua co LeaveGame)",
+				strAcc.c_str(), itAccCu->second.param);
+			m_mapParam.erase(itAccCu->second.param);
+			m_mapRole.erase(itAccCu->second.role);
+		}
+
+		PARAMMAP::iterator itKheCu = m_mapParam.find(pEnterGame2->lnID);
+
+		if (itKheCu != m_mapParam.end())
+		{
+			rTRACE("[MAYID] don muc cu cung khe: khe=%08X acc cu=%s (khe duoc tai su dung)",
+				pEnterGame2->lnID, itKheCu->second.acc.c_str());
+			m_mapAcc.erase(itKheCu->second.acc);
+			m_mapRole.erase(itKheCu->second.role);
+		}
+	}
+
 	m_mapAcc[strAcc] = infoAcc;
 	m_mapRole[strRole] = infoRole;
 	m_mapParam[pEnterGame2->lnID] = infoParam;
@@ -139,8 +179,29 @@ void CHostConnect::Proc1_Normal_LeaveGame(const void* pData, size_t size)
 		}}
 		
 
+		/*
+		 * [MAYID 15/09] Chi xoa muc m_mapParam neu no VAN THUOC VE tai khoan nay. Khe ket noi (param = lnID)
+		 * duoc tai su dung cho nguoi khac, nen xoa mu se lam NGUOI MOI khong con bi dem - tuc la ho thoat
+		 * gioi han ma khong ai biet.
+		 */
+		{
+			PARAMMAP::iterator itParam = m_mapParam.find(rAccInfo.param);
+
+			if (itParam != m_mapParam.end())
+			{
+				if (itParam->second.acc == strAcc)
+				{
+					m_mapParam.erase(itParam);
+				}
+				else
+				{
+					rTRACE("[MAYID] KHONG xoa khe %08X: no da thuoc ve acc=%s chu khong phai %s",
+						rAccInfo.param, itParam->second.acc.c_str(), strAcc.c_str());
+				}
+			}
+		}
+
 		m_mapRole.erase(rAccInfo.role);
-		m_mapParam.erase(rAccInfo.param);
 
 		m_mapAcc.erase(itAcc);
 	}
