@@ -422,3 +422,32 @@ Chạy cả tệp là dính bẫy §10.4 (ghi đè `auto_m.spr`).
 * **Luật §0.7:** tôi dựng lúc 14:02 **mà chưa soát lịch Tống Kim**. Trận 13:23 = báo danh 1 phút + đánh
   45 phút theo **giờ HĐH máy chủ** (`AUTO_TONGKIM_SPEC.md` §1.1), máy chủ từng lệch múi giờ (§6.3) nên không
   chắc lúc đó có trận hay không. Sau khi phát hiện thì không dựng, không đo gì thêm.
+
+---
+
+# [WACHON 14/09] HỘP CHỌN KỸ NĂNG / VẬT PHẨM: CHỌN XONG KHÔNG HIỆN
+
+Chủ 17:0x: *"WAuto đang lỗi các phần kích vào ra chọn danh sách skill và item chọn xong không hiển thị"*, kèm yêu cầu đối chiếu bản PC và tìm đúng nguyên nhân trước khi sửa.
+
+## 1. Nguyên nhân
+
+`KUiWAutoTrang::DienChon` (`UiWAutoTrang.cpp:496`) khai `int i, v = 0;` rồi **từng nhánh tự đọc giá trị** bằng `LayInt(p)`: nhánh Boss cố định đọc, nhánh Rương cửa đọc, nhánh chung ở cuối đọc (kèm chú thích [WAUTO 12/09] "các nhánh trên mới tự đọc giá trị"). Riêng nhánh `WA_NGUON_CHIEU` — **mọi hộp chọn kỹ năng/vật phẩm**: Bật hỗ trợ #1–3, Kỹ năng đánh boss, Sinh lực %, Nội lực %, Vòng sáng #1–2, Đổi vũ khí, Chiêu kết hợp — **không đọc**, nên `v` luôn bằng 0 và ô luôn in "Không thiết lập", dù giá trị đã ghi đúng vào `autoData`.
+
+Bằng chứng máy ảo 17:1x: chọn "Toạ Vọng Vô Ngã" ở Bật hỗ trợ #1 → nhật ký `[WAUTO-UI] IDC_COMBO_2_SP1 = 157` và `[WAUTO] ghi \APdataý8889385.dat: 7644 byte` (đã lưu), nhưng ô vẫn "Không thiết lập"; mở lại cửa sổ vẫn trống.
+
+## 2. Đối chiếu bản PC (WAutoUI/WAuto.cpp)
+
+PC lưu **mã chiêu** `nId` kiểu `int` vào `autoData` (`nSkillIdSP1`… `ipc_shared.h:139-152`), tên lấy tươi từ `gnode.arSkill[]` do game đẩy qua `PRG_MAINSYNC` (`WAuto.cpp:3038-3097`). Khi dựng lại giao diện, `UpdateUI` (`WAuto.cpp:1842`) làm đúng ba bước cho mỗi hộp: `CB_RESETCONTENT` (`2099`) → thêm "Không thiết lập" rồi từng chiêu (`2100-2108`) → **đọc `autoData` và so với `arSkill[].nId` để tính dòng đang chọn** (`2111-2116`). Bước thứ ba chính là cái bản mobile thiếu. PC cũng lệch 1 vì dòng 0 luôn là "Không thiết lập" (`994`, `2112`).
+
+## 3. Sửa
+
+`v = LayInt(p);` ở đầu nhánh `WA_NGUON_CHIEU`, đúng cách các nhánh khác đang làm. Một dòng; `kiem --pc` ĐẠT. Kịch bản `android/va_nguon_wauto_chon_1409.py`.
+
+Thử máy ảo: mở lại cửa sổ, Bật hỗ trợ #1 hiện "Toạ Vọng Vô Ngã" (giá trị 157 đã lưu từ lần trước).
+
+## 4. Hai chỗ VẬT PHẨM còn thiếu thật (chưa sửa, cần chủ xác nhận có phải ý chủ không)
+
+| Chỗ | Trạng thái mobile | Bản PC làm gì |
+|---|---|---|
+| **Cài đặt tên không nhặt** (`IDC_BTN_4_NOP`, thẻ Nhặt đồ) | nút **tắt** (`nNguon = 2` = phải xin dữ liệu lúc chạy) | gửi `PRT_GETITEMNAME`, game trả `PRG_OPENNOPICK` với mảng tên 80 byte, mở hộp thoại riêng `IDD_NOPICK_DIALOG` (`WAuto.cpp:6919-6929`, `3278-3299`) |
+| **Dòng thuộc tính khi nhặt** (`IDC_LIST_4_FT`) | khai `WA_MUC_DSACH` nhưng `UiWAutoTrang.cpp` **chưa hề dựng** loại này | bảng tĩnh `g_MagicTable` 41 dòng (`WAuto.cpp:280-322`), chọn xong dựng lại cả listbox trong `UpdateUI` (`1893-1906`) |

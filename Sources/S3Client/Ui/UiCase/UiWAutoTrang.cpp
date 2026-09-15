@@ -545,6 +545,9 @@ void KUiWAutoTrang::DienChon(const WAUiMuc* p)
 	}
 	else if (p->nNguon == WA_NGUON_CHIEU)
 	{
+		v = LayInt(p);	// [WACHON 14/09] chu: "chon xong khong hien thi" - nhanh nay QUEN doc gia tri (v van = 0 tu
+					// dau ham) nen moi hop chon ky nang / vat pham luon in "Khong thiet lap" du autoData da ghi dung
+					// (nhat ky may ao: IDC_COMBO_2_SP1 = 157 ma o van trong). Cac nhanh khac deu tu doc, xem chu thich [WAUTO 12/09] duoi.
 		if (m_nChieu < 0)
 			NapChieu();
 		if (v == 0)
