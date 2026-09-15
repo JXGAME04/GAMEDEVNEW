@@ -15,7 +15,8 @@ In ra:
   5. Vao map ([VAOMAP], [VAOMAP-MO], [VAOMAP-DONG]) - tam pha
   6. Ghep nen dat ([PGND-R]) va cua so giao dien nang nhat ([PDET-UI], co ten muc ini tu ban 109141701)
   7. Hoan ve / cho pak ([VE-TAI], [VE-NAP]) - dem luot bo ve
-  8. Anh nap hong nhieu nhat (loc san cac tep KHONG CO tren ca cay PC, xem MEMORY may-ao-anh-chup...)
+  8. The gioi vao RT / zoom / lac / lop chu ([TG], [TGCAP], [ZOOM], [LAC], [CHUNET]) + GPU luc nhin rong
+  9. Anh nap hong nhieu nhat (loc san cac tep KHONG CO tren ca cay PC, xem MEMORY may-ao-anh-chup...)
 
 Khong sua gi, chi doc.
 """
@@ -211,8 +212,65 @@ def main():
     if t2:
         print("khung to giao nen: %d" % sum(t2))
 
-    # ---- 8. anh hong
-    muc("7. ANH NAP HONG (da bo cac tep thieu tren ca cay PC)")
+    # ---- 8. the gioi vao RT / zoom / lac / lop chu (phan chia cho phien lia canh)
+    muc("8. THE GIOI VAO RT / ZOOM / LAC / LOP CHU")
+    kh = re.findall(r"\[TGCAP\] RT cap (\d+), RT2 cap 2 x (\d+) phan nghin khung, cap san (\d+)", rep3)
+    if kh:
+        print("Khoa: TheGioiRTCap=%s TheGioiRT2Cap=%s TheGioiRTSan=%s" % kh[-1])
+    m = re.search(r"\[TGNAC\] nhin rong tu (\d+) phan nghin[^\n]*loc bang mau (\d+)", rep3)
+    if m:
+        print("       TheGioiRTNac=%s (0 = tat, ve 1:1 vao RT to roi thu - net hon) TheGioiRTNacLoc=%s" % (m.group(1), m.group(2)))
+    m = re.search(r"\[CHUNET\] lop chu the gioi ve sau blit khi zoom / lac: (\d+)", rep3)
+    if m:
+        print("       TheGioiRTChu=%s (lop chu ve sau blit khi zoom / lac)" % m.group(1))
+    cap = re.findall(r"\[TG\] render target the gioi cap (\d+)x(\d+) \(dung (\d+)x(\d+), khung (\d+)x(\d+), muc (\d+)\)", rep3)
+    cap2 = re.findall(r"\[ZOOM3D\] RT2 cap (\d+)x(\d+) \(dung (\d+)x(\d+)\)", rep3)
+    print("Cap RT: %d lan%s | cap RT2: %d lan%s" % (
+        len(cap), (" (lan cuoi %sx%s cho khung %sx%s)" % (cap[-1][0], cap[-1][1], cap[-1][4], cap[-1][5])) if cap else "",
+        len(cap2), (" (lan cuoi %sx%s)" % (cap2[-1][0], cap2[-1][1])) if cap2 else ""))
+    nLan = len(kh) if kh else 1        # moi lan mo app ghi mot dong [TGCAP] khoa -> dem duoc so lan chay gop trong tep
+    if nLan > 1:
+        print("   (tep nay gop %d lan chay app - log may ao ghi noi tiep, cac so duoi la TONG ca %d lan)" % (nLan, nLan))
+    if len(cap) + len(cap2) > 4 * nLan:
+        print("   !! cap lai nhieu lan trong mot lan chay - moi lan cap la mot khung dai (xem muc TGCAP trong BANGIAO_LIA_CANH_MOBILE_1309.md)")
+    cham = re.findall(r"\[TGCAP\] cham san RT (\d+)x(\d+)([^\(]*)", rep3)
+    if cham:
+        print("Cham san: %d lan%s" % (len(cham), (" (%sx%s%s)" % (cham[0][0], cham[0][1], cham[0][2].strip())) if cham else ""))
+    z = [(int(a), int(b)) for a, b in re.findall(r"\[ZOOM\] zoom (\d+) -> (\d+) \(phan nghin\)", rep3)]
+    if z:
+        muc_z = [b for _, b in z]
+        print("Zoom: %d lan doi | rong nhat %d%%, gan nhat %d%%, cuoi phien %d%%" % (
+            len(z), max(muc_z) / 10.0, min(muc_z) / 10.0, muc_z[-1] / 10.0))
+        rong = sum(1 for v in muc_z if v > 1000)
+        to = sum(1 for v in muc_z if v < 1000)
+        print("      nhin rong %d lan, phong to %d lan" % (rong, to))
+    else:
+        print("Zoom: khong doi lan nao trong phien (nguoi choi de 100 %)")
+    le = re.findall(r"\[LAC\] le RT (\d+) -> (\d+)", rep3)
+    if le:
+        print("Lac camera: %d lan doi le RT (moi lan bat/tat la mot cu cap lai RT o ban truoc TGCAP)" % len(le))
+    # [TG] dong tong ket cua so 30 s: dem khung di duong RT va viec/khung
+    tg = re.findall(r"\[TG\] the gioi RT: bat=(\d+) ep=(\d+) K=(\d+) \| khung: duong cu (\d+), ve vao RT (\d+), chi blit (\d+)[^\n]*viec/khung the gioi TB ([\d.]+)", rep3)
+    if tg:
+        cu_, rt, blit = sum(int(x[3]) for x in tg), sum(int(x[4]) for x in tg), sum(int(x[5]) for x in tg)
+        tong = cu_ + rt + blit
+        viec = [float(x[6]) for x in tg if float(x[6]) > 0]
+        print("Duong ve: %d khung duong cu / %d ve vao RT / %d chi blit%s" % (
+            cu_, rt, blit, (" (%.0f %% qua RT)" % (100.0 * (rt + blit) / tong)) if tong else ""))
+        if viec:
+            print("          viec/khung the gioi TB %.2f ms (dinh %.2f)" % (sum(viec) / len(viec), max(viec)))
+    # GPU luc dang nhin rong: ghep moc gio cua [ZOOM] voi mau [MAU] gan nhat
+    if z and thiet:
+        mau2 = re.findall(r"\[MAU\] (\d+):(\d+):(\d+)\.\d+ t=(\d+)[^\n]*p=([\d.]+) W \| gpu=(\d+)%", thiet)
+        if mau2:
+            g = [int(x[5]) for x in mau2]
+            w = [float(x[4]) for x in mau2]
+            print("GPU ca phien: %d %% TB (dinh %d) | dien %.2f W TB" % (sum(g) // len(g), max(g), sum(w) / len(w)))
+            print("   (muon so RIENG luc nhin rong thi doi chieu moc [ms] cua [ZOOM] voi t= cua [MAU]; ban 109141731 tro di co [TGNAC])")
+    print()
+
+    # ---- 9. anh hong
+    muc("9. ANH NAP HONG (da bo cac tep thieu tren ca cay PC)")
     h = collections.Counter()
     for m2 in re.findall(r"LoadImage FAIL[^:]*: (.+)", rep3):
         ten2 = m2.strip().split("\\")[-1].lower()
