@@ -290,6 +290,18 @@ set_target_properties(jx1ios PROPERTIES XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_AP
 set(JX_IOS_PRIVACY ${CMAKE_CURRENT_SOURCE_DIR}/PrivacyInfo.xcprivacy)
 target_sources(jx1ios PRIVATE ${JX_IOS_PRIVACY})
 set_source_files_properties(${JX_IOS_PRIVACY} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+# [IOS-MANTAI 15/09] Anh nen cho man TAI DU LIEU. Phai nam TRONG GOI: man nay chay khi may VUA CAI,
+# luc do chua co mot byte du lieu game nao nen khong lay anh tu cay du lieu duoc (VNKU cung nhet san
+# LaunchScreenBackground.png trong goi cua ho). Chua co tep thi bo qua, ma tu ve nen chuyen sac toi
+# (JxTaiDuLieu.mm, ham datNen) - khong can sua ma khi them anh sau.
+foreach(jx_nen nen_tai.jpg nen_tai.png)
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${jx_nen})
+    target_sources(jx1ios PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${jx_nen})
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${jx_nen}
+                                PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    message(STATUS "[IOS-MANTAI] dong goi anh nen man tai: ${jx_nen}")
+  endif()
+endforeach()
 # [IOS-PHATHANH 15/09] Archive phai chua app: INSTALL_PATH trong => Xcode tu dat SKIP_INSTALL=YES cho jx1ios => xcodebuild
 # archive ra goi khong co app, khong tai len duoc. Cac thu vien tinh van tu bo qua vi INSTALL_PATH cua chung trong.
 set_target_properties(jx1ios PROPERTIES

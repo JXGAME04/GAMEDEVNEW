@@ -47,6 +47,8 @@ người ta tưởng kho đã được ký. Nay xoá cả `manifest.sig`.
 |---|---|
 | `ios/JxTaiDuLieu.mm` | Vòng **Thử lại** trên màn tải; **kiểm mã HTTP trước khi ghi** (trước đây nối thẳng thân phản hồi vào `.part`, kể cả trang lỗi 404/500); xử lý máy chủ bỏ qua `Range` (trả 200 khi đang xin khúc); **trần số lần thử + giãn cách**; giữ `.part` khi chỉ đứt mạng, chỉ xoá khi byte thật sự sai; chặn manifest thiếu md5; lọc `..` trong đường dẫn; chống khoá màn hình khi đang tải. |
 | `ios/JxIosMain.cpp` | Bốn lối chết không còn để lại **màn hình đen**. |
+| `ios/JxTaiDuLieu.mm` (đợt 2) | **Màn cập nhật dựng theo VNKU**: hai thanh tiến độ (trên = tệp đang tải kèm số MB thật, dưới = tổng), đồng hồ + tốc độ, nền ảnh splash. Toàn bộ đặt bằng ràng buộc Auto Layout. |
+| `ios/CMakeLists.txt` | Đóng gói `ios/nen_tai.jpg` (hoặc `.png`) làm nền màn tải **nếu tệp tồn tại**. Chưa có tệp thì tự vẽ nền chuyển sắc tối, không cần sửa mã. Ảnh **phải nằm trong gói**: màn này chạy lúc máy vừa cài, chưa có byte dữ liệu game nào — VNKU cũng nhét sẵn `LaunchScreenBackground.png` trong gói của họ. |
 
 **Vì sao "màn hình đen" là chuyện lớn:** SDL3 đã vô hiệu `exit()`
 (`SDL_uikitappdelegate.m`, dòng `// exit(exit_status);`), nên `return` từ `main()` **không kết thúc tiến trình** —

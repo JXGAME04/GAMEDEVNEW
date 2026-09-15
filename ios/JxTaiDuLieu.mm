@@ -41,6 +41,11 @@
 @interface JxTaiTrangThai : NSObject
 @property (atomic) long long coTong;      // tong so byte phai tai
 @property (atomic) long long coDaTai;     // da tai duoc
+// [IOS-MANTAI 15/09] Tien do cua RIENG tep dang tai, de ve thanh thu hai giong VNKU:
+// thanh tren = tep hien tai, thanh duoi = tong. Chi co tong thi nguoi choi nhin tep pak
+// vai tram MB se tuong may treo, vi con so tong gan nhu dung yen hang phut.
+@property (atomic) long long coTepTong;   // co cua tep dang tai
+@property (atomic) long long coTepDaTai;  // da tai duoc cua tep dang tai
 @property (atomic) long long coDaBam;     // da bam md5 (buoc kiem lan dau)
 @property (atomic) long long coCanBam;    // tong phai bam
 @property (atomic, copy) NSString* mucHienTai;
@@ -190,6 +195,9 @@ static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSStr
 	if (daCo < 0) daCo = 0;
 	if (daCo > co) { unlink(tam.fileSystemRepresentation); daCo = 0; }	// .part hong
 
+	tt.coTepTong = co;		// [IOS-MANTAI 15/09] cho thanh tien do cua rieng tep nay
+	tt.coTepDaTai = daCo;	// tai tiep thi bat dau tu phan da co, khong ve lai tu 0
+
 	// [IOS-TAI-CHAC 15/09] Dem so lan hong de KHONG quay vo han. Truoc day vong nay chi thoat khi
 	// daCo >= co, ma moi vong "co them byte" la tinh la tien bo - nen mot cong dang nhap Wi-Fi cong
 	// cong (tra 200 kem trang HTML cho MOI yeu cau) se lam no quay hang tram nghin lan, ghi day rac
@@ -250,6 +258,7 @@ static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSStr
 						{
 							size_t w = fwrite(pD, 1, n, fo);
 							tt.coDaTai = tt.coDaTai + (long long)w;	// chi dem byte GHI DUOC that
+							tt.coTepDaTai = tt.coTepDaTai + (long long)w;
 							if (w != n) { bDayDia = YES; break; }
 						}
 						free(pD);
@@ -283,6 +292,7 @@ static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSStr
 			FILE* fx = fopen(tam.fileSystemRepresentation, "wb"); if (fx) fclose(fx);
 			if (daCo > 0) tt.coDaTai = tt.coDaTai - daCo;	// tra lai thanh tien do cho khoi dem trung
 			daCo = 0;
+			tt.coTepDaTai = 0;	// tep nay tai lai tu dau -> thanh tien do cua no ve 0
 			continue;
 		}
 		if (le || !hp)
@@ -318,6 +328,7 @@ static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSStr
 		}
 		soLoiMang = 0; soKhongTien = 0; nNghi = 1;	// co tien bo that -> dat lai bo dem
 		daCo = mm;
+		tt.coTepDaTai = mm;	// dong bo lai theo co that tren dia
 	}
 	if (tt.huy) return NO;
 
@@ -503,6 +514,9 @@ static void JxLamViec(NSString* goc, NSString* thuMuc, JxTaiTrangThai* tt)
 }
 
 // ---------------------------------------------------------------- giao dien
+// [IOS-MANTAI 15/09] Khai truoc: veTienDo: ben duoi goi JxMb, ma than ham JxMb nam SAU khoi lop nay.
+static NSString* JxMb(long long n);
+
 #if TARGET_OS_IPHONE
 @interface JxTaiMan : UIViewController
 @property (nonatomic, strong) UILabel* nhan;
@@ -512,47 +526,138 @@ static void JxLamViec(NSString* goc, NSString* thuMuc, JxTaiTrangThai* tt)
 // daBam la atomic vi vong bom o luong chinh doc no, con UIKit dat no trong ham bam.
 @property (nonatomic, strong) UIButton* nut;
 @property (atomic) BOOL daBam;
+// [IOS-MANTAI 15/09] thanh thu hai (tong) + nhan tong + dong ho, theo dung bo cuc cua VNKU
+@property (nonatomic, strong) UIProgressView* thanh2;
+@property (nonatomic, strong) UILabel* nhanTong;
+@property (nonatomic, strong) UILabel* dongHo;
 @end
 @implementation JxTaiMan
+
+// [IOS-MANTAI 15/09] Nen man tai. Uu tien anh "nen_tai" nhet san trong goi (ios/nen_tai.jpg,
+// ios/CMakeLists.txt tu dong goi neu co tep); chua co anh thi ve nen chuyen sac toi.
+// KHONG duoc lay anh tu cay du lieu game: man nay chay khi may VUA CAI, luc do chua co du lieu.
+- (void)datNen
+{
+	UIImage* anh = [UIImage imageNamed:@"nen_tai"];
+	if (anh)
+	{
+		UIImageView* nen = [[UIImageView alloc] initWithImage:anh];
+		nen.translatesAutoresizingMaskIntoConstraints = NO;
+		nen.contentMode = UIViewContentModeScaleAspectFill;
+		nen.clipsToBounds = YES;
+		[self.view addSubview:nen];
+		[NSLayoutConstraint activateConstraints:@[
+			[nen.leadingAnchor  constraintEqualToAnchor:self.view.leadingAnchor],
+			[nen.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+			[nen.topAnchor      constraintEqualToAnchor:self.view.topAnchor],
+			[nen.bottomAnchor   constraintEqualToAnchor:self.view.bottomAnchor],
+		]];
+		// Phu mot lop toi o nua duoi de chu va thanh tien do luon doc duoc, du anh sang mau gi.
+		UIView* phu = [[UIView alloc] init];
+		phu.translatesAutoresizingMaskIntoConstraints = NO;
+		phu.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.45];
+		[self.view addSubview:phu];
+		[NSLayoutConstraint activateConstraints:@[
+			[phu.leadingAnchor  constraintEqualToAnchor:self.view.leadingAnchor],
+			[phu.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+			[phu.bottomAnchor   constraintEqualToAnchor:self.view.bottomAnchor],
+			[phu.heightAnchor   constraintEqualToAnchor:self.view.heightAnchor multiplier:0.42],
+		]];
+		return;
+	}
+	self.view.backgroundColor = [UIColor colorWithRed:0.05 green:0.04 blue:0.03 alpha:1.0];
+}
+
+- (UILabel*)taoNhan:(CGFloat)co dam:(BOOL)dam mau:(UIColor*)mau
+{
+	UILabel* l = [[UILabel alloc] init];
+	l.translatesAutoresizingMaskIntoConstraints = NO;
+	l.textColor = mau;
+	l.font = [UIFont systemFontOfSize:co weight:(dam ? UIFontWeightSemibold : UIFontWeightRegular)];
+	l.numberOfLines = 1;
+	[self.view addSubview:l];
+	return l;
+}
+
 - (void)viewDidLoad
 {
 	[super viewDidLoad];
-	self.view.backgroundColor = [UIColor blackColor];
-	CGFloat w = self.view.bounds.size.width, h = self.view.bounds.size.height;
-	self.nhan = [[UILabel alloc] initWithFrame:CGRectMake(20, h/2 - 70, w - 40, 26)];
-	self.nhan.textColor = [UIColor whiteColor];
-	self.nhan.textAlignment = NSTextAlignmentCenter;
-	self.nhan.font = [UIFont systemFontOfSize:17 weight:UIFontWeightSemibold];
-	self.nhan.text = @"Chuẩn bị dữ liệu";
-	[self.view addSubview:self.nhan];
+	[self datNen];
 
-	self.thanh = [[UIProgressView alloc] initWithFrame:CGRectMake(30, h/2 - 20, w - 60, 4)];
+	// [IOS-MANTAI 15/09] TAT CA dat bang rang buoc, KHONG dung toa do cung: cua so duoc tao theo
+	// [UIScreen mainScreen].bounds (luc khoi dong la chieu DOC) trong khi Info.plist khoa game nam
+	// NGANG, nen toa do tinh mot lan trong viewDidLoad se lech - nut bam se khong trung.
+	UILayoutGuide* an = self.view.safeAreaLayoutGuide;
+
+	self.nhan    = [self taoNhan:17 dam:YES mau:[UIColor whiteColor]];
+	self.nhan.textAlignment = NSTextAlignmentCenter;
+	self.nhan.text = @"Chuẩn bị dữ liệu";
+
+	// Hang tep: "Tên tệp — 37.5% (366.8 / 978.5 MB)"
+	self.chiTiet = [self taoNhan:13 dam:NO mau:[UIColor colorWithWhite:0.86 alpha:1.0]];
+	self.chiTiet.numberOfLines = 2;
+
+	self.thanh = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
+	self.thanh.translatesAutoresizingMaskIntoConstraints = NO;
+	self.thanh.progressTintColor = [UIColor colorWithRed:0.25 green:0.55 blue:0.95 alpha:1.0];	// xanh duong: tep
+	self.thanh.trackTintColor = [UIColor colorWithWhite:1.0 alpha:0.22];
 	[self.view addSubview:self.thanh];
 
-	self.chiTiet = [[UILabel alloc] initWithFrame:CGRectMake(20, h/2 + 2, w - 40, 60)];
-	self.chiTiet.textColor = [UIColor colorWithWhite:0.75 alpha:1.0];
-	self.chiTiet.textAlignment = NSTextAlignmentCenter;
-	self.chiTiet.numberOfLines = 3;
-	self.chiTiet.font = [UIFont systemFontOfSize:13];
-	[self.view addSubview:self.chiTiet];
+	self.nhanTong = [self taoNhan:13 dam:NO mau:[UIColor colorWithWhite:0.86 alpha:1.0]];
 
-	// [IOS-KHONGCHET 15/09] Nut nay PHAI bam trung, nen dat bang rang buoc chu KHONG bang toa do cung
-	// nhu ba muc tren: cua so duoc tao theo [UIScreen mainScreen].bounds (luc khoi dong la chieu DOC)
-	// trong khi Info.plist khoa game nam NGANG -> toa do cung tinh mot lan trong viewDidLoad se lech.
+	self.thanh2 = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
+	self.thanh2.translatesAutoresizingMaskIntoConstraints = NO;
+	self.thanh2.progressTintColor = [UIColor colorWithRed:0.30 green:0.80 blue:0.35 alpha:1.0];	// xanh la: tong
+	self.thanh2.trackTintColor = [UIColor colorWithWhite:1.0 alpha:0.22];
+	[self.view addSubview:self.thanh2];
+
+	self.dongHo = [self taoNhan:12 dam:NO mau:[UIColor colorWithWhite:0.70 alpha:1.0]];
+	self.dongHo.text = @"00:00:00";
+
 	self.nut = [UIButton buttonWithType:UIButtonTypeSystem];
 	self.nut.translatesAutoresizingMaskIntoConstraints = NO;
 	self.nut.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightSemibold];
-	self.nut.backgroundColor = [UIColor colorWithWhite:0.22 alpha:1.0];
+	self.nut.backgroundColor = [UIColor colorWithWhite:0.22 alpha:0.95];
 	[self.nut setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
 	self.nut.layer.cornerRadius = 8;
 	self.nut.hidden = YES;
 	[self.nut addTarget:self action:@selector(bamNut) forControlEvents:UIControlEventTouchUpInside];
 	[self.view addSubview:self.nut];
+
+	const CGFloat le = 26;	// le trai/phai
 	[NSLayoutConstraint activateConstraints:@[
+		// tieu de nam giua man
+		[self.nhan.centerXAnchor  constraintEqualToAnchor:self.view.centerXAnchor],
+		[self.nhan.bottomAnchor   constraintEqualToAnchor:self.chiTiet.topAnchor constant:-18],
+		[self.nhan.leadingAnchor  constraintEqualToAnchor:an.leadingAnchor  constant:le],
+		[self.nhan.trailingAnchor constraintEqualToAnchor:an.trailingAnchor constant:-le],
+
+		// khoi tien do bam DAY man, xep tu duoi len (giong VNKU)
+		[self.chiTiet.leadingAnchor  constraintEqualToAnchor:an.leadingAnchor  constant:le],
+		[self.chiTiet.trailingAnchor constraintEqualToAnchor:an.trailingAnchor constant:-le],
+		[self.chiTiet.bottomAnchor   constraintEqualToAnchor:self.thanh.topAnchor constant:-6],
+
+		[self.thanh.leadingAnchor  constraintEqualToAnchor:an.leadingAnchor  constant:le],
+		[self.thanh.trailingAnchor constraintEqualToAnchor:an.trailingAnchor constant:-le],
+		[self.thanh.bottomAnchor   constraintEqualToAnchor:self.nhanTong.topAnchor constant:-16],
+		[self.thanh.heightAnchor   constraintEqualToConstant:5],
+
+		[self.nhanTong.leadingAnchor constraintEqualToAnchor:an.leadingAnchor constant:le],
+		[self.nhanTong.bottomAnchor  constraintEqualToAnchor:self.thanh2.topAnchor constant:-6],
+
+		[self.thanh2.leadingAnchor  constraintEqualToAnchor:an.leadingAnchor  constant:le],
+		[self.thanh2.trailingAnchor constraintEqualToAnchor:an.trailingAnchor constant:-le],
+		[self.thanh2.bottomAnchor   constraintEqualToAnchor:self.dongHo.topAnchor constant:-8],
+		[self.thanh2.heightAnchor   constraintEqualToConstant:5],
+
+		[self.dongHo.leadingAnchor constraintEqualToAnchor:an.leadingAnchor constant:le],
+		[self.dongHo.bottomAnchor  constraintEqualToAnchor:an.bottomAnchor  constant:-16],
+
+		// nut Thu lai: chi hien khi hong, nam tren khoi tien do
 		[self.nut.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-		[self.nut.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor constant:-28],
-		[self.nut.widthAnchor  constraintGreaterThanOrEqualToConstant:200],
-		[self.nut.heightAnchor constraintEqualToConstant:46],
+		[self.nut.bottomAnchor  constraintEqualToAnchor:self.chiTiet.topAnchor constant:-22],
+		[self.nut.widthAnchor   constraintGreaterThanOrEqualToConstant:200],
+		[self.nut.heightAnchor  constraintEqualToConstant:46],
 	]];
 }
 
@@ -561,11 +666,51 @@ static void JxLamViec(NSString* goc, NSString* thuMuc, JxTaiTrangThai* tt)
 	self.daBam = YES;
 }
 
+// Cap nhat mot lan ve: tien do tep + tien do tong + dong ho.
+- (void)veTienDo:(NSString*)ten tepDa:(long long)tepDa tepTong:(long long)tepTong
+            tong:(long long)tong  da:(long long)da     giay:(double)giay
+{
+	if (tepTong > 0)
+	{
+		double r = (double)tepDa / (double)tepTong;
+		self.thanh.hidden = NO;
+		self.thanh.progress = (float)(r > 1.0 ? 1.0 : r);
+		self.chiTiet.text = [NSString stringWithFormat:@"%@ — %.1f%% (%@ / %@ MB)",
+		                     ten ?: @"", r * 100.0, JxMb(tepDa), JxMb(tepTong)];
+	}
+	else
+	{
+		self.thanh.hidden = YES;
+		self.chiTiet.text = ten ?: @"";
+	}
+
+	if (tong > 0)
+	{
+		double r = (double)da / (double)tong;
+		self.thanh2.hidden = NO;
+		self.thanh2.progress = (float)(r > 1.0 ? 1.0 : r);
+		self.nhanTong.text = [NSString stringWithFormat:@"Tổng: %.1f%%  (%@ / %@ MB)",
+		                      r * 100.0, JxMb(da), JxMb(tong)];
+	}
+	else
+	{
+		self.thanh2.hidden = YES;
+		self.nhanTong.text = @"";
+	}
+
+	int g = (int)(giay < 0 ? 0 : giay);
+	double td = giay > 0.5 ? (double)da / giay : 0;
+	self.dongHo.text = [NSString stringWithFormat:@"%02d:%02d:%02d   %.1f MB/s",
+	                    g / 3600, (g / 60) % 60, g % 60, td / (1024.0 * 1024.0)];
+}
+
 // Chuyen man tai sang trang thai BAO LOI: giau thanh tien do, hien loi va nut.
 - (void)hienLoi:(NSString*)loi nut:(NSString*)tenNut
 {
 	self.nhan.text = @"Không tải được dữ liệu";
 	self.thanh.hidden = YES;
+	self.thanh2.hidden = YES;
+	self.nhanTong.text = @"";
 	self.chiTiet.numberOfLines = 4;
 	self.chiTiet.text = loi ?: @"";
 	[self.nut setTitle:tenNut forState:UIControlStateNormal];
@@ -577,11 +722,12 @@ static void JxLamViec(NSString* goc, NSString* thuMuc, JxTaiTrangThai* tt)
 - (void)veLaiDangTai
 {
 	self.nut.hidden = YES;
-	self.thanh.hidden = NO;
-	self.thanh.progress = 0;
-	self.chiTiet.numberOfLines = 3;
+	self.thanh.hidden = NO;  self.thanh.progress = 0;
+	self.thanh2.hidden = NO; self.thanh2.progress = 0;
+	self.chiTiet.numberOfLines = 2;
 	self.nhan.text = @"Chuẩn bị dữ liệu";
 	self.chiTiet.text = @"";
+	self.nhanTong.text = @"";
 }
 @end
 #endif
@@ -671,25 +817,24 @@ extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char*
 #if TARGET_OS_IPHONE
 					if (man)
 					{
+						// [IOS-MANTAI 15/09] Bo cuc theo VNKU: thanh TREN = tep dang tai (kem so MB that),
+						// thanh DUOI = tong, duoi cung la dong ho + toc do. Chi co mot thanh tong thi nguoi
+						// choi tai tep pak vai tram MB se thay no dung yen hang phut va tuong may treo.
 						long long canBam = tt.coCanBam, daBam = tt.coDaBam;
-						long long tong = tt.coTong, da = tt.coDaTai;
+						double gy = -[batDau timeIntervalSinceNow];
 						if (canBam > 0 && daBam < canBam)
-						{
+						{	// buoc kiem md5 bo du lieu da co (chi lam mot lan)
 							man.nhan.text = @"Kiểm tra dữ liệu đã có";
-							man.thanh.progress = (float)((double)daBam / (double)canBam);
-							man.chiTiet.text = [NSString stringWithFormat:@"%@ / %@ MB", JxMb(daBam), JxMb(canBam)];
-						}
-						else if (tong > 0)
-						{
-							double gy = -[batDau timeIntervalSinceNow];
-							double td = gy > 0.5 ? (double)da / gy : 0;
-							man.nhan.text = @"Đang tải dữ liệu";
-							man.thanh.progress = (float)((double)da / (double)tong);
-							man.chiTiet.text = [NSString stringWithFormat:@"%@ / %@ MB\n%.1f MB/s\n%@",
-							                    JxMb(da), JxMb(tong), td / (1024.0*1024.0), tt.mucHienTai ?: @""];
+							[man veTienDo:@"Đang kiểm tra dữ liệu…" tepDa:daBam tepTong:canBam
+							          tong:0 da:0 giay:gy];
 						}
 						else
-							man.chiTiet.text = tt.mucHienTai ?: @"";
+						{
+							man.nhan.text = @"Đang tải dữ liệu";
+							[man veTienDo:(tt.mucHienTai ?: @"")
+							        tepDa:tt.coTepDaTai tepTong:tt.coTepTong
+							         tong:tt.coTong     da:tt.coDaTai  giay:gy];
+						}
 					}
 #endif
 				}
