@@ -1,0 +1,586 @@
+/*
+ * KMachineId.cpp - [MAYID 14/09] Ma may on dinh cho client PC. Xem KMachineId.h de biet vi sao.
+ *
+ * NGUYEN TAC VIET O DAY:
+ *   - Khong bao gio nem ngoai le, khong bao gio lam treo dang nhap. Moi loi -> bo qua nguon do, di tiep.
+ *   - Moi loi goi API deu co duong lui. Neu khong lay duoc gi thi van tra ve mot chuoi hop le hang 'C'.
+ *   - Tinh MOT LAN roi nho lai (dang nhap lai khong tinh lai).
+ */
+
+/*
+ * Tep nay KHONG dung tien bien dich (PCH) cua S3Client: PCH do dat _WIN32_WINNT = 0x0400 (NT 4.0),
+ * ma ta can khai bao cua Vista tro len. Da dat NotUsing trong S3Client.vcxproj cho rieng tep nay.
+ */
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+
+#include <windows.h>
+#include <winioctl.h>
+#include <iphlpapi.h>
+#include <stdio.h>
+#include <string.h>
+
+#pragma comment(lib, "iphlpapi.lib")
+
+#include "KMachineId.h"
+
+/*---------------------------------------------------------------- bam FNV-1a 64 bit */
+
+static unsigned __int64 _Fnv1a64(const unsigned char* p, size_t n, unsigned __int64 seed)
+{
+	unsigned __int64 h = seed;
+
+	for (size_t i = 0; i < n; i++)
+	{
+		h ^= (unsigned __int64)p[i];
+		h *= 1099511628211ULL;
+	}
+
+	return h;
+}
+
+/*---------------------------------------------------------------- tien ich chuoi */
+
+/* Cat khoang trang hai dau, tra ve TRUE neu con lai it nhat mot ky tu co nghia. */
+static BOOL _TrimUseful(char* s)
+{
+	if (!s)
+		return FALSE;
+
+	size_t n = strlen(s);
+	size_t b = 0;
+
+	while (b < n && (unsigned char)s[b] <= ' ')
+		b++;
+
+	while (n > b && (unsigned char)s[n - 1] <= ' ')
+		n--;
+
+	if (n <= b)
+	{
+		s[0] = 0;
+		return FALSE;
+	}
+
+	memmove(s, s + b, n - b);
+	s[n - b] = 0;
+
+	/* Se-ri toan '0' hoac toan mot ky tu lap lai thi coi nhu vo nghia. */
+	{
+		size_t i;
+		BOOL bKhac = FALSE;
+
+		for (i = 1; s[i]; i++)
+		{
+			if (s[i] != s[0])
+			{
+				bKhac = TRUE;
+				break;
+			}
+		}
+
+		if (!bKhac)
+		{
+			s[0] = 0;
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+/*---------------------------------------------------------------- nguon 1: UUID he thong trong SMBIOS */
+
+/*
+ * Doc bang SMBIOS tho, tim cau truc Type 1 (System Information), lay 16 byte UUID o offset 0x08.
+ * Day la dinh danh do NHA SAN XUAT BO MACH ghi - nhan ban dia KHONG lam no doi.
+ */
+static BOOL _LaySmbiosUuid(unsigned char out[16])
+{
+	BOOL bOk = FALSE;
+	UINT uSize;
+	BYTE* pBuf = NULL;
+
+	/*
+	 * Goi DONG: GetSystemFirmwareTable chi co tu Windows Vista. Neu lien ket TINH thi Game.exe se
+	 * KHONG MO DUOC tren Windows XP (thieu ham nhap). Lay qua GetProcAddress de may cu chi mat
+	 * nguon nay chu khong hong ca game.
+	 */
+	{
+		typedef UINT (WINAPI *PFN_GSFT)(DWORD, DWORD, PVOID, DWORD);
+		static PFN_GSFT s_pfn = NULL;
+		static BOOL s_bDaTim = FALSE;
+
+		if (!s_bDaTim)
+		{
+			HMODULE hK32 = ::GetModuleHandleA("kernel32.dll");
+
+			if (hK32)
+				s_pfn = (PFN_GSFT)::GetProcAddress(hK32, "GetSystemFirmwareTable");
+
+			s_bDaTim = TRUE;
+		}
+
+		if (!s_pfn)
+			return FALSE;
+
+		uSize = s_pfn('RSMB', 0, NULL, 0);
+
+		if (uSize == 0 || uSize > (1u << 20))
+			return FALSE;
+
+		pBuf = (BYTE*)::malloc(uSize);
+
+		if (!pBuf)
+			return FALSE;
+
+		if (s_pfn('RSMB', 0, pBuf, uSize) != uSize)
+		{
+			::free(pBuf);
+			return FALSE;
+		}
+	}
+
+	/* RawSMBIOSData: 4 byte dau la thong tin phien ban, roi DWORD Length, roi du lieu bang. */
+	if (uSize > 8)
+	{
+		DWORD dwLen = *(DWORD*)(pBuf + 4);
+		BYTE* p = pBuf + 8;
+		BYTE* pEnd;
+
+		if (dwLen > uSize - 8)
+			dwLen = uSize - 8;
+
+		pEnd = p + dwLen;
+
+		while (p + 4 <= pEnd)
+		{
+			BYTE byType = p[0];
+			BYTE byLen = p[1];
+			BYTE* pNext;
+
+			if (byLen < 4)
+				break;
+
+			if (p + byLen > pEnd)
+				break;
+
+			if (byType == 1 && byLen >= 0x18)
+			{
+				unsigned char* u = p + 0x08;
+				int i;
+				BOOL bAllZero = TRUE;
+				BOOL bAllFF = TRUE;
+
+				for (i = 0; i < 16; i++)
+				{
+					if (u[i] != 0x00)
+						bAllZero = FALSE;
+
+					if (u[i] != 0xFF)
+						bAllFF = FALSE;
+				}
+
+				if (!bAllZero && !bAllFF)
+				{
+					/*
+					 * Mot so bo mach re dung san UUID mau 03000200-0400-0500-0006-000700080009
+					 * cho MOI bo mach cung dong -> phai loai, khong thi lai trung nhau.
+					 */
+					static const unsigned char s_byMau[16] =
+					{
+						0x03,0x00,0x02,0x00, 0x04,0x00, 0x05,0x00,
+						0x00,0x06, 0x00,0x07,0x00,0x08,0x00,0x09
+					};
+
+					if (memcmp(u, s_byMau, 16) != 0)
+					{
+						memcpy(out, u, 16);
+						bOk = TRUE;
+					}
+				}
+
+				break;
+			}
+
+			/* Nhay qua vung dinh dang roi qua vung chuoi (ket thuc bang hai NUL lien tiep). */
+			pNext = p + byLen;
+
+			while (pNext + 1 < pEnd && !(pNext[0] == 0 && pNext[1] == 0))
+				pNext++;
+
+			pNext += 2;
+
+			if (pNext <= p)
+				break;
+
+			p = pNext;
+		}
+	}
+
+	::free(pBuf);
+
+	return bOk;
+}
+
+/*---------------------------------------------------------------- nguon 2: se-ri o dia VAT LY */
+
+/*
+ * Mo \\.\PhysicalDrive0 voi quyen 0 (chi truy van) - KHONG can quyen quan tri.
+ * Day la se-ri ghi trong o dia, khac han VolumeSerialNumber (thu bi doi khi format va bi sao khi ghost).
+ */
+static BOOL _LaySeriODia(char* szOut, size_t nOut)
+{
+	BOOL bOk = FALSE;
+	int nDrive;
+
+	if (!szOut || nOut == 0)
+		return FALSE;
+
+	szOut[0] = 0;
+
+	for (nDrive = 0; nDrive < 4 && !bOk; nDrive++)
+	{
+		char szPath[64];
+		HANDLE hDev;
+
+		::_snprintf(szPath, sizeof(szPath) - 1, "\\\\.\\PhysicalDrive%d", nDrive);
+		szPath[sizeof(szPath) - 1] = 0;
+
+		hDev = ::CreateFileA(szPath, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
+					NULL, OPEN_EXISTING, 0, NULL);
+
+		if (hDev == INVALID_HANDLE_VALUE)
+			continue;
+
+		{
+			STORAGE_PROPERTY_QUERY query;
+			BYTE byBuf[1024];
+			DWORD dwRet = 0;
+
+			memset(&query, 0, sizeof(query));
+			query.PropertyId = StorageDeviceProperty;
+			query.QueryType = PropertyStandardQuery;
+			memset(byBuf, 0, sizeof(byBuf));
+
+			if (::DeviceIoControl(hDev, IOCTL_STORAGE_QUERY_PROPERTY,
+					&query, sizeof(query), byBuf, sizeof(byBuf), &dwRet, NULL)
+				&& dwRet >= sizeof(STORAGE_DEVICE_DESCRIPTOR))
+			{
+				STORAGE_DEVICE_DESCRIPTOR* pDesc = (STORAGE_DEVICE_DESCRIPTOR*)byBuf;
+
+				if (pDesc->SerialNumberOffset > 0 && pDesc->SerialNumberOffset < dwRet)
+				{
+					::strncpy(szOut, (const char*)byBuf + pDesc->SerialNumberOffset, nOut - 1);
+					szOut[nOut - 1] = 0;
+
+					if (_TrimUseful(szOut))
+						bOk = TRUE;
+					else
+						szOut[0] = 0;
+				}
+			}
+		}
+
+		::CloseHandle(hDev);
+	}
+
+	return bOk;
+}
+
+/*---------------------------------------------------------------- nguon 3: MAC card mang that */
+
+/* Cac tu khoa nhan dang card mang AO - phai loai vi chung doi hoac trung nhau. */
+static BOOL _LaCardAo(const char* szMoTa)
+{
+	static const char* s_szAo[] =
+	{
+		"vmware", "virtualbox", "vbox", "hyper-v", "virtual", "tap-", "tap ",
+		"loopback", "bluetooth", "npcap", "pcap", "vpn", "tunnel", "teredo",
+		"wan miniport", "microsoft wi-fi direct", "hamachi", "radmin", "nordvpn",
+		"openvpn", "wireguard", "zerotier", "docker", "wsl", "ppp"
+	};
+
+	char szThuong[512];
+	size_t i;
+	int k;
+
+	if (!szMoTa || !szMoTa[0])
+		return TRUE;
+
+	::strncpy(szThuong, szMoTa, sizeof(szThuong) - 1);
+	szThuong[sizeof(szThuong) - 1] = 0;
+
+	for (i = 0; szThuong[i]; i++)
+	{
+		if (szThuong[i] >= 'A' && szThuong[i] <= 'Z')
+			szThuong[i] = (char)(szThuong[i] - 'A' + 'a');
+	}
+
+	for (k = 0; k < (int)(sizeof(s_szAo) / sizeof(s_szAo[0])); k++)
+	{
+		if (::strstr(szThuong, s_szAo[k]) != NULL)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+/*
+ * Lay MAC nho nhat trong so cac card VAT LY. Chon "nho nhat" de ket qua on dinh
+ * du thu tu liet ke cua he dieu hanh co doi giua cac lan khoi dong.
+ */
+static BOOL _LayMac(unsigned char out[6])
+{
+	BOOL bOk = FALSE;
+	ULONG ulLen = 0;
+	IP_ADAPTER_INFO* pInfo = NULL;
+
+	if (::GetAdaptersInfo(NULL, &ulLen) != ERROR_BUFFER_OVERFLOW || ulLen == 0 || ulLen > (1u << 20))
+		return FALSE;
+
+	pInfo = (IP_ADAPTER_INFO*)::malloc(ulLen);
+
+	if (!pInfo)
+		return FALSE;
+
+	if (::GetAdaptersInfo(pInfo, &ulLen) == NO_ERROR)
+	{
+		IP_ADAPTER_INFO* p = pInfo;
+
+		while (p)
+		{
+			if (p->AddressLength == 6 && p->Type != MIB_IF_TYPE_LOOPBACK && !_LaCardAo(p->Description))
+			{
+				int i;
+				BOOL bAllZero = TRUE;
+
+				for (i = 0; i < 6; i++)
+				{
+					if (p->Address[i] != 0)
+						bAllZero = FALSE;
+				}
+
+				/* Bit thu hai cua byte dau = 1 nghia la MAC dat tay / cuc bo -> khong tin. */
+				if (!bAllZero && (p->Address[0] & 0x02) == 0)
+				{
+					if (!bOk || memcmp(p->Address, out, 6) < 0)
+					{
+						memcpy(out, p->Address, 6);
+						bOk = TRUE;
+					}
+				}
+			}
+
+			p = p->Next;
+		}
+	}
+
+	::free(pInfo);
+
+	return bOk;
+}
+
+/*---------------------------------------------------------------- nguon lui (KHONG song sot qua ghost dia) */
+
+static BOOL _LayMachineGuid(char* szOut, size_t nOut)
+{
+	HKEY hKey = NULL;
+	BOOL bOk = FALSE;
+
+	if (!szOut || nOut == 0)
+		return FALSE;
+
+	szOut[0] = 0;
+
+	/*
+	 * KEY_WOW64_64KEY: tien trinh 32 bit tren Windows 64 bit phai doc dung nhanh 64 bit,
+	 * khong thi lay nham ban sao trong Wow6432Node.
+	 */
+	if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Cryptography", 0,
+			KEY_READ | KEY_WOW64_64KEY, &hKey) == ERROR_SUCCESS)
+	{
+		DWORD dwType = 0;
+		DWORD dwSize = (DWORD)(nOut - 1);
+
+		if (::RegQueryValueExA(hKey, "MachineGuid", NULL, &dwType,
+				(LPBYTE)szOut, &dwSize) == ERROR_SUCCESS && dwType == REG_SZ)
+		{
+			szOut[dwSize < nOut ? dwSize : nOut - 1] = 0;
+			bOk = _TrimUseful(szOut);
+		}
+
+		::RegCloseKey(hKey);
+	}
+
+	return bOk;
+}
+
+/*---------------------------------------------------------------- ghi mot dong chan doan */
+
+static void _GhiChanDoan(const char* szId, const char* szChiTiet)
+{
+	FILE* f = ::fopen("jx_machineid.log", "a");
+
+	if (!f)
+		return;
+
+	::fprintf(f, "[MAYID] id=%s  %s\n", szId ? szId : "?", szChiTiet ? szChiTiet : "");
+	::fclose(f);
+}
+
+/*---------------------------------------------------------------- dau vao chinh */
+
+static char s_szMachineId[40] = { 0 };
+
+static void _TinhMachineId(void)
+{
+	unsigned char byUuid[16];
+	unsigned char byMac[6];
+	char szSeri[256];
+	char szGuid[128];
+	char szChiTiet[512];
+
+	BOOL bCoUuid = FALSE;
+	BOOL bCoSeri = FALSE;
+	BOOL bCoMac = FALSE;
+	int nManh = 0;
+	char chHang;
+
+	unsigned __int64 h1 = 14695981039346656037ULL;
+	unsigned __int64 h2 = 1099511628211ULL;
+
+	memset(byUuid, 0, sizeof(byUuid));
+	memset(byMac, 0, sizeof(byMac));
+	szSeri[0] = 0;
+	szGuid[0] = 0;
+
+	/* Moi nguon deu duoc bao boc: mot nguon hong khong lam hong ca ham. */
+	__try
+	{
+		bCoUuid = _LaySmbiosUuid(byUuid);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		bCoUuid = FALSE;
+	}
+
+	__try
+	{
+		bCoSeri = _LaySeriODia(szSeri, sizeof(szSeri));
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		bCoSeri = FALSE;
+	}
+
+	__try
+	{
+		bCoMac = _LayMac(byMac);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		bCoMac = FALSE;
+	}
+
+	/*
+	 * Tron theo THU TU CO DINH va chi tron nguon nao TIM DUOC.
+	 * Nho vay them mot card mang USB hay cam them o dia khong lam doi ma may.
+	 */
+	if (bCoUuid)
+	{
+		nManh++;
+		h1 = _Fnv1a64((const unsigned char*)"U", 1, h1);
+		h1 = _Fnv1a64(byUuid, sizeof(byUuid), h1);
+		h2 = _Fnv1a64(byUuid, sizeof(byUuid), h2 ^ 0x9E3779B97F4A7C15ULL);
+	}
+
+	if (bCoSeri)
+	{
+		nManh++;
+		h1 = _Fnv1a64((const unsigned char*)"S", 1, h1);
+		h1 = _Fnv1a64((const unsigned char*)szSeri, strlen(szSeri), h1);
+		h2 = _Fnv1a64((const unsigned char*)szSeri, strlen(szSeri), h2 ^ 0xC2B2AE3D27D4EB4FULL);
+	}
+
+	if (bCoMac)
+	{
+		nManh++;
+		h1 = _Fnv1a64((const unsigned char*)"M", 1, h1);
+		h1 = _Fnv1a64(byMac, sizeof(byMac), h1);
+		h2 = _Fnv1a64(byMac, sizeof(byMac), h2 ^ 0x165667B19E3779F9ULL);
+	}
+
+	if (nManh == 0)
+	{
+		/*
+		 * Khong lay duoc nguon phan cung nao. Dung nguon lui CHI de co mot gia tri on dinh,
+		 * va danh dau hang 'C' de may chu KHONG tu choi dang nhap dua tren ma may nay.
+		 */
+		BOOL bCoGuid = FALSE;
+
+		__try
+		{
+			bCoGuid = _LayMachineGuid(szGuid, sizeof(szGuid));
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			bCoGuid = FALSE;
+		}
+
+		if (bCoGuid)
+		{
+			h1 = _Fnv1a64((const unsigned char*)szGuid, strlen(szGuid), h1);
+			h2 = _Fnv1a64((const unsigned char*)szGuid, strlen(szGuid), h2 ^ 0x27D4EB2F165667C5ULL);
+		}
+		else
+		{
+			DWORD dwVol = 0;
+
+			::GetVolumeInformationA("C:\\", NULL, 0, &dwVol, NULL, NULL, NULL, 0);
+			h1 = _Fnv1a64((const unsigned char*)&dwVol, sizeof(dwVol), h1);
+			h2 = _Fnv1a64((const unsigned char*)&dwVol, sizeof(dwVol), h2 ^ 0x85EBCA77C2B2AE63ULL);
+		}
+	}
+
+	chHang = (nManh >= 2) ? 'A' : ((nManh == 1) ? 'B' : 'C');
+
+	::_snprintf(s_szMachineId, sizeof(s_szMachineId) - 1, "%c%016I64X%016I64X", chHang, h1, h2);
+	s_szMachineId[sizeof(s_szMachineId) - 1] = 0;
+
+	::_snprintf(szChiTiet, sizeof(szChiTiet) - 1,
+		"hang=%c nguon_manh=%d uuid=%d seri=%d mac=%d",
+		chHang, nManh, bCoUuid ? 1 : 0, bCoSeri ? 1 : 0, bCoMac ? 1 : 0);
+	szChiTiet[sizeof(szChiTiet) - 1] = 0;
+
+	_GhiChanDoan(s_szMachineId, szChiTiet);
+}
+
+const char* JX_GetMachineId(void)
+{
+	if (s_szMachineId[0] == 0)
+	{
+		__try
+		{
+			_TinhMachineId();
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			s_szMachineId[0] = 0;
+		}
+
+		/* Bao hiem cuoi cung: khong bao gio tra ve chuoi rong. */
+		if (s_szMachineId[0] == 0)
+		{
+			::strcpy(s_szMachineId, "C00000000000000000000000000000000");
+		}
+	}
+
+	return s_szMachineId;
+}
+
+char JX_GetMachineIdTier(void)
+{
+	return JX_GetMachineId()[0];
+}

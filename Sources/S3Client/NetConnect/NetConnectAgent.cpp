@@ -10,6 +10,7 @@
 #include <initguid.h>
 #include "KEngine.h"
 #include "NetConnectAgent.h"
+#include "../Login/KMachineId.h"		/* [MAYID 14/09] ma may lay tu phan cung that */
 #include "NetMsgTargetObject.h"
 #include "../Ui/Elem/Wnds.h"
 #include "../Ui/UiCase/UiSysMsgCentre.h"
@@ -163,17 +164,13 @@ void KNetConnectAgent::DisconnectClient()
 		m_pClient = NULL;
 	}
 }
-std::string GenerateRandomString(size_t length) {
-	const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	const size_t max_index = (sizeof(charset) - 1);
-	std::string randomString;
-
-	for (size_t i = 0; i < length; ++i) {
-		randomString += charset[rand() % max_index];
-	}
-
-	return randomString;
-}
+/*
+ * [MAYID 14/09] DA BO ham GenerateRandomString.
+ * No chi ton tai de phuc vu hai dong bi chu thich ngay duoi day (noi mot chuoi ngau nhien vao ma may,
+ * kem ghi chu "mo gioi han log vao game"). Bo chu thich hai dong do = moi lan dang nhap mot ma may khac
+ * = VO HIEU HOA hoan toan gioi han. Chu game yeu cau 14/09: TAT han duong mo gioi han, moi nguoi deu
+ * phai di qua gioi han cho cong bang. Xoa han de khong ai bat lai duoc bang cach bo hai dau chu thich.
+ */
 int KNetConnectAgent::ConnectToGameSvr(const unsigned char* pIpAddress, unsigned short uPort, GUID* pGuid)
 {
 	
@@ -207,33 +204,25 @@ int KNetConnectAgent::ConnectToGameSvr(const unsigned char* pIpAddress, unsigned
 	ll.cProtocol = c2s_logiclogin;
 	memcpy( &ll.guid, pGuid, sizeof(GUID));
 	//edit by phong kieu send HWID to server
-	HW_PROFILE_INFO hwProfileInfo;
-	char* szHwID;
-	if (GetCurrentHwProfile(&hwProfileInfo))
-	{
-		std::string hwIDStr = hwProfileInfo.szHwProfileGuid;
-	//	hwIDStr += "-";   // mo gioi han log vao game
-	//	hwIDStr += GenerateRandomString(8); // mo gioi han log vao game
-
-		szHwID = new char[hwIDStr.length() + 1]; 
-		std::strcpy(szHwID, hwIDStr.c_str()); 
-
-	}
-	if(szHwID[0])
-	{
-		strcpy(ll.sHWID, szHwID);
-	}
+	/*
+	 * [MAYID 14/09] TRUOC: GetCurrentHwProfile().szHwProfileGuid chi la mot khoa REGISTRY sinh luc CAI
+	 * Windows. Phong net ghost dia tu mot may mau => CA DAN MAY mang CUNG MOT ma; khi ca phong ra Internet
+	 * qua cung mot tuong lua (cung mot IP) thi may chu thay ca phong la MOT may => nguoi vao duoc nguoi khong.
+	 * NAY: JX_GetMachineId() bam tu PHAN CUNG THAT (UUID bo mach trong SMBIOS + se-ri o dia vat ly + MAC),
+	 * la nhung thu KHONG di theo khi nhan ban dia. Chuoi dai 33 ky tu, ky tu dau la HANG tin cay A/B/C;
+	 * hang 'C' = khong doc duoc phan cung nao. HANG KHONG PHAI GIAY MIEN: hang cung do client khai nen
+	 * client gia chi can gui "C000..." la thoat sach - may chu VAN DEM hang 'C' nhu thuong, xem KMachineId.h.
+	 * Xem Sources/S3Client/Login/KMachineId.cpp.
+	 */
+	memset(ll.sHWID, 0, sizeof(ll.sHWID));
+	strncpy(ll.sHWID, JX_GetMachineId(), sizeof(ll.sHWID) - 1);
 	//end send HWID to server
 	if (FAILED(m_pGameSvrClient->SendPackToServer(&ll, sizeof(tagLogicLogin)))) {
-		if(szHwID[0])
-			delete[] szHwID;
 		return false;
 	}
 
 	if (g_pCoreShell)
 		g_pCoreShell->SetClient(m_pGameSvrClient);
-	if (szHwID[0])
-		delete[] szHwID;
 	return true;
 }
 void KNetConnectAgent::DisconnectGameSvr()

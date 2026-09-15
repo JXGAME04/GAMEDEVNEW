@@ -191,6 +191,9 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="AntiHack\Splash\splash2.cpp" />
     <ClCompile Include="ErrorCode.cpp" />
     <ClCompile Include="Login\Login.cpp" />
+    <ClCompile Include="Login\KMachineId.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="NetConnect\NetConnectAgent.cpp" />
     <ClCompile Include="S3Client.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -403,6 +406,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="JxrDrawAdapter.h" />
     <ClInclude Include="ErrorCode.h" />
     <ClInclude Include="Login\Login.h" />
+    <ClInclude Include="Login\KMachineId.h" />
     <ClInclude Include="Login\LoginDef.h" />
     <ClInclude Include="NetConnect\NetConnectAgent.h" />
     <ClInclude Include="NetConnect\NetMsgTargetObject.h" />
