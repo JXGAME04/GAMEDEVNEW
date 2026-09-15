@@ -121,8 +121,10 @@ def cho_trong_vong(s):
 def tim_goc(goc):
     """Nhan ca hai cach go: <thu muc chua Sources/> hay chinh thu muc Sources/.
 
-    Phai chon theo Core/Src chu KHONG theo ten: kho nay co that mot thu muc Sources/Sources rong,
-    nen "python ... Sources" tung lang le quet nham cho rong do va bao 0 (phien WAuto dinh 14/09).
+    Phai chon theo Core/Src chu KHONG theo ten, va cung KHONG theo os.path.exists:
+    kho nay co that mot thu muc Sources/Sources, va no CO THUC (ben trong la Sword3PaySys/s3accserver)
+    chu khong rong - chi thieu Core/Src. Nen "python ... Sources" tung lang le quet nham cay
+    Sword3PaySys va bao 0 (phien WAuto dinh 14/09). Phep thu "co ton tai khong" khong du.
     """
     for thu in (os.path.join(goc, 'Sources'), goc):
         if os.path.isdir(os.path.join(thu, 'Core', 'Src')):
