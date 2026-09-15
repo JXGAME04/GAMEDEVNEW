@@ -658,10 +658,28 @@ void KWndWindow::Paint()
 		extern int g_nPaintLog; extern double g_dJxUiMaxMs; extern int g_nJxUiMaxX, g_nJxUiMaxY, g_nJxUiMaxW, g_nJxUiMaxH; extern const char* g_pszJxUiMaxLop; extern const void* g_pJxUiMax; extern char g_szJxUiMaxTen[64];	// [UITEN 14/09]
 		const bool bJxDoUi = (g_nPaintLog > 0 && (!m_pParentWnd || !m_pParentWnd->m_pParentWnd));	// [PDET-UI 14/09 b] cua so goc = ANH EM cua goc lop (Wnd_AddWindow -> AddBrother, parent NULL); cap con truc tiep van do, cha thang vi gom con
 		LARGE_INTEGER jxU0; if (bJxDoUi) QueryPerformanceCounter(&jxU0);
+		// [TGPHA 14/09] rieng cua so THE GIOI: tach ban than / con / anh em (phan lech iOS-Android nam o day)
+		extern void* g_pJxWndTheGioi; extern double g_dJxTgPha[3];
+		const bool bJxTg = (g_nPaintLog > 0 && g_pJxWndTheGioi == (void*)this);
+		LARGE_INTEGER jxG[4]; if (bJxTg) QueryPerformanceCounter(&jxG[0]);
 #endif
 		PaintWindow();
+#ifdef JX_MOBILE
+		if (bJxTg) QueryPerformanceCounter(&jxG[1]);	// [TGPHA 14/09] xong ban than
+#endif
 		if (m_pFirstChild)
 			m_pFirstChild->Paint();
+#ifdef JX_MOBILE
+		if (bJxTg)
+		{	// [TGPHA 14/09] xong cac o con; anh em do o duoi (sau khoi #endif cua PDET-UI)
+			LARGE_INTEGER jxGF; QueryPerformanceFrequency(&jxGF);
+			QueryPerformanceCounter(&jxG[2]);
+			const double dK = jxGF.QuadPart ? 1000.0 / (double)jxGF.QuadPart : 0.0;
+			g_dJxTgPha[0] = (double)(jxG[1].QuadPart - jxG[0].QuadPart) * dK;
+			g_dJxTgPha[1] = (double)(jxG[2].QuadPart - jxG[1].QuadPart) * dK;
+			g_dJxTgPha[2] = 0.0;
+		}
+#endif
 #ifdef JX_MOBILE
 		if (bJxDoUi)
 		{
