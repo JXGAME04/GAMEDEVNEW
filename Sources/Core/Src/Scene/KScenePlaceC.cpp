@@ -247,9 +247,18 @@ void KScenePlaceC::ClosePlace()
 	int i = 0;
 	if (m_szPlaceRootPath[0] == 0)
 		return;
+#ifdef JX_MOBILE
+	// [VAOMAP 14/09 c] doi map: OpenPlace goi ClosePlace dau tien; hai EnterCriticalSection duoi day cho
+	// LUONG NAP VUNG nha khoa. Do rieng tung doan de biet 144-405 ms la CHO KHOA hay la viec that.
+	LARGE_INTEGER jxD[6], jxDF; QueryPerformanceFrequency(&jxDF);
+	QueryPerformanceCounter(&jxD[0]); jxD[1] = jxD[2] = jxD[3] = jxD[4] = jxD[5] = jxD[0];
+#endif
 
 	m_nSceneId = SPWP_NO_SCENE;
 	m_Map.Free();
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxD[1]);	// [VAOMAP 14/09 c] xong ban do nho
+#endif
 
 	SetLoadingStatus(false);
 
@@ -258,6 +267,9 @@ void KScenePlaceC::ClosePlace()
 
 	EnterCriticalSection(&m_RegionListAdjustCritical);
 	EnterCriticalSection(&m_LoadCritical);
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxD[2]);	// [VAOMAP 14/09 c] da lay duoc hai khoa nap
+#endif
 	m_nFirstToLoadIndex = -1;
 	for (i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
 		m_pInProcessAreaRegions[i] = NULL;
@@ -265,10 +277,16 @@ void KScenePlaceC::ClosePlace()
 	LeaveCriticalSection(&m_RegionListAdjustCritical);
 
 	EnterCriticalSection(&m_ProcessCritical);
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxD[3]);	// [VAOMAP 14/09 c] da lay duoc khoa xu ly
+#endif
 	ClearPreprocess(true);
 	for (i = 0; i < SPWP_MAX_NUM_REGIONS; i++)
 		m_RegionObjs[i].Clear();
 	LeaveCriticalSection(&m_ProcessCritical);
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxD[4]);	// [VAOMAP 14/09 c] xong don vung
+#endif
 
 	m_nHLSpecialObjectBioIndex = SPWP_NO_HL_SPECAIL_OBJECT;
 	m_szPlaceRootPath[0] = 0;
@@ -281,6 +299,26 @@ void KScenePlaceC::ClosePlace()
 		delete m_pWeather;
 		m_pWeather = NULL;
 	}
+#ifdef JX_MOBILE
+	{	// [VAOMAP 14/09 c] mot dong khi ClosePlace >= 20 ms
+		extern int g_nCorePaintLog;
+		QueryPerformanceCounter(&jxD[5]);
+		const double dK = jxDF.QuadPart ? 1000.0 / (double)jxDF.QuadPart : 0.0;
+		const double dTong = (double)(jxD[5].QuadPart - jxD[0].QuadPart) * dK;
+		if (g_nCorePaintLog > 0 && dTong >= 1.0)
+		{
+			FILE* pDg = fopen("jx_paint.log", "a");
+			if (pDg)
+			{
+				fprintf(pDg, "[VAOMAP-DONG] tong %.0f ms = ban do %.0f + CHO KHOA NAP %.0f + cho khoa xu ly %.0f + don vung %.0f + con lai %.0f\n",
+					dTong, (double)(jxD[1].QuadPart - jxD[0].QuadPart) * dK, (double)(jxD[2].QuadPart - jxD[1].QuadPart) * dK,
+					(double)(jxD[3].QuadPart - jxD[2].QuadPart) * dK, (double)(jxD[4].QuadPart - jxD[3].QuadPart) * dK,
+					(double)(jxD[5].QuadPart - jxD[4].QuadPart) * dK);
+				fclose(pDg);
+			}
+		}
+	}
+#endif
 }
 
 //##ModelId=3DCAA6A703DB
@@ -329,6 +367,9 @@ void KScenePlaceC::LoadSymbol(int nSubWorldID)
 }
 
 //##ModelId=3DCAA64C01DA
+#ifdef JX_MOBILE
+KIniFile* JxMapListGiu();	// [MAPLIST 14/09 b] KSubWorld.cpp (cung libCoreClient.so)
+#endif
 bool KScenePlaceC::OpenPlace(int nPlaceIndex)
 {
 	if (m_bInited == false)
@@ -339,19 +380,39 @@ bool KScenePlaceC::OpenPlace(int nPlaceIndex)
 	KIniFile	Ini;
 	char		Index[16];
 	char		Buff[128];
+#ifdef JX_MOBILE
+	// [VAOMAP 14/09 b] may ao do duoc pha 'mo map' 149-405 ms trong tong 160-432 ms cua mot lan doi map
+	// -> chia nho: danh sach map + .wor | m_Map.Load (du lieu map) | con lai (anh nen vung, den moi truong)
+	LARGE_INTEGER jxMo[4], jxMoF; QueryPerformanceFrequency(&jxMoF); QueryPerformanceCounter(&jxMo[0]);
+	jxMo[1] = jxMo[2] = jxMo[3] = jxMo[0];
+	KIniFile* pJxGiu = JxMapListGiu();
+#endif
 
 //	g_SetFilePath(ALL_PALCE_ROOT_FOLDER);
+#ifdef JX_MOBILE
+	if (pJxGiu == NULL && Ini.Load("\\settings\\MapList.ini") == FALSE)	// [MAPLIST 14/09 b] co ban giu thi khoi doc lai 191 KB
+		return false;
+
+	itoa(nPlaceIndex, Index, 10);
+	if ((pJxGiu ? pJxGiu : &Ini)->GetString("List", Index, "", Buff, sizeof(Buff)) == FALSE)
+		return false;
+#else
 	if (Ini.Load("\\settings\\MapList.ini") == FALSE)
 		return false;
 
 	itoa(nPlaceIndex, Index, 10);
 	if (Ini.GetString("List", Index, "", Buff, sizeof(Buff)) == FALSE)
 		return false;
+#endif
 
 	sprintf(m_szPlaceRootPath, "%s\\%s", ALL_PALCE_ROOT_FOLDER, Buff);
 
 	strcat(Index, "_name");
+#ifdef JX_MOBILE
+	if (!(pJxGiu ? pJxGiu : &Ini)->GetString("List", Index, "", m_szSceneName, sizeof(m_szSceneName)))	// [MAPLIST 14/09 b]
+#else
 	if (!Ini.GetString("List", Index, "", m_szSceneName, sizeof(m_szSceneName)))
+#endif
 	{
 		char* pName = strchr(Buff, '\\');
 		if (pName)
@@ -374,9 +435,15 @@ bool KScenePlaceC::OpenPlace(int nPlaceIndex)
 	}
 	m_szPlaceRootPath[nValue - 4] = 0;
 	m_nSceneId = nPlaceIndex;
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxMo[1]);	// [VAOMAP 14/09 b] xong danh sach map + .wor
+#endif
 	NapLopCanh(nPlaceIndex);	// [ANHNEN 10/09]
 	CoreDataChanged(GDCNI_SWITCHING_MAPMODE, m_Map.Load(&Ini, m_szPlaceRootPath), 0);//m_Map.Load(&Ini, m_szPlaceRootPath);
 
+#ifdef JX_MOBILE
+	QueryPerformanceCounter(&jxMo[2]);	// [VAOMAP 14/09 b] xong m_Map.Load (du lieu map)
+#endif
 	int nIsInDoor;
 	Ini.GetInteger("MAIN", "IsInDoor", 0, &nIsInDoor);
 	m_ObjectsTree.SetIsIndoor(nIsInDoor != 0);
@@ -462,6 +529,26 @@ bool KScenePlaceC::OpenPlace(int nPlaceIndex)
 	}
 
 	SetLoadingStatus(true);
+#ifdef JX_MOBILE
+	{	// [VAOMAP 14/09 b] mot dong khi OpenPlace >= 20 ms
+		extern int g_nCorePaintLog;
+		QueryPerformanceCounter(&jxMo[3]);
+		const double dK = jxMoF.QuadPart ? 1000.0 / (double)jxMoF.QuadPart : 0.0;
+		const double dTong = (double)(jxMo[3].QuadPart - jxMo[0].QuadPart) * dK;
+		if (g_nCorePaintLog > 0 && dTong >= 1.0)
+		{
+			FILE* pMo = fopen("jx_paint.log", "a");
+			if (pMo)
+			{
+				fprintf(pMo, "[VAOMAP-MO] map %d: tong %.0f ms = danh sach + wor %.0f + du lieu map %.0f + con lai %.0f (ban giu MapList %d)\n",
+					nPlaceIndex, dTong, (double)(jxMo[1].QuadPart - jxMo[0].QuadPart) * dK,
+					(double)(jxMo[2].QuadPart - jxMo[1].QuadPart) * dK, (double)(jxMo[3].QuadPart - jxMo[2].QuadPart) * dK,
+					(int)(pJxGiu != NULL));
+				fclose(pMo);
+			}
+		}
+	}
+#endif
 	//≤‚ ‘”√
 //	ChangeWeather(0);
 	return true;

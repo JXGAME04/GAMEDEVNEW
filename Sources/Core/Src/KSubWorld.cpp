@@ -2288,6 +2288,19 @@ static int s_nJxVaoMapSo = 0;
 // [MAPLIST 14/09] ban MapList.ini da phan tich, giu lai giua cac lan doi map (xem chu thich trong LoadMap)
 static KIniFile* s_pJxMapList = NULL;
 static int s_nJxMapList = 0;	// 0 = chua thu, 1 = dang dung ban giu, -1 = nap hong -> di duong cu
+// [MAPLIST 14/09 b] ban giu dung chung trong libCoreClient.so (KScenePlaceC::OpenPlace cung doc MapList.ini
+// mot lan nua moi lan doi map). Tra NULL = khong dung duoc -> noi goi tu doc tep nhu duong cu.
+KIniFile* JxMapListGiu()
+{
+	if (s_nJxMapList == 0)
+	{
+		g_SetFilePath("\\settings");
+		s_pJxMapList = new KIniFile;
+		s_nJxMapList = (s_pJxMapList && s_pJxMapList->Load("MapList.ini")) ? 1 : -1;
+		if (s_nJxMapList != 1 && s_pJxMapList) { delete s_pJxMapList; s_pJxMapList = NULL; }
+	}
+	return (s_nJxMapList == 1) ? s_pJxMapList : NULL;
+}
 #define JX_VAOMAP_MOC(n) do { if (s_nJxVaoMapSo > 0 && (n) < 9) { QueryPerformanceCounter(&s_liJxVaoMap[(n)]); if ((n) + 1 > s_nJxVaoMapSo) s_nJxVaoMapSo = (n) + 1; } } while (0)
 static double JxVaoMapMs(int a, int b)
 {
@@ -2392,13 +2405,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		// [MAPLIST 14/09] MapList.ini (191 KB, 6 518 dong o ban dien thoai) truoc day duoc doc + phan tich LAI
 		// moi lan doi map: [VAOMAP] do duoc pha 'ini' 38 ms tren 95 ms cua ca lan doi map (may ao). Noi dung tep
 		// khong doi luc dang chay -> giu mot ban da phan tich, lan sau dung lai. Gia tri doc ra y het ban cu.
-		if (s_nJxMapList == 0)
-		{
-			g_SetFilePath("\\settings");
-			s_pJxMapList = new KIniFile;
-			s_nJxMapList = (s_pJxMapList && s_pJxMapList->Load("MapList.ini")) ? 1 : -1;
-			if (s_nJxMapList != 1 && s_pJxMapList) { delete s_pJxMapList; s_pJxMapList = NULL; }
-		}
+		JxMapListGiu();	// [MAPLIST 14/09 b] nap ban giu neu chua co
 		sprintf(szKeyName, "%d", nId);
 		if (s_nJxMapList == 1)
 			s_pJxMapList->GetString("List", szKeyName, "", m_szPathName, sizeof(m_szPathName));
