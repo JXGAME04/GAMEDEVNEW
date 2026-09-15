@@ -274,7 +274,7 @@ def main():
     print()
 
     # ---- 9. anh hong
-    muc("9. ANH NAP HONG (doc ca dong "ngan sach" ben duoi truoc khi ket luan)")
+    muc("9. ANH NAP HONG (doc ca dong ngan sach ben duoi truoc khi ket luan)")
     h = collections.Counter()
     for m2 in re.findall(r"LoadImage FAIL[^:]*: (.+)", rep3):
         ten2 = m2.strip().split("\\")[-1].lower()
