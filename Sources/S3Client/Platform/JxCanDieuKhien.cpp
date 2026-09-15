@@ -1595,7 +1595,7 @@ bool JxKyNang_GanKyNang(unsigned int uGenre, unsigned int uId)
 	// [KNHOTRO 14/09 b] ky nang ho tro / noi cong (khong danh duoc bang tay trai lan tay phai): khong cho gan vao o.
 	if (!KyNang_DungDuoc(uId))
 	{
-		KyNang_Bao("Kü n¨ng hç trî: kh«ng g¾n vµo « ®­îc");
+		// [GONMAN 14/09 c] khong bao nua theo y chu; van chan, va nhat ky ben duoi con ghi ly do.
 		g_DebugLog("[KYNANG] ky nang %u khong dung duoc (khong co trong bang danh trai lan phai) -> khong gan vao o", uId);
 		return false;
 	}
@@ -1961,14 +1961,19 @@ int JxKyNang_ChamBangChon(int x, int y)
 			}
 			if (i < KYNANG_SO_PHU)
 			{
-				// [GONMAN 14/09 b] gan vao o phu: khong bao nua (xem chu thich tren)
+				// [GONMAN 14/09 c] ban b go dong bao "Da gan vao o phu N" nhung go nham CA ba dong lam viec
+				//   ben duoi -> bam "Phim phu" luc chua cham o nao thi khong gan duoc gi. Giu lai ba dong,
+				//   chi khong bao nua (chu: "tat thong bao khi bo ky nang vao o ky nang").
+				s_nKNCheDoGan = 1;
+				s_nKNOChon = i;
+				JxKyNang_GanKyNang(o.uGenre, o.uId);
 			}
 			else
 			{
 				s_KNCho = o;
 				s_nKNCheDoGan = 1;
 				s_nKNOChon = -1;
-				KyNang_Bao("HÕt « trèng: ch¹m « phô muèn thay");
+				// [GONMAN 14/09 c] het o trong: khong bao nua, van vao che do gan de nguoi choi cham o muon thay.
 			}
 		}
 	}

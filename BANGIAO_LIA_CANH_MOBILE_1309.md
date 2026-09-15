@@ -782,3 +782,41 @@ Thông báo khi bị chặn: **"Kỹ năng hỗ trợ: không gắn vào ô đư
 ### 4. Còn lại
 
 Kỹ năng cấp 150 bị chặn ở nhân vật cấp 120 là **đúng ý "không dùng được"**, nhưng nếu chủ muốn cho gắn sẵn để lên cấp là dùng được ngay thì bỏ điều kiện cấp phải đổi cách hỏi Core (hai bảng trái/phải đã lọc sẵn theo cấp, không tách ra được) — lúc đó mới cần thêm một đường hỏi mới.
+
+## [GONMAN 14/09 c] Tắt nốt thông báo khi bỏ kỹ năng vào ô, và một lỗi bản b tự gây ra
+
+Chủ 21:3x: *"bạn chưa tắt thông báo khi bỏ kỹ năng vào ô kỹ năng"*.
+
+### 1. Lỗi bản b tự gây ra, nặng hơn cả chuyện thông báo
+
+Khi gỡ dòng báo "Đã gắn vào ô phụ N", bản b xoá **cả khối** trong nhánh "còn ô trống" của `KyNang_ChamBangChon`, kể cả ba dòng **làm việc**:
+
+```
+s_nKNCheDoGan = 1;   s_nKNOChon = i;   JxKyNang_GanKyNang(o.uGenre, o.uId);
+```
+
+Hậu quả: bấm **"Phím phụ"** trong bảng chọn lúc chưa chạm ô nào thì **không gắn được gì, im lặng**. Đã khôi phục ba dòng, chỉ bỏ dòng báo.
+
+**Bài học**: kịch bản vá thay cả khối bằng một dòng chú thích thì phải đọc lại khối cũ xem trong đó có gì ngoài dòng định gỡ. Bộ bảo vệ "số byte cao" không bắt được vì ba dòng kia là ASCII.
+
+### 2. Hai thông báo còn lại trên đường BỎ KỸ NĂNG VÀO Ô
+
+| Thông báo | Nay |
+|---|---|
+| "Hết ô trống: chạm ô phụ muốn thay" | bỏ; vẫn vào chế độ gắn để người chơi chạm ô muốn thay |
+| "Kỹ năng hỗ trợ: không gắn vào ô được" | bỏ; vẫn chặn, `g_DebugLog` vẫn ghi lý do |
+
+**Giữ lại** thông báo của đường **GỠ** kỹ năng: "Đã gỡ khỏi ô phụ", "Ô chính chỉ thay được, không gỡ được", "Kỹ năng này chưa nằm ở ô nào", "Ô chính về kỹ năng cơ bản". Chủ nói về lúc **bỏ vào** ô, không phải lúc gỡ. Lần trước tôi tự giữ lại nhóm "lý do" và chủ nhắc lại lần hai, nên lần này bỏ hết phần bỏ-vào.
+
+### 3. Thử máy ảo (bản `109142140`, nhân vật Võ Đang 120, trong Tống Kim)
+
+- chạm "Võ Đang Kiếm pháp" (bị động): không gắn, **không còn chữ nào** giữa màn; nhật ký `[KYNANG] ky nang 151 khong dung duoc ...`
+- gỡ một ô rồi bấm "Phím phụ" cho kỹ năng khác: `[KYNANG] gan ky nang 164 vao o 5` — đường bản b làm hỏng đã chạy lại
+- gắn xong không có chữ nào hiện
+- chuỗi "Hết ô trống" đã **biến mất khỏi `libmain.so`** cả hai ABI
+
+`kiem --pc` ĐẠT. Kịch bản `android/va_nguon_gonman_1409_c.py`.
+
+### 4. Một chỗ chủ nên biết: kỹ năng cấp 0 cũng bị chặn
+
+Hai bảng trái/phải của Core đòi `SkillLevel > 0`, nên kỹ năng **đã có trong bảng võ công nhưng chưa cộng điểm** (ví dụ "Thương Hải Minh Nguyệt", "Đẳng cấp hiện thời: 0") cũng không gắn xuống ô được. Trước [KNHOTRO] thì gắn được. Đúng nghĩa "chưa dùng được", nhưng là thay đổi ngoài câu chữ của chủ — nếu chủ muốn cho gắn sẵn kỹ năng cấp 0 thì phải thêm một đường hỏi Core mới, hai bảng kia không tách điều kiện ra được.
