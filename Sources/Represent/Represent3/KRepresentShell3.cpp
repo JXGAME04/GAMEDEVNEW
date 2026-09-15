@@ -102,6 +102,9 @@ static int Rep3Ini(const char* szKey, int nDef)
 
 // [FX 07/09] bo dem lop ve (in them vao dong thong ke 30 s, roi dat lai 0). Chi luong ve cham.
 unsigned g_uRep3FxTexNull = 0;		// DrawSprite*: texture NULL -> bo qua quad
+#ifdef JX_MOBILE
+int g_nJxONenLog = 0;	// [ONEN 15/09] [Client] Rep3ONenLog = so lan ghep nen con phai ghi chi tiet (tu giam ve 0)
+#endif
 unsigned g_uRep3FxAnhNull = 0;		// DrawImage2D*: GetImage NULL / khung ngoai tam -> break
 #ifdef JX_APPLE	// [IOS-ANHRONG 12/09] tach hai ly do de biet cay mat hinh la do dau
 unsigned g_uJxRongAnh = 0, g_uJxRongKhung = 0, g_uJxRongKhungMax = 0;
@@ -1285,6 +1288,9 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nJxBoKhungGiong   = Rep3Ini("Rep3BoKhungGiong", 1);	// [BKG 11/09] 1 = khung giong het khung vua trinh chieu -> khong trinh chieu; 0 = chi dem [VE-BKG]; -1 = tat han (khong so sanh)
 	g_nJxBoKhungGiongMs = Rep3Ini("Rep3BoKhungGiongMs", 250);	// toi da ms giua hai lan trinh chieu khi khung giong (0 = khong gioi han)
 	if (g_nJxBoKhungGiong > 1) g_nJxBoKhungGiong = 1; if (g_nJxBoKhungGiong < -1) g_nJxBoKhungGiong = -1;
+#ifdef JX_MOBILE
+	{ extern int g_nJxONenLog; g_nJxONenLog = Rep3Ini("Rep3ONenLog", 0); if (g_nJxONenLog < 0) g_nJxONenLog = 0; if (g_nJxONenLog > 64) g_nJxONenLog = 64; }	// [ONEN 15/09]
+#endif
 	g_nJxPsBuffer       = Rep3Ini("Rep3PsBuffer", 1) ? 1 : 0;	// [GOP 11/09] 1 = trang thai tang texture qua storage buffer, chi so theo dinh (hai quad khac ps van gop duoc; bot 800 lan day uniform/khung)
 	if (!g_nJxPalBuffer) g_nJxPsBuffer = 0;	// shader PC khong co buffer nao
 	g_nJxAtlasMang      = Rep3Ini("Rep3AtlasMangGpu", 0) ? 1 : 0;	// [MANG 11/09] MAC DINH 0 sau khi do tren Fold 7 16:22: gop lenh CO giam (doi texture 1043 -> 508, lenh 2001 -> 1222)
@@ -2963,6 +2969,9 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 	LARGE_INTEGER jxNd0, jxNd1, jxNdT0, jxNdF; QueryPerformanceFrequency(&jxNdF); QueryPerformanceCounter(&jxNdT0); const double jxNdK = jxNdF.QuadPart ? 1000.0 / (double)jxNdF.QuadPart : 0.0;
 	s_dJxNenGetMs = 0.0; s_dJxNenRioMs = 0.0; s_dJxNenRtMs = 0.0; s_uJxNenGetLan = 0; s_uJxNenBoLan = 0; s_uJxNenNapLan = 0;
 	const unsigned uJxNdNap0 = (unsigned)m_TextureResMgr.m_nLoadCount;
+	extern int g_nJxONenLog;	// [ONEN 15/09] ghi chi tiet tung o cho N lan ghep nen dau tien
+	const bool bJxONen = (g_nJxONenLog > 0 && uGenre == RU_T_IMAGE && pszImage && pszImage[0]);
+	if (bJxONen) { g_nJxONenLog--; Rep3Log("[ONEN] === bat dau ghep %s: %d anh ===", pszImage, nPrimitiveCount); }
 #endif
 	if(!pPrimitives)
 	{
@@ -3032,6 +3041,13 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 						pTemp->nISPosition, pTemp->nFrame, pTemp->nType);
 #ifdef JX_MOBILE
 					QueryPerformanceCounter(&jxNd1); s_dJxNenGetMs += (double)(jxNd1.QuadPart - jxNd0.QuadPart) * jxNdK; s_uJxNenGetLan++;	// [NENDO 13/09]
+					if (bJxONen)
+					{	// [ONEN 15/09] ghi TRUOC khi bo, de biet DUNG o nao va vi sao
+						if (pSprite == NULL)
+							Rep3Log("[ONEN] o %d/%d tai %d,%d khung %d : %s -> BO GetImage NULL", i, nPrimitiveCount, pTemp->oPosition.nX, pTemp->oPosition.nY, pTemp->nFrame, pTemp->szImage);
+						else if (pTemp->nFrame >= pSprite->m_nFrameNum)
+							Rep3Log("[ONEN] o %d/%d tai %d,%d khung %d : %s -> BO khung %d >= so khung %d", i, nPrimitiveCount, pTemp->oPosition.nX, pTemp->oPosition.nY, pTemp->nFrame, pTemp->szImage, pTemp->nFrame, pSprite->m_nFrameNum);
+					}
 					if (pSprite == NULL || pTemp->nFrame >= pSprite->m_nFrameNum) { s_uJxNenBoLan++; break; }
 #else
 					if (pSprite == NULL || pTemp->nFrame >= pSprite->m_nFrameNum)
@@ -3059,7 +3075,15 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 					case IMAGE_RENDER_STYLE_OPACITY:
 					case IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT:
 #ifdef JX_MOBILE
-						QueryPerformanceCounter(&jxNd0); RIO_CopySprToBufferAlpha(pSprite, pTemp->nFrame, pDestBitmap, nX, nY); QueryPerformanceCounter(&jxNd1); s_dJxNenRioMs += (double)(jxNd1.QuadPart - jxNd0.QuadPart) * jxNdK;	// [NENDO 13/09]
+						QueryPerformanceCounter(&jxNd0);
+						{	// [ONEN 15/09] g_uRep3FxTexNull tang = RIO thoat vi texture rong -> o do DEN ma khong bi dem vao "bo"
+							const unsigned uJxTN0 = g_uRep3FxTexNull;
+							RIO_CopySprToBufferAlpha(pSprite, pTemp->nFrame, pDestBitmap, nX, nY);
+							if (bJxONen)
+								Rep3Log("[ONEN] o %d/%d tai %d,%d khung %d : %s -> %s", i, nPrimitiveCount, pTemp->oPosition.nX, pTemp->oPosition.nY, pTemp->nFrame, pTemp->szImage,
+									(g_uRep3FxTexNull != uJxTN0) ? "BO texture rong" : "VE");
+						}
+						QueryPerformanceCounter(&jxNd1); s_dJxNenRioMs += (double)(jxNd1.QuadPart - jxNd0.QuadPart) * jxNdK;	// [NENDO 13/09]
 #else
 						RIO_CopySprToBufferAlpha(pSprite, pTemp->nFrame, pDestBitmap, nX, nY);
 #endif
