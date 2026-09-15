@@ -102,7 +102,29 @@ python3 android/ky_manifest.py --ky <thư mục dt_v4 đã mount/copy> --khoa ~/
 Lưu ý: PC không tự ý tạo khoá mới, vì đổi khoá = phải sửa khoá công khai trong `ios/JxTaiDuLieu.mm`
 rồi phát hành lại bản iOS.
 
-## 3. 🟡 CẦN ĐO — iOS còn tốn 8,88 ms mỗi khung ở phần NGOÀI vẽ cảnh
+## 3. 🔴 LÀM TRƯỚC MỌI THỨ — XÁC NHẬN BẢN iOS ĐANG DỰNG Ở CẤU HÌNH NÀO
+
+Bên Android thư viện C++ dựng **Release**: `android/gradle-project/app/build.gradle:22` truyền
+`-DCMAKE_BUILD_TYPE=Release`, nhật ký gradle in `buildCMakeRelease[arm64-v8a]` mỗi lần dựng.
+
+Nếu bản iPhone đang là **Debug `-O0`** thì mọi số so sánh hai hệ hôm nay đều vô nghĩa về mặt mã:
+
+| | iPhone | Fold 7 |
+|---|---|---|
+| việc/khung thế giới (mọi khung) | 10,30 ms | 5,37 ms |
+| khung > 20 ms | 38,6 % | 0,0 % |
+
+Phần dư 8,55 ms nằm trong `KRepresentShell3::JxTheGioi` (mở RT, kết thúc RT, blit) — chỗ ghi và đóng
+gói cả lô lệnh vẽ, đúng loại mã mà `-O0` phạt nặng nhất (thường gấp 3–5 lần).
+
+**Việc**: kiểm scheme/cấu hình của bản iOS đang cài trên máy chủ. Nếu Debug thì dựng lại Release rồi
+chơi vài phút, và gửi hai số cho phiên đo nhịp: `the gioi` trong dòng `[PDET]`, và phần dư
+(= `the gioi` − `ban than` − `con`).
+
+Ngưỡng đã chốt với phiên camera: phần dư **dưới ~3 ms** ⇒ đóng hồ sơ, đường RT không có lỗi;
+**trên ~6 ms** ⇒ chỗ tốn là thật, phiên camera sẽ cắm đồng hồ tách "kết thúc RT" khỏi "blit".
+
+## 4. 🟡 CẦN ĐO — iOS còn tốn 8,88 ms mỗi khung ở phần NGOÀI vẽ cảnh
 
 Sau khi bật KHỐI, chỗ lệch còn lại nằm nguyên một chỗ. Trung bình mỗi khung, hai máy ở độ đông tương
 đương (iOS 69 NPC quanh nhân vật, Android 91):
@@ -128,7 +150,7 @@ Bản từ `109142052` trở đi in thêm vào cuối dòng `[PDET]` trong `jx_p
 `con` lớn ⇒ nằm ở các ô con của cửa sổ thế giới. Báo lại số cho phiên đo nhịp để cắt tiếp — mã đó dùng
 chung với Android nên sửa một lần ăn cả hai hệ.
 
-## 4. 🔵 GHI CHÚ — `[CHUGIU]` nên giữ theo SỐ KHUNG thay vì 12 ms
+## 5. 🔵 GHI CHÚ — `[CHUGIU]` nên giữ theo SỐ KHUNG thay vì 12 ms
 
 Đo được: tỉ lệ giữ vị trí chữ iOS **8 %**, Android **23 %**, trong khi cả hai cùng đặt 12 ms. Hạn tính
 theo thời gian thật nên máy nào khung dài hơn 12 ms là luôn trượt — tức nó đang đo "khung có nhanh hơn
