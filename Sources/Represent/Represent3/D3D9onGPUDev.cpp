@@ -132,6 +132,16 @@ static void JxDatHintSwapchain(SDL_Window* pWin, UINT bbW, UINT bbH)
 #endif
 
 #define RG_PAL_ROWS 8192
+#ifdef JX_MOBILE
+// [PALDO 15/09] so sach hang bang mau: bat hai ca lam mot anh DA VE ma RA DEN.
+//   (a) hang cap roi ma lo staging cua khung do bi bo -> hang o lai TOAN 0 vinh vien (m_palPending
+//       da clear truoc khi biet map co thanh cong khong, va m_nPalRow >= 0 nen khong ai cap lai).
+//   (b) hang duoc cap tu mot bang mau .spr toan den (du lieu pak hong).
+static unsigned char s_ucJxPalDaTai[RG_PAL_ROWS];	// 1 = da tai len GPU it nhat mot lan
+static unsigned char s_ucJxPalDen[RG_PAL_ROWS];		// 1 = hang toan mau den
+static unsigned s_uJxPalMatKhung = 0, s_uJxPalMatHang = 0;
+int g_nJxPalDo = 0;	// [Client] Rep3PalDo=1: to moi hang bang mau bang mau sac ro theo chi so hang (thi nghiem phan dinh)
+#endif
 #define JX_PS_MAX 2048	// [GOP 11/09] so to hop trang thai tang texture toi da trong mot khung (chi so 11 bit trong o PALROW sau [KHOI2 11/09];
 						// do that te suot ca phien Tong Kim: 5 muc, tran 0 - nen 2048 van la thua 400 lan)
 
@@ -1758,6 +1768,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 					{
 						SDL_GPUTransferBufferLocation src = { m_pTexXfer, m_jxPalUploads[i].second }; SDL_GPUBufferRegion dst = { m_pJxPalBuf, m_jxPalUploads[i].first * 1024u, 1024u };
 						SDL_UploadToGPUBuffer(cp, &src, &dst, false);
+						{ const int jxR = (int)m_jxPalUploads[i].first; if (jxR >= 0 && jxR < RG_PAL_ROWS) s_ucJxPalDaTai[jxR] = 1; }	// [PALDO 15/09]
 					}
 					m_uUploads += (unsigned)m_jxPalUploads.size();
 					jxK.dChepPalLenh = JxVeMs(uPl0, SDL_GetPerformanceCounter());
@@ -1771,6 +1782,14 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 #endif
 			}
 			else RgLog("map transfer texture (%u B) that bai: %s", (unsigned)m_texStage.size(), SDL_GetError());
+#ifdef JX_MOBILE
+			if (!p && !m_jxPalUploads.empty())
+			{	// [PALDO 15/09] ca lo cua khung bi bo: cac hang bang mau nay KHONG bao gio duoc cap lai
+				s_uJxPalMatKhung++; s_uJxPalMatHang += (unsigned)m_jxPalUploads.size();
+				RgLog("[PALDO] MAT CA LO KHUNG %u: %u hang bang mau + %u lenh tai texture bi bo -> cac anh do se ve ra DEN vinh vien",
+					m_uFrames, (unsigned)m_jxPalUploads.size(), (unsigned)m_texUploads.size());
+			}
+#endif
 		}
 #ifdef JX_MOBILE
 		jxK.uXferKB = m_texXferSize >> 10;
@@ -2077,6 +2096,14 @@ HRESULT CDevGpu::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hD
 		RgLog("khung %u: lenh ve %u, quad %u, tai texture %u, pipeline %u, texture GPU %u (%u MB) | atlas %u trang (%u MB) | bo ban CPU %u texture (%u MB), doc lai %u", m_uFrames, m_uDrawCmds, m_uQuads, m_uUploads, (unsigned)m_pipes.size(), g_uRep3GpuTexCount, (unsigned)(g_uRep3GpuTexBytes >> 20),
 			g_uRep3AtlasPages, (unsigned)(g_uRep3AtlasBytes >> 20), m_uCpuBoSo, (unsigned)(m_uCpuBoBytes >> 20), m_uCpuBoThuLai);	// [GPU 11/09 ATLAS] [GPU 11/09 BOCPU]
 #ifdef JX_MOBILE
+	if (m_uFrames == 1 || (m_uFrames % 1800) == 0)
+	{	// [PALDO 15/09] hang cap roi ma chua tai len GPU = anh se ve ra DEN
+		unsigned uJxCho = 0, uJxDen = 0;
+		for (int i = 0; i < RG_PAL_ROWS; i++) { if (s_ucJxPalDen[i]) uJxDen++; }
+		for (unsigned i = 0; i < g_uRep3PalRows && i < (unsigned)RG_PAL_ROWS; i++) if (!s_ucJxPalDaTai[i]) uJxCho++;
+		RgLog("[PALDO] khung %u: hang bang mau da cap %u | CAP MA CHUA TAI LEN GPU %u | hang TOAN DEN %u | khung mat ca lo %u (mat %u hang) | to mau thu %d",
+			m_uFrames, g_uRep3PalRows, uJxCho, uJxDen, s_uJxPalMatKhung, s_uJxPalMatHang, g_nJxPalDo);
+	}
 	s_uRep3GpuLenhVe = m_uDrawCmds; s_uRep3GpuQuad = m_uQuads;	// [ANDROID 11/09 HUD]
 #endif
 	m_uDrawCmds = m_uQuads = m_uUploads = 0;
@@ -2136,6 +2163,16 @@ int CDevGpu::PalAlloc(const unsigned char* pPal24, int nColors)
 	if (nColors > 256) nColors = 256;
 	for (int i = 0; i < 256; i++)
 		rgb[i] = (i < nColors) ? (0xFF000000u | ((DWORD)pPal24[i * 3 + 0] << 16) | ((DWORD)pPal24[i * 3 + 1] << 8) | (DWORD)pPal24[i * 3 + 2]) : 0xFF000000u;
+#ifdef JX_MOBILE
+	{	// [PALDO 15/09]
+		unsigned uJxKhac = 0;
+		for (int i = 0; i < nColors; i++) if (rgb[i] & 0x00FFFFFFu) uJxKhac++;
+		if (row >= 0 && row < RG_PAL_ROWS) { s_ucJxPalDaTai[row] = 0; s_ucJxPalDen[row] = (uJxKhac == 0) ? 1 : 0; }
+		if (uJxKhac == 0) RgLog("[PALDO] hang %d: bang mau TOAN DEN (%d mau) - moi anh dung hang nay se ve ra DEN", row, nColors);
+		if (g_nJxPalDo)	// thi nghiem phan dinh: hang nao cung thanh mot mau sac ro rieng
+			for (int i = 0; i < 256; i++) rgb[i] = 0xFF000000u | ((DWORD)((row * 53) & 0xFF) << 16) | ((DWORD)((row * 97) & 0xFF) << 8) | (DWORD)((row * 29) & 0xFF);
+	}
+#endif
 	m_palPending.push_back(std::make_pair(row, rgb));
 	g_uRep3PalRows++;
 	Unlock();

@@ -1285,6 +1285,9 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	g_nJxBoKhungGiong   = Rep3Ini("Rep3BoKhungGiong", 1);	// [BKG 11/09] 1 = khung giong het khung vua trinh chieu -> khong trinh chieu; 0 = chi dem [VE-BKG]; -1 = tat han (khong so sanh)
 	g_nJxBoKhungGiongMs = Rep3Ini("Rep3BoKhungGiongMs", 250);	// toi da ms giua hai lan trinh chieu khi khung giong (0 = khong gioi han)
 	if (g_nJxBoKhungGiong > 1) g_nJxBoKhungGiong = 1; if (g_nJxBoKhungGiong < -1) g_nJxBoKhungGiong = -1;
+#ifdef JX_MOBILE
+	{ extern int g_nJxPalDo; g_nJxPalDo = Rep3Ini("Rep3PalDo", 0) ? 1 : 0; }	// [PALDO 15/09] 1 = to hang bang mau sac ro theo chi so (thi nghiem phan dinh den)
+#endif
 	g_nJxPsBuffer       = Rep3Ini("Rep3PsBuffer", 1) ? 1 : 0;	// [GOP 11/09] 1 = trang thai tang texture qua storage buffer, chi so theo dinh (hai quad khac ps van gop duoc; bot 800 lan day uniform/khung)
 	if (!g_nJxPalBuffer) g_nJxPsBuffer = 0;	// shader PC khong co buffer nao
 	g_nJxAtlasMang      = Rep3Ini("Rep3AtlasMangGpu", 0) ? 1 : 0;	// [MANG 11/09] MAC DINH 0 sau khi do tren Fold 7 16:22: gop lenh CO giam (doi texture 1043 -> 508, lenh 2001 -> 1222)
