@@ -434,3 +434,30 @@ và nằm trong bản Release; phần đo `[TGPHA]` là thứ chỉ ra phần d�
 ("gấp 5 lần", "nằm ở chuỗi anh em") đều sinh ra từ việc so mã tối ưu với mã chưa tối ưu. Khi cắt log
 phải LỌC THEO MỐC đổi cấu hình: các phiên iOS 21:21–21:33 là Debug, từ 21:45 mới là Release, trộn vào
 nhau là lặp lại đúng lỗi mẫu đã gỡ ở §10.10.
+
+## §10.11 — Vào map: bỏ đọc dữ liệu chặn đường của bản đồ nhỏ (84–109 ms → 9 ms)
+
+`KScenePlaceMapC::Load` quét **toàn bộ lưới vùng của map** gọi `KRegion::LoadLittleMapData` cho từng vùng.
+Chỉ chạy với map **không có `MapLTRegionIndex`** trong `.wor`, nên map 379 (Chiến trường) tốn còn map 324
+thì không. Đo trên bản Release: `[VAOMAP-MO] map 379` = 85–111 ms, trong đó pha "dữ liệu map" 84–109 ms.
+
+**Dữ liệu đó ghi vào rồi không bao giờ đọc** — tra từng mắt xích, hai phiên soi độc lập:
+
+| Mắt xích | Trạng thái |
+|---|---|
+| ghi vào `m_cLittleMap` | `ScenePlaceMapC.cpp:258–268` |
+| đọc ra: `GetbtBarrier` | `ScenePlaceMapC.cpp:1352, 1357` |
+| gọi `GetbtBarrier`: `KJXPathFinder::LoadMap` | `KJXPathFinder.cpp:185` |
+| gọi `KJXPathFinder::*` | `KCore.cpp:95`, `KJXPathFinder.cpp:20`, `KJXPathFinder.h:324`, `KProtocolProcess.cpp:163/3284`, `CoreShell.cpp:27302/27309/27315`, `ScenePlaceMapC.cpp:1422/1431/1458/1478` — **tất cả nằm trong khối `/* */`** |
+| `KLittleMap::Draw` (có đọc) | **0 nơi gọi** trong cả cây |
+| cờ `SetHaveLoad` → `m_pbyLoadFlag` | chỉ `GetBarrierBuf` (chặn NULL) và `Draw` đọc |
+
+Kết quả máy ảo sau khi bỏ: pha dữ liệu map **84–109 → 9 ms**, cả lần vào map **85–127 → 38 ms**; chụp
+màn hình kiểm bản đồ nhỏ vẫn vẽ đủ ảnh map và chấm đỏ/xanh.
+
+> **BẪY CHO NGƯỜI SAU (đã ghi ngay trong mã):** `KJXPathFinder::Init` và `LoadMap` là mã SỐNG, chỉ mọi
+> LỐI VÀO chúng mới đang bị chú thích. Ai bật lại `g_JXPathFinder` để làm tự tìm đường thì **phải bật lại
+> vòng này cho mobile**, không thì điện thoại nhận mảng chặn đường RỖNG và tìm đường sai một cách im
+> lặng, trong khi bản PC vẫn đúng.
+
+Cách rào: mobile bỏ qua, bản PC giữ nguyên từng dòng trong `#else`; `kiem --pc` ĐẠT.
