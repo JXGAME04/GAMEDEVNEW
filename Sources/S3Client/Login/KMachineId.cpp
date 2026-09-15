@@ -22,6 +22,9 @@
 #include <string.h>
 
 #pragma comment(lib, "iphlpapi.lib")
+/* [MAYID 15/09 PHAN BIEN] _LayMachineGuid dung RegOpenKeyExA/RegQueryValueExA/RegCloseKey. MSBuild mac dinh
+ * co advapi32 nen van lien ket duoc, nhung khai ro de khong phu thuoc ngam dinh. */
+#pragma comment(lib, "advapi32.lib")
 
 #include "KMachineId.h"
 
@@ -485,28 +488,35 @@ static void _TinhMachineId(void)
 	}
 
 	/*
-	 * Tron theo THU TU CO DINH va chi tron nguon nao TIM DUOC.
-	 * Nho vay them mot card mang USB hay cam them o dia khong lam doi ma may.
+	 * [MAYID 15/09 PHAN BIEN] DOI HAN CACH CHON NGUON: truoc day TRON MOI nguon tim duoc.
+	 *
+	 * Chu thich cu o day viet 'them mot card mang USB hay cam them o dia khong lam doi ma may' - DO LA SAI,
+	 * va tac tu phan bien da chung minh bang do that. Tron moi nguon nghia la ma may phu thuoc vao TAP nguon:
+	 * chi can mot nguon XUAT HIEN hay BIEN MAT la ma doi. Cam mot SSD USB, rut no ra, cam day mang USB, chia
+	 * se mang tu dien thoai - deu co the doi ma. Ma doi = may bi coi la may MOI = lach duoc gioi han.
+	 *
+	 * NAY: chon theo THU TU UU TIEN va CHI dung MOT nguon dau tien lay duoc. On dinh hon han, vi ma chi doi
+	 * khi chinh nguon da chon bien mat - ma UUID bo mach thi gan nhu khong bao gio bien mat.
+	 * Uu tien: UUID bo mach (gan voi bo mach chu, ben nhat) > se-ri o dia > MAC.
+	 * Tinh duy nhat khong giam: rieng UUID bo mach da la duy nhat theo tung may.
 	 */
 	if (bCoUuid)
 	{
-		nManh++;
+		nManh = 3;		/* nguon ben nhat */
 		h1 = _Fnv1a64((const unsigned char*)"U", 1, h1);
 		h1 = _Fnv1a64(byUuid, sizeof(byUuid), h1);
 		h2 = _Fnv1a64(byUuid, sizeof(byUuid), h2 ^ 0x9E3779B97F4A7C15ULL);
 	}
-
-	if (bCoSeri)
+	else if (bCoSeri)
 	{
-		nManh++;
+		nManh = 2;
 		h1 = _Fnv1a64((const unsigned char*)"S", 1, h1);
 		h1 = _Fnv1a64((const unsigned char*)szSeri, strlen(szSeri), h1);
 		h2 = _Fnv1a64((const unsigned char*)szSeri, strlen(szSeri), h2 ^ 0xC2B2AE3D27D4EB4FULL);
 	}
-
-	if (bCoMac)
+	else if (bCoMac)
 	{
-		nManh++;
+		nManh = 1;
 		h1 = _Fnv1a64((const unsigned char*)"M", 1, h1);
 		h1 = _Fnv1a64(byMac, sizeof(byMac), h1);
 		h2 = _Fnv1a64(byMac, sizeof(byMac), h2 ^ 0x165667B19E3779F9ULL);
@@ -544,14 +554,17 @@ static void _TinhMachineId(void)
 		}
 	}
 
-	chHang = (nManh >= 2) ? 'A' : ((nManh == 1) ? 'B' : 'C');
+	/* Hang theo DO BEN cua nguon da chon: 3 = UUID bo mach (A), 2 = o dia, 1 = MAC (deu B), 0 = du phong (C). */
+	chHang = (nManh >= 3) ? 'A' : ((nManh >= 1) ? 'B' : 'C');
 
 	::_snprintf(s_szMachineId, sizeof(s_szMachineId) - 1, "%c%016I64X%016I64X", chHang, h1, h2);
 	s_szMachineId[sizeof(s_szMachineId) - 1] = 0;
 
 	::_snprintf(szChiTiet, sizeof(szChiTiet) - 1,
-		"hang=%c nguon_manh=%d uuid=%d seri=%d mac=%d",
-		chHang, nManh, bCoUuid ? 1 : 0, bCoSeri ? 1 : 0, bCoMac ? 1 : 0);
+		"hang=%c nguon_dung=%s (co: uuid=%d seri=%d mac=%d)",
+		chHang,
+		(nManh == 3) ? "uuid-bo-mach" : ((nManh == 2) ? "seri-o-dia" : ((nManh == 1) ? "mac" : "du-phong")),
+		bCoUuid ? 1 : 0, bCoSeri ? 1 : 0, bCoMac ? 1 : 0);
 	szChiTiet[sizeof(szChiTiet) - 1] = 0;
 
 	_GhiChanDoan(s_szMachineId, szChiTiet);

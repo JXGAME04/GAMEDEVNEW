@@ -481,8 +481,21 @@ BOOL CFriendMgr::PlayerAddFriend(const std::_tstring& someone, const std::_tstri
 
 	AUTOLOCKWRITE(m_lockFriend);
 
-	PLAYERINFO& rSrcPlayerInfo = m_mapPlayers[someone];
-	assert(rSrcPlayerInfo.loaded);
+	/*
+	 * [MAYID 15/09] Truoc day: `m_mapPlayers[someone]` roi `assert(loaded)`.
+	 * Toan tu [] TU TAO mot muc rong voi loaded = FALSE neu nguoi do chua duoc nap, nen dong assert ngay sau
+	 * do BAO LOI - chu game da gap hop thoai 'Assertion failed: rSrcPlayerInfo.loaded' luc 00:2x ngay 15/09.
+	 * NANG HON CA HOP THOAI: ban Release khong co assert nen no di TIEP voi danh sach ban RONG, roi
+	 * _StoreSomeone ghi danh sach rong do XUONG CSDL => MAT SACH danh sach ban that cua nguoi ay.
+	 * Nay nap dang hoang bang _LoadSomeone (dung cach SomeoneLogin van lam, dang giu cung khoa m_lockFriend
+	 * nen goi o day an toan); nap khong duoc thi TRA VE, khong dung, khong ghi de.
+	 */
+	PLAYERSMAP::iterator itSrc = _LoadSomeone(someone);
+
+	if (itSrc == m_mapPlayers.end() || !itSrc->second.loaded)
+		return FALSE;
+
+	PLAYERINFO& rSrcPlayerInfo = itSrc->second;
 	FRIENDINFO& rSrcInfo = rSrcPlayerInfo.friends[dst];
 	rSrcInfo.cheating = false;
 
@@ -1226,9 +1239,21 @@ BOOL CFriendMgr::PlayerAssociate(const std::_tstring& someone, const std::_tstri
 {
 	AUTOLOCKWRITE(m_lockFriend);
 
+	/*
+	 * [MAYID 15/09] Truoc day: `m_mapPlayers[someone]` roi `assert(loaded)`.
+	 * Toan tu [] TU TAO mot muc rong voi loaded = FALSE neu nguoi do chua duoc nap, nen dong assert ngay sau
+	 * do BAO LOI - chu game da gap hop thoai 'Assertion failed: rSrcPlayerInfo.loaded' luc 00:2x ngay 15/09.
+	 * NANG HON CA HOP THOAI: ban Release khong co assert nen no di TIEP voi danh sach ban RONG, roi
+	 * _StoreSomeone ghi danh sach rong do XUONG CSDL => MAT SACH danh sach ban that cua nguoi ay.
+	 * Nay nap dang hoang bang _LoadSomeone (dung cach SomeoneLogin van lam, dang giu cung khoa m_lockFriend
+	 * nen goi o day an toan); nap khong duoc thi TRA VE, khong dung, khong ghi de.
+	 */
+	PLAYERSMAP::iterator itSrc = _LoadSomeone(someone);
 
-	PLAYERINFO& rSrcPlayerInfo = m_mapPlayers[someone];
-	assert(rSrcPlayerInfo.loaded);
+	if (itSrc == m_mapPlayers.end() || !itSrc->second.loaded)
+		return FALSE;
+
+	PLAYERINFO& rSrcPlayerInfo = itSrc->second;
 	FRIENDINFO& rSrcInfo = rSrcPlayerInfo.friends[dst];
 	rSrcInfo.cheating = false;
 	rSrcInfo.group = group;

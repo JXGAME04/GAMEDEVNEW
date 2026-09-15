@@ -1870,6 +1870,20 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				 * tat tinh nang quen dung xua nay la dat MaxLogin=1000 thi thanh nguong 232. Nay so bang int va
 				 * chan gia tri vo nghia: MaxLogin <= 0 = TAT.
 				 */
+				/*
+				 * [MAYID 15/09] Che do quan sat: ghi MOI lan tra loi, ke ca khi CHUA vuot nguong. Day moi la so
+				 * lieu de chon nguong (bao nhieu ma may thuong chay 1, 2, 3... phien). Chi bat khi ChiQuanSat=1
+				 * nen khi da cuong che that thi khong con on log.
+				 */
+				if (pLogin && gs_nChiQuanSat)
+				{
+					pLogin->m_szName[sizeof(pLogin->m_szName) - 1] = 0;
+					std::ostringstream oss;
+					oss << "[MAYID-DEM] mamay [" << pLogin->m_szName << "] dang co "
+						<< (int)pLogin->num_login << " phien (nguong " << m_MaxLogin << ")" << endl;
+					GameServerLog::Instance().WriteAndConsole(oss.str());
+				}
+
 				if (pLogin && m_MaxLogin > 0 && (int)pLogin->num_login >= m_MaxLogin) //#limit account 
 				{
 					DWORD nIdx = pLogin->m_dwTongNameID;
@@ -4142,6 +4156,18 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 					GameServerLog::Instance().WriteAndConsole(oss.str());
 				}
 			}
+		}
+
+		/*
+		 * [MAYID 15/09] Ghi MOT DONG cho MOI lan dang nhap. Che do chi quan sat ma chi ghi khi VUOT nguong thi
+		 * khong the chon duoc nguong, vi khong biet phan bo binh thuong ra sao. Dong nay cung la cach duy nhat
+		 * de xac nhan ma may cua client CO toi duoc may chu (hang o ky tu dau: A tot nhat, C la dang ngo).
+		 */
+		{
+			std::ostringstream oss;
+			oss << "[MAYID] dang nhap: mamay [" << szHwID << "] hang " << szHwID[0]
+				<< " IP " << (ip.empty() ? "?" : ip.c_str()) << " khe " << lnID << endl;
+			GameServerLog::Instance().WriteAndConsole(oss.str());
 		}
 
 		int nIdx = m_pCoreServerShell->AttachPlayer(lnID, &pLL->guid, szHwID);
