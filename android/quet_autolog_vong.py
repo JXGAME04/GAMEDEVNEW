@@ -118,10 +118,26 @@ def cho_trong_vong(s):
     return sach, trong
 
 
+def tim_goc(goc):
+    """Nhan ca hai cach go: <thu muc chua Sources/> hay chinh thu muc Sources/.
+
+    Phai chon theo Core/Src chu KHONG theo ten: kho nay co that mot thu muc Sources/Sources rong,
+    nen "python ... Sources" tung lang le quet nham cho rong do va bao 0 (phien WAuto dinh 14/09).
+    """
+    for thu in (os.path.join(goc, 'Sources'), goc):
+        if os.path.isdir(os.path.join(thu, 'Core', 'Src')):
+            return thu
+    raise SystemExit(
+        'khong tim ra cay nguon tu %r.\n'
+        'Da thu: %s va %s - khong cho nao co Core/Src.\n'
+        'Tham so phai la thu muc CHUA Sources/ (vi du: python android/quet_autolog_vong.py .)\n'
+        'hoac chinh thu muc Sources/.'
+        % (goc, os.path.join(goc, 'Sources'), goc))
+
+
 def main():
-    goc_src = os.path.join(GOC, 'Sources')
-    if not os.path.isdir(goc_src):
-        raise SystemExit('khong thay %s' % goc_src)
+    goc_src = tim_goc(GOC)
+    print('quet: %s' % os.path.abspath(goc_src))   # luon in goc, de so 0 khong bao gio mo ho
     dinh = []
     tep_co = 0
     for root, dirs, files in os.walk(goc_src):
