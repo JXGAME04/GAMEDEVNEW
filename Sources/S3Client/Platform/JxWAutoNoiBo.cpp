@@ -409,6 +409,13 @@ void JxWAuto_NhipVongLap()
 	// [WAUTO 12/09] Dien thoai khong co ban phim: Wnd_IsPKKeyDown() luon 0 nen bUseFKey = 1 la may PK KHONG BAO GIO chay
 	// (S3Client.cpp:1182). Tep .dat chep tu ban PC co the dang bat -> ep 0 o day, o tick da bo khoi giao dien mobile.
 	pGL->setting.bUseFKey = 0;
+#ifdef JX_IOS
+	// [IOS-NEN 15/09] Ba co tu thoat nay tren iOS chi lam auto dung im lang (app khong con thoat duoc), va giao dien
+	// mobile khong co cho bat chung - chi tep .dat chep tu ban PC moi bat, dung ly do da xoa bUseFKey o tren.
+	pGL->setting.bOutWhenDis = 0;
+	pGL->setting.bOutTimer = 0;
+	pGL->setting.bOutWhenTP = 0;
+#endif
 	if (bNhat)
 	{
 		// [ANDROID 11/09 WAUTO B2 i] dot nhat ngay: KHONG danh (bFight / bOnPK = 0), NHAT + chay toi (bFollowPick), tam nhat >= 800

@@ -190,7 +190,9 @@ bool GetFileTimeVersionString(const char* pszFile, char* pszVersionString, int n
 
 void UiPostQuitMsg()
 {
+#ifndef JX_IOS	// [IOS-THOAT 15/09] chan chung: iOS khong dat co chet cho giao dien.
 	s_UiLiveSeed = UI_LIVING_S_DEAD;
+#endif
 }
 
 bool UiIsAlreadyQuit()
@@ -268,6 +270,23 @@ int	UiInit()
 	return true;
 }
 
+#ifdef JX_MOBILE
+// [MOBILE-NEN 15/09] Dien thoai: nguoi choi vuot tat app thi UiExit() khong chay, cau hinh giao dien mat.
+// Tren iOS con chac chan mat, vi tu 15/09 iOS khong con duong nao goi UiExit() (ios/va_thoat_ios_1509.py).
+// Ham nay duoc goi tu bo theo doi su kien cua SDL luc app sap vao nen.
+// CHI luu cau hinh: KHONG goi CleanTempDataFolder() o day vi dang choi ma don thu muc tam co the xoa nham
+// tep dang dung; viec don tam van de nguyen trong UiExit() cho cac ban khac.
+// PHAI la UI_LIVING_S_INGAME, khong phai "khac DEAD": do la quy uoc san co cua ca UiExit() va nhanh mat
+// ket noi trong UiHeartBeat(). Luu luc dang o man dang nhap / chon nhan vat la nguy hiem, vi
+// SavePrivateConfig() xoa sach roi ghi lai tu cac cua so da bi huy -> co the xoa dung bo cuc can giu.
+void UiLuuKhiVaoNen()
+{
+	if (s_UiLiveSeed != UI_LIVING_S_INGAME)
+		return;
+	g_UiBase.SavePrivateConfig();
+}
+
+#endif
 void	UiExit()
 {
 	if (s_UiLiveSeed == UI_LIVING_S_INGAME)

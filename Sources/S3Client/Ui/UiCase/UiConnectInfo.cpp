@@ -177,7 +177,12 @@ void KUiConnectInfo::OnClickConfirmBtn()
 		break;
 	case CI_NS_EXIT_PROGRAM:
 		Hide();
+#ifdef JX_IOS	// [IOS-THOAT 15/09] khong thoat app; ve man chon may chu nhu nhanh default o duoi.
+		g_LoginLogic.ReturnToIdle();
+		KUiSelServer::OpenWindow();
+#else
         UiPostQuitMsg();
+#endif
 		break;
 	default:
 		//取消正在进行的操作

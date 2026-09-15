@@ -312,8 +312,12 @@ void KUiInit::OnClickButton(KWndButton* pWnd)
 	}
 	else if (pWnd == &m_ExitGame)
 	{
+#ifdef JX_IOS	// [IOS-THOAT 15/09] iOS khong cho app tu dong: giu nut, bam khong lam gi.
+		// KHONG goi CloseWindow() o day - dong cua so ma khong mo lai gi thi man hinh den.
+#else
 		CloseWindow();
 		UiPostQuitMsg();
+#endif
 	}
 }
 
