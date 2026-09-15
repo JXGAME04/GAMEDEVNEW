@@ -104,6 +104,11 @@ void Wnd_Cleanup()
 	s_WndStation.pExclusiveWnd[2] = NULL;
 	s_WndStation.pExclusiveWnd[3] = NULL;
 	s_WndStation.pGameSpaceWnd = NULL;
+#ifdef JX_MOBILE
+#ifdef JX_MOBILE
+	{ extern void* g_pJxWndTheGioi; g_pJxWndTheGioi = NULL; }	// [TGPHA 14/09]
+#endif
+#endif
 
 	s_WndStation.Cursor.Cleanup();
 	s_WndStation.DragInfo.bDragging = false;
@@ -117,7 +122,12 @@ void Wnd_Cleanup()
 // va [PDET] cho thay ca 20 ms do nam gon trong MOT lenh goi Wnd_RenderWindows. Chia nho de biet pha nao.
 // 0 the gioi | 1 neo lai cua so (chi mobile) | 2 lop duoi | 3 lop giua | 4 lop tren.
 double g_dJxPhaVe[5] = { 0, 0, 0, 0, 0 };
-double g_dJxUiMaxMs = 0.0; int g_nJxUiMaxX = 0, g_nJxUiMaxY = 0, g_nJxUiMaxW = 0, g_nJxUiMaxH = 0; const char* g_pszJxUiMaxLop = NULL; const void* g_pJxUiMax = NULL; char g_szJxUiMaxTen[64] = { 0 };	// [UITEN 14/09] ten muc ini (m_szMucIni) de biet BANG nao	// [PDET-UI 14/09] cua so goc ve lau nhat trong khung (WndWindow.cpp ghi, UiShell.cpp in [PDET-UI])
+double g_dJxUiMaxMs = 0.0; int g_nJxUiMaxX = 0, g_nJxUiMaxY = 0, g_nJxUiMaxW = 0, g_nJxUiMaxH = 0; const char* g_pszJxUiMaxLop = NULL; const void* g_pJxUiMax = NULL; char g_szJxUiMaxTen[64] = { 0 };
+// [TGPHA 14/09] tach pha cua so THE GIOI: 0 = ban than (DrawGameSpace + tim muc tieu), 1 = cac o con, 2 = cac o anh em.
+// Do log 14/09: pha the gioi iOS 12,92 ms / Android 5,51 ms trong khi KScenePlaceC::Paint hai ben nhu nhau (4,04 / 3,73)
+// -> phan lech nam NGOAI canh va chua duoc do bao gio.
+double g_dJxTgPha[3] = { 0.0, 0.0, 0.0 };
+void*  g_pJxWndTheGioi = NULL;	// [UITEN 14/09] ten muc ini (m_szMucIni) de biet BANG nao	// [PDET-UI 14/09] cua so goc ve lau nhat trong khung (WndWindow.cpp ghi, UiShell.cpp in [PDET-UI])
 extern int g_nPaintLog;
 static double JxPhaMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 {
@@ -279,6 +289,11 @@ KWndWindow* Wnd_GetLayerRoot(int nLayer)
 void Wnd_SetGameSpaceWnd(KWndWindow* pWnd)
 {
 	s_WndStation.pGameSpaceWnd = pWnd;
+#ifdef JX_MOBILE
+#ifdef JX_MOBILE
+	{ extern void* g_pJxWndTheGioi; g_pJxWndTheGioi = (void*)pWnd; }	// [TGPHA 14/09]
+#endif
+#endif
 }
 
 void Wnd_GameSpaceHandleInput(bool bHandle)
