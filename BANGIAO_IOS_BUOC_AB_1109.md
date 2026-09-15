@@ -1,37 +1,81 @@
-# ⚠ VIỆC CẦN LÀM TRÊN MAC (14/09 20:2x) — iOS TỤT FPS LÚC ĐÔNG VÌ THIẾU SHADER KHỐI METAL
+# ⚠ VIỆC CHO PHIÊN iOS (cập nhật 21:1x 14/09) — ĐỌC MỤC NÀY TRƯỚC
 
-Chủ 20:2x: *"FPS của iOS giảm mạnh khi đông"*. Đo từ log iPhone gửi về PC qua LAN
-(`D:\jx1_android_log\ios_iPhone18_2_0914_200358`) — gốc KHÔNG phải Metal chậm, mà là **atlas KHỐI đang TẮT
-trên iOS**. Dòng đầu tiên của log nói thẳng:
+> Ghi bởi phiên đo nhịp chạy trên máy Windows (`bangiao-donhip-mobile-context-deaeff-60`).
+> Máy Windows **không có Mac và không có khoá ký**, nên ba việc dưới đây phải làm bên Mac.
+> Log của cả hai máy tự gửi về PC (`D:\jx1_android_log\<máy>_<phiên>`); đọc bằng một lệnh:
+> `python android/phan_tich_log_fold7.py <thư mục phiên>`.
 
-```
-[KHOI] Rep3AtlasKhoi=1 nhung Rep3ShadersGPU_msl.h chua co bien the khoi (chay ios/sinh_shader_msl.py tren Mac) -> TU TAT
-```
+## 1. ✅ XONG — shader KHỐI Metal (giữ lại để khỏi làm lại)
 
-So cùng mức đông, Android (bản 109141951) với iOS:
+`python3 ios/sinh_shader_msl.py` trên Mac đã sinh biến thể KHỐI. Kết quả đo trên chính iPhone 18,2,
+so cùng cảnh trước và sau:
 
-| | Android | iOS |
+| | trước | sau |
 |---|---|---|
-| `atlas khoi=` | 1 (11 khối, 704 MB) | **0** |
-| đổi texture/sampler mỗi khung | 30 (max 37) | **1 558 (max 2 018)** |
-| quad không gộp do texture0 | 45 197 | **2 314 021** |
-| lệnh vẽ / quad mỗi khung | 1 064 / 3 052 | 2 994 / 3 634 |
-| luồng chính | 68–74 % | **99 %** |
-| fps lúc đông | 58–60 | **40** |
+| `atlas khoi=` | 0 (tự tắt) | 7–8 khối |
+| đổi texture/sampler mỗi khung | 1 558 (đỉnh 2 018) | **26** (đỉnh 32) |
+| quad không gộp do texture0 | 2 314 021 | **33 821** |
+| lệnh vẽ / quad mỗi khung | 2 994 / 3 634 | **932** / 2 415 |
+| ghi lệnh | 0,45 ms | **0,08 ms** |
+| việc/khung thế giới | 14,56 ms | **9,56 ms** |
 
-**Ba bước trên Mac:**
+Nếu sau này dòng `[KHOI] ... TU TAT` xuất hiện lại trong log iOS nghĩa là header MSL bị sinh lại thiếu
+biến thể — chạy lại bước trên.
 
-1. `python3 ios/sinh_shader_msl.py` (cần `spirv-cross`). Script sinh lại
-   `Sources/Represent/Represent3/Rep3ShadersGPU_msl.h`; hai dòng stub cuối tệp
-   (`g_Rep3GpuFSPalPsKhoiMsl[] = ""` và `g_nJxMslCoKhoi = 0`) phải biến thành mảng MSL thật + cờ `= 1`.
-2. Dựng lại bản iOS.
-3. Kiểm log mới: dòng `[KHOI]` phải là `khoi atlas moi #1: 2048x2048 x 8 lop ...` chứ không phải `TU TAT`,
-   và `[VE-GOP]` phải có `atlas khoi=1`. Đúng thì "đổi texture/sampler mỗi khung" rơi từ ~1 558 xuống vài chục.
+## 2. 🔴 CẦN LÀM — KÝ MANIFEST, iOS ĐANG KHÔNG NHẬN ĐƯỢC DỮ LIỆU MỚI
 
-Điều kiện đi kèm (`D3D9onGPUDev.cpp` CreateShaders): khối chỉ bật khi `Rep3PalBuffer=1`, `Rep3PsBuffer=1`,
-`Rep3AtlasMang=0` — log iOS hiện đã đúng cả ba, nên chỉ còn thiếu shader.
+Máy chủ dữ liệu chạy trên PC Windows, mỗi lần chép bản mới nó sinh lại `manifest.txt` **nhưng không ký
+được** (khoá riêng nằm ở `~/.jx1_khoa/jx1_manifest_ec.key` trên Mac, cố ý để ngoài kho mã nguồn).
+`JxTaiDuLieu.mm` có khoá công khai nhúng sẵn và **từ chối kho không có chữ ký hợp lệ**, nên iPhone hiện
+chỉ chạy dữ liệu đã có trong máy: mọi thay đổi `config.ini` hay tệp dữ liệu mới KHÔNG tới được iOS.
 
-Ghi bởi phiên đo nhịp (Windows) — phiên này không có Mac nên không tự chạy được bước 1.
+Kiểm nhanh: `D:\jx1_android_data_dt_v4\manifest.sig` hiện **không tồn tại**.
+
+Cách làm (một trong hai, chủ đã được hỏi và sẽ chọn):
+
+```
+# a) ký từ Mac sau mỗi lần PC chép bản mới (khoá không rời Mac)
+python3 android/ky_manifest.py --ky <thư mục dt_v4 đã mount/copy> --khoa ~/.jx1_khoa/jx1_manifest_ec.key
+
+# b) hoặc đặt khoá trên PC rồi máy chủ tự ký mỗi lần --chi-manifest (biến JX_KHOA_KY đổi được chỗ)
+```
+
+Lưu ý: PC không tự ý tạo khoá mới, vì đổi khoá = phải sửa khoá công khai trong `ios/JxTaiDuLieu.mm`
+rồi phát hành lại bản iOS.
+
+## 3. 🟡 CẦN ĐO — iOS còn tốn 8,88 ms mỗi khung ở phần NGOÀI vẽ cảnh
+
+Sau khi bật KHỐI, chỗ lệch còn lại nằm nguyên một chỗ. Trung bình mỗi khung, hai máy ở độ đông tương
+đương (iOS 69 NPC quanh nhân vật, Android 91):
+
+| pha | iOS | Android |
+|---|---|---|
+| `pGameSpaceWnd->Paint()` (pha "thế giới") | 12,92 ms | 5,51 ms |
+| trong đó `KScenePlaceC::Paint` (vẽ cảnh) | 4,04 ms | 3,73 ms |
+| **phần ngoài cảnh** | **8,88 ms** | **1,78 ms** |
+
+Phần vẽ cảnh hai máy như nhau; toàn bộ khoảng cách nằm ở `KUiGameSpace::PaintWindow` (DrawGameSpace +
+tìm mục tiêu dưới con trỏ) và **các ô con** của cửa sổ thế giới. Đã loại: số quad, số lệnh vẽ, số dòng
+chữ mỗi khung (iOS 2,5 — Android 2,3, bằng nhau), lớp chữ CHUNET.
+
+Bản từ `109142052` trở đi in thêm vào cuối dòng `[PDET]` trong `jx_paint.log`:
+
+```
+| the gioi: ban than X.X, con Y.Y
+```
+
+**Việc cần**: cập nhật iPhone lên bản mới nhất trong dt_v4 (hiện `109142055`), chơi ~5 phút có cả lúc
+đông, rồi đọc dòng `[PDET]` mới. `ban than` lớn ⇒ nằm trong DrawGameSpace/tìm mục tiêu;
+`con` lớn ⇒ nằm ở các ô con của cửa sổ thế giới. Báo lại số cho phiên đo nhịp để cắt tiếp — mã đó dùng
+chung với Android nên sửa một lần ăn cả hai hệ.
+
+## 4. 🔵 GHI CHÚ — `[CHUGIU]` nên giữ theo SỐ KHUNG thay vì 12 ms
+
+Đo được: tỉ lệ giữ vị trí chữ iOS **8 %**, Android **23 %**, trong khi cả hai cùng đặt 12 ms. Hạn tính
+theo thời gian thật nên máy nào khung dài hơn 12 ms là luôn trượt — tức nó đang đo "khung có nhanh hơn
+12 ms không" chứ không đo chữ có đổi chỗ hay không, và chữ trên iOS nhảy nhiều hơn Android. Đổi sang
+giữ 1–2 KHUNG thì hai máy so được với nhau. Mã nằm trong `KRepresentShell3.cpp` (`Rep3ChuGiu`,
+`Rep3ChuGiuMs`) — phần của phiên đo nhịp, ghi ở đây để phiên iOS biết, chưa sửa.
 
 ---
 
