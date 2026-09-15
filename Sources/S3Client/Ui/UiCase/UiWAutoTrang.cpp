@@ -562,6 +562,16 @@ void KUiWAutoTrang::DienChon(const WAUiMuc* p)
 					sz[31] = 0;
 					break;
 				}
+			if (i >= m_nChieu)
+			{	// [WACHON 14/09] da chon nhung chieu do KHONG con trong danh sach cua nhan vat (doi phai, quen chieu,
+					// hay game chua day bang chieu sang): o se hien "#<ma>" - ghi vet de biet la du lieu chu khong phai loi ve.
+				static int s_nBaoChieu = 0;
+				if (s_nBaoChieu < 5)
+				{
+					s_nBaoChieu++;
+					g_DebugLog("[WACHON] %s: ma chieu %d khong co trong %d chieu cua nhan vat", p->szIdc, v, m_nChieu);
+				}
+			}
 		}
 	}
 	else if (p->pLuaChon && p->nLuaChon > 0)
