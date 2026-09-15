@@ -951,8 +951,16 @@ static bool KyNang_CoTrongBang(const KUiSkillData* pBang, int nCo, unsigned int 
 }
 
 //	Nhan vat CHUA CO TEP bo cuc: chup danh sach ky nang danh hien co thanh hang THAT trong tep (O0..O7)
-//	roi khoa lai bang Dung=1 - dung y nhu cai ho nhin thay truoc day, chi khac la tu day no dung yen.
-//	Nhan vat DA CO TEP thi khong dung: o nao ho chua dat la trong that (chu chon 14/09).
+//	roi khoa lai bang Dung=1. Nhan vat DA CO TEP thi khong dung: o nao ho chua dat la trong that (chu chon 14/09).
+//
+//	[KYNANG 14/09 TRONG b] BO QUA muc 0 cua danh sach: muc do la GetCurActiveWeaponSkill() - ky nang danh thuong
+//	suy ra tu LOAI VU KHI dang cam (KNpc.cpp:12599), khong phai ky nang da hoc. No la ky nang GOC (Attrib <= 1,
+//	vi du ma 2 "cong kich vat ly") nen KHONG nam trong GetLeftSkillSortList / GetRightSkillSortList /
+//	GetSkillSortList - ba bang deu loai IsBase. Truoc day o phu 1 lay muc 0 theo danh sach SONG nen luon dung;
+//	dong bang no vao tep thi doi loai vu khi (dao -> kiem) la ma cu khong con o bang nao -> KyNang_DonOChet xoa
+//	o phu 1 sau 4 giay, va KyNang_DungDuoc cua ban [KNHOTRO 14/09] cung khong cho gan lai. O do von chi la ban
+//	sao cua O CHINH (o chinh bam ky nang danh trai that cua Core) nen bo di la dung: o phu 1 lay ky nang da hoc
+//	dau tien.
 static void KyNang_DungMacDinh()
 {
 	int i, nDat = 0;
@@ -961,14 +969,14 @@ static void KyNang_DungMacDinh()
 		return;
 	if (s_nKNCo1 <= 1)
 		return;		// danh sach chua san sang (giua luot chuyen phai co luc chi con ky nang vu khi)
-	for (i = 0; i < KYNANG_SO_PHU && i < s_nKNCo1; i++)
+	for (i = 0; i < KYNANG_SO_PHU && i + 1 < s_nKNCo1; i++)
 	{
 		if (s_KNGan[i].uId || s_nKNTrong[i])
 			continue;	// nguoi choi da tu dat hoac tu go o nay
-		if (s_KNBang[i].uGenre == CGOG_NOTHING || s_KNBang[i].uId == 0)
+		if (s_KNBang[i + 1].uGenre == CGOG_NOTHING || s_KNBang[i + 1].uId == 0)
 			continue;
-		s_KNGan[i].uGenre = s_KNBang[i].uGenre;
-		s_KNGan[i].uId    = s_KNBang[i].uId;
+		s_KNGan[i].uGenre = s_KNBang[i + 1].uGenre;
+		s_KNGan[i].uId    = s_KNBang[i + 1].uId;
 		nDat++;
 	}
 	s_nKNDaDung = 1;
