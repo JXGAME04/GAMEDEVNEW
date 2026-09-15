@@ -442,18 +442,27 @@ nhau là lặp lại đúng lỗi mẫu đã gỡ ở §10.10.
 > máy đúng là đang chạy bản này. Dòng `[PGND-V]` có `bo > 0` (ô nền bị bỏ khi ghép): phiên đó **3/6 dòng**,
 > ba phiên trước 0/53, 0/80, 0/83.
 >
-> **Chỗ tôi kiểm thiếu:** tôi chỉ hỏi "ai ĐỌC dữ liệu chặn đường" (trả lời đúng: không ai), mà không hỏi
-> "vòng đó còn làm gì khác". Nó mở `KPakFile` trên tệp gộp `<map>\v_NNN\NNN_<combined>` của TỪNG vùng —
-> **ảnh ô nền nằm trong chính tệp đó**, chỉ khác mục. Vòng ấy vô tình nạp nóng sẵn dữ liệu vùng cho cả map;
-> bỏ nó thì lần đầu ghép nền phải đọc thật từ bộ nhớ máy. Máy ảo đọc gần như miễn phí nên không lộ, máy
-> thật thì ra đen nền và chớp khi qua ranh vùng.
+> **Nguyên nhân THẬT của đen nền (sửa lại lúc 22:4x, cả hai phiên cùng đọc mã):** `bo` trong dòng
+> `[PGND-V]` chỉ tăng đúng MỘT chỗ (`KRepresentShell3.cpp:3015`), khi `GetImage` trả NULL — mà `GetImage`
+> tra **ảnh SPR theo tên tệp riêng** qua `TextureResMgr`, KHÔNG đụng tệp vùng gộp. Nên `bo > 0` đếm
+> "tra ảnh SPR hỏng", và nó **gỡ tội** cho `[BANDONHO]` chứ không buộc tội.
 >
-> **Bài học:** trước khi bỏ một đoạn mã vì "dữ liệu nó tạo ra không ai đọc", phải hỏi thêm **tác dụng phụ
-> của chính thao tác đó** (mở tệp, nạp nóng, khoá, thứ tự). Và: máy ảo KHÔNG thay được máy thật cho các
-> thay đổi đụng tới đọc đĩa.
+> Danh sách `LoadImage FAIL` của chính phiên 22:23 chỉ ra thủ phạm: **`\system\spr\RegionTileDefault.spr`**
+> — tệp ô nền mặc định mà các tệp vùng tham chiếu nhưng **không tồn tại ở bất kỳ đâu**: không trong 46 pak
+> của cây PC, không trong pak điện thoại, không trong `D:\USVOLAM`, không trong `NHACTAI`. Vùng nào dùng ô
+> đó thì thủng ô ⇒ mảng đen. Đây là lỗ hổng DỮ LIỆU có sẵn từ trước, không phải hồi quy của bản nào.
 >
-> Muốn lại 84–109 ms thì phải làm cách khác: giữ phần nạp nóng, chỉ bỏ phần ghi vào mảng chặn đường —
-> và phải thử trên MÁY THẬT trước khi giao.
+> **Vì sao vẫn gỡ `[BANDONHO]`:** lúc chủ báo lỗi thì chưa truy xong, trả về hành vi đã biết là lựa chọn
+> an toàn. Nay biết nó vô can, nhưng muốn dùng lại thì vẫn phải thử trên MÁY THẬT trước.
+>
+> **Chỗ tôi kiểm thiếu, vẫn đúng và vẫn phải nhớ:** khi bỏ một đoạn mã vì "dữ liệu nó tạo ra không ai đọc",
+> phải hỏi thêm **thao tác đó còn làm gì khác** (mở tệp, nạp nóng, khoá, thứ tự). Vòng bị bỏ CÓ mở tệp vùng
+> gộp mà `KScenePlaceRegionC::Load` đọc lớp nền từ đó, nên nó vẫn có thể ảnh hưởng tới lúc dữ liệu vùng
+> sẵn sàng — chỉ là không giải thích được `bo > 0`.
+>
+> **Bài học thứ hai, mới:** khi đọc một bộ đếm trong log, **mở đúng dòng mã tăng bộ đếm đó** xem nó đếm
+> cái gì, đừng suy từ tên. Hôm nay cả hai phiên suýt kết luận sai vì `bo` nghe như "bỏ ô nền" nhưng thật
+> ra là "tra ảnh SPR hỏng".
 
 ### Ghi lại nội dung cũ (để hiểu vì sao từng làm)
 
