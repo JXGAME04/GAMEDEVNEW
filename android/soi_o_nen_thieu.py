@@ -13,6 +13,15 @@ Bo cuc da doc tu ma nguon:
 Dung:
   python android\soi_o_nen_thieu.py --map 78 93 379           # so hieu trong settings\MapList.ini
   python android\soi_o_nen_thieu.py --map 78 --du-lieu D:\jx1_android_data_dt_v4
+
+DIEM MU - PHAI BIET TRUOC KHI LAY KET QUA LAM BANG CHUNG (phien camera soi cheo 23:2x 14/09):
+  Cong cu nay chi tra loi "TEN co trong pak / co tep roi khong". Mac du dong 3035 bo o khi
+  GetImage NULL HOAC nFrame >= m_nFrameNum, o day khong doc duoc so khung cua SPR nen-THEO-KHUNG
+  (co nen 0x11 = TYPE_FRAME | TYPE_UCL, ZSPRPackFile.h:92-94) vi bo giai nen ca-tep khong mo duoc.
+  Trong map 78 co it nhat mot o nhu vay: \游戏资源\室外地表\大型拼接图素\大草原_大碧波.spr.
+  Dung kieu hong cua loi chi muc pak 16 bit ([[pak-mobile-chi-muc-16bit]]): SPR nen-theo-khung o muc
+  >= 65 536 mat SACH khung va CHI hong tren dien thoai. Vay neu lai co mang den ma cong cu bao
+  "khong thieu tep nao" thi dung tin voi - phai soi rieng lop tep nay.
 """
 import argparse
 import glob
