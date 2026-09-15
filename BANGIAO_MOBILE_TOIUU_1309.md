@@ -386,3 +386,30 @@ bằng `typeid`, cắt chữ số đầu của tên mã hoá GCC — nếu khôn
 **Việc tiếp theo (chưa làm):** một quãng ĐỐI CHỨNG có điều kiện giống nhau — cùng bản đồ, đứng yên,
 đóng hết cửa sổ, đo một phút trên cả hai máy. Chênh lệch còn nguyên = chi phí nền; co lại = do cửa sổ
 đang mở. Đây là phép duy nhất tách được hai kết luận ở trên.
+
+### §10.10 b — KẾT THÚC HỒ SƠ: iPhone chạy bản DEBUG, không có lỗi mã nào
+
+Phiên `ios_iPhone18_2_0914_214545` (bắt đầu 21:45:45, sau khi phiên iOS dựng lại **Release `-O3`**
+ở commit `41a6ffd3`; 391 giây, 24 821 khung):
+
+| | iOS **Debug** (trước 21:45) | iOS **Release** | Fold 7 (vốn Release) |
+|---|---|---|---|
+| việc/khung thế giới, mọi khung | 10,30 ms | **4,19 ms** | 5,37 ms |
+| khung > 20 ms | 38,6 % | **0,2 %** | 0,0 % |
+| fps theo cửa sổ 30 s | 39–60, nhảy liên tục | **60 phẳng, cả 14 cửa sổ** | 60–61 |
+| phần dư trong `JxTheGioi` | 8,55 ms | **0,87 ms** | |
+
+**Kết luận: không có lỗi hiệu năng nào ở iOS.** Bản iPhone đang cài là Debug `-O0`
+(`cmake --build build/ios-dev`; `xcodebuild -showBuildSettings` cho `GCC_OPTIMIZATION_LEVEL = 0` ở
+`jx1ios`, `Represent3`, `SDL3-static`), trong khi Android luôn dựng thư viện C++ với
+`-DCMAKE_BUILD_TYPE=Release` (`android/gradle-project/app/build.gradle:22`). Dựng Release xong thì iOS
+còn **nhanh hơn** Android và hết hẳn cái đuôi 38,6 %.
+
+Việc đã làm trong ngày vẫn có giá trị: atlas KHỐI Metal là lỗi thật (đổi texture 1 558 → 26 mỗi khung)
+và nằm trong bản Release; phần đo `[TGPHA]` là thứ chỉ ra phần dư nằm ở đâu.
+
+**Bài học, ghi để đừng lặp:** trước khi so CPU giữa hai nền tảng, **kiểm cấu hình dựng của cả hai** —
+`-O0` phạt nặng nhất đúng loại mã ghi/đóng gói lệnh vẽ (3–5 lần). Ba vòng đo và hai kết luận sai
+("gấp 5 lần", "nằm ở chuỗi anh em") đều sinh ra từ việc so mã tối ưu với mã chưa tối ưu. Khi cắt log
+phải LỌC THEO MỐC đổi cấu hình: các phiên iOS 21:21–21:33 là Debug, từ 21:45 mới là Release, trộn vào
+nhau là lặp lại đúng lỗi mẫu đã gỡ ở §10.10.
