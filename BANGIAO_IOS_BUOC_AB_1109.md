@@ -83,6 +83,16 @@ biến thể — chạy lại bước trên.
 
 ## 2. 🔴 CẦN LÀM — KÝ MANIFEST, iOS ĐANG KHÔNG NHẬN ĐƯỢC DỮ LIỆU MỚI
 
+> **Cập nhật 23:1x 14/09 — nay việc này CHẶN một bản vá thật, không còn là việc dọn dẹp.**
+> Đã tìm ra nguyên nhân "mảng đen / chớp màn đen khi đi trong map" mà chủ báo trên cả hai máy:
+> dữ liệu gốc **thiếu** `\system\spr\RegionTileDefault.spr` (ô nền mặc định). Ô nào tham chiếu nó thì
+> `GetImage` trả NULL → `DrawPrimitivesOnImage` bỏ ô → ô giữ màu đen. Tương Dương có vùng **64/64 ô**
+> như vậy. Bản vá là **một tệp dữ liệu 115 KB** đã nằm trong `D:\jx1_android_data_dt_v4` và trong
+> manifest (`system/spr/regiontiledefault.spr`) — **Android nhận ngay, iPhone thì không**, vì
+> `JxTaiDuLieu.mm` từ chối kho chưa ký. Ký xong là iOS hết đen mà không cần dựng lại bản.
+> Chi tiết + công cụ kiểm (`android/soi_o_nen_thieu.py`): `BANGIAO_MOBILE_TOIUU_1309.md` §10.12.
+
+
 Máy chủ dữ liệu chạy trên PC Windows, mỗi lần chép bản mới nó sinh lại `manifest.txt` **nhưng không ký
 được** (khoá riêng nằm ở `~/.jx1_khoa/jx1_manifest_ec.key` trên Mac, cố ý để ngoài kho mã nguồn).
 `JxTaiDuLieu.mm` có khoá công khai nhúng sẵn và **từ chối kho không có chữ ký hợp lệ**, nên iPhone hiện
