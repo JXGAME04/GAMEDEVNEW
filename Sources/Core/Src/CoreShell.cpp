@@ -11183,6 +11183,10 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		if (nMap != TK_MAP_TRAN)
 		{
+			// (14/09) [TK-BOMAY] tra quyen cho auto thuong = auto thuong chay theo toa do tab
+			// 'Di chuyen' (toa do map farm) => nhan vat co the chay vao goc ban do. Ghi lai MOI
+			// lan tra quyen sau tran de lan sau truy duoc ngay bang mot dong log.
+			AUTOLOG("[TK-BOMAY] TKP_FIGHT: dang o map %d (khong phai 379, khong phai 324) - tra may cho auto thuong", nMap);
 			ea.nTKPhase = TKP_DONE;
 			ea.nTKHold = 0;
 			return 0;
@@ -11345,17 +11349,35 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.nTKTry = 0;	// (14/09) PHAI dat lai: buoc tim Xa Phu ben duoi dem CHUNG bien nay
 				return 1;
 			}
-			int nTrong = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
-			if (nTrong < 8)
+			// (14/09) HOI TAY TRUOC, KHONG phu thuoc con bao nhieu o trong.
+			// GOC LOI chu game bao 14/09 "xong tong kim hay cam binh mau len tren chuot":
+			// DT_ClickItem(pos_equiproom, j, i) o duoi la lenh NHAC BINH LEN TAY (down == up
+			// cung mot o) - nhac xong thi O DO TRONG RA, nen nhip sau CalcFreeItemCellCount
+			// vua du 8 va dieu kien (nTrong < 8) thanh SAI => ca nhanh kiem TAY ben trong bi
+			// bo qua, buoc ket thuc voi BINH CON NAM TREN CHUOT. Luon xay ra o lan nhac CUOI
+			// CUNG, tuc gan nhu moi tran. (nTKMuaMau mac dinh = 0 = 'mua nhanh (day tui)' nen
+			// khoi nay chay that - log 14/09 co dong 'Da mua nhanh thuoc o Quan Y'.)
 			{
-				int nHand = Player[nPlayerIdx].m_ItemList.Hand();
+				const int nHand = Player[nPlayerIdx].m_ItemList.Hand();
 				if (nHand > 0)
 				{
 					if (TK_LaBinhMua(nHand))
+					{
+						AUTOLOG("[TK-DONTUI] vut binh dang cam tren tay - o trong=%d", Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment));
 						Player[nPlayerIdx].ThrowAwayItem();
-					ea.uTKNext = uCurTime + 400;
+						ea.uTKNext = uCurTime + 400;
+						return 1;
+					}
+					// tren tay la mon KHAC (nguoi choi tu cam) - khong dong vao, bo qua buoc nay
+					AUTOLOG_EVERY(5000, "[TK-DONTUI] tren tay dang cam mon khac - bo qua buoc don tui");
+					ea.nTKStep = 2;
+					ea.nTKTry = 0;
 					return 1;
 				}
+			}
+			int nTrong = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
+			if (nTrong < 8)
+			{
 				for (int i = 0; i < EQUIPMENT_ROOM_HEIGHT; ++i)
 					for (int j = 0; j < EQUIPMENT_ROOM_WIDTH; ++j)
 					{
@@ -11542,6 +11564,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					return 1;
 				}
 				TK_Msg(nPlayerIdx, "<color=Cyan>§· vÒ tíi thµnh ®· chän - tr¶ m¸y l¹i cho auto cò.");
+				AUTOLOG("[TK-BOMAY] pha=%d map=%d - tra may cho auto thuong", ea.nTKPhase, nMap);
 				ea.nTKPhase = TKP_DONE;
 				ea.nTKHold = 0;
 				return 0;
@@ -11553,6 +11576,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				ea.uLDHopT = 0;
 				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng ®i tíi ®­îc thµnh ®· chän (hÕt ThÇn Hµnh Phï / kh«ng thÊy Xa Phu) - tr¶ m¸y t¹i chç.");
+				AUTOLOG("[TK-BOMAY] pha=%d map=%d - tra may cho auto thuong", ea.nTKPhase, nMap);
 				ea.nTKPhase = TKP_DONE;
 				ea.nTKHold = 0;
 				return 0;
@@ -11604,6 +11628,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (nBest < 0)
 			{
 				TK_Msg(nPlayerIdx, "<color=Yellow>Thµnh nµy kh«ng cã r­¬ng trong b¶ng - tr¶ m¸y l¹i cho auto cò.");
+				AUTOLOG("[TK-BOMAY] pha=%d map=%d - tra may cho auto thuong", ea.nTKPhase, nMap);
 				ea.nTKPhase = TKP_DONE;
 				ea.nTKHold = 0;
 				return 0;
@@ -11621,6 +11646,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					if (++ea.nTKTry > 900)		// ~6 phut van chua toi thi thoi
 					{
 						TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng ®i tíi ®­îc r­¬ng ®· chän - tr¶ m¸y l¹i cho auto cò.");
+						AUTOLOG("[TK-BOMAY] pha=%d map=%d - tra may cho auto thuong", ea.nTKPhase, nMap);
 						ea.nTKPhase = TKP_DONE;
 						ea.nTKHold = 0;
 						return 0;
