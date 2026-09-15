@@ -1,4 +1,14 @@
 # -*- coding: latin-1 -*-
+r"""!! DUNG CHAY LAI - BAN VA NAY SAI, DA GO 00:1x 15/09 !!
+
+Chu chot: "dang ra map do ben ngoai map la mau den khong phai mau".
+Ben ngoai vung choi PHAI DEN. Tep \system\spr\RegionTileDefault.spr khong ton tai la CO Y:
+trinh soan ban do dien o mac dinh cho phan ngoai ban do, engine tra khong thay nen bo o, ra mau den
+- dung thiet ke. Phien camera da ghi dung dieu nay trong tri nho du an va toi da ghi de len ket luan dung do.
+
+Giu tep nay CHI de ghi nho cach lam va cach sai. Chi tiet: BANGIAO_MOBILE_TOIUU_1309.md muc 10.12.
+"""
+# ----- noi dung cu, KHONG CHAY -----
 r"""[NENNGOAI 14/09] Vung KHONG CO du lieu nen -> to o nen mac dinh thay vi de DEN.
 
 TRIEU CHUNG (chu gui anh chup 23:4x, ban do Tien Cuc dong): mot mang vuong DEN o goc tren-trai

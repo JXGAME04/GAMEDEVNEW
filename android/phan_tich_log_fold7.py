@@ -31,11 +31,11 @@ GOC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 THU_NHAT_KY = r"D:\jx1_android_log"
 HOP_MAC_DINH = (0, 250, 700, 560)
 # cac tep .spr thieu tren CA cay PC -> khong phai loi dong goi dien thoai (14/09)
-# [ONENDEN 14/09] regiontiledefault.spr DA BI BO KHOI danh sach nay. No tung nam day voi ly do
-# "thieu san tren cay PC nen vo hai" - chinh vi the moi bao cao deu giau no di, trong khi no la
-# nguyen nhan THAT cua mang den (o nen mac dinh, xem BANGIAO_MOBILE_TOIUU_1309.md muc 10.12).
-# Da va bang tep roi trong du lieu; neu ten nay HIEN LAI o muc 9 nghia la may CHUA nhan duoc ban va.
-BO_QUA_HONG = ("minimap.spr",)
+# [ONENDEN 15/09] regiontiledefault.spr VE LAI danh sach bo qua, va lan nay biet VI SAO:
+# chu chot "ben ngoai map phai la mau den". Tep do khong ton tai la CO Y - trinh soan ban do dien
+# o mac dinh cho phan ngoai vung choi, engine tra khong thay nen bo o, ra den. Dong FAIL cua ten nay
+# la BINH THUONG, khong phai loi, va KHONG duoc "sua" bang cach bu tep (da thu 14/09, sai, da go).
+BO_QUA_HONG = ("regiontiledefault.spr", "minimap.spr")
 
 
 def doc(p):
@@ -294,9 +294,7 @@ def main():
     onen = sum(1 for m2 in re.findall(r"LoadImage FAIL[^:]*: (.+)", rep3)
                if m2.strip().split("\\")[-1].lower() == "regiontiledefault.spr")
     if onen:
-        print("   O NEN MAC DINH van hong %d lan -> may CHUA nhan ban va system/spr/regiontiledefault.spr" % onen)
-    elif dinh < 200:
-        print("   o nen mac dinh: khong hong lan nao (ngan sach con) -> ban va da toi may")
+        print("   o nen mac dinh (ngoai ban do) hong %d lan - BINH THUONG, cho ra mau den la dung" % onen)
     print()
 
 

@@ -491,7 +491,33 @@ màn hình kiểm bản đồ nhỏ vẫn vẽ đủ ảnh map và chấm đỏ/
 
 Cách rào: mobile bỏ qua, bản PC giữ nguyên từng dòng trong `#else`; `kiem --pc` ĐẠT.
 
-## §10.12 — ĐÃ SỬA: mảng đen / chớp màn đen khi đi trong Tương Dương (thiếu ô nền mặc định)
+## §10.12 — ĐÃ GỠ, SAI TỪ GỐC: "thiếu ô nền mặc định" KHÔNG phải lỗi
+
+> **CHỦ CHỐT 00:0x 15/09: *"đáng ra map đó bên ngoài map là màu đen không phải màu"*.**
+> Bên ngoài bản đồ **phải đen**. `\system\spr\RegionTileDefault.spr` không tồn tại là **CỐ Ý**:
+> trình soạn bản đồ điền ô mặc định cho phần ngoài vùng chơi, engine tra không thấy nên bỏ ô, và
+> chỗ đó ra màu đen — đúng như thiết kế. Phiên camera đã ghi đúng điều này trong trí nhớ dự án
+> (*"RegionTileDefault.spr thiếu cả PC, không phải lỗi"*) và **tôi đã ghi đè lên kết luận đúng đó**.
+>
+> Hậu quả: bản vá 10.12 tô 2 958 ô (46,7 % Tiến Cúc động) thành nền đất ô-liu, biến vùng-ngoài-bản-đồ
+> thành một bãi cỏ khổng lồ. Bản vá 10.13 làm nặng thêm: tô nốt các vùng không có tệp.
+> **Cả hai đã gỡ sạch lúc 00:1x 15/09** (tệp rời khỏi `dt_v4` và khỏi lớp ghi đè, mã `[NENNGOAI]`
+> revert, bản 1091500xx). Kịch bản `android/sinh_o_nen_mac_dinh.py` và
+> `android/va_nguon_mobile_1409_u.py` giữ lại **chỉ để ghi nhớ**, KHÔNG được chạy lại.
+>
+> **Sai ở đâu (ghi cho lần sau):** tôi chứng minh được "tệp này không tồn tại ở đâu cả" rồi nhảy thẳng
+> sang "vậy là thiếu, phải bù". Câu chưa hỏi: ***nó vắng mặt có phải là cố ý không?*** Bằng chứng để
+> trả lời đã nằm sẵn trong tay: tệp thiếu ở **cả cây PC** và bản PC chạy như vậy nhiều năm; cái gì
+> hỏng trên cả hai nền suốt nhiều năm mà không ai kêu thì nhiều phần là thiết kế, không phải lỗi.
+> Đây là **lần thứ hai trong một ngày** mắc đúng một kiểu (lần đầu: `[BANDONHO]`, mục 10.11).
+>
+> **Còn lại:** triệu chứng gốc của chủ (*"vào map bị đen màn, di chuyển bị chớp màn đen"*) **vẫn chưa
+> tìm ra nguyên nhân**. Những gì đã loại trừ, có số đo: không phải `[BANDONHO]`; không phải ô nền
+> thiếu tệp; không phải mức nhìn rộng (chủ thử 100% vẫn đen); không phải khung hình (60 fps đều,
+> việc/khung thế giới 2,96 ms); mọi dòng `[PGND-V]` đều `bo 0`.
+
+### Ghi lại nội dung cũ của mục 10.12 (để hiểu vì sao từng làm)
+
 
 Chủ báo hai lần: *"vào game qua map bị đen màn và di chuyển cũng bị chớp màn"*, rồi sau khi gỡ
 `[BANDONHO]` vẫn *"chạy lại bản bạn vừa up vẫn còn tình trạng di chuyển bị chớp màn đen"*. Lần này truy
@@ -567,53 +593,3 @@ Không đụng mã nguồn, không đổi hành vi vẽ, gỡ bỏ chỉ cần x
    "bản mới gây lỗi" là sai vì chủ đã đổi bản đồ.
 3. **Đọc dữ liệu thật, đừng quét byte thô.** Hai lần quét thô trước đó cho kết quả mâu thuẫn vì mục pak
    bị nén UCL; chỉ khi giải nén đúng mới ra danh sách ô nền đúng.
-
-## §10.13 — ĐÃ SỬA (bản 109142352): mảng đen còn lại = vùng KHÔNG CÓ dữ liệu nền
-
-Sau §10.12 chủ vẫn báo *"vẫn còn bị rất nặng"*, và về 100% zoom cũng vẫn đen. Ảnh chụp của chủ
-(Tiến Cúc động) cho thấy **một mảng vuông đen ở góc trên-trái**, đứng yên không hết, nhân vật và
-đá vẫn vẽ đè bình thường.
-
-### Vì sao §10.12 chưa đủ
-
-§10.12 sửa ô nền **thiếu tệp**. Ở Tiến Cúc động chỗ đó là rất lớn: đọc lưới vùng thật từ pak,
-**2 958 / 6 336 ô nền (46,7 %) của map 93 dùng ô mặc định** — tức gần một nửa bản đồ này trước đây
-là đen, và phần nền xanh ô-liu bao quanh hẻm núi trong ảnh chụp chính là bản vá đó đang chạy
-(ảnh thay thế `黄稀.spr`, màu trung bình RGB 86,85,47 — đúng tông trong ảnh).
-
-### Nguyên nhân còn lại
-
-Cụm vùng của map 93 là **x 94..109, y 93..104, rìa răng cưa**: góc trên-trái **không có tệp vùng nào**.
-Chuỗi mã (đọc từng mắt xích):
-
-| bước | chuyện gì xảy ra |
-|---|---|
-| `KScenePlaceRegionC::Load` | mở không được tệp vùng vẫn **đặt `m_Status = REGION_S_STANDBY`** |
-| `KScenePlaceC::AdjustProcessArea` | vùng đó vẫn vào process area, vẫn **được cấp một ảnh nền 512×512** |
-| `PrerenderGround` | `ClearImageData` xoá ảnh đó về **đen** |
-| cùng hàm | `uNumGrunode == 0` nên `if (nNum) JX_NEN_VE(nNum)` **không chạy** |
-| kết quả | ảnh nền giữ nguyên màu đen, vĩnh viễn |
-
-Khớp nhật ký: `[PGND-X]` có ghi *"xoá nền `_*PlaceGround*_#~24~#_` / `#~33~#_`"* nhưng `[PGND-V]`
-**không có dòng nào cho hai ô đó** — đúng là "xoá xong rồi không ghép gì". Và mọi dòng `[PGND-V]`
-đều `bo 0`, tức không ô nào bị bỏ: vấn đề không nằm ở ảnh thiếu nữa.
-
-**Vì sao bản PC không thấy:** khung vẽ PC 800×600, mobile 1040×936 (gấp 2,03 lần diện tích). Mobile
-nhìn xa hơn nửa vùng mỗi bên nên chạm tới rìa dữ liệu bản đồ, PC hiếm khi thấy.
-
-### Cách sửa
-
-`android/va_nguon_mobile_1409_u.py`: vùng **không có lớp nền** thì tô đầy bằng chính ô nền mặc định
-(8×8 ô 64×64 = 512×512), đi qua **đúng đường ghép cũ** (`DrawPrimitivesOnImage`) nên liền mạch với
-vùng bên cạnh, không có đường nối. Rào `#ifdef JX_MOBILE`, `ios/kiem_android_tuongduong.py --pc HEAD`
-= **ĐẠT** (Windows biên dịch y hệt). Tắt bằng `[Client] NenNgoaiBanDo=0`.
-
-Một bẫy đã tránh khi viết: điều kiện phải là `uJxTong == 0` chứ **không** phải `uNumGrunode == 0`.
-Chỉ khi `uJxTong == 0` thì `nJxMaxImg` mới bằng 64; vùng có vật thể mà không có lớp nền (hiếm) sẽ có
-`nJxMaxImg` nhỏ hơn 64 và 64 mục sẽ **tràn mảng**.
-
-### Bài học
-
-Bộ đếm `bo 0` nói "mọi ô ĐƯỢC YÊU CẦU đều vẽ được", **không** nói "vùng có nền". Vùng không yêu cầu
-ô nào thì đếm vẫn đẹp mà màn hình vẫn đen. Khi một bộ đếm về 0 mà triệu chứng còn, phải hỏi *bộ đếm
-này có bao phủ trường hợp đang xảy ra không* trước khi tin nó.
