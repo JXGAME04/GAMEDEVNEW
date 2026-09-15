@@ -4861,6 +4861,8 @@ static int DT_HasPortalInBag(int nPlayerIdx)
 static DWORD g_dwDTKhoePend = 0;	// ID mon KHOE (loai 3) da dat vao hop giao, dang cho ket qua tra
 static DWORD g_dwDTKhoeId = 0;		// ID mon khoe da tra XONG (server hoan lai) - can cat vao ruong
 static int   g_nDTKhoeTry = 0;		// so nhip da thu cat mon khoe
+static int  s_nDTHuyLien = 0;	// (15/09) so lan XAC NHAN HUY lien tiep tren CUNG mot loai nhiem vu
+static int  s_nDTHuyLoai = -1;	// (15/09) loai nhiem vu cua lan xac nhan huy truoc
 static int   g_nDTSellNeed = 8;		// DTP_SELLJUNK: du bao nhieu o trong thi thoi ban
 static int   g_nDTSellMin = 5;		// DTP_SELLJUNK: het rac ma >= so nay thi van lam tiep duoc
 static UINT  g_uDTYieldT = 0;		// lan cuoi nhuong may cho Hau can (DTP_YIELD)
@@ -6347,6 +6349,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			if (pAp->nDTCancelMode == 2)
 			{
+				AUTOLOG("[DT-HUY] thoai HET LUOT - dung 100 manh son Ha Xa Tac (loai=%d)", ea.nDTQType);
 				DT_Answer(nPlayerIdx, idx);
 				ea.nDTStep = DTI_CANCELWAIT;
 				ea.uDTNext = uCurTime + 900;
@@ -6355,6 +6358,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (pAp->nDTCancelMode == 1
 			&& (idx = DT_FindAns(apAns, nAns, DTM_OPT_NORMALCANCEL)) >= 0)
 			{
+				AUTOLOG("[DT-HUY] thoai HET LUOT - van chon huy thuong (loai=%d)", ea.nDTQType);
 				DT_Answer(nPlayerIdx, idx);
 				ea.nDTStep = DTI_CANCELWAIT;
 				ea.uDTNext = uCurTime + 900;
@@ -6367,9 +6371,38 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if ((idx = DT_FindAns(apAns, nAns, DTM_OPT_CANCEL1A)) >= 0
 		|| (idx = DT_FindAns(apAns, nAns, DTM_OPT_CANCEL1B)) >= 0)
 		{
-			// (15/09) dem so lan XAC NHAN HUY lien tiep de lo vong lap huy (chu game 15/09:
-			// 'nhiem vu thu 40 ma huy thi se huy mai khong len map luyen cong').
-			AUTOLOG("[DT-HUY] xac nhan huy - loai=%d buoc=%d, quay lai NPC xin nhiem vu moi", ea.nDTQType, ea.nDTStep);
+			// (15/09 dot 2) CHAN VONG LAP HUY - da bat tan tay bang log dot 1:
+			//   [DT-HUY] loai=5 buoc=3 lap 14 lan lien tiep, chu ky 2,93 giay deu tam tap;
+			//   [DT-STATE] pha=2 (WAITDLG) buoc=3 (DTI_CANCELWAIT) retry=0 -> co thoai MOI
+			//   moi vong, khong phai timeout; [DT-40] = 0 -> KHONG phai chot 40.
+			// Mach that: thoai chinh -> loai dang TAT nen bam CANCELCONF -> Task_CancelConfirm
+			// -> client xac nhan o day -> may chu Task_Cancel KHONG huy duoc (het luot huy, va
+			// khi du 40 thi con bi checkTask_Limit chan thang o seasonnpc.lua:697) -> nhiem vu
+			// VAN NGUYEN cung loai -> ve NPC -> thoai chinh -> LAP VO TAN.
+			// Mach huy la mach DUY NHAT cua may Da Tau khong co bo dem chong lap (cac mach khac
+			// deu co nDTRetry / nDTUnknown / nDTShopTry...). Dem so lan huy LIEN TIEP tren CUNG
+			// mot loai: khac loai la huy that su co tac dung -> dem lai tu dau.
+			if (ea.nDTQType == s_nDTHuyLoai)
+				++s_nDTHuyLien;
+			else
+			{
+				s_nDTHuyLoai = ea.nDTQType;
+				s_nDTHuyLien = 1;
+			}
+			AUTOLOG("[DT-HUY] xac nhan huy - loai=%d buoc=%d lien=%d", ea.nDTQType, ea.nDTStep, s_nDTHuyLien);
+			if (s_nDTHuyLien > 5)
+			{
+				// Huy 6 lan lien ma van dung loai do = huy KHONG CO TAC DUNG. Thoat sach bang
+				// lua chon CUOI cua thoai - ca Task_CancelConfirm lan Task_NormalCancel deu co
+				// "...de ta suy nghi lai..." o cuoi, tro toi Task_Wait() la ham RONG.
+				AUTOLOG("[DT-HUY] huy %d lan lien ma van loai %d - huy KHONG co tac dung, thoat va treo 15 phut", s_nDTHuyLien, ea.nDTQType);
+				s_nDTHuyLien = 0;
+				s_nDTHuyLoai = -1;
+				if (nAns > 0)
+					DT_Answer(nPlayerIdx, nAns - 1);
+				ea.nDTStep = DTI_NONE;
+				return DT_Hold(nPlayerIdx, "<color=Orange>HÕt l­ît hñy nhiÖm vô.", uCurTime, 15 * 60 * 1000);
+			}
 			DT_Answer(nPlayerIdx, idx);
 			ea.nDTStep = DTI_NONE;
 			ea.nDTQType = 0;
@@ -6477,6 +6510,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				int nCanIdx = DT_FindAns(apAns, nAns, DTM_OPT_CANCELCONF);
 				if (pAp->nDTSkipMode == 1 && nCanIdx >= 0)
 				{
+					AUTOLOG("[DT-HUY] loai %d dang TAT trong tab - bam nut huy o thoai chinh", ea.nDTQType);
 					DT_Answer(nPlayerIdx, nCanIdx);
 					ea.nDTStep = DTI_CANCELWAIT;
 					ea.uDTNext = uCurTime + 900;
@@ -6509,6 +6543,9 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return DT_Hold(nPlayerIdx, "<color=Red>Kh«ng thÊy nót hñy trong héi tho¹i.", uCurTime, 10 * 60 * 1000);
 			}
 			// nhiem vu moi -> dong khung thoai (khong can tra loi - nhiem vu da duoc gan)
+			// (15/09) nhan duoc nhiem vu moi = mach huy da thong -> dem lai tu dau
+			s_nDTHuyLien = 0;
+			s_nDTHuyLoai = -1;
 			CoreDataChanged(GDCNI_UI_ACT, 1, 0);
 			ea.nDTPhase = DTP_EXEC;
 			ea.uDTNext = uCurTime + 300;
