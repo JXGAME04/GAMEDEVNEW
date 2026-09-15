@@ -567,3 +567,53 @@ Không đụng mã nguồn, không đổi hành vi vẽ, gỡ bỏ chỉ cần x
    "bản mới gây lỗi" là sai vì chủ đã đổi bản đồ.
 3. **Đọc dữ liệu thật, đừng quét byte thô.** Hai lần quét thô trước đó cho kết quả mâu thuẫn vì mục pak
    bị nén UCL; chỉ khi giải nén đúng mới ra danh sách ô nền đúng.
+
+## §10.13 — ĐÃ SỬA (bản 109142352): mảng đen còn lại = vùng KHÔNG CÓ dữ liệu nền
+
+Sau §10.12 chủ vẫn báo *"vẫn còn bị rất nặng"*, và về 100% zoom cũng vẫn đen. Ảnh chụp của chủ
+(Tiến Cúc động) cho thấy **một mảng vuông đen ở góc trên-trái**, đứng yên không hết, nhân vật và
+đá vẫn vẽ đè bình thường.
+
+### Vì sao §10.12 chưa đủ
+
+§10.12 sửa ô nền **thiếu tệp**. Ở Tiến Cúc động chỗ đó là rất lớn: đọc lưới vùng thật từ pak,
+**2 958 / 6 336 ô nền (46,7 %) của map 93 dùng ô mặc định** — tức gần một nửa bản đồ này trước đây
+là đen, và phần nền xanh ô-liu bao quanh hẻm núi trong ảnh chụp chính là bản vá đó đang chạy
+(ảnh thay thế `黄稀.spr`, màu trung bình RGB 86,85,47 — đúng tông trong ảnh).
+
+### Nguyên nhân còn lại
+
+Cụm vùng của map 93 là **x 94..109, y 93..104, rìa răng cưa**: góc trên-trái **không có tệp vùng nào**.
+Chuỗi mã (đọc từng mắt xích):
+
+| bước | chuyện gì xảy ra |
+|---|---|
+| `KScenePlaceRegionC::Load` | mở không được tệp vùng vẫn **đặt `m_Status = REGION_S_STANDBY`** |
+| `KScenePlaceC::AdjustProcessArea` | vùng đó vẫn vào process area, vẫn **được cấp một ảnh nền 512×512** |
+| `PrerenderGround` | `ClearImageData` xoá ảnh đó về **đen** |
+| cùng hàm | `uNumGrunode == 0` nên `if (nNum) JX_NEN_VE(nNum)` **không chạy** |
+| kết quả | ảnh nền giữ nguyên màu đen, vĩnh viễn |
+
+Khớp nhật ký: `[PGND-X]` có ghi *"xoá nền `_*PlaceGround*_#~24~#_` / `#~33~#_`"* nhưng `[PGND-V]`
+**không có dòng nào cho hai ô đó** — đúng là "xoá xong rồi không ghép gì". Và mọi dòng `[PGND-V]`
+đều `bo 0`, tức không ô nào bị bỏ: vấn đề không nằm ở ảnh thiếu nữa.
+
+**Vì sao bản PC không thấy:** khung vẽ PC 800×600, mobile 1040×936 (gấp 2,03 lần diện tích). Mobile
+nhìn xa hơn nửa vùng mỗi bên nên chạm tới rìa dữ liệu bản đồ, PC hiếm khi thấy.
+
+### Cách sửa
+
+`android/va_nguon_mobile_1409_u.py`: vùng **không có lớp nền** thì tô đầy bằng chính ô nền mặc định
+(8×8 ô 64×64 = 512×512), đi qua **đúng đường ghép cũ** (`DrawPrimitivesOnImage`) nên liền mạch với
+vùng bên cạnh, không có đường nối. Rào `#ifdef JX_MOBILE`, `ios/kiem_android_tuongduong.py --pc HEAD`
+= **ĐẠT** (Windows biên dịch y hệt). Tắt bằng `[Client] NenNgoaiBanDo=0`.
+
+Một bẫy đã tránh khi viết: điều kiện phải là `uJxTong == 0` chứ **không** phải `uNumGrunode == 0`.
+Chỉ khi `uJxTong == 0` thì `nJxMaxImg` mới bằng 64; vùng có vật thể mà không có lớp nền (hiếm) sẽ có
+`nJxMaxImg` nhỏ hơn 64 và 64 mục sẽ **tràn mảng**.
+
+### Bài học
+
+Bộ đếm `bo 0` nói "mọi ô ĐƯỢC YÊU CẦU đều vẽ được", **không** nói "vùng có nền". Vùng không yêu cầu
+ô nào thì đếm vẫn đẹp mà màn hình vẫn đen. Khi một bộ đếm về 0 mà triệu chứng còn, phải hỏi *bộ đếm
+này có bao phủ trường hợp đang xảy ra không* trước khi tin nó.

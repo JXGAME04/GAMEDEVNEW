@@ -228,6 +228,21 @@ void KScenePlaceRegionC::Clear()
 #define JX_NEN_VE(n) g_pRepresent->DrawPrimitivesOnImage((n), &ImgList[0], RU_T_IMAGE, m_pPrerenderGroundImg->szImage, m_pPrerenderGroundImg->uImage, m_pPrerenderGroundImg->nISPosition)
 #endif
 
+#ifdef JX_MOBILE
+// [NENNGOAI 14/09] Vung khong co du lieu nen (ria ngoai luoi ban do) truoc day bi xoa den roi de nguyen.
+// To day bang o nen mac dinh - CHINH tep ma trinh soan ban do dat cho o chua ve, nen mau khop voi
+// phan ria ma chinh ban do da to san. 8x8 o 64x64 phu kin anh nen 512x512 cua mot vung.
+// Tat: [Client] NenNgoaiBanDo=0 trong Config.ini (doc mot lan).
+#define JX_NENNGOAI_CANH 8
+static const char JX_NENNGOAI_TEP[] = "\\system\\spr\\RegionTileDefault.spr";
+static int g_nJxNenNgoai = -1;
+static bool JxNenNgoaiBat()
+{
+	if (g_nJxNenNgoai < 0)
+		g_nJxNenNgoai = GetPrivateProfileIntA("Client", "NenNgoaiBanDo", 1, ".\\Config.ini") ? 1 : 0;
+	return g_nJxNenNgoai != 0;
+}
+#endif
 bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 {
 	if (g_pRepresent == NULL || m_pPrerenderGroundImg == NULL ||
@@ -254,7 +269,8 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 	// KRUImage co szImage[128] + cac truong khac, cho ~180-200 byte moi phan tu: mot vung thuong ~512 nut la
 	// ~100 KB moi lan cap phat; tran 2048 la ~400 KB o truong hop xau nhat, va van thua gap bon lan vung thuong.
 	const unsigned uJxTran = 2048;
-	const unsigned uJxDem = uJxTong ? (uJxTong <= uJxTran ? uJxTong : uJxTran) : 1;
+	// [NENNGOAI 14/09] vung RONG (khong co lop nen): can 8x8 = 64 cho de to o nen mac dinh, khong phai 1.
+	const unsigned uJxDem = uJxTong ? (uJxTong <= uJxTran ? uJxTong : uJxTran) : (unsigned)(JX_NENNGOAI_CANH * JX_NENNGOAI_CANH);
 	std::vector<KRUImage> jxBuf((size_t)uJxDem);
 	KRUImage* const ImgList = &jxBuf[0];
 	const int nJxMaxImg = (int)uJxDem;
@@ -276,6 +292,32 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 	int			nNum = 0;
 	pGi = &ImgList[0];
 
+#ifdef JX_MOBILE
+	// [NENNGOAI 14/09] Vung khong co lop nen: to day o nen mac dinh thay vi de den.
+	// Hai vong duoi chay 0 lan (uNumGrunode = uNumObject = 0), nen 64 muc nay se duoc
+	// ve boi dung mot loi goi JX_NEN_VE(nNum) o cuoi ham - cung duong ghep nhu vung binh thuong.
+	// Dieu kien la uJxTong == 0 chu KHONG phai uNumGrunode == 0: chi luc do nJxMaxImg moi bang 64.
+	// Vung co vat the ma khong co lop nen (hiem) thi nJxMaxImg = so vat the, co the < 64 -> tran mang.
+	if (uJxTong == 0 && JxNenNgoaiBat())
+	{
+		const size_t uJxLen = sizeof(JX_NENNGOAI_TEP) - 1;
+		for (int jy = 0; jy < JX_NENNGOAI_CANH; jy++)
+		{
+			for (int jx = 0; jx < JX_NENNGOAI_CANH; jx++, pGi++, nNum++)
+			{
+				pGi->bRenderStyle = IMAGE_RENDER_STYLE_OPACITY;
+				pGi->nType = ISI_T_SPR;
+				pGi->oPosition.nX = (jx * 2) * CellWidth;
+				pGi->oPosition.nY = (jy * 2) * CellHeight;
+				memcpy(pGi->szImage, JX_NENNGOAI_TEP, uJxLen);
+				pGi->szImage[uJxLen] = 0;
+				pGi->nFrame = 0;
+				pGi->uImage = 0;
+				pGi->nISPosition = IMAGE_IS_POSITION_INIT;
+			}
+		}
+	}
+#endif
 	//--------
 	KSPRCrunode* pGrunode = m_GroundLayerData.pGrunodes;
 	for (nIndex = 0; nIndex < m_GroundLayerData.uNumGrunode; nIndex++)
