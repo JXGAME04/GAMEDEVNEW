@@ -275,3 +275,60 @@ Log 14:47 (109141405, mục 14/09 14:47 trong `PHANTICH_LOG_FOLD7_1309.md`): A �
   Bẫy: `extern void f();` khai báo TRONG thân hàm `extern "C"` bị liên kết C → undefined symbol; khai báo ngoài hàm.
 Giao 15:2x: APK 109141524 + config + `--chi-manifest` (gom cả tệp mới của phiên camera). Kỳ vọng Fold 7: không còn `[KHOI] khoi atlas moi` giữa trận trong ≥ 10 phút,
 `pak ban giao nen` vài chục/30 s, `[MANG-CHAM]` cho tên gói nặng giữa trận, `[PDET-UI]` cho cửa sổ thật. Còn lại (đã giao phiên camera): GPU nghẽn khi zoom + đông → RT nấc thấp.
+
+## §10.9 — Phân tích log Fold 7 phiên 15:40 (60 phút, bản 109141524) + bản đo 109141701
+
+**Tổng thể bản 109141524 trên Fold 7 (Snapdragon SM8750, màn 1968x2184, chạy nấc 60 Hz, backbuffer 1040x936):**
+
+| Chỉ số | Giá trị |
+|---|---|
+| FPS trung bình | 59 (589 khung/10 s, `[SUM]` avg 10-16 ms, max 19-28) |
+| Điện | 1,81 W trung bình (đỉnh 4,31), pin 50 % xuống 38 % trong 64 phút |
+| Nhiệt | 35,1 lên 35,5 do C, mức nhiệt 1 |
+| CPU / GPU | tiến trình 64 % (luồng chính 57 %); GPU 62 % ở 160-222 MHz |
+| Bộ nhớ | RAM riêng 684 MB, texture GPU 561 MB, 11 khối atlas 704 MB, VRAM còn 462 MB |
+| Tải lên GPU | 0 ô qua ảnh đệm, 0 lần tô 0 tốn thời gian, tức [TAI]/[DEM] coi như xong |
+
+**Xếp hạng chỗ đau còn lại:**
+
+| Nguồn | Lần/60 phút | Tổng | Nặng nhất |
+|---|---|---|---|
+| `s2c_syncworld` (vào map) | 15 | 2,8 s | **340 ms** |
+| `s2c_syncnpc` | 14 | 242 ms | 54 ms |
+| Ghép nền đất một vùng (`[PGND-R]`) | 25 | | 70 ms |
+| Khung giật từ 20 ms (`[VE-GIAT]`) | 78 | 2,6 s | 270 ms (khung 1, khởi động) |
+| Cửa sổ giao diện (`[PDET-UI]`) | 4 | | 103 ms |
+
+- Giải mã id gói (enum `s2c_PROTOCOL` trong `Headers/KProtocolDef.h`): 73 = `s2c_syncworld`, 76 = `s2c_syncnpc`,
+  117 = `s2c_syncitem`, 52 = `s2c_notifyplayerlogin`, 224 = `s2c_skillfired`, 148 = `s2c_castskilldirectly`,
+  95 = `s2c_skillcast`, 69 = `s2c_synccurplayerskill`.
+- Dựng lại mốc 340 ms: `[MANG-CHAM] t=413514 msg=73 339.8 ms` rồi `[LOGIC-PHA] logic=345` rồi `[SPIKE] total=385`,
+  ngay sau đó ba vùng nền ghép (12,8 + 17,3 + 7,6 ms) và một khung 40 ms. Gốc: `KProtocolProcess::SyncWorld` gọi
+  thẳng `SubWorld[0].LoadMap(...)` đồng bộ ngay trong lúc xử lý gói.
+- 55 trên 78 khung giật chỉ là trình chiếu chờ đồng bộ màn ở 20-21 ms (lỡ một nhịp), 12 do nạp, 7 do vẽ.
+- Hoãn vẽ: `pak ban giao nen` 6 479 lượt/phiên (dồn 1 532 trong một cửa sổ 30 s lúc vào map), `bo ve` 10 091 lượt.
+  Mỗi lượt trễ một khung; cần chủ xác nhận bằng mắt có thấy NPC/vật hiện trễ lúc vào map không.
+- `system\spr\RegionTileDefault.spr` và bốn đường `Spr\Ui3\...` hỏng nạp CŨNG không có trên cây PC, tức không phải
+  lỗi đóng gói điện thoại, bỏ qua.
+
+**Bản 109141701 (giao 17:06) là bản ĐO trước khi sửa, theo đúng bài học TGNAC:**
+
+| Mã | Việc | Kết quả máy ảo |
+|---|---|---|
+| `[VAOMAP]` | Tám mốc thời gian trong `KSubWorld::LoadMap(nId, nRegion)`, ghi một dòng `jx_paint.log` mỗi lần đổi map từ 30 ms | `map 324: tổng 95 ms = đóng 1 + mở map 43 + ini 38 + vùng giữa 0 + 8 vùng kề 0 + trang trí 12 + nối vùng 0 + lưới đường 2` |
+| `[MAPLIST]` | Pha ini chính là đọc + phân tích lại `settings\MapList.ini` (191 KB, 6 518 dòng) MỖI LẦN đổi map, nay giữ một bản đã phân tích; in kèm `MapList dung lai %d` | đường đọc từ bản giữ chạy đúng (vào map bình thường, 59 fps); mức lợi thấy được từ lần đổi map THỨ HAI trở đi |
+| `[UITEN]` | `[PDET-UI]` in kèm tên mục ini (`m_szMucIni`) của cửa sổ nặng nhất | `muc ini [Main] tai (9,14) 1040x604` |
+
+Chứng minh PC: `kiem_android_tuongduong.py --pc HEAD` = **ĐẠT**. Bẫy: bộ kiểm chỉ hiểu `#ifdef` đơn, viết
+`#if defined(JX_MOBILE) && !defined(_SERVER)` là báo HỎNG; cả hàm `LoadMap` đã nằm trong `#ifndef _SERVER` nên
+rào `#ifdef JX_MOBILE` là đủ.
+
+**Thủ tục mới giữa ba phiên** (chốt 17:0x sau sự cố 16:52 làm rơi bản vá ô kỹ năng khỏi dt_v4 trong khoảng một phút):
+trước khi chép dt_v4 phải ĐỌC CHUỖI THẬT trong .so của chính gói sắp chép, cả hai ABI, rồi dán bảng mốc vào tin nhắn báo.
+Mốc hiện dùng: `libmain.so` "dung bo cuc mac dinh mot lan" + "khong con hoc" + "muc ini [%s]"; `libCoreClient.so`
+"[SOLUONG]" + "[VAOMAP] map %d vung" + "MapList dung lai %d"; `libRepresent3.so` "TheGioiRTNacLoc"; `libSDL3.so`
+`JX_DUNG_LAI_SUBOPTIMAL`. Lý do: `gradle assembleDebug` báo BUILD SUCCESSFUL trong 4-10 giây vẫn có thể là gói cũ.
+
+**Việc tiếp theo (chờ log Fold 7 của 109141701):** đọc `[VAOMAP]` để biết 340 ms chia thế nào trên máy thật rồi mới
+quyết cắt chỗ nào (mở map / trang trí / lưới đường); đọc `[PDET-UI] muc ini [...]` để truy cửa sổ 103 ms; kiểm
+`[MANG-CHAM]` xem `s2c_syncnpc` có giảm không.
