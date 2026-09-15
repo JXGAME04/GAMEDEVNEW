@@ -1,3 +1,62 @@
+# ↩ PHIÊN iOS TRẢ LỜI (21:5x 14/09) — ĐỌC CÙNG MỤC ⚠ BÊN DƯỚI
+
+> Ghi bởi phiên iOS trên máy Mac. Trả lời mục 3 bên dưới và commit `74eff13d` [TGPHA 14/09 b].
+
+## A. Mọi số iOS trước 21:45 14/09 là bản **Debug không tối ưu**
+
+Bản cài qua `cmake --build build/ios-dev` là cấu hình **Debug**. Kiểm bằng
+`xcodebuild -showBuildSettings`: `jx1ios`, `Represent3`, `SDL3-static` đều có `GCC_OPTIMIZATION_LEVEL = 0`
+(bản Release là `3`). APK Android là bản Release, nên phép so iOS–Android đến giờ lệch do cấu hình dựng.
+Phần chịu thiệt nhiều nhất chính là phần ghi lệnh vẽ (Represent3 và SDL_GPU Metal).
+
+**Từ `41a6ffd3` (21:45 14/09), iPhone chạy bản Release `-O3`** (5,9 MB, bản Debug 11 MB). Bản này có
+[TGPHA b/c] (`cua so nang nhat`), atlas khối và WAuto r7. Số đo từ giờ trở đi so thẳng được với Android.
+
+## B. 8,55 ms KHÔNG nằm ở chuỗi anh em — mã không cho phép
+
+`KWndWindow::Paint()` đúng là đi tiếp `m_pNextWnd`, nhưng cửa sổ thế giới **không có anh em**:
+- `g_WndGameSpace` (`UiGame.cpp:38`) chỉ được `Wnd_SetGameSpaceWnd` gắn vào (`UiShell.cpp:242`).
+  Grep toàn `Sources/S3Client` không có `AddBrother`, `AddChild` hay `Wnd_AddWindow` nào đưa nó vào chuỗi.
+  Các chỗ còn lại chỉ truyền nó làm nơi nhận của `KPopupMenu::Popup` (`UiGame.cpp:423,464`).
+- `Wnds.cpp:186` tự ghi: *"Cua so ban do (pGameSpaceWnd) dat rieng, khong nam trong ba chuoi nay."*
+- Vậy `m_pNextWnd` = NULL, và dòng `m_pNextWnd->Paint()` tốn 0 ms.
+
+Pha `the gioi` đo ở `Wnds.cpp:158–181`. Ngoài `pGameSpaceWnd->Paint()` (= `ban than` + `con`), pha này
+chỉ còn các lệnh sau:
+
+```
+JxDoNhip_LayNhip(...)            // lấy nấc fps
+JxUi_TheGioi(0, fps)             // chọn đường
+JxUi_TheGioi(1, 0)               // BẮT ĐẦU vẽ vào RT
+  pGameSpaceWnd->Paint()         // ban than 3,89 + con 0,00
+JxUi_TheGioi(2, 0)               // KẾT THÚC RT + blit ra màn
+```
+
+Cả ba lệnh đều đi vào `KRepresentShell3::JxTheGioi`, và **100 % khung đi đường RT** (22 245 khung, chỉ 62
+khung đi đường cũ). Giả thuyết: lệnh 2 là lúc cả lô lệnh vẽ gom trong `Paint()` mới thật sự được ghi và gửi
+sang Metal. Muốn chốt thì đặt hai đồng hồ quanh `JxUi_TheGioi(1)` và `JxUi_TheGioi(2)` (`Wnds.cpp:167–170`,
+trong rào `JX_MOBILE`). Trường `cua so nang nhat` của [TGPHA b] sẽ cho thấy pha này không có cửa sổ gốc nào nặng.
+
+## C. Số đọc từ log iPhone (bản **Debug**, 3 lần chạy 21:21–21:33, pid 9294/9312/9379)
+
+| | giá trị |
+|---|---|
+| `the gioi` | **12,45 ms** = `ban than` 3,89 (bằng `tong Paint`) + `con` 0,00 + **phần dư 8,57 (69 %)** |
+| khung nặng (`the gioi` ≥ 10, 4 286 dòng) | 12,60 = 3,95 + 0,00 + 8,65 |
+| atlas khối | `atlas khoi=1: 8 khoi (8 lop/khoi, 512 MB)`, đổi texture/sampler mỗi khung TB 21,5, không có `TU TAT` |
+| fps / CPU / RAM / nhiệt | TB 58, thấp nhất 29 (21/89 mẫu dưới 50) / 15 % / tối đa 1,34 GB / tối đa 1 |
+| pin | 65 → 55 % trong khoảng 15 phút |
+| giật | 437 khung (43 do trình chiếu, 10 do nạp); đổi map `s2c_syncworld` tới 247 ms |
+
+Không có báo cáo sập nào từ 21:21. Dòng `[PDET]` chỉ ghi khi cả khung ≥ 20 ms (`UiShell.cpp:394`), nên các
+trung bình trên là của khung chậm.
+
+## D. Việc tiếp
+- Chủ chơi bản Release khoảng 5 phút, có cả lúc đông. Sau đó so `the gioi` và phần dư với bảng C.
+- Ký manifest (mục 2 bên dưới) vẫn chờ chủ chọn cách; phiên iOS chưa làm gì với khoá.
+
+---
+
 # ⚠ VIỆC CHO PHIÊN iOS (cập nhật 21:1x 14/09) — ĐỌC MỤC NÀY TRƯỚC
 
 > Ghi bởi phiên đo nhịp chạy trên máy Windows (`bangiao-donhip-mobile-context-deaeff-60`).
