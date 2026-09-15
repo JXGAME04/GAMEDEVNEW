@@ -956,11 +956,15 @@ static bool KyNang_CoTrongBang(const KUiSkillData* pBang, int nCo, unsigned int 
 //	[KYNANG 14/09 TRONG b] BO QUA muc 0 cua danh sach: muc do la GetCurActiveWeaponSkill() - ky nang danh thuong
 //	suy ra tu LOAI VU KHI dang cam (KNpc.cpp:12599), khong phai ky nang da hoc. No la ky nang GOC (Attrib <= 1,
 //	vi du ma 2 "cong kich vat ly") nen KHONG nam trong GetLeftSkillSortList / GetRightSkillSortList /
-//	GetSkillSortList - ba bang deu loai IsBase. Truoc day o phu 1 lay muc 0 theo danh sach SONG nen luon dung;
-//	dong bang no vao tep thi doi loai vu khi (dao -> kiem) la ma cu khong con o bang nao -> KyNang_DonOChet xoa
-//	o phu 1 sau 4 giay, va KyNang_DungDuoc cua ban [KNHOTRO 14/09] cung khong cho gan lai. O do von chi la ban
-//	sao cua O CHINH (o chinh bam ky nang danh trai that cua Core) nen bo di la dung: o phu 1 lay ky nang da hoc
-//	dau tien.
+//	GetSkillSortList - ba bang deu loai IsBase. No CHI xuat hien o muc 0, va KyNang_CoTrongBang quet tu muc 0
+//	nen chung nao nguoi choi con cam dung loai vu khi do thi o van khop, van dung duoc, van gan lai duoc
+//	(KyNang_DungDuoc cua [KNHOTRO 14/09] cung goi KyNang_CoTrongBang nen no chi chan ma goc cua loai vu khi KHAC).
+//	Truoc day o phu 1 lay muc 0 theo danh sach SONG nen tu doi theo vu khi, khong bao gio le. Dong bang no vao
+//	tep thi DOI LOAI VU KHI (dao -> kiem) la ma cu roi khoi ca ba bang -> KyNang_DonOChet xoa o phu 1 sau 4 giay,
+//	lang le. O do von chi la ban sao cua O CHINH (o chinh bam ky nang danh trai that cua Core) nen bo di la dung:
+//	o phu 1 lay ky nang da hoc dau tien.
+//	Tep bo cuc CU (ghi truoc ban va nay) van co the con ma goc o o phu 1: de nguyen la dung - no chay binh thuong
+//	chung nao vu khi chua doi loai, doi roi thi thanh nut chet va KyNang_DonOChet don di, dung y do tinh nang.
 static void KyNang_DungMacDinh()
 {
 	int i, nDat = 0;
