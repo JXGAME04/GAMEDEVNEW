@@ -206,3 +206,9 @@ set_target_properties(jx1ios PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
     XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER vn.jx1.mobile
     OUTPUT_NAME jx1ios)
+# [IOS-ICON 14/09] Icon ung dung (chu: "toi co icon trong download ban lay lam icon game"): MOT anh 1024x1024 trong
+# ios/Assets.xcassets/AppIcon.appiconset. actool cua Xcode tu sinh cac co va ghi CFBundleIcons vao Info.plist cua goi.
+set(JX_IOS_ASSETS ${CMAKE_CURRENT_SOURCE_DIR}/Assets.xcassets)
+target_sources(jx1ios PRIVATE ${JX_IOS_ASSETS})
+set_source_files_properties(${JX_IOS_ASSETS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+set_target_properties(jx1ios PROPERTIES XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME AppIcon)
