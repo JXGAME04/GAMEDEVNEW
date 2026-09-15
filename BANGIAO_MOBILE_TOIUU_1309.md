@@ -392,18 +392,39 @@ bằng `typeid`, cắt chữ số đầu của tên mã hoá GCC — nếu khôn
 Phiên `ios_iPhone18_2_0914_214545` (bắt đầu 21:45:45, sau khi phiên iOS dựng lại **Release `-O3`**
 ở commit `41a6ffd3`; 391 giây, 24 821 khung):
 
-| | iOS **Debug** (trước 21:45) | iOS **Release** | Fold 7 (vốn Release) |
+**Bảng A — mọi khung** (từ `[TG] viec/khung the gioi TB`, không lọc; iOS Release 24 821 khung,
+iOS Debug 39 046 khung, Fold 7 49 896 khung):
+
+| | iOS **Debug** | iOS **Release** | Fold 7 (vốn Release) |
 |---|---|---|---|
-| việc/khung thế giới, mọi khung | 10,30 ms | **4,19 ms** | 5,37 ms |
+| việc/khung thế giới | 10,30 ms | **4,19 ms** | 5,37 ms |
 | khung > 20 ms | 38,6 % | **0,2 %** | 0,0 % |
 | fps theo cửa sổ 30 s | 39–60, nhảy liên tục | **60 phẳng, cả 14 cửa sổ** | 60–61 |
-| phần dư trong `JxTheGioi` | 8,55 ms | **0,87 ms** | |
+
+**Bảng B — chỉ các khung NẶNG** (từ `[PDET]`, chỉ ghi khi pha vẽ ≥ 20 ms; iOS Release **44 mẫu**,
+iOS Debug **15 064 mẫu**). Hai cột này KHÔNG cùng tập khung, không so trực tiếp được:
+
+| | iOS Debug (15 064 khung xấu nhất) | iOS Release (44 khung xấu nhất) |
+|---|---|---|
+| the gioi | 12,45 ms | 13,68 ms |
+| ban than | 3,90 ms | 12,81 ms |
+| con | 0,00 ms | 0,00 ms |
+| **phần dư trong `JxTheGioi`** | **8,55 ms** | **0,87 ms** |
+
+`ban than` **tăng** ở cột Release không có nghĩa Release chậm hơn: mẫu Release chỉ còn đúng 44 khung tệ
+nhất trong 24 821, còn mẫu Debug là 38,6 % số khung. Điều đáng giá là phần dư 0,87 ms đo được **ngay
+trên 44 khung xấu nhất** — nơi nó dễ lộ nhất — mà vẫn nhỏ.
 
 **Kết luận: không có lỗi hiệu năng nào ở iOS.** Bản iPhone đang cài là Debug `-O0`
 (`cmake --build build/ios-dev`; `xcodebuild -showBuildSettings` cho `GCC_OPTIMIZATION_LEVEL = 0` ở
 `jx1ios`, `Represent3`, `SDL3-static`), trong khi Android luôn dựng thư viện C++ với
 `-DCMAKE_BUILD_TYPE=Release` (`android/gradle-project/app/build.gradle:22`). Dựng Release xong thì iOS
 còn **nhanh hơn** Android và hết hẳn cái đuôi 38,6 %.
+
+**Đừng đổ cho khung chat.** Trong 44 khung nặng đó, cửa sổ gốc nặng nhất là `KUiMsgCentrePad|Main`
+(40/44), NHƯNG `ban than` của cửa sổ thế giới cũng 12,81 ms trong cùng những khung ấy. Hai cửa sổ khác
+nhau cùng chậm một lúc thì nguyên nhân nhiều khả năng là CHUNG (nạp tài nguyên, chờ GPU), không phải
+việc riêng của khung chat. Với 0,2 % số khung thì không đáng đụng tới, nhưng đừng ghi sai nguyên nhân.
 
 Việc đã làm trong ngày vẫn có giá trị: atlas KHỐI Metal là lỗi thật (đổi texture 1 558 → 26 mỗi khung)
 và nằm trong bản Release; phần đo `[TGPHA]` là thứ chỉ ra phần dư nằm ở đâu.
