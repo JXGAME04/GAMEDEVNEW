@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 """Quet ca cay: AUTOLOG_EVERY / AUTOLOG_IDX_EVERY nam TRONG than vong lap.
 
-Ly do: hai macro (Core/Src/KCore.h:252 va :258) goi timeGetTime() NGAY SAU phep thu log-bat, truoc
-phep so ms -> khi log dang bat thi MOI LAN danh gia deu ton mot loi goi dong ho, ke ca khi khong ghi
-dong nao. Tren Android timeGetTime() = SDL_GetTicks() (Engine/Src/KWin32.h:45) nen dat hon PC nhieu.
-Dat trong than vong lap (quet NPC / quet obj / quet o tui) la cach giet fps dien thoai.
+Ly do: AUTOLOG_EVERY / AUTOLOG_IDX_EVERY o Core/Src/KCore.h co HAI nhanh.
+  - Nhanh PC / may chu (#else): goi timeGetTime() NGAY SAU phep thu log-bat, truoc phep so ms
+    -> khi log dang bat thi MOI LAN danh gia deu ton mot loi goi dong ho, ke ca khi khong ghi gi.
+    Dat trong than vong lap (quet NPC / quet obj / quet o tui) la dat mot phep goi dong ho vao
+    duong nong.
+  - Nhanh JX_MOBILE: KHONG goi dong ho, so voi g_uAutoLogNow (cap nhat mot lan moi tick). Da sua
+    tu 11/09 ([DAN 11/09 b]) sau vu tut fps Fold 7. Nen ket qua bo quet nay la viec cua PC / may
+    chu, KHONG phai lo cho dien thoai nua. Dung ket luan nguoc.
 Xem bo nho autolog-every-khong-trong-vong-lap.
 
 BAN DAU TOI VIET SAI: chi coi mot dong la "mo vong lap" khi dau { nam CUNG DONG voi for/while.
