@@ -1546,12 +1546,47 @@ static void KyNang_DanhMotPhat()
 	g_pCoreShell->LockSomeoneUseSkill(nDich, (int)o.uId);
 }
 
+//	[KNHOTRO 14/09] Chu: "ky nang nao thuoc dang ho tro (khong dung duoc) thi khong cho bo xuong o ky nang".
+//	[KNHOTRO 14/09 b] Dung duoc = co mat trong bang danh TRAI (GDI_LEFT_ENABLE_SKILLS) HOAC bang danh PHAI /
+//	vong sang (GDI_RIGHT_ENABLE_SKILLS). Hai bang do la cho duy nhat Core doi GetSkillLRInfo() phai la
+//	BothSkill / LeftOnlySkill / RightOnlySkill (KSkillList.cpp:700, 767), nen ky nang ho tro - noi cong
+//	(LRSkill = 3 = NoneSkill, "khong tay nao") bi loai khoi ca hai. Hai bang cung doi DA HOC (cap > 0) va
+//	DU CAP nhan vat, dung y "khong dung duoc" cua chu.
+//	KHONG dung GDI_FIGHT_SKILLS o day: GetSkillSortList (KSkillList.cpp:638) chi loai ky nang GOC, ky nang
+//	BI DONG van nam trong bang -> lay lam phep thu la nhan het (ban a chan hut: "The Van Tung" id 160,
+//	Property "ho tro chien dau - bi dong", van gan duoc). KyNang_DonOChet van dung ca ba bang vi o do
+//	tha lot con hon xoa nham o cua nguoi choi - nguoc chieu voi cho nay.
+static bool KyNang_DungDuoc(unsigned int uId)
+{
+	if (g_pCoreShell == NULL || uId == 0)
+		return true;	// khong biet thi cu cho gan (nhu truoc)
+	KyNang_DocBang();
+	if (s_nKNCo1 <= 1)
+		return true;	// chua doc duoc bang trai (vua vao game / dang chuyen phai): khong chan
+	if (KyNang_CoTrongBang(s_KNBang, s_nKNCo1, uId))
+		return true;
+	// Doc lai bang PHAI MOI LAN: day la viec theo cu cham cua nguoi choi (khong phai moi khung), ma bang cu
+	// se sai ngay sau khi doi phai / hoc them chieu.
+	memset(s_KNBangPhai, 0, sizeof(s_KNBangPhai));
+	s_nKNCoPhai = g_pCoreShell->GetGameData(GDI_RIGHT_ENABLE_SKILLS, (KUPARAM)&s_KNBangPhai, 0);
+	if (s_nKNCoPhai < 0)				s_nKNCoPhai = 0;
+	if (s_nKNCoPhai > KYNANG_DS_TOI_DA)	s_nKNCoPhai = KYNANG_DS_TOI_DA;
+	return KyNang_CoTrongBang(s_KNBangPhai, s_nKNCoPhai, uId);
+}
+
 //	[ANDROID 09/09 GAN] Bang ky nang goi vao day khi nguoi choi cham mot ky nang.
 //	Tra ve true = da gan vao o dang cho, ben goi khoi lam viec cua no nua.
 bool JxKyNang_GanKyNang(unsigned int uGenre, unsigned int uId)
 {
 	if (!s_nKNCheDoGan || uId == 0)
 		return false;
+	// [KNHOTRO 14/09 b] ky nang ho tro / noi cong (khong danh duoc bang tay trai lan tay phai): khong cho gan vao o.
+	if (!KyNang_DungDuoc(uId))
+	{
+		KyNang_Bao("Kü n¨ng hç trî: kh«ng g¾n vµo « ®­îc");
+		g_DebugLog("[KYNANG] ky nang %u khong dung duoc (khong co trong bang danh trai lan phai) -> khong gan vao o", uId);
+		return false;
+	}
 	// [ANDROID 10/09 BANGCHON] o CHINH: dat lam ky nang danh TRAI cua Core va nho lai de mo game van con
 	if (s_nKNOChon == KYNANG_CHON_CHINH)
 	{

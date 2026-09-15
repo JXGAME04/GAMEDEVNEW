@@ -739,3 +739,46 @@ Chủ 20:2x sau khi thử 109142015: *"bỏ vẽ ô vuông màu vàng ở ô ẩ
 `kiem --pc` ĐẠT. Máy ảo: vào chế độ gắn, nút hai mũi tên sạch, ô đang chọn là vòng tròn sáng; chọn kỹ năng trong bảng thì gắn xong không còn chữ nào giữa màn (nhật ký vẫn ghi `[KYNANG] gan ky nang 155 vao o 7`). Kịch bản `android/va_nguon_gonman_1409_b.py`.
 
 **Bẫy khi vá**: bộ bảo vệ "số byte cao không đổi" của kịch bản vá chặn đúng khi mình CỐ Ý xoá chuỗi tiếng Việt — phải đổi phép kiểm thành "giảm đúng bằng phần xoá" (`cao(s) - cao(cu) + cao(moi)`), đừng bỏ phép kiểm.
+
+## [KMTRON + KNHOTRO 14/09] Icon Kinh Mạch tròn, chặn kỹ năng hỗ trợ xuống ô kỹ năng
+
+Chủ 21:0x: *"icon kinh mạch ở màng hình đang hình vuông tôi muốn bạn làm lại hình tròn"*, *"fix lại các kỹ năng nào thuộc dạng hỗ trợ (không dùng được) thì không cho bỏ xuống ô kỹ năng"*.
+
+### 1. Icon Kinh Mạch tròn
+
+`android/anh_kinhmach_tron.py` đọc thẳng `spr/UiNew/UiToolsControlBar/kinh_mach_m.spr` (48×48, 2 khung), cắt tròn bán kính 23 với biên mềm 1,5 px, thêm vòng vàng `#F0D070` dày 2 px và vòng trong tối `#2A1E0A` dày 1 px cho khớp các icon tròn bên cạnh, rồi ghi đè **đúng tên - đúng cỡ - đúng số khung** nên không phải đụng ini nào. Ghi vào cả lớp ghi đè `android/du_lieu_ghi_de` lẫn `D:\jx1_android_data`; chạy lại được (bốn góc đã trong suốt thì bỏ qua).
+
+Bẫy đã tránh: alpha trong RLE của SPR là **8 bit** (xem `spr-alpha-8bit-sinh-anh-pil`), bảng màu ghi lại bằng `quantize(255, FASTOCTREE)` chứ không giữ bảng gốc vì hai vòng viền là màu mới.
+
+### 2. Chặn kỹ năng hỗ trợ
+
+`KyNang_DungDuoc()` trong `JxCanDieuKhien.cpp`, gọi ở **đầu** `JxKyNang_GanKyNang` nên chặn cả hai đường: chạm thẳng vào kỹ năng trong bảng, và bấm "Phím chính" / "Phím phụ" của bảng chọn.
+
+**Dùng được = có trong bảng đánh TRÁI (`GDI_LEFT_ENABLE_SKILLS`) HOẶC bảng đánh PHẢI (`GDI_RIGHT_ENABLE_SKILLS`).** Hai hàm Core đó (`KSkillList.cpp:700`, `:767`) là chỗ duy nhất đòi `GetSkillLRInfo()` phải là `BothSkill` / `LeftOnlySkill` / `RightOnlySkill`; kỹ năng hỗ trợ - nội công có `LRSkill = 3 = NoneSkill` ("không tay nào") nên rơi khỏi cả hai. Hai hàm cũng đòi **đã học** (`SkillLevel > 0`) và **đủ cấp nhân vật** (`GetSkillReqLevel`).
+
+**KHÔNG được dùng `GDI_FIGHT_SKILLS` làm phép thử** — đây là lỗi của bản a: `GetSkillSortList` (`KSkillList.cpp:638`) chỉ loại kỹ năng GỐC (`IsBase()` = `m_nAttrib <= 1`), còn kỹ năng **bị động** (`SKILL_SS_PassivityNpcState`) vẫn nằm nguyên trong bảng. Bản a nhận cả ba bảng nên "Thê Vân Tung" (id 160, `Property` = "hỗ trợ chiến đấu - bị động") vẫn gắn được như cũ.
+
+`KyNang_DonOChet` **vẫn giữ cả ba bảng**: ở đó thà lọt còn hơn xoá nhầm ô của người chơi, ngược chiều với chỗ này. Bảng PHẢI ở `KyNang_DungDuoc` đọc lại **mỗi lần** (không nhớ) vì đây là việc theo cú chạm chứ không phải mỗi khung, mà bảng cũ sai ngay sau khi đổi phái / học thêm chiêu.
+
+Thiếu bảng thì **không chặn**: `g_pCoreShell == NULL`, `uId == 0`, hay `s_nKNCo1 <= 1` (vừa vào game / đang chuyển phái) đều trả `true`.
+
+### 3. Thử máy ảo (nhân vật Võ Đang cấp 120, bản `109142107`)
+
+| id | Tên | Property | LRSkill | Kết quả |
+|---|---|---|---|---|
+| 151 | Võ Đang Kiếm pháp | Hỗ trợ bị động | 3 | **chặn** (đã thử) |
+| 152 | Võ Đang Quyền Pháp | Hỗ trợ bị động | 3 | **chặn** (đã thử) |
+| 160 | Thê Vân Tung | hỗ trợ chiến đấu - bị động | 3 | **chặn** (đã thử, cả "Phím chính" lẫn "Phím phụ") |
+| 166 | Thái Cực Thần Công | Hỗ trợ bị động | 3 | **chặn** (tính từ bảng) |
+| 1078/1079 | Tạo Hoá Thái Thanh / Kiếm Thuỷ Tinh Hà | Công kích | 0 | **chặn** vì `ReqLevel` 150 > cấp 120 |
+| 153 | Nộ Lôi Chưởng | Công kích nội công | 0 | gắn được (đã thử) |
+| 159 | Thất Tinh Trận | Vòng tròn hỗ trợ công kích | 2 | gắn được (đã thử) |
+| 155, 157, 158, 164, 165, 267, 365, 368 | | Công kích / hỗ trợ chủ động | 0 hoặc 2 | gắn được |
+
+Thông báo khi bị chặn: **"Kỹ năng hỗ trợ: không gắn vào ô được"** (đã soi ảnh, chữ đúng, không vỡ font). Nhật ký: `[KYNANG] ky nang %u khong dung duoc (khong co trong bang danh trai lan phai) -> khong gan vao o`.
+
+`kiem --pc` ĐẠT. Kịch bản `android/va_nguon_kynang_hotro_1409.py` (bản a) + `android/va_nguon_kynang_hotro_1409_b.py` (sửa lại phép thử).
+
+### 4. Còn lại
+
+Kỹ năng cấp 150 bị chặn ở nhân vật cấp 120 là **đúng ý "không dùng được"**, nhưng nếu chủ muốn cho gắn sẵn để lên cấp là dùng được ngay thì bỏ điều kiện cấp phải đổi cách hỏi Core (hai bảng trái/phải đã lọc sẵn theo cấp, không tách ra được) — lúc đó mới cần thêm một đường hỏi mới.
