@@ -6554,6 +6554,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// hop thoai la (khong khop marker nao). Khoi phuc bo dem cu roi tang - KHONG bi
 		// reset boi new-dialog nen chot nay khong bi vo hieu khi NPC lien tuc tra hoi thoai la (DT-1).
 		ea.nDTUnknown = nUnkSave + 1;
+		// (15/09) GHI NGUYEN VAN thoai la - phep do con thieu cuoi cung. Nhanh nay tu truoc
+		// den nay CAM TIT nen khong ai biet NPC noi gi ma client khong hieu, va dung no la
+		// mot mat xich cua vong lap huy: chot 'qua 6 thoai la thi treo' o duoi BI VO HIEU khi
+		// thoai la XEN KE voi thoai khop, vi moi thoai KHOP deu dat ea.nDTUnknown = 0 o dau ham
+		// (dong ~6244). Vong cua may: thoai chinh (khop) -> xac nhan huy (khop) -> cau tu choi
+		// cua may chu (LA) -> lai thoai chinh... nen bo dem khong bao gio vuot 6.
+		// In ca nAns va 300 ky tu dau de doi chieu thang voi cau NPC hien tren man hinh.
+		AUTOLOG("[DT-LA] thoai khong nhan dang duoc (lan %d) nAns=%d loai=%d buoc=%d: %.300s", ea.nDTUnknown, nAns, ea.nDTQType, ea.nDTStep, cap.szDlg);
 		if (ea.nDTUnknown > 6)
 			return DT_Hold(nPlayerIdx, "<color=Red>Héi tho¹i kh«ng nhËn d¹ng ®­îc (server ®æi lêi tho¹i?).", uCurTime, 5 * 60 * 1000);
 		CoreDataChanged(GDCNI_UI_ACT, 1, 0);
