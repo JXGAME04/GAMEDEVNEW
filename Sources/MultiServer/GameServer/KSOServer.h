@@ -174,6 +174,9 @@ private:
 	void				ChatSpecMan(const void *pData, size_t dataLength);
 	BOOL				ConformAskWay(const void* pData, int nSize, DWORD *pdwID);
 	void				MainLoop();
+	// [MAYID 14/09] hang doi dong ket noi TRE sau khi da gui goi thoat (xem chu thich trong KSOServer.cpp)
+	void				XepDongTre(int nIdx);
+	void				XuLyDongTre();
 	int					ProcessLoginProtocol(const unsigned long lnID, const char* pData, size_t dataLength);
 	BOOL				ProcessSyncReplyProtocol(const unsigned long lnID, const char* pData, size_t dataLength);
 	void				PingClient(const unsigned long lnID);
