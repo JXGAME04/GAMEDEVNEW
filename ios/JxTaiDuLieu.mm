@@ -180,20 +180,33 @@ static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSStr
 	[[NSFileManager defaultManager] createDirectoryAtPath:[dich stringByDeletingLastPathComponent]
 	                         withIntermediateDirectories:YES attributes:nil error:nil];
 
+	// [IOS-TAI-CHAC 15/09] Dia chi phai hop le TRUOC vong lap: goc doc tu tep nguoi dung sua duoc,
+	// ma requestWithURL:nil NEM NGOAI LE -> sap app chu khong ra man bao loi.
+	NSString* su = [NSString stringWithFormat:@"%@%@", goc, JxUrlHoaDuongDan(rel)];
+	NSURL* dc = [NSURL URLWithString:su];
+	if (!dc) { tt.loi = [NSString stringWithFormat:@"%@: dia chi khong hop le (%@)", rel, su]; return NO; }
+
 	long long daCo = JxCoTep(tam);
 	if (daCo < 0) daCo = 0;
 	if (daCo > co) { unlink(tam.fileSystemRepresentation); daCo = 0; }	// .part hong
 
+	// [IOS-TAI-CHAC 15/09] Dem so lan hong de KHONG quay vo han. Truoc day vong nay chi thoat khi
+	// daCo >= co, ma moi vong "co them byte" la tinh la tien bo - nen mot cong dang nhap Wi-Fi cong
+	// cong (tra 200 kem trang HTML cho MOI yeu cau) se lam no quay hang tram nghin lan, ghi day rac
+	// vao may, thanh tien do van chay muot nhu that.
+	int soLoiMang = 0, soLamLai = 0, soKhongTien = 0, nNghi = 1;
+
 	while (daCo < co && !tt.huy)
 	{
-		NSString* su = [NSString stringWithFormat:@"%@%@", goc, JxUrlHoaDuongDan(rel)];
-		NSMutableURLRequest* rq = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:su]
+		NSMutableURLRequest* rq = [NSMutableURLRequest requestWithURL:dc
 		                                                 cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
 		                                             timeoutInterval:30.0];
+		const long long daCoLucGui = daCo;	// chup lai de doi chieu voi Content-Range
 		if (daCo > 0)
 			[rq setValue:[NSString stringWithFormat:@"bytes=%lld-", daCo] forHTTPHeaderField:@"Range"];
 
-		__block NSData* du = nil; __block NSHTTPURLResponse* hp = nil; __block NSError* le = nil;
+		__block NSHTTPURLResponse* hp = nil; __block NSError* le = nil;
+		__block BOOL bDayDia = NO, bLamLai = NO, bRangeSai = NO;
 		dispatch_semaphore_t sem = dispatch_semaphore_create(0);
 		// Dung downloadTask: no ghi thang ra tep tam cua he thong nen tep pak vai tram MB
 		// khong phai nam het trong bo nho.
@@ -201,7 +214,30 @@ static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSStr
 			completionHandler:^(NSURL* vt, NSURLResponse* rp, NSError* er) {
 				hp = [rp isKindOfClass:[NSHTTPURLResponse class]] ? (NSHTTPURLResponse*)rp : nil;
 				le = er;
-				if (vt)
+				// [IOS-TAI-CHAC 15/09] KIEM MA TRA VE TRUOC KHI GHI. downloadTask giao tep tam voi
+				// BAT KY ma nao - 404, 500, trang cong dang nhap - vi loi HTTP khong phai NSError.
+				// Truoc day khoi ghi nam trong "if (vt)" chay vo dieu kien, nen than trang loi bi noi
+				// thang vao .part roi con nam lai do sang lan mo app sau.
+				BOOL bGhi = NO;
+				if (!er && hp && vt)
+				{
+					long st = hp.statusCode;
+					if (st == 206)
+					{	// Phai dung khuc ta xin. May chu noi doi -> noi vao la hong am tham.
+						long long a = -1, b = -1, tong = -1;
+						NSString* cr = [hp valueForHTTPHeaderField:@"Content-Range"];
+						int k = cr ? sscanf(cr.UTF8String, "bytes %lld-%lld/%lld", &a, &b, &tong) : 0;
+						if (k >= 2 && a == daCoLucGui && (k < 3 || tong == co)) bGhi = YES;
+						else bRangeSai = YES;
+					}
+					else if (st == 200)
+					{	// 200 khi dang xin khuc = may chu bo qua Range, dang gui tu byte 0.
+						if (daCoLucGui == 0) bGhi = YES;
+						else                 bLamLai = YES;
+					}
+					// 4xx/5xx: khong ghi gi ca, .part giu nguyen
+				}
+				if (bGhi)
 				{	// noi vao duoi .part
 					FILE* fo = fopen(tam.fileSystemRepresentation, "ab");
 					FILE* fi = fopen(vt.path.fileSystemRepresentation, "rb");
@@ -212,28 +248,75 @@ static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSStr
 						size_t n;
 						while (pD && (n = fread(pD, 1, nD, fi)) > 0)
 						{
-							fwrite(pD, 1, n, fo);
-							tt.coDaTai = tt.coDaTai + (long long)n;
+							size_t w = fwrite(pD, 1, n, fo);
+							tt.coDaTai = tt.coDaTai + (long long)w;	// chi dem byte GHI DUOC that
+							if (w != n) { bDayDia = YES; break; }
 						}
 						free(pD);
 					}
+					else bDayDia = (fo == NULL);
 					if (fi) fclose(fi);
-					if (fo) fclose(fo);
+					// het cho trong thuong lo ra o fflush/fclose chu khong o fwrite
+					if (fo) { if (fflush(fo) != 0) bDayDia = YES; if (fclose(fo) != 0) bDayDia = YES; }
 				}
-				(void)du;
 				dispatch_semaphore_signal(sem);
 			}];
 		[t resume];
 		dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
 
-		if (le) { tt.loi = [NSString stringWithFormat:@"%@: %@", rel, le.localizedDescription]; return NO; }
-		if (hp && hp.statusCode != 200 && hp.statusCode != 206)
-		{
+		// [IOS-TAI-CHAC 15/09] Phep tac xu ly loi: byte tren dia SAI thi xoa, chi THIEU thi giu.
+		// Dut mang chi lam cut tep chu khong lam hong, nen xoa .part luc do la tu bat nguoi choi
+		// tai lai tu dau ca tram MB - dung cai hai ma .part sinh ra de tranh.
+		if (bDayDia)
+		{	// giu .part: byte da ghi van dung, chi la chua du
+			tt.loi = [NSString stringWithFormat:@"%@: may het cho trong", rel];
+			return NO;
+		}
+		if (bLamLai || bRangeSai)
+		{	// byte cu khong noi tiep duoc voi byte moi -> cat ve 0 va tai lai TEP NAY tu dau
+			if (++soLamLai > 2)
+			{
+				unlink(tam.fileSystemRepresentation);
+				tt.loi = [NSString stringWithFormat:@"%@: may chu khong theo dung Range", rel];
+				return NO;
+			}
+			FILE* fx = fopen(tam.fileSystemRepresentation, "wb"); if (fx) fclose(fx);
+			if (daCo > 0) tt.coDaTai = tt.coDaTai - daCo;	// tra lai thanh tien do cho khoi dem trung
+			daCo = 0;
+			continue;
+		}
+		if (le || !hp)
+		{	// loi truyen tai, hoac phan hoi khong phai HTTP. Giu .part, cho roi thu lai.
+			// hp rong TRUOC day loc qua duoc "if (hp && ...)" -> nhan bua phan hoi la
+			if (++soLoiMang > 4)
+			{
+				tt.loi = le ? [NSString stringWithFormat:@"%@: %@", rel, le.localizedDescription]
+				            : [NSString stringWithFormat:@"%@: phan hoi khong hop le", rel];
+				return NO;
+			}
+			for (int i = 0; i < nNghi * 10 && !tt.huy; i++) usleep(100000);
+			if (nNghi < 16) nNghi *= 2;
+			continue;
+		}
+		if (hp.statusCode != 200 && hp.statusCode != 206)
+		{	// giu .part: 404 luc dang rai ban moi, 403 het han chu ky... khong noi gi ve byte da tai
 			tt.loi = [NSString stringWithFormat:@"%@: may chu tra ve %ld", rel, (long)hp.statusCode];
 			return NO;
 		}
+
 		long long mm = JxCoTep(tam);
-		if (mm <= daCo) { tt.loi = [NSString stringWithFormat:@"%@: khong tai them duoc byte nao", rel]; return NO; }
+		if (mm <= daCo)
+		{	// than rong, hoac ghi khong duoc. Giu .part nhung KHONG duoc quay mai.
+			if (++soKhongTien >= 3)
+			{
+				tt.loi = [NSString stringWithFormat:@"%@: khong tai them duoc byte nao", rel];
+				return NO;
+			}
+			for (int i = 0; i < nNghi * 10 && !tt.huy; i++) usleep(100000);
+			if (nNghi < 16) nNghi *= 2;
+			continue;
+		}
+		soLoiMang = 0; soKhongTien = 0; nNghi = 1;	// co tien bo that -> dat lai bo dem
 		daCo = mm;
 	}
 	if (tt.huy) return NO;
@@ -244,8 +327,17 @@ static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSStr
 		unlink(tam.fileSystemRepresentation);
 		return NO;
 	}
+	// [IOS-TAI-CHAC 15/09] md5 rong = KHONG kiem. Truoc day dieu kien la "md5.length && ..." nen mot
+	// dong manifest thieu cot md5 se cho tep di thang vao may ma khong ai bam, roi dong 'da tai' ghi
+	// chuoi rong lam da kiem -> khong bao gio bam lai nua. Phai chan han, khong duoc im lang bo qua.
+	if (!md5.length)
+	{
+		tt.loi = [NSString stringWithFormat:@"%@: manifest thieu md5 cho tep nay", rel];
+		unlink(tam.fileSystemRepresentation);
+		return NO;
+	}
 	NSString* m = JxMd5Tep(tam, nil);
-	if (md5.length && ![m isEqualToString:md5])
+	if (![m isEqualToString:md5])
 	{
 		tt.loi = [NSString stringWithFormat:@"%@: md5 sai (%@ != %@)", rel, m, md5];
 		unlink(tam.fileSystemRepresentation);
@@ -329,6 +421,19 @@ static void JxLamViec(NSString* goc, NSString* thuMuc, JxTaiTrangThai* tt)
 		NSString* rel = [[c[2] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]
 		                 stringByReplacingOccurrencesOfString:@"\\" withString:@"/"];
 		if (!rel.length) continue;
+		// [IOS-TAI-CHAC 15/09] Loc duong dan. Ban Android da loc tu lau (TaiDuLieuActivity.java:340-341),
+		// ban iOS bo sot: stringByAppendingPathComponent KHONG bo ".." , ma JxTaiMotTep con tu tao cac
+		// thu muc trung gian - nen mot dong manifest "../../Library/..." se ghi ra NGOAI thu muc du lieu.
+		// Chi ke giu khoa ky moi lam duoc, nhung khoa thi co ngay lo; chan o day la chan them mot lop.
+		while ([rel hasPrefix:@"/"]) rel = [rel substringFromIndex:1];
+		if (!rel.length) continue;
+		if ([rel isEqualToString:@".."] || [rel hasPrefix:@"../"] ||
+		    [rel hasSuffix:@"/.."]     || [rel containsString:@"/../"])
+		{	// Chat hon ban Android (ben do chi bo qua dong): manifest DA KY thi khong duoc phep co
+			// duong dan kieu nay - co la dau hieu hong that, phai dung lai cho nguoi ta thay.
+			tt.loi = [NSString stringWithFormat:@"manifest co duong dan khong hop le: %@", rel];
+			tt.xong = YES; return;
+		}
 		[duong addObject:rel];
 		[cos   addObject:@([c[0] longLongValue])];
 		[md5s  addObject:[c[1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
@@ -403,6 +508,10 @@ static void JxLamViec(NSString* goc, NSString* thuMuc, JxTaiTrangThai* tt)
 @property (nonatomic, strong) UILabel* nhan;
 @property (nonatomic, strong) UILabel* chiTiet;
 @property (nonatomic, strong) UIProgressView* thanh;
+// [IOS-KHONGCHET 15/09] nut duoi man tai: luc tai thi an, luc hong thi hien "Thử lại".
+// daBam la atomic vi vong bom o luong chinh doc no, con UIKit dat no trong ham bam.
+@property (nonatomic, strong) UIButton* nut;
+@property (atomic) BOOL daBam;
 @end
 @implementation JxTaiMan
 - (void)viewDidLoad
@@ -426,6 +535,53 @@ static void JxLamViec(NSString* goc, NSString* thuMuc, JxTaiTrangThai* tt)
 	self.chiTiet.numberOfLines = 3;
 	self.chiTiet.font = [UIFont systemFontOfSize:13];
 	[self.view addSubview:self.chiTiet];
+
+	// [IOS-KHONGCHET 15/09] Nut nay PHAI bam trung, nen dat bang rang buoc chu KHONG bang toa do cung
+	// nhu ba muc tren: cua so duoc tao theo [UIScreen mainScreen].bounds (luc khoi dong la chieu DOC)
+	// trong khi Info.plist khoa game nam NGANG -> toa do cung tinh mot lan trong viewDidLoad se lech.
+	self.nut = [UIButton buttonWithType:UIButtonTypeSystem];
+	self.nut.translatesAutoresizingMaskIntoConstraints = NO;
+	self.nut.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightSemibold];
+	self.nut.backgroundColor = [UIColor colorWithWhite:0.22 alpha:1.0];
+	[self.nut setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+	self.nut.layer.cornerRadius = 8;
+	self.nut.hidden = YES;
+	[self.nut addTarget:self action:@selector(bamNut) forControlEvents:UIControlEventTouchUpInside];
+	[self.view addSubview:self.nut];
+	[NSLayoutConstraint activateConstraints:@[
+		[self.nut.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+		[self.nut.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor constant:-28],
+		[self.nut.widthAnchor  constraintGreaterThanOrEqualToConstant:200],
+		[self.nut.heightAnchor constraintEqualToConstant:46],
+	]];
+}
+
+- (void)bamNut
+{
+	self.daBam = YES;
+}
+
+// Chuyen man tai sang trang thai BAO LOI: giau thanh tien do, hien loi va nut.
+- (void)hienLoi:(NSString*)loi nut:(NSString*)tenNut
+{
+	self.nhan.text = @"Không tải được dữ liệu";
+	self.thanh.hidden = YES;
+	self.chiTiet.numberOfLines = 4;
+	self.chiTiet.text = loi ?: @"";
+	[self.nut setTitle:tenNut forState:UIControlStateNormal];
+	self.daBam = NO;
+	self.nut.hidden = NO;
+}
+
+// Ve lai trang thai dang tai (goi truoc moi lan thu lai).
+- (void)veLaiDangTai
+{
+	self.nut.hidden = YES;
+	self.thanh.hidden = NO;
+	self.thanh.progress = 0;
+	self.chiTiet.numberOfLines = 3;
+	self.nhan.text = @"Chuẩn bị dữ liệu";
+	self.chiTiet.text = @"";
 }
 @end
 #endif
@@ -476,10 +632,9 @@ extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char*
 		[[NSFileManager defaultManager] createDirectoryAtPath:thuMuc withIntermediateDirectories:YES attributes:nil error:nil];
 		JxKhongSaoLuu(thuMuc);
 
-		JxTaiTrangThai* tt = [[JxTaiTrangThai alloc] init];
-		tt.mucHienTai = @"Dang ket noi…";
-
 #if TARGET_OS_IPHONE
+		// [IOS-KHONGCHET 15/09] Cua so tao MOT lan, dung cho ca cac lan thu lai. Truoc day no bi
+		// an di ngay truoc nhanh loi, ma no la tham chieu manh duy nhat -> giai phong luon man hinh.
 		UIWindow* cua = nil; JxTaiMan* man = nil;
 		if ([UIApplication sharedApplication])
 		{
@@ -488,49 +643,128 @@ extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char*
 			cua.rootViewController = man;
 			cua.windowLevel = UIWindowLevelAlert + 1;
 			[cua makeKeyAndVisible];
+			// Tai 8,5 GB mat hang gio; khong chan thi may tu khoa man hinh giua chung roi dut tai.
+			// Ban Android da lam viec nay tu lau (FLAG_KEEP_SCREEN_ON trong TaiDuLieuActivity).
+			[UIApplication sharedApplication].idleTimerDisabled = YES;
 		}
 #endif
-		dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{ JxLamViec(goc, thuMuc, tt); });
 
-		NSDate* batDau = [NSDate date];
-		while (!tt.xong)
+		// [IOS-KHONGCHET 15/09] Vong THU LAI. Truoc day tai hong mot lan la ham tra ve khac 0,
+		// ben goi dung SDL_ShowSimpleMessageBox roi "return 1" - ma SDL3 da vo hieu exit() nen
+		// tien trinh con song khong cua so = man hinh den vinh vien (Apple coi la treo, dieu 2.1).
+		// Nay hong thi bao loi ngay tren man tai va cho bam "Thử lại"; bo tai von da noi tiep duoc
+		// nho tep .part nen thu lai khong mat phan da tai.
+		int nKetQua = 0;
+		for (;;)
+		{
+			// Moi lan thu dung mot trang thai MOI: cac bien dem (coTong/coDaTai/coDaBam) phai ve 0,
+			// va khoi tao lai thi khong the dinh dang voi luong nen cua lan truoc.
+			JxTaiTrangThai* tt = [[JxTaiTrangThai alloc] init];
+			tt.mucHienTai = @"Dang ket noi…";
+			dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{ JxLamViec(goc, thuMuc, tt); });
+
+			NSDate* batDau = [NSDate date];
+			while (!tt.xong)
+			{
+				@autoreleasepool {
+					[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+#if TARGET_OS_IPHONE
+					if (man)
+					{
+						long long canBam = tt.coCanBam, daBam = tt.coDaBam;
+						long long tong = tt.coTong, da = tt.coDaTai;
+						if (canBam > 0 && daBam < canBam)
+						{
+							man.nhan.text = @"Kiểm tra dữ liệu đã có";
+							man.thanh.progress = (float)((double)daBam / (double)canBam);
+							man.chiTiet.text = [NSString stringWithFormat:@"%@ / %@ MB", JxMb(daBam), JxMb(canBam)];
+						}
+						else if (tong > 0)
+						{
+							double gy = -[batDau timeIntervalSinceNow];
+							double td = gy > 0.5 ? (double)da / gy : 0;
+							man.nhan.text = @"Đang tải dữ liệu";
+							man.thanh.progress = (float)((double)da / (double)tong);
+							man.chiTiet.text = [NSString stringWithFormat:@"%@ / %@ MB\n%.1f MB/s\n%@",
+							                    JxMb(da), JxMb(tong), td / (1024.0*1024.0), tt.mucHienTai ?: @""];
+						}
+						else
+							man.chiTiet.text = tt.mucHienTai ?: @"";
+					}
+#endif
+				}
+			}
+
+			if (!tt.loi.length)			// xong xuoi
+				break;
+
+			if (pszLoi && nLoi) snprintf(pszLoi, nLoi, "%s", tt.loi.UTF8String);
+#if TARGET_OS_IPHONE
+			if (man)
+			{	// Co man hinh -> KHONG bao gio tra ve loi; cho nguoi dung bam thu lai.
+				[man hienLoi:tt.loi nut:@"Thử lại"];
+				while (!man.daBam)
+				{
+					@autoreleasepool {
+						[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+					}
+				}
+				[man veLaiDangTai];
+				continue;
+			}
+#endif
+			nKetQua = 1;	// ban macOS / khong co giao dien: giu nguyen hanh vi cu, ben goi tu xu ly
+			break;
+		}
+
+#if TARGET_OS_IPHONE
+		if (cua)
+		{
+			[UIApplication sharedApplication].idleTimerDisabled = NO;
+			cua.hidden = YES; cua = nil;
+		}
+#endif
+		return nKetQua;
+	}
+}
+
+// ---------------------------------------------------------------- man bao loi CHAN
+// [IOS-KHONGCHET 15/09] Man bao loi cho cac hong hoc chi mang tinh KHOI DONG (khong co du lieu,
+// tao tang ve that bai...). KHONG ket thuc tien trinh: iOS khong cho app tu dong, va SDL3 da vo hieu
+// exit() (SDL_uikitappdelegate.m, dong "// exit(exit_status);") nen "return" tu main() chi de lai
+// tien trinh song khong cua so = man hinh den.
+//   pszNut = NULL/rong -> chan mai mai (khong co gi de thu lai), chi hien thong bao.
+//   Tra ve 0 khi nguoi dung bam nut; -1 khi khong dung duoc giao dien (macOS, hoac chua co UIApplication).
+extern "C" int JxIosManLoi(const char* pszTieuDe, const char* pszNoiDung, const char* pszNut)
+{
+#if TARGET_OS_IPHONE
+	@autoreleasepool {
+		if (![UIApplication sharedApplication])
+			return -1;
+		UIWindow* cua = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+		JxTaiMan* man = [[JxTaiMan alloc] init];
+		cua.rootViewController = man;
+		cua.windowLevel = UIWindowLevelAlert + 1;
+		[cua makeKeyAndVisible];
+
+		[man hienLoi:[NSString stringWithUTF8String:pszNoiDung ? pszNoiDung : ""]
+		         nut:[NSString stringWithUTF8String:(pszNut && *pszNut) ? pszNut : ""]];
+		if (pszTieuDe && *pszTieuDe)
+			man.nhan.text = [NSString stringWithUTF8String:pszTieuDe];
+		if (!(pszNut && *pszNut))
+			man.nut.hidden = YES;	// khong co gi de thu lai -> chan, nhung van hien thong bao
+
+		while (!man.daBam)
 		{
 			@autoreleasepool {
 				[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
-#if TARGET_OS_IPHONE
-				if (man)
-				{
-					long long canBam = tt.coCanBam, daBam = tt.coDaBam;
-					long long tong = tt.coTong, da = tt.coDaTai;
-					if (canBam > 0 && daBam < canBam)
-					{
-						man.nhan.text = @"Kiểm tra dữ liệu đã có";
-						man.thanh.progress = (float)((double)daBam / (double)canBam);
-						man.chiTiet.text = [NSString stringWithFormat:@"%@ / %@ MB", JxMb(daBam), JxMb(canBam)];
-					}
-					else if (tong > 0)
-					{
-						double gy = -[batDau timeIntervalSinceNow];
-						double td = gy > 0.5 ? (double)da / gy : 0;
-						man.nhan.text = @"Đang tải dữ liệu";
-						man.thanh.progress = (float)((double)da / (double)tong);
-						man.chiTiet.text = [NSString stringWithFormat:@"%@ / %@ MB\n%.1f MB/s\n%@",
-						                    JxMb(da), JxMb(tong), td / (1024.0*1024.0), tt.mucHienTai ?: @""];
-					}
-					else
-						man.chiTiet.text = tt.mucHienTai ?: @"";
-				}
-#endif
 			}
 		}
-#if TARGET_OS_IPHONE
-		if (cua) { cua.hidden = YES; cua = nil; }
-#endif
-		if (tt.loi.length)
-		{
-			if (pszLoi && nLoi) snprintf(pszLoi, nLoi, "%s", tt.loi.UTF8String);
-			return 1;
-		}
+		cua.hidden = YES; cua = nil;
 		return 0;
 	}
+#else
+	(void)pszTieuDe; (void)pszNoiDung; (void)pszNut;
+	return -1;
+#endif
 }
