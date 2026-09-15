@@ -140,7 +140,8 @@ static int gs_nTreNhipDong = 2;		// so nhip cho truoc khi dong socket, 0 = khong
  * Dung BO DEM LUI chu khong dung moc nhip, vi m_nGameLoop quay ve 0 moi 1.512.000 nhip.
  */
 #define MAYID_MAX_DONG	64
-static struct { int nNetIdx; int nConLai; } gs_aDongTre[MAYID_MAX_DONG];
+// [MAYID 15/09 PHAN BIEN] giu them chi so NGUOI CHOI de doi chieu lai truoc khi dong (xem XuLyDongTre).
+static struct { int nNetIdx; int nIdxNguoi; int nConLai; } gs_aDongTre[MAYID_MAX_DONG];
 
 // [NET-XA 13/09] Xa ngay phan tra loi cho client vua co goi den (cuoi MessageLoop) thay vi doi toi cuoi MainLoop
 // ke tiep (0..55 ms). Gia tri = KHOANG CACH TOI THIEU (ms) giua hai lan xa nhu the, vi Breathe chay khong chan
@@ -538,6 +539,13 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 	iniFile.GetInteger("LimitLogin", "ChiQuanSat",  1, &gs_nChiQuanSat);
 	iniFile.GetInteger("LimitLogin", "BoQuaHangC",  1, &gs_nBoQuaHangC);
 	iniFile.GetInteger("LimitLogin", "TreNhipDong", 2, &gs_nTreNhipDong);
+	/*
+	 * [MAYID 15/09 PHAN BIEN] KEP gia tri 1 len 2. XuLyDongTre() chay o DAU MainLoop con SendPackToClient(-1)
+	 * o CUOI MainLoop; de 1 thi dong socket ngay trong nhip do, TRUOC lan xa, va ShutdownClient lai Empty()
+	 * dem ghi => goi s2c_exitgame bi VUT - dung cai benh ma co che nay sinh ra de tranh. 0 van la TAT.
+	 */
+	if (gs_nTreNhipDong == 1)
+		gs_nTreNhipDong = 2;
 	memset(gs_aDongTre, 0, sizeof(gs_aDongTre));
 	printf("[MAYID] MaxLogin=%d ChiQuanSat=%d BoQuaHangC=%d TreNhipDong=%d\n",
 		m_MaxLogin, gs_nChiQuanSat, gs_nBoQuaHangC, gs_nTreNhipDong);
@@ -1856,7 +1864,13 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				 *     Nhung hang KHONG PHAI GIAY MIEN: ta VAN DEM va VAN GHI LOG hang 'C', chi khong cuong che.
 				 *     Thay ti le hang 'C' tang vot = dau hieu client gia, phai xem lai ngay.
 				 */
-				if (pLogin && pLogin->num_login >= (BYTE)m_MaxLogin) //#limit account 
+				/*
+				 * [MAYID 15/09 PHAN BIEN] Truoc do viet `num_login >= (BYTE)m_MaxLogin`. m_MaxLogin la int, ep
+				 * (BYTE) se CAT CUT: MaxLogin=256 thanh 0 => dieu kien LUON DUNG => DA SACH MOI NGUOI; va cach
+				 * tat tinh nang quen dung xua nay la dat MaxLogin=1000 thi thanh nguong 232. Nay so bang int va
+				 * chan gia tri vo nghia: MaxLogin <= 0 = TAT.
+				 */
+				if (pLogin && m_MaxLogin > 0 && (int)pLogin->num_login >= m_MaxLogin) //#limit account 
 				{
 					DWORD nIdx = pLogin->m_dwTongNameID;
 					char szName[32];
@@ -3397,15 +3411,24 @@ void KSwordOnLineSever::XepDongTre(int nIdx)
 		{
 			int nNetIdx = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NETID, nIdx, 0);
 
-			if (nNetIdx <= 0)		// bot co m_nNetConnectIdx = -1, khong co socket de dong
+			/*
+			 * [MAYID 15/09 PHAN BIEN] Truoc do viet `<= 0`. Chi so client cua Heaven BAT DAU TU 0
+			 * (ServerStage.cpp nap m_freeClientNode voi index = 0..n-1), con dau hieu 'khong co socket' la -1
+			 * (bot). Viet `<= 0` la bo sot dung khe so 0 => moi may chu co dung mot nguoi khong bao gio bi
+			 * dong cung, tuc la client sua doi chiem khe do se o lai vinh vien.
+			 */
+			if (nNetIdx < 0)		// bot co m_nNetConnectIdx = -1, khong co socket de dong
 				return;
 
-			gs_aDongTre[i].nNetIdx = nNetIdx;
-			gs_aDongTre[i].nConLai = gs_nTreNhipDong;
+			gs_aDongTre[i].nNetIdx   = nNetIdx;
+			gs_aDongTre[i].nIdxNguoi = nIdx;
+			gs_aDongTre[i].nConLai   = gs_nTreNhipDong;
 			return;
 		}
 	}
-	// Hang day (64 nguoi cho dong cung mot luc) thi thoi, goi mem da gui roi.
+
+	// Hang day (64 nguoi cho dong cung mot luc) thi thoi, goi mem da gui roi - nhung phai BIET la co.
+	printf("[MAYID] hang doi dong tre DAY (%d cho), bo qua dong cung cho nguoi %d\n", MAYID_MAX_DONG, nIdx);
 }
 
 /*
@@ -3422,10 +3445,29 @@ void KSwordOnLineSever::XuLyDongTre()
 		{
 			gs_aDongTre[i].nConLai--;
 
-			if (gs_aDongTre[i].nConLai == 0 && m_pServer)
+			if (gs_aDongTre[i].nConLai == 0 && m_pServer && m_pCoreServerShell)
 			{
-				m_pServer->ShutdownClient(gs_aDongTre[i].nNetIdx);
-				gs_aDongTre[i].nNetIdx = 0;
+				/*
+				 * [MAYID 15/09 PHAN BIEN] DOI CHIEU LAI truoc khi dong. Khe mang duoc TAI SU DUNG: hang doi
+				 * cap phat la FIFO nen binh thuong phai cap het moi quay lai, nhung khi may chu DAY 100% thi
+				 * khe vua tra ve lai la khe duy nhat con trong => nguoi ke tiep nhan dung no => sau 2 nhip ta
+				 * dong NHAM NGUOI VO CAN, dung vao luc bao dang nhap. Nhanh tren da doi chieu ma may de tranh
+				 * da nham thi o day cung phai doi chieu, khong thi vo ich.
+				 */
+				int nNetBayGio = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NETID, gs_aDongTre[i].nIdxNguoi, 0);
+
+				if (nNetBayGio == gs_aDongTre[i].nNetIdx)
+				{
+					m_pServer->ShutdownClient(gs_aDongTre[i].nNetIdx);
+				}
+				else
+				{
+					printf("[MAYID] BO QUA dong cung khe %d: nguoi %d nay dang o khe %d (khe da doi chu)\n",
+						gs_aDongTre[i].nNetIdx, gs_aDongTre[i].nIdxNguoi, nNetBayGio);
+				}
+
+				gs_aDongTre[i].nNetIdx   = -1;
+				gs_aDongTre[i].nIdxNguoi = 0;
 			}
 		}
 	}
@@ -4011,7 +4053,19 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 	const char*  pClientInfo = (const char*)m_pServer->GetClientInfo(lnID);
 	char szHwID[256];
 
-	std::string ip = getIpFromClientInfo(pClientInfo);
+	/*
+	 * [MAYID 15/09 PHAN BIEN] CIOCPServer::GetClientInfo tra NULL khi pSocket da bi luong IOCP dat NULL
+	 * (client cat ket noi ngay sau khi gui goi dang nhap). Dung NULL de dung std::string = strlen(NULL) = SAP.
+	 * g_csFlow cua GameServer KHONG khoa luong IOCP cua Heaven nen day la cuoc dua that, du cua so hep.
+	 */
+	std::string ip = pClientInfo ? getIpFromClientInfo(pClientInfo) : std::string();
+
+	/*
+	 * [MAYID 15/09 PHAN BIEN] Kiem CO GOI truoc khi doc. Khong co dong nay thi client gui goi dai 1 byte
+	 * van bi doc 64 byte sHWID va ca GUID, tuc la lay ma may + GUID tu RAC cua goi ke tiep trong dem doc.
+	 */
+	if (dataLength < sizeof(tagLogicLogin))
+		return 0;
 
 	if (*pBuffer != c2s_logiclogin)
 	{
@@ -4093,7 +4147,7 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 		int nIdx = m_pCoreServerShell->AttachPlayer(lnID, &pLL->guid, szHwID);
 		if (nIdx)
 		{
-			if(&pLL->sHWID[0])  //#limit account 
+			if (szHwID[0])  //#limit account   [MAYID 15/09 PHAN BIEN] cu la `&pLL->sHWID[0]` = DIA CHI mang, luon dung
 			{
 				STONG_GET_LOGIN_LIMIT_COMMAND	sLogin;	
 				sLogin.ProtocolFamily	= pf_tong;
