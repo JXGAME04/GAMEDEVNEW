@@ -1,3 +1,40 @@
+# ⚠ VIỆC CẦN LÀM TRÊN MAC (14/09 20:2x) — iOS TỤT FPS LÚC ĐÔNG VÌ THIẾU SHADER KHỐI METAL
+
+Chủ 20:2x: *"FPS của iOS giảm mạnh khi đông"*. Đo từ log iPhone gửi về PC qua LAN
+(`D:\jx1_android_log\ios_iPhone18_2_0914_200358`) — gốc KHÔNG phải Metal chậm, mà là **atlas KHỐI đang TẮT
+trên iOS**. Dòng đầu tiên của log nói thẳng:
+
+```
+[KHOI] Rep3AtlasKhoi=1 nhung Rep3ShadersGPU_msl.h chua co bien the khoi (chay ios/sinh_shader_msl.py tren Mac) -> TU TAT
+```
+
+So cùng mức đông, Android (bản 109141951) với iOS:
+
+| | Android | iOS |
+|---|---|---|
+| `atlas khoi=` | 1 (11 khối, 704 MB) | **0** |
+| đổi texture/sampler mỗi khung | 30 (max 37) | **1 558 (max 2 018)** |
+| quad không gộp do texture0 | 45 197 | **2 314 021** |
+| lệnh vẽ / quad mỗi khung | 1 064 / 3 052 | 2 994 / 3 634 |
+| luồng chính | 68–74 % | **99 %** |
+| fps lúc đông | 58–60 | **40** |
+
+**Ba bước trên Mac:**
+
+1. `python3 ios/sinh_shader_msl.py` (cần `spirv-cross`). Script sinh lại
+   `Sources/Represent/Represent3/Rep3ShadersGPU_msl.h`; hai dòng stub cuối tệp
+   (`g_Rep3GpuFSPalPsKhoiMsl[] = ""` và `g_nJxMslCoKhoi = 0`) phải biến thành mảng MSL thật + cờ `= 1`.
+2. Dựng lại bản iOS.
+3. Kiểm log mới: dòng `[KHOI]` phải là `khoi atlas moi #1: 2048x2048 x 8 lop ...` chứ không phải `TU TAT`,
+   và `[VE-GOP]` phải có `atlas khoi=1`. Đúng thì "đổi texture/sampler mỗi khung" rơi từ ~1 558 xuống vài chục.
+
+Điều kiện đi kèm (`D3D9onGPUDev.cpp` CreateShaders): khối chỉ bật khi `Rep3PalBuffer=1`, `Rep3PsBuffer=1`,
+`Rep3AtlasMang=0` — log iOS hiện đã đúng cả ba, nên chỉ còn thiếu shader.
+
+Ghi bởi phiên đo nhịp (Windows) — phiên này không có Mac nên không tự chạy được bước 1.
+
+---
+
 # BÀN GIAO — iOS BƯỚC A VÀ B (11/09): CLIENT ĐÃ BIÊN DỊCH VÀ LINK ĐƯỢC CHO iOS
 
 > Nhánh `mobile-0809`, làm trên máy Mac (10.0.0.34). Đọc kèm `PHANTICH_IOS_LOTRINH_1109.md` (lộ trình 6 bước).
