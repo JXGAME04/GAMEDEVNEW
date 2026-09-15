@@ -7449,14 +7449,20 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// farm Da Tau, con hai duong nhat binh thuong thi chan dung (log 14/09: ten do co
 		// 7.621 dong PICK-NAME-IN va 0 dong PICK-TYPE-IN = khong he lot duong thuong).
 		// Khoi nay khong ghi log nao nen truoc day khong soi ra duoc.
+		// (14/09 r10) AUTOLOG_EVERY (KCore.h:252) goi timeGetTime() MOI LAN DANH GIA khi log
+		// dang bat - ton KE CA khi khong ghi ra dong nao. Do dung la cai lam tut fps 11/09.
+		// Nen KHONG de macro do trong than vong quet obj: dem co roi ghi MOT dong sau vong.
 		int nObj = ObjSet.GetNext(0);
+		int nCuonBoQua = 0;
+		const char* szCuonBoQua = "";
 		while (nObj)
 		{
 			if (Object[nObj].m_nKind == Obj_Kind_Item && Object[nObj].m_nGenre == 6)
 			{
 				if (WA_ObjBiCamNhat(pAp, Object[nObj].m_szName))
 				{
-					AUTOLOG_EVERY(3000, "[DT-CUON] bo qua '%.79s' - co trong danh sach khong nhat", Object[nObj].m_szName);
+					++nCuonBoQua;
+					szCuonBoQua = Object[nObj].m_szName;
 					nObj = ObjSet.GetNext(nObj);
 					continue;
 				}
@@ -7471,6 +7477,8 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			}
 			nObj = ObjSet.GetNext(nObj);
 		}
+		if (nCuonBoQua)
+			AUTOLOG_EVERY(3000, "[DT-CUON] bo qua %d cuon co trong danh sach khong nhat (vi du '%.79s')", nCuonBoQua, szCuonBoQua);
 		ea.uDTNext = uCurTime + 400;
 		return 2;
 	}

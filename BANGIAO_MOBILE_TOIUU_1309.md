@@ -332,3 +332,44 @@ Mốc hiện dùng: `libmain.so` "dung bo cuc mac dinh mot lan" + "khong con hoc
 **Việc tiếp theo (chờ log Fold 7 của 109141701):** đọc `[VAOMAP]` để biết 340 ms chia thế nào trên máy thật rồi mới
 quyết cắt chỗ nào (mở map / trang trí / lưới đường); đọc `[PDET-UI] muc ini [...]` để truy cửa sổ 103 ms; kiểm
 `[MANG-CHAM]` xem `s2c_syncnpc` có giảm không.
+
+## §10.10 — iOS so với Android: gấp 2 mỗi khung, và triệu chứng thật là cái ĐUÔI
+
+**Bẫy lấy mẫu phải nhớ trước khi đọc bất kỳ số [PDET] nào.** `UiShell.cpp` chỉ in dòng `[PDET]` khi cả
+pha vẽ `>= 20 ms`. Hai máy vì thế KHÔNG cùng điều kiện lấy mẫu, và trung bình rút từ đó không so được
+với nhau:
+
+| | iPhone 18,2 | Fold 7 |
+|---|---|---|
+| khung vẽ trong phiên (bản 109142122, ~6 phút) | 39 046 | 49 896 |
+| khung >= 20 ms = số mẫu `[PDET]` | **15 064 (38,6 %)** | **19 (0,0 %)** |
+
+Lần đầu tôi lấy trung bình trên hai tập đó rồi kết luận "iOS gấp 5 lần" — sai. Phiên camera ngờ số mẫu,
+tôi tìm ra gốc là ngưỡng 20 ms.
+
+**Số đúng lấy từ `[TG] viec/khung the gioi TB`** (tính trên MỌI khung của cửa sổ 30 giây, không lọc):
+
+| | iPhone | Fold 7 |
+|---|---|---|
+| việc/khung thế giới | **10,30 ms** | **5,37 ms** |
+| fps theo từng cửa sổ 30 s | 39–60, nhảy liên tục | 60–61, phẳng |
+| iOS trước khi bật KHỐI | 14,56 ms | |
+
+Hai kết luận, và chúng dẫn đi hai hướng khác nhau nên phải tách bạch:
+
+1. **Gấp ~2 đều tay** (10,30 so với 5,37 ms): có một chi phí cố định mỗi khung mà iOS phải trả thêm.
+2. **Triệu chứng nặng nhất là ĐUÔI**: 38,6 % khung iPhone vượt 20 ms trong khi Fold 7 gần như không khung
+   nào. Đây mới là thứ người chơi thấy — khung hình iPhone dao động 39–60 còn Android phẳng lì 60.
+   Tìm thứ "thỉnh thoảng mới đắt", không phải thứ "lúc nào cũng đắt".
+
+Trong các khung nặng đó, pha thế giới 12,45 ms chia ra: bản thân cửa sổ 3,90 (đúng bằng `tong Paint`,
+tức chỉ vẽ cảnh), ô con 0,00, **còn 8,55 ms nằm ở CHUỖI ANH EM** mà `KWndWindow::Paint` đi tiếp qua
+`m_pNextWnd`. Ba lớp giao diện chỉ 1,66 ms nên không phải chúng. Con số 8,55 chỉ đúng TRONG khung nặng.
+
+**Bẫy tên cửa sổ:** `[PDET-UI]` in tên MỤC ini, mà rất nhiều lớp đặt mục gốc là `Main`
+(`KUiItem|Main`, `KUiMsgSel2|Main` là hai cửa sổ khác hẳn). Từ `277ff837` dòng đo ghi `<Lớp>|<Mục>`
+bằng `typeid`, cắt chữ số đầu của tên mã hoá GCC — nếu không thì mọi cửa sổ gộp thành một dòng `[Main]`.
+
+**Việc tiếp theo (chưa làm):** một quãng ĐỐI CHỨNG có điều kiện giống nhau — cùng bản đồ, đứng yên,
+đóng hết cửa sổ, đo một phút trên cả hai máy. Chênh lệch còn nguyên = chi phí nền; co lại = do cửa sổ
+đang mở. Đây là phép duy nhất tách được hai kết luận ở trên.
