@@ -262,6 +262,11 @@ BOOL KScenePlaceMapC::Load(KIniFile* pSetting, const char* pszScenePlaceRootPath
 				// lan moi loi goi den no deu nam trong khoi chu thich (KCore.cpp:95, KJXPathFinder.cpp:20,
 				// KProtocolProcess.cpp:163/3284, CoreShell.cpp:27302); KLittleMap::Draw co doc nhung khong
 				// ai goi Draw. Giu Init de cau truc va Release khong doi. Ban PC giu nguyen duong cu.
+				// CANH BAO CHO NGUOI SAU: KJXPathFinder::Init va LoadMap la ma SONG, chi moi LOI VAO chung
+				// dang bi chu thich. Ai bat lai g_JXPathFinder (lam tu tim duong) thi PHAI bat lai vong nay
+				// cho mobile, khong thi tren dien thoai no nhan mang chan duong RONG va tim duong sai im lang,
+				// trong khi ban PC van dung. Vong nay cung dat co SetHaveLoad; co do chi GetBarrierBuf va
+				// KLittleMap::Draw doc, ca hai deu khong co noi goi song.
 				m_cLittleMap.Init(rc.left, rc.top, rc.right, rc.bottom);
 #else
 				m_cLittleMap.Init(rc.left, rc.top, rc.right, rc.bottom);
