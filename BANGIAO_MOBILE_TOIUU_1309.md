@@ -490,3 +490,80 @@ màn hình kiểm bản đồ nhỏ vẫn vẽ đủ ảnh map và chấm đỏ/
 > lặng, trong khi bản PC vẫn đúng.
 
 Cách rào: mobile bỏ qua, bản PC giữ nguyên từng dòng trong `#else`; `kiem --pc` ĐẠT.
+
+## §10.12 — ĐÃ SỬA: mảng đen / chớp màn đen khi đi trong Tương Dương (thiếu ô nền mặc định)
+
+Chủ báo hai lần: *"vào game qua map bị đen màn và di chuyển cũng bị chớp màn"*, rồi sau khi gỡ
+`[BANDONHO]` vẫn *"chạy lại bản bạn vừa up vẫn còn tình trạng di chuyển bị chớp màn đen"*. Lần này truy
+đến tận dữ liệu, không dừng ở suy đoán.
+
+### Chuỗi số dẫn tới thủ phạm
+
+Bốn phiên Fold 7 trong tối 14/09, đếm dòng `[PGND-V]` (ghép nền một vùng) có `bo > 0`:
+
+| phiên | map đã vào | số lần ghép nền | có ô bị bỏ |
+|---|---|---|---|
+| 19:57 | 324, 379 | 80 | **0** |
+| 21:24 | 324, 379 | 53 | **0** |
+| 22:23 | 324, **78**, **93** | 9 | **4** |
+| 22:36 | **93** | 1 | **1** |
+
+Dữ liệu `dt_v4` không đổi từ 10/09, bản dựng giữa 21:24 và 22:23 chỉ thêm dòng đo — nên khác biệt duy
+nhất là **chủ đi sang bản đồ khác**: 78 = Tương Dương, 93 = Tiến Cúc Động.
+
+### Nguyên nhân, đọc thẳng từ pak
+
+Viết bộ đọc pak có giải nén UCL (`ReverseTools/pak_vltk/ucl.py` + `ReverseTools/viemde/pak_id.py`) rồi
+mở đúng tệp vùng `\maps\<map>\v_YYY\XXX_Region_C.dat`, tách lớp nền theo `KScenePlaceRegionC::Load`
+(mục 4 = `REGION_GROUND_LAYER_FILE_INDEX`) và so từng tên ô nền với 13 pak điện thoại + 41 pak cây PC:
+
+* **Mọi ô nền thật đều có đủ** trên điện thoại, số khung khớp PC (27 khung cho ô "trung bình",
+  60 cho ô "ghép"), chỉ số khung bản đồ xin luôn nhỏ hơn số khung có → **không phải lỗi pak 16 bit**,
+  không phải thiếu tệp ảnh.
+* Thiếu đúng **một** tên: `\system\spr\RegionTileDefault.spr` — ô nền **mặc định** mà trình soạn bản đồ
+  đặt cho ô chưa vẽ. Tệp này không có ở đâu cả: không trong pak điện thoại, không trong 41 pak cây PC,
+  không có cả thư mục `\system` trên hai cây. **Bản PC đen y hệt** — đây là lỗ hổng dữ liệu gốc.
+
+Vùng nào dùng ô đó thì `GetImage` trả NULL, `DrawPrimitivesOnImage` bỏ qua ô (`KRepresentShell3.cpp:3035`),
+ô giữ nguyên màu đen mà `ClearImageData` vừa xoá. Đếm được:
+
+| bản đồ | vùng có ô thiếu | nặng nhất |
+|---|---|---|
+| 78 Tương Dương (727 vùng đọc được) | 6 | (86,92) **64/64 ô**, (79,109) 56/58, (121,97) 53/64, (173,0) 48/64 |
+| 379 Xung phong (305 vùng) | 6 | (103,101) **63/64**, (89,108) 63/64, (90,107) 59/64, (86,110) 55/64 |
+| 93, 324 | 0 | — |
+
+Khớp đúng dòng máy thật: `66 ảnh … bo 56` và `64 ảnh … bo 19`. Vùng (98,104) chỉ thiếu **1 ô** nhưng nằm
+**giữa Tương Dương** → một ô vuông đen 64×64 ngay trong thành; (121,97) và (173,0) thì **đi lại được**
+(chỉ 136/512 và 110/512 ô bị chặn) mà 75–83 % nền là đen.
+
+**Vì sao nhật ký chỉ thấy 4 dòng `LoadImage FAIL`:** `TextureResMgr::GetImage` nhớ mục NULL và **chỉ thử
+nạp lại mỗi 10 giây** (`REP3_RELOAD_COOLDOWN`), hỏng 3 lần thì 10 phút. Hàng trăm ô bị bỏ chỉ ghi được
+vài dòng — đọc số dòng FAIL mà suy ra mức độ là sai.
+
+### Cách sửa (đã làm, 23:0x)
+
+Đặt **chính tệp mà engine hỏi**: `android/sinh_o_nen_mac_dinh.py` rút ô nền
+`\游戏资源\室外地表\中型地表图素\黄稀.spr` (64×64, 27 khung, 256 màu — ô nền **dùng nhiều nhất quanh các
+vùng đen**: 361 lượt, gấp 3,6 lần ô đứng thứ hai) và ghi thành `\system\spr\RegionTileDefault.spr`.
+Các ô thiếu đều xin **khung 0**, nên một tệp là đủ cho mọi bản đồ.
+
+* kho mã nguồn: `android/du_lieu_ghi_de/system/spr/RegionTileDefault.spr` (lớp ghi đè → mọi lần sinh dữ
+  liệu sau đều có; `chuan_bi_du_lieu.ps1` tự hạ chữ thường tên ASCII)
+* dữ liệu đang phát: `D:\jx1_android_data_dt_v4\system\spr\regiontiledefault.spr` + đã chạy
+  `--chi-manifest` (manifest 688 tệp, có dòng `system/spr/regiontiledefault.spr`). **APK không đổi**
+  (vẫn 109142234) — chủ chỉ cần để app tải dữ liệu.
+* bản PC (tôi không được ghi vào `bin\client`): chép tệp trong lớp ghi đè sang
+  `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client\system\spr\RegionTileDefault.spr`.
+* iOS: nhận được ngay khi manifest được **ký** trên Mac (việc số 2 trong `BANGIAO_IOS_BUOC_AB_1109.md`).
+
+Không đụng mã nguồn, không đổi hành vi vẽ, gỡ bỏ chỉ cần xoá tệp.
+
+### Ba bài học
+
+1. **Bộ đếm trong log phải mở đúng dòng mã tăng nó.** `bo` nghe như "bỏ ô nền" nhưng là "tra ảnh SPR
+   trả NULL"; và nó **giảm** khi lỗi lặp lại vì có bộ hẹn 10 giây.
+2. **So phiên phải so cùng bối cảnh.** Ba phiên "sạch" trước đó chỉ ở map 324/379 vùng lành; kết luận
+   "bản mới gây lỗi" là sai vì chủ đã đổi bản đồ.
+3. **Đọc dữ liệu thật, đừng quét byte thô.** Hai lần quét thô trước đó cho kết quả mâu thuẫn vì mục pak
+   bị nén UCL; chỉ khi giải nén đúng mới ra danh sách ô nền đúng.
