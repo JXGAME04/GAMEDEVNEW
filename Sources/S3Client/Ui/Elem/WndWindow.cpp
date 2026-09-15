@@ -5,6 +5,9 @@
 //	CreateTime:	2002-7-9
 *****************************************************************************************/
 #include "KWin32.h"
+#ifdef JX_MOBILE
+#include <typeinfo>	// [TGPHA 14/09 c] ten lop cua so nang nhat
+#endif
 #include "KIniFile.h"
 #include "../Elem/WndMessage.h"
 #include "WndWindow.h"
@@ -688,7 +691,16 @@ void KWndWindow::Paint()
 			// [PDET-UI 14/09 c] bo goc lop (0x0, gom ca con) de thay cua so that
 			if (dJx > g_dJxUiMaxMs && (m_Width > 0 || m_Height > 0)) { g_dJxUiMaxMs = dJx; g_pJxUiMax = this; g_nJxUiMaxX = m_nAbsoluteLeft; g_nJxUiMaxY = m_nAbsoluteTop; g_nJxUiMaxW = m_Width; g_nJxUiMaxH = m_Height; g_pszJxUiMaxLop = UiTenLopPhu();
 				// [UITEN 14/09] chep (khong giu con tro) vi cua so co the bi huy truoc luc UiShell in dong [PDET-UI]
-				strncpy(g_szJxUiMaxTen, GetMucIni(), sizeof(g_szJxUiMaxTen) - 1); g_szJxUiMaxTen[sizeof(g_szJxUiMaxTen) - 1] = 0; }
+				// [TGPHA 14/09 c] ten muc ini KHONG duy nhat (rat nhieu lop dat muc goc la "Main") -> ghi kem TEN LOP
+				// nhu [PHONGBANG] lam, cat chu so dau cua ten ma hoa GCC ("16KUiFoo" -> "KUiFoo").
+				{
+					const char* pszJxLop = typeid(*this).name();
+					const char* pszJxSp = strrchr(pszJxLop, ' ');
+					if (pszJxSp) pszJxLop = pszJxSp + 1;
+					while (*pszJxLop >= '0' && *pszJxLop <= '9') pszJxLop++;
+					_snprintf(g_szJxUiMaxTen, sizeof(g_szJxUiMaxTen) - 1, "%s|%s", pszJxLop, GetMucIni());
+					g_szJxUiMaxTen[sizeof(g_szJxUiMaxTen) - 1] = 0;
+				} }
 		}
 #endif
 	}

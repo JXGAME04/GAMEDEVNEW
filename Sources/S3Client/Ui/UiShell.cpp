@@ -399,16 +399,16 @@ void UiPaint(int nGameLoop)
 #ifdef JX_MOBILE
 				// [PHAVE 11/09] tach 'render' thanh nam pha cua Wnd_RenderWindows
 				extern double g_dJxPhaVe[5];
-				extern double g_dJxPhaCanh[11]; extern double g_dJxTgPha[3];	// [TGPHA 14/09]	// [PHACANH 11/09] bay pha + [PHACANH2 11/09] ba cho con sot
+				extern double g_dJxPhaCanh[11]; extern double g_dJxTgPha[3]; extern char g_szJxUiMaxTen[64]; extern double g_dJxUiMaxMs;	// [TGPHA 14/09]	// [PHACANH 11/09] bay pha + [PHACANH2 11/09] ba cho con sot
 				fprintf(pLog, "[PDET] begin=%u render=%u end=%u | the gioi %.1f, neo cua so %.1f, lop duoi %.1f, lop giua %.1f, lop tren %.1f"
 					" | canh: nen %.1f, nen dat %.1f, phu nen %.1f, VAT THE %.1f, tren dau %.1f, truoc het %.1f, thoi tiet %.1f"
 					" | dau ham %.1f, CHO KHOA %.1f, tong Paint %.1f, chon muc tieu %.1f"
-					" | the gioi: ban than %.1f, con %.1f\n",	// [TGPHA 14/09]
+					" | the gioi: ban than %.1f, con %.1f | cua so nang nhat [%s] %.1f ms\n",	// [TGPHA 14/09]
 					nPdT1 - nPdT0, nPdT2 - nPdT1, nPdT3 - nPdT2,
 					g_dJxPhaVe[0], g_dJxPhaVe[1], g_dJxPhaVe[2], g_dJxPhaVe[3], g_dJxPhaVe[4],
 					g_dJxPhaCanh[0], g_dJxPhaCanh[1], g_dJxPhaCanh[2], g_dJxPhaCanh[3], g_dJxPhaCanh[4], g_dJxPhaCanh[5], g_dJxPhaCanh[6],
 					g_dJxPhaCanh[7], g_dJxPhaCanh[8], g_dJxPhaCanh[9], g_dJxPhaCanh[10],
-					g_dJxTgPha[0], g_dJxTgPha[1]);	// [TGPHA 14/09]
+					g_dJxTgPha[0], g_dJxTgPha[1], g_szJxUiMaxTen[0] ? g_szJxUiMaxTen : "?", g_dJxUiMaxMs);	// [TGPHA 14/09 b]	// [TGPHA 14/09]
 				if (g_dJxPhaVe[2] + g_dJxPhaVe[3] + g_dJxPhaVe[4] >= 20.0)
 				{	// [PDET-UI 14/09] ba lop UI >= 20 ms: cua so goc ve lau nhat (vi tri/co theo man hinh, lop phu neu co) de biet cua so nao nang
 					extern double g_dJxUiMaxMs; extern int g_nJxUiMaxX, g_nJxUiMaxY, g_nJxUiMaxW, g_nJxUiMaxH; extern const char* g_pszJxUiMaxLop; extern const void* g_pJxUiMax; extern char g_szJxUiMaxTen[64];	// [UITEN 14/09]
