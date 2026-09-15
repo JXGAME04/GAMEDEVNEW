@@ -34,6 +34,8 @@ extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char*
 extern "C" int JxTaiDuLieu_KiemPhienBan(const char* pszThuMuc, int nPhienBanApp, char* pszLoi, int nLoi);
 #define JX_PHIEN_BAN_APP  20260912   // tang moi lan phat hanh (dang ngay)
 extern "C" int JxIosAnGame_Co(void);   // [IOS-AN 11/09] nut an game co day duoc xuong nen khong
+// [IOS-LOG 13/09] gui nhat ky ve may chu tren PC (ios/JxIosNhatKy.mm), chung thu muc voi ban Android
+extern "C" int JxNhatKy_Bat(const char* pszThuMuc);
 
 // [IOS-KYHIEU 11/09] cac ham ma tren Windows/Android nam trong DLL/.so rieng; tren iOS chung link tinh
 // vao cung mot nhi phan nen chi can khai bao roi lay dia chi. Voi ham lien ket kieu C thi trinh lien ket
@@ -180,6 +182,8 @@ int main(int argc, char* argv[])
 		JxIosLog("[IOS] chdir(%s) that bai: %s", s_szDir, strerror(errno));
 	JxIosLog("[IOS] thu muc du lieu: %s (SDL %d.%d.%d)", s_szDir, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
 	JxIosLog("[IOS-AN] nut an game: %s", JxIosAnGame_Co() ? "day han xuong nen duoc" : "KHONG, chi mo duoc dia chi ngoai");
+	// [IOS-LOG 13/09] bat gui nhat ky ve may chu tren PC; [IOS-LOG 14/09] ghi ket qua vao jx_ios.log de kiem duoc tu xa
+	JxIosLog("[IOS-LOG] gui nhat ky ve may chu PC: %s", JxNhatKy_Bat(s_szDir) ? "BAT" : "tat (khong co may_chu_nhatky.txt / may_chu_tai.txt)");
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
 
 	// [IOS-KYHIEU 11/09] iOS khong nap duoc thu vien dong: dang ky truoc cac ham ma ma chung van
