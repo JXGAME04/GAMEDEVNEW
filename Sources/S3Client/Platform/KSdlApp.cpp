@@ -32,6 +32,28 @@ static KSdlApp* s_pSdlApp = NULL;
 #include "JxCanDieuKhien.h"
 #include "JxLiaCanh.h"	// [LIA 13/09] lia canh: mot ngon keo tren ban do
 #include "../Ui/Elem/UiToaDo.h"	// [ANDROID 09/09 SUAKEO] UiToaDo_DangSua	// [ANDROID 09/09 CAN] can dieu khien ao
+// KHONG mo #ifdef JX_MOBILE o day: doan nay da nam TRONG khoi JX_MOBILE mo o tren, lop rao thu hai la thua.
+void UiLuuKhiVaoNen();	// [MOBILE-NEN 15/09] dinh nghia o Ui/UiShell.cpp
+// [MOBILE-NEN 15/09] Bo theo doi su kien. Cac su kien vong doi KHONG vao hang doi: SDL_events.c ghi ro "We won't
+// actually queue this event" roi goi thang danh sach theo doi, nen SDL_PollEvent khong bao gio thay chung.
+// Gia tri tra ve bi BO QUA voi bo theo doi (khac bo loc su kien); tra true chi cho dung quy uoc.
+// Tren iOS ham chay luc bom su kien nen khong chen ngang giua khung; tren Android no CO THE chay giua khung
+// (Android_WaitActiveAndLockActivity). Ham chi ghi mot tep ini, khong goi lai SDL, khong giu khoa -> an toan ca hai.
+static bool SDLCALL JxTheoDoiVongDoi(void* pRieng, SDL_Event* pSuKien)
+{
+	(void)pRieng;
+	bool bVaoNen = (pSuKien && pSuKien->type == SDL_EVENT_WILL_ENTER_BACKGROUND);
+#ifdef JX_IOS
+	// CHI iOS moi bat them TERMINATING. Tren Android, luc vuot tat app da co duong thoat thuong lo viec luu
+	// (nativeSendQuit -> WM_CLOSE -> UiExit), them nhanh nay la ghi de tep ini LAN HAI ngay trong cua so 1 giay
+	// cua luc bi huy; ma KIniFile::Save ghi de toan bo tep nen de dut nua chung.
+	if (pSuKien && pSuKien->type == SDL_EVENT_TERMINATING)
+		bVaoNen = true;
+#endif
+	if (bVaoNen)
+		UiLuuKhiVaoNen();
+	return true;
+}
 #endif
 
 #ifdef JX_MOBILE
@@ -542,6 +564,12 @@ BOOL KSdlApp::Init(HINSTANCE hInstance, char* AppName)
 		g_DebugLog("[SDL] SDL_Init loi: %s", SDL_GetError());
 		return FALSE;
 	}
+#ifdef JX_MOBILE
+	// [MOBILE-NEN 15/09] SDL KHONG day cac su kien vong doi vao hang doi thuong (SDL_events.h: "must be handled in a
+	// callback set with SDL_AddEventWatch"), nen SDL_PollEvent khong bao gio thay chung. Bat o day de
+	// con kip luu cau hinh truoc khi iOS treo app.
+	SDL_AddEventWatch(JxTheoDoiVongDoi, NULL);
+#endif
 	// cua so co dung kich thuoc vung ve nhu KWin32App::InitWindow (WND_INIT_WIDTH x WND_INIT_HEIGHT), khong doi co
 #ifdef JX_IOS	// [IOS-MATDO 11/09] thieu co nay thi SDL chay o 1x (diem thay vi diem anh) -> khung ve sai, hinh mo
 	m_pWindow = SDL_CreateWindow(m_szTitle, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_HIGH_PIXEL_DENSITY);
@@ -704,9 +732,14 @@ void KSdlApp::Run()
 				SinhHover();
 				if (!GameLoop())
 				{
+#ifdef JX_IOS
+					// [IOS-NEN 15/09] iOS: khong thoat. HandleInput(WM_CLOSE) tra 0 khi g_bScreen bat hoac chuoi thong bao
+					// rong -> se ra khoi main va de lai tien trinh khong con cua so. iOS de he dieu hanh tat app.
+#else
 					// KWin32App: PostMessage(WM_CLOSE) -> MsgProc -> HandleInput(WM_CLOSE) (hoi thoat neu chua thoat)
 					if (HandleInput(WM_CLOSE, 0, 0) == 0)
 						bQuit = true;
+#endif
 				}
 			}
 		}

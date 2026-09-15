@@ -21,6 +21,9 @@ void		UiOnGameServerStartSyncEnd(bool changegs);	  //fix by phong ki“u change gs
 void		UiResumeGame();							
 void		UiEndGame();							
 void		UiSetSwitchSceneStatus(int bSwitching);
+#ifdef JX_MOBILE	// [MOBILE-NEN 15/09] luu cau hinh luc app vao nen (ca Android lan iOS).
+void		UiLuuKhiVaoNen();
+#endif
 
 #include "Elem/ComWindow.h"
 #include "Elem/WndButton.h"

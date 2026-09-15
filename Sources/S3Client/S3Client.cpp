@@ -1236,8 +1236,13 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 					AUTOLOG_EVERY(1000, "[FIGHT-RET] pass=%u t=%u fightret=%d nDT=%d moving=%d vis=%d near=%d appr=%d fback=%d fbvis=%d selfb=%d selboss=%d skipboss=%d fmode=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, bMoving, pApData->nVision, pApData->nNearDist, pApData->bApproach, pApData->bFightBack, pApData->nFBVision, pApData->nSelFBack, pApData->nSelBoss, pApData->bSkipGoldboss, g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0));
 					if(bLaunch == 2)
 					{
+#ifdef JX_IOS
+						// [IOS-NEN 15/09] iOS: khong thoat app, va KHONG return - return se cat ngang moi nhip auto khi
+						// dieu kien con dung, lam auto dung im lang. Bo qua thi auto choi tiep.
+#else
 						PostQuitMessage(0);
 						return;
+#endif
 					}
 					if(!bLaunch)
 						AUTOLOG_EVERY(1000, "[FIGHT-SKIP] fight tra 0 -> RESETMOVE moving=%d nDT=%d vis=%d near=%d", (int)bMoving, nDT, pApData->nVision, pApData->nNearDist);
