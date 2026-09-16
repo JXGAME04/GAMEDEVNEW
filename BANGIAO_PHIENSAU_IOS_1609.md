@@ -71,6 +71,39 @@ Bằng chứng: kiểm rào ĐẠT (9 tệp `Sources/`), Release/Debug cây th�
 
 **Báo phiên Android (mới)** — bản đầy đủ, có thứ tự và cách sửa: `BANGIAO_ANDROID_TU_IOS_1609.md`. Tóm tắt: (a) LDPlayer 9 (sdcardfs) **cũng phân biệt hoa/thường Latin-1** → 115 tệp tên Latin-1 hoa cũng không tìm thấy trên Android, nên chuẩn hoá tên trong `TaiDuLieuActivity` như iOS (hoặc đổi tên trên PC); (b) `donPakCu` chỉ xoá `userdata/UiToaDo.ini`, còn `UiToaDo_<id>.ini` theo nhân vật thì không; (c) `st_mtime_ns` (đã ghi trên).
 
+### 2c. Bản MacBook: đã dựng và ĐỐI CHIẾU ĐỒNG BỘ với iPhone (16/09, chủ yêu cầu)
+
+Bản MacBook = **chính bản iOS** (xem `ban-macbook-mot-ban-dung`), cây `build/ios-mac` (`JX_IOS_KHO_DU_LIEU=http://10.0.0.34:8770/`).
+
+**Dựng:** `xcodebuild -destination 'id=<UDID Mac>,arch=arm64'` — ĐẠT, chữ ký hợp lệ (`valid on disk`, `satisfies its Designated Requirement`).
+Nhị phân Mac so với nhị phân iPhone: cùng `arm64`, cùng nền tảng iOS, chỉ khác **10/13909** ký hiệu (do bản Mac khai thêm iPad và
+số bản dựng khác). Mọi ký hiệu và chuỗi của đợt sửa có đủ ở cả hai: `JxTaiDuLieu_DatPhienBanApp`, `JxIos_KhoDuLieu`,
+`_getaddrinfo`, `manifest_dakiem`, `IOS-TENTEP`, `IOS-DON`, `tocao.log`, `[TO CAO]`, `"Tố cáo"` (TCVN3), và các chuỗi giao diện
+UTF-16 ("Tải xuống", "Không kiểm tra được cập nhật", "Máy còn trống"…).
+
+**Đồng bộ dữ liệu — chạy thật trên Mac** (chính `ios/JxTaiDuLieu.mm`, cùng kho và cùng khoá ký mà iPhone dùng): tải trọn
+**7,81 GB / 688 tệp trong 262 giây**, kết quả 0, cổng `phienban.txt` qua. Đối chiếu:
+
+| Phép kiểm | Mac | iPhone |
+|---|---|---|
+| Mục manifest có mặt dưới tên CHUẨN, đúng cỡ | 688/688 | 687/688 (`config.ini` riêng của máy) |
+| Biến thể tên HOA còn lại | 0 | 0 |
+| Tệp mồ côi trong thư mục manifest | 0 | 0 |
+| `da_tai.txt` | 688 dòng, 0 khoá hoa | 688 dòng, 0 khoá hoa |
+| `manifest_dakiem.txt` = chữ ký + manifest kho (nguyên byte) | khớp | khớp |
+| md5 trên 5 tệp lấy ngẫu nhiên | 5/5 | — |
+| Tên chỉ có ở một bên / cùng tên khác cỡ | **không có** | **không có** |
+
+→ **Hai bản đồng bộ y hệt nhau.**
+
+**Chỗ CHƯA tự động hoá được:** bật app iOS lên *màn hình* Mac. `open`/Finder trả "incorrect executable format"; bọc `Wrapper`
++ `WrappedBundle` như gói App Store cũng không lên; `xcrun devicectl` không nhận "My Mac" là thiết bị. Apple chỉ khởi chạy kiểu
+app này qua khung CoreDevice nội bộ mà **nút Run của Xcode** gọi; điều khiển nút đó bằng kịch bản thì macOS chặn
+(`osascript is not allowed assistive access`, cần cấp quyền Accessibility). Muốn xem giao diện: mở
+`build/ios-mac/JX1Ios.xcodeproj`, chọn scheme `jx1ios` + đích **My Mac (Designed for iPad)**, bấm ⌘R.
+**Bẫy đã trả giá:** đừng sửa nhị phân bằng `vtool` rồi ký tay — gói sẽ bị `SIGKILL (Code Signature Invalid)` lúc mở, mất công
+truy ngược; dựng sạch bằng `xcodebuild` là xong.
+
 ---
 
 ## 3. Máy trạng thái lúc mở app (đã cài, đã thử)
