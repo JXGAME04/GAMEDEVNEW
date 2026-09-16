@@ -11,6 +11,51 @@
  * Tep nay KHONG dung tien bien dich (PCH) cua S3Client: PCH do dat _WIN32_WINNT = 0x0400 (NT 4.0),
  * ma ta can khai bao cua Vista tro len. Da dat NotUsing trong S3Client.vcxproj cho rieng tep nay.
  */
+#ifdef JX_MOBILE
+/*
+ * [MAYID 16/09] Android / iOS (nhanh mobile-0809 rao bang JX_MOBILE): KHONG co SMBIOS, PhysicalDrive, GetAdaptersInfo.
+ * Giu nguyen cach cu cua ban mobile: shim GetCurrentHwProfile trong Engine/Src/Platform/KPosixWin32.cpp bam
+ * hostname + thu muc du lieu thanh chuoi dang "{%08lX-4E44-4A58-B1B1-%012lX}" (38 ky tu, bat dau bang '{' nen may chu
+ * dem/da binh thuong, khong roi vao hang C). Login.cpp / NetConnectAgent.cpp goi JX_GetMachineId() o ca hai nen.
+ * CHUA DUNG THU tren mobile trong phien 16/09 (phien PC) - khi gop sang mobile-0809 phai them tep nay vao danh sach
+ * nguon S3Client cua android/CMakeLists.txt va dung thu.
+ */
+#include "KWin32.h"
+#include <string.h>
+#include "KMachineId.h"
+
+static char s_szMachineId[40] = { 0 };
+
+const char* JX_GetMachineId(void)
+{
+	if (s_szMachineId[0] == 0)
+	{
+		HW_PROFILE_INFO hw;
+
+		memset(&hw, 0, sizeof(hw));
+
+		if (GetCurrentHwProfile(&hw) && hw.szHwProfileGuid[0])
+		{
+			strncpy(s_szMachineId, hw.szHwProfileGuid, sizeof(s_szMachineId) - 1);
+			s_szMachineId[sizeof(s_szMachineId) - 1] = 0;
+		}
+		else
+		{
+			strcpy(s_szMachineId, "C00000000000000000000000000000000");
+		}
+	}
+
+	return s_szMachineId;
+}
+
+char JX_GetMachineIdTier(void)
+{
+	return JX_GetMachineId()[0];
+}
+
+#else /* ---- PC (Windows that) ---- */
+
+
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0600
 #endif
@@ -855,3 +900,5 @@ char JX_GetMachineIdTier(void)
 {
 	return JX_GetMachineId()[0];
 }
+
+#endif /* JX_MOBILE */
