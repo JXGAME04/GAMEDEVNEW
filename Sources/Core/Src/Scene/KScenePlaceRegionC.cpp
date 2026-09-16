@@ -46,6 +46,7 @@ KScenePlaceRegionC::KScenePlaceRegionC()
 	m_pPrerenderGroundImg = NULL;
 #ifdef JX_MOBILE
 	JxNenDatLai();	// [NENTRUOC 13/09] [NENTRUOC 13/09 b]
+	m_bJxNenAnhCu = false;	// [NENNHIN 16/09]
 #endif
 
 	memset(m_TrapInfo, 0, sizeof(m_TrapInfo));
@@ -216,6 +217,7 @@ void KScenePlaceRegionC::Clear()
 	memset(&m_BiosData, 0, sizeof(KBiosData));
 #ifdef JX_MOBILE
 	JxNenDatLai();	// [NENTRUOC 13/09] [NENTRUOC 13/09 b]
+	m_bJxNenAnhCu = false;	// [NENNHIN 16/09] da bo anh nen
 #endif
 	m_Status = REGION_S_STANDBY;
 }
@@ -335,6 +337,7 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 		JX_NEN_VE(nNum);	// [GOMNEN 12/09]
 	}
 #ifdef JX_MOBILE
+	m_bJxNenAnhCu = true;	// [NENNHIN 16/09] tu day anh nen la anh dung cua vung nay: OK_FLAG bi dat lai thi van ve anh nay toi khi ghep lai xong
 	{	// [NENDO 13/09 b] tung vung: tong = xoa (ClearImageData) + ghep (DrawPrimitivesOnImage); ghi >= 3 ms de tim 17 ms/vung XA tren Fold 7
 		extern int g_nCorePaintLog;
 		QueryPerformanceCounter(&jxR2);
@@ -866,7 +869,14 @@ void KScenePlaceRegionC::PaintGroundDirect()
 //##ModelId=3DDBD8C80309
 void KScenePlaceRegionC::PaintGround(BOOL bPrerenderGroundImg)//add by phong kiÒu h×nh nÒn hoa s¬n
 {
+#ifdef JX_MOBILE
+	// [NENNHIN 16/09] OK_FLAG = false chi la 'can ghep lai' (SetNestRegion moi khi vung ke moi nap xong, ChangeProcessArea): anh cu van la
+	// anh DUNG cua vung nay -> van ve anh cu cho toi khi ghep lai xong. Roi xuong PaintGroundDirect tren mobile = bo o chua nap
+	// (TextureResMgr::GetImage tra NULL khi dang ve, PrepareFrameData bo ve) = o den roi hien lai = chop; PC nap dong bo nen khong thay.
+	if (m_pPrerenderGroundImg && bPrerenderGroundImg && (m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG || m_bJxNenAnhCu))
+#else
 	if (m_pPrerenderGroundImg && bPrerenderGroundImg && m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG)
+#endif
 	{
 		//g_DebugLog("preren [%d][%x]", m_pPrerenderGroundImg->bRenderStyle, m_pPrerenderGroundImg->Color.Color_dw);
 		g_pRepresent->DrawPrimitives(1, m_pPrerenderGroundImg, RU_T_IMAGE, false);
@@ -1166,6 +1176,9 @@ void KScenePlaceRegionC::LeaveProcessArea()
 		m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG = false;
 	}
 	m_pPrerenderGroundImg = NULL;
+#ifdef JX_MOBILE
+	m_bJxNenAnhCu = false;	// [NENNHIN 16/09] da tra anh nen
+#endif
 	if (m_BiosData.pLeafs)
 	{
 		free(m_BiosData.pLeafs);
@@ -1184,6 +1197,9 @@ void KScenePlaceRegionC::EnterProcessArea(KRUImage *pImage)
 			m_pPrerenderGroundImg->GROUND_IMG_OCCUPY_FLAG = false;
 			m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG = false;
 		}
+#ifdef JX_MOBILE
+		m_bJxNenAnhCu = false;	// [NENNHIN 16/09] anh khac (hoac NULL): chua co noi dung cua vung nay
+#endif
 		if (m_pPrerenderGroundImg = pImage)
 		{
 			m_pPrerenderGroundImg->GROUND_IMG_OCCUPY_FLAG = true;

@@ -97,6 +97,12 @@ class KScenePlaceRegionC
 	int      m_nJxNenCho;		// so o con cho trong m_jxNenCho (-1 = qua nhieu, hoi lai tat ca)
 	bool     m_bJxNenDaHoi;		// da hoi du mot lan
 	unsigned short m_jxNenCho[640];	// chi so o (grunode roi object) con 'dang chuan bi', tang dan
+	// [NENNHIN 16/09] anh nen dang cam co noi dung cua CHINH vung nay (da ghep xong >= 1 lan). GROUND_IMG_OK_FLAG = false tu do chi con
+	// nghia 'can ghep lai' (SetNestRegion / ChangeProcessArea), KHONG con nghia 've truc tiep': PaintGroundDirect tren mobile bo o chua nap
+	// (GetImage tra NULL / bo ve khi dang ve) nen roi vao no la o den + chop; PC nap dong bo nen hai duong cho cung diem anh.
+	bool JxNenCoAnhCu() const { return m_bJxNenAnhCu; }
+	void JxNenAnhCuDat(bool b) { m_bJxNenAnhCu = b; }
+	bool     m_bJxNenAnhCu;
 #endif
 
 	//##ModelId=3DDBD8C80309

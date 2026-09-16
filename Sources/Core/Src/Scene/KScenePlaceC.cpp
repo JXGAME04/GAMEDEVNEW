@@ -1200,6 +1200,28 @@ static double JxCanhMs(const LARGE_INTEGER& a, const LARGE_INTEGER& b)
 	return s_dF > 0.0 ? (double)(b.QuadPart - a.QuadPart) * 1000.0 / s_dF : 0.0;
 }
 #endif
+#ifdef JX_MOBILE
+// [NENNHIN 16/09] Vung co giao vung ve (m_RepresentArea + 64 px) khong - cung phep thu Paint() dung de chon vung ve nen.
+static inline bool JxNenVungNhin(const POINT& RgIdx, const RECT& rc)
+{
+	const LONG nL = RgIdx.x * (LONG)KScenePlaceRegionC::RWPP_AREGION_WIDTH, nT = RgIdx.y * (LONG)KScenePlaceRegionC::RWPP_AREGION_HEIGHT;
+	return !(nL >= rc.right || nL + (LONG)KScenePlaceRegionC::RWPP_AREGION_WIDTH <= rc.left || nT >= rc.bottom || nT + (LONG)KScenePlaceRegionC::RWPP_AREGION_HEIGHT <= rc.top);
+}
+// [NENNHIN 16/09] moc nhat ky (jx_paint.log, PaintLog=1): vung cach tieu diem >= 2 nhung dang tren man hinh duoc ghep theo nhanh ke ben; 24 dong dau
+static unsigned g_uJxNenNhinSo = 0, g_uJxNenNhinNgay = 0;
+static void JxNenNhinGhi(const POINT& RgIdx, int nDx, int nDy, bool bNgay)
+{
+	extern int g_nCorePaintLog;
+	g_uJxNenNhinSo++;
+	if (bNgay) g_uJxNenNhinNgay++;
+	if (g_nCorePaintLog <= 0 || g_uJxNenNhinSo > 24) return;
+	FILE* p = fopen("jx_paint.log", "a");
+	if (!p) return;
+	fprintf(p, "[NENNHIN] vung (%d,%d) cach tieu diem %d,%d dang tren man hinh -> ghep theo nhanh ke ben (%s) [tong %u, ghep ngay %u]\n",
+		RgIdx.x, RgIdx.y, nDx, nDy, bNgay ? "chua co anh: ghep ngay" : "co anh cu: theo ngan sach", g_uJxNenNhinSo, g_uJxNenNhinNgay);
+	fclose(p);
+}
+#endif
 
 void KScenePlaceC::Paint()
 {
@@ -1443,6 +1465,10 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 	// m_bRenderGround. Toi da ~8ms de con cho khau ve trong chu ky 16,67ms.
 	DWORD	dwPgT0 = timeGetTime();
 	const DWORD	dwPgBudgetMs = 8;
+#ifdef JX_MOBILE
+	RECT rcJxNhin = m_RepresentArea;	// [NENNHIN 16/09] vung ve cua khung nay (+64 px nhu rcGroundView trong Paint())
+	rcJxNhin.left -= 64; rcJxNhin.top -= 64; rcJxNhin.right += 64; rcJxNhin.bottom += 64;
+#endif
 #if defined(JX_MOBILE) && !defined(_SERVER)
 	LARGE_INTEGER jxN0, jxN1, jxNF; QueryPerformanceFrequency(&jxNF);	// [NENDAT 11/09]
 	for (int q = 0; q < 3; q++) { g_dJxNenNhanh[q] = 0.0; g_nJxNenSo[q] = 0; }
@@ -1472,23 +1498,37 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 			// nen ngay duoi chan nguoi choi se bi cu vai khung, rat de thay.
 			JX_NEN_DO(0, m_pInProcessAreaRegions[i]->PrerenderGround(false));	// [NENDAT 11/09]
 		}
+#ifdef JX_MOBILE
+		else if ((nDx <= 1 && nDy <= 1) || JxNenVungNhin(RgIdx, rcJxNhin))
+		{	// [NENNHIN 16/09] ke ben HOAC DANG TREN MAN HINH. Luat cu chi coi 8 vung ke ben la 'trong tam nhin' - dung voi man PC 800x600 / 1024x768,
+			// sai tren dien thoai: khung 1040x936 + nhin rong 120-150 % (camera_mobile.ini / chum ngon) cho thay ca vung cach tieu diem 2 (nua tam nhin
+			// toi 920 px = 1,8 vung ngang, 1,5 vung doc). Vung do roi vao nhanh XA (1 vung/khung + hoan NENTRUOC toi 1,5 s), va trong luc cho
+			// PaintGround ve bang PaintGroundDirect - tren mobile duong do BO o chua nap (GetImage tra NULL / bo ve khi dang ve: TextureResMgr.cpp:522,
+			// TextureRes.cpp:655) = o den roi lan luot hien = 'den mang / chop mang', chi thay tren man rong. PC nap dong bo nen khong bao gio thay.
+			const bool bJxNhin = JxNenVungNhin(RgIdx, rcJxNhin);
+			const bool bJxNgay = bJxNhin && !m_pInProcessAreaRegions[i]->JxNenCoAnhCu();	// dang tren man hinh ma CHUA co anh nao cua no: ghep NGAY, khong chiu ngan sach
+			if (bJxNgay || timeGetTime() - dwPgT0 < dwPgBudgetMs)
+			{	// [NENTRUOC 13/09 c] vung dang tren man hinh: ghep NGAY nhu cu, KHONG hoan (hoan = nen quanh nhan vat den toi 1,5 s luc vao/quay lai
+				// map vi luong nen dang ngap - chu thay 22:13 13/09). Chi xin nap truoc: vung bi hoan vi ngan sach 8 ms se co khung san o khung sau.
+				m_pInProcessAreaRegions[i]->JxNenTruoc();
+				bool bJxDa = false;
+				JX_NEN_DO(1, bJxDa = m_pInProcessAreaRegions[i]->PrerenderGround(false));	// [NENDAT 11/09]
+				if (bJxDa && bJxNhin && (nDx > 1 || nDy > 1)) JxNenNhinGhi(RgIdx, nDx, nDy, bJxNgay);	// [NENNHIN 16/09] moc nhat ky
+			}
+			else
+				nDeferred++;	// da co anh cu: PaintGround van ve anh cu, ghep lai o khung sau
+		}
+#else
 		else if (nDx <= 1 && nDy <= 1)
 		{
 			// 8 region ke ben (van trong tam nhin o ria): ve ngay NEU con ngan sach,
 			// het ngan sach thi hoan sang khung sau thay vi keo dai khung nay.
 			if (timeGetTime() - dwPgT0 < dwPgBudgetMs)
-#ifdef JX_MOBILE
-			{	// [NENTRUOC 13/09 c] vung KE BEN dang tren man hinh: ghep NGAY nhu cu, KHONG hoan (hoan = nen quanh nhan vat den toi 1,5 s luc vao/quay lai
-				// map vi luong nen dang ngap - chu thay 22:13 13/09). Chi xin nap truoc: vung bi hoan vi ngan sach 8 ms se co khung san o khung sau.
-				m_pInProcessAreaRegions[i]->JxNenTruoc();
 				JX_NEN_DO(1, m_pInProcessAreaRegions[i]->PrerenderGround(false));	// [NENDAT 11/09]
-			}
-#else
-				JX_NEN_DO(1, m_pInProcessAreaRegions[i]->PrerenderGround(false));	// [NENDAT 11/09]
-#endif
 			else
 				nDeferred++;
 		}
+#endif
 		else if (nFarBudget > 0)
 		{
 			// amortize the far ones: a full region prerender costs 10-40ms and
@@ -1963,6 +2003,10 @@ void KScenePlaceC::RepresentShellReset()
 	m_bRenderGround = true;
 	for (int i = 0; i < m_nNumGroundImagesAvailable; i++)
 		m_RegionGroundImages[i].GROUND_IMG_OK_FLAG = false;
+#ifdef JX_MOBILE
+	for (int i = 0; i < SPWP_MAX_NUM_REGIONS; i++)
+		if (m_pRegions[i]) m_pRegions[i]->JxNenAnhCuDat(false);	// [NENNHIN 16/09] thiet bi dat lai: anh nen phai ghep lai tu dau, khong con anh cu de ve
+#endif
 }
 
 //设置场景中一个区域被加载完毕后的回调函数
