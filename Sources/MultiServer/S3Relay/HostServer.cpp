@@ -135,20 +135,48 @@ BOOL CHostServer::FindPlayerByRole(CHostConnect* pConn, const std::_tstring& rol
 	return FALSE;
 }
 
+/*
+ * [MAYID 16/09] Dem so phien dang mang ma may nay tren MOI GameServer dang noi vao relay.
+ *
+ * Truoc: duyet m_mapIp2Connect. Bang do khoa theo DWORD IP: GameServer thu hai cung IP GHI DE muc cua GameServer
+ * thu nhat, va OnClientConnectClose erase(ip) khi MOT trong hai dong => co luc khong GameServer nao cua IP do
+ * duoc dem. Nay duyet m_mapId2Connect cua CNetServer (moi ket noi dang song, giong CNetServer::Route).
+ *
+ * Cong don bang int va KEP o 255: num_login tren day (KTongProtocol.h) la BYTE, 256 phien cung ma se quay ve 0
+ * = qua nguong; ma dung chung (KHONG-KHAI-MA-MAY, UUID mau...) hoan toan co the toi con so do.
+ */
+struct _MayIdDemCtx
+{
+	const std::_tstring* pHwid;
+	int nTong;
+	int nKetNoi;
+};
+
+static void _MayIdDemMotKetNoi(CNetConnect* pConn, void* pCtx)
+{
+	_MayIdDemCtx* p = (_MayIdDemCtx*)pCtx;
+
+	p->nKetNoi++;
+	p->nTong += ((CHostConnect*)pConn)->CountLoginByHWID(*p->pHwid);
+}
+
 BYTE CHostServer::CountLoginByHWID(CHostConnect* pConn, const std::_tstring& hwid)
 {
-	AUTOLOCKREAD(m_lockIpMap);
-	BYTE total = 0;
-	for (IP2CONNECTMAP::iterator it = m_mapIp2Connect.begin(); it != m_mapIp2Connect.end(); it++)
-	{
-		CHostConnect* pConnMe = (*it).second;
+	_MayIdDemCtx ctx;
 
-		assert(pConnMe);
-		if (pConnMe)
-			total += pConnMe->CountLoginByHWID(hwid);	//fix by phong kiÒu count trªn tÊt c¶ GS
+	ctx.pHwid = &hwid;
+	ctx.nTong = 0;
+	ctx.nKetNoi = 0;
+
+	ForEachConnect(_MayIdDemMotKetNoi, &ctx);
+
+	if (ctx.nTong > 255)
+	{
+		rTRACE("[MAYID] ma may [%s] co %d phien tren %d GameServer, KEP ve 255", hwid.c_str(), ctx.nTong, ctx.nKetNoi);
+		ctx.nTong = 255;
 	}
 
-	return total;
+	return (BYTE)ctx.nTong;
 }
 
 BOOL CHostServer::FindPlayerByIpParam(CHostConnect* pConn, DWORD ip, unsigned long param, CNetConnectDup* pConnDup, std::_tstring* pAcc, std::_tstring* pRole, DWORD* pNameID)

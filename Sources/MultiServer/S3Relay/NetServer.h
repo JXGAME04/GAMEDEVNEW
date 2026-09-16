@@ -46,6 +46,11 @@ public:
 
 	BOOL BroadPackage(const void* pData, size_t size);
 
+	// [MAYID 16/09] Duyet MOI ket noi dang song (m_mapId2Connect). Dung de dem theo ma may qua tat ca GameServer:
+	// m_mapIp2Connect cua CHostServer khoa theo IP nen hai GameServer chung IP chi giu duoc mot => dem sot.
+	typedef void (*PFN_DUYET_CONNECT)(CNetConnect* pConn, void* pCtx);
+	void ForEachConnect(PFN_DUYET_CONNECT pfn, void* pCtx);
+
 private:
 	typedef std::map<unsigned long, CNetConnect*>	ID2CONNECTMAP;
 	ID2CONNECTMAP m_mapId2Connect;

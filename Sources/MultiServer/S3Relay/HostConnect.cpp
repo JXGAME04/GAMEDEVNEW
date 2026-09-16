@@ -718,11 +718,11 @@ BOOL CHostConnect::FindPlayerByRole(const std::_tstring& role, std::_tstring* pA
 	return TRUE;
 }
 
-BYTE CHostConnect::CountLoginByHWID(const std::_tstring& hwid)
+int CHostConnect::CountLoginByHWID(const std::_tstring& hwid)
 {
 	DUMMY_AUTOLOCKREAD(m_lockPlayer);
 	
-	BYTE mCount = 0;
+	int mCount = 0;
 	for (PARAMMAP::iterator it = m_mapParam.begin(); it != m_mapParam.end(); it++)
 	{
 		const PARAMINFO& infoParam = (*it).second;

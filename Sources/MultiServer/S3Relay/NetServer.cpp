@@ -263,6 +263,23 @@ CNetConnectDup CNetServer::FindNetConnect(unsigned long id)
 	return CNetConnectDup(*pNetConn);
 }
 
+// [MAYID 16/09] xem NetServer.h
+void CNetServer::ForEachConnect(PFN_DUYET_CONNECT pfn, void* pCtx)
+{
+	AUTOLOCKREAD(m_lockAccess);
+
+	if (!pfn)
+		return;
+
+	for (ID2CONNECTMAP::iterator it = m_mapId2Connect.begin(); it != m_mapId2Connect.end(); it++)
+	{
+		CNetConnect* pNetConnect = (*it).second;
+
+		if (pNetConnect)
+			pfn(pNetConnect, pCtx);
+	}
+}
+
 BOOL CNetServer::BroadPackage(const void* pData, size_t size)
 {
 	if (!m_ready || m_pServer == NULL)

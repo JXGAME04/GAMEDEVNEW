@@ -93,7 +93,7 @@ public:
 	BOOL FindPlayerByAcc(const std::_tstring& acc, std::_tstring* pRole, DWORD* pNameID, unsigned long* pParam, std::_tstring* pRealAcc = NULL);
 	BOOL FindPlayerByRole(const std::_tstring& role, std::_tstring* pAcc, DWORD* pNameID, unsigned long* pParam, std::_tstring* pRealRole = NULL);
 	BOOL FindPlayerByParam(unsigned long param, std::_tstring* pAcc, std::_tstring* pRole, DWORD* pNameID);
-	BYTE  CountLoginByHWID(const std::_tstring& hwid);
+	int  CountLoginByHWID(const std::_tstring& hwid);	// [MAYID 16/09] int, khong con BYTE (256 phien se quay ve 0)
 	//BOOL BroadOnPlayer(BOOL byAcc, DWORD fromIP, unsigned long fromRelayID, const void* pData, size_t size);
 	BOOL ncheckMapIn(int nMapID);
 public:
