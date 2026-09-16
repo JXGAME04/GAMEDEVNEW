@@ -9,6 +9,7 @@
 #include "KEngine.h"
 #include "LoginDef.h"
 #include "Login.h"
+#include "KMachineId.h"		/* [MAYID 14/09] ma may lay tu phan cung that */
 #include "../NetConnect/NetConnectAgent.h"
 #include "KProtocol.h"
 #include "crtdbg.h"
@@ -1092,14 +1093,9 @@ extern void RandMemSet(int nSize, unsigned char *pbyBuffer);
 //--------------------------------------------------------------------------
 int KLogin::Request(const char* pszAccount, const KSG_PASSWORD* pcPassword, int nAction)
 {
-	HW_PROFILE_INFO hwProfileInfo;
-	char* szHwID;
-	if (GetCurrentHwProfile(&hwProfileInfo))
-	{
-		//printf("HWID: %s\n", hwProfileInfo.szHwProfileGuid);
-		//hwProfileInfo.szHwProfileGuid;
-		szHwID = hwProfileInfo.szHwProfileGuid;
-	}
+	/* [MAYID 14/09] ma may nay lay tu phan cung that, xem KMachineId.cpp. Bo GetCurrentHwProfile vi no
+	 * chi la khoa registry sinh luc cai Windows => ca dan may ghost cung mot ma. */
+	const char* szHwID = JX_GetMachineId();
 	if(szHwID[0])
 	{
 		//BYTE		Buff[sizeof(KLoginLimitInfo) + PROTOCOL_MSG_SIZE];
@@ -1137,10 +1133,8 @@ int KLogin::Request(const char* pszAccount, const KSG_PASSWORD* pcPassword, int 
         pInfo->ProtocolVersion = KPROTOCOL_VERSION;    //  传输协议版本，以便校验是否兼容
         #endif
 
-		if(szHwID[0])
-		{
-			strncpy(pInfo->sHWID,  szHwID, sizeof(pInfo->sHWID));
-		}
+		memset(pInfo->sHWID, 0, sizeof(pInfo->sHWID));
+		strncpy(pInfo->sHWID, szHwID, sizeof(pInfo->sHWID) - 1);	/* [MAYID 14/09] */
 
 		if (g_NetConnectAgent.SendMsg(Buff, sizeof(KLoginAccountInfo) + PROTOCOL_MSG_SIZE))
 		{

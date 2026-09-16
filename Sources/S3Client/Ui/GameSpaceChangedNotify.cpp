@@ -580,6 +580,13 @@ int CoreDataChangedCallback(unsigned int uDataId, KUPARAM uParam, KNPARAM nParam
 		UiEndGame();
 		KUiConnectInfo::CloseWindow(true);
 		KUiInit::OpenWindow(true, false);
+		/*
+		 * [MAYID 16/09] Truoc day ve thang man hinh dau, KHONG mot loi bao => 'bi da ma khong hieu vi sao'.
+		 * s2c_exitgame dung chung cho lenh da cua GM va cho gioi han so may (RemovePlayerForLimit) nen chi bao chung.
+		 * Thong bao he thong gui truoc do khong dung duoc: UiEndGame() da dong cua so chat. g_UiInformation la cua so
+		 * he thong (UiShell khoi tao), UiEndGame khong dong no nen hien duoc tren man hinh dau.
+		 */
+		UIMessageBox("KÕt nèi ®· bÞ m¸y chñ ®ãng: tµi kho¶n bÞ ®­a ra khái trß ch¬i (th­êng do m¸y nµy ®· v­ît sè tµi kho¶n ®­îc phÐp ch¬i cïng lóc).");
 	}
 	break;
 	case GDCNI_SWITCHING_SCENEPLACE:
