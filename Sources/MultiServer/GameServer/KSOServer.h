@@ -177,6 +177,10 @@ private:
 	// [MAYID 14/09] hang doi dong ket noi TRE sau khi da gui goi thoat (xem chu thich trong KSOServer.cpp)
 	void				XepDongTre(int nIdx);
 	void				XuLyDongTre();
+	// [MAYID 16/09] hang doi HOI so phien tre sau khi ghi so (xem chu thich trong KSOServer.cpp)
+	void				XepHoiTre(int nIdx, int nNetIdx);
+	void				XuLyHoiTre();
+	void				GuiCauHoiMayId(int nIdx, int nNetIdx);
 	int					ProcessLoginProtocol(const unsigned long lnID, const char* pData, size_t dataLength);
 	BOOL				ProcessSyncReplyProtocol(const unsigned long lnID, const char* pData, size_t dataLength);
 	void				PingClient(const unsigned long lnID);

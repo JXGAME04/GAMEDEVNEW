@@ -83,6 +83,7 @@ private:
 		std::_tstring role;
 		std::_tstring hwid;
 		DWORD nameID;
+		DWORD seq;		// [MAYID 16/09] thu tu ghi so toan relay (1, 2, ...); 0 = chua co
 	};
 	typedef std::map<unsigned long, PARAMINFO>	PARAMMAP;
 	PARAMMAP m_mapParam;
@@ -94,6 +95,10 @@ public:
 	BOOL FindPlayerByRole(const std::_tstring& role, std::_tstring* pAcc, DWORD* pNameID, unsigned long* pParam, std::_tstring* pRealRole = NULL);
 	BOOL FindPlayerByParam(unsigned long param, std::_tstring* pAcc, std::_tstring* pRole, DWORD* pNameID);
 	int  CountLoginByHWID(const std::_tstring& hwid);	// [MAYID 16/09] int, khong con BYTE (256 phien se quay ve 0)
+	// [MAYID 16/09] seq cua muc (ma may, khe = lnID) tren ket noi nay; 0 = khong co muc nhu the.
+	DWORD TimSeqChinhMinh(const std::_tstring& hwid, unsigned long lnID);
+	// [MAYID 16/09] so muc cung ma may co seq < seqChinhMinh (seqChinhMinh == 0: dem tat ca nhu CountLoginByHWID).
+	int  DemHwidTruoc(const std::_tstring& hwid, DWORD seqChinhMinh);
 	//BOOL BroadOnPlayer(BOOL byAcc, DWORD fromIP, unsigned long fromRelayID, const void* pData, size_t size);
 	BOOL ncheckMapIn(int nMapID);
 public:

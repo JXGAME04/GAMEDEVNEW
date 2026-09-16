@@ -43,6 +43,10 @@ public:
 	BOOL FindPlayerByRole(CHostConnect* pConn, const std::_tstring& role, CNetConnectDup* pConnDup, std::_tstring* pAcc, DWORD* pNameID, unsigned long* pParam, std::_tstring* pRealRole = NULL);
 	BOOL FindPlayerByIpParam(CHostConnect* pConn, DWORD ip, unsigned long param, CNetConnectDup* pConnDup, std::_tstring* pAcc, std::_tstring* pRole, DWORD* pNameID);
 	BYTE CountLoginByHWID(CHostConnect* pConn, const std::_tstring& hwid);
+	// [MAYID 16/09] So phien cung ma may da ghi so TRUOC muc (ma may, khe lnID) cua nguoi hoi, tren MOI GameServer.
+	// Muc cua nguoi hoi duoc tim theo (nSerRegIndex, nGsNumber) cua link Tong, roi theo IP, roi bat ky; khong thay
+	// thi *pbThayChinhMinh = FALSE va tra ve so phien cung ma may (nhu CountLoginByHWID).
+	int DemHwidTruocNguoiHoi(const std::_tstring& hwid, unsigned long lnID, unsigned int nSerRegIndex, unsigned int nGsNumber, DWORD ipHoi, BOOL* pbThayChinhMinh);
 	//BOOL BroadOnPlayer(BOOL byAcc, DWORD fromIP, unsigned long fromRelayID, const void* pData, size_t size);
 public:
 	size_t GetPlayerCount();

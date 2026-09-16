@@ -179,6 +179,84 @@ BYTE CHostServer::CountLoginByHWID(CHostConnect* pConn, const std::_tstring& hwi
 	return (BYTE)ctx.nTong;
 }
 
+/* [MAYID 16/09] xem HostServer.h */
+struct _MayIdTimCtx
+{
+	const std::_tstring* pHwid;
+	unsigned long lnID;
+	unsigned int nSerIdx;
+	unsigned int nGsNum;
+	DWORD ip;
+	int nMucKhop;		// 3 = cung (serRegIndex, gsNumber), 2 = cung IP, 1 = bat ky
+	DWORD dwSeq;
+};
+
+static void _MayIdTimChinhMinh(CNetConnect* pConn, void* pCtx)
+{
+	_MayIdTimCtx* p = (_MayIdTimCtx*)pCtx;
+	CHostConnect* pHost = (CHostConnect*)pConn;
+	DWORD dwSeq = pHost->TimSeqChinhMinh(*p->pHwid, p->lnID);
+	int nMuc;
+
+	if (dwSeq == 0)
+		return;
+
+	if (pHost->getSerRegIndex() == p->nSerIdx && pHost->getGsNumber() == p->nGsNum)
+		nMuc = 3;
+	else if (pHost->GetIP() == p->ip)
+		nMuc = 2;
+	else
+		nMuc = 1;
+
+	/* cung muc khop thi lay muc ghi so MOI NHAT: cau hoi den ngay sau khi ghi so */
+	if (nMuc > p->nMucKhop || (nMuc == p->nMucKhop && dwSeq > p->dwSeq))
+	{
+		p->nMucKhop = nMuc;
+		p->dwSeq = dwSeq;
+	}
+}
+
+struct _MayIdDemTruocCtx
+{
+	const std::_tstring* pHwid;
+	DWORD dwSeq;
+	int nTong;
+};
+
+static void _MayIdDemTruocMotKetNoi(CNetConnect* pConn, void* pCtx)
+{
+	_MayIdDemTruocCtx* p = (_MayIdDemTruocCtx*)pCtx;
+
+	p->nTong += ((CHostConnect*)pConn)->DemHwidTruoc(*p->pHwid, p->dwSeq);
+}
+
+int CHostServer::DemHwidTruocNguoiHoi(const std::_tstring& hwid, unsigned long lnID, unsigned int nSerRegIndex, unsigned int nGsNumber, DWORD ipHoi, BOOL* pbThayChinhMinh)
+{
+	_MayIdTimCtx tim;
+	_MayIdDemTruocCtx dem;
+
+	tim.pHwid = &hwid;
+	tim.lnID = lnID;
+	tim.nSerIdx = nSerRegIndex;
+	tim.nGsNum = nGsNumber;
+	tim.ip = ipHoi;
+	tim.nMucKhop = 0;
+	tim.dwSeq = 0;
+
+	ForEachConnect(_MayIdTimChinhMinh, &tim);
+
+	if (pbThayChinhMinh)
+		*pbThayChinhMinh = (tim.dwSeq != 0);
+
+	dem.pHwid = &hwid;
+	dem.dwSeq = tim.dwSeq;
+	dem.nTong = 0;
+
+	ForEachConnect(_MayIdDemTruocMotKetNoi, &dem);
+
+	return dem.nTong;
+}
+
 BOOL CHostServer::FindPlayerByIpParam(CHostConnect* pConn, DWORD ip, unsigned long param, CNetConnectDup* pConnDup, std::_tstring* pAcc, std::_tstring* pRole, DWORD* pNameID)
 {
 	AUTOLOCKREAD(m_lockIpMap);

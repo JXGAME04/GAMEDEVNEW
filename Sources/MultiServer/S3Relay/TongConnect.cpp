@@ -495,16 +495,50 @@ void CTongConnect::Proc0_Tong(const void* pData, size_t size)
 				this->SendPackage((const void *)&sLogin, sizeof(sLogin));
 		}
 		break;
-	case enumC2S_TONG_GET_LOGIN_LIMIT:  //#limit account 
+	case enumC2S_TONG_GET_LOGIN_LIMIT:  //#limit account
 		{
 			STONG_GET_LOGIN_LIMIT_COMMAND	*pLogin = (STONG_GET_LOGIN_LIMIT_COMMAND*)pData;
 			STONG_RETURN_LOGIN_LIMIT_COMMAND	pSync;
+			/*
+			 * [MAYID 16/09] GameServer moi hoi SAU khi da ghi so (EnterGame) va dat m_dwParam = 0x80000000 | khe mang
+			 * (lnID) cua nguoi hoi. Khi do chi dem nhung phien cung ma may da ghi so TRUOC muc cua nguoi hoi
+			 * => "N nguoi dau o lai", hai nguoi vao cung luc khong con ca hai deu qua (hay ca hai deu bi da).
+			 * Khong tim thay muc cua nguoi hoi (GameServer cu hoi luc logiclogin, hay EnterGame chua toi) thi dem
+			 * tat ca nhu truoc. m_dwParam duoc vong lai nguyen ven de GameServer doi chieu khe truoc khi da.
+			 * Layout goi khong doi (KTongProtocol.h).
+			 */
+			char szHwid[64];
+			BOOL bThayChinhMinh = FALSE;
+			int nTruoc;
+
+			memcpy(szHwid, pLogin->m_szName, sizeof(szHwid));
+			szHwid[sizeof(szHwid) - 1] = 0;
+
 			memset(&pSync, 0, sizeof(STONG_RETURN_LOGIN_LIMIT_COMMAND));
-			pSync.ProtocolFamily			= pf_tong;
-			pSync.ProtocolID					= enumS2C_TONG_LOGIN_LIMIT;
-			pSync.num_login						= 	g_HostServer.CountLoginByHWID(NULL, pLogin->m_szName);
-			pSync.m_dwTongNameID		= pLogin->m_dwTongNameID; //#mapping nIdx
-			strcpy_s(pSync.m_szName, pLogin->m_szName);				//#mapping sHWID
+			pSync.ProtocolFamily = pf_tong;
+			pSync.ProtocolID = enumS2C_TONG_LOGIN_LIMIT;
+			pSync.m_dwParam = pLogin->m_dwParam;
+			pSync.m_dwTongNameID = pLogin->m_dwTongNameID; //#mapping nIdx
+
+			if (pLogin->m_dwParam & 0x80000000u)
+			{
+				nTruoc = g_HostServer.DemHwidTruocNguoiHoi(szHwid, pLogin->m_dwParam & 0x7FFFFFFFu,
+							getSerRegIndex(), getGsNumber(), GetIP(), &bThayChinhMinh);
+
+				if (!bThayChinhMinh)
+					rTRACE("[MAYID] khong thay muc cua nguoi hoi (ma may [%s] khe %u, GS %u/%08X): dem tat ca = %d",
+						szHwid, pLogin->m_dwParam & 0x7FFFFFFFu, getSerRegIndex(), getGsNumber(), nTruoc);
+			}
+			else
+			{
+				nTruoc = g_HostServer.CountLoginByHWID(NULL, szHwid);
+			}
+
+			if (nTruoc > 255)
+				nTruoc = 255;
+
+			pSync.num_login = (BYTE)nTruoc;
+			strncpy(pSync.m_szName, szHwid, sizeof(pSync.m_szName) - 1);	//#mapping sHWID
 			this->SendPackage((const void *)&pSync, sizeof(pSync));
 		}
 		break;
