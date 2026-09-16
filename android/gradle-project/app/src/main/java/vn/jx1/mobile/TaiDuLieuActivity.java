@@ -33,6 +33,8 @@ import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;           // [TENTEP 16/09] kiem md5 tep tai ve
+import java.text.Normalizer;                   // [TENTEP 16/09] ten chuan NFC
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +57,7 @@ public class TaiDuLieuActivity extends Activity
     private String mUrl;                                 // http://.../ (co / cuoi)
     private final AtomicBoolean mHuy = new AtomicBoolean(false);
 
-    private static class Muc { long co; String md5; String duong; }
+    private static class Muc { long co; String md5; String duong; String duongGoc; }   // [TENTEP 16/09] duong = ten CHUAN tren dia, duongGoc = ten trong manifest (URL)
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -280,7 +282,7 @@ public class TaiDuLieuActivity extends Activity
         long tong = 0, coSan = 0;
         for (Muc m : manifest)
         {
-            File f = new File(mThuMuc, m.duong);
+            File f = tepTrenDia(m.duong);          // [TENTEP 16/09] bien the hoa da tai truoc day -> doi ten ve chuan, khong tai lai
             String ghi = daTai.get(m.duong);
             if (f.isFile() && f.length() == m.co && m.md5.equals(ghi))
             {
@@ -293,6 +295,7 @@ public class TaiDuLieuActivity extends Activity
         if (can.isEmpty())
         {
             donPakCu();
+            donMoCoi();     // [TENTEP 16/09] dong bo tron ven -> don tep khong con trong manifest
             vaoGame(0);
             return;
         }
@@ -339,6 +342,7 @@ public class TaiDuLieuActivity extends Activity
                 m.co = Long.parseLong(p[0].trim()); m.md5 = p[1].trim(); m.duong = p[2].trim().replace('\\', '/');
                 if (m.duong.startsWith("/")) m.duong = m.duong.substring(1);
                 if (m.duong.contains("..")) continue;
+                m.duongGoc = m.duong; m.duong = chuanHoa(m.duong);   // [TENTEP 16/09] tren dia luon la ten chuan (JxPathPosix ha Latin-1); URL giu ten goc
                 ds.add(m);
             }
         }
@@ -358,7 +362,7 @@ public class TaiDuLieuActivity extends Activity
             while ((ln = r.readLine()) != null)
             {
                 int i = ln.indexOf('\t');
-                if (i > 0) m.put(ln.substring(i + 1), ln.substring(0, i));
+                if (i > 0) m.put(chuanHoa(ln.substring(i + 1)), ln.substring(0, i));   // [TENTEP 16/09] khoa = ten chuan (ban cu ghi ten hoa van khop)
             }
         }
         catch (IOException ignored) {}
@@ -420,6 +424,7 @@ public class TaiDuLieuActivity extends Activity
         }
         mChinh.post(() -> mThanh.setProgress(1000));
         donPakCu();
+        donMoCoi();     // [TENTEP 16/09] tai xong khong loi = dong bo tron ven
         // [UITOADO 12/09 NEO c] bo cuc mac dinh doi -> bo tep bo cuc nguoi choi luu tren may (userdata/UiToaDo.ini) keo no de len
         // mac dinh moi (tep nay chua ca bang, ke ca o chua tung keo). Chu chinh tren may ao, khong tren dien thoai.
         for (Muc m : ds)
@@ -427,6 +432,14 @@ public class TaiDuLieuActivity extends Activity
             {
                 File cu = new File(mThuMuc, "userdata/UiToaDo.ini");
                 if (cu.isFile() && cu.delete()) android.util.Log.i("JxTai", "bo cuc mac dinh doi -> xoa userdata/UiToaDo.ini");
+                // [TENTEP 16/09] UiToaDoMobile.inc uu tien UserData\UiToaDo_<id>.ini theo nhan vat (game ghi ten chu thuong qua JxPathPosix) -> xoa ca ho nay
+                File[] ud = new File(mThuMuc, "userdata").listFiles();
+                if (ud != null)
+                    for (File t : ud)
+                    {
+                        String tn = t.getName().toLowerCase(Locale.US);
+                        if (t.isFile() && tn.startsWith("uitoado") && tn.endsWith(".ini") && t.delete()) android.util.Log.i("JxTai", "bo cuc mac dinh doi -> xoa userdata/" + t.getName());
+                    }
                 break;
             }
         hien("Tải xong " + mb(tong) + " MB trong " + giay((System.currentTimeMillis() - t0) / 1000) + ". Vào game…", "");
@@ -455,7 +468,7 @@ public class TaiDuLieuActivity extends Activity
     /** tai mot tep: ghi <duong>.part, HTTP Range de tai tiep, xong doi ten */
     private void taiMot(Muc m, AtomicLong xong) throws IOException
     {
-        File dich = new File(mThuMuc, m.duong);
+        File dich = tepTrenDia(m.duong);       // [TENTEP 16/09] thu muc cha bien the hoa -> doi ten truoc, khong tao thu muc thu hai
         File cha = dich.getParentFile();
         if (cha != null && !cha.isDirectory() && !cha.mkdirs())
             throw new IOException("không tạo được thư mục " + cha);
@@ -469,7 +482,7 @@ public class TaiDuLieuActivity extends Activity
         else
         {
             xong.addAndGet(daCo);
-            String url = mUrl + duongUrl(m.duong);
+            String url = mUrl + duongUrl(m.duongGoc != null ? m.duongGoc : m.duong);   // [TENTEP 16/09] URL = ten trong manifest
             HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
             c.setConnectTimeout(THOI_HAN_MS); c.setReadTimeout(30000);
             if (daCo > 0) c.setRequestProperty("Range", "bytes=" + daCo + "-");
@@ -491,10 +504,110 @@ public class TaiDuLieuActivity extends Activity
             if (part.length() != m.co)
                 throw new IOException("cỡ sai " + part.length() + " != " + m.co);
         }
+        if (m.co == 0 && !part.isFile()) new FileOutputStream(part).close();   // [TENTEP 16/09] tep 0 byte: khong co .part de doi ten -> tao rong
+        {   // [TENTEP 16/09] kiem md5 nhu iOS: manifest da ky ma tep tai ve khong kiem thi chu ky vo nghia voi tep
+            String bam = md5Tep(part);
+            if (!m.md5.equalsIgnoreCase(bam)) { part.delete(); throw new IOException("md5 sai (" + bam + " != " + m.md5 + ")"); }
+        }
         if (dich.isFile() && !dich.delete())
             throw new IOException("không xoá được tệp cũ");
         if (!part.renameTo(dich))
             throw new IOException("không đổi tên được .part");
+    }
+
+    /** [TENTEP 16/09] ten chuan = cach JxPathPosix (KPosixWin32.cpp) ha chu thuong: A-Z, Latin-1 U+00C0-00DE (tru U+00D7), S/OE/Z hoa +1, Y hoa -> y; roi NFC.
+     *  Ten GBK tren dia PC doc kieu cp1252 la chu Latin-1 hoa ('I' co dau...); /storage/emulated Android <= 10 (sdcardfs) chi gap hoa/thuong ASCII
+     *  -> 115 tep ten Latin-1 hoa trong manifest khong tim thay (iOS: APFS phan biet ca hai). Manifest PC da doi sang ten chuan; day la phong thu. */
+    static String chuanHoa(String s)
+    {
+        String nfc = Normalizer.normalize(s, Normalizer.Form.NFC);
+        char[] p = nfc.toCharArray();
+        for (int i = 0; i < p.length; i++)
+        {
+            char c = p[i];
+            if (c >= 'A' && c <= 'Z') c = (char) (c + 32);
+            else if (c >= 0xC0 && c <= 0xDE && c != 0xD7) c = (char) (c + 0x20);
+            else if (c == 0x160 || c == 0x152 || c == 0x17D) c = (char) (c + 1);
+            else if (c == 0x178) c = 0xFF;
+            p[i] = c;
+        }
+        return Normalizer.normalize(new String(p), Normalizer.Form.NFC);
+    }
+
+    /** [TENTEP 16/09] tep/thu muc theo ten chuan; thanh phan nao chua co ma co bien the (khac hoa/thuong) tren dia thi DOI TEN ve chuan
+     *  (he tep phan biet hoa/thuong: tranh tai lai 292 MB va tranh hai thu muc song song). He tep khong phan biet: exists() dung -> khong dong gi. */
+    private File tepTrenDia(String duongChuan)
+    {
+        File cur = mThuMuc;
+        for (String tp : duongChuan.split("/"))
+        {
+            if (tp.isEmpty()) continue;
+            File f = new File(cur, tp);
+            if (!f.exists())
+            {
+                File[] ds = cur.listFiles();
+                if (ds != null)
+                    for (File s : ds)
+                        if (!s.getName().equals(tp) && chuanHoa(s.getName()).equals(tp))
+                        {
+                            if (s.renameTo(f)) android.util.Log.i("JxTai", "doi ten ve chuan: " + s.getName() + " -> " + tp);
+                            break;
+                        }
+            }
+            cur = f;
+        }
+        return cur;
+    }
+
+    private static String md5Tep(File f) throws IOException
+    {
+        try (InputStream in = new java.io.FileInputStream(f))
+        {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] dem = new byte[256 * 1024];
+            int n;
+            while ((n = in.read(dem)) > 0) md.update(dem, 0, n);
+            StringBuilder sb = new StringBuilder();
+            for (byte b : md.digest()) sb.append(String.format(Locale.US, "%02x", b & 0xFF));
+            return sb.toString();
+        }
+        catch (java.security.NoSuchAlgorithmException e) { throw new IOException("MD5"); }
+    }
+
+    /** [TENTEP 16/09] don mo coi nhu iOS: sau khi dong bo TRON VEN, xoa tep trong cac thu muc cap 1 cua manifest ma khong co trong manifest
+     *  (ten so theo dang chuan). Giu userdata/, apdata/, tep o goc, .part; thu muc khong co trong manifest (capnhat/...) khong dung. */
+    private void donMoCoi()
+    {
+        if (mManifest == null || mManifest.isEmpty()) return;
+        java.util.HashSet<String> con = new java.util.HashSet<>();
+        java.util.HashSet<String> goc = new java.util.HashSet<>();
+        for (Muc m : mManifest)
+        {
+            con.add(m.duong);
+            int i = m.duong.indexOf('/');
+            if (i > 0) goc.add(m.duong.substring(0, i));
+        }
+        goc.remove("userdata"); goc.remove("apdata");
+        int xoa = 0;
+        for (String g : goc)
+            xoa += donMoCoiThu(new File(mThuMuc, g), g, con);
+        if (xoa > 0) android.util.Log.i("JxTai", "don " + xoa + " tep mo coi (khong co trong manifest)");
+    }
+
+    private int donMoCoiThu(File thu, String rel, java.util.HashSet<String> con)
+    {
+        File[] ds = thu.listFiles();
+        if (ds == null) return 0;
+        int xoa = 0;
+        for (File f : ds)
+        {
+            String r = rel + "/" + f.getName();
+            if (f.isDirectory()) { xoa += donMoCoiThu(f, r, con); continue; }
+            if (!f.isFile() || f.getName().endsWith(".part")) continue;
+            if (con.contains(chuanHoa(r))) continue;
+            if (f.delete()) { xoa++; android.util.Log.i("JxTai", "xoa mo coi " + r); }
+        }
+        return xoa;
     }
 
     private static String duongUrl(String d)

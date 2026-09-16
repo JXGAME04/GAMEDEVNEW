@@ -36,7 +36,22 @@ if (Test-Path $GhiDe) {
 # [ANDROID 11/09 TENGBK] CHI ha A-Z (ASCII). Ten GBK doc bang cp1252 la chu Latin-1 hoa ('Ö' 'Ï' 'É'...): ToLowerInvariant ha luon
 # -> byte tren dia doi (0xD6 -> 0xF6) -> game (JxPathPosix doi cp1252 -> UTF-8 tu byte GBK goc) khong tim thay tep. Da mat 1.639/3.518
 # ten GBK trong spr/settings/maps (anh vat pham, hieu ung chieu, ban do). Sua lai du lieu da sinh: android\sua_ten_gbk_android.py
-function HaAscii([string]$s) { return [regex]::Replace($s, '[A-Z]', { param($m) $m.Value.ToLowerInvariant() }) }
+# [TENTEP 16/09] DAO NGUOC [TENGBK 11/09]: JxPathPosix (KPosixWin32.cpp, 518fbacd 08/09) van ha chu thuong ca Latin-1 khi mo tep, nen ten tren dia
+# PHAI la ten chuan y het anh xa cua game: A-Z, U+00C0-00DE (tru x U+00D7) +0x20, S/OE/Z hoa (U+0160/0152/017D) +1, Y hoa U+0178 -> y, roi NFC.
+# /storage/emulated Android <= 10 (sdcardfs) chi gap hoa/thuong ASCII, iOS (APFS) phan biet ca hai -> 115 tep Latin-1 hoa khong tim thay
+# (BANGIAO_ANDROID_TU_IOS_1609.md muc 1). Ket luan 11/09 'game xin bang byte goc' la sai; sua_ten_gbk_android.py KHONG DUNG NUA.
+function HaAscii([string]$s) {
+  $sb = New-Object System.Text.StringBuilder
+  foreach ($ch in $s.ToCharArray()) {
+    $c = [int]$ch
+    if ($c -ge 65 -and $c -le 90) { $c += 32 }
+    elseif ($c -ge 0xC0 -and $c -le 0xDE -and $c -ne 0xD7) { $c += 0x20 }
+    elseif ($c -eq 0x160 -or $c -eq 0x152 -or $c -eq 0x17D) { $c += 1 }
+    elseif ($c -eq 0x178) { $c = 0xFF }
+    [void]$sb.Append([char]$c)
+  }
+  return $sb.ToString().Normalize([System.Text.NormalizationForm]::FormC)
+}
 Get-ChildItem -LiteralPath $Dich -Recurse -File | Where-Object { $_.Name -cne (HaAscii $_.Name) } | ForEach-Object {
   $tmp = $_.FullName + ".__tmp__"; Rename-Item -LiteralPath $_.FullName -NewName ($_.Name + ".__tmp__"); Rename-Item -LiteralPath $tmp -NewName (HaAscii $_.Name)
 }

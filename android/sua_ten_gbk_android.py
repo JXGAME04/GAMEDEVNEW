@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# [TENTEP 16/09] KHONG DUNG NUA: ket luan 11/09 sai - JxPathPosix VAN ha chu thuong Latin-1 khi mo tep (518fbacd 08/09), nen ten tren dia
+# phai la ten chuan chu thuong (android/ha_ten_theo_game.py + chuan_bi_du_lieu.ps1 HaAscii moi). Chay tep nay la dua ten ve hoa = hong lai.
+raise SystemExit("[TENTEP 16/09] sua_ten_gbk_android.py da bo: dung android/ha_ten_theo_game.py (xem BANGIAO_ANDROID_TU_IOS_1609.md muc 1)")
 r"""[ANDROID 11/09 TENGBK] Sua ten tep/thu muc GBK bi doi khi ha chu thuong trong D:\jx1_android_data.
 
 Loi: chuan_bi_du_lieu.ps1 ha chu thuong bang .ToLowerInvariant() tren ten Unicode. Ten GBK (byte 0x81..0xFE) khi Windows doc bang

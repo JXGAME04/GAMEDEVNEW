@@ -74,7 +74,7 @@ def md5_tep(p):
 
 
 def lam_manifest(thu):
-    """Tao manifest.txt (co, md5, duong dan) cho moi tep trong thu muc; dem md5 theo (co, mtime) o manifest_cache.txt"""
+    """Tao manifest.txt (co, md5, duong dan) cho moi tep trong thu muc; dem md5 theo (co, mtime_ns) o manifest_cache.txt"""
     dem = {}
     p_dem = os.path.join(thu, "manifest_cache.txt")
     if os.path.isfile(p_dem):
@@ -93,7 +93,7 @@ def lam_manifest(thu):
             p = os.path.join(root, f)
             rel = os.path.relpath(p, thu).replace(os.sep, "/")
             st = os.stat(p)
-            co = st.st_size; mt = int(st.st_mtime)
+            co = st.st_size; mt = st.st_mtime_ns   # [TENTEP 16/09] theo nano giay: ghi cung tep hai lan trong mot giay (cung co) khong con mang md5 cu (iOS bao 'md5 sai' voi phienban.txt 16/09); doi khoa = bam lai mot lan
             cu = dem.get(rel)
             if cu and cu[0] == co and cu[1] == mt:
                 md5 = cu[2]
