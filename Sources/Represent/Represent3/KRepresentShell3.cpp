@@ -104,6 +104,7 @@ static int Rep3Ini(const char* szKey, int nDef)
 unsigned g_uRep3FxTexNull = 0;		// DrawSprite*: texture NULL -> bo qua quad
 #ifdef JX_MOBILE
 int g_nJxONenLog = 0;	// [ONEN 15/09] [Client] Rep3ONenLog = so lan ghep nen con phai ghi chi tiet (tu giam ve 0)
+int g_nJxNenKiem = 1;	// [NENKIEM 16/09] [Client] Rep3NenKiem: 1 = sau moi lan ghep anh nen vung doc nguoc GPU kiem tung o + kiem lai dinh ky (chan doan nen den Fold 7); 0 = tat
 #endif
 unsigned g_uRep3FxAnhNull = 0;		// DrawImage2D*: GetImage NULL / khung ngoai tam -> break
 #ifdef JX_APPLE	// [IOS-ANHRONG 12/09] tach hai ly do de biet cay mat hinh la do dau
@@ -1290,6 +1291,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	if (g_nJxBoKhungGiong > 1) g_nJxBoKhungGiong = 1; if (g_nJxBoKhungGiong < -1) g_nJxBoKhungGiong = -1;
 #ifdef JX_MOBILE
 	{ extern int g_nJxONenLog; g_nJxONenLog = Rep3Ini("Rep3ONenLog", 0); if (g_nJxONenLog < 0) g_nJxONenLog = 0; if (g_nJxONenLog > 64) g_nJxONenLog = 64; }	// [ONEN 15/09]
+	{ extern int g_nJxNenKiem; g_nJxNenKiem = Rep3Ini("Rep3NenKiem", 1) ? 1 : 0; Rep3Log("[NENKIEM] kiem tung o anh nen vung sau ghep: %d (Rep3NenKiem)", g_nJxNenKiem); }	// [NENKIEM 16/09]
 #endif
 	g_nJxPsBuffer       = Rep3Ini("Rep3PsBuffer", 1) ? 1 : 0;	// [GOP 11/09] 1 = trang thai tang texture qua storage buffer, chi so theo dinh (hai quad khac ps van gop duoc; bot 800 lan day uniform/khung)
 	if (!g_nJxPalBuffer) g_nJxPsBuffer = 0;	// shader PC khong co buffer nao
@@ -1683,6 +1685,94 @@ unsigned int KRepresentShell3::CreateImage(const char* pszName, int nWidth, int 
 
 // [VE 09/09 d] giu khoa TextureResMgr mot lan cho ca lo lenh (GetImage tren cung luong bo khoa; ~3 000 cap Enter/Leave/khung)
 struct Rep3KhoaNgoai { TextureResMgr& m; Rep3KhoaNgoai(TextureResMgr& t) : m(t) { m.KhoaNgoaiVao(); } ~Rep3KhoaNgoai() { m.KhoaNgoaiRa(); } };
+#ifdef JX_MOBILE
+// [NENKIEM 16/09] Chan doan nen den Fold 7 (anh chup 11:09 16/09: lenh ve o san DA GHI ma diem anh khong ra). Sau moi lan ghep anh nen vung
+// (_*PlaceGround*_#~N~#_) doc nguoc render target ve CPU (SAU Present: khong con lenh cho -> khong xa giua khung) va kiem TUNG O 64x64:
+//   '#' co diem anh, '.' rong (khong ghi lenh ve: lo RegionTileDefault), 'X' = DA GHI LENH VE MA DEN (loi phia GPU / lenh), 'o' = co ma khong
+//   ghi lenh ve o (vat phu nen / xuong). Kiem lai dinh ky 4 s cac anh dang hien (DrawPrimitives thay ten) va chi ghi khi ban do doi -> bat
+//   duoc thoi diem mat. Ghi [NENKIEM] vao jx_rep3.log; doi chieu vung (x,y) <-> #N bang [PGND-R] trong jx_paint.log. [Client] Rep3NenKiem=0 tat.
+extern int Rep3Gpu_DocLaiAnh(IDirect3DDevice9* pDev, IDirect3DTexture9* pTex, void* pBuf, unsigned uPitch, unsigned* pW, unsigned* pH);
+struct JxNkMuc { unsigned long long ve; unsigned nVat; unsigned uGhepKhung; unsigned uVeKhung; unsigned nKiem; short nPos; unsigned char bCo; unsigned char cell[64]; };
+static JxNkMuc s_jxNk[64];
+static int s_jxNkCho[64]; static int s_nJxNkCho = 0;
+static unsigned s_uJxNkKhung = 0;
+static DWORD s_dwJxNkLuc = 0; static int s_nJxNkVong = -1;
+static unsigned char* s_pJxNkBuf = NULL;
+static int JxNkSlot(const char* pszImage)
+{
+	if (!g_nJxNenKiem || !pszImage || strncmp(pszImage, "_*PlaceGround*_#~", 17) != 0) return -1;
+	const int n = atoi(pszImage + 17);
+	return (n >= 0 && n < 64) ? n : -1;
+}
+static void JxNkXoa(const char* pszImage)
+{
+	const int n = JxNkSlot(pszImage); if (n < 0) return;
+	if (!s_jxNk[n].bCo) s_jxNk[n].nPos = IMAGE_IS_POSITION_INIT;
+	s_jxNk[n].ve = 0; s_jxNk[n].nVat = 0; s_jxNk[n].uGhepKhung = s_uJxNkKhung; s_jxNk[n].nKiem = 0; s_jxNk[n].bCo = 1;
+}
+static void JxNkGhi(int n, int x, int y, bool bO)
+{
+	if (bO && x >= 0 && y >= 0 && x < 512 && y < 512 && (x & 63) == 0 && (y & 63) == 0) s_jxNk[n].ve |= 1ull << ((y >> 6) * 8 + (x >> 6));
+	else s_jxNk[n].nVat++;
+}
+static void JxNkXep(int n)
+{
+	for (int i = 0; i < s_nJxNkCho; i++) if (s_jxNkCho[i] == n) return;
+	if (s_nJxNkCho < 64) s_jxNkCho[s_nJxNkCho++] = n;
+}
+static void JxNkDangVe(const char* q)
+{
+	if (q && q[0] == '_' && q[1] == '*' && q[2] == 'P') { const int n = JxNkSlot(q); if (n >= 0) s_jxNk[n].uVeKhung = s_uJxNkKhung; }
+}
+// doc nguoc + kiem; bSauGhep = lan dau sau ghep (luon ghi), kiem lai thi chi ghi khi ban do doi
+static void JxNkKiem(TextureResMgr& mgr, IDirect3DDevice9* pDev, int n, bool bSauGhep)
+{
+	JxNkMuc& m = s_jxNk[n];
+	char szTen[64]; sprintf(szTen, "_*PlaceGround*_#~%d~#_", n);
+	unsigned int uImage = 0;
+	TextureResBmp* pBmp = (TextureResBmp*)mgr.GetImage(szTen, uImage, m.nPos, 0, ISI_T_BITMAP16);
+	if (!pBmp || !pBmp->m_FrameInfo.texInfo[0].pTexture) { Rep3Log("[NENKIEM] #%d: khong lay duoc anh (%s)", n, pBmp ? "khong co texture" : "GetImage NULL"); return; }
+	if (!s_pJxNkBuf) s_pJxNkBuf = (unsigned char*)malloc(512 * 512 * 4);
+	if (!s_pJxNkBuf) return;
+	unsigned w = 0, h = 0;
+	LARGE_INTEGER a, b, f; QueryPerformanceFrequency(&f); QueryPerformanceCounter(&a);
+	if (!Rep3Gpu_DocLaiAnh(pDev, pBmp->m_FrameInfo.texInfo[0].pTexture, s_pJxNkBuf, 512 * 4, &w, &h) || w != 512 || h != 512) { Rep3Log("[NENKIEM] #%d: doc nguoc GPU that bai (%ux%u)", n, w, h); return; }
+	QueryPerformanceCounter(&b);
+	unsigned char cell[64]; unsigned nX = 0, nCo = 0, nO = 0, nVe = 0;
+	for (int cy = 0; cy < 8; cy++) for (int cx = 0; cx < 8; cx++)
+	{
+		unsigned nSang = 0;
+		for (int y = cy * 64 + 2; y < cy * 64 + 64; y += 4) { const unsigned char* p = s_pJxNkBuf + (size_t)y * 512 * 4 + (size_t)cx * 64 * 4 + 8; for (int x = 0; x < 16; x++, p += 16) if ((p[0] | p[1] | p[2]) > 24) nSang++; }
+		const bool bCo = nSang >= 32, bVe = ((m.ve >> (cy * 8 + cx)) & 1) != 0;
+		cell[cy * 8 + cx] = bCo ? (bVe ? '#' : 'o') : (bVe ? 'X' : '.');
+		if (bCo) nCo++; if (bVe) nVe++; if (bVe && !bCo) nX++; if (bCo && !bVe) nO++;
+	}
+	m.nKiem++;
+	const bool bDoi = (memcmp(cell, m.cell, 64) != 0);
+	memcpy(m.cell, cell, 64);
+	if (!bSauGhep && !bDoi) return;
+	char szBanDo[80]; int k = 0;
+	for (int cy = 0; cy < 8; cy++) { memcpy(szBanDo + k, cell + cy * 8, 8); k += 8; szBanDo[k++] = (cy == 7) ? 0 : ' '; }
+	Rep3Log("[NENKIEM] #%d %s: ghep o khung %u, kiem lan %u (sau %u khung), doc %.1f ms | ve %u o + %u vat, co %u o, DEN-MA-VE %u, co-ma-khong-ve %u | %s", n,
+		bSauGhep ? "SAU GHEP" : "DOI", m.uGhepKhung, m.nKiem, s_uJxNkKhung - m.uGhepKhung, f.QuadPart ? (double)(b.QuadPart - a.QuadPart) * 1000.0 / (double)f.QuadPart : 0.0, nVe, m.nVat, nCo, nX, nO, szBanDo);
+}
+static void JxNkSauKhung(TextureResMgr& mgr, IDirect3DDevice9* pDev)
+{
+	s_uJxNkKhung++;
+	if (!g_nJxNenKiem) return;
+	int nLam = 0;
+	while (s_nJxNkCho > 0 && nLam < 2) { const int n = s_jxNkCho[0]; for (int i = 1; i < s_nJxNkCho; i++) s_jxNkCho[i - 1] = s_jxNkCho[i]; s_nJxNkCho--; JxNkKiem(mgr, pDev, n, true); nLam++; }
+	if (nLam) return;
+	const DWORD dwNow = timeGetTime();
+	if (s_nJxNkVong < 0) { if (dwNow - s_dwJxNkLuc >= 4000) { s_dwJxNkLuc = dwNow; s_nJxNkVong = 0; } else return; }
+	while (s_nJxNkVong < 64)
+	{
+		const int n = s_nJxNkVong++;
+		if (s_jxNk[n].bCo && s_jxNk[n].nKiem > 0 && s_uJxNkKhung - s_jxNk[n].uVeKhung <= 2) { JxNkKiem(mgr, pDev, n, false); return; }
+	}
+	s_nJxNkVong = -1;
+}
+#endif
 void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrimitives, unsigned int uGenre, int bSinglePlaneCoord)
 {
 	Rep3VeDpTimer veDp;	// [VE 08/09 b]
@@ -1699,6 +1789,7 @@ void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 	int i = 0;
 #ifdef JX_MOBILE
 	int bLopChu = 0; if (bSinglePlaneCoord == 2) { bLopChu = 1; bSinglePlaneCoord = 0; }	// [CHUNET 14/09 d] KNpc::PaintInfo (mobile): icon canh ten = toa do the gioi + lop thong tin
+	if (g_nJxNenKiem && uGenre == RU_T_IMAGE && nPrimitiveCount == 1) JxNkDangVe(((KRUImage*)pPrimitives)->szImage);	// [NENKIEM 16/09] anh nen vung dang hien -> kiem lai dinh ky
 	if (uGenre == RU_T_IMAGE && bLopChu && TgChuXep()) { for (i = 0; i < nPrimitiveCount; i++) TgChuThem(4, 0, NULL, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, ((KRUImage*)pPrimitives) + i); return; }
 	if (uGenre == RU_T_SHADOW && !bSinglePlaneCoord && nPrimitiveCount == 1 && TgChuXep()) { TgChuThem(3, 0, NULL, 0, 0, 0, 0, 0, 0, 0, NULL, (KRUShadow*)pPrimitives, NULL); return; }	// [CHUNET 14/09] nen mo sau ten + thanh mau (KNpc VeNenChu / PaintInfo, luon 1 hat): ve sau blit cung chu; KWeather ve ca lo hat mua / tuyet -> khong xep (soi cheo)
 #endif
@@ -2972,6 +3063,7 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 	extern int g_nJxONenLog;	// [ONEN 15/09] ghi chi tiet tung o cho N lan ghep nen dau tien
 	const bool bJxONen = (g_nJxONenLog > 0 && uGenre == RU_T_IMAGE && pszImage && pszImage[0]);
 	if (bJxONen) { g_nJxONenLog--; Rep3Log("[ONEN] === bat dau ghep %s: %d anh ===", pszImage, nPrimitiveCount); }
+	const int nJxNk = (uGenre == RU_T_IMAGE) ? JxNkSlot(pszImage) : -1;	// [NENKIEM 16/09]
 #endif
 	if(!pPrimitives)
 	{
@@ -3079,6 +3171,7 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 						{	// [ONEN 15/09] g_uRep3FxTexNull tang = RIO thoat vi texture rong -> o do DEN ma khong bi dem vao "bo"
 							const unsigned uJxTN0 = g_uRep3FxTexNull;
 							RIO_CopySprToBufferAlpha(pSprite, pTemp->nFrame, pDestBitmap, nX, nY);
+							if (nJxNk >= 0 && g_uRep3FxTexNull == uJxTN0) JxNkGhi(nJxNk, pTemp->oPosition.nX, pTemp->oPosition.nY, pTemp->bRenderStyle == IMAGE_RENDER_STYLE_OPACITY);	// [NENKIEM 16/09] o da ghi lenh ve
 							if (bJxONen)
 								Rep3Log("[ONEN] o %d/%d tai %d,%d khung %d : %s -> %s", i, nPrimitiveCount, pTemp->oPosition.nX, pTemp->oPosition.nY, pTemp->nFrame, pTemp->szImage,
 									(g_uRep3FxTexNull != uJxTN0) ? "BO texture rong" : "VE");
@@ -3120,6 +3213,7 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 			Rep3Log("[PGND-V] %s: %d anh, %.1f ms = GetImage %.1f (%u lan, nap dong bo %u, bo %u) + RIO %.1f + doi dich %.1f", pszImage, nPrimitiveCount, dNdTong,
 				s_dJxNenGetMs, s_uJxNenGetLan, s_uJxNenNapLan, s_uJxNenBoLan, s_dJxNenRioMs, s_dJxNenRtMs);
 	}
+	if (nJxNk >= 0) JxNkXep(nJxNk);	// [NENKIEM 16/09] kiem sau Present
 #endif
 }
 
@@ -3150,6 +3244,7 @@ void KRepresentShell3::ClearImageData(const char* pszImage, unsigned int uImage,
 		// nen khong ai doc. ScenePlaceMapC / UiPlayVideo giu duong cu (ten khac).
 		if (strncmp(pszImage, "_*PlaceGround*_", 15) == 0 && pBitmap->m_FrameInfo.texInfo[0].pTexture)
 		{
+			JxNkXoa(pszImage);	// [NENKIEM 16/09] bat dau mot lan ghep moi: xoa mat na o da ghi lenh ve
 			LARGE_INTEGER jxX0, jxX1, jxXF; QueryPerformanceFrequency(&jxXF); QueryPerformanceCounter(&jxX0);
 			IDirect3DSurface9 *pXDes = NULL, *pXOld = NULL;
 			bool bXong = false;
@@ -3767,6 +3862,7 @@ void KRepresentShell3::RepresentEnd()
 	// ½»»»Ò³Ãæ
 #ifdef JX_MOBILE
 	{ LARGE_INTEGER liJx0, liJx1; QueryPerformanceCounter(&liJx0); PD3DDEVICE->Present(NULL,NULL,NULL,NULL); QueryPerformanceCounter(&liJx1); JxVeGiatGhi(Rep3NapMs(liJx0, liJx1)); JxTheGioiCapNhat(Rep3NapMs(liJx0, liJx1)); }	// [VE 11/09] [TG 13/09]
+	JxNkSauKhung(m_TextureResMgr, PD3DDEVICE);	// [NENKIEM 16/09] doc nguoc + kiem anh nen vung vua ghep (toi da 2/khung) hoac kiem lai dinh ky
 #else
 	PD3DDEVICE->Present(NULL,NULL,NULL,NULL);
 #endif

@@ -54,6 +54,7 @@ static void JxNhipGhiCho(Uint64 uT0, bool bCoSwap, Uint32 swW, Uint32 swH)
 // KRepresentShell3.cpp in [VE]/[VE-GOP] moi ky va [VE-GIAT] cho khung cham. Chi cong khung co Present (bPresent).
 JxVeDo g_jxVeKhung, g_jxVeTong, g_jxVeMax;
 unsigned g_uJxVeKhungSo = 0, g_uJxVe8 = 0, g_uJxVe16 = 0, g_uJxGopVo[8];
+const char* g_szJxXaLyDo = NULL; unsigned g_uJxXaGiua = 0;	// [NENKIEM 16/09] ly do + so lan xa giua khung (SubmitFrame(false)) -> [XAGIUA] jx_rep3.log
 static int s_nJxCullCpuCur = 0;				// [CULLCPU 11/09] lenh ve hien tai: 0 = khong cull tren CPU, khac 0 = che do cull cua D3D9 (D3DCULL_CW / D3DCULL_CCW)
 static unsigned long long s_ullJxPipeKeyCur = 0;	// [CULLCPU 11/09] khoa pipeline cua lenh ve hien tai (chi de DO)
 static double JxVeMs(Uint64 a, Uint64 b) { return (double)(b - a) * 1000.0 / (double)SDL_GetPerformanceFrequency(); }
@@ -787,6 +788,9 @@ HRESULT CDevGpu::Reset(D3DPRESENT_PARAMETERS* pp)
 {
 	if (!pp) return D3DERR_INVALIDCALL;
 	Lock();
+#ifdef JX_MOBILE
+	g_szJxXaLyDo = " (Reset)";	// [NENKIEM 16/09]
+#endif
 	if (m_bFrameOpen || !m_cmds.empty()) SubmitFrame(false);
 #ifdef JX_MOBILE
 	m_bJxCoKhungTruoc = false; s_nJxEpTrinhChieu = 1;	// [BKG 11/09] backbuffer / swapchain doi -> khung ke tiep phai trinh chieu
@@ -915,6 +919,9 @@ HRESULT CDevGpu::ColorFill(IDirect3DSurface9* pSurface, CONST RECT* pRect, D3DCO
 bool CDevGpu::ReadbackTexture(SDL_GPUTexture* pTex, UINT w, UINT h, BYTE* pDst, UINT dstPitch)
 {
 	if (!pTex || !pDst) return false;
+#ifdef JX_MOBILE
+	if (!g_szJxXaLyDo) g_szJxXaLyDo = " (ReadbackTexture)";	// [NENKIEM 16/09]
+#endif
 	if (!m_cmds.empty() || !m_texUploads.empty()) SubmitFrame(false);
 	const UINT bytes = w * h * 4;
 	SDL_GPUTransferBufferCreateInfo ti; memset(&ti, 0, sizeof(ti)); ti.usage = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD; ti.size = bytes;
@@ -983,6 +990,19 @@ extern int g_nRep3ApiOn;
 void Rep3Gpu_DichSeXoa(IDirect3DDevice9* pDev, int bBat)
 {
 	if (pDev && g_nRep3ApiOn == 100) ((CDevGpu*)pDev)->m_bJxDichSeXoa = (bBat != 0);
+}
+// [NENKIEM 16/09] KRepresentShell3 doc nguoc mot render target (anh nen vung 512x512 BGRA8) ve CPU de kiem tung o sau khi ghep;
+// goi SAU Present (khong con lenh cho nen ReadbackTexture khong xa giua khung). Tra 1 = duoc, 0 = khong.
+int Rep3Gpu_DocLaiAnh(IDirect3DDevice9* pDev, IDirect3DTexture9* pTex, void* pBuf, unsigned uPitch, unsigned* pW, unsigned* pH)
+{
+	if (!pDev || !pTex || !pBuf || g_nRep3ApiOn != 100) return 0;
+	CDevGpu* d = (CDevGpu*)pDev; CTexGpu* t = (CTexGpu*)pTex;
+	if (!t->m_pGpu || !t->m_bGpuTarget) return 0;
+	if (pW) *pW = t->m_w; if (pH) *pH = t->m_h;
+	g_szJxXaLyDo = " (DocLaiAnh - khong mong doi)";
+	const int r = d->ReadbackTexture(t->m_pGpu, t->m_w, t->m_h, (BYTE*)pBuf, uPitch) ? 1 : 0;
+	g_szJxXaLyDo = NULL;
+	return r;
 }
 // [TGNAC 14/09] KRepresentShell3 JxTheGioi: nhin rong ve thu nho - VS chia theo viewport LO-GIC nW x nH (0 = tat) trong khi viewport that nho hon
 void Rep3Gpu_VpLogic(IDirect3DDevice9* pDev, int nW, int nH)
@@ -1271,6 +1291,9 @@ void CDevGpu::QueueZeroUpload(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT
 bool CDevGpu::ReadbackRegion(SDL_GPUTexture* pTex, UINT x, UINT y, UINT w, UINT h, UINT bpp, BYTE* pDst, UINT dstPitch, UINT layer)
 {
 	if (!pTex || !pDst || !w || !h || !bpp) return false;
+#ifdef JX_MOBILE
+	if (!g_szJxXaLyDo) g_szJxXaLyDo = " (ReadbackRegion)";	// [NENKIEM 16/09]
+#endif
 	if (!m_cmds.empty() || !m_texUploads.empty()) SubmitFrame(false);
 	const UINT bytes = w * h * bpp;
 	SDL_GPUTransferBufferCreateInfo ti; memset(&ti, 0, sizeof(ti)); ti.usage = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD; ti.size = bytes;
@@ -1569,6 +1592,7 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 {
 #ifdef JX_MOBILE	// [IOS-GOP 12/09 b] mo cho iOS: bo do ve dung chung; Android van dinh nghia JX_MOBILE nen khong doi gi
 	if (!bPresent) m_bJxKhungCoFlush = true;	// [BKG 11/09] flush giua khung (doc lai / doi khung bay): khung nay khong dung lam "khung truoc" de so
+	if (!bPresent) { g_uJxXaGiua++; RgLog("[XAGIUA] xa giua khung #%u%s: %u lenh, %u tai, dich %s %ux%u", g_uJxXaGiua, g_szJxXaLyDo ? g_szJxXaLyDo : "", (unsigned)m_cmds.size(), (unsigned)m_texUploads.size(), m_pRtTex ? "RT" : "backbuffer", m_pRtTex ? m_pRtTex->m_w : m_bbW, m_pRtTex ? m_pRtTex->m_h : m_bbH); g_szJxXaLyDo = NULL; }	// [NENKIEM 16/09]
 	JxVeDo jxK; memset(&jxK, 0, sizeof(jxK)); const Uint64 uJxK0 = SDL_GetPerformanceCounter(); Uint64 uJxK1 = uJxK0;	// [VE 11/09]
 #endif
 	SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(m_pGpu);
@@ -1992,6 +2016,15 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 	{ const Uint64 u = SDL_GetPerformanceCounter(); jxK.dNop = JxVeMs(uJxK1, u); jxK.dTong = JxVeMs(uJxK0, u); jxK.uQuad = m_uQuads; if (bPresent) JxVeCong(jxK); }	// [VE 11/09] nop
 #endif
 	FrameReset();
+#ifdef JX_MOBILE
+	if (!bPresent && m_pRtTex && m_pRtTex->m_pGpu)
+	{	// [NENKIEM 16/09] xa giua khung khi dang ve vao RT (ghep anh nen vung): FrameReset xoa lenh + m_touched -> lenh ve tiep theo roi len swapchain
+		// (pass builder bat dau tu pSwap) va RT khong con trong m_touched (scissor 0x0). Cham lai + ghi lai dich de phan con lai cua khung van vao RT.
+		m_pRtTex->FrameEnd(); TouchTex(m_pRtTex); m_pRtTex->MarkUsed();
+		RgCmd c; memset(&c, 0, sizeof(c)); c.type = RGCMD_TARGET; c.pTarget = m_pRtTex->m_pGpu; m_cmds.push_back(c);
+		RgLog("[XAGIUA] giu lai dich RT %ux%u sau xa", m_pRtTex->m_w, m_pRtTex->m_h);
+	}
+#endif
 	return true;
 }
 
@@ -2189,6 +2222,7 @@ extern "C" void Rep3_DoNhipDat(int nChepKhung, int nKhungBay)
 	if (nKhungBay >= 1 && nKhungBay <= 3 && nKhungBay != s_nJxKhungBay && d && d->m_pGpu)
 	{
 		d->Lock();
+		g_szJxXaLyDo = " (doi khung bay)";	// [NENKIEM 16/09]
 		if (d->m_bFrameOpen || !d->m_cmds.empty() || !d->m_texUploads.empty()) d->SubmitFrame(false);
 		if (SDL_SetGPUAllowedFramesInFlight(d->m_pGpu, (Uint32)nKhungBay)) s_nJxKhungBay = nKhungBay;
 		else RgLog("[DONHIP] SetGPUAllowedFramesInFlight(%d) that bai: %s", nKhungBay, SDL_GetError());

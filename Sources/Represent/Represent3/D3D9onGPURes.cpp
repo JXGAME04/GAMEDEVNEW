@@ -73,6 +73,9 @@ bool CTexGpu::NewVersion(bool bTarget)
 	if (!p) { RgLog("CreateGPUTexture %ux%u fmt %d rt=%d that bai: %s", m_w, m_h, (int)gf, (int)bTarget, SDL_GetError()); return false; }
 	ReleaseGpu();
 	m_pGpu = p; m_gpuFmt = gf; m_bGpuTarget = bTarget; m_bGpuHasData = false; m_bUsedThisFrame = false; m_bGpuNewer = false;
+#ifdef JX_MOBILE
+	if (bTarget) RgLog("[NENKIEM] render target %ux%u: phien ban GPU moi (noi dung cu neu co da mat)", m_w, m_h);	// [NENKIEM 16/09] anh nen vung 512x512 chi nen cap 1 lan
+#endif
 	m_uGpuBytes = m_w * m_h * RgGpuBpp(gf);
 	m_pDev->m_uTexBytes += m_uGpuBytes;
 	g_uRep3GpuTexCount++; g_uRep3GpuTexBytes += m_uGpuBytes;
@@ -298,6 +301,9 @@ HRESULT CTexGpu::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, CONST RECT* p
 	if (m_bGpuNewer && m_pGpu)
 #endif
 	{	// render target da ve tren GPU: doc lai ve CPU (dong bo, hiem)
+#ifdef JX_MOBILE
+		{ extern const char* g_szJxXaLyDo; g_szJxXaLyDo = " (LockRect render target)"; }	// [NENKIEM 16/09]
+#endif
 		if (m_gpuFmt == m_fi.gpu && !m_fi.bConvert)
 			m_pDev->ReadbackTexture(m_pGpu, m_w, m_h, m_pCpu, m_pitch);
 		else
@@ -354,6 +360,9 @@ bool CTexGpu::ThuLaiCpu()
 	const UINT gbpp = RgGpuBpp(gf), ox = m_bVirtual ? m_ax : 0, oy = m_bVirtual ? m_ay : 0;
 	if (gbpp == 0) { m_bCpuBo = false; return false; }
 	std::vector<BYTE> tmp((size_t)m_w * m_h * gbpp);
+#ifdef JX_MOBILE
+	{ extern const char* g_szJxXaLyDo; g_szJxXaLyDo = " (ThuLaiCpu: doc lai ban CPU da bo)"; }	// [NENKIEM 16/09]
+#endif
 	if (!m_pDev->ReadbackRegion(pSrc, ox, oy, m_w, m_h, gbpp, &tmp[0], m_w * gbpp, JxLop())) { m_bCpuBo = false; return false; }	// [MANG 11/09] dung lop cua trang
 	const bool bConv = (gf != m_fi.gpu) || m_fi.bConvert;
 	for (UINT y = 0; y < m_h; y++)

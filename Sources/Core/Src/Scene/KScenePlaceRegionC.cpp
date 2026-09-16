@@ -343,7 +343,7 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 		QueryPerformanceCounter(&jxR2);
 		const double dR = jxRF.QuadPart ? 1000.0 / (double)jxRF.QuadPart : 0.0;
 		const double dTong = (double)(jxR2.QuadPart - jxR0.QuadPart) * dR, dXoa = (double)(jxR1.QuadPart - jxR0.QuadPart) * dR;
-		if (g_nCorePaintLog > 0 && dTong >= 3.0)
+		if (g_nCorePaintLog > 0)	// [NENKIEM 16/09] ghi MOI lan ghep (doi chieu vung (x,y) <-> anh #N voi [NENKIEM] trong jx_rep3.log); truoc: chi khi >= 3 ms
 		{
 			FILE* pR = fopen("jx_paint.log", "a");
 			if (pR)
