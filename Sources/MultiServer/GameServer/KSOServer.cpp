@@ -128,7 +128,7 @@ const int KSwordOnLineSever::m_snBufferSize = 1024 * 16;
  * doc log [MAYID] roi moi chon nguong va dat ChiQuanSat=0.
  */
 static int gs_nChiQuanSat  = 1;		// 1 = chi ghi log, khong cuong che
-static int gs_nBoQuaHangC  = 1;		// 1 = ma may hang 'C' van DUOC DEM nhung khong bi da (xem chu thich duoi)
+static int gs_nBoQuaHangC  = 0;		// [MAYID 16/09] mac dinh 0: hang C KHONG con la giay mien (client gia chi can gui C000... la thoat)
 static int gs_nTreNhipDong = 2;		// so nhip cho truoc khi dong socket, 0 = khong dong cung
 
 /*
@@ -139,7 +139,7 @@ static int gs_nTreNhipDong = 2;		// so nhip cho truoc khi dong socket, 0 = khong
  * (SendPackToClient(-1)), nen phai doi qua it nhat mot nhip roi moi dong.
  * Dung BO DEM LUI chu khong dung moc nhip, vi m_nGameLoop quay ve 0 moi 1.512.000 nhip.
  */
-#define MAYID_MAX_DONG	64
+#define MAYID_MAX_DONG	256		// [MAYID 16/09] 64 -> 256: hang day thi chi con da mem, client sua doi bo qua s2c_exitgame se o lai
 // [MAYID 15/09 PHAN BIEN] giu them chi so NGUOI CHOI de doi chieu lai truoc khi dong (xem XuLyDongTre).
 static struct { int nNetIdx; int nIdxNguoi; int nConLai; } gs_aDongTre[MAYID_MAX_DONG];
 
@@ -550,7 +550,7 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 	iniFile.GetInteger("LimitLogin", "MaxLogin", 3, &m_MaxLogin);
 	// [MAYID 14/09] mac dinh CHI QUAN SAT: do truoc, phat sau.
 	iniFile.GetInteger("LimitLogin", "ChiQuanSat",  1, &gs_nChiQuanSat);
-	iniFile.GetInteger("LimitLogin", "BoQuaHangC",  1, &gs_nBoQuaHangC);
+	iniFile.GetInteger("LimitLogin", "BoQuaHangC",  0, &gs_nBoQuaHangC);	// [MAYID 16/09] mac dinh 0, xem gs_nBoQuaHangC
 	iniFile.GetInteger("LimitLogin", "TreNhipDong", 2, &gs_nTreNhipDong);
 	/*
 	 * [MAYID 15/09 PHAN BIEN] KEP gia tri 1 len 2. XuLyDongTre() chay o DAU MainLoop con SendPackToClient(-1)
