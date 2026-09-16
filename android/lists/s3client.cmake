@@ -2,11 +2,11 @@
 set(JX_S3CLIENT_SOURCES
     ${JX_ROOT}/Sources/S3Client/ErrorCode.cpp
     ${JX_ROOT}/Sources/S3Client/Login/Login.cpp
+    ${JX_ROOT}/Sources/S3Client/Login/KMachineId.cpp
     ${JX_ROOT}/Sources/S3Client/NetConnect/NetConnectAgent.cpp
     ${JX_ROOT}/Sources/S3Client/S3Client.cpp
     ${JX_ROOT}/Sources/S3Client/Platform/KSdlApp.cpp
     ${JX_ROOT}/Sources/S3Client/Platform/JxCanDieuKhien.cpp
-    ${JX_ROOT}/Sources/S3Client/Platform/JxLiaCanh.cpp
     ${JX_ROOT}/Sources/S3Client/stdafx.cpp
     ${JX_ROOT}/Sources/S3Client/TextCtrlCmd/TextCtrlCmd.cpp
     ${JX_ROOT}/Sources/S3Client/Ui/ChatFilter.cpp
@@ -172,6 +172,7 @@ set(JX_S3CLIENT_SOURCES
     ${JX_ROOT}/Sources/S3Client/Ui/UiChatPhrase.cpp
     ${JX_ROOT}/Sources/S3Client/Ui/UiShell.cpp
     ${JX_ROOT}/Sources/S3Client/Ui/UiSoundSetting.cpp
+    ${JX_ROOT}/Sources/S3Client/Platform/JxLiaCanh.cpp
 )
 set(JX_S3CLIENT_DEFS S3_CLIENT JX_PLATFORM_SDL SWORDONLINE_USE_MD5_PASSWORD)
 set(JX_S3CLIENT_INCS

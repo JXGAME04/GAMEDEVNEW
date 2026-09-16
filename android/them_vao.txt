@@ -1,0 +1,3 @@
+# [MAYID 16/09] Tep CHI mobile khong nam trong vcxproj nhung phai co trong lists/<du an>.cmake (Android + iOS dung chung).
+# Moi dong: <du an> <duong dan tuong doi goc kho>. gen_lists.py doc tep nay; dung sua tay lists/*.cmake nua.
+s3client Sources/S3Client/Platform/JxLiaCanh.cpp   # [LIA 13/09] lia / zoom canh mobile (truoc 16/09 them tay vao s3client.cmake)

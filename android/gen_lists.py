@@ -38,6 +38,17 @@ if os.path.isfile(p_excl):
         l = l.split("#")[0].strip().replace("\\", "/").lower()
         if l: EXTRA_EXCL.add(l)
 
+# [MAYID 16/09] them vao (tep CHI mobile khong co trong vcxproj, vi du S3Client/Platform/JxLiaCanh.cpp): android/them_vao.txt,
+# moi dong '<du an> <duong dan tuong doi ROOT>' - truoc day them tay vao lists/*.cmake nen moi lan sinh lai la mat
+EXTRA_INCL = {}
+p_incl = os.path.join(ROOT, "android", "them_vao.txt")
+if os.path.isfile(p_incl):
+    for l in io.open(p_incl, encoding="utf-8"):
+        l = l.split("#")[0].strip().replace("\\", "/")
+        if l and " " in l:
+            k, d = l.split(None, 1)
+            EXTRA_INCL.setdefault(k.lower(), []).append(d.strip())
+
 def cond_match(cond, key):
     if not cond: return True
     c = cond.replace(" ", ""); k = ("'%s'" % key).replace(" ", "")
@@ -87,6 +98,10 @@ for key, P in PROJ.items():
         if WINONLY_RE.search(r.lower()) or r.lower() in EXTRA_EXCL: loai.append(r)
         elif not os.path.isfile(f): loai.append(r + " (KHONG TON TAI)")
         else: keep.append(r)
+    for d in EXTRA_INCL.get(key, []):
+        if d.lower() in [x.lower() for x in keep]: continue
+        if os.path.isfile(os.path.join(ROOT, d)): keep.append(d)
+        else: loai.append(d + " (them_vao.txt: KHONG TON TAI)")
     defs2 = [d for d in defs if d.split("=")[0] not in DROP_DEFS]
     incs2 = []
     for i in incs:
