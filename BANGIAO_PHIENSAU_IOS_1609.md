@@ -19,7 +19,22 @@ BANGIAO_PHIENSAU_IOS_1509.md (2 dòng con trỏ)   BANGIAO_PHIENSAU_IOS_1609.md 
 ```
 Số liệu diff: 860 dòng thêm, 208 dòng bỏ; `ios/JxTaiDuLieu.mm` chiếm 797.
 
-iPhone "An Nguyen" đang chạy đúng bản Release của commit này (cài 11:17, không còn nút ẩn game).
+iPhone "An Nguyen" đang chạy bản Release của cây thử (khoá thợ ON).
+
+### 1b. THỬ TRÊN LAN (11:30–11:40, theo yêu cầu chủ) — trạng thái iPhone đã ĐỔI, phiên sau phải biết
+- PC `10.0.0.140:8765` phục vụ 688 tệp / 7,81 GB, manifest sạch, **nhưng `manifest.sig` 404** (PC không có khoá riêng, khoá ở
+  Mac `~/.jx1_khoa`). Giải pháp thử: **`ios/tram_ky.py`** chạy trên Mac (cổng 8770) — lấy manifest từ PC, ký bằng khoa Mac,
+  giữ nguyên `config.ini` riêng của iPhone (đổi dòng `config.ini` trong manifest thành cỡ+md5 bản trên máy), chuyển tiếp
+  mọi tệp khác sang PC (Range/404 nguyên). Bản sao `config.ini` của iPhone: `~/jx1_thu/iphone_config_1609.ini`.
+- **iPhone nay có `Documents/may_chu_tai.txt` = `http://10.0.0.34:8770/`** → mỗi lần mở game sẽ đồng bộ qua trạm; trạm tắt thì
+  D (vào game sau ~0–8 s). Muốn tắt: đẩy một `may_chu_tai.txt` **rỗng** lên (`devicectl device copy to`), không xoá được tệp bằng devicectl.
+- Kết quả lần đầu: **66 s** cho băm 7,5 GB + tải 117 tệp (116 ảnh bản đồ tên GBK 245 MB — trên máy tên bị mã hoá hai lần nên
+  bộ tải coi là thiếu — + `magicscript.txt` 0,9 MB + 1 tệp 1 byte); `da_tai.txt` 688 dòng; `manifest_dakiem.txt` khớp trạm;
+  `config.ini` giữ nguyên md5. `[65973] [IOS-TAI] ket qua 0` rồi vào game. Thử D/E2 trên iPhone chưa làm được từ xa vì máy khoá
+  màn hình — chủ tự thử: tắt Wi-Fi rồi mở game (D); muốn E2 thì tôi đẩy một tệp cụt lên rồi chủ mở game khi tắt Wi-Fi.
+- Vấn đề lộ ra: **tên tệp GBK trên iPhone không khớp manifest** (các bản chép tay trước đây bị mã hoá hai lần); sau đồng bộ máy có
+  cả hai bản (bản cũ 245 MB thành rác, D4 "dọn pak thừa" sẽ xử). Game đọc bản nào — chưa kiểm.
+- Ảnh nền màn tải: chủ chọn lấy nền màn cập nhật của VNKU = `KHTD_Ui/UpdateScene.png` (1136×640) → `ios/nen_tai.png`, CMake tự đóng gói (ảnh nằm trong gói vì màn này chạy lúc chưa có dữ liệu). Các ảnh khác trong gói VNKU: `Bg_Login.jpg`, `Bg_SelPlayer.jpg`, `hinhnen1.png`, `LaunchScreenBackground.png` (logo).
 
 ---
 
@@ -149,7 +164,7 @@ bình thường, gửi nhật ký về PC vẫn BẬT (`may_chu_nhatky.txt` có 
 | B1, B4, B5, B6 | tài khoản trả phí, mã hoá, Distribution/exportArchive, xếp hạng tuổi | như cũ |
 | C3 | hỏi ý trước khi tải | **nửa đầu xong** (dung lượng + nút); "không tải qua 4G mặc định" **không phải** yêu cầu xét duyệt (phản biện rà 4.2.3, 2.4.4), để sau |
 | C4 | nút tố cáo | chưa |
-| D2 | ảnh nền `ios/nen_tai.jpg` | chờ chủ |
+| D2 | ảnh nền màn tải | **Xong** — `ios/nen_tai.png` = `KHTD_Ui/UpdateScene.png` của VNKU (1136×640, chủ chọn 16/09; KHÔNG phải LaunchScreenBackground logo) |
 | D3 | kiểm dung lượng trống (+ khai `DiskSpace`) | chưa |
 | D5, D6 | tải nhiều luồng; iPad | chưa |
 | Mới | nút "Mở App Store" ở màn A (cần ID app) | chờ tài khoản |
