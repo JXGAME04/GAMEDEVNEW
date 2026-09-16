@@ -95,6 +95,100 @@ static BOOL _TrimUseful(char* s)
 
 /*---------------------------------------------------------------- nguon 1: UUID he thong trong SMBIOS */
 
+/* Chi de ghi log chan doan: UUID doc duoc (dang wmic hien thi) va ket luan ve no. */
+static char s_szUuidHienThi[40] = { 0 };
+static char s_szUuidGhiChu[64] = { 0 };
+
+static void _DatGhiChuUuid(const char* sz)
+{
+	::strncpy(s_szUuidGhiChu, sz ? sz : "", sizeof(s_szUuidGhiChu) - 1);
+	s_szUuidGhiChu[sizeof(s_szUuidGhiChu) - 1] = 0;
+}
+
+/*
+ * [MAYID 16/09] Nhan dien UUID MAU (placeholder) cua firmware. Phai loai, khong thi ca dan may cung lo bo mach
+ * ra CUNG MOT ma, ma lai la hang A (khong co duong mien) - dung trieu chung ban dau.
+ *
+ * BAY THU TU BYTE (loi cua ban 14/09): 'wmic csproduct get uuid' hien thi UUID sau khi DAO little-endian ba
+ * truong dau (4-2-2 byte). Mau hay gap nhat hien thi la 03000200-0400-0500-0006-000700080009, nhung 16 byte
+ * THO trong bang SMBIOS la 00 02 00 03 | 00 04 | 00 05 | 00 06 | 00 07 00 08 00 09 (day tang dan). Ban 14/09
+ * chep hang so theo thu tu HIEN THI nen memcmp khong bao gio khop. Do that tren may dev 16/09:
+ * tho 86 7C B8 34 C0 CA 16 04 ... <-> wmic 34B87C86-CAC0-0416-.... Nay so CA HAI thu tu cho moi mau.
+ */
+static BOOL _UuidLaMau(const unsigned char u[16])
+{
+	/* Moi mau ghi theo thu tu byte THO; thu tu hien thi duoc suy ra luc so. */
+	static const unsigned char s_aMau[][16] =
+	{
+		/* wmic: 03000200-0400-0500-0006-000700080009 (AMI/Intel mac dinh, gap nhieu nhat) */
+		{ 0x00,0x02,0x00,0x03, 0x00,0x04, 0x00,0x05, 0x00,0x06, 0x00,0x07,0x00,0x08,0x00,0x09 },
+		/* wmic: 12345678-1234-5678-90AB-CDDEEFAABBCC */
+		{ 0x78,0x56,0x34,0x12, 0x34,0x12, 0x78,0x56, 0x90,0xAB, 0xCD,0xDE,0xEF,0xAA,0xBB,0xCC },
+		/* wmic: 00010203-0405-0607-0809-0A0B0C0D0E0F (day 00..0F) */
+		{ 0x03,0x02,0x01,0x00, 0x05,0x04, 0x07,0x06, 0x08,0x09, 0x0A,0x0B,0x0C,0x0D,0x0E,0x0F },
+		/* wmic: 4C4C4544-0000-2010-8020-80C04F202020 (Dell chua ghi service tag) */
+		{ 0x44,0x45,0x4C,0x4C, 0x00,0x00, 0x10,0x20, 0x80,0x20, 0x80,0xC0,0x4F,0x20,0x20,0x20 },
+	};
+	char szLyDo[64];
+	int i, k;
+	int nSoByte0 = 0;
+	BOOL bDeuGiong = TRUE;
+
+	for (i = 0; i < 16; i++)
+	{
+		if (u[i] == 0)
+			nSoByte0++;
+
+		if (u[i] != u[0])
+			bDeuGiong = FALSE;
+	}
+
+	/* Toan mot gia tri (00 00 ..., FF FF ..., AA AA ...). */
+	if (bDeuGiong)
+	{
+		::_snprintf(szLyDo, sizeof(szLyDo) - 1, "LOAI:16-byte-deu-%02X", u[0]);
+		szLyDo[sizeof(szLyDo) - 1] = 0;
+		_DatGhiChuUuid(szLyDo);
+		return TRUE;
+	}
+
+	for (k = 0; k < (int)(sizeof(s_aMau) / sizeof(s_aMau[0])); k++)
+	{
+		const unsigned char* m = s_aMau[k];
+		unsigned char d[16];
+
+		/* d = cung mau nhung theo thu tu HIEN THI (dao 4-2-2 byte dau) */
+		d[0] = m[3]; d[1] = m[2]; d[2] = m[1]; d[3] = m[0];
+		d[4] = m[5]; d[5] = m[4];
+		d[6] = m[7]; d[7] = m[6];
+		memcpy(d + 8, m + 8, 8);
+
+		if (memcmp(u, m, 16) == 0 || memcmp(u, d, 16) == 0)
+		{
+			::_snprintf(szLyDo, sizeof(szLyDo) - 1, "LOAI:mau-so-%d", k + 1);
+			szLyDo[sizeof(szLyDo) - 1] = 0;
+			_DatGhiChuUuid(szLyDo);
+			return TRUE;
+		}
+	}
+
+	/*
+	 * Luat entropy: UUID that (ngau nhien, hoac sinh tu MAC/serial) gan nhu khong bao gio co >= 8 byte 0.
+	 * UUID "dien do" cua Gigabyte/ASRock (dau lay tu MAC, duoi giu 0006-000700080009) chi co 2-3 byte 0
+	 * nen van duoc coi la that - chung khac nhau theo tung bo mach.
+	 */
+	if (nSoByte0 >= 8)
+	{
+		::_snprintf(szLyDo, sizeof(szLyDo) - 1, "LOAI:%d-byte-0", nSoByte0);
+		szLyDo[sizeof(szLyDo) - 1] = 0;
+		_DatGhiChuUuid(szLyDo);
+		return TRUE;
+	}
+
+	_DatGhiChuUuid("ok");
+	return FALSE;
+}
+
 /*
  * Doc bang SMBIOS tho, tim cau truc Type 1 (System Information), lay 16 byte UUID o offset 0x08.
  * Day la dinh danh do NHA SAN XUAT BO MACH ghi - nhan ban dia KHONG lam no doi.
@@ -104,6 +198,9 @@ static BOOL _LaySmbiosUuid(unsigned char out[16])
 	BOOL bOk = FALSE;
 	UINT uSize;
 	BYTE* pBuf = NULL;
+
+	s_szUuidHienThi[0] = 0;
+	_DatGhiChuUuid("khong-thay-Type1");
 
 	/*
 	 * Goi DONG: GetSystemFirmwareTable chi co tu Windows Vista. Neu lien ket TINH thi Game.exe se
@@ -126,21 +223,31 @@ static BOOL _LaySmbiosUuid(unsigned char out[16])
 		}
 
 		if (!s_pfn)
+		{
+			_DatGhiChuUuid("khong-co-GetSystemFirmwareTable");
 			return FALSE;
+		}
 
 		uSize = s_pfn('RSMB', 0, NULL, 0);
 
 		if (uSize == 0 || uSize > (1u << 20))
+		{
+			_DatGhiChuUuid("bang-SMBIOS-rong-hoac-qua-lon");
 			return FALSE;
+		}
 
 		pBuf = (BYTE*)::malloc(uSize);
 
 		if (!pBuf)
+		{
+			_DatGhiChuUuid("het-bo-nho");
 			return FALSE;
+		}
 
 		if (s_pfn('RSMB', 0, pBuf, uSize) != uSize)
 		{
 			::free(pBuf);
+			_DatGhiChuUuid("doc-bang-SMBIOS-loi");
 			return FALSE;
 		}
 	}
@@ -172,38 +279,25 @@ static BOOL _LaySmbiosUuid(unsigned char out[16])
 			if (byType == 1 && byLen >= 0x18)
 			{
 				unsigned char* u = p + 0x08;
-				int i;
-				BOOL bAllZero = TRUE;
-				BOOL bAllFF = TRUE;
 
-				for (i = 0; i < 16; i++)
+				/* Ghi theo dang wmic hien thi (dao 4-2-2 byte dau) de doi chieu 'wmic csproduct get uuid'. */
+				::_snprintf(s_szUuidHienThi, sizeof(s_szUuidHienThi) - 1,
+					"%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+					u[3], u[2], u[1], u[0], u[5], u[4], u[7], u[6],
+					u[8], u[9], u[10], u[11], u[12], u[13], u[14], u[15]);
+				s_szUuidHienThi[sizeof(s_szUuidHienThi) - 1] = 0;
+
+				if (!_UuidLaMau(u))
 				{
-					if (u[i] != 0x00)
-						bAllZero = FALSE;
-
-					if (u[i] != 0xFF)
-						bAllFF = FALSE;
+					memcpy(out, u, 16);
+					bOk = TRUE;
 				}
 
-				if (!bAllZero && !bAllFF)
-				{
-					/*
-					 * Mot so bo mach re dung san UUID mau 03000200-0400-0500-0006-000700080009
-					 * cho MOI bo mach cung dong -> phai loai, khong thi lai trung nhau.
-					 */
-					static const unsigned char s_byMau[16] =
-					{
-						0x03,0x00,0x02,0x00, 0x04,0x00, 0x05,0x00,
-						0x00,0x06, 0x00,0x07,0x00,0x08,0x00,0x09
-					};
-
-					if (memcmp(u, s_byMau, 16) != 0)
-					{
-						memcpy(out, u, 16);
-						bOk = TRUE;
-					}
-				}
-
+				break;
+			}
+			else if (byType == 1)
+			{
+				_DatGhiChuUuid("Type1-qua-ngan-khong-co-UUID");
 				break;
 			}
 
@@ -561,10 +655,11 @@ static void _TinhMachineId(void)
 	s_szMachineId[sizeof(s_szMachineId) - 1] = 0;
 
 	::_snprintf(szChiTiet, sizeof(szChiTiet) - 1,
-		"hang=%c nguon_dung=%s (co: uuid=%d seri=%d mac=%d)",
+		"hang=%c nguon_dung=%s (co: uuid=%d seri=%d mac=%d) uuid_smbios=%s [%s]",
 		chHang,
 		(nManh == 3) ? "uuid-bo-mach" : ((nManh == 2) ? "seri-o-dia" : ((nManh == 1) ? "mac" : "du-phong")),
-		bCoUuid ? 1 : 0, bCoSeri ? 1 : 0, bCoMac ? 1 : 0);
+		bCoUuid ? 1 : 0, bCoSeri ? 1 : 0, bCoMac ? 1 : 0,
+		s_szUuidHienThi[0] ? s_szUuidHienThi : "-", s_szUuidGhiChu[0] ? s_szUuidGhiChu : "-");
 	szChiTiet[sizeof(szChiTiet) - 1] = 0;
 
 	_GhiChanDoan(s_szMachineId, szChiTiet);
