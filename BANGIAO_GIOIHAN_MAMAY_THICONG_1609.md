@@ -106,3 +106,24 @@ Xong test: đặt lại `ChiQuanSat=1` nếu chưa muốn cưỡng chế, hoặc
 - Không đụng `CoreServer.dll` (giao diện `CoreServerShell` giữ nguyên) — vì thế thông báo đá là chung, không kèm con số.
 - Log quan sát cũ `[MAYID-DEM] … dang co N phien (nguong M)` đổi thành `… dang co N phien vao truoc, khe K (nguong M)`; công cụ đọc log (nếu có) cần theo.
 - Đã bỏ hẳn câu hỏi ở `logiclogin`: mã máy vẫn được ghi log `[MAYID] dang nhap:` ngay lúc đăng nhập như cũ.
+
+---
+
+## 7. KẾT QUẢ TEST SỐNG (16/09, 11:21–11:37, chủ tự chạy bat và đăng nhập)
+
+Ba bản `.moi` đã được áp (md5 khớp mục 2). S3Relay mới chạy từ 11:21:43, GameServer mới từ 11:35:05 (lần 2, sau khi thêm `ChiQuanSat=0`).
+
+**Đợt 1 — chỉ quan sát (`ChiQuanSat` chưa có = 1):** 4 nick cùng máy dev (mã `A27EAD…`) + máy ảo LDPlayer 10.0.0.140 (mã `{A20B4C6D…}`):
+`[MAYID-DEM]` in `0 → 1 → 2 → 3 phien vao truoc` đúng thứ tự, phát **sau** `vao game`; nick 3, 4 ghi `-> CHI QUAN SAT (ChiQuanSat=1), khong da`.
+Relay: `seq=1…6` tăng đều, `count limit` = số vào trước + 1, **không** có `khong thay muc cua nguoi hoi` (trễ 3 nhịp đủ), không kẹp.
+
+**Đợt 2 — cưỡng chế (`MaxLogin=2`, `ChiQuanSat=0`):**
+- `thienho` (khe 0) vào, `hinodl` máy ảo (khe 1) vào, `hinodl01` (khe 2) vào.
+- `hinodl02` (khe 3): `dang co 2 phien vao truoc, nguong 2 -> DA RA` → `thoat game character quiting`; relay `player logout: hinodl02` **cùng giây** với lúc vào (11:36:43) → bộ đếm về 2, không mồ côi.
+- `hinodl02` vào lại 2 lần nữa (khe 4, 5): đều `-> DA RA` vì vẫn còn 2 phiên vào trước. Hai nick đầu và máy ảo không bị ảnh hưởng.
+- Log GameServer sau khi mở lại: không error/assert/`KHONG hoi duoc`/`hang doi … DAY`/`BO QUA`.
+
+**Chưa xác nhận được từ log (hỏi chủ):** hộp thoại P7 có hiện trên client thứ 3 không; thử đua 3 client cùng lúc.
+
+**Lưu ý vận hành:** máy chủ thử nghiệm hiện đang **cưỡng chế thật** (`ChiQuanSat=0`, `MaxLogin=2`) — người test khác mở > 2 nick/máy sẽ bị đá; muốn về quan sát thì đặt lại `ChiQuanSat=1` và mở lại GameServer.
+Máy ảo Android trên cùng PC mang mã `{…}` riêng nên **không** bị tính chung với client PC cùng máy — đây là giới hạn của mã mobile (hostname + thư mục dữ liệu), không phải lỗi bản này.
