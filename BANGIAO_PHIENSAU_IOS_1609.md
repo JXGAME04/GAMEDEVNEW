@@ -9,7 +9,8 @@
 ## 1. Tình trạng git
 
 Nhánh `mobile-0809`. Đã gộp tiến thẳng 4 commit của phiên khác trong ngày (bộ công cụ mổ nhị phân; nền đen khi di
-chuyển — không chạm `ios/`). **Mười tệp sửa + tệp này CHƯA commit** (chờ chủ cho phép, theo luật §5 tệp 1509):
+chuyển — không chạm `ios/`). Chủ cho phép lúc 11:15 → **đã commit `a0d2d66c` và đẩy lên `origin/mobile-0809`** (tiến thẳng),
+gồm các tệp:
 
 ```
 android/may_chu_tai_du_lieu.py   ios/CMakeLists.txt   ios/Info.plist   ios/JxIosAnGame.mm   ios/JxIosDuongDan.mm
@@ -18,8 +19,7 @@ BANGIAO_PHIENSAU_IOS_1509.md (2 dòng con trỏ)   BANGIAO_PHIENSAU_IOS_1609.md 
 ```
 Số liệu diff: 860 dòng thêm, 208 dòng bỏ; `ios/JxTaiDuLieu.mm` chiếm 797.
 
-Bẫy đã ghi ở tệp 1509 §8 / bộ nhớ `cai-ban-ios-len-iphone`: GitHub Desktop khi pull có thể cất phần chưa commit vào stash.
-Commit sớm thì tránh được.
+iPhone "An Nguyen" đang chạy đúng bản Release của commit này (cài 11:17, không còn nút ẩn game).
 
 ---
 
