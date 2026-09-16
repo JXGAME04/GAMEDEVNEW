@@ -69,7 +69,7 @@ Cách làm theo luật của chủ: **4 phản biện đối kháng song song ch
 
 Bằng chứng: kiểm rào ĐẠT (9 tệp `Sources/`), Release/Debug cây thử sạch, cây OFF dịch được nhánh lọc region, hồi quy 31/31 + chuẩn hoá 13/13, bản đã cài lên iPhone lúc 13:1x (máy khoá, chủ tự mở: lần mở đầu sẽ đổi tên 142 tệp và xoá 245 MB rác).
 
-**Báo phiên Android (mới):** (a) LDPlayer 9 (sdcardfs) **cũng phân biệt hoa/thường Latin-1** → 115 tệp tên Latin-1 hoa cũng không tìm thấy trên Android, nên chuẩn hoá tên trong `TaiDuLieuActivity` như iOS (hoặc đổi tên trên PC); (b) `donPakCu` chỉ xoá `userdata/UiToaDo.ini`, còn `UiToaDo_<id>.ini` theo nhân vật thì không; (c) `st_mtime_ns` (đã ghi trên).
+**Báo phiên Android (mới)** — bản đầy đủ, có thứ tự và cách sửa: `BANGIAO_ANDROID_TU_IOS_1609.md`. Tóm tắt: (a) LDPlayer 9 (sdcardfs) **cũng phân biệt hoa/thường Latin-1** → 115 tệp tên Latin-1 hoa cũng không tìm thấy trên Android, nên chuẩn hoá tên trong `TaiDuLieuActivity` như iOS (hoặc đổi tên trên PC); (b) `donPakCu` chỉ xoá `userdata/UiToaDo.ini`, còn `UiToaDo_<id>.ini` theo nhân vật thì không; (c) `st_mtime_ns` (đã ghi trên).
 
 ---
 
