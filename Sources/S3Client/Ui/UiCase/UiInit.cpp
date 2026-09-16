@@ -217,7 +217,12 @@ void KUiInit::Initialize()
 //	AddChild(&m_AutoLogin);
 	AddChild(&m_GameConfig);
 	AddChild(&m_DesignerList);
+#ifdef JX_IOS
+	// [IOS-THOAT 16/09] Chu chot: GIAU HAN nut Thoat tren iOS (iOS khong cho app tu dong; nut bam khong phan ung la mau
+	// tu choi 2.1). Khong AddChild -> khong ve, khong bam duoc; trinh sua giao dien duyet cay con nen cung khong thay.
+#else
 	AddChild(&m_ExitGame);
+#endif
 
 	m_szLoginBg[0] = 0;
 

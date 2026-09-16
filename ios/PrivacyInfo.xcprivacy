@@ -22,6 +22,17 @@
 				<string>35F9.1</string>
 			</array>
 		</dict>
+		<!-- [IOS-DUNGLUONG 16/09] JxTaiDuLieu.mm doc NSURLVolumeAvailableCapacityForImportantUsageKey: E174.1 = kiem du cho
+		     truoc khi tai (co ngoai le "khong tai tu may chu khi thieu cho"), 85F4.1 = hien so cho nguoi dung. Khong gui len may chu. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>E174.1</string>
+				<string>85F4.1</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

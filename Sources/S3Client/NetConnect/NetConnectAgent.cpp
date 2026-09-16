@@ -45,6 +45,14 @@ void __stdcall ClientCallBack(LPVOID lpParam, const unsigned long &ulnEventType)
 
 extern iCoreShell*		g_pCoreShell;
 KNetConnectAgent g_NetConnectAgent;
+#ifdef JX_IOS
+// [IOS-MANG 16/09] dia chi thuoc dai rieng (khong toi duoc tu Internet)
+static bool JxIpRieng(const unsigned char* a)
+{
+	return a[0] == 10 || a[0] == 127 || a[0] == 0 || (a[0] == 172 && a[1] >= 16 && a[1] <= 31) ||
+	       (a[0] == 192 && a[1] == 168) || (a[0] == 169 && a[1] == 254);
+}
+#endif
 #ifdef _DEBUG
 static int g_snBugLog;
 #endif
@@ -233,6 +241,18 @@ int KNetConnectAgent::ConnectToGameSvr(const unsigned char* pIpAddress, unsigned
 			s_abyIpTaiKhoan[0], s_abyIpTaiKhoan[1], s_abyIpTaiKhoan[2], s_abyIpTaiKhoan[3]);
 		memcpy(abyIp, s_abyIpTaiKhoan, 4);
 	}
+#ifdef JX_IOS
+	// [IOS-MANG 16/09] May chu tai khoan CONG CONG tra dia chi may chu game thuoc dai RIENG (GameServer_cfg.ini ghi IP LAN):
+	// tu Internet khong toi duoc, tren NAT64 con treo toi 75 s -> dung dia chi may chu tai khoan vua dang nhap. Chi khi
+	// dia chi tai khoan KHONG rieng, de LAN thu (10.0.0.140 tra 10.0.0.x) van nhu cu.
+	if (JxIpRieng(abyIp) && s_abyIpTaiKhoan[0] != 0 && !JxIpRieng(s_abyIpTaiKhoan))
+	{
+		g_DebugLog("[Gateway] may chu game tra %d.%d.%d.%d (dai rieng) -> dung dia chi may chu tai khoan %d.%d.%d.%d",
+			abyIp[0], abyIp[1], abyIp[2], abyIp[3],
+			s_abyIpTaiKhoan[0], s_abyIpTaiKhoan[1], s_abyIpTaiKhoan[2], s_abyIpTaiKhoan[3]);
+		memcpy(abyIp, s_abyIpTaiKhoan, 4);
+	}
+#endif
 	sprintf(Address, "%d.%d.%d.%d", abyIp[0], abyIp[1], abyIp[2], abyIp[3]);
 	g_DebugLog("[Gateway] noi may chu game %s:%d", Address, (int)uPort);
 #else

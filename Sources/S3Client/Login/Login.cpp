@@ -39,6 +39,52 @@ bool GetIpAddress(const char* szAddress, unsigned char* pcAddress)
 	}
 	return false;
 }
+#if defined(JX_IOS) && !JX_IOS_NOI_BO
+// [IOS-MANG 16/09] Ban App Store: bo dia chi may chu thuoc dai RIENG (10/8, 172.16/12, 192.168/16, 127/8, 169.254/16, 0/8)
+// khoi danh sach may chu. Tu Internet khong toi duoc; tren mang IPv6-only cua nguoi duyet NAT64 VAN tong hop dia chi rieng
+// (Libinfo si_getaddrinfo.c chi loai 0/8, 127/8, 169.254/16, 192.0.0.0/29, 192.88.99/24, 224/4) -> connect treo toi 75 s
+// tren luong chinh, lai kich hop thoai "Mang cuc bo". Cay ban thu (JX_IOS_NOI_BO=1) giu nguyen de con vao 10.0.0.140.
+// GetServerRegionList NEN mang region con GetServerList dung chi so danh sach lam so section (phan bien 16/09): bo mot
+// region ma khong giu bang anh xa la mat sach may chu -> s_aRegionSection[chi so danh sach] = so Region_<n> that.
+static bool JxIpRieng(const unsigned char* a)
+{
+	return a[0] == 10 || a[0] == 127 || a[0] == 0 || (a[0] == 172 && a[1] >= 16 && a[1] <= 31) ||
+	       (a[0] == 192 && a[1] == 168) || (a[0] == 169 && a[1] == 254);
+}
+#define JX_REGION_TOIDA 64
+static int s_aRegionSection[JX_REGION_TOIDA];
+static int s_nRegionSo = 0;
+// Region_<i> con it nhat mot dia chi cong cong hop le?
+static bool JxRegionCongCong(KIniFile& File, int i)
+{
+	char szSection[32], szKey[32], szBuffer[32];
+	unsigned char aby[4];
+	int nDem = 0, k;
+	sprintf(szSection, "Region_%d", i);
+	File.GetInteger(szSection, "Count", 0, &nDem);
+	for (k = 0; k < nDem; k++)
+	{
+		sprintf(szKey, "%d_Address", k);
+		if (File.GetString(szSection, szKey, "", szBuffer, sizeof(szBuffer)) && GetIpAddress(szBuffer, aby) && !JxIpRieng(aby))
+			return true;
+	}
+	return false;
+}
+// Lap bang anh xa tu tep. Goi o CA HAI ham doc: AutoLogin goi GetServerList(-1) truoc khi GetServerRegionList chay.
+static void JxLapBangRegion(KIniFile& File)
+{
+	int nReadCount = 0, i;
+	char szKey[32], szTitle[64];
+	s_nRegionSo = 0;
+	File.GetInteger("List", "RegionCount", 0, &nReadCount);
+	for (i = 0; i < nReadCount && s_nRegionSo < JX_REGION_TOIDA; i++)
+	{
+		sprintf(szKey, "Region_%d", i);
+		if (File.GetString("List", szKey, "", szTitle, sizeof(szTitle)) && szTitle[0] && JxRegionCongCong(File, i))
+			s_aRegionSection[s_nRegionSo++] = i;
+	}
+}
+#endif
 static unsigned gs_holdrand = time(NULL);
 
 static inline unsigned _Rand()
@@ -919,6 +965,9 @@ KLoginServer*	KLogin::GetServerRegionList(int& nCount, int& nAdviceChoice)
 						sizeof(pServers[nCount].Title)) &&
 						pServers[nCount].Title[0])
 					{
+#if defined(JX_IOS) && !JX_IOS_NOI_BO
+						if (!JxRegionCongCong(File, i)) continue;	// [IOS-MANG 16/09] region chi co dia chi rieng -> bo (bang anh xa lap o JxLapBangRegion)
+#endif
 						nCount ++;
 					}
 				}
@@ -968,7 +1017,12 @@ KLoginServer* KLogin::GetServerList(int nRegion, int& nCount, int& nAdviceChoice
 		if (nReadCount > 0 || nRegion >= 0 && nRegion < nReadCount)
 		{
 			m_Choices.nServerRegionIndex = nRegion;
+#if defined(JX_IOS) && !JX_IOS_NOI_BO
+			JxLapBangRegion(File);	// [IOS-MANG 16/09] chi so danh sach (sau khi bo region rieng) -> so section that
+			sprintf(szSection, "Region_%d", (nRegion >= 0 && nRegion < s_nRegionSo) ? s_aRegionSection[nRegion] : nRegion);
+#else
 			sprintf(szSection, "Region_%d", nRegion);
+#endif
 			File.GetInteger(szSection, "Count", 0, &nReadCount);	//该区域服务器的数目
 			if (nReadCount > 0)
 			{
@@ -983,6 +1037,9 @@ KLoginServer* KLogin::GetServerList(int nRegion, int& nCount, int& nAdviceChoice
 						{
 							continue;
 						}
+#if defined(JX_IOS) && !JX_IOS_NOI_BO
+						if (JxIpRieng(pServers[nCount].Address)) continue;	// [IOS-MANG 16/09] dia chi rieng -> bo
+#endif
 						sprintf(szKey, "%d_Title", i);
 						if (File.GetString(szSection, szKey, "", pServers[nCount].Title,
 							sizeof(pServers[nCount].Title)) &&

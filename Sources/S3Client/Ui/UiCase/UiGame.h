@@ -39,6 +39,9 @@ enum
 	ACTION_VIEWITEM,					//pDest->uId != 0 id = 7
 	ACTION_BLACKLIST,					//要用Name	8
 	ACTION_TONG,                        //要用Name	9
+#ifdef JX_IOS
+	ACTION_TOCAO,						// [IOS-TOCAO 16/09] to cao nguoi choi (App Store 1.2) - chi iOS, dung cuoi de khong lech cac so tren
+#endif
 };
 
 //pDest的Name必须填, 然后其他根据具体情况填写
