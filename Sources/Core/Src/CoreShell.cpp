@@ -14474,6 +14474,10 @@ static void HD_Msg(int nPlayerIdx, const char* szMsg)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	UINT uNow = timeGetTime();
+	// (16/09) GHI TRUOC phanh 1,2 giay - giong DT_Msg. May Hoat dong truoc nay chi co
+	// DUY NHAT mot dau log [HD-GATE]; moi ly do quyet dinh chi ban ra kenh chat roi troi,
+	// lai con bi phanh uTKMsgT vut bot nen ca dong chat cung khong du de doi chieu.
+	AUTOLOG("[HD-MSG] pha=%d buoc=%d %s", ea.nHDPhase, ea.nHDStep, szMsg);
 	if (ea.uTKMsgT > uNow)
 		return;
 	ea.uTKMsgT = uNow + 1200;
@@ -14487,6 +14491,10 @@ static void HD_Msg(int nPlayerIdx, const char* szMsg)
 static void HD_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	// (16/09) khuon giong [TK-PHA] cua may Tong Kim. Pha: 0 OFF, 1 BN_GO, 2 BN_IN,
+	// 3 BN_BUFF, 4 BN_OUT, 5 BC_GO, 6 BC_SIGN, 7 BC_FIGHT, 8 BC_OUT,
+	// 9 TS_GO, 10 TS_XAPHU, 11 TS_AI, 12 DONE.
+	AUTOLOG("[HD-PHA] %d -> %d map=%d t=%u", ea.nHDPhase, nPha, SubWorld[0].m_SubWorldID, uCurTime);
 	ea.nHDPhase = nPha;
 	ea.nHDStep = 0;
 	ea.nHDTry = 0;
@@ -14864,6 +14872,32 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		return 0;
 	}
 
+	// (16/09) [HD-TS] dong trang thai cho RIENG ba pha Tin Su (9/10/11). Trieu chung chu
+	// game bao 16/09: "nhan nhiem vu - len map nhiem vu - roi ra ngoai map lai nhan nhiem
+	// vu (khong bat dau nhiem vu)". De truy duoc phai nhin DONG THOI: pha/buoc, map dang
+	// dung, va BON BIEN NHIEM VU do may chu dong bo xuong (m_cTask):
+	//   tt    = HD_TS_TSK_TT    trang thai nhiem vu (0 = khong co nhiem vu nao dang lam)
+	//   tuyen = HD_TS_TSK_TUYEN hang tuyen dang lam (-1 = khong khop bang g_HDTSVe)
+	//   ma/da = HD_TS_TSK_MA / _DA  ma ruong phai mo va so ruong da mo
+	//   ngay  = HD_TS_TSK_NGAY  YYMMDD*256 + so luot da xong hom nay
+	// Kem khoa ngay nHDKeyTS + moc nghi uHDTSNghi + luot/muc tieu - day la nhung thu
+	// quyet dinh cong vao o tren chon 'lam tiep viec do dang' hay 'di nhan nhiem vu moi'.
+	// Dat NGOAI moi vong lap, 3 giay mot dong.
+	if (ea.nHDPhase == HDP_TS_GO || ea.nHDPhase == HDP_TS_XAPHU || ea.nHDPhase == HDP_TS_AI)
+	{
+		AUTOLOG_EVERY(3000, "[HD-TS] pha=%d buoc=%d try=%d map=%d | tt=%d tuyen=%d ma=%d da=%d ruongke=%d | ngay=%d luot=%d/%d keyTS=%d nghi=%d giaytrongpha=%d",
+			ea.nHDPhase, ea.nHDStep, ea.nHDTry, nMap,
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(HD_TS_TSK_TT),
+			HD_TSTuyen(nPlayerIdx),
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(HD_TS_TSK_MA),
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(HD_TS_TSK_DA),
+			HD_TSRuongKe(nPlayerIdx),
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(HD_TS_TSK_NGAY),
+			HD_TSLuotNay(nPlayerIdx, nNgay), HD_TSMucTieu(pAp),
+			ea.nHDKeyTS,
+			(int)((ea.uHDTSNghi > uCurTime) ? (ea.uHDTSNghi - uCurTime) / 1000 : 0),
+			(int)((uCurTime - ea.uHDPhaseT) / 1000));
+	}
 	switch (ea.nHDPhase)
 	{
 	case HDP_BN_GO:
