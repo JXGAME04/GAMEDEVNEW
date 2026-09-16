@@ -847,7 +847,11 @@ BOOL GetKeyboardState(PBYTE p) { if (p) { for (int i = 0; i < 256; i++) p[i] = (
 UINT MapVirtualKeyA(UINT c, UINT t) { (void)t; return c; }
 void PostQuitMessage(int n)
 {
+#ifdef JX_IOS	// [IOS-THOAT 15/09] iOS: nuot lenh thoat (auto tu thoat, WM_DESTROY, trinh chieu phim).
+	(void)n;
+#else
 	(void)n; SDL_Event ev; SDL_zero(ev); ev.type = SDL_EVENT_QUIT; ev.quit.timestamp = SDL_GetTicksNS(); SDL_PushEvent(&ev);
+#endif
 }
 BOOL PostMessageA(HWND h, UINT m, WPARAM w, LPARAM l)
 {

@@ -12,8 +12,14 @@
 	<key>CFBundleDisplayName</key>                    <string>JX1 Mobile</string>
 	<key>CFBundlePackageType</key>                    <string>APPL</string>
 	<key>CFBundleShortVersionString</key>             <string>1.0</string>
-	<key>CFBundleVersion</key>                        <string>1</string>
+	<!-- [IOS-PHATHANH 15/09] So ban dung: App Store Connect tu choi ban tai len co CFBundleVersion trung ban truoc.
+	     Xcode thay $(CURRENT_PROJECT_VERSION) bang gia tri dat trong ios/CMakeLists.txt (JX_IOS_SO_BAN_DUNG). -->
+	<key>CFBundleVersion</key>                        <string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>                     <true/>
+	<!-- [IOS-PHATHANH 15/09] CFBundleIconName cap cao nhat: thieu la App Store Connect tu choi ban tai len
+	     (ITMS-90713). actool chi ghi khoa nay LONG trong CFBundleIcons, va du an khong bat GENERATE_INFOPLIST_FILE
+	     nen khong co ai them ho. Gia tri phai trung ten bo icon trong ios/Assets.xcassets (AppIcon). -->
+	<key>CFBundleIconName</key>                       <string>AppIcon</string>
 	<key>MinimumOSVersion</key>                       <string>15.0</string>
 	<key>UIFileSharingEnabled</key>                   <true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>      <true/>

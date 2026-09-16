@@ -31,6 +31,10 @@ GOC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 THU_NHAT_KY = r"D:\jx1_android_log"
 HOP_MAC_DINH = (0, 250, 700, 560)
 # cac tep .spr thieu tren CA cay PC -> khong phai loi dong goi dien thoai (14/09)
+# [ONENDEN 15/09] regiontiledefault.spr VE LAI danh sach bo qua, va lan nay biet VI SAO:
+# chu chot "ben ngoai map phai la mau den". Tep do khong ton tai la CO Y - trinh soan ban do dien
+# o mac dinh cho phan ngoai vung choi, engine tra khong thay nen bo o, ra den. Dong FAIL cua ten nay
+# la BINH THUONG, khong phai loi, va KHONG duoc "sua" bang cach bu tep (da thu 14/09, sai, da go).
 BO_QUA_HONG = ("regiontiledefault.spr", "minimap.spr")
 
 
@@ -270,7 +274,7 @@ def main():
     print()
 
     # ---- 9. anh hong
-    muc("9. ANH NAP HONG (da bo cac tep thieu tren ca cay PC)")
+    muc("9. ANH NAP HONG (doc ca dong ngan sach ben duoi truoc khi ket luan)")
     h = collections.Counter()
     for m2 in re.findall(r"LoadImage FAIL[^:]*: (.+)", rep3):
         ten2 = m2.strip().split("\\")[-1].lower()
@@ -281,7 +285,16 @@ def main():
         for k2, v2 in h.most_common(8):
             print("   %4d  %s" % (v2, k2))
     else:
-        print("   (khong co, hoac chi con cac tep thieu san tren PC)")
+        print("   (khong co)")
+    # [ONENDEN 14/09] Rep3LogLoadFail IM HAN sau 200 dong (TextureResMgr.cpp:10-17, static theo moi lan
+    # chay app). Het ngan sach thi VANG MOT TEN KHONG CHUNG MINH DUOC GI - phai doc so nay truoc.
+    so = [int(x) for x in re.findall(r"LoadImage FAIL \((\d+)/200\)", rep3)]
+    dinh = max(so) if so else 0
+    print("   ngan sach dong FAIL: %d/200%s" % (dinh, "  <<< DA CAN, vang mot ten la VO NGHIA" if dinh >= 200 else ""))
+    onen = sum(1 for m2 in re.findall(r"LoadImage FAIL[^:]*: (.+)", rep3)
+               if m2.strip().split("\\")[-1].lower() == "regiontiledefault.spr")
+    if onen:
+        print("   o nen mac dinh (ngoai ban do) hong %d lan - BINH THUONG, cho ra mau den la dung" % onen)
     print()
 
 

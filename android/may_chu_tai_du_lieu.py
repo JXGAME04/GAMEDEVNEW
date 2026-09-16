@@ -26,7 +26,23 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)   # nhat ky hien ngay khi chuyen huong ra tep
 BO_THU_MUC = ("userdata", "apdata")
-BO_TEP = ("da_tai.txt", "jx_data_dir.txt", "tai_du_lieu.txt", "manifest.txt", "manifest_cache.txt", "apk.txt")
+# [BAOMAT 15/09] Ba tep them vao danh sach loai nay, moi tep mot ly do:
+#
+# manifest.sig - QUAN TRONG NHAT, day la loi CHAN PHAT HANH.
+#   lam_manifest() duyet cay ghi manifest.txt (dong 93) RO`I moi goi _ky_lai() ghi manifest.sig (dong 98).
+#   Nen tu lan chay THU HAI tro di, vong duyet thay manifest.sig con lai cua lan truoc va ghi no vao
+#   manifest kem md5 CU; ngay sau do chu ky bi ghi de bang chu ky MOI. Chu ky ECDSA dung so ngau nhien
+#   nen hai lan ky khong bao gio trung byte -> md5 trong manifest KHONG BAO GIO khop tep tren dia.
+#   Ban iOS kiem md5 sau khi tai (JxTaiDuLieu.mm) -> hong -> ket o man "Thu lai" vinh vien, MOI may,
+#   MOI lan mo. Lan chay dau khong lo vi luc do chua co tep. Ban Android khong lo vi no khong kiem md5,
+#   doi lai da_tai.txt ben do bi ghi md5 sai ma van coi nhu da kiem.
+#
+# may_chu_tai.txt / may_chu_nhatky.txt - hai tep nay chua DIA CHI MAY CHU; dien thoai doc chung de biet
+#   tai du lieu tu dau (JxIosMain.cpp) va gui nhat ky ve dau (JxIosNhatKy.mm). Neu lot vao manifest thi
+#   bo tai ghi chung xuong Documents cua MOI nguoi choi -> tu bat bo gui nhat ky tro ve dia chi trong tep,
+#   ma duong gui nhat ky KHONG he kiem chu ky.
+BO_TEP = ("da_tai.txt", "jx_data_dir.txt", "tai_du_lieu.txt", "manifest.txt", "manifest_cache.txt", "apk.txt",
+          "manifest.sig", "may_chu_tai.txt", "may_chu_nhatky.txt")
 MB = 1048576.0
 THU_NHAT_KY = r"D:\jx1_android_log"   # [DONHIP 12/09] --nhat-ky
 

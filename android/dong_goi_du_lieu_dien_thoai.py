@@ -388,7 +388,9 @@ def main():
         except OSError:
             shutil.copy2(src, dst)
     print("tep roi giu nguyen: %d (lien ket cung %d)" % (len(ROI_GIU), so_lk))
-    for f in ("manifest.txt",):                     # manifest cu -> may chu tai sinh lai
+    # [BAOMAT 15/09] Xoa CA manifest.sig. Chu ky cu khong con ung voi cay du lieu vua dong goi lai,
+    # de lai thi vua vo nghia vua de lam nguoi ta tuong kho nay da duoc ky.
+    for f in ("manifest.txt", "manifest.sig"):      # manifest + chu ky cu -> may chu tai sinh lai
         if os.path.isfile(os.path.join(dich, f)):
             os.remove(os.path.join(dich, f))
     tong_dich = sum(os.path.getsize(os.path.join(r, f)) for r, _, fs in os.walk(dich) for f in fs)

@@ -491,7 +491,33 @@ màn hình kiểm bản đồ nhỏ vẫn vẽ đủ ảnh map và chấm đỏ/
 
 Cách rào: mobile bỏ qua, bản PC giữ nguyên từng dòng trong `#else`; `kiem --pc` ĐẠT.
 
-## §10.12 — ĐÃ SỬA: mảng đen / chớp màn đen khi đi trong Tương Dương (thiếu ô nền mặc định)
+## §10.12 — ĐÃ GỠ, SAI TỪ GỐC: "thiếu ô nền mặc định" KHÔNG phải lỗi
+
+> **CHỦ CHỐT 00:0x 15/09: *"đáng ra map đó bên ngoài map là màu đen không phải màu"*.**
+> Bên ngoài bản đồ **phải đen**. `\system\spr\RegionTileDefault.spr` không tồn tại là **CỐ Ý**:
+> trình soạn bản đồ điền ô mặc định cho phần ngoài vùng chơi, engine tra không thấy nên bỏ ô, và
+> chỗ đó ra màu đen — đúng như thiết kế. Phiên camera đã ghi đúng điều này trong trí nhớ dự án
+> (*"RegionTileDefault.spr thiếu cả PC, không phải lỗi"*) và **tôi đã ghi đè lên kết luận đúng đó**.
+>
+> Hậu quả: bản vá 10.12 tô 2 958 ô (46,7 % Tiến Cúc động) thành nền đất ô-liu, biến vùng-ngoài-bản-đồ
+> thành một bãi cỏ khổng lồ. Bản vá 10.13 làm nặng thêm: tô nốt các vùng không có tệp.
+> **Cả hai đã gỡ sạch lúc 00:1x 15/09** (tệp rời khỏi `dt_v4` và khỏi lớp ghi đè, mã `[NENNGOAI]`
+> revert, bản 1091500xx). Kịch bản `android/sinh_o_nen_mac_dinh.py` và
+> `android/va_nguon_mobile_1409_u.py` giữ lại **chỉ để ghi nhớ**, KHÔNG được chạy lại.
+>
+> **Sai ở đâu (ghi cho lần sau):** tôi chứng minh được "tệp này không tồn tại ở đâu cả" rồi nhảy thẳng
+> sang "vậy là thiếu, phải bù". Câu chưa hỏi: ***nó vắng mặt có phải là cố ý không?*** Bằng chứng để
+> trả lời đã nằm sẵn trong tay: tệp thiếu ở **cả cây PC** và bản PC chạy như vậy nhiều năm; cái gì
+> hỏng trên cả hai nền suốt nhiều năm mà không ai kêu thì nhiều phần là thiết kế, không phải lỗi.
+> Đây là **lần thứ hai trong một ngày** mắc đúng một kiểu (lần đầu: `[BANDONHO]`, mục 10.11).
+>
+> **Còn lại:** triệu chứng gốc của chủ (*"vào map bị đen màn, di chuyển bị chớp màn đen"*) **vẫn chưa
+> tìm ra nguyên nhân**. Những gì đã loại trừ, có số đo: không phải `[BANDONHO]`; không phải ô nền
+> thiếu tệp; không phải mức nhìn rộng (chủ thử 100% vẫn đen); không phải khung hình (60 fps đều,
+> việc/khung thế giới 2,96 ms); mọi dòng `[PGND-V]` đều `bo 0`.
+
+### Ghi lại nội dung cũ của mục 10.12 (để hiểu vì sao từng làm)
+
 
 Chủ báo hai lần: *"vào game qua map bị đen màn và di chuyển cũng bị chớp màn"*, rồi sau khi gỡ
 `[BANDONHO]` vẫn *"chạy lại bản bạn vừa up vẫn còn tình trạng di chuyển bị chớp màn đen"*. Lần này truy

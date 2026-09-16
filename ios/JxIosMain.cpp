@@ -32,6 +32,11 @@ extern "C" const char* JxIos_ThuMucGoi(char* pszRa, size_t nRa);
 extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char* pszLoi, int nLoi);
 // [BAOMAT 12/09 PHIENBAN] kho du lieu khai so phien ban client toi thieu trong phienban.txt
 extern "C" int JxTaiDuLieu_KiemPhienBan(const char* pszThuMuc, int nPhienBanApp, char* pszLoi, int nLoi);
+// [IOS-KHONGCHET 15/09] Man bao loi CHAN (ios/JxTaiDuLieu.mm). Dung thay cho "bao roi return":
+// SDL3 da vo hieu exit() nen tra ve tu main() khong ket thuc tien trinh, chi de lai app song
+// khong cua so - man hinh den, nguoi duyet cua Apple coi la treo (dieu 2.1).
+// pszNut rong = chan mai mai. Tra ve 0 khi bam nut, -1 khi khong dung duoc giao dien.
+extern "C" int JxIosManLoi(const char* pszTieuDe, const char* pszNoiDung, const char* pszNut);
 #define JX_PHIEN_BAN_APP  20260912   // tang moi lan phat hanh (dang ngay)
 extern "C" int JxIosAnGame_Co(void);   // [IOS-AN 11/09] nut an game co day duoc xuong nen khong
 // [IOS-LOG 13/09] gui nhat ky ve may chu tren PC (ios/JxIosNhatKy.mm), chung thu muc voi ban Android
@@ -139,6 +144,12 @@ int main(int argc, char* argv[])
 				JxPosix_SetDataDir(szTaiLieu); chdir(szTaiLieu);
 				char sz[1024];
 				snprintf(sz, sizeof(sz), "Tai du lieu that bai:\n\n%s", szLoi);
+				// [IOS-KHONGCHET 15/09] Tren iOS cho nay gan nhu khong toi duoc nua: JxTaiDuLieu_Chay
+				// da tu cho bam "Thu lai" ngay tren man tai, khong tra ve loi khi con giao dien.
+				// Chi con toi day khi khong dung duoc giao dien. Van KHONG duoc de man hinh den:
+				// xem ghi chu o khai bao JxIosManLoi.
+				JxIosLog("[IOS-TAI] %s", sz);
+				JxIosManLoi("Khong tai duoc du lieu", sz, "");
 				SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "JX1 Mobile", sz, NULL);
 				return 1;
 			}
@@ -154,6 +165,12 @@ int main(int argc, char* argv[])
 			"Khong thay config.ini o cac thu muc:%s\n\nHay chep du lieu game (ten tep ha chu thuong) vao thu muc "
 			"Documents cua ung dung, hoac ghi duong dan thu muc du lieu vao jx_data_dir.txt trong thu muc do.", szKiem);
 		JxIosLog("[IOS] %s", sz);
+		// [IOS-KHONGCHET 15/09] Day la duong di cua may VUA CAI: ca nam thu muc deu rong va khong co
+		// tep may_chu_tai.txt de biet kho du lieu o dau. Truoc day la "bao roi return 1" = man hinh den.
+		// Nay chan lai o man thong bao. Khi nao ghi san dia chi kho du lieu vao ban dung thi cho nay
+		// se co them nut "Thu lai" thay vi chan.
+		JxIosManLoi("Thieu du lieu game",
+			"Ung dung chua co du lieu game.\n\nHay lien he noi phat hanh de duoc huong dan cai du lieu.", "");
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "JX1 Mobile", sz, NULL);
 		return 1;
 	}
@@ -174,6 +191,10 @@ int main(int argc, char* argv[])
 		if (JxTaiDuLieu_KiemPhienBan(s_szDir, JX_PHIEN_BAN_APP, szLoiPb, sizeof(szLoiPb)))
 		{
 			JxIosLog("[PHIENBAN] %s", szLoiPb);
+			// [IOS-KHONGCHET 15/09] Van CHAN nhu cu (khong doi chinh sach o buoc nay), nhung chan bang
+			// man thong bao chu khong phai bang man hinh den. Viec noi long cong phien ban - canh bao
+			// thay vi chan, them nut mo App Store - la quyet dinh rieng, chua lam o day.
+			JxIosManLoi("Ban game da cu", szLoiPb, "");
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "JX1 Mobile", szLoiPb, NULL);
 			return 1;
 		}
@@ -201,5 +222,13 @@ int main(int argc, char* argv[])
 
 	int nRet = JxPosixMain(argc, argv);
 	JxIosLog("[IOS] JxPosixMain tra ve %d", nRet);
+	// [IOS-KHONGCHET 15/09] JxPosixMain tra ve = game da dung han. Hai truong hop:
+	//   - MyApp.Init() hong (S3Client.cpp, nhanh JX_APPLE): chi ghi mot dong vao jx_ios.log roi tra ve 0.
+	//     Day la cho TE NHAT truoc kia: man hinh den ma KHONG co lay mot thong bao nao.
+	//   - MyApp.Run() ket thuc binh thuong (nguoi choi thoat): tu 15/09 nut Thoat khong con dong app,
+	//     nhung cac duong khac van co the toi day.
+	// Ca hai deu khong duoc de tien trinh song ma khong cua so.
+	JxIosManLoi("Khong khoi dong duoc",
+		"Game khong khoi dong duoc.\n\nHay dong han ung dung roi mo lai.", "");
 	return nRet;
 }

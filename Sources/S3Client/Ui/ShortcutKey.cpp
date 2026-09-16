@@ -1548,7 +1548,9 @@ int LuaExitGame(Lua_State * L)
 
 int LuaExit(Lua_State * L)
 {
+#ifndef JX_IOS	// [IOS-THOAT 15/09] script goi Exit() cung khong duoc dong app tren iOS.
 	UiPostQuitMsg();
+#endif
 
 	return 0;
 }
