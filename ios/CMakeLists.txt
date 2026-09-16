@@ -105,6 +105,44 @@ endif()
 set(JX_COMMON_DEFS JX_PLATFORM_SDL JX_POSIX JX_MOBILE JX_APPLE JX_IOS JX_NO_DIRECTX JX_D3D9MINI _WIN64 NDEBUG _MBCS USE_STANDALONE_SPR
     _LIBCPP_ENABLE_CXX17_REMOVED_FEATURES _LIBCPP_ENABLE_CXX20_REMOVED_FEATURES
     _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR)   # libc++ cua Xcode 26 doi macro rieng cho std::auto_ptr (MultiServer/Common/Utils.cpp)
+# [IOS-PHATHANH 16/09] KHOA THO (noi bo). Mac dinh BAT cho cay ban thu (build/ios-dev); ios/dung_ban_phat_hanh.sh truyen OFF.
+#   ON : Info.plist co UIFileSharingEnabled + LSSupportsOpeningDocumentsInPlace (chep du lieu bang Finder) va
+#        NSAllowsLocalNetworking + NSLocalNetworkUsageDescription (may chu thu HTTP trong LAN); ma co JX_IOS_NOI_BO=1:
+#        JxIosMain.cpp doc may_chu_tai.txt / jx_data_dir.txt / JX_DATA_DIR, JxIosNhatKy.mm gui nhat ky ve PC.
+#        (JxIosAnGame.mm voi API noi bo -[UIApplication suspend] tung nam trong nhom nay; tu 16/09 chu bo han nut an game
+#        tren Apple nen tep do khong con duoc dich - xem danh sach nguon S3Client ben duoi.)
+#   OFF: khong khoa nao o tren; JX_IOS_NOI_BO=0 -> cac nhanh do bien mat khoi nhi phan, ke ca chuoi "may_chu_tai.txt"
+#        (script phat hanh tu kiem bang strings + PlistBuddy; chuoi "suspend" cung duoc kiem = 0 de phong tai them).
+#   KHONG gac theo Debug/Release (THIETKE_CAPNHAT_IOS_MAC_1509.md §5.4): chu van dung Release o build/ios-dev de do
+#   hieu nang tren may that. Macro dat vao JX_COMMON_DEFS (moi target qua jx_setup) chu khong dat rieng cho vai tep,
+#   de mai sau Sources/ cung dung duoc (vd giau han nut an game). Gia: doi cong tac la dich lai ~456 don vi.
+#   BAY: gia tri -D dinh lai trong CMakeCache cua cay do; dong message(STATUS) ben duoi ghi vao cauhinh.log de doi chieu.
+option(JX_IOS_KHOA_NOI_BO "Giu khoa tho: chia se tep, HTTP LAN, may_chu_tai.txt, jx_data_dir.txt, nhat ky ve PC. Ban App Store: OFF" ON)
+# [IOS-PHATHANH 16/09] Dia chi kho du lieu ghi SAN vao ban dung (Info.plist khoa JxKhoDuLieu, JxIosMain.cpp doc).
+# Nhieu dia chi cach nhau bang dau cach = cac guong, bo tai thu lan luot. RONG = chua co may chu: may cai moi tu
+# App Store se KHONG khoi dong duoc (chan o man "Thieu du lieu game") -> script phat hanh tu choi dong goi, tru khi
+# dat JX_IOS_CHO_PHEP_KHO_RONG=1 de thu quy trinh.
+set(JX_IOS_KHO_DU_LIEU "" CACHE STRING "Dia chi kho du lieu (https://.../), nhieu guong cach nhau bang dau cach; rong = chua co may chu")
+if(JX_IOS_KHOA_NOI_BO)
+  set(JX_IOS_PLIST_NOI_BO "<key>UIFileSharingEnabled</key>                   <true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>      <true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Tải dữ liệu game từ máy chủ trong mạng nội bộ.</string>")
+  list(APPEND JX_COMMON_DEFS JX_IOS_NOI_BO=1)
+else()
+  set(JX_IOS_PLIST_NOI_BO "")
+  list(APPEND JX_COMMON_DEFS JX_IOS_NOI_BO=0)
+endif()
+# Dia chi di vao XML nen & < > phai escape (& TRUOC): dia chi co '&' thi xcodebuild hong ngay o ProcessInfoPlistFile (do 16/09).
+string(REPLACE "&" "&amp;" JX_IOS_KHO_XML "${JX_IOS_KHO_DU_LIEU}")
+string(REPLACE "<" "&lt;"  JX_IOS_KHO_XML "${JX_IOS_KHO_XML}")
+string(REPLACE ">" "&gt;"  JX_IOS_KHO_XML "${JX_IOS_KHO_XML}")
+message(STATUS "[IOS] JX_IOS_KHOA_NOI_BO=${JX_IOS_KHOA_NOI_BO}  JX_IOS_KHO_DU_LIEU='${JX_IOS_KHO_DU_LIEU}'")
 set(JX_COMMON_OPTS -fsigned-char -fms-extensions -U__linux -w -Wno-register -Wno-address-of-temporary -fno-strict-aliasing -Wno-error)
 set(JX_COMMON_INCS
     ${CMAKE_CURRENT_SOURCE_DIR}/shim          # header CHI cho iOS (malloc.h ...) - Android khong thay
@@ -239,7 +277,8 @@ add_library(S3Client STATIC ${JX_S3CLIENT_SOURCES}
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosStubs.cpp      # [IOS-DO] dem khung + ghi jx_nhip.log moi 10 s
     ${CMAKE_CURRENT_SOURCE_DIR}/JxTaiDuLieu.mm                 # [IOS-TAI 11/09] buoc F: bo tai du lieu trong app (manifest chung voi Android)
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosMiniAudio.mm               # [IOS-AM 11/09] cai dat miniaudio (tach vi AVFoundation da BOOL)
-    ${CMAKE_CURRENT_SOURCE_DIR}/JxIosAnGame.mm                  # [IOS-AN 11/09] nut an game: day ung dung xuong nen
+    # [IOS-AN 16/09] JxIosAnGame.mm KHONG con duoc dich: chu bo han nut "an game" tren Apple (UiPlayerBar.cpp, rao JX_APPLE).
+    # Tep van nam trong ios/ vi macos/CMakeLists.txt:162 con liet ke (ban macOS chu da bo, khong sua).
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosKhoaMat.mm                 # [BAOMAT 12/09 KHOMAT] Keychain: tai khoan / mat khau
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosNhatKy.mm                  # [IOS-LOG 13/09] gui nhat ky ve may chu tren PC, chung thu muc voi Android
     ${CMAKE_CURRENT_SOURCE_DIR}/JxIosDoNhip.mm      # do CPU/RAM/nhiet/pin bang API Apple

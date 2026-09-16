@@ -14,7 +14,15 @@
 #   JX_IOS_KY           ten chung thu ky (mac dinh "Apple Development"; tai khoan tra phi dung "Apple Distribution")
 #   JX_IOS_SO_BAN_DUNG  CFBundleVersion - moi lan tai len App Store Connect PHAI tang
 #   JX_IOS_MA_GOI       ma goi cho san (mac dinh vn.jx1.mobile)
-#   JX_IOS_NGHIEM=1     che do NGHIEM: chi chap nhan goi ky bang chung thu Distribution va khong co get-task-allow
+#   JX_IOS_NGHIEM=1     che do NGHIEM: chi chap nhan goi ky bang chung thu Distribution va khong co get-task-allow,
+#                       va kho du lieu phai la https://
+#   JX_IOS_KHO_DU_LIEU  [16/09] dia chi kho du lieu ghi SAN vao goi (Info.plist JxKhoDuLieu); nhieu guong cach nhau bang
+#                       dau cach. Script TAI THAT manifest + chu ky tu moi guong va kiem bang khoa cong khai trong app.
+#   JX_IOS_CHO_PHEP_KHO_RONG=1  [16/09] cho phep dong goi khi kho rong (CHI de thu quy trinh; goi do khong gui duyet duoc:
+#                       may cai moi se chan o man "Thieu du lieu game" - rot dieu 2.1 chac chan).
+#
+# [16/09] Script luon truyen -DJX_IOS_KHOA_NOI_BO=OFF: goi phat hanh khong co UIFileSharingEnabled, khong HTTP LAN, khong doc
+# may_chu_tai.txt, khong API noi bo suspend - va tu kiem lai tren goi + nhi phan (chot 4).
 set -e
 
 # In ra duong dan tuyet doi, da bo "." ".." va lien ket mem. Khong tao thu muc.
@@ -35,6 +43,7 @@ DOI=${JX_IOS_DOI:-PK9QTZYMSL}
 KY=${JX_IOS_KY:-Apple Development}
 SO=${JX_IOS_SO_BAN_DUNG:-1}
 MA_MONG=${JX_IOS_MA_GOI:-vn.jx1.mobile}
+KHO=${JX_IOS_KHO_DU_LIEU:-}
 
 # Chot 1: khong duoc dung cay ban thu. So bang duong dan da phan giai, vi "build/ios-dev" (tuong doi),
 # "build/./ios-dev", lien ket mem... deu tro toi cung cho ma so chuoi thuong khong bat duoc.
@@ -51,14 +60,63 @@ case "$RA/" in
   *) echo "HONG: archive phai nam trong cay dung $CAY (dang co: $RA)"; exit 1 ;;
 esac
 
-echo "== cau hinh cay dung rieng: $CAY (so ban dung=$SO, ky=$KY)"
+# [IOS-PHATHANH 16/09] Chot 3: KHO DU LIEU. Rong = may cai moi khong khoi dong duoc (rot 2.1 chac chan) -> HONG mac dinh,
+# chi cho qua khi noi ro la dang thu quy trinh. Co dia chi thi KIEM THAT truoc khi ton 10 phut dong goi:
+#   - tai manifest.txt + manifest.sig tu TUNG guong, kiem chu ky bang dung khoa cong khai dang nam trong ios/JxTaiDuLieu.mm
+#     (kho ky bang khoa khac = moi may cai moi deu ket o man Thu lai);
+#   - phienban.txt (neu kho co) KHONG duoc doi ban cao hon JX_PHIEN_BAN_APP dang dong goi (ios/JxIosMain.cpp) - khong thi
+#     nguoi duyet cai xong gap "Ban game da cu" khong loi thoat. Luat van hanh: chi nang phienban.txt SAU khi ban moi
+#     da "Ready for Sale", khong bao gio nang trong luc dang duyet.
 mkdir -p "$CAY"   # phai tao truoc: shell mo tep log TRUOC khi cmake tao thu muc
+if [ -z "$KHO" ]; then
+  if [ "${JX_IOS_CHO_PHEP_KHO_RONG:-0}" = "1" ]; then
+    echo "CANH BAO: JX_IOS_KHO_DU_LIEU rong -> goi nay KHONG gui duyet duoc (may cai moi chan o 'Thieu du lieu game')"
+  else
+    echo "HONG: JX_IOS_KHO_DU_LIEU rong. Dat dia chi kho (https://.../), hoac JX_IOS_CHO_PHEP_KHO_RONG=1 neu chi thu quy trinh"; exit 1
+  fi
+else
+  PB_APP=$(sed -n 's/^#define JX_PHIEN_BAN_APP[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$GOC/ios/JxIosMain.cpp" | head -1)
+  [ -n "$PB_APP" ] || { echo "HONG: khong doc duoc JX_PHIEN_BAN_APP trong ios/JxIosMain.cpp"; exit 1; }
+  KK="$CAY/kiem_kho"; rm -rf "$KK"; mkdir -p "$KK"
+  python3 - "$GOC/ios/JxTaiDuLieu.mm" > "$KK/khoa.der" <<'EOF'
+import re, sys
+s = open(sys.argv[1], encoding="utf-8", errors="replace").read()
+m = re.search(r"s_jxKhoaCongKhai\[\]\s*=\s*\{(.*?)\};", s, re.S)
+sys.stdout.buffer.write(bytes(int(x, 16) for x in re.findall(r"0x([0-9A-Fa-f]{2})", m.group(1))))
+EOF
+  openssl ec -pubin -inform DER -in "$KK/khoa.der" -out "$KK/khoa.pem" >/dev/null 2>&1 \
+    || { echo "HONG: khong doc duoc khoa cong khai s_jxKhoaCongKhai trong ios/JxTaiDuLieu.mm"; exit 1; }
+  for goc in $KHO; do   # $KHO KHONG ngoac kep: tach theo dau cach thanh tung guong (sh khong co mang)
+    case "$goc" in */) ;; *) goc="$goc/" ;; esac
+    if [ "${JX_IOS_NGHIEM:-0}" = "1" ]; then
+      case "$goc" in https://*) ;; *) echo "HONG (nghiem): kho phai la https:// (ATS chan http ra Internet): $goc"; exit 1 ;; esac
+    fi
+    curl -fsS -m 30 -o "$KK/manifest.txt" "${goc}manifest.txt" || { echo "HONG: khong tai duoc ${goc}manifest.txt"; exit 1; }
+    curl -fsS -m 30 -o "$KK/manifest.sig" "${goc}manifest.sig" || { echo "HONG: khong tai duoc ${goc}manifest.sig"; exit 1; }
+    base64 -D -i "$KK/manifest.sig" -o "$KK/sig.der" 2>/dev/null || { echo "HONG: ${goc}manifest.sig khong phai base64"; exit 1; }
+    openssl dgst -sha256 -verify "$KK/khoa.pem" -signature "$KK/sig.der" "$KK/manifest.txt" >/dev/null 2>&1 \
+      || { echo "HONG: chu ky manifest o $goc KHONG khop khoa cong khai trong app (ky lai: python3 android/ky_manifest.py)"; exit 1; }
+    SO_TEP=$(wc -l < "$KK/manifest.txt" | tr -d ' ')
+    PB_KHO=""
+    if grep -qa 'phienban.txt$' "$KK/manifest.txt"; then
+      PB_KHO=$(curl -fsS -m 30 "${goc}phienban.txt" 2>/dev/null | head -1 | tr -cd '0-9' || true)
+      if [ -n "$PB_KHO" ] && [ "$PB_KHO" -gt "$PB_APP" ]; then
+        echo "HONG: ${goc}phienban.txt doi ban $PB_KHO > ban dang dong goi $PB_APP -> nguoi duyet se bi chan 'Ban game da cu'"; exit 1
+      fi
+    fi
+    echo "== kho $goc: chu ky HOP LE, $SO_TEP tep, phienban.txt=${PB_KHO:-(khong co)}, app=$PB_APP"
+  done
+fi
+
+echo "== cau hinh cay dung rieng: $CAY (so ban dung=$SO, ky=$KY, khoa noi bo=OFF)"
 cmake -S "$GOC/ios" -B "$CAY" -G Xcode \
   -DCMAKE_SYSTEM_NAME=iOS \
   -DCMAKE_OSX_SYSROOT=iphoneos \
   -DCMAKE_OSX_ARCHITECTURES=arm64 \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
   -DJX_IOS_SO_BAN_DUNG="$SO" \
+  -DJX_IOS_KHOA_NOI_BO=OFF \
+  -DJX_IOS_KHO_DU_LIEU="$KHO" \
   -DCMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM="$DOI" \
   -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE=Automatic \
   -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY="$KY" \
@@ -118,6 +176,7 @@ echo "tep nguon trong dSYM : $SO_NGUON (SDL3 $SO_SDL, Lua54 $SO_LUA, game $SO_GA
 echo "ky hieu con lai      : $KY_HIEU"
 echo "ma goi / so ban dung : $MA_GOI / $SO_BAN"
 echo "ten bo icon          : $TEN_ICON"
+echo "kho du lieu          : ${KHO:-(RONG - khong gui duyet duoc)}"
 
 [ "$U_APP" = "$U_SYM" ] || { echo "HONG: UUID cua dSYM khong khop tep chay"; exit 1; }
 [ "$SO_NGUON" -gt 400 ] || { echo "HONG: dSYM chi co $SO_NGUON tep nguon (do duoc 466) - thu vien tinh dang bi strip"; exit 1; }
@@ -141,6 +200,29 @@ done
 [ "$MA_GOI" = "$MA_MONG" ] || { echo "HONG: ma goi la $MA_GOI, mong doi $MA_MONG"; exit 1; }
 [ "$SO_BAN" = "$SO" ] || { echo "HONG: CFBundleVersion trong goi la $SO_BAN, yeu cau $SO (Xcode khong thay duoc bien?)"; exit 1; }
 
+# [IOS-PHATHANH 16/09] Chot 4: khoa THO phai bien mat khoi goi lan nhi phan (JX_IOS_KHOA_NOI_BO=OFF).
+# PlistBuddy: khoa CO -> exit 0 (ke ca gia tri rong), khoa THIEU -> exit 1. Voi set -e phai boc trong if.
+for k in UIFileSharingEnabled LSSupportsOpeningDocumentsInPlace NSAppTransportSecurity NSLocalNetworkUsageDescription; do
+  if /usr/libexec/PlistBuddy -c "Print :$k" "$APP/Info.plist" >/dev/null 2>&1; then echo "HONG: goi con khoa tho $k"; exit 1; fi
+done
+# JxKhoDuLieu: THIEU khoa (mau plist hong / go sai ten bien - configure_file thay bien khong ton tai bang rong, khong bao)
+# khac voi RONG (chua co may chu, da xet o chot 3).
+if ! KHO_GOI=$(/usr/libexec/PlistBuddy -c 'Print :JxKhoDuLieu' "$APP/Info.plist" 2>/dev/null); then
+  echo "HONG: Info.plist trong goi thieu khoa JxKhoDuLieu (mau ios/Info.plist hong hoac ten bien CMake sai)"; exit 1
+fi
+[ "$KHO_GOI" = "$KHO" ] || { echo "HONG: JxKhoDuLieu trong goi la '$KHO_GOI', yeu cau '$KHO'"; exit 1; }
+# strings: DOI CHUNG DUONG truoc (jx_ios.log luon co trong nhi phan), roi moi tin cac so 0. grep -c tra exit 1 khi dem = 0
+# nen phai "|| true"; dung /usr/bin/grep de khong dinh ham boc grep cua shell nguoi dung.
+SO_CHUNG=$(strings -a "$BIN" | /usr/bin/grep -c 'jx_ios.log' || true)
+[ "$SO_CHUNG" -ge 1 ] || { echo "HONG: strings khong doc duoc tep chay (0 chuoi jx_ios.log) - phep do hong, khong ket luan duoc"; exit 1; }
+SO_SUS=$(strings -a "$BIN" | /usr/bin/grep -cx 'suspend' || true)
+[ "$SO_SUS" -eq 0 ] || { echo "HONG: tep chay con chuoi 'suspend' ($SO_SUS) - API noi bo chua bi loai (JX_IOS_NOI_BO?)"; exit 1; }
+SO_MCT=$(strings -a "$BIN" | /usr/bin/grep -c 'may_chu_tai.txt' || true)
+[ "$SO_MCT" -eq 0 ] || { echo "HONG: tep chay con chuoi 'may_chu_tai.txt' ($SO_MCT) - nhanh noi bo chua bi loai"; exit 1; }
+SO_SEL=$(otool -v -s __TEXT __objc_methname "$BIN" 2>/dev/null | /usr/bin/grep -cw 'suspend' || true)
+[ "$SO_SEL" -eq 0 ] || { echo "HONG: __objc_methname con 'suspend' ($SO_SEL)"; exit 1; }
+echo "khoa tho             : da loai (plist sach, 0 'suspend', 0 'may_chu_tai.txt')"
+
 # Che do NGHIEM: chi dung khi that su di tai len. Goi ky bang chung thu phat trien se bi App Store Connect tu choi.
 if [ "${JX_IOS_NGHIEM:-0}" = "1" ]; then
   codesign -d --entitlements :- "$APP" > "$CAY/quyen.txt" 2>/dev/null || true
@@ -161,6 +243,6 @@ fi
 echo "DAT: $RA"
 if [ "${JX_IOS_NGHIEM:-0}" != "1" ]; then
   echo "LUU Y: ban nay ky bang chung thu PHAT TRIEN, KHONG tai len App Store Connect duoc."
-  echo "       Khi co tai khoan tra phi: dat JX_IOS_KY='Apple Distribution' JX_IOS_NGHIEM=1, roi them buoc"
-  echo "       xcodebuild -exportArchive voi ExportOptions.plist (method app-store-connect, uploadSymbols true)."
+  echo "       Khi co tai khoan tra phi: dat JX_IOS_KY='Apple Distribution' JX_IOS_NGHIEM=1 JX_IOS_KHO_DU_LIEU=https://...,"
+  echo "       roi them buoc xcodebuild -exportArchive voi ExportOptions.plist (method app-store-connect, uploadSymbols true)."
 fi

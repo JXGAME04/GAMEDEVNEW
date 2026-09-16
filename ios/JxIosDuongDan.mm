@@ -37,3 +37,15 @@ extern "C" const char* JxIos_ThuMucGoi(char* pszRa, size_t nRa)
 	snprintf(pszRa, nRa, "%s", p ? [p UTF8String] : "");
 	return pszRa;
 }
+
+// [IOS-PHATHANH 16/09] Dia chi kho du lieu ghi SAN trong goi: Info.plist khoa JxKhoDuLieu, do ios/CMakeLists.txt dien tu
+// bien JX_IOS_KHO_DU_LIEU (nhieu guong cach nhau bang dau cach). Tra chuoi rong khi khoa thieu hoac rong - JxIosMain.cpp
+// coi rong la "chua co may chu". Day la duong DUY NHAT ban App Store biet kho o dau (may_chu_tai.txt chi con o cay ban thu).
+extern "C" const char* JxIos_KhoDuLieu(char* pszRa, size_t nRa)
+{
+	id v = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"JxKhoDuLieu"];
+	NSString* s = [v isKindOfClass:[NSString class]] ? (NSString*)v : nil;
+	s = [s stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	snprintf(pszRa, nRa, "%s", s.length ? [s UTF8String] : "");
+	return pszRa;
+}

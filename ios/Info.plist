@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- [IOS 11/09] Ban ke cua ung dung. UIFileSharingEnabled + LSSupportsOpeningDocumentsInPlace
-     de chep du lieu vao thu muc Documents bang Finder khi chay tren may that. -->
+<!-- [IOS 11/09] Ban ke cua ung dung. CMake xu ly tep nay bang configure_file (thay @BIEN@), Xcode thay $(BIEN) sau do.
+     [IOS-PHATHANH 16/09] Cac khoa THO (chia se tep qua Finder, HTTP trong LAN) chi con khi JX_IOS_KHOA_NOI_BO=ON,
+     xem ios/CMakeLists.txt; ban App Store khong co chung. -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -21,8 +22,12 @@
 	     nen khong co ai them ho. Gia tri phai trung ten bo icon trong ios/Assets.xcassets (AppIcon). -->
 	<key>CFBundleIconName</key>                       <string>AppIcon</string>
 	<key>MinimumOSVersion</key>                       <string>15.0</string>
-	<key>UIFileSharingEnabled</key>                   <true/>
-	<key>LSSupportsOpeningDocumentsInPlace</key>      <true/>
+	<!-- [IOS-PHATHANH 16/09] Khoa THO, ios/CMakeLists.txt dien khi JX_IOS_KHOA_NOI_BO=ON: UIFileSharingEnabled,
+	     LSSupportsOpeningDocumentsInPlace, NSAllowsLocalNetworking, NSLocalNetworkUsageDescription. OFF = dong trong. -->
+	@JX_IOS_PLIST_NOI_BO@
+	<!-- [IOS-PHATHANH 16/09] Dia chi kho du lieu ghi san (bien CMake JX_IOS_KHO_DU_LIEU, da escape XML). Rong = chua co
+	     may chu; may cai moi se khong khoi dong duoc - script phat hanh tu choi dong goi khi rong. -->
+	<key>JxKhoDuLieu</key>                            <string>@JX_IOS_KHO_XML@</string>
 	<key>UIRequiresFullScreen</key>                   <true/>
 	<key>UIStatusBarHidden</key>                      <true/>
 	<key>UIViewControllerBasedStatusBarAppearance</key> <false/>
@@ -37,14 +42,5 @@
 		<string>arm64</string>
 		<string>metal</string>
 	</array>
-	<!-- [IOS-TAI 11/09] bo tai du lieu: cho phep HTTP thuong TRONG MANG NOI BO (may chu thu o LAN).
-	     Kho du lieu phat hanh cho nguoi choi phai dung HTTPS - ATS mac dinh van chan HTTP ra Internet. -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>Tai du lieu game tu may chu trong mang noi bo.</string>
 </dict>
 </plist>

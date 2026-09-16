@@ -12,6 +12,8 @@
 //   - Moi 10 giay gui phan MOI cua tung tep (nho vi tri da gui, khong gui lai tu dau).
 //   - Vi tri ban dau = do dai tep luc mo app, nen log cua cac lan chay truoc KHONG bi gui lai.
 //   - Dia chi may chu lay tu dong dau <Documents>/may_chu_nhatky.txt; khong co thi moi lay may_chu_tai.txt.
+//     [IOS-PHATHANH 16/09] CHI o cay ban thu (JX_IOS_NOI_BO=1). Ban App Store (JX_IOS_KHOA_NOI_BO=OFF) khong doc hai
+//     tep nay va khong gui nhat ky di dau: duong nay khong kiem chu ky, va nguoi choi that khong co may chu PC de nhan.
 //     [IOS-LOG 14/09] Chu chon tep RIENG: tao may_chu_tai.txt la bat bo tai dong bo du lieu moi lan mo app,
 //     ma bo tai se ghi de config.ini rieng cua iPhone bang ban cua PC.
 //   - CHI tien vi tri khi may chu nhan THAT (2xx): mat mang giua chung thi lan sau gui lai,
@@ -154,6 +156,10 @@ static void JxGuiHet(void)
 // Tra 1 neu da bat. Goi MOT lan, sau khi da chot thu muc du lieu.
 extern "C" int JxNhatKy_Bat(const char* pszThuMuc)
 {
+#if !JX_IOS_NOI_BO
+	(void)pszThuMuc;
+	return 0;	// [IOS-PHATHANH 16/09] ban phat hanh: xem ghi chu dau tep
+#else
 	@autoreleasepool {
 		if (s_hen || !pszThuMuc || !*pszThuMuc)
 			return 0;
@@ -220,6 +226,7 @@ extern "C" int JxNhatKy_Bat(const char* pszThuMuc)
 		      goc, JX_NHATKY_GIAY, JxTenMay(), phien);
 		return 1;
 	}
+#endif
 }
 
 extern "C" void JxNhatKy_GuiNgay(void)

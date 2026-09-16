@@ -59,9 +59,6 @@ extern iRepresentShell*	g_pRepresentShell;
 
 #define	SCHEME_INI			"UiPlayerBar.ini"		//edit by phong kieu file ini quy dinh Ui player bar
 #define	SCHEME_INI_MINI		"UiPlayerBarMini.ini"		//file ini quy dinh Ui toi uu hoa game mini
-#ifdef JX_APPLE	// [IOS-AN 11/09] day ung dung xuong nen (ios/JxIosAnGame.mm)
-extern "C" int JxIosAnGame(const char* pszDiaChiDuPhong);
-#endif
 #define GAME_LOGO				"Vâ L©m TruyÒn Kú"
 #define	SWITCH_LOGO_INTERVAL	5000
 #define	SCHEME_INI_STATE_POS	"\\Ui\\StatePos.ini"
@@ -743,7 +740,13 @@ void KUiPlayerBar::Initialize()
 	AddChild(&m_Market);
 	AddChild(&m_WifiStatus);
 	AddChild(&m_Auto);	
+#ifdef JX_APPLE
+	// [IOS-AN 16/09] Chu bo han nut "an game" tren Apple: iOS khong co API hop le de app tu day minh xuong nen
+	// (-[UIApplication suspend] la API noi bo, App Store tu choi; mo Safari thay the thi nguoi duyet coi la loi).
+	// Khong AddChild -> nut khong ve, khong bam duoc, va trinh "Sua giao dien" (UiToaDo duyet cay con that) khong thay no.
+#else
 	AddChild(&m_HideWindow);
+#endif
 	// [TaskGuide 19/08] bo 2 nut Zalo/Facebook goc man hinh theo yeu cau chu game;
 	// the cho bang nut bat/tat khung theo doi nhiem vu (di dung co che neo cu)
 	//AddChild(&m_Zalo);
@@ -1012,8 +1015,8 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 			OnSwitchSize();
         else if (uParam == (KUPARAM)(KWndWindow*)&m_HideWindow)
 		{
-#ifdef JX_APPLE	// [IOS-AN 11/09] TrayMode la ham rong tren POSIX; Apple day han ung dung xuong nen (ios/JxIosAnGame.mm)
-			JxIosAnGame(NULL);
+#ifdef JX_APPLE
+			// [IOS-AN 16/09] tren Apple nut khong duoc AddChild (xem tren) nen khong bao gio toi day
 #else
 			gTrayMode.HideNotify(hInst);			
 #endif

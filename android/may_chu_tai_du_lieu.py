@@ -41,8 +41,12 @@ BO_THU_MUC = ("userdata", "apdata")
 #   tai du lieu tu dau (JxIosMain.cpp) va gui nhat ky ve dau (JxIosNhatKy.mm). Neu lot vao manifest thi
 #   bo tai ghi chung xuong Documents cua MOI nguoi choi -> tu bat bo gui nhat ky tro ve dia chi trong tep,
 #   ma duong gui nhat ky KHONG he kiem chu ky.
+#
+# manifest_dakiem.txt [IOS 16/09] - ban iOS giu lai manifest DA KIEM CHU KY (dong dau = chu ky, sau la manifest) trong
+#   Documents de mat mang van biet du lieu da du hay chua. Tep nay chi sinh tren may iOS; loai o day cho doi xung voi
+#   da_tai.txt, phong khi cay du lieu cua mot may bi dem ra phuc vu.
 BO_TEP = ("da_tai.txt", "jx_data_dir.txt", "tai_du_lieu.txt", "manifest.txt", "manifest_cache.txt", "apk.txt",
-          "manifest.sig", "may_chu_tai.txt", "may_chu_nhatky.txt")
+          "manifest.sig", "may_chu_tai.txt", "may_chu_nhatky.txt", "manifest_dakiem.txt")
 MB = 1048576.0
 THU_NHAT_KY = r"D:\jx1_android_log"   # [DONHIP 12/09] --nhat-ky
 

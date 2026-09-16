@@ -1,5 +1,7 @@
 # BÀN GIAO CHO PHIÊN SAU — PHÁT HÀNH iOS (chốt 15/09/2026)
 
+> **16/09:** đã có bản mới hơn — đọc `BANGIAO_PHIENSAU_IOS_1609.md` trước (A3, B2, B3 xong; §5.3 và §4 của tệp thiết kế bị bác).
+
 > Đọc tệp này trước. Hai tệp kia đọc khi cần chi tiết:
 > - **`THIETKE_CAPNHAT_IOS_MAC_1509.md`** — thiết kế hệ cập nhật + phần mổ nhị phân VNKU đối chứng
 > - **`BANGIAO_TAIDULIEU_1509.md`** — gửi riêng phiên Android (2 tệp `android/` dùng chung)

@@ -4,10 +4,11 @@
 // roi goi JxPosixMain() (S3Client.cpp:263, nhanh JX_POSIX) = phan WinMain khong dinh Windows.
 //
 // Thu muc du lieu, thu theo thu tu, lay thu muc dau tien co config.ini:
-//   1. bien moi truong JX_DATA_DIR (dat duoc trong so do chay cua Xcode khi go loi)
-//   2. dong dau tien cua <Documents>/jx_data_dir.txt
-//   3. <Documents> cua ung dung  - bo tai (ios/JxTaiDuLieu.mm) ghi vao day; dia chi kho du lieu
-//      doc tu dong dau <Documents>/may_chu_tai.txt
+//   1. bien moi truong JX_DATA_DIR (dat duoc trong so do chay cua Xcode khi go loi)     - chi cay ban thu (JX_IOS_NOI_BO)
+//   2. dong dau tien cua <Documents>/jx_data_dir.txt                                    - chi cay ban thu (JX_IOS_NOI_BO)
+//   3. <Documents> cua ung dung  - bo tai (ios/JxTaiDuLieu.mm) ghi vao day; dia chi kho du lieu doc tu dong dau
+//      <Documents>/may_chu_tai.txt (chi cay ban thu), khong co thi lay dia chi ghi san trong goi (Info.plist JxKhoDuLieu,
+//      [IOS-PHATHANH 16/09] - duong DUY NHAT cua ban App Store)
 //   4. <Library/Application Support>/jx1
 //   5. thu muc tai nguyen trong goi ung dung (chi doc, dung khi nhet san du lieu vao goi de thu)
 //
@@ -28,17 +29,19 @@ extern int JxPosixMain(int argc, char* argv[]);   // KHONG extern "C" (S3Client.
 extern "C" const char* JxIos_ThuMucTaiLieu(char* pszRa, size_t nRa);
 extern "C" const char* JxIos_ThuMucHoTro(char* pszRa, size_t nRa);
 extern "C" const char* JxIos_ThuMucGoi(char* pszRa, size_t nRa);
+extern "C" const char* JxIos_KhoDuLieu(char* pszRa, size_t nRa);   // [IOS-PHATHANH 16/09] Info.plist JxKhoDuLieu (ios/JxIosDuongDan.mm)
 // [IOS-TAI 11/09] buoc F: bo tai du lieu trong app (ios/JxTaiDuLieu.mm)
 extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char* pszLoi, int nLoi);
 // [BAOMAT 12/09 PHIENBAN] kho du lieu khai so phien ban client toi thieu trong phienban.txt
 extern "C" int JxTaiDuLieu_KiemPhienBan(const char* pszThuMuc, int nPhienBanApp, char* pszLoi, int nLoi);
+// [IOS-PHIENBAN 16/09] bao so phien ban app cho bo tai de no kiem phienban.txt TRUOC khi tai hang GB (ios/JxTaiDuLieu.mm)
+extern "C" void JxTaiDuLieu_DatPhienBanApp(int nPhienBanApp);
 // [IOS-KHONGCHET 15/09] Man bao loi CHAN (ios/JxTaiDuLieu.mm). Dung thay cho "bao roi return":
 // SDL3 da vo hieu exit() nen tra ve tu main() khong ket thuc tien trinh, chi de lai app song
 // khong cua so - man hinh den, nguoi duyet cua Apple coi la treo (dieu 2.1).
 // pszNut rong = chan mai mai. Tra ve 0 khi bam nut, -1 khi khong dung duoc giao dien.
 extern "C" int JxIosManLoi(const char* pszTieuDe, const char* pszNoiDung, const char* pszNut);
 #define JX_PHIEN_BAN_APP  20260912   // tang moi lan phat hanh (dang ngay)
-extern "C" int JxIosAnGame_Co(void);   // [IOS-AN 11/09] nut an game co day duoc xuong nen khong
 // [IOS-LOG 13/09] gui nhat ky ve may chu tren PC (ios/JxIosNhatKy.mm), chung thu muc voi ban Android
 extern "C" int JxNhatKy_Bat(const char* pszThuMuc);
 
@@ -57,11 +60,15 @@ extern "C" HRESULT          CreateInterface(const GUID&, void**);   // Rainbow/C
 extern "C" HRESULT          CreateTextFilter(ITextFilter**);        // FilterText/FilterText.cpp:218
 // [MOBILE 13/09] Rep3_JxEpTrinhChieu / Rep3_JxTheGioi nay rao JX_MOBILE (co tren iOS) -> dang ky o duoi de KSdlApp / Wnds.cpp tra duoc.
 
+// [IOS-LOG 16/09] Duong tuyet doi toi jx_ios.log trong Documents, dat ngay dau main(). Truoc day jx_fopen("jx_ios.log")
+// giai duong TUONG DOI: truoc khi JxPosix_SetDataDir + chdir (tuc suot luc bo tai chay) thu muc hien hanh la "/" nen moi
+// dong [IOS-TAI] ("kho du lieu:", "ket qua ...") bi mat - thay ro tren may ao 16/09: jx_ios.log khong co dong nao cua bo tai.
+static char s_szJxIosLog[1200] = "";
 static void JxIosLog(const char* fmt, ...)
 {
 	char sz[1024]; va_list va; va_start(va, fmt); vsnprintf(sz, sizeof(sz), fmt, va); va_end(va);
 	SDL_Log("%s", sz);
-	FILE* f = jx_fopen("jx_ios.log", "ab");
+	FILE* f = s_szJxIosLog[0] ? fopen(s_szJxIosLog, "ab") : jx_fopen("jx_ios.log", "ab");
 	if (f) { fprintf(f, "[%u] %s\n", (unsigned)SDL_GetTicks(), sz); fclose(f); }
 }
 
@@ -71,7 +78,10 @@ int main(int argc, char* argv[])
 	JxIos_ThuMucTaiLieu(szTaiLieu, sizeof(szTaiLieu));
 	JxIos_ThuMucHoTro(szHoTro, sizeof(szHoTro));
 	JxIos_ThuMucGoi(szGoi, sizeof(szGoi));
+	if (szTaiLieu[0]) snprintf(s_szJxIosLog, sizeof(s_szJxIosLog), "%s/jx_ios.log", szTaiLieu);	// [IOS-LOG 16/09]
 
+	const char* cand[8]; int nc = 0;
+#if JX_IOS_NOI_BO	// [IOS-PHATHANH 16/09] hai duong "tho" nay chi o cay ban thu; ban App Store khong doc bien moi truong / jx_data_dir.txt
 	char szTxt[1024] = "";
 	if (szTaiLieu[0])
 	{
@@ -87,11 +97,10 @@ int main(int argc, char* argv[])
 			fclose(f);
 		}
 	}
-
-	const char* cand[8]; int nc = 0;
 	const char* pszEnv = getenv("JX_DATA_DIR");
 	if (pszEnv && *pszEnv) cand[nc++] = pszEnv;
 	if (szTxt[0])          cand[nc++] = szTxt;
+#endif
 	if (szTaiLieu[0])      cand[nc++] = szTaiLieu;
 	if (szHoTro[0])        cand[nc++] = szHoTro;
 	if (szGoi[0])          cand[nc++] = szGoi;
@@ -110,13 +119,20 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	// [IOS-TAI 11/09] buoc F: neu <Documents>/may_chu_tai.txt co dia chi kho du lieu thi tai ve.
-	// Chay CA KHI da co du lieu: manifest cho biet tep nao doi, chi tai phan chenh lech.
-	// Khong noi duoc may chu ma da co du lieu san thi ghi log roi choi tiep (choi duoc khi khong mang).
+	// [IOS-TAI 11/09] buoc F: dong bo du lieu tu kho. Chay CA KHI da co du lieu: manifest cho biet tep nao doi, chi tai
+	// phan chenh lech. Khong noi duoc may chu ma du lieu da DU theo manifest da kiem lan truoc thi bo tai tu cho qua
+	// (tinh huong D trong ios/JxTaiDuLieu.mm) - choi duoc khi khong mang; chua du thi giu o man Thu lai.
+	// [IOS-PHATHANH 16/09] Dia chi kho lay theo thu tu:
+	//   1. <Documents>/may_chu_tai.txt - CHI cay ban thu (JX_IOS_NOI_BO=1), de tro may chu LAN. Luu y: bo tai se ghi de
+	//      config.ini cua may nay bang ban tren kho (JxIosNhatKy.mm ghi chu 14/09).
+	//   2. Dia chi ghi SAN trong goi: Info.plist khoa JxKhoDuLieu (bien CMake JX_IOS_KHO_DU_LIEU, nhieu guong cach nhau
+	//      bang dau cach). Ban App Store chi co duong nay. Rong = chua co may chu -> may cai moi roi xuong man
+	//      "Thieu du lieu game" ben duoi (script phat hanh tu choi dong goi khi rong).
 	if (szTaiLieu[0])
 	{
+		char szGoc[1024] = "";
+#if JX_IOS_NOI_BO
 		char szMc[1200]; snprintf(szMc, sizeof(szMc), "%s/may_chu_tai.txt", szTaiLieu);
-		char szGoc[512] = "";
 		FILE* fm = fopen(szMc, "rb");
 		if (fm)
 		{
@@ -127,10 +143,18 @@ int main(int argc, char* argv[])
 			}
 			fclose(fm);
 		}
+		if (szGoc[0]) JxIosLog("[IOS-TAI] dia chi kho lay tu may_chu_tai.txt (cay ban thu)");
+#endif
+		if (!szGoc[0])
+		{
+			JxIos_KhoDuLieu(szGoc, sizeof(szGoc));
+			if (szGoc[0]) JxIosLog("[IOS-TAI] dia chi kho ghi san trong goi (JxKhoDuLieu)");
+		}
 		if (szGoc[0])
 		{
-			char szLoi[512] = "";
+			char szLoi[768] = "";
 			JxIosLog("[IOS-TAI] kho du lieu: %s -> %s", szGoc, szTaiLieu);
+			JxTaiDuLieu_DatPhienBanApp(JX_PHIEN_BAN_APP);	// [IOS-PHIENBAN 16/09] kiem phienban.txt truoc khi tai hang GB
 			int nT = JxTaiDuLieu_Chay(szTaiLieu, szGoc, szLoi, sizeof(szLoi));
 			JxIosLog("[IOS-TAI] ket qua %d%s%s", nT, szLoi[0] ? ": " : "", szLoi);
 			if (nT == 0 && !pszDir)
@@ -143,17 +167,19 @@ int main(int argc, char* argv[])
 			{
 				JxPosix_SetDataDir(szTaiLieu); chdir(szTaiLieu);
 				char sz[1024];
-				snprintf(sz, sizeof(sz), "Tai du lieu that bai:\n\n%s", szLoi);
+				snprintf(sz, sizeof(sz), "Tải dữ liệu thất bại:\n\n%s", szLoi);
 				// [IOS-KHONGCHET 15/09] Tren iOS cho nay gan nhu khong toi duoc nua: JxTaiDuLieu_Chay
 				// da tu cho bam "Thu lai" ngay tren man tai, khong tra ve loi khi con giao dien.
 				// Chi con toi day khi khong dung duoc giao dien. Van KHONG duoc de man hinh den:
 				// xem ghi chu o khai bao JxIosManLoi.
 				JxIosLog("[IOS-TAI] %s", sz);
-				JxIosManLoi("Khong tai duoc du lieu", sz, "");
+				JxIosManLoi("Không tải được dữ liệu", sz, "");
 				SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "JX1 Mobile", sz, NULL);
 				return 1;
 			}
 		}
+		else
+			JxIosLog("[IOS-TAI] khong co dia chi kho du lieu -> khong dong bo");	// (chuoi khong nhac ten tep tho: script phat hanh dem strings)
 	}
 
 	if (!pszDir)
@@ -161,16 +187,24 @@ int main(int argc, char* argv[])
 		const char* pszLog = szTaiLieu[0] ? szTaiLieu : ".";
 		JxPosix_SetDataDir(pszLog); chdir(pszLog);
 		char sz[4600];
+#if JX_IOS_NOI_BO
 		snprintf(sz, sizeof(sz),
 			"Khong thay config.ini o cac thu muc:%s\n\nHay chep du lieu game (ten tep ha chu thuong) vao thu muc "
 			"Documents cua ung dung, hoac ghi duong dan thu muc du lieu vao jx_data_dir.txt trong thu muc do.", szKiem);
+#else
+		snprintf(sz, sizeof(sz), "Khong thay config.ini o cac thu muc:%s", szKiem);	// ban phat hanh: khong nhac duong tho
+#endif
 		JxIosLog("[IOS] %s", sz);
 		// [IOS-KHONGCHET 15/09] Day la duong di cua may VUA CAI: ca nam thu muc deu rong va khong co
 		// tep may_chu_tai.txt de biet kho du lieu o dau. Truoc day la "bao roi return 1" = man hinh den.
-		// Nay chan lai o man thong bao. Khi nao ghi san dia chi kho du lieu vao ban dung thi cho nay
-		// se co them nut "Thu lai" thay vi chan.
-		JxIosManLoi("Thieu du lieu game",
-			"Ung dung chua co du lieu game.\n\nHay lien he noi phat hanh de duoc huong dan cai du lieu.", "");
+		// Nay chan lai o man thong bao.
+		// [IOS-PHATHANH 16/09] Toi day CHI khi khong co dia chi kho nao (JxKhoDuLieu rong, khong may_chu_tai.txt): co dia
+		// chi thi bo tai da tu giu nguoi choi o man Thu lai / D / A, khong roi xuong day. Loi cau hinh ban dung, khong phai
+		// loi nguoi choi -> khong co nut Thu lai (thu lai cung vay).
+		JxIosManLoi("Thiếu dữ liệu game",
+			"Ứng dụng chưa có dữ liệu game và chưa biết địa chỉ kho dữ liệu.\n\n"
+			"Hãy liên hệ nơi phát hành để được hướng dẫn.\n"
+			"(Game data is missing and no download server is configured. Please contact the publisher.)", "");
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "JX1 Mobile", sz, NULL);
 		return 1;
 	}
@@ -194,7 +228,7 @@ int main(int argc, char* argv[])
 			// [IOS-KHONGCHET 15/09] Van CHAN nhu cu (khong doi chinh sach o buoc nay), nhung chan bang
 			// man thong bao chu khong phai bang man hinh den. Viec noi long cong phien ban - canh bao
 			// thay vi chan, them nut mo App Store - la quyet dinh rieng, chua lam o day.
-			JxIosManLoi("Ban game da cu", szLoiPb, "");
+			JxIosManLoi("Bản game đã cũ", szLoiPb, "");
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "JX1 Mobile", szLoiPb, NULL);
 			return 1;
 		}
@@ -202,9 +236,12 @@ int main(int argc, char* argv[])
 	if (chdir(s_szDir) != 0)
 		JxIosLog("[IOS] chdir(%s) that bai: %s", s_szDir, strerror(errno));
 	JxIosLog("[IOS] thu muc du lieu: %s (SDL %d.%d.%d)", s_szDir, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
-	JxIosLog("[IOS-AN] nut an game: %s", JxIosAnGame_Co() ? "day han xuong nen duoc" : "KHONG, chi mo duoc dia chi ngoai");
 	// [IOS-LOG 13/09] bat gui nhat ky ve may chu tren PC; [IOS-LOG 14/09] ghi ket qua vao jx_ios.log de kiem duoc tu xa
+#if JX_IOS_NOI_BO
 	JxIosLog("[IOS-LOG] gui nhat ky ve may chu PC: %s", JxNhatKy_Bat(s_szDir) ? "BAT" : "tat (khong co may_chu_nhatky.txt / may_chu_tai.txt)");
+#else
+	JxIosLog("[IOS-LOG] gui nhat ky ve may chu PC: tat (ban phat hanh, JX_IOS_NOI_BO=0)");
+#endif
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
 
 	// [IOS-KYHIEU 11/09] iOS khong nap duoc thu vien dong: dang ky truoc cac ham ma ma chung van
@@ -228,7 +265,8 @@ int main(int argc, char* argv[])
 	//   - MyApp.Run() ket thuc binh thuong (nguoi choi thoat): tu 15/09 nut Thoat khong con dong app,
 	//     nhung cac duong khac van co the toi day.
 	// Ca hai deu khong duoc de tien trinh song ma khong cua so.
-	JxIosManLoi("Khong khoi dong duoc",
-		"Game khong khoi dong duoc.\n\nHay dong han ung dung roi mo lai.", "");
+	JxIosManLoi("Không khởi động được",
+		"Game không khởi động được.\n\nHãy đóng hẳn ứng dụng rồi mở lại.\n"
+		"(The game could not start. Please force-quit the app and open it again.)", "");
 	return nRet;
 }
