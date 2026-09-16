@@ -54,6 +54,23 @@ Cách làm theo luật của chủ: **4 phản biện đối kháng song song ch
 | `ios/dung_ban_phat_hanh.sh` | Luôn `-DJX_IOS_KHOA_NOI_BO=OFF`. **Chốt 3**: kho rỗng → HỎNG (trừ `JX_IOS_CHO_PHEP_KHO_RONG=1`); có kho → tải `manifest.txt`+`.sig` từ **từng gương**, kiểm chữ ký bằng đúng khoá trong `JxTaiDuLieu.mm`, `phienban.txt` không được đòi cao hơn `JX_PHIEN_BAN_APP`; NGHIÊM đòi `https://`. **Chốt 4** trên gói: 4 khoá thợ phải thiếu, `JxKhoDuLieu` phải có và khớp, `strings` đối chứng dương rồi `suspend` = 0, `may_chu_tai.txt` = 0, `__objc_methname` không có `suspend`. |
 | `android/may_chu_tai_du_lieu.py` | Thêm `manifest_dakiem.txt` vào `BO_TEP` (tệp chỉ sinh trên máy iOS; loại cho đối xứng với `da_tai.txt`). Phiên Android: không cần làm gì. |
 
+### 2b. Đợt 2 trong ngày (chủ: "tiếp tục làm 1–4, giấu nút Thoát") — 3 phản biện trước khi sửa, kiểm rào ĐẠT 9 tệp
+
+| Việc | Tệp | Nội dung |
+|---|---|---|
+| 1. Tên tệp GBK/hoa | `ios/JxTaiDuLieu.mm` | **Tên trên đĩa = dạng `JxPathPosix` tìm** (`KPosixWin32.cpp:134-157`): hạ thường ASCII + Latin-1 (U+00C0–U+00DE trừ ×, Š/Œ/Ž, Ÿ), NFC; URL vẫn tên gốc; khoá `da_tai.txt` chuẩn hoá khi đọc. Manifest PC có **142/688** tên hoa (27 `spr/ui3/FortuneRank/*` + 115 Latin-1) mà iOS (APFS phân biệt hoa/thường) không tìm thấy → trước đây bản đồ Tống Kim, hiệu ứng trang sức, màn đăng nhập… bị **ảnh trống** trên iPhone (chưa ai vào đúng chỗ). Trước khi so: **đổi tên** biến thể hoa → chuẩn (không tải lại 292 MB). Sau đồng bộ **online trọn vẹn**: xoá tệp **mồ côi** trong các thư mục cấp 1 của manifest (rác mã hoá hai lần 245 MB, pak cũ; giữ `userdata/`, `apdata/`, tệp gốc, `.part` đang tải); `ui/uitoado_macdinh*` đổi → xoá `userdata/uitoado*.ini` (như Android). Không cắt NBSP khi đọc manifest. Thử 13/13 trên ảnh đĩa APFS **phân biệt hoa/thường** (`hdiutil` — ổ Mac không phân biệt nên thử trên ổ Mac là vô nghĩa) + hồi quy 31/31. |
+| 2. IPv6 | `Sources/MultiServer/Common/SocketClient.cpp` (`JX_APPLE`) | `CreateConnectionSocket`: `getaddrinfo(AF_UNSPEC, AI_DEFAULT)` → socket theo họ địa chỉ trả về → connect (tối đa 3 địa chỉ). **Không** `AI_NUMERICHOST` (tắt NAT64). Hỏng → `INVALID_SOCKET` (cùng đường UI như cũ). `nm -u` có `_getaddrinfo`. Chưa đo trên mạng NAT64 thật. |
+| 2. Địa chỉ riêng | `Sources/S3Client/Login/Login.cpp` (`defined(JX_IOS) && !JX_IOS_NOI_BO`) | **Bản App Store** bỏ địa chỉ dải riêng (10/8, 172.16/12, 192.168/16, 127/8, 169.254/16) và region chỉ có địa chỉ riêng, **có bảng ánh xạ** chỉ số danh sách → số `Region_n` (phản biện: `GetServerList` dùng chỉ số danh sách làm số section, bỏ Region_0 mà không ánh xạ = mất sạch máy chủ). Đính chính tiền đề cũ: NAT64 của iOS **vẫn tổng hợp** 10.0.0.140 (Libinfo chỉ loại 0/8, 127/8, 169.254/16, 192.0.0.0/29, 192.88.99/24, 224/4) → connect treo 75 s trên luồng chính; đó là lý do lọc. Cây thử giữ nguyên để vào 10.0.0.140. Không đổi tệp `serverlist` dùng chung. |
+| 2. IP game server | `Sources/S3Client/NetConnect/NetConnectAgent.cpp` (`JX_IOS`) | Máy chủ tài khoản **công cộng** trả IP game server dải riêng (GameServer_cfg.ini ghi IP LAN) → dùng IP máy chủ tài khoản (mở rộng phép thay 127.x sẵn có); không áp khi máy chủ tài khoản cũng là LAN. **Chủ kiểm:** 70.36.108.27 trả IP gì cho game server. |
+| 3. Nút Thoát | `UiInit.cpp:220` (`JX_IOS`), `ShortcutKey.cpp` `LuaExit` | Giấu hẳn nút Thoát màn đầu (không `AddChild`); `Exit()` từ Lua → về màn đầu như `ExitGame()` thay vì nút chết. |
+| 4a. Dung lượng trống | `ios/JxTaiDuLieu.mm`, `ios/PrivacyInfo.xcprivacy`, `ios/dung_ban_phat_hanh.sh` | `NSURLVolumeAvailableCapacityForImportantUsageKey`; cần = còn phải tải + **tệp lớn nhất** (downloadTask giữ tệp tạm riêng, pak 512 MB) + 150 MB; thiếu → E "Máy còn trống X, cần Y"; màn hỏi ý in "máy còn trống". Khai `DiskSpace` lý do **E174.1 + 85F4.1** (không gửi số lên máy chủ). Script: chốt 5 — `nm -u` có API dung lượng thì plist phải có DiskSpace. |
+| 4c. Nút Tố cáo (1.2) | `UiGame.h/.cpp`, `GameSpaceChangedNotify.cpp` (`JX_IOS`) | Thực đơn lên người chơi khác thêm **"Tố cáo"** (cuối enum, TCVN3 viết `\x` để khối iOS thuần ASCII) → hộp `UIMessageBox` "Tố cáo người chơi X?" (Xác nhận/Huỷ bỏ, nút 1 = 0) → gửi **tin riêng** `[TO CAO] <tên> - hh:mm dd/mm` tới nhân vật quản trị (`config.ini [Client] TenGM`, mặc định `GM`) bằng `OnSendSomeoneMessage` (không qua bộ lọc tục), ghi `userdata/tocao.log`, báo "Đã gửi tố cáo tới quản trị viên"; chặn dòng "GM không có trên mạng" cho tin `[TO CAO]`. Relay **luôn** ghi `s3relay_log/ChatSomeOne*.log` kể cả GM offline → có dấu vết máy chủ, không phải sửa máy chủ. **Chủ cần:** tạo nhân vật `GM` (hoặc đặt `TenGM`), ghi quy trình xử lý 24 giờ vào Review Notes, thêm thông tin liên hệ trong app (1.2 đòi). |
+| 4b. Dọn tệp thừa | `ios/JxTaiDuLieu.mm` | xem việc 1. |
+
+Bằng chứng: kiểm rào ĐẠT (9 tệp `Sources/`), Release/Debug cây thử sạch, cây OFF dịch được nhánh lọc region, hồi quy 31/31 + chuẩn hoá 13/13, bản đã cài lên iPhone lúc 13:1x (máy khoá, chủ tự mở: lần mở đầu sẽ đổi tên 142 tệp và xoá 245 MB rác).
+
+**Báo phiên Android (mới):** (a) LDPlayer 9 (sdcardfs) **cũng phân biệt hoa/thường Latin-1** → 115 tệp tên Latin-1 hoa cũng không tìm thấy trên Android, nên chuẩn hoá tên trong `TaiDuLieuActivity` như iOS (hoặc đổi tên trên PC); (b) `donPakCu` chỉ xoá `userdata/UiToaDo.ini`, còn `UiToaDo_<id>.ini` theo nhân vật thì không; (c) `st_mtime_ns` (đã ghi trên).
+
 ---
 
 ## 3. Máy trạng thái lúc mở app (đã cài, đã thử)
@@ -141,8 +158,7 @@ bình thường, gửi nhật ký về PC vẫn BẬT (`may_chu_nhatky.txt` có 
 1. ~~Nút "Ẩn game" trên Apple~~ — **chủ đã chốt 16/09: bỏ hẳn**, đã làm (xem §2). Dữ liệu chung
    `android/du_lieu_ghi_de/ui/uitoado_danhsach.ini:75` vẫn ghi "Nút ẩn game" cho Android; trên iOS mục đó trỏ tới nút
    không tồn tại nên vô hại.
-2. **Nút Thoát vô hiệu trên iOS** (chốt 15/09 "giữ nút nhưng bấm không thoát") — phản biện xét duyệt xếp là mẫu 2.1 "nút không
-   phản ứng". Cách vẫn đúng lời chủ: bấm về màn chọn máy chủ, hoặc giấu trên iOS.
+2. ~~Nút Thoát vô hiệu trên iOS~~ — **chủ chốt 16/09: giấu**, đã làm (UiInit.cpp); `Exit()` từ Lua về màn đầu.
 3. **Kho dữ liệu**: HTTPS trên hạ tầng có SLA (S3/CloudFront/R2, chỉ cần tệp tĩnh + Range), **2 gương** (`JX_IOS_KHO_DU_LIEU`
    nhận nhiều địa chỉ), đóng băng kho suốt thời gian duyệt; **luật `phienban.txt`**: không bao giờ nâng vượt bản đang
    "Waiting for Review / In Review". Script phát hành đã biến luật này thành máy.
@@ -158,14 +174,15 @@ bình thường, gửi nhật ký về PC vẫn BẬT (`may_chu_nhatky.txt` có 
 | A1 | Cài mới xong app chạy được | **Cơ chế xong** (`JxKhoDuLieu`), chỉ chờ địa chỉ thật (A2). Script từ chối đóng gói khi rỗng. |
 | A2 | Máy chủ HTTPS có tên miền | **Chủ thuê** |
 | A3 | Tách "cũ" / "mất mạng" + dấu hoàn tất | **Xong** |
-| A4 | `serverlist` còn trỏ `10.0.0.140` | chưa (dữ liệu, không phải mã); trên máy người duyệt còn kích hộp "Mạng cục bộ" |
-| A5 | IPv6 | chưa (~40 dòng) |
+| A4 | `serverlist` còn trỏ `10.0.0.140` | **Xong bằng mã**: bản App Store tự bỏ địa chỉ riêng (Login.cpp); dữ liệu chung không đổi |
+| A5 | IPv6 | **Xong** (SocketClient.cpp, chưa đo trên NAT64 thật) |
 | B2, B3 | API nội bộ, khoá thợ | **Xong**, kèm chốt máy |
 | B1, B4, B5, B6 | tài khoản trả phí, mã hoá, Distribution/exportArchive, xếp hạng tuổi | như cũ |
 | C3 | hỏi ý trước khi tải | **nửa đầu xong** (dung lượng + nút); "không tải qua 4G mặc định" **không phải** yêu cầu xét duyệt (phản biện rà 4.2.3, 2.4.4), để sau |
-| C4 | nút tố cáo | chưa |
+| C4 | nút tố cáo | **Xong** (tin riêng tới GM); còn thiếu thông tin liên hệ trong app |
 | D2 | ảnh nền màn tải | **Xong** — `ios/nen_tai.png` = `KHTD_Ui/UpdateScene.png` của VNKU (1136×640, chủ chọn 16/09; KHÔNG phải LaunchScreenBackground logo) |
-| D3 | kiểm dung lượng trống (+ khai `DiskSpace`) | chưa |
+| D3 | kiểm dung lượng trống (+ khai `DiskSpace`) | **Xong** |
+| D4 | dọn tệp thừa | **Xong** (mồ côi trong thư mục manifest, chỉ sau đồng bộ online trọn vẹn) |
 | D5, D6 | tải nhiều luồng; iPad | chưa |
 | Mới | nút "Mở App Store" ở màn A (cần ID app) | chờ tài khoản |
 | Mới | `NSURLSession` nền (tải tiếp khi ra nền, không cần `UIBackgroundModes`) | ý phản biện, chưa làm |

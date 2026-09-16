@@ -32,6 +32,13 @@
 #include "../../S3Client.h"
 #include "CommCtrl.h"
 #include "UiMiniMap.h"
+#ifdef JX_IOS
+#include "UiInformation.h"	// [IOS-TOCAO 16/09] UIMessageBox
+#include "UiMsgCentrePad.h"	// [IOS-TOCAO 16/09] SystemMessageArrival
+#define JX_TOCAO_UPARAM  0x4A544343	// [IOS-TOCAO 16/09] uParam rieng cua hop xac nhan to cao (WndProc o duoi dung truoc ham)
+static char s_szToCaoTen[32] = "";
+static void JxToCaoGui();
+#endif
 extern iCoreShell*		g_pCoreShell;
 extern KUiChatPhrase    g_UiChatPhrase;
 
@@ -120,6 +127,16 @@ int KUiGameSpace::WndProc(unsigned int uMsg, KUPARAM uParam, KNPARAM nParam)
 				bDefault = false;
 		}
 		break;
+#ifdef JX_IOS
+	case WND_M_OTHER_WORK_RESULT:	// [IOS-TOCAO 16/09] ket qua hop xac nhan to cao: nut dau (Xac nhan) = 0
+		if (uParam == (KUPARAM)JX_TOCAO_UPARAM)
+		{
+			if (nParam == WND_OPER_RESULT_0) JxToCaoGui();
+			s_szToCaoTen[0] = 0;
+			bDefault = false;
+		}
+		break;
+#endif
 	case WND_M_MENUITEM_SELECTED:
 		if (uParam == (KUPARAM)(KWndWindow*)this)
 		{
@@ -219,6 +236,44 @@ void KUiGameSpace::OnMouseMoveCursor(int x, int y)
 }
 
 void AddBlackList(const char* strName, const char* strGroup);
+#ifdef JX_IOS
+// [IOS-TOCAO 16/09] Nut "To cao" trong thuc don len nguoi choi khac (App Store 1.2: phai co co che bao cao noi dung xau).
+// Chon -> hop xac nhan -> gui TIN RIENG toi nhan vat quan tri (config.ini [Client] TenGM, mac dinh "GM") + ghi
+// userdata/tocao.log + bao "Da gui to cao". Relay LUON ghi s3relay_log/ChatSomeOne*.log ke ca khi GM khong online ->
+// co dau vet phia may chu ma khong phai sua may chu. Khong qua IsCanSendMessage (bo loc tuc co the chan chinh ban to cao).
+// Tin toi da 211 byte (GameServer bo goi >= 255). Chuoi TCVN3 viet bang \x de khoi iOS thuan ASCII (ios/kiem_rao.py).
+static void JxToCaoHoi(const char* pszTen)
+{
+	if (!pszTen || !pszTen[0]) return;
+	strncpy(s_szToCaoTen, pszTen, sizeof(s_szToCaoTen) - 1);
+	s_szToCaoTen[sizeof(s_szToCaoTen) - 1] = 0;
+	char szHoi[128];
+	_snprintf(szHoi, sizeof(szHoi), "T\xE8 c\xB8o ng\xAD\xEAi ch\xACi %s?", s_szToCaoTen);	// "To cao nguoi choi %s?"
+	szHoi[sizeof(szHoi) - 1] = 0;
+	UIMessageBox(szHoi, &g_WndGameSpace, "X\xB8" "c nh\xCBn", "Hu\xFB b\xE1", JX_TOCAO_UPARAM);	// "Xac nhan" / "Huy bo"
+}
+static void JxToCaoGui()
+{
+	if (!s_szToCaoTen[0]) return;
+	char szGM[32] = "GM";
+	GetPrivateProfileStringA("Client", "TenGM", "GM", szGM, sizeof(szGM), ".\\config.ini");
+	if (!szGM[0]) strcpy(szGM, "GM");
+	time_t t = time(NULL);
+	struct tm* pT = localtime(&t);
+	char szTin[212];
+	int n = _snprintf(szTin, sizeof(szTin) - 1, "[TO CAO] %s - %02d:%02d %02d/%02d", s_szToCaoTen,
+		pT ? pT->tm_hour : 0, pT ? pT->tm_min : 0, pT ? pT->tm_mday : 0, pT ? (pT->tm_mon + 1) : 0);
+	if (n < 0 || n > (int)sizeof(szTin) - 1) n = (int)sizeof(szTin) - 1;
+	szTin[n] = 0;
+	KUiPlayerBar::OnSendSomeoneMessage(szGM, szTin, n);
+	FILE* f = fopen("\\userdata\\tocao.log", "ab");	// fopen = jx_fopen: tu tao thu muc, ha chu thuong
+	if (f) { fprintf(f, "%s -> %s\n", szTin, szGM); fclose(f); }
+	// "Da gui to cao toi quan tri vien."
+	static const char szBao[] = "\xA7\xB7 g\xF6i t\xE8 c\xB8o t\xEDi qu\xB6n tr\xDE vi\xAAn.";
+	KUiMsgCentrePad::SystemMessageArrival(szBao, (unsigned short)strlen(szBao) + 1);
+	s_szToCaoTen[0] = 0;
+}
+#endif
 
 void ProcessPeople(KUiPlayerItem* pDest, int nAction)
 {
@@ -292,6 +347,11 @@ void ProcessPeople(KUiPlayerItem* pDest, int nAction)
 	case ACTION_TONG:		//	9
 		KUiTongJX2::ToggleFromIcon();	// he bang hoi JX2 thay cua so cu
 		break;
+#ifdef JX_IOS
+	case ACTION_TOCAO:		// [IOS-TOCAO 16/09]
+		JxToCaoHoi(pDest->Name);
+		break;
+#endif
 	}
 }
 
@@ -365,6 +425,9 @@ char g_ActionName[][32] =
 	"Tin tøc",
 	"Sæ ®en",
 	"Bang héi",
+#ifdef JX_IOS
+	"T\xE8 c\xB8o",	// [IOS-TOCAO 16/09] "To cao" (TCVN3)
+#endif
 }; //# thanh menu chuot trai + control len nguoi choi khac
 
 bool IsInBlackName(char* strName);
@@ -407,6 +470,9 @@ void PopUpContextPeopleMenu(const KUiPlayerItem& SelectPlayer, int x, int y)
 			(i == ACTION_TONG && SelectPlayer.nIndex != -1 && nbIsRecruit) ||
 			(i == ACTION_BLACKLIST && !IsInBlackName((char*)SelectPlayer.Name)) ||
 			(i == ACTION_CHAT)
+#ifdef JX_IOS
+			|| (i == ACTION_TOCAO)	// [IOS-TOCAO 16/09]
+#endif
 			)
 		{
 			strcpy(pMenuData->Items[nMenuCount].szData, g_ActionName[i]);

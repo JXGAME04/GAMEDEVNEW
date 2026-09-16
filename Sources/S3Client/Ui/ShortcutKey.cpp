@@ -1550,6 +1550,9 @@ int LuaExit(Lua_State * L)
 {
 #ifndef JX_IOS	// [IOS-THOAT 15/09] script goi Exit() cung khong duoc dong app tren iOS.
 	UiPostQuitMsg();
+#else
+	// [IOS-THOAT 16/09] khong lam gi = nut chet trong UI Lua (phan bien 16/09) -> ve man dau nhu LuaExitGame.
+	return LuaExitGame(L);
 #endif
 
 	return 0;

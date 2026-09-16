@@ -32,6 +32,10 @@
 //      Moi that bai SAU khi da co manifest hop le (404 tep, md5 sai, het cho) deu la E - khong loi vao game.
 //   7. phienban.txt (co md5 trong manifest da ky) duoc tai va kiem TRUOC khi tai hang GB (A: chan han).
 //   8. Dieu 4.2.3(ii): tu 50 MB thi noi dung luong va cho bam "Tai xuong" truoc khi tai (mot nut, khong bo qua).
+//   [IOS-TENTEP 16/09] 9. Ten tep tren dia = dang CHUAN ma JxPathPosix se tim (ha chu thuong ASCII + Latin-1, NFC), khong phai
+//      ten trong manifest (PC Windows khong phan biet hoa/thuong, iOS thi co). Tep tren dia chi khac hoa/thuong -> DOI TEN,
+//      khong tai lai. Sau khi dong bo online tron ven: xoa tep MO COI trong cac thu muc cap 1 cua manifest (khong dung
+//      userdata/, apdata/, tep o goc) - nhu Android don data/*.pak nhung rong hon vi iOS con rac ten mã hoa hai lan.
 //   Khong HMAC/Keychain: ECDSA tren manifest da luu da tra loi "manifest that" - KHONG phai "moi nhat" (chu ky
 //   khong co dau thoi gian, mot cap cu hop le vinh vien); chuyen do chi may chu game chan duoc luc dang nhap.
 //   KHONG "chi gieo lan dau" config.ini: game tren mobile khong ghi config.ini (moi thiet dat vao userdata/, may chu
@@ -89,6 +93,7 @@ extern "C" int JxTaiDuLieu_KiemPhienBan(const char* pszThuMuc, int nPhienBanApp,
 @property (atomic, copy) NSString* canhBao;      // D: xong nhung khong kiem tra duoc cap nhat (hien 1,5 s roi vao game)
 @property (atomic) BOOL chan;                    // A: chan han (ban app qua cu), khong nut Thu lai
 @property (atomic) long long canHoi;             // 4.2.3(ii): >0 = dang cho nguoi choi bam "Tai xuong" cho tung nay byte
+@property (atomic) long long choTrong;           // [IOS-DUNGLUONG 16/09] cho trong tren may luc hoi (de hien), <0 = khong biet
 @property (atomic) BOOL daDongY;
 @property (atomic) BOOL xong;
 @property (atomic) BOOL huy;
@@ -200,8 +205,59 @@ static void JxKhongSaoLuu(NSString* p)
 	[u setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:&e];
 }
 
+// ---------------------------------------------------------------- ten tep chuan
+// [IOS-TENTEP 16/09] Ten tren dia = DUNG dang JxPathPosix (Sources/Engine/Src/Platform/KPosixWin32.cpp:134-157) se tim khi
+// game mo tep: ha chu thuong ASCII; ha chu thuong Latin-1 (U+00C0-U+00DE tru U+00D7 -> +0x20; U+0160/U+0152/U+017D -> +1;
+// U+0178 -> U+00FF); giu nguyen con lai; NFC. Manifest tu PC Windows mang ten CHU HOA (NTFS khong phan biet hoa/thuong),
+// iOS (APFS) thi phan biet -> khong chuan hoa thi game KHONG THAY 142/688 tep (do 16/09: 27 spr/ui3/FortuneRank/* +
+// 115 ten Latin-1 kieu maps/ÌØÊâÓÃµØ/...). APFS khong phan biet NFC/NFD nen chi hoa/thuong la van de. URL tai van dung
+// ten goc trong manifest. Phan bien 16/09 doi chieu tung buoc voi JxPathPosix tren 688 muc manifest that: khop 100%, 0 va cham.
+static NSString* JxChuanHoaDuongDan(NSString* rel)
+{
+	NSString* nfc = [rel precomposedStringWithCanonicalMapping];
+	NSUInteger n = nfc.length;
+	if (!n) return nfc;
+	unichar* p = (unichar*)malloc(sizeof(unichar) * n);
+	if (!p) return nfc;
+	[nfc getCharacters:p range:NSMakeRange(0, n)];
+	for (NSUInteger i = 0; i < n; i++)
+	{
+		unichar c = p[i];
+		if (c >= 'A' && c <= 'Z') c = (unichar)(c + 32);
+		else if (c >= 0xC0 && c <= 0xDE && c != 0xD7) c = (unichar)(c + 0x20);
+		else if (c == 0x160 || c == 0x152 || c == 0x17D) c = (unichar)(c + 1);
+		else if (c == 0x178) c = 0xFF;
+		p[i] = c;
+	}
+	NSString* ra = [[NSString stringWithCharacters:p length:n] precomposedStringWithCanonicalMapping];
+	free(p);
+	return ra;
+}
+
+// Cat CR/LF/khoang trang/tab ASCII o hai dau. KHONG dung whitespaceAndNewlineCharacterSet: no cat ca U+00A0 (byte GBK 0xA0
+// qua cp1252) va khoang trang Unicode khac co the la mot phan cua ten tep (phan bien 16/09).
+static NSString* JxCatDauCuoi(NSString* s)
+{
+	static NSCharacterSet* bo = nil;
+	if (!bo) bo = JX_GIU([NSCharacterSet characterSetWithCharactersInString:@" \t\r\n"]);
+	return [s stringByTrimmingCharactersInSet:bo];
+}
+
+// Thu muc cap 1 ma manifest co (data, maps, spr, ui, settings, system...): chi doi ten / don rac TRONG cac thu muc nay.
+// Tep o goc (config.ini, da_tai.txt...), userdata/, apdata/, tmp/, logs/... khong bao gio bi dung toi.
+static NSArray<NSString*>* JxThuMucCap1(NSArray<NSString*>* duong)
+{
+	NSMutableOrderedSet* ra = [NSMutableOrderedSet orderedSet];
+	for (NSString* rel in duong)
+	{
+		NSRange r = [rel rangeOfString:@"/"];
+		if (r.location != NSNotFound && r.location > 0) [ra addObject:[rel substringToIndex:r.location]];
+	}
+	return ra.array;
+}
+
 // ---------------------------------------------------------------- da_tai.txt
-// "<md5>\t<duong dan>" moi dong: tep da tai VA da kiem md5 dung.
+// "<md5>\t<duong dan>" moi dong: tep da tai VA da kiem md5 dung. Khoa = ten CHUAN (JxChuanHoaDuongDan).
 static NSMutableDictionary* JxDocDaTai(NSString* thuMuc)
 {
 	NSMutableDictionary* d = [NSMutableDictionary dictionary];
@@ -211,7 +267,8 @@ static NSMutableDictionary* JxDocDaTai(NSString* thuMuc)
 	for (NSString* ln in [(s ?: @"") componentsSeparatedByString:@"\n"])
 	{
 		NSArray* c = [ln componentsSeparatedByString:@"\t"];
-		if (c.count >= 2) d[c[1]] = c[0];
+		// [IOS-TENTEP 16/09] chuan hoa khoa khi doc: dong cu ghi ten hoa (truoc 16/09) van dung duoc sau khi tep da doi ten
+		if (c.count >= 2) d[JxChuanHoaDuongDan(c[1])] = c[0];
 	}
 	return d;
 }
@@ -227,7 +284,7 @@ static void JxGhiThemDaTai(NSString* thuMuc, NSString* md5, NSString* rel)
 
 // [16/09] Ghi lai da_tai.txt GON (moi tep mot dong) bang tep tam + rename. Tep chi noi them nen phinh dan qua moi ban
 // cap nhat, va mot byte hong UTF-8 la ca tep bi bo -> bam lai 8,5 GB moi lan mo, vinh vien (phan bien 16/09 muc 13).
-static void JxGhiGonDaTai(NSString* thuMuc, NSDictionary* daTai)
+static void JxGhiGonDaTai(NSString* thuMuc, NSDictionary* daTai, NSSet<NSString*>* tapManifest)
 {
 	if (!daTai.count) return;
 	NSString* p = [thuMuc stringByAppendingPathComponent:@"da_tai.txt"];
@@ -236,12 +293,120 @@ static void JxGhiGonDaTai(NSString* thuMuc, NSDictionary* daTai)
 	if (!f) return;
 	BOOL ok = YES;
 	for (NSString* rel in [daTai.allKeys sortedArrayUsingSelector:@selector(compare:)])
+	{
+		if (tapManifest && ![tapManifest containsObject:rel]) continue;	// [16/09] bo khoa khong con trong manifest
 		if (fprintf(f, "%s\t%s\n", [daTai[rel] UTF8String], rel.UTF8String) < 0) { ok = NO; break; }
+	}
 	if (fflush(f) != 0) ok = NO;
 	if (ok && fsync(fileno(f)) != 0) ok = NO;
 	if (fclose(f) != 0) ok = NO;
 	if (!ok || rename(tam.fileSystemRepresentation, p.fileSystemRepresentation) != 0)
 		unlink(tam.fileSystemRepresentation);
+}
+
+// ---------------------------------------------------------------- doi ten bien the / don tep mo coi
+// [IOS-TENTEP 16/09] Truoc khi so voi manifest: tep tren dia ma ten CHUAN HOA trung mot muc manifest nhung byte ten khac
+// (chi khac hoa/thuong) -> DOI TEN sang ten chuan, khoi tai lai (iPhone cua chu 16/09: 142 tep / 292 MB nhu the, do bo tai
+// cu ghi ten hoa va do chep tay). So sau NFC: bo tai ghi NFD, manifest NFC, APFS coi la mot tep -> khong phai bien the.
+// Ten dich da co tep khac -> bien the la ban thua, xoa. Tra so tep da doi.
+static int JxDoiTenBienThe(NSString* thuMuc, NSSet<NSString*>* tapChuan, NSArray<NSString*>* cap1s)
+{
+	NSFileManager* fm = [NSFileManager defaultManager];
+	int nDoi = 0, nXoa = 0;
+	for (NSString* cap1 in cap1s)
+	{
+		NSString* goc = [thuMuc stringByAppendingPathComponent:cap1];
+		NSDirectoryEnumerator* e = [fm enumeratorAtPath:goc];
+		NSMutableArray<NSArray*>* ds = [NSMutableArray array];	// gom truoc, doi ten trong luc duyet lam enumerator lech
+		NSString* con;
+		while ((con = [e nextObject]))
+		{
+			if (![[e.fileAttributes fileType] isEqualToString:NSFileTypeRegular]) continue;
+			NSString* rel = [[cap1 stringByAppendingPathComponent:con] precomposedStringWithCanonicalMapping];
+			NSString* chuan = JxChuanHoaDuongDan(rel);
+			if ([chuan isEqualToString:rel] || ![tapChuan containsObject:chuan]) continue;
+			[ds addObject:@[rel, chuan]];
+		}
+		for (NSArray* c in ds)
+		{
+			NSString* tu = [thuMuc stringByAppendingPathComponent:c[0]];
+			NSString* toi = [thuMuc stringByAppendingPathComponent:c[1]];
+			if ([fm fileExistsAtPath:toi])
+			{	// da co tep dung ten chuan -> ban hoa la thua
+				if (unlink(tu.fileSystemRepresentation) == 0) { nXoa++; NSLog(@"[IOS-TENTEP] xoa ban thua %@ (da co %@)", c[0], c[1]); }
+				continue;
+			}
+			[fm createDirectoryAtPath:[toi stringByDeletingLastPathComponent] withIntermediateDirectories:YES attributes:nil error:nil];
+			if (rename(tu.fileSystemRepresentation, toi.fileSystemRepresentation) == 0)
+			{
+				nDoi++;
+				NSLog(@"[IOS-TENTEP] doi ten %@ -> %@", c[0], c[1]);
+				rmdir([tu stringByDeletingLastPathComponent].fileSystemRepresentation);	// thu muc cu rong thi bo (khong rong thi rmdir tu hong)
+			}
+			else NSLog(@"[IOS-TENTEP] doi ten %@ that bai: %s", c[0], strerror(errno));
+		}
+	}
+	if (nDoi || nXoa) NSLog(@"[IOS-TENTEP] doi ten %d tep, xoa %d ban thua", nDoi, nXoa);
+	return nDoi;
+}
+
+// [IOS-DON 16/09] Sau khi dong bo ONLINE tron ven: xoa tep MO COI trong cac thu muc cap 1 cua manifest = tep ma ten chuan
+// hoa khong co trong manifest (pak da bo, rac ten mã hoa hai lan 245 MB tren iPhone cua chu, .part cua tep da bo).
+// Giu: .part cua tep con trong manifest ma ten dang chuan (tai do). Khong dung: userdata/, apdata/, tep o goc, thu muc
+// khong co trong manifest (tmp/, logs/, chat/). Android chi don data/*.pak (TaiDuLieuActivity.java donPakCu); iOS phai rong
+// hon vi APFS phan biet hoa/thuong de lai ban trung. Ghi tung tep vao log; tra so tep xoa.
+static int JxDonTepThua(NSString* thuMuc, NSSet<NSString*>* tapChuan, NSArray<NSString*>* cap1s, long long* pByte)
+{
+	NSFileManager* fm = [NSFileManager defaultManager];
+	int nXoa = 0; long long byte = 0;
+	for (NSString* cap1 in cap1s)
+	{
+		NSString* goc = [thuMuc stringByAppendingPathComponent:cap1];
+		NSDirectoryEnumerator* e = [fm enumeratorAtPath:goc];
+		NSMutableArray<NSString*>* ds = [NSMutableArray array];
+		NSString* con;
+		while ((con = [e nextObject]))
+		{
+			if (![[e.fileAttributes fileType] isEqualToString:NSFileTypeRegular]) continue;
+			NSString* rel = [[cap1 stringByAppendingPathComponent:con] precomposedStringWithCanonicalMapping];
+			BOOL bPart = [rel hasSuffix:@".part"];
+			NSString* goc2 = bPart ? [rel substringToIndex:rel.length - 5] : rel;
+			NSString* chuan = JxChuanHoaDuongDan(goc2);
+			if ([tapChuan containsObject:chuan] && [chuan isEqualToString:goc2]) continue;	// dung ten chuan (hoac .part dang tai)
+			[ds addObject:rel];
+		}
+		for (NSString* rel in ds)
+		{
+			NSString* p = [thuMuc stringByAppendingPathComponent:rel];
+			long long co = JxCoTep(p);
+			if (unlink(p.fileSystemRepresentation) == 0)
+			{
+				nXoa++; byte += (co > 0 ? co : 0);
+				NSLog(@"[IOS-DON] xoa mo coi %@ (%lld B)", rel, co);
+				rmdir([p stringByDeletingLastPathComponent].fileSystemRepresentation);	// thu muc rong thi bo
+			}
+		}
+	}
+	if (pByte) *pByte = byte;
+	if (nXoa) NSLog(@"[IOS-DON] xoa %d tep mo coi, %lld B", nXoa, byte);
+	return nXoa;
+}
+
+// [UITOADO 16/09] Nhu Android (TaiDuLieuActivity.java, [UITOADO 12/09 NEO c]): bo cuc mac dinh (ui/uitoado_macdinh*) vua doi
+// -> bo tep bo cuc nguoi choi luu tren may, keo no de len mac dinh moi. Tren iOS ten tren dia la chu thuong
+// (userdata/uitoado.ini) va con ban theo nhan vat uitoado_<id>.ini (UiToaDoMobile.inc) - xoa ca hai.
+static void JxXoaBoCucCu(NSString* thuMuc)
+{
+	NSString* ud = [thuMuc stringByAppendingPathComponent:@"userdata"];
+	for (NSString* ten in [[NSFileManager defaultManager] contentsOfDirectoryAtPath:ud error:nil])
+	{
+		NSString* t = ten.lowercaseString;
+		if ([t hasPrefix:@"uitoado"] && [t hasSuffix:@".ini"])
+		{
+			NSString* p = [ud stringByAppendingPathComponent:ten];
+			if (unlink(p.fileSystemRepresentation) == 0) NSLog(@"[UITOADO] bo cuc mac dinh doi -> xoa userdata/%@", ten);
+		}
+	}
 }
 
 // ---------------------------------------------------------------- manifest da kiem (dau hoan tat)
@@ -289,10 +454,11 @@ static NSData* JxDocManifestDaKiem(NSString* thuMuc)
 
 // ---------------------------------------------------------------- phan tich manifest
 // Ba mang song song: duong dan tuong doi, co, md5. Tra NO + *pLoi khi manifest hong (khong doc mot dong nao).
+// duong = ten CHUAN tren dia (JxChuanHoaDuongDan), goc = ten nguyen trong manifest (de ghep URL tai).
 static BOOL JxDocManifest(NSData* dm, NSMutableArray<NSString*>* duong, NSMutableArray<NSNumber*>* cos,
-                          NSMutableArray<NSString*>* md5s, NSString** pLoi)
+                          NSMutableArray<NSString*>* md5s, NSMutableArray<NSString*>* goc, NSString** pLoi)
 {
-	[duong removeAllObjects]; [cos removeAllObjects]; [md5s removeAllObjects];
+	[duong removeAllObjects]; [cos removeAllObjects]; [md5s removeAllObjects]; [goc removeAllObjects];
 	// [16/09] May chu ghi UTF-8 (may_chu_tai_du_lieu.py, io.open utf-8). Nhanh Latin-1 truoc day la ma chet, ma neu roi
 	// vao thi moi duong dan/URL deu sai byte -> bao thang cho nguoi ta thay.
 	NSString* sm = JX_TUTHA([[NSString alloc] initWithData:dm encoding:NSUTF8StringEncoding]);
@@ -301,8 +467,7 @@ static BOOL JxDocManifest(NSData* dm, NSMutableArray<NSString*>* duong, NSMutabl
 	{
 		NSArray* c = [ln componentsSeparatedByString:@"\t"];
 		if (c.count < 3) continue;
-		NSString* rel = [[c[2] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]
-		                 stringByReplacingOccurrencesOfString:@"\\" withString:@"/"];
+		NSString* rel = [JxCatDauCuoi(c[2]) stringByReplacingOccurrencesOfString:@"\\" withString:@"/"];
 		if (!rel.length) continue;
 		// [IOS-TAI-CHAC 15/09] Loc duong dan. Ban Android da loc tu lau (TaiDuLieuActivity.java:340-341), ban iOS bo sot:
 		// stringByAppendingPathComponent KHONG bo "..", ma JxTaiMotTep con tu tao cac thu muc trung gian - nen mot dong
@@ -317,9 +482,10 @@ static BOOL JxDocManifest(NSData* dm, NSMutableArray<NSString*>* duong, NSMutabl
 			*pLoi = [NSString stringWithFormat:@"manifest co duong dan khong hop le: %@", rel];
 			return NO;
 		}
-		[duong addObject:rel];
+		[goc   addObject:rel];
+		[duong addObject:JxChuanHoaDuongDan(rel)];
 		[cos   addObject:@([c[0] longLongValue])];
-		[md5s  addObject:[c[1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+		[md5s  addObject:JxCatDauCuoi(c[1])];
 	}
 	if (duong.count == 0) { *pLoi = @"manifest.txt rong"; return NO; }
 	return YES;
@@ -409,7 +575,8 @@ static long long JxChotDanhSach(NSString* thuMuc, NSArray<NSString*>* duong, NSA
 // ---------------------------------------------------------------- tai mot tep
 /** Tai <goc>/<rel> ve <thuMuc>/<rel>, tai tiep neu da co <rel>.part.
     Tra ve YES neu tep cuoi cung dung co va dung md5. */
-static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSString* rel,
+// rel = ten CHUAN tren dia; relGoc = ten trong manifest (URL tren may chu).
+static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSString* rel, NSString* relGoc,
                         long long co, NSString* md5, JxTaiTrangThai* tt)
 {
 	NSString* dich = [thuMuc stringByAppendingPathComponent:rel];
@@ -419,7 +586,7 @@ static BOOL JxTaiMotTep(NSURLSession* ss, NSString* goc, NSString* thuMuc, NSStr
 
 	// [IOS-TAI-CHAC 15/09] Dia chi phai hop le TRUOC vong lap: goc doc tu tep nguoi dung sua duoc,
 	// ma requestWithURL:nil NEM NGOAI LE -> sap app chu khong ra man bao loi.
-	NSString* su = [NSString stringWithFormat:@"%@%@", goc, JxUrlHoaDuongDan(rel)];
+	NSString* su = [NSString stringWithFormat:@"%@%@", goc, JxUrlHoaDuongDan(relGoc)];
 	NSURL* dc = [NSURL URLWithString:su];
 	if (!dc) { tt.loi = [NSString stringWithFormat:@"%@: dia chi khong hop le (%@)", rel, su]; return NO; }
 
@@ -680,6 +847,18 @@ static NSString* JxLyDoMang(long ma, NSInteger loiMang, BOOL html, BOOL chuKySai
 	return @"Không nối được máy chủ dữ liệu.";
 }
 
+// [IOS-DUNGLUONG 16/09] Cho trong con dung duoc cho du lieu quan trong (tinh ca phan he tu don duoc = so trong Cai dat).
+// API nay thuoc nhom "required reason" DiskSpace -> ios/PrivacyInfo.xcprivacy khai E174.1 (kiem du cho truoc khi tai)
+// + 85F4.1 (hien so cho nguoi dung); so nay KHONG duoc gui len may chu. -1 = khong do duoc (khi do khong chan).
+static long long JxChoTrong(NSString* thuMuc)
+{
+	NSNumber* v = nil;
+	if ([[NSURL fileURLWithPath:thuMuc] getResourceValue:&v forKey:NSURLVolumeAvailableCapacityForImportantUsageKey error:nil] && v)
+		return v.longLongValue;
+	return -1;
+}
+#define JX_DEM_TRONG  (150LL * 1024 * 1024)   // dem ngoai tong tai + tep lon nhat (downloadTask giu tep tam rieng truoc khi noi vao .part)
+
 static NSString* JxDungLuong(long long n)
 {
 	if (n >= (1LL << 30)) return [NSString stringWithFormat:@"%.1f GB", (double)n / (1024.0*1024.0*1024.0)];
@@ -693,19 +872,23 @@ static void JxLamViecThat(NSURLSession* ss, NSArray<NSString*>* cacGoc, NSString
 	NSMutableArray<NSString*>* duong = [NSMutableArray array];
 	NSMutableArray<NSNumber*>* cos   = [NSMutableArray array];
 	NSMutableArray<NSString*>* md5s  = [NSMutableArray array];
+	NSMutableArray<NSString*>* gocTen = [NSMutableArray array];	// ten nguyen trong manifest (URL)
 	NSMutableDictionary* daTai = JxDocDaTai(thuMuc);
 
 	// --- 0. manifest DA KIEM lan truoc (dau hoan tat) ---
 	NSMutableArray<NSString*>* duongLuu = [NSMutableArray array];
 	NSMutableArray<NSNumber*>* cosLuu   = [NSMutableArray array];
 	NSMutableArray<NSString*>* md5sLuu  = [NSMutableArray array];
+	NSMutableArray<NSString*>* gocLuu   = [NSMutableArray array];
 	BOOL coLuu = NO, duTheoLuu = NO;
 	{
 		NSData* dmLuu = JxDocManifestDaKiem(thuMuc);
 		NSString* l = nil;
-		if (dmLuu && JxDocManifest(dmLuu, duongLuu, cosLuu, md5sLuu, &l))
+		if (dmLuu && JxDocManifest(dmLuu, duongLuu, cosLuu, md5sLuu, gocLuu, &l))
 		{
 			coLuu = YES;
+			// [IOS-TENTEP 16/09] doi ten bien the hoa/thuong theo manifest da kiem TRUOC khi so, ke ca khi sap offline
+			JxDoiTenBienThe(thuMuc, [NSSet setWithArray:duongLuu], JxThuMucCap1(duongLuu));
 			duTheoLuu = JxDuTheoDaTai(thuMuc, duongLuu, cosLuu, md5sLuu, daTai);
 		}
 		NSLog(@"[IOS-TAI] manifest da kiem: %@ (%lu tep)%@", coLuu ? @"co" : @"khong", (unsigned long)duongLuu.count,
@@ -743,7 +926,7 @@ static void JxLamViecThat(NSURLSession* ss, NSArray<NSString*>* cacGoc, NSString
 			continue;
 		}
 		NSString* l = nil;
-		if (!JxDocManifest(dm, duong, cos, md5s, &l))
+		if (!JxDocManifest(dm, duong, cos, md5s, gocTen, &l))
 		{	// chu ky dung ma noi dung hong: loi cua kho, khong dung manifest da luu de che
 			tt.loi = [NSString stringWithFormat:@"%@: %@", g, l];
 			tt.loiNguoiDung = @"Danh sách tệp trên máy chủ không hợp lệ. Hãy thử lại sau.\n(The server's file list is invalid. Please try again later.)";
@@ -773,9 +956,13 @@ static void JxLamViecThat(NSURLSession* ss, NSArray<NSString*>* cacGoc, NSString
 			return;
 		}
 		nguon = JxNguonDaLuu;
-		[duong setArray:duongLuu]; [cos setArray:cosLuu]; [md5s setArray:md5sLuu];
+		[duong setArray:duongLuu]; [cos setArray:cosLuu]; [md5s setArray:md5sLuu]; [gocTen setArray:gocLuu];
 		NSLog(@"[IOS-TAI] dung manifest DA KIEM lan truoc (%lu tep)", (unsigned long)duong.count);
 	}
+	NSSet<NSString*>* tapChuan = [NSSet setWithArray:duong];
+	NSArray<NSString*>* cap1s = JxThuMucCap1(duong);
+	if (nguon == JxNguonOnline)
+		JxDoiTenBienThe(thuMuc, tapChuan, cap1s);	// [IOS-TENTEP 16/09] theo manifest MOI, truoc khi so
 
 	// --- 2. so voi tep tren dia; bam md5 nhung tep dung co ma chua ghi trong da_tai.txt ---
 	NSMutableArray<NSNumber*>* canTai = [NSMutableArray array];
@@ -798,7 +985,7 @@ static void JxLamViecThat(NSURLSession* ss, NSArray<NSString*>* cacGoc, NSString
 					goto e2;
 				}
 				tt.mucHienTai = @"phienban.txt";
-				if (!JxTaiMotTep(ss, goc, thuMuc, @"phienban.txt", cos[iPb].longLongValue, md5s[iPb], tt))
+				if (!JxTaiMotTep(ss, goc, thuMuc, @"phienban.txt", gocTen[iPb], cos[iPb].longLongValue, md5s[iPb], tt))
 					return;	// tt.loi da duoc dat
 				daTai[@"phienban.txt"] = md5s[iPb];
 				[canTai removeObjectAtIndex:kPb];
@@ -824,7 +1011,8 @@ static void JxLamViecThat(NSURLSession* ss, NSArray<NSString*>* cacGoc, NSString
 			              JxLyDoMang(maCuoi, loiMangCuoi, htmlCuoi, chuKySaiCuoi)];
 		}
 		tt.mucHienTai = @"Dữ liệu đã đầy đủ";
-		JxGhiGonDaTai(thuMuc, daTai);
+		if (nguon == JxNguonOnline) JxDonTepThua(thuMuc, tapChuan, cap1s, NULL);	// [IOS-DON 16/09] chi khi dong bo online tron ven
+		JxGhiGonDaTai(thuMuc, daTai, tapChuan);
 		return;
 	}
 	if (nguon == JxNguonDaLuu)
@@ -840,6 +1028,28 @@ e2:		// E2: co ban moi (theo manifest da kiem) chua tai xong, ma khong nol duoc 
 		return;
 	}
 
+	// --- 2b'. [IOS-DUNGLUONG 16/09] du cho trong khong? Can = tong con phai tai + tep LON NHAT trong danh sach (downloadTask
+	// giao tep tam rieng, cung ton tai voi .part luc noi) + dem. Thieu -> E, "Thu lai" do lai. Chi kiem khi con phai tai.
+	tt.choTrong = -1;
+	{
+		long long lonNhat = 0;
+		for (NSNumber* k in canTai) { long long c = cos[k.unsignedIntegerValue].longLongValue; if (c > lonNhat) lonNhat = c; }
+		long long trong = JxChoTrong(thuMuc);
+		long long can = tongTai + lonNhat + JX_DEM_TRONG;
+		tt.choTrong = trong;
+		NSLog(@"[IOS-TAI] con phai tai %lld B (%lu tep, lon nhat %lld B), cho trong %lld B", tongTai, (unsigned long)canTai.count, lonNhat, trong);
+		if (trong >= 0 && trong < can)
+		{
+			tt.loi = [NSString stringWithFormat:@"thieu cho: trong %lld B, can %lld B (tai %lld + lon nhat %lld + dem %lld)",
+			          trong, can, tongTai, lonNhat, JX_DEM_TRONG];
+			tt.loiNguoiDung = [NSString stringWithFormat:
+				@"Máy còn trống %@, cần khoảng %@ để tải %@ dữ liệu.\nHãy xoá bớt ứng dụng hoặc ảnh, video rồi bấm Thử lại.\n"
+				 "(Not enough free space: %@ available, about %@ needed. Free up space and tap Retry.)",
+				JxDungLuong(trong), JxDungLuong(can), JxDungLuong(tongTai), JxDungLuong(trong), JxDungLuong(can)];
+			return;
+		}
+	}
+
 	// --- 2c. [16/09] dieu 4.2.3(ii): noi dung luong va cho nguoi choi bam "Tai xuong" truoc khi tai lon ---
 	// Mot nut duy nhat, khong co "bo qua" (chu da chot ep cap nhat). Duoi nguong thi tai luon nhu ban va nho.
 	if (s_coGiaoDien && tongTai >= JX_HOI_TU_BYTE)
@@ -852,21 +1062,25 @@ e2:		// E2: co ban moi (theo manifest da kiem) chua tai xong, ma khong nol duoc 
 	}
 
 	// --- 3. tai ---
+	BOOL bBoCucDoi = NO;
 	for (NSNumber* k in canTai)
 	{
 		if (tt.huy) break;
 		NSUInteger i = k.unsignedIntegerValue;
-		tt.mucHienTai = duong[i];
+		tt.mucHienTai = gocTen[i];
 		BOOL ok;
-		@autoreleasepool { ok = JxTaiMotTep(ss, goc, thuMuc, duong[i], cos[i].longLongValue, md5s[i], tt); }
+		@autoreleasepool { ok = JxTaiMotTep(ss, goc, thuMuc, duong[i], gocTen[i], cos[i].longLongValue, md5s[i], tt); }
 		if (!ok)
 			return;	// tt.loi da duoc dat
 		daTai[duong[i]] = md5s[i];
+		if ([duong[i] hasPrefix:@"ui/uitoado_macdinh"]) bBoCucDoi = YES;
 	}
 	if (!tt.huy)
 	{
 		tt.mucHienTai = @"Dữ liệu đã đầy đủ";
-		JxGhiGonDaTai(thuMuc, daTai);
+		JxDonTepThua(thuMuc, tapChuan, cap1s, NULL);	// [IOS-DON 16/09] dong bo online tron ven
+		if (bBoCucDoi) JxXoaBoCucCu(thuMuc);			// [UITOADO 16/09]
+		JxGhiGonDaTai(thuMuc, daTai, tapChuan);
 	}
 }
 
@@ -1229,9 +1443,11 @@ extern "C" int JxTaiDuLieu_Chay(const char* pszThuMuc, const char* pszGoc, char*
 						{	// [16/09] dieu 4.2.3(ii): noi dung luong, cho bam "Tai xuong" (mot nut, khong bo qua)
 							if (!daHienHoi)
 							{
+								long long trong = tt.choTrong;
 								[man hienLoi:[NSString stringWithFormat:
-									@"Cần tải %@ dữ liệu game để chơi. Nên dùng Wi-Fi.\n(%@ of game data must be downloaded before you can play. Wi-Fi recommended.)",
-									JxDungLuong(canHoi), JxDungLuong(canHoi)]
+									@"Cần tải %@ dữ liệu game để chơi%@. Nên dùng Wi-Fi.\n(%@ of game data must be downloaded before you can play. Wi-Fi recommended.)",
+									JxDungLuong(canHoi), trong >= 0 ? [NSString stringWithFormat:@" (máy còn trống %@)", JxDungLuong(trong)] : @"",
+									JxDungLuong(canHoi)]
 								     kyThuat:@"" nut:@"Tải xuống"];
 								man.nhan.text = @"Cần tải dữ liệu";
 								daHienHoi = YES;

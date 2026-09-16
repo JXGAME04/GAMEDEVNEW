@@ -1330,6 +1330,11 @@ void KClientCallback::MSNMessageArrival(char* szSourceName, char* szSendName, co
 {
 	if (!bSucc)
 	{
+#ifdef JX_IOS
+		// [IOS-TOCAO 16/09] tin to cao gui GM dang offline: relay da ghi log, khong bao "khong co tren mang" (mau thuan voi "Da gui to cao")
+		if (pMsgBuff && nMsgLength >= 8 && strncmp(pMsgBuff, "[TO CAO]", 8) == 0)
+			return;
+#endif
 		char szInfo[256];
 		int n = sprintf(szInfo, "Ng­êi ch¬i, %s kh«ng cã trªn m¹ng!", szSendName);
 		KUiMsgCentrePad::SystemMessageArrival(szInfo, n);

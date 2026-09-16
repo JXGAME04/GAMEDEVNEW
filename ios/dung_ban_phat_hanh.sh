@@ -222,6 +222,16 @@ SO_MCT=$(strings -a "$BIN" | /usr/bin/grep -c 'may_chu_tai.txt' || true)
 SO_SEL=$(otool -v -s __TEXT __objc_methname "$BIN" 2>/dev/null | /usr/bin/grep -cw 'suspend' || true)
 [ "$SO_SEL" -eq 0 ] || { echo "HONG: __objc_methname con 'suspend' ($SO_SEL)"; exit 1; }
 echo "khoa tho             : da loai (plist sach, 0 'suspend', 0 'may_chu_tai.txt')"
+# [IOS-DUNGLUONG 16/09] Chot 5: nhi phan dung API dung luong dia (nhom required-reason DiskSpace) thi PrivacyInfo phai khai,
+# khong thi App Store Connect chan ngay khi tai len (ITMS-91053). Doi chung: nm -u phai doc duoc (>50 ky hieu).
+SO_NMU=$(nm -u "$BIN" 2>/dev/null | wc -l | tr -d ' ')
+[ "$SO_NMU" -gt 50 ] || { echo "HONG: nm -u chi doc duoc $SO_NMU ky hieu - phep do hong"; exit 1; }
+if nm -u "$BIN" 2>/dev/null | /usr/bin/grep -qE '_statvfs$|_statfs$|_fstatvfs$|_fstatfs$|_getattrlist|VolumeAvailableCapacity|VolumeTotalCapacity|FileSystemFreeSize|FileSystemSize'; then
+  if ! plutil -extract NSPrivacyAccessedAPITypes json -o - "$APP/PrivacyInfo.xcprivacy" 2>/dev/null | /usr/bin/grep -q 'NSPrivacyAccessedAPICategoryDiskSpace'; then
+    echo "HONG: nhi phan dung API dung luong dia nhung PrivacyInfo.xcprivacy thieu NSPrivacyAccessedAPICategoryDiskSpace"; exit 1
+  fi
+  echo "dung luong dia       : co dung API, PrivacyInfo da khai DiskSpace"
+fi
 
 # Che do NGHIEM: chi dung khi that su di tai len. Goi ky bang chung thu phat trien se bi App Store Connect tu choi.
 if [ "${JX_IOS_NGHIEM:-0}" = "1" ]; then

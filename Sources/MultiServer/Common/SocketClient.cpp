@@ -221,6 +221,59 @@ SOCKET CSocketClient::CreateConnectionSocket(
 					  const OnlineGameLib::Win32::_tstring &addressToConnectServer,
 					  unsigned short port)
 {
+#ifdef JX_APPLE
+	/* [IOS-IPV6 16/09] App Store duyet tren mang IPv6-only (NAT64). Dia chi vao la chuoi IPv4 cham; getaddrinfo voi
+	   AF_UNSPEC + AI_DEFAULT tren iOS tu tong hop dia chi IPv6 (Apple "Supporting IPv6 DNS64/NAT64 Networks", Listing 10-1).
+	   KHONG dung AI_NUMERICHOST: Libinfo tat tong hop NAT64 khi co co do. Moi dia chi tra ve: socket theo ho dia chi cua
+	   no, TCP_NODELAY, connect; hong thi dong fd, thu dia chi ke (toi da 3 vi connect chan toi 75 s moi lan). Khong noi
+	   duoc thi tra INVALID_SOCKET (nhu ma cu khi tao socket hong): StartConnections that bai -> E_FAIL -> UiConnectInfo bao
+	   "khong noi duoc" y nhu duong nem CSocket::Exception (phan bien 16/09 da doi chieu ca hai duong).
+	   Phan bien 16/09: NAT64 VAN tong hop ca dai rieng 10/8, nen dia chi LAN tu Internet = treo; loc o Login.cpp. */
+	char szCong[16];
+	snprintf( szCong, sizeof( szCong ), "%u", ( unsigned )port );
+	struct addrinfo hints;
+	memset( &hints, 0, sizeof( hints ) );
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_DEFAULT;
+	struct addrinfo *pDs = NULL;
+	int nGai = getaddrinfo( addressToConnectServer.c_str(), szCong, &hints, &pDs );
+	if ( nGai != 0 || !pDs )
+	{
+		char szLoi[256];
+		snprintf( szLoi, sizeof( szLoi ), "[IOS-IPV6] getaddrinfo(%s) that bai: %s\n", addressToConnectServer.c_str(), gai_strerror( nGai ) );
+		::OutputDebugStringA( szLoi );
+		if ( pDs ) freeaddrinfo( pDs );
+		return INVALID_SOCKET;
+	}
+	SOCKET sRa = INVALID_SOCKET;
+	int nLoiCuoi = 0, nThu = 0;
+	for ( struct addrinfo *pA = pDs; pA && nThu < 3; pA = pA->ai_next, nThu++ )
+	{
+		SOCKET sM = ::socket( pA->ai_family, pA->ai_socktype, pA->ai_protocol );
+		if ( INVALID_SOCKET == sM ) { nLoiCuoi = ::WSAGetLastError(); continue; }
+		{
+			BOOL bNoDelay = TRUE;
+			::setsockopt( sM, IPPROTO_TCP, TCP_NODELAY, ( const char * )&bNoDelay, sizeof( bNoDelay ) );
+		}
+		if ( 0 == ::connect( sM, pA->ai_addr, pA->ai_addrlen ) ) { sRa = sM; break; }
+		nLoiCuoi = ::WSAGetLastError();
+		{
+			char szLoi[256];
+			snprintf( szLoi, sizeof( szLoi ), "[IOS-IPV6] connect %s (ho dia chi %d) that bai: %d\n", addressToConnectServer.c_str(), ( int )pA->ai_family, nLoiCuoi );
+			::OutputDebugStringA( szLoi );
+		}
+		::closesocket( sM );
+	}
+	freeaddrinfo( pDs );
+	if ( INVALID_SOCKET == sRa )
+	{
+		char szLoi[128];
+		snprintf( szLoi, sizeof( szLoi ), "[IOS-IPV6] khong noi duoc %s:%u (loi cuoi %d)\n", addressToConnectServer.c_str(), ( unsigned )port, nLoiCuoi );
+		::OutputDebugStringA( szLoi );
+	}
+	return sRa;
+#else
 #ifdef JX_PLATFORM_SDL
 	SOCKET s = JxNetCreateTcpSocket();	// [SDL 08/09 2b-2]
 #else
@@ -254,6 +307,7 @@ SOCKET CSocketClient::CreateConnectionSocket(
 	connectionSocket.Connect( localAddress );
 	
 	return connectionSocket.Detatch();	
+#endif
 }
 
 void CSocketClient::InitiateShutdown()
