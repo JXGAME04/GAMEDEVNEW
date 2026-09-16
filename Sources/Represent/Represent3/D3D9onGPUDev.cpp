@@ -54,6 +54,7 @@ static void JxNhipGhiCho(Uint64 uT0, bool bCoSwap, Uint32 swW, Uint32 swH)
 // KRepresentShell3.cpp in [VE]/[VE-GOP] moi ky va [VE-GIAT] cho khung cham. Chi cong khung co Present (bPresent).
 JxVeDo g_jxVeKhung, g_jxVeTong, g_jxVeMax;
 unsigned g_uJxVeKhungSo = 0, g_uJxVe8 = 0, g_uJxVe16 = 0, g_uJxGopVo[8];
+int g_nJxGhepTach = 2; static bool s_bJxKhungCoGhep = false; unsigned g_uJxGhepTachSo = 0; double g_dJxGhepTachMs = 0.0;	// [NENGHEP 16/09] [Client] Rep3GhepTach: 2 = khung co ghep anh nen vung -> copy pass vao command buffer rieng, nop + CHO fence; 1 = chi nop truoc; 0 = tat
 const char* g_szJxXaLyDo = NULL; unsigned g_uJxXaGiua = 0;	// [NENKIEM 16/09] ly do + so lan xa giua khung (SubmitFrame(false)) -> [XAGIUA] jx_rep3.log
 static int s_nJxCullCpuCur = 0;				// [CULLCPU 11/09] lenh ve hien tai: 0 = khong cull tren CPU, khac 0 = che do cull cua D3D9 (D3DCULL_CW / D3DCULL_CCW)
 static unsigned long long s_ullJxPipeKeyCur = 0;	// [CULLCPU 11/09] khoa pipeline cua lenh ve hien tai (chi de DO)
@@ -1004,6 +1005,11 @@ int Rep3Gpu_DocLaiAnh(IDirect3DDevice9* pDev, IDirect3DTexture9* pTex, void* pBu
 	g_szJxXaLyDo = NULL;
 	return r;
 }
+// [NENGHEP 16/09] KRepresentShell3::DrawPrimitivesOnImage bao: khung nay ghep anh nen vung -> SubmitFrame tach copy pass ra command buffer rieng
+void Rep3Gpu_DanhDauGhep(IDirect3DDevice9* pDev)
+{
+	if (pDev && g_nRep3ApiOn == 100) s_bJxKhungCoGhep = true;
+}
 // [TGNAC 14/09] KRepresentShell3 JxTheGioi: nhin rong ve thu nho - VS chia theo viewport LO-GIC nW x nH (0 = tat) trong khi viewport that nho hon
 void Rep3Gpu_VpLogic(IDirect3DDevice9* pDev, int nW, int nH)
 {
@@ -1598,6 +1604,17 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 	SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(m_pGpu);
 	if (!cb) { RgLog("AcquireGPUCommandBuffer that bai: %s", SDL_GetError()); FrameReset(); return false; }
 	SDL_GPUTexture* pSwap = NULL; Uint32 swW = 0, swH = 0;
+#ifdef JX_MOBILE
+	SDL_GPUCommandBuffer* cbJxChep = cb; bool bJxTach = false;
+	if (bPresent && s_bJxKhungCoGhep && g_nJxGhepTach > 0)
+	{	// [NENGHEP 16/09] khung nay ghep anh nen vung (render target giu vinh vien) trong khi cung khung tai texture/ring len GPU: tren Fold 7 (Adreno)
+		// lenh ve doc dinh trong ring truoc khi lenh chep toi (doc nguoc [NENKIEM] 16/09: 31/50 o vung (97,97) va 53/53 o vung (98,97) ghi lenh VE ma trong,
+		// mat theo dai lien tiep trong MOT lenh ve gop). Rao chan SDL dung chuan -> tach: copy pass vao command buffer RIENG, nop truoc (=2: cho fence
+		// xong) roi moi ghi pass ve. Khung khong ghep giu nguyen mot command buffer.
+		cbJxChep = SDL_AcquireGPUCommandBuffer(m_pGpu);
+		if (cbJxChep) bJxTach = true; else { cbJxChep = cb; RgLog("[NENGHEP] AcquireGPUCommandBuffer (chep) that bai: %s -> dung chung", SDL_GetError()); }
+	}
+#endif
 	if (bPresent)
 	{
 #ifdef JX_MOBILE
@@ -1621,7 +1638,11 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 #endif
 	// ---- copy pass: bang mau, texture, ring dinh
 	{
+#ifdef JX_MOBILE
+		SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cbJxChep);	// [NENGHEP 16/09] khung co ghep: command buffer chep rieng
+#else
 		SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+#endif
 #ifdef JX_MOBILE
 		// [VE 11/09 f] vung 0 (trang atlas moi / o chua co ban CPU) PHAI ghi lenh TRUOC noi dung texture: trang moi va anh dau tien tren no
 		// nam trong cung khung; [VE 11/09 d] tung dat khoi nay SAU tex -> lenh to 0 ghi de anh vua tai (chu thay spr an hien, map loi, ngua mat dau duoi).
@@ -1829,6 +1850,20 @@ bool CDevGpu::SubmitFrame(bool bPresent)
 		SDL_EndGPUCopyPass(cp);
 	}
 #ifdef JX_MOBILE
+	if (bJxTach)
+	{	// [NENGHEP 16/09] nop command buffer chep TRUOC; =2: cho GPU chep xong (fence) roi moi ghi pass ve -> lenh ve khong bao gio thay ring / texture chua toi
+		const Uint64 uJxTach0 = SDL_GetPerformanceCounter();
+		if (g_nJxGhepTach >= 2)
+		{
+			SDL_GPUFence* f = SDL_SubmitGPUCommandBufferAndAcquireFence(cbJxChep);
+			if (f) { SDL_WaitForGPUFences(m_pGpu, true, &f, 1); SDL_ReleaseGPUFence(m_pGpu, f); }
+			else RgLog("[NENGHEP] nop command buffer chep (fence) that bai: %s", SDL_GetError());
+		}
+		else if (!SDL_SubmitGPUCommandBuffer(cbJxChep)) RgLog("[NENGHEP] nop command buffer chep that bai: %s", SDL_GetError());
+		const double dJxTach = JxVeMs(uJxTach0, SDL_GetPerformanceCounter());
+		g_uJxGhepTachSo++; g_dJxGhepTachMs += dJxTach;
+		if (g_uJxGhepTachSo <= 40 || (g_uJxGhepTachSo % 50) == 0) RgLog("[NENGHEP] khung co ghep #%u: chep len GPU bang command buffer rieng (%u tex %u KB, ring %u KB), %s %.1f ms", g_uJxGhepTachSo, jxK.uTai, jxK.uTaiKB, jxK.uRingKB, g_nJxGhepTach >= 2 ? "cho xong" : "nop truoc", dJxTach);
+	}
 	{ const Uint64 u = SDL_GetPerformanceCounter(); jxK.dChep = JxVeMs(uJxK1, u); uJxK1 = u; }	// [VE 11/09] chep len GPU
 #endif
 	// ---- render pass
@@ -2034,6 +2069,7 @@ void CDevGpu::FrameReset()
 #ifdef JX_MOBILE	// [IOS-GOP 12/09 e] PHAI mo cho iOS: khong don thi m_jxPalUploads giu offset cu vao m_texStage DA BI XOA (tai rac vao bang mau), va m_jxPsBang phinh mai toi khi tran 2048 (chi so ps sai) - dung la nguyen nhan "luc den luc nhoe mau khi di chuyen" cua ca hai lan hong truoc
 	m_jxZeroUploads.clear();	// [VE 11/09 d]
 	m_jxZeroCopy.clear();	// [TAI 14/09]
+	s_bJxKhungCoGhep = false;	// [NENGHEP 16/09]
 	m_jxPalUploads.clear();	// [PALBUF 11/09]
 	m_jxPsBang.clear(); m_jxPsMap.clear(); m_uJxPsCuoi = 0xFFFFFFFFu; m_uJxPsStageOff = 0xFFFFFFFFu;	// [GOP 11/09] bang ps theo tung khung
 #endif

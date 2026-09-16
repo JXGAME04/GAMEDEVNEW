@@ -104,7 +104,7 @@ static int Rep3Ini(const char* szKey, int nDef)
 unsigned g_uRep3FxTexNull = 0;		// DrawSprite*: texture NULL -> bo qua quad
 #ifdef JX_MOBILE
 int g_nJxONenLog = 0;	// [ONEN 15/09] [Client] Rep3ONenLog = so lan ghep nen con phai ghi chi tiet (tu giam ve 0)
-int g_nJxNenKiem = 1;	// [NENKIEM 16/09] [Client] Rep3NenKiem: 1 = sau moi lan ghep anh nen vung doc nguoc GPU kiem tung o + kiem lai dinh ky (chan doan nen den Fold 7); 0 = tat
+int g_nJxNenKiem = 0;	// [NENGHEP 16/09] mac dinh TAT (doc nguoc 2-14 ms moi lan ghep) - bat bang Rep3NenKiem=1 khi can chan doan. [NENKIEM 16/09] [Client] Rep3NenKiem: 1 = sau moi lan ghep anh nen vung doc nguoc GPU kiem tung o + kiem lai dinh ky (chan doan nen den Fold 7); 0 = tat
 #endif
 unsigned g_uRep3FxAnhNull = 0;		// DrawImage2D*: GetImage NULL / khung ngoai tam -> break
 #ifdef JX_APPLE	// [IOS-ANHRONG 12/09] tach hai ly do de biet cay mat hinh la do dau
@@ -1291,7 +1291,8 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	if (g_nJxBoKhungGiong > 1) g_nJxBoKhungGiong = 1; if (g_nJxBoKhungGiong < -1) g_nJxBoKhungGiong = -1;
 #ifdef JX_MOBILE
 	{ extern int g_nJxONenLog; g_nJxONenLog = Rep3Ini("Rep3ONenLog", 0); if (g_nJxONenLog < 0) g_nJxONenLog = 0; if (g_nJxONenLog > 64) g_nJxONenLog = 64; }	// [ONEN 15/09]
-	{ extern int g_nJxNenKiem; g_nJxNenKiem = Rep3Ini("Rep3NenKiem", 1) ? 1 : 0; Rep3Log("[NENKIEM] kiem tung o anh nen vung sau ghep: %d (Rep3NenKiem)", g_nJxNenKiem); }	// [NENKIEM 16/09]
+	{ extern int g_nJxNenKiem; g_nJxNenKiem = Rep3Ini("Rep3NenKiem", 0) ? 1 : 0; Rep3Log("[NENKIEM] kiem tung o anh nen vung sau ghep: %d (Rep3NenKiem)", g_nJxNenKiem); }	// [NENKIEM 16/09] [NENGHEP 16/09] mac dinh 0
+	{ extern int g_nJxGhepTach; g_nJxGhepTach = Rep3Ini("Rep3GhepTach", 2); if (g_nJxGhepTach < 0) g_nJxGhepTach = 0; if (g_nJxGhepTach > 2) g_nJxGhepTach = 2; Rep3Log("[NENGHEP] khung co ghep anh nen vung: copy pass tach command buffer rieng = %d (Rep3GhepTach: 2 cho fence, 1 nop truoc, 0 tat)", g_nJxGhepTach); }	// [NENGHEP 16/09]
 #endif
 	g_nJxPsBuffer       = Rep3Ini("Rep3PsBuffer", 1) ? 1 : 0;	// [GOP 11/09] 1 = trang thai tang texture qua storage buffer, chi so theo dinh (hai quad khac ps van gop duoc; bot 800 lan day uniform/khung)
 	if (!g_nJxPalBuffer) g_nJxPsBuffer = 0;	// shader PC khong co buffer nao
@@ -3064,6 +3065,7 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 	const bool bJxONen = (g_nJxONenLog > 0 && uGenre == RU_T_IMAGE && pszImage && pszImage[0]);
 	if (bJxONen) { g_nJxONenLog--; Rep3Log("[ONEN] === bat dau ghep %s: %d anh ===", pszImage, nPrimitiveCount); }
 	const int nJxNk = (uGenre == RU_T_IMAGE) ? JxNkSlot(pszImage) : -1;	// [NENKIEM 16/09]
+	if (uGenre == RU_T_IMAGE && pszImage && strncmp(pszImage, "_*PlaceGround*_", 15) == 0) { extern void Rep3Gpu_DanhDauGhep(IDirect3DDevice9*); Rep3Gpu_DanhDauGhep(PD3DDEVICE); }	// [NENGHEP 16/09] khung nay ghep anh nen vung
 #endif
 	if(!pPrimitives)
 	{
