@@ -22,6 +22,26 @@ S3PAccount::~S3PAccount()
 
 DWORD GetGMID();
 
+// [BAOMAT A2 16/09] Moi cau SQL trong tep nay ghep thang ten tai khoan / mat khau / ten may chu bang sprintf
+// (chen SQL: go  ' or '1'='1  vao o tai khoan la dang nhap thanh nguoi khac, nang hon la doc / xoa ca bang).
+// API DB chi co QuerySql(chuoi), khong co tham so hoa, nen chan o dau vao: tu choi chuoi khong ket thuc trong bo dem
+// goi tin, chua dau nhay don, gach cheo nguoc hay ky tu dieu khien. Khong co ' va \ thi khong cach nao dong chuoi SQL.
+static bool S3P_ChuoiSqlAnToan(const char* s, int nMax)
+{
+	if (!s)
+		return false;
+	int n = 0;
+	for (; n < nMax && s[n]; ++n)
+	{
+		unsigned char c = (unsigned char)s[n];
+		if (c == '\'' || c == '\\' || c < 0x20)
+			return false;
+	}
+	return n < nMax;	// phai gap NUL trong bo dem
+}
+#define S3P_KIEM_TK(tk, loi)	if (!S3P_ChuoiSqlAnToan((tk), LOGIN_USER_ACCOUNT_MAX_LEN)) return (loi)
+#define S3P_KIEM_MK(mk, loi)	if (!S3P_ChuoiSqlAnToan((mk), LOGIN_USER_PASSWORD_MAX_LEN)) return (loi)
+
 int S3PAccount::Login(S3PDBConVBC* pConn, const char* strAccName, const char* strPassword, DWORD ClientID, WORD& nExtPoint, DWORD& nLeftTime)
 {
 	int iRet = ACTION_FAILED;
@@ -29,6 +49,8 @@ int S3PAccount::Login(S3PDBConVBC* pConn, const char* strAccName, const char* st
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, E_ACCOUNT_OR_PASSWORD);	// [BAOMAT A2 16/09]
+	S3P_KIEM_MK(strPassword, E_ACCOUNT_OR_PASSWORD);
 	if (strcmp(strAccName, "')DELETE Account_Info --") == 0)
 		return iRet;
 
@@ -97,6 +119,7 @@ int S3PAccount::LoginGame(S3PDBConVBC* pConn, DWORD ClientID, const char* strAcc
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, ACTION_FAILED);	// [BAOMAT A2 16/09]
 
 	DWORD NewClientID = 0;
 	iRet = GetAccountGameID(pConn, strAccName, NewClientID);
@@ -129,6 +152,7 @@ int S3PAccount::Logout(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccNam
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, ACTION_FAILED);	// [BAOMAT A2 16/09]
 	char strSQL[2 * MAX_PATH];
 	sprintf(strSQL,
 		"update Account_Habitus set iLeftSecond = iLeftSecond - IF(dLoginDate IS NOT NULL, TIME_TO_SEC(ABS(TIMEDIFF(dLoginDate, NOW()))), 0) where (iClientID = %d) and (cAccName = '%s')",
@@ -179,6 +203,7 @@ int S3PAccount::ElapseTime(S3PDBConVBC* pConn, DWORD ClientID, const char* strAc
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, ACTION_FAILED);	// [BAOMAT A2 16/09]
 	DWORD dwSecord = 0;
 	iRet = QueryTime(pConn, ClientID, strAccName, dwSecord);
 	if (iRet == ACTION_SUCCESS)
@@ -204,6 +229,7 @@ int S3PAccount::QueryTime(S3PDBConVBC* pConn, DWORD ClientID, const char* strAcc
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, ACTION_FAILED);	// [BAOMAT A2 16/09]
 	DWORD NewClientID = 0;
 	iRet = GetAccountGameID(pConn, strAccName, NewClientID);
 	if (iRet == ACTION_SUCCESS)
@@ -230,6 +256,8 @@ int S3PAccount::ServerLogin(S3PDBConVBC* pConn, const char* strAccName, const ch
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, E_ACCOUNT_OR_PASSWORD);	// [BAOMAT A2 16/09]
+	S3P_KIEM_MK(strPassword, E_ACCOUNT_OR_PASSWORD);
 	char strSQL[MAX_PATH];
 	sprintf(strSQL, "select cIP, iPort, iid, cMemo from ServerList where (cServerName = '%s') and (cPassword = '%s')", strAccName, strPassword);
 	S3PResultVBC* pResult = NULL;
@@ -286,6 +314,7 @@ int S3PAccount::GetServerID(S3PDBConVBC* pConn, const char* strAccName, unsigned
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, ACTION_FAILED);	// [BAOMAT A2 16/09]
 	char strSQL[MAX_PATH];
 	sprintf(strSQL, "select iid from ServerList where (cServerName = '%s')", strAccName);
 	S3PResultVBC* pResult = NULL;
@@ -373,6 +402,7 @@ int S3PAccount::GetAccountGameID(S3PDBConVBC* pConn, const char* strAccName, DWO
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, ACTION_FAILED);	// [BAOMAT A2 16/09]
 	char strSQL[MAX_PATH];
 	sprintf(strSQL, "select iClientID from Account_info where (cAccName = '%s')", strAccName);
 	S3PResultVBC* pResult = NULL;
@@ -404,6 +434,7 @@ int S3PAccount::GetLockAccount(S3PDBConVBC* pConn,
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, ACTION_FAILED);	// [BAOMAT A2 16/09]
 	char strSQL[MAX_PATH];
 	sprintf(strSQL, "SELECT nLockTm FROM Account_Info WHERE cAccname = '%s'", strAccName);
 	S3PResultVBC* pResult = NULL;
@@ -458,6 +489,7 @@ int S3PAccount::GetLeftSecondsOfDeposit(S3PDBConVBC* pConn,
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, ACTION_FAILED);	// [BAOMAT A2 16/09]
 	char strSQL[MAX_PATH];
 	sprintf(strSQL, "select TIME_TO_SEC(ABS(TIMEDIFF(NOW(), dEndDate))), iLeftSecond, nExtPoint from Account_Habitus where (cAccname = '%s')", strAccName);
 	//sprintf(strSQL, "EXEC GetExPoint_Account '%s'", strAccName); // vi ko co thu tuc GetExPoint_Account nen gay ra loi;
@@ -500,6 +532,8 @@ int S3PAccount::VerifyUserModifyPassword(S3PDBConVBC* pConn, DWORD ClientID, con
 	{
 		return iRet;
 	}
+	S3P_KIEM_TK(strAccName, E_ACCOUNT_OR_PASSWORD);	// [BAOMAT A2 16/09]
+	S3P_KIEM_MK(strPassword, E_ACCOUNT_OR_PASSWORD);
 
 	DWORD NewClientID = 0;
 	iRet = GetAccountGameID(pConn, strAccName, NewClientID);

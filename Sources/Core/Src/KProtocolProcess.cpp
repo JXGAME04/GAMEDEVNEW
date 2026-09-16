@@ -6788,6 +6788,10 @@ void KProtocolProcess::StoreMoneyCommand(int nIndex, BYTE* pProtocol)
 
 	STORE_MONEY_COMMAND*	pCommand = (STORE_MONEY_COMMAND *)pProtocol;
 
+	// [BAOMAT A5 16/09] So tien tu may nguoi choi la DWORD, ExchangeMoney nhan int: >= 2^31 hoa am -> doi chieu chuyen
+	// (rut ruong khi chua mo khoa, cong tien phong nguon). Chi nhan 1..INT_MAX; so du nguon do AddMoney(-n) kiem.
+	if (pCommand->m_dwMoney == 0 || pCommand->m_dwMoney > (DWORD)0x7FFFFFFF)
+		return;
 	if (pCommand->m_byDir)	
 		Player[nIndex].m_ItemList.ExchangeMoney(room_repository, room_equipment, pCommand->m_dwMoney);
 	else					
@@ -7291,6 +7295,8 @@ void KProtocolProcess::SetPrice(int nIndex, BYTE* pProtocol)
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
 		return;
 	PLAYER_SET_PRICE *pSP=(PLAYER_SET_PRICE *)pProtocol;
+	if (pSP->m_Price < 0)	// [BAOMAT A4 16/09] gia am tu may nguoi choi: truoc day luu thang -> mua gan nhu mien phi
+		return;
 	if (nIndex > 0 && nIndex < MAX_PLAYER)
 	{ 
 		Player[nIndex].m_ItemList.SetPrice(pSP->m_ID,pSP->m_Price);
@@ -7557,18 +7563,36 @@ void KProtocolProcess::c2sTradeBuy(int nIndex, BYTE* pProtocol)
 
 	
 	PLAYER_TRADE_BUY_ITEM_COMMAND* pPlayer = (PLAYER_TRADE_BUY_ITEM_COMMAND *)pProtocol;
+	// [BAOMAT A3/A4 16/09] Truoc day: chi so mon do may nguoi choi gui len dung thang cho Item[] (khong kiem bien),
+	// khong chan tu mua sap minh (nhan doi do, chi mat thue), khong kiem mon co dang bay ban, o dich do nguoi mua chon
+	// (ke ca o trang bi), gia am/0 lot, va tru tien ngay ca khi dat do that bai. Nay: kiem bien, cam tu mua, mon phai
+	// dang o hanh trang nguoi ban voi gia > 0, o dich chi la hanh trang, dat do xong moi tra tien.
+	if (pPlayer->m_Idx <= 0 || pPlayer->m_Idx >= MAX_ITEM)
+		return;
+	if (pPlayer->m_PlayerId == Npc[Player[nIndex].m_nIndex].m_dwID)
+		return;
 	int nPlayerIdx = Player[nIndex].FindAroundPlayer(pPlayer->m_PlayerId);
 	
-	if (nPlayerIdx <= 0 || !Npc[Player[nPlayerIdx].m_nIndex].m_BaiTan)
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER || nPlayerIdx == nIndex || !Npc[Player[nPlayerIdx].m_nIndex].m_BaiTan)
 		return;
-	int nPrice = Player[nPlayerIdx].m_ItemList.GetPrice(pPlayer->m_Idx);
-	if (Player[nIndex].m_ItemList.GetEquipmentMoney() < nPrice || nPrice == 0)
+	int nJxMuc = Player[nPlayerIdx].m_ItemList.FindSame(pPlayer->m_Idx);
+	if (nJxMuc <= 0 || Player[nPlayerIdx].m_ItemList.m_Items[nJxMuc].nPlace != pos_equiproom)
+		return;
+	int nPrice = Player[nPlayerIdx].m_ItemList.m_Items[nJxMuc].nPrice;
+	if (nPrice <= 0 || Player[nIndex].m_ItemList.GetEquipmentMoney() < nPrice)
+		return;
+	if (pPlayer->m_Place != pos_equiproom)
 		return;
 	int nIdx = ItemSet.AddI(&Item[pPlayer->m_Idx]);
-	if (nIdx > 0 && nIdx < MAX_ITEM)
-		Item[nIdx].m_CommonAttrib.uPrice = 0;	// [DUNGLUYEN-PB 01/09] ban sao nguoi mua khong mang gia sap nguoi ban (AddKIL chep uPrice -> nPrice: tu len sap nguoi mua)
+	if (nIdx <= 0 || nIdx >= MAX_ITEM)
+		return;
+	Item[nIdx].m_CommonAttrib.uPrice = 0;	// [DUNGLUYEN-PB 01/09] ban sao nguoi mua khong mang gia sap nguoi ban (AddKIL chep uPrice -> nPrice: tu len sap nguoi mua)
 	
-	Player[nIndex].m_ItemList.AddKIL(nIdx,pPlayer->m_Place,pPlayer->m_X,pPlayer->m_Y);
+	if (!Player[nIndex].m_ItemList.AddKIL(nIdx,pPlayer->m_Place,pPlayer->m_X,pPlayer->m_Y))
+	{
+		ItemSet.Remove(nIdx);	// [BAOMAT A3 16/09] o dich bi chiem / ngoai luoi: huy ban sao, khong tru tien, sap giu nguyen
+		return;
+	}
 	
 	Player[nIndex].Pay(nPrice); //nguoi mua
 

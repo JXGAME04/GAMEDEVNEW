@@ -6,6 +6,63 @@
 #define GMCMD_GENRE_PREFIX_LEN 3
 #define GM_CTRL_CMD_PREFIX '?'
 
+#ifdef _SERVER
+#include "KNpc.h"
+// [BAOMAT A1 16/09] Lenh "?gm ..." qua kenh chat truoc day KHONG kiem quyen: nguoi choi nao cung chay duoc Lua tuy y
+// tren may chu (ds/dw/RSF/RLS/RLAS -> mat may chu chu khong chi mat do). Nay chi tai khoan co ten trong tep
+// \GmTaiKhoan.ini (canh GameServer.exe) moi duoc chay:
+//   [GM]
+//   TaiKhoan=gm1,gm2      (ten TAI KHOAN dang nhap, khong phai ten nhan vat; cach nhau dau phay; khong phan biet hoa/thuong)
+// Khong co tep / danh sach rong = KHONG AI chay duoc (dong cua an toan). Moi lan thu (cho hay chan) deu ghi log may chu.
+// Tep doc lai moi lan co lenh ?gm (hiem) nen sua danh sach khong can mo lai may chu.
+static BOOL JxGmDuocPhep(int nPlayerIdx, const char* pText, int nLen)
+{
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER || Player[nPlayerIdx].m_dwID <= 0)
+		return FALSE;
+	const char* szTk = Player[nPlayerIdx].GetPlayerAccount();
+	const char* szNv = "";
+	if (Player[nPlayerIdx].m_nIndex > 0 && Player[nPlayerIdx].m_nIndex < MAX_NPC)
+		szNv = Npc[Player[nPlayerIdx].m_nIndex].Name;
+	char szDs[1024];
+	szDs[0] = 0;
+	KIniFile ini;
+	if (ini.Load("\\GmTaiKhoan.ini"))
+		ini.GetString("GM", "TaiKhoan", "", szDs, sizeof(szDs));
+	BOOL bOk = FALSE;
+	if (szTk && szTk[0] && szDs[0])
+	{
+		int nTk = (int)strlen(szTk);
+		const char* p = szDs;
+		while (*p && !bOk)
+		{
+			while (*p == ',' || *p == ';' || *p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')
+				p++;
+			const char* q = p;
+			while (*q && *q != ',' && *q != ';' && *q != ' ' && *q != '\t' && *q != '\r' && *q != '\n')
+				q++;
+			if (q > p && (int)(q - p) == nTk && _strnicmp(p, szTk, nTk) == 0)
+				bOk = TRUE;
+			p = q;
+		}
+	}
+	if (nLen < 0) nLen = 0;
+	if (nLen > 200) nLen = 200;
+	// printf = cua so console GameServer (luon co); g_DebugLog chi toi DebugWin.exe khi dang mo.
+	printf("[BAOMAT-GM] %s: tai khoan '%s' nhan vat '%s' lenh '%.*s'\n",
+		bOk ? "CHO CHAY" : "CHAN", szTk ? szTk : "", szNv, nLen, pText);
+	g_DebugLog((LPSTR)"[BAOMAT-GM] %s: tai khoan '%s' nhan vat '%s' lenh '%.*s'",
+		bOk ? "CHO CHAY" : "CHAN", szTk ? szTk : "", szNv, nLen, pText);
+	return bOk;
+}
+#define JX_GM_DEM_TEP	300	// [BAOMAT A1 16/09] moi token co the dai toi nLen (< 300): bo dem cu 200/100/100 tran
+#define JX_GM_DEM_HAM	300
+#define JX_GM_DEM_THAM	300
+#else
+#define JX_GM_DEM_TEP	200
+#define JX_GM_DEM_HAM	100
+#define JX_GM_DEM_THAM	100
+#endif
+
 static TGameMaster_Command GM_Command[]=
 {
 	{"DoSct",			GMDoScriptAction},				//DoSct Say("abc");
@@ -38,6 +95,10 @@ BOOL TextGMFilter(int nPlayerIdx, const char* pText, int nLen)
 		{
 			if ((*(unsigned int*)pText) == 0x206D673F || (*(unsigned int*)pText) == 0x204D473F)	// 0x2067642F = "/gm " "/GM "
 			{
+#ifdef _SERVER
+				if (!JxGmDuocPhep(nPlayerIdx, pText, nLen))	// [BAOMAT A1 16/09] khong phai GM: nuot cau chat, khong chay
+					return TRUE;
+#endif
 				bHandled = (bool)(0 != TextMsgProcessGMCmd(nPlayerIdx, pText + GMCMD_GENRE_PREFIX_LEN + 1,
 					nLen - GMCMD_GENRE_PREFIX_LEN - 1));
 				return TRUE;
@@ -64,6 +125,16 @@ BOOL TextMsgProcessGMCmd(int nPlayerIdx, const char * pGMCmd, int nLen)
 	const char* pStart = strstr(pGMCmd, " ");
 	int nTempLen = nLen;
 	
+#ifdef _SERVER
+	// [BAOMAT A1 16/09] ten lenh dai hon bo dem 20 byte -> truoc day tran ngan xep; strstr cung co the chay qua nLen
+	// (cau chat khong ket thuc bang NUL) nen chi nhan dau cach nam trong nLen.
+	if (NULL != pStart && (int)(pStart - pGMCmd) < nLen)
+		nTempLen = (int)(pStart - pGMCmd);
+	if (nTempLen <= 0 || nTempLen >= (int)sizeof(szCmd))
+		return FALSE;
+	memcpy(szCmd, pGMCmd, nTempLen);
+	szCmd[nTempLen] = 0;
+#else
 	if (NULL == pStart)
 	{
 		memcpy(szCmd, pGMCmd, nTempLen);
@@ -74,6 +145,7 @@ BOOL TextMsgProcessGMCmd(int nPlayerIdx, const char * pGMCmd, int nLen)
 		memcpy(szCmd, pGMCmd, nTempLen);
 		szCmd[nTempLen] = 0;
 	}
+#endif
 	for(int i  = 0; i < sizeof(GM_Command) / sizeof(TGameMaster_Command); i ++)
 	{
 		if (strcmp(GM_Command[i].Command, szCmd) == 0)
@@ -128,9 +200,13 @@ BOOL  ProcessGMCommand(int nPlayerIdx, EGameMasterCommand eCommand, const char *
 		{
 			if (nPlayerIdx < 0 || Player[nPlayerIdx].m_dwID <= 0)
 				return FALSE;
-			char szScriptFile[200];
-			char szScriptFun[100];
-			char szScriptParam[100];
+#ifdef _SERVER
+			if (nLen <= 0 || nLen >= 300)	// [BAOMAT A1 16/09] nhu ds/dw: tham so phai < 300 de vua bo dem
+				return FALSE;
+#endif
+			char szScriptFile[JX_GM_DEM_TEP];
+			char szScriptFun[JX_GM_DEM_HAM];
+			char szScriptParam[JX_GM_DEM_THAM];
 			int nBufLen = GetNextUnit(pParam, ' ', nLen, szScriptFile);
 			if (szScriptFile[0] == 0) return FALSE;
 
@@ -144,7 +220,11 @@ BOOL  ProcessGMCommand(int nPlayerIdx, EGameMasterCommand eCommand, const char *
 	case GMReloadScriptFile:
 		{
 			if (nPlayerIdx < 0 || Player[nPlayerIdx].m_dwID <= 0)	return FALSE;
-			char szScriptFile[200];
+#ifdef _SERVER
+			if (nLen <= 0 || nLen >= 300)	// [BAOMAT A1 16/09]
+				return FALSE;
+#endif
+			char szScriptFile[JX_GM_DEM_TEP];
 			GetNextUnit(pParam, ' ', nLen, szScriptFile);
 			if (szScriptFile[0] == 0) return FALSE;
 			ReLoadScript(szScriptFile);

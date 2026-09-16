@@ -6068,8 +6068,12 @@ void KItemList::SetPriceFromScript( int nIdx, int nPrice)//#fix bay ban trang bi
 
 void KItemList::SetPrice( int nIdx, int nPrice)
 {
+	if (nPrice < 0)	// [BAOMAT A4 16/09] khong nhan gia am (goi tin dat gia da chan, day la lop thu hai)
+		return;
 	int nGameId = SearchID(nIdx);
 	int nId = FindSame(nGameId);
+	if (nGameId <= 0 || nId <= 0)	// [BAOMAT A4 16/09] mon khong co trong tui: truoc day ghi vao m_Items[0] / Item[0]
+		return;
 	if (nPrice)
 	{
 		m_Items[nId].nPrice = nPrice;
