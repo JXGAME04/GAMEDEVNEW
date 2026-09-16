@@ -8,8 +8,9 @@
  *
  * Mo-dun nay lay ma may tu PHAN CUNG THAT - thu KHONG di theo khi nhan ban dia:
  *   1. UUID he thong trong SMBIOS  (gan voi BO MACH CHU)
- *   2. So se-ri O DIA VAT LY        (gan voi o dia, khong phai volume serial)
- *   3. Dia chi MAC cua card mang that
+ *   2. Dia chi MAC cua card mang that (uu tien card co gateway; [MAYID 16/09] len truoc o dia vi phong may
+ *      khong o cung boot ca phong tu mot dia ao cung se-ri, con MAC la thu may chu boot dung de phan biet ghe)
+ *   3. So se-ri O DIA VAT LY        (o he thong; bo USB/the nho/iSCSI/dia ao; khong phai volume serial)
  *
  * Chuoi tra ve: <hang><32 chu so hex>  = 33 ky tu, vua trong sHWID[64] va con cho may chu noi them " <IP>".
  *   hang 'A' = tim duoc >= 2 nguon manh

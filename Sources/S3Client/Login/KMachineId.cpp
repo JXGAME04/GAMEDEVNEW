@@ -323,72 +323,207 @@ static BOOL _LaySmbiosUuid(unsigned char out[16])
 
 /*---------------------------------------------------------------- nguon 2: se-ri o dia VAT LY */
 
+/* BusType cua STORAGE_DEVICE_DESCRIPTOR (ntddstor.h) - viet so de khong phu thuoc phien ban SDK. */
+#define JX_BUS_USB				7
+#define JX_BUS_ISCSI			9
+#define JX_BUS_SD				12
+#define JX_BUS_MMC				13
+#define JX_BUS_VIRTUAL			14
+#define JX_BUS_FILEBACKED		15
+
+/* Chi de ghi log chan doan: o dia nao duoc dung / vi sao bi loai. */
+static char s_szODiaGhiChu[160] = { 0 };
+
+static void _NoiGhiChu(char* szDst, size_t nDst, const char* szThem)
+{
+	size_t nCo = strlen(szDst);
+
+	if (!szThem || !szThem[0] || nCo + 2 >= nDst)
+		return;
+
+	if (nCo > 0)
+		::strncat(szDst, ";", nDst - nCo - 1);
+
+	::strncat(szDst, szThem, nDst - strlen(szDst) - 1);
+}
+
 /*
- * Mo \\.\PhysicalDrive0 voi quyen 0 (chi truy van) - KHONG can quyen quan tri.
- * Day la se-ri ghi trong o dia, khac han VolumeSerialNumber (thu bi doi khi format va bi sao khi ghost).
+ * Doc se-ri cua \\.\PhysicalDrive<nDrive> (mo quyen 0, KHONG can quyen quan tri). Day la se-ri ghi trong o dia,
+ * khac han VolumeSerialNumber (thu bi doi khi format va bi sao khi ghost). Tra ve FALSE kem ly do neu khong doc
+ * duoc hoac o dia thuoc loai KHONG gan voi may.
+ */
+static BOOL _DocSeriDrive(int nDrive, char* szOut, size_t nOut, char* szLyDo, size_t nLyDo)
+{
+	char szPath[64];
+	HANDLE hDev;
+	BOOL bOk = FALSE;
+
+	szLyDo[0] = 0;
+	::_snprintf(szPath, sizeof(szPath) - 1, "\\\\.\\PhysicalDrive%d", nDrive);
+	szPath[sizeof(szPath) - 1] = 0;
+
+	hDev = ::CreateFileA(szPath, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+
+	if (hDev == INVALID_HANDLE_VALUE)
+	{
+		::_snprintf(szLyDo, nLyDo - 1, "drive%d:khong-mo-duoc", nDrive);
+		szLyDo[nLyDo - 1] = 0;
+		return FALSE;
+	}
+
+	{
+		STORAGE_PROPERTY_QUERY query;
+		BYTE byBuf[1024];
+		DWORD dwRet = 0;
+
+		memset(&query, 0, sizeof(query));
+		query.PropertyId = StorageDeviceProperty;
+		query.QueryType = PropertyStandardQuery;
+		memset(byBuf, 0, sizeof(byBuf));
+
+		/* sizeof(byBuf) - 1: byte cuoi luon = 0 nen strncpy ben duoi khong bao gio doc qua duoi dem. */
+		if (::DeviceIoControl(hDev, IOCTL_STORAGE_QUERY_PROPERTY,
+				&query, sizeof(query), byBuf, sizeof(byBuf) - 1, &dwRet, NULL)
+			&& dwRet >= sizeof(STORAGE_DEVICE_DESCRIPTOR))
+		{
+			STORAGE_DEVICE_DESCRIPTOR* pDesc = (STORAGE_DEVICE_DESCRIPTOR*)byBuf;
+			int nBus = (int)pDesc->BusType;
+
+			/*
+			 * [MAYID 16/09] Loai o dia KHONG gan voi may: thao roi / USB / the nho (cam rut la ma doi), iSCSI (phong
+			 * may khong o cung: ca phong boot tu mot dia ao, se-ri giong nhau hoac rong), dia ao.
+			 */
+			if (pDesc->RemovableMedia || nBus == JX_BUS_USB || nBus == JX_BUS_SD || nBus == JX_BUS_MMC)
+				::_snprintf(szLyDo, nLyDo - 1, "drive%d:thao-roi-usb(bus%d)", nDrive, nBus);
+			else if (nBus == JX_BUS_ISCSI || nBus == JX_BUS_VIRTUAL || nBus == JX_BUS_FILEBACKED)
+				::_snprintf(szLyDo, nLyDo - 1, "drive%d:iscsi-ao(bus%d)", nDrive, nBus);
+			else if (pDesc->SerialNumberOffset > 0 && pDesc->SerialNumberOffset < dwRet)
+			{
+				::strncpy(szOut, (const char*)byBuf + pDesc->SerialNumberOffset, nOut - 1);
+				szOut[nOut - 1] = 0;
+
+				if (_TrimUseful(szOut))
+					bOk = TRUE;
+				else
+				{
+					szOut[0] = 0;
+					::_snprintf(szLyDo, nLyDo - 1, "drive%d:seri-vo-nghia", nDrive);
+				}
+			}
+			else
+				::_snprintf(szLyDo, nLyDo - 1, "drive%d:khong-co-seri", nDrive);
+		}
+		else
+			::_snprintf(szLyDo, nLyDo - 1, "drive%d:ioctl-loi", nDrive);
+
+		szLyDo[nLyDo - 1] = 0;
+	}
+
+	::CloseHandle(hDev);
+
+	return bOk;
+}
+
+/* So thu tu PhysicalDrive chua o dia Windows (thuong la C:); -1 neu khong xac dinh duoc. */
+static int _SoDriveHeThong(void)
+{
+	char szWin[MAX_PATH];
+	char szVol[16];
+	HANDLE hVol;
+	int nDrive = -1;
+
+	if (::GetWindowsDirectoryA(szWin, sizeof(szWin)) < 2 || szWin[1] != ':')
+		return -1;
+
+	::_snprintf(szVol, sizeof(szVol) - 1, "\\\\.\\%c:", szWin[0]);
+	szVol[sizeof(szVol) - 1] = 0;
+
+	hVol = ::CreateFileA(szVol, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+
+	if (hVol == INVALID_HANDLE_VALUE)
+		return -1;
+
+	{
+		BYTE byBuf[512];
+		DWORD dwRet = 0;
+		VOLUME_DISK_EXTENTS* pExt = (VOLUME_DISK_EXTENTS*)byBuf;
+
+		memset(byBuf, 0, sizeof(byBuf));
+
+		/* Dia dong (dynamic disk) tra ERROR_MORE_DATA nhung extent dau van hop le trong byBuf. */
+		if (::DeviceIoControl(hVol, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, byBuf, sizeof(byBuf), &dwRet, NULL)
+			|| ::GetLastError() == ERROR_MORE_DATA)
+		{
+			if (pExt->NumberOfDiskExtents >= 1)
+				nDrive = (int)pExt->Extents[0].DiskNumber;
+		}
+	}
+
+	::CloseHandle(hVol);
+
+	return nDrive;
+}
+
+/*
+ * [MAYID 16/09] Uu tien o dia HE THONG (chua Windows): PhysicalDrive0 khong chac la o he thong - cam USB truoc khi
+ * khoi dong co the doi so thu tu, tuc la ma doi theo viec cam rut. Khong co thi moi thu PhysicalDrive0..3.
  */
 static BOOL _LaySeriODia(char* szOut, size_t nOut)
 {
-	BOOL bOk = FALSE;
+	int nHeThong;
 	int nDrive;
+	char szLyDo[64];
+	char szTam[32];
 
 	if (!szOut || nOut == 0)
 		return FALSE;
 
 	szOut[0] = 0;
+	s_szODiaGhiChu[0] = 0;
 
-	for (nDrive = 0; nDrive < 4 && !bOk; nDrive++)
+	nHeThong = _SoDriveHeThong();
+
+	if (nHeThong >= 0)
 	{
-		char szPath[64];
-		HANDLE hDev;
-
-		::_snprintf(szPath, sizeof(szPath) - 1, "\\\\.\\PhysicalDrive%d", nDrive);
-		szPath[sizeof(szPath) - 1] = 0;
-
-		hDev = ::CreateFileA(szPath, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
-					NULL, OPEN_EXISTING, 0, NULL);
-
-		if (hDev == INVALID_HANDLE_VALUE)
-			continue;
-
+		if (_DocSeriDrive(nHeThong, szOut, nOut, szLyDo, sizeof(szLyDo)))
 		{
-			STORAGE_PROPERTY_QUERY query;
-			BYTE byBuf[1024];
-			DWORD dwRet = 0;
-
-			memset(&query, 0, sizeof(query));
-			query.PropertyId = StorageDeviceProperty;
-			query.QueryType = PropertyStandardQuery;
-			memset(byBuf, 0, sizeof(byBuf));
-
-			if (::DeviceIoControl(hDev, IOCTL_STORAGE_QUERY_PROPERTY,
-					&query, sizeof(query), byBuf, sizeof(byBuf), &dwRet, NULL)
-				&& dwRet >= sizeof(STORAGE_DEVICE_DESCRIPTOR))
-			{
-				STORAGE_DEVICE_DESCRIPTOR* pDesc = (STORAGE_DEVICE_DESCRIPTOR*)byBuf;
-
-				if (pDesc->SerialNumberOffset > 0 && pDesc->SerialNumberOffset < dwRet)
-				{
-					::strncpy(szOut, (const char*)byBuf + pDesc->SerialNumberOffset, nOut - 1);
-					szOut[nOut - 1] = 0;
-
-					if (_TrimUseful(szOut))
-						bOk = TRUE;
-					else
-						szOut[0] = 0;
-				}
-			}
+			::_snprintf(szTam, sizeof(szTam) - 1, "drive%d(he-thong)", nHeThong);
+			szTam[sizeof(szTam) - 1] = 0;
+			_NoiGhiChu(s_szODiaGhiChu, sizeof(s_szODiaGhiChu), szTam);
+			return TRUE;
 		}
 
-		::CloseHandle(hDev);
+		_NoiGhiChu(s_szODiaGhiChu, sizeof(s_szODiaGhiChu), szLyDo);
+	}
+	else
+		_NoiGhiChu(s_szODiaGhiChu, sizeof(s_szODiaGhiChu), "khong-biet-o-he-thong");
+
+	for (nDrive = 0; nDrive < 4; nDrive++)
+	{
+		if (nDrive == nHeThong)
+			continue;
+
+		if (_DocSeriDrive(nDrive, szOut, nOut, szLyDo, sizeof(szLyDo)))
+		{
+			::_snprintf(szTam, sizeof(szTam) - 1, "drive%d", nDrive);
+			szTam[sizeof(szTam) - 1] = 0;
+			_NoiGhiChu(s_szODiaGhiChu, sizeof(s_szODiaGhiChu), szTam);
+			return TRUE;
+		}
+
+		_NoiGhiChu(s_szODiaGhiChu, sizeof(s_szODiaGhiChu), szLyDo);
 	}
 
-	return bOk;
+	return FALSE;
 }
+
 
 /*---------------------------------------------------------------- nguon 3: MAC card mang that */
 
-/* Cac tu khoa nhan dang card mang AO - phai loai vi chung doi hoac trung nhau. */
+/* Chi de ghi log chan doan: bao nhieu card that, card duoc chon co gateway khong. */
+static char s_szMacGhiChu[64] = { 0 };
+
+/* Cac tu khoa nhan dang card mang AO / KHONG gan voi may - phai loai vi chung doi hoac trung nhau. */
 static BOOL _LaCardAo(const char* szMoTa)
 {
 	static const char* s_szAo[] =
@@ -396,7 +531,9 @@ static BOOL _LaCardAo(const char* szMoTa)
 		"vmware", "virtualbox", "vbox", "hyper-v", "virtual", "tap-", "tap ",
 		"loopback", "bluetooth", "npcap", "pcap", "vpn", "tunnel", "teredo",
 		"wan miniport", "microsoft wi-fi direct", "hamachi", "radmin", "nordvpn",
-		"openvpn", "wireguard", "zerotier", "docker", "wsl", "ppp"
+		"openvpn", "wireguard", "zerotier", "docker", "wsl", "ppp",
+		/* [MAYID 16/09] chia se mang tu dien thoai (Remote NDIS), card mang USB cam rut, tether */
+		"ndis", "usb", "tether", "internet sharing"
 	};
 
 	char szThuong[512];
@@ -425,17 +562,26 @@ static BOOL _LaCardAo(const char* szMoTa)
 }
 
 /*
- * Lay MAC nho nhat trong so cac card VAT LY. Chon "nho nhat" de ket qua on dinh
- * du thu tu liet ke cua he dieu hanh co doi giua cac lan khoi dong.
+ * [MAYID 16/09] Chon card mang: UU TIEN card CO gateway mac dinh (card dang ra Internet), trong so do lay MAC nho
+ * nhat de on dinh khi thu tu liet ke doi. Truoc day lay MAC nho nhat trong MOI card that, nen cam USB-NIC, bat
+ * Wi-Fi phu hay chia se mang tu dien thoai la co the ra MAC nho hon => ma doi. Khong card nao co gateway thi
+ * moi lay MAC nho nhat nhu cu.
  */
 static BOOL _LayMac(unsigned char out[6])
 {
 	BOOL bOk = FALSE;
+	BOOL bCoGw = FALSE;
+	int nCardThat = 0;
 	ULONG ulLen = 0;
 	IP_ADAPTER_INFO* pInfo = NULL;
 
+	s_szMacGhiChu[0] = 0;
+
 	if (::GetAdaptersInfo(NULL, &ulLen) != ERROR_BUFFER_OVERFLOW || ulLen == 0 || ulLen > (1u << 20))
+	{
+		::strcpy(s_szMacGhiChu, "GetAdaptersInfo-loi");
 		return FALSE;
+	}
 
 	pInfo = (IP_ADAPTER_INFO*)::malloc(ulLen);
 
@@ -459,13 +605,19 @@ static BOOL _LayMac(unsigned char out[6])
 						bAllZero = FALSE;
 				}
 
-				/* Bit thu hai cua byte dau = 1 nghia la MAC dat tay / cuc bo -> khong tin. */
+				/* Bit thu hai cua byte dau = 1 nghia la MAC dat tay / ngau nhien hoa -> khong tin. */
 				if (!bAllZero && (p->Address[0] & 0x02) == 0)
 				{
-					if (!bOk || memcmp(p->Address, out, 6) < 0)
+					const char* szGw = p->GatewayList.IpAddress.String;
+					BOOL bGw = (szGw[0] != 0 && strcmp(szGw, "0.0.0.0") != 0);
+
+					nCardThat++;
+
+					if (!bOk || (bGw && !bCoGw) || (bGw == bCoGw && memcmp(p->Address, out, 6) < 0))
 					{
 						memcpy(out, p->Address, 6);
 						bOk = TRUE;
+						bCoGw = bGw;
 					}
 				}
 			}
@@ -476,8 +628,13 @@ static BOOL _LayMac(unsigned char out[6])
 
 	::free(pInfo);
 
+	::_snprintf(s_szMacGhiChu, sizeof(s_szMacGhiChu) - 1, "%d-card-that,%s",
+		nCardThat, bOk ? (bCoGw ? "co-gateway" : "khong-gateway") : "khong-co");
+	s_szMacGhiChu[sizeof(s_szMacGhiChu) - 1] = 0;
+
 	return bOk;
 }
+
 
 /*---------------------------------------------------------------- nguon lui (KHONG song sot qua ghost dia) */
 
@@ -591,7 +748,10 @@ static void _TinhMachineId(void)
 	 *
 	 * NAY: chon theo THU TU UU TIEN va CHI dung MOT nguon dau tien lay duoc. On dinh hon han, vi ma chi doi
 	 * khi chinh nguon da chon bien mat - ma UUID bo mach thi gan nhu khong bao gio bien mat.
-	 * Uu tien: UUID bo mach (gan voi bo mach chu, ben nhat) > se-ri o dia > MAC.
+ * Uu tien: UUID bo mach (gan voi bo mach chu, ben nhat) > MAC > se-ri o dia.
+ * [MAYID 16/09] MAC len truoc o dia: phong may khong o cung (diskless) ca phong boot tu mot dia ao cung se-ri,
+ * con MAC chinh la thu may chu boot dung de phan biet tung ghe. Hat giong bam giu nguyen nen may truoc day da
+ * dung MAC van ra dung ma cu; may truoc day dung o dia (khong UUID) se doi ma MOT LAN khi len ban nay.
 	 * Tinh duy nhat khong giam: rieng UUID bo mach da la duy nhat theo tung may.
 	 */
 	if (bCoUuid)
@@ -601,19 +761,19 @@ static void _TinhMachineId(void)
 		h1 = _Fnv1a64(byUuid, sizeof(byUuid), h1);
 		h2 = _Fnv1a64(byUuid, sizeof(byUuid), h2 ^ 0x9E3779B97F4A7C15ULL);
 	}
-	else if (bCoSeri)
-	{
-		nManh = 2;
-		h1 = _Fnv1a64((const unsigned char*)"S", 1, h1);
-		h1 = _Fnv1a64((const unsigned char*)szSeri, strlen(szSeri), h1);
-		h2 = _Fnv1a64((const unsigned char*)szSeri, strlen(szSeri), h2 ^ 0xC2B2AE3D27D4EB4FULL);
-	}
 	else if (bCoMac)
 	{
-		nManh = 1;
+		nManh = 2;
 		h1 = _Fnv1a64((const unsigned char*)"M", 1, h1);
 		h1 = _Fnv1a64(byMac, sizeof(byMac), h1);
 		h2 = _Fnv1a64(byMac, sizeof(byMac), h2 ^ 0x165667B19E3779F9ULL);
+	}
+	else if (bCoSeri)
+	{
+		nManh = 1;
+		h1 = _Fnv1a64((const unsigned char*)"S", 1, h1);
+		h1 = _Fnv1a64((const unsigned char*)szSeri, strlen(szSeri), h1);
+		h2 = _Fnv1a64((const unsigned char*)szSeri, strlen(szSeri), h2 ^ 0xC2B2AE3D27D4EB4FULL);
 	}
 
 	if (nManh == 0)
@@ -648,18 +808,21 @@ static void _TinhMachineId(void)
 		}
 	}
 
-	/* Hang theo DO BEN cua nguon da chon: 3 = UUID bo mach (A), 2 = o dia, 1 = MAC (deu B), 0 = du phong (C). */
+	/* Hang theo DO BEN cua nguon da chon: 3 = UUID bo mach (A), 2 = MAC, 1 = o dia (deu B), 0 = du phong (C). */
 	chHang = (nManh >= 3) ? 'A' : ((nManh >= 1) ? 'B' : 'C');
 
 	::_snprintf(s_szMachineId, sizeof(s_szMachineId) - 1, "%c%016I64X%016I64X", chHang, h1, h2);
 	s_szMachineId[sizeof(s_szMachineId) - 1] = 0;
 
 	::_snprintf(szChiTiet, sizeof(szChiTiet) - 1,
-		"hang=%c nguon_dung=%s (co: uuid=%d seri=%d mac=%d) uuid_smbios=%s [%s]",
+		"hang=%c nguon_dung=%s (co: uuid=%d mac=%d seri=%d) uuid_smbios=%s [%s] mac=%02X%02X%02X%02X%02X%02X [%s] odia=[%s]",
 		chHang,
-		(nManh == 3) ? "uuid-bo-mach" : ((nManh == 2) ? "seri-o-dia" : ((nManh == 1) ? "mac" : "du-phong")),
-		bCoUuid ? 1 : 0, bCoSeri ? 1 : 0, bCoMac ? 1 : 0,
-		s_szUuidHienThi[0] ? s_szUuidHienThi : "-", s_szUuidGhiChu[0] ? s_szUuidGhiChu : "-");
+		(nManh == 3) ? "uuid-bo-mach" : ((nManh == 2) ? "mac" : ((nManh == 1) ? "seri-o-dia" : "du-phong")),
+		bCoUuid ? 1 : 0, bCoMac ? 1 : 0, bCoSeri ? 1 : 0,
+		s_szUuidHienThi[0] ? s_szUuidHienThi : "-", s_szUuidGhiChu[0] ? s_szUuidGhiChu : "-",
+		byMac[0], byMac[1], byMac[2], byMac[3], byMac[4], byMac[5],
+		s_szMacGhiChu[0] ? s_szMacGhiChu : "-",
+		s_szODiaGhiChu[0] ? s_szODiaGhiChu : "-");
 	szChiTiet[sizeof(szChiTiet) - 1] = 0;
 
 	_GhiChanDoan(s_szMachineId, szChiTiet);
