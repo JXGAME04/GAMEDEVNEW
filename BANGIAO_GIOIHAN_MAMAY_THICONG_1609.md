@@ -127,3 +127,27 @@ Relay: `seq=1…6` tăng đều, `count limit` = số vào trước + 1, **khôn
 
 **Lưu ý vận hành:** máy chủ thử nghiệm hiện đang **cưỡng chế thật** (`ChiQuanSat=0`, `MaxLogin=2`) — người test khác mở > 2 nick/máy sẽ bị đá; muốn về quan sát thì đặt lại `ChiQuanSat=1` và mở lại GameServer.
 Máy ảo Android trên cùng PC mang mã `{…}` riêng nên **không** bị tính chung với client PC cùng máy — đây là giới hạn của mã mobile (hostname + thư mục dữ liệu), không phải lỗi bản này.
+
+---
+
+## 8. DỰNG LẠI 17/09 08:56 (cùng mã, bản sạch để test tiếp)
+
+Nguồn không đổi so với 16/09 (`main` = `c01e1f34`, đã lên GitHub). Xoá hết tệp đầu ra cũ rồi dựng sạch cả ba, **0 lỗi biên dịch**:
+
+| Tệp | md5 mới (17/09) | md5 cũ (16/09) | Cỡ |
+|---|---|---|---|
+| `GameServer.exe` | `abcdbfea` | `2a729f12` | 1 996 288 |
+| `S3Relay.exe` | `02297ab1` | `cc1d4e5a` | 4 484 096 |
+| `Game.exe` | `40a6c8d4` | `1284f509` | 1 536 512 |
+
+Cỡ giống hệt, md5 khác là bình thường (dấu thời gian/GUID trong tệp PE đổi mỗi lần dựng).
+Đã kiểm lại **12 chuỗi mốc** đủ trong ba tệp + chuỗi TCVN3 của hộp thoại P7 có trong `Game.exe`;
+harness `test_kmachineid.cpp` **13/13 PASS**, mã máy máy dev vẫn `A27EADC94CFCBAD3CB54E1FA92D025ACE`.
+Cả ba đã đặt dạng `.moi`.
+
+**KHÔNG dựng lại `CoreServer.dll`**: bản đang nằm ở `bin\server` (16/09 16:59) là của **phiên bảo mật A1–A5**,
+nhánh `claude/baomat-a1a5-1609` **chưa gộp `main`** — dựng lại từ `main` sẽ xoá mất 5 bản vá của họ.
+Đã đối chiếu: nhánh đó chỉ đụng `KGMCommand/KItemList/KProtocolProcess` + `S3PAccount`, **không** đụng
+`CoreServerShell.h`, nên `GameServer.exe` của tôi và `CoreServer.dll` của họ **không lệch vtable**, chạy chung được.
+
+Lúc dựng (17/09 08:56) **mọi máy chủ đều đang tắt**. Cấu hình vẫn `MaxLogin=2`, `ChiQuanSat=0` (cưỡng chế thật).
