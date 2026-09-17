@@ -101,3 +101,37 @@ cả cụm theo thứ tự thường ngày** (Sword3PaySys → S3RelayServer →
 ## 5. Còn lại ngoài nhóm A (không thuộc đợt này)
 Nhóm B/C của hồ sơ 14/09 (ký gói cài, tự cập nhật, mã hoá đường truyền, chống gian lận mobile) — đã liệt kê trong
 `KEHOACH_PHAT_HANH_1609.md` mục 1C/1D.
+
+---
+
+## 6. SOI CHÉO bởi phiên giới hạn mã máy — 17/09, trước khi gộp `main`
+
+Chủ yêu cầu kiểm rồi gộp. Đã đọc toàn bộ diff 4 tệp nguồn và truy ngược các hàm liên quan. **Kết luận: đúng, gộp được.**
+
+### Đã kiểm và đạt
+
+| Mục | Điều đã truy ngược |
+|---|---|
+| A1 | Cửa quyền đóng mặc định (không tệp / danh sách rỗng = không ai chạy). So tên tài khoản bằng `_strnicmp` đúng độ dài nên `gm` không khớp nhầm `gm2`. Ghi log cả lúc cho lẫn lúc chặn. Chặn tràn tên lệnh: `nTempLen >= sizeof(szCmd)` trả `FALSE` (trước đây tên lệnh ≥ 20 ký tự là ghi đè ngăn xếp). `GetNextUnit` ghi tối đa `nLen` byte + NUL, với `nLen < 300` và bộ đệm 300 thì **vừa khít**, không tràn. Nhánh `#else` của máy khách giữ nguyên mã cũ. |
+| A2 | `S3P_ChuoiSqlAnToan` từ chối `'`, `\`, ký tự < 0x20, và **bắt buộc gặp NUL trong bộ đệm** (32/64 byte) nên còn chặn luôn chuỗi không kết thúc. Đã quét lại toàn tệp: chỉ còn **một** chỗ ghép `%s` chưa kiểm là `CheckAddress`, và chỗ đó **an toàn thật** vì chuỗi do `inet_ntoa` sinh ra (chỉ chữ số và dấu chấm), không có cách chèn. |
+| A3 | Ba điểm dễ sai đã truy ngược: (1) `FindSame` có **hai bản nạp chồng** `int` và `DWORD` đọc hai trường khác nhau; `m_Idx` khai là `int` nên gọi đúng bản `int`, giống hệt `GetPrice` cũ. (2) Cửa mới `m_Place == pos_equiproom` **không làm hỏng mua bình thường**: cả hai chỗ máy khách gửi lệnh mua (`CoreShell.cpp:7448` và `:17210`) đều truyền `pos_equiproom`. (3) `AddKIL` trả `0` ở **cả 55 nhánh lỗi** và trả `i` khi thành công, nên `if (!AddKIL(...))` bắt đúng thất bại. Phía người bán vẫn `Remove` + `Earn` + thuế thành như cũ. |
+| A4 | `m_Price` khai `int` nên `< 0` là phép so có nghĩa (nếu là unsigned thì câu lệnh đã vô dụng). Lớp thứ hai trong `KItemList::SetPrice` còn bịt luôn lỗi ghi vào `m_Items[0]` khi món không có trong túi. |
+| A5 | Chặn `0` và `>= 2^31`, đúng gốc bệnh đảo chiều chuyển tiền. |
+| Mã hoá | Số byte cao TCVN3 **giống hệt** `main` ở cả 4 tệp (16 / 1165 / 1344 / 0), không có FFFD. |
+| Gate 2 | `KProtocol.h` không bị đụng: không đổi giao thức, cỡ gói, cấu trúc dữ liệu. |
+| Tệp đang chạy | `CoreServer.dll` md5 `dfffe145…` và `Sword3PaySys.exe` md5 `4663529f…` **khớp từng chữ** với bảng ở §1, và chứa đủ chuỗi mốc `[BAOMAT-GM]`, `GmTaiKhoan.ini`. `bin\server\GmTaiKhoan.ini` chủ đã điền `TaiKhoan=thienho`. |
+| Dựng sau khi gộp | `Core` **Server Release|x64** trên cây đã gộp (giới hạn mã máy + bảo mật): **0 lỗi biên dịch**. |
+
+### Còn lại — không chặn phát hành, ghi để đợt sau
+
+1. **`gm_c2s_execute` chưa qua cửa quyền.** `KGMProcess.cpp:38` gọi thẳng `TextMsgProcessGMCmd`, bỏ qua `JxGmDuocPhep`.
+   Đã truy ngược: đường này **chỉ đến từ link Transfer/relay** (công cụ GM), gói của người chơi đi vào `KProtocolProcess`
+   là bảng điều phối khác, nên người chơi thường **không với tới**. Nên thêm cùng cửa quyền cho chắc lớp.
+2. **`strstr(pGMCmd, " ")` vẫn quét quá `nLen`** trước khi áp cận. Kết quả chỉ được dùng khi nằm trong `nLen` nên không
+   còn gây hại, nhưng phép đọc quá đuôi bộ đệm thì vẫn còn (vốn có từ trước, bản vá không làm nặng thêm).
+3. **`S3RELAYSERVER/S3PAccount.cpp`** vẫn ghép chuỗi SQL kiểu cũ (chính tài liệu này đã ghi ở §2-A2). Dữ liệu vào đến từ
+   máy chủ game chứ không từ người chơi, nên để đợt sau cho cùng chuẩn.
+
+### Đã gộp
+
+`main` = `ae151d39` (gồm `801cd4f4` bảo mật + `c01e1f34` giới hạn mã máy + tài liệu). Fast-forward, không sửa một dòng mã nào.
