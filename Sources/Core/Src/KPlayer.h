@@ -345,7 +345,7 @@ struct ExtAuto
 	int  nACRepath;
 	UINT uACNghi;        // ket -> nghi toi moc nay
 	// (17/09) sang map ac chinh bang Than Hanh Phu (AC_DiThanHanh)
-	int  nACThp;         // buoc: 0 chua bat dau / 1 da gui movemapid / 10 da dung phu, dang lan thoai / <0 = -ly do hong, nghi toi uACThpHan
+	int  nACThp;         // buoc: 0 chua bat dau / 10 da dung phu, dang lan thoai / <0 = -ly do hong, nghi toi uACThpHan
 	int  nACThpTry;      // so lan gui / dung phu trong luot
 	int  nACThpMap;      // map dich cua luot (ac chinh doi map = lam lai tu dau)
 	UINT uACThpT;        // moc gui / dung phu / tra loi thoai gan nhat

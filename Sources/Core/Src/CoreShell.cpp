@@ -43,6 +43,7 @@ extern KCacheNode* AmThanhLay(KCache& cache, char* szTen, KCacheNode* pNode);	//
 #include "KDaTauSpots.h"
 #include "KTongKimTables.h"
 #include "KWayPointTables.h"
+#include "KThanHanhTables.h"
 #include "KLienDauTables.h"
 #include "KHoatDongTables.h"
 #include "KCongThanhTables.h"
@@ -10310,10 +10311,11 @@ static void AC_GuiViTri(int nPlayerIdx, UINT uCurTime)
 // khong can di chuyen theo toi xa phu - chi can dung than hanh phu". Thay han hai duong Xa Phu
 // cua 04/09 (LD_DiThanh "thanh thi da di qua" + AC_DiWayPoint "noi da di qua") bang phu 6/1/1271.
 // Ba duong, tuy map ac chinh dang dung (theo menu cua script\item\ib\shenxingfu.lua):
-//   (a) BAI LUYEN CONG - 31 map tab_lv20map..tab_lv90map (= g_GoMapID[] cua tab Hau can): gui
-//       c2sdnmbr_movemapid, may chu chay GotoMapId(map) -> nhay ngay, KHONG can thoai (dung duong
-//       "Di map luyen cong" cua Hau can, nHomeStep 10). May chu tu kiem phu trong tui, cap toi
-//       thieu cua bai (gopos_step3lvXX) va map dang dung co cam phu hay khong.
+//   (a) BAI LUYEN CONG - 31 map tab_lv20map..tab_lv90map (bang KThanHanhTables.h sinh tu script):
+//       dung phu -> "Su dung thuat than hanh..." -> "Ban do luyen cong tu 20 den 90" -> "90 tro len." |
+//       "20 den 80." -> (20..80) "... luyen cong cap NN" -> ten bai -> gopos_step3lvNN (may chu kiem cap).
+//       (18/09) Chu game test dot 17/09 thay ac phu "di thang len map khong bam mo than hanh phu" vi
+//       dot do di tat bang lenh c2sdnmbr_movemapid (GotoMapId) -> BO, phai mo phu nhu nguoi choi.
 //   (b) THANH THI (7, THANH_ARRAY): dung phu -> "Su dung thuat than hanh di den noi chi dinh"
 //       -> "Thanh thi" -> ten thanh -> muc dau mang ten thanh (Trung Tam; Lam An = "Lam An Nam");
 //       toi noi AC_DiTheo di not trong map. Chuoi menu chep tu DTP_CITYHOP (r5) da chay that.
@@ -10347,14 +10349,6 @@ static const ACPhuMuc g_aACPhuMuc[11] =
 };
 static const char* const g_aACPhuNhom[2] = { "Thµnh thÞ", "Th«n trang" };
 
-static int AC_LaBaiLuyen(int nMap)
-{
-	for (int i = 0; i < (int)(sizeof(g_GoMapID) / sizeof(g_GoMapID[0])); ++i)
-		if (g_GoMapID[i] == nMap)
-			return 1;
-	return 0;
-}
-
 static const ACPhuMuc* AC_TimMucPhu(int nMap)
 {
 	for (int i = 0; i < (int)(sizeof(g_aACPhuMuc) / sizeof(g_aACPhuMuc[0])); ++i)
@@ -10363,17 +10357,35 @@ static const ACPhuMuc* AC_TimMucPhu(int nMap)
 	return NULL;
 }
 
-// gui "nhay toi map bang Than Hanh Phu" - may chu chay GotoMapId (khuon Hau can nHomeStep 10)
-static void AC_GuiMoveMapId(int nMap)
+// duong bam trong menu phu toi map dich: szTen = muc cuoi (ten thanh / thon / bai), szNhom = muc o
+// "chondiadiem1" ("Thanh thi" / "Thon trang" / "Ban do luyen cong tu 20 den 90"); bai luyen cong con
+// szCap1 ("90 tro len." | "20 den 80.") va szCap2 ("... luyen cong cap NN", chi 20..80). Tra 0 = phu khong toi.
+struct ACPhuDuong { const char* szTen; const char* szNhom; const char* szCap1; char szCap2[64]; };
+static int AC_DuongPhu(int nMap, ACPhuDuong* p)
 {
-	char szPack[16];
-	DYNAMIC_COMMAND* pCmd = (DYNAMIC_COMMAND*)&szPack[0];
-	pCmd->ProtocolType = c2s_dynamic_structure;
-	pCmd->nBranch = c2sdnmbr_movemapid;
-	pCmd->m_wLength = sizeof(DYNAMIC_COMMAND) - 1 + sizeof(int);
-	*(int*)(pCmd + 1) = nMap;
-	if (g_pClient)
-		g_pClient->SendPackToServer((BYTE*)pCmd, pCmd->m_wLength + 1);
+	p->szTen = NULL;
+	p->szNhom = NULL;
+	p->szCap1 = NULL;
+	p->szCap2[0] = 0;
+	const ACPhuMuc* pMuc = AC_TimMucPhu(nMap);
+	if (pMuc)
+	{
+		p->szTen = pMuc->szMuc;
+		p->szNhom = g_aACPhuNhom[pMuc->nNhom];
+		return 1;
+	}
+	for (int i = 0; i < THP_BAI_COUNT; ++i)
+	{
+		if (g_aTHPBai[i].nMapId != nMap)
+			continue;
+		p->szTen = g_aTHPBai[i].szTen;
+		p->szNhom = THPM_LUYEN;
+		p->szCap1 = (g_aTHPBai[i].nCap >= 90) ? THPM_LV90 : THPM_LV2080;
+		if (g_aTHPBai[i].nCap < 90)
+			sprintf(p->szCap2, "%s%d", THPM_CAP, g_aTHPBai[i].nCap);
+		return 1;
+	}
+	return 0;
 }
 
 static void AC_ThpXoa(ExtAuto& ea)
@@ -10415,9 +10427,8 @@ static int AC_DiThanHanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT
 	// ac chinh doi map giua chung -> luot moi
 	if (ea.nACThp > 0 && ea.nACThpMap != nDestMap)
 		AC_ThpXoa(ea);
-	const int nBai = AC_LaBaiLuyen(nDestMap);
-	const ACPhuMuc* pMuc = nBai ? NULL : AC_TimMucPhu(nDestMap);
-	if (!nBai && !pMuc)
+	ACPhuDuong duong;
+	if (!AC_DuongPhu(nDestMap, &duong))
 	{
 		*pnLyDo = 1;
 		return 0;
@@ -10437,20 +10448,7 @@ static int AC_DiThanHanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT
 	}
 	if ((int)(uCurTime - ea.uACThpHan) > 0)
 		return AC_ThpHong(nPlayerIdx, 3, uCurTime, pnLyDo);
-	if (nBai)
-	{	// (a) bai luyen cong: gui movemapid roi doi may chu doi map (AC_KhacMap tu het khi cung map)
-		if (ea.nACThp == 1 && (int)(uCurTime - ea.uACThpT) < AC_THP_GO_LAI)
-			return 1;
-		if (ea.nACThpTry >= AC_THP_THU)
-			return AC_ThpHong(nPlayerIdx, 3, uCurTime, pnLyDo);
-		AC_GuiMoveMapId(nDestMap);
-		ea.nACThp = 1;
-		++ea.nACThpTry;
-		ea.uACThpT = uCurTime;
-		AUTOLOG("[AC-PHU] gui movemapid map=%d lan %d/%d (dang o map %d)", nDestMap, ea.nACThpTry, AC_THP_THU, SubWorld[0].m_SubWorldID);
-		return 1;
-	}
-	// (b)/(c) thanh thi / thon tran: dung phu roi lan theo thoai
+	// dung phu roi lan theo thoai - chung cho ca ba duong (a)/(b)/(c)
 	if (ea.nACThp == 10 && cap.uDlgSeq != ea.uACDlgSeen)
 	{
 		ea.uACDlgSeen = cap.uDlgSeq;
@@ -10459,8 +10457,10 @@ static int AC_DiThanHanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT
 		g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
 		int nAns = DT_Split(szBuf, apAns, 24);
 		int nOpt;
-		// thu tu: ten thanh/thon (o danh sach ten LAN danh sach cua) -> nhom -> muc "thuat than hanh"
-		if ((nOpt = DT_FindAns(apAns, nAns, pMuc->szMuc)) >= 0)
+		// thu tu: muc cuoi (ten thanh/thon/bai - o danh sach ten LAN danh sach cua cua thanh) -> "cap NN"
+		// -> "90 tro len." / "20 den 80." -> nhom o chondiadiem1 -> muc "thuat than hanh" o menu chinh.
+		// Moi thoai chi chua muc cua tang no va cac chuoi khong lan nhau nen strstr khong bam nham tang.
+		if ((nOpt = DT_FindAns(apAns, nAns, duong.szTen)) >= 0)
 		{
 			DT_Answer(nPlayerIdx, nOpt);
 			ea.uACThpT = uCurTime;
@@ -10468,7 +10468,9 @@ static int AC_DiThanHanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT
 			AUTOLOG("[AC-PHU] thoai: chon '%s' (muc %d/%d)", apAns[nOpt], nOpt, nAns);
 			return 1;
 		}
-		if ((nOpt = DT_FindAns(apAns, nAns, g_aACPhuNhom[pMuc->nNhom])) >= 0
+		if ((duong.szCap2[0] && (nOpt = DT_FindAns(apAns, nAns, duong.szCap2)) >= 0)
+		 || (duong.szCap1 && (nOpt = DT_FindAns(apAns, nAns, duong.szCap1)) >= 0)
+		 || (nOpt = DT_FindAns(apAns, nAns, duong.szNhom)) >= 0
 		 || (nOpt = DT_FindAns(apAns, nAns, "thuËt thÇn hµnh")) >= 0)
 		{
 			DT_Answer(nPlayerIdx, nOpt);
@@ -10495,8 +10497,8 @@ static int AC_DiThanHanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT
 	++ea.nACThpTry;
 	ea.uACThpT = uCurTime;
 	ea.uACNext = uCurTime + 900;
-	AUTOLOG("[AC-PHU] dung phu lan %d/%d - dich '%s' (nhom %d) map=%d (dang o map %d)",
-		ea.nACThpTry, AC_THP_THU, pMuc->szMuc, pMuc->nNhom, nDestMap, SubWorld[0].m_SubWorldID);
+	AUTOLOG("[AC-PHU] dung phu lan %d/%d - dich '%s' (nhom '%s') map=%d (dang o map %d)",
+		ea.nACThpTry, AC_THP_THU, duong.szTen, duong.szNhom, nDestMap, SubWorld[0].m_SubWorldID);
 	return 1;
 }
 // (04/09) ac chinh con song va tin con moi, NHUNG dang o MAP KHAC?

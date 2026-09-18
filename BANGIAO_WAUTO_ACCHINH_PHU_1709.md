@@ -12,11 +12,11 @@ Tiếp nối `BANGIAO_WAUTO_ACCHINH_0309.md` (đợt 1) và bộ vá 04/09 (`goi
 
 | Tệp | md5 | sha256[:8] | cỡ (byte) | Nội dung |
 |---|---|---|---|---|
-| `CoreClient.dll.moi` | `7f0577a7` | `c666aa5c` | 2.679.296 | máy Ác chính sang map bằng Thần Hành Phù (mục 3) — **tập cha** của bản đang chạy `676d452f` (mục 6) |
+| `CoreClient.dll.moi` | `725f1ae7` | `9a0e078c` | 2.680.320 | **đợt b (18/09 16:50)**: cả bãi luyện công cũng MỞ PHÙ và lần menu, bỏ hẳn lệnh `movemapid` — thay bản đợt a `7f0577a7` đang chạy (chủ test: "đi thẳng lên map không bấm mở thần hành phù") |
 | `WAuto.exe.moi` | `3293885f` | `86ef6813` | 467.968 | chỉ đổi chữ: nhãn ô *"Ác chính ở map khác thì dùng Thần Hành Phù sang"*, tooltip, note tab Ác chính |
 
-Bản đang chạy: `CoreClient.dll` `676d452f` (16/09 09:20, dựng từ nhánh `claude/wauto-auto-horse-bugs-ad45c9`) ·
-`WAuto.exe` `b2d93a37` (07/09) · `Game.exe` 17/09 08:56 (GIOIHAN, **không đụng**).
+Bản đang chạy (chủ đã swap đợt a lúc ~16:2x): `CoreClient.dll` `7f0577a7` · `WAuto.exe` `3293885f` (đợt a, giữ nguyên — không có `.moi` mới) ·
+`Game.exe` 17/09 08:56 (GIOIHAN, **không đụng**). Trước đợt a là `676d452f` (16/09, nhánh horse-bugs).
 
 ### Cách đổi
 
@@ -42,7 +42,9 @@ TRƯỚC (04/09) — ác chính ở map khác, ô "Ác chính ở map khác thì
    -> ác phụ bỏ bãi, chạy về Xa Phu, mất 1–3 phút, tốn tiền
 
 SAU (17/09) — AC_DiThanHanh, CHỈ Thần Hành Phù (6/1/1271), không có bước Xa Phu nào:
-   (a) bãi luyện công (31 map)  -> gửi lệnh c2sdnmbr_movemapid -> máy chủ chạy GotoMapId(map) -> nhảy ngay
+   (a) bãi luyện công (31 map)  -> dùng phù -> "Sử dụng thuật thần hành…" -> "Bản đồ luyện công từ 20 đến 90"
+                                   -> "90 trở lên." | "20 đến 80." -> (20–80) "… luyện công cấp NN" -> tên bãi
+                                   (đợt a 17/09 đi tắt bằng lệnh movemapid = máy chủ GotoMapId, KHÔNG mở phù -> chủ bỏ 18/09)
    (b) 7 thành thị              -> dùng phù -> "Sử dụng thuật thần hành…" -> "Thành thị" -> tên thành -> cửa đầu
    (c) 4 thôn trấn              -> dùng phù -> "Sử dụng thuật thần hành…" -> "Thôn trang" -> tên thôn
    tới map ác chính -> AC_DiTheo đi bộ nốt đoạn trong map (như cũ)
@@ -56,7 +58,7 @@ SAU (17/09) — AC_DiThanHanh, CHỈ Thần Hành Phù (6/1/1271), không có b�
 
 | Nhóm | Map | Cách đi | Nguồn |
 |---|---|---|---|
-| (a) Bãi luyện công | 31 map `g_GoMapID[]` = `tab_lv20map…tab_lv90map` của `shenxingfu.lua` (875, 322, 321, 75, 225–227, 336, 340, 144, 93, 124, 152, 224, 198, 320, 181, 319, 123, 206, 79, 56, 166, 182, 164, 21, 167, 193, 170, 19, 7) | gửi `c2sdnmbr_movemapid` + id map, máy chủ gọi `GotoMapId(map)` → `gopos_step3lvXX` → `NewWorld`. **Không cần thoại.** Máy chủ tự kiểm phù trong túi, **cấp tối thiểu của bãi** (lv90 cần ≥ 90…) và map đang đứng có cấm phù không. | y hệt "Đi map luyện công" của tab Hậu cần (`nHomeStep == 10`) |
+| (a) Bãi luyện công | 31 map `g_GoMapID[]` = `tab_lv20map…tab_lv90map` của `shenxingfu.lua` (875, 322, 321, 75, 225–227, 336, 340, 144, 93, 124, 152, 224, 198, 320, 181, 319, 123, 206, 79, 56, 166, 182, 164, 21, 167, 193, 170, 19, 7) | `AutoUseItem(6,1,1271)` → thoại: *"Sử dụng thuật thần hành…"* → *"Bản đồ luyện công từ 20 đến 90"* → *"Bản đồ luyện công 90 trở lên."* (bãi 90) hoặc *"Bản đồ Luyện công 20 đến 80."* → *"Di chuyển đến bản đồ luyện công cấp NN"* → tên bãi → `gopos_step3lvNN` (máy chủ kiểm **cấp tối thiểu của bãi**, thiếu cấp thì *"phía trước nguy hiểm"* và không đi). Tên bãi + 4 chuỗi menu lấy **thẳng từ script** (`KThanHanhTables.h` sinh bởi `gen_thanhanh_tables.py`) nên đúng byte TCVN3 (vd "Khoả Lang động" script viết *oả*). | đợt a dùng lệnh `movemapid` (= "Đi map luyện công" của Hậu cần) → chủ test 18/09 thấy "đi thẳng lên map không bấm mở thần hành phù" → **bỏ** |
 | (b) Thành thị | 1 Phượng Tường, 11 Thành Đô, 162 Đại Lý, 37 Biện Kinh, 78 Tương Dương, 80 Dương Châu, 176 Lâm An | `AutoUseItem(6,1,1271)` → thoại: *"Sử dụng thuật thần hành đi đến nơi chỉ định"* → *"Thành thị"* → tên thành → mục đầu mang tên thành (*Trung Tâm*; Lâm An = *Lâm An Nam*) | chuỗi menu chép từ `DTP_CITYHOP` (r5) đã chạy thật |
 | (c) Thôn trấn | 53 Ba Lăng, 20 Giang Tân, 121 Long Môn, 54 Nam Nhạc | như (b) nhưng chọn *"Thôn trang"* → tên thôn | `THON_ARRAY` của script |
 
@@ -90,7 +92,7 @@ tick *Trong thành*. (Với bãi luyện công / thôn không có Xa Phu như Na
 
 ### 3.5 Trạng thái mới trong `ExtAuto` (KPlayer.h, chỉ client)
 
-`nACThp` (0 chưa bắt đầu / 1 đã gửi movemapid / 10 đã dùng phù, đang lần thoại / <0 = −lý do hỏng, nghỉ tới
+`nACThp` (0 chưa bắt đầu / 10 đã dùng phù, đang lần thoại / <0 = −lý do hỏng, nghỉ tới
 `uACThpHan`), `nACThpTry`, `nACThpMap`, `uACThpT`, `uACThpHan`, `uACDlgSeen`. `autoData` (IPC WAuto) **không đổi**.
 
 ---
@@ -107,15 +109,15 @@ tick *Trong thành*. (Với bãi luyện công / thôn không có Xa Phu như Na
 ## 5. Cách kiểm sau swap
 
 1. Hai cửa sổ, ác phụ tick *Tìm ác chính* + *Ác chính ở map khác thì dùng Thần Hành Phù sang*, túi ác phụ có Thần Hành Phù.
-2. Ác chính dùng phù sang **bãi luyện công** (vd Khỏa Lang động 75, ác phụ ≥ 90): ác phụ phải nhảy theo trong ~2 s, chat
+2. Ác chính dùng phù sang **bãi luyện công** (vd Khoả Lang động 75, ác phụ ≥ 90): ác phụ **mở Thần Hành Phù**, thoại nhảy 4 bước (~5 s) rồi sang, chat
    *"Ac chính ở map khác - dùng Thần Hành Phù sang."*; log
-   `findstr /C:"[AC-PHU]" bin\client\jx_auto.log` → `[AC-PHU] gui movemapid map=75 lan 1/3 (dang o map …)` rồi
+   `findstr /C:"[AC-PHU]" bin\client\jx_auto.log` → `[AC-PHU] dung phu lan 1/3 - dich 'Khoả Lang động' (nhom 'Bản đồ luyện công từ 20 đến 90')` → `thoai: chon 'Sử dụng thuật thần hành…'` → `chon 'Bản đồ luyện công từ 20 đến 90'` → `chon 'Bản đồ luyện công 90 trở lên.'` → `chon 'Khoả Lang động'` rồi
    `[AC] theo ac chinh (x,y) d=…`.
 3. Ác chính về **thành** với *Trong thành* **bật** (vd Tương Dương 78): log `[AC-PHU] dung phu lan 1/3 - dich 'Tương Dương'
    (nhom 0) map=78` → `thoai: chon 'Sử dụng thuật thần hành…'` → `chon 'Thành thị'` → `chon 'Tương Dương Phủ'` →
    `chon 'Tương Dương Trung Tâm'` → đổi map. *Trong thành* **tắt** → không có dòng nào, ác phụ đứng bãi đánh tiếp.
 4. Cất phù vào rương → chat *"Không có Thần Hành Phù trong túi…"* đúng một lần, ác phụ auto tại chỗ; bỏ phù lại túi → đi.
-5. Ác phụ cấp thấp hơn bãi (vd 85 với bãi 90): 3 dòng `gui movemapid … lan 1/3, 2/3, 3/3` cách nhau 4 s, rồi
+5. Ác phụ cấp thấp hơn bãi (vd 85 với bãi 90): tới bước chọn tên bãi máy chủ chỉ Talk *"phía trước nguy hiểm"*, 4 s không có thoại mới thì auto dùng phù lại — 3 lượt `dung phu lan 1/3, 2/3, 3/3`, rồi
    `[AC-PHU] hong (ly do 3 …) - nghi 60 giay roi thu lai` + chat vàng. Đây là máy chủ từ chối (*"phía trước nguy hiểm"*), không phải lỗi.
 
 Log ghi TCVN3 (đọc qua `vn_edit.py --read`).
@@ -137,7 +139,7 @@ Log ghi TCVN3 (đọc qua `vn_edit.py --read`).
 | `origin/claude/kind-clarke-lmcrr7` (chỉ origin) | 118 commit mobile 09/09 | bản mobile cũ, đã nằm trong `mobile-0809` | để nguyên |
 
 ⇒ **Dòng PC (client + máy chủ) thiếu đúng một nhánh** (horse-bugs) và nay `main` = `f7324d86` + horse-bugs + Ác chính (đợt này),
-**đã push `origin/main`**. `CoreClient.dll.moi` `7f0577a7` dựng từ đúng cây này. Nhánh `claude/wauto-ac-chinh-phu-32d2e8` = main (fast-forward), không có gì riêng.
+**đã push `origin/main`**. Đợt b `725f1ae7` dựng từ main sau khi thêm commit đợt b. Nhánh `claude/wauto-ac-chinh-phu-32d2e8` = main (fast-forward), không có gì riêng.
 
 - Nhánh `claude/wauto-ac-chinh-phu-32d2e8` (worktree `D:\GAMEDEVNEW\.claude\worktrees\machine-code-limit-analysis-ac47d1`)
   = `main` `f7324d86` **+ gộp** `claude/wauto-auto-horse-bugs-ad45c9` `52b663f3` (`ce7977d2`) **+** `60d72b26` (đợt này) — nay chính là `main`.
@@ -146,7 +148,7 @@ Log ghi TCVN3 (đọc qua `vn_edit.py --read`).
   `main`** (12 commit 14–16/09: ngựa, `[DT-HUY]`, bình máu kẹt tay, Tin Sứ…). Dựng từ `main` không thì DLL mới **rớt** các
   vá đó. Đã kiểm chuỗi trong DLL mới: `[TK-BOMAY]` 2/2, `[TK-DONTUI]` 4/4, `[PK-NGUA]` 2/2, `[FIGHT-HORSE]` 2/2, `[HD-TS]` 1/1,
   `[DT-HUY]` 7/7, `[DT-CUON]` 2/2, `[PK-KHIEN]` 1/1, `[TK-NPC]` 3/3, `[HC-BAN]` 1/1, `[DT-LA]` 1/1 (mới/cũ) — tập cha;
-  thêm `[AC-PHU]` 5, `movemapid`, 4 câu thông báo mới; **0** câu "qua Xa Phu" cũ.
+  thêm `[AC-PHU]`, 4 câu thông báo mới; **0** câu "qua Xa Phu" cũ. Đợt b: **0** `movemapid`, đủ 31 tên bãi + 4 chuỗi menu của header.
 - `main` sau `52b663f3` có thêm vá BAOMAT/MAYID (`KItemList::SetPrice` chặn giá âm, `KProtocolProcess` phía máy chủ) —
   vào theo, không liên quan client.
 - Build: `build.py --config "Client Release" --platform Win32 --project Core --solution-dir <worktree>`; WAuto:
@@ -161,6 +163,7 @@ Log ghi TCVN3 (đọc qua `vn_edit.py --read`).
 2. TCVN3 **không có chữ hoa có dấu**: "Ác chính" phải viết "Ac chính" trong `.cpp` (bộ vá bắt được ngay); WAuto UTF-16 thì viết được.
 3. `ChoiGame.bat` đổi cả `WAuto.exe` → phải **thoát WAuto** trước, không thì bat báo lỗi và không mở game.
 4. Thần Hành Phù chỉ được máy chủ đếm **trong túi** (`GetItemCount(0,6,1,1271)`), để trong rương coi như không có.
-5. Map cấm phù (script `shenxingfu.lua`): 324 báo danh, 44, 175, 197, 208–223, 336–339, 341, 342, 375–395, 416–511, và
+5. Đợt a tôi chọn đường tắt `movemapid` vì Hậu cần đã dùng nó — nhưng chủ muốn **nhìn thấy** ác phụ mở phù, và đúng là thoại phù còn kiểm cấp ngay trên menu như người chơi. Bài học: "dùng X" của chủ = làm y như người chơi làm với X.
+6. Map cấm phù (script `shenxingfu.lua`): 324 báo danh, 44, 175, 197, 208–223, 336–339, 341, 342, 375–395, 416–511, và
    `CheckAllMaps` → đứng ở đó thì lượt hỏng (lý do 3) chứ không phải lỗi auto; Tống Kim / Công Thành đang cầm máy thì
    máy Ác chính vốn không chạy.
