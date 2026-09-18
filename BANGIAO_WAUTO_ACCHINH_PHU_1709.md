@@ -8,12 +8,12 @@ Tiếp nối `BANGIAO_WAUTO_ACCHINH_0309.md` (đợt 1) và bộ vá 04/09 (`goi
 
 ---
 
-## 1. Trạng thái — CHỜ SWAP, hai tệp `.moi` ở `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client`
+## 1. Trạng thái — CHỜ SWAP đợt b: `CoreClient.dll.moi` ở `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client`
 
 | Tệp | md5 | sha256[:8] | cỡ (byte) | Nội dung |
 |---|---|---|---|---|
 | `CoreClient.dll.moi` | `725f1ae7` | `9a0e078c` | 2.680.320 | **đợt b (18/09 16:50)**: cả bãi luyện công cũng MỞ PHÙ và lần menu, bỏ hẳn lệnh `movemapid` — thay bản đợt a `7f0577a7` đang chạy (chủ test: "đi thẳng lên map không bấm mở thần hành phù") |
-| `WAuto.exe.moi` | `3293885f` | `86ef6813` | 467.968 | chỉ đổi chữ: nhãn ô *"Ác chính ở map khác thì dùng Thần Hành Phù sang"*, tooltip, note tab Ác chính |
+| `WAuto.exe` (đã lên `3293885f`, không có `.moi` mới) | `3293885f` | `86ef6813` | 467.968 | chỉ đổi chữ: nhãn ô *"Ác chính ở map khác thì dùng Thần Hành Phù sang"*, tooltip, note tab Ác chính |
 
 Bản đang chạy (chủ đã swap đợt a lúc ~16:2x): `CoreClient.dll` `7f0577a7` · `WAuto.exe` `3293885f` (đợt a, giữ nguyên — không có `.moi` mới) ·
 `Game.exe` 17/09 08:56 (GIOIHAN, **không đụng**). Trước đợt a là `676d452f` (16/09, nhánh horse-bugs).
@@ -21,7 +21,7 @@ Bản đang chạy (chủ đã swap đợt a lúc ~16:2x): `CoreClient.dll` `7f0
 ### Cách đổi
 
 1. Thoát hẳn `Game.exe` **và** `WAuto.exe` (bat đổi tên `WAuto.exe`, đang mở thì báo lỗi và không mở game).
-2. Chạy `bin\client\ChoiGame.bat` — đổi cả hai `.moi`.
+2. Chạy `bin\client\ChoiGame.bat` — đổi `CoreClient.dll.moi` (đợt b chỉ có tệp này).
 3. `autoData` **không đổi** nên hai tệp không bắt buộc lên cùng lúc; WAuto cũ + CoreClient mới vẫn chạy đúng
    (chỉ nhãn ô còn ghi "qua Xa Phu"). Cấu hình `APdata\<ID>.dat` giữ nguyên, ô *Ác chính ở map khác…*
    (`bAcChinhVaoMap`, mặc định BẬT từ 04/09) vẫn là công tắc của tính năng.
@@ -69,8 +69,8 @@ báo *"Ac chính đang ở map N - Thần Hành Phù không có mục tới map 
 
 - Bắt đầu lượt: phải có phù trong túi/ô dùng nhanh (`TK_DemThanHanhPhu`), không thì báo *"Không có Thần Hành Phù
   trong túi…"* (một lần / 60 s), thả máy, nhịp sau kiểm lại (mua/nhặt được phù là đi ngay).
-- (a): gửi lệnh, 4 s chưa đổi map thì gửi lại, tối đa 3 lần. (b)/(c): dùng phù, 4 s không ra thoại mới thì dùng
-  lại, tối đa 3 lần; thoại nào không phải menu phù thì đóng (`GDCNI_UI_ACT`) để khỏi kẹt.
+- Cả ba đường: dùng phù, mỗi thoại mới bấm đúng mục, 4 s không ra thoại mới thì dùng phù lại, tối đa 3 lần;
+  thoại nào không phải menu phù thì đóng (`GDCNI_UI_ACT`) để khỏi kẹt.
 - Hết 3 lần hoặc quá 60 s → **lượt hỏng**: báo *"Dùng Thần Hành Phù sang map ác chính không được (map đang đứng
   cấm phù / chưa đủ cấp / thoại không ra) - nghỉ 1 phút rồi thử lại."*, thả máy (auto thường chạy tại chỗ),
   60 s sau tự thử lại. Không bao giờ quay vòng gửi lệnh liên tục.
