@@ -344,6 +344,13 @@ struct ExtAuto
 	UINT uACMoveT;
 	int  nACRepath;
 	UINT uACNghi;        // ket -> nghi toi moc nay
+	// (17/09) sang map ac chinh bang Than Hanh Phu (AC_DiThanHanh)
+	int  nACThp;         // buoc: 0 chua bat dau / 1 da gui movemapid / 10 da dung phu, dang lan thoai / <0 = -ly do hong, nghi toi uACThpHan
+	int  nACThpTry;      // so lan gui / dung phu trong luot
+	int  nACThpMap;      // map dich cua luot (ac chinh doi map = lam lai tu dau)
+	UINT uACThpT;        // moc gui / dung phu / tra loi thoai gan nhat
+	UINT uACThpHan;      // han luot (60 s) hoac moc het nghi
+	UINT uACDlgSeen;     // uDlgSeq da xu ly
 	// == chung cho MOI may auto (25/08) ==
 	int  nMapCu;         // map cua nhip truoc; doi so = vua chuyen map -> DUNG di chuyen
 	int  nXCu;           // toa do nhip truoc (mps); nhay xa = bi TRAP dich chuyen
@@ -567,6 +574,12 @@ struct ExtAuto
 		uACMoveT = 0;
 		nACRepath = 0;
 		uACNghi = 0;
+		nACThp = 0;
+		nACThpTry = 0;
+		nACThpMap = 0;
+		uACThpT = 0;
+		uACThpHan = 0;
+		uACDlgSeen = 0;
 		nMapCu = 0;
 		nXCu = 0;
 		nYCu = 0;

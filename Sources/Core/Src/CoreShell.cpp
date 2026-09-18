@@ -10305,79 +10305,198 @@ static void AC_GuiViTri(int nPlayerIdx, UINT uCurTime)
 }
 
 
-// (04/09) DI TOI MAP QUA MUC "NHUNG NOI DA DI QUA" CUA XA PHU.
-// Xa Phu co HAI danh sach (script/global/npcchucnang/xaphu.lua):
-//   "Nhung thanh thi da di qua" -> Station.txt  (16 thanh thi)   -> LD_DiThanh lo
-//   "Nhung noi da di qua"       -> WayPoint.txt (81 map dong / bai luyen cong)
-// Chu game 04/09: ac chinh dung o map 75 "Khoa Lang dong" ma auto bao "khong co tuyen
-// Xa Phu" - sai, vi truoc day WAuto chi biet danh sach thanh thi.
-// Tra: 1 = dang di, 0 = chua toi duoc Xa Phu, -1 = chiu (het gio / khong co trong bang).
-static int AC_DiWayPoint(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT uCurTime)
+// ===== (17/09) SANG MAP AC CHINH BANG THAN HANH PHU - KHONG DI XA PHU =====
+// Chu game 17/09: "nick phu di theo ac chinh phai dung than hanh phu de di chuyen theo sau -
+// khong can di chuyen theo toi xa phu - chi can dung than hanh phu". Thay han hai duong Xa Phu
+// cua 04/09 (LD_DiThanh "thanh thi da di qua" + AC_DiWayPoint "noi da di qua") bang phu 6/1/1271.
+// Ba duong, tuy map ac chinh dang dung (theo menu cua script\item\ib\shenxingfu.lua):
+//   (a) BAI LUYEN CONG - 31 map tab_lv20map..tab_lv90map (= g_GoMapID[] cua tab Hau can): gui
+//       c2sdnmbr_movemapid, may chu chay GotoMapId(map) -> nhay ngay, KHONG can thoai (dung duong
+//       "Di map luyen cong" cua Hau can, nHomeStep 10). May chu tu kiem phu trong tui, cap toi
+//       thieu cua bai (gopos_step3lvXX) va map dang dung co cam phu hay khong.
+//   (b) THANH THI (7, THANH_ARRAY): dung phu -> "Su dung thuat than hanh di den noi chi dinh"
+//       -> "Thanh thi" -> ten thanh -> muc dau mang ten thanh (Trung Tam; Lam An = "Lam An Nam");
+//       toi noi AC_DiTheo di not trong map. Chuoi menu chep tu DTP_CITYHOP (r5) da chay that.
+//   (c) THON TRAN (4, THON_ARRAY): dung phu -> "Su dung thuat than hanh..." -> "Thon trang" -> ten thon.
+// Map ngoai ba nhom (thon khong co trong menu phu, map su kien...) thi KHONG di, AC_Process bao
+// mot lan / 60 s. Khong co buoc Xa Phu nao, khong dung phu ve thanh.
+// Tra: 1 = dang di (cam may); 0 = khong di, *pnLyDo: 0 im lang (dang chet), 1 map khong co trong
+//      menu phu, 2 khong co phu trong tui, 3 may chu khong cho (map dang dung cam phu / chua du
+//      cap / thoai khong ra / het han luot) -> nghi AC_THP_NGHI roi tu thu lai.
+#define AC_THP_GO_LAI	4000	// ms: chua doi map / chua ra thoai moi thi gui / dung phu lai
+#define AC_THP_THU		3		// so lan gui / dung phu toi da trong mot luot
+#define AC_THP_LUOT		60000	// ms: han mot luot
+#define AC_THP_NGHI		60000	// ms: luot hong -> nghi roi thu lai
+
+// muc trong menu "Su dung thuat than hanh" cua phu: nNhom 0 = "Thanh thi", 1 = "Thon trang".
+// Ten rut ngan de strstr khop CA danh sach ten LAN danh sach cua ("Thanh Do Phu" / "Thanh Do Trung Tam").
+struct ACPhuMuc { int nMapId; int nNhom; const char* szMuc; };
+static const ACPhuMuc g_aACPhuMuc[11] =
+{
+	{ 1,   0, "Ph­îng T­êng" },
+	{ 11,  0, "Thµnh §«" },
+	{ 162, 0, "§¹i Lý" },
+	{ 37,  0, "BiÖn Kinh" },
+	{ 78,  0, "T­¬ng D­¬ng" },
+	{ 80,  0, "D­¬ng Ch©u" },
+	{ 176, 0, "L©m An" },
+	{ 53,  1, "Ba L¨ng" },		// "Ba Lang Huyen"
+	{ 20,  1, "Giang T©n" },	// "Giang Tan Thon"
+	{ 121, 1, "Long M«n" },	// "Long Mon Tran"
+	{ 54,  1, "Nam Nh¹c" },	// "Nam Nhac Tran" - khong co Xa Phu, chi phu toi duoc
+};
+static const char* const g_aACPhuNhom[2] = { "Thµnh thÞ", "Th«n trang" };
+
+static int AC_LaBaiLuyen(int nMap)
+{
+	for (int i = 0; i < (int)(sizeof(g_GoMapID) / sizeof(g_GoMapID[0])); ++i)
+		if (g_GoMapID[i] == nMap)
+			return 1;
+	return 0;
+}
+
+static const ACPhuMuc* AC_TimMucPhu(int nMap)
+{
+	for (int i = 0; i < (int)(sizeof(g_aACPhuMuc) / sizeof(g_aACPhuMuc[0])); ++i)
+		if (g_aACPhuMuc[i].nMapId == nMap)
+			return &g_aACPhuMuc[i];
+	return NULL;
+}
+
+// gui "nhay toi map bang Than Hanh Phu" - may chu chay GotoMapId (khuon Hau can nHomeStep 10)
+static void AC_GuiMoveMapId(int nMap)
+{
+	char szPack[16];
+	DYNAMIC_COMMAND* pCmd = (DYNAMIC_COMMAND*)&szPack[0];
+	pCmd->ProtocolType = c2s_dynamic_structure;
+	pCmd->nBranch = c2sdnmbr_movemapid;
+	pCmd->m_wLength = sizeof(DYNAMIC_COMMAND) - 1 + sizeof(int);
+	*(int*)(pCmd + 1) = nMap;
+	if (g_pClient)
+		g_pClient->SendPackToServer((BYTE*)pCmd, pCmd->m_wLength + 1);
+}
+
+static void AC_ThpXoa(ExtAuto& ea)
+{
+	ea.nACThp = 0;
+	ea.nACThpTry = 0;
+	ea.nACThpMap = 0;
+	ea.uACThpT = 0;
+	ea.uACThpHan = 0;
+}
+
+static int AC_ThpHong(int nPlayerIdx, int nLyDo, UINT uCurTime, int* pnLyDo)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	AUTOLOG("[AC-PHU] hong (ly do %d, buoc %d, lan %d, map dich %d) - nghi %d giay roi thu lai",
+		nLyDo, ea.nACThp, ea.nACThpTry, ea.nACThpMap, AC_THP_NGHI / 1000);
+	ea.nACThp = -nLyDo;
+	ea.uACThpHan = uCurTime + AC_THP_NGHI;
+	*pnLyDo = nLyDo;
+	return 0;
+}
+
+static int AC_DiThanHanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT uCurTime, int* pnLyDo)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	KDaTauCapture& cap = g_sDTCap;
-	const char* szTen = WayPointMenu(nDestMap);
-	if (!szTen)
-		return -1;
-	if (!ea.uLDHopT)
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	*pnLyDo = 0;
+	// dang nghi sau luot hong: giu ly do cho AC_Process bao, het nghi thi lam lai tu dau
+	if (ea.nACThp < 0)
 	{
-		ea.uLDHopT = uCurTime + 150000;
-		ea.uLDThpT = 0;
-	}
-	if (uCurTime > ea.uLDHopT)
-		return -1;
-	const int nMap = SubWorld[0].m_SubWorldID;
-	std::map<int, StationVector>::iterator itXa = g_MoveStation.find(nMap);
-	if (itXa == g_MoveStation.end() || itXa->second.empty())
-	{	// dang o map khong co Xa Phu -> ve thanh truoc, nhip sau di tiep
-		if (!DT_UsePortal(nPlayerIdx))
-			return -1;
-		ea.uLDNext = uCurTime + 4000;
-		return 1;
-	}
-	if (cap.uDlgSeq != ea.uLDDlgSeen)
-	{
-		ea.uLDDlgSeen = cap.uDlgSeq;
-		char szBuf[2048];
-		char* apAns[16];
-		g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
-		int nAns = DT_Split(szBuf, apAns, 16);
-		int nOpt;
-		if ((nOpt = DT_FindAns(apAns, nAns, szTen)) >= 0)
-		{	// danh sach dang mo va co dung ten noi can den
-			DT_Answer(nPlayerIdx, nOpt);
-			ea.uLDNext = uCurTime + 1500;
-			return 1;
-		}
-		if ((nOpt = DT_FindAns(apAns, nAns, DTM_SAP_NOIDADIQUA)) >= 0)
-		{	// dang o menu chinh -> mo danh sach "Nhung noi da di qua"
-			DT_Answer(nPlayerIdx, nOpt);
-			ea.uLDNext = uCurTime + 900;
-			return 1;
-		}
-		ea.uLDNext = uCurTime + 1200;
-		return 1;
-	}
-	{	// chua mo duoc thoai -> di toi Xa Phu cua map dang dung
-		sStation& sXa = DT_TramGan(itXa->second, nPlayerIdx);
-		int nXaIdx = DT_FindNpcName(nPlayerIdx, "xa phu", sXa.x, sXa.y, 400);
-		if (nXaIdx)
+		if ((int)(uCurTime - ea.uACThpHan) < 0)
 		{
-			int nX2, nY2, dX2, dY2;
-			Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX2, &nY2);
-			Npc[nXaIdx].GetMpsPos(&dX2, &dY2);
-			if (g_GetDistance(nX2, nY2, dX2, dY2) <= 128)
-			{
-				ea.uLDDlgSeen = cap.uDlgSeq;
-				Player[nPlayerIdx].DialogNpc(nXaIdx);
-				ea.uLDNext = uCurTime + 800;
-				return 1;
-			}
-			DT_WalkTo(nPlayerIdx, dX2, dY2, 96, uCurTime);
+			*pnLyDo = -ea.nACThp;
+			return 0;
+		}
+		AC_ThpXoa(ea);
+	}
+	// ac chinh doi map giua chung -> luot moi
+	if (ea.nACThp > 0 && ea.nACThpMap != nDestMap)
+		AC_ThpXoa(ea);
+	const int nBai = AC_LaBaiLuyen(nDestMap);
+	const ACPhuMuc* pMuc = nBai ? NULL : AC_TimMucPhu(nDestMap);
+	if (!nBai && !pMuc)
+	{
+		*pnLyDo = 1;
+		return 0;
+	}
+	if (Npc[nSelf].m_Doing == do_death || Npc[nSelf].m_Doing == do_revive || Npc[nSelf].m_CurrentLife <= 0)
+		return 0;		// dang chet: im lang, nhip sau xem lai (hoi sinh do tab Co ban / S3Client lo)
+	if (ea.nACThp == 0)
+	{
+		if (TK_DemThanHanhPhu(nPlayerIdx) <= 0)
+		{
+			*pnLyDo = 2;
+			return 0;
+		}
+		ea.nACThpMap = nDestMap;
+		ea.nACThpTry = 0;
+		ea.uACThpHan = uCurTime + AC_THP_LUOT;
+	}
+	if ((int)(uCurTime - ea.uACThpHan) > 0)
+		return AC_ThpHong(nPlayerIdx, 3, uCurTime, pnLyDo);
+	if (nBai)
+	{	// (a) bai luyen cong: gui movemapid roi doi may chu doi map (AC_KhacMap tu het khi cung map)
+		if (ea.nACThp == 1 && (int)(uCurTime - ea.uACThpT) < AC_THP_GO_LAI)
+			return 1;
+		if (ea.nACThpTry >= AC_THP_THU)
+			return AC_ThpHong(nPlayerIdx, 3, uCurTime, pnLyDo);
+		AC_GuiMoveMapId(nDestMap);
+		ea.nACThp = 1;
+		++ea.nACThpTry;
+		ea.uACThpT = uCurTime;
+		AUTOLOG("[AC-PHU] gui movemapid map=%d lan %d/%d (dang o map %d)", nDestMap, ea.nACThpTry, AC_THP_THU, SubWorld[0].m_SubWorldID);
+		return 1;
+	}
+	// (b)/(c) thanh thi / thon tran: dung phu roi lan theo thoai
+	if (ea.nACThp == 10 && cap.uDlgSeq != ea.uACDlgSeen)
+	{
+		ea.uACDlgSeen = cap.uDlgSeq;
+		char szBuf[2048];
+		char* apAns[24];
+		g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+		int nAns = DT_Split(szBuf, apAns, 24);
+		int nOpt;
+		// thu tu: ten thanh/thon (o danh sach ten LAN danh sach cua) -> nhom -> muc "thuat than hanh"
+		if ((nOpt = DT_FindAns(apAns, nAns, pMuc->szMuc)) >= 0)
+		{
+			DT_Answer(nPlayerIdx, nOpt);
+			ea.uACThpT = uCurTime;
+			ea.uACNext = uCurTime + 1500;
+			AUTOLOG("[AC-PHU] thoai: chon '%s' (muc %d/%d)", apAns[nOpt], nOpt, nAns);
 			return 1;
 		}
-		DT_WalkTo(nPlayerIdx, sXa.x, sXa.y, 200, uCurTime);
+		if ((nOpt = DT_FindAns(apAns, nAns, g_aACPhuNhom[pMuc->nNhom])) >= 0
+		 || (nOpt = DT_FindAns(apAns, nAns, "thuËt thÇn hµnh")) >= 0)
+		{
+			DT_Answer(nPlayerIdx, nOpt);
+			ea.uACThpT = uCurTime;
+			ea.uACNext = uCurTime + 900;
+			AUTOLOG("[AC-PHU] thoai: chon '%s' (muc %d/%d)", apAns[nOpt], nOpt, nAns);
+			return 1;
+		}
+		AUTOLOG("[AC-PHU] thoai la (%d muc): %.80s - dong", nAns, szBuf);
+		CoreDataChanged(GDCNI_UI_ACT, 1, 0);	// thoai khong phai menu phu - dong de khoi ket
 	}
+	if (ea.nACThp == 10 && (int)(uCurTime - ea.uACThpT) < AC_THP_GO_LAI)
+		return 1;
+	if (ea.nACThpTry >= AC_THP_THU)
+		return AC_ThpHong(nPlayerIdx, 3, uCurTime, pnLyDo);
+	ea.uACDlgSeen = cap.uDlgSeq;	// chi xet thoai MOI sau khi dung phu
+	if (!Player[nPlayerIdx].m_ItemList.AutoUseItem(TK_ITEM_THP_G, TK_ITEM_THP_D, TK_ITEM_THP_P, nPlayerIdx))
+	{
+		AC_ThpXoa(ea);
+		*pnLyDo = 2;
+		return 0;
+	}
+	ea.nACThp = 10;
+	++ea.nACThpTry;
+	ea.uACThpT = uCurTime;
+	ea.uACNext = uCurTime + 900;
+	AUTOLOG("[AC-PHU] dung phu lan %d/%d - dich '%s' (nhom %d) map=%d (dang o map %d)",
+		ea.nACThpTry, AC_THP_THU, pMuc->szMuc, pMuc->nNhom, nDestMap, SubWorld[0].m_SubWorldID);
 	return 1;
 }
 // (04/09) ac chinh con song va tin con moi, NHUNG dang o MAP KHAC?
@@ -10510,51 +10629,32 @@ static int AC_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		return ea.nACHold;
 	ea.uACNext = uCurTime + AC_NHIP;
 	const int nMap = SubWorld[0].m_SubWorldID;
-	// (04/09) AC CHINH O MAP KHAC: truoc day may tra 0 ngay -> ac phu dung yen chay auto
-	// thuong, dung nhu chu game bao "khong tu di den Xa Phu len map cua ac chinh".
-	// Nay bat o "Ac chinh o map khac thi tu qua Xa Phu sang" thi di bang may di duong
-	// san co LD_DiThanh (tu tim Xa Phu -> "nhung thanh thi da di qua" -> ten thanh).
+	// (17/09) AC CHINH O MAP KHAC -> sang CHI BANG THAN HANH PHU (AC_DiThanHanh), khong Xa Phu.
+	// (04/09 cu: LD_DiThanh / AC_DiWayPoint = chay bo toi Xa Phu, chu game bo 17/09.)
 	if (pAp->bAcChinhVaoMap && pAp->bTimAcChinh && AC_KhacMap(pAp, nMap))
 	{
-		if (!DT_SapTownMenu(pAp->nACMap) && WayPointMenu(pAp->nACMap))
-		{	// (04/09) khong phai thanh thi nhung CO trong "Nhung noi da di qua"
-			// (81 map dong / bai luyen cong, vi du map 75 Khoa Lang dong)
-			int nW = AC_DiWayPoint(nPlayerIdx, pAp, pAp->nACMap, uCurTime);
-			if (ea.uLDNext > uCurTime)
-				ea.uACNext = ea.uLDNext;
-			if (nW >= 0)
-			{
-				if (ea.nACHold != 1)
-				{
-					s_uACBaoLoi = 0;
-					DT_Msg(nPlayerIdx, "<color=Cyan>Ac chÝnh ë map kh¸c - ®ang qua Xa Phu (n¬i ®· ®i qua) ®Ó sang.");
-				}
-				ea.nACHold = 1;
-				return 1;
-			}
-		}
-		if (!DT_SapTownMenu(pAp->nACMap) && !WayPointMenu(pAp->nACMap))
-		{	// map ac chinh khong co trong CA HAI danh sach cua Xa Phu - bao MOT LAN
-			if (!s_uACBaoLoi || (int)(uCurTime - s_uACBaoLoi) > AC_BAO_LAI)
-			{
-				s_uACBaoLoi = uCurTime ? uCurTime : 1;
-				char szB[160];
-				sprintf(szB, "<color=Yellow>Ac chÝnh ®ang ë map %d - map nµy kh«ng cã tuyÕn Xa Phu nªn kh«ng tù sang ®­îc.", pAp->nACMap);
-				DT_Msg(nPlayerIdx, szB);
-			}
+		// o "Trong thanh" tat: ac chinh dang o map co Xa Phu (thanh) thi khong sang - cung luat voi
+		// cung map ben duoi (tranh ca bay nhay vao thanh moi lan ac chinh ve ban do / sua do)
+		if (!pAp->bAcChinhThanh && g_MoveStation.find(pAp->nACMap) != g_MoveStation.end())
+		{
 			ea.nACHold = 0;
 			return 0;
 		}
-		int nDi = LD_DiThanh(nPlayerIdx, pAp, pAp->nACMap, uCurTime);
-		if (ea.uLDNext > uCurTime)
-			ea.uACNext = ea.uLDNext;		// ton trong nhip noi bo cua LD_DiThanh
-		if (nDi < 0)
+		int nLyDo = 0;
+		const int nDi = AC_DiThanHanh(nPlayerIdx, pAp, pAp->nACMap, uCurTime, &nLyDo);
+		if (nDi <= 0)
 		{
-			ea.uLDHopT = 0;
-			if (!s_uACBaoLoi || (int)(uCurTime - s_uACBaoLoi) > AC_BAO_LAI)
+			if (nLyDo && (!s_uACBaoLoi || (int)(uCurTime - s_uACBaoLoi) > AC_BAO_LAI))
 			{
 				s_uACBaoLoi = uCurTime ? uCurTime : 1;
-				DT_Msg(nPlayerIdx, "<color=Yellow>Kh«ng sang ®­îc map cña ¸c chÝnh (hÕt ThÇn Hµnh Phï / kh«ng thÊy Xa Phu).");
+				char szB[200];
+				if (nLyDo == 1)
+					sprintf(szB, "<color=Yellow>Ac chÝnh ®ang ë map %d - ThÇn Hµnh Phï kh«ng cã môc tíi map nµy nªn kh«ng tù sang ®­îc.", pAp->nACMap);
+				else if (nLyDo == 2)
+					strcpy(szB, "<color=Yellow>Kh«ng cã ThÇn Hµnh Phï trong tói - kh«ng sang ®­îc map cña ¸c chÝnh.");
+				else
+					strcpy(szB, "<color=Yellow>Dïng ThÇn Hµnh Phï sang map ¸c chÝnh kh«ng ®­îc (map ®ang ®øng cÊm phï / ch­a ®ñ cÊp / tho¹i kh«ng ra) - nghØ 1 phót råi thö l¹i.");
+				DT_Msg(nPlayerIdx, szB);
 			}
 			ea.nACHold = 0;
 			return 0;
@@ -10562,11 +10662,12 @@ static int AC_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (ea.nACHold != 1)
 		{
 			s_uACBaoLoi = 0;		// di duoc roi - lan sau hong thi duoc bao ngay
-			DT_Msg(nPlayerIdx, "<color=Cyan>Ac chÝnh ë map kh¸c - ®ang qua Xa Phu ®Ó sang.");
+			DT_Msg(nPlayerIdx, "<color=Cyan>Ac chÝnh ë map kh¸c - dïng ThÇn Hµnh Phï sang.");
 		}
 		ea.nACHold = 1;
 		return 1;
 	}
+	AC_ThpXoa(ea);		// (17/09) cung map / mat ac chinh / khong sang: luot phu (neu co) ket thuc
 	if (!AC_CoAcChinh(pAp, nMap))
 	{
 		if (ea.nACHold)
@@ -10579,7 +10680,6 @@ static int AC_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nACHold = 0;
 		return 0;
 	}
-	ea.uLDHopT = 0;		// (04/09) da o cung map voi ac chinh - xoa dong ho di duong
 	int nX = 0, nY = 0;
 	Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
 	if (AC_CungMucTieu(nPlayerIdx, pAp, uCurTime))
