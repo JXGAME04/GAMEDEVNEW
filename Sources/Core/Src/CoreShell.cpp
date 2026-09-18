@@ -3014,6 +3014,11 @@ static void DT_Msg(int nPlayerIdx, const char* szMsg)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	UINT uNow = timeGetTime();
+	// (15/09) GHI TRUOC phanh 1,2 giay. May Da Tau truoc nay gan nhu CAM trong
+	// jx_auto.log: moi quyet dinh (huy / treo / bo qua / doi loai) chi ban ra kenh chat
+	// trong game roi troi, va phanh uDTStatusTime con VUT BOT nen ca dong chat cung khong
+	// du. Ghi o day thi moi ly do deu co dau vet, va loc mot chu [DT-MSG] la ra ca mach.
+	AUTOLOG("[DT-MSG] pha=%d buoc=%d loai=%d %s", ea.nDTPhase, ea.nDTStep, ea.nDTQType, szMsg);
 	if (ea.uDTStatusTime > uNow)
 		return;
 	ea.uDTStatusTime = uNow + 1200;
@@ -3135,6 +3140,52 @@ static int DT_FindNpcTpl(int nPlayerIdx, int nTpl, int nRadius)
 			nFirst = nIdx;
 	}
 	return nFirst;
+}
+
+// (14/09) [PICK-NOP] Danh sach 'khong nhat' so TEN OBJ TREN DAT voi ten nguoi choi chon.
+// Hai ten do KHONG cung nguon: danh sach lay tu TEN TRONG TUI (ATYPE_GETITEMNAME ->
+// Item[].GetName()), con ten obj tren dat duoc may chu ghi kem SO LUONG khi mon chong
+// dong rot thanh chong: sprintf(szName, "%s x %d", GetName(), GetStackNum()) - co o TAT CA
+// duong rot do (KNpc.cpp:10368 / 10436 / 10609, KItemList.cpp:3094 / 3459 / 4901 / 5478 /
+// 5579, KItemCompound.cpp:1526, KJx2WarInfra.cpp:1727). Nen cung mot mon: rot 1 cai thi
+// strcmp trung -> bo qua; rot 2 cai tro len ten thanh 'X x 2' -> KHONG trung -> VAN NHAT.
+// Dung trieu chung chu game bao 14/09: 'luc nhat luc khong'. So sanh bo duoi ' x <so>'.
+// Khong so nham mon khac: phai trung HET phan dau VA phan con lai dung dang ' x ' + toan chu so.
+static bool WA_TenObjTrungCam(const char* szObj, const char* szCam)
+{
+	if (!szObj || !szCam || !szCam[0])
+		return false;
+	if (!strcmp(szObj, szCam))
+		return true;
+	const size_t nLen = strlen(szCam);
+	if (strncmp(szObj, szCam, nLen) != 0)
+		return false;
+	const char* p = szObj + nLen;
+	if (p[0] != ' ' || p[1] != 'x' || p[2] != ' ')
+		return false;
+	p += 3;
+	if (*p < '0' || *p > '9')
+		return false;
+	for (; *p; ++p)
+		if (*p < '0' || *p > '9')
+			return false;
+	return true;
+}
+
+// (14/09) Mon nay co trong danh sach 'khong nhat' (tab Nhat do) khong?
+// MOT cho duy nhat cho CA BA duong nhat do cua WAuto - truoc day moi duong tu viet
+// mot vong strcmp rieng va duong farm Da Tau thi khong co vong nao.
+static bool WA_ObjBiCamNhat(const autoData* pAp, const char* szTen)
+{
+	if (!pAp || !pAp->bNoPick || pAp->nNOPCount <= 0 || !szTen || !szTen[0])
+		return false;
+	int nSo = pAp->nNOPCount;
+	if (nSo > 60)
+		nSo = 60;	// szNOPName[60][80] - chan ke ca khi cau hinh cu ghi so lon hon
+	for (int c = 0; c < nSo; ++c)
+		if (WA_TenObjTrungCam(szTen, pAp->szNOPName[c]))
+			return true;
+	return false;
 }
 
 // tim NPC kind_dialoger co ten (thuong hoa ASCII) chua chuoi con, gan (nX,nY)
@@ -4810,6 +4861,14 @@ static int DT_HasPortalInBag(int nPlayerIdx)
 static DWORD g_dwDTKhoePend = 0;	// ID mon KHOE (loai 3) da dat vao hop giao, dang cho ket qua tra
 static DWORD g_dwDTKhoeId = 0;		// ID mon khoe da tra XONG (server hoan lai) - can cat vao ruong
 static int   g_nDTKhoeTry = 0;		// so nhip da thu cat mon khoe
+static int  s_nDTHuyLien = 0;	// (15/09) so lan XAC NHAN HUY lien tiep tren CUNG mot loai nhiem vu
+static int  s_nDTHuyLoai = -1;	// (15/09) loai nhiem vu cua lan xac nhan huy truoc
+// (15/09 dot 4) Chu game: "huy mot lan ma khong duoc thi khong huy nua ma di luyen cong".
+// Ghi nho loai nhiem vu ma HUY DA CHUNG MINH la vo tac dung, theo NGAY (luot huy chi hoi
+// khi qua ngay). Con cho thi KHONG bam huy nua - tha may cho auto thuong di luyen cong.
+static int  s_nDTHuyHongLoai = 0;	// loai nhiem vu huy khong an
+static int  s_nDTHuyHongNgay = 0;	// ngay ghi nhan (DT_Today)
+static const char DTS_HUYHONG[] = "<color=Orange>HÕt l­ît hñy nhiÖm vô.";
 static int   g_nDTSellNeed = 8;		// DTP_SELLJUNK: du bao nhieu o trong thi thoi ban
 static int   g_nDTSellMin = 5;		// DTP_SELLJUNK: het rac ma >= so nay thi van lam tiep duoc
 static UINT  g_uDTYieldT = 0;		// lan cuoi nhuong may cho Hau can (DTP_YIELD)
@@ -6199,6 +6258,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// het 40 nhiem vu / ngay
 		if (DT_Has(szQ, DTM_MSG_LIMIT))
 		{
+			// (15/09) DU KIEN DA DO tu kich ban may chu (global/seasonnpc.lua):
+			//   Task_Cancel(nType) dong 697 mo dau bang 'if checkTask_Limit()~=1 then return end'
+			//   checkTask_Limit() dong 63: nNum >= 40 -> Say(cau nay) roi return 0.
+			// => DU 40 THI LENH HUY TREN MAY CHU HOAN TOAN VO HIEU: bam bao nhieu lan cung
+			// khong huy duoc, nhiem vu dang cam VAN NGUYEN. Bo dem tang luc nhiem vu BAT DAU
+			// (storm_goon_start dong 39) nen dang lam nhiem vu thu 40 la nNum da = 40.
+			AUTOLOG("[DT-40] NPC bao du 40 luot hom nay - may chu CHAN ca lenh huy (seasonnpc.lua:697). pha=%d buoc=%d loai=%d treo60p", ea.nDTPhase, ea.nDTStep, ea.nDTQType);
 			const int bLanDauNgay = (ea.nDTDoneDay != nToday);
 			ea.nDTDoneDay = nToday;
 			// (20/08) treo co han: server reset la chay tiep ngay.
@@ -6289,6 +6355,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			if (pAp->nDTCancelMode == 2)
 			{
+				AUTOLOG("[DT-HUY] thoai HET LUOT - dung 100 manh son Ha Xa Tac (loai=%d)", ea.nDTQType);
 				DT_Answer(nPlayerIdx, idx);
 				ea.nDTStep = DTI_CANCELWAIT;
 				ea.uDTNext = uCurTime + 900;
@@ -6297,6 +6364,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (pAp->nDTCancelMode == 1
 			&& (idx = DT_FindAns(apAns, nAns, DTM_OPT_NORMALCANCEL)) >= 0)
 			{
+				AUTOLOG("[DT-HUY] thoai HET LUOT - van chon huy thuong (loai=%d)", ea.nDTQType);
 				DT_Answer(nPlayerIdx, idx);
 				ea.nDTStep = DTI_CANCELWAIT;
 				ea.uDTNext = uCurTime + 900;
@@ -6309,6 +6377,42 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if ((idx = DT_FindAns(apAns, nAns, DTM_OPT_CANCEL1A)) >= 0
 		|| (idx = DT_FindAns(apAns, nAns, DTM_OPT_CANCEL1B)) >= 0)
 		{
+			// (15/09 dot 2) CHAN VONG LAP HUY - da bat tan tay bang log dot 1:
+			//   [DT-HUY] loai=5 buoc=3 lap 14 lan lien tiep, chu ky 2,93 giay deu tam tap;
+			//   [DT-STATE] pha=2 (WAITDLG) buoc=3 (DTI_CANCELWAIT) retry=0 -> co thoai MOI
+			//   moi vong, khong phai timeout; [DT-40] = 0 -> KHONG phai chot 40.
+			// Mach that: thoai chinh -> loai dang TAT nen bam CANCELCONF -> Task_CancelConfirm
+			// -> client xac nhan o day -> may chu Task_Cancel KHONG huy duoc (het luot huy, va
+			// khi du 40 thi con bi checkTask_Limit chan thang o seasonnpc.lua:697) -> nhiem vu
+			// VAN NGUYEN cung loai -> ve NPC -> thoai chinh -> LAP VO TAN.
+			// Mach huy la mach DUY NHAT cua may Da Tau khong co bo dem chong lap (cac mach khac
+			// deu co nDTRetry / nDTUnknown / nDTShopTry...). Dem so lan huy LIEN TIEP tren CUNG
+			// mot loai: khac loai la huy that su co tac dung -> dem lai tu dau.
+			if (ea.nDTQType == s_nDTHuyLoai)
+				++s_nDTHuyLien;
+			else
+			{
+				s_nDTHuyLoai = ea.nDTQType;
+				s_nDTHuyLien = 1;
+			}
+			AUTOLOG("[DT-HUY] xac nhan huy - loai=%d buoc=%d lien=%d", ea.nDTQType, ea.nDTStep, s_nDTHuyLien);
+			// (15/09 dot 4) chu game chot: huy MOT LAN, quay lai van loai do = huy khong an.
+			// lien == 1 la lan huy dau; lien == 2 nghia la da huy roi ma NHIEM VU VAN NGUYEN.
+			if (s_nDTHuyLien > 1)
+			{
+				// Huy 6 lan lien ma van dung loai do = huy KHONG CO TAC DUNG. Thoat sach bang
+				// lua chon CUOI cua thoai - ca Task_CancelConfirm lan Task_NormalCancel deu co
+				// "...de ta suy nghi lai..." o cuoi, tro toi Task_Wait() la ham RONG.
+				AUTOLOG("[DT-HUY] huy %d lan ma van loai %d - huy KHONG co tac dung. Ghi nho ca ngay, thoi khong huy nua, tha may di luyen cong", s_nDTHuyLien, ea.nDTQType);
+				s_nDTHuyHongLoai = ea.nDTQType;	// (15/09 dot 4) nho ca ngay
+				s_nDTHuyHongNgay = nToday;
+				s_nDTHuyLien = 0;
+				s_nDTHuyLoai = -1;
+				if (nAns > 0)
+					DT_Answer(nPlayerIdx, nAns - 1);
+				ea.nDTStep = DTI_NONE;
+				return DT_Hold(nPlayerIdx, DTS_HUYHONG, uCurTime, 60 * 60 * 1000);
+			}
 			DT_Answer(nPlayerIdx, idx);
 			ea.nDTStep = DTI_NONE;
 			ea.nDTQType = 0;
@@ -6413,9 +6517,21 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				}
 				else if (pAp->bDTLenhBai == 1 && ea.nDTLBTry >= 2)
 					DT_Msg(nPlayerIdx, "<color=Red>LÖnh bµi hoµn thµnh kh«ng cã t¸c dông (server ch­a cËp nhËt script?) - lµm theo cÊu h×nh.");
+				// (15/09 dot 4) da chung minh huy loai nay hom nay KHONG AN thi DUNG bam huy nua -
+				// dong thoai, tha may (DT_Hold dat nDTEngaged = 0) cho auto thuong di luyen cong.
+				// Luot huy chi hoi khi qua ngay (checkTask_Limit dat lai LIMITCancelCount theo ngay)
+				// nen nho theo NGAY la du; sang ngay moi tu dong thu lai.
+				if (ea.nDTQType == s_nDTHuyHongLoai && nToday == s_nDTHuyHongNgay)
+				{
+					AUTOLOG("[DT-HUY] loai %d hom nay huy KHONG AN (da thu) - khong bam huy nua, tha may di luyen cong", ea.nDTQType);
+					CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+					ea.nDTStep = DTI_NONE;
+					return DT_Hold(nPlayerIdx, DTS_HUYHONG, uCurTime, 60 * 60 * 1000);
+				}
 				int nCanIdx = DT_FindAns(apAns, nAns, DTM_OPT_CANCELCONF);
 				if (pAp->nDTSkipMode == 1 && nCanIdx >= 0)
 				{
+					AUTOLOG("[DT-HUY] loai %d dang TAT trong tab - bam nut huy o thoai chinh", ea.nDTQType);
 					DT_Answer(nPlayerIdx, nCanIdx);
 					ea.nDTStep = DTI_CANCELWAIT;
 					ea.uDTNext = uCurTime + 900;
@@ -6439,6 +6555,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				int nCanIdx = DT_FindAns(apAns, nAns, DTM_OPT_CANCELCONF);
 				if (nCanIdx >= 0)
 				{
+					AUTOLOG("[DT-HUY] bam nut huy o thoai chinh - loai=%d", ea.nDTQType);
 					DT_Answer(nPlayerIdx, nCanIdx);
 					ea.nDTStep = DTI_CANCELWAIT;
 					ea.uDTNext = uCurTime + 900;
@@ -6447,6 +6564,9 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return DT_Hold(nPlayerIdx, "<color=Red>Kh«ng thÊy nót hñy trong héi tho¹i.", uCurTime, 10 * 60 * 1000);
 			}
 			// nhiem vu moi -> dong khung thoai (khong can tra loi - nhiem vu da duoc gan)
+			// (15/09) nhan duoc nhiem vu moi = mach huy da thong -> dem lai tu dau
+			s_nDTHuyLien = 0;
+			s_nDTHuyLoai = -1;
 			CoreDataChanged(GDCNI_UI_ACT, 1, 0);
 			ea.nDTPhase = DTP_EXEC;
 			ea.uDTNext = uCurTime + 300;
@@ -6455,6 +6575,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// hop thoai la (khong khop marker nao). Khoi phuc bo dem cu roi tang - KHONG bi
 		// reset boi new-dialog nen chot nay khong bi vo hieu khi NPC lien tuc tra hoi thoai la (DT-1).
 		ea.nDTUnknown = nUnkSave + 1;
+		// (15/09) GHI NGUYEN VAN thoai la - phep do con thieu cuoi cung. Nhanh nay tu truoc
+		// den nay CAM TIT nen khong ai biet NPC noi gi ma client khong hieu, va dung no la
+		// mot mat xich cua vong lap huy: chot 'qua 6 thoai la thi treo' o duoi BI VO HIEU khi
+		// thoai la XEN KE voi thoai khop, vi moi thoai KHOP deu dat ea.nDTUnknown = 0 o dau ham
+		// (dong ~6244). Vong cua may: thoai chinh (khop) -> xac nhan huy (khop) -> cau tu choi
+		// cua may chu (LA) -> lai thoai chinh... nen bo dem khong bao gio vuot 6.
+		// In ca nAns va 300 ky tu dau de doi chieu thang voi cau NPC hien tren man hinh.
+		AUTOLOG("[DT-LA] thoai khong nhan dang duoc (lan %d) nAns=%d loai=%d buoc=%d: %.300s", ea.nDTUnknown, nAns, ea.nDTQType, ea.nDTStep, cap.szDlg);
 		if (ea.nDTUnknown > 6)
 			return DT_Hold(nPlayerIdx, "<color=Red>Héi tho¹i kh«ng nhËn d¹ng ®­îc (server ®æi lêi tho¹i?).", uCurTime, 5 * 60 * 1000);
 		CoreDataChanged(GDCNI_UI_ACT, 1, 0);
@@ -7107,21 +7235,42 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			}
 		}
 		// nhat cuon roi tren dat (genre 6) ke ca khi bo loc nhat cua nguoi choi bo qua
+		// (14/09) TRU danh sach 'khong nhat'. Chu game 14/09: 'item nao co trong danh sach
+		// la khong duoc nhat'. Day la GOC THAT cua loi 'luc nhat luc khong': 'Tui Hoat Dong'
+		// la Genre 6 (server\settings\item\magicscript.txt) nen khoi nay nhat no TRONG pha
+		// farm Da Tau, con hai duong nhat binh thuong thi chan dung (log 14/09: ten do co
+		// 7.621 dong PICK-NAME-IN va 0 dong PICK-TYPE-IN = khong he lot duong thuong).
+		// Khoi nay khong ghi log nao nen truoc day khong soi ra duoc.
+		// (14/09 r10) AUTOLOG_EVERY (KCore.h:252) goi timeGetTime() MOI LAN DANH GIA khi log
+		// dang bat - ton KE CA khi khong ghi ra dong nao. Do dung la cai lam tut fps 11/09.
+		// Nen KHONG de macro do trong than vong quet obj: dem co roi ghi MOT dong sau vong.
 		int nObj = ObjSet.GetNext(0);
+		int nCuonBoQua = 0;
+		const char* szCuonBoQua = "";
 		while (nObj)
 		{
 			if (Object[nObj].m_nKind == Obj_Kind_Item && Object[nObj].m_nGenre == 6)
 			{
+				if (WA_ObjBiCamNhat(pAp, Object[nObj].m_szName))
+				{
+					++nCuonBoQua;
+					szCuonBoQua = Object[nObj].m_szName;
+					nObj = ObjSet.GetNext(nObj);
+					continue;
+				}
 				int dX, dY;
 				Object[nObj].GetMpsPos(&dX, &dY);
 				if (g_GetDistance(nX, nY, dX, dY) < 500)
 				{
+					AUTOLOG("[DT-CUON] nhat cuon genre 6 '%.79s' obj=%d", Object[nObj].m_szName, Object[nObj].m_nID);
 					Player[nPlayerIdx].CheckObject(nObj);
 					break;
 				}
 			}
 			nObj = ObjSet.GetNext(nObj);
 		}
+		if (nCuonBoQua)
+			AUTOLOG_EVERY(3000, "[DT-CUON] bo qua %d cuon co trong danh sach khong nhat (vi du '%.79s')", nCuonBoQua, szCuonBoQua);
 		ea.uDTNext = uCurTime + 400;
 		return 2;
 	}
@@ -8238,11 +8387,31 @@ static int TK_RaoDung(int nMap)
 // (03/09 dem, dot 4) XUONG NGUA khi gap dich (chu game: "xuong ngua chi khi gap dich") - cung khuon
 // PA_RIDE (co ngua o o trang bi, khong ngoi, het gian TIME_RIDE); ghi moc de DT_DuocLenNgua khong
 // len lai ngay. May PK (o 'Xuong ngua') van xuong theo cach cua no - cung chieu, khong xung dot.
-static void TK_XuongNgua(int nPlayerIdx, UINT uCurTime)
+static int WA_VongChieuDoiNgua(int nNpcIdx, const autoData* pAp, int nChieuA, int nChieuB, int* pnChieu);
+static void TK_XuongNgua(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
 	if (nSelf <= 0 || !Npc[nSelf].m_bRideHorse)
 		return;
+	// (14/09) CHO NAY LA CHO EP XUONG NGUA MA CHU GAME BAO - va no chi chay trong Tong Kim
+	// ("khi vao tong kim moi bi"). Luat 03/09 "xuong ngua chi khi gap dich" xuong VO DIEU
+	// KIEN, khong he hoi chieu cua nhan vat co danh duoc tren ngua khong. Trong tran Tong Kim
+	// dich ra vao tam nhin lien tuc nen: xuong -> DT_DuocLenNgua len lai sau NGUA_NGHI ->
+	// gap dich lai xuong... = dung "tu dong len xuong ngua"; va nguoi cam DAO Thieu Lam
+	// (11 chieu dao deu HorseLimit 0 = danh tren ngua duoc) thay minh "bi ep xuong".
+	// Chu game 14/09: "thieu lam dao tat nhien la skill tren ngua roi".
+	// Nay chi xuong khi vong chieu TAN CONG CHINH that su doi xuong (moi chieu HorseLimit 1 -
+	// luc do cuoi ngua la khong danh duoc gi). Hai o 'Xuong ngua' cua nguoi choi van thang the.
+	if (pAp && pAp->nSelFHorse != 2 && !pAp->bPKDownHorse)
+	{
+		int nChieuQD = 0;
+		const int nLS = Player[nPlayerIdx].GetLeftSkill();
+		if (WA_VongChieuDoiNgua(nSelf, pAp, nLS, nLS, &nChieuQD) != 1)
+		{
+			AUTOLOG_EVERY(5000, "[TK-NGUA] GAP DICH nhung GIU TREN NGUA: vong chieu chinh danh duoc tren ngua (chieu %d)", nChieuQD);
+			return;		// KHONG ghi s_uNguaXuongT: khong co lan xuong nao ca
+		}
+	}
 	s_uNguaXuongT = uCurTime ? uCurTime : 1;
 	if (Player[nPlayerIdx].m_ItemList.GetEquipment(itempart_horse) <= 0)
 		return;
@@ -8939,10 +9108,26 @@ static void TK_Msg(int nPlayerIdx, const char* szMsg)
 	catch (...) {}
 }
 
+// (14/09) [TK-RUONG] Cham vao ruong = may chu chay OpenBox() (ruongchua.lua:59) roi gui
+// s2c_openstorebox -> client MO KUiStoreBox + KUiItem (GameSpaceChangedNotify.cpp:557-560).
+// WAuto khong he dong lai nen cat do xong hai cua so do nam tren man hinh mai (chu game
+// 14/09: 've mo ruong ra xong khong tu tat ruong di'). May auto co san cua client dong
+// bang chinh duong nay: CoreDataChanged(GDCNI_FK_AUTO_ITEM, 0, -2) (KPlayerAuto.cpp:3695
+// -> GameSpaceChangedNotify.cpp:730). Dung lai duong do, khong them lenh UI moi.
+static UINT s_uTKXaPhuBao = 0;	// (14/09) moc lan cuoi bao 'khong thay Xa Phu' - chan lap dong chat
+static int  s_nTKVutThu = 0;	// (14/09) so lan da thu vut binh o buoc don tui cua TKP_END
+
+static void TK_DongRuong()
+{
+	CoreDataChanged(GDCNI_FK_AUTO_ITEM, 0, -2);
+}
+
 static void TK_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	AUTOLOG("[TK-PHA] %d -> %d map=%d t=%u", ea.nTKPhase, nPha, SubWorld[0].m_SubWorldID, uCurTime);	// (06/09)
+	if (ea.nTKPhase == TKP_RUONG && nPha != TKP_RUONG)
+		TK_DongRuong();	// (14/09) roi pha ruong bang duong khac (bi keo map / han pha) cung phai dong
 	ea.nTKPhase = nPha;
 	ea.nTKStep = 0;
 	ea.nTKTry = 0;
@@ -8951,6 +9136,7 @@ static void TK_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 	// ngay khi roi TKP_FIGHT, khong thi may PK bi khoa oan.
 	s_uTKSanQuyen = 0;
 	TK_SanBo();
+	s_nTKVutThu = 0;	// (14/09) pha moi - dem lai so lan thu vut binh
 	s_uTKPosT = 0;		// (03/09 toi, dot 3) doi pha (hoi sinh / ra trai) la nhay hop le - khong tinh la bi nem ve
 	s_nTKXQDa = 0;		// (03/09 dem, dot 4) luot ra tran moi -> di lai khu xuat quan dich
 	s_nTKXQChon = -1;
@@ -9830,7 +10016,9 @@ static int TK_ToiNpc(int nPlayerIdx, const char* szTen, int nOx, int nOy, UINT u
 		// thoai gan nhau nhat cung cach >= 12 o (vi du khu Kim: Xa Phu 1568,3075 va Quan nhu quan
 		// 1580,3074). Ghi log ten NPC de lan sau doi chieu duoc vi sao ten truot.
 		int nXaGan = -1;
-		const int nGan = TK_NpcThoaiGan(TK_O(nOx), TK_O(nOy), 96, &nXaGan);
+		// (14/09) noi 96 -> 160 mps (3 -> 5 o): NPC co the duoc dat lech moc trong bang vai o.
+		// Van rat xa nguong nham: hai NPC thoai gan nhau nhat quanh moi moc cung cach >= 12 o.
+		const int nGan = TK_NpcThoaiGan(TK_O(nOx), TK_O(nOy), 160, &nXaGan);
 		if (nGan)
 		{
 			AUTOLOG_EVERY(3000, "[TK-NPC] khong thay ten '%s' quanh (%d,%d) - dung NPC thoai gan nhat '%.31s' cach %d mps", szTen, nOx, nOy, Npc[nGan].Name, nXaGan);
@@ -11087,6 +11275,10 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		if (nMap != TK_MAP_TRAN)
 		{
+			// (14/09) [TK-BOMAY] tra quyen cho auto thuong = auto thuong chay theo toa do tab
+			// 'Di chuyen' (toa do map farm) => nhan vat co the chay vao goc ban do. Ghi lai MOI
+			// lan tra quyen sau tran de lan sau truy duoc ngay bang mot dong log.
+			AUTOLOG("[TK-BOMAY] TKP_FIGHT: dang o map %d (khong phai 379, khong phai 324) - tra may cho auto thuong", nMap);
 			ea.nTKPhase = TKP_DONE;
 			ea.nTKHold = 0;
 			return 0;
@@ -11121,7 +11313,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		s_nTKPosY = nY;
 		s_uTKPosT = uCurTime;
 		if (ea.uNpcID)
-			TK_XuongNgua(nPlayerIdx, uCurTime);	// (03/09 dem, dot 4) dang om muc tieu = dang gap dich
+			TK_XuongNgua(nPlayerIdx, pAp, uCurTime);	// (03/09 dem, dot 4) dang om muc tieu = dang gap dich
 		if (s_uTKChoBatDau)
 		{
 			if ((int)(uCurTime - s_uTKChoBatDau) >= 0)
@@ -11146,7 +11338,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// (03/09 dem) AC CHINH: ac phu danh CUNG MUC TIEU ac chinh neu thay duoc (truoc moi thu tu)
 		if (AC_CoAcChinh(pAp, nMap) && AC_CungMucTieu(nPlayerIdx, pAp, uCurTime))
 		{
-			TK_XuongNgua(nPlayerIdx, uCurTime);
+			TK_XuongNgua(nPlayerIdx, pAp, uCurTime);
 			ea.uTKDestT = 0;
 			s_uTKSanQuyen = 0;
 			TK_SanBo();
@@ -11181,7 +11373,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 						else if (nTamNg > 1200)
 							nTamNg = 1200;
 						if (g_GetDistance(nX, nY, sx, sy) <= nTamNg + NGUA_DICH_THEM)
-							TK_XuongNgua(nPlayerIdx, uCurTime);
+							TK_XuongNgua(nPlayerIdx, pAp, uCurTime);
 					}
 					ea.uNpcID = 0;			// chua danh duoc ai - de may PK khong om id cu
 					s_uTKSanQuyen = uCurTime + 700;
@@ -11195,7 +11387,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				if (Npc[nTG].m_Kind == kind_player)
 					TK_RaoThayDich(nTG, uCurTime);
-				TK_XuongNgua(nPlayerIdx, uCurTime);	// (03/09 dem, dot 4) gap dich = xuong ngua roi giao may PK
+				TK_XuongNgua(nPlayerIdx, pAp, uCurTime);	// (03/09 dem, dot 4) gap dich = xuong ngua roi giao may PK
 				// giao muc tieu cho may PK (tab PK) danh - no nhan luon uNpcID nay
 				ea.uNpcID = Npc[nTG].m_dwID;
 				ea.uTKDestT = 0;
@@ -11246,19 +11438,68 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (++ea.nTKTry > 40)
 			{
 				ea.nTKStep = 2;
+				ea.nTKTry = 0;	// (14/09) PHAI dat lai: buoc tim Xa Phu ben duoi dem CHUNG bien nay
 				return 1;
 			}
-			int nTrong = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
-			if (nTrong < 8)
+			// (14/09) HOI TAY TRUOC, KHONG phu thuoc con bao nhieu o trong.
+			// GOC LOI chu game bao 14/09 "xong tong kim hay cam binh mau len tren chuot":
+			// DT_ClickItem(pos_equiproom, j, i) o duoi la lenh NHAC BINH LEN TAY (down == up
+			// cung mot o) - nhac xong thi O DO TRONG RA, nen nhip sau CalcFreeItemCellCount
+			// vua du 8 va dieu kien (nTrong < 8) thanh SAI => ca nhanh kiem TAY ben trong bi
+			// bo qua, buoc ket thuc voi BINH CON NAM TREN CHUOT. Luon xay ra o lan nhac CUOI
+			// CUNG, tuc gan nhu moi tran. (nTKMuaMau mac dinh = 0 = 'mua nhanh (day tui)' nen
+			// khoi nay chay that - log 14/09 co dong 'Da mua nhanh thuoc o Quan Y'.)
 			{
-				int nHand = Player[nPlayerIdx].m_ItemList.Hand();
+				const int nHand = Player[nPlayerIdx].m_ItemList.Hand();
 				if (nHand > 0)
 				{
 					if (TK_LaBinhMua(nHand))
-						Player[nPlayerIdx].ThrowAwayItem();
-					ea.uTKNext = uCurTime + 400;
+					{
+						// (14/09 r9) DO THAT tu log chu game: 30 dong 'vut binh dang cam tren tay'
+						// lien tiep trong 17 giay ma binh KHONG HE ROI KHOI TAY. KPlayer::ThrowAwayItem
+						// TU CHOI (tra 0) khi mon co GoldId / Nature >= NATURE_GOLD / IsPurple /
+						// Genre == item_task / m_nCurrentDur == 0. Binh thuoc khong co do ben nen roi
+						// vao ve cuoi => KHONG BAO GIO vut duoc, tuc ca buoc don tui nay CHUA TUNG chay
+						// duoc. Nen: thu toi da 3 lan roi DAT LAI BINH VAO TUI va ket thuc buoc.
+						const int nTrongTay = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
+						if (++s_nTKVutThu <= 3)
+						{
+							const int nVut = Player[nPlayerIdx].ThrowAwayItem();
+							AUTOLOG("[TK-DONTUI] thu vut binh lan %d: ret=%d otrong=%d | goldid=%d nature=%d purple=%d genre=%d dur=%d", s_nTKVutThu, nVut, nTrongTay, Item[nHand].GetGoldId(), Item[nHand].GetNature(), Item[nHand].IsPurple(), (int)Item[nHand].GetGenre(), Item[nHand].GetDurability());
+							ea.uTKNext = uCurTime + 400;
+							return 1;
+						}
+						// vut khong duoc - tra binh ve tui (khuon Hau can buoc 0) roi thoi
+						{
+							int x = 0, y = 0;
+							if (Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+									Item[nHand].GetWidth(), Item[nHand].GetHeight(), &x, &y))
+							{
+								ItemPos P1, P2;
+								P1.nPlace = P2.nPlace = pos_equiproom;
+								P1.nX = P2.nX = x;
+								P1.nY = P2.nY = y;
+								Player[nPlayerIdx].MoveItem(P1, P2);
+								AUTOLOG("[TK-DONTUI] khong vut duoc binh sau 3 lan - DAT LAI vao tui o (%d,%d), bo qua buoc don tui", x, y);
+							}
+							else
+								AUTOLOG("[TK-DONTUI] khong vut duoc binh va tui khong con cho - danh de tren tay, bo qua buoc don tui");
+						}
+						ea.nTKStep = 2;
+						ea.nTKTry = 0;
+						return 1;
+					}
+					// tren tay la mon KHAC (nguoi choi tu cam) - khong dong vao, bo qua buoc nay
+					AUTOLOG_EVERY(5000, "[TK-DONTUI] tren tay dang cam mon khac - bo qua buoc don tui");
+					ea.nTKStep = 2;
+					ea.nTKTry = 0;
 					return 1;
 				}
+			}
+			int nTrong = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
+			// (14/09 r9) da biet khong vut duoc binh thi NHAC THEM chi to ket lai - thoi luon
+			if (nTrong < 8 && s_nTKVutThu <= 3)
+			{
 				for (int i = 0; i < EQUIPMENT_ROOM_HEIGHT; ++i)
 					for (int j = 0; j < EQUIPMENT_ROOM_WIDTH; ++j)
 					{
@@ -11375,17 +11616,39 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				// (27/08) vua bi keo ve 324, danh sach NPC phia client can vai giay
 				// moi dong bo xong (dung benh voi Quan Y trong TKP_CAMP) - thu lai
-				// toi ~8 giay truoc khi bo, khong thi nhip dau tien da phan 'khong
+				// mot luc truoc khi bo, khong thi nhip dau tien da phan 'khong
 				// thay Xa Phu' roi tra may, dung im tai cho khong ve thanh.
-				if (++ea.nTKTry < 20)
+				// (14/09) GOC RO RI: bien dem ea.nTKTry DUNG CHUNG voi buoc don tui ngay dau pha
+				// (nhanh '++ea.nTKTry > 40' thoat ma khong dat lai 0) => co luot buoc nay bat dau
+				// voi nTKTry = 41 va BO CUOC NGAY O NHIP DAU. Da dat lai 0 o nhanh do; o day noi
+				// ngan sach 20 -> 50 nhip = 20 giay. KHONG do bang ea.uTKPhaseT: buoc don tui co
+				// the an toi 16 giay cua dong ho pha truoc khi chay toi day.
+				// Vi sao phe Kim de dinh hon phe Tong: may chu tha nguoi Kim o (1570,3085) cach
+				// Xa Phu Kim (1568,3075) chi ~326 mps, con nguoi Tong o (1541,3178) cach Xa Phu
+				// Tong (1535,3153) ~823 mps (lib_tktc.lua:798-801 battle_transprot). TK_ToiNpc chi
+				// tra -1 khi da o trong 320 mps cua moc, nen phe Kim vao dem bo cuoc gan nhu ngay
+				// lap tuc, phe Tong con ca quang duong 26 o de danh sach NPC kip dong bo.
+				if (++ea.nTKTry < 50)
 				{
 					ea.uTKNext = uCurTime + 400;
 					return 1;
 				}
-				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Xa Phu ®Ó rêi ®iÓm b¸o danh.");
-				ea.nTKPhase = TKP_DONE;
-				ea.nTKHold = 0;
-				return 0;
+				if (!s_uTKXaPhuBao || uCurTime - s_uTKXaPhuBao > 60000)
+				{	// (14/09) buoc nay gio thu lai mai nen dong chat phai chan, 1 lan / phut
+					s_uTKXaPhuBao = uCurTime ? uCurTime : 1;
+					TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Xa Phu ®Ó rêi ®iÓm b¸o danh.");
+				}
+				// (14/09) KHONG tra may cho auto thuong khi VAN DANG DUNG TREN MAP BAO DANH.
+				// Do chinh la duong sinh ra trieu chung chu game bao: nTKHold = 0 -> S3Client
+				// cho ATYPE_MOVE chay theo toa do tab 'Di chuyen' (toa do cua map farm, vo nghia
+				// o map 324) -> nhan vat chay thang vao goc ban do. Thu lai tu dau va DUNG YEN
+				// canh Xa Phu con hon chay vao goc; danh sach NPC dong bo xong la di tiep duoc.
+				AUTOLOG("[TK-NPC] TKP_END khong thay Xa Phu sau 20 giay - GIU MAY tren map bao danh va thu lai (phe=%d step=%d)", ea.nTKPhe, ea.nTKStep);
+				ea.nTKStep = 2;
+				ea.nTKTry = 0;
+				ea.uTKPhaseT = uCurTime;
+				ea.uTKNext = uCurTime + 3000;
+				return 1;
 			}
 		}
 		return 1;
@@ -11423,6 +11686,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					return 1;
 				}
 				TK_Msg(nPlayerIdx, "<color=Cyan>§· vÒ tíi thµnh ®· chän - tr¶ m¸y l¹i cho auto cò.");
+				AUTOLOG("[TK-BOMAY] pha=%d map=%d - tra may cho auto thuong", ea.nTKPhase, nMap);
 				ea.nTKPhase = TKP_DONE;
 				ea.nTKHold = 0;
 				return 0;
@@ -11434,6 +11698,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				ea.uLDHopT = 0;
 				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng ®i tíi ®­îc thµnh ®· chän (hÕt ThÇn Hµnh Phï / kh«ng thÊy Xa Phu) - tr¶ m¸y t¹i chç.");
+				AUTOLOG("[TK-BOMAY] pha=%d map=%d - tra may cho auto thuong", ea.nTKPhase, nMap);
 				ea.nTKPhase = TKP_DONE;
 				ea.nTKHold = 0;
 				return 0;
@@ -11485,6 +11750,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (nBest < 0)
 			{
 				TK_Msg(nPlayerIdx, "<color=Yellow>Thµnh nµy kh«ng cã r­¬ng trong b¶ng - tr¶ m¸y l¹i cho auto cò.");
+				AUTOLOG("[TK-BOMAY] pha=%d map=%d - tra may cho auto thuong", ea.nTKPhase, nMap);
 				ea.nTKPhase = TKP_DONE;
 				ea.nTKHold = 0;
 				return 0;
@@ -11502,6 +11768,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					if (++ea.nTKTry > 900)		// ~6 phut van chua toi thi thoi
 					{
 						TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng ®i tíi ®­îc r­¬ng ®· chän - tr¶ m¸y l¹i cho auto cò.");
+						AUTOLOG("[TK-BOMAY] pha=%d map=%d - tra may cho auto thuong", ea.nTKPhase, nMap);
 						ea.nTKPhase = TKP_DONE;
 						ea.nTKHold = 0;
 						return 0;
@@ -11551,6 +11818,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (!pAp->bTKRuongCat)
 		{
 			TK_Msg(nPlayerIdx, "<color=Cyan>Xong viÖc ë r­¬ng - tr¶ m¸y l¹i cho auto cò.");
+			TK_DongRuong();	// (14/09) dong cua so ruong OpenBox() vua mo
 			ea.nTKPhase = TKP_DONE;
 			ea.nTKHold = 0;
 			return 0;
@@ -11574,6 +11842,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			else
 				TK_Msg(nPlayerIdx, "<color=Cyan>Trong tói kh«ng cã trang bÞ nµo cÇn cÊt - tr¶ m¸y l¹i cho auto cò.");
 		}
+		TK_DongRuong();	// (14/09) cat do xong - dong cua so ruong OpenBox() vua mo
 		ea.nTKPhase = TKP_DONE;
 		ea.nTKHold = 0;
 		return 0;
@@ -14205,6 +14474,10 @@ static void HD_Msg(int nPlayerIdx, const char* szMsg)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	UINT uNow = timeGetTime();
+	// (16/09) GHI TRUOC phanh 1,2 giay - giong DT_Msg. May Hoat dong truoc nay chi co
+	// DUY NHAT mot dau log [HD-GATE]; moi ly do quyet dinh chi ban ra kenh chat roi troi,
+	// lai con bi phanh uTKMsgT vut bot nen ca dong chat cung khong du de doi chieu.
+	AUTOLOG("[HD-MSG] pha=%d buoc=%d %s", ea.nHDPhase, ea.nHDStep, szMsg);
 	if (ea.uTKMsgT > uNow)
 		return;
 	ea.uTKMsgT = uNow + 1200;
@@ -14218,6 +14491,10 @@ static void HD_Msg(int nPlayerIdx, const char* szMsg)
 static void HD_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	// (16/09) khuon giong [TK-PHA] cua may Tong Kim. Pha: 0 OFF, 1 BN_GO, 2 BN_IN,
+	// 3 BN_BUFF, 4 BN_OUT, 5 BC_GO, 6 BC_SIGN, 7 BC_FIGHT, 8 BC_OUT,
+	// 9 TS_GO, 10 TS_XAPHU, 11 TS_AI, 12 DONE.
+	AUTOLOG("[HD-PHA] %d -> %d map=%d t=%u", ea.nHDPhase, nPha, SubWorld[0].m_SubWorldID, uCurTime);
 	ea.nHDPhase = nPha;
 	ea.nHDStep = 0;
 	ea.nHDTry = 0;
@@ -14595,6 +14872,32 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		return 0;
 	}
 
+	// (16/09) [HD-TS] dong trang thai cho RIENG ba pha Tin Su (9/10/11). Trieu chung chu
+	// game bao 16/09: "nhan nhiem vu - len map nhiem vu - roi ra ngoai map lai nhan nhiem
+	// vu (khong bat dau nhiem vu)". De truy duoc phai nhin DONG THOI: pha/buoc, map dang
+	// dung, va BON BIEN NHIEM VU do may chu dong bo xuong (m_cTask):
+	//   tt    = HD_TS_TSK_TT    trang thai nhiem vu (0 = khong co nhiem vu nao dang lam)
+	//   tuyen = HD_TS_TSK_TUYEN hang tuyen dang lam (-1 = khong khop bang g_HDTSVe)
+	//   ma/da = HD_TS_TSK_MA / _DA  ma ruong phai mo va so ruong da mo
+	//   ngay  = HD_TS_TSK_NGAY  YYMMDD*256 + so luot da xong hom nay
+	// Kem khoa ngay nHDKeyTS + moc nghi uHDTSNghi + luot/muc tieu - day la nhung thu
+	// quyet dinh cong vao o tren chon 'lam tiep viec do dang' hay 'di nhan nhiem vu moi'.
+	// Dat NGOAI moi vong lap, 3 giay mot dong.
+	if (ea.nHDPhase == HDP_TS_GO || ea.nHDPhase == HDP_TS_XAPHU || ea.nHDPhase == HDP_TS_AI)
+	{
+		AUTOLOG_EVERY(3000, "[HD-TS] pha=%d buoc=%d try=%d map=%d | tt=%d tuyen=%d ma=%d da=%d ruongke=%d | ngay=%d luot=%d/%d keyTS=%d nghi=%d giaytrongpha=%d",
+			ea.nHDPhase, ea.nHDStep, ea.nHDTry, nMap,
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(HD_TS_TSK_TT),
+			HD_TSTuyen(nPlayerIdx),
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(HD_TS_TSK_MA),
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(HD_TS_TSK_DA),
+			HD_TSRuongKe(nPlayerIdx),
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(HD_TS_TSK_NGAY),
+			HD_TSLuotNay(nPlayerIdx, nNgay), HD_TSMucTieu(pAp),
+			ea.nHDKeyTS,
+			(int)((ea.uHDTSNghi > uCurTime) ? (ea.uHDTSNghi - uCurTime) / 1000 : 0),
+			(int)((uCurTime - ea.uHDPhaseT) / 1000));
+	}
 	switch (ea.nHDPhase)
 	{
 	case HDP_BN_GO:
@@ -16073,6 +16376,76 @@ static int WA_MapSuKien(int nPlayerIdx)
 // chinh minh do may chu dong bo xuong qua s2c_syncvhtd (KProtocolProcess.cpp:4487)
 // nen doc thang Npc[].HS_SpGet() la dung.
 // pnCanTang (co the NULL) tra ve SO TANG ma chieu do an - > 0 nghia la "chieu tang".
+// (14/09) [FIGHT-HORSE] Nhan vat NAY danh TREN ngua hay DUOI ngua?
+// Chu game 14/09: "tu dong co nghia WAuto xac dinh duoc phai nao danh skill gi tren ngua
+// hay duoi ngua de tu dong len xuong ngua" va "thieu lam dao tat nhien la skill tren ngua roi".
+// Luat that cua game nam o DUY NHAT cot HorseLimit trong settings\skills.txt -
+// KSkill::CanCastSkill (KSkills.cpp:320) khong doc gi khac; bang cua client va cua may chu
+// giong het nhau (doi chieu 1683/1683 dong, 0 dong lech).
+//
+// LUAT: chi can MOT chieu TAN CONG CHINH danh duoc tren ngua (HorseLimit 0 hoac 2) la LEN NGUA.
+// Chi XUONG khi MOI chieu tan cong chinh deu HorseLimit 1 - luc do cuoi ngua la khong danh
+// duoc gi (vi du Con Lon 372 Ngao Tuyet Tieu Phong: log 14/09 co 13 dong [CHIEU-CAM] ly do 2).
+// Vi du Thieu Lam cam dao: chieu dao (id 6/19/24/32/34/37/321/322/1058/1077/1084) deu
+// HorseLimit 0 => LEN NGUA, ke ca khi trong bang Chieu KH con khe HorseLimit 1 (Kim Cang
+// Phuc Ma 10, Long Trao Ho Trao 17...) - khe do chi bi BO LUOT mot cach em, khong ket may:
+// WA_ChieuBiCam tra 'bi cam TAM THOI' -> nguoi goi dat bBanRoi = true 'coi nhu da ban de
+// sang khe ke' (CoreShell.cpp:19949 / 20460 / 20490), va KHONG cam chieu do 30 giay.
+//
+// Chi xet VONG CHIEU TAN CONG CHINH: chieu dang dinh ban + chieu chuot trai + 6 khe Chieu KH
+// + o 'Doi chieu'. KHONG xet cuu mang / cuu mana / chieu boss / tien chieu - chung la chieu
+// PHU, thinh thoang moi ban, khong duoc quyen troi ngua ca tran.
+// Chieu CHUA HOC cung bo qua - no khong bao gio ban ra.
+// Tra: 1 = phai o DUOI dat; 2 = nen o TREN ngua. *pnChieu = chieu quyet dinh (de ghi log).
+static int WA_VongChieuDoiNgua(int nNpcIdx, const autoData* pAp, int nChieuA, int nChieuB, int* pnChieu)
+{
+	if (pnChieu)
+		*pnChieu = 0;
+	if (!pAp)
+		return 2;
+	int aId[10];
+	int nSo = 0;
+	aId[nSo++] = nChieuA;		// chieu may dang dinh ban nhip nay
+	aId[nSo++] = nChieuB;		// chieu nen (chuot trai trong game)
+	if (pAp->bCombo)
+		for (int k = 0; k < 6; ++k)
+			aId[nSo++] = pAp->nComboSkill[k];
+	aId[nSo++] = pAp->nSkillIdC;	// o 'Doi chieu'
+	int nTren = 0, nDuoi = 0;
+	for (int i = 0; i < nSo; ++i)
+	{
+		if (aId[i] <= 0)
+			continue;
+		const int nIdx = Npc[nNpcIdx].m_SkillList.FindSame(aId[i]);
+		if (!nIdx)
+			continue;
+		KSkill* pS = (KSkill*)g_SkillManager.GetSkill(aId[i],
+						Npc[nNpcIdx].m_SkillList.m_Skills[nIdx].SkillLevel);
+		if (!pS)
+			continue;
+		if (pS->GetHorseLimit() == 1)
+		{
+			if (!nDuoi)
+				nDuoi = aId[i];
+		}
+		else if (!nTren)
+			nTren = aId[i];	// HorseLimit 0 hoac 2 - deu danh duoc khi dang cuoi
+	}
+	if (nTren)
+	{	// co chieu danh duoc tren ngua -> cuoi cho nhanh, khe doi xuong (neu co) tu bo luot
+		if (pnChieu)
+			*pnChieu = nTren;
+		return 2;
+	}
+	if (nDuoi)
+	{	// MOI chieu tan cong chinh deu doi xuong -> cuoi ngua la dung im khong danh duoc gi
+		if (pnChieu)
+			*pnChieu = nDuoi;
+		return 1;
+	}
+	return 2;	// khong doc duoc chieu nao - giu nhu cu la len ngua
+}
+
 static bool WA_ChieuSanSang(int nNpcIdx, int nSkillId, int* pnCanTang)
 {
 	if (pnCanTang)
@@ -19690,18 +20063,42 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					if(!pSkill)
 						return 0;
 					AUTOLOG_EVERY(1000, "[FIGHT-SKILLRDY] t=%u skill=%d idx=%d lv=%d next=%u now=%u radius=%d needDown=%d ride=%d dist=%d mp=%d", uCurTime, nMainSkill, nSkillIdx, Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].SkillLevel, Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].NextCastTime, SubWorld[0].m_dwCurrentTime, pSkill->GetAttackRadius(), (int)pSkill->IsNeedDownHorse(), Npc[nNpcIdx].m_bRideHorse, nDist, Npc[nNpcIdx].m_CurrentMana);
+					// (14/09) [FIGHT-HORSE] O 'Tu dong' (nSelFHorse == 0) TRUOC DAY: chieu CAN xuong
+					// ngua thi xuong, CON LAI thi LEN ngua. Nhung settings\skills.txt chi co dung hai
+					// gia tri HorseLimit: 0 (1372 chieu = khong rang buoc) va 1 (312 chieu = phai xuong).
+					// Nen nhanh 'con lai' = LEN NGUA cho 81% so chieu => may danh leo len ngua giua tran,
+					// roi khe ke tiep cua bang Chieu KH la chieu HorseLimit 1 (Thieu Lam: Kim Cang Phuc
+					// Ma 10 / Hoanh Tao Luc Hop 11 / Long Trao Ho Trao 17 / Tram Long quyet 29...) lai
+					// xuong => LEN XUONG LIEN TUC. Nguoi cam DAO thay ro nhat: chieu dao cua Thieu Lam /
+					// Thien Vuong (Ma Ha Vo Luong 19, Vo Tam Tram 32, Kinh Loi Tram 34, Bat Phong Tram 37
+					// - EqtLimit 1, HorseLimit 0) danh tren ngua duoc, ma van bi ep xuong vi khe ben canh.
+					// May auto CO SAN cua client lam dung: 'if (pISkill->GetHorseLimit() && F_Auto)' -
+					// KHONG dong den ngua khi HorseLimit == 0 (KPlayerAuto.cpp:1732). Lam y het.
+					// Them phanh uHorseTime 2 giay nhu hai o 'Len ngua' / 'Xuong ngua' o duoi: khong thi
+					// moi nhip ~300 ms lai ban PA_RIDE trong khi TIME_RIDE = 5000 ms, va case PA_RIDE
+					// (CoreShell.cpp:23636) tra ve dong 'Ban qua met moi...' moi lan bi tu choi.
 					if(pApData->nSelFHorse == 0)
 					{
-						AUTOLOG_EVERY(1000, "[FIGHT-HORSE] t=%u TOGGLE skill=%d needDown=%d ride=%d selFHorse=%d dist=%d", uCurTime, nMainSkill, (int)pSkill->IsNeedDownHorse(), Npc[nNpcIdx].m_bRideHorse, pApData->nSelFHorse, nDist);
-						if(pSkill->IsNeedDownHorse())
+						// (14/09) Quyet theo CA VONG CHIEU TAN CONG CHINH (WA_VongChieuDoiNgua), khong
+						// theo tung khe: co chieu nao danh duoc tren ngua thi LEN, chi xuong khi moi
+						// chieu chinh deu doi xuong. Quyet theo ca vong chieu nen khong the keo len roi
+						// keo xuong giua hai khe - dung loi 'tu dong len xuong ngua' chu game bao 14/09.
+						int nChieuQD = 0;
+						const int nRangBuoc = WA_VongChieuDoiNgua(nNpcIdx, pApData, nMainSkill,
+											Player[nPlayerIdx].GetLeftSkill(), &nChieuQD);
+						const int nMuonCuoi = (nRangBuoc == 1) ? 0 : 1;	// 1 = nen o TREN ngua
+						AUTOLOG_EVERY(1000, "[FIGHT-HORSE] t=%u skill=%d limit=%d rangbuoc=%d chieuQD=%d ride=%d muon=%d dist=%d cho=%d", uCurTime, nMainSkill, pSkill->GetHorseLimit(), nRangBuoc, nChieuQD, Npc[nNpcIdx].m_bRideHorse, nMuonCuoi, nDist, (int)((Player[nPlayerIdx].m_sExtAuto.uHorseTime > uCurTime) ? (Player[nPlayerIdx].m_sExtAuto.uHorseTime - uCurTime) : 0));
+						// Hai phanh: uHorseTime (chung voi cac o ngua khac cua WAuto) VA dong ho THAT
+						// cua client m_TimeHorse/TIME_RIDE - case PA_RIDE chi nhan lenh khi da du 5 giay
+						// va tra ve dong 'Ban qua met moi...' moi lan bi tu choi; cac cho khac (DT_Ride,
+						// TK_XuongNgua, KPlayer.cpp:12661) deu hoi dong ho do truoc khi goi.
+						if((int)Npc[nNpcIdx].m_bRideHorse != nMuonCuoi
+						&& Player[nPlayerIdx].m_sExtAuto.uHorseTime < uCurTime
+						&& GetTickCount() - Npc[nNpcIdx].m_TimeHorse >= TIME_RIDE)
 						{
-							if(Npc[nNpcIdx].m_bRideHorse)
-								OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
-						}
-						else
-						{
-							if(!Npc[nNpcIdx].m_bRideHorse)
-								OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
+							AUTOLOG("[FIGHT-HORSE] t=%u %s ngua: vong chieu rangbuoc=%d (chieu %d), dang ride=%d", uCurTime, nMuonCuoi ? "LEN" : "XUONG", nRangBuoc, nChieuQD, Npc[nNpcIdx].m_bRideHorse);
+							Player[nPlayerIdx].m_sExtAuto.uHorseTime = uCurTime + 2000;
+							OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
 						}
 					}
 					int nSkillRadius = pSkill->GetAttackRadius();
@@ -19905,15 +20302,22 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						Player[nPlayerIdx].m_sExtAuto.uNpcID = Npc[nTGNpcIdx].m_dwID;
 						bNewFound = TRUE;
 					}
+					// (14/09) O 'Xuong ngua' cua TAB PK - Tong Kim danh bang may nay. O day xuong
+					// VO DIEU KIEN, khong hoi chieu co danh duoc tren ngua khong. Day la O CUA NGUOI
+					// CHOI nen KHONG tu doi hanh vi: tick la xuong. Nhung truoc day khoi nay cam tit,
+					// khong soi duoc; nay ghi log de biet ngay no co phai thu pham 'bi ep xuong ngua'
+					// trong Tong Kim khong. Them phanh TIME_RIDE nhu cac cho khac de khoi spam dong
+					// 'Ban qua met moi...' (CoreShell.cpp case PA_RIDE).
 					if(pApData->bPKDownHorse)
 					{
-						if(Player[nPlayerIdx].m_sExtAuto.uHorseTime < uCurTime)
+						AUTOLOG_EVERY(5000, "[PK-NGUA] o 'Xuong ngua' tab PK dang BAT - ride=%d (o nay xuong bat ke chieu gi)", Npc[nNpcIdx].m_bRideHorse);
+						if(Npc[nNpcIdx].m_bRideHorse
+						&& Player[nPlayerIdx].m_sExtAuto.uHorseTime < uCurTime
+						&& GetTickCount() - Npc[nNpcIdx].m_TimeHorse >= TIME_RIDE)
 						{
+							AUTOLOG("[PK-NGUA] XUONG ngua theo o 'Xuong ngua' tab PK t=%u", uCurTime);
 							Player[nPlayerIdx].m_sExtAuto.uHorseTime = uCurTime + 2000;
-							if(Npc[nNpcIdx].m_bRideHorse)
-							{
-								OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
-							}
+							OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
 						}
 					}
 					Npc[nTGNpcIdx].GetMpsPos(&x, &y);
@@ -20450,20 +20854,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								}
 							}
 							AUTOLOG("PICK-NAME-IN obj=%d name=%.79s nopcount=%d", Object[i].m_nID, Object[i].m_szName, pApData->nNOPCount);
-							if(pApData->bNoPick && pApData->nNOPCount)
 							{
-								bool bCont = false;
-								for(int c=0;c < pApData->nNOPCount;++c)
-								{
-									if(!strcmp(Object[i].m_szName, pApData->szNOPName[c]))
-									{
-										bCont = true;
-										break;
-									}
-								}
-								AUTOLOG("PICK-SKIP-NAME obj=%d name=%.79s nopcount=%d", Object[i].m_nID, Object[i].m_szName, pApData->nNOPCount);
+								// (14/09) dung ham chung WA_ObjBiCamNhat (bo duoi ' x <so luong>')
+								const bool bCont = WA_ObjBiCamNhat(pApData, Object[i].m_szName);
 								if(bCont)
 								{
+									// (14/09) dong log nay TRUOC DAY ghi KE CA khi khong bo qua - 10.963 dong
+									// 'SKIP-NAME' trong khi 4.949 mon van duoc nhat, khong the soi ra loc sai.
+									AUTOLOG("PICK-SKIP-NAME obj=%d name=%.79s nopcount=%d", Object[i].m_nID, Object[i].m_szName, pApData->nNOPCount);
 									i = ObjSet.GetNext(i);
 									continue;
 								}
@@ -20683,20 +21081,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 											continue;
 										}
 									}
-									if(pApData->bNoPick && pApData->nNOPCount)
 									{
-										bool bCont = false;
-										for(int c=0;c < pApData->nNOPCount;++c)
-										{
-											if(!strcmp(Object[i].m_szName, pApData->szNOPName[c]))
-											{
-												bCont = true;
-												break;
-											}
-										}
-										AUTOLOG("PICK2-SKIP-NAME obj=%d name=%.79s nopcount=%d", Object[i].m_nID, Object[i].m_szName, pApData->nNOPCount);
+										// (14/09) dung ham chung WA_ObjBiCamNhat (bo duoi ' x <so luong>')
+										const bool bCont = WA_ObjBiCamNhat(pApData, Object[i].m_szName);
 										if(bCont)
 										{
+											AUTOLOG("PICK2-SKIP-NAME obj=%d name=%.79s nopcount=%d", Object[i].m_nID, Object[i].m_szName, pApData->nNOPCount);
 											i = ObjSet.GetNext(i);
 											continue;
 										}
