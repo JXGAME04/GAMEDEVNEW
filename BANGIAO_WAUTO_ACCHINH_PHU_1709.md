@@ -124,8 +124,23 @@ Log ghi TCVN3 (đọc qua `vn_edit.py --read`).
 
 ## 6. Nhánh, build, kiểm nhị phân
 
+### 6.0 (18/09) Chủ chốt: *"fix trên main chính rồi up lên main chính … kiểm tra xem đồng bộ main chính toàn bộ tính năng, để cập nhật khỏi mất việc khác"*
+
+Đã rà **mọi nhánh local + origin** có commit ngoài `main` (`git rev-list main..<nhánh>`, `git diff main <nhánh> -- Sources`):
+
+| Nhánh | Ngoài main | Kết luận | Xử lý |
+|---|---|---|---|
+| `claude/wauto-auto-horse-bugs-ad45c9` (local + origin) | 12 commit mã + 5 doc, 14–16/09 | **THIẾU THẬT** — CoreShell.cpp của nhánh = `CoreClient.dll` đang chạy `676d452f`; main chưa có (ngựa, `[DT-HUY]`, bình máu kẹt tay, Tin Sứ) | **đã gộp vào main** (`ce7977d2`) |
+| `mail-0309`, `tkruong-0409`, `tichhop-0409` (04–06/09) | 86 / 42 / 3 commit | chỉ là **mã cũ**: tính năng của chúng đã ở main (UiAuction/KAuctionClient, `TKP_RUONG`/`bTKRuong`, UiChienLenh + commit `fb200e15` "gop phuve+chienlenh+rolechk2 vao main"); phần "thêm" so với main là lua.h 4.0, UiTongJX2 cũ… đã bị main thay | không gộp (gộp là kéo mã cũ đè mã mới) |
+| `mobile-0809` + 12 nhánh `claude/*mobile*/fps*/ios*` (local + origin) | 200–577 commit | **dòng Android/iOS riêng**, đang chứa main (mobile gộp main 11/09, 16/09) — APK dựng từ đó, không mất | không gộp vào main (quyết định riêng của dòng mobile) |
+| `origin/claude/friendly-cori-afxhh2` (chỉ origin) | 1 commit `ReverseTools/crash` 09/09 | công cụ đọc crash, không phải mã game | để nguyên |
+| `origin/claude/kind-clarke-lmcrr7` (chỉ origin) | 118 commit mobile 09/09 | bản mobile cũ, đã nằm trong `mobile-0809` | để nguyên |
+
+⇒ **Dòng PC (client + máy chủ) thiếu đúng một nhánh** (horse-bugs) và nay `main` = `f7324d86` + horse-bugs + Ác chính (đợt này),
+**đã push `origin/main`**. `CoreClient.dll.moi` `7f0577a7` dựng từ đúng cây này. Nhánh `claude/wauto-ac-chinh-phu-32d2e8` = main (fast-forward), không có gì riêng.
+
 - Nhánh `claude/wauto-ac-chinh-phu-32d2e8` (worktree `D:\GAMEDEVNEW\.claude\worktrees\machine-code-limit-analysis-ac47d1`)
-  = `main` `f7324d86` **+ gộp** `claude/wauto-auto-horse-bugs-ad45c9` `52b663f3` (`ce7977d2`) **+** `60d72b26` (đợt này).
+  = `main` `f7324d86` **+ gộp** `claude/wauto-auto-horse-bugs-ad45c9` `52b663f3` (`ce7977d2`) **+** `60d72b26` (đợt này) — nay chính là `main`.
 - **Vì sao phải gộp nhánh horse-bugs:** `CoreClient.dll` đang chạy `676d452f` = đúng bản dựng tại `52b663f3` của worktree
   `wauto-auto-horse-bugs-ad45c9` (md5 khớp tệp `Sources\Core\ClientRelease\CoreClient.dll` ở đó), nhánh này **chưa vào
   `main`** (12 commit 14–16/09: ngựa, `[DT-HUY]`, bình máu kẹt tay, Tin Sứ…). Dựng từ `main` không thì DLL mới **rớt** các
